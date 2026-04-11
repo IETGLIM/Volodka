@@ -1,0 +1,1 @@
+# Audio Files\n\nPlace audio files here:\n- ambient-calm.mp3 - Calm background music\n- ambient-tense.mp3 - Tense background music\n- click.mp3 - UI click sound\n- glitch.mp3 - Glitch effect sound\n- heartbeat.mp3 - Heartbeat at high stress\n- sfx/ - Sound effects for 3D scenes

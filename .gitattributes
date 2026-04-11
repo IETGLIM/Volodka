@@ -1,0 +1,12 @@
+# Git LFS для больших файлов
+*.glb filter=lfs diff=lfs merge=lfs -text
+*.fbx filter=lfs diff=lfs merge=lfs -text
+*.zip filter=lfs diff=lfs merge=lfs -text
+
+# Текстовые файлы
+*.md text
+*.json text
+*.ts text
+*.tsx text
+*.js text
+*.css text
