@@ -1,0 +1,261 @@
+"use client";
+
+import { memo, useRef, useEffect, useMemo, useCallback, useState } from 'react';
+import { Canvas } from '@react-three/fiber';
+import { Physics, RigidBody } from '@react-three/rapier';
+import * as THREE from 'three';
+
+// Types
+import type { 
+  VisualState,
+  SceneId 
+} from '../../data/types';
+import type { 
+  NPCDefinition,
+  NPCState, 
+  TriggerState,
+} from '../../data/rpgTypes';
+
+// Data
+import { NPC_DEFINITIONS, getNPCsForScene } from '../../data/npcDefinitions';
+import { getTriggersForScene } from '../../data/triggerZones';
+
+// Components
+import { Player, PlayerRef } from './Player';
+import { NPCSystem } from './NPC';
+import { SceneColliderSelector } from './SceneColliders';
+import { SimpleFollowCamera } from './FollowCamera';
+import { TriggerSystem } from './InteractiveTrigger';
+import CameraEffects from '../CameraEffects';
+
+// Store
+import { useGameStore } from '../../store/gameStore';
+
+// ============================================
+// TYPES
+// ============================================
+
+interface RPGGameCanvasProps {
+  sceneId: SceneId;
+  visualState: VisualState;
+  isDialogueActive: boolean;
+  onTriggerEnter: (triggerId: string, storyNodeId: string) => void;
+  onNPCInteraction: (npcId: string) => void;
+  children?: React.ReactNode;
+}
+
+// ============================================
+// COMPONENT
+// ============================================
+
+const RPGGameCanvas = memo(function RPGGameCanvas({
+  sceneId,
+  visualState,
+  isDialogueActive,
+  onTriggerEnter,
+  onNPCInteraction,
+  children,
+}: RPGGameCanvasProps) {
+  const playerRef = useRef<PlayerRef>(null);
+  const [npcStates, setNPCStates] = useState<Record<string, NPCState>>({});
+  const [triggerStates, setTriggerStates] = useState<Record<string, TriggerState>>({});
+  
+  // Получаем ВСЁ состояние напрямую из store (единый источник истины)
+  const playerState = useGameStore((state) => state.playerState);
+  const playerPosition = useGameStore((state) => state.exploration.playerPosition);
+  const setPlayerPosition = useGameStore((state) => state.setPlayerPosition);
+  
+  // Ref для актуального значения playerPosition (избегаем устаревших замыканий)
+  const playerPositionRef = useRef(playerPosition);
+  useEffect(() => { 
+    playerPositionRef.current = playerPosition; 
+  }, [playerPosition]);
+
+  // Scene config
+  const sceneConfig = useMemo(() => {
+    switch (sceneId) {
+      case 'kitchen_night':
+      case 'kitchen_dawn':
+      case 'home_morning':
+      case 'home_evening':
+        return { ambient: 0.4, light: '#ffcc00', fogColor: '#1a1a2e' };
+      case 'office_morning':
+        return { ambient: 0.5, light: '#ffffff', fogColor: '#2a2a3a' };
+      case 'cafe_evening':
+        return { ambient: 0.35, light: '#ffa500', fogColor: '#1a1510' };
+      case 'rooftop_night':
+        return { ambient: 0.15, light: '#4a5568', fogColor: '#0a0a15' };
+      case 'dream':
+        return { ambient: 0.3, light: '#a855f7', fogColor: '#1a0a2e' };
+      case 'battle':
+        return { ambient: 0.25, light: '#ef4444', fogColor: '#1a0505' };
+      case 'street_winter':
+      case 'street_night':
+        return { ambient: 0.25, light: '#87ceeb', fogColor: '#0a1020' };
+      case 'memorial_park':
+        return { ambient: 0.35, light: '#ffd9a0', fogColor: '#0a1510' };
+      default:
+        return { ambient: 0.35, light: '#b2bec3', fogColor: '#1a1a2e' };
+    }
+  }, [sceneId]);
+
+  // Get NPCs and triggers for current scene
+  const sceneNPCs = useMemo(() => getNPCsForScene(sceneId), [sceneId]);
+  const sceneTriggers = useMemo(() => getTriggersForScene(sceneId), [sceneId]);
+
+  // Handle player position changes - сохраняем в store напрямую
+  const handlePositionChange = useCallback((pos: { x: number; y: number; z: number }) => {
+    setPlayerPosition({ ...pos, rotation: playerPositionRef.current.rotation });
+  }, [setPlayerPosition]);
+
+  // Handle NPC state changes
+  const handleNPCStateChange = useCallback((npcId: string, state: NPCState) => {
+    setNPCStates(prev => ({ ...prev, [npcId]: state }));
+  }, []);
+
+  // Handle trigger state changes
+  const handleTriggerStateChange = useCallback((triggerId: string, state: TriggerState) => {
+    setTriggerStates(prev => ({ ...prev, [triggerId]: state }));
+  }, []);
+
+  // Handle trigger enter
+  const handleTriggerEnter = useCallback((triggerId: string) => {
+    const trigger = sceneTriggers.find(t => t.id === triggerId);
+    if (trigger && trigger.storyNodeId) {
+      onTriggerEnter(triggerId, trigger.storyNodeId);
+    }
+  }, [sceneTriggers, onTriggerEnter]);
+
+  // Handle player interaction (E key) - find nearest NPC
+  const handlePlayerInteraction = useCallback(() => {
+    if (isDialogueActive) return;
+    
+    const currentPos = playerPositionRef.current;
+    
+    // Find nearest NPC
+    let nearestNPC: NPCDefinition | null = null;
+    let nearestDistance = Infinity;
+    
+    for (const npc of sceneNPCs) {
+      const state = npcStates[npc.id];
+      const npcPos = state?.position || npc.defaultPosition;
+      const dx = currentPos.x - npcPos.x;
+      const dz = currentPos.z - npcPos.z;
+      const distance = Math.sqrt(dx * dx + dz * dz);
+      
+      if (distance < 3 && distance < nearestDistance) {
+        nearestDistance = distance;
+        nearestNPC = npc;
+      }
+    }
+    
+    if (nearestNPC) {
+      onNPCInteraction(nearestNPC.id);
+    }
+  }, [isDialogueActive, sceneNPCs, npcStates, onNPCInteraction]);
+
+  return (
+    <Canvas
+      shadows={{ type: THREE.PCFShadowMap }}
+      camera={{ fov: 60, near: 0.1, far: 1000, position: [0, 5, 8] }}
+      style={{ 
+        background: sceneConfig.fogColor,
+        width: '100%',
+        height: '100%',
+        position: 'absolute',
+        top: 0,
+        left: 0,
+      }}
+      gl={{ antialias: true, alpha: false, powerPreference: 'high-performance' }}
+    >
+      {/* Physics World */}
+      <Physics gravity={[0, -9.81, 0]} debug={false}>
+        {/* Floor - используем boxGeometry с cuboid collider для корректной физики */}
+        <RigidBody type="fixed" colliders="cuboid" position={[0, -0.05, 0]}>
+          <mesh rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
+            <boxGeometry args={[20, 0.1, 20]} />
+            <meshStandardMaterial color="#3d3436" roughness={0.9} />
+          </mesh>
+        </RigidBody>
+      
+        {/* Fog */}
+        <fog attach="fog" args={[sceneConfig.fogColor, 8, 25]} />
+
+        {/* Lighting - Усиленное */}
+        <ambientLight intensity={sceneConfig.ambient + 0.3} />
+        <hemisphereLight args={[sceneConfig.light, '#1a1a1a', 0.8]} />
+        <directionalLight
+          position={[5, 10, 5]}
+          intensity={0.6}
+          color={visualState.colorTint !== 'transparent' ? visualState.colorTint : '#fff'}
+          castShadow
+          shadow-mapSize={[512, 512]}
+          shadow-camera-far={50}
+          shadow-camera-left={-10}
+          shadow-camera-right={10}
+          shadow-camera-top={10}
+          shadow-camera-bottom={-10}
+        />
+        <pointLight position={[0, 4, 3]} intensity={1.2} color={sceneConfig.light} distance={20} />
+        <pointLight position={[-3, 2, 0]} intensity={0.6} color={sceneConfig.light} distance={15} />
+        <pointLight position={[3, 2, 0]} intensity={0.6} color={sceneConfig.light} distance={15} />
+
+        {/* Scene Colliders */}
+        <SceneColliderSelector sceneId={sceneId} />
+
+        {/* Visual Scene Elements */}
+        {children}
+
+        {/* Player */}
+        <Player
+          ref={playerRef}
+          position={[playerPosition.x, playerPosition.y, playerPosition.z]}
+          onPositionChange={handlePositionChange}
+          onInteraction={handlePlayerInteraction}
+          isLocked={isDialogueActive}
+        />
+
+        {/* NPCs */}
+        <NPCSystem
+          npcs={sceneNPCs}
+          npcStates={npcStates}
+          playerPosition={playerPosition}
+          onNPCInteraction={onNPCInteraction}
+          onNPCStateChange={handleNPCStateChange}
+          isDialogueActive={isDialogueActive}
+        />
+
+        {/* Triggers */}
+        <TriggerSystem
+          triggers={sceneTriggers}
+          triggerStates={triggerStates}
+          playerPosition={playerPosition}
+          currentSceneId={sceneId}
+          onTriggerEnter={handleTriggerEnter}
+          onTriggerInteract={handleTriggerEnter}
+          onTriggerStateChange={handleTriggerStateChange}
+        />
+
+        {/* Camera that follows player */}
+        <SimpleFollowCamera
+          targetPosition={playerPosition}
+          distance={8}
+          height={5}
+          smoothness={0.08}
+          isLocked={isDialogueActive}
+        />
+
+        {/* Camera Effects */}
+        <CameraEffects
+          stress={playerState.stress}
+          panicMode={playerState.panicMode}
+          stability={playerState.stability}
+          creativity={playerState.creativity}
+        />
+      </Physics>
+    </Canvas>
+  );
+});
+
+export { RPGGameCanvas };
+export type { RPGGameCanvasProps };
