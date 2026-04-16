@@ -132,6 +132,20 @@ const INITIAL_NPC_RELATIONS: NPCRelation[] = [
     flags: {},
     interactions: []
   },
+  { id: 'zarema', name: 'Заремушка (Зарема)', value: 15, stage: 'friend', trust: 20, respect: 15, intimacy: 10, flags: {}, interactions: [] },
+  { id: 'albert', name: 'Альберт', value: 10, stage: 'acquaintance', trust: 15, respect: 20, intimacy: 5, flags: {}, interactions: [] },
+  { id: 'district_vika', name: 'Вика с Зелёнки', value: 12, stage: 'friend', trust: 18, respect: 10, intimacy: 8, flags: {}, interactions: [] },
+  { id: 'district_renata', name: 'Рената', value: 8, stage: 'acquaintance', trust: 12, respect: 10, intimacy: 6, flags: {}, interactions: [] },
+  { id: 'district_damien', name: 'Дамьен', value: 8, stage: 'acquaintance', trust: 12, respect: 10, intimacy: 5, flags: {}, interactions: [] },
+  { id: 'district_konstantin', name: 'Константин', value: 10, stage: 'friend', trust: 15, respect: 12, intimacy: 4, flags: {}, interactions: [] },
+  { id: 'district_timur', name: 'Тимур', value: 10, stage: 'friend', trust: 14, respect: 12, intimacy: 4, flags: {}, interactions: [] },
+  { id: 'district_polikarp', name: 'Поликарп', value: 12, stage: 'acquaintance', trust: 20, respect: 25, intimacy: 3, flags: {}, interactions: [] },
+  { id: 'district_rimma', name: 'Римма', value: 6, stage: 'acquaintance', trust: 10, respect: 10, intimacy: 5, flags: {}, interactions: [] },
+  { id: 'district_nastya', name: 'Настя', value: 6, stage: 'acquaintance', trust: 10, respect: 10, intimacy: 5, flags: {}, interactions: [] },
+  { id: 'office_alexander', name: 'Александр', value: 5, stage: 'acquaintance', trust: 12, respect: 18, intimacy: 2, flags: {}, interactions: [] },
+  { id: 'office_dmitry', name: 'Дмитрий', value: 8, stage: 'friend', trust: 16, respect: 14, intimacy: 3, flags: {}, interactions: [] },
+  { id: 'office_andrey', name: 'Андрей (коллега)', value: 0, stage: 'stranger', trust: 8, respect: 10, intimacy: 2, flags: {}, interactions: [] },
+  { id: 'office_artyom', name: 'Артём', value: 4, stage: 'acquaintance', trust: 10, respect: 16, intimacy: 2, flags: {}, interactions: [] },
 ];
 
 // ============================================
@@ -297,7 +311,7 @@ const clamp = (value: number, min: number, max: number) =>
   Math.max(min, Math.min(max, value));
 
 const SAVE_KEY = 'volodka_save_v3';
-const DEFAULT_ACTIVE_QUEST_IDS = ['main_goal', 'first_words'] as const;
+const DEFAULT_ACTIVE_QUEST_IDS = ['main_goal'] as const;
 
 const getNPCStage = (value: number): NPCRelation['stage'] => {
   if (value >= 50) return 'close';

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { motion, AnimatePresence } from 'framer-motion';
 import dynamic from 'next/dynamic';
@@ -29,6 +29,7 @@ import { useDialogueFlow } from '@/hooks/useDialogueFlow';
 import { useGameSessionFlow } from '@/hooks/useGameSessionFlow';
 import { usePanicFlow } from '@/hooks/usePanicFlow';
 import { useGameUiLayout } from '@/hooks/useGameUiLayout';
+import { useQuestProgressBridge } from '@/hooks/useQuestProgress';
 
 // Components (eager)
 import { IntroScreen } from './IntroScreen';
@@ -160,6 +161,10 @@ export default function GameOrchestrator() {
   // Derived state
   const currentNode = useMemo(() => STORY_NODES[currentNodeId] || STORY_NODES['start'], [currentNodeId]);
   const currentSceneId = useMemo((): SceneId => (currentNode?.scene as SceneId) || 'kitchen_night', [currentNode]);
+  const {
+    handleNPCInteraction: trackQuestNpcTalk,
+    handleEvent: emitQuestEvent,
+  } = useQuestProgressBridge(currentSceneId);
   // Dialogue store actions adapter
   const dialogueStoreActions = useMemo(() => ({
     addStat, addStress, reduceStress, setFlag, unsetFlag,
@@ -198,7 +203,7 @@ export default function GameOrchestrator() {
   const {
     activeDialogue,
     handleDialogueEffect,
-    handleNPCInteraction,
+    handleNPCInteraction: openNpcDialogue,
     openDialogueFromStory,
     closeDialogue,
   } = useDialogueFlow({
@@ -207,6 +212,14 @@ export default function GameOrchestrator() {
     dialogueStoreActions,
     setCurrentNode,
   });
+
+  const handleNPCInteraction = useCallback(
+    (npcId: string) => {
+      trackQuestNpcTalk(npcId);
+      openNpcDialogue(npcId);
+    },
+    [trackQuestNpcTalk, openNpcDialogue],
+  );
 
   const { handleChoice } = useStoryChoiceHandler({
     playerSkills: playerState.skills as Record<string, number>,
@@ -319,6 +332,9 @@ export default function GameOrchestrator() {
           <StoryRenderer
             node={currentNode}
             onChoice={handleChoice}
+            onPoemGameComplete={() => {
+              emitQuestEvent({ type: 'poem_written', data: {} });
+            }}
           />
         )}
       </AnimatePresence>

@@ -5,7 +5,7 @@
 import { useCallback, useEffect, useMemo } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useGameStore } from '../store/gameStore';
-import { QUEST_DEFINITIONS } from '../data/quests';
+import { QUEST_DEFINITIONS, isObjectiveSatisfied } from '../data/quests';
 import { getFactionByNPC, FACTIONS, type FactionId } from '../data/factions';
 import type { SceneId } from '../data/types';
 
@@ -51,26 +51,18 @@ const EVENT_OBJECTIVE_MAP: Partial<Record<QuestEventType, Array<{ questId: strin
     { questId: 'night_owl', objectiveId: 'write_nights' },
   ],
   npc_talked: [
-    { questId: 'maria_connection', objectiveId: 'talk_maria', condition: (d) => d.npcId === 'maria' },
-    { questId: 'maria_connection', objectiveId: 'exchange_contacts', condition: (d) => d.npcId === 'maria' },
-    { questId: 'lost_memories', objectiveId: 'meet_stranger', condition: (d) => d.npcId === 'quester' },
-    { questId: 'lost_memories', objectiveId: 'speak_to_lillian', condition: (d) => d.npcId === 'lillian' },
-    { questId: 'star_connection', objectiveId: 'meet_astra', condition: (d) => d.npcId === 'galaxy' },
+    { questId: 'maria_connection', objectiveId: 'talk_maria', condition: (d) => d.npcId === 'cafe_college_girl' },
+    { questId: 'maria_connection', objectiveId: 'exchange_contacts', condition: (d) => d.npcId === 'cafe_college_girl' },
+    { questId: 'lost_memories', objectiveId: 'meet_stranger', condition: (d) => d.npcId === 'dream_quester' },
+    { questId: 'lost_memories', objectiveId: 'speak_to_lillian', condition: (d) => d.npcId === 'dream_lillian' },
+    { questId: 'star_connection', objectiveId: 'meet_astra', condition: (d) => d.npcId === 'dream_galaxy' },
   ],
   location_visited: [
     { questId: 'first_reading', objectiveId: 'go_to_cafe', condition: (d) => d.locationId === 'cafe_evening' },
     { questId: 'coffee_affair', objectiveId: 'visit_cafe', condition: (d) => d.locationId === 'cafe_evening' },
     { questId: 'lost_memories', objectiveId: 'reach_lake', condition: (d) => d.locationId === 'dream' },
   ],
-  terminal_used: [
-    { questId: 'openstack_server_find', objectiveId: 'use_cli' },
-    { questId: 'rabbitmq_overflow', objectiveId: 'detect_overflow' },
-    { questId: 'kubernetes_orchestrator', objectiveId: 'check_status' },
-    { questId: 'auth_crisis', objectiveId: 'check_logs' },
-    { questId: 'database_pool_exhausted', objectiveId: 'check_processlist' },
-    { questId: 'ssl_certificate_renewal', objectiveId: 'check_expiry' },
-    { questId: 'microservice_memory_leak', objectiveId: 'check_memory' },
-  ],
+  // IT-цели терминала обновляются через effect.questObjective в ITTerminal.tsx — дублировать здесь нельзя
 };
 
 // ============================================
@@ -97,13 +89,14 @@ export function useQuestProgress() {
         const progress = questProgress[id] || {};
         
         // Обновляем objectives с текущим прогрессом
-        const objectives = def.objectives.map((obj) => ({
-          ...obj,
-          currentValue: progress[obj.id] || obj.currentValue || 0,
-          completed: obj.targetValue 
-            ? (progress[obj.id] || 0) >= obj.targetValue 
-            : obj.completed,
-        }));
+        const objectives = def.objectives.map((obj) => {
+          const cur = progress[obj.id] ?? obj.currentValue ?? 0;
+          return {
+            ...obj,
+            currentValue: cur,
+            completed: isObjectiveSatisfied(obj, cur),
+          };
+        });
         
         const allCompleted = objectives.every((o) => o.completed);
         
@@ -237,3 +230,17 @@ export const useFactions = () => useGameStore(useShallow((s) => ({
 })));
 
 export default useQuestProgress;
+
+/**
+ * Подписка на мир: посещение локации для квестов + базовый прогресс.
+ * Вызывать из корня игры (GameOrchestrator) с текущей сценой из узла сюжета.
+ */
+export function useQuestProgressBridge(currentSceneId: SceneId) {
+  const api = useQuestProgress();
+
+  useEffect(() => {
+    api.handleLocationVisit(currentSceneId);
+  }, [currentSceneId, api.handleLocationVisit]);
+
+  return api;
+}

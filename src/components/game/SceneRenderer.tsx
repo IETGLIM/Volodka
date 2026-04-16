@@ -4,7 +4,7 @@ import { useMemo, memo, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { sceneManager, type SceneVisualConfig } from '@/engine/SceneManager';
 import { useMobileVisualPerf } from '@/hooks/useMobileVisualPerf';
-import { SceneBackgroundPhoto } from './SceneBackgroundPhoto';
+import { AsciiCyberBackdrop } from './AsciiCyberBackdrop';
 import { RainCanvasLayer } from './RainCanvasLayer';
 import type { SceneId } from '@/data/types';
 import type { PlayerState } from '@/data/types';
@@ -229,7 +229,7 @@ export default function SceneRenderer({ sceneId, playerState, isTransitioning }:
       exit={{ opacity: 0 }}
       transition={{ duration: 0.8 }}
     >
-      <SceneBackgroundPhoto config={sceneConfig} />
+      <AsciiCyberBackdrop sceneId={sceneId} playerState={playerState} visualLite={visualLite} />
 
       {(sceneId === 'office_morning' || sceneId === 'psychologist_office') &&
         !visualLite &&

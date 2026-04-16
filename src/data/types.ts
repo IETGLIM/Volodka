@@ -387,12 +387,17 @@ export interface QuestObjective {
   targetValue?: number;
   currentValue?: number;
   hidden?: boolean;
-  
+
   // Подсказки для игрока
   hint?: string;           // Подсказка что делать (например, "Поговори с Алисой в кафе")
   targetLocation?: string; // Где искать (например, "cafe_evening")
   targetNPC?: string;      // С кем говорить (например, "cafe_college_girl")
   targetItem?: string;     // Какой предмет нужен
+
+  /** Тип шага для UX (трекер, журнал) */
+  stageType?: 'minigame' | 'narration' | 'exploration' | 'dialogue' | 'terminal';
+  /** Узел сюжета, к которому привязан шаг (подсказка «где это») */
+  linkedStoryNodeId?: string;
 }
 
 export interface QuestReward {

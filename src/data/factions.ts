@@ -227,11 +227,20 @@ export function updateReputationValue(
 // Получить фракцию по NPC ID
 export function getFactionByNPC(npcId: string): FactionId | null {
   // Поэты и творческие
-  const poetNPCs = ['poet', 'alisa', 'maria'];
+  const poetNPCs = ['poet', 'alisa', 'maria', 'cafe_college_girl', 'cafe_poet'];
   if (poetNPCs.includes(npcId)) return 'poets';
   
   // IT-коллеги
-  const itNPCs = ['kirill', 'office_colleague', 'office_boss'];
+  const itNPCs = [
+    'kirill',
+    'office_colleague',
+    'office_boss',
+    'office_alexander',
+    'office_dmitry',
+    'office_andrey',
+    'office_artyom',
+    'albert',
+  ];
   if (itNPCs.includes(npcId)) return 'it_workers';
   
   // Странники снов
@@ -239,7 +248,19 @@ export function getFactionByNPC(npcId: string): FactionId | null {
   if (dreamerNPCs.includes(npcId)) return 'dreamers';
   
   // Местные
-  const localNPCs = ['sergeich', 'barista'];
+  const localNPCs = [
+    'sergeich',
+    'barista',
+    'zarema',
+    'district_vika',
+    'district_renata',
+    'district_damien',
+    'district_konstantin',
+    'district_timur',
+    'district_polikarp',
+    'district_rimma',
+    'district_nastya',
+  ];
   if (localNPCs.includes(npcId)) return 'locals';
   
   return null;

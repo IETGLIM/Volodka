@@ -16,6 +16,8 @@ function createObjective(
     targetLocation?: string;
     targetNPC?: string;
     targetItem?: string;
+    stageType?: QuestObjective['stageType'];
+    linkedStoryNodeId?: string;
   }
 ): QuestObjective {
   return {
@@ -29,6 +31,8 @@ function createObjective(
     targetLocation: options?.targetLocation,
     targetNPC: options?.targetNPC,
     targetItem: options?.targetItem,
+    stageType: options?.stageType,
+    linkedStoryNodeId: options?.linkedStoryNodeId,
   };
 }
 
@@ -312,14 +316,21 @@ export const QUEST_DEFINITIONS: Record<string, ExtendedQuest> = {
     title: '✍️ Первые слова',
     description: 'Написать своё первое стихотворение за долгое время',
     type: 'main',
-    status: 'active',
+    status: 'available',
     objectives: [
-      createObjective('write_poem', 'Написать стихотворение ночью', {
-        hint: 'Дома ночью, когда не спится — возьми ручку и пиши',
-        targetLocation: 'home_evening'
+      createObjective('write_poem', 'Мини-игра: собери стих из строк', {
+        targetValue: 1,
+        hint: 'Примите квест в 📋, затем вечером дома выберите «Писать» — откроется сборка строк.',
+        targetLocation: 'home_evening',
+        stageType: 'minigame',
+        linkedStoryNodeId: 'write_evening',
       }),
-      createObjective('reflect', 'Поразмышлять над написанным', {
-        hint: 'Перечитай и подумай о смысле'
+      createObjective('reflect', 'Прочитать результат и отпустить мысль', {
+        targetValue: 1,
+        hint: 'После мини-игры дочитайте сцену и нажмите «дальше» — рефлексия засчитается.',
+        targetLocation: 'home_evening',
+        stageType: 'narration',
+        linkedStoryNodeId: 'write_evening_result',
       }),
     ],
     reward: createReward({
@@ -334,21 +345,30 @@ export const QUEST_DEFINITIONS: Record<string, ExtendedQuest> = {
   first_reading: {
     id: 'first_reading',
     title: '📖 Первое чтение',
-    description: 'Прочитать свои стихи перед аудиторией в "Синем коте"',
+    description: 'Прочитать свои стихи перед аудиторией в "Синей Яме"; квест стартует из сюжета при первом визите',
     type: 'main',
     status: 'locked',
     prerequisite: 'first_words',
     objectives: [
-      createObjective('go_to_cafe', 'Посетить "Синяя Яма" в пятницу', {
-        hint: 'В пятницу вечером иди в кафе',
-        targetLocation: 'cafe_evening'
+      createObjective('go_to_cafe', 'Оказаться в «Синей Яме» (сцена кафе)', {
+        targetValue: 1,
+        hint: 'Следуйте сюжету в пятничный вечер или выберите ветку с кафе — засчитывается при входе в локацию.',
+        targetLocation: 'cafe_evening',
+        stageType: 'exploration',
+        linkedStoryNodeId: 'blue_cat_cafe',
       }),
-      createObjective('read_poem', 'Прочитать стихотворение публично', {
-        hint: 'Подними руку когда ведущий спросит "Кто хочет прочитать?"',
-        targetNPC: 'cafe_barista'
+      createObjective('read_poem', 'Прочитать стихотворение с микрофона', {
+        targetValue: 1,
+        hint: 'На open mic поднимите руку (или ветку «я готовился»).',
+        targetNPC: 'cafe_barista',
+        stageType: 'narration',
+        linkedStoryNodeId: 'open_mic',
       }),
-      createObjective('meet_someone', 'Познакомиться с кем-то новым', {
-        hint: 'После чтения подойди к Марии'
+      createObjective('meet_someone', 'Познакомиться после выступления', {
+        targetValue: 1,
+        hint: 'Ответьте Виктории в диалоге после чтения.',
+        stageType: 'dialogue',
+        linkedStoryNodeId: 'stranger_approach',
       }),
     ],
     reward: createReward({
@@ -357,9 +377,8 @@ export const QUEST_DEFINITIONS: Record<string, ExtendedQuest> = {
       stability: 5,
       skillPoints: 2,
     }),
-    requiredFlags: ['interested_cafe_event', 'curious_cafe_event', 'friend_invited_cafe'],
     discoveryCondition: {
-      hasFlag: 'interested_cafe_event',
+      hasFlag: 'visited_cafe',
     },
   },
   
@@ -459,7 +478,7 @@ export const QUEST_DEFINITIONS: Record<string, ExtendedQuest> = {
         hint: 'Перечитай и исправь неточности'
       }),
       createObjective('share_collection', 'Показать кому-то', {
-        hint: 'Поделись с Марией или выступи публично'
+        hint: 'Покажи сборник Виктории в кафе или выступи снова публично'
       }),
     ],
     reward: createReward({
@@ -633,6 +652,15 @@ export function getNextObjective(quest: ExtendedQuest): QuestObjective | null {
   return quest.objectives.find(o => !o.completed && !o.hidden) || null;
 }
 
+/** Цель выполнена с учётом числового прогресса из store (в т.ч. цели без targetValue — increment ≥ 1) */
+export function isObjectiveSatisfied(o: QuestObjective, storedValue: number): boolean {
+  if (o.hidden) return true;
+  if (o.targetValue !== undefined && o.targetValue > 0) {
+    return storedValue >= o.targetValue;
+  }
+  return o.completed || storedValue >= 1;
+}
+
 /** Следующая незакрытая цель с учётом прогресса из сохранения (как в QuestsPanel) */
 export function getNextTrackedObjective(
   quest: ExtendedQuest,
@@ -640,12 +668,8 @@ export function getNextTrackedObjective(
 ): QuestObjective | null {
   for (const o of quest.objectives) {
     if (o.hidden) continue;
-    if (o.targetValue !== undefined && o.targetValue > 0) {
-      const cur = questProgress[o.id] ?? o.currentValue ?? 0;
-      if (cur < o.targetValue) return o;
-    } else if (!o.completed) {
-      return o;
-    }
+    const cur = questProgress[o.id] ?? o.currentValue ?? 0;
+    if (!isObjectiveSatisfied(o, cur)) return o;
   }
   return null;
 }

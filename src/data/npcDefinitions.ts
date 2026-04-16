@@ -10,16 +10,16 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
 
   zarema: {
     id: 'zarema',
-    name: 'Зарема',
+    name: 'Заремушка (Зарема)',
     model: 'barista',
     modelPath: '/models/smol_ame_in_an_upcycled_terrarium_hololiveen.glb',
     scale: 1,
     defaultPosition: { x: -2, y: 0, z: 0 },
     patrolRadius: 1.5,
-    sceneId: 'kitchen_night',
+    sceneId: 'street_night',
     dialogueTree: {
       id: 'zarema_room',
-      text: '🌸 Володька! Ты как, нормально? Мы с Альбертом тут обсуждаем новый проект...',
+      text: '🌸 Володька! Я тут у подъезда — Зелёнка не спит раньше нас. Альберт уже дома допиливает код, а я вышла подышать. Как ты?',
       choices: [
         { text: 'Расскажите про проект', next: 'zarema_project', effect: { creativity: 5 } },
         { text: 'Я просто хотел поговорить', next: 'zarema_talk', effect: { mood: 5 } },
@@ -37,7 +37,7 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
     scale: 1,
     defaultPosition: { x: 2, y: 0, z: 0 },
     patrolRadius: 1.2,
-    sceneId: 'kitchen_night',
+    sceneId: 'street_night',
     dialogueTree: {
       id: 'albert_room',
       text: '💻 О, Володька! Заходи, заходи. Как раз разбираю логи с продакшена...',
@@ -576,7 +576,7 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
 
   cafe_college_girl: {
     id: 'cafe_college_girl',
-    name: 'Алиса',
+    name: 'Виктория',
     model: 'generic',
     modelPath: '/models/college_girl.glb',
     scale: 1,
@@ -584,21 +584,22 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
     sceneId: 'cafe_evening',
     dialogueTree: {
       id: 'college_girl_greeting',
-      text: '📚 *поднимает глаза от ноутбука* Ой, привет! Извини, я писала эссе... Ты не местный, да? Я всех тут знаю.',
+      text: '📚 *поднимает глаза от ноутбука* Привет. Я Вика — ну, в полном паспорте Виктория, но здесь все зовут как получится. Писала эссе… Ты не местный? Я многих тут знаю.',
       choices: [
         {
           text: 'Да, я здесь впервые.',
           next: 'college_girl_first',
-          effect: { mood: 5 },
+          effect: { mood: 5, npcId: 'maria', npcChange: 2 },
         },
         {
           text: 'Что пишешь?',
           next: 'college_girl_writing',
-          effect: { creativity: 10 },
+          effect: { creativity: 10, npcId: 'maria', npcChange: 2 },
         },
         {
           text: 'Расскажи об этом месте.',
           next: 'college_girl_about',
+          effect: { npcId: 'maria', npcChange: 1 },
         },
       ],
     },
@@ -831,6 +832,239 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
           text: 'Можно позже? Я сейчас занят.',
           next: 'boss_later',
         },
+      ],
+    },
+  },
+
+  office_alexander: {
+    id: 'office_alexander',
+    name: 'Александр',
+    model: 'colleague',
+    modelPath: '/models/cyberpunk_character.glb',
+    scale: 1,
+    defaultPosition: { x: -3.2, y: 0, z: 1.2 },
+    patrolRadius: 1,
+    sceneId: 'office_morning',
+    dialogueTree: {
+      id: 'alexander_greeting',
+      text: 'Сашка, техлид. Смотрю на твой тикет — если это не наш прод, я первый скажу «не наш контур». Но логи честные. Держись.',
+      choices: [
+        { text: 'Спасибо, Саш. Разберусь до эскалации.', next: 'alexander_ok', effect: { stability: 4, npcId: 'office_alexander', npcChange: 3 } },
+        { text: 'Скинешь ссылку на дашборд?', next: 'alexander_dash', effect: { mood: 2, npcId: 'office_alexander', npcChange: 2 } },
+        { text: 'Потом поболтаем — сейчас в бой.', next: 'alexander_bye' },
+      ],
+    },
+  },
+
+  office_dmitry: {
+    id: 'office_dmitry',
+    name: 'Дмитрий',
+    model: 'colleague',
+    modelPath: '/models/cyberpunk_character.glb',
+    scale: 1,
+    defaultPosition: { x: -1.2, y: 0, z: 2 },
+    patrolRadius: 1.2,
+    sceneId: 'office_morning',
+    dialogueTree: {
+      id: 'dmitry_greeting',
+      text: 'Димон, DevOps. Все зовут Дима — но в паспорте Дмитрий, на память потомкам. Grafana у меня открыта: пингую пул, как сердце больного.',
+      choices: [
+        { text: 'Вижу твой скрин в треде — спасибо, что подсветил.', next: 'dmitry_thanks', effect: { stress: -3, npcId: 'office_dmitry', npcChange: 4 } },
+        { text: 'Если что — дам знать по откату.', next: 'dmitry_roll', effect: { stability: 3, npcId: 'office_dmitry', npcChange: 2 } },
+        { text: 'Я побежал по тикету.', next: 'dmitry_bye' },
+      ],
+    },
+  },
+
+  office_andrey: {
+    id: 'office_andrey',
+    name: 'Андрей (коллега)',
+    model: 'colleague',
+    modelPath: '/models/cyberpunk_character.glb',
+    scale: 1,
+    defaultPosition: { x: 1.4, y: 0, z: 0.5 },
+    patrolRadius: 1,
+    sceneId: 'office_morning',
+    dialogueTree: {
+      id: 'andrey_office_greeting',
+      text: 'Я Андрей из соседнего блока — compliance. Другой человек, не тот, о комь… ну ты понял. Одно имя в городе — как дубликат ключа в базе: коллизия, но мы разные записи.',
+      choices: [
+        { text: 'Понял. Рабочий Андрей — отдельная сущность.', next: 'andrey_respect', effect: { stability: 5, npcId: 'office_andrey', npcChange: 5 } },
+        { text: 'Спасибо, что сказал прямо.', next: 'andrey_thanks', effect: { mood: 3, npcId: 'office_andrey', npcChange: 3 } },
+        { text: 'Мне пора в логи.', next: 'andrey_bye' },
+      ],
+    },
+  },
+
+  office_artyom: {
+    id: 'office_artyom',
+    name: 'Артём',
+    model: 'colleague',
+    modelPath: '/models/cyberpunk_character.glb',
+    scale: 0.95,
+    defaultPosition: { x: -2.4, y: 0, z: -1.5 },
+    patrolRadius: 0.8,
+    sceneId: 'office_morning',
+    dialogueTree: {
+      id: 'artyom_greeting',
+      text: 'ИБ, Артём. Вижу auth-down — уже смотрю CVE и токены в песочнице. Если что-то утечет наружу — я первый ору, но пока это наша внутренняя грязь.',
+      choices: [
+        { text: 'Держи ухо востро — отпишусь по факту.', next: 'artyom_ok', effect: { karma: 2, npcId: 'office_artyom', npcChange: 3 } },
+        { text: 'Скинешь чеклист по инциденту?', next: 'artyom_list', effect: { stability: 2, npcId: 'office_artyom', npcChange: 2 } },
+        { text: 'Ок, я в тикете.', next: 'artyom_bye' },
+      ],
+    },
+  },
+
+  // ========== РАЙОН (ночь): Зелёнка, двор, подъезд — живые лица памяти ==========
+
+  district_vika: {
+    id: 'district_vika',
+    name: 'Вика с Зелёнки',
+    model: 'generic',
+    modelPath: '/models/college_girl.glb',
+    scale: 1,
+    defaultPosition: { x: -3.5, y: 0, z: 2.5 },
+    patrolRadius: 1.8,
+    sceneId: 'street_night',
+    dialogueTree: {
+      id: 'vika_zelenka_hi',
+      text: 'Володь! Мы ж на одной Зелёнке выросли — помнишь, качели у пятиэтажки? Я теперь на дизайне подрабатываю. Ты всё в техподдержке? Ты герой, честно.',
+      choices: [
+        { text: 'Помню качели. Ты тогда спасла меня от собаки соседской.', next: 'vika_memory', effect: { mood: 6, npcId: 'district_vika', npcChange: 5 } },
+        { text: 'Работа есть работа. Заходи в «Синюю Яму» как-нибудь.', next: 'vika_cafe', effect: { karma: 2, npcId: 'district_vika', npcChange: 3 } },
+        { text: 'Мне пора.', next: 'vika_bye' },
+      ],
+    },
+  },
+
+  district_renata: {
+    id: 'district_renata',
+    name: 'Рената',
+    model: 'generic',
+    modelPath: '/models/cyberpunk_female_full-body_character.glb',
+    scale: 1,
+    defaultPosition: { x: 4, y: 0, z: 1 },
+    patrolRadius: 1.2,
+    sceneId: 'street_night',
+    dialogueTree: {
+      id: 'renata_hi',
+      text: 'Рената, третий подъезд — мы с Дамьеном кормим дворовых. Ты выглядишь как после релиза без ревью. Чай?',
+      choices: [
+        { text: 'Чай не откажусь в другой раз — сейчас голова кругом.', next: 'renata_sympathy', effect: { stress: -4, npcId: 'district_renata', npcChange: 4 } },
+        { text: 'Передай привет Дамьену.', next: 'renata_damien', effect: { mood: 3, npcId: 'district_renata', npcChange: 2 } },
+        { text: 'Я побежал.', next: 'renata_bye' },
+      ],
+    },
+  },
+
+  district_damien: {
+    id: 'district_damien',
+    name: 'Дамьен',
+    model: 'colleague',
+    modelPath: '/models/calvin_freckle_mcmurray_from_lackadaisy.glb',
+    scale: 1,
+    defaultPosition: { x: 4.3, y: 0, z: -0.5 },
+    sceneId: 'street_night',
+    dialogueTree: {
+      id: 'damien_hi',
+      text: 'Дамьен. С Ренатой мы держим этот двор — как микросервис: кто-то кормит, кто-то чинит подъезд. Ты держись, брат.',
+      choices: [
+        { text: 'Вы для района — как health-check.', next: 'damien_joke', effect: { stability: 4, npcId: 'district_damien', npcChange: 4 } },
+        { text: 'Спасибо. Взаимно.', next: 'damien_bye', effect: { npcId: 'district_damien', npcChange: 2 } },
+      ],
+    },
+  },
+
+  district_konstantin: {
+    id: 'district_konstantin',
+    name: 'Константин',
+    model: 'colleague',
+    modelPath: '/models/cyberpunk_character.glb',
+    scale: 1.05,
+    defaultPosition: { x: 0.5, y: 0, z: 3 },
+    sceneId: 'street_night',
+    dialogueTree: {
+      id: 'konstantin_hi',
+      text: 'Костя с лавки — футбол, работа на стройке, дети. Тимур опять спорит, что «Зенит» сильнее. Ты как, Володь, всё ещё ночами?',
+      choices: [
+        { text: 'Ночами — да. Но живой.', next: 'konstantin_nod', effect: { npcId: 'district_konstantin', npcChange: 3 } },
+        { text: 'Поздоровайся от меня Тимуру.', next: 'konstantin_timur', effect: { mood: 2, npcId: 'district_konstantin', npcChange: 2 } },
+        { text: 'Иду дальше.', next: 'konstantin_bye' },
+      ],
+    },
+  },
+
+  district_timur: {
+    id: 'district_timur',
+    name: 'Тимур',
+    model: 'generic',
+    modelPath: '/models/cyberpunk_character.glb',
+    scale: 1,
+    defaultPosition: { x: 1.2, y: 0, z: 3.2 },
+    sceneId: 'street_night',
+    dialogueTree: {
+      id: 'timur_hi',
+      text: 'Тимур. Костя прав — я за Зенит до гроба. Ты вон как похудел с тех пор, как… ну, сам знаешь. Если надо выговориться — лавка не сбежит.',
+      choices: [
+        { text: 'Знаю. Спасибо, брат.', next: 'timur_pat', effect: { stability: 5, npcId: 'district_timur', npcChange: 4 } },
+        { text: 'Потом за пивом по району.', next: 'timur_bye' },
+      ],
+    },
+  },
+
+  district_polikarp: {
+    id: 'district_polikarp',
+    name: 'Поликарп',
+    model: 'elder',
+    modelPath: '/models/antoni_gaudi.glb',
+    scale: 1,
+    defaultPosition: { x: -1, y: 0, z: -2.5 },
+    sceneId: 'street_winter',
+    dialogueTree: {
+      id: 'polikarp_hi',
+      text: 'Поликарп, бывший дворник — теперь волонтёр: сугробы, лёд, лопата. Видел тебя и зимой, и летом — город меняется, а двор остаётся. Заходи в тёплое.',
+      choices: [
+        { text: 'Здоровья тебе, дядя Поликарп.', next: 'polikarp_thanks', effect: { karma: 5, npcId: 'district_polikarp', npcChange: 5 } },
+        { text: 'Если что — помогу с лопатой.', next: 'polikarp_shovel', effect: { npcId: 'district_polikarp', npcChange: 3 } },
+        { text: 'Иду.', next: 'polikarp_bye' },
+      ],
+    },
+  },
+
+  district_rimma: {
+    id: 'district_rimma',
+    name: 'Римма',
+    model: 'generic',
+    modelPath: '/models/shibahu.glb',
+    scale: 0.95,
+    defaultPosition: { x: 2.5, y: 0, z: -2 },
+    sceneId: 'street_winter',
+    dialogueTree: {
+      id: 'rimma_hi',
+      text: 'Римма, второй этаж. С Настей спорим — тепло ли в холле. Ты бы лучше сказал: у нас же батареи как в проде — то есть никогда как надо.',
+      choices: [
+        { text: 'Скажу честно: как в проде.', next: 'rimma_laugh', effect: { mood: 4, npcId: 'district_rimma', npcChange: 3 } },
+        { text: 'Передай Насте привет.', next: 'rimma_nastya', effect: { npcId: 'district_rimma', npcChange: 2 } },
+        { text: 'Пока.', next: 'rimma_bye' },
+      ],
+    },
+  },
+
+  district_nastya: {
+    id: 'district_nastya',
+    name: 'Настя',
+    model: 'generic',
+    modelPath: '/models/smol_ame_in_an_upcycled_terrarium_hololiveen.glb',
+    scale: 1,
+    defaultPosition: { x: 3, y: 0, z: -2.2 },
+    sceneId: 'street_night',
+    dialogueTree: {
+      id: 'nastya_hi',
+      text: 'Настя. Римма права — я за тепло в подъезде воюю, как ты за SLA. Если что — кинь в чат дома, не стесняйся.',
+      choices: [
+        { text: 'Кину. Ты сильная.', next: 'nastya_smile', effect: { npcId: 'district_nastya', npcChange: 4 } },
+        { text: 'Держитесь обе.', next: 'nastya_bye' },
       ],
     },
   },
@@ -1607,41 +1841,42 @@ export const DIALOGUE_NODES: Record<string, NPCDefinition['dialogueTree']> = {
     effect: { mood: 5 },
   },
 
-  // ========== АЛИСА (COLLEGE GIRL) ==========
+  // ========== ВИКТОРИЯ (КАФЕ «СИНЯЯ ЯМА») ==========
   college_girl_first: {
     id: 'college_girl_first',
-    text: '📚 Круто! Тут обычно одни завсегдатаи. Новые лица — это освежает. Ты поэт? Тут многие такие.',
-    effect: { mood: 5 },
+    text: '📚 Круто. Тут обычно одни завсегдатаи — новое лицо как свежий коммит. Ты поэт? Здесь многие такие, я к ним привыкла.',
+    effect: { mood: 5, npcId: 'maria', npcChange: 3 },
   },
   college_girl_writing: {
     id: 'college_girl_writing',
-    text: '📚 Эссе о связи между снами и творчеством. Звучит заумно, но мне интересно. А ты что пишешь?',
+    text: '📚 Эссе о связи между снами и творчеством — да, звучит заумно, но мне правда интересно. А ты что пишешь?',
     choices: [
       {
         text: 'Стихи о жизни и потере.',
         next: 'college_girl_poems',
-        effect: { creativity: 10 },
+        effect: { creativity: 10, npcId: 'maria', npcChange: 4 },
       },
       {
         text: 'Просто записываю мысли.',
         next: 'college_girl_thoughts',
+        effect: { npcId: 'maria', npcChange: 2 },
       },
     ],
   },
   college_girl_about: {
     id: 'college_girl_about',
-    text: '📚 Это "Синяя Яма". Легендарное место для творческих людей. Тут выступали известные поэты... и неизвестные тоже.',
-    effect: { creativity: 5 },
+    text: '📚 Это «Синяя Яма». Легендарное место для тех, кто не боится слова вслух. Известные и неизвестные поэты — для меня разницы почти нет, если честно.',
+    effect: { creativity: 5, npcId: 'maria', npcChange: 2 },
   },
   college_girl_poems: {
     id: 'college_girl_poems',
-    text: '📚 О... Это глубоко. Потеря... я тоже кое-кого потеряла. Может, поэтому я здесь.',
-    effect: { stability: 5, karma: 5 },
+    text: '📚 О… Это глубоко. Про потерю я понимаю не из учебника — поэтому сижу здесь, а не в тихой аудитории.',
+    effect: { stability: 5, karma: 5, npcId: 'maria', npcChange: 5 },
   },
   college_girl_thoughts: {
     id: 'college_girl_thoughts',
-    text: '📚 Мысли — это тоже творчество. Иногда они складываются в стихи, сами того не замечая.',
-    effect: { creativity: 5 },
+    text: '📚 Мысли — тоже материал. Иногда они сами складываются в стихи, пока ты не заметил.',
+    effect: { creativity: 5, npcId: 'maria', npcChange: 3 },
   },
 
   // ========== РЕЙ (CYBERPUNK GIRL) ==========
@@ -2220,6 +2455,114 @@ export const DIALOGUE_NODES: Record<string, NPCDefinition['dialogueTree']> = {
     text: '💻 До связи, Володька! Если что — пиши в Slack или заходи. Я почти всегда тут... Ну, ты знаешь.',
     effect: { mood: 3 },
   },
+
+  alexander_ok: {
+    id: 'alexander_ok',
+    text: 'Вот это настрой. Если что — я на связи в треде.',
+  },
+  alexander_dash: {
+    id: 'alexander_dash',
+    text: 'Ссылка в закрепе канала #banking-war-room. Не дай себе утонуть в графиках.',
+  },
+  alexander_bye: { id: 'alexander_bye', text: 'Давай, держись.' },
+
+  dmitry_thanks: {
+    id: 'dmitry_thanks',
+    text: 'Не за что. Мы же одной продакшн-судьбой дышим.',
+  },
+  dmitry_roll: {
+    id: 'dmitry_roll',
+    text: 'Откатываем — я подстрахую. Напиши, если kubectl начнёт капризничать.',
+  },
+  dmitry_bye: { id: 'dmitry_bye', text: 'Удачи в тикете, Володь.' },
+
+  andrey_respect: {
+    id: 'andrey_respect',
+    text: 'Именно. Разные записи в одной таблице жизни. Увидимся у кофемашины.',
+  },
+  andrey_thanks: {
+    id: 'andrey_thanks',
+    text: 'Обращайся. Compliance — не враг, мы просто читаем мелкий шрифт.',
+  },
+  andrey_bye: { id: 'andrey_bye', text: 'Хорошего дня.' },
+
+  artyom_ok: {
+    id: 'artyom_ok',
+    text: 'Жду апдейт. И помни: песочница — только песочница.',
+  },
+  artyom_list: {
+    id: 'artyom_list',
+    text: 'Кину в Confluence шаблон инцидента — там чеклисты и ответственные.',
+  },
+  artyom_bye: { id: 'artyom_bye', text: 'Не просри токены.' },
+
+  vika_memory: {
+    id: 'vika_memory',
+    text: 'Ах та собака… Мы тогда так ржали. Заходи как-нибудь — вспомним вслух.',
+  },
+  vika_cafe: {
+    id: 'vika_cafe',
+    text: '«Синяя Яма» — записала. Я как раз хотела туда на вечер поэзии.',
+  },
+  vika_bye: { id: 'vika_bye', text: 'Береги себя, Володь.' },
+
+  renata_sympathy: {
+    id: 'renata_sympathy',
+    text: 'Заходи завтра — чай с мятой и без вопросов. Дамьен одобрит.',
+  },
+  renata_damien: {
+    id: 'renata_damien',
+    text: 'Передам. Он сейчас кормит Рыжего у бордюра.',
+  },
+  renata_bye: { id: 'renata_bye', text: 'До встречи во дворе.' },
+
+  damien_joke: {
+    id: 'damien_joke',
+    text: 'Ха. Тогда мы — liveness probe для человечности.',
+  },
+  damien_bye: { id: 'damien_bye', text: 'Держись, брат.' },
+
+  konstantin_nod: {
+    id: 'konstantin_nod',
+    text: 'Главное — живой. Остальное — патчами лечится.',
+  },
+  konstantin_timur: {
+    id: 'konstantin_timur',
+    text: 'Уже кричит «Зенит» в небо. Иди, пока не утащил в спор.',
+  },
+  konstantin_bye: { id: 'konstantin_bye', text: 'Бывай, Володь.' },
+
+  timur_pat: {
+    id: 'timur_pat',
+    text: '*кивает* Мы тут. Лавка никуда не денется.',
+  },
+  timur_bye: { id: 'timur_bye', text: 'Увидимся.' },
+
+  polikarp_thanks: {
+    id: 'polikarp_thanks',
+    text: 'Спасибо, сынок. Снег чистый — душа чуть легче.',
+  },
+  polikarp_shovel: {
+    id: 'polikarp_shovel',
+    text: 'Запомню. Лопата всегда в подсобке — как резервный инстанс.',
+  },
+  polikarp_bye: { id: 'polikarp_bye', text: 'Аккуратно на ступеньках.' },
+
+  rimma_laugh: {
+    id: 'rimma_laugh',
+    text: 'Вот! Настя, слышала? Он всё-таки инженер до мозга костей.',
+  },
+  rimma_nastya: {
+    id: 'rimma_nastya',
+    text: 'Передам. Она сейчас внизу с теплосчётчиком бьётся.',
+  },
+  rimma_bye: { id: 'rimma_bye', text: 'Теплее одевайся.' },
+
+  nastya_smile: {
+    id: 'nastya_smile',
+    text: '*улыбается* Тогда не пропадай. Чат дома — не декорация.',
+  },
+  nastya_bye: { id: 'nastya_bye', text: 'Пока, Володь.' },
 };
 
 // ============================================

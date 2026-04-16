@@ -2,9 +2,17 @@
 
 import React, { memo, useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { QUEST_DEFINITIONS, getQuestProgress, getNextObjective } from '@/data/quests';
+import {
+  QUEST_DEFINITIONS,
+  getQuestProgress,
+  getNextObjective,
+  getNextTrackedObjective,
+  checkQuestAvailability,
+  isObjectiveSatisfied,
+} from '@/data/quests';
 import type { ExtendedQuest, QuestObjective } from '@/data/types';
 import { useGameStore } from '@/store/gameStore';
+import { eventBus } from '@/engine/EventBus';
 
 // ============================================
 // OBJECTIVE ITEM
@@ -17,12 +25,12 @@ interface ObjectiveItemProps {
 }
 
 const ObjectiveItem = memo(function ObjectiveItem({ objective, isNext, currentValue }: ObjectiveItemProps) {
-  const isCompleted = objective.targetValue 
-    ? currentValue >= objective.targetValue 
-    : objective.completed;
-  const progress = objective.targetValue 
-    ? Math.round(currentValue / objective.targetValue * 100)
-    : (isCompleted ? 100 : 0);
+  const isCompleted = isObjectiveSatisfied(objective, currentValue);
+  const progress = objective.targetValue
+    ? Math.round((currentValue / objective.targetValue) * 100)
+    : isCompleted
+      ? 100
+      : 0;
 
   return (
     <motion.div
@@ -78,23 +86,18 @@ const QuestCard = memo(function QuestCard({ quest, questProgress, isExpanded, on
     }));
   }, [quest.objectives, questProgress]);
 
-  const completedObjectives = objectivesWithProgress.filter((o) => 
-    o.targetValue ? (questProgress[o.id] || 0) >= o.targetValue : o.completed
+  const completedObjectives = objectivesWithProgress.filter((o) =>
+    isObjectiveSatisfied(o, questProgress[o.id] || o.currentValue || 0),
   ).length;
-  
-  const progressPercent = objectivesWithProgress.length > 0 
-    ? (completedObjectives / objectivesWithProgress.length) * 100 
+
+  const progressPercent = objectivesWithProgress.length > 0
+    ? (completedObjectives / objectivesWithProgress.length) * 100
     : 0;
 
-  const nextObjective = useMemo(() => {
-    return objectivesWithProgress.find((o) => {
-      if (o.hidden) return false;
-      if (o.targetValue) {
-        return (questProgress[o.id] || 0) < o.targetValue;
-      }
-      return !o.completed;
-    }) || null;
-  }, [objectivesWithProgress, questProgress]);
+  const nextObjective = useMemo(
+    () => getNextTrackedObjective(quest, questProgress),
+    [quest, questProgress],
+  );
 
   const typeIcon = {
     main: '⭐',
@@ -234,6 +237,16 @@ export const QuestsPanel = memo(function QuestsPanel({
   const activeQuestIds = useGameStore((s) => s.activeQuestIds);
   const completedQuestIds = useGameStore((s) => s.completedQuestIds);
   const questProgress = useGameStore((s) => s.questProgress);
+  const flags = useGameStore((s) => s.playerState.flags);
+  const activateQuest = useGameStore((s) => s.activateQuest);
+
+  const availableQuests = useMemo(() => {
+    return Object.values(QUEST_DEFINITIONS).filter((q) => {
+      if (q.status !== 'available') return false;
+      if (activeQuestIds.includes(q.id) || completedQuestIds.includes(q.id)) return false;
+      return checkQuestAvailability(q, completedQuestIds, flags);
+    });
+  }, [activeQuestIds, completedQuestIds, flags]);
 
   // Формируем активные квесты
   const activeQuests = useMemo(() => {
@@ -288,18 +301,51 @@ export const QuestsPanel = memo(function QuestsPanel({
 
       <div className="border-b border-purple-500/15 bg-black/30 px-3 py-2">
         <p className="font-mono text-[10px] leading-snug text-cyan-500/70">
-          💡 IT-цели из этого журнала можно закрывать в игровом терминале (💻): введите команды из подсказек шага или начните с{' '}
-          <span className="text-cyan-400/90">help</span>. Репутация групп — во вкладке ⚔️.
+          💡 Сюжетные цели: примите квест → выполните шаг (мини-игра / сцена). IT-цели — в терминале (💻), команды из подсказек или{' '}
+          <span className="text-cyan-400/90">help</span>. Репутация — ⚔️.
         </p>
       </div>
 
       {/* Content */}
       <div className="max-h-[calc(85vh-60px)] space-y-3 overflow-y-auto p-3">
-        {activeQuests.length === 0 && completedQuests.length === 0 && (
+        {activeQuests.length === 0 && completedQuests.length === 0 && availableQuests.length === 0 && (
           <div className="text-center text-slate-400 py-8">
             <p className="text-4xl mb-2">📜</p>
             <p>Нет активных квестов</p>
             <p className="text-sm mt-1">Исследуйте мир, чтобы найти приключения</p>
+          </div>
+        )}
+
+        {availableQuests.length > 0 && (
+          <div>
+            <h3 className="text-xs uppercase tracking-wider text-amber-500/80 font-semibold mb-2">
+              Доступные ({availableQuests.length})
+            </h3>
+            <div className="space-y-2">
+              {availableQuests.map((quest) => (
+                <div
+                  key={quest.id}
+                  className="rounded-lg border border-amber-500/40 bg-gradient-to-r from-amber-500/10 to-orange-500/10 p-3"
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <h4 className="font-semibold text-white text-sm">{quest.title}</h4>
+                      <p className="text-xs text-slate-400 mt-1 line-clamp-3">{quest.description}</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        activateQuest(quest.id);
+                        eventBus.emit('quest:activated', { questId: quest.id });
+                      }}
+                      className="shrink-0 rounded border border-amber-400/50 bg-amber-950/60 px-2 py-1.5 text-[11px] font-mono uppercase tracking-wide text-amber-200 hover:bg-amber-900/50 touch-manipulation min-h-11"
+                    >
+                      Принять
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         )}
 

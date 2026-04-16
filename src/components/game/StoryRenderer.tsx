@@ -13,6 +13,8 @@ import { PoemGameComponent, InterpretationComponent } from './PoemComponents';
 interface StoryRendererProps {
   node: StoryNode;
   onChoice: (choice: StoryChoice) => void;
+  /** После успешной мини-игры со стихами — обновление квестов (например poem_written) */
+  onPoemGameComplete?: (ctx: { nodeId: string; score: number }) => void;
 }
 
 /** Фон «под стеклом» за текстом сюжета — не плоский залив, а neo-noir слои */
@@ -217,7 +219,7 @@ function SpeakerTag({ speaker }: { speaker: string }) {
 // MAIN STORY RENDERER
 // ============================================
 
-export default function StoryRenderer({ node, onChoice }: StoryRendererProps) {
+export default function StoryRenderer({ node, onChoice, onPoemGameComplete }: StoryRendererProps) {
   const visualLite = useMobileVisualPerf();
   const isNarrow = useIsMobile();
   const [isTyping, setIsTyping] = useState(false);
@@ -503,6 +505,7 @@ export default function StoryRenderer({ node, onChoice }: StoryRendererProps) {
             <PoemGameComponent
               lines={node.lines}
               onComplete={(score) => {
+                onPoemGameComplete?.({ nodeId: node.id, score });
                 // After poem game, advance to autoNext or first choice's next
                 const nextId = node.autoNext || node.choices?.[0]?.next;
                 if (nextId) {
