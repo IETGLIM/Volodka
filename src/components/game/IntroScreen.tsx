@@ -1,6 +1,6 @@
 "use client";
 
-import { memo, useEffect, useState, useMemo, useCallback, useRef } from 'react';
+import { memo, useEffect, useLayoutEffect, useState, useMemo, useCallback, useRef } from 'react';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { PoemReveal } from './PoemComponents';
 import type { Poem } from '@/data/poems';
@@ -624,6 +624,15 @@ export const IntroScreen = memo(function IntroScreen({
   const [introPhase, setIntroPhase] = useState<'boot' | 'title' | 'prose' | 'poem' | 'done'>('boot');
   const [revealedPoem, setRevealedPoem] = useState<Poem | null>(null);
   const [collectedPoems, setCollectedPoems] = useState<string[]>([]);
+  const proseScrollRef = useRef<HTMLDivElement>(null);
+
+  // Автоскролл лога памяти к последней строке / курсору
+  useLayoutEffect(() => {
+    if (introPhase !== 'prose') return;
+    const el = proseScrollRef.current;
+    if (!el) return;
+    el.scrollTop = el.scrollHeight;
+  }, [introPhase, beatIndex, charIndex]);
 
   // Skip intro handler
   const handleSkip = useCallback(() => {
@@ -786,32 +795,70 @@ export const IntroScreen = memo(function IntroScreen({
               className="mx-auto w-full max-w-2xl px-3 sm:px-6"
             >
               <div
-                className="relative border border-cyan-500/20 bg-black/75 p-4 shadow-[0_0_32px_rgba(0,255,255,0.06)] backdrop-blur-sm sm:p-5"
+                className="intro-recall-frame relative overflow-hidden border border-emerald-500/25 bg-black/80 p-0 shadow-[0_0_40px_rgba(0,255,65,0.08),0_0_80px_rgba(0,255,255,0.05)] backdrop-blur-md sm:p-0"
                 style={{
                   clipPath: 'polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px))',
                 }}
               >
-                <div className="pointer-events-none absolute top-2 left-2 h-5 w-5 border-l border-t border-cyan-500/25" />
-                <div className="pointer-events-none absolute top-2 right-2 h-5 w-5 border-r border-t border-cyan-500/25" />
-                <div className="pointer-events-none absolute bottom-2 left-2 h-5 w-5 border-l border-b border-amber-500/20" />
-                <div className="pointer-events-none absolute bottom-2 right-2 h-5 w-5 border-r border-b border-amber-500/20" />
+                <div
+                  className="pointer-events-none absolute inset-0 opacity-[0.85]"
+                  aria-hidden
+                  style={{
+                    background: [
+                      'linear-gradient(165deg, rgba(0,255,65,0.06) 0%, transparent 42%)',
+                      'linear-gradient(345deg, rgba(255,0,128,0.04) 0%, transparent 38%)',
+                      'repeating-linear-gradient(90deg, transparent, transparent 3px, rgba(0,255,65,0.04) 3px, rgba(0,255,65,0.04) 4px)',
+                      'repeating-linear-gradient(0deg, transparent, transparent 20px, rgba(0,255,255,0.02) 20px, rgba(0,255,255,0.02) 21px)',
+                    ].join(', '),
+                  }}
+                />
+                <div className="pointer-events-none absolute top-2 left-2 z-[1] h-5 w-5 border-l border-t border-emerald-400/35" />
+                <div className="pointer-events-none absolute top-2 right-2 z-[1] h-5 w-5 border-r border-t border-cyan-400/30" />
+                <div className="pointer-events-none absolute bottom-2 left-2 z-[1] h-5 w-5 border-l border-b border-amber-400/25" />
+                <div className="pointer-events-none absolute bottom-2 right-2 z-[1] h-5 w-5 border-r border-b border-fuchsia-500/20" />
 
-                <div className="mb-3 flex flex-wrap items-center gap-2 border-b border-cyan-500/10 pb-3">
-                  <span className="h-2 w-2 rounded-full bg-emerald-500/80" />
-                  <span className="h-2 w-2 rounded-full bg-yellow-500/80" />
-                  <span className="h-2 w-2 rounded-full bg-red-500/80" />
-                  <span className="font-mono text-[10px] tracking-[0.18em] text-cyan-500/45">
-                    volodka://memory/recall
-                  </span>
-                  <span className="ml-auto font-mono text-[10px] text-cyan-500/35">
-                    SEG{' '}
-                    {storyBeats.length === 0
-                      ? '—'
-                      : `${Math.min(beatIndex + 1, storyBeats.length)}/${storyBeats.length}`}
-                  </span>
+                <div className="relative z-[2] border-b border-cyan-500/15 bg-gradient-to-r from-black/90 via-[#030806]/95 to-black/90 px-3 py-2.5 sm:px-4">
+                  <div className="mb-2 flex items-center gap-2">
+                    <span className="h-2 w-2 rounded-full bg-red-500/85 shadow-[0_0_6px_rgba(239,68,68,0.6)]" />
+                    <span className="h-2 w-2 rounded-full bg-amber-400/90 shadow-[0_0_6px_rgba(251,191,36,0.45)]" />
+                    <span className="h-2 w-2 rounded-full bg-emerald-500/90 shadow-[0_0_8px_rgba(34,197,94,0.55)]" />
+                    <span className="ml-1 font-mono text-[9px] uppercase tracking-[0.28em] text-emerald-400/50">
+                      live
+                    </span>
+                  </div>
+                  <div className="intro-recall-chrome-line flex flex-wrap items-center gap-x-1.5 gap-y-1 font-mono text-[10px] font-semibold sm:text-[11px]">
+                    <span className="text-emerald-300/95 drop-shadow-[0_0_10px_rgba(0,255,65,0.35)]">
+                      Volodka
+                    </span>
+                    <span className="intro-recall-glitch-pipe text-fuchsia-500/40">|</span>
+                    <span className="text-cyan-300/90">Matrix</span>
+                    <span className="intro-recall-glitch-pipe text-fuchsia-500/40">|</span>
+                    <span className="text-amber-400/85">Cyberpunk</span>
+                    <span className="intro-recall-glitch-pipe text-fuchsia-500/40">|</span>
+                    <span className="bg-gradient-to-r from-cyan-200 via-white to-fuchsia-200 bg-clip-text text-transparent drop-shadow-[0_0_12px_rgba(0,255,255,0.25)]">
+                      Glitch
+                    </span>
+                  </div>
+                  <div className="mt-1.5 flex flex-col gap-1.5 font-mono sm:flex-row sm:items-center sm:justify-between">
+                    <span className="intro-recall-blade-glow text-[9px] uppercase tracking-[0.22em] text-amber-500/70">
+                      Running on the Blade
+                    </span>
+                    <div className="flex flex-wrap items-center gap-x-3 text-[9px] text-cyan-500/40">
+                      <span className="tracking-[0.14em]">volodka://memory/recall</span>
+                      <span className="tabular-nums text-cyan-500/50">
+                        SEG{' '}
+                        {storyBeats.length === 0
+                          ? '—'
+                          : `${Math.min(beatIndex + 1, storyBeats.length)}/${storyBeats.length}`}
+                      </span>
+                    </div>
+                  </div>
                 </div>
 
-                <div className="max-h-[min(52dvh,520px)] overflow-y-auto pr-1 font-mono text-left game-scrollbar">
+                <div
+                  ref={proseScrollRef}
+                  className="relative z-[2] max-h-[min(52dvh,520px)] overflow-y-auto px-3 py-3 pr-2 font-mono text-left game-scrollbar sm:px-4 sm:py-4"
+                >
                   {storyBeats.slice(0, beatIndex).map((beat, i) => {
                     const line = beat.text;
                     return (
@@ -849,24 +896,27 @@ export const IntroScreen = memo(function IntroScreen({
                       initial={{ opacity: 0.35, x: -4 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ duration: 0.28 }}
-                      className={`motion-safe:animate-[intro-line-glow_3.5s_ease-in-out_infinite] mb-2 text-base leading-relaxed sm:text-lg ${
+                      className={`motion-safe:animate-[intro-line-glow_3.5s_ease-in-out_infinite] relative mb-2 border-l-2 border-emerald-500/45 bg-gradient-to-r from-emerald-500/10 via-cyan-500/5 to-transparent py-1 pl-2 text-base leading-relaxed sm:text-lg ${
                         storyBeats[beatIndex].paragraphGap
-                          ? 'mt-5 border-t border-cyan-500/10 pt-4 sm:mt-6 sm:pt-5'
+                          ? 'mt-5 border-t border-cyan-500/15 pt-4 sm:mt-6 sm:pt-5'
                           : ''
-                      } text-slate-200/95`}
+                      } text-slate-100/95`}
                     >
-                      <span className="mr-2 inline-block w-5 select-none text-right text-cyan-500/45 tabular-nums">
+                      <span className="mr-2 inline-block w-5 select-none text-right font-mono text-[11px] text-emerald-400/55 tabular-nums sm:text-xs">
                         {(beatIndex + 1).toString().padStart(2, '0')}
                       </span>
-                      <span className="text-cyan-500/50">&gt;</span>{' '}
-                      {reduceMotion
-                        ? storyBeats[beatIndex].text
-                        : storyBeats[beatIndex].text.slice(0, charIndex)}
-                      <span className="ml-0.5 inline-block align-baseline font-mono text-cyan-400 motion-safe:animate-pulse">
+                      <span className="font-mono text-emerald-400/70">&gt;</span>{' '}
+                      <span style={{ textShadow: '0 0 2px rgba(0,0,0,0.95), 0 0 12px rgba(0,40,30,0.4)' }}>
+                        {reduceMotion
+                          ? storyBeats[beatIndex].text
+                          : storyBeats[beatIndex].text.slice(0, charIndex)}
+                      </span>
+                      <span className="ml-0.5 inline-block align-baseline font-mono text-emerald-300 motion-safe:animate-pulse drop-shadow-[0_0_6px_rgba(0,255,65,0.7)]">
                         █
                       </span>
                     </motion.p>
                   )}
+                  <div className="h-2 shrink-0" aria-hidden />
                 </div>
               </div>
             </motion.div>

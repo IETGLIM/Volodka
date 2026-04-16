@@ -336,6 +336,82 @@
   }
 }
 
+/* Intro memory recall — рамка и бренд-линия Matrix / Blade */
+@keyframes intro-recall-frame-pulse {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 1px rgba(0, 255, 200, 0.16),
+      0 0 28px rgba(0, 255, 65, 0.1),
+      inset 0 0 72px rgba(0, 0, 0, 0.58);
+  }
+  50% {
+    box-shadow:
+      0 0 0 1px rgba(236, 72, 153, 0.2),
+      0 0 40px rgba(0, 255, 255, 0.09),
+      inset 0 0 88px rgba(12, 4, 24, 0.42);
+  }
+}
+
+.intro-recall-frame {
+  animation: intro-recall-frame-pulse 5.5s ease-in-out infinite;
+}
+
+@keyframes intro-recall-pipe-flicker {
+  0%,
+  91%,
+  100% {
+    opacity: 0.42;
+    transform: translateX(0);
+  }
+  92% {
+    opacity: 0.12;
+    transform: translateX(-1px);
+  }
+  93% {
+    opacity: 0.95;
+    transform: translateX(1px);
+  }
+  94% {
+    opacity: 0.35;
+    transform: translateX(0);
+  }
+}
+
+.intro-recall-glitch-pipe {
+  animation: intro-recall-pipe-flicker 2.8s ease-in-out infinite;
+}
+
+@keyframes intro-recall-blade {
+  0%,
+  100% {
+    text-shadow:
+      0 0 8px rgba(251, 191, 36, 0.22),
+      0 0 18px rgba(0, 255, 255, 0.06);
+  }
+  50% {
+    text-shadow:
+      0 0 14px rgba(251, 191, 36, 0.42),
+      0 0 24px rgba(0, 255, 200, 0.12);
+  }
+}
+
+.intro-recall-blade-glow {
+  animation: intro-recall-blade 3.2s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .intro-recall-frame,
+  .intro-recall-glitch-pipe,
+  .intro-recall-blade-glow {
+    animation: none;
+  }
+
+  .intro-recall-glitch-pipe {
+    opacity: 0.45;
+  }
+}
+
 /* Scene transition */
 @keyframes scene-fade {
   0% {
