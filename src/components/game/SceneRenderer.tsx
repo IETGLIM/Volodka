@@ -1,8 +1,11 @@
 'use client';
 
 import { useMemo, memo, useEffect, useRef, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { sceneManager, type SceneVisualConfig } from '@/engine/SceneManager';
+import { useMobileVisualPerf } from '@/hooks/useMobileVisualPerf';
+import { SceneBackgroundPhoto } from './SceneBackgroundPhoto';
+import { RainCanvasLayer } from './RainCanvasLayer';
 import type { SceneId } from '@/data/types';
 import type { PlayerState } from '@/data/types';
 
@@ -57,9 +60,9 @@ function hashSceneId(sceneId: string): number {
 /** Горизонт: сетка + силуэт мегаполиса (Blade Runner / Matrix), стабильный seed по сцене */
 const GlobalNeoNoirLayer = memo(function GlobalNeoNoirLayer({ sceneId }: { sceneId: SceneId }) {
   const seed = hashSceneId(sceneId);
-  const prng = (i: number) => ((seed + i * 7919) % 1000) / 1000;
 
   const buildings = useMemo(() => {
+    const prng = (i: number) => ((seed + i * 7919) % 1000) / 1000;
     const count = 28;
     return Array.from({ length: count }, (_, i) => {
       const w = 2.2 + prng(i) * 5.5;
@@ -77,18 +80,17 @@ const GlobalNeoNoirLayer = memo(function GlobalNeoNoirLayer({ sceneId }: { scene
     });
   }, [seed]);
 
-  const windowDots = useMemo(
-    () =>
-      Array.from({ length: 48 }, (_, i) => ({
-        id: i,
-        left: prng(i + 200) * 100,
-        bottom: 8 + prng(i + 250) * 28,
-        size: 1 + prng(i + 300) * 2,
-        opacity: 0.12 + prng(i + 350) * 0.35,
-        delay: prng(i + 400) * 4,
-      })),
-    [seed],
-  );
+  const windowDots = useMemo(() => {
+    const prng = (i: number) => ((seed + i * 7919) % 1000) / 1000;
+    return Array.from({ length: 48 }, (_, i) => ({
+      id: i,
+      left: prng(i + 200) * 100,
+      bottom: 8 + prng(i + 250) * 28,
+      size: 1 + prng(i + 300) * 2,
+      opacity: 0.12 + prng(i + 350) * 0.35,
+      delay: prng(i + 400) * 4,
+    }));
+  }, [seed]);
 
   return (
     <div className="absolute inset-0 z-[3] pointer-events-none overflow-hidden">
@@ -144,8 +146,32 @@ const GlobalNeoNoirLayer = memo(function GlobalNeoNoirLayer({ sceneId }: { scene
 // MAIN SCENE RENDERER
 // ============================================
 
+/** Мерцание «люминесцентных» ламп в офисных сценах */
+const OfficeFluorescentFlicker = memo(function OfficeFluorescentFlicker() {
+  return (
+    <motion.div
+      className="pointer-events-none absolute inset-0 z-[2]"
+      aria-hidden
+      style={{
+        mixBlendMode: 'screen' as const,
+        background:
+          'radial-gradient(ellipse 120% 35% at 50% 0%, rgba(220,235,255,0.14), transparent 58%), radial-gradient(ellipse 80% 25% at 20% 12%, rgba(180,200,255,0.06), transparent 50%)',
+      }}
+      animate={{ opacity: [0.35, 0.72, 0.28, 0.68, 0.4, 0.8, 0.32] }}
+      transition={{
+        duration: 9.5,
+        repeat: Infinity,
+        ease: 'easeInOut',
+        times: [0, 0.15, 0.28, 0.42, 0.55, 0.72, 1],
+      }}
+    />
+  );
+});
+
 export default function SceneRenderer({ sceneId, playerState, isTransitioning }: SceneRendererProps) {
   const sceneConfig = useMemo(() => sceneManager.getSceneConfig(sceneId), [sceneId]);
+  const visualLite = useMobileVisualPerf();
+  const reduceMotion = useReducedMotion();
 
   // Calculate visual effects based on player state
   const visualEffects = useMemo(() => {
@@ -192,7 +218,7 @@ export default function SceneRenderer({ sceneId, playerState, isTransitioning }:
 
   return (
     <motion.div
-      className={`fixed inset-0 ${effectClasses}`}
+      className={`fixed inset-0 z-10 ${effectClasses}`}
       style={{
         background: sceneConfig.background,
         ...overlayStyles,
@@ -203,6 +229,12 @@ export default function SceneRenderer({ sceneId, playerState, isTransitioning }:
       exit={{ opacity: 0 }}
       transition={{ duration: 0.8 }}
     >
+      <SceneBackgroundPhoto config={sceneConfig} />
+
+      {(sceneId === 'office_morning' || sceneId === 'psychologist_office') &&
+        !visualLite &&
+        !reduceMotion && <OfficeFluorescentFlicker />}
+
       {/* Scene overlay (gradient atmosphere) */}
       {sceneConfig.overlay && (
         <div className={`absolute inset-0 ${sceneConfig.overlay}`} />
@@ -803,10 +835,12 @@ const CafeEveningAtmosphere = memo(function CafeEveningAtmosphere() {
 // ============================================
 
 const StreetNightAtmosphere = memo(function StreetNightAtmosphere() {
+  const lite = useMobileVisualPerf();
   return (
     <>
-      {/* Rain effect */}
-      <RainEffect intensity={0.6} color="rgba(150,170,200,0.25)" />
+      {!lite && (
+        <RainCanvasLayer intensity={0.6} color="rgba(150,170,200,0.25)" className="absolute inset-0" />
+      )}
 
       {/* Neon sign reflections on wet ground */}
       <NeonSign
@@ -1097,6 +1131,7 @@ const MemorialParkAtmosphere = memo(function MemorialParkAtmosphere() {
 // ============================================
 
 const RooftopNightAtmosphere = memo(function RooftopNightAtmosphere() {
+  const lite = useMobileVisualPerf();
   const stars = useMemo(() =>
     Array.from({ length: 30 }, (_, i) => ({
       id: i,
@@ -1131,6 +1166,10 @@ const RooftopNightAtmosphere = memo(function RooftopNightAtmosphere() {
 
   return (
     <>
+      {!lite && (
+        <RainCanvasLayer intensity={0.38} color="rgba(170,190,220,0.2)" className="absolute inset-0" />
+      )}
+
       {/* Stars */}
       {stars.map(star => (
         <motion.div
@@ -1858,93 +1897,6 @@ const NeonSign = memo(function NeonSign({ text, x, y, color, fontSize = 14, flic
     >
       {text}
     </motion.div>
-  );
-});
-
-// ============================================
-// RAIN EFFECT - CANVAS BASED
-// ============================================
-
-interface RainEffectProps {
-  intensity?: number; // 0-1
-  color?: string;
-}
-
-const RainEffect = memo(function RainEffect({ intensity = 0.5, color = 'rgba(150,170,200,0.25)' }: RainEffectProps) {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const animFrameRef = useRef<number>(0);
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    let width = window.innerWidth;
-    let height = window.innerHeight;
-    canvas.width = width;
-    canvas.height = height;
-
-    const dropCount = Math.floor(80 * intensity);
-    const drops: Array<{ x: number; y: number; speed: number; length: number; opacity: number }> = [];
-
-    for (let i = 0; i < dropCount; i++) {
-      drops.push({
-        x: Math.random() * width,
-        y: Math.random() * height,
-        speed: 4 + Math.random() * 6,
-        length: 10 + Math.random() * 20,
-        opacity: 0.1 + Math.random() * 0.3,
-      });
-    }
-
-    const handleResize = () => {
-      width = window.innerWidth;
-      height = window.innerHeight;
-      canvas.width = width;
-      canvas.height = height;
-    };
-
-    window.addEventListener('resize', handleResize);
-
-    const animate = () => {
-      ctx.clearRect(0, 0, width, height);
-
-      for (const drop of drops) {
-        ctx.beginPath();
-        ctx.moveTo(drop.x, drop.y);
-        ctx.lineTo(drop.x + 0.5, drop.y + drop.length);
-        ctx.strokeStyle = color.replace(/[\d.]+\)$/, `${drop.opacity * intensity})`);
-        ctx.lineWidth = 1;
-        ctx.stroke();
-
-        drop.y += drop.speed;
-        drop.x += 0.3; // slight wind
-
-        if (drop.y > height) {
-          drop.y = -drop.length;
-          drop.x = Math.random() * width;
-        }
-      }
-
-      animFrameRef.current = requestAnimationFrame(animate);
-    };
-
-    animate();
-
-    return () => {
-      cancelAnimationFrame(animFrameRef.current);
-      window.removeEventListener('resize', handleResize);
-    };
-  }, [intensity, color]);
-
-  return (
-    <canvas
-      ref={canvasRef}
-      className="absolute inset-0 pointer-events-none"
-      style={{ width: '100%', height: '100%' }}
-    />
   );
 });
 

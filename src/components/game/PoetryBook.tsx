@@ -118,13 +118,15 @@ const PoemView = memo(function PoemView({ poem, onBack }: PoemViewProps) {
       initial={{ opacity: 0, x: 50 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -50 }}
-      className="h-full flex flex-col"
+      className="flex h-full min-h-0 flex-col"
     >
       {/* Header */}
-      <div className="flex items-center gap-3 mb-4">
+      <div className="mb-4 flex items-center gap-3">
         <button
+          type="button"
           onClick={onBack}
-          className="w-8 h-8 flex items-center justify-center font-mono text-cyan-400/60 hover:text-cyan-400 transition-colors border border-cyan-500/20 hover:border-cyan-500/40"
+          aria-label="Назад к списку"
+          className="inline-flex min-h-11 min-w-11 touch-manipulation items-center justify-center border border-cyan-500/20 font-mono text-cyan-400/60 transition-colors hover:border-cyan-500/40 hover:text-cyan-400"
           style={{
             clipPath: 'polygon(0 0, calc(100% - 4px) 0, 100% 4px, 100% 100%, 4px 100%, 0 calc(100% - 4px))',
           }}
@@ -357,7 +359,7 @@ export const PoetryBook = memo(function PoetryBook({ isOpen, onClose }: PoetryBo
         initial={{ scale: 0.9, y: 20 }}
         animate={{ scale: 1, y: 0 }}
         exit={{ scale: 0.9, y: 20 }}
-        className="relative w-full max-w-2xl h-[80vh] overflow-hidden"
+        className="relative h-[min(85vh,800px)] max-h-[85vh] w-full max-w-[min(95vw,42rem)] overflow-hidden"
         style={{
           background: 'linear-gradient(180deg, rgba(5, 8, 15, 0.98) 0%, rgba(10, 15, 25, 0.98) 100%)',
           border: '1px solid rgba(0, 255, 255, 0.2)',
@@ -396,7 +398,7 @@ export const PoetryBook = memo(function PoetryBook({ isOpen, onClose }: PoetryBo
         <div className="absolute bottom-2 right-2 w-8 h-8 border-r border-b border-cyan-500/30" />
 
         {/* Content */}
-        <div className="relative h-full p-5 flex flex-col" style={{ paddingTop: '2.5rem' }}>
+        <div className="relative flex h-full min-h-0 flex-col overflow-hidden p-5" style={{ paddingTop: '2.5rem' }}>
           <AnimatePresence mode="wait">
             {selectedPoem ? (
               <PoemView
@@ -410,7 +412,7 @@ export const PoetryBook = memo(function PoetryBook({ isOpen, onClose }: PoetryBo
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="h-full flex flex-col"
+                className="flex h-full min-h-0 flex-col"
               >
                 {/* Header */}
                 <div className="flex items-center justify-between mb-3">
@@ -440,8 +442,10 @@ export const PoetryBook = memo(function PoetryBook({ isOpen, onClose }: PoetryBo
                     </div>
                   </div>
                   <button
+                    type="button"
                     onClick={onClose}
-                    className="w-8 h-8 flex items-center justify-center font-mono text-cyan-400/40 hover:text-red-400 transition-all border border-cyan-500/20 hover:border-red-500/40"
+                    aria-label="Закрыть"
+                    className="inline-flex min-h-11 min-w-11 touch-manipulation items-center justify-center border border-cyan-500/20 font-mono text-cyan-400/40 transition-all hover:border-red-500/40 hover:text-red-400"
                     style={{
                       clipPath: 'polygon(0 0, calc(100% - 4px) 0, 100% 4px, 100% 100%, 4px 100%, 0 calc(100% - 4px))',
                     }}

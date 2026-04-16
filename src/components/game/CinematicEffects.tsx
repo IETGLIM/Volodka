@@ -72,11 +72,18 @@ export const Letterbox = memo(function Letterbox({
 export const FilmGrain = memo(function FilmGrain({
   intensity = 0.5,
   animated = true,
-  color = 'white'
+  color = 'white',
+  layout = 'fixed' as 'fixed' | 'absolute',
+  className = '',
+  zIndex = 30,
 }: {
   intensity?: number;
   animated?: boolean;
   color?: 'white' | 'colored';
+  /** absolute — внутри оболочки; fixed — поверх вьюпорта (по умолчанию) */
+  layout?: 'fixed' | 'absolute';
+  className?: string;
+  zIndex?: number;
 }) {
   const [offset, setOffset] = useState(0);
 
@@ -88,10 +95,14 @@ export const FilmGrain = memo(function FilmGrain({
     return () => clearInterval(interval);
   }, [animated]);
 
+  const posClass = layout === 'fixed' ? 'fixed inset-0' : 'absolute inset-0';
+
   return (
     <div
-      className="fixed inset-0 z-30 pointer-events-none opacity-30 mix-blend-overlay"
+      className={`${posClass} pointer-events-none ${className}`}
       style={{
+        zIndex,
+        mixBlendMode: 'overlay',
         backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='${0.5 + intensity * 0.5}' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`,
         backgroundPosition: `${offset}% ${offset}%`,
         opacity: intensity * 0.5,

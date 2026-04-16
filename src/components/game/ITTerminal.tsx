@@ -309,13 +309,13 @@ export default function ITTerminal({ onClose }: ITTerminalProps) {
 
   return (
     <motion.div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-3 backdrop-blur-sm"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
     >
       <motion.div
-        className="w-full max-w-3xl mx-4 bg-slate-950 border border-green-500/30 rounded-lg overflow-hidden shadow-2xl shadow-green-900/20"
+        className="mx-auto flex max-h-[85vh] w-full max-w-[min(95vw,48rem)] flex-col overflow-hidden rounded-lg border border-green-500/30 bg-slate-950 shadow-2xl shadow-green-900/20"
         initial={{ scale: 0.9, y: 20 }}
         animate={{ scale: 1, y: 0 }}
         exit={{ scale: 0.9, y: 20 }}
@@ -331,17 +331,20 @@ export default function ITTerminal({ onClose }: ITTerminalProps) {
             </span>
           </div>
           <button
+            type="button"
             onClick={onClose}
-            className="text-green-500/60 hover:text-green-400 transition-colors font-mono text-sm"
+            aria-label="Закрыть"
+            className="inline-flex min-h-11 min-w-11 touch-manipulation items-center justify-center px-2 font-mono text-sm text-green-500/60 transition-colors hover:text-green-400 sm:min-w-0 sm:px-3"
           >
-            [ESC] Закрыть
+            <span className="hidden sm:inline">[ESC] Закрыть</span>
+            <span className="sm:hidden">✕</span>
           </button>
         </div>
 
         {/* Terminal body */}
         <div
           ref={terminalRef}
-          className="h-96 overflow-y-auto p-4 font-mono text-sm space-y-1"
+          className="min-h-0 flex-1 space-y-1 overflow-y-auto p-4 font-mono text-sm"
           onClick={() => inputRef.current?.focus()}
         >
           {lines.map((line, i) => (

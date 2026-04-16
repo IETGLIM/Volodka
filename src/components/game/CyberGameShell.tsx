@@ -1,8 +1,10 @@
 'use client';
 
-import { memo, useEffect, useRef } from 'react';
-import { motion } from 'framer-motion';
+import { memo, useEffect, useRef, useMemo } from 'react';
+import { motion, useReducedMotion } from 'framer-motion';
 import { useMobileVisualPerf } from '@/hooks/useMobileVisualPerf';
+import { FilmGrain } from '@/components/game/CinematicEffects';
+import type { SceneId } from '@/data/types';
 
 /** Лёгкий digital rain — только вне lite-режима; resize через visualViewport + debounce */
 const MatrixRainBackdrop = memo(function MatrixRainBackdrop() {
@@ -271,8 +273,24 @@ const FilmVignette = memo(function FilmVignette({ soft }: { soft?: boolean }) {
  * Общая оболочка игровой фазы: Matrix / Blade Runner / терминал.
  * На мобильных — статичный фон + лёгкая виньетка без canvas/scanline/CRT поверх UI.
  */
-export function CyberGameShell({ children }: { children: React.ReactNode }) {
+export function CyberGameShell({
+  children,
+  sceneId: _sceneId,
+  stability = 72,
+}: {
+  children: React.ReactNode;
+  /** Для зерна / будущих глобальных эффектов по сцене */
+  sceneId?: SceneId;
+  /** Чем ниже стабильность — сильнее film grain */
+  stability?: number;
+}) {
   const lite = useMobileVisualPerf();
+  const reduceMotion = useReducedMotion();
+
+  const grainIntensity = useMemo(() => {
+    const s = Math.max(0, Math.min(100, stability));
+    return Math.min(0.48, 0.1 + ((100 - s) / 100) * 0.38);
+  }, [stability]);
 
   return (
     <div
@@ -314,6 +332,10 @@ export function CyberGameShell({ children }: { children: React.ReactNode }) {
         )}
         {lite && <HorizonGlowStatic />}
       </div>
+
+      {!lite && !reduceMotion && (
+        <FilmGrain layout="fixed" zIndex={18} intensity={grainIntensity} animated={!reduceMotion} />
+      )}
 
       <div className="relative z-[5] h-full w-full">{children}</div>
 

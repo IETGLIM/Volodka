@@ -4,6 +4,7 @@ import { useMemo, useState, memo } from 'react';
 import { motion } from 'framer-motion';
 import { useGameStore } from '@/store/gameStore';
 import { useMobileVisualPerf } from '@/hooks/useMobileVisualPerf';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { QUEST_DEFINITIONS, getNextTrackedObjective } from '@/data/quests';
 
 interface HUDProps {
@@ -36,16 +37,18 @@ const CyberStatBar = memo(function CyberStatBar({
   visualLite,
 }: CyberStatBarProps) {
   const [isHovered, setIsHovered] = useState(false);
+  const narrow = useIsMobile();
   const hexVal = Math.round(value).toString(16).toUpperCase().padStart(2, '0');
 
   return (
     <div
-      className="flex items-center gap-1.5 group"
+      className={`flex items-center gap-1.5 group ${narrow ? 'min-h-11 py-0.5' : ''}`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
       <span className="text-sm" title={label}>{icon}</span>
-      <div className="relative w-16 h-2 bg-slate-800/80 overflow-hidden"
+      <div
+        className={`relative bg-slate-800/80 overflow-hidden ${narrow ? 'h-2.5 w-20' : 'h-2 w-16'}`}
         style={{
           clipPath: 'polygon(0 0, calc(100% - 4px) 0, 100% 4px, 100% 100%, 4px 100%, 0 calc(100% - 4px))',
         }}
@@ -105,6 +108,7 @@ function CyberStressBar({
   panicMode: boolean;
   visualLite: boolean;
 }) {
+  const narrow = useIsMobile();
   const color = panicMode
     ? 'from-red-600 to-red-400'
     : stress > 70
@@ -122,12 +126,12 @@ function CyberStressBar({
     : 'rgba(34, 197, 94, 0.3)';
 
   return (
-    <div className={`flex items-center gap-2 ${panicMode && !visualLite ? 'stress-pulse' : ''}`}>
+    <div className={`flex items-center gap-2 ${narrow ? 'min-h-11' : ''} ${panicMode && !visualLite ? 'stress-pulse' : ''}`}>
       <span className="text-xs text-slate-500" title="Уровень стресса">
         {panicMode ? '🔥' : '📊'}
       </span>
       <div
-        className="relative w-28 h-2 bg-slate-800/80 overflow-hidden"
+        className={`relative bg-slate-800/80 overflow-hidden ${narrow ? 'h-2.5 w-32' : 'h-2 w-28'}`}
         style={{
           clipPath: 'polygon(0 0, calc(100% - 4px) 0, 100% 4px, 100% 100%, 4px 100%, 0 calc(100% - 4px))',
           boxShadow: panicMode ? '0 0 12px rgba(239, 68, 68, 0.4)' : undefined,
@@ -266,6 +270,7 @@ interface CyberActionBtnProps {
 
 function CyberActionBtn({ label, isActive, onClick, colorClass, icon }: CyberActionBtnProps) {
   const [isHovered, setIsHovered] = useState(false);
+  const narrow = useIsMobile();
 
   return (
     <button
@@ -273,8 +278,8 @@ function CyberActionBtn({ label, isActive, onClick, colorClass, icon }: CyberAct
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       className={`relative px-2.5 py-1.5 font-mono text-xs uppercase tracking-wider transition-all duration-200 overflow-hidden ${
-        isActive ? 'ring-1 ring-cyan-500/30' : ''
-      }`}
+        narrow ? 'min-h-11 min-w-11 shrink-0 px-2 py-2' : ''
+      } ${isActive ? 'ring-1 ring-cyan-500/30' : ''}`}
       style={{
         clipPath: 'polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 6px 100%, 0 calc(100% - 6px))',
         background: isHovered ? `${colorClass.replace('/80', '/90')}` : `${colorClass}`,
@@ -292,8 +297,8 @@ function CyberActionBtn({ label, isActive, onClick, colorClass, icon }: CyberAct
           }}
         />
       )}
-      <span className="relative z-10 flex items-center gap-1 text-white/90">
-        <span className="text-sm">{icon}</span>
+      <span className="relative z-10 flex items-center justify-center gap-1 text-white/90">
+        <span className={narrow ? 'text-lg' : 'text-sm'}>{icon}</span>
         <span className="hidden sm:inline">{label}</span>
       </span>
     </button>
@@ -306,6 +311,7 @@ function CyberActionBtn({ label, isActive, onClick, colorClass, icon }: CyberAct
 
 export default function HUD({ onSave, onTogglePanel, activePanels }: HUDProps) {
   const visualLite = useMobileVisualPerf();
+  const narrow = useIsMobile();
   const playerState = useGameStore(s => s.playerState);
   const collectedPoems = useGameStore(s => s.collectedPoemIds);
   const inventory = useGameStore(s => s.inventory);
@@ -364,9 +370,9 @@ export default function HUD({ onSave, onTogglePanel, activePanels }: HUDProps) {
               }),
         }}
       >
-        <div className="flex justify-between items-start">
+        <div className={`flex justify-between items-start gap-2 ${narrow ? 'flex-col sm:flex-row' : ''}`}>
           {/* Left side: stat bars */}
-          <div className="flex flex-wrap gap-1.5 items-center">
+          <div className={`flex flex-wrap gap-1.5 items-center ${narrow ? 'max-w-full' : ''}`}>
             {statBars.map((stat, i) => (
               <CyberStatBar
                 key={i}
@@ -391,7 +397,9 @@ export default function HUD({ onSave, onTogglePanel, activePanels }: HUDProps) {
           </div>
 
           {/* Right side: action buttons */}
-          <div className="flex gap-1.5 flex-wrap">
+          <div
+            className={`flex gap-1.5 ${narrow ? 'max-w-full flex-nowrap overflow-x-auto pb-1 [-webkit-overflow-scrolling:touch]' : 'flex-wrap'}`}
+          >
             {actionButtons.map((btn) => (
               <CyberActionBtn
                 key={btn.key}

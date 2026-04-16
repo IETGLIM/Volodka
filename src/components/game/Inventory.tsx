@@ -289,7 +289,7 @@ export const Inventory = memo(function Inventory({ isOpen, onClose }: InventoryP
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-50 flex items-center justify-center"
+      className="fixed inset-0 z-50 flex items-center justify-center p-3"
       style={{ background: 'rgba(0, 0, 0, 0.8)' }}
       onClick={onClose}
     >
@@ -297,7 +297,7 @@ export const Inventory = memo(function Inventory({ isOpen, onClose }: InventoryP
         initial={{ scale: 0.9, y: 20 }}
         animate={{ scale: 1, y: 0 }}
         exit={{ scale: 0.9, y: 20 }}
-        className="relative overflow-hidden"
+        className="relative flex max-h-[85vh] w-full max-w-[min(95vw,28rem)] flex-col overflow-hidden"
         style={{
           background: 'linear-gradient(180deg, rgba(10, 10, 20, 0.98) 0%, rgba(15, 15, 30, 0.98) 100%)',
           border: '1px solid rgba(34, 211, 238, 0.3)',
@@ -321,7 +321,7 @@ export const Inventory = memo(function Inventory({ isOpen, onClose }: InventoryP
         />
 
         {/* Header */}
-        <div className="relative p-4 border-b border-cyan-500/20">
+        <div className="relative shrink-0 border-b border-cyan-500/20 p-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded bg-cyan-500/20 flex items-center justify-center border border-cyan-500/30">
@@ -337,8 +337,10 @@ export const Inventory = memo(function Inventory({ isOpen, onClose }: InventoryP
               </div>
             </div>
             <button
+              type="button"
               onClick={onClose}
-              className="w-8 h-8 flex items-center justify-center rounded bg-slate-700/50 hover:bg-red-500/30 text-slate-400 hover:text-red-400 transition-all border border-slate-600/50 hover:border-red-500/50"
+              aria-label="Закрыть"
+              className="inline-flex min-h-11 min-w-11 touch-manipulation items-center justify-center rounded border border-slate-600/50 bg-slate-700/50 text-slate-400 transition-all hover:border-red-500/50 hover:bg-red-500/30 hover:text-red-400"
             >
               ✕
             </button>
@@ -346,7 +348,7 @@ export const Inventory = memo(function Inventory({ isOpen, onClose }: InventoryP
         </div>
 
         {/* Inventory Grid */}
-        <div className="relative p-4">
+        <div className="relative min-h-0 flex-1 overflow-y-auto p-4">
           <div
             className="grid gap-2"
             style={{
@@ -367,7 +369,7 @@ export const Inventory = memo(function Inventory({ isOpen, onClose }: InventoryP
         </div>
 
         {/* Footer */}
-        <div className="relative p-3 border-t border-cyan-500/20 bg-slate-900/30">
+        <div className="relative shrink-0 border-t border-cyan-500/20 bg-slate-900/30 p-3">
           <div className="flex items-center justify-between text-xs text-slate-500">
             <span className="flex items-center gap-1">
               <span className="text-cyan-500">▶</span> Клик — выбрать предмет

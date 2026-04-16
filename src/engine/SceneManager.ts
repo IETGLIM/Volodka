@@ -12,12 +12,22 @@ import type { SceneId } from '@/data/types';
 // ТИПЫ
 // ============================================
 
+export type ScenePhotoBlendMode = 'normal' | 'multiply' | 'screen' | 'overlay' | 'soft-light' | 'darken' | 'lighten';
+
 export interface SceneVisualConfig {
   id: SceneId;
   name: string;
   description: string;
   /** CSS gradient for background */
   background: string;
+  /** Путь к webp/jpg под десктоп (горизонталь); опционально */
+  photoUrl?: string;
+  /** Портрет / узкий экран; если нет — используется photoUrl */
+  mobilePhotoUrl?: string;
+  /** 0–1, по умолчанию ~0.55 */
+  photoOpacity?: number;
+  /** Режим смешивания с градиентом */
+  photoBlendMode?: ScenePhotoBlendMode;
   /** Overlay CSS class */
   overlay?: string;
   /** Ambient color tint (hex) */

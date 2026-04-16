@@ -119,7 +119,7 @@ const SkillsPanel = memo(function SkillsPanel({ skills, onClose }: SkillsPanelPr
       initial={{ opacity: 0, scale: 0.95, x: -20 }}
       animate={{ opacity: 1, scale: 1, x: 0 }}
       exit={{ opacity: 0, scale: 0.95, x: -20 }}
-      className="w-full max-w-sm relative overflow-hidden"
+      className="relative max-h-[85vh] w-full max-w-[min(95vw,24rem)] overflow-y-auto"
       style={{
         background: 'linear-gradient(180deg, rgba(15, 15, 25, 0.97) 0%, rgba(20, 20, 35, 0.97) 100%)',
         border: '1px solid rgba(34, 211, 238, 0.3)',
@@ -154,8 +154,10 @@ const SkillsPanel = memo(function SkillsPanel({ skills, onClose }: SkillsPanelPr
           </div>
           {onClose && (
             <button
+              type="button"
               onClick={onClose}
-              className="w-7 h-7 flex items-center justify-center rounded bg-slate-700/50 hover:bg-red-500/30 text-slate-400 hover:text-red-400 transition-all border border-slate-600/50 hover:border-red-500/50"
+              aria-label="Закрыть"
+              className="inline-flex min-h-11 min-w-11 touch-manipulation items-center justify-center rounded border border-slate-600/50 bg-slate-700/50 text-slate-400 transition-all hover:border-red-500/50 hover:bg-red-500/30 hover:text-red-400"
             >
               ✕
             </button>

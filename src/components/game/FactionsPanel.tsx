@@ -127,7 +127,7 @@ export const FactionsPanel = memo(function FactionsPanel({ onClose }: FactionsPa
       initial={{ opacity: 0, x: 300 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: 300 }}
-      className="fixed right-4 top-20 w-80 max-h-[70vh] bg-slate-900/95 backdrop-blur-md rounded-lg border border-slate-700 shadow-xl overflow-hidden z-50"
+      className="fixed right-2 top-16 z-50 w-[min(95vw,20rem)] max-h-[85vh] overflow-hidden rounded-lg border border-slate-700 bg-slate-900/95 shadow-xl backdrop-blur-md sm:right-4 sm:top-20"
     >
       {/* Header */}
       <div className="p-3 border-b border-slate-700 flex items-center justify-between bg-gradient-to-r from-amber-500/20 to-orange-500/20">
@@ -136,8 +136,10 @@ export const FactionsPanel = memo(function FactionsPanel({ onClose }: FactionsPa
         </h2>
         {onClose && (
           <button
+            type="button"
             onClick={onClose}
-            className="text-slate-400 hover:text-white transition-colors"
+            aria-label="Закрыть"
+            className="inline-flex min-h-11 min-w-11 touch-manipulation items-center justify-center text-slate-400 transition-colors hover:text-white"
           >
             ✕
           </button>
@@ -165,7 +167,7 @@ export const FactionsPanel = memo(function FactionsPanel({ onClose }: FactionsPa
       </div>
 
       {/* Content */}
-      <div className="p-3 overflow-y-auto max-h-[calc(70vh-120px)] space-y-3">
+      <div className="max-h-[calc(85vh-120px)] space-y-3 overflow-y-auto p-3">
         {sortedFactions.map(({ id, rep }) => (
           <FactionBadge
             key={id}

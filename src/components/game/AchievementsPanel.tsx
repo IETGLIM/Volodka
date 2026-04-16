@@ -189,7 +189,7 @@ export const AchievementsPanel = memo(function AchievementsPanel({ onClose }: Ac
       initial={{ opacity: 0, x: 300 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: 300 }}
-      className="fixed top-16 right-4 w-80 max-h-[70vh] overflow-hidden z-50"
+      className="fixed right-2 top-14 z-50 w-[min(95vw,20rem)] max-h-[85vh] overflow-hidden sm:right-4 sm:top-16"
       style={{
         background: 'linear-gradient(180deg, rgba(10,10,20,0.98) 0%, rgba(15,15,30,0.98) 100%)',
         border: '1px solid rgba(139, 92, 246, 0.3)',
@@ -209,8 +209,10 @@ export const AchievementsPanel = memo(function AchievementsPanel({ onClose }: Ac
             <span className="text-xs text-slate-500">очков</span>
             {onClose && (
               <button
+                type="button"
                 onClick={onClose}
-                className="w-6 h-6 flex items-center justify-center rounded bg-slate-700/50 hover:bg-red-500/30 text-slate-400 hover:text-red-400 transition-all"
+                aria-label="Закрыть"
+                className="inline-flex min-h-11 min-w-11 touch-manipulation items-center justify-center rounded bg-slate-700/50 text-slate-400 transition-all hover:bg-red-500/30 hover:text-red-400"
               >
                 ✕
               </button>
@@ -226,7 +228,7 @@ export const AchievementsPanel = memo(function AchievementsPanel({ onClose }: Ac
       </div>
       
       {/* Список достижений */}
-      <div className="p-3 space-y-2 max-h-[calc(70vh-80px)] overflow-y-auto">
+      <div className="max-h-[calc(85vh-80px)] space-y-2 overflow-y-auto p-3">
         {/* Разблокированные */}
         {unlocked.length > 0 && (
           <div className="space-y-2">

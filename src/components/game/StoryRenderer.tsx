@@ -6,6 +6,7 @@ import type { StoryNode, StoryChoice, ChoiceCondition, PoemLine, StoryEffect } f
 import { statsEngine } from '@/engine/StatsEngine';
 import { useGameStore } from '@/store/gameStore';
 import { useMobileVisualPerf } from '@/hooks/useMobileVisualPerf';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { formatSkillCheckHint } from '@/lib/skillCheckHint';
 import { PoemGameComponent, InterpretationComponent } from './PoemComponents';
 
@@ -212,6 +213,7 @@ function SpeakerTag({ speaker }: { speaker: string }) {
 
 export default function StoryRenderer({ node, onChoice }: StoryRendererProps) {
   const visualLite = useMobileVisualPerf();
+  const isNarrow = useIsMobile();
   const [isTyping, setIsTyping] = useState(false);
   const [displayedText, setDisplayedText] = useState('');
   const typingRef = useRef<NodeJS.Timeout | null>(null);
@@ -295,21 +297,9 @@ export default function StoryRenderer({ node, onChoice }: StoryRendererProps) {
     }
   }, [node, isTyping, onChoice]);
 
-  // Don't render if no text, no choices, no autoNext, and not a special type
-  if (!node.text && !node.choices?.length && !node.autoNext && node.type !== 'poem_game' && node.type !== 'interpretation') return null;
-
-  // Special rendering for different node types
   const isDreamNode = node.type === 'dream';
   const isPoemNode = node.type === 'poem' || node.type === 'poem_game';
   const isEndingNode = node.type === 'ending';
-
-  const borderColor = isDreamNode
-    ? 'border-purple-500/40'
-    : isPoemNode
-    ? 'border-amber-500/40'
-    : isEndingNode
-    ? 'border-slate-400/30'
-    : 'border-cyan-500/40';
 
   const bodyBackdropCss = useMemo(
     () =>
@@ -322,9 +312,26 @@ export default function StoryRenderer({ node, onChoice }: StoryRendererProps) {
     [isDreamNode, isPoemNode, isEndingNode, visualLite],
   );
 
+  const hasRenderableContent =
+    !!node.text ||
+    !!node.choices?.length ||
+    !!node.autoNext ||
+    node.type === 'poem_game' ||
+    node.type === 'interpretation';
+
+  if (!hasRenderableContent) return null;
+
+  const borderColor = isDreamNode
+    ? 'border-purple-500/40'
+    : isPoemNode
+    ? 'border-amber-500/40'
+    : isEndingNode
+    ? 'border-slate-400/30'
+    : 'border-cyan-500/40';
+
   return (
     <motion.div
-      className="fixed bottom-0 left-0 right-0 z-40 p-4"
+      className="fixed bottom-0 left-0 right-0 z-40 p-4 max-md:p-5"
       initial={{ opacity: 0, y: 50 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: 50 }}
@@ -382,7 +389,7 @@ export default function StoryRenderer({ node, onChoice }: StoryRendererProps) {
             />
           )}
 
-          <div className="relative z-10 p-6">
+          <div className="relative z-10 px-5 py-6 md:px-6 md:py-6">
           {/* Dream indicator */}
           {isDreamNode && (
             <div className="mb-3 flex items-center gap-2">
@@ -413,7 +420,7 @@ export default function StoryRenderer({ node, onChoice }: StoryRendererProps) {
           {node.text && (
             <div className="min-h-[80px] mb-4">
               <p
-                className={`text-lg md:text-xl leading-relaxed whitespace-pre-line ${
+                className={`text-xl md:text-2xl leading-relaxed whitespace-pre-line ${
                   isDreamNode ? 'text-purple-200/90' : isPoemNode ? 'text-amber-200/90' : 'text-white/90'
                 }`}
                 style={{
@@ -432,10 +439,10 @@ export default function StoryRenderer({ node, onChoice }: StoryRendererProps) {
 
           {/* Skip typing button */}
           {isTyping && (
-            <div className="flex justify-end mb-2">
+            <div className="relative z-[50] flex justify-end mb-2">
               <button
                 onClick={(e) => { e.stopPropagation(); skipTyping(); }}
-                className="px-3 py-1.5 font-mono text-xs text-cyan-400/60 hover:text-cyan-400 transition-colors border border-cyan-500/20 hover:border-cyan-500/40"
+                className="min-h-11 px-3 py-2 font-mono text-xs text-cyan-400/60 hover:text-cyan-400 transition-colors border border-cyan-500/20 hover:border-cyan-500/40 touch-manipulation"
                 style={{
                   clipPath: 'polygon(0 0, calc(100% - 4px) 0, 100% 4px, 100% 100%, 4px 100%, 0 calc(100% - 4px))',
                 }}
@@ -541,6 +548,18 @@ export default function StoryRenderer({ node, onChoice }: StoryRendererProps) {
             </motion.div>
           )}
           </div>
+
+          {isTyping && isNarrow && (
+            <button
+              type="button"
+              aria-label="Пропустить набор текста"
+              className="absolute inset-x-0 bottom-0 z-[45] h-[min(46%,280px)] min-h-[120px] bg-transparent md:hidden touch-manipulation"
+              onClick={(e) => {
+                e.stopPropagation();
+                skipTyping();
+              }}
+            />
+          )}
         </div>
       </div>
     </motion.div>

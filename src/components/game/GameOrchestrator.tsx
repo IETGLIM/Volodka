@@ -287,7 +287,7 @@ export default function GameOrchestrator() {
 
   // ---- Game Phase ----
   return (
-    <CyberGameShell>
+    <CyberGameShell sceneId={currentSceneId} stability={playerState.stability}>
       {/* 2D Scene background */}
       <SceneRenderer
         sceneId={currentSceneId}
@@ -485,7 +485,7 @@ function PanelWrapper({ children, onClose }: { children: React.ReactNode; onClos
       exit={{ opacity: 0 }}
     >
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
-      <div className="relative z-10 max-h-[80vh] overflow-y-auto">
+      <div className="relative z-10 max-h-[85vh] max-w-[95vw] overflow-y-auto overflow-x-hidden">
         {children}
       </div>
     </motion.div>
