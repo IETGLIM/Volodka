@@ -29,7 +29,7 @@ interface CommandResult {
 const COMMANDS: Record<string, (args: string[]) => CommandResult> = {
   help: () => ({
     output: [
-      'Доступные команды:',
+      'Доступные команды (успешные шаги обновляют цели в 📋 «Квесты»):',
       '  kubectl get nodes                    — Статус кластера Kubernetes',
       '  kubectl logs <pod> -n <ns>           — Логи пода',
       '  kubectl rollout undo deploy/<name>   — Откат деплоя',
@@ -201,7 +201,7 @@ export default function ITTerminal({ onClose }: ITTerminalProps) {
   const [lines, setLines] = useState<TerminalLine[]>([
     { type: 'system', text: '☁ Cloud Operations Terminal v3.2.1', timestamp: Date.now() },
     { type: 'system', text: 'Подключение к internal-cloud... OK', timestamp: Date.now() },
-    { type: 'system', text: 'Введите "help" для списка команд.', timestamp: Date.now() },
+    { type: 'system', text: 'Введите help — список команд. Часть команд продвигает параллельные IT-квесты (см. 📋).', timestamp: Date.now() },
     { type: 'system', text: '—', timestamp: Date.now() },
   ]);
   const [input, setInput] = useState('');

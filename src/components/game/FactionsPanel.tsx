@@ -179,8 +179,8 @@ export const FactionsPanel = memo(function FactionsPanel({ onClose }: FactionsPa
 
       {/* Legend */}
       <div className="p-2 border-t border-slate-700 bg-slate-800/50">
-        <p className="text-xs text-slate-400 text-center">
-          💡 Взаимодействуйте с NPC разных групп для улучшения репутации
+        <p className="text-center text-xs leading-snug text-slate-400">
+          💡 Репутация растёт от сюжетных выборов и диалогов на локациях. Союзники открывают побочные линии; квесты по фракциям дублируются в 📋.
         </p>
       </div>
     </motion.div>

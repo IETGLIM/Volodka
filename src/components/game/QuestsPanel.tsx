@@ -286,6 +286,13 @@ export const QuestsPanel = memo(function QuestsPanel({
         )}
       </div>
 
+      <div className="border-b border-purple-500/15 bg-black/30 px-3 py-2">
+        <p className="font-mono text-[10px] leading-snug text-cyan-500/70">
+          💡 IT-цели из этого журнала можно закрывать в игровом терминале (💻): введите команды из подсказек шага или начните с{' '}
+          <span className="text-cyan-400/90">help</span>. Репутация групп — во вкладке ⚔️.
+        </p>
+      </div>
+
       {/* Content */}
       <div className="max-h-[calc(85vh-60px)] space-y-3 overflow-y-auto p-3">
         {activeQuests.length === 0 && completedQuests.length === 0 && (
