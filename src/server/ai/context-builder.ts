@@ -5,6 +5,7 @@
 // состояние игры, NPC-отношения, флаги, стресс.
 
 import type { PlayerState, NPCRelation } from '@/shared/types/game';
+import { MAX_PLAYER_ENERGY } from '@/lib/energyConfig';
 import type { NarrativeRequest, DialogueRequest } from './types';
 
 // ============================================
@@ -48,7 +49,7 @@ export function buildNarrativeContext(request: NarrativeRequest): string {
 
   return `Игрок: Володька, ${playerState.act}-й акт, путь "${playerState.path}"
 Настроение: ${playerState.mood}/100 | Креативность: ${playerState.creativity}/100 | Стабильность: ${playerState.stability}/100
-Энергия: ${playerState.energy}/10 | Карма: ${playerState.karma}/100 | Самооценка: ${playerState.selfEsteem}/100
+Энергия: ${playerState.energy}/${MAX_PLAYER_ENERGY} | Карма: ${playerState.karma}/100 | Самооценка: ${playerState.selfEsteem}/100
 Стресс: ${playerState.stress}/100${playerState.panicMode ? ' (PANIC!)' : ''}
 ${stressNote} ${creativityNote} ${selfEsteemNote}
 Флаги: ${relevantFlags}

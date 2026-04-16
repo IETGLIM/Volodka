@@ -8,13 +8,18 @@ import { ENERGY_COSTS } from '@/hooks/useEnergySystem';
 
 type EffectNotifType = 'poem' | 'stat' | 'quest' | 'flag' | 'energy';
 
+const ENERGY_BLOCK_NOTIF_MS = 9_500;
+
+const ENERGY_BLOCK_MESSAGE =
+  'Не хватает энергии на этот выбор. Что можно сделать: поговорить с NPC на сцене (диалог не тратит энергию), пройти отдых в сюжете («сон»), заглянуть в 📋 квесты, ⚔️ фракции или 💻 терминал. Энергия также медленно восстанавливается сама со временем.';
+
 interface StoryChoiceHandlerParams {
   playerSkills: Record<string, number>;
   energySystem: {
     canAfford: (amount: number) => boolean;
     consumeEnergy: (amount: number) => boolean;
   };
-  showEffectNotif: (text: string, type: EffectNotifType) => void;
+  showEffectNotif: (text: string, type: EffectNotifType, durationMs?: number) => void;
   setCurrentNode: (nodeId: string) => void;
   addStat: (stat: 'mood' | 'creativity' | 'stability' | 'energy' | 'karma' | 'selfEsteem', amount: number) => void;
   addStress: (amount: number) => void;
@@ -128,13 +133,13 @@ export function useStoryChoiceHandler(params: StoryChoiceHandlerParams) {
     const energyCost = choice.skillCheck ? ENERGY_COSTS.skillCheck : ENERGY_COSTS.choice;
 
     if (!energySystem.canAfford(energyCost)) {
-      showEffectNotif('⚠️ Недостаточно энергии!', 'energy');
+      showEffectNotif(ENERGY_BLOCK_MESSAGE, 'energy', ENERGY_BLOCK_NOTIF_MS);
       return;
     }
 
     const consumed = energySystem.consumeEnergy(energyCost);
     if (!consumed) {
-      showEffectNotif('⚠️ Недостаточно энергии!', 'energy');
+      showEffectNotif(ENERGY_BLOCK_MESSAGE, 'energy', ENERGY_BLOCK_NOTIF_MS);
       return;
     }
 

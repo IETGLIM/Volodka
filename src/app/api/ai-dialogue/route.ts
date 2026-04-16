@@ -8,6 +8,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import type { DialogueRequest, DialogueResponse, PlayerDialogueChoice } from '../../../lib/ai-types';
 import type { PlayerState, NPCRelation } from '../../../data/types';
+import { MAX_PLAYER_ENERGY } from '@/lib/energyConfig';
 
 // Lazy singleton for the AI client
 let zaiInstance: Awaited<ReturnType<typeof import('z-ai-web-dev-sdk').default>> | null = null;
@@ -204,7 +205,7 @@ function buildDialogueContext(
     ``,
     `--- Володька (состояние) ---`,
     `Настроение: ${mood}/100 | Креативность: ${creativity}/100 | Стабильность: ${stability}/100`,
-    `Энергия: ${energy}/10 | Карма: ${karma}/100 | Самооценка: ${selfEsteem}/100`,
+    `Энергия: ${energy}/${MAX_PLAYER_ENERGY} | Карма: ${karma}/100 | Самооценка: ${selfEsteem}/100`,
     `Стресс: ${stress}/100${panicMode ? ' (PANIC!)' : ''}`,
     `Эмпатия: ${skills.empathy} | Убеждение: ${skills.persuasion} | Интуиция: ${skills.intuition}`,
     ``,

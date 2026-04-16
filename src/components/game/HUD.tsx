@@ -6,6 +6,7 @@ import { useGameStore } from '@/store/gameStore';
 import { useMobileVisualPerf } from '@/hooks/useMobileVisualPerf';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { QUEST_DEFINITIONS, getNextTrackedObjective } from '@/data/quests';
+import { MAX_PLAYER_ENERGY } from '@/lib/energyConfig';
 
 interface HUDProps {
   onSave: () => void;
@@ -178,24 +179,25 @@ function CyberStressBar({
 // ENERGY BAR — BATTERY CELLS
 // ============================================
 
+const HUD_ENERGY_BUCKETS = 16;
+
 function CyberEnergyBar({ energy, visualLite }: { energy: number; visualLite: boolean }) {
-  const maxEnergy = 10;
-  const cells = useMemo(() => Array.from({ length: maxEnergy }, (_, i) => ({
-    id: i,
-    active: i < energy,
-  })), [energy]);
+  const maxEnergy = MAX_PLAYER_ENERGY;
+  const filledBuckets = Math.max(0, Math.ceil((energy / maxEnergy) * HUD_ENERGY_BUCKETS));
+  const cells = useMemo(
+    () =>
+      Array.from({ length: HUD_ENERGY_BUCKETS }, (_, i) => ({
+        id: i,
+        active: i < filledBuckets,
+      })),
+    [filledBuckets],
+  );
 
-  const cellColor = energy <= 2
-    ? 'bg-red-500'
-    : energy <= 4
-    ? 'bg-orange-500'
-    : 'bg-cyan-500';
+  const pct = energy / maxEnergy;
+  const cellColor = pct <= 0.12 ? 'bg-red-500' : pct <= 0.33 ? 'bg-orange-500' : 'bg-cyan-500';
 
-  const cellGlow = energy <= 2
-    ? 'rgba(239, 68, 68, 0.4)'
-    : energy <= 4
-    ? 'rgba(249, 115, 22, 0.3)'
-    : 'rgba(0, 255, 255, 0.3)';
+  const cellGlow =
+    pct <= 0.12 ? 'rgba(239, 68, 68, 0.4)' : pct <= 0.33 ? 'rgba(249, 115, 22, 0.3)' : 'rgba(0, 255, 255, 0.3)';
 
   return (
     <div className="flex items-center gap-2">
@@ -204,7 +206,7 @@ function CyberEnergyBar({ energy, visualLite }: { energy: number; visualLite: bo
         {cells.map((cell) => (
           <div
             key={cell.id}
-            className={`w-2.5 h-3 rounded-sm transition-all duration-300 ${
+            className={`h-3 w-2 rounded-sm transition-all duration-300 ${
               cell.active
                 ? `${cellColor}`
                 : 'bg-slate-800/60'

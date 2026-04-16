@@ -41,7 +41,7 @@ interface UseGameRuntimeParams {
   addSkill: (skill: 'writing', amount: number) => void;
   setFlag: (flag: string) => void;
   unlockAchievement: (achievementId: string) => void;
-  showEffectNotif: (text: string, type: 'poem' | 'stat' | 'quest' | 'flag' | 'energy') => void;
+  showEffectNotif: (text: string, type: 'poem' | 'stat' | 'quest' | 'flag' | 'energy', durationMs?: number) => void;
 }
 
 export function useGameRuntime(params: UseGameRuntimeParams) {

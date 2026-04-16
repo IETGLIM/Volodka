@@ -10,6 +10,7 @@
 
 import { eventBus } from './EventBus';
 import type { PlayerState, PlayerSkills, ChoiceCondition } from '@/data/types';
+import { MAX_PLAYER_ENERGY } from '@/lib/energyConfig';
 
 // ============================================
 // ТИПЫ
@@ -54,7 +55,7 @@ class StatsEngineClass {
     currentState: PlayerState
   ): StatChangeResult {
     const oldValue = this.getStatValue(stat, currentState);
-    const newValue = Math.max(0, Math.min(stat === 'energy' ? 10 : 100, oldValue + delta));
+    const newValue = Math.max(0, Math.min(stat === 'energy' ? MAX_PLAYER_ENERGY : 100, oldValue + delta));
 
     const derivedEffects = this.getDerivedEffects({
       ...currentState,
@@ -149,8 +150,19 @@ class StatsEngineClass {
     const energyLevel = this.getEnergyLevel(state.energy);
     
     if (energyLevel === 'exhausted') {
-      blockedChoices.push({ reason: 'Нет сил на это действие', condition: 'energy <= 2' });
-      narrativeHints.push('Совсем нет сил — нужно отдохнуть');
+      blockedChoices.push({
+        reason: 'Нет сил на это действие',
+        condition: `energy <= ${Math.ceil(MAX_PLAYER_ENERGY * 0.12)}`,
+      });
+      narrativeHints.push(
+        'Совсем нет сил: в сюжете выберите отдых («сон»), поговорите с NPC на сцене (без траты энергии) или подождите — энергия медленно восстанавливается.',
+      );
+    }
+
+    if (state.energy <= Math.ceil(MAX_PLAYER_ENERGY * 0.35) && state.energy > Math.ceil(MAX_PLAYER_ENERGY * 0.12)) {
+      narrativeHints.push(
+        'Энергия на исходе: квесты и фракции — через панели 📋 и ⚔️; IT-терминал 💻 для сюжетных команд. Диалоги с персонажами на локации не расходуют энергию.',
+      );
     }
 
     // ---- Mood effects ----
@@ -172,7 +184,7 @@ class StatsEngineClass {
       blockedChoices,
       availableActions,
       visualEffects,
-      narrativeHints,
+      narrativeHints: [...new Set(narrativeHints)],
       stressPenalty,
       creativityBonus,
       sociallyBlocked,
@@ -285,9 +297,10 @@ class StatsEngineClass {
   }
 
   private getEnergyLevel(energy: number): 'exhausted' | 'tired' | 'normal' | 'energized' {
-    if (energy <= 2) return 'exhausted';
-    if (energy <= 4) return 'tired';
-    if (energy <= 7) return 'normal';
+    const m = MAX_PLAYER_ENERGY;
+    if (energy <= Math.max(2, Math.ceil(m * 0.12))) return 'exhausted';
+    if (energy <= Math.ceil(m * 0.33)) return 'tired';
+    if (energy <= Math.ceil(m * 0.66)) return 'normal';
     return 'energized';
   }
 }

@@ -8,16 +8,19 @@ export interface EffectNotification {
   type: EffectNotifType;
 }
 
-export function useEffectNotifications(maxVisible = 5, timeoutMs = 3000) {
+export function useEffectNotifications(maxVisible = 5, defaultTimeoutMs = 3000) {
   const [notifications, setNotifications] = useState<EffectNotification[]>([]);
 
-  const showEffectNotif = useCallback((text: string, type: EffectNotifType) => {
-    const id = Date.now().toString();
-    setNotifications((prev) => [...prev.slice(-(maxVisible - 1)), { id, text, type }]);
-    setTimeout(() => {
-      setNotifications((prev) => prev.filter((notif) => notif.id !== id));
-    }, timeoutMs);
-  }, [maxVisible, timeoutMs]);
+  const showEffectNotif = useCallback(
+    (text: string, type: EffectNotifType, durationMs: number = defaultTimeoutMs) => {
+      const id = Date.now().toString();
+      setNotifications((prev) => [...prev.slice(-(maxVisible - 1)), { id, text, type }]);
+      setTimeout(() => {
+        setNotifications((prev) => prev.filter((notif) => notif.id !== id));
+      }, durationMs);
+    },
+    [maxVisible, defaultTimeoutMs],
+  );
 
   return {
     notifications,

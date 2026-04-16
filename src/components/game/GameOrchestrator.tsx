@@ -423,7 +423,7 @@ export default function GameOrchestrator() {
               initial={{ opacity: 0, x: 40 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 40 }}
-              className="px-4 py-2 backdrop-blur-sm border"
+              className={`px-4 py-2 backdrop-blur-sm border ${notif.type === 'energy' ? 'max-w-[min(92vw,22rem)]' : ''}`}
               style={{
                 background:
                   notif.type === 'energy' ? 'rgba(251, 191, 36, 0.15)' :
@@ -441,7 +441,7 @@ export default function GameOrchestrator() {
               }}
             >
               <span
-                className="font-mono text-xs tracking-wider"
+                className={`font-mono text-xs tracking-wider ${notif.type === 'energy' ? 'leading-snug whitespace-normal' : ''}`}
                 style={{
                   color:
                     notif.type === 'energy' ? 'rgba(251, 191, 36, 0.9)' :

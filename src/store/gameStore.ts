@@ -22,6 +22,7 @@ import type { SceneId } from '../data/types';
 import type { FactionId, FactionReputation } from '../data/factions';
 import { QUEST_DEFINITIONS } from '../data/quests';
 import { getItemById } from '../data/items';
+import { INITIAL_PLAYER_ENERGY, MAX_PLAYER_ENERGY } from '@/lib/energyConfig';
 
 // ============================================
 // INITIAL STATE - Defined inline to avoid circular imports
@@ -45,7 +46,7 @@ const INITIAL_STATE: PlayerState = {
   mood: 50,
   creativity: 30,
   stability: 60,
-  energy: 5,
+  energy: INITIAL_PLAYER_ENERGY,
   karma: 50,
   selfEsteem: 40,
   stress: 0,
@@ -469,7 +470,7 @@ export const useGameStore = create<GameState>()((set, get) => ({
       set({
         playerState: {
           ...playerState,
-          [stat]: clamp(currentValue + amount, 0, stat === 'energy' ? 10 : 100)
+          [stat]: clamp(currentValue + amount, 0, stat === 'energy' ? MAX_PLAYER_ENERGY : 100)
         }
       });
     }

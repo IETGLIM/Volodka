@@ -74,7 +74,7 @@ export interface PlayerState {
   mood: number;          // 0-100
   creativity: number;    // 0-100
   stability: number;     // 0-100
-  energy: number;        // 0-10
+  energy: number;        // 0..MAX_PLAYER_ENERGY (lib/energyConfig)
   karma: number;         // 0-100
   selfEsteem: number;    // 0-100 — самооценка, критично для психологии
   

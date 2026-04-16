@@ -8,6 +8,7 @@
 import { create } from 'zustand';
 import { useShallow } from 'zustand/react/shallow';
 import type { PlayerState, PlayerSkills, MoralChoice } from '@/shared/types/game';
+import { INITIAL_PLAYER_ENERGY, MAX_PLAYER_ENERGY } from '@/lib/energyConfig';
 
 // ============================================
 // INITIAL STATE
@@ -31,7 +32,7 @@ const INITIAL_PLAYER: PlayerState = {
   mood: 50,
   creativity: 30,
   stability: 60,
-  energy: 5,
+  energy: INITIAL_PLAYER_ENERGY,
   karma: 50,
   selfEsteem: 40,
   stress: 0,
@@ -127,7 +128,7 @@ export const usePlayerStore = create<PlayerStore>()((set, get) => ({
       set({
         playerState: {
           ...playerState,
-          [stat]: clamp(currentValue + amount, 0, stat === 'energy' ? 10 : 100),
+          [stat]: clamp(currentValue + amount, 0, stat === 'energy' ? MAX_PLAYER_ENERGY : 100),
         },
       });
     }

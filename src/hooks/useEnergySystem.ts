@@ -3,24 +3,14 @@
 import { useCallback, useEffect, useRef } from 'react';
 import { useGameStore } from '@/store/gameStore';
 import { eventBus } from '@/engine/EventBus';
+import {
+  MAX_PLAYER_ENERGY,
+  PASSIVE_ENERGY_AMOUNT,
+  PASSIVE_ENERGY_REGEN_MS,
+  SLEEP_ENERGY_REGEN,
+} from '@/lib/energyConfig';
 
-// ============================================
-// КОНСТАНТЫ СТОИМОСТИ ЭНЕРГИИ
-// ============================================
-
-/** Стоимость действий в единицах энергии */
-export const ENERGY_COSTS = {
-  choice: 1,       // Обычный выбор
-  skillCheck: 2,   // Проверка навыка
-  poemGame: 1,     // Стихотворная мини-игра
-  dialogue: 0,     // Диалог бесплатный
-} as const;
-
-/** Сколько энергии восстанавливается при отдыхе */
-const SLEEP_ENERGY_REGEN = 3;
-
-/** Максимальная энергия */
-const MAX_ENERGY = 10;
+export { ENERGY_COSTS } from '@/lib/energyConfig';
 
 // ============================================
 // ТИПЫ
@@ -48,15 +38,16 @@ export function useEnergySystem(): EnergySystemAPI {
   const addStat = useGameStore(s => s.addStat);
   const addStress = useGameStore(s => s.addStress);
   const currentNodeId = useGameStore(s => s.currentNodeId);
+  const phase = useGameStore(s => s.phase);
 
   // Реф для отслеживания уведомления об истощении
   const exhaustionNotifiedRef = useRef(false);
 
-  // Определяем уровень энергии
+  const m = MAX_PLAYER_ENERGY;
   const energyLevel: EnergySystemAPI['energyLevel'] =
-    energy <= 2 ? 'exhausted' :
-    energy <= 4 ? 'tired' :
-    energy <= 7 ? 'normal' :
+    energy <= Math.max(2, Math.ceil(m * 0.12)) ? 'exhausted' :
+    energy <= Math.ceil(m * 0.33) ? 'tired' :
+    energy <= Math.ceil(m * 0.66) ? 'normal' :
     'energized';
 
   // Проверка доступности энергии
@@ -106,28 +97,45 @@ export function useEnergySystem(): EnergySystemAPI {
   useEffect(() => {
     if (currentNodeId && currentNodeId.toLowerCase().includes('sleep')) {
       const currentEnergy = useGameStore.getState().playerState.energy;
-      if (currentEnergy < MAX_ENERGY) {
+      if (currentEnergy < MAX_PLAYER_ENERGY) {
         addStat('energy', SLEEP_ENERGY_REGEN);
         eventBus.emit('stat:changed', {
           stat: 'energy',
           oldValue: currentEnergy,
-          newValue: Math.min(MAX_ENERGY, currentEnergy + SLEEP_ENERGY_REGEN),
+          newValue: Math.min(MAX_PLAYER_ENERGY, currentEnergy + SLEEP_ENERGY_REGEN),
           delta: SLEEP_ENERGY_REGEN,
         });
       }
     }
   }, [currentNodeId, addStat]);
 
+  // Пассивное восстановление в активной игре — не копится в меню/интро
+  useEffect(() => {
+    if (phase !== 'game') return;
+    const id = setInterval(() => {
+      const currentEnergy = useGameStore.getState().playerState.energy;
+      if (currentEnergy >= MAX_PLAYER_ENERGY) return;
+      addStat('energy', PASSIVE_ENERGY_AMOUNT);
+      eventBus.emit('stat:changed', {
+        stat: 'energy',
+        oldValue: currentEnergy,
+        newValue: Math.min(MAX_PLAYER_ENERGY, currentEnergy + PASSIVE_ENERGY_AMOUNT),
+        delta: PASSIVE_ENERGY_AMOUNT,
+      });
+    }, PASSIVE_ENERGY_REGEN_MS);
+    return () => clearInterval(id);
+  }, [addStat, phase]);
+
   // Сброс уведомления об истощении, когда энергия восстановилась
   useEffect(() => {
-    if (energy > 2) {
+    if (energy > Math.ceil(MAX_PLAYER_ENERGY * 0.25)) {
       exhaustionNotifiedRef.current = false;
     }
   }, [energy]);
 
   return {
     energy,
-    maxEnergy: MAX_ENERGY,
+    maxEnergy: MAX_PLAYER_ENERGY,
     consumeEnergy,
     canAfford,
     energyLevel,

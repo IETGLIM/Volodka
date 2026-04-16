@@ -49,7 +49,11 @@ describe('useStoryChoiceHandler', () => {
       result.current.handleChoice({ text: 'Выбор', next: 'node_2' });
     });
 
-    expect(params.showEffectNotif).toHaveBeenCalledWith('⚠️ Недостаточно энергии!', 'energy');
+    expect(params.showEffectNotif).toHaveBeenCalledWith(
+      expect.stringContaining('Не хватает энергии'),
+      'energy',
+      expect.any(Number),
+    );
     expect(params.setCurrentNode).not.toHaveBeenCalled();
   });
 
