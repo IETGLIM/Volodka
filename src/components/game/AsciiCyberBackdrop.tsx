@@ -63,6 +63,8 @@ export const AsciiCyberBackdrop = memo(function AsciiCyberBackdrop({
     let raf = 0;
     let t0 = performance.now();
     const drops: { x: number; y: number; speed: number; c: string }[] = [];
+    // Новый эффект = новая сцена/режим: не тащим капли из предыдущего замыкания.
+    drops.length = 0;
 
     const resize = () => {
       drops.length = 0;
@@ -102,6 +104,9 @@ export const AsciiCyberBackdrop = memo(function AsciiCyberBackdrop({
 
       // Matrix rain (редкий)
       const rainCount = staticMode ? 12 : Math.floor(cols * 0.35);
+      if (drops.length > rainCount) {
+        drops.length = rainCount;
+      }
       while (drops.length < rainCount) {
         drops.push({
           x: Math.random() * w,
@@ -167,12 +172,13 @@ export const AsciiCyberBackdrop = memo(function AsciiCyberBackdrop({
       raf = requestAnimationFrame(draw);
     }
 
+    // npcsHere в deps намеренно (не только через sceneId), чтобы смена данных NPC по сцене перезапускала эффект.
     return () => {
       cancelAnimationFrame(raf);
       window.removeEventListener('resize', resize);
       window.visualViewport?.removeEventListener('resize', resize);
     };
-  }, [sceneId, sceneMeta.name, sceneMeta.description, npcsHere, staticMode, playerState.stress, playerState.panicMode]);
+  }, [sceneId, staticMode, npcsHere, sceneMeta.name, sceneMeta.description, playerState.stress, playerState.panicMode]);
 
   return (
     <canvas

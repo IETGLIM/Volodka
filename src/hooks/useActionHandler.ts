@@ -8,6 +8,7 @@ import { usePanicFlow } from '@/hooks/usePanicFlow';
 import type { EnergySystemAPI } from '@/hooks/useEnergySystem';
 import type { GamePanelsState } from '@/hooks/useGamePanels';
 import type { GameMode } from '@/data/rpgTypes';
+import type { PlayerSkills } from '@/data/types';
 
 export type OpenDialogueFromStoryPayload = {
   npcId: string;
@@ -17,7 +18,9 @@ export type OpenDialogueFromStoryPayload = {
 };
 
 export interface UseActionHandlerParams {
-  playerSkills: Record<string, number>;
+  /** Навыки игрока (как в сторе) — для skill check в сюжетных выборах без приведения к Record. */
+  playerSkills: PlayerSkills;
+  /** Списание энергии на выбор / skill check; прокидывается в `useStoryChoiceHandler`. */
   energySystem: EnergySystemAPI;
   showEffectNotif: (
     text: string,
@@ -36,7 +39,7 @@ export interface UseActionHandlerParams {
   completeQuest: (questId: string) => void;
   incrementQuestObjective: (questId: string, objectiveId: string) => void;
   updateQuestObjective: (questId: string, objectiveId: string, value?: number) => void;
-  addSkill: (skill: 'writing', amount: number) => void;
+  addSkill: (skill: keyof PlayerSkills, amount: number) => void;
   addItem: (itemId: string, quantity?: number) => void;
   removeItem: (itemId: string, quantity?: number) => void;
   openDialogueFromStory: (p: OpenDialogueFromStoryPayload) => void;

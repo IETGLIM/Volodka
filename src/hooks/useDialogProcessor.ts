@@ -4,6 +4,8 @@ import { useMemo } from 'react';
 import { useDialogueFlow } from '@/hooks/useDialogueFlow';
 import type { StoreActionAdapter } from '@/hooks/useGameRuntime';
 import type { GameMode } from '@/data/rpgTypes';
+import type { PlayerSkills } from '@/data/types';
+import { asTrainablePlayerSkill } from '@/lib/trainablePlayerSkill';
 
 export interface UseDialogProcessorParams {
   setCurrentNPC: (npcId: string | null) => void;
@@ -20,7 +22,7 @@ export interface UseDialogProcessorParams {
   activateQuest: StoreActionAdapter['activateQuest'];
   updateQuestObjective: StoreActionAdapter['updateQuestObjective'];
   collectPoem: StoreActionAdapter['collectPoem'];
-  addSkill: (skill: 'writing', amount: number) => void;
+  addSkill: (skill: keyof PlayerSkills, amount: number) => void;
 }
 
 /**
@@ -58,7 +60,10 @@ export function useDialogProcessor(params: UseDialogProcessorParams) {
       activateQuest,
       updateQuestObjective,
       collectPoem,
-      addSkill: (s: string, a: number) => addSkill(s as 'writing', a),
+      addSkill: (skill: string, amount: number) => {
+        const k = asTrainablePlayerSkill(skill);
+        if (k != null) addSkill(k, amount);
+      },
     }),
     [
       addStat,

@@ -113,4 +113,26 @@ export const INITIAL_NPC_RELATIONS: NPCRelation[] = [
     flags: {},
     interactions: []
   },
+  {
+    id: 'albert',
+    name: 'Альберт',
+    value: 0,
+    stage: 'stranger',
+    trust: 0,
+    respect: 0,
+    intimacy: 0,
+    flags: {},
+    interactions: []
+  },
+  {
+    id: 'alexander',
+    name: 'Александр',
+    value: 0,
+    stage: 'stranger',
+    trust: 0,
+    respect: 0,
+    intimacy: 0,
+    flags: {},
+    interactions: []
+  },
 ];

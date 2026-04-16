@@ -1,6 +1,7 @@
 import { useCallback, useMemo } from 'react';
 import { eventBus } from '@/engine/EventBus';
 import type { GameMode } from '@/data/rpgTypes';
+import { VERTICAL_SLICE_ENTRY_NODE_ID } from '@/data/verticalSliceStoryNodes';
 
 interface UseGameSessionFlowParams {
   setPhase: (phase: 'loading' | 'intro' | 'menu' | 'game') => void;
@@ -41,7 +42,7 @@ export function useGameSessionFlow({
   const handleStartNewGame = useCallback(() => {
     resetGameStore();
     setGameMode('visual-novel');
-    setCurrentNode('start');
+    setCurrentNode(VERTICAL_SLICE_ENTRY_NODE_ID);
     setPhase('intro');
   }, [resetGameStore, setGameMode, setCurrentNode, setPhase]);
 

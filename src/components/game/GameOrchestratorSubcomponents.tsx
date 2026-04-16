@@ -1,11 +1,59 @@
 'use client';
 
-import { useMemo } from 'react';
+import { Component, useMemo, type ErrorInfo, type ReactNode } from 'react';
 import { motion } from 'framer-motion';
 import type { SceneId } from '@/data/types';
 import { POEMS } from '@/data/poems';
 import { NPC_DEFINITIONS } from '@/data/npcDefinitions';
 import { PoemReveal } from './PoemComponents';
+
+/** Ошибка загрузки lazy-панели (dynamic import) — не роняет весь orchestrator. */
+export class PanelErrorBoundary extends Component<
+  { children: ReactNode; panelLabel: string; onClose: () => void },
+  { error: Error | null }
+> {
+  state: { error: Error | null } = { error: null };
+
+  static getDerivedStateFromError(error: Error) {
+    return { error };
+  }
+
+  componentDidCatch(error: Error, info: ErrorInfo) {
+    console.error(`[PanelLoadError] ${this.props.panelLabel}`, error, info);
+  }
+
+  private retry = () => {
+    this.setState({ error: null });
+  };
+
+  render() {
+    if (this.state.error) {
+      return (
+        <div className="mx-auto my-4 max-w-lg rounded border border-red-500/40 bg-red-950/60 p-4 font-mono text-sm text-red-100 shadow-[0_0_24px_rgba(239,68,68,0.12)]">
+          <p className="mb-1 text-[10px] uppercase tracking-widest text-red-400/80">// module_load_fail</p>
+          <p className="mb-3 text-red-100/90">Панель «{this.props.panelLabel}» не загрузилась.</p>
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={this.retry}
+              className="rounded border border-cyan-500/40 bg-cyan-950/40 px-3 py-1.5 text-xs text-cyan-200 hover:border-cyan-400/60"
+            >
+              Повторить
+            </button>
+            <button
+              type="button"
+              onClick={this.props.onClose}
+              className="rounded border border-slate-600/50 bg-slate-900/60 px-3 py-1.5 text-xs text-slate-200 hover:border-slate-500"
+            >
+              Закрыть
+            </button>
+          </div>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
 
 export function KernelPanicOverlay({ isActive, onCalmDown }: { isActive: boolean; onCalmDown: () => void }) {
   if (!isActive) return null;

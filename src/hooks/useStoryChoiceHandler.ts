@@ -1,5 +1,6 @@
 import { useCallback } from 'react';
-import type { StoryChoice, StoryEffect } from '@/data/types';
+import type { StoryChoice, StoryEffect, PlayerSkills } from '@/data/types';
+import { asTrainablePlayerSkill } from '@/lib/trainablePlayerSkill';
 import { coreLoop } from '@/engine/CoreLoop';
 import { statsEngine } from '@/engine/StatsEngine';
 import { eventBus } from '@/engine/EventBus';
@@ -15,7 +16,7 @@ const ENERGY_BLOCK_MESSAGE =
   'Не хватает энергии на этот выбор. Что можно сделать: поговорить с NPC на сцене (диалог не тратит энергию), пройти отдых в сюжете («сон»), заглянуть в 📋 квесты, ⚔️ фракции или 💻 терминал. Энергия также медленно восстанавливается сама со временем.';
 
 interface StoryChoiceHandlerParams {
-  playerSkills: Record<string, number>;
+  playerSkills: PlayerSkills;
   energySystem: {
     canAfford: (amount: number) => boolean;
     consumeEnergy: (amount: number) => boolean;
@@ -33,7 +34,7 @@ interface StoryChoiceHandlerParams {
   completeQuest: (questId: string) => void;
   incrementQuestObjective: (questId: string, objectiveId: string) => void;
   updateQuestObjective: (questId: string, objectiveId: string, value?: number) => void;
-  addSkill: (skill: 'writing', amount: number) => void;
+  addSkill: (skill: keyof PlayerSkills, amount: number) => void;
   addItem: (itemId: string, quantity?: number) => void;
   removeItem: (itemId: string, quantity?: number) => void;
   /** Сюжетный выбор с `dialogueNpcId`: открыть диалог, затем перейти на `next` */
@@ -116,7 +117,9 @@ export function useStoryChoiceHandler(params: StoryChoiceHandlerParams) {
     }
     if (effect.skillGains) {
       Object.entries(effect.skillGains).forEach(([k, v]) => {
-        if (v) addSkill(k as 'writing', v);
+        if (!v) return;
+        const skill = asTrainablePlayerSkill(k);
+        if (skill != null) addSkill(skill, v);
       });
     }
     if (effect.itemReward) addItem(effect.itemReward, 1);
@@ -154,7 +157,8 @@ export function useStoryChoiceHandler(params: StoryChoiceHandlerParams) {
 
     if (choice.skillCheck) {
       const fromId = useGameStore.getState().currentNodeId;
-      const skillValue = playerSkills[choice.skillCheck.skill] as number;
+      const rawSkill = playerSkills[choice.skillCheck.skill];
+      const skillValue = typeof rawSkill === 'number' ? rawSkill : 10;
       const roll = skillValue + (Math.random() * 20 - 10);
       const success = roll >= choice.skillCheck.difficulty;
       const toId = success ? choice.skillCheck.successNext : choice.skillCheck.failNext;

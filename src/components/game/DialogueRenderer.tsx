@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useRef, useEffect, memo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { DialogueNode, DialogueChoice, DialogueEffect } from '@/data/rpgTypes';
 import { startDialogue, endDialogue, processDialogueChoice, applyDialogueEffects, type DialogueContext } from '@/engine/DialogueEngine';
 import type { PlayerState, NPCRelation } from '@/data/types';
+import { asTrainablePlayerSkill } from '@/lib/trainablePlayerSkill';
 import { useGameStore } from '@/store/gameStore';
 
 interface DialogueRendererProps {
@@ -56,7 +57,7 @@ function HolographicPortrait({ npcName, npcColor }: { npcName: string; npcColor:
 // CYBER DIALOGUE CHOICE
 // ============================================
 
-function CyberDialogueChoice({
+const CyberDialogueChoice = memo(function CyberDialogueChoice({
   choice,
   index,
   currentNodeId,
@@ -149,7 +150,7 @@ function CyberDialogueChoice({
       </div>
     </motion.button>
   );
-}
+});
 
 // ============================================
 // SKILL CHECK RESULT — TERMINAL ALERT
@@ -201,7 +202,6 @@ export default function DialogueRenderer({
   onClose,
 }: DialogueRendererProps) {
   const [currentNode, setCurrentNode] = useState<DialogueNode>(dialogueTree);
-  const [history, setHistory] = useState<DialogueNode[]>([]);
   const [isTyping, setIsTyping] = useState(false);
   const [displayedText, setDisplayedText] = useState('');
   const [lastSkillCheck, setLastSkillCheck] = useState<{ success: boolean; skill: string; roll: number; difficulty: number } | null>(null);
@@ -222,41 +222,62 @@ export default function DialogueRenderer({
   const dialogueStoreActions = useMemo(() => ({
     addStat, addStress, reduceStress, setFlag, unsetFlag,
     updateNPCRelation, addItem, removeItem, activateQuest,
-    updateQuestObjective, collectPoem, addSkill: (s: string, a: number) => addSkill(s as 'writing', a),
+    updateQuestObjective, collectPoem,
+    addSkill: (skill: string, amount: number) => {
+      const k = asTrainablePlayerSkill(skill);
+      if (k != null) addSkill(k, amount);
+    },
   }), [addStat, addStress, reduceStress, setFlag, unsetFlag, updateNPCRelation, addItem, removeItem, activateQuest, updateQuestObjective, collectPoem, addSkill]);
 
-  // Build dialogue context
-  const dialogueContext: DialogueContext = useMemo(() => {
-    const ps = useGameStore.getState().playerState;
-    return {
-      playerState: ps,
+  // Build dialogue context (только проп playerState — без getState(), чтобы не рассинхронизироваться с родителем)
+  const dialogueContext: DialogueContext = useMemo(
+    () => ({
+      playerState,
       npcRelations,
       flags,
       inventory,
       visitedNodes,
-      skills: ps.skills,
-    };
-  }, [flags, inventory, visitedNodes, npcRelations, playerState.skills]);
+      skills: playerState.skills,
+    }),
+    [playerState, npcRelations, flags, inventory, visitedNodes],
+  );
 
-  // Initialize dialogue
-  const { filteredChoices } = useMemo(() => {
-    return startDialogue(npcId, dialogueTree, dialogueContext);
-  }, [npcId, dialogueTree, dialogueContext]);
+  useEffect(() => {
+    if (!isOpen) return;
+    startDialogue(npcId, dialogueTree, dialogueContext);
+  }, [isOpen, npcId, dialogueTree, dialogueContext]);
 
-  // Handle typing
+  const typingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  useEffect(
+    () => () => {
+      if (typingIntervalRef.current != null) {
+        clearInterval(typingIntervalRef.current);
+        typingIntervalRef.current = null;
+      }
+    },
+    [],
+  );
+
   const startTyping = useCallback((text: string) => {
+    if (typingIntervalRef.current != null) {
+      clearInterval(typingIntervalRef.current);
+      typingIntervalRef.current = null;
+    }
     setIsTyping(true);
     setDisplayedText('');
     let i = 0;
-    const interval = setInterval(() => {
+    typingIntervalRef.current = setInterval(() => {
       if (i < text.length) {
         setDisplayedText(text.slice(0, ++i));
       } else {
-        clearInterval(interval);
+        if (typingIntervalRef.current != null) {
+          clearInterval(typingIntervalRef.current);
+          typingIntervalRef.current = null;
+        }
         setIsTyping(false);
       }
     }, 25);
-    return () => clearInterval(interval);
   }, []);
 
   // Handle dialogue choice
@@ -278,7 +299,6 @@ export default function DialogueRenderer({
 
     // Move to next node
     if (result.nextNode) {
-      setHistory(prev => [...prev, currentNode]);
       setCurrentNode(result.nextNode);
       startTyping(result.nextNode.text);
     } else {
@@ -424,7 +444,7 @@ export default function DialogueRenderer({
                     textShadow: '0 0 8px rgba(0, 255, 255, 0.1)',
                   }}
                 >
-                  {currentNode.text}
+                  {isTyping ? displayedText : currentNode.text}
                   {isTyping && <span className="animate-pulse text-cyan-400">|</span>}
                 </p>
               </div>

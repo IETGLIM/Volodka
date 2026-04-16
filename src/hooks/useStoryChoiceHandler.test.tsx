@@ -1,6 +1,6 @@
 import { act, renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { StoryChoice } from '@/data/types';
+import type { StoryChoice, PlayerSkills } from '@/data/types';
 import { useStoryChoiceHandler } from './useStoryChoiceHandler';
 import { eventBus } from '@/engine/EventBus';
 import { coreLoop } from '@/engine/CoreLoop';
@@ -8,7 +8,7 @@ import { useGameStore } from '@/store/gameStore';
 
 function createBaseParams() {
   return {
-    playerSkills: { writing: 50, empathy: 25 },
+    playerSkills: { writing: 50, empathy: 25 } as PlayerSkills,
     energySystem: {
       canAfford: vi.fn(() => true),
       consumeEnergy: vi.fn(() => true),

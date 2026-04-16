@@ -22,10 +22,12 @@ const MatrixRainBackdrop = memo(function MatrixRainBackdrop() {
     let drops: number[] = [];
     let resizeTimer: ReturnType<typeof setTimeout> | undefined;
 
+    const visualViewport =
+      typeof window !== 'undefined' && window.visualViewport != null ? window.visualViewport : null;
+
     const applyResize = () => {
-      const vv = window.visualViewport;
-      const w = vv?.width ?? window.innerWidth;
-      const h = vv?.height ?? window.innerHeight;
+      const w = visualViewport?.width ?? window.innerWidth;
+      const h = visualViewport?.height ?? window.innerHeight;
       canvas.width = Math.max(1, Math.floor(w));
       canvas.height = Math.max(1, Math.floor(h));
       columns = Math.floor(canvas.width / fontSize);
@@ -44,7 +46,9 @@ const MatrixRainBackdrop = memo(function MatrixRainBackdrop() {
 
     applyResize();
     window.addEventListener('resize', scheduleResize);
-    window.visualViewport?.addEventListener('resize', scheduleResize);
+    if (visualViewport) {
+      visualViewport.addEventListener('resize', scheduleResize);
+    }
 
     const chars =
       'アイウエオカキクケコ0123456789ABCDEFВОЛОДЬКА█▓▒░[]{}()<>';
@@ -82,7 +86,9 @@ const MatrixRainBackdrop = memo(function MatrixRainBackdrop() {
       cancelAnimationFrame(animationId);
       if (resizeTimer) clearTimeout(resizeTimer);
       window.removeEventListener('resize', scheduleResize);
-      window.visualViewport?.removeEventListener('resize', scheduleResize);
+      if (visualViewport) {
+        visualViewport.removeEventListener('resize', scheduleResize);
+      }
     };
   }, []);
 

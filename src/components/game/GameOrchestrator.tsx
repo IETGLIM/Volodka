@@ -31,6 +31,7 @@ import ConsequenceNotification from './ConsequenceNotification';
 import { CyberGameShell } from './CyberGameShell';
 import {
   KernelPanicOverlay,
+  PanelErrorBoundary,
   PanelWrapper,
   PoemRevealOverlay,
   SceneNPCList,
@@ -189,7 +190,7 @@ export default function GameOrchestrator() {
   );
 
   const actionsBundle = useActionHandler({
-    playerSkills: playerState.skills as unknown as Record<string, number>,
+    playerSkills: playerState.skills,
     energySystem,
     showEffectNotif,
     setCurrentNode,
@@ -322,41 +323,71 @@ export default function GameOrchestrator() {
       <AnimatePresence>
         {panels.skills && (
           <PanelWrapper onClose={() => handleTogglePanel('skills')}>
-            <SkillsPanel skills={playerState.skills} onClose={() => handleTogglePanel('skills')} />
+            <PanelErrorBoundary panelLabel="Навыки" onClose={() => handleTogglePanel('skills')}>
+              <SkillsPanel skills={playerState.skills} onClose={() => handleTogglePanel('skills')} />
+            </PanelErrorBoundary>
           </PanelWrapper>
         )}
       </AnimatePresence>
       <AnimatePresence>
-        {panels.quests && <QuestsPanel onClose={() => handleTogglePanel('quests')} />}
+        {panels.quests && (
+          <PanelErrorBoundary panelLabel="Квесты" onClose={() => handleTogglePanel('quests')}>
+            <QuestsPanel onClose={() => handleTogglePanel('quests')} />
+          </PanelErrorBoundary>
+        )}
       </AnimatePresence>
       <AnimatePresence>
-        {panels.factions && <FactionsPanel onClose={() => handleTogglePanel('factions')} />}
+        {panels.factions && (
+          <PanelErrorBoundary panelLabel="Фракции" onClose={() => handleTogglePanel('factions')}>
+            <FactionsPanel onClose={() => handleTogglePanel('factions')} />
+          </PanelErrorBoundary>
+        )}
       </AnimatePresence>
       <AnimatePresence>
-        {panels.inventory && <Inventory isOpen={panels.inventory} onClose={() => handleTogglePanel('inventory')} />}
+        {panels.inventory && (
+          <PanelErrorBoundary panelLabel="Инвентарь" onClose={() => handleTogglePanel('inventory')}>
+            <Inventory isOpen={panels.inventory} onClose={() => handleTogglePanel('inventory')} />
+          </PanelErrorBoundary>
+        )}
       </AnimatePresence>
       <AnimatePresence>
-        {panels.achievements && <AchievementsPanel onClose={() => handleTogglePanel('achievements')} />}
+        {panels.achievements && (
+          <PanelErrorBoundary panelLabel="Достижения" onClose={() => handleTogglePanel('achievements')}>
+            <AchievementsPanel onClose={() => handleTogglePanel('achievements')} />
+          </PanelErrorBoundary>
+        )}
       </AnimatePresence>
       <AnimatePresence>
-        {panels.poetry && <PoetryBook isOpen={panels.poetry} onClose={() => handleTogglePanel('poetry')} />}
-        {panels.terminal && <ITTerminal onClose={() => handleTogglePanel('terminal')} />}
+        {panels.poetry && (
+          <PanelErrorBoundary panelLabel="Книга стихов" onClose={() => handleTogglePanel('poetry')}>
+            <PoetryBook isOpen={panels.poetry} onClose={() => handleTogglePanel('poetry')} />
+          </PanelErrorBoundary>
+        )}
+        {panels.terminal && (
+          <PanelErrorBoundary panelLabel="Терминал" onClose={() => handleTogglePanel('terminal')}>
+            <ITTerminal onClose={() => handleTogglePanel('terminal')} />
+          </PanelErrorBoundary>
+        )}
         {panels.journal && (
-          <JournalPanel key="journal-panel" onClose={() => handleTogglePanel('journal')} />
+          <PanelErrorBoundary panelLabel="Журнал" onClose={() => handleTogglePanel('journal')}>
+            <JournalPanel key="journal-panel" onClose={() => handleTogglePanel('journal')} />
+          </PanelErrorBoundary>
         )}
       </AnimatePresence>
 
       <KernelPanicOverlay isActive={playerState.panicMode} onCalmDown={handleCalmDown} />
 
       {showLegacy && currentNode?.type === 'ending' && (
-        <LegacyScreen
-          endingType={currentNode.endingType || 'broken'}
-          endingTitle={currentNode.endingTitle || 'Финал'}
-          onRestart={() => {
-            hideLegacy();
-            resetGameStore();
-          }}
-        />
+        <PanelErrorBoundary panelLabel="Наследие / финал" onClose={hideLegacy}>
+          <LegacyScreen
+            endingType={currentNode.endingType || 'broken'}
+            endingTitle={currentNode.endingTitle || 'Финал'}
+            onRestart={() => {
+              hideLegacy();
+              resetGameStore();
+            }}
+          />
+        </PanelErrorBoundary>
       )}
 
       <AnimatePresence>

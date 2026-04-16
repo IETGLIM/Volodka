@@ -4,3 +4,7 @@
 node_modules
 .next
 _volodka_upstream_check
+
+# Локальные сборки для коллег (генерируются скриптом)
+archives/*.zip
+archives/_stage_expert_review_*

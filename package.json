@@ -10,6 +10,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "validate:content": "vitest run src/validation/contentValidator.test.ts",
+    "expert:archive": "pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/export-expert-review-archive.ps1",
     "scenes:download": "node scripts/download-scene-backgrounds.mjs",
     "scenes:download:force": "node scripts/download-scene-backgrounds.mjs --force",
     "db:push": "prisma db push",

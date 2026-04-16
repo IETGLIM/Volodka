@@ -1,4 +1,5 @@
 import type { StoryNode, StoryChoice, PoemLine, Interpretation, StoryEffect, ChoiceCondition } from './types';
+import { VERTICAL_SLICE_STORY_NODES } from './verticalSliceStoryNodes';
 
 // ============================================
 // КОНСТАНТЫ
@@ -1897,4 +1898,6 @@ try {
     effect: { stability: 3, creativity: 3 },
     autoNext: 'saturday_morning',
   },
+
+  ...VERTICAL_SLICE_STORY_NODES,
 };

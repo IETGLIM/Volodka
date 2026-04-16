@@ -130,6 +130,8 @@ export {
   INTRO_POEM,
 } from './storyNodes';
 
+export { VERTICAL_SLICE_ENTRY_NODE_ID } from './verticalSliceStoryNodes';
+
 // Триггерные зоны
 export {
   STORY_TRIGGERS,

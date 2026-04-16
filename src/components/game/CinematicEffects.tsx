@@ -191,12 +191,20 @@ export const ChromaticAberration = memo(function ChromaticAberration({
 }) {
   if (intensity <= 0) return null;
 
+  /** Пиковое смещение в px: при intensity > 0.5 без clamp слой визуально «уезжает» за край. */
+  const maxShiftPx = 2.5;
+  const ampPos = Math.min(intensity * 5, maxShiftPx);
+  const ampNeg = Math.min(intensity * 3, maxShiftPx);
+
   return (
-    <>
+    <div
+      className="fixed inset-0 z-30 pointer-events-none overflow-hidden"
+      style={{ clipPath: 'inset(0)' }}
+    >
       <motion.div
-        className="fixed inset-0 z-30 pointer-events-none"
+        className="absolute inset-0"
         animate={{
-          x: [0, intensity * 5, 0, -intensity * 3, 0],
+          x: [0, ampPos, 0, -ampNeg, 0],
         }}
         transition={{
           duration: 0.15,
@@ -207,7 +215,7 @@ export const ChromaticAberration = memo(function ChromaticAberration({
           background: `linear-gradient(90deg, rgba(255,0,0,${intensity * 0.1}) 0%, transparent 30%, transparent 70%, rgba(0,255,255,${intensity * 0.1}) 100%)`,
         }}
       />
-    </>
+    </div>
   );
 });
 
@@ -227,20 +235,38 @@ export const SceneTransition = memo(function SceneTransition({
   useEffect(() => {
     // Only trigger when isActive transitions from false to true
     if (isActive && !prevIsActiveRef.current) {
-      // This is intentional animation trigger based on prop change
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setPhase('in');
-      const holdTimer = setTimeout(() => setPhase('hold'), duration * 500);
-      const outTimer = setTimeout(() => {
+      let cancelled = false;
+      const stepMs = duration * 500;
+      const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
+
+      const run = async () => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- фазы перехода по таймлайну (отмена через cancelled)
+        setPhase('in');
+        await sleep(stepMs);
+        if (cancelled) {
+          setPhase('idle');
+          return;
+        }
+        setPhase('hold');
+        await sleep(stepMs);
+        if (cancelled) {
+          setPhase('idle');
+          return;
+        }
         setPhase('out');
         onComplete?.();
-      }, duration * 1000);
-      const idleTimer = setTimeout(() => setPhase('idle'), duration * 1500);
+        await sleep(stepMs);
+        if (cancelled) {
+          setPhase('idle');
+          return;
+        }
+        setPhase('idle');
+      };
+
+      void run();
 
       return () => {
-        clearTimeout(holdTimer);
-        clearTimeout(outTimer);
-        clearTimeout(idleTimer);
+        cancelled = true;
       };
     }
     prevIsActiveRef.current = isActive;
@@ -389,29 +415,36 @@ export const SplitScreen = memo(function SplitScreen({
   animated?: boolean;
 }) {
   const isHorizontal = direction === 'horizontal';
+  const sizeKey = isHorizontal ? 'width' : 'height';
+  /** Пружина даёт плавное догоняние при смене ratio (например перетаскивание разделителя). */
+  const ratioTransition = animated
+    ? { type: 'spring' as const, stiffness: 320, damping: 32, mass: 0.85 }
+    : { duration: 0 };
 
   return (
-    <div className={`relative w-full h-full flex ${isHorizontal ? 'flex-row' : 'flex-col'}`}>
+    <div
+      className={`relative flex h-full w-full min-h-0 min-w-0 overflow-hidden ${isHorizontal ? 'flex-row' : 'flex-col'}`}
+    >
       <motion.div
-        className="overflow-hidden"
-        initial={animated ? { [isHorizontal ? 'width' : 'height']: '0%' } : {}}
-        animate={{ [isHorizontal ? 'width' : 'height']: `${ratio * 100}%` }}
-        transition={{ duration: 0.8, ease: [0.4, 0, 0.2, 1] }}
+        className="min-h-0 min-w-0 shrink-0 overflow-hidden"
+        initial={animated ? { [sizeKey]: '0%' } : undefined}
+        animate={{ [sizeKey]: `${ratio * 100}%` }}
+        transition={ratioTransition}
       >
         {leftContent}
       </motion.div>
 
       {borderStyle !== 'none' && (
         <div
-          className={`bg-white/20 ${isHorizontal ? 'w-px h-full' : 'h-px w-full'} ${borderStyle === 'blur' ? 'blur-sm' : ''}`}
+          className={`shrink-0 bg-white/20 ${isHorizontal ? 'w-px self-stretch' : 'h-px self-stretch'} ${borderStyle === 'blur' ? 'blur-sm' : ''}`}
         />
       )}
 
       <motion.div
-        className="overflow-hidden flex-1"
-        initial={animated ? { [isHorizontal ? 'width' : 'height']: '0%' } : {}}
-        animate={{ [isHorizontal ? 'width' : 'height']: `${(1 - ratio) * 100}%` }}
-        transition={{ duration: 0.8, ease: [0.4, 0, 0.2, 1] }}
+        className="min-h-0 min-w-0 shrink-0 overflow-hidden"
+        initial={animated ? { [sizeKey]: '0%' } : undefined}
+        animate={{ [sizeKey]: `${(1 - ratio) * 100}%` }}
+        transition={ratioTransition}
       >
         {rightContent}
       </motion.div>
@@ -584,4 +617,5 @@ export const DramaticTextReveal = memo(function DramaticTextReveal({
   );
 });
 
+/** Именованный экспорт для точечных импортов + default для совместимости с ленивыми импортами. */
 export default CinematicOverlay;

@@ -8,7 +8,8 @@ import { sceneManager } from '@/engine/SceneManager';
 import { coreLoop } from '@/engine/CoreLoop';
 import { poemMechanics } from '@/engine/PoemMechanics';
 import { initConsequencesSystem } from '@/engine/ConsequencesSystem';
-import type { NPCRelation, PlayerState, SceneId } from '@/data/types';
+import type { NPCRelation, PlayerState, PlayerSkills, SceneId } from '@/data/types';
+import { asTrainablePlayerSkill } from '@/lib/trainablePlayerSkill';
 import type { TravelToSceneOptions, TravelToSceneResult } from '@/store/gameStore';
 
 export type StoreActionAdapter = {
@@ -39,7 +40,7 @@ export interface UseGameRuntimeParams {
   travelToScene: (sceneId: SceneId, options?: TravelToSceneOptions) => TravelToSceneResult;
   collectPoem: (poemId: string) => void;
   addStat: (stat: 'mood' | 'creativity' | 'stability' | 'energy' | 'karma' | 'selfEsteem', amount: number) => void;
-  addSkill: (skill: 'writing', amount: number) => void;
+  addSkill: (skill: keyof PlayerSkills, amount: number) => void;
   setFlag: (flag: string) => void;
   unlockAchievement: (achievementId: string) => void;
   showEffectNotif: (text: string, type: 'poem' | 'stat' | 'quest' | 'flag' | 'energy', durationMs?: number) => void;
@@ -146,7 +147,9 @@ export function useGameRuntime(params: UseGameRuntimeParams) {
           }
         }
         for (const [skill, value] of Object.entries(insight.skillBonuses)) {
-          if (value) addSkill(skill as 'writing', value);
+          if (!value) continue;
+          const k = asTrainablePlayerSkill(skill);
+          if (k != null) addSkill(k, value);
         }
         const unlocks = poemMechanics.getUnlockedChoices(poem.id);
         for (const unlock of unlocks) {
