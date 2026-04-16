@@ -213,7 +213,7 @@ export const AnimeCutsceneOverlay = memo(function AnimeCutsceneOverlay({
 
   return (
     <motion.div
-      className="fixed inset-0 z-[55] flex flex-col items-center justify-center overflow-hidden"
+      className={`fixed inset-0 z-[55] flex flex-col items-center justify-center overflow-hidden ${phase === 'complete' ? 'cursor-pointer' : ''}`}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}

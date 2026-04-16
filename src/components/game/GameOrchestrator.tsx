@@ -355,6 +355,7 @@ export default function GameOrchestrator() {
       <AnimatePresence>
         {activeCutsceneId && (
           <AnimeCutsceneOverlay
+            key={activeCutsceneId}
             cutsceneId={activeCutsceneId}
             onComplete={completeCutscene}
           />

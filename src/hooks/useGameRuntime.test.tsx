@@ -201,4 +201,25 @@ describe('useGameRuntime', () => {
     expect(params.unlockAchievement).toHaveBeenCalledWith('ach_1');
     expect(eventBus.emit).toHaveBeenCalledWith('achievement:unlocked', { achievementId: 'ach_1' });
   });
+
+  it('does not restart the same cutscene after completeCutscene', async () => {
+    const params = createBaseParams();
+    const { result } = renderHook(() => useGameRuntime(params));
+    await act(async () => {
+      await Promise.resolve();
+    });
+    expect(result.current.activeCutsceneId).toBe('cutscene_1');
+
+    await act(async () => {
+      result.current.completeCutscene();
+      await Promise.resolve();
+    });
+    expect(result.current.activeCutsceneId).toBeNull();
+
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+    expect(result.current.activeCutsceneId).toBeNull();
+  });
 });

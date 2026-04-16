@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useGameStore } from '@/store/gameStore';
 import { ACHIEVEMENTS, checkAchievement } from '@/data/achievements';
 import { STORY_NODES } from '@/data/storyNodes';
@@ -68,6 +68,11 @@ export function useGameRuntime(params: UseGameRuntimeParams) {
   const [activeCutsceneId, setActiveCutsceneId] = useState<string | null>(null);
   const [showLegacy, setShowLegacy] = useState(false);
 
+  /** Иначе после onComplete снова срабатывает эффект и заставка зацикливается на том же узле. */
+  const cutscenesCompletedRef = useRef(new Set<string>());
+  const activeCutsceneIdRef = useRef<string | null>(null);
+  activeCutsceneIdRef.current = activeCutsceneId;
+
   const storeContext = useMemo(() => () => {
     const state = useGameStore.getState();
     return {
@@ -115,11 +120,16 @@ export function useGameRuntime(params: UseGameRuntimeParams) {
 
   useEffect(() => {
     if (phase !== 'game') return;
-
     const storyNode = STORY_NODES[currentNodeId];
-    if (storyNode?.cutscene && !activeCutsceneId) {
-      queueMicrotask(() => setActiveCutsceneId(storyNode.cutscene!));
-    }
+    if (!storyNode?.cutscene) return;
+    if (activeCutsceneId) return;
+    const key = `${currentNodeId}::${storyNode.cutscene}`;
+    if (cutscenesCompletedRef.current.has(key)) return;
+    queueMicrotask(() => setActiveCutsceneId(storyNode.cutscene!));
+  }, [phase, currentNodeId, activeCutsceneId]);
+
+  useEffect(() => {
+    if (phase !== 'game') return;
 
     const poem = POEMS.find(p => p.unlocksAt === currentNodeId);
     if (poem && !collectedPoems.includes(poem.id)) {
@@ -145,7 +155,7 @@ export function useGameRuntime(params: UseGameRuntimeParams) {
 
       eventBus.emit('poem:collected', { poemId: poem.id });
     }
-  }, [phase, currentNodeId, activeCutsceneId, collectedPoems, collectPoem, showEffectNotif, addStat, addSkill, setFlag]);
+  }, [phase, currentNodeId, collectedPoems, collectPoem, showEffectNotif, addStat, addSkill, setFlag]);
 
   useEffect(() => {
     if (phase !== 'game') return;
@@ -181,11 +191,17 @@ export function useGameRuntime(params: UseGameRuntimeParams) {
     });
   }, [phase, unlockedAchievements, collectedPoems, playerState, npcRelations, unlockAchievement]);
 
+  const completeCutscene = useCallback(() => {
+    const id = activeCutsceneIdRef.current;
+    if (id) cutscenesCompletedRef.current.add(`${currentNodeId}::${id}`);
+    setActiveCutsceneId(null);
+  }, [currentNodeId]);
+
   return {
     revealedPoemId,
     closePoemReveal: () => setRevealedPoemId(null),
     activeCutsceneId,
-    completeCutscene: () => setActiveCutsceneId(null),
+    completeCutscene,
     showLegacy,
     hideLegacy: () => setShowLegacy(false),
   };

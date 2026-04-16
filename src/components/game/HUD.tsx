@@ -396,6 +396,12 @@ export default function HUD({ onSave, onTogglePanel, activePanels }: HUDProps) {
             >
               АКТ {playerState.act}
             </div>
+            <p
+              className="w-full basis-full font-mono text-[9px] text-slate-500/80 leading-snug max-w-[min(36rem,92vw)] mt-1"
+              title="Подсказка по системе"
+            >
+              Показатели и стресс открывают или блокируют реплики; цели — в «Квесты» 📋 и в трекере ниже. Терминал 💻 — учебные задачи в духе смены; его можно открывать между сценами, как рабочий чек-лист.
+            </p>
           </div>
 
           {/* Right side: action buttons */}
