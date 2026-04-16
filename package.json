@@ -10,6 +10,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "validate:content": "vitest run src/validation/contentValidator.test.ts",
+    "scenes:download": "node scripts/download-scene-backgrounds.mjs",
+    "scenes:download:force": "node scripts/download-scene-backgrounds.mjs --force",
     "db:push": "prisma db push",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",

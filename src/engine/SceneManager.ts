@@ -14,6 +14,9 @@ import type { SceneId } from '@/data/types';
 
 export type ScenePhotoBlendMode = 'normal' | 'multiply' | 'screen' | 'overlay' | 'soft-light' | 'darken' | 'lighten';
 
+/** Фон из `public/scenes/{id}.webp` (генерация: `npm run scenes:download`) */
+const scenePhoto = (id: SceneId) => `/scenes/${id}.webp`;
+
 export interface SceneVisualConfig {
   id: SceneId;
   name: string;
@@ -49,6 +52,7 @@ export const SCENE_VISUALS: Record<SceneId, SceneVisualConfig> = {
     id: 'kitchen_night',
     name: 'Кухня, ночь',
     description: 'Тёмная кухня, холодный свет из окна, пар от чая',
+    photoUrl: scenePhoto('kitchen_night'),
     background:
       'linear-gradient(180deg, #020308 0%, #060b14 32%, #0c1220 68%, #05080f 100%)',
     overlay: 'bg-gradient-to-t from-cyan-950/25 via-blue-950/20 to-transparent',
@@ -62,6 +66,7 @@ export const SCENE_VISUALS: Record<SceneId, SceneVisualConfig> = {
     id: 'kitchen_dawn',
     name: 'Кухня, рассвет',
     description: 'Тёплый оранжево-розовый рассвет, утренний свет',
+    photoUrl: scenePhoto('kitchen_dawn'),
     background: 'linear-gradient(180deg, #1a0a2e 0%, #2d1b4e 30%, #4a2040 60%, #8b4025 100%)',
     overlay: 'bg-gradient-to-t from-orange-950/30 to-purple-900/20',
     ambientColor: '#ff8c42',
@@ -71,6 +76,7 @@ export const SCENE_VISUALS: Record<SceneId, SceneVisualConfig> = {
     id: 'home_morning',
     name: 'Дом, утро',
     description: 'Мягкий тёплый свет, уют',
+    photoUrl: scenePhoto('home_morning'),
     background: 'linear-gradient(180deg, #1a1510 0%, #2a2015 40%, #3a2a1a 100%)',
     overlay: 'bg-gradient-to-t from-amber-950/20 to-transparent',
     ambientColor: '#f5d0a0',
@@ -80,6 +86,7 @@ export const SCENE_VISUALS: Record<SceneId, SceneVisualConfig> = {
     id: 'home_evening',
     name: 'Дом, вечер',
     description: 'Тусклый янтарный свет от лампы',
+    photoUrl: scenePhoto('home_evening'),
     background: 'linear-gradient(180deg, #0d0a05 0%, #1a1208 40%, #2a1a0a 100%)',
     overlay: 'bg-gradient-to-t from-amber-900/30 to-transparent',
     ambientColor: '#d4940a',
@@ -91,6 +98,7 @@ export const SCENE_VISUALS: Record<SceneId, SceneVisualConfig> = {
     id: 'office_morning',
     name: 'Офис, утро',
     description: 'Резкий флуоресцентный бело-голубой свет, клинический',
+    photoUrl: scenePhoto('office_morning'),
     background:
       'linear-gradient(180deg, #030508 0%, #0a1018 38%, #101a28 72%, #060a10 100%)',
     overlay: 'bg-gradient-to-t from-slate-900/35 to-cyan-900/15',
@@ -102,6 +110,7 @@ export const SCENE_VISUALS: Record<SceneId, SceneVisualConfig> = {
     id: 'server_room',
     name: 'Серверная',
     description: 'Темнота с зелёным/янтарным свечением терминалов',
+    photoUrl: scenePhoto('server_room'),
     background:
       'linear-gradient(180deg, #010302 0%, #051008 42%, #020805 78%, #030a06 100%)',
     overlay: 'bg-gradient-to-t from-emerald-950/45 via-cyan-950/10 to-transparent',
@@ -114,6 +123,7 @@ export const SCENE_VISUALS: Record<SceneId, SceneVisualConfig> = {
     id: 'rooftop_night',
     name: 'Крыша, ночь',
     description: 'Глубокий тёмно-синий, огни города внизу, звёзды',
+    photoUrl: scenePhoto('rooftop_night'),
     background:
       'linear-gradient(180deg, #010207 0%, #050a18 28%, #0a1228 58%, #060912 100%)',
     overlay: 'bg-gradient-to-t from-orange-950/15 via-slate-900/25 to-transparent',
@@ -126,6 +136,7 @@ export const SCENE_VISUALS: Record<SceneId, SceneVisualConfig> = {
     id: 'dream',
     name: 'Мир сна',
     description: 'Пурпурно-чёрный водоворот, неземной',
+    photoUrl: scenePhoto('dream'),
     background: 'linear-gradient(180deg, #0a0015 0%, #1a0030 30%, #2a0045 60%, #0a0015 100%)',
     overlay: 'bg-gradient-to-t from-purple-950/40 to-transparent',
     ambientColor: '#a855f7',
@@ -137,6 +148,7 @@ export const SCENE_VISUALS: Record<SceneId, SceneVisualConfig> = {
     id: 'battle',
     name: 'Битва',
     description: 'Красно-чёрный, напряжённый',
+    photoUrl: scenePhoto('battle'),
     background: 'linear-gradient(180deg, #0a0000 0%, #1a0505 40%, #2a0a0a 100%)',
     overlay: 'bg-gradient-to-t from-red-950/40 to-transparent',
     ambientColor: '#ef4444',
@@ -147,6 +159,7 @@ export const SCENE_VISUALS: Record<SceneId, SceneVisualConfig> = {
     id: 'street_winter',
     name: 'Зимняя улица',
     description: 'Холодный серо-голубой, снег',
+    photoUrl: scenePhoto('street_winter'),
     background: 'linear-gradient(180deg, #1a2030 0%, #2a3040 40%, #3a4050 100%)',
     overlay: 'bg-gradient-to-t from-slate-800/30 to-transparent',
     ambientColor: '#94a3b8',
@@ -156,6 +169,7 @@ export const SCENE_VISUALS: Record<SceneId, SceneVisualConfig> = {
     id: 'street_night',
     name: 'Улица, ночь',
     description: 'Темнота с оранжевыми лужами света от фонарей',
+    photoUrl: scenePhoto('street_night'),
     background:
       'linear-gradient(180deg, #020308 0%, #060a12 45%, #0a101c 85%, #05070e 100%)',
     overlay: 'bg-gradient-to-t from-fuchsia-950/10 via-slate-900/22 to-transparent',
@@ -167,6 +181,7 @@ export const SCENE_VISUALS: Record<SceneId, SceneVisualConfig> = {
     id: 'cafe_evening',
     name: 'Кафе "Синяя Яма"',
     description: 'Тёплый янтарный свет, мягкие тени, интимность',
+    photoUrl: scenePhoto('cafe_evening'),
     background: 'linear-gradient(180deg, #0d0a05 0%, #1a1208 40%, #2a1a0a 100%)',
     overlay: 'bg-gradient-to-t from-amber-950/30 to-orange-950/10',
     ambientColor: '#d97706',
@@ -177,6 +192,7 @@ export const SCENE_VISUALS: Record<SceneId, SceneVisualConfig> = {
     id: 'gallery_opening',
     name: 'Галерея, вернисаж',
     description: 'Яркий белый свет с цветными акцентами',
+    photoUrl: scenePhoto('gallery_opening'),
     background: 'linear-gradient(180deg, #0a0a0a 0%, #1a1a1a 40%, #2a2a2a 100%)',
     overlay: 'bg-gradient-to-t from-neutral-900/20 to-transparent',
     ambientColor: '#ffffff',
@@ -186,6 +202,7 @@ export const SCENE_VISUALS: Record<SceneId, SceneVisualConfig> = {
     id: 'underground_club',
     name: 'Подземный клуб',
     description: 'Красно-пурпурный неон, темнота',
+    photoUrl: scenePhoto('underground_club'),
     background:
       'linear-gradient(180deg, #050002 0%, #120510 38%, #200818 72%, #080004 100%)',
     overlay: 'bg-gradient-to-t from-fuchsia-950/38 via-cyan-950/8 to-transparent',
@@ -197,6 +214,7 @@ export const SCENE_VISUALS: Record<SceneId, SceneVisualConfig> = {
     id: 'old_library',
     name: 'Старая библиотека',
     description: 'Тёплый коричневый, пыльное золотистое освещение',
+    photoUrl: scenePhoto('old_library'),
     background: 'linear-gradient(180deg, #0d0a05 0%, #1a1208 40%, #251a0a 100%)',
     overlay: 'bg-gradient-to-t from-yellow-950/20 to-transparent',
     ambientColor: '#b8860b',
@@ -206,6 +224,7 @@ export const SCENE_VISUALS: Record<SceneId, SceneVisualConfig> = {
     id: 'abandoned_factory',
     name: 'Заброшенный завод',
     description: 'Холодный индустриальный серый',
+    photoUrl: scenePhoto('abandoned_factory'),
     background: 'linear-gradient(180deg, #0a0a0a 0%, #151515 40%, #1f1f1f 100%)',
     overlay: 'bg-gradient-to-t from-neutral-900/30 to-transparent',
     ambientColor: '#737373',
@@ -215,6 +234,7 @@ export const SCENE_VISUALS: Record<SceneId, SceneVisualConfig> = {
     id: 'psychologist_office',
     name: 'Кабинет психолога',
     description: 'Мягкий нейтральный, успокаивающий',
+    photoUrl: scenePhoto('psychologist_office'),
     background: 'linear-gradient(180deg, #0d0f0a 0%, #1a1f15 40%, #252a1f 100%)',
     overlay: 'bg-gradient-to-t from-emerald-950/20 to-transparent',
     ambientColor: '#86efac',
@@ -224,6 +244,7 @@ export const SCENE_VISUALS: Record<SceneId, SceneVisualConfig> = {
     id: 'train_station',
     name: 'Вокзал',
     description: 'Серо-белый, размытие движения',
+    photoUrl: scenePhoto('train_station'),
     background: 'linear-gradient(180deg, #0a0a0f 0%, #15151f 40%, #1f1f2f 100%)',
     overlay: 'bg-gradient-to-t from-slate-900/20 to-transparent',
     ambientColor: '#cbd5e1',
@@ -233,6 +254,7 @@ export const SCENE_VISUALS: Record<SceneId, SceneVisualConfig> = {
     id: 'memorial_park',
     name: 'Мемориальный парк',
     description: 'Зелёно-серый, осень',
+    photoUrl: scenePhoto('memorial_park'),
     background: 'linear-gradient(180deg, #050a05 0%, #0a150a 40%, #0f1a0f 100%)',
     overlay: 'bg-gradient-to-t from-emerald-950/30 to-transparent',
     ambientColor: '#4ade80',
@@ -242,6 +264,7 @@ export const SCENE_VISUALS: Record<SceneId, SceneVisualConfig> = {
     id: 'library',
     name: 'Библиотека',
     description: 'Тёплый коричневый, запах книг',
+    photoUrl: scenePhoto('library'),
     background: 'linear-gradient(180deg, #0d0a05 0%, #1a1208 40%, #251a0a 100%)',
     overlay: 'bg-gradient-to-t from-yellow-950/20 to-transparent',
     ambientColor: '#b8860b',
@@ -251,6 +274,7 @@ export const SCENE_VISUALS: Record<SceneId, SceneVisualConfig> = {
     id: 'blue_pit',
     name: 'Синяя яма',
     description: 'Глубокий сине-чёрный, подводный',
+    photoUrl: scenePhoto('blue_pit'),
     background:
       'linear-gradient(180deg, #000208 0%, #000c1a 40%, #001428 75%, #000510 100%)',
     overlay: 'bg-gradient-to-t from-blue-950/55 via-cyan-950/12 to-transparent',
