@@ -24,6 +24,7 @@ import { QUEST_DEFINITIONS } from '../data/quests';
 import { getItemById } from '../data/items';
 import { ENERGY_COSTS, INITIAL_PLAYER_ENERGY, MAX_PLAYER_ENERGY } from '@/lib/energyConfig';
 import { eventBus } from '@/engine/EventBus';
+import { VERTICAL_SLICE_ENTRY_NODE_ID } from '@/data/verticalSliceStoryNodes';
 
 export type TravelToSceneResult =
   | { ok: true }
@@ -417,7 +418,10 @@ let storageHydrationApplied = false;
 
 const normalizeLoadedState = (data: SavedGameData) => ({
   playerState: data.playerState || INITIAL_STATE,
-  currentNodeId: data.currentNodeId || 'start',
+  currentNodeId:
+    typeof data.currentNodeId === 'string' && data.currentNodeId.length > 0
+      ? data.currentNodeId
+      : VERTICAL_SLICE_ENTRY_NODE_ID,
   npcRelations: data.npcRelations || INITIAL_NPC_RELATIONS,
   inventory: deserializeInventory(data.inventory),
   collectedPoemIds: data.collectedPoemIds || [],
@@ -449,7 +453,7 @@ const normalizeLoadedState = (data: SavedGameData) => ({
 export const useGameStore = create<GameState>()((set, get) => ({
   // Initial state
   playerState: INITIAL_STATE,
-  currentNodeId: 'start',
+  currentNodeId: VERTICAL_SLICE_ENTRY_NODE_ID,
   npcRelations: INITIAL_NPC_RELATIONS,
   inventory: [],
   revealedPoemId: null,
@@ -484,6 +488,8 @@ export const useGameStore = create<GameState>()((set, get) => ({
   // Node
   setCurrentNode: (nodeId) => {
     const { playerState } = get();
+    // Узел попадает в visitedNodes здесь; visitNode — для отметки без смены currentNodeId
+    // (не вызывайте подряд с setCurrentNode для того же nodeId — двойное обновление state).
     set({ 
       currentNodeId: nodeId,
       playerState: {
@@ -606,7 +612,7 @@ export const useGameStore = create<GameState>()((set, get) => ({
         ...playerState,
         skills: {
           ...playerState.skills,
-          skillPoints: playerState.skills.skillPoints + points
+          skillPoints: Math.max(0, playerState.skills.skillPoints + points)
         }
       }
     });
@@ -616,6 +622,11 @@ export const useGameStore = create<GameState>()((set, get) => ({
   addItem: (itemId, quantity = 1) => {
     const { inventory } = get();
     const itemData = getItemById(itemId);
+    if (!itemData) {
+      console.warn(
+        `[gameStore] Item with id "${itemId}" not found in data/items. Using fallback.`,
+      );
+    }
     
     // Fallback: if item not found in database, create a basic entry
     const item = itemData || {
@@ -763,7 +774,7 @@ export const useGameStore = create<GameState>()((set, get) => ({
     return get().playerState.flags[flag] === true;
   },
   
-  // Visit node
+  // Visit node — только visitedNodes; без смены currentNodeId (не дублируйте с setCurrentNode для того же id).
   visitNode: (nodeId) => {
     const { playerState } = get();
     if (!playerState.visitedNodes.includes(nodeId)) {
@@ -1184,7 +1195,7 @@ export const useGameStore = create<GameState>()((set, get) => ({
     
     set({
       playerState: INITIAL_STATE,
-      currentNodeId: 'start',
+      currentNodeId: VERTICAL_SLICE_ENTRY_NODE_ID,
       npcRelations: INITIAL_NPC_RELATIONS,
       inventory: [],
       collectedPoemIds: [],
@@ -1270,4 +1281,4 @@ export const useGameMode = () => useGameStore(useShallow((state) => ({
 // DIRECT STORE ACCESS (for non-hook contexts)
 // ============================================
 
-export const getGameStore = () => useGameStore;
+export const getGameStore = () => useGameStore.getState();

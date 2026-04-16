@@ -48,5 +48,5 @@ export const useGameStore = Object.assign(
   }
 );
 
-/** Direct store access for non-hook contexts */
-export const getGameStore = () => usePlayerStore;
+/** Direct store access for non-hook contexts (Zustand vanilla API). */
+export const getGameStore = () => usePlayerStore.getState();

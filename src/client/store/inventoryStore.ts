@@ -45,6 +45,11 @@ export const useInventoryStore = create<InventoryStore>()((set, get) => ({
   addItem: (itemId, quantity = 1) => {
     const { inventory } = get();
     const itemData = getItemById(itemId);
+    if (!itemData) {
+      console.warn(
+        `[inventoryStore] Item with id "${itemId}" not found in data/items. Using fallback.`,
+      );
+    }
 
     const item = itemData || {
       id: itemId,

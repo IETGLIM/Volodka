@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { motion, AnimatePresence } from 'framer-motion';
 import dynamic from 'next/dynamic';
@@ -24,7 +24,8 @@ import SceneRenderer from './SceneRenderer';
 import StoryRenderer from './StoryRenderer';
 import DialogueRenderer from './DialogueRenderer';
 import HUD from './HUD';
-import { AnimeCutsceneOverlay } from './AnimeCutsceneOverlay';
+import { AnimeCutscene, type AnimeCutsceneData } from './AnimeCutscene';
+import { getCutsceneById } from '@/data/animeCutscenes';
 import CoreLoopIndicator from './CoreLoopIndicator';
 import ConsequenceNotification from './ConsequenceNotification';
 import { CyberGameShell } from './CyberGameShell';
@@ -165,6 +166,20 @@ export default function GameOrchestrator() {
     hideLegacy,
   } = runtime;
 
+  const activeCutscene = useMemo(() => {
+    if (!activeCutsceneId) return null;
+    const data = getCutsceneById(activeCutsceneId);
+    return data ? (data as AnimeCutsceneData) : null;
+  }, [activeCutsceneId]);
+
+  useEffect(() => {
+    if (!activeCutsceneId) return;
+    if (!getCutsceneById(activeCutsceneId)) {
+      console.warn(`[GameOrchestrator] Cutscene "${activeCutsceneId}" not found`);
+      completeCutscene();
+    }
+  }, [activeCutsceneId, completeCutscene]);
+
   const handleNPCInteraction = useCallback(
     (npcId: string) => {
       trackQuestNpcTalk(npcId);
@@ -295,10 +310,10 @@ export default function GameOrchestrator() {
       </AnimatePresence>
 
       <AnimatePresence>
-        {activeCutsceneId && (
-          <AnimeCutsceneOverlay
-            key={activeCutsceneId}
-            cutsceneId={activeCutsceneId}
+        {activeCutscene && (
+          <AnimeCutscene
+            key={activeCutscene.id}
+            cutscene={activeCutscene}
             onComplete={completeCutscene}
           />
         )}

@@ -113,6 +113,8 @@ export const usePlayerStore = create<PlayerStore>()((set, get) => ({
 
   setCurrentNode: (nodeId) => {
     const { playerState } = get();
+    // Узел попадает в visitedNodes здесь; visitNode нужен отдельно,
+    // если нужно отметить посещение без смены currentNodeId (без двойного set подряд с setCurrentNode).
     set({
       currentNodeId: nodeId,
       playerState: {
@@ -189,7 +191,10 @@ export const usePlayerStore = create<PlayerStore>()((set, get) => ({
     set({
       playerState: {
         ...playerState,
-        skills: { ...playerState.skills, skillPoints: playerState.skills.skillPoints + points },
+        skills: {
+          ...playerState.skills,
+          skillPoints: Math.max(0, playerState.skills.skillPoints + points),
+        },
       },
     });
   },
@@ -208,6 +213,7 @@ export const usePlayerStore = create<PlayerStore>()((set, get) => ({
 
   hasFlag: (flag) => get().playerState.flags[flag] === true,
 
+  /** Отметить узел в visitedNodes без смены currentNodeId (не дублируйте с setCurrentNode для того же id). */
   visitNode: (nodeId) => {
     const { playerState } = get();
     if (!playerState.visitedNodes.includes(nodeId)) {
