@@ -4,7 +4,12 @@
 // Обеспечивает обратную совместимость с
 // существующим useGameStore через фасад.
 
-export { usePlayerStore, usePlayerStats, usePlayerSkills, useStress } from './playerStore';
+export {
+  selectEnergyFraction,
+  selectEnergyPercentage,
+  selectEnergyPercentageFromPlayer,
+} from './playerStoreSelectors';
+export { usePlayerStore, usePlayerStats, usePlayerSkills, useStress, useEnergyPercentage } from './playerStore';
 export { useWorldStore, useExploration, useGameMode } from './worldStore';
 export { useQuestStore } from './questStore';
 export { useInventoryStore } from './inventoryStore';

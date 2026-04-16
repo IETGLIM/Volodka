@@ -8,7 +8,8 @@ import { create } from 'zustand';
 import type { FactionId, FactionReputation } from '@/shared/types/factions';
 import { FACTIONS, createInitialReputation, updateReputationValue, getStandingLevel } from '@/shared/types/factions';
 import { QUEST_DEFINITIONS } from '@/data/quests';
-import type { PlayerSkills } from '@/shared/types/game';
+import type { ExtendedQuest } from '@/data/types';
+import { parseAIQuestPayload } from '@/validation/aiQuestSchema';
 
 // ============================================
 // INITIAL STATE
@@ -31,6 +32,8 @@ interface QuestStoreState {
   completedQuestIds: string[];
   questProgress: Record<string, Record<string, number>>;
   factionReputations: Record<FactionId, FactionReputation>;
+  /** Квесты, пришедшие от LLM после Zod-валидации (не в data/quests.ts). */
+  aiQuestDefinitions: Record<string, ExtendedQuest>;
 }
 
 interface QuestStoreActions {
@@ -45,6 +48,12 @@ interface QuestStoreActions {
   getFactionReputation: (factionId: FactionId) => number;
   completeQuestForFaction: (questId: string, factionId: FactionId) => void;
   resetQuests: () => void;
+  /**
+   * Принимает сырой JSON от модели: Zod → при успехе регистрирует определение и активирует квест.
+   */
+  generateQuestFromAI: (
+    payload: unknown
+  ) => { success: true; questId: string } | { success: false; error: string };
 }
 
 /** Reward data passed to external handler (decoupled from player store) */
@@ -76,6 +85,7 @@ export const useQuestStore = create<QuestStore>()((set, get) => ({
   completedQuestIds: [],
   questProgress: {},
   factionReputations: INITIAL_FACTION_REPUTATIONS,
+  aiQuestDefinitions: {},
 
   activateQuest: (questId) => {
     const { activeQuestIds, completedQuestIds } = get();
@@ -92,17 +102,23 @@ export const useQuestStore = create<QuestStore>()((set, get) => ({
     delete newQuestProgress[questId];
 
     // Get reward data from quest definition
-    const questDef = QUEST_DEFINITIONS[questId];
+    const questDef = QUEST_DEFINITIONS[questId] ?? get().aiQuestDefinitions[questId];
     const reward = questDef?.reward;
 
     if (reward && applyReward) {
       applyReward(reward as unknown as QuestRewardData);
     }
 
+    const aiQuestDefinitions = { ...get().aiQuestDefinitions };
+    if (aiQuestDefinitions[questId]) {
+      delete aiQuestDefinitions[questId];
+    }
+
     set({
       activeQuestIds: activeQuestIds.filter((id) => id !== questId),
       completedQuestIds: [...completedQuestIds, questId],
       questProgress: newQuestProgress,
+      aiQuestDefinitions,
     });
   },
 
@@ -178,5 +194,21 @@ export const useQuestStore = create<QuestStore>()((set, get) => ({
       completedQuestIds: [],
       questProgress: {},
       factionReputations: INITIAL_FACTION_REPUTATIONS,
+      aiQuestDefinitions: {},
     }),
+
+  generateQuestFromAI: (payload) => {
+    const parsed = parseAIQuestPayload(payload);
+    if (!parsed.success) {
+      return { success: false, error: parsed.error };
+    }
+    const { quest } = parsed;
+    const { aiQuestDefinitions } = get();
+    if (aiQuestDefinitions[quest.id]) {
+      return { success: false, error: `AI quest already registered: ${quest.id}` };
+    }
+    set({ aiQuestDefinitions: { ...aiQuestDefinitions, [quest.id]: quest } });
+    get().activateQuest(quest.id);
+    return { success: true, questId: quest.id };
+  },
 }));

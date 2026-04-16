@@ -9,6 +9,7 @@ import { create } from 'zustand';
 import { useShallow } from 'zustand/react/shallow';
 import type { PlayerState, PlayerSkills, MoralChoice } from '@/shared/types/game';
 import { INITIAL_PLAYER_ENERGY, MAX_PLAYER_ENERGY } from '@/lib/energyConfig';
+import { selectEnergyPercentageFromPlayer } from './playerStoreSelectors';
 
 // ============================================
 // INITIAL STATE
@@ -103,6 +104,8 @@ const clamp = (value: number, min: number, max: number) =>
 // ============================================
 // STORE
 // ============================================
+// Производные поля (проценты, агрегаты) не добавлять методами в state —
+// см. playerStoreSelectors + хуки ниже (или useShallow для объектов).
 
 export const usePlayerStore = create<PlayerStore>()((set, get) => ({
   playerState: INITIAL_PLAYER,
@@ -264,3 +267,7 @@ export const useStress = () =>
       clearPanicMode: state.clearPanicMode,
     }))
   );
+
+/** Доля энергии 0–100; пересчёт только при смене `playerState.energy` в сторе. */
+export const useEnergyPercentage = () =>
+  usePlayerStore((state) => selectEnergyPercentageFromPlayer(state.playerState));

@@ -38,7 +38,6 @@
 
 ### Notes
 - Poetry/memory files were not modified.
-- Repository is currently not initialized as git in this workspace path, so commit/push was not executed.
 
 ## 2026-04-16 — Cyberpunk game shell + scene environment
 
@@ -51,3 +50,18 @@
 ### Tests
 - `npm run test` — 4 files, 9 tests, passing.
 - `npm run validate:content` — passing.
+
+## 2026-04-16 — Store hydration, client quest validation, player selectors
+
+### Done
+- **gameStore:** убрана синхронная подгрузка сейва при импорте модуля; добавлены `hydrateFromLocalStorage()` и клиентский `GameStoreHydration` в `useEffect` в корневом `layout.tsx`, чтобы не расходиться с SSR/первым кадром.
+- **playerStore (client):** `playerStoreSelectors.ts` — чистые селекторы для производных значений (доля энергии); хук `useEnergyPercentage`; реэкспорт из `src/client/store/index.ts`.
+- **questStore (client):** Zod-схема `src/validation/aiQuestSchema.ts` и `parseAIQuestPayload`; `generateQuestFromAI(unknown)` валидирует JSON от LLM, пишет только в `aiQuestDefinitions`, `completeQuest` подхватывает награду из статики или AI-определения; тесты `aiQuestSchema.test.ts`.
+
+### Files touched (high level)
+- `src/store/gameStore.ts`, `src/app/layout.tsx`, `src/app/GameStoreHydration.tsx`
+- `src/client/store/playerStore.ts`, `playerStoreSelectors.ts`, `index.ts`, `questStore.ts`
+- `src/validation/aiQuestSchema.ts`, `aiQuestSchema.test.ts`
+
+### Tests
+- `npm run test` — 7 files, 22 tests, passing.

@@ -301,6 +301,8 @@ interface GameState {
   saveGame: () => void;
   loadGame: () => boolean;
   resetGame: () => void;
+  /** Merge persisted snapshot from localStorage (client-only; call once after mount). */
+  hydrateFromLocalStorage: () => void;
 }
 
 // ============================================
@@ -395,6 +397,9 @@ const deserializeInventory = (entries: SavedInventoryEntry[] = []): InventoryIte
     };
   });
 };
+
+/** Ensures auto-load runs at most once per tab (Strict Mode double-invokes effects in dev). */
+let storageHydrationApplied = false;
 
 const normalizeLoadedState = (data: SavedGameData) => ({
   playerState: data.playerState || INITIAL_STATE,
@@ -1125,22 +1130,17 @@ export const useGameStore = create<GameState>()((set, get) => ({
     if (storage) {
       storage.removeItem(SAVE_KEY);
     }
-  }
-}));
+  },
 
-// ============================================
-// INITIALIZE FROM LOCALSTORAGE (client-side)
-// ============================================
-
-if (typeof window !== 'undefined') {
-  const savedData = loadSavedState();
-  if (savedData) {
+  hydrateFromLocalStorage: () => {
+    if (typeof window === 'undefined' || storageHydrationApplied) return;
+    storageHydrationApplied = true;
+    const savedData = loadSavedState();
+    if (!savedData) return;
     const normalized = normalizeLoadedState(savedData as SavedGameData);
-    useGameStore.setState({
-      ...normalized,
-    });
-  }
-}
+    set({ ...normalized });
+  },
+}));
 
 // ============================================
 // SELECTOR HOOKS (for convenience)
