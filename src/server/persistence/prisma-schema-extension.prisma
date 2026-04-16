@@ -1,0 +1,83 @@
+// ============================================
+// GAME PERSISTENCE — Prisma Schema Extension
+// ============================================
+// Добавляет игровые таблицы к существующей схеме.
+// Запуск: npx prisma db push
+
+// NOTE: This is the extension to be APPENDED to the existing prisma/schema.prisma
+// The existing User and Post models are preserved.
+
+model GameSave {
+  id          String   @id @default(cuid())
+  userId      String?
+  slot        Int      @default(1)        // Save slot number (1-10)
+  label       String?                     // Optional save label
+  
+  // Versioned save data
+  version     Int      @default(5)        // Save format version
+  data        String                       // JSON-serialized game state
+  
+  // Metadata
+  currentNodeId String
+  playTime    Int      @default(0)        // Total play time in seconds
+  act         Int      @default(1)        // Current story act
+  path        String   @default("none")   // Player path
+  
+  // Stats snapshot for quick preview
+  mood        Int      @default(50)
+  creativity  Int      @default(30)
+  stability   Int      @default(60)
+  stress      Int      @default(0)
+  energy      Int      @default(5)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Unique constraint: one save per slot per user
+  @@unique([userId, slot])
+  @@index([userId])
+  @@index([updatedAt])
+}
+
+model PlayerProgress {
+  id                String   @id @default(cuid())
+  userId            String?
+  
+  // Tracking
+  totalChoicesMade  Int      @default(0)
+  totalPlayTime     Int      @default(0)    // Seconds
+  poemsCollected    Int      @default(0)
+  questsCompleted   Int      @default(0)
+  npcsMet           Int      @default(0)
+  endingsSeen       String   @default("[]") // JSON array of ending IDs
+  
+  // Achievements
+  achievements      String   @default("[]") // JSON array
+  
+  // Session
+  lastSaveId        String?
+  sessionCount      Int      @default(0)
+  
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  @@index([userId])
+}
+
+model AIConversationLog {
+  id          String   @id @default(cuid())
+  sessionId   String                    // Game session ID
+  type        String                    // "narrative" | "dialogue" | "pipeline"
+  npcId       String?                   // For dialogue type
+  prompt      String                    // Input prompt
+  response    String                    // AI response (JSON)
+  model       String?                   // Model used
+  latencyMs   Int?                      // Response latency
+  fallback    Boolean  @default(false)  // Whether fallback was used
+  
+  createdAt   DateTime @default(now())
+  
+  @@index([sessionId])
+  @@index([type])
+  @@index([createdAt])
+}

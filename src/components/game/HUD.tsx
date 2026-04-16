@@ -1,0 +1,460 @@
+'use client';
+
+import { useMemo, useState, memo } from 'react';
+import { motion } from 'framer-motion';
+import { useGameStore } from '@/store/gameStore';
+import { useMobileVisualPerf } from '@/hooks/useMobileVisualPerf';
+import { QUEST_DEFINITIONS, getNextTrackedObjective } from '@/data/quests';
+
+interface HUDProps {
+  onSave: () => void;
+  onTogglePanel: (panel: string) => void;
+  activePanels: Record<string, boolean>;
+}
+
+// ============================================
+// CYBERPUNK STAT BAR
+// ============================================
+
+interface CyberStatBarProps {
+  icon: string;
+  label: string;
+  value: number;
+  glowColor: string;
+  gradientFrom: string;
+  gradientTo: string;
+  visualLite: boolean;
+}
+
+const CyberStatBar = memo(function CyberStatBar({
+  icon,
+  label,
+  value,
+  glowColor,
+  gradientFrom,
+  gradientTo,
+  visualLite,
+}: CyberStatBarProps) {
+  const [isHovered, setIsHovered] = useState(false);
+  const hexVal = Math.round(value).toString(16).toUpperCase().padStart(2, '0');
+
+  return (
+    <div
+      className="flex items-center gap-1.5 group"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      <span className="text-sm" title={label}>{icon}</span>
+      <div className="relative w-16 h-2 bg-slate-800/80 overflow-hidden"
+        style={{
+          clipPath: 'polygon(0 0, calc(100% - 4px) 0, 100% 4px, 100% 100%, 4px 100%, 0 calc(100% - 4px))',
+        }}
+      >
+        {/* Fill bar */}
+        <motion.div
+          className={`h-full bg-gradient-to-r ${gradientFrom} ${gradientTo}`}
+          style={{
+            boxShadow: `0 0 8px ${glowColor}`,
+          }}
+          initial={{ width: 0 }}
+          animate={{ width: `${value}%` }}
+          transition={{ duration: 0.5 }}
+        />
+
+        {!visualLite && (
+          <div
+            className="absolute inset-0 pointer-events-none"
+            style={{
+              background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.15) 50%, transparent 100%)',
+              backgroundSize: '50% 100%',
+              animation: 'cyber-scan 2s linear infinite',
+              opacity: 0.6,
+            }}
+          />
+        )}
+
+        {!visualLite && (
+          <div
+            className="absolute inset-0 pointer-events-none holo-flicker"
+            style={{ background: `linear-gradient(90deg, transparent, ${glowColor}20, transparent)` }}
+          />
+        )}
+      </div>
+
+      {/* Hex/digital readout */}
+      <span
+        className="font-mono text-[10px] min-w-[20px] text-right"
+        style={{ color: glowColor }}
+      >
+        {isHovered ? `${value}` : `0x${hexVal}`}
+      </span>
+    </div>
+  );
+});
+
+// ============================================
+// STRESS BAR — TEMPERATURE GAUGE
+// ============================================
+
+function CyberStressBar({
+  stress,
+  panicMode,
+  visualLite,
+}: {
+  stress: number;
+  panicMode: boolean;
+  visualLite: boolean;
+}) {
+  const color = panicMode
+    ? 'from-red-600 to-red-400'
+    : stress > 70
+    ? 'from-red-500 to-orange-400'
+    : stress > 40
+    ? 'from-orange-500 to-yellow-400'
+    : 'from-green-500 to-emerald-400';
+
+  const glowColor = panicMode
+    ? 'rgba(239, 68, 68, 0.6)'
+    : stress > 70
+    ? 'rgba(239, 68, 68, 0.4)'
+    : stress > 40
+    ? 'rgba(249, 115, 22, 0.3)'
+    : 'rgba(34, 197, 94, 0.3)';
+
+  return (
+    <div className={`flex items-center gap-2 ${panicMode && !visualLite ? 'stress-pulse' : ''}`}>
+      <span className="text-xs text-slate-500" title="Уровень стресса">
+        {panicMode ? '🔥' : '📊'}
+      </span>
+      <div
+        className="relative w-28 h-2 bg-slate-800/80 overflow-hidden"
+        style={{
+          clipPath: 'polygon(0 0, calc(100% - 4px) 0, 100% 4px, 100% 100%, 4px 100%, 0 calc(100% - 4px))',
+          boxShadow: panicMode ? '0 0 12px rgba(239, 68, 68, 0.4)' : undefined,
+        }}
+      >
+        <motion.div
+          className={`h-full bg-gradient-to-r ${color}`}
+          style={{ boxShadow: `0 0 8px ${glowColor}` }}
+          animate={{ width: `${stress}%` }}
+          transition={{ duration: 0.5 }}
+        />
+
+        {/* Scan line */}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.1) 50%, transparent 100%)',
+            backgroundSize: '50% 100%',
+            animation: 'cyber-scan 2s linear infinite',
+          }}
+        />
+
+        {/* Panic mode flashing overlay */}
+        {panicMode && (
+          <motion.div
+            className="absolute inset-0 bg-red-500/20"
+            animate={{ opacity: [0, 0.5, 0] }}
+            transition={{ duration: 0.5, repeat: Infinity }}
+          />
+        )}
+      </div>
+      <span className={`font-mono text-xs ${panicMode ? 'text-red-400 font-bold' : 'text-slate-500'}`}>
+        {panicMode ? (
+          <span className="glitch-mild">KERNEL PANIC!</span>
+        ) : (
+          `${stress}%`
+        )}
+      </span>
+    </div>
+  );
+}
+
+// ============================================
+// ENERGY BAR — BATTERY CELLS
+// ============================================
+
+function CyberEnergyBar({ energy, visualLite }: { energy: number; visualLite: boolean }) {
+  const maxEnergy = 10;
+  const cells = useMemo(() => Array.from({ length: maxEnergy }, (_, i) => ({
+    id: i,
+    active: i < energy,
+  })), [energy]);
+
+  const cellColor = energy <= 2
+    ? 'bg-red-500'
+    : energy <= 4
+    ? 'bg-orange-500'
+    : 'bg-cyan-500';
+
+  const cellGlow = energy <= 2
+    ? 'rgba(239, 68, 68, 0.4)'
+    : energy <= 4
+    ? 'rgba(249, 115, 22, 0.3)'
+    : 'rgba(0, 255, 255, 0.3)';
+
+  return (
+    <div className="flex items-center gap-2">
+      <span className="text-xs text-slate-500" title="Энергия">⚡</span>
+      <div className="flex gap-px">
+        {cells.map((cell) => (
+          <div
+            key={cell.id}
+            className={`w-2.5 h-3 rounded-sm transition-all duration-300 ${
+              cell.active
+                ? `${cellColor}`
+                : 'bg-slate-800/60'
+            }`}
+            style={{
+              boxShadow: cell.active ? `0 0 4px ${cellGlow}` : 'none',
+              animation:
+                cell.active && !visualLite ? 'cell-flicker 3s ease-in-out infinite' : undefined,
+              animationDelay: `${cell.id * 0.2}s`,
+            }}
+          />
+        ))}
+      </div>
+      <span className="font-mono text-xs text-slate-500">{energy}/{maxEnergy}</span>
+    </div>
+  );
+}
+
+// ============================================
+// KARMA INDICATOR — DIAMOND
+// ============================================
+
+function CyberKarmaBar({ karma }: { karma: number }) {
+  return (
+    <div className="flex items-center gap-2">
+      <div
+        className="w-3 h-3 rotate-45 border border-amber-500/60"
+        style={{
+          boxShadow: '0 0 8px rgba(245, 158, 11, 0.3)',
+          background: `linear-gradient(135deg, rgba(245, 158, 11, ${karma / 200}), transparent)`,
+        }}
+      />
+      <span className="font-mono text-xs text-amber-500/70">КАРМА</span>
+      <div
+        className="relative w-16 h-1.5 bg-slate-800/80 overflow-hidden"
+        style={{
+          clipPath: 'polygon(0 0, calc(100% - 3px) 0, 100% 3px, 100% 100%, 3px 100%, 0 calc(100% - 3px))',
+        }}
+      >
+        <motion.div
+          className="h-full bg-gradient-to-r from-yellow-600 to-amber-400"
+          style={{ boxShadow: '0 0 6px rgba(245, 158, 11, 0.3)' }}
+          animate={{ width: `${karma}%` }}
+          transition={{ duration: 0.5 }}
+        />
+      </div>
+      <span className="font-mono text-xs text-amber-500/70">{karma}</span>
+    </div>
+  );
+}
+
+// ============================================
+// CYBER ACTION BUTTON
+// ============================================
+
+interface CyberActionBtnProps {
+  label: string;
+  isActive: boolean;
+  onClick: () => void;
+  colorClass: string;
+  icon: string;
+}
+
+function CyberActionBtn({ label, isActive, onClick, colorClass, icon }: CyberActionBtnProps) {
+  const [isHovered, setIsHovered] = useState(false);
+
+  return (
+    <button
+      onClick={onClick}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      className={`relative px-2.5 py-1.5 font-mono text-xs uppercase tracking-wider transition-all duration-200 overflow-hidden ${
+        isActive ? 'ring-1 ring-cyan-500/30' : ''
+      }`}
+      style={{
+        clipPath: 'polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 6px 100%, 0 calc(100% - 6px))',
+        background: isHovered ? `${colorClass.replace('/80', '/90')}` : `${colorClass}`,
+        border: `1px solid ${isActive ? 'rgba(0, 255, 255, 0.3)' : 'rgba(100, 116, 139, 0.2)'}`,
+      }}
+    >
+      {/* Scan line on hover */}
+      {isHovered && (
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background: 'linear-gradient(90deg, transparent 0%, rgba(0, 255, 255, 0.1) 50%, transparent 100%)',
+            backgroundSize: '50% 100%',
+            animation: 'cyber-scan 1.5s linear infinite',
+          }}
+        />
+      )}
+      <span className="relative z-10 flex items-center gap-1 text-white/90">
+        <span className="text-sm">{icon}</span>
+        <span className="hidden sm:inline">{label}</span>
+      </span>
+    </button>
+  );
+}
+
+// ============================================
+// MAIN HUD COMPONENT
+// ============================================
+
+export default function HUD({ onSave, onTogglePanel, activePanels }: HUDProps) {
+  const visualLite = useMobileVisualPerf();
+  const playerState = useGameStore(s => s.playerState);
+  const collectedPoems = useGameStore(s => s.collectedPoemIds);
+  const inventory = useGameStore(s => s.inventory);
+  const activeQuestIds = useGameStore(s => s.activeQuestIds);
+  const questProgress = useGameStore(s => s.questProgress);
+
+  const questTracker = useMemo(() => {
+    return activeQuestIds.slice(0, 2).flatMap((questId) => {
+      const def = QUEST_DEFINITIONS[questId];
+      if (!def) return [];
+      const progress = questProgress[questId] || {};
+      const next = getNextTrackedObjective(def, progress);
+      if (!next) return [];
+      return [{ questId, title: def.title, line: next.text, hint: next.hint }];
+    });
+  }, [activeQuestIds, questProgress]);
+
+  // Stat bars configuration — cyberpunk colors
+  const statBars = useMemo(() => [
+    { icon: '😊', label: 'Настроение', value: playerState.mood, glowColor: 'rgba(0, 255, 255, 0.4)', gradientFrom: 'from-cyan-500', gradientTo: 'to-cyan-300' },
+    { icon: '🎨', label: 'Креативность', value: playerState.creativity, glowColor: 'rgba(168, 85, 247, 0.4)', gradientFrom: 'from-purple-500', gradientTo: 'to-pink-400' },
+    { icon: '🧠', label: 'Стабильность', value: playerState.stability, glowColor: 'rgba(34, 197, 94, 0.4)', gradientFrom: 'from-green-500', gradientTo: 'to-emerald-400' },
+    { icon: '💪', label: 'Самооценка', value: playerState.selfEsteem, glowColor: 'rgba(245, 158, 11, 0.4)', gradientFrom: 'from-amber-500', gradientTo: 'to-yellow-400' },
+  ], [playerState.mood, playerState.creativity, playerState.stability, playerState.selfEsteem]);
+
+  // Action buttons — cyberpunk
+  const actionButtons = useMemo(() => [
+    { key: 'skills', label: 'Навыки', colorClass: 'bg-teal-900/80', icon: '🎯' },
+    { key: 'journal', label: 'Лог', colorClass: 'bg-slate-800/90', icon: '📜' },
+    { key: 'quests', label: 'Квесты', colorClass: 'bg-purple-900/80', icon: '📋' },
+    { key: 'terminal', label: '', colorClass: 'bg-green-900/80', icon: '💻' },
+    { key: 'factions', label: 'Фракции', colorClass: 'bg-amber-900/80', icon: '⚔️' },
+    { key: 'inventory', label: `(${inventory.length})`, colorClass: 'bg-cyan-900/80', icon: '🎒' },
+    { key: 'achievements', label: '', colorClass: 'bg-amber-900/80', icon: '🏆' },
+    { key: 'poetry', label: `(${collectedPoems.length})`, colorClass: 'bg-purple-900/80', icon: '📖' },
+  ], [inventory.length, collectedPoems.length]);
+
+  return (
+    <div className="relative z-30 pointer-events-none">
+      {/* Semi-transparent dark panel with grid pattern */}
+      <div
+        className="p-3 pointer-events-auto"
+        style={{
+          background: 'linear-gradient(180deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.3) 80%, transparent 100%)',
+          backgroundImage: `
+            linear-gradient(180deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.3) 80%, transparent 100%),
+            linear-gradient(rgba(0, 255, 255, 0.03) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(0, 255, 255, 0.03) 1px, transparent 1px)
+          `,
+          backgroundSize: '100% 100%, 20px 20px, 20px 20px',
+          ...(visualLite
+            ? {}
+            : {
+                backdropFilter: 'blur(4px)',
+                WebkitBackdropFilter: 'blur(4px)',
+              }),
+        }}
+      >
+        <div className="flex justify-between items-start">
+          {/* Left side: stat bars */}
+          <div className="flex flex-wrap gap-1.5 items-center">
+            {statBars.map((stat, i) => (
+              <CyberStatBar
+                key={i}
+                icon={stat.icon}
+                label={stat.label}
+                value={stat.value}
+                glowColor={stat.glowColor}
+                gradientFrom={stat.gradientFrom}
+                gradientTo={stat.gradientTo}
+                visualLite={visualLite}
+              />
+            ))}
+            <div
+              className="px-2 py-1 font-mono text-xs text-cyan-500/60"
+              style={{
+                background: 'rgba(0,0,0,0.4)',
+                clipPath: 'polygon(0 0, calc(100% - 4px) 0, 100% 4px, 100% 100%, 4px 100%, 0 calc(100% - 4px))',
+              }}
+            >
+              АКТ {playerState.act}
+            </div>
+          </div>
+
+          {/* Right side: action buttons */}
+          <div className="flex gap-1.5 flex-wrap">
+            {actionButtons.map((btn) => (
+              <CyberActionBtn
+                key={btn.key}
+                label={btn.label}
+                isActive={!!activePanels[btn.key]}
+                onClick={() => onTogglePanel(btn.key)}
+                colorClass={btn.colorClass}
+                icon={btn.icon}
+              />
+            ))}
+            <CyberActionBtn
+              label=""
+              isActive={false}
+              onClick={onSave}
+              colorClass="bg-emerald-900/80"
+              icon="💾"
+            />
+          </div>
+        </div>
+
+        {/* Stress indicator */}
+        <div className="mt-2">
+          <CyberStressBar stress={playerState.stress} panicMode={playerState.panicMode} visualLite={visualLite} />
+        </div>
+
+        {/* Energy bar */}
+        <div className="mt-1">
+          <CyberEnergyBar energy={playerState.energy} visualLite={visualLite} />
+        </div>
+
+        {/* Karma indicator */}
+        <div className="mt-1">
+          <CyberKarmaBar karma={playerState.karma} />
+        </div>
+
+        {/* Компактный трекер квестов */}
+        {questTracker.length > 0 && (
+          <div className="mt-2 space-y-1.5">
+            <div className="font-mono text-[9px] uppercase tracking-[0.2em] text-cyan-500/35">TRACK // QUESTS</div>
+            {questTracker.map((q) => (
+              <button
+                key={q.questId}
+                type="button"
+                onClick={() => onTogglePanel('quests')}
+                className="block w-full max-w-md text-left"
+              >
+                <div
+                  className="rounded-sm border border-cyan-500/15 bg-black/35 px-2 py-1.5 transition-colors hover:border-cyan-500/35"
+                  style={{
+                    clipPath: 'polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 6px 100%, 0 calc(100% - 6px))',
+                  }}
+                >
+                  <div className="font-mono text-[10px] text-cyan-400/70 truncate">{q.title}</div>
+                  <div className="mt-0.5 font-mono text-[11px] leading-snug text-slate-300/90 line-clamp-2">{q.line}</div>
+                  {q.hint && (
+                    <div className="mt-0.5 font-mono text-[9px] text-cyan-500/40 line-clamp-1">💡 {q.hint}</div>
+                  )}
+                </div>
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}

@@ -1,0 +1,101 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Post {
+  id        String   @id @default(cuid())
+  title     String
+  content   String?
+  published Boolean  @default(false)
+  authorId  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ============================================
+// GAME TABLES — Persistence for ВОЛОДЯ RPG
+// ============================================
+
+model GameSave {
+  id          String   @id @default(cuid())
+  userId      String   @default("default")
+  slot        Int      @default(1)
+  label       String?
+
+  version     Int      @default(5)
+  data        String   // JSON-serialized game state
+
+  currentNodeId String
+  playTime    Int      @default(0)
+  act         Int      @default(1)
+  path        String   @default("none")
+
+  mood        Int      @default(50)
+  creativity  Int      @default(30)
+  stability   Int      @default(60)
+  stress      Int      @default(0)
+  energy      Int      @default(5)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([userId, slot])
+  @@index([userId])
+  @@index([updatedAt])
+}
+
+model PlayerProgress {
+  id                String   @id @default(cuid())
+  userId            String   @default("default")
+
+  totalChoicesMade  Int      @default(0)
+  totalPlayTime     Int      @default(0)
+  poemsCollected    Int      @default(0)
+  questsCompleted   Int      @default(0)
+  npcsMet           Int      @default(0)
+  endingsSeen       String   @default("[]")
+
+  achievements      String   @default("[]")
+
+  lastSaveId        String?
+  sessionCount      Int      @default(0)
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([userId])
+}
+
+model AIConversationLog {
+  id          String   @id @default(cuid())
+  sessionId   String
+  type        String   // "narrative" | "dialogue" | "pipeline"
+  npcId       String?
+  prompt      String
+  response    String
+  model       String?
+  latencyMs   Int?
+  fallback    Boolean  @default(false)
+
+  createdAt   DateTime @default(now())
+
+  @@index([sessionId])
+  @@index([type])
+  @@index([createdAt])
+}

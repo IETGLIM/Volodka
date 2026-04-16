@@ -1,0 +1,6 @@
+.vercel
+.env*.local
+
+node_modules
+.next
+_volodka_upstream_check

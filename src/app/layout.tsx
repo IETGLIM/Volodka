@@ -1,0 +1,45 @@
+import type { Metadata } from 'next';
+import { Geist, Geist_Mono } from 'next/font/google';
+import './globals.css';
+
+const geistSans = Geist({
+  variable: '--font-geist-sans',
+  subsets: ['latin'],
+});
+
+const geistMono = Geist_Mono({
+  variable: '--font-geist-mono',
+  subsets: ['latin'],
+});
+
+export const metadata: Metadata = {
+  title: 'ВОЛОДЬКА — RPG о жизни, стихах и одиночестве',
+  description:
+    'Интерактивная история Владимира Лебедева — 12 лет в техподдержке, 10 лет любви, 8 лет одиночества. Реальные стихи. Настоящая боль.',
+  keywords: [
+    'RPG',
+    'Visual Novel',
+    'поэзия',
+    'одиночество',
+    'ВОЛОДЬКА',
+    'интерактивная история',
+    'Владимир Лебедев',
+  ],
+  authors: [{ name: 'Владимир Лебедев' }],
+};
+
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  return (
+    <html lang="ru" className="dark" suppressHydrationWarning>
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground`}
+      >
+        {children}
+      </body>
+    </html>
+  );
+}
