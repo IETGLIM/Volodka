@@ -829,6 +829,10 @@ export const STORY_NODES: Record<string, StoryNode> = {
       createChoice('Чай, книга, тишина — как всегда', 'home_friday_quiet', { stability: 4 }),
       createChoice('Выйти в круглосуточный магазин — сменить воздух', 'friday_night_store', { mood: 3, stress: -3 }),
       createChoice('Набрать маме «как дела» — и решить, отправлять или нет', 'friday_draft_message', { karma: 3, stress: 5 }),
+      createChoice('Лечь и поймать второй слой сна — с «кодом» и глитчами', 'dream_remember', {
+        creativity: 5,
+        skillGains: { introspection: 3 },
+      }),
     ],
   },
 
@@ -1729,5 +1733,135 @@ export const STORY_NODES: Record<string, StoryNode> = {
       createChoice('Я тоже хочу так помнить', 'explore_mode', { mood: 5 }),
       createChoice('Молча кивнуть', 'explore_mode'),
     ],
+  },
+
+  // ---------- МИР СНА: триггеры 3D + фэнтези-слой (перемежает акт 2) ----------
+  // См. triggerZones.ts (dream_lillian_meet / dream_galaxy_meet), npcDefinitions story_dream_lillian
+
+  story_dream_lillian: {
+    id: 'story_dream_lillian',
+    type: 'narration',
+    scene: 'dream',
+    act: 2,
+    text: 'Голос Лилиан ещё звенит в висках — как уведомление без thread id.\n\n— Ты уже ходил по этому лесу во сне. Теперь можешь ходить пешком. Ищи странников и «битые сектора» — там, где стыдно смотреть.\n\nЛес на секунду замирает, как кластер в maintenance window.',
+    autoNext: 'explore_mode',
+  },
+
+  dream_lillian_meet: {
+    id: 'dream_lillian_meet',
+    type: 'narration',
+    scene: 'dream',
+    act: 2,
+    text: 'Туман расступается. Лилиан — как в первом сне, но чуть отрезвее, суше, ближе к «документации».\n\n— Ты нашёл точку входа сам. Хороший знак: значит, отладка ещё не закончена.',
+    choices: [
+      createChoice('Спросить, что она здесь делает', 'dream_lillian_revisit', { introspection: 4 }),
+      createChoice('Вернуться к шагам по лесу', 'explore_mode', { stability: 2 }),
+    ],
+  },
+
+  dream_lillian_revisit: {
+    id: 'dream_lillian_revisit',
+    type: 'narration',
+    scene: 'dream',
+    act: 2,
+    text: '— Я не богиня и не подруга, — говорит она. — Скорее слой метафоры. Твой внутренний README, который ты не обновлял годами.\n\nСон дрожит, как старая ЭЛТ.\n\n— Иди. Если увидишь Астру — не спорь о физике. Она любит поэтику больше, чем SLA.',
+    effect: { setFlag: 'met_lillian' },
+    autoNext: 'explore_mode',
+  },
+
+  dream_galaxy_meet: {
+    id: 'dream_galaxy_meet',
+    type: 'narration',
+    scene: 'dream',
+    act: 2,
+    text: 'У ручья из жидкого неона стоит сияющая фигура.\n\n— Звёзды здесь лежат, как нераспечатанные тикеты, — говорит она. — Угадай, сколько вселенных брошено без ответа?\n\nПауза.\n\n— Шучу. Ответа нет. Есть только то, что ты решишь записать в лог завтра утром.',
+    effect: { setFlag: 'met_galaxy' },
+    choices: [
+      createChoice('«Слишком много» — и усмехнуться', 'explore_mode', { creativity: 5, mood: 3 }),
+      createChoice('Хватит сюрреализма — назад в тело', 'explore_mode', { stability: 4 }),
+    ],
+  },
+
+  /** Второй слой сна (IT-фэнтези) — вход с пятничного дома; выход в субботу, как после тихой ночи */
+  dream_remember: {
+    id: 'dream_remember',
+    type: 'dream',
+    scene: 'dream',
+    act: 2,
+    text: `Снова этот сон — но резче, «ближе к железу».
+
+В углу комнаты — старый монитор. Экран мерцает.
+
+На нём — текст. Твои строки, но в другом порядке. Как будто кто-то переставил слова.
+
+try {
+  помнить();
+} catch (Невозвратимо e) {
+  // backup не существует
+}
+
+Это… послание?`,
+    effect: { setFlag: 'had_meaningful_dream' },
+    choices: [
+      {
+        text: '[Восприятие] Разглядеть скрытый текст на экране',
+        next: 'dream_hidden_text_success',
+        skillCheck: {
+          skill: 'perception',
+          difficulty: 25,
+          successNext: 'dream_hidden_text_success',
+          failNext: 'dream_hidden_text_fail',
+          successEffect: { skillGains: { perception: 3 } },
+          failEffect: { stress: 5 },
+        },
+      },
+      createChoice('Запомнить образ и выйти из сна', 'dream_wake_remember', { stability: 4 }),
+    ],
+  },
+
+  dream_hidden_text_success: {
+    id: 'dream_hidden_text_success',
+    type: 'narration',
+    scene: 'dream',
+    act: 2,
+    text: `Ты вглядываешься. Текст расплывается — потом становится чётче.
+
+Это не просто слова. Это карта.
+
+«Битые сектора» памяти — не баги. Это места, где ты спрятал то, что не хотел помнить.
+
+Теперь ты хотя бы знаешь, где искать.`,
+    effect: { skillGains: { perception: 3, introspection: 2 }, setFlag: 'found_memory_map' },
+    autoNext: 'saturday_morning',
+  },
+
+  dream_hidden_text_fail: {
+    id: 'dream_hidden_text_fail',
+    type: 'narration',
+    scene: 'dream',
+    act: 2,
+    text: `Текст расплывается. Экран гаснет.
+
+Что-то было там — но не успел прочитать.
+
+Просыпаешься с ощущением упущенного патча.`,
+    effect: { stress: 5 },
+    autoNext: 'saturday_morning',
+  },
+
+  dream_wake_remember: {
+    id: 'dream_wake_remember',
+    type: 'narration',
+    scene: 'home_morning',
+    act: 2,
+    text: `Суббота. Свет в окно — уже не ночной.
+
+Я записываю обрывки: монитор, try/catch, «backup не существует».
+
+Как будто подсознание шлёт syslog — с уровнем WARNING, без stack trace.
+
+Интересно, что ещё оно попытается сказать — в следующий раз.`,
+    effect: { stability: 3, creativity: 3 },
+    autoNext: 'saturday_morning',
   },
 };
