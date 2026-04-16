@@ -12,6 +12,8 @@ interface DialogueRendererProps {
   npcId: string;
   npcName: string;
   dialogueTree: DialogueNode;
+  /** Диалог открыт из сюжетного выбора — после завершения продолжится история */
+  storyLinked?: boolean;
   playerState: PlayerState;
   npcRelations: NPCRelation[];
   flags: Record<string, boolean>;
@@ -183,6 +185,7 @@ export default function DialogueRenderer({
   npcId,
   npcName,
   dialogueTree,
+  storyLinked = false,
   playerState,
   npcRelations,
   flags,
@@ -342,6 +345,14 @@ export default function DialogueRenderer({
                 clipPath: 'polygon(0 0, calc(100% - 16px) 0, 100% 16px, 100% 100%, 16px 100%, 0 calc(100% - 16px))',
               }}
             >
+              {storyLinked && (
+                <div className="border-b border-amber-500/25 bg-amber-950/25 px-4 py-2">
+                  <p className="font-mono text-[10px] leading-snug text-amber-200/80">
+                    ⟡ Встроенный диалог — после «Завершить разговор» или последней реплики вы вернётесь к сюжетной ветке.
+                  </p>
+                </div>
+              )}
+
               {/* Terminal header with NPC info */}
               <div className="flex items-center gap-4 p-4 border-b border-cyan-500/10 bg-black/30">
                 {/* NPC portrait with holographic frame */}

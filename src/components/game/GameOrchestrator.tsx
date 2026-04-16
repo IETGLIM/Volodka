@@ -214,17 +214,20 @@ export default function GameOrchestrator() {
     addSkill,
     addItem,
     removeItem,
+    openDialogueFromStory,
   });
 
   const {
     activeDialogue,
     handleDialogueEffect,
     handleNPCInteraction,
+    openDialogueFromStory,
     closeDialogue,
   } = useDialogueFlow({
     setCurrentNPC,
     setGameMode,
     dialogueStoreActions,
+    setCurrentNode,
   });
 
   const { showStoryPanel, handleTogglePanel } = useGameUiLayout({
@@ -327,6 +330,7 @@ export default function GameOrchestrator() {
           npcId={activeDialogue.npcId}
           npcName={activeDialogue.npcName}
           dialogueTree={activeDialogue.node}
+          storyLinked={Boolean(activeDialogue.storyResume)}
           onClose={closeDialogue}
           playerState={playerState}
           npcRelations={npcRelations}

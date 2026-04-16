@@ -78,6 +78,17 @@ function createChoice(
   return { text, next, effect, condition };
 }
 
+/** Выбор сюжета → открывается диалог NPC, затем переход на `next` */
+function createDialogueChoice(
+  text: string,
+  next: string,
+  dialogueNpcId: string,
+  effect?: StoryEffect,
+  condition?: ChoiceCondition,
+): StoryChoice {
+  return { text, next, dialogueNpcId, effect, condition };
+}
+
 // ============================================
 // УЗЛЫ ИСТОРИИ — РАСШИРЕННАЯ ВЕРСИЯ
 // ============================================
@@ -110,6 +121,12 @@ export const STORY_NODES: Record<string, StoryNode> = {
       createChoice('Начать диагностику', 'start_diagnosis', { stability: 3 }),
       createChoice('Эскалировать на L2', 'escalate_now', { stability: 5, karma: -2 }),
       createChoice('Посмотреть, что с базой', 'check_database', { skillGains: { coding: 2 } }),
+      createDialogueChoice(
+        'Спросить у коллеги — не попадалась ли ему такая авария',
+        'start_diagnosis',
+        'office_colleague',
+        { mood: 3 },
+      ),
     ],
   },
 
@@ -165,6 +182,12 @@ export const STORY_NODES: Record<string, StoryNode> = {
       createChoice('Устал — но это моя работа', 'fix_choice', { stability: 2, stress: 5 }),
       createChoice('Привык — мне нравится решать проблемы', 'fix_choice', { mood: 3 }),
       createChoice('Не знаю уже. Всё смешалось', 'fix_choice', { stability: -2, stress: 10 }),
+      createDialogueChoice(
+        'Сходить к начальнику за формальным «ок» на откат',
+        'fix_choice',
+        'office_boss',
+        { stress: 3 },
+      ),
     ],
   },
 
@@ -180,6 +203,12 @@ export const STORY_NODES: Record<string, StoryNode> = {
         { type: 'objective', questId: 'auth_crisis', objectiveId: 'apply_fix', value: 1 },
         { type: 'objective', questId: 'microservice_memory_leak', objectiveId: 'create_fix', value: 1 },
       ] }),
+      createDialogueChoice(
+        'Сначала переговорить с коллегой — как он откатывал в прошлый раз',
+        'fix_success',
+        'office_colleague',
+        { stability: 2 },
+      ),
     ],
   },
 
@@ -217,6 +246,12 @@ export const STORY_NODES: Record<string, StoryNode> = {
       createChoice('"Нет, я один живу"', 'neutral_answer', { stability: 2 }),
       createChoice('"Были отношения. Долго. Закончилось"', 'honest_answer', { karma: 5, stress: 10 }),
       createChoice('"Не люблю корпоративы — слишком шумно"', 'avoid_answer', { stability: 3 }),
+      createDialogueChoice(
+        'Перекинуться парой фраз с посетителем за соседним столом',
+        'neutral_answer',
+        'cafe_visitor',
+        { mood: 2 },
+      ),
     ],
   },
 

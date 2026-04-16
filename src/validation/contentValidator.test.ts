@@ -67,6 +67,13 @@ function validateStoryGraph(): { errors: ValidationIssue[]; warnings: Validation
         });
       }
 
+      if (choice.dialogueNpcId && !npcIds.has(choice.dialogueNpcId)) {
+        errors.push({
+          code: 'CHOICE_DIALOGUE_NPC_MISSING',
+          message: `Node "${nodeKey}" choice references unknown dialogueNpcId "${choice.dialogueNpcId}"`,
+        });
+      }
+
       if (choice.skillCheck) {
         if (!nodeIds.has(choice.skillCheck.successNext)) {
           errors.push({

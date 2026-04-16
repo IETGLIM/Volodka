@@ -5,6 +5,7 @@ import { statsEngine } from '@/engine/StatsEngine';
 import { eventBus } from '@/engine/EventBus';
 import { useGameStore } from '@/store/gameStore';
 import { ENERGY_COSTS } from '@/hooks/useEnergySystem';
+import { NPC_DEFINITIONS } from '@/data/npcDefinitions';
 
 type EffectNotifType = 'poem' | 'stat' | 'quest' | 'flag' | 'energy';
 
@@ -35,6 +36,13 @@ interface StoryChoiceHandlerParams {
   addSkill: (skill: 'writing', amount: number) => void;
   addItem: (itemId: string, quantity?: number) => void;
   removeItem: (itemId: string, quantity?: number) => void;
+  /** Сюжетный выбор с `dialogueNpcId`: открыть диалог, затем перейти на `next` */
+  openDialogueFromStory?: (p: {
+    npcId: string;
+    nextNodeId: string;
+    fromNodeId: string;
+    choiceText: string;
+  }) => void;
 }
 
 export function useStoryChoiceHandler(params: StoryChoiceHandlerParams) {
@@ -57,6 +65,7 @@ export function useStoryChoiceHandler(params: StoryChoiceHandlerParams) {
     addSkill,
     addItem,
     removeItem,
+    openDialogueFromStory,
   } = params;
 
   const applyStoryEffect = useCallback((effect: StoryEffect) => {
@@ -191,6 +200,19 @@ export function useStoryChoiceHandler(params: StoryChoiceHandlerParams) {
       },
     );
 
+    if (choice.dialogueNpcId && choice.next && openDialogueFromStory) {
+      const npcDef = NPC_DEFINITIONS[choice.dialogueNpcId];
+      if (npcDef?.dialogueTree) {
+        openDialogueFromStory({
+          npcId: choice.dialogueNpcId,
+          nextNodeId: choice.next,
+          fromNodeId,
+          choiceText: choice.text,
+        });
+        return;
+      }
+    }
+
     if (choice.next) {
       setCurrentNode(choice.next);
       useGameStore.getState().pushChoiceLog({
@@ -200,7 +222,7 @@ export function useStoryChoiceHandler(params: StoryChoiceHandlerParams) {
         kind: 'story',
       });
     }
-  }, [energySystem, showEffectNotif, playerSkills, applyStoryEffect, setCurrentNode]);
+  }, [energySystem, showEffectNotif, playerSkills, applyStoryEffect, setCurrentNode, openDialogueFromStory]);
 
   return {
     applyStoryEffect,

@@ -153,9 +153,15 @@ function CyberChoiceCard({ choice, index, nodeId, isLocked, lockReason, onSelect
             {isLocked ? '🔒' : `${index + 1}.`}
           </span>
 
-          <span className={`text-base md:text-lg font-medium ${isLocked ? 'text-slate-500' : 'text-white/90'}`}>
+          <span className={`min-w-0 flex-1 text-base font-medium md:text-lg ${isLocked ? 'text-slate-500' : 'text-white/90'}`}>
             {choice.text}
           </span>
+
+          {!isLocked && choice.dialogueNpcId && (
+            <span className="shrink-0 font-mono text-[10px] text-cyan-500/50" title="Встроенный диалог с персонажем">
+              💬
+            </span>
+          )}
 
           {isLocked && (
             <span className="ml-auto font-mono text-[10px] text-red-400/60 uppercase tracking-wider">RESTRICTED</span>

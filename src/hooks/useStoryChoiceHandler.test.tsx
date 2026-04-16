@@ -29,6 +29,7 @@ function createBaseParams() {
     addSkill: vi.fn(),
     addItem: vi.fn(),
     removeItem: vi.fn(),
+    openDialogueFromStory: vi.fn(),
   };
 }
 
@@ -86,6 +87,28 @@ describe('useStoryChoiceHandler', () => {
     expect(log.length).toBe(1);
     expect(log[0].kind).toBe('skill');
     expect(log[0].toNodeId).toBe('success_node');
+  });
+
+  it('opens embedded NPC dialogue and defers story node until dialogue closes', () => {
+    const params = createBaseParams();
+    const { result } = renderHook(() => useStoryChoiceHandler(params));
+
+    act(() => {
+      result.current.handleChoice({
+        text: 'Поговорить с коллегой',
+        next: 'next_node',
+        dialogueNpcId: 'office_colleague',
+      });
+    });
+
+    expect(params.openDialogueFromStory).toHaveBeenCalledWith({
+      npcId: 'office_colleague',
+      nextNodeId: 'next_node',
+      fromNodeId: 'start',
+      choiceText: 'Поговорить с коллегой',
+    });
+    expect(params.setCurrentNode).not.toHaveBeenCalled();
+    expect(useGameStore.getState().choiceLog.length).toBe(0);
   });
 
   it('appends story choice to choice log after transition', () => {

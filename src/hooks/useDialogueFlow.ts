@@ -3,6 +3,7 @@ import type { DialogueNode, DialogueEffect } from '@/data/rpgTypes';
 import { NPC_DEFINITIONS } from '@/data/npcDefinitions';
 import { eventBus } from '@/engine/EventBus';
 import { applyDialogueEffects } from '@/engine/DialogueEngine';
+import { useGameStore } from '@/store/gameStore';
 
 interface DialogueStoreActions {
   addStat: (stat: 'mood' | 'creativity' | 'stability' | 'energy' | 'karma' | 'selfEsteem', amount: number) => void;
@@ -19,22 +20,31 @@ interface DialogueStoreActions {
   addSkill: (skill: string, amount: number) => void;
 }
 
+export interface StoryDialogueResume {
+  nextNodeId: string;
+  fromNodeId: string;
+  choiceText: string;
+}
+
 interface ActiveDialogueState {
   npcId: string;
   npcName: string;
   node: DialogueNode;
+  storyResume?: StoryDialogueResume;
 }
 
 interface UseDialogueFlowParams {
   setCurrentNPC: (npcId: string | null) => void;
   setGameMode: (mode: 'visual-novel' | 'exploration' | 'dialogue' | 'combat' | 'dream-sequence') => void;
   dialogueStoreActions: DialogueStoreActions;
+  setCurrentNode: (nodeId: string) => void;
 }
 
 export function useDialogueFlow({
   setCurrentNPC,
   setGameMode,
   dialogueStoreActions,
+  setCurrentNode,
 }: UseDialogueFlowParams) {
   const [activeDialogue, setActiveDialogue] = useState<ActiveDialogueState | null>(null);
 
@@ -57,16 +67,54 @@ export function useDialogueFlow({
     eventBus.emit('npc:interacted', { npcId, npcName: npcDef.name });
   }, [setCurrentNPC, setGameMode]);
 
+  /** Встроенный диалог из сюжетного выбора: после закрытия — переход на nextNodeId */
+  const openDialogueFromStory = useCallback(
+    (params: { npcId: string; nextNodeId: string; fromNodeId: string; choiceText: string }) => {
+      const npcDef = NPC_DEFINITIONS[params.npcId];
+      if (!npcDef?.dialogueTree) return;
+
+      setCurrentNPC(params.npcId);
+      setActiveDialogue({
+        npcId: params.npcId,
+        npcName: npcDef.name,
+        node: npcDef.dialogueTree as DialogueNode,
+        storyResume: {
+          nextNodeId: params.nextNodeId,
+          fromNodeId: params.fromNodeId,
+          choiceText: params.choiceText,
+        },
+      });
+      setGameMode('dialogue');
+      eventBus.emit('npc:interacted', { npcId: params.npcId, npcName: npcDef.name });
+    },
+    [setCurrentNPC, setGameMode],
+  );
+
   const closeDialogue = useCallback(() => {
-    setActiveDialogue(null);
+    setActiveDialogue((current) => {
+      if (current?.storyResume) {
+        const { nextNodeId, fromNodeId, choiceText } = current.storyResume;
+        queueMicrotask(() => {
+          setCurrentNode(nextNodeId);
+          useGameStore.getState().pushChoiceLog({
+            fromNodeId,
+            choiceText,
+            toNodeId: nextNodeId,
+            kind: 'story',
+          });
+        });
+      }
+      return null;
+    });
     setCurrentNPC(null);
     setGameMode('visual-novel');
-  }, [setCurrentNPC, setGameMode]);
+  }, [setCurrentNPC, setGameMode, setCurrentNode]);
 
   return {
     activeDialogue,
     handleDialogueEffect,
     handleNPCInteraction,
+    openDialogueFromStory,
     closeDialogue,
   };
 }

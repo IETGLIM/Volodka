@@ -260,6 +260,9 @@ export interface StoryChoice {
   condition?: ChoiceCondition;
   locked?: boolean;
   lockReason?: string;
+
+  /** Открыть дерево диалога этого NPC; по завершении разговора — переход на `next` */
+  dialogueNpcId?: string;
   
   // Для моральных дилемм
   moralType?: 'selfless' | 'selfish' | 'neutral' | 'chaotic';
