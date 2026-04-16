@@ -195,6 +195,19 @@ export default function GameOrchestrator() {
 
   // ---- Handlers ----
 
+  const {
+    activeDialogue,
+    handleDialogueEffect,
+    handleNPCInteraction,
+    openDialogueFromStory,
+    closeDialogue,
+  } = useDialogueFlow({
+    setCurrentNPC,
+    setGameMode,
+    dialogueStoreActions,
+    setCurrentNode,
+  });
+
   const { handleChoice } = useStoryChoiceHandler({
     playerSkills: playerState.skills as Record<string, number>,
     energySystem,
@@ -215,19 +228,6 @@ export default function GameOrchestrator() {
     addItem,
     removeItem,
     openDialogueFromStory,
-  });
-
-  const {
-    activeDialogue,
-    handleDialogueEffect,
-    handleNPCInteraction,
-    openDialogueFromStory,
-    closeDialogue,
-  } = useDialogueFlow({
-    setCurrentNPC,
-    setGameMode,
-    dialogueStoreActions,
-    setCurrentNode,
   });
 
   const { showStoryPanel, handleTogglePanel } = useGameUiLayout({
