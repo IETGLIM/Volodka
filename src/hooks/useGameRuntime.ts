@@ -9,8 +9,9 @@ import { coreLoop } from '@/engine/CoreLoop';
 import { poemMechanics } from '@/engine/PoemMechanics';
 import { initConsequencesSystem } from '@/engine/ConsequencesSystem';
 import type { NPCRelation, PlayerState, SceneId } from '@/data/types';
+import type { TravelToSceneOptions, TravelToSceneResult } from '@/store/gameStore';
 
-type StoreActionAdapter = {
+export type StoreActionAdapter = {
   addStat: (stat: 'mood' | 'creativity' | 'stability' | 'energy' | 'karma' | 'selfEsteem', amount: number) => void;
   addStress: (amount: number) => void;
   reduceStress: (amount: number) => void;
@@ -25,7 +26,7 @@ type StoreActionAdapter = {
   addSkill: (skill: string, amount: number) => void;
 };
 
-interface UseGameRuntimeParams {
+export interface UseGameRuntimeParams {
   phase: 'loading' | 'intro' | 'menu' | 'game';
   currentNodeId: string;
   currentSceneId: SceneId;
@@ -35,7 +36,7 @@ interface UseGameRuntimeParams {
   unlockedAchievements: string[];
   dialogueStoreActions: StoreActionAdapter;
   incrementPlayTime: () => void;
-  setCurrentScene: (sceneId: SceneId) => void;
+  travelToScene: (sceneId: SceneId, options?: TravelToSceneOptions) => TravelToSceneResult;
   collectPoem: (poemId: string) => void;
   addStat: (stat: 'mood' | 'creativity' | 'stability' | 'energy' | 'karma' | 'selfEsteem', amount: number) => void;
   addSkill: (skill: 'writing', amount: number) => void;
@@ -55,7 +56,7 @@ export function useGameRuntime(params: UseGameRuntimeParams) {
     unlockedAchievements,
     dialogueStoreActions,
     incrementPlayTime,
-    setCurrentScene,
+    travelToScene,
     collectPoem,
     addStat,
     addSkill,
@@ -102,8 +103,8 @@ export function useGameRuntime(params: UseGameRuntimeParams) {
 
   useEffect(() => {
     sceneManager.transitionTo(currentSceneId);
-    setCurrentScene(currentSceneId);
-  }, [currentSceneId, setCurrentScene]);
+    travelToScene(currentSceneId, { narrativeDriven: true });
+  }, [currentSceneId, travelToScene]);
 
   useEffect(() => {
     if (phase === 'game') {
@@ -189,7 +190,16 @@ export function useGameRuntime(params: UseGameRuntimeParams) {
         eventBus.emit('achievement:unlocked', { achievementId: achievement.id });
       }
     });
-  }, [phase, unlockedAchievements, collectedPoems, playerState, npcRelations, unlockAchievement]);
+  }, [
+    phase,
+    unlockedAchievements,
+    collectedPoems,
+    playerState.karma,
+    playerState.flags,
+    playerState.playTime,
+    npcRelations,
+    unlockAchievement,
+  ]);
 
   const completeCutscene = useCallback(() => {
     const id = activeCutsceneIdRef.current;

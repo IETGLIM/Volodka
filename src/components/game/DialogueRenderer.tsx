@@ -73,9 +73,14 @@ function CyberDialogueChoice({
 }) {
   const [isHovered, setIsHovered] = useState(false);
 
+  const dialogueChoiceAria = !isConditionMet
+    ? `Недоступная реплика ${index + 1}: ${choice.text}`
+    : `Выбрать реплику ${index + 1}: ${choice.text}`;
+
   return (
     <motion.button
       key={`${currentNodeId}-${index}`}
+      type="button"
       initial={{ opacity: 0, x: -10 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ delay: index * 0.05 }}
@@ -83,7 +88,8 @@ function CyberDialogueChoice({
       disabled={!isConditionMet}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      className={`w-full text-left relative overflow-hidden transition-all duration-200 ${
+      aria-label={dialogueChoiceAria}
+      className={`w-full text-left relative overflow-hidden transition-all duration-200 game-fm-layer game-fm-layer-promote ${
         isConditionMet ? 'cursor-pointer' : 'cursor-not-allowed opacity-50'
       }`}
       style={{
@@ -220,14 +226,17 @@ export default function DialogueRenderer({
   }), [addStat, addStress, reduceStress, setFlag, unsetFlag, updateNPCRelation, addItem, removeItem, activateQuest, updateQuestObjective, collectPoem, addSkill]);
 
   // Build dialogue context
-  const dialogueContext: DialogueContext = useMemo(() => ({
-    playerState,
-    npcRelations,
-    flags,
-    inventory,
-    visitedNodes,
-    skills: playerState.skills,
-  }), [playerState, npcRelations, flags, inventory, visitedNodes]);
+  const dialogueContext: DialogueContext = useMemo(() => {
+    const ps = useGameStore.getState().playerState;
+    return {
+      playerState: ps,
+      npcRelations,
+      flags,
+      inventory,
+      visitedNodes,
+      skills: ps.skills,
+    };
+  }, [flags, inventory, visitedNodes, npcRelations, playerState.skills]);
 
   // Initialize dialogue
   const { filteredChoices } = useMemo(() => {
@@ -323,17 +332,21 @@ export default function DialogueRenderer({
     <AnimatePresence>
       {isOpen && (
         <motion.div
-          className="fixed inset-0 z-50 flex items-end justify-center"
+          className="fixed inset-0 z-50 flex items-end justify-center game-fm-layer game-fm-layer-promote"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
         >
           {/* Dark overlay */}
-          <div className="absolute inset-0 bg-black/40" onClick={onClose} />
+          <div
+            className="absolute inset-0 bg-black/40"
+            onClick={onClose}
+            role="presentation"
+          />
 
           {/* Dialogue window — cyberpunk terminal */}
           <motion.div
-            className="relative w-full max-w-4xl mx-4 mb-4"
+            className="relative mx-4 mb-4 w-full max-w-4xl game-fm-layer"
             initial={{ y: 100, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 100, opacity: 0 }}
@@ -376,13 +389,15 @@ export default function DialogueRenderer({
                 </div>
 
                 <button
+                  type="button"
                   onClick={onClose}
                   className="font-mono text-slate-500 hover:text-cyan-400 transition-colors p-2 text-sm border border-slate-700/30 hover:border-cyan-500/30"
                   style={{
                     clipPath: 'polygon(0 0, calc(100% - 4px) 0, 100% 4px, 100% 100%, 4px 100%, 0 calc(100% - 4px))',
                   }}
+                  aria-label={`Закрыть диалог с ${npcName}`}
                 >
-                  ✕
+                  <span aria-hidden>✕</span>
                 </button>
               </div>
 
@@ -441,11 +456,13 @@ export default function DialogueRenderer({
               {(!currentNode.choices || currentNode.choices.length === 0) && (
                 <div className="px-4 pb-4 flex justify-end relative z-10">
                   <button
+                    type="button"
                     onClick={onClose}
                     className="px-4 py-2 font-mono text-sm text-cyan-400/60 hover:text-cyan-400 border border-cyan-500/20 hover:border-cyan-500/40 transition-colors"
                     style={{
                       clipPath: 'polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 6px 100%, 0 calc(100% - 6px))',
                     }}
+                    aria-label={`Завершить разговор с ${npcName} и закрыть окно`}
                   >
                     Завершить разговор
                   </button>

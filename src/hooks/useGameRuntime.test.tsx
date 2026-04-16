@@ -147,7 +147,7 @@ function createBaseParams() {
       addSkill: vi.fn(),
     },
     incrementPlayTime: vi.fn(),
-    setCurrentScene: vi.fn(),
+    travelToScene: vi.fn(() => ({ ok: true as const })),
     collectPoem: vi.fn(),
     addStat: vi.fn(),
     addSkill: vi.fn(),
@@ -168,7 +168,7 @@ describe('useGameRuntime', () => {
 
     expect(initConsequencesSystem).toHaveBeenCalledTimes(1);
     expect(sceneManager.transitionTo).toHaveBeenCalledWith('kitchen_night');
-    expect(params.setCurrentScene).toHaveBeenCalledWith('kitchen_night');
+    expect(params.travelToScene).toHaveBeenCalledWith('kitchen_night', { narrativeDriven: true });
     expect(coreLoop.init).toHaveBeenCalledTimes(1);
     expect(coreLoop.startLoop).toHaveBeenCalledWith('start', 'kitchen_night');
 

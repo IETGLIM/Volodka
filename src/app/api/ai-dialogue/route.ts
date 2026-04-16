@@ -6,7 +6,8 @@
 // Uses z-ai-web-dev-sdk (backend only!).
 
 import { NextRequest, NextResponse } from 'next/server';
-import type { DialogueRequest, DialogueResponse, PlayerDialogueChoice } from '../../../lib/ai-types';
+import type { DialogueRequest, DialogueResponse } from '../../../lib/ai-types';
+import { parseDialogueFromModelRaw, withAbortTimeout, AI_DIALOGUE_SDK_TIMEOUT_MS } from '@/services/ai-service';
 import type { PlayerState, NPCRelation } from '../../../data/types';
 import { MAX_PLAYER_ENERGY } from '@/lib/energyConfig';
 
@@ -248,86 +249,6 @@ function buildDialogueContext(
 }
 
 // ============================================
-// JSON PARSER
-// ============================================
-
-function normalizeDialogueResponse(parsed: Record<string, unknown>): DialogueResponse | null {
-  if (!parsed.npcResponse || !Array.isArray(parsed.playerChoices)) {
-    return null;
-  }
-
-  let npcResponse = String(parsed.npcResponse);
-
-  // Handle double-encoded JSON: sometimes the AI wraps its response in an extra
-  // JSON layer, so npcResponse itself is a JSON string containing the real data.
-  if (npcResponse.startsWith('{')) {
-    try {
-      const inner = JSON.parse(npcResponse);
-      if (inner.npcResponse && typeof inner.npcResponse === 'string') {
-        // Found the real nested response — extract it
-        return {
-          npcResponse: String(inner.npcResponse),
-          playerChoices: Array.isArray(inner.playerChoices)
-            ? (inner.playerChoices as PlayerDialogueChoice[]).slice(0, 3).map(c => ({
-                text: String(c.text),
-                mood: String(c.mood ?? 'нейтрально'),
-              }))
-            : (parsed.playerChoices as PlayerDialogueChoice[]).slice(0, 3).map(c => ({
-                text: String(c.text),
-                mood: String(c.mood ?? 'нейтрально'),
-              })),
-          relationshipHint: String(inner.relationshipHint ?? parsed.relationshipHint ?? 'без изменений'),
-        };
-      }
-    } catch {
-      // Not valid inner JSON — use the string as-is
-    }
-  }
-
-  return {
-    npcResponse,
-    playerChoices: (parsed.playerChoices as PlayerDialogueChoice[]).slice(0, 3).map(c => ({
-      text: String(c.text),
-      mood: String(c.mood ?? 'нейтрально'),
-    })),
-    relationshipHint: String(parsed.relationshipHint ?? 'без изменений'),
-  };
-}
-
-function parseDialogueJSON(raw: string): DialogueResponse {
-  // Try direct parse
-  try {
-    const parsed = JSON.parse(raw);
-    const result = normalizeDialogueResponse(parsed);
-    if (result) return result;
-  } catch {
-    // Try extraction
-  }
-
-  // Try to find JSON block
-  const jsonMatch = raw.match(/\{[\s\S]*\}/);
-  if (jsonMatch) {
-    try {
-      const parsed = JSON.parse(jsonMatch[0]);
-      const result = normalizeDialogueResponse(parsed);
-      if (result) return result;
-    } catch {
-      // Still failed
-    }
-  }
-
-  // Ultimate fallback
-  return {
-    npcResponse: raw.slice(0, 300),
-    playerChoices: [
-      { text: 'Продолжить разговор', mood: 'спокойно' },
-      { text: 'Закончить диалог', mood: 'устало' },
-    ],
-    relationshipHint: 'без изменений',
-  };
-}
-
-// ============================================
 // FALLBACK RESPONSE
 // ============================================
 
@@ -415,20 +336,32 @@ export async function POST(request: NextRequest) {
         currentTopic ?? 'общая беседа',
       );
 
-      const completion = await zai.chat.completions.create({
-        messages: [
-          { role: 'system', content: DIALOGUE_SYSTEM_PROMPT },
-          { role: 'user', content: contextPrompt },
-        ],
-      });
+      const messages = [
+        { role: 'system' as const, content: DIALOGUE_SYSTEM_PROMPT },
+        { role: 'user' as const, content: contextPrompt },
+      ];
 
-      const rawContent = completion.choices?.[0]?.message?.content;
+      let completion: unknown;
+      try {
+        completion = await withAbortTimeout(
+          zai.chat.completions.create({ messages }),
+          AI_DIALOGUE_SDK_TIMEOUT_MS,
+        );
+      } catch (timeoutOrSdkErr) {
+        const msg = timeoutOrSdkErr instanceof Error ? timeoutOrSdkErr.message : String(timeoutOrSdkErr);
+        console.warn('[AI Dialogue] SDK call failed or timed out, using mock fallback:', msg);
+        aiResponse = getFallbackDialogue(body);
+        return NextResponse.json(aiResponse);
+      }
+
+      const c = completion as { choices?: Array<{ message?: { content?: unknown } }> };
+      const rawContent = c.choices?.[0]?.message?.content;
 
       if (!rawContent || typeof rawContent !== 'string') {
         console.warn('[AI Dialogue] Empty or invalid AI response, using fallback');
         aiResponse = getFallbackDialogue(body);
       } else {
-        aiResponse = parseDialogueJSON(rawContent);
+        aiResponse = parseDialogueFromModelRaw(rawContent);
       }
     } catch (aiError) {
       const msg = aiError instanceof Error ? aiError.message : 'Unknown AI error';

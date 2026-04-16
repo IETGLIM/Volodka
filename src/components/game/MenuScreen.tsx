@@ -322,9 +322,18 @@ interface CyberButtonProps {
   primary?: boolean;
   delay?: number;
   variant?: 'primary' | 'secondary' | 'danger';
+  /** Для скринридеров; если не задано и children — строка, подставляется она */
+  ariaLabel?: string;
 }
 
-const CyberButton = memo(function CyberButton({ children, onClick, primary = false, delay = 0, variant = primary ? 'primary' : 'secondary' }: CyberButtonProps) {
+const CyberButton = memo(function CyberButton({
+  children,
+  onClick,
+  primary = false,
+  delay = 0,
+  variant = primary ? 'primary' : 'secondary',
+  ariaLabel,
+}: CyberButtonProps) {
   const [isHovered, setIsHovered] = useState(false);
   const [glitchActive, setGlitchActive] = useState(false);
   const [hoverChars, setHoverChars] = useState(0);
@@ -399,15 +408,20 @@ const CyberButton = memo(function CyberButton({ children, onClick, primary = fal
 
   const icon = variant === 'primary' ? '▶' : variant === 'danger' ? '⚠' : '↻';
 
+  const resolvedAria =
+    ariaLabel ?? (typeof children === 'string' ? children : undefined);
+
   return (
     <motion.button
+      type="button"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay, duration: 0.5 }}
       onClick={onClick}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      className="relative w-full group"
+      className="relative w-full group game-fm-layer game-fm-layer-promote"
+      aria-label={resolvedAria}
     >
       <div
         className={`
@@ -585,15 +599,19 @@ interface SettingsPanelProps {
 const SettingsPanel = memo(function SettingsPanel({ onClose }: SettingsPanelProps) {
   return (
     <motion.div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 game-fm-layer game-fm-layer-promote"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
     >
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
+      <div
+        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+        onClick={onClose}
+        role="presentation"
+      />
 
       <motion.div
-        className="relative z-10 w-full max-w-md"
+        className="relative z-10 w-full max-w-md game-fm-layer"
         initial={{ scale: 0.9, y: 20 }}
         animate={{ scale: 1, y: 0 }}
         exit={{ scale: 0.9, y: 20 }}
@@ -614,10 +632,12 @@ const SettingsPanel = memo(function SettingsPanel({ onClose }: SettingsPanelProp
               Настройки
             </h2>
             <button
+              type="button"
               onClick={onClose}
               className="w-8 h-8 flex items-center justify-center text-cyan-500/60 hover:text-cyan-300 transition-colors"
+              aria-label="Закрыть настройки"
             >
-              ✕
+              <span aria-hidden>✕</span>
             </button>
           </div>
 
@@ -833,30 +853,47 @@ export const MenuScreen = memo(function MenuScreen({
           <UfaBadge />
         </div>
 
-        {/* Menu buttons */}
-        <div className="w-full max-w-xs space-y-3">
-          {hasSave && (
-            <CyberButton onClick={onContinue} primary delay={0.3}>
-              Продолжить
+        {/* Menu buttons — терминальная рамка */}
+        <div className="w-full max-w-xs rounded-sm border border-cyan-500/25 bg-black/55 px-3 py-4 shadow-[inset_0_1px_0_0_rgba(0,255,255,0.07)]">
+          <pre
+            className="mb-3 font-mono text-[10px] leading-snug text-cyan-500/45 select-none whitespace-pre"
+            aria-hidden
+          >
+{`┌──────────────────────────┐
+│ > BOOT_MENU              │
+└──────────────────────────┘`}
+          </pre>
+          <div className="space-y-3">
+            {hasSave && (
+              <CyberButton
+                onClick={onContinue}
+                primary
+                delay={0.3}
+                ariaLabel="Продолжить сохранённую игру"
+              >
+                Продолжить
+              </CyberButton>
+            )}
+
+            <CyberButton
+              onClick={onNewGame}
+              primary={!hasSave}
+              delay={hasSave ? 0.4 : 0.3}
+              variant={hasSave ? 'secondary' : 'primary'}
+              ariaLabel={hasSave ? 'Начать новую игру' : 'Начать новую игру с главного меню'}
+            >
+              Новая игра
             </CyberButton>
-          )}
 
-          <CyberButton
-            onClick={onNewGame}
-            primary={!hasSave}
-            delay={hasSave ? 0.4 : 0.3}
-            variant={hasSave ? 'secondary' : 'primary'}
-          >
-            Новая игра
-          </CyberButton>
-
-          <CyberButton
-            onClick={() => setShowSettings(true)}
-            delay={0.5}
-            variant="secondary"
-          >
-            Настройки
-          </CyberButton>
+            <CyberButton
+              onClick={() => setShowSettings(true)}
+              delay={0.5}
+              variant="secondary"
+              ariaLabel="Открыть настройки"
+            >
+              Настройки
+            </CyberButton>
+          </div>
         </div>
 
         {/* Footer */}

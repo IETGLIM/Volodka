@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import type { StoryNode, StoryChoice, ChoiceCondition, PoemLine, StoryEffect } from '@/data/types';
 import { statsEngine } from '@/engine/StatsEngine';
 import { useGameStore } from '@/store/gameStore';
+import { useStoryConditionSlice } from '@/hooks/useStoryConditionSlice';
 import { useMobileVisualPerf } from '@/hooks/useMobileVisualPerf';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { formatSkillCheckHint } from '@/lib/skillCheckHint';
@@ -92,9 +93,14 @@ function CyberChoiceCard({ choice, index, nodeId, isLocked, lockReason, onSelect
     ? 'hover:border-amber-400/60'
     : 'hover:border-cyan-400/60';
 
+  const choiceAria = isLocked
+    ? `Недоступный вариант ${index + 1}: ${choice.text}${lockReason ? `. ${lockReason}` : ''}`
+    : `Выбрать вариант ${index + 1}: ${choice.text}`;
+
   return (
     <motion.button
       key={`${nodeId}-${index}`}
+      type="button"
       initial={{ opacity: 0, x: -20 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ delay: index * 0.08 }}
@@ -105,7 +111,8 @@ function CyberChoiceCard({ choice, index, nodeId, isLocked, lockReason, onSelect
       disabled={isLocked}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      className={`w-full text-left relative overflow-hidden transition-all duration-200 ${
+      aria-label={choiceAria}
+      className={`w-full text-left relative overflow-hidden transition-all duration-200 game-fm-layer game-fm-layer-promote ${
         isLocked
           ? 'opacity-50 cursor-not-allowed'
           : 'cursor-pointer'
@@ -225,13 +232,11 @@ export default function StoryRenderer({ node, onChoice, onPoemGameComplete }: St
   const [isTyping, setIsTyping] = useState(false);
   const [displayedText, setDisplayedText] = useState('');
   const typingRef = useRef<NodeJS.Timeout | null>(null);
-  const playerState = useGameStore(s => s.playerState);
-  const npcRelations = useGameStore(s => s.npcRelations);
-  const inventory = useGameStore(s => s.inventory);
-  const flags = playerState.flags;
-  const visitedNodes = playerState.visitedNodes;
-  const activeQuestIds = useGameStore(s => s.activeQuestIds);
-  const completedQuestIds = useGameStore(s => s.completedQuestIds);
+  const conditionSlice = useStoryConditionSlice();
+  const inventoryIds = useGameStore((s) => s.inventory.map((i) => i.item.id).join(','));
+  const npcRelationSig = useGameStore((s) => s.npcRelations.map((r) => `${r.id}:${r.value}`).join('|'));
+  const activeQuestIds = useGameStore((s) => s.activeQuestIds);
+  const completedQuestIds = useGameStore((s) => s.completedQuestIds);
 
   // Typewriter effect
   useEffect(() => {
@@ -280,17 +285,21 @@ export default function StoryRenderer({ node, onChoice, onPoemGameComplete }: St
   const checkCondition = useCallback((condition?: ChoiceCondition): { met: boolean; reason?: string } => {
     if (!condition) return { met: true };
 
+    const state = useGameStore.getState();
+    const playerState = state.playerState;
+    const inventory = state.inventory.map((i) => i.item.id);
+
     return statsEngine.isChoiceConditionMet(
       condition,
       playerState,
-      flags,
-      inventory.map(i => i.item.id),
-      npcRelations,
-      visitedNodes,
+      playerState.flags,
+      inventory,
+      state.npcRelations,
+      playerState.visitedNodes,
       activeQuestIds,
-      completedQuestIds
+      completedQuestIds,
     );
-  }, [playerState, flags, inventory, npcRelations, visitedNodes, activeQuestIds, completedQuestIds]);
+  }, [conditionSlice, inventoryIds, npcRelationSig, activeQuestIds, completedQuestIds]);
 
   // Auto-advance for nodes with autoNext
   // BUGFIX: pass node's onEnter/effect so effects aren't silently lost
@@ -339,7 +348,7 @@ export default function StoryRenderer({ node, onChoice, onPoemGameComplete }: St
 
   return (
     <motion.div
-      className="fixed bottom-0 left-0 right-0 z-40 p-4 max-md:p-5"
+      className="fixed bottom-0 left-0 right-0 z-40 p-4 max-md:p-5 game-fm-layer game-fm-layer-promote"
       initial={{ opacity: 0, y: 50 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: 50 }}
@@ -477,7 +486,7 @@ export default function StoryRenderer({ node, onChoice, onPoemGameComplete }: St
                       ? formatSkillCheckHint(
                           choice.skillCheck.skill,
                           choice.skillCheck.difficulty,
-                          playerState.skills,
+                          conditionSlice.skills,
                         )
                       : undefined;
 

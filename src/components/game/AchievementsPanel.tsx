@@ -158,7 +158,15 @@ export const AchievementsPanel = memo(function AchievementsPanel({ onClose }: Ac
     relations: npcRelations.reduce((acc, rel) => { acc[rel.id] = rel.value; return acc; }, {} as Record<string, number>),
     visitedLocations: unlockedLocations,
     endingsSeen: [],
-  }), [playerState, npcRelations, unlockedLocations, completedQuestIds]);
+  }), [
+    playerState.poemsCollected,
+    playerState.karma,
+    playerState.flags,
+    playerState.playTime,
+    npcRelations,
+    unlockedLocations,
+    completedQuestIds,
+  ]);
   
   // Разделение на разблокированные и заблокированные
   const { unlocked, locked } = useMemo(() => {

@@ -1,9 +1,10 @@
 import { useCallback, useMemo } from 'react';
 import { eventBus } from '@/engine/EventBus';
+import type { GameMode } from '@/data/rpgTypes';
 
 interface UseGameSessionFlowParams {
   setPhase: (phase: 'loading' | 'intro' | 'menu' | 'game') => void;
-  setGameMode: (mode: 'visual-novel' | 'exploration' | 'dialogue' | 'combat' | 'dream-sequence') => void;
+  setGameMode: (mode: GameMode) => void;
   setCurrentNode: (nodeId: string) => void;
   saveGameToStore: () => void;
   loadGameFromStore: () => boolean;

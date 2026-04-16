@@ -29,7 +29,11 @@ const API_ENDPOINTS = {
 const CACHE_TTL_MS = 30_000;          // Cache entries live 30 seconds
 const MAX_CACHE_SIZE = 50;             // Max cached responses
 const MIN_REQUEST_INTERVAL_MS = 1_500; // Minimum time between requests
-const REQUEST_TIMEOUT_MS = 20_000;     // Per-request timeout
+const REQUEST_TIMEOUT_MS = 20_000;     // Per-request timeout (narrative)
+/** Диалог: короче, чтобы спиннер не висел дольше ~9 с (согласовано с AI_DIALOGUE_SDK_TIMEOUT_MS на сервере). */
+const DIALOGUE_FETCH_TIMEOUT_MS = 9_000;
+
+const SESSION_DIALOGUE_PREFIX = 'volodka_ai_dialogue_v1:';
 
 // ============================================
 // RESPONSE CACHE
@@ -162,11 +166,64 @@ function generateNarrativeCacheKey(request: NarrativeRequest): string {
   return `narrative:${currentNodeId}:${action}:${statSnapshot}`;
 }
 
+function hashDjb2(str: string): string {
+  let h = 5381;
+  for (let i = 0; i < str.length; i++) {
+    h = (Math.imul(31, h) + str.charCodeAt(i)) | 0;
+  }
+  return (h >>> 0).toString(36);
+}
+
 function generateDialogueCacheKey(request: DialogueRequest): string {
-  const { npcId, currentTopic, playerState } = request;
-  const lastLine = request.dialogueHistory?.slice(-1)?.[0]?.text ?? '';
-  const statSnapshot = `${playerState.mood}-${playerState.stress}-${playerState.creativity}`;
-  return `dialogue:${npcId}:${currentTopic}:${lastLine.slice(0, 50)}:${statSnapshot}`;
+  const { npcId, currentTopic, playerState, dialogueHistory } = request;
+  const recent = (dialogueHistory ?? [])
+    .slice(-5)
+    .map((h) => `${h.speaker}:${h.text.slice(0, 160)}`)
+    .join('\n');
+  const topic = (currentTopic ?? '').slice(0, 120);
+  const digest = hashDjb2(`${topic}\n${recent}`);
+  const statSnapshot = `${playerState.mood}-${playerState.stress}-${playerState.creativity}-${playerState.energy}-${playerState.stability}`;
+  return `dialogue:${npcId}:${digest}:${statSnapshot}`;
+}
+
+function dialogueSessionStorageKey(cacheKey: string): string {
+  return `${SESSION_DIALOGUE_PREFIX}${cacheKey}`;
+}
+
+function readDialogueFromSession(cacheKey: string): DialogueResponse | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const raw = sessionStorage.getItem(dialogueSessionStorageKey(cacheKey));
+    if (!raw) return null;
+    const data = JSON.parse(raw) as DialogueResponse;
+    if (!data.npcResponse || !Array.isArray(data.playerChoices)) return null;
+    return data;
+  } catch {
+    return null;
+  }
+}
+
+function writeDialogueToSession(cacheKey: string, data: DialogueResponse): void {
+  if (typeof window === 'undefined') return;
+  try {
+    sessionStorage.setItem(dialogueSessionStorageKey(cacheKey), JSON.stringify(data));
+  } catch {
+    // quota / private mode
+  }
+}
+
+function clearDialogueSessionStorage(): void {
+  if (typeof window === 'undefined') return;
+  try {
+    const keys: string[] = [];
+    for (let i = 0; i < sessionStorage.length; i++) {
+      const k = sessionStorage.key(i);
+      if (k?.startsWith(SESSION_DIALOGUE_PREFIX)) keys.push(k);
+    }
+    keys.forEach((k) => sessionStorage.removeItem(k));
+  } catch {
+    // ignore
+  }
 }
 
 // ============================================
@@ -335,21 +392,29 @@ export async function generateNarrativeReaction(
 export async function generateDialogueResponse(
   request: DialogueRequest,
 ): Promise<AIDialogueResult> {
-  // Check cache first
   const cacheKey = generateDialogueCacheKey(request);
+
+  const fromSession = readDialogueFromSession(cacheKey);
+  if (fromSession) {
+    return fromSession;
+  }
+
   const cached = cache.get<DialogueResponse>(cacheKey);
   if (cached) {
     return cached;
   }
 
-  // Queue the actual request
   return queue.enqueue(async (): Promise<AIDialogueResult> => {
     try {
-      const response = await fetchWithTimeout(API_ENDPOINTS.dialogue, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(request),
-      });
+      const response = await fetchWithTimeout(
+        API_ENDPOINTS.dialogue,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(request),
+        },
+        DIALOGUE_FETCH_TIMEOUT_MS,
+      );
 
       if (!response.ok) {
         console.warn(
@@ -360,14 +425,13 @@ export async function generateDialogueResponse(
 
       const data = await response.json() as DialogueResponse;
 
-      // Validate minimal structure
       if (!data.npcResponse || !Array.isArray(data.playerChoices)) {
         console.warn('[AI Client] Invalid dialogue response structure, using fallback');
         return getDialogueFallback(request);
       }
 
-      // Cache the valid response
       cache.set(cacheKey, data);
+      writeDialogueToSession(cacheKey, data);
 
       return data;
     } catch (error) {
@@ -388,6 +452,7 @@ export async function generateDialogueResponse(
  */
 export function clearAICache(): void {
   cache.clear();
+  clearDialogueSessionStorage();
 }
 
 /**

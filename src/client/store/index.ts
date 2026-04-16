@@ -10,7 +10,13 @@ export {
   selectEnergyPercentageFromPlayer,
 } from './playerStoreSelectors';
 export { usePlayerStore, usePlayerStats, usePlayerSkills, useStress, useEnergyPercentage } from './playerStore';
-export { useWorldStore, useExploration, useGameMode } from './worldStore';
+export {
+  useWorldStore,
+  useExploration,
+  useGameMode,
+  type TravelToSceneResult,
+  type TravelToSceneOptions,
+} from './worldStore';
 export { useQuestStore } from './questStore';
 export { useInventoryStore } from './inventoryStore';
 

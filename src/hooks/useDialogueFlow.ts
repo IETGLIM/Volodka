@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react';
-import type { DialogueNode, DialogueEffect } from '@/data/rpgTypes';
+import type { DialogueNode, DialogueEffect, GameMode } from '@/data/rpgTypes';
 import { NPC_DEFINITIONS } from '@/data/npcDefinitions';
 import { eventBus } from '@/engine/EventBus';
 import { applyDialogueEffects } from '@/engine/DialogueEngine';
@@ -35,7 +35,7 @@ interface ActiveDialogueState {
 
 interface UseDialogueFlowParams {
   setCurrentNPC: (npcId: string | null) => void;
-  setGameMode: (mode: 'visual-novel' | 'exploration' | 'dialogue' | 'combat' | 'dream-sequence') => void;
+  setGameMode: (mode: GameMode) => void;
   dialogueStoreActions: DialogueStoreActions;
   setCurrentNode: (nodeId: string) => void;
 }

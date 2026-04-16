@@ -7,11 +7,12 @@ import { useMobileVisualPerf } from '@/hooks/useMobileVisualPerf';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { QUEST_DEFINITIONS, getNextTrackedObjective } from '@/data/quests';
 import { MAX_PLAYER_ENERGY } from '@/lib/energyConfig';
+import type { GamePanelsState } from '@/hooks/useGamePanels';
 
 interface HUDProps {
   onSave: () => void;
   onTogglePanel: (panel: string) => void;
-  activePanels: Record<string, boolean>;
+  activePanels: GamePanelsState;
 }
 
 // ============================================
@@ -268,17 +269,20 @@ interface CyberActionBtnProps {
   onClick: () => void;
   colorClass: string;
   icon: string;
+  ariaLabel: string;
 }
 
-function CyberActionBtn({ label, isActive, onClick, colorClass, icon }: CyberActionBtnProps) {
+function CyberActionBtn({ label, isActive, onClick, colorClass, icon, ariaLabel }: CyberActionBtnProps) {
   const [isHovered, setIsHovered] = useState(false);
   const narrow = useIsMobile();
 
   return (
     <button
+      type="button"
       onClick={onClick}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
+      aria-label={ariaLabel}
       className={`relative px-2.5 py-1.5 font-mono text-xs uppercase tracking-wider transition-all duration-200 overflow-hidden ${
         narrow ? 'min-h-11 min-w-11 shrink-0 px-2 py-2' : ''
       } ${isActive ? 'ring-1 ring-cyan-500/30' : ''}`}
@@ -341,14 +345,14 @@ export default function HUD({ onSave, onTogglePanel, activePanels }: HUDProps) {
 
   // Action buttons — cyberpunk
   const actionButtons = useMemo(() => [
-    { key: 'skills', label: 'Навыки', colorClass: 'bg-teal-900/80', icon: '🎯' },
-    { key: 'journal', label: 'Лог', colorClass: 'bg-slate-800/90', icon: '📜' },
-    { key: 'quests', label: 'Квесты', colorClass: 'bg-purple-900/80', icon: '📋' },
-    { key: 'terminal', label: '', colorClass: 'bg-green-900/80', icon: '💻' },
-    { key: 'factions', label: 'Фракции', colorClass: 'bg-amber-900/80', icon: '⚔️' },
-    { key: 'inventory', label: `(${inventory.length})`, colorClass: 'bg-cyan-900/80', icon: '🎒' },
-    { key: 'achievements', label: '', colorClass: 'bg-amber-900/80', icon: '🏆' },
-    { key: 'poetry', label: `(${collectedPoems.length})`, colorClass: 'bg-purple-900/80', icon: '📖' },
+    { key: 'skills', label: 'Навыки', colorClass: 'bg-teal-900/80', icon: '🎯', ariaLabel: 'Открыть или закрыть панель навыков' },
+    { key: 'journal', label: 'Лог', colorClass: 'bg-slate-800/90', icon: '📜', ariaLabel: 'Открыть или закрыть журнал событий' },
+    { key: 'quests', label: 'Квесты', colorClass: 'bg-purple-900/80', icon: '📋', ariaLabel: 'Открыть или закрыть панель квестов' },
+    { key: 'terminal', label: '', colorClass: 'bg-green-900/80', icon: '💻', ariaLabel: 'Открыть или закрыть учебный терминал' },
+    { key: 'factions', label: 'Фракции', colorClass: 'bg-amber-900/80', icon: '⚔️', ariaLabel: 'Открыть или закрыть панель фракций' },
+    { key: 'inventory', label: `(${inventory.length})`, colorClass: 'bg-cyan-900/80', icon: '🎒', ariaLabel: `Открыть или закрыть инвентарь, предметов: ${inventory.length}` },
+    { key: 'achievements', label: '', colorClass: 'bg-amber-900/80', icon: '🏆', ariaLabel: 'Открыть или закрыть панель достижений' },
+    { key: 'poetry', label: `(${collectedPoems.length})`, colorClass: 'bg-purple-900/80', icon: '📖', ariaLabel: `Открыть или закрыть собранные стихи, штук: ${collectedPoems.length}` },
   ], [inventory.length, collectedPoems.length]);
 
   return (
@@ -416,6 +420,7 @@ export default function HUD({ onSave, onTogglePanel, activePanels }: HUDProps) {
                 onClick={() => onTogglePanel(btn.key)}
                 colorClass={btn.colorClass}
                 icon={btn.icon}
+                ariaLabel={btn.ariaLabel}
               />
             ))}
             <CyberActionBtn
@@ -424,6 +429,7 @@ export default function HUD({ onSave, onTogglePanel, activePanels }: HUDProps) {
               onClick={onSave}
               colorClass="bg-emerald-900/80"
               icon="💾"
+              ariaLabel="Сохранить игру"
             />
           </div>
         </div>
@@ -453,6 +459,7 @@ export default function HUD({ onSave, onTogglePanel, activePanels }: HUDProps) {
                 type="button"
                 onClick={() => onTogglePanel('quests')}
                 className="block w-full max-w-md text-left"
+                aria-label={`Открыть квесты: ${q.title}. Текущая цель: ${q.line}`}
               >
                 <div
                   className="rounded-sm border border-cyan-500/15 bg-black/35 px-2 py-1.5 transition-colors hover:border-cyan-500/35"

@@ -22,7 +22,20 @@ import type { SceneId } from '../data/types';
 import type { FactionId, FactionReputation } from '../data/factions';
 import { QUEST_DEFINITIONS } from '../data/quests';
 import { getItemById } from '../data/items';
-import { INITIAL_PLAYER_ENERGY, MAX_PLAYER_ENERGY } from '@/lib/energyConfig';
+import { ENERGY_COSTS, INITIAL_PLAYER_ENERGY, MAX_PLAYER_ENERGY } from '@/lib/energyConfig';
+import { eventBus } from '@/engine/EventBus';
+
+export type TravelToSceneResult =
+  | { ok: true }
+  | { ok: false; reason: 'same_scene' | 'locked' | 'no_energy' };
+
+export type TravelToSceneOptions = {
+  /** Сцена следует за узлом сюжета — без проверки unlock и без траты энергии */
+  narrativeDriven?: boolean;
+  energyCost?: number;
+  /** Если задано (например из useEnergySystem), отвечает за списание и побочные эффекты */
+  consumeEnergy?: (amount: number) => boolean;
+};
 
 // ============================================
 // INITIAL STATE - Defined inline to avoid circular imports
@@ -275,6 +288,7 @@ interface GameState {
   // RPG Actions
   setPlayerPosition: (position: PlayerPosition) => void;
   setCurrentScene: (sceneId: SceneId) => void;
+  travelToScene: (sceneId: SceneId, options?: TravelToSceneOptions) => TravelToSceneResult;
   setTriggerState: (triggerId: string, state: TriggerState) => void;
   addWorldItem: (item: WorldItem) => void;
   collectWorldItem: (itemId: string) => void;
@@ -801,6 +815,70 @@ export const useGameStore = create<GameState>()((set, get) => ({
       }
     });
   },
+
+  travelToScene: (sceneId, options = {}) => {
+    const narrative = options.narrativeDriven === true;
+    const { exploration, unlockedLocations, playerState } = get();
+
+    if (narrative) {
+      set({
+        exploration: {
+          ...exploration,
+          currentSceneId: sceneId,
+          lastSceneTransition: Date.now(),
+        },
+      });
+      return { ok: true as const };
+    }
+
+    if (exploration.currentSceneId === sceneId) {
+      return { ok: false as const, reason: 'same_scene' as const };
+    }
+
+    if (unlockedLocations.length > 0 && !unlockedLocations.includes(sceneId)) {
+      return { ok: false as const, reason: 'locked' as const };
+    }
+
+    const cost = options.energyCost ?? ENERGY_COSTS.sceneTravel;
+    const consume = options.consumeEnergy;
+
+    if (cost > 0) {
+      if (consume) {
+        if (!consume(cost)) {
+          return { ok: false as const, reason: 'no_energy' as const };
+        }
+      } else if (playerState.energy < cost) {
+        get().addStress(5);
+        eventBus.emit('stat:changed', {
+          stat: 'energy',
+          oldValue: playerState.energy,
+          newValue: playerState.energy,
+          delta: 0,
+        });
+        return { ok: false as const, reason: 'no_energy' as const };
+      } else {
+        const oldE = playerState.energy;
+        get().addStat('energy', -cost);
+        const newE = get().playerState.energy;
+        eventBus.emit('stat:changed', {
+          stat: 'energy',
+          oldValue: oldE,
+          newValue: newE,
+          delta: -cost,
+        });
+      }
+    }
+
+    const ex = get().exploration;
+    set({
+      exploration: {
+        ...ex,
+        currentSceneId: sceneId,
+        lastSceneTransition: Date.now(),
+      },
+    });
+    return { ok: true as const };
+  },
   
   setTriggerState: (triggerId, state) => {
     const { exploration } = get();
@@ -1174,6 +1252,7 @@ export const useExploration = () => useGameStore(useShallow((state) => ({
   worldItems: state.exploration.worldItems,
   setPlayerPosition: state.setPlayerPosition,
   setCurrentScene: state.setCurrentScene,
+  travelToScene: state.travelToScene,
   setNPCState: state.setNPCState,
   setTriggerState: state.setTriggerState,
 })));

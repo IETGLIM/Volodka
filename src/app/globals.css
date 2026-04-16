@@ -917,3 +917,26 @@
     -webkit-backdrop-filter: none !important;
   }
 }
+
+/* ============================================
+   Framer Motion / compositor (mobile vs desktop)
+   Постоянный will-change на многих слоях на телефонах даёт лишние
+   текстуры GPU и подвисания — держим изоляцию и включаем hint
+   только на «тонких» указателях и достаточной ширине.
+   ============================================ */
+
+.game-fm-layer {
+  contain: layout paint;
+}
+
+@media (min-width: 769px) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .game-fm-layer-promote {
+    will-change: transform, opacity;
+  }
+}
+
+@media (max-width: 768px), (pointer: coarse), (prefers-reduced-motion: reduce) {
+  .game-fm-layer-promote {
+    will-change: auto;
+  }
+}

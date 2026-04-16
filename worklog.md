@@ -65,3 +65,25 @@
 
 ### Tests
 - `npm run test` — 7 files, 22 tests, passing.
+
+## 2026-04-16 — Оркестратор, Zustand-слайсы, терминал UI, motion и a11y
+
+### Done
+- **`GameOrchestrator`:** вынесены подхуки и подкомпоненты — `useActionHandler`, `useDialogProcessor`, `useGameScene`, `GameOrchestratorSubcomponents` (оверлеи, список NPC на сцене, энергия и т.п.), проще сопровождать и тестировать поток игры.
+- **Zustand / ререндеры:** добавлен `useStoryConditionSlice` (`useShallow`) для условий сюжета; в `StoryRenderer`, `DialogueRenderer`, `useGameRuntime`, `SceneRenderer`, `AchievementsPanel` сужены зависимости `useMemo` / `useEffect` вместо подписки на весь `playerState`; контекст диалога при необходимости читает актуальное состояние через `getState()`.
+- **Терминальная стилистика меню:** блок кнопок в `MenuScreen` (рамка `BOOT_MENU`), верхняя панель в `GameUI` как `SYS.INTERFACE` — моноширинный хром и рамки в духе остального UI.
+- **`globals.css`:** утилиты `game-fm-layer` (`contain: layout paint`) и `game-fm-layer-promote` — `will-change: transform, opacity` только на десктопе с тонким указателем; на мобильных / таче / `prefers-reduced-motion` — `will-change: auto`, чтобы снизить нагрузку на композитор.
+- **Доступность:** осмысленные `aria-label` на кнопках действий в `HUD`, `GameUI`, главном меню (`CyberButton`), вариантах сюжета и диалога, закрытии диалога, квест-трекере, паник-кнопке и кнопках «поговорить с NPC».
+- **AI-диалог (контур):** доработки `api/ai-dialogue`, клиент `ai-client`, модуль `ai-dialogue-json` + тест; вынос `ai-service` в `src/services/`.
+- **Прочее:** настройки энергии (`energyConfig`), синхронизация `gameStore` / клиентских сторов и сценариев (`useDialogueFlow`, `useGameSessionFlow`, `useGameUiLayout`), правки теста `useGameRuntime`.
+
+### Files touched (high level)
+- Оркестратор: `GameOrchestrator.tsx`, `GameOrchestratorSubcomponents.tsx`, `useActionHandler.ts`, `useDialogProcessor.ts`, `useGameScene.ts`
+- Store / сюжет: `gameStore.ts`, `useStoryConditionSlice.ts`, `StoryRenderer.tsx`, `DialogueRenderer.tsx`, `useGameRuntime.ts`, `SceneRenderer.tsx`, `AchievementsPanel.tsx`
+- UI / стили: `MenuScreen.tsx`, `GameUI.tsx`, `HUD.tsx`, `globals.css`
+- AI: `route.ts` (ai-dialogue), `ai-client.ts`, `ai-dialogue-json.ts`, `ai-dialogue-json.test.ts`, `src/services/ai-service.ts`
+- Клиентские сторы: `src/client/store/index.ts`, `worldStore.ts`
+- Прочие хуки: `useDialogueFlow.ts`, `useGameSessionFlow.ts`, `useGameUiLayout.ts`, `energyConfig.ts`, `package.json` / `package-lock.json`
+
+### Tests
+- `npm run test` — 8 files, 24 tests, passing.

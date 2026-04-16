@@ -184,7 +184,13 @@ export default function SceneRenderer({ sceneId, playerState, isTransitioning }:
     if (playerState.mood < 20) effects.push('mood-low');
 
     return effects;
-  }, [playerState]);
+  }, [
+    playerState.stress,
+    playerState.stability,
+    playerState.creativity,
+    playerState.panicMode,
+    playerState.mood,
+  ]);
 
   // Build CSS classes based on effects
   const effectClasses = useMemo(() => {
@@ -214,7 +220,7 @@ export default function SceneRenderer({ sceneId, playerState, isTransitioning }:
     }
 
     return styles;
-  }, [playerState]);
+  }, [playerState.stress, playerState.creativity, playerState.stability]);
 
   return (
     <motion.div

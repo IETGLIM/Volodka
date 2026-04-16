@@ -12,6 +12,8 @@ export const ENERGY_COSTS = {
   skillCheck: 2,
   poemGame: 1,
   dialogue: 0,
+  /** Добровольная смена локации (карта / RPG), не синхронизация сцены с узлом сюжета */
+  sceneTravel: 2,
 } as const;
 
 /** Восстановление на узлах со «sleep» в id */

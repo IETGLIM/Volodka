@@ -160,51 +160,77 @@ export const GameUI = memo(function GameUI({
     <>
       {/* Верхняя панель */}
       <div className="relative z-10 p-3 bg-gradient-to-b from-black/60 to-transparent">
-        <div className="flex justify-between items-start">
+        <div className="flex justify-between items-start gap-3 flex-wrap">
           <StateBars state={playerState} />
-          <div className="flex gap-2 flex-wrap">
+          <div className="shrink-0 rounded-sm border border-cyan-500/20 bg-slate-950/80 px-2 py-2 font-mono shadow-[inset_0_1px_0_0_rgba(0,255,255,0.06)]">
+            <div
+              className="mb-2 border-b border-cyan-500/15 pb-1.5 text-center text-[9px] uppercase tracking-[0.28em] text-cyan-500/55"
+              aria-hidden
+            >
+              ╔═ SYS.INTERFACE ═╗
+            </div>
+            <div className="flex gap-2 flex-wrap">
             <button
+              type="button"
               onClick={onToggleMode}
-              className="px-3 py-1.5 bg-slate-700/80 hover:bg-slate-600 text-white rounded-lg text-sm transition-colors shadow-md"
+              className="rounded-sm border border-slate-600/40 bg-slate-800/90 px-3 py-1.5 text-sm text-white transition-colors hover:bg-slate-700/90"
+              aria-label={
+                gameMode === 'visual-novel'
+                  ? 'Переключить на свободное перемещение по сцене'
+                  : 'Переключить на режим визуальной новеллы'
+              }
             >
               {gameMode === 'visual-novel' ? '🎮 Свободное перемещение' : '📖 Режим сюжета'}
             </button>
             <button
+              type="button"
               onClick={onToggleSkills}
-              className={`px-3 py-1.5 rounded-lg text-sm transition-colors shadow-md ${showSkills ? 'bg-teal-500 text-white' : 'bg-teal-600/80 hover:bg-teal-500 text-white'}`}
+              className={`rounded-sm border border-teal-500/30 px-3 py-1.5 text-sm transition-colors ${showSkills ? 'bg-teal-600 text-white' : 'bg-teal-950/80 text-white hover:bg-teal-800/90'}`}
+              aria-label={showSkills ? 'Закрыть панель навыков' : 'Открыть панель навыков'}
             >
               🎯 Навыки
             </button>
             <button
+              type="button"
               onClick={onTogglePoems}
-              className={`px-3 py-1.5 rounded-lg text-sm transition-colors shadow-md ${showPoems ? 'bg-amber-500 text-white' : 'bg-amber-600/80 hover:bg-amber-500 text-white'}`}
+              className={`rounded-sm border border-amber-500/30 px-3 py-1.5 text-sm transition-colors ${showPoems ? 'bg-amber-600 text-white' : 'bg-amber-950/80 text-white hover:bg-amber-800/90'}`}
+              aria-label={`${showPoems ? 'Закрыть' : 'Открыть'} список стихов, собрано: ${collectedPoemsCount}`}
             >
               📜 Стихи ({collectedPoemsCount})
             </button>
             <button
+              type="button"
               onClick={onToggleQuests}
-              className={`px-3 py-1.5 rounded-lg text-sm transition-colors shadow-md ${showQuests ? 'bg-purple-500 text-white' : 'bg-purple-600/80 hover:bg-purple-500 text-white'}`}
+              className={`rounded-sm border border-purple-500/30 px-3 py-1.5 text-sm transition-colors ${showQuests ? 'bg-purple-600 text-white' : 'bg-purple-950/80 text-white hover:bg-purple-800/90'}`}
+              aria-label={showQuests ? 'Закрыть панель квестов' : 'Открыть панель квестов'}
             >
               📋 Квесты
             </button>
             <button
+              type="button"
               onClick={onToggleInventory}
-              className={`px-3 py-1.5 rounded-lg text-sm transition-colors shadow-md ${showInventory ? 'bg-cyan-500 text-white' : 'bg-cyan-600/80 hover:bg-cyan-500 text-white'}`}
+              className={`rounded-sm border border-cyan-500/30 px-3 py-1.5 text-sm transition-colors ${showInventory ? 'bg-cyan-600 text-white' : 'bg-cyan-950/80 text-white hover:bg-cyan-800/90'}`}
+              aria-label={`${showInventory ? 'Закрыть' : 'Открыть'} инвентарь, предметов: ${inventoryCount}`}
             >
               🎒 Инвентарь ({inventoryCount})
             </button>
             <button
+              type="button"
               onClick={onToggleNPC}
-              className={`px-3 py-1.5 rounded-lg text-sm transition-colors shadow-md ${showNPC ? 'bg-pink-500 text-white' : 'bg-pink-600/80 hover:bg-pink-500 text-white'}`}
+              className={`rounded-sm border border-pink-500/30 px-3 py-1.5 text-sm transition-colors ${showNPC ? 'bg-pink-600 text-white' : 'bg-pink-950/80 text-white hover:bg-pink-800/90'}`}
+              aria-label={showNPC ? 'Закрыть панель отношений с персонажами' : 'Открыть панель отношений с персонажами'}
             >
               👥 Связи
             </button>
             <button
+              type="button"
               onClick={onSave}
-              className="px-3 py-1.5 bg-emerald-600/80 hover:bg-emerald-500 text-white rounded-lg text-sm transition-colors shadow-md"
+              className="rounded-sm border border-emerald-500/35 bg-emerald-950/90 px-3 py-1.5 text-sm text-white transition-colors hover:bg-emerald-800/90"
+              aria-label="Сохранить игру"
             >
               💾 Сохранить
             </button>
+            </div>
           </div>
         </div>
         
@@ -215,7 +241,7 @@ export const GameUI = memo(function GameUI({
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
-              className="mt-3 p-3 bg-slate-800/80 rounded-lg"
+              className="mt-3 rounded-sm border border-cyan-500/15 bg-slate-900/85 p-3 font-mono game-fm-layer game-fm-layer-promote"
             >
               <NPCRelationsPanel relations={npcRelations} />
             </motion.div>

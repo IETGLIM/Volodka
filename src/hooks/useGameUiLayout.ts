@@ -1,9 +1,10 @@
 import { useCallback, useMemo } from 'react';
 import type { GamePanelsState } from '@/hooks/useGamePanels';
+import type { GameMode } from '@/data/rpgTypes';
 
 interface UseGameUiLayoutParams {
   phase: 'loading' | 'intro' | 'menu' | 'game';
-  gameMode: 'visual-novel' | 'exploration' | 'dialogue' | 'combat' | 'dream-sequence';
+  gameMode: GameMode;
   currentNodeId: string;
   hasCurrentNode: boolean;
   togglePanel: (key: keyof GamePanelsState) => void;
