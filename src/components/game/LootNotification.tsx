@@ -64,7 +64,7 @@ export const SkillUpNotification = memo(function SkillUpNotification() {
   useEffect(() => {
     return eventBus.on('skill:level_up', (p) => {
       setSkill(p);
-      eventBus.emit('sound:play', { type: 'loot' });
+      eventBus.emit('sound:play', { type: 'skill' });
       window.setTimeout(() => setSkill(null), 2800);
     });
   }, []);

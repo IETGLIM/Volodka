@@ -44,6 +44,7 @@ import { eventBus } from '@/engine/EventBus';
 import { useGameAudioProfile } from '@/hooks/useAudio';
 import { QUEST_DEFINITIONS, getNextTrackedObjective } from '@/data/quests';
 import { getNPCsForScene } from '@/data/npcDefinitions';
+import { getSceneConfig, getInteractiveObjectsForScene } from '@/config/scenes';
 import type { MiniMapQuestMarker } from '@/components/game/MiniMap';
 import { MoralCompassHUD } from '@/components/game/MoralCompassHUD';
 import { LootNotification, SkillUpNotification } from '@/components/game/LootNotification';
@@ -154,6 +155,55 @@ export default function GameOrchestrator() {
     return unsub;
   }, [showEffectNotif]);
 
+  useEffect(() => {
+    return eventBus.on('object:interact', ({ objectId, action }) => {
+      const sid = useGameStore.getState().exploration.currentSceneId;
+      const objects = getInteractiveObjectsForScene(sid);
+      const obj = objects.find((o) => o.id === objectId);
+      const toast = (text: string) => eventBus.emit('ui:exploration_message', { text });
+
+      if (!obj) {
+        toast('Объект не найден в этой сцене.');
+        return;
+      }
+
+      const store = useGameStore.getState();
+      switch (action) {
+        case 'inspect': {
+          if (obj.canBeRead && obj.poemId) {
+            toast(`«${obj.type}»: можно прочитать (сюжет / триггер рядом с объектом).`);
+          } else {
+            toast(`Объект «${obj.id}» (${obj.type}).`);
+          }
+          break;
+        }
+        case 'take': {
+          if (obj.itemId) {
+            store.addItem(obj.itemId, 1);
+          } else {
+            toast('С объекта нечего взять.');
+          }
+          break;
+        }
+        case 'use': {
+          toast('Использование привязано к сюжету — скоро.');
+          break;
+        }
+        case 'drop': {
+          if (obj.itemId) {
+            store.removeItem(obj.itemId, 1);
+            toast(`Выброшено: ${obj.itemId}`);
+          } else {
+            toast('Нельзя выбросить привязку к этому объекту.');
+          }
+          break;
+        }
+        default:
+          toast(`Действие «${action}» не обработано.`);
+      }
+    });
+  }, []);
+
   const {
     dialogueStoreActions,
     activeDialogue,
@@ -237,6 +287,11 @@ export default function GameOrchestrator() {
       position: exploration.npcStates[def.id]?.position,
     }));
   }, [gameMode, exploration.currentSceneId, exploration.npcStates]);
+
+  const minimapSceneSize = useMemo(() => {
+    const cfg = getSceneConfig(exploration.currentSceneId);
+    return { width: cfg.size[0], depth: cfg.size[1] };
+  }, [exploration.currentSceneId]);
 
   const minimapQuestMarkers = useMemo((): MiniMapQuestMarker[] => {
     if (gameMode !== 'exploration') return [];
@@ -446,7 +501,7 @@ export default function GameOrchestrator() {
       {gameMode === 'exploration' && (
         <MiniMap
           playerPosition={exploration.playerPosition}
-          sceneSize={{ width: 20, depth: 20 }}
+          sceneSize={minimapSceneSize}
           sceneName={SCENE_VISUALS[exploration.currentSceneId]?.name ?? exploration.currentSceneId}
           npcs={minimapNpcs}
           questMarkers={minimapQuestMarkers}

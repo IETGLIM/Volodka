@@ -577,6 +577,12 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
           effect: { karma: 5 },
         },
         {
+          text: 'Тут держат бар для своих — чувствуется свобода.',
+          next: 'barista_kindred',
+          conditions: { minKarma: 55 },
+          effect: { mood: 3 },
+        },
+        {
           text: 'До свидания.',
           next: 'barista_bye',
         },
@@ -1892,6 +1898,14 @@ export const DIALOGUE_NODES: Record<string, NPCDefinition['dialogueTree']> = {
   },
 
   // ========== БАРИСТА И ДРУГИЕ (сокращённо) ==========
+  barista_kindred: {
+    id: 'barista_kindred',
+    text: 'Ты угадал. Сюда приходят не за лайками — за дыханием. Кофе на дом, если расскажешь строчку.',
+    choices: [
+      { text: 'Потом — хочу только посидеть.', next: 'barista_bye' },
+      { text: 'Есть одна строчка…', next: 'barista_coffee', effect: { stress: -3, creativity: 5 } },
+    ],
+  },
   barista_about: {
     id: 'barista_about',
     text: '"Синяя Яма" — место для творческих людей. Поэтов, музыкантов... Каждую пятницу — открытый микрофон.',

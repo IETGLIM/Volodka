@@ -330,6 +330,9 @@ export default function HUD({
   const visualLite = useMobileVisualPerf();
   const narrow = useIsMobile();
   const playerState = useGameStore(s => s.playerState);
+  const setFlag = useGameStore(s => s.setFlag);
+  const unsetFlag = useGameStore(s => s.unsetFlag);
+  const tutorialsDisabled = playerState.flags.tutorialsDisabled === true;
   const collectedPoems = useGameStore(s => s.collectedPoemIds);
   const inventory = useGameStore(s => s.inventory);
   const activeQuestIds = useGameStore(s => s.activeQuestIds);
@@ -460,6 +463,20 @@ export default function HUD({
                 ariaLabel={btn.ariaLabel}
               />
             ))}
+            <CyberActionBtn
+              label=""
+              isActive={!tutorialsDisabled}
+              onClick={() =>
+                tutorialsDisabled ? unsetFlag('tutorialsDisabled') : setFlag('tutorialsDisabled')
+              }
+              colorClass="bg-slate-800/90"
+              icon="💡"
+              ariaLabel={
+                tutorialsDisabled
+                  ? 'Включить подсказки в режиме 3D'
+                  : 'Отключить подсказки в режиме 3D'
+              }
+            />
             <CyberActionBtn
               label=""
               isActive={false}
