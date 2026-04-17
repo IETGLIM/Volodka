@@ -16,6 +16,7 @@ import { Player } from './Player';
 import FollowCamera from './FollowCamera';
 import { NPCSystem } from './NPC';
 import { InteractiveObject, ZaremaAlbertRoom } from './RoomEnvironment';
+import { useGameStore } from '@/store/gameStore';
 
 interface NPCConfig {
   id: string;
@@ -113,6 +114,7 @@ export const PhysicsGameModeSwitcher = memo(function PhysicsGameModeSwitcher({
   children,
 }: PhysicsGameModeSwitcherProps) {
   const [npcStates, setNPCStates] = React.useState<Record<string, NPCState>>({});
+  const setNPCState = useGameStore((s) => s.setNPCState);
 
   const handleObjectInteract = React.useCallback((objectId: string) => {
     onObjectInteract?.(objectId, 'interact');
@@ -133,9 +135,13 @@ export const PhysicsGameModeSwitcher = memo(function PhysicsGameModeSwitcher({
     }));
   }, [npcs, sceneId]);
 
-  const handleNPCStateChange = React.useCallback((npcId: string, state: NPCState) => {
-    setNPCStates(prev => ({ ...prev, [npcId]: state }));
-  }, []);
+  const handleNPCStateChange = React.useCallback(
+    (npcId: string, state: NPCState) => {
+      setNPCStates((prev) => ({ ...prev, [npcId]: state }));
+      setNPCState(npcId, state);
+    },
+    [setNPCState],
+  );
 
   return (
     <Canvas

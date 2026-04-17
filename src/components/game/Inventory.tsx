@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useCallback, useMemo, memo, useRef } from 'react';
+import React, { useState, useCallback, useMemo, memo, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGameStore } from '@/store/gameStore';
 import type { InventoryItem, ItemRarity } from '@/data/types';
@@ -64,6 +64,7 @@ const RARITY_STYLES: Record<ItemRarity, {
 
 const SLOT_SIZE = 56;
 const INVENTORY_COLS = 6;
+/** Базовое число рядов; при большем количестве предметов сетка расширяется по рядам, прокрутка — overflow-y-auto. */
 const INVENTORY_ROWS = 4;
 
 // ============================================
@@ -75,8 +76,28 @@ interface ItemTooltipProps {
   position: { x: number; y: number };
 }
 
+const TOOLTIP_MAX_W = 280;
+const TOOLTIP_MAX_H = 220;
+
 const ItemTooltip = memo(function ItemTooltip({ item, position }: ItemTooltipProps) {
   const rarity = RARITY_STYLES[item.item.rarity];
+  const [viewport, setViewport] = useState(() => ({
+    w: typeof window !== 'undefined' ? window.innerWidth : 800,
+    h: typeof window !== 'undefined' ? window.innerHeight : 600,
+  }));
+
+  useEffect(() => {
+    const sync = () => {
+      setViewport({ w: window.innerWidth, h: window.innerHeight });
+    };
+    sync();
+    window.addEventListener('resize', sync);
+    window.visualViewport?.addEventListener('resize', sync);
+    return () => {
+      window.removeEventListener('resize', sync);
+      window.visualViewport?.removeEventListener('resize', sync);
+    };
+  }, []);
 
   return (
     <motion.div
@@ -85,8 +106,8 @@ const ItemTooltip = memo(function ItemTooltip({ item, position }: ItemTooltipPro
       exit={{ opacity: 0, scale: 0.95, y: 5 }}
       className="fixed z-[100] pointer-events-none"
       style={{
-        left: Math.min(position.x + 16, (typeof window !== 'undefined' ? window.innerWidth : 800) - 280),
-        top: Math.min(position.y + 16, (typeof window !== 'undefined' ? window.innerHeight : 600) - 220),
+        left: Math.min(position.x + 16, viewport.w - TOOLTIP_MAX_W),
+        top: Math.min(position.y + 16, viewport.h - TOOLTIP_MAX_H),
       }}
     >
       <div
@@ -263,9 +284,11 @@ export const Inventory = memo(function Inventory({ isOpen, onClose }: InventoryP
   const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
 
-  // Create slots array
+  // Слоты: минимум 6×4; при переполнении добавляются полные ряды по 6 ячеек
   const slots = useMemo(() => {
-    const totalSlots = INVENTORY_COLS * INVENTORY_ROWS;
+    const base = INVENTORY_COLS * INVENTORY_ROWS;
+    const n = inventory.length;
+    const totalSlots = n <= base ? base : Math.ceil(n / INVENTORY_COLS) * INVENTORY_COLS;
     const result: (InventoryItem | null)[] = [...inventory];
     while (result.length < totalSlots) {
       result.push(null);
@@ -332,7 +355,7 @@ export const Inventory = memo(function Inventory({ isOpen, onClose }: InventoryP
                   ИНВЕНТАРЬ
                 </h2>
                 <p className="text-xs text-slate-500">
-                  {inventory.length} / {INVENTORY_COLS * INVENTORY_ROWS} ячеек
+                  {inventory.length} / {slots.length} ячеек
                 </p>
               </div>
             </div>
@@ -367,6 +390,33 @@ export const Inventory = memo(function Inventory({ isOpen, onClose }: InventoryP
             ))}
           </div>
         </div>
+
+        {/* Действия с выбранным предметом (логика use/drop — позже) */}
+        {selectedIndex !== null && slots[selectedIndex] != null && (
+          <div className="relative shrink-0 border-t border-cyan-500/20 bg-slate-950/40 px-4 py-2">
+            <p className="mb-2 font-mono text-[10px] uppercase tracking-wide text-slate-500">
+              Выбрано: {slots[selectedIndex]!.item.name}
+            </p>
+            <div className="flex flex-wrap gap-2">
+              <button
+                type="button"
+                disabled
+                title="Использование предметов будет добавлено в следующих версиях"
+                className="rounded border border-slate-600/40 bg-slate-800/40 px-3 py-1.5 font-mono text-xs text-slate-500 cursor-not-allowed"
+              >
+                Использовать
+              </button>
+              <button
+                type="button"
+                disabled
+                title="Выброс предмета будет добавлен в следующих версиях"
+                className="rounded border border-slate-600/40 bg-slate-800/40 px-3 py-1.5 font-mono text-xs text-slate-500 cursor-not-allowed"
+              >
+                Выбросить
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Footer */}
         <div className="relative shrink-0 border-t border-cyan-500/20 bg-slate-900/30 p-3">

@@ -16,6 +16,7 @@ import { useEffectNotifications } from '@/hooks/useEffectNotifications';
 import { useGameScene } from '@/hooks/useGameScene';
 import { useDialogProcessor } from '@/hooks/useDialogProcessor';
 import { useActionHandler } from '@/hooks/useActionHandler';
+import { AmbientMusicPlayer } from '@/hooks/useAmbientMusic';
 
 import { IntroScreen } from './IntroScreen';
 import { MenuScreen } from './MenuScreen';
@@ -39,6 +40,9 @@ import {
 } from './GameOrchestratorSubcomponents';
 
 import { useGameStore } from '@/store/gameStore';
+import { MiniMap } from '@/components/game/MiniMap';
+import { getNPCsForScene } from '@/data/npcDefinitions';
+import { SCENE_VISUALS } from '@/engine/SceneManager';
 
 const QuestsPanel = dynamic(() => import('@/components/game/QuestsPanel'), { ssr: false });
 const FactionsPanel = dynamic(() => import('@/components/game/FactionsPanel'), { ssr: false });
@@ -102,6 +106,13 @@ export default function GameOrchestrator() {
   const collectedPoems = useGameStore((s) => s.collectedPoemIds);
   const unlockedAchievements = useGameStore((s) => s.unlockedAchievementIds);
   const gameMode = useGameStore((s) => s.gameMode);
+  const exploration = useGameStore(
+    useShallow((s) => ({
+      playerPosition: s.exploration.playerPosition,
+      currentSceneId: s.exploration.currentSceneId,
+      npcStates: s.exploration.npcStates,
+    })),
+  );
   const npcRelations = useGameStore((s) => s.npcRelations);
   const inventory = useGameStore((s) => s.inventory);
 
@@ -172,6 +183,18 @@ export default function GameOrchestrator() {
     const data = getCutsceneById(activeCutsceneId);
     return data ? (data as AnimeCutsceneData) : null;
   }, [activeCutsceneId]);
+
+  const minimapNpcs = useMemo(() => {
+    if (gameMode !== 'exploration') return [];
+    return getNPCsForScene(exploration.currentSceneId).map((def) => ({
+      id: def.id,
+      name: def.name,
+      model: def.model,
+      defaultPosition: def.defaultPosition,
+      sceneId: def.sceneId,
+      position: exploration.npcStates[def.id]?.position,
+    }));
+  }, [gameMode, exploration.currentSceneId, exploration.npcStates]);
 
   useEffect(() => {
     if (!activeCutsceneId) return;
@@ -266,9 +289,25 @@ export default function GameOrchestrator() {
 
   return (
     <CyberGameShell sceneId={currentSceneId} stability={playerState.stability}>
+      <AmbientMusicPlayer
+        sceneId={currentSceneId}
+        mood={playerState.mood}
+        stress={playerState.stress}
+        creativity={playerState.creativity}
+        enabled={phase === 'game' && !activeCutscene}
+      />
       <SceneRenderer sceneId={currentSceneId} playerState={playerState} />
 
       <SceneNPCList sceneId={currentSceneId} onInteract={handleNPCInteraction} />
+
+      {gameMode === 'exploration' && (
+        <MiniMap
+          playerPosition={exploration.playerPosition}
+          sceneSize={{ width: 20, depth: 20 }}
+          sceneName={SCENE_VISUALS[exploration.currentSceneId]?.name ?? exploration.currentSceneId}
+          npcs={minimapNpcs}
+        />
+      )}
 
       <HUD onSave={handleSaveGame} onTogglePanel={handleTogglePanel} activePanels={panels} />
 

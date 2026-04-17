@@ -1,10 +1,10 @@
 "use client";
 
-import React, { useRef, useState, useMemo, memo, Suspense, useCallback } from 'react';
+import React, { useRef, useState, useMemo, memo, Suspense, useCallback, useEffect } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { useGLTF, useAnimations, Html } from '@react-three/drei';
 import * as THREE from 'three';
-import type { NPCDefinition, NPCState } from '@/data/rpgTypes';
+import type { AnimationMapping, NPCDefinition, NPCState } from '@/data/rpgTypes';
 
 // ============================================
 // ERROR BOUNDARY ДЛЯ МОДЕЛЕЙ
@@ -41,6 +41,58 @@ interface GLTFModelProps {
   isNearPlayer: boolean;
   isDialogueActive: boolean;
   fallback: React.ReactNode;
+  npcAnimation: 'idle' | 'walk' | 'talk';
+  animations?: AnimationMapping;
+}
+
+const DEFAULT_ANIMATIONS = {
+  idle: 'Idle',
+  walk: 'Walk',
+  talk: 'Talk',
+};
+
+function resolveNpcAnimationClip(
+  actionKeys: string[],
+  mapping?: AnimationMapping
+): { idle: string; walk: string | null; talk: string | null } {
+  const has = (name?: string) => Boolean(name && actionKeys.includes(name));
+
+  const idle =
+    (has(mapping?.idle) ? mapping!.idle : undefined) ??
+    (actionKeys.includes(DEFAULT_ANIMATIONS.idle) ? DEFAULT_ANIMATIONS.idle : undefined) ??
+    actionKeys.find((k) => k.toLowerCase().includes('idle')) ??
+    actionKeys[0];
+
+  const walk =
+    (has(mapping?.walk) ? mapping!.walk : undefined) ??
+    (has(mapping?.run) ? mapping!.run : undefined) ??
+    (actionKeys.includes(DEFAULT_ANIMATIONS.walk) ? DEFAULT_ANIMATIONS.walk : undefined) ??
+    actionKeys.find((k) => {
+      const l = k.toLowerCase();
+      return l.includes('walk') || l.includes('run');
+    }) ??
+    null;
+
+  const talk =
+    (has(mapping?.talk) ? mapping!.talk : undefined) ??
+    (actionKeys.includes(DEFAULT_ANIMATIONS.talk) ? DEFAULT_ANIMATIONS.talk : undefined) ??
+    actionKeys.find((k) => {
+      const l = k.toLowerCase();
+      return l.includes('talk') || l.includes('speak') || l.includes('gesture');
+    }) ??
+    null;
+
+  return { idle, walk, talk };
+}
+
+function isValidNpcModelPath(p: string): boolean {
+  const lower = p.toLowerCase();
+  return (
+    typeof p === 'string' &&
+    p.length > 8 &&
+    p.startsWith('/models/') &&
+    (lower.endsWith('.glb') || lower.endsWith('.gltf'))
+  );
 }
 
 // Внутренний компонент для рендера загруженной модели
@@ -57,13 +109,6 @@ const GLTFModelInner = memo(function GLTFModelInner({
   isNearPlayer: boolean;
   isDialogueActive: boolean;
 }) {
-  useFrame(({ clock }) => {
-    if (groupRef.current) {
-      const t = clock.getElapsedTime();
-      groupRef.current.position.y = Math.sin(t * 1.5) * 0.02;
-    }
-  });
-
   return (
     <group ref={groupRef}>
       <primitive object={scene} scale={scale} />
@@ -84,14 +129,21 @@ const GLTFLoader = memo(function GLTFLoader({
   isNearPlayer,
   isDialogueActive,
   fallback,
+  npcAnimation,
+  animations: animMapping,
 }: Omit<GLTFModelProps, 'fallback'> & { fallback: React.ReactNode }) {
   const groupRef = useRef<THREE.Group>(null);
-  const { scene: loadedScene } = useGLTF(modelPath) as any;
+  const { scene: loadedScene, animations } = useGLTF(modelPath) as {
+    scene: THREE.Group;
+    animations?: THREE.AnimationClip[];
+  };
+  const { actions } = useAnimations(animations ?? [], groupRef);
+  const [currentClipName, setCurrentClipName] = useState<string | null>(null);
 
   const scene = useMemo(() => {
     if (!loadedScene) return null;
     try {
-      const clone = loadedScene.clone();
+      const clone = loadedScene.clone(true);
       clone.traverse((child: any) => {
         if (child.isMesh) {
           child.castShadow = true;
@@ -103,6 +155,36 @@ const GLTFLoader = memo(function GLTFLoader({
       return null;
     }
   }, [loadedScene]);
+
+  useEffect(() => {
+    return () => {
+      useGLTF.clear(modelPath);
+    };
+  }, [modelPath]);
+
+  useEffect(() => {
+    if (!actions || Object.keys(actions).length === 0) return;
+
+    const actionKeys = Object.keys(actions).filter((k) => actions[k]);
+    if (actionKeys.length === 0) return;
+
+    const resolved = resolveNpcAnimationClip(actionKeys, animMapping);
+    const targetClip =
+      npcAnimation === 'walk'
+        ? resolved.walk || resolved.idle
+        : npcAnimation === 'talk'
+          ? resolved.talk || resolved.idle
+          : resolved.idle;
+
+    if (!targetClip || !actions[targetClip] || currentClipName === targetClip) return;
+
+    if (currentClipName && actions[currentClipName]) {
+      actions[currentClipName].fadeOut(0.2);
+    }
+    actions[targetClip].reset().fadeIn(0.2).play();
+    const timer = setTimeout(() => setCurrentClipName(targetClip), 0);
+    return () => clearTimeout(timer);
+  }, [actions, animMapping, npcAnimation, currentClipName]);
 
   if (!scene) {
     return <>{fallback}</>;
@@ -124,14 +206,21 @@ const GLTFModel = memo(function GLTFModel({
   scale = 1,
   isNearPlayer,
   isDialogueActive,
-  fallback
+  fallback,
+  npcAnimation,
+  animations,
 }: GLTFModelProps) {
-  // Если путь не указан или undefined, показываем fallback
-  if (!modelPath || modelPath === 'undefined' || modelPath === '/undefined' || modelPath === '') {
+  // Если путь не указан или заведомо неверный — не дергаем загрузчик (ошибки сети ловит boundary)
+  if (
+    !modelPath ||
+    modelPath === 'undefined' ||
+    modelPath === '/undefined' ||
+    modelPath === '' ||
+    !isValidNpcModelPath(modelPath)
+  ) {
     return <>{fallback}</>;
   }
 
-  // Рендерим загрузчик только если путь валидный
   return (
     <ModelErrorBoundary fallback={fallback}>
       <GLTFLoader
@@ -140,20 +229,12 @@ const GLTFModel = memo(function GLTFModel({
         isNearPlayer={isNearPlayer}
         isDialogueActive={isDialogueActive}
         fallback={fallback}
+        npcAnimation={npcAnimation}
+        animations={animations}
       />
     </ModelErrorBoundary>
   );
 });
-
-// ============================================
-// КОНСТАНТЫ
-// ============================================
-
-const DEFAULT_ANIMATIONS = {
-  idle: 'Idle',
-  walk: 'Walk',
-  talk: 'Talk',
-};
 
 // ============================================
 // СТИЛИЗОВАННЫЕ МОДЕЛИ ПЕРСОНАЖЕЙ
@@ -624,13 +705,15 @@ export const NPC = memo(function NPC({
     }
   });
 
-  // Fallback model для GLTF
-  const fallbackModel = (
-    <FallbackNPCModel
-      modelType={definition.model}
-      isNearPlayer={isNearPlayer}
-      isDialogueActive={isDialogueActive}
-    />
+  const fallbackModel = useMemo(
+    () => (
+      <FallbackNPCModel
+        modelType={definition.model}
+        isNearPlayer={isNearPlayer}
+        isDialogueActive={isDialogueActive}
+      />
+    ),
+    [definition.model, isNearPlayer, isDialogueActive]
   );
 
   return (
@@ -645,6 +728,8 @@ export const NPC = memo(function NPC({
                 isNearPlayer={isNearPlayer}
                 isDialogueActive={isDialogueActive}
                 fallback={fallbackModel}
+                npcAnimation={currentAnimation}
+                animations={definition.animations}
               />
             </ModelErrorBoundary>
           </Suspense>

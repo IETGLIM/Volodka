@@ -25,7 +25,7 @@ import { Player, PlayerRef } from './Player';
 import { NPCSystem } from './NPC';
 import { SceneColliderSelector } from './SceneColliders';
 import { SimpleFollowCamera } from './FollowCamera';
-import { TriggerSystem } from './InteractiveTrigger';
+import { TriggerSystem, isPlayerInTriggerZone } from './InteractiveTrigger';
 import CameraEffects from '../CameraEffects';
 
 // Store
@@ -64,6 +64,7 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
   const playerState = useGameStore((state) => state.playerState);
   const playerPosition = useGameStore((state) => state.exploration.playerPosition);
   const setPlayerPosition = useGameStore((state) => state.setPlayerPosition);
+  const setNPCState = useGameStore((state) => state.setNPCState);
   
   // Ref для актуального значения playerPosition (избегаем устаревших замыканий)
   const playerPositionRef = useRef(playerPosition);
@@ -109,9 +110,13 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
   }, [setPlayerPosition]);
 
   // Handle NPC state changes
-  const handleNPCStateChange = useCallback((npcId: string, state: NPCState) => {
-    setNPCStates(prev => ({ ...prev, [npcId]: state }));
-  }, []);
+  const handleNPCStateChange = useCallback(
+    (npcId: string, state: NPCState) => {
+      setNPCStates((prev) => ({ ...prev, [npcId]: state }));
+      setNPCState(npcId, state);
+    },
+    [setNPCState],
+  );
 
   // Handle trigger state changes
   const handleTriggerStateChange = useCallback((triggerId: string, state: TriggerState) => {
@@ -126,11 +131,20 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
     }
   }, [sceneTriggers, onTriggerEnter]);
 
-  // Handle player interaction (E key) - find nearest NPC
+  // Handle player interaction (E key) — сначала триггер с requiresInteraction в зоне, иначе ближайший NPC
   const handlePlayerInteraction = useCallback(() => {
     if (isDialogueActive) return;
     
     const currentPos = playerPositionRef.current;
+
+    for (const trigger of sceneTriggers) {
+      const st = triggerStates[trigger.id] || { id: trigger.id, triggered: false };
+      if (st.triggered) continue;
+      if (!trigger.requiresInteraction) continue;
+      if (!isPlayerInTriggerZone(currentPos, trigger)) continue;
+      handleTriggerEnter(trigger.id);
+      return;
+    }
     
     // Find nearest NPC
     let nearestNPC: NPCDefinition | null = null;
@@ -152,7 +166,15 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
     if (nearestNPC) {
       onNPCInteraction(nearestNPC.id);
     }
-  }, [isDialogueActive, sceneNPCs, npcStates, onNPCInteraction]);
+  }, [
+    isDialogueActive,
+    sceneTriggers,
+    triggerStates,
+    handleTriggerEnter,
+    sceneNPCs,
+    npcStates,
+    onNPCInteraction,
+  ]);
 
   return (
     <Canvas
@@ -229,10 +251,9 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
         <TriggerSystem
           triggers={sceneTriggers}
           triggerStates={triggerStates}
-          playerPosition={playerPosition}
+          playerPositionRef={playerPositionRef}
           currentSceneId={sceneId}
           onTriggerEnter={handleTriggerEnter}
-          onTriggerInteract={handleTriggerEnter}
           onTriggerStateChange={handleTriggerStateChange}
         />
 

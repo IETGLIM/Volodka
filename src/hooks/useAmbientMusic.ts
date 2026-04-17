@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { getAtmosphereGenreForScene } from '@/lib/atmosphereMusicGenres';
 
 // ============================================
 // ПРОЦЕДУРНАЯ АТМОСФЕРНАЯ МУЗЫКА С КРОССФЕЙДАМИ
@@ -102,6 +103,19 @@ const SCENE_SCALES: Record<string, { scale: number[]; tempo: number; intensity: 
   },
 };
 
+function createDistortionNode(ctx: AudioContext): WaveShaperNode {
+  const n = 256;
+  const curve = new Float32Array(n);
+  for (let i = 0; i < n; i++) {
+    const x = (i / (n / 2)) - 1;
+    curve[i] = Math.tanh(x * 4);
+  }
+  const w = ctx.createWaveShaper();
+  w.curve = curve;
+  w.oversample = '4x';
+  return w;
+}
+
 // Типы звуковых слоёв
 type LayerType = 'bass' | 'pad' | 'melody' | 'noise' | 'accent';
 
@@ -119,6 +133,10 @@ export function useAmbientMusic(config: AmbientConfig) {
   const previousSceneRef = useRef<string>('');
   const crossfadeRef = useRef<number>(0);
   const [isPlaying, setIsPlaying] = useState(false);
+  const configRef = useRef(config);
+  configRef.current = config;
+  const playMelodicPhraseRef = useRef<() => void>(() => {});
+  const playBackgroundLayerRef = useRef<() => void>(() => {});
   
   // Инициализация аудио-контекста
   const initAudio = useCallback(() => {
@@ -274,6 +292,118 @@ export function useAmbientMusic(config: AmbientConfig) {
       layer.nodes.push(source);
     }
   }, []);
+
+  /** Короткий square-тон (8-bit). */
+  const createChiptuneBlip = useCallback(
+    (frequency: number, duration: number, volume: number = 0.12, layerType: LayerType = 'melody') => {
+      if (!audioContextRef.current || !masterGainRef.current) return;
+
+      const ctx = audioContextRef.current;
+      const now = ctx.currentTime;
+      const osc = ctx.createOscillator();
+      osc.type = 'square';
+      osc.frequency.value = frequency;
+
+      const filter = ctx.createBiquadFilter();
+      filter.type = 'lowpass';
+      filter.frequency.value = 5200;
+      filter.Q.value = 0.7;
+
+      const gain = ctx.createGain();
+      gain.gain.setValueAtTime(0, now);
+      gain.gain.linearRampToValueAtTime(volume, now + 0.008);
+      gain.gain.exponentialRampToValueAtTime(0.0008, now + Math.max(0.04, duration));
+
+      osc.connect(filter);
+      filter.connect(gain);
+      gain.connect(masterGainRef.current);
+      osc.start(now);
+      osc.stop(now + duration + 0.08);
+
+      const layer = layersRef.current.get(layerType);
+      if (layer) layer.nodes.push(osc);
+      osc.onended = () => {
+        const l = layersRef.current.get(layerType);
+        if (l) l.nodes = l.nodes.filter((n) => n !== osc);
+      };
+    },
+    []
+  );
+
+  /** Короткий saw + искажение (стилизация «тяжёлого» слоя, без клиппинга). */
+  const createBrutalSawStab = useCallback((frequency: number, duration: number, volume: number) => {
+    if (!audioContextRef.current || !masterGainRef.current) return;
+
+    const ctx = audioContextRef.current;
+    const now = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    osc.type = 'sawtooth';
+    osc.frequency.value = frequency * (1 + (Math.random() - 0.5) * 0.02);
+
+    const dist = createDistortionNode(ctx);
+    const lp = ctx.createBiquadFilter();
+    lp.type = 'lowpass';
+    lp.frequency.value = 1400 + Math.random() * 1200;
+    lp.Q.value = 0.9;
+
+    const gain = ctx.createGain();
+    gain.gain.setValueAtTime(0, now);
+    gain.gain.linearRampToValueAtTime(volume, now + 0.004);
+    gain.gain.linearRampToValueAtTime(0.0005, now + duration);
+
+    osc.connect(dist);
+    dist.connect(lp);
+    lp.connect(gain);
+    gain.connect(masterGainRef.current);
+    osc.start(now);
+    osc.stop(now + duration + 0.05);
+
+    const layer = layersRef.current.get('accent');
+    if (layer) layer.nodes.push(osc);
+    osc.onended = () => {
+      const l = layersRef.current.get('accent');
+      if (l) l.nodes = l.nodes.filter((n) => n !== osc);
+    };
+  }, []);
+
+  /** Ударный шумовой акцент. */
+  const createBrutalNoiseHit = useCallback((duration: number, volume: number) => {
+    if (!audioContextRef.current || !masterGainRef.current) return;
+
+    const ctx = audioContextRef.current;
+    const bufferSize = Math.max(64, Math.floor(ctx.sampleRate * duration));
+    const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) {
+      data[i] = (Math.random() * 2 - 1) * 0.35;
+    }
+
+    const source = ctx.createBufferSource();
+    source.buffer = buffer;
+
+    const bp = ctx.createBiquadFilter();
+    bp.type = 'bandpass';
+    bp.frequency.value = 900 + Math.random() * 1400;
+    bp.Q.value = 1.2;
+
+    const gain = ctx.createGain();
+    const now = ctx.currentTime;
+    gain.gain.setValueAtTime(0, now);
+    gain.gain.linearRampToValueAtTime(volume, now + 0.002);
+    gain.gain.exponentialRampToValueAtTime(0.0006, now + duration);
+
+    source.connect(bp);
+    bp.connect(gain);
+    gain.connect(masterGainRef.current);
+    source.start(now);
+
+    const layer = layersRef.current.get('noise');
+    if (layer) layer.nodes.push(source);
+    source.onended = () => {
+      const l = layersRef.current.get('noise');
+      if (l) l.nodes = l.nodes.filter((n) => n !== source);
+    };
+  }, []);
   
   // Создание мелодичной фразы
   const playMelodicPhrase = useCallback(() => {
@@ -281,11 +411,52 @@ export function useAmbientMusic(config: AmbientConfig) {
     
     const sceneConfig = SCENE_SCALES[config.sceneId] || SCENE_SCALES['default'];
     const scale = sceneConfig.scale;
+    const genre = getAtmosphereGenreForScene(config.sceneId);
     
     // Модификация в зависимости от настроения
     const moodModifier = config.mood / 100; // 0-1
     const stressModifier = 1 - (config.stress / 200); // 0.5-1
     const creativityModifier = config.creativity / 200; // 0-0.5
+
+    if (genre === 'chiptune_8bit') {
+      const steps = Math.floor(Math.random() * 5) + 5;
+      const stepMs = 95 / sceneConfig.tempo;
+      let idx = 0;
+      const dir = Math.random() > 0.5 ? 1 : -1;
+      for (let i = 0; i < steps; i++) {
+        idx = (idx + dir + scale.length * 10) % scale.length;
+        const freq = scale[idx] * (Math.random() > 0.85 ? 2 : 1);
+        const delayMs = i * (stepMs + Math.random() * 35);
+        setTimeout(() => {
+          const vol =
+            (0.09 + moodModifier * 0.05) * stressModifier * sceneConfig.intensity * (0.85 + creativityModifier);
+          createChiptuneBlip(freq, 0.07 + Math.random() * 0.06, vol, 'melody');
+        }, delayMs);
+      }
+      return;
+    }
+
+    if (genre === 'brutal_heavy') {
+      const hits = Math.floor(Math.random() * 6) + 7;
+      const stepMs = (42 + Math.random() * 28) / sceneConfig.tempo;
+      for (let i = 0; i < hits; i++) {
+        const delayMs = i * stepMs;
+        setTimeout(() => {
+          if (Math.random() < 0.72) {
+            const baseNote = scale[Math.floor(Math.random() * scale.length)];
+            const freq = baseNote * (Math.random() > 0.55 ? 0.5 : 1);
+            const vol =
+              (0.07 + moodModifier * 0.04) * (0.55 + stressModifier * 0.45) * sceneConfig.intensity;
+            createBrutalSawStab(freq, 0.055 + Math.random() * 0.05, Math.min(0.11, vol));
+          } else {
+            const vol =
+              (0.04 + creativityModifier * 0.06) * stressModifier * sceneConfig.intensity;
+            createBrutalNoiseHit(0.035 + Math.random() * 0.03, Math.min(0.09, vol));
+          }
+        }, delayMs);
+      }
+      return;
+    }
     
     // Выбираем 2-4 ноты для фразы
     const phraseLength = Math.floor(Math.random() * 3) + 2;
@@ -312,7 +483,50 @@ export function useAmbientMusic(config: AmbientConfig) {
         createPad(freq, duration, volume, 'melody');
       }, i * (baseDelay + Math.random() * 300));
     });
-  }, [config.sceneId, config.mood, config.stress, config.creativity, createPad]);
+  }, [
+    config.sceneId,
+    config.mood,
+    config.stress,
+    config.creativity,
+    createPad,
+    createChiptuneBlip,
+    createBrutalSawStab,
+    createBrutalNoiseHit,
+  ]);
+
+  const playBackgroundLayer = useCallback(() => {
+    if (!audioContextRef.current || !masterGainRef.current) return;
+
+    const sceneConfig = SCENE_SCALES[config.sceneId] || SCENE_SCALES['default'];
+    const genre = getAtmosphereGenreForScene(config.sceneId);
+    const scale = sceneConfig.scale;
+    const bassFreq = scale[0] / 2;
+
+    if (genre === 'brutal_heavy') {
+      createPad(bassFreq * 0.72, 14, 0.11 * sceneConfig.intensity, 'bass');
+      if (Math.random() < 0.35) {
+        createBrutalNoiseHit(0.14, 0.025 * sceneConfig.intensity);
+      }
+      return;
+    }
+
+    if (genre === 'chiptune_8bit') {
+      createChiptuneBlip(bassFreq, 5.5, 0.055 * sceneConfig.intensity, 'bass');
+      setTimeout(() => {
+        if (scale[3]) {
+          createChiptuneBlip(scale[3] * 0.5, 4, 0.04 * sceneConfig.intensity, 'pad');
+        }
+      }, 2800);
+      return;
+    }
+
+    createPad(bassFreq, 10, 0.08 * sceneConfig.intensity, 'bass');
+    setTimeout(() => {
+      if (scale[2]) {
+        createPad(scale[2], 8, 0.06 * sceneConfig.intensity, 'pad');
+      }
+    }, 5000);
+  }, [config.sceneId, createPad, createChiptuneBlip, createBrutalNoiseHit]);
   
   // Кроссфейд при смене сцены
   const crossfadeToScene = useCallback((newSceneId: string) => {
@@ -343,6 +557,9 @@ export function useAmbientMusic(config: AmbientConfig) {
       playMelodicPhrase();
     }, crossfadeTime * 1000);
   }, [playMelodicPhrase]);
+
+  playMelodicPhraseRef.current = playMelodicPhrase;
+  playBackgroundLayerRef.current = playBackgroundLayer;
   
   // Основной цикл эмбиента
   const startAmbient = useCallback(() => {
@@ -352,6 +569,7 @@ export function useAmbientMusic(config: AmbientConfig) {
     setIsPlaying(true);
     
     const sceneConfig = SCENE_SCALES[config.sceneId] || SCENE_SCALES['default'];
+    const genre = getAtmosphereGenreForScene(config.sceneId);
     
     // Инициализация слоёв
     (['bass', 'pad', 'melody', 'noise', 'accent'] as LayerType[]).forEach(type => {
@@ -360,49 +578,42 @@ export function useAmbientMusic(config: AmbientConfig) {
       }
     });
     
-    // Фоновый слой - медленные пэды
-    const playBackgroundLayer = () => {
-      const scale = sceneConfig.scale;
-      
-      // Басовая нота (тоника)
-      const bassFreq = scale[0] / 2;
-      createPad(bassFreq, 10, 0.08 * sceneConfig.intensity, 'bass');
-      
-      // Через 5 секунд - вторая гармоника
-      setTimeout(() => {
-        if (scale[2]) {
-          createPad(scale[2], 8, 0.06 * sceneConfig.intensity, 'pad');
-        }
-      }, 5000);
-    };
-    
     // Запуск слоёв
-    playBackgroundLayer();
-    playMelodicPhrase();
+    playBackgroundLayerRef.current();
+    playMelodicPhraseRef.current();
     
     // Периодическое добавление шумового слоя
-    createNoise(12, 0.02);
+    const noiseDur = genre === 'brutal_heavy' ? 8 : 12;
+    const noiseVol = genre === 'brutal_heavy' ? 0.028 : 0.02;
+    createNoise(noiseDur, noiseVol);
     
-    // Цикл с вариативностью
+    // Цикл с вариативностью (refs — актуальная сцена и колбэки после смены локации)
     intervalRef.current = setInterval(() => {
-      if (!config.enabled) return;
-      
-      // Случайный выбор: пэд или мелодия
+      const c = configRef.current;
+      if (!c.enabled) return;
+
+      const sc = SCENE_SCALES[c.sceneId] || SCENE_SCALES['default'];
+      const g = getAtmosphereGenreForScene(c.sceneId);
       const choice = Math.random();
-      
-      if (choice < 0.25) {
-        playBackgroundLayer();
-      } else if (choice < 0.55) {
-        playMelodicPhrase();
-      } else if (choice < 0.70) {
-        // Редкий - тихий шум
-        createNoise(6, 0.015);
+
+      if (g === 'brutal_heavy') {
+        if (choice < 0.32) playBackgroundLayerRef.current();
+        else if (choice < 0.82) playMelodicPhraseRef.current();
+        else if (choice < 0.92) createBrutalNoiseHit(0.06 + Math.random() * 0.05, 0.022 * sc.intensity);
+        else createNoise(5, 0.018);
+      } else if (g === 'chiptune_8bit') {
+        if (choice < 0.22) playBackgroundLayerRef.current();
+        else if (choice < 0.68) playMelodicPhraseRef.current();
+        else if (choice < 0.78) createNoise(4, 0.012);
+      } else {
+        if (choice < 0.25) playBackgroundLayerRef.current();
+        else if (choice < 0.55) playMelodicPhraseRef.current();
+        else if (choice < 0.70) createNoise(6, 0.015);
       }
-      // 30% тишина - паузы важны для атмосферы
       
-    }, (6000 + Math.random() * 4000) / sceneConfig.tempo); // Адаптивный интервал
+    }, ((genre === 'brutal_heavy' ? 4200 : genre === 'chiptune_8bit' ? 5200 : 6000) + Math.random() * 4000) / sceneConfig.tempo);
     
-  }, [config.enabled, config.sceneId, initAudio, createPad, createNoise, playMelodicPhrase]);
+  }, [config.enabled, config.sceneId, initAudio, createNoise, createBrutalNoiseHit]);
   
   // Остановка
   const stopAmbient = useCallback(() => {

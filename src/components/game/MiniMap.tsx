@@ -1,18 +1,20 @@
 'use client';
 
-import { memo, useMemo } from 'react';
+import { memo, useMemo, useState, useCallback, useId } from 'react';
 import { motion } from 'framer-motion';
 
 // ============================================
 // TYPES
 // ============================================
 
-interface MiniMapNPC {
+export interface MiniMapNPC {
   id: string;
   name: string;
   model: string;
   defaultPosition: { x: number; y: number; z: number };
   sceneId: string;
+  /** Текущая позиция в мире; если нет — используется defaultPosition */
+  position?: { x: number; y: number; z: number };
 }
 
 interface MiniMapProps {
@@ -22,6 +24,31 @@ interface MiniMapProps {
   npcs: MiniMapNPC[];
   interactiveObjects?: Array<{ id: string; position: [number, number, number]; type: string }>;
   className?: string;
+}
+
+const ZOOM_MIN = 0.65;
+const ZOOM_MAX = 1.85;
+const ZOOM_STEP = 0.15;
+
+const COLORS = {
+  bg: 'rgba(10, 4, 22, 0.92)',
+  border: 'rgba(168, 85, 247, 0.35)',
+  headerBg: 'rgba(34, 12, 48, 0.75)',
+  grid: 'rgba(0, 255, 255, 0.22)',
+  playerCore: '#22d3ee',
+  playerGlow: 'rgba(34, 211, 238, 0.45)',
+  npcCore: '#e879f9',
+  npcGlow: 'rgba(232, 121, 249, 0.55)',
+  poem: '#fbbf24',
+  poemGlow: 'rgba(251, 191, 36, 0.65)',
+  object: '#22d3ee',
+  objectGlow: 'rgba(34, 211, 238, 0.55)',
+  labelMuted: 'rgba(148, 163, 184, 0.85)',
+  compass: 'rgba(34, 211, 238, 0.45)',
+} as const;
+
+function npcWorldPos(npc: MiniMapNPC) {
+  return npc.position ?? npc.defaultPosition;
 }
 
 // ============================================
@@ -36,140 +63,229 @@ export const MiniMap = memo(function MiniMap({
   interactiveObjects = [],
   className = '',
 }: MiniMapProps) {
+  const gridPatternId = useId().replace(/:/g, '');
   const mapSize = { width: 150, height: 120 };
-  
-  const scale = useMemo(() => ({
-    x: mapSize.width / sceneSize.width,
-    z: mapSize.height / sceneSize.depth,
-  }), [sceneSize.width, sceneSize.depth]);
+  const [zoom, setZoom] = useState(1);
 
-  const playerMapPos = useMemo(() => ({
-    x: playerPosition.x * scale.x + mapSize.width / 2,
-    y: playerPosition.z * scale.z + mapSize.height / 2,
-  }), [playerPosition.x, playerPosition.z, scale]);
+  const scale = useMemo(
+    () => ({
+      x: mapSize.width / sceneSize.width,
+      z: mapSize.height / sceneSize.depth,
+    }),
+    [sceneSize.width, sceneSize.depth],
+  );
+
+  const playerMapPos = useMemo(
+    () => ({
+      x: playerPosition.x * scale.x + mapSize.width / 2,
+      y: playerPosition.z * scale.z + mapSize.height / 2,
+    }),
+    [playerPosition.x, playerPosition.z, scale.x, scale.z],
+  );
 
   const playerRotation = playerPosition.rotation || 0;
+
+  const bumpZoom = useCallback((delta: number) => {
+    setZoom((z) => Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, Math.round((z + delta) * 100) / 100)));
+  }, []);
+
+  const onWheelMap = useCallback((e: React.WheelEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    bumpZoom(e.deltaY > 0 ? -ZOOM_STEP : ZOOM_STEP);
+  }, [bumpZoom]);
 
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
-      className={`fixed bottom-4 right-4 z-30 ${className}`}
+      className={`fixed bottom-24 right-4 z-30 select-none ${className}`}
     >
-      <div className="relative bg-slate-900/90 backdrop-blur-sm rounded-lg border border-slate-700/50 overflow-hidden shadow-xl">
+      <div
+        className="relative overflow-hidden rounded-lg shadow-xl backdrop-blur-sm"
+        style={{
+          background: COLORS.bg,
+          borderWidth: 1,
+          borderStyle: 'solid',
+          borderColor: COLORS.border,
+          boxShadow: '0 0 24px rgba(168, 85, 247, 0.12), inset 0 0 40px rgba(0, 255, 255, 0.04)',
+        }}
+      >
         {/* Header */}
-        <div className="px-2 py-1 bg-slate-800/50 border-b border-slate-700/30">
-          <span className="text-xs font-mono text-cyan-400 tracking-wider">
-            {sceneName}
-          </span>
-        </div>
-        
-        {/* Map Area */}
-        <div 
-          className="relative"
-          style={{ width: mapSize.width, height: mapSize.height }}
+        <div
+          className="flex items-center justify-between gap-2 px-2 py-1"
+          style={{ background: COLORS.headerBg, borderBottom: `1px solid ${COLORS.border}` }}
         >
-          {/* Grid lines */}
-          <svg className="absolute inset-0 w-full h-full opacity-10">
-            <defs>
-              <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
-                <path d="M 20 0 L 0 0 0 20" fill="none" stroke="rgba(0,255,255,0.5)" strokeWidth="0.5"/>
-              </pattern>
-            </defs>
-            <rect width="100%" height="100%" fill="url(#grid)" />
-          </svg>
-
-          {/* Interactive Objects */}
-          {interactiveObjects.map(obj => (
-            <div
-              key={obj.id}
-              className="absolute w-2 h-2 rounded-full transform -translate-x-1/2 -translate-y-1/2"
-              style={{
-                left: obj.position[0] * scale.x + mapSize.width / 2,
-                top: obj.position[2] * scale.z + mapSize.height / 2,
-                backgroundColor: obj.type === 'poem' ? '#fbbf24' : '#22d3ee',
-                boxShadow: `0 0 4px ${obj.type === 'poem' ? '#fbbf24' : '#22d3ee'}`,
-              }}
-              title={obj.id}
-            />
-          ))}
-
-          {/* NPCs */}
-          {npcs.map(npc => (
-            <div
-              key={npc.id}
-              className="absolute w-3 h-3 rounded-full transform -translate-x-1/2 -translate-y-1/2
-                         bg-green-400 shadow-lg shadow-green-400/50"
-              style={{
-                left: npc.defaultPosition.x * scale.x + mapSize.width / 2,
-                top: npc.defaultPosition.z * scale.z + mapSize.height / 2,
-              }}
-              title={npc.name}
+          <span className="text-xs font-mono tracking-wider text-cyan-300">{sceneName}</span>
+          <div className="flex items-center gap-0.5">
+            <button
+              type="button"
+              aria-label="Уменьшить масштаб карты"
+              className="h-5 min-w-[1.25rem] rounded border border-fuchsia-500/30 bg-black/40 px-1 font-mono text-[10px] text-fuchsia-200 hover:border-cyan-400/50 hover:text-cyan-200"
+              onClick={() => bumpZoom(-ZOOM_STEP)}
             >
-              <span className="absolute -bottom-3 left-1/2 -translate-x-1/2 text-[8px] text-green-300 whitespace-nowrap">
-                {npc.name.slice(0, 6)}
-              </span>
-            </div>
-          ))}
-
-          {/* Player */}
-          <motion.div
-            className="absolute w-4 h-4 transform -translate-x-1/2 -translate-y-1/2"
-            style={{
-              left: playerMapPos.x,
-              top: playerMapPos.y,
-            }}
-            animate={{
-              left: playerMapPos.x,
-              top: playerMapPos.y,
-            }}
-            transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-          >
-            {/* Player direction indicator */}
-            <div
-              className="absolute inset-0 flex items-center justify-center"
-              style={{ transform: `rotate(${playerRotation}rad)` }}
+              −
+            </button>
+            <span className="w-8 text-center font-mono text-[9px] text-slate-400">{Math.round(zoom * 100)}%</span>
+            <button
+              type="button"
+              aria-label="Увеличить масштаб карты"
+              className="h-5 min-w-[1.25rem] rounded border border-fuchsia-500/30 bg-black/40 px-1 font-mono text-[10px] text-fuchsia-200 hover:border-cyan-400/50 hover:text-cyan-200"
+              onClick={() => bumpZoom(ZOOM_STEP)}
             >
-              <div className="w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-b-[10px] border-b-cyan-400" />
-            </div>
-            {/* Player glow */}
-            <div className="absolute inset-0 rounded-full bg-cyan-400/30 animate-ping" />
-            {/* Player core */}
-            <div className="absolute inset-1 rounded-full bg-cyan-400 shadow-lg shadow-cyan-400/50" />
-          </motion.div>
-
-          {/* Compass */}
-          <div className="absolute top-1 left-1 text-[10px] font-mono text-slate-500">
-            N
-          </div>
-          <div className="absolute bottom-1 left-1/2 -translate-x-1/2 text-[10px] font-mono text-slate-500">
-            S
-          </div>
-          <div className="absolute left-1 top-1/2 -translate-y-1/2 text-[10px] font-mono text-slate-500">
-            W
-          </div>
-          <div className="absolute right-1 top-1/2 -translate-y-1/2 text-[10px] font-mono text-slate-500">
-            E
+              +
+            </button>
           </div>
         </div>
 
-        {/* Legend */}
-        <div className="flex items-center justify-center gap-3 px-2 py-1 bg-slate-800/30 border-t border-slate-700/30">
+        {/* Map Area */}
+        <div
+          className="relative overflow-hidden"
+          style={{ width: mapSize.width, height: mapSize.height }}
+          onWheel={onWheelMap}
+        >
+          <div
+            className="absolute inset-0"
+            style={{
+              transform: `scale(${zoom})`,
+              transformOrigin: `${playerMapPos.x}px ${playerMapPos.y}px`,
+            }}
+          >
+            <svg className="pointer-events-none absolute inset-0 h-full w-full opacity-[0.14]">
+              <defs>
+                <pattern id={gridPatternId} width="20" height="20" patternUnits="userSpaceOnUse">
+                  <path d="M 20 0 L 0 0 0 20" fill="none" stroke={COLORS.grid} strokeWidth="0.5" />
+                </pattern>
+              </defs>
+              <rect width="100%" height="100%" fill={`url(#${gridPatternId})`} />
+            </svg>
+
+            {interactiveObjects.map((obj) => (
+              <div
+                key={obj.id}
+                className="absolute h-2 w-2 -translate-x-1/2 -translate-y-1/2 transform rounded-full"
+                style={{
+                  left: obj.position[0] * scale.x + mapSize.width / 2,
+                  top: obj.position[2] * scale.z + mapSize.height / 2,
+                  backgroundColor: obj.type === 'poem' ? COLORS.poem : COLORS.object,
+                  boxShadow: `0 0 5px ${obj.type === 'poem' ? COLORS.poemGlow : COLORS.objectGlow}`,
+                }}
+                title={obj.id}
+              />
+            ))}
+
+            {npcs.map((npc) => {
+              const p = npcWorldPos(npc);
+              return (
+                <div
+                  key={npc.id}
+                  className="absolute h-3 w-3 -translate-x-1/2 -translate-y-1/2 transform rounded-full"
+                  style={{
+                    left: p.x * scale.x + mapSize.width / 2,
+                    top: p.z * scale.z + mapSize.height / 2,
+                    backgroundColor: COLORS.npcCore,
+                    boxShadow: `0 0 8px ${COLORS.npcGlow}`,
+                  }}
+                  title={npc.name}
+                >
+                  <span
+                    className="absolute -bottom-3 left-1/2 max-w-[52px] -translate-x-1/2 truncate text-[8px] whitespace-nowrap"
+                    style={{ color: COLORS.npcGlow }}
+                  >
+                    {npc.name.slice(0, 6)}
+                  </span>
+                </div>
+              );
+            })}
+
+            <motion.div
+              className="absolute h-4 w-4 -translate-x-1/2 -translate-y-1/2 transform"
+              style={{
+                left: playerMapPos.x,
+                top: playerMapPos.y,
+              }}
+              animate={{
+                left: playerMapPos.x,
+                top: playerMapPos.y,
+              }}
+              transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+            >
+              <div
+                className="absolute inset-0 flex items-center justify-center"
+                style={{ transform: `rotate(${playerRotation}rad)` }}
+              >
+                <div
+                  className="h-0 w-0 border-b-[10px] border-l-[6px] border-r-[6px] border-b-cyan-400 border-l-transparent border-r-transparent"
+                  style={{ filter: `drop-shadow(0 0 4px ${COLORS.playerGlow})` }}
+                />
+              </div>
+              <div
+                className="absolute inset-0 animate-ping rounded-full"
+                style={{ background: COLORS.playerGlow }}
+              />
+              <div
+                className="absolute inset-1 rounded-full shadow-lg"
+                style={{
+                  background: COLORS.playerCore,
+                  boxShadow: `0 0 10px ${COLORS.playerGlow}`,
+                }}
+              />
+            </motion.div>
+
+            <div className="pointer-events-none absolute left-1 top-1 font-mono text-[10px]" style={{ color: COLORS.compass }}>
+              N
+            </div>
+            <div
+              className="pointer-events-none absolute bottom-1 left-1/2 -translate-x-1/2 font-mono text-[10px]"
+              style={{ color: COLORS.compass }}
+            >
+              S
+            </div>
+            <div
+              className="pointer-events-none absolute left-1 top-1/2 -translate-y-1/2 font-mono text-[10px]"
+              style={{ color: COLORS.compass }}
+            >
+              W
+            </div>
+            <div
+              className="pointer-events-none absolute right-1 top-1/2 -translate-y-1/2 font-mono text-[10px]"
+              style={{ color: COLORS.compass }}
+            >
+              E
+            </div>
+          </div>
+        </div>
+
+        <div
+          className="flex flex-wrap items-center justify-center gap-2 border-t px-2 py-1"
+          style={{
+            background: 'rgba(15, 6, 28, 0.55)',
+            borderColor: COLORS.border,
+          }}
+        >
           <div className="flex items-center gap-1">
-            <div className="w-2 h-2 rounded-full bg-cyan-400" />
-            <span className="text-[9px] text-slate-400">Вы</span>
+            <div className="h-2 w-2 rounded-full" style={{ background: COLORS.playerCore }} />
+            <span className="text-[9px]" style={{ color: COLORS.labelMuted }}>
+              Вы
+            </span>
           </div>
           <div className="flex items-center gap-1">
-            <div className="w-2 h-2 rounded-full bg-green-400" />
-            <span className="text-[9px] text-slate-400">NPC</span>
+            <div className="h-2 w-2 rounded-full" style={{ background: COLORS.npcCore }} />
+            <span className="text-[9px]" style={{ color: COLORS.labelMuted }}>
+              NPC
+            </span>
           </div>
           <div className="flex items-center gap-1">
-            <div className="w-2 h-2 rounded-full bg-yellow-400" />
-            <span className="text-[9px] text-slate-400">Стихи</span>
+            <div className="h-2 w-2 rounded-full" style={{ background: COLORS.poem }} />
+            <span className="text-[9px]" style={{ color: COLORS.labelMuted }}>
+              Стихи
+            </span>
           </div>
           <div className="flex items-center gap-1">
-            <div className="w-2 h-2 rounded-full bg-cyan-300" />
-            <span className="text-[9px] text-slate-400">Объекты</span>
+            <div className="h-2 w-2 rounded-full" style={{ background: COLORS.object }} />
+            <span className="text-[9px]" style={{ color: COLORS.labelMuted }}>
+              Объекты
+            </span>
           </div>
         </div>
       </div>
