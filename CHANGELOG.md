@@ -12,11 +12,16 @@
 - **Миникарта**: проп **`questMarkers`** (`MiniMap.tsx`), расчёт в **`GameOrchestrator`** по активным квестам и **`getNextTrackedObjective`**.
 - **Аудио**: `src/engine/AudioEngine.ts`, хук **`useAudio.ts`**; **`AmbientMusicPlayer`**: **`forceBattleMusic`** при стрессе > 80 или сцене **`battle`**; фон в **`MenuScreen`** / **`IntroScreen`** через `audioEngine` (опциональные файлы в `/audio/ui/`).
 - **Туториал 3D**: `TutorialOverlay.tsx`, флаги **`tutorial_seen_movement`**, **`tutorial_seen_interact`**, **`tutorialsDisabled`** в `playerState.flags`.
+- **SFX по шине**: **`sound:play`** → **`AudioEngine.playSfx`** (поиск `/audio/ui/sfx_{type}.mp3` и `/audio/ui/{type}.mp3`, при отсутствии — короткий beep); подписка в **`useGameAudioProfile`**; для прокачки навыка отдельный тип **`skill`** в **`SkillUpNotification`**.
+- **Объекты в 3D**: глобальный обработчик **`object:interact`** в **`GameOrchestrator`** по **`getInteractiveObjectsForScene`** (осмотр / взять с **`addItem`** / выбросить с **`removeItem`** / тосты **`ui:exploration_message`**).
+- **Импорт стора мира**: **`src/store/worldStore.ts`** реэкспортирует **`useWorldStore`**, **`useExploration`**, **`useGameMode`** из **`src/client/store/worldStore.ts`**.
+- **Контент диалога**: у баристы ветка **`barista_kindred`** с условием **`minKarma: 55`**.
 
 ### Changed
 
 - **`NPC.tsx`**, **`RPGGameCanvas.tsx`**, **`PhysicsRPGCanvas.tsx`**: интеграция расписания, тика времени внутри `<Canvas>`, радиальное меню.
-- **`GameOrchestrator.tsx`**: HUD кармы, лут/скилл-оверлеи, туториал, маркеры квестов на миникарте, боевой режим музыки.
+- **`GameOrchestrator.tsx`**: HUD кармы, лут/скилл-оверлеи, туториал, маркеры квестов на миникарте, боевой режим музыки; размер миникарты из **`getSceneConfig(currentSceneId).size`**; обработка **`object:interact`**.
+- **`HUD.tsx`**: кнопка **💡** переключает флаг **`tutorialsDisabled`** (подсказки 3D).
 
 ### Removed
 
