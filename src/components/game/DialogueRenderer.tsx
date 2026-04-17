@@ -3,7 +3,15 @@
 import { useState, useCallback, useMemo, useRef, useEffect, memo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { DialogueNode, DialogueChoice, DialogueEffect } from '@/data/rpgTypes';
-import { startDialogue, endDialogue, processDialogueChoice, applyDialogueEffects, type DialogueContext } from '@/engine/DialogueEngine';
+import {
+  startDialogue,
+  endDialogue,
+  processDialogueChoice,
+  applyDialogueEffects,
+  evaluateCondition,
+  type DialogueContext,
+} from '@/engine/DialogueEngine';
+import { DIALOGUE_NODES } from '@/data/npcDefinitions';
 import type { PlayerState, NPCRelation } from '@/data/types';
 import { asTrainablePlayerSkill } from '@/lib/trainablePlayerSkill';
 import { useGameStore } from '@/store/gameStore';
@@ -252,7 +260,12 @@ export default function DialogueRenderer({
 
   // Handle dialogue choice
   const handleChoice = useCallback((choice: DialogueChoice) => {
-    const result = processDialogueChoice(choice, {}, dialogueContext, npcId);
+    const result = processDialogueChoice(
+      choice,
+      DIALOGUE_NODES as Record<string, DialogueNode>,
+      dialogueContext,
+      npcId,
+    );
 
     if (result.blocked) return;
 
@@ -423,9 +436,9 @@ export default function DialogueRenderer({
               {currentNode.choices && currentNode.choices.length > 0 && (
                 <div className="px-4 pb-4 space-y-2 relative z-10">
                   {currentNode.choices.map((choice, i) => {
-                    const isConditionMet = !choice.condition ||
-                      (choice.condition.hasFlag ? flags[choice.condition.hasFlag] : true) &&
-                      (choice.condition.notFlag ? !flags[choice.condition.notFlag] : true);
+                    const isConditionMet = choice.skillCheck
+                      ? true
+                      : !choice.condition || evaluateCondition(choice.condition, dialogueContext);
 
                     return (
                       <CyberDialogueChoice

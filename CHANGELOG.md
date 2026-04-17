@@ -6,6 +6,8 @@
 
 - **Правило Cursor**: **`.cursor/rules/git-changelog-workflow.mdc`** — после содержательных правок обновлять **`CHANGELOG.md`** (`[Unreleased]`), делать коммит и при необходимости **`git push`**.
 
+- **RPG-прототипы (глубина сессии)**: зависимость **`three-pathfinding`**; **`src/lib/explorationNavMesh.ts`** — navmesh по размеру пола и поиск пути; **`NPC.tsx`** / **`NPCSystem`** / **`RPGGameCanvas`** — патруль по **waypoints** с обходом через углы пути (при отсутствии сетки — прямой бег); **`BattleClickLayer`** — бой по **клику/тапу** на примитивах на сцене **`battle`**, урон **`rollStrikeDamage`** от **`logic` / `coding` / `intuition`** (**`src/lib/combatDamage.ts`**, тесты); **`InteractiveObjectConfig.requiredSkills`** в **`scenes.ts`** (кафе **`cafe_jack_portable`**), проверки в **`GameOrchestrator`** и **`src/lib/interactiveSkillRequirements.ts`**; в офисе у коллеги реплика с **`minSkill: persuasion`** и узел **`colleague_persuasion_line`** в **`DIALOGUE_NODES`**; **`DialogueRenderer`** передаёт **`DIALOGUE_NODES`** в **`processDialogueChoice`** и **`evaluateCondition`** для доступности выборов; у **`battle_burntrap`** заданы **waypoints** для демонстрации маршрута.
+
 - **Расписания NPC (рутины)**: в **`ScheduleEngine`** расширены слоты **`albert`**, **`zarema`**, **`cafe_barista`** — смена **sceneId**, позиций и **activity** (`work`, `read`, `rest`, `walk`, `talk`, `sleep`); алиасы **`zarema_home` / `albert_home`** на каноническое расписание; **`getNPCsForScene(sceneId, timeOfDay)`** и **`getNpcExplorationPosition`** в **`npcDefinitions`** подставляют гостей по часу; миникарта, квест-маркеры и **`TutorialOverlay`** учитывают **`exploration.timeOfDay`**; иконки активности в **`NPC.tsx`**; тесты **`src/engine/ScheduleEngine.test.ts`**.
 - **Вечерняя квартира (`home_evening`) и `object:interact`**: в **`scenes.ts`** десять **`interactiveObjects`** (радио, книга со стихом, вода, блокнот, чай, шоколад, окно, холодильник, телефон, растение) и новое имя сцены в UI; **`src/lib/homeApartmentInteract.ts`** — тексты осмотра и **«Использовать»** (радио через **`sound:play`** и флаг **`home_radio_played`**, вода и быт со статьами/стрессом, книга через **`collectPoem`** / **`poemMechanics`** и событие квеста **`poem_collected`**); **`GameOrchestrator`** обрабатывает **`object:interact`** для этой сцены с **`emitQuestEvent`**; **`HomeEveningColliders`** в **`PhysicsSceneColliders`** и **`SceneColliders`** — пол и периметр 14×14 без дублирующих кухонных блоков, чтобы коллизии совпадали с интерактивными коробками.
 - **Золотой путь сюжета**: `src/data/goldenPath.ts` — каноническая линия к финалу **`ending_creator`**, скелет узлов (`GOLDEN_PATH_STORY_SPINE`), развилки (`GOLDEN_PATH_BRANCH_HINTS`), квестовый хребет и опционально **`poetry_collection`**; экспорт из `src/data/index.ts`; регрессионные проверки в **`src/data/goldenPath.test.ts`**.
@@ -40,6 +42,8 @@
 ### Removed
 
 ### Fixed
+
+- **`DialogueRenderer`**: в **`processDialogueChoice`** передавался пустой объект узлов — переходы по **`next`** из **`DIALOGUE_NODES`** не находились; теперь подставляется **`DIALOGUE_NODES`**, условия выборов проверяются через **`evaluateCondition`**.
 
 - **`storyNodes` / квест «Первое чтение»**: при входе в **`blue_cat_cafe`** сразу закрывается цель **`go_to_cafe`** (до этого **`location_visited`** мог сработать до активации квеста); ветка **`maria_curious`** теперь даёт **`meet_someone`** и стартует **`maria_connection`**, как остальные ответы Виктории.
 

@@ -14,6 +14,7 @@ import { rewriteLegacyModelPath } from '@/config/modelUrls';
 import { getCurrentScheduleEntry } from '@/engine/ScheduleEngine';
 import { useGameStore } from '@/store/gameStore';
 import { getNpcQuestMarkerForExploration } from '@/lib/npcQuestMarker';
+import type { FindNavPathXZ } from '@/lib/explorationNavMesh';
 
 function scheduleActivityIcon(entry: ScheduleEntry | null | undefined): string {
   if (!entry) return '💬';
@@ -561,6 +562,8 @@ interface NPCProps {
   scheduleEntry?: ScheduleEntry | null;
   /** Кинематический RigidBody для телепорта в Rapier-сцене. */
   enableNpcPhysics?: boolean;
+  /** Путь по navmesh (three-pathfinding); если нет — прямой бег к waypoint. */
+  findNavPath?: FindNavPathXZ | null;
 }
 
 export const NPC = memo(function NPC({
@@ -572,6 +575,7 @@ export const NPC = memo(function NPC({
   isDialogueActive,
   scheduleEntry = null,
   enableNpcPhysics = false,
+  findNavPath = null,
 }: NPCProps) {
   const groupRef = useRef<THREE.Group>(null);
   const rigidBodyRef = useRef<RapierRigidBody>(null);
@@ -588,6 +592,9 @@ export const NPC = memo(function NPC({
   const wasNearPlayer = useRef(false);
   // Ref для текущей анимации - чтобы не вызывать setState каждый кадр
   const currentAnimationRef = useRef<'idle' | 'walk' | 'talk'>('idle');
+  const navCornersRef = useRef<{ x: number; z: number }[]>([]);
+  const navCornerIdxRef = useRef(0);
+  const navGoalKeyRef = useRef('');
 
   // Хелпер для установки анимации без лишних перерендеров
   const setAnimation = useCallback((anim: 'idle' | 'walk' | 'talk') => {
@@ -711,15 +718,53 @@ export const NPC = memo(function NPC({
       const distanceToTarget = Math.sqrt(distX * distX + distZ * distZ);
 
       if (distanceToTarget < 0.5) {
+        navCornersRef.current = [];
+        navCornerIdxRef.current = 0;
+        navGoalKeyRef.current = '';
         isWaiting.current = true;
         waitTime.current = 2 + Math.random() * 3;
         setAnimation('idle');
       } else {
-        const npcSpeed = 1.5 * delta;
-        const vx = (distX / distanceToTarget) * npcSpeed;
-        const vz = (distZ / distanceToTarget) * npcSpeed;
+        const goalKey = `${currentTargetIndex.current}:${target.x}:${target.z}`;
+        if (findNavPath && navGoalKeyRef.current !== goalKey) {
+          navGoalKeyRef.current = goalKey;
+          const path = findNavPath({ x: pos.x, z: pos.z }, { x: target.x, z: target.z }, pos.y);
+          if (path && path.length > 0) {
+            navCornersRef.current = path;
+            navCornerIdxRef.current = 0;
+          } else {
+            navCornersRef.current = [];
+            navCornerIdxRef.current = 0;
+          }
+        }
 
-        // Обновляем позицию напрямую через ref (без setState)
+        let dirX = distX / distanceToTarget;
+        let dirZ = distZ / distanceToTarget;
+
+        if (findNavPath && navCornersRef.current.length > 0) {
+          let idx = navCornerIdxRef.current;
+          let corner = navCornersRef.current[idx];
+          let dx2 = corner.x - pos.x;
+          let dz2 = corner.z - pos.z;
+          let d2 = Math.hypot(dx2, dz2);
+          while (d2 < 0.38 && idx < navCornersRef.current.length - 1) {
+            idx += 1;
+            corner = navCornersRef.current[idx];
+            dx2 = corner.x - pos.x;
+            dz2 = corner.z - pos.z;
+            d2 = Math.hypot(dx2, dz2);
+          }
+          navCornerIdxRef.current = idx;
+          if (d2 > 1e-4) {
+            dirX = dx2 / d2;
+            dirZ = dz2 / d2;
+          }
+        }
+
+        const npcSpeed = 1.5 * delta;
+        const vx = dirX * npcSpeed;
+        const vz = dirZ * npcSpeed;
+
         currentPositionRef.current = {
           x: pos.x + vx,
           y: pos.y,
@@ -729,7 +774,7 @@ export const NPC = memo(function NPC({
         setAnimation('walk');
 
         if (modelRef.current) {
-          const targetRotation = Math.atan2(distX, distZ);
+          const targetRotation = Math.atan2(dirX, dirZ);
           modelRef.current.rotation.y = THREE.MathUtils.lerp(
             modelRef.current.rotation.y,
             targetRotation,
@@ -953,6 +998,7 @@ interface NPCSystemProps {
   currentSceneId: SceneId;
   timeOfDay: number;
   enableNpcPhysics?: boolean;
+  findNavPath?: FindNavPathXZ | null;
 }
 
 export const NPCSystem = memo(function NPCSystem({
@@ -965,6 +1011,7 @@ export const NPCSystem = memo(function NPCSystem({
   currentSceneId,
   timeOfDay,
   enableNpcPhysics = false,
+  findNavPath = null,
 }: NPCSystemProps) {
   const visibleNpcs = useMemo(() => {
     return npcs.filter((npc) => {
@@ -1000,6 +1047,7 @@ export const NPCSystem = memo(function NPCSystem({
             isDialogueActive={isDialogueActive}
             scheduleEntry={scheduleEntry}
             enableNpcPhysics={enableNpcPhysics}
+            findNavPath={findNavPath}
           />
         );
       })}

@@ -55,7 +55,7 @@ const SKILL_CONFIG: Record<keyof Omit<PlayerSkills, 'skillPoints'>, {
     icon: '🧩',
     color: 'from-emerald-400 to-green-500',
     glowColor: 'rgba(16, 185, 129, 0.5)',
-    description: 'Взлом терминалов, аргументы',
+    description: 'Споры и прототип боя: сильнее удар по «логическим» целям',
     category: 'mental'
   },
   coding: {
@@ -63,7 +63,7 @@ const SKILL_CONFIG: Record<keyof Omit<PlayerSkills, 'skillPoints'>, {
     icon: '💻',
     color: 'from-slate-400 to-zinc-500',
     glowColor: 'rgba(100, 116, 139, 0.5)',
-    description: 'Дебаггинг памяти',
+    description: 'Дебаг памяти и доступ к заблокированным контейнерам в мире',
     category: 'mental'
   },
   persuasion: {
@@ -71,7 +71,7 @@ const SKILL_CONFIG: Record<keyof Omit<PlayerSkills, 'skillPoints'>, {
     icon: '🗣️',
     color: 'from-rose-400 to-red-500',
     glowColor: 'rgba(244, 63, 94, 0.5)',
-    description: 'Влиять на решения других',
+    description: 'Новые ветки в диалогах, когда хватает красноречия',
     category: 'social'
   },
   intuition: {

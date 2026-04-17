@@ -46,6 +46,8 @@ import { ExplorationMobileHud } from './ExplorationMobileHud';
 import { RadialMenu, type RadialMenuAction } from './RadialMenu';
 import { getNearestInteractiveObject } from './InteractiveTriggers';
 import type { PlayerControls } from '@/hooks/useGamePhysics';
+import { createFloorNavPathfinder } from '@/lib/explorationNavMesh';
+import { BattleClickLayer } from './BattleClickLayer';
 
 // ============================================
 // TYPES
@@ -146,6 +148,12 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
   }, [sceneId]);
 
   const groundGeometryArgs = groundGeometryArgsProp ?? sceneConfig.groundGeometryArgs;
+
+  const findNavPath = useMemo(() => {
+    const [fw, , fd] = groundGeometryArgs;
+    const api = createFloorNavPathfinder(fw, fd);
+    return api?.findPathXZ ?? null;
+  }, [groundGeometryArgs]);
 
   const isPanelDistrict = sceneId === 'street_night' || sceneId === 'street_winter';
 
@@ -380,7 +388,10 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
           currentSceneId={sceneId}
           timeOfDay={timeOfDay}
           enableNpcPhysics
+          findNavPath={findNavPath}
         />
+
+        <BattleClickLayer key={sceneId} active={sceneId === 'battle'} />
 
         {/* Triggers */}
         <TriggerSystem

@@ -46,6 +46,7 @@ import { QUEST_DEFINITIONS, getNextTrackedObjective } from '@/data/quests';
 import { getNPCsForScene, getNpcExplorationPosition } from '@/data/npcDefinitions';
 import { getSceneConfig, getInteractiveObjectsForScene } from '@/config/scenes';
 import { homeApartmentInspectLine, tryHomeApartmentUse } from '@/lib/homeApartmentInteract';
+import { getInteractiveSkillBlockMessage } from '@/lib/interactiveSkillRequirements';
 import type { MiniMapQuestMarker } from '@/components/game/MiniMap';
 import { MoralCompassHUD } from '@/components/game/MoralCompassHUD';
 import { SceneTransition } from '@/components/game/CinematicEffects';
@@ -263,17 +264,31 @@ export default function GameOrchestrator() {
       const store = useGameStore.getState();
       switch (action) {
         case 'inspect': {
+          const skillHint = getInteractiveSkillBlockMessage(obj, store.playerState.skills);
           const homeLine = sid === 'home_evening' ? homeApartmentInspectLine(obj) : null;
           if (homeLine) {
-            toast(homeLine);
+            toast(skillHint ? `${homeLine} ${skillHint}` : homeLine);
           } else if (obj.canBeRead && obj.poemId) {
-            toast(`«${obj.type}»: можно прочитать — действие «Использовать».`);
+            toast(
+              skillHint
+                ? `«${obj.type}»: можно прочитать — «Использовать». ${skillHint}`
+                : `«${obj.type}»: можно прочитать — действие «Использовать».`,
+            );
           } else {
-            toast(`Объект «${obj.id}» (${obj.type}).`);
+            toast(
+              skillHint
+                ? `Объект «${obj.id}» (${obj.type}). ${skillHint}`
+                : `Объект «${obj.id}» (${obj.type}).`,
+            );
           }
           break;
         }
         case 'take': {
+          const block = getInteractiveSkillBlockMessage(obj, store.playerState.skills);
+          if (block) {
+            toast(block);
+            break;
+          }
           if (obj.itemId) {
             store.addItem(obj.itemId, 1);
           } else {
@@ -282,6 +297,11 @@ export default function GameOrchestrator() {
           break;
         }
         case 'use': {
+          const blockUse = getInteractiveSkillBlockMessage(obj, store.playerState.skills);
+          if (blockUse) {
+            toast(blockUse);
+            break;
+          }
           if (sid === 'home_evening' && tryHomeApartmentUse(obj, store, toast, emitQuestEvent)) {
             break;
           }

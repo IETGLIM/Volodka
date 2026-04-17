@@ -28,6 +28,8 @@ export interface InteractiveObjectConfig {
   pages?: number;
   canBeRead?: boolean;
   hasWheels?: boolean;
+  /** Все перечисленные навыки должны быть ≥ min для «Взять» / «Использовать». */
+  requiredSkills?: { skill: string; min: number }[];
 }
 
 export interface SceneConfig {
@@ -212,7 +214,19 @@ export const SCENE_CONFIG = {
       { id: 'poet', name: 'Поэт', model: 'colleague', modelPath: '/models/witchapprentice.glb', position: [-3, 0, -5], rotation: [0, 0.5, 0], dialogueTree: 'poet_greeting' },
       { id: 'alisa', name: 'Алиса', model: 'shadow', modelPath: '/models/college_girl.glb', position: [-2, 0, 3], rotation: [0, 0.5, 0], dialogueTree: 'alisa_cafe' }
     ],
-    interactiveObjects: [{ id: 'cafe_book', type: 'book', position: [0, 0.8, -3.5], poemId: 'poem_cafe_01', itemId: 'poem_fragment_1', canBeRead: true, size: [0.22, 0.04, 0.16], color: '#a0522d' }],
+    interactiveObjects: [
+      { id: 'cafe_book', type: 'book', position: [0, 0.8, -3.5], poemId: 'poem_cafe_01', itemId: 'poem_fragment_1', canBeRead: true, size: [0.22, 0.04, 0.16], color: '#a0522d' },
+      {
+        id: 'cafe_jack_portable',
+        type: 'notebook',
+        position: [4.1, 0.72, -1.8],
+        rotation: [0, -0.45, 0],
+        size: [0.32, 0.05, 0.24],
+        color: '#1e272e',
+        itemId: 'lucky_coin',
+        requiredSkills: [{ skill: 'coding', min: 22 }],
+      },
+    ],
     backgroundMusic: '/audio/ambient-calm.mp3'
   },
   

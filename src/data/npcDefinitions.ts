@@ -633,6 +633,12 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
     animations: NPC_ANIM_BURNT_TRAP,
     scale: 1.5,
     defaultPosition: { x: 0, y: 0, z: -5 },
+    waypoints: [
+      { x: -3.5, y: 0, z: -4 },
+      { x: 3.5, y: 0, z: -4 },
+      { x: 3.5, y: 0, z: 2.5 },
+      { x: -3.5, y: 0, z: 2.5 },
+    ],
     sceneId: 'battle',
     dialogueTree: {
       id: 'burntrap_greeting',
@@ -1037,6 +1043,12 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
         {
           text: 'Привет. Мне нужно работать.',
           next: 'colleague_work',
+        },
+        {
+          text: 'Сниму с тебя часть давления — через людей, без шума.',
+          next: 'colleague_persuasion_line',
+          condition: { minSkill: { skill: 'persuasion', value: 26 } },
+          effect: { mood: 6, skillGains: { persuasion: 2 } },
         },
       ],
     },
@@ -2351,6 +2363,11 @@ export const DIALOGUE_NODES: Record<string, NPCDefinition['dialogueTree']> = {
   },
 
   // ========== КОЛЛЕГА (ОФИС) ==========
+  colleague_persuasion_line: {
+    id: 'colleague_persuasion_line',
+    text: 'Ого… Ты так формулируешь, что даже мне легче. Перекину часть созвонов на себя. Спасибо.',
+    effect: { stress: -6, stability: 6 },
+  },
   colleague_tired: {
     id: 'colleague_tired',
     text: 'Понимаю... Бессонница? У меня тоже бывает. Попробуй чай с мятой — помогает.',
