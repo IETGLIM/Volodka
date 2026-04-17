@@ -6,9 +6,9 @@
  * Ввод: клавиатура (WASD, E); для тач-устройств позже — виртуальный джойстик / кнопка действия.
  */
 
-import { memo, useRef, useEffect, useMemo, useCallback, useState, Fragment } from 'react';
+import { memo, useRef, useEffect, useMemo, useCallback, useState, Fragment, Suspense } from 'react';
 import { Canvas } from '@react-three/fiber';
-import { Physics, RigidBody } from '@react-three/rapier';
+import { Physics, RigidBody, CuboidCollider } from '@react-three/rapier';
 import * as THREE from 'three';
 
 // Types
@@ -232,11 +232,21 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
       }}
       gl={{ antialias: true, alpha: false, powerPreference: 'high-performance' }}
     >
-      {/* Physics World */}
+      {/* Physics: Suspense — WASM Rapier; пол — явный CuboidCollider (авто cuboid на повёрнутом mesh часто «дырявый»). */}
+      <Suspense fallback={null}>
       <Physics gravity={[0, -9.81, 0]} debug={false}>
-        {/* Пол: размер из sceneConfig или проп `groundGeometryArgs` */}
-        <RigidBody type="fixed" colliders="cuboid" position={[0, -0.05, 0]}>
-          <mesh rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
+        <RigidBody type="fixed" colliders={false} position={[0, 0, 0]}>
+          <CuboidCollider
+            args={[
+              groundGeometryArgs[0] / 2,
+              groundGeometryArgs[1] / 2,
+              groundGeometryArgs[2] / 2,
+            ]}
+            position={[0, -groundGeometryArgs[1] / 2, 0]}
+            friction={1}
+            restitution={0}
+          />
+          <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.05, 0]} receiveShadow>
             <boxGeometry args={groundGeometryArgs} />
             <meshStandardMaterial
               color={isPanelDistrict ? '#141c18' : '#3d3436'}
@@ -345,6 +355,7 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
           creativity={playerState.creativity}
         />
       </Physics>
+      </Suspense>
     </Canvas>
     {narrow && (
       <ExplorationMobileHud
