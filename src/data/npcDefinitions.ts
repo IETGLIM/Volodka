@@ -1163,6 +1163,26 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
     },
   },
 
+  /** Та же Римма — на `street_night` рядом с Настей (зимняя версия остаётся на `street_winter`). */
+  district_rimma_night: {
+    id: 'district_rimma_night',
+    name: 'Римма',
+    model: 'generic',
+    modelPath: '/models/shibahu.glb',
+    scale: 0.95,
+    defaultPosition: { x: 2.35, y: 0, z: -1.95 },
+    sceneId: 'street_night',
+    dialogueTree: {
+      id: 'rimma_hi',
+      text: 'Римма, второй этаж. С Настей спорим — тепло ли в холле. Ты бы лучше сказал: у нас же батареи как в проде — то есть никогда как надо.',
+      choices: [
+        { text: 'Скажу честно: как в проде.', next: 'rimma_laugh', effect: { mood: 4, npcId: 'district_rimma', npcChange: 3 } },
+        { text: 'Передай Насте привет.', next: 'rimma_nastya', effect: { npcId: 'district_rimma', npcChange: 2 } },
+        { text: 'Пока.', next: 'rimma_bye' },
+      ],
+    },
+  },
+
   district_nastya: {
     id: 'district_nastya',
     name: 'Настя',

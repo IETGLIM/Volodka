@@ -259,6 +259,7 @@ export function getFactionByNPC(npcId: string): FactionId | null {
     'district_timur',
     'district_polikarp',
     'district_rimma',
+    'district_rimma_night',
     'district_nastya',
   ];
   if (localNPCs.includes(npcId)) return 'locals';
