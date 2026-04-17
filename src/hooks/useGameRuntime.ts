@@ -76,9 +76,12 @@ export function useGameRuntime(params: UseGameRuntimeParams) {
   /** Иначе после onComplete снова срабатывает эффект и заставка зацикливается на том же узле. */
   const cutscenesCompletedRef = useRef(new Set<string>());
   const activeCutsceneIdRef = useRef<string | null>(null);
-  activeCutsceneIdRef.current = activeCutsceneId;
   /** Ключ для `cutscenesCompletedRef` при старте заставки (узел сюжета или explore-триггер). */
   const cutsceneCompletionKeyRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    activeCutsceneIdRef.current = activeCutsceneId;
+  }, [activeCutsceneId]);
 
   const storeContext = useMemo(() => () => {
     const state = useGameStore.getState();

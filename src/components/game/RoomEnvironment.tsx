@@ -106,7 +106,9 @@ function useZaremaRoomProceduralTextures(): ZaremaRoomTextures | null {
     const woodTexture = createWoodFloorCanvasTexture();
     const wallpaperTexture = createWallpaperCanvasTexture();
     const carpetTexture = createCarpetCanvasTexture();
-    setTextures({ woodTexture, wallpaperTexture, carpetTexture });
+    queueMicrotask(() => {
+      setTextures({ woodTexture, wallpaperTexture, carpetTexture });
+    });
     return () => {
       woodTexture.dispose();
       wallpaperTexture.dispose();

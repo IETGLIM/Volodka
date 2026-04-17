@@ -30,7 +30,7 @@ export class PanelErrorBoundary extends Component<
     if (this.state.error) {
       return (
         <div className="mx-auto my-4 max-w-lg rounded border border-red-500/40 bg-red-950/60 p-4 font-mono text-sm text-red-100 shadow-[0_0_24px_rgba(239,68,68,0.12)]">
-          <p className="mb-1 text-[10px] uppercase tracking-widest text-red-400/80">// module_load_fail</p>
+          <p className="mb-1 text-[10px] uppercase tracking-widest text-red-400/80">{'// module_load_fail'}</p>
           <p className="mb-3 text-red-100/90">Панель «{this.props.panelLabel}» не загрузилась.</p>
           <div className="flex flex-wrap gap-2">
             <button

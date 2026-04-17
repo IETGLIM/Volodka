@@ -12,6 +12,22 @@
 
 ---
 
+## [0.2.4] - 2026-04-17
+
+### Added
+
+- **`npcExplorationIntegrity.test.ts`**: проверка `explore_mode`, наличия GLB для всех `modelPath` NPC в `public/models-external`, соответствия `storyNodeId` / `cutsceneId` в триггерах данным сюжета и катсцен.
+
+### Changed
+
+- **`storyNodes.ts`**: добавлены узлы **`kitchen_table`**, **`kitchen_fridge`**, **`kitchen_window`**, **`cafe_*`**, **`office_*`**, **`street_bench`**, **`street_bench_view`**, **`memorial_main`**, **`park_gazebo`**, **`rooftop_edge`**, **`room_table`**, **`room_bookshelf`** — id совпадают с **`triggerZones.ts`**, выход обратно в **`explore_mode`** после короткого бита (раньше при E на триггере в 3D граф не находил узел и откатывался к **`start`**).
+
+### Fixed
+
+- **ESLint (react-hooks)**: синхронизация **`activeCutsceneIdRef`** в **`useGameRuntime`** через **`useEffect`**; обновление **`configRef`** / колбэков-рефов в **`useAmbientMusic`**; **`usePoemLineTypewriter`** — рефы и сброс строк через эффекты / **`queueMicrotask`**; **`InteractiveTrigger`** — раздельный расчёт зон и маркеров без мутации ref-объекта; **`WorldItem`** — близость через **`useMemo`**; сброс маркеров триггеров и текстур комнаты через **`queueMicrotask`** где нужно; **`GameOrchestratorSubcomponents`** — строка с `//` в JSX; игнор **`_volodka_upstream_check/**`** в **`eslint.config.mjs`**.
+
+---
+
 ## [0.2.3] - 2026-04-16
 
 ### Added

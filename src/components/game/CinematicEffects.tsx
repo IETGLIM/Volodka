@@ -240,7 +240,6 @@ export const SceneTransition = memo(function SceneTransition({
       const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
 
       const run = async () => {
-        // eslint-disable-next-line react-hooks/set-state-in-effect -- фазы перехода по таймлайну (отмена через cancelled)
         setPhase('in');
         await sleep(stepMs);
         if (cancelled) {

@@ -134,9 +134,12 @@ export function useAmbientMusic(config: AmbientConfig) {
   const crossfadeRef = useRef<number>(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const configRef = useRef(config);
-  configRef.current = config;
   const playMelodicPhraseRef = useRef<() => void>(() => {});
   const playBackgroundLayerRef = useRef<() => void>(() => {});
+
+  useEffect(() => {
+    configRef.current = config;
+  }, [config]);
   
   // Инициализация аудио-контекста
   const initAudio = useCallback(() => {
@@ -558,9 +561,11 @@ export function useAmbientMusic(config: AmbientConfig) {
     }, crossfadeTime * 1000);
   }, [playMelodicPhrase]);
 
-  playMelodicPhraseRef.current = playMelodicPhrase;
-  playBackgroundLayerRef.current = playBackgroundLayer;
-  
+  useEffect(() => {
+    playMelodicPhraseRef.current = playMelodicPhrase;
+    playBackgroundLayerRef.current = playBackgroundLayer;
+  }, [playMelodicPhrase, playBackgroundLayer]);
+
   // Основной цикл эмбиента
   const startAmbient = useCallback(() => {
     if (!config.enabled) return;

@@ -45,7 +45,16 @@ const eslintConfig = [
   },
   {
     // Используем **/next-env.d.ts для игнорирования в любой вложенности
-    ignores: ["node_modules/**", ".next/**", "out/**", "build/**", "**/next-env.d.ts", "examples/**", "skills"]
+    ignores: [
+      "node_modules/**",
+      ".next/**",
+      "out/**",
+      "build/**",
+      "**/next-env.d.ts",
+      "examples/**",
+      "skills",
+      "_volodka_upstream_check/**",
+    ]
   }
 ];
 

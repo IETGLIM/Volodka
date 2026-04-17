@@ -29,10 +29,15 @@ export function usePoemLineTypewriter({
   onFinished,
 }: UsePoemLineTypewriterOptions) {
   const linesRef = useRef(lines);
-  linesRef.current = lines;
-
   const onFinishedRef = useRef(onFinished);
-  onFinishedRef.current = onFinished;
+
+  useEffect(() => {
+    linesRef.current = lines;
+  }, [lines]);
+
+  useEffect(() => {
+    onFinishedRef.current = onFinished;
+  }, [onFinished]);
 
   const [currentLineIndex, setCurrentLineIndex] = useState(0);
   const [displayedLines, setDisplayedLines] = useState<string[]>([]);
@@ -45,11 +50,13 @@ export function usePoemLineTypewriter({
 
   useEffect(() => {
     finishedForLinesKeyRef.current = null;
-    setCurrentLineIndex(0);
-    setDisplayedLines([]);
-    setCurrentLineText('');
-    setCharIndex(0);
-    setIsComplete(false);
+    queueMicrotask(() => {
+      setCurrentLineIndex(0);
+      setDisplayedLines([]);
+      setCurrentLineText('');
+      setCharIndex(0);
+      setIsComplete(false);
+    });
   }, [linesKey]);
 
   useEffect(() => {

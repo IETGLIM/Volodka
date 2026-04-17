@@ -236,8 +236,6 @@ describe('Content Validator', () => {
     const errorReport = errors.map((issue) => `[${issue.code}] ${issue.message}`).join('\n');
     const warningReport = warnings.map((issue) => `[${issue.code}] ${issue.message}`).join('\n');
     if (warningReport) {
-      // Useful in CI logs: warnings are visible, but do not fail validation.
-      // eslint-disable-next-line no-console
       console.warn(`Content validation warnings:\n${warningReport}`);
     }
     expect(errors, errorReport).toEqual([]);

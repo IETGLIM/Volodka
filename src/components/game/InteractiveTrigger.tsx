@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useEffect, memo, type RefObject } from "react";
+import { useRef, useState, useEffect, memo, useMemo, type RefObject } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import type { TriggerZone, TriggerState } from "@/data/rpgTypes";
@@ -58,7 +58,9 @@ export const TriggerSystem = memo(function TriggerSystem({
   useEffect(() => {
     wasInsideRef.current = {};
     markerInsideRef.current = {};
-    setMarkerInside({});
+    queueMicrotask(() => {
+      setMarkerInside({});
+    });
   }, [currentSceneId]);
 
   useFrame(() => {
@@ -68,11 +70,11 @@ export const TriggerSystem = memo(function TriggerSystem({
     frameCounterRef.current += 1;
     const doMarkerTick = frameCounterRef.current % MARKER_THROTTLE_FRAMES === 0;
 
-    const nextMarkers: Record<string, boolean> = doMarkerTick ? {} : markerInsideRef.current;
-
+    const insideByTrigger: Record<string, boolean> = {};
     for (const trigger of sceneTriggers) {
       const state = triggerStates[trigger.id] || { id: trigger.id, triggered: false };
       const inside = isPlayerInTriggerZone(pos, trigger);
+      insideByTrigger[trigger.id] = inside;
       const prevInside = wasInsideRef.current[trigger.id] ?? false;
 
       if (inside && !prevInside && !state.triggered && !trigger.requiresInteraction) {
@@ -87,15 +89,18 @@ export const TriggerSystem = memo(function TriggerSystem({
       }
 
       wasInsideRef.current[trigger.id] = inside;
-
-      if (doMarkerTick) {
-        nextMarkers[trigger.id] = Boolean(
-          inside && trigger.requiresInteraction && !state.triggered,
-        );
-      }
     }
 
     if (!doMarkerTick) return;
+
+    const nextMarkers: Record<string, boolean> = {};
+    for (const trigger of sceneTriggers) {
+      const state = triggerStates[trigger.id] || { id: trigger.id, triggered: false };
+      const inside = insideByTrigger[trigger.id];
+      nextMarkers[trigger.id] = Boolean(
+        inside && trigger.requiresInteraction && !state.triggered,
+      );
+    }
 
     let markerChanged = false;
     for (const t of sceneTriggers) {
@@ -154,21 +159,15 @@ export const WorldItem = memo(function WorldItem({
   onCollect,
   playerPosition,
 }: WorldItemProps) {
-  const [isNear, setIsNear] = useState(false);
-  const isNearRef = useRef(false);
   const meshRef = useRef<THREE.Mesh>(null);
 
-  useEffect(() => {
+  const isNear = useMemo(() => {
     const dx = playerPosition.x - position[0];
     const dy = playerPosition.y - position[1];
     const dz = playerPosition.z - position[2];
     const distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
-    const near = distance < 1.5;
-    if (near !== isNearRef.current) {
-      isNearRef.current = near;
-      setIsNear(near);
-    }
-  }, [playerPosition, position]);
+    return distance < 1.5;
+  }, [playerPosition.x, playerPosition.y, playerPosition.z, position]);
 
   useFrame((_, delta) => {
     if (meshRef.current && !collected) {
