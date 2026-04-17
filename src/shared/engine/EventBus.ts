@@ -75,8 +75,11 @@ export interface EventMap {
   'achievement:unlocked': { achievementId: string };
 
   // Сохранение / загрузка
-  'game:saved': { timestamp: number };
+  'game:saved': { timestamp: number; source?: 'auto' | 'manual' };
   'game:loaded': { timestamp: number };
+
+  /** Шаг игрока в исследовании (следы на земле, отладка). */
+  'exploration:footstep': { x: number; y: number; z: number; yaw: number; timestamp: number };
 
   // Путь персонажа
   'path:changed': { oldPath: PlayerPath; newPath: PlayerPath };

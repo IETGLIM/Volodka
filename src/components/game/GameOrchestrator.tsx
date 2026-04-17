@@ -47,6 +47,7 @@ import { getNPCsForScene, getNpcExplorationPosition } from '@/data/npcDefinition
 import { getSceneConfig, getInteractiveObjectsForScene } from '@/config/scenes';
 import { homeApartmentInspectLine, tryHomeApartmentUse } from '@/lib/homeApartmentInteract';
 import { getInteractiveSkillBlockMessage } from '@/lib/interactiveSkillRequirements';
+import { getExplorationAmbientStressPerTick } from '@/lib/explorationAtmosphere';
 import type { MiniMapQuestMarker } from '@/components/game/MiniMap';
 import { MoralCompassHUD } from '@/components/game/MoralCompassHUD';
 import { SceneTransition } from '@/components/game/CinematicEffects';
@@ -151,7 +152,9 @@ export default function GameOrchestrator() {
   const prevSceneTransitionTsRef = useRef<number | null>(null);
   const explorationGlitchClearRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const { panels, togglePanel } = useGamePanels();
-  const { message: saveNotif, showMessage: showSaveNotif } = useTimedMessage(2000);
+  const { message: manualSaveMsg, showMessage: showManualSave } = useTimedMessage(2400);
+  const { message: autoSaveMsg, showMessage: showAutoSave } = useTimedMessage(900);
+  const { message: loadMsg, showMessage: showLoadPulse } = useTimedMessage(1100);
   const { notifications: effectNotifs, showEffectNotif } = useEffectNotifications(5, 3000);
 
   useEffect(() => {
@@ -164,6 +167,32 @@ export default function GameOrchestrator() {
     });
     return unsub;
   }, [showEffectNotif]);
+
+  useEffect(() => {
+    const offSaved = eventBus.on('game:saved', ({ source }) => {
+      if (source === 'manual') showManualSave('Игра сохранена');
+      else showAutoSave('Синхронизация');
+    });
+    const offLoaded = eventBus.on('game:loaded', () => {
+      showLoadPulse('Прогресс загружен');
+    });
+    return () => {
+      offSaved();
+      offLoaded();
+    };
+  }, [showManualSave, showAutoSave, showLoadPulse]);
+
+  /** Улица ночью / зима — лёгкий фоновый стресс (атмосфера). */
+  useEffect(() => {
+    if (phase !== 'game' || gameMode !== 'exploration') return;
+    const tick = () => {
+      const sceneId = exploration.currentSceneId;
+      const d = getExplorationAmbientStressPerTick(sceneId, exploration.timeOfDay);
+      if (d > 0) addStress(d);
+    };
+    const id = window.setInterval(tick, 3200);
+    return () => window.clearInterval(id);
+  }, [phase, gameMode, exploration.currentSceneId, exploration.timeOfDay, addStress]);
 
   /** Glitch-переход при смене 3D-локации (store `lastSceneTransition`); без вспышки при первом входе в обход. */
   useEffect(() => {
@@ -511,7 +540,6 @@ export default function GameOrchestrator() {
     saveGameToStore,
     loadGameFromStore,
     resetGameStore,
-    showSaveNotif,
     clearPanicMode,
   });
 
@@ -740,14 +768,26 @@ export default function GameOrchestrator() {
       )}
 
       <AnimatePresence>
-        {saveNotif && (
+        {manualSaveMsg && (
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             className="fixed top-20 left-1/2 -translate-x-1/2 z-50 px-6 py-3 bg-emerald-900/95 rounded-lg border border-emerald-500/50 shadow-lg"
           >
-            <span className="text-white font-medium">💾 {saveNotif}</span>
+            <span className="text-white font-medium">💾 {manualSaveMsg}</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
+      <AnimatePresence>
+        {(autoSaveMsg || loadMsg) && (
+          <motion.div
+            initial={{ opacity: 0, x: 12 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 12 }}
+            className="fixed bottom-24 right-4 z-50 px-3 py-1.5 rounded border border-slate-600/50 bg-slate-950/80 text-[11px] font-mono tracking-wide text-slate-300 shadow-md pointer-events-none"
+          >
+            {autoSaveMsg ? `◆ ${autoSaveMsg}` : `◇ ${loadMsg}`}
           </motion.div>
         )}
       </AnimatePresence>

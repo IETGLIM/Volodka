@@ -372,7 +372,8 @@ export default function HUD({
   return (
     <div className="relative z-30 pointer-events-none">
       {/* Semi-transparent dark panel with grid pattern */}
-      <div
+      <motion.div
+        layout
         className="p-3 pointer-events-auto"
         style={{
           background: 'linear-gradient(180deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.3) 80%, transparent 100%)',
@@ -531,7 +532,7 @@ export default function HUD({
             ))}
           </div>
         )}
-      </div>
+      </motion.div>
     </div>
   );
 }

@@ -1,7 +1,6 @@
 import { act, renderHook } from '@testing-library/react';
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { useGameSessionFlow } from './useGameSessionFlow';
-import { eventBus } from '@/engine/EventBus';
 
 describe('useGameSessionFlow', () => {
   beforeEach(() => {
@@ -19,7 +18,6 @@ describe('useGameSessionFlow', () => {
         saveGameToStore: vi.fn(),
         loadGameFromStore: vi.fn(),
         resetGameStore: vi.fn(),
-        showSaveNotif: vi.fn(),
       }),
     );
 
@@ -36,7 +34,6 @@ describe('useGameSessionFlow', () => {
         saveGameToStore: vi.fn(),
         loadGameFromStore: vi.fn(),
         resetGameStore,
-        showSaveNotif: vi.fn(),
       }),
     );
 
@@ -48,10 +45,8 @@ describe('useGameSessionFlow', () => {
     expect(setPhase).toHaveBeenCalledWith('intro');
   });
 
-  it('saves game and emits save event', () => {
+  it('saves game with manual source', () => {
     const saveGameToStore = vi.fn();
-    const showSaveNotif = vi.fn();
-    const emitSpy = vi.spyOn(eventBus, 'emit');
 
     const { result } = renderHook(() =>
       useGameSessionFlow({
@@ -61,7 +56,6 @@ describe('useGameSessionFlow', () => {
         saveGameToStore,
         loadGameFromStore: vi.fn(),
         resetGameStore: vi.fn(),
-        showSaveNotif,
       }),
     );
 
@@ -70,9 +64,6 @@ describe('useGameSessionFlow', () => {
     });
 
     expect(saveGameToStore).toHaveBeenCalledTimes(1);
-    expect(showSaveNotif).toHaveBeenCalledWith('Игра сохранена!');
-    expect(emitSpy).toHaveBeenCalledWith('game:saved', expect.objectContaining({ timestamp: expect.any(Number) }));
-
-    emitSpy.mockRestore();
+    expect(saveGameToStore).toHaveBeenCalledWith({ source: 'manual' });
   });
 });

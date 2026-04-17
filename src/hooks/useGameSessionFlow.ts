@@ -1,16 +1,15 @@
 import { useCallback, useMemo } from 'react';
-import { eventBus } from '@/engine/EventBus';
 import type { GameMode } from '@/data/rpgTypes';
+import type { SaveGameOptions } from '@/store/gameStore';
 
 interface UseGameSessionFlowParams {
   setPhase: (phase: 'loading' | 'intro' | 'menu' | 'game') => void;
   /** Оставлены для совместимости с `useActionHandler`; сброс режима/узла делает `resetGameStore`. */
   setGameMode?: (mode: GameMode) => void;
   setCurrentNode?: (nodeId: string) => void;
-  saveGameToStore: () => void;
+  saveGameToStore: (options?: SaveGameOptions) => void;
   loadGameFromStore: () => boolean;
   resetGameStore: () => void;
-  showSaveNotif: (message: string) => void;
 }
 
 const SAVE_KEY = 'volodka_save_v3';
@@ -20,7 +19,6 @@ export function useGameSessionFlow({
   saveGameToStore,
   loadGameFromStore,
   resetGameStore,
-  showSaveNotif,
 }: UseGameSessionFlowParams) {
   const hasSavedGame = useMemo(() => {
     if (typeof window === 'undefined') return false;
@@ -32,10 +30,8 @@ export function useGameSessionFlow({
   }, [setPhase]);
 
   const handleSaveGame = useCallback(() => {
-    saveGameToStore();
-    showSaveNotif('Игра сохранена!');
-    eventBus.emit('game:saved', { timestamp: Date.now() });
-  }, [saveGameToStore, showSaveNotif]);
+    saveGameToStore({ source: 'manual' });
+  }, [saveGameToStore]);
 
   const handleStartNewGame = useCallback(() => {
     resetGameStore();

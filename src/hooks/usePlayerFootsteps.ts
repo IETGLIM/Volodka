@@ -8,6 +8,7 @@ import type { RapierRigidBody } from '@react-three/rapier';
 import { RigidBodyType } from '@dimforge/rapier3d-compat';
 import { footstepSfxType, resolveFootstepMaterial, type FootstepMaterial } from '@/lib/footstepMaterials';
 import { audioEngine } from '@/engine/AudioEngine';
+import { eventBus } from '@/engine/EventBus';
 import { PHYSICS_CONSTANTS } from '@/hooks/useGamePhysics';
 
 const RAY_LEN = 2.8;
@@ -87,6 +88,18 @@ export function usePlayerFootsteps({
     }
 
     audioEngine.playSfx(footstepSfxType(material), isRunningRef.current ? 0.2 : 0.17);
+
+    const rot = rb.rotation();
+    const { w, x, y, z } = rot;
+    const yaw = Math.atan2(2 * (w * y - z * x), 1 - 2 * (x * x + y * y));
+    eventBus.emit('exploration:footstep', {
+      x: tr.x,
+      y: tr.y,
+      z: tr.z,
+      yaw,
+      timestamp: Date.now(),
+    });
+
     stepCooldownRef.current = interval;
   });
 }

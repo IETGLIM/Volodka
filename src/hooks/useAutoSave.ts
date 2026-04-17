@@ -37,7 +37,7 @@ export function useAutoSave(options: AutoSaveOptions = {}) {
     const now = Date.now();
     if (now - lastSaveRef.current < minDelayMs) return;
     lastSaveRef.current = now;
-    saveGame();
+    saveGame({ source: 'auto' });
   }, [saveGame, minDelayMs]);
 
   // Периодическое авто-сохранение

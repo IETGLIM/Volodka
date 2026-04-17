@@ -12,15 +12,16 @@ export function useTimedMessage(timeoutMs = 2000) {
     setMessage(null);
   }, []);
 
-  const showMessage = useCallback((text: string) => {
+  const showMessage = useCallback((text: string, durationMs?: number) => {
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
     }
     setMessage(text);
+    const ms = durationMs ?? timeoutMs;
     timeoutRef.current = setTimeout(() => {
       setMessage(null);
       timeoutRef.current = null;
-    }, timeoutMs);
+    }, ms);
   }, [timeoutMs]);
 
   return {

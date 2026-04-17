@@ -9,6 +9,7 @@ import type { EnergySystemAPI } from '@/hooks/useEnergySystem';
 import type { GamePanelsState } from '@/hooks/useGamePanels';
 import type { GameMode } from '@/data/rpgTypes';
 import type { PlayerSkills } from '@/data/types';
+import type { SaveGameOptions } from '@/store/gameStore';
 
 export type OpenDialogueFromStoryPayload = {
   npcId: string;
@@ -51,10 +52,9 @@ export interface UseActionHandlerParams {
   togglePanel: (key: keyof GamePanelsState) => void;
   setPhase: (phase: 'loading' | 'intro' | 'menu' | 'game') => void;
   setGameMode: (mode: GameMode) => void;
-  saveGameToStore: () => void;
+  saveGameToStore: (options?: SaveGameOptions) => void;
   loadGameFromStore: () => boolean;
   resetGameStore: () => void;
-  showSaveNotif: (message: string) => void;
   clearPanicMode: () => void;
 }
 
@@ -93,7 +93,6 @@ export function useActionHandler(params: UseActionHandlerParams) {
     saveGameToStore,
     loadGameFromStore,
     resetGameStore,
-    showSaveNotif,
     clearPanicMode,
   } = params;
 
@@ -135,7 +134,6 @@ export function useActionHandler(params: UseActionHandlerParams) {
     saveGameToStore,
     loadGameFromStore,
     resetGameStore,
-    showSaveNotif,
   });
 
   const { handleCalmDown } = usePanicFlow({

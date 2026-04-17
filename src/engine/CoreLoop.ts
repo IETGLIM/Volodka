@@ -73,7 +73,6 @@ class CoreLoopClass {
   private context: CoreLoopContext | null = null;
   private stateHistory: CoreLoopState[] = [];
   private callbacks: CoreLoopCallbacks | null = null;
-  private autoSaveInterval: ReturnType<typeof setInterval> | null = null;
   private totalChoicesMade = 0;
   private totalConsequencesProcessed = 0;
   private eventUnsubscribers: Array<() => void> = [];
@@ -107,16 +106,11 @@ class CoreLoopClass {
     this.totalChoicesMade = 0;
     this.totalConsequencesProcessed = 0;
 
-    // Авто-сохранение каждые 2 минуты
-    this.startAutoSave();
   }
 
   /** Остановка цикла */
   stopLoop(): void {
-    if (this.autoSaveInterval) {
-      clearInterval(this.autoSaveInterval);
-      this.autoSaveInterval = null;
-    }
+    // (раньше здесь снимался таймер «фейкового» game:saved; персистентность — `useAutoSave`.)
   }
 
   /** Transition to a new state */
@@ -233,13 +227,6 @@ class CoreLoopClass {
   endDialogue(npcId: string, dialogueId: string): void {
     eventBus.emit('dialogue:ended', { npcId, dialogueId });
     this.transition('EXPLORING');
-  }
-
-  /** Авто-сохранение */
-  private startAutoSave(): void {
-    this.autoSaveInterval = setInterval(() => {
-      eventBus.emit('game:saved', { timestamp: Date.now() });
-    }, 120_000); // Каждые 2 минуты
   }
 
   /** Подписка на события */

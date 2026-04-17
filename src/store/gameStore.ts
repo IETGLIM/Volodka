@@ -30,6 +30,11 @@ export type TravelToSceneResult =
   | { ok: true }
   | { ok: false; reason: 'same_scene' | 'locked' | 'no_energy' };
 
+export type SaveGameOptions = {
+  /** `manual` — из HUD; `auto` — таймер / смена сцены. */
+  source?: 'auto' | 'manual';
+};
+
 export type TravelToSceneOptions = {
   /** Сцена следует за узлом сюжета — без проверки unlock и без траты энергии */
   narrativeDriven?: boolean;
@@ -317,7 +322,7 @@ interface GameState {
   pushChoiceLog: (entry: Omit<ChoiceLogEntry, 'id' | 'at'> & { id?: string; at?: number }) => void;
   
   // Save/Load
-  saveGame: () => void;
+  saveGame: (options?: SaveGameOptions) => void;
   loadGame: () => boolean;
   resetGame: () => void;
   /** Merge persisted snapshot from localStorage (client-only; call once after mount). */
@@ -1228,6 +1233,7 @@ export const useGameStore = create<GameState>()((set, get) => ({
           ...normalized,
           phase: 'game'
         });
+        eventBus.emit('game:loaded', { timestamp: Date.now() });
         return true;
       } catch {
         return false;

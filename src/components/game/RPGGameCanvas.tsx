@@ -42,6 +42,10 @@ import { useGameStore } from '../../store/gameStore';
 import { eventBus } from '@/engine/EventBus';
 import { getCurrentScheduleEntry } from '@/engine/ScheduleEngine';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useMobileVisualPerf } from '@/hooks/useMobileVisualPerf';
+import { ExplorationPostFX } from '@/components/game/exploration/ExplorationPostFX';
+import { ExplorationParticles } from '@/components/game/exploration/ExplorationParticles';
+import { ExplorationFootprints } from '@/components/game/exploration/ExplorationFootprints';
 import { ExplorationMobileHud } from './ExplorationMobileHud';
 import { RadialMenu, type RadialMenuAction } from './RadialMenu';
 import { getNearestInteractiveObject } from './InteractiveTriggers';
@@ -94,6 +98,7 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
   groundGeometryArgs: groundGeometryArgsProp,
 }: RPGGameCanvasProps) {
   const narrow = useIsMobile();
+  const visualLite = useMobileVisualPerf();
   const virtualControlsRef = useRef<Partial<PlayerControls>>({});
   const [npcStates, setNPCStates] = useState<Record<string, NPCState>>({});
   const [triggerStates, setTriggerStates] = useState<Record<string, TriggerState>>({});
@@ -101,6 +106,7 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
   
   // Получаем ВСЁ состояние напрямую из store (единый источник истины)
   const playerState = useGameStore((state) => state.playerState);
+  const shadowMap = narrow || visualLite ? 256 : 512;
   const playerPosition = useGameStore((state) => state.exploration.playerPosition);
   const setPlayerPosition = useGameStore((state) => state.setPlayerPosition);
   const setNPCState = useGameStore((state) => state.setNPCState);
@@ -351,7 +357,7 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
           intensity={0.6}
           color={visualState.colorTint !== 'transparent' ? visualState.colorTint : '#fff'}
           castShadow
-          shadow-mapSize={[512, 512]}
+          shadow-mapSize={[shadowMap, shadowMap]}
           shadow-camera-far={50}
           shadow-camera-left={-10}
           shadow-camera-right={10}
@@ -421,6 +427,9 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
           creativity={playerState.creativity}
         />
       </Physics>
+        <ExplorationPostFX sceneId={sceneId} visualLite={visualLite} stress={playerState.stress} />
+        <ExplorationParticles sceneId={sceneId} timeOfDay={timeOfDay} visualLite={visualLite} />
+        <ExplorationFootprints key={sceneId} sceneId={sceneId} />
       </Suspense>
     </Canvas>
     {narrow && (
