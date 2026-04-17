@@ -9,6 +9,8 @@
 - **Шина событий**: **`exploration:footstep`**; **`game:saved`** с опциональным **`source: 'auto' | 'manual'`**; **`game:loaded`** эмитится из **`loadGame`** после успешной загрузки.
 - **Сохранения**: **`saveGame(options?)`** в **`gameStore`** пишет в **`localStorage`** и эмитит **`game:saved`**; **`useAutoSave`** передаёт **`{ source: 'auto' }`**; UX в **`GameOrchestrator`** — отдельные тосты ручного сохранения и короткая подпись для авто/загрузки; убран ложный интервал **`game:saved`** из **`CoreLoop`** (персистентность только через стор/хуки).
 
+- **Перфоманс 3D**: **`PanelDistrictBuildings`** — пять коллайдеров Rapier + **один `InstancedMesh`** на фасады панельного квартала; **`ExplorationFrameStats`** (FPS, **`gl.info.render`**) по **`?exploreStats=1`** или **`localStorage`** **`volodka_exploration_stats=1`**; тест **`PanelDistrictBuildings.test.ts`**.
+
 - **Правило Cursor**: **`.cursor/rules/git-changelog-workflow.mdc`** — после содержательных правок обновлять **`CHANGELOG.md`** (`[Unreleased]`), делать коммит и при необходимости **`git push`**.
 
 - **RPG-прототипы (глубина сессии)**: зависимость **`three-pathfinding`**; **`src/lib/explorationNavMesh.ts`** — navmesh по размеру пола и поиск пути; **`NPC.tsx`** / **`NPCSystem`** / **`RPGGameCanvas`** — патруль по **waypoints** с обходом через углы пути (при отсутствии сетки — прямой бег); **`BattleClickLayer`** — бой по **клику/тапу** на примитивах на сцене **`battle`**, урон **`rollStrikeDamage`** от **`logic` / `coding` / `intuition`** (**`src/lib/combatDamage.ts`**, тесты); **`InteractiveObjectConfig.requiredSkills`** в **`scenes.ts`** (кафе **`cafe_jack_portable`**), проверки в **`GameOrchestrator`** и **`src/lib/interactiveSkillRequirements.ts`**; в офисе у коллеги реплика с **`minSkill: persuasion`** и узел **`colleague_persuasion_line`** в **`DIALOGUE_NODES`**; **`DialogueRenderer`** передаёт **`DIALOGUE_NODES`** в **`processDialogueChoice`** и **`evaluateCondition`** для доступности выборов; у **`battle_burntrap`** заданы **waypoints** для демонстрации маршрута.
@@ -35,8 +37,10 @@
 
 ### Changed
 
+- **`NPC.tsx`**: дистанционный **LOD** для NPC с **`modelPath`**: дальше **~17 m** — капсула-импостор вместо GLB (гистерезис с **~12 m**); при диалоге всегда полная модель; убран **`useGLTF.clear`** при размонтировании загрузчика, чтобы не сбрасывать общий кэш при LOD у соседних NPC.
+
 - **`usePlayerFootsteps`**: при шаге эмит **`exploration:footstep`** (позиция и yaw для декалей).
-- **`RPGGameCanvas`**: тени **`directionalLight`** 256×256 на мобильном / **`useMobileVisualPerf`**.
+- **`RPGGameCanvas`**: тени **`directionalLight`** 256×256 на мобильном / **`useMobileVisualPerf`**; панельные короба заменены на **`PanelDistrictBuildings`**.
 - **`HUD`**: **`motion.div`** с **`layout`** для плавной перестройки панели.
 - **`useGameSessionFlow`**, **`useActionHandler`**, **`useTimedMessage`**: сохранение без дублирующего **`emit`** из сессии; опциональная длительность у **`showMessage`**.
 

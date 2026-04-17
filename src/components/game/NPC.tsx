@@ -16,6 +16,10 @@ import { useGameStore } from '@/store/gameStore';
 import { getNpcQuestMarkerForExploration } from '@/lib/npcQuestMarker';
 import type { FindNavPathXZ } from '@/lib/explorationNavMesh';
 
+/** Дальше — упрощённая болванка вместо GLB (меньше полигоналки и скинов). */
+const NPC_LOD_FULL_IN_M = 12;
+const NPC_LOD_IMPOSTOR_OUT_M = 17;
+
 function scheduleActivityIcon(entry: ScheduleEntry | null | undefined): string {
   if (!entry) return '💬';
   if (!entry.dialogueAvailable) return '😴';
@@ -185,12 +189,6 @@ const GLTFLoader = memo(function GLTFLoader({
       return null;
     }
   }, [loadedScene]);
-
-  useEffect(() => {
-    return () => {
-      useGLTF.clear(modelPath);
-    };
-  }, [modelPath]);
 
   useEffect(() => {
     if (!actions || Object.keys(actions).length === 0) return;
@@ -528,6 +526,17 @@ const GenericModel = memo(function GenericModel({ isNearPlayer, isDialogueActive
   );
 });
 
+const NpcDistanceImpostor = memo(function NpcDistanceImpostor({ scale = 1 }: { scale?: number }) {
+  const r = 0.26 * scale;
+  const len = 0.85 * scale;
+  return (
+    <mesh position={[0, 0.45 * scale + len * 0.5, 0]} castShadow={false}>
+      <capsuleGeometry args={[r, len, 5, 10]} />
+      <meshStandardMaterial color="#3d4f48" roughness={0.88} metalness={0.05} />
+    </mesh>
+  );
+});
+
 const FallbackNPCModel = memo(function FallbackNPCModel({
   modelType,
   isNearPlayer,
@@ -590,6 +599,8 @@ export const NPC = memo(function NPC({
   const isWaiting = useRef(false);
   const lastStateChangeTime = useRef(0);
   const wasNearPlayer = useRef(false);
+  const lodFullModelRef = useRef(true);
+  const [useFullModel, setUseFullModel] = useState(true);
   // Ref для текущей анимации - чтобы не вызывать setState каждый кадр
   const currentAnimationRef = useRef<'idle' | 'walk' | 'talk'>('idle');
   const navCornersRef = useRef<{ x: number; z: number }[]>([]);
@@ -622,6 +633,21 @@ export const NPC = memo(function NPC({
   );
 
   useFrame((_, delta) => {
+    const posForLod = scheduleEntry ? scheduleEntry.position : currentPositionRef.current;
+    const dLod = Math.hypot(playerPosition.x - posForLod.x, playerPosition.z - posForLod.z);
+    let nextLodFull = lodFullModelRef.current;
+    if (isDialogueActive || !definition.modelPath) {
+      nextLodFull = true;
+    } else if (dLod < NPC_LOD_FULL_IN_M) {
+      nextLodFull = true;
+    } else if (dLod > NPC_LOD_IMPOSTOR_OUT_M) {
+      nextLodFull = false;
+    }
+    if (nextLodFull !== lodFullModelRef.current) {
+      lodFullModelRef.current = nextLodFull;
+      setUseFullModel(nextLodFull);
+    }
+
     if (scheduleEntry) {
       const p = scheduleEntry.position;
       currentPositionRef.current = { x: p.x, y: p.y, z: p.z };
@@ -909,7 +935,7 @@ export const NPC = memo(function NPC({
   const body = (
     <>
       <group ref={modelRef}>
-        {definition.modelPath ? (
+        {definition.modelPath && useFullModel ? (
           <Suspense fallback={fallbackModel}>
             <ModelErrorBoundary fallback={fallbackModel}>
               <GLTFModel
@@ -923,6 +949,8 @@ export const NPC = memo(function NPC({
               />
             </ModelErrorBoundary>
           </Suspense>
+        ) : definition.modelPath && !useFullModel ? (
+          <NpcDistanceImpostor scale={definition.scale || 1} />
         ) : (
           fallbackModel
         )}

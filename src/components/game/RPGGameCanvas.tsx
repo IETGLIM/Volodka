@@ -46,6 +46,8 @@ import { useMobileVisualPerf } from '@/hooks/useMobileVisualPerf';
 import { ExplorationPostFX } from '@/components/game/exploration/ExplorationPostFX';
 import { ExplorationParticles } from '@/components/game/exploration/ExplorationParticles';
 import { ExplorationFootprints } from '@/components/game/exploration/ExplorationFootprints';
+import { PanelDistrictBuildings } from '@/components/game/exploration/PanelDistrictBuildings';
+import { ExplorationFrameStats, useExplorationFrameStatsEnabled } from '@/components/game/exploration/ExplorationFrameStats';
 import { ExplorationMobileHud } from './ExplorationMobileHud';
 import { RadialMenu, type RadialMenuAction } from './RadialMenu';
 import { getNearestInteractiveObject } from './InteractiveTriggers';
@@ -99,6 +101,7 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
 }: RPGGameCanvasProps) {
   const narrow = useIsMobile();
   const visualLite = useMobileVisualPerf();
+  const showExplorationStats = useExplorationFrameStatsEnabled();
   const virtualControlsRef = useRef<Partial<PlayerControls>>({});
   const [npcStates, setNPCStates] = useState<Record<string, NPCState>>({});
   const [triggerStates, setTriggerStates] = useState<Record<string, TriggerState>>({});
@@ -318,33 +321,7 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
           </mesh>
         </RigidBody>
 
-        {isPanelDistrict &&
-          [
-            { pos: [-19, 3, -10] as const, size: [5, 7, 5] as const },
-            { pos: [20, 3.5, -8] as const, size: [6, 8, 5] as const },
-            { pos: [-16, 4, 16] as const, size: [5, 10, 5] as const },
-            { pos: [17, 2.5, 14] as const, size: [5, 6, 5] as const },
-            { pos: [0, 2, -22] as const, size: [14, 5, 4] as const },
-          ].map((b, i) => (
-            <RigidBody
-              key={`panel-${i}`}
-              type="fixed"
-              colliders={false}
-              position={[b.pos[0], b.pos[1], b.pos[2]]}
-            >
-              <CuboidCollider args={[b.size[0] / 2, b.size[1] / 2, b.size[2] / 2]} name={footstepColliderName('metal')} />
-              <mesh castShadow receiveShadow>
-                <boxGeometry args={[...b.size]} />
-                <meshStandardMaterial
-                  color="#0a1210"
-                  roughness={0.92}
-                  metalness={0.08}
-                  emissive="#001a12"
-                  emissiveIntensity={0.12}
-                />
-              </mesh>
-            </RigidBody>
-          ))}
+        {isPanelDistrict && <PanelDistrictBuildings />}
       
         {/* Fog */}
         <fog attach="fog" args={[sceneConfig.fogColor, isPanelDistrict ? 14 : 8, isPanelDistrict ? 48 : 25]} />
@@ -430,6 +407,7 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
         <ExplorationPostFX sceneId={sceneId} visualLite={visualLite} stress={playerState.stress} />
         <ExplorationParticles sceneId={sceneId} timeOfDay={timeOfDay} visualLite={visualLite} />
         <ExplorationFootprints key={sceneId} sceneId={sceneId} />
+        {showExplorationStats && <ExplorationFrameStats />}
       </Suspense>
     </Canvas>
     {narrow && (
