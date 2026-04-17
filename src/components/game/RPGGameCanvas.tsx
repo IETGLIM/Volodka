@@ -29,6 +29,7 @@ import { getTriggersForScene } from '../../data/triggerZones';
 import {
   getInteractiveObjectsForScene,
   getExplorationCharacterModelScale,
+  getExplorationLocomotionScale,
   type InteractiveObjectConfig,
 } from '@/config/scenes';
 
@@ -164,6 +165,11 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
 
   const explorationCharacterModelScale = useMemo(
     () => getExplorationCharacterModelScale(sceneId),
+    [sceneId],
+  );
+
+  const explorationLocomotionScale = useMemo(
+    () => getExplorationLocomotionScale(sceneId),
     [sceneId],
   );
 
@@ -364,6 +370,7 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
           position={[playerPosition.x, playerPosition.y, playerPosition.z]}
           modelPath={getDefaultPlayerModelPath()}
           visualModelScale={explorationCharacterModelScale}
+          locomotionScale={explorationLocomotionScale}
           onPositionChange={handlePositionChange}
           onInteraction={handlePlayerInteraction}
           isLocked={isDialogueActive}
@@ -381,6 +388,7 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
           currentSceneId={sceneId}
           timeOfDay={timeOfDay}
           locationModelScale={explorationCharacterModelScale}
+          locationLocomotionScale={explorationLocomotionScale}
           enableNpcPhysics
           findNavPath={findNavPath}
         />

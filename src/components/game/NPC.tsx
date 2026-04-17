@@ -597,6 +597,8 @@ interface NPCProps {
   isDialogueActive: boolean;
   /** Множитель из `getExplorationCharacterModelScale(currentSceneId)` — адаптация под локацию. */
   locationModelScale?: number;
+  /** Множитель скорости патруля; `getExplorationLocomotionScale`. */
+  locationLocomotionScale?: number;
   /** Текущее окно расписания для этого NPC (если есть в `ScheduleEngine`). */
   scheduleEntry?: ScheduleEntry | null;
   /** Кинематический RigidBody для телепорта в Rapier-сцене. */
@@ -613,6 +615,7 @@ export const NPC = memo(function NPC({
   onStateChange,
   isDialogueActive,
   locationModelScale = 1,
+  locationLocomotionScale = 1,
   scheduleEntry = null,
   enableNpcPhysics = false,
   findNavPath = null,
@@ -839,7 +842,7 @@ export const NPC = memo(function NPC({
           }
         }
 
-        const npcSpeed = 1.5 * delta;
+        const npcSpeed = 1.5 * locationLocomotionScale * delta;
         const vx = dirX * npcSpeed;
         const vz = dirZ * npcSpeed;
 
@@ -881,7 +884,7 @@ export const NPC = memo(function NPC({
       const distanceToTarget = Math.sqrt(distX * distX + distZ * distZ);
 
       if (distanceToTarget > 0.5) {
-        const npcSpeed = 1.0 * delta;
+        const npcSpeed = 1.0 * locationLocomotionScale * delta;
         const vx = (distX / distanceToTarget) * npcSpeed;
         const vz = (distZ / distanceToTarget) * npcSpeed;
 
@@ -1080,6 +1083,8 @@ interface NPCSystemProps {
   timeOfDay: number;
   /** См. `getExplorationCharacterModelScale` в `config/scenes`. */
   locationModelScale?: number;
+  /** См. `getExplorationLocomotionScale`. */
+  locationLocomotionScale?: number;
   enableNpcPhysics?: boolean;
   findNavPath?: FindNavPathXZ | null;
 }
@@ -1094,6 +1099,7 @@ export const NPCSystem = memo(function NPCSystem({
   currentSceneId,
   timeOfDay,
   locationModelScale = 1,
+  locationLocomotionScale = 1,
   enableNpcPhysics = false,
   findNavPath = null,
 }: NPCSystemProps) {
@@ -1130,6 +1136,7 @@ export const NPCSystem = memo(function NPCSystem({
             onStateChange={(newState) => onNPCStateChange(npcDef.id, newState)}
             isDialogueActive={isDialogueActive}
             locationModelScale={locationModelScale}
+            locationLocomotionScale={locationLocomotionScale}
             scheduleEntry={scheduleEntry}
             enableNpcPhysics={enableNpcPhysics}
             findNavPath={findNavPath}

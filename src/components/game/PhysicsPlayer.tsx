@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useEffect, useMemo, useState, memo, forwardRef, useImperativeHandle, Suspense, useCallback } from 'react';
+import React, { useRef, useEffect, useLayoutEffect, useMemo, useState, memo, forwardRef, useImperativeHandle, Suspense, useCallback } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { useGLTF, useAnimations } from '@react-three/drei';
 import { RigidBody, RapierRigidBody, CapsuleCollider, useRapier, useBeforePhysicsStep } from '@react-three/rapier';
@@ -20,6 +20,8 @@ export interface PhysicsPlayerProps {
   modelPath?: string;
   /** Визуальный масштаб GLB/заглушки игрока (коллайдер Rapier без изменений). См. `getExplorationCharacterModelScale`. */
   visualModelScale?: number;
+  /** Множитель ходьбы/бега/прыжка; см. `getExplorationLocomotionScale`. */
+  locomotionScale?: number;
   onPositionChange?: (position: { x: number; y: number; z: number }) => void;
   onInteraction?: () => void;
   isLocked?: boolean;
@@ -268,6 +270,7 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
     position = [0, 1, 3],
     modelPath,
     visualModelScale = 1,
+    locomotionScale = 1,
     onPositionChange,
     onInteraction,
     isLocked = false,
@@ -293,6 +296,10 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
   const [modelError, setModelError] = useState(false);
   const onInteractionRef = useRef(onInteraction);
   const isLockedRef = useRef(isLocked);
+  const locomotionScaleRef = useRef(locomotionScale);
+  useLayoutEffect(() => {
+    locomotionScaleRef.current = locomotionScale;
+  }, [locomotionScale]);
 
   useEffect(() => {
     onInteractionRef.current = onInteraction;
@@ -360,6 +367,7 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
     horizVelZRef,
     isLockedRef,
     isRunningRef,
+    locomotionScaleRef,
     enabled: true,
   });
 
@@ -394,7 +402,9 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
       moveZ /= len;
     }
 
-    const speed = controls.run ? PHYSICS_CONSTANTS.RUN_SPEED : PHYSICS_CONSTANTS.WALK_SPEED;
+    const loc = locomotionScaleRef.current;
+    const speed =
+      (controls.run ? PHYSICS_CONSTANTS.RUN_SPEED : PHYSICS_CONSTANTS.WALK_SPEED) * loc;
     isRunningRef.current = controls.run;
     const yaw = moveYawRef.current;
     const sin = Math.sin(yaw);
@@ -413,7 +423,7 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
     verticalVelRef.current += g * dt;
 
     if (groundedRef.current && controls.jump && canJumpRef.current) {
-      verticalVelRef.current = PHYSICS_CONSTANTS.JUMP_FORCE;
+      verticalVelRef.current = PHYSICS_CONSTANTS.JUMP_FORCE * loc;
       canJumpRef.current = false;
     }
 

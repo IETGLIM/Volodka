@@ -23,6 +23,8 @@ export interface UsePlayerFootstepsArgs {
   isLockedRef: MutableRefObject<boolean>;
   /** Бег укорачивает интервал между шагами */
   isRunningRef: MutableRefObject<boolean>;
+  /** Синхрон с `PhysicsPlayer` `locomotionScale` (пер-локация). */
+  locomotionScaleRef?: MutableRefObject<number>;
   enabled?: boolean;
 }
 
@@ -36,6 +38,7 @@ export function usePlayerFootsteps({
   horizVelZRef,
   isLockedRef,
   isRunningRef,
+  locomotionScaleRef,
   enabled = true,
 }: UsePlayerFootstepsArgs) {
   const { world, rapier, colliderStates } = useRapier();
@@ -60,8 +63,9 @@ export function usePlayerFootsteps({
       return;
     }
 
-    const walk = PHYSICS_CONSTANTS.WALK_SPEED;
-    const speedNorm = Math.min(1.35, spd / walk);
+    const loc = locomotionScaleRef?.current ?? 1;
+    const walk = PHYSICS_CONSTANTS.WALK_SPEED * loc;
+    const speedNorm = Math.min(1.35, spd / Math.max(1e-4, walk));
     const base = isRunningRef.current ? 0.26 : 0.36;
     const interval = Math.min(MAX_STEP_INTERVAL, Math.max(MIN_STEP_INTERVAL, base / speedNorm));
 

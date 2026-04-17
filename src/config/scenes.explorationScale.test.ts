@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { getExplorationCharacterModelScale } from './scenes';
+import {
+  getExplorationCharacterModelScale,
+  getExplorationLocomotionScale,
+} from './scenes';
 
 describe('getExplorationCharacterModelScale', () => {
   it('returns >1 for wide plaza streets', () => {
@@ -13,5 +16,22 @@ describe('getExplorationCharacterModelScale', () => {
 
   it('defaults to 1 for unknown scene ids', () => {
     expect(getExplorationCharacterModelScale('server_room')).toBe(1);
+  });
+});
+
+describe('getExplorationLocomotionScale', () => {
+  it('is >1 on streets but slightly below character model scale', () => {
+    const m = getExplorationCharacterModelScale('street_night');
+    const l = getExplorationLocomotionScale('street_night');
+    expect(l).toBeGreaterThan(1);
+    expect(l).toBeLessThan(m);
+  });
+
+  it('is <1 for compact indoor scenes with configured locomotion', () => {
+    expect(getExplorationLocomotionScale('kitchen_night')).toBeLessThan(1);
+  });
+
+  it('defaults to 1 for unknown scene ids', () => {
+    expect(getExplorationLocomotionScale('server_room')).toBe(1);
   });
 });

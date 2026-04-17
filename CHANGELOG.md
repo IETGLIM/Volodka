@@ -39,6 +39,8 @@
 
 ### Changed
 
+- **Локомоция под локацию (3D)**: в **`SceneConfig`** поле **`explorationLocomotionScale`**, **`getExplorationLocomotionScale(sceneId)`**; **`PhysicsPlayer`** умножает ходьбу/бег/прыжок; **`usePlayerFootsteps`** нормирует интервал шагов от фактической скорости ходьбы; **`NPC`** / **`NPCSystem`** — скорость патруля по waypoints и в **`patrolRadius`**; проводка из **`RPGGameCanvas`** и **`PhysicsRPGCanvas`**; тесты в **`scenes.explorationScale.test.ts`**.
+
 - **`NPC.tsx`**: дистанционный **LOD** для NPC с **`modelPath`**: дальше **~17 m** — капсула-импостор вместо GLB (гистерезис с **~12 m**); при диалоге всегда полная модель; убран **`useGLTF.clear`** при размонтировании загрузчика, чтобы не сбрасывать общий кэш при LOD у соседних NPC; **mid-shadow LOD** — при полном GLB дальше **~4.5–6.5 m** (зона гистерезиса) у мешей **`castShadow=false`**, ближе и в диалоге — как раньше.
 
 - **`usePlayerFootsteps`**: при шаге эмит **`exploration:footstep`** (позиция и yaw для декалей).

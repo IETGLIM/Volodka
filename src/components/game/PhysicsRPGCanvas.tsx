@@ -18,7 +18,7 @@ import { getDefaultPlayerModelPath } from '@/config/modelUrls';
 import { NPCSystem } from './NPC';
 import { InteractiveObject, PhysicsExplorationRoomVisual } from './RoomEnvironment';
 import { useGameStore } from '@/store/gameStore';
-import { getExplorationCharacterModelScale } from '@/config/scenes';
+import { getExplorationCharacterModelScale, getExplorationLocomotionScale } from '@/config/scenes';
 
 const PhysicsWorldClock = memo(function PhysicsWorldClock() {
   const advanceTime = useGameStore((s) => s.advanceTime);
@@ -139,6 +139,11 @@ export const PhysicsGameModeSwitcher = memo(function PhysicsGameModeSwitcher({
     [sceneId],
   );
 
+  const explorationLocomotionScale = useMemo(
+    () => getExplorationLocomotionScale(sceneId),
+    [sceneId],
+  );
+
   const handleObjectInteract = React.useCallback((objectId: string) => {
     onObjectInteract?.(objectId, 'interact');
   }, [onObjectInteract]);
@@ -218,6 +223,7 @@ export const PhysicsGameModeSwitcher = memo(function PhysicsGameModeSwitcher({
               currentSceneId={sceneId}
               timeOfDay={timeOfDay}
               locationModelScale={explorationCharacterModelScale}
+              locationLocomotionScale={explorationLocomotionScale}
               enableNpcPhysics
             />
           )}
@@ -228,6 +234,7 @@ export const PhysicsGameModeSwitcher = memo(function PhysicsGameModeSwitcher({
                 position={[playerPosition.x, playerPosition.y, playerPosition.z]}
                 modelPath={getDefaultPlayerModelPath()}
                 visualModelScale={explorationCharacterModelScale}
+                locomotionScale={explorationLocomotionScale}
                 onPositionChange={onPlayerPositionChange}
               />
               <FollowCamera
