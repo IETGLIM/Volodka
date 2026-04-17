@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useEffect, useCallback, useMemo } from 'react';
+import { useRef, useEffect, useCallback } from 'react';
 import { useThree, useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { CAMERA_COLLISION_LAYER } from './SceneColliders';
@@ -171,6 +171,16 @@ export default function FollowCamera({
   // ОБРАБОТКА ВВОДА
   // ============================================
 
+  const applyPointerDelta = useCallback(
+    (clientX: number, clientY: number) => {
+      if (!isDragging.current || isLocked) return;
+      const deltaX = clientX - lastMousePos.current.x;
+      currentAngle.current -= deltaX * rotationSpeed;
+      lastMousePos.current = { x: clientX, y: clientY };
+    },
+    [isLocked],
+  );
+
   const handleMouseDown = useCallback((e: MouseEvent) => {
     if (e.button === 0 || e.button === 2) {
       isDragging.current = true;
@@ -182,13 +192,32 @@ export default function FollowCamera({
     isDragging.current = false;
   }, []);
 
-  const handleMouseMove = useCallback((e: MouseEvent) => {
-    if (!isDragging.current || isLocked) return;
-    
-    const deltaX = e.clientX - lastMousePos.current.x;
-    currentAngle.current -= deltaX * rotationSpeed;
-    lastMousePos.current = { x: e.clientX, y: e.clientY };
-  }, [isLocked]);
+  const handleMouseMove = useCallback(
+    (e: MouseEvent) => {
+      applyPointerDelta(e.clientX, e.clientY);
+    },
+    [applyPointerDelta],
+  );
+
+  const handleTouchStart = useCallback((e: TouchEvent) => {
+    if (e.touches.length !== 1) return;
+    const t = e.touches[0];
+    isDragging.current = true;
+    lastMousePos.current = { x: t.clientX, y: t.clientY };
+  }, []);
+
+  const handleTouchMove = useCallback(
+    (e: TouchEvent) => {
+      if (e.touches.length !== 1) return;
+      const t = e.touches[0];
+      applyPointerDelta(t.clientX, t.clientY);
+    },
+    [applyPointerDelta],
+  );
+
+  const handleTouchEnd = useCallback(() => {
+    isDragging.current = false;
+  }, []);
 
   const handleContextMenu = useCallback((e: MouseEvent) => {
     e.preventDefault();
@@ -205,11 +234,15 @@ export default function FollowCamera({
     );
   }, [isLocked, enableZoom, minDistance, maxDistance]);
 
-  // Добавляем обработчики событий
+  // Добавляем обработчики событий (мышь + тач для орбиты)
   useEffect(() => {
     window.addEventListener('mousedown', handleMouseDown);
     window.addEventListener('mouseup', handleMouseUp);
     window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('touchstart', handleTouchStart, { passive: true });
+    window.addEventListener('touchmove', handleTouchMove, { passive: true });
+    window.addEventListener('touchend', handleTouchEnd);
+    window.addEventListener('touchcancel', handleTouchEnd);
     window.addEventListener('contextmenu', handleContextMenu);
     window.addEventListener('wheel', handleWheel, { passive: true });
 
@@ -217,10 +250,23 @@ export default function FollowCamera({
       window.removeEventListener('mousedown', handleMouseDown);
       window.removeEventListener('mouseup', handleMouseUp);
       window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('touchstart', handleTouchStart);
+      window.removeEventListener('touchmove', handleTouchMove);
+      window.removeEventListener('touchend', handleTouchEnd);
+      window.removeEventListener('touchcancel', handleTouchEnd);
       window.removeEventListener('contextmenu', handleContextMenu);
       window.removeEventListener('wheel', handleWheel);
     };
-  }, [handleMouseDown, handleMouseUp, handleMouseMove, handleContextMenu, handleWheel]);
+  }, [
+    handleMouseDown,
+    handleMouseUp,
+    handleMouseMove,
+    handleTouchStart,
+    handleTouchMove,
+    handleTouchEnd,
+    handleContextMenu,
+    handleWheel,
+  ]);
 
   // ============================================
   // ОБНОВЛЕНИЕ КАДРА
@@ -300,6 +346,16 @@ export function SimpleFollowCamera({
   const lastMousePos = useRef({ x: 0, y: 0 });
   const rotationSpeed = 0.005;
 
+  const applyPointerDelta = useCallback(
+    (clientX: number, clientY: number) => {
+      if (!isDragging.current || isLocked) return;
+      const deltaX = clientX - lastMousePos.current.x;
+      currentAngle.current -= deltaX * rotationSpeed;
+      lastMousePos.current = { x: clientX, y: clientY };
+    },
+    [isLocked],
+  );
+
   const handleMouseDown = useCallback((e: MouseEvent) => {
     if (e.button === 0 || e.button === 2) {
       isDragging.current = true;
@@ -311,13 +367,32 @@ export function SimpleFollowCamera({
     isDragging.current = false;
   }, []);
 
-  const handleMouseMove = useCallback((e: MouseEvent) => {
-    if (!isDragging.current || isLocked) return;
-    
-    const deltaX = e.clientX - lastMousePos.current.x;
-    currentAngle.current -= deltaX * rotationSpeed;
-    lastMousePos.current = { x: e.clientX, y: e.clientY };
-  }, [isLocked]);
+  const handleMouseMove = useCallback(
+    (e: MouseEvent) => {
+      applyPointerDelta(e.clientX, e.clientY);
+    },
+    [applyPointerDelta],
+  );
+
+  const handleTouchStart = useCallback((e: TouchEvent) => {
+    if (e.touches.length !== 1) return;
+    const t = e.touches[0];
+    isDragging.current = true;
+    lastMousePos.current = { x: t.clientX, y: t.clientY };
+  }, []);
+
+  const handleTouchMove = useCallback(
+    (e: TouchEvent) => {
+      if (e.touches.length !== 1) return;
+      const t = e.touches[0];
+      applyPointerDelta(t.clientX, t.clientY);
+    },
+    [applyPointerDelta],
+  );
+
+  const handleTouchEnd = useCallback(() => {
+    isDragging.current = false;
+  }, []);
 
   const handleContextMenu = useCallback((e: MouseEvent) => {
     e.preventDefault();
@@ -338,6 +413,10 @@ export function SimpleFollowCamera({
     window.addEventListener('mousedown', handleMouseDown);
     window.addEventListener('mouseup', handleMouseUp);
     window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('touchstart', handleTouchStart, { passive: true });
+    window.addEventListener('touchmove', handleTouchMove, { passive: true });
+    window.addEventListener('touchend', handleTouchEnd);
+    window.addEventListener('touchcancel', handleTouchEnd);
     window.addEventListener('contextmenu', handleContextMenu);
     window.addEventListener('wheel', handleWheel, { passive: true });
 
@@ -345,10 +424,23 @@ export function SimpleFollowCamera({
       window.removeEventListener('mousedown', handleMouseDown);
       window.removeEventListener('mouseup', handleMouseUp);
       window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('touchstart', handleTouchStart);
+      window.removeEventListener('touchmove', handleTouchMove);
+      window.removeEventListener('touchend', handleTouchEnd);
+      window.removeEventListener('touchcancel', handleTouchEnd);
       window.removeEventListener('contextmenu', handleContextMenu);
       window.removeEventListener('wheel', handleWheel);
     };
-  }, [handleMouseDown, handleMouseUp, handleMouseMove, handleContextMenu, handleWheel]);
+  }, [
+    handleMouseDown,
+    handleMouseUp,
+    handleMouseMove,
+    handleTouchStart,
+    handleTouchMove,
+    handleTouchEnd,
+    handleContextMenu,
+    handleWheel,
+  ]);
 
   useFrame(() => {
     const target = new THREE.Vector3(targetPosition.x, targetPosition.y, targetPosition.z);

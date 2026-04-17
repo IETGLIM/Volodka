@@ -2,7 +2,6 @@ import { act, renderHook } from '@testing-library/react';
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { useGameSessionFlow } from './useGameSessionFlow';
 import { eventBus } from '@/engine/EventBus';
-import { VERTICAL_SLICE_ENTRY_NODE_ID } from '@/data/verticalSliceStoryNodes';
 
 describe('useGameSessionFlow', () => {
   beforeEach(() => {
@@ -29,15 +28,11 @@ describe('useGameSessionFlow', () => {
 
   it('starts new game with expected flow', () => {
     const setPhase = vi.fn();
-    const setGameMode = vi.fn();
-    const setCurrentNode = vi.fn();
     const resetGameStore = vi.fn();
 
     const { result } = renderHook(() =>
       useGameSessionFlow({
         setPhase,
-        setGameMode,
-        setCurrentNode,
         saveGameToStore: vi.fn(),
         loadGameFromStore: vi.fn(),
         resetGameStore,
@@ -50,8 +45,6 @@ describe('useGameSessionFlow', () => {
     });
 
     expect(resetGameStore).toHaveBeenCalledTimes(1);
-    expect(setGameMode).toHaveBeenCalledWith('visual-novel');
-    expect(setCurrentNode).toHaveBeenCalledWith(VERTICAL_SLICE_ENTRY_NODE_ID);
     expect(setPhase).toHaveBeenCalledWith('intro');
   });
 

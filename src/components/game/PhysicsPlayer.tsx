@@ -271,8 +271,14 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
   const [modelError, setModelError] = useState(false);
   const onInteractionRef = useRef(onInteraction);
   const isLockedRef = useRef(isLocked);
-  onInteractionRef.current = onInteraction;
-  isLockedRef.current = isLocked;
+
+  useEffect(() => {
+    onInteractionRef.current = onInteraction;
+  }, [onInteraction]);
+
+  useEffect(() => {
+    isLockedRef.current = isLocked;
+  }, [isLocked]);
 
   const handleInteractPress = useCallback(() => {
     if (onInteractionRef.current && !isLockedRef.current) {

@@ -181,8 +181,8 @@ const INITIAL_FACTION_REPUTATIONS: Record<FactionId, FactionReputation> = {
 // ============================================
 
 const INITIAL_EXPLORATION_STATE: ExplorationState = {
-  playerPosition: { x: 0, y: 1, z: 3, rotation: 0 },
-  currentSceneId: 'kitchen_night',
+  playerPosition: { x: 0, y: 1, z: 4, rotation: 0 },
+  currentSceneId: 'street_night',
   npcStates: {},
   triggerStates: {},
   worldItems: [],
@@ -427,7 +427,7 @@ const normalizeLoadedState = (data: SavedGameData) => ({
   collectedPoemIds: data.collectedPoemIds || [],
   unlockedAchievementIds: data.unlockedAchievementIds || [],
   unlockedLocations: data.unlockedLocations || [],
-  gameMode: data.gameMode || 'visual-novel',
+  gameMode: data.gameMode ?? 'exploration',
   exploration: data.exploration || INITIAL_EXPLORATION_STATE,
   activeQuestIds: data.activeQuestIds || [...DEFAULT_ACTIVE_QUEST_IDS],
   completedQuestIds: data.completedQuestIds || [],
@@ -453,7 +453,7 @@ const normalizeLoadedState = (data: SavedGameData) => ({
 export const useGameStore = create<GameState>()((set, get) => ({
   // Initial state
   playerState: INITIAL_STATE,
-  currentNodeId: VERTICAL_SLICE_ENTRY_NODE_ID,
+  currentNodeId: 'explore_mode',
   npcRelations: INITIAL_NPC_RELATIONS,
   inventory: [],
   revealedPoemId: null,
@@ -463,8 +463,8 @@ export const useGameStore = create<GameState>()((set, get) => ({
   activePanicTimer: null,
   phase: 'loading',
   
-  // RPG initial state
-  gameMode: 'visual-novel',
+  // RPG initial state — старт с 3D-локации; сюжет и квесты через NPC и триггеры
+  gameMode: 'exploration',
   exploration: INITIAL_EXPLORATION_STATE,
   currentNPCId: null,
   interactionPrompt: null,
@@ -832,6 +832,9 @@ export const useGameStore = create<GameState>()((set, get) => ({
     const { exploration, unlockedLocations, playerState } = get();
 
     if (narrative) {
+      if (exploration.currentSceneId === sceneId) {
+        return { ok: true as const };
+      }
       set({
         exploration: {
           ...exploration,
@@ -1195,7 +1198,7 @@ export const useGameStore = create<GameState>()((set, get) => ({
     
     set({
       playerState: INITIAL_STATE,
-      currentNodeId: VERTICAL_SLICE_ENTRY_NODE_ID,
+      currentNodeId: 'explore_mode',
       npcRelations: INITIAL_NPC_RELATIONS,
       inventory: [],
       collectedPoemIds: [],
@@ -1203,7 +1206,7 @@ export const useGameStore = create<GameState>()((set, get) => ({
       unlockedLocations: [],
       activePanicTimer: null,
       phase: 'menu',
-      gameMode: 'visual-novel',
+      gameMode: 'exploration',
       exploration: INITIAL_EXPLORATION_STATE,
       currentNPCId: null,
       interactionPrompt: null,

@@ -71,6 +71,7 @@ vi.mock('@/store/gameStore', () => ({
       activeQuestIds: [],
       completedQuestIds: [],
       inventory: [],
+      exploration: { currentSceneId: 'kitchen_night' },
     })),
   },
 }));
@@ -221,5 +222,17 @@ describe('useGameRuntime', () => {
       await Promise.resolve();
     });
     expect(result.current.activeCutsceneId).toBeNull();
+  });
+
+  it('in explore_mode updates sceneManager from exploration scene without travelToScene', () => {
+    const params = {
+      ...createBaseParams(),
+      currentNodeId: 'explore_mode',
+      explorationCurrentSceneId: 'zarema_albert_room' as const,
+    };
+    renderHook(() => useGameRuntime(params));
+
+    expect(sceneManager.transitionTo).toHaveBeenCalledWith('zarema_albert_room');
+    expect(params.travelToScene).not.toHaveBeenCalled();
   });
 });

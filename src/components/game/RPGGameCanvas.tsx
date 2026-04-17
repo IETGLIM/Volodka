@@ -52,7 +52,7 @@ interface RPGGameCanvasProps {
   sceneId: SceneId;
   visualState: VisualState;
   isDialogueActive: boolean;
-  onTriggerEnter: (triggerId: string, storyNodeId: string) => void;
+  onTriggerEnter: (triggerId: string, storyNodeId?: string, cutsceneId?: string) => void;
   onNPCInteraction: (npcId: string) => void;
   children?: React.ReactNode;
   /** Переопределить размер пола; иначе берётся из конфигурации по `sceneId`. */
@@ -113,7 +113,12 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
         return { ambient: 0.25, light: '#ef4444', fogColor: '#1a0505', groundGeometryArgs: GROUND_OPEN };
       case 'street_winter':
       case 'street_night':
-        return { ambient: 0.25, light: '#87ceeb', fogColor: '#0a1020', groundGeometryArgs: GROUND_PLAZA };
+        return {
+          ambient: 0.14,
+          light: '#39ff9c',
+          fogColor: '#020806',
+          groundGeometryArgs: GROUND_PLAZA,
+        };
       case 'memorial_park':
         return { ambient: 0.35, light: '#ffd9a0', fogColor: '#0a1510', groundGeometryArgs: GROUND_PLAZA };
       case 'zarema_albert_room':
@@ -124,6 +129,8 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
   }, [sceneId]);
 
   const groundGeometryArgs = groundGeometryArgsProp ?? sceneConfig.groundGeometryArgs;
+
+  const isPanelDistrict = sceneId === 'street_night' || sceneId === 'street_winter';
 
   // Get NPCs and triggers for current scene
   const sceneNPCs = useMemo(() => getNPCsForScene(sceneId), [sceneId]);
@@ -151,8 +158,9 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
   // Handle trigger enter
   const handleTriggerEnter = useCallback((triggerId: string) => {
     const trigger = sceneTriggers.find(t => t.id === triggerId);
-    if (trigger && trigger.storyNodeId) {
-      onTriggerEnter(triggerId, trigger.storyNodeId);
+    if (!trigger) return;
+    if (trigger.storyNodeId || trigger.cutsceneId) {
+      onTriggerEnter(triggerId, trigger.storyNodeId, trigger.cutsceneId);
     }
   }, [sceneTriggers, onTriggerEnter]);
 
@@ -168,6 +176,13 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
       if (!trigger.requiresInteraction) continue;
       if (!isPlayerInTriggerZone(currentPos, trigger)) continue;
       handleTriggerEnter(trigger.id);
+      if (trigger.oneTime) {
+        handleTriggerStateChange(trigger.id, {
+          id: trigger.id,
+          triggered: true,
+          triggeredAt: Date.now(),
+        });
+      }
       return;
     }
     
@@ -196,6 +211,7 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
     sceneTriggers,
     triggerStates,
     handleTriggerEnter,
+    handleTriggerStateChange,
     sceneNPCs,
     npcStates,
     onNPCInteraction,
@@ -222,12 +238,40 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
         <RigidBody type="fixed" colliders="cuboid" position={[0, -0.05, 0]}>
           <mesh rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
             <boxGeometry args={groundGeometryArgs} />
-            <meshStandardMaterial color="#3d3436" roughness={0.9} />
+            <meshStandardMaterial
+              color={isPanelDistrict ? '#141c18' : '#3d3436'}
+              roughness={isPanelDistrict ? 0.78 : 0.9}
+              metalness={isPanelDistrict ? 0.22 : 0}
+              emissive={isPanelDistrict ? '#002818' : '#000000'}
+              emissiveIntensity={isPanelDistrict ? 0.35 : 0}
+            />
           </mesh>
         </RigidBody>
+
+        {isPanelDistrict &&
+          [
+            { pos: [-19, 3, -10] as const, size: [5, 7, 5] as const },
+            { pos: [20, 3.5, -8] as const, size: [6, 8, 5] as const },
+            { pos: [-16, 4, 16] as const, size: [5, 10, 5] as const },
+            { pos: [17, 2.5, 14] as const, size: [5, 6, 5] as const },
+            { pos: [0, 2, -22] as const, size: [14, 5, 4] as const },
+          ].map((b, i) => (
+            <RigidBody key={`panel-${i}`} type="fixed" position={[b.pos[0], b.pos[1], b.pos[2]]} colliders="cuboid">
+              <mesh castShadow receiveShadow>
+                <boxGeometry args={[...b.size]} />
+                <meshStandardMaterial
+                  color="#0a1210"
+                  roughness={0.92}
+                  metalness={0.08}
+                  emissive="#001a12"
+                  emissiveIntensity={0.12}
+                />
+              </mesh>
+            </RigidBody>
+          ))}
       
         {/* Fog */}
-        <fog attach="fog" args={[sceneConfig.fogColor, 8, 25]} />
+        <fog attach="fog" args={[sceneConfig.fogColor, isPanelDistrict ? 14 : 8, isPanelDistrict ? 48 : 25]} />
 
         {/* Lighting - Усиленное */}
         <ambientLight intensity={sceneConfig.ambient + 0.3} />

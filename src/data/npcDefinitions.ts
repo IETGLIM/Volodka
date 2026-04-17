@@ -12,7 +12,7 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
     id: 'zarema',
     name: 'Заремушка (Зарема)',
     model: 'barista',
-    modelPath: '/models/smol_ame_in_an_upcycled_terrarium_hololiveen.glb',
+    modelPath: '/models/cyberpunk_female_full-body_character.glb',
     scale: 1,
     defaultPosition: { x: -2, y: 0, z: 0 },
     patrolRadius: 1.5,
@@ -25,6 +25,27 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
         { text: 'Я просто хотел поговорить', next: 'zarema_talk', effect: { mood: 5 } },
         { text: 'Мне нужна помощь с квестом', next: 'zarema_quest_help' },
         { text: 'Пока, увидимся позже', next: 'zarema_bye' },
+      ],
+    },
+  },
+
+  /** Та же пара — в интерьере комнаты (сцена `zarema_albert_room`), модели из `models-external`. */
+  zarema_home: {
+    id: 'zarema_home',
+    name: 'Заремушка (Зарема)',
+    model: 'barista',
+    modelPath: '/models/cyberpunk_female_full-body_character.glb',
+    scale: 1,
+    defaultPosition: { x: -1.8, y: 0, z: 0.8 },
+    patrolRadius: 1,
+    sceneId: 'zarema_albert_room',
+    dialogueTree: {
+      id: 'zarema_room_home',
+      text: '🌸 Дома тише, чем на лестнице. Альберт уже «допиливает» что-то в углу — а я рада, что ты заглянул. Чай?',
+      choices: [
+        { text: 'Как у вас дела с ремонтом / соседями?', next: 'zarema_project', effect: { creativity: 3 } },
+        { text: 'Просто заскочил поздороваться', next: 'zarema_talk', effect: { mood: 4 } },
+        { text: 'Мне пора', next: 'zarema_bye' },
       ],
     },
   },
@@ -46,6 +67,25 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
         { text: 'Я не по работе, просто зашёл', next: 'albert_casual', effect: { mood: 5 } },
         { text: 'У меня проблема с Kubernetes', next: 'albert_kubernetes' },
         { text: 'Пока, Альберт!', next: 'albert_bye' },
+      ],
+    },
+  },
+
+  albert_home: {
+    id: 'albert_home',
+    name: 'Альберт',
+    model: 'colleague',
+    modelPath: '/models/cyberpunk_character.glb',
+    scale: 1,
+    defaultPosition: { x: 2.2, y: 0, z: -0.8 },
+    patrolRadius: 0.9,
+    sceneId: 'zarema_albert_room',
+    dialogueTree: {
+      id: 'albert_room_home',
+      text: '💻 О, Володька. Тут хоть стены держат тепло — не как в том подъезде. Садись, если есть пара минут.',
+      choices: [
+        { text: 'Как настроение после работы?', next: 'albert_casual', effect: { mood: 3 } },
+        { text: 'Я не задержусь', next: 'albert_bye' },
       ],
     },
   },

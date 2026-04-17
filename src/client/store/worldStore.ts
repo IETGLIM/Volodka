@@ -154,6 +154,9 @@ export const useWorldStore = create<WorldStore>()((set, get) => ({
     const { exploration, unlockedLocations } = get();
 
     if (narrative) {
+      if (exploration.currentSceneId === sceneId) {
+        return { ok: true as const };
+      }
       set({
         exploration: {
           ...exploration,

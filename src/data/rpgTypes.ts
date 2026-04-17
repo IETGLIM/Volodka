@@ -122,6 +122,8 @@ export interface TriggerZone {
   
   // Для story-триггеров
   storyNodeId?: string;
+  /** Полноэкранная аниме-заставка (`animeCutscenes.ts`); после окончания можно открыть `storyNodeId`. */
+  cutsceneId?: string;
   
   // Для item-триггеров
   itemId?: string;

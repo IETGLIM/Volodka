@@ -123,6 +123,17 @@ export const STORY_TRIGGERS: TriggerZone[] = [
     requiresInteraction: true,
     promptText: 'Нажмите E чтобы сесть на скамейку',
   },
+  {
+    id: 'trigger_street_lantern_memory',
+    position: { x: 0, y: 0.5, z: -10 },
+    size: { x: 2.5, y: 2, z: 2.5 },
+    sceneId: 'street_night',
+    type: 'story',
+    cutsceneId: 'city_memories',
+    oneTime: true,
+    requiresInteraction: true,
+    promptText: 'Нажмите E — короткий флешбэк о городе',
+  },
 
   // ========== МЕМОРИАЛЬНЫЙ ПАРК ==========
   {
@@ -271,10 +282,28 @@ export const WORLD_ITEMS: Array<{
 // ФУНКЦИИ ПОЛУЧЕНИЯ
 // ============================================
 
+/**
+ * Сцены 3D с тем же лейаутом/триггерами, что и базовая (комната Заремы = бывший «kitchen» сетап).
+ * Триггеры в данных остаются на `kitchen_night`, чтобы не дублировать координаты.
+ */
+const SCENE_TRIGGER_FALLBACK: Record<string, string> = {
+  zarema_albert_room: 'kitchen_night',
+};
+
+const SCENE_WORLD_ITEMS_FALLBACK: Record<string, string> = {
+  zarema_albert_room: 'kitchen_night',
+};
+
 export function getTriggersForScene(sceneId: string): TriggerZone[] {
-  return STORY_TRIGGERS.filter(t => t.sceneId === sceneId);
+  const fallback = SCENE_TRIGGER_FALLBACK[sceneId];
+  return STORY_TRIGGERS.filter(
+    (t) => t.sceneId === sceneId || (fallback !== undefined && t.sceneId === fallback),
+  );
 }
 
 export function getWorldItemsForScene(sceneId: string) {
-  return WORLD_ITEMS.filter(i => i.sceneId === sceneId);
+  const fallback = SCENE_WORLD_ITEMS_FALLBACK[sceneId];
+  return WORLD_ITEMS.filter(
+    (i) => i.sceneId === sceneId || (fallback !== undefined && i.sceneId === fallback),
+  );
 }

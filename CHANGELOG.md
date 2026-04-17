@@ -12,6 +12,26 @@
 
 ---
 
+## [0.2.3] - 2026-04-16
+
+### Added
+
+- **3D «панельный» двор**: на `street_night` / `street_winter` в `RPGGameCanvas` — тёмный неоновый пол, силуэты панелек (коллайдеры), расширенный туман.
+
+### Changed
+
+- **Старт игры**: после сброса / новой игры режим по умолчанию **`exploration`**, узел **`explore_mode`**, первая локация **`street_night`** (VN по кнопке HUD или через сюжетные триггеры).
+- **`explore_mode`** в `storyNodes`: сцена узла выровнена с хабом обхода — **`street_night`**.
+- **`useGameScene`**: события квестов по локации (`location_visited`) в режиме обхода считаются по **`exploration.currentSceneId`**, а не по сцене узла сюжета.
+- **`GameOrchestrator`**: визуал обхода на улице — чуть сильнее glitch / неоновый оттенок.
+
+### Fixed
+
+- **`useGameRuntime`**: при **`explore_mode`** вызывается **`sceneManager.transitionTo`** по фактической 3D-сцене (`explorationCurrentSceneId`), без **`travelToScene`**, чтобы не откатывать локацию после перемещения игрока.
+- **`GameOrchestrator`**: удалён дублирующий `useEffect` с тем же нарративным `travelToScene` — достаточно эффекта в `useGameRuntime`.
+
+---
+
 ## [0.2.2] - 2026-04-16
 
 ### Added

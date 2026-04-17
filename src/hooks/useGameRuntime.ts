@@ -31,6 +31,8 @@ export interface UseGameRuntimeParams {
   phase: 'loading' | 'intro' | 'menu' | 'game';
   currentNodeId: string;
   currentSceneId: SceneId;
+  /** Актуальная 3D-локация при узле `explore_mode` (не перезаписываем стором сценой узла). */
+  explorationCurrentSceneId?: SceneId;
   playerState: PlayerState;
   npcRelations: NPCRelation[];
   collectedPoems: string[];
@@ -51,6 +53,7 @@ export function useGameRuntime(params: UseGameRuntimeParams) {
     phase,
     currentNodeId,
     currentSceneId,
+    explorationCurrentSceneId,
     playerState,
     npcRelations,
     collectedPoems,
@@ -74,6 +77,8 @@ export function useGameRuntime(params: UseGameRuntimeParams) {
   const cutscenesCompletedRef = useRef(new Set<string>());
   const activeCutsceneIdRef = useRef<string | null>(null);
   activeCutsceneIdRef.current = activeCutsceneId;
+  /** Ключ для `cutscenesCompletedRef` при старте заставки (узел сюжета или explore-триггер). */
+  const cutsceneCompletionKeyRef = useRef<string | null>(null);
 
   const storeContext = useMemo(() => () => {
     const state = useGameStore.getState();
@@ -102,10 +107,21 @@ export function useGameRuntime(params: UseGameRuntimeParams) {
     return () => clearInterval(i);
   }, [phase, incrementPlayTime]);
 
+  /**
+   * Синхрон VN-сцены с 3D-локацией.
+   * В `explore_mode` не вызываем `travelToScene` (игрок мог переехать в другую 3D-локацию),
+   * но обновляем `sceneManager` по фактической `exploration.currentSceneId`.
+   */
   useEffect(() => {
+    if (phase !== 'game') return;
+    if (currentNodeId === 'explore_mode') {
+      const sid = explorationCurrentSceneId ?? useGameStore.getState().exploration.currentSceneId;
+      sceneManager.transitionTo(sid);
+      return;
+    }
     sceneManager.transitionTo(currentSceneId);
     travelToScene(currentSceneId, { narrativeDriven: true });
-  }, [currentSceneId, travelToScene]);
+  }, [phase, currentNodeId, currentSceneId, explorationCurrentSceneId, travelToScene]);
 
   useEffect(() => {
     if (phase === 'game') {
@@ -127,8 +143,20 @@ export function useGameRuntime(params: UseGameRuntimeParams) {
     if (activeCutsceneId) return;
     const key = `${currentNodeId}::${storyNode.cutscene}`;
     if (cutscenesCompletedRef.current.has(key)) return;
-    queueMicrotask(() => setActiveCutsceneId(storyNode.cutscene!));
+    queueMicrotask(() => {
+      cutsceneCompletionKeyRef.current = `${currentNodeId}::${storyNode.cutscene}`;
+      setActiveCutsceneId(storyNode.cutscene!);
+    });
   }, [phase, currentNodeId, activeCutsceneId]);
+
+  const requestCutscene = useCallback((cutsceneId: string, completionKey: string) => {
+    if (activeCutsceneIdRef.current) return;
+    if (cutscenesCompletedRef.current.has(completionKey)) return;
+    queueMicrotask(() => {
+      cutsceneCompletionKeyRef.current = completionKey;
+      setActiveCutsceneId(cutsceneId);
+    });
+  }, []);
 
   useEffect(() => {
     if (phase !== 'game') return;
@@ -206,7 +234,10 @@ export function useGameRuntime(params: UseGameRuntimeParams) {
 
   const completeCutscene = useCallback(() => {
     const id = activeCutsceneIdRef.current;
-    if (id) cutscenesCompletedRef.current.add(`${currentNodeId}::${id}`);
+    const key =
+      cutsceneCompletionKeyRef.current ?? (id ? `${currentNodeId}::${id}` : null);
+    if (key) cutscenesCompletedRef.current.add(key);
+    cutsceneCompletionKeyRef.current = null;
     setActiveCutsceneId(null);
   }, [currentNodeId]);
 
@@ -214,6 +245,7 @@ export function useGameRuntime(params: UseGameRuntimeParams) {
     revealedPoemId,
     closePoemReveal: () => setRevealedPoemId(null),
     activeCutsceneId,
+    requestCutscene,
     completeCutscene,
     showLegacy,
     hideLegacy: () => setShowLegacy(false),

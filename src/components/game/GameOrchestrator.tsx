@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { motion, AnimatePresence } from 'framer-motion';
 import dynamic from 'next/dynamic';
@@ -165,6 +165,8 @@ export default function GameOrchestrator() {
 
   const scene = useGameScene({
     phase,
+    gameMode,
+    explorationCurrentSceneId: exploration.currentSceneId,
     currentNodeId,
     playerState,
     npcRelations,
@@ -186,10 +188,21 @@ export default function GameOrchestrator() {
     revealedPoemId,
     closePoemReveal,
     activeCutsceneId,
+    requestCutscene,
     completeCutscene,
     showLegacy,
     hideLegacy,
   } = runtime;
+
+  const pendingStoryAfterExplorationCutsceneRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (activeCutsceneId) return;
+    const pending = pendingStoryAfterExplorationCutsceneRef.current;
+    if (!pending) return;
+    pendingStoryAfterExplorationCutsceneRef.current = null;
+    setCurrentNode(pending);
+  }, [activeCutsceneId, setCurrentNode]);
 
   const activeCutscene = useMemo(() => {
     if (!activeCutsceneId) return null;
@@ -227,21 +240,42 @@ export default function GameOrchestrator() {
 
   const displaySceneId = gameMode === 'exploration' ? exploration.currentSceneId : currentSceneId;
 
-  const explorationVisualState = useMemo((): VisualState => ({
-    glitchIntensity: Math.min(1, (playerState.stress / 100) * 0.45 + (playerState.panicMode ? 0.35 : 0)),
-    saturation: 0.82 + (playerState.stability / 100) * 0.18,
-    contrast: 0.88 + (playerState.mood / 100) * 0.12,
-    colorTint: 'transparent',
-    particles: playerState.creativity > 55,
-  }), [playerState.stress, playerState.stability, playerState.mood, playerState.creativity, playerState.panicMode]);
+  const explorationVisualState = useMemo((): VisualState => {
+    const stressGlitch = Math.min(
+      1,
+      (playerState.stress / 100) * 0.45 + (playerState.panicMode ? 0.35 : 0),
+    );
+    const panelDistrict =
+      exploration.currentSceneId === 'street_night' ||
+      exploration.currentSceneId === 'street_winter';
+    return {
+      glitchIntensity: Math.min(1, stressGlitch + (panelDistrict ? 0.12 : 0)),
+      saturation: 0.78 + (playerState.stability / 100) * 0.2 + (panelDistrict ? -0.06 : 0),
+      contrast: 0.9 + (playerState.mood / 100) * 0.12 + (panelDistrict ? 0.04 : 0),
+      colorTint: panelDistrict ? '#0d3d28' : 'transparent',
+      particles: playerState.creativity > 55 || panelDistrict,
+    };
+  }, [
+    playerState.stress,
+    playerState.stability,
+    playerState.mood,
+    playerState.creativity,
+    playerState.panicMode,
+    exploration.currentSceneId,
+  ]);
 
   const storyOverlayEligible = useMemo(() => storyNodeShowsStoryOverlay(currentNode), [currentNode]);
 
   const handleExplorationStoryTrigger = useCallback(
-    (_triggerId: string, storyNodeId: string) => {
-      setCurrentNode(storyNodeId);
+    (triggerId: string, storyNodeId?: string, cutsceneId?: string) => {
+      if (cutsceneId) {
+        requestCutscene(cutsceneId, `explore::${triggerId}::${cutsceneId}`);
+        pendingStoryAfterExplorationCutsceneRef.current = storyNodeId ?? null;
+        return;
+      }
+      if (storyNodeId) setCurrentNode(storyNodeId);
     },
-    [setCurrentNode],
+    [setCurrentNode, requestCutscene],
   );
 
   const handleEnterExplorationMode = useCallback(() => {
@@ -253,14 +287,6 @@ export default function GameOrchestrator() {
   const handleEnterVisualNovelMode = useCallback(() => {
     setGameMode('visual-novel');
   }, [setGameMode]);
-
-  /** Сцена 3D-обхода совпадает с локацией сюжетного узла в VN (без траты энергии и проверки «замка»). */
-  useEffect(() => {
-    if (phase !== 'game') return;
-    if (gameMode !== 'visual-novel') return;
-    if (currentNodeId === 'explore_mode') return;
-    travelToScene(currentSceneId, { narrativeDriven: true });
-  }, [phase, gameMode, currentNodeId, currentSceneId, travelToScene]);
 
   const actionsBundle = useActionHandler({
     playerSkills: playerState.skills,
@@ -360,7 +386,7 @@ export default function GameOrchestrator() {
           <RPGGameCanvas
             sceneId={exploration.currentSceneId}
             visualState={explorationVisualState}
-            isDialogueActive={Boolean(activeDialogue)}
+            isDialogueActive={Boolean(activeDialogue) || Boolean(activeCutsceneId)}
             onTriggerEnter={handleExplorationStoryTrigger}
             onNPCInteraction={handleNPCInteraction}
           />

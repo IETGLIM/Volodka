@@ -1647,7 +1647,8 @@ export const STORY_NODES: Record<string, StoryNode> = {
   explore_mode: {
     id: 'explore_mode',
     type: 'narration',
-    scene: 'office_morning',
+    /** Хаб 3D: панельный двор / ночная улица (синхрон с `exploration.currentSceneId`). */
+    scene: 'street_night',
     act: 1,
     text: '',
   },
