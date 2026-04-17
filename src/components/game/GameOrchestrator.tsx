@@ -47,6 +47,7 @@ import { getNPCsForScene } from '@/data/npcDefinitions';
 import { getSceneConfig, getInteractiveObjectsForScene } from '@/config/scenes';
 import type { MiniMapQuestMarker } from '@/components/game/MiniMap';
 import { MoralCompassHUD } from '@/components/game/MoralCompassHUD';
+import { SceneTransition } from '@/components/game/CinematicEffects';
 import { LootNotification, SkillUpNotification } from '@/components/game/LootNotification';
 import { TutorialOverlay } from '@/components/game/TutorialOverlay';
 import { MiniMap } from '@/components/game/MiniMap';
@@ -132,6 +133,7 @@ export default function GameOrchestrator() {
       playerPosition: s.exploration.playerPosition,
       currentSceneId: s.exploration.currentSceneId,
       npcStates: s.exploration.npcStates,
+      lastSceneTransition: s.exploration.lastSceneTransition,
     })),
   );
   const activeQuestIds = useGameStore((s) => s.activeQuestIds);
@@ -140,6 +142,11 @@ export default function GameOrchestrator() {
   const inventory = useGameStore((s) => s.inventory);
 
   const [mounted, setMounted] = useState(false);
+  /** Короткий matrix/glitch-переход при смене 3D-локации (`lastSceneTransition`). */
+  const [explorationSceneGlitch, setExplorationSceneGlitch] = useState(false);
+  const explorationTransitionReadyRef = useRef(false);
+  const prevSceneTransitionTsRef = useRef<number | null>(null);
+  const explorationGlitchClearRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const { panels, togglePanel } = useGamePanels();
   const { message: saveNotif, showMessage: showSaveNotif } = useTimedMessage(2000);
   const { notifications: effectNotifs, showEffectNotif } = useEffectNotifications(5, 3000);
@@ -154,6 +161,43 @@ export default function GameOrchestrator() {
     });
     return unsub;
   }, [showEffectNotif]);
+
+  /** Glitch-переход при смене 3D-локации (store `lastSceneTransition`); без вспышки при первом входе в обход. */
+  useEffect(() => {
+    if (phase !== 'game' || gameMode !== 'exploration') {
+      explorationTransitionReadyRef.current = false;
+      prevSceneTransitionTsRef.current = null;
+      if (explorationGlitchClearRef.current) {
+        clearTimeout(explorationGlitchClearRef.current);
+        explorationGlitchClearRef.current = null;
+      }
+      setExplorationSceneGlitch(false);
+      return;
+    }
+    const ts = exploration.lastSceneTransition;
+    if (!explorationTransitionReadyRef.current) {
+      explorationTransitionReadyRef.current = true;
+      prevSceneTransitionTsRef.current = ts;
+      return;
+    }
+    if (prevSceneTransitionTsRef.current !== ts && ts !== 0) {
+      if (explorationGlitchClearRef.current) clearTimeout(explorationGlitchClearRef.current);
+      setExplorationSceneGlitch(true);
+      const duration = 0.55;
+      explorationGlitchClearRef.current = setTimeout(() => {
+        explorationGlitchClearRef.current = null;
+        setExplorationSceneGlitch(false);
+      }, duration * 1500);
+      prevSceneTransitionTsRef.current = ts;
+      return () => {
+        if (explorationGlitchClearRef.current) {
+          clearTimeout(explorationGlitchClearRef.current);
+          explorationGlitchClearRef.current = null;
+        }
+      };
+    }
+    prevSceneTransitionTsRef.current = ts;
+  }, [phase, gameMode, exploration.lastSceneTransition]);
 
   useEffect(() => {
     return eventBus.on('object:interact', ({ objectId, action }) => {
@@ -484,6 +528,17 @@ export default function GameOrchestrator() {
 
       {gameMode !== 'exploration' && (
         <SceneNPCList sceneId={currentSceneId} onInteract={handleNPCInteraction} />
+      )}
+
+      {phase === 'game' && gameMode === 'exploration' && (
+        <>
+          <SceneTransition isActive={explorationSceneGlitch} type="glitch" duration={0.55} />
+          {explorationSceneGlitch && (
+            <div className="pointer-events-none fixed inset-0 z-[51] flex justify-center pt-5 font-mono text-[10px] uppercase tracking-[0.35em] text-cyan-400/75 mix-blend-screen">
+              link // {exploration.currentSceneId.replace(/_/g, '.')}
+            </div>
+          )}
+        </>
       )}
 
       {gameMode === 'exploration' && (

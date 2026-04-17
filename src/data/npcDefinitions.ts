@@ -1144,6 +1144,27 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
     },
   },
 
+  /** Поликарп на ночной площадке (зимний вариант остаётся на `street_winter`). */
+  district_polikarp_night: {
+    id: 'district_polikarp_night',
+    name: 'Поликарп',
+    model: 'elder',
+    modelPath: '/models/antoni_gaudi.glb',
+    scale: 1,
+    defaultPosition: { x: -3.8, y: 0, z: 1.6 },
+    patrolRadius: 1.2,
+    sceneId: 'street_night',
+    dialogueTree: {
+      id: 'polikarp_hi',
+      text: 'Поликарп, бывший дворник — теперь волонтёр: сугробы, лёд, лопата. Видел тебя и зимой, и летом — город меняется, а двор остаётся. Заходи в тёплое.',
+      choices: [
+        { text: 'Здоровья тебе, дядя Поликарп.', next: 'polikarp_thanks', effect: { karma: 5, npcId: 'district_polikarp', npcChange: 5 } },
+        { text: 'Если что — помогу с лопатой.', next: 'polikarp_shovel', effect: { npcId: 'district_polikarp', npcChange: 3 } },
+        { text: 'Иду.', next: 'polikarp_bye' },
+      ],
+    },
+  },
+
   district_rimma: {
     id: 'district_rimma',
     name: 'Римма',

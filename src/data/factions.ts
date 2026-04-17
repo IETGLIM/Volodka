@@ -258,6 +258,7 @@ export function getFactionByNPC(npcId: string): FactionId | null {
     'district_konstantin',
     'district_timur',
     'district_polikarp',
+    'district_polikarp_night',
     'district_rimma',
     'district_rimma_night',
     'district_nastya',
