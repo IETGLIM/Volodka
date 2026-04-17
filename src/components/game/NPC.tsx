@@ -18,8 +18,18 @@ import { getNpcQuestMarkerForExploration } from '@/lib/npcQuestMarker';
 function scheduleActivityIcon(entry: ScheduleEntry | null | undefined): string {
   if (!entry) return '💬';
   if (!entry.dialogueAvailable) return '😴';
-  if (entry.activity === 'walk') return '🚶';
-  return '💬';
+  switch (entry.activity) {
+    case 'walk':
+      return '🚶';
+    case 'work':
+      return '💻';
+    case 'read':
+      return '📖';
+    case 'rest':
+      return '☕';
+    default:
+      return '💬';
+  }
 }
 
 // ============================================

@@ -43,8 +43,9 @@ import { useGameStore } from '@/store/gameStore';
 import { eventBus } from '@/engine/EventBus';
 import { useGameAudioProfile } from '@/hooks/useAudio';
 import { QUEST_DEFINITIONS, getNextTrackedObjective } from '@/data/quests';
-import { getNPCsForScene } from '@/data/npcDefinitions';
+import { getNPCsForScene, getNpcExplorationPosition } from '@/data/npcDefinitions';
 import { getSceneConfig, getInteractiveObjectsForScene } from '@/config/scenes';
+import { homeApartmentInspectLine, tryHomeApartmentUse } from '@/lib/homeApartmentInteract';
 import type { MiniMapQuestMarker } from '@/components/game/MiniMap';
 import { MoralCompassHUD } from '@/components/game/MoralCompassHUD';
 import { SceneTransition } from '@/components/game/CinematicEffects';
@@ -132,6 +133,7 @@ export default function GameOrchestrator() {
     useShallow((s) => ({
       playerPosition: s.exploration.playerPosition,
       currentSceneId: s.exploration.currentSceneId,
+      timeOfDay: s.exploration.timeOfDay,
       npcStates: s.exploration.npcStates,
       lastSceneTransition: s.exploration.lastSceneTransition,
     })),
@@ -199,55 +201,6 @@ export default function GameOrchestrator() {
     prevSceneTransitionTsRef.current = ts;
   }, [phase, gameMode, exploration.lastSceneTransition]);
 
-  useEffect(() => {
-    return eventBus.on('object:interact', ({ objectId, action }) => {
-      const sid = useGameStore.getState().exploration.currentSceneId;
-      const objects = getInteractiveObjectsForScene(sid);
-      const obj = objects.find((o) => o.id === objectId);
-      const toast = (text: string) => eventBus.emit('ui:exploration_message', { text });
-
-      if (!obj) {
-        toast('Объект не найден в этой сцене.');
-        return;
-      }
-
-      const store = useGameStore.getState();
-      switch (action) {
-        case 'inspect': {
-          if (obj.canBeRead && obj.poemId) {
-            toast(`«${obj.type}»: можно прочитать (сюжет / триггер рядом с объектом).`);
-          } else {
-            toast(`Объект «${obj.id}» (${obj.type}).`);
-          }
-          break;
-        }
-        case 'take': {
-          if (obj.itemId) {
-            store.addItem(obj.itemId, 1);
-          } else {
-            toast('С объекта нечего взять.');
-          }
-          break;
-        }
-        case 'use': {
-          toast('Использование привязано к сюжету — скоро.');
-          break;
-        }
-        case 'drop': {
-          if (obj.itemId) {
-            store.removeItem(obj.itemId, 1);
-            toast(`Выброшено: ${obj.itemId}`);
-          } else {
-            toast('Нельзя выбросить привязку к этому объекту.');
-          }
-          break;
-        }
-        default:
-          toast(`Действие «${action}» не обработано.`);
-      }
-    });
-  }, []);
-
   const {
     dialogueStoreActions,
     activeDialogue,
@@ -294,6 +247,62 @@ export default function GameOrchestrator() {
   });
 
   const { currentNode, currentSceneId, trackQuestNpcTalk, emitQuestEvent, runtime } = scene;
+
+  useEffect(() => {
+    return eventBus.on('object:interact', ({ objectId, action }) => {
+      const sid = useGameStore.getState().exploration.currentSceneId;
+      const objects = getInteractiveObjectsForScene(sid);
+      const obj = objects.find((o) => o.id === objectId);
+      const toast = (text: string) => eventBus.emit('ui:exploration_message', { text });
+
+      if (!obj) {
+        toast('Объект не найден в этой сцене.');
+        return;
+      }
+
+      const store = useGameStore.getState();
+      switch (action) {
+        case 'inspect': {
+          const homeLine = sid === 'home_evening' ? homeApartmentInspectLine(obj) : null;
+          if (homeLine) {
+            toast(homeLine);
+          } else if (obj.canBeRead && obj.poemId) {
+            toast(`«${obj.type}»: можно прочитать — действие «Использовать».`);
+          } else {
+            toast(`Объект «${obj.id}» (${obj.type}).`);
+          }
+          break;
+        }
+        case 'take': {
+          if (obj.itemId) {
+            store.addItem(obj.itemId, 1);
+          } else {
+            toast('С объекта нечего взять.');
+          }
+          break;
+        }
+        case 'use': {
+          if (sid === 'home_evening' && tryHomeApartmentUse(obj, store, toast, emitQuestEvent)) {
+            break;
+          }
+          toast('Использование привязано к сюжету — скоро.');
+          break;
+        }
+        case 'drop': {
+          if (obj.itemId) {
+            store.removeItem(obj.itemId, 1);
+            toast(`Выброшено: ${obj.itemId}`);
+          } else {
+            toast('Нельзя выбросить привязку к этому объекту.');
+          }
+          break;
+        }
+        default:
+          toast(`Действие «${action}» не обработано.`);
+      }
+    });
+  }, [emitQuestEvent]);
+
   const {
     revealedPoemId,
     closePoemReveal,
@@ -322,15 +331,17 @@ export default function GameOrchestrator() {
 
   const minimapNpcs = useMemo(() => {
     if (gameMode !== 'exploration') return [];
-    return getNPCsForScene(exploration.currentSceneId).map((def) => ({
+    const sid = exploration.currentSceneId;
+    const t = exploration.timeOfDay;
+    return getNPCsForScene(sid, t).map((def) => ({
       id: def.id,
       name: def.name,
       model: def.model,
       defaultPosition: def.defaultPosition,
       sceneId: def.sceneId,
-      position: exploration.npcStates[def.id]?.position,
+      position: getNpcExplorationPosition(def, sid, t, exploration.npcStates[def.id]?.position),
     }));
-  }, [gameMode, exploration.currentSceneId, exploration.npcStates]);
+  }, [gameMode, exploration.currentSceneId, exploration.timeOfDay, exploration.npcStates]);
 
   const minimapSceneSize = useMemo(() => {
     const cfg = getSceneConfig(exploration.currentSceneId);
@@ -351,9 +362,15 @@ export default function GameOrchestrator() {
       if (!obj?.targetLocation || obj.targetLocation !== sid) continue;
 
       if (obj.targetNPC) {
-        const npc = getNPCsForScene(sid).find((n) => n.id === obj.targetNPC);
+        const t = exploration.timeOfDay;
+        const npc = getNPCsForScene(sid, t).find((n) => n.id === obj.targetNPC);
         if (npc) {
-          const p = exploration.npcStates[npc.id]?.position ?? npc.defaultPosition;
+          const p = getNpcExplorationPosition(
+            npc,
+            sid,
+            t,
+            exploration.npcStates[npc.id]?.position,
+          );
           markers.push({ id: `${qid}-${obj.id}`, position: { x: p.x, z: p.z }, type: 'target' });
         }
       } else {
@@ -366,7 +383,14 @@ export default function GameOrchestrator() {
     }
 
     return markers;
-  }, [gameMode, exploration.currentSceneId, exploration.npcStates, activeQuestIds, questProgress]);
+  }, [
+    gameMode,
+    exploration.currentSceneId,
+    exploration.timeOfDay,
+    exploration.npcStates,
+    activeQuestIds,
+    questProgress,
+  ]);
 
   useEffect(() => {
     if (!activeCutsceneId) return;

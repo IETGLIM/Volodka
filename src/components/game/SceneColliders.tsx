@@ -140,6 +140,19 @@ export const KitchenColliders = memo(function KitchenColliders() {
   );
 });
 
+/** Вечерняя квартира: периметр без «кухонных» блоков — совпадает с физической версией сцены. */
+export const HomeEveningColliders = memo(function HomeEveningColliders() {
+  return (
+    <group>
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.01, 0]} receiveShadow>
+        <planeGeometry args={[20, 20]} />
+        <meshStandardMaterial color="#241c14" roughness={0.78} />
+      </mesh>
+      <BoundaryWalls size={14} height={3} />
+    </group>
+  );
+});
+
 // ============================================
 // КОЛЛАЙДЕРЫ КАФЕ
 // ============================================
@@ -367,8 +380,9 @@ export const SceneColliderSelector = memo(function SceneColliderSelector({ scene
       case 'kitchen_night':
       case 'kitchen_dawn':
       case 'home_morning':
-      case 'home_evening':
         return <KitchenColliders />;
+      case 'home_evening':
+        return <HomeEveningColliders />;
       case 'cafe_evening':
         return <CafeColliders />;
       case 'office_morning':

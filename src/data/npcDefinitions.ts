@@ -1,4 +1,5 @@
 import type { NPCDefinition } from './rpgTypes';
+import { getCurrentScheduleEntry, resolveScheduleNpcId } from '@/engine/ScheduleEngine';
 
 /** Клипы в `lowpoly_anime_character_cyberstyle.glb` (Mixamo idle/walk). */
 const NPC_ANIM_LOWPOLY_CYBER: NonNullable<NPCDefinition['animations']> = {
@@ -2870,8 +2871,63 @@ export const DIALOGUE_NODES: Record<string, NPCDefinition['dialogueTree']> = {
 // ПОЛУЧЕНИЕ NPC ДЛЯ СЦЕНЫ
 // ============================================
 
-export function getNPCsForScene(sceneId: string): NPCDefinition[] {
-  return Object.values(NPC_DEFINITIONS).filter(npc => npc.sceneId === sceneId);
+function isNpcVisibleInExplorationScene(
+  npc: NPCDefinition,
+  sceneId: string,
+  timeOfDay: number,
+): boolean {
+  const entry = getCurrentScheduleEntry(npc.id, timeOfDay);
+  const atHomeCard = npc.sceneId === sceneId;
+  const isHomeDuplicate = npc.id.endsWith('_home');
+
+  if (atHomeCard) {
+    if (!entry) return true;
+    if (isHomeDuplicate) return entry.sceneId === sceneId;
+    return entry.sceneId === sceneId;
+  }
+  return Boolean(entry && entry.sceneId === sceneId);
+}
+
+/**
+ * NPC в сцене: по «дому» (`sceneId`) и по текущему окну расписания (персонаж может уйти в офис, кафе и т.д.).
+ * При совпадении канона (`zarema` / `zarema_home`) остаётся карточка с `npc.sceneId === sceneId`, если есть.
+ */
+export function getNPCsForScene(sceneId: string, timeOfDay?: number): NPCDefinition[] {
+  if (timeOfDay === undefined) {
+    return Object.values(NPC_DEFINITIONS).filter((npc) => npc.sceneId === sceneId);
+  }
+
+  const candidates = Object.values(NPC_DEFINITIONS).filter((npc) =>
+    isNpcVisibleInExplorationScene(npc, sceneId, timeOfDay),
+  );
+
+  const byCanon = new Map<string, NPCDefinition>();
+  for (const npc of candidates) {
+    const canon = resolveScheduleNpcId(npc.id);
+    const prev = byCanon.get(canon);
+    if (!prev) {
+      byCanon.set(canon, npc);
+      continue;
+    }
+    const prevAnchored = prev.sceneId === sceneId ? 1 : 0;
+    const nextAnchored = npc.sceneId === sceneId ? 1 : 0;
+    if (nextAnchored > prevAnchored) byCanon.set(canon, npc);
+  }
+  return [...byCanon.values()];
+}
+
+/** Позиция для миникарты / туториала: слот расписания в текущей сцене или стор / default. */
+export function getNpcExplorationPosition(
+  npc: NPCDefinition,
+  sceneId: string,
+  timeOfDay: number,
+  statePosition?: { x: number; y: number; z: number },
+): { x: number; y: number; z: number } {
+  const entry = getCurrentScheduleEntry(npc.id, timeOfDay);
+  if (entry?.sceneId === sceneId) {
+    return { ...entry.position };
+  }
+  return statePosition ?? npc.defaultPosition;
 }
 
 export function getNPCById(npcId: string): NPCDefinition | undefined {

@@ -223,6 +223,16 @@ export const KitchenColliders = memo(function KitchenColliders() {
   );
 });
 
+/** Вечерняя квартира: пол и стены без дублирующей «кухонной» мебели — коллизии дают интерактивные объекты сцены. */
+export const HomeEveningColliders = memo(function HomeEveningColliders() {
+  return (
+    <group>
+      <PhysicsFloor size={[14, 14]} color="#241c14" footstepMaterial="wood" />
+      <BoundaryWalls size={14} height={3} />
+    </group>
+  );
+});
+
 // ============================================
 // КОЛЛАЙДЕРЫ КАФЕ
 // ============================================
@@ -560,8 +570,9 @@ export const PhysicsSceneColliders = memo(function PhysicsSceneColliders({ scene
       case 'kitchen_night':
       case 'kitchen_dawn':
       case 'home_morning':
-      case 'home_evening':
         return <KitchenColliders />;
+      case 'home_evening':
+        return <HomeEveningColliders />;
       case 'cafe_evening':
         return <CafeColliders />;
       case 'office_morning':

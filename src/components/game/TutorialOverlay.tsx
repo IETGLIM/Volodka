@@ -4,7 +4,7 @@ import { memo, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGameStore } from '@/store/gameStore';
 import { useShallow } from 'zustand/react/shallow';
-import { getNPCsForScene } from '@/data/npcDefinitions';
+import { getNPCsForScene, getNpcExplorationPosition } from '@/data/npcDefinitions';
 
 export const TutorialOverlay = memo(function TutorialOverlay({
   gameMode,
@@ -25,11 +25,18 @@ export const TutorialOverlay = memo(function TutorialOverlay({
     if (gameMode !== 'exploration') return false;
     const pos = exploration.playerPosition;
     const sid = exploration.currentSceneId;
-    return getNPCsForScene(sid).some((n) => {
-      const p = exploration.npcStates[n.id]?.position ?? n.defaultPosition;
+    const t = exploration.timeOfDay;
+    return getNPCsForScene(sid, t).some((n) => {
+      const p = getNpcExplorationPosition(n, sid, t, exploration.npcStates[n.id]?.position);
       return Math.hypot(p.x - pos.x, p.z - pos.z) < 3.2;
     });
-  }, [gameMode, exploration.playerPosition, exploration.currentSceneId, exploration.npcStates]);
+  }, [
+    gameMode,
+    exploration.playerPosition,
+    exploration.currentSceneId,
+    exploration.timeOfDay,
+    exploration.npcStates,
+  ]);
 
   const disabled = flags.tutorialsDisabled === true;
   const showMovement = gameMode === 'exploration' && !disabled && !flags.tutorial_seen_movement;

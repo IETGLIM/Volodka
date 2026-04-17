@@ -150,14 +150,10 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
   const isPanelDistrict = sceneId === 'street_night' || sceneId === 'street_winter';
 
   // Get NPCs and triggers for current scene
-  const sceneNPCs = useMemo(() => {
-    const all = getNPCsForScene(sceneId);
-    return all.filter((npc) => {
-      const entry = getCurrentScheduleEntry(npc.id, timeOfDay);
-      if (!entry) return true;
-      return entry.sceneId === sceneId;
-    });
-  }, [sceneId, timeOfDay]);
+  const sceneNPCs = useMemo(
+    () => getNPCsForScene(sceneId, timeOfDay),
+    [sceneId, timeOfDay],
+  );
 
   const sceneInteractiveObjects = useMemo(() => getInteractiveObjectsForScene(sceneId), [sceneId]);
   const sceneTriggers = useMemo(() => getTriggersForScene(sceneId), [sceneId]);
