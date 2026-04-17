@@ -2,6 +2,7 @@
 
 import { memo, useEffect, useLayoutEffect, useState, useMemo, useCallback, useRef } from 'react';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
+import { audioEngine } from '@/engine/AudioEngine';
 import { PoemReveal } from './PoemComponents';
 import type { Poem } from '@/data/poems';
 
@@ -625,6 +626,13 @@ export const IntroScreen = memo(function IntroScreen({
   const [revealedPoem, setRevealedPoem] = useState<Poem | null>(null);
   const [collectedPoems, setCollectedPoems] = useState<string[]>([]);
   const proseScrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    audioEngine.playMusic('intro');
+    return () => {
+      audioEngine.stop();
+    };
+  }, []);
 
   // Автоскролл лога памяти к последней строке / курсору
   useLayoutEffect(() => {

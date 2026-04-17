@@ -15,6 +15,13 @@ interface AmbientConfig {
   mood: number;
   stress: number;
   creativity: number;
+  /** Принудительно «боевая» подложка (стресс / сцена боя). */
+  forceBattleMusic?: boolean;
+}
+
+function resolveAmbientGenre(sceneId: string, forceBattle?: boolean) {
+  if (forceBattle) return 'brutal_heavy' as const;
+  return getAtmosphereGenreForScene(sceneId);
 }
 
 // Музыкальные режимы для разных сцен
@@ -414,7 +421,7 @@ export function useAmbientMusic(config: AmbientConfig) {
     
     const sceneConfig = SCENE_SCALES[config.sceneId] || SCENE_SCALES['default'];
     const scale = sceneConfig.scale;
-    const genre = getAtmosphereGenreForScene(config.sceneId);
+    const genre = resolveAmbientGenre(config.sceneId, config.forceBattleMusic);
     
     // Модификация в зависимости от настроения
     const moodModifier = config.mood / 100; // 0-1
@@ -501,7 +508,7 @@ export function useAmbientMusic(config: AmbientConfig) {
     if (!audioContextRef.current || !masterGainRef.current) return;
 
     const sceneConfig = SCENE_SCALES[config.sceneId] || SCENE_SCALES['default'];
-    const genre = getAtmosphereGenreForScene(config.sceneId);
+    const genre = resolveAmbientGenre(config.sceneId, config.forceBattleMusic);
     const scale = sceneConfig.scale;
     const bassFreq = scale[0] / 2;
 
@@ -574,7 +581,7 @@ export function useAmbientMusic(config: AmbientConfig) {
     setIsPlaying(true);
     
     const sceneConfig = SCENE_SCALES[config.sceneId] || SCENE_SCALES['default'];
-    const genre = getAtmosphereGenreForScene(config.sceneId);
+    const genre = resolveAmbientGenre(config.sceneId, config.forceBattleMusic);
     
     // Инициализация слоёв
     (['bass', 'pad', 'melody', 'noise', 'accent'] as LayerType[]).forEach(type => {
@@ -598,7 +605,7 @@ export function useAmbientMusic(config: AmbientConfig) {
       if (!c.enabled) return;
 
       const sc = SCENE_SCALES[c.sceneId] || SCENE_SCALES['default'];
-      const g = getAtmosphereGenreForScene(c.sceneId);
+      const g = resolveAmbientGenre(c.sceneId, c.forceBattleMusic);
       const choice = Math.random();
 
       if (g === 'brutal_heavy') {
@@ -719,6 +726,7 @@ interface AmbientMusicPlayerProps {
   stress: number;
   creativity: number;
   enabled: boolean;
+  forceBattleMusic?: boolean;
 }
 
 export function AmbientMusicPlayer({
@@ -727,6 +735,7 @@ export function AmbientMusicPlayer({
   stress,
   creativity,
   enabled,
+  forceBattleMusic = false,
 }: AmbientMusicPlayerProps) {
   useAmbientMusic({
     enabled,
@@ -734,6 +743,7 @@ export function AmbientMusicPlayer({
     mood,
     stress,
     creativity,
+    forceBattleMusic,
   });
   
   return null; // Невизуальный компонент

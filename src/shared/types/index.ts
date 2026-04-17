@@ -64,3 +64,4 @@ export type {
 } from './rpg';
 
 export type { FactionId, FactionReputation } from './factions';
+export type { ScheduleEntry } from './schedule';

@@ -1,11 +1,26 @@
 "use client";
 
-import React, { useRef, useState, useMemo, memo, Suspense, useCallback, useEffect } from 'react';
+import React, { useRef, useState, useMemo, memo, Suspense, useCallback, useEffect, useLayoutEffect } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { useGLTF, useAnimations, Html } from '@react-three/drei';
+import { RigidBody, type RapierRigidBody } from '@react-three/rapier';
+import { motion } from 'framer-motion';
+import { useShallow } from 'zustand/react/shallow';
 import * as THREE from 'three';
 import type { AnimationMapping, NPCDefinition, NPCState } from '@/data/rpgTypes';
+import type { SceneId } from '@/data/types';
+import type { ScheduleEntry } from '@/shared/types/schedule';
 import { rewriteLegacyModelPath } from '@/config/modelUrls';
+import { getCurrentScheduleEntry } from '@/engine/ScheduleEngine';
+import { useGameStore } from '@/store/gameStore';
+import { getNpcQuestMarkerForExploration } from '@/lib/npcQuestMarker';
+
+function scheduleActivityIcon(entry: ScheduleEntry | null | undefined): string {
+  if (!entry) return '💬';
+  if (!entry.dialogueAvailable) return '😴';
+  if (entry.activity === 'walk') return '🚶';
+  return '💬';
+}
 
 // ============================================
 // ERROR BOUNDARY ДЛЯ МОДЕЛЕЙ
@@ -532,6 +547,10 @@ interface NPCProps {
   onInteraction: (npcId: string) => void;
   onStateChange: (state: NPCState) => void;
   isDialogueActive: boolean;
+  /** Текущее окно расписания для этого NPC (если есть в `ScheduleEngine`). */
+  scheduleEntry?: ScheduleEntry | null;
+  /** Кинематический RigidBody для телепорта в Rapier-сцене. */
+  enableNpcPhysics?: boolean;
 }
 
 export const NPC = memo(function NPC({
@@ -541,8 +560,11 @@ export const NPC = memo(function NPC({
   onInteraction,
   onStateChange,
   isDialogueActive,
+  scheduleEntry = null,
+  enableNpcPhysics = false,
 }: NPCProps) {
   const groupRef = useRef<THREE.Group>(null);
+  const rigidBodyRef = useRef<RapierRigidBody>(null);
   const modelRef = useRef<THREE.Group>(null);
   const [isNearPlayer, setIsNearPlayer] = useState(false);
   const [currentAnimation, setCurrentAnimation] = useState<'idle' | 'walk' | 'talk'>('idle');
@@ -565,12 +587,69 @@ export const NPC = memo(function NPC({
     }
   }, []);
 
+  useLayoutEffect(() => {
+    if (!enableNpcPhysics || !rigidBodyRef.current) return;
+    const p = scheduleEntry?.position ?? state.position;
+    rigidBodyRef.current.setTranslation({ x: p.x, y: p.y, z: p.z }, true);
+  }, [enableNpcPhysics, scheduleEntry, state.position.x, state.position.y, state.position.z]);
+
+  const syncWorldPosition = useCallback(
+    (p: { x: number; y: number; z: number }) => {
+      if (enableNpcPhysics && rigidBodyRef.current) {
+        rigidBodyRef.current.setTranslation({ x: p.x, y: p.y, z: p.z }, true);
+      } else if (groupRef.current) {
+        groupRef.current.position.set(p.x, p.y, p.z);
+      }
+    },
+    [enableNpcPhysics],
+  );
+
   useFrame((_, delta) => {
-    // Обновляем позицию группы напрямую через ref (без перерендера)
-    const pos = currentPositionRef.current;
-    if (groupRef.current) {
-      groupRef.current.position.set(pos.x, pos.y, pos.z);
+    if (scheduleEntry) {
+      const p = scheduleEntry.position;
+      currentPositionRef.current = { x: p.x, y: p.y, z: p.z };
+      syncWorldPosition(p);
+
+      const dx = playerPosition.x - p.x;
+      const dz = playerPosition.z - p.z;
+      const distance = Math.sqrt(dx * dx + dz * dz);
+      const near = distance < 3;
+      if (near !== wasNearPlayer.current) {
+        wasNearPlayer.current = near;
+        setIsNearPlayer(near);
+      }
+
+      if (isDialogueActive) {
+        setAnimation('talk');
+        return;
+      }
+
+      if (near && modelRef.current) {
+        const targetRotation = Math.atan2(dx, dz);
+        modelRef.current.rotation.y = THREE.MathUtils.lerp(
+          modelRef.current.rotation.y,
+          targetRotation,
+          0.1,
+        );
+        setAnimation('idle');
+        return;
+      }
+
+      setAnimation('idle');
+      const now = Date.now();
+      if (onStateChange && now - lastStateChangeTime.current > 1000) {
+        lastStateChangeTime.current = now;
+        onStateChange({
+          ...state,
+          position: currentPositionRef.current,
+          currentWaypoint: currentTargetIndex.current,
+        });
+      }
+      return;
     }
+
+    const pos = currentPositionRef.current;
+    syncWorldPosition(pos);
 
     // Проверка дистанции до игрока (без useEffect/setTimeout)
     const dx = playerPosition.x - pos.x;
@@ -722,8 +801,58 @@ export const NPC = memo(function NPC({
     [definition.model, isNearPlayer, isDialogueActive]
   );
 
-  return (
-    <group ref={groupRef} position={[state.position.x, state.position.y, state.position.z]}>
+  const activityIcon = scheduleActivityIcon(scheduleEntry);
+
+  const questSlice = useGameStore(
+    useShallow((s) => ({
+      activeQuestIds: s.activeQuestIds,
+      completedQuestIds: s.completedQuestIds,
+      questProgress: s.questProgress,
+      flags: s.playerState.flags,
+    })),
+  );
+
+  const questMarker = useMemo(
+    () => getNpcQuestMarkerForExploration(definition.id, questSlice),
+    [definition.id, questSlice],
+  );
+
+  const nameplate = (
+    <Html
+      position={[0, 2.0, 0]}
+      center
+      style={{
+        opacity: isNearPlayer ? 1 : 0.7,
+        transition: 'opacity 0.3s',
+        pointerEvents: 'none',
+      }}
+    >
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 6,
+          background: 'rgba(0, 0, 0, 0.7)',
+          color: isDialogueActive ? '#fbbf24' : '#fff',
+          padding: '4px 10px',
+          borderRadius: '4px',
+          fontSize: '12px',
+          fontFamily: 'system-ui, sans-serif',
+          whiteSpace: 'nowrap',
+          textShadow: '0 1px 2px rgba(0,0,0,0.8)',
+          border: isDialogueActive ? '1px solid #fbbf24' : '1px solid rgba(255,255,255,0.2)',
+        }}
+      >
+        <span style={{ fontSize: 14, lineHeight: 1 }} aria-hidden>
+          {activityIcon}
+        </span>
+        <span>{definition.name}</span>
+      </div>
+    </Html>
+  );
+
+  const body = (
+    <>
       <group ref={modelRef}>
         {definition.modelPath ? (
           <Suspense fallback={fallbackModel}>
@@ -753,29 +882,49 @@ export const NPC = memo(function NPC({
         </group>
       )}
 
-      <Html
-        position={[0, 2.0, 0]}
-        center
-        style={{
-          opacity: isNearPlayer ? 1 : 0.7,
-          transition: 'opacity 0.3s',
-          pointerEvents: 'none',
-        }}
-      >
-        <div style={{
-          background: 'rgba(0, 0, 0, 0.7)',
-          color: isDialogueActive ? '#fbbf24' : '#fff',
-          padding: '4px 10px',
-          borderRadius: '4px',
-          fontSize: '12px',
-          fontFamily: 'system-ui, sans-serif',
-          whiteSpace: 'nowrap',
-          textShadow: '0 1px 2px rgba(0,0,0,0.8)',
-          border: isDialogueActive ? '1px solid #fbbf24' : '1px solid rgba(255,255,255,0.2)',
-        }}>
-          {definition.name}
-        </div>
-      </Html>
+      {nameplate}
+
+      {questMarker !== 'none' && (
+        <Html
+          position={[0, 2.55, 0]}
+          center
+          style={{ pointerEvents: 'none' }}
+        >
+          <motion.div
+            animate={{ scale: [1, 1.14, 1] }}
+            transition={{ repeat: Infinity, duration: 1.35, ease: 'easeInOut' }}
+            style={{
+              fontSize: 22,
+              fontWeight: 900,
+              lineHeight: 1,
+              color:
+                questMarker === 'turn_in'
+                  ? '#fbbf24'
+                  : questMarker === 'in_progress'
+                    ? '#9ca3af'
+                    : '#facc15',
+              textShadow: '0 0 8px rgba(0,0,0,0.95)',
+              userSelect: 'none',
+            }}
+          >
+            {questMarker === 'available' ? '!' : '?'}
+          </motion.div>
+        </Html>
+      )}
+    </>
+  );
+
+  if (enableNpcPhysics) {
+    return (
+      <RigidBody ref={rigidBodyRef} type="kinematicPosition" colliders={false}>
+        {body}
+      </RigidBody>
+    );
+  }
+
+  return (
+    <group ref={groupRef} position={[state.position.x, state.position.y, state.position.z]}>
+      {body}
     </group>
   );
 });
@@ -791,6 +940,9 @@ interface NPCSystemProps {
   onNPCInteraction: (npcId: string) => void;
   onNPCStateChange: (npcId: string, state: NPCState) => void;
   isDialogueActive: boolean;
+  currentSceneId: SceneId;
+  timeOfDay: number;
+  enableNpcPhysics?: boolean;
 }
 
 export const NPCSystem = memo(function NPCSystem({
@@ -800,10 +952,21 @@ export const NPCSystem = memo(function NPCSystem({
   onNPCInteraction,
   onNPCStateChange,
   isDialogueActive,
+  currentSceneId,
+  timeOfDay,
+  enableNpcPhysics = false,
 }: NPCSystemProps) {
+  const visibleNpcs = useMemo(() => {
+    return npcs.filter((npc) => {
+      const entry = getCurrentScheduleEntry(npc.id, timeOfDay);
+      if (!entry) return true;
+      return entry.sceneId === currentSceneId;
+    });
+  }, [npcs, timeOfDay, currentSceneId]);
+
   return (
     <>
-      {npcs.map((npcDef) => {
+      {visibleNpcs.map((npcDef) => {
         const state = npcStates[npcDef.id] || {
           id: npcDef.id,
           position: npcDef.defaultPosition,
@@ -814,6 +977,8 @@ export const NPCSystem = memo(function NPCSystem({
           lastInteractionTime: 0,
         };
 
+        const scheduleEntry = getCurrentScheduleEntry(npcDef.id, timeOfDay);
+
         return (
           <NPC
             key={npcDef.id}
@@ -823,6 +988,8 @@ export const NPCSystem = memo(function NPCSystem({
             onInteraction={onNPCInteraction}
             onStateChange={(newState) => onNPCStateChange(npcDef.id, newState)}
             isDialogueActive={isDialogueActive}
+            scheduleEntry={scheduleEntry}
+            enableNpcPhysics={enableNpcPhysics}
           />
         );
       })}

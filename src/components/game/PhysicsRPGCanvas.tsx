@@ -1,7 +1,7 @@
 'use client';
 
 import React, { Suspense, useMemo, memo } from 'react';
-import { Canvas } from '@react-three/fiber';
+import { Canvas, useFrame } from '@react-three/fiber';
 import { Physics } from '@react-three/rapier';
 import { EffectComposer, Vignette, ChromaticAberration, Bloom, Noise } from '@react-three/postprocessing';
 import { Vector2 } from 'three';
@@ -18,6 +18,14 @@ import { getDefaultPlayerModelPath } from '@/config/modelUrls';
 import { NPCSystem } from './NPC';
 import { InteractiveObject, PhysicsExplorationRoomVisual } from './RoomEnvironment';
 import { useGameStore } from '@/store/gameStore';
+
+const PhysicsWorldClock = memo(function PhysicsWorldClock() {
+  const advanceTime = useGameStore((s) => s.advanceTime);
+  useFrame((_, delta) => {
+    advanceTime(delta / 48);
+  });
+  return null;
+});
 
 interface NPCConfig {
   id: string;
@@ -111,6 +119,7 @@ export const PhysicsGameModeSwitcher = memo(function PhysicsGameModeSwitcher({
 }: PhysicsGameModeSwitcherProps) {
   const [npcStates, setNPCStates] = React.useState<Record<string, NPCState>>({});
   const setNPCState = useGameStore((s) => s.setNPCState);
+  const timeOfDay = useGameStore((s) => s.exploration.timeOfDay);
 
   /** Гравитация от стресса/паники — через проп `<Physics gravity>`, без мутации world (совместимо с ESLint). */
   const gravity = useMemo((): [number, number, number] => {
@@ -171,6 +180,7 @@ export const PhysicsGameModeSwitcher = memo(function PhysicsGameModeSwitcher({
         )}
 
         <Physics debug={false} gravity={gravity}>
+          <PhysicsWorldClock />
           <PhysicsSceneColliders sceneId={sceneId} />
 
           <PhysicsExplorationRoomVisual sceneId={sceneId} />
@@ -195,6 +205,9 @@ export const PhysicsGameModeSwitcher = memo(function PhysicsGameModeSwitcher({
               onNPCInteraction={onNPCInteraction || (() => {})}
               onNPCStateChange={handleNPCStateChange}
               isDialogueActive={false}
+              currentSceneId={sceneId}
+              timeOfDay={timeOfDay}
+              enableNpcPhysics
             />
           )}
 

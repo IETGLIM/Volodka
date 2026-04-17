@@ -49,6 +49,7 @@ const INITIAL_NPC_RELATIONS: NPCRelation[] = [
 const INITIAL_EXPLORATION: ExplorationState = {
   playerPosition: { x: 0, y: 1, z: 3, rotation: 0 },
   currentSceneId: 'kitchen_night',
+  timeOfDay: 20,
   npcStates: {},
   triggerStates: {},
   worldItems: [],
@@ -77,6 +78,7 @@ interface WorldStoreActions {
   setNPCState: (npcId: string, state: NPCState) => void;
   setCurrentNPC: (npcId: string | null) => void;
   setPlayerPosition: (position: PlayerPosition) => void;
+  advanceTime: (deltaHours: number) => void;
   setCurrentScene: (sceneId: SceneId) => void;
   travelToScene: (sceneId: SceneId, options?: TravelToSceneOptions) => TravelToSceneResult;
   setTriggerState: (triggerId: string, state: TriggerState) => void;
@@ -142,6 +144,13 @@ export const useWorldStore = create<WorldStore>()((set, get) => ({
   setPlayerPosition: (position) => {
     const { exploration } = get();
     set({ exploration: { ...exploration, playerPosition: position } });
+  },
+
+  advanceTime: (deltaHours) => {
+    const { exploration } = get();
+    const next = exploration.timeOfDay + deltaHours;
+    const normalized = ((next % 24) + 24) % 24;
+    set({ exploration: { ...exploration, timeOfDay: normalized } });
   },
 
   setCurrentScene: (sceneId) => {
@@ -270,10 +279,12 @@ export const useExploration = () =>
     useShallow((state) => ({
       playerPosition: state.exploration.playerPosition,
       currentSceneId: state.exploration.currentSceneId,
+      timeOfDay: state.exploration.timeOfDay,
       npcStates: state.exploration.npcStates,
       triggerStates: state.exploration.triggerStates,
       worldItems: state.exploration.worldItems,
       setPlayerPosition: state.setPlayerPosition,
+      advanceTime: state.advanceTime,
       setCurrentScene: state.setCurrentScene,
       travelToScene: state.travelToScene,
       setNPCState: state.setNPCState,

@@ -97,6 +97,9 @@ export function evaluateCondition(
     if (typeof skillValue !== 'number' || skillValue < condition.minSkill.value) return false;
   }
 
+  if (condition.minKarma !== undefined && context.playerState.karma < condition.minKarma) return false;
+  if (condition.maxKarma !== undefined && context.playerState.karma > condition.maxKarma) return false;
+
   // Посещённые узлы
   if (condition.visitedNode && !context.visitedNodes.includes(condition.visitedNode)) return false;
 

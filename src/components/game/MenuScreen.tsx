@@ -2,6 +2,7 @@
 
 import { memo, useEffect, useState, useMemo, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { audioEngine } from '@/engine/AudioEngine';
 
 // ============================================
 // CANVAS MATRIX RAIN
@@ -709,6 +710,13 @@ export const MenuScreen = memo(function MenuScreen({
   useEffect(() => {
     const timer = setTimeout(() => setSystemStatus('ГОТОВ'), 2000);
     return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    audioEngine.playMusic('menu');
+    return () => {
+      audioEngine.stop();
+    };
   }, []);
 
   // Periodic title glitch

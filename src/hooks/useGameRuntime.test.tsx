@@ -71,7 +71,7 @@ vi.mock('@/store/gameStore', () => ({
       activeQuestIds: [],
       completedQuestIds: [],
       inventory: [],
-      exploration: { currentSceneId: 'kitchen_night' },
+      exploration: { currentSceneId: 'kitchen_night', timeOfDay: 12 },
     })),
   },
 }));

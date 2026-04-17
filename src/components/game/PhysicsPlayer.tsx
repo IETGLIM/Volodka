@@ -7,6 +7,7 @@ import { RigidBody, RapierRigidBody, CapsuleCollider } from '@react-three/rapier
 import * as THREE from 'three';
 import { usePlayerControls, PHYSICS_CONSTANTS, type PlayerControls } from '@/hooks/useGamePhysics';
 import { getDefaultPlayerModelPath, isValidPlayerGlbPath, rewriteLegacyModelPath } from '@/config/modelUrls';
+import { useGameStore } from '@/store/gameStore';
 
 // ============================================
 // TYPES
@@ -265,6 +266,7 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
 ) {
   const rigidBodyRef = useRef<RapierRigidBody>(null);
   const modelRef = useRef<THREE.Group>(null);
+  const karma = useGameStore((s) => s.playerState.karma);
   const canJumpRef = useRef(true);
   const [rotation, setRotation] = useState(initialRotation);
   const [isMoving, setIsMoving] = useState(false);
@@ -437,6 +439,16 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
           )}
         </Suspense>
       </group>
+
+      {karma > 70 && (
+        <pointLight position={[0, 1.4, 0]} intensity={0.55} distance={4} color="#fcd34d" decay={2} />
+      )}
+      {karma < 30 && (
+        <>
+          <pointLight position={[0.08, 1.55, 0.18]} intensity={0.35} distance={1.2} color="#b91c1c" decay={2} />
+          <pointLight position={[-0.08, 1.55, 0.18]} intensity={0.35} distance={1.2} color="#b91c1c" decay={2} />
+        </>
+      )}
 
       {/* Тень под игроком */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.01, 0]}>

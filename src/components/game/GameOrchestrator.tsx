@@ -40,8 +40,15 @@ import {
 } from './GameOrchestratorSubcomponents';
 
 import { useGameStore } from '@/store/gameStore';
-import { MiniMap } from '@/components/game/MiniMap';
+import { eventBus } from '@/engine/EventBus';
+import { useGameAudioProfile } from '@/hooks/useAudio';
+import { QUEST_DEFINITIONS, getNextTrackedObjective } from '@/data/quests';
 import { getNPCsForScene } from '@/data/npcDefinitions';
+import type { MiniMapQuestMarker } from '@/components/game/MiniMap';
+import { MoralCompassHUD } from '@/components/game/MoralCompassHUD';
+import { LootNotification, SkillUpNotification } from '@/components/game/LootNotification';
+import { TutorialOverlay } from '@/components/game/TutorialOverlay';
+import { MiniMap } from '@/components/game/MiniMap';
 import { SCENE_VISUALS } from '@/engine/SceneManager';
 import type { VisualState } from '@/data/types';
 import { storyNodeShowsStoryOverlay } from '@/lib/storyOverlayEligibility';
@@ -126,6 +133,8 @@ export default function GameOrchestrator() {
       npcStates: s.exploration.npcStates,
     })),
   );
+  const activeQuestIds = useGameStore((s) => s.activeQuestIds);
+  const questProgress = useGameStore((s) => s.questProgress);
   const npcRelations = useGameStore((s) => s.npcRelations);
   const inventory = useGameStore((s) => s.inventory);
 
@@ -137,6 +146,13 @@ export default function GameOrchestrator() {
   useEffect(() => {
     requestAnimationFrame(() => setMounted(true));
   }, []);
+
+  useEffect(() => {
+    const unsub = eventBus.on('ui:exploration_message', ({ text }) => {
+      showEffectNotif(text, 'system');
+    });
+    return unsub;
+  }, [showEffectNotif]);
 
   const {
     dialogueStoreActions,
@@ -222,6 +238,37 @@ export default function GameOrchestrator() {
     }));
   }, [gameMode, exploration.currentSceneId, exploration.npcStates]);
 
+  const minimapQuestMarkers = useMemo((): MiniMapQuestMarker[] => {
+    if (gameMode !== 'exploration') return [];
+    const sid = exploration.currentSceneId;
+    const markers: MiniMapQuestMarker[] = [];
+
+    for (const qid of activeQuestIds) {
+      const quest = QUEST_DEFINITIONS[qid];
+      if (!quest) continue;
+      const prog = questProgress[qid] || {};
+      const next = getNextTrackedObjective(quest, prog);
+      const obj = next ?? quest.objectives.find((o) => !o.hidden);
+      if (!obj?.targetLocation || obj.targetLocation !== sid) continue;
+
+      if (obj.targetNPC) {
+        const npc = getNPCsForScene(sid).find((n) => n.id === obj.targetNPC);
+        if (npc) {
+          const p = exploration.npcStates[npc.id]?.position ?? npc.defaultPosition;
+          markers.push({ id: `${qid}-${obj.id}`, position: { x: p.x, z: p.z }, type: 'target' });
+        }
+      } else {
+        markers.push({
+          id: `${qid}-${obj.id}-area`,
+          position: { x: 0, z: 0 },
+          type: 'area',
+        });
+      }
+    }
+
+    return markers;
+  }, [gameMode, exploration.currentSceneId, exploration.npcStates, activeQuestIds, questProgress]);
+
   useEffect(() => {
     if (!activeCutsceneId) return;
     if (!getCutsceneById(activeCutsceneId)) {
@@ -239,6 +286,8 @@ export default function GameOrchestrator() {
   );
 
   const displaySceneId = gameMode === 'exploration' ? exploration.currentSceneId : currentSceneId;
+
+  useGameAudioProfile(displaySceneId, playerState.stress);
 
   const explorationVisualState = useMemo((): VisualState => {
     const stressGlitch = Math.min(
@@ -372,6 +421,7 @@ export default function GameOrchestrator() {
         stress={playerState.stress}
         creativity={playerState.creativity}
         enabled={phase === 'game' && !activeCutscene}
+        forceBattleMusic={playerState.stress > 80 || displaySceneId === 'battle'}
       />
       {gameMode !== 'exploration' && (
         <SceneRenderer sceneId={currentSceneId} playerState={playerState} />
@@ -399,8 +449,14 @@ export default function GameOrchestrator() {
           sceneSize={{ width: 20, depth: 20 }}
           sceneName={SCENE_VISUALS[exploration.currentSceneId]?.name ?? exploration.currentSceneId}
           npcs={minimapNpcs}
+          questMarkers={minimapQuestMarkers}
         />
       )}
+
+      <MoralCompassHUD />
+      <LootNotification />
+      <SkillUpNotification />
+      <TutorialOverlay gameMode={gameMode} isDialogue={Boolean(activeDialogue)} />
 
       <HUD
         onSave={handleSaveGame}
@@ -557,12 +613,14 @@ export default function GameOrchestrator() {
                   notif.type === 'poem' ? 'rgba(245, 158, 11, 0.15)' :
                   notif.type === 'quest' ? 'rgba(168, 85, 247, 0.15)' :
                   notif.type === 'flag' ? 'rgba(34, 197, 94, 0.15)' :
+                  notif.type === 'system' ? 'rgba(148, 163, 184, 0.18)' :
                   'rgba(0, 255, 255, 0.1)',
                 borderColor:
                   notif.type === 'energy' ? 'rgba(251, 191, 36, 0.4)' :
                   notif.type === 'poem' ? 'rgba(245, 158, 11, 0.4)' :
                   notif.type === 'quest' ? 'rgba(168, 85, 247, 0.4)' :
                   notif.type === 'flag' ? 'rgba(34, 197, 94, 0.4)' :
+                  notif.type === 'system' ? 'rgba(148, 163, 184, 0.45)' :
                   'rgba(0, 255, 255, 0.3)',
                 clipPath: 'polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 6px 100%, 0 calc(100% - 6px))',
               }}
@@ -575,12 +633,14 @@ export default function GameOrchestrator() {
                     notif.type === 'poem' ? 'rgba(245, 158, 11, 0.9)' :
                     notif.type === 'quest' ? 'rgba(168, 85, 247, 0.9)' :
                     notif.type === 'flag' ? 'rgba(34, 197, 94, 0.9)' :
+                    notif.type === 'system' ? 'rgba(226, 232, 240, 0.92)' :
                     'rgba(0, 255, 255, 0.8)',
                   textShadow: `0 0 8px ${
                     notif.type === 'energy' ? 'rgba(251,191,36,0.4)' :
                     notif.type === 'poem' ? 'rgba(245,158,11,0.4)' :
                     notif.type === 'quest' ? 'rgba(168,85,247,0.4)' :
                     notif.type === 'flag' ? 'rgba(34,197,94,0.4)' :
+                    notif.type === 'system' ? 'rgba(148,163,184,0.35)' :
                     'rgba(0,255,255,0.3)'
                   }`,
                 }}

@@ -92,6 +92,8 @@ export interface DialogueCondition {
   minSkill?: { skill: string; value: number };
   visitedNode?: string;
   completedDialogue?: string; // Пройденный диалог
+  minKarma?: number;
+  maxKarma?: number;
 }
 
 // Эффект диалога
@@ -188,6 +190,8 @@ export interface SceneColliders {
 export interface ExplorationState {
   playerPosition: PlayerPosition;
   currentSceneId: SceneId;
+  /** Игровое время суток, часы [0, 24) с дробной частью. */
+  timeOfDay: number;
   npcStates: Record<string, NPCState>;
   triggerStates: Record<string, TriggerState>;
   worldItems: WorldItem[];

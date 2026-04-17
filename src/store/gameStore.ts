@@ -183,6 +183,7 @@ const INITIAL_FACTION_REPUTATIONS: Record<FactionId, FactionReputation> = {
 const INITIAL_EXPLORATION_STATE: ExplorationState = {
   playerPosition: { x: 0, y: 1, z: 4, rotation: 0 },
   currentSceneId: 'street_night',
+  timeOfDay: 20,
   npcStates: {},
   triggerStates: {},
   worldItems: [],
@@ -288,6 +289,8 @@ interface GameState {
   
   // RPG Actions
   setPlayerPosition: (position: PlayerPosition) => void;
+  /** Сдвиг игрового времени суток (часы, дробные). Значение нормализуется в [0, 24). */
+  advanceTime: (deltaHours: number) => void;
   setCurrentScene: (sceneId: SceneId) => void;
   travelToScene: (sceneId: SceneId, options?: TravelToSceneOptions) => TravelToSceneResult;
   setTriggerState: (triggerId: string, state: TriggerState) => void;
@@ -428,7 +431,14 @@ const normalizeLoadedState = (data: SavedGameData) => ({
   unlockedAchievementIds: data.unlockedAchievementIds || [],
   unlockedLocations: data.unlockedLocations || [],
   gameMode: data.gameMode ?? 'exploration',
-  exploration: data.exploration || INITIAL_EXPLORATION_STATE,
+  exploration: {
+    ...INITIAL_EXPLORATION_STATE,
+    ...(data.exploration || {}),
+    timeOfDay:
+      typeof data.exploration?.timeOfDay === 'number'
+        ? data.exploration.timeOfDay
+        : INITIAL_EXPLORATION_STATE.timeOfDay,
+  },
   activeQuestIds: data.activeQuestIds || [...DEFAULT_ACTIVE_QUEST_IDS],
   completedQuestIds: data.completedQuestIds || [],
   questProgress: data.questProgress || {},
@@ -594,15 +604,23 @@ export const useGameStore = create<GameState>()((set, get) => ({
   addSkill: (skill, amount) => {
     const { playerState } = get();
     const currentSkill = playerState.skills[skill] as number;
+    const next = clamp(currentSkill + amount, 0, 100);
     set({
       playerState: {
         ...playerState,
         skills: {
           ...playerState.skills,
-          [skill]: clamp(currentSkill + amount, 0, 100)
-        }
-      }
+          [skill]: next,
+        },
+      },
     });
+    if (amount > 0 && skill !== 'skillPoints') {
+      const prevTier = Math.floor(currentSkill / 20);
+      const nextTier = Math.floor(next / 20);
+      if (nextTier > prevTier) {
+        eventBus.emit('skill:level_up', { skill: String(skill), level: nextTier + 1 });
+      }
+    }
   },
   
   addSkillPoints: (points) => {
@@ -653,6 +671,13 @@ export const useGameStore = create<GameState>()((set, get) => ({
             : i
         )
       });
+      if (newQuantity > existing.quantity) {
+        eventBus.emit('loot:reward', {
+          itemId,
+          name: item.name,
+          rarity: String(item.rarity ?? 'common'),
+        });
+      }
     } else {
       set({
         inventory: [...inventory, {
@@ -660,6 +685,11 @@ export const useGameStore = create<GameState>()((set, get) => ({
           quantity: Math.min(quantity, item.maxStack || 99),
           obtainedAt: Date.now()
         }]
+      });
+      eventBus.emit('loot:reward', {
+        itemId,
+        name: item.name,
+        rarity: String(item.rarity ?? 'common'),
       });
     }
   },
@@ -813,6 +843,18 @@ export const useGameStore = create<GameState>()((set, get) => ({
         ...exploration,
         playerPosition: position
       }
+    });
+  },
+
+  advanceTime: (deltaHours) => {
+    const { exploration } = get();
+    const next = exploration.timeOfDay + deltaHours;
+    const normalized = ((next % 24) + 24) % 24;
+    set({
+      exploration: {
+        ...exploration,
+        timeOfDay: normalized,
+      },
     });
   },
   
@@ -1261,10 +1303,12 @@ export const useStress = () => useGameStore(useShallow((state) => ({
 export const useExploration = () => useGameStore(useShallow((state) => ({
   playerPosition: state.exploration.playerPosition,
   currentSceneId: state.exploration.currentSceneId,
+  timeOfDay: state.exploration.timeOfDay,
   npcStates: state.exploration.npcStates,
   triggerStates: state.exploration.triggerStates,
   worldItems: state.exploration.worldItems,
   setPlayerPosition: state.setPlayerPosition,
+  advanceTime: state.advanceTime,
   setCurrentScene: state.setCurrentScene,
   travelToScene: state.travelToScene,
   setNPCState: state.setNPCState,

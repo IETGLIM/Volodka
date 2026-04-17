@@ -7,7 +7,7 @@
  */
 
 import { memo, useRef, useEffect, useMemo, useCallback, useState, Fragment, Suspense } from 'react';
-import { Canvas } from '@react-three/fiber';
+import { Canvas, useFrame } from '@react-three/fiber';
 import { Physics, RigidBody, CuboidCollider } from '@react-three/rapier';
 import * as THREE from 'three';
 
@@ -25,6 +25,7 @@ import type {
 // Data
 import { getNPCsForScene } from '../../data/npcDefinitions';
 import { getTriggersForScene } from '../../data/triggerZones';
+import { getInteractiveObjectsForScene, type InteractiveObjectConfig } from '@/config/scenes';
 
 // Components
 import { PhysicsPlayer } from './PhysicsPlayer';
@@ -37,8 +38,12 @@ import CameraEffects from '../CameraEffects';
 
 // Store
 import { useGameStore } from '../../store/gameStore';
+import { eventBus } from '@/engine/EventBus';
+import { getCurrentScheduleEntry } from '@/engine/ScheduleEngine';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { ExplorationMobileHud } from './ExplorationMobileHud';
+import { RadialMenu, type RadialMenuAction } from './RadialMenu';
+import { getNearestInteractiveObject } from './InteractiveTriggers';
 import type { PlayerControls } from '@/hooks/useGamePhysics';
 
 // ============================================
@@ -63,6 +68,15 @@ const GROUND_INDOOR: RpgGroundGeometryArgs = [20, 0.1, 20];
 const GROUND_PLAZA: RpgGroundGeometryArgs = [48, 0.1, 48];
 const GROUND_OPEN: RpgGroundGeometryArgs = [40, 0.1, 40];
 
+/** Тик игрового времени суток внутри `<Canvas>` (useFrame допустим только здесь). */
+const ExplorationWorldClock = memo(function ExplorationWorldClock() {
+  const advanceTime = useGameStore((s) => s.advanceTime);
+  useFrame((_, delta) => {
+    advanceTime(delta / 48);
+  });
+  return null;
+});
+
 // ============================================
 // COMPONENT
 // ============================================
@@ -80,12 +94,14 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
   const virtualControlsRef = useRef<Partial<PlayerControls>>({});
   const [npcStates, setNPCStates] = useState<Record<string, NPCState>>({});
   const [triggerStates, setTriggerStates] = useState<Record<string, TriggerState>>({});
+  const [radialObject, setRadialObject] = useState<InteractiveObjectConfig | null>(null);
   
   // Получаем ВСЁ состояние напрямую из store (единый источник истины)
   const playerState = useGameStore((state) => state.playerState);
   const playerPosition = useGameStore((state) => state.exploration.playerPosition);
   const setPlayerPosition = useGameStore((state) => state.setPlayerPosition);
   const setNPCState = useGameStore((state) => state.setNPCState);
+  const timeOfDay = useGameStore((state) => state.exploration.timeOfDay);
   
   // Ref для актуального значения playerPosition (избегаем устаревших замыканий)
   const playerPositionRef = useRef(playerPosition);
@@ -133,7 +149,16 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
   const isPanelDistrict = sceneId === 'street_night' || sceneId === 'street_winter';
 
   // Get NPCs and triggers for current scene
-  const sceneNPCs = useMemo(() => getNPCsForScene(sceneId), [sceneId]);
+  const sceneNPCs = useMemo(() => {
+    const all = getNPCsForScene(sceneId);
+    return all.filter((npc) => {
+      const entry = getCurrentScheduleEntry(npc.id, timeOfDay);
+      if (!entry) return true;
+      return entry.sceneId === sceneId;
+    });
+  }, [sceneId, timeOfDay]);
+
+  const sceneInteractiveObjects = useMemo(() => getInteractiveObjectsForScene(sceneId), [sceneId]);
   const sceneTriggers = useMemo(() => getTriggersForScene(sceneId), [sceneId]);
 
   // Handle player position changes - сохраняем в store напрямую
@@ -167,7 +192,12 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
   // Handle player interaction (E key) — сначала триггер с requiresInteraction в зоне, иначе ближайший NPC
   const handlePlayerInteraction = useCallback(() => {
     if (isDialogueActive) return;
-    
+
+    if (radialObject) {
+      setRadialObject(null);
+      return;
+    }
+
     const currentPos = playerPositionRef.current;
 
     for (const trigger of sceneTriggers) {
@@ -185,7 +215,16 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
       }
       return;
     }
-    
+
+    const nearObj = getNearestInteractiveObject(
+      { x: currentPos.x, z: currentPos.z },
+      sceneInteractiveObjects,
+    );
+    if (nearObj) {
+      setRadialObject(nearObj);
+      return;
+    }
+
     // Find nearest NPC
     let nearestNPC: NPCDefinition | null = null;
     let nearestDistance = Infinity;
@@ -204,6 +243,11 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
     }
     
     if (nearestNPC) {
+      const entry = getCurrentScheduleEntry(nearestNPC.id, timeOfDay);
+      if (entry && !entry.dialogueAvailable) {
+        eventBus.emit('ui:exploration_message', { text: 'Персонаж сейчас недоступен' });
+        return;
+      }
       onNPCInteraction(nearestNPC.id);
     }
   }, [
@@ -215,6 +259,9 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
     sceneNPCs,
     npcStates,
     onNPCInteraction,
+    timeOfDay,
+    radialObject,
+    sceneInteractiveObjects,
   ]);
 
   return (
@@ -235,6 +282,7 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
       {/* Physics: Suspense — WASM Rapier; пол — явный CuboidCollider (авто cuboid на повёрнутом mesh часто «дырявый»). */}
       <Suspense fallback={null}>
       <Physics gravity={[0, -9.81, 0]} debug={false}>
+        <ExplorationWorldClock />
         <RigidBody type="fixed" colliders={false} position={[0, 0, 0]}>
           <CuboidCollider
             args={[
@@ -325,6 +373,9 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
           onNPCInteraction={onNPCInteraction}
           onNPCStateChange={handleNPCStateChange}
           isDialogueActive={isDialogueActive}
+          currentSceneId={sceneId}
+          timeOfDay={timeOfDay}
+          enableNpcPhysics
         />
 
         {/* Triggers */}
@@ -364,6 +415,17 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
         onInteract={handlePlayerInteraction}
       />
     )}
+
+    <RadialMenu
+      open={radialObject !== null}
+      anchorLabel={radialObject?.id}
+      onClose={() => setRadialObject(null)}
+      onSelect={(action: RadialMenuAction) => {
+        if (!radialObject) return;
+        eventBus.emit('object:interact', { objectId: radialObject.id, action });
+        setRadialObject(null);
+      }}
+    />
     </Fragment>
   );
 });

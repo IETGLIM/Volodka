@@ -83,6 +83,18 @@ export interface EventMap {
 
   // Проверка навыков
   'skill:check': { skill: string; difficulty: number; success: boolean; roll: number };
+
+  /** Короткое сообщение поверх исследования (тост / эффект). */
+  'ui:exploration_message': { text: string };
+
+  /** Звук UI / мира (см. AudioEngine / обработчики). */
+  'sound:play': { type: string; volume?: number };
+
+  /** Взаимодействие с объектом из радиального меню и др. */
+  'object:interact': { objectId: string; action: string };
+
+  'loot:reward': { itemId: string; name: string; rarity: string };
+  'skill:level_up': { skill: string; level: number };
 }
 
 // ============================================

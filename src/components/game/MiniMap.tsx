@@ -17,12 +17,19 @@ export interface MiniMapNPC {
   position?: { x: number; y: number; z: number };
 }
 
+export interface MiniMapQuestMarker {
+  id: string;
+  position: { x: number; z: number };
+  type: 'target' | 'area';
+}
+
 interface MiniMapProps {
   playerPosition: { x: number; y: number; z: number; rotation?: number };
   sceneSize: { width: number; depth: number };
   sceneName: string;
   npcs: MiniMapNPC[];
   interactiveObjects?: Array<{ id: string; position: [number, number, number]; type: string }>;
+  questMarkers?: MiniMapQuestMarker[];
   className?: string;
 }
 
@@ -61,6 +68,7 @@ export const MiniMap = memo(function MiniMap({
   sceneName,
   npcs,
   interactiveObjects = [],
+  questMarkers = [],
   className = '',
 }: MiniMapProps) {
   const gridPatternId = useId().replace(/:/g, '');
@@ -173,6 +181,31 @@ export const MiniMap = memo(function MiniMap({
                 title={obj.id}
               />
             ))}
+
+            {questMarkers.map((m) => {
+              const left = m.position.x * scale.x + mapSize.width / 2;
+              const top = m.position.z * scale.z + mapSize.height / 2;
+              if (m.type === 'area') {
+                return (
+                  <div
+                    key={m.id}
+                    className="absolute h-3 w-3 -translate-x-1/2 -translate-y-1/2 transform rounded-full border-2 border-yellow-400/70 bg-yellow-400/25"
+                    style={{ left, top, boxShadow: '0 0 10px rgba(250, 204, 21, 0.45)' }}
+                    title="Зона квеста"
+                  />
+                );
+              }
+              return (
+                <div
+                  key={m.id}
+                  className="absolute -translate-x-1/2 -translate-y-1/2 transform font-mono text-[12px] text-red-400 drop-shadow-[0_0_6px_rgba(248,113,113,0.9)]"
+                  style={{ left, top }}
+                  title="Цель квеста"
+                >
+                  ✕
+                </div>
+              );
+            })}
 
             {npcs.map((npc) => {
               const p = npcWorldPos(npc);

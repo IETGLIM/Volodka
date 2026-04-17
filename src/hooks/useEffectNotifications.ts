@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react';
 
-export type EffectNotifType = 'poem' | 'stat' | 'quest' | 'flag' | 'energy';
+export type EffectNotifType = 'poem' | 'stat' | 'quest' | 'flag' | 'energy' | 'system';
 
 export interface EffectNotification {
   id: string;
