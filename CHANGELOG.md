@@ -9,7 +9,7 @@
 - **Шина событий**: **`exploration:footstep`**; **`game:saved`** с опциональным **`source: 'auto' | 'manual'`**; **`game:loaded`** эмитится из **`loadGame`** после успешной загрузки.
 - **Сохранения**: **`saveGame(options?)`** в **`gameStore`** пишет в **`localStorage`** и эмитит **`game:saved`**; **`useAutoSave`** передаёт **`{ source: 'auto' }`**; UX в **`GameOrchestrator`** — отдельные тосты ручного сохранения и короткая подпись для авто/загрузки; убран ложный интервал **`game:saved`** из **`CoreLoop`** (персистентность только через стор/хуки).
 
-- **Перфоманс 3D**: **`PanelDistrictBuildings`** — пять коллайдеров Rapier + **один `InstancedMesh`** на фасады панельного квартала; **`ExplorationFrameStats`** (FPS, **`gl.info.render`**) по **`?exploreStats=1`** или **`localStorage`** **`volodka_exploration_stats=1`**; тест **`PanelDistrictBuildings.test.ts`**.
+- **Перфоманс 3D**: **`PanelDistrictBuildings`** — пять коллайдеров Rapier + **один `InstancedMesh`** на фасады панельного квартала; **`ExplorationFrameStats`** (FPS, **`gl.info.render`**) по **`?exploreStats=1`** или **`localStorage`** **`volodka_exploration_stats=1`**; тест **`PanelDistrictBuildings.test.ts`**; **`SceneColliders` `InstancedWalls`** — реальный **`InstancedMesh`** для невидимых объёмов камеры вместо N отдельных мешей.
 
 - **Правило Cursor**: **`.cursor/rules/git-changelog-workflow.mdc`** — после содержательных правок обновлять **`CHANGELOG.md`** (`[Unreleased]`), делать коммит и при необходимости **`git push`**.
 
@@ -37,7 +37,7 @@
 
 ### Changed
 
-- **`NPC.tsx`**: дистанционный **LOD** для NPC с **`modelPath`**: дальше **~17 m** — капсула-импостор вместо GLB (гистерезис с **~12 m**); при диалоге всегда полная модель; убран **`useGLTF.clear`** при размонтировании загрузчика, чтобы не сбрасывать общий кэш при LOD у соседних NPC.
+- **`NPC.tsx`**: дистанционный **LOD** для NPC с **`modelPath`**: дальше **~17 m** — капсула-импостор вместо GLB (гистерезис с **~12 m**); при диалоге всегда полная модель; убран **`useGLTF.clear`** при размонтировании загрузчика, чтобы не сбрасывать общий кэш при LOD у соседних NPC; **mid-shadow LOD** — при полном GLB дальше **~4.5–6.5 m** (зона гистерезиса) у мешей **`castShadow=false`**, ближе и в диалоге — как раньше.
 
 - **`usePlayerFootsteps`**: при шаге эмит **`exploration:footstep`** (позиция и yaw для декалей).
 - **`RPGGameCanvas`**: тени **`directionalLight`** 256×256 на мобильном / **`useMobileVisualPerf`**; панельные короба заменены на **`PanelDistrictBuildings`**.

@@ -1,6 +1,15 @@
 "use client";
 
-import React, { useRef, useState, useMemo, memo, Suspense, useCallback, useEffect, useLayoutEffect } from 'react';
+import React, {
+  useRef,
+  useState,
+  useMemo,
+  memo,
+  Suspense,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+} from 'react';
 import { useFrame } from '@react-three/fiber';
 import { useGLTF, useAnimations, Html } from '@react-three/drei';
 import { RigidBody, type RapierRigidBody } from '@react-three/rapier';
@@ -71,6 +80,8 @@ interface GLTFModelProps {
   scale?: number;
   isNearPlayer: boolean;
   isDialogueActive: boolean;
+  /** `mid` — дальше порога: меши GLB не отбрасывают тень (дешевле для GPU). */
+  shadowTier: 'near' | 'mid';
   fallback: React.ReactNode;
   npcAnimation: 'idle' | 'walk' | 'talk';
   animations?: AnimationMapping;
@@ -136,13 +147,26 @@ const GLTFModelInner = memo(function GLTFModelInner({
   scale,
   isNearPlayer,
   isDialogueActive,
+  shadowTier,
 }: {
   groupRef: React.RefObject<THREE.Group | null>;
   scene: THREE.Group;
   scale: number | undefined;
   isNearPlayer: boolean;
   isDialogueActive: boolean;
+  shadowTier: 'near' | 'mid';
 }) {
+  useLayoutEffect(() => {
+    const cast = shadowTier === 'near';
+    scene.traverse((obj) => {
+      const mesh = obj as THREE.Mesh;
+      if (mesh.isMesh) {
+        mesh.castShadow = cast;
+        mesh.receiveShadow = true;
+      }
+    });
+  }, [scene, shadowTier]);
+
   return (
     <group ref={groupRef}>
       <primitive object={scene} scale={scale} />
@@ -162,6 +186,7 @@ const GLTFLoader = memo(function GLTFLoader({
   scale,
   isNearPlayer,
   isDialogueActive,
+  shadowTier,
   fallback,
   npcAnimation,
   animations: animMapping,
@@ -225,6 +250,7 @@ const GLTFLoader = memo(function GLTFLoader({
       scale={scale}
       isNearPlayer={isNearPlayer}
       isDialogueActive={isDialogueActive}
+      shadowTier={shadowTier}
     />
   );
 });
@@ -234,6 +260,7 @@ const GLTFModel = memo(function GLTFModel({
   scale = 1,
   isNearPlayer,
   isDialogueActive,
+  shadowTier,
   fallback,
   npcAnimation,
   animations,
@@ -258,6 +285,7 @@ const GLTFModel = memo(function GLTFModel({
         scale={scale}
         isNearPlayer={isNearPlayer}
         isDialogueActive={isDialogueActive}
+        shadowTier={shadowTier}
         fallback={fallback}
         npcAnimation={npcAnimation}
         animations={animations}
@@ -601,6 +629,8 @@ export const NPC = memo(function NPC({
   const wasNearPlayer = useRef(false);
   const lodFullModelRef = useRef(true);
   const [useFullModel, setUseFullModel] = useState(true);
+  const npcShadowTierRef = useRef<'near' | 'mid'>('near');
+  const [npcShadowTier, setNpcShadowTier] = useState<'near' | 'mid'>('near');
   // Ref для текущей анимации - чтобы не вызывать setState каждый кадр
   const currentAnimationRef = useRef<'idle' | 'walk' | 'talk'>('idle');
   const navCornersRef = useRef<{ x: number; z: number }[]>([]);
@@ -646,6 +676,20 @@ export const NPC = memo(function NPC({
     if (nextLodFull !== lodFullModelRef.current) {
       lodFullModelRef.current = nextLodFull;
       setUseFullModel(nextLodFull);
+    }
+
+    let nextShadow: 'near' | 'mid' = npcShadowTierRef.current;
+    if (isDialogueActive) {
+      nextShadow = 'near';
+    } else if (definition.modelPath && lodFullModelRef.current) {
+      if (dLod < 4.5) nextShadow = 'near';
+      else if (dLod > 6.5) nextShadow = 'mid';
+    } else {
+      nextShadow = 'near';
+    }
+    if (nextShadow !== npcShadowTierRef.current) {
+      npcShadowTierRef.current = nextShadow;
+      setNpcShadowTier(nextShadow);
     }
 
     if (scheduleEntry) {
@@ -943,6 +987,7 @@ export const NPC = memo(function NPC({
                 scale={definition.scale || 1}
                 isNearPlayer={isNearPlayer}
                 isDialogueActive={isDialogueActive}
+                shadowTier={npcShadowTier}
                 fallback={fallbackModel}
                 npcAnimation={currentAnimation}
                 animations={definition.animations}

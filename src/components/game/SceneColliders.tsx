@@ -1,6 +1,6 @@
 "use client";
 
-import { memo, useMemo } from 'react';
+import { memo, useLayoutEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
 import type { SceneId } from '@/data/types';
 
@@ -91,7 +91,7 @@ const BoundaryWalls = memo(function BoundaryWalls({
 });
 
 /**
- * Инстансированные стены для производительности
+ * Один `InstancedMesh` на много невидимых AABB для raycast камеры (слой {@link CAMERA_COLLISION_LAYER}).
  */
 const InstancedWalls = memo(function InstancedWalls({
   positions,
@@ -100,12 +100,46 @@ const InstancedWalls = memo(function InstancedWalls({
   positions: [number, number, number][];
   size?: [number, number, number];
 }) {
+  const ref = useRef<THREE.InstancedMesh>(null);
+  const geo = useMemo(() => new THREE.BoxGeometry(1, 1, 1), []);
+  const mat = useMemo(
+    () =>
+      new THREE.MeshBasicMaterial({
+        transparent: true,
+        opacity: 0,
+        side: THREE.DoubleSide,
+        depthWrite: false,
+      }),
+    [],
+  );
+
+  useLayoutEffect(() => {
+    const mesh = ref.current;
+    if (!mesh) return;
+    mesh.layers.set(CAMERA_COLLISION_LAYER);
+    mesh.userData.isCollider = true;
+  }, []);
+
+  useLayoutEffect(() => {
+    const mesh = ref.current;
+    if (!mesh || positions.length === 0) return;
+    const m = new THREE.Matrix4();
+    const p = new THREE.Vector3();
+    const q = new THREE.Quaternion();
+    const s = new THREE.Vector3(size[0], size[1], size[2]);
+    positions.forEach((pos, i) => {
+      p.set(pos[0], pos[1], pos[2]);
+      q.identity();
+      m.compose(p, q, s);
+      mesh.setMatrixAt(i, m);
+    });
+    mesh.instanceMatrix.needsUpdate = true;
+  }, [positions, size]);
+
+  if (positions.length === 0) return null;
+
   return (
-    <>
-      {positions.map((pos, i) => (
-        <InvisibleWall key={`wall-${i}`} position={pos} size={size} />
-      ))}
-    </>
+    <instancedMesh ref={ref} args={[geo, mat, positions.length]} frustumCulled={false} userData={{ isCollider: true }} />
   );
 });
 
