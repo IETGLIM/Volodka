@@ -245,7 +245,7 @@ export default function GameOrchestrator() {
   );
 
   const handleEnterExplorationMode = useCallback(() => {
-    travelToScene(currentSceneId);
+    travelToScene(currentSceneId, { narrativeDriven: true });
     setCurrentNode('explore_mode');
     setGameMode('exploration');
   }, [travelToScene, currentSceneId, setCurrentNode, setGameMode]);
@@ -253,6 +253,14 @@ export default function GameOrchestrator() {
   const handleEnterVisualNovelMode = useCallback(() => {
     setGameMode('visual-novel');
   }, [setGameMode]);
+
+  /** Сцена 3D-обхода совпадает с локацией сюжетного узла в VN (без траты энергии и проверки «замка»). */
+  useEffect(() => {
+    if (phase !== 'game') return;
+    if (gameMode !== 'visual-novel') return;
+    if (currentNodeId === 'explore_mode') return;
+    travelToScene(currentSceneId, { narrativeDriven: true });
+  }, [phase, gameMode, currentNodeId, currentSceneId, travelToScene]);
 
   const actionsBundle = useActionHandler({
     playerSkills: playerState.skills,

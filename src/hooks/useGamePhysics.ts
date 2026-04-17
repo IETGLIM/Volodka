@@ -1,5 +1,6 @@
 "use client";
 
+import type { MutableRefObject } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 // ============================================
@@ -82,6 +83,8 @@ export interface UsePlayerControlsOptions {
    * После вызова флаг `interact` сбрасывается внутри хука — опрос через `setInterval` не нужен.
    */
   onInteractPress?: () => void;
+  /** Тач / виртуальные кнопки: объединяются с клавиатурой по OR на каждый флаг. */
+  virtualControlsRef?: MutableRefObject<Partial<PlayerControls>>;
 }
 
 export function usePlayerControls(options?: UsePlayerControlsOptions) {
@@ -89,12 +92,26 @@ export function usePlayerControls(options?: UsePlayerControlsOptions) {
   const interactPressedRef = useRef(false);
   const onInteractPressRef = useRef(options?.onInteractPress);
   onInteractPressRef.current = options?.onInteractPress;
+  const virtualControlsRef = options?.virtualControlsRef;
   const [, forceUpdate] = useState({});
 
   // Получение текущего состояния контроллов
   const getControls = useCallback(() => {
-    return { ...controlsRef.current };
-  }, []);
+    const k = { ...controlsRef.current };
+    const v = virtualControlsRef?.current;
+    if (!v) return k;
+    const hasVirt = Object.keys(v).some((key) => v[key as keyof PlayerControls] === true);
+    if (!hasVirt) return k;
+    return {
+      forward: k.forward || !!v.forward,
+      backward: k.backward || !!v.backward,
+      left: k.left || !!v.left,
+      right: k.right || !!v.right,
+      run: k.run || !!v.run,
+      jump: k.jump || !!v.jump,
+      interact: k.interact || !!v.interact,
+    };
+  }, [virtualControlsRef]);
 
   // Сброс флага взаимодействия
   const resetInteract = useCallback(() => {

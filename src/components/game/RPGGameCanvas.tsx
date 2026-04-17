@@ -6,7 +6,7 @@
  * Ввод: клавиатура (WASD, E); для тач-устройств позже — виртуальный джойстик / кнопка действия.
  */
 
-import { memo, useRef, useEffect, useMemo, useCallback, useState } from 'react';
+import { memo, useRef, useEffect, useMemo, useCallback, useState, Fragment } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { Physics, RigidBody } from '@react-three/rapier';
 import * as THREE from 'three';
@@ -37,6 +37,9 @@ import CameraEffects from '../CameraEffects';
 
 // Store
 import { useGameStore } from '../../store/gameStore';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { ExplorationMobileHud } from './ExplorationMobileHud';
+import type { PlayerControls } from '@/hooks/useGamePhysics';
 
 // ============================================
 // TYPES
@@ -73,6 +76,8 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
   children,
   groundGeometryArgs: groundGeometryArgsProp,
 }: RPGGameCanvasProps) {
+  const narrow = useIsMobile();
+  const virtualControlsRef = useRef<Partial<PlayerControls>>({});
   const [npcStates, setNPCStates] = useState<Record<string, NPCState>>({});
   const [triggerStates, setTriggerStates] = useState<Record<string, TriggerState>>({});
   
@@ -197,6 +202,7 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
   ]);
 
   return (
+    <Fragment>
     <Canvas
       shadows={{ type: THREE.PCFShadowMap }}
       camera={{ fov: 60, near: 0.1, far: 1000, position: [0, 5, 8] }}
@@ -254,6 +260,7 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
           onPositionChange={handlePositionChange}
           onInteraction={handlePlayerInteraction}
           isLocked={isDialogueActive}
+          virtualControlsRef={narrow ? virtualControlsRef : undefined}
         />
 
         {/* NPCs */}
@@ -295,6 +302,14 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
         />
       </Physics>
     </Canvas>
+    {narrow && (
+      <ExplorationMobileHud
+        active={!isDialogueActive}
+        virtualControlsRef={virtualControlsRef}
+        onInteract={handlePlayerInteraction}
+      />
+    )}
+    </Fragment>
   );
 });
 

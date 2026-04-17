@@ -12,6 +12,22 @@
 
 ---
 
+## [0.2.2] - 2026-04-16
+
+### Added
+
+- **`ExplorationMobileHud.tsx`** — тач-оверлей для режима 3D-обхода на узких экранах: направления, прыжок, кнопка действия (аналог E); подсказка по орбите камеры.
+- **`usePlayerControls`** (`useGamePhysics.ts`): опция **`virtualControlsRef`** — виртуальный ввод объединяется с клавиатурой по OR.
+- **`PhysicsPlayer`**: проп **`virtualControlsRef`** для связи с тач-панелью.
+
+### Changed
+
+- **`GameOrchestrator`**: при фазе `game` и режиме **`visual-novel`**, если текущий узел не **`explore_mode`**, вызывается **`travelToScene(currentSceneId, { narrativeDriven: true })`** — локация **`exploration.currentSceneId`** синхронизируется со сценой сюжета без траты энергии и без проверки «локация закрыта».
+- Кнопка HUD **«3D»**: переход в обход через **`travelToScene(..., { narrativeDriven: true })`**, затем **`explore_mode`** и **`exploration`**.
+- **`RPGGameCanvas`**: оборачивает Canvas и мобильный HUD; на мобиле передаёт **`virtualControlsRef`** в **`PhysicsPlayer`**.
+
+---
+
 ## [0.2.1] - 2026-04-16
 
 Сводный релиз для деплоя на Vercel: накопленные правки UI/данных/физики и рефакторинг сцены, плюс выравнивание сюжетного оверлея с диалогами.

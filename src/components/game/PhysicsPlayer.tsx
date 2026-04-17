@@ -5,7 +5,7 @@ import { useFrame } from '@react-three/fiber';
 import { useGLTF, useAnimations } from '@react-three/drei';
 import { RigidBody, RapierRigidBody, CapsuleCollider } from '@react-three/rapier';
 import * as THREE from 'three';
-import { usePlayerControls, PHYSICS_CONSTANTS } from '@/hooks/useGamePhysics';
+import { usePlayerControls, PHYSICS_CONSTANTS, type PlayerControls } from '@/hooks/useGamePhysics';
 import { getDefaultPlayerModelPath, isValidPlayerGlbPath, rewriteLegacyModelPath } from '@/config/modelUrls';
 
 // ============================================
@@ -19,6 +19,8 @@ export interface PhysicsPlayerProps {
   onInteraction?: () => void;
   isLocked?: boolean;
   initialRotation?: number;
+  /** Тач-панель (см. `ExplorationMobileHud`): движение объединяется с клавиатурой. */
+  virtualControlsRef?: React.MutableRefObject<Partial<PlayerControls>>;
 }
 
 export interface PhysicsPlayerRef {
@@ -257,6 +259,7 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
     onInteraction,
     isLocked = false,
     initialRotation = 0,
+    virtualControlsRef,
   },
   ref
 ) {
@@ -279,6 +282,7 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
 
   const { getControls } = usePlayerControls({
     onInteractPress: handleInteractPress,
+    virtualControlsRef,
   });
 
   // Экспозиция методов через ref
