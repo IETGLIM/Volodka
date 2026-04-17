@@ -117,7 +117,7 @@ export function useActionHandler(params: UseActionHandlerParams) {
     openDialogueFromStory,
   });
 
-  const { showStoryPanel, handleTogglePanel } = useGameUiLayout({
+  const { showStoryOverlay, handleTogglePanel } = useGameUiLayout({
     phase,
     gameMode,
     currentNodeId,
@@ -143,7 +143,7 @@ export function useActionHandler(params: UseActionHandlerParams) {
 
   return {
     handleChoice,
-    showStoryPanel,
+    showStoryOverlay,
     handleTogglePanel,
     ...session,
     handleCalmDown,

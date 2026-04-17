@@ -1,5 +1,16 @@
 'use client';
 
+/**
+ * Лёгкий canvas-дождь для **SceneRenderer** (ночная улица, дождливые атмосферы поверх 3D).
+ *
+ * Это **не** замена `CanvasMatrixRain` из IntroScreen, MenuScreen, LoadingScreen и CyberGameShell —
+ * там отдельный канвасный «matrix rain» под полноэкранный UI.
+ *
+ * Намеренно простая модель: капли идут по **фиксированной диагонали** (постоянный сдвиг по X/Y,
+ * без гравитации), размер буфера = CSS-пиксели окна (**без devicePixelRatio**) — для полупрозрачного
+ * фона этого достаточно и дешевле на слабых устройствах. Снаружи отключайте при `lite`-режиме.
+ */
+
 import { memo, useEffect, useRef } from 'react';
 
 export interface RainCanvasLayerProps {
@@ -8,7 +19,6 @@ export interface RainCanvasLayerProps {
   className?: string;
 }
 
-/** Canvas-дождь — общий слой для сцен; отключать на lite-режиме снаружи */
 export const RainCanvasLayer = memo(function RainCanvasLayer({
   intensity = 0.5,
   color = 'rgba(150,170,200,0.25)',

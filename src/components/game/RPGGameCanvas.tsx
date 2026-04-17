@@ -1,5 +1,11 @@
 "use client";
 
+/**
+ * Связывает Rapier, игрока, NPC, триггеры и камеру для свободного 3D-обхода.
+ * Ошибки загрузки GLB обрабатываются в `PhysicsPlayer` / `NPCSystem` — здесь дубли не нужны.
+ * Ввод: клавиатура (WASD, E); для тач-устройств позже — виртуальный джойстик / кнопка действия.
+ */
+
 import { memo, useRef, useEffect, useMemo, useCallback, useState } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { Physics, RigidBody } from '@react-three/rapier';
@@ -17,7 +23,7 @@ import type {
 } from '../../data/rpgTypes';
 
 // Data
-import { NPC_DEFINITIONS, getNPCsForScene } from '../../data/npcDefinitions';
+import { getNPCsForScene } from '../../data/npcDefinitions';
 import { getTriggersForScene } from '../../data/triggerZones';
 
 // Components
@@ -36,6 +42,9 @@ import { useGameStore } from '../../store/gameStore';
 // TYPES
 // ============================================
 
+/** Пол: полные размеры `boxGeometry` [ширина X, толщина Y, глубина Z], центр сцены в начале координат. */
+export type RpgGroundGeometryArgs = [number, number, number];
+
 interface RPGGameCanvasProps {
   sceneId: SceneId;
   visualState: VisualState;
@@ -43,7 +52,13 @@ interface RPGGameCanvasProps {
   onTriggerEnter: (triggerId: string, storyNodeId: string) => void;
   onNPCInteraction: (npcId: string) => void;
   children?: React.ReactNode;
+  /** Переопределить размер пола; иначе берётся из конфигурации по `sceneId`. */
+  groundGeometryArgs?: RpgGroundGeometryArgs;
 }
+
+const GROUND_INDOOR: RpgGroundGeometryArgs = [20, 0.1, 20];
+const GROUND_PLAZA: RpgGroundGeometryArgs = [48, 0.1, 48];
+const GROUND_OPEN: RpgGroundGeometryArgs = [40, 0.1, 40];
 
 // ============================================
 // COMPONENT
@@ -56,6 +71,7 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
   onTriggerEnter,
   onNPCInteraction,
   children,
+  groundGeometryArgs: groundGeometryArgsProp,
 }: RPGGameCanvasProps) {
   const [npcStates, setNPCStates] = useState<Record<string, NPCState>>({});
   const [triggerStates, setTriggerStates] = useState<Record<string, TriggerState>>({});
@@ -72,33 +88,35 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
     playerPositionRef.current = playerPosition; 
   }, [playerPosition]);
 
-  // Scene config
+  // Scene config (свет / туман + размер поля под тип локации; при необходимости — проп `groundGeometryArgs`)
   const sceneConfig = useMemo(() => {
     switch (sceneId) {
       case 'kitchen_night':
       case 'kitchen_dawn':
       case 'home_morning':
       case 'home_evening':
-        return { ambient: 0.4, light: '#ffcc00', fogColor: '#1a1a2e' };
+        return { ambient: 0.4, light: '#ffcc00', fogColor: '#1a1a2e', groundGeometryArgs: GROUND_INDOOR };
       case 'office_morning':
-        return { ambient: 0.5, light: '#ffffff', fogColor: '#2a2a3a' };
+        return { ambient: 0.5, light: '#ffffff', fogColor: '#2a2a3a', groundGeometryArgs: GROUND_INDOOR };
       case 'cafe_evening':
-        return { ambient: 0.35, light: '#ffa500', fogColor: '#1a1510' };
+        return { ambient: 0.35, light: '#ffa500', fogColor: '#1a1510', groundGeometryArgs: GROUND_INDOOR };
       case 'rooftop_night':
-        return { ambient: 0.15, light: '#4a5568', fogColor: '#0a0a15' };
+        return { ambient: 0.15, light: '#4a5568', fogColor: '#0a0a15', groundGeometryArgs: GROUND_OPEN };
       case 'dream':
-        return { ambient: 0.3, light: '#a855f7', fogColor: '#1a0a2e' };
+        return { ambient: 0.3, light: '#a855f7', fogColor: '#1a0a2e', groundGeometryArgs: GROUND_OPEN };
       case 'battle':
-        return { ambient: 0.25, light: '#ef4444', fogColor: '#1a0505' };
+        return { ambient: 0.25, light: '#ef4444', fogColor: '#1a0505', groundGeometryArgs: GROUND_OPEN };
       case 'street_winter':
       case 'street_night':
-        return { ambient: 0.25, light: '#87ceeb', fogColor: '#0a1020' };
+        return { ambient: 0.25, light: '#87ceeb', fogColor: '#0a1020', groundGeometryArgs: GROUND_PLAZA };
       case 'memorial_park':
-        return { ambient: 0.35, light: '#ffd9a0', fogColor: '#0a1510' };
+        return { ambient: 0.35, light: '#ffd9a0', fogColor: '#0a1510', groundGeometryArgs: GROUND_PLAZA };
       default:
-        return { ambient: 0.35, light: '#b2bec3', fogColor: '#1a1a2e' };
+        return { ambient: 0.35, light: '#b2bec3', fogColor: '#1a1a2e', groundGeometryArgs: GROUND_INDOOR };
     }
   }, [sceneId]);
+
+  const groundGeometryArgs = groundGeometryArgsProp ?? sceneConfig.groundGeometryArgs;
 
   // Get NPCs and triggers for current scene
   const sceneNPCs = useMemo(() => getNPCsForScene(sceneId), [sceneId]);
@@ -192,10 +210,10 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
     >
       {/* Physics World */}
       <Physics gravity={[0, -9.81, 0]} debug={false}>
-        {/* Floor - используем boxGeometry с cuboid collider для корректной физики */}
+        {/* Пол: размер из sceneConfig или проп `groundGeometryArgs` */}
         <RigidBody type="fixed" colliders="cuboid" position={[0, -0.05, 0]}>
           <mesh rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
-            <boxGeometry args={[20, 0.1, 20]} />
+            <boxGeometry args={groundGeometryArgs} />
             <meshStandardMaterial color="#3d3436" roughness={0.9} />
           </mesh>
         </RigidBody>

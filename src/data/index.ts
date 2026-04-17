@@ -102,11 +102,13 @@ export type { Poem } from './poems';
 export {
   POEMS,
   GAME_INTRO,
+  MAIN_ARCHIVE_POEM_COUNT,
   getPoemById,
   getPoemsByTheme,
   getOrderedPoems,
   getMainPoems,
   getHiddenPoems,
+  isBonusPoem,
 } from './poems';
 
 // Квесты

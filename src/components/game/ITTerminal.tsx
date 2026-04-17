@@ -1,5 +1,10 @@
 'use client';
 
+/**
+ * Единственный игровой IT-терминал: команды, подсказки, частичное совпадение, обновление `questProgress` и флагов.
+ * Ранее существовал отдельный `SSHTerminal` без связи с квестами — удалён как дубликат; сценарии покрываются здесь и в 💻 панели.
+ */
+
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGameStore } from '@/store/gameStore';

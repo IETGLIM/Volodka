@@ -38,13 +38,14 @@ function createObjective(
 
 function createReward(options: QuestReward): QuestReward {
   return {
+    ...options,
     creativity: options.creativity || 0,
     mood: options.mood || 0,
     stability: options.stability || 0,
     karma: options.karma || 0,
     skillPoints: options.skillPoints || 0,
-    itemRewards: options.itemRewards || [],
-    unlockFlags: options.unlockFlags || [],
+    itemRewards: options.itemRewards ?? [],
+    unlockFlags: options.unlockFlags ?? [],
   };
 }
 
@@ -98,6 +99,7 @@ export const QUEST_DEFINITIONS: Record<string, ExtendedQuest> = {
     title: '🖥️ OpenStack: Поиск сервера',
     description: 'Найти сервер по IP-адресу через CLI. Получить имя сервера и ссылку на консоль.',
     type: 'main',
+    faction: 'Работа · IT',
     status: 'active',
     objectives: [
       createObjective('get_ip', 'Получить IP-адрес от начальника', {
@@ -129,6 +131,7 @@ export const QUEST_DEFINITIONS: Record<string, ExtendedQuest> = {
     title: '🐰 RabbitMQ: Накопление сообщений',
     description: 'Очередь переполнена — более 100000 сообщений. Принять решение: собирать ACK? Спросить админов? Написать владельцам?',
     type: 'main',
+    faction: 'Работа · IT',
     status: 'active',
     objectives: [
       createObjective('detect_overflow', 'Обнаружить накопление >100000', {
@@ -158,6 +161,7 @@ export const QUEST_DEFINITIONS: Record<string, ExtendedQuest> = {
     title: '☸️ Kubernetes: Перезапуск оркестратора',
     description: 'Внутреннее облако. Оркестратор упал. Проверить причину и перезапустить.',
     type: 'main',
+    faction: 'Работа · IT',
     status: 'active',
     objectives: [
       createObjective('check_status', 'Проверить статус кластера', {
@@ -189,6 +193,7 @@ export const QUEST_DEFINITIONS: Record<string, ExtendedQuest> = {
     title: '🔥 Кризис авторизации',
     description: 'Банк "Северный Капитал" — 5000+ пользователей не могут войти. 15 минут до эскалации. Найти и исправить проблему.',
     type: 'main',
+    faction: 'Работа · IT',
     status: 'active',
     objectives: [
       createObjective('check_logs', 'Проверить логи Kibana', {
@@ -221,6 +226,7 @@ export const QUEST_DEFINITIONS: Record<string, ExtendedQuest> = {
     title: '🗄️ Исчерпание пула соединений',
     description: 'База данных перегружена. 847 соединений при лимите 800. Новый микросервис не возвращает соединения.',
     type: 'side',
+    faction: 'Работа · IT',
     status: 'locked',
     objectives: [
       createObjective('check_processlist', 'Проверить SHOW PROCESSLIST', {
@@ -251,6 +257,7 @@ export const QUEST_DEFINITIONS: Record<string, ExtendedQuest> = {
     title: '🔐 SSL-сертификат истекает',
     description: 'Сертификат для banking.example.com истекает через 48 часов. Обновить без простоя.',
     type: 'side',
+    faction: 'Работа · IT',
     status: 'locked',
     objectives: [
       createObjective('check_expiry', 'Проверить срок действия', {
@@ -281,6 +288,7 @@ export const QUEST_DEFINITIONS: Record<string, ExtendedQuest> = {
     title: '🧠 Утечка памяти в микросервисе',
     description: 'loyalty-points потребляет 8GB RAM и растёт. Профилирование показало утечку.',
     type: 'side',
+    faction: 'Работа · IT',
     status: 'locked',
     objectives: [
       createObjective('check_memory', 'Проверить потребление памяти', {

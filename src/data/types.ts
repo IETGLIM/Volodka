@@ -429,6 +429,8 @@ export interface Quest {
   title: string;
   description: string;
   type: 'main' | 'side' | 'hidden' | 'personal';
+  /** Подгруппа в журнале квестов (например «Работа · IT»); без поля — общий список */
+  faction?: string;
   status: 'locked' | 'available' | 'active' | 'completed' | 'failed';
   objectives: QuestObjective[];
   reward: QuestReward;

@@ -13,6 +13,8 @@ export interface Poem {
   themes: string[];
   unlocksAt: string; // Node ID where this poem is revealed
   order: number;
+  /** Короткий/скрытый фрагмент: не входит в прогресс основной коллекции в книге стихов */
+  bonus?: boolean;
   intro?: string; // Проза-интро перед стихом
   subtitle?: string; // Подзаголовок стиха
 }
@@ -619,6 +621,7 @@ export const POEMS: Poem[] = [
     title: 'Обязательно подумаю',
     author: 'Владимир Лебедев',
     order: 14,
+    bonus: true,
     unlocksAt: 'hidden_poem_discovery',
     themes: ['ирония', 'творчество', 'разочарование'],
     intro: 'Скрытый стих, который можно найти только исследуя мир...',
@@ -634,6 +637,7 @@ export const POEMS: Poem[] = [
     title: 'Я отпуск - не советую вам господа',
     author: 'Владимир Лебедев',
     order: 15,
+    bonus: true,
     unlocksAt: 'hidden_poem_discovery',
     themes: ['отпуск', 'ирония', 'литература'],
     intro: 'Ещё один скрытый стих...',
@@ -649,6 +653,7 @@ export const POEMS: Poem[] = [
     title: 'Папе — вычислительный ларь-чемодан!',
     author: 'Владимир Лебедев',
     order: 16,
+    bonus: true,
     unlocksAt: 'hidden_poem_discovery',
     themes: ['семья', 'детство', 'одиночество', 'ирония'],
     intro: 'О детстве и семейных ожиданиях...',
@@ -682,6 +687,7 @@ export const POEMS: Poem[] = [
     title: 'Мы стремимся ради других',
     author: 'Владимир Лебедев',
     order: 17,
+    bonus: true,
     unlocksAt: 'hidden_poem_discovery',
     themes: ['альтруизм', 'самопожертвование', 'одиночество'],
     intro: 'О природе человеческой доброты...',
@@ -710,6 +716,7 @@ export const POEMS: Poem[] = [
     title: 'Вся клевета - вернется в сто крат',
     author: 'Владимир Лебедев',
     order: 18,
+    bonus: true,
     unlocksAt: 'ending_reconciliation',
     themes: ['клевета', 'прощение', 'покой'],
     intro: 'Финальные размышления о правде и лжи...',
@@ -748,10 +755,17 @@ export function getOrderedPoems(): Poem[] {
   return [...POEMS].sort((a, b) => a.order - b.order);
 }
 
+export function isBonusPoem(p: Poem): boolean {
+  return p.bonus === true;
+}
+
 export function getMainPoems(): Poem[] {
-  return POEMS.filter(p => p.order <= 13).sort((a, b) => a.order - b.order);
+  return POEMS.filter((p) => !isBonusPoem(p)).sort((a, b) => a.order - b.order);
 }
 
 export function getHiddenPoems(): Poem[] {
-  return POEMS.filter(p => p.order > 13);
+  return POEMS.filter(isBonusPoem).sort((a, b) => a.order - b.order);
 }
+
+/** Число стихов основной коллекции (для прогресса в UI); новые основные стихи — без `bonus: true` */
+export const MAIN_ARCHIVE_POEM_COUNT = getMainPoems().length;

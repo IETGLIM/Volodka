@@ -4,6 +4,20 @@
 
 ### Added
 
+### Changed
+
+### Removed
+
+### Fixed
+
+---
+
+## [0.2.1] - 2026-04-16
+
+Сводный релиз для деплоя на Vercel: накопленные правки UI/данных/физики и рефакторинг сцены, плюс выравнивание сюжетного оверлея с диалогами.
+
+### Added
+
 - `PanelErrorBoundary` в `GameOrchestratorSubcomponents.tsx`: изоляция ошибок lazy-панелей (`next/dynamic`) и экрана наследия; обёртки в `GameOrchestrator.tsx`.
 - Вертикальный слайс главы 1: узлы сюжета в `src/data/verticalSliceStoryNodes.ts`, слияние в общий граф через `VERTICAL_SLICE_STORY_NODES` в `src/data/storyNodes.ts`, экспорт `VERTICAL_SLICE_ENTRY_NODE_ID` из `src/data/index.ts`.
 - NPC слайса (Альберт, Александр) в `src/data/npcDefinitions.ts`; стартовые отношения в `INITIAL_NPC_RELATIONS` (`src/data/constants.ts`).
@@ -12,12 +26,20 @@
 - `MiniMap` в `GameOrchestrator.tsx` для `gameMode === 'exploration'`: позиция из стора, размер сцены, подпись из `SCENE_VISUALS`, NPC через `getNPCsForScene` и позиции из `exploration.npcStates`.
 - `src/config/modelUrls.ts`: `isValidPlayerGlbPath`, `getDefaultPlayerModelPath()` (fallback игрока, переопределение через `NEXT_PUBLIC_DEFAULT_PLAYER_MODEL`); тест `src/config/modelUrls.test.ts`.
 - `PhysicsExplorationRoomVisual` в `RoomEnvironment.tsx` — визуал комнаты для Rapier-канваса по `sceneId` (пока `zarema_albert_room`); сцена `zarema_albert_room` добавлена в `SceneId` (`src/data/types.ts`, `src/shared/types/game.ts`).
+- **`src/components/game/scene-atmospheres/`** — вынесенные атмосферные слои и пресеты сцен (`SceneAtmosphere`, `GlobalNeoNoirLayer`, улица/зима/кафе/кухня/офис/клуб/парк/крыша/серверная/дом/сон/бой и др.), `hashSceneId`, реэкспорт из `index.ts`.
+- **`CyberSkillCheckResult.tsx`** — общий баннер результата проверки навыка (клип-путь, неон); используется в `DialogueRenderer` и `StoryRenderer`.
+- **`usePoemLineTypewriter.ts`** — хук посимвольной печати массива строк для стихов/прозы (паузы между строками, `onFinished`).
+- Поле **`faction?: string`** у квестов (`Quest` / `ExtendedQuest` в `types.ts`) — группировка в журнале; для IT-цепочек в `quests.ts` заданы подписи вида «Работа · IT».
+- У стихов **`bonus?: boolean`**, хелперы **`isBonusPoem`**, константа **`MAIN_ARCHIVE_POEM_COUNT`**, экспорт из `data/index.ts`; основная коллекция в книге — без бонусных, скрытые — по `isBonusPoem`.
 
 ### Removed
 
 - `Player.tsx`: дублировал `PhysicsPlayer` (своя клавиатура, кламп позиции, без GLB); основной 3D-режим — `PhysicsPlayer` + `FollowCamera`.
 - Устаревший альтернативный интерфейс `GameUI.tsx`: не использовался в коде; актуальная композиция — `HUD` и `EnergyBar` из `GameOrchestratorSubcomponents` в `GameOrchestrator`.
 - Устаревшее диалоговое окно `DialogueWindow.tsx` (включая неиспользуемый `DialogueManager`): в проекте нигде не импортировалось; единый UI — `DialogueRenderer.tsx` + `DialogueEngine`.
+- **`SSHTerminal.tsx`** — дубликат IT-терминала без связи с квестами; каноничный терминал — **`ITTerminal.tsx`** (комментарий в шапке модуля).
+- **`StoryPanel.tsx`** — не использовался; сюжет рендерится **`StoryRenderer`**.
+- **`PoemReveal.tsx`** — логика объединена с потоком в **`PoemComponents.tsx`** / общий хук печати.
 
 ### Changed
 
@@ -31,6 +53,18 @@
 - `useGamePhysics.ts` (`usePlayerControls`): опциональный `onInteractPress` при первом нажатии взаимодействия вместо опроса `setInterval` в `PhysicsPlayer`.
 - `PhysicsRPGCanvas.tsx` (`PhysicsGameModeSwitcher`): гравитация от стресса и `panicMode` через проп `gravity` у `<Physics>`; постобработка учитывает `panicMode`; отладочные `gridHelper`/`axesHelper` только при `NEXT_PUBLIC_PHYSICS_DEBUG_HELPERS=1`; вместо постоянного `ZaremaAlbertRoom` — `PhysicsExplorationRoomVisual` по сцене; заглушка `EmotionalGravityController` удалена.
 - `docs/MODEL_INTEGRATION.md`: пример игрока переведён на `PhysicsPlayer`.
+- **`SceneRenderer.tsx`**: компактный корень, докблок про разделение слоёв (`AsciiCyberBackdrop` vs дождь в 3D-атмосферах), подключение **`scene-atmospheres`**.
+- **`QuestsPanel.tsx`**: группировка квестов по **`faction`**, бейджи наград (статы, навыки, предметы, флаги), доработки кибер-UI.
+- **`createReward`** в `quests.ts`: spread исходных полей награды, `??` для массивов — не затираются кастомные поля награды.
+- **`RPGGameCanvas.tsx`**: пресеты размера пола по типу локации, опциональный проп **`groundGeometryArgs`**, тип **`RpgGroundGeometryArgs`**; модульный комментарий; убран неиспользуемый импорт `NPC_DEFINITIONS`.
+- **`RoomEnvironment.tsx`**: процедурные **`CanvasTexture`** для пола/обоев (без HTTP к отсутствующим `/textures/*`), комментарии про переход на файлы из `public/`; доработки жизненного цикла текстур.
+- **`RainCanvasLayer.tsx`**, **`SceneComponents.tsx`**: согласованность с новой структурой сцен / комментарии.
+- **`PoetryBook.tsx`**: учёт **`MAIN_ARCHIVE_POEM_COUNT`** / разделения основной коллекции и бонусных стихов.
+- **`PoemComponents.tsx`**: рефакторинг потока мини-игр/интро стихов с **`usePoemLineTypewriter`**.
+- **`StoryRenderer.tsx`**: баннер skill check по событию **`eventBus` `skill:check`** (согласовано с `useStoryChoiceHandler`); **`SpeakerTag`** для обычных спикеров — циан/slate вместо фиолета.
+- **`DialogueRenderer.tsx`**: импорт **`CyberSkillCheckResult`** из общего модуля.
+- **`GameOrchestrator.tsx`**: флаг видимости сюжета переименован в **`showStoryOverlay`** (не путать с удалённым `StoryPanel`).
+- **`useGameUiLayout.ts`** / **`useActionHandler.ts`**: возврат и прокид **`showStoryOverlay`**.
 
 ### Fixed
 

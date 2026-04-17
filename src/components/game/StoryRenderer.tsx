@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { eventBus } from '@/engine/EventBus';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { StoryNode, StoryChoice, ChoiceCondition, PoemLine, StoryEffect } from '@/data/types';
 import { statsEngine } from '@/engine/StatsEngine';
@@ -10,6 +11,7 @@ import { useMobileVisualPerf } from '@/hooks/useMobileVisualPerf';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { formatSkillCheckHint } from '@/lib/skillCheckHint';
 import { PoemGameComponent, InterpretationComponent } from './PoemComponents';
+import { CyberSkillCheckResult, type SkillCheckBannerPayload } from './CyberSkillCheckResult';
 
 interface StoryRendererProps {
   node: StoryNode;
@@ -203,7 +205,7 @@ function SpeakerTag({ speaker }: { speaker: string }) {
     ? { bg: 'bg-slate-800/80', text: 'text-slate-300', border: 'border-slate-600/40', prefix: '[', suffix: ']' }
     : isVika
     ? { bg: 'bg-rose-900/60', text: 'text-rose-200', border: 'border-rose-500/40', prefix: '<', suffix: '>' }
-    : { bg: 'bg-purple-900/60', text: 'text-purple-200', border: 'border-purple-500/40', prefix: '<', suffix: '>' };
+    : { bg: 'bg-slate-900/75', text: 'text-cyan-100', border: 'border-cyan-500/35', prefix: '<', suffix: '>' };
 
   return (
     <motion.div
@@ -232,6 +234,8 @@ export default function StoryRenderer({ node, onChoice, onPoemGameComplete }: St
   const [isTyping, setIsTyping] = useState(false);
   const [displayedText, setDisplayedText] = useState('');
   const typingRef = useRef<NodeJS.Timeout | null>(null);
+  const skillBannerTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [lastSkillCheck, setLastSkillCheck] = useState<SkillCheckBannerPayload | null>(null);
   const conditionSlice = useStoryConditionSlice();
   const inventoryIds = useGameStore((s) => s.inventory.map((i) => i.item.id).join(','));
   const npcRelationSig = useGameStore((s) => s.npcRelations.map((r) => `${r.id}:${r.value}`).join('|'));
@@ -269,6 +273,40 @@ export default function StoryRenderer({ node, onChoice, onPoemGameComplete }: St
       }
     };
   }, [node.id, node.text]);
+
+  useEffect(() => {
+    setLastSkillCheck(null);
+    if (skillBannerTimeoutRef.current) {
+      clearTimeout(skillBannerTimeoutRef.current);
+      skillBannerTimeoutRef.current = null;
+    }
+  }, [node.id]);
+
+  useEffect(() => {
+    const unsub = eventBus.on('skill:check', (payload) => {
+      if (skillBannerTimeoutRef.current) {
+        clearTimeout(skillBannerTimeoutRef.current);
+        skillBannerTimeoutRef.current = null;
+      }
+      setLastSkillCheck({
+        success: payload.success,
+        skill: payload.skill,
+        roll: payload.roll,
+        difficulty: payload.difficulty,
+      });
+      skillBannerTimeoutRef.current = setTimeout(() => {
+        setLastSkillCheck(null);
+        skillBannerTimeoutRef.current = null;
+      }, 3000);
+    });
+    return () => {
+      unsub();
+      if (skillBannerTimeoutRef.current) {
+        clearTimeout(skillBannerTimeoutRef.current);
+        skillBannerTimeoutRef.current = null;
+      }
+    };
+  }, []);
 
   const skipTyping = useCallback(() => {
     if (typingRef.current) {
@@ -405,6 +443,14 @@ export default function StoryRenderer({ node, onChoice, onPoemGameComplete }: St
               }}
             />
           )}
+
+          <AnimatePresence>
+            {lastSkillCheck && (
+              <div className="relative z-[25]">
+                <CyberSkillCheckResult result={lastSkillCheck} />
+              </div>
+            )}
+          </AnimatePresence>
 
           <div className="relative z-10 px-5 py-6 md:px-6 md:py-6">
           {/* Dream indicator */}

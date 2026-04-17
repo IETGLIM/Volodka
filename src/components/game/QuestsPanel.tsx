@@ -10,9 +10,113 @@ import {
   checkQuestAvailability,
   isObjectiveSatisfied,
 } from '@/data/quests';
-import type { ExtendedQuest, QuestObjective } from '@/data/types';
+import type { ExtendedQuest, QuestObjective, QuestReward } from '@/data/types';
 import { useGameStore } from '@/store/gameStore';
 import { eventBus } from '@/engine/EventBus';
+
+const FACTION_UNGROUPED = '__ungrouped';
+
+function groupQuestsByOptionalFaction(quests: ExtendedQuest[]): { label: string; quests: ExtendedQuest[] }[] {
+  const hasAnyFaction = quests.some((q) => Boolean(q.faction?.trim()));
+  if (!hasAnyFaction) return [{ label: '', quests }];
+
+  const map = new Map<string, ExtendedQuest[]>();
+  for (const q of quests) {
+    const key = q.faction?.trim() || FACTION_UNGROUPED;
+    const list = map.get(key) ?? [];
+    list.push(q);
+    map.set(key, list);
+  }
+  const keys = [...map.keys()].sort((a, b) => {
+    if (a === FACTION_UNGROUPED) return 1;
+    if (b === FACTION_UNGROUPED) return -1;
+    return a.localeCompare(b, 'ru');
+  });
+  return keys.map((key) => ({
+    label: key === FACTION_UNGROUPED ? 'Без категории' : key,
+    quests: map.get(key)!,
+  }));
+}
+
+function humanizeRewardToken(s: string): string {
+  return s.replace(/_/g, ' ').replace(/\./g, ' · ');
+}
+
+const CORE_REWARD_BADGES: { key: keyof QuestReward; label: string; icon: string; className: string }[] = [
+  { key: 'creativity', label: 'Креативность', icon: '🎨', className: 'bg-purple-500/20 text-purple-300' },
+  { key: 'stability', label: 'Стабильность', icon: '🧠', className: 'bg-green-500/20 text-green-300' },
+  { key: 'karma', label: 'Карма', icon: '✨', className: 'bg-amber-500/20 text-amber-300' },
+  { key: 'mood', label: 'Настроение', icon: '😊', className: 'bg-pink-500/20 text-pink-300' },
+  { key: 'skillPoints', label: 'Очки навыков', icon: '🎯', className: 'bg-cyan-500/20 text-cyan-300' },
+];
+
+const SKILL_REWARD_BADGES: { key: keyof QuestReward; label: string }[] = [
+  { key: 'perception', label: 'Восприятие' },
+  { key: 'introspection', label: 'Интроспекция' },
+  { key: 'writing', label: 'Письмо' },
+  { key: 'empathy', label: 'Эмпатия' },
+  { key: 'persuasion', label: 'Убеждение' },
+  { key: 'intuition', label: 'Интуиция' },
+  { key: 'resilience', label: 'Стойкость' },
+];
+
+function questRewardHasVisibleChips(reward: QuestReward): boolean {
+  for (const { key } of CORE_REWARD_BADGES) {
+    const v = reward[key];
+    if (typeof v === 'number' && v > 0) return true;
+  }
+  for (const { key } of SKILL_REWARD_BADGES) {
+    const v = reward[key];
+    if (typeof v === 'number' && v > 0) return true;
+  }
+  if ((reward.itemRewards?.length ?? 0) > 0) return true;
+  if ((reward.unlockFlags?.length ?? 0) > 0) return true;
+  return false;
+}
+
+const QuestRewardBadges = memo(function QuestRewardBadges({ reward }: { reward: QuestReward }) {
+  return (
+    <div className="flex flex-wrap gap-2">
+      {CORE_REWARD_BADGES.map(({ key, label, icon, className }) => {
+        const v = reward[key];
+        if (typeof v !== 'number' || v <= 0) return null;
+        return (
+          <span key={String(key)} className={`rounded px-2 py-0.5 text-xs ${className}`}>
+            {icon} +{v} {label}
+          </span>
+        );
+      })}
+      {SKILL_REWARD_BADGES.map(({ key, label }) => {
+        const v = reward[key];
+        if (typeof v !== 'number' || v <= 0) return null;
+        return (
+          <span
+            key={String(key)}
+            className="rounded border border-slate-500/30 bg-slate-600/35 px-2 py-0.5 text-xs text-slate-100"
+          >
+            🧩 +{v} {label}
+          </span>
+        );
+      })}
+      {(reward.itemRewards ?? []).map((itemId) => (
+        <span
+          key={itemId}
+          className="rounded border border-amber-500/30 bg-amber-500/15 px-2 py-0.5 text-xs text-amber-100"
+        >
+          📦 {humanizeRewardToken(itemId)}
+        </span>
+      ))}
+      {(reward.unlockFlags ?? []).map((flagId) => (
+        <span
+          key={flagId}
+          className="rounded border border-emerald-500/30 bg-emerald-500/15 px-2 py-0.5 text-xs text-emerald-100"
+        >
+          🔓 {humanizeRewardToken(flagId)}
+        </span>
+      ))}
+    </div>
+  );
+});
 
 // ============================================
 // OBJECTIVE ITEM
@@ -178,38 +282,10 @@ const QuestCard = memo(function QuestCard({ quest, questProgress, isExpanded, on
               </div>
 
               {/* Rewards */}
-              {quest.reward && (
-                <div className="mt-3 pt-3 border-t border-slate-700">
-                  <h4 className="text-xs uppercase tracking-wider text-slate-500 font-semibold mb-2">
-                    Награды
-                  </h4>
-                  <div className="flex flex-wrap gap-2">
-                    {(quest.reward.creativity ?? 0) > 0 && (
-                      <span className="px-2 py-0.5 bg-purple-500/20 text-purple-300 rounded text-xs">
-                        🎨 +{quest.reward.creativity} Креативность
-                      </span>
-                    )}
-                    {(quest.reward.stability ?? 0) > 0 && (
-                      <span className="px-2 py-0.5 bg-green-500/20 text-green-300 rounded text-xs">
-                        🧠 +{quest.reward.stability} Стабильность
-                      </span>
-                    )}
-                    {(quest.reward.karma ?? 0) > 0 && (
-                      <span className="px-2 py-0.5 bg-amber-500/20 text-amber-300 rounded text-xs">
-                        ✨ +{quest.reward.karma} Карма
-                      </span>
-                    )}
-                    {(quest.reward.mood ?? 0) > 0 && (
-                      <span className="px-2 py-0.5 bg-pink-500/20 text-pink-300 rounded text-xs">
-                        😊 +{quest.reward.mood} Настроение
-                      </span>
-                    )}
-                    {(quest.reward.skillPoints ?? 0) > 0 && (
-                      <span className="px-2 py-0.5 bg-cyan-500/20 text-cyan-300 rounded text-xs">
-                        🎯 +{quest.reward.skillPoints} Очки навыков
-                      </span>
-                    )}
-                  </div>
+              {quest.reward && questRewardHasVisibleChips(quest.reward) && (
+                <div className="mt-3 border-t border-slate-700 pt-3">
+                  <h4 className="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-500">Награды</h4>
+                  <QuestRewardBadges reward={quest.reward} />
                 </div>
               )}
             </div>
@@ -270,6 +346,16 @@ export const QuestsPanel = memo(function QuestsPanel({
       .filter(Boolean) as ExtendedQuest[];
   }, [completedQuestIds]);
 
+  const availableQuestGroups = useMemo(
+    () => groupQuestsByOptionalFaction(availableQuests),
+    [availableQuests],
+  );
+  const activeQuestGroups = useMemo(() => groupQuestsByOptionalFaction(activeQuests), [activeQuests]);
+  const completedQuestGroups = useMemo(
+    () => groupQuestsByOptionalFaction(completedQuests),
+    [completedQuests],
+  );
+
   return (
     <motion.div
       initial={{ opacity: 0, x: 300 }}
@@ -321,27 +407,43 @@ export const QuestsPanel = memo(function QuestsPanel({
             <h3 className="text-xs uppercase tracking-wider text-amber-500/80 font-semibold mb-2">
               Доступные ({availableQuests.length})
             </h3>
-            <div className="space-y-2">
-              {availableQuests.map((quest) => (
-                <div
-                  key={quest.id}
-                  className="rounded-lg border border-amber-500/40 bg-gradient-to-r from-amber-500/10 to-orange-500/10 p-3"
-                >
-                  <div className="flex items-start justify-between gap-2">
-                    <div>
-                      <h4 className="font-semibold text-white text-sm">{quest.title}</h4>
-                      <p className="text-xs text-slate-400 mt-1 line-clamp-3">{quest.description}</p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        activateQuest(quest.id);
-                        eventBus.emit('quest:activated', { questId: quest.id });
-                      }}
-                      className="shrink-0 rounded border border-amber-400/50 bg-amber-950/60 px-2 py-1.5 text-[11px] font-mono uppercase tracking-wide text-amber-200 hover:bg-amber-900/50 touch-manipulation min-h-11"
-                    >
-                      Принять
-                    </button>
+            <div className="space-y-3">
+              {availableQuestGroups.map(({ label, quests }) => (
+                <div key={label || 'available-all'}>
+                  {label ? (
+                    <h4 className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-amber-500/60">
+                      {label}
+                    </h4>
+                  ) : null}
+                  <div className="space-y-2">
+                    {quests.map((quest) => (
+                      <div
+                        key={quest.id}
+                        className="rounded-lg border border-amber-500/40 bg-gradient-to-r from-amber-500/10 to-orange-500/10 p-3"
+                      >
+                        <div className="flex items-start justify-between gap-2">
+                          <div>
+                            <h4 className="text-sm font-semibold text-white">{quest.title}</h4>
+                            <p className="mt-1 line-clamp-3 text-xs text-slate-400">{quest.description}</p>
+                            {quest.reward && questRewardHasVisibleChips(quest.reward) && (
+                              <div className="mt-2 border-t border-amber-500/15 pt-2">
+                                <QuestRewardBadges reward={quest.reward} />
+                              </div>
+                            )}
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              activateQuest(quest.id);
+                              eventBus.emit('quest:activated', { questId: quest.id });
+                            }}
+                            className="min-h-11 shrink-0 touch-manipulation rounded border border-amber-400/50 bg-amber-950/60 px-2 py-1.5 font-mono text-[11px] uppercase tracking-wide text-amber-200 hover:bg-amber-900/50"
+                          >
+                            Принять
+                          </button>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
               ))}
@@ -355,15 +457,26 @@ export const QuestsPanel = memo(function QuestsPanel({
             <h3 className="text-xs uppercase tracking-wider text-slate-500 font-semibold mb-2">
               Активные ({activeQuests.length})
             </h3>
-            <div className="space-y-2">
-              {activeQuests.map((quest) => (
-                <QuestCard
-                  key={quest.id}
-                  quest={quest}
-                  questProgress={questProgress[quest.id] || {}}
-                  isExpanded={expandedId === quest.id}
-                  onToggle={() => setExpandedId(expandedId === quest.id ? null : quest.id)}
-                />
+            <div className="space-y-3">
+              {activeQuestGroups.map(({ label, quests }) => (
+                <div key={label || 'active-all'}>
+                  {label ? (
+                    <h4 className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-slate-500/90">
+                      {label}
+                    </h4>
+                  ) : null}
+                  <div className="space-y-2">
+                    {quests.map((quest) => (
+                      <QuestCard
+                        key={quest.id}
+                        quest={quest}
+                        questProgress={questProgress[quest.id] || {}}
+                        isExpanded={expandedId === quest.id}
+                        onToggle={() => setExpandedId(expandedId === quest.id ? null : quest.id)}
+                      />
+                    ))}
+                  </div>
+                </div>
               ))}
             </div>
           </div>
@@ -375,15 +488,26 @@ export const QuestsPanel = memo(function QuestsPanel({
             <h3 className="text-xs uppercase tracking-wider text-slate-500 font-semibold mb-2">
               Завершённые ({completedQuests.length})
             </h3>
-            <div className="space-y-2 opacity-60">
-              {completedQuests.map((quest) => (
-                <QuestCard
-                  key={quest.id}
-                  quest={quest}
-                  questProgress={questProgress[quest.id] || {}}
-                  isExpanded={expandedId === quest.id}
-                  onToggle={() => setExpandedId(expandedId === quest.id ? null : quest.id)}
-                />
+            <div className="space-y-3 opacity-60">
+              {completedQuestGroups.map(({ label, quests }) => (
+                <div key={label || 'completed-all'}>
+                  {label ? (
+                    <h4 className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-slate-500/90">
+                      {label}
+                    </h4>
+                  ) : null}
+                  <div className="space-y-2">
+                    {quests.map((quest) => (
+                      <QuestCard
+                        key={quest.id}
+                        quest={quest}
+                        questProgress={questProgress[quest.id] || {}}
+                        isExpanded={expandedId === quest.id}
+                        onToggle={() => setExpandedId(expandedId === quest.id ? null : quest.id)}
+                      />
+                    ))}
+                  </div>
+                </div>
               ))}
             </div>
           </div>

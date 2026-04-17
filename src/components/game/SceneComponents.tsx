@@ -1,11 +1,22 @@
 "use client";
 
+/**
+ * Декоративные 3D-группы для слоя сцен (без Rapier): статичные примитивы под `SceneRenderer` / окружение.
+ *
+ * Столы, стулья и т.п. здесь **не** те же компоненты, что в `RoomEnvironment` (там RigidBody и коллайдеры).
+ * Унификация в один набор мешей возможна (общие «dumb» группы + обёртка с физикой там, где нужно),
+ * пока разделение намеренное: меньше связности между визуальным фоном и физкомнатой.
+ *
+ * Материалы — в основном сплошной цвет; файловые текстуры как в `RoomEnvironment` можно подключить позже
+ * (CanvasTexture / ассеты в `public/`), не меняя контракт именованных экспортов.
+ */
+
 import { memo, useMemo } from 'react';
 import { Float, Stars, Box, Sphere, Cone, Cylinder, Torus } from '@react-three/drei';
 import * as THREE from 'three';
 
 // ============================================
-// ПОЛ С ТЕКСТУРОЙ
+// ПОЛ (палитра по сцене, без файловых карт — имя компонента историческое)
 // ============================================
 
 export const FloorWithTexture = memo(function FloorWithTexture({ sceneId }: { sceneId: string }) {
@@ -507,16 +518,3 @@ export const BattleScene = memo(function BattleScene() {
   );
 });
 
-const SceneComponents = {
-  FloorWithTexture,
-  KitchenScene,
-  CafeScene,
-  StreetScene,
-  MemorialParkScene,
-  OfficeScene,
-  RooftopScene,
-  DreamScene,
-  BattleScene,
-};
-
-export default SceneComponents;

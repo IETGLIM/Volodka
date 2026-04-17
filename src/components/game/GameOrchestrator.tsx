@@ -248,7 +248,7 @@ export default function GameOrchestrator() {
 
   const {
     handleChoice,
-    showStoryPanel,
+    showStoryOverlay,
     handleTogglePanel,
     hasSavedGame,
     handleLoadingReady,
@@ -315,7 +315,7 @@ export default function GameOrchestrator() {
       <ConsequenceNotification />
 
       <AnimatePresence>
-        {showStoryPanel && (
+        {showStoryOverlay && (
           <StoryRenderer
             node={currentNode}
             onChoice={handleChoice}

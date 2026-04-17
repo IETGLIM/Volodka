@@ -3,6 +3,7 @@
 
 node_modules
 .next
+tsconfig.tsbuildinfo
 _volodka_upstream_check
 
 # Локальные сборки для коллег (генерируются скриптом)

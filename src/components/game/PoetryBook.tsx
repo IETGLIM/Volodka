@@ -3,7 +3,7 @@
 import { memo, useMemo, useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGameStore } from '@/store/gameStore';
-import { POEMS, getPoemById } from '@/data/poems';
+import { POEMS, getPoemById, MAIN_ARCHIVE_POEM_COUNT, isBonusPoem } from '@/data/poems';
 import type { Poem } from '@/data/poems';
 
 // ============================================
@@ -336,9 +336,14 @@ export const PoetryBook = memo(function PoetryBook({ isOpen, onClose }: PoetryBo
       .sort((a, b) => a.order - b.order);
   }, [collectedPoemIds]);
 
+  const collectedMainPoems = useMemo(
+    () => collectedPoems.filter((p) => !isBonusPoem(p)),
+    [collectedPoems],
+  );
+
   const lockedPoems = useMemo(() => {
     return POEMS
-      .filter(p => !collectedPoemIds.includes(p.id) && p.order <= 13)
+      .filter((p) => !isBonusPoem(p) && !collectedPoemIds.includes(p.id))
       .sort((a, b) => a.order - b.order);
   }, [collectedPoemIds]);
 
@@ -456,7 +461,7 @@ export const PoetryBook = memo(function PoetryBook({ isOpen, onClose }: PoetryBo
 
                 {/* Progress */}
                 <div className="mb-4">
-                  <CyberProgressBar current={collectedPoems.length} total={13} />
+                  <CyberProgressBar current={collectedMainPoems.length} total={MAIN_ARCHIVE_POEM_COUNT} />
                 </div>
 
                 {/* Divider */}

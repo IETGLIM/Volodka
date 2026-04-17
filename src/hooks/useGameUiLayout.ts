@@ -17,7 +17,8 @@ export function useGameUiLayout({
   hasCurrentNode,
   togglePanel,
 }: UseGameUiLayoutParams) {
-  const showStoryPanel = useMemo(() => {
+  /** Показать нижний оверлей сюжета (`StoryRenderer`), не путать с удалённым `StoryPanel`. */
+  const showStoryOverlay = useMemo(() => {
     return phase === 'game'
       && gameMode === 'visual-novel'
       && hasCurrentNode
@@ -29,7 +30,7 @@ export function useGameUiLayout({
   }, [togglePanel]);
 
   return {
-    showStoryPanel,
+    showStoryOverlay,
     handleTogglePanel,
   };
 }

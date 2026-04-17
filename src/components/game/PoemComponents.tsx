@@ -1,10 +1,11 @@
 "use client";
 
 import { memo, useState, useEffect, useLayoutEffect, useCallback, useRef, useMemo } from 'react';
-import type { ReactNode } from 'react';
+import type { ReactNode, RefObject } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { PoemLine, StoryEffect } from '@/data/types';
 import type { Poem } from '@/data/poems';
+import { usePoemLineTypewriter } from '@/hooks/usePoemLineTypewriter';
 
 // ============================================
 // ОБЩИЙ CHROME — интро / меню / стих при introTerminalChrome
@@ -122,20 +123,366 @@ const getPoemTheme = (themes: string[]) => {
   return { primary: '#a855f7', secondary: '#581c87', glow: 'rgba(168, 85, 247, 0.3)', name: 'default' };
 };
 
+type PoemTheme = ReturnType<typeof getPoemTheme>;
+
+/** Тело полноэкранного стиха — терминальный chrome (интро игры). */
+const PoemRevealTerminalPoemBody = memo(function PoemRevealTerminalPoemBody({
+  poem,
+  theme,
+  scrollRef,
+  displayedLines,
+  currentLineText,
+  currentLineIndex,
+  isComplete,
+  intro,
+  showInnerVoice,
+  handleInnerVoice,
+  getLineColor,
+}: {
+  poem: Poem;
+  theme: PoemTheme;
+  scrollRef: RefObject<HTMLDivElement | null>;
+  displayedLines: string[];
+  currentLineText: string;
+  currentLineIndex: number;
+  isComplete: boolean;
+  intro?: string;
+  showInnerVoice: boolean;
+  handleInnerVoice: () => void;
+  getLineColor: (line: string) => string;
+}) {
+  return (
+    <div
+      className="intro-recall-frame relative flex min-h-0 flex-1 flex-col overflow-hidden border border-emerald-500/25 bg-black/85 shadow-[0_0_40px_rgba(0,255,65,0.08),0_0_80px_rgba(0,255,255,0.05)] backdrop-blur-md"
+      style={{
+        clipPath: 'polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px))',
+      }}
+    >
+      <div
+        className="pointer-events-none absolute inset-0 opacity-[0.85]"
+        aria-hidden
+        style={{
+          background: [
+            'linear-gradient(165deg, rgba(0,255,65,0.07) 0%, transparent 42%)',
+            'linear-gradient(345deg, rgba(255,0,128,0.05) 0%, transparent 38%)',
+            'repeating-linear-gradient(90deg, transparent, transparent 3px, rgba(0,255,65,0.04) 3px, rgba(0,255,65,0.04) 4px)',
+            'repeating-linear-gradient(0deg, transparent, transparent 20px, rgba(0,255,255,0.02) 20px, rgba(0,255,255,0.02) 21px)',
+          ].join(', '),
+        }}
+      />
+      <div className="pointer-events-none absolute top-2 left-2 z-[1] h-5 w-5 border-l border-t border-emerald-400/35" />
+      <div className="pointer-events-none absolute top-2 right-2 z-[1] h-5 w-5 border-r border-t border-cyan-400/30" />
+      <div className="pointer-events-none absolute bottom-2 left-2 z-[1] h-5 w-5 border-l border-b border-amber-400/25" />
+      <div className="pointer-events-none absolute bottom-2 right-2 z-[1] h-5 w-5 border-r border-b border-fuchsia-500/20" />
+
+      <IntroMemoryPoemChromeHeader
+        uri={`volodka://memory/poem_${poem.id}`}
+        rightSlot={
+          isComplete
+            ? 'LOCK'
+            : `LN ${String(Math.min(currentLineIndex + 1, poem.lines.length)).padStart(2, '0')}/${String(poem.lines.length).padStart(2, '0')}`
+        }
+      />
+
+      <motion.div
+        initial={{ opacity: 0, y: -12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.55 }}
+        className="relative z-[2] border-b border-cyan-500/10 px-4 py-4 text-center"
+      >
+        <h2 className="bg-gradient-to-r from-red-300/95 via-cyan-200 to-red-200/90 bg-clip-text font-mono text-lg font-bold uppercase leading-snug tracking-[0.12em] text-transparent drop-shadow-[0_0_18px_rgba(239,68,68,0.25)] sm:text-xl md:text-2xl">
+          {poem.title}
+        </h2>
+        <p className="mt-2 font-mono text-[10px] uppercase tracking-[0.2em] text-cyan-500/55 sm:text-[11px]">
+          {poem.author} {'//'} FRAGMENT_0x{(poem.order ?? 0).toString(16).toUpperCase().padStart(2, '0')}
+        </p>
+      </motion.div>
+
+      <div
+        ref={scrollRef}
+        className="relative z-[2] min-h-0 flex-1 overflow-y-auto px-3 py-3 pr-2 font-mono game-scrollbar sm:px-4 sm:py-4"
+      >
+        <div className="space-y-2">
+          {displayedLines.map((line, i) => (
+            <motion.p
+              key={i}
+              initial={{ opacity: 0, x: -8, filter: 'blur(2px)' }}
+              animate={{ opacity: 1, x: 0, filter: 'blur(0px)' }}
+              transition={{ duration: 0.32 }}
+              className={`text-base leading-relaxed sm:text-lg ${getLineColor(line)}`}
+            >
+              <span className="mr-2 inline-block w-6 select-none text-right text-xs text-cyan-500/35 tabular-nums sm:text-[13px]">
+                {String(i + 1).padStart(2, '0')}
+              </span>
+              <span className="text-cyan-500/40">&gt;</span> {line || '\u00A0'}
+            </motion.p>
+          ))}
+          {currentLineIndex < poem.lines.length && (
+            <motion.p
+              initial={{ opacity: 0.4, x: -4 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.25 }}
+              className={`motion-safe:animate-[intro-line-glow_3.5s_ease-in-out_infinite] border-l-2 border-emerald-500/45 bg-gradient-to-r from-emerald-500/10 via-cyan-500/5 to-transparent py-1 pl-2 text-base leading-relaxed sm:text-lg ${getLineColor(currentLineText)}`}
+            >
+              <span className="mr-2 inline-block w-6 select-none text-right text-xs text-emerald-400/50 tabular-nums sm:text-[13px]">
+                {String(currentLineIndex + 1).padStart(2, '0')}
+              </span>
+              <span className="text-emerald-400/70">&gt;</span>{' '}
+              <span style={{ textShadow: '0 0 2px rgba(0,0,0,0.95)' }}>{currentLineText}</span>
+              <span className="ml-0.5 inline-block align-baseline font-mono text-emerald-300 motion-safe:animate-pulse drop-shadow-[0_0_6px_rgba(0,255,65,0.65)]">
+                █
+              </span>
+            </motion.p>
+          )}
+        </div>
+        <div className="h-2 shrink-0" aria-hidden />
+      </div>
+
+      <AnimatePresence>
+        {isComplete && (
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="relative z-[2] px-3 pb-5 pt-1 sm:px-4"
+          >
+            <div
+              className="relative mx-auto max-w-md overflow-hidden border-2 border-cyan-500/55 bg-gradient-to-r from-black via-cyan-950/90 to-black px-5 py-4 font-mono shadow-[0_0_24px_rgba(0,255,255,0.12)]"
+              style={{
+                clipPath: 'polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px))',
+              }}
+            >
+              <div className="pointer-events-none absolute inset-0 cyber-scan opacity-35" aria-hidden />
+              <div className="absolute left-1 top-1 h-3 w-3 border-l-2 border-t-2 border-cyan-400/55" />
+              <div className="absolute right-3 top-1 h-3 w-3 border-r-2 border-t-2 border-cyan-400/55" />
+              <div className="absolute bottom-1 left-1 h-3 w-3 border-l-2 border-b-2 border-cyan-400/40" />
+              <div className="absolute bottom-1 right-3 h-3 w-3 border-r-2 border-b-2 border-cyan-400/40" />
+              <p className="relative z-10 text-center text-xs uppercase tracking-[0.18em] text-cyan-200/90 sm:text-sm">
+                ✓ DATA_LOCKED // стих в коллекции
+              </p>
+              <motion.p
+                animate={{ opacity: [0.45, 1, 0.45] }}
+                transition={{ duration: 1.8, repeat: Infinity }}
+                className="relative z-10 mt-2 text-center text-[10px] uppercase tracking-[0.28em] text-cyan-400/75"
+              >
+                Нажмите для продолжения…
+              </motion.p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {intro && !showInnerVoice && !isComplete && (
+        <motion.button
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 2 }}
+          onClick={(e) => {
+            e.stopPropagation();
+            handleInnerVoice();
+          }}
+          className="relative z-[2] mx-auto mb-4 mt-1 w-[min(100%,320px)] overflow-hidden border-2 border-cyan-500/50 bg-gradient-to-r from-black via-cyan-950/85 to-black px-6 py-3 font-mono text-sm font-bold uppercase tracking-[0.18em] text-cyan-200 transition-colors hover:border-cyan-400/70 hover:text-cyan-100"
+          style={{
+            clipPath: 'polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px))',
+          }}
+        >
+          <span className="pointer-events-none absolute inset-0 cyber-scan opacity-25" aria-hidden />
+          <span className="relative z-10 flex items-center justify-center gap-2">
+            <span className="text-base opacity-90">💭</span>
+            Внутренний голос
+          </span>
+        </motion.button>
+      )}
+    </div>
+  );
+});
+
+/** Тело полноэкранного стиха — «театральный» режим без терминала. */
+const PoemRevealClassicPoemBody = memo(function PoemRevealClassicPoemBody({
+  poem,
+  theme,
+  scrollRef,
+  displayedLines,
+  currentLineText,
+  currentLineIndex,
+  isComplete,
+  intro,
+  showInnerVoice,
+  handleInnerVoice,
+  getLineColor,
+}: {
+  poem: Poem;
+  theme: PoemTheme;
+  scrollRef: RefObject<HTMLDivElement | null>;
+  displayedLines: string[];
+  currentLineText: string;
+  currentLineIndex: number;
+  isComplete: boolean;
+  intro?: string;
+  showInnerVoice: boolean;
+  handleInnerVoice: () => void;
+  getLineColor: (line: string) => string;
+}) {
+  return (
+    <>
+      <div
+        className="pointer-events-none absolute inset-0 rounded-2xl"
+        style={{
+          border: `1px solid ${theme.primary}20`,
+          borderRadius: '1rem',
+          boxShadow: `inset 0 0 100px ${theme.glow}, 0 0 50px ${theme.glow}`,
+        }}
+      />
+
+      <motion.div
+        initial={{ opacity: 0, y: -30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8 }}
+        className="relative z-10 mb-4 pt-6 text-center"
+      >
+        <div className="mb-4 flex items-center justify-center gap-4">
+          <motion.div
+            initial={{ scaleX: 0 }}
+            animate={{ scaleX: 1 }}
+            transition={{ duration: 1 }}
+            className="h-px w-16"
+            style={{ background: `linear-gradient(90deg, transparent, ${theme.primary})` }}
+          />
+          <span style={{ color: theme.primary }} className="text-2xl">
+            ✦
+          </span>
+          <motion.div
+            initial={{ scaleX: 0 }}
+            animate={{ scaleX: 1 }}
+            transition={{ duration: 1 }}
+            className="h-px w-16"
+            style={{ background: `linear-gradient(90deg, ${theme.primary}, transparent)` }}
+          />
+        </div>
+        <h2
+          className="mb-2 text-3xl font-bold tracking-wide md:text-4xl"
+          style={{
+            color: 'white',
+            textShadow: `0 0 30px ${theme.glow}`,
+          }}
+        >
+          {poem.title}
+        </h2>
+        <p className="text-sm uppercase tracking-widest text-slate-400">{poem.author}</p>
+      </motion.div>
+
+      <div
+        ref={scrollRef}
+        className="scrollbar-thin scrollbar-track-transparent scrollbar-thumb-purple-500/30 flex-1 overflow-y-auto px-4 pb-8 md:px-10"
+      >
+        <div className="space-y-2 py-4 font-serif">
+          {displayedLines.map((line, i) => (
+            <motion.p
+              key={i}
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.3 }}
+              className={`text-lg leading-relaxed tracking-wide md:text-xl lg:text-2xl ${getLineColor(line)}`}
+            >
+              {line || '\u00A0'}
+            </motion.p>
+          ))}
+          {currentLineIndex < poem.lines.length && (
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className={`text-lg leading-relaxed tracking-wide md:text-xl lg:text-2xl ${getLineColor(currentLineText)}`}
+            >
+              {currentLineText}
+              <span className="ml-1 inline-block animate-pulse" style={{ color: theme.primary }}>
+                |
+              </span>
+            </motion.p>
+          )}
+        </div>
+      </div>
+
+      <AnimatePresence>
+        {isComplete && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="relative z-10 pb-6 text-center"
+          >
+            <motion.div
+              animate={{ scale: [1, 1.05, 1] }}
+              transition={{ duration: 2, repeat: Infinity }}
+              className="inline-block rounded-full px-6 py-3"
+              style={{
+                background: `${theme.primary}20`,
+                border: `1px solid ${theme.primary}40`,
+              }}
+            >
+              <p className="text-sm text-slate-300">✓ Стих добавлен в коллекцию</p>
+            </motion.div>
+            <motion.div
+              animate={{ opacity: [0.3, 1, 0.3] }}
+              transition={{ duration: 2, repeat: Infinity }}
+              className="mt-3 text-sm"
+              style={{ color: theme.primary }}
+            >
+              Нажмите для продолжения...
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {intro && !showInnerVoice && !isComplete && (
+        <motion.button
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 2 }}
+          onClick={(e) => {
+            e.stopPropagation();
+            handleInnerVoice();
+          }}
+          className="group relative mx-auto mb-4 overflow-hidden rounded-xl px-8 py-4 text-base font-medium transition-all duration-300"
+          style={{
+            background: `${theme.primary}30`,
+            border: `1px solid ${theme.primary}50`,
+            color: 'white',
+          }}
+        >
+          <span className="relative z-10 flex items-center gap-2">
+            <span className="text-xl">💭</span>
+            Внутренний голос
+          </span>
+          <motion.div
+            className="absolute inset-0"
+            style={{ background: theme.primary }}
+            initial={{ x: '-100%' }}
+            whileHover={{ x: 0 }}
+            transition={{ duration: 0.3 }}
+          />
+        </motion.button>
+      )}
+    </>
+  );
+});
+
 export const PoemReveal = memo(function PoemReveal({
   poem,
   intro,
   onClose,
   introTerminalChrome = false,
 }: PoemRevealProps) {
-  const [currentLineIndex, setCurrentLineIndex] = useState(0);
-  const [displayedLines, setDisplayedLines] = useState<string[]>([]);
-  const [currentLineText, setCurrentLineText] = useState('');
-  const [charIndex, setCharIndex] = useState(0);
   const [showIntro, setShowIntro] = useState(!!intro);
-  const [isComplete, setIsComplete] = useState(false);
   const [showInnerVoice, setShowInnerVoice] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  const pausedTyping = showIntro || showInnerVoice;
+  const { displayedLines, currentLineText, currentLineIndex, isComplete } = usePoemLineTypewriter({
+    lines: poem.lines,
+    paused: pausedTyping,
+    msPerChar: 30,
+    pauseAfterLineMs: 500,
+    pauseAfterEmptyLineMs: 300,
+    finishDelayMs: 0,
+  });
   
   const theme = useMemo(() => getPoemTheme(poem.themes), [poem.themes]);
 
@@ -168,33 +515,6 @@ export const PoemReveal = memo(function PoemReveal({
       return () => clearTimeout(timer);
     }
   }, [showIntro, intro]);
-
-  useEffect(() => {
-    if (showIntro || showInnerVoice) return;
-    
-    if (currentLineIndex >= poem.lines.length) {
-      const timer = setTimeout(() => setIsComplete(true), 0);
-      return () => clearTimeout(timer);
-    }
-
-    const currentLine = poem.lines[currentLineIndex];
-    
-    if (charIndex < currentLine.length) {
-      const timer = setTimeout(() => {
-        setCurrentLineText(currentLine.slice(0, charIndex + 1));
-        setCharIndex(charIndex + 1);
-      }, 30);
-      return () => clearTimeout(timer);
-    } else {
-      const timer = setTimeout(() => {
-        setDisplayedLines(prev => [...prev, currentLine]);
-        setCurrentLineText('');
-        setCharIndex(0);
-        setCurrentLineIndex(currentLineIndex + 1);
-      }, currentLine === '' ? 300 : 500);
-      return () => clearTimeout(timer);
-    }
-  }, [currentLineIndex, charIndex, poem.lines, showIntro, showInnerVoice]);
 
   useEffect(() => {
     if (isComplete) {
@@ -420,287 +740,35 @@ export const PoemReveal = memo(function PoemReveal({
           transition={{ duration: 0.6 }}
         >
           {introTerminalChrome ? (
-            <div
-              className="intro-recall-frame relative flex min-h-0 flex-1 flex-col overflow-hidden border border-emerald-500/25 bg-black/85 shadow-[0_0_40px_rgba(0,255,65,0.08),0_0_80px_rgba(0,255,255,0.05)] backdrop-blur-md"
-              style={{
-                clipPath: 'polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px))',
-              }}
-            >
-              <div
-                className="pointer-events-none absolute inset-0 opacity-[0.85]"
-                aria-hidden
-                style={{
-                  background: [
-                    'linear-gradient(165deg, rgba(0,255,65,0.07) 0%, transparent 42%)',
-                    'linear-gradient(345deg, rgba(255,0,128,0.05) 0%, transparent 38%)',
-                    'repeating-linear-gradient(90deg, transparent, transparent 3px, rgba(0,255,65,0.04) 3px, rgba(0,255,65,0.04) 4px)',
-                    'repeating-linear-gradient(0deg, transparent, transparent 20px, rgba(0,255,255,0.02) 20px, rgba(0,255,255,0.02) 21px)',
-                  ].join(', '),
-                }}
-              />
-              <div className="pointer-events-none absolute top-2 left-2 z-[1] h-5 w-5 border-l border-t border-emerald-400/35" />
-              <div className="pointer-events-none absolute top-2 right-2 z-[1] h-5 w-5 border-r border-t border-cyan-400/30" />
-              <div className="pointer-events-none absolute bottom-2 left-2 z-[1] h-5 w-5 border-l border-b border-amber-400/25" />
-              <div className="pointer-events-none absolute bottom-2 right-2 z-[1] h-5 w-5 border-r border-b border-fuchsia-500/20" />
-
-              <IntroMemoryPoemChromeHeader
-                uri={`volodka://memory/poem_${poem.id}`}
-                rightSlot={
-                  isComplete
-                    ? 'LOCK'
-                    : `LN ${String(Math.min(currentLineIndex + 1, poem.lines.length)).padStart(2, '0')}/${String(poem.lines.length).padStart(2, '0')}`
-                }
-              />
-
-              <motion.div
-                initial={{ opacity: 0, y: -12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.55 }}
-                className="relative z-[2] border-b border-cyan-500/10 px-4 py-4 text-center"
-              >
-                <h2 className="bg-gradient-to-r from-red-300/95 via-cyan-200 to-red-200/90 bg-clip-text font-mono text-lg font-bold uppercase leading-snug tracking-[0.12em] text-transparent drop-shadow-[0_0_18px_rgba(239,68,68,0.25)] sm:text-xl md:text-2xl">
-                  {poem.title}
-                </h2>
-                <p className="mt-2 font-mono text-[10px] uppercase tracking-[0.2em] text-cyan-500/55 sm:text-[11px]">
-                  {poem.author} {'//'} FRAGMENT_0x{(poem.order ?? 0).toString(16).toUpperCase().padStart(2, '0')}
-                </p>
-              </motion.div>
-
-              <div
-                ref={scrollRef}
-                className="relative z-[2] min-h-0 flex-1 overflow-y-auto px-3 py-3 pr-2 font-mono game-scrollbar sm:px-4 sm:py-4"
-              >
-                <div className="space-y-2">
-                  {displayedLines.map((line, i) => (
-                    <motion.p
-                      key={i}
-                      initial={{ opacity: 0, x: -8, filter: 'blur(2px)' }}
-                      animate={{ opacity: 1, x: 0, filter: 'blur(0px)' }}
-                      transition={{ duration: 0.32 }}
-                      className={`text-base leading-relaxed sm:text-lg ${getLineColor(line)}`}
-                    >
-                      <span className="mr-2 inline-block w-6 select-none text-right text-xs text-cyan-500/35 tabular-nums sm:text-[13px]">
-                        {String(i + 1).padStart(2, '0')}
-                      </span>
-                      <span className="text-cyan-500/40">&gt;</span> {line || '\u00A0'}
-                    </motion.p>
-                  ))}
-                  {currentLineIndex < poem.lines.length && (
-                    <motion.p
-                      initial={{ opacity: 0.4, x: -4 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ duration: 0.25 }}
-                      className={`motion-safe:animate-[intro-line-glow_3.5s_ease-in-out_infinite] border-l-2 border-emerald-500/45 bg-gradient-to-r from-emerald-500/10 via-cyan-500/5 to-transparent py-1 pl-2 text-base leading-relaxed sm:text-lg ${getLineColor(currentLineText)}`}
-                    >
-                      <span className="mr-2 inline-block w-6 select-none text-right text-xs text-emerald-400/50 tabular-nums sm:text-[13px]">
-                        {String(currentLineIndex + 1).padStart(2, '0')}
-                      </span>
-                      <span className="text-emerald-400/70">&gt;</span>{' '}
-                      <span style={{ textShadow: '0 0 2px rgba(0,0,0,0.95)' }}>{currentLineText}</span>
-                      <span className="ml-0.5 inline-block align-baseline font-mono text-emerald-300 motion-safe:animate-pulse drop-shadow-[0_0_6px_rgba(0,255,65,0.65)]">
-                        █
-                      </span>
-                    </motion.p>
-                  )}
-                </div>
-                <div className="h-2 shrink-0" aria-hidden />
-              </div>
-
-              <AnimatePresence>
-                {isComplete && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 16 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="relative z-[2] px-3 pb-5 pt-1 sm:px-4"
-                  >
-                    <div
-                      className="relative mx-auto max-w-md overflow-hidden border-2 border-cyan-500/55 bg-gradient-to-r from-black via-cyan-950/90 to-black px-5 py-4 font-mono shadow-[0_0_24px_rgba(0,255,255,0.12)]"
-                      style={{
-                        clipPath: 'polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px))',
-                      }}
-                    >
-                      <div className="pointer-events-none absolute inset-0 cyber-scan opacity-35" aria-hidden />
-                      <div className="absolute left-1 top-1 h-3 w-3 border-l-2 border-t-2 border-cyan-400/55" />
-                      <div className="absolute right-3 top-1 h-3 w-3 border-r-2 border-t-2 border-cyan-400/55" />
-                      <div className="absolute bottom-1 left-1 h-3 w-3 border-l-2 border-b-2 border-cyan-400/40" />
-                      <div className="absolute bottom-1 right-3 h-3 w-3 border-r-2 border-b-2 border-cyan-400/40" />
-                      <p className="relative z-10 text-center text-xs uppercase tracking-[0.18em] text-cyan-200/90 sm:text-sm">
-                        ✓ DATA_LOCKED // стих в коллекции
-                      </p>
-                      <motion.p
-                        animate={{ opacity: [0.45, 1, 0.45] }}
-                        transition={{ duration: 1.8, repeat: Infinity }}
-                        className="relative z-10 mt-2 text-center text-[10px] uppercase tracking-[0.28em] text-cyan-400/75"
-                      >
-                        Нажмите для продолжения…
-                      </motion.p>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-
-              {intro && !showInnerVoice && !isComplete && (
-                <motion.button
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 2 }}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleInnerVoice();
-                  }}
-                  className="relative z-[2] mx-auto mb-4 mt-1 w-[min(100%,320px)] overflow-hidden border-2 border-cyan-500/50 bg-gradient-to-r from-black via-cyan-950/85 to-black px-6 py-3 font-mono text-sm font-bold uppercase tracking-[0.18em] text-cyan-200 transition-colors hover:border-cyan-400/70 hover:text-cyan-100"
-                  style={{
-                    clipPath: 'polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px))',
-                  }}
-                >
-                  <span className="pointer-events-none absolute inset-0 cyber-scan opacity-25" aria-hidden />
-                  <span className="relative z-10 flex items-center justify-center gap-2">
-                    <span className="text-base opacity-90">💭</span>
-                    Внутренний голос
-                  </span>
-                </motion.button>
-              )}
-            </div>
+            <PoemRevealTerminalPoemBody
+              poem={poem}
+              theme={theme}
+              scrollRef={scrollRef}
+              displayedLines={displayedLines}
+              currentLineText={currentLineText}
+              currentLineIndex={currentLineIndex}
+              isComplete={isComplete}
+              intro={intro}
+              showInnerVoice={showInnerVoice}
+              handleInnerVoice={handleInnerVoice}
+              getLineColor={getLineColor}
+            />
           ) : (
-            <>
-              <div
-                className="pointer-events-none absolute inset-0 rounded-2xl"
-                style={{
-                  border: `1px solid ${theme.primary}20`,
-                  borderRadius: '1rem',
-                  boxShadow: `inset 0 0 100px ${theme.glow}, 0 0 50px ${theme.glow}`,
-                }}
-              />
-
-              <motion.div
-                initial={{ opacity: 0, y: -30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8 }}
-                className="relative z-10 mb-4 pt-6 text-center"
-              >
-                <div className="mb-4 flex items-center justify-center gap-4">
-                  <motion.div
-                    initial={{ scaleX: 0 }}
-                    animate={{ scaleX: 1 }}
-                    transition={{ duration: 1 }}
-                    className="h-px w-16"
-                    style={{ background: `linear-gradient(90deg, transparent, ${theme.primary})` }}
-                  />
-                  <span style={{ color: theme.primary }} className="text-2xl">
-                    ✦
-                  </span>
-                  <motion.div
-                    initial={{ scaleX: 0 }}
-                    animate={{ scaleX: 1 }}
-                    transition={{ duration: 1 }}
-                    className="h-px w-16"
-                    style={{ background: `linear-gradient(90deg, ${theme.primary}, transparent)` }}
-                  />
-                </div>
-                <h2
-                  className="mb-2 text-3xl font-bold tracking-wide md:text-4xl"
-                  style={{
-                    color: 'white',
-                    textShadow: `0 0 30px ${theme.glow}`,
-                  }}
-                >
-                  {poem.title}
-                </h2>
-                <p className="text-sm uppercase tracking-widest text-slate-400">{poem.author}</p>
-              </motion.div>
-
-              <div
-                ref={scrollRef}
-                className="scrollbar-thin scrollbar-track-transparent scrollbar-thumb-purple-500/30 flex-1 overflow-y-auto px-4 pb-8 md:px-10"
-              >
-                <div className="space-y-2 py-4 font-serif">
-                  {displayedLines.map((line, i) => (
-                    <motion.p
-                      key={i}
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ duration: 0.3 }}
-                      className={`text-lg leading-relaxed tracking-wide md:text-xl lg:text-2xl ${getLineColor(line)}`}
-                    >
-                      {line || '\u00A0'}
-                    </motion.p>
-                  ))}
-                  {currentLineIndex < poem.lines.length && (
-                    <motion.p
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      className={`text-lg leading-relaxed tracking-wide md:text-xl lg:text-2xl ${getLineColor(currentLineText)}`}
-                    >
-                      {currentLineText}
-                      <span className="ml-1 inline-block animate-pulse" style={{ color: theme.primary }}>
-                        |
-                      </span>
-                    </motion.p>
-                  )}
-                </div>
-              </div>
-
-              <AnimatePresence>
-                {isComplete && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="relative z-10 pb-6 text-center"
-                  >
-                    <motion.div
-                      animate={{ scale: [1, 1.05, 1] }}
-                      transition={{ duration: 2, repeat: Infinity }}
-                      className="inline-block rounded-full px-6 py-3"
-                      style={{
-                        background: `${theme.primary}20`,
-                        border: `1px solid ${theme.primary}40`,
-                      }}
-                    >
-                      <p className="text-sm text-slate-300">✓ Стих добавлен в коллекцию</p>
-                    </motion.div>
-                    <motion.div
-                      animate={{ opacity: [0.3, 1, 0.3] }}
-                      transition={{ duration: 2, repeat: Infinity }}
-                      className="mt-3 text-sm"
-                      style={{ color: theme.primary }}
-                    >
-                      Нажмите для продолжения...
-                    </motion.div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-
-              {intro && !showInnerVoice && !isComplete && (
-                <motion.button
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 2 }}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleInnerVoice();
-                  }}
-                  className="group relative mx-auto mb-4 overflow-hidden rounded-xl px-8 py-4 text-base font-medium transition-all duration-300"
-                  style={{
-                    background: `${theme.primary}30`,
-                    border: `1px solid ${theme.primary}50`,
-                    color: 'white',
-                  }}
-                >
-                  <span className="relative z-10 flex items-center gap-2">
-                    <span className="text-xl">💭</span>
-                    Внутренний голос
-                  </span>
-                  <motion.div
-                    className="absolute inset-0"
-                    style={{ background: theme.primary }}
-                    initial={{ x: '-100%' }}
-                    whileHover={{ x: 0 }}
-                    transition={{ duration: 0.3 }}
-                  />
-                </motion.button>
-              )}
-            </>
+            <PoemRevealClassicPoemBody
+              poem={poem}
+              theme={theme}
+              scrollRef={scrollRef}
+              displayedLines={displayedLines}
+              currentLineText={currentLineText}
+              currentLineIndex={currentLineIndex}
+              isComplete={isComplete}
+              intro={intro}
+              showInnerVoice={showInnerVoice}
+              handleInnerVoice={handleInnerVoice}
+              getLineColor={getLineColor}
+            />
           )}
+
 
           {/* Кнопка закрытия — поверх всех слоёв, крупная зона тапа (мобильные) */}
           <button
@@ -744,35 +812,14 @@ export const PoemTypewriter = memo(function PoemTypewriter({
   onComplete: () => void;
   speed?: number;
 }) {
-  const [currentLineIndex, setCurrentLineIndex] = useState(0);
-  const [displayedLines, setDisplayedLines] = useState<string[]>([]);
-  const [currentLineText, setCurrentLineText] = useState('');
-  const [charIndex, setCharIndex] = useState(0);
-
-  useEffect(() => {
-    if (currentLineIndex >= lines.length) {
-      setTimeout(onComplete, 1500);
-      return;
-    }
-
-    const currentLine = lines[currentLineIndex];
-    
-    if (charIndex < currentLine.length) {
-      const timer = setTimeout(() => {
-        setCurrentLineText(currentLine.slice(0, charIndex + 1));
-        setCharIndex(charIndex + 1);
-      }, 40);
-      return () => clearTimeout(timer);
-    } else {
-      const timer = setTimeout(() => {
-        setDisplayedLines([...displayedLines, currentLine]);
-        setCurrentLineText('');
-        setCharIndex(0);
-        setCurrentLineIndex(currentLineIndex + 1);
-      }, currentLine === '' ? 300 : speed);
-      return () => clearTimeout(timer);
-    }
-  }, [currentLineIndex, charIndex, lines, onComplete, speed, displayedLines]);
+  const { displayedLines, currentLineText, currentLineIndex } = usePoemLineTypewriter({
+    lines,
+    msPerChar: 40,
+    pauseAfterLineMs: speed,
+    pauseAfterEmptyLineMs: 300,
+    finishDelayMs: 1500,
+    onFinished: onComplete,
+  });
 
   return (
     <div className="space-y-2 font-serif">

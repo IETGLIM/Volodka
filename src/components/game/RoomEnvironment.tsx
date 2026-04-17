@@ -1,34 +1,120 @@
 "use client";
 
-import { memo, useMemo, useRef, useState, Suspense } from 'react';
+import { memo, useEffect, useMemo, useRef, useState, Suspense } from 'react';
 import type { SceneId } from '@/data/types';
 import { RigidBody, CuboidCollider } from '@react-three/rapier';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 
 // ============================================
-// ТЕКСТУРЫ
+// ТЕКСТУРЫ (процедурные — без HTTP, без 404)
 // ============================================
+// Раньше пути вида /textures/*.jpg давали ошибки в консоли, если файлов нет в public.
+// Для комнаты Заремы используем CanvasTexture; при желании заменить на фото — загрузить
+// файлы в public/textures/ и здесь переключить на THREE.TextureLoader + onError → эти же процедурные.
 
-function useRoomTextures() {
-  return useMemo(() => {
-    const loader = new THREE.TextureLoader();
-    
-    const woodTexture = loader.load('/textures/wood_floor.jpg');
-    const wallpaperTexture = loader.load('/textures/wallpaper.jpg');
-    const carpetTexture = loader.load('/textures/carpet_pattern.jpg');
-    
-    // Настраиваем повторение
-    woodTexture.wrapS = woodTexture.wrapT = THREE.RepeatWrapping;
-    wallpaperTexture.wrapS = wallpaperTexture.wrapT = THREE.RepeatWrapping;
-    carpetTexture.wrapS = carpetTexture.wrapT = THREE.RepeatWrapping;
+function createWoodFloorCanvasTexture(): THREE.CanvasTexture {
+  const size = 128;
+  const canvas = document.createElement('canvas');
+  canvas.width = size;
+  canvas.height = size;
+  const ctx = canvas.getContext('2d')!;
+  ctx.fillStyle = '#3d2817';
+  ctx.fillRect(0, 0, size, size);
+  const plank = size / 10;
+  for (let y = 0; y <= size; y += plank) {
+    ctx.strokeStyle = 'rgba(0,0,0,0.22)';
+    ctx.beginPath();
+    ctx.moveTo(0, y);
+    ctx.lineTo(size, y);
+    ctx.stroke();
+  }
+  for (let x = 0; x < size; x += 2) {
+    ctx.strokeStyle = 'rgba(255,255,255,0.035)';
+    ctx.beginPath();
+    ctx.moveTo(x, 0);
+    ctx.lineTo(x, size);
+    ctx.stroke();
+  }
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+  tex.repeat.set(4, 4);
+  tex.needsUpdate = true;
+  return tex;
+}
 
-    woodTexture.repeat.set(4, 4);
-    wallpaperTexture.repeat.set(2, 1);
-    carpetTexture.repeat.set(2, 1.5);
+function createWallpaperCanvasTexture(): THREE.CanvasTexture {
+  const size = 128;
+  const canvas = document.createElement('canvas');
+  canvas.width = size;
+  canvas.height = size;
+  const ctx = canvas.getContext('2d')!;
+  const g = ctx.createLinearGradient(0, 0, size, size);
+  g.addColorStop(0, '#4a4a5a');
+  g.addColorStop(1, '#353545');
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, size, size);
+  const step = 14;
+  ctx.strokeStyle = 'rgba(255,255,255,0.07)';
+  ctx.lineWidth = 1;
+  for (let x = 0; x < size; x += step) {
+    for (let y = 0; y < size; y += step) {
+      ctx.strokeRect(x + 1, y + 1, step - 2, step - 2);
+    }
+  }
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+  tex.repeat.set(2, 1);
+  tex.needsUpdate = true;
+  return tex;
+}
 
-    return { woodTexture, wallpaperTexture, carpetTexture };
+function createCarpetCanvasTexture(): THREE.CanvasTexture {
+  const size = 96;
+  const canvas = document.createElement('canvas');
+  canvas.width = size;
+  canvas.height = size;
+  const ctx = canvas.getContext('2d')!;
+  ctx.fillStyle = '#4a2028';
+  ctx.fillRect(0, 0, size, size);
+  for (let i = 0; i < 500; i++) {
+    ctx.fillStyle = `rgba(0,0,0,${0.04 + Math.random() * 0.1})`;
+    ctx.fillRect((Math.random() * size) | 0, (Math.random() * size) | 0, 1, 1);
+  }
+  for (let i = 0; i < 250; i++) {
+    ctx.fillStyle = `rgba(255,210,210,${0.02 + Math.random() * 0.06})`;
+    ctx.fillRect((Math.random() * size) | 0, (Math.random() * size) | 0, 1, 1);
+  }
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+  tex.repeat.set(2, 1.5);
+  tex.needsUpdate = true;
+  return tex;
+}
+
+type ZaremaRoomTextures = {
+  woodTexture: THREE.CanvasTexture;
+  wallpaperTexture: THREE.CanvasTexture;
+  carpetTexture: THREE.CanvasTexture;
+};
+
+/** Только на клиенте (canvas), чтобы SSR не обращался к `document`. */
+function useZaremaRoomProceduralTextures(): ZaremaRoomTextures | null {
+  const [textures, setTextures] = useState<ZaremaRoomTextures | null>(null);
+
+  useEffect(() => {
+    const woodTexture = createWoodFloorCanvasTexture();
+    const wallpaperTexture = createWallpaperCanvasTexture();
+    const carpetTexture = createCarpetCanvasTexture();
+    setTextures({ woodTexture, wallpaperTexture, carpetTexture });
+    return () => {
+      woodTexture.dispose();
+      wallpaperTexture.dispose();
+      carpetTexture.dispose();
+    };
   }, []);
+
+  return textures;
 }
 
 // ============================================
@@ -101,7 +187,7 @@ export const InteractiveObject = memo(function InteractiveObject({
 // ============================================
 // СТОЛ
 // ============================================
-
+/** Стол с Rapier-коллайдерами; визуально богаче примитивов в OptimizedSceneEnvironment — намеренно для физкомнаты. */
 export const Table = memo(function Table({
   position,
   color = '#5c4033',
@@ -142,7 +228,7 @@ export const Table = memo(function Table({
 // ============================================
 // СТУЛ
 // ============================================
-
+/** Стул с коллайдерами; не дубль сцены из OptimizedSceneEnvironment — здесь отдельная детализация под Rapier. */
 export const Chair = memo(function Chair({
   position,
   rotation = 0,
@@ -328,12 +414,14 @@ export const Carpet = memo(function Carpet({
 });
 
 // ============================================
-// КОМНАТА "ЗАРЕМУШКА С АЛЬБЕРТОМ" (С ТЕКСТУРАМИ)
+// КОМНАТА "ЗАРЕМУШКА С АЛЬБЕРТОМ" (процедурные текстуры)
 // ============================================
 
 const ZaremaAlbertRoomContent = memo(function ZaremaAlbertRoomContent() {
   const roomSize = [10, 3, 8]; // ширина, высота, глубина
-  const { woodTexture, wallpaperTexture, carpetTexture } = useRoomTextures();
+  const textures = useZaremaRoomProceduralTextures();
+  if (!textures) return null;
+  const { woodTexture, wallpaperTexture, carpetTexture } = textures;
 
   return (
     <group>
@@ -343,7 +431,7 @@ const ZaremaAlbertRoomContent = memo(function ZaremaAlbertRoomContent() {
       </RigidBody>
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.01, 0]} receiveShadow>
         <planeGeometry args={[roomSize[0], roomSize[2]]} />
-        <meshStandardMaterial map={woodTexture} roughness={0.7} />
+        <meshStandardMaterial map={woodTexture} color="#ffffff" roughness={0.7} />
       </mesh>
 
       {/* Ковёр в центре с текстурой */}
@@ -359,7 +447,7 @@ const ZaremaAlbertRoomContent = memo(function ZaremaAlbertRoomContent() {
         <CuboidCollider args={[roomSize[0] / 2, roomSize[1] / 2, 0.1]} />
         <mesh receiveShadow>
           <boxGeometry args={[roomSize[0], roomSize[1], 0.2]} />
-          <meshStandardMaterial map={wallpaperTexture} roughness={0.9} />
+          <meshStandardMaterial map={wallpaperTexture} color="#ffffff" roughness={0.9} />
         </mesh>
       </RigidBody>
 
@@ -368,14 +456,14 @@ const ZaremaAlbertRoomContent = memo(function ZaremaAlbertRoomContent() {
         <CuboidCollider args={[roomSize[0] / 4, roomSize[1] / 2, 0.1]} />
         <mesh receiveShadow>
           <boxGeometry args={[roomSize[0] / 2, roomSize[1], 0.2]} />
-          <meshStandardMaterial map={wallpaperTexture} roughness={0.9} />
+          <meshStandardMaterial map={wallpaperTexture} color="#ffffff" roughness={0.9} />
         </mesh>
       </RigidBody>
       <RigidBody type="fixed" position={[roomSize[0] / 4, roomSize[1] / 2, roomSize[2] / 2]}>
         <CuboidCollider args={[roomSize[0] / 4, roomSize[1] / 2, 0.1]} />
         <mesh receiveShadow>
           <boxGeometry args={[roomSize[0] / 2, roomSize[1], 0.2]} />
-          <meshStandardMaterial map={wallpaperTexture} roughness={0.9} />
+          <meshStandardMaterial map={wallpaperTexture} color="#ffffff" roughness={0.9} />
         </mesh>
       </RigidBody>
 
@@ -384,14 +472,14 @@ const ZaremaAlbertRoomContent = memo(function ZaremaAlbertRoomContent() {
         <CuboidCollider args={[0.1, roomSize[1] / 2, roomSize[2] / 2]} />
         <mesh receiveShadow>
           <boxGeometry args={[0.2, roomSize[1], roomSize[2]]} />
-          <meshStandardMaterial map={wallpaperTexture} roughness={0.9} />
+          <meshStandardMaterial map={wallpaperTexture} color="#ffffff" roughness={0.9} />
         </mesh>
       </RigidBody>
       <RigidBody type="fixed" position={[roomSize[0] / 2, roomSize[1] / 2, 0]}>
         <CuboidCollider args={[0.1, roomSize[1] / 2, roomSize[2] / 2]} />
         <mesh receiveShadow>
           <boxGeometry args={[0.2, roomSize[1], roomSize[2]]} />
-          <meshStandardMaterial map={wallpaperTexture} roughness={0.9} />
+          <meshStandardMaterial map={wallpaperTexture} color="#ffffff" roughness={0.9} />
         </mesh>
       </RigidBody>
 
@@ -498,7 +586,10 @@ export const ZaremaAlbertRoom = memo(function ZaremaAlbertRoom() {
   );
 });
 
-/** Визуальная оболочка комнаты для Rapier-канваса: только сцены с готовым 3D-мешем. */
+/**
+ * Визуальная оболочка физической комнаты (Rapier): по `sceneId` выбирается готовый 3D-набор.
+ * Сейчас реализована только `zarema_albert_room` — заготовка под новые `SceneId` без дублирования логики в канвасе.
+ */
 export const PhysicsExplorationRoomVisual = memo(function PhysicsExplorationRoomVisual({
   sceneId,
 }: {
