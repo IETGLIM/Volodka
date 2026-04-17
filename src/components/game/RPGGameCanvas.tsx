@@ -21,10 +21,11 @@ import { NPC_DEFINITIONS, getNPCsForScene } from '../../data/npcDefinitions';
 import { getTriggersForScene } from '../../data/triggerZones';
 
 // Components
-import { Player, PlayerRef } from './Player';
+import { PhysicsPlayer } from './PhysicsPlayer';
+import FollowCamera from './FollowCamera';
 import { NPCSystem } from './NPC';
 import { SceneColliderSelector } from './SceneColliders';
-import { SimpleFollowCamera } from './FollowCamera';
+import { getDefaultPlayerModelPath } from '@/config/modelUrls';
 import { TriggerSystem, isPlayerInTriggerZone } from './InteractiveTrigger';
 import CameraEffects from '../CameraEffects';
 
@@ -56,7 +57,6 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
   onNPCInteraction,
   children,
 }: RPGGameCanvasProps) {
-  const playerRef = useRef<PlayerRef>(null);
   const [npcStates, setNPCStates] = useState<Record<string, NPCState>>({});
   const [triggerStates, setTriggerStates] = useState<Record<string, TriggerState>>({});
   
@@ -228,10 +228,9 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
         {/* Visual Scene Elements */}
         {children}
 
-        {/* Player */}
-        <Player
-          ref={playerRef}
+        <PhysicsPlayer
           position={[playerPosition.x, playerPosition.y, playerPosition.z]}
+          modelPath={getDefaultPlayerModelPath()}
           onPositionChange={handlePositionChange}
           onInteraction={handlePlayerInteraction}
           isLocked={isDialogueActive}
@@ -257,13 +256,14 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
           onTriggerStateChange={handleTriggerStateChange}
         />
 
-        {/* Camera that follows player */}
-        <SimpleFollowCamera
+        <FollowCamera
           targetPosition={playerPosition}
           distance={8}
           height={5}
           smoothness={0.08}
           isLocked={isDialogueActive}
+          enableCollision
+          enableZoom
         />
 
         {/* Camera Effects */}

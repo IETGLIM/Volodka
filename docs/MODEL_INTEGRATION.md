@@ -40,14 +40,11 @@ public/
 ### Игрок
 
 ```tsx
-<Player
+<PhysicsPlayer
   modelPath="/models/player.glb"
-  animations={{
-    idle: 'Idle',
-    walk: 'Walk',
-    run: 'Run',
-  }}
   position={[0, 1, 3]}
+  onPositionChange={(pos) => { /* sync в store */ }}
+  onInteraction={() => { /* E / F / Enter */ }}
 />
 ```
 

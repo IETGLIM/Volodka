@@ -12,10 +12,11 @@ import type { PlayerPosition, NPCState } from '@/data/rpgTypes';
 
 // Компоненты сцены
 import { PhysicsSceneColliders } from './PhysicsSceneColliders';
-import { Player } from './Player';
+import { PhysicsPlayer } from './PhysicsPlayer';
 import FollowCamera from './FollowCamera';
+import { getDefaultPlayerModelPath } from '@/config/modelUrls';
 import { NPCSystem } from './NPC';
-import { InteractiveObject, ZaremaAlbertRoom } from './RoomEnvironment';
+import { InteractiveObject, PhysicsExplorationRoomVisual } from './RoomEnvironment';
 import { useGameStore } from '@/store/gameStore';
 
 interface NPCConfig {
@@ -43,39 +44,33 @@ interface InteractiveObjectConfig {
 }
 
 // ============================================
-// ЭМОЦИОНАЛЬНАЯ ГРАВИТАЦИЯ
-// ============================================
-
-// Примечание: Компонент отключён из-за конфликта с ESLint правилом react-hooks/immutability
-// Гравитация в Rapier world изменяется динамически, что требует прямого доступа к объекту
-// из хука. Это легитимное использование, но ESLint считает это нарушением.
-
-const EmotionalGravityController = memo(function EmotionalGravityController(_props: { 
-  stressLevel: number 
-}) {
-  // TODO: Реализовать эмоциональную гравитацию через глобальный сервис
-  // или использовать ref-based подход для обхода ESLint ограничений
-  return null;
-});
-
-// ============================================
 // ПОСТОБРАБОТКА
 // ============================================
-const PostProcessingEffects = memo(({ visualParams }: { visualParams: {
-  glitchIntensity?: number;
-  creativity?: number;
-  stability?: number;
-} }) => {
-  const { glitchIntensity = 0, creativity = 50, stability = 50 } = visualParams;
-  return (
-    <EffectComposer>
-      <Vignette darkness={0.3 + (1 - stability / 100) * 0.5} eskil={false} />
-      <ChromaticAberration offset={new Vector2(glitchIntensity * 0.03, glitchIntensity * 0.01)} />
-      <Bloom luminanceThreshold={0.7} intensity={creativity / 100 * 0.8} radius={0.5} />
-      <Noise premultiply opacity={Math.max(0, (50 - stability) / 100) * 0.15} />
-    </EffectComposer>
-  );
-});
+const PostProcessingEffects = memo(
+  ({
+    visualParams,
+    panicMode = false,
+  }: {
+    visualParams: {
+      glitchIntensity?: number;
+      creativity?: number;
+      stability?: number;
+    };
+    panicMode?: boolean;
+  }) => {
+    const { glitchIntensity = 0, creativity = 50, stability = 50 } = visualParams;
+    const panic = panicMode ? 0.35 : 0;
+    const g = Math.min(1.2, glitchIntensity + panic);
+    return (
+      <EffectComposer>
+        <Vignette darkness={0.3 + (1 - stability / 100) * 0.5 + (panicMode ? 0.12 : 0)} eskil={false} />
+        <ChromaticAberration offset={new Vector2(g * 0.03, g * 0.012)} />
+        <Bloom luminanceThreshold={0.7} intensity={creativity / 100 * 0.8} radius={0.5} />
+        <Noise premultiply opacity={Math.max(0, (50 - stability) / 100) * 0.15 + (panicMode ? 0.06 : 0)} />
+      </EffectComposer>
+    );
+  }
+);
 
 // ============================================
 // ОСНОВНОЙ КОМПОНЕНТ
@@ -104,6 +99,7 @@ export const PhysicsGameModeSwitcher = memo(function PhysicsGameModeSwitcher({
   sceneId,
   isExplorationMode,
   stressLevel = 0,
+  panicMode = false,
   visualParams = {},
   playerPosition = { x: 0, y: 1, z: 3, rotation: 0 },
   npcs = [],
@@ -115,6 +111,16 @@ export const PhysicsGameModeSwitcher = memo(function PhysicsGameModeSwitcher({
 }: PhysicsGameModeSwitcherProps) {
   const [npcStates, setNPCStates] = React.useState<Record<string, NPCState>>({});
   const setNPCState = useGameStore((s) => s.setNPCState);
+
+  /** Гравитация от стресса/паники — через проп `<Physics gravity>`, без мутации world (совместимо с ESLint). */
+  const gravity = useMemo((): [number, number, number] => {
+    const s = Math.max(0, Math.min(100, stressLevel));
+    const stressFactor = 1 + (s / 100) * 0.22;
+    const panicMul = panicMode ? 1.1 : 1;
+    return [0, -9.81 * stressFactor * panicMul, 0];
+  }, [stressLevel, panicMode]);
+
+  const showPhysicsDebugHelpers = process.env.NEXT_PUBLIC_PHYSICS_DEBUG_HELPERS === '1';
 
   const handleObjectInteract = React.useCallback((objectId: string) => {
     onObjectInteract?.(objectId, 'interact');
@@ -157,16 +163,17 @@ export const PhysicsGameModeSwitcher = memo(function PhysicsGameModeSwitcher({
         <pointLight position={[-3, 2, 2]} intensity={1} />
         <pointLight position={[3, 2, -2]} intensity={1} />
 
-        {/* Отладочная сетка (можно удалить после проверки) */}
-        <gridHelper args={[20, 20]} position={[0, 0.01, 0]} />
-        <axesHelper args={[5]} />
+        {showPhysicsDebugHelpers && (
+          <>
+            <gridHelper args={[20, 20]} position={[0, 0.01, 0]} />
+            <axesHelper args={[5]} />
+          </>
+        )}
 
-        <Physics debug={false} gravity={[0, -9.81, 0]}>
-          <EmotionalGravityController stressLevel={stressLevel} />
+        <Physics debug={false} gravity={gravity}>
           <PhysicsSceneColliders sceneId={sceneId} />
 
-          {/* ВРЕМЕННО: всегда рендерим комнату Заремы и Альберта */}
-          <ZaremaAlbertRoom />
+          <PhysicsExplorationRoomVisual sceneId={sceneId} />
 
           {interactiveObjects.map(obj => (
             <InteractiveObject
@@ -193,8 +200,9 @@ export const PhysicsGameModeSwitcher = memo(function PhysicsGameModeSwitcher({
 
           {isExplorationMode && (
             <>
-              <Player
+              <PhysicsPlayer
                 position={[playerPosition.x, playerPosition.y, playerPosition.z]}
+                modelPath={getDefaultPlayerModelPath()}
                 onPositionChange={onPlayerPositionChange}
               />
               <FollowCamera
@@ -204,6 +212,7 @@ export const PhysicsGameModeSwitcher = memo(function PhysicsGameModeSwitcher({
                 smoothness={0.08}
                 isLocked={false}
                 enableCollision={false}
+                enableZoom
               />
             </>
           )}
@@ -211,7 +220,7 @@ export const PhysicsGameModeSwitcher = memo(function PhysicsGameModeSwitcher({
           {children}
         </Physics>
 
-        <PostProcessingEffects visualParams={visualParams} />
+        <PostProcessingEffects visualParams={visualParams} panicMode={panicMode} />
       </Suspense>
     </Canvas>
   );

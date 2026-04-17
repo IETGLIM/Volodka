@@ -40,7 +40,12 @@ export type SceneId =
   | 'train_station'
   | 'memorial_park'
   | 'library'
-  | 'blue_pit';
+  | 'blue_pit'
+  | 'green_zone'
+  | 'district'
+  | 'mvd'
+  | 'president_hotel'
+  | 'zarema_albert_room';
 
 // Пути развития персонажа
 export type PlayerPath = 

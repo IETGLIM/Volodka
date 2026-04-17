@@ -50,6 +50,28 @@ export const MODEL_URLS = {
   blackhole: `${BASE_URL}/blackhole.glb`,
 } as const;
 
+/** Проверка пути к GLB игрока: абсолютный путь приложения или http(s) URL. */
+export function isValidPlayerGlbPath(p: string | undefined): p is string {
+  if (!p || typeof p !== 'string') return false;
+  const t = p.trim();
+  if (!t || t === 'undefined' || t === '/undefined') return false;
+  if (!/\.glb$/i.test(t)) return false;
+  if (t.startsWith('/')) return true;
+  return /^https?:\/\//i.test(t);
+}
+
+/**
+ * Fallback-модель игрока при невалидном `modelPath`.
+ * Переопределение: переменная окружения `NEXT_PUBLIC_DEFAULT_PLAYER_MODEL`
+ * (например `/models/alternate.glb` или полный URL на `.glb`).
+ */
+export function getDefaultPlayerModelPath(): string {
+  const fromEnv =
+    typeof process !== 'undefined' ? process.env.NEXT_PUBLIC_DEFAULT_PLAYER_MODEL?.trim() : undefined;
+  if (fromEnv && isValidPlayerGlbPath(fromEnv)) return fromEnv;
+  return MODEL_URLS.volodka;
+}
+
 // ============================================
 // ИНСТРУКЦИЯ ПО ЗАГРУЗКЕ НА GITHUB RELEASES
 // ============================================

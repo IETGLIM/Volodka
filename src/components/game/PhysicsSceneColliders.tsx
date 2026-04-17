@@ -2,7 +2,6 @@
 
 import { memo, useMemo } from 'react';
 import { RigidBody, CuboidCollider } from '@react-three/rapier';
-import * as THREE from 'three';
 import type { SceneId } from '@/data/types';
 
 // ============================================
@@ -74,6 +73,51 @@ const BoundaryWalls = memo(function BoundaryWalls({
       <PhysicsWall
         position={[halfSize, height / 2, 0]}
         size={[wallThickness, height, size]}
+      />
+    </group>
+  );
+});
+
+/**
+ * Прямоугольный периметр (разные ширина/глубина), те же кубоиды, что и у {@link BoundaryWalls}.
+ */
+const RectangularBoundaryWalls = memo(function RectangularBoundaryWalls({
+  width,
+  depth,
+  height = 4,
+  position = [0, 0, 0],
+  wallInset = 1,
+}: {
+  width: number;
+  depth: number;
+  height?: number;
+  position?: [number, number, number];
+  /** Уменьшение внутреннего прямоугольника относительно полного width/depth по каждой оси */
+  wallInset?: number;
+}) {
+  const bw = Math.max(2, width - wallInset);
+  const bd = Math.max(2, depth - wallInset);
+  const halfW = bw / 2;
+  const halfD = bd / 2;
+  const wallThickness = 0.5;
+
+  return (
+    <group position={position}>
+      <PhysicsWall
+        position={[0, height / 2, -halfD]}
+        size={[bw + wallThickness * 2, height, wallThickness]}
+      />
+      <PhysicsWall
+        position={[0, height / 2, halfD]}
+        size={[bw + wallThickness * 2, height, wallThickness]}
+      />
+      <PhysicsWall
+        position={[-halfW, height / 2, 0]}
+        size={[wallThickness, height, bd]}
+      />
+      <PhysicsWall
+        position={[halfW, height / 2, 0]}
+        size={[wallThickness, height, bd]}
       />
     </group>
   );
@@ -362,6 +406,132 @@ export const ZaremaAlbertColliders = memo(function ZaremaAlbertColliders() {
 });
 
 // ============================================
+// НОВЫЕ ЛОКАЦИИ (размеры пола = src/config/scenes.ts)
+// ============================================
+
+export const BluePitColliders = memo(function BluePitColliders() {
+  const bar = useMemo(() => [[0, 0.55, -4.5]] as [number, number, number][], []);
+  const tables = useMemo(
+    () =>
+      [
+        [-3.5, 0.4, 1],
+        [3.5, 0.4, 1],
+      ] as [number, number, number][],
+    []
+  );
+
+  return (
+    <group>
+      <PhysicsFloor size={[15, 15]} color="#1e3a5f" />
+      <BoundaryWalls size={14} height={3} />
+      <InstancedObstacles positions={bar} size={[5, 1.1, 0.9]} />
+      <InstancedObstacles positions={tables} size={[0.85, 0.8, 0.85]} />
+    </group>
+  );
+});
+
+export const GreenZoneColliders = memo(function GreenZoneColliders() {
+  const trees = useMemo(
+    () =>
+      [
+        [-6, 1.2, -5],
+        [6, 1.2, -4],
+        [-5, 1.2, 5],
+        [5, 1.2, 5],
+      ] as [number, number, number][],
+    []
+  );
+  const benches = useMemo(
+    () =>
+      [
+        [-2, 0.35, 0],
+        [2, 0.35, 0],
+      ] as [number, number, number][],
+    []
+  );
+
+  return (
+    <group>
+      <PhysicsFloor size={[18, 18]} color="#2d5a3d" />
+      <BoundaryWalls size={17} height={2.5} />
+      <InstancedObstacles positions={trees} size={[0.45, 2.4, 0.45]} />
+      <InstancedObstacles positions={benches} size={[1.2, 0.55, 0.45]} />
+    </group>
+  );
+});
+
+export const DistrictColliders = memo(function DistrictColliders() {
+  const lamps = useMemo(
+    () =>
+      [
+        [-7, 1.4, -7],
+        [0, 1.4, -8],
+        [7, 1.4, -7],
+      ] as [number, number, number][],
+    []
+  );
+  const crates = useMemo(
+    () =>
+      [
+        [-4, 0.45, 3],
+        [4, 0.45, 3],
+      ] as [number, number, number][],
+    []
+  );
+
+  return (
+    <group>
+      <PhysicsFloor size={[20, 20]} color="#3d3d42" />
+      <BoundaryWalls size={19} height={2.5} />
+      <InstancedObstacles positions={lamps} size={[0.22, 2.8, 0.22]} />
+      <InstancedObstacles positions={crates} size={[1, 0.9, 0.9]} />
+    </group>
+  );
+});
+
+export const MvdColliders = memo(function MvdColliders() {
+  const counter = useMemo(() => [[0, 0.55, -3.2]] as [number, number, number][], []);
+  const desks = useMemo(
+    () =>
+      [
+        [-4, 0.48, 2],
+        [4, 0.48, 2],
+      ] as [number, number, number][],
+    []
+  );
+
+  return (
+    <group>
+      <PhysicsFloor size={[12, 10]} color="#4a5568" />
+      <RectangularBoundaryWalls width={12} depth={10} height={3} wallInset={1} />
+      <InstancedObstacles positions={counter} size={[4.5, 1.1, 0.7]} />
+      <InstancedObstacles positions={desks} size={[1.2, 0.95, 0.65]} />
+    </group>
+  );
+});
+
+export const PresidentHotelColliders = memo(function PresidentHotelColliders() {
+  const reception = useMemo(() => [[0, 0.55, -3.5]] as [number, number, number][], []);
+  const columns = useMemo(
+    () =>
+      [
+        [-4.5, 1.1, 0],
+        [4.5, 1.1, 0],
+      ] as [number, number, number][],
+    []
+  );
+
+  return (
+    <group>
+      <PhysicsFloor size={[14, 10]} color="#5c5348" />
+      <RectangularBoundaryWalls width={14} depth={10} height={3.5} wallInset={1} />
+      <InstancedObstacles positions={reception} size={[5, 1.1, 0.85]} />
+      <InstancedObstacles positions={columns} size={[0.35, 2.2, 0.35]} />
+    </group>
+  );
+});
+
+// ============================================
 // СЕЛЕКТОР КОЛЛАЙДЕРОВ ПО СЦЕНЕ
 // ============================================
 
@@ -395,6 +565,16 @@ export const PhysicsSceneColliders = memo(function PhysicsSceneColliders({ scene
       // Сцена Заремушка с Альбертом
       case 'zarema_albert_room':
         return <ZaremaAlbertColliders />;
+      case 'blue_pit':
+        return <BluePitColliders />;
+      case 'green_zone':
+        return <GreenZoneColliders />;
+      case 'district':
+        return <DistrictColliders />;
+      case 'mvd':
+        return <MvdColliders />;
+      case 'president_hotel':
+        return <PresidentHotelColliders />;
       default:
         return (
           <group>

@@ -1,6 +1,7 @@
 "use client";
 
 import { memo, useMemo, useRef, useState, Suspense } from 'react';
+import type { SceneId } from '@/data/types';
 import { RigidBody, CuboidCollider } from '@react-three/rapier';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
@@ -495,6 +496,20 @@ export const ZaremaAlbertRoom = memo(function ZaremaAlbertRoom() {
       <ZaremaAlbertRoomContent />
     </Suspense>
   );
+});
+
+/** Визуальная оболочка комнаты для Rapier-канваса: только сцены с готовым 3D-мешем. */
+export const PhysicsExplorationRoomVisual = memo(function PhysicsExplorationRoomVisual({
+  sceneId,
+}: {
+  sceneId: SceneId;
+}) {
+  switch (sceneId) {
+    case 'zarema_albert_room':
+      return <ZaremaAlbertRoom />;
+    default:
+      return null;
+  }
 });
 
 // ============================================

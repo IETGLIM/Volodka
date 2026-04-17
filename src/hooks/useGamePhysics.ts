@@ -76,9 +76,19 @@ const KEY_MAP: Record<string, keyof PlayerControls> = {
 // usePlayerControls HOOK
 // ============================================
 
-export function usePlayerControls() {
+export interface UsePlayerControlsOptions {
+  /**
+   * Вызывается синхронно при первом нажатии клавиши взаимодействия (E / F / Enter).
+   * После вызова флаг `interact` сбрасывается внутри хука — опрос через `setInterval` не нужен.
+   */
+  onInteractPress?: () => void;
+}
+
+export function usePlayerControls(options?: UsePlayerControlsOptions) {
   const controlsRef = useRef<PlayerControls>({ ...DEFAULT_CONTROLS });
   const interactPressedRef = useRef(false);
+  const onInteractPressRef = useRef(options?.onInteractPress);
+  onInteractPressRef.current = options?.onInteractPress;
   const [, forceUpdate] = useState({});
 
   // Получение текущего состояния контроллов
@@ -102,6 +112,15 @@ export function usePlayerControls() {
           if (!interactPressedRef.current) {
             controlsRef.current[control] = true;
             interactPressedRef.current = true;
+            const immediate = onInteractPressRef.current;
+            if (immediate) {
+              try {
+                immediate();
+              } finally {
+                controlsRef.current.interact = false;
+                // interactPressedRef остаётся true до keyup — иначе автоповтор keydown вызовет колбэк снова
+              }
+            }
             forceUpdate({});
           }
         } else {

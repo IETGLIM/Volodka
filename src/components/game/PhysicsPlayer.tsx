@@ -6,6 +6,7 @@ import { useGLTF, useAnimations } from '@react-three/drei';
 import { RigidBody, RapierRigidBody, CapsuleCollider } from '@react-three/rapier';
 import * as THREE from 'three';
 import { usePlayerControls, PHYSICS_CONSTANTS } from '@/hooks/useGamePhysics';
+import { getDefaultPlayerModelPath, isValidPlayerGlbPath } from '@/config/modelUrls';
 
 // ============================================
 // TYPES
@@ -261,10 +262,24 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
 ) {
   const rigidBodyRef = useRef<RapierRigidBody>(null);
   const modelRef = useRef<THREE.Group>(null);
+  const canJumpRef = useRef(true);
   const [rotation, setRotation] = useState(initialRotation);
   const [isMoving, setIsMoving] = useState(false);
   const [modelError, setModelError] = useState(false);
-  const { getControls, resetInteract } = usePlayerControls();
+  const onInteractionRef = useRef(onInteraction);
+  const isLockedRef = useRef(isLocked);
+  onInteractionRef.current = onInteraction;
+  isLockedRef.current = isLocked;
+
+  const handleInteractPress = useCallback(() => {
+    if (onInteractionRef.current && !isLockedRef.current) {
+      onInteractionRef.current();
+    }
+  }, []);
+
+  const { getControls } = usePlayerControls({
+    onInteractPress: handleInteractPress,
+  });
 
   // Экспозиция методов через ref
   useImperativeHandle(ref, () => ({
@@ -284,20 +299,6 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
     },
     getRigidBody: () => rigidBodyRef.current,
   }), [rotation, position]);
-
-  // Обработка взаимодействия
-  useEffect(() => {
-    const checkInteraction = () => {
-      const controls = getControls();
-      if (controls.interact && onInteraction && !isLocked) {
-        onInteraction();
-        resetInteract();
-      }
-    };
-
-    const interval = setInterval(checkInteraction, 100);
-    return () => clearInterval(interval);
-  }, [getControls, onInteraction, isLocked, resetInteract]);
 
   // Обновление физики
   useFrame((_, delta) => {
@@ -343,8 +344,19 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
     const newVelX = THREE.MathUtils.lerp(currentVel.x, targetVelX, friction);
     const newVelZ = THREE.MathUtils.lerp(currentVel.z, targetVelZ, friction);
 
-    // Применяем скорость
-    rigidBodyRef.current.setLinvel({ x: newVelX, y: currentVel.y, z: newVelZ }, true);
+    const groundedNear =
+      currentPos.y <= PHYSICS_CONSTANTS.PLAYER_HEIGHT * 0.65 + 0.15 && currentVel.y <= 0.35;
+    if (groundedNear) {
+      canJumpRef.current = true;
+    }
+
+    let newVelY = currentVel.y;
+    if (controls.jump && canJumpRef.current && !isLocked) {
+      newVelY = PHYSICS_CONSTANTS.JUMP_FORCE;
+      canJumpRef.current = false;
+    }
+
+    rigidBodyRef.current.setLinvel({ x: newVelX, y: newVelY, z: newVelZ }, true);
 
     // Определяем движение
     const moving = Math.abs(newVelX) > 0.1 || Math.abs(newVelZ) > 0.1;
@@ -376,19 +388,9 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
     setModelError(true);
   }, []);
 
-  // Валидация modelPath - если невалидный, используем дефолтный путь
-  const isValidModelPath = modelPath &&
-    typeof modelPath === 'string' &&
-    modelPath !== 'undefined' &&
-    modelPath !== '/undefined' &&
-    modelPath !== '' &&
-    modelPath.startsWith('/models/') &&
-    modelPath.length > 8;
+  const modelPathToUse = isValidPlayerGlbPath(modelPath) ? modelPath : getDefaultPlayerModelPath();
 
-  const modelPathToUse = isValidModelPath ? modelPath : '/models/Volodka.glb';
-
-  // Логируем если путь был невалидным
-  if (modelPath && !isValidModelPath) {
+  if (modelPath && !isValidPlayerGlbPath(modelPath)) {
     console.warn('[PhysicsPlayer] Invalid modelPath provided, using default:', modelPath);
   }
 
