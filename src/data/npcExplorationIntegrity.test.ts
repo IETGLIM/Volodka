@@ -8,11 +8,11 @@ import { STORY_TRIGGERS } from '@/data/triggerZones';
 import { rewriteLegacyModelPath } from '@/config/modelUrls';
 
 describe('3D / exploration data integrity', () => {
-  it('defines explore_mode story node aligned with 3D hub', () => {
+  it('defines explore_mode story node aligned with default 3D start (home / 10th floor)', () => {
     const node = STORY_NODES.explore_mode;
     expect(node).toBeDefined();
     expect(node?.id).toBe('explore_mode');
-    expect(node?.scene).toBe('street_night');
+    expect(node?.scene).toBe('home_evening');
   });
 
   it('maps every NPC legacy modelPath to an existing file under public/models-external', () => {

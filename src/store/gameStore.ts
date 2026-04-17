@@ -181,8 +181,9 @@ const INITIAL_FACTION_REPUTATIONS: Record<FactionId, FactionReputation> = {
 // ============================================
 
 const INITIAL_EXPLORATION_STATE: ExplorationState = {
-  playerPosition: { x: 0, y: 1, z: 4, rotation: 0 },
-  currentSceneId: 'street_night',
+  /** Спавн как в `SCENE_CONFIG.home_evening.spawnPoint` — квартира на 10-м, не двор. */
+  playerPosition: { x: 0, y: 1, z: 3, rotation: 0 },
+  currentSceneId: 'home_evening',
   timeOfDay: 20,
   npcStates: {},
   triggerStates: {},

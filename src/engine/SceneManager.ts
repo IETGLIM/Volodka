@@ -84,8 +84,8 @@ export const SCENE_VISUALS: Record<SceneId, SceneVisualConfig> = {
   },
   home_evening: {
     id: 'home_evening',
-    name: 'Дом, вечер',
-    description: 'Тусклый янтарный свет от лампы',
+    name: 'Квартира, 10-й этаж',
+    description: 'Вечер: тусклый янтарный свет от лампы, окно в двор',
     photoUrl: scenePhoto('home_evening'),
     background: 'linear-gradient(180deg, #0d0a05 0%, #1a1208 40%, #2a1a0a 100%)',
     overlay: 'bg-gradient-to-t from-amber-900/30 to-transparent',

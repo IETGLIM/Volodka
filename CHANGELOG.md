@@ -4,6 +4,7 @@
 
 ### Added
 
+- **`scripts/list-glb-animations.mjs`**: проверка `animations` в JSON-чанке каждого `.glb` в `public/models-external`.
 - **Расписание NPC**: `src/engine/ScheduleEngine.ts` (`ScheduleEntry`, `getCurrentScheduleEntry`), слоты для albert / zarema / kitchen_maria / cafe_barista; в исследовании **`exploration.timeOfDay`** и **`advanceTime`** в `gameStore` и `src/client/store/worldStore.ts`; `NPCSystem` фильтрует NPC по сцене и расписанию, опционально **`RigidBody` kinematic** для телепорта; иконки активности в `<Html>`; недоступный по расписанию диалог → **`eventBus` `ui:exploration_message`**.
 - **Квесты в 3D**: индикаторы `!` / `?` над NPC (`src/lib/npcQuestMarker.ts`, `src/store/questStore.ts`), данные из **`gameStore`**.
 - **Карма в UI и диалогах**: `MoralCompassHUD.tsx`; подсветка игрока в **`PhysicsPlayer`** по порогам кармы; в **`DialogueEngine`** условия **`minKarma` / `maxKarma`** (типы в `rpgTypes` / `shared/types/rpg`).
@@ -19,13 +20,17 @@
 
 ### Changed
 
+- **Старт 3D**: `exploration.currentSceneId` и узел **`explore_mode`** → **`home_evening`** (квартира); подписи в **`SceneManager`**, **`scenes.ts`**, тест **`npcExplorationIntegrity`**.
+- **`NPC_DEFINITIONS`**: заменены GLB без клипов анимации / с одним A-pose; у всех целевых NPC поле **`animations`** и константы имён клипов; **`scenes.ts`** / **`modelUrls.ts`** приведены в соответствие.
 - **`NPC.tsx`**, **`RPGGameCanvas.tsx`**, **`PhysicsRPGCanvas.tsx`**: интеграция расписания, тика времени внутри `<Canvas>`, радиальное меню.
-- **`GameOrchestrator.tsx`**: HUD кармы, лут/скилл-оверлеи, туториал, маркеры квестов на миникарте, боевой режим музыки; размер миникарты из **`getSceneConfig(currentSceneId).size`**; обработка **`object:interact`**.
+- **`GameOrchestrator.tsx`**: HUD кармы, лут/скилл-оверлеи, туториал, маркеры квестов на миникарте, боевой режим музыки; размер миникарты из **`getSceneConfig(currentSceneId).size`**; обработка **`object:interact`**; **glitch**-переход при смене 3D-локации по **`lastSceneTransition`**.
 - **`HUD.tsx`**: кнопка **💡** переключает флаг **`tutorialsDisabled`** (подсказки 3D).
 
 ### Removed
 
 ### Fixed
+
+- **`PhysicsPlayer` / `GLBPlayerModel`**: отказ от глубокого клона сцены игрока для skinned **`Volodka.glb`** (меш снова виден); при одном клипе в файле он проигрывается и при движении.
 
 ---
 

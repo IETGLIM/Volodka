@@ -55,17 +55,18 @@ export const MODEL_URLS = {
   annie: `${BASE_URL}/free_annie_anime_gerl_-_without_clothes.glb`,
   burntrap: `${BASE_URL}/burntrap_hd_-_fnaf_security_breach.glb`,
   shibahu: `${BASE_URL}/shibahu.glb`,
-  cyberpunkChar: `${BASE_URL}/cyberpunk_character.glb`,
-  darkLantern: `${BASE_URL}/dark_lantern_huntress.glb`,
+  /** @deprecated Используйте `lowpolyAnimeCyber` для NPC с idle/walk. */
+  cyberpunkChar: `${BASE_URL}/lowpoly_anime_character_cyberstyle.glb`,
+  darkLantern: `${BASE_URL}/witchapprentice.glb`,
   calvin: `${BASE_URL}/calvin_freckle_mcmurray_from_lackadaisy.glb`,
   collegeGirl: `${BASE_URL}/college_girl.glb`,
   cyberpunkFemale: `${BASE_URL}/cyberpunk_female_full-body_character.glb`,
-  antoniGaudi: `${BASE_URL}/antoni_gaudi.glb`,
+  antoniGaudi: `${BASE_URL}/on_a_quest.glb`,
   destinyBust: `${BASE_URL}/destiny_2_character_bust.glb`,
   toonCat: `${BASE_URL}/toon_cat_free.glb`,
   spartanArmour: `${BASE_URL}/spartan_armour_mkv_-_halo_reach.glb`,
-  crimsonLaceConfidence: `${BASE_URL}/crimson_lace_confidence.glb`,
-  crimsonLaceHallway: `${BASE_URL}/crimson_lace_in_the_hallway.glb`,
+  crimsonLaceConfidence: `${BASE_URL}/alleyana.glb`,
+  crimsonLaceHallway: `${BASE_URL}/miss_galaxy.glb`,
   
   // Окружение
   blackhole: `${BASE_URL}/blackhole.glb`,

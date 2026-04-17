@@ -1,5 +1,99 @@
 import type { NPCDefinition } from './rpgTypes';
 
+/** Клипы в `lowpoly_anime_character_cyberstyle.glb` (Mixamo idle/walk). */
+const NPC_ANIM_LOWPOLY_CYBER: NonNullable<NPCDefinition['animations']> = {
+  idle: 'Armature|Idle',
+  walk: 'Armature|Walk',
+};
+
+/** Один клип «Take 001» (Sketchfab и т.п.). */
+const NPC_ANIM_TAKE001: NonNullable<NPCDefinition['animations']> = {
+  idle: 'Take 001',
+  walk: 'Take 001',
+};
+
+/** Клип в `cyberpunk_female_full-body_character.glb`. */
+const NPC_ANIM_MIXAMO_FEMALE: NonNullable<NPCDefinition['animations']> = {
+  idle: 'Armature|mixamo.com|Layer0',
+  walk: 'Armature|mixamo.com|Layer0',
+};
+
+/** Клип в `alleyana.glb`. */
+const NPC_ANIM_ALLEYANA: NonNullable<NPCDefinition['animations']> = {
+  idle: 'Alleyana',
+  walk: 'Alleyana',
+};
+
+const NPC_ANIM_MISS_GALAXY: NonNullable<NPCDefinition['animations']> = {
+  idle: 'walking',
+  walk: 'walking',
+};
+
+const NPC_ANIM_SHIBAHU: NonNullable<NPCDefinition['animations']> = {
+  idle: 'Take 001',
+  walk: 'Take 001',
+};
+
+const NPC_ANIM_SMOL_AME: NonNullable<NPCDefinition['animations']> = {
+  idle: 'Animation',
+  walk: 'Animation',
+};
+
+const NPC_ANIM_LILLIAN: NonNullable<NPCDefinition['animations']> = {
+  idle: 'Idle_g',
+  walk: 'Idle_g',
+};
+
+const NPC_ANIM_COLLEGE_GIRL: NonNullable<NPCDefinition['animations']> = {
+  idle: 'All2',
+  walk: 'All2',
+};
+
+const NPC_ANIM_CALVIN: NonNullable<NPCDefinition['animations']> = {
+  idle: 'rig_deform|G_Pose1',
+  walk: 'rig_deform|G_Pose1',
+};
+
+const NPC_ANIM_DESTINY_BUST: NonNullable<NPCDefinition['animations']> = {
+  idle: 'Take 001',
+  walk: 'Take 001',
+};
+
+const NPC_ANIM_SAYURI: NonNullable<NPCDefinition['animations']> = {
+  idle: 'Dans',
+  walk: 'Dans',
+};
+
+const NPC_ANIM_BURNT_TRAP: NonNullable<NPCDefinition['animations']> = {
+  idle: 'RIG_Burntrap.ao|BurnTrap_Idle',
+  walk: 'RIG_Burntrap.ao|BurnTrap_Idle',
+};
+
+const NPC_ANIM_BLADE_SOUL: NonNullable<NPCDefinition['animations']> = {
+  idle: 'Take 001',
+  walk: 'Take 001',
+};
+
+const NPC_ANIM_ANNIE: NonNullable<NPCDefinition['animations']> = {
+  idle: 'Walk',
+  walk: 'Walk',
+};
+
+const NPC_ANIM_LUOLI: NonNullable<NPCDefinition['animations']> = {
+  idle: 'CINEMA_4D___',
+  walk: 'CINEMA_4D___',
+};
+
+const NPC_ANIM_SPARTAN: NonNullable<NPCDefinition['animations']> = {
+  idle: 'Take 001',
+  walk: 'Take 001',
+};
+
+const NPC_ANIM_TOON_CAT: NonNullable<NPCDefinition['animations']> = {
+  idle: 'Scene',
+  walk: 'Scene',
+};
+
 // ============================================
 // ПОЛНЫЕ ОПРЕДЕЛЕНИЯ NPC С ФЭНТЕЗИ-ПЕРСОНАЖАМИ
 // 25 уникальных персонажей для мира Володьки
@@ -13,6 +107,7 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
     name: 'Заремушка (Зарема)',
     model: 'barista',
     modelPath: '/models/cyberpunk_female_full-body_character.glb',
+    animations: NPC_ANIM_MIXAMO_FEMALE,
     scale: 1,
     defaultPosition: { x: -2, y: 0, z: 0 },
     patrolRadius: 1.5,
@@ -35,6 +130,7 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
     name: 'Заремушка (Зарема)',
     model: 'barista',
     modelPath: '/models/cyberpunk_female_full-body_character.glb',
+    animations: NPC_ANIM_MIXAMO_FEMALE,
     scale: 1,
     defaultPosition: { x: -1.8, y: 0, z: 0.8 },
     patrolRadius: 1,
@@ -54,7 +150,8 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
     id: 'albert',
     name: 'Альберт',
     model: 'colleague',
-    modelPath: '/models/cyberpunk_character.glb',
+    modelPath: '/models/lowpoly_anime_character_cyberstyle.glb',
+    animations: NPC_ANIM_LOWPOLY_CYBER,
     scale: 1,
     defaultPosition: { x: 2, y: 0, z: 0 },
     patrolRadius: 1.2,
@@ -75,7 +172,8 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
     id: 'albert_home',
     name: 'Альберт',
     model: 'colleague',
-    modelPath: '/models/cyberpunk_character.glb',
+    modelPath: '/models/lowpoly_anime_character_cyberstyle.glb',
+    animations: NPC_ANIM_LOWPOLY_CYBER,
     scale: 1,
     defaultPosition: { x: 2.2, y: 0, z: -0.8 },
     patrolRadius: 0.9,
@@ -97,6 +195,7 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
     name: 'Виктория',
     model: 'generic',
     modelPath: '/models/smol_ame_in_an_upcycled_terrarium_hololiveen.glb',
+    animations: NPC_ANIM_SMOL_AME,
     scale: 1,
     defaultPosition: { x: -2, y: 0, z: 0 },
     patrolRadius: 1.5,
@@ -134,7 +233,8 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
     id: 'vs_slice_albert',
     name: 'Альберт',
     model: 'colleague',
-    modelPath: '/models/cyberpunk_character.glb',
+    modelPath: '/models/lowpoly_anime_character_cyberstyle.glb',
+    animations: NPC_ANIM_LOWPOLY_CYBER,
     scale: 1,
     defaultPosition: { x: 2.2, y: 0, z: 0.5 },
     patrolRadius: 0.8,
@@ -167,7 +267,8 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
     id: 'vs_slice_coworker',
     name: 'Александр (рабочий чат)',
     model: 'colleague',
-    modelPath: '/models/cyberpunk_character.glb',
+    modelPath: '/models/lowpoly_anime_character_cyberstyle.glb',
+    animations: NPC_ANIM_LOWPOLY_CYBER,
     scale: 1,
     defaultPosition: { x: -2.5, y: 0, z: 1.2 },
     patrolRadius: 0.6,
@@ -202,6 +303,7 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
     name: 'Лилиан',
     model: 'generic',
     modelPath: '/models/lillian__vgdc.glb',
+    animations: NPC_ANIM_LILLIAN,
     scale: 1.2,
     defaultPosition: { x: 0, y: 0, z: -4 },
     sceneId: 'dream',
@@ -233,6 +335,7 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
     name: 'Эмбер — Ученица Ведьмы',
     model: 'generic',
     modelPath: '/models/witchapprentice.glb',
+    animations: NPC_ANIM_TAKE001,
     scale: 1.1,
     defaultPosition: { x: -3, y: 0, z: -2 },
     sceneId: 'dream',
@@ -263,6 +366,7 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
     name: 'Астра — Мисс Галактика',
     model: 'generic',
     modelPath: '/models/miss_galaxy.glb',
+    animations: NPC_ANIM_MISS_GALAXY,
     scale: 1.3,
     defaultPosition: { x: 3, y: 0.5, z: -3 },
     sceneId: 'dream',
@@ -294,6 +398,7 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
     name: 'Странник',
     model: 'generic',
     modelPath: '/models/on_a_quest.glb',
+    animations: NPC_ANIM_TAKE001,
     scale: 1,
     defaultPosition: { x: 2, y: 0, z: 1 },
     patrolRadius: 2,
@@ -327,6 +432,7 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
     name: 'Саюри',
     model: 'generic',
     modelPath: '/models/sayuri_dans.glb',
+    animations: NPC_ANIM_SAYURI,
     scale: 1,
     defaultPosition: { x: 0, y: 0, z: 2 },
     sceneId: 'dream',
@@ -357,6 +463,7 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
     name: 'Нексус',
     model: 'generic',
     modelPath: '/models/lowpoly_anime_character_cyberstyle.glb',
+    animations: NPC_ANIM_LOWPOLY_CYBER,
     scale: 1.1,
     defaultPosition: { x: -2, y: 0, z: 3 },
     sceneId: 'dream',
@@ -387,6 +494,7 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
     name: 'Лу',
     model: 'generic',
     modelPath: '/models/luoli_run.glb',
+    animations: NPC_ANIM_LUOLI,
     scale: 1,
     defaultPosition: { x: 4, y: 0, z: 0 },
     waypoints: [
@@ -425,6 +533,7 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
     name: 'Аллеяна — Тень Переулка',
     model: 'generic',
     modelPath: '/models/alleyana.glb',
+    animations: NPC_ANIM_ALLEYANA,
     scale: 1.1,
     defaultPosition: { x: -4, y: 0, z: -4 },
     sceneId: 'dream',
@@ -455,6 +564,7 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
     name: 'Клинок — Воин Души',
     model: 'generic',
     modelPath: '/models/blade__soul_kung_fu_sword_stick.glb',
+    animations: NPC_ANIM_BLADE_SOUL,
     scale: 1.2,
     defaultPosition: { x: 3, y: 0, z: 3 },
     sceneId: 'dream',
@@ -485,6 +595,7 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
     name: 'Энни — Невинная Душа',
     model: 'generic',
     modelPath: '/models/free_annie_anime_gerl_-_without_clothes.glb',
+    animations: NPC_ANIM_ANNIE,
     scale: 0.9,
     defaultPosition: { x: -1, y: 0, z: 4 },
     sceneId: 'dream',
@@ -518,6 +629,7 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
     name: 'Сожжённый',
     model: 'shadow',
     modelPath: '/models/burntrap_hd_-_fnaf_security_breach.glb',
+    animations: NPC_ANIM_BURNT_TRAP,
     scale: 1.5,
     defaultPosition: { x: 0, y: 0, z: -5 },
     sceneId: 'battle',
@@ -552,6 +664,7 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
     name: 'Бариста',
     model: 'barista',
     modelPath: '/models/shibahu.glb',
+    animations: NPC_ANIM_SHIBAHU,
     scale: 1,
     defaultPosition: { x: 0, y: 0, z: -3 },
     patrolRadius: 2,
@@ -594,7 +707,8 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
     id: 'cafe_visitor',
     name: 'Посетитель кафе',
     model: 'generic',
-    modelPath: '/models/cyberpunk_character.glb',
+    modelPath: '/models/lowpoly_anime_character_cyberstyle.glb',
+    animations: NPC_ANIM_LOWPOLY_CYBER,
     scale: 1,
     defaultPosition: { x: 3, y: 0, z: 0 },
     waypoints: [
@@ -628,7 +742,8 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
     id: 'cafe_poet',
     name: 'Поэт',
     model: 'colleague',
-    modelPath: '/models/dark_lantern_huntress.glb',
+    modelPath: '/models/witchapprentice.glb',
+    animations: NPC_ANIM_TAKE001,
     scale: 1,
     defaultPosition: { x: -3, y: 0, z: -5 },
     sceneId: 'cafe_evening',
@@ -660,6 +775,7 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
     name: 'Калвин',
     model: 'generic',
     modelPath: '/models/calvin_freckle_mcmurray_from_lackadaisy.glb',
+    animations: NPC_ANIM_CALVIN,
     scale: 1,
     defaultPosition: { x: 2, y: 0, z: 2 },
     patrolRadius: 1.5,
@@ -691,6 +807,7 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
     name: 'Виктория',
     model: 'generic',
     modelPath: '/models/college_girl.glb',
+    animations: NPC_ANIM_COLLEGE_GIRL,
     scale: 1,
     defaultPosition: { x: -2, y: 0, z: 3 },
     sceneId: 'cafe_evening',
@@ -722,6 +839,7 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
     name: 'Рей',
     model: 'generic',
     modelPath: '/models/cyberpunk_female_full-body_character.glb',
+    animations: NPC_ANIM_MIXAMO_FEMALE,
     scale: 1.1,
     defaultPosition: { x: 4, y: 0, z: -2 },
     sceneId: 'cafe_evening',
@@ -753,7 +871,8 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
     id: 'park_elder',
     name: 'Старик в парке',
     model: 'elder',
-    modelPath: '/models/antoni_gaudi.glb',
+    modelPath: '/models/on_a_quest.glb',
+    animations: NPC_ANIM_TAKE001,
     scale: 1,
     defaultPosition: { x: -5, y: 0, z: 0 },
     waypoints: [
@@ -791,6 +910,7 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
     name: 'Статуя Судьбы',
     model: 'generic',
     modelPath: '/models/destiny_2_character_bust.glb',
+    animations: NPC_ANIM_DESTINY_BUST,
     scale: 1.5,
     defaultPosition: { x: 0, y: 0, z: -8 },
     sceneId: 'memorial_park',
@@ -822,6 +942,7 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
     name: 'Выгуливатель собак',
     model: 'generic',
     modelPath: '/models/toon_cat_free.glb',
+    animations: NPC_ANIM_TOON_CAT,
     scale: 1,
     defaultPosition: { x: 5, y: 0, z: 3 },
     patrolRadius: 3,
@@ -853,7 +974,8 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
     id: 'rooftop_shadow',
     name: 'Тень на крыше',
     model: 'shadow',
-    modelPath: '/models/dark_lantern_huntress.glb',
+    modelPath: '/models/witchapprentice.glb',
+    animations: NPC_ANIM_TAKE001,
     scale: 1,
     defaultPosition: { x: -3, y: 0, z: -5 },
     sceneId: 'rooftop_night',
@@ -890,7 +1012,8 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
     id: 'office_colleague',
     name: 'Коллега',
     model: 'colleague',
-    modelPath: '/models/cyberpunk_character.glb',
+    modelPath: '/models/lowpoly_anime_character_cyberstyle.glb',
+    animations: NPC_ANIM_LOWPOLY_CYBER,
     scale: 1,
     defaultPosition: { x: 3, y: 0, z: 1 },
     patrolRadius: 1.5,
@@ -923,6 +1046,7 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
     name: 'Начальник',
     model: 'elder',
     modelPath: '/models/spartan_armour_mkv_-_halo_reach.glb',
+    animations: NPC_ANIM_SPARTAN,
     scale: 1,
     defaultPosition: { x: 0, y: 0, z: -4 },
     sceneId: 'office_morning',
@@ -952,7 +1076,8 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
     id: 'office_alexander',
     name: 'Александр',
     model: 'colleague',
-    modelPath: '/models/cyberpunk_character.glb',
+    modelPath: '/models/lowpoly_anime_character_cyberstyle.glb',
+    animations: NPC_ANIM_LOWPOLY_CYBER,
     scale: 1,
     defaultPosition: { x: -3.2, y: 0, z: 1.2 },
     patrolRadius: 1,
@@ -972,7 +1097,8 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
     id: 'office_dmitry',
     name: 'Дмитрий',
     model: 'colleague',
-    modelPath: '/models/cyberpunk_character.glb',
+    modelPath: '/models/lowpoly_anime_character_cyberstyle.glb',
+    animations: NPC_ANIM_LOWPOLY_CYBER,
     scale: 1,
     defaultPosition: { x: -1.2, y: 0, z: 2 },
     patrolRadius: 1.2,
@@ -992,7 +1118,8 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
     id: 'office_andrey',
     name: 'Андрей (коллега)',
     model: 'colleague',
-    modelPath: '/models/cyberpunk_character.glb',
+    modelPath: '/models/lowpoly_anime_character_cyberstyle.glb',
+    animations: NPC_ANIM_LOWPOLY_CYBER,
     scale: 1,
     defaultPosition: { x: 1.4, y: 0, z: 0.5 },
     patrolRadius: 1,
@@ -1012,7 +1139,8 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
     id: 'office_artyom',
     name: 'Артём',
     model: 'colleague',
-    modelPath: '/models/cyberpunk_character.glb',
+    modelPath: '/models/lowpoly_anime_character_cyberstyle.glb',
+    animations: NPC_ANIM_LOWPOLY_CYBER,
     scale: 0.95,
     defaultPosition: { x: -2.4, y: 0, z: -1.5 },
     patrolRadius: 0.8,
@@ -1035,6 +1163,7 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
     name: 'Вика с Зелёнки',
     model: 'generic',
     modelPath: '/models/college_girl.glb',
+    animations: NPC_ANIM_COLLEGE_GIRL,
     scale: 1,
     defaultPosition: { x: -3.5, y: 0, z: 2.5 },
     patrolRadius: 1.8,
@@ -1055,6 +1184,7 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
     name: 'Рената',
     model: 'generic',
     modelPath: '/models/cyberpunk_female_full-body_character.glb',
+    animations: NPC_ANIM_MIXAMO_FEMALE,
     scale: 1,
     defaultPosition: { x: 4, y: 0, z: 1 },
     patrolRadius: 1.2,
@@ -1075,6 +1205,7 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
     name: 'Дамьен',
     model: 'colleague',
     modelPath: '/models/calvin_freckle_mcmurray_from_lackadaisy.glb',
+    animations: NPC_ANIM_CALVIN,
     scale: 1,
     defaultPosition: { x: 4.3, y: 0, z: -0.5 },
     sceneId: 'street_night',
@@ -1092,7 +1223,8 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
     id: 'district_konstantin',
     name: 'Константин',
     model: 'colleague',
-    modelPath: '/models/cyberpunk_character.glb',
+    modelPath: '/models/lowpoly_anime_character_cyberstyle.glb',
+    animations: NPC_ANIM_LOWPOLY_CYBER,
     scale: 1.05,
     defaultPosition: { x: 0.5, y: 0, z: 3 },
     sceneId: 'street_night',
@@ -1111,7 +1243,8 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
     id: 'district_timur',
     name: 'Тимур',
     model: 'generic',
-    modelPath: '/models/cyberpunk_character.glb',
+    modelPath: '/models/lowpoly_anime_character_cyberstyle.glb',
+    animations: NPC_ANIM_LOWPOLY_CYBER,
     scale: 1,
     defaultPosition: { x: 1.2, y: 0, z: 3.2 },
     sceneId: 'street_night',
@@ -1129,7 +1262,8 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
     id: 'district_polikarp',
     name: 'Поликарп',
     model: 'elder',
-    modelPath: '/models/antoni_gaudi.glb',
+    modelPath: '/models/on_a_quest.glb',
+    animations: NPC_ANIM_TAKE001,
     scale: 1,
     defaultPosition: { x: -1, y: 0, z: -2.5 },
     sceneId: 'street_winter',
@@ -1149,7 +1283,8 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
     id: 'district_polikarp_night',
     name: 'Поликарп',
     model: 'elder',
-    modelPath: '/models/antoni_gaudi.glb',
+    modelPath: '/models/on_a_quest.glb',
+    animations: NPC_ANIM_TAKE001,
     scale: 1,
     defaultPosition: { x: -3.8, y: 0, z: 1.6 },
     patrolRadius: 1.2,
@@ -1170,6 +1305,7 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
     name: 'Римма',
     model: 'generic',
     modelPath: '/models/shibahu.glb',
+    animations: NPC_ANIM_SHIBAHU,
     scale: 0.95,
     defaultPosition: { x: 2.5, y: 0, z: -2 },
     sceneId: 'street_winter',
@@ -1190,6 +1326,7 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
     name: 'Римма',
     model: 'generic',
     modelPath: '/models/shibahu.glb',
+    animations: NPC_ANIM_SHIBAHU,
     scale: 0.95,
     defaultPosition: { x: 2.35, y: 0, z: -1.95 },
     sceneId: 'street_night',
@@ -1209,6 +1346,7 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
     name: 'Настя',
     model: 'generic',
     modelPath: '/models/smol_ame_in_an_upcycled_terrarium_hololiveen.glb',
+    animations: NPC_ANIM_SMOL_AME,
     scale: 1,
     defaultPosition: { x: 3, y: 0, z: -2.2 },
     sceneId: 'street_night',
@@ -1228,7 +1366,8 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
     id: 'street_stranger',
     name: 'Незнакомец',
     model: 'shadow',
-    modelPath: '/models/crimson_lace_confidence.glb',
+    modelPath: '/models/alleyana.glb',
+    animations: NPC_ANIM_ALLEYANA,
     scale: 1,
     defaultPosition: { x: -4, y: 0, z: 2 },
     patrolRadius: 2,
@@ -1258,7 +1397,8 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
     id: 'street_crimson',
     name: 'Алая',
     model: 'generic',
-    modelPath: '/models/crimson_lace_in_the_hallway.glb',
+    modelPath: '/models/miss_galaxy.glb',
+    animations: NPC_ANIM_MISS_GALAXY,
     scale: 1.1,
     defaultPosition: { x: 3, y: 0, z: -3 },
     sceneId: 'street_night',

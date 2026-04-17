@@ -69,7 +69,7 @@ export const SCENE_CONFIG = {
         id: 'albert', 
         name: 'Альберт', 
         model: 'colleague', 
-        modelPath: '/models/cyberpunk_character.glb',
+        modelPath: '/models/lowpoly_anime_character_cyberstyle.glb',
         position: [2, 0, -1], 
         rotation: [0, -0.5, 0], 
         dialogueTree: 'albert_room',
@@ -97,7 +97,7 @@ export const SCENE_CONFIG = {
   },
   
   home_evening: {
-    id: 'home_evening', name: 'Дом (вечер)', size: [14, 14],
+    id: 'home_evening', name: 'Квартира, 10-й этаж (вечер)', size: [14, 14],
     spawnPoint: { x: 0, y: 1, z: 3, rotation: 0 } as PlayerPosition,
     ambientLight: { intensity: 0.35, color: '#ffaa66' }, npcs: [], interactiveObjects: [],
   },
@@ -112,7 +112,7 @@ export const SCENE_CONFIG = {
         id: 'kirill', 
         name: 'Кирилл', 
         model: 'colleague', 
-        modelPath: '/models/cyberpunk_character.glb',
+        modelPath: '/models/lowpoly_anime_character_cyberstyle.glb',
         position: [3, 0, 0.8], 
         rotation: [0, Math.PI, 0], 
         basePersonalSpace: 1.5, 
@@ -130,7 +130,7 @@ export const SCENE_CONFIG = {
     ambientLight: { intensity: 0.5, color: '#ffa500' },
     npcs: [
       { id: 'barista', name: 'Бариста', model: 'barista', modelPath: '/models/shibahu.glb', position: [0, 0, -3], rotation: [0, 0, 0], dialogueTree: 'barista_greeting' },
-      { id: 'poet', name: 'Поэт', model: 'colleague', modelPath: '/models/dark_lantern_huntress.glb', position: [-3, 0, -5], rotation: [0, 0.5, 0], dialogueTree: 'poet_greeting' },
+      { id: 'poet', name: 'Поэт', model: 'colleague', modelPath: '/models/witchapprentice.glb', position: [-3, 0, -5], rotation: [0, 0.5, 0], dialogueTree: 'poet_greeting' },
       { id: 'alisa', name: 'Алиса', model: 'shadow', modelPath: '/models/college_girl.glb', position: [-2, 0, 3], rotation: [0, 0.5, 0], dialogueTree: 'alisa_cafe' }
     ],
     interactiveObjects: [{ id: 'cafe_book', type: 'book', position: [0, 0.8, -3.5], poemId: 'poem_cafe_01', itemId: 'poem_fragment_1', canBeRead: true, size: [0.22, 0.04, 0.16], color: '#a0522d' }],
@@ -146,7 +146,7 @@ export const SCENE_CONFIG = {
         id: 'sergeich', 
         name: 'Сергеич', 
         model: 'elder', 
-        modelPath: '/models/antoni_gaudi.glb',
+        modelPath: '/models/on_a_quest.glb',
         position: [-4, 0, 2], 
         rotation: [0, 0.3, 0], 
         basePersonalSpace: 1.5, 
@@ -167,7 +167,7 @@ export const SCENE_CONFIG = {
         id: 'sergeich', 
         name: 'Сергеич', 
         model: 'elder', 
-        modelPath: '/models/antoni_gaudi.glb',
+        modelPath: '/models/on_a_quest.glb',
         position: [-4, 0, 2], 
         rotation: [0, 0.3, 0], 
         dialogueTree: 'sergeich_street'
@@ -203,7 +203,7 @@ export const SCENE_CONFIG = {
         id: 'kirill', 
         name: 'Кирилл', 
         model: 'colleague', 
-        modelPath: '/models/cyberpunk_character.glb',
+        modelPath: '/models/lowpoly_anime_character_cyberstyle.glb',
         position: [4, 0, -2], 
         dialogueTree: 'kirill_library'
       }
@@ -237,7 +237,7 @@ export const SCENE_CONFIG = {
         id: 'sergeich', 
         name: 'Сергеич', 
         model: 'elder', 
-        modelPath: '/models/antoni_gaudi.glb',
+        modelPath: '/models/on_a_quest.glb',
         position: [5, 0, 2], 
         dialogueTree: 'sergeich_district'
       }

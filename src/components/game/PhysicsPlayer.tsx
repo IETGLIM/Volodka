@@ -191,20 +191,18 @@ const GLBPlayerModel = memo(function GLBPlayerModel({
     };
   }, [modelPath]);
 
-  const clonedScene = useMemo(() => {
-    if (!loadedScene) {
-      onError();
-      return null;
-    }
+  /** Без `Object3D.clone(true)` для skinned GLB: клон часто оставляет меш невидимым (видна только декаль тени). */
+  const displayScene = useMemo(() => {
+    if (!loadedScene) return null;
     try {
-      const clone = loadedScene.clone(true);
-      clone.traverse((child: any) => {
-        if (child.isMesh) {
-          child.castShadow = true;
-          child.receiveShadow = true;
+      loadedScene.traverse((child: THREE.Object3D) => {
+        const m = child as THREE.Mesh & { isMesh?: boolean };
+        if (m.isMesh) {
+          m.castShadow = true;
+          m.receiveShadow = true;
         }
       });
-      return clone;
+      return loadedScene;
     } catch {
       onError();
       return null;
@@ -215,8 +213,15 @@ const GLBPlayerModel = memo(function GLBPlayerModel({
     if (!actions || Object.keys(actions).length === 0) return;
 
     const animationNames = Object.keys(actions);
-    const idleAnim = animationNames.find(n => n.toLowerCase().includes('idle')) || animationNames[0];
-    const walkAnim = animationNames.find(n => n.toLowerCase().includes('walk') || n.toLowerCase().includes('run'));
+    const idleAnim =
+      animationNames.find((n) => n.toLowerCase().includes('idle')) || animationNames[0];
+    /** Один клип в GLB (напр. `Volodka.glb` — «Basic Sing Serious»): и idle, и «ходьба» без отдельного Walk. */
+    const walkAnim =
+      animationNames.length === 1
+        ? idleAnim
+        : animationNames.find(
+            (n) => n.toLowerCase().includes('walk') || n.toLowerCase().includes('run'),
+          );
 
     const targetAnim = isMoving && walkAnim ? walkAnim : idleAnim;
 
@@ -231,11 +236,11 @@ const GLBPlayerModel = memo(function GLBPlayerModel({
     }
   }, [actions, isMoving, currentAction]);
 
-  if (!clonedScene) return null;
+  if (!displayScene) return null;
 
   return (
     <group ref={groupRef} scale={[1, 1, 1]}>
-      <primitive object={clonedScene} />
+      <primitive object={displayScene} />
       {isLocked && (
         <group position={[0, 2.2, 0]}>
           <mesh>
