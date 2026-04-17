@@ -42,6 +42,11 @@ export interface SceneConfig {
   npcs: NPCConfig[];
   interactiveObjects: InteractiveObjectConfig[];
   backgroundMusic?: string;
+  /**
+   * Множитель визуального масштаба персонажей в 3D-исследовании для этой локации.
+   * Итог: NPC `(npc.scale ?? 1) * explorationCharacterModelScale`, игрок — визуал × тот же коэффициент (коллайдер без изменений).
+   */
+  explorationCharacterModelScale?: number;
 }
 
 export const SCENE_CONFIG = {
@@ -50,6 +55,7 @@ export const SCENE_CONFIG = {
   kitchen_night: {
     id: 'kitchen_night', 
     name: 'Комната', 
+    explorationCharacterModelScale: 0.92,
     size: [10, 8],
     spawnPoint: { x: 0, y: 1, z: 3, rotation: 0 } as PlayerPosition,  // Спавн у входа
     ambientLight: { intensity: 0.8, color: '#ffd93d' },
@@ -99,7 +105,7 @@ export const SCENE_CONFIG = {
   },
   
   home_evening: {
-    id: 'home_evening', name: 'Квартира, десятый этаж — снег за стеклом', size: [14, 14],
+    id: 'home_evening', name: 'Квартира, десятый этаж — снег за стеклом', explorationCharacterModelScale: 0.92, size: [14, 14],
     spawnPoint: { x: 0, y: 1, z: 3, rotation: 0 } as PlayerPosition,
     ambientLight: { intensity: 0.35, color: '#ffaa66' },
     npcs: [],
@@ -184,7 +190,7 @@ export const SCENE_CONFIG = {
   },
   
   office_morning: {
-    id: 'office_morning', name: 'Офис', size: [16, 16],
+    id: 'office_morning', name: 'Офис', explorationCharacterModelScale: 0.94, size: [16, 16],
     spawnPoint: { x: 0, y: 1, z: 2, rotation: 0 } as PlayerPosition,
     ambientLight: { intensity: 0.5, color: '#ffffff' },
     directionalLights: [{ position: [5, 10, 5], intensity: 0.8 }],
@@ -206,7 +212,7 @@ export const SCENE_CONFIG = {
   },
   
   cafe_evening: {
-    id: 'cafe_evening', name: 'Кафе "Синий Кот"', size: [16, 16],
+    id: 'cafe_evening', name: 'Кафе "Синий Кот"', explorationCharacterModelScale: 0.93, size: [16, 16],
     spawnPoint: { x: 0, y: 1, z: 2, rotation: 0 } as PlayerPosition,
     ambientLight: { intensity: 0.5, color: '#ffa500' },
     npcs: [
@@ -231,7 +237,7 @@ export const SCENE_CONFIG = {
   },
   
   street_night: {
-    id: 'street_night', name: 'Улица', size: [26, 26],
+    id: 'street_night', name: 'Улица', explorationCharacterModelScale: 1.14, size: [26, 26],
     spawnPoint: { x: 0, y: 1, z: 4, rotation: 0 } as PlayerPosition,
     ambientLight: { intensity: 0.25, color: '#87ceeb' },
     npcs: [
@@ -252,7 +258,7 @@ export const SCENE_CONFIG = {
   },
   
   street_winter: {
-    id: 'street_winter', name: 'Зимняя улица', size: [26, 26],
+    id: 'street_winter', name: 'Зимняя улица', explorationCharacterModelScale: 1.14, size: [26, 26],
     spawnPoint: { x: 0, y: 1, z: 4, rotation: 0 } as PlayerPosition,
     ambientLight: { intensity: 0.3, color: '#b0c4de' },
     npcs: [
@@ -270,7 +276,7 @@ export const SCENE_CONFIG = {
   },
   
   memorial_park: {
-    id: 'memorial_park', name: 'Мемориальный парк', size: [22, 22],
+    id: 'memorial_park', name: 'Мемориальный парк', explorationCharacterModelScale: 1.06, size: [22, 22],
     spawnPoint: { x: 0, y: 1, z: 3, rotation: 0 } as PlayerPosition,
     ambientLight: { intensity: 0.35, color: '#ffd9a0' },
     npcs: [],
@@ -279,7 +285,7 @@ export const SCENE_CONFIG = {
   },
   
   rooftop_night: {
-    id: 'rooftop_night', name: 'Крыша', size: [20, 20],
+    id: 'rooftop_night', name: 'Крыша', explorationCharacterModelScale: 1.02, size: [20, 20],
     spawnPoint: { x: 0, y: 0.5, z: -4, rotation: 0 } as PlayerPosition,
     ambientLight: { intensity: 0.15, color: '#4a5568' },
     npcs: [],
@@ -288,7 +294,7 @@ export const SCENE_CONFIG = {
   },
   
   library: {
-    id: 'library', name: 'Библиотека', size: [30, 40],
+    id: 'library', name: 'Библиотека', explorationCharacterModelScale: 0.98, size: [30, 40],
     spawnPoint: { x: 0, y: 1, z: 5, rotation: 0 } as PlayerPosition,
     ambientLight: { intensity: 0.4, color: '#ffd9a0' },
     npcs: [
@@ -351,7 +357,7 @@ export const SCENE_CONFIG = {
   },
   
   zarema_albert_room: {
-    id: 'zarema_albert_room', name: 'Комната Заремы и Альберта', size: [10, 8],
+    id: 'zarema_albert_room', name: 'Комната Заремы и Альберта', explorationCharacterModelScale: 0.94, size: [10, 8],
     spawnPoint: { x: 0, y: 1, z: 0, rotation: 0 } as PlayerPosition,  // центр комнаты
     ambientLight: { intensity: 0.8, color: '#ffd93d' },  // усилен свет
     npcs: [
@@ -379,7 +385,7 @@ export const SCENE_CONFIG = {
   },
   
   dream: {
-    id: 'dream', name: 'Сон', size: [20, 20],
+    id: 'dream', name: 'Сон', explorationCharacterModelScale: 1.08, size: [20, 20],
     spawnPoint: { x: 0, y: 1, z: 0, rotation: 0 } as PlayerPosition,
     ambientLight: { intensity: 0.4, color: '#a855f7' },
     npcs: [
@@ -392,7 +398,7 @@ export const SCENE_CONFIG = {
   },
   
   battle: {
-    id: 'battle', name: 'Битва', size: [20, 20],
+    id: 'battle', name: 'Битва', explorationCharacterModelScale: 1.05, size: [20, 20],
     spawnPoint: { x: 0, y: 1, z: 0, rotation: 0 } as PlayerPosition,
     ambientLight: { intensity: 0.25, color: '#ef4444' }, npcs: [], interactiveObjects: [],
   },
@@ -401,6 +407,12 @@ export const SCENE_CONFIG = {
 export const getSceneConfig = (sceneId: SceneId): SceneConfig => {
   return SCENE_CONFIG[sceneId] ?? SCENE_CONFIG.kitchen_night!;
 };
+
+/** Множитель визуала персонажей в 3D-исследовании для `sceneId` (1, если не задано в `SCENE_CONFIG`). */
+export function getExplorationCharacterModelScale(sceneId: SceneId): number {
+  const row = SCENE_CONFIG[sceneId as keyof typeof SCENE_CONFIG];
+  return row?.explorationCharacterModelScale ?? 1;
+}
 
 export const getNPCsForScene = (sceneId: SceneId, _flags: Record<string, boolean> = {}): NPCConfig[] => {
   const config = getSceneConfig(sceneId);

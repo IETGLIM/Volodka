@@ -26,7 +26,11 @@ import type {
 // Data
 import { getNPCsForScene } from '../../data/npcDefinitions';
 import { getTriggersForScene } from '../../data/triggerZones';
-import { getInteractiveObjectsForScene, type InteractiveObjectConfig } from '@/config/scenes';
+import {
+  getInteractiveObjectsForScene,
+  getExplorationCharacterModelScale,
+  type InteractiveObjectConfig,
+} from '@/config/scenes';
 
 // Components
 import { PhysicsPlayer } from './PhysicsPlayer';
@@ -157,6 +161,11 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
   }, [sceneId]);
 
   const groundGeometryArgs = groundGeometryArgsProp ?? sceneConfig.groundGeometryArgs;
+
+  const explorationCharacterModelScale = useMemo(
+    () => getExplorationCharacterModelScale(sceneId),
+    [sceneId],
+  );
 
   const findNavPath = useMemo(() => {
     const [fw, , fd] = groundGeometryArgs;
@@ -354,6 +363,7 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
         <PhysicsPlayer
           position={[playerPosition.x, playerPosition.y, playerPosition.z]}
           modelPath={getDefaultPlayerModelPath()}
+          visualModelScale={explorationCharacterModelScale}
           onPositionChange={handlePositionChange}
           onInteraction={handlePlayerInteraction}
           isLocked={isDialogueActive}
@@ -370,6 +380,7 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
           isDialogueActive={isDialogueActive}
           currentSceneId={sceneId}
           timeOfDay={timeOfDay}
+          locationModelScale={explorationCharacterModelScale}
           enableNpcPhysics
           findNavPath={findNavPath}
         />

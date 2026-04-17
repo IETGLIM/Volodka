@@ -18,6 +18,7 @@ import { getDefaultPlayerModelPath } from '@/config/modelUrls';
 import { NPCSystem } from './NPC';
 import { InteractiveObject, PhysicsExplorationRoomVisual } from './RoomEnvironment';
 import { useGameStore } from '@/store/gameStore';
+import { getExplorationCharacterModelScale } from '@/config/scenes';
 
 const PhysicsWorldClock = memo(function PhysicsWorldClock() {
   const advanceTime = useGameStore((s) => s.advanceTime);
@@ -31,6 +32,8 @@ interface NPCConfig {
   id: string;
   name: string;
   model: string;
+  modelPath?: string;
+  scale?: number;
   position: [number, number, number];
   rotation?: [number, number, number];
   basePersonalSpace?: number;
@@ -131,15 +134,22 @@ export const PhysicsGameModeSwitcher = memo(function PhysicsGameModeSwitcher({
 
   const showPhysicsDebugHelpers = process.env.NEXT_PUBLIC_PHYSICS_DEBUG_HELPERS === '1';
 
+  const explorationCharacterModelScale = useMemo(
+    () => getExplorationCharacterModelScale(sceneId),
+    [sceneId],
+  );
+
   const handleObjectInteract = React.useCallback((objectId: string) => {
     onObjectInteract?.(objectId, 'interact');
   }, [onObjectInteract]);
 
   const npcDefinitions = useMemo(() => {
-    return npcs.map(npc => ({
+    return npcs.map((npc) => ({
       id: npc.id,
       name: npc.name,
       model: npc.model as 'elder' | 'barista' | 'colleague' | 'shadow' | 'generic',
+      modelPath: npc.modelPath,
+      scale: npc.scale,
       defaultPosition: { x: npc.position[0], y: npc.position[1], z: npc.position[2] },
       defaultRotation: npc.rotation ? npc.rotation[1] : 0,
       waypoints: [],
@@ -207,6 +217,7 @@ export const PhysicsGameModeSwitcher = memo(function PhysicsGameModeSwitcher({
               isDialogueActive={false}
               currentSceneId={sceneId}
               timeOfDay={timeOfDay}
+              locationModelScale={explorationCharacterModelScale}
               enableNpcPhysics
             />
           )}
@@ -216,6 +227,7 @@ export const PhysicsGameModeSwitcher = memo(function PhysicsGameModeSwitcher({
               <PhysicsPlayer
                 position={[playerPosition.x, playerPosition.y, playerPosition.z]}
                 modelPath={getDefaultPlayerModelPath()}
+                visualModelScale={explorationCharacterModelScale}
                 onPositionChange={onPlayerPositionChange}
               />
               <FollowCamera

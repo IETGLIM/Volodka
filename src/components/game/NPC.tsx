@@ -595,6 +595,8 @@ interface NPCProps {
   onInteraction: (npcId: string) => void;
   onStateChange: (state: NPCState) => void;
   isDialogueActive: boolean;
+  /** Множитель из `getExplorationCharacterModelScale(currentSceneId)` — адаптация под локацию. */
+  locationModelScale?: number;
   /** Текущее окно расписания для этого NPC (если есть в `ScheduleEngine`). */
   scheduleEntry?: ScheduleEntry | null;
   /** Кинематический RigidBody для телепорта в Rapier-сцене. */
@@ -610,10 +612,16 @@ export const NPC = memo(function NPC({
   onInteraction,
   onStateChange,
   isDialogueActive,
+  locationModelScale = 1,
   scheduleEntry = null,
   enableNpcPhysics = false,
   findNavPath = null,
 }: NPCProps) {
+  const effectiveModelScale = useMemo(
+    () => (definition.scale ?? 1) * locationModelScale,
+    [definition.scale, locationModelScale],
+  );
+
   const groupRef = useRef<THREE.Group>(null);
   const rigidBodyRef = useRef<RapierRigidBody>(null);
   const modelRef = useRef<THREE.Group>(null);
@@ -984,7 +992,7 @@ export const NPC = memo(function NPC({
             <ModelErrorBoundary fallback={fallbackModel}>
               <GLTFModel
                 modelPath={definition.modelPath}
-                scale={definition.scale || 1}
+                scale={effectiveModelScale}
                 isNearPlayer={isNearPlayer}
                 isDialogueActive={isDialogueActive}
                 shadowTier={npcShadowTier}
@@ -995,9 +1003,9 @@ export const NPC = memo(function NPC({
             </ModelErrorBoundary>
           </Suspense>
         ) : definition.modelPath && !useFullModel ? (
-          <NpcDistanceImpostor scale={definition.scale || 1} />
+          <NpcDistanceImpostor scale={effectiveModelScale} />
         ) : (
-          fallbackModel
+          <group scale={effectiveModelScale}>{fallbackModel}</group>
         )}
       </group>
 
@@ -1070,6 +1078,8 @@ interface NPCSystemProps {
   isDialogueActive: boolean;
   currentSceneId: SceneId;
   timeOfDay: number;
+  /** См. `getExplorationCharacterModelScale` в `config/scenes`. */
+  locationModelScale?: number;
   enableNpcPhysics?: boolean;
   findNavPath?: FindNavPathXZ | null;
 }
@@ -1083,6 +1093,7 @@ export const NPCSystem = memo(function NPCSystem({
   isDialogueActive,
   currentSceneId,
   timeOfDay,
+  locationModelScale = 1,
   enableNpcPhysics = false,
   findNavPath = null,
 }: NPCSystemProps) {
@@ -1118,6 +1129,7 @@ export const NPCSystem = memo(function NPCSystem({
             onInteraction={onNPCInteraction}
             onStateChange={(newState) => onNPCStateChange(npcDef.id, newState)}
             isDialogueActive={isDialogueActive}
+            locationModelScale={locationModelScale}
             scheduleEntry={scheduleEntry}
             enableNpcPhysics={enableNpcPhysics}
             findNavPath={findNavPath}

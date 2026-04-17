@@ -4,6 +4,8 @@
 
 ### Added
 
+- **Масштаб персонажей под локацию (3D)**: в **`SceneConfig`** поле **`explorationCharacterModelScale`**, функция **`getExplorationCharacterModelScale(sceneId)`** в **`config/scenes.ts`**; множитель применяется к визуалу NPC **`(definition.scale ?? 1) * …`** и к модели игрока (**`PhysicsPlayer`** `visualModelScale`); тесты **`scenes.explorationScale.test.ts`**. Значения заданы для улиц (крупнее), комнат/офиса/кафе (компактнее), парка, библиотеки, сна, боя и др.
+
 - **Атмосфера и полировка 3D-исследования**: **`src/lib/explorationAtmosphere.ts`** — погода по сцене/часу (`street_winter` → снег, ночная улица → туман/морось) и фоновый стресс на улице; тесты **`explorationAtmosphere.test.ts`**; в **`GameOrchestrator`** тик **`addStress`** в режиме обхода для **`street_night` / `street_winter`**.
 - **Постобработка и частицы в `<Canvas>`**: **`ExplorationPostFX`** (N8AO + bloom + vignette + шум; облегчённый стек на **`useMobileVisualPerf`**), **`ExplorationParticles`** (снег / дождь / искры на **`abandoned_factory`** и **`battle`**), **`ExplorationFootprints`** (декали-следы по событию **`exploration:footstep`**); интеграция в **`RPGGameCanvas`**.
 - **Шина событий**: **`exploration:footstep`**; **`game:saved`** с опциональным **`source: 'auto' | 'manual'`**; **`game:loaded`** эмитится из **`loadGame`** после успешной загрузки.

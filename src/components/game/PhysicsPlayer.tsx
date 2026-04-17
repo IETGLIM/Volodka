@@ -18,6 +18,8 @@ import { useGameStore } from '@/store/gameStore';
 export interface PhysicsPlayerProps {
   position?: [number, number, number];
   modelPath?: string;
+  /** Визуальный масштаб GLB/заглушки игрока (коллайдер Rapier без изменений). См. `getExplorationCharacterModelScale`. */
+  visualModelScale?: number;
   onPositionChange?: (position: { x: number; y: number; z: number }) => void;
   onInteraction?: () => void;
   isLocked?: boolean;
@@ -265,6 +267,7 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
   {
     position = [0, 1, 3],
     modelPath,
+    visualModelScale = 1,
     onPositionChange,
     onInteraction,
     isLocked = false,
@@ -508,7 +511,7 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
         position={[0, PHYSICS_CONSTANTS.PLAYER_HEIGHT / 2, 0]}
       />
 
-      <group ref={modelRef}>
+      <group ref={modelRef} scale={visualModelScale}>
         <Suspense fallback={<FallbackPlayerModel isMoving={isMoving} isLocked={isLocked} />}>
           {!modelError ? (
             <GLBPlayerModel
