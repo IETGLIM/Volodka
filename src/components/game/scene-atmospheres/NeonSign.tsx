@@ -12,7 +12,7 @@ interface NeonSignProps {
   flickerSpeed?: number;
 }
 
-const NeonSign = memo(function NeonSign({ text, x, y, color, fontSize = 14, flickerSpeed = 5 }: NeonSignProps) {
+export const NeonSign = memo(function NeonSign({ text, x, y, color, fontSize = 14, flickerSpeed = 5 }: NeonSignProps) {
   // Parse color for opacity variants
   const glowShadow = useMemo(() => {
     return `0 0 7px ${color}, 0 0 14px ${color}, 0 0 28px ${color}80, 0 0 50px ${color}40`;

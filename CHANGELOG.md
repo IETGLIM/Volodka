@@ -12,6 +12,22 @@
 
 ---
 
+## [0.2.5] - 2026-04-17
+
+### Added
+
+- **`useQuestProgress.npcMap.test.ts`**: квесты с событием **`npc_talked`** согласованы с **`QUEST_DEFINITIONS`** и **`NPC_DEFINITIONS`**; экспорт **`EVENT_OBJECTIVE_MAP`** из **`useQuestProgress`** для проверок.
+
+### Changed
+
+- **`package.json`**: зависимости **`@react-three/postprocessing`**, **`postprocessing`** (эффекты в **`CameraEffects`** / 3D-канвас).
+
+### Fixed
+
+- **`NeonSign.tsx`**, **`FloatingHolographicFragments.tsx`**, **`TerminalWindowOverlay.tsx`**: именованный **`export`**, без которого Turbopack считал модуль пустым и сборка на Vercel падала.
+
+---
+
 ## [0.2.4] - 2026-04-17
 
 ### Added

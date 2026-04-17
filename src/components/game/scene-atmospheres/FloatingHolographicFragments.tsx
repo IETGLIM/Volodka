@@ -13,7 +13,7 @@ interface FloatingFragment {
   rotation: number;
 }
 
-const FloatingHolographicFragments = memo(function FloatingHolographicFragments({
+export const FloatingHolographicFragments = memo(function FloatingHolographicFragments({
   fragments,
 }: {
   fragments: FloatingFragment[];

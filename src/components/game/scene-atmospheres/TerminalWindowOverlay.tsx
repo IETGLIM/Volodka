@@ -14,7 +14,7 @@ interface TerminalWindowOverlayProps {
   align?: 'left' | 'right';
 }
 
-const TerminalWindowOverlay = memo(function TerminalWindowOverlay({
+export const TerminalWindowOverlay = memo(function TerminalWindowOverlay({
   lines,
   x,
   y,

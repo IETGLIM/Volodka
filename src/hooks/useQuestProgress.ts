@@ -41,7 +41,8 @@ export interface QuestEvent {
 // ============================================
 
 // Карта: тип события -> (questId, objectiveId)
-const EVENT_OBJECTIVE_MAP: Partial<Record<QuestEventType, Array<{ questId: string; objectiveId: string; condition?: (data: Record<string, unknown>) => boolean }>>> = {
+/** Экспорт для тестов целостности: условия должны ссылаться на реальные `npcId` в данных. */
+export const EVENT_OBJECTIVE_MAP: Partial<Record<QuestEventType, Array<{ questId: string; objectiveId: string; condition?: (data: Record<string, unknown>) => boolean }>>> = {
   poem_collected: [
     { questId: 'main_goal', objectiveId: 'write_poems' },
     { questId: 'poetry_collection', objectiveId: 'write_poems' },
