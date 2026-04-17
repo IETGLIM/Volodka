@@ -6,7 +6,7 @@ import { useGLTF, useAnimations } from '@react-three/drei';
 import { RigidBody, RapierRigidBody, CapsuleCollider } from '@react-three/rapier';
 import * as THREE from 'three';
 import { usePlayerControls, PHYSICS_CONSTANTS } from '@/hooks/useGamePhysics';
-import { getDefaultPlayerModelPath, isValidPlayerGlbPath } from '@/config/modelUrls';
+import { getDefaultPlayerModelPath, isValidPlayerGlbPath, rewriteLegacyModelPath } from '@/config/modelUrls';
 
 // ============================================
 // TYPES
@@ -388,7 +388,10 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
     setModelError(true);
   }, []);
 
-  const modelPathToUse = isValidPlayerGlbPath(modelPath) ? modelPath : getDefaultPlayerModelPath();
+  const modelPathToUse = useMemo(() => {
+    const raw = isValidPlayerGlbPath(modelPath) ? modelPath! : getDefaultPlayerModelPath();
+    return rewriteLegacyModelPath(raw);
+  }, [modelPath]);
 
   if (modelPath && !isValidPlayerGlbPath(modelPath)) {
     console.warn('[PhysicsPlayer] Invalid modelPath provided, using default:', modelPath);

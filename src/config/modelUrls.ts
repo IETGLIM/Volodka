@@ -1,16 +1,37 @@
 // ============================================
 // КОНФИГУРАЦИЯ ВНЕШНИХ URL ДЛЯ 3D МОДЕЛЕЙ
 // ============================================
-// После загрузки моделей на GitHub Releases, замените BASE_URL на свой
+// По умолчанию — `public/models-external` (единая папка для GLB в репо).
+// Переопределение: `NEXT_PUBLIC_MODELS_BASE` (например `/models` или CDN URL без завершающего `/`).
 
-// Для локальной разработки - модели из /public/models/
-const BASE_URL = '/models';
+/**
+ * Публичный префикс для GLB (без завершающего `/`).
+ * Старые пути в данных вида `/models/foo.glb` переписываются через `rewriteLegacyModelPath`.
+ */
+export function getModelsPublicBase(): string {
+  const env =
+    typeof process !== 'undefined' && process.env.NEXT_PUBLIC_MODELS_BASE != null
+      ? String(process.env.NEXT_PUBLIC_MODELS_BASE).trim()
+      : '';
+  if (env) return env.replace(/\/$/, '');
+  return '/models-external';
+}
 
-// Для GitHub Releases раскомментируйте и замените USERNAME:
-// const BASE_URL = 'https://github.com/IETGLIM/Volodka/releases/download/VolodkaModel';
+const BASE_URL = getModelsPublicBase();
 
-// Для Cloudflare R2 / D1:
-// const BASE_URL = 'https://pub-xxx.r2.dev/models';
+/** Перенос legacy-путей `/models/…` на актуальный `BASE_URL` (или оставить http(s) как есть). */
+export function rewriteLegacyModelPath(path: string): string {
+  if (!path || typeof path !== 'string') return path;
+  const t = path.trim();
+  if (t.startsWith('/models/')) {
+    const rest = t.slice('/models/'.length);
+    return `${BASE_URL}/${rest}`;
+  }
+  return t;
+}
+
+// Для GitHub Releases: задайте NEXT_PUBLIC_MODELS_BASE=https://github.com/.../download/tag
+// Для Cloudflare R2: NEXT_PUBLIC_MODELS_BASE=https://pub-xxx.r2.dev/models
 
 // ============================================
 // СПИСОК МОДЕЛЕЙ
@@ -68,7 +89,7 @@ export function isValidPlayerGlbPath(p: string | undefined): p is string {
 export function getDefaultPlayerModelPath(): string {
   const fromEnv =
     typeof process !== 'undefined' ? process.env.NEXT_PUBLIC_DEFAULT_PLAYER_MODEL?.trim() : undefined;
-  if (fromEnv && isValidPlayerGlbPath(fromEnv)) return fromEnv;
+  if (fromEnv && isValidPlayerGlbPath(fromEnv)) return rewriteLegacyModelPath(fromEnv);
   return MODEL_URLS.volodka;
 }
 

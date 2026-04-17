@@ -5,6 +5,7 @@ import { useFrame } from '@react-three/fiber';
 import { useGLTF, useAnimations, Html } from '@react-three/drei';
 import * as THREE from 'three';
 import type { AnimationMapping, NPCDefinition, NPCState } from '@/data/rpgTypes';
+import { rewriteLegacyModelPath } from '@/config/modelUrls';
 
 // ============================================
 // ERROR BOUNDARY ДЛЯ МОДЕЛЕЙ
@@ -87,11 +88,14 @@ function resolveNpcAnimationClip(
 
 function isValidNpcModelPath(p: string): boolean {
   const lower = p.toLowerCase();
+  if (typeof p !== 'string' || p.length < 8 || p.includes('..')) return false;
+  if (lower.startsWith('http://') || lower.startsWith('https://')) {
+    return lower.includes('.glb') || lower.includes('.gltf');
+  }
   return (
-    typeof p === 'string' &&
-    p.length > 8 &&
-    p.startsWith('/models/') &&
-    (lower.endsWith('.glb') || lower.endsWith('.gltf'))
+    p.startsWith('/') &&
+    (lower.endsWith('.glb') || lower.endsWith('.gltf')) &&
+    (p.startsWith('/models/') || p.startsWith('/models-external/'))
   );
 }
 
@@ -210,13 +214,15 @@ const GLTFModel = memo(function GLTFModel({
   npcAnimation,
   animations,
 }: GLTFModelProps) {
+  const resolvedPath = useMemo(() => rewriteLegacyModelPath(modelPath), [modelPath]);
+
   // Если путь не указан или заведомо неверный — не дергаем загрузчик (ошибки сети ловит boundary)
   if (
-    !modelPath ||
-    modelPath === 'undefined' ||
-    modelPath === '/undefined' ||
-    modelPath === '' ||
-    !isValidNpcModelPath(modelPath)
+    !resolvedPath ||
+    resolvedPath === 'undefined' ||
+    resolvedPath === '/undefined' ||
+    resolvedPath === '' ||
+    !isValidNpcModelPath(resolvedPath)
   ) {
     return <>{fallback}</>;
   }
@@ -224,7 +230,7 @@ const GLTFModel = memo(function GLTFModel({
   return (
     <ModelErrorBoundary fallback={fallback}>
       <GLTFLoader
-        modelPath={modelPath}
+        modelPath={resolvedPath}
         scale={scale}
         isNearPlayer={isNearPlayer}
         isDialogueActive={isDialogueActive}

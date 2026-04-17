@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import type { DialogueNode, DialogueEffect, GameMode } from '@/data/rpgTypes';
 import { NPC_DEFINITIONS } from '@/data/npcDefinitions';
 import { eventBus } from '@/engine/EventBus';
@@ -47,6 +47,8 @@ export function useDialogueFlow({
   setCurrentNode,
 }: UseDialogueFlowParams) {
   const [activeDialogue, setActiveDialogue] = useState<ActiveDialogueState | null>(null);
+  /** После диалога возвращаемся в тот же режим (например `exploration`), а не всегда в VN. */
+  const gameModeBeforeDialogueRef = useRef<GameMode>('visual-novel');
 
   const handleDialogueEffect = useCallback((effect: DialogueEffect) => {
     applyDialogueEffects([effect], dialogueStoreActions);
@@ -56,6 +58,7 @@ export function useDialogueFlow({
     const npcDef = NPC_DEFINITIONS[npcId];
     if (!npcDef?.dialogueTree) return;
 
+    gameModeBeforeDialogueRef.current = useGameStore.getState().gameMode;
     setCurrentNPC(npcId);
     setActiveDialogue({
       npcId,
@@ -73,6 +76,7 @@ export function useDialogueFlow({
       const npcDef = NPC_DEFINITIONS[params.npcId];
       if (!npcDef?.dialogueTree) return;
 
+      gameModeBeforeDialogueRef.current = useGameStore.getState().gameMode;
       setCurrentNPC(params.npcId);
       setActiveDialogue({
         npcId: params.npcId,
@@ -107,7 +111,7 @@ export function useDialogueFlow({
       return null;
     });
     setCurrentNPC(null);
-    setGameMode('visual-novel');
+    setGameMode(gameModeBeforeDialogueRef.current);
   }, [setCurrentNPC, setGameMode, setCurrentNode]);
 
   return {

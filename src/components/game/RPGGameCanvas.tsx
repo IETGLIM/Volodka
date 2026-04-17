@@ -111,6 +111,8 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
         return { ambient: 0.25, light: '#87ceeb', fogColor: '#0a1020', groundGeometryArgs: GROUND_PLAZA };
       case 'memorial_park':
         return { ambient: 0.35, light: '#ffd9a0', fogColor: '#0a1510', groundGeometryArgs: GROUND_PLAZA };
+      case 'zarema_albert_room':
+        return { ambient: 0.38, light: '#e8dcc8', fogColor: '#120c0a', groundGeometryArgs: GROUND_INDOOR };
       default:
         return { ambient: 0.35, light: '#b2bec3', fogColor: '#1a1a2e', groundGeometryArgs: GROUND_INDOOR };
     }

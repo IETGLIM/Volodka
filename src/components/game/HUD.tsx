@@ -8,11 +8,15 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { QUEST_DEFINITIONS, getNextTrackedObjective } from '@/data/quests';
 import { MAX_PLAYER_ENERGY } from '@/lib/energyConfig';
 import type { GamePanelsState } from '@/hooks/useGamePanels';
+import type { GameMode } from '@/data/rpgTypes';
 
 interface HUDProps {
   onSave: () => void;
   onTogglePanel: (panel: string) => void;
   activePanels: GamePanelsState;
+  gameMode?: GameMode;
+  onEnterExploration?: () => void;
+  onEnterVisualNovel?: () => void;
 }
 
 // ============================================
@@ -315,7 +319,14 @@ function CyberActionBtn({ label, isActive, onClick, colorClass, icon, ariaLabel 
 // MAIN HUD COMPONENT
 // ============================================
 
-export default function HUD({ onSave, onTogglePanel, activePanels }: HUDProps) {
+export default function HUD({
+  onSave,
+  onTogglePanel,
+  activePanels,
+  gameMode = 'visual-novel',
+  onEnterExploration,
+  onEnterVisualNovel,
+}: HUDProps) {
   const visualLite = useMobileVisualPerf();
   const narrow = useIsMobile();
   const playerState = useGameStore(s => s.playerState);
@@ -412,6 +423,32 @@ export default function HUD({ onSave, onTogglePanel, activePanels }: HUDProps) {
           <div
             className={`flex gap-1.5 ${narrow ? 'max-w-full flex-nowrap overflow-x-auto pb-1 [-webkit-overflow-scrolling:touch]' : 'flex-wrap'}`}
           >
+            {(gameMode === 'visual-novel' || gameMode === 'exploration') &&
+              onEnterExploration &&
+              onEnterVisualNovel && (
+                <>
+                  {gameMode === 'visual-novel' && (
+                    <CyberActionBtn
+                      label="3D"
+                      isActive={false}
+                      onClick={onEnterExploration}
+                      colorClass="bg-cyan-950/85"
+                      icon="🎮"
+                      ariaLabel="Режим свободного 3D-обхода с физикой и NPC"
+                    />
+                  )}
+                  {gameMode === 'exploration' && (
+                    <CyberActionBtn
+                      label="Сцена"
+                      isActive={false}
+                      onClick={onEnterVisualNovel}
+                      colorClass="bg-slate-800/90"
+                      icon="📜"
+                      ariaLabel="Режим визуальной новеллы (текст и выборы)"
+                    />
+                  )}
+                </>
+              )}
             {actionButtons.map((btn) => (
               <CyberActionBtn
                 key={btn.key}

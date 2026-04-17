@@ -43,6 +43,8 @@ import { useGameStore } from '@/store/gameStore';
 import { MiniMap } from '@/components/game/MiniMap';
 import { getNPCsForScene } from '@/data/npcDefinitions';
 import { SCENE_VISUALS } from '@/engine/SceneManager';
+import type { VisualState } from '@/data/types';
+import { storyNodeShowsStoryOverlay } from '@/lib/storyOverlayEligibility';
 
 const QuestsPanel = dynamic(() => import('@/components/game/QuestsPanel'), { ssr: false });
 const FactionsPanel = dynamic(() => import('@/components/game/FactionsPanel'), { ssr: false });
@@ -53,6 +55,17 @@ const SkillsPanel = dynamic(() => import('@/components/SkillsPanel'), { ssr: fal
 const ITTerminal = dynamic(() => import('@/components/game/ITTerminal'), { ssr: false });
 const JournalPanel = dynamic(() => import('@/components/game/JournalPanel'), { ssr: false });
 const LegacyScreen = dynamic(() => import('@/components/game/LegacyScreen'), { ssr: false });
+const RPGGameCanvas = dynamic(
+  () => import('@/components/game/RPGGameCanvas').then((m) => m.RPGGameCanvas),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="fixed inset-0 z-[12] flex items-center justify-center bg-black/50 font-mono text-sm text-cyan-500/70">
+        SYNC // 3D…
+      </div>
+    ),
+  },
+);
 
 // ============================================
 // GAME ORCHESTRATOR — композиция хуков сцены, диалога и действий
@@ -212,6 +225,35 @@ export default function GameOrchestrator() {
     [trackQuestNpcTalk, openNpcDialogue],
   );
 
+  const displaySceneId = gameMode === 'exploration' ? exploration.currentSceneId : currentSceneId;
+
+  const explorationVisualState = useMemo((): VisualState => ({
+    glitchIntensity: Math.min(1, (playerState.stress / 100) * 0.45 + (playerState.panicMode ? 0.35 : 0)),
+    saturation: 0.82 + (playerState.stability / 100) * 0.18,
+    contrast: 0.88 + (playerState.mood / 100) * 0.12,
+    colorTint: 'transparent',
+    particles: playerState.creativity > 55,
+  }), [playerState.stress, playerState.stability, playerState.mood, playerState.creativity, playerState.panicMode]);
+
+  const storyOverlayEligible = useMemo(() => storyNodeShowsStoryOverlay(currentNode), [currentNode]);
+
+  const handleExplorationStoryTrigger = useCallback(
+    (_triggerId: string, storyNodeId: string) => {
+      setCurrentNode(storyNodeId);
+    },
+    [setCurrentNode],
+  );
+
+  const handleEnterExplorationMode = useCallback(() => {
+    travelToScene(currentSceneId);
+    setCurrentNode('explore_mode');
+    setGameMode('exploration');
+  }, [travelToScene, currentSceneId, setCurrentNode, setGameMode]);
+
+  const handleEnterVisualNovelMode = useCallback(() => {
+    setGameMode('visual-novel');
+  }, [setGameMode]);
+
   const actionsBundle = useActionHandler({
     playerSkills: playerState.skills,
     energySystem,
@@ -236,6 +278,7 @@ export default function GameOrchestrator() {
     gameMode,
     currentNodeId,
     hasCurrentNode: Boolean(currentNode),
+    storyOverlayEligible,
     togglePanel,
     setPhase,
     setGameMode,
@@ -288,17 +331,33 @@ export default function GameOrchestrator() {
   }
 
   return (
-    <CyberGameShell sceneId={currentSceneId} stability={playerState.stability}>
+    <CyberGameShell sceneId={displaySceneId} stability={playerState.stability}>
       <AmbientMusicPlayer
-        sceneId={currentSceneId}
+        sceneId={displaySceneId}
         mood={playerState.mood}
         stress={playerState.stress}
         creativity={playerState.creativity}
         enabled={phase === 'game' && !activeCutscene}
       />
-      <SceneRenderer sceneId={currentSceneId} playerState={playerState} />
+      {gameMode !== 'exploration' && (
+        <SceneRenderer sceneId={currentSceneId} playerState={playerState} />
+      )}
 
-      <SceneNPCList sceneId={currentSceneId} onInteract={handleNPCInteraction} />
+      {gameMode !== 'exploration' && (
+        <SceneNPCList sceneId={currentSceneId} onInteract={handleNPCInteraction} />
+      )}
+
+      {gameMode === 'exploration' && (
+        <div className="fixed inset-0 z-[12]">
+          <RPGGameCanvas
+            sceneId={exploration.currentSceneId}
+            visualState={explorationVisualState}
+            isDialogueActive={Boolean(activeDialogue)}
+            onTriggerEnter={handleExplorationStoryTrigger}
+            onNPCInteraction={handleNPCInteraction}
+          />
+        </div>
+      )}
 
       {gameMode === 'exploration' && (
         <MiniMap
@@ -309,7 +368,14 @@ export default function GameOrchestrator() {
         />
       )}
 
-      <HUD onSave={handleSaveGame} onTogglePanel={handleTogglePanel} activePanels={panels} />
+      <HUD
+        onSave={handleSaveGame}
+        onTogglePanel={handleTogglePanel}
+        activePanels={panels}
+        gameMode={gameMode}
+        onEnterExploration={handleEnterExplorationMode}
+        onEnterVisualNovel={handleEnterVisualNovelMode}
+      />
 
       <CoreLoopIndicator />
       <ConsequenceNotification />

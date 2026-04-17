@@ -1,5 +1,9 @@
 # 3D Models Hosting
 
+**Каноничная папка в этом репозитории:** `public/models-external` — пути в данных вида `/models/*.glb` автоматически перенаправляются сюда (см. `getModelsPublicBase` / `rewriteLegacyModelPath` в `src/config/modelUrls.ts`). Для CDN задайте `NEXT_PUBLIC_MODELS_BASE`.
+
+---
+
 ## Бесплатные варианты хранения моделей:
 
 ### Вариант 1: GitHub Releases (рекомендуется)

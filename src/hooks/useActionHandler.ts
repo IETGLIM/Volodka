@@ -47,6 +47,7 @@ export interface UseActionHandlerParams {
   gameMode: GameMode;
   currentNodeId: string;
   hasCurrentNode: boolean;
+  storyOverlayEligible: boolean;
   togglePanel: (key: keyof GamePanelsState) => void;
   setPhase: (phase: 'loading' | 'intro' | 'menu' | 'game') => void;
   setGameMode: (mode: GameMode) => void;
@@ -85,6 +86,7 @@ export function useActionHandler(params: UseActionHandlerParams) {
     gameMode,
     currentNodeId,
     hasCurrentNode,
+    storyOverlayEligible,
     togglePanel,
     setPhase,
     setGameMode,
@@ -122,6 +124,7 @@ export function useActionHandler(params: UseActionHandlerParams) {
     gameMode,
     currentNodeId,
     hasCurrentNode,
+    storyOverlayEligible,
     togglePanel,
   });
 
