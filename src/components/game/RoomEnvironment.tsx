@@ -3,6 +3,7 @@
 import { memo, useEffect, useMemo, useRef, useState, Suspense } from 'react';
 import type { SceneId } from '@/data/types';
 import { RigidBody, CuboidCollider } from '@react-three/rapier';
+import { footstepColliderName } from '@/lib/footstepMaterials';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 
@@ -156,7 +157,8 @@ export const InteractiveObject = memo(function InteractiveObject({
   });
 
   return (
-    <RigidBody type="fixed" colliders="cuboid" position={position}>
+    <RigidBody type="fixed" colliders={false} position={position}>
+      <CuboidCollider args={[size[0] / 2, size[1] / 2, size[2] / 2]} name={footstepColliderName('wood')} />
       <mesh
         ref={meshRef}
         rotation={rotation}
@@ -205,8 +207,8 @@ export const Table = memo(function Table({
   return (
     <group position={position}>
       {/* Столешница */}
-      <RigidBody type="fixed" position={[0, tableHeight, 0]}>
-        <CuboidCollider args={[tableWidth / 2, 0.03, tableDepth / 2]} />
+      <RigidBody type="fixed" colliders={false} position={[0, tableHeight, 0]}>
+        <CuboidCollider args={[tableWidth / 2, 0.03, tableDepth / 2]} name={footstepColliderName('wood')} />
         <mesh castShadow receiveShadow position={[0, 0, 0]}>
           <boxGeometry args={[tableWidth, 0.04, tableDepth]} />
           <meshStandardMaterial color={color} roughness={0.6} />
@@ -215,8 +217,8 @@ export const Table = memo(function Table({
 
       {/* Ножки */}
       {[[-1, -1], [1, -1], [-1, 1], [1, 1]].map(([x, z], i) => (
-        <RigidBody key={i} type="fixed" position={[x * (tableWidth / 2 - legSize), tableHeight / 2, z * (tableDepth / 2 - legSize)]}>
-          <CuboidCollider args={[legSize / 2, tableHeight / 2, legSize / 2]} />
+        <RigidBody key={i} type="fixed" colliders={false} position={[x * (tableWidth / 2 - legSize), tableHeight / 2, z * (tableDepth / 2 - legSize)]}>
+          <CuboidCollider args={[legSize / 2, tableHeight / 2, legSize / 2]} name={footstepColliderName('wood')} />
           <mesh castShadow receiveShadow>
             <boxGeometry args={[legSize, tableHeight, legSize]} />
             <meshStandardMaterial color={color} roughness={0.7} />
@@ -243,8 +245,8 @@ export const Chair = memo(function Chair({
   return (
     <group position={position} rotation={[0, rotation, 0]}>
       {/* Сиденье */}
-      <RigidBody type="fixed" position={[0, 0.45, 0]}>
-        <CuboidCollider args={[0.25, 0.03, 0.25]} />
+      <RigidBody type="fixed" colliders={false} position={[0, 0.45, 0]}>
+        <CuboidCollider args={[0.25, 0.03, 0.25]} name={footstepColliderName('wood')} />
         <mesh castShadow receiveShadow>
           <boxGeometry args={[0.5, 0.05, 0.5]} />
           <meshStandardMaterial color={color} roughness={0.7} />
@@ -252,8 +254,8 @@ export const Chair = memo(function Chair({
       </RigidBody>
 
       {/* Спинка */}
-      <RigidBody type="fixed" position={[0, 0.7, -0.22]}>
-        <CuboidCollider args={[0.25, 0.3, 0.03]} />
+      <RigidBody type="fixed" colliders={false} position={[0, 0.7, -0.22]}>
+        <CuboidCollider args={[0.25, 0.3, 0.03]} name={footstepColliderName('wood')} />
         <mesh castShadow receiveShadow>
           <boxGeometry args={[0.5, 0.6, 0.05]} />
           <meshStandardMaterial color={color} roughness={0.7} />
@@ -283,8 +285,8 @@ export const Crate = memo(function Crate({
   size?: [number, number, number];
 }) {
   return (
-    <RigidBody type="fixed" position={[position[0], position[1] + size[1] / 2, position[2]]}>
-      <CuboidCollider args={[size[0] / 2, size[1] / 2, size[2] / 2]} />
+    <RigidBody type="fixed" colliders={false} position={[position[0], position[1] + size[1] / 2, position[2]]}>
+      <CuboidCollider args={[size[0] / 2, size[1] / 2, size[2] / 2]} name={footstepColliderName('wood')} />
       <mesh castShadow receiveShadow>
         <boxGeometry args={size} />
         <meshStandardMaterial color="#6b4423" roughness={0.9} />
@@ -428,8 +430,8 @@ const ZaremaAlbertRoomContent = memo(function ZaremaAlbertRoomContent() {
   return (
     <group>
       {/* Пол с текстурой дерева */}
-      <RigidBody type="fixed" position={[0, -0.05, 0]}>
-        <CuboidCollider args={[roomSize[0] / 2, 0.05, roomSize[2] / 2]} />
+      <RigidBody type="fixed" colliders={false} position={[0, -0.05, 0]}>
+        <CuboidCollider args={[roomSize[0] / 2, 0.05, roomSize[2] / 2]} name={footstepColliderName('wood')} />
       </RigidBody>
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.01, 0]} receiveShadow>
         <planeGeometry args={[roomSize[0], roomSize[2]]} />
@@ -445,8 +447,8 @@ const ZaremaAlbertRoomContent = memo(function ZaremaAlbertRoomContent() {
 
       {/* Стены */}
       {/* Задняя стена */}
-      <RigidBody type="fixed" position={[0, roomSize[1] / 2, -roomSize[2] / 2]}>
-        <CuboidCollider args={[roomSize[0] / 2, roomSize[1] / 2, 0.1]} />
+      <RigidBody type="fixed" colliders={false} position={[0, roomSize[1] / 2, -roomSize[2] / 2]}>
+        <CuboidCollider args={[roomSize[0] / 2, roomSize[1] / 2, 0.1]} name={footstepColliderName('concrete')} />
         <mesh receiveShadow>
           <boxGeometry args={[roomSize[0], roomSize[1], 0.2]} />
           <meshStandardMaterial map={wallpaperTexture} color="#ffffff" roughness={0.9} />
@@ -454,15 +456,15 @@ const ZaremaAlbertRoomContent = memo(function ZaremaAlbertRoomContent() {
       </RigidBody>
 
       {/* Передняя стена с дверным проёмом */}
-      <RigidBody type="fixed" position={[-roomSize[0] / 4, roomSize[1] / 2, roomSize[2] / 2]}>
-        <CuboidCollider args={[roomSize[0] / 4, roomSize[1] / 2, 0.1]} />
+      <RigidBody type="fixed" colliders={false} position={[-roomSize[0] / 4, roomSize[1] / 2, roomSize[2] / 2]}>
+        <CuboidCollider args={[roomSize[0] / 4, roomSize[1] / 2, 0.1]} name={footstepColliderName('concrete')} />
         <mesh receiveShadow>
           <boxGeometry args={[roomSize[0] / 2, roomSize[1], 0.2]} />
           <meshStandardMaterial map={wallpaperTexture} color="#ffffff" roughness={0.9} />
         </mesh>
       </RigidBody>
-      <RigidBody type="fixed" position={[roomSize[0] / 4, roomSize[1] / 2, roomSize[2] / 2]}>
-        <CuboidCollider args={[roomSize[0] / 4, roomSize[1] / 2, 0.1]} />
+      <RigidBody type="fixed" colliders={false} position={[roomSize[0] / 4, roomSize[1] / 2, roomSize[2] / 2]}>
+        <CuboidCollider args={[roomSize[0] / 4, roomSize[1] / 2, 0.1]} name={footstepColliderName('concrete')} />
         <mesh receiveShadow>
           <boxGeometry args={[roomSize[0] / 2, roomSize[1], 0.2]} />
           <meshStandardMaterial map={wallpaperTexture} color="#ffffff" roughness={0.9} />
@@ -470,15 +472,15 @@ const ZaremaAlbertRoomContent = memo(function ZaremaAlbertRoomContent() {
       </RigidBody>
 
       {/* Боковые стены */}
-      <RigidBody type="fixed" position={[-roomSize[0] / 2, roomSize[1] / 2, 0]}>
-        <CuboidCollider args={[0.1, roomSize[1] / 2, roomSize[2] / 2]} />
+      <RigidBody type="fixed" colliders={false} position={[-roomSize[0] / 2, roomSize[1] / 2, 0]}>
+        <CuboidCollider args={[0.1, roomSize[1] / 2, roomSize[2] / 2]} name={footstepColliderName('concrete')} />
         <mesh receiveShadow>
           <boxGeometry args={[0.2, roomSize[1], roomSize[2]]} />
           <meshStandardMaterial map={wallpaperTexture} color="#ffffff" roughness={0.9} />
         </mesh>
       </RigidBody>
-      <RigidBody type="fixed" position={[roomSize[0] / 2, roomSize[1] / 2, 0]}>
-        <CuboidCollider args={[0.1, roomSize[1] / 2, roomSize[2] / 2]} />
+      <RigidBody type="fixed" colliders={false} position={[roomSize[0] / 2, roomSize[1] / 2, 0]}>
+        <CuboidCollider args={[0.1, roomSize[1] / 2, roomSize[2] / 2]} name={footstepColliderName('concrete')} />
         <mesh receiveShadow>
           <boxGeometry args={[0.2, roomSize[1], roomSize[2]]} />
           <meshStandardMaterial map={wallpaperTexture} color="#ffffff" roughness={0.9} />
@@ -486,8 +488,8 @@ const ZaremaAlbertRoomContent = memo(function ZaremaAlbertRoomContent() {
       </RigidBody>
 
       {/* Потолок */}
-      <RigidBody type="fixed" position={[0, roomSize[1], 0]}>
-        <CuboidCollider args={[roomSize[0] / 2, 0.1, roomSize[2] / 2]} />
+      <RigidBody type="fixed" colliders={false} position={[0, roomSize[1], 0]}>
+        <CuboidCollider args={[roomSize[0] / 2, 0.1, roomSize[2] / 2]} name={footstepColliderName('concrete')} />
         <mesh receiveShadow>
           <boxGeometry args={[roomSize[0], 0.2, roomSize[2]]} />
           <meshStandardMaterial color="#2d2d3d" roughness={0.9} />
@@ -520,8 +522,8 @@ const ZaremaAlbertRoomContent = memo(function ZaremaAlbertRoomContent() {
 
       {/* Книжная полка */}
       <group position={[-4, 0, 1]}>
-        <RigidBody type="fixed" position={[0, 0.75, 0]}>
-          <CuboidCollider args={[0.8, 0.75, 0.2]} />
+        <RigidBody type="fixed" colliders={false} position={[0, 0.75, 0]}>
+          <CuboidCollider args={[0.8, 0.75, 0.2]} name={footstepColliderName('wood')} />
         </RigidBody>
         <mesh position={[0, 0.75, 0]} castShadow receiveShadow>
           <boxGeometry args={[1.5, 1.5, 0.3]} />
@@ -538,8 +540,8 @@ const ZaremaAlbertRoomContent = memo(function ZaremaAlbertRoomContent() {
 
       {/* Диван */}
       <group position={[3, 0, 2]}>
-        <RigidBody type="fixed" position={[0, 0.3, 0]}>
-          <CuboidCollider args={[1.5, 0.3, 0.6]} />
+        <RigidBody type="fixed" colliders={false} position={[0, 0.3, 0]}>
+          <CuboidCollider args={[1.5, 0.3, 0.6]} name={footstepColliderName('carpet')} />
         </RigidBody>
         {/* Сиденье */}
         <mesh position={[0, 0.25, 0]} castShadow receiveShadow>
@@ -613,8 +615,8 @@ export const CozyRoom = memo(function CozyRoom() {
   return (
     <group>
       {/* Пол */}
-      <RigidBody type="fixed" position={[0, -0.05, 0]}>
-        <CuboidCollider args={[8, 0.05, 8]} />
+      <RigidBody type="fixed" colliders={false} position={[0, -0.05, 0]}>
+        <CuboidCollider args={[8, 0.05, 8]} name={footstepColliderName('wood')} />
       </RigidBody>
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.01, 0]} receiveShadow>
         <planeGeometry args={[16, 16]} />
@@ -622,29 +624,29 @@ export const CozyRoom = memo(function CozyRoom() {
       </mesh>
 
       {/* Стены */}
-      <RigidBody type="fixed" position={[0, 1.5, -8]}>
-        <CuboidCollider args={[8, 1.5, 0.1]} />
+      <RigidBody type="fixed" colliders={false} position={[0, 1.5, -8]}>
+        <CuboidCollider args={[8, 1.5, 0.1]} name={footstepColliderName('concrete')} />
         <mesh receiveShadow>
           <boxGeometry args={[16, 3, 0.2]} />
           <meshStandardMaterial color="#4a4a5a" roughness={0.9} />
         </mesh>
       </RigidBody>
-      <RigidBody type="fixed" position={[-8, 1.5, 0]}>
-        <CuboidCollider args={[0.1, 1.5, 8]} />
+      <RigidBody type="fixed" colliders={false} position={[-8, 1.5, 0]}>
+        <CuboidCollider args={[0.1, 1.5, 8]} name={footstepColliderName('concrete')} />
         <mesh receiveShadow>
           <boxGeometry args={[0.2, 3, 16]} />
           <meshStandardMaterial color="#4a4a5a" roughness={0.9} />
         </mesh>
       </RigidBody>
-      <RigidBody type="fixed" position={[8, 1.5, 0]}>
-        <CuboidCollider args={[0.1, 1.5, 8]} />
+      <RigidBody type="fixed" colliders={false} position={[8, 1.5, 0]}>
+        <CuboidCollider args={[0.1, 1.5, 8]} name={footstepColliderName('concrete')} />
         <mesh receiveShadow>
           <boxGeometry args={[0.2, 3, 16]} />
           <meshStandardMaterial color="#4a4a5a" roughness={0.9} />
         </mesh>
       </RigidBody>
-      <RigidBody type="fixed" position={[0, 1.5, 8]}>
-        <CuboidCollider args={[8, 1.5, 0.1]} />
+      <RigidBody type="fixed" colliders={false} position={[0, 1.5, 8]}>
+        <CuboidCollider args={[8, 1.5, 0.1]} name={footstepColliderName('concrete')} />
         <mesh receiveShadow>
           <boxGeometry args={[16, 3, 0.2]} />
           <meshStandardMaterial color="#4a4a5a" roughness={0.9} />

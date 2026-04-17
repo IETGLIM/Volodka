@@ -3,6 +3,7 @@
 import { memo, useMemo } from 'react';
 import { RigidBody, CuboidCollider } from '@react-three/rapier';
 import type { SceneId } from '@/data/types';
+import { footstepColliderName, type FootstepMaterial } from '@/lib/footstepMaterials';
 
 // ============================================
 // ФИЗИЧЕСКИЕ КОЛЛАЙДЕРЫ ДЛЯ RAPIER
@@ -17,16 +18,21 @@ import type { SceneId } from '@/data/types';
 interface PhysicsWallProps {
   position: [number, number, number];
   size: [number, number, number];
+  footstepMaterial?: FootstepMaterial;
 }
 
 /**
  * Невидимая стена с физическим коллайдером
  * Блокирует движение игрока
  */
-const PhysicsWall = memo(function PhysicsWall({ position, size }: PhysicsWallProps) {
+const PhysicsWall = memo(function PhysicsWall({
+  position,
+  size,
+  footstepMaterial = 'concrete',
+}: PhysicsWallProps) {
   return (
     <RigidBody type="fixed" position={position} colliders={false}>
-      <CuboidCollider args={[size[0] / 2, size[1] / 2, size[2] / 2]} />
+      <CuboidCollider args={[size[0] / 2, size[1] / 2, size[2] / 2]} name={footstepColliderName(footstepMaterial)} />
     </RigidBody>
   );
 });
@@ -131,18 +137,24 @@ interface PhysicsFloorProps {
   size?: [number, number];
   color?: string;
   position?: [number, number, number];
+  footstepMaterial?: FootstepMaterial;
 }
 
 const PhysicsFloor = memo(function PhysicsFloor({
   size = [20, 20],
   color = '#3d2817',
   position = [0, 0, 0],
+  footstepMaterial = 'wood',
 }: PhysicsFloorProps) {
   return (
     <group position={position}>
       {/* Физический коллайдер пола */}
       <RigidBody type="fixed" colliders={false}>
-        <CuboidCollider args={[size[0] / 2, 0.1, size[1] / 2]} position={[0, -0.1, 0]} />
+        <CuboidCollider
+          args={[size[0] / 2, 0.1, size[1] / 2]}
+          position={[0, -0.1, 0]}
+          name={footstepColliderName(footstepMaterial)}
+        />
       </RigidBody>
 
       {/* Визуальный пол */}
@@ -161,12 +173,13 @@ const PhysicsFloor = memo(function PhysicsFloor({
 interface ObstacleProps {
   position: [number, number, number];
   size: [number, number, number];
+  footstepMaterial?: FootstepMaterial;
 }
 
-const PhysicsObstacle = memo(function PhysicsObstacle({ position, size }: ObstacleProps) {
+const PhysicsObstacle = memo(function PhysicsObstacle({ position, size, footstepMaterial = 'wood' }: ObstacleProps) {
   return (
     <RigidBody type="fixed" position={position} colliders={false}>
-      <CuboidCollider args={[size[0] / 2, size[1] / 2, size[2] / 2]} />
+      <CuboidCollider args={[size[0] / 2, size[1] / 2, size[2] / 2]} name={footstepColliderName(footstepMaterial)} />
     </RigidBody>
   );
 });
@@ -174,14 +187,16 @@ const PhysicsObstacle = memo(function PhysicsObstacle({ position, size }: Obstac
 const InstancedObstacles = memo(function InstancedObstacles({
   positions,
   size = [1, 2, 1],
+  footstepMaterial = 'wood',
 }: {
   positions: [number, number, number][];
   size?: [number, number, number];
+  footstepMaterial?: FootstepMaterial;
 }) {
   return (
     <>
       {positions.map((pos, i) => (
-        <PhysicsObstacle key={`obstacle-${i}`} position={pos} size={size} />
+        <PhysicsObstacle key={`obstacle-${i}`} position={pos} size={size} footstepMaterial={footstepMaterial} />
       ))}
     </>
   );
@@ -201,9 +216,9 @@ export const KitchenColliders = memo(function KitchenColliders() {
 
   return (
     <group>
-      <PhysicsFloor size={[14, 14]} color="#3d2817" />
+      <PhysicsFloor size={[14, 14]} color="#3d2817" footstepMaterial="wood" />
       <BoundaryWalls size={14} height={3} />
-      <InstancedObstacles positions={obstacles} size={[1.2, 2, 0.8]} />
+      <InstancedObstacles positions={obstacles} size={[1.2, 2, 0.8]} footstepMaterial="wood" />
     </group>
   );
 });
@@ -228,10 +243,10 @@ export const CafeColliders = memo(function CafeColliders() {
 
   return (
     <group>
-      <PhysicsFloor size={[16, 16]} color="#4a3520" />
+      <PhysicsFloor size={[16, 16]} color="#4a3520" footstepMaterial="wood" />
       <BoundaryWalls size={16} height={3} />
-      <InstancedObstacles positions={obstacles} size={[6, 1.2, 1]} />
-      <InstancedObstacles positions={tables} size={[0.8, 0.8, 0.8]} />
+      <InstancedObstacles positions={obstacles} size={[6, 1.2, 1]} footstepMaterial="wood" />
+      <InstancedObstacles positions={tables} size={[0.8, 0.8, 0.8]} footstepMaterial="wood" />
     </group>
   );
 });
@@ -248,9 +263,9 @@ export const OfficeColliders = memo(function OfficeColliders() {
 
   return (
     <group>
-      <PhysicsFloor size={[16, 16]} color="#4a4a4a" />
+      <PhysicsFloor size={[16, 16]} color="#4a4a4a" footstepMaterial="carpet" />
       <BoundaryWalls size={16} height={3} />
-      <InstancedObstacles positions={desks} size={[1.5, 1.2, 0.8]} />
+      <InstancedObstacles positions={desks} size={[1.5, 1.2, 0.8]} footstepMaterial="wood" />
     </group>
   );
 });
@@ -279,11 +294,11 @@ export const StreetColliders = memo(function StreetColliders() {
 
   return (
     <group>
-      <PhysicsFloor size={[30, 30]} color="#2d3436" />
+      <PhysicsFloor size={[30, 30]} color="#2d3436" footstepMaterial="concrete" />
       <BoundaryWalls size={26} height={2.5} />
-      <InstancedObstacles positions={lamps} size={[0.2, 3, 0.2]} />
-      <InstancedObstacles positions={benches} size={[1.3, 0.6, 0.4]} />
-      <InstancedObstacles positions={trees} size={[0.5, 2.5, 0.5]} />
+      <InstancedObstacles positions={lamps} size={[0.2, 3, 0.2]} footstepMaterial="metal" />
+      <InstancedObstacles positions={benches} size={[1.3, 0.6, 0.4]} footstepMaterial="wood" />
+      <InstancedObstacles positions={trees} size={[0.5, 2.5, 0.5]} footstepMaterial="grass" />
     </group>
   );
 });
@@ -310,12 +325,12 @@ export const MemorialParkColliders = memo(function MemorialParkColliders() {
 
   return (
     <group>
-      <PhysicsFloor size={[25, 25]} color="#2a4a2a" />
+      <PhysicsFloor size={[25, 25]} color="#2a4a2a" footstepMaterial="grass" />
       <BoundaryWalls size={22} height={2} />
-      <InstancedObstacles positions={trees} size={[0.5, 3, 0.5]} />
-      <InstancedObstacles positions={benches} size={[1.3, 0.6, 0.4]} />
-      <InstancedObstacles positions={monument} size={[0.6, 1.6, 0.6]} />
-      <InstancedObstacles positions={gazebo} size={[5, 2.6, 4]} />
+      <InstancedObstacles positions={trees} size={[0.5, 3, 0.5]} footstepMaterial="grass" />
+      <InstancedObstacles positions={benches} size={[1.3, 0.6, 0.4]} footstepMaterial="wood" />
+      <InstancedObstacles positions={monument} size={[0.6, 1.6, 0.6]} footstepMaterial="concrete" />
+      <InstancedObstacles positions={gazebo} size={[5, 2.6, 4]} footstepMaterial="wood" />
     </group>
   );
 });
@@ -335,18 +350,18 @@ export const RooftopColliders = memo(function RooftopColliders() {
 
   return (
     <group>
-      <PhysicsFloor size={[20, 20]} color="#2a2a2a" />
+      <PhysicsFloor size={[20, 20]} color="#2a2a2a" footstepMaterial="concrete" />
 
       {/* Ограждение по краю крыши */}
-      <PhysicsWall position={[0, 0.6, -8]} size={[20, 1.2, 0.2]} />
+      <PhysicsWall position={[0, 0.6, -8]} size={[20, 1.2, 0.2]} footstepMaterial="metal" />
 
       {/* Столбы ограждения */}
-      <InstancedObstacles positions={railings} size={[0.15, 1.5, 0.15]} />
+      <InstancedObstacles positions={railings} size={[0.15, 1.5, 0.15]} footstepMaterial="metal" />
 
       {/* Боковые стены */}
-      <PhysicsWall position={[-10, 1.5, 0]} size={[0.5, 3, 20]} />
-      <PhysicsWall position={[10, 1.5, 0]} size={[0.5, 3, 20]} />
-      <PhysicsWall position={[0, 1.5, 10]} size={[20, 3, 0.5]} />
+      <PhysicsWall position={[-10, 1.5, 0]} size={[0.5, 3, 20]} footstepMaterial="concrete" />
+      <PhysicsWall position={[10, 1.5, 0]} size={[0.5, 3, 20]} footstepMaterial="concrete" />
+      <PhysicsWall position={[0, 1.5, 10]} size={[20, 3, 0.5]} footstepMaterial="concrete" />
     </group>
   );
 });
@@ -358,7 +373,7 @@ export const RooftopColliders = memo(function RooftopColliders() {
 export const DreamColliders = memo(function DreamColliders() {
   return (
     <group>
-      <PhysicsFloor size={[20, 20]} color="#1a0a2e" />
+      <PhysicsFloor size={[20, 20]} color="#1a0a2e" footstepMaterial="default" />
       <BoundaryWalls size={18} height={1.5} />
     </group>
   );
@@ -376,9 +391,9 @@ export const BattleColliders = memo(function BattleColliders() {
 
   return (
     <group>
-      <PhysicsFloor size={[20, 20]} color="#2a0a0a" />
+      <PhysicsFloor size={[20, 20]} color="#2a0a0a" footstepMaterial="concrete" />
       <BoundaryWalls size={18} height={2} />
-      <InstancedObstacles positions={crystals} size={[0.4, 0.7, 0.4]} />
+      <InstancedObstacles positions={crystals} size={[0.4, 0.7, 0.4]} footstepMaterial="metal" />
     </group>
   );
 });
@@ -391,8 +406,8 @@ export const ZaremaAlbertColliders = memo(function ZaremaAlbertColliders() {
   return (
     <group>
       {/* Пол с физикой */}
-      <RigidBody type="fixed" position={[0, -0.05, 0]}>
-        <CuboidCollider args={[5, 0.05, 4]} />
+      <RigidBody type="fixed" colliders={false} position={[0, -0.05, 0]}>
+        <CuboidCollider args={[5, 0.05, 4]} name={footstepColliderName('wood')} />
       </RigidBody>
       {/* Визуальный пол */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.01, 0]} receiveShadow>
@@ -422,10 +437,10 @@ export const BluePitColliders = memo(function BluePitColliders() {
 
   return (
     <group>
-      <PhysicsFloor size={[15, 15]} color="#1e3a5f" />
+      <PhysicsFloor size={[15, 15]} color="#1e3a5f" footstepMaterial="concrete" />
       <BoundaryWalls size={14} height={3} />
-      <InstancedObstacles positions={bar} size={[5, 1.1, 0.9]} />
-      <InstancedObstacles positions={tables} size={[0.85, 0.8, 0.85]} />
+      <InstancedObstacles positions={bar} size={[5, 1.1, 0.9]} footstepMaterial="wood" />
+      <InstancedObstacles positions={tables} size={[0.85, 0.8, 0.85]} footstepMaterial="wood" />
     </group>
   );
 });
@@ -452,10 +467,10 @@ export const GreenZoneColliders = memo(function GreenZoneColliders() {
 
   return (
     <group>
-      <PhysicsFloor size={[18, 18]} color="#2d5a3d" />
+      <PhysicsFloor size={[18, 18]} color="#2d5a3d" footstepMaterial="grass" />
       <BoundaryWalls size={17} height={2.5} />
-      <InstancedObstacles positions={trees} size={[0.45, 2.4, 0.45]} />
-      <InstancedObstacles positions={benches} size={[1.2, 0.55, 0.45]} />
+      <InstancedObstacles positions={trees} size={[0.45, 2.4, 0.45]} footstepMaterial="grass" />
+      <InstancedObstacles positions={benches} size={[1.2, 0.55, 0.45]} footstepMaterial="wood" />
     </group>
   );
 });
@@ -481,10 +496,10 @@ export const DistrictColliders = memo(function DistrictColliders() {
 
   return (
     <group>
-      <PhysicsFloor size={[20, 20]} color="#3d3d42" />
+      <PhysicsFloor size={[20, 20]} color="#3d3d42" footstepMaterial="concrete" />
       <BoundaryWalls size={19} height={2.5} />
-      <InstancedObstacles positions={lamps} size={[0.22, 2.8, 0.22]} />
-      <InstancedObstacles positions={crates} size={[1, 0.9, 0.9]} />
+      <InstancedObstacles positions={lamps} size={[0.22, 2.8, 0.22]} footstepMaterial="metal" />
+      <InstancedObstacles positions={crates} size={[1, 0.9, 0.9]} footstepMaterial="wood" />
     </group>
   );
 });
@@ -502,10 +517,10 @@ export const MvdColliders = memo(function MvdColliders() {
 
   return (
     <group>
-      <PhysicsFloor size={[12, 10]} color="#4a5568" />
+      <PhysicsFloor size={[12, 10]} color="#4a5568" footstepMaterial="carpet" />
       <RectangularBoundaryWalls width={12} depth={10} height={3} wallInset={1} />
-      <InstancedObstacles positions={counter} size={[4.5, 1.1, 0.7]} />
-      <InstancedObstacles positions={desks} size={[1.2, 0.95, 0.65]} />
+      <InstancedObstacles positions={counter} size={[4.5, 1.1, 0.7]} footstepMaterial="wood" />
+      <InstancedObstacles positions={desks} size={[1.2, 0.95, 0.65]} footstepMaterial="wood" />
     </group>
   );
 });
@@ -523,10 +538,10 @@ export const PresidentHotelColliders = memo(function PresidentHotelColliders() {
 
   return (
     <group>
-      <PhysicsFloor size={[14, 10]} color="#5c5348" />
+      <PhysicsFloor size={[14, 10]} color="#5c5348" footstepMaterial="carpet" />
       <RectangularBoundaryWalls width={14} depth={10} height={3.5} wallInset={1} />
-      <InstancedObstacles positions={reception} size={[5, 1.1, 0.85]} />
-      <InstancedObstacles positions={columns} size={[0.35, 2.2, 0.35]} />
+      <InstancedObstacles positions={reception} size={[5, 1.1, 0.85]} footstepMaterial="wood" />
+      <InstancedObstacles positions={columns} size={[0.35, 2.2, 0.35]} footstepMaterial="concrete" />
     </group>
   );
 });
@@ -578,7 +593,7 @@ export const PhysicsSceneColliders = memo(function PhysicsSceneColliders({ scene
       default:
         return (
           <group>
-            <PhysicsFloor size={[20, 20]} color="#2d3436" />
+            <PhysicsFloor size={[20, 20]} color="#2d3436" footstepMaterial="concrete" />
             <BoundaryWalls size={18} height={2.5} />
           </group>
         );

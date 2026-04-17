@@ -1002,6 +1002,8 @@ export const STORY_NODES: Record<string, StoryNode> = {
     effect: { setFlag: 'visited_cafe', questOperations: [
       { type: 'start', questId: 'first_reading' },
       { type: 'start', questId: 'coffee_affair' },
+      /** Сразу закрываем «добраться до кафе»: событие location_visited могло сработать до активации квеста. */
+      { type: 'objective', questId: 'first_reading', objectiveId: 'go_to_cafe', value: 1 },
     ] },
     autoNext: 'cafe_atmosphere',
   },
@@ -1117,7 +1119,10 @@ export const STORY_NODES: Record<string, StoryNode> = {
     speaker: 'Виктория',
     act: 2,
     text: '"Иногда. Но я больше слушаю. Наблюдаю. Набираюсь... смелости."\n\nПауза.\n\n"Твои слова... о восьми годах одиночества. О предательстве друга. О том, как привыкаешь к пустоте."\n\nОна смотрит на меня — внимательно, серьёзно.\n\n"Я тоже знаю, как это. Не так долго — но знаю. Когда теряешь — и не находишь замены. Когда все вокруг — чужие."\n\nОна не уточняет. Я не спрашиваю. Это — наше первое молчаливое соглашение.',
-    effect: { npcId: 'maria', npcChange: 8, setFlag: 'met_victoria' },
+    effect: { npcId: 'maria', npcChange: 8, setFlag: 'met_victoria', questOperations: [
+      { type: 'start', questId: 'maria_connection' },
+      { type: 'objective', questId: 'first_reading', objectiveId: 'meet_someone', value: 1 },
+    ] },
     autoNext: 'cafe_end',
   },
 

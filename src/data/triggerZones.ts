@@ -17,6 +17,7 @@ export const STORY_TRIGGERS: TriggerZone[] = [
     oneTime: true,
     requiresInteraction: true,
     promptText: 'Нажмите E чтобы сесть за стол',
+    enterToast: 'Стол помнит слишком много чужих разговоров.',
   },
   {
     id: 'trigger_kitchen_fridge',
@@ -52,6 +53,7 @@ export const STORY_TRIGGERS: TriggerZone[] = [
     oneTime: true,
     requiresInteraction: true,
     promptText: 'Нажмите E чтобы подойти к сцене',
+    enterToast: 'Здесь пахнет кофе, пылью усилителей и чужими аплодисментами.',
   },
   {
     id: 'trigger_cafe_table_left',
@@ -87,6 +89,7 @@ export const STORY_TRIGGERS: TriggerZone[] = [
     oneTime: false,
     requiresInteraction: true,
     promptText: 'Нажмите E чтобы сесть за рабочий стол',
+    enterToast: 'Монитор гаснет — будто офис на секунду забывает, зачем он существует.',
   },
   {
     id: 'trigger_office_desk_right',
@@ -111,6 +114,7 @@ export const STORY_TRIGGERS: TriggerZone[] = [
     oneTime: false,
     requiresInteraction: true,
     promptText: 'Нажмите E чтобы сесть на скамейку',
+    enterToast: 'Скамейка холодная — как всё на этой стороне города.',
   },
   {
     id: 'trigger_street_bench_right',
@@ -146,6 +150,7 @@ export const STORY_TRIGGERS: TriggerZone[] = [
     oneTime: true,
     requiresInteraction: true,
     promptText: 'Нажмите E чтобы осмотреть памятник',
+    enterToast: 'Тишина здесь не пустая — она кого-то помнит.',
   },
   {
     id: 'trigger_park_gazebo',
@@ -170,6 +175,31 @@ export const STORY_TRIGGERS: TriggerZone[] = [
     oneTime: true,
     requiresInteraction: true,
     promptText: 'Нажмите E чтобы подойти к краю',
+    enterToast: 'Ветер с края крыши звучит громче любого совещания.',
+  },
+
+  // ========== АТМОСФЕРНЫЕ ЗОНЫ (только тост при входе, без узла) ==========
+  {
+    id: 'ambience_street_plaza',
+    position: { x: 0, y: 0.6, z: 0 },
+    size: { x: 16, y: 2.2, z: 16 },
+    sceneId: 'street_night',
+    type: 'story',
+    requiresInteraction: false,
+    oneTime: false,
+    enterToast: 'Неон отражается в луже — город будто смотрит на себя.',
+    enterToastCooldownMs: 28_000,
+  },
+  {
+    id: 'ambience_memorial_open',
+    position: { x: 0, y: 0.8, z: 2 },
+    size: { x: 18, y: 2.5, z: 14 },
+    sceneId: 'memorial_park',
+    type: 'story',
+    requiresInteraction: false,
+    oneTime: false,
+    enterToast: 'Трава у дорожек приглушает шаги — здесь даже время идёт тише.',
+    enterToastCooldownMs: 28_000,
   },
 
   // ========== КОМНАТА ЗАРЕМЫ И АЛЬБЕРТА ==========

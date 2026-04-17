@@ -124,6 +124,15 @@ export {
   getNextObjective,
 } from './quests';
 
+// Золотой путь (основная линия → финал)
+export {
+  GOLDEN_PATH_BRANCH_HINTS,
+  GOLDEN_PATH_OPTIONAL_FULL_LEGACY_QUEST_IDS,
+  GOLDEN_PATH_QUEST_SPINE,
+  GOLDEN_PATH_STORY_SPINE,
+  GOLDEN_PATH_TARGET_ENDING_NODE_ID,
+} from './goldenPath';
+
 // Узлы истории
 export {
   STORY_NODES,

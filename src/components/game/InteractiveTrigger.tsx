@@ -5,6 +5,7 @@ import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import type { TriggerZone, TriggerState } from "@/data/rpgTypes";
 import type { SceneId } from "@/data/types";
+import { eventBus } from "@/engine/EventBus";
 
 // ============================================
 // Коллизия игрока с AABB триггера
@@ -54,10 +55,12 @@ export const TriggerSystem = memo(function TriggerSystem({
   const markerInsideRef = useRef<Record<string, boolean>>({});
   const [markerInside, setMarkerInside] = useState<Record<string, boolean>>({});
   const frameCounterRef = useRef(0);
+  const enterToastLastAtRef = useRef<Record<string, number>>({});
 
   useEffect(() => {
     wasInsideRef.current = {};
     markerInsideRef.current = {};
+    enterToastLastAtRef.current = {};
     queueMicrotask(() => {
       setMarkerInside({});
     });
@@ -76,6 +79,16 @@ export const TriggerSystem = memo(function TriggerSystem({
       const inside = isPlayerInTriggerZone(pos, trigger);
       insideByTrigger[trigger.id] = inside;
       const prevInside = wasInsideRef.current[trigger.id] ?? false;
+
+      if (inside && !prevInside && trigger.enterToast) {
+        const now = performance.now();
+        const cooldown = trigger.enterToastCooldownMs ?? 22_000;
+        const last = enterToastLastAtRef.current[trigger.id] ?? 0;
+        if (now - last >= cooldown) {
+          enterToastLastAtRef.current[trigger.id] = now;
+          eventBus.emit("ui:exploration_message", { text: trigger.enterToast });
+        }
+      }
 
       if (inside && !prevInside && !state.triggered && !trigger.requiresInteraction) {
         onTriggerEnter(trigger.id);

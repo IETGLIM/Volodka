@@ -4,6 +4,10 @@
 
 ### Added
 
+- **Золотой путь сюжета**: `src/data/goldenPath.ts` — каноническая линия к финалу **`ending_creator`**, скелет узлов (`GOLDEN_PATH_STORY_SPINE`), развилки (`GOLDEN_PATH_BRANCH_HINTS`), квестовый хребет и опционально **`poetry_collection`**; экспорт из `src/data/index.ts`; регрессионные проверки в **`src/data/goldenPath.test.ts`**.
+- **Мир отвечает на вход в зону**: у **`TriggerZone`** поля **`enterToast`** / **`enterToastCooldownMs`** (`rpgTypes`, `shared/types/rpg`); в **`InteractiveTrigger`** при пересечении границы AABB → **`eventBus.emit('ui:exploration_message')`** с кулдауном по триггеру; в **`triggerZones.ts`** — тосты на части сюжетных триггеров и две атмосферные зоны (**`ambience_street_plaza`**, **`ambience_memorial_open`**).
+- **Шаги по поверхности в 3D**: **`usePlayerFootsteps`** (raycast вниз, интервал от скорости и бега), **`footstepMaterials.ts`** (материал из **`userData.footstepMaterial`** или имени коллайдера **`fs:{wood|concrete|…}`**), расширение **`AudioEngine`** (SFX / процедурный beep); пол **`PhysicsSceneColliders`**, **`RoomEnvironment`**, **`RPGGameCanvas`** размечают пол/пропы именами **`footstepColliderName(...)`**.
+
 - **`scripts/list-glb-animations.mjs`**: проверка `animations` в JSON-чанке каждого `.glb` в `public/models-external`.
 - **Расписание NPC**: `src/engine/ScheduleEngine.ts` (`ScheduleEntry`, `getCurrentScheduleEntry`), слоты для albert / zarema / kitchen_maria / cafe_barista; в исследовании **`exploration.timeOfDay`** и **`advanceTime`** в `gameStore` и `src/client/store/worldStore.ts`; `NPCSystem` фильтрует NPC по сцене и расписанию, опционально **`RigidBody` kinematic** для телепорта; иконки активности в `<Html>`; недоступный по расписанию диалог → **`eventBus` `ui:exploration_message`**.
 - **Квесты в 3D**: индикаторы `!` / `?` над NPC (`src/lib/npcQuestMarker.ts`, `src/store/questStore.ts`), данные из **`gameStore`**.
@@ -20,6 +24,8 @@
 
 ### Changed
 
+- **`PhysicsPlayer`**: движение на **Kinematic Character Controller** Rapier с **`kinematicPosition`**, шаги через **`usePlayerFootsteps`**; согласованы коллайдеры сцен с явными **`CuboidCollider`** и префиксом материала для шагов.
+
 - **Старт 3D**: `exploration.currentSceneId` и узел **`explore_mode`** → **`home_evening`** (квартира); подписи в **`SceneManager`**, **`scenes.ts`**, тест **`npcExplorationIntegrity`**.
 - **`NPC_DEFINITIONS`**: заменены GLB без клипов анимации / с одним A-pose; у всех целевых NPC поле **`animations`** и константы имён клипов; **`scenes.ts`** / **`modelUrls.ts`** приведены в соответствие.
 - **`NPC.tsx`**, **`RPGGameCanvas.tsx`**, **`PhysicsRPGCanvas.tsx`**: интеграция расписания, тика времени внутри `<Canvas>`, радиальное меню.
@@ -29,6 +35,8 @@
 ### Removed
 
 ### Fixed
+
+- **`storyNodes` / квест «Первое чтение»**: при входе в **`blue_cat_cafe`** сразу закрывается цель **`go_to_cafe`** (до этого **`location_visited`** мог сработать до активации квеста); ветка **`maria_curious`** теперь даёт **`meet_someone`** и стартует **`maria_connection`**, как остальные ответы Виктории.
 
 - **`PhysicsPlayer` / `GLBPlayerModel`**: отказ от глубокого клона сцены игрока для skinned **`Volodka.glb`** (меш снова виден); при одном клипе в файле он проигрывается и при движении.
 

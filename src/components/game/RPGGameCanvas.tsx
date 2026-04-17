@@ -9,6 +9,7 @@
 import { memo, useRef, useEffect, useMemo, useCallback, useState, Fragment, Suspense } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { Physics, RigidBody, CuboidCollider } from '@react-three/rapier';
+import { footstepColliderName } from '@/lib/footstepMaterials';
 import * as THREE from 'three';
 
 // Types
@@ -293,6 +294,7 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
             position={[0, -groundGeometryArgs[1] / 2, 0]}
             friction={1}
             restitution={0}
+            name={footstepColliderName(isPanelDistrict ? 'metal' : 'concrete')}
           />
           <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.05, 0]} receiveShadow>
             <boxGeometry args={groundGeometryArgs} />
@@ -314,7 +316,13 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
             { pos: [17, 2.5, 14] as const, size: [5, 6, 5] as const },
             { pos: [0, 2, -22] as const, size: [14, 5, 4] as const },
           ].map((b, i) => (
-            <RigidBody key={`panel-${i}`} type="fixed" position={[b.pos[0], b.pos[1], b.pos[2]]} colliders="cuboid">
+            <RigidBody
+              key={`panel-${i}`}
+              type="fixed"
+              colliders={false}
+              position={[b.pos[0], b.pos[1], b.pos[2]]}
+            >
+              <CuboidCollider args={[b.size[0] / 2, b.size[1] / 2, b.size[2] / 2]} name={footstepColliderName('metal')} />
               <mesh castShadow receiveShadow>
                 <boxGeometry args={[...b.size]} />
                 <meshStandardMaterial

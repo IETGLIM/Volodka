@@ -52,6 +52,10 @@ class AudioEngineImpl {
   }
 
   private playSfxBeep(type: string, volume: number) {
+    if (type.startsWith('footstep_')) {
+      this.playFootstepBeep(type.slice('footstep_'.length), volume);
+      return;
+    }
     try {
       const Ctx = window.AudioContext || (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
       if (!Ctx) return;
@@ -67,6 +71,68 @@ class AudioEngineImpl {
       osc.start();
       osc.stop(ctx.currentTime + 0.09);
       osc.onended = () => void ctx.close();
+    } catch {
+      /* ignore */
+    }
+  }
+
+  /** Короткий «сухой» шаг без семпла: полосовой шум + затухание по материалу. */
+  private playFootstepBeep(material: string, volume: number) {
+    try {
+      const Ctx = window.AudioContext || (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+      if (!Ctx) return;
+      const ctx = new Ctx();
+      const dur = 0.045;
+      const sampleRate = ctx.sampleRate;
+      const n = Math.floor(sampleRate * dur);
+      const buf = ctx.createBuffer(1, n, sampleRate);
+      const data = buf.getChannelData(0);
+      const center =
+        material === 'wood'
+          ? 0.22
+          : material === 'concrete'
+            ? 0.42
+            : material === 'grass'
+              ? 0.14
+              : material === 'metal'
+                ? 0.55
+                : material === 'carpet'
+                  ? 0.1
+                  : 0.28;
+      const q = material === 'metal' ? 4.2 : 2.4;
+      for (let i = 0; i < n; i++) {
+        const t = i / n;
+        const env = Math.sin((t * Math.PI) ** 1.6) * (1 - t * 0.35);
+        const noise = (Math.random() * 2 - 1) * env;
+        const ph = 2 * Math.PI * center * i;
+        const tone = Math.sin(ph) * (material === 'metal' ? 0.35 : 0.2) * env;
+        data[i] = (noise * 0.55 + tone) * volume * 0.45;
+      }
+      const src = ctx.createBufferSource();
+      const filt = ctx.createBiquadFilter();
+      const gain = ctx.createGain();
+      src.buffer = buf;
+      filt.type = 'bandpass';
+      filt.frequency.value =
+        material === 'wood'
+          ? 380
+          : material === 'concrete'
+            ? 620
+            : material === 'grass'
+              ? 260
+              : material === 'metal'
+                ? 1100
+                : material === 'carpet'
+                  ? 220
+                  : 440;
+      filt.Q.value = q;
+      gain.gain.value = 0.85;
+      src.connect(filt);
+      filt.connect(gain);
+      gain.connect(ctx.destination);
+      src.start();
+      src.stop(ctx.currentTime + dur + 0.02);
+      src.onended = () => void ctx.close();
     } catch {
       /* ignore */
     }

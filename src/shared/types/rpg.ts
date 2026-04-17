@@ -124,6 +124,7 @@ export interface TriggerZone {
   
   // Для story-триггеров
   storyNodeId?: string;
+  cutsceneId?: string;
   
   // Для item-триггеров
   itemId?: string;
@@ -146,6 +147,11 @@ export interface TriggerZone {
   
   // Подсказка при входе
   promptText?: string;
+
+  /** Короткий текст «голоса места» при пересечении границы зоны (тост `ui:exploration_message`). */
+  enterToast?: string;
+  /** Минимальный интервал между повторными показами того же тоста, мс. По умолчанию 22 с. */
+  enterToastCooldownMs?: number;
 }
 
 // Состояние триггера

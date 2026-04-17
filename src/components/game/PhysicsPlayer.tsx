@@ -3,9 +3,11 @@
 import React, { useRef, useEffect, useMemo, useState, memo, forwardRef, useImperativeHandle, Suspense, useCallback } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { useGLTF, useAnimations } from '@react-three/drei';
-import { RigidBody, RapierRigidBody, CapsuleCollider } from '@react-three/rapier';
+import { RigidBody, RapierRigidBody, CapsuleCollider, useRapier, useBeforePhysicsStep } from '@react-three/rapier';
+import type { KinematicCharacterController } from '@dimforge/rapier3d-compat';
 import * as THREE from 'three';
 import { usePlayerControls, PHYSICS_CONSTANTS, type PlayerControls } from '@/hooks/useGamePhysics';
+import { usePlayerFootsteps } from '@/hooks/usePlayerFootsteps';
 import { getDefaultPlayerModelPath, isValidPlayerGlbPath, rewriteLegacyModelPath } from '@/config/modelUrls';
 import { useGameStore } from '@/store/gameStore';
 
@@ -257,6 +259,8 @@ const GLBPlayerModel = memo(function GLBPlayerModel({
 // PHYSICS PLAYER COMPONENT
 // ============================================
 
+const DEFAULT_PHYSICS_DT = 1 / 60;
+
 export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProps>(function PhysicsPlayer(
   {
     position = [0, 1, 3],
@@ -269,10 +273,18 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
   },
   ref
 ) {
+  const { world } = useRapier();
   const rigidBodyRef = useRef<RapierRigidBody>(null);
+  const characterControllerRef = useRef<KinematicCharacterController | null>(null);
   const modelRef = useRef<THREE.Group>(null);
   const karma = useGameStore((s) => s.playerState.karma);
   const canJumpRef = useRef(true);
+  const groundedRef = useRef(false);
+  const isRunningRef = useRef(false);
+  const verticalVelRef = useRef(0);
+  const horizVelXRef = useRef(0);
+  const horizVelZRef = useRef(0);
+  const moveYawRef = useRef(initialRotation);
   const [rotation, setRotation] = useState(initialRotation);
   const [isMoving, setIsMoving] = useState(false);
   const [modelError, setModelError] = useState(false);
@@ -298,6 +310,23 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
     virtualControlsRef,
   });
 
+  const getControlsRef = useRef(getControls);
+  getControlsRef.current = getControls;
+
+  useEffect(() => {
+    const cc = world.createCharacterController(0.06);
+    cc.setSlideEnabled(true);
+    cc.setUp({ x: 0, y: 1, z: 0 });
+    cc.enableAutostep(0.35, 0.25, false);
+    cc.enableSnapToGround(0.45);
+    cc.setMaxSlopeClimbAngle(Math.PI * 0.45);
+    characterControllerRef.current = cc;
+    return () => {
+      world.removeCharacterController(cc);
+      characterControllerRef.current = null;
+    };
+  }, [world]);
+
   // Экспозиция методов через ref
   useImperativeHandle(ref, () => ({
     getPosition: () => {
@@ -310,79 +339,130 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
     getRotation: () => rotation,
     teleport: (x: number, y: number, z: number) => {
       if (rigidBodyRef.current) {
-        rigidBodyRef.current.setTranslation({ x, y, z }, true);
-        rigidBodyRef.current.setLinvel({ x: 0, y: 0, z: 0 }, true);
+        const p = { x, y, z };
+        rigidBodyRef.current.setTranslation(p, true);
+        rigidBodyRef.current.setNextKinematicTranslation(p);
+        verticalVelRef.current = 0;
+        horizVelXRef.current = 0;
+        horizVelZRef.current = 0;
       }
     },
     getRigidBody: () => rigidBodyRef.current,
   }), [rotation, position]);
 
-  // Обновление физики
-  useFrame((_, delta) => {
-    if (!rigidBodyRef.current || isLocked) {
-      setIsMoving(false);
+  usePlayerFootsteps({
+    rigidBodyRef,
+    groundedRef,
+    horizVelXRef,
+    horizVelZRef,
+    isLockedRef,
+    isRunningRef,
+    enabled: true,
+  });
+
+  useBeforePhysicsStep((stepWorld) => {
+    const rb = rigidBodyRef.current;
+    const cc = characterControllerRef.current;
+    if (!rb || !cc) return;
+
+    if (isLockedRef.current) {
+      const t = rb.translation();
+      rb.setNextKinematicTranslation({ x: t.x, y: t.y, z: t.z });
       return;
     }
 
-    const controls = getControls();
-    const currentVel = rigidBodyRef.current.linvel();
-    const currentPos = rigidBodyRef.current.translation();
+    const dtRaw = stepWorld.timestep;
+    const dt = dtRaw > 1e-6 && dtRaw < 0.25 ? dtRaw : DEFAULT_PHYSICS_DT;
+    const controls = getControlsRef.current();
+    const n = rb.numColliders();
+    if (n < 1) return;
+    const collider = rb.collider(0);
 
-    // Вычисляем направление движения
     let moveX = 0;
     let moveZ = 0;
-
     if (controls.forward) moveZ -= 1;
     if (controls.backward) moveZ += 1;
     if (controls.left) moveX -= 1;
     if (controls.right) moveX += 1;
 
-    // Нормализация диагонального движения
-    const length = Math.sqrt(moveX * moveX + moveZ * moveZ);
-    if (length > 0) {
-      moveX /= length;
-      moveZ /= length;
+    const len = Math.hypot(moveX, moveZ);
+    if (len > 0) {
+      moveX /= len;
+      moveZ /= len;
     }
 
     const speed = controls.run ? PHYSICS_CONSTANTS.RUN_SPEED : PHYSICS_CONSTANTS.WALK_SPEED;
-
-    // Применяем поворот камеры к движению
-    const sin = Math.sin(rotation);
-    const cos = Math.cos(rotation);
+    isRunningRef.current = controls.run;
+    const yaw = moveYawRef.current;
+    const sin = Math.sin(yaw);
+    const cos = Math.cos(yaw);
     const rotatedX = moveX * cos - moveZ * sin;
     const rotatedZ = moveX * sin + moveZ * cos;
-
-    // Целевая скорость
     const targetVelX = rotatedX * speed;
     const targetVelZ = rotatedZ * speed;
 
-    // Плавное изменение скорости
-    const friction = 0.15;
-    const newVelX = THREE.MathUtils.lerp(currentVel.x, targetVelX, friction);
-    const newVelZ = THREE.MathUtils.lerp(currentVel.z, targetVelZ, friction);
+    const accel = 14;
+    const t = 1 - Math.exp(-accel * dt);
+    horizVelXRef.current = THREE.MathUtils.lerp(horizVelXRef.current, targetVelX, t);
+    horizVelZRef.current = THREE.MathUtils.lerp(horizVelZRef.current, targetVelZ, t);
 
-    const groundedNear =
-      currentPos.y <= PHYSICS_CONSTANTS.PLAYER_HEIGHT * 0.65 + 0.15 && currentVel.y <= 0.35;
-    if (groundedNear) {
-      canJumpRef.current = true;
-    }
+    const g = stepWorld.gravity.y;
+    verticalVelRef.current += g * dt;
 
-    let newVelY = currentVel.y;
-    if (controls.jump && canJumpRef.current && !isLocked) {
-      newVelY = PHYSICS_CONSTANTS.JUMP_FORCE;
+    if (groundedRef.current && controls.jump && canJumpRef.current) {
+      verticalVelRef.current = PHYSICS_CONSTANTS.JUMP_FORCE;
       canJumpRef.current = false;
     }
 
-    rigidBodyRef.current.setLinvel({ x: newVelX, y: newVelY, z: newVelZ }, true);
+    const dx = horizVelXRef.current * dt;
+    const dy = verticalVelRef.current * dt;
+    const dz = horizVelZRef.current * dt;
 
-    // Определяем движение
-    const moving = Math.abs(newVelX) > 0.1 || Math.abs(newVelZ) > 0.1;
+    cc.computeColliderMovement(collider, { x: dx, y: dy, z: dz });
+    const m = cc.computedMovement();
+    const t0 = rb.translation();
+    rb.setNextKinematicTranslation({ x: t0.x + m.x, y: t0.y + m.y, z: t0.z + m.z });
+
+    const grounded = cc.computedGrounded();
+    groundedRef.current = grounded;
+    if (grounded) {
+      if (verticalVelRef.current < 0) {
+        verticalVelRef.current = 0;
+      }
+      if (!controls.jump) {
+        canJumpRef.current = true;
+      }
+    }
+  });
+
+  // Визуал: поворот модели и колбэк позиции (после шага Rapier mesh уже интерполирован).
+  useFrame(() => {
+    if (!rigidBodyRef.current) {
+      setIsMoving(false);
+      return;
+    }
+
+    if (isLocked) {
+      setIsMoving(false);
+      if (modelRef.current) {
+        modelRef.current.rotation.y = rotation;
+      }
+      moveYawRef.current = rotation;
+      if (onPositionChange) {
+        const p = rigidBodyRef.current.translation();
+        onPositionChange({ x: p.x, y: p.y, z: p.z });
+      }
+      return;
+    }
+
+    const hx = horizVelXRef.current;
+    const hz = horizVelZRef.current;
+    const moving = Math.hypot(hx, hz) > 0.12;
     setIsMoving(moving);
 
-    // Поворот модели в сторону движения
     if (moving) {
-      const targetRotation = Math.atan2(newVelX, newVelZ);
-      setRotation(prev => {
+      const targetRotation = Math.atan2(hx, hz);
+      setRotation((prev) => {
         let diff = targetRotation - prev;
         while (diff > Math.PI) diff -= Math.PI * 2;
         while (diff < -Math.PI) diff += Math.PI * 2;
@@ -390,14 +470,15 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
       });
     }
 
-    // Обновляем поворот модели
     if (modelRef.current) {
       modelRef.current.rotation.y = rotation;
     }
 
-    // Уведомляем об изменении позиции
+    moveYawRef.current = rotation;
+
     if (onPositionChange) {
-      onPositionChange({ x: currentPos.x, y: currentPos.y, z: currentPos.z });
+      const p = rigidBodyRef.current.translation();
+      onPositionChange({ x: p.x, y: p.y, z: p.z });
     }
   });
 
@@ -418,12 +499,9 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
     <RigidBody
       ref={rigidBodyRef}
       position={position}
-      type="dynamic"
+      type="kinematicPosition"
       colliders={false}
       enabledRotations={[false, false, false]}
-      linearDamping={0.5}
-      angularDamping={1}
-      gravityScale={1}
     >
       <CapsuleCollider
         args={[PHYSICS_CONSTANTS.PLAYER_HEIGHT / 2 - PHYSICS_CONSTANTS.PLAYER_RADIUS, PHYSICS_CONSTANTS.PLAYER_RADIUS]}
