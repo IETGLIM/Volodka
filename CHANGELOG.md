@@ -4,7 +4,19 @@
 
 ### Added
 
+- **Расписание NPC**: `src/engine/ScheduleEngine.ts` (`ScheduleEntry`, `getCurrentScheduleEntry`), слоты для albert / zarema / kitchen_maria / cafe_barista; в исследовании **`exploration.timeOfDay`** и **`advanceTime`** в `gameStore` и `src/client/store/worldStore.ts`; `NPCSystem` фильтрует NPC по сцене и расписанию, опционально **`RigidBody` kinematic** для телепорта; иконки активности в `<Html>`; недоступный по расписанию диалог → **`eventBus` `ui:exploration_message`**.
+- **Квесты в 3D**: индикаторы `!` / `?` над NPC (`src/lib/npcQuestMarker.ts`, `src/store/questStore.ts`), данные из **`gameStore`**.
+- **Карма в UI и диалогах**: `MoralCompassHUD.tsx`; подсветка игрока в **`PhysicsPlayer`** по порогам кармы; в **`DialogueEngine`** условия **`minKarma` / `maxKarma`** (типы в `rpgTypes` / `shared/types/rpg`).
+- **Лут и навыки**: `LootNotification` / `SkillUpNotification`, события **`loot:reward`**, **`skill:level_up`**, **`sound:play`** в `EventBus`; выдача предмета из `addSkill` / `addItem` с уведомлениями; тип тоста **`system`** в `useEffectNotifications`.
+- **Радиальное меню объектов**: `RadialMenu.tsx`, `InteractiveTriggers.tsx` (поиск ближайшего объекта), в **`RPGGameCanvas`** по **E** → **`object:interact`**.
+- **Миникарта**: проп **`questMarkers`** (`MiniMap.tsx`), расчёт в **`GameOrchestrator`** по активным квестам и **`getNextTrackedObjective`**.
+- **Аудио**: `src/engine/AudioEngine.ts`, хук **`useAudio.ts`**; **`AmbientMusicPlayer`**: **`forceBattleMusic`** при стрессе > 80 или сцене **`battle`**; фон в **`MenuScreen`** / **`IntroScreen`** через `audioEngine` (опциональные файлы в `/audio/ui/`).
+- **Туториал 3D**: `TutorialOverlay.tsx`, флаги **`tutorial_seen_movement`**, **`tutorial_seen_interact`**, **`tutorialsDisabled`** в `playerState.flags`.
+
 ### Changed
+
+- **`NPC.tsx`**, **`RPGGameCanvas.tsx`**, **`PhysicsRPGCanvas.tsx`**: интеграция расписания, тика времени внутри `<Canvas>`, радиальное меню.
+- **`GameOrchestrator.tsx`**: HUD кармы, лут/скилл-оверлеи, туториал, маркеры квестов на миникарте, боевой режим музыки.
 
 ### Removed
 
