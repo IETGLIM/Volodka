@@ -8,6 +8,8 @@
 
 ### Added
 
+- **Browserbase Functions — дымовой тест деплоя**: каталог **`browserbase-functions/volodka-smoke`** (`defineFn` **`volodka-smoke`**) — Playwright по CDP к сессии Browserbase: открытие **`baseUrl`**, проверка заголовка с **«ВОЛОДЬКА»**, ожидание **`canvas`**, проверка **WebGL**; скрипты в корневом **`package.json`**: **`bb:volodka-smoke:dev`**, **`bb:volodka-smoke:publish`**; в **`.gitignore`** — **`browserbase-functions/**/.env`**, **`.browserbase`**.
+
 - **Масштаб персонажей под локацию (3D)**: в **`SceneConfig`** поле **`explorationCharacterModelScale`**, функция **`getExplorationCharacterModelScale(sceneId)`** в **`config/scenes.ts`**; множитель применяется к визуалу NPC **`(definition.scale ?? 1) * …`** и к модели игрока (**`PhysicsPlayer`** `visualModelScale`); тесты **`scenes.explorationScale.test.ts`**. Значения заданы для улиц (крупнее), комнат/офиса/кафе (компактнее), парка, библиотеки, сна, боя и др.
 
 - **Атмосфера и полировка 3D-исследования**: **`src/lib/explorationAtmosphere.ts`** — погода по сцене/часу (`street_winter` → снег, ночная улица → туман/морось) и фоновый стресс на улице; тесты **`explorationAtmosphere.test.ts`**; в **`GameOrchestrator`** тик **`addStress`** в режиме обхода для **`street_night` / `street_winter`**.

@@ -1,5 +1,7 @@
 .vercel
 .env*.local
+browserbase-functions/**/.env
+.browserbase
 
 node_modules
 .next

@@ -10,6 +10,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "validate:content": "vitest run src/validation/contentValidator.test.ts",
+    "bb:volodka-smoke:dev": "npm run dev --prefix browserbase-functions/volodka-smoke",
+    "bb:volodka-smoke:publish": "npm run publish --prefix browserbase-functions/volodka-smoke",
     "expert:archive": "pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/export-expert-review-archive.ps1",
     "scenes:download": "node scripts/download-scene-backgrounds.mjs",
     "scenes:download:force": "node scripts/download-scene-backgrounds.mjs --force",
