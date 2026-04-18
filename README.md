@@ -20,6 +20,14 @@ npm run build
 npm test
 ```
 
+## Инженерия, CI и безопасность (аудит 2026)
+
+- **GitHub Actions**: workflow **`.github/workflows/ci.yml`** — `npm ci` → **`npx tsc --noEmit`** → **`npm test`** (Vitest) → **`npm run lint`** на push/PR в `main` / `master`.
+- **TypeScript**: в **`next.config.ts`** снято **`typescript.ignoreBuildErrors`** — ошибки типов снова **блокируют** `next build`.
+- **React**: включён **`reactStrictMode: true`** — в development возможны двойные эффекты; так ловятся утечки подписок и гонки в R3F.
+- **Облачные сохранения** (`/api/save`): по умолчанию API отвечает **403** с кодом `CLOUD_SAVE_DISABLED`. Включение только при **`ENABLE_CLOUD_GAME_SAVE=1`** в окружении (и настроенном **`DATABASE_URL`** через Prisma). Клиентский прогресс по-прежнему в **localStorage** через стор.
+- **Черновик сюжета**: файл **`src/data/storyNodesExpansion.ts`** не смержен в **`STORY_NODES`** — не опирайтесь на узлы из него, пока явно не перенесены в **`storyNodes.ts`**.
+
 ## Что недавно появилось в проекте
 
 Ниже — сжатое описание крупных доработок (ветка `main`). Подробный список изменений — в **[CHANGELOG.md](./CHANGELOG.md)**.

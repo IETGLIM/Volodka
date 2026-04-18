@@ -11,8 +11,15 @@
 
 - **Vercel: «This repository exceeded its LFS budget»**: клон репозитория тянет объекты **Git LFS** (см. **`.gitattributes`**: `*.glb`, `*.fbx`, `*.zip`); при исчерпании квоты хранилища/трафика GitHub LFS сборка на Vercel падает. Варианты: оплатить **Data packs** в [GitHub → Billing](https://github.com/settings/billing); или один раз вынести бинарники из LFS в обычный Git (**`git lfs migrate export`**, затем **`git push --force-with-lease`**) — см. **`FREE_HOSTING.md`**. **Сделано для `main`:** **`git lfs migrate export --include='*.glb,*.fbx,*.zip' --everything`**, очищен **`.gitattributes`** (без `filter=lfs`), пуш с **`--force-with-lease`** на **`origin/main`**.
 
+### Changed
+
+- **Next.js**: **`next.config.ts`** — **`typescript.ignoreBuildErrors: false`** (сборка снова зависит от проверки типов); **`reactStrictMode: true`**.
+- **API сохранений**: **`src/app/api/save/route.ts`** — без **`ENABLE_CLOUD_GAME_SAVE=1`** все методы отвечают **403** и **`CLOUD_SAVE_DISABLED`** (основной прогресс остаётся в **`localStorage`**; облако — только после явного включения и дальнейшей защиты, напр. auth).
+- **ESLint / React hooks**: **`FollowCamera`** — обновление **`collisionSpringRef`** в **`useEffect`**; **`PhysicsPlayer`** — расчёт высоты GLB без чтения ref в render; **`usePlayerFootsteps`** — переиспользуемые **`Rapier`**-векторы через **`useRef`**, без мутации значений из **`useMemo`**.
+
 ### Added
 
+- **CI**: **`.github/workflows/ci.yml`** — на push/PR: **`npm ci`**, **`tsc --noEmit`**, **`npm test`**, **`npm run lint`**.
 - **Мобильная адаптация (обход + UI)**: **`useIsMobile`** и **`useMobileVisualPerf`** — порог **до 1023px** по ширине (телефоны в **ландшафте** не выпадают из «узкого» режима); оболочка 3D в **`GameOrchestrator`** — **`touch-manipulation`** вместо **`touch-none`**, чтобы тапы по оверлеям вели себя предсказуемее; **`ExplorationMobileHud`** — крупнее зоны нажатия (~52px), отступы **`safe-area-inset` слева/справа/снизу**; **`RadialMenu`** — закрытие по **`pointerdown`** вне панели, **`touch-manipulation`**, отступы под вырез, кнопки **min-h-11**; **`MiniMap`** — позиция с учётом **safe-area**, не наезжает на тач-панель.
 
 - **Целостность сюжета / стихов / золотого пути**: тест **`src/data/narrativePoetryIntegrity.test.ts`** — все **`poemId`** в эффектах **`STORY_NODES`** существуют в **`POEMS`**; непустой **`POEMS[].unlocksAt`** указывает на узел сюжета; у квестов **`GOLDEN_PATH_QUEST_SPINE`** и **`poetry_collection`** каждый **`linkedStoryNodeId`** есть в **`STORY_NODES`**; правило Cursor **`.cursor/rules/narrative-poetry-golden-path.mdc`** (прогон **`vitest`** этих файлов при правках **`storyNodes`** / **`quests`** / **`poems`** / **`goldenPath`**). Исправлен **`poem_6`**: **`unlocksAt`** → **`stranger_approach`** (вместо отсутствующего **`maria_introduction`**, чтобы **`useGameRuntime`** снова мог выдать стих на узле).

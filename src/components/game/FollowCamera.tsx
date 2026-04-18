@@ -132,7 +132,10 @@ export default function FollowCamera({
   const springCamPos = useRef(new THREE.Vector3());
   const springCamInitialized = useRef(false);
 
-  collisionSpringRef.current = collisionSpring;
+  /** Не обновлять ref синхронно в render (eslint react-hooks/refs). */
+  useEffect(() => {
+    collisionSpringRef.current = collisionSpring;
+  }, [collisionSpring]);
 
   /** Смена сцены меняет `distance` из `RPGGameCanvas` — ref зума иначе остаётся от предыдущей локации. */
   useEffect(() => {

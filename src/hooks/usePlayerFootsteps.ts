@@ -1,11 +1,11 @@
 "use client";
 
 import type { MutableRefObject, RefObject } from 'react';
-import { useMemo, useRef } from 'react';
+import { useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { useRapier } from '@react-three/rapier';
 import type { RapierRigidBody } from '@react-three/rapier';
-import { RigidBodyType } from '@dimforge/rapier3d-compat';
+import { RigidBodyType, type Vector3 as RapierVector3 } from '@dimforge/rapier3d-compat';
 import { footstepSfxType, resolveFootstepMaterial, type FootstepMaterial } from '@/lib/footstepMaterials';
 import { audioEngine } from '@/engine/AudioEngine';
 import { eventBus } from '@/engine/EventBus';
@@ -42,8 +42,9 @@ export function usePlayerFootsteps({
   enabled = true,
 }: UsePlayerFootstepsArgs) {
   const { world, rapier, colliderStates } = useRapier();
-  const footRayOrigin = useMemo(() => new rapier.Vector3(0, 0, 0), [rapier]);
-  const footRayDir = useMemo(() => new rapier.Vector3(0, -1, 0), [rapier]);
+  /** Ленивая инициализация в `useFrame`: векторы из `useMemo` нельзя мутировать (eslint react-hooks/immutability). */
+  const footRayOriginRef = useRef<RapierVector3 | null>(null);
+  const footRayDirRef = useRef<RapierVector3 | null>(null);
   const lastMatRef = useRef<FootstepMaterial>('default');
   const stepCooldownRef = useRef(0);
 
@@ -75,6 +76,10 @@ export function usePlayerFootsteps({
     if (stepCooldownRef.current > 0) return;
 
     const tr = rb.translation();
+    if (!footRayOriginRef.current) footRayOriginRef.current = new rapier.Vector3(0, 0, 0);
+    if (!footRayDirRef.current) footRayDirRef.current = new rapier.Vector3(0, -1, 0);
+    const footRayOrigin = footRayOriginRef.current;
+    const footRayDir = footRayDirRef.current;
     footRayOrigin.x = tr.x;
     footRayOrigin.y = tr.y + 0.06;
     footRayOrigin.z = tr.z;

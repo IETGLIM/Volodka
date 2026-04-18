@@ -1,8 +1,21 @@
 // ============================================
 // SAVE/LOAD API — Server-side persistence
 // ============================================
+// По умолчанию выключено: без auth все слоты шли бы на `userId: default`.
+// Включение: переменная окружения **`ENABLE_CLOUD_GAME_SAVE=1`** (и настроенный **`DATABASE_URL`**).
 
 import { NextRequest, NextResponse } from 'next/server';
+
+const CLOUD_SAVE_DISABLED_BODY = {
+  error:
+    'Облачные сохранения отключены. Прогресс хранится в localStorage (клиент). Для сервера задайте ENABLE_CLOUD_GAME_SAVE=1 и защитите API (auth).',
+  code: 'CLOUD_SAVE_DISABLED' as const,
+};
+
+function assertCloudSaveEnabled(): NextResponse | null {
+  if (process.env.ENABLE_CLOUD_GAME_SAVE === '1') return null;
+  return NextResponse.json(CLOUD_SAVE_DISABLED_BODY, { status: 403 });
+}
 
 async function getPrisma() {
   const { db } = await import('@/lib/db');
@@ -10,6 +23,8 @@ async function getPrisma() {
 }
 
 export async function POST(request: NextRequest) {
+  const disabled = assertCloudSaveEnabled();
+  if (disabled) return disabled;
   try {
     const body = await request.json();
     const {
@@ -54,6 +69,8 @@ export async function POST(request: NextRequest) {
 }
 
 export async function GET(request: NextRequest) {
+  const disabled = assertCloudSaveEnabled();
+  if (disabled) return disabled;
   try {
     const { searchParams } = new URL(request.url);
     const userId = searchParams.get('userId') || 'default';
@@ -96,6 +113,8 @@ export async function GET(request: NextRequest) {
 }
 
 export async function DELETE(request: NextRequest) {
+  const disabled = assertCloudSaveEnabled();
+  if (disabled) return disabled;
   try {
     const { searchParams } = new URL(request.url);
     const userId = searchParams.get('userId') || 'default';
