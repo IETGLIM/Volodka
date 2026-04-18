@@ -6,6 +6,7 @@
 // - квесты `QUEST_DEFINITIONS` и стартовый набор в gameStore (`main_goal`, `first_words`);
 // - автопрогресс по событиям в `useQuestProgress` (location_visited, npc_talked, poem_collected);
 // - ветвления с `dialogueNpcId` → `DialogueRenderer` + `DialogueEngine` (processDialogueChoice / startDialogue).
+// Регрессии: `goldenPath.test.ts`, `narrativePoetryIntegrity.test.ts` (+ `contentValidator.test.ts` для графа).
 //
 // Канон для «один проход до титров»: финал **Создатель** (`ending_creator`).
 // Условие выбора в `ending_choice`: завершён `first_words` + минимум 2 завершённых квеста всего.

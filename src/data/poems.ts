@@ -276,7 +276,8 @@ export const POEMS: Poem[] = [
     title: 'Ну а тебе, друг мой!',
     author: 'Владимир Лебедев',
     order: 6,
-    unlocksAt: 'maria_introduction',
+    /** Первый разговор с Викторией после чтения в «Синей Яме» (канон `STORY_NODES`, без черновика `maria_introduction`). */
+    unlocksAt: 'stranger_approach',
     themes: ['поэзия', 'ирония', 'серебряный век'],
     intro: 'Размышления о поэзии и её месте в жизни...',
     lines: [
