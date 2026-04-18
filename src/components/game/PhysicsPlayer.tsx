@@ -183,13 +183,12 @@ const FallbackPlayerModel = memo(function FallbackPlayerModel({
 // ============================================
 
 /**
- * Высота (м) для расчёта uniform-масштаба GLB. SkinnedMesh AABB часто завышен (кости, поза), но <8 m —
- * старый порог пропускал такие случаи и давал микроскопический `TARGET/h`.
+ * Высота (м) для делителя масштаба GLB. Нельзя поднимать слишком маленький `hRaw` вверх —
+ * иначе `TARGET/h` становится огромным (ноги по краям экрана). Только верхний cap и fallback.
  */
 const PLAYER_VISUAL_HEIGHT_FALLBACK_M = 1.72;
-/** Нижняя/верхняя граница «человеческой» высоты по world AABB по Y для делителя масштаба. */
-const PLAYER_MESH_BBOX_H_MIN = 0.52;
-const PLAYER_MESH_BBOX_H_MAX = 2.35;
+/** Максимум world AABB по Y, который ещё считаем «ростом персонажа» для делителя (завышенный bbox режем). */
+const PLAYER_MESH_BBOX_H_CAP = 2.45;
 
 function getRootCharacterVisualHeightMeters(root: THREE.Object3D, scratch: THREE.Vector3): number {
   root.updateMatrixWorld(true);
@@ -215,7 +214,11 @@ function getRootCharacterVisualHeightMeters(root: THREE.Object3D, scratch: THREE
   if (!Number.isFinite(hRaw) || hRaw < 1e-4) {
     return PLAYER_VISUAL_HEIGHT_FALLBACK_M;
   }
-  return THREE.MathUtils.clamp(hRaw, PLAYER_MESH_BBOX_H_MIN, PLAYER_MESH_BBOX_H_MAX);
+  // Слишком мелкий Y — битый bbox (делитель маленький → гигантский mesh); не поднимаем h вручную.
+  if (hRaw < 0.55 || hRaw > 22) {
+    return PLAYER_VISUAL_HEIGHT_FALLBACK_M;
+  }
+  return Math.min(hRaw, PLAYER_MESH_BBOX_H_CAP);
 }
 
 const GLBPlayerModel = memo(function GLBPlayerModel({
@@ -264,11 +267,7 @@ const GLBPlayerModel = memo(function GLBPlayerModel({
     if (!loadedScene) return 0.12 * rs;
     const h = getRootCharacterVisualHeightMeters(loadedScene, bboxSizeScratchRef.current);
     if (h < 1e-4) return 0.12 * rs;
-    const u = (PLAYER_GLB_TARGET_VISUAL_METERS / h) * rs;
-    // Вторая страховка: даже при странном h не даём персонажу схлопнуться до «точки».
-    const uMin = (PLAYER_GLB_TARGET_VISUAL_METERS / PLAYER_MESH_BBOX_H_MAX) * rs;
-    const uMax = (PLAYER_GLB_TARGET_VISUAL_METERS / PLAYER_MESH_BBOX_H_MIN) * rs;
-    return THREE.MathUtils.clamp(u, uMin, uMax);
+    return (PLAYER_GLB_TARGET_VISUAL_METERS / h) * rs;
   }, [loadedScene, rs]);
 
   useEffect(() => {
