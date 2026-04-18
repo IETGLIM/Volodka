@@ -8,6 +8,8 @@
 
 ### Added
 
+- **`src/app/error.tsx`**, **`src/app/global-error.tsx`**: границы ошибок App Router (сегмент и корень при падении **`layout`**); кнопка **`reset`**, в development — текст ошибки в UI.
+
 - **Browserbase Functions — дымовой тест деплоя**: каталог **`browserbase-functions/volodka-smoke`** (`defineFn` **`volodka-smoke`**) — Playwright по CDP к сессии Browserbase: открытие **`baseUrl`**, проверка заголовка с **«ВОЛОДЬКА»**, ожидание **`canvas`**, проверка **WebGL**; скрипты в корневом **`package.json`**: **`bb:volodka-smoke:dev`**, **`bb:volodka-smoke:publish`**; в **`.gitignore`** — **`browserbase-functions/**/.env`**, **`.browserbase`**.
 
 - **Масштаб персонажей под локацию (3D)**: в **`SceneConfig`** поле **`explorationCharacterModelScale`**, функция **`getExplorationCharacterModelScale(sceneId)`** в **`config/scenes.ts`**; множитель применяется к визуалу NPC **`(definition.scale ?? 1) * …`** и к модели игрока (**`PhysicsPlayer`** `visualModelScale`); тесты **`scenes.explorationScale.test.ts`**. Значения заданы для улиц (крупнее), комнат/офиса/кафе (компактнее), парка, библиотеки, сна, боя и др.
@@ -44,6 +46,8 @@
 - **Контент диалога**: у баристы ветка **`barista_kindred`** с условием **`minKarma: 55`**.
 
 ### Changed
+
+- **`vercel.json`**: для **`/models-external/(.*)`** задан **`Cache-Control: public, max-age=31536000, immutable`** (как для **`/models/`**), чтобы GLB из **`public/models-external`** кешировались на CDN.
 
 - **3D-интерьеры квартир (обход)**: **`VolodkaRoomVisual`**, **`VolodkaCorridorVisual`**, **`HomeEveningVisual`** — мебель и пропы (столы, диван, шкафы, кровать, обувница, батарея, плафоны, ковры, кухонный угол, торшер) для читаемой «обстановки»; в комнате Володьки объекты по координатам совпадают с **`VolodkaRoomColliders`**.
 
