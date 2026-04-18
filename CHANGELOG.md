@@ -65,6 +65,8 @@
 
 ### Fixed
 
+- **Исследование квартиры / коридор — «чёрный экран»**: в **`RPGGameCanvas`** не монтировался интерьер (стены/потолок были только в **`OptimizedSceneEnvironment`** для VN). Добавлены **`VolodkaCorridorVisual`**, **`VolodkaRoomVisual`**, **`HomeEveningVisual`** и подключены по **`sceneId`**; туман для узких локаций расширен (**near / far**), пол слегка осветлён с лёгким **emissive**; **`ExplorationPostFX`** получает **`compactIndoor`** (без **N8AO** в квартире — иначе кадр «съедался» в чёрное).
+
 - **`PhysicsPlayer` (лаги + визуал)**: убраны **`setState` в `useFrame`** для поворота (теперь **`rotationRef`** + поворот **`modelRef`** в кадре без React commit ~60 Гц); **`setIsMoving`** только при смене движения; в **`useFrame`** для блокировки диалога используется **`isLockedRef`**, чтобы не залипать на устаревшем замыкании; подписка на карму — дискретные зоны **`high` / `mid` / `low`**, без ререндера на каждое изменение числа; **`useGLTF.clear`** у игрока убран (как у NPC) — меньше повторных загрузок и мигания; **`Suspense`**-fallback при загрузке GLB — пустой **`group`**, чтобы процедурная заглушка не оставалась под моделью; визуал вынесен в именованный **`PlayerVisualRoot`**. **`usePlayerControls`**: игнор **`keydown` с `e.repeat`** для WASD/стрелок, чтобы удержание клавиш не вызывало лишние **`forceUpdate`**.
 
 - **`gameStore.saveGame`**: после успешной записи в **`localStorage`** эмитируется **`game:saved`** с **`timestamp`** и **`source`** из **`SaveGameOptions`** (по умолчанию **`manual`**), чтобы **`GameOrchestrator`** и **`useAutoSave`** снова получали тосты и различие авто/ручного сохранения.

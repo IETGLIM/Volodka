@@ -8,12 +8,15 @@ interface ExplorationPostFXProps {
   sceneId: SceneId;
   visualLite: boolean;
   stress: number;
+  /** Квартира / узкий коридор: без N8AO — иначе тёмные тона «съедаются» в почти чёрный кадр. */
+  compactIndoor?: boolean;
 }
 
 export const ExplorationPostFX = memo(function ExplorationPostFX({
   sceneId,
   visualLite,
   stress,
+  compactIndoor = false,
 }: ExplorationPostFXProps) {
   const bloom = useMemo(() => {
     const nightish = sceneId === 'street_night' || sceneId === 'dream' || sceneId === 'rooftop_night';
@@ -26,11 +29,16 @@ export const ExplorationPostFX = memo(function ExplorationPostFX({
 
   const vignetteDark = useMemo(() => 0.22 + Math.min(0.32, stress / 150), [stress]);
 
-  if (visualLite) {
+  if (visualLite || compactIndoor) {
     return (
       <EffectComposer enableNormalPass={false} multisampling={0}>
-        <Bloom luminanceThreshold={0.72} intensity={0.2} mipmapBlur radius={0.32} />
-        <Vignette eskil={false} offset={0.18} darkness={0.2} />
+        <Bloom
+          luminanceThreshold={0.72}
+          intensity={compactIndoor ? 0.24 : 0.2}
+          mipmapBlur
+          radius={0.32}
+        />
+        <Vignette eskil={false} offset={0.16} darkness={compactIndoor ? 0.14 : 0.2} />
       </EffectComposer>
     );
   }

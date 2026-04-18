@@ -58,6 +58,9 @@ import { getNearestInteractiveObject } from './InteractiveTriggers';
 import type { PlayerControls } from '@/hooks/useGamePhysics';
 import { createFloorNavPathfinder } from '@/lib/explorationNavMesh';
 import { BattleClickLayer } from './BattleClickLayer';
+import { VolodkaCorridorVisual } from './exploration/VolodkaCorridorVisual';
+import { VolodkaRoomVisual } from './exploration/VolodkaRoomVisual';
+import { HomeEveningVisual } from './exploration/HomeEveningVisual';
 
 // ============================================
 // TYPES
@@ -331,24 +334,35 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
           <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.05, 0]} receiveShadow>
             <boxGeometry args={groundGeometryArgs} />
             <meshStandardMaterial
-              color={isPanelDistrict ? '#141c18' : '#3d3436'}
-              roughness={isPanelDistrict ? 0.78 : 0.9}
+              color={
+                isPanelDistrict
+                  ? '#141c18'
+                  : isNarrowApartment
+                    ? '#5a524e'
+                    : '#3d3436'
+              }
+              roughness={isPanelDistrict ? 0.78 : isNarrowApartment ? 0.88 : 0.9}
               metalness={isPanelDistrict ? 0.22 : 0}
-              emissive={isPanelDistrict ? '#002818' : '#000000'}
-              emissiveIntensity={isPanelDistrict ? 0.35 : 0}
+              emissive={isPanelDistrict ? '#002818' : isNarrowApartment ? '#1a1512' : '#000000'}
+              emissiveIntensity={isPanelDistrict ? 0.35 : isNarrowApartment ? 0.08 : 0}
             />
           </mesh>
         </group>
 
+        {/* Интерьер квартиры в обходе (раньше был только в VN-слое — без стен сцена читалась как «чёрная дыра»). */}
+        {sceneId === 'volodka_corridor' && <VolodkaCorridorVisual />}
+        {sceneId === 'volodka_room' && <VolodkaRoomVisual />}
+        {sceneId === 'home_evening' && <HomeEveningVisual />}
+
         {isPanelDistrict && <PanelDistrictBuildings />}
       
-        {/* Fog */}
+        {/* Fog — в узких комнатах был слишком короткий far: стены уходили в 100% тумана. */}
         <fog
           attach="fog"
           args={[
             sceneConfig.fogColor,
-            isPanelDistrict ? 14 : isNarrowApartment ? 5 : 8,
-            isPanelDistrict ? 48 : isNarrowApartment ? 18 : 25,
+            isPanelDistrict ? 14 : isNarrowApartment ? 1.2 : 8,
+            isPanelDistrict ? 48 : isNarrowApartment ? 42 : 25,
           ]}
         />
 
@@ -437,7 +451,12 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
           creativity={playerState.creativity}
         />
       </Physics>
-        <ExplorationPostFX sceneId={sceneId} visualLite={visualLite} stress={playerState.stress} />
+        <ExplorationPostFX
+          sceneId={sceneId}
+          visualLite={visualLite}
+          stress={playerState.stress}
+          compactIndoor={isNarrowApartment}
+        />
         <ExplorationParticles sceneId={sceneId} timeOfDay={timeOfDay} visualLite={visualLite} />
         <ExplorationFootprints key={sceneId} sceneId={sceneId} />
         {showExplorationStats && <ExplorationFrameStats />}
