@@ -43,6 +43,8 @@
 
 ### Changed
 
+- **3D-интерьеры квартир (обход)**: **`VolodkaRoomVisual`**, **`VolodkaCorridorVisual`**, **`HomeEveningVisual`** — мебель и пропы (столы, диван, шкафы, кровать, обувница, батарея, плафоны, ковры, кухонный угол, торшер) для читаемой «обстановки»; в комнате Володьки объекты по координатам совпадают с **`VolodkaRoomColliders`**.
+
 - **`FollowCamera`**: переиспользование **`Raycaster`** и векторов в **`checkCameraCollision`**, плюс **`frameTargetRef` / `frameDesiredCamRef`** в **`useFrame`**; то же для **`SimpleFollowCamera`** — меньше краткоживущих объектов при обходе с коллизиями камеры.
 
 - **Перфоманс кадра (частицы и шаги)**: **`ExplorationParticles`** — без **`Math.random`** и **`performance.now`** в **`useFrame`** (предвычисленные **`Float32Array`**, фаза от **`clock.getElapsedTime()`**); **`OptimizedSceneEnvironment` / `Snowflakes`** — джиттер скорости падения вынесен из кадра, respawn позиций без **`Math.random`** в цикле; **`usePlayerFootsteps`** — переиспользуемые **`rapier.Vector3`** для луча вместо аллокаций на шаг; **`PhysicsPlayer` / `GLBPlayerModel`** — один **`Vector3`**-scratch для **`Box3.getSize`**; **`InteractiveTrigger` / `WorldItem`** — покачивание по **`clock`**, не по **`Date.now()`**.
@@ -74,6 +76,8 @@
 ### Removed
 
 ### Fixed
+
+- **Консоль / аудио / камера / ввод**: **`AudioEngine.playSfx`** для **`footstep_*`** сразу процедурный шаг без запросов **`/audio/ui/sfx_footstep_*.mp3`** (убраны 404). **Иконка**: **`public/icon.svg`**, **`metadata.icons`** в **`app/layout.tsx`**, редирект **`/favicon.ico` → `/icon.svg`** в **`next.config.ts`**. **`FollowCamera`**: зум на **`wheel`** с **`gl.domElement`**, **`passive: false`** и **`preventDefault`**; коллизии камеры без чередования кадров (**`COLLISION_THROTTLE_FRAMES = 1`**), чтобы убрать джиттер. **`RPGGameCanvas`**: **`hemisphereLight`** через **`color` / `groundColor` / `intensity`** (меньше предупреждений R3F/Three о deprecated args); **`Canvas`** **`tabIndex`**, **`onPointerDown`** → фокус для клавиатуры после клика по сцене. **`useGamePhysics`**: не перехватывать WASD, если фокус в **`input` / `textarea` / contentEditable** (чинило «управление мёртвое» после UI).
 
 - **`ConsequencesSystem` / EventBus**: подписки на события сохраняются в **`consequenceBusUnsubs`**; **`resetConsequences()`** вызывает отписки перед сбросом состояния — иначе при повторном **`initConsequencesSystem`** (тесты, HMR) обработчики накапливались (утечка подписок + двойное применение последствий). Тест **`ConsequencesSystem.test.ts`**.
 
