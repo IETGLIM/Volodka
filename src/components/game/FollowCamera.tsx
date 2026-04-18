@@ -91,6 +91,15 @@ export default function FollowCamera({
   const lastMousePos = useRef({ x: 0, y: 0 });
   const rotationSpeed = 0.005;
   const frameCount = useRef(0);
+
+  /** Переиспользование вместо new Raycaster / Vector3 на каждый кадр коллизии — меньше давления на GC. */
+  const collisionRaycasterRef = useRef<THREE.Raycaster | null>(null);
+  const collisionOriginRef = useRef(new THREE.Vector3());
+  const collisionDirectionRef = useRef(new THREE.Vector3());
+  const collisionResultRef = useRef(new THREE.Vector3());
+  const collisionOffsetRef = useRef(new THREE.Vector3());
+  const frameTargetRef = useRef(new THREE.Vector3());
+  const frameDesiredCamRef = useRef(new THREE.Vector3());
   
   // ============================================
   // ПРОВЕРКА КОЛЛИЗИЙ КАМЕРЫ
@@ -106,44 +115,38 @@ export default function FollowCamera({
     if (!enableCollision) {
       return desiredCamPos;
     }
+
+    if (!collisionRaycasterRef.current) {
+      collisionRaycasterRef.current = new THREE.Raycaster();
+    }
+    const raycaster = collisionRaycasterRef.current;
+    const origin = collisionOriginRef.current;
+    const direction = collisionDirectionRef.current;
+    const collidedPos = collisionResultRef.current;
+    const offset = collisionOffsetRef.current;
     
-    // Создаём новые векторы для вычислений
-    const origin = new THREE.Vector3();
-    const direction = new THREE.Vector3();
-    const collidedPos = new THREE.Vector3();
-    
-    // Направление от цели к камере
     direction.subVectors(desiredCamPos, targetPos).normalize();
     
-    // Начальная точка - чуть выше цели (голова персонажа)
     origin.copy(targetPos);
     origin.y += 1.5;
     
-    // Создаём raycaster с оптимизацией по слоям
-    const raycaster = new THREE.Raycaster();
     raycaster.set(origin, direction);
     raycaster.far = dist + radius;
-    // Включаем только слой коллайдеров камеры и дефолтный слой
     raycaster.layers.set(CAMERA_COLLISION_LAYER);
-    raycaster.layers.enable(0); // Дефолтный слой для обычных объектов
+    raycaster.layers.enable(0);
     
-    // Получаем все пересечения (включая невидимые меши с opacity=0)
     const intersects = raycaster.intersectObjects(scene.children, true);
     
-    // Фильтруем пересечения
     for (const hit of intersects) {
-      // Проверяем, что объект является коллайдером
       let isValidCollider = false;
       let currentObj: THREE.Object3D | null = hit.object;
       
-      // Поднимаемся по иерархии для проверки userData
       while (currentObj) {
         if (!isCollidable(currentObj)) {
           isValidCollider = false;
           break;
         }
         
-        // Если это mesh с геометрией - потенциальный коллайдер
         if (currentObj instanceof THREE.Mesh && currentObj.geometry) {
           isValidCollider = true;
         }
@@ -152,18 +155,17 @@ export default function FollowCamera({
       }
       
       if (isValidCollider && hit.distance < dist + radius) {
-        // Коллизия обнаружена - двигаем камеру ближе к цели
         const safeDistance = Math.max(minDist, hit.distance - radius);
         
         collidedPos.copy(targetPos);
         collidedPos.y += 1.5;
-        collidedPos.add(direction.clone().multiplyScalar(safeDistance));
+        offset.copy(direction).multiplyScalar(safeDistance);
+        collidedPos.add(offset);
         
         return collidedPos;
       }
     }
     
-    // Коллизий нет - возвращаем исходную позицию
     return desiredCamPos;
   }, [enableCollision, scene]);
 
@@ -273,40 +275,34 @@ export default function FollowCamera({
   // ============================================
 
   useFrame(() => {
-    // Целевая позиция с плавной интерполяцией
-    const target = new THREE.Vector3(targetPosition.x, targetPosition.y, targetPosition.z);
-    currentTarget.current.lerp(target, smoothness);
+    frameTargetRef.current.set(targetPosition.x, targetPosition.y, targetPosition.z);
+    currentTarget.current.lerp(frameTargetRef.current, smoothness);
 
-    // Используем текущую дистанцию (с учётом зума)
     const activeDistance = currentDistance.current;
 
-    // Вычисляем желаемую позицию камеры на основе угла
     const cameraX = currentTarget.current.x + Math.sin(currentAngle.current) * activeDistance;
     const cameraZ = currentTarget.current.z + Math.cos(currentAngle.current) * activeDistance;
     const cameraY = currentTarget.current.y + height;
 
-    // Плавное движение камеры
-    const desiredCamPos = new THREE.Vector3(cameraX, cameraY, cameraZ);
+    frameDesiredCamRef.current.set(cameraX, cameraY, cameraZ);
     
-    // Проверка коллизий (каждый N-й кадр для производительности)
     frameCount.current++;
     let finalCamPos: THREE.Vector3;
     
     if (enableCollision && frameCount.current % COLLISION_THROTTLE_FRAMES === 0) {
       finalCamPos = checkCameraCollision(
         currentTarget.current,
-        desiredCamPos,
+        frameDesiredCamRef.current,
         activeDistance,
         collisionRadius,
         minDistance
       );
     } else {
-      finalCamPos = desiredCamPos;
+      finalCamPos = frameDesiredCamRef.current;
     }
     
     camera.position.lerp(finalCamPos, smoothness);
 
-    // Смотрим на цель
     camera.lookAt(currentTarget.current);
   });
 
@@ -340,6 +336,8 @@ export function SimpleFollowCamera({
 }: SimpleFollowCameraProps) {
   const { camera } = useThree();
   const currentTarget = useRef(new THREE.Vector3(0, 0, 0));
+  const simpleFrameTargetRef = useRef(new THREE.Vector3());
+  const simpleFrameCamRef = useRef(new THREE.Vector3());
   const currentAngle = useRef(0);
   const currentDistance = useRef(distance);
   const isDragging = useRef(false);
@@ -443,16 +441,16 @@ export function SimpleFollowCamera({
   ]);
 
   useFrame(() => {
-    const target = new THREE.Vector3(targetPosition.x, targetPosition.y, targetPosition.z);
-    currentTarget.current.lerp(target, smoothness);
+    simpleFrameTargetRef.current.set(targetPosition.x, targetPosition.y, targetPosition.z);
+    currentTarget.current.lerp(simpleFrameTargetRef.current, smoothness);
 
     const activeDistance = currentDistance.current;
     const cameraX = currentTarget.current.x + Math.sin(currentAngle.current) * activeDistance;
     const cameraZ = currentTarget.current.z + Math.cos(currentAngle.current) * activeDistance;
     const cameraY = currentTarget.current.y + height;
 
-    const targetCamPos = new THREE.Vector3(cameraX, cameraY, cameraZ);
-    camera.position.lerp(targetCamPos, smoothness);
+    simpleFrameCamRef.current.set(cameraX, cameraY, cameraZ);
+    camera.position.lerp(simpleFrameCamRef.current, smoothness);
 
     camera.lookAt(currentTarget.current);
   });
