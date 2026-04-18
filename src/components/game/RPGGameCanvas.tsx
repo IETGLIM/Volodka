@@ -314,6 +314,9 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
   return (
     <Fragment>
     <Canvas
+      tabIndex={0}
+      role="application"
+      aria-label="Исследование локации"
       shadows={{ type: THREE.PCFShadowMap }}
       camera={{ fov: 60, near: 0.1, far: 1000, position: [0, 5, 8] }}
       style={{ 
@@ -323,8 +326,12 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
         position: 'absolute',
         top: 0,
         left: 0,
+        outline: 'none',
       }}
       gl={{ antialias: true, alpha: false, powerPreference: 'high-performance' }}
+      onPointerDown={(e) => {
+        (e.target as HTMLCanvasElement | null)?.focus?.();
+      }}
     >
       {/* Physics: Suspense — WASM Rapier; коллайдер пола в `PhysicsSceneColliders`. */}
       <Suspense fallback={null}>
@@ -355,7 +362,7 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
 
         {/* Lighting - Усиленное */}
         <ambientLight intensity={sceneConfig.ambient + 0.3} />
-        <hemisphereLight args={[sceneConfig.light, '#1a1a1a', 0.8]} />
+        <hemisphereLight color={sceneConfig.light} groundColor="#1a1a1a" intensity={0.8} />
         <directionalLight
           position={[5, 10, 5]}
           intensity={0.6}

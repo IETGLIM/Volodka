@@ -9,7 +9,8 @@ import { CAMERA_COLLISION_LAYER } from './SceneColliders';
 // КОНСТАНТЫ
 // ============================================
 
-const COLLISION_THROTTLE_FRAMES = 2;
+/** Коллизии камеры каждый кадр: при `2` чередовались «с коллизией / без» и давали заметный джиттер. */
+const COLLISION_THROTTLE_FRAMES = 1;
 const ZOOM_SPEED = 0.5;
 const MAX_DISTANCE = 15;
 
@@ -83,7 +84,7 @@ export default function FollowCamera({
   maxDistance = MAX_DISTANCE,
   enableZoom = true,
 }: FollowCameraProps) {
-  const { camera, scene } = useThree();
+  const { camera, scene, gl } = useThree();
   const currentTarget = useRef(new THREE.Vector3(0, 0, 0));
   const currentAngle = useRef(0);
   const currentDistance = useRef(distance);
@@ -91,6 +92,11 @@ export default function FollowCamera({
   const lastMousePos = useRef({ x: 0, y: 0 });
   const rotationSpeed = 0.005;
   const frameCount = useRef(0);
+
+  /** Смена сцены меняет `distance` из `RPGGameCanvas` — ref зума иначе остаётся от предыдущей локации. */
+  useEffect(() => {
+    currentDistance.current = distance;
+  }, [distance]);
 
   /** Переиспользование вместо new Raycaster / Vector3 на каждый кадр коллизии — меньше давления на GC. */
   const collisionRaycasterRef = useRef<THREE.Raycaster | null>(null);
@@ -226,15 +232,18 @@ export default function FollowCamera({
   }, []);
 
   // Зум колёсиком мыши
-  const handleWheel = useCallback((e: WheelEvent) => {
-    if (isLocked || !enableZoom) return;
-    
-    const delta = Math.sign(e.deltaY) * ZOOM_SPEED;
-    currentDistance.current = Math.max(
-      minDistance,
-      Math.min(maxDistance, currentDistance.current + delta)
-    );
-  }, [isLocked, enableZoom, minDistance, maxDistance]);
+  const handleWheel = useCallback(
+    (e: WheelEvent) => {
+      if (isLocked || !enableZoom) return;
+      e.preventDefault();
+      const delta = Math.sign(e.deltaY) * ZOOM_SPEED;
+      currentDistance.current = Math.max(
+        minDistance,
+        Math.min(maxDistance, currentDistance.current + delta),
+      );
+    },
+    [isLocked, enableZoom, minDistance, maxDistance],
+  );
 
   // Добавляем обработчики событий (мышь + тач для орбиты)
   useEffect(() => {
@@ -246,7 +255,6 @@ export default function FollowCamera({
     window.addEventListener('touchend', handleTouchEnd);
     window.addEventListener('touchcancel', handleTouchEnd);
     window.addEventListener('contextmenu', handleContextMenu);
-    window.addEventListener('wheel', handleWheel, { passive: true });
 
     return () => {
       window.removeEventListener('mousedown', handleMouseDown);
@@ -257,7 +265,6 @@ export default function FollowCamera({
       window.removeEventListener('touchend', handleTouchEnd);
       window.removeEventListener('touchcancel', handleTouchEnd);
       window.removeEventListener('contextmenu', handleContextMenu);
-      window.removeEventListener('wheel', handleWheel);
     };
   }, [
     handleMouseDown,
@@ -267,8 +274,15 @@ export default function FollowCamera({
     handleTouchMove,
     handleTouchEnd,
     handleContextMenu,
-    handleWheel,
   ]);
+
+  /** Зум только над WebGL-canvas (`passive: false` + `preventDefault` — иначе браузер ест wheel и зум «не работает»). */
+  useEffect(() => {
+    if (!enableZoom) return;
+    const el = gl.domElement;
+    el.addEventListener('wheel', handleWheel, { passive: false });
+    return () => el.removeEventListener('wheel', handleWheel);
+  }, [gl, enableZoom, handleWheel]);
 
   // ============================================
   // ОБНОВЛЕНИЕ КАДРА
@@ -334,7 +348,7 @@ export function SimpleFollowCamera({
   maxDistance = MAX_DISTANCE,
   enableZoom = true,
 }: SimpleFollowCameraProps) {
-  const { camera } = useThree();
+  const { camera, gl } = useThree();
   const currentTarget = useRef(new THREE.Vector3(0, 0, 0));
   const simpleFrameTargetRef = useRef(new THREE.Vector3());
   const simpleFrameCamRef = useRef(new THREE.Vector3());
@@ -343,6 +357,10 @@ export function SimpleFollowCamera({
   const isDragging = useRef(false);
   const lastMousePos = useRef({ x: 0, y: 0 });
   const rotationSpeed = 0.005;
+
+  useEffect(() => {
+    currentDistance.current = distance;
+  }, [distance]);
 
   const applyPointerDelta = useCallback(
     (clientX: number, clientY: number) => {
@@ -397,15 +415,18 @@ export function SimpleFollowCamera({
   }, []);
 
   // Зум колёсиком мыши
-  const handleWheel = useCallback((e: WheelEvent) => {
-    if (isLocked || !enableZoom) return;
-    
-    const delta = Math.sign(e.deltaY) * ZOOM_SPEED;
-    currentDistance.current = Math.max(
-      minDistance,
-      Math.min(maxDistance, currentDistance.current + delta)
-    );
-  }, [isLocked, enableZoom, minDistance, maxDistance]);
+  const handleWheel = useCallback(
+    (e: WheelEvent) => {
+      if (isLocked || !enableZoom) return;
+      e.preventDefault();
+      const delta = Math.sign(e.deltaY) * ZOOM_SPEED;
+      currentDistance.current = Math.max(
+        minDistance,
+        Math.min(maxDistance, currentDistance.current + delta),
+      );
+    },
+    [isLocked, enableZoom, minDistance, maxDistance],
+  );
 
   useEffect(() => {
     window.addEventListener('mousedown', handleMouseDown);
@@ -416,7 +437,6 @@ export function SimpleFollowCamera({
     window.addEventListener('touchend', handleTouchEnd);
     window.addEventListener('touchcancel', handleTouchEnd);
     window.addEventListener('contextmenu', handleContextMenu);
-    window.addEventListener('wheel', handleWheel, { passive: true });
 
     return () => {
       window.removeEventListener('mousedown', handleMouseDown);
@@ -427,7 +447,6 @@ export function SimpleFollowCamera({
       window.removeEventListener('touchend', handleTouchEnd);
       window.removeEventListener('touchcancel', handleTouchEnd);
       window.removeEventListener('contextmenu', handleContextMenu);
-      window.removeEventListener('wheel', handleWheel);
     };
   }, [
     handleMouseDown,
@@ -437,8 +456,14 @@ export function SimpleFollowCamera({
     handleTouchMove,
     handleTouchEnd,
     handleContextMenu,
-    handleWheel,
   ]);
+
+  useEffect(() => {
+    if (!enableZoom) return;
+    const el = gl.domElement;
+    el.addEventListener('wheel', handleWheel, { passive: false });
+    return () => el.removeEventListener('wheel', handleWheel);
+  }, [gl, enableZoom, handleWheel]);
 
   useFrame(() => {
     simpleFrameTargetRef.current.set(targetPosition.x, targetPosition.y, targetPosition.z);

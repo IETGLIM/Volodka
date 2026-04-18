@@ -15,6 +15,10 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: 'ВОЛОДЬКА — RPG о жизни, стихах и одиночестве',
+  icons: {
+    icon: [{ url: '/icon.svg', type: 'image/svg+xml' }],
+    shortcut: '/icon.svg',
+  },
   description:
     'Интерактивная история Владимира Лебедева — 12 лет в техподдержке, 10 лет любви, 8 лет одиночества. Реальные стихи. Настоящая боль.',
   keywords: [

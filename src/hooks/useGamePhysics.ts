@@ -122,6 +122,13 @@ export function usePlayerControls(options?: UsePlayerControlsOptions) {
   // Обработка нажатия клавиш
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      const t = e.target;
+      if (t instanceof HTMLElement) {
+        const tag = t.tagName;
+        if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || t.isContentEditable) {
+          return;
+        }
+      }
       const control = KEY_MAP[e.code];
       if (control) {
         // Удержание WASD даёт серию keydown с repeat — без этого каждый раз forceUpdate и ререндер Canvas.
@@ -150,6 +157,13 @@ export function usePlayerControls(options?: UsePlayerControlsOptions) {
     };
 
     const handleKeyUp = (e: KeyboardEvent) => {
+      const t = e.target;
+      if (t instanceof HTMLElement) {
+        const tag = t.tagName;
+        if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || t.isContentEditable) {
+          return;
+        }
+      }
       const control = KEY_MAP[e.code];
       if (control) {
         if (control === 'interact') {

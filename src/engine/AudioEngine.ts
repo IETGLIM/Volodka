@@ -40,6 +40,11 @@ class AudioEngineImpl {
   /** Короткий SFX по событию `sound:play` (файлы опциональны — есть программный fallback). */
   playSfx(type: string, volume = 0.35) {
     if (this.muted || typeof window === 'undefined') return;
+    /** Шаги по материалу — только процедурный звук (нет `sfx_footstep_*.mp3` в `public/` → без 404 в консоли). */
+    if (type.startsWith('footstep_')) {
+      this.playFootstepBeep(type.slice('footstep_'.length), volume);
+      return;
+    }
     const a = new Audio(`/audio/ui/sfx_${type}.mp3`);
     a.volume = volume;
     a.muted = this.muted;
