@@ -25,6 +25,7 @@ import { getItemById } from '../data/items';
 import { ENERGY_COSTS, INITIAL_PLAYER_ENERGY, MAX_PLAYER_ENERGY } from '@/lib/energyConfig';
 import { eventBus } from '@/engine/EventBus';
 import { VERTICAL_SLICE_ENTRY_NODE_ID } from '@/data/verticalSliceStoryNodes';
+import { sanitizeExplorationSceneId } from '@/config/scenes';
 
 export type TravelToSceneResult =
   | { ok: true }
@@ -440,6 +441,11 @@ const normalizeLoadedState = (data: SavedGameData) => ({
   exploration: {
     ...INITIAL_EXPLORATION_STATE,
     ...(data.exploration || {}),
+    currentSceneId: sanitizeExplorationSceneId(
+      data.exploration && typeof data.exploration === 'object'
+        ? (data.exploration as { currentSceneId?: unknown }).currentSceneId
+        : undefined,
+    ),
     timeOfDay:
       typeof data.exploration?.timeOfDay === 'number'
         ? data.exploration.timeOfDay

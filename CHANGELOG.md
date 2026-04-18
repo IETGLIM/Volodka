@@ -87,6 +87,8 @@
 
 ### Fixed
 
+- **Сохранения → 3D «квартира»**: при загрузке из **`localStorage`** поле **`exploration.currentSceneId`** прогоняется через **`sanitizeExplorationSceneId`** (`scenes.ts`); битые или устаревшие значения сбрасываются на **`volodka_room`**, чтобы комната в панели и коллайдеры совпадали с **`RPGGameCanvas`** / **`PhysicsSceneColliders`**.
+
 - **Консоль (three r183 + Web Audio)**: импорт **`threeClientPrep`** до R3F из **`GameClient`** — совместимый **`Clock`** без deprecation **`THREE.Clock` → `THREE.Timer`**, общий **`AudioContext`** с опциями **`{ latencyHint: 'interactive' }`** для **`THREE.AudioContext.setContext`**; **`createBrowserAudioContext`** в **`AudioEngine`**, **`useAdaptiveAudio`**, **`useAmbientMusic`** + **`resume()`** там, где контекст создаётся без жеста — меньше предупреждений Chromium и мягче поведение при suspended context.
 
 - **Консоль / аудио / камера / ввод**: **`AudioEngine.playSfx`** для **`footstep_*`** сразу процедурный шаг без запросов **`/audio/ui/sfx_footstep_*.mp3`** (убраны 404). **Иконка**: **`public/icon.svg`**, **`metadata.icons`** в **`app/layout.tsx`**, редирект **`/favicon.ico` → `/icon.svg`** в **`next.config.ts`**. **`FollowCamera`**: зум на **`wheel`** с **`gl.domElement`**, **`passive: false`** и **`preventDefault`**; коллизии камеры без чередования кадров (**`COLLISION_THROTTLE_FRAMES = 1`**), чтобы убрать джиттер. **`RPGGameCanvas`**: **`hemisphereLight`** через **`color` / `groundColor` / `intensity`** (меньше предупреждений R3F/Three о deprecated args); **`Canvas`** **`tabIndex`**, **`onPointerDown`** → фокус для клавиатуры после клика по сцене. **`useGamePhysics`**: не перехватывать WASD, если фокус в **`input` / `textarea` / contentEditable** (чинило «управление мёртвое» после UI).

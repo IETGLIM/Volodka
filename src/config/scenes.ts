@@ -597,6 +597,17 @@ export const SCENE_CONFIG = {
   },
 };
 
+/**
+ * Для 3D-исследования: только сцены из `SCENE_CONFIG`. Иначе — комната Володьки в панели
+ * (битые/старые сохранения не должны вести в «пустой» или чужой конфиг).
+ */
+export function sanitizeExplorationSceneId(raw: unknown): SceneId {
+  if (typeof raw === 'string' && raw in SCENE_CONFIG) {
+    return raw as SceneId;
+  }
+  return 'volodka_room';
+}
+
 export const getSceneConfig = (sceneId: SceneId): SceneConfig => {
   return SCENE_CONFIG[sceneId] ?? SCENE_CONFIG.kitchen_night!;
 };

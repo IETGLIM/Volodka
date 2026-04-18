@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   getExplorationCharacterModelScale,
   getExplorationLocomotionScale,
+  sanitizeExplorationSceneId,
 } from './scenes';
 
 describe('getExplorationCharacterModelScale', () => {
@@ -17,6 +18,19 @@ describe('getExplorationCharacterModelScale', () => {
 
   it('defaults to 1 for unknown scene ids', () => {
     expect(getExplorationCharacterModelScale('server_room')).toBe(1);
+  });
+});
+
+describe('sanitizeExplorationSceneId', () => {
+  it('keeps valid scene ids', () => {
+    expect(sanitizeExplorationSceneId('volodka_room')).toBe('volodka_room');
+    expect(sanitizeExplorationSceneId('home_evening')).toBe('home_evening');
+  });
+
+  it('falls back to volodka_room for garbage or unknown', () => {
+    expect(sanitizeExplorationSceneId('typo_scene')).toBe('volodka_room');
+    expect(sanitizeExplorationSceneId(null)).toBe('volodka_room');
+    expect(sanitizeExplorationSceneId(123)).toBe('volodka_room');
   });
 });
 
