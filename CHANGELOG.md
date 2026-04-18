@@ -4,7 +4,7 @@
 
 ### Build / repository
 
-- **Vercel: «This repository exceeded its LFS budget»**: клон репозитория тянет объекты **Git LFS** (см. **`.gitattributes`**: `*.glb`, `*.fbx`, `*.zip`); при исчерпании квоты хранилища/трафика GitHub LFS сборка на Vercel падает. Варианты: оплатить **Data packs** в [GitHub → Billing](https://github.com/settings/billing); или один раз вынести бинарники из LFS в обычный Git (**`git lfs migrate export`**, затем **`git push --force-with-lease`**) — см. **`FREE_HOSTING.md`**.
+- **Vercel: «This repository exceeded its LFS budget»**: клон репозитория тянет объекты **Git LFS** (см. **`.gitattributes`**: `*.glb`, `*.fbx`, `*.zip`); при исчерпании квоты хранилища/трафика GitHub LFS сборка на Vercel падает. Варианты: оплатить **Data packs** в [GitHub → Billing](https://github.com/settings/billing); или один раз вынести бинарники из LFS в обычный Git (**`git lfs migrate export`**, затем **`git push --force-with-lease`**) — см. **`FREE_HOSTING.md`**. **Сделано для `main`:** **`git lfs migrate export --include='*.glb,*.fbx,*.zip' --everything`**, очищен **`.gitattributes`** (без `filter=lfs`), пуш с **`--force-with-lease`** на **`origin/main`**.
 
 ### Added
 
