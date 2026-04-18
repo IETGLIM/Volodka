@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Maintainer notes
+
+- **Ритм выкладки (с душой и для потомков)**: порция функционала или исправлений → быстрая проверка (**`tsc`**, **`vitest`**) → запись в **`CHANGELOG.md`** в **`[Unreleased]`** → коммит с ясной первой строкой → **`git push origin`** на каноническую ветку (**`main`**). Так на GitHub и у тех, кто откроет репозиторий позже, всегда видна честная история, а не «магия у одного разработчика на ноутбуке».
+
 ### Build / repository
 
 - **Vercel: «This repository exceeded its LFS budget»**: клон репозитория тянет объекты **Git LFS** (см. **`.gitattributes`**: `*.glb`, `*.fbx`, `*.zip`); при исчерпании квоты хранилища/трафика GitHub LFS сборка на Vercel падает. Варианты: оплатить **Data packs** в [GitHub → Billing](https://github.com/settings/billing); или один раз вынести бинарники из LFS в обычный Git (**`git lfs migrate export`**, затем **`git push --force-with-lease`**) — см. **`FREE_HOSTING.md`**. **Сделано для `main`:** **`git lfs migrate export --include='*.glb,*.fbx,*.zip' --everything`**, очищен **`.gitattributes`** (без `filter=lfs`), пуш с **`--force-with-lease`** на **`origin/main`**.
