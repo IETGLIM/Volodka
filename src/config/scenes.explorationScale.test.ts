@@ -12,6 +12,7 @@ describe('getExplorationCharacterModelScale', () => {
 
   it('returns <1 for compact indoor kitchen', () => {
     expect(getExplorationCharacterModelScale('kitchen_night')).toBeLessThan(1);
+    expect(getExplorationCharacterModelScale('volodka_corridor')).toBeLessThan(1);
   });
 
   it('defaults to 1 for unknown scene ids', () => {
@@ -29,6 +30,7 @@ describe('getExplorationLocomotionScale', () => {
 
   it('is <1 for compact indoor scenes with configured locomotion', () => {
     expect(getExplorationLocomotionScale('kitchen_night')).toBeLessThan(1);
+    expect(getExplorationLocomotionScale('volodka_corridor')).toBeLessThan(1);
   });
 
   it('defaults to 1 for unknown scene ids', () => {

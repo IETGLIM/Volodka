@@ -186,7 +186,7 @@ const INITIAL_FACTION_REPUTATIONS: Record<FactionId, FactionReputation> = {
 // ============================================
 
 const INITIAL_EXPLORATION_STATE: ExplorationState = {
-  /** Спавн как в `SCENE_CONFIG.volodka_room.spawnPoint` — комната в панельке; кухня/коридор — `home_evening`. */
+  /** Спавн как в `SCENE_CONFIG.volodka_room.spawnPoint` — комната в панельке; коридор — `volodka_corridor`; общая зона — `home_evening`. */
   playerPosition: { x: 2.2, y: 1, z: 1.8, rotation: 0 },
   currentSceneId: 'volodka_room',
   timeOfDay: 20,

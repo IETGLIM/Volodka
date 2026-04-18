@@ -266,6 +266,33 @@ export const VolodkaRoomColliders = memo(function VolodkaRoomColliders() {
   );
 });
 
+/** Коридор трёшки 3.5×12: пол + стены с проёмами у дверей в комнату (юг) и в общую зону (север). */
+export const VolodkaCorridorColliders = memo(function VolodkaCorridorColliders() {
+  const h = 3;
+  const wallT = 0.5;
+  const halfW = 1.75;
+  const halfD = 6;
+  const shoe = useMemo(() => [[-1.15, 0.26, -4.05]] as [number, number, number][], []);
+  const radiator = useMemo(() => [[1.22, 0.24, -0.8]] as [number, number, number][], []);
+
+  return (
+    <group>
+      <PhysicsFloor size={[3.5, 12]} color="#3a3630" footstepMaterial="wood" />
+      {/* Восток / запад — сплошные */}
+      <PhysicsWall position={[halfW, h / 2, 0]} size={[wallT, h, 12]} />
+      <PhysicsWall position={[-halfW, h / 2, 0]} size={[wallT, h, 12]} />
+      {/* Юг: проём под дверь в комнату ~1 m по X */}
+      <PhysicsWall position={[-1.125, h / 2, -halfD]} size={[1.25, h, wallT]} />
+      <PhysicsWall position={[1.125, h / 2, -halfD]} size={[1.25, h, wallT]} />
+      {/* Север: проём в квартиру */}
+      <PhysicsWall position={[-1.125, h / 2, halfD]} size={[1.25, h, wallT]} />
+      <PhysicsWall position={[1.125, h / 2, halfD]} size={[1.25, h, wallT]} />
+      <InstancedObstacles positions={shoe} size={[0.64, 0.52, 0.28]} footstepMaterial="wood" />
+      <InstancedObstacles positions={radiator} size={[0.12, 0.48, 2.35]} footstepMaterial="metal" />
+    </group>
+  );
+});
+
 // ============================================
 // КОЛЛАЙДЕРЫ КАФЕ
 // ============================================
@@ -608,6 +635,8 @@ export const PhysicsSceneColliders = memo(function PhysicsSceneColliders({ scene
         return <HomeEveningColliders />;
       case 'volodka_room':
         return <VolodkaRoomColliders />;
+      case 'volodka_corridor':
+        return <VolodkaCorridorColliders />;
       case 'cafe_evening':
         return <CafeColliders />;
       case 'office_morning':

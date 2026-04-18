@@ -1,6 +1,6 @@
 import type { InteractiveObjectConfig } from '@/config/scenes';
-import { getSceneConfig } from '@/config/scenes';
 import type { useGameStore } from '@/store/gameStore';
+import { CORRIDOR_FROM_ROOM } from '@/lib/volodkaCorridorInteract';
 
 type StoreSnapshot = ReturnType<typeof useGameStore.getState>;
 
@@ -30,7 +30,7 @@ const INSPECT: Partial<Record<string, string>> = {
   volodka_window:
     'Окно справа от стола: двор, фонари, чужие окна. Панелька — как фон, который не выключить.',
   volodka_door_corridor:
-    'Дверь в коридор трёхкомнатной квартиры. Налево — санузлы и кухня, направо — две комнаты с балконами; здесь начинается «остальная» квартира.',
+    'Дверь в коридор трёхкомнатной квартиры. Узкий проход: отсюда — либо обратно в «офис», либо в кухню и общие комнаты, либо в боковые крылья планировки.',
 };
 
 export function volodkaRoomInspectLine(obj: InteractiveObjectConfig): string | null {
@@ -44,9 +44,8 @@ export function tryVolodkaRoomUse(
   toast: (text: string) => void,
 ): boolean {
   if (obj.id !== 'volodka_door_corridor') return false;
-  const sp = getSceneConfig('home_evening').spawnPoint;
-  store.travelToScene('home_evening', { narrativeDriven: true });
-  store.setPlayerPosition({ x: sp.x, y: sp.y, z: sp.z, rotation: sp.rotation ?? 0 });
-  toast('Коридор. За стенами — соседи, холодильник на кухне и привычный шум «дома».');
+  store.travelToScene('volodka_corridor', { narrativeDriven: true });
+  store.setPlayerPosition({ ...CORRIDOR_FROM_ROOM });
+  toast('Коридор. Линолеум, щиток, чужие тапки — короткий буфер между удалёнкой и остальным домом.');
   return true;
 }

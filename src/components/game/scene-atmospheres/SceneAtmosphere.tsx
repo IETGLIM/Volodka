@@ -35,6 +35,7 @@ export const SceneAtmosphere = memo(function SceneAtmosphere({ sceneId }: { scen
                 return <OfficeAtmosphere />;
               case 'home_evening':
               case 'volodka_room':
+              case 'volodka_corridor':
                 return <HomeEveningAtmosphere />;
               case 'kitchen_night':
                 return <KitchenNightAtmosphere />;

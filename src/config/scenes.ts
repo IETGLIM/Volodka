@@ -220,6 +220,73 @@ export const SCENE_CONFIG = {
     ],
     backgroundMusic: '/audio/ambient-calm.mp3',
   },
+
+  /** Узкий коридор трёшки: между комнатой Володьки и общей зоной; впереди — кухня/гостиная, сбоку — проёмы под санузел/кухню и спальни (пока без отдельных сцен). */
+  volodka_corridor: {
+    id: 'volodka_corridor',
+    name: 'Коридор',
+    explorationCharacterModelScale: 0.92,
+    explorationLocomotionScale: 0.86,
+    size: [3.5, 12],
+    spawnPoint: { x: 0, y: 1, z: -4.25, rotation: 0 } as PlayerPosition,
+    ambientLight: { intensity: 0.32, color: '#e8dcc8' },
+    directionalLights: [{ position: [0, 6, 2], intensity: 0.55 }],
+    npcs: [],
+    interactiveObjects: [
+      {
+        id: 'corridor_door_volodka_room',
+        type: 'generic',
+        position: [0, 0.55, -5.58],
+        size: [1.0, 1.9, 0.1],
+        color: '#5c4a3a',
+      },
+      {
+        id: 'corridor_door_home_common',
+        type: 'generic',
+        position: [0, 0.55, 5.58],
+        size: [1.0, 1.9, 0.1],
+        color: '#4a3f35',
+      },
+      {
+        id: 'corridor_shoe_shelf',
+        type: 'generic',
+        position: [-1.15, 0.32, -4.05],
+        size: [0.62, 0.52, 0.26],
+        color: '#3d3428',
+      },
+      {
+        id: 'corridor_radiator',
+        type: 'generic',
+        position: [1.22, 0.38, -0.8],
+        size: [0.1, 0.48, 2.35],
+        color: '#aeb2b8',
+      },
+      {
+        id: 'corridor_ceiling_lamp',
+        type: 'generic',
+        position: [0, 2.38, 0.4],
+        size: [0.32, 0.07, 0.85],
+        color: '#dcd6cf',
+      },
+      {
+        id: 'corridor_door_wing_left',
+        type: 'generic',
+        position: [-1.58, 0.55, 3.65],
+        rotation: [0, Math.PI / 2, 0],
+        size: [0.1, 1.85, 0.92],
+        color: '#4a4036',
+      },
+      {
+        id: 'corridor_door_wing_right',
+        type: 'generic',
+        position: [1.58, 0.55, 3.65],
+        rotation: [0, -Math.PI / 2, 0],
+        size: [0.1, 1.85, 0.92],
+        color: '#4a4036',
+      },
+    ],
+    backgroundMusic: '/audio/ambient-calm.mp3',
+  },
   
   home_evening: {
     id: 'home_evening', name: 'Квартира Володьки — кухня и общие комнаты', explorationCharacterModelScale: 0.92, explorationLocomotionScale: 0.9, size: [14, 14],

@@ -25,6 +25,7 @@ export type SceneId =
   | 'home_morning' 
   | 'home_evening'
   | 'volodka_room'
+  | 'volodka_corridor'
   | 'office_morning' 
   | 'server_room' 
   | 'rooftop_night' 

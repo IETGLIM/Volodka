@@ -80,6 +80,7 @@ interface RPGGameCanvasProps {
 
 const GROUND_INDOOR: RpgGroundGeometryArgs = [20, 0.1, 20];
 const GROUND_VOLODKA_ROOM: RpgGroundGeometryArgs = [14, 0.1, 10];
+const GROUND_VOLODKA_CORRIDOR: RpgGroundGeometryArgs = [3.5, 0.1, 12];
 const GROUND_PLAZA: RpgGroundGeometryArgs = [48, 0.1, 48];
 const GROUND_OPEN: RpgGroundGeometryArgs = [40, 0.1, 40];
 
@@ -137,6 +138,8 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
         return { ambient: 0.4, light: '#ffcc00', fogColor: '#1a1a2e', groundGeometryArgs: GROUND_INDOOR };
       case 'volodka_room':
         return { ambient: 0.38, light: '#c8dff0', fogColor: '#151a22', groundGeometryArgs: GROUND_VOLODKA_ROOM };
+      case 'volodka_corridor':
+        return { ambient: 0.34, light: '#e8dcc8', fogColor: '#16140f', groundGeometryArgs: GROUND_VOLODKA_CORRIDOR };
       case 'office_morning':
         return { ambient: 0.5, light: '#ffffff', fogColor: '#2a2a3a', groundGeometryArgs: GROUND_INDOOR };
       case 'cafe_evening':
@@ -183,6 +186,15 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
   }, [groundGeometryArgs]);
 
   const isPanelDistrict = sceneId === 'street_night' || sceneId === 'street_winter';
+  const isNarrowApartment =
+    sceneId === 'volodka_room' || sceneId === 'volodka_corridor' || sceneId === 'home_evening';
+
+  const followCameraProps = useMemo(() => {
+    if (isNarrowApartment) {
+      return { distance: 4.25 as const, height: 2.75 as const, smoothness: 0.1 as const };
+    }
+    return { distance: 8 as const, height: 5 as const, smoothness: 0.08 as const };
+  }, [isNarrowApartment]);
 
   // Get NPCs and triggers for current scene
   const sceneNPCs = useMemo(
@@ -342,7 +354,14 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
         {isPanelDistrict && <PanelDistrictBuildings />}
       
         {/* Fog */}
-        <fog attach="fog" args={[sceneConfig.fogColor, isPanelDistrict ? 14 : 8, isPanelDistrict ? 48 : 25]} />
+        <fog
+          attach="fog"
+          args={[
+            sceneConfig.fogColor,
+            isPanelDistrict ? 14 : isNarrowApartment ? 5 : 8,
+            isPanelDistrict ? 48 : isNarrowApartment ? 18 : 25,
+          ]}
+        />
 
         {/* Lighting - Усиленное */}
         <ambientLight intensity={sceneConfig.ambient + 0.3} />
@@ -370,7 +389,9 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
         {children}
 
         <PhysicsPlayer
+          key={sceneId}
           position={[playerPosition.x, playerPosition.y, playerPosition.z]}
+          initialRotation={playerPosition.rotation ?? 0}
           modelPath={getDefaultPlayerModelPath()}
           visualModelScale={explorationCharacterModelScale}
           locomotionScale={explorationLocomotionScale}
@@ -409,10 +430,11 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
         />
 
         <FollowCamera
+          key={sceneId}
           targetPosition={playerPosition}
-          distance={8}
-          height={5}
-          smoothness={0.08}
+          distance={followCameraProps.distance}
+          height={followCameraProps.height}
+          smoothness={followCameraProps.smoothness}
           isLocked={isDialogueActive}
           enableCollision
           enableZoom

@@ -222,6 +222,32 @@ export const VolodkaRoomColliders = memo(function VolodkaRoomColliders() {
   );
 });
 
+export const VolodkaCorridorColliders = memo(function VolodkaCorridorColliders() {
+  const h = 3;
+  const wallT = 0.5;
+  const halfW = 1.75;
+  const halfD = 6;
+  const shoe: [number, number, number][] = useMemo(() => [[-1.15, 0.26, -4.05]], []);
+  const radiator: [number, number, number][] = useMemo(() => [[1.22, 0.24, -0.8]], []);
+
+  return (
+    <group>
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.01, 0]} receiveShadow>
+        <planeGeometry args={[4, 13]} />
+        <meshStandardMaterial color="#3a3630" roughness={0.82} />
+      </mesh>
+      <InstancedWalls positions={[[halfW, h / 2, 0]]} size={[wallT, h, 12]} />
+      <InstancedWalls positions={[[-halfW, h / 2, 0]]} size={[wallT, h, 12]} />
+      <InstancedWalls positions={[[-1.125, h / 2, -halfD]]} size={[1.25, h, wallT]} />
+      <InstancedWalls positions={[[1.125, h / 2, -halfD]]} size={[1.25, h, wallT]} />
+      <InstancedWalls positions={[[-1.125, h / 2, halfD]]} size={[1.25, h, wallT]} />
+      <InstancedWalls positions={[[1.125, h / 2, halfD]]} size={[1.25, h, wallT]} />
+      <InstancedWalls positions={shoe} size={[0.64, 0.52, 0.28]} />
+      <InstancedWalls positions={radiator} size={[0.12, 0.48, 2.35]} />
+    </group>
+  );
+});
+
 // ============================================
 // КОЛЛАЙДЕРЫ КАФЕ
 // ============================================
@@ -454,6 +480,8 @@ export const SceneColliderSelector = memo(function SceneColliderSelector({ scene
         return <HomeEveningColliders />;
       case 'volodka_room':
         return <VolodkaRoomColliders />;
+      case 'volodka_corridor':
+        return <VolodkaCorridorColliders />;
       case 'cafe_evening':
         return <CafeColliders />;
       case 'office_morning':

@@ -25,5 +25,6 @@ describe('explorationAtmosphere', () => {
   it('indoor scenes have no ambient street stress', () => {
     expect(getExplorationAmbientStressPerTick('home_evening', 23)).toBe(0);
     expect(getExplorationAmbientStressPerTick('volodka_room', 23)).toBe(0);
+    expect(getExplorationAmbientStressPerTick('volodka_corridor', 23)).toBe(0);
   });
 });

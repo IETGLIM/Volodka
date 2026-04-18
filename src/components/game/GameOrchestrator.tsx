@@ -47,6 +47,7 @@ import { getNPCsForScene, getNpcExplorationPosition } from '@/data/npcDefinition
 import { getSceneConfig, getInteractiveObjectsForScene } from '@/config/scenes';
 import { homeApartmentInspectLine, tryHomeApartmentUse } from '@/lib/homeApartmentInteract';
 import { volodkaRoomInspectLine, tryVolodkaRoomUse } from '@/lib/volodkaRoomInteract';
+import { volodkaCorridorInspectLine, tryVolodkaCorridorUse } from '@/lib/volodkaCorridorInteract';
 import { getInteractiveSkillBlockMessage } from '@/lib/interactiveSkillRequirements';
 import { getExplorationAmbientStressPerTick } from '@/lib/explorationAtmosphere';
 import type { MiniMapQuestMarker } from '@/components/game/MiniMap';
@@ -297,10 +298,13 @@ export default function GameOrchestrator() {
           const skillHint = getInteractiveSkillBlockMessage(obj, store.playerState.skills);
           const homeLine = sid === 'home_evening' ? homeApartmentInspectLine(obj) : null;
           const volLine = sid === 'volodka_room' ? volodkaRoomInspectLine(obj) : null;
+          const corLine = sid === 'volodka_corridor' ? volodkaCorridorInspectLine(obj) : null;
           if (homeLine) {
             toast(skillHint ? `${homeLine} ${skillHint}` : homeLine);
           } else if (volLine) {
             toast(skillHint ? `${volLine} ${skillHint}` : volLine);
+          } else if (corLine) {
+            toast(skillHint ? `${corLine} ${skillHint}` : corLine);
           } else if (obj.canBeRead && obj.poemId) {
             toast(
               skillHint
@@ -339,6 +343,9 @@ export default function GameOrchestrator() {
             break;
           }
           if (sid === 'volodka_room' && tryVolodkaRoomUse(obj, store, toast)) {
+            break;
+          }
+          if (sid === 'volodka_corridor' && tryVolodkaCorridorUse(obj, store, toast)) {
             break;
           }
           toast('Использование привязано к сюжету — скоро.');

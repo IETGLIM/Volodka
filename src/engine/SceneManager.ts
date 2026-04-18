@@ -105,6 +105,17 @@ export const SCENE_VISUALS: Record<SceneId, SceneVisualConfig> = {
     musicKey: 'ambient_evening',
     extraClasses: 'before:absolute before:inset-0 before:bg-[radial-gradient(ellipse_at_70%_30%,rgba(125,211,252,0.07),transparent_55%)]',
   },
+  volodka_corridor: {
+    id: 'volodka_corridor',
+    name: 'Коридор квартиры',
+    description: 'Узкий проход панельной трёшки: дверь в комнату Володьки, вперёд — кухня и общие комнаты',
+    photoUrl: scenePhoto('home_evening'),
+    background: 'linear-gradient(180deg, #12100c 0%, #1c1812 50%, #262018 100%)',
+    overlay: 'bg-gradient-to-t from-amber-950/25 to-transparent',
+    ambientColor: '#d4b896',
+    musicKey: 'ambient_evening',
+    extraClasses: 'before:absolute before:inset-0 before:bg-[radial-gradient(ellipse_at_50%_80%,rgba(212,184,150,0.06),transparent_55%)]',
+  },
   office_morning: {
     id: 'office_morning',
     name: 'Офис, утро',
