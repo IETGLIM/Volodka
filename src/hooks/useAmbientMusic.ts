@@ -495,6 +495,7 @@ export function useAmbientMusic(config: AmbientConfig) {
     });
   }, [
     config.sceneId,
+    config.forceBattleMusic,
     config.mood,
     config.stress,
     config.creativity,
@@ -536,7 +537,7 @@ export function useAmbientMusic(config: AmbientConfig) {
         createPad(scale[2], 8, 0.06 * sceneConfig.intensity, 'pad');
       }
     }, 5000);
-  }, [config.sceneId, createPad, createChiptuneBlip, createBrutalNoiseHit]);
+  }, [config.sceneId, config.forceBattleMusic, createPad, createChiptuneBlip, createBrutalNoiseHit]);
   
   // Кроссфейд при смене сцены
   const crossfadeToScene = useCallback((newSceneId: string) => {
@@ -625,7 +626,7 @@ export function useAmbientMusic(config: AmbientConfig) {
       
     }, ((genre === 'brutal_heavy' ? 4200 : genre === 'chiptune_8bit' ? 5200 : 6000) + Math.random() * 4000) / sceneConfig.tempo);
     
-  }, [config.enabled, config.sceneId, initAudio, createNoise, createBrutalNoiseHit]);
+  }, [config.enabled, config.sceneId, config.forceBattleMusic, initAudio, createNoise, createBrutalNoiseHit]);
   
   // Остановка
   const stopAmbient = useCallback(() => {

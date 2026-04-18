@@ -24,7 +24,16 @@ export const AmbientSound = memo(function AmbientSound({
   autoplay = true,
 }: AmbientSoundProps) {
   const soundRef = useRef<THREE.PositionalAudio>(null);
-  
+
+  useEffect(() => {
+    const a = soundRef.current;
+    if (!a) return;
+    const withVolume = a as unknown as { setVolume?: (v: number) => void };
+    if (typeof withVolume.setVolume === 'function') {
+      withVolume.setVolume(volume);
+    }
+  }, [volume]);
+
   return (
     <PositionalAudio
       ref={soundRef}
@@ -33,7 +42,6 @@ export const AmbientSound = memo(function AmbientSound({
       distance={distance}
       loop={loop}
       autoplay={autoplay}
-      volume={volume}
     />
   );
 });

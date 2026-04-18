@@ -10,12 +10,21 @@ import type { NarrativeRequest, NarrativeResponse, DynamicChoice } from '../../.
 import type { PlayerState, NPCRelation } from '../../../data/types';
 import { MAX_PLAYER_ENERGY } from '@/lib/energyConfig';
 
-// Lazy singleton for the AI client — avoids importing on client bundle
-let zaiInstance: Awaited<ReturnType<typeof import('z-ai-web-dev-sdk').default>> | null = null;
+type ZAIClient = {
+  chat: {
+    completions: {
+      create: (args: { messages: Array<{ role: string; content: string }> }) => Promise<unknown>;
+    };
+  };
+};
 
-async function getAIClient() {
+// Lazy singleton for the AI client — avoids importing on client bundle
+let zaiInstance: ZAIClient | null = null;
+
+async function getAIClient(): Promise<ZAIClient> {
   if (!zaiInstance) {
-    const ZAI = (await import('z-ai-web-dev-sdk')).default;
+    const mod = await import('z-ai-web-dev-sdk');
+    const ZAI = mod.default as unknown as { create: () => Promise<ZAIClient> };
     zaiInstance = await ZAI.create();
   }
   return zaiInstance;
@@ -261,12 +270,12 @@ export async function POST(request: NextRequest) {
         action,
       );
 
-      const completion = await zai.chat.completions.create({
+      const completion = (await zai.chat.completions.create({
         messages: [
           { role: 'system', content: NARRATIVE_SYSTEM_PROMPT },
           { role: 'user', content: contextPrompt },
         ],
-      });
+      })) as { choices?: Array<{ message?: { content?: unknown } }> };
 
       const rawContent = completion.choices?.[0]?.message?.content;
 

@@ -180,6 +180,8 @@ export function applyDialogueEffects(
         effect.npcRelation.npcId,
         effect.npcRelation.change
       );
+    } else if (effect.npcId != null && effect.npcChange != null) {
+      storeActions.updateNPCRelation(effect.npcId, effect.npcChange);
     }
 
     // Предметы

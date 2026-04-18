@@ -106,6 +106,9 @@ export interface DialogueEffect {
   skillGains?: Record<string, number>;
   setFlag?: string;
   unsetFlag?: string;
+  /** Предпочтительно `npcRelation`; плоские поля — для данных диалогов в одну строку. */
+  npcId?: string;
+  npcChange?: number;
   npcRelation?: { npcId: string; change: number };
   giveItem?: string;
   removeItem?: string;

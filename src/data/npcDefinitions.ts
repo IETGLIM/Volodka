@@ -2815,7 +2815,6 @@ export const DIALOGUE_NODES: Record<string, NPCDefinition['dialogueTree']> = {
     id: 'timur_pat',
     text: '*кивает* Мы тут. Лавка никуда не денется.',
   },
-  timur_bye: { id: 'timur_bye', text: 'Увидимся.' },
 
   polikarp_thanks: {
     id: 'polikarp_thanks',

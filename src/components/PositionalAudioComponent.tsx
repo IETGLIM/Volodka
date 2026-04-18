@@ -36,6 +36,27 @@ export default function PositionalAudioComponent({
     }
   }, [play, loaded]);
 
+  useEffect(() => {
+    const a = soundRef.current;
+    if (!a) return;
+    const withVolume = a as unknown as { setVolume?: (v: number) => void };
+    if (typeof withVolume.setVolume === 'function') {
+      withVolume.setVolume(volume);
+    }
+  }, [volume, loaded]);
+
+  useEffect(() => {
+    if (!url) return;
+    const id = window.setInterval(() => {
+      const a = soundRef.current;
+      if (a?.buffer) {
+        setLoaded(true);
+        window.clearInterval(id);
+      }
+    }, 48);
+    return () => window.clearInterval(id);
+  }, [url]);
+
   // Заглушка - не рендерим если файла нет
   // В реальном проекте файлы должны быть в public/audio/
   if (!url) return null;
@@ -47,11 +68,6 @@ export default function PositionalAudioComponent({
       distance={distance}
       loop={loop}
       autoplay={autoplay}
-      onLoad={() => setLoaded(true)}
-      onError={() => {
-        // Молча игнорируем ошибки загрузки
-        console.log(`Audio not loaded: ${url}`);
-      }}
     />
   );
 }

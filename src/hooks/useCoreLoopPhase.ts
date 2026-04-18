@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { eventBus } from '@/engine/EventBus';
 import type { CoreLoopState } from '@/engine/CoreLoop';
+import type { EventMap } from '@/shared/engine/EventBus';
 
 // ============================================
 // ТИПЫ
@@ -39,7 +40,7 @@ const PHASE_DISPLAY_NAMES: Record<CoreLoopPhase, string> = {
 // МАППИНГ СОБЫТИЙ НА ФАЗЫ
 // ============================================
 
-const EVENT_PHASE_MAP: Record<string, CoreLoopPhase> = {
+const EVENT_PHASE_MAP = {
   'scene:enter': 'EXPLORING',
   'scene:exit': 'EXPLORING',
   'dialogue:started': 'IN_DIALOGUE',
@@ -57,7 +58,7 @@ const EVENT_PHASE_MAP: Record<string, CoreLoopPhase> = {
   'poem:collected': 'NEW_OPPORTUNITIES',
   'achievement:unlocked': 'NEW_OPPORTUNITIES',
   'skill:check': 'MAKING_CHOICE',
-};
+} satisfies Partial<Record<keyof EventMap, CoreLoopPhase>>;
 
 // События, после которых фаза кратковременна и должна
 // автоматически вернуться к EXPLORING через таймаут
@@ -96,11 +97,11 @@ export function useCoreLoopPhase(): CoreLoopPhaseInfo {
     let transientTimer: ReturnType<typeof setTimeout> | null = null;
 
     // Подписка на события, которые определяют переход фаз
-    const events = Object.keys(EVENT_PHASE_MAP) as Array<keyof typeof EVENT_PHASE_MAP>;
-
-    const unsubscribers = events.map((eventName) => {
+    const unsubscribers = (
+      Object.entries(EVENT_PHASE_MAP) as [keyof EventMap, CoreLoopPhase][]
+    ).map(([eventName, mappedPhase]) => {
       return eventBus.on(eventName, () => {
-        const newPhase = EVENT_PHASE_MAP[eventName] as CoreLoopPhase;
+        const newPhase = mappedPhase;
 
         setPhase(prev => {
           if (prev === newPhase) return prev;

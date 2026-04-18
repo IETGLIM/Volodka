@@ -37,7 +37,11 @@ describe('useStoryChoiceHandler', () => {
   beforeEach(() => {
     vi.restoreAllMocks();
     useGameStore.setState({ currentNodeId: 'start', choiceLog: [] });
-    vi.spyOn(coreLoop, 'processChoiceCycle').mockImplementation(() => {});
+    vi.spyOn(coreLoop, 'processChoiceCycle').mockImplementation(() => ({
+      effects: [],
+      unlocks: [],
+      consequences: [],
+    }));
   });
 
   it('shows energy warning and stops when energy is insufficient', () => {

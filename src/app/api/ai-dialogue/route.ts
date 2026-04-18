@@ -11,12 +11,21 @@ import { parseDialogueFromModelRaw, withAbortTimeout, AI_DIALOGUE_SDK_TIMEOUT_MS
 import type { PlayerState, NPCRelation } from '../../../data/types';
 import { MAX_PLAYER_ENERGY } from '@/lib/energyConfig';
 
-// Lazy singleton for the AI client
-let zaiInstance: Awaited<ReturnType<typeof import('z-ai-web-dev-sdk').default>> | null = null;
+type ZAIClient = {
+  chat: {
+    completions: {
+      create: (args: { messages: Array<{ role: string; content: string }> }) => Promise<unknown>;
+    };
+  };
+};
 
-async function getAIClient() {
+// Lazy singleton for the AI client (SDK default export is a class, not a callable type for ReturnType<>)
+let zaiInstance: ZAIClient | null = null;
+
+async function getAIClient(): Promise<ZAIClient> {
   if (!zaiInstance) {
-    const ZAI = (await import('z-ai-web-dev-sdk')).default;
+    const mod = await import('z-ai-web-dev-sdk');
+    const ZAI = mod.default as unknown as { create: () => Promise<ZAIClient> };
     zaiInstance = await ZAI.create();
   }
   return zaiInstance;

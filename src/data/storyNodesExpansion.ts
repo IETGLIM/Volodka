@@ -3,7 +3,7 @@
 // Готовый код для интеграции в storyNodes.ts
 // ============================================
 
-import type { StoryNode, StoryChoice, PoemLine, Interpretation, StoryEffect } from './types';
+import type { StoryNode, StoryChoice, PoemLine, Interpretation, StoryEffect, PlayerSkills } from './types';
 
 // ============================================
 // HELPER FUNCTIONS
@@ -21,7 +21,7 @@ function createChoice(
       choice.effect = storyEffect as StoryEffect;
     }
     if (npcId && npcChange) {
-      choice.effect = { ...choice.effect, npcRelation: { npcId, change: npcChange } };
+      choice.effect = { ...choice.effect, npcId, npcChange };
     }
   }
   return choice;
@@ -29,7 +29,7 @@ function createChoice(
 
 function createSkillCheckChoice(
   text: string,
-  skill: string,
+  skill: keyof PlayerSkills,
   difficulty: number,
   successNext: string,
   failNext: string,

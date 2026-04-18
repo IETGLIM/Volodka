@@ -17,7 +17,7 @@ const RARITY_STYLE: Record<string, string> = {
 
 export const LootNotification = memo(function LootNotification() {
   const [loot, setLoot] = useState<LootPayload | null>(null);
-  const hideTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const hideTimer = useRef<number | null>(null);
 
   useEffect(() => {
     return eventBus.on('loot:reward', (p) => {

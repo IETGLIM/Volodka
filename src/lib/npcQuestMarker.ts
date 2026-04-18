@@ -9,7 +9,8 @@ export type NpcQuestMarkerVisual = 'none' | 'available' | 'in_progress' | 'turn_
 function resolveTurnInNpcId(quest: (typeof QUEST_DEFINITIONS)[string]): string | null {
   const vis = quest.objectives.filter((o) => !o.hidden);
   for (let i = vis.length - 1; i >= 0; i--) {
-    if (vis[i].targetNPC) return vis[i].targetNPC;
+    const id = vis[i].targetNPC;
+    if (id != null && id !== '') return id;
   }
   return null;
 }

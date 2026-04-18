@@ -603,14 +603,16 @@ export const getSceneConfig = (sceneId: SceneId): SceneConfig => {
 
 /** Множитель визуала персонажей в 3D-исследовании для `sceneId` (1, если не задано в `SCENE_CONFIG`). */
 export function getExplorationCharacterModelScale(sceneId: SceneId): number {
-  const row = SCENE_CONFIG[sceneId as keyof typeof SCENE_CONFIG];
-  return row?.explorationCharacterModelScale ?? 1;
+  const entry = SCENE_CONFIG[sceneId];
+  if (!entry) return 1;
+  return entry.explorationCharacterModelScale ?? 1;
 }
 
 /** Множитель скорости в 3D-исследовании для `sceneId` (1, если не задано в `SCENE_CONFIG`). */
 export function getExplorationLocomotionScale(sceneId: SceneId): number {
-  const row = SCENE_CONFIG[sceneId as keyof typeof SCENE_CONFIG];
-  return row?.explorationLocomotionScale ?? 1;
+  const entry = SCENE_CONFIG[sceneId];
+  if (!entry) return 1;
+  return entry.explorationLocomotionScale ?? 1;
 }
 
 export const getNPCsForScene = (sceneId: SceneId, _flags: Record<string, boolean> = {}): NPCConfig[] => {

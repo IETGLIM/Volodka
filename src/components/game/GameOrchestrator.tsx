@@ -205,6 +205,7 @@ export default function GameOrchestrator() {
         clearTimeout(explorationGlitchClearRef.current);
         explorationGlitchClearRef.current = null;
       }
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- сброс оверлея при выходе из режима exploration
       setExplorationSceneGlitch(false);
       return;
     }

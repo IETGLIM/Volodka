@@ -13,6 +13,7 @@ export const MoralCompassHUD = memo(function MoralCompassHUD() {
     const delta = karma - prev.current;
     prev.current = karma;
     if (Math.abs(delta) < 0.75) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- краткая вспышка при изменении кармы из стора
     setFlash({
       text: delta > 0 ? 'Благородный поступок' : 'Жестокий выбор',
       kind: delta > 0 ? 'good' : 'bad',

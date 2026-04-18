@@ -201,7 +201,6 @@ const GLBPlayerModel = memo(function GLBPlayerModel({
   const { actions } = useAnimations(animations || [], groupRef);
   const [currentAction, setCurrentAction] = useState<string | null>(null);
   const rs = Math.max(0.28, Math.min(1.25, roomScale));
-  const [visualUniform, setVisualUniform] = useState(() => 0.12 * rs);
 
   // Очистка кэша при размонтировании для предотвращения утечек памяти
   useEffect(() => {
@@ -228,14 +227,13 @@ const GLBPlayerModel = memo(function GLBPlayerModel({
     }
   }, [loadedScene, onError]);
 
-  useLayoutEffect(() => {
-    if (!loadedScene) return;
+  const visualUniform = useMemo(() => {
+    if (!loadedScene) return 0.12 * rs;
     loadedScene.updateMatrixWorld(true);
     const b = new THREE.Box3().setFromObject(loadedScene);
     const h = b.getSize(new THREE.Vector3()).y;
-    if (h < 1e-4) return;
-    const intrinsic = PLAYER_GLB_TARGET_VISUAL_METERS / h;
-    setVisualUniform(intrinsic * rs);
+    if (h < 1e-4) return 0.12 * rs;
+    return (PLAYER_GLB_TARGET_VISUAL_METERS / h) * rs;
   }, [loadedScene, rs]);
 
   useEffect(() => {
@@ -356,7 +354,9 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
   });
 
   const getControlsRef = useRef(getControls);
-  getControlsRef.current = getControls;
+  useLayoutEffect(() => {
+    getControlsRef.current = getControls;
+  }, [getControls]);
 
   useEffect(() => {
     const cc = world.createCharacterController(0.06);

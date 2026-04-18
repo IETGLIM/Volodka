@@ -5,6 +5,8 @@ import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { OrbitControls, Text, Line } from '@react-three/drei';
 import { motion, AnimatePresence } from 'framer-motion';
 import * as THREE from 'three';
+import { Line2 } from 'three/examples/jsm/lines/Line2.js';
+import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial.js';
 
 // ============================================
 // ТИПЫ
@@ -103,11 +105,11 @@ function ConnectionLine({ start, end, isActive }: {
   end: [number, number, number];
   isActive: boolean;
 }) {
-  const lineRef = useRef<THREE.Line>(null);
-  
+  const lineRef = useRef<Line2>(null);
+
   useFrame(({ clock }) => {
     if (!lineRef.current || !isActive) return;
-    const material = lineRef.current.material as THREE.LineBasicMaterial;
+    const material = lineRef.current.material as LineMaterial;
     material.opacity = 0.5 + Math.sin(clock.getElapsedTime() * 3) * 0.3;
   });
   

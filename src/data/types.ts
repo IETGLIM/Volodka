@@ -182,6 +182,14 @@ export interface StoryEffect {
   // Прямые изменения навыков (для быстрых эффектов)
   perception?: number;
   introspection?: number;
+  logic?: number;
+  coding?: number;
+  empathy?: number;
+  writing?: number;
+  imagination?: number;
+  persuasion?: number;
+  intuition?: number;
+  resilience?: number;
   
   // Предметы
   itemReward?: string;
