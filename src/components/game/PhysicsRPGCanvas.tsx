@@ -101,7 +101,7 @@ interface PhysicsGameModeSwitcherProps {
   interactiveObjects?: InteractiveObjectConfig[];
   onNPCRelationChange?: (npcId: string, delta: number) => void;
   onObjectInteract?: (objectId: string, action: string) => void;
-  onPlayerPositionChange?: (pos: { x: number; y: number; z: number }) => void;
+  onPlayerPositionChange?: (pos: { x: number; y: number; z: number; rotation?: number }) => void;
   onNPCInteraction?: (npcId: string) => void;
   children?: React.ReactNode;
 }

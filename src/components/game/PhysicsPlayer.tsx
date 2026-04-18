@@ -26,7 +26,8 @@ export interface PhysicsPlayerProps {
   visualModelScale?: number;
   /** Множитель ходьбы/бега/прыжка; см. `getExplorationLocomotionScale`. */
   locomotionScale?: number;
-  onPositionChange?: (position: { x: number; y: number; z: number }) => void;
+  /** Позиция и yaw модели каждый кадр (для камеры / ресета без отставания от стора). */
+  onPositionChange?: (position: { x: number; y: number; z: number; rotation: number }) => void;
   onInteraction?: () => void;
   isLocked?: boolean;
   initialRotation?: number;
@@ -564,7 +565,7 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
       moveYawRef.current = rotationRef.current;
       if (onPositionChange) {
         const p = rb.translation();
-        onPositionChange({ x: p.x, y: p.y, z: p.z });
+        onPositionChange({ x: p.x, y: p.y, z: p.z, rotation: rotationRef.current });
       }
       return;
     }
@@ -594,7 +595,7 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
 
     if (onPositionChange) {
       const p = rb.translation();
-      onPositionChange({ x: p.x, y: p.y, z: p.z });
+      onPositionChange({ x: p.x, y: p.y, z: p.z, rotation: rotationRef.current });
     }
   });
 

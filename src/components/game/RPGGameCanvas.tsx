@@ -135,6 +135,7 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
     x: playerPosition.x,
     y: playerPosition.y,
     z: playerPosition.z,
+    rotation: playerPosition.rotation ?? 0,
   });
   const lastStorePositionFlushRef = useRef(0);
   const setNPCState = useGameStore((state) => state.setNPCState);
@@ -148,7 +149,7 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
 
   useEffect(() => {
     const p = useGameStore.getState().exploration.playerPosition;
-    livePlayerPositionRef.current = { x: p.x, y: p.y, z: p.z };
+    livePlayerPositionRef.current = { x: p.x, y: p.y, z: p.z, rotation: p.rotation ?? 0 };
   }, [sceneId]);
 
   // Scene config (свет / туман + размер поля под тип локации; при необходимости — проп `groundGeometryArgs`)
@@ -214,9 +215,23 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
 
   const followCameraProps = useMemo(() => {
     if (isNarrowApartment) {
-      return { distance: 4.25 as const, height: 2.75 as const, smoothness: 0.1 as const };
+      return {
+        distance: 4.25 as const,
+        height: 2.75 as const,
+        smoothness: 0.1 as const,
+        shoulderOffset: 0.2 as const,
+        lookAtHeightOffset: 1.22 as const,
+        collisionSpring: 11 as const,
+      };
     }
-    return { distance: 8 as const, height: 5 as const, smoothness: 0.08 as const };
+    return {
+      distance: 8 as const,
+      height: 5 as const,
+      smoothness: 0.08 as const,
+      shoulderOffset: 0.32 as const,
+      lookAtHeightOffset: 1.38 as const,
+      collisionSpring: 9 as const,
+    };
   }, [isNarrowApartment]);
 
   // Get NPCs and triggers for current scene
@@ -230,15 +245,14 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
 
   // Handle player position changes - сохраняем в store напрямую
   const handlePositionChange = useCallback(
-    (pos: { x: number; y: number; z: number }) => {
-      const rot = playerPositionRef.current.rotation;
-      livePlayerPositionRef.current = { x: pos.x, y: pos.y, z: pos.z };
-      playerPositionRef.current = { ...pos, rotation: rot };
+    (pos: { x: number; y: number; z: number; rotation: number }) => {
+      livePlayerPositionRef.current = { x: pos.x, y: pos.y, z: pos.z, rotation: pos.rotation };
+      playerPositionRef.current = { x: pos.x, y: pos.y, z: pos.z, rotation: pos.rotation };
 
       const now = typeof performance !== 'undefined' ? performance.now() : Date.now();
       if (now - lastStorePositionFlushRef.current < 90) return;
       lastStorePositionFlushRef.current = now;
-      setPlayerPosition({ ...pos, rotation: rot });
+      setPlayerPosition({ x: pos.x, y: pos.y, z: pos.z, rotation: pos.rotation });
     },
     [setPlayerPosition],
   );
@@ -479,6 +493,9 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
           distance={followCameraProps.distance}
           height={followCameraProps.height}
           smoothness={followCameraProps.smoothness}
+          shoulderOffset={followCameraProps.shoulderOffset}
+          lookAtHeightOffset={followCameraProps.lookAtHeightOffset}
+          collisionSpring={followCameraProps.collisionSpring}
           isLocked={isDialogueActive}
           enableCollision
           enableZoom
