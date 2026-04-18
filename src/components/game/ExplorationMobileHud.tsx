@@ -106,14 +106,14 @@ export const ExplorationMobileHud = memo(function ExplorationMobileHud({
   if (!active) return null;
 
   const padBtn =
-    'min-h-12 min-w-12 touch-manipulation select-none rounded border border-cyan-500/35 bg-black/55 font-mono text-sm text-cyan-200/90 active:bg-cyan-950/80';
+    'min-h-[52px] min-w-[52px] sm:min-h-12 sm:min-w-12 touch-manipulation select-none rounded border border-cyan-500/35 bg-black/55 font-mono text-base text-cyan-200/90 active:bg-cyan-950/80';
 
   return (
     <div
       className="pointer-events-none fixed inset-x-0 bottom-0 z-[14]"
       aria-hidden={false}
     >
-      <div className="pointer-events-auto mx-auto flex max-w-lg items-end justify-between gap-2 px-2 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-2">
+      <div className="pointer-events-auto mx-auto flex max-w-lg items-end justify-between gap-2 pl-[max(0.5rem,env(safe-area-inset-left))] pr-[max(0.5rem,env(safe-area-inset-right))] pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-2">
         <div className="grid grid-cols-3 gap-1.5" role="group" aria-label="Движение">
           <span className="col-start-2">
             <VirtualPadHoldButton holdKey="forward" className={padBtn} ariaLabel="Вперёд" setKey={setKey}>
@@ -154,7 +154,7 @@ export const ExplorationMobileHud = memo(function ExplorationMobileHud({
           </VirtualPadHoldButton>
           <button
             type="button"
-            className="min-h-12 touch-manipulation select-none rounded border border-amber-500/40 bg-amber-950/50 px-3 font-mono text-xs uppercase tracking-wide text-amber-100/90 active:bg-amber-900/70"
+            className="min-h-[52px] min-w-[52px] touch-manipulation select-none rounded border border-amber-500/40 bg-amber-950/50 px-3 font-mono text-xs uppercase tracking-wide text-amber-100/90 active:bg-amber-900/70 sm:min-h-12 sm:min-w-0"
             aria-label="Действие, как клавиша E"
             onPointerDown={(e) => {
               e.preventDefault();

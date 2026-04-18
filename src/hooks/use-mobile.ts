@@ -1,18 +1,20 @@
 import * as React from "react"
 
-const MOBILE_BREAKPOINT = 768
+/** До `lg` в Tailwind и ниже: телефоны в ландшафте (ширина > 768) остаются «мобильными». */
+const MOBILE_BREAKPOINT_PX = 1024
 
 export function useIsMobile() {
   const [isMobile, setIsMobile] = React.useState<boolean | undefined>(undefined)
 
   React.useEffect(() => {
-    const mql = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT - 1}px)`)
+    const query = `(max-width: ${MOBILE_BREAKPOINT_PX - 1}px)`
+    const mql = window.matchMedia(query)
     const onChange = () => {
-      setIsMobile(window.innerWidth < MOBILE_BREAKPOINT)
+      setIsMobile(window.matchMedia(query).matches)
     }
-    mql.addEventListener("change", onChange)
-    setIsMobile(window.innerWidth < MOBILE_BREAKPOINT)
-    return () => mql.removeEventListener("change", onChange)
+    mql.addEventListener('change', onChange)
+    onChange()
+    return () => mql.removeEventListener('change', onChange)
   }, [])
 
   return !!isMobile

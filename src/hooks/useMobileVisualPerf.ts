@@ -13,13 +13,13 @@ export function useMobileVisualPerf(): boolean {
   useEffect(() => {
     const sync = () => {
       const coarse = window.matchMedia('(pointer: coarse)').matches;
-      const narrow = window.matchMedia('(max-width: 768px)').matches;
+      const narrow = window.matchMedia('(max-width: 1023px)').matches;
       const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       setLite(coarse || narrow || reduce);
     };
     sync();
     const m1 = window.matchMedia('(pointer: coarse)');
-    const m2 = window.matchMedia('(max-width: 768px)');
+    const m2 = window.matchMedia('(max-width: 1023px)');
     const m3 = window.matchMedia('(prefers-reduced-motion: reduce)');
     m1.addEventListener('change', sync);
     m2.addEventListener('change', sync);
