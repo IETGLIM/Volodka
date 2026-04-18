@@ -39,6 +39,8 @@
 
 ### Changed
 
+- **Инкрементальный аудит утечек / удержания ресурсов (обзор)**: проверены типичные источники — **`window` / `document` listeners** (в т.ч. **`FollowCamera`**, **`RadialMenu`**, **`GameOrchestrator`**, **`IntroScreen`**, **`useGamePhysics`**) — везде есть снятие в **`useEffect` cleanup**; **`requestAnimationFrame` / `setInterval`** в **`AsciiCyberBackdrop`**, **`RainCanvasLayer`**, **`useAmbientMusic`** (интервал + **`stopAmbient`** при unmount с **`audioContext.close()`**), **`GameOrchestrator`** (street stress tick) — с очисткой; **`eventBus.on`** в хуках и оверлеях — возвращаемый **`unsub`** в cleanup. Оставшийся риск производительности (не классическая утечка): **`FollowCamera.checkCameraCollision`** создаёт **`Raycaster`** и векторы на вызов — высокая частота аллокаций при коллизиях; при необходимости — пул в **`useRef`**. Кэш **`useGLTF`** у игрока намеренно не очищается при unmount (обмен на повторную загрузку; см. комментарий в **`PhysicsPlayer`**).
+
 - **Кросс-функциональная полировка (геймдизайн UI + архитектура)**: визуал оверлеев исследования (**`TutorialOverlay`**, **`MoralCompassHUD`**, **`RadialMenu`**, **`MiniMap`**) выровнен под **`game-fm-layer`**, **`intro-recall-frame`** и градиентные акценты как в меню/интро; подпись glitch-перехода смены 3D-сцены — русский термин + **`SCENE_VISUALS`**.name; **`SceneManager`** — публичное имя **`getSceneVisualConfig`** для атмосферы (старый **`getSceneConfig`** экземпляра — deprecated alias, чтобы не путать с **`getSceneConfig`** из **`@/config/scenes`**).
 
 - **Локомоция под локацию (3D)**: в **`SceneConfig`** поле **`explorationLocomotionScale`**, **`getExplorationLocomotionScale(sceneId)`**; **`PhysicsPlayer`** умножает ходьбу/бег/прыжок; **`usePlayerFootsteps`** нормирует интервал шагов от фактической скорости ходьбы; **`NPC`** / **`NPCSystem`** — скорость патруля по waypoints и в **`patrolRadius`**; проводка из **`RPGGameCanvas`** и **`PhysicsRPGCanvas`**; тесты в **`scenes.explorationScale.test.ts`**.
@@ -64,6 +66,8 @@
 ### Removed
 
 ### Fixed
+
+- **`ConsequencesSystem` / EventBus**: подписки на события сохраняются в **`consequenceBusUnsubs`**; **`resetConsequences()`** вызывает отписки перед сбросом состояния — иначе при повторном **`initConsequencesSystem`** (тесты, HMR) обработчики накапливались (утечка подписок + двойное применение последствий). Тест **`ConsequencesSystem.test.ts`**.
 
 - **Исследование квартиры / коридор — «чёрный экран»**: в **`RPGGameCanvas`** не монтировался интерьер (стены/потолок были только в **`OptimizedSceneEnvironment`** для VN). Добавлены **`VolodkaCorridorVisual`**, **`VolodkaRoomVisual`**, **`HomeEveningVisual`** и подключены по **`sceneId`**; туман для узких локаций расширен (**near / far**), пол слегка осветлён с лёгким **emissive**; **`ExplorationPostFX`** получает **`compactIndoor`** (без **N8AO** в квартире — иначе кадр «съедался» в чёрное).
 

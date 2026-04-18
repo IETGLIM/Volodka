@@ -448,6 +448,9 @@ export function registerDefaultConsequences(): void {
 
 let initialized = false;
 
+/** Отписки от `eventBus` — обязательно вызывать в `resetConsequences`, иначе повторный init дублирует обработчики (утечка + двойные эффекты). */
+let consequenceBusUnsubs: Array<() => void> = [];
+
 export function initConsequencesSystem(
   getContext: () => ConsequenceEvaluationContext,
   storeActions: Parameters<typeof applyConsequenceEffects>[1]
@@ -473,19 +476,27 @@ export function initConsequencesSystem(
     'flag:set',
   ];
 
-  listenedEvents.forEach((eventName) => {
+  consequenceBusUnsubs = listenedEvents.map((eventName) =>
     eventBus.on(eventName, () => {
       const context = getContext();
       const effects = evaluateConsequences(eventName, context);
       if (effects.length > 0) {
         applyConsequenceEffects(effects, storeActions);
       }
-    });
-  });
+    }),
+  );
 }
 
 // Сброс для тестов
 export function resetConsequences(): void {
+  for (const unsub of consequenceBusUnsubs) {
+    try {
+      unsub();
+    } catch {
+      // ignore
+    }
+  }
+  consequenceBusUnsubs = [];
   consequences.clear();
   firedConsequences.clear();
   initialized = false;
