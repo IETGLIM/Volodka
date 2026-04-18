@@ -327,6 +327,17 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
   }, [locomotionScale]);
 
   const roomScale = Math.max(0.28, Math.min(1.25, visualModelScale));
+  /**
+   * Стартовая позиция капсулы только при монтировании (смена сцены — `key` на родителе).
+   * Нельзя прокидывать сюда координаты из Zustand каждый кадр: RigidBody синхронизирует prop с телом
+   * и ломает kinematic + `setNextKinematicTranslation` (мигание, залипание, прыжок не срабатывает).
+   */
+  const [rigidSpawnPosition] = useState<[number, number, number]>(() => [
+    position[0],
+    position[1],
+    position[2],
+  ]);
+
   const capsule = useMemo(() => {
     const s = roomScale;
     const r0 = PHYSICS_CONSTANTS.PLAYER_RADIUS;
@@ -567,7 +578,7 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
   return (
     <RigidBody
       ref={rigidBodyRef}
-      position={position}
+      position={rigidSpawnPosition}
       type="kinematicPosition"
       colliders={false}
       enabledRotations={[false, false, false]}

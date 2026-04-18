@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useEffect, useCallback } from 'react';
+import { useRef, useEffect, useCallback, type RefObject } from 'react';
 import { useThree, useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { CAMERA_COLLISION_LAYER } from './SceneColliders';
@@ -20,6 +20,8 @@ const MAX_DISTANCE = 15;
 
 interface FollowCameraProps {
   targetPosition: { x: number; y: number; z: number };
+  /** Позиция из физики каждый кадр без ре-рендера React (приоритетнее `targetPosition` в useFrame). */
+  targetPositionRef?: RefObject<{ x: number; y: number; z: number }>;
   distance?: number;
   height?: number;
   smoothness?: number;
@@ -74,6 +76,7 @@ function isCollidable(object: THREE.Object3D): boolean {
 
 export default function FollowCamera({
   targetPosition,
+  targetPositionRef,
   distance = 6,
   height = 4,
   smoothness = 0.05,
@@ -289,7 +292,12 @@ export default function FollowCamera({
   // ============================================
 
   useFrame(() => {
-    frameTargetRef.current.set(targetPosition.x, targetPosition.y, targetPosition.z);
+    const live = targetPositionRef?.current;
+    if (live) {
+      frameTargetRef.current.set(live.x, live.y, live.z);
+    } else {
+      frameTargetRef.current.set(targetPosition.x, targetPosition.y, targetPosition.z);
+    }
     currentTarget.current.lerp(frameTargetRef.current, smoothness);
 
     const activeDistance = currentDistance.current;

@@ -122,14 +122,26 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
   const shadowMap = narrow || visualLite ? 256 : 512;
   const playerPosition = useGameStore((state) => state.exploration.playerPosition);
   const setPlayerPosition = useGameStore((state) => state.setPlayerPosition);
+  /** Позиция для камеры каждый кадр без коммита Zustand ~60 Гц (см. `FollowCamera` + throttle store). */
+  const livePlayerPositionRef = useRef({
+    x: playerPosition.x,
+    y: playerPosition.y,
+    z: playerPosition.z,
+  });
+  const lastStorePositionFlushRef = useRef(0);
   const setNPCState = useGameStore((state) => state.setNPCState);
   const timeOfDay = useGameStore((state) => state.exploration.timeOfDay);
   
   // Ref для актуального значения playerPosition (избегаем устаревших замыканий)
   const playerPositionRef = useRef(playerPosition);
-  useEffect(() => { 
-    playerPositionRef.current = playerPosition; 
+  useEffect(() => {
+    playerPositionRef.current = playerPosition;
   }, [playerPosition]);
+
+  useEffect(() => {
+    const p = useGameStore.getState().exploration.playerPosition;
+    livePlayerPositionRef.current = { x: p.x, y: p.y, z: p.z };
+  }, [sceneId]);
 
   // Scene config (свет / туман + размер поля под тип локации; при необходимости — проп `groundGeometryArgs`)
   const sceneConfig = useMemo(() => {
@@ -209,9 +221,19 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
   const sceneTriggers = useMemo(() => getTriggersForScene(sceneId), [sceneId]);
 
   // Handle player position changes - сохраняем в store напрямую
-  const handlePositionChange = useCallback((pos: { x: number; y: number; z: number }) => {
-    setPlayerPosition({ ...pos, rotation: playerPositionRef.current.rotation });
-  }, [setPlayerPosition]);
+  const handlePositionChange = useCallback(
+    (pos: { x: number; y: number; z: number }) => {
+      const rot = playerPositionRef.current.rotation;
+      livePlayerPositionRef.current = { x: pos.x, y: pos.y, z: pos.z };
+      playerPositionRef.current = { ...pos, rotation: rot };
+
+      const now = typeof performance !== 'undefined' ? performance.now() : Date.now();
+      if (now - lastStorePositionFlushRef.current < 90) return;
+      lastStorePositionFlushRef.current = now;
+      setPlayerPosition({ ...pos, rotation: rot });
+    },
+    [setPlayerPosition],
+  );
 
   // Handle NPC state changes
   const handleNPCStateChange = useCallback(
@@ -395,7 +417,7 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
           onPositionChange={handlePositionChange}
           onInteraction={handlePlayerInteraction}
           isLocked={isDialogueActive}
-          virtualControlsRef={narrow ? virtualControlsRef : undefined}
+          virtualControlsRef={virtualControlsRef}
         />
 
         {/* NPCs */}
@@ -429,6 +451,7 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
         <FollowCamera
           key={sceneId}
           targetPosition={playerPosition}
+          targetPositionRef={livePlayerPositionRef}
           distance={followCameraProps.distance}
           height={followCameraProps.height}
           smoothness={followCameraProps.smoothness}
@@ -456,13 +479,11 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
         {showExplorationStats && <ExplorationFrameStats />}
       </Suspense>
     </Canvas>
-    {narrow && (
-      <ExplorationMobileHud
-        active={!isDialogueActive}
-        virtualControlsRef={virtualControlsRef}
-        onInteract={handlePlayerInteraction}
-      />
-    )}
+    <ExplorationMobileHud
+      active={!isDialogueActive}
+      virtualControlsRef={virtualControlsRef}
+      onInteract={handlePlayerInteraction}
+    />
 
     <RadialMenu
       open={radialObject !== null}

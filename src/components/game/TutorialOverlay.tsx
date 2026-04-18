@@ -63,7 +63,7 @@ export const TutorialOverlay = memo(function TutorialOverlay({
         initial={{ opacity: 0, x: 20 }}
         animate={{ opacity: 1, x: 0 }}
         exit={{ opacity: 0, x: 12 }}
-        className="game-fm-layer game-fm-layer-promote intro-recall-frame pointer-events-auto fixed bottom-32 right-4 z-40 max-w-xs rounded-lg border border-cyan-500/40 bg-black/82 p-3 font-mono text-xs text-cyan-100 shadow-xl backdrop-blur"
+        className="game-fm-layer game-fm-layer-promote intro-recall-frame pointer-events-auto fixed bottom-32 left-4 z-40 max-w-xs rounded-lg border border-cyan-500/40 bg-black/82 p-3 font-mono text-xs text-cyan-100 shadow-xl backdrop-blur"
       >
         {lines.map((t) => (
           <div key={t} className="py-0.5">

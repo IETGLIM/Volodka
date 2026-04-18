@@ -3,8 +3,6 @@
 import { memo, useCallback, useEffect, useRef } from 'react';
 import type { MutableRefObject } from 'react';
 import type { PlayerControls } from '@/hooks/useGamePhysics';
-import { useIsMobile } from '@/hooks/use-mobile';
-
 interface ExplorationMobileHudProps {
   active: boolean;
   virtualControlsRef: MutableRefObject<Partial<PlayerControls>>;
@@ -20,7 +18,6 @@ export const ExplorationMobileHud = memo(function ExplorationMobileHud({
   virtualControlsRef,
   onInteract,
 }: ExplorationMobileHudProps) {
-  const narrow = useIsMobile();
   const lastInteractAt = useRef(0);
 
   const setKey = useCallback(
@@ -53,14 +50,14 @@ export const ExplorationMobileHud = memo(function ExplorationMobileHud({
     onInteract();
   }, [onInteract]);
 
-  if (!narrow || !active) return null;
+  if (!active) return null;
 
   const padBtn =
     'min-h-12 min-w-12 touch-manipulation select-none rounded border border-cyan-500/35 bg-black/55 font-mono text-sm text-cyan-200/90 active:bg-cyan-950/80';
 
   return (
     <div
-      className="pointer-events-none fixed inset-x-0 bottom-0 z-[14] md:hidden"
+      className="pointer-events-none fixed inset-x-0 bottom-0 z-[14]"
       aria-hidden={false}
     >
       <div className="pointer-events-auto mx-auto flex max-w-lg items-end justify-between gap-2 px-2 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-2">
