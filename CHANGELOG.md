@@ -7,6 +7,10 @@
 - **Ритм выкладки (с душой и для потомков)**: порция функционала или исправлений → быстрая проверка (**`tsc`**, **`vitest`**, разбор линтера по смыслу) → запись в **`CHANGELOG.md`** в **`[Unreleased]`** → коммит с ясной первой строкой → **`git push origin`** на каноническую ветку (**`main`**). Так на GitHub и у тех, кто откроет репозиторий позже, всегда видна честная история, а не «магия у одного разработчика на ноутбуке».
 - **3D и ассеты**: новые бинарники моделей — только когда пользователь передаст файлы; в коде опираться на **`public/models/`** и **`public/models-external/`** и существующую стилистику сцен (**`explorationAtmosphere`**, визуалы комнат, **`npcDefinitions`**). Правило Cursor **`.cursor/rules/git-changelog-workflow.mdc`** обновлено этими пунктами.
 
+### Documentation
+
+- **Облачные сохранения (`/api/save`)**: при **`ENABLE_CLOUD_GAME_SAVE=1`** нужны **`DATABASE_URL`**, **`SAVE_API_SECRET`** (только в окружении сервера, не в репозитории). Каждый запрос к API — с заголовком **`Authorization: Bearer <SAVE_API_SECRET>`**. Идентификатор строки в БД задаётся **`SAVE_USER_ID`** (если не задан — используется **`default`**); поля **`userId`** в JSON-теле и в query **игнорируются**. Кэш GLTF: см. **`src/lib/gltfModelCache.ts`** (лимит **14** URL, **`useGLTF.clear`** для вытесненных).
+
 ### Build / repository
 
 - **Vercel: «This repository exceeded its LFS budget»**: клон репозитория тянет объекты **Git LFS** (см. **`.gitattributes`**: `*.glb`, `*.fbx`, `*.zip`); при исчерпании квоты хранилища/трафика GitHub LFS сборка на Vercel падает. Варианты: оплатить **Data packs** в [GitHub → Billing](https://github.com/settings/billing); или один раз вынести бинарники из LFS в обычный Git (**`git lfs migrate export`**, затем **`git push --force-with-lease`**) — см. **`FREE_HOSTING.md`**. **Сделано для `main`:** **`git lfs migrate export --include='*.glb,*.fbx,*.zip' --everything`**, очищен **`.gitattributes`** (без `filter=lfs`), пуш с **`--force-with-lease`** на **`origin/main`**.
