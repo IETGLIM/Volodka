@@ -3,6 +3,7 @@
 import { useRef, useEffect, useCallback, type RefObject } from 'react';
 import { useThree, useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
+import { followCameraCollisionDamp, followCameraSmoothDamp } from '@/lib/followCameraDamp';
 import { CAMERA_COLLISION_LAYER } from './SceneColliders';
 
 // ============================================
@@ -59,14 +60,8 @@ interface FollowCameraProps {
 // УТИЛИТЫ
 // ============================================
 
-function dampFactor(smoothness: number, delta: number): number {
-  const lambda = 2.4 + smoothness * 52;
-  return 1 - Math.exp(-lambda * delta);
-}
-
-function dampCollisionFactor(collisionSpring: number, delta: number): number {
-  return 1 - Math.exp(-collisionSpring * delta);
-}
+const dampFactor = followCameraSmoothDamp;
+const dampCollisionFactor = followCameraCollisionDamp;
 
 /**
  * Проверяет, является ли объект коллайдером для камеры

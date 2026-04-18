@@ -13,6 +13,9 @@
 
 ### Changed
 
+- **`threeClientPrep`**: убрана подмена **`THREE.Clock`** (namespace ES-модуля нельзя перезаписать; при необходимости — обновление **`@react-three/fiber`**). Сохранена установка общего **`AudioContext`** для three.
+- **Камера**: формулы сглаживания вынесены в **`src/lib/followCameraDamp.ts`**; **`FollowCamera`** импортирует их; тесты **`src/lib/followCameraDamp.test.ts`**.
+
 - **Turbopack в приоритете**: **`package.json`** — **`dev`**: `next dev --turbo`; **`build`**: `next build --turbo`. **CI** — шаг **`npm run build`** (тот же Turbopack-сборщик).
 - **Next.js**: **`next.config.ts`** — **`typescript.ignoreBuildErrors: false`** (сборка снова зависит от проверки типов); **`reactStrictMode: true`**.
 - **API сохранений**: **`src/app/api/save/route.ts`** — без **`ENABLE_CLOUD_GAME_SAVE=1`** — **403** / **`CLOUD_SAVE_DISABLED`**. При включённом облаке: обязательны **`SAVE_API_SECRET`** и заголовок **`Authorization: Bearer …`**; идентификатор пользователя в БД — только **`SAVE_USER_ID`** (значение из тела/query не используется).

@@ -1,7 +1,7 @@
 // src/app/GameClient.tsx
 'use client';
 
-/** До любого `@react-three/fiber` — патч Clock / WebAudio для three r183+. */
+/** До любого `@react-three/fiber` — общий Web Audio контекст (three r183+), см. `threeClientPrep`. */
 import '@/lib/threeClientPrep';
 
 import dynamic from 'next/dynamic';
