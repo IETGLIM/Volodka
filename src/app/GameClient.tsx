@@ -7,6 +7,7 @@ import '@/lib/threeClientPrep';
 import dynamic from 'next/dynamic';
 import { useState, useEffect, useRef, memo, useMemo } from 'react';
 import { motion } from 'framer-motion';
+import { FamilyWelcomeGate } from '@/components/game/FamilyWelcomeGate';
 
 // Dynamic import with SSR disabled — uses the new 2D GameOrchestrator
 const GameOrchestrator = dynamic(
@@ -586,7 +587,9 @@ function ErrorBoundary({ children }: { children: React.ReactNode }) {
 export default function GameClient() {
   return (
     <ErrorBoundary>
-      <GameOrchestrator />
+      <FamilyWelcomeGate>
+        <GameOrchestrator />
+      </FamilyWelcomeGate>
     </ErrorBoundary>
   );
 }

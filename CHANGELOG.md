@@ -8,6 +8,8 @@
 
 ### Added
 
+- **Экран для близких**: **`FamilyWelcomeGate`** в **`GameClient`** (перед **`GameOrchestrator`**), тексты в **`src/data/familyWelcome.ts`** — спокойное приветствие, подсказки по управлению, чекбокс «не показывать снова» в **`localStorage`** (**`volodka_family_gate_done`**); тяжёлый бандл игры не грузится, пока не нажата «Войти в историю».
+
 - **`src/app/error.tsx`**, **`src/app/global-error.tsx`**: границы ошибок App Router (сегмент и корень при падении **`layout`**); кнопка **`reset`**, в development — текст ошибки в UI.
 
 - **Browserbase Functions — дымовой тест деплоя**: каталог **`browserbase-functions/volodka-smoke`** (`defineFn` **`volodka-smoke`**) — Playwright по CDP к сессии Browserbase: открытие **`baseUrl`**, проверка заголовка с **«ВОЛОДЬКА»**, ожидание **`canvas`**, проверка **WebGL**; скрипты в корневом **`package.json`**: **`bb:volodka-smoke:dev`**, **`bb:volodka-smoke:publish`**; в **`.gitignore`** — **`browserbase-functions/**/.env`**, **`.browserbase`**.
@@ -46,6 +48,8 @@
 - **Контент диалога**: у баристы ветка **`barista_kindred`** с условием **`minKarma: 55`**.
 
 ### Changed
+
+- **`src/lib/db.ts`**: лог Prisma **`query`** только в **development**; в **production** — **`error`**, без засорения логов Vercel.
 
 - **`vercel.json`**: для **`/models-external/(.*)`** задан **`Cache-Control: public, max-age=31536000, immutable`** (как для **`/models/`**), чтобы GLB из **`public/models-external`** кешировались на CDN.
 
