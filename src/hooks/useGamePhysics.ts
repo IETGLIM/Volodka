@@ -124,6 +124,8 @@ export function usePlayerControls(options?: UsePlayerControlsOptions) {
     const handleKeyDown = (e: KeyboardEvent) => {
       const control = KEY_MAP[e.code];
       if (control) {
+        // Удержание WASD даёт серию keydown с repeat — без этого каждый раз forceUpdate и ререндер Canvas.
+        if (e.repeat && control !== 'interact') return;
         // Для interact используем флаг, чтобы не срабатывать многократно
         if (control === 'interact') {
           if (!interactPressedRef.current) {

@@ -202,12 +202,8 @@ const GLBPlayerModel = memo(function GLBPlayerModel({
   const [currentAction, setCurrentAction] = useState<string | null>(null);
   const rs = Math.max(0.28, Math.min(1.25, roomScale));
 
-  // Очистка кэша при размонтировании для предотвращения утечек памяти
-  useEffect(() => {
-    return () => {
-      useGLTF.clear(modelPath);
-    };
-  }, [modelPath]);
+  // Не вызываем useGLTF.clear: сброс кэша при каждом remount (смена сцены `key`) даёт повторную загрузку,
+  // мигание fallback+GLB и лишнюю нагрузку на главный поток.
 
   /** Без `Object3D.clone(true)` для skinned GLB: клон часто оставляет меш невидимым (видна только декаль тени). */
   const displayScene = useMemo(() => {
@@ -305,7 +301,10 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
   const rigidBodyRef = useRef<RapierRigidBody>(null);
   const characterControllerRef = useRef<KinematicCharacterController | null>(null);
   const modelRef = useRef<THREE.Group>(null);
-  const karma = useGameStore((s) => s.playerState.karma);
+  /** Зона кармы для подсветки — без подписки на каждое микроизменение числа. */
+  const karmaZone = useGameStore((s) =>
+    s.playerState.karma > 70 ? 'high' : s.playerState.karma < 30 ? 'low' : 'mid',
+  );
   const canJumpRef = useRef(true);
   const groundedRef = useRef(false);
   const isRunningRef = useRef(false);
@@ -313,8 +312,11 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
   const horizVelXRef = useRef(0);
   const horizVelZRef = useRef(0);
   const moveYawRef = useRef(initialRotation);
-  const [rotation, setRotation] = useState(initialRotation);
+  /** Поворот визуала — только ref, без setState в useFrame (иначе ~60 React commit/сек). */
+  const rotationRef = useRef(initialRotation);
+  /** Для анимаций GLB / заглушки: обновляем React только при смене true/false. */
   const [isMoving, setIsMoving] = useState(false);
+  const isMovingSyncRef = useRef(false);
   const [modelError, setModelError] = useState(false);
   const onInteractionRef = useRef(onInteraction);
   const isLockedRef = useRef(isLocked);
@@ -341,6 +343,14 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
   useEffect(() => {
     isLockedRef.current = isLocked;
   }, [isLocked]);
+
+  useEffect(() => {
+    rotationRef.current = initialRotation;
+    moveYawRef.current = initialRotation;
+    if (modelRef.current) {
+      modelRef.current.rotation.y = initialRotation;
+    }
+  }, [initialRotation]);
 
   const handleInteractPress = useCallback(() => {
     if (onInteractionRef.current && !isLockedRef.current) {
@@ -381,7 +391,7 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
       }
       return { x: position[0], y: position[1], z: position[2] };
     },
-    getRotation: () => rotation,
+    getRotation: () => rotationRef.current,
     teleport: (x: number, y: number, z: number) => {
       if (rigidBodyRef.current) {
         const p = { x, y, z };
@@ -393,7 +403,7 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
       }
     },
     getRigidBody: () => rigidBodyRef.current,
-  }), [rotation, position]);
+  }), [position]);
 
   usePlayerFootsteps({
     rigidBodyRef,
@@ -484,20 +494,28 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
   });
 
   // Визуал: поворот модели и колбэк позиции (после шага Rapier mesh уже интерполирован).
+  // Важно: не вызывать setState каждый кадр — иначе весь поддерево игрока (GLB + физика) уходит в React commit ~60 Гц.
   useFrame(() => {
-    if (!rigidBodyRef.current) {
-      setIsMoving(false);
+    const rb = rigidBodyRef.current;
+    if (!rb) {
+      if (isMovingSyncRef.current) {
+        isMovingSyncRef.current = false;
+        setIsMoving(false);
+      }
       return;
     }
 
-    if (isLocked) {
-      setIsMoving(false);
-      if (modelRef.current) {
-        modelRef.current.rotation.y = rotation;
+    if (isLockedRef.current) {
+      if (isMovingSyncRef.current) {
+        isMovingSyncRef.current = false;
+        setIsMoving(false);
       }
-      moveYawRef.current = rotation;
+      if (modelRef.current) {
+        modelRef.current.rotation.y = rotationRef.current;
+      }
+      moveYawRef.current = rotationRef.current;
       if (onPositionChange) {
-        const p = rigidBodyRef.current.translation();
+        const p = rb.translation();
         onPositionChange({ x: p.x, y: p.y, z: p.z });
       }
       return;
@@ -506,26 +524,28 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
     const hx = horizVelXRef.current;
     const hz = horizVelZRef.current;
     const moving = Math.hypot(hx, hz) > 0.12;
-    setIsMoving(moving);
+    if (moving !== isMovingSyncRef.current) {
+      isMovingSyncRef.current = moving;
+      setIsMoving(moving);
+    }
 
     if (moving) {
       const targetRotation = Math.atan2(hx, hz);
-      setRotation((prev) => {
-        let diff = targetRotation - prev;
-        while (diff > Math.PI) diff -= Math.PI * 2;
-        while (diff < -Math.PI) diff += Math.PI * 2;
-        return prev + diff * 0.1;
-      });
+      let prev = rotationRef.current;
+      let diff = targetRotation - prev;
+      while (diff > Math.PI) diff -= Math.PI * 2;
+      while (diff < -Math.PI) diff += Math.PI * 2;
+      rotationRef.current = prev + diff * 0.1;
     }
 
     if (modelRef.current) {
-      modelRef.current.rotation.y = rotation;
+      modelRef.current.rotation.y = rotationRef.current;
     }
 
-    moveYawRef.current = rotation;
+    moveYawRef.current = rotationRef.current;
 
     if (onPositionChange) {
-      const p = rigidBodyRef.current.translation();
+      const p = rb.translation();
       onPositionChange({ x: p.x, y: p.y, z: p.z });
     }
   });
@@ -553,8 +573,12 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
     >
       <CapsuleCollider args={[capsule.halfH, capsule.r]} position={[0, capsule.capCenterY, 0]} />
 
-      <group ref={modelRef}>
-        <Suspense fallback={<FallbackPlayerModel isMoving={isMoving} isLocked={isLocked} roomScale={roomScale} />}>
+      {/*
+        Визуал отдельно от коллайдера: один активный меш (GLB или fallback), без наслоения процедурки на модель.
+        Пустой fallback при загрузке — чтобы не рисовать две фигуры в одном месте.
+      */}
+      <group ref={modelRef} name="PlayerVisualRoot">
+        <Suspense fallback={<group name="PlayerModelLoading" />}>
           {!modelError ? (
             <GLBPlayerModel
               modelPath={modelPathToUse}
@@ -569,7 +593,7 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
         </Suspense>
       </group>
 
-      {karma > 70 && (
+      {karmaZone === 'high' && (
         <pointLight
           position={[0, 1.4 * roomScale, 0]}
           intensity={0.55}
@@ -578,7 +602,7 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
           decay={2}
         />
       )}
-      {karma < 30 && (
+      {karmaZone === 'low' && (
         <>
           <pointLight
             position={[0.08 * roomScale, 1.55 * roomScale, 0.18 * roomScale]}
