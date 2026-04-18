@@ -25,7 +25,7 @@ npm test
 - **GitHub Actions**: workflow **`.github/workflows/ci.yml`** — `npm ci` → **`npx tsc --noEmit`** → **`npm test`** (Vitest) → **`npm run lint`** на push/PR в `main` / `master`.
 - **TypeScript**: в **`next.config.ts`** снято **`typescript.ignoreBuildErrors`** — ошибки типов снова **блокируют** `next build`.
 - **React**: включён **`reactStrictMode: true`** — в development возможны двойные эффекты; так ловятся утечки подписок и гонки в R3F.
-- **Облачные сохранения** (`/api/save`): по умолчанию API отвечает **403** с кодом `CLOUD_SAVE_DISABLED`. Включение только при **`ENABLE_CLOUD_GAME_SAVE=1`** в окружении (и настроенном **`DATABASE_URL`** через Prisma). Клиентский прогресс по-прежнему в **localStorage** через стор.
+- **Облачные сохранения** (`/api/save`): по умолчанию API отвечает **403** с кодом `CLOUD_SAVE_DISABLED`. Включение только при **`ENABLE_CLOUD_GAME_SAVE=1`**, **`DATABASE_URL`** (Prisma) и секрете **`SAVE_API_SECRET`** на сервере; каждый запрос — с **`Authorization: Bearer <SAVE_API_SECRET>`**. Идентификатор строки в БД задаётся **`SAVE_USER_ID`** (без доверия к `userId` из тела или query). Клиентский прогресс по-прежнему в **localStorage** через стор.
 - **Черновик сюжета**: файл **`src/data/storyNodesExpansion.ts`** не смержен в **`STORY_NODES`** — не опирайтесь на узлы из него, пока явно не перенесены в **`storyNodes.ts`**.
 
 ## Что недавно появилось в проекте
@@ -52,6 +52,10 @@ npm test
 - **Музыка**: более «боевая» процедурная подложка при высоком стрессе или сцене боя; лёгкий **`AudioEngine`** для меню/интро (при наличии файлов в `public/audio/ui/`).
 - **Туториал** в режиме обхода (WASD, E, I; контекст у NPC); отключение через флаг и **кнопку 💡 в HUD**.
 - **Стор мира (клиент)**: удобный импорт **`@/store/worldStore`** (реэкспорт с `src/client/store/worldStore.ts`).
+- **Клавиша E в обходе**: один резолвер между интерактивным объектом и NPC по дистанции в XZ (**`src/lib/explorationPrimaryInteraction.ts`**, вызов из **`RPGGameCanvas`**).
+- **Камера и оверлеи обхода**: элементы с **`data-exploration-ui`** не вращают орбиту (**`src/lib/explorationUiPointer.ts`**, камеры **`FollowCamera`** / **`SimpleFollowCamera`**); удержание **Run** на таче, контейнер Canvas — **`100dvh`** в **`GameOrchestrator`**.
+- **Кэш GLB**: LRU для **`useGLTF`** (**`src/lib/gltfModelCache.ts`**, лимит URL и **`useGLTF.clear`** при вытеснении).
+- **Сглаживание камеры**: общие формулы damp в **`src/lib/followCameraDamp.ts`** (тесты рядом в `src/lib`).
 
 ### Квестовая цепочка
 
