@@ -95,8 +95,8 @@ export default function TimedChoice({
         className={`text-center mb-4 ${currentColors.text}`}
       >
         <span className="text-sm uppercase tracking-widest font-mono">
-          {panicLevel === 'panic' ? '🔥 KERNEL PANIC' : 
-           panicLevel === 'critical' ? '⚠️ CRITICAL DECISION' : 
+          {panicLevel === 'panic' ? '🔥 ПАНИКА ЯДРА' :
+           panicLevel === 'critical' ? '⚠️ КРИТИЧЕСКИЙ ВЫБОР' :
            '⏱️ ВРЕМЯ ОГРАНИЧЕНО'}
         </span>
       </motion.div>

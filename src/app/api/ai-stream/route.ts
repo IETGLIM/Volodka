@@ -78,7 +78,10 @@ async function generateNarrative(body: Record<string, unknown>): Promise<string>
     ],
   });
 
-  return completion.choices[0]?.message?.content || '{"narrativeText":"Мир тихо отзывается.","dynamicChoices":[],"atmosphereHint":"ожидание"}';
+  return (
+    completion.choices?.[0]?.message?.content ||
+    '{"narrativeText":"Мир тихо отзывается.","dynamicChoices":[],"atmosphereHint":"ожидание"}'
+  );
 }
 
 // ============================================
@@ -115,7 +118,10 @@ async function generateDialogue(body: Record<string, unknown>): Promise<string> 
     ],
   });
 
-  return completion.choices[0]?.message?.content || `{"npcResponse":"${npcName} смотрит на тебя.","playerChoices":[{"text":"Продолжить","mood":"нейтрально"}],"relationshipHint":"без изменений"}`;
+  return (
+    completion.choices?.[0]?.message?.content ||
+    `{"npcResponse":"${npcName} смотрит на тебя.","playerChoices":[{"text":"Продолжить","mood":"нейтрально"}],"relationshipHint":"без изменений"}`
+  );
 }
 
 // ============================================

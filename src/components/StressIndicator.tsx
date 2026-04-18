@@ -135,18 +135,18 @@ export const KernelPanicOverlay = memo(function KernelPanicOverlay({
   isActive: boolean;
   onCalmDown: () => void;
 }) {
-  const [glitchText, setGlitchText] = useState('KERNEL PANIC');
+  const [glitchText, setGlitchText] = useState('ПАНИКА ЯДРА');
 
   useEffect(() => {
     if (!isActive) return;
 
     const messages = [
-      'KERNEL PANIC',
+      'ПАНИКА ЯДРА',
       'ПАМЯТЬ ПЕРЕПОЛНЕНА',
       'СИСТЕМА НЕСТАБИЛЬНА',
       'ТРЕБУЕТСЯ ПЕРЕЗАГРУЗКА',
       'ОШИБКА: ЭМОЦИОНАЛЬНЫЙ СБОЙ',
-      'MEMORY LEAK DETECTED'
+      'УТЕЧКА ПАМЯТИ',
     ];
 
     const interval = setInterval(() => {

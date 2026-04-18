@@ -48,7 +48,7 @@ export const AsciiCyberBackdrop = memo(function AsciiCyberBackdrop({
   const reduceMotion = useReducedMotion();
   const staticMode = Boolean(visualLite || reduceMotion);
 
-  const sceneMeta = useMemo(() => sceneManager.getSceneConfig(sceneId), [sceneId]);
+  const sceneMeta = useMemo(() => sceneManager.getSceneVisualConfig(sceneId), [sceneId]);
   const npcsHere = useMemo(
     () => Object.values(NPC_DEFINITIONS).filter((n) => n.sceneId === sceneId),
     [sceneId],

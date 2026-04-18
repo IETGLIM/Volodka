@@ -375,15 +375,20 @@ class SceneManagerClass {
     return this.previousSceneId;
   }
 
-  /** Get visual config for a scene */
-  getSceneConfig(sceneId?: SceneId): SceneVisualConfig {
+  /** Визуал/атмосфера сцены (фото, CSS-фон). Не путать с `getSceneConfig` из `@/config/scenes` (layout 3D). */
+  getSceneVisualConfig(sceneId?: SceneId): SceneVisualConfig {
     const id = sceneId || this.currentSceneId;
     return SCENE_VISUALS[id] || SCENE_VISUALS.kitchen_night;
   }
 
+  /** @deprecated Используйте {@link SceneManagerClass.getSceneVisualConfig} — имя пересекалось с конфигом 3D-сцен. */
+  getSceneConfig(sceneId?: SceneId): SceneVisualConfig {
+    return this.getSceneVisualConfig(sceneId);
+  }
+
   /** Get the current scene config */
   getCurrentSceneConfig(): SceneVisualConfig {
-    return this.getSceneConfig(this.currentSceneId);
+    return this.getSceneVisualConfig(this.currentSceneId);
   }
 
   /** Transition to a new scene */

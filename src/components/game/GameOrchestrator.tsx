@@ -622,7 +622,8 @@ export default function GameOrchestrator() {
           <SceneTransition isActive={explorationSceneGlitch} type="glitch" duration={0.55} />
           {explorationSceneGlitch && (
             <div className="pointer-events-none fixed inset-0 z-[51] flex justify-center pt-5 font-mono text-[10px] uppercase tracking-[0.35em] text-cyan-400/75 mix-blend-screen">
-              link // {exploration.currentSceneId.replace(/_/g, '.')}
+              поток.sync //{' '}
+              {SCENE_VISUALS[exploration.currentSceneId]?.name ?? exploration.currentSceneId}
             </div>
           )}
         </>

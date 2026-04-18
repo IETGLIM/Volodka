@@ -171,7 +171,7 @@ function CyberStressBar({
       </div>
       <span className={`font-mono text-xs ${panicMode ? 'text-red-400 font-bold' : 'text-slate-500'}`}>
         {panicMode ? (
-          <span className="glitch-mild">KERNEL PANIC!</span>
+          <span className="glitch-mild">ПАНИКА ЯДРА!</span>
         ) : (
           `${stress}%`
         )}

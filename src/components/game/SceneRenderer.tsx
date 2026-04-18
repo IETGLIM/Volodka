@@ -108,7 +108,7 @@ function CreativityParticles({ intensity }: { intensity: number }) {
 // ============================================
 
 export default function SceneRenderer({ sceneId, playerState }: SceneRendererProps) {
-  const sceneConfig = useMemo(() => sceneManager.getSceneConfig(sceneId), [sceneId]);
+  const sceneConfig = useMemo(() => sceneManager.getSceneVisualConfig(sceneId), [sceneId]);
   const visualLite = useMobileVisualPerf();
   const reduceMotion = useReducedMotion();
 

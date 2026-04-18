@@ -39,6 +39,8 @@
 
 ### Changed
 
+- **Кросс-функциональная полировка (геймдизайн UI + архитектура)**: визуал оверлеев исследования (**`TutorialOverlay`**, **`MoralCompassHUD`**, **`RadialMenu`**, **`MiniMap`**) выровнен под **`game-fm-layer`**, **`intro-recall-frame`** и градиентные акценты как в меню/интро; подпись glitch-перехода смены 3D-сцены — русский термин + **`SCENE_VISUALS`**.name; **`SceneManager`** — публичное имя **`getSceneVisualConfig`** для атмосферы (старый **`getSceneConfig`** экземпляра — deprecated alias, чтобы не путать с **`getSceneConfig`** из **`@/config/scenes`**).
+
 - **Локомоция под локацию (3D)**: в **`SceneConfig`** поле **`explorationLocomotionScale`**, **`getExplorationLocomotionScale(sceneId)`**; **`PhysicsPlayer`** умножает ходьбу/бег/прыжок; **`usePlayerFootsteps`** нормирует интервал шагов от фактической скорости ходьбы; **`NPC`** / **`NPCSystem`** — скорость патруля по waypoints и в **`patrolRadius`**; проводка из **`RPGGameCanvas`** и **`PhysicsRPGCanvas`**; тесты в **`scenes.explorationScale.test.ts`**.
 
 - **`NPC.tsx`**: дистанционный **LOD** для NPC с **`modelPath`**: дальше **~17 m** — капсула-импостор вместо GLB (гистерезис с **~12 m**); при диалоге всегда полная модель; убран **`useGLTF.clear`** при размонтировании загрузчика, чтобы не сбрасывать общий кэш при LOD у соседних NPC; **mid-shadow LOD** — при полном GLB дальше **~4.5–6.5 m** (зона гистерезиса) у мешей **`castShadow=false`**, ближе и в диалоге — как раньше.
@@ -62,6 +64,9 @@
 ### Removed
 
 ### Fixed
+
+- **`gameStore.saveGame`**: после успешной записи в **`localStorage`** эмитируется **`game:saved`** с **`timestamp`** и **`source`** из **`SaveGameOptions`** (по умолчанию **`manual`**), чтобы **`GameOrchestrator`** и **`useAutoSave`** снова получали тосты и различие авто/ручного сохранения.
+- **`/api/ai-stream`**: разбор ответа SDK через **`completion.choices?.[0]`**, без исключения при отсутствии **`choices`**.
 
 - **Аудит TypeScript / сборки**: **`tsconfig.json`** — в **`exclude`** добавлены **`_volodka_upstream_check`** и **`.next`**; ленивый клиент **`z-ai-web-dev-sdk`** в **`ai-dialogue`** / **`ai-narrative`** типизирован через **`create()`** и минимальный интерфейс **`chat.completions`**, без **`ReturnType<typeof default>`** (несовместим с экспортом класса); **`SceneAudio`** / **`PositionalAudioComponent`** — вызов **`setVolume`** через **`unknown`** (типы **`PositionalAudio`** vs **`Audio<GainNode>`**); **`LootNotification`** — ref таймера как **`number | null`** под **`window.setTimeout`**; **`MemoryDebug`** — **`ref`** и анимация линии для **`Line`** из **drei** на **`Line2`** + **`LineMaterial`**; **`StoryEffect`** (**`types.ts`**, **`shared/types/game.ts`**) — прямые дельты навыков (**`logic`**, **`coding`**, **`empathy`** и др.); **`storyNodesExpansion`** — эффект NPC через **`npcId`/`npcChange`**, **`createSkillCheckChoice`** с **`keyof PlayerSkills`**; **`useCoreLoopPhase`** — подписка по **`Object.entries`** и **`satisfies Partial<Record<keyof EventMap, …>>`**; мок **`processChoiceCycle`** в **`useStoryChoiceHandler.test.tsx`** возвращает объект цикла; разбор ответа narrative после **`unknown`** completion.
 - **`getExplorationCharacterModelScale` / `getExplorationLocomotionScale`**: для **`sceneId`**, которого нет в **`SCENE_CONFIG`**, возвращается **1**, а не множители из запасного **`kitchen_night`** (совпадает с контрактом тестов и ожидаемым поведением при опечатке id).

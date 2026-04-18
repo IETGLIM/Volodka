@@ -37,6 +37,15 @@ const ZOOM_MIN = 0.65;
 const ZOOM_MAX = 1.85;
 const ZOOM_STEP = 0.15;
 
+const INTERACTIVE_OBJECT_LABEL: Record<string, string> = {
+  book: 'Книга',
+  chair: 'Стул',
+  notebook: 'Блокнот',
+  crate: 'Ящик',
+  lamp: 'Свет',
+  generic: 'Объект',
+};
+
 const COLORS = {
   bg: 'rgba(10, 4, 22, 0.92)',
   border: 'rgba(168, 85, 247, 0.35)',
@@ -124,7 +133,9 @@ export const MiniMap = memo(function MiniMap({
           className="flex items-center justify-between gap-2 px-2 py-1"
           style={{ background: COLORS.headerBg, borderBottom: `1px solid ${COLORS.border}` }}
         >
-          <span className="text-xs font-mono tracking-wider text-cyan-300">{sceneName}</span>
+          <span className="bg-gradient-to-r from-cyan-200 via-cyan-300 to-emerald-400/90 bg-clip-text text-xs font-mono tracking-wider text-transparent">
+            {sceneName}
+          </span>
           <div className="flex items-center gap-0.5">
             <button
               type="button"
@@ -178,7 +189,7 @@ export const MiniMap = memo(function MiniMap({
                   backgroundColor: obj.type === 'poem' ? COLORS.poem : COLORS.object,
                   boxShadow: `0 0 5px ${obj.type === 'poem' ? COLORS.poemGlow : COLORS.objectGlow}`,
                 }}
-                title={obj.id}
+                title={`${INTERACTIVE_OBJECT_LABEL[obj.type] ?? 'Объект'} (${obj.id})`}
               />
             ))}
 

@@ -30,7 +30,9 @@ export class PanelErrorBoundary extends Component<
     if (this.state.error) {
       return (
         <div className="mx-auto my-4 max-w-lg rounded border border-red-500/40 bg-red-950/60 p-4 font-mono text-sm text-red-100 shadow-[0_0_24px_rgba(239,68,68,0.12)]">
-          <p className="mb-1 text-[10px] uppercase tracking-widest text-red-400/80">{'// module_load_fail'}</p>
+          <p className="mb-1 text-[10px] uppercase tracking-widest text-red-400/80">
+            {'// сбой_загрузки_модуля'}
+          </p>
           <p className="mb-3 text-red-100/90">Панель «{this.props.panelLabel}» не загрузилась.</p>
           <div className="flex flex-wrap gap-2">
             <button
@@ -62,7 +64,7 @@ export function KernelPanicOverlay({ isActive, onCalmDown }: { isActive: boolean
     <div className="fixed inset-0 z-[60] kernel-panic-overlay flex items-center justify-center">
       <div className="text-center p-8">
         <h2 className="text-4xl font-bold text-red-500 kernel-panic-text mb-4">
-          ⚠️ KERNEL PANIC ⚠️
+          ⚠️ ПАНИКА ЯДРА ⚠️
         </h2>
         <p className="text-red-300/80 text-lg mb-8 kernel-panic-text">
           Критический уровень стресса. Система нестабильна.

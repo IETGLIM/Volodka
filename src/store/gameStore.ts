@@ -1189,10 +1189,10 @@ export const useGameStore = create<GameState>()((set, get) => ({
   },
   
   // Save
-  saveGame: () => {
+  saveGame: (options?: SaveGameOptions) => {
     const storage = getLocalStorage();
     if (!storage) return;
-    
+
     const state = get();
     storage.setItem(SAVE_KEY, JSON.stringify({
       version: 4,
@@ -1218,6 +1218,10 @@ export const useGameStore = create<GameState>()((set, get) => ({
       choiceLog: state.choiceLog,
       savedAt: Date.now()
     }));
+    eventBus.emit('game:saved', {
+      timestamp: Date.now(),
+      source: options?.source ?? 'manual',
+    });
   },
   
   loadGame: () => {
