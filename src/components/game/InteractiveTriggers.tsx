@@ -4,10 +4,10 @@ import type { InteractiveObjectConfig } from '@/config/scenes';
 
 const INTERACT_RANGE = 2.6;
 
-export function getNearestInteractiveObject(
+export function getNearestInteractiveObjectWithDistance(
   player: { x: number; z: number },
   objects: InteractiveObjectConfig[],
-): InteractiveObjectConfig | null {
+): { object: InteractiveObjectConfig; distance: number } | null {
   let best: InteractiveObjectConfig | null = null;
   let bestD = INTERACT_RANGE;
   for (const o of objects) {
@@ -19,7 +19,14 @@ export function getNearestInteractiveObject(
       best = o;
     }
   }
-  return best;
+  return best ? { object: best, distance: bestD } : null;
+}
+
+export function getNearestInteractiveObject(
+  player: { x: number; z: number },
+  objects: InteractiveObjectConfig[],
+): InteractiveObjectConfig | null {
+  return getNearestInteractiveObjectWithDistance(player, objects)?.object ?? null;
 }
 
 export { INTERACT_RANGE };

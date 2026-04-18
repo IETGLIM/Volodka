@@ -17,6 +17,7 @@
 
 ### Changed
 
+- **Обход 3D — одна клавиша взаимодействия (E)**: **`src/lib/explorationPrimaryInteraction.ts`** — после триггеров с **`requiresInteraction`** выбор между **интерактивным объектом** и **NPC** по дистанции XZ (при почти равной — приоритет NPC); **`RPGGameCanvas`** использует резолвер; **`InteractiveTriggers`** — **`getNearestInteractiveObjectWithDistance`**. Тесты **`src/lib/explorationPrimaryInteraction.test.ts`**.
 - **`threeClientPrep`**: убрана подмена **`THREE.Clock`** (namespace ES-модуля нельзя перезаписать; при необходимости — обновление **`@react-three/fiber`**). Сохранена установка общего **`AudioContext`** для three.
 - **Камера**: формулы сглаживания вынесены в **`src/lib/followCameraDamp.ts`**; **`FollowCamera`** импортирует их; тесты **`src/lib/followCameraDamp.test.ts`**.
 

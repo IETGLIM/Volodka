@@ -39,7 +39,7 @@ import { NPCSystem } from './NPC';
 import { SceneColliderSelector } from './SceneColliders';
 import { PhysicsSceneColliders } from './PhysicsSceneColliders';
 import { getDefaultPlayerModelPath } from '@/config/modelUrls';
-import { TriggerSystem, isPlayerInTriggerZone } from './InteractiveTrigger';
+import { TriggerSystem } from './InteractiveTrigger';
 import CameraEffects from '../CameraEffects';
 
 // Store
@@ -55,7 +55,7 @@ import { PanelDistrictBuildings } from '@/components/game/exploration/PanelDistr
 import { ExplorationFrameStats, useExplorationFrameStatsEnabled } from '@/components/game/exploration/ExplorationFrameStats';
 import { ExplorationMobileHud } from './ExplorationMobileHud';
 import { RadialMenu, type RadialMenuAction } from './RadialMenu';
-import { getNearestInteractiveObject } from './InteractiveTriggers';
+import { resolveExplorationPrimaryInteraction } from '@/lib/explorationPrimaryInteraction';
 import type { PlayerControls } from '@/hooks/useGamePhysics';
 import { createFloorNavPathfinder } from '@/lib/explorationNavMesh';
 import { BattleClickLayer } from './BattleClickLayer';
@@ -281,7 +281,7 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
     }
   }, [sceneTriggers, onTriggerEnter]);
 
-  // Handle player interaction (E key) — сначала триггер с requiresInteraction в зоне, иначе ближайший NPC
+  // Handle player interaction (E / тач) — единый резолвер: триггер → объект vs NPC по дистанции
   const handlePlayerInteraction = useCallback(() => {
     if (isDialogueActive) return;
 
@@ -291,12 +291,18 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
     }
 
     const currentPos = playerPositionRef.current;
+    const target = resolveExplorationPrimaryInteraction({
+      playerPosition: currentPos,
+      sceneTriggers,
+      triggerStates,
+      sceneInteractiveObjects,
+      sceneNPCs,
+      npcStates,
+    });
 
-    for (const trigger of sceneTriggers) {
-      const st = triggerStates[trigger.id] || { id: trigger.id, triggered: false };
-      if (st.triggered) continue;
-      if (!trigger.requiresInteraction) continue;
-      if (!isPlayerInTriggerZone(currentPos, trigger)) continue;
+    if (target.kind === 'trigger') {
+      const trigger = sceneTriggers.find((t) => t.id === target.triggerId);
+      if (!trigger) return;
       handleTriggerEnter(trigger.id);
       if (trigger.oneTime) {
         handleTriggerStateChange(trigger.id, {
@@ -308,33 +314,14 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
       return;
     }
 
-    const nearObj = getNearestInteractiveObject(
-      { x: currentPos.x, z: currentPos.z },
-      sceneInteractiveObjects,
-    );
-    if (nearObj) {
-      setRadialObject(nearObj);
+    if (target.kind === 'world_object') {
+      setRadialObject(target.object);
       return;
     }
 
-    // Find nearest NPC
-    let nearestNPC: NPCDefinition | null = null;
-    let nearestDistance = Infinity;
-    
-    for (const npc of sceneNPCs) {
-      const state = npcStates[npc.id];
-      const npcPos = state?.position || npc.defaultPosition;
-      const dx = currentPos.x - npcPos.x;
-      const dz = currentPos.z - npcPos.z;
-      const distance = Math.sqrt(dx * dx + dz * dz);
-      
-      if (distance < 3 && distance < nearestDistance) {
-        nearestDistance = distance;
-        nearestNPC = npc;
-      }
-    }
-    
-    if (nearestNPC) {
+    if (target.kind === 'npc') {
+      const nearestNPC = sceneNPCs.find((n) => n.id === target.npcId);
+      if (!nearestNPC) return;
       const entry = getCurrentScheduleEntry(nearestNPC.id, timeOfDay);
       if (entry && !entry.dialogueAvailable) {
         eventBus.emit('ui:exploration_message', { text: 'Персонаж сейчас недоступен' });
