@@ -9,7 +9,7 @@ export const HomeEveningVisual = memo(function HomeEveningVisual() {
   const h = 2.9;
   const t = 0.1;
   return (
-    <group name="HomeEveningVisual">
+    <group name="HomeEveningVisual" userData={{ noCameraCollision: true }}>
       <mesh position={[w / 2 - t / 2, h / 2, 0]} castShadow receiveShadow>
         <boxGeometry args={[t, h, d - 0.15]} />
         <meshStandardMaterial color="#c9b8a8" roughness={0.9} />

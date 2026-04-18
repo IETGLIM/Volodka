@@ -182,6 +182,36 @@ const FallbackPlayerModel = memo(function FallbackPlayerModel({
 // GLB PLAYER MODEL
 // ============================================
 
+/** Если экспорт GLB даёт гигантский `setFromObject` (лишние ноды), высота для масштаба берётся по SkinnedMesh или fallback. */
+const PLAYER_VISUAL_HEIGHT_FALLBACK_M = 1.72;
+
+function getRootCharacterVisualHeightMeters(root: THREE.Object3D, scratch: THREE.Vector3): number {
+  root.updateMatrixWorld(true);
+  const box = new THREE.Box3();
+  let foundSkinned = false;
+  root.traverse((obj) => {
+    if (obj instanceof THREE.SkinnedMesh && obj.geometry) {
+      foundSkinned = true;
+      if (!obj.geometry.boundingBox) {
+        obj.geometry.computeBoundingBox();
+      }
+      const local = obj.geometry.boundingBox;
+      if (!local || local.isEmpty()) return;
+      const tmp = local.clone();
+      tmp.applyMatrix4(obj.matrixWorld);
+      box.union(tmp);
+    }
+  });
+  if (!foundSkinned || box.isEmpty()) {
+    box.setFromObject(root);
+  }
+  const h = box.getSize(scratch).y;
+  if (!Number.isFinite(h) || h < 0.25 || h > 8) {
+    return PLAYER_VISUAL_HEIGHT_FALLBACK_M;
+  }
+  return h;
+}
+
 const GLBPlayerModel = memo(function GLBPlayerModel({
   modelPath,
   isMoving,
@@ -226,9 +256,7 @@ const GLBPlayerModel = memo(function GLBPlayerModel({
 
   const visualUniform = useMemo(() => {
     if (!loadedScene) return 0.12 * rs;
-    loadedScene.updateMatrixWorld(true);
-    const b = new THREE.Box3().setFromObject(loadedScene);
-    const h = b.getSize(bboxSizeScratchRef.current).y;
+    const h = getRootCharacterVisualHeightMeters(loadedScene, bboxSizeScratchRef.current);
     if (h < 1e-4) return 0.12 * rs;
     return (PLAYER_GLB_TARGET_VISUAL_METERS / h) * rs;
   }, [loadedScene, rs]);
@@ -582,6 +610,7 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
       type="kinematicPosition"
       colliders={false}
       enabledRotations={[false, false, false]}
+      userData={{ isPlayer: true }}
     >
       <CapsuleCollider args={[capsule.halfH, capsule.r]} position={[0, capsule.capCenterY, 0]} />
 
@@ -589,7 +618,7 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
         Визуал отдельно от коллайдера: один активный меш (GLB или fallback), без наслоения процедурки на модель.
         Пустой fallback при загрузке — чтобы не рисовать две фигуры в одном месте.
       */}
-      <group ref={modelRef} name="PlayerVisualRoot">
+      <group ref={modelRef} name="PlayerVisualRoot" userData={{ isPlayer: true }}>
         <Suspense fallback={<group name="PlayerModelLoading" />}>
           {!modelError ? (
             <GLBPlayerModel

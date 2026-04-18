@@ -1055,14 +1055,23 @@ export const NPC = memo(function NPC({
 
   if (enableNpcPhysics) {
     return (
-      <RigidBody ref={rigidBodyRef} type="kinematicPosition" colliders={false}>
+      <RigidBody
+        ref={rigidBodyRef}
+        type="kinematicPosition"
+        colliders={false}
+        userData={{ isNPC: true }}
+      >
         {body}
       </RigidBody>
     );
   }
 
   return (
-    <group ref={groupRef} position={[state.position.x, state.position.y, state.position.z]}>
+    <group
+      ref={groupRef}
+      position={[state.position.x, state.position.y, state.position.z]}
+      userData={{ isNPC: true }}
+    >
       {body}
     </group>
   );

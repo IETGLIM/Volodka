@@ -11,7 +11,7 @@ export const VolodkaCorridorVisual = memo(function VolodkaCorridorVisual() {
   const h = 2.85;
   const t = 0.09;
   return (
-    <group name="VolodkaCorridorVisual">
+    <group name="VolodkaCorridorVisual" userData={{ noCameraCollision: true }}>
       <mesh position={[w / 2 - t / 2, h / 2, 0]} castShadow receiveShadow>
         <boxGeometry args={[t, h, d - 0.25]} />
         <meshStandardMaterial color="#d4c4b0" roughness={0.86} />

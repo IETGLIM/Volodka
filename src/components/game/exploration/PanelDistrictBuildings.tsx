@@ -59,7 +59,7 @@ const PanelFacadesInstanced = memo(function PanelFacadesInstanced() {
 /** Коллайдеры по одному + один instanced mesh на все фасады (меньше draw calls). */
 export const PanelDistrictBuildings = memo(function PanelDistrictBuildings() {
   return (
-    <group>
+    <group userData={{ noCameraCollision: true }}>
       {PANEL_BUILDING_SPECS.map((b, i) => (
         <RigidBody key={`panel-rb-${i}`} type="fixed" colliders={false} position={[b.pos[0], b.pos[1], b.pos[2]]}>
           <CuboidCollider args={[b.size[0] / 2, b.size[1] / 2, b.size[2] / 2]} name={footstepColliderName('metal')} />

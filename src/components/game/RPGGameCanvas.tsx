@@ -87,7 +87,7 @@ const GROUND_VOLODKA_CORRIDOR: RpgGroundGeometryArgs = [3.5, 0.1, 12];
 const GROUND_PLAZA: RpgGroundGeometryArgs = [48, 0.1, 48];
 const GROUND_OPEN: RpgGroundGeometryArgs = [40, 0.1, 40];
 
-/** Тик игрового времени суток внутри `<Canvas>` (useFrame допустим только здесь). */
+/** Тик суток в обходе: глобальный `advanceTime` из стора (остальной `useFrame` — в дочерних компонентах). */
 const ExplorationWorldClock = memo(function ExplorationWorldClock() {
   const advanceTime = useGameStore((s) => s.advanceTime);
   useFrame((_, delta) => {
@@ -113,11 +113,12 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
   const visualLite = useMobileVisualPerf();
   const showExplorationStats = useExplorationFrameStatsEnabled();
   const virtualControlsRef = useRef<Partial<PlayerControls>>({});
-  const [npcStates, setNPCStates] = useState<Record<string, NPCState>>({});
-  const [triggerStates, setTriggerStates] = useState<Record<string, TriggerState>>({});
   const [radialObject, setRadialObject] = useState<InteractiveObjectConfig | null>(null);
-  
-  // Получаем ВСЁ состояние напрямую из store (единый источник истины)
+
+  const npcStates = useGameStore((s) => s.exploration.npcStates);
+  const triggerStates = useGameStore((s) => s.exploration.triggerStates);
+  const setTriggerState = useGameStore((s) => s.setTriggerState);
+
   const playerState = useGameStore((state) => state.playerState);
   const shadowMap = narrow || visualLite ? 256 : 512;
   const playerPosition = useGameStore((state) => state.exploration.playerPosition);
@@ -238,16 +239,17 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
   // Handle NPC state changes
   const handleNPCStateChange = useCallback(
     (npcId: string, state: NPCState) => {
-      setNPCStates((prev) => ({ ...prev, [npcId]: state }));
       setNPCState(npcId, state);
     },
     [setNPCState],
   );
 
-  // Handle trigger state changes
-  const handleTriggerStateChange = useCallback((triggerId: string, state: TriggerState) => {
-    setTriggerStates(prev => ({ ...prev, [triggerId]: state }));
-  }, []);
+  const handleTriggerStateChange = useCallback(
+    (triggerId: string, state: TriggerState) => {
+      setTriggerState(triggerId, state);
+    },
+    [setTriggerState],
+  );
 
   // Handle trigger enter
   const handleTriggerEnter = useCallback((triggerId: string) => {
@@ -339,6 +341,7 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
       tabIndex={0}
       role="application"
       aria-label="Исследование локации"
+      dpr={[1, 2]}
       shadows={{ type: THREE.PCFShadowMap }}
       camera={{ fov: 60, near: 0.1, far: 1000, position: [0, 5, 8] }}
       style={{ 
@@ -355,7 +358,11 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
         (e.target as HTMLCanvasElement | null)?.focus?.();
       }}
     >
-      {/* Physics: Suspense — WASM Rapier; коллайдер пола в `PhysicsSceneColliders`. */}
+      {/*
+        Порядок внутри Suspense: Rapier (пол/стены) → визуалы интерьера (userData.noCameraCollision для raycast камеры)
+        → SceneColliderSelector (невидимые меши слоя камеры) → игрок/NPC → триггеры → FollowCamera → эффекты.
+        PostFX вне Physics, но в Canvas — отдельный render pass.
+      */}
       <Suspense fallback={null}>
       <Physics gravity={[0, -9.81, 0]} debug={false}>
         <ExplorationWorldClock />
