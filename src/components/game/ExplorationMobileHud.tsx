@@ -1,17 +1,70 @@
 'use client';
 
-import { memo, useCallback, useEffect, useRef } from 'react';
+import { memo, useCallback, useEffect, useRef, type ReactNode } from 'react';
 import type { MutableRefObject } from 'react';
 import type { PlayerControls } from '@/hooks/useGamePhysics';
+
 interface ExplorationMobileHudProps {
   active: boolean;
   virtualControlsRef: MutableRefObject<Partial<PlayerControls>>;
   onInteract: () => void;
 }
 
+type HoldKey = 'forward' | 'backward' | 'left' | 'right' | 'jump';
+
+const VirtualPadHoldButton = memo(function VirtualPadHoldButton({
+  holdKey,
+  className,
+  children,
+  ariaLabel,
+  setKey,
+}: {
+  holdKey: HoldKey;
+  className: string;
+  children: ReactNode;
+  ariaLabel: string;
+  setKey: (k: keyof PlayerControls, v: boolean) => void;
+}) {
+  const release = useCallback(() => setKey(holdKey, false), [holdKey, setKey]);
+
+  return (
+    <button
+      type="button"
+      className={className}
+      aria-label={ariaLabel}
+      onPointerDown={(e) => {
+        e.preventDefault();
+        try {
+          e.currentTarget.setPointerCapture(e.pointerId);
+        } catch {
+          /* старые WebView */
+        }
+        setKey(holdKey, true);
+      }}
+      onPointerUp={(e) => {
+        try {
+          if (e.currentTarget.hasPointerCapture(e.pointerId)) {
+            e.currentTarget.releasePointerCapture(e.pointerId);
+          }
+        } catch {
+          /* noop */
+        }
+        release();
+      }}
+      onPointerCancel={release}
+      onPointerLeave={(e) => {
+        if (e.buttons === 0) release();
+      }}
+      onLostPointerCapture={release}
+    >
+      {children}
+    </button>
+  );
+});
+
 /**
  * Тач-оверлей для режима 3D-обхода: стрелки + прыжок + действие (E).
- * Клавиатура по-прежнему работает; на узких экранах дублирует WASD.
+ * Клавиатура по-прежнему работает; `setPointerCapture` — чтобы палец не «рвал» удержание при микросдвигах.
  */
 export const ExplorationMobileHud = memo(function ExplorationMobileHud({
   active,
@@ -63,82 +116,42 @@ export const ExplorationMobileHud = memo(function ExplorationMobileHud({
       <div className="pointer-events-auto mx-auto flex max-w-lg items-end justify-between gap-2 px-2 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-2">
         <div className="grid grid-cols-3 gap-1.5" role="group" aria-label="Движение">
           <span className="col-start-2">
-            <button
-              type="button"
-              className={padBtn}
-              aria-label="Вперёд"
-              onPointerDown={(e) => {
-                e.preventDefault();
-                setKey('forward', true);
-              }}
-              onPointerUp={() => setKey('forward', false)}
-              onPointerLeave={() => setKey('forward', false)}
-              onPointerCancel={() => setKey('forward', false)}
-            >
+            <VirtualPadHoldButton holdKey="forward" className={padBtn} ariaLabel="Вперёд" setKey={setKey}>
               ▲
-            </button>
+            </VirtualPadHoldButton>
           </span>
-          <button
-            type="button"
+          <VirtualPadHoldButton
+            holdKey="left"
             className={`${padBtn} col-start-1 row-start-2`}
-            aria-label="Влево"
-            onPointerDown={(e) => {
-              e.preventDefault();
-              setKey('left', true);
-            }}
-            onPointerUp={() => setKey('left', false)}
-            onPointerLeave={() => setKey('left', false)}
-            onPointerCancel={() => setKey('left', false)}
+            ariaLabel="Влево"
+            setKey={setKey}
           >
             ◀
-          </button>
-          <button
-            type="button"
+          </VirtualPadHoldButton>
+          <VirtualPadHoldButton
+            holdKey="right"
             className={`${padBtn} col-start-3 row-start-2`}
-            aria-label="Вправо"
-            onPointerDown={(e) => {
-              e.preventDefault();
-              setKey('right', true);
-            }}
-            onPointerUp={() => setKey('right', false)}
-            onPointerLeave={() => setKey('right', false)}
-            onPointerCancel={() => setKey('right', false)}
+            ariaLabel="Вправо"
+            setKey={setKey}
           >
             ▶
-          </button>
+          </VirtualPadHoldButton>
           <span className="col-start-2 row-start-3">
-            <button
-              type="button"
-              className={padBtn}
-              aria-label="Назад"
-              onPointerDown={(e) => {
-                e.preventDefault();
-                setKey('backward', true);
-              }}
-              onPointerUp={() => setKey('backward', false)}
-              onPointerLeave={() => setKey('backward', false)}
-              onPointerCancel={() => setKey('backward', false)}
-            >
+            <VirtualPadHoldButton holdKey="backward" className={padBtn} ariaLabel="Назад" setKey={setKey}>
               ▼
-            </button>
+            </VirtualPadHoldButton>
           </span>
         </div>
 
         <div className="flex flex-col gap-2">
-          <button
-            type="button"
+          <VirtualPadHoldButton
+            holdKey="jump"
             className={`${padBtn} px-3 text-xs uppercase tracking-wide`}
-            aria-label="Прыжок"
-            onPointerDown={(e) => {
-              e.preventDefault();
-              setKey('jump', true);
-            }}
-            onPointerUp={() => setKey('jump', false)}
-            onPointerLeave={() => setKey('jump', false)}
-            onPointerCancel={() => setKey('jump', false)}
+            ariaLabel="Прыжок"
+            setKey={setKey}
           >
             Jump
-          </button>
+          </VirtualPadHoldButton>
           <button
             type="button"
             className="min-h-12 touch-manipulation select-none rounded border border-amber-500/40 bg-amber-950/50 px-3 font-mono text-xs uppercase tracking-wide text-amber-100/90 active:bg-amber-900/70"
@@ -152,8 +165,8 @@ export const ExplorationMobileHud = memo(function ExplorationMobileHud({
           </button>
         </div>
       </div>
-      <p className="pointer-events-none px-3 pb-1 text-center font-mono text-[9px] text-cyan-600/50">
-        Камера — перетаскивание по экрану (орбита, как мышью)
+      <p className="pointer-events-none px-3 pb-[max(0.25rem,env(safe-area-inset-bottom))] text-center font-mono text-[9px] text-cyan-600/50">
+        Камера — перетаскивание по пустому месту экрана
       </p>
     </div>
   );

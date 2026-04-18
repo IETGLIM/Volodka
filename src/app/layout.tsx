@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import { GameStoreHydration } from './GameStoreHydration';
 import './globals.css';
@@ -31,6 +31,14 @@ export const metadata: Metadata = {
     'Владимир Лебедев',
   ],
   authors: [{ name: 'Владимир Лебедев' }],
+};
+
+/** Мобильные браузеры: вписать в экран с вырезами, без лишнего масштабирования страницы. */
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  viewportFit: 'cover',
+  themeColor: '#030308',
 };
 
 export default function RootLayout({

@@ -49,6 +49,10 @@
 
 ### Changed
 
+- **Мобильная плавность (3D и оболочка)**: **`src/app/layout.tsx`** — экспорт **`viewport`** (`width: device-width`, **`viewportFit: cover`**, **`themeColor`**); **`src/hooks/use-mobile.ts`** — **`useTouchGameControls()`** (тач-панель при ширине &lt;768px или **`(pointer: coarse)`**); **`ExplorationMobileHud`** — **`setPointerCapture`**, **`onLostPointerCapture`** и сброс при **`pointerleave`** без нажатых кнопок, чтобы удержание WASD-направлений не «рвалось»; **`RPGGameCanvas`** — кап **`dpr`** (`visualLite` / `narrow`), **`gl`** без лишнего **`stencil`**, **`antialias`** выключается в lite-режиме, **`powerPreference: default`** на мобиле, **`touchAction: 'none'`** на стиле canvas, на **`narrow || visualLite`** один боковой слой точечных огней вместо трёх; **`CyberGameShell`** — **`WebkitTapHighlightColor: transparent`**; **`GameOrchestrator`** — обёртка 3D с **`touch-none`**; **`TutorialOverlay`** — **`max-md:bottom-44`**, **`touch-manipulation`**, чтобы не перекрывать нижний HUD.
+
+- **Тон сюжета и память (тексты)**: **`storyNodes.ts`** — **`SUBTITLE_TEXT`** («сказка между сменами», «память о Володе»), в **`start`** абзац про «сказку между сменами» и память, в **`go_home`** мост к **комнате в панельке**; **`src/data/poems.ts`** — финальный абзац **`GAME_INTRO`** для близких (темп, не экзамен); **`src/data/familyWelcome.ts`** — согласованная формулировка «интерактивная память / сказка между сменами»; **`TutorialOverlay`** — две строки атмосферы при первом туториале движения в **`volodka_room`**.
+
 - **`src/lib/db.ts`**: лог Prisma **`query`** только в **development**; в **production** — **`error`**, без засорения логов Vercel.
 
 - **`vercel.json`**: для **`/models-external/(.*)`** задан **`Cache-Control: public, max-age=31536000, immutable`** (как для **`/models/`**), чтобы GLB из **`public/models-external`** кешировались на CDN.

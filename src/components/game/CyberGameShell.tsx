@@ -306,6 +306,7 @@ export function CyberGameShell({
         WebkitTransform: 'translateZ(0)',
         backfaceVisibility: 'hidden',
         WebkitBackfaceVisibility: 'hidden',
+        WebkitTapHighlightColor: 'transparent',
       }}
     >
       <div className="pointer-events-none absolute inset-0 z-0">

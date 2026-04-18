@@ -630,7 +630,7 @@ export default function GameOrchestrator() {
       )}
 
       {gameMode === 'exploration' && (
-        <div className="fixed inset-0 z-[12]">
+        <div className="fixed inset-0 z-[12] touch-none">
           <RPGGameCanvas
             sceneId={exploration.currentSceneId}
             visualState={explorationVisualState}

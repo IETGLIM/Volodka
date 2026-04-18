@@ -17,3 +17,21 @@ export function useIsMobile() {
 
   return !!isMobile
 }
+
+/**
+ * Показывать тач-панель в 3D: узкий экран или основной ввод — грубый указатель (планшеты, телефоны).
+ */
+export function useTouchGameControls(): boolean {
+  const narrow = useIsMobile()
+  const [coarsePointer, setCoarsePointer] = React.useState(false)
+
+  React.useEffect(() => {
+    const mql = window.matchMedia("(pointer: coarse)")
+    const sync = () => setCoarsePointer(mql.matches)
+    sync()
+    mql.addEventListener("change", sync)
+    return () => mql.removeEventListener("change", sync)
+  }, [])
+
+  return narrow || coarsePointer
+}

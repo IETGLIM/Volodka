@@ -3,7 +3,7 @@
 /**
  * Связывает Rapier, игрока, NPC, триггеры и камеру для свободного 3D-обхода.
  * Ошибки загрузки GLB обрабатываются в `PhysicsPlayer` / `NPCSystem` — здесь дубли не нужны.
- * Ввод: клавиатура (WASD, E); для тач-устройств позже — виртуальный джойстик / кнопка действия.
+ * Ввод: клавиатура (WASD, E); тач — `ExplorationMobileHud` при узком экране или `(pointer: coarse)`.
  */
 
 import { memo, useRef, useEffect, useMemo, useCallback, useState, Fragment, Suspense } from 'react';
@@ -46,7 +46,7 @@ import CameraEffects from '../CameraEffects';
 import { useGameStore } from '../../store/gameStore';
 import { eventBus } from '@/engine/EventBus';
 import { getCurrentScheduleEntry } from '@/engine/ScheduleEngine';
-import { useIsMobile } from '@/hooks/use-mobile';
+import { useIsMobile, useTouchGameControls } from '@/hooks/use-mobile';
 import { useMobileVisualPerf } from '@/hooks/useMobileVisualPerf';
 import { ExplorationPostFX } from '@/components/game/exploration/ExplorationPostFX';
 import { ExplorationParticles } from '@/components/game/exploration/ExplorationParticles';
@@ -111,6 +111,7 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
 }: RPGGameCanvasProps) {
   const narrow = useIsMobile();
   const visualLite = useMobileVisualPerf();
+  const showTouchHud = useTouchGameControls();
   const showExplorationStats = useExplorationFrameStatsEnabled();
   const virtualControlsRef = useRef<Partial<PlayerControls>>({});
   const [radialObject, setRadialObject] = useState<InteractiveObjectConfig | null>(null);
@@ -121,6 +122,12 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
 
   const playerState = useGameStore((state) => state.playerState);
   const shadowMap = narrow || visualLite ? 256 : 512;
+  const simplifyLights = narrow || visualLite;
+  const canvasDpr = useMemo((): [number, number] => {
+    if (visualLite) return [1, 1.25];
+    if (narrow) return [1, 1.5];
+    return [1, 2];
+  }, [visualLite, narrow]);
   const playerPosition = useGameStore((state) => state.exploration.playerPosition);
   const setPlayerPosition = useGameStore((state) => state.setPlayerPosition);
   /** Позиция для камеры каждый кадр без коммита Zustand ~60 Гц (см. `FollowCamera` + throttle store). */
@@ -341,7 +348,7 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
       tabIndex={0}
       role="application"
       aria-label="Исследование локации"
-      dpr={[1, 2]}
+      dpr={canvasDpr}
       shadows={{ type: THREE.PCFShadowMap }}
       camera={{ fov: 60, near: 0.1, far: 1000, position: [0, 5, 8] }}
       style={{ 
@@ -352,8 +359,14 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
         top: 0,
         left: 0,
         outline: 'none',
+        touchAction: 'none',
       }}
-      gl={{ antialias: true, alpha: false, powerPreference: 'high-performance' }}
+      gl={{
+        antialias: !visualLite,
+        alpha: false,
+        stencil: false,
+        powerPreference: visualLite || narrow ? 'default' : 'high-performance',
+      }}
       onPointerDown={(e) => {
         (e.target as HTMLCanvasElement | null)?.focus?.();
       }}
@@ -404,9 +417,13 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
           shadow-camera-top={10}
           shadow-camera-bottom={-10}
         />
-        <pointLight position={[0, 4, 3]} intensity={1.2} color={sceneConfig.light} distance={20} />
-        <pointLight position={[-3, 2, 0]} intensity={0.6} color={sceneConfig.light} distance={15} />
-        <pointLight position={[3, 2, 0]} intensity={0.6} color={sceneConfig.light} distance={15} />
+        <pointLight position={[0, 4, 3]} intensity={simplifyLights ? 1.05 : 1.2} color={sceneConfig.light} distance={20} />
+        {!simplifyLights && (
+          <>
+            <pointLight position={[-3, 2, 0]} intensity={0.6} color={sceneConfig.light} distance={15} />
+            <pointLight position={[3, 2, 0]} intensity={0.6} color={sceneConfig.light} distance={15} />
+          </>
+        )}
 
         {/* Scene Colliders */}
         <SceneColliderSelector sceneId={sceneId} />
@@ -487,7 +504,7 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
       </Suspense>
     </Canvas>
     <ExplorationMobileHud
-      active={!isDialogueActive}
+      active={showTouchHud && !isDialogueActive}
       virtualControlsRef={virtualControlsRef}
       onInteract={handlePlayerInteraction}
     />
