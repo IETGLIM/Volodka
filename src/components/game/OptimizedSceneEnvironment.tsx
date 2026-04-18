@@ -138,35 +138,40 @@ const Snowflakes = memo(function Snowflakes({ intensity = 1 }: SnowflakesProps) 
   const meshRef = useRef<THREE.InstancedMesh>(null);
   const tempMatrix = useMemo(() => new THREE.Matrix4(), []);
   const positionsRef = useRef<Float32Array>(null);
+  /** Скорость падения 0.02..0.03 на снежинку; без `Math.random` в `useFrame`. */
+  const fallJitterRef = useRef<Float32Array | null>(null);
 
   useEffect(() => {
     if (!positionsRef.current) {
       positionsRef.current = new Float32Array(count * 3);
+      fallJitterRef.current = new Float32Array(count);
       for (let i = 0; i < count; i++) {
         positionsRef.current[i * 3] = (Math.random() - 0.5) * 25;
         positionsRef.current[i * 3 + 1] = Math.random() * 20;
         positionsRef.current[i * 3 + 2] = (Math.random() - 0.5) * 25;
+        fallJitterRef.current[i] = Math.random();
       }
     }
   }, [count]);
 
   useFrame(({ clock }) => {
-    if (!meshRef.current || !positionsRef.current) return;
+    if (!meshRef.current || !positionsRef.current || !fallJitterRef.current) return;
 
     const time = clock.getElapsedTime();
     const positions = positionsRef.current;
+    const fallJitter = fallJitterRef.current;
 
     for (let i = 0; i < count; i++) {
       // Обновляем позицию
       positions[i * 3] += Math.sin(time * 0.5 + i) * 0.01;
-      positions[i * 3 + 1] -= 0.02 + Math.random() * 0.01;
+      positions[i * 3 + 1] -= 0.02 + fallJitter[i] * 0.01;
       positions[i * 3 + 2] += Math.cos(time * 0.3 + i) * 0.01;
 
       // Сбрасываем если упало ниже пола
       if (positions[i * 3 + 1] < -1) {
         positions[i * 3 + 1] = 20;
-        positions[i * 3] = (Math.random() - 0.5) * 25;
-        positions[i * 3 + 2] = (Math.random() - 0.5) * 25;
+        positions[i * 3] = Math.sin(time * 1.7 + i * 9.17) * 12.5;
+        positions[i * 3 + 2] = Math.cos(time * 1.3 + i * 6.91) * 12.5;
       }
 
       tempMatrix.setPosition(positions[i * 3], positions[i * 3 + 1], positions[i * 3 + 2]);

@@ -197,6 +197,7 @@ const GLBPlayerModel = memo(function GLBPlayerModel({
   roomScale: number;
 }) {
   const groupRef = useRef<THREE.Group>(null);
+  const bboxSizeScratchRef = useRef(new THREE.Vector3());
   const { scene: loadedScene, animations } = useGLTF(modelPath) as any;
   const { actions } = useAnimations(animations || [], groupRef);
   const [currentAction, setCurrentAction] = useState<string | null>(null);
@@ -227,7 +228,7 @@ const GLBPlayerModel = memo(function GLBPlayerModel({
     if (!loadedScene) return 0.12 * rs;
     loadedScene.updateMatrixWorld(true);
     const b = new THREE.Box3().setFromObject(loadedScene);
-    const h = b.getSize(new THREE.Vector3()).y;
+    const h = b.getSize(bboxSizeScratchRef.current).y;
     if (h < 1e-4) return 0.12 * rs;
     return (PLAYER_GLB_TARGET_VISUAL_METERS / h) * rs;
   }, [loadedScene, rs]);

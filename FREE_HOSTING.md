@@ -77,6 +77,31 @@ git push
 4. Готово! Сайт будет жить по адресу:
    `https://volodka.vercel.app`
 
+### Ошибка деплоя: «This repository exceeded its LFS budget»
+
+Vercel при клонировании подтягивает **Git LFS**. У GitHub у бесплатного/дешёвого плана ограничены **хранилище и месячный трафик** LFS; тяжёлые `*.glb` в `public/models-external/` быстро расходуют квоту, после чего любой `git lfs pull` / клон с smudge падает.
+
+**Вариант A — увеличить квоту (самый простой):** [GitHub → Settings → Billing](https://github.com/settings/billing) → **Git LFS Data** / пакеты данных.
+
+**Вариант B — убрать LFS из истории (без ежемесячного LFS-трафика на клон):** один раз переписать коммиты так, чтобы `*.glb` / `*.fbx` / `*.zip` хранились как обычные Git-blob’ы, а не как LFS-указатели. Делайте только с полным бэкапом и после согласования с теми, у кого есть локальные ветки.
+
+```bash
+git lfs install
+# Убедитесь, что все LFS-файлы скачаны локально (в каталоге реальные .glb, не 130-байтные указатели)
+git lfs pull
+
+# Переписать всю историю: вынести перечисленные типы из LFS в обычный Git
+git lfs migrate export --include="*.glb,*.fbx,*.zip" --everything
+
+# Проверить .gitattributes — строки filter=lfs для этих масок должны исчезнуть
+git status
+git push --force-with-lease origin main
+```
+
+После **`migrate export`** размер репозитория на GitHub вырастет (зато Vercel и CI клонируют без LFS). При необходимости вручную поправьте **`.gitattributes`**, если там остались лишние правила LFS.
+
+**Вариант C — не полагаться на LFS в репозитории:** держать архив моделей в **GitHub Releases** или на CDN и скачивать их скриптом на этапе `build` (аналогично фонам в `scripts/download-scene-backgrounds.mjs`).
+
 ---
 
 ## ⚙️ Конфигурация внешних моделей

@@ -1,7 +1,7 @@
 "use client";
 
 import type { MutableRefObject, RefObject } from 'react';
-import { useRef } from 'react';
+import { useMemo, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { useRapier } from '@react-three/rapier';
 import type { RapierRigidBody } from '@react-three/rapier';
@@ -42,6 +42,8 @@ export function usePlayerFootsteps({
   enabled = true,
 }: UsePlayerFootstepsArgs) {
   const { world, rapier, colliderStates } = useRapier();
+  const footRayOrigin = useMemo(() => new rapier.Vector3(0, 0, 0), [rapier]);
+  const footRayDir = useMemo(() => new rapier.Vector3(0, -1, 0), [rapier]);
   const lastMatRef = useRef<FootstepMaterial>('default');
   const stepCooldownRef = useRef(0);
 
@@ -73,9 +75,10 @@ export function usePlayerFootsteps({
     if (stepCooldownRef.current > 0) return;
 
     const tr = rb.translation();
-    const origin = new rapier.Vector3(tr.x, tr.y + 0.06, tr.z);
-    const dir = new rapier.Vector3(0, -1, 0);
-    const ray = new rapier.Ray(origin, dir);
+    footRayOrigin.x = tr.x;
+    footRayOrigin.y = tr.y + 0.06;
+    footRayOrigin.z = tr.z;
+    const ray = new rapier.Ray(footRayOrigin, footRayDir);
 
     const hit = world.castRay(ray, RAY_LEN, true, undefined, undefined, undefined, rb, (c) => {
       const p = c.parent();

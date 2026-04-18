@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Build / repository
+
+- **Vercel: «This repository exceeded its LFS budget»**: клон репозитория тянет объекты **Git LFS** (см. **`.gitattributes`**: `*.glb`, `*.fbx`, `*.zip`); при исчерпании квоты хранилища/трафика GitHub LFS сборка на Vercel падает. Варианты: оплатить **Data packs** в [GitHub → Billing](https://github.com/settings/billing); или один раз вынести бинарники из LFS в обычный Git (**`git lfs migrate export`**, затем **`git push --force-with-lease`**) — см. **`FREE_HOSTING.md`**.
+
 ### Added
 
 - **Масштаб персонажей под локацию (3D)**: в **`SceneConfig`** поле **`explorationCharacterModelScale`**, функция **`getExplorationCharacterModelScale(sceneId)`** в **`config/scenes.ts`**; множитель применяется к визуалу NPC **`(definition.scale ?? 1) * …`** и к модели игрока (**`PhysicsPlayer`** `visualModelScale`); тесты **`scenes.explorationScale.test.ts`**. Значения заданы для улиц (крупнее), комнат/офиса/кафе (компактнее), парка, библиотеки, сна, боя и др.
@@ -41,6 +45,8 @@
 
 - **`FollowCamera`**: переиспользование **`Raycaster`** и векторов в **`checkCameraCollision`**, плюс **`frameTargetRef` / `frameDesiredCamRef`** в **`useFrame`**; то же для **`SimpleFollowCamera`** — меньше краткоживущих объектов при обходе с коллизиями камеры.
 
+- **Перфоманс кадра (частицы и шаги)**: **`ExplorationParticles`** — без **`Math.random`** и **`performance.now`** в **`useFrame`** (предвычисленные **`Float32Array`**, фаза от **`clock.getElapsedTime()`**); **`OptimizedSceneEnvironment` / `Snowflakes`** — джиттер скорости падения вынесен из кадра, respawn позиций без **`Math.random`** в цикле; **`usePlayerFootsteps`** — переиспользуемые **`rapier.Vector3`** для луча вместо аллокаций на шаг; **`PhysicsPlayer` / `GLBPlayerModel`** — один **`Vector3`**-scratch для **`Box3.getSize`**; **`InteractiveTrigger` / `WorldItem`** — покачивание по **`clock`**, не по **`Date.now()`**.
+
 - **Инкрементальный аудит утечек / удержания ресурсов (обзор)**: проверены типичные источники — **`window` / `document` listeners** (в т.ч. **`FollowCamera`**, **`RadialMenu`**, **`GameOrchestrator`**, **`IntroScreen`**, **`useGamePhysics`**) — везде есть снятие в **`useEffect` cleanup**; **`requestAnimationFrame` / `setInterval`** в **`AsciiCyberBackdrop`**, **`RainCanvasLayer`**, **`useAmbientMusic`** (интервал + **`stopAmbient`** при unmount с **`audioContext.close()`**), **`GameOrchestrator`** (street stress tick) — с очисткой; **`eventBus.on`** в хуках и оверлеях — возвращаемый **`unsub`** в cleanup. **`FollowCamera`**: пул **`Raycaster`** и переиспользуемые **`Vector3`** в **`checkCameraCollision`** и в **`useFrame`** (в т.ч. **`SimpleFollowCamera`**) — без аллокаций на кадр при коллизиях / лерпе. Кэш **`useGLTF`** у игрока намеренно не очищается при unmount (обмен на повторную загрузку; см. комментарий в **`PhysicsPlayer`**).
 
 - **Кросс-функциональная полировка (геймдизайн UI + архитектура)**: визуал оверлеев исследования (**`TutorialOverlay`**, **`MoralCompassHUD`**, **`RadialMenu`**, **`MiniMap`**) выровнен под **`game-fm-layer`**, **`intro-recall-frame`** и градиентные акценты как в меню/интро; подпись glitch-перехода смены 3D-сцены — русский термин + **`SCENE_VISUALS`**.name; **`SceneManager`** — публичное имя **`getSceneVisualConfig`** для атмосферы (старый **`getSceneConfig`** экземпляра — deprecated alias, чтобы не путать с **`getSceneConfig`** из **`@/config/scenes`**).
@@ -56,7 +62,7 @@
 
 - **`PhysicsPlayer`**: движение на **Kinematic Character Controller** Rapier с **`kinematicPosition`**, шаги через **`usePlayerFootsteps`**; согласованы коллайдеры сцен с явными **`CuboidCollider`** и префиксом материала для шагов.
 
-- **Масштаб и пол в 3D**: GLB Володьки автоподгоняется по bounding box к **`PLAYER_GLB_TARGET_VISUAL_METERS`** и множителю **`explorationCharacterModelScale`** комнаты; капсула Rapier масштабируется тем же коэффициентом; убран дублирующий cuboid пола из **`RPGGameCanvas`** (только **`PhysicsSceneColliders`**), утолщён **`PhysicsFloor`**; спавн ног **`PLAYER_FEET_SPAWN_Y`** в квартире и сторе.
+- **Масштаб и пол в 3D**: GLB Володьки автоподгоняется по bounding box к **`PLAYER_GLB_TARGET_VISUAL_METERS`** и множителю **`explorationCharacterModelScale`** комнаты; капсула Rapier масштабируется тем же коэффициентом; единый пол/коллизии из **`PhysicsSceneColliders`** (**`PhysicsFloor`**); спавн ног **`PLAYER_FEET_SPAWN_Y`** в квартире и сторе.
 
 - **Локации и лор (квартира / бар)**: сцены **`volodka_room`** и **`volodka_corridor`** (комната → коридор → **`home_evening`**; двери и интерактивы); старт **`exploration`** в **`gameStore`** / **`worldStore`** и **`explore_mode`** → **`volodka_room`**; **`RPGGameCanvas`** — пол 3.5×12 для коридора, камера ближе в узких комнатах, **`PhysicsPlayer`** сбрасывается по **`sceneId`** и берёт **`initialRotation`** из стора; **`cafe_evening`** — бар **«Синяя яма»**; NPC **Альберт** / **Заремушка**, **`pit_timur`**; **`blue_pit`** — служебная сцена. Подписи в **`SceneManager`**, **`scenes.ts`**, тесты **`npcExplorationIntegrity`**, **`explorationAtmosphere`**, **`scenes.explorationScale`**.
 - **`PhysicsSceneColliders`**, **`SceneColliders`**: для **`home_evening`** используются **`HomeEveningColliders`** вместо **`KitchenColliders`**, без лишних препятствий «кухни» поверх интерактивных объектов.
@@ -74,6 +80,10 @@
 - **Исследование квартиры / коридор — «чёрный экран»**: в **`RPGGameCanvas`** не монтировался интерьер (стены/потолок были только в **`OptimizedSceneEnvironment`** для VN). Добавлены **`VolodkaCorridorVisual`**, **`VolodkaRoomVisual`**, **`HomeEveningVisual`** и подключены по **`sceneId`**; туман для узких локаций расширен (**near / far**), пол слегка осветлён с лёгким **emissive**; **`ExplorationPostFX`** получает **`compactIndoor`** (без **N8AO** в квартире — иначе кадр «съедался» в чёрное).
 
 - **`PhysicsPlayer` (лаги + визуал)**: убраны **`setState` в `useFrame`** для поворота (теперь **`rotationRef`** + поворот **`modelRef`** в кадре без React commit ~60 Гц); **`setIsMoving`** только при смене движения; в **`useFrame`** для блокировки диалога используется **`isLockedRef`**, чтобы не залипать на устаревшем замыкании; подписка на карму — дискретные зоны **`high` / `mid` / `low`**, без ререндера на каждое изменение числа; **`useGLTF.clear`** у игрока убран (как у NPC) — меньше повторных загрузок и мигания; **`Suspense`**-fallback при загрузке GLB — пустой **`group`**, чтобы процедурная заглушка не оставалась под моделью; визуал вынесен в именованный **`PlayerVisualRoot`**. **`usePlayerControls`**: игнор **`keydown` с `e.repeat`** для WASD/стрелок, чтобы удержание клавиш не вызывало лишние **`forceUpdate`**.
+
+- **`RPGGameCanvas` / обход и физика**: внутрь **`<Physics>`** добавлен **`PhysicsSceneColliders`** (как в **`PhysicsRPGCanvas`**): пол и стены Rapier для KCC, шагов и коллизий игрока; ранее монтировались только меши **`SceneColliderSelector`** (в основном слой для raycast камеры), без **`RigidBody`** окружения. Убран отдельный визуальный box-пол сверху — визуал и кубоид пола уже в **`PhysicsFloor`** внутри **`PhysicsSceneColliders`**, без z-fight с «вторым» полом.
+
+- **`StressIndicator`**: глитч-полоса при стрессе > 80 без **`Date.now()`** в **`style.transform`** (ломало стабильность ререндера) — **`motion.div`** с циклической анимацией **`x`**.
 
 - **`gameStore.saveGame`**: после успешной записи в **`localStorage`** эмитируется **`game:saved`** с **`timestamp`** и **`source`** из **`SaveGameOptions`** (по умолчанию **`manual`**), чтобы **`GameOrchestrator`** и **`useAutoSave`** снова получали тосты и различие авто/ручного сохранения.
 - **`/api/ai-stream`**: разбор ответа SDK через **`completion.choices?.[0]`**, без исключения при отсутствии **`choices`**.

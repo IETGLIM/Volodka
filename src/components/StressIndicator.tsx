@@ -97,8 +97,11 @@ const StressIndicator = memo(function StressIndicator({ stress, panicMode, resil
             animate={{ opacity: [0, 0.5, 0] }}
             transition={{ duration: 0.2, repeat: Infinity, repeatDelay: 1 }}
           >
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent" 
-              style={{ width: '30%', transform: `translateX(${(Date.now() / 50) % 400}%)` }}
+            <motion.div
+              className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent"
+              style={{ width: '30%' }}
+              animate={{ x: ['-100%', '350%'] }}
+              transition={{ duration: 1.4, repeat: Infinity, ease: 'linear' }}
             />
           </motion.div>
         )}

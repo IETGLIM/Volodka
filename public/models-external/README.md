@@ -23,12 +23,17 @@
 3. Используйте ссылку вида:
    https://drive.google.com/uc?export=download&id=FILE_ID
 
-### Вариант 4: GitHub LFS (1GB бесплатно)
+### Вариант 4: GitHub LFS (квота хранилища и трафика)
+
+Если Vercel / CI пишет **«exceeded its LFS budget»**, квота GitHub LFS исчерпана: либо [увеличить лимит в Billing](https://github.com/settings/billing), либо вынести модели из LFS (**`git lfs migrate export`**) — см. **`FREE_HOSTING.md`**.
+
+```bash
 git lfs install
 git lfs track "*.glb"
 git lfs track "*.fbx"
 git add .gitattributes
 git push
+```
 
 ---
 

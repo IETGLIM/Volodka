@@ -37,6 +37,7 @@ import { PhysicsPlayer } from './PhysicsPlayer';
 import FollowCamera from './FollowCamera';
 import { NPCSystem } from './NPC';
 import { SceneColliderSelector } from './SceneColliders';
+import { PhysicsSceneColliders } from './PhysicsSceneColliders';
 import { getDefaultPlayerModelPath } from '@/config/modelUrls';
 import { TriggerSystem, isPlayerInTriggerZone } from './InteractiveTrigger';
 import CameraEffects from '../CameraEffects';
@@ -329,25 +330,11 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
       <Suspense fallback={null}>
       <Physics gravity={[0, -9.81, 0]} debug={false}>
         <ExplorationWorldClock />
-        {/* Пол: только визуал — физический пол задаётся в `PhysicsSceneColliders` (иначе два cuboid на y≈0 дают продавливание KCC). */}
-        <group>
-          <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.05, 0]} receiveShadow>
-            <boxGeometry args={groundGeometryArgs} />
-            <meshStandardMaterial
-              color={
-                isPanelDistrict
-                  ? '#141c18'
-                  : isNarrowApartment
-                    ? '#5a524e'
-                    : '#3d3436'
-              }
-              roughness={isPanelDistrict ? 0.78 : isNarrowApartment ? 0.88 : 0.9}
-              metalness={isPanelDistrict ? 0.22 : 0}
-              emissive={isPanelDistrict ? '#002818' : isNarrowApartment ? '#1a1512' : '#000000'}
-              emissiveIntensity={isPanelDistrict ? 0.35 : isNarrowApartment ? 0.08 : 0}
-            />
-          </mesh>
-        </group>
+        {/*
+          Пол + стены Rapier — здесь же визуал пола в `PhysicsFloor` (`PhysicsSceneColliders`).
+          Отдельный box-пол сверху убран: иначе z-fight и расхождение с реальными размерами пола по сцене.
+        */}
+        <PhysicsSceneColliders sceneId={sceneId} />
 
         {/* Интерьер квартиры в обходе (раньше был только в VN-слое — без стен сцена читалась как «чёрная дыра»). */}
         {sceneId === 'volodka_corridor' && <VolodkaCorridorVisual />}

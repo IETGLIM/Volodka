@@ -182,10 +182,10 @@ export const WorldItem = memo(function WorldItem({
     return distance < 1.5;
   }, [playerPosition.x, playerPosition.y, playerPosition.z, position]);
 
-  useFrame((_, delta) => {
+  useFrame(({ clock }, delta) => {
     if (meshRef.current && !collected) {
       meshRef.current.rotation.y += delta * 2;
-      meshRef.current.position.y = position[1] + 0.3 + Math.sin(Date.now() * 0.003) * 0.1;
+      meshRef.current.position.y = position[1] + 0.3 + Math.sin(clock.getElapsedTime() * 3) * 0.1;
     }
   });
 

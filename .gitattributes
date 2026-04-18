@@ -1,7 +1,7 @@
-# Git LFS для больших файлов
-*.glb filter=lfs diff=lfs merge=lfs -text
-*.fbx filter=lfs diff=lfs merge=lfs -text
-*.zip filter=lfs diff=lfs merge=lfs -text
+# Модели и архивы — обычные Git-blobs (без LFS; см. FREE_HOSTING.md).
+*.glb -text
+*.fbx -text
+*.zip -text
 
 # Текстовые файлы
 *.md text
@@ -10,6 +10,3 @@
 *.tsx text
 *.js text
 *.css text
-*.glb !text !filter !merge !diff
-*.fbx !text !filter !merge !diff
-*.zip !text !filter !merge !diff
