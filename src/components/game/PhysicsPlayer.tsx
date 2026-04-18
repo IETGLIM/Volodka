@@ -182,8 +182,14 @@ const FallbackPlayerModel = memo(function FallbackPlayerModel({
 // GLB PLAYER MODEL
 // ============================================
 
-/** Если экспорт GLB даёт гигантский `setFromObject` (лишние ноды), высота для масштаба берётся по SkinnedMesh или fallback. */
+/**
+ * Высота (м) для расчёта uniform-масштаба GLB. SkinnedMesh AABB часто завышен (кости, поза), но <8 m —
+ * старый порог пропускал такие случаи и давал микроскопический `TARGET/h`.
+ */
 const PLAYER_VISUAL_HEIGHT_FALLBACK_M = 1.72;
+/** Нижняя/верхняя граница «человеческой» высоты по world AABB по Y для делителя масштаба. */
+const PLAYER_MESH_BBOX_H_MIN = 0.52;
+const PLAYER_MESH_BBOX_H_MAX = 2.35;
 
 function getRootCharacterVisualHeightMeters(root: THREE.Object3D, scratch: THREE.Vector3): number {
   root.updateMatrixWorld(true);
@@ -205,11 +211,11 @@ function getRootCharacterVisualHeightMeters(root: THREE.Object3D, scratch: THREE
   if (!foundSkinned || box.isEmpty()) {
     box.setFromObject(root);
   }
-  const h = box.getSize(scratch).y;
-  if (!Number.isFinite(h) || h < 0.25 || h > 8) {
+  const hRaw = box.getSize(scratch).y;
+  if (!Number.isFinite(hRaw) || hRaw < 1e-4) {
     return PLAYER_VISUAL_HEIGHT_FALLBACK_M;
   }
-  return h;
+  return THREE.MathUtils.clamp(hRaw, PLAYER_MESH_BBOX_H_MIN, PLAYER_MESH_BBOX_H_MAX);
 }
 
 const GLBPlayerModel = memo(function GLBPlayerModel({
@@ -258,7 +264,11 @@ const GLBPlayerModel = memo(function GLBPlayerModel({
     if (!loadedScene) return 0.12 * rs;
     const h = getRootCharacterVisualHeightMeters(loadedScene, bboxSizeScratchRef.current);
     if (h < 1e-4) return 0.12 * rs;
-    return (PLAYER_GLB_TARGET_VISUAL_METERS / h) * rs;
+    const u = (PLAYER_GLB_TARGET_VISUAL_METERS / h) * rs;
+    // Вторая страховка: даже при странном h не даём персонажу схлопнуться до «точки».
+    const uMin = (PLAYER_GLB_TARGET_VISUAL_METERS / PLAYER_MESH_BBOX_H_MAX) * rs;
+    const uMax = (PLAYER_GLB_TARGET_VISUAL_METERS / PLAYER_MESH_BBOX_H_MIN) * rs;
+    return THREE.MathUtils.clamp(u, uMin, uMax);
   }, [loadedScene, rs]);
 
   useEffect(() => {
