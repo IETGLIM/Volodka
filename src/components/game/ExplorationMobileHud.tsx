@@ -10,7 +10,7 @@ interface ExplorationMobileHudProps {
   onInteract: () => void;
 }
 
-type HoldKey = 'forward' | 'backward' | 'left' | 'right' | 'jump';
+type HoldKey = 'forward' | 'backward' | 'left' | 'right' | 'jump' | 'run';
 
 const VirtualPadHoldButton = memo(function VirtualPadHoldButton({
   holdKey,
@@ -113,7 +113,10 @@ export const ExplorationMobileHud = memo(function ExplorationMobileHud({
       className="pointer-events-none fixed inset-x-0 bottom-0 z-[14]"
       aria-hidden={false}
     >
-      <div className="pointer-events-auto mx-auto flex max-w-lg items-end justify-between gap-2 pl-[max(0.5rem,env(safe-area-inset-left))] pr-[max(0.5rem,env(safe-area-inset-right))] pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-2">
+      <div
+        data-exploration-ui
+        className="pointer-events-auto mx-auto flex max-w-lg items-end justify-between gap-2 pl-[max(0.5rem,env(safe-area-inset-left))] pr-[max(0.5rem,env(safe-area-inset-right))] pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-2"
+      >
         <div className="grid grid-cols-3 gap-1.5" role="group" aria-label="Движение">
           <span className="col-start-2">
             <VirtualPadHoldButton holdKey="forward" className={padBtn} ariaLabel="Вперёд" setKey={setKey}>
@@ -145,6 +148,14 @@ export const ExplorationMobileHud = memo(function ExplorationMobileHud({
 
         <div className="flex flex-col gap-2">
           <VirtualPadHoldButton
+            holdKey="run"
+            className={`${padBtn} border-fuchsia-500/35 px-2 text-[11px] uppercase tracking-wide text-fuchsia-100/90`}
+            ariaLabel="Бег (как Shift)"
+            setKey={setKey}
+          >
+            Run
+          </VirtualPadHoldButton>
+          <VirtualPadHoldButton
             holdKey="jump"
             className={`${padBtn} px-3 text-xs uppercase tracking-wide`}
             ariaLabel="Прыжок"
@@ -166,7 +177,7 @@ export const ExplorationMobileHud = memo(function ExplorationMobileHud({
         </div>
       </div>
       <p className="pointer-events-none px-3 pb-[max(0.25rem,env(safe-area-inset-bottom))] text-center font-mono text-[9px] text-cyan-600/50">
-        Камера — перетаскивание по пустому месту экрана
+        Камера — перетаскивание по экрану вне панелей · Run = бег как Shift
       </p>
     </div>
   );

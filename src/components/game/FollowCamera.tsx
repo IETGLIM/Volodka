@@ -4,6 +4,7 @@ import { useRef, useEffect, useCallback, type RefObject } from 'react';
 import { useThree, useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { followCameraCollisionDamp, followCameraSmoothDamp } from '@/lib/followCameraDamp';
+import { explorationPointerBlocksCameraOrbit } from '@/lib/explorationUiPointer';
 import { CAMERA_COLLISION_LAYER } from './SceneColliders';
 
 // ============================================
@@ -228,6 +229,7 @@ export default function FollowCamera({
   );
 
   const handleMouseDown = useCallback((e: MouseEvent) => {
+    if (explorationPointerBlocksCameraOrbit(e.target)) return;
     if (e.button === 0 || e.button === 2) {
       isDragging.current = true;
       lastMousePos.current = { x: e.clientX, y: e.clientY };
@@ -247,6 +249,7 @@ export default function FollowCamera({
 
   const handleTouchStart = useCallback((e: TouchEvent) => {
     if (e.touches.length !== 1) return;
+    if (explorationPointerBlocksCameraOrbit(e.target)) return;
     const t = e.touches[0];
     isDragging.current = true;
     lastMousePos.current = { x: t.clientX, y: t.clientY };
@@ -475,6 +478,7 @@ export function SimpleFollowCamera({
   );
 
   const handleMouseDown = useCallback((e: MouseEvent) => {
+    if (explorationPointerBlocksCameraOrbit(e.target)) return;
     if (e.button === 0 || e.button === 2) {
       isDragging.current = true;
       lastMousePos.current = { x: e.clientX, y: e.clientY };
@@ -494,6 +498,7 @@ export function SimpleFollowCamera({
 
   const handleTouchStart = useCallback((e: TouchEvent) => {
     if (e.touches.length !== 1) return;
+    if (explorationPointerBlocksCameraOrbit(e.target)) return;
     const t = e.touches[0];
     isDragging.current = true;
     lastMousePos.current = { x: t.clientX, y: t.clientY };

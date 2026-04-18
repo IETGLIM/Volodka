@@ -114,6 +114,7 @@ export const MiniMap = memo(function MiniMap({
 
   return (
     <motion.div
+      data-exploration-ui
       initial={{ opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
       className={`fixed z-30 select-none touch-manipulation bottom-[max(6.5rem,calc(5.5rem+env(safe-area-inset-bottom)))] right-[max(1rem,env(safe-area-inset-right))] ${className}`}

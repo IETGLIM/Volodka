@@ -3,7 +3,7 @@
 /**
  * Связывает Rapier, игрока, NPC, триггеры и камеру для свободного 3D-обхода.
  * Ошибки загрузки GLB обрабатываются в `PhysicsPlayer` / `NPCSystem` — здесь дубли не нужны.
- * Ввод: клавиатура (WASD, E); тач — `ExplorationMobileHud` при узком экране или `(pointer: coarse)`.
+ * Ввод: клавиатура (WASD, Shift бег, E); тач — `ExplorationMobileHud` (в т.ч. Run) при узком экране или `(pointer: coarse)`.
  */
 
 import { memo, useRef, useEffect, useMemo, useCallback, useState, Fragment, Suspense } from 'react';

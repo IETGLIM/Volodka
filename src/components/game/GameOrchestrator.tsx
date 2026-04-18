@@ -639,7 +639,7 @@ export default function GameOrchestrator() {
       )}
 
       {gameMode === 'exploration' && (
-        <div className="fixed inset-0 z-[12] touch-manipulation">
+        <div className="fixed inset-0 z-[12] h-[100dvh] max-h-[100dvh] w-full touch-manipulation">
           <RPGGameCanvas
             sceneId={exploration.currentSceneId}
             visualState={explorationVisualState}
