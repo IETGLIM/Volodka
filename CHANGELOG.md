@@ -18,6 +18,10 @@
 - **API сохранений**: **`src/app/api/save/route.ts`** — без **`ENABLE_CLOUD_GAME_SAVE=1`** все методы отвечают **403** и **`CLOUD_SAVE_DISABLED`** (основной прогресс остаётся в **`localStorage`**; облако — только после явного включения и дальнейшей защиты, напр. auth).
 - **ESLint / React hooks**: **`FollowCamera`** — обновление **`collisionSpringRef`** в **`useEffect`**; **`PhysicsPlayer`** — расчёт высоты GLB без чтения ref в render; **`usePlayerFootsteps`** — переиспользуемые **`Rapier`**-векторы через **`useRef`**, без мутации значений из **`useMemo`**.
 
+### Fixed
+
+- **Память / жизненный цикл**: **`useAmbientMusic`** — инкремент «поколения» расписания гасит хвосты **`setTimeout`** после остановки, кроссфейда и размонтирования; при повторном старте сбрасывается прежний **`setInterval`**. **`RadialMenu`** — один **`pointerdown`** в **`capture`**, без пары mousedown+pointerdown.
+
 ### Added
 
 - **CI**: **`.github/workflows/ci.yml`** — на push/PR: **`npm ci`**, **`tsc --noEmit`**, **`npm test`**, **`npm run lint`**.

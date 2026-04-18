@@ -24,14 +24,12 @@ export const RadialMenu = memo(function RadialMenu({ open, anchorLabel, onClose,
 
   useEffect(() => {
     if (!open) return;
-    const onDoc = (e: MouseEvent | PointerEvent) => {
+    const onDoc = (e: PointerEvent) => {
       if (!rootRef.current?.contains(e.target as Node)) onClose();
     };
-    document.addEventListener('mousedown', onDoc);
-    document.addEventListener('pointerdown', onDoc);
+    document.addEventListener('pointerdown', onDoc, { capture: true });
     return () => {
-      document.removeEventListener('mousedown', onDoc);
-      document.removeEventListener('pointerdown', onDoc);
+      document.removeEventListener('pointerdown', onDoc, { capture: true });
     };
   }, [open, onClose]);
 

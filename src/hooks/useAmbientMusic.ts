@@ -144,6 +144,11 @@ export function useAmbientMusic(config: AmbientConfig) {
   const configRef = useRef(config);
   const playMelodicPhraseRef = useRef<() => void>(() => {});
   const playBackgroundLayerRef = useRef<() => void>(() => {});
+  /** Инкремент при остановке / кроссфейде / новом старте — отбрасывает «хвосты» setTimeout после размонтирования. */
+  const ambientScheduleGenRef = useRef(0);
+  const bumpAmbientSchedule = () => {
+    ambientScheduleGenRef.current += 1;
+  };
 
   useEffect(() => {
     configRef.current = config;
@@ -420,7 +425,9 @@ export function useAmbientMusic(config: AmbientConfig) {
   // Создание мелодичной фразы
   const playMelodicPhrase = useCallback(() => {
     if (!audioContextRef.current || !masterGainRef.current) return;
-    
+
+    const phraseGen = ambientScheduleGenRef.current;
+
     const sceneConfig = SCENE_SCALES[config.sceneId] || SCENE_SCALES['default'];
     const scale = sceneConfig.scale;
     const genre = resolveAmbientGenre(config.sceneId, config.forceBattleMusic);
@@ -440,6 +447,7 @@ export function useAmbientMusic(config: AmbientConfig) {
         const freq = scale[idx] * (Math.random() > 0.85 ? 2 : 1);
         const delayMs = i * (stepMs + Math.random() * 35);
         setTimeout(() => {
+          if (ambientScheduleGenRef.current !== phraseGen) return;
           const vol =
             (0.09 + moodModifier * 0.05) * stressModifier * sceneConfig.intensity * (0.85 + creativityModifier);
           createChiptuneBlip(freq, 0.07 + Math.random() * 0.06, vol, 'melody');
@@ -454,6 +462,7 @@ export function useAmbientMusic(config: AmbientConfig) {
       for (let i = 0; i < hits; i++) {
         const delayMs = i * stepMs;
         setTimeout(() => {
+          if (ambientScheduleGenRef.current !== phraseGen) return;
           if (Math.random() < 0.72) {
             const baseNote = scale[Math.floor(Math.random() * scale.length)];
             const freq = baseNote * (Math.random() > 0.55 ? 0.5 : 1);
@@ -490,6 +499,7 @@ export function useAmbientMusic(config: AmbientConfig) {
     const baseDelay = 800 / sceneConfig.tempo;
     selectedNotes.forEach((freq, i) => {
       setTimeout(() => {
+        if (ambientScheduleGenRef.current !== phraseGen) return;
         const duration = (2 + Math.random() * 2) * sceneConfig.tempo;
         const volume = (0.12 + moodModifier * 0.08) * stressModifier * sceneConfig.intensity;
         createPad(freq, duration, volume, 'melody');
@@ -510,6 +520,8 @@ export function useAmbientMusic(config: AmbientConfig) {
   const playBackgroundLayer = useCallback(() => {
     if (!audioContextRef.current || !masterGainRef.current) return;
 
+    const layerGen = ambientScheduleGenRef.current;
+
     const sceneConfig = SCENE_SCALES[config.sceneId] || SCENE_SCALES['default'];
     const genre = resolveAmbientGenre(config.sceneId, config.forceBattleMusic);
     const scale = sceneConfig.scale;
@@ -526,6 +538,7 @@ export function useAmbientMusic(config: AmbientConfig) {
     if (genre === 'chiptune_8bit') {
       createChiptuneBlip(bassFreq, 5.5, 0.055 * sceneConfig.intensity, 'bass');
       setTimeout(() => {
+        if (ambientScheduleGenRef.current !== layerGen) return;
         if (scale[3]) {
           createChiptuneBlip(scale[3] * 0.5, 4, 0.04 * sceneConfig.intensity, 'pad');
         }
@@ -535,6 +548,7 @@ export function useAmbientMusic(config: AmbientConfig) {
 
     createPad(bassFreq, 10, 0.08 * sceneConfig.intensity, 'bass');
     setTimeout(() => {
+      if (ambientScheduleGenRef.current !== layerGen) return;
       if (scale[2]) {
         createPad(scale[2], 8, 0.06 * sceneConfig.intensity, 'pad');
       }
@@ -544,7 +558,10 @@ export function useAmbientMusic(config: AmbientConfig) {
   // Кроссфейд при смене сцены
   const crossfadeToScene = useCallback((newSceneId: string) => {
     if (!masterGainRef.current || !audioContextRef.current) return;
-    
+
+    bumpAmbientSchedule();
+    const crossfadeGen = ambientScheduleGenRef.current;
+
     const ctx = audioContextRef.current;
     const now = ctx.currentTime;
     const crossfadeTime = 2; // 2 секунды на кроссфейд
@@ -567,6 +584,7 @@ export function useAmbientMusic(config: AmbientConfig) {
     
     // После кроссфейда запускаем новую музыку
     setTimeout(() => {
+      if (ambientScheduleGenRef.current !== crossfadeGen) return;
       playMelodicPhrase();
     }, crossfadeTime * 1000);
   }, [playMelodicPhrase]);
@@ -579,8 +597,13 @@ export function useAmbientMusic(config: AmbientConfig) {
   // Основной цикл эмбиента
   const startAmbient = useCallback(() => {
     if (!config.enabled) return;
-    
+
     initAudio();
+    bumpAmbientSchedule();
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
     setIsPlaying(true);
     
     const sceneConfig = SCENE_SCALES[config.sceneId] || SCENE_SCALES['default'];
@@ -632,6 +655,7 @@ export function useAmbientMusic(config: AmbientConfig) {
   
   // Остановка
   const stopAmbient = useCallback(() => {
+    bumpAmbientSchedule();
     if (intervalRef.current) {
       clearInterval(intervalRef.current);
       intervalRef.current = null;
