@@ -9,11 +9,11 @@ npm install
 npm run dev
 ```
 
-Откройте [http://localhost:3000](http://localhost:3000).
+Откройте [http://localhost:3000](http://localhost:3000). Скрипт **`dev`** явно запускает **Turbopack** (`next dev --turbo`).
 
 ## Сборка
 
-Перед `next build` подтягиваются фоны сцен (см. `scripts/download-scene-backgrounds.mjs` и `public/scenes/`).
+Перед `next build` подтягиваются фоны сцен (см. `scripts/download-scene-backgrounds.mjs` и `public/scenes/`). Сборка по умолчанию идёт через **Turbopack** (`next build --turbo`); при необходимости отладки webpack используйте локально `npx next build --webpack`.
 
 ```bash
 npm run build

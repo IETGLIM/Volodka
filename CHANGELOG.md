@@ -13,6 +13,7 @@
 
 ### Changed
 
+- **Turbopack в приоритете**: **`package.json`** — **`dev`**: `next dev --turbo`; **`build`**: `next build --turbo`. **CI** — шаг **`npm run build`** (тот же Turbopack-сборщик).
 - **Next.js**: **`next.config.ts`** — **`typescript.ignoreBuildErrors: false`** (сборка снова зависит от проверки типов); **`reactStrictMode: true`**.
 - **API сохранений**: **`src/app/api/save/route.ts`** — без **`ENABLE_CLOUD_GAME_SAVE=1`** все методы отвечают **403** и **`CLOUD_SAVE_DISABLED`** (основной прогресс остаётся в **`localStorage`**; облако — только после явного включения и дальнейшей защиты, напр. auth).
 - **ESLint / React hooks**: **`FollowCamera`** — обновление **`collisionSpringRef`** в **`useEffect`**; **`PhysicsPlayer`** — расчёт высоты GLB без чтения ref в render; **`usePlayerFootsteps`** — переиспользуемые **`Rapier`**-векторы через **`useRef`**, без мутации значений из **`useMemo`**.
