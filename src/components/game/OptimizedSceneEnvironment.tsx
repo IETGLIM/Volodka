@@ -824,6 +824,7 @@ export const OptimizedSceneEnvironment = memo(function OptimizedSceneEnvironment
       case 'kitchen_dawn':
       case 'home_morning':
       case 'home_evening':
+      case 'volodka_room':
         return { ambient: 0.4, light: '#ffcc00', fogColor: '#1a1a2e' };
       case 'office_morning':
         return { ambient: 0.5, light: '#ffffff', fogColor: '#2a2a3a' };
@@ -865,6 +866,7 @@ export const OptimizedSceneEnvironment = memo(function OptimizedSceneEnvironment
       case 'kitchen_dawn':
       case 'home_morning':
       case 'home_evening':
+      case 'volodka_room':
         return <KitchenEnvironment />;
       case 'office_morning':
         return <OfficeEnvironment />;

@@ -105,7 +105,7 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
 
   zarema: {
     id: 'zarema',
-    name: 'Заремушка (Зарема)',
+    name: 'Заремушка (мама, жена Альберта)',
     model: 'barista',
     modelPath: '/models/cyberpunk_female_full-body_character.glb',
     animations: NPC_ANIM_MIXAMO_FEMALE,
@@ -115,7 +115,7 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
     sceneId: 'street_night',
     dialogueTree: {
       id: 'zarema_room',
-      text: '🌸 Володька! Я тут у подъезда — Зелёнка не спит раньше нас. Альберт уже дома допиливает код, а я вышла подышать. Как ты?',
+      text: '🌸 Володька! Я тут у подъезда — Зелёнка не спит раньше нас. Дома Альберт и код, а через дорогу у нас бар «Синяя яма» — там он по вечерам и гитара, и стойка. Я иногда подменяю зал. Как ты?',
       choices: [
         { text: 'Расскажите про проект', next: 'zarema_project', effect: { creativity: 5 } },
         { text: 'Я просто хотел поговорить', next: 'zarema_talk', effect: { mood: 5 } },
@@ -128,7 +128,7 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
   /** Та же пара — в интерьере комнаты (сцена `zarema_albert_room`), модели из `models-external`. */
   zarema_home: {
     id: 'zarema_home',
-    name: 'Заремушка (Зарема)',
+    name: 'Заремушка (мама, жена Альберта)',
     model: 'barista',
     modelPath: '/models/cyberpunk_female_full-body_character.glb',
     animations: NPC_ANIM_MIXAMO_FEMALE,
@@ -159,7 +159,7 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
     sceneId: 'street_night',
     dialogueTree: {
       id: 'albert_room',
-      text: '💻 О, Володька! Заходи, заходи. Как раз разбираю логи с продакшена...',
+      text: '💻 О, Володька! Днём — логи и прод, вечером через дорогу «Синяя яма»: стойка, гитара, кавер до закрытия. Заремушка называет это «семейный бизнес с панельным фасадом».',
       choices: [
         { text: 'Что за логи? Показывай', next: 'albert_logs', effect: { stability: 5 } },
         { text: 'Я не по работе, просто зашёл', next: 'albert_casual', effect: { mood: 5 } },
@@ -664,55 +664,11 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
     },
   },
 
-  // ========== КАФЕ "СИНИЙ КОТ" (реальный мир) ==========
-
-  cafe_barista: {
-    id: 'cafe_barista',
-    name: 'Бариста',
-    model: 'barista',
-    modelPath: '/models/shibahu.glb',
-    animations: NPC_ANIM_SHIBAHU,
-    scale: 1,
-    defaultPosition: { x: 0, y: 0, z: -3 },
-    patrolRadius: 2,
-    sceneId: 'cafe_evening',
-    storyTrigger: 'story_cafe_barista',
-    dialogueTree: {
-      id: 'barista_greeting',
-      text: 'Добро пожаловать в "Синяя Яма"! Чем могу помочь? У нас сегодня особенный вечер поэзии.',
-      choices: [
-        {
-          text: 'Что это за место?',
-          next: 'barista_about',
-          effect: { mood: 5 },
-        },
-        {
-          text: 'Мне нужен кофе.',
-          next: 'barista_coffee',
-          effect: { stress: -5 },
-        },
-        {
-          text: 'Я здесь на чтение стихов.',
-          next: 'barista_poetry',
-          effect: { karma: 5 },
-        },
-        {
-          text: 'Тут держат бар для своих — чувствуется свобода.',
-          next: 'barista_kindred',
-          conditions: { minKarma: 55 },
-          effect: { mood: 3 },
-        },
-        {
-          text: 'До свидания.',
-          next: 'barista_bye',
-        },
-      ],
-    },
-  },
+  // ========== БАР «СИНЯЯ ЯМА» (через дорогу от панельки Володьки) ==========
 
   cafe_visitor: {
     id: 'cafe_visitor',
-    name: 'Посетитель кафе',
+    name: 'Посетитель бара',
     model: 'generic',
     modelPath: '/models/lowpoly_anime_character_cyberstyle.glb',
     animations: NPC_ANIM_LOWPOLY_CYBER,
@@ -726,7 +682,7 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
     sceneId: 'cafe_evening',
     dialogueTree: {
       id: 'visitor_greeting',
-      text: 'О, привет! Ты здесь впервые? Я тебя не помню. Тут обычно одни и те же лица.',
+      text: 'О, привет! Я с Зелёнки, иногда захожу с района. Рената с Дамьеном сюда не заглядывают — а так тут свой шум: кавер, стихи, кто во что горазд.',
       choices: [
         {
           text: 'Да, я впервые на вечере поэзии.',
@@ -745,33 +701,28 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
     },
   },
 
-  cafe_poet: {
-    id: 'cafe_poet',
-    name: 'Поэт',
+  pit_timur: {
+    id: 'pit_timur',
+    name: 'Тимур',
     model: 'colleague',
-    modelPath: '/models/witchapprentice.glb',
-    animations: NPC_ANIM_TAKE001,
+    modelPath: '/models/lowpoly_anime_character_cyberstyle.glb',
+    animations: NPC_ANIM_LOWPOLY_CYBER,
     scale: 1,
-    defaultPosition: { x: -3, y: 0, z: -5 },
+    defaultPosition: { x: 3.2, y: 0, z: -3.5 },
+    patrolRadius: 1.2,
     sceneId: 'cafe_evening',
-    storyTrigger: 'story_cafe_poet',
     dialogueTree: {
-      id: 'poet_greeting',
-      text: 'Привет... Ты тоже пишешь? Видел, как ты смотрел на сцену. В твоих глазах — жажда творчества.',
+      id: 'timur_greeting',
+      text: '🥁 Володь! Ударка проверяю — вечером снова кавер. Альберт за стойкой орёт в микрофон чуть мягче, чем в проде. Заремушка иногда выгоняет всех домой — но это любовь.',
       choices: [
         {
-          text: 'Да, я пытаюсь. Но пока не решаюсь выступить.',
-          next: 'poet_shy',
-          effect: { mood: 5 },
+          text: 'Как у вас с репетициями?',
+          next: 'timur_band',
+          effect: { mood: 4, creativity: 3 },
         },
         {
-          text: 'Нет, я просто слушаю.',
-          next: 'poet_listener',
-          effect: { creativity: 5 },
-        },
-        {
-          text: 'Что посоветуешь новичку?',
-          next: 'poet_advice',
+          text: 'Я только мимо.',
+          next: 'timur_bye',
         },
       ],
     },
@@ -2139,6 +2090,15 @@ export const DIALOGUE_NODES: Record<string, NPCDefinition['dialogueTree']> = {
   },
 
   // ========== КАЛВИН ==========
+  timur_band: {
+    id: 'timur_band',
+    text: 'На Зелёнке днём стучим «для себя», сюда приходим как на сцену без бэкстейджа. Гитара — Альберт, микрофон тоже он, я только держу ритм, чтобы панель не разъехалась.',
+  },
+  timur_bye: {
+    id: 'timur_bye',
+    text: 'Заходи на сет — кружка пены и правильный downbeat.',
+  },
+
   calvin_poet: {
     id: 'calvin_poet',
     text: '☕ Я? Я... был поэтом. Давно. Теперь я просто слушаю. И иногда слышу вещи, которые стоит услышать.',

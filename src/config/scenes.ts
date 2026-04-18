@@ -109,13 +109,131 @@ export const SCENE_CONFIG = {
     spawnPoint: { x: 0, y: 1, z: 3, rotation: 0 } as PlayerPosition,
     ambientLight: { intensity: 0.5, color: '#ffffff' }, npcs: [], interactiveObjects: [],
   },
+
+  /** Комната Володьки в панельной трёшке: удалёнка, два ноутбука, три монитора, мониторинг; дверь в коридор квартиры. */
+  volodka_room: {
+    id: 'volodka_room',
+    name: 'Комната Володьки',
+    explorationCharacterModelScale: 0.92,
+    explorationLocomotionScale: 0.9,
+    size: [14, 10],
+    spawnPoint: { x: 2.2, y: 1, z: 1.8, rotation: 0 } as PlayerPosition,
+    ambientLight: { intensity: 0.42, color: '#c8dff0' },
+    directionalLights: [{ position: [4, 8, 2], intensity: 0.95 }],
+    npcs: [],
+    interactiveObjects: [
+      {
+        id: 'volodka_laptop_work',
+        type: 'notebook',
+        position: [2.95, 0.82, 0.35],
+        rotation: [0, -0.35, 0],
+        size: [0.34, 0.02, 0.22],
+        color: '#2f3640',
+        itemId: 'note_draft',
+      },
+      {
+        id: 'volodka_laptop_personal',
+        type: 'notebook',
+        position: [3.15, 0.82, -0.25],
+        rotation: [0, 0.2, 0],
+        size: [0.32, 0.02, 0.2],
+        color: '#1e272e',
+      },
+      {
+        id: 'volodka_monitor_rack',
+        type: 'generic',
+        position: [3.5, 1.05, 0.05],
+        size: [1.15, 0.55, 0.18],
+        color: '#1a1f28',
+      },
+      {
+        id: 'volodka_kibana_tail',
+        type: 'generic',
+        position: [3.35, 0.72, 0.55],
+        size: [0.55, 0.04, 0.38],
+        color: '#f4e6c2',
+      },
+      {
+        id: 'volodka_zabbix_screen',
+        type: 'generic',
+        position: [3.72, 0.88, -0.45],
+        size: [0.22, 0.28, 0.02],
+        color: '#c0392b',
+      },
+      {
+        id: 'volodka_grafana_board',
+        type: 'generic',
+        position: [3.72, 0.88, 0.55],
+        size: [0.22, 0.28, 0.02],
+        color: '#2980b9',
+      },
+      {
+        id: 'volodka_desk_main',
+        type: 'generic',
+        position: [3.2, 0.45, 0.1],
+        size: [1.4, 0.06, 0.75],
+        color: '#3d2817',
+      },
+      {
+        id: 'volodka_desk_side',
+        type: 'generic',
+        position: [0.8, 0.45, -2.8],
+        size: [1.0, 0.06, 0.55],
+        color: '#4a3728',
+      },
+      {
+        id: 'volodka_wardrobe_right',
+        type: 'crate',
+        position: [5.2, 0.95, 0.2],
+        size: [0.55, 1.75, 0.65],
+        color: '#2d2419',
+      },
+      {
+        id: 'volodka_wardrobe_left',
+        type: 'crate',
+        position: [5.2, 0.95, -1.4],
+        size: [0.55, 1.75, 0.65],
+        color: '#352a1f',
+      },
+      {
+        id: 'volodka_sofa',
+        type: 'chair',
+        position: [-3.8, 0.42, 1.2],
+        size: [1.85, 0.55, 0.85],
+        color: '#4a5568',
+      },
+      {
+        id: 'volodka_window',
+        type: 'generic',
+        position: [-5.85, 1.05, 0.4],
+        size: [0.15, 1.1, 2.4],
+        color: '#1e3a5f',
+      },
+      {
+        id: 'volodka_door_corridor',
+        type: 'generic',
+        position: [0.05, 0.55, 4.35],
+        rotation: [0, 0, 0],
+        size: [1.05, 1.9, 0.12],
+        color: '#5c4a3a',
+      },
+    ],
+    backgroundMusic: '/audio/ambient-calm.mp3',
+  },
   
   home_evening: {
-    id: 'home_evening', name: 'Квартира, десятый этаж — снег за стеклом', explorationCharacterModelScale: 0.92, explorationLocomotionScale: 0.9, size: [14, 14],
+    id: 'home_evening', name: 'Квартира Володьки — кухня и общие комнаты', explorationCharacterModelScale: 0.92, explorationLocomotionScale: 0.9, size: [14, 14],
     spawnPoint: { x: 0, y: 1, z: 3, rotation: 0 } as PlayerPosition,
     ambientLight: { intensity: 0.35, color: '#ffaa66' },
     npcs: [],
     interactiveObjects: [
+      {
+        id: 'home_door_volodka_room',
+        type: 'generic',
+        position: [5.65, 0.55, 4.1],
+        size: [0.95, 1.85, 0.12],
+        color: '#4a3f35',
+      },
       {
         id: 'home_radio',
         type: 'generic',
@@ -218,14 +336,14 @@ export const SCENE_CONFIG = {
   },
   
   cafe_evening: {
-    id: 'cafe_evening', name: 'Кафе "Синий Кот"', explorationCharacterModelScale: 0.93, explorationLocomotionScale: 0.91, size: [16, 16],
+    id: 'cafe_evening',
+    name: 'Бар «Синяя яма»',
+    explorationCharacterModelScale: 0.93,
+    explorationLocomotionScale: 0.91,
+    size: [16, 16],
     spawnPoint: { x: 0, y: 1, z: 2, rotation: 0 } as PlayerPosition,
     ambientLight: { intensity: 0.5, color: '#ffa500' },
-    npcs: [
-      { id: 'barista', name: 'Бариста', model: 'barista', modelPath: '/models/shibahu.glb', position: [0, 0, -3], rotation: [0, 0, 0], dialogueTree: 'barista_greeting' },
-      { id: 'poet', name: 'Поэт', model: 'colleague', modelPath: '/models/witchapprentice.glb', position: [-3, 0, -5], rotation: [0, 0.5, 0], dialogueTree: 'poet_greeting' },
-      { id: 'alisa', name: 'Алиса', model: 'shadow', modelPath: '/models/college_girl.glb', position: [-2, 0, 3], rotation: [0, 0.5, 0], dialogueTree: 'alisa_cafe' }
-    ],
+    npcs: [],
     interactiveObjects: [
       { id: 'cafe_book', type: 'book', position: [0, 0.8, -3.5], poemId: 'poem_cafe_01', itemId: 'poem_fragment_1', canBeRead: true, size: [0.22, 0.04, 0.16], color: '#a0522d' },
       {
@@ -322,7 +440,9 @@ export const SCENE_CONFIG = {
   },
   
   blue_pit: {
-    id: 'blue_pit', name: 'Синяя яма', size: [15, 15],
+    id: 'blue_pit',
+    name: '«Синяя яма» (служебная сцена)',
+    size: [15, 15],
     spawnPoint: { x: 0, y: 0.5, z: 0, rotation: 0 } as PlayerPosition,
     ambientLight: { intensity: 0.3, color: '#0066ff' }, npcs: [], interactiveObjects: [],
   },

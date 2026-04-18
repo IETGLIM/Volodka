@@ -187,6 +187,41 @@ export const HomeEveningColliders = memo(function HomeEveningColliders() {
   );
 });
 
+export const VolodkaRoomColliders = memo(function VolodkaRoomColliders() {
+  const h = 3;
+  const wallT = 0.5;
+  const hw = 7;
+  const hd = 5;
+  const deskMain: [number, number, number][] = useMemo(() => [[3.2, 0.45, 0.1]], []);
+  const deskSide: [number, number, number][] = useMemo(() => [[0.8, 0.45, -2.8]], []);
+  const wardrobes: [number, number, number][] = useMemo(
+    () => [
+      [5.2, 0.95, 0.2],
+      [5.2, 0.95, -1.4],
+    ],
+    [],
+  );
+  const sofa: [number, number, number][] = useMemo(() => [[-3.8, 0.42, 1.2]], []);
+
+  return (
+    <group>
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.01, 0]} receiveShadow>
+        <planeGeometry args={[16, 14]} />
+        <meshStandardMaterial color="#2a3340" roughness={0.82} />
+      </mesh>
+      <InstancedWalls positions={[[0, h / 2, -hd]]} size={[14 + wallT * 2, h, wallT]} />
+      <InstancedWalls positions={[[-hw, h / 2, 0]]} size={[wallT, h, 10]} />
+      <InstancedWalls positions={[[hw, h / 2, 0]]} size={[wallT, h, 10]} />
+      <InstancedWalls positions={[[-4.12, h / 2, hd]]} size={[5.9 + wallT, h, wallT]} />
+      <InstancedWalls positions={[[4.12, h / 2, hd]]} size={[5.9 + wallT, h, wallT]} />
+      <InstancedWalls positions={deskMain} size={[1.45, 0.08, 0.78]} />
+      <InstancedWalls positions={deskSide} size={[1.05, 0.08, 0.58]} />
+      <InstancedWalls positions={wardrobes} size={[0.58, 1.75, 0.68]} />
+      <InstancedWalls positions={sofa} size={[1.85, 0.52, 0.88]} />
+    </group>
+  );
+});
+
 // ============================================
 // КОЛЛАЙДЕРЫ КАФЕ
 // ============================================
@@ -417,6 +452,8 @@ export const SceneColliderSelector = memo(function SceneColliderSelector({ scene
         return <KitchenColliders />;
       case 'home_evening':
         return <HomeEveningColliders />;
+      case 'volodka_room':
+        return <VolodkaRoomColliders />;
       case 'cafe_evening':
         return <CafeColliders />;
       case 'office_morning':

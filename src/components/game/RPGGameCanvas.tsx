@@ -79,6 +79,7 @@ interface RPGGameCanvasProps {
 }
 
 const GROUND_INDOOR: RpgGroundGeometryArgs = [20, 0.1, 20];
+const GROUND_VOLODKA_ROOM: RpgGroundGeometryArgs = [14, 0.1, 10];
 const GROUND_PLAZA: RpgGroundGeometryArgs = [48, 0.1, 48];
 const GROUND_OPEN: RpgGroundGeometryArgs = [40, 0.1, 40];
 
@@ -134,6 +135,8 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
       case 'home_morning':
       case 'home_evening':
         return { ambient: 0.4, light: '#ffcc00', fogColor: '#1a1a2e', groundGeometryArgs: GROUND_INDOOR };
+      case 'volodka_room':
+        return { ambient: 0.38, light: '#c8dff0', fogColor: '#151a22', groundGeometryArgs: GROUND_VOLODKA_ROOM };
       case 'office_morning':
         return { ambient: 0.5, light: '#ffffff', fogColor: '#2a2a3a', groundGeometryArgs: GROUND_INDOOR };
       case 'cafe_evening':

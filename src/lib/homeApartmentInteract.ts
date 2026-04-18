@@ -1,4 +1,5 @@
 import type { InteractiveObjectConfig } from '@/config/scenes';
+import { getSceneConfig } from '@/config/scenes';
 import { POEMS } from '@/data/poems';
 import { eventBus } from '@/engine/EventBus';
 import { poemMechanics } from '@/engine/PoemMechanics';
@@ -9,6 +10,8 @@ type StoreSnapshot = ReturnType<typeof useGameStore.getState>;
 
 /** Осмотр: нуар + кибер-деталь + быт (Volodka / BR / gothic-noir RPG). */
 const INSPECT: Partial<Record<string, string>> = {
+  home_door_volodka_room:
+    'Дверь в твою комнату. За ней — два стола, мониторы и тот самый «офис» в панельке, где мама с папой называют это «работаешь из дома».',
   home_radio:
     'Потёртый корпус, ручка громкости заедает. На шкале — города, между ними только «шум»: белый, как пустой канал без приглашения.',
   home_book_bedside:
@@ -47,6 +50,13 @@ export function tryHomeApartmentUse(
   if (!obj.id.startsWith('home_')) return false;
 
   switch (obj.id) {
+    case 'home_door_volodka_room': {
+      const sp = getSceneConfig('volodka_room').spawnPoint;
+      store.travelToScene('volodka_room', { narrativeDriven: true });
+      store.setPlayerPosition({ x: sp.x, y: sp.y, z: sp.z, rotation: sp.rotation ?? 0 });
+      toast('Комната. Здесь пахнет кофе из кружки и чуть‑чуть heated plastic от техники.');
+      break;
+    }
     case 'home_radio': {
       eventBus.emit('sound:play', { type: 'radio_static', volume: 0.32 });
       toast(

@@ -26,6 +26,7 @@ export const FloorWithTexture = memo(function FloorWithTexture({ sceneId }: { sc
       case 'kitchen_dawn':
       case 'home_morning':
       case 'home_evening':
+      case 'volodka_room':
         return { color: '#3d2817', roughness: 0.7, segments: 20 };
       case 'office_morning':
         return { color: '#4a4a4a', roughness: 0.9, segments: 40 };

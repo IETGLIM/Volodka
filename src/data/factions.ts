@@ -61,9 +61,9 @@ export const FACTIONS: Record<FactionId, Faction> = {
     name: 'Поэты',
     icon: '📜',
     color: 'from-purple-500 to-pink-500',
-    description: 'Творческие души, собирающиеся в "Синем коте". Верят в силу слова и искренность чувств.',
+    description: 'Творческие души у бара «Синяя яма» через дорогу от панельки: стихи, кавер, свои столы.',
     headquarters: 'cafe_evening',
-    leader: 'poet',
+    leader: 'albert',
     alliedFactions: ['dreamers', 'locals'],
     enemyFactions: ['shadow_network'],
     benefits: {
@@ -227,7 +227,7 @@ export function updateReputationValue(
 // Получить фракцию по NPC ID
 export function getFactionByNPC(npcId: string): FactionId | null {
   // Поэты и творческие
-  const poetNPCs = ['poet', 'alisa', 'maria', 'cafe_college_girl', 'cafe_poet'];
+  const poetNPCs = ['poet', 'alisa', 'maria', 'cafe_college_girl'];
   if (poetNPCs.includes(npcId)) return 'poets';
   
   // IT-коллеги
@@ -262,6 +262,7 @@ export function getFactionByNPC(npcId: string): FactionId | null {
     'district_rimma',
     'district_rimma_night',
     'district_nastya',
+    'pit_timur',
   ];
   if (localNPCs.includes(npcId)) return 'locals';
   

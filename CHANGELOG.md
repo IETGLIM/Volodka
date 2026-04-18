@@ -50,7 +50,7 @@
 
 - **`PhysicsPlayer`**: движение на **Kinematic Character Controller** Rapier с **`kinematicPosition`**, шаги через **`usePlayerFootsteps`**; согласованы коллайдеры сцен с явными **`CuboidCollider`** и префиксом материала для шагов.
 
-- **Старт 3D**: `exploration.currentSceneId` и узел **`explore_mode`** → **`home_evening`** (квартира); подписи в **`SceneManager`**, **`scenes.ts`**, тест **`npcExplorationIntegrity`**.
+- **Локации и лор (квартира / бар)**: сцена **`volodka_room`** (комната Володьки — удалёнка, мониторинг, дверь в **`home_evening`**); старт **`exploration`** в **`gameStore`** и **`worldStore`** и узел **`explore_mode`** → **`volodka_room`**; **`cafe_evening`** — бар **«Синяя яма»**; NPC **Альберт** / **Заремушка**, **`pit_timur`** (Тимур); квесты на **`albert`**; **`blue_pit`** — служебная сцена. Подписи в **`SceneManager`**, **`scenes.ts`**, тест **`npcExplorationIntegrity`**.
 - **`PhysicsSceneColliders`**, **`SceneColliders`**: для **`home_evening`** используются **`HomeEveningColliders`** вместо **`KitchenColliders`**, без лишних препятствий «кухни» поверх интерактивных объектов.
 - **`NPC_DEFINITIONS`**: заменены GLB без клипов анимации / с одним A-pose; у всех целевых NPC поле **`animations`** и константы имён клипов; **`scenes.ts`** / **`modelUrls.ts`** приведены в соответствие.
 - **`NPC.tsx`**, **`RPGGameCanvas.tsx`**, **`PhysicsRPGCanvas.tsx`**: интеграция расписания, тика времени внутри `<Canvas>`, радиальное меню.

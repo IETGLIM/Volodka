@@ -17,21 +17,24 @@ describe('ScheduleEngine routines', () => {
     expect(isHourInRange(10, 7, 10)).toBe(false);
   });
 
-  it('Albert moves between room, office, cafe, library, park and street by hour', () => {
+  it('Albert moves between home, office, library, park and bar by hour', () => {
     expect(getCurrentScheduleEntry('albert', 2)?.sceneId).toBe('zarema_albert_room');
     expect(getCurrentScheduleEntry('albert', 2)?.activity).toBe('sleep');
     expect(getCurrentScheduleEntry('albert', 8)?.activity).toBe('rest');
     expect(getCurrentScheduleEntry('albert', 10)?.sceneId).toBe('office_morning');
-    expect(getCurrentScheduleEntry('albert', 12.5)?.sceneId).toBe('cafe_evening');
+    expect(getCurrentScheduleEntry('albert', 12.5)?.sceneId).toBe('library');
     expect(getCurrentScheduleEntry('albert', 14)?.sceneId).toBe('library');
     expect(getCurrentScheduleEntry('albert', 17)?.sceneId).toBe('memorial_park');
-    expect(getCurrentScheduleEntry('albert', 20)?.sceneId).toBe('street_night');
+    expect(getCurrentScheduleEntry('albert', 20)?.sceneId).toBe('cafe_evening');
   });
 
   it('getNPCsForScene with time includes NPCs visiting from schedule', () => {
-    const cafe = getNPCsForScene('cafe_evening', 16);
-    expect(cafe.some((n) => n.id === 'zarema')).toBe(true);
-    expect(cafe.some((n) => n.id === 'cafe_barista')).toBe(true);
+    const cafeAfternoon = getNPCsForScene('cafe_evening', 16);
+    expect(cafeAfternoon.some((n) => n.id === 'zarema')).toBe(true);
+    expect(cafeAfternoon.some((n) => n.id === 'pit_timur')).toBe(true);
+
+    const cafeEvening = getNPCsForScene('cafe_evening', 19);
+    expect(cafeEvening.some((n) => n.id === 'albert')).toBe(true);
 
     const office = getNPCsForScene('office_morning', 10);
     expect(office.some((n) => n.id === 'albert')).toBe(true);

@@ -47,8 +47,9 @@ const INITIAL_NPC_RELATIONS: NPCRelation[] = [
 ];
 
 const INITIAL_EXPLORATION: ExplorationState = {
-  playerPosition: { x: 0, y: 1, z: 3, rotation: 0 },
-  currentSceneId: 'kitchen_night',
+  /** Как в `gameStore` / `SCENE_CONFIG.volodka_room.spawnPoint` */
+  playerPosition: { x: 2.2, y: 1, z: 1.8, rotation: 0 },
+  currentSceneId: 'volodka_room',
   timeOfDay: 20,
   npcStates: {},
   triggerStates: {},

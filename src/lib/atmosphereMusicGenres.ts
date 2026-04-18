@@ -12,6 +12,7 @@ const SCENE_GENRE: Partial<Record<string, AtmosphereGenre>> = {
   kitchen_dawn: 'chiptune_8bit',
   home_morning: 'chiptune_8bit',
   home_evening: 'chiptune_8bit',
+  volodka_room: 'chiptune_8bit',
   blue_pit: 'chiptune_8bit',
   library: 'chiptune_8bit',
 

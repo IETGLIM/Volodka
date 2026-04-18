@@ -298,7 +298,8 @@ function getDialogueFallback(request: DialogueRequest): AIFallbackDialogue {
     zarema: 'Володька, ты в порядке? Давай хоть чай попьём, а?',
     albert: 'Хм. Если хочешь поговорить — я тут.',
     dream_lillian: 'Твоё молчание... оно звучит громче слов.',
-    cafe_barista: 'Вам подсказать что-нибудь? Или просто посидеть?',
+    cafe_barista: 'Заказать что-нибудь по меню или просто посидеть у стойки?',
+    pit_timur: 'Ритм держу. На сет заглянешь?',
   };
 
   const npcResponse = fallbackResponses[npcId]

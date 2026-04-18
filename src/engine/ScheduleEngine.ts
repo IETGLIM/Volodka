@@ -26,7 +26,7 @@ export function isHourInRange(timeOfDay: number, startHour: number, endHour: num
 }
 
 /**
- * Ключевые NPC: Альберт (сосед Володьки), Зарема, Виктория на кухне, бариста.
+ * Ключевые NPC: Альберт (бар «Синяя яма» + сосед), Зарема, Тимур, Виктория на кухне.
  * «Володька» — ИГРОК; отдельного NPC с таким id нет, слот закрыт комментарием в данных.
  *
  * Рутины: несколько непересекающихся окон [start, end) — смена **sceneId**, **position**, **activity**.
@@ -61,14 +61,6 @@ const NPC_SCHEDULES: Record<string, ScheduleEntry[]> = {
     },
     {
       startHour: 12,
-      endHour: 13,
-      sceneId: 'cafe_evening',
-      position: { x: 2.8, y: 0, z: 1.5 },
-      activity: 'rest',
-      dialogueAvailable: true,
-    },
-    {
-      startHour: 13,
       endHour: 16,
       sceneId: 'library',
       position: { x: -4, y: 0, z: 2 },
@@ -86,9 +78,9 @@ const NPC_SCHEDULES: Record<string, ScheduleEntry[]> = {
     {
       startHour: 18,
       endHour: 23,
-      sceneId: 'street_night',
-      position: { x: 2.2, y: 0, z: 0.5 },
-      activity: 'talk',
+      sceneId: 'cafe_evening',
+      position: { x: 0.6, y: 0, z: -3.4 },
+      activity: 'work',
       dialogueAvailable: true,
     },
   ],
@@ -138,7 +130,7 @@ const NPC_SCHEDULES: Record<string, ScheduleEntry[]> = {
       startHour: 16,
       endHour: 19,
       sceneId: 'cafe_evening',
-      position: { x: -2.2, y: 0, z: 2.4 },
+      position: { x: -1.6, y: 0, z: -2.2 },
       activity: 'work',
       dialogueAvailable: true,
     },
@@ -178,62 +170,30 @@ const NPC_SCHEDULES: Record<string, ScheduleEntry[]> = {
       dialogueAvailable: false,
     },
   ],
-  /** Бариста: ночь в заведении → открытие → смена у стойки → выход «на воздух» / парк → закрытие. */
-  cafe_barista: [
+  /** Тимур: ударник кавер-группы, завсегдатай бара «Синяя яма»; днём — Зелёнка / район. */
+  pit_timur: [
     {
       startHour: 22,
-      endHour: 7,
-      sceneId: 'cafe_evening',
-      position: { x: 1.2, y: 0, z: -4.2 },
+      endHour: 10,
+      sceneId: 'district',
+      position: { x: 2.2, y: 0, z: 1.2 },
       activity: 'sleep',
       dialogueAvailable: false,
     },
     {
-      startHour: 7,
-      endHour: 9,
-      sceneId: 'cafe_evening',
-      position: { x: 0.3, y: 0, z: -2.4 },
-      activity: 'work',
-      dialogueAvailable: true,
-    },
-    {
-      startHour: 9,
-      endHour: 12,
-      sceneId: 'cafe_evening',
-      position: { x: 0, y: 0, z: -3 },
-      activity: 'talk',
-      dialogueAvailable: true,
-    },
-    {
-      startHour: 12,
-      endHour: 13,
-      sceneId: 'street_night',
-      position: { x: 4.5, y: 0, z: 1 },
+      startHour: 10,
+      endHour: 14,
+      sceneId: 'green_zone',
+      position: { x: -1.5, y: 0, z: 0.8 },
       activity: 'walk',
       dialogueAvailable: true,
     },
     {
-      startHour: 13,
-      endHour: 17,
+      startHour: 14,
+      endHour: 23,
       sceneId: 'cafe_evening',
-      position: { x: -0.8, y: 0, z: -3.2 },
+      position: { x: 3.4, y: 0, z: -3.8 },
       activity: 'talk',
-      dialogueAvailable: true,
-    },
-    {
-      startHour: 17,
-      endHour: 18,
-      sceneId: 'memorial_park',
-      position: { x: 0, y: 0, z: 2 },
-      activity: 'walk',
-      dialogueAvailable: true,
-    },
-    {
-      startHour: 18,
-      endHour: 22,
-      sceneId: 'cafe_evening',
-      position: { x: 0.5, y: 0, z: -2.8 },
-      activity: 'work',
       dialogueAvailable: true,
     },
   ],

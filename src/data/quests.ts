@@ -368,7 +368,7 @@ export const QUEST_DEFINITIONS: Record<string, ExtendedQuest> = {
       createObjective('read_poem', 'Прочитать стихотворение с микрофона', {
         targetValue: 1,
         hint: 'На open mic поднимите руку (или ветку «я готовился»).',
-        targetNPC: 'cafe_barista',
+        targetNPC: 'albert',
         stageType: 'narration',
         linkedStoryNodeId: 'open_mic',
       }),

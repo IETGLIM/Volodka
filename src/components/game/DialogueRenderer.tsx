@@ -297,6 +297,7 @@ export default function DialogueRenderer({
       case 'maria':
       case 'kitchen_maria':
         return 'from-rose-600 to-pink-700';
+      case 'albert':
       case 'cafe_barista':
         return 'from-amber-600 to-orange-700';
       case 'office_colleague':
@@ -316,6 +317,7 @@ export default function DialogueRenderer({
       case 'maria':
       case 'kitchen_maria':
         return 'text-rose-300';
+      case 'albert':
       case 'cafe_barista':
         return 'text-amber-300';
       case 'office_colleague':

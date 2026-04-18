@@ -84,8 +84,8 @@ export const SCENE_VISUALS: Record<SceneId, SceneVisualConfig> = {
   },
   home_evening: {
     id: 'home_evening',
-    name: 'Квартира, 10-й этаж',
-    description: 'Вечер: тусклый янтарный свет от лампы, окно в двор',
+    name: 'Квартира Володьки — кухня и общие комнаты',
+    description: 'Трёшка на десятом: коридор, кухня, соседи за стеной; из комнаты Володьки — отдельная дверь',
     photoUrl: scenePhoto('home_evening'),
     background: 'linear-gradient(180deg, #0d0a05 0%, #1a1208 40%, #2a1a0a 100%)',
     overlay: 'bg-gradient-to-t from-amber-900/30 to-transparent',
@@ -93,6 +93,17 @@ export const SCENE_VISUALS: Record<SceneId, SceneVisualConfig> = {
     musicKey: 'ambient_evening',
     atmosphereAnimation: 'animate-pulse-slow',
     extraClasses: 'before:absolute before:inset-0 before:bg-[radial-gradient(ellipse_at_50%_70%,rgba(212,148,10,0.06),transparent_60%)]',
+  },
+  volodka_room: {
+    id: 'volodka_room',
+    name: 'Комната Володьки',
+    description: 'Удалёнка: мониторы, Kibana, Zabbix, Grafana; диван и дверь в коридор',
+    photoUrl: scenePhoto('home_evening'),
+    background: 'linear-gradient(180deg, #0a1018 0%, #121c28 45%, #1a2430 100%)',
+    overlay: 'bg-gradient-to-t from-slate-900/35 to-cyan-950/10',
+    ambientColor: '#7dd3fc',
+    musicKey: 'ambient_evening',
+    extraClasses: 'before:absolute before:inset-0 before:bg-[radial-gradient(ellipse_at_70%_30%,rgba(125,211,252,0.07),transparent_55%)]',
   },
   office_morning: {
     id: 'office_morning',
@@ -179,8 +190,8 @@ export const SCENE_VISUALS: Record<SceneId, SceneVisualConfig> = {
   },
   cafe_evening: {
     id: 'cafe_evening',
-    name: 'Кафе "Синяя Яма"',
-    description: 'Тёплый янтарный свет, мягкие тени, интимность',
+    name: 'Бар «Синяя яма»',
+    description: 'Через дорогу от панельки: кавер, стихи, стойка Альберта и Заремы',
     photoUrl: scenePhoto('cafe_evening'),
     background: 'linear-gradient(180deg, #0d0a05 0%, #1a1208 40%, #2a1a0a 100%)',
     overlay: 'bg-gradient-to-t from-amber-950/30 to-orange-950/10',
@@ -272,8 +283,8 @@ export const SCENE_VISUALS: Record<SceneId, SceneVisualConfig> = {
   },
   blue_pit: {
     id: 'blue_pit',
-    name: 'Синяя яма',
-    description: 'Глубокий сине-чёрный, подводный',
+    name: '«Синяя яма» (служебная сцена)',
+    description: 'Сюжетный/технический слот; основной бар — локация cafe_evening',
     photoUrl: scenePhoto('blue_pit'),
     background:
       'linear-gradient(180deg, #000208 0%, #000c1a 40%, #001428 75%, #000510 100%)',
