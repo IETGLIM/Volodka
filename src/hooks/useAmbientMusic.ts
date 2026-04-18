@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { createBrowserAudioContext } from '@/lib/browserAudioContext';
 import { getAtmosphereGenreForScene } from '@/lib/atmosphereMusicGenres';
 
 // ============================================
@@ -153,9 +154,10 @@ export function useAmbientMusic(config: AmbientConfig) {
     if (audioContextRef.current) return;
     
     try {
-      const AudioContextClass = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
-      audioContextRef.current = new AudioContextClass();
-      
+      audioContextRef.current = createBrowserAudioContext();
+      if (!audioContextRef.current) return;
+      void audioContextRef.current.resume().catch(() => {});
+
       // Master gain с компрессором для мягкости
       const compressor = audioContextRef.current.createDynamicsCompressor();
       compressor.threshold.value = -24;

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useCallback, useState, useMemo } from 'react';
+import { createBrowserAudioContext } from '@/lib/browserAudioContext';
 
 interface AudioTrack {
   id: string;
@@ -31,7 +32,9 @@ export function useAdaptiveAudio({
     if (audioContextRef.current) return;
     
     try {
-      audioContextRef.current = new (window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)();
+      audioContextRef.current = createBrowserAudioContext();
+      if (!audioContextRef.current) return;
+      void audioContextRef.current.resume().catch(() => {});
       setIsInitialized(true);
     } catch (e) {
       console.warn('AudioContext not supported');

@@ -1,6 +1,9 @@
 // src/app/GameClient.tsx
 'use client';
 
+/** До любого `@react-three/fiber` — патч Clock / WebAudio для three r183+. */
+import '@/lib/threeClientPrep';
+
 import dynamic from 'next/dynamic';
 import { useState, useEffect, useRef, memo, useMemo } from 'react';
 import { motion } from 'framer-motion';

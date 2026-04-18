@@ -3,6 +3,8 @@
  * Для меню/интро — простые зацикленные клипы (файлы опциональны).
  */
 
+import { createBrowserAudioContext } from '@/lib/browserAudioContext';
+
 type TrackId = 'menu' | 'intro' | 'ambient';
 
 class AudioEngineImpl {
@@ -62,9 +64,9 @@ class AudioEngineImpl {
       return;
     }
     try {
-      const Ctx = window.AudioContext || (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
-      if (!Ctx) return;
-      const ctx = new Ctx();
+      const ctx = createBrowserAudioContext();
+      if (!ctx) return;
+      void ctx.resume().catch(() => {});
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       osc.connect(gain);
@@ -84,9 +86,9 @@ class AudioEngineImpl {
   /** Короткий «сухой» шаг без семпла: полосовой шум + затухание по материалу. */
   private playFootstepBeep(material: string, volume: number) {
     try {
-      const Ctx = window.AudioContext || (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
-      if (!Ctx) return;
-      const ctx = new Ctx();
+      const ctx = createBrowserAudioContext();
+      if (!ctx) return;
+      void ctx.resume().catch(() => {});
       const dur = 0.045;
       const sampleRate = ctx.sampleRate;
       const n = Math.floor(sampleRate * dur);
