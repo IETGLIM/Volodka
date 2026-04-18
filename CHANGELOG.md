@@ -8,6 +8,8 @@
 
 ### Added
 
+- **IT «гильдия облака» (боковые квесты, дух Fable/Gothic)**: в **`quests.ts`** — **`incident_scroll_4729`**, **`vault_backup_trial`**, **`dependency_sigil`** (свиток инцидента, реликварий бэкапов, печать npm); старт из **`storyNodes`** (**`start_diagnosis`**, **`escalate_now`**, **`check_database`**); фракция **`it_workers`** в **`factions.ts`**; прогресс по NPC — **`useQuestProgress`** **`EVENT_OBJECTIVE_MAP`** (**`office_alexander`**, **`office_colleague`**, **`office_dmitry`**, **`office_artyom`**); по 💻 — **`ITTerminal`**: `journalctl`, `incident close`, `aws s3 ls`, `sha256sum`, `npm audit` / `npm uninstall`, **`openstack server show`** с двумя целями сразу, **`kubectl rollout undo`** для **`auth_crisis.apply_fix`**; частичное совпадение команд — сортировка ключей по длине; **`GameOrchestrator`**: **`openDialogueFromStoryWithQuest`** — при диалоге из сюжета тоже вызывается **`trackQuestNpcTalk`** (квесты не «молчали»); **`goldenPath`** — уточнение у **`start_diagnosis`**; тесты **`useQuestProgress.npcMap.test.ts`**.
+
 - **Экран для близких**: **`FamilyWelcomeGate`** в **`GameClient`** (перед **`GameOrchestrator`**), тексты в **`src/data/familyWelcome.ts`** — спокойное приветствие, подсказки по управлению, чекбокс «не показывать снова» в **`localStorage`** (**`volodka_family_gate_done`**); тяжёлый бандл игры не грузится, пока не нажата «Войти в историю».
 
 - **`src/app/error.tsx`**, **`src/app/global-error.tsx`**: границы ошибок App Router (сегмент и корень при падении **`layout`**); кнопка **`reset`**, в development — текст ошибки в UI.

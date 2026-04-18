@@ -281,6 +281,15 @@ export default function GameOrchestrator() {
 
   const { currentNode, currentSceneId, trackQuestNpcTalk, emitQuestEvent, runtime } = scene;
 
+  /** Диалог из сюжета (`dialogueNpcId`) — тоже считается разговором для 📋 / `npc_talked`. */
+  const openDialogueFromStoryWithQuest = useCallback(
+    (p: { npcId: string; nextNodeId: string; fromNodeId: string; choiceText: string }) => {
+      trackQuestNpcTalk(p.npcId);
+      openDialogueFromStory(p);
+    },
+    [trackQuestNpcTalk, openDialogueFromStory],
+  );
+
   useEffect(() => {
     return eventBus.on('object:interact', ({ objectId, action }) => {
       const sid = useGameStore.getState().exploration.currentSceneId;
@@ -543,7 +552,7 @@ export default function GameOrchestrator() {
     addSkill,
     addItem,
     removeItem,
-    openDialogueFromStory,
+    openDialogueFromStory: openDialogueFromStoryWithQuest,
     phase,
     gameMode,
     currentNodeId,

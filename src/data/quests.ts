@@ -316,6 +316,93 @@ export const QUEST_DEFINITIONS: Record<string, ExtendedQuest> = {
       hasFlag: 'memory_alert',
     },
   },
+
+  /** Боковые «свитки гильдии облака» — RPG-обрамление (Fable / Gothic), шаги через 💻 и офисных NPC. */
+  incident_scroll_4729: {
+    id: 'incident_scroll_4729',
+    title: '📜 Свиток инцидента 4729',
+    description:
+      'Гильдия облака вывесила задание: банк стонет, тикет горит, SLA тает как свеча у алтаря. Сначала — наставление «мага кластера», потом чтение «камня памяти» (журнал службы), печать согласия у собрата по цеху и руну закрытия в терминале.',
+    type: 'side',
+    faction: 'Работа · IT',
+    status: 'active',
+    objectives: [
+      createObjective('invoke_techlead', 'Получить наставление у мага кластера (техлид)', {
+        hint: 'В офисе откройте диалог с Александром — он у Grafana.',
+        targetNPC: 'office_alexander',
+        targetLocation: 'office_morning',
+      }),
+      createObjective('read_service_journal', 'Прочесть журнал службы auth (камень памяти)', {
+        hint: 'В 💻: journalctl -u auth-service -n 40 --no-pager',
+        targetLocation: 'office_morning',
+      }),
+      createObjective('seal_with_colleague', 'Получить печать согласования у цехового брата', {
+        hint: 'Поговорите в офисе с коллегой с парты.',
+        targetNPC: 'office_colleague',
+        targetLocation: 'office_morning',
+      }),
+      createObjective('close_incident_rune', 'Начертить руну закрытия тикета', {
+        hint: 'В 💻: incident close 4729 --note resolved',
+        targetLocation: 'office_morning',
+      }),
+    ],
+    reward: createReward({ skillPoints: 2, stability: 8, karma: 4, introspection: 3 }),
+    startNode: 'start',
+  },
+
+  vault_backup_trial: {
+    id: 'vault_backup_trial',
+    title: '⚱️ Испытание реликвария бэкапов',
+    description:
+      'В подземелье дата-центра шепчут о «реликварии» — холодном хранилище снимков мира. Оракул DevOps (Дмитрий) подскажет путь; ты должен увидеть список сосудов и проверить печать целостности манифеста, иначе восстановление — ложный сон.',
+    type: 'side',
+    faction: 'Работа · IT',
+    status: 'active',
+    objectives: [
+      createObjective('listen_oracle_dmitry', 'Выслушать оракула резервных копий', {
+        hint: 'В офисе — диалог с Дмитрием из DevOps.',
+        targetNPC: 'office_dmitry',
+        targetLocation: 'office_morning',
+      }),
+      createObjective('list_reliquary', 'Сверить сосуды в реликварии S3', {
+        hint: 'В 💻: aws s3 ls s3://banking-vault/',
+        targetLocation: 'office_morning',
+      }),
+      createObjective('verify_manifest_sigil', 'Сверить печать манифеста (SHA256)', {
+        hint: 'В 💻: sha256sum -c manifest.sha256',
+        targetLocation: 'office_morning',
+      }),
+    ],
+    reward: createReward({ skillPoints: 2, stability: 10, mood: 3, intuition: 3 }),
+    startNode: 'start',
+  },
+
+  dependency_sigil: {
+    id: 'dependency_sigil',
+    title: '⛓️ Печать зависимостей (npm)',
+    description:
+      'В корнях проекта затаилась «проклятая транзитивная» зависимость — как проклятая вещь в старом RPG. Страж ИБ (Артём) знает обряд аудита; в терминале нужно вызвать сигил проверки и снять проклятие удалением пакета.',
+    type: 'side',
+    faction: 'Работа · IT',
+    status: 'active',
+    objectives: [
+      createObjective('cast_audit_sigil', 'Наложить сигил аудита (--production)', {
+        hint: 'В 💻: npm audit --production',
+        targetLocation: 'office_morning',
+      }),
+      createObjective('consult_crypt_warden', 'Спросить у стража склепа (ИБ) про CVE', {
+        hint: 'Диалог в офисе с Артёмом из информационной безопасности.',
+        targetNPC: 'office_artyom',
+        targetLocation: 'office_morning',
+      }),
+      createObjective('banish_transitive', 'Изгнать проклятый транзитив', {
+        hint: 'В 💻: npm uninstall phantom-left-pad --save',
+        targetLocation: 'office_morning',
+      }),
+    ],
+    reward: createReward({ skillPoints: 2, karma: 6, intuition: 4 }),
+    startNode: 'start',
+  },
   
   // ========== ОСНОВНЫЕ КВЕСТЫ ==========
   
