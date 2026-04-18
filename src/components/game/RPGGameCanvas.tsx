@@ -8,8 +8,7 @@
 
 import { memo, useRef, useEffect, useMemo, useCallback, useState, Fragment, Suspense } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { Physics, RigidBody, CuboidCollider } from '@react-three/rapier';
-import { footstepColliderName } from '@/lib/footstepMaterials';
+import { Physics } from '@react-three/rapier';
 import * as THREE from 'three';
 
 // Types
@@ -323,22 +322,12 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
       }}
       gl={{ antialias: true, alpha: false, powerPreference: 'high-performance' }}
     >
-      {/* Physics: Suspense — WASM Rapier; пол — явный CuboidCollider (авто cuboid на повёрнутом mesh часто «дырявый»). */}
+      {/* Physics: Suspense — WASM Rapier; коллайдер пола в `PhysicsSceneColliders`. */}
       <Suspense fallback={null}>
       <Physics gravity={[0, -9.81, 0]} debug={false}>
         <ExplorationWorldClock />
-        <RigidBody type="fixed" colliders={false} position={[0, 0, 0]}>
-          <CuboidCollider
-            args={[
-              groundGeometryArgs[0] / 2,
-              groundGeometryArgs[1] / 2,
-              groundGeometryArgs[2] / 2,
-            ]}
-            position={[0, -groundGeometryArgs[1] / 2, 0]}
-            friction={1}
-            restitution={0}
-            name={footstepColliderName(isPanelDistrict ? 'metal' : 'concrete')}
-          />
+        {/* Пол: только визуал — физический пол задаётся в `PhysicsSceneColliders` (иначе два cuboid на y≈0 дают продавливание KCC). */}
+        <group>
           <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.05, 0]} receiveShadow>
             <boxGeometry args={groundGeometryArgs} />
             <meshStandardMaterial
@@ -349,7 +338,7 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
               emissiveIntensity={isPanelDistrict ? 0.35 : 0}
             />
           </mesh>
-        </RigidBody>
+        </group>
 
         {isPanelDistrict && <PanelDistrictBuildings />}
       

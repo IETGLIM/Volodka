@@ -151,8 +151,8 @@ const PhysicsFloor = memo(function PhysicsFloor({
       {/* Физический коллайдер пола */}
       <RigidBody type="fixed" colliders={false}>
         <CuboidCollider
-          args={[size[0] / 2, 0.1, size[1] / 2]}
-          position={[0, -0.1, 0]}
+          args={[size[0] / 2, 0.22, size[1] / 2]}
+          position={[0, -0.22, 0]}
           name={footstepColliderName(footstepMaterial)}
         />
       </RigidBody>

@@ -1,4 +1,5 @@
 import type { InteractiveObjectConfig } from '@/config/scenes';
+import { PLAYER_FEET_SPAWN_Y } from '@/lib/playerScaleConstants';
 import type { useGameStore } from '@/store/gameStore';
 
 type StoreSnapshot = ReturnType<typeof useGameStore.getState>;
@@ -6,7 +7,7 @@ type StoreSnapshot = ReturnType<typeof useGameStore.getState>;
 /** Спавн у южной двери (из комнаты Володьки), смотрим вдоль коридора к кухне. */
 export const CORRIDOR_FROM_ROOM: { x: number; y: number; z: number; rotation: number } = {
   x: 0,
-  y: 1,
+  y: PLAYER_FEET_SPAWN_Y,
   z: -4.25,
   rotation: 0,
 };
@@ -14,7 +15,7 @@ export const CORRIDOR_FROM_ROOM: { x: number; y: number; z: number; rotation: nu
 /** С северной стороны коридора, лицом к дверям комнат. */
 export const CORRIDOR_FROM_HOME: { x: number; y: number; z: number; rotation: number } = {
   x: 0,
-  y: 1,
+  y: PLAYER_FEET_SPAWN_Y,
   z: 4.15,
   rotation: Math.PI,
 };
@@ -22,7 +23,7 @@ export const CORRIDOR_FROM_HOME: { x: number; y: number; z: number; rotation: nu
 /** В комнате у порога, лицом к двери в коридор. */
 export const ROOM_FROM_CORRIDOR: { x: number; y: number; z: number; rotation: number } = {
   x: 0.05,
-  y: 1,
+  y: PLAYER_FEET_SPAWN_Y,
   z: 3.45,
   rotation: Math.PI,
 };
@@ -30,7 +31,7 @@ export const ROOM_FROM_CORRIDOR: { x: number; y: number; z: number; rotation: nu
 /** В общей зоне квартиры, западнее двери в коридор. */
 export const HOME_FROM_CORRIDOR: { x: number; y: number; z: number; rotation: number } = {
   x: 4.55,
-  y: 1,
+  y: PLAYER_FEET_SPAWN_Y,
   z: 4.05,
   rotation: -Math.PI / 2,
 };

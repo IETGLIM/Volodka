@@ -50,6 +50,8 @@
 
 - **`PhysicsPlayer`**: движение на **Kinematic Character Controller** Rapier с **`kinematicPosition`**, шаги через **`usePlayerFootsteps`**; согласованы коллайдеры сцен с явными **`CuboidCollider`** и префиксом материала для шагов.
 
+- **Масштаб и пол в 3D**: GLB Володьки автоподгоняется по bounding box к **`PLAYER_GLB_TARGET_VISUAL_METERS`** и множителю **`explorationCharacterModelScale`** комнаты; капсула Rapier масштабируется тем же коэффициентом; убран дублирующий cuboid пола из **`RPGGameCanvas`** (только **`PhysicsSceneColliders`**), утолщён **`PhysicsFloor`**; спавн ног **`PLAYER_FEET_SPAWN_Y`** в квартире и сторе.
+
 - **Локации и лор (квартира / бар)**: сцены **`volodka_room`** и **`volodka_corridor`** (комната → коридор → **`home_evening`**; двери и интерактивы); старт **`exploration`** в **`gameStore`** / **`worldStore`** и **`explore_mode`** → **`volodka_room`**; **`RPGGameCanvas`** — пол 3.5×12 для коридора, камера ближе в узких комнатах, **`PhysicsPlayer`** сбрасывается по **`sceneId`** и берёт **`initialRotation`** из стора; **`cafe_evening`** — бар **«Синяя яма»**; NPC **Альберт** / **Заремушка**, **`pit_timur`**; **`blue_pit`** — служебная сцена. Подписи в **`SceneManager`**, **`scenes.ts`**, тесты **`npcExplorationIntegrity`**, **`explorationAtmosphere`**, **`scenes.explorationScale`**.
 - **`PhysicsSceneColliders`**, **`SceneColliders`**: для **`home_evening`** используются **`HomeEveningColliders`** вместо **`KitchenColliders`**, без лишних препятствий «кухни» поверх интерактивных объектов.
 - **`NPC_DEFINITIONS`**: заменены GLB без клипов анимации / с одним A-pose; у всех целевых NPC поле **`animations`** и константы имён клипов; **`scenes.ts`** / **`modelUrls.ts`** приведены в соответствие.

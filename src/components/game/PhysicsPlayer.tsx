@@ -9,6 +9,7 @@ import * as THREE from 'three';
 import { usePlayerControls, PHYSICS_CONSTANTS, type PlayerControls } from '@/hooks/useGamePhysics';
 import { usePlayerFootsteps } from '@/hooks/usePlayerFootsteps';
 import { getDefaultPlayerModelPath, isValidPlayerGlbPath, rewriteLegacyModelPath } from '@/config/modelUrls';
+import { PLAYER_GLB_TARGET_VISUAL_METERS } from '@/lib/playerScaleConstants';
 import { useGameStore } from '@/store/gameStore';
 
 // ============================================
@@ -18,7 +19,10 @@ import { useGameStore } from '@/store/gameStore';
 export interface PhysicsPlayerProps {
   position?: [number, number, number];
   modelPath?: string;
-  /** Визуальный масштаб GLB/заглушки игрока (коллайдер Rapier без изменений). См. `getExplorationCharacterModelScale`. */
+  /**
+   * Масштаб персонажа в помещении (`getExplorationCharacterModelScale`):
+   * умножает капсулу Rapier и целевой размер GLB после автоподгонки по bounding box.
+   */
   visualModelScale?: number;
   /** Множитель ходьбы/бега/прыжка; см. `getExplorationLocomotionScale`. */
   locomotionScale?: number;
@@ -43,10 +47,13 @@ export interface PhysicsPlayerRef {
 
 const FallbackPlayerModel = memo(function FallbackPlayerModel({
   isMoving,
-  isLocked
+  isLocked,
+  roomScale = 1,
 }: {
   isMoving: boolean;
   isLocked: boolean;
+  /** Согласован с `visualModelScale` сцены (узкие комнаты — меньше заглушка). */
+  roomScale?: number;
 }) {
   const groupRef = useRef<THREE.Group>(null);
   const leftLegRef = useRef<THREE.Group>(null);
@@ -79,8 +86,9 @@ const FallbackPlayerModel = memo(function FallbackPlayerModel({
     }
   });
 
+  const rs = Math.max(0.28, Math.min(1.25, roomScale));
   return (
-    <group ref={groupRef}>
+    <group ref={groupRef} scale={[rs, rs, rs]}>
       {/* ТЕЛО */}
       <group position={[0, 0.9, 0]}>
         <mesh castShadow>
@@ -179,16 +187,21 @@ const GLBPlayerModel = memo(function GLBPlayerModel({
   isMoving,
   isLocked,
   onError,
+  roomScale,
 }: {
   modelPath: string;
   isMoving: boolean;
   isLocked: boolean;
   onError: () => void;
+  /** Множитель комнаты; итоговая высота ≈ `PLAYER_GLB_TARGET_VISUAL_METERS * roomScale`. */
+  roomScale: number;
 }) {
   const groupRef = useRef<THREE.Group>(null);
   const { scene: loadedScene, animations } = useGLTF(modelPath) as any;
   const { actions } = useAnimations(animations || [], groupRef);
   const [currentAction, setCurrentAction] = useState<string | null>(null);
+  const rs = Math.max(0.28, Math.min(1.25, roomScale));
+  const [visualUniform, setVisualUniform] = useState(() => 0.12 * rs);
 
   // Очистка кэша при размонтировании для предотвращения утечек памяти
   useEffect(() => {
@@ -214,6 +227,16 @@ const GLBPlayerModel = memo(function GLBPlayerModel({
       return null;
     }
   }, [loadedScene, onError]);
+
+  useLayoutEffect(() => {
+    if (!loadedScene) return;
+    loadedScene.updateMatrixWorld(true);
+    const b = new THREE.Box3().setFromObject(loadedScene);
+    const h = b.getSize(new THREE.Vector3()).y;
+    if (h < 1e-4) return;
+    const intrinsic = PLAYER_GLB_TARGET_VISUAL_METERS / h;
+    setVisualUniform(intrinsic * rs);
+  }, [loadedScene, rs]);
 
   useEffect(() => {
     if (!actions || Object.keys(actions).length === 0) return;
@@ -244,8 +267,9 @@ const GLBPlayerModel = memo(function GLBPlayerModel({
 
   if (!displayScene) return null;
 
+  const u = visualUniform;
   return (
-    <group ref={groupRef} scale={[1, 1, 1]}>
+    <group ref={groupRef} scale={[u, u, u]}>
       <primitive object={displayScene} />
       {isLocked && (
         <group position={[0, 2.2, 0]}>
@@ -267,7 +291,7 @@ const DEFAULT_PHYSICS_DT = 1 / 60;
 
 export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProps>(function PhysicsPlayer(
   {
-    position = [0, 1, 3],
+    position = [0, 0.06, 3],
     modelPath,
     visualModelScale = 1,
     locomotionScale = 1,
@@ -300,6 +324,17 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
   useLayoutEffect(() => {
     locomotionScaleRef.current = locomotionScale;
   }, [locomotionScale]);
+
+  const roomScale = Math.max(0.28, Math.min(1.25, visualModelScale));
+  const capsule = useMemo(() => {
+    const s = roomScale;
+    const r0 = PHYSICS_CONSTANTS.PLAYER_RADIUS;
+    const h0 = PHYSICS_CONSTANTS.PLAYER_HEIGHT;
+    const r = r0 * s;
+    const halfH = (h0 / 2 - r0) * s;
+    const capCenterY = halfH + r;
+    return { halfH, r, capCenterY };
+  }, [roomScale]);
 
   useEffect(() => {
     onInteractionRef.current = onInteraction;
@@ -516,39 +551,55 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
       colliders={false}
       enabledRotations={[false, false, false]}
     >
-      <CapsuleCollider
-        args={[PHYSICS_CONSTANTS.PLAYER_HEIGHT / 2 - PHYSICS_CONSTANTS.PLAYER_RADIUS, PHYSICS_CONSTANTS.PLAYER_RADIUS]}
-        position={[0, PHYSICS_CONSTANTS.PLAYER_HEIGHT / 2, 0]}
-      />
+      <CapsuleCollider args={[capsule.halfH, capsule.r]} position={[0, capsule.capCenterY, 0]} />
 
-      <group ref={modelRef} scale={visualModelScale}>
-        <Suspense fallback={<FallbackPlayerModel isMoving={isMoving} isLocked={isLocked} />}>
+      <group ref={modelRef}>
+        <Suspense fallback={<FallbackPlayerModel isMoving={isMoving} isLocked={isLocked} roomScale={roomScale} />}>
           {!modelError ? (
             <GLBPlayerModel
               modelPath={modelPathToUse}
               isMoving={isMoving}
               isLocked={isLocked}
               onError={handleModelError}
+              roomScale={roomScale}
             />
           ) : (
-            <FallbackPlayerModel isMoving={isMoving} isLocked={isLocked} />
+            <FallbackPlayerModel isMoving={isMoving} isLocked={isLocked} roomScale={roomScale} />
           )}
         </Suspense>
       </group>
 
       {karma > 70 && (
-        <pointLight position={[0, 1.4, 0]} intensity={0.55} distance={4} color="#fcd34d" decay={2} />
+        <pointLight
+          position={[0, 1.4 * roomScale, 0]}
+          intensity={0.55}
+          distance={4 * roomScale}
+          color="#fcd34d"
+          decay={2}
+        />
       )}
       {karma < 30 && (
         <>
-          <pointLight position={[0.08, 1.55, 0.18]} intensity={0.35} distance={1.2} color="#b91c1c" decay={2} />
-          <pointLight position={[-0.08, 1.55, 0.18]} intensity={0.35} distance={1.2} color="#b91c1c" decay={2} />
+          <pointLight
+            position={[0.08 * roomScale, 1.55 * roomScale, 0.18 * roomScale]}
+            intensity={0.35}
+            distance={1.2}
+            color="#b91c1c"
+            decay={2}
+          />
+          <pointLight
+            position={[-0.08 * roomScale, 1.55 * roomScale, 0.18 * roomScale]}
+            intensity={0.35}
+            distance={1.2}
+            color="#b91c1c"
+            decay={2}
+          />
         </>
       )}
 
       {/* Тень под игроком */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.01, 0]}>
-        <circleGeometry args={[0.5, 32]} />
+        <circleGeometry args={[Math.max(0.22, 0.5 * roomScale), 32]} />
         <meshBasicMaterial color="#000000" transparent opacity={0.3} />
       </mesh>
     </RigidBody>

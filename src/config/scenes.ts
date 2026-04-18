@@ -114,10 +114,10 @@ export const SCENE_CONFIG = {
   volodka_room: {
     id: 'volodka_room',
     name: 'Комната Володьки',
-    explorationCharacterModelScale: 0.92,
+    explorationCharacterModelScale: 0.52,
     explorationLocomotionScale: 0.9,
     size: [14, 10],
-    spawnPoint: { x: 2.2, y: 1, z: 1.8, rotation: 0 } as PlayerPosition,
+    spawnPoint: { x: 2.2, y: 0.06, z: 1.8, rotation: 0 } as PlayerPosition,
     ambientLight: { intensity: 0.42, color: '#c8dff0' },
     directionalLights: [{ position: [4, 8, 2], intensity: 0.95 }],
     npcs: [],
@@ -225,10 +225,10 @@ export const SCENE_CONFIG = {
   volodka_corridor: {
     id: 'volodka_corridor',
     name: 'Коридор',
-    explorationCharacterModelScale: 0.92,
+    explorationCharacterModelScale: 0.48,
     explorationLocomotionScale: 0.86,
     size: [3.5, 12],
-    spawnPoint: { x: 0, y: 1, z: -4.25, rotation: 0 } as PlayerPosition,
+    spawnPoint: { x: 0, y: 0.06, z: -4.25, rotation: 0 } as PlayerPosition,
     ambientLight: { intensity: 0.32, color: '#e8dcc8' },
     directionalLights: [{ position: [0, 6, 2], intensity: 0.55 }],
     npcs: [],
@@ -289,8 +289,8 @@ export const SCENE_CONFIG = {
   },
   
   home_evening: {
-    id: 'home_evening', name: 'Квартира Володьки — кухня и общие комнаты', explorationCharacterModelScale: 0.92, explorationLocomotionScale: 0.9, size: [14, 14],
-    spawnPoint: { x: 0, y: 1, z: 3, rotation: 0 } as PlayerPosition,
+    id: 'home_evening', name: 'Квартира Володьки — кухня и общие комнаты', explorationCharacterModelScale: 0.52, explorationLocomotionScale: 0.9, size: [14, 14],
+    spawnPoint: { x: 0, y: 0.06, z: 3, rotation: 0 } as PlayerPosition,
     ambientLight: { intensity: 0.35, color: '#ffaa66' },
     npcs: [],
     interactiveObjects: [

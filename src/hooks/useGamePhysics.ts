@@ -12,7 +12,7 @@ export const PHYSICS_CONSTANTS = {
   WALK_SPEED: 3.5,
   RUN_SPEED: 6.0,
   
-  // Размеры игрока
+  // Размеры игрока (капсула Rapier; умножаются на `explorationCharacterModelScale` сцены)
   PLAYER_HEIGHT: 1.8,
   PLAYER_RADIUS: 0.4,
   
