@@ -10,6 +10,7 @@ import { usePlayerControls, PHYSICS_CONSTANTS, type PlayerControls } from '@/hoo
 import { usePlayerFootsteps } from '@/hooks/usePlayerFootsteps';
 import { getDefaultPlayerModelPath, isValidPlayerGlbPath, rewriteLegacyModelPath } from '@/config/modelUrls';
 import { PLAYER_GLB_TARGET_VISUAL_METERS } from '@/lib/playerScaleConstants';
+import { retainGltfModelUrl, releaseGltfModelUrl } from '@/lib/gltfModelCache';
 import { useGameStore } from '@/store/gameStore';
 
 // ============================================
@@ -241,10 +242,12 @@ const GLBPlayerModel = memo(function GLBPlayerModel({
   const [currentAction, setCurrentAction] = useState<string | null>(null);
   const rs = Math.max(0.28, Math.min(1.25, roomScale));
 
-  // Не вызываем useGLTF.clear: сброс кэша при каждом remount (смена сцены `key`) даёт повторную загрузку,
-  // мигание fallback+GLB и лишнюю нагрузку на главный поток.
+  useEffect(() => {
+    retainGltfModelUrl(modelPath);
+    return () => releaseGltfModelUrl(modelPath);
+  }, [modelPath]);
 
-  /** Без `Object3D.clone(true)` для skinned GLB: клон часто оставляет меш невидимым (видна только декаль тени). */
+  /** Кэш `useGLTF` ограничен LRU в `gltfModelCache`; сцену из кэша не клонируем — для skinned GLB обычный clone ломает видимость. */
   const displayScene = useMemo(() => {
     if (!loadedScene) return null;
     try {

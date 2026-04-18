@@ -23,6 +23,7 @@ import { rewriteLegacyModelPath } from '@/config/modelUrls';
 import { getCurrentScheduleEntry } from '@/engine/ScheduleEngine';
 import { useGameStore } from '@/store/gameStore';
 import { getNpcQuestMarkerForExploration } from '@/lib/npcQuestMarker';
+import { retainGltfModelUrl, releaseGltfModelUrl } from '@/lib/gltfModelCache';
 import type { FindNavPathXZ } from '@/lib/explorationNavMesh';
 
 /** Дальше — упрощённая болванка вместо GLB (меньше полигоналки и скинов). */
@@ -198,6 +199,11 @@ const GLTFLoader = memo(function GLTFLoader({
   };
   const { actions } = useAnimations(animations ?? [], groupRef);
   const [currentClipName, setCurrentClipName] = useState<string | null>(null);
+
+  useEffect(() => {
+    retainGltfModelUrl(modelPath);
+    return () => releaseGltfModelUrl(modelPath);
+  }, [modelPath]);
 
   const scene = useMemo(() => {
     if (!loadedScene) return null;

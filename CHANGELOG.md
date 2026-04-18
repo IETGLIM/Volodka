@@ -15,12 +15,14 @@
 
 - **Turbopack в приоритете**: **`package.json`** — **`dev`**: `next dev --turbo`; **`build`**: `next build --turbo`. **CI** — шаг **`npm run build`** (тот же Turbopack-сборщик).
 - **Next.js**: **`next.config.ts`** — **`typescript.ignoreBuildErrors: false`** (сборка снова зависит от проверки типов); **`reactStrictMode: true`**.
-- **API сохранений**: **`src/app/api/save/route.ts`** — без **`ENABLE_CLOUD_GAME_SAVE=1`** все методы отвечают **403** и **`CLOUD_SAVE_DISABLED`** (основной прогресс остаётся в **`localStorage`**; облако — только после явного включения и дальнейшей защиты, напр. auth).
+- **API сохранений**: **`src/app/api/save/route.ts`** — без **`ENABLE_CLOUD_GAME_SAVE=1`** — **403** / **`CLOUD_SAVE_DISABLED`**. При включённом облаке: обязательны **`SAVE_API_SECRET`** и заголовок **`Authorization: Bearer …`**; идентификатор пользователя в БД — только **`SAVE_USER_ID`** (значение из тела/query не используется).
+- **Vitest**: **`vitest.config.ts`** — **`testTimeout`**, **`hookTimeout`**, **`maxConcurrency`** для стабильнее долгих прогонов в CI.
 - **ESLint / React hooks**: **`FollowCamera`** — обновление **`collisionSpringRef`** в **`useEffect`**; **`PhysicsPlayer`** — расчёт высоты GLB без чтения ref в render; **`usePlayerFootsteps`** — переиспользуемые **`Rapier`**-векторы через **`useRef`**, без мутации значений из **`useMemo`**.
 
 ### Fixed
 
 - **Память / жизненный цикл**: **`useAmbientMusic`** — инкремент «поколения» расписания гасит хвосты **`setTimeout`** после остановки, кроссфейда и размонтирования; при повторном старте сбрасывается прежний **`setInterval`**. **`RadialMenu`** — один **`pointerdown`** в **`capture`**, без пары mousedown+pointerdown.
+- **Кэш GLTF (`useGLTF`)**: **`src/lib/gltfModelCache.ts`** — учёт ссылок + LRU-вытеснение через **`useGLTF.clear`** для неиспользуемых URL (лимит **14**); подписка в **`PhysicsPlayer`** / **`NPC`**. Тесты **`src/lib/gltfModelCache.test.ts`**.
 
 ### Added
 

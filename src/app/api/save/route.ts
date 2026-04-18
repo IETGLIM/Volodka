@@ -1,8 +1,9 @@
 // ============================================
 // SAVE/LOAD API — Server-side persistence
 // ============================================
-// По умолчанию выключено: без auth все слоты шли бы на `userId: default`.
-// Включение: переменная окружения **`ENABLE_CLOUD_GAME_SAVE=1`** (и настроенный **`DATABASE_URL`**).
+// По умолчанию выключено. Включение: **`ENABLE_CLOUD_GAME_SAVE=1`**, **`DATABASE_URL`**, **`SAVE_API_SECRET`**
+// (заголовок **`Authorization: Bearer <SAVE_API_SECRET>`** на каждый запрос). Идентификатор пользователя
+// на сервере — только **`SAVE_USER_ID`** (клиентский `userId` в теле/query не доверяем).
 
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -17,6 +18,37 @@ function assertCloudSaveEnabled(): NextResponse | null {
   return NextResponse.json(CLOUD_SAVE_DISABLED_BODY, { status: 403 });
 }
 
+function assertSaveApiSecret(request: NextRequest): NextResponse | null {
+  const secret = process.env.SAVE_API_SECRET?.trim();
+  if (!secret) {
+    return NextResponse.json(
+      {
+        error:
+          'Для облачных сохранений задайте SAVE_API_SECRET на сервере и передавайте Authorization: Bearer с этим значением.',
+        code: 'SAVE_SECRET_MISSING' as const,
+      },
+      { status: 503 },
+    );
+  }
+  const raw = request.headers.get('authorization') ?? '';
+  const token = raw.length > 7 && raw.slice(0, 7).toLowerCase() === 'bearer ' ? raw.slice(7).trim() : '';
+  if (token !== secret) {
+    return NextResponse.json(
+      {
+        error: 'Требуется заголовок Authorization: Bearer с SAVE_API_SECRET.',
+        code: 'SAVE_UNAUTHORIZED' as const,
+      },
+      { status: 401 },
+    );
+  }
+  return null;
+}
+
+function serverSaveUserId(): string {
+  const id = process.env.SAVE_USER_ID?.trim();
+  return id && id.length > 0 ? id : 'default';
+}
+
 async function getPrisma() {
   const { db } = await import('@/lib/db');
   return db;
@@ -25,10 +57,12 @@ async function getPrisma() {
 export async function POST(request: NextRequest) {
   const disabled = assertCloudSaveEnabled();
   if (disabled) return disabled;
+  const unauthorized = assertSaveApiSecret(request);
+  if (unauthorized) return unauthorized;
   try {
     const body = await request.json();
+    const userId = serverSaveUserId();
     const {
-      userId = 'default',
       slot = 1,
       label,
       version = 5,
@@ -43,7 +77,7 @@ export async function POST(request: NextRequest) {
       stress = 0,
       energy = 5,
     } = body as {
-      userId?: string; slot?: number; label?: string; version?: number;
+      slot?: number; label?: string; version?: number;
       data: string; currentNodeId: string; playTime?: number; act?: number;
       path?: string; mood?: number; creativity?: number; stability?: number;
       stress?: number; energy?: number;
@@ -71,9 +105,11 @@ export async function POST(request: NextRequest) {
 export async function GET(request: NextRequest) {
   const disabled = assertCloudSaveEnabled();
   if (disabled) return disabled;
+  const unauthorized = assertSaveApiSecret(request);
+  if (unauthorized) return unauthorized;
   try {
     const { searchParams } = new URL(request.url);
-    const userId = searchParams.get('userId') || 'default';
+    const userId = serverSaveUserId();
     const slot = parseInt(searchParams.get('slot') || '1', 10);
     const listOnly = searchParams.get('list') === 'true';
 
@@ -115,9 +151,11 @@ export async function GET(request: NextRequest) {
 export async function DELETE(request: NextRequest) {
   const disabled = assertCloudSaveEnabled();
   if (disabled) return disabled;
+  const unauthorized = assertSaveApiSecret(request);
+  if (unauthorized) return unauthorized;
   try {
     const { searchParams } = new URL(request.url);
-    const userId = searchParams.get('userId') || 'default';
+    const userId = serverSaveUserId();
     const slot = parseInt(searchParams.get('slot') || '1', 10);
 
     const prisma = await getPrisma();
