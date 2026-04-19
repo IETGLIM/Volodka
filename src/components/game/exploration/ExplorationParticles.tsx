@@ -162,7 +162,7 @@ export function ExplorationParticles({ sceneId, timeOfDay, visualLite }: Explora
   }, [nSpark]);
 
   useFrame(({ clock }, dt) => {
-    const t = clock.getElapsedTime();
+    const t = clock.elapsedTime;
 
     if (snowRef.current && weather === 'snow') {
       const arr = snowRef.current.geometry.attributes.position.array as Float32Array;

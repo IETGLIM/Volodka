@@ -162,7 +162,7 @@ const Snowflakes = memo(function Snowflakes({ intensity = 1 }: SnowflakesProps) 
   useFrame(({ clock }) => {
     if (!meshRef.current || !positionsRef.current || !fallJitterRef.current) return;
 
-    const time = clock.getElapsedTime();
+    const time = clock.elapsedTime;
     const positions = positionsRef.current;
     const fallJitter = fallJitterRef.current;
 

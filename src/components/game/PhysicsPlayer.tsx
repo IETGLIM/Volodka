@@ -73,7 +73,7 @@ const FallbackPlayerModel = memo(function FallbackPlayerModel({
   const headRef = useRef<THREE.Group>(null);
 
   useFrame(({ clock }) => {
-    const t = clock.getElapsedTime();
+    const t = clock.elapsedTime;
 
     if (groupRef.current) {
       groupRef.current.position.y = isMoving ? Math.abs(Math.sin(t * 8)) * 0.03 : Math.sin(t * 2) * 0.01;

@@ -185,7 +185,7 @@ export const WorldItem = memo(function WorldItem({
   useFrame(({ clock }, delta) => {
     if (meshRef.current && !collected) {
       meshRef.current.rotation.y += delta * 2;
-      meshRef.current.position.y = position[1] + 0.3 + Math.sin(clock.getElapsedTime() * 3) * 0.1;
+      meshRef.current.position.y = position[1] + 0.3 + Math.sin(clock.elapsedTime * 3) * 0.1;
     }
   });
 

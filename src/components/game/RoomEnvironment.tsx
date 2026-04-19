@@ -149,7 +149,7 @@ export const InteractiveObject = memo(function InteractiveObject({
 
   useFrame(({ clock }) => {
     if (meshRef.current && isInteractable) {
-      const t = clock.getElapsedTime();
+      const t = clock.elapsedTime;
       if (highlighted || hovered) {
         meshRef.current.position.y = position[1] + Math.sin(t * 3) * 0.05;
       }

@@ -373,7 +373,7 @@ const ElderModel = memo(function ElderModel({ isNearPlayer, isDialogueActive }: 
 
   useFrame(({ clock }) => {
     if (groupRef.current) {
-      const t = clock.getElapsedTime();
+      const t = clock.elapsedTime;
       groupRef.current.position.y = Math.sin(t * 1.2) * 0.015;
       groupRef.current.rotation.z = Math.sin(t * 0.6) * 0.015;
     }
@@ -423,7 +423,7 @@ const BaristaModel = memo(function BaristaModel({ isNearPlayer, isDialogueActive
 
   useFrame(({ clock }) => {
     if (groupRef.current) {
-      const t = clock.getElapsedTime();
+      const t = clock.elapsedTime;
       groupRef.current.position.y = Math.sin(t * 1.8) * 0.012;
     }
   });
@@ -470,7 +470,7 @@ const ColleagueModel = memo(function ColleagueModel({ isNearPlayer, isDialogueAc
 
   useFrame(({ clock }) => {
     if (groupRef.current) {
-      const t = clock.getElapsedTime();
+      const t = clock.elapsedTime;
       groupRef.current.position.y = Math.sin(t * 1.6) * 0.01;
       groupRef.current.rotation.z = Math.sin(t * 0.7) * 0.01;
     }
@@ -529,7 +529,7 @@ const ShadowModel = memo(function ShadowModel({ isNearPlayer, isDialogueActive }
 
   useFrame(({ clock }) => {
     if (glowRef.current) {
-      const t = clock.getElapsedTime();
+      const t = clock.elapsedTime;
       (glowRef.current.material as THREE.MeshBasicMaterial).opacity = 0.15 + Math.sin(t * 2) * 0.05;
     }
   });
@@ -585,7 +585,7 @@ const GenericModel = memo(function GenericModel({ isNearPlayer, isDialogueActive
 
   useFrame(({ clock }) => {
     if (groupRef.current) {
-      const t = clock.getElapsedTime();
+      const t = clock.elapsedTime;
       groupRef.current.position.y = Math.sin(t * 1.5) * 0.02;
       groupRef.current.rotation.z = Math.sin(t * 0.8) * 0.02;
     }

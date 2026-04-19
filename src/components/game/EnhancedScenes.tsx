@@ -34,7 +34,7 @@ const DustParticles = memo(function DustParticles({
   
   useFrame(({ clock }) => {
     if (!meshRef.current) return;
-    const time = clock.getElapsedTime();
+    const time = clock.elapsedTime;
     
     particles.forEach((p, i) => {
       // Медленное движение вверх и покачивание
@@ -67,7 +67,7 @@ export const EnhancedOfficeScene = memo(function EnhancedOfficeScene() {
   
   // Анимация мерцания экранов
   useFrame(({ clock }) => {
-    const time = clock.getElapsedTime();
+    const time = clock.elapsedTime;
     
     // Экран 1 - логи, тикеты
     if (screenRef1.current) {

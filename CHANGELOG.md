@@ -8,6 +8,8 @@
 
 - **Обход / коллайдеры и дубликаты геометрии (диагностика)**: **`lib/explorationDiagnostics.ts`** — флаги **`NEXT_PUBLIC_EXPLORATION_RAPIER_DEBUG_COLLIDERS`** (проволочные коллайдеры через **`Physics debug`**, в `@react-three/rapier` 2.x нет публичного **`<Debug />`**), **`NEXT_PUBLIC_EXPLORATION_MESH_AUDIT`** (`console.table` мешей с мировыми координатами), **`NEXT_PUBLIC_EXPLORATION_NOCLIP`** (игрок без **`RigidBody`**, зелёный «пилон»), **`NEXT_PUBLIC_EXPLORATION_WEBGL_CONTEXT_LOG`**; **`ExplorationSceneDiagnostics.tsx`**, **`ExplorationNoclipPlayer.tsx`**, правки **`RPGGameCanvas`**, **`PhysicsRPGCanvas`**, комментарии в **`PhysicsSceneColliders`** и **`ExplorationPostFX`**; тест **`explorationDiagnostics.test.ts`**.
 
+- **Three.js / консоль**: зафиксирован **`three@~0.182.0`** и **`@types/three@~0.182.0`** — в **0.183** помечен deprecated **`THREE.Clock`**, а **`@react-three/fiber` 9.x** всё ещё создаёт **`new THREE.Clock()`**, из‑за чего в браузере сыпалось предупреждение «use THREE.Timer instead». В **`useFrame`** везде **`clock.getElapsedTime()`** заменён на **`clock.elapsedTime`** (рекомендация R3F, без лишнего **`getDelta()`** внутри анимаций).
+
 ### Maintainer notes
 
 - **Ритм выкладки (с душой и для потомков)**: порция функционала или исправлений → быстрая проверка (**`tsc`**, **`vitest`**, разбор линтера по смыслу) → запись в **`CHANGELOG.md`** в **`[Unreleased]`** → коммит с ясной первой строкой → **`git push origin`** на каноническую ветку (**`main`**). Так на GitHub и у тех, кто откроет репозиторий позже, всегда видна честная история, а не «магия у одного разработчика на ноутбуке».
