@@ -19,7 +19,10 @@ export function getModelsPublicBase(): string {
 
 const BASE_URL = getModelsPublicBase();
 
-/** Перенос legacy-путей `/models/…` на актуальный `BASE_URL` (или оставить http(s) как есть). */
+/**
+ * Перенос legacy-путей `/models/…` на актуальный `BASE_URL` (или оставить http(s) как есть).
+ * Не добавляйте cache-bust query (`?v=…`) к URL для GLB — иначе кэш загрузчика не стабилен и возможно мерцание.
+ */
 export function rewriteLegacyModelPath(path: string): string {
   if (!path || typeof path !== 'string') return path;
   const t = path.trim();

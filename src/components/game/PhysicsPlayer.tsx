@@ -244,6 +244,15 @@ const GLBPlayerModel = memo(function GLBPlayerModel({
   const actionsRef = useRef(actions);
   actionsRef.current = actions;
 
+  /** Стабильный ключ набора экшенов: ссылка `actions` от drei может меняться без смены клипов. */
+  const actionKeysSig = useMemo(() => {
+    if (!actions) return '';
+    return Object.keys(actions)
+      .filter((k) => actions[k])
+      .sort()
+      .join('\0');
+  }, [actions]);
+
   useEffect(() => {
     retainGltfModelUrl(modelPath);
     return () => releaseGltfModelUrl(modelPath);
@@ -287,9 +296,10 @@ const GLBPlayerModel = memo(function GLBPlayerModel({
   }, [loadedScene, rs]);
 
   useEffect(() => {
-    if (!actions || Object.keys(actions).length === 0) return;
+    const act = actionsRef.current;
+    if (!act || Object.keys(act).length === 0) return;
 
-    const animationNames = Object.keys(actions);
+    const animationNames = Object.keys(act);
     const idleAnim =
       animationNames.find((n) => n.toLowerCase().includes('idle')) || animationNames[0];
     /** Один клип в GLB (напр. `Volodka.glb` — «Basic Sing Serious»): и idle, и «ходьба» без отдельного Walk. */
@@ -302,16 +312,16 @@ const GLBPlayerModel = memo(function GLBPlayerModel({
 
     const targetAnim = isMoving && walkAnim ? walkAnim : idleAnim;
 
-    if (targetAnim && actions[targetAnim] && currentAction !== targetAnim) {
-      if (currentAction && actions[currentAction]) {
-        actions[currentAction].fadeOut(0.2);
+    if (targetAnim && act[targetAnim] && currentAction !== targetAnim) {
+      if (currentAction && act[currentAction]) {
+        act[currentAction].fadeOut(0.2);
       }
-      actions[targetAnim].reset().fadeIn(0.2).play();
+      act[targetAnim].reset().fadeIn(0.2).play();
       // Defer setState to avoid cascading renders
       const timer = setTimeout(() => setCurrentAction(targetAnim), 0);
       return () => clearTimeout(timer);
     }
-  }, [actions, isMoving, currentAction]);
+  }, [actionKeysSig, isMoving, currentAction]);
 
   if (!displayScene) return null;
 

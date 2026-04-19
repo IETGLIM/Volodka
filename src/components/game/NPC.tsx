@@ -218,6 +218,23 @@ const GLTFLoader = memo(function GLTFLoader({
   const actionsRef = useRef(actions);
   actionsRef.current = actions;
 
+  const actionKeysSig = useMemo(() => {
+    if (!actions) return '';
+    return Object.keys(actions)
+      .filter((k) => actions[k])
+      .sort()
+      .join('\0');
+  }, [actions]);
+
+  const animMappingSig = useMemo(() => {
+    if (!animMapping) return '';
+    const parts: string[] = [`idle:${animMapping.idle}`];
+    if (animMapping.walk) parts.push(`walk:${animMapping.walk}`);
+    if (animMapping.run) parts.push(`run:${animMapping.run}`);
+    if (animMapping.talk) parts.push(`talk:${animMapping.talk}`);
+    return parts.join('|');
+  }, [animMapping]);
+
   useEffect(() => {
     retainGltfModelUrl(modelPath);
     return () => releaseGltfModelUrl(modelPath);
@@ -259,9 +276,10 @@ const GLTFLoader = memo(function GLTFLoader({
   }, [scene]);
 
   useEffect(() => {
-    if (!actions || Object.keys(actions).length === 0) return;
+    const act = actionsRef.current;
+    if (!act || Object.keys(act).length === 0) return;
 
-    const actionKeys = Object.keys(actions).filter((k) => actions[k]);
+    const actionKeys = Object.keys(act).filter((k) => act[k]);
     if (actionKeys.length === 0) return;
 
     const resolved = resolveNpcAnimationClip(actionKeys, animMapping);
@@ -272,15 +290,15 @@ const GLTFLoader = memo(function GLTFLoader({
           ? resolved.talk || resolved.idle
           : resolved.idle;
 
-    if (!targetClip || !actions[targetClip] || currentClipName === targetClip) return;
+    if (!targetClip || !act[targetClip] || currentClipName === targetClip) return;
 
-    if (currentClipName && actions[currentClipName]) {
-      actions[currentClipName].fadeOut(0.2);
+    if (currentClipName && act[currentClipName]) {
+      act[currentClipName].fadeOut(0.2);
     }
-    actions[targetClip].reset().fadeIn(0.2).play();
+    act[targetClip].reset().fadeIn(0.2).play();
     const timer = setTimeout(() => setCurrentClipName(targetClip), 0);
     return () => clearTimeout(timer);
-  }, [actions, animMapping, npcAnimation, currentClipName]);
+  }, [actionKeysSig, animMappingSig, npcAnimation, currentClipName]);
 
   if (!scene) {
     return <>{fallback}</>;
