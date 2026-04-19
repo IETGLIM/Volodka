@@ -11,6 +11,8 @@
 
 - **Обход / диагностика мерцания (шаг А)**: полностью отключена постобработка в **`ExplorationPostFX`** (`EffectComposer`, N8AO, Bloom, Vignette, Noise) — проверка «мерцание из‑за поста или нет»; дальше шаг А1 при успехе или шаг Б.
 
+- **Обход / диагностика мерцания (шаг Б)**: после шага А мерцание осталось — **`getExplorationSceneGlProps`** (`Scene.tsx`): **`antialias: true`**, **`powerPreference: 'high-performance'`**, **`logarithmicDepthBuffer: false`**; в **`RPGGameCanvas`** у **`<Canvas>`** — **`camera.near: 0.3`**, **`far: 50`**, **`fov: 60`**; **`frameloop`** по-прежнему **`always`** (`EXPLORATION_SCENE_FRAMELOOP`).
+
 ## [0.2.8] - 2026-04-19
 
 ### Changed

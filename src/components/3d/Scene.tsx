@@ -7,6 +7,10 @@
  *   могут обновляться без синхронного рендера → отставание и ощущение «мигания».
  * - **`logarithmicDepthBuffer: false`** — при `true` на части сцен возможны артефакты глубины.
  *
+ * Шаг Б (после отключения поста мерцание осталось): жёстче **`antialias`**, **`powerPreference`**, без
+ * логарифмического буфера глубины — см. **`getExplorationSceneGlProps`**; у **`Canvas`** в **`RPGGameCanvas`**
+ * — **`camera.near` / `far`** для точности Z (не чрезмерный диапазон).
+ *
  * Потребитель: **`RPGGameCanvas`**. Не монтируйте второй Canvas для той же сцены.
  *
  * CLS: контейнер 3D-обхода — фиксированный вьюпорт (**`EXPLORATION_GAME_VIEWPORT_CLASS`**), без смены
@@ -22,14 +26,13 @@ export const EXPLORATION_GAME_VIEWPORT_CLASS =
 export const EXPLORATION_SCENE_FRAMELOOP: NonNullable<CanvasProps['frameloop']> = 'always';
 
 export function getExplorationSceneGlProps(visualLite: boolean, narrow: boolean) {
+  void visualLite;
+  void narrow;
   return {
-    antialias: !visualLite,
+    antialias: true,
     alpha: false,
     stencil: false,
     logarithmicDepthBuffer: false as const,
-    powerPreference: (visualLite || narrow ? 'default' : 'high-performance') as
-      | 'default'
-      | 'low-power'
-      | 'high-performance',
+    powerPreference: 'high-performance' as const,
   };
 }

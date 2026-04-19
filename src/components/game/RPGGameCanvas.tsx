@@ -4,6 +4,8 @@
  * Связывает Rapier, игрока, NPC, триггеры и камеру для свободного 3D-обхода.
  * Ошибки загрузки GLB обрабатываются в `PhysicsPlayer` / `NPCSystem` — здесь дубли не нужны.
  * Ввод: клавиатура (WASD, Shift бег, E); тач — `ExplorationMobileHud` (в т.ч. Run) при узком экране или `(pointer: coarse)`.
+ *
+ * Диагностика мерцания (шаг Б): у `<Canvas>` заданы умеренные **`camera.near` / `far`** и GL через **`getExplorationSceneGlProps`** в **`Scene.tsx`**.
  */
 
 import { memo, useRef, useEffect, useMemo, useCallback, useState, Fragment, Suspense } from 'react';
@@ -382,7 +384,7 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
       frameloop={EXPLORATION_SCENE_FRAMELOOP}
       dpr={canvasDpr}
       shadows={{ type: THREE.PCFShadowMap }}
-      camera={{ fov: 60, near: 0.1, far: 1000, position: [0, 5, 8] }}
+      camera={{ fov: 60, near: 0.3, far: 50, position: [0, 5, 8] }}
       style={{ 
         background: sceneConfig.fogColor,
         width: '100%',
