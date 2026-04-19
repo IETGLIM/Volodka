@@ -144,6 +144,8 @@ export interface TriggerZone {
   
   // Требует нажатия E
   requiresInteraction?: boolean;
+
+  interactionId?: string;
   
   // Подсказка при входе
   promptText?: string;
@@ -206,7 +208,7 @@ export interface ExplorationState {
 }
 
 // Режим игры
-export type GameMode = 'visual-novel' | 'exploration' | 'dialogue' | 'cutscene';
+export type GameMode = 'visual-novel' | 'exploration' | 'dialogue' | 'cutscene' | 'combat';
 
 // Сообщение-подсказка
 export interface InteractionPrompt {

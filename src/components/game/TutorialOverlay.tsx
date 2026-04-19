@@ -7,12 +7,13 @@ import { useShallow } from 'zustand/react/shallow';
 import { getNPCsForScene, getNpcExplorationPosition } from '@/data/npcDefinitions';
 import { getExplorationLivePlayerPositionOrNull } from '@/lib/explorationLivePlayerBridge';
 import { useExplorationLivePlayerTick } from '@/hooks/useExplorationLivePlayerTick';
+import type { GameMode } from '@/data/rpgTypes';
 
 export const TutorialOverlay = memo(function TutorialOverlay({
   gameMode,
   isDialogue,
 }: {
-  gameMode: 'visual-novel' | 'exploration' | 'dialogue' | 'cutscene';
+  gameMode: GameMode;
   isDialogue: boolean;
 }) {
   const { flags, exploration, setFlag } = useGameStore(

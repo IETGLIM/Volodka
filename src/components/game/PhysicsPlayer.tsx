@@ -6,7 +6,14 @@ import { useGLTF, useAnimations } from '@react-three/drei';
 import { RigidBody, RapierRigidBody, CapsuleCollider, useRapier, useBeforePhysicsStep } from '@react-three/rapier';
 import type { KinematicCharacterController } from '@dimforge/rapier3d-compat';
 import * as THREE from 'three';
-import { usePlayerControls, PHYSICS_CONSTANTS, type PlayerControls } from '@/hooks/useGamePhysics';
+import { usePlayerControls, type PlayerControls } from '@/hooks/useGamePhysics';
+import {
+  applyGroundingAfterCharacterProbe,
+  clampPhysicsTimestep,
+  computePlayerCapsule,
+  createExplorationKinematicCharacterController,
+  integrateKinematicLocomotionDelta,
+} from '@/core/physics/CharacterController';
 import { usePlayerFootsteps } from '@/hooks/usePlayerFootsteps';
 import { getDefaultPlayerModelPath, isValidPlayerGlbPath, rewriteLegacyModelPath } from '@/config/modelUrls';
 import { PLAYER_GLB_TARGET_VISUAL_METERS } from '@/lib/playerScaleConstants';
@@ -14,6 +21,7 @@ import { retainGltfModelUrl, releaseGltfModelUrl } from '@/lib/gltfModelCache';
 import { applyGltfExplorationCharacterMaterialPolicies } from '@/lib/gltfCharacterMaterialPolicy';
 import { cloneAnimationClipsWithoutExplorationPlayerRootMotion } from '@/lib/stripExplorationPlayerRootMotionFromClips';
 import { isExplorationPlayerDebugPrimitiveEnabled } from '@/lib/explorationPlayerDebugPrimitive';
+import { isExplorationPlayerLocomotionLogEnabled } from '@/lib/explorationDiagnostics';
 import { useGameStore } from '@/store/gameStore';
 
 // ============================================
@@ -365,8 +373,6 @@ const GLBPlayerModel = memo(function GLBPlayerModel({
 // иначе конфликт с kinematic + `setNextKinematicTranslation` (гипотеза №2).
 // `onPositionChange` ниже — только для ref + моста в родителе (`livePlayerPositionRef` / `explorationLivePlayerBridge`), не для сдвига меша из стора.
 //
-const DEFAULT_PHYSICS_DT = 1 / 60;
-
 export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProps>(function PhysicsPlayer(
   {
     position = [0, 0.06, 3],
@@ -402,6 +408,7 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
   /** Для анимаций GLB / заглушки: обновляем React только при смене true/false. */
   const [isMoving, setIsMoving] = useState(false);
   const isMovingSyncRef = useRef(false);
+  const locomotionLogCounterRef = useRef(0);
   const [modelError, setModelError] = useState(false);
   const onInteractionRef = useRef(onInteraction);
   const isLockedRef = useRef(isLocked);
@@ -422,15 +429,7 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
     position[2],
   ]);
 
-  const capsule = useMemo(() => {
-    const s = roomScale;
-    const r0 = PHYSICS_CONSTANTS.PLAYER_RADIUS;
-    const h0 = PHYSICS_CONSTANTS.PLAYER_HEIGHT;
-    const r = r0 * s;
-    const halfH = (h0 / 2 - r0) * s;
-    const capCenterY = halfH + r;
-    return { halfH, r, capCenterY };
-  }, [roomScale]);
+  const capsule = useMemo(() => computePlayerCapsule(roomScale), [roomScale]);
 
   useEffect(() => {
     onInteractionRef.current = onInteraction;
@@ -465,12 +464,7 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
   }, [getControls]);
 
   useEffect(() => {
-    const cc = world.createCharacterController(0.06);
-    cc.setSlideEnabled(true);
-    cc.setUp({ x: 0, y: 1, z: 0 });
-    cc.enableAutostep(0.35, 0.25, false);
-    cc.enableSnapToGround(0.45);
-    cc.setMaxSlopeClimbAngle(Math.PI * 0.45);
+    const cc = createExplorationKinematicCharacterController(world);
     characterControllerRef.current = cc;
     return () => {
       world.removeCharacterController(cc);
@@ -523,54 +517,25 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
       return;
     }
 
-    const dtRaw = stepWorld.timestep;
-    const dt = dtRaw > 1e-6 && dtRaw < 0.25 ? dtRaw : DEFAULT_PHYSICS_DT;
+    const dt = clampPhysicsTimestep(stepWorld.timestep);
     const controls = getControlsRef.current();
     const n = rb.numColliders();
     if (n < 1) return;
     const collider = rb.collider(0);
 
-    let moveX = 0;
-    let moveZ = 0;
-    if (controls.forward) moveZ -= 1;
-    if (controls.backward) moveZ += 1;
-    if (controls.left) moveX -= 1;
-    if (controls.right) moveX += 1;
-
-    const len = Math.hypot(moveX, moveZ);
-    if (len > 0) {
-      moveX /= len;
-      moveZ /= len;
-    }
-
-    const loc = locomotionScaleRef.current;
-    const speed =
-      (controls.run ? PHYSICS_CONSTANTS.RUN_SPEED : PHYSICS_CONSTANTS.WALK_SPEED) * loc;
-    isRunningRef.current = controls.run;
-    const yaw = moveYawRef.current;
-    const sin = Math.sin(yaw);
-    const cos = Math.cos(yaw);
-    const rotatedX = moveX * cos - moveZ * sin;
-    const rotatedZ = moveX * sin + moveZ * cos;
-    const targetVelX = rotatedX * speed;
-    const targetVelZ = rotatedZ * speed;
-
-    const accel = 14;
-    const t = 1 - Math.exp(-accel * dt);
-    horizVelXRef.current = THREE.MathUtils.lerp(horizVelXRef.current, targetVelX, t);
-    horizVelZRef.current = THREE.MathUtils.lerp(horizVelZRef.current, targetVelZ, t);
-
-    const g = stepWorld.gravity.y;
-    verticalVelRef.current += g * dt;
-
-    if (groundedRef.current && controls.jump && canJumpRef.current) {
-      verticalVelRef.current = PHYSICS_CONSTANTS.JUMP_FORCE * loc;
-      canJumpRef.current = false;
-    }
-
-    const dx = horizVelXRef.current * dt;
-    const dy = verticalVelRef.current * dt;
-    const dz = horizVelZRef.current * dt;
+    const { dx, dy, dz } = integrateKinematicLocomotionDelta({
+      dt,
+      controls,
+      locomotionScale: locomotionScaleRef.current,
+      moveYaw: moveYawRef.current,
+      gravityY: stepWorld.gravity.y,
+      grounded: groundedRef.current,
+      verticalVel: verticalVelRef,
+      horizVelX: horizVelXRef,
+      horizVelZ: horizVelZRef,
+      canJump: canJumpRef,
+      isRunning: isRunningRef,
+    });
 
     cc.computeColliderMovement(collider, { x: dx, y: dy, z: dz });
     const m = cc.computedMovement();
@@ -579,12 +544,27 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
 
     const grounded = cc.computedGrounded();
     groundedRef.current = grounded;
-    if (grounded) {
-      if (verticalVelRef.current < 0) {
-        verticalVelRef.current = 0;
-      }
-      if (!controls.jump) {
-        canJumpRef.current = true;
+    applyGroundingAfterCharacterProbe({
+      grounded,
+      jumpHeld: controls.jump,
+      verticalVel: verticalVelRef,
+      canJump: canJumpRef,
+    });
+
+    if (isExplorationPlayerLocomotionLogEnabled()) {
+      locomotionLogCounterRef.current += 1;
+      if (locomotionLogCounterRef.current % 48 === 0) {
+        const p = rb.translation();
+        // eslint-disable-next-line no-console -- gated by NEXT_PUBLIC_EXPLORATION_PLAYER_LOCOMOTION_LOG
+        console.info('[ExplorationPlayerLocomotion]', {
+          grounded,
+          vy: verticalVelRef.current,
+          hx: horizVelXRef.current,
+          hz: horizVelZRef.current,
+          x: p.x,
+          y: p.y,
+          z: p.z,
+        });
       }
     }
   });

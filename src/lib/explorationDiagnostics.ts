@@ -22,3 +22,11 @@ export function isExplorationNoclipEnabled(): boolean {
 export function isExplorationWebGlContextLogEnabled(): boolean {
   return process.env.NEXT_PUBLIC_EXPLORATION_WEBGL_CONTEXT_LOG === '1';
 }
+
+/**
+ * Throttled `console.info` of grounded / horizontal velocity / position from `PhysicsPlayer`
+ * (NEXT_PUBLIC_EXPLORATION_PLAYER_LOCOMOTION_LOG=1, rebuild dev server).
+ */
+export function isExplorationPlayerLocomotionLogEnabled(): boolean {
+  return process.env.NEXT_PUBLIC_EXPLORATION_PLAYER_LOCOMOTION_LOG === '1';
+}

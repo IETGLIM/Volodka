@@ -18,6 +18,10 @@
 
 ### Added
 
+- **Слой `core` (обход и дальнейший RPG-каркас)**: **`src/core/input`** (`PlayerInputController`, типы контролов), **`src/core/physics`** (`PHYSICS_CONSTANTS`, интеграция шага до Rapier KCC в **`CharacterController`**), **`src/core/game`**, **`src/core/camera`**, **`src/core/entities`**, **`src/core/interaction`**; **`useGamePhysics`** / **`PhysicsPlayer`** / **`usePlayerFootsteps`** подключены к этим модулям; опциональный лог **`NEXT_PUBLIC_EXPLORATION_PLAYER_LOCOMOTION_LOG`** в **`explorationDiagnostics`** и **`PhysicsPlayer`**. В **`GameMode`** добавлен **`combat`**; **`TutorialOverlay`** берёт тип из **`rpgTypes`**.
+
+- **Цикл взаимодействия (зона → подсказка → E → диалог)**: поле **`interactionId`** у **`TriggerZone`**; зона **`trigger_zarema_home_interaction`** (`zarema_albert_room`); **`TriggerSystem`** — колбэк **`onInteractionAvailabilityChange`**; **`InteractionExecutor`**, расширенный **`InteractionRegistry`**, **`InteractionResolver`** (+ тест); **`src/game/interactions/registerBaseInteractions`** (**`npc_intro`** → **`onNPCInteraction('zarema_home')`** + **`setGameMode('dialogue')`**); в **`RPGGameCanvas`** приоритетный резолв перед **`resolveExplorationPrimaryInteraction`**; оверлей **`InteractionHint`**.
+
 - **Анализ трейсов Performance**: скрипт **`scripts/analyze-chrome-trace.mjs`** (сводка длинных **`RunTask`** / **`traceEvents`**); в **`.gitignore`** — маска **`Trace-*.json`**, чтобы локальные записи DevTools не попадали в git.
 
 ### Maintainer notes

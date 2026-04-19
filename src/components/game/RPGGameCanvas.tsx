@@ -53,7 +53,7 @@ import { NPCSystem } from './NPC';
 import { SceneColliderSelector } from './SceneColliders';
 import { PhysicsSceneColliders } from './PhysicsSceneColliders';
 import { getDefaultPlayerModelPath } from '@/config/modelUrls';
-import { TriggerSystem } from './InteractiveTrigger';
+import { TriggerSystem, isPlayerInTriggerZone } from './InteractiveTrigger';
 import CameraEffects from '../CameraEffects';
 
 // Store
@@ -83,6 +83,10 @@ import {
   clearExplorationLivePlayerPosition,
   updateExplorationLivePlayerPosition,
 } from '@/lib/explorationLivePlayerBridge';
+import { resolveNearest, type InteractionCandidate } from '@/core/interaction/InteractionResolver';
+import { explorationInteractionRegistry, registerBaseInteractions } from '@/game/interactions/registerBaseInteractions';
+import { InteractionHint, EXPLORATION_INTERACTION_HINT_MAX_DISTANCE } from '@/components/ui/InteractionHint';
+import { useExplorationLivePlayerTick } from '@/hooks/useExplorationLivePlayerTick';
 
 // ============================================
 // TYPES
@@ -140,6 +144,14 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
   const explorationWebGlLog = isExplorationWebGlContextLogEnabled();
   const virtualControlsRef = useRef<Partial<PlayerControls>>({});
   const [radialObject, setRadialObject] = useState<InteractiveObjectConfig | null>(null);
+  const [availableInteractionIds, setAvailableInteractionIds] = useState<ReadonlySet<string>>(
+    () => new Set(),
+  );
+  const interactionHintTick = useExplorationLivePlayerTick(!isDialogueActive, 120);
+
+  useEffect(() => {
+    registerBaseInteractions();
+  }, []);
 
   const npcStates = useGameStore((s) => s.exploration.npcStates);
   const triggerStates = useGameStore((s) => s.exploration.triggerStates);
@@ -328,6 +340,10 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
     }
   }, [sceneTriggers, onTriggerEnter]);
 
+  const onInteractionAvailabilityChange = useCallback((ids: ReadonlySet<string>) => {
+    setAvailableInteractionIds(ids);
+  }, []);
+
   // Handle player interaction (E / тач) — единый резолвер: триггер → объект vs NPC по дистанции
   const handlePlayerInteraction = useCallback(() => {
     if (isDialogueActive) return;
@@ -338,6 +354,35 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
     }
 
     const currentPos = playerPositionRef.current;
+    if (currentPos) {
+      const byInteractionId = new Map<string, number>();
+      for (const trigger of sceneTriggers) {
+        if (!trigger.interactionId) continue;
+        if (!availableInteractionIds.has(trigger.interactionId)) continue;
+        if (!isPlayerInTriggerZone(currentPos, trigger)) continue;
+        const dx = currentPos.x - trigger.position.x;
+        const dy = currentPos.y - trigger.position.y;
+        const dz = currentPos.z - trigger.position.z;
+        const distance = Math.hypot(dx, dy, dz);
+        if (distance > EXPLORATION_INTERACTION_HINT_MAX_DISTANCE) continue;
+        const prev = byInteractionId.get(trigger.interactionId);
+        if (prev === undefined || distance < prev) {
+          byInteractionId.set(trigger.interactionId, distance);
+        }
+      }
+      const registryCandidates: InteractionCandidate[] = [...byInteractionId.entries()].map(
+        ([id, distance]) => ({ id, distance }),
+      );
+      const nearestRegistry = resolveNearest(registryCandidates);
+      if (nearestRegistry) {
+        const ran = explorationInteractionRegistry.tryExecute(nearestRegistry.id, {
+          setGameMode: useGameStore.getState().setGameMode,
+          onNPCInteraction,
+        });
+        if (ran) return;
+      }
+    }
+
     const target = resolveExplorationPrimaryInteraction({
       playerPosition: currentPos,
       sceneTriggers,
@@ -388,6 +433,7 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
     timeOfDay,
     radialObject,
     sceneInteractiveObjects,
+    availableInteractionIds,
   ]);
 
   return (
@@ -538,6 +584,7 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
           currentSceneId={sceneId}
           onTriggerEnter={handleTriggerEnter}
           onTriggerStateChange={handleTriggerStateChange}
+          onInteractionAvailabilityChange={onInteractionAvailabilityChange}
         />
 
         <FollowCamera
@@ -574,6 +621,13 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
         {showExplorationStats && <ExplorationFrameStats />}
       </Suspense>
     </Canvas>
+    <InteractionHint
+      enabled={!isDialogueActive}
+      tick={interactionHintTick}
+      sceneTriggers={sceneTriggers}
+      availableInteractionIds={availableInteractionIds}
+      playerPositionRef={playerPositionRef}
+    />
     <ExplorationMobileHud
       active={showTouchHud && !isDialogueActive}
       virtualControlsRef={virtualControlsRef}
