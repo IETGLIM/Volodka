@@ -13,6 +13,8 @@
 
 - **Обход / диагностика мерцания (шаг Б)**: после шага А мерцание осталось — **`getExplorationSceneGlProps`** (`Scene.tsx`): **`antialias: true`**, **`powerPreference: 'high-performance'`**, **`logarithmicDepthBuffer: false`**; в **`RPGGameCanvas`** у **`<Canvas>`** — **`camera.near: 0.3`**, **`far: 50`**, **`fov: 60`**; **`frameloop`** по-прежнему **`always`** (`EXPLORATION_SCENE_FRAMELOOP`).
 
+- **Обход / материалы и прозрачность (шаг В)**: **`applyGltfExplorationCharacterMaterialPolicies`** — **`depthWrite`** на всех мешах GLB + **`applyGltfHairLikeAlphaTestCutout`** по имени меша (волосы/ресницы: **`alphaTest`**, отключение **`transparent`**); **`PhysicsPlayer`** / **`NPC`**; процедурная **`VolodkaRoomVisual`** — явные **`depthWrite`** / **`depthTest`**; тесты **`gltfCharacterMaterialPolicy.test.ts`**; **`TransparencyRenderOrder.tsx`**.
+
 ## [0.2.8] - 2026-04-19
 
 ### Changed

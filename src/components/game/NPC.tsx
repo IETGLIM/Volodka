@@ -25,7 +25,7 @@ import { getCurrentScheduleEntry } from '@/engine/ScheduleEngine';
 import { useGameStore } from '@/store/gameStore';
 import { getNpcQuestMarkerForExploration } from '@/lib/npcQuestMarker';
 import { retainGltfModelUrl, releaseGltfModelUrl } from '@/lib/gltfModelCache';
-import { applyGltfCharacterDepthWrite } from '@/lib/gltfCharacterMaterialPolicy';
+import { applyGltfExplorationCharacterMaterialPolicies } from '@/lib/gltfCharacterMaterialPolicy';
 import type { FindNavPathXZ } from '@/lib/explorationNavMesh';
 import {
   NPC_SHADOW_MID_IN_M,
@@ -264,7 +264,7 @@ const GLTFLoader = memo(function GLTFLoader({
           child.receiveShadow = true;
         }
       });
-      applyGltfCharacterDepthWrite(clone);
+      applyGltfExplorationCharacterMaterialPolicies(clone);
       return clone;
     } catch {
       return null;

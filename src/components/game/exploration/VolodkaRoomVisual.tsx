@@ -12,6 +12,9 @@ import {
 /**
  * Комната Володьки в обходе: панелька, удалёнка (два ноутбука, стойка мониторов — как `scenes.ts` / коллайдеры).
  * Текстуры процедурные (canvas), без внешних PNG.
+ *
+ * Шаг В (мерцание / материалы): у процедурных мешей принудительно **`depthWrite`** / **`depthTest`** —
+ * в т.ч. «шкафы» на **`woodMat`** (отдельного GLB шкафа нет).
  */
 export const VolodkaRoomVisual = memo(function VolodkaRoomVisual() {
   const w = 14;
@@ -51,6 +54,8 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual() {
         map: wallMap,
         roughness: 0.88,
         metalness: 0.02,
+        depthWrite: true,
+        depthTest: true,
       }),
     [wallMap],
   );
@@ -61,6 +66,8 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual() {
         map: floorMap,
         roughness: 0.82,
         metalness: 0.04,
+        depthWrite: true,
+        depthTest: true,
       }),
     [floorMap],
   );
@@ -71,6 +78,8 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual() {
         map: woodMap,
         roughness: 0.78,
         metalness: 0.08,
+        depthWrite: true,
+        depthTest: true,
       }),
     [woodMap],
   );
@@ -109,6 +118,8 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual() {
           metalness={0.15}
           transparent
           opacity={0.92}
+          depthWrite
+          depthTest
         />
       </mesh>
 
@@ -125,7 +136,7 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual() {
 
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.022, -2.2]} receiveShadow>
         <planeGeometry args={[4.2, 3.2]} />
-        <meshStandardMaterial map={carpetMap} roughness={0.92} color="#ffffff" />
+        <meshStandardMaterial map={carpetMap} roughness={0.92} color="#ffffff" depthWrite depthTest />
       </mesh>
 
       <group position={[3.2, 0.45, 0.1]}>
@@ -134,27 +145,48 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual() {
         </mesh>
         <mesh position={[0, 0.28, -0.05]} castShadow receiveShadow>
           <boxGeometry args={[1.12, 0.52, 0.04]} />
-          <meshStandardMaterial color="#151a22" roughness={0.45} metalness={0.2} />
+          <meshStandardMaterial color="#151a22" roughness={0.45} metalness={0.2} depthWrite depthTest />
         </mesh>
         <mesh position={[0.22, 0.46, 0.22]} rotation={[0, -0.35, 0]} castShadow>
           <boxGeometry args={[0.34, 0.02, 0.22]} />
-          <meshStandardMaterial color="#2f3640" roughness={0.55} metalness={0.25} />
+          <meshStandardMaterial color="#2f3640" roughness={0.55} metalness={0.25} depthWrite depthTest />
         </mesh>
         <mesh position={[-0.12, 0.46, -0.18]} rotation={[0, 0.2, 0]} castShadow>
           <boxGeometry args={[0.32, 0.02, 0.2]} />
-          <meshStandardMaterial color="#1e272e" roughness={0.55} metalness={0.2} />
+          <meshStandardMaterial color="#1e272e" roughness={0.55} metalness={0.2} depthWrite depthTest />
         </mesh>
         <mesh position={[0.15, 0.52, 0.42]} castShadow>
           <boxGeometry args={[0.5, 0.28, 0.025]} />
-          <meshStandardMaterial color="#f4e6c2" emissive="#c9b87a" emissiveIntensity={0.06} roughness={0.5} />
+          <meshStandardMaterial
+            color="#f4e6c2"
+            emissive="#c9b87a"
+            emissiveIntensity={0.06}
+            roughness={0.5}
+            depthWrite
+            depthTest
+          />
         </mesh>
         <mesh position={[0.52, 0.52, -0.38]} castShadow>
           <boxGeometry args={[0.2, 0.24, 0.02]} />
-          <meshStandardMaterial color="#c0392b" emissive="#7f1d1d" emissiveIntensity={0.12} roughness={0.45} />
+          <meshStandardMaterial
+            color="#c0392b"
+            emissive="#7f1d1d"
+            emissiveIntensity={0.12}
+            roughness={0.45}
+            depthWrite
+            depthTest
+          />
         </mesh>
         <mesh position={[0.52, 0.52, 0.38]} castShadow>
           <boxGeometry args={[0.2, 0.24, 0.02]} />
-          <meshStandardMaterial color="#2980b9" emissive="#1d4ed8" emissiveIntensity={0.1} roughness={0.45} />
+          <meshStandardMaterial
+            color="#2980b9"
+            emissive="#1d4ed8"
+            emissiveIntensity={0.1}
+            roughness={0.45}
+            depthWrite
+            depthTest
+          />
         </mesh>
       </group>
 
@@ -164,7 +196,7 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual() {
         </mesh>
         <mesh position={[-0.2, 0.22, 0]} castShadow receiveShadow>
           <boxGeometry args={[0.35, 0.4, 0.25]} />
-          <meshStandardMaterial color="#e8d4c0" roughness={0.85} />
+          <meshStandardMaterial color="#e8d4c0" roughness={0.85} depthWrite depthTest />
         </mesh>
       </group>
 
@@ -180,22 +212,22 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual() {
       <group position={[-3.8, 0.42, 1.2]}>
         <mesh castShadow receiveShadow>
           <boxGeometry args={[1.85, 0.52, 0.88]} />
-          <meshStandardMaterial color="#4a3d55" roughness={0.9} map={carpetMap} />
+          <meshStandardMaterial color="#4a3d55" roughness={0.9} map={carpetMap} depthWrite depthTest />
         </mesh>
         <mesh position={[0, 0.32, -0.25]} castShadow receiveShadow>
           <boxGeometry args={[1.7, 0.45, 0.15]} />
-          <meshStandardMaterial color="#3d3350" roughness={0.92} />
+          <meshStandardMaterial color="#3d3350" roughness={0.92} depthWrite depthTest />
         </mesh>
       </group>
 
       <group position={[-4.8, 0.22, -3.2]}>
         <mesh castShadow receiveShadow>
           <boxGeometry args={[1.8, 0.35, 2.1]} />
-          <meshStandardMaterial color="#5c4a4a" roughness={0.9} />
+          <meshStandardMaterial color="#5c4a4a" roughness={0.9} depthWrite depthTest />
         </mesh>
         <mesh position={[0, 0.35, 0]} castShadow receiveShadow>
           <boxGeometry args={[1.75, 0.2, 2.05]} />
-          <meshStandardMaterial color="#7a5c4a" roughness={0.95} map={carpetMap} />
+          <meshStandardMaterial color="#7a5c4a" roughness={0.95} map={carpetMap} depthWrite depthTest />
         </mesh>
       </group>
 
