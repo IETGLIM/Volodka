@@ -661,6 +661,8 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
       {/*
         Визуал отдельно от коллайдера: один активный меш (GLB или fallback), без наслоения процедурки на модель.
         Пустой fallback при загрузке — чтобы не рисовать две фигуры в одном месте.
+        Шаг 3 (стабилизация позиции): эта группа не синхронизируется с exploration.playerPosition из Zustand
+        в useEffect — позиция только у RigidBody / Rapier; modelRef — вращение и т.п., не XYZ из стора.
       */}
       <group ref={modelRef} name="PlayerVisualRoot" userData={{ isPlayer: true }}>
         <Suspense fallback={<group name="PlayerModelLoading" />}>

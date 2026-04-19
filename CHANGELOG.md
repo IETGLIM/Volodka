@@ -21,6 +21,8 @@
 
 ### Fixed
 
+- **Обход / стабилизация позиции игрока (шаг 3)**: подтверждено отсутствие второго источника движения группы визуала из стора; навигация **`src/components/3d/player/PlayerModel.tsx`**; комментарий у **`PlayerVisualRoot`** в **`PhysicsPlayer`**; **`PlayerController.tsx`**.
+
 - **Обход / стабилизация позиции игрока (шаг 2)**: **`useExplorationLivePlayerTick`** — общий тик для чтения моста; **`TutorialOverlay`** (`nearNpc` по живой позиции); **`MiniMap`** с тиком в deps **`useMemo`**; комментарии **`PhysicsPlayer`** / **`PlayerController`**.
 
 - **Обход / стабилизация позиции игрока (шаг 1)**: в **`RPGGameCanvas`** убран **`setPlayerPosition`** из **`handlePositionChange`** (только ref + **`explorationLivePlayerBridge`**); перед **`saveGame`** позиция подмешивается из моста в стор; **`MiniMap`** в обходе опрашивает мост по интервалу; навигация **`components/3d/player/PlayerController.tsx`**.

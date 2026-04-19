@@ -9,6 +9,9 @@
  * (**`getExplorationLivePlayerPositionOrNull`**) с тиком **`useExplorationLivePlayerTick`** (`MiniMap`, **`TutorialOverlay`**);
  * перед сохранением стор подмешивается из моста в **`saveGame`**.
  *
+ * Шаг 3: группа визуала не двигается из стора — см. **`PlayerModel.tsx`** и комментарий у **`PlayerVisualRoot`**
+ * в **`PhysicsPlayer`**.
+ *
  * Отдельного runtime-`PlayerController` в проекте нет — этот файл навигация по архитектуре.
  */
 
