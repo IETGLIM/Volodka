@@ -600,7 +600,7 @@ interface SettingsPanelProps {
 const SettingsPanel = memo(function SettingsPanel({ onClose }: SettingsPanelProps) {
   return (
     <motion.div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 game-fm-layer game-fm-layer-promote"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 game-fm-layer game-fm-layer-promote pointer-events-auto"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
@@ -731,7 +731,7 @@ export const MenuScreen = memo(function MenuScreen({
   }, []);
 
   return (
-    <div className="fixed inset-0 overflow-hidden">
+    <div className="fixed inset-0 overflow-hidden pointer-events-none">
       {/* Animated gradient background */}
       <GradientBackground />
 
@@ -861,8 +861,8 @@ export const MenuScreen = memo(function MenuScreen({
           <UfaBadge />
         </div>
 
-        {/* Menu buttons — терминальная рамка */}
-        <div className="w-full max-w-xs rounded-sm border border-cyan-500/25 bg-black/55 px-3 py-4 shadow-[inset_0_1px_0_0_rgba(0,255,255,0.07)]">
+        {/* Menu buttons — терминальная рамка (pointer-events-auto: корень меню pointer-events-none, иначе INP цепляется за пустой min-h-screen) */}
+        <div className="w-full max-w-xs rounded-sm border border-cyan-500/25 bg-black/55 px-3 py-4 shadow-[inset_0_1px_0_0_rgba(0,255,255,0.07)] pointer-events-auto">
           <pre
             className="mb-3 font-mono text-[10px] leading-snug text-cyan-500/45 select-none whitespace-pre"
             aria-hidden
