@@ -9,6 +9,7 @@ import React, {
   useCallback,
   useEffect,
   useLayoutEffect,
+  type RefObject,
 } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { useGLTF, useAnimations, Html } from '@react-three/drei';
@@ -634,6 +635,8 @@ interface NPCProps {
   definition: NPCDefinition;
   state: NPCState;
   playerPosition: { x: number; y: number; z: number };
+  /** Актуальная позиция игрока без ре-рендера родителя (приоритет над `playerPosition` в `useFrame`). */
+  playerPositionRef?: RefObject<{ x: number; y: number; z: number; rotation?: number } | null>;
   onInteraction: (npcId: string) => void;
   onStateChange: (state: NPCState) => void;
   isDialogueActive: boolean;
@@ -653,6 +656,7 @@ export const NPC = memo(function NPC({
   definition,
   state,
   playerPosition,
+  playerPositionRef,
   onInteraction,
   onStateChange,
   isDialogueActive,
@@ -716,8 +720,12 @@ export const NPC = memo(function NPC({
   );
 
   useFrame((_, delta) => {
+    const live = playerPositionRef?.current;
+    const px = live?.x ?? playerPosition.x;
+    const pz = live?.z ?? playerPosition.z;
+
     const posForLod = scheduleEntry ? scheduleEntry.position : currentPositionRef.current;
-    const dLod = Math.hypot(playerPosition.x - posForLod.x, playerPosition.z - posForLod.z);
+    const dLod = Math.hypot(px - posForLod.x, pz - posForLod.z);
     let nextLodFull = lodFullModelRef.current;
     if (isDialogueActive || !definition.modelPath) {
       nextLodFull = true;
@@ -750,8 +758,8 @@ export const NPC = memo(function NPC({
       currentPositionRef.current = { x: p.x, y: p.y, z: p.z };
       syncWorldPosition(p);
 
-      const dx = playerPosition.x - p.x;
-      const dz = playerPosition.z - p.z;
+      const dx = px - p.x;
+      const dz = pz - p.z;
       const distance = Math.sqrt(dx * dx + dz * dz);
       const near = distance < 3;
       if (near !== wasNearPlayer.current) {
@@ -792,8 +800,8 @@ export const NPC = memo(function NPC({
     syncWorldPosition(pos);
 
     // Проверка дистанции до игрока (без useEffect/setTimeout)
-    const dx = playerPosition.x - pos.x;
-    const dz = playerPosition.z - pos.z;
+    const dx = px - pos.x;
+    const dz = pz - pos.z;
     const distance = Math.sqrt(dx * dx + dz * dz);
     const near = distance < 3;
 
@@ -1127,6 +1135,7 @@ interface NPCSystemProps {
   npcs: NPCDefinition[];
   npcStates: Record<string, NPCState>;
   playerPosition: { x: number; y: number; z: number };
+  playerPositionRef?: RefObject<{ x: number; y: number; z: number; rotation?: number } | null>;
   onNPCInteraction: (npcId: string) => void;
   onNPCStateChange: (npcId: string, state: NPCState) => void;
   isDialogueActive: boolean;
@@ -1144,6 +1153,7 @@ export const NPCSystem = memo(function NPCSystem({
   npcs,
   npcStates,
   playerPosition,
+  playerPositionRef,
   onNPCInteraction,
   onNPCStateChange,
   isDialogueActive,
@@ -1183,6 +1193,7 @@ export const NPCSystem = memo(function NPCSystem({
             definition={npcDef}
             state={state}
             playerPosition={playerPosition}
+            playerPositionRef={playerPositionRef}
             onInteraction={onNPCInteraction}
             onStateChange={(newState) => onNPCStateChange(npcDef.id, newState)}
             isDialogueActive={isDialogueActive}

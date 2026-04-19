@@ -359,8 +359,13 @@ export default function FollowCamera({
       frameTargetRef.current.set(targetPosition.x, targetPosition.y, targetPosition.z);
     }
 
-    const posT = dampFactor(smoothness, dt);
-    currentTarget.current.lerp(frameTargetRef.current, posT);
+    // С `targetPositionRef` цель уже «живая» каждый кадр — второй lerp давал отставание и джиттер относительно меша/тени.
+    if (targetPositionRef) {
+      currentTarget.current.copy(frameTargetRef.current);
+    } else {
+      const posT = dampFactor(smoothness, dt);
+      currentTarget.current.lerp(frameTargetRef.current, posT);
+    }
 
     const pivot = pivotRef.current;
     pivot.set(currentTarget.current.x, currentTarget.current.y + height, currentTarget.current.z);

@@ -2,6 +2,7 @@
 
 import { memo, useMemo, useState, useCallback, useId } from 'react';
 import { motion } from 'framer-motion';
+import { useGameStore } from '@/store/gameStore';
 
 // ============================================
 // TYPES
@@ -24,7 +25,8 @@ export interface MiniMapQuestMarker {
 }
 
 interface MiniMapProps {
-  playerPosition: { x: number; y: number; z: number; rotation?: number };
+  /** Если не передать — берётся из стора (чтобы `GameOrchestrator` не перерисовывался на каждый шаг игрока). */
+  playerPosition?: { x: number; y: number; z: number; rotation?: number };
   sceneSize: { width: number; depth: number };
   sceneName: string;
   npcs: MiniMapNPC[];
@@ -72,7 +74,7 @@ function npcWorldPos(npc: MiniMapNPC) {
 // ============================================
 
 export const MiniMap = memo(function MiniMap({
-  playerPosition,
+  playerPosition: playerPositionProp,
   sceneSize,
   sceneName,
   npcs,
@@ -80,6 +82,9 @@ export const MiniMap = memo(function MiniMap({
   questMarkers = [],
   className = '',
 }: MiniMapProps) {
+  const playerPositionFromStore = useGameStore((s) => s.exploration.playerPosition);
+  const playerPosition = playerPositionProp ?? playerPositionFromStore;
+
   const gridPatternId = useId().replace(/:/g, '');
   const mapSize = { width: 150, height: 120 };
   const [zoom, setZoom] = useState(1);

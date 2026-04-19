@@ -130,24 +130,28 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
     return [1, 2];
   }, [visualLite, narrow]);
 
-  const playerPosition = useGameStore((state) => state.exploration.playerPosition);
   const setPlayerPosition = useGameStore((state) => state.setPlayerPosition);
-  /** Позиция для камеры каждый кадр без коммита Zustand ~60 Гц (см. `FollowCamera` + throttle store). */
-  const livePlayerPositionRef = useRef({
-    x: playerPosition.x,
-    y: playerPosition.y,
-    z: playerPosition.z,
-    rotation: playerPosition.rotation ?? 0,
-  });
+  /** Позиция игрока из физики каждый кадр; без подписки на стор в этом компоненте — меньше ре-рендеров Canvas/UI. */
+  const livePlayerPositionRef = useRef(
+    (() => {
+      const p = useGameStore.getState().exploration.playerPosition;
+      return { x: p.x, y: p.y, z: p.z, rotation: p.rotation ?? 0 };
+    })(),
+  );
   const lastStorePositionFlushRef = useRef(0);
   const setNPCState = useGameStore((state) => state.setNPCState);
   const timeOfDay = useGameStore((state) => state.exploration.timeOfDay);
-  
-  // Ref для актуального значения playerPosition (избегаем устаревших замыканий)
-  const playerPositionRef = useRef(playerPosition);
+
+  /** Снимок из стора при смене сцены: спавн `PhysicsPlayer`, бутстрап камеры/NPC без подписки на каждый шаг. */
+  const explorationSpawnSnapshot = useMemo(() => {
+    const p = useGameStore.getState().exploration.playerPosition;
+    return { x: p.x, y: p.y, z: p.z, rotation: p.rotation ?? 0 };
+  }, [sceneId]);
+
+  const playerPositionRef = useRef(explorationSpawnSnapshot);
   useEffect(() => {
-    playerPositionRef.current = playerPosition;
-  }, [playerPosition]);
+    playerPositionRef.current = explorationSpawnSnapshot;
+  }, [explorationSpawnSnapshot]);
 
   useEffect(() => {
     const p = useGameStore.getState().exploration.playerPosition;
@@ -218,23 +222,33 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
   const followCameraProps = useMemo(() => {
     if (isNarrowApartment) {
       return {
-        distance: 4.25 as const,
-        height: 2.75 as const,
-        smoothness: 0.1 as const,
-        shoulderOffset: 0.2 as const,
-        lookAtHeightOffset: 1.22 as const,
+        distance: 3.85 as const,
+        height: 2.52 as const,
+        smoothness: 0.12 as const,
+        shoulderOffset: 0.18 as const,
+        lookAtHeightOffset: 1.18 as const,
         collisionSpring: 11 as const,
       };
     }
+    if (isPanelDistrict) {
+      return {
+        distance: 5.25 as const,
+        height: 3.05 as const,
+        smoothness: 0.11 as const,
+        shoulderOffset: 0.26 as const,
+        lookAtHeightOffset: 1.3 as const,
+        collisionSpring: 10 as const,
+      };
+    }
     return {
-      distance: 8 as const,
-      height: 5 as const,
-      smoothness: 0.08 as const,
-      shoulderOffset: 0.32 as const,
-      lookAtHeightOffset: 1.38 as const,
-      collisionSpring: 9 as const,
+      distance: 4.75 as const,
+      height: 2.9 as const,
+      smoothness: 0.11 as const,
+      shoulderOffset: 0.24 as const,
+      lookAtHeightOffset: 1.28 as const,
+      collisionSpring: 11 as const,
     };
-  }, [isNarrowApartment]);
+  }, [isNarrowApartment, isPanelDistrict]);
 
   // Get NPCs and triggers for current scene
   const sceneNPCs = useMemo(
@@ -252,7 +266,7 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
       playerPositionRef.current = { x: pos.x, y: pos.y, z: pos.z, rotation: pos.rotation };
 
       const now = typeof performance !== 'undefined' ? performance.now() : Date.now();
-      if (now - lastStorePositionFlushRef.current < 90) return;
+      if (now - lastStorePositionFlushRef.current < 165) return;
       lastStorePositionFlushRef.current = now;
       setPlayerPosition({ x: pos.x, y: pos.y, z: pos.z, rotation: pos.rotation });
     },
@@ -436,8 +450,12 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
 
         <PhysicsPlayer
           key={sceneId}
-          position={[playerPosition.x, playerPosition.y, playerPosition.z]}
-          initialRotation={playerPosition.rotation ?? 0}
+          position={[
+            explorationSpawnSnapshot.x,
+            explorationSpawnSnapshot.y,
+            explorationSpawnSnapshot.z,
+          ]}
+          initialRotation={explorationSpawnSnapshot.rotation ?? 0}
           modelPath={getDefaultPlayerModelPath()}
           visualModelScale={explorationCharacterModelScale}
           locomotionScale={explorationLocomotionScale}
@@ -451,7 +469,8 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
         <NPCSystem
           npcs={sceneNPCs}
           npcStates={npcStates}
-          playerPosition={playerPosition}
+          playerPosition={explorationSpawnSnapshot}
+          playerPositionRef={livePlayerPositionRef}
           onNPCInteraction={onNPCInteraction}
           onNPCStateChange={handleNPCStateChange}
           isDialogueActive={isDialogueActive}
@@ -486,7 +505,7 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
 
         <FollowCamera
           key={sceneId}
-          targetPosition={playerPosition}
+          targetPosition={explorationSpawnSnapshot}
           targetPositionRef={livePlayerPositionRef}
           distance={followCameraProps.distance}
           height={followCameraProps.height}

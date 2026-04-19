@@ -135,7 +135,6 @@ export default function GameOrchestrator() {
   const gameMode = useGameStore((s) => s.gameMode);
   const exploration = useGameStore(
     useShallow((s) => ({
-      playerPosition: s.exploration.playerPosition,
       currentSceneId: s.exploration.currentSceneId,
       timeOfDay: s.exploration.timeOfDay,
       npcStates: s.exploration.npcStates,
@@ -652,7 +651,6 @@ export default function GameOrchestrator() {
 
       {gameMode === 'exploration' && (
         <MiniMap
-          playerPosition={exploration.playerPosition}
           sceneSize={minimapSceneSize}
           sceneName={SCENE_VISUALS[exploration.currentSceneId]?.name ?? exploration.currentSceneId}
           npcs={minimapNpcs}
