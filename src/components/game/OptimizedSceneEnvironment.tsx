@@ -6,6 +6,11 @@ import { Float, Stars, useTexture } from '@react-three/drei';
 import { RigidBody, CuboidCollider } from '@react-three/rapier';
 import * as THREE from 'three';
 import type { SceneId, VisualState } from '@/data/types';
+import {
+  EXPLORATION_DIRECTIONAL_SHADOW_BIAS,
+  EXPLORATION_DIRECTIONAL_SHADOW_NORMAL_BIAS,
+  SCENE_ENVIRONMENT_SHADOW_MAP_SIZE,
+} from '@/lib/explorationShadowConstants';
 import { ZaremaAlbertRoom } from './RoomEnvironment';
 import { VolodkaCorridorVisual } from './exploration/VolodkaCorridorVisual';
 
@@ -926,7 +931,14 @@ export const OptimizedSceneEnvironment = memo(function OptimizedSceneEnvironment
         intensity={0.5}
         color={visualState.colorTint !== 'transparent' ? visualState.colorTint : '#fff'}
         castShadow
-        shadow-mapSize={[1024, 1024]}
+        shadow-mapSize={[SCENE_ENVIRONMENT_SHADOW_MAP_SIZE, SCENE_ENVIRONMENT_SHADOW_MAP_SIZE]}
+        shadow-bias={EXPLORATION_DIRECTIONAL_SHADOW_BIAS}
+        shadow-normalBias={EXPLORATION_DIRECTIONAL_SHADOW_NORMAL_BIAS}
+        shadow-camera-far={50}
+        shadow-camera-left={-14}
+        shadow-camera-right={14}
+        shadow-camera-top={14}
+        shadow-camera-bottom={-14}
       />
       <pointLight position={[0, 4, 3]} intensity={1.2} color={config.light} />
 

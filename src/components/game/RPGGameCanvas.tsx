@@ -64,6 +64,7 @@ import { VolodkaRoomVisual } from './exploration/VolodkaRoomVisual';
 import { HomeEveningVisual } from './exploration/HomeEveningVisual';
 import { NpcProximityBarks } from './NpcProximityBarks';
 import { EXPLORATION_SCENE_FRAMELOOP, getExplorationSceneGlProps } from '@/components/3d/Scene';
+import { ExplorationLighting, getExplorationDirectionalShadowMapSize } from '@/components/3d/Lighting';
 
 // ============================================
 // TYPES
@@ -123,7 +124,10 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
   const setTriggerState = useGameStore((s) => s.setTriggerState);
 
   const playerState = useGameStore((state) => state.playerState);
-  const shadowMap = narrow || visualLite ? 256 : 512;
+  const shadowMapSize = useMemo(
+    () => getExplorationDirectionalShadowMapSize(narrow, visualLite),
+    [narrow, visualLite],
+  );
   const simplifyLights = narrow || visualLite;
   const canvasDpr = useMemo((): [number, number] => {
     if (visualLite) return [1, 1.25];
@@ -421,28 +425,14 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
           ]}
         />
 
-        {/* Lighting - Усиленное */}
-        <ambientLight intensity={sceneConfig.ambient + 0.3} />
-        <hemisphereLight color={sceneConfig.light} groundColor="#1a1a1a" intensity={0.8} />
-        <directionalLight
-          position={[5, 10, 5]}
-          intensity={0.6}
-          color={visualState.colorTint !== 'transparent' ? visualState.colorTint : '#fff'}
-          castShadow
-          shadow-mapSize={[shadowMap, shadowMap]}
-          shadow-camera-far={50}
-          shadow-camera-left={-10}
-          shadow-camera-right={10}
-          shadow-camera-top={10}
-          shadow-camera-bottom={-10}
+        <ExplorationLighting
+          ambientIntensity={sceneConfig.ambient + 0.3}
+          hemisphereSky={sceneConfig.light}
+          directionalColor={visualState.colorTint !== 'transparent' ? visualState.colorTint : '#fff'}
+          pointColor={sceneConfig.light}
+          simplifyLights={simplifyLights}
+          shadowMapSize={shadowMapSize}
         />
-        <pointLight position={[0, 4, 3]} intensity={simplifyLights ? 1.05 : 1.2} color={sceneConfig.light} distance={20} />
-        {!simplifyLights && (
-          <>
-            <pointLight position={[-3, 2, 0]} intensity={0.6} color={sceneConfig.light} distance={15} />
-            <pointLight position={[3, 2, 0]} intensity={0.6} color={sceneConfig.light} distance={15} />
-          </>
-        )}
 
         {/* Scene Colliders */}
         <SceneColliderSelector sceneId={sceneId} />

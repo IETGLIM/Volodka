@@ -21,6 +21,8 @@
 
 ### Fixed
 
+- **Обход / освещение и тени (шаг 6, мерцание)**: **`src/components/3d/Lighting.tsx`** — **`ExplorationLighting`** с **`shadow-bias`** / **`shadow-normalBias`** и картой **1024** (десктоп) / **512** (mobile/lite, вместо **256**); **`lib/explorationShadowConstants.ts`**; те же bias + **`SCENE_ENVIRONMENT_SHADOW_MAP_SIZE`** в **`OptimizedSceneEnvironment`**; отладочный **`PhysicsRPGCanvas`**.
+
 - **Обход / LOD NPC (шаг 5, мерцание)**: явный **гистерезис** в **`lib/npcLodConstants.ts`** (`resolveNpcModelLodUseFull`: дальше **19 m** сброс полного GLB, ближе **11 m** возврат из импостора); шире мёртвая зона теней **4 / 8 m**; навигация **`src/components/3d/LODController.tsx`**, **`NPCManager.tsx`**.
 
 - **Обход / прозрачность (шаг 4, мерцание)**: **`applyGltfCharacterDepthWrite`** (`lib/gltfCharacterMaterialPolicy.ts`) для GLB игрока и NPC — **`depthWrite: true`** на материалах после загрузки; навигация **`src/components/3d/TransparencyRenderOrder.tsx`**.

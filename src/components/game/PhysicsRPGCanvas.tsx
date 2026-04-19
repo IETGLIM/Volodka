@@ -3,6 +3,11 @@
 import React, { Suspense, useMemo, memo } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { Physics } from '@react-three/rapier';
+import {
+  EXPLORATION_DIRECTIONAL_SHADOW_BIAS,
+  EXPLORATION_DIRECTIONAL_SHADOW_NORMAL_BIAS,
+  EXPLORATION_SHADOW_MAP_DESKTOP,
+} from '@/lib/explorationShadowConstants';
 import { EffectComposer, Vignette, ChromaticAberration, Bloom, Noise } from '@react-three/postprocessing';
 import { Vector2 } from 'three';
 
@@ -182,7 +187,19 @@ export const PhysicsGameModeSwitcher = memo(function PhysicsGameModeSwitcher({
       <Suspense fallback={null}>
         {/* Усиленное освещение */}
         <ambientLight intensity={1.0} />
-        <directionalLight position={[5, 10, 5]} intensity={2} castShadow />
+        <directionalLight
+          position={[5, 10, 5]}
+          intensity={2}
+          castShadow
+          shadow-mapSize={[EXPLORATION_SHADOW_MAP_DESKTOP, EXPLORATION_SHADOW_MAP_DESKTOP]}
+          shadow-bias={EXPLORATION_DIRECTIONAL_SHADOW_BIAS}
+          shadow-normalBias={EXPLORATION_DIRECTIONAL_SHADOW_NORMAL_BIAS}
+          shadow-camera-far={50}
+          shadow-camera-left={-12}
+          shadow-camera-right={12}
+          shadow-camera-top={12}
+          shadow-camera-bottom={-12}
+        />
         <pointLight position={[0, 3, 0]} intensity={1.5} />
         <pointLight position={[-3, 2, 2]} intensity={1} />
         <pointLight position={[3, 2, -2]} intensity={1} />
