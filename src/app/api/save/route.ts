@@ -6,6 +6,7 @@
 // на сервере — только **`SAVE_USER_ID`** (клиентский `userId` в теле/query не доверяем).
 
 import { NextRequest, NextResponse } from 'next/server';
+import { CLOUD_SAVE_MAX_DATA_BYTES } from '@/lib/persistedGameSnapshot';
 
 const CLOUD_SAVE_DISABLED_BODY = {
   error:
@@ -83,8 +84,26 @@ export async function POST(request: NextRequest) {
       stress?: number; energy?: number;
     };
 
-    if (!data || !currentNodeId) {
+    if (data == null || !currentNodeId) {
       return NextResponse.json({ error: 'Поля "data" и "currentNodeId" обязательны' }, { status: 400 });
+    }
+    if (typeof data !== 'string') {
+      return NextResponse.json(
+        { error: 'Поле "data" должно быть строкой (JSON снимка)', code: 'SAVE_DATA_NOT_STRING' as const },
+        { status: 400 },
+      );
+    }
+    const dataUtf8Bytes = new TextEncoder().encode(data).length;
+    if (dataUtf8Bytes > CLOUD_SAVE_MAX_DATA_BYTES) {
+      return NextResponse.json(
+        {
+          error: `Поле "data" превышает лимит ${CLOUD_SAVE_MAX_DATA_BYTES} байт UTF-8 (${dataUtf8Bytes} байт).`,
+          code: 'SAVE_PAYLOAD_TOO_LARGE' as const,
+          maxBytes: CLOUD_SAVE_MAX_DATA_BYTES,
+          bytes: dataUtf8Bytes,
+        },
+        { status: 413 },
+      );
     }
 
     const prisma = await getPrisma();

@@ -26,6 +26,11 @@ import { ENERGY_COSTS, INITIAL_PLAYER_ENERGY, MAX_PLAYER_ENERGY } from '@/lib/en
 import { eventBus } from '@/engine/EventBus';
 import { VERTICAL_SLICE_ENTRY_NODE_ID } from '@/data/verticalSliceStoryNodes';
 import { sanitizeExplorationSceneId } from '@/config/scenes';
+import {
+  buildLocalSavePayload,
+  estimateJsonUtf8Bytes,
+  LOCAL_SAVE_WARN_BYTES,
+} from '@/lib/persistedGameSnapshot';
 
 export type TravelToSceneResult =
   | { ok: true }
@@ -391,7 +396,7 @@ type SavedGameData = {
   unlockedAchievementIds?: string[];
   unlockedLocations?: string[];
   gameMode?: GameMode;
-  exploration?: ExplorationState;
+  exploration?: Partial<ExplorationState> & { npcStates?: Record<string, NPCState> };
   activeQuestIds?: string[];
   completedQuestIds?: string[];
   questProgress?: Record<string, Record<string, number>>;
@@ -438,19 +443,24 @@ const normalizeLoadedState = (data: SavedGameData) => ({
   unlockedAchievementIds: data.unlockedAchievementIds || [],
   unlockedLocations: data.unlockedLocations || [],
   gameMode: data.gameMode ?? 'exploration',
-  exploration: {
-    ...INITIAL_EXPLORATION_STATE,
-    ...(data.exploration || {}),
-    currentSceneId: sanitizeExplorationSceneId(
+  exploration: (() => {
+    const raw =
       data.exploration && typeof data.exploration === 'object'
-        ? (data.exploration as { currentSceneId?: unknown }).currentSceneId
-        : undefined,
-    ),
-    timeOfDay:
-      typeof data.exploration?.timeOfDay === 'number'
-        ? data.exploration.timeOfDay
-        : INITIAL_EXPLORATION_STATE.timeOfDay,
-  },
+        ? (data.exploration as Partial<ExplorationState>)
+        : {};
+    const npcStates =
+      raw.npcStates && typeof raw.npcStates === 'object' && !Array.isArray(raw.npcStates)
+        ? raw.npcStates
+        : {};
+    return {
+      ...INITIAL_EXPLORATION_STATE,
+      ...raw,
+      npcStates,
+      currentSceneId: sanitizeExplorationSceneId(raw.currentSceneId),
+      timeOfDay:
+        typeof raw.timeOfDay === 'number' ? raw.timeOfDay : INITIAL_EXPLORATION_STATE.timeOfDay,
+    };
+  })(),
   activeQuestIds: data.activeQuestIds || [...DEFAULT_ACTIVE_QUEST_IDS],
   completedQuestIds: data.completedQuestIds || [],
   questProgress: data.questProgress || {},
@@ -1200,30 +1210,32 @@ export const useGameStore = create<GameState>()((set, get) => ({
     if (!storage) return;
 
     const state = get();
-    storage.setItem(SAVE_KEY, JSON.stringify({
-      version: 4,
+    const payload = buildLocalSavePayload({
       playerState: state.playerState,
       currentNodeId: state.currentNodeId,
       npcRelations: state.npcRelations,
-      inventory: state.inventory.map(i => ({
-        itemId: i.item.id,
-        quantity: i.quantity,
-        obtainedAt: i.obtainedAt
-      })),
+      inventory: state.inventory,
       collectedPoemIds: state.collectedPoemIds,
       unlockedAchievementIds: state.unlockedAchievementIds,
       unlockedLocations: state.unlockedLocations,
       gameMode: state.gameMode,
       exploration: state.exploration,
-      // Quest state
       activeQuestIds: state.activeQuestIds,
       completedQuestIds: state.completedQuestIds,
       questProgress: state.questProgress,
-      // Faction state
       factionReputations: state.factionReputations,
       choiceLog: state.choiceLog,
-      savedAt: Date.now()
-    }));
+    });
+    const json = JSON.stringify(payload);
+    if (typeof console !== 'undefined' && console.warn) {
+      const bytes = estimateJsonUtf8Bytes(payload);
+      if (bytes > LOCAL_SAVE_WARN_BYTES) {
+        console.warn(
+          `[Volodka] Сохранение крупное (~${(bytes / 1_000_000).toFixed(2)} MB UTF-8). Риск лимита localStorage; имеет смысл облако / чистка прогресса.`,
+        );
+      }
+    }
+    storage.setItem(SAVE_KEY, json);
     eventBus.emit('game:saved', {
       timestamp: Date.now(),
       source: options?.source ?? 'manual',
