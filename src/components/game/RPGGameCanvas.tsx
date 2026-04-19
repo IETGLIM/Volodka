@@ -63,6 +63,7 @@ import { VolodkaCorridorVisual } from './exploration/VolodkaCorridorVisual';
 import { VolodkaRoomVisual } from './exploration/VolodkaRoomVisual';
 import { HomeEveningVisual } from './exploration/HomeEveningVisual';
 import { NpcProximityBarks } from './NpcProximityBarks';
+import { EXPLORATION_SCENE_FRAMELOOP, getExplorationSceneGlProps } from '@/components/3d/Scene';
 
 // ============================================
 // TYPES
@@ -129,6 +130,11 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
     if (narrow) return [1, 1.5];
     return [1, 2];
   }, [visualLite, narrow]);
+
+  const explorationGl = useMemo(
+    () => getExplorationSceneGlProps(visualLite, narrow),
+    [visualLite, narrow],
+  );
 
   const setPlayerPosition = useGameStore((state) => state.setPlayerPosition);
   /** Позиция игрока из физики каждый кадр; без подписки на стор в этом компоненте — меньше ре-рендеров Canvas/UI. */
@@ -365,6 +371,7 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
       tabIndex={0}
       role="application"
       aria-label="Исследование локации"
+      frameloop={EXPLORATION_SCENE_FRAMELOOP}
       dpr={canvasDpr}
       shadows={{ type: THREE.PCFShadowMap }}
       camera={{ fov: 60, near: 0.1, far: 1000, position: [0, 5, 8] }}
@@ -378,12 +385,7 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
         outline: 'none',
         touchAction: 'none',
       }}
-      gl={{
-        antialias: !visualLite,
-        alpha: false,
-        stencil: false,
-        powerPreference: visualLite || narrow ? 'default' : 'high-performance',
-      }}
+      gl={explorationGl}
       onPointerDown={(e) => {
         (e.target as HTMLCanvasElement | null)?.focus?.();
       }}

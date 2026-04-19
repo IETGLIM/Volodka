@@ -21,6 +21,8 @@
 
 ### Fixed
 
+- **Обход / Canvas (шаг 1, мерцание)**: **`src/components/3d/Scene.tsx`** — явные **`getExplorationSceneGlProps`** (**`logarithmicDepthBuffer: false`**) и **`frameloop="always"`**; подключено в **`RPGGameCanvas`** (исключение режима **`demand`** без **`invalidate()`**).
+
 - **Камера и перформанс обхода**: ближе третье лицо за спиной (**`followCameraProps`** в **`RPGGameCanvas`**: меньше **`distance`/`height`**, отдельный профиль для панели); **`FollowCamera`** без второго lerp цели при **`targetPositionRef`** (убран джиттер относительно меша/тени). **`RPGGameCanvas`** не подписывается на **`playerPosition`** в сторе — снимок при смене сцены + **`livePlayerPositionRef`** для камеры/NPC; **`NPC`** читает **`playerPositionRef`** в **`useFrame`**; **`MiniMap`** сам подписывается на стор — **`GameOrchestrator`** не перерисовывается на каждый шаг; реже сброс позиции в стор (**~165 ms**).
 
 - **Обход / Rapier**: откат увеличенного **`timeStep`** в **`visualLite`** — при редком шаге мира **`useBeforePhysicsStep`** (движение кинематики игрока) не вызывался каждый кадр, из‑за чего персонаж и тень «дёргались» и терялась плавность. Снова дефолтный шаг Rapier (**1/60**). У **`PhysicsPlayer`** **`canSleep={false}`**, чтобы кинематика не засыпала и матрицы меша не отставали от тела.
