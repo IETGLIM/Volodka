@@ -634,6 +634,7 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
       position={rigidSpawnPosition}
       type="kinematicPosition"
       colliders={false}
+      canSleep={false}
       enabledRotations={[false, false, false]}
       userData={{ isPlayer: true }}
     >

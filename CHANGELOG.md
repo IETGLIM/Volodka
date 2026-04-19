@@ -9,8 +9,6 @@
 
 ### Changed
 
-- **Мобильный перформанс обхода**: при **`useMobileVisualPerf` / visualLite** у `<Physics>` в **`RPGGameCanvas`** задаётся больший **`timeStep`** (**1/30** с vs **1/60**), реже шаг Rapier; константы в **`src/lib/rapierExplorationTimestep.ts`**, визу по-прежнему с **`interpolate`**.
-
 - **EventBus**: строгие пейлоады **`StatBusId`** и **`SfxBusType`** в **`src/shared/engine/EventBus.ts`**; в шапке модуля — правило «**`emit`/`on` только на границах слоёв**» (3D→DOM, движок→UI) и отладка через **`setDebug(true)`**. **`ECSWorld`**: **`ctx.emit`** типизирован по **`EventMap`** без **`as never`**. Квесты: **`quest:activated`**, **`quest:completed`**, **`quest:objective_updated`** эмитятся из **`gameStore`**; **`QuestsPanel`** только вызывает **`activateQuest`**. **`LootNotification`**: звук награды/навыка — прямой **`audioEngine.playSfx`**, без лишнего **`sound:play`** внутри того же UI-слоя. **`useCoreLoopPhase`**: учёт **`quest:objective_updated`**.
 
 - **Сохранения (localStorage / облако)**: компактный снимок **`buildLocalSavePayload`** (`src/lib/persistedGameSnapshot.ts`) — без **`npcStates`** в **`exploration`**, только сработавшие триггеры, усечённые журналы (**`choiceLog`**, **`moralChoices`**, **`interactions`**), без нулевых счётчиков квестов; **`saveGame`** пишет этот объект; предупреждение в консоли при размере **> ~3.5 MB UTF-8**. **`POST /api/save`** — ответ **413**, если строка **`data`** длиннее **4.5 MB UTF-8**.
@@ -20,6 +18,8 @@
 - **Оклики NPC в обходе**: при первом входе в радиус по XZ (**`NpcProximityBarks`**, **`npcProximityBarks`**) — тост **`ui:exploration_message`** и короткий **`sound:play`**; текст от **`npcRelations[].value`**: враждебно (≤35) — «Опять ты, Володька? Проваливай!», тепло (≥65) — «Привет, герой!», иначе нейтральная реплика; кулдаун **22 s** на NPC, учёт **`ScheduleEngine`** (спящий NPC не кричит).
 
 ### Fixed
+
+- **Обход / Rapier**: откат увеличенного **`timeStep`** в **`visualLite`** — при редком шаге мира **`useBeforePhysicsStep`** (движение кинематики игрока) не вызывался каждый кадр, из‑за чего персонаж и тень «дёргались» и терялась плавность. Снова дефолтный шаг Rapier (**1/60**). У **`PhysicsPlayer`** **`canSleep={false}`**, чтобы кинематика не засыпала и матрицы меша не отставали от тела.
 
 - **Камера обхода**: при **`isLocked`** сбрасывается флаг перетаскивания орбиты (**`FollowCamera`**, **`SimpleFollowCamera`**), чтобы после диалога не продолжалось «невидимое» вращение от последнего жеста.
 - **Память 3D / NPC GLB**: у клона сцены NPC (**`NPC.tsx`** → **`GLTFLoader`**) в cleanup освобождаются **`geometry`** / **`material`**; при размонтировании останавливаются **`AnimationAction`** (игрок — **`GLBPlayerModel`** в **`PhysicsPlayer.tsx`**).
