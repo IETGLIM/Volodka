@@ -6,6 +6,8 @@
  * стор в **`group.position`** — второй источник перемещения даст джиттер и рассинхрон с Rapier.
  *
  * Реальная загрузка GLB и анимации — **`GLBPlayerModel`** внутри **`RigidBody`** в **`PhysicsPlayer`**.
+ * Шаг 4 (root motion): см. **`AnimationController.tsx`** в этой папке.
+ *
  * Отдельного runtime-`PlayerModel` в проекте нет — этот файл навигация по архитектуре.
  */
 

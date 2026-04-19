@@ -12,6 +12,7 @@ import { getDefaultPlayerModelPath, isValidPlayerGlbPath, rewriteLegacyModelPath
 import { PLAYER_GLB_TARGET_VISUAL_METERS } from '@/lib/playerScaleConstants';
 import { retainGltfModelUrl, releaseGltfModelUrl } from '@/lib/gltfModelCache';
 import { applyGltfCharacterDepthWrite } from '@/lib/gltfCharacterMaterialPolicy';
+import { cloneAnimationClipsWithoutExplorationPlayerRootMotion } from '@/lib/stripExplorationPlayerRootMotionFromClips';
 import { useGameStore } from '@/store/gameStore';
 
 // ============================================
@@ -239,7 +240,12 @@ const GLBPlayerModel = memo(function GLBPlayerModel({
 }) {
   const groupRef = useRef<THREE.Group>(null);
   const { scene: loadedScene, animations } = useGLTF(modelPath) as any;
-  const { actions } = useAnimations(animations || [], groupRef);
+  /** Шаг 4: без root translation на клонах — не дублировать сдвиг с kinematic Rapier. */
+  const mixerAnimations = useMemo(
+    () => cloneAnimationClipsWithoutExplorationPlayerRootMotion(animations as THREE.AnimationClip[] | undefined),
+    [animations],
+  );
+  const { actions } = useAnimations(mixerAnimations, groupRef);
   const [currentAction, setCurrentAction] = useState<string | null>(null);
   const rs = Math.max(0.28, Math.min(1.25, roomScale));
   const actionsRef = useRef(actions);

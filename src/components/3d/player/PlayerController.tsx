@@ -12,6 +12,9 @@
  * Шаг 3: группа визуала не двигается из стора — см. **`PlayerModel.tsx`** и комментарий у **`PlayerVisualRoot`**
  * в **`PhysicsPlayer`**.
  *
+ * Шаг 4: анимации без root translation на корневых костях — см. **`AnimationController.tsx`** (папка `player`) и
+ * **`lib/stripExplorationPlayerRootMotionFromClips`**.
+ *
  * Отдельного runtime-`PlayerController` в проекте нет — этот файл навигация по архитектуре.
  */
 
