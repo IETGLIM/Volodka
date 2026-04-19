@@ -20,3 +20,6 @@ _volodka_upstream_check
 # Локальные сборки для коллег (генерируются скриптом)
 archives/*.zip
 archives/_stage_expert_review_*
+
+# Записи Performance (Chrome DevTools), часто сотни МБ — не в репозиторий
+Trace-*.json

@@ -12,7 +12,13 @@
 
 - **Меню / загрузка / INP**: у полноэкранных оболочек **`MenuScreen`**, **`LoadingScreen`**, **`CyberpunkLoadingFallback` (`GameClient`)** — **`pointer-events-none`** на корне, чтобы клики не приписывались пустому **`div.relative.z-10.min-h-screen…`**; у блока кнопок меню и у **`SettingsPanel`** — **`pointer-events-auto`**, чтобы «Продолжить» / «Новая игра» / оверлей настроек оставались кликабельными.
 
+- **INP / клавиатура в игре**: **`usePlayerControls`** в **`useGamePhysics.ts`** — обновление только **`controlsRef`** (без лишнего **`setState`** на каждый keydown/keyup); для **`keydown`** / **`keyup`** — **`{ passive: true }`**.
+
 - **LCP (крупный заголовок)**: у герой-**`motion.h1`** / обёртки в **`MenuScreen`**, **`GlitchTitle` (`LoadingScreen`)**, **`CyberpunkLoadingFallback`** — **`initial={false}`**, чтобы первый кадр уже был с **`opacity: 1`** (раньше **`opacity: 0`** откладывала LCP до конца входной анимации). Фаза **`loading`** в **`LoadingScreen`**: у контейнера **`initial={false}`**. **`page.tsx`**: в **`LoadingFallback`** при **`dynamic(..., { ssr: false })`** — сразу видимый **`<h1>ВОЛОДЬКА</h1>`** до подгрузки чанка. **`layout.tsx`**: у **`next/font`** Geist — **`adjustFontFallback: true`**.
+
+### Added
+
+- **Анализ трейсов Performance**: скрипт **`scripts/analyze-chrome-trace.mjs`** (сводка длинных **`RunTask`** / **`traceEvents`**); в **`.gitignore`** — маска **`Trace-*.json`**, чтобы локальные записи DevTools не попадали в git.
 
 ### Maintainer notes
 

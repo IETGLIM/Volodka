@@ -93,7 +93,6 @@ export function usePlayerControls(options?: UsePlayerControlsOptions) {
   const onInteractPressRef = useRef(options?.onInteractPress);
   onInteractPressRef.current = options?.onInteractPress;
   const virtualControlsRef = options?.virtualControlsRef;
-  const [, forceUpdate] = useState({});
 
   // Получение текущего состояния контроллов
   const getControls = useCallback(() => {
@@ -147,11 +146,10 @@ export function usePlayerControls(options?: UsePlayerControlsOptions) {
                 // interactPressedRef остаётся true до keyup — иначе автоповтор keydown вызовет колбэк снова
               }
             }
-            forceUpdate({});
           }
         } else {
+          // Без setState: движение читает только refs в useBeforePhysicsStep / useFrame — лишний ререндер Canvas портил INP.
           controlsRef.current[control] = true;
-          forceUpdate({});
         }
       }
     };
@@ -170,7 +168,6 @@ export function usePlayerControls(options?: UsePlayerControlsOptions) {
           interactPressedRef.current = false;
         }
         controlsRef.current[control] = false;
-        forceUpdate({});
       }
     };
 
@@ -178,16 +175,16 @@ export function usePlayerControls(options?: UsePlayerControlsOptions) {
     const handleBlur = () => {
       controlsRef.current = { ...DEFAULT_CONTROLS };
       interactPressedRef.current = false;
-      forceUpdate({});
     };
 
-    window.addEventListener('keydown', handleKeyDown);
-    window.addEventListener('keyup', handleKeyUp);
+    const keyOpts: AddEventListenerOptions = { passive: true };
+    window.addEventListener('keydown', handleKeyDown, keyOpts);
+    window.addEventListener('keyup', handleKeyUp, keyOpts);
     window.addEventListener('blur', handleBlur);
 
     return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-      window.removeEventListener('keyup', handleKeyUp);
+      window.removeEventListener('keydown', handleKeyDown, keyOpts);
+      window.removeEventListener('keyup', handleKeyUp, keyOpts);
       window.removeEventListener('blur', handleBlur);
     };
   }, []);
