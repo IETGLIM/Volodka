@@ -9,6 +9,8 @@
 
 ### Changed
 
+- **EventBus**: строгие пейлоады **`StatBusId`** и **`SfxBusType`** в **`src/shared/engine/EventBus.ts`**; в шапке модуля — правило «**`emit`/`on` только на границах слоёв**» (3D→DOM, движок→UI) и отладка через **`setDebug(true)`**. **`ECSWorld`**: **`ctx.emit`** типизирован по **`EventMap`** без **`as never`**. Квесты: **`quest:activated`**, **`quest:completed`**, **`quest:objective_updated`** эмитятся из **`gameStore`**; **`QuestsPanel`** только вызывает **`activateQuest`**. **`LootNotification`**: звук награды/навыка — прямой **`audioEngine.playSfx`**, без лишнего **`sound:play`** внутри того же UI-слоя. **`useCoreLoopPhase`**: учёт **`quest:objective_updated`**.
+
 - **Сохранения (localStorage / облако)**: компактный снимок **`buildLocalSavePayload`** (`src/lib/persistedGameSnapshot.ts`) — без **`npcStates`** в **`exploration`**, только сработавшие триггеры, усечённые журналы (**`choiceLog`**, **`moralChoices`**, **`interactions`**), без нулевых счётчиков квестов; **`saveGame`** пишет этот объект; предупреждение в консоли при размере **> ~3.5 MB UTF-8**. **`POST /api/save`** — ответ **413**, если строка **`data`** длиннее **4.5 MB UTF-8**.
 
 ### Added

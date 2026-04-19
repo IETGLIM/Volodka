@@ -4,10 +4,38 @@
 // Улучшения по сравнению с v1:
 // - Добавлены middleware (pre/post emit hooks)
 // - Type-safe emit/on с автокомплитом
-// - Валидация payload в dev-режиме
-// - Улучшенная отладка: getLastEvent, getEventStats
+// - Улучшенная отладка: getLog, getLastEvent, getEventStats, setDebug(true)
+//
+// --- Правило границ (чтобы не превратить шину в «спагетти») ---
+// `emit` / `on` — только там, где нужно связать **разные слои** без прямой зависимости:
+//   • 3D / обход → DOM (тосты, оверлеи)
+//   • движок / стор → UI-подписчики (уведомления, фазы, аудио-хук)
+// Внутри **одной** подсистемы (квесты, навыки, один модуль) — вызывайте функции/методы стора
+// напрямую; не дублируйте логику вторым `emit` «ради порядка».
+//
+// Отладка: `eventBus.setDebug(true)` в dev — в консоль уйдут имя события и payload.
 
-import type { PlayerPath, SceneId } from '../types/game';
+import type { PlayerPath, SceneId, PlayerState, PlayerSkills } from '../types/game';
+
+// ============================================
+// Строгие идентификаторы в payload (не «произвольная строка»)
+// ============================================
+
+/** Поля `PlayerState` с числом — то, что реально уходит в `stat:changed`. */
+type NumericPlayerStateKeys = {
+  [K in keyof PlayerState]: PlayerState[K] extends number ? K : never;
+}[keyof PlayerState];
+
+/** Имя стата в шине: кор статы + навыки (как в StatsEngine.getStatValue). */
+export type StatBusId = NumericPlayerStateKeys | keyof PlayerSkills;
+
+/** Звуки из `sound:play` / `AudioEngine.playSfx` (известные + шаги `footstep_*`). */
+export type SfxBusType =
+  | 'loot'
+  | 'skill'
+  | 'ui'
+  | 'radio_static'
+  | `footstep_${string}`;
 
 // ============================================
 // ТИПЫ СОБЫТИЙ И ПЕЙЛОАДОВ
@@ -28,7 +56,7 @@ export interface EventMap {
 
   // Изменение характеристик
   'stat:changed': {
-    stat: string;
+    stat: StatBusId;
     oldValue: number;
     newValue: number;
     delta: number;
@@ -91,7 +119,7 @@ export interface EventMap {
   'ui:exploration_message': { text: string };
 
   /** Звук UI / мира (см. AudioEngine / обработчики). */
-  'sound:play': { type: string; volume?: number };
+  'sound:play': { type: SfxBusType; volume?: number };
 
   /** Взаимодействие с объектом из радиального меню и др. */
   'object:interact': { objectId: string; action: string };

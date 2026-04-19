@@ -3,6 +3,7 @@
 import { memo, useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { eventBus } from '@/engine/EventBus';
+import { audioEngine } from '@/engine/AudioEngine';
 
 type LootPayload = { itemId: string; name: string; rarity: string };
 type SkillPayload = { skill: string; level: number };
@@ -23,7 +24,7 @@ export const LootNotification = memo(function LootNotification() {
     return eventBus.on('loot:reward', (p) => {
       if (hideTimer.current) window.clearTimeout(hideTimer.current);
       setLoot(p);
-      eventBus.emit('sound:play', { type: 'loot' });
+      audioEngine.playSfx('loot', 0.35);
       hideTimer.current = window.setTimeout(() => setLoot(null), 3200);
     });
   }, []);
@@ -64,7 +65,7 @@ export const SkillUpNotification = memo(function SkillUpNotification() {
   useEffect(() => {
     return eventBus.on('skill:level_up', (p) => {
       setSkill(p);
-      eventBus.emit('sound:play', { type: 'skill' });
+      audioEngine.playSfx('skill', 0.35);
       window.setTimeout(() => setSkill(null), 2800);
     });
   }, []);

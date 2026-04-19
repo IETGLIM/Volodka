@@ -1014,6 +1014,7 @@ export const useGameStore = create<GameState>()((set, get) => ({
       set({
         activeQuestIds: [...activeQuestIds, questId]
       });
+      eventBus.emit('quest:activated', { questId });
     }
   },
   
@@ -1089,20 +1090,27 @@ export const useGameStore = create<GameState>()((set, get) => ({
         questProgress: newQuestProgress,
       });
     }
+    eventBus.emit('quest:completed', { questId });
   },
   
   updateQuestObjective: (questId, objectiveId, value) => {
     const { questProgress } = get();
     const questObj = questProgress[questId] || {};
-    
+    const nextValue = value !== undefined ? value : (questObj[objectiveId] || 0) + 1;
+
     set({
       questProgress: {
         ...questProgress,
         [questId]: {
           ...questObj,
-          [objectiveId]: value !== undefined ? value : (questObj[objectiveId] || 0) + 1
-        }
-      }
+          [objectiveId]: nextValue,
+        },
+      },
+    });
+    eventBus.emit('quest:objective_updated', {
+      questId,
+      objectiveId,
+      value: nextValue,
     });
   },
   
@@ -1110,15 +1118,21 @@ export const useGameStore = create<GameState>()((set, get) => ({
     const { questProgress } = get();
     const questObj = questProgress[questId] || {};
     const currentValue = questObj[objectiveId] || 0;
-    
+    const nextValue = currentValue + 1;
+
     set({
       questProgress: {
         ...questProgress,
         [questId]: {
           ...questObj,
-          [objectiveId]: currentValue + 1
-        }
-      }
+          [objectiveId]: nextValue,
+        },
+      },
+    });
+    eventBus.emit('quest:objective_updated', {
+      questId,
+      objectiveId,
+      value: nextValue,
     });
   },
   

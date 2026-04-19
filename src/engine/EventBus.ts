@@ -12,4 +12,6 @@ export {
   type EventPayload,
   type PreEmitMiddleware,
   type PostEmitMiddleware,
+  type StatBusId,
+  type SfxBusType,
 } from '@/shared/engine/EventBus';
