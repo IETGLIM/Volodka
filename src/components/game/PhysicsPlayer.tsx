@@ -13,6 +13,7 @@ import { PLAYER_GLB_TARGET_VISUAL_METERS } from '@/lib/playerScaleConstants';
 import { retainGltfModelUrl, releaseGltfModelUrl } from '@/lib/gltfModelCache';
 import { applyGltfExplorationCharacterMaterialPolicies } from '@/lib/gltfCharacterMaterialPolicy';
 import { cloneAnimationClipsWithoutExplorationPlayerRootMotion } from '@/lib/stripExplorationPlayerRootMotionFromClips';
+import { isExplorationPlayerDebugPrimitiveEnabled } from '@/lib/explorationPlayerDebugPrimitive';
 import { useGameStore } from '@/store/gameStore';
 
 // ============================================
@@ -36,6 +37,11 @@ export interface PhysicsPlayerProps {
   initialRotation?: number;
   /** Тач-панель (см. `ExplorationMobileHud`): движение объединяется с клавиатурой. */
   virtualControlsRef?: React.MutableRefObject<Partial<PlayerControls>>;
+  /**
+   * Диагностика: вместо GLB — красный бокс с размерами капсулы (тот же контроллер / коллайдер).
+   * Обычно не задаётся вручную — см. **`NEXT_PUBLIC_EXPLORATION_PLAYER_DEBUG_PRIMITIVE`** и **`explorationPlayerDebugPrimitive`**.
+   */
+  debugPlayerPrimitive?: boolean;
 }
 
 export interface PhysicsPlayerRef {
@@ -372,6 +378,7 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
     isLocked = false,
     initialRotation = 0,
     virtualControlsRef,
+    debugPlayerPrimitive = isExplorationPlayerDebugPrimitiveEnabled(),
   },
   ref
 ) {
@@ -671,19 +678,32 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
         в useEffect — позиция только у RigidBody / Rapier; modelRef — вращение и т.п., не XYZ из стора.
       */}
       <group ref={modelRef} name="PlayerVisualRoot" userData={{ isPlayer: true }}>
-        <Suspense fallback={<group name="PlayerModelLoading" />}>
-          {!modelError ? (
-            <GLBPlayerModel
-              modelPath={modelPathToUse}
-              isMoving={isMoving}
-              isLocked={isLocked}
-              onError={handleModelError}
-              roomScale={roomScale}
-            />
-          ) : (
-            <FallbackPlayerModel isMoving={isMoving} isLocked={isLocked} roomScale={roomScale} />
-          )}
-        </Suspense>
+        {debugPlayerPrimitive ? (
+          <mesh
+            name="PlayerDebugPrimitive"
+            position={[0, capsule.capCenterY, 0]}
+            castShadow
+            receiveShadow
+            userData={{ isPlayer: true }}
+          >
+            <boxGeometry args={[capsule.r * 2, 2 * capsule.halfH + 2 * capsule.r, capsule.r * 2]} />
+            <meshStandardMaterial color="#cc2222" roughness={0.45} metalness={0.08} />
+          </mesh>
+        ) : (
+          <Suspense fallback={<group name="PlayerModelLoading" />}>
+            {!modelError ? (
+              <GLBPlayerModel
+                modelPath={modelPathToUse}
+                isMoving={isMoving}
+                isLocked={isLocked}
+                onError={handleModelError}
+                roomScale={roomScale}
+              />
+            ) : (
+              <FallbackPlayerModel isMoving={isMoving} isLocked={isLocked} roomScale={roomScale} />
+            )}
+          </Suspense>
+        )}
       </group>
 
       {karmaZone === 'high' && (

@@ -19,6 +19,8 @@
 
 - **Обход / Z-fighting (анализ видео)**: **`applyGltfCharacterDepthWrite`** сбрасывает **`polygonOffset`** на материалах GLB; cutout волос — также по **`material.name`**; «окно» в **`VolodkaRoomVisual`** — **`depthWrite: false`** у полупрозрачности; тень под игроком — выше пола, **`depthWrite: false`**; следы **`ExplorationFootprints`** — выше по **Y** + тесты **`gltfCharacterMaterialPolicy`**.
 
+- **Обход / диагностика физики vs GLB**: красный бокс вместо модели при **`NEXT_PUBLIC_EXPLORATION_PLAYER_DEBUG_PRIMITIVE=1`** (**`PhysicsPlayer`**, **`lib/explorationPlayerDebugPrimitive.ts`**, проп **`debugPlayerPrimitive`**); навигация **`PlayerController.tsx`**.
+
 ## [0.2.8] - 2026-04-19
 
 ### Changed

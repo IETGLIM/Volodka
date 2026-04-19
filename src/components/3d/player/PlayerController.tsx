@@ -21,6 +21,10 @@
  * без дёрганья позиции модели относительно мира. Автоматическая подстраховка данных сцен —
  * **`config/explorationScenesMovementSanity.test.ts`** + полный **`vitest`**.
  *
+ * Диагностика «мерцание от физики или от GLB»: **`NEXT_PUBLIC_EXPLORATION_PLAYER_DEBUG_PRIMITIVE=1`**
+ * (пересборка) — в **`PhysicsPlayer`** вместо **`GLBPlayerModel`** рисуется красный бокс по размеру капсулы;
+ * см. **`lib/explorationPlayerDebugPrimitive.ts`**, проп **`debugPlayerPrimitive`**.
+ *
  * Отдельного runtime-`PlayerController` в проекте нет — этот файл навигация по архитектуре.
  */
 
