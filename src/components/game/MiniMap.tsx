@@ -1,6 +1,7 @@
 'use client';
 
-import { memo, useMemo, useState, useCallback, useId } from 'react';
+import { memo, useMemo, useState, useCallback, useId, useEffect } from 'react';
+import { getExplorationLivePlayerPositionOrNull } from '@/lib/explorationLivePlayerBridge';
 import { motion } from 'framer-motion';
 import { useGameStore } from '@/store/gameStore';
 
@@ -82,8 +83,19 @@ export const MiniMap = memo(function MiniMap({
   questMarkers = [],
   className = '',
 }: MiniMapProps) {
+  const gameMode = useGameStore((s) => s.gameMode);
   const playerPositionFromStore = useGameStore((s) => s.exploration.playerPosition);
-  const playerPosition = playerPositionProp ?? playerPositionFromStore;
+  const [, setLiveTick] = useState(0);
+  useEffect(() => {
+    if (gameMode !== 'exploration' || playerPositionProp != null) return;
+    const id = window.setInterval(() => {
+      setLiveTick((n) => n + 1);
+    }, 110);
+    return () => window.clearInterval(id);
+  }, [gameMode, playerPositionProp]);
+
+  const live = gameMode === 'exploration' && playerPositionProp == null ? getExplorationLivePlayerPositionOrNull() : null;
+  const playerPosition = playerPositionProp ?? live ?? playerPositionFromStore;
 
   const gridPatternId = useId().replace(/:/g, '');
   const mapSize = { width: 150, height: 120 };

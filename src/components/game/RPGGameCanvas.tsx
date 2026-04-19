@@ -65,6 +65,10 @@ import { HomeEveningVisual } from './exploration/HomeEveningVisual';
 import { NpcProximityBarks } from './NpcProximityBarks';
 import { EXPLORATION_SCENE_FRAMELOOP, getExplorationSceneGlProps } from '@/components/3d/Scene';
 import { ExplorationLighting, getExplorationDirectionalShadowMapSize } from '@/components/3d/Lighting';
+import {
+  clearExplorationLivePlayerPosition,
+  updateExplorationLivePlayerPosition,
+} from '@/lib/explorationLivePlayerBridge';
 
 // ============================================
 // TYPES
@@ -140,7 +144,6 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
     [visualLite, narrow],
   );
 
-  const setPlayerPosition = useGameStore((state) => state.setPlayerPosition);
   /** Позиция игрока из физики каждый кадр; без подписки на стор в этом компоненте — меньше ре-рендеров Canvas/UI. */
   const livePlayerPositionRef = useRef(
     (() => {
@@ -148,7 +151,6 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
       return { x: p.x, y: p.y, z: p.z, rotation: p.rotation ?? 0 };
     })(),
   );
-  const lastStorePositionFlushRef = useRef(0);
   const setNPCState = useGameStore((state) => state.setNPCState);
   const timeOfDay = useGameStore((state) => state.exploration.timeOfDay);
 
@@ -166,7 +168,14 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
   useEffect(() => {
     const p = useGameStore.getState().exploration.playerPosition;
     livePlayerPositionRef.current = { x: p.x, y: p.y, z: p.z, rotation: p.rotation ?? 0 };
+    updateExplorationLivePlayerPosition(livePlayerPositionRef.current);
   }, [sceneId]);
+
+  useEffect(() => {
+    return () => {
+      clearExplorationLivePlayerPosition();
+    };
+  }, []);
 
   // Scene config (свет / туман + размер поля под тип локации; при необходимости — проп `groundGeometryArgs`)
   const sceneConfig = useMemo(() => {
@@ -269,19 +278,13 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
   const sceneInteractiveObjects = useMemo(() => getInteractiveObjectsForScene(sceneId), [sceneId]);
   const sceneTriggers = useMemo(() => getTriggersForScene(sceneId), [sceneId]);
 
-  // Handle player position changes - сохраняем в store напрямую
-  const handlePositionChange = useCallback(
-    (pos: { x: number; y: number; z: number; rotation: number }) => {
-      livePlayerPositionRef.current = { x: pos.x, y: pos.y, z: pos.z, rotation: pos.rotation };
-      playerPositionRef.current = { x: pos.x, y: pos.y, z: pos.z, rotation: pos.rotation };
-
-      const now = typeof performance !== 'undefined' ? performance.now() : Date.now();
-      if (now - lastStorePositionFlushRef.current < 165) return;
-      lastStorePositionFlushRef.current = now;
-      setPlayerPosition({ x: pos.x, y: pos.y, z: pos.z, rotation: pos.rotation });
-    },
-    [setPlayerPosition],
-  );
+  // Позиция только в ref + мост: не вызывать setPlayerPosition здесь (конфликт с kinematic / мерцание).
+  const handlePositionChange = useCallback((pos: { x: number; y: number; z: number; rotation: number }) => {
+    const next = { x: pos.x, y: pos.y, z: pos.z, rotation: pos.rotation };
+    livePlayerPositionRef.current = next;
+    playerPositionRef.current = next;
+    updateExplorationLivePlayerPosition(next);
+  }, []);
 
   // Handle NPC state changes
   const handleNPCStateChange = useCallback(

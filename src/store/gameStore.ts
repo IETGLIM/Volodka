@@ -31,6 +31,7 @@ import {
   estimateJsonUtf8Bytes,
   LOCAL_SAVE_WARN_BYTES,
 } from '@/lib/persistedGameSnapshot';
+import { getExplorationLivePlayerPositionOrNull } from '@/lib/explorationLivePlayerBridge';
 
 export type TravelToSceneResult =
   | { ok: true }
@@ -1222,6 +1223,11 @@ export const useGameStore = create<GameState>()((set, get) => ({
   saveGame: (options?: SaveGameOptions) => {
     const storage = getLocalStorage();
     if (!storage) return;
+
+    const live = getExplorationLivePlayerPositionOrNull();
+    if (live && get().gameMode === 'exploration') {
+      get().setPlayerPosition(live);
+    }
 
     const state = get();
     const payload = buildLocalSavePayload({
