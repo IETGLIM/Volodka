@@ -21,6 +21,8 @@
 
 - **Обход / диагностика физики vs GLB**: красный бокс вместо модели при **`NEXT_PUBLIC_EXPLORATION_PLAYER_DEBUG_PRIMITIVE=1`** (**`PhysicsPlayer`**, **`lib/explorationPlayerDebugPrimitive.ts`**, проп **`debugPlayerPrimitive`**); навигация **`PlayerController.tsx`**.
 
+- **Обход / frustum culling (проблема 3)**: **`applyGltfMeshesFrustumCullOff`** — **`frustumCulled = false`** на всех мешах GLB; входит в **`applyGltfExplorationCharacterMaterialPolicies`** (игрок, NPC); тесты **`gltfCharacterMaterialPolicy`**; **`TransparencyRenderOrder.tsx`**.
+
 ## [0.2.8] - 2026-04-19
 
 ### Changed

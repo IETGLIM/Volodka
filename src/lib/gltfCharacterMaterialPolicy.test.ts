@@ -4,6 +4,7 @@ import {
   applyGltfCharacterDepthWrite,
   applyGltfExplorationCharacterMaterialPolicies,
   applyGltfHairLikeAlphaTestCutout,
+  applyGltfMeshesFrustumCullOff,
 } from './gltfCharacterMaterialPolicy';
 
 describe('gltfCharacterMaterialPolicy', () => {
@@ -53,6 +54,16 @@ describe('gltfCharacterMaterialPolicy', () => {
     expect(mat.depthWrite).toBe(true);
     expect(mat.transparent).toBe(false);
     expect(mat.alphaTest).toBe(0.42);
+    expect(mesh.frustumCulled).toBe(false);
+  });
+
+  it('applyGltfMeshesFrustumCullOff disables frustum culling on meshes', () => {
+    const root = new THREE.Group();
+    const mesh = new THREE.Mesh(new THREE.BoxGeometry(), new THREE.MeshBasicMaterial());
+    mesh.frustumCulled = true;
+    root.add(mesh);
+    applyGltfMeshesFrustumCullOff(root);
+    expect(mesh.frustumCulled).toBe(false);
   });
 
   it('applyGltfCharacterDepthWrite clears polygonOffset on materials', () => {

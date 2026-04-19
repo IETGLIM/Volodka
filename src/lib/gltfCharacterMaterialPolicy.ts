@@ -86,10 +86,24 @@ export function applyGltfHairLikeAlphaTestCutout(root: THREE.Object3D): void {
 }
 
 /**
- * Политика материалов персонажа в обходе: сначала **`depthWrite`**, затем cutout для волос/ресниц.
- * Вызывать после загрузки GLB (**`GLBPlayerModel`**, **`NPC`**).
+ * Диагностика «пропадание» / мерцание из‑за неверного frustum culling у динамических персонажей:
+ * **`frustumCulled = false`** на всех **`Mesh`** / **`SkinnedMesh`** под корнем GLB.
+ */
+export function applyGltfMeshesFrustumCullOff(root: THREE.Object3D): void {
+  root.traverse((obj) => {
+    const mesh = obj as THREE.Mesh;
+    if (mesh.isMesh) {
+      mesh.frustumCulled = false;
+    }
+  });
+}
+
+/**
+ * Политика материалов и видимости персонажа в обходе: **`depthWrite`**, cutout волос, отключение
+ * frustum culling на мешах GLB. Вызывать после загрузки (**`GLBPlayerModel`**, **`NPC`**).
  */
 export function applyGltfExplorationCharacterMaterialPolicies(root: THREE.Object3D): void {
   applyGltfCharacterDepthWrite(root);
   applyGltfHairLikeAlphaTestCutout(root);
+  applyGltfMeshesFrustumCullOff(root);
 }
