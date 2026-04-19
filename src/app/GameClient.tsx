@@ -446,7 +446,7 @@ function CyberpunkLoadingFallback() {
               ? '-2px 0 #ff0000, 2px 0 #00ffff, 0 0 60px rgba(0, 255, 255, 0.6)'
               : '0 0 50px rgba(0, 255, 255, 0.5), 0 0 100px rgba(0, 255, 255, 0.3), 0 0 160px rgba(255, 140, 0, 0.08)',
           }}
-          initial={{ opacity: 0, y: -20, scale: 0.95 }}
+          initial={false}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ duration: 1, ease: 'easeOut' }}
         >

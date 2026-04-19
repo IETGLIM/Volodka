@@ -12,6 +12,8 @@
 
 - **Меню / загрузка / INP**: у полноэкранных оболочек **`MenuScreen`**, **`LoadingScreen`**, **`CyberpunkLoadingFallback` (`GameClient`)** — **`pointer-events-none`** на корне, чтобы клики не приписывались пустому **`div.relative.z-10.min-h-screen…`**; у блока кнопок меню и у **`SettingsPanel`** — **`pointer-events-auto`**, чтобы «Продолжить» / «Новая игра» / оверлей настроек оставались кликабельными.
 
+- **LCP (крупный заголовок)**: у герой-**`motion.h1`** / обёртки в **`MenuScreen`**, **`GlitchTitle` (`LoadingScreen`)**, **`CyberpunkLoadingFallback`** — **`initial={false}`**, чтобы первый кадр уже был с **`opacity: 1`** (раньше **`opacity: 0`** откладывала LCP до конца входной анимации). Фаза **`loading`** в **`LoadingScreen`**: у контейнера **`initial={false}`**. **`page.tsx`**: в **`LoadingFallback`** при **`dynamic(..., { ssr: false })`** — сразу видимый **`<h1>ВОЛОДЬКА</h1>`** до подгрузки чанка. **`layout.tsx`**: у **`next/font`** Geist — **`adjustFontFallback: true`**.
+
 ### Maintainer notes
 
 - **Ритм выкладки (с душой и для потомков)**: порция функционала или исправлений → быстрая проверка (**`tsc`**, **`vitest`**, разбор линтера по смыслу) → запись в **`CHANGELOG.md`** в **`[Unreleased]`** → коммит с ясной первой строкой → **`git push origin`** на каноническую ветку (**`main`**). Так на GitHub и у тех, кто откроет репозиторий позже, всегда видна честная история, а не «магия у одного разработчика на ноутбуке».

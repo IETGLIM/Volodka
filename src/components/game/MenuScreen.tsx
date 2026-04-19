@@ -783,9 +783,9 @@ export const MenuScreen = memo(function MenuScreen({
           </div>
         </motion.div>
 
-        {/* Title */}
+        {/* Title — initial={false}: первый кадр уже «контентный» для LCP (иначе opacity:0 откладывает метрику на анимацию). */}
         <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
+          initial={false}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.8, type: 'spring' }}
           className="text-center mb-8"
@@ -806,7 +806,7 @@ export const MenuScreen = memo(function MenuScreen({
                 ? '-2px 0 #ff0000, 2px 0 #00ffff, 0 0 60px rgba(0, 255, 255, 0.6)'
                 : '0 0 60px rgba(0, 255, 255, 0.6), 0 0 120px rgba(0, 255, 255, 0.4), 0 0 180px rgba(255, 140, 0, 0.1)',
             }}
-            initial={{ opacity: 0, y: -30 }}
+            initial={false}
             animate={{ opacity: 1, y: 0 }}
           >
             <span className="text-transparent bg-clip-text bg-gradient-to-b from-cyan-300 via-cyan-400 to-emerald-500 neon-pulse-cyan">

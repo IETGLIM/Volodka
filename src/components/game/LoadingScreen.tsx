@@ -580,7 +580,7 @@ const GlitchTitle = memo(function GlitchTitle({ text, subtitle }: GlitchTitlePro
             ? '-2px 0 #ff0000, 2px 0 #00ffff, 0 0 80px rgba(0, 255, 255, 0.6)'
             : '0 0 60px rgba(0, 255, 255, 0.5), 0 0 120px rgba(0, 255, 255, 0.3), 0 0 200px rgba(255, 140, 0, 0.1)',
         }}
-        initial={{ opacity: 0, y: -30, scale: 0.95 }}
+        initial={false}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ duration: 1.2, ease: 'easeOut' }}
       >
@@ -775,7 +775,7 @@ const LoadingScreen = memo(function LoadingScreen({ onReady }: LoadingScreenProp
           {(phase === 'loading' || phase === 'ready') && (
             <motion.div
               key="loading"
-              initial={{ opacity: 0, y: 20 }}
+              initial={false}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}
               className="text-center flex flex-col items-center"
