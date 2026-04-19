@@ -351,7 +351,7 @@ const GLBPlayerModel = memo(function GLBPlayerModel({
 // Его world-matrix выставляет `@react-three/rapier` из симуляции. Не подписывайте этот group
 // на `exploration.playerPosition` из Zustand и не делайте `group.position.copy(store)` в useEffect —
 // иначе конфликт с kinematic + `setNextKinematicTranslation` (гипотеза №2).
-// `onPositionChange` ниже — только для камеры / редкого стора (`livePlayerPositionRef` + throttle в родителе).
+// `onPositionChange` ниже — только для ref + моста в родителе (`livePlayerPositionRef` / `explorationLivePlayerBridge`), не для сдвига меша из стора.
 //
 const DEFAULT_PHYSICS_DT = 1 / 60;
 

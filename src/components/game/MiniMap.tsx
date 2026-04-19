@@ -1,7 +1,8 @@
 'use client';
 
-import { memo, useMemo, useState, useCallback, useId, useEffect } from 'react';
+import { memo, useMemo, useState, useCallback, useId } from 'react';
 import { getExplorationLivePlayerPositionOrNull } from '@/lib/explorationLivePlayerBridge';
+import { useExplorationLivePlayerTick } from '@/hooks/useExplorationLivePlayerTick';
 import { motion } from 'framer-motion';
 import { useGameStore } from '@/store/gameStore';
 
@@ -85,14 +86,10 @@ export const MiniMap = memo(function MiniMap({
 }: MiniMapProps) {
   const gameMode = useGameStore((s) => s.gameMode);
   const playerPositionFromStore = useGameStore((s) => s.exploration.playerPosition);
-  const [, setLiveTick] = useState(0);
-  useEffect(() => {
-    if (gameMode !== 'exploration' || playerPositionProp != null) return;
-    const id = window.setInterval(() => {
-      setLiveTick((n) => n + 1);
-    }, 110);
-    return () => window.clearInterval(id);
-  }, [gameMode, playerPositionProp]);
+  const livePlayerTick = useExplorationLivePlayerTick(
+    gameMode === 'exploration' && playerPositionProp == null,
+    110,
+  );
 
   const live = gameMode === 'exploration' && playerPositionProp == null ? getExplorationLivePlayerPositionOrNull() : null;
   const playerPosition = playerPositionProp ?? live ?? playerPositionFromStore;
@@ -114,7 +111,7 @@ export const MiniMap = memo(function MiniMap({
       x: playerPosition.x * scale.x + mapSize.width / 2,
       y: playerPosition.z * scale.z + mapSize.height / 2,
     }),
-    [playerPosition.x, playerPosition.z, scale.x, scale.z],
+    [playerPosition.x, playerPosition.z, scale.x, scale.z, livePlayerTick],
   );
 
   const playerRotation = playerPosition.rotation || 0;

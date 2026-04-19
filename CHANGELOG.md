@@ -21,6 +21,8 @@
 
 ### Fixed
 
+- **Обход / стабилизация позиции игрока (шаг 2)**: **`useExplorationLivePlayerTick`** — общий тик для чтения моста; **`TutorialOverlay`** (`nearNpc` по живой позиции); **`MiniMap`** с тиком в deps **`useMemo`**; комментарии **`PhysicsPlayer`** / **`PlayerController`**.
+
 - **Обход / стабилизация позиции игрока (шаг 1)**: в **`RPGGameCanvas`** убран **`setPlayerPosition`** из **`handlePositionChange`** (только ref + **`explorationLivePlayerBridge`**); перед **`saveGame`** позиция подмешивается из моста в стор; **`MiniMap`** в обходе опрашивает мост по интервалу; навигация **`components/3d/player/PlayerController.tsx`**.
 
 - **LCP / CLS (перцепция загрузки и сдвиги макета)**: **`AppPerfWarmup`** в **`layout`** — фоновый **`warmupRapierWasm`** (`lib/rapierWasmWarmup.ts`) и **`preloadExplorationPlayerGltf`** (`lib/model-cache.ts`, `useGLTF.preload`); оболочки загрузки **`page`** / **`GameOrchestrator`** (фиксированный полноэкранный слот); **`EXPLORATION_GAME_VIEWPORT_CLASS`** в **`Scene.tsx`** + **`RPGGameCanvas`** (`Canvas` **`block h-full w-full`**); **`next/font`**: **`display: 'swap'`**, **`adjustFontFallback: false`**; диалог: **`overflow: hidden`** на **`body`**, вход окна через **opacity/scale** без сдвига по **Y**; **`HUD`**: убран **`layout`** у framer-motion.
