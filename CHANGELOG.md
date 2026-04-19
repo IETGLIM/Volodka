@@ -21,6 +21,8 @@
 
 ### Fixed
 
+- **Обход / LOD NPC (шаг 5, мерцание)**: явный **гистерезис** в **`lib/npcLodConstants.ts`** (`resolveNpcModelLodUseFull`: дальше **19 m** сброс полного GLB, ближе **11 m** возврат из импостора); шире мёртвая зона теней **4 / 8 m**; навигация **`src/components/3d/LODController.tsx`**, **`NPCManager.tsx`**.
+
 - **Обход / прозрачность (шаг 4, мерцание)**: **`applyGltfCharacterDepthWrite`** (`lib/gltfCharacterMaterialPolicy.ts`) для GLB игрока и NPC — **`depthWrite: true`** на материалах после загрузки; навигация **`src/components/3d/TransparencyRenderOrder.tsx`**.
 
 - **Обход / модели и анимации (шаг 3, мерцание)**: документ **`src/components/3d/ModelLoader.tsx`** / **`AnimationController.tsx`** (реальная логика — **`GLTFLoader`** в **`NPC.tsx`**, **`GLBPlayerModel`** в **`PhysicsPlayer.tsx`**); смена клипов по **`actionKeysSig`** / **`animMappingSig`**, чтение **`actions`** из **`actionsRef`** — без лишних сбросов при смене только ссылки на **`actions`**; в **`modelUrls`** — предупреждение не бить кэш query **`?v=…`** для GLB.

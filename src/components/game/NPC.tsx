@@ -27,10 +27,11 @@ import { getNpcQuestMarkerForExploration } from '@/lib/npcQuestMarker';
 import { retainGltfModelUrl, releaseGltfModelUrl } from '@/lib/gltfModelCache';
 import { applyGltfCharacterDepthWrite } from '@/lib/gltfCharacterMaterialPolicy';
 import type { FindNavPathXZ } from '@/lib/explorationNavMesh';
-
-/** Дальше — упрощённая болванка вместо GLB (меньше полигоналки и скинов). */
-const NPC_LOD_FULL_IN_M = 12;
-const NPC_LOD_IMPOSTOR_OUT_M = 17;
+import {
+  NPC_SHADOW_MID_IN_M,
+  NPC_SHADOW_NEAR_IN_M,
+  resolveNpcModelLodUseFull,
+} from '@/lib/npcLodConstants';
 
 function scheduleActivityIcon(entry: ScheduleEntry | null | undefined): string {
   if (!entry) return '💬';
@@ -746,14 +747,11 @@ export const NPC = memo(function NPC({
 
     const posForLod = scheduleEntry ? scheduleEntry.position : currentPositionRef.current;
     const dLod = Math.hypot(px - posForLod.x, pz - posForLod.z);
-    let nextLodFull = lodFullModelRef.current;
-    if (isDialogueActive || !definition.modelPath) {
-      nextLodFull = true;
-    } else if (dLod < NPC_LOD_FULL_IN_M) {
-      nextLodFull = true;
-    } else if (dLod > NPC_LOD_IMPOSTOR_OUT_M) {
-      nextLodFull = false;
-    }
+    const nextLodFull = resolveNpcModelLodUseFull({
+      wasFull: lodFullModelRef.current,
+      distanceXZ: dLod,
+      forceFull: Boolean(isDialogueActive || !definition.modelPath),
+    });
     if (nextLodFull !== lodFullModelRef.current) {
       lodFullModelRef.current = nextLodFull;
       setUseFullModel(nextLodFull);
@@ -763,8 +761,8 @@ export const NPC = memo(function NPC({
     if (isDialogueActive) {
       nextShadow = 'near';
     } else if (definition.modelPath && lodFullModelRef.current) {
-      if (dLod < 4.5) nextShadow = 'near';
-      else if (dLod > 6.5) nextShadow = 'mid';
+      if (dLod < NPC_SHADOW_NEAR_IN_M) nextShadow = 'near';
+      else if (dLod > NPC_SHADOW_MID_IN_M) nextShadow = 'mid';
     } else {
       nextShadow = 'near';
     }
