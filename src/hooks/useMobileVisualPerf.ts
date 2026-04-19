@@ -6,6 +6,9 @@ import { useEffect, useState } from 'react';
  * Упрощённый визуальный режим: узкий экран, тач или reduced-motion.
  * На мобильных Safari/Chromium постоянные full-screen слои + backdrop-blur
  * часто дают мерцание compositor — тогда выключаем тяжёлые эффекты.
+ *
+ * В обходе (`RPGGameCanvas`) тот же флаг включает более крупный фикс. шаг Rapier
+ * (`rapierExplorationTimestep`) — реже считаются коллайдеры, в ущерб точности.
  */
 export function useMobileVisualPerf(): boolean {
   const [lite, setLite] = useState(false);

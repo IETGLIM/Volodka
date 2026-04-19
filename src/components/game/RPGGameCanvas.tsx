@@ -58,6 +58,10 @@ import { RadialMenu, type RadialMenuAction } from './RadialMenu';
 import { resolveExplorationPrimaryInteraction } from '@/lib/explorationPrimaryInteraction';
 import type { PlayerControls } from '@/hooks/useGamePhysics';
 import { createFloorNavPathfinder } from '@/lib/explorationNavMesh';
+import {
+  RAPIER_EXPLORATION_TIMESTEP_DEFAULT,
+  RAPIER_EXPLORATION_TIMESTEP_VISUAL_LITE,
+} from '@/lib/rapierExplorationTimestep';
 import { BattleClickLayer } from './BattleClickLayer';
 import { VolodkaCorridorVisual } from './exploration/VolodkaCorridorVisual';
 import { VolodkaRoomVisual } from './exploration/VolodkaRoomVisual';
@@ -129,6 +133,11 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
     if (narrow) return [1, 1.5];
     return [1, 2];
   }, [visualLite, narrow]);
+
+  const rapierTimeStep = useMemo(
+    () => (visualLite ? RAPIER_EXPLORATION_TIMESTEP_VISUAL_LITE : RAPIER_EXPLORATION_TIMESTEP_DEFAULT),
+    [visualLite],
+  );
   const playerPosition = useGameStore((state) => state.exploration.playerPosition);
   const setPlayerPosition = useGameStore((state) => state.setPlayerPosition);
   /** Позиция для камеры каждый кадр без коммита Zustand ~60 Гц (см. `FollowCamera` + throttle store). */
@@ -379,7 +388,12 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
         PostFX вне Physics, но в Canvas — отдельный render pass.
       */}
       <Suspense fallback={null}>
-      <Physics gravity={[0, -9.81, 0]} debug={false}>
+      <Physics
+        gravity={[0, -9.81, 0]}
+        debug={false}
+        timeStep={rapierTimeStep}
+        interpolate
+      >
         <ExplorationWorldClock />
         {/*
           Пол + стены Rapier — здесь же визуал пола в `PhysicsFloor` (`PhysicsSceneColliders`).
