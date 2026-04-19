@@ -15,6 +15,8 @@
 
 - **Обход / материалы и прозрачность (шаг В)**: **`applyGltfExplorationCharacterMaterialPolicies`** — **`depthWrite`** на всех мешах GLB + **`applyGltfHairLikeAlphaTestCutout`** по имени меша (волосы/ресницы: **`alphaTest`**, отключение **`transparent`**); **`PhysicsPlayer`** / **`NPC`**; процедурная **`VolodkaRoomVisual`** — явные **`depthWrite`** / **`depthTest`**; тесты **`gltfCharacterMaterialPolicy.test.ts`**; **`TransparencyRenderOrder.tsx`**.
 
+- **Обход / тени (шаг Г)**: **`explorationShadowConstants`** — **`shadow-mapSize`** десктоп **2048**, mobile/lite **1024**; **`EXPLORATION_DIRECTIONAL_SHADOW_BIAS`** **−0.0005**, **`EXPLORATION_DIRECTIONAL_SHADOW_NORMAL_BIAS`** **0.02**; **`SCENE_ENVIRONMENT_SHADOW_MAP_SIZE`** **2048**; комментарии **`Lighting.tsx`**.
+
 ## [0.2.8] - 2026-04-19
 
 ### Changed

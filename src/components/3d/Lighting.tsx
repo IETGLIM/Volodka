@@ -4,8 +4,8 @@
  * Шаг 6 (анти-мерцание): освещение и тени обхода вынесены в **`ExplorationLighting`**.
  *
  * - Размер карты теней: **`getExplorationDirectionalShadowMapSize`** (`lib/explorationShadowConstants.ts`) —
- *   десктоп **1024**, mobile/lite **512** (не **256**).
- * - **Bias** / **normalBias** — там же; уменьшают полосы на персонаже при мелком shadow map.
+ *   шаг Г: десктоп **2048**, mobile/lite **1024**.
+ * - **Bias** / **normalBias** — **`explorationShadowConstants`** (шаг Г: **−0.0005** / **0.02**).
  * - Дополнительные **pointLight** при `simplifyLights` отключаются стабильно по профилю, без покадрового
  *   мигания (не дублируйте второй **directionalLight** с `castShadow` — два каскада дают артефакты).
  *
