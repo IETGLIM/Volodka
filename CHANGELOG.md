@@ -17,6 +17,8 @@
 
 - **Обход / тени (шаг Г)**: **`explorationShadowConstants`** — **`shadow-mapSize`** десктоп **2048**, mobile/lite **1024**; **`EXPLORATION_DIRECTIONAL_SHADOW_BIAS`** **−0.0005**, **`EXPLORATION_DIRECTIONAL_SHADOW_NORMAL_BIAS`** **0.02**; **`SCENE_ENVIRONMENT_SHADOW_MAP_SIZE`** **2048**; комментарии **`Lighting.tsx`**.
 
+- **Обход / Z-fighting (анализ видео)**: **`applyGltfCharacterDepthWrite`** сбрасывает **`polygonOffset`** на материалах GLB; cutout волос — также по **`material.name`**; «окно» в **`VolodkaRoomVisual`** — **`depthWrite: false`** у полупрозрачности; тень под игроком — выше пола, **`depthWrite: false`**; следы **`ExplorationFootprints`** — выше по **Y** + тесты **`gltfCharacterMaterialPolicy`**.
+
 ## [0.2.8] - 2026-04-19
 
 ### Changed

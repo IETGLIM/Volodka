@@ -714,10 +714,16 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
         </>
       )}
 
-      {/* Тень под игроком */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.01, 0]}>
+      {/* Тень под игроком: чуть выше пола + без depthWrite, чтобы не бороться с полом (Z / «пропадание»). */}
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.045, 0]} renderOrder={2}>
         <circleGeometry args={[Math.max(0.22, 0.5 * roomScale), 32]} />
-        <meshBasicMaterial color="#000000" transparent opacity={0.3} />
+        <meshBasicMaterial
+          color="#000000"
+          transparent
+          opacity={0.28}
+          depthWrite={false}
+          depthTest
+        />
       </mesh>
     </RigidBody>
   );

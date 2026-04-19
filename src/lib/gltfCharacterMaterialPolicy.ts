@@ -1,9 +1,21 @@
 import * as THREE from 'three';
 
+function applyPerMaterialDepthAndPolygonDefaults(mat: THREE.Material): void {
+  if (typeof mat.depthWrite === 'boolean') {
+    mat.depthWrite = true;
+  }
+  /** Шаг «Глубина / Z»: импорт GLB иногда задаёт polygonOffset — при борьбе с полом даёт «пропадание». */
+  mat.polygonOffset = false;
+  mat.polygonOffsetFactor = 0;
+  mat.polygonOffsetUnits = 0;
+}
+
 /**
  * Шаг 4 / В (мерцание / порядок с окружением): для загруженного персонажа GLB включить **`depthWrite`**
  * на всех материалах мешей. У прозрачных материалов Three.js часто ставит **`depthWrite: false`** —
  * тогда порядок относительно статичного окружения нестабилен и возможен z-fighting / «мигание».
+ *
+ * Сброс **`polygonOffset`** на материалах — диагностика/профилактика Z-конфликтов с DCC.
  *
  * Не вызывать для намеренно «декальных» мешей (мягкая тень на полу и т.п.).
  */
@@ -13,15 +25,10 @@ export function applyGltfCharacterDepthWrite(root: THREE.Object3D): void {
     if (!mesh.isMesh || !mesh.material) return;
     if (Array.isArray(mesh.material)) {
       mesh.material.forEach((mat) => {
-        if (mat && typeof (mat as THREE.Material).depthWrite === 'boolean') {
-          (mat as THREE.Material).depthWrite = true;
-        }
+        if (mat) applyPerMaterialDepthAndPolygonDefaults(mat);
       });
     } else {
-      const mat = mesh.material;
-      if (mat && typeof (mat as THREE.Material).depthWrite === 'boolean') {
-        (mat as THREE.Material).depthWrite = true;
-      }
+      applyPerMaterialDepthAndPolygonDefaults(mesh.material);
     }
   });
 }
@@ -59,14 +66,21 @@ function applyAlphaTestToHairMaterial(mat: THREE.Material): void {
  * чтобы уменьшить мерцание самопересечений и относительно окружения (при наличии альфы в карте
  * или низкой непрозрачности в GLB).
  */
+function isHairLikeMaterialName(mat: THREE.Material): boolean {
+  return HAIR_LIKE_NAME.test(`${mat.name}`.toLowerCase());
+}
+
 export function applyGltfHairLikeAlphaTestCutout(root: THREE.Object3D): void {
   root.traverse((obj) => {
     const mesh = obj as THREE.Mesh;
-    if (!mesh.isMesh || !mesh.material || !isHairLikeMesh(mesh)) return;
-    if (Array.isArray(mesh.material)) {
-      mesh.material.forEach((m) => m && applyAlphaTestToHairMaterial(m));
-    } else {
-      applyAlphaTestToHairMaterial(mesh.material);
+    if (!mesh.isMesh || !mesh.material) return;
+    const mats = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+    const meshHair = isHairLikeMesh(mesh);
+    for (const m of mats) {
+      if (!m) continue;
+      if (meshHair || isHairLikeMaterialName(m)) {
+        applyAlphaTestToHairMaterial(m);
+      }
     }
   });
 }

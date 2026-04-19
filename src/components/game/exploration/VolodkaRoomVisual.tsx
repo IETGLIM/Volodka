@@ -118,7 +118,7 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual() {
           metalness={0.15}
           transparent
           opacity={0.92}
-          depthWrite
+          depthWrite={false}
           depthTest
         />
       </mesh>

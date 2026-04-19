@@ -54,4 +54,36 @@ describe('gltfCharacterMaterialPolicy', () => {
     expect(mat.transparent).toBe(false);
     expect(mat.alphaTest).toBe(0.42);
   });
+
+  it('applyGltfCharacterDepthWrite clears polygonOffset on materials', () => {
+    const root = new THREE.Group();
+    const m = new THREE.MeshStandardMaterial({
+      color: 0x00ff00,
+      depthWrite: false,
+      polygonOffset: true,
+      polygonOffsetFactor: -3,
+      polygonOffsetUnits: -2,
+    });
+    const mesh = new THREE.Mesh(new THREE.BoxGeometry(), m);
+    root.add(mesh);
+    applyGltfCharacterDepthWrite(root);
+    expect(m.polygonOffset).toBe(false);
+    expect(m.polygonOffsetFactor).toBe(0);
+    expect(m.polygonOffsetUnits).toBe(0);
+  });
+
+  it('applyGltfHairLikeAlphaTestCutout matches material name', () => {
+    const root = new THREE.Group();
+    const mat = new THREE.MeshStandardMaterial({
+      name: 'Character_Eyelash_MAT',
+      transparent: true,
+      opacity: 0.5,
+    });
+    const mesh = new THREE.Mesh(new THREE.BoxGeometry(), mat);
+    mesh.name = 'Submesh_12';
+    root.add(mesh);
+    applyGltfHairLikeAlphaTestCutout(root);
+    expect(mat.transparent).toBe(false);
+    expect(mat.alphaTest).toBe(0.42);
+  });
 });

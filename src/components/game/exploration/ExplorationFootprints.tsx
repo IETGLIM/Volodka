@@ -35,9 +35,9 @@ export const ExplorationFootprints = memo(function ExplorationFootprints({
   return (
     <group>
       {prints.map((pr) => (
-        <mesh key={pr.id} rotation={[-Math.PI / 2, 0, pr.ry]} position={[pr.x, 0.018, pr.z]}>
+        <mesh key={pr.id} rotation={[-Math.PI / 2, 0, pr.ry]} position={[pr.x, 0.034, pr.z]} renderOrder={1}>
           <circleGeometry args={[0.12, 10]} />
-          <meshBasicMaterial color="#050808" transparent opacity={0.32} depthWrite={false} />
+          <meshBasicMaterial color="#050808" transparent opacity={0.32} depthWrite={false} depthTest />
         </mesh>
       ))}
     </group>
