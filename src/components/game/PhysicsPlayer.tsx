@@ -11,6 +11,7 @@ import { usePlayerFootsteps } from '@/hooks/usePlayerFootsteps';
 import { getDefaultPlayerModelPath, isValidPlayerGlbPath, rewriteLegacyModelPath } from '@/config/modelUrls';
 import { PLAYER_GLB_TARGET_VISUAL_METERS } from '@/lib/playerScaleConstants';
 import { retainGltfModelUrl, releaseGltfModelUrl } from '@/lib/gltfModelCache';
+import { applyGltfCharacterDepthWrite } from '@/lib/gltfCharacterMaterialPolicy';
 import { useGameStore } from '@/store/gameStore';
 
 // ============================================
@@ -280,6 +281,7 @@ const GLBPlayerModel = memo(function GLBPlayerModel({
           m.receiveShadow = true;
         }
       });
+      applyGltfCharacterDepthWrite(loadedScene);
       return loadedScene;
     } catch {
       onError();

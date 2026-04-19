@@ -21,6 +21,8 @@
 
 ### Fixed
 
+- **Обход / прозрачность (шаг 4, мерцание)**: **`applyGltfCharacterDepthWrite`** (`lib/gltfCharacterMaterialPolicy.ts`) для GLB игрока и NPC — **`depthWrite: true`** на материалах после загрузки; навигация **`src/components/3d/TransparencyRenderOrder.tsx`**.
+
 - **Обход / модели и анимации (шаг 3, мерцание)**: документ **`src/components/3d/ModelLoader.tsx`** / **`AnimationController.tsx`** (реальная логика — **`GLTFLoader`** в **`NPC.tsx`**, **`GLBPlayerModel`** в **`PhysicsPlayer.tsx`**); смена клипов по **`actionKeysSig`** / **`animMappingSig`**, чтение **`actions`** из **`actionsRef`** — без лишних сбросов при смене только ссылки на **`actions`**; в **`modelUrls`** — предупреждение не бить кэш query **`?v=…`** для GLB.
 
 - **Обход / игрок (шаг 2, мерцание)**: алиасы **`src/components/3d/Player.tsx`** и **`src/components/3d/entities/PlayerEntity.tsx`** на **`PhysicsPlayer`**; в **`PhysicsPlayer`** — явное правило: позиция меша только из **`RigidBody`**, не из Zustand; **`onPositionChange`** — только камера / throttled-стор (без двойного двига группы).
