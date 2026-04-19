@@ -273,35 +273,75 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
     sceneId === 'volodka_room' || sceneId === 'volodka_corridor' || sceneId === 'home_evening';
 
   const followCameraProps = useMemo(() => {
-    if (isNarrowApartment) {
+    if (sceneId === 'volodka_corridor') {
       return {
-        distance: 3.85 as const,
-        height: 2.52 as const,
-        smoothness: 0.12 as const,
-        shoulderOffset: 0.18 as const,
-        lookAtHeightOffset: 1.18 as const,
-        collisionSpring: 11 as const,
+        distance: 2.68,
+        height: 1.72,
+        smoothness: 0.12,
+        shoulderOffset: 0.06,
+        lookAtHeightOffset: 1.02,
+        collisionSpring: 12,
+        minDistance: 1.38,
+        maxDistance: 3.4,
+        collisionRayOriginY: 1.18,
+        collisionRadius: 0.2,
+      };
+    }
+    if (sceneId === 'volodka_room') {
+      return {
+        distance: 3.12,
+        height: 1.96,
+        smoothness: 0.11,
+        shoulderOffset: 0.1,
+        lookAtHeightOffset: 1.08,
+        collisionSpring: 12,
+        minDistance: 1.52,
+        maxDistance: 4.0,
+        collisionRayOriginY: 1.3,
+        collisionRadius: 0.24,
+      };
+    }
+    if (sceneId === 'home_evening') {
+      return {
+        distance: 3.35,
+        height: 2.1,
+        smoothness: 0.11,
+        shoulderOffset: 0.14,
+        lookAtHeightOffset: 1.14,
+        collisionSpring: 11,
+        minDistance: 1.58,
+        maxDistance: 4.25,
+        collisionRayOriginY: 1.34,
+        collisionRadius: 0.26,
       };
     }
     if (isPanelDistrict) {
       return {
-        distance: 5.25 as const,
-        height: 3.05 as const,
-        smoothness: 0.11 as const,
-        shoulderOffset: 0.26 as const,
-        lookAtHeightOffset: 1.3 as const,
-        collisionSpring: 10 as const,
+        distance: 5.25,
+        height: 3.05,
+        smoothness: 0.11,
+        shoulderOffset: 0.26,
+        lookAtHeightOffset: 1.3,
+        collisionSpring: 10,
+        minDistance: 2,
+        maxDistance: 15,
+        collisionRayOriginY: 1.5,
+        collisionRadius: 0.3,
       };
     }
     return {
-      distance: 4.75 as const,
-      height: 2.9 as const,
-      smoothness: 0.11 as const,
-      shoulderOffset: 0.24 as const,
-      lookAtHeightOffset: 1.28 as const,
-      collisionSpring: 11 as const,
+      distance: 4.75,
+      height: 2.9,
+      smoothness: 0.11,
+      shoulderOffset: 0.24,
+      lookAtHeightOffset: 1.28,
+      collisionSpring: 11,
+      minDistance: 2,
+      maxDistance: 15,
+      collisionRayOriginY: 1.5,
+      collisionRadius: 0.3,
     };
-  }, [isNarrowApartment, isPanelDistrict]);
+  }, [sceneId, isPanelDistrict]);
 
   // Get NPCs and triggers for current scene
   const sceneNPCs = useMemo(
@@ -608,6 +648,11 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
           shoulderOffset={followCameraProps.shoulderOffset}
           lookAtHeightOffset={followCameraProps.lookAtHeightOffset}
           collisionSpring={followCameraProps.collisionSpring}
+          collisionRayOriginY={followCameraProps.collisionRayOriginY}
+          collisionRadius={followCameraProps.collisionRadius}
+          minDistance={followCameraProps.minDistance}
+          maxDistance={followCameraProps.maxDistance}
+          orbitResyncKey={sceneId}
           isLocked={isDialogueActive}
           dialogueFraming={Boolean(isDialogueActive && dialogueSubjectPosition)}
           dialogueSubjectPosition={dialogueSubjectPosition}

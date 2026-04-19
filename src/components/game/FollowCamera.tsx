@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useEffect, useCallback, type RefObject } from 'react';
+import { useRef, useEffect, useLayoutEffect, useCallback, type RefObject } from 'react';
 import { useThree, useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { damp3 } from 'maath/easing';
@@ -60,6 +60,8 @@ interface FollowCameraProps {
   /** Узкий кадр «игрок — NPC» при диалоге из обхода (с `isLocked` и позицией NPC). */
   dialogueFraming?: boolean;
   dialogueSubjectPosition?: { x: number; y: number; z: number } | null;
+  /** Смена сцены: мгновенно переставить орбиту сзади по yaw игрока (см. `RPGGameCanvas` → `sceneId`). */
+  orbitResyncKey?: string;
 }
 
 // ============================================
@@ -68,6 +70,14 @@ interface FollowCameraProps {
 
 const dampFactor = followCameraSmoothDamp;
 const dampCollisionFactor = followCameraCollisionDamp;
+
+/** Разница углов в (−π, π]. */
+function shortestAngleDelta(from: number, to: number): number {
+  let d = to - from;
+  while (d > Math.PI) d -= Math.PI * 2;
+  while (d < -Math.PI) d += Math.PI * 2;
+  return d;
+}
 
 /**
  * `maath` smoothTime для `damp3(camera.position, …)`: меньше → резче (согласовано с пропом `smoothness`).
@@ -134,6 +144,7 @@ export default function FollowCamera({
   enableZoom = true,
   dialogueFraming = false,
   dialogueSubjectPosition = null,
+  orbitResyncKey,
 }: FollowCameraProps) {
   const { camera, scene, gl } = useThree();
   const currentTarget = useRef(new THREE.Vector3(0, 0, 0));
@@ -153,11 +164,11 @@ export default function FollowCamera({
     collisionSpringRef.current = collisionSpring;
   }, [collisionSpring]);
 
-  /** Смена сцены меняет `distance` из `RPGGameCanvas` — ref зума иначе остаётся от предыдущей локации. */
+  /** Смена сцены / лимитов зума: `currentDistance` не выше `maxDistance` (узкая комната и т.п.). */
   useEffect(() => {
-    currentDistance.current = distance;
+    currentDistance.current = Math.max(minDistance, Math.min(maxDistance, distance));
     springCamInitialized.current = false;
-  }, [distance]);
+  }, [distance, minDistance, maxDistance]);
 
   /** Диалог / блокировка: иначе орбита может «ехать» от последнего удержания кнопки до lock. */
   useEffect(() => {
@@ -336,6 +347,11 @@ export default function FollowCamera({
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [recenterBehindPlayer]);
 
+  /** Первый кадр и смена сцены: орбита сразу сзади по yaw игрока (до paint, чтобы не «плыть» из стартового угла 0). */
+  useLayoutEffect(() => {
+    recenterBehindPlayer();
+  }, [orbitResyncKey, recenterBehindPlayer]);
+
   useEffect(() => {
     window.addEventListener('mousedown', handleMouseDown);
     window.addEventListener('mouseup', handleMouseUp);
@@ -384,6 +400,19 @@ export default function FollowCamera({
 
     const posT = dampFactor(smoothness, dt);
     currentTarget.current.lerp(frameTargetRef.current, posT);
+
+    if (!isLocked) {
+      const playerYaw =
+        live && typeof live.rotation === 'number'
+          ? live.rotation
+          : (targetPosition.rotation ?? 0);
+      const behind = playerYaw + Math.PI;
+      if (!isDragging.current) {
+        const diff = shortestAngleDelta(currentAngle.current, behind);
+        const syncRadPerSec = 14;
+        currentAngle.current += diff * Math.min(1, syncRadPerSec * dt);
+      }
+    }
 
     if (isLocked && dialogueFraming && dialogueSubjectPosition) {
       const px = currentTarget.current.x;

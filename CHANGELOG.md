@@ -4,6 +4,8 @@
 
 ### Changed
 
+- **Обход / FollowCamera за спиной и внутри комнаты**: горизонтальный yaw орбиты подтягивается к **`rotation + π`** (пока не тянут орбиту мышью); **`useLayoutEffect`** по **`orbitResyncKey`** (`sceneId`) — старт и смена локации без «залипания» на угле 0; **`currentDistance`** ограничивается **`minDistance` / `maxDistance`** при смене пропов. Для **`volodka_room`**, **`volodka_corridor`**, **`home_evening`** — свои **`distance` / `height` / `maxDistance`** и мягче **`shoulderOffset`** / **`collisionRadius`**.
+
 - **R3F / Suspense и ключи (обход)**: вместо **`fallback={null}`** у корневого **`Suspense`** в **`RPGGameCanvas`**, **`PhysicsRPGCanvas`**, **`RoomEnvironment`** (`ZaremaAlbertRoom`), **`OptimizedSceneEnvironment`** и у **`PhysicsPlayer`** (GLB) — общий **`ThreeCanvasSuspenseFallback`** (`components/3d`); с **`FollowCamera`** и **`BattleClickLayer`** снят лишний **`key={sceneId}`** (сброс волн боя при **`active`**, очистка следов при смене **`sceneId`** в **`ExplorationFootprints`**). У **`PhysicsPlayer`** / **`ExplorationNoclipPlayer`** вместо **`key={sceneId}`** — **`spawnSyncKey`** + телепорт при смене локации (без remount дерева GLB).
 
 - **Canvas / WebGL (обход)**: **`RPGGameCanvas`** и **`PhysicsRPGCanvas`** — **`dpr={[1, 1.5]}`**, **`gl`** с **`powerPreference: 'high-performance'`** (и прежние флаги из **`getExplorationSceneGlProps`** в обходе), **`PerformanceMonitor`** (drei).
