@@ -141,6 +141,21 @@ function isValidNpcModelPath(p: string): boolean {
   );
 }
 
+/** Клон сцены из `loadedScene.clone(true)` — освобождаем GPU при смене URL или размонтировании. */
+function disposeNpcGltfCloneResources(root: THREE.Object3D) {
+  root.traverse((obj) => {
+    const mesh = obj as THREE.Mesh & { isMesh?: boolean };
+    if (!mesh.isMesh) return;
+    mesh.geometry?.dispose();
+    const mat = mesh.material;
+    if (Array.isArray(mat)) {
+      for (const m of mat) m.dispose();
+    } else if (mat && typeof (mat as THREE.Material).dispose === 'function') {
+      (mat as THREE.Material).dispose();
+    }
+  });
+}
+
 // Внутренний компонент для рендера загруженной модели
 const GLTFModelInner = memo(function GLTFModelInner({
   groupRef,
@@ -199,11 +214,25 @@ const GLTFLoader = memo(function GLTFLoader({
   };
   const { actions } = useAnimations(animations ?? [], groupRef);
   const [currentClipName, setCurrentClipName] = useState<string | null>(null);
+  const actionsRef = useRef(actions);
+  actionsRef.current = actions;
 
   useEffect(() => {
     retainGltfModelUrl(modelPath);
     return () => releaseGltfModelUrl(modelPath);
   }, [modelPath]);
+
+  /** Размонтирование / смена `actions`: останавливаем клипы, иначе mixer держит ссылки. */
+  useEffect(() => {
+    return () => {
+      const act = actionsRef.current;
+      if (!act) return;
+      for (const key of Object.keys(act)) {
+        const a = act[key];
+        if (a) a.stop();
+      }
+    };
+  }, []);
 
   const scene = useMemo(() => {
     if (!loadedScene) return null;
@@ -220,6 +249,13 @@ const GLTFLoader = memo(function GLTFLoader({
       return null;
     }
   }, [loadedScene]);
+
+  useEffect(() => {
+    if (!scene) return;
+    return () => {
+      disposeNpcGltfCloneResources(scene);
+    };
+  }, [scene]);
 
   useEffect(() => {
     if (!actions || Object.keys(actions).length === 0) return;

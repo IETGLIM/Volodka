@@ -139,6 +139,11 @@ export default function FollowCamera({
     springCamInitialized.current = false;
   }, [distance]);
 
+  /** Диалог / блокировка: иначе орбита может «ехать» от последнего удержания кнопки до lock. */
+  useEffect(() => {
+    if (isLocked) isDragging.current = false;
+  }, [isLocked]);
+
   /** Переиспользование вместо new Raycaster / Vector3 на каждый кадр коллизии — меньше давления на GC. */
   const collisionRaycasterRef = useRef<THREE.Raycaster | null>(null);
   const collisionOriginRef = useRef(new THREE.Vector3());
@@ -463,6 +468,10 @@ export function SimpleFollowCamera({
   useEffect(() => {
     currentDistance.current = distance;
   }, [distance]);
+
+  useEffect(() => {
+    if (isLocked) isDragging.current = false;
+  }, [isLocked]);
 
   const applyPointerDelta = useCallback(
     (clientX: number, clientY: number) => {

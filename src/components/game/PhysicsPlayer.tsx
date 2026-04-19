@@ -241,11 +241,24 @@ const GLBPlayerModel = memo(function GLBPlayerModel({
   const { actions } = useAnimations(animations || [], groupRef);
   const [currentAction, setCurrentAction] = useState<string | null>(null);
   const rs = Math.max(0.28, Math.min(1.25, roomScale));
+  const actionsRef = useRef(actions);
+  actionsRef.current = actions;
 
   useEffect(() => {
     retainGltfModelUrl(modelPath);
     return () => releaseGltfModelUrl(modelPath);
   }, [modelPath]);
+
+  useEffect(() => {
+    return () => {
+      const act = actionsRef.current;
+      if (!act) return;
+      for (const key of Object.keys(act)) {
+        const a = act[key];
+        if (a) a.stop();
+      }
+    };
+  }, []);
 
   /** Кэш `useGLTF` ограничен LRU в `gltfModelCache`; сцену из кэша не клонируем — для skinned GLB обычный clone ломает видимость. */
   const displayScene = useMemo(() => {
