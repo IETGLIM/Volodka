@@ -12,6 +12,7 @@
 - **Камера обхода**: при **`isLocked`** сбрасывается флаг перетаскивания орбиты (**`FollowCamera`**, **`SimpleFollowCamera`**), чтобы после диалога не продолжалось «невидимое» вращение от последнего жеста.
 - **Память 3D / NPC GLB**: у клона сцены NPC (**`NPC.tsx`** → **`GLTFLoader`**) в cleanup освобождаются **`geometry`** / **`material`**; при размонтировании останавливаются **`AnimationAction`** (игрок — **`GLBPlayerModel`** в **`PhysicsPlayer.tsx`**).
 - **Консоль продакшена (Vercel / Chrome)**: **`threeClientPrep`** переведён на именованный импорт **`AudioContext`** из **`three`** (без **`import * as THREE`** при загрузке модуля); инициализация — из **`GameClient`** через **`ensureThreeClientPrep()`**. Один общий нативный **`AudioContext`** в **`createBrowserAudioContext`**; процедурные SFX в **`AudioEngine`** больше не закрывают общий контекст после каждого бипа — меньше «The AudioContext encountered an error…» при частых шагах.
+- **Сборка Next / `tsc`**: каталог **`browserbase-functions`** исключён из корневого **`tsconfig.json`** — отдельный пакет со своими **`node_modules`** (`@browserbasehq/sdk-functions`); иначе **`next build`** падает на типах смоук-функции.
 
 ## [0.2.7] - 2026-04-19
 
