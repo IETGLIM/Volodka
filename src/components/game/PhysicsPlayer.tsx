@@ -334,7 +334,13 @@ const GLBPlayerModel = memo(function GLBPlayerModel({
 // ============================================
 // PHYSICS PLAYER COMPONENT
 // ============================================
-
+//
+// Шаг 2 (мерцание / двойная позиция): визуал (group + GLB) — **дочерний** `<RigidBody>`.
+// Его world-matrix выставляет `@react-three/rapier` из симуляции. Не подписывайте этот group
+// на `exploration.playerPosition` из Zustand и не делайте `group.position.copy(store)` в useEffect —
+// иначе конфликт с kinematic + `setNextKinematicTranslation` (гипотеза №2).
+// `onPositionChange` ниже — только для камеры / редкого стора (`livePlayerPositionRef` + throttle в родителе).
+//
 const DEFAULT_PHYSICS_DT = 1 / 60;
 
 export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProps>(function PhysicsPlayer(

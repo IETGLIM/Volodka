@@ -21,6 +21,8 @@
 
 ### Fixed
 
+- **Обход / игрок (шаг 2, мерцание)**: алиасы **`src/components/3d/Player.tsx`** и **`src/components/3d/entities/PlayerEntity.tsx`** на **`PhysicsPlayer`**; в **`PhysicsPlayer`** — явное правило: позиция меша только из **`RigidBody`**, не из Zustand; **`onPositionChange`** — только камера / throttled-стор (без двойного двига группы).
+
 - **Обход / Canvas (шаг 1, мерцание)**: **`src/components/3d/Scene.tsx`** — явные **`getExplorationSceneGlProps`** (**`logarithmicDepthBuffer: false`**) и **`frameloop="always"`**; подключено в **`RPGGameCanvas`** (исключение режима **`demand`** без **`invalidate()`**).
 
 - **Камера и перформанс обхода**: ближе третье лицо за спиной (**`followCameraProps`** в **`RPGGameCanvas`**: меньше **`distance`/`height`**, отдельный профиль для панели); **`FollowCamera`** без второго lerp цели при **`targetPositionRef`** (убран джиттер относительно меша/тени). **`RPGGameCanvas`** не подписывается на **`playerPosition`** в сторе — снимок при смене сцены + **`livePlayerPositionRef`** для камеры/NPC; **`NPC`** читает **`playerPositionRef`** в **`useFrame`**; **`MiniMap`** сам подписывается на стор — **`GameOrchestrator`** не перерисовывается на каждый шаг; реже сброс позиции в стор (**~165 ms**).
