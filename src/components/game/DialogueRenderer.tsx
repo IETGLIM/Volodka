@@ -24,6 +24,8 @@ interface DialogueRendererProps {
   dialogueTree: DialogueNode;
   /** Диалог открыт из сюжетного выбора — после завершения продолжится история */
   storyLinked?: boolean;
+  /** Диалог поверх 3D-обхода: кинематографичные полосы и более тёмный фон. */
+  explorationLayout?: boolean;
   playerState: PlayerState;
   npcRelations: NPCRelation[];
   flags: Record<string, boolean>;
@@ -171,6 +173,7 @@ export default function DialogueRenderer({
   npcName,
   dialogueTree,
   storyLinked = false,
+  explorationLayout = false,
   playerState,
   npcRelations,
   flags,
@@ -302,6 +305,8 @@ export default function DialogueRenderer({
   // Get NPC avatar color based on name
   const npcColor = useMemo(() => {
     switch (npcId) {
+      case 'zarema_home':
+        return 'from-fuchsia-500 to-rose-700';
       case 'maria':
       case 'kitchen_maria':
         return 'from-rose-600 to-pink-700';
@@ -322,6 +327,8 @@ export default function DialogueRenderer({
   // Neon color for NPC name
   const npcNeonColor = useMemo(() => {
     switch (npcId) {
+      case 'zarema_home':
+        return 'text-fuchsia-200';
       case 'maria':
       case 'kitchen_maria':
         return 'text-rose-300';
@@ -350,16 +357,29 @@ export default function DialogueRenderer({
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
         >
+          {explorationLayout && (
+            <>
+              <div
+                className="pointer-events-none absolute inset-x-0 top-0 z-[52] h-[min(10vh,72px)] bg-black shadow-[0_12px_40px_rgba(0,0,0,0.85)]"
+                aria-hidden
+              />
+              <div
+                className="pointer-events-none absolute inset-x-0 bottom-0 z-[52] h-[min(12vh,88px)] bg-black shadow-[0_-12px_40px_rgba(0,0,0,0.85)]"
+                aria-hidden
+              />
+            </>
+          )}
+
           {/* Dark overlay */}
           <div
-            className="absolute inset-0 bg-black/40"
+            className={`absolute inset-0 ${explorationLayout ? 'bg-black/68' : 'bg-black/40'}`}
             onClick={onClose}
             role="presentation"
           />
 
           {/* Dialogue window — cyberpunk terminal */}
           <motion.div
-            className="relative mx-4 mb-4 w-full max-w-4xl game-fm-layer"
+            className={`relative mx-4 mb-4 w-full max-w-4xl game-fm-layer ${explorationLayout ? 'z-[53]' : ''}`}
             style={{ transformOrigin: 'bottom center' }}
             initial={{ opacity: 0, scale: 0.985 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -372,6 +392,14 @@ export default function DialogueRenderer({
                 clipPath: 'polygon(0 0, calc(100% - 16px) 0, 100% 16px, 100% 100%, 16px 100%, 0 calc(100% - 16px))',
               }}
             >
+              {explorationLayout && (
+                <div className="border-b border-cyan-500/20 bg-cyan-950/20 px-4 py-1.5">
+                  <p className="font-mono text-[10px] uppercase tracking-[0.28em] text-cyan-300/70">
+                    3D · обход · диалог
+                  </p>
+                </div>
+              )}
+
               {storyLinked && (
                 <div className="border-b border-amber-500/25 bg-amber-950/25 px-4 py-2">
                   <p className="font-mono text-[10px] leading-snug text-amber-200/80">

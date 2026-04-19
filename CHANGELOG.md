@@ -22,6 +22,10 @@
 
 - **Цикл взаимодействия (зона → подсказка → E → диалог)**: поле **`interactionId`** у **`TriggerZone`**; зона **`trigger_zarema_home_interaction`** (`zarema_albert_room`); **`TriggerSystem`** — колбэк **`onInteractionAvailabilityChange`**; **`InteractionExecutor`**, расширенный **`InteractionRegistry`**, **`InteractionResolver`** (+ тест); **`src/game/interactions/registerBaseInteractions`** (**`npc_intro`** → **`onNPCInteraction('zarema_home')`** + **`setGameMode('dialogue')`**); в **`RPGGameCanvas`** приоритетный резолв перед **`resolveExplorationPrimaryInteraction`**; оверлей **`InteractionHint`**.
 
+- **Диалог из 3D-обхода (камера + UI)**: **`FollowCamera`** — узкий кадр **`dialogueFraming`** + **`dialogueSubjectPosition`** при **`isLocked`**; **`RPGGameCanvas`** передаёт позицию NPC, отключает коллизию/зум камеры на время диалога; **`GameOrchestrator`** — **`dialogueSubjectPosition`** из **`getNPCById`** / **`getNpcExplorationPosition`**, монтирование **`RPGGameCanvas`** под диалогом из обхода; **`DialogueRenderer`** — проп **`explorationLayout`** (letterbox, затемнение, шапка «3D · обход · диалог»), цвета для **`zarema_home`**.
+
+- **Квест поверх Interaction**: расширенный **`InteractionContext`** (хуки квестов из стора); побочный квест **`exploration_zarema_hearth`** в **`quests.ts`** (**`startNode: 'explore_mode'`**); зона **`trigger_zarema_quest_hearth`** → **`interactionId: 'quest_zarema_hearth`**; в **`registerBaseInteractions`** — выполнение **`activateQuest` / `incrementQuestObjective` / `completeQuest`** и тост **`ui:exploration_message`**.
+
 - **Анализ трейсов Performance**: скрипт **`scripts/analyze-chrome-trace.mjs`** (сводка длинных **`RunTask`** / **`traceEvents`**); в **`.gitignore`** — маска **`Trace-*.json`**, чтобы локальные записи DevTools не попадали в git.
 
 ### Maintainer notes

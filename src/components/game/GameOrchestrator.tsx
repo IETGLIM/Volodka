@@ -43,7 +43,7 @@ import { useGameStore } from '@/store/gameStore';
 import { eventBus } from '@/engine/EventBus';
 import { useGameAudioProfile } from '@/hooks/useAudio';
 import { QUEST_DEFINITIONS, getNextTrackedObjective } from '@/data/quests';
-import { getNPCsForScene, getNpcExplorationPosition } from '@/data/npcDefinitions';
+import { getNPCById, getNPCsForScene, getNpcExplorationPosition } from '@/data/npcDefinitions';
 import { getSceneConfig, getInteractiveObjectsForScene } from '@/config/scenes';
 import { homeApartmentInspectLine, tryHomeApartmentUse } from '@/lib/homeApartmentInteract';
 import { volodkaRoomInspectLine, tryVolodkaRoomUse } from '@/lib/volodkaRoomInteract';
@@ -153,6 +153,8 @@ export default function GameOrchestrator() {
   const [mounted, setMounted] = useState(false);
   /** Короткий matrix/glitch-переход при смене 3D-локации (`lastSceneTransition`). */
   const [explorationSceneGlitch, setExplorationSceneGlitch] = useState(false);
+  /** Диалог открыт из 3D-обхода: оставляем `RPGGameCanvas` смонтированным под оверлеем + кадр камеры. */
+  const [explorationDialogueLayout, setExplorationDialogueLayout] = useState(false);
   const explorationTransitionReadyRef = useRef(false);
   const prevSceneTransitionTsRef = useRef<number | null>(null);
   const explorationGlitchClearRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -262,6 +264,28 @@ export default function GameOrchestrator() {
     addSkill,
   });
 
+  const closeDialogueAndLayout = useCallback(() => {
+    setExplorationDialogueLayout(false);
+    closeDialogue();
+  }, [closeDialogue]);
+
+  const dialogueSubjectPosition = useMemo(() => {
+    if (!activeDialogue) return null;
+    const npc = getNPCById(activeDialogue.npcId);
+    if (!npc) return null;
+    return getNpcExplorationPosition(
+      npc,
+      exploration.currentSceneId,
+      exploration.timeOfDay,
+      exploration.npcStates[activeDialogue.npcId]?.position,
+    );
+  }, [
+    activeDialogue,
+    exploration.currentSceneId,
+    exploration.timeOfDay,
+    exploration.npcStates,
+  ]);
+
   const scene = useGameScene({
     phase,
     gameMode,
@@ -287,6 +311,7 @@ export default function GameOrchestrator() {
   /** Диалог из сюжета (`dialogueNpcId`) — тоже считается разговором для 📋 / `npc_talked`. */
   const openDialogueFromStoryWithQuest = useCallback(
     (p: { npcId: string; nextNodeId: string; fromNodeId: string; choiceText: string }) => {
+      setExplorationDialogueLayout(useGameStore.getState().gameMode === 'exploration');
       trackQuestNpcTalk(p.npcId);
       openDialogueFromStory(p);
     },
@@ -478,6 +503,7 @@ export default function GameOrchestrator() {
 
   const handleNPCInteraction = useCallback(
     (npcId: string) => {
+      setExplorationDialogueLayout(useGameStore.getState().gameMode === 'exploration');
       trackQuestNpcTalk(npcId);
       openNpcDialogue(npcId);
     },
@@ -641,12 +667,13 @@ export default function GameOrchestrator() {
         </>
       )}
 
-      {gameMode === 'exploration' && (
+      {(gameMode === 'exploration' || (Boolean(activeDialogue) && explorationDialogueLayout)) && (
         <div className={EXPLORATION_GAME_VIEWPORT_CLASS}>
           <RPGGameCanvas
             sceneId={exploration.currentSceneId}
             visualState={explorationVisualState}
             isDialogueActive={Boolean(activeDialogue) || Boolean(activeCutsceneId)}
+            dialogueSubjectPosition={dialogueSubjectPosition}
             onTriggerEnter={handleExplorationStoryTrigger}
             onNPCInteraction={handleNPCInteraction}
           />
@@ -694,11 +721,12 @@ export default function GameOrchestrator() {
       {activeDialogue && (
         <DialogueRenderer
           isOpen={true}
+          explorationLayout={explorationDialogueLayout}
           npcId={activeDialogue.npcId}
           npcName={activeDialogue.npcName}
           dialogueTree={activeDialogue.node}
           storyLinked={Boolean(activeDialogue.storyResume)}
-          onClose={closeDialogue}
+          onClose={closeDialogueAndLayout}
           playerState={playerState}
           npcRelations={npcRelations}
           flags={playerState.flags}

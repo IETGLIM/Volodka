@@ -99,6 +99,8 @@ interface RPGGameCanvasProps {
   sceneId: SceneId;
   visualState: VisualState;
   isDialogueActive: boolean;
+  /** Мировая позиция собеседника для кадра камеры в диалоге из обхода. */
+  dialogueSubjectPosition?: { x: number; y: number; z: number } | null;
   onTriggerEnter: (triggerId: string, storyNodeId?: string, cutsceneId?: string) => void;
   onNPCInteraction: (npcId: string) => void;
   children?: React.ReactNode;
@@ -129,6 +131,7 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
   sceneId,
   visualState,
   isDialogueActive,
+  dialogueSubjectPosition = null,
   onTriggerEnter,
   onNPCInteraction,
   children,
@@ -375,9 +378,16 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
       );
       const nearestRegistry = resolveNearest(registryCandidates);
       if (nearestRegistry) {
+        const st = useGameStore.getState();
         const ran = explorationInteractionRegistry.tryExecute(nearestRegistry.id, {
-          setGameMode: useGameStore.getState().setGameMode,
+          setGameMode: st.setGameMode,
           onNPCInteraction,
+          activateQuest: st.activateQuest,
+          incrementQuestObjective: st.incrementQuestObjective,
+          completeQuest: st.completeQuest,
+          isQuestActive: st.isQuestActive,
+          isQuestCompleted: st.isQuestCompleted,
+          getQuestProgress: st.getQuestProgress,
         });
         if (ran) return;
       }
@@ -598,8 +608,10 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
           lookAtHeightOffset={followCameraProps.lookAtHeightOffset}
           collisionSpring={followCameraProps.collisionSpring}
           isLocked={isDialogueActive}
-          enableCollision
-          enableZoom
+          dialogueFraming={Boolean(isDialogueActive && dialogueSubjectPosition)}
+          dialogueSubjectPosition={dialogueSubjectPosition}
+          enableCollision={!isDialogueActive}
+          enableZoom={!isDialogueActive}
         />
 
         {/* Camera Effects */}

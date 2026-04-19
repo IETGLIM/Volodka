@@ -55,6 +55,9 @@ interface FollowCameraProps {
   minDistance?: number;
   maxDistance?: number;
   enableZoom?: boolean;
+  /** Узкий кадр «игрок — NPC» при диалоге из обхода (с `isLocked` и позицией NPC). */
+  dialogueFraming?: boolean;
+  dialogueSubjectPosition?: { x: number; y: number; z: number } | null;
 }
 
 // ============================================
@@ -114,6 +117,8 @@ export default function FollowCamera({
   minDistance = 2,
   maxDistance = MAX_DISTANCE,
   enableZoom = true,
+  dialogueFraming = false,
+  dialogueSubjectPosition = null,
 }: FollowCameraProps) {
   const { camera, scene, gl } = useThree();
   const currentTarget = useRef(new THREE.Vector3(0, 0, 0));
@@ -154,6 +159,9 @@ export default function FollowCamera({
   const frameDesiredCamRef = useRef(new THREE.Vector3());
   const pivotRef = useRef(new THREE.Vector3());
   const rightScratchRef = useRef(new THREE.Vector3());
+  const framingFlatRef = useRef(new THREE.Vector3());
+  const framingCamRef = useRef(new THREE.Vector3());
+  const framingLookRef = useRef(new THREE.Vector3());
 
   const checkCameraCollision = useCallback(
     (targetPos: THREE.Vector3, desiredCamPos: THREE.Vector3, radius: number, minDist: number): THREE.Vector3 => {
@@ -365,6 +373,39 @@ export default function FollowCamera({
     } else {
       const posT = dampFactor(smoothness, dt);
       currentTarget.current.lerp(frameTargetRef.current, posT);
+    }
+
+    if (isLocked && dialogueFraming && dialogueSubjectPosition) {
+      const px = currentTarget.current.x;
+      const py = currentTarget.current.y;
+      const pz = currentTarget.current.z;
+      const sx = dialogueSubjectPosition.x;
+      const sy = dialogueSubjectPosition.y;
+      const sz = dialogueSubjectPosition.z;
+      const flat = framingFlatRef.current.set(sx - px, 0, sz - pz);
+      const flatLen = flat.length();
+      const arm = 3.35;
+      if (flatLen > 0.06) {
+        flat.multiplyScalar(1 / flatLen);
+        framingCamRef.current.set(px - flat.x * arm, py + 1.52, pz - flat.z * arm);
+      } else {
+        framingCamRef.current.set(px, py + 2.2, pz + arm * 0.85);
+      }
+      framingLookRef.current.set(
+        px + (sx - px) * 0.42,
+        Math.max(py, sy) + 1.28,
+        pz + (sz - pz) * 0.42,
+      );
+      if (!springCamInitialized.current) {
+        springCamPos.current.copy(camera.position);
+        springCamInitialized.current = true;
+      }
+      const colT = dampCollisionFactor(collisionSpringRef.current, dt);
+      springCamPos.current.lerp(framingCamRef.current, colT);
+      const camT = dampFactor(smoothness, dt);
+      camera.position.lerp(springCamPos.current, camT);
+      camera.lookAt(framingLookRef.current);
+      return;
     }
 
     const pivot = pivotRef.current;

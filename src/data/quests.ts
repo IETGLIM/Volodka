@@ -91,6 +91,27 @@ export const QUEST_DEFINITIONS: Record<string, ExtendedQuest> = {
     }),
     startNode: 'start',
   },
+
+  /** Короткий побочный квест 3D-обхода комнаты Заремы (связка с `InteractionRegistry`). */
+  exploration_zarema_hearth: {
+    id: 'exploration_zarema_hearth',
+    title: '🏠 Тёплый угол',
+    description:
+      'Отметить уютный угол в комнате Заремы и Альберта — там, где слышно, как «тишина» на самом деле не пустая.',
+    type: 'side',
+    status: 'active',
+    objectives: [
+      createObjective('hearth_moment', 'Побыть у «очага разговора»', {
+        targetValue: 1,
+        currentValue: 0,
+        hint: 'Зона у дивана в 3D-обходе (отдельный триггер с E)',
+        targetLocation: 'zarema_albert_room',
+      }),
+    ],
+    reward: createReward({ mood: 5, creativity: 3, karma: 2 }),
+    /** Сторинод-хаб 3D-обхода (`explore_mode` в `storyNodes`). */
+    startNode: 'explore_mode',
+  },
   
   // ========== ТЕХНИЧЕСКИЕ IT-КВЕСТЫ (НОВЫЕ!) ==========
   

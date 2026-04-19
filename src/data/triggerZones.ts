@@ -31,6 +31,17 @@ export const STORY_TRIGGERS: TriggerZone[] = [
     interactionId: 'npc_intro',
     promptText: 'Поговорить с Заремушкой',
   },
+  /** Зона побочного квеста «Тёплый угол» (`exploration_zarema_hearth`). */
+  {
+    id: 'trigger_zarema_quest_hearth',
+    position: { x: 1.1, y: 0.45, z: -0.6 },
+    size: { x: 2.2, y: 1.8, z: 2.2 },
+    sceneId: 'zarema_albert_room',
+    type: 'quest',
+    requiresInteraction: true,
+    interactionId: 'quest_zarema_hearth',
+    promptText: 'Осмотреть угол у дивана',
+  },
   {
     id: 'trigger_kitchen_fridge',
     position: { x: 4, y: 0.5, z: -2 },
