@@ -6,11 +6,23 @@
  * Ввод: клавиатура (WASD, Shift бег, E); тач — `ExplorationMobileHud` (в т.ч. Run) при узком экране или `(pointer: coarse)`.
  *
  * Диагностика мерцания (шаг Б): у `<Canvas>` заданы умеренные **`camera.near` / `far`** и GL через **`getExplorationSceneGlProps`** в **`Scene.tsx`**.
+ *
+ * Доп. флаги (`.env.local`, пересборка): **`NEXT_PUBLIC_EXPLORATION_RAPIER_DEBUG_COLLIDERS`** — проволочные коллайдеры (`<Physics debug>`);
+ * **`NEXT_PUBLIC_EXPLORATION_MESH_AUDIT`** — `console.table` мешей и мировых позиций; **`NEXT_PUBLIC_EXPLORATION_NOCLIP`** — игрок без `RigidBody`;
+ * **`NEXT_PUBLIC_EXPLORATION_WEBGL_CONTEXT_LOG`** — `webglcontextlost` / `restored` в консоль.
  */
 
 import { memo, useRef, useEffect, useMemo, useCallback, useState, Fragment, Suspense } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { Physics } from '@react-three/rapier';
+import {
+  isExplorationMeshAuditEnabled,
+  isExplorationNoclipEnabled,
+  isExplorationRapierColliderDebugEnabled,
+  isExplorationWebGlContextLogEnabled,
+} from '@/lib/explorationDiagnostics';
+import { ExplorationMeshWorldAudit, ExplorationWebGlContextLog } from '@/components/game/exploration/ExplorationSceneDiagnostics';
+import { ExplorationNoclipPlayer } from '@/components/game/exploration/ExplorationNoclipPlayer';
 import * as THREE from 'three';
 
 // Types
@@ -122,6 +134,10 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
   const visualLite = useMobileVisualPerf();
   const showTouchHud = useTouchGameControls();
   const showExplorationStats = useExplorationFrameStatsEnabled();
+  const rapierColliderDebug = isExplorationRapierColliderDebugEnabled();
+  const explorationMeshAudit = isExplorationMeshAuditEnabled();
+  const explorationNoclip = isExplorationNoclipEnabled();
+  const explorationWebGlLog = isExplorationWebGlContextLogEnabled();
   const virtualControlsRef = useRef<Partial<PlayerControls>>({});
   const [radialObject, setRadialObject] = useState<InteractiveObjectConfig | null>(null);
 
@@ -408,7 +424,9 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
         PostFX вне Physics, но в Canvas — отдельный render pass.
       */}
       <Suspense fallback={null}>
-      <Physics gravity={[0, -9.81, 0]} debug={false}>
+        {explorationWebGlLog && <ExplorationWebGlContextLog />}
+        {explorationMeshAudit && <ExplorationMeshWorldAudit sceneId={sceneId} />}
+      <Physics gravity={[0, -9.81, 0]} debug={rapierColliderDebug}>
         <ExplorationWorldClock />
         {/*
           Пол + стены Rapier — здесь же визуал пола в `PhysicsFloor` (`PhysicsSceneColliders`).
@@ -448,22 +466,41 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
         {/* Visual Scene Elements */}
         {children}
 
-        <PhysicsPlayer
-          key={sceneId}
-          position={[
-            explorationSpawnSnapshot.x,
-            explorationSpawnSnapshot.y,
-            explorationSpawnSnapshot.z,
-          ]}
-          initialRotation={explorationSpawnSnapshot.rotation ?? 0}
-          modelPath={getDefaultPlayerModelPath()}
-          visualModelScale={explorationCharacterModelScale}
-          locomotionScale={explorationLocomotionScale}
-          onPositionChange={handlePositionChange}
-          onInteraction={handlePlayerInteraction}
-          isLocked={isDialogueActive}
-          virtualControlsRef={virtualControlsRef}
-        />
+        {explorationNoclip ? (
+          <ExplorationNoclipPlayer
+            key={sceneId}
+            position={[
+              explorationSpawnSnapshot.x,
+              explorationSpawnSnapshot.y,
+              explorationSpawnSnapshot.z,
+            ]}
+            initialRotation={explorationSpawnSnapshot.rotation ?? 0}
+            modelPath={getDefaultPlayerModelPath()}
+            visualModelScale={explorationCharacterModelScale}
+            locomotionScale={explorationLocomotionScale}
+            onPositionChange={handlePositionChange}
+            onInteraction={handlePlayerInteraction}
+            isLocked={isDialogueActive}
+            virtualControlsRef={virtualControlsRef}
+          />
+        ) : (
+          <PhysicsPlayer
+            key={sceneId}
+            position={[
+              explorationSpawnSnapshot.x,
+              explorationSpawnSnapshot.y,
+              explorationSpawnSnapshot.z,
+            ]}
+            initialRotation={explorationSpawnSnapshot.rotation ?? 0}
+            modelPath={getDefaultPlayerModelPath()}
+            visualModelScale={explorationCharacterModelScale}
+            locomotionScale={explorationLocomotionScale}
+            onPositionChange={handlePositionChange}
+            onInteraction={handlePlayerInteraction}
+            isLocked={isDialogueActive}
+            virtualControlsRef={virtualControlsRef}
+          />
+        )}
 
         {/* NPCs */}
         <NPCSystem

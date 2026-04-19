@@ -6,6 +6,8 @@
 
 - **Next.js 16**: переименование **`src/middleware.ts`** → **`src/proxy.ts`**, экспорт **`proxy`** вместо **`middleware`** ([миграция](https://nextjs.org/docs/messages/middleware-to-proxy)); предупреждение о deprecated convention снимается при сборке.
 
+- **Обход / коллайдеры и дубликаты геометрии (диагностика)**: **`lib/explorationDiagnostics.ts`** — флаги **`NEXT_PUBLIC_EXPLORATION_RAPIER_DEBUG_COLLIDERS`** (проволочные коллайдеры через **`Physics debug`**, в `@react-three/rapier` 2.x нет публичного **`<Debug />`**), **`NEXT_PUBLIC_EXPLORATION_MESH_AUDIT`** (`console.table` мешей с мировыми координатами), **`NEXT_PUBLIC_EXPLORATION_NOCLIP`** (игрок без **`RigidBody`**, зелёный «пилон»), **`NEXT_PUBLIC_EXPLORATION_WEBGL_CONTEXT_LOG`**; **`ExplorationSceneDiagnostics.tsx`**, **`ExplorationNoclipPlayer.tsx`**, правки **`RPGGameCanvas`**, **`PhysicsRPGCanvas`**, комментарии в **`PhysicsSceneColliders`** и **`ExplorationPostFX`**; тест **`explorationDiagnostics.test.ts`**.
+
 ### Maintainer notes
 
 - **Ритм выкладки (с душой и для потомков)**: порция функционала или исправлений → быстрая проверка (**`tsc`**, **`vitest`**, разбор линтера по смыслу) → запись в **`CHANGELOG.md`** в **`[Unreleased]`** → коммит с ясной первой строкой → **`git push origin`** на каноническую ветку (**`main`**). Так на GitHub и у тех, кто откроет репозиторий позже, всегда видна честная история, а не «магия у одного разработчика на ноутбуке».

@@ -132,6 +132,10 @@ const RectangularBoundaryWalls = memo(function RectangularBoundaryWalls({
 // ============================================
 // ПОЛ С ФИЗИКОЙ
 // ============================================
+//
+// Диагностика мерцания: на сцену обычно приходится **один** `PhysicsFloor` (один `CuboidCollider` на пол).
+// Мелкая сетка box-коллайдеров для пола здесь не используется — см. отдельные `InstancedObstacles` для мебели.
+// Визуальный пол в интерьерах (напр. `VolodkaRoomVisual`) чуть **выше** коллайдера (`y≈0.015` vs кубоид `y≈-0.22`) — намеренный зазор, не дублирующийся «второй пол» в Rapier.
 
 interface PhysicsFloorProps {
   size?: [number, number];

@@ -24,6 +24,7 @@ import { NPCSystem } from './NPC';
 import { InteractiveObject, PhysicsExplorationRoomVisual } from './RoomEnvironment';
 import { useGameStore } from '@/store/gameStore';
 import { getExplorationCharacterModelScale, getExplorationLocomotionScale } from '@/config/scenes';
+import { isExplorationRapierColliderDebugEnabled } from '@/lib/explorationDiagnostics';
 
 const PhysicsWorldClock = memo(function PhysicsWorldClock() {
   const advanceTime = useGameStore((s) => s.advanceTime);
@@ -138,6 +139,7 @@ export const PhysicsGameModeSwitcher = memo(function PhysicsGameModeSwitcher({
   }, [stressLevel, panicMode]);
 
   const showPhysicsDebugHelpers = process.env.NEXT_PUBLIC_PHYSICS_DEBUG_HELPERS === '1';
+  const rapierColliderDebug = isExplorationRapierColliderDebugEnabled();
 
   const explorationCharacterModelScale = useMemo(
     () => getExplorationCharacterModelScale(sceneId),
@@ -211,7 +213,7 @@ export const PhysicsGameModeSwitcher = memo(function PhysicsGameModeSwitcher({
           </>
         )}
 
-        <Physics debug={false} gravity={gravity}>
+        <Physics debug={rapierColliderDebug} gravity={gravity}>
           <PhysicsWorldClock />
           <PhysicsSceneColliders sceneId={sceneId} />
 
