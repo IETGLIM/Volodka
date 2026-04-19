@@ -15,6 +15,8 @@
 
 ### Added
 
+- **Порядок в рабочей копии (IDE)**: **`.cursorignore`** — не индексировать **`node_modules`**, **`.next`**, кэши и вложенные **`browserbase-functions/**/node_modules`**; **`.vscode/settings.json`** — **`search.exclude`** / **`files.watcherExclude`** для тех же путей. **`.gitignore`** — **`out`**, **`dist`**, **`coverage`**, **`.turbo`**, отчёты Playwright, **`*.log`**. **`eslint.config.mjs`** — **`browserbase-functions/**`** в **`ignores`** (как в корневом **`tsconfig`**).
+
 - **Оклики NPC в обходе**: при первом входе в радиус по XZ (**`NpcProximityBarks`**, **`npcProximityBarks`**) — тост **`ui:exploration_message`** и короткий **`sound:play`**; текст от **`npcRelations[].value`**: враждебно (≤35) — «Опять ты, Володька? Проваливай!», тепло (≥65) — «Привет, герой!», иначе нейтральная реплика; кулдаун **22 s** на NPC, учёт **`ScheduleEngine`** (спящий NPC не кричит).
 
 ### Fixed
