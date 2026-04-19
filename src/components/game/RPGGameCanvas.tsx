@@ -372,6 +372,7 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
   return (
     <Fragment>
     <Canvas
+      className="block h-full w-full touch-none"
       tabIndex={0}
       role="application"
       aria-label="Исследование локации"
@@ -383,6 +384,8 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
         background: sceneConfig.fogColor,
         width: '100%',
         height: '100%',
+        minHeight: 0,
+        minWidth: 0,
         position: 'absolute',
         top: 0,
         left: 0,

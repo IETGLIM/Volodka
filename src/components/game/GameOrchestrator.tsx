@@ -59,6 +59,7 @@ import { MiniMap } from '@/components/game/MiniMap';
 import { SCENE_VISUALS } from '@/engine/SceneManager';
 import type { VisualState } from '@/data/types';
 import { storyNodeShowsStoryOverlay } from '@/lib/storyOverlayEligibility';
+import { EXPLORATION_GAME_VIEWPORT_CLASS } from '@/components/3d/Scene';
 
 const QuestsPanel = dynamic(() => import('@/components/game/QuestsPanel'), { ssr: false });
 const FactionsPanel = dynamic(() => import('@/components/game/FactionsPanel'), { ssr: false });
@@ -74,8 +75,11 @@ const RPGGameCanvas = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="fixed inset-0 z-[12] flex items-center justify-center bg-black/50 font-mono text-sm text-cyan-500/70">
-        SYNC // 3D…
+      <div
+        className={`${EXPLORATION_GAME_VIEWPORT_CLASS} flex flex-col items-center justify-center bg-[#030308]/92 font-mono`}
+      >
+        <div className="text-lg tracking-[0.25em] text-cyan-400/85 animate-pulse">SYNC // 3D</div>
+        <div className="mt-2 text-[10px] uppercase tracking-[0.4em] text-cyan-600/50">камера · физика · GLB</div>
       </div>
     ),
   },
@@ -638,7 +642,7 @@ export default function GameOrchestrator() {
       )}
 
       {gameMode === 'exploration' && (
-        <div className="fixed inset-0 z-[12] h-[100dvh] max-h-[100dvh] w-full touch-manipulation">
+        <div className={EXPLORATION_GAME_VIEWPORT_CLASS}>
           <RPGGameCanvas
             sceneId={exploration.currentSceneId}
             visualState={explorationVisualState}

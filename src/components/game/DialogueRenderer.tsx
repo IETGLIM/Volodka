@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useMemo, useRef, useEffect, memo } from 'react';
+import { useState, useCallback, useMemo, useRef, useEffect, useLayoutEffect, memo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { DialogueNode, DialogueChoice, DialogueEffect } from '@/data/rpgTypes';
 import {
@@ -207,6 +207,14 @@ export default function DialogueRenderer({
     },
   }), [addStat, addStress, reduceStress, setFlag, unsetFlag, updateNPCRelation, addItem, removeItem, activateQuest, updateQuestObjective, collectPoem, addSkill]);
 
+  useLayoutEffect(() => {
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, []);
+
   // Build dialogue context (только проп playerState — без getState(), чтобы не рассинхронизироваться с родителем)
   const dialogueContext: DialogueContext = useMemo(
     () => ({
@@ -352,10 +360,11 @@ export default function DialogueRenderer({
           {/* Dialogue window — cyberpunk terminal */}
           <motion.div
             className="relative mx-4 mb-4 w-full max-w-4xl game-fm-layer"
-            initial={{ y: 100, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={{ y: 100, opacity: 0 }}
-            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+            style={{ transformOrigin: 'bottom center' }}
+            initial={{ opacity: 0, scale: 0.985 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.985 }}
+            transition={{ type: 'tween', duration: 0.22, ease: 'easeOut' }}
           >
             <div
               className="bg-slate-950/95 backdrop-blur-md border border-cyan-500/30 shadow-2xl overflow-hidden terminal-border-pulse"

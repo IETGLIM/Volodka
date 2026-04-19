@@ -370,10 +370,9 @@ export default function HUD({
   ], [inventory.length, collectedPoems.length]);
 
   return (
-    <div className="relative z-30 pointer-events-none">
-      {/* Semi-transparent dark panel with grid pattern */}
+    <div className="relative z-30 min-h-0 min-w-0 shrink-0 pointer-events-none">
+      {/* Semi-transparent dark panel with grid pattern — без `layout`: меньше CLS от FLIP */}
       <motion.div
-        layout
         data-exploration-ui
         className="p-3 pointer-events-auto"
         style={{

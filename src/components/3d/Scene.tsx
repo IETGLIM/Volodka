@@ -8,9 +8,16 @@
  * - **`logarithmicDepthBuffer: false`** — при `true` на части сцен возможны артефакты глубины.
  *
  * Потребитель: **`RPGGameCanvas`**. Не монтируйте второй Canvas для той же сцены.
+ *
+ * CLS: контейнер 3D-обхода — фиксированный вьюпорт (**`EXPLORATION_GAME_VIEWPORT_CLASS`**), без смены
+ * размеров после гидрации; сам `<Canvas>` внутри заполняет родителя (**`block h-full w-full`** в `RPGGameCanvas`).
  */
 
 import type { CanvasProps } from '@react-three/fiber';
+
+/** Обёртка вокруг `<RPGGameCanvas>` в `GameOrchestrator` — жёсткий полноэкранный слот под WebGL. */
+export const EXPLORATION_GAME_VIEWPORT_CLASS =
+  'fixed inset-0 z-[12] h-svh min-h-0 w-screen max-w-[100vw] overflow-hidden touch-manipulation';
 
 export const EXPLORATION_SCENE_FRAMELOOP: NonNullable<CanvasProps['frameloop']> = 'always';
 

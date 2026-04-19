@@ -21,6 +21,8 @@
 
 ### Fixed
 
+- **LCP / CLS (перцепция загрузки и сдвиги макета)**: **`AppPerfWarmup`** в **`layout`** — фоновый **`warmupRapierWasm`** (`lib/rapierWasmWarmup.ts`) и **`preloadExplorationPlayerGltf`** (`lib/model-cache.ts`, `useGLTF.preload`); оболочки загрузки **`page`** / **`GameOrchestrator`** (фиксированный полноэкранный слот); **`EXPLORATION_GAME_VIEWPORT_CLASS`** в **`Scene.tsx`** + **`RPGGameCanvas`** (`Canvas` **`block h-full w-full`**); **`next/font`**: **`display: 'swap'`**, **`adjustFontFallback: false`**; диалог: **`overflow: hidden`** на **`body`**, вход окна через **opacity/scale** без сдвига по **Y**; **`HUD`**: убран **`layout`** у framer-motion.
+
 - **Обход / освещение и тени (шаг 6, мерцание)**: **`src/components/3d/Lighting.tsx`** — **`ExplorationLighting`** с **`shadow-bias`** / **`shadow-normalBias`** и картой **1024** (десктоп) / **512** (mobile/lite, вместо **256**); **`lib/explorationShadowConstants.ts`**; те же bias + **`SCENE_ENVIRONMENT_SHADOW_MAP_SIZE`** в **`OptimizedSceneEnvironment`**; отладочный **`PhysicsRPGCanvas`**.
 
 - **Обход / LOD NPC (шаг 5, мерцание)**: явный **гистерезис** в **`lib/npcLodConstants.ts`** (`resolveNpcModelLodUseFull`: дальше **19 m** сброс полного GLB, ближе **11 m** возврат из импостора); шире мёртвая зона теней **4 / 8 m**; навигация **`src/components/3d/LODController.tsx`**, **`NPCManager.tsx`**.
