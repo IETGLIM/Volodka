@@ -1,5 +1,6 @@
 import { useCallback, useRef, useState } from 'react';
 import type { DialogueNode, DialogueEffect, GameMode } from '@/data/rpgTypes';
+import { resolveDialogueVariant } from '@/core/dialogue/resolveDialogueVariant';
 import { NPC_DEFINITIONS } from '@/data/npcDefinitions';
 import { eventBus } from '@/engine/EventBus';
 import { applyDialogueEffects } from '@/engine/DialogueEngine';
@@ -58,12 +59,15 @@ export function useDialogueFlow({
     const npcDef = NPC_DEFINITIONS[npcId];
     if (!npcDef?.dialogueTree) return;
 
+    const root = npcDef.dialogueTree as DialogueNode;
+    const node = resolveDialogueVariant(npcId, root);
+
     gameModeBeforeDialogueRef.current = useGameStore.getState().gameMode;
     setCurrentNPC(npcId);
     setActiveDialogue({
       npcId,
       npcName: npcDef.name,
-      node: npcDef.dialogueTree as DialogueNode,
+      node,
     });
     setGameMode('dialogue');
 
@@ -76,12 +80,15 @@ export function useDialogueFlow({
       const npcDef = NPC_DEFINITIONS[params.npcId];
       if (!npcDef?.dialogueTree) return;
 
+      const root = npcDef.dialogueTree as DialogueNode;
+      const node = resolveDialogueVariant(params.npcId, root);
+
       gameModeBeforeDialogueRef.current = useGameStore.getState().gameMode;
       setCurrentNPC(params.npcId);
       setActiveDialogue({
         npcId: params.npcId,
         npcName: npcDef.name,
-        node: npcDef.dialogueTree as DialogueNode,
+        node,
         storyResume: {
           nextNodeId: params.nextNodeId,
           fromNodeId: params.fromNodeId,

@@ -10,7 +10,7 @@ import { getAtmosphereGenreForScene } from '@/lib/atmosphereMusicGenres';
 // Создаёт эмбиент-саундтрек на основе Web Audio API
 // Без внешних файлов - всё генерируется в реальном времени
 
-interface AmbientConfig {
+export interface AmbientConfig {
   enabled: boolean;
   sceneId: string;
   mood: number;
@@ -18,6 +18,14 @@ interface AmbientConfig {
   creativity: number;
   /** Принудительно «боевая» подложка (стресс / сцена боя). */
   forceBattleMusic?: boolean;
+  /** Нарративная память → слегка меняет темп подложки (`worldReactivity`). */
+  narrativeMusic?: 'default' | 'melancholic' | 'hopeful';
+}
+
+function narrativeTempoFactor(m?: AmbientConfig['narrativeMusic']): number {
+  if (m === 'melancholic') return 0.82;
+  if (m === 'hopeful') return 1.06;
+  return 1;
 }
 
 function resolveAmbientGenre(sceneId: string, forceBattle?: boolean) {
@@ -429,6 +437,7 @@ export function useAmbientMusic(config: AmbientConfig) {
     const phraseGen = ambientScheduleGenRef.current;
 
     const sceneConfig = SCENE_SCALES[config.sceneId] || SCENE_SCALES['default'];
+    const tempo = sceneConfig.tempo * narrativeTempoFactor(config.narrativeMusic);
     const scale = sceneConfig.scale;
     const genre = resolveAmbientGenre(config.sceneId, config.forceBattleMusic);
     
@@ -439,7 +448,7 @@ export function useAmbientMusic(config: AmbientConfig) {
 
     if (genre === 'chiptune_8bit') {
       const steps = Math.floor(Math.random() * 5) + 5;
-      const stepMs = 95 / sceneConfig.tempo;
+      const stepMs = 95 / tempo;
       let idx = 0;
       const dir = Math.random() > 0.5 ? 1 : -1;
       for (let i = 0; i < steps; i++) {
@@ -458,7 +467,7 @@ export function useAmbientMusic(config: AmbientConfig) {
 
     if (genre === 'brutal_heavy') {
       const hits = Math.floor(Math.random() * 6) + 7;
-      const stepMs = (42 + Math.random() * 28) / sceneConfig.tempo;
+      const stepMs = (42 + Math.random() * 28) / tempo;
       for (let i = 0; i < hits; i++) {
         const delayMs = i * stepMs;
         setTimeout(() => {
@@ -496,11 +505,11 @@ export function useAmbientMusic(config: AmbientConfig) {
     }
     
     // Играем ноты с задержкой, учитывая темп сцены
-    const baseDelay = 800 / sceneConfig.tempo;
+    const baseDelay = 800 / tempo;
     selectedNotes.forEach((freq, i) => {
       setTimeout(() => {
         if (ambientScheduleGenRef.current !== phraseGen) return;
-        const duration = (2 + Math.random() * 2) * sceneConfig.tempo;
+        const duration = (2 + Math.random() * 2) * tempo;
         const volume = (0.12 + moodModifier * 0.08) * stressModifier * sceneConfig.intensity;
         createPad(freq, duration, volume, 'melody');
       }, i * (baseDelay + Math.random() * 300));
@@ -511,6 +520,7 @@ export function useAmbientMusic(config: AmbientConfig) {
     config.mood,
     config.stress,
     config.creativity,
+    config.narrativeMusic,
     createPad,
     createChiptuneBlip,
     createBrutalSawStab,
@@ -608,6 +618,8 @@ export function useAmbientMusic(config: AmbientConfig) {
     
     const sceneConfig = SCENE_SCALES[config.sceneId] || SCENE_SCALES['default'];
     const genre = resolveAmbientGenre(config.sceneId, config.forceBattleMusic);
+    const intervalTempo =
+      sceneConfig.tempo * narrativeTempoFactor(configRef.current.narrativeMusic);
     
     // Инициализация слоёв
     (['bass', 'pad', 'melody', 'noise', 'accent'] as LayerType[]).forEach(type => {
@@ -649,9 +661,9 @@ export function useAmbientMusic(config: AmbientConfig) {
         else if (choice < 0.70) createNoise(6, 0.015);
       }
       
-    }, ((genre === 'brutal_heavy' ? 4200 : genre === 'chiptune_8bit' ? 5200 : 6000) + Math.random() * 4000) / sceneConfig.tempo);
+    }, ((genre === 'brutal_heavy' ? 4200 : genre === 'chiptune_8bit' ? 5200 : 6000) + Math.random() * 4000) / intervalTempo);
     
-  }, [config.enabled, config.sceneId, config.forceBattleMusic, initAudio, createNoise, createBrutalNoiseHit]);
+  }, [config.enabled, config.sceneId, config.forceBattleMusic, config.narrativeMusic, initAudio, createNoise, createBrutalNoiseHit]);
   
   // Остановка
   const stopAmbient = useCallback(() => {
@@ -754,6 +766,7 @@ interface AmbientMusicPlayerProps {
   creativity: number;
   enabled: boolean;
   forceBattleMusic?: boolean;
+  narrativeMusic?: AmbientConfig['narrativeMusic'];
 }
 
 export function AmbientMusicPlayer({
@@ -763,6 +776,7 @@ export function AmbientMusicPlayer({
   creativity,
   enabled,
   forceBattleMusic = false,
+  narrativeMusic,
 }: AmbientMusicPlayerProps) {
   useAmbientMusic({
     enabled,
@@ -771,6 +785,7 @@ export function AmbientMusicPlayer({
     stress,
     creativity,
     forceBattleMusic,
+    narrativeMusic,
   });
   
   return null; // Невизуальный компонент

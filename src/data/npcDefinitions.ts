@@ -2455,6 +2455,38 @@ export const DIALOGUE_NODES: Record<string, NPCDefinition['dialogueTree']> = {
       },
     ],
   },
+
+  /** Домашний корень Заремы (дублирует карточку `zarema_home` для `DIALOGUE_NODES` / вариантов). */
+  zarema_room_home: {
+    id: 'zarema_room_home',
+    text: '🌸 Дома тише, чем на лестнице. Альберт уже «допиливает» что-то в углу — а я рада, что ты заглянул. Чай?',
+    choices: [
+      { text: 'Как у вас дела с ремонтом / соседями?', next: 'zarema_project', effect: { creativity: 3 } },
+      { text: 'Просто заскочил поздороваться', next: 'zarema_talk', effect: { mood: 4 } },
+      { text: 'Мне пора', next: 'zarema_bye' },
+    ],
+  },
+  /** Тёплый вариант при высоком раппорте и памяти о встрече (`resolveDialogueVariant`). */
+  zarema_room_home_warm: {
+    id: 'zarema_room_home_warm',
+    text: '🌸 О, ты снова здесь — уже не как «гость из лифта», а как свой. Чайник только что щёлкнул: садись, расскажешь, как ты там, снаружи?',
+    choices: [
+      { text: 'Как у вас дела с ремонтом / соседями?', next: 'zarema_project', effect: { creativity: 3 } },
+      { text: 'Просто заскочил поздороваться', next: 'zarema_talk', effect: { mood: 4 } },
+      { text: 'Мне пора', next: 'zarema_bye' },
+    ],
+  },
+  /** Холоднее, если настроение мира просело (`getDominantEmotion`). */
+  zarema_room_home_cold: {
+    id: 'zarema_room_home_cold',
+    text: '🌸 …Ты пришёл. Я не буду делать вид, что всё легко: сядь, если надо — но не жди, что я сразу заговорю как в прошлый раз.',
+    choices: [
+      { text: 'Как у вас дела с ремонтом / соседями?', next: 'zarema_project', effect: { creativity: 3 } },
+      { text: 'Просто заскочил поздороваться', next: 'zarema_talk', effect: { mood: 4 } },
+      { text: 'Мне пора', next: 'zarema_bye' },
+    ],
+  },
+
   zarema_project: {
     id: 'zarema_project',
     text: '🌸 Мы с Альбертом делаем интерактивную инсталляцию! Стихи + 3D-проекции + музыка. Хочешь принять участие? Твои стихи идеально подойдут.',

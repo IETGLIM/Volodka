@@ -14,6 +14,7 @@ import {
 import { DIALOGUE_NODES } from '@/data/npcDefinitions';
 import type { PlayerState, NPCRelation } from '@/data/types';
 import { asTrainablePlayerSkill } from '@/lib/trainablePlayerSkill';
+import { rememberDialogue } from '@/core/memory/MemoryEngine';
 import { useGameStore } from '@/store/gameStore';
 import { CyberSkillCheckResult, type SkillCheckBannerPayload } from './CyberSkillCheckResult';
 
@@ -231,10 +232,24 @@ export default function DialogueRenderer({
     [playerState, npcRelations, flags, inventory, visitedNodes],
   );
 
+  const dialogueOpenKeyRef = useRef<string | null>(null);
+
   useEffect(() => {
     if (!isOpen) return;
     startDialogue(npcId, dialogueTree, dialogueContext);
   }, [isOpen, npcId, dialogueTree, dialogueContext]);
+
+  /** Нарративная память: один раз на открытие сессии (без дублей при смене контекста). */
+  useEffect(() => {
+    if (!isOpen) {
+      dialogueOpenKeyRef.current = null;
+      return;
+    }
+    const key = `${npcId}:${dialogueTree.id}`;
+    if (dialogueOpenKeyRef.current === key) return;
+    dialogueOpenKeyRef.current = key;
+    rememberDialogue(dialogueTree.id, 'neutral', npcId, 'open');
+  }, [isOpen, npcId, dialogueTree.id]);
 
   const typingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -269,6 +284,12 @@ export default function DialogueRenderer({
     }, 25);
   }, []);
 
+  const closeDialogueSession = useCallback(() => {
+    endDialogue(npcId, dialogueTree.id);
+    rememberDialogue(dialogueTree.id, 'neutral', npcId, 'close');
+    onClose();
+  }, [npcId, dialogueTree.id, onClose]);
+
   // Handle dialogue choice
   const handleChoice = useCallback((choice: DialogueChoice) => {
     const result = processDialogueChoice(
@@ -297,10 +318,9 @@ export default function DialogueRenderer({
       startTyping(result.nextNode.text);
     } else {
       // End of dialogue
-      endDialogue(npcId, dialogueTree.id);
-      onClose();
+      closeDialogueSession();
     }
-  }, [dialogueContext, npcId, currentNode, dialogueStoreActions, startTyping, onClose, dialogueTree.id]);
+  }, [dialogueContext, npcId, currentNode, dialogueStoreActions, startTyping, closeDialogueSession, dialogueTree.id]);
 
   // Get NPC avatar color based on name
   const npcColor = useMemo(() => {
@@ -373,7 +393,7 @@ export default function DialogueRenderer({
           {/* Dark overlay */}
           <div
             className={`absolute inset-0 ${explorationLayout ? 'bg-black/68' : 'bg-black/40'}`}
-            onClick={onClose}
+            onClick={closeDialogueSession}
             role="presentation"
           />
 
@@ -432,7 +452,7 @@ export default function DialogueRenderer({
 
                 <button
                   type="button"
-                  onClick={onClose}
+                  onClick={closeDialogueSession}
                   className="font-mono text-slate-500 hover:text-cyan-400 transition-colors p-2 text-sm border border-slate-700/30 hover:border-cyan-500/30"
                   style={{
                     clipPath: 'polygon(0 0, calc(100% - 4px) 0, 100% 4px, 100% 100%, 4px 100%, 0 calc(100% - 4px))',
@@ -499,7 +519,7 @@ export default function DialogueRenderer({
                 <div className="px-4 pb-4 flex justify-end relative z-10">
                   <button
                     type="button"
-                    onClick={onClose}
+                    onClick={closeDialogueSession}
                     className="px-4 py-2 font-mono text-sm text-cyan-400/60 hover:text-cyan-400 border border-cyan-500/20 hover:border-cyan-500/40 transition-colors"
                     style={{
                       clipPath: 'polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 6px 100%, 0 calc(100% - 6px))',

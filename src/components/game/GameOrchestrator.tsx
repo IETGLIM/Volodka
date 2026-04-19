@@ -60,6 +60,9 @@ import { SCENE_VISUALS } from '@/engine/SceneManager';
 import type { VisualState } from '@/data/types';
 import { storyNodeShowsStoryOverlay } from '@/lib/storyOverlayEligibility';
 import { EXPLORATION_GAME_VIEWPORT_CLASS } from '@/components/3d/Scene';
+import { getWorldStateModifiers } from '@/core/world/worldReactivity';
+import MemoryLog from '@/components/ui/MemoryLog';
+import QuestTracker from '@/components/ui/QuestTracker';
 
 const QuestsPanel = dynamic(() => import('@/components/game/QuestsPanel'), { ssr: false });
 const FactionsPanel = dynamic(() => import('@/components/game/FactionsPanel'), { ssr: false });
@@ -646,6 +649,7 @@ export default function GameOrchestrator() {
         creativity={playerState.creativity}
         enabled={phase === 'game' && !activeCutscene}
         forceBattleMusic={playerState.stress > 80 || displaySceneId === 'battle'}
+        narrativeMusic={getWorldStateModifiers().music}
       />
       {gameMode !== 'exploration' && (
         <SceneRenderer sceneId={currentSceneId} playerState={playerState} />
@@ -693,6 +697,9 @@ export default function GameOrchestrator() {
       <LootNotification />
       <SkillUpNotification />
       <TutorialOverlay gameMode={gameMode} isDialogue={Boolean(activeDialogue)} />
+
+      {phase === 'game' && <QuestTracker />}
+      {phase === 'game' && <MemoryLog />}
 
       <HUD
         onSave={handleSaveGame}

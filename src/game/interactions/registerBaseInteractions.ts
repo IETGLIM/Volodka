@@ -1,8 +1,12 @@
 'use client';
 
 import { InteractionRegistry } from '@/core/interaction/InteractionRegistry';
+import { checkDialogueCondition } from '@/core/dialogue/dialogueConditions';
+import { rememberExplorationQuestCompleted } from '@/core/memory/MemoryEngine';
+import { startQuestWithLog } from '@/core/quests/QuestEngine';
 import { QUEST_DEFINITIONS } from '@/data/quests';
 import { eventBus } from '@/engine/EventBus';
+import { introQuest } from '@/game/quests/introQuest';
 import { useGameStore } from '@/store/gameStore';
 
 /** Singleton used by exploration (`RPGGameCanvas`). */
@@ -31,6 +35,7 @@ export function registerBaseInteractions(registry: InteractionRegistry = explora
     id: 'npc_intro',
     type: 'dialogue',
     execute: (ctx) => {
+      startQuestWithLog(introQuest);
       ctx.setGameMode('dialogue');
       ctx.onNPCInteraction?.('zarema_home');
     },
@@ -53,10 +58,29 @@ export function registerBaseInteractions(registry: InteractionRegistry = explora
       const target = hearthObjectiveTarget();
       if (current >= target) {
         completeQuest(HEARTH_QUEST_ID);
+        const hq = QUEST_DEFINITIONS[HEARTH_QUEST_ID];
+        rememberExplorationQuestCompleted(
+          HEARTH_QUEST_ID,
+          hq?.title ?? 'Тёплый угол',
+          'Ты закрепил этот угол в памяти — как точку, куда можно вернуться мыслью.',
+        );
         eventBus.emit('ui:exploration_message', { text: 'Квест «Тёплый угол» выполнен.' });
       } else {
         eventBus.emit('ui:exploration_message', { text: 'Ты отметил уютный угол — цель в журнале обновлена.' });
       }
+    },
+  });
+
+  /** Пример: память + раппорт (`checkDialogueCondition`) — доступно реестру / будущим зонам. */
+  registry.register({
+    id: 'zarema_resonance_ping',
+    type: 'event',
+    condition: () =>
+      checkDialogueCondition('hasMemory("met_npc") && relationship(zarema_home) > 42'),
+    execute: () => {
+      eventBus.emit('ui:exploration_message', {
+        text: 'Где-то в комнате отзывается эхо прошлого разговора — память держит дверь чуть приоткрытой.',
+      });
     },
   });
 }

@@ -26,6 +26,12 @@
 
 - **Квест поверх Interaction**: расширенный **`InteractionContext`** (хуки квестов из стора); побочный квест **`exploration_zarema_hearth`** в **`quests.ts`** (**`startNode: 'explore_mode'`**); зона **`trigger_zarema_quest_hearth`** → **`interactionId: 'quest_zarema_hearth`**; в **`registerBaseInteractions`** — выполнение **`activateQuest` / `incrementQuestObjective` / `completeQuest`** и тост **`ui:exploration_message`**.
 
+- **Модульные квесты (core) поверх Interaction**: **`src/core/quests`** — **`types`**, **`questStore`** (Zustand, иммутабельные обновления), **`QuestEngine`** (**`handleInteractionForQuests`**, **`startQuestWithLog`**); после **`execute`** в **`InteractionExecutor`** вызывается движок; **`src/game/quests/introQuest`** + старт из **`npc_intro`**; оверлей **`QuestTracker`** в **`GameOrchestrator`**; тест **`QuestEngine.test.ts`**; отладочные логи **`[Quest] …`** в движке.
+
+- **Нарративная память (core)**: **`src/core/memory`** — **`types`**, **`memoryStore`** (новые сверху, дедуп по **`id`**, без побочных эффектов), **`MemoryEngine`** (**`rememberInteraction`**, **`rememberDialogue`**, события квестов), **`memoryQueries`** (**`hasMemory`**, **`getDominantEmotion`**, **`getRelationship`**); связка после взаимодействий в **`InteractionExecutor`**; квесты core + legacy «Тёплый угол» → память; **`DialogueRenderer`** — открытие/закрытие сессии; UI **`MemoryLog`** (таймлайн, эмоции, фильтры); тесты **`memoryStore`**, **`memoryQueries`**.
+
+- **Память → геймплей**: **`RelationshipEngine`** + поле **`relationships`** в **`memoryStore`** (пересчёт при **`addMemory`** с **`relatedEntityId`**); **`relationshipAccess.getRelationshipScore`**; **`dialogueConditions.checkDialogueCondition`**; **`resolveDialogueVariant`** + узлы **`zarema_room_home` / `_warm` / `_cold`** в **`DIALOGUE_NODES`**; **`useDialogueFlow`** подставляет вариант корня; **`zarema_resonance_ping`** — условие **`relationship(zarema_home) > 42`**; **`emotionalProfile`**, **`worldReactivity`** → **`AmbientMusicPlayer.narrativeMusic`**; расширенный **`MemoryLog`** (раппорт, сводка эмоций); тесты **`RelationshipEngine`**, **`dialogueConditions`**, **`resolveDialogueVariant`**.
+
 - **Анализ трейсов Performance**: скрипт **`scripts/analyze-chrome-trace.mjs`** (сводка длинных **`RunTask`** / **`traceEvents`**); в **`.gitignore`** — маска **`Trace-*.json`**, чтобы локальные записи DevTools не попадали в git.
 
 ### Maintainer notes
