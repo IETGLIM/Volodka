@@ -21,6 +21,8 @@
 
 ### Fixed
 
+- **Обход / стабилизация позиции игрока (шаг 5)**: автоматическая проверка всех записей **`SCENE_CONFIG`** на адекватные **`spawnPoint`**, размеры комнаты, масштабы обхода и позиции NPC — **`src/config/explorationScenesMovementSanity.test.ts`**; ручной чеклист (локации, вперёд/назад, повороты, стены, NPC) в JSDoc **`PlayerController.tsx`**.
+
 - **Обход / стабилизация позиции игрока (шаг 4)**: снятие root motion с клипов игрока — **`cloneAnimationClipsWithoutExplorationPlayerRootMotion`** (`lib/stripExplorationPlayerRootMotionFromClips.ts`, тесты); подключено в **`GLBPlayerModel`** (**`PhysicsPlayer`**); навигация **`src/components/3d/player/AnimationController.tsx`**; перекрёстная ссылка в **`components/3d/AnimationController.tsx`**, **`PlayerModel.tsx`**.
 
 - **Обход / стабилизация позиции игрока (шаг 3)**: подтверждено отсутствие второго источника движения группы визуала из стора; навигация **`src/components/3d/player/PlayerModel.tsx`**; комментарий у **`PlayerVisualRoot`** в **`PhysicsPlayer`**; **`PlayerController.tsx`**.
