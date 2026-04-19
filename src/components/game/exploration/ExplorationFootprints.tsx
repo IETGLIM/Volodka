@@ -20,6 +20,10 @@ export const ExplorationFootprints = memo(function ExplorationFootprints({
   const [prints, setPrints] = useState<Print[]>([]);
 
   useEffect(() => {
+    setPrints([]);
+  }, [sceneId]);
+
+  useEffect(() => {
     if (!sceneAllowsFootprints(sceneId)) return;
     const off = eventBus.on('exploration:footstep', (p) => {
       setPrints((prev) => [

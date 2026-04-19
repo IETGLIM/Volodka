@@ -7,9 +7,9 @@
  *   могут обновляться без синхронного рендера → отставание и ощущение «мигания».
  * - **`logarithmicDepthBuffer: false`** — при `true` на части сцен возможны артефакты глубины.
  *
- * Шаг Б (после отключения поста мерцание осталось): жёстче **`antialias`**, **`powerPreference`**, без
+ * Шаг Б (после отключения поста мерцание осталось): жёстче **`antialias`**, **`powerPreference: 'high-performance'`**, без
  * логарифмического буфера глубины — см. **`getExplorationSceneGlProps`**; у **`Canvas`** в **`RPGGameCanvas`**
- * — **`camera.near` / `far`** для точности Z (не чрезмерный диапазон).
+ * — **`dpr={[1, 1.5]}`**, **`PerformanceMonitor`** (drei), **`camera.near` / `far`** для точности Z.
  *
  * Потребитель: **`RPGGameCanvas`**. Не монтируйте второй Canvas для той же сцены.
  *

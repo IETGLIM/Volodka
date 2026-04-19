@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from 'next';
+import { StrictMode } from 'react';
 import { Geist, Geist_Mono } from 'next/font/google';
 import { GameStoreHydration } from './GameStoreHydration';
 import { AppPerfWarmup } from './AppPerfWarmup';
@@ -58,7 +59,8 @@ export default function RootLayout({
       >
         <GameStoreHydration />
         <AppPerfWarmup />
-        {children}
+        {/* StrictMode: проверка двойного mount/effect в dev; гидрация стора — вне обёртки (один проход). */}
+        <StrictMode>{children}</StrictMode>
       </body>
     </html>
   );

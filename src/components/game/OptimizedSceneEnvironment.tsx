@@ -13,6 +13,7 @@ import {
 } from '@/lib/explorationShadowConstants';
 import { ZaremaAlbertRoom } from './RoomEnvironment';
 import { VolodkaCorridorVisual } from './exploration/VolodkaCorridorVisual';
+import { ThreeCanvasSuspenseFallback } from '@/components/3d/ThreeCanvasSuspenseFallback';
 
 // ============================================
 // INSTANCED MESHES FOR PERFORMANCE
@@ -943,7 +944,7 @@ export const OptimizedSceneEnvironment = memo(function OptimizedSceneEnvironment
       <pointLight position={[0, 4, 3]} intensity={1.2} color={config.light} />
 
       {/* Специфичные сцены */}
-      <Suspense fallback={null}>
+      <Suspense fallback={<ThreeCanvasSuspenseFallback />}>
         {environment}
       </Suspense>
 

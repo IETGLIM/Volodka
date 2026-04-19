@@ -32,6 +32,12 @@ export const BattleClickLayer = memo(function BattleClickLayer({ active }: Battl
     };
   }, []);
 
+  useEffect(() => {
+    if (active) {
+      setEnemies(INITIAL_ENEMIES.map((e) => ({ ...e })));
+    }
+  }, [active]);
+
   const onHit = useCallback(
     (id: string) => {
       const dmg = rollStrikeDamage(skills);

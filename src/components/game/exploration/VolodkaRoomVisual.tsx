@@ -13,8 +13,8 @@ import {
  * Комната Володьки в обходе: панелька, удалёнка (два ноутбука, стойка мониторов — как `scenes.ts` / коллайдеры).
  * Текстуры процедурные (canvas), без внешних PNG.
  *
- * Шаг В (мерцание / материалы): у процедурных мешей принудительно **`depthWrite`** / **`depthTest`** —
- * в т.ч. «шкафы» на **`woodMat`** (отдельного GLB шкафа нет).
+ * Шаг В (мерцание / материалы): у процедурных мешей **`depthWrite`** / **`depthTest`** и **`polygonOffset`**
+ * (factor/units **1**) — меньше z-fight с полом **`PhysicsFloor`** и между наслоениями; в т.ч. **`woodMat`**.
  */
 export const VolodkaRoomVisual = memo(function VolodkaRoomVisual() {
   const w = 14;
@@ -56,6 +56,9 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual() {
         metalness: 0.02,
         depthWrite: true,
         depthTest: true,
+        polygonOffset: true,
+        polygonOffsetFactor: 1,
+        polygonOffsetUnits: 1,
       }),
     [wallMap],
   );
@@ -68,6 +71,9 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual() {
         metalness: 0.04,
         depthWrite: true,
         depthTest: true,
+        polygonOffset: true,
+        polygonOffsetFactor: 1,
+        polygonOffsetUnits: 1,
       }),
     [floorMap],
   );
@@ -80,6 +86,9 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual() {
         metalness: 0.08,
         depthWrite: true,
         depthTest: true,
+        polygonOffset: true,
+        polygonOffsetFactor: 1,
+        polygonOffsetUnits: 1,
       }),
     [woodMap],
   );
@@ -120,6 +129,9 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual() {
           opacity={0.92}
           depthWrite={false}
           depthTest
+          polygonOffset
+          polygonOffsetFactor={1}
+          polygonOffsetUnits={1}
         />
       </mesh>
 
@@ -136,7 +148,16 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual() {
 
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.022, -2.2]} receiveShadow>
         <planeGeometry args={[4.2, 3.2]} />
-        <meshStandardMaterial map={carpetMap} roughness={0.92} color="#ffffff" depthWrite depthTest />
+        <meshStandardMaterial
+          map={carpetMap}
+          roughness={0.92}
+          color="#ffffff"
+          depthWrite
+          depthTest
+          polygonOffset
+          polygonOffsetFactor={1}
+          polygonOffsetUnits={1}
+        />
       </mesh>
 
       <group position={[3.2, 0.45, 0.1]}>
@@ -145,15 +166,42 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual() {
         </mesh>
         <mesh position={[0, 0.28, -0.05]} castShadow receiveShadow>
           <boxGeometry args={[1.12, 0.52, 0.04]} />
-          <meshStandardMaterial color="#151a22" roughness={0.45} metalness={0.2} depthWrite depthTest />
+          <meshStandardMaterial
+            color="#151a22"
+            roughness={0.45}
+            metalness={0.2}
+            depthWrite
+            depthTest
+            polygonOffset
+            polygonOffsetFactor={1}
+            polygonOffsetUnits={1}
+          />
         </mesh>
         <mesh position={[0.22, 0.46, 0.22]} rotation={[0, -0.35, 0]} castShadow>
           <boxGeometry args={[0.34, 0.02, 0.22]} />
-          <meshStandardMaterial color="#2f3640" roughness={0.55} metalness={0.25} depthWrite depthTest />
+          <meshStandardMaterial
+            color="#2f3640"
+            roughness={0.55}
+            metalness={0.25}
+            depthWrite
+            depthTest
+            polygonOffset
+            polygonOffsetFactor={1}
+            polygonOffsetUnits={1}
+          />
         </mesh>
         <mesh position={[-0.12, 0.46, -0.18]} rotation={[0, 0.2, 0]} castShadow>
           <boxGeometry args={[0.32, 0.02, 0.2]} />
-          <meshStandardMaterial color="#1e272e" roughness={0.55} metalness={0.2} depthWrite depthTest />
+          <meshStandardMaterial
+            color="#1e272e"
+            roughness={0.55}
+            metalness={0.2}
+            depthWrite
+            depthTest
+            polygonOffset
+            polygonOffsetFactor={1}
+            polygonOffsetUnits={1}
+          />
         </mesh>
         <mesh position={[0.15, 0.52, 0.42]} castShadow>
           <boxGeometry args={[0.5, 0.28, 0.025]} />
@@ -164,6 +212,9 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual() {
             roughness={0.5}
             depthWrite
             depthTest
+            polygonOffset
+            polygonOffsetFactor={1}
+            polygonOffsetUnits={1}
           />
         </mesh>
         <mesh position={[0.52, 0.52, -0.38]} castShadow>
@@ -175,6 +226,9 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual() {
             roughness={0.45}
             depthWrite
             depthTest
+            polygonOffset
+            polygonOffsetFactor={1}
+            polygonOffsetUnits={1}
           />
         </mesh>
         <mesh position={[0.52, 0.52, 0.38]} castShadow>
@@ -186,6 +240,9 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual() {
             roughness={0.45}
             depthWrite
             depthTest
+            polygonOffset
+            polygonOffsetFactor={1}
+            polygonOffsetUnits={1}
           />
         </mesh>
       </group>
@@ -196,7 +253,15 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual() {
         </mesh>
         <mesh position={[-0.2, 0.22, 0]} castShadow receiveShadow>
           <boxGeometry args={[0.35, 0.4, 0.25]} />
-          <meshStandardMaterial color="#e8d4c0" roughness={0.85} depthWrite depthTest />
+          <meshStandardMaterial
+            color="#e8d4c0"
+            roughness={0.85}
+            depthWrite
+            depthTest
+            polygonOffset
+            polygonOffsetFactor={1}
+            polygonOffsetUnits={1}
+          />
         </mesh>
       </group>
 
@@ -212,26 +277,61 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual() {
       <group position={[-3.8, 0.42, 1.2]}>
         <mesh castShadow receiveShadow>
           <boxGeometry args={[1.85, 0.52, 0.88]} />
-          <meshStandardMaterial color="#4a3d55" roughness={0.9} map={carpetMap} depthWrite depthTest />
+          <meshStandardMaterial
+            color="#4a3d55"
+            roughness={0.9}
+            map={carpetMap}
+            depthWrite
+            depthTest
+            polygonOffset
+            polygonOffsetFactor={1}
+            polygonOffsetUnits={1}
+          />
         </mesh>
         <mesh position={[0, 0.32, -0.25]} castShadow receiveShadow>
           <boxGeometry args={[1.7, 0.45, 0.15]} />
-          <meshStandardMaterial color="#3d3350" roughness={0.92} depthWrite depthTest />
+          <meshStandardMaterial
+            color="#3d3350"
+            roughness={0.92}
+            depthWrite
+            depthTest
+            polygonOffset
+            polygonOffsetFactor={1}
+            polygonOffsetUnits={1}
+          />
         </mesh>
       </group>
 
       <group position={[-4.8, 0.22, -3.2]}>
         <mesh castShadow receiveShadow>
           <boxGeometry args={[1.8, 0.35, 2.1]} />
-          <meshStandardMaterial color="#5c4a4a" roughness={0.9} depthWrite depthTest />
+          <meshStandardMaterial
+            color="#5c4a4a"
+            roughness={0.9}
+            depthWrite
+            depthTest
+            polygonOffset
+            polygonOffsetFactor={1}
+            polygonOffsetUnits={1}
+          />
         </mesh>
         <mesh position={[0, 0.35, 0]} castShadow receiveShadow>
           <boxGeometry args={[1.75, 0.2, 2.05]} />
-          <meshStandardMaterial color="#7a5c4a" roughness={0.95} map={carpetMap} depthWrite depthTest />
+          <meshStandardMaterial
+            color="#7a5c4a"
+            roughness={0.95}
+            map={carpetMap}
+            depthWrite
+            depthTest
+            polygonOffset
+            polygonOffsetFactor={1}
+            polygonOffsetUnits={1}
+          />
         </mesh>
       </group>
 
-      <group position={[0.05, 0.55, hd - t]}>
+      {/* Чуть вглубь комнаты (−Z): иначе коробка «въезжает» в слой передней стены (z≈4.9–5.0) → z-fight. */}
+      <group position={[0.05, 0.55, hd - t - 0.05]}>
         <mesh castShadow receiveShadow material={woodMat}>
           <boxGeometry args={[1.0, 1.85, 0.06]} />
         </mesh>

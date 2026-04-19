@@ -2,13 +2,13 @@
 
 import { memo, useEffect } from 'react';
 import { useThree } from '@react-three/fiber';
-import * as THREE from 'three';
 import type { SceneId } from '@/data/types';
 import { isExplorationMeshAuditEnabled, isExplorationWebGlContextLogEnabled } from '@/lib/explorationDiagnostics';
-
-function round3(n: number): number {
-  return Math.round(n * 1000) / 1000;
-}
+import {
+  collectMeshWorldAuditRows,
+  findGeometryPlacementDuplicates,
+  findNamePlacementDuplicates,
+} from '@/lib/explorationMeshWorldAudit';
 
 /**
  * После смены сцены логирует все `Mesh` с **мировыми** координатами (ищите совпадения / наслоение полов).
@@ -26,27 +26,42 @@ export const ExplorationMeshWorldAudit = memo(function ExplorationMeshWorldAudit
     let cancelled = false;
     const run = () => {
       if (cancelled) return;
-      scene.updateMatrixWorld(true);
-      const rows: { name: string; wx: number; wy: number; wz: number; uuid: string }[] = [];
-      const v = new THREE.Vector3();
-      scene.traverse((obj) => {
-        const mesh = obj as THREE.Mesh;
-        if (!mesh.isMesh) return;
-        mesh.getWorldPosition(v);
-        rows.push({
-          name: mesh.name || '(unnamed)',
-          wx: round3(v.x),
-          wy: round3(v.y),
-          wz: round3(v.z),
-          uuid: mesh.uuid.slice(0, 8),
-        });
-      });
-      rows.sort((a, b) => a.name.localeCompare(b.name) || a.wx - b.wx || a.wy - b.wy || a.wz - b.wz);
       // eslint-disable-next-line no-console -- диагностический режим по env
-      console.table(rows);
+      console.log('[ExplorationMeshWorldAudit] THREE.Scene (разверните в DevTools → children)', scene);
+
+      const rows = collectMeshWorldAuditRows(scene);
+      const tableRows = rows.map((r) => ({
+        name: r.name,
+        wx: r.wx,
+        wy: r.wy,
+        wz: r.wz,
+        mesh: r.meshUuid,
+        geometry: r.geometryUuid,
+      }));
+      // eslint-disable-next-line no-console -- диагностический режим по env
+      console.table(tableRows);
+
+      const geoDups = findGeometryPlacementDuplicates(rows);
+      if (geoDups.length > 0) {
+        // eslint-disable-next-line no-console
+        console.warn(
+          `[ExplorationMeshWorldAudit] Дубликаты: одна и та же геометрия (uuid) в одной мировой позиции (${geoDups.length} групп). Часто — два одинаковых меша в GLTF.`,
+          geoDups,
+        );
+      }
+
+      const nameDups = findNamePlacementDuplicates(rows);
+      if (nameDups.length > 0) {
+        // eslint-disable-next-line no-console
+        console.warn(
+          `[ExplorationMeshWorldAudit] Дубликаты: одно и то же имя меша в одной позиции (${nameDups.length} групп).`,
+          nameDups,
+        );
+      }
+
       // eslint-disable-next-line no-console
       console.info(
-        `[ExplorationMeshWorldAudit] sceneId=${sceneId} meshes=${rows.length}. Ищите одинаковые wx,wy,wz у разных имён (z-fight / дубликаты).`,
+        `[ExplorationMeshWorldAudit] sceneId=${sceneId} meshes=${rows.length}. Колонка geometry — совпадение + одинаковые wx,wy,wz → дубликат узла; см. console.warn выше.`,
       );
     };
 

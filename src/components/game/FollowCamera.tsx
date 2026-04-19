@@ -3,7 +3,9 @@
 import { useRef, useEffect, useCallback, type RefObject } from 'react';
 import { useThree, useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
+import { damp3 } from 'maath/easing';
 import { followCameraCollisionDamp, followCameraSmoothDamp } from '@/lib/followCameraDamp';
+import { clampPhysicsTimestep } from '@/core/physics/CharacterController';
 import { explorationPointerBlocksCameraOrbit } from '@/lib/explorationUiPointer';
 import { CAMERA_COLLISION_LAYER } from './SceneColliders';
 
@@ -31,7 +33,7 @@ export type FollowCameraTargetRef = {
 
 interface FollowCameraProps {
   targetPosition: { x: number; y: number; z: number; rotation?: number };
-  /** Позиция из физики каждый кадр без ре-рендера React (приоритетнее `targetPosition` в useFrame). */
+  /** Позиция из физики каждый кадр без ре-рендера React; сглаживается тем же lerp, что и проп `targetPosition`. */
   targetPositionRef?: RefObject<FollowCameraTargetRef>;
   distance?: number;
   /** Высота «плеча» орбиты над ногами персонажа (пивот горизонтального кольца при pitch = 0). */
@@ -66,6 +68,19 @@ interface FollowCameraProps {
 
 const dampFactor = followCameraSmoothDamp;
 const dampCollisionFactor = followCameraCollisionDamp;
+
+/**
+ * `maath` smoothTime для `damp3(camera.position, …)`: меньше → резче (согласовано с пропом `smoothness`).
+ */
+function cameraPositionSmoothTime(smoothness: number): number {
+  return Math.max(0.07, 0.3 - smoothness * 4);
+}
+
+/**
+ * Приоритет `useFrame` в R3F: **больше** → **позже** в кадре. Rapier шагает на ~0 — камера читает
+ * `targetPositionRef` / меш после интеграции и интерполяции rigid body.
+ */
+const FOLLOW_CAMERA_R3F_PRIORITY = 50;
 
 /**
  * Проверяет, является ли объект коллайдером для камеры
@@ -359,7 +374,7 @@ export default function FollowCamera({
   }, [gl, enableZoom, handleWheel]);
 
   useFrame((_, delta) => {
-    const dt = Math.min(delta, 0.05);
+    const dt = clampPhysicsTimestep(delta);
     const live = targetPositionRef?.current;
     if (live) {
       frameTargetRef.current.set(live.x, live.y, live.z);
@@ -367,13 +382,8 @@ export default function FollowCamera({
       frameTargetRef.current.set(targetPosition.x, targetPosition.y, targetPosition.z);
     }
 
-    // С `targetPositionRef` цель уже «живая» каждый кадр — второй lerp давал отставание и джиттер относительно меша/тени.
-    if (targetPositionRef) {
-      currentTarget.current.copy(frameTargetRef.current);
-    } else {
-      const posT = dampFactor(smoothness, dt);
-      currentTarget.current.lerp(frameTargetRef.current, posT);
-    }
+    const posT = dampFactor(smoothness, dt);
+    currentTarget.current.lerp(frameTargetRef.current, posT);
 
     if (isLocked && dialogueFraming && dialogueSubjectPosition) {
       const px = currentTarget.current.x;
@@ -402,8 +412,7 @@ export default function FollowCamera({
       }
       const colT = dampCollisionFactor(collisionSpringRef.current, dt);
       springCamPos.current.lerp(framingCamRef.current, colT);
-      const camT = dampFactor(smoothness, dt);
-      camera.position.lerp(springCamPos.current, camT);
+      damp3(camera.position, springCamPos.current, cameraPositionSmoothTime(smoothness), dt);
       camera.lookAt(framingLookRef.current);
       return;
     }
@@ -454,13 +463,12 @@ export default function FollowCamera({
     const colT = dampCollisionFactor(collisionSpringRef.current, dt);
     springCamPos.current.lerp(rawCamPos, colT);
 
-    const camT = dampFactor(smoothness, dt);
-    camera.position.lerp(springCamPos.current, camT);
+    damp3(camera.position, springCamPos.current, cameraPositionSmoothTime(smoothness), dt);
 
     const lookY = currentTarget.current.y + lookAtHeightOffset;
     currentLookAt.current.set(currentTarget.current.x, lookY, currentTarget.current.z);
     camera.lookAt(currentLookAt.current);
-  });
+  }, FOLLOW_CAMERA_R3F_PRIORITY);
 
   return null;
 }
@@ -627,7 +635,7 @@ export function SimpleFollowCamera({
   }, [gl, enableZoom, handleWheel]);
 
   useFrame((_, delta) => {
-    const dt = Math.min(delta, 0.05);
+    const dt = clampPhysicsTimestep(delta);
     simpleFrameTargetRef.current.set(targetPosition.x, targetPosition.y, targetPosition.z);
     const posT = dampFactor(smoothness, dt);
     currentTarget.current.lerp(simpleFrameTargetRef.current, posT);
@@ -657,13 +665,12 @@ export function SimpleFollowCamera({
       pivot.z + hz + right.z,
     );
 
-    const camT = dampFactor(smoothness, dt);
-    camera.position.lerp(simpleFrameCamRef.current, camT);
+    damp3(camera.position, simpleFrameCamRef.current, cameraPositionSmoothTime(smoothness), dt);
 
     const lookY = currentTarget.current.y + lookAtHeightOffset;
     currentLookAt.current.set(currentTarget.current.x, lookY, currentTarget.current.z);
     camera.lookAt(currentLookAt.current);
-  });
+  }, FOLLOW_CAMERA_R3F_PRIORITY);
 
   return null;
 }

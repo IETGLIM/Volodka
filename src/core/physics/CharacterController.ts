@@ -3,11 +3,19 @@ import type { KinematicCharacterController } from '@dimforge/rapier3d-compat';
 import type { PlayerControls } from '@/core/input/playerControlsTypes';
 import { PHYSICS_CONSTANTS } from './constants';
 
-/** Default integration step when Rapier reports an out-of-range dt. */
+/** Nominal fixed step (~60 Hz) for callers that need a default dt. */
 export const DEFAULT_PHYSICS_DT = 1 / 60;
 
-export function clampPhysicsTimestep(dtRaw: number): number {
-  return dtRaw > 1e-6 && dtRaw < 0.25 ? dtRaw : DEFAULT_PHYSICS_DT;
+const MAX_PHYSICS_DT = 1 / 30;
+const MIN_PHYSICS_DT = 1 / 1200;
+
+/**
+ * Ограничение dt для интеграции и камеры: защита от вкладки в фоне (огромный delta) и от нуля.
+ * В `useBeforePhysicsStep` предпочтительно брать **`stepWorld.timestep`** (совпадает с **`Physics timeStep`**).
+ */
+export function clampPhysicsTimestep(dt: number): number {
+  if (!Number.isFinite(dt) || dt <= 0) return DEFAULT_PHYSICS_DT;
+  return Math.min(Math.max(dt, MIN_PHYSICS_DT), MAX_PHYSICS_DT);
 }
 
 export type MutableScalarRef = { current: number };

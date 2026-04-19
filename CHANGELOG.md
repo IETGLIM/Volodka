@@ -4,6 +4,24 @@
 
 ### Changed
 
+- **R3F / Suspense и ключи (обход)**: вместо **`fallback={null}`** у корневого **`Suspense`** в **`RPGGameCanvas`**, **`PhysicsRPGCanvas`**, **`RoomEnvironment`** (`ZaremaAlbertRoom`), **`OptimizedSceneEnvironment`** и у **`PhysicsPlayer`** (GLB) — общий **`ThreeCanvasSuspenseFallback`** (`components/3d`); с **`FollowCamera`** и **`BattleClickLayer`** снят лишний **`key={sceneId}`** (сброс волн боя при **`active`**, очистка следов при смене **`sceneId`** в **`ExplorationFootprints`**). У **`PhysicsPlayer`** / **`ExplorationNoclipPlayer`** вместо **`key={sceneId}`** — **`spawnSyncKey`** + телепорт при смене локации (без remount дерева GLB).
+
+- **Canvas / WebGL (обход)**: **`RPGGameCanvas`** и **`PhysicsRPGCanvas`** — **`dpr={[1, 1.5]}`**, **`gl`** с **`powerPreference: 'high-performance'`** (и прежние флаги из **`getExplorationSceneGlProps`** в обходе), **`PerformanceMonitor`** (drei).
+
+- **Физика / KCC / камера**: **`clampPhysicsTimestep`** — нижняя и верхняя граница dt, в **`useBeforePhysicsStep`** игрока dt из **`stepWorld.timestep`**; **`FollowCamera`** / noclip — тот же clamp вместо **`Math.min(delta, 0.05)`**. У NPC при снапе расписания — только **`setNextKinematicTranslation`** (без **`setTranslation`** в этом пути).
+
+- **React**: в **`layout.tsx`** — **`StrictMode`** вокруг **`{children}`** (гидратация стора снаружи, один проход **`hydrateFromLocalStorage`**).
+
+- **NPC / LOD без размонтажа GLB**: в **`NPC.tsx`** при **`useFullModel`** больше не переключают тернарником «только GLB или только импостор» — оба поддерева остаются смонтированными, видимость через **`group visible`** (нет повторного **`useGLTF`** / сброса скина при смене дистанции).
+
+- **Обход / аудит дубликатов мешей (GLTF)**: при **`NEXT_PUBLIC_EXPLORATION_MESH_AUDIT=1`** — **`console.log(scene)`**, таблица с колонкой **`geometry`** (uuid), **`console.warn`** по группам «та же геометрия + та же позиция» и «то же имя + та же позиция»; логика в **`explorationMeshWorldAudit.ts`**, тесты **`explorationMeshWorldAudit.test.ts`**.
+
+- **Обход / z-fighting (пол и интерьер)**: у визуального пола **`PhysicsFloor`** (`PhysicsSceneColliders.tsx`) и процедурной **`VolodkaRoomVisual`** — **`meshStandardMaterial`** с **`polygonOffset`**, **`polygonOffsetFactor={1}`**, **`polygonOffsetUnits={1}`** (в т.ч. **`MeshStandardMaterial`** в **`useMemo`** для стен/пола/дерева).
+
+- **Обход / комната Володьки (мерцание у шкафа / стены)**: убран **дублирующий видимый пол** — у **`VolodkaRoomColliders`** в **`PhysicsSceneColliders`** у **`PhysicsFloor`** добавлено **`showVisualPlane={false}`**; в **`SceneColliders`** серый плоский пол заменён на **`InstancedWalls`** (невидимый, слой камеры). Дверная створка сдвинута по **−Z** относительно передней стены, чтобы не пересекаться с её объёмом (**`VolodkaRoomVisual`**).
+
+- **Обход / Canvas камера**: **`RPGGameCanvas`** — **`camera.near: 0.5`**, **`far: 50`** (плоскость отсечения дальше от камеры, меньше артефактов у ближних поверхностей; **`far`** без изменений).
+
 - **Next.js 16**: переименование **`src/middleware.ts`** → **`src/proxy.ts`**, экспорт **`proxy`** вместо **`middleware`** ([миграция](https://nextjs.org/docs/messages/middleware-to-proxy)); предупреждение о deprecated convention снимается при сборке.
 
 - **Обход / коллайдеры и дубликаты геометрии (диагностика)**: **`lib/explorationDiagnostics.ts`** — флаги **`NEXT_PUBLIC_EXPLORATION_RAPIER_DEBUG_COLLIDERS`** (проволочные коллайдеры через **`Physics debug`**, в `@react-three/rapier` 2.x нет публичного **`<Debug />`**), **`NEXT_PUBLIC_EXPLORATION_MESH_AUDIT`** (`console.table` мешей с мировыми координатами), **`NEXT_PUBLIC_EXPLORATION_NOCLIP`** (игрок без **`RigidBody`**, зелёный «пилон»), **`NEXT_PUBLIC_EXPLORATION_WEBGL_CONTEXT_LOG`**; **`ExplorationSceneDiagnostics.tsx`**, **`ExplorationNoclipPlayer.tsx`**, правки **`RPGGameCanvas`**, **`PhysicsRPGCanvas`**, комментарии в **`PhysicsSceneColliders`** и **`ExplorationPostFX`**; тест **`explorationDiagnostics.test.ts`**.

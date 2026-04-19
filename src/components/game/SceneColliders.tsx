@@ -231,10 +231,8 @@ export const VolodkaRoomColliders = memo(function VolodkaRoomColliders() {
 
   return (
     <group>
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.01, 0]} receiveShadow>
-        <planeGeometry args={[14, 10]} />
-        <meshStandardMaterial color="#2a3340" roughness={0.82} />
-      </mesh>
+      {/* Пол только для raycast камеры (`InstancedWalls` = слой 4); видимый пол — в `VolodkaRoomVisual`. */}
+      <InstancedWalls positions={[[0, -0.04, 0]]} size={[14, 0.08, 10]} />
       <InstancedWalls positions={[[0, h / 2, -hd]]} size={[14 + wallT * 2, h, wallT]} />
       <InstancedWalls positions={[[-hw, h / 2, 0]]} size={[wallT, h, 10]} />
       <InstancedWalls positions={[[hw, h / 2, 0]]} size={[wallT, h, 10]} />

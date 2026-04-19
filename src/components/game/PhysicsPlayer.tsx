@@ -19,6 +19,7 @@ import { getDefaultPlayerModelPath, isValidPlayerGlbPath, rewriteLegacyModelPath
 import { PLAYER_GLB_TARGET_VISUAL_METERS } from '@/lib/playerScaleConstants';
 import { retainGltfModelUrl, releaseGltfModelUrl } from '@/lib/gltfModelCache';
 import { applyGltfExplorationCharacterMaterialPolicies } from '@/lib/gltfCharacterMaterialPolicy';
+import { ThreeCanvasSuspenseFallback } from '@/components/3d/ThreeCanvasSuspenseFallback';
 import { cloneAnimationClipsWithoutExplorationPlayerRootMotion } from '@/lib/stripExplorationPlayerRootMotionFromClips';
 import { isExplorationPlayerDebugPrimitiveEnabled } from '@/lib/explorationPlayerDebugPrimitive';
 import { isExplorationPlayerLocomotionLogEnabled } from '@/lib/explorationDiagnostics';
@@ -50,6 +51,11 @@ export interface PhysicsPlayerProps {
    * Обычно не задаётся вручную — см. **`NEXT_PUBLIC_EXPLORATION_PLAYER_DEBUG_PRIMITIVE`** и **`explorationPlayerDebugPrimitive`**.
    */
   debugPlayerPrimitive?: boolean;
+  /**
+   * Смена сцены без `key` на модели: при новом значении — телепорт на `position` + сброс скоростей
+   * (например **`sceneId`** из **`RPGGameCanvas`**).
+   */
+  spawnSyncKey?: string;
 }
 
 export interface PhysicsPlayerRef {
@@ -385,6 +391,7 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
     initialRotation = 0,
     virtualControlsRef,
     debugPlayerPrimitive = isExplorationPlayerDebugPrimitiveEnabled(),
+    spawnSyncKey,
   },
   ref
 ) {
@@ -419,7 +426,8 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
 
   const roomScale = Math.max(0.28, Math.min(1.25, visualModelScale));
   /**
-   * Стартовая позиция капсулы только при монтировании (смена сцены — `key` на родителе).
+   * Стартовая позиция капсулы при монтировании; смена локации — **`spawnSyncKey`** + телепорт в **`useEffect`**,
+   * без `key` на всём дереве GLB (см. **`RPGGameCanvas`**).
    * Нельзя прокидывать сюда координаты из Zustand каждый кадр: RigidBody синхронизирует prop с телом
    * и ломает kinematic + `setNextKinematicTranslation` (мигание, залипание, прыжок не срабатывает).
    */
@@ -446,6 +454,24 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
       modelRef.current.rotation.y = initialRotation;
     }
   }, [initialRotation]);
+
+  /**
+   * Смена сцены: телепорт без `key` на дереве GLB. `useLayoutEffect` — после commit Rapier, до paint.
+   * Варп: `setTranslation` + `setNextKinematicTranslation`; в игровом KCC-шаге — только `setNextKinematicTranslation`.
+   */
+  useLayoutEffect(() => {
+    if (spawnSyncKey === undefined) return;
+    const rb = rigidBodyRef.current;
+    if (!rb) return;
+    const x = position[0];
+    const y = position[1];
+    const z = position[2];
+    rb.setTranslation({ x, y, z }, true);
+    rb.setNextKinematicTranslation({ x, y, z });
+    verticalVelRef.current = 0;
+    horizVelXRef.current = 0;
+    horizVelZRef.current = 0;
+  }, [spawnSyncKey, position[0], position[1], position[2]]);
 
   const handleInteractPress = useCallback(() => {
     if (onInteractionRef.current && !isLockedRef.current) {
@@ -482,6 +508,7 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
       return { x: position[0], y: position[1], z: position[2] };
     },
     getRotation: () => rotationRef.current,
+    /** Явный варп: `setTranslation` допустим только здесь (не в игровом KCC-кадре). */
     teleport: (x: number, y: number, z: number) => {
       if (rigidBodyRef.current) {
         const p = { x, y, z };
@@ -571,7 +598,7 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
 
   // Визуал: поворот модели и колбэк позиции (после шага Rapier mesh уже интерполирован).
   // Важно: не вызывать setState каждый кадр — иначе весь поддерево игрока (GLB + физика) уходит в React commit ~60 Гц.
-  useFrame(() => {
+  useFrame((_state, _delta) => {
     const rb = rigidBodyRef.current;
     if (!rb) {
       if (isMovingSyncRef.current) {
@@ -670,7 +697,7 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
             <meshStandardMaterial color="#cc2222" roughness={0.45} metalness={0.08} />
           </mesh>
         ) : (
-          <Suspense fallback={<group name="PlayerModelLoading" />}>
+          <Suspense fallback={<ThreeCanvasSuspenseFallback />}>
             {!modelError ? (
               <GLBPlayerModel
                 modelPath={modelPathToUse}

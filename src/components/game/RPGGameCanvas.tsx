@@ -5,7 +5,8 @@
  * Ошибки загрузки GLB обрабатываются в `PhysicsPlayer` / `NPCSystem` — здесь дубли не нужны.
  * Ввод: клавиатура (WASD, Shift бег, E); тач — `ExplorationMobileHud` (в т.ч. Run) при узком экране или `(pointer: coarse)`.
  *
- * Диагностика мерцания (шаг Б): у `<Canvas>` заданы умеренные **`camera.near` / `far`** и GL через **`getExplorationSceneGlProps`** в **`Scene.tsx`**.
+ * Canvas: **`camera.near` / `far`**, GL — **`getExplorationSceneGlProps`** (`Scene.tsx`). Игрок: **`spawnSyncKey={sceneId}`**
+ * вместо **`key`** на дереве GLB; камера — **`useFrame(..., FOLLOW_CAMERA_R3F_PRIORITY)`** после физики Rapier.
  *
  * Доп. флаги (`.env.local`, пересборка): **`NEXT_PUBLIC_EXPLORATION_RAPIER_DEBUG_COLLIDERS`** — проволочные коллайдеры (`<Physics debug>`);
  * **`NEXT_PUBLIC_EXPLORATION_MESH_AUDIT`** — `console.table` мешей и мировых позиций; **`NEXT_PUBLIC_EXPLORATION_NOCLIP`** — игрок без `RigidBody`;
@@ -14,6 +15,7 @@
 
 import { memo, useRef, useEffect, useMemo, useCallback, useState, Fragment, Suspense } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
+import { PerformanceMonitor } from '@react-three/drei';
 import { Physics } from '@react-three/rapier';
 import {
   isExplorationMeshAuditEnabled,
@@ -22,6 +24,7 @@ import {
   isExplorationWebGlContextLogEnabled,
 } from '@/lib/explorationDiagnostics';
 import { ExplorationMeshWorldAudit, ExplorationWebGlContextLog } from '@/components/game/exploration/ExplorationSceneDiagnostics';
+import { ThreeCanvasSuspenseFallback } from '@/components/3d/ThreeCanvasSuspenseFallback';
 import { ExplorationNoclipPlayer } from '@/components/game/exploration/ExplorationNoclipPlayer';
 import * as THREE from 'three';
 
@@ -166,14 +169,12 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
     [narrow, visualLite],
   );
   const simplifyLights = narrow || visualLite;
-  const canvasDpr = useMemo((): [number, number] => {
-    if (visualLite) return [1, 1.25];
-    if (narrow) return [1, 1.5];
-    return [1, 2];
-  }, [visualLite, narrow]);
 
   const explorationGl = useMemo(
-    () => getExplorationSceneGlProps(visualLite, narrow),
+    () => ({
+      ...getExplorationSceneGlProps(visualLite, narrow),
+      powerPreference: 'high-performance' as const,
+    }),
     [visualLite, narrow],
   );
 
@@ -454,9 +455,9 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
       role="application"
       aria-label="Исследование локации"
       frameloop={EXPLORATION_SCENE_FRAMELOOP}
-      dpr={canvasDpr}
+      dpr={[1, 1.5]}
       shadows={{ type: THREE.PCFShadowMap }}
-      camera={{ fov: 60, near: 0.3, far: 50, position: [0, 5, 8] }}
+      camera={{ fov: 60, near: 0.5, far: 50, position: [0, 5, 8] }}
       style={{ 
         background: sceneConfig.fogColor,
         width: '100%',
@@ -474,15 +475,16 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
         (e.target as HTMLCanvasElement | null)?.focus?.();
       }}
     >
+      <PerformanceMonitor />
       {/*
         Порядок внутри Suspense: Rapier (пол/стены) → визуалы интерьера (userData.noCameraCollision для raycast камеры)
         → SceneColliderSelector (невидимые меши слоя камеры) → игрок/NPC → триггеры → FollowCamera → эффекты.
         PostFX вне Physics, но в Canvas — отдельный render pass.
       */}
-      <Suspense fallback={null}>
+      <Suspense fallback={<ThreeCanvasSuspenseFallback />}>
         {explorationWebGlLog && <ExplorationWebGlContextLog />}
         {explorationMeshAudit && <ExplorationMeshWorldAudit sceneId={sceneId} />}
-      <Physics gravity={[0, -9.81, 0]} debug={rapierColliderDebug}>
+      <Physics timeStep={1 / 60} gravity={[0, -9.81, 0]} debug={rapierColliderDebug}>
         <ExplorationWorldClock />
         {/*
           Пол + стены Rapier — здесь же визуал пола в `PhysicsFloor` (`PhysicsSceneColliders`).
@@ -524,7 +526,7 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
 
         {explorationNoclip ? (
           <ExplorationNoclipPlayer
-            key={sceneId}
+            spawnSyncKey={sceneId}
             position={[
               explorationSpawnSnapshot.x,
               explorationSpawnSnapshot.y,
@@ -541,7 +543,7 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
           />
         ) : (
           <PhysicsPlayer
-            key={sceneId}
+            spawnSyncKey={sceneId}
             position={[
               explorationSpawnSnapshot.x,
               explorationSpawnSnapshot.y,
@@ -584,7 +586,7 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
           isDialogueActive={isDialogueActive}
         />
 
-        <BattleClickLayer key={sceneId} active={sceneId === 'battle'} />
+        <BattleClickLayer active={sceneId === 'battle'} />
 
         {/* Triggers */}
         <TriggerSystem
@@ -598,7 +600,6 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
         />
 
         <FollowCamera
-          key={sceneId}
           targetPosition={explorationSpawnSnapshot}
           targetPositionRef={livePlayerPositionRef}
           distance={followCameraProps.distance}
@@ -629,7 +630,7 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
           compactIndoor={isNarrowApartment}
         />
         <ExplorationParticles sceneId={sceneId} timeOfDay={timeOfDay} visualLite={visualLite} />
-        <ExplorationFootprints key={sceneId} sceneId={sceneId} />
+        <ExplorationFootprints sceneId={sceneId} />
         {showExplorationStats && <ExplorationFrameStats />}
       </Suspense>
     </Canvas>

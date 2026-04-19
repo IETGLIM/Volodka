@@ -15,6 +15,7 @@ import { useFrame } from '@react-three/fiber';
 import type { RapierRigidBody } from '@react-three/rapier';
 import * as THREE from 'three';
 import { PHYSICS_CONSTANTS, usePlayerControls } from '@/hooks/useGamePhysics';
+import { clampPhysicsTimestep } from '@/core/physics/CharacterController';
 import type { PhysicsPlayerProps, PhysicsPlayerRef } from '@/components/game/PhysicsPlayer';
 
 /**
@@ -32,6 +33,7 @@ export const ExplorationNoclipPlayer = memo(
       isLocked = false,
       initialRotation = 0,
       virtualControlsRef,
+      spawnSyncKey,
     },
     ref
   ) {
@@ -45,6 +47,17 @@ export const ExplorationNoclipPlayer = memo(
       g.position.copy(posRef.current);
       g.rotation.y = yawRef.current;
     }, []);
+
+    useLayoutEffect(() => {
+      if (spawnSyncKey === undefined) return;
+      posRef.current.set(position[0], position[1], position[2]);
+      yawRef.current = initialRotation;
+      const g = groupRef.current;
+      if (g) {
+        g.position.copy(posRef.current);
+        g.rotation.y = yawRef.current;
+      }
+    }, [spawnSyncKey, position[0], position[1], position[2], initialRotation]);
     const isLockedRef = useRef(isLocked);
     const locomotionScaleRef = useRef(locomotionScale);
     const onInteractionRef = useRef(onInteraction);
@@ -115,6 +128,7 @@ export const ExplorationNoclipPlayer = memo(
     useFrame((_, delta) => {
       const g = groupRef.current;
       if (!g) return;
+      const dt = clampPhysicsTimestep(delta);
 
       if (isLockedRef.current) {
         g.position.copy(posRef.current);
@@ -150,10 +164,10 @@ export const ExplorationNoclipPlayer = memo(
       const yaw = yawRef.current;
       const sin = Math.sin(yaw);
       const cos = Math.cos(yaw);
-      const wx = (moveX * cos - moveZ * sin) * speed * delta;
-      const wz = (moveX * sin + moveZ * cos) * speed * delta;
+      const wx = (moveX * cos - moveZ * sin) * speed * dt;
+      const wz = (moveX * sin + moveZ * cos) * speed * dt;
 
-      const moving = Math.hypot(wx / Math.max(delta, 1e-6), wz / Math.max(delta, 1e-6)) > 0.08;
+      const moving = Math.hypot(wx / Math.max(dt, 1e-6), wz / Math.max(dt, 1e-6)) > 0.08;
       if (moving !== isMovingSyncRef.current) {
         isMovingSyncRef.current = moving;
         setIsMoving(moving);

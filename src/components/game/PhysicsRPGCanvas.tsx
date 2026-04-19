@@ -2,6 +2,7 @@
 
 import React, { Suspense, useMemo, memo } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
+import { PerformanceMonitor } from '@react-three/drei';
 import { Physics } from '@react-three/rapier';
 import {
   EXPLORATION_DIRECTIONAL_SHADOW_BIAS,
@@ -19,6 +20,7 @@ import type { PlayerPosition, NPCState } from '@/data/rpgTypes';
 import { PhysicsSceneColliders } from './PhysicsSceneColliders';
 import { PhysicsPlayer } from './PhysicsPlayer';
 import FollowCamera from './FollowCamera';
+import { ThreeCanvasSuspenseFallback } from '@/components/3d/ThreeCanvasSuspenseFallback';
 import { getDefaultPlayerModelPath } from '@/config/modelUrls';
 import { NPCSystem } from './NPC';
 import { InteractiveObject, PhysicsExplorationRoomVisual } from './RoomEnvironment';
@@ -183,10 +185,18 @@ export const PhysicsGameModeSwitcher = memo(function PhysicsGameModeSwitcher({
   return (
     <Canvas
       shadows
-      gl={{ antialias: true, alpha: false }}
+      dpr={[1, 1.5]}
+      gl={{
+        antialias: true,
+        alpha: false,
+        stencil: false,
+        logarithmicDepthBuffer: false,
+        powerPreference: 'high-performance',
+      }}
       style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
     >
-      <Suspense fallback={null}>
+      <PerformanceMonitor />
+      <Suspense fallback={<ThreeCanvasSuspenseFallback />}>
         {/* Усиленное освещение */}
         <ambientLight intensity={1.0} />
         <directionalLight
@@ -213,7 +223,7 @@ export const PhysicsGameModeSwitcher = memo(function PhysicsGameModeSwitcher({
           </>
         )}
 
-        <Physics debug={rapierColliderDebug} gravity={gravity}>
+        <Physics timeStep={1 / 60} debug={rapierColliderDebug} gravity={gravity}>
           <PhysicsWorldClock />
           <PhysicsSceneColliders sceneId={sceneId} />
 
