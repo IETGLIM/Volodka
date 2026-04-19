@@ -7,6 +7,8 @@
 - **Ритм выкладки (с душой и для потомков)**: порция функционала или исправлений → быстрая проверка (**`tsc`**, **`vitest`**, разбор линтера по смыслу) → запись в **`CHANGELOG.md`** в **`[Unreleased]`** → коммит с ясной первой строкой → **`git push origin`** на каноническую ветку (**`main`**). Так на GitHub и у тех, кто откроет репозиторий позже, всегда видна честная история, а не «магия у одного разработчика на ноутбуке».
 - **3D и ассеты**: новые бинарники моделей — только когда пользователь передаст файлы; в коде опираться на **`public/models/`** и **`public/models-external/`** и существующую стилистику сцен (**`explorationAtmosphere`**, визуалы комнат, **`npcDefinitions`**). Правило Cursor **`.cursor/rules/git-changelog-workflow.mdc`** обновлено этими пунктами.
 
+## [0.2.8] - 2026-04-19
+
 ### Changed
 
 - **EventBus**: строгие пейлоады **`StatBusId`** и **`SfxBusType`** в **`src/shared/engine/EventBus.ts`**; в шапке модуля — правило «**`emit`/`on` только на границах слоёв**» (3D→DOM, движок→UI) и отладка через **`setDebug(true)`**. **`ECSWorld`**: **`ctx.emit`** типизирован по **`EventMap`** без **`as never`**. Квесты: **`quest:activated`**, **`quest:completed`**, **`quest:objective_updated`** эмитятся из **`gameStore`**; **`QuestsPanel`** только вызывает **`activateQuest`**. **`LootNotification`**: звук награды/навыка — прямой **`audioEngine.playSfx`**, без лишнего **`sound:play`** внутри того же UI-слоя. **`useCoreLoopPhase`**: учёт **`quest:objective_updated`**.
