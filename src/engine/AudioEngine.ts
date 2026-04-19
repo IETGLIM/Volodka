@@ -77,7 +77,14 @@ class AudioEngineImpl {
       gain.gain.value = volume * 0.12;
       osc.start();
       osc.stop(ctx.currentTime + 0.09);
-      osc.onended = () => void ctx.close();
+      osc.onended = () => {
+        try {
+          osc.disconnect();
+          gain.disconnect();
+        } catch {
+          /* ignore */
+        }
+      };
     } catch {
       /* ignore */
     }
@@ -139,7 +146,15 @@ class AudioEngineImpl {
       gain.connect(ctx.destination);
       src.start();
       src.stop(ctx.currentTime + dur + 0.02);
-      src.onended = () => void ctx.close();
+      src.onended = () => {
+        try {
+          src.disconnect();
+          filt.disconnect();
+          gain.disconnect();
+        } catch {
+          /* ignore */
+        }
+      };
     } catch {
       /* ignore */
     }

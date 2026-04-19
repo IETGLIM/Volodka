@@ -1,8 +1,7 @@
 // src/app/GameClient.tsx
 'use client';
 
-/** До любого `@react-three/fiber` — общий Web Audio контекст (three r183+), см. `threeClientPrep`. */
-import '@/lib/threeClientPrep';
+import { ensureThreeClientPrep } from '@/lib/threeClientPrep';
 
 import dynamic from 'next/dynamic';
 import { useState, useEffect, useRef, memo, useMemo } from 'react';
@@ -585,6 +584,7 @@ function ErrorBoundary({ children }: { children: React.ReactNode }) {
 
 // Main GameClient — just wraps GameOrchestrator with error boundary
 export default function GameClient() {
+  ensureThreeClientPrep();
   return (
     <ErrorBoundary>
       <FamilyWelcomeGate>
