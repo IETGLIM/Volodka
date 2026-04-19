@@ -62,6 +62,7 @@ import { BattleClickLayer } from './BattleClickLayer';
 import { VolodkaCorridorVisual } from './exploration/VolodkaCorridorVisual';
 import { VolodkaRoomVisual } from './exploration/VolodkaRoomVisual';
 import { HomeEveningVisual } from './exploration/HomeEveningVisual';
+import { NpcProximityBarks } from './NpcProximityBarks';
 
 // ============================================
 // TYPES
@@ -459,6 +460,15 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
           locationLocomotionScale={explorationLocomotionScale}
           enableNpcPhysics
           findNavPath={findNavPath}
+        />
+
+        <NpcProximityBarks
+          sceneId={sceneId}
+          timeOfDay={timeOfDay}
+          npcs={sceneNPCs}
+          npcStates={npcStates}
+          playerPositionRef={playerPositionRef}
+          isDialogueActive={isDialogueActive}
         />
 
         <BattleClickLayer key={sceneId} active={sceneId === 'battle'} />
