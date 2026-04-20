@@ -471,7 +471,13 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
     verticalVelRef.current = 0;
     horizVelXRef.current = 0;
     horizVelZRef.current = 0;
-  }, [spawnSyncKey, position[0], position[1], position[2]]);
+    const r0 = initialRotation;
+    rotationRef.current = r0;
+    moveYawRef.current = r0;
+    if (modelRef.current) {
+      modelRef.current.rotation.y = r0;
+    }
+  }, [spawnSyncKey, position[0], position[1], position[2], initialRotation]);
 
   const handleInteractPress = useCallback(() => {
     if (onInteractionRef.current && !isLockedRef.current) {
@@ -550,6 +556,9 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
     if (n < 1) return;
     const collider = rb.collider(0);
 
+    // W/A/S/D относительно текущего «вперёд» модели (`rotationRef`), а не мировых осей и не застывшего угла спавна.
+    moveYawRef.current = rotationRef.current;
+
     const { dx, dy, dz } = integrateKinematicLocomotionDelta({
       dt,
       controls,
@@ -562,8 +571,7 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
       horizVelZ: horizVelZRef,
       canJump: canJumpRef,
       isRunning: isRunningRef,
-      /** Обход: W/A/S/D по миру, а не от yaw модели (избегает «зависимости от камеры» из-за порядка кадров). */
-      horizontalWorldSpace: true,
+      horizontalWorldSpace: false,
     });
 
     cc.computeColliderMovement(collider, { x: dx, y: dy, z: dz });

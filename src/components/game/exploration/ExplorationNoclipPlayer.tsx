@@ -161,9 +161,12 @@ export const ExplorationNoclipPlayer = memo(
         moveZ /= len;
       }
 
-      // Мировые оси, как у `PhysicsPlayer` с `horizontalWorldSpace` (не от yaw камеры/игрока).
-      const wx = moveX * speed * dt;
-      const wz = moveZ * speed * dt;
+      // Как у `PhysicsPlayer`: шаг по осям относительно текущего yaw (вперёд модели), не мировой сеткой.
+      const yaw = yawRef.current;
+      const sin = Math.sin(yaw);
+      const cos = Math.cos(yaw);
+      const wx = (moveX * cos - moveZ * sin) * speed * dt;
+      const wz = (moveX * sin + moveZ * cos) * speed * dt;
 
       const moving = Math.hypot(wx / Math.max(dt, 1e-6), wz / Math.max(dt, 1e-6)) > 0.08;
       if (moving !== isMovingSyncRef.current) {
@@ -172,7 +175,9 @@ export const ExplorationNoclipPlayer = memo(
       }
 
       if (moving) {
-        const targetRotation = Math.atan2(moveX, moveZ);
+        const vx = wx / Math.max(dt, 1e-9);
+        const vz = wz / Math.max(dt, 1e-9);
+        const targetRotation = Math.atan2(vx, vz);
         let prev = yawRef.current;
         let diff = targetRotation - prev;
         while (diff > Math.PI) diff -= Math.PI * 2;
