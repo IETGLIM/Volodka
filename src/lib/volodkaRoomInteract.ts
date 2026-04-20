@@ -1,6 +1,7 @@
 import type { InteractiveObjectConfig } from '@/config/scenes';
 import type { useGameStore } from '@/store/gameStore';
 import { CORRIDOR_FROM_ROOM } from '@/lib/volodkaCorridorInteract';
+import { explorationNarrativeTeleport } from '@/lib/explorationNarrativeTeleport';
 
 type StoreSnapshot = ReturnType<typeof useGameStore.getState>;
 
@@ -40,12 +41,11 @@ export function volodkaRoomInspectLine(obj: InteractiveObjectConfig): string | n
 /** Дверь в коридор / квартиру: без расхода энергии (внутренняя смена комнаты). */
 export function tryVolodkaRoomUse(
   obj: InteractiveObjectConfig,
-  store: StoreSnapshot,
+  _store: StoreSnapshot,
   toast: (text: string) => void,
 ): boolean {
   if (obj.id !== 'volodka_door_corridor') return false;
-  store.travelToScene('volodka_corridor', { narrativeDriven: true });
-  store.setPlayerPosition({ ...CORRIDOR_FROM_ROOM });
+  explorationNarrativeTeleport('volodka_corridor', { ...CORRIDOR_FROM_ROOM });
   toast('Коридор. Линолеум, щиток, чужие тапки — короткий буфер между удалёнкой и остальным домом.');
   return true;
 }

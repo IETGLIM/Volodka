@@ -16,6 +16,7 @@ import type { RapierRigidBody } from '@react-three/rapier';
 import * as THREE from 'three';
 import { PHYSICS_CONSTANTS, usePlayerControls } from '@/hooks/useGamePhysics';
 import { clampPhysicsTimestep } from '@/core/physics/CharacterController';
+import { getExplorationCameraOrbitYawRad } from '@/lib/explorationCameraOrbitBridge';
 import type { PhysicsPlayerProps, PhysicsPlayerRef } from '@/components/game/PhysicsPlayer';
 
 /**
@@ -161,8 +162,8 @@ export const ExplorationNoclipPlayer = memo(
         moveZ /= len;
       }
 
-      // Как у `PhysicsPlayer`: шаг по осям относительно текущего yaw (вперёд модели), не мировой сеткой.
-      const yaw = yawRef.current;
+      // Как у `PhysicsPlayer`: шаг относительно горизонтальной орбиты камеры (TPS).
+      const yaw = -getExplorationCameraOrbitYawRad();
       const sin = Math.sin(yaw);
       const cos = Math.cos(yaw);
       const wx = (moveX * cos - moveZ * sin) * speed * dt;

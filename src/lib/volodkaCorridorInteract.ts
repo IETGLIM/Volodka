@@ -1,6 +1,7 @@
 import type { InteractiveObjectConfig } from '@/config/scenes';
 import { PLAYER_FEET_SPAWN_Y } from '@/lib/playerScaleConstants';
 import type { useGameStore } from '@/store/gameStore';
+import { explorationNarrativeTeleport } from '@/lib/explorationNarrativeTeleport';
 
 type StoreSnapshot = ReturnType<typeof useGameStore.getState>;
 
@@ -63,21 +64,19 @@ export function volodkaCorridorInspectLine(obj: InteractiveObjectConfig): string
  */
 export function tryVolodkaCorridorUse(
   obj: InteractiveObjectConfig,
-  store: StoreSnapshot,
+  _store: StoreSnapshot,
   toast: (text: string) => void,
 ): boolean {
   if (!obj.id.startsWith('corridor_')) return false;
 
   switch (obj.id) {
     case 'corridor_door_volodka_room': {
-      store.travelToScene('volodka_room', { narrativeDriven: true });
-      store.setPlayerPosition({ ...ROOM_FROM_CORRIDOR });
+      explorationNarrativeTeleport('volodka_room', { ...ROOM_FROM_CORRIDOR });
       toast('Комната. Захлопни дверь — и снова только ты, мониторы и чужой эфир в наушниках.');
       return true;
     }
     case 'corridor_door_home_common': {
-      store.travelToScene('home_evening', { narrativeDriven: true });
-      store.setPlayerPosition({ ...HOME_FROM_CORRIDOR });
+      explorationNarrativeTeleport('home_evening', { ...HOME_FROM_CORRIDOR });
       toast('Общая зона квартиры. Воздух другой — смесь ужина и «реальной» жизни вне тикетов.');
       return true;
     }

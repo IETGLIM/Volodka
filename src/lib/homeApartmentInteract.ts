@@ -1,5 +1,6 @@
 import type { InteractiveObjectConfig } from '@/config/scenes';
 import { CORRIDOR_FROM_HOME } from '@/lib/volodkaCorridorInteract';
+import { explorationNarrativeTeleport } from '@/lib/explorationNarrativeTeleport';
 import { POEMS } from '@/data/poems';
 import { eventBus } from '@/engine/EventBus';
 import { poemMechanics } from '@/engine/PoemMechanics';
@@ -51,8 +52,7 @@ export function tryHomeApartmentUse(
 
   switch (obj.id) {
     case 'home_door_volodka_room': {
-      store.travelToScene('volodka_corridor', { narrativeDriven: true });
-      store.setPlayerPosition({ ...CORRIDOR_FROM_HOME });
+      explorationNarrativeTeleport('volodka_corridor', { ...CORRIDOR_FROM_HOME });
       toast('Коридор. Дверь в твою комнату — с другой стороны узкого прохода.');
       break;
     }

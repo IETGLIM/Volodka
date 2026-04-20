@@ -23,6 +23,7 @@ import { ThreeCanvasSuspenseFallback } from '@/components/3d/ThreeCanvasSuspense
 import { cloneAnimationClipsWithoutExplorationPlayerRootMotion } from '@/lib/stripExplorationPlayerRootMotionFromClips';
 import { isExplorationPlayerDebugPrimitiveEnabled } from '@/lib/explorationPlayerDebugPrimitive';
 import { isExplorationPlayerLocomotionLogEnabled } from '@/lib/explorationDiagnostics';
+import { getExplorationCameraOrbitYawRad } from '@/lib/explorationCameraOrbitBridge';
 import { useGameStore } from '@/store/gameStore';
 
 // ============================================
@@ -556,14 +557,15 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
     if (n < 1) return;
     const collider = rb.collider(0);
 
-    // W/A/S/D относительно текущего «вперёд» модели (`rotationRef`), а не мировых осей и не застывшего угла спавна.
-    moveYawRef.current = rotationRef.current;
+    // W/A/S/D относительно горизонтальной орбиты камеры (классический TPS), а не только поворота модели.
+    const orbit = getExplorationCameraOrbitYawRad();
+    const moveYawCameraRelative = -orbit;
 
     const { dx, dy, dz } = integrateKinematicLocomotionDelta({
       dt,
       controls,
       locomotionScale: locomotionScaleRef.current,
-      moveYaw: moveYawRef.current,
+      moveYaw: moveYawCameraRelative,
       gravityY: stepWorld.gravity.y,
       grounded: groundedRef.current,
       verticalVel: verticalVelRef,
@@ -626,7 +628,7 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
       if (modelRef.current) {
         modelRef.current.rotation.y = rotationRef.current;
       }
-      moveYawRef.current = rotationRef.current;
+      moveYawRef.current = -getExplorationCameraOrbitYawRad();
       if (onPositionChange) {
         const p = rb.translation();
         onPositionChange({ x: p.x, y: p.y, z: p.z, rotation: rotationRef.current });
@@ -655,7 +657,7 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
       modelRef.current.rotation.y = rotationRef.current;
     }
 
-    moveYawRef.current = rotationRef.current;
+    moveYawRef.current = -getExplorationCameraOrbitYawRad();
 
     if (onPositionChange) {
       const p = rb.translation();

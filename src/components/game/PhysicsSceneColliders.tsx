@@ -269,7 +269,8 @@ export const VolodkaRoomColliders = memo(function VolodkaRoomColliders() {
 
   return (
     <group>
-      <PhysicsFloor size={[14, 10]} color="#2a3340" footstepMaterial="wood" showVisualPlane={false} />
+      {/* Чуть шире по Z: порог у двери в коридор, иначе при выходе «вперёд» капсула уезжает за край пола. */}
+      <PhysicsFloor size={[14, 11.2]} color="#2a3340" footstepMaterial="wood" showVisualPlane={false} />
       <PhysicsWall position={[0, h / 2, -hd]} size={[14 + wallT * 2, h, wallT]} />
       <PhysicsWall position={[-hw, h / 2, 0]} size={[wallT, h, 10]} />
       <PhysicsWall position={[hw, h / 2, 0]} size={[wallT, h, 10]} />
@@ -294,7 +295,7 @@ export const VolodkaCorridorColliders = memo(function VolodkaCorridorColliders()
 
   return (
     <group>
-      <PhysicsFloor size={[3.5, 12]} color="#3a3630" footstepMaterial="wood" />
+      <PhysicsFloor size={[3.5, 12.6]} color="#3a3630" footstepMaterial="wood" />
       {/* Восток / запад — сплошные */}
       <PhysicsWall position={[halfW, h / 2, 0]} size={[wallT, h, 12]} />
       <PhysicsWall position={[-halfW, h / 2, 0]} size={[wallT, h, 12]} />

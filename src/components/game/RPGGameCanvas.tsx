@@ -113,8 +113,8 @@ interface RPGGameCanvasProps {
 }
 
 const GROUND_INDOOR: RpgGroundGeometryArgs = [20, 0.1, 20];
-const GROUND_VOLODKA_ROOM: RpgGroundGeometryArgs = [14, 0.1, 10];
-const GROUND_VOLODKA_CORRIDOR: RpgGroundGeometryArgs = [3.5, 0.1, 12];
+const GROUND_VOLODKA_ROOM: RpgGroundGeometryArgs = [14, 0.1, 11.2];
+const GROUND_VOLODKA_CORRIDOR: RpgGroundGeometryArgs = [3.5, 0.1, 12.6];
 const GROUND_PLAZA: RpgGroundGeometryArgs = [48, 0.1, 48];
 const GROUND_OPEN: RpgGroundGeometryArgs = [40, 0.1, 40];
 
@@ -190,12 +190,13 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
   );
   const setNPCState = useGameStore((state) => state.setNPCState);
   const timeOfDay = useGameStore((state) => state.exploration.timeOfDay);
+  const explorationStorePosition = useGameStore((state) => state.exploration.playerPosition);
 
-  /** Снимок из стора при смене сцены: спавн `PhysicsPlayer`, бутстрап камеры/NPC без подписки на каждый шаг. */
+  /** Снимок из стора: спавн `PhysicsPlayer` и бутстрап камеры/NPC при смене локации или телепорте из стора. */
   const explorationSpawnSnapshot = useMemo(() => {
-    const p = useGameStore.getState().exploration.playerPosition;
+    const p = explorationStorePosition;
     return { x: p.x, y: p.y, z: p.z, rotation: p.rotation ?? 0 };
-  }, [sceneId]);
+  }, [sceneId, explorationStorePosition.x, explorationStorePosition.y, explorationStorePosition.z, explorationStorePosition.rotation]);
 
   const playerPositionRef = useRef(explorationSpawnSnapshot);
   useEffect(() => {
@@ -283,43 +284,43 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
   const followCameraProps = useMemo(() => {
     if (sceneId === 'volodka_corridor') {
       return {
-        distance: 2.12,
-        height: 1.58,
+        distance: 1.82,
+        height: 1.48,
         smoothness: 0.12,
         shoulderOffset: 0.05,
-        lookAtHeightOffset: 1.02,
+        lookAtHeightOffset: 0.98,
         collisionSpring: 12,
-        minDistance: 1.22,
-        maxDistance: 2.85,
-        collisionRayOriginY: 1.12,
+        minDistance: 1.05,
+        maxDistance: 2.55,
+        collisionRayOriginY: 1.05,
         collisionRadius: 0.2,
       };
     }
     if (sceneId === 'volodka_room') {
       return {
-        distance: 2.38,
-        height: 1.72,
+        distance: 2.05,
+        height: 1.62,
         smoothness: 0.11,
         shoulderOffset: 0.08,
-        lookAtHeightOffset: 1.08,
+        lookAtHeightOffset: 1.04,
         collisionSpring: 12,
-        minDistance: 1.32,
-        maxDistance: 3.15,
-        collisionRayOriginY: 1.22,
+        minDistance: 1.12,
+        maxDistance: 2.85,
+        collisionRayOriginY: 1.15,
         collisionRadius: 0.22,
       };
     }
     if (sceneId === 'home_evening') {
       return {
-        distance: 2.58,
-        height: 1.88,
+        distance: 2.28,
+        height: 1.78,
         smoothness: 0.11,
         shoulderOffset: 0.12,
-        lookAtHeightOffset: 1.14,
+        lookAtHeightOffset: 1.1,
         collisionSpring: 11,
-        minDistance: 1.38,
-        maxDistance: 3.35,
-        collisionRayOriginY: 1.28,
+        minDistance: 1.22,
+        maxDistance: 3.05,
+        collisionRayOriginY: 1.22,
         collisionRadius: 0.24,
       };
     }

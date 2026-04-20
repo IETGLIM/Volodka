@@ -7,6 +7,7 @@ import { damp3 } from 'maath/easing';
 import { followCameraCollisionDamp, followCameraSmoothDamp } from '@/lib/followCameraDamp';
 import { clampPhysicsTimestep } from '@/core/physics/CharacterController';
 import { explorationPointerBlocksCameraOrbit } from '@/lib/explorationUiPointer';
+import { setExplorationCameraOrbitYawRad } from '@/lib/explorationCameraOrbitBridge';
 import { CAMERA_COLLISION_LAYER } from './SceneColliders';
 
 // ============================================
@@ -333,6 +334,7 @@ export default function FollowCamera({
         : (targetPosition.rotation ?? 0);
     currentAngle.current = rot + Math.PI;
     currentPitch.current = 0;
+    setExplorationCameraOrbitYawRad(currentAngle.current);
   }, [isLocked, targetPosition.rotation, targetPositionRef]);
 
   useEffect(() => {
@@ -497,6 +499,8 @@ export default function FollowCamera({
     const lookY = currentTarget.current.y + lookAtHeightOffset;
     currentLookAt.current.set(currentTarget.current.x, lookY, currentTarget.current.z);
     camera.lookAt(currentLookAt.current);
+
+    setExplorationCameraOrbitYawRad(currentAngle.current);
   }, FOLLOW_CAMERA_R3F_PRIORITY);
 
   return null;
