@@ -8,7 +8,7 @@
 
 ### Changed
 
-- **Сборка / npm**: в **`package.json`** — **`overrides.@swc/helpers`** `0.5.21`, чтобы **`npm ci`** на CI совпадал с деревом зависимостей; скрипт **`build`** без удалённого **`download-scene-backgrounds.mjs`**; убраны сломанные **`scenes:download`** / **`expert:archive`**.
+- **Сборка / npm**: в **`package.json`** — **`overrides.@swc/helpers`** `0.5.21`, чтобы **`npm ci`** на CI совпадал с деревом зависимостей; скрипт **`build`** без удалённого **`download-scene-backgrounds.mjs`**; убраны сломанные **`scenes:download`** / **`expert:archive`**. Обновлён **`bun.lock`** под **`vercel.json`** (`bun install` на Vercel).
 
 - **Обход / предметы**: радиус **`INTERACT_RANGE`** (~3.25 м) и логика «ближайшего объекта» в **`InteractiveTriggers`**; подсказка зон **`InteractionHint`** — «Взаимодействие» и дистанция **3.15** м. **`RadialMenu`** — закрытие по клику на затемнение без `capture`-слушателя на `document` (клики по кнопкам не срываются).
 
