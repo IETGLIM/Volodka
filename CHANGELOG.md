@@ -4,6 +4,7 @@
 
 ### Changed
 
+- **Обход / E2.2 радиальное меню и предметы**: `**getExplorationRadialMenuActions**` (`lib/explorationRadialMenuActions.ts`, тесты) — фильтр действий по объекту и сцене; `**RadialMenu**` — проп `**allowedActions**`, сетка 1×N / 2×N; `**RPGGameCanvas**` — подпись с `**itemId**`; при «Взять» — тост с именем предмета из `**data/items.ts**` (`**GameOrchestrator**`).
 - **Документация**: `**README.md**` — в блоке про 3D-обход добавлены пункты про брифинг (квесты, карма, камера и **R**), тост при первом диалоге из обхода и сглаженную GLB-локомоцию игрока/NPC; полный список по-прежнему в этом файле.
 
 - **Обход / E2.1 квесты и карма**: в `**ExplorationBriefingOverlay**` — одна выделенная строка про журнал квестов и влияние кармы на диалоги (`**EXPLORATION_QUESTS_KARMA_HINT_LINE_RU**`); в `**GameOrchestrator**` при первом входе в диалог из режима обхода — тост `**ui:exploration_message**` с тем же текстом и флаг `**exploration_first_dialogue_quest_karma_hint_v1**`.

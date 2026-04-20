@@ -72,6 +72,7 @@ import { PanelDistrictBuildings } from '@/components/game/exploration/PanelDistr
 import { ExplorationFrameStats, useExplorationFrameStatsEnabled } from '@/components/game/exploration/ExplorationFrameStats';
 import { ExplorationMobileHud } from './ExplorationMobileHud';
 import { RadialMenu, type RadialMenuAction } from './RadialMenu';
+import { getExplorationRadialMenuActions } from '@/lib/explorationRadialMenuActions';
 import { resolveExplorationPrimaryInteraction } from '@/lib/explorationPrimaryInteraction';
 import type { PlayerControls } from '@/hooks/useGamePhysics';
 import { createFloorNavPathfinder } from '@/lib/explorationNavMesh';
@@ -165,6 +166,7 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
   const npcStates = useGameStore((s) => s.exploration.npcStates);
   const triggerStates = useGameStore((s) => s.exploration.triggerStates);
   const setTriggerState = useGameStore((s) => s.setTriggerState);
+  const hasItem = useGameStore((s) => s.hasItem);
 
   const playerState = useGameStore((state) => state.playerState);
   const shadowMapSize = useMemo(
@@ -360,6 +362,18 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
 
   const sceneInteractiveObjects = useMemo(() => getInteractiveObjectsForScene(sceneId), [sceneId]);
   const sceneTriggers = useMemo(() => getTriggersForScene(sceneId), [sceneId]);
+
+  const radialMenuActions = useMemo((): RadialMenuAction[] => {
+    if (!radialObject) return [];
+    return getExplorationRadialMenuActions(sceneId, radialObject, hasItem);
+  }, [sceneId, radialObject, hasItem]);
+
+  const radialMenuAnchorLabel = useMemo(() => {
+    if (!radialObject) return undefined;
+    const parts = [`${radialObject.type} · ${radialObject.id}`];
+    if (radialObject.itemId) parts.push(`item: ${radialObject.itemId}`);
+    return parts.join(' · ');
+  }, [radialObject]);
 
   // Позиция только в ref + мост: не вызывать setPlayerPosition здесь (конфликт с kinematic / мерцание).
   const handlePositionChange = useCallback(
@@ -721,7 +735,8 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
 
     <RadialMenu
       open={radialObject !== null}
-      anchorLabel={radialObject?.id}
+      anchorLabel={radialMenuAnchorLabel}
+      allowedActions={radialMenuActions.length > 0 ? radialMenuActions : undefined}
       onClose={() => setRadialObject(null)}
       onSelect={(action: RadialMenuAction) => {
         if (!radialObject) return;

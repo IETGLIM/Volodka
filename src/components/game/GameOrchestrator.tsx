@@ -43,6 +43,7 @@ import { useGameStore } from '@/store/gameStore';
 import { eventBus } from '@/engine/EventBus';
 import { useGameAudioProfile } from '@/hooks/useAudio';
 import { QUEST_DEFINITIONS, getNextTrackedObjective } from '@/data/quests';
+import { items as GAME_ITEM_TABLE } from '@/data/items';
 import { getNPCById, getNPCsForScene, getNpcExplorationPosition } from '@/data/npcDefinitions';
 import { getSceneConfig, getInteractiveObjectsForScene } from '@/config/scenes';
 import { homeApartmentInspectLine, tryHomeApartmentUse } from '@/lib/homeApartmentInteract';
@@ -386,6 +387,8 @@ export default function GameOrchestrator() {
           }
           if (obj.itemId) {
             store.addItem(obj.itemId, 1);
+            const label = GAME_ITEM_TABLE[obj.itemId]?.name ?? obj.itemId;
+            toast(`В инвентарь: ${label}`);
           } else {
             toast('С объекта нечего взять.');
           }
