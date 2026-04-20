@@ -562,6 +562,8 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
       horizVelZ: horizVelZRef,
       canJump: canJumpRef,
       isRunning: isRunningRef,
+      /** Обход: W/A/S/D по миру, а не от yaw модели (избегает «зависимости от камеры» из-за порядка кадров). */
+      horizontalWorldSpace: true,
     });
 
     cc.computeColliderMovement(collider, { x: dx, y: dy, z: dz });

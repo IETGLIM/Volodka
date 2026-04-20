@@ -275,44 +275,44 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
   const followCameraProps = useMemo(() => {
     if (sceneId === 'volodka_corridor') {
       return {
-        distance: 2.68,
-        height: 1.72,
+        distance: 2.12,
+        height: 1.58,
         smoothness: 0.12,
-        shoulderOffset: 0.06,
+        shoulderOffset: 0.05,
         lookAtHeightOffset: 1.02,
         collisionSpring: 12,
-        minDistance: 1.38,
-        maxDistance: 3.4,
-        collisionRayOriginY: 1.18,
+        minDistance: 1.22,
+        maxDistance: 2.85,
+        collisionRayOriginY: 1.12,
         collisionRadius: 0.2,
       };
     }
     if (sceneId === 'volodka_room') {
       return {
-        distance: 3.12,
-        height: 1.96,
+        distance: 2.38,
+        height: 1.72,
         smoothness: 0.11,
-        shoulderOffset: 0.1,
+        shoulderOffset: 0.08,
         lookAtHeightOffset: 1.08,
         collisionSpring: 12,
-        minDistance: 1.52,
-        maxDistance: 4.0,
-        collisionRayOriginY: 1.3,
-        collisionRadius: 0.24,
+        minDistance: 1.32,
+        maxDistance: 3.15,
+        collisionRayOriginY: 1.22,
+        collisionRadius: 0.22,
       };
     }
     if (sceneId === 'home_evening') {
       return {
-        distance: 3.35,
-        height: 2.1,
+        distance: 2.58,
+        height: 1.88,
         smoothness: 0.11,
-        shoulderOffset: 0.14,
+        shoulderOffset: 0.12,
         lookAtHeightOffset: 1.14,
         collisionSpring: 11,
-        minDistance: 1.58,
-        maxDistance: 4.25,
-        collisionRayOriginY: 1.34,
-        collisionRadius: 0.26,
+        minDistance: 1.38,
+        maxDistance: 3.35,
+        collisionRayOriginY: 1.28,
+        collisionRadius: 0.24,
       };
     }
     if (isPanelDistrict) {

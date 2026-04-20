@@ -51,6 +51,7 @@ export function integrateKinematicLocomotionDelta(input: {
   dt: number;
   controls: PlayerControls;
   locomotionScale: number;
+  /** Используется только при `horizontalWorldSpace === false` (танк относительно yaw). */
   moveYaw: number;
   gravityY: number;
   grounded: boolean;
@@ -59,6 +60,11 @@ export function integrateKinematicLocomotionDelta(input: {
   horizVelZ: MutableScalarRef;
   canJump: MutableBoolRef;
   isRunning: MutableBoolRef;
+  /**
+   * true: WASD по осям мира (+X вправо, −Z «вперёд» как у клавиш forward), без поворота от камеры/модели.
+   * false: горизонталь относительно `moveYaw`.
+   */
+  horizontalWorldSpace?: boolean;
 }): { dx: number; dy: number; dz: number } {
   const {
     dt,
@@ -72,6 +78,7 @@ export function integrateKinematicLocomotionDelta(input: {
     horizVelZ,
     canJump,
     isRunning,
+    horizontalWorldSpace = false,
   } = input;
 
   let moveX = 0;
@@ -91,12 +98,19 @@ export function integrateKinematicLocomotionDelta(input: {
   const speed =
     (controls.run ? PHYSICS_CONSTANTS.RUN_SPEED : PHYSICS_CONSTANTS.WALK_SPEED) * loc;
   isRunning.current = controls.run;
-  const sin = Math.sin(moveYaw);
-  const cos = Math.cos(moveYaw);
-  const rotatedX = moveX * cos - moveZ * sin;
-  const rotatedZ = moveX * sin + moveZ * cos;
-  const targetVelX = rotatedX * speed;
-  const targetVelZ = rotatedZ * speed;
+  let targetVelX: number;
+  let targetVelZ: number;
+  if (horizontalWorldSpace) {
+    targetVelX = moveX * speed;
+    targetVelZ = moveZ * speed;
+  } else {
+    const sin = Math.sin(moveYaw);
+    const cos = Math.cos(moveYaw);
+    const rotatedX = moveX * cos - moveZ * sin;
+    const rotatedZ = moveX * sin + moveZ * cos;
+    targetVelX = rotatedX * speed;
+    targetVelZ = rotatedZ * speed;
+  }
 
   const t = 1 - Math.exp(-HORIZONTAL_ACCEL * dt);
   horizVelX.current = THREE.MathUtils.lerp(horizVelX.current, targetVelX, t);
@@ -107,6 +121,11 @@ export function integrateKinematicLocomotionDelta(input: {
   if (grounded && controls.jump && canJump.current) {
     verticalVel.current = PHYSICS_CONSTANTS.JUMP_FORCE * loc;
     canJump.current = false;
+  }
+
+  const maxUp = PHYSICS_CONSTANTS.MAX_UPWARD_SPEED;
+  if (verticalVel.current > maxUp) {
+    verticalVel.current = maxUp;
   }
 
   return {

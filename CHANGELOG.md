@@ -4,6 +4,8 @@
 
 ### Changed
 
+- **Обход / WASD и камера**: горизонталь KCC в **`integrateKinematicLocomotionDelta`** для **`PhysicsPlayer`** — в **мировых осях** (`horizontalWorldSpace`), без поворота по `moveYaw` (стабильные W/A/S/D независимо от орбиты камеры). Прыжок: **`JUMP_FORCE`** ниже, **`MAX_UPWARD_SPEED`**, выше **`PLAYER_HEIGHT`** капсулы — меньше визуальный клип головы в потолок. В **`RPGGameCanvas`** для **`volodka_room`**, **`volodka_corridor`**, **`home_evening`** — ближе **`distance` / `maxDistance`** и чуть ниже **`height`**.
+
 - **Обход / FollowCamera за спиной и внутри комнаты**: горизонтальный yaw орбиты подтягивается к **`rotation + π`** (пока не тянут орбиту мышью); **`useLayoutEffect`** по **`orbitResyncKey`** (`sceneId`) — старт и смена локации без «залипания» на угле 0; **`currentDistance`** ограничивается **`minDistance` / `maxDistance`** при смене пропов. Для **`volodka_room`**, **`volodka_corridor`**, **`home_evening`** — свои **`distance` / `height` / `maxDistance`** и мягче **`shoulderOffset`** / **`collisionRadius`**.
 
 - **R3F / Suspense и ключи (обход)**: вместо **`fallback={null}`** у корневого **`Suspense`** в **`RPGGameCanvas`**, **`PhysicsRPGCanvas`**, **`RoomEnvironment`** (`ZaremaAlbertRoom`), **`OptimizedSceneEnvironment`** и у **`PhysicsPlayer`** (GLB) — общий **`ThreeCanvasSuspenseFallback`** (`components/3d`); с **`FollowCamera`** и **`BattleClickLayer`** снят лишний **`key={sceneId}`** (сброс волн боя при **`active`**, очистка следов при смене **`sceneId`** в **`ExplorationFootprints`**). У **`PhysicsPlayer`** / **`ExplorationNoclipPlayer`** вместо **`key={sceneId}`** — **`spawnSyncKey`** + телепорт при смене локации (без remount дерева GLB).
