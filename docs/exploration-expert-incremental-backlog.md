@@ -15,8 +15,8 @@
 | ID | Задача | Проверка готовности |
 |----|--------|---------------------|
 | E1.1 | «Гигант в центре» (T-pose): аудит `useGLTF` / общий root без clone, дубли `primitive`, масштаб при `hRaw` | **Частично сделано:** автомасштаб GLB NPC по bbox скина (`gltfSkinnedBoundingHeight.ts`, `NPC.tsx` GLTFLoader); fallback имён клипов; при повторе — `NEXT_PUBLIC_EXPLORATION_MESH_AUDIT=1` |
-| E1.2 | Анимации игрока: отдельный Walk/Run клип или blend tree; без «дёрганья» при смене isMoving | Визу + `stripExplorationPlayerRootMotionFromClips` |
-| E1.3 | Анимации NPC: корректные имена клипов в `AnimationMapping`, walk по патрулю без скольжения | `npcDefinitions.ts`, `NPC.tsx` |
+| E1.2 | Анимации игрока: отдельный Walk/Run клип или blend tree; без «дёрганья» при смене isMoving | **Частично сделано:** `PhysicsPlayer` — гистерезис скорости, отдельный Run по имени клипа, `crossFadeFrom` (~0.3 s), один клип — `effectiveTimeScale`; `stripExplorationPlayerRootMotionFromClips` без изменений |
+| E1.3 | Анимации NPC: корректные имена клипов в `AnimationMapping`, walk по патрулю без скольжения | **Частично сделано:** `NPC.tsx` — `resolveNpcAnimationClip` (walk до run, поле `run`), `crossFadeFrom` для смены клипа, скорость патруля → `effectiveTimeScale` ходьбы (~1.4 m/s номинал), чуть быстрее разворот к скорости; при необходимости добить имена в `npcDefinitions` |
 | E1.4 | Имена над NPC + «!» при активном квесте | **Сделано:** `Html` с `distanceFactor`, имя + глиф квеста (`getNpcQuestMarkerForExploration`) в одной шапке |
 
 ## Слой 2 — геймплей и смысл

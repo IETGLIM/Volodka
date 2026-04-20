@@ -249,12 +249,14 @@ function getRootCharacterVisualHeightMeters(root: THREE.Object3D, scratch: THREE
 const GLBPlayerModel = memo(function GLBPlayerModel({
   modelPath,
   isMoving,
+  isRunning,
   isLocked,
   onError,
   roomScale,
 }: {
   modelPath: string;
   isMoving: boolean;
+  isRunning: boolean;
   isLocked: boolean;
   onError: () => void;
   /** Множитель комнаты; итоговая высота ≈ `PLAYER_GLB_TARGET_VISUAL_METERS * roomScale`. */
@@ -268,10 +270,12 @@ const GLBPlayerModel = memo(function GLBPlayerModel({
     [animations],
   );
   const { actions } = useAnimations(mixerAnimations, groupRef);
-  const [currentAction, setCurrentAction] = useState<string | null>(null);
   const rs = Math.max(0.28, Math.min(1.25, roomScale));
   const actionsRef = useRef(actions);
   actionsRef.current = actions;
+  const prevTargetAnimRef = useRef<string | null>(null);
+  const idleKeyForTimeScaleRef = useRef<string>('');
+  const singleClipModeRef = useRef(false);
 
   /** Стабильный ключ набора экшенов: ссылка `actions` от drei может меняться без смены клипов. */
   const actionKeysSig = useMemo(() => {
@@ -332,26 +336,60 @@ const GLBPlayerModel = memo(function GLBPlayerModel({
     const animationNames = Object.keys(act);
     const idleAnim =
       animationNames.find((n) => n.toLowerCase().includes('idle')) || animationNames[0];
-    /** Один клип в GLB (напр. `Volodka.glb` — «Basic Sing Serious»): и idle, и «ходьба» без отдельного Walk. */
-    const walkAnim =
+    idleKeyForTimeScaleRef.current = idleAnim;
+    singleClipModeRef.current = animationNames.length === 1;
+
+    const runPrefer =
+      animationNames.find((n) => {
+        const l = n.toLowerCase();
+        return l.includes('run') && !l.includes('walk');
+      }) ??
+      animationNames.find((n) => n.toLowerCase().includes('run')) ??
+      null;
+
+    const walkPrefer =
       animationNames.length === 1
         ? idleAnim
-        : animationNames.find(
-            (n) => n.toLowerCase().includes('walk') || n.toLowerCase().includes('run'),
-          );
+        : animationNames.find((n) => n.toLowerCase().includes('walk') && !n.toLowerCase().includes('run')) ??
+          animationNames.find((n) => n.toLowerCase().includes('walk')) ??
+          runPrefer ??
+          null;
 
-    const targetAnim = isMoving && walkAnim ? walkAnim : idleAnim;
-
-    if (targetAnim && act[targetAnim] && currentAction !== targetAnim) {
-      if (currentAction && act[currentAction]) {
-        act[currentAction].fadeOut(0.2);
+    let targetAnim = idleAnim;
+    if (isMoving) {
+      if (!singleClipModeRef.current && isRunning && runPrefer && act[runPrefer]) {
+        targetAnim = runPrefer;
+      } else if (walkPrefer && act[walkPrefer]) {
+        targetAnim = walkPrefer;
       }
-      act[targetAnim].reset().fadeIn(0.2).play();
-      // Defer setState to avoid cascading renders
-      const timer = setTimeout(() => setCurrentAction(targetAnim), 0);
-      return () => clearTimeout(timer);
     }
-  }, [actionKeysSig, isMoving, currentAction]);
+
+    if (!targetAnim || !act[targetAnim]) return;
+    if (targetAnim === prevTargetAnimRef.current) return;
+
+    const prevKey = prevTargetAnimRef.current;
+    const prevAction = prevKey && act[prevKey] ? act[prevKey]! : null;
+    const nextAction = act[targetAnim]!;
+    const duration = 0.3;
+    nextAction.reset();
+    nextAction.setEffectiveTimeScale(1);
+    nextAction.play();
+    if (prevAction && prevAction !== nextAction) {
+      nextAction.crossFadeFrom(prevAction, duration, false);
+    } else {
+      nextAction.fadeIn(duration);
+    }
+    prevTargetAnimRef.current = targetAnim;
+  }, [actionKeysSig, isMoving, isRunning]);
+
+  useFrame(() => {
+    if (!singleClipModeRef.current || isLocked) return;
+    const act = actionsRef.current;
+    const k = idleKeyForTimeScaleRef.current;
+    const a = k && act?.[k];
+    if (!a) return;
+    a.setEffectiveTimeScale(isMoving ? 1.22 : 1);
+  });
 
   if (!displayScene) return null;
 
@@ -417,6 +455,10 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
   /** Для анимаций GLB / заглушки: обновляем React только при смене true/false. */
   const [isMoving, setIsMoving] = useState(false);
   const isMovingSyncRef = useRef(false);
+  /** Гистерезис по горизонтальной скорости — меньше дёрганья idle/walk на границе. */
+  const moveActiveRef = useRef(false);
+  const [isRunning, setIsRunning] = useState(false);
+  const isRunningSyncRef = useRef(false);
   const locomotionLogCounterRef = useRef(0);
   const [modelError, setModelError] = useState(false);
   const onInteractionRef = useRef(onInteraction);
@@ -473,6 +515,9 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
     verticalVelRef.current = 0;
     horizVelXRef.current = 0;
     horizVelZRef.current = 0;
+    moveActiveRef.current = false;
+    isMovingSyncRef.current = false;
+    isRunningSyncRef.current = false;
     const r0 = initialRotation;
     rotationRef.current = r0;
     moveYawRef.current = r0;
@@ -525,6 +570,9 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
         verticalVelRef.current = 0;
         horizVelXRef.current = 0;
         horizVelZRef.current = 0;
+        moveActiveRef.current = false;
+        isMovingSyncRef.current = false;
+        isRunningSyncRef.current = false;
       }
     },
     getRigidBody: () => rigidBodyRef.current,
@@ -616,7 +664,12 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
     if (!rb) {
       if (isMovingSyncRef.current) {
         isMovingSyncRef.current = false;
+        moveActiveRef.current = false;
         setIsMoving(false);
+      }
+      if (isRunningSyncRef.current) {
+        isRunningSyncRef.current = false;
+        setIsRunning(false);
       }
       return;
     }
@@ -624,7 +677,12 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
     if (isLockedRef.current) {
       if (isMovingSyncRef.current) {
         isMovingSyncRef.current = false;
+        moveActiveRef.current = false;
         setIsMoving(false);
+      }
+      if (isRunningSyncRef.current) {
+        isRunningSyncRef.current = false;
+        setIsRunning(false);
       }
       if (modelRef.current) {
         modelRef.current.rotation.y = rotationRef.current;
@@ -639,19 +697,30 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
 
     const hx = horizVelXRef.current;
     const hz = horizVelZRef.current;
-    const moving = Math.hypot(hx, hz) > 0.12;
-    if (moving !== isMovingSyncRef.current) {
-      isMovingSyncRef.current = moving;
-      setIsMoving(moving);
+    const speed = Math.hypot(hx, hz);
+    const MOVE_ENTER = 0.14;
+    const MOVE_EXIT = 0.055;
+    const wasActive = moveActiveRef.current;
+    const nextActive = wasActive ? speed > MOVE_EXIT : speed > MOVE_ENTER;
+    moveActiveRef.current = nextActive;
+    if (nextActive !== isMovingSyncRef.current) {
+      isMovingSyncRef.current = nextActive;
+      setIsMoving(nextActive);
     }
 
-    if (moving) {
+    const running = isRunningRef.current;
+    if (running !== isRunningSyncRef.current) {
+      isRunningSyncRef.current = running;
+      setIsRunning(running);
+    }
+
+    if (nextActive) {
       const targetRotation = Math.atan2(hx, hz);
       let prev = rotationRef.current;
       let diff = targetRotation - prev;
       while (diff > Math.PI) diff -= Math.PI * 2;
       while (diff < -Math.PI) diff += Math.PI * 2;
-      rotationRef.current = prev + diff * 0.1;
+      rotationRef.current = prev + diff * 0.16;
     }
 
     if (modelRef.current) {
@@ -715,6 +784,7 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
               <GLBPlayerModel
                 modelPath={modelPathToUse}
                 isMoving={isMoving}
+                isRunning={isRunning}
                 isLocked={isLocked}
                 onError={handleModelError}
                 roomScale={roomScale}

@@ -9,6 +9,7 @@ import React, {
   useCallback,
   useEffect,
   useLayoutEffect,
+  type MutableRefObject,
   type RefObject,
 } from 'react';
 import { useFrame } from '@react-three/fiber';
@@ -92,6 +93,9 @@ class ModelErrorBoundary extends React.Component<
 // GLTF МОДЕЛЬ С FALLBACK
 // ============================================
 
+/** Номинальная скорость «ходьбы» в клипе (м/с) для подгонки `effectiveTimeScale` под фактическую скорость патруля. */
+const NPC_WALK_CLIP_NOMINAL_MPS = 1.4;
+
 interface GLTFModelProps {
   modelPath: string;
   scale?: number;
@@ -102,6 +106,8 @@ interface GLTFModelProps {
   fallback: React.ReactNode;
   npcAnimation: 'idle' | 'walk' | 'talk';
   animations?: AnimationMapping;
+  /** Плановая скорость по XZ (м/с); обновляется в `NPC.useFrame` при патруле. */
+  planarSpeedMpsRef: MutableRefObject<number>;
 }
 
 const DEFAULT_ANIMATIONS = {
@@ -113,7 +119,7 @@ const DEFAULT_ANIMATIONS = {
 function resolveNpcAnimationClip(
   actionKeys: string[],
   mapping?: AnimationMapping
-): { idle: string; walk: string | null; talk: string | null } {
+): { idle: string; walk: string | null; run: string | null; talk: string | null } {
   const has = (name?: string) => Boolean(name && actionKeys.includes(name));
 
   const idle =
@@ -124,11 +130,20 @@ function resolveNpcAnimationClip(
 
   const walk =
     (has(mapping?.walk) ? mapping!.walk : undefined) ??
+    actionKeys.find((k) => k.toLowerCase().includes('walk')) ??
     (has(mapping?.run) ? mapping!.run : undefined) ??
     (actionKeys.includes(DEFAULT_ANIMATIONS.walk) ? DEFAULT_ANIMATIONS.walk : undefined) ??
     actionKeys.find((k) => {
       const l = k.toLowerCase();
-      return l.includes('walk') || l.includes('run');
+      return l.includes('run');
+    }) ??
+    null;
+
+  const run =
+    (has(mapping?.run) ? mapping!.run : undefined) ??
+    actionKeys.find((k) => {
+      const l = k.toLowerCase();
+      return l.includes('run') && !l.includes('walk');
     }) ??
     null;
 
@@ -141,7 +156,7 @@ function resolveNpcAnimationClip(
     }) ??
     null;
 
-  return { idle, walk, talk };
+  return { idle, walk, run, talk };
 }
 
 function isValidNpcModelPath(p: string): boolean {
@@ -222,6 +237,7 @@ const GLTFLoader = memo(function GLTFLoader({
   fallback,
   npcAnimation,
   animations: animMapping,
+  planarSpeedMpsRef,
 }: Omit<GLTFModelProps, 'fallback'> & { fallback: React.ReactNode }) {
   const groupRef = useRef<THREE.Group>(null);
   const { scene: loadedScene, animations } = useGLTF(modelPath) as {
@@ -229,9 +245,10 @@ const GLTFLoader = memo(function GLTFLoader({
     animations?: THREE.AnimationClip[];
   };
   const { actions } = useAnimations(animations ?? [], groupRef);
-  const [currentClipName, setCurrentClipName] = useState<string | null>(null);
   const actionsRef = useRef(actions);
   actionsRef.current = actions;
+  const prevNpcClipRef = useRef<string | null>(null);
+  const walkClipNameRef = useRef<string | null>(null);
 
   const actionKeysSig = useMemo(() => {
     if (!actions) return '';
@@ -326,6 +343,8 @@ const GLTFLoader = memo(function GLTFLoader({
     let talkClip = resolved.talk;
     if (talkClip && !act[talkClip]) talkClip = null;
 
+    walkClipNameRef.current = walkClip;
+
     const targetClip =
       npcAnimation === 'walk'
         ? walkClip
@@ -333,15 +352,38 @@ const GLTFLoader = memo(function GLTFLoader({
           ? talkClip || idleClip
           : idleClip;
 
-    if (!targetClip || !act[targetClip] || currentClipName === targetClip) return;
+    if (!targetClip || !act[targetClip]) return;
+    if (targetClip === prevNpcClipRef.current) return;
 
-    if (currentClipName && act[currentClipName]) {
-      act[currentClipName].fadeOut(0.2);
+    const prevKey = prevNpcClipRef.current;
+    const prevAction = prevKey && act[prevKey] ? act[prevKey]! : null;
+    const nextAction = act[targetClip]!;
+    const duration = 0.3;
+    nextAction.reset();
+    nextAction.setEffectiveTimeScale(1);
+    nextAction.play();
+    if (prevAction && prevAction !== nextAction) {
+      nextAction.crossFadeFrom(prevAction, duration, false);
+    } else {
+      nextAction.fadeIn(duration);
     }
-    act[targetClip].reset().fadeIn(0.2).play();
-    const timer = setTimeout(() => setCurrentClipName(targetClip), 0);
-    return () => clearTimeout(timer);
-  }, [actionKeysSig, animMappingSig, npcAnimation, currentClipName]);
+    prevNpcClipRef.current = targetClip;
+  }, [actionKeysSig, animMappingSig, npcAnimation]);
+
+  useFrame(() => {
+    const act = actionsRef.current;
+    if (!act) return;
+    const walkKey = walkClipNameRef.current;
+    const walkAction = walkKey && act[walkKey] ? act[walkKey]! : null;
+    if (!walkAction) return;
+    if (npcAnimation === 'walk') {
+      const v = Math.max(0, planarSpeedMpsRef.current);
+      const ts = THREE.MathUtils.clamp(v / NPC_WALK_CLIP_NOMINAL_MPS, 0.42, 1.85);
+      walkAction.setEffectiveTimeScale(ts);
+    } else {
+      walkAction.setEffectiveTimeScale(1);
+    }
+  });
 
   if (!scene) {
     return <>{fallback}</>;
@@ -368,6 +410,7 @@ const GLTFModel = memo(function GLTFModel({
   fallback,
   npcAnimation,
   animations,
+  planarSpeedMpsRef,
 }: GLTFModelProps) {
   const resolvedPath = useMemo(() => rewriteLegacyModelPath(modelPath), [modelPath]);
 
@@ -393,6 +436,7 @@ const GLTFModel = memo(function GLTFModel({
         fallback={fallback}
         npcAnimation={npcAnimation}
         animations={animations}
+        planarSpeedMpsRef={planarSpeedMpsRef}
       />
     </ModelErrorBoundary>
   );
@@ -767,6 +811,7 @@ export const NPC = memo(function NPC({
   const navCornersRef = useRef<{ x: number; z: number }[]>([]);
   const navCornerIdxRef = useRef(0);
   const navGoalKeyRef = useRef('');
+  const npcPlanarSpeedMpsRef = useRef(0);
 
   // Хелпер для установки анимации без лишних перерендеров
   const setAnimation = useCallback((anim: 'idle' | 'walk' | 'talk') => {
@@ -831,6 +876,7 @@ export const NPC = memo(function NPC({
   );
 
   useFrame((_, delta) => {
+    npcPlanarSpeedMpsRef.current = 0;
     const live = playerPositionRef?.current;
     const px = live?.x ?? playerPosition.x;
     const pz = live?.z ?? playerPosition.z;
@@ -1021,6 +1067,7 @@ export const NPC = memo(function NPC({
         const npcSpeed = 1.5 * locationLocomotionScale * delta;
         const vx = dirX * npcSpeed;
         const vz = dirZ * npcSpeed;
+        npcPlanarSpeedMpsRef.current = Math.hypot(vx, vz) / Math.max(delta, 1e-6);
 
         const nextPos = {
           x: pos.x + vx,
@@ -1040,7 +1087,7 @@ export const NPC = memo(function NPC({
           modelRef.current.rotation.y = THREE.MathUtils.lerp(
             modelRef.current.rotation.y,
             targetRotation,
-            0.1
+            0.2
           );
         }
       }
@@ -1068,6 +1115,7 @@ export const NPC = memo(function NPC({
         const npcSpeed = 1.0 * locationLocomotionScale * delta;
         const vx = (distX / distanceToTarget) * npcSpeed;
         const vz = (distZ / distanceToTarget) * npcSpeed;
+        npcPlanarSpeedMpsRef.current = Math.hypot(vx, vz) / Math.max(delta, 1e-6);
 
         const nextPos = {
           x: pos.x + vx,
@@ -1087,7 +1135,7 @@ export const NPC = memo(function NPC({
           modelRef.current.rotation.y = THREE.MathUtils.lerp(
             modelRef.current.rotation.y,
             targetRotation,
-            0.1
+            0.2
           );
         }
       } else {
@@ -1247,6 +1295,7 @@ export const NPC = memo(function NPC({
                     fallback={fallbackModel}
                     npcAnimation={currentAnimation}
                     animations={definition.animations}
+                    planarSpeedMpsRef={npcPlanarSpeedMpsRef}
                   />
                 </ModelErrorBoundary>
               </Suspense>
