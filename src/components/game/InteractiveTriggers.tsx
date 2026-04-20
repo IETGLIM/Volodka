@@ -2,14 +2,15 @@
 
 import type { InteractiveObjectConfig } from '@/config/scenes';
 
-const INTERACT_RANGE = 2.6;
+/** Согласован с радиусом NPC и подсказками: чуть шире старого 2.6 м, чтобы E стабильно ловил стол/ноутбуки. */
+const INTERACT_RANGE = 3.25;
 
 export function getNearestInteractiveObjectWithDistance(
   player: { x: number; z: number },
   objects: InteractiveObjectConfig[],
 ): { object: InteractiveObjectConfig; distance: number } | null {
   let best: InteractiveObjectConfig | null = null;
-  let bestD = INTERACT_RANGE;
+  let bestD = Number.POSITIVE_INFINITY;
   for (const o of objects) {
     const dx = o.position[0] - player.x;
     const dz = o.position[2] - player.z;
@@ -19,7 +20,8 @@ export function getNearestInteractiveObjectWithDistance(
       best = o;
     }
   }
-  return best ? { object: best, distance: bestD } : null;
+  if (!best || bestD > INTERACT_RANGE) return null;
+  return { object: best, distance: bestD };
 }
 
 export function getNearestInteractiveObject(

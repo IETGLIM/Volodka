@@ -2,7 +2,13 @@
 
 ## [Unreleased]
 
+### Added
+
+- **Обход / первая локация**: NPC **`volodka_dima_neighbor`** (Дима с пятого) в **`volodka_room`**; четыре короткие аниме-заставки в **`animeCutscenes.ts`** и триггеры по **E** у окна, стола, дивана и двери в **`triggerZones.ts`**. После первого тика физики — оверлей **`ExplorationBriefingOverlay`** с явными инструкциями (WASD, E, зоны заставок).
+
 ### Changed
+
+- **Обход / предметы**: радиус **`INTERACT_RANGE`** (~3.25 м) и логика «ближайшего объекта» в **`InteractiveTriggers`**; подсказка зон **`InteractionHint`** — «Взаимодействие» и дистанция **3.15** м. **`RadialMenu`** — закрытие по клику на затемнение без `capture`-слушателя на `document` (клики по кнопкам не срываются).
 
 - **Обход / WASD и камера**: горизонталь KCC в **`integrateKinematicLocomotionDelta`** для **`PhysicsPlayer`** — в **мировых осях** (`horizontalWorldSpace`), без поворота по `moveYaw` (стабильные W/A/S/D независимо от орбиты камеры). То же для диагностического **`ExplorationNoclipPlayer`** (`NEXT_PUBLIC_EXPLORATION_NOCLIP`). Прыжок: **`JUMP_FORCE`** ниже, **`MAX_UPWARD_SPEED`**, выше **`PLAYER_HEIGHT`** капсулы — меньше визуальный клип головы в потолок. В **`RPGGameCanvas`** для **`volodka_room`**, **`volodka_corridor`**, **`home_evening`** — ближе **`distance` / `maxDistance`** и чуть ниже **`height`**.
 

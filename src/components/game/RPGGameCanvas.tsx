@@ -80,6 +80,7 @@ import { VolodkaCorridorVisual } from './exploration/VolodkaCorridorVisual';
 import { VolodkaRoomVisual } from './exploration/VolodkaRoomVisual';
 import { HomeEveningVisual } from './exploration/HomeEveningVisual';
 import { NpcProximityBarks } from './NpcProximityBarks';
+import { ExplorationBriefingOverlay } from '@/components/game/exploration/ExplorationBriefingOverlay';
 import { EXPLORATION_SCENE_FRAMELOOP, getExplorationSceneGlProps } from '@/components/3d/Scene';
 import { ExplorationLighting, getExplorationDirectionalShadowMapSize } from '@/components/3d/Lighting';
 import {
@@ -153,6 +154,8 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
   const [availableInteractionIds, setAvailableInteractionIds] = useState<ReadonlySet<string>>(
     () => new Set(),
   );
+  const [explorationBriefingOpen, setExplorationBriefingOpen] = useState(false);
+  const explorationBriefingPendingRef = useRef(true);
   const interactionHintTick = useExplorationLivePlayerTick(!isDialogueActive, 120);
 
   useEffect(() => {
@@ -203,6 +206,11 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
     const p = useGameStore.getState().exploration.playerPosition;
     livePlayerPositionRef.current = { x: p.x, y: p.y, z: p.z, rotation: p.rotation ?? 0 };
     updateExplorationLivePlayerPosition(livePlayerPositionRef.current);
+  }, [sceneId]);
+
+  useEffect(() => {
+    explorationBriefingPendingRef.current = true;
+    setExplorationBriefingOpen(false);
   }, [sceneId]);
 
   useEffect(() => {
@@ -353,12 +361,19 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
   const sceneTriggers = useMemo(() => getTriggersForScene(sceneId), [sceneId]);
 
   // Позиция только в ref + мост: не вызывать setPlayerPosition здесь (конфликт с kinematic / мерцание).
-  const handlePositionChange = useCallback((pos: { x: number; y: number; z: number; rotation: number }) => {
-    const next = { x: pos.x, y: pos.y, z: pos.z, rotation: pos.rotation };
-    livePlayerPositionRef.current = next;
-    playerPositionRef.current = next;
-    updateExplorationLivePlayerPosition(next);
-  }, []);
+  const handlePositionChange = useCallback(
+    (pos: { x: number; y: number; z: number; rotation: number }) => {
+      const next = { x: pos.x, y: pos.y, z: pos.z, rotation: pos.rotation };
+      livePlayerPositionRef.current = next;
+      playerPositionRef.current = next;
+      updateExplorationLivePlayerPosition(next);
+      if (explorationBriefingPendingRef.current && !isDialogueActive) {
+        explorationBriefingPendingRef.current = false;
+        queueMicrotask(() => setExplorationBriefingOpen(true));
+      }
+    },
+    [isDialogueActive],
+  );
 
   // Handle NPC state changes
   const handleNPCStateChange = useCallback(
@@ -391,6 +406,10 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
   // Handle player interaction (E / тач) — единый резолвер: триггер → объект vs NPC по дистанции
   const handlePlayerInteraction = useCallback(() => {
     if (isDialogueActive) return;
+    if (explorationBriefingOpen) {
+      setExplorationBriefingOpen(false);
+      return;
+    }
 
     if (radialObject) {
       setRadialObject(null);
@@ -485,6 +504,7 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
     radialObject,
     sceneInteractiveObjects,
     availableInteractionIds,
+    explorationBriefingOpen,
   ]);
 
   return (
@@ -687,9 +707,15 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
       playerPositionRef={playerPositionRef}
     />
     <ExplorationMobileHud
-      active={showTouchHud && !isDialogueActive}
+      active={showTouchHud && !isDialogueActive && !explorationBriefingOpen}
       virtualControlsRef={virtualControlsRef}
       onInteract={handlePlayerInteraction}
+    />
+
+    <ExplorationBriefingOverlay
+      sceneId={sceneId}
+      open={explorationBriefingOpen}
+      onDismiss={() => setExplorationBriefingOpen(false)}
     />
 
     <RadialMenu

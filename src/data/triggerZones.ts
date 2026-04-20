@@ -225,6 +225,52 @@ export const STORY_TRIGGERS: TriggerZone[] = [
     enterToastCooldownMs: 28_000,
   },
 
+  // ========== КОМНАТА ВОЛОДЬКИ (первая локация 3D-обхода) — заставки по E ==========
+  {
+    id: 'trigger_volodka_window_cutscene',
+    position: { x: -4.35, y: 0.85, z: 0.35 },
+    size: { x: 2.4, y: 1.7, z: 2.2 },
+    sceneId: 'volodka_room',
+    type: 'story',
+    cutsceneId: 'volodka_window_skyline',
+    oneTime: false,
+    requiresInteraction: true,
+    promptText: 'E — короткая заставка у окна',
+  },
+  {
+    id: 'trigger_volodka_desk_cutscene',
+    position: { x: 3.15, y: 0.75, z: 0.05 },
+    size: { x: 2.2, y: 1.5, z: 1.4 },
+    sceneId: 'volodka_room',
+    type: 'story',
+    cutsceneId: 'volodka_desk_monitors',
+    oneTime: false,
+    requiresInteraction: true,
+    promptText: 'E — заставка у рабочего стола',
+  },
+  {
+    id: 'trigger_volodka_sofa_cutscene',
+    position: { x: -3.75, y: 0.45, z: 1.15 },
+    size: { x: 2.0, y: 1.2, z: 1.6 },
+    sceneId: 'volodka_room',
+    type: 'story',
+    cutsceneId: 'volodka_sofa_static',
+    oneTime: false,
+    requiresInteraction: true,
+    promptText: 'E — заставка у дивана',
+  },
+  {
+    id: 'trigger_volodka_door_cutscene',
+    position: { x: 0.05, y: 0.55, z: 3.55 },
+    size: { x: 1.4, y: 1.8, z: 1.0 },
+    sceneId: 'volodka_room',
+    type: 'story',
+    cutsceneId: 'volodka_door_threshold',
+    oneTime: false,
+    requiresInteraction: true,
+    promptText: 'E — заставка у двери в коридор',
+  },
+
   // ========== КОМНАТА ЗАРЕМЫ И АЛЬБЕРТА ==========
   {
     id: 'trigger_room_bed',

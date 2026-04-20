@@ -5,7 +5,7 @@ import type { RefObject } from 'react';
 import type { TriggerZone } from '@/data/rpgTypes';
 import { isPlayerInTriggerZone } from '@/components/game/InteractiveTrigger';
 
-export const EXPLORATION_INTERACTION_HINT_MAX_DISTANCE = 2.85;
+export const EXPLORATION_INTERACTION_HINT_MAX_DISTANCE = 3.15;
 
 type InteractionHintProps = {
   enabled: boolean;
@@ -48,7 +48,7 @@ export function InteractionHint({
 
   return (
     <div className="pointer-events-none fixed bottom-28 left-1/2 z-[60] -translate-x-1/2 rounded-md border border-cyan-500/40 bg-black/70 px-4 py-2 font-mono text-xs tracking-wide text-cyan-200 shadow-lg">
-      <span className="text-cyan-400">[E]</span> Interact
+      <span className="text-cyan-400">[E]</span> Взаимодействие
     </div>
   );
 }

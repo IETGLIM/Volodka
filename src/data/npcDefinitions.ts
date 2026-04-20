@@ -189,6 +189,28 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
     },
   },
 
+  /** Сосед по панели — в первой локации обхода (`volodka_room`), без расписания (всегда «дома» в этой сцене). */
+  volodka_dima_neighbor: {
+    id: 'volodka_dima_neighbor',
+    name: 'Дима с пятого',
+    model: 'colleague',
+    modelPath: '/models/lowpoly_anime_character_cyberstyle.glb',
+    animations: NPC_ANIM_LOWPOLY_CYBER,
+    scale: 0.78,
+    defaultPosition: { x: -2.15, y: 0, z: 2.35 },
+    patrolRadius: 0.35,
+    sceneId: 'volodka_room',
+    dialogueTree: {
+      id: 'volodka_dima_root',
+      text: 'Дима стоит в дверном проёме с кружкой: «Володь, у тебя опять Grafana орёт на весь подъезд. Я не жалуюсь — я констатирую. Кофе допьёшь — глянь громкость, а?»',
+      choices: [
+        { text: 'Сорян, сейчас приглушу алерты', next: 'volodka_dima_ok', effect: { stability: 2 } },
+        { text: 'Это прод, без звука никак', next: 'volodka_dima_prod', effect: { mood: -2 } },
+        { text: 'Потом поговорим, мне в тикет', next: 'volodka_dima_bye' },
+      ],
+    },
+  },
+
   // ========== КУХНЯ / ДОМ (реальный мир) ==========
 
   kitchen_maria: {
@@ -2873,6 +2895,21 @@ export const DIALOGUE_NODES: Record<string, NPCDefinition['dialogueTree']> = {
     text: '*улыбается* Тогда не пропадай. Чат дома — не декорация.',
   },
   nastya_bye: { id: 'nastya_bye', text: 'Пока, Володь.' },
+
+  volodka_dima_ok: {
+    id: 'volodka_dima_ok',
+    text: 'Вот и ладненько. Мы тут все друг друга слышим — как в одном большом open space, только с трубами.',
+    effect: { mood: 2 },
+  },
+  volodka_dima_prod: {
+    id: 'volodka_dima_prod',
+    text: 'Прод, прод… Ладно, я сам в понедельник в проде. Только не в три ночи, ок?',
+    effect: { stability: 1 },
+  },
+  volodka_dima_bye: {
+    id: 'volodka_dima_bye',
+    text: 'Ага, беги. Только не забудь — соседи не mute.',
+  },
 };
 
 // ============================================
