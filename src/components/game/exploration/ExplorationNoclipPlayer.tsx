@@ -161,11 +161,9 @@ export const ExplorationNoclipPlayer = memo(
         moveZ /= len;
       }
 
-      const yaw = yawRef.current;
-      const sin = Math.sin(yaw);
-      const cos = Math.cos(yaw);
-      const wx = (moveX * cos - moveZ * sin) * speed * dt;
-      const wz = (moveX * sin + moveZ * cos) * speed * dt;
+      // Мировые оси, как у `PhysicsPlayer` с `horizontalWorldSpace` (не от yaw камеры/игрока).
+      const wx = moveX * speed * dt;
+      const wz = moveZ * speed * dt;
 
       const moving = Math.hypot(wx / Math.max(dt, 1e-6), wz / Math.max(dt, 1e-6)) > 0.08;
       if (moving !== isMovingSyncRef.current) {
