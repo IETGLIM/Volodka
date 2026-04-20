@@ -470,16 +470,16 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
 
   const roomScale = Math.max(0.28, Math.min(1.25, visualModelScale));
   /**
-   * Стартовая позиция капсулы при монтировании; смена локации — **`spawnSyncKey`** + телепорт в **`useEffect`**,
-   * без `key` на всём дереве GLB (см. **`RPGGameCanvas`**).
-   * Нельзя прокидывать сюда координаты из Zustand каждый кадр: RigidBody синхронизирует prop с телом
-   * и ломает kinematic + `setNextKinematicTranslation` (мигание, залипание, прыжок не срабатывает).
+   * Позиция для пропа `<RigidBody position={…}>`: должна совпадать с нарративным телепортом.
+   * Раньше здесь был `useState(начальная)` — после смены сцены Rapier снова подтягивал тело к **первому**
+   * спавну (комната), пока мир уже коридор → игрок снаружи пола и «пустота» / ломаный масштаб визуала.
+   * Живые координаты ходьбы из стора сюда не попадают (`handlePositionChange` не пишет стор каждый кадр),
+   * поэтому `useMemo` по `position` безопасен: обновление только при телепорте / смене `spawnSyncKey`.
    */
-  const [rigidSpawnPosition] = useState<[number, number, number]>(() => [
-    position[0],
-    position[1],
-    position[2],
-  ]);
+  const rigidSpawnPosition = useMemo(
+    (): [number, number, number] => [position[0], position[1], position[2]],
+    [spawnSyncKey, position[0], position[1], position[2]],
+  );
 
   const capsule = useMemo(() => computePlayerCapsule(roomScale), [roomScale]);
 

@@ -20,6 +20,8 @@
 
 ### Fixed
 
+- **Обход / коридор — падение в пустоту и гигантский GLB**: у `**PhysicsPlayer**` проп `**position**` у `**RigidBody**` больше не застывает на координатах **первого** монтирования (`useState`); через `**useMemo**` он синхронизируется с нарративным телепортом (`**spawnSyncKey**` + `position` из стора), при этом ходьба по-прежнему не гоняет стор каждый кадр — без конфликта с kinematic KCC.
+- **Обход / `volodka_room` — T-pose у соседа**: у `**volodka_dima_neighbor**` заменён GLB и маппинг клипов на `**lillian__vgdc.glb**` + `**NPC_ANIM_LILLIAN**` (как у `**dream_lillian**`), чтобы idle/walk стабильно подхватывались микшером.
 - **Обход / порог двери и падение в пустоту**: одна запись стора `**explorationNarrativeTeleport`** (сцена + позиция + `**lastSceneTransition`**) вместо двух подряд `**travelToScene**` / `**setPlayerPosition**`; пол Rapier у комнаты/коридора чуть шире по глубине (`**PhysicsSceneColliders**` — `**VolodkaRoomColliders**` / `**VolodkaCorridorColliders**`). В `**RPGGameCanvas**` снимок спавна учитывает координаты `**playerPosition**` из Zustand, а не только `**sceneId**`.
 
 ### Changed
