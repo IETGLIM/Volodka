@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbo -p 3000 2>&1 | tee dev.log",
-    "build": "node scripts/download-scene-backgrounds.mjs && next build --turbo",
+    "build": "next build --turbo",
     "start": "NODE_ENV=production bun .next/standalone/server.js 2>&1 | tee server.log",
     "lint": "eslint .",
     "test": "vitest run",
@@ -12,9 +12,6 @@
     "validate:content": "vitest run src/validation/contentValidator.test.ts",
     "bb:volodka-smoke:dev": "npm run dev --prefix browserbase-functions/volodka-smoke",
     "bb:volodka-smoke:publish": "npm run publish --prefix browserbase-functions/volodka-smoke",
-    "expert:archive": "pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/export-expert-review-archive.ps1",
-    "scenes:download": "node scripts/download-scene-backgrounds.mjs",
-    "scenes:download:force": "node scripts/download-scene-backgrounds.mjs --force",
     "db:push": "prisma db push",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
@@ -111,5 +108,8 @@
     "tw-animate-css": "^1.3.5",
     "typescript": "^5",
     "vitest": "^4.1.4"
+  },
+  "overrides": {
+    "@swc/helpers": "0.5.21"
   }
 }

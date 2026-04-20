@@ -9,11 +9,11 @@ npm install
 npm run dev
 ```
 
-Откройте [http://localhost:3000](http://localhost:3000). Скрипт **`dev`** явно запускает **Turbopack** (`next dev --turbo`).
+Откройте [http://localhost:3000](http://localhost:3000). Скрипт `**dev**` явно запускает **Turbopack** (`next dev --turbo`).
 
 ## Сборка
 
-Перед `next build` подтягиваются фоны сцен (см. `scripts/download-scene-backgrounds.mjs` и `public/scenes/`). Сборка по умолчанию идёт через **Turbopack** (`next build --turbo`); при необходимости отладки webpack используйте локально `npx next build --webpack`.
+Фоны сцен лежат в репозитории в **`public/scenes/`** (отдельный шаг скачивания перед сборкой не нужен). Сборка по умолчанию идёт через **Turbopack** (`next build --turbo`); при необходимости отладки webpack используйте локально `npx next build --webpack`.
 
 ```bash
 npm run build
@@ -22,11 +22,11 @@ npm test
 
 ## Инженерия, CI и безопасность (аудит 2026)
 
-- **GitHub Actions**: workflow **`.github/workflows/ci.yml`** — `npm ci` → **`npx tsc --noEmit`** → **`npm test`** (Vitest) → **`npm run lint`** на push/PR в `main` / `master`.
-- **TypeScript**: в **`next.config.ts`** снято **`typescript.ignoreBuildErrors`** — ошибки типов снова **блокируют** `next build`.
-- **React**: включён **`reactStrictMode: true`** — в development возможны двойные эффекты; так ловятся утечки подписок и гонки в R3F.
-- **Облачные сохранения** (`/api/save`): по умолчанию API отвечает **403** с кодом `CLOUD_SAVE_DISABLED`. Включение только при **`ENABLE_CLOUD_GAME_SAVE=1`**, **`DATABASE_URL`** (Prisma) и секрете **`SAVE_API_SECRET`** на сервере; каждый запрос — с **`Authorization: Bearer <SAVE_API_SECRET>`**. Идентификатор строки в БД задаётся **`SAVE_USER_ID`** (без доверия к `userId` из тела или query). Клиентский прогресс по-прежнему в **localStorage** через стор.
-- **Черновик сюжета**: файл **`src/data/storyNodesExpansion.ts`** не смержен в **`STORY_NODES`** — не опирайтесь на узлы из него, пока явно не перенесены в **`storyNodes.ts`**.
+- **GitHub Actions**: workflow `**.github/workflows/ci.yml`** — `npm ci` → `**npx tsc --noEmit**` → `**npm test**` (Vitest) → `**npm run lint**` на push/PR в `main` / `master`.
+- **TypeScript**: в `**next.config.ts`** снято `**typescript.ignoreBuildErrors**` — ошибки типов снова **блокируют** `next build`.
+- **React**: включён `**reactStrictMode: true`** — в development возможны двойные эффекты; так ловятся утечки подписок и гонки в R3F.
+- **Облачные сохранения** (`/api/save`): по умолчанию API отвечает **403** с кодом `CLOUD_SAVE_DISABLED`. Включение только при `**ENABLE_CLOUD_GAME_SAVE=1`**, `**DATABASE_URL**` (Prisma) и секрете `**SAVE_API_SECRET**` на сервере; каждый запрос — с `**Authorization: Bearer <SAVE_API_SECRET>**`. Идентификатор строки в БД задаётся `**SAVE_USER_ID**` (без доверия к `userId` из тела или query). Клиентский прогресс по-прежнему в **localStorage** через стор.
+- **Черновик сюжета**: файл `**src/data/storyNodesExpansion.ts`** не смержен в `**STORY_NODES**` — не опирайтесь на узлы из него, пока явно не перенесены в `**storyNodes.ts**`.
 
 ## Что недавно появилось в проекте
 
@@ -34,47 +34,48 @@ npm test
 
 ### Сюжет и мир (2026-04)
 
-- **Золотой путь**: в **`src/data/goldenPath.ts`** задокументирована основная линия от пролога к финалу **«Создатель»** (`ending_creator`) вместе с ключевыми развилками и квестами; тесты в **`src/data/goldenPath.test.ts`**; константы реэкспортируются из **`@/data`**.
-- **Триггеры зон**: опциональные **`enterToast`** / **`enterToastCooldownMs`** — короткие ремарки при входе в объём (шина **`ui:exploration_message`**), плюс атмосферные зоны без сюжетного узла в **`triggerZones.ts`**.
+- **Золотой путь**: в `**src/data/goldenPath.ts`** задокументирована основная линия от пролога к финалу **«Создатель»** (`ending_creator`) вместе с ключевыми развилками и квестами; тесты в `**src/data/goldenPath.test.ts`**; константы реэкспортируются из `**@/data**`.
+- **Триггеры зон**: опциональные `**enterToast`** / `**enterToastCooldownMs**` — короткие ремарки при входе в объём (шина `**ui:exploration_message**`), плюс атмосферные зоны без сюжетного узла в `**triggerZones.ts**`.
 
 ### 3D-исследование и RPG-UX (2026-04)
 
-- **Стартовая 3D-локация**: по умолчанию **`home_evening`** (квартира, 10-й этаж), а не двор `street_night`; узел **`explore_mode`** и стор **`exploration`** согласованы; двор и зимняя улица — через переходы (**`travelToScene`** / **`SceneTransition`** glitch в **`GameOrchestrator`**).
-- **Модель игрока в Rapier**: **`Volodka.glb`** ренерится **без** `Object3D.clone(true)` у skinned-меша (иначе часто видна только тень); при **одном** клипе анимации в GLB он используется и для покоя, и при движении.
-- **Kinematic Character Controller** в **`PhysicsPlayer`**: плавнее ходьба по ступеням и полу; **шаги** — луч вниз по коллайдерам с именем **`fs:{материал}`** (дерево, бетон и т.д.) и SFX через **`AudioEngine`** (**`usePlayerFootsteps`**, **`footstepMaterials.ts`**).
-- **NPC в обходе**: в данных остаются только GLB **с** встроенными клипами; для каждого NPC задан явный **`animations`** (имена клипов из файлов). Скрипт аудита: **`node scripts/list-glb-animations.mjs`** (`public/models-external`).
-- **Время суток** (`timeOfDay`, `advanceTime` в сторе) и **`ScheduleEngine`**: у **Альберта**, **Заремы** и **баристы** несколько окон в сутках — смена сцен (дом, офис, кафе, библиотека, парк, улица и т.д.) и позиций; **`getNPCsForScene(sceneId, timeOfDay)`** подмешивает в сцену гостей по расписанию; иконки 💬 / 😴 / 🚶 / 💻 / 📖 / ☕ над головой; если персонаж «спит» — взаимодействие блокируется с подсказкой.
+- **Стартовая 3D-локация**: по умолчанию `**home_evening`** (квартира, 10-й этаж), а не двор `street_night`; узел `**explore_mode**` и стор `**exploration**` согласованы; двор и зимняя улица — через переходы (`**travelToScene**` / `**SceneTransition**` glitch в `**GameOrchestrator**`).
+- **Модель игрока в Rapier**: `**Volodka.glb`** ренерится **без** `Object3D.clone(true)` у skinned-меша (иначе часто видна только тень); при **одном** клипе анимации в GLB он используется и для покоя, и при движении.
+- **Kinematic Character Controller** в `**PhysicsPlayer`**: плавнее ходьба по ступеням и полу; **шаги** — луч вниз по коллайдерам с именем `**fs:{материал}`** (дерево, бетон и т.д.) и SFX через `**AudioEngine**` (`**usePlayerFootsteps**`, `**footstepMaterials.ts**`).
+- **NPC в обходе**: в данных остаются только GLB **с** встроенными клипами; для каждого NPC задан явный `**animations`** (имена клипов из файлов). Скрипт аудита: `**node scripts/list-glb-animations.mjs**` (`public/models-external`).
+- **Время суток** (`timeOfDay`, `advanceTime` в сторе) и `**ScheduleEngine`**: у **Альберта**, **Заремы** и **баристы** несколько окон в сутках — смена сцен (дом, офис, кафе, библиотека, парк, улица и т.д.) и позиций; `**getNPCsForScene(sceneId, timeOfDay)`** подмешивает в сцену гостей по расписанию; иконки 💬 / 😴 / 🚶 / 💻 / 📖 / ☕ над головой; если персонаж «спит» — взаимодействие блокируется с подсказкой.
 - **Маркеры квестов** над NPC (жёлтый `!`, серый/золотой `?` в зависимости от состояния квеста).
 - **Моральный компас** (карма, всплывающие реакции на её изменение), визуальные эффекты кармы на модели игрока в Rapier-сцене.
-- **Уведомления о луте и прокачке навыка**, события через **`eventBus`**; короткие SFX по **`sound:play`** (в **`AudioEngine.playSfx`**, опциональные файлы в `public/audio/ui/`, иначе программный beep).
-- **Радиальное меню** по **E** у интерактивных объектов сцены (осмотреть / взять / использовать / выбросить) → **`object:interact`**, обработка в **`GameOrchestrator`** по конфигу сцены (`getInteractiveObjectsForScene`).
-- **Миникарта**: маркеры целей квестов (зона / цель); масштаб карты под **реальный размер сцены** из **`getSceneConfig`**.
-- **Музыка**: более «боевая» процедурная подложка при высоком стрессе или сцене боя; лёгкий **`AudioEngine`** для меню/интро (при наличии файлов в `public/audio/ui/`).
+- **Уведомления о луте и прокачке навыка**, события через `**eventBus`**; короткие SFX по `**sound:play**` (в `**AudioEngine.playSfx**`, опциональные файлы в `public/audio/ui/`, иначе программный beep).
+- **Радиальное меню** по **E** у интерактивных объектов сцены (осмотреть / взять / использовать / выбросить) → `**object:interact`**, обработка в `**GameOrchestrator**` по конфигу сцены (`getInteractiveObjectsForScene`).
+- **Миникарта**: маркеры целей квестов (зона / цель); масштаб карты под **реальный размер сцены** из `**getSceneConfig`**.
+- **Музыка**: более «боевая» процедурная подложка при высоком стрессе или сцене боя; лёгкий `**AudioEngine`** для меню/интро (при наличии файлов в `public/audio/ui/`).
 - **Туториал** в режиме обхода (WASD, E, I; контекст у NPC); отключение через флаг и **кнопку 💡 в HUD**.
-- **Стор мира (клиент)**: удобный импорт **`@/store/worldStore`** (реэкспорт с `src/client/store/worldStore.ts`).
-- **Клавиша E в обходе**: один резолвер между интерактивным объектом и NPC по дистанции в XZ (**`src/lib/explorationPrimaryInteraction.ts`**, вызов из **`RPGGameCanvas`**).
-- **Камера и оверлеи обхода**: элементы с **`data-exploration-ui`** не вращают орбиту (**`src/lib/explorationUiPointer.ts`**, камеры **`FollowCamera`** / **`SimpleFollowCamera`**); удержание **Run** на таче, контейнер Canvas — **`100dvh`** в **`GameOrchestrator`**.
-- **Кэш GLB**: LRU для **`useGLTF`** (**`src/lib/gltfModelCache.ts`**, лимит URL и **`useGLTF.clear`** при вытеснении).
-- **Сглаживание камеры**: общие формулы damp в **`src/lib/followCameraDamp.ts`** (тесты рядом в `src/lib`).
+- **Стор мира (клиент)**: удобный импорт `**@/store/worldStore`** (реэкспорт с `src/client/store/worldStore.ts`).
+- **Клавиша E в обходе**: один резолвер между интерактивным объектом и NPC по дистанции в XZ (`**src/lib/explorationPrimaryInteraction.ts`**, вызов из `**RPGGameCanvas**`).
+- **Камера и оверлеи обхода**: элементы с `**data-exploration-ui`** не вращают орбиту (`**src/lib/explorationUiPointer.ts**`, камеры `**FollowCamera**` / `**SimpleFollowCamera**`); удержание **Run** на таче, контейнер Canvas — `**100dvh`** в `**GameOrchestrator**`.
+- **Кэш GLB**: LRU для `**useGLTF`** (`**src/lib/gltfModelCache.ts**`, лимит URL и `**useGLTF.clear**` при вытеснении).
+- **Сглаживание камеры**: общие формулы damp в `**src/lib/followCameraDamp.ts`** (тесты рядом в `src/lib`).
 
 ### Квестовая цепочка
 
-- Журнал квестов: **«Первые слова»** сначала в статусе *доступен* — принятие в панели 📋, затем гейт **`questActive`** на ветку с мини-игрой стихов.
-- **`useQuestProgress`** реально подключён к игре: смена сцены, NPC, завершение **poem_game** → события прогресса.
-- Цели без **`targetValue`** учитываются через **`isObjectiveSatisfied`** / **`getNextTrackedObjective`**; тесты в `src/data/quests.tracking.test.ts`.
-- **`first_reading`**: убраны невыполнимые **`requiredFlags`**, у целей заданы **`targetValue`** и метаданные шагов; в сюжете при первом визите в «Синюю Яму» явно закрывается **`go_to_cafe`**, все ветки после open mic засчитывают **`meet_someone`** для Виктории.
+- Журнал квестов: **«Первые слова»** сначала в статусе *доступен* — принятие в панели 📋, затем гейт `**questActive`** на ветку с мини-игрой стихов.
+- `**useQuestProgress**` реально подключён к игре: смена сцены, NPC, завершение **poem_game** → события прогресса.
+- Цели без `**targetValue`** учитываются через `**isObjectiveSatisfied**` / `**getNextTrackedObjective**`; тесты в `src/data/quests.tracking.test.ts`.
+- `**first_reading**`: убраны невыполнимые `**requiredFlags**`, у целей заданы `**targetValue**` и метаданные шагов; в сюжете при первом визите в «Синюю Яму» явно закрывается `**go_to_cafe**`, все ветки после open mic засчитывают `**meet_someone**` для Виктории.
 
 ### Визуал сцен
 
-- Вместо статичного фото на фоне сюжета — **`AsciiCyberBackdrop`**: матричный дождь, тикер с названием/описанием сцены из `SceneManager`, ASCII-силуэт города, движение фигур NPC (в lite-режиме упрощение).
+- Вместо статичного фото на фоне сюжета — `**AsciiCyberBackdrop**`: матричный дождь, тикер с названием/описанием сцены из `SceneManager`, ASCII-силуэт города, движение фигур NPC (в lite-режиме упрощение).
 
 ### Персонажи и сюжет
 
 - **Район (`street_night` / `street_winter`)**: Заремушка (Зарема), Альберт, Вика с Зелёнки, Рената, Дамьен, Константин, Тимур, Поликарп, Римма, Настя — NPC и врезки в `storyNodes` (магазин у дома, выход из библиотеки).
 - **Офис**: Александр, Дмитрий, Андрей (compliance, с отстройкой от «того» Андрея), Артём — NPC и выборы в прологе.
-- **Кафе**: персонаж **`cafe_college_girl`** переименован в **Виктория**; диалоги качают отношения **`maria`** для согласованности с сюжетом после open mic.
-- **`factions`**, **`gameStore`** (стартовые отношения), профили в **`src/app/api/ai-dialogue/route.ts`** обновлены под новых NPC.
+- **Кафе**: персонаж `**cafe_college_girl`** переименован в **Виктория**; диалоги качают отношения `**maria`** для согласованности с сюжетом после open mic.
+- `**factions**`, `**gameStore**` (стартовые отношения), профили в `**src/app/api/ai-dialogue/route.ts**` обновлены под новых NPC.
 
 ### Прочее
 
 - Сцены по-прежнему можно генерировать в webp через скрипт загрузки; в рантайме сюжетный слой опирается на ASCII-фон (фото не обязательны для игры в VN-режиме).
+

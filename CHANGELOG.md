@@ -8,6 +8,8 @@
 
 ### Changed
 
+- **Сборка / npm**: в **`package.json`** — **`overrides.@swc/helpers`** `0.5.21`, чтобы **`npm ci`** на CI совпадал с деревом зависимостей; скрипт **`build`** без удалённого **`download-scene-backgrounds.mjs`**; убраны сломанные **`scenes:download`** / **`expert:archive`**.
+
 - **Обход / предметы**: радиус **`INTERACT_RANGE`** (~3.25 м) и логика «ближайшего объекта» в **`InteractiveTriggers`**; подсказка зон **`InteractionHint`** — «Взаимодействие» и дистанция **3.15** м. **`RadialMenu`** — закрытие по клику на затемнение без `capture`-слушателя на `document` (клики по кнопкам не срываются).
 
 - **Обход / WASD и камера**: горизонталь KCC в **`integrateKinematicLocomotionDelta`** для **`PhysicsPlayer`** — в **мировых осях** (`horizontalWorldSpace`), без поворота по `moveYaw` (стабильные W/A/S/D независимо от орбиты камеры). То же для диагностического **`ExplorationNoclipPlayer`** (`NEXT_PUBLIC_EXPLORATION_NOCLIP`). Прыжок: **`JUMP_FORCE`** ниже, **`MAX_UPWARD_SPEED`**, выше **`PLAYER_HEIGHT`** капсулы — меньше визуальный клип головы в потолок. В **`RPGGameCanvas`** для **`volodka_room`**, **`volodka_corridor`**, **`home_evening`** — ближе **`distance` / `maxDistance`** и чуть ниже **`height`**.

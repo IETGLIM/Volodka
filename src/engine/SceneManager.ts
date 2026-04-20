@@ -14,7 +14,7 @@ import type { SceneId } from '@/data/types';
 
 export type ScenePhotoBlendMode = 'normal' | 'multiply' | 'screen' | 'overlay' | 'soft-light' | 'darken' | 'lighten';
 
-/** Фон из `public/scenes/{id}.webp` (генерация: `npm run scenes:download`) */
+/** Фон из `public/scenes/{id}.webp` (ассеты в репозитории) */
 const scenePhoto = (id: SceneId) => `/scenes/${id}.webp`;
 
 export interface SceneVisualConfig {
