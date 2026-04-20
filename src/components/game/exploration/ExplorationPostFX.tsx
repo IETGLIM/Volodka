@@ -14,7 +14,7 @@ interface ExplorationPostFXProps {
 /**
  * Шаг А (диагностика мерцания): весь конвейер постобработки отключён — раньше здесь были
  * `EffectComposer` + `N8AO` / `Bloom` / `Vignette` / `Noise` из `@react-three/postprocessing`.
- * Сейчас компонент всегда `return null` — **ни одного** `EffectComposer` в обходе нет (legacy-пост только в `PhysicsRPGCanvas` / демо-режим).
+ * Сейчас компонент всегда `return null` — **ни одного** `EffectComposer` в обходе нет (пост отключён для стабильности кадра).
  * См. `RPGGameCanvas`. Если мерцание исчезло → проблема в настройках поста (шаг А1); иначе → шаг Б.
  */
 export const ExplorationPostFX = memo(function ExplorationPostFX(_props: ExplorationPostFXProps) {

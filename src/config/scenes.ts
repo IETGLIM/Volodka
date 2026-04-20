@@ -626,11 +626,6 @@ export function getExplorationLocomotionScale(sceneId: SceneId): number {
   return entry.explorationLocomotionScale ?? 1;
 }
 
-export const getNPCsForScene = (sceneId: SceneId, _flags: Record<string, boolean> = {}): NPCConfig[] => {
-  const config = getSceneConfig(sceneId);
-  return config.npcs;
-};
-
 export const getInteractiveObjectsForScene = (sceneId: SceneId): InteractiveObjectConfig[] => {
   const config = getSceneConfig(sceneId);
   return config.interactiveObjects;

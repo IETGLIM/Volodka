@@ -208,44 +208,6 @@ const FallbackPlayerModel = memo(function FallbackPlayerModel({
 // GLB PLAYER MODEL
 // ============================================
 
-/**
- * Вертикальный размер bbox SkinnedMesh в **единицах файла** (часто ~170–240 «сантиметров» без node-scale).
- * Делитель в `TARGET/h` должен совпадать с этим числом — иначе модель раздувается (см. Volodka.glb: hRaw≈234).
- * Fallback только при слишком мелком/пустом bbox.
- */
-const PLAYER_VISUAL_HEIGHT_FALLBACK_M = 1.72;
-
-function getRootCharacterVisualHeightMeters(root: THREE.Object3D, scratch: THREE.Vector3): number {
-  root.updateMatrixWorld(true);
-  const box = new THREE.Box3();
-  let foundSkinned = false;
-  root.traverse((obj) => {
-    if (obj instanceof THREE.SkinnedMesh && obj.geometry) {
-      foundSkinned = true;
-      if (!obj.geometry.boundingBox) {
-        obj.geometry.computeBoundingBox();
-      }
-      const local = obj.geometry.boundingBox;
-      if (!local || local.isEmpty()) return;
-      const tmp = local.clone();
-      tmp.applyMatrix4(obj.matrixWorld);
-      box.union(tmp);
-    }
-  });
-  if (!foundSkinned || box.isEmpty()) {
-    box.setFromObject(root);
-  }
-  const hRaw = box.getSize(scratch).y;
-  if (!Number.isFinite(hRaw) || hRaw < 1e-4) {
-    return PLAYER_VISUAL_HEIGHT_FALLBACK_M;
-  }
-  // Слишком мелкий Y — битый bbox (делитель маленький → гигантский mesh).
-  if (hRaw < 0.55) {
-    return PLAYER_VISUAL_HEIGHT_FALLBACK_M;
-  }
-  return hRaw;
-}
-
 const GLBPlayerModel = memo(function GLBPlayerModel({
   modelPath,
   isMoving,

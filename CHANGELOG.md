@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Removed
+
+- **Мёртвый код обхода**: удалён неиспользуемый `**PhysicsRPGCanvas.tsx**` (ни один импорт в приложении); из `**RoomEnvironment.tsx**` — обёртка `**PhysicsExplorationRoomVisual**` (использовалась только этим канвасом). В `**PhysicsPlayer.tsx**` — неиспользуемая локальная `**getRootCharacterVisualHeightMeters**` (масштаб через `**getGltfSkinnedVisualHeightMeters**`). В `**config/scenes.ts**` — неиспользуемый экспорт `**getNPCsForScene**` (дублировал имя с `**data/npcDefinitions**`); список NPC из конфига сцены — через `**getSceneConfig(sceneId).npcs**`.
+
 ### Changed
 
 - **Обход / E2.2 радиальное меню и предметы**: `**getExplorationRadialMenuActions**` (`lib/explorationRadialMenuActions.ts`, тесты) — фильтр действий по объекту и сцене; `**RadialMenu**` — проп `**allowedActions**`, сетка 1×N / 2×N; `**RPGGameCanvas**` — подпись с `**itemId**`; при «Взять» — тост с именем предмета из `**data/items.ts**` (`**GameOrchestrator**`).

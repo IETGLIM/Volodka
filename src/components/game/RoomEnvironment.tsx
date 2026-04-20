@@ -1,7 +1,6 @@
 "use client";
 
 import { memo, useEffect, useMemo, useRef, useState, Suspense } from 'react';
-import type { SceneId } from '@/data/types';
 import { RigidBody, CuboidCollider } from '@react-three/rapier';
 import { footstepColliderName } from '@/lib/footstepMaterials';
 import { ThreeCanvasSuspenseFallback } from '@/components/3d/ThreeCanvasSuspenseFallback';
@@ -589,23 +588,6 @@ export const ZaremaAlbertRoom = memo(function ZaremaAlbertRoom() {
       <ZaremaAlbertRoomContent />
     </Suspense>
   );
-});
-
-/**
- * Визуальная оболочка физической комнаты (Rapier): по `sceneId` выбирается готовый 3D-набор.
- * Сейчас реализована только `zarema_albert_room` — заготовка под новые `SceneId` без дублирования логики в канвасе.
- */
-export const PhysicsExplorationRoomVisual = memo(function PhysicsExplorationRoomVisual({
-  sceneId,
-}: {
-  sceneId: SceneId;
-}) {
-  switch (sceneId) {
-    case 'zarema_albert_room':
-      return <ZaremaAlbertRoom />;
-    default:
-      return null;
-  }
 });
 
 // ============================================
