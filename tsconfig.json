@@ -39,6 +39,7 @@
   "exclude": [
     "node_modules",
     "_volodka_upstream_check",
-    ".next"
+    ".next",
+    "browserbase-functions"
   ]
 }

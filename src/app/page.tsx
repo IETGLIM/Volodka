@@ -55,10 +55,15 @@ class GameErrorBoundary extends Component<
 // Loading screen
 function LoadingFallback() {
   return (
-    <div className="min-h-screen bg-slate-900 flex items-center justify-center">
-      <div className="text-center">
-        <div className="text-5xl mb-4 animate-pulse">📜</div>
-        <p className="text-slate-400 text-lg">Загрузка ВОЛОДЬКИ...</p>
+    <div className="fixed inset-0 z-[100] flex h-svh min-h-0 w-screen flex-col items-center justify-center bg-[#030308] font-mono text-white">
+      <div className="text-center px-6">
+        {/* Сразу видимый h1 — LCP до гидрации GameClient (dynamic ssr:false). */}
+        <h1 className="mb-3 text-4xl font-bold tracking-[0.12em] text-transparent bg-clip-text bg-gradient-to-b from-cyan-200 via-cyan-400 to-emerald-600 sm:text-5xl md:text-6xl">
+          ВОЛОДЬКА
+        </h1>
+        <div className="mb-4 text-2xl tracking-[0.2em] text-cyan-400/90 animate-pulse sm:text-3xl">ЗАГРУЗКА</div>
+        <div className="text-sm uppercase tracking-[0.35em] text-cyan-500/50">ядро · сцена</div>
+        <p className="mt-6 text-xs text-slate-500">Rapier · Three</p>
       </div>
     </div>
   );

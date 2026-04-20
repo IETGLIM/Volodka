@@ -9,6 +9,10 @@ const NPC_IDS_USED_IN_NPC_TALKED_QUESTS = [
   'dream_quester',
   'dream_lillian',
   'dream_galaxy',
+  'office_alexander',
+  'office_colleague',
+  'office_dmitry',
+  'office_artyom',
 ] as const;
 
 describe('Quest events ↔ NPC ids', () => {

@@ -54,6 +54,7 @@ const EVENT_PHASE_MAP = {
   'npc:relation_changed': 'PROGRESSING',
   'quest:activated': 'NEW_OPPORTUNITIES',
   'quest:completed': 'NEW_OPPORTUNITIES',
+  'quest:objective_updated': 'PROGRESSING',
   'item:acquired': 'NEW_OPPORTUNITIES',
   'poem:collected': 'NEW_OPPORTUNITIES',
   'achievement:unlocked': 'NEW_OPPORTUNITIES',

@@ -43,7 +43,7 @@ import { useGameStore } from '@/store/gameStore';
 import { eventBus } from '@/engine/EventBus';
 import { useGameAudioProfile } from '@/hooks/useAudio';
 import { QUEST_DEFINITIONS, getNextTrackedObjective } from '@/data/quests';
-import { getNPCsForScene, getNpcExplorationPosition } from '@/data/npcDefinitions';
+import { getNPCById, getNPCsForScene, getNpcExplorationPosition } from '@/data/npcDefinitions';
 import { getSceneConfig, getInteractiveObjectsForScene } from '@/config/scenes';
 import { homeApartmentInspectLine, tryHomeApartmentUse } from '@/lib/homeApartmentInteract';
 import { volodkaRoomInspectLine, tryVolodkaRoomUse } from '@/lib/volodkaRoomInteract';
@@ -59,6 +59,10 @@ import { MiniMap } from '@/components/game/MiniMap';
 import { SCENE_VISUALS } from '@/engine/SceneManager';
 import type { VisualState } from '@/data/types';
 import { storyNodeShowsStoryOverlay } from '@/lib/storyOverlayEligibility';
+import { EXPLORATION_GAME_VIEWPORT_CLASS } from '@/components/3d/Scene';
+import { getWorldStateModifiers } from '@/core/world/worldReactivity';
+import MemoryLog from '@/components/ui/MemoryLog';
+import QuestTracker from '@/components/ui/QuestTracker';
 
 const QuestsPanel = dynamic(() => import('@/components/game/QuestsPanel'), { ssr: false });
 const FactionsPanel = dynamic(() => import('@/components/game/FactionsPanel'), { ssr: false });
@@ -74,8 +78,11 @@ const RPGGameCanvas = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="fixed inset-0 z-[12] flex items-center justify-center bg-black/50 font-mono text-sm text-cyan-500/70">
-        SYNC // 3D…
+      <div
+        className={`${EXPLORATION_GAME_VIEWPORT_CLASS} flex flex-col items-center justify-center bg-[#030308]/92 font-mono`}
+      >
+        <div className="text-lg tracking-[0.25em] text-cyan-400/85 animate-pulse">SYNC // 3D</div>
+        <div className="mt-2 text-[10px] uppercase tracking-[0.4em] text-cyan-600/50">камера · физика · GLB</div>
       </div>
     ),
   },
@@ -135,7 +142,6 @@ export default function GameOrchestrator() {
   const gameMode = useGameStore((s) => s.gameMode);
   const exploration = useGameStore(
     useShallow((s) => ({
-      playerPosition: s.exploration.playerPosition,
       currentSceneId: s.exploration.currentSceneId,
       timeOfDay: s.exploration.timeOfDay,
       npcStates: s.exploration.npcStates,
@@ -150,6 +156,8 @@ export default function GameOrchestrator() {
   const [mounted, setMounted] = useState(false);
   /** Короткий matrix/glitch-переход при смене 3D-локации (`lastSceneTransition`). */
   const [explorationSceneGlitch, setExplorationSceneGlitch] = useState(false);
+  /** Диалог открыт из 3D-обхода: оставляем `RPGGameCanvas` смонтированным под оверлеем + кадр камеры. */
+  const [explorationDialogueLayout, setExplorationDialogueLayout] = useState(false);
   const explorationTransitionReadyRef = useRef(false);
   const prevSceneTransitionTsRef = useRef<number | null>(null);
   const explorationGlitchClearRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -259,6 +267,28 @@ export default function GameOrchestrator() {
     addSkill,
   });
 
+  const closeDialogueAndLayout = useCallback(() => {
+    setExplorationDialogueLayout(false);
+    closeDialogue();
+  }, [closeDialogue]);
+
+  const dialogueSubjectPosition = useMemo(() => {
+    if (!activeDialogue) return null;
+    const npc = getNPCById(activeDialogue.npcId);
+    if (!npc) return null;
+    return getNpcExplorationPosition(
+      npc,
+      exploration.currentSceneId,
+      exploration.timeOfDay,
+      exploration.npcStates[activeDialogue.npcId]?.position,
+    );
+  }, [
+    activeDialogue,
+    exploration.currentSceneId,
+    exploration.timeOfDay,
+    exploration.npcStates,
+  ]);
+
   const scene = useGameScene({
     phase,
     gameMode,
@@ -280,6 +310,16 @@ export default function GameOrchestrator() {
   });
 
   const { currentNode, currentSceneId, trackQuestNpcTalk, emitQuestEvent, runtime } = scene;
+
+  /** Диалог из сюжета (`dialogueNpcId`) — тоже считается разговором для 📋 / `npc_talked`. */
+  const openDialogueFromStoryWithQuest = useCallback(
+    (p: { npcId: string; nextNodeId: string; fromNodeId: string; choiceText: string }) => {
+      setExplorationDialogueLayout(useGameStore.getState().gameMode === 'exploration');
+      trackQuestNpcTalk(p.npcId);
+      openDialogueFromStory(p);
+    },
+    [trackQuestNpcTalk, openDialogueFromStory],
+  );
 
   useEffect(() => {
     return eventBus.on('object:interact', ({ objectId, action }) => {
@@ -466,6 +506,7 @@ export default function GameOrchestrator() {
 
   const handleNPCInteraction = useCallback(
     (npcId: string) => {
+      setExplorationDialogueLayout(useGameStore.getState().gameMode === 'exploration');
       trackQuestNpcTalk(npcId);
       openNpcDialogue(npcId);
     },
@@ -543,7 +584,7 @@ export default function GameOrchestrator() {
     addSkill,
     addItem,
     removeItem,
-    openDialogueFromStory,
+    openDialogueFromStory: openDialogueFromStoryWithQuest,
     phase,
     gameMode,
     currentNodeId,
@@ -608,6 +649,7 @@ export default function GameOrchestrator() {
         creativity={playerState.creativity}
         enabled={phase === 'game' && !activeCutscene}
         forceBattleMusic={playerState.stress > 80 || displaySceneId === 'battle'}
+        narrativeMusic={getWorldStateModifiers().music}
       />
       {gameMode !== 'exploration' && (
         <SceneRenderer sceneId={currentSceneId} playerState={playerState} />
@@ -629,12 +671,13 @@ export default function GameOrchestrator() {
         </>
       )}
 
-      {gameMode === 'exploration' && (
-        <div className="fixed inset-0 z-[12]">
+      {(gameMode === 'exploration' || (Boolean(activeDialogue) && explorationDialogueLayout)) && (
+        <div className={EXPLORATION_GAME_VIEWPORT_CLASS}>
           <RPGGameCanvas
             sceneId={exploration.currentSceneId}
             visualState={explorationVisualState}
             isDialogueActive={Boolean(activeDialogue) || Boolean(activeCutsceneId)}
+            dialogueSubjectPosition={dialogueSubjectPosition}
             onTriggerEnter={handleExplorationStoryTrigger}
             onNPCInteraction={handleNPCInteraction}
           />
@@ -643,7 +686,6 @@ export default function GameOrchestrator() {
 
       {gameMode === 'exploration' && (
         <MiniMap
-          playerPosition={exploration.playerPosition}
           sceneSize={minimapSceneSize}
           sceneName={SCENE_VISUALS[exploration.currentSceneId]?.name ?? exploration.currentSceneId}
           npcs={minimapNpcs}
@@ -655,6 +697,9 @@ export default function GameOrchestrator() {
       <LootNotification />
       <SkillUpNotification />
       <TutorialOverlay gameMode={gameMode} isDialogue={Boolean(activeDialogue)} />
+
+      {phase === 'game' && <QuestTracker />}
+      {phase === 'game' && <MemoryLog />}
 
       <HUD
         onSave={handleSaveGame}
@@ -683,11 +728,12 @@ export default function GameOrchestrator() {
       {activeDialogue && (
         <DialogueRenderer
           isOpen={true}
+          explorationLayout={explorationDialogueLayout}
           npcId={activeDialogue.npcId}
           npcName={activeDialogue.npcName}
           dialogueTree={activeDialogue.node}
           storyLinked={Boolean(activeDialogue.storyResume)}
-          onClose={closeDialogue}
+          onClose={closeDialogueAndLayout}
           playerState={playerState}
           npcRelations={npcRelations}
           flags={playerState.flags}

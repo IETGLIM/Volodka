@@ -1,0 +1,16 @@
+---
+description: Сюжет, стихи, золотой путь — не ломать связи; перед коммитом прогонять проверки
+alwaysApply: false
+---
+
+# Сюжет, стихи и золотой путь
+
+При правках **`storyNodes`**, **`quests`**, **`poems`**, **`goldenPath`**, **`useQuestProgress`**, **`useStoryChoiceHandler`**, **`GameOrchestrator`** (ветки сюжета / квесты / стихи):
+
+1. **Канон линии** описан в **`src/data/goldenPath.ts`** (`GOLDEN_PATH_STORY_SPINE`, `GOLDEN_PATH_BRANCH_HINTS`, квесты `GOLDEN_PATH_QUEST_SPINE`, опционально `poetry_collection`).
+2. **Стихи** — неизменяемый текст в **`src/data/poems.ts`**; новые id только вместе с узлом выдачи и (при необходимости) **`unlocksAt`**.
+3. **Перед коммитом** из корня репозитория:
+   - `npx vitest run src/data/goldenPath.test.ts src/data/narrativePoetryIntegrity.test.ts`
+   - при широких правках сюжета — полный `npx vitest run` и `npx tsc --noEmit`.
+
+Тест **`narrativePoetryIntegrity`** проверяет: все **`poemId`** в эффектах **`STORY_NODES`** есть в **`POEMS`**; у каждого стиха валиден **`unlocksAt`**; у квестов золотого пути и **`poetry_collection`** каждый **`linkedStoryNodeId`** существует в **`STORY_NODES`**.

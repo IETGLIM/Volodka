@@ -2,180 +2,40 @@
 
 import type { MutableRefObject } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { PHYSICS_CONSTANTS } from '@/core/physics/constants';
+import { PlayerInputController } from '@/core/input/InputController';
+import type { PlayerControls } from '@/core/input/playerControlsTypes';
 
-// ============================================
-// PHYSICS CONSTANTS
-// ============================================
-
-export const PHYSICS_CONSTANTS = {
-  // Скорости
-  WALK_SPEED: 3.5,
-  RUN_SPEED: 6.0,
-  
-  // Размеры игрока (капсула Rapier; умножаются на `explorationCharacterModelScale` сцены)
-  PLAYER_HEIGHT: 1.8,
-  PLAYER_RADIUS: 0.4,
-  
-  // Физика
-  GRAVITY: -20,
-  JUMP_FORCE: 8,
-  GROUND_FRICTION: 0.1,
-  AIR_FRICTION: 0.05,
-  
-  // Камера
-  CAMERA_DISTANCE: 5,
-  CAMERA_HEIGHT: 2,
-  CAMERA_SMOOTHING: 0.1,
-};
-
-// ============================================
-// PLAYER CONTROLS INTERFACE
-// ============================================
-
-export interface PlayerControls {
-  forward: boolean;
-  backward: boolean;
-  left: boolean;
-  right: boolean;
-  run: boolean;
-  jump: boolean;
-  interact: boolean;
-}
-
-const DEFAULT_CONTROLS: PlayerControls = {
-  forward: false,
-  backward: false,
-  left: false,
-  right: false,
-  run: false,
-  jump: false,
-  interact: false,
-};
-
-// ============================================
-// KEY MAPPINGS
-// ============================================
-
-const KEY_MAP: Record<string, keyof PlayerControls> = {
-  KeyW: 'forward',
-  ArrowUp: 'forward',
-  KeyS: 'backward',
-  ArrowDown: 'backward',
-  KeyA: 'left',
-  ArrowLeft: 'left',
-  KeyD: 'right',
-  ArrowRight: 'right',
-  ShiftLeft: 'run',
-  ShiftRight: 'run',
-  Space: 'jump',
-  KeyE: 'interact',
-  KeyF: 'interact',
-  Enter: 'interact',
-};
-
-// ============================================
-// usePlayerControls HOOK
-// ============================================
+export { PHYSICS_CONSTANTS };
+export type { PlayerControls };
 
 export interface UsePlayerControlsOptions {
-  /**
-   * Вызывается синхронно при первом нажатии клавиши взаимодействия (E / F / Enter).
-   * После вызова флаг `interact` сбрасывается внутри хука — опрос через `setInterval` не нужен.
-   */
   onInteractPress?: () => void;
-  /** Тач / виртуальные кнопки: объединяются с клавиатурой по OR на каждый флаг. */
   virtualControlsRef?: MutableRefObject<Partial<PlayerControls>>;
 }
 
 export function usePlayerControls(options?: UsePlayerControlsOptions) {
-  const controlsRef = useRef<PlayerControls>({ ...DEFAULT_CONTROLS });
-  const interactPressedRef = useRef(false);
+  const controllerRef = useRef<PlayerInputController | null>(null);
+  if (!controllerRef.current) {
+    controllerRef.current = new PlayerInputController();
+  }
   const onInteractPressRef = useRef(options?.onInteractPress);
   onInteractPressRef.current = options?.onInteractPress;
   const virtualControlsRef = options?.virtualControlsRef;
-  const [, forceUpdate] = useState({});
 
-  // Получение текущего состояния контроллов
   const getControls = useCallback(() => {
-    const k = { ...controlsRef.current };
-    const v = virtualControlsRef?.current;
-    if (!v) return k;
-    const hasVirt = Object.keys(v).some((key) => v[key as keyof PlayerControls] === true);
-    if (!hasVirt) return k;
-    return {
-      forward: k.forward || !!v.forward,
-      backward: k.backward || !!v.backward,
-      left: k.left || !!v.left,
-      right: k.right || !!v.right,
-      run: k.run || !!v.run,
-      jump: k.jump || !!v.jump,
-      interact: k.interact || !!v.interact,
-    };
+    return controllerRef.current!.getMergedControls(virtualControlsRef);
   }, [virtualControlsRef]);
 
-  // Сброс флага взаимодействия
   const resetInteract = useCallback(() => {
-    controlsRef.current.interact = false;
-    interactPressedRef.current = false;
+    controllerRef.current?.resetInteract();
   }, []);
 
-  // Обработка нажатия клавиш
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      const control = KEY_MAP[e.code];
-      if (control) {
-        // Удержание WASD даёт серию keydown с repeat — без этого каждый раз forceUpdate и ререндер Canvas.
-        if (e.repeat && control !== 'interact') return;
-        // Для interact используем флаг, чтобы не срабатывать многократно
-        if (control === 'interact') {
-          if (!interactPressedRef.current) {
-            controlsRef.current[control] = true;
-            interactPressedRef.current = true;
-            const immediate = onInteractPressRef.current;
-            if (immediate) {
-              try {
-                immediate();
-              } finally {
-                controlsRef.current.interact = false;
-                // interactPressedRef остаётся true до keyup — иначе автоповтор keydown вызовет колбэк снова
-              }
-            }
-            forceUpdate({});
-          }
-        } else {
-          controlsRef.current[control] = true;
-          forceUpdate({});
-        }
-      }
-    };
-
-    const handleKeyUp = (e: KeyboardEvent) => {
-      const control = KEY_MAP[e.code];
-      if (control) {
-        if (control === 'interact') {
-          interactPressedRef.current = false;
-        }
-        controlsRef.current[control] = false;
-        forceUpdate({});
-      }
-    };
-
-    // Сброс при потере фокуса окна
-    const handleBlur = () => {
-      controlsRef.current = { ...DEFAULT_CONTROLS };
-      interactPressedRef.current = false;
-      forceUpdate({});
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    window.addEventListener('keyup', handleKeyUp);
-    window.addEventListener('blur', handleBlur);
-
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-      window.removeEventListener('keyup', handleKeyUp);
-      window.removeEventListener('blur', handleBlur);
-    };
+    const ctrl = controllerRef.current!;
+    return ctrl.attachWindow(() => {
+      onInteractPressRef.current?.();
+    });
   }, []);
 
   return {
@@ -183,10 +43,6 @@ export function usePlayerControls(options?: UsePlayerControlsOptions) {
     resetInteract,
   };
 }
-
-// ============================================
-// usePhysicsState HOOK
-// ============================================
 
 export interface PhysicsState {
   isGrounded: boolean;
@@ -225,9 +81,5 @@ export function usePhysicsState() {
     setGrounded,
   };
 }
-
-// ============================================
-// EXPORT DEFAULT
-// ============================================
 
 export default usePlayerControls;

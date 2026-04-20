@@ -2,7 +2,13 @@
 
 import React, { Suspense, useMemo, memo } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
+import { PerformanceMonitor } from '@react-three/drei';
 import { Physics } from '@react-three/rapier';
+import {
+  EXPLORATION_DIRECTIONAL_SHADOW_BIAS,
+  EXPLORATION_DIRECTIONAL_SHADOW_NORMAL_BIAS,
+  EXPLORATION_SHADOW_MAP_DESKTOP,
+} from '@/lib/explorationShadowConstants';
 import { EffectComposer, Vignette, ChromaticAberration, Bloom, Noise } from '@react-three/postprocessing';
 import { Vector2 } from 'three';
 
@@ -14,11 +20,13 @@ import type { PlayerPosition, NPCState } from '@/data/rpgTypes';
 import { PhysicsSceneColliders } from './PhysicsSceneColliders';
 import { PhysicsPlayer } from './PhysicsPlayer';
 import FollowCamera from './FollowCamera';
+import { ThreeCanvasSuspenseFallback } from '@/components/3d/ThreeCanvasSuspenseFallback';
 import { getDefaultPlayerModelPath } from '@/config/modelUrls';
 import { NPCSystem } from './NPC';
 import { InteractiveObject, PhysicsExplorationRoomVisual } from './RoomEnvironment';
 import { useGameStore } from '@/store/gameStore';
 import { getExplorationCharacterModelScale, getExplorationLocomotionScale } from '@/config/scenes';
+import { isExplorationRapierColliderDebugEnabled } from '@/lib/explorationDiagnostics';
 
 const PhysicsWorldClock = memo(function PhysicsWorldClock() {
   const advanceTime = useGameStore((s) => s.advanceTime);
@@ -101,7 +109,7 @@ interface PhysicsGameModeSwitcherProps {
   interactiveObjects?: InteractiveObjectConfig[];
   onNPCRelationChange?: (npcId: string, delta: number) => void;
   onObjectInteract?: (objectId: string, action: string) => void;
-  onPlayerPositionChange?: (pos: { x: number; y: number; z: number }) => void;
+  onPlayerPositionChange?: (pos: { x: number; y: number; z: number; rotation?: number }) => void;
   onNPCInteraction?: (npcId: string) => void;
   children?: React.ReactNode;
 }
@@ -133,6 +141,7 @@ export const PhysicsGameModeSwitcher = memo(function PhysicsGameModeSwitcher({
   }, [stressLevel, panicMode]);
 
   const showPhysicsDebugHelpers = process.env.NEXT_PUBLIC_PHYSICS_DEBUG_HELPERS === '1';
+  const rapierColliderDebug = isExplorationRapierColliderDebugEnabled();
 
   const explorationCharacterModelScale = useMemo(
     () => getExplorationCharacterModelScale(sceneId),
@@ -176,13 +185,33 @@ export const PhysicsGameModeSwitcher = memo(function PhysicsGameModeSwitcher({
   return (
     <Canvas
       shadows
-      gl={{ antialias: true, alpha: false }}
+      dpr={[1, 1.5]}
+      gl={{
+        antialias: true,
+        alpha: false,
+        stencil: false,
+        logarithmicDepthBuffer: false,
+        powerPreference: 'high-performance',
+      }}
       style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
     >
-      <Suspense fallback={null}>
+      <PerformanceMonitor />
+      <Suspense fallback={<ThreeCanvasSuspenseFallback />}>
         {/* Усиленное освещение */}
         <ambientLight intensity={1.0} />
-        <directionalLight position={[5, 10, 5]} intensity={2} castShadow />
+        <directionalLight
+          position={[5, 10, 5]}
+          intensity={2}
+          castShadow
+          shadow-mapSize={[EXPLORATION_SHADOW_MAP_DESKTOP, EXPLORATION_SHADOW_MAP_DESKTOP]}
+          shadow-bias={EXPLORATION_DIRECTIONAL_SHADOW_BIAS}
+          shadow-normalBias={EXPLORATION_DIRECTIONAL_SHADOW_NORMAL_BIAS}
+          shadow-camera-far={50}
+          shadow-camera-left={-12}
+          shadow-camera-right={12}
+          shadow-camera-top={12}
+          shadow-camera-bottom={-12}
+        />
         <pointLight position={[0, 3, 0]} intensity={1.5} />
         <pointLight position={[-3, 2, 2]} intensity={1} />
         <pointLight position={[3, 2, -2]} intensity={1} />
@@ -194,7 +223,7 @@ export const PhysicsGameModeSwitcher = memo(function PhysicsGameModeSwitcher({
           </>
         )}
 
-        <Physics debug={false} gravity={gravity}>
+        <Physics timeStep={1 / 60} debug={rapierColliderDebug} gravity={gravity}>
           <PhysicsWorldClock />
           <PhysicsSceneColliders sceneId={sceneId} />
 

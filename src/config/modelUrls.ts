@@ -19,7 +19,10 @@ export function getModelsPublicBase(): string {
 
 const BASE_URL = getModelsPublicBase();
 
-/** Перенос legacy-путей `/models/…` на актуальный `BASE_URL` (или оставить http(s) как есть). */
+/**
+ * Перенос legacy-путей `/models/…` на актуальный `BASE_URL` (или оставить http(s) как есть).
+ * Не добавляйте cache-bust query (`?v=…`) к URL для GLB — иначе кэш загрузчика не стабилен и возможно мерцание.
+ */
 export function rewriteLegacyModelPath(path: string): string {
   if (!path || typeof path !== 'string') return path;
   const t = path.trim();
@@ -38,7 +41,10 @@ export function rewriteLegacyModelPath(path: string): string {
 // ============================================
 
 export const MODEL_URLS = {
-  // Главный персонаж
+  /**
+   * Главный персонаж. В идеале — root ~1.7 m, клипы `Idle` / `Walk` (сейчас в файле часто один клип).
+   * Клиент масштабирует по bounding box SkinnedMesh; кривой экспорт с огромным root bbox больше не ломает рост.
+   */
   volodka: `${BASE_URL}/Volodka.glb`,
   
   // NPC модели (аниме стиль)

@@ -1,19 +1,39 @@
 import * as React from "react"
 
-const MOBILE_BREAKPOINT = 768
+/** До `lg` в Tailwind и ниже: телефоны в ландшафте (ширина > 768) остаются «мобильными». */
+const MOBILE_BREAKPOINT_PX = 1024
 
 export function useIsMobile() {
   const [isMobile, setIsMobile] = React.useState<boolean | undefined>(undefined)
 
   React.useEffect(() => {
-    const mql = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT - 1}px)`)
+    const query = `(max-width: ${MOBILE_BREAKPOINT_PX - 1}px)`
+    const mql = window.matchMedia(query)
     const onChange = () => {
-      setIsMobile(window.innerWidth < MOBILE_BREAKPOINT)
+      setIsMobile(window.matchMedia(query).matches)
     }
-    mql.addEventListener("change", onChange)
-    setIsMobile(window.innerWidth < MOBILE_BREAKPOINT)
-    return () => mql.removeEventListener("change", onChange)
+    mql.addEventListener('change', onChange)
+    onChange()
+    return () => mql.removeEventListener('change', onChange)
   }, [])
 
   return !!isMobile
+}
+
+/**
+ * Показывать тач-панель в 3D: узкий экран или основной ввод — грубый указатель (планшеты, телефоны).
+ */
+export function useTouchGameControls(): boolean {
+  const narrow = useIsMobile()
+  const [coarsePointer, setCoarsePointer] = React.useState(false)
+
+  React.useEffect(() => {
+    const mql = window.matchMedia("(pointer: coarse)")
+    const sync = () => setCoarsePointer(mql.matches)
+    sync()
+    mql.addEventListener("change", sync)
+    return () => mql.removeEventListener("change", sync)
+  }, [])
+
+  return narrow || coarsePointer
 }

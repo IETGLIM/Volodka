@@ -1,0 +1,20 @@
+# Зависимости и артефакты сборки — не индексировать в Cursor (тысячи package.json внутри node_modules).
+node_modules/
+**/.next/
+.next/
+out/
+build/
+dist/
+coverage/
+.turbo/
+playwright-report/
+test-results/
+*.tsbuildinfo
+tsconfig.tsbuildinfo
+
+_volodka_upstream_check/
+browserbase-functions/**/node_modules/
+
+.vercel/
+
+archives/*.zip

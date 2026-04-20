@@ -600,7 +600,7 @@ interface SettingsPanelProps {
 const SettingsPanel = memo(function SettingsPanel({ onClose }: SettingsPanelProps) {
   return (
     <motion.div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 game-fm-layer game-fm-layer-promote"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 game-fm-layer game-fm-layer-promote pointer-events-auto"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
@@ -731,7 +731,7 @@ export const MenuScreen = memo(function MenuScreen({
   }, []);
 
   return (
-    <div className="fixed inset-0 overflow-hidden">
+    <div className="fixed inset-0 overflow-hidden pointer-events-none">
       {/* Animated gradient background */}
       <GradientBackground />
 
@@ -783,9 +783,9 @@ export const MenuScreen = memo(function MenuScreen({
           </div>
         </motion.div>
 
-        {/* Title */}
+        {/* Title — initial={false}: первый кадр уже «контентный» для LCP (иначе opacity:0 откладывает метрику на анимацию). */}
         <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
+          initial={false}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.8, type: 'spring' }}
           className="text-center mb-8"
@@ -806,7 +806,7 @@ export const MenuScreen = memo(function MenuScreen({
                 ? '-2px 0 #ff0000, 2px 0 #00ffff, 0 0 60px rgba(0, 255, 255, 0.6)'
                 : '0 0 60px rgba(0, 255, 255, 0.6), 0 0 120px rgba(0, 255, 255, 0.4), 0 0 180px rgba(255, 140, 0, 0.1)',
             }}
-            initial={{ opacity: 0, y: -30 }}
+            initial={false}
             animate={{ opacity: 1, y: 0 }}
           >
             <span className="text-transparent bg-clip-text bg-gradient-to-b from-cyan-300 via-cyan-400 to-emerald-500 neon-pulse-cyan">
@@ -861,8 +861,8 @@ export const MenuScreen = memo(function MenuScreen({
           <UfaBadge />
         </div>
 
-        {/* Menu buttons — терминальная рамка */}
-        <div className="w-full max-w-xs rounded-sm border border-cyan-500/25 bg-black/55 px-3 py-4 shadow-[inset_0_1px_0_0_rgba(0,255,255,0.07)]">
+        {/* Menu buttons — терминальная рамка (pointer-events-auto: корень меню pointer-events-none, иначе INP цепляется за пустой min-h-screen) */}
+        <div className="w-full max-w-xs rounded-sm border border-cyan-500/25 bg-black/55 px-3 py-4 shadow-[inset_0_1px_0_0_rgba(0,255,255,0.07)] pointer-events-auto">
           <pre
             className="mb-3 font-mono text-[10px] leading-snug text-cyan-500/45 select-none whitespace-pre"
             aria-hidden

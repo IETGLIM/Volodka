@@ -90,6 +90,36 @@ const BoundaryWalls = memo(function BoundaryWalls({
   );
 });
 
+/** Прямоугольный периметр для raycast камеры (как `RectangularBoundaryWalls` в `PhysicsSceneColliders`). */
+const RectangularInvisibleBoundary = memo(function RectangularInvisibleBoundary({
+  width,
+  depth,
+  height = 4,
+  position = [0, 0, 0],
+  wallInset = 1,
+}: {
+  width: number;
+  depth: number;
+  height?: number;
+  position?: [number, number, number];
+  wallInset?: number;
+}) {
+  const bw = Math.max(2, width - wallInset);
+  const bd = Math.max(2, depth - wallInset);
+  const halfW = bw / 2;
+  const halfD = bd / 2;
+  const wallThickness = 0.5;
+
+  return (
+    <group position={position}>
+      <InvisibleWall position={[0, height / 2, -halfD]} size={[bw + wallThickness * 2, height, wallThickness]} />
+      <InvisibleWall position={[0, height / 2, halfD]} size={[bw + wallThickness * 2, height, wallThickness]} />
+      <InvisibleWall position={[-halfW, height / 2, 0]} size={[wallThickness, height, bd]} />
+      <InvisibleWall position={[halfW, height / 2, 0]} size={[wallThickness, height, bd]} />
+    </group>
+  );
+});
+
 /**
  * Один `InstancedMesh` на много невидимых AABB для raycast камеры (слой {@link CAMERA_COLLISION_LAYER}).
  */
@@ -149,19 +179,15 @@ const InstancedWalls = memo(function InstancedWalls({
 
 export const KitchenColliders = memo(function KitchenColliders() {
   const obstacleWalls: [number, number, number][] = useMemo(() => [
-    // Холодильник
     [4, 1, -2],
-    // Стол (низкий блок)
     [0, 0.5, -2],
-    // Окно (стена за ним)
-    [-3, 1.5, -5],
   ], []);
   
   return (
     <group>
-      {/* Пол */}
+      {/* Пол — как PhysicsFloor 14×14 */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.01, 0]} receiveShadow>
-        <planeGeometry args={[20, 20]} />
+        <planeGeometry args={[14, 14]} />
         <meshStandardMaterial color="#3d2817" roughness={0.7} />
       </mesh>
       
@@ -179,7 +205,7 @@ export const HomeEveningColliders = memo(function HomeEveningColliders() {
   return (
     <group>
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.01, 0]} receiveShadow>
-        <planeGeometry args={[20, 20]} />
+        <planeGeometry args={[14, 14]} />
         <meshStandardMaterial color="#241c14" roughness={0.78} />
       </mesh>
       <BoundaryWalls size={14} height={3} />
@@ -205,10 +231,8 @@ export const VolodkaRoomColliders = memo(function VolodkaRoomColliders() {
 
   return (
     <group>
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.01, 0]} receiveShadow>
-        <planeGeometry args={[16, 14]} />
-        <meshStandardMaterial color="#2a3340" roughness={0.82} />
-      </mesh>
+      {/* Пол только для raycast камеры (`InstancedWalls` = слой 4); видимый пол — в `VolodkaRoomVisual`. */}
+      <InstancedWalls positions={[[0, -0.04, 0]]} size={[14, 0.08, 10]} />
       <InstancedWalls positions={[[0, h / 2, -hd]]} size={[14 + wallT * 2, h, wallT]} />
       <InstancedWalls positions={[[-hw, h / 2, 0]]} size={[wallT, h, 10]} />
       <InstancedWalls positions={[[hw, h / 2, 0]]} size={[wallT, h, 10]} />
@@ -233,7 +257,7 @@ export const VolodkaCorridorColliders = memo(function VolodkaCorridorColliders()
   return (
     <group>
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.01, 0]} receiveShadow>
-        <planeGeometry args={[4, 13]} />
+        <planeGeometry args={[3.5, 12]} />
         <meshStandardMaterial color="#3a3630" roughness={0.82} />
       </mesh>
       <InstancedWalls positions={[[halfW, h / 2, 0]]} size={[wallT, h, 12]} />
@@ -269,7 +293,7 @@ export const CafeColliders = memo(function CafeColliders() {
   return (
     <group>
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.01, 0]} receiveShadow>
-        <planeGeometry args={[20, 20]} />
+        <planeGeometry args={[16, 16]} />
         <meshStandardMaterial color="#4a3520" roughness={0.6} />
       </mesh>
       
@@ -294,7 +318,7 @@ export const OfficeColliders = memo(function OfficeColliders() {
   return (
     <group>
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.01, 0]} receiveShadow>
-        <planeGeometry args={[20, 20]} />
+        <planeGeometry args={[16, 16]} />
         <meshStandardMaterial color="#4a4a4a" roughness={0.9} />
       </mesh>
       
@@ -461,6 +485,155 @@ export const BattleColliders = memo(function BattleColliders() {
   );
 });
 
+export const ZaremaAlbertColliders = memo(function ZaremaAlbertColliders() {
+  return (
+    <group>
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.01, 0]} receiveShadow>
+        <planeGeometry args={[10, 8]} />
+        <meshStandardMaterial color="#5c4033" roughness={0.8} />
+      </mesh>
+      <BoundaryWalls size={10} height={3} />
+    </group>
+  );
+});
+
+export const BluePitColliders = memo(function BluePitColliders() {
+  const bar = useMemo(() => [[0, 0.55, -4.5]] as [number, number, number][], []);
+  const tables = useMemo(
+    () =>
+      [
+        [-3.5, 0.4, 1],
+        [3.5, 0.4, 1],
+      ] as [number, number, number][],
+    [],
+  );
+
+  return (
+    <group>
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.01, 0]} receiveShadow>
+        <planeGeometry args={[15, 15]} />
+        <meshStandardMaterial color="#1e3a5f" roughness={0.85} />
+      </mesh>
+      <BoundaryWalls size={14} height={3} />
+      <InstancedWalls positions={bar} size={[5, 1.1, 0.9]} />
+      <InstancedWalls positions={tables} size={[0.85, 0.8, 0.85]} />
+    </group>
+  );
+});
+
+export const GreenZoneColliders = memo(function GreenZoneColliders() {
+  const trees = useMemo(
+    () =>
+      [
+        [-6, 1.2, -5],
+        [6, 1.2, -4],
+        [-5, 1.2, 5],
+        [5, 1.2, 5],
+      ] as [number, number, number][],
+    [],
+  );
+  const benches = useMemo(
+    () =>
+      [
+        [-2, 0.35, 0],
+        [2, 0.35, 0],
+      ] as [number, number, number][],
+    [],
+  );
+
+  return (
+    <group>
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.01, 0]} receiveShadow>
+        <planeGeometry args={[18, 18]} />
+        <meshStandardMaterial color="#2d5a3d" roughness={0.88} />
+      </mesh>
+      <BoundaryWalls size={17} height={2.5} />
+      <InstancedWalls positions={trees} size={[0.45, 2.4, 0.45]} />
+      <InstancedWalls positions={benches} size={[1.2, 0.55, 0.45]} />
+    </group>
+  );
+});
+
+export const DistrictColliders = memo(function DistrictColliders() {
+  const lamps = useMemo(
+    () =>
+      [
+        [-7, 1.4, -7],
+        [0, 1.4, -8],
+        [7, 1.4, -7],
+      ] as [number, number, number][],
+    [],
+  );
+  const crates = useMemo(
+    () =>
+      [
+        [-4, 0.45, 3],
+        [4, 0.45, 3],
+      ] as [number, number, number][],
+    [],
+  );
+
+  return (
+    <group>
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.01, 0]} receiveShadow>
+        <planeGeometry args={[20, 20]} />
+        <meshStandardMaterial color="#3d3d42" roughness={0.82} />
+      </mesh>
+      <BoundaryWalls size={19} height={2.5} />
+      <InstancedWalls positions={lamps} size={[0.22, 2.8, 0.22]} />
+      <InstancedWalls positions={crates} size={[1, 0.9, 0.9]} />
+    </group>
+  );
+});
+
+export const MvdColliders = memo(function MvdColliders() {
+  const counter = useMemo(() => [[0, 0.55, -3.2]] as [number, number, number][], []);
+  const desks = useMemo(
+    () =>
+      [
+        [-4, 0.48, 2],
+        [4, 0.48, 2],
+      ] as [number, number, number][],
+    [],
+  );
+
+  return (
+    <group>
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.01, 0]} receiveShadow>
+        <planeGeometry args={[12, 10]} />
+        <meshStandardMaterial color="#4a5568" roughness={0.88} />
+      </mesh>
+      <RectangularInvisibleBoundary width={12} depth={10} height={3} wallInset={1} />
+      <InstancedWalls positions={counter} size={[4.5, 1.1, 0.7]} />
+      <InstancedWalls positions={desks} size={[1.2, 0.95, 0.65]} />
+    </group>
+  );
+});
+
+export const PresidentHotelColliders = memo(function PresidentHotelColliders() {
+  const reception = useMemo(() => [[0, 0.55, -3.5]] as [number, number, number][], []);
+  const columns = useMemo(
+    () =>
+      [
+        [-4.5, 1.1, 0],
+        [4.5, 1.1, 0],
+      ] as [number, number, number][],
+    [],
+  );
+
+  return (
+    <group>
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.01, 0]} receiveShadow>
+        <planeGeometry args={[14, 10]} />
+        <meshStandardMaterial color="#5c5348" roughness={0.86} />
+      </mesh>
+      <RectangularInvisibleBoundary width={14} depth={10} height={3.5} wallInset={1} />
+      <InstancedWalls positions={reception} size={[5, 1.1, 0.85]} />
+      <InstancedWalls positions={columns} size={[0.35, 2.2, 0.35]} />
+    </group>
+  );
+});
+
 // ============================================
 // СЕЛЕКТОР КОЛЛАЙДЕРОВ ПО СЦЕНЕ
 // ============================================
@@ -497,6 +670,18 @@ export const SceneColliderSelector = memo(function SceneColliderSelector({ scene
         return <DreamColliders />;
       case 'battle':
         return <BattleColliders />;
+      case 'zarema_albert_room':
+        return <ZaremaAlbertColliders />;
+      case 'blue_pit':
+        return <BluePitColliders />;
+      case 'green_zone':
+        return <GreenZoneColliders />;
+      case 'district':
+        return <DistrictColliders />;
+      case 'mvd':
+        return <MvdColliders />;
+      case 'president_hotel':
+        return <PresidentHotelColliders />;
       default:
         return (
           <group>

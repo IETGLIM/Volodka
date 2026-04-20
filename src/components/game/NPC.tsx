@@ -9,10 +9,22 @@ import React, {
   useCallback,
   useEffect,
   useLayoutEffect,
+  type RefObject,
 } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { useGLTF, useAnimations, Html } from '@react-three/drei';
-import { RigidBody, type RapierRigidBody } from '@react-three/rapier';
+import {
+  RigidBody,
+  type RapierRigidBody,
+  useRapier,
+  useBeforePhysicsStep,
+  CapsuleCollider,
+} from '@react-three/rapier';
+import type { KinematicCharacterController } from '@dimforge/rapier3d-compat';
+import {
+  computePlayerCapsule,
+  createExplorationKinematicCharacterController,
+} from '@/core/physics/CharacterController';
 import { motion } from 'framer-motion';
 import { useShallow } from 'zustand/react/shallow';
 import * as THREE from 'three';
@@ -23,11 +35,14 @@ import { rewriteLegacyModelPath } from '@/config/modelUrls';
 import { getCurrentScheduleEntry } from '@/engine/ScheduleEngine';
 import { useGameStore } from '@/store/gameStore';
 import { getNpcQuestMarkerForExploration } from '@/lib/npcQuestMarker';
+import { retainGltfModelUrl, releaseGltfModelUrl } from '@/lib/gltfModelCache';
+import { applyGltfExplorationCharacterMaterialPolicies } from '@/lib/gltfCharacterMaterialPolicy';
 import type { FindNavPathXZ } from '@/lib/explorationNavMesh';
-
-/** Дальше — упрощённая болванка вместо GLB (меньше полигоналки и скинов). */
-const NPC_LOD_FULL_IN_M = 12;
-const NPC_LOD_IMPOSTOR_OUT_M = 17;
+import {
+  NPC_SHADOW_MID_IN_M,
+  NPC_SHADOW_NEAR_IN_M,
+  resolveNpcModelLodUseFull,
+} from '@/lib/npcLodConstants';
 
 function scheduleActivityIcon(entry: ScheduleEntry | null | undefined): string {
   if (!entry) return '💬';
@@ -140,6 +155,21 @@ function isValidNpcModelPath(p: string): boolean {
   );
 }
 
+/** Клон сцены из `loadedScene.clone(true)` — освобождаем GPU при смене URL или размонтировании. */
+function disposeNpcGltfCloneResources(root: THREE.Object3D) {
+  root.traverse((obj) => {
+    const mesh = obj as THREE.Mesh & { isMesh?: boolean };
+    if (!mesh.isMesh) return;
+    mesh.geometry?.dispose();
+    const mat = mesh.material;
+    if (Array.isArray(mat)) {
+      for (const m of mat) m.dispose();
+    } else if (mat && typeof (mat as THREE.Material).dispose === 'function') {
+      (mat as THREE.Material).dispose();
+    }
+  });
+}
+
 // Внутренний компонент для рендера загруженной модели
 const GLTFModelInner = memo(function GLTFModelInner({
   groupRef,
@@ -198,6 +228,42 @@ const GLTFLoader = memo(function GLTFLoader({
   };
   const { actions } = useAnimations(animations ?? [], groupRef);
   const [currentClipName, setCurrentClipName] = useState<string | null>(null);
+  const actionsRef = useRef(actions);
+  actionsRef.current = actions;
+
+  const actionKeysSig = useMemo(() => {
+    if (!actions) return '';
+    return Object.keys(actions)
+      .filter((k) => actions[k])
+      .sort()
+      .join('\0');
+  }, [actions]);
+
+  const animMappingSig = useMemo(() => {
+    if (!animMapping) return '';
+    const parts: string[] = [`idle:${animMapping.idle}`];
+    if (animMapping.walk) parts.push(`walk:${animMapping.walk}`);
+    if (animMapping.run) parts.push(`run:${animMapping.run}`);
+    if (animMapping.talk) parts.push(`talk:${animMapping.talk}`);
+    return parts.join('|');
+  }, [animMapping]);
+
+  useEffect(() => {
+    retainGltfModelUrl(modelPath);
+    return () => releaseGltfModelUrl(modelPath);
+  }, [modelPath]);
+
+  /** Размонтирование / смена `actions`: останавливаем клипы, иначе mixer держит ссылки. */
+  useEffect(() => {
+    return () => {
+      const act = actionsRef.current;
+      if (!act) return;
+      for (const key of Object.keys(act)) {
+        const a = act[key];
+        if (a) a.stop();
+      }
+    };
+  }, []);
 
   const scene = useMemo(() => {
     if (!loadedScene) return null;
@@ -209,6 +275,7 @@ const GLTFLoader = memo(function GLTFLoader({
           child.receiveShadow = true;
         }
       });
+      applyGltfExplorationCharacterMaterialPolicies(clone);
       return clone;
     } catch {
       return null;
@@ -216,9 +283,17 @@ const GLTFLoader = memo(function GLTFLoader({
   }, [loadedScene]);
 
   useEffect(() => {
-    if (!actions || Object.keys(actions).length === 0) return;
+    if (!scene) return;
+    return () => {
+      disposeNpcGltfCloneResources(scene);
+    };
+  }, [scene]);
 
-    const actionKeys = Object.keys(actions).filter((k) => actions[k]);
+  useEffect(() => {
+    const act = actionsRef.current;
+    if (!act || Object.keys(act).length === 0) return;
+
+    const actionKeys = Object.keys(act).filter((k) => act[k]);
     if (actionKeys.length === 0) return;
 
     const resolved = resolveNpcAnimationClip(actionKeys, animMapping);
@@ -229,15 +304,15 @@ const GLTFLoader = memo(function GLTFLoader({
           ? resolved.talk || resolved.idle
           : resolved.idle;
 
-    if (!targetClip || !actions[targetClip] || currentClipName === targetClip) return;
+    if (!targetClip || !act[targetClip] || currentClipName === targetClip) return;
 
-    if (currentClipName && actions[currentClipName]) {
-      actions[currentClipName].fadeOut(0.2);
+    if (currentClipName && act[currentClipName]) {
+      act[currentClipName].fadeOut(0.2);
     }
-    actions[targetClip].reset().fadeIn(0.2).play();
+    act[targetClip].reset().fadeIn(0.2).play();
     const timer = setTimeout(() => setCurrentClipName(targetClip), 0);
     return () => clearTimeout(timer);
-  }, [actions, animMapping, npcAnimation, currentClipName]);
+  }, [actionKeysSig, animMappingSig, npcAnimation, currentClipName]);
 
   if (!scene) {
     return <>{fallback}</>;
@@ -309,7 +384,7 @@ const ElderModel = memo(function ElderModel({ isNearPlayer, isDialogueActive }: 
 
   useFrame(({ clock }) => {
     if (groupRef.current) {
-      const t = clock.getElapsedTime();
+      const t = clock.elapsedTime;
       groupRef.current.position.y = Math.sin(t * 1.2) * 0.015;
       groupRef.current.rotation.z = Math.sin(t * 0.6) * 0.015;
     }
@@ -359,7 +434,7 @@ const BaristaModel = memo(function BaristaModel({ isNearPlayer, isDialogueActive
 
   useFrame(({ clock }) => {
     if (groupRef.current) {
-      const t = clock.getElapsedTime();
+      const t = clock.elapsedTime;
       groupRef.current.position.y = Math.sin(t * 1.8) * 0.012;
     }
   });
@@ -406,7 +481,7 @@ const ColleagueModel = memo(function ColleagueModel({ isNearPlayer, isDialogueAc
 
   useFrame(({ clock }) => {
     if (groupRef.current) {
-      const t = clock.getElapsedTime();
+      const t = clock.elapsedTime;
       groupRef.current.position.y = Math.sin(t * 1.6) * 0.01;
       groupRef.current.rotation.z = Math.sin(t * 0.7) * 0.01;
     }
@@ -465,7 +540,7 @@ const ShadowModel = memo(function ShadowModel({ isNearPlayer, isDialogueActive }
 
   useFrame(({ clock }) => {
     if (glowRef.current) {
-      const t = clock.getElapsedTime();
+      const t = clock.elapsedTime;
       (glowRef.current.material as THREE.MeshBasicMaterial).opacity = 0.15 + Math.sin(t * 2) * 0.05;
     }
   });
@@ -521,7 +596,7 @@ const GenericModel = memo(function GenericModel({ isNearPlayer, isDialogueActive
 
   useFrame(({ clock }) => {
     if (groupRef.current) {
-      const t = clock.getElapsedTime();
+      const t = clock.elapsedTime;
       groupRef.current.position.y = Math.sin(t * 1.5) * 0.02;
       groupRef.current.rotation.z = Math.sin(t * 0.8) * 0.02;
     }
@@ -592,6 +667,8 @@ interface NPCProps {
   definition: NPCDefinition;
   state: NPCState;
   playerPosition: { x: number; y: number; z: number };
+  /** Актуальная позиция игрока без ре-рендера родителя (приоритет над `playerPosition` в `useFrame`). */
+  playerPositionRef?: RefObject<{ x: number; y: number; z: number; rotation?: number } | null>;
   onInteraction: (npcId: string) => void;
   onStateChange: (state: NPCState) => void;
   isDialogueActive: boolean;
@@ -611,6 +688,7 @@ export const NPC = memo(function NPC({
   definition,
   state,
   playerPosition,
+  playerPositionRef,
   onInteraction,
   onStateChange,
   isDialogueActive,
@@ -625,6 +703,13 @@ export const NPC = memo(function NPC({
     [definition.scale, locationModelScale],
   );
 
+  const { world } = useRapier();
+  const npcCharacterControllerRef = useRef<KinematicCharacterController | null>(null);
+  const npcCapsule = useMemo(
+    () => computePlayerCapsule(Math.max(0.28, Math.min(1.25, effectiveModelScale))),
+    [effectiveModelScale],
+  );
+
   const groupRef = useRef<THREE.Group>(null);
   const rigidBodyRef = useRef<RapierRigidBody>(null);
   const modelRef = useRef<THREE.Group>(null);
@@ -633,6 +718,12 @@ export const NPC = memo(function NPC({
 
   // Используем ref для позиции вместо useState - avoids re-renders every frame
   const currentPositionRef = useRef(state.position);
+  /** Целевая позиция до KCC; `useBeforePhysicsStep` читает её до того, как `useFrame` успевает обновить `currentPositionRef`. */
+  const npcKccIntentRef = useRef({
+    x: state.position.x,
+    y: state.position.y,
+    z: state.position.z,
+  });
   const currentTargetIndex = useRef(state.currentWaypoint);
   const waitTime = useRef(0);
   const isWaiting = useRef(false);
@@ -659,14 +750,51 @@ export const NPC = memo(function NPC({
   useLayoutEffect(() => {
     if (!enableNpcPhysics || !rigidBodyRef.current) return;
     const p = scheduleEntry?.position ?? state.position;
-    rigidBodyRef.current.setTranslation({ x: p.x, y: p.y, z: p.z }, true);
+    /** Снап расписания: только следующий kinematic-шаг — без `setTranslation` в KCC-петле. */
+    rigidBodyRef.current.setNextKinematicTranslation({ x: p.x, y: p.y, z: p.z });
+    npcKccIntentRef.current = { x: p.x, y: p.y, z: p.z };
+    currentPositionRef.current = { x: p.x, y: p.y, z: p.z };
   }, [enableNpcPhysics, scheduleEntry, state.position.x, state.position.y, state.position.z]);
+
+  useEffect(() => {
+    if (!enableNpcPhysics) return;
+    const cc = createExplorationKinematicCharacterController(world);
+    npcCharacterControllerRef.current = cc;
+    return () => {
+      world.removeCharacterController(cc);
+      npcCharacterControllerRef.current = null;
+    };
+  }, [world, enableNpcPhysics]);
+
+  useBeforePhysicsStep(() => {
+    if (!enableNpcPhysics) return;
+    const rb = rigidBodyRef.current;
+    const cc = npcCharacterControllerRef.current;
+    if (!rb || !cc) return;
+    const n = rb.numColliders();
+    if (n < 1) return;
+    const collider = rb.collider(0);
+    const t0 = rb.translation();
+    const target = npcKccIntentRef.current;
+    const dx = target.x - t0.x;
+    const dy = target.y - t0.y;
+    const dz = target.z - t0.z;
+    cc.computeColliderMovement(collider, { x: dx, y: dy, z: dz });
+    const m = cc.computedMovement();
+    const nx = t0.x + m.x;
+    const ny = t0.y + m.y;
+    const nz = t0.z + m.z;
+    rb.setNextKinematicTranslation({ x: nx, y: ny, z: nz });
+    currentPositionRef.current = { x: nx, y: ny, z: nz };
+  });
 
   const syncWorldPosition = useCallback(
     (p: { x: number; y: number; z: number }) => {
-      if (enableNpcPhysics && rigidBodyRef.current) {
-        rigidBodyRef.current.setTranslation({ x: p.x, y: p.y, z: p.z }, true);
-      } else if (groupRef.current) {
+      if (enableNpcPhysics) {
+        // Целевая позиция в `currentPositionRef` выставляется в `useFrame`; сдвиг тела — KCC в `useBeforePhysicsStep`.
+        return;
+      }
+      if (groupRef.current) {
         groupRef.current.position.set(p.x, p.y, p.z);
       }
     },
@@ -674,16 +802,22 @@ export const NPC = memo(function NPC({
   );
 
   useFrame((_, delta) => {
-    const posForLod = scheduleEntry ? scheduleEntry.position : currentPositionRef.current;
-    const dLod = Math.hypot(playerPosition.x - posForLod.x, playerPosition.z - posForLod.z);
-    let nextLodFull = lodFullModelRef.current;
-    if (isDialogueActive || !definition.modelPath) {
-      nextLodFull = true;
-    } else if (dLod < NPC_LOD_FULL_IN_M) {
-      nextLodFull = true;
-    } else if (dLod > NPC_LOD_IMPOSTOR_OUT_M) {
-      nextLodFull = false;
+    const live = playerPositionRef?.current;
+    const px = live?.x ?? playerPosition.x;
+    const pz = live?.z ?? playerPosition.z;
+
+    if (enableNpcPhysics && rigidBodyRef.current) {
+      const tr = rigidBodyRef.current.translation();
+      currentPositionRef.current = { x: tr.x, y: tr.y, z: tr.z };
     }
+
+    const posForLod = scheduleEntry ? scheduleEntry.position : currentPositionRef.current;
+    const dLod = Math.hypot(px - posForLod.x, pz - posForLod.z);
+    const nextLodFull = resolveNpcModelLodUseFull({
+      wasFull: lodFullModelRef.current,
+      distanceXZ: dLod,
+      forceFull: Boolean(isDialogueActive || !definition.modelPath),
+    });
     if (nextLodFull !== lodFullModelRef.current) {
       lodFullModelRef.current = nextLodFull;
       setUseFullModel(nextLodFull);
@@ -693,8 +827,8 @@ export const NPC = memo(function NPC({
     if (isDialogueActive) {
       nextShadow = 'near';
     } else if (definition.modelPath && lodFullModelRef.current) {
-      if (dLod < 4.5) nextShadow = 'near';
-      else if (dLod > 6.5) nextShadow = 'mid';
+      if (dLod < NPC_SHADOW_NEAR_IN_M) nextShadow = 'near';
+      else if (dLod > NPC_SHADOW_MID_IN_M) nextShadow = 'mid';
     } else {
       nextShadow = 'near';
     }
@@ -706,10 +840,13 @@ export const NPC = memo(function NPC({
     if (scheduleEntry) {
       const p = scheduleEntry.position;
       currentPositionRef.current = { x: p.x, y: p.y, z: p.z };
+      if (enableNpcPhysics) {
+        npcKccIntentRef.current = { x: p.x, y: p.y, z: p.z };
+      }
       syncWorldPosition(p);
 
-      const dx = playerPosition.x - p.x;
-      const dz = playerPosition.z - p.z;
+      const dx = px - p.x;
+      const dz = pz - p.z;
       const distance = Math.sqrt(dx * dx + dz * dz);
       const near = distance < 3;
       if (near !== wasNearPlayer.current) {
@@ -739,7 +876,13 @@ export const NPC = memo(function NPC({
         lastStateChangeTime.current = now;
         onStateChange({
           ...state,
-          position: currentPositionRef.current,
+          position:
+            enableNpcPhysics && rigidBodyRef.current
+              ? (() => {
+                  const t = rigidBodyRef.current!.translation();
+                  return { x: t.x, y: t.y, z: t.z };
+                })()
+              : currentPositionRef.current,
           currentWaypoint: currentTargetIndex.current,
         });
       }
@@ -750,8 +893,8 @@ export const NPC = memo(function NPC({
     syncWorldPosition(pos);
 
     // Проверка дистанции до игрока (без useEffect/setTimeout)
-    const dx = playerPosition.x - pos.x;
-    const dz = playerPosition.z - pos.z;
+    const dx = px - pos.x;
+    const dz = pz - pos.z;
     const distance = Math.sqrt(dx * dx + dz * dz);
     const near = distance < 3;
 
@@ -805,6 +948,10 @@ export const NPC = memo(function NPC({
         isWaiting.current = true;
         waitTime.current = 2 + Math.random() * 3;
         setAnimation('idle');
+        if (enableNpcPhysics && rigidBodyRef.current) {
+          const t = rigidBodyRef.current.translation();
+          npcKccIntentRef.current = { x: t.x, y: t.y, z: t.z };
+        }
       } else {
         const goalKey = `${currentTargetIndex.current}:${target.x}:${target.z}`;
         if (findNavPath && navGoalKeyRef.current !== goalKey) {
@@ -846,11 +993,16 @@ export const NPC = memo(function NPC({
         const vx = dirX * npcSpeed;
         const vz = dirZ * npcSpeed;
 
-        currentPositionRef.current = {
+        const nextPos = {
           x: pos.x + vx,
           y: pos.y,
           z: pos.z + vz,
         };
+        if (enableNpcPhysics) {
+          npcKccIntentRef.current = nextPos;
+        } else {
+          currentPositionRef.current = nextPos;
+        }
 
         setAnimation('walk');
 
@@ -888,12 +1040,16 @@ export const NPC = memo(function NPC({
         const vx = (distX / distanceToTarget) * npcSpeed;
         const vz = (distZ / distanceToTarget) * npcSpeed;
 
-        // Обновляем позицию напрямую через ref (без setState)
-        currentPositionRef.current = {
+        const nextPos = {
           x: pos.x + vx,
           y: pos.y,
           z: pos.z + vz,
         };
+        if (enableNpcPhysics) {
+          npcKccIntentRef.current = nextPos;
+        } else {
+          currentPositionRef.current = nextPos;
+        }
 
         setAnimation('walk');
 
@@ -909,6 +1065,10 @@ export const NPC = memo(function NPC({
         isWaiting.current = true;
         waitTime.current = 1 + Math.random() * 2;
         setAnimation('idle');
+        if (enableNpcPhysics && rigidBodyRef.current) {
+          const t = rigidBodyRef.current.translation();
+          npcKccIntentRef.current = { x: t.x, y: t.y, z: t.z };
+        }
       }
     } else {
       setAnimation('idle');
@@ -920,7 +1080,13 @@ export const NPC = memo(function NPC({
       lastStateChangeTime.current = now;
       onStateChange({
         ...state,
-        position: currentPositionRef.current,
+        position:
+          enableNpcPhysics && rigidBodyRef.current
+            ? (() => {
+                const t = rigidBodyRef.current!.translation();
+                return { x: t.x, y: t.y, z: t.z };
+              })()
+            : currentPositionRef.current,
         currentWaypoint: currentTargetIndex.current,
       });
     }
@@ -990,23 +1156,32 @@ export const NPC = memo(function NPC({
   const body = (
     <>
       <group ref={modelRef}>
-        {definition.modelPath && useFullModel ? (
-          <Suspense fallback={fallbackModel}>
-            <ModelErrorBoundary fallback={fallbackModel}>
-              <GLTFModel
-                modelPath={definition.modelPath}
-                scale={effectiveModelScale}
-                isNearPlayer={isNearPlayer}
-                isDialogueActive={isDialogueActive}
-                shadowTier={npcShadowTier}
-                fallback={fallbackModel}
-                npcAnimation={currentAnimation}
-                animations={definition.animations}
-              />
-            </ModelErrorBoundary>
-          </Suspense>
-        ) : definition.modelPath && !useFullModel ? (
-          <NpcDistanceImpostor scale={effectiveModelScale} />
+        {definition.modelPath ? (
+          <>
+            {/*
+              Не `{useFullModel && <GLB />}`: при каждом переключении LOD модель размонтировалась бы и монтировалась заново (useGLTF / скины).
+              Оба варианта в сцене; видимость — через `visible` на группах.
+            */}
+            <group visible={useFullModel}>
+              <Suspense fallback={fallbackModel}>
+                <ModelErrorBoundary fallback={fallbackModel}>
+                  <GLTFModel
+                    modelPath={definition.modelPath}
+                    scale={effectiveModelScale}
+                    isNearPlayer={isNearPlayer}
+                    isDialogueActive={isDialogueActive}
+                    shadowTier={npcShadowTier}
+                    fallback={fallbackModel}
+                    npcAnimation={currentAnimation}
+                    animations={definition.animations}
+                  />
+                </ModelErrorBoundary>
+              </Suspense>
+            </group>
+            <group visible={!useFullModel}>
+              <NpcDistanceImpostor scale={effectiveModelScale} />
+            </group>
+          </>
         ) : (
           <group scale={effectiveModelScale}>{fallbackModel}</group>
         )}
@@ -1055,14 +1230,27 @@ export const NPC = memo(function NPC({
 
   if (enableNpcPhysics) {
     return (
-      <RigidBody ref={rigidBodyRef} type="kinematicPosition" colliders={false}>
+      <RigidBody
+        ref={rigidBodyRef}
+        type="kinematicPosition"
+        colliders={false}
+        userData={{ isNPC: true }}
+      >
+        <CapsuleCollider
+          args={[npcCapsule.halfH, npcCapsule.r]}
+          position={[0, npcCapsule.capCenterY, 0]}
+        />
         {body}
       </RigidBody>
     );
   }
 
   return (
-    <group ref={groupRef} position={[state.position.x, state.position.y, state.position.z]}>
+    <group
+      ref={groupRef}
+      position={[state.position.x, state.position.y, state.position.z]}
+      userData={{ isNPC: true }}
+    >
       {body}
     </group>
   );
@@ -1076,6 +1264,7 @@ interface NPCSystemProps {
   npcs: NPCDefinition[];
   npcStates: Record<string, NPCState>;
   playerPosition: { x: number; y: number; z: number };
+  playerPositionRef?: RefObject<{ x: number; y: number; z: number; rotation?: number } | null>;
   onNPCInteraction: (npcId: string) => void;
   onNPCStateChange: (npcId: string, state: NPCState) => void;
   isDialogueActive: boolean;
@@ -1093,6 +1282,7 @@ export const NPCSystem = memo(function NPCSystem({
   npcs,
   npcStates,
   playerPosition,
+  playerPositionRef,
   onNPCInteraction,
   onNPCStateChange,
   isDialogueActive,
@@ -1132,6 +1322,7 @@ export const NPCSystem = memo(function NPCSystem({
             definition={npcDef}
             state={state}
             playerPosition={playerPosition}
+            playerPositionRef={playerPositionRef}
             onInteraction={onNPCInteraction}
             onStateChange={(newState) => onNPCStateChange(npcDef.id, newState)}
             isDialogueActive={isDialogueActive}

@@ -1,7 +1,10 @@
 'use client';
 
 import { memo, useMemo, useState, useCallback, useId } from 'react';
+import { getExplorationLivePlayerPositionOrNull } from '@/lib/explorationLivePlayerBridge';
+import { useExplorationLivePlayerTick } from '@/hooks/useExplorationLivePlayerTick';
 import { motion } from 'framer-motion';
+import { useGameStore } from '@/store/gameStore';
 
 // ============================================
 // TYPES
@@ -24,7 +27,8 @@ export interface MiniMapQuestMarker {
 }
 
 interface MiniMapProps {
-  playerPosition: { x: number; y: number; z: number; rotation?: number };
+  /** Если не передать — берётся из стора (чтобы `GameOrchestrator` не перерисовывался на каждый шаг игрока). */
+  playerPosition?: { x: number; y: number; z: number; rotation?: number };
   sceneSize: { width: number; depth: number };
   sceneName: string;
   npcs: MiniMapNPC[];
@@ -72,7 +76,7 @@ function npcWorldPos(npc: MiniMapNPC) {
 // ============================================
 
 export const MiniMap = memo(function MiniMap({
-  playerPosition,
+  playerPosition: playerPositionProp,
   sceneSize,
   sceneName,
   npcs,
@@ -80,6 +84,16 @@ export const MiniMap = memo(function MiniMap({
   questMarkers = [],
   className = '',
 }: MiniMapProps) {
+  const gameMode = useGameStore((s) => s.gameMode);
+  const playerPositionFromStore = useGameStore((s) => s.exploration.playerPosition);
+  const livePlayerTick = useExplorationLivePlayerTick(
+    gameMode === 'exploration' && playerPositionProp == null,
+    110,
+  );
+
+  const live = gameMode === 'exploration' && playerPositionProp == null ? getExplorationLivePlayerPositionOrNull() : null;
+  const playerPosition = playerPositionProp ?? live ?? playerPositionFromStore;
+
   const gridPatternId = useId().replace(/:/g, '');
   const mapSize = { width: 150, height: 120 };
   const [zoom, setZoom] = useState(1);
@@ -97,7 +111,7 @@ export const MiniMap = memo(function MiniMap({
       x: playerPosition.x * scale.x + mapSize.width / 2,
       y: playerPosition.z * scale.z + mapSize.height / 2,
     }),
-    [playerPosition.x, playerPosition.z, scale.x, scale.z],
+    [playerPosition.x, playerPosition.z, scale.x, scale.z, livePlayerTick],
   );
 
   const playerRotation = playerPosition.rotation || 0;
@@ -114,9 +128,10 @@ export const MiniMap = memo(function MiniMap({
 
   return (
     <motion.div
+      data-exploration-ui
       initial={{ opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
-      className={`fixed bottom-24 right-4 z-30 select-none ${className}`}
+      className={`fixed z-30 select-none touch-manipulation bottom-[max(6.5rem,calc(5.5rem+env(safe-area-inset-bottom)))] right-[max(1rem,env(safe-area-inset-right))] ${className}`}
     >
       <div
         className="relative overflow-hidden rounded-lg shadow-xl backdrop-blur-sm"

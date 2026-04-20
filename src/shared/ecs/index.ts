@@ -11,7 +11,7 @@
 // НЕ overengineered — читаемый, совместимый
 // с текущей архитектурой.
 
-import { eventBus, type EventBusEvent } from '../engine/EventBus';
+import { eventBus, type EventMap } from '../engine/EventBus';
 
 // ============================================
 // CORE TYPES
@@ -45,8 +45,8 @@ export interface SystemContext {
   query: (...componentTypes: string[]) => EntityId[];
   /** Get all entities that have ALL specified components */
   queryAll: (...componentTypes: string[]) => EntityId[];
-  /** Emit an event via the event bus */
-  emit: (event: EventBusEvent, payload: unknown) => void;
+  /** Emit an event via the event bus (только известные ключи EventMap — без `as never`). */
+  emit: <K extends keyof EventMap>(event: K, payload: EventMap[K]) => void;
   /** Delta time since last update (ms) */
   deltaTime: number;
 }
@@ -296,8 +296,7 @@ export class ECSWorld {
         this.hasComponent(entityId, type),
       query: (...types: string[]) => this.query(...types),
       queryAll: (...types: string[]) => this.queryAll(...types),
-      emit: (event: EventBusEvent, payload: unknown) =>
-        eventBus.emit(event, payload as never),
+      emit: (event, payload) => eventBus.emit(event, payload),
       deltaTime,
     };
 
@@ -323,8 +322,7 @@ export class ECSWorld {
         this.hasComponent(entityId, type),
       query: (...types: string[]) => this.query(...types),
       queryAll: (...types: string[]) => this.queryAll(...types),
-      emit: (event: EventBusEvent, payload: unknown) =>
-        eventBus.emit(event, payload as never),
+      emit: (event, payload) => eventBus.emit(event, payload),
       deltaTime: 0,
     };
 

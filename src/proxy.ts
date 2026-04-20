@@ -1,10 +1,12 @@
 import { NextResponse, type NextRequest } from 'next/server';
 
 /**
+ * Next.js 16+: файл **`proxy`** (ранее **`middleware`**) — логика у границы запроса.
+ *
  * Приложение — одна страница (`/`). Любой другой путь без файла/роута даёт 404 в проде.
  * Перенаправляем на главную, кроме API, статики Next и известных публичных префиксов.
  */
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   if (pathname === '/' || pathname === '/undefined') {

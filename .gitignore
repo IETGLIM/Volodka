@@ -1,11 +1,25 @@
 .vercel
 .env*.local
+browserbase-functions/**/.env
+.browserbase
 
 node_modules
 .next
+out
+dist
+coverage
+.turbo
+playwright-report
+test-results
 tsconfig.tsbuildinfo
 _volodka_upstream_check
+
+# Логи локального dev (`npm run dev` с tee и т.п.)
+*.log
 
 # Локальные сборки для коллег (генерируются скриптом)
 archives/*.zip
 archives/_stage_expert_review_*
+
+# Записи Performance (Chrome DevTools), часто сотни МБ — не в репозиторий
+Trace-*.json

@@ -57,6 +57,10 @@ export const EVENT_OBJECTIVE_MAP: Partial<Record<QuestEventType, Array<{ questId
     { questId: 'lost_memories', objectiveId: 'meet_stranger', condition: (d) => d.npcId === 'dream_quester' },
     { questId: 'lost_memories', objectiveId: 'speak_to_lillian', condition: (d) => d.npcId === 'dream_lillian' },
     { questId: 'star_connection', objectiveId: 'meet_astra', condition: (d) => d.npcId === 'dream_galaxy' },
+    { questId: 'incident_scroll_4729', objectiveId: 'invoke_techlead', condition: (d) => d.npcId === 'office_alexander' },
+    { questId: 'incident_scroll_4729', objectiveId: 'seal_with_colleague', condition: (d) => d.npcId === 'office_colleague' },
+    { questId: 'vault_backup_trial', objectiveId: 'listen_oracle_dmitry', condition: (d) => d.npcId === 'office_dmitry' },
+    { questId: 'dependency_sigil', objectiveId: 'consult_crypt_warden', condition: (d) => d.npcId === 'office_artyom' },
   ],
   location_visited: [
     { questId: 'first_reading', objectiveId: 'go_to_cafe', condition: (d) => d.locationId === 'cafe_evening' },

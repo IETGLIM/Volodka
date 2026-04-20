@@ -87,7 +87,18 @@ export const FACTIONS: Record<FactionId, Faction> = {
       trusted: ['server_access', 'after_hours_office'],
       ally: ['admin_privileges', 'remote_work_approval'],
     },
-    quests: ['openstack_server_find', 'rabbitmq_overflow', 'kubernetes_orchestrator', 'auth_crisis', 'database_pool_exhausted', 'ssl_certificate_renewal', 'microservice_memory_leak'],
+    quests: [
+      'openstack_server_find',
+      'rabbitmq_overflow',
+      'kubernetes_orchestrator',
+      'auth_crisis',
+      'database_pool_exhausted',
+      'ssl_certificate_renewal',
+      'microservice_memory_leak',
+      'incident_scroll_4729',
+      'vault_backup_trial',
+      'dependency_sigil',
+    ],
   },
   
   dreamers: {

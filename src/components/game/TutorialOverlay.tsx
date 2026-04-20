@@ -5,12 +5,15 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useGameStore } from '@/store/gameStore';
 import { useShallow } from 'zustand/react/shallow';
 import { getNPCsForScene, getNpcExplorationPosition } from '@/data/npcDefinitions';
+import { getExplorationLivePlayerPositionOrNull } from '@/lib/explorationLivePlayerBridge';
+import { useExplorationLivePlayerTick } from '@/hooks/useExplorationLivePlayerTick';
+import type { GameMode } from '@/data/rpgTypes';
 
 export const TutorialOverlay = memo(function TutorialOverlay({
   gameMode,
   isDialogue,
 }: {
-  gameMode: 'visual-novel' | 'exploration' | 'dialogue' | 'cutscene';
+  gameMode: GameMode;
   isDialogue: boolean;
 }) {
   const { flags, exploration, setFlag } = useGameStore(
@@ -21,9 +24,12 @@ export const TutorialOverlay = memo(function TutorialOverlay({
     })),
   );
 
+  const livePlayerTick = useExplorationLivePlayerTick(gameMode === 'exploration', 200);
+
   const nearNpc = useMemo(() => {
     if (gameMode !== 'exploration') return false;
-    const pos = exploration.playerPosition;
+    const live = getExplorationLivePlayerPositionOrNull();
+    const pos = live ?? exploration.playerPosition;
     const sid = exploration.currentSceneId;
     const t = exploration.timeOfDay;
     return getNPCsForScene(sid, t).some((n) => {
@@ -32,10 +38,11 @@ export const TutorialOverlay = memo(function TutorialOverlay({
     });
   }, [
     gameMode,
-    exploration.playerPosition,
+    exploration,
     exploration.currentSceneId,
     exploration.timeOfDay,
     exploration.npcStates,
+    livePlayerTick,
   ]);
 
   const disabled = flags.tutorialsDisabled === true;
@@ -46,6 +53,10 @@ export const TutorialOverlay = memo(function TutorialOverlay({
   const lines = useMemo(() => {
     const l: string[] = [];
     if (showMovement) {
+      if (exploration.currentSceneId === 'volodka_room') {
+        l.push('Комната в панельке — келья между сменами: здесь стихи и тишина рядом с буднями.');
+        l.push('Ходи спокойно — пространство как сказка: никуда не торопит.');
+      }
       l.push('WASD — движение');
       l.push('E — взаимодействие');
       l.push('I — инвентарь');
@@ -53,7 +64,7 @@ export const TutorialOverlay = memo(function TutorialOverlay({
       l.push('Нажмите E, чтобы поговорить или использовать объект');
     }
     return l;
-  }, [showMovement, showInteract]);
+  }, [showMovement, showInteract, exploration.currentSceneId]);
 
   if (disabled || gameMode !== 'exploration' || lines.length === 0) return null;
 
@@ -63,7 +74,7 @@ export const TutorialOverlay = memo(function TutorialOverlay({
         initial={{ opacity: 0, x: 20 }}
         animate={{ opacity: 1, x: 0 }}
         exit={{ opacity: 0, x: 12 }}
-        className="game-fm-layer game-fm-layer-promote intro-recall-frame pointer-events-auto fixed bottom-32 right-4 z-40 max-w-xs rounded-lg border border-cyan-500/40 bg-black/82 p-3 font-mono text-xs text-cyan-100 shadow-xl backdrop-blur"
+        className="game-fm-layer game-fm-layer-promote intro-recall-frame pointer-events-auto fixed left-4 z-40 max-w-xs rounded-lg border border-cyan-500/40 bg-black/82 p-3 font-mono text-xs text-cyan-100 shadow-xl backdrop-blur max-md:bottom-44 bottom-32 touch-manipulation"
       >
         {lines.map((t) => (
           <div key={t} className="py-0.5">

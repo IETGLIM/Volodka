@@ -19,6 +19,29 @@ export const STORY_TRIGGERS: TriggerZone[] = [
     promptText: 'Нажмите E чтобы сесть за стол',
     enterToast: 'Стол помнит слишком много чужих разговоров.',
   },
+  /** Зона разговора с Заремой в комнате (`zarema_home`): `InteractionRegistry` id `npc_intro`. */
+  {
+    id: 'trigger_zarema_home_interaction',
+    position: { x: -1.8, y: 0.5, z: 0.8 },
+    size: { x: 2.6, y: 2.2, z: 2.6 },
+    sceneId: 'zarema_albert_room',
+    type: 'npc',
+    npcId: 'zarema_home',
+    requiresInteraction: true,
+    interactionId: 'npc_intro',
+    promptText: 'Поговорить с Заремушкой',
+  },
+  /** Зона побочного квеста «Тёплый угол» (`exploration_zarema_hearth`). */
+  {
+    id: 'trigger_zarema_quest_hearth',
+    position: { x: 1.1, y: 0.45, z: -0.6 },
+    size: { x: 2.2, y: 1.8, z: 2.2 },
+    sceneId: 'zarema_albert_room',
+    type: 'quest',
+    requiresInteraction: true,
+    interactionId: 'quest_zarema_hearth',
+    promptText: 'Осмотреть угол у дивана',
+  },
   {
     id: 'trigger_kitchen_fridge',
     position: { x: 4, y: 0.5, z: -2 },

@@ -1,0 +1,36 @@
+/**
+ * Флаги диагностики мерцания / коллайдеров / дубликатов мешей (обход).
+ * Все через `NEXT_PUBLIC_*` — после изменения `.env.local` нужна пересборка дев-сервера.
+ */
+
+export function isExplorationRapierColliderDebugEnabled(): boolean {
+  return process.env.NEXT_PUBLIC_EXPLORATION_RAPIER_DEBUG_COLLIDERS === '1';
+}
+
+/**
+ * Один проход по сцене: `console.log(scene)`, `console.table` мешей (мир + `geometry` uuid),
+ * `console.warn` при дубликатах (та же геометрия в той же позиции / то же имя в той же позиции).
+ * См. **`explorationMeshWorldAudit`** и **`ExplorationMeshWorldAudit`**.
+ */
+export function isExplorationMeshAuditEnabled(): boolean {
+  return process.env.NEXT_PUBLIC_EXPLORATION_MESH_AUDIT === '1';
+}
+
+/**
+ * Игрок без `RigidBody`: движение `group.position` + те же клавиши (локализация: мерцание от Rapier или нет).
+ */
+export function isExplorationNoclipEnabled(): boolean {
+  return process.env.NEXT_PUBLIC_EXPLORATION_NOCLIP === '1';
+}
+
+export function isExplorationWebGlContextLogEnabled(): boolean {
+  return process.env.NEXT_PUBLIC_EXPLORATION_WEBGL_CONTEXT_LOG === '1';
+}
+
+/**
+ * Throttled `console.info` of grounded / horizontal velocity / position from `PhysicsPlayer`
+ * (NEXT_PUBLIC_EXPLORATION_PLAYER_LOCOMOTION_LOG=1, rebuild dev server).
+ */
+export function isExplorationPlayerLocomotionLogEnabled(): boolean {
+  return process.env.NEXT_PUBLIC_EXPLORATION_PLAYER_LOCOMOTION_LOG === '1';
+}

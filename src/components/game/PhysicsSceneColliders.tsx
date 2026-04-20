@@ -132,12 +132,21 @@ const RectangularBoundaryWalls = memo(function RectangularBoundaryWalls({
 // ============================================
 // ПОЛ С ФИЗИКОЙ
 // ============================================
+//
+// Диагностика мерцания: на сцену обычно приходится **один** `PhysicsFloor` (один `CuboidCollider` на пол).
+// Мелкая сетка box-коллайдеров для пола здесь не используется — см. отдельные `InstancedObstacles` для мебели.
+// В интерьерах с отдельным полом (напр. **`VolodkaRoomVisual`**) передают **`showVisualPlane={false}`** —
+// иначе два почти совпадающих по XZ горизонтальных меша (**`y≈0.01`** и **`y≈0.015`**) дают z-fighting
+// по всей комнате; мерцание часто «цепляется» к вертикали у стены (шкаф и т.п.).
+// У визуального меша пола (когда включён) — `polygonOffset` (factor/units 1).
 
 interface PhysicsFloorProps {
   size?: [number, number];
   color?: string;
   position?: [number, number, number];
   footstepMaterial?: FootstepMaterial;
+  /** `false` — только Rapier-пол; визуал рисует интерьер (избегать дублирующего горизонта с `VolodkaRoomVisual`). */
+  showVisualPlane?: boolean;
 }
 
 const PhysicsFloor = memo(function PhysicsFloor({
@@ -145,6 +154,7 @@ const PhysicsFloor = memo(function PhysicsFloor({
   color = '#3d2817',
   position = [0, 0, 0],
   footstepMaterial = 'wood',
+  showVisualPlane = true,
 }: PhysicsFloorProps) {
   return (
     <group position={position}>
@@ -157,11 +167,18 @@ const PhysicsFloor = memo(function PhysicsFloor({
         />
       </RigidBody>
 
-      {/* Визуальный пол */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.01, 0]} receiveShadow>
-        <planeGeometry args={size} />
-        <meshStandardMaterial color={color} roughness={0.8} />
-      </mesh>
+      {showVisualPlane && (
+        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.01, 0]} receiveShadow>
+          <planeGeometry args={size} />
+          <meshStandardMaterial
+            color={color}
+            roughness={0.8}
+            polygonOffset
+            polygonOffsetFactor={1}
+            polygonOffsetUnits={1}
+          />
+        </mesh>
+      )}
     </group>
   );
 });
@@ -252,7 +269,7 @@ export const VolodkaRoomColliders = memo(function VolodkaRoomColliders() {
 
   return (
     <group>
-      <PhysicsFloor size={[14, 10]} color="#2a3340" footstepMaterial="wood" />
+      <PhysicsFloor size={[14, 10]} color="#2a3340" footstepMaterial="wood" showVisualPlane={false} />
       <PhysicsWall position={[0, h / 2, -hd]} size={[14 + wallT * 2, h, wallT]} />
       <PhysicsWall position={[-hw, h / 2, 0]} size={[wallT, h, 10]} />
       <PhysicsWall position={[hw, h / 2, 0]} size={[wallT, h, 10]} />

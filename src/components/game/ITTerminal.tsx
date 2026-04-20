@@ -19,11 +19,15 @@ interface TerminalLine {
   timestamp: number;
 }
 
+type QuestObjectivePatch = { questId: string; objectiveId: string; value?: number };
+
 interface CommandResult {
   output: string[];
   effect?: {
     flag?: string;
-    questObjective?: { questId: string; objectiveId: string; value?: number };
+    questObjective?: QuestObjectivePatch;
+    /** Несколько целей за один «заклинание» терминала (например openstack show → сервер + консоль). */
+    questObjectives?: QuestObjectivePatch[];
   };
 }
 
@@ -45,6 +49,12 @@ const COMMANDS: Record<string, (args: string[]) => CommandResult> = {
       '  rabbitmqctl list_queues              — Состояние очередей RabbitMQ',
       '  mysql -h <host> -e "SHOW PROCESSLIST" — Активные соединения MySQL',
       '  openssl s_client -connect <host:port> — Проверка SSL-сертификата',
+      '  journalctl -u auth-service …         — Журнал службы (свиток инцидента)',
+      '  incident close 4729 --note resolved  — Закрыть тикет',
+      '  aws s3 ls s3://banking-vault/        — Реликварий бэкапов',
+      '  sha256sum -c manifest.sha256         — Печать целостности',
+      '  npm audit --production               — Сигил зависимостей',
+      '  npm uninstall phantom-left-pad --save — Снять проклятие',
       '  clear                                — Очистить экран',
     ],
   }),
@@ -108,6 +118,28 @@ const COMMANDS: Record<string, (args: string[]) => CommandResult> = {
     ],
     effect: {
       questObjective: { questId: 'openstack_server_find', objectiveId: 'use_cli', value: 1 },
+    },
+  }),
+
+  'openstack server show': () => ({
+    output: [
+      '+--------------------------------------+',
+      '| Field            | Value             |',
+      '+--------------------------------------+',
+      '| id               | a1b2c3d4-...7890 |',
+      '| name             | banking-prod-01 |',
+      '| status           | ACTIVE            |',
+      '| addresses        | 10.0.1.15         |',
+      '| console_url      | https://horizon.internal/vnc/banking-prod-01/console |',
+      '+--------------------------------------+',
+      '',
+      '✓ Сервер найден; ссылка на консоль в поле console_url',
+    ],
+    effect: {
+      questObjectives: [
+        { questId: 'openstack_server_find', objectiveId: 'find_server', value: 1 },
+        { questId: 'openstack_server_find', objectiveId: 'get_console', value: 1 },
+      ],
     },
   }),
 
@@ -192,6 +224,111 @@ const COMMANDS: Record<string, (args: string[]) => CommandResult> = {
       questObjective: { questId: 'microservice_memory_leak', objectiveId: 'check_memory', value: 1 },
     },
   }),
+
+  'kubectl rollout undo deployment/loyalty-points -n banking-prod': () => ({
+    output: [
+      'deployment.apps/loyalty-points rolled back to revision 42',
+      '✓ Pool соединений освобождается — auth-db дышит',
+    ],
+    effect: {
+      questObjective: { questId: 'auth_crisis', objectiveId: 'apply_fix', value: 1 },
+    },
+  }),
+
+  'journalctl -u auth-service -n 40 --no-pager': () => ({
+    output: [
+      'Apr 15 03:47:12 auth-service[1842]: ERROR: HikariPool-1 - Connection is not available',
+      'Apr 15 03:47:13 auth-service[1842]: WARN: request timeout /oauth/token client=loyalty-points',
+      'Apr 15 03:48:01 auth-service[1842]: FATAL: thread blocked 600s on loyalty-points healthcheck',
+      '',
+      '⚠ Виновник в цепочке вызовов — loyalty-points держит пул открытым',
+    ],
+    effect: {
+      questObjective: { questId: 'incident_scroll_4729', objectiveId: 'read_service_journal', value: 1 },
+    },
+  }),
+
+  'journalctl -u auth-service': () => ({
+    output: [
+      '-- Logs begin at ...',
+      'auth-service: pool exhausted, upstream loyalty-points',
+      '',
+      '(Сокращённая выжимка — для полного лога см. journalctl … -n 40 --no-pager)',
+    ],
+    effect: {
+      questObjective: { questId: 'incident_scroll_4729', objectiveId: 'read_service_journal', value: 1 },
+    },
+  }),
+
+  'incident close 4729 --note resolved': () => ({
+    output: [
+      'ticket INC-4729 → RESOLVED',
+      'customer: Северный Капитал — уведомление отправлено',
+      '✓ SLA восстановлено. Можно выдохнуть — до следующего деплоя.',
+    ],
+    effect: {
+      questObjective: { questId: 'incident_scroll_4729', objectiveId: 'close_incident_rune', value: 1 },
+    },
+  }),
+
+  'incident close 4729': () => ({
+    output: [
+      'ticket INC-4729 → RESOLVED (краткая форма — заметка по умолчанию: resolved)',
+    ],
+    effect: {
+      questObjective: { questId: 'incident_scroll_4729', objectiveId: 'close_incident_rune', value: 1 },
+    },
+  }),
+
+  'aws s3 ls s3://banking-vault/': () => ({
+    output: [
+      '                           PRE daily/',
+      '                           PRE weekly/',
+      '2026-04-14 22:01:12   2145783690 manifest-20260414.json.sha256',
+      '2026-04-14 22:01:08      1048576 manifest-20260414.json',
+      '',
+      '✓ Реликварий на месте — проверь печать: sha256sum -c manifest.sha256',
+    ],
+    effect: {
+      questObjective: { questId: 'vault_backup_trial', objectiveId: 'list_reliquary', value: 1 },
+    },
+  }),
+
+  'sha256sum -c manifest.sha256': () => ({
+    output: [
+      'manifest-20260414.json: OK',
+      '✓ Печать целостности сошлась — бэкап не подменён злой копией',
+    ],
+    effect: {
+      questObjective: { questId: 'vault_backup_trial', objectiveId: 'verify_manifest_sigil', value: 1 },
+    },
+  }),
+
+  'npm audit --production': () => ({
+    output: [
+      '# npm audit report',
+      '',
+      'phantom-left-pad  1.0.0  critical  prototype pollution',
+      '  Depends on vulnerable versions of shadow-json-merge',
+      '',
+      '1 critical severity vulnerability',
+      '',
+      '⚠ Рекомендация: npm uninstall phantom-left-pad --save',
+    ],
+    effect: {
+      questObjective: { questId: 'dependency_sigil', objectiveId: 'cast_audit_sigil', value: 1 },
+    },
+  }),
+
+  'npm uninstall phantom-left-pad --save': () => ({
+    output: [
+      'removed 1 package, and audited 842 packages in 3s',
+      '✓ Проклятый транзитив изгнан из package-lock',
+    ],
+    effect: {
+      questObjective: { questId: 'dependency_sigil', objectiveId: 'banish_transitive', value: 1 },
+    },
+  }),
 };
 
 // ============================================
@@ -258,8 +395,11 @@ export default function ITTerminal({ onClose }: ITTerminalProps) {
     if (COMMANDS[trimmed]) {
       result = COMMANDS[trimmed]([]);
     } else {
-      // Частичное совпадение (для openstack server show и т.д.)
-      for (const key of Object.keys(COMMANDS)) {
+      // Частичное совпадение: сначала более длинные ключи (чтобы «openstack server show» не съел «list»).
+      const keys = Object.keys(COMMANDS)
+        .filter((k) => k !== 'help')
+        .sort((a, b) => b.length - a.length || b.localeCompare(a));
+      for (const key of keys) {
         if (trimmed.startsWith(key)) {
           result = COMMANDS[key]([]);
           break;
@@ -291,13 +431,18 @@ export default function ITTerminal({ onClose }: ITTerminalProps) {
         if (result!.effect.flag) {
           setFlag(result!.effect.flag);
         }
-        if (result!.effect.questObjective) {
-          const { questId, objectiveId, value } = result!.effect.questObjective;
-          if (value !== undefined) {
-            updateQuestObjective(questId, objectiveId, value);
+        const applyQuest = (p: QuestObjectivePatch) => {
+          if (p.value !== undefined) {
+            updateQuestObjective(p.questId, p.objectiveId, p.value);
           } else {
-            incrementQuestObjective(questId, objectiveId);
+            incrementQuestObjective(p.questId, p.objectiveId);
           }
+        };
+        for (const p of result!.effect.questObjectives ?? []) {
+          applyQuest(p);
+        }
+        if (result!.effect.questObjective) {
+          applyQuest(result!.effect.questObjective);
         }
       }
 

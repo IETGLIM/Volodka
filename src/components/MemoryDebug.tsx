@@ -49,7 +49,7 @@ function MemoryNodeMesh({
   
   useFrame(({ clock }) => {
     if (!meshRef.current) return;
-    const t = clock.getElapsedTime();
+    const t = clock.elapsedTime;
     meshRef.current.position.y = node.position[1] + Math.sin(t * 2 + node.position[0]) * 0.05;
     
     if (isSelected) {
@@ -110,7 +110,7 @@ function ConnectionLine({ start, end, isActive }: {
   useFrame(({ clock }) => {
     if (!lineRef.current || !isActive) return;
     const material = lineRef.current.material as LineMaterial;
-    material.opacity = 0.5 + Math.sin(clock.getElapsedTime() * 3) * 0.3;
+    material.opacity = 0.5 + Math.sin(clock.elapsedTime * 3) * 0.3;
   });
   
   return (

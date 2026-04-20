@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useMemo, useRef, useEffect, memo } from 'react';
+import { useState, useCallback, useMemo, useRef, useEffect, useLayoutEffect, memo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { DialogueNode, DialogueChoice, DialogueEffect } from '@/data/rpgTypes';
 import {
@@ -14,6 +14,7 @@ import {
 import { DIALOGUE_NODES } from '@/data/npcDefinitions';
 import type { PlayerState, NPCRelation } from '@/data/types';
 import { asTrainablePlayerSkill } from '@/lib/trainablePlayerSkill';
+import { rememberDialogue } from '@/core/memory/MemoryEngine';
 import { useGameStore } from '@/store/gameStore';
 import { CyberSkillCheckResult, type SkillCheckBannerPayload } from './CyberSkillCheckResult';
 
@@ -24,6 +25,8 @@ interface DialogueRendererProps {
   dialogueTree: DialogueNode;
   /** Диалог открыт из сюжетного выбора — после завершения продолжится история */
   storyLinked?: boolean;
+  /** Диалог поверх 3D-обхода: кинематографичные полосы и более тёмный фон. */
+  explorationLayout?: boolean;
   playerState: PlayerState;
   npcRelations: NPCRelation[];
   flags: Record<string, boolean>;
@@ -171,6 +174,7 @@ export default function DialogueRenderer({
   npcName,
   dialogueTree,
   storyLinked = false,
+  explorationLayout = false,
   playerState,
   npcRelations,
   flags,
@@ -207,6 +211,14 @@ export default function DialogueRenderer({
     },
   }), [addStat, addStress, reduceStress, setFlag, unsetFlag, updateNPCRelation, addItem, removeItem, activateQuest, updateQuestObjective, collectPoem, addSkill]);
 
+  useLayoutEffect(() => {
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, []);
+
   // Build dialogue context (только проп playerState — без getState(), чтобы не рассинхронизироваться с родителем)
   const dialogueContext: DialogueContext = useMemo(
     () => ({
@@ -220,10 +232,24 @@ export default function DialogueRenderer({
     [playerState, npcRelations, flags, inventory, visitedNodes],
   );
 
+  const dialogueOpenKeyRef = useRef<string | null>(null);
+
   useEffect(() => {
     if (!isOpen) return;
     startDialogue(npcId, dialogueTree, dialogueContext);
   }, [isOpen, npcId, dialogueTree, dialogueContext]);
+
+  /** Нарративная память: один раз на открытие сессии (без дублей при смене контекста). */
+  useEffect(() => {
+    if (!isOpen) {
+      dialogueOpenKeyRef.current = null;
+      return;
+    }
+    const key = `${npcId}:${dialogueTree.id}`;
+    if (dialogueOpenKeyRef.current === key) return;
+    dialogueOpenKeyRef.current = key;
+    rememberDialogue(dialogueTree.id, 'neutral', npcId, 'open');
+  }, [isOpen, npcId, dialogueTree.id]);
 
   const typingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -258,6 +284,12 @@ export default function DialogueRenderer({
     }, 25);
   }, []);
 
+  const closeDialogueSession = useCallback(() => {
+    endDialogue(npcId, dialogueTree.id);
+    rememberDialogue(dialogueTree.id, 'neutral', npcId, 'close');
+    onClose();
+  }, [npcId, dialogueTree.id, onClose]);
+
   // Handle dialogue choice
   const handleChoice = useCallback((choice: DialogueChoice) => {
     const result = processDialogueChoice(
@@ -286,14 +318,15 @@ export default function DialogueRenderer({
       startTyping(result.nextNode.text);
     } else {
       // End of dialogue
-      endDialogue(npcId, dialogueTree.id);
-      onClose();
+      closeDialogueSession();
     }
-  }, [dialogueContext, npcId, currentNode, dialogueStoreActions, startTyping, onClose, dialogueTree.id]);
+  }, [dialogueContext, npcId, currentNode, dialogueStoreActions, startTyping, closeDialogueSession, dialogueTree.id]);
 
   // Get NPC avatar color based on name
   const npcColor = useMemo(() => {
     switch (npcId) {
+      case 'zarema_home':
+        return 'from-fuchsia-500 to-rose-700';
       case 'maria':
       case 'kitchen_maria':
         return 'from-rose-600 to-pink-700';
@@ -314,6 +347,8 @@ export default function DialogueRenderer({
   // Neon color for NPC name
   const npcNeonColor = useMemo(() => {
     switch (npcId) {
+      case 'zarema_home':
+        return 'text-fuchsia-200';
       case 'maria':
       case 'kitchen_maria':
         return 'text-rose-300';
@@ -342,20 +377,34 @@ export default function DialogueRenderer({
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
         >
+          {explorationLayout && (
+            <>
+              <div
+                className="pointer-events-none absolute inset-x-0 top-0 z-[52] h-[min(10vh,72px)] bg-black shadow-[0_12px_40px_rgba(0,0,0,0.85)]"
+                aria-hidden
+              />
+              <div
+                className="pointer-events-none absolute inset-x-0 bottom-0 z-[52] h-[min(12vh,88px)] bg-black shadow-[0_-12px_40px_rgba(0,0,0,0.85)]"
+                aria-hidden
+              />
+            </>
+          )}
+
           {/* Dark overlay */}
           <div
-            className="absolute inset-0 bg-black/40"
-            onClick={onClose}
+            className={`absolute inset-0 ${explorationLayout ? 'bg-black/68' : 'bg-black/40'}`}
+            onClick={closeDialogueSession}
             role="presentation"
           />
 
           {/* Dialogue window — cyberpunk terminal */}
           <motion.div
-            className="relative mx-4 mb-4 w-full max-w-4xl game-fm-layer"
-            initial={{ y: 100, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={{ y: 100, opacity: 0 }}
-            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+            className={`relative mx-4 mb-4 w-full max-w-4xl game-fm-layer ${explorationLayout ? 'z-[53]' : ''}`}
+            style={{ transformOrigin: 'bottom center' }}
+            initial={{ opacity: 0, scale: 0.985 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.985 }}
+            transition={{ type: 'tween', duration: 0.22, ease: 'easeOut' }}
           >
             <div
               className="bg-slate-950/95 backdrop-blur-md border border-cyan-500/30 shadow-2xl overflow-hidden terminal-border-pulse"
@@ -363,6 +412,14 @@ export default function DialogueRenderer({
                 clipPath: 'polygon(0 0, calc(100% - 16px) 0, 100% 16px, 100% 100%, 16px 100%, 0 calc(100% - 16px))',
               }}
             >
+              {explorationLayout && (
+                <div className="border-b border-cyan-500/20 bg-cyan-950/20 px-4 py-1.5">
+                  <p className="font-mono text-[10px] uppercase tracking-[0.28em] text-cyan-300/70">
+                    3D · обход · диалог
+                  </p>
+                </div>
+              )}
+
               {storyLinked && (
                 <div className="border-b border-amber-500/25 bg-amber-950/25 px-4 py-2">
                   <p className="font-mono text-[10px] leading-snug text-amber-200/80">
@@ -395,7 +452,7 @@ export default function DialogueRenderer({
 
                 <button
                   type="button"
-                  onClick={onClose}
+                  onClick={closeDialogueSession}
                   className="font-mono text-slate-500 hover:text-cyan-400 transition-colors p-2 text-sm border border-slate-700/30 hover:border-cyan-500/30"
                   style={{
                     clipPath: 'polygon(0 0, calc(100% - 4px) 0, 100% 4px, 100% 100%, 4px 100%, 0 calc(100% - 4px))',
@@ -462,7 +519,7 @@ export default function DialogueRenderer({
                 <div className="px-4 pb-4 flex justify-end relative z-10">
                   <button
                     type="button"
-                    onClick={onClose}
+                    onClick={closeDialogueSession}
                     className="px-4 py-2 font-mono text-sm text-cyan-400/60 hover:text-cyan-400 border border-cyan-500/20 hover:border-cyan-500/40 transition-colors"
                     style={{
                       clipPath: 'polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 6px 100%, 0 calc(100% - 6px))',

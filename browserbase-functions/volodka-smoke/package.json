@@ -1,0 +1,17 @@
+{
+  "name": "volodka-smoke",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "bb dev index.ts",
+    "publish": "bb publish index.ts"
+  },
+  "dependencies": {
+    "@browserbasehq/sdk-functions": "^1.0.1",
+    "playwright-core": "^1.57.0",
+    "zod": "^4.1.5"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.0"
+  }
+}

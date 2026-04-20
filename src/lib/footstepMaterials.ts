@@ -28,6 +28,6 @@ export function footstepColliderName(material: FootstepMaterial): string {
   return `${FS_PREFIX}${material}`;
 }
 
-export function footstepSfxType(material: FootstepMaterial): string {
+export function footstepSfxType(material: FootstepMaterial): `footstep_${FootstepMaterial}` {
   return `footstep_${material}`;
 }

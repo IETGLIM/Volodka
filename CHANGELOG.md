@@ -2,11 +2,176 @@
 
 ## [Unreleased]
 
+### Changed
+
+- **Обход / FollowCamera за спиной и внутри комнаты**: горизонтальный yaw орбиты подтягивается к **`rotation + π`** (пока не тянут орбиту мышью); **`useLayoutEffect`** по **`orbitResyncKey`** (`sceneId`) — старт и смена локации без «залипания» на угле 0; **`currentDistance`** ограничивается **`minDistance` / `maxDistance`** при смене пропов. Для **`volodka_room`**, **`volodka_corridor`**, **`home_evening`** — свои **`distance` / `height` / `maxDistance`** и мягче **`shoulderOffset`** / **`collisionRadius`**.
+
+- **R3F / Suspense и ключи (обход)**: вместо **`fallback={null}`** у корневого **`Suspense`** в **`RPGGameCanvas`**, **`PhysicsRPGCanvas`**, **`RoomEnvironment`** (`ZaremaAlbertRoom`), **`OptimizedSceneEnvironment`** и у **`PhysicsPlayer`** (GLB) — общий **`ThreeCanvasSuspenseFallback`** (`components/3d`); с **`FollowCamera`** и **`BattleClickLayer`** снят лишний **`key={sceneId}`** (сброс волн боя при **`active`**, очистка следов при смене **`sceneId`** в **`ExplorationFootprints`**). У **`PhysicsPlayer`** / **`ExplorationNoclipPlayer`** вместо **`key={sceneId}`** — **`spawnSyncKey`** + телепорт при смене локации (без remount дерева GLB).
+
+- **Canvas / WebGL (обход)**: **`RPGGameCanvas`** и **`PhysicsRPGCanvas`** — **`dpr={[1, 1.5]}`**, **`gl`** с **`powerPreference: 'high-performance'`** (и прежние флаги из **`getExplorationSceneGlProps`** в обходе), **`PerformanceMonitor`** (drei).
+
+- **Физика / KCC / камера**: **`clampPhysicsTimestep`** — нижняя и верхняя граница dt, в **`useBeforePhysicsStep`** игрока dt из **`stepWorld.timestep`**; **`FollowCamera`** / noclip — тот же clamp вместо **`Math.min(delta, 0.05)`**. У NPC при снапе расписания — только **`setNextKinematicTranslation`** (без **`setTranslation`** в этом пути).
+
+- **React**: в **`layout.tsx`** — **`StrictMode`** вокруг **`{children}`** (гидратация стора снаружи, один проход **`hydrateFromLocalStorage`**).
+
+- **NPC / LOD без размонтажа GLB**: в **`NPC.tsx`** при **`useFullModel`** больше не переключают тернарником «только GLB или только импостор» — оба поддерева остаются смонтированными, видимость через **`group visible`** (нет повторного **`useGLTF`** / сброса скина при смене дистанции).
+
+- **Обход / аудит дубликатов мешей (GLTF)**: при **`NEXT_PUBLIC_EXPLORATION_MESH_AUDIT=1`** — **`console.log(scene)`**, таблица с колонкой **`geometry`** (uuid), **`console.warn`** по группам «та же геометрия + та же позиция» и «то же имя + та же позиция»; логика в **`explorationMeshWorldAudit.ts`**, тесты **`explorationMeshWorldAudit.test.ts`**.
+
+- **Обход / z-fighting (пол и интерьер)**: у визуального пола **`PhysicsFloor`** (`PhysicsSceneColliders.tsx`) и процедурной **`VolodkaRoomVisual`** — **`meshStandardMaterial`** с **`polygonOffset`**, **`polygonOffsetFactor={1}`**, **`polygonOffsetUnits={1}`** (в т.ч. **`MeshStandardMaterial`** в **`useMemo`** для стен/пола/дерева).
+
+- **Обход / комната Володьки (мерцание у шкафа / стены)**: убран **дублирующий видимый пол** — у **`VolodkaRoomColliders`** в **`PhysicsSceneColliders`** у **`PhysicsFloor`** добавлено **`showVisualPlane={false}`**; в **`SceneColliders`** серый плоский пол заменён на **`InstancedWalls`** (невидимый, слой камеры). Дверная створка сдвинута по **−Z** относительно передней стены, чтобы не пересекаться с её объёмом (**`VolodkaRoomVisual`**).
+
+- **Обход / Canvas камера**: **`RPGGameCanvas`** — **`camera.near: 0.5`**, **`far: 50`** (плоскость отсечения дальше от камеры, меньше артефактов у ближних поверхностей; **`far`** без изменений).
+
+- **Next.js 16**: переименование **`src/middleware.ts`** → **`src/proxy.ts`**, экспорт **`proxy`** вместо **`middleware`** ([миграция](https://nextjs.org/docs/messages/middleware-to-proxy)); предупреждение о deprecated convention снимается при сборке.
+
+- **Обход / коллайдеры и дубликаты геометрии (диагностика)**: **`lib/explorationDiagnostics.ts`** — флаги **`NEXT_PUBLIC_EXPLORATION_RAPIER_DEBUG_COLLIDERS`** (проволочные коллайдеры через **`Physics debug`**, в `@react-three/rapier` 2.x нет публичного **`<Debug />`**), **`NEXT_PUBLIC_EXPLORATION_MESH_AUDIT`** (`console.table` мешей с мировыми координатами), **`NEXT_PUBLIC_EXPLORATION_NOCLIP`** (игрок без **`RigidBody`**, зелёный «пилон»), **`NEXT_PUBLIC_EXPLORATION_WEBGL_CONTEXT_LOG`**; **`ExplorationSceneDiagnostics.tsx`**, **`ExplorationNoclipPlayer.tsx`**, правки **`RPGGameCanvas`**, **`PhysicsRPGCanvas`**, комментарии в **`PhysicsSceneColliders`** и **`ExplorationPostFX`**; тест **`explorationDiagnostics.test.ts`**.
+
+- **Three.js / консоль**: зафиксирован **`three@~0.182.0`** и **`@types/three@~0.182.0`** — в **0.183** помечен deprecated **`THREE.Clock`**, а **`@react-three/fiber` 9.x** всё ещё создаёт **`new THREE.Clock()`**, из‑за чего в браузере сыпалось предупреждение «use THREE.Timer instead». В **`useFrame`** везде **`clock.getElapsedTime()`** заменён на **`clock.elapsedTime`** (рекомендация R3F, без лишнего **`getDelta()`** внутри анимаций).
+
+- **Меню / загрузка / INP**: у полноэкранных оболочек **`MenuScreen`**, **`LoadingScreen`**, **`CyberpunkLoadingFallback` (`GameClient`)** — **`pointer-events-none`** на корне, чтобы клики не приписывались пустому **`div.relative.z-10.min-h-screen…`**; у блока кнопок меню и у **`SettingsPanel`** — **`pointer-events-auto`**, чтобы «Продолжить» / «Новая игра» / оверлей настроек оставались кликабельными.
+
+- **INP / клавиатура в игре**: **`usePlayerControls`** в **`useGamePhysics.ts`** — обновление только **`controlsRef`** (без лишнего **`setState`** на каждый keydown/keyup); для **`keydown`** / **`keyup`** — **`{ passive: true }`**.
+
+- **LCP (крупный заголовок)**: у герой-**`motion.h1`** / обёртки в **`MenuScreen`**, **`GlitchTitle` (`LoadingScreen`)**, **`CyberpunkLoadingFallback`** — **`initial={false}`**, чтобы первый кадр уже был с **`opacity: 1`** (раньше **`opacity: 0`** откладывала LCP до конца входной анимации). Фаза **`loading`** в **`LoadingScreen`**: у контейнера **`initial={false}`**. **`page.tsx`**: в **`LoadingFallback`** при **`dynamic(..., { ssr: false })`** — сразу видимый **`<h1>ВОЛОДЬКА</h1>`** до подгрузки чанка. **`layout.tsx`**: у **`next/font`** Geist — **`adjustFontFallback: true`**.
+
+### Added
+
+- **Слой `core` (обход и дальнейший RPG-каркас)**: **`src/core/input`** (`PlayerInputController`, типы контролов), **`src/core/physics`** (`PHYSICS_CONSTANTS`, интеграция шага до Rapier KCC в **`CharacterController`**), **`src/core/game`**, **`src/core/camera`**, **`src/core/entities`**, **`src/core/interaction`**; **`useGamePhysics`** / **`PhysicsPlayer`** / **`usePlayerFootsteps`** подключены к этим модулям; опциональный лог **`NEXT_PUBLIC_EXPLORATION_PLAYER_LOCOMOTION_LOG`** в **`explorationDiagnostics`** и **`PhysicsPlayer`**. В **`GameMode`** добавлен **`combat`**; **`TutorialOverlay`** берёт тип из **`rpgTypes`**.
+
+- **Цикл взаимодействия (зона → подсказка → E → диалог)**: поле **`interactionId`** у **`TriggerZone`**; зона **`trigger_zarema_home_interaction`** (`zarema_albert_room`); **`TriggerSystem`** — колбэк **`onInteractionAvailabilityChange`**; **`InteractionExecutor`**, расширенный **`InteractionRegistry`**, **`InteractionResolver`** (+ тест); **`src/game/interactions/registerBaseInteractions`** (**`npc_intro`** → **`onNPCInteraction('zarema_home')`** + **`setGameMode('dialogue')`**); в **`RPGGameCanvas`** приоритетный резолв перед **`resolveExplorationPrimaryInteraction`**; оверлей **`InteractionHint`**.
+
+- **Диалог из 3D-обхода (камера + UI)**: **`FollowCamera`** — узкий кадр **`dialogueFraming`** + **`dialogueSubjectPosition`** при **`isLocked`**; **`RPGGameCanvas`** передаёт позицию NPC, отключает коллизию/зум камеры на время диалога; **`GameOrchestrator`** — **`dialogueSubjectPosition`** из **`getNPCById`** / **`getNpcExplorationPosition`**, монтирование **`RPGGameCanvas`** под диалогом из обхода; **`DialogueRenderer`** — проп **`explorationLayout`** (letterbox, затемнение, шапка «3D · обход · диалог»), цвета для **`zarema_home`**.
+
+- **Квест поверх Interaction**: расширенный **`InteractionContext`** (хуки квестов из стора); побочный квест **`exploration_zarema_hearth`** в **`quests.ts`** (**`startNode: 'explore_mode'`**); зона **`trigger_zarema_quest_hearth`** → **`interactionId: 'quest_zarema_hearth`**; в **`registerBaseInteractions`** — выполнение **`activateQuest` / `incrementQuestObjective` / `completeQuest`** и тост **`ui:exploration_message`**.
+
+- **Модульные квесты (core) поверх Interaction**: **`src/core/quests`** — **`types`**, **`questStore`** (Zustand, иммутабельные обновления), **`QuestEngine`** (**`handleInteractionForQuests`**, **`startQuestWithLog`**); после **`execute`** в **`InteractionExecutor`** вызывается движок; **`src/game/quests/introQuest`** + старт из **`npc_intro`**; оверлей **`QuestTracker`** в **`GameOrchestrator`**; тест **`QuestEngine.test.ts`**; отладочные логи **`[Quest] …`** в движке.
+
+- **Нарративная память (core)**: **`src/core/memory`** — **`types`**, **`memoryStore`** (новые сверху, дедуп по **`id`**, без побочных эффектов), **`MemoryEngine`** (**`rememberInteraction`**, **`rememberDialogue`**, события квестов), **`memoryQueries`** (**`hasMemory`**, **`getDominantEmotion`**, **`getRelationship`**); связка после взаимодействий в **`InteractionExecutor`**; квесты core + legacy «Тёплый угол» → память; **`DialogueRenderer`** — открытие/закрытие сессии; UI **`MemoryLog`** (таймлайн, эмоции, фильтры); тесты **`memoryStore`**, **`memoryQueries`**.
+
+- **Память → геймплей**: **`RelationshipEngine`** + поле **`relationships`** в **`memoryStore`** (пересчёт при **`addMemory`** с **`relatedEntityId`**); **`relationshipAccess.getRelationshipScore`**; **`dialogueConditions.checkDialogueCondition`**; **`resolveDialogueVariant`** + узлы **`zarema_room_home` / `_warm` / `_cold`** в **`DIALOGUE_NODES`**; **`useDialogueFlow`** подставляет вариант корня; **`zarema_resonance_ping`** — условие **`relationship(zarema_home) > 42`**; **`emotionalProfile`**, **`worldReactivity`** → **`AmbientMusicPlayer.narrativeMusic`**; расширенный **`MemoryLog`** (раппорт, сводка эмоций); тесты **`RelationshipEngine`**, **`dialogueConditions`**, **`resolveDialogueVariant`**.
+
+- **Анализ трейсов Performance**: скрипт **`scripts/analyze-chrome-trace.mjs`** (сводка длинных **`RunTask`** / **`traceEvents`**); в **`.gitignore`** — маска **`Trace-*.json`**, чтобы локальные записи DevTools не попадали в git.
+
+### Maintainer notes
+
+- **Ритм выкладки (с душой и для потомков)**: порция функционала или исправлений → быстрая проверка (**`tsc`**, **`vitest`**, разбор линтера по смыслу) → запись в **`CHANGELOG.md`** в **`[Unreleased]`** → коммит с ясной первой строкой → **`git push origin`** на каноническую ветку (**`main`**). Так на GitHub и у тех, кто откроет репозиторий позже, всегда видна честная история, а не «магия у одного разработчика на ноутбуке».
+- **3D и ассеты**: новые бинарники моделей — только когда пользователь передаст файлы; в коде опираться на **`public/models/`** и **`public/models-external/`** и существующую стилистику сцен (**`explorationAtmosphere`**, визуалы комнат, **`npcDefinitions`**). Правило Cursor **`.cursor/rules/git-changelog-workflow.mdc`** обновлено этими пунктами.
+
+### Changed
+
+- **Обход / диагностика мерцания (шаг А)**: полностью отключена постобработка в **`ExplorationPostFX`** (`EffectComposer`, N8AO, Bloom, Vignette, Noise) — проверка «мерцание из‑за поста или нет»; дальше шаг А1 при успехе или шаг Б.
+
+- **Обход / диагностика мерцания (шаг Б)**: после шага А мерцание осталось — **`getExplorationSceneGlProps`** (`Scene.tsx`): **`antialias: true`**, **`powerPreference: 'high-performance'`**, **`logarithmicDepthBuffer: false`**; в **`RPGGameCanvas`** у **`<Canvas>`** — **`camera.near: 0.3`**, **`far: 50`**, **`fov: 60`**; **`frameloop`** по-прежнему **`always`** (`EXPLORATION_SCENE_FRAMELOOP`).
+
+- **Обход / материалы и прозрачность (шаг В)**: **`applyGltfExplorationCharacterMaterialPolicies`** — **`depthWrite`** на всех мешах GLB + **`applyGltfHairLikeAlphaTestCutout`** по имени меша (волосы/ресницы: **`alphaTest`**, отключение **`transparent`**); **`PhysicsPlayer`** / **`NPC`**; процедурная **`VolodkaRoomVisual`** — явные **`depthWrite`** / **`depthTest`**; тесты **`gltfCharacterMaterialPolicy.test.ts`**; **`TransparencyRenderOrder.tsx`**.
+
+- **Обход / тени (шаг Г)**: **`explorationShadowConstants`** — **`shadow-mapSize`** десктоп **2048**, mobile/lite **1024**; **`EXPLORATION_DIRECTIONAL_SHADOW_BIAS`** **−0.0005**, **`EXPLORATION_DIRECTIONAL_SHADOW_NORMAL_BIAS`** **0.02**; **`SCENE_ENVIRONMENT_SHADOW_MAP_SIZE`** **2048**; комментарии **`Lighting.tsx`**.
+
+- **Обход / Z-fighting (анализ видео)**: **`applyGltfCharacterDepthWrite`** сбрасывает **`polygonOffset`** на материалах GLB; cutout волос — также по **`material.name`**; «окно» в **`VolodkaRoomVisual`** — **`depthWrite: false`** у полупрозрачности; тень под игроком — выше пола, **`depthWrite: false`**; следы **`ExplorationFootprints`** — выше по **Y** + тесты **`gltfCharacterMaterialPolicy`**.
+
+- **Обход / диагностика физики vs GLB**: красный бокс вместо модели при **`NEXT_PUBLIC_EXPLORATION_PLAYER_DEBUG_PRIMITIVE=1`** (**`PhysicsPlayer`**, **`lib/explorationPlayerDebugPrimitive.ts`**, проп **`debugPlayerPrimitive`**); навигация **`PlayerController.tsx`**.
+
+- **Обход / frustum culling (проблема 3)**: **`applyGltfMeshesFrustumCullOff`** — **`frustumCulled = false`** на всех мешах GLB; входит в **`applyGltfExplorationCharacterMaterialPolicies`** (игрок, NPC); тесты **`gltfCharacterMaterialPolicy`**; **`TransparencyRenderOrder.tsx`**.
+
+## [0.2.8] - 2026-04-19
+
+### Changed
+
+- **EventBus**: строгие пейлоады **`StatBusId`** и **`SfxBusType`** в **`src/shared/engine/EventBus.ts`**; в шапке модуля — правило «**`emit`/`on` только на границах слоёв**» (3D→DOM, движок→UI) и отладка через **`setDebug(true)`**. **`ECSWorld`**: **`ctx.emit`** типизирован по **`EventMap`** без **`as never`**. Квесты: **`quest:activated`**, **`quest:completed`**, **`quest:objective_updated`** эмитятся из **`gameStore`**; **`QuestsPanel`** только вызывает **`activateQuest`**. **`LootNotification`**: звук награды/навыка — прямой **`audioEngine.playSfx`**, без лишнего **`sound:play`** внутри того же UI-слоя. **`useCoreLoopPhase`**: учёт **`quest:objective_updated`**.
+
+- **Сохранения (localStorage / облако)**: компактный снимок **`buildLocalSavePayload`** (`src/lib/persistedGameSnapshot.ts`) — без **`npcStates`** в **`exploration`**, только сработавшие триггеры, усечённые журналы (**`choiceLog`**, **`moralChoices`**, **`interactions`**), без нулевых счётчиков квестов; **`saveGame`** пишет этот объект; предупреждение в консоли при размере **> ~3.5 MB UTF-8**. **`POST /api/save`** — ответ **413**, если строка **`data`** длиннее **4.5 MB UTF-8**.
+
+### Added
+
+- **Порядок в рабочей копии (IDE)**: **`.cursorignore`** — не индексировать **`node_modules`**, **`.next`**, кэши и вложенные **`browserbase-functions/**/node_modules`**; **`.vscode/settings.json`** — **`search.exclude`** / **`files.watcherExclude`** для тех же путей. **`.gitignore`** — **`out`**, **`dist`**, **`coverage`**, **`.turbo`**, отчёты Playwright, **`*.log`**. **`eslint.config.mjs`** — **`browserbase-functions/**`** в **`ignores`** (как в корневом **`tsconfig`**).
+
+- **Оклики NPC в обходе**: при первом входе в радиус по XZ (**`NpcProximityBarks`**, **`npcProximityBarks`**) — тост **`ui:exploration_message`** и короткий **`sound:play`**; текст от **`npcRelations[].value`**: враждебно (≤35) — «Опять ты, Володька? Проваливай!», тепло (≥65) — «Привет, герой!», иначе нейтральная реплика; кулдаун **22 s** на NPC, учёт **`ScheduleEngine`** (спящий NPC не кричит).
+
+### Fixed
+
+- **Обход / стабилизация позиции игрока (шаг 5)**: автоматическая проверка всех записей **`SCENE_CONFIG`** на адекватные **`spawnPoint`**, размеры комнаты, масштабы обхода и позиции NPC — **`src/config/explorationScenesMovementSanity.test.ts`**; ручной чеклист (локации, вперёд/назад, повороты, стены, NPC) в JSDoc **`PlayerController.tsx`**.
+
+- **Обход / стабилизация позиции игрока (шаг 4)**: снятие root motion с клипов игрока — **`cloneAnimationClipsWithoutExplorationPlayerRootMotion`** (`lib/stripExplorationPlayerRootMotionFromClips.ts`, тесты); подключено в **`GLBPlayerModel`** (**`PhysicsPlayer`**); навигация **`src/components/3d/player/AnimationController.tsx`**; перекрёстная ссылка в **`components/3d/AnimationController.tsx`**, **`PlayerModel.tsx`**.
+
+- **Обход / стабилизация позиции игрока (шаг 3)**: подтверждено отсутствие второго источника движения группы визуала из стора; навигация **`src/components/3d/player/PlayerModel.tsx`**; комментарий у **`PlayerVisualRoot`** в **`PhysicsPlayer`**; **`PlayerController.tsx`**.
+
+- **Обход / стабилизация позиции игрока (шаг 2)**: **`useExplorationLivePlayerTick`** — общий тик для чтения моста; **`TutorialOverlay`** (`nearNpc` по живой позиции); **`MiniMap`** с тиком в deps **`useMemo`**; комментарии **`PhysicsPlayer`** / **`PlayerController`**.
+
+- **Обход / стабилизация позиции игрока (шаг 1)**: в **`RPGGameCanvas`** убран **`setPlayerPosition`** из **`handlePositionChange`** (только ref + **`explorationLivePlayerBridge`**); перед **`saveGame`** позиция подмешивается из моста в стор; **`MiniMap`** в обходе опрашивает мост по интервалу; навигация **`components/3d/player/PlayerController.tsx`**.
+
+- **LCP / CLS (перцепция загрузки и сдвиги макета)**: **`AppPerfWarmup`** в **`layout`** — фоновый **`warmupRapierWasm`** (`lib/rapierWasmWarmup.ts`) и **`preloadExplorationPlayerGltf`** (`lib/model-cache.ts`, `useGLTF.preload`); оболочки загрузки **`page`** / **`GameOrchestrator`** (фиксированный полноэкранный слот); **`EXPLORATION_GAME_VIEWPORT_CLASS`** в **`Scene.tsx`** + **`RPGGameCanvas`** (`Canvas` **`block h-full w-full`**); **`next/font`**: **`display: 'swap'`**, **`adjustFontFallback: false`**; диалог: **`overflow: hidden`** на **`body`**, вход окна через **opacity/scale** без сдвига по **Y**; **`HUD`**: убран **`layout`** у framer-motion.
+
+- **Обход / освещение и тени (шаг 6, мерцание)**: **`src/components/3d/Lighting.tsx`** — **`ExplorationLighting`** с **`shadow-bias`** / **`shadow-normalBias`** и картой **1024** (десктоп) / **512** (mobile/lite, вместо **256**); **`lib/explorationShadowConstants.ts`**; те же bias + **`SCENE_ENVIRONMENT_SHADOW_MAP_SIZE`** в **`OptimizedSceneEnvironment`**; отладочный **`PhysicsRPGCanvas`**.
+
+- **Обход / LOD NPC (шаг 5, мерцание)**: явный **гистерезис** в **`lib/npcLodConstants.ts`** (`resolveNpcModelLodUseFull`: дальше **19 m** сброс полного GLB, ближе **11 m** возврат из импостора); шире мёртвая зона теней **4 / 8 m**; навигация **`src/components/3d/LODController.tsx`**, **`NPCManager.tsx`**.
+
+- **Обход / прозрачность (шаг 4, мерцание)**: **`applyGltfCharacterDepthWrite`** (`lib/gltfCharacterMaterialPolicy.ts`) для GLB игрока и NPC — **`depthWrite: true`** на материалах после загрузки; навигация **`src/components/3d/TransparencyRenderOrder.tsx`**.
+
+- **Обход / модели и анимации (шаг 3, мерцание)**: документ **`src/components/3d/ModelLoader.tsx`** / **`AnimationController.tsx`** (реальная логика — **`GLTFLoader`** в **`NPC.tsx`**, **`GLBPlayerModel`** в **`PhysicsPlayer.tsx`**); смена клипов по **`actionKeysSig`** / **`animMappingSig`**, чтение **`actions`** из **`actionsRef`** — без лишних сбросов при смене только ссылки на **`actions`**; в **`modelUrls`** — предупреждение не бить кэш query **`?v=…`** для GLB.
+
+- **Обход / игрок (шаг 2, мерцание)**: алиасы **`src/components/3d/Player.tsx`** и **`src/components/3d/entities/PlayerEntity.tsx`** на **`PhysicsPlayer`**; в **`PhysicsPlayer`** — явное правило: позиция меша только из **`RigidBody`**, не из Zustand; **`onPositionChange`** — только камера / throttled-стор (без двойного двига группы).
+
+- **Обход / Canvas (шаг 1, мерцание)**: **`src/components/3d/Scene.tsx`** — явные **`getExplorationSceneGlProps`** (**`logarithmicDepthBuffer: false`**) и **`frameloop="always"`**; подключено в **`RPGGameCanvas`** (исключение режима **`demand`** без **`invalidate()`**).
+
+- **Камера и перформанс обхода**: ближе третье лицо за спиной (**`followCameraProps`** в **`RPGGameCanvas`**: меньше **`distance`/`height`**, отдельный профиль для панели); **`FollowCamera`** без второго lerp цели при **`targetPositionRef`** (убран джиттер относительно меша/тени). **`RPGGameCanvas`** не подписывается на **`playerPosition`** в сторе — снимок при смене сцены + **`livePlayerPositionRef`** для камеры/NPC; **`NPC`** читает **`playerPositionRef`** в **`useFrame`**; **`MiniMap`** сам подписывается на стор — **`GameOrchestrator`** не перерисовывается на каждый шаг; реже сброс позиции в стор (**~165 ms**).
+
+- **Обход / Rapier**: откат увеличенного **`timeStep`** в **`visualLite`** — при редком шаге мира **`useBeforePhysicsStep`** (движение кинематики игрока) не вызывался каждый кадр, из‑за чего персонаж и тень «дёргались» и терялась плавность. Снова дефолтный шаг Rapier (**1/60**). У **`PhysicsPlayer`** **`canSleep={false}`**, чтобы кинематика не засыпала и матрицы меша не отставали от тела.
+
+- **Камера обхода**: при **`isLocked`** сбрасывается флаг перетаскивания орбиты (**`FollowCamera`**, **`SimpleFollowCamera`**), чтобы после диалога не продолжалось «невидимое» вращение от последнего жеста.
+- **Память 3D / NPC GLB**: у клона сцены NPC (**`NPC.tsx`** → **`GLTFLoader`**) в cleanup освобождаются **`geometry`** / **`material`**; при размонтировании останавливаются **`AnimationAction`** (игрок — **`GLBPlayerModel`** в **`PhysicsPlayer.tsx`**).
+- **Консоль продакшена (Vercel / Chrome)**: **`threeClientPrep`** переведён на именованный импорт **`AudioContext`** из **`three`** (без **`import * as THREE`** при загрузке модуля); инициализация — из **`GameClient`** через **`ensureThreeClientPrep()`**. Один общий нативный **`AudioContext`** в **`createBrowserAudioContext`**; процедурные SFX в **`AudioEngine`** больше не закрывают общий контекст после каждого бипа — меньше «The AudioContext encountered an error…» при частых шагах.
+- **Сборка Next / `tsc`**: каталог **`browserbase-functions`** исключён из корневого **`tsconfig.json`** — отдельный пакет со своими **`node_modules`** (`@browserbasehq/sdk-functions`); иначе **`next build`** падает на типах смоук-функции.
+
+## [0.2.7] - 2026-04-19
+
+### Build
+
+- **`npm run build`** (`next build --turbo`, скрипт фонов сцен) — успешная production-сборка на `main`, 2026-04-19.
+
+### Documentation
+
+- **Облачные сохранения (`/api/save`)**: при **`ENABLE_CLOUD_GAME_SAVE=1`** нужны **`DATABASE_URL`**, **`SAVE_API_SECRET`** (только в окружении сервера, не в репозитории). Каждый запрос к API — с заголовком **`Authorization: Bearer <SAVE_API_SECRET>`**. Идентификатор строки в БД задаётся **`SAVE_USER_ID`** (если не задан — используется **`default`**); поля **`userId`** в JSON-теле и в query **игнорируются**. Кэш GLTF: см. **`src/lib/gltfModelCache.ts`** (лимит **14** URL, **`useGLTF.clear`** для вытесненных).
+
 ### Build / repository
 
 - **Vercel: «This repository exceeded its LFS budget»**: клон репозитория тянет объекты **Git LFS** (см. **`.gitattributes`**: `*.glb`, `*.fbx`, `*.zip`); при исчерпании квоты хранилища/трафика GitHub LFS сборка на Vercel падает. Варианты: оплатить **Data packs** в [GitHub → Billing](https://github.com/settings/billing); или один раз вынести бинарники из LFS в обычный Git (**`git lfs migrate export`**, затем **`git push --force-with-lease`**) — см. **`FREE_HOSTING.md`**. **Сделано для `main`:** **`git lfs migrate export --include='*.glb,*.fbx,*.zip' --everything`**, очищен **`.gitattributes`** (без `filter=lfs`), пуш с **`--force-with-lease`** на **`origin/main`**.
 
+### Changed
+
+- **Обход 3D — камера и мобильный HUD**: **`FollowCamera`** / **`SimpleFollowCamera`** не начинают орбиту при клике по элементам с **`data-exploration-ui`** (тач-панель, миникарта, верхний HUD); хелпер **`src/lib/explorationUiPointer.ts`**. **`ExplorationMobileHud`** — удержание **Run** (аналог Shift). Контейнер Canvas в **`GameOrchestrator`** — **`100dvh`** для мобильных браузеров.
+- **Обход 3D — одна клавиша взаимодействия (E)**: **`src/lib/explorationPrimaryInteraction.ts`** — после триггеров с **`requiresInteraction`** выбор между **интерактивным объектом** и **NPC** по дистанции XZ (при почти равной — приоритет NPC); **`RPGGameCanvas`** использует резолвер; **`InteractiveTriggers`** — **`getNearestInteractiveObjectWithDistance`**. Тесты **`src/lib/explorationPrimaryInteraction.test.ts`**.
+- **`threeClientPrep`**: убрана подмена **`THREE.Clock`** (namespace ES-модуля нельзя перезаписать; при необходимости — обновление **`@react-three/fiber`**). Сохранена установка общего **`AudioContext`** для three.
+- **Камера**: формулы сглаживания вынесены в **`src/lib/followCameraDamp.ts`**; **`FollowCamera`** импортирует их; тесты **`src/lib/followCameraDamp.test.ts`**.
+
+- **Turbopack в приоритете**: **`package.json`** — **`dev`**: `next dev --turbo`; **`build`**: `next build --turbo`. **CI** — шаг **`npm run build`** (тот же Turbopack-сборщик).
+- **Next.js**: **`next.config.ts`** — **`typescript.ignoreBuildErrors: false`** (сборка снова зависит от проверки типов); **`reactStrictMode: true`**.
+- **API сохранений**: **`src/app/api/save/route.ts`** — без **`ENABLE_CLOUD_GAME_SAVE=1`** — **403** / **`CLOUD_SAVE_DISABLED`**. При включённом облаке: обязательны **`SAVE_API_SECRET`** и заголовок **`Authorization: Bearer …`**; идентификатор пользователя в БД — только **`SAVE_USER_ID`** (значение из тела/query не используется).
+- **Vitest**: **`vitest.config.ts`** — **`testTimeout`**, **`hookTimeout`**, **`maxConcurrency`** для стабильнее долгих прогонов в CI.
+- **ESLint / React hooks**: **`FollowCamera`** — обновление **`collisionSpringRef`** в **`useEffect`**; **`PhysicsPlayer`** — расчёт высоты GLB без чтения ref в render; **`usePlayerFootsteps`** — переиспользуемые **`Rapier`**-векторы через **`useRef`**, без мутации значений из **`useMemo`**.
+
+### Fixed
+
+- **Память / жизненный цикл**: **`useAmbientMusic`** — инкремент «поколения» расписания гасит хвосты **`setTimeout`** после остановки, кроссфейда и размонтирования; при повторном старте сбрасывается прежний **`setInterval`**. **`RadialMenu`** — один **`pointerdown`** в **`capture`**, без пары mousedown+pointerdown.
+- **Кэш GLTF (`useGLTF`)**: **`src/lib/gltfModelCache.ts`** — учёт ссылок + LRU-вытеснение через **`useGLTF.clear`** для неиспользуемых URL (лимит **14**); подписка в **`PhysicsPlayer`** / **`NPC`**. Тесты **`src/lib/gltfModelCache.test.ts`**.
+
 ### Added
+
+- **CI**: **`.github/workflows/ci.yml`** — на push/PR: **`npm ci`**, **`tsc --noEmit`**, **`npm test`**, **`npm run lint`**.
+- **Мобильная адаптация (обход + UI)**: **`useIsMobile`** и **`useMobileVisualPerf`** — порог **до 1023px** по ширине (телефоны в **ландшафте** не выпадают из «узкого» режима); оболочка 3D в **`GameOrchestrator`** — **`touch-manipulation`** вместо **`touch-none`**, чтобы тапы по оверлеям вели себя предсказуемее; **`ExplorationMobileHud`** — крупнее зоны нажатия (~52px), отступы **`safe-area-inset` слева/справа/снизу**; **`RadialMenu`** — закрытие по **`pointerdown`** вне панели, **`touch-manipulation`**, отступы под вырез, кнопки **min-h-11**; **`MiniMap`** — позиция с учётом **safe-area**, не наезжает на тач-панель.
+
+- **Целостность сюжета / стихов / золотого пути**: тест **`src/data/narrativePoetryIntegrity.test.ts`** — все **`poemId`** в эффектах **`STORY_NODES`** существуют в **`POEMS`**; непустой **`POEMS[].unlocksAt`** указывает на узел сюжета; у квестов **`GOLDEN_PATH_QUEST_SPINE`** и **`poetry_collection`** каждый **`linkedStoryNodeId`** есть в **`STORY_NODES`**; правило Cursor **`.cursor/rules/narrative-poetry-golden-path.mdc`** (прогон **`vitest`** этих файлов при правках **`storyNodes`** / **`quests`** / **`poems`** / **`goldenPath`**). Исправлен **`poem_6`**: **`unlocksAt`** → **`stranger_approach`** (вместо отсутствующего **`maria_introduction`**, чтобы **`useGameRuntime`** снова мог выдать стих на узле).
+
+- **Камера третьего лица (исследование)**: **`FollowCamera`** — вертикальный **pitch** с ограничением, **over-the-shoulder** (`shoulderOffset`), **lookAt** чуть выше ног (`lookAtHeightOffset`), сглаживание от **`delta`** (экспоненциальный damp), мягче **коллизия** (пружина `collisionSpring`, луч от `target.y + collisionRayOriginY` по фактической длине до камеры), клавиша **`R`** — сброс орбиты **за спину** по живому **`rotation`** из физики; **`livePlayerPositionRef`** и **`onPositionChange`** в **`PhysicsPlayer`** / **`RPGGameCanvas`** передают **`rotation`** каждый кадр; **`SimpleFollowCamera`** — те же pitch / плечо / damp без коллизий.
+
+- **IT «гильдия облака» (боковые квесты, дух Fable/Gothic)**: в **`quests.ts`** — **`incident_scroll_4729`**, **`vault_backup_trial`**, **`dependency_sigil`** (свиток инцидента, реликварий бэкапов, печать npm); старт из **`storyNodes`** (**`start_diagnosis`**, **`escalate_now`**, **`check_database`**); фракция **`it_workers`** в **`factions.ts`**; прогресс по NPC — **`useQuestProgress`** **`EVENT_OBJECTIVE_MAP`** (**`office_alexander`**, **`office_colleague`**, **`office_dmitry`**, **`office_artyom`**); по 💻 — **`ITTerminal`**: `journalctl`, `incident close`, `aws s3 ls`, `sha256sum`, `npm audit` / `npm uninstall`, **`openstack server show`** с двумя целями сразу, **`kubectl rollout undo`** для **`auth_crisis.apply_fix`**; частичное совпадение команд — сортировка ключей по длине; **`GameOrchestrator`**: **`openDialogueFromStoryWithQuest`** — при диалоге из сюжета тоже вызывается **`trackQuestNpcTalk`** (квесты не «молчали»); **`goldenPath`** — уточнение у **`start_diagnosis`**; тесты **`useQuestProgress.npcMap.test.ts`**.
+
+- **Экран для близких**: **`FamilyWelcomeGate`** в **`GameClient`** (перед **`GameOrchestrator`**), тексты в **`src/data/familyWelcome.ts`** — спокойное приветствие, подсказки по управлению, чекбокс «не показывать снова» в **`localStorage`** (**`volodka_family_gate_done`**); тяжёлый бандл игры не грузится, пока не нажата «Войти в историю».
+
+- **`src/app/error.tsx`**, **`src/app/global-error.tsx`**: границы ошибок App Router (сегмент и корень при падении **`layout`**); кнопка **`reset`**, в development — текст ошибки в UI.
+
+- **Browserbase Functions — дымовой тест деплоя**: каталог **`browserbase-functions/volodka-smoke`** (`defineFn` **`volodka-smoke`**) — Playwright по CDP к сессии Browserbase: открытие **`baseUrl`**, проверка заголовка с **«ВОЛОДЬКА»**, ожидание **`canvas`**, проверка **WebGL**; скрипты в корневом **`package.json`**: **`bb:volodka-smoke:dev`**, **`bb:volodka-smoke:publish`**; в **`.gitignore`** — **`browserbase-functions/**/.env`**, **`.browserbase`**.
 
 - **Масштаб персонажей под локацию (3D)**: в **`SceneConfig`** поле **`explorationCharacterModelScale`**, функция **`getExplorationCharacterModelScale(sceneId)`** в **`config/scenes.ts`**; множитель применяется к визуалу NPC **`(definition.scale ?? 1) * …`** и к модели игрока (**`PhysicsPlayer`** `visualModelScale`); тесты **`scenes.explorationScale.test.ts`**. Значения заданы для улиц (крупнее), комнат/офиса/кафе (компактнее), парка, библиотеки, сна, боя и др.
 
@@ -44,6 +209,15 @@
 ### Changed
 
 - **Core loop / 3D store sync (perf + lifecycle)**: в **`src/engine/CoreLoop.ts`** `stopLoop()` теперь снимает все подписки `eventBus` и сбрасывает флаг listeners (чтобы не накапливались обработчики при повторных init/start); в **`src/components/game/RPGGameCanvas.tsx`** добавлен троттлинг записи `exploration.timeOfDay` (батч по частоте) и `setPlayerPosition` (интервал/порог дистанции) для снижения частоты глобальных обновлений Zustand в кадре.
+- **Мобильная плавность (3D и оболочка)**: **`src/app/layout.tsx`** — экспорт **`viewport`** (`width: device-width`, **`viewportFit: cover`**, **`themeColor`**); **`src/hooks/use-mobile.ts`** — **`useTouchGameControls()`** (тач-панель при ширине &lt;768px или **`(pointer: coarse)`**); **`ExplorationMobileHud`** — **`setPointerCapture`**, **`onLostPointerCapture`** и сброс при **`pointerleave`** без нажатых кнопок, чтобы удержание WASD-направлений не «рвалось»; **`RPGGameCanvas`** — кап **`dpr`** (`visualLite` / `narrow`), **`gl`** без лишнего **`stencil`**, **`antialias`** выключается в lite-режиме, **`powerPreference: default`** на мобиле, **`touchAction: 'none'`** на стиле canvas, на **`narrow || visualLite`** один боковой слой точечных огней вместо трёх; **`CyberGameShell`** — **`WebkitTapHighlightColor: transparent`**; **`GameOrchestrator`** — обёртка 3D с **`touch-none`**; **`TutorialOverlay`** — **`max-md:bottom-44`**, **`touch-manipulation`**, чтобы не перекрывать нижний HUD.
+
+- **Тон сюжета и память (тексты)**: **`storyNodes.ts`** — **`SUBTITLE_TEXT`** («сказка между сменами», «память о Володе»), в **`start`** абзац про «сказку между сменами» и память, в **`go_home`** мост к **комнате в панельке**; **`src/data/poems.ts`** — финальный абзац **`GAME_INTRO`** для близких (темп, не экзамен); **`src/data/familyWelcome.ts`** — согласованная формулировка «интерактивная память / сказка между сменами»; **`TutorialOverlay`** — две строки атмосферы при первом туториале движения в **`volodka_room`**.
+
+- **`src/lib/db.ts`**: лог Prisma **`query`** только в **development**; в **production** — **`error`**, без засорения логов Vercel.
+
+- **`vercel.json`**: для **`/models-external/(.*)`** задан **`Cache-Control: public, max-age=31536000, immutable`** (как для **`/models/`**), чтобы GLB из **`public/models-external`** кешировались на CDN.
+
+- **3D-интерьеры квартир (обход)**: **`VolodkaRoomVisual`**, **`VolodkaCorridorVisual`**, **`HomeEveningVisual`** — мебель и пропы (столы, диван, шкафы, кровать, обувница, батарея, плафоны, ковры, кухонный угол, торшер) для читаемой «обстановки»; в комнате Володьки объекты по координатам совпадают с **`VolodkaRoomColliders`**.
 
 - **`FollowCamera`**: переиспользование **`Raycaster`** и векторов в **`checkCameraCollision`**, плюс **`frameTargetRef` / `frameDesiredCamRef`** в **`useFrame`**; то же для **`SimpleFollowCamera`** — меньше краткоживущих объектов при обходе с коллизиями камеры.
 
@@ -77,6 +251,12 @@
 
 ### Fixed
 
+- **Сохранения → 3D «квартира»**: при загрузке из **`localStorage`** поле **`exploration.currentSceneId`** прогоняется через **`sanitizeExplorationSceneId`** (`scenes.ts`); битые или устаревшие значения сбрасываются на **`volodka_room`**, чтобы комната в панели и коллайдеры совпадали с **`RPGGameCanvas`** / **`PhysicsSceneColliders`**.
+
+- **Консоль (three r183 + Web Audio)**: импорт **`threeClientPrep`** до R3F из **`GameClient`** — совместимый **`Clock`** без deprecation **`THREE.Clock` → `THREE.Timer`**, общий **`AudioContext`** с опциями **`{ latencyHint: 'interactive' }`** для **`THREE.AudioContext.setContext`**; **`createBrowserAudioContext`** в **`AudioEngine`**, **`useAdaptiveAudio`**, **`useAmbientMusic`** + **`resume()`** там, где контекст создаётся без жеста — меньше предупреждений Chromium и мягче поведение при suspended context.
+
+- **Консоль / аудио / камера / ввод**: **`AudioEngine.playSfx`** для **`footstep_*`** сразу процедурный шаг без запросов **`/audio/ui/sfx_footstep_*.mp3`** (убраны 404). **Иконка**: **`public/icon.svg`**, **`metadata.icons`** в **`app/layout.tsx`**, редирект **`/favicon.ico` → `/icon.svg`** в **`next.config.ts`**. **`FollowCamera`**: зум на **`wheel`** с **`gl.domElement`**, **`passive: false`** и **`preventDefault`**; коллизии камеры без чередования кадров (**`COLLISION_THROTTLE_FRAMES = 1`**), чтобы убрать джиттер. **`RPGGameCanvas`**: **`hemisphereLight`** через **`color` / `groundColor` / `intensity`** (меньше предупреждений R3F/Three о deprecated args); **`Canvas`** **`tabIndex`**, **`onPointerDown`** → фокус для клавиатуры после клика по сцене. **`useGamePhysics`**: не перехватывать WASD, если фокус в **`input` / `textarea` / contentEditable** (чинило «управление мёртвое» после UI).
+
 - **`ConsequencesSystem` / EventBus**: подписки на события сохраняются в **`consequenceBusUnsubs`**; **`resetConsequences()`** вызывает отписки перед сбросом состояния — иначе при повторном **`initConsequencesSystem`** (тесты, HMR) обработчики накапливались (утечка подписок + двойное применение последствий). Тест **`ConsequencesSystem.test.ts`**.
 
 - **Исследование квартиры / коридор — «чёрный экран»**: в **`RPGGameCanvas`** не монтировался интерьер (стены/потолок были только в **`OptimizedSceneEnvironment`** для VN). Добавлены **`VolodkaCorridorVisual`**, **`VolodkaRoomVisual`**, **`HomeEveningVisual`** и подключены по **`sceneId`**; туман для узких локаций расширен (**near / far**), пол слегка осветлён с лёгким **emissive**; **`ExplorationPostFX`** получает **`compactIndoor`** (без **N8AO** в квартире — иначе кадр «съедался» в чёрное).
@@ -98,6 +278,10 @@
 - **`storyNodes` / квест «Первое чтение»**: при входе в **`blue_cat_cafe`** сразу закрывается цель **`go_to_cafe`** (до этого **`location_visited`** мог сработать до активации квеста); ветка **`maria_curious`** теперь даёт **`meet_someone`** и стартует **`maria_connection`**, как остальные ответы Виктории.
 
 - **`PhysicsPlayer` / `GLBPlayerModel`**: отказ от глубокого клона сцены игрока для skinned **`Volodka.glb`** (меш снова виден); при одном клипе в файле он проигрывается и при движении.
+
+- **`PhysicsPlayer` / масштаб по bbox**: если высота AABB по Y **< 0.55 m** (нереалистично для целого персонажа), считаем bbox битым и берём **`PLAYER_VISUAL_HEIGHT_FALLBACK_M`** вместо маленького делителя — иначе **`PLAYER_GLB_TARGET_VISUAL_METERS / h`** раздувает модель (ноги по краям кадра, комната «щелью»).
+
+- **`PhysicsPlayer` / масштаб GLB (Volodka.glb)**: ветка **`hRaw > 22` → fallback** ошибочно подменяла делитель при **большом** bbox по вертикали (~234 единицы файла): масштаб получался ~в **100×** больше нужного. Большой **`hRaw`** снова идёт в формулу как есть; fallback только при **`hRaw < 0.55`**.
 
 ---
 

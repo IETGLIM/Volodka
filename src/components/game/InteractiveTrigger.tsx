@@ -39,6 +39,8 @@ interface TriggerSystemProps {
   currentSceneId: SceneId;
   onTriggerEnter: (triggerId: string) => void;
   onTriggerStateChange: (triggerId: string, state: TriggerState) => void;
+  /** Набор `interactionId`, для которых игрок сейчас внутри зоны (без автозапуска диалога). */
+  onInteractionAvailabilityChange?: (interactionIds: ReadonlySet<string>) => void;
 }
 
 export const TriggerSystem = memo(function TriggerSystem({
@@ -48,6 +50,7 @@ export const TriggerSystem = memo(function TriggerSystem({
   currentSceneId,
   onTriggerEnter,
   onTriggerStateChange,
+  onInteractionAvailabilityChange,
 }: TriggerSystemProps) {
   const sceneTriggers = triggers.filter((t) => t.sceneId === currentSceneId);
 
@@ -56,6 +59,7 @@ export const TriggerSystem = memo(function TriggerSystem({
   const [markerInside, setMarkerInside] = useState<Record<string, boolean>>({});
   const frameCounterRef = useRef(0);
   const enterToastLastAtRef = useRef<Record<string, number>>({});
+  const prevInteractionAvailabilityKeyRef = useRef<string>('');
 
   useEffect(() => {
     wasInsideRef.current = {};
@@ -102,6 +106,21 @@ export const TriggerSystem = memo(function TriggerSystem({
       }
 
       wasInsideRef.current[trigger.id] = inside;
+    }
+
+    if (onInteractionAvailabilityChange) {
+      const activeIds = new Set<string>();
+      for (const trigger of sceneTriggers) {
+        if (!trigger.interactionId) continue;
+        if (insideByTrigger[trigger.id]) {
+          activeIds.add(trigger.interactionId);
+        }
+      }
+      const key = [...activeIds].sort().join('|');
+      if (key !== prevInteractionAvailabilityKeyRef.current) {
+        prevInteractionAvailabilityKeyRef.current = key;
+        onInteractionAvailabilityChange(activeIds);
+      }
     }
 
     if (!doMarkerTick) return;
@@ -185,7 +204,7 @@ export const WorldItem = memo(function WorldItem({
   useFrame(({ clock }, delta) => {
     if (meshRef.current && !collected) {
       meshRef.current.rotation.y += delta * 2;
-      meshRef.current.position.y = position[1] + 0.3 + Math.sin(clock.getElapsedTime() * 3) * 0.1;
+      meshRef.current.position.y = position[1] + 0.3 + Math.sin(clock.elapsedTime * 3) * 0.1;
     }
   });
 

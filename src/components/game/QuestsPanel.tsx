@@ -12,7 +12,6 @@ import {
 } from '@/data/quests';
 import type { ExtendedQuest, QuestObjective, QuestReward } from '@/data/types';
 import { useGameStore } from '@/store/gameStore';
-import { eventBus } from '@/engine/EventBus';
 
 const FACTION_UNGROUPED = '__ungrouped';
 
@@ -435,7 +434,6 @@ export const QuestsPanel = memo(function QuestsPanel({
                             type="button"
                             onClick={() => {
                               activateQuest(quest.id);
-                              eventBus.emit('quest:activated', { questId: quest.id });
                             }}
                             className="min-h-11 shrink-0 touch-manipulation rounded border border-amber-400/50 bg-amber-950/60 px-2 py-1.5 font-mono text-[11px] uppercase tracking-wide text-amber-200 hover:bg-amber-900/50"
                           >

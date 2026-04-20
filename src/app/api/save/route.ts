@@ -1,8 +1,54 @@
 // ============================================
 // SAVE/LOAD API — Server-side persistence
 // ============================================
+// По умолчанию выключено. Включение: **`ENABLE_CLOUD_GAME_SAVE=1`**, **`DATABASE_URL`**, **`SAVE_API_SECRET`**
+// (заголовок **`Authorization: Bearer <SAVE_API_SECRET>`** на каждый запрос). Идентификатор пользователя
+// на сервере — только **`SAVE_USER_ID`** (клиентский `userId` в теле/query не доверяем).
 
 import { NextRequest, NextResponse } from 'next/server';
+import { CLOUD_SAVE_MAX_DATA_BYTES } from '@/lib/persistedGameSnapshot';
+
+const CLOUD_SAVE_DISABLED_BODY = {
+  error:
+    'Облачные сохранения отключены. Прогресс хранится в localStorage (клиент). Для сервера задайте ENABLE_CLOUD_GAME_SAVE=1 и защитите API (auth).',
+  code: 'CLOUD_SAVE_DISABLED' as const,
+};
+
+function assertCloudSaveEnabled(): NextResponse | null {
+  if (process.env.ENABLE_CLOUD_GAME_SAVE === '1') return null;
+  return NextResponse.json(CLOUD_SAVE_DISABLED_BODY, { status: 403 });
+}
+
+function assertSaveApiSecret(request: NextRequest): NextResponse | null {
+  const secret = process.env.SAVE_API_SECRET?.trim();
+  if (!secret) {
+    return NextResponse.json(
+      {
+        error:
+          'Для облачных сохранений задайте SAVE_API_SECRET на сервере и передавайте Authorization: Bearer с этим значением.',
+        code: 'SAVE_SECRET_MISSING' as const,
+      },
+      { status: 503 },
+    );
+  }
+  const raw = request.headers.get('authorization') ?? '';
+  const token = raw.length > 7 && raw.slice(0, 7).toLowerCase() === 'bearer ' ? raw.slice(7).trim() : '';
+  if (token !== secret) {
+    return NextResponse.json(
+      {
+        error: 'Требуется заголовок Authorization: Bearer с SAVE_API_SECRET.',
+        code: 'SAVE_UNAUTHORIZED' as const,
+      },
+      { status: 401 },
+    );
+  }
+  return null;
+}
+
+function serverSaveUserId(): string {
+  const id = process.env.SAVE_USER_ID?.trim();
+  return id && id.length > 0 ? id : 'default';
+}
 
 async function getPrisma() {
   const { db } = await import('@/lib/db');
@@ -10,10 +56,14 @@ async function getPrisma() {
 }
 
 export async function POST(request: NextRequest) {
+  const disabled = assertCloudSaveEnabled();
+  if (disabled) return disabled;
+  const unauthorized = assertSaveApiSecret(request);
+  if (unauthorized) return unauthorized;
   try {
     const body = await request.json();
+    const userId = serverSaveUserId();
     const {
-      userId = 'default',
       slot = 1,
       label,
       version = 5,
@@ -28,14 +78,32 @@ export async function POST(request: NextRequest) {
       stress = 0,
       energy = 5,
     } = body as {
-      userId?: string; slot?: number; label?: string; version?: number;
+      slot?: number; label?: string; version?: number;
       data: string; currentNodeId: string; playTime?: number; act?: number;
       path?: string; mood?: number; creativity?: number; stability?: number;
       stress?: number; energy?: number;
     };
 
-    if (!data || !currentNodeId) {
+    if (data == null || !currentNodeId) {
       return NextResponse.json({ error: 'Поля "data" и "currentNodeId" обязательны' }, { status: 400 });
+    }
+    if (typeof data !== 'string') {
+      return NextResponse.json(
+        { error: 'Поле "data" должно быть строкой (JSON снимка)', code: 'SAVE_DATA_NOT_STRING' as const },
+        { status: 400 },
+      );
+    }
+    const dataUtf8Bytes = new TextEncoder().encode(data).length;
+    if (dataUtf8Bytes > CLOUD_SAVE_MAX_DATA_BYTES) {
+      return NextResponse.json(
+        {
+          error: `Поле "data" превышает лимит ${CLOUD_SAVE_MAX_DATA_BYTES} байт UTF-8 (${dataUtf8Bytes} байт).`,
+          code: 'SAVE_PAYLOAD_TOO_LARGE' as const,
+          maxBytes: CLOUD_SAVE_MAX_DATA_BYTES,
+          bytes: dataUtf8Bytes,
+        },
+        { status: 413 },
+      );
     }
 
     const prisma = await getPrisma();
@@ -54,9 +122,13 @@ export async function POST(request: NextRequest) {
 }
 
 export async function GET(request: NextRequest) {
+  const disabled = assertCloudSaveEnabled();
+  if (disabled) return disabled;
+  const unauthorized = assertSaveApiSecret(request);
+  if (unauthorized) return unauthorized;
   try {
     const { searchParams } = new URL(request.url);
-    const userId = searchParams.get('userId') || 'default';
+    const userId = serverSaveUserId();
     const slot = parseInt(searchParams.get('slot') || '1', 10);
     const listOnly = searchParams.get('list') === 'true';
 
@@ -96,9 +168,13 @@ export async function GET(request: NextRequest) {
 }
 
 export async function DELETE(request: NextRequest) {
+  const disabled = assertCloudSaveEnabled();
+  if (disabled) return disabled;
+  const unauthorized = assertSaveApiSecret(request);
+  if (unauthorized) return unauthorized;
   try {
     const { searchParams } = new URL(request.url);
-    const userId = searchParams.get('userId') || 'default';
+    const userId = serverSaveUserId();
     const slot = parseInt(searchParams.get('slot') || '1', 10);
 
     const prisma = await getPrisma();

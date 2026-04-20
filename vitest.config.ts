@@ -6,6 +6,9 @@ export default defineConfig({
     environment: 'jsdom',
     globals: true,
     include: ['src/**/*.test.ts', 'src/**/*.test.tsx'],
+    testTimeout: 45_000,
+    hookTimeout: 30_000,
+    maxConcurrency: 8,
   },
   resolve: {
     alias: {

@@ -4,6 +4,7 @@ import { memo, useEffect, useMemo, useRef, useState, Suspense } from 'react';
 import type { SceneId } from '@/data/types';
 import { RigidBody, CuboidCollider } from '@react-three/rapier';
 import { footstepColliderName } from '@/lib/footstepMaterials';
+import { ThreeCanvasSuspenseFallback } from '@/components/3d/ThreeCanvasSuspenseFallback';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 
@@ -149,7 +150,7 @@ export const InteractiveObject = memo(function InteractiveObject({
 
   useFrame(({ clock }) => {
     if (meshRef.current && isInteractable) {
-      const t = clock.getElapsedTime();
+      const t = clock.elapsedTime;
       if (highlighted || hovered) {
         meshRef.current.position.y = position[1] + Math.sin(t * 3) * 0.05;
       }
@@ -584,7 +585,7 @@ const ZaremaAlbertRoomContent = memo(function ZaremaAlbertRoomContent() {
 
 export const ZaremaAlbertRoom = memo(function ZaremaAlbertRoom() {
   return (
-    <Suspense fallback={null}>
+    <Suspense fallback={<ThreeCanvasSuspenseFallback />}>
       <ZaremaAlbertRoomContent />
     </Suspense>
   );

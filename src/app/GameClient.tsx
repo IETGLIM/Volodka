@@ -1,9 +1,12 @@
 // src/app/GameClient.tsx
 'use client';
 
+import { ensureThreeClientPrep } from '@/lib/threeClientPrep';
+
 import dynamic from 'next/dynamic';
 import { useState, useEffect, useRef, memo, useMemo } from 'react';
 import { motion } from 'framer-motion';
+import { FamilyWelcomeGate } from '@/components/game/FamilyWelcomeGate';
 
 // Dynamic import with SSR disabled — uses the new 2D GameOrchestrator
 const GameOrchestrator = dynamic(
@@ -392,7 +395,7 @@ function CyberpunkLoadingFallback() {
   }, []);
 
   return (
-    <div className="fixed inset-0 bg-black overflow-hidden">
+    <div className="fixed inset-0 bg-black overflow-hidden pointer-events-none">
       {/* Matrix rain */}
       <MiniMatrixRain />
 
@@ -443,7 +446,7 @@ function CyberpunkLoadingFallback() {
               ? '-2px 0 #ff0000, 2px 0 #00ffff, 0 0 60px rgba(0, 255, 255, 0.6)'
               : '0 0 50px rgba(0, 255, 255, 0.5), 0 0 100px rgba(0, 255, 255, 0.3), 0 0 160px rgba(255, 140, 0, 0.08)',
           }}
-          initial={{ opacity: 0, y: -20, scale: 0.95 }}
+          initial={false}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ duration: 1, ease: 'easeOut' }}
         >
@@ -581,9 +584,12 @@ function ErrorBoundary({ children }: { children: React.ReactNode }) {
 
 // Main GameClient — just wraps GameOrchestrator with error boundary
 export default function GameClient() {
+  ensureThreeClientPrep();
   return (
     <ErrorBoundary>
-      <GameOrchestrator />
+      <FamilyWelcomeGate>
+        <GameOrchestrator />
+      </FamilyWelcomeGate>
     </ErrorBoundary>
   );
 }

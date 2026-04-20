@@ -6,6 +6,7 @@
 // - квесты `QUEST_DEFINITIONS` и стартовый набор в gameStore (`main_goal`, `first_words`);
 // - автопрогресс по событиям в `useQuestProgress` (location_visited, npc_talked, poem_collected);
 // - ветвления с `dialogueNpcId` → `DialogueRenderer` + `DialogueEngine` (processDialogueChoice / startDialogue).
+// Регрессии: `goldenPath.test.ts`, `narrativePoetryIntegrity.test.ts` (+ `contentValidator.test.ts` для графа).
 //
 // Канон для «один проход до титров»: финал **Создатель** (`ending_creator`).
 // Условие выбора в `ending_choice`: завершён `first_words` + минимум 2 завершённых квеста всего.
@@ -26,7 +27,7 @@ export const GOLDEN_PATH_OPTIONAL_FULL_LEGACY_QUEST_IDS: readonly string[] = ['p
 export const GOLDEN_PATH_STORY_SPINE: readonly { nodeId: string; note: string }[] = [
   { nodeId: 'start', note: 'Пролог офис' },
   { nodeId: 'start_2', note: 'Алерт; любой выбор → start_diagnosis (или ветка диалога → туда же)' },
-  { nodeId: 'start_diagnosis', note: 'Kibana / старт IT-квестов' },
+  { nodeId: 'start_diagnosis', note: 'Kibana / старт IT-квестов + три «свитка» (инцидент / бэкапы / npm)' },
   { nodeId: 'database_analysis', note: 'Внутренний монолог → fix_choice' },
   { nodeId: 'fix_choice', note: 'Откат / патч → fix_success' },
   { nodeId: 'fix_success', note: 'Закрытие инцидента → lunch_time' },

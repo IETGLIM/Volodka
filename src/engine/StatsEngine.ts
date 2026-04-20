@@ -8,7 +8,7 @@
 // - Низкая энергия: ограничивает доступные действия
 // - Карма: влияет на доступные концовки
 
-import { eventBus } from './EventBus';
+import { eventBus, type StatBusId } from './EventBus';
 import type { PlayerState, PlayerSkills, ChoiceCondition } from '@/data/types';
 import { MAX_PLAYER_ENERGY } from '@/lib/energyConfig';
 
@@ -36,7 +36,7 @@ export interface DerivedEffects {
 }
 
 export interface StatChangeResult {
-  stat: string;
+  stat: StatBusId;
   oldValue: number;
   newValue: number;
   delta: number;
@@ -50,7 +50,7 @@ export interface StatChangeResult {
 class StatsEngineClass {
   /** Process a stat change and get derived effects */
   processStatChange(
-    stat: string,
+    stat: StatBusId,
     delta: number,
     currentState: PlayerState
   ): StatChangeResult {
@@ -286,7 +286,7 @@ class StatsEngineClass {
 
   // ---- Private helpers ----
 
-  private getStatValue(stat: string, state: PlayerState): number {
+  private getStatValue(stat: StatBusId | string, state: PlayerState): number {
     if (stat in state) {
       return state[stat as keyof PlayerState] as number;
     }

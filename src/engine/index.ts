@@ -2,7 +2,14 @@
 // ENGINE INDEX — Единый экспорт всех систем
 // ============================================
 
-export { eventBus, type EventBusEvent, type EventMap, type EventHandler } from './EventBus';
+export {
+  eventBus,
+  type EventBusEvent,
+  type EventMap,
+  type EventHandler,
+  type StatBusId,
+  type SfxBusType,
+} from './EventBus';
 export {
   registerConsequence,
   registerConsequences,

@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { createBrowserAudioContext } from '@/lib/browserAudioContext';
 import { getAtmosphereGenreForScene } from '@/lib/atmosphereMusicGenres';
 
 // ============================================
@@ -9,7 +10,7 @@ import { getAtmosphereGenreForScene } from '@/lib/atmosphereMusicGenres';
 // Создаёт эмбиент-саундтрек на основе Web Audio API
 // Без внешних файлов - всё генерируется в реальном времени
 
-interface AmbientConfig {
+export interface AmbientConfig {
   enabled: boolean;
   sceneId: string;
   mood: number;
@@ -17,6 +18,14 @@ interface AmbientConfig {
   creativity: number;
   /** Принудительно «боевая» подложка (стресс / сцена боя). */
   forceBattleMusic?: boolean;
+  /** Нарративная память → слегка меняет темп подложки (`worldReactivity`). */
+  narrativeMusic?: 'default' | 'melancholic' | 'hopeful';
+}
+
+function narrativeTempoFactor(m?: AmbientConfig['narrativeMusic']): number {
+  if (m === 'melancholic') return 0.82;
+  if (m === 'hopeful') return 1.06;
+  return 1;
 }
 
 function resolveAmbientGenre(sceneId: string, forceBattle?: boolean) {
@@ -143,6 +152,11 @@ export function useAmbientMusic(config: AmbientConfig) {
   const configRef = useRef(config);
   const playMelodicPhraseRef = useRef<() => void>(() => {});
   const playBackgroundLayerRef = useRef<() => void>(() => {});
+  /** Инкремент при остановке / кроссфейде / новом старте — отбрасывает «хвосты» setTimeout после размонтирования. */
+  const ambientScheduleGenRef = useRef(0);
+  const bumpAmbientSchedule = () => {
+    ambientScheduleGenRef.current += 1;
+  };
 
   useEffect(() => {
     configRef.current = config;
@@ -153,9 +167,10 @@ export function useAmbientMusic(config: AmbientConfig) {
     if (audioContextRef.current) return;
     
     try {
-      const AudioContextClass = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
-      audioContextRef.current = new AudioContextClass();
-      
+      audioContextRef.current = createBrowserAudioContext();
+      if (!audioContextRef.current) return;
+      void audioContextRef.current.resume().catch(() => {});
+
       // Master gain с компрессором для мягкости
       const compressor = audioContextRef.current.createDynamicsCompressor();
       compressor.threshold.value = -24;
@@ -418,8 +433,11 @@ export function useAmbientMusic(config: AmbientConfig) {
   // Создание мелодичной фразы
   const playMelodicPhrase = useCallback(() => {
     if (!audioContextRef.current || !masterGainRef.current) return;
-    
+
+    const phraseGen = ambientScheduleGenRef.current;
+
     const sceneConfig = SCENE_SCALES[config.sceneId] || SCENE_SCALES['default'];
+    const tempo = sceneConfig.tempo * narrativeTempoFactor(config.narrativeMusic);
     const scale = sceneConfig.scale;
     const genre = resolveAmbientGenre(config.sceneId, config.forceBattleMusic);
     
@@ -430,7 +448,7 @@ export function useAmbientMusic(config: AmbientConfig) {
 
     if (genre === 'chiptune_8bit') {
       const steps = Math.floor(Math.random() * 5) + 5;
-      const stepMs = 95 / sceneConfig.tempo;
+      const stepMs = 95 / tempo;
       let idx = 0;
       const dir = Math.random() > 0.5 ? 1 : -1;
       for (let i = 0; i < steps; i++) {
@@ -438,6 +456,7 @@ export function useAmbientMusic(config: AmbientConfig) {
         const freq = scale[idx] * (Math.random() > 0.85 ? 2 : 1);
         const delayMs = i * (stepMs + Math.random() * 35);
         setTimeout(() => {
+          if (ambientScheduleGenRef.current !== phraseGen) return;
           const vol =
             (0.09 + moodModifier * 0.05) * stressModifier * sceneConfig.intensity * (0.85 + creativityModifier);
           createChiptuneBlip(freq, 0.07 + Math.random() * 0.06, vol, 'melody');
@@ -448,10 +467,11 @@ export function useAmbientMusic(config: AmbientConfig) {
 
     if (genre === 'brutal_heavy') {
       const hits = Math.floor(Math.random() * 6) + 7;
-      const stepMs = (42 + Math.random() * 28) / sceneConfig.tempo;
+      const stepMs = (42 + Math.random() * 28) / tempo;
       for (let i = 0; i < hits; i++) {
         const delayMs = i * stepMs;
         setTimeout(() => {
+          if (ambientScheduleGenRef.current !== phraseGen) return;
           if (Math.random() < 0.72) {
             const baseNote = scale[Math.floor(Math.random() * scale.length)];
             const freq = baseNote * (Math.random() > 0.55 ? 0.5 : 1);
@@ -485,10 +505,11 @@ export function useAmbientMusic(config: AmbientConfig) {
     }
     
     // Играем ноты с задержкой, учитывая темп сцены
-    const baseDelay = 800 / sceneConfig.tempo;
+    const baseDelay = 800 / tempo;
     selectedNotes.forEach((freq, i) => {
       setTimeout(() => {
-        const duration = (2 + Math.random() * 2) * sceneConfig.tempo;
+        if (ambientScheduleGenRef.current !== phraseGen) return;
+        const duration = (2 + Math.random() * 2) * tempo;
         const volume = (0.12 + moodModifier * 0.08) * stressModifier * sceneConfig.intensity;
         createPad(freq, duration, volume, 'melody');
       }, i * (baseDelay + Math.random() * 300));
@@ -499,6 +520,7 @@ export function useAmbientMusic(config: AmbientConfig) {
     config.mood,
     config.stress,
     config.creativity,
+    config.narrativeMusic,
     createPad,
     createChiptuneBlip,
     createBrutalSawStab,
@@ -507,6 +529,8 @@ export function useAmbientMusic(config: AmbientConfig) {
 
   const playBackgroundLayer = useCallback(() => {
     if (!audioContextRef.current || !masterGainRef.current) return;
+
+    const layerGen = ambientScheduleGenRef.current;
 
     const sceneConfig = SCENE_SCALES[config.sceneId] || SCENE_SCALES['default'];
     const genre = resolveAmbientGenre(config.sceneId, config.forceBattleMusic);
@@ -524,6 +548,7 @@ export function useAmbientMusic(config: AmbientConfig) {
     if (genre === 'chiptune_8bit') {
       createChiptuneBlip(bassFreq, 5.5, 0.055 * sceneConfig.intensity, 'bass');
       setTimeout(() => {
+        if (ambientScheduleGenRef.current !== layerGen) return;
         if (scale[3]) {
           createChiptuneBlip(scale[3] * 0.5, 4, 0.04 * sceneConfig.intensity, 'pad');
         }
@@ -533,6 +558,7 @@ export function useAmbientMusic(config: AmbientConfig) {
 
     createPad(bassFreq, 10, 0.08 * sceneConfig.intensity, 'bass');
     setTimeout(() => {
+      if (ambientScheduleGenRef.current !== layerGen) return;
       if (scale[2]) {
         createPad(scale[2], 8, 0.06 * sceneConfig.intensity, 'pad');
       }
@@ -542,7 +568,10 @@ export function useAmbientMusic(config: AmbientConfig) {
   // Кроссфейд при смене сцены
   const crossfadeToScene = useCallback((newSceneId: string) => {
     if (!masterGainRef.current || !audioContextRef.current) return;
-    
+
+    bumpAmbientSchedule();
+    const crossfadeGen = ambientScheduleGenRef.current;
+
     const ctx = audioContextRef.current;
     const now = ctx.currentTime;
     const crossfadeTime = 2; // 2 секунды на кроссфейд
@@ -565,6 +594,7 @@ export function useAmbientMusic(config: AmbientConfig) {
     
     // После кроссфейда запускаем новую музыку
     setTimeout(() => {
+      if (ambientScheduleGenRef.current !== crossfadeGen) return;
       playMelodicPhrase();
     }, crossfadeTime * 1000);
   }, [playMelodicPhrase]);
@@ -577,12 +607,19 @@ export function useAmbientMusic(config: AmbientConfig) {
   // Основной цикл эмбиента
   const startAmbient = useCallback(() => {
     if (!config.enabled) return;
-    
+
     initAudio();
+    bumpAmbientSchedule();
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
     setIsPlaying(true);
     
     const sceneConfig = SCENE_SCALES[config.sceneId] || SCENE_SCALES['default'];
     const genre = resolveAmbientGenre(config.sceneId, config.forceBattleMusic);
+    const intervalTempo =
+      sceneConfig.tempo * narrativeTempoFactor(configRef.current.narrativeMusic);
     
     // Инициализация слоёв
     (['bass', 'pad', 'melody', 'noise', 'accent'] as LayerType[]).forEach(type => {
@@ -624,12 +661,13 @@ export function useAmbientMusic(config: AmbientConfig) {
         else if (choice < 0.70) createNoise(6, 0.015);
       }
       
-    }, ((genre === 'brutal_heavy' ? 4200 : genre === 'chiptune_8bit' ? 5200 : 6000) + Math.random() * 4000) / sceneConfig.tempo);
+    }, ((genre === 'brutal_heavy' ? 4200 : genre === 'chiptune_8bit' ? 5200 : 6000) + Math.random() * 4000) / intervalTempo);
     
-  }, [config.enabled, config.sceneId, config.forceBattleMusic, initAudio, createNoise, createBrutalNoiseHit]);
+  }, [config.enabled, config.sceneId, config.forceBattleMusic, config.narrativeMusic, initAudio, createNoise, createBrutalNoiseHit]);
   
   // Остановка
   const stopAmbient = useCallback(() => {
+    bumpAmbientSchedule();
     if (intervalRef.current) {
       clearInterval(intervalRef.current);
       intervalRef.current = null;
@@ -728,6 +766,7 @@ interface AmbientMusicPlayerProps {
   creativity: number;
   enabled: boolean;
   forceBattleMusic?: boolean;
+  narrativeMusic?: AmbientConfig['narrativeMusic'];
 }
 
 export function AmbientMusicPlayer({
@@ -737,6 +776,7 @@ export function AmbientMusicPlayer({
   creativity,
   enabled,
   forceBattleMusic = false,
+  narrativeMusic,
 }: AmbientMusicPlayerProps) {
   useAmbientMusic({
     enabled,
@@ -745,6 +785,7 @@ export function AmbientMusicPlayer({
     stress,
     creativity,
     forceBattleMusic,
+    narrativeMusic,
   });
   
   return null; // Невизуальный компонент

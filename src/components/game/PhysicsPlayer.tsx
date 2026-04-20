@@ -6,10 +6,23 @@ import { useGLTF, useAnimations } from '@react-three/drei';
 import { RigidBody, RapierRigidBody, CapsuleCollider, useRapier, useBeforePhysicsStep } from '@react-three/rapier';
 import type { KinematicCharacterController } from '@dimforge/rapier3d-compat';
 import * as THREE from 'three';
-import { usePlayerControls, PHYSICS_CONSTANTS, type PlayerControls } from '@/hooks/useGamePhysics';
+import { usePlayerControls, type PlayerControls } from '@/hooks/useGamePhysics';
+import {
+  applyGroundingAfterCharacterProbe,
+  clampPhysicsTimestep,
+  computePlayerCapsule,
+  createExplorationKinematicCharacterController,
+  integrateKinematicLocomotionDelta,
+} from '@/core/physics/CharacterController';
 import { usePlayerFootsteps } from '@/hooks/usePlayerFootsteps';
 import { getDefaultPlayerModelPath, isValidPlayerGlbPath, rewriteLegacyModelPath } from '@/config/modelUrls';
 import { PLAYER_GLB_TARGET_VISUAL_METERS } from '@/lib/playerScaleConstants';
+import { retainGltfModelUrl, releaseGltfModelUrl } from '@/lib/gltfModelCache';
+import { applyGltfExplorationCharacterMaterialPolicies } from '@/lib/gltfCharacterMaterialPolicy';
+import { ThreeCanvasSuspenseFallback } from '@/components/3d/ThreeCanvasSuspenseFallback';
+import { cloneAnimationClipsWithoutExplorationPlayerRootMotion } from '@/lib/stripExplorationPlayerRootMotionFromClips';
+import { isExplorationPlayerDebugPrimitiveEnabled } from '@/lib/explorationPlayerDebugPrimitive';
+import { isExplorationPlayerLocomotionLogEnabled } from '@/lib/explorationDiagnostics';
 import { useGameStore } from '@/store/gameStore';
 
 // ============================================
@@ -26,12 +39,23 @@ export interface PhysicsPlayerProps {
   visualModelScale?: number;
   /** Множитель ходьбы/бега/прыжка; см. `getExplorationLocomotionScale`. */
   locomotionScale?: number;
-  onPositionChange?: (position: { x: number; y: number; z: number }) => void;
+  /** Позиция и yaw модели каждый кадр (для камеры / ресета без отставания от стора). */
+  onPositionChange?: (position: { x: number; y: number; z: number; rotation: number }) => void;
   onInteraction?: () => void;
   isLocked?: boolean;
   initialRotation?: number;
   /** Тач-панель (см. `ExplorationMobileHud`): движение объединяется с клавиатурой. */
   virtualControlsRef?: React.MutableRefObject<Partial<PlayerControls>>;
+  /**
+   * Диагностика: вместо GLB — красный бокс с размерами капсулы (тот же контроллер / коллайдер).
+   * Обычно не задаётся вручную — см. **`NEXT_PUBLIC_EXPLORATION_PLAYER_DEBUG_PRIMITIVE`** и **`explorationPlayerDebugPrimitive`**.
+   */
+  debugPlayerPrimitive?: boolean;
+  /**
+   * Смена сцены без `key` на модели: при новом значении — телепорт на `position` + сброс скоростей
+   * (например **`sceneId`** из **`RPGGameCanvas`**).
+   */
+  spawnSyncKey?: string;
 }
 
 export interface PhysicsPlayerRef {
@@ -63,7 +87,7 @@ const FallbackPlayerModel = memo(function FallbackPlayerModel({
   const headRef = useRef<THREE.Group>(null);
 
   useFrame(({ clock }) => {
-    const t = clock.getElapsedTime();
+    const t = clock.elapsedTime;
 
     if (groupRef.current) {
       groupRef.current.position.y = isMoving ? Math.abs(Math.sin(t * 8)) * 0.03 : Math.sin(t * 2) * 0.01;
@@ -182,6 +206,44 @@ const FallbackPlayerModel = memo(function FallbackPlayerModel({
 // GLB PLAYER MODEL
 // ============================================
 
+/**
+ * Вертикальный размер bbox SkinnedMesh в **единицах файла** (часто ~170–240 «сантиметров» без node-scale).
+ * Делитель в `TARGET/h` должен совпадать с этим числом — иначе модель раздувается (см. Volodka.glb: hRaw≈234).
+ * Fallback только при слишком мелком/пустом bbox.
+ */
+const PLAYER_VISUAL_HEIGHT_FALLBACK_M = 1.72;
+
+function getRootCharacterVisualHeightMeters(root: THREE.Object3D, scratch: THREE.Vector3): number {
+  root.updateMatrixWorld(true);
+  const box = new THREE.Box3();
+  let foundSkinned = false;
+  root.traverse((obj) => {
+    if (obj instanceof THREE.SkinnedMesh && obj.geometry) {
+      foundSkinned = true;
+      if (!obj.geometry.boundingBox) {
+        obj.geometry.computeBoundingBox();
+      }
+      const local = obj.geometry.boundingBox;
+      if (!local || local.isEmpty()) return;
+      const tmp = local.clone();
+      tmp.applyMatrix4(obj.matrixWorld);
+      box.union(tmp);
+    }
+  });
+  if (!foundSkinned || box.isEmpty()) {
+    box.setFromObject(root);
+  }
+  const hRaw = box.getSize(scratch).y;
+  if (!Number.isFinite(hRaw) || hRaw < 1e-4) {
+    return PLAYER_VISUAL_HEIGHT_FALLBACK_M;
+  }
+  // Слишком мелкий Y — битый bbox (делитель маленький → гигантский mesh).
+  if (hRaw < 0.55) {
+    return PLAYER_VISUAL_HEIGHT_FALLBACK_M;
+  }
+  return hRaw;
+}
+
 const GLBPlayerModel = memo(function GLBPlayerModel({
   modelPath,
   isMoving,
@@ -197,16 +259,44 @@ const GLBPlayerModel = memo(function GLBPlayerModel({
   roomScale: number;
 }) {
   const groupRef = useRef<THREE.Group>(null);
-  const bboxSizeScratchRef = useRef(new THREE.Vector3());
   const { scene: loadedScene, animations } = useGLTF(modelPath) as any;
-  const { actions } = useAnimations(animations || [], groupRef);
+  /** Шаг 4: без root translation на клонах — не дублировать сдвиг с kinematic Rapier. */
+  const mixerAnimations = useMemo(
+    () => cloneAnimationClipsWithoutExplorationPlayerRootMotion(animations as THREE.AnimationClip[] | undefined),
+    [animations],
+  );
+  const { actions } = useAnimations(mixerAnimations, groupRef);
   const [currentAction, setCurrentAction] = useState<string | null>(null);
   const rs = Math.max(0.28, Math.min(1.25, roomScale));
+  const actionsRef = useRef(actions);
+  actionsRef.current = actions;
 
-  // Не вызываем useGLTF.clear: сброс кэша при каждом remount (смена сцены `key`) даёт повторную загрузку,
-  // мигание fallback+GLB и лишнюю нагрузку на главный поток.
+  /** Стабильный ключ набора экшенов: ссылка `actions` от drei может меняться без смены клипов. */
+  const actionKeysSig = useMemo(() => {
+    if (!actions) return '';
+    return Object.keys(actions)
+      .filter((k) => actions[k])
+      .sort()
+      .join('\0');
+  }, [actions]);
 
-  /** Без `Object3D.clone(true)` для skinned GLB: клон часто оставляет меш невидимым (видна только декаль тени). */
+  useEffect(() => {
+    retainGltfModelUrl(modelPath);
+    return () => releaseGltfModelUrl(modelPath);
+  }, [modelPath]);
+
+  useEffect(() => {
+    return () => {
+      const act = actionsRef.current;
+      if (!act) return;
+      for (const key of Object.keys(act)) {
+        const a = act[key];
+        if (a) a.stop();
+      }
+    };
+  }, []);
+
+  /** Кэш `useGLTF` ограничен LRU в `gltfModelCache`; сцену из кэша не клонируем — для skinned GLB обычный clone ломает видимость. */
   const displayScene = useMemo(() => {
     if (!loadedScene) return null;
     try {
@@ -217,6 +307,7 @@ const GLBPlayerModel = memo(function GLBPlayerModel({
           m.receiveShadow = true;
         }
       });
+      applyGltfExplorationCharacterMaterialPolicies(loadedScene);
       return loadedScene;
     } catch {
       onError();
@@ -226,17 +317,17 @@ const GLBPlayerModel = memo(function GLBPlayerModel({
 
   const visualUniform = useMemo(() => {
     if (!loadedScene) return 0.12 * rs;
-    loadedScene.updateMatrixWorld(true);
-    const b = new THREE.Box3().setFromObject(loadedScene);
-    const h = b.getSize(bboxSizeScratchRef.current).y;
+    const scratch = new THREE.Vector3();
+    const h = getRootCharacterVisualHeightMeters(loadedScene, scratch);
     if (h < 1e-4) return 0.12 * rs;
     return (PLAYER_GLB_TARGET_VISUAL_METERS / h) * rs;
   }, [loadedScene, rs]);
 
   useEffect(() => {
-    if (!actions || Object.keys(actions).length === 0) return;
+    const act = actionsRef.current;
+    if (!act || Object.keys(act).length === 0) return;
 
-    const animationNames = Object.keys(actions);
+    const animationNames = Object.keys(act);
     const idleAnim =
       animationNames.find((n) => n.toLowerCase().includes('idle')) || animationNames[0];
     /** Один клип в GLB (напр. `Volodka.glb` — «Basic Sing Serious»): и idle, и «ходьба» без отдельного Walk. */
@@ -249,16 +340,16 @@ const GLBPlayerModel = memo(function GLBPlayerModel({
 
     const targetAnim = isMoving && walkAnim ? walkAnim : idleAnim;
 
-    if (targetAnim && actions[targetAnim] && currentAction !== targetAnim) {
-      if (currentAction && actions[currentAction]) {
-        actions[currentAction].fadeOut(0.2);
+    if (targetAnim && act[targetAnim] && currentAction !== targetAnim) {
+      if (currentAction && act[currentAction]) {
+        act[currentAction].fadeOut(0.2);
       }
-      actions[targetAnim].reset().fadeIn(0.2).play();
+      act[targetAnim].reset().fadeIn(0.2).play();
       // Defer setState to avoid cascading renders
       const timer = setTimeout(() => setCurrentAction(targetAnim), 0);
       return () => clearTimeout(timer);
     }
-  }, [actions, isMoving, currentAction]);
+  }, [actionKeysSig, isMoving, currentAction]);
 
   if (!displayScene) return null;
 
@@ -281,9 +372,13 @@ const GLBPlayerModel = memo(function GLBPlayerModel({
 // ============================================
 // PHYSICS PLAYER COMPONENT
 // ============================================
-
-const DEFAULT_PHYSICS_DT = 1 / 60;
-
+//
+// Шаг 2 (мерцание / двойная позиция): визуал (group + GLB) — **дочерний** `<RigidBody>`.
+// Его world-matrix выставляет `@react-three/rapier` из симуляции. Не подписывайте этот group
+// на `exploration.playerPosition` из Zustand и не делайте `group.position.copy(store)` в useEffect —
+// иначе конфликт с kinematic + `setNextKinematicTranslation` (гипотеза №2).
+// `onPositionChange` ниже — только для ref + моста в родителе (`livePlayerPositionRef` / `explorationLivePlayerBridge`), не для сдвига меша из стора.
+//
 export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProps>(function PhysicsPlayer(
   {
     position = [0, 0.06, 3],
@@ -295,6 +390,8 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
     isLocked = false,
     initialRotation = 0,
     virtualControlsRef,
+    debugPlayerPrimitive = isExplorationPlayerDebugPrimitiveEnabled(),
+    spawnSyncKey,
   },
   ref
 ) {
@@ -318,6 +415,7 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
   /** Для анимаций GLB / заглушки: обновляем React только при смене true/false. */
   const [isMoving, setIsMoving] = useState(false);
   const isMovingSyncRef = useRef(false);
+  const locomotionLogCounterRef = useRef(0);
   const [modelError, setModelError] = useState(false);
   const onInteractionRef = useRef(onInteraction);
   const isLockedRef = useRef(isLocked);
@@ -327,15 +425,19 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
   }, [locomotionScale]);
 
   const roomScale = Math.max(0.28, Math.min(1.25, visualModelScale));
-  const capsule = useMemo(() => {
-    const s = roomScale;
-    const r0 = PHYSICS_CONSTANTS.PLAYER_RADIUS;
-    const h0 = PHYSICS_CONSTANTS.PLAYER_HEIGHT;
-    const r = r0 * s;
-    const halfH = (h0 / 2 - r0) * s;
-    const capCenterY = halfH + r;
-    return { halfH, r, capCenterY };
-  }, [roomScale]);
+  /**
+   * Стартовая позиция капсулы при монтировании; смена локации — **`spawnSyncKey`** + телепорт в **`useEffect`**,
+   * без `key` на всём дереве GLB (см. **`RPGGameCanvas`**).
+   * Нельзя прокидывать сюда координаты из Zustand каждый кадр: RigidBody синхронизирует prop с телом
+   * и ломает kinematic + `setNextKinematicTranslation` (мигание, залипание, прыжок не срабатывает).
+   */
+  const [rigidSpawnPosition] = useState<[number, number, number]>(() => [
+    position[0],
+    position[1],
+    position[2],
+  ]);
+
+  const capsule = useMemo(() => computePlayerCapsule(roomScale), [roomScale]);
 
   useEffect(() => {
     onInteractionRef.current = onInteraction;
@@ -352,6 +454,24 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
       modelRef.current.rotation.y = initialRotation;
     }
   }, [initialRotation]);
+
+  /**
+   * Смена сцены: телепорт без `key` на дереве GLB. `useLayoutEffect` — после commit Rapier, до paint.
+   * Варп: `setTranslation` + `setNextKinematicTranslation`; в игровом KCC-шаге — только `setNextKinematicTranslation`.
+   */
+  useLayoutEffect(() => {
+    if (spawnSyncKey === undefined) return;
+    const rb = rigidBodyRef.current;
+    if (!rb) return;
+    const x = position[0];
+    const y = position[1];
+    const z = position[2];
+    rb.setTranslation({ x, y, z }, true);
+    rb.setNextKinematicTranslation({ x, y, z });
+    verticalVelRef.current = 0;
+    horizVelXRef.current = 0;
+    horizVelZRef.current = 0;
+  }, [spawnSyncKey, position[0], position[1], position[2]]);
 
   const handleInteractPress = useCallback(() => {
     if (onInteractionRef.current && !isLockedRef.current) {
@@ -370,12 +490,7 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
   }, [getControls]);
 
   useEffect(() => {
-    const cc = world.createCharacterController(0.06);
-    cc.setSlideEnabled(true);
-    cc.setUp({ x: 0, y: 1, z: 0 });
-    cc.enableAutostep(0.35, 0.25, false);
-    cc.enableSnapToGround(0.45);
-    cc.setMaxSlopeClimbAngle(Math.PI * 0.45);
+    const cc = createExplorationKinematicCharacterController(world);
     characterControllerRef.current = cc;
     return () => {
       world.removeCharacterController(cc);
@@ -393,6 +508,7 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
       return { x: position[0], y: position[1], z: position[2] };
     },
     getRotation: () => rotationRef.current,
+    /** Явный варп: `setTranslation` допустим только здесь (не в игровом KCC-кадре). */
     teleport: (x: number, y: number, z: number) => {
       if (rigidBodyRef.current) {
         const p = { x, y, z };
@@ -428,54 +544,25 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
       return;
     }
 
-    const dtRaw = stepWorld.timestep;
-    const dt = dtRaw > 1e-6 && dtRaw < 0.25 ? dtRaw : DEFAULT_PHYSICS_DT;
+    const dt = clampPhysicsTimestep(stepWorld.timestep);
     const controls = getControlsRef.current();
     const n = rb.numColliders();
     if (n < 1) return;
     const collider = rb.collider(0);
 
-    let moveX = 0;
-    let moveZ = 0;
-    if (controls.forward) moveZ -= 1;
-    if (controls.backward) moveZ += 1;
-    if (controls.left) moveX -= 1;
-    if (controls.right) moveX += 1;
-
-    const len = Math.hypot(moveX, moveZ);
-    if (len > 0) {
-      moveX /= len;
-      moveZ /= len;
-    }
-
-    const loc = locomotionScaleRef.current;
-    const speed =
-      (controls.run ? PHYSICS_CONSTANTS.RUN_SPEED : PHYSICS_CONSTANTS.WALK_SPEED) * loc;
-    isRunningRef.current = controls.run;
-    const yaw = moveYawRef.current;
-    const sin = Math.sin(yaw);
-    const cos = Math.cos(yaw);
-    const rotatedX = moveX * cos - moveZ * sin;
-    const rotatedZ = moveX * sin + moveZ * cos;
-    const targetVelX = rotatedX * speed;
-    const targetVelZ = rotatedZ * speed;
-
-    const accel = 14;
-    const t = 1 - Math.exp(-accel * dt);
-    horizVelXRef.current = THREE.MathUtils.lerp(horizVelXRef.current, targetVelX, t);
-    horizVelZRef.current = THREE.MathUtils.lerp(horizVelZRef.current, targetVelZ, t);
-
-    const g = stepWorld.gravity.y;
-    verticalVelRef.current += g * dt;
-
-    if (groundedRef.current && controls.jump && canJumpRef.current) {
-      verticalVelRef.current = PHYSICS_CONSTANTS.JUMP_FORCE * loc;
-      canJumpRef.current = false;
-    }
-
-    const dx = horizVelXRef.current * dt;
-    const dy = verticalVelRef.current * dt;
-    const dz = horizVelZRef.current * dt;
+    const { dx, dy, dz } = integrateKinematicLocomotionDelta({
+      dt,
+      controls,
+      locomotionScale: locomotionScaleRef.current,
+      moveYaw: moveYawRef.current,
+      gravityY: stepWorld.gravity.y,
+      grounded: groundedRef.current,
+      verticalVel: verticalVelRef,
+      horizVelX: horizVelXRef,
+      horizVelZ: horizVelZRef,
+      canJump: canJumpRef,
+      isRunning: isRunningRef,
+    });
 
     cc.computeColliderMovement(collider, { x: dx, y: dy, z: dz });
     const m = cc.computedMovement();
@@ -484,19 +571,34 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
 
     const grounded = cc.computedGrounded();
     groundedRef.current = grounded;
-    if (grounded) {
-      if (verticalVelRef.current < 0) {
-        verticalVelRef.current = 0;
-      }
-      if (!controls.jump) {
-        canJumpRef.current = true;
+    applyGroundingAfterCharacterProbe({
+      grounded,
+      jumpHeld: controls.jump,
+      verticalVel: verticalVelRef,
+      canJump: canJumpRef,
+    });
+
+    if (isExplorationPlayerLocomotionLogEnabled()) {
+      locomotionLogCounterRef.current += 1;
+      if (locomotionLogCounterRef.current % 48 === 0) {
+        const p = rb.translation();
+        // eslint-disable-next-line no-console -- gated by NEXT_PUBLIC_EXPLORATION_PLAYER_LOCOMOTION_LOG
+        console.info('[ExplorationPlayerLocomotion]', {
+          grounded,
+          vy: verticalVelRef.current,
+          hx: horizVelXRef.current,
+          hz: horizVelZRef.current,
+          x: p.x,
+          y: p.y,
+          z: p.z,
+        });
       }
     }
   });
 
   // Визуал: поворот модели и колбэк позиции (после шага Rapier mesh уже интерполирован).
   // Важно: не вызывать setState каждый кадр — иначе весь поддерево игрока (GLB + физика) уходит в React commit ~60 Гц.
-  useFrame(() => {
+  useFrame((_state, _delta) => {
     const rb = rigidBodyRef.current;
     if (!rb) {
       if (isMovingSyncRef.current) {
@@ -517,7 +619,7 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
       moveYawRef.current = rotationRef.current;
       if (onPositionChange) {
         const p = rb.translation();
-        onPositionChange({ x: p.x, y: p.y, z: p.z });
+        onPositionChange({ x: p.x, y: p.y, z: p.z, rotation: rotationRef.current });
       }
       return;
     }
@@ -547,7 +649,7 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
 
     if (onPositionChange) {
       const p = rb.translation();
-      onPositionChange({ x: p.x, y: p.y, z: p.z });
+      onPositionChange({ x: p.x, y: p.y, z: p.z, rotation: rotationRef.current });
     }
   });
 
@@ -567,31 +669,48 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
   return (
     <RigidBody
       ref={rigidBodyRef}
-      position={position}
+      position={rigidSpawnPosition}
       type="kinematicPosition"
       colliders={false}
+      canSleep={false}
       enabledRotations={[false, false, false]}
+      userData={{ isPlayer: true }}
     >
       <CapsuleCollider args={[capsule.halfH, capsule.r]} position={[0, capsule.capCenterY, 0]} />
 
       {/*
         Визуал отдельно от коллайдера: один активный меш (GLB или fallback), без наслоения процедурки на модель.
         Пустой fallback при загрузке — чтобы не рисовать две фигуры в одном месте.
+        Шаг 3 (стабилизация позиции): эта группа не синхронизируется с exploration.playerPosition из Zustand
+        в useEffect — позиция только у RigidBody / Rapier; modelRef — вращение и т.п., не XYZ из стора.
       */}
-      <group ref={modelRef} name="PlayerVisualRoot">
-        <Suspense fallback={<group name="PlayerModelLoading" />}>
-          {!modelError ? (
-            <GLBPlayerModel
-              modelPath={modelPathToUse}
-              isMoving={isMoving}
-              isLocked={isLocked}
-              onError={handleModelError}
-              roomScale={roomScale}
-            />
-          ) : (
-            <FallbackPlayerModel isMoving={isMoving} isLocked={isLocked} roomScale={roomScale} />
-          )}
-        </Suspense>
+      <group ref={modelRef} name="PlayerVisualRoot" userData={{ isPlayer: true }}>
+        {debugPlayerPrimitive ? (
+          <mesh
+            name="PlayerDebugPrimitive"
+            position={[0, capsule.capCenterY, 0]}
+            castShadow
+            receiveShadow
+            userData={{ isPlayer: true }}
+          >
+            <boxGeometry args={[capsule.r * 2, 2 * capsule.halfH + 2 * capsule.r, capsule.r * 2]} />
+            <meshStandardMaterial color="#cc2222" roughness={0.45} metalness={0.08} />
+          </mesh>
+        ) : (
+          <Suspense fallback={<ThreeCanvasSuspenseFallback />}>
+            {!modelError ? (
+              <GLBPlayerModel
+                modelPath={modelPathToUse}
+                isMoving={isMoving}
+                isLocked={isLocked}
+                onError={handleModelError}
+                roomScale={roomScale}
+              />
+            ) : (
+              <FallbackPlayerModel isMoving={isMoving} isLocked={isLocked} roomScale={roomScale} />
+            )}
+          </Suspense>
+        )}
       </group>
 
       {karmaZone === 'high' && (
@@ -622,10 +741,16 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
         </>
       )}
 
-      {/* Тень под игроком */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.01, 0]}>
+      {/* Тень под игроком: чуть выше пола + без depthWrite, чтобы не бороться с полом (Z / «пропадание»). */}
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.045, 0]} renderOrder={2}>
         <circleGeometry args={[Math.max(0.22, 0.5 * roomScale), 32]} />
-        <meshBasicMaterial color="#000000" transparent opacity={0.3} />
+        <meshBasicMaterial
+          color="#000000"
+          transparent
+          opacity={0.28}
+          depthWrite={false}
+          depthTest
+        />
       </mesh>
     </RigidBody>
   );
