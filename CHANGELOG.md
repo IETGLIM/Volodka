@@ -43,6 +43,8 @@
 
 ### Changed
 
+- **Core loop / 3D store sync (perf + lifecycle)**: в **`src/engine/CoreLoop.ts`** `stopLoop()` теперь снимает все подписки `eventBus` и сбрасывает флаг listeners (чтобы не накапливались обработчики при повторных init/start); в **`src/components/game/RPGGameCanvas.tsx`** добавлен троттлинг записи `exploration.timeOfDay` (батч по частоте) и `setPlayerPosition` (интервал/порог дистанции) для снижения частоты глобальных обновлений Zustand в кадре.
+
 - **`FollowCamera`**: переиспользование **`Raycaster`** и векторов в **`checkCameraCollision`**, плюс **`frameTargetRef` / `frameDesiredCamRef`** в **`useFrame`**; то же для **`SimpleFollowCamera`** — меньше краткоживущих объектов при обходе с коллизиями камеры.
 
 - **Перфоманс кадра (частицы и шаги)**: **`ExplorationParticles`** — без **`Math.random`** и **`performance.now`** в **`useFrame`** (предвычисленные **`Float32Array`**, фаза от **`clock.getElapsedTime()`**); **`OptimizedSceneEnvironment` / `Snowflakes`** — джиттер скорости падения вынесен из кадра, respawn позиций без **`Math.random`** в цикле; **`usePlayerFootsteps`** — переиспользуемые **`rapier.Vector3`** для луча вместо аллокаций на шаг; **`PhysicsPlayer` / `GLBPlayerModel`** — один **`Vector3`**-scratch для **`Box3.getSize`**; **`InteractiveTrigger` / `WorldItem`** — покачивание по **`clock`**, не по **`Date.now()`**.

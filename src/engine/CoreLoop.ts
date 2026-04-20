@@ -111,6 +111,16 @@ class CoreLoopClass {
   /** Остановка цикла */
   stopLoop(): void {
     // (раньше здесь снимался таймер «фейкового» game:saved; персистентность — `useAutoSave`.)
+    // Важно снимать подписки: иначе при повторных init/start (например HMR) копятся обработчики.
+    for (const unsub of this.eventUnsubscribers) {
+      try {
+        unsub();
+      } catch {
+        // ignore
+      }
+    }
+    this.eventUnsubscribers = [];
+    this.listenersBound = false;
   }
 
   /** Transition to a new state */

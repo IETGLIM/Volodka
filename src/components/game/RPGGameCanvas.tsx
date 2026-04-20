@@ -86,12 +86,25 @@ const GROUND_VOLODKA_ROOM: RpgGroundGeometryArgs = [14, 0.1, 10];
 const GROUND_VOLODKA_CORRIDOR: RpgGroundGeometryArgs = [3.5, 0.1, 12];
 const GROUND_PLAZA: RpgGroundGeometryArgs = [48, 0.1, 48];
 const GROUND_OPEN: RpgGroundGeometryArgs = [40, 0.1, 40];
+const WORLD_TIME_STORE_SYNC_HZ = 4;
+const PLAYER_POS_STORE_SYNC_INTERVAL_MS = 110;
+const PLAYER_POS_STORE_FORCE_DISTANCE = 0.3;
 
 /** Тик игрового времени суток внутри `<Canvas>` (useFrame допустим только здесь). */
 const ExplorationWorldClock = memo(function ExplorationWorldClock() {
   const advanceTime = useGameStore((s) => s.advanceTime);
+  const elapsedRef = useRef(0);
+  const pendingHoursRef = useRef(0);
   useFrame((_, delta) => {
-    advanceTime(delta / 48);
+    pendingHoursRef.current += delta / 48;
+    elapsedRef.current += delta;
+    if (elapsedRef.current >= 1 / WORLD_TIME_STORE_SYNC_HZ) {
+      if (pendingHoursRef.current > 0) {
+        advanceTime(pendingHoursRef.current);
+      }
+      elapsedRef.current = 0;
+      pendingHoursRef.current = 0;
+    }
   });
   return null;
 });
@@ -127,8 +140,11 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
   
   // Ref для актуального значения playerPosition (избегаем устаревших замыканий)
   const playerPositionRef = useRef(playerPosition);
+  const lastStoreWriteAtRef = useRef(0);
+  const lastStoredPositionRef = useRef(playerPosition);
   useEffect(() => { 
     playerPositionRef.current = playerPosition; 
+    lastStoredPositionRef.current = playerPosition;
   }, [playerPosition]);
 
   // Scene config (свет / туман + размер поля под тип локации; при необходимости — проп `groundGeometryArgs`)
@@ -210,7 +226,23 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
 
   // Handle player position changes - сохраняем в store напрямую
   const handlePositionChange = useCallback((pos: { x: number; y: number; z: number }) => {
-    setPlayerPosition({ ...pos, rotation: playerPositionRef.current.rotation });
+    const next = { ...pos, rotation: playerPositionRef.current.rotation };
+    playerPositionRef.current = next;
+
+    const prev = lastStoredPositionRef.current;
+    const dx = next.x - prev.x;
+    const dy = next.y - prev.y;
+    const dz = next.z - prev.z;
+    const moved = Math.hypot(dx, dy, dz);
+    const now = performance.now();
+    if (
+      moved >= PLAYER_POS_STORE_FORCE_DISTANCE ||
+      now - lastStoreWriteAtRef.current >= PLAYER_POS_STORE_SYNC_INTERVAL_MS
+    ) {
+      setPlayerPosition(next);
+      lastStoreWriteAtRef.current = now;
+      lastStoredPositionRef.current = next;
+    }
   }, [setPlayerPosition]);
 
   // Handle NPC state changes
