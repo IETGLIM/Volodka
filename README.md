@@ -56,6 +56,9 @@ npm test
 - **Камера и оверлеи обхода**: элементы с `**data-exploration-ui`** не вращают орбиту (`**src/lib/explorationUiPointer.ts**`, камеры `**FollowCamera**` / `**SimpleFollowCamera**`); удержание **Run** на таче, контейнер Canvas — `**100dvh`** в `**GameOrchestrator**`.
 - **Кэш GLB**: LRU для `**useGLTF`** (`**src/lib/gltfModelCache.ts**`, лимит URL и `**useGLTF.clear**` при вытеснении).
 - **Сглаживание камеры**: общие формулы damp в `**src/lib/followCameraDamp.ts`** (тесты рядом в `src/lib`).
+- **Брифинг при входе в локацию** (`**ExplorationBriefingOverlay**`): отдельная строка про журнал квестов и влияние **кармы** на тон и ветки диалогов; в списке подсказок — поворот камеры мышью или пальцем и клавиша **R** (сброс орбиты за спину, см. `**FollowCamera**`).
+- **Первый диалог из обхода**: одноразовый тост с тем же текстом про квесты и карму (`**GameOrchestrator**`, флаг в `**playerState.flags**`, шина `**ui:exploration_message**`).
+- **GLB-локомоция**: у игрока — гистерезис скорости, отдельный клип **run** при беге, `**crossFadeFrom**` между клипами; у NPC на патруле — подгонка `**effectiveTimeScale**` ходьбы к скорости по XZ и кроссфейд смены клипов (`**PhysicsPlayer**`, `**NPC.tsx**`).
 
 ### Квестовая цепочка
 
