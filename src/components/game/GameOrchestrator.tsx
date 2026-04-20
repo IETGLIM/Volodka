@@ -60,6 +60,7 @@ import { SCENE_VISUALS } from '@/engine/SceneManager';
 import type { VisualState } from '@/data/types';
 import { storyNodeShowsStoryOverlay } from '@/lib/storyOverlayEligibility';
 import { EXPLORATION_GAME_VIEWPORT_CLASS } from '@/components/3d/Scene';
+import { EXPLORATION_QUESTS_KARMA_HINT_LINE_RU } from '@/components/game/exploration/ExplorationBriefingOverlay';
 import { getWorldStateModifiers } from '@/core/world/worldReactivity';
 import MemoryLog from '@/components/ui/MemoryLog';
 import QuestTracker from '@/components/ui/QuestTracker';
@@ -73,6 +74,9 @@ const SkillsPanel = dynamic(() => import('@/components/SkillsPanel'), { ssr: fal
 const ITTerminal = dynamic(() => import('@/components/game/ITTerminal'), { ssr: false });
 const JournalPanel = dynamic(() => import('@/components/game/JournalPanel'), { ssr: false });
 const LegacyScreen = dynamic(() => import('@/components/game/LegacyScreen'), { ssr: false });
+/** Один раз за прохождение: тост при первом входе в диалог из 3D-обхода (E2.1). */
+const EXPLORATION_FIRST_DIALOGUE_QUEST_KARMA_FLAG = 'exploration_first_dialogue_quest_karma_hint_v1';
+
 const RPGGameCanvas = dynamic(
   () => import('@/components/game/RPGGameCanvas').then((m) => m.RPGGameCanvas),
   {
@@ -177,6 +181,19 @@ export default function GameOrchestrator() {
     });
     return unsub;
   }, [showEffectNotif]);
+
+  const prevGameModeRef = useRef<string | null>(null);
+  useEffect(() => {
+    const prev = prevGameModeRef.current;
+    if (gameMode === 'dialogue' && prev === 'exploration') {
+      const { hasFlag, setFlag } = useGameStore.getState();
+      if (!hasFlag(EXPLORATION_FIRST_DIALOGUE_QUEST_KARMA_FLAG)) {
+        setFlag(EXPLORATION_FIRST_DIALOGUE_QUEST_KARMA_FLAG);
+        eventBus.emit('ui:exploration_message', { text: EXPLORATION_QUESTS_KARMA_HINT_LINE_RU });
+      }
+    }
+    prevGameModeRef.current = gameMode;
+  }, [gameMode]);
 
   useEffect(() => {
     const offSaved = eventBus.on('game:saved', ({ source }) => {

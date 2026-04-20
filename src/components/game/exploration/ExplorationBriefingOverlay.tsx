@@ -4,6 +4,13 @@ import { memo, useCallback, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { SceneId } from '@/data/types';
 
+/** Одна строка для брифинга и тоста при первом диалоге из обхода (E2.1). */
+export const EXPLORATION_QUESTS_KARMA_HINT_LINE_RU =
+  'Квесты и цели — в журнале справа; карма влияет на тон реплик и ветки диалогов.';
+
+const CAMERA_ORBIT_HINT_RU =
+  'Камера: мышь или перетаскивание пальца по экрану; R — сброс орбиты за спину.';
+
 export type ExplorationBriefingOverlayProps = {
   sceneId: SceneId;
   open: boolean;
@@ -23,6 +30,7 @@ function briefingForScene(sceneId: SceneId): {
         lead: 'Сцена загружена. Кратко, что можно делать:',
         bullets: [
           'WASD — ходьба, Shift — бег, пробел — прыжок.',
+          CAMERA_ORBIT_HINT_RU,
           'Подойдите к столу, окну, двери: у предметов нажмите E — откроется круговое меню (осмотреть / взять / использовать).',
           'Рядом с Димой с пятого — E, чтобы заговорить.',
           'В отмеченных зонах с подсказкой внизу экрана — снова E для короткой заставки или сюжета.',
@@ -34,6 +42,7 @@ function briefingForScene(sceneId: SceneId): {
         title: 'Коридор',
         lead: 'Узкий проход между комнатой и общей зоной.',
         bullets: [
+          CAMERA_ORBIT_HINT_RU,
           'Двери ведут в комнату Володьки и в квартиру; подойдите и используйте сцену по подсказкам.',
           'E — взаимодействие с объектами и зонами, как в комнате.',
         ],
@@ -44,6 +53,7 @@ function briefingForScene(sceneId: SceneId): {
         title: 'Кухня и общие комнаты',
         lead: 'Большая локация квартиры.',
         bullets: [
+          CAMERA_ORBIT_HINT_RU,
           'Ищите интерактивные объекты и NPC; E открывает действия или диалог.',
           'Следите за подсказкой [E] Interact у зон квестов и разговоров.',
         ],
@@ -54,7 +64,8 @@ function briefingForScene(sceneId: SceneId): {
         title: 'Обход',
         lead: 'Локация готова.',
         bullets: [
-          'WASD, Shift, пробел; мышь — камера.',
+          'WASD, Shift, пробел.',
+          CAMERA_ORBIT_HINT_RU,
           'E — взаимодействие, когда вы рядом с объектом или персонажем.',
         ],
         foot: 'Закрыть — кнопка или E.',
@@ -123,6 +134,9 @@ export const ExplorationBriefingOverlay = memo(function ExplorationBriefingOverl
               {content.title}
             </h2>
             <p className="mt-3 text-sm leading-relaxed text-slate-200">{content.lead}</p>
+            <p className="mt-2 border-l-2 border-amber-500/45 pl-3 text-xs leading-relaxed text-slate-300">
+              {EXPLORATION_QUESTS_KARMA_HINT_LINE_RU}
+            </p>
             <ul className="mt-3 list-disc space-y-2 pl-5 text-sm leading-relaxed text-slate-300">
               {content.bullets.map((line, i) => (
                 <li key={i}>{line}</li>
