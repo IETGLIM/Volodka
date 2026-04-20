@@ -37,6 +37,8 @@ import { useGameStore } from '@/store/gameStore';
 import { getNpcQuestMarkerForExploration } from '@/lib/npcQuestMarker';
 import { retainGltfModelUrl, releaseGltfModelUrl } from '@/lib/gltfModelCache';
 import { applyGltfExplorationCharacterMaterialPolicies } from '@/lib/gltfCharacterMaterialPolicy';
+import { getGltfSkinnedVisualHeightMeters } from '@/lib/gltfSkinnedBoundingHeight';
+import { PLAYER_GLB_TARGET_VISUAL_METERS } from '@/lib/playerScaleConstants';
 import type { FindNavPathXZ } from '@/lib/explorationNavMesh';
 import {
   NPC_SHADOW_MID_IN_M,
@@ -265,8 +267,9 @@ const GLTFLoader = memo(function GLTFLoader({
     };
   }, []);
 
-  const scene = useMemo(() => {
-    if (!loadedScene) return null;
+  const { scene, bakedVisualScale } = useMemo(() => {
+    if (!loadedScene) return { scene: null, bakedVisualScale: 1 };
+    const scaleSafe = scale ?? 1;
     try {
       const clone = loadedScene.clone(true);
       clone.traverse((child: any) => {
@@ -276,11 +279,18 @@ const GLTFLoader = memo(function GLTFLoader({
         }
       });
       applyGltfExplorationCharacterMaterialPolicies(clone);
-      return clone;
+      const scratchVec = new THREE.Vector3();
+      const hRaw = getGltfSkinnedVisualHeightMeters(clone, scratchVec);
+      const bakedVisualScale = THREE.MathUtils.clamp(
+        (PLAYER_GLB_TARGET_VISUAL_METERS * scaleSafe) / hRaw,
+        0.0025,
+        18,
+      );
+      return { scene: clone, bakedVisualScale };
     } catch {
-      return null;
+      return { scene: null, bakedVisualScale: 1 };
     }
-  }, [loadedScene]);
+  }, [loadedScene, scale]);
 
   useEffect(() => {
     if (!scene) return;
@@ -297,12 +307,31 @@ const GLTFLoader = memo(function GLTFLoader({
     if (actionKeys.length === 0) return;
 
     const resolved = resolveNpcAnimationClip(actionKeys, animMapping);
+    let idleClip = resolved.idle;
+    if (!act[idleClip]) {
+      idleClip =
+        actionKeys.find((k) => k.toLowerCase().includes('idle')) ??
+        actionKeys.find((k) => /armature\|/i.test(k)) ??
+        actionKeys[0];
+    }
+    let walkClip = resolved.walk;
+    if (walkClip && !act[walkClip]) {
+      walkClip =
+        actionKeys.find((k) => {
+          const l = k.toLowerCase();
+          return l.includes('walk') || l.includes('run');
+        }) ?? null;
+    }
+    if (!walkClip || !act[walkClip]) walkClip = idleClip;
+    let talkClip = resolved.talk;
+    if (talkClip && !act[talkClip]) talkClip = null;
+
     const targetClip =
       npcAnimation === 'walk'
-        ? resolved.walk || resolved.idle
+        ? walkClip
         : npcAnimation === 'talk'
-          ? resolved.talk || resolved.idle
-          : resolved.idle;
+          ? talkClip || idleClip
+          : idleClip;
 
     if (!targetClip || !act[targetClip] || currentClipName === targetClip) return;
 
@@ -322,7 +351,7 @@ const GLTFLoader = memo(function GLTFLoader({
     <GLTFModelInner
       groupRef={groupRef}
       scene={scene}
-      scale={scale}
+      scale={bakedVisualScale}
       isNearPlayer={isNearPlayer}
       isDialogueActive={isDialogueActive}
       shadowTier={shadowTier}
@@ -1119,12 +1148,23 @@ export const NPC = memo(function NPC({
     [definition.id, questSlice],
   );
 
+  const questGlyph =
+    questMarker === 'none'
+      ? null
+      : questMarker === 'available'
+        ? '!'
+        : questMarker === 'in_progress'
+          ? '…'
+          : '?';
+
   const nameplate = (
     <Html
-      position={[0, 2.0, 0]}
+      position={[0, 2.18, 0]}
       center
+      distanceFactor={5.5}
+      zIndexRange={[50, 200]}
       style={{
-        opacity: isNearPlayer ? 1 : 0.7,
+        opacity: isNearPlayer ? 1 : 0.92,
         transition: 'opacity 0.3s',
         pointerEvents: 'none',
       }}
@@ -1134,7 +1174,7 @@ export const NPC = memo(function NPC({
           display: 'flex',
           alignItems: 'center',
           gap: 6,
-          background: 'rgba(0, 0, 0, 0.7)',
+          background: 'rgba(0, 0, 0, 0.78)',
           color: isDialogueActive ? '#fbbf24' : '#fff',
           padding: '4px 10px',
           borderRadius: '4px',
@@ -1148,6 +1188,39 @@ export const NPC = memo(function NPC({
         <span style={{ fontSize: 14, lineHeight: 1 }} aria-hidden>
           {activityIcon}
         </span>
+        {questGlyph != null &&
+          (questMarker === 'available' ? (
+            <motion.span
+              animate={{ scale: [1, 1.12, 1] }}
+              transition={{ repeat: Infinity, duration: 1.35, ease: 'easeInOut' }}
+              style={{
+                fontSize: 15,
+                fontWeight: 900,
+                lineHeight: 1,
+                color: '#facc15',
+              }}
+              aria-hidden
+            >
+              {questGlyph}
+            </motion.span>
+          ) : (
+            <span
+              style={{
+                fontSize: 15,
+                fontWeight: 900,
+                lineHeight: 1,
+                color:
+                  questMarker === 'turn_in'
+                    ? '#fbbf24'
+                    : questMarker === 'in_progress'
+                      ? '#9ca3af'
+                      : '#e5e7eb',
+              }}
+              aria-hidden
+            >
+              {questGlyph}
+            </span>
+          ))}
         <span>{definition.name}</span>
       </div>
     </Html>
@@ -1197,34 +1270,6 @@ export const NPC = memo(function NPC({
       )}
 
       {nameplate}
-
-      {questMarker !== 'none' && (
-        <Html
-          position={[0, 2.55, 0]}
-          center
-          style={{ pointerEvents: 'none' }}
-        >
-          <motion.div
-            animate={{ scale: [1, 1.14, 1] }}
-            transition={{ repeat: Infinity, duration: 1.35, ease: 'easeInOut' }}
-            style={{
-              fontSize: 22,
-              fontWeight: 900,
-              lineHeight: 1,
-              color:
-                questMarker === 'turn_in'
-                  ? '#fbbf24'
-                  : questMarker === 'in_progress'
-                    ? '#9ca3af'
-                    : '#facc15',
-              textShadow: '0 0 8px rgba(0,0,0,0.95)',
-              userSelect: 'none',
-            }}
-          >
-            {questMarker === 'available' ? '!' : '?'}
-          </motion.div>
-        </Html>
-      )}
     </>
   );
 

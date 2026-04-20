@@ -17,6 +17,7 @@ import {
 import { usePlayerFootsteps } from '@/hooks/usePlayerFootsteps';
 import { getDefaultPlayerModelPath, isValidPlayerGlbPath, rewriteLegacyModelPath } from '@/config/modelUrls';
 import { PLAYER_GLB_TARGET_VISUAL_METERS } from '@/lib/playerScaleConstants';
+import { getGltfSkinnedVisualHeightMeters } from '@/lib/gltfSkinnedBoundingHeight';
 import { retainGltfModelUrl, releaseGltfModelUrl } from '@/lib/gltfModelCache';
 import { applyGltfExplorationCharacterMaterialPolicies } from '@/lib/gltfCharacterMaterialPolicy';
 import { ThreeCanvasSuspenseFallback } from '@/components/3d/ThreeCanvasSuspenseFallback';
@@ -319,7 +320,7 @@ const GLBPlayerModel = memo(function GLBPlayerModel({
   const visualUniform = useMemo(() => {
     if (!loadedScene) return 0.12 * rs;
     const scratch = new THREE.Vector3();
-    const h = getRootCharacterVisualHeightMeters(loadedScene, scratch);
+    const h = getGltfSkinnedVisualHeightMeters(loadedScene, scratch);
     if (h < 1e-4) return 0.12 * rs;
     return (PLAYER_GLB_TARGET_VISUAL_METERS / h) * rs;
   }, [loadedScene, rs]);
