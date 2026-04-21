@@ -621,7 +621,7 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
 
   // Визуал: поворот модели и колбэк позиции (после шага Rapier mesh уже интерполирован).
   // Важно: не вызывать setState каждый кадр — иначе весь поддерево игрока (GLB + физика) уходит в React commit ~60 Гц.
-  useFrame((_state, _delta) => {
+  useFrame((_state, frameDelta) => {
     const rb = rigidBodyRef.current;
     if (!rb) {
       if (isMovingSyncRef.current) {
@@ -682,7 +682,11 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
       let diff = targetRotation - prev;
       while (diff > Math.PI) diff -= Math.PI * 2;
       while (diff < -Math.PI) diff += Math.PI * 2;
-      rotationRef.current = prev + diff * 0.16;
+      const dt = clampPhysicsTimestep(frameDelta);
+      /** Экспоненциальное сглаживание к направлению ходьбы, независимо от FPS (раньше фиксированный 0.16/кадр давал рывки). */
+      const k = 10.5;
+      const blend = 1 - Math.exp(-k * dt);
+      rotationRef.current = prev + diff * blend;
     }
 
     if (modelRef.current) {

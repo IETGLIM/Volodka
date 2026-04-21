@@ -300,16 +300,16 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
     }
     if (sceneId === 'volodka_room') {
       return {
-        distance: 2.05,
-        height: 1.62,
+        distance: 1.72,
+        height: 1.05,
         smoothness: 0.11,
-        shoulderOffset: 0.08,
-        lookAtHeightOffset: 1.04,
+        shoulderOffset: 0.06,
+        lookAtHeightOffset: 0.78,
         collisionSpring: 12,
-        minDistance: 1.12,
-        maxDistance: 2.85,
-        collisionRayOriginY: 1.15,
-        collisionRadius: 0.22,
+        minDistance: 0.78,
+        maxDistance: 2.95,
+        collisionRayOriginY: 0.92,
+        collisionRadius: 0.2,
       };
     }
     if (sceneId === 'home_evening') {

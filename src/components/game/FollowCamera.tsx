@@ -17,7 +17,14 @@ import { CAMERA_COLLISION_LAYER } from './SceneColliders';
 /** Коллизии камеры каждый кадр: при `2` чередовались «с коллизией / без» и давали заметный джиттер. */
 const COLLISION_THROTTLE_FRAMES = 1;
 const ZOOM_SPEED = 0.5;
+/** Чувствительность колеса/тачпада (м/тик); мелкие deltaY дают плавное приближение. */
+const ZOOM_PIXEL_SCALE = 0.0075;
 const MAX_DISTANCE = 15;
+
+function followCameraWheelDistanceDelta(e: WheelEvent): number {
+  const coarse = Math.abs(e.deltaY) >= 48;
+  return coarse ? Math.sign(e.deltaY) * ZOOM_SPEED : -e.deltaY * ZOOM_PIXEL_SCALE;
+}
 const ROTATION_POINTER_SPEED = 0.005;
 const PITCH_POINTER_SPEED = 0.0035;
 
@@ -316,7 +323,7 @@ export default function FollowCamera({
     (e: WheelEvent) => {
       if (isLocked || !enableZoom) return;
       e.preventDefault();
-      const delta = Math.sign(e.deltaY) * ZOOM_SPEED;
+      const delta = followCameraWheelDistanceDelta(e);
       currentDistance.current = Math.max(
         minDistance,
         Math.min(maxDistance, currentDistance.current + delta),
@@ -621,7 +628,7 @@ export function SimpleFollowCamera({
     (e: WheelEvent) => {
       if (isLocked || !enableZoom) return;
       e.preventDefault();
-      const delta = Math.sign(e.deltaY) * ZOOM_SPEED;
+      const delta = followCameraWheelDistanceDelta(e);
       currentDistance.current = Math.max(
         minDistance,
         Math.min(maxDistance, currentDistance.current + delta),

@@ -183,7 +183,9 @@ export const ExplorationNoclipPlayer = memo(
         let diff = targetRotation - prev;
         while (diff > Math.PI) diff -= Math.PI * 2;
         while (diff < -Math.PI) diff += Math.PI * 2;
-        yawRef.current = prev + diff * 0.12;
+        const k = 10.5;
+        const blend = 1 - Math.exp(-k * dt);
+        yawRef.current = prev + diff * blend;
       }
 
       posRef.current.x += wx;

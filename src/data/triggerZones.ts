@@ -261,8 +261,9 @@ export const STORY_TRIGGERS: TriggerZone[] = [
   },
   {
     id: 'trigger_volodka_door_cutscene',
-    position: { x: 0.05, y: 0.55, z: 3.55 },
-    size: { x: 1.4, y: 1.8, z: 1.0 },
+    /** Зона вглубь комнаты: не пересекать `volodka_door_corridor` (~z 4.35), иначе E всегда уходит в заставку и дверь не открывается. */
+    position: { x: 0.05, y: 0.55, z: 2.82 },
+    size: { x: 1.35, y: 1.75, z: 0.72 },
     sceneId: 'volodka_room',
     type: 'story',
     cutsceneId: 'volodka_door_threshold',
