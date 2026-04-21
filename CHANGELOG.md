@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Added
+
+- **`explorationPlayerGlbVisualUniformMultiplier`** в `**SCENE_CONFIG**` + `**getExplorationPlayerGlbVisualUniformMultiplier**` — явный множитель к uniform GLB игрока **после** bbox-формулы (`**applyExplorationPlayerGlbVisualUniformMultiplier**` в `**PhysicsPlayer**`); в **`volodka_room`** задано **0.52**, в **`volodka_corridor`** **0.58**, в **`zarema_albert_room`** **0.56**, чтобы размер в кадре гарантированно менялся в проде.
+
 ### Fixed
 
 - **Обход / камера и масштаб игрока**: clamp uniform GLB (**`PLAYER_GLB_VISUAL_UNIFORM_MAX` 0.92**); на мешах GLB игрока — **`userData.isPlayer`**; **`volodka_room`**: **`explorationPlayerGltfTargetMeters` 0.96**, **`explorationCharacterModelScale` 0.48**; пресет **`FollowCamera`** — дальше/выше, **`minDistance`**, **`collisionRayOriginY`**, опционально **`pitchMin`/`pitchMax`** (меньше кадр «из-под ног» на Vercel).

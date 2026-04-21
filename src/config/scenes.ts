@@ -63,6 +63,11 @@ export interface SceneConfig {
    * `explorationCharacterModelScale` почти не меняет размер (доминирует `target / bboxHeight`).
    */
   explorationPlayerGltfTargetMeters?: number;
+  /**
+   * Множитель к **итоговому** uniform GLB игрока после `computeExplorationPlayerGlbUniformFromBBox` (1 = как считает формула).
+   * Используйте, когда в проде визуально почти нет ответа на `target`/`roomScale` (bbox/кэш); например **0.52** в `volodka_room`.
+   */
+  explorationPlayerGlbVisualUniformMultiplier?: number;
 }
 
 function inferredExplorationLocomotionFromCharacter(characterScale: number): number {
@@ -147,6 +152,8 @@ export const SCENE_CONFIG = {
     explorationCharacterModelScale: 0.48,
     /** Ниже глобального 1.38: в узкой комнате иначе персонаж доминирует кадр при TPS. */
     explorationPlayerGltfTargetMeters: 0.96,
+    /** Явный множитель меша поверх bbox-формулы — гарантирует видимое уменьшение в проде (Vercel). */
+    explorationPlayerGlbVisualUniformMultiplier: 0.52,
     explorationLocomotionScale: 0.9,
     size: [14, 10],
     spawnPoint: { x: 2.2, y: 0.06, z: 1.8, rotation: 0 } as PlayerPosition,
@@ -259,6 +266,7 @@ export const SCENE_CONFIG = {
     name: 'Коридор',
     /** Чуть крупнее узкой комнаты: 0.48 давало «пропавшего» персонажа на некоторых клиентах (кэш GLB / масштаб). */
     explorationCharacterModelScale: 0.58,
+    explorationPlayerGlbVisualUniformMultiplier: 0.58,
     explorationLocomotionScale: 0.86,
     size: [3.5, 12],
     spawnPoint: { x: 0, y: 0.06, z: -3.92, rotation: 0 } as PlayerPosition,
@@ -594,6 +602,7 @@ export const SCENE_CONFIG = {
     explorationLocomotionScale: 0.86,
     /** Явная привязка к сцене: без этого `visualModelScale` слабо влияет на итоговый uniform GLB. */
     explorationPlayerGltfTargetMeters: 0.78,
+    explorationPlayerGlbVisualUniformMultiplier: 0.56,
     size: [10, 8],
     spawnPoint: { x: 0, y: 1, z: 0, rotation: 0 } as PlayerPosition,  // центр комнаты
     ambientLight: { intensity: 0.8, color: '#ffd93d' },  // усилен свет
@@ -685,6 +694,14 @@ export function getExplorationLocomotionScale(sceneId: SceneId): number {
 export function getExplorationPlayerGltfTargetMeters(sceneId: SceneId): number {
   const entry = SCENE_CONFIG[sceneId];
   return entry?.explorationPlayerGltfTargetMeters ?? PLAYER_GLB_TARGET_VISUAL_METERS;
+}
+
+/** Множитель uniform GLB игрока после bbox-формулы (`explorationPlayerGlbVisualUniformMultiplier`, иначе 1). */
+export function getExplorationPlayerGlbVisualUniformMultiplier(sceneId: SceneId): number {
+  const entry = SCENE_CONFIG[sceneId];
+  const v = entry?.explorationPlayerGlbVisualUniformMultiplier;
+  if (v == null || !Number.isFinite(v) || v <= 0) return 1;
+  return Math.min(2.5, Math.max(0.12, v));
 }
 
 export const getInteractiveObjectsForScene = (sceneId: SceneId): InteractiveObjectConfig[] => {

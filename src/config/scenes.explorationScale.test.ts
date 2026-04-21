@@ -3,6 +3,7 @@ import {
   getExplorationCharacterModelScale,
   getExplorationLocomotionScale,
   getExplorationNpcModelScale,
+  getExplorationPlayerGlbVisualUniformMultiplier,
   getExplorationPlayerGltfTargetMeters,
   sanitizeExplorationSceneId,
   suggestInteriorCharacterModelScale,
@@ -69,6 +70,17 @@ describe('getExplorationPlayerGltfTargetMeters', () => {
   it('falls back to PLAYER_GLB_TARGET_VISUAL_METERS when scene has no override', () => {
     expect(getExplorationPlayerGltfTargetMeters('volodka_corridor')).toBe(PLAYER_GLB_TARGET_VISUAL_METERS);
     expect(getExplorationPlayerGltfTargetMeters('server_room')).toBe(PLAYER_GLB_TARGET_VISUAL_METERS);
+  });
+});
+
+describe('getExplorationPlayerGlbVisualUniformMultiplier', () => {
+  it('volodka_room uses explicit multiplier below 1', () => {
+    expect(getExplorationPlayerGlbVisualUniformMultiplier('volodka_room')).toBe(0.52);
+  });
+
+  it('defaults to 1 when not configured', () => {
+    expect(getExplorationPlayerGlbVisualUniformMultiplier('kitchen_night')).toBe(1);
+    expect(getExplorationPlayerGlbVisualUniformMultiplier('server_room')).toBe(1);
   });
 });
 

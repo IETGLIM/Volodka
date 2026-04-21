@@ -47,6 +47,7 @@ import {
   getExplorationCharacterModelScale,
   getExplorationLocomotionScale,
   getExplorationNpcModelScale,
+  getExplorationPlayerGlbVisualUniformMultiplier,
   getExplorationPlayerGltfTargetMeters,
   type InteractiveObjectConfig,
 } from '@/config/scenes';
@@ -322,6 +323,11 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
 
   const explorationPlayerGltfTargetMeters = useMemo(
     () => getExplorationPlayerGltfTargetMeters(sceneId),
+    [sceneId],
+  );
+
+  const explorationPlayerGlbVisualUniformMultiplier = useMemo(
+    () => getExplorationPlayerGlbVisualUniformMultiplier(sceneId),
     [sceneId],
   );
 
@@ -703,6 +709,7 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
             modelPath={getDefaultPlayerModelPath()}
             visualModelScale={explorationCharacterModelScale}
             playerGltfTargetMeters={explorationPlayerGltfTargetMeters}
+            playerGlbVisualUniformMultiplier={explorationPlayerGlbVisualUniformMultiplier}
             locomotionScale={explorationLocomotionScale}
             onPositionChange={handlePositionChange}
             onInteraction={handlePlayerInteraction}

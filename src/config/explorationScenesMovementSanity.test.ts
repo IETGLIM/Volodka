@@ -3,6 +3,7 @@ import {
   SCENE_CONFIG,
   getExplorationCharacterModelScale,
   getExplorationLocomotionScale,
+  getExplorationPlayerGlbVisualUniformMultiplier,
   getExplorationPlayerGltfTargetMeters,
 } from './scenes';
 
@@ -21,15 +22,19 @@ describe('exploration scenes movement / scale sanity (step 5 automation)', () =>
     const ch = getExplorationCharacterModelScale(sceneId);
     const loc = getExplorationLocomotionScale(sceneId);
     const gltfTarget = getExplorationPlayerGltfTargetMeters(sceneId);
+    const glbUniformMul = getExplorationPlayerGlbVisualUniformMultiplier(sceneId);
     expect(Number.isFinite(ch), `character scale for ${sceneId}`).toBe(true);
     expect(Number.isFinite(loc), `locomotion scale for ${sceneId}`).toBe(true);
     expect(Number.isFinite(gltfTarget), `player GLB target meters for ${sceneId}`).toBe(true);
+    expect(Number.isFinite(glbUniformMul), `player GLB uniform mult for ${sceneId}`).toBe(true);
     expect(ch, `character scale > 0 for ${sceneId}`).toBeGreaterThan(0.15);
     expect(ch, `character scale < 3 for ${sceneId}`).toBeLessThan(3);
     expect(loc, `locomotion scale > 0 for ${sceneId}`).toBeGreaterThan(0.1);
     expect(loc, `locomotion scale < 3 for ${sceneId}`).toBeLessThan(3);
     expect(gltfTarget, `player GLB target > 0.45 for ${sceneId}`).toBeGreaterThan(0.45);
     expect(gltfTarget, `player GLB target < 2 for ${sceneId}`).toBeLessThan(2);
+    expect(glbUniformMul, `player GLB uniform mult >= 0.12 for ${sceneId}`).toBeGreaterThanOrEqual(0.12);
+    expect(glbUniformMul, `player GLB uniform mult <= 2.5 for ${sceneId}`).toBeLessThanOrEqual(2.5);
   });
 
   it.each(sceneIds)('scene %s — spawn point and room size look usable for physics', (sceneId) => {

@@ -18,6 +18,7 @@ import { usePlayerFootsteps } from '@/hooks/usePlayerFootsteps';
 import { getDefaultPlayerModelPath, isValidPlayerGlbPath, rewriteLegacyModelPath } from '@/config/modelUrls';
 import {
   PLAYER_GLB_TARGET_VISUAL_METERS,
+  applyExplorationPlayerGlbVisualUniformMultiplier,
   computeExplorationPlayerGlbUniformFromBBox,
 } from '@/lib/playerScaleConstants';
 import { getGltfSkinnedVisualHeightMeters } from '@/lib/gltfSkinnedBoundingHeight';
@@ -49,6 +50,11 @@ export interface PhysicsPlayerProps {
    * По умолчанию `PLAYER_GLB_TARGET_VISUAL_METERS`.
    */
   playerGltfTargetMeters?: number;
+  /**
+   * Множитель к uniform GLB после bbox (`getExplorationPlayerGlbVisualUniformMultiplier(sceneId)`).
+   * По умолчанию **1**; в `SCENE_CONFIG` — явное уменьшение меша в кадре.
+   */
+  playerGlbVisualUniformMultiplier?: number;
   /** Множитель ходьбы/бега/прыжка; см. `getExplorationLocomotionScale`. */
   locomotionScale?: number;
   /** Позиция и yaw модели каждый кадр (для камеры / ресета без отставания от стора). */
@@ -226,6 +232,7 @@ const GLBPlayerModel = memo(function GLBPlayerModel({
   onError,
   roomScale,
   targetVisualMeters,
+  visualUniformMultiplier = 1,
 }: {
   modelPath: string;
   isMoving: boolean;
@@ -236,6 +243,8 @@ const GLBPlayerModel = memo(function GLBPlayerModel({
   roomScale: number;
   /** Целевая высота визуала в метрах сцены (из `SCENE_CONFIG` или дефолт). */
   targetVisualMeters: number;
+  /** Из `SCENE_CONFIG.explorationPlayerGlbVisualUniformMultiplier` — после bbox. */
+  visualUniformMultiplier?: number;
 }) {
   const groupRef = useRef<THREE.Group>(null);
   const { scene: loadedScene, animations } = useGLTF(modelPath) as any;
@@ -299,12 +308,17 @@ const GLBPlayerModel = memo(function GLBPlayerModel({
   }, [loadedScene, onError]);
 
   const visualUniform = useMemo(() => {
-    if (!loadedScene) return 0.12 * rs;
-    const scratch = new THREE.Vector3();
-    const h = getGltfSkinnedVisualHeightMeters(loadedScene, scratch);
-    if (h < 1e-4) return 0.12 * rs;
-    return computeExplorationPlayerGlbUniformFromBBox(h, targetVisualMeters, rs);
-  }, [loadedScene, rs, targetVisualMeters]);
+    let base: number;
+    if (!loadedScene) {
+      base = 0.12 * rs;
+    } else {
+      const scratch = new THREE.Vector3();
+      const h = getGltfSkinnedVisualHeightMeters(loadedScene, scratch);
+      if (h < 1e-4) base = 0.12 * rs;
+      else base = computeExplorationPlayerGlbUniformFromBBox(h, targetVisualMeters, rs);
+    }
+    return applyExplorationPlayerGlbVisualUniformMultiplier(base, visualUniformMultiplier);
+  }, [loadedScene, rs, targetVisualMeters, visualUniformMultiplier]);
 
   useEffect(() => {
     const act = actionsRef.current;
@@ -402,6 +416,7 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
     modelPath,
     visualModelScale = 1,
     playerGltfTargetMeters = PLAYER_GLB_TARGET_VISUAL_METERS,
+    playerGlbVisualUniformMultiplier = 1,
     locomotionScale = 1,
     onPositionChange,
     onInteraction,
@@ -817,6 +832,7 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
                 onError={handleModelError}
                 roomScale={roomScale}
                 targetVisualMeters={playerGltfTargetMeters}
+                visualUniformMultiplier={playerGlbVisualUniformMultiplier}
               />
             ) : (
               <FallbackPlayerModel isMoving={isMoving} isLocked={isLocked} roomScale={roomScale} />

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  applyExplorationPlayerGlbVisualUniformMultiplier,
   computeExplorationPlayerGlbUniformFromBBox,
   PLAYER_GLB_VISUAL_UNIFORM_MAX,
 } from '@/lib/playerScaleConstants';
@@ -25,5 +26,17 @@ describe('computeExplorationPlayerGlbUniformFromBBox', () => {
 
   it('returns safe default when inputs are non-finite', () => {
     expect(computeExplorationPlayerGlbUniformFromBBox(NaN, 1.38, 1)).toBe(0.12);
+  });
+});
+
+describe('applyExplorationPlayerGlbVisualUniformMultiplier', () => {
+  it('scales down then reclamps', () => {
+    const base = 0.88;
+    const u = applyExplorationPlayerGlbVisualUniformMultiplier(base, 0.52);
+    expect(u).toBeCloseTo(base * 0.52, 5);
+  });
+
+  it('treats undefined multiplier as 1', () => {
+    expect(applyExplorationPlayerGlbVisualUniformMultiplier(0.7, undefined)).toBeCloseTo(0.7, 5);
   });
 });

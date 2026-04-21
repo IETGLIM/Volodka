@@ -36,3 +36,18 @@ export function computeExplorationPlayerGlbUniformFromBBox(
   if (raw > PLAYER_GLB_VISUAL_UNIFORM_MAX) return PLAYER_GLB_VISUAL_UNIFORM_MAX;
   return raw;
 }
+
+/**
+ * После расчёта по bbox — множитель из `SCENE_CONFIG.explorationPlayerGlbVisualUniformMultiplier` (явное «сделай меньше в кадре»).
+ */
+export function applyExplorationPlayerGlbVisualUniformMultiplier(
+  baseUniform: number,
+  multiplier: number | undefined,
+): number {
+  const m =
+    multiplier != null && Number.isFinite(multiplier) && multiplier > 0 ? Math.min(2.5, Math.max(0.12, multiplier)) : 1;
+  const u = baseUniform * m;
+  if (u < PLAYER_GLB_VISUAL_UNIFORM_MIN) return PLAYER_GLB_VISUAL_UNIFORM_MIN;
+  if (u > PLAYER_GLB_VISUAL_UNIFORM_MAX) return PLAYER_GLB_VISUAL_UNIFORM_MAX;
+  return u;
+}
