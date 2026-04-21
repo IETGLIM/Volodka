@@ -24,7 +24,7 @@ describe('getExplorationCharacterModelScale', () => {
     expect(getExplorationCharacterModelScale('zarema_albert_room')).toBeLessThan(
       getExplorationNpcModelScale('zarema_albert_room'),
     );
-    expect(getExplorationNpcModelScale('zarema_albert_room')).toBe(getExplorationCharacterModelScale('volodka_room'));
+    expect(getExplorationNpcModelScale('zarema_albert_room')).toBe(0.52);
   });
 
   it('getExplorationNpcModelScale defaults to character scale when not overridden', () => {
@@ -61,8 +61,13 @@ describe('getExplorationPlayerGltfTargetMeters', () => {
     );
   });
 
+  it('volodka_room uses explicit lower GLB target for tight interior', () => {
+    expect(getExplorationPlayerGltfTargetMeters('volodka_room')).toBe(0.96);
+    expect(getExplorationPlayerGltfTargetMeters('volodka_room')).toBeLessThan(PLAYER_GLB_TARGET_VISUAL_METERS);
+  });
+
   it('falls back to PLAYER_GLB_TARGET_VISUAL_METERS when scene has no override', () => {
-    expect(getExplorationPlayerGltfTargetMeters('volodka_room')).toBe(PLAYER_GLB_TARGET_VISUAL_METERS);
+    expect(getExplorationPlayerGltfTargetMeters('volodka_corridor')).toBe(PLAYER_GLB_TARGET_VISUAL_METERS);
     expect(getExplorationPlayerGltfTargetMeters('server_room')).toBe(PLAYER_GLB_TARGET_VISUAL_METERS);
   });
 });

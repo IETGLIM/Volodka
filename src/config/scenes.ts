@@ -54,7 +54,7 @@ export interface SceneConfig {
   explorationNpcModelScale?: number;
   /**
    * Множитель скорости ходьбы/бега игрока и патруля NPC в 3D-исследовании (коллайдеры без изменений).
-   * Если не задано — выводится из итогового масштаба персонажа (как пара 0.52 / 0.9 у `volodka_room`).
+   * Если не задано — выводится из итогового масштаба персонажа (как пара 0.48 / 0.9 у `volodka_room`).
    */
   explorationLocomotionScale?: number;
   /**
@@ -70,7 +70,7 @@ function inferredExplorationLocomotionFromCharacter(characterScale: number): num
 }
 
 /**
- * Подсказка масштаба персонажей для **новых** узких интерьеров: эталон `volodka_room` (max габарит пола ~14 м → 0.52).
+ * Подсказка масштаба персонажей для **новых** узких интерьеров: эталон `volodka_room` (max габарит пола ~14 м → ~0.48).
  * Подставьте в `SCENE_CONFIG.*.explorationCharacterModelScale` при заведении локации.
  */
 export function suggestInteriorCharacterModelScale(maxFloorDimensionMeters: number): number {
@@ -144,7 +144,9 @@ export const SCENE_CONFIG = {
   volodka_room: {
     id: 'volodka_room',
     name: 'Комната Володьки',
-    explorationCharacterModelScale: 0.52,
+    explorationCharacterModelScale: 0.48,
+    /** Ниже глобального 1.38: в узкой комнате иначе персонаж доминирует кадр при TPS. */
+    explorationPlayerGltfTargetMeters: 0.96,
     explorationLocomotionScale: 0.9,
     size: [14, 10],
     spawnPoint: { x: 2.2, y: 0.06, z: 1.8, rotation: 0 } as PlayerPosition,

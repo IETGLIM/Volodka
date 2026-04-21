@@ -15,8 +15,8 @@ export const PLAYER_FEET_SPAWN_Y = 0.06;
  * (пол в делителе завышал модель там, где bbox уже был корректным ~0.6–0.8 м).
  */
 export const PLAYER_GLB_VISUAL_UNIFORM_MIN = 0.045;
-/** Верхний clamp: заниженный bbox SkinnedMesh иначе даёт raw 2+ и «ботинок на весь экран». */
-export const PLAYER_GLB_VISUAL_UNIFORM_MAX = 1.06;
+/** Верхний clamp: заниженный bbox SkinnedMesh иначе даёт raw 2+ и «ботинок на весь экран» (см. Vercel / volodka_room). */
+export const PLAYER_GLB_VISUAL_UNIFORM_MAX = 0.92;
 
 /**
  * Единая формула uniform для GLB игрока в обходе (метры сцены).

@@ -120,6 +120,22 @@ interface RPGGameCanvasProps {
   groundGeometryArgs?: RpgGroundGeometryArgs;
 }
 
+/** Пресет `FollowCamera` по `sceneId` (опционально — лимит pitch, чтобы не «есть» ноги при отрицательном наклоне). */
+interface ExplorationFollowCameraPreset {
+  distance: number;
+  height: number;
+  smoothness: number;
+  shoulderOffset: number;
+  lookAtHeightOffset: number;
+  collisionSpring: number;
+  minDistance: number;
+  maxDistance: number;
+  collisionRayOriginY: number;
+  collisionRadius: number;
+  pitchMin?: number;
+  pitchMax?: number;
+}
+
 const GROUND_INDOOR: RpgGroundGeometryArgs = [20, 0.1, 20];
 const GROUND_VOLODKA_ROOM: RpgGroundGeometryArgs = [14, 0.1, 11.2];
 const GROUND_VOLODKA_CORRIDOR: RpgGroundGeometryArgs = [3.5, 0.1, 13.2];
@@ -322,7 +338,7 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
     sceneId === 'home_evening' ||
     sceneId === 'zarema_albert_room';
 
-  const followCameraProps = useMemo(() => {
+  const followCameraProps = useMemo((): ExplorationFollowCameraPreset => {
     if (sceneId === 'volodka_corridor') {
       return {
         distance: 1.82,
@@ -339,16 +355,18 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
     }
     if (sceneId === 'volodka_room') {
       return {
-        distance: 2.18,
-        height: 1.38,
+        distance: 2.62,
+        height: 1.58,
         smoothness: 0.11,
-        shoulderOffset: 0.08,
-        lookAtHeightOffset: 1.05,
+        shoulderOffset: 0.1,
+        lookAtHeightOffset: 1.22,
         collisionSpring: 12,
-        minDistance: 1.22,
-        maxDistance: 3.05,
-        collisionRayOriginY: 1.18,
+        minDistance: 1.58,
+        maxDistance: 3.35,
+        collisionRayOriginY: 1.38,
         collisionRadius: 0.2,
+        pitchMin: -0.18,
+        pitchMax: 0.38,
       };
     }
     if (sceneId === 'home_evening') {
@@ -742,6 +760,8 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
           smoothness={followCameraProps.smoothness}
           shoulderOffset={followCameraProps.shoulderOffset}
           lookAtHeightOffset={followCameraProps.lookAtHeightOffset}
+          pitchMin={followCameraProps.pitchMin}
+          pitchMax={followCameraProps.pitchMax}
           collisionSpring={followCameraProps.collisionSpring}
           collisionRayOriginY={followCameraProps.collisionRayOriginY}
           collisionRadius={followCameraProps.collisionRadius}

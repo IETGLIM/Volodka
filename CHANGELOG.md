@@ -4,7 +4,7 @@
 
 ### Fixed
 
-- **Обход / камера и масштаб игрока**: жёстче clamp uniform GLB (**`PLAYER_GLB_VISUAL_UNIFORM_MAX` 1.06**); на мешах GLB игрока выставлен **`userData.isPlayer`** (луч коллизий камеры не цепляется за скин); пресет **`FollowCamera`** для **`volodka_room`** — дальше **`distance`**, выше **`height`** / **`lookAtHeightOffset`**, больше **`minDistance`** и **`collisionRayOriginY`**, чтобы не «нырять» в ботинки у стен.
+- **Обход / камера и масштаб игрока**: clamp uniform GLB (**`PLAYER_GLB_VISUAL_UNIFORM_MAX` 0.92**); на мешах GLB игрока — **`userData.isPlayer`**; **`volodka_room`**: **`explorationPlayerGltfTargetMeters` 0.96**, **`explorationCharacterModelScale` 0.48**; пресет **`FollowCamera`** — дальше/выше, **`minDistance`**, **`collisionRayOriginY`**, опционально **`pitchMin`/`pitchMax`** (меньше кадр «из-под ног» на Vercel).
 
 ### Changed
 
