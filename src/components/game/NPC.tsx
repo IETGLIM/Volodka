@@ -298,10 +298,11 @@ const GLTFLoader = memo(function GLTFLoader({
       applyGltfExplorationCharacterMaterialPolicies(clone);
       const scratchVec = new THREE.Vector3();
       const hRaw = getGltfSkinnedVisualHeightMeters(clone, scratchVec);
+      /** Верхняя граница ниже, чем у старых демо (было 18): при битом bbox клона иначе NPC превращается в «колосс» рядом с игроком. */
       const bakedVisualScale = THREE.MathUtils.clamp(
         (PLAYER_GLB_TARGET_VISUAL_METERS * scaleSafe) / hRaw,
         0.0025,
-        18,
+        2.85,
       );
       return { scene: clone, bakedVisualScale };
     } catch {
