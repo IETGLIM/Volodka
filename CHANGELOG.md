@@ -21,6 +21,7 @@
 
 ### Added
 
+- **Скрипт архива для разбора**: `**scripts/pack-volodka-analysis-archive.ps1**` — ZIP в `**archives/volodka-analysis-archive-*.zip**` (интро, обход, `**storyNodes**` / триггеры / заставки-оверлеи, ключевой UI); внутри `**README-ANALYSIS-BUNDLE.txt**`.
 - **Обход / фаза и интро**: стор `**gamePhaseStore.ts**` (`gameplay` / `intro_cutscene`, подписи, оверлей лифта), `**IntroCutsceneCinematicDirector**` — таймлайн камеры и телепорты в `**volodka_room**`, спуск **10→3**, финал в `**zarema_albert_room**` (`**introVolodkaOpeningCutscene.ts**`); `**IntroCutsceneOverlays**` в `**GameOrchestrator**`; после текстового `**IntroScreen**` — `**handleIntroComplete**` (`**useGameSessionFlow**`) ставит игрока за стол и запускает 3D-интро; `**RPGGameCanvas**` — режиссёр при `**intro_cutscene**`, синхрон `**livePlayerPositionRef**` при телепортах; мини-карта скрыта на время интро; `**resetGame**` / загрузка сейва сбрасывают фазу интро.
 - **Обход / первая локация**: NPC `**volodka_dima_neighbor`** (Дима с пятого) в `**volodka_room`**; четыре короткие аниме-заставки в `**animeCutscenes.ts`** и триггеры по E у окна, стола, дивана и двери в `**triggerZones.ts**`. После первого тика физики — оверлей `**ExplorationBriefingOverlay`** с явными инструкциями (WASD, E, зоны заставок).
 - **Документ плана**: `**docs/exploration-expert-incremental-backlog.md`** — пошаговый экспертный бэклог по обходу (камера, квесты, мобильный ввод, интро и т.д.).
