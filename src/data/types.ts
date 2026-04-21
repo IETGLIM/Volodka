@@ -407,6 +407,8 @@ export interface QuestObjective {
   hint?: string;           // Подсказка что делать (например, "Поговори с Алисой в кафе")
   targetLocation?: string; // Где искать (например, "cafe_evening")
   targetNPC?: string;      // С кем говорить (например, "cafe_college_girl")
+  /** Якорь метки на миникарте обхода (мир XZ), если есть `targetLocation` без `targetNPC`. */
+  mapHint?: { x: number; z: number };
   targetItem?: string;     // Какой предмет нужен
 
   /** Тип шага для UX (трекер, журнал) */

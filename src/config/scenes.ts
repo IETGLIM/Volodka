@@ -228,7 +228,7 @@ export const SCENE_CONFIG = {
     explorationCharacterModelScale: 0.48,
     explorationLocomotionScale: 0.86,
     size: [3.5, 12],
-    spawnPoint: { x: 0, y: 0.06, z: -4.25, rotation: 0 } as PlayerPosition,
+    spawnPoint: { x: 0, y: 0.06, z: -3.92, rotation: 0 } as PlayerPosition,
     ambientLight: { intensity: 0.32, color: '#e8dcc8' },
     directionalLights: [{ position: [0, 6, 2], intensity: 0.55 }],
     npcs: [],

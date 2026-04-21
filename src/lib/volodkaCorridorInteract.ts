@@ -9,7 +9,8 @@ type StoreSnapshot = ReturnType<typeof useGameStore.getState>;
 export const CORRIDOR_FROM_ROOM: { x: number; y: number; z: number; rotation: number } = {
   x: 0,
   y: PLAYER_FEET_SPAWN_Y,
-  z: -4.25,
+  /** Чуть дальше от южного проёма (дверь в комнату), чтобы не цеплять кромку пола при первом кадре. */
+  z: -3.92,
   rotation: 0,
 };
 

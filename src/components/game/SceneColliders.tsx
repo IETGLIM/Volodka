@@ -218,6 +218,7 @@ export const VolodkaRoomColliders = memo(function VolodkaRoomColliders() {
   const wallT = 0.5;
   const hw = 7;
   const hd = 5;
+  const floorHalfZ = 6.35;
   const deskMain: [number, number, number][] = useMemo(() => [[3.2, 0.45, 0.1]], []);
   const deskSide: [number, number, number][] = useMemo(() => [[0.8, 0.45, -2.8]], []);
   const wardrobes: [number, number, number][] = useMemo(
@@ -232,12 +233,13 @@ export const VolodkaRoomColliders = memo(function VolodkaRoomColliders() {
   return (
     <group>
       {/* Пол только для raycast камеры (`InstancedWalls` = слой 4); видимый пол — в `VolodkaRoomVisual`. */}
-      <InstancedWalls positions={[[0, -0.04, 0]]} size={[14, 0.08, 10]} />
+      <InstancedWalls positions={[[0, -0.04, 0]]} size={[14, 0.08, floorHalfZ * 2]} />
       <InstancedWalls positions={[[0, h / 2, -hd]]} size={[14 + wallT * 2, h, wallT]} />
-      <InstancedWalls positions={[[-hw, h / 2, 0]]} size={[wallT, h, 10]} />
-      <InstancedWalls positions={[[hw, h / 2, 0]]} size={[wallT, h, 10]} />
+      <InstancedWalls positions={[[-hw, h / 2, 0]]} size={[wallT, h, floorHalfZ * 2]} />
+      <InstancedWalls positions={[[hw, h / 2, 0]]} size={[wallT, h, floorHalfZ * 2]} />
       <InstancedWalls positions={[[-4.12, h / 2, hd]]} size={[5.9 + wallT, h, wallT]} />
       <InstancedWalls positions={[[4.12, h / 2, hd]]} size={[5.9 + wallT, h, wallT]} />
+      <InstancedWalls positions={[[0, h / 2, hd + 1.35]]} size={[14 + wallT * 2, h, wallT]} />
       <InstancedWalls positions={deskMain} size={[1.45, 0.08, 0.78]} />
       <InstancedWalls positions={deskSide} size={[1.05, 0.08, 0.58]} />
       <InstancedWalls positions={wardrobes} size={[0.58, 1.75, 0.68]} />
@@ -257,11 +259,11 @@ export const VolodkaCorridorColliders = memo(function VolodkaCorridorColliders()
   return (
     <group>
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.01, 0]} receiveShadow>
-        <planeGeometry args={[3.5, 12]} />
+        <planeGeometry args={[3.5, 13.2]} />
         <meshStandardMaterial color="#3a3630" roughness={0.82} />
       </mesh>
-      <InstancedWalls positions={[[halfW, h / 2, 0]]} size={[wallT, h, 12]} />
-      <InstancedWalls positions={[[-halfW, h / 2, 0]]} size={[wallT, h, 12]} />
+      <InstancedWalls positions={[[halfW, h / 2, 0]]} size={[wallT, h, 13.2]} />
+      <InstancedWalls positions={[[-halfW, h / 2, 0]]} size={[wallT, h, 13.2]} />
       <InstancedWalls positions={[[-1.125, h / 2, -halfD]]} size={[1.25, h, wallT]} />
       <InstancedWalls positions={[[1.125, h / 2, -halfD]]} size={[1.25, h, wallT]} />
       <InstancedWalls positions={[[-1.125, h / 2, halfD]]} size={[1.25, h, wallT]} />

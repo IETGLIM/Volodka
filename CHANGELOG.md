@@ -8,6 +8,7 @@
 
 ### Changed
 
+- **Обход / NPC в комнате Володьки (временно)**: без `**NEXT_PUBLIC_EXPLORATION_VOLODKA_NPC_GLB=1**` в `**volodka_room**` не грузится GLB — только `**FallbackNPCModel**` (`**NPC.tsx**`, `**explorationDiagnostics.ts**`).
 - **Обход / E2.2 радиальное меню и предметы**: `**getExplorationRadialMenuActions**` (`lib/explorationRadialMenuActions.ts`, тесты) — фильтр действий по объекту и сцене; `**RadialMenu**` — проп `**allowedActions**`, сетка 1×N / 2×N; `**RPGGameCanvas**` — подпись с `**itemId**`; при «Взять» — тост с именем предмета из `**data/items.ts**` (`**GameOrchestrator**`).
 - **Документация**: `**README.md**` — в блоке про 3D-обход добавлены пункты про брифинг (квесты, карма, камера и **R**), тост при первом диалоге из обхода и сглаженную GLB-локомоцию игрока/NPC; полный список по-прежнему в этом файле.
 
@@ -24,6 +25,9 @@
 
 ### Fixed
 
+- **Обход / провал при «проходе» в коридор без телепорта**: у `**VolodkaRoomColliders**` (Rapier + слой камеры в `**SceneColliders**`) пол глубже по **+Z**, боковые стены по глубине, южный «колпак» за проёмом двери; коридор — чуть длиннее пол (`**PhysicsSceneColliders**` / визу слой). Спавн из комнаты `**CORRIDOR_FROM_ROOM**` / `**scenes.volodka_corridor.spawnPoint**` сдвинут от южного проёма.
+- **Миникарта / квесты**: убрана ложная метка «зона» в центре `(0,0)`; в `**QuestObjective**` — опциональный `**mapHint**` (миникарта для целей с `**targetLocation**` без NPC); у `**main_goal.write_poems**` и `**exploration_zarema_hearth.hearth_moment**` заданы подсказки по сцене.
+- **Панель квестов**: обводка/фон/clip в духе HUD (cyan, mono), свёрнутая карточка — `**line-clamp-2**` вместо обрезки `**slice(0,50)**`.
 - **Обход / `volodka_room` — нельзя выйти в коридор**: зона `**trigger_volodka_door_cutscene**` перекрывала дверь `**volodka_door_corridor**`; по приоритету резолвера E уходил только в заставку, радиальное меню двери не открывалось. Триггер сужен и сдвинут вглубь комнаты (`**triggerZones.ts**`).
 - **Обход / камера и зум**: для `**volodka_room**` — ниже pivot и точка взгляда, ближе `**minDistance**` / стартовый `**distance**` (`**RPGGameCanvas**`); в `**FollowCamera**` — зум колесом/тачпадом по `**deltaY**` (мелкие шаги), грубый шаг при больших `**deltaY**`.
 - **Обход / поворот персонажа**: в `**PhysicsPlayer**` и `**ExplorationNoclipPlayer**` поворот к вектору скорости через экспоненциальное сглаживание от `**dt**` вместо фиксированной доли за кадр — меньше «рывков» при смене направления.

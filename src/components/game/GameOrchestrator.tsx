@@ -497,11 +497,11 @@ export default function GameOrchestrator() {
           );
           markers.push({ id: `${qid}-${obj.id}`, position: { x: p.x, z: p.z }, type: 'target' });
         }
-      } else {
+      } else if (obj.mapHint) {
         markers.push({
-          id: `${qid}-${obj.id}-area`,
-          position: { x: 0, z: 0 },
-          type: 'area',
+          id: `${qid}-${obj.id}-hint`,
+          position: { x: obj.mapHint.x, z: obj.mapHint.z },
+          type: 'target',
         });
       }
     }

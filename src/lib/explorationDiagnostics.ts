@@ -34,3 +34,11 @@ export function isExplorationWebGlContextLogEnabled(): boolean {
 export function isExplorationPlayerLocomotionLogEnabled(): boolean {
   return process.env.NEXT_PUBLIC_EXPLORATION_PLAYER_LOCOMOTION_LOG === '1';
 }
+
+/**
+ * В `volodka_room` не грузить GLB NPC — только упрощённый «человечек» для отладки сцены.
+ * Вернуть GLB: `NEXT_PUBLIC_EXPLORATION_VOLODKA_NPC_GLB=1` (пересборка).
+ */
+export function isExplorationVolodkaRoomNpcGlbDisabled(): boolean {
+  return process.env.NEXT_PUBLIC_EXPLORATION_VOLODKA_NPC_GLB !== '1';
+}

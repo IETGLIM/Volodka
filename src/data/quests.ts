@@ -15,6 +15,7 @@ function createObjective(
     hint?: string;
     targetLocation?: string;
     targetNPC?: string;
+    mapHint?: { x: number; z: number };
     targetItem?: string;
     stageType?: QuestObjective['stageType'];
     linkedStoryNodeId?: string;
@@ -30,6 +31,7 @@ function createObjective(
     hint: options?.hint,
     targetLocation: options?.targetLocation,
     targetNPC: options?.targetNPC,
+    mapHint: options?.mapHint,
     targetItem: options?.targetItem,
     stageType: options?.stageType,
     linkedStoryNodeId: options?.linkedStoryNodeId,
@@ -63,10 +65,13 @@ export const QUEST_DEFINITIONS: Record<string, ExtendedQuest> = {
     type: 'main',
     status: 'active',
     objectives: [
-      createObjective('write_poems', 'Написать 10 стихотворений', { 
-        targetValue: 10, 
+      createObjective('write_poems', 'Написать 10 стихотворений', {
+        targetValue: 10,
         currentValue: 0,
-        hint: 'Пиши стихи ночью на кухне или дома'
+        hint: 'Пиши стихи ночью на кухне или дома; в комнате — у стола или в черновиках на ноутбуке.',
+        targetLocation: 'volodka_room',
+        mapHint: { x: 2.85, z: 0.15 },
+        stageType: 'exploration',
       }),
       createObjective('perform_live', 'Выступить публично', {
         hint: 'Посети кафе "Синяя Яма" в пятницу вечером',
@@ -106,6 +111,7 @@ export const QUEST_DEFINITIONS: Record<string, ExtendedQuest> = {
         currentValue: 0,
         hint: 'Зона у дивана в 3D-обходе (отдельный триггер с E)',
         targetLocation: 'zarema_albert_room',
+        mapHint: { x: -1.85, z: 1.1 },
       }),
     ],
     reward: createReward({ mood: 5, creativity: 3, karma: 2 }),

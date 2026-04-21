@@ -46,6 +46,7 @@ import {
   NPC_SHADOW_NEAR_IN_M,
   resolveNpcModelLodUseFull,
 } from '@/lib/npcLodConstants';
+import { isExplorationVolodkaRoomNpcGlbDisabled } from '@/lib/explorationDiagnostics';
 
 function scheduleActivityIcon(entry: ScheduleEntry | null | undefined): string {
   if (!entry) return '💬';
@@ -756,6 +757,8 @@ interface NPCProps {
   enableNpcPhysics?: boolean;
   /** Путь по navmesh (three-pathfinding); если нет — прямой бег к waypoint. */
   findNavPath?: FindNavPathXZ | null;
+  /** Сцена обхода (для временных режимов отладки, напр. без GLB в `volodka_room`). */
+  explorationSceneId?: SceneId;
 }
 
 export const NPC = memo(function NPC({
@@ -771,7 +774,13 @@ export const NPC = memo(function NPC({
   scheduleEntry = null,
   enableNpcPhysics = false,
   findNavPath = null,
+  explorationSceneId,
 }: NPCProps) {
+  const volodkaDebugHumanoidOnly = useMemo(
+    () => explorationSceneId === 'volodka_room' && isExplorationVolodkaRoomNpcGlbDisabled(),
+    [explorationSceneId],
+  );
+
   const effectiveModelScale = useMemo(
     () => (definition.scale ?? 1) * locationModelScale,
     [definition.scale, locationModelScale],
@@ -1278,7 +1287,7 @@ export const NPC = memo(function NPC({
   const body = (
     <>
       <group ref={modelRef}>
-        {definition.modelPath ? (
+        {definition.modelPath && !volodkaDebugHumanoidOnly ? (
           <>
             {/*
               Не `{useFullModel && <GLB />}`: при каждом переключении LOD модель размонтировалась бы и монтировалась заново (useGLTF / скины).
@@ -1426,6 +1435,7 @@ export const NPCSystem = memo(function NPCSystem({
             scheduleEntry={scheduleEntry}
             enableNpcPhysics={enableNpcPhysics}
             findNavPath={findNavPath}
+            explorationSceneId={currentSceneId}
           />
         );
       })}

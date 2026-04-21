@@ -219,18 +219,24 @@ const QuestCard = memo(function QuestCard({ quest, questProgress, isExpanded, on
       layout
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className={`rounded-lg border overflow-hidden bg-gradient-to-r ${typeColor}`}
+      className={`overflow-hidden rounded border border-cyan-500/15 bg-gradient-to-r ${typeColor}`}
+      style={{
+        clipPath: 'polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 6px 100%, 0 calc(100% - 6px))',
+      }}
     >
       {/* Header */}
       <button
         onClick={onToggle}
-        className="w-full p-3 flex items-center justify-between hover:bg-white/5 transition-colors"
+        type="button"
+        className="flex w-full items-center justify-between p-3 transition-colors hover:bg-white/5"
       >
         <div className="flex items-center gap-2">
           <span className="text-lg">{typeIcon}</span>
           <div className="text-left">
-            <h3 className="font-semibold text-white">{quest.title}</h3>
-            <p className="text-xs text-slate-400">{quest.description.slice(0, 50)}...</p>
+            <h3 className="font-mono text-sm font-semibold text-white/95">{quest.title}</h3>
+            <p className="mt-0.5 line-clamp-2 font-mono text-[11px] leading-snug text-slate-400/90">
+              {quest.description}
+            </p>
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -263,11 +269,11 @@ const QuestCard = memo(function QuestCard({ quest, questProgress, isExpanded, on
             exit={{ height: 0, opacity: 0 }}
             className="overflow-hidden"
           >
-            <div className="p-3 space-y-2">
-              <p className="text-sm text-slate-300 mb-3">{quest.description}</p>
-              
+            <div className="space-y-2 p-3">
+              <p className="mb-3 font-mono text-xs leading-relaxed text-slate-300/95">{quest.description}</p>
+
               <div className="space-y-2">
-                <h4 className="text-xs uppercase tracking-wider text-slate-500 font-semibold">
+                <h4 className="text-[10px] font-semibold uppercase tracking-wider text-cyan-600/80">
                   Цели ({completedObjectives}/{objectivesWithProgress.length})
                 </h4>
                 {objectivesWithProgress.map((obj) => (
@@ -360,14 +366,18 @@ export const QuestsPanel = memo(function QuestsPanel({
       initial={{ opacity: 0, x: 300 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: 300 }}
-      className="fixed right-2 top-16 z-50 w-[min(95vw,20rem)] max-h-[85vh] overflow-hidden rounded-lg border border-slate-700 bg-slate-900/95 shadow-xl backdrop-blur-md sm:right-4 sm:top-20"
+      className="fixed right-2 top-16 z-50 w-[min(95vw,20rem)] max-h-[85vh] overflow-hidden border border-cyan-500/25 bg-[linear-gradient(180deg,rgba(0,0,0,0.88)_0%,rgba(15,23,42,0.92)_55%,rgba(2,6,23,0.96)_100%)] shadow-[0_0_24px_rgba(34,211,238,0.12)] backdrop-blur-md sm:right-4 sm:top-20"
+      style={{
+        clipPath: 'polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px))',
+      }}
     >
-      {/* Header */}
-      <div className="p-3 border-b border-slate-700 flex items-center justify-between bg-gradient-to-r from-purple-500/20 to-pink-500/20">
-        <h2 className="font-bold text-lg text-white flex items-center gap-2">
-          📋 Журнал квестов
+      {/* Header — в духе верхней панели HUD (кибер, mono, cyan accent) */}
+      <div className="flex items-center justify-between border-b border-cyan-500/20 bg-gradient-to-r from-teal-950/80 to-slate-950/80 p-3">
+        <h2 className="flex items-center gap-2 font-mono text-sm font-semibold uppercase tracking-wider text-white/95">
+          <span aria-hidden>📋</span>
+          Журнал квестов
           {activeQuests.length > 0 && (
-            <span className="text-xs bg-purple-500/30 px-2 py-0.5 rounded-full">
+            <span className="rounded border border-cyan-500/35 bg-cyan-950/50 px-2 py-0.5 font-mono text-[10px] text-cyan-200/90">
               {activeQuests.length}
             </span>
           )}
@@ -377,15 +387,15 @@ export const QuestsPanel = memo(function QuestsPanel({
             type="button"
             onClick={onClose}
             aria-label="Закрыть"
-            className="inline-flex min-h-11 min-w-11 touch-manipulation items-center justify-center text-slate-400 transition-colors hover:text-white"
+            className="inline-flex min-h-11 min-w-11 touch-manipulation items-center justify-center font-mono text-slate-400 transition-colors hover:text-cyan-200"
           >
             ✕
           </button>
         )}
       </div>
 
-      <div className="border-b border-purple-500/15 bg-black/30 px-3 py-2">
-        <p className="font-mono text-[10px] leading-snug text-cyan-500/70">
+      <div className="border-b border-cyan-500/10 bg-black/35 px-3 py-2">
+        <p className="font-mono text-[10px] leading-snug text-cyan-500/75">
           💡 Сюжетные цели: примите квест → выполните шаг (мини-игра / сцена). IT-цели — в терминале (💻), команды из подсказек или{' '}
           <span className="text-cyan-400/90">help</span>. Репутация — ⚔️.
         </p>

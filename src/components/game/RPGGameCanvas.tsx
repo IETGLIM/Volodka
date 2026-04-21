@@ -115,7 +115,7 @@ interface RPGGameCanvasProps {
 
 const GROUND_INDOOR: RpgGroundGeometryArgs = [20, 0.1, 20];
 const GROUND_VOLODKA_ROOM: RpgGroundGeometryArgs = [14, 0.1, 11.2];
-const GROUND_VOLODKA_CORRIDOR: RpgGroundGeometryArgs = [3.5, 0.1, 12.6];
+const GROUND_VOLODKA_CORRIDOR: RpgGroundGeometryArgs = [3.5, 0.1, 13.2];
 const GROUND_PLAZA: RpgGroundGeometryArgs = [48, 0.1, 48];
 const GROUND_OPEN: RpgGroundGeometryArgs = [40, 0.1, 40];
 
