@@ -98,6 +98,7 @@ export const ZaremaAlbertExplorationVisual = memo(function ZaremaAlbertExplorati
         <boxGeometry args={[w - 0.2, h, t]} />
       </mesh>
 
+      {/* Окно / ночной силуэт за стеклом (южная стена, +Z). */}
       <mesh position={[0, 1.25, hd - 0.06]} rotation={[0, 0, 0]}>
         <planeGeometry args={[3.2, 1.35]} />
         <meshStandardMaterial
@@ -111,6 +112,22 @@ export const ZaremaAlbertExplorationVisual = memo(function ZaremaAlbertExplorati
           depthWrite={false}
         />
       </mesh>
+
+      {/* «Зеркало Альберта»: восточная стена (+X), рядом с зоной стола — не пересекается с позициями NPC. */}
+      <group
+        name="AlbertMirror"
+        position={[w / 2 - 0.08, 1.08, -0.42]}
+        userData={{ explorationProp: 'albert_mirror' }}
+      >
+        <mesh rotation={[0, -Math.PI / 2, 0]} receiveShadow>
+          <planeGeometry args={[1.2, 1.5]} />
+          <meshStandardMaterial color="#0b1220" metalness={0.82} roughness={0.18} />
+        </mesh>
+        <mesh rotation={[0, -Math.PI / 2, 0]} position={[0.04, 0, 0]}>
+          <planeGeometry args={[1.32, 1.62]} />
+          <meshStandardMaterial color="#713f12" roughness={0.55} metalness={0.25} />
+        </mesh>
+      </group>
 
       <mesh position={[0, h - 0.06, 0]} receiveShadow material={wallMat}>
         <boxGeometry args={[w - 0.15, 0.12, d - 0.15]} />
@@ -140,6 +157,7 @@ export const ZaremaAlbertExplorationVisual = memo(function ZaremaAlbertExplorati
       <pointLight position={[0, 2.4, 0]} intensity={0.75} color="#fde68a" distance={14} decay={2} />
       <pointLight position={[-2.5, 1.8, 2.2]} intensity={0.38} color="#7dd3fc" distance={9} decay={2} />
       <pointLight position={[3.2, 1.5, -2.4]} intensity={0.28} color="#fb923c" distance={8} decay={2} />
+      <pointLight position={[2.35, 1.65, -0.4]} intensity={0.55} color="#fff7d6" distance={5.5} decay={2} />
     </group>
   );
 });

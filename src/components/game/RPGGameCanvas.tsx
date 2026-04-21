@@ -359,6 +359,21 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
         collisionRadius: 0.24,
       };
     }
+    /** Узкая квартира 10×8: без пресета срабатывал дефолт с большой `height` — при отбое коллизий камера «ныряла» к ботинкам. */
+    if (sceneId === 'zarema_albert_room') {
+      return {
+        distance: 2.42,
+        height: 1.48,
+        smoothness: 0.11,
+        shoulderOffset: 0.1,
+        lookAtHeightOffset: 1.04,
+        collisionSpring: 11,
+        minDistance: 1.48,
+        maxDistance: 3.15,
+        collisionRayOriginY: 1.14,
+        collisionRadius: 0.22,
+      };
+    }
     if (isPanelDistrict) {
       return {
         distance: 5.25,

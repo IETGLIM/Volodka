@@ -22,8 +22,8 @@ export const STORY_TRIGGERS: TriggerZone[] = [
   /** Зона разговора с Заремой в комнате (`zarema_home`): `InteractionRegistry` id `npc_intro`. */
   {
     id: 'trigger_zarema_home_interaction',
-    position: { x: -1.8, y: 0.5, z: 0.8 },
-    size: { x: 2.6, y: 2.2, z: 2.6 },
+    position: { x: -1.55, y: 0.5, z: 0.65 },
+    size: { x: 2.4, y: 2.2, z: 2.4 },
     sceneId: 'zarema_albert_room',
     type: 'npc',
     npcId: 'zarema_home',

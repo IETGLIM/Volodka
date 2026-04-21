@@ -127,17 +127,16 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
 
   /**
    * Интерьер `zarema_albert_room`: карточка `zarema_home` (не путать с `zarema` на улице).
-   * Видимость в обходе — `getNPCsForScene` + расписание канона `zarema` (`ScheduleEngine`); масштаб GLB — `getExplorationNpcModelScale` из `config/scenes`.
+   * Видимость в обходе — `getNPCsForScene` + расписание канона `zarema` (`ScheduleEngine`); масштаб — `getExplorationNpcModelScale`.
+   * Без `modelPath` — процедурный `BaristaModel` (киберпанк-силуэт); TODO: финальный GLB Заремы + `animations`.
    */
   zarema_home: {
     id: 'zarema_home',
     name: 'Заремушка (мама, жена Альберта)',
     model: 'barista',
-    modelPath: '/models/cyberpunk_female_full-body_character.glb',
-    animations: NPC_ANIM_MIXAMO_FEMALE,
     scale: 1,
-    defaultPosition: { x: -1.8, y: 0, z: 0.8 },
-    patrolRadius: 1,
+    defaultPosition: { x: -1.55, y: 0, z: 0.65 },
+    patrolRadius: 0.85,
     sceneId: 'zarema_albert_room',
     dialogueTree: {
       id: 'zarema_room_home',
@@ -172,16 +171,17 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
     },
   },
 
-  /** Пара `zarema_home` в квартире; канон расписания — `albert`. */
+  /**
+   * Пара `zarema_home` в квартире; канон расписания — `albert`.
+   * Без `modelPath` — процедурный `ColleagueModel` (мужской силуэт без GLB); TODO: финальный GLB Альберта + `animations`.
+   */
   albert_home: {
     id: 'albert_home',
     name: 'Альберт',
     model: 'colleague',
-    modelPath: '/models/lowpoly_anime_character_cyberstyle.glb',
-    animations: NPC_ANIM_LOWPOLY_CYBER,
     scale: 1,
-    defaultPosition: { x: 2.2, y: 0, z: -0.8 },
-    patrolRadius: 0.9,
+    defaultPosition: { x: 2.05, y: 0, z: -0.35 },
+    patrolRadius: 0.75,
     sceneId: 'zarema_albert_room',
     dialogueTree: {
       id: 'albert_room_home',

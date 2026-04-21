@@ -576,31 +576,36 @@ export const SCENE_CONFIG = {
   zarema_albert_room: {
     id: 'zarema_albert_room',
     name: 'Комната Заремы и Альберта',
-    /** Как у `volodka_room` / `home_evening` — узкая «панель», иначе GLB «перевешивают» комнату. */
-    explorationCharacterModelScale: 0.52,
-    explorationLocomotionScale: 0.9,
+    /**
+     * Игрок чуть меньше NPC — меньше «ботинок в кадре» при узкой орбите; NPC остаются читабельными.
+     * См. пресет камеры `zarema_albert_room` в `RPGGameCanvas`.
+     */
+    explorationCharacterModelScale: 0.48,
+    explorationNpcModelScale: 0.52,
+    explorationLocomotionScale: 0.88,
     size: [10, 8],
     spawnPoint: { x: 0, y: 1, z: 0, rotation: 0 } as PlayerPosition,  // центр комнаты
     ambientLight: { intensity: 0.8, color: '#ffd93d' },  // усилен свет
+    /** В 3D-обходе используются `zarema_home` / `albert_home` из `npcDefinitions`; здесь — справочные слоты под VN/квесты. */
     npcs: [
-      { 
-        id: 'zarema', 
-        name: 'Зарема', 
-        model: 'barista', 
+      {
+        id: 'zarema',
+        name: 'Зарема',
+        model: 'barista',
         modelPath: '/models/smol_ame_in_an_upcycled_terrarium_hololiveen.glb',
-        position: [-2, 0, 0], 
+        position: [-1.55, 0, 0.65],
         dialogueTree: 'zarema_room',
-        scale: 1.0
+        scale: 1.0,
       },
-      { 
-        id: 'albert', 
-        name: 'Альберт', 
-        model: 'colleague', 
-        modelPath: '/models/lillian__vgdc.glb',
-        position: [2, 0, 0], 
+      {
+        id: 'albert',
+        name: 'Альберт',
+        model: 'colleague',
+        modelPath: '/models/lowpoly_anime_character_cyberstyle.glb',
+        position: [2.05, 0, -0.35],
         dialogueTree: 'albert_room',
-        scale: 1.0
-      }
+        scale: 1.0,
+      },
     ],
     interactiveObjects: [{ id: 'room_book', type: 'book', position: [0, 0.9, -1], poemId: 'poem_zarema_01', itemId: 'gift_pen', canBeRead: true, size: [0.3, 0.04, 0.2], color: '#8b4513' }],
     backgroundMusic: '/audio/ambient-calm.mp3'
