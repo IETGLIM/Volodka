@@ -216,6 +216,21 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
     updateExplorationLivePlayerPosition(livePlayerPositionRef.current);
   }, [sceneId]);
 
+  /** Телепорты из 3D-интро без смены `sceneId`: синхронизируем ref камеры с стором. */
+  useEffect(() => {
+    if (!introCutsceneActive) return;
+    const p = explorationStorePosition;
+    const snap = { x: p.x, y: p.y, z: p.z, rotation: p.rotation ?? 0 };
+    livePlayerPositionRef.current = snap;
+    updateExplorationLivePlayerPosition(snap);
+  }, [
+    introCutsceneActive,
+    explorationStorePosition.x,
+    explorationStorePosition.y,
+    explorationStorePosition.z,
+    explorationStorePosition.rotation,
+  ]);
+
   useEffect(() => {
     explorationBriefingPendingRef.current = true;
     setExplorationBriefingOpen(false);
@@ -679,7 +694,7 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
           onInteractionAvailabilityChange={onInteractionAvailabilityChange}
         />
 
-        {sceneId === 'volodka_room' && <IntroCutsceneCinematicDirector />}
+        {introCutsceneActive && <IntroCutsceneCinematicDirector />}
 
         <FollowCamera
           targetPosition={explorationSpawnSnapshot}

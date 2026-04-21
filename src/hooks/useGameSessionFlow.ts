@@ -1,6 +1,12 @@
 import { useCallback, useMemo } from 'react';
 import type { GameMode } from '@/data/rpgTypes';
 import type { SaveGameOptions } from '@/store/gameStore';
+import { explorationNarrativeTeleport } from '@/lib/explorationNarrativeTeleport';
+import {
+  INTRO_OPENING_DESK_CHAIR,
+  INTRO_OPENING_SCENE_ID,
+} from '@/lib/introVolodkaOpeningCutscene';
+import { useGamePhaseStore } from '@/store/gamePhaseStore';
 
 interface UseGameSessionFlowParams {
   setPhase: (phase: 'loading' | 'intro' | 'menu' | 'game') => void;
@@ -35,6 +41,7 @@ export function useGameSessionFlow({
 
   const handleStartNewGame = useCallback(() => {
     resetGameStore();
+    useGamePhaseStore.getState().completeIntroCutscene();
     setPhase('intro');
   }, [resetGameStore, setPhase]);
 
@@ -43,6 +50,9 @@ export function useGameSessionFlow({
   }, [loadGameFromStore, setPhase]);
 
   const handleIntroComplete = useCallback(() => {
+    /** Сразу комната + стол: первый кадр 3D — кат-сцена, не свободный спавн у дивана. */
+    explorationNarrativeTeleport(INTRO_OPENING_SCENE_ID, { ...INTRO_OPENING_DESK_CHAIR });
+    useGamePhaseStore.getState().beginOpeningCutsceneAfterTextIntro();
     setPhase('game');
   }, [setPhase]);
 

@@ -40,6 +40,8 @@ import {
 } from './GameOrchestratorSubcomponents';
 
 import { useGameStore } from '@/store/gameStore';
+import { useGamePhaseStore } from '@/store/gamePhaseStore';
+import { IntroCutsceneOverlays } from '@/components/Cutscenes/IntroCutsceneOverlays';
 import { eventBus } from '@/engine/EventBus';
 import { useGameAudioProfile } from '@/hooks/useAudio';
 import { QUEST_DEFINITIONS, getNextTrackedObjective } from '@/data/quests';
@@ -157,6 +159,9 @@ export default function GameOrchestrator() {
   const questProgress = useGameStore((s) => s.questProgress);
   const npcRelations = useGameStore((s) => s.npcRelations);
   const inventory = useGameStore((s) => s.inventory);
+  const explorationIntroPhase = useGamePhaseStore((s) => s.phase);
+  const introOpening3dActive =
+    phase === 'game' && gameMode === 'exploration' && explorationIntroPhase === 'intro_cutscene';
 
   const [mounted, setMounted] = useState(false);
   /** Короткий matrix/glitch-переход при смене 3D-локации (`lastSceneTransition`). */
@@ -704,7 +709,7 @@ export default function GameOrchestrator() {
         </div>
       )}
 
-      {gameMode === 'exploration' && (
+      {gameMode === 'exploration' && !introOpening3dActive && (
         <MiniMap
           sceneSize={minimapSceneSize}
           sceneName={SCENE_VISUALS[exploration.currentSceneId]?.name ?? exploration.currentSceneId}
@@ -712,6 +717,8 @@ export default function GameOrchestrator() {
           questMarkers={minimapQuestMarkers}
         />
       )}
+
+      {introOpening3dActive && <IntroCutsceneOverlays />}
 
       <MoralCompassHUD />
       <LootNotification />

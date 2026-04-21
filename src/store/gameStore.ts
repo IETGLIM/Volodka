@@ -32,6 +32,7 @@ import {
   LOCAL_SAVE_WARN_BYTES,
 } from '@/lib/persistedGameSnapshot';
 import { getExplorationLivePlayerPositionOrNull } from '@/lib/explorationLivePlayerBridge';
+import { useGamePhaseStore } from '@/store/gamePhaseStore';
 
 export type TravelToSceneResult =
   | { ok: true }
@@ -1275,6 +1276,7 @@ export const useGameStore = create<GameState>()((set, get) => ({
           ...normalized,
           phase: 'game'
         });
+        useGamePhaseStore.getState().completeIntroCutscene();
         eventBus.emit('game:loaded', { timestamp: Date.now() });
         return true;
       } catch {
@@ -1309,7 +1311,9 @@ export const useGameStore = create<GameState>()((set, get) => ({
       factionReputations: INITIAL_FACTION_REPUTATIONS,
       choiceLog: [],
     });
-    
+
+    useGamePhaseStore.getState().completeIntroCutscene();
+
     if (storage) {
       storage.removeItem(SAVE_KEY);
     }
