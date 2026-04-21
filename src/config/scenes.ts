@@ -1,6 +1,7 @@
 // src/config/scenes.ts
 import type { SceneId } from '@/data/types';
 import type { PlayerPosition } from '@/data/rpgTypes';
+import { PLAYER_GLB_TARGET_VISUAL_METERS } from '@/lib/playerScaleConstants';
 
 export interface NPCConfig {
   id: string;
@@ -56,6 +57,12 @@ export interface SceneConfig {
    * Если не задано — выводится из итогового масштаба персонажа (как пара 0.52 / 0.9 у `volodka_room`).
    */
   explorationLocomotionScale?: number;
+  /**
+   * Целевая высота визуала GLB **игрока** в метрах сцены (см. `PhysicsPlayer` / `GLBPlayerModel`).
+   * По умолчанию `PLAYER_GLB_TARGET_VISUAL_METERS` (~1.38). В узких комнатах уменьшайте явно — иначе
+   * `explorationCharacterModelScale` почти не меняет размер (доминирует `target / bboxHeight`).
+   */
+  explorationPlayerGltfTargetMeters?: number;
 }
 
 function inferredExplorationLocomotionFromCharacter(characterScale: number): number {
@@ -580,9 +587,11 @@ export const SCENE_CONFIG = {
      * Игрок чуть меньше NPC — меньше «ботинок в кадре» при узкой орбите; NPC остаются читабельными.
      * См. пресет камеры `zarema_albert_room` в `RPGGameCanvas`.
      */
-    explorationCharacterModelScale: 0.48,
+    explorationCharacterModelScale: 0.44,
     explorationNpcModelScale: 0.52,
-    explorationLocomotionScale: 0.88,
+    explorationLocomotionScale: 0.86,
+    /** Явная привязка к сцене: без этого `visualModelScale` слабо влияет на итоговый uniform GLB. */
+    explorationPlayerGltfTargetMeters: 0.88,
     size: [10, 8],
     spawnPoint: { x: 0, y: 1, z: 0, rotation: 0 } as PlayerPosition,  // центр комнаты
     ambientLight: { intensity: 0.8, color: '#ffd93d' },  // усилен свет
@@ -668,6 +677,12 @@ export function getExplorationLocomotionScale(sceneId: SceneId): number {
   if (!entry) return 1;
   if (entry.explorationLocomotionScale != null) return entry.explorationLocomotionScale;
   return inferredExplorationLocomotionFromCharacter(getExplorationCharacterModelScale(sceneId));
+}
+
+/** Целевая высота GLB игрока в метрах сцены для `sceneId` (см. `explorationPlayerGltfTargetMeters` в `SCENE_CONFIG`). */
+export function getExplorationPlayerGltfTargetMeters(sceneId: SceneId): number {
+  const entry = SCENE_CONFIG[sceneId];
+  return entry?.explorationPlayerGltfTargetMeters ?? PLAYER_GLB_TARGET_VISUAL_METERS;
 }
 
 export const getInteractiveObjectsForScene = (sceneId: SceneId): InteractiveObjectConfig[] => {

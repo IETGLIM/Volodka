@@ -47,6 +47,7 @@ import {
   getExplorationCharacterModelScale,
   getExplorationLocomotionScale,
   getExplorationNpcModelScale,
+  getExplorationPlayerGltfTargetMeters,
   type InteractiveObjectConfig,
 } from '@/config/scenes';
 
@@ -302,6 +303,11 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
   );
 
   const explorationNpcModelScale = useMemo(() => getExplorationNpcModelScale(sceneId), [sceneId]);
+
+  const explorationPlayerGltfTargetMeters = useMemo(
+    () => getExplorationPlayerGltfTargetMeters(sceneId),
+    [sceneId],
+  );
 
   const findNavPath = useMemo(() => {
     const [fw, , fd] = groundGeometryArgs;
@@ -678,6 +684,7 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
             initialRotation={explorationSpawnSnapshot.rotation ?? 0}
             modelPath={getDefaultPlayerModelPath()}
             visualModelScale={explorationCharacterModelScale}
+            playerGltfTargetMeters={explorationPlayerGltfTargetMeters}
             locomotionScale={explorationLocomotionScale}
             onPositionChange={handlePositionChange}
             onInteraction={handlePlayerInteraction}

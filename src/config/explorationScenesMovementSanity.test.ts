@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { SCENE_CONFIG, getExplorationCharacterModelScale, getExplorationLocomotionScale } from './scenes';
+import {
+  SCENE_CONFIG,
+  getExplorationCharacterModelScale,
+  getExplorationLocomotionScale,
+  getExplorationPlayerGltfTargetMeters,
+} from './scenes';
 
 /**
  * Шаг 5 (автоматическая часть): по всем локациям из `SCENE_CONFIG` проверяются данные,
@@ -15,12 +20,16 @@ describe('exploration scenes movement / scale sanity (step 5 automation)', () =>
   it.each(sceneIds)('scene %s — exploration scales finite and in sane range', (sceneId) => {
     const ch = getExplorationCharacterModelScale(sceneId);
     const loc = getExplorationLocomotionScale(sceneId);
+    const gltfTarget = getExplorationPlayerGltfTargetMeters(sceneId);
     expect(Number.isFinite(ch), `character scale for ${sceneId}`).toBe(true);
     expect(Number.isFinite(loc), `locomotion scale for ${sceneId}`).toBe(true);
+    expect(Number.isFinite(gltfTarget), `player GLB target meters for ${sceneId}`).toBe(true);
     expect(ch, `character scale > 0 for ${sceneId}`).toBeGreaterThan(0.15);
     expect(ch, `character scale < 3 for ${sceneId}`).toBeLessThan(3);
     expect(loc, `locomotion scale > 0 for ${sceneId}`).toBeGreaterThan(0.1);
     expect(loc, `locomotion scale < 3 for ${sceneId}`).toBeLessThan(3);
+    expect(gltfTarget, `player GLB target > 0.45 for ${sceneId}`).toBeGreaterThan(0.45);
+    expect(gltfTarget, `player GLB target < 2 for ${sceneId}`).toBeLessThan(2);
   });
 
   it.each(sceneIds)('scene %s — spawn point and room size look usable for physics', (sceneId) => {

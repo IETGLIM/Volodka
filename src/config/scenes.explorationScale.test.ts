@@ -3,9 +3,11 @@ import {
   getExplorationCharacterModelScale,
   getExplorationLocomotionScale,
   getExplorationNpcModelScale,
+  getExplorationPlayerGltfTargetMeters,
   sanitizeExplorationSceneId,
   suggestInteriorCharacterModelScale,
 } from './scenes';
+import { PLAYER_GLB_TARGET_VISUAL_METERS } from '@/lib/playerScaleConstants';
 
 describe('getExplorationCharacterModelScale', () => {
   it('returns >1 for wide plaza streets', () => {
@@ -48,6 +50,20 @@ describe('sanitizeExplorationSceneId', () => {
     expect(sanitizeExplorationSceneId('typo_scene')).toBe('volodka_room');
     expect(sanitizeExplorationSceneId(null)).toBe('volodka_room');
     expect(sanitizeExplorationSceneId(123)).toBe('volodka_room');
+  });
+});
+
+describe('getExplorationPlayerGltfTargetMeters', () => {
+  it('zarema_albert_room overrides GLB target height below global default', () => {
+    expect(getExplorationPlayerGltfTargetMeters('zarema_albert_room')).toBe(0.88);
+    expect(getExplorationPlayerGltfTargetMeters('zarema_albert_room')).toBeLessThan(
+      PLAYER_GLB_TARGET_VISUAL_METERS,
+    );
+  });
+
+  it('falls back to PLAYER_GLB_TARGET_VISUAL_METERS when scene has no override', () => {
+    expect(getExplorationPlayerGltfTargetMeters('volodka_room')).toBe(PLAYER_GLB_TARGET_VISUAL_METERS);
+    expect(getExplorationPlayerGltfTargetMeters('server_room')).toBe(PLAYER_GLB_TARGET_VISUAL_METERS);
   });
 });
 

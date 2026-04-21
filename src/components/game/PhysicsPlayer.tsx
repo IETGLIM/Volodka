@@ -38,9 +38,14 @@ export interface PhysicsPlayerProps {
   modelPath?: string;
   /**
    * Масштаб персонажа в помещении (`getExplorationCharacterModelScale`):
-   * умножает капсулу Rapier и целевой размер GLB после автоподгонки по bounding box.
+   * умножает капсулу Rapier и множитель в формуле uniform GLB `(targetMeters / bboxH) * visualModelScale`.
    */
   visualModelScale?: number;
+  /**
+   * Целевая высота GLB в метрах сцены (`getExplorationPlayerGltfTargetMeters(sceneId)` из `RPGGameCanvas`).
+   * По умолчанию `PLAYER_GLB_TARGET_VISUAL_METERS`.
+   */
+  playerGltfTargetMeters?: number;
   /** Множитель ходьбы/бега/прыжка; см. `getExplorationLocomotionScale`. */
   locomotionScale?: number;
   /** Позиция и yaw модели каждый кадр (для камеры / ресета без отставания от стора). */
@@ -217,14 +222,17 @@ const GLBPlayerModel = memo(function GLBPlayerModel({
   isLocked,
   onError,
   roomScale,
+  targetVisualMeters,
 }: {
   modelPath: string;
   isMoving: boolean;
   isRunning: boolean;
   isLocked: boolean;
   onError: () => void;
-  /** Множитель комнаты; итоговая высота ≈ `PLAYER_GLB_TARGET_VISUAL_METERS * roomScale`. */
+  /** Множитель комнаты; итоговая высота ≈ `targetVisualMeters * roomScale` (после деления на bbox). */
   roomScale: number;
+  /** Целевая высота визуала в метрах сцены (из `SCENE_CONFIG` или дефолт). */
+  targetVisualMeters: number;
 }) {
   const groupRef = useRef<THREE.Group>(null);
   const { scene: loadedScene, animations } = useGLTF(modelPath) as any;
@@ -290,8 +298,8 @@ const GLBPlayerModel = memo(function GLBPlayerModel({
     const scratch = new THREE.Vector3();
     const h = getGltfSkinnedVisualHeightMeters(loadedScene, scratch);
     if (h < 1e-4) return 0.12 * rs;
-    return (PLAYER_GLB_TARGET_VISUAL_METERS / h) * rs;
-  }, [loadedScene, rs]);
+    return (targetVisualMeters / h) * rs;
+  }, [loadedScene, rs, targetVisualMeters]);
 
   useEffect(() => {
     const act = actionsRef.current;
@@ -388,6 +396,7 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
     position = [0, 0.06, 3],
     modelPath,
     visualModelScale = 1,
+    playerGltfTargetMeters = PLAYER_GLB_TARGET_VISUAL_METERS,
     locomotionScale = 1,
     onPositionChange,
     onInteraction,
@@ -802,6 +811,7 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
                 isLocked={isLocked}
                 onError={handleModelError}
                 roomScale={roomScale}
+                targetVisualMeters={playerGltfTargetMeters}
               />
             ) : (
               <FallbackPlayerModel isMoving={isMoving} isLocked={isLocked} roomScale={roomScale} />
