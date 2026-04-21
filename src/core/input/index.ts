@@ -1,3 +1,2 @@
-export { PlayerInputController } from './InputController';
-export type { PlayerControls } from './playerControlsTypes';
-export { DEFAULT_PLAYER_CONTROLS } from './playerControlsTypes';
+/** Shim: реализация в `@/engine/input`. */
+export * from '@/engine/input';

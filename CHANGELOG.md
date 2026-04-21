@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+### Changed
+
+- **Архитектура / runtime (`engine`)**: реализация физики, ввода и камеры перенесена в `**src/engine/physics**`, `**src/engine/input**`, `**src/engine/camera**`; в `**src/core/physics**`, `**src/core/input**`, `**src/core/camera**` оставлены shims (`export *` на `@/engine/...`) для совместимости импортов.
+- **EventBus**: канонический модуль `**src/engine/events/EventBus.ts**` (типы из `**@/shared/types/game**`); `**src/shared/engine/EventBus.ts**` — re-export; `**src/engine/EventBus.ts**` и `**src/shared/ecs/index.ts**` ссылаются на канон. В `**EventMap**` добавлены `**exploration:interaction_detected**` / `**exploration:interaction_resolved**` для пайплайна detection → resolve → execute.
+- **ECS**: в `**src/shared/ecs/index.ts**` — `**ECSWorld.update(deltaMs?)**` (опциональный явный шаг в мс), фазы `**fixedUpdate**` / `**lateUpdate**`, у `**ISystem**` опциональные `**fixedUpdate?**` / `**lateUpdate?**`; `**src/ecs/systems/SystemsRunner.ts**` — накопитель fixed **60 Hz** в мс + вызов variable `**update**` / `**lateUpdate**` с `**delta**` из R3F (секунды → мс внутри раннера). Заготовки систем: `**CameraSystem**` (**100**), `**InteractionSystem**` (**80**), `**AISystem**` (**50**).
+- **Обход / Canvas**: в `**RPGGameCanvas**` — `**<Physics>`** снаружи общего `**<Suspense>`**; `**PhysicsSceneColliders**` до Suspense (коллайдеры не ждут GLB); постобработка/частицы/следы после `**</Physics>`**. Тик ECS: `**ExplorationSystemsTick**` (`**useFrame**` → `**SystemsRunner.update(delta)**`).
+- **Фича-слой обхода**: `**src/features/exploration/ExplorationController.ts**` — `**mountExplorationController**` (подписки на шину без лезания в ECS), монтирование из `**RPGGameCanvas**`.
+- **`useCoreLoopPhase`**: тип `**EventMap**` импортируется из `**@/engine/events/EventBus**`.
+
 ### Removed
 
 - **Мёртвый код обхода**: удалён неиспользуемый `**PhysicsRPGCanvas.tsx**` (ни один импорт в приложении); из `**RoomEnvironment.tsx**` — обёртка `**PhysicsExplorationRoomVisual**` (использовалась только этим канвасом). В `**PhysicsPlayer.tsx**` — неиспользуемая локальная `**getRootCharacterVisualHeightMeters**` (масштаб через `**getGltfSkinnedVisualHeightMeters**`). В `**config/scenes.ts**` — неиспользуемый экспорт `**getNPCsForScene**` (дублировал имя с `**data/npcDefinitions**`); список NPC из конфига сцены — через `**getSceneConfig(sceneId).npcs**`.
@@ -21,6 +30,7 @@
 
 ### Added
 
+- **ECS / движок (каркас)**: публичный вход `**src/ecs/index.ts**`, `**src/ecs/systems/**` (`**SystemsRunner**`, заготовки `**CameraSystem**` / `**InteractionSystem**` / `**AISystem**`), компонент `**ExplorationSystemsTick.tsx**`; заготовка `**src/engine/debug/DebugPanel.ts**`.
 - **Скрипт архива для разбора**: `**scripts/pack-volodka-analysis-archive.ps1**` — ZIP в `**archives/volodka-analysis-archive-*.zip**` (интро, обход, `**storyNodes**` / триггеры / заставки-оверлеи, ключевой UI); внутри `**README-ANALYSIS-BUNDLE.txt**`.
 - **Обход / фаза и интро**: стор `**gamePhaseStore.ts**` (`gameplay` / `intro_cutscene`, подписи, оверлей лифта), `**IntroCutsceneCinematicDirector**` — таймлайн камеры и телепорты в `**volodka_room**`, спуск **10→3**, финал в `**zarema_albert_room**` (`**introVolodkaOpeningCutscene.ts**`); `**IntroCutsceneOverlays**` в `**GameOrchestrator**`; после текстового `**IntroScreen**` — `**handleIntroComplete**` (`**useGameSessionFlow**`) ставит игрока за стол и запускает 3D-интро; `**RPGGameCanvas**` — режиссёр при `**intro_cutscene**`, синхрон `**livePlayerPositionRef**` при телепортах; мини-карта скрыта на время интро; `**resetGame**` / загрузка сейва сбрасывают фазу интро.
 - **Обход / первая локация**: NPC `**volodka_dima_neighbor`** (Дима с пятого) в `**volodka_room`**; четыре короткие аниме-заставки в `**animeCutscenes.ts`** и триггеры по E у окна, стола, дивана и двери в `**triggerZones.ts**`. После первого тика физики — оверлей `**ExplorationBriefingOverlay`** с явными инструкциями (WASD, E, зоны заставок).

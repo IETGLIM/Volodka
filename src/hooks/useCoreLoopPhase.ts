@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { eventBus } from '@/engine/EventBus';
 import type { CoreLoopState } from '@/engine/CoreLoop';
-import type { EventMap } from '@/shared/engine/EventBus';
+import type { EventMap } from '@/engine/events/EventBus';
 
 // ============================================
 // ТИПЫ

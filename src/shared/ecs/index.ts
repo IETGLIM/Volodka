@@ -11,7 +11,7 @@
 // НЕ overengineered — читаемый, совместимый
 // с текущей архитектурой.
 
-import { eventBus, type EventMap } from '../engine/EventBus';
+import { eventBus, type EventMap } from '@/engine/events/EventBus';
 
 // ============================================
 // CORE TYPES
@@ -47,7 +47,10 @@ export interface SystemContext {
   queryAll: (...componentTypes: string[]) => EntityId[];
   /** Emit an event via the event bus (только известные ключи EventMap — без `as never`). */
   emit: <K extends keyof EventMap>(event: K, payload: EventMap[K]) => void;
-  /** Delta time since last update (ms) */
+  /**
+   * Интервал текущего фазы апдейта в **миллисекундах** (variable step в `update` / `lateUpdate`
+   * или фиксированный шаг в `fixedUpdate`).
+   */
   deltaTime: number;
 }
 
@@ -59,6 +62,10 @@ export interface ISystem {
   readonly priority: SystemPriority;
   /** Update the system */
   update(ctx: SystemContext): void;
+  /** Фиксированный шаг (~60 Гц), накапливается в `SystemsRunner`. */
+  fixedUpdate?(ctx: SystemContext): void;
+  /** После всех `update` в том же кадре. */
+  lateUpdate?(ctx: SystemContext): void;
   /** Initialize the system (called once) */
   init?(ctx: SystemContext): void;
   /** Clean up the system */
@@ -279,13 +286,8 @@ export class ECSWorld {
   // UPDATE LOOP
   // ========================================
 
-  /** Update all systems */
-  update(): void {
-    const now = Date.now();
-    const deltaTime = now - this.lastUpdateTime;
-    this.lastUpdateTime = now;
-
-    const ctx: SystemContext = {
+  private makeContext(deltaTime: number): SystemContext {
+    return {
       getComponent: <T extends Component>(entityId: EntityId, type: string) =>
         this.getComponent<T>(entityId, type),
       setComponent: (entityId: EntityId, component: Component) =>
@@ -299,6 +301,24 @@ export class ECSWorld {
       emit: (event, payload) => eventBus.emit(event, payload),
       deltaTime,
     };
+  }
+
+  /**
+   * Variable-step update всех систем.
+   * @param deltaMs если передан — используется как `ctx.deltaTime` (мс); иначе считается от `Date.now()`.
+   */
+  update(deltaMs?: number): void {
+    let dt: number;
+    if (deltaMs !== undefined) {
+      dt = deltaMs;
+      this.lastUpdateTime = Date.now();
+    } else {
+      const now = Date.now();
+      dt = now - this.lastUpdateTime;
+      this.lastUpdateTime = now;
+    }
+
+    const ctx = this.makeContext(dt);
 
     for (const system of this.systems) {
       try {
@@ -309,22 +329,32 @@ export class ECSWorld {
     }
   }
 
+  /** Фиксированный подшаг (мс), вызывается из `SystemsRunner` ноль или несколько раз за кадр. */
+  fixedUpdate(fixedStepMs: number): void {
+    const ctx = this.makeContext(fixedStepMs);
+    for (const system of this.systems) {
+      try {
+        system.fixedUpdate?.(ctx);
+      } catch (err) {
+        console.error(`[ECS] Error in fixedUpdate "${system.name}":`, err);
+      }
+    }
+  }
+
+  lateUpdate(deltaMs: number): void {
+    const ctx = this.makeContext(deltaMs);
+    for (const system of this.systems) {
+      try {
+        system.lateUpdate?.(ctx);
+      } catch (err) {
+        console.error(`[ECS] Error in lateUpdate "${system.name}":`, err);
+      }
+    }
+  }
+
   /** Initialize all systems */
   init(): void {
-    const ctx: SystemContext = {
-      getComponent: <T extends Component>(entityId: EntityId, type: string) =>
-        this.getComponent<T>(entityId, type),
-      setComponent: (entityId: EntityId, component: Component) =>
-        this.setComponent(entityId, component),
-      removeComponent: (entityId: EntityId, type: string) =>
-        this.removeComponent(entityId, type),
-      hasComponent: (entityId: EntityId, type: string) =>
-        this.hasComponent(entityId, type),
-      query: (...types: string[]) => this.query(...types),
-      queryAll: (...types: string[]) => this.queryAll(...types),
-      emit: (event, payload) => eventBus.emit(event, payload),
-      deltaTime: 0,
-    };
+    const ctx = this.makeContext(0);
 
     for (const system of this.systems) {
       system.init?.(ctx);

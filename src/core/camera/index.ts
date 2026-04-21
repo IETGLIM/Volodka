@@ -1,2 +1,2 @@
-export { cameraDamp } from './CameraController';
-export type { CameraFollowParams, ExplorationCameraMode } from './CameraController';
+/** Shim: реализация в `@/engine/camera`. */
+export * from '@/engine/camera';

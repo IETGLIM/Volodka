@@ -1,8 +1,7 @@
 // ============================================
-// EVENT BUS — Re-export from shared/engine
+// EVENT BUS — Re-export from engine/events
 // ============================================
-// Обратная совместимость: старые импорты
-// `@/engine/EventBus` продолжают работать.
+// Обратная совместимость: `@/engine/EventBus` и `@/engine/events/EventBus`.
 
 export {
   eventBus,
@@ -14,4 +13,4 @@ export {
   type PostEmitMiddleware,
   type StatBusId,
   type SfxBusType,
-} from '@/shared/engine/EventBus';
+} from '@/engine/events/EventBus';

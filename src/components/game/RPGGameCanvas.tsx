@@ -71,6 +71,8 @@ import { ExplorationParticles } from '@/components/game/exploration/ExplorationP
 import { ExplorationFootprints } from '@/components/game/exploration/ExplorationFootprints';
 import { PanelDistrictBuildings } from '@/components/game/exploration/PanelDistrictBuildings';
 import { ExplorationFrameStats, useExplorationFrameStatsEnabled } from '@/components/game/exploration/ExplorationFrameStats';
+import { ExplorationSystemsTick } from '@/components/game/exploration/ExplorationSystemsTick';
+import { mountExplorationController } from '@/features/exploration/ExplorationController';
 import { ExplorationMobileHud } from './ExplorationMobileHud';
 import { RadialMenu, type RadialMenuAction } from './RadialMenu';
 import { getExplorationRadialMenuActions } from '@/lib/explorationRadialMenuActions';
@@ -166,6 +168,10 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
 
   useEffect(() => {
     registerBaseInteractions();
+  }, []);
+
+  useEffect(() => {
+    return mountExplorationController();
   }, []);
 
   const npcStates = useGameStore((s) => s.exploration.npcStates);
@@ -572,21 +578,21 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
     >
       <PerformanceMonitor />
       {/*
-        Порядок внутри Suspense: Rapier (пол/стены) → визуалы интерьера (userData.noCameraCollision для raycast камеры)
-        → SceneColliderSelector (невидимые меши слоя камеры) → игрок/NPC → триггеры → FollowCamera → эффекты.
-        PostFX вне Physics, но в Canvas — отдельный render pass.
+        Rapier **вне** Suspense: коллайдеры и шаг мира не зависят от загрузки GLB.
+        Внутри Physics → Suspense только для ассетов/мешей, которые могут suspend.
+        PostFX / частицы — в Canvas после Physics (без Rapier).
       */}
-      <Suspense fallback={<ThreeCanvasSuspenseFallback />}>
-        {explorationWebGlLog && <ExplorationWebGlContextLog />}
-        {explorationMeshAudit && <ExplorationMeshWorldAudit sceneId={sceneId} />}
+      {explorationWebGlLog && <ExplorationWebGlContextLog />}
+      {explorationMeshAudit && <ExplorationMeshWorldAudit sceneId={sceneId} />}
       <Physics timeStep={1 / 60} gravity={[0, -9.81, 0]} debug={rapierColliderDebug}>
+        <ExplorationSystemsTick />
         <ExplorationWorldClock />
         {/*
-          Пол + стены Rapier — здесь же визуал пола в `PhysicsFloor` (`PhysicsSceneColliders`).
-          Отдельный box-пол сверху убран: иначе z-fight и расхождение с реальными размерами пола по сцене.
+          Пол + стены Rapier — вне Suspense: подвисший GLB не задерживает коллайдеры.
+          Визуал пола в `PhysicsFloor` (`PhysicsSceneColliders`).
         */}
         <PhysicsSceneColliders sceneId={sceneId} />
-
+        <Suspense fallback={<ThreeCanvasSuspenseFallback />}>
         {/* Интерьер квартиры в обходе (раньше был только в VN-слое — без стен сцена читалась как «чёрная дыра»). */}
         {sceneId === 'volodka_corridor' && <VolodkaCorridorVisual />}
         {sceneId === 'volodka_room' && <VolodkaRoomVisual />}
@@ -725,17 +731,17 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
           stability={playerState.stability}
           creativity={playerState.creativity}
         />
+        </Suspense>
       </Physics>
-        <ExplorationPostFX
-          sceneId={sceneId}
-          visualLite={visualLite}
-          stress={playerState.stress}
-          compactIndoor={isNarrowApartment}
-        />
-        <ExplorationParticles sceneId={sceneId} timeOfDay={timeOfDay} visualLite={visualLite} />
-        <ExplorationFootprints sceneId={sceneId} />
-        {showExplorationStats && <ExplorationFrameStats />}
-      </Suspense>
+      <ExplorationPostFX
+        sceneId={sceneId}
+        visualLite={visualLite}
+        stress={playerState.stress}
+        compactIndoor={isNarrowApartment}
+      />
+      <ExplorationParticles sceneId={sceneId} timeOfDay={timeOfDay} visualLite={visualLite} />
+      <ExplorationFootprints sceneId={sceneId} />
+      {showExplorationStats && <ExplorationFrameStats />}
     </Canvas>
     <InteractionHint
       enabled={!playerInputLocked}
