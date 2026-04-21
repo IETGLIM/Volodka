@@ -747,7 +747,7 @@ interface NPCProps {
   onInteraction: (npcId: string) => void;
   onStateChange: (state: NPCState) => void;
   isDialogueActive: boolean;
-  /** Множитель из `getExplorationCharacterModelScale(currentSceneId)` — адаптация под локацию. */
+  /** Множитель из `getExplorationNpcModelScale(currentSceneId)` (или свой `explorationNpcModelScale` в сцене). */
   locationModelScale?: number;
   /** Множитель скорости патруля; `getExplorationLocomotionScale`. */
   locationLocomotionScale?: number;
@@ -1374,7 +1374,7 @@ interface NPCSystemProps {
   isDialogueActive: boolean;
   currentSceneId: SceneId;
   timeOfDay: number;
-  /** См. `getExplorationCharacterModelScale` в `config/scenes`. */
+  /** См. `getExplorationNpcModelScale` в `config/scenes`. */
   locationModelScale?: number;
   /** См. `getExplorationLocomotionScale`. */
   locationLocomotionScale?: number;

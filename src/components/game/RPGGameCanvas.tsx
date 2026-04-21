@@ -46,6 +46,7 @@ import {
   getInteractiveObjectsForScene,
   getExplorationCharacterModelScale,
   getExplorationLocomotionScale,
+  getExplorationNpcModelScale,
   type InteractiveObjectConfig,
 } from '@/config/scenes';
 
@@ -300,6 +301,8 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
     [sceneId],
   );
 
+  const explorationNpcModelScale = useMemo(() => getExplorationNpcModelScale(sceneId), [sceneId]);
+
   const findNavPath = useMemo(() => {
     const [fw, , fd] = groundGeometryArgs;
     const api = createFloorNavPathfinder(fw, fd);
@@ -308,7 +311,10 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
 
   const isPanelDistrict = sceneId === 'street_night' || sceneId === 'street_winter';
   const isNarrowApartment =
-    sceneId === 'volodka_room' || sceneId === 'volodka_corridor' || sceneId === 'home_evening';
+    sceneId === 'volodka_room' ||
+    sceneId === 'volodka_corridor' ||
+    sceneId === 'home_evening' ||
+    sceneId === 'zarema_albert_room';
 
   const followCameraProps = useMemo(() => {
     if (sceneId === 'volodka_corridor') {
@@ -676,7 +682,7 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
           isDialogueActive={isDialogueActive}
           currentSceneId={sceneId}
           timeOfDay={timeOfDay}
-          locationModelScale={explorationCharacterModelScale}
+          locationModelScale={explorationNpcModelScale}
           locationLocomotionScale={explorationLocomotionScale}
           enableNpcPhysics
           findNavPath={findNavPath}

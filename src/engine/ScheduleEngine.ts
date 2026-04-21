@@ -33,7 +33,7 @@ export function isHourInRange(timeOfDay: number, startHour: number, endHour: num
  * Диалог недоступен при `sleep` (иконка 😴 в `NPC.tsx`).
  */
 const NPC_SCHEDULES: Record<string, ScheduleEntry[]> = {
-  /** Альберт: ночь дома → утро в комнате → офис → кофе → библиотека / парк → вечер у подъезда → сон. */
+  /** Альберт: ночь дома → утро в комнате → офис → кафе днём → парк → вечер кафе → дом с Заремой → сон. */
   albert: [
     {
       startHour: 23,
@@ -77,14 +77,22 @@ const NPC_SCHEDULES: Record<string, ScheduleEntry[]> = {
     },
     {
       startHour: 18,
-      endHour: 23,
+      endHour: 20,
       sceneId: 'cafe_evening',
       position: { x: 0.6, y: 0, z: -3.4 },
       activity: 'work',
       dialogueAvailable: true,
     },
+    {
+      startHour: 20,
+      endHour: 23,
+      sceneId: 'zarema_albert_room',
+      position: { x: 2.2, y: 0, z: -0.8 },
+      activity: 'rest',
+      dialogueAvailable: true,
+    },
   ],
-  /** Зарема: сон дома → подъезд / соседи → парк и книги → кафе → вечер на улице → дом отдохнуть. */
+  /** Зарема: сон дома → утро у подъезда → дом Володьки / парк / кафе → вечер дома с Альбертом (квартира). */
   zarema: [
     {
       startHour: 23,
@@ -136,17 +144,9 @@ const NPC_SCHEDULES: Record<string, ScheduleEntry[]> = {
     },
     {
       startHour: 19,
-      endHour: 21,
-      sceneId: 'street_night',
-      position: { x: -3, y: 0, z: -1.5 },
-      activity: 'walk',
-      dialogueAvailable: true,
-    },
-    {
-      startHour: 21,
       endHour: 23,
       sceneId: 'zarema_albert_room',
-      position: { x: -0.8, y: 0, z: -0.6 },
+      position: { x: -0.85, y: 0, z: -0.55 },
       activity: 'rest',
       dialogueAvailable: true,
     },

@@ -43,15 +43,32 @@ export interface SceneConfig {
   interactiveObjects: InteractiveObjectConfig[];
   backgroundMusic?: string;
   /**
-   * Множитель визуального масштаба персонажей в 3D-исследовании для этой локации.
-   * Итог: NPC `(npc.scale ?? 1) * explorationCharacterModelScale`, игрок — визуал × тот же коэффициент (коллайдер без изменений).
+   * Множитель визуального масштаба **игрока** в 3D-исследовании для этой локации (если не задано — 1).
+   * Для новых узких интерьеров см. `suggestInteriorCharacterModelScale(max(size))` по эталону `volodka_room`.
    */
   explorationCharacterModelScale?: number;
   /**
+   * Отдельный множитель визуала NPC в обходе; если не задан — как у игрока (`explorationCharacterModelScale` / авто).
+   */
+  explorationNpcModelScale?: number;
+  /**
    * Множитель скорости ходьбы/бега игрока и патруля NPC в 3D-исследовании (коллайдеры без изменений).
-   * По умолчанию 1, если не задано.
+   * Если не задано — выводится из итогового масштаба персонажа (как пара 0.52 / 0.9 у `volodka_room`).
    */
   explorationLocomotionScale?: number;
+}
+
+function inferredExplorationLocomotionFromCharacter(characterScale: number): number {
+  return Math.min(1.05, Math.max(0.78, 0.72 + characterScale * 0.35));
+}
+
+/**
+ * Подсказка масштаба персонажей для **новых** узких интерьеров: эталон `volodka_room` (max габарит пола ~14 м → 0.52).
+ * Подставьте в `SCENE_CONFIG.*.explorationCharacterModelScale` при заведении локации.
+ */
+export function suggestInteriorCharacterModelScale(maxFloorDimensionMeters: number): number {
+  const d = Math.max(6, maxFloorDimensionMeters);
+  return Math.min(0.82, Math.max(0.45, 0.52 * (14 / d)));
 }
 
 export const SCENE_CONFIG = {
@@ -97,7 +114,10 @@ export const SCENE_CONFIG = {
   },
   
   kitchen_dawn: {
-    id: 'kitchen_dawn', name: 'Кухня (рассвет)', size: [14, 14],
+    id: 'kitchen_dawn',
+    name: 'Кухня (рассвет)',
+    explorationLocomotionScale: 1,
+    size: [14, 14],
     spawnPoint: { x: 0, y: 1, z: 3, rotation: 0 } as PlayerPosition,
     ambientLight: { intensity: 0.6, color: '#ffddaa' },
     npcs: [],
@@ -105,7 +125,10 @@ export const SCENE_CONFIG = {
   },
   
   home_morning: {
-    id: 'home_morning', name: 'Дом (утро)', size: [14, 14],
+    id: 'home_morning',
+    name: 'Дом (утро)',
+    explorationLocomotionScale: 1,
+    size: [14, 14],
     spawnPoint: { x: 0, y: 1, z: 3, rotation: 0 } as PlayerPosition,
     ambientLight: { intensity: 0.5, color: '#ffffff' }, npcs: [], interactiveObjects: [],
   },
@@ -551,7 +574,12 @@ export const SCENE_CONFIG = {
   },
   
   zarema_albert_room: {
-    id: 'zarema_albert_room', name: 'Комната Заремы и Альберта', explorationCharacterModelScale: 0.94, explorationLocomotionScale: 0.92, size: [10, 8],
+    id: 'zarema_albert_room',
+    name: 'Комната Заремы и Альберта',
+    /** Как у `volodka_room` / `home_evening` — узкая «панель», иначе GLB «перевешивают» комнату. */
+    explorationCharacterModelScale: 0.52,
+    explorationLocomotionScale: 0.9,
+    size: [10, 8],
     spawnPoint: { x: 0, y: 1, z: 0, rotation: 0 } as PlayerPosition,  // центр комнаты
     ambientLight: { intensity: 0.8, color: '#ffd93d' },  // усилен свет
     npcs: [
@@ -613,18 +641,28 @@ export const getSceneConfig = (sceneId: SceneId): SceneConfig => {
   return SCENE_CONFIG[sceneId] ?? SCENE_CONFIG.kitchen_night!;
 };
 
-/** Множитель визуала персонажей в 3D-исследовании для `sceneId` (1, если не задано в `SCENE_CONFIG`). */
+/** Множитель визуала игрока в 3D-исследовании для `sceneId` (1, если не задано в `SCENE_CONFIG`). */
 export function getExplorationCharacterModelScale(sceneId: SceneId): number {
   const entry = SCENE_CONFIG[sceneId];
   if (!entry) return 1;
   return entry.explorationCharacterModelScale ?? 1;
 }
 
-/** Множитель скорости в 3D-исследовании для `sceneId` (1, если не задано в `SCENE_CONFIG`). */
+/**
+ * Множитель визуала NPC в обходе: по умолчанию совпадает с игроком; можно задать `explorationNpcModelScale` только для NPC.
+ */
+export function getExplorationNpcModelScale(sceneId: SceneId): number {
+  const entry = SCENE_CONFIG[sceneId];
+  if (!entry) return 1;
+  return entry.explorationNpcModelScale ?? getExplorationCharacterModelScale(sceneId);
+}
+
+/** Множитель скорости в 3D-исследовании для `sceneId` (из масштаба персонажа, если не задано явно). */
 export function getExplorationLocomotionScale(sceneId: SceneId): number {
   const entry = SCENE_CONFIG[sceneId];
   if (!entry) return 1;
-  return entry.explorationLocomotionScale ?? 1;
+  if (entry.explorationLocomotionScale != null) return entry.explorationLocomotionScale;
+  return inferredExplorationLocomotionFromCharacter(getExplorationCharacterModelScale(sceneId));
 }
 
 export const getInteractiveObjectsForScene = (sceneId: SceneId): InteractiveObjectConfig[] => {

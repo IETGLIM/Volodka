@@ -25,7 +25,13 @@ describe('ScheduleEngine routines', () => {
     expect(getCurrentScheduleEntry('albert', 12.5)?.sceneId).toBe('library');
     expect(getCurrentScheduleEntry('albert', 14)?.sceneId).toBe('library');
     expect(getCurrentScheduleEntry('albert', 17)?.sceneId).toBe('memorial_park');
-    expect(getCurrentScheduleEntry('albert', 20)?.sceneId).toBe('cafe_evening');
+    expect(getCurrentScheduleEntry('albert', 20)?.sceneId).toBe('zarema_albert_room');
+  });
+
+  it('at hour 20 Zarema and Albert are both in zarema_albert_room (home cards)', () => {
+    const home = getNPCsForScene('zarema_albert_room', 20);
+    expect(home.some((n) => n.id === 'zarema_home')).toBe(true);
+    expect(home.some((n) => n.id === 'albert_home')).toBe(true);
   });
 
   it('getNPCsForScene with time includes NPCs visiting from schedule', () => {

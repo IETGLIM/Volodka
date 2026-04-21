@@ -125,7 +125,10 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
     },
   },
 
-  /** Та же пара — в интерьере комнаты (сцена `zarema_albert_room`), модели из `models-external`. */
+  /**
+   * Интерьер `zarema_albert_room`: карточка `zarema_home` (не путать с `zarema` на улице).
+   * Видимость в обходе — `getNPCsForScene` + расписание канона `zarema` (`ScheduleEngine`); масштаб GLB — `getExplorationNpcModelScale` из `config/scenes`.
+   */
   zarema_home: {
     id: 'zarema_home',
     name: 'Заремушка (мама, жена Альберта)',
@@ -169,6 +172,7 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
     },
   },
 
+  /** Пара `zarema_home` в квартире; канон расписания — `albert`. */
   albert_home: {
     id: 'albert_home',
     name: 'Альберт',

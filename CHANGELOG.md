@@ -4,6 +4,8 @@
 
 ### Changed
 
+- **Обход / квартира Заремы и Альберта**: масштаб игрока и NPC как у `**volodka_room**` (**0.52** / локомоция **0.9**); `**getExplorationNpcModelScale**` + опциональный `**explorationNpcModelScale**` в `**SceneConfig**`, `**suggestInteriorCharacterModelScale**` для новых интерьеров; вечером (**19–23** и **20–23**) оба в `**zarema_albert_room**` по расписанию (`**ScheduleEngine**`) — карточки `**zarema_home**` / `**albert_home**` в `**npcDefinitions.ts**`; `**RPGGameCanvas**` — узкая квартира в `**isNarrowApartment**` для камеры/тумана.
+
 - **Обход / 3D-интро (плавность и атмосфера)**: траектория Володьки — `**INTRO_PLAYER_PATH_KEYFRAMES**` + `**sampleIntroPlayerPose**` (`**introVolodkaOpeningCutscene.ts**`); `**IntroCutsceneCinematicDirector**` пишет позу в мост, `**PhysicsPlayer**` в `**intro_cutscene**` задаёт `**setNextKinematicTranslation**` и синхронизирует walk/run по `**horizontalSpeed**`; в `**volodka_room**` — матричные экраны и процедурные текстуры стола/стен (`**VolodkaRoomVisual**`); на время интро список NPC в `**RPGGameCanvas**` пустой; постFX включается флагом из канваса.
 
 - **Архитектура / runtime (`engine`)**: реализация физики, ввода и камеры перенесена в `**src/engine/physics`**, `**src/engine/input`**, `**src/engine/camera**`; в `**src/core/physics**`, `**src/core/input**`, `**src/core/camera**` оставлены shims (`export *` на `@/engine/...`) для совместимости импортов.

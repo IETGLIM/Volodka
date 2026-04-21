@@ -2,7 +2,9 @@ import { describe, expect, it } from 'vitest';
 import {
   getExplorationCharacterModelScale,
   getExplorationLocomotionScale,
+  getExplorationNpcModelScale,
   sanitizeExplorationSceneId,
+  suggestInteriorCharacterModelScale,
 } from './scenes';
 
 describe('getExplorationCharacterModelScale', () => {
@@ -14,6 +16,20 @@ describe('getExplorationCharacterModelScale', () => {
   it('returns <1 for compact indoor kitchen', () => {
     expect(getExplorationCharacterModelScale('kitchen_night')).toBeLessThan(1);
     expect(getExplorationCharacterModelScale('volodka_corridor')).toBeLessThan(1);
+  });
+
+  it('zarema_albert_room matches volodka_room character scale for consistent apartment feel', () => {
+    expect(getExplorationCharacterModelScale('zarema_albert_room')).toBe(
+      getExplorationCharacterModelScale('volodka_room'),
+    );
+  });
+
+  it('getExplorationNpcModelScale defaults to character scale', () => {
+    expect(getExplorationNpcModelScale('volodka_room')).toBe(getExplorationCharacterModelScale('volodka_room'));
+  });
+
+  it('suggestInteriorCharacterModelScale decreases as room footprint grows', () => {
+    expect(suggestInteriorCharacterModelScale(8)).toBeGreaterThan(suggestInteriorCharacterModelScale(14));
   });
 
   it('defaults to 1 for unknown scene ids', () => {
