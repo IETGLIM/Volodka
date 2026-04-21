@@ -10,14 +10,12 @@ export const PLAYER_GLB_TARGET_VISUAL_METERS = 1.38;
 export const PLAYER_FEET_SPAWN_Y = 0.06;
 
 /**
- * Нижняя граница высоты bbox в делителе: SkinnedMesh в bind pose часто даёт заниженную коробку (≈0.55–0.75 м),
- * из‑за чего `(target / h) * roomScale` раздувает модель до «колосса». См. clamp у NPC в `NPC.tsx`.
+ * Минимальный / максимальный uniform scale визуала игрока (как clamp у NPC в `NPC.tsx`):
+ * заниженный bbox SkinnedMesh даёт большой raw — ограничиваем сверху, **не** подменяя делитель константой
+ * (пол в делителе завышал модель там, где bbox уже был корректным ~0.6–0.8 м).
  */
-export const PLAYER_GLTF_BOUNDING_HEIGHT_FLOOR_M = 0.92;
-
-/** Минимальный / максимальный uniform scale визуала игрока (защита от битого bbox и от артефактов). */
 export const PLAYER_GLB_VISUAL_UNIFORM_MIN = 0.045;
-export const PLAYER_GLB_VISUAL_UNIFORM_MAX = 1.62;
+export const PLAYER_GLB_VISUAL_UNIFORM_MAX = 1.32;
 
 /**
  * Единая формула uniform для GLB игрока в обходе (метры сцены).
@@ -27,7 +25,11 @@ export function computeExplorationPlayerGlbUniformFromBBox(
   targetVisualMeters: number,
   roomScale: number,
 ): number {
-  const h = Math.max(bboxHeightMeters, PLAYER_GLTF_BOUNDING_HEIGHT_FLOOR_M);
+  const rsSafe = Number.isFinite(roomScale) ? Math.max(0.28, Math.min(1.25, roomScale)) : 1;
+  if (!Number.isFinite(bboxHeightMeters) || !Number.isFinite(targetVisualMeters) || !Number.isFinite(roomScale)) {
+    return 0.12 * rsSafe;
+  }
+  const h = Math.max(bboxHeightMeters, 1e-4);
   const raw = (targetVisualMeters / h) * roomScale;
   if (raw < PLAYER_GLB_VISUAL_UNIFORM_MIN) return PLAYER_GLB_VISUAL_UNIFORM_MIN;
   if (raw > PLAYER_GLB_VISUAL_UNIFORM_MAX) return PLAYER_GLB_VISUAL_UNIFORM_MAX;
