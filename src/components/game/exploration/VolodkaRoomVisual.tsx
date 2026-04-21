@@ -8,6 +8,7 @@ import {
   createVolodkaWallTexture,
   createVolodkaWoodTexture,
 } from '@/components/game/exploration/volodkaRoomProceduralTextures';
+import { MatrixRainScreenMesh } from '@/components/game/exploration/MatrixRainScreenMesh';
 
 /**
  * Комната Володьки в обходе: панелька, удалёнка (два ноутбука, стойка мониторов — как `scenes.ts` / коллайдеры).
@@ -203,13 +204,15 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual() {
             polygonOffsetUnits={1}
           />
         </mesh>
+        {/* Ноутбук: матовая крышка + лёгкий cyan с подсветки экранов */}
         <mesh position={[0.15, 0.52, 0.42]} castShadow>
           <boxGeometry args={[0.5, 0.28, 0.025]} />
           <meshStandardMaterial
-            color="#f4e6c2"
-            emissive="#c9b87a"
-            emissiveIntensity={0.06}
-            roughness={0.5}
+            color="#1a2430"
+            emissive="#0ea5e9"
+            emissiveIntensity={0.08}
+            roughness={0.55}
+            metalness={0.25}
             depthWrite
             depthTest
             polygonOffset
@@ -217,34 +220,29 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual() {
             polygonOffsetUnits={1}
           />
         </mesh>
-        <mesh position={[0.52, 0.52, -0.38]} castShadow>
-          <boxGeometry args={[0.2, 0.24, 0.02]} />
-          <meshStandardMaterial
-            color="#c0392b"
-            emissive="#7f1d1d"
-            emissiveIntensity={0.12}
-            roughness={0.45}
-            depthWrite
-            depthTest
-            polygonOffset
-            polygonOffsetFactor={1}
-            polygonOffsetUnits={1}
-          />
-        </mesh>
-        <mesh position={[0.52, 0.52, 0.38]} castShadow>
-          <boxGeometry args={[0.2, 0.24, 0.02]} />
-          <meshStandardMaterial
-            color="#2980b9"
-            emissive="#1d4ed8"
-            emissiveIntensity={0.1}
-            roughness={0.45}
-            depthWrite
-            depthTest
-            polygonOffset
-            polygonOffsetFactor={1}
-            polygonOffsetUnits={1}
-          />
-        </mesh>
+        {/* Два монитора: матричный дождь на CanvasTexture */}
+        <group position={[0.52, 0.52, -0.38]}>
+          <mesh position={[0, 0, -0.014]}>
+            <boxGeometry args={[0.22, 0.26, 0.024]} />
+            <meshStandardMaterial color="#0b0f0c" roughness={0.75} metalness={0.35} />
+          </mesh>
+          <group position={[0, 0, 0.013]} rotation={[0, Math.PI, 0]}>
+            <MatrixRainScreenMesh seed={41} width={0.17} height={0.22} emissiveIntensity={1.25} />
+          </group>
+          <pointLight position={[0, 0, 0.35]} intensity={0.45} color="#4ade80" distance={1.2} decay={2} />
+        </group>
+        <group position={[0.52, 0.52, 0.38]}>
+          <mesh position={[0, 0, -0.014]}>
+            <boxGeometry args={[0.22, 0.26, 0.024]} />
+            <meshStandardMaterial color="#0b0f0c" roughness={0.75} metalness={0.35} />
+          </mesh>
+          <group position={[0, 0, 0.013]} rotation={[0, Math.PI, 0]}>
+            <MatrixRainScreenMesh seed={73} width={0.17} height={0.22} emissiveIntensity={1.2} />
+          </group>
+          <pointLight position={[0, 0, 0.35]} intensity={0.42} color="#22d3ee" distance={1.15} decay={2} />
+        </group>
+        <pointLight position={[2.9, 1.85, 0.25]} intensity={0.62} color="#7dd3fc" distance={6} decay={2} />
+        <pointLight position={[3.85, 1.65, -0.6]} intensity={0.38} color="#fdba74" distance={5} decay={2} />
       </group>
 
       <group position={[0.8, 0.45, -2.8]}>

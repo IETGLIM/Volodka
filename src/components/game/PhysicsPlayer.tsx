@@ -26,6 +26,8 @@ import { isExplorationPlayerDebugPrimitiveEnabled } from '@/lib/explorationPlaye
 import { isExplorationPlayerLocomotionLogEnabled } from '@/lib/explorationDiagnostics';
 import { getExplorationCameraOrbitYawRad } from '@/lib/explorationCameraOrbitBridge';
 import { useGameStore } from '@/store/gameStore';
+import { useGamePhaseStore } from '@/store/gamePhaseStore';
+import { getIntroCutscenePlayerPose } from '@/lib/introCutscenePlayerBridge';
 
 // ============================================
 // TYPES
@@ -556,6 +558,15 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
     const cc = characterControllerRef.current;
     if (!rb || !cc) return;
 
+    if (useGamePhaseStore.getState().phase === 'intro_cutscene') {
+      const cut = getIntroCutscenePlayerPose();
+      if (cut) {
+        rb.setNextKinematicTranslation({ x: cut.x, y: cut.y, z: cut.z });
+        rotationRef.current = cut.rotation;
+        return;
+      }
+    }
+
     if (isLockedRef.current) {
       const t = rb.translation();
       rb.setNextKinematicTranslation({ x: t.x, y: t.y, z: t.z });
@@ -637,6 +648,36 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
     }
 
     if (isLockedRef.current) {
+      if (useGamePhaseStore.getState().phase === 'intro_cutscene') {
+        const cut = getIntroCutscenePlayerPose();
+        if (cut) {
+          const walk = cut.horizontalSpeed > 0.12;
+          const run = cut.horizontalSpeed > 2.35;
+          if (walk !== isMovingSyncRef.current) {
+            isMovingSyncRef.current = walk;
+            moveActiveRef.current = walk;
+            setIsMoving(walk);
+          }
+          if (run !== isRunningSyncRef.current) {
+            isRunningSyncRef.current = run;
+            setIsRunning(run);
+          }
+          if (modelRef.current) {
+            modelRef.current.rotation.y = rotationRef.current;
+          }
+          moveYawRef.current = -getExplorationCameraOrbitYawRad();
+          if (onPositionChange) {
+            onPositionChange({
+              x: cut.x,
+              y: cut.y,
+              z: cut.z,
+              rotation: rotationRef.current,
+            });
+          }
+          return;
+        }
+      }
+
       if (isMovingSyncRef.current) {
         isMovingSyncRef.current = false;
         moveActiveRef.current = false;

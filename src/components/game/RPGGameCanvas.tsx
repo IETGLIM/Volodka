@@ -82,6 +82,7 @@ import { createFloorNavPathfinder } from '@/lib/explorationNavMesh';
 import { BattleClickLayer } from './BattleClickLayer';
 import { VolodkaCorridorVisual } from './exploration/VolodkaCorridorVisual';
 import { VolodkaRoomVisual } from './exploration/VolodkaRoomVisual';
+import { ZaremaAlbertExplorationVisual } from './exploration/ZaremaAlbertExplorationVisual';
 import { HomeEveningVisual } from './exploration/HomeEveningVisual';
 import { NpcProximityBarks } from './NpcProximityBarks';
 import { ExplorationBriefingOverlay } from '@/components/game/exploration/ExplorationBriefingOverlay';
@@ -381,10 +382,12 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
   }, [sceneId, isPanelDistrict]);
 
   // Get NPCs and triggers for current scene
-  const sceneNPCs = useMemo(
-    () => getNPCsForScene(sceneId, timeOfDay),
-    [sceneId, timeOfDay],
-  );
+  const sceneNPCs = useMemo((): NPCDefinition[] => {
+    if (explorationPhase === 'intro_cutscene') {
+      return [];
+    }
+    return getNPCsForScene(sceneId, timeOfDay);
+  }, [explorationPhase, sceneId, timeOfDay]);
 
   const sceneInteractiveObjects = useMemo(() => getInteractiveObjectsForScene(sceneId), [sceneId]);
   const sceneTriggers = useMemo(() => getTriggersForScene(sceneId), [sceneId]);
@@ -596,6 +599,7 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
         {/* Интерьер квартиры в обходе (раньше был только в VN-слое — без стен сцена читалась как «чёрная дыра»). */}
         {sceneId === 'volodka_corridor' && <VolodkaCorridorVisual />}
         {sceneId === 'volodka_room' && <VolodkaRoomVisual />}
+        {sceneId === 'zarema_albert_room' && <ZaremaAlbertExplorationVisual />}
         {sceneId === 'home_evening' && <HomeEveningVisual />}
 
         {isPanelDistrict && <PanelDistrictBuildings />}
@@ -738,6 +742,7 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
         visualLite={visualLite}
         stress={playerState.stress}
         compactIndoor={isNarrowApartment}
+        cinematicIntro={introCutsceneActive}
       />
       <ExplorationParticles sceneId={sceneId} timeOfDay={timeOfDay} visualLite={visualLite} />
       <ExplorationFootprints sceneId={sceneId} />

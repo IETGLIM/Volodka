@@ -5,9 +5,10 @@ import { useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 import { setExplorationCameraOrbitYawRad } from '@/lib/explorationCameraOrbitBridge';
 import { useGamePhaseStore } from '@/store/gamePhaseStore';
-import { useGameStore } from '@/store/gameStore';
 import { explorationNarrativeTeleport } from '@/lib/explorationNarrativeTeleport';
 import { eventBus } from '@/engine/EventBus';
+import { audioEngine } from '@/engine/AudioEngine';
+import { setIntroCutscenePlayerPose } from '@/lib/introCutscenePlayerBridge';
 import {
   INTRO_OPENING_CAM_KEYFRAMES,
   INTRO_OPENING_END_SCENE_ID,
@@ -15,17 +16,15 @@ import {
   INTRO_OPENING_ZAREMA_SPAWN,
   INTRO_ELEVATOR_OVERLAY_END_SEC,
   INTRO_ELEVATOR_OVERLAY_START_SEC,
+  sampleIntroPlayerPose,
 } from '@/lib/introVolodkaOpeningCutscene';
+import { IntroElevatorShaftVisual } from '@/components/game/exploration/IntroElevatorShaftVisual';
 
 const INTRO_CAMERA_R3F_PRIORITY = 55;
 
 const tmpCam = new THREE.Vector3();
 const tmpLook = new THREE.Vector3();
 const tmpScratch = new THREE.Vector3();
-
-function lerpVec3(out: THREE.Vector3, a: THREE.Vector3, b: THREE.Vector3, u: number): THREE.Vector3 {
-  return out.copy(a).lerp(b, u);
-}
 
 function sampleCamera(elapsed: number): { cam: THREE.Vector3; look: THREE.Vector3 } {
   const kf = INTRO_OPENING_CAM_KEYFRAMES;
@@ -62,26 +61,33 @@ function sampleCamera(elapsed: number): { cam: THREE.Vector3; look: THREE.Vector
  */
 export function IntroCutsceneCinematicDirector() {
   const phase = useGamePhaseStore((s) => s.phase);
+  const introElevatorOverlay = useGamePhaseStore((s) => s.introElevatorOverlay);
   const { camera } = useThree();
   const startMsRef = useRef<number | null>(null);
   const finishedRef = useRef(false);
-  const lastPlayerKeyframeRef = useRef(-1);
   const setIntroCaption = useGamePhaseStore((s) => s.setIntroCaption);
   const setIntroElevatorOverlay = useGamePhaseStore((s) => s.setIntroElevatorOverlay);
   const completeIntroCutscene = useGamePhaseStore((s) => s.completeIntroCutscene);
   const lastCaptionSentRef = useRef<string | undefined>(undefined);
   const lastElevatorOverlayRef = useRef<boolean | undefined>(undefined);
+  const playedAmbientRef = useRef(false);
+  const playedLiftRef = useRef(false);
 
   useEffect(() => {
     if (phase !== 'intro_cutscene') {
       startMsRef.current = null;
+      setIntroCutscenePlayerPose(null);
       return;
     }
     finishedRef.current = false;
-    lastPlayerKeyframeRef.current = -1;
     lastCaptionSentRef.current = undefined;
     lastElevatorOverlayRef.current = undefined;
+    playedAmbientRef.current = false;
+    playedLiftRef.current = false;
     startMsRef.current = performance.now();
+    return () => {
+      setIntroCutscenePlayerPose(null);
+    };
   }, [phase]);
 
   useFrame(() => {
@@ -96,28 +102,25 @@ export function IntroCutsceneCinematicDirector() {
     const dz = camera.position.z - look.z;
     setExplorationCameraOrbitYawRad(Math.atan2(dx, dz));
 
+    const { pose, horizontalSpeed } = sampleIntroPlayerPose(elapsed);
+    setIntroCutscenePlayerPose({ ...pose, horizontalSpeed });
+
+    if (!playedAmbientRef.current && elapsed > 0.35) {
+      playedAmbientRef.current = true;
+      audioEngine.playSfx('radio_static', 0.12);
+    }
+
     const elevatorOn = elapsed >= INTRO_ELEVATOR_OVERLAY_START_SEC && elapsed < INTRO_ELEVATOR_OVERLAY_END_SEC;
     if (lastElevatorOverlayRef.current !== elevatorOn) {
       lastElevatorOverlayRef.current = elevatorOn;
       setIntroElevatorOverlay(elevatorOn);
     }
-
-    const kf = INTRO_OPENING_CAM_KEYFRAMES;
-    for (let i = 0; i < kf.length; i += 1) {
-      if (kf[i].player == null) continue;
-      if (elapsed < kf[i].tSec - 1e-3) continue;
-      if (lastPlayerKeyframeRef.current >= i) continue;
-      lastPlayerKeyframeRef.current = i;
-      const p = kf[i].player!;
-      useGameStore.setState((s) => ({
-        exploration: {
-          ...s.exploration,
-          playerPosition: { x: p.x, y: p.y, z: p.z, rotation: p.rotation },
-          lastSceneTransition: Date.now(),
-        },
-      }));
+    if (elevatorOn && !playedLiftRef.current) {
+      playedLiftRef.current = true;
+      audioEngine.playSfx('ui', 0.22);
     }
 
+    const kf = INTRO_OPENING_CAM_KEYFRAMES;
     let derivedCaption: string | null | undefined;
     for (const k of kf) {
       if (elapsed + 1e-3 < k.tSec) break;
@@ -135,6 +138,7 @@ export function IntroCutsceneCinematicDirector() {
 
     if (elapsed >= INTRO_OPENING_FINISH_SEC) {
       finishedRef.current = true;
+      setIntroCutscenePlayerPose(null);
       setIntroCaption(null);
       setIntroElevatorOverlay(false);
       explorationNarrativeTeleport(INTRO_OPENING_END_SCENE_ID, { ...INTRO_OPENING_ZAREMA_SPAWN });
@@ -145,5 +149,7 @@ export function IntroCutsceneCinematicDirector() {
     }
   }, INTRO_CAMERA_R3F_PRIORITY);
 
-  return null;
+  if (phase !== 'intro_cutscene') return null;
+
+  return <IntroElevatorShaftVisual active={introElevatorOverlay} />;
 }
