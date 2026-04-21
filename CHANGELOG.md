@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- **Обход / камера и масштаб игрока**: жёстче clamp uniform GLB (**`PLAYER_GLB_VISUAL_UNIFORM_MAX` 1.06**); на мешах GLB игрока выставлен **`userData.isPlayer`** (луч коллизий камеры не цепляется за скин); пресет **`FollowCamera`** для **`volodka_room`** — дальше **`distance`**, выше **`height`** / **`lookAtHeightOffset`**, больше **`minDistance`** и **`collisionRayOriginY`**, чтобы не «нырять» в ботинки у стен.
+
 ### Changed
 
 - **Визуал и камера (`zarema_albert_room`)**: пресет `FollowCamera` под узкую квартиру (раньше срабатывал общий пресет с большой высотой → «ботинок в кадре»); масштаб игрока **0.38** и NPC **0.52** через `**explorationNpcModelScale**`; для GLB игрока — `**explorationPlayerGltfTargetMeters**` (**0.78** м) → `**playerGltfTargetMeters**` в `**PhysicsPlayer**`; uniform считается через `**computeExplorationPlayerGlbUniformFromBBox**` (только clamp raw по bbox, без искусственного пола в делителе — иначе при корректном bbox ~0.6–0.8 м модель раздувалась во всех сценах); `**zarema_home**` / `**albert_home**` без GLB — процедурные `**BaristaModel**` / `**ColleagueModel**` + TODO на финальные модели; позиции и триггер Заремы синхронизированы с вечерним расписанием; `**ZaremaAlbertExplorationVisual**` — зеркало Альберта и тёплый свет у зеркала. Ранее: `**getExplorationNpcModelScale**`, `**suggestInteriorCharacterModelScale**`, вечер дома в `**ScheduleEngine**`, `**isNarrowApartment**` в `**RPGGameCanvas**`.

@@ -286,6 +286,8 @@ const GLBPlayerModel = memo(function GLBPlayerModel({
         if (m.isMesh) {
           m.castShadow = true;
           m.receiveShadow = true;
+          /** Луч коллизий камеры поднимается от `target + collisionRayOriginY`; без флага на листьях GLB луч может зацепить скин. */
+          m.userData.isPlayer = true;
         }
       });
       applyGltfExplorationCharacterMaterialPolicies(loadedScene);
