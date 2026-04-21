@@ -587,11 +587,11 @@ export const SCENE_CONFIG = {
      * Игрок чуть меньше NPC — меньше «ботинок в кадре» при узкой орбите; NPC остаются читабельными.
      * См. пресет камеры `zarema_albert_room` в `RPGGameCanvas`.
      */
-    explorationCharacterModelScale: 0.44,
+    explorationCharacterModelScale: 0.38,
     explorationNpcModelScale: 0.52,
     explorationLocomotionScale: 0.86,
     /** Явная привязка к сцене: без этого `visualModelScale` слабо влияет на итоговый uniform GLB. */
-    explorationPlayerGltfTargetMeters: 0.88,
+    explorationPlayerGltfTargetMeters: 0.78,
     size: [10, 8],
     spawnPoint: { x: 0, y: 1, z: 0, rotation: 0 } as PlayerPosition,  // центр комнаты
     ambientLight: { intensity: 0.8, color: '#ffd93d' },  // усилен свет

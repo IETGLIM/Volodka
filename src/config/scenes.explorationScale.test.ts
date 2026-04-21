@@ -55,7 +55,7 @@ describe('sanitizeExplorationSceneId', () => {
 
 describe('getExplorationPlayerGltfTargetMeters', () => {
   it('zarema_albert_room overrides GLB target height below global default', () => {
-    expect(getExplorationPlayerGltfTargetMeters('zarema_albert_room')).toBe(0.88);
+    expect(getExplorationPlayerGltfTargetMeters('zarema_albert_room')).toBe(0.78);
     expect(getExplorationPlayerGltfTargetMeters('zarema_albert_room')).toBeLessThan(
       PLAYER_GLB_TARGET_VISUAL_METERS,
     );

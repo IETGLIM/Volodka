@@ -16,7 +16,10 @@ import {
 } from '@/core/physics/CharacterController';
 import { usePlayerFootsteps } from '@/hooks/usePlayerFootsteps';
 import { getDefaultPlayerModelPath, isValidPlayerGlbPath, rewriteLegacyModelPath } from '@/config/modelUrls';
-import { PLAYER_GLB_TARGET_VISUAL_METERS } from '@/lib/playerScaleConstants';
+import {
+  PLAYER_GLB_TARGET_VISUAL_METERS,
+  computeExplorationPlayerGlbUniformFromBBox,
+} from '@/lib/playerScaleConstants';
 import { getGltfSkinnedVisualHeightMeters } from '@/lib/gltfSkinnedBoundingHeight';
 import { retainGltfModelUrl, releaseGltfModelUrl } from '@/lib/gltfModelCache';
 import { applyGltfExplorationCharacterMaterialPolicies } from '@/lib/gltfCharacterMaterialPolicy';
@@ -298,7 +301,7 @@ const GLBPlayerModel = memo(function GLBPlayerModel({
     const scratch = new THREE.Vector3();
     const h = getGltfSkinnedVisualHeightMeters(loadedScene, scratch);
     if (h < 1e-4) return 0.12 * rs;
-    return (targetVisualMeters / h) * rs;
+    return computeExplorationPlayerGlbUniformFromBBox(h, targetVisualMeters, rs);
   }, [loadedScene, rs, targetVisualMeters]);
 
   useEffect(() => {
