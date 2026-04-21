@@ -14,9 +14,9 @@ import {
 import { DIALOGUE_NODES } from '@/data/npcDefinitions';
 import type { PlayerState, NPCRelation } from '@/data/types';
 import { asTrainablePlayerSkill } from '@/lib/trainablePlayerSkill';
-import { rememberDialogue } from '@/core/memory/MemoryEngine';
 import { useGameStore } from '@/store/gameStore';
 import { CyberSkillCheckResult, type SkillCheckBannerPayload } from './CyberSkillCheckResult';
+import { QuestAcceptedGlitchToast } from './QuestAcceptedGlitchToast';
 
 interface DialogueRendererProps {
   isOpen: boolean;
@@ -187,6 +187,7 @@ export default function DialogueRenderer({
   const [isTyping, setIsTyping] = useState(false);
   const [displayedText, setDisplayedText] = useState('');
   const [lastSkillCheck, setLastSkillCheck] = useState<SkillCheckBannerPayload | null>(null);
+  const [dimaQuestToastOpen, setDimaQuestToastOpen] = useState(false);
 
   const addStat = useGameStore(s => s.addStat);
   const addStress = useGameStore(s => s.addStress);
@@ -232,23 +233,20 @@ export default function DialogueRenderer({
     [playerState, npcRelations, flags, inventory, visitedNodes],
   );
 
-  const dialogueOpenKeyRef = useRef<string | null>(null);
-
   useEffect(() => {
     if (!isOpen) return;
     startDialogue(npcId, dialogueTree, dialogueContext);
   }, [isOpen, npcId, dialogueTree, dialogueContext]);
 
-  /** Нарративная память: один раз на открытие сессии (без дублей при смене контекста). */
+  /** Квестовое уведомление: старт разговора с Димой (ветка корня) — без внутренних id в UI диалога. */
   useEffect(() => {
     if (!isOpen) {
-      dialogueOpenKeyRef.current = null;
+      setDimaQuestToastOpen(false);
       return;
     }
-    const key = `${npcId}:${dialogueTree.id}`;
-    if (dialogueOpenKeyRef.current === key) return;
-    dialogueOpenKeyRef.current = key;
-    rememberDialogue(dialogueTree.id, 'neutral', npcId, 'open');
+    if (npcId === 'volodka_dima_neighbor' && dialogueTree.id === 'volodka_dima_root') {
+      setDimaQuestToastOpen(true);
+    }
   }, [isOpen, npcId, dialogueTree.id]);
 
   const typingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -284,9 +282,10 @@ export default function DialogueRenderer({
     }, 25);
   }, []);
 
+  const dismissDimaQuestToast = useCallback(() => setDimaQuestToastOpen(false), []);
+
   const closeDialogueSession = useCallback(() => {
     endDialogue(npcId, dialogueTree.id);
-    rememberDialogue(dialogueTree.id, 'neutral', npcId, 'close');
     onClose();
   }, [npcId, dialogueTree.id, onClose]);
 
@@ -372,11 +371,16 @@ export default function DialogueRenderer({
     <AnimatePresence>
       {isOpen && (
         <motion.div
-          className="fixed inset-0 z-50 flex items-end justify-center game-fm-layer game-fm-layer-promote"
+          className="fixed inset-0 z-50 flex items-end justify-center game-fm-layer game-fm-layer-promote font-[family-name:var(--font-geist-mono)]"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
         >
+          <QuestAcceptedGlitchToast
+            open={dimaQuestToastOpen}
+            body="Помочь соседу Диме: Grafana не должна будить весь подъезд. Реплики ниже — твой ответ."
+            onDismiss={dismissDimaQuestToast}
+          />
           {explorationLayout && (
             <>
               <div
@@ -401,22 +405,25 @@ export default function DialogueRenderer({
           <motion.div
             className={`relative mx-4 mb-4 w-full max-w-4xl game-fm-layer ${explorationLayout ? 'z-[53]' : ''}`}
             style={{ transformOrigin: 'bottom center' }}
-            initial={{ opacity: 0, scale: 0.985 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.985 }}
-            transition={{ type: 'tween', duration: 0.22, ease: 'easeOut' }}
+            initial={{ opacity: 0, scale: 0.97, skewX: -2 }}
+            animate={{ opacity: 1, scale: 1, skewX: 0 }}
+            exit={{ opacity: 0, scale: 0.97, skewX: 1.5 }}
+            transition={{ type: 'spring', stiffness: 380, damping: 32 }}
           >
             <div
-              className="bg-slate-950/95 backdrop-blur-md border border-cyan-500/30 shadow-2xl overflow-hidden terminal-border-pulse"
+              className="overflow-hidden border border-orange-500/35 bg-black/95 shadow-[0_0_32px_rgba(34,197,94,0.22),0_0_56px_rgba(251,146,60,0.08)] backdrop-blur-md terminal-border-pulse"
               style={{
                 clipPath: 'polygon(0 0, calc(100% - 16px) 0, 100% 16px, 100% 100%, 16px 100%, 0 calc(100% - 16px))',
               }}
             >
+              <div className="border-b border-emerald-500/25 bg-emerald-950/15 px-4 py-1.5">
+                <p className="text-[9px] uppercase tracking-[0.24em] text-emerald-400/85">
+                  VOLODKA_OS v.1.3 // USER: root // CONN: SECURE
+                </p>
+              </div>
               {explorationLayout && (
-                <div className="border-b border-cyan-500/20 bg-cyan-950/20 px-4 py-1.5">
-                  <p className="font-mono text-[10px] uppercase tracking-[0.28em] text-cyan-300/70">
-                    3D · обход · диалог
-                  </p>
+                <div className="border-b border-orange-500/15 bg-black/40 px-4 py-1">
+                  <p className="text-[9px] uppercase tracking-[0.2em] text-orange-300/55">CHANNEL: DIALOGUE // MODE: LIVE</p>
                 </div>
               )}
 
@@ -429,25 +436,26 @@ export default function DialogueRenderer({
               )}
 
               {/* Terminal header with NPC info */}
-              <div className="flex items-center gap-4 p-4 border-b border-cyan-500/10 bg-black/30">
+              <div className="flex items-center gap-4 border-b border-emerald-500/20 bg-black/50 p-4">
                 {/* NPC portrait with holographic frame */}
                 <HolographicPortrait npcName={npcName} npcColor={npcColor} />
 
                 <div className="flex-1">
-                  <h3 className={`font-mono font-bold ${npcNeonColor}`} style={{
-                    textShadow: '0 0 10px rgba(0, 255, 255, 0.3)',
-                  }}>
-                    &lt;{npcName}&gt;
+                  <h3
+                    className={`font-mono font-bold ${npcNeonColor}`}
+                    style={{
+                      textShadow: '0 0 12px rgba(52, 211, 153, 0.35)',
+                    }}
+                  >
+                    {npcName}
                   </h3>
-                  <p className="font-mono text-[10px] text-cyan-500/40 tracking-wider">
-                    volodka://dialogue/{npcId}
-                  </p>
+                  <p className="mt-0.5 text-[10px] tracking-wide text-emerald-600/50">INCOMING_SIGNAL</p>
                 </div>
 
                 {/* System status indicators */}
                 <div className="flex items-center gap-1.5">
-                  <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-                  <span className="font-mono text-[10px] text-green-500/50">АКТИВ</span>
+                  <div className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500" />
+                  <span className="text-[10px] text-emerald-500/60">LIVE</span>
                 </div>
 
                 <button

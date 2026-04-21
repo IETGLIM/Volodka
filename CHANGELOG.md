@@ -8,6 +8,8 @@
 
 ### Changed
 
+- **UI диалога (обход / VN)**: `**DialogueRenderer**` — терминальный хром (`VOLODKA_OS…`), неон, spring-«глитч», без путей `volodka://` и без записи в память «разговор начат/завершён»; `**MemoryLog**` — убраны видимые `@id` и `#теги`. Звук квеста — опционально `**/sounds/quest_notify.mp3**` (если файла нет, тост всё равно показывается).
+- **Обход / масштаб игрока в коридоре**: в `**scenes.ts**` для `**volodka_corridor**` — `**explorationCharacterModelScale**` **0.58** вместо **0.48** (читабельнее модель на узкой сцене).
 - **Обход / NPC в комнате Володьки (временно)**: без `**NEXT_PUBLIC_EXPLORATION_VOLODKA_NPC_GLB=1**` в `**volodka_room**` не грузится GLB — только `**FallbackNPCModel**` (`**NPC.tsx**`, `**explorationDiagnostics.ts**`).
 - **Обход / E2.2 радиальное меню и предметы**: `**getExplorationRadialMenuActions**` (`lib/explorationRadialMenuActions.ts`, тесты) — фильтр действий по объекту и сцене; `**RadialMenu**` — проп `**allowedActions**`, сетка 1×N / 2×N; `**RPGGameCanvas**` — подпись с `**itemId**`; при «Взять» — тост с именем предмета из `**data/items.ts**` (`**GameOrchestrator**`).
 - **Документация**: `**README.md**` — в блоке про 3D-обход добавлены пункты про брифинг (квесты, карма, камера и **R**), тост при первом диалоге из обхода и сглаженную GLB-локомоцию игрока/NPC; полный список по-прежнему в этом файле.
@@ -19,12 +21,15 @@
 
 ### Added
 
+- **Обход / фаза и интро**: стор `**gamePhaseStore.ts**` (`gameplay` / `intro_cutscene`), заготовка `**IntroCutsceneCinematicDirector**` в `**components/Cutscenes/IntroCutscene.tsx**` (плейсхолдеры мониторов + камера), в `**RPGGameCanvas**` — блокировка ввода при `**intro_cutscene**`, проп `**cutsceneActive**` у `**FollowCamera**`; тост `**QuestAcceptedGlitchToast**` при открытии диалога с Димой (корневая ветка).
 - **Обход / первая локация**: NPC `**volodka_dima_neighbor`** (Дима с пятого) в `**volodka_room`**; четыре короткие аниме-заставки в `**animeCutscenes.ts`** и триггеры по E у окна, стола, дивана и двери в `**triggerZones.ts**`. После первого тика физики — оверлей `**ExplorationBriefingOverlay`** с явными инструкциями (WASD, E, зоны заставок).
 - **Документ плана**: `**docs/exploration-expert-incremental-backlog.md`** — пошаговый экспертный бэклог по обходу (камера, квесты, мобильный ввод, интро и т.д.).
 - **Утилита GLB**: `**src/lib/gltfSkinnedBoundingHeight.ts`** + тест `**gltfSkinnedBoundingHeight.test.ts**`; `**PhysicsPlayer**` использует её вместо локального дубля bbox.
 
 ### Fixed
 
+- **Обход / S «крутит» камеру**: в `**PhysicsPlayer**` при `**backward**` без `**forward**` цель yaw визуала — противоположно вектору скорости (backpedal), чтобы орбита `**FollowCamera**` не догоняла разворот на 180°; у `**GLBPlayerModel**` — `**key**` по `**spawnSyncKey**` для стабильного ремаунта при смене сцены.
+- **Обход / проём двери в коридор**: в `**VolodkaRoomColliders**` — узкие боковые кубоиды у косяков южного проёма, меньше проскальзывания сквозь стык стен.
 - **Обход / провал при «проходе» в коридор без телепорта**: у `**VolodkaRoomColliders**` (Rapier + слой камеры в `**SceneColliders**`) пол глубже по **+Z**, боковые стены по глубине, южный «колпак» за проёмом двери; коридор — чуть длиннее пол (`**PhysicsSceneColliders**` / визу слой). Спавн из комнаты `**CORRIDOR_FROM_ROOM**` / `**scenes.volodka_corridor.spawnPoint**` сдвинут от южного проёма.
 - **Миникарта / квесты**: убрана ложная метка «зона» в центре `(0,0)`; в `**QuestObjective**` — опциональный `**mapHint**` (миникарта для целей с `**targetLocation**` без NPC); у `**main_goal.write_poems**` и `**exploration_zarema_hearth.hearth_moment**` заданы подсказки по сцене.
 - **Панель квестов**: обводка/фон/clip в духе HUD (cyan, mono), свёрнутая карточка — `**line-clamp-2**` вместо обрезки `**slice(0,50)**`.

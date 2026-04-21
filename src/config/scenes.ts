@@ -225,7 +225,8 @@ export const SCENE_CONFIG = {
   volodka_corridor: {
     id: 'volodka_corridor',
     name: 'Коридор',
-    explorationCharacterModelScale: 0.48,
+    /** Чуть крупнее узкой комнаты: 0.48 давало «пропавшего» персонажа на некоторых клиентах (кэш GLB / масштаб). */
+    explorationCharacterModelScale: 0.58,
     explorationLocomotionScale: 0.86,
     size: [3.5, 12],
     spawnPoint: { x: 0, y: 0.06, z: -3.92, rotation: 0 } as PlayerPosition,

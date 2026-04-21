@@ -277,6 +277,9 @@ export const VolodkaRoomColliders = memo(function VolodkaRoomColliders() {
       <PhysicsWall position={[hw, h / 2, 0]} size={[wallT, h, floorHalfZ * 2]} />
       <PhysicsWall position={[-4.12, h / 2, hd]} size={[5.9 + wallT, h, wallT]} />
       <PhysicsWall position={[4.12, h / 2, hd]} size={[5.9 + wallT, h, wallT]} />
+      {/* Косяки дверного проёма: узкий зазор у стыка с боковыми стенами — без доборных кубоидов капсула иногда «скользит» сквозь угол. */}
+      <PhysicsWall position={[-0.88, h / 2, hd - 0.12]} size={[0.26, h, 0.42]} />
+      <PhysicsWall position={[0.88, h / 2, hd - 0.12]} size={[0.26, h, 0.42]} />
       {/* Замыкает +Z за проёмом двери: без этого капсула проходит «в коридор» без телепорта и падает. */}
       <PhysicsWall position={[0, h / 2, hd + 1.35]} size={[14 + wallT * 2, h, wallT]} />
       <InstancedObstacles positions={deskMain} size={[1.45, 0.08, 0.78]} footstepMaterial="wood" />

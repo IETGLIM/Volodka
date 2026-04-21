@@ -677,7 +677,13 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
     }
 
     if (nextActive) {
-      const targetRotation = Math.atan2(hx, hz);
+      const ctrl = getControlsRef.current();
+      /** S без W: движение назад относительно камеры — не разворачивать модель «лицом в скорость», иначе орбита камеры догоняет yaw и кажется «кручением». */
+      const backNoForward = ctrl.backward && !ctrl.forward;
+      let targetRotation = Math.atan2(hx, hz);
+      if (backNoForward) {
+        targetRotation = Math.atan2(-hx, -hz);
+      }
       let prev = rotationRef.current;
       let diff = targetRotation - prev;
       while (diff > Math.PI) diff -= Math.PI * 2;
@@ -748,6 +754,7 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
           <Suspense fallback={<ThreeCanvasSuspenseFallback />}>
             {!modelError ? (
               <GLBPlayerModel
+                key={spawnSyncKey ?? modelPathToUse}
                 modelPath={modelPathToUse}
                 isMoving={isMoving}
                 isRunning={isRunning}

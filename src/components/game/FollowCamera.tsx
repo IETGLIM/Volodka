@@ -70,6 +70,10 @@ interface FollowCameraProps {
   dialogueSubjectPosition?: { x: number; y: number; z: number } | null;
   /** Смена сцены: мгновенно переставить орбиту сзади по yaw игрока (см. `RPGGameCanvas` → `sceneId`). */
   orbitResyncKey?: string;
+  /**
+   * Кат-сцена без диалогового кадра: не трогать камеру и орбиту — ими управляет `IntroCutsceneCinematicDirector`.
+   */
+  cutsceneActive?: boolean;
 }
 
 // ============================================
@@ -153,6 +157,7 @@ export default function FollowCamera({
   dialogueFraming = false,
   dialogueSubjectPosition = null,
   orbitResyncKey,
+  cutsceneActive = false,
 }: FollowCameraProps) {
   const { camera, scene, gl } = useThree();
   const currentTarget = useRef(new THREE.Vector3(0, 0, 0));
@@ -400,6 +405,9 @@ export default function FollowCamera({
 
   useFrame((_, delta) => {
     const dt = clampPhysicsTimestep(delta);
+    if (cutsceneActive && !(isLocked && dialogueFraming && dialogueSubjectPosition)) {
+      return;
+    }
     const live = targetPositionRef?.current;
     if (live) {
       frameTargetRef.current.set(live.x, live.y, live.z);

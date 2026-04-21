@@ -61,6 +61,7 @@ import CameraEffects from '../CameraEffects';
 
 // Store
 import { useGameStore } from '../../store/gameStore';
+import { useGamePhaseStore } from '@/store/gamePhaseStore';
 import { eventBus } from '@/engine/EventBus';
 import { getCurrentScheduleEntry } from '@/engine/ScheduleEngine';
 import { useIsMobile, useTouchGameControls } from '@/hooks/use-mobile';
@@ -82,6 +83,7 @@ import { VolodkaRoomVisual } from './exploration/VolodkaRoomVisual';
 import { HomeEveningVisual } from './exploration/HomeEveningVisual';
 import { NpcProximityBarks } from './NpcProximityBarks';
 import { ExplorationBriefingOverlay } from '@/components/game/exploration/ExplorationBriefingOverlay';
+import { IntroCutsceneCinematicDirector } from '@/components/Cutscenes/IntroCutscene';
 import { EXPLORATION_SCENE_FRAMELOOP, getExplorationSceneGlProps } from '@/components/3d/Scene';
 import { ExplorationLighting, getExplorationDirectionalShadowMapSize } from '@/components/3d/Lighting';
 import {
@@ -157,7 +159,10 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
   );
   const [explorationBriefingOpen, setExplorationBriefingOpen] = useState(false);
   const explorationBriefingPendingRef = useRef(true);
-  const interactionHintTick = useExplorationLivePlayerTick(!isDialogueActive, 120);
+  const explorationPhase = useGamePhaseStore((s) => s.phase);
+  const introCutsceneActive = explorationPhase === 'intro_cutscene';
+  const playerInputLocked = isDialogueActive || introCutsceneActive;
+  const interactionHintTick = useExplorationLivePlayerTick(!playerInputLocked, 120);
 
   useEffect(() => {
     registerBaseInteractions();
@@ -382,12 +387,12 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
       livePlayerPositionRef.current = next;
       playerPositionRef.current = next;
       updateExplorationLivePlayerPosition(next);
-      if (explorationBriefingPendingRef.current && !isDialogueActive) {
+      if (explorationBriefingPendingRef.current && !playerInputLocked) {
         explorationBriefingPendingRef.current = false;
         queueMicrotask(() => setExplorationBriefingOpen(true));
       }
     },
-    [isDialogueActive],
+    [playerInputLocked],
   );
 
   // Handle NPC state changes
@@ -420,7 +425,7 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
 
   // Handle player interaction (E / тач) — единый резолвер: триггер → объект vs NPC по дистанции
   const handlePlayerInteraction = useCallback(() => {
-    if (isDialogueActive) return;
+    if (playerInputLocked) return;
     if (explorationBriefingOpen) {
       setExplorationBriefingOpen(false);
       return;
@@ -507,7 +512,7 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
       onNPCInteraction(nearestNPC.id);
     }
   }, [
-    isDialogueActive,
+    playerInputLocked,
     sceneTriggers,
     triggerStates,
     handleTriggerEnter,
@@ -613,7 +618,7 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
             locomotionScale={explorationLocomotionScale}
             onPositionChange={handlePositionChange}
             onInteraction={handlePlayerInteraction}
-            isLocked={isDialogueActive}
+            isLocked={playerInputLocked}
             virtualControlsRef={virtualControlsRef}
           />
         ) : (
@@ -630,7 +635,7 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
             locomotionScale={explorationLocomotionScale}
             onPositionChange={handlePositionChange}
             onInteraction={handlePlayerInteraction}
-            isLocked={isDialogueActive}
+            isLocked={playerInputLocked}
             virtualControlsRef={virtualControlsRef}
           />
         )}
@@ -674,6 +679,8 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
           onInteractionAvailabilityChange={onInteractionAvailabilityChange}
         />
 
+        {sceneId === 'volodka_room' && <IntroCutsceneCinematicDirector />}
+
         <FollowCamera
           targetPosition={explorationSpawnSnapshot}
           targetPositionRef={livePlayerPositionRef}
@@ -689,10 +696,11 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
           maxDistance={followCameraProps.maxDistance}
           orbitResyncKey={sceneId}
           isLocked={isDialogueActive}
+          cutsceneActive={introCutsceneActive}
           dialogueFraming={Boolean(isDialogueActive && dialogueSubjectPosition)}
           dialogueSubjectPosition={dialogueSubjectPosition}
-          enableCollision={!isDialogueActive}
-          enableZoom={!isDialogueActive}
+          enableCollision={!isDialogueActive && !introCutsceneActive}
+          enableZoom={!isDialogueActive && !introCutsceneActive}
         />
 
         {/* Camera Effects */}
@@ -715,14 +723,14 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
       </Suspense>
     </Canvas>
     <InteractionHint
-      enabled={!isDialogueActive}
+      enabled={!playerInputLocked}
       tick={interactionHintTick}
       sceneTriggers={sceneTriggers}
       availableInteractionIds={availableInteractionIds}
       playerPositionRef={playerPositionRef}
     />
     <ExplorationMobileHud
-      active={showTouchHud && !isDialogueActive && !explorationBriefingOpen}
+      active={showTouchHud && !playerInputLocked && !explorationBriefingOpen}
       virtualControlsRef={virtualControlsRef}
       onInteract={handlePlayerInteraction}
     />

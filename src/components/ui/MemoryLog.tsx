@@ -98,17 +98,9 @@ export default function MemoryLog() {
           </time>
         </div>
         <p className="mt-1 text-[11px] leading-relaxed opacity-90">{m.description}</p>
-        <div className="mt-1.5 flex flex-wrap gap-1.5 font-mono text-[9px] uppercase tracking-wide opacity-75">
-          {m.relatedEntityId ? (
-            <span className="rounded bg-black/25 px-1.5 py-0.5">@{m.relatedEntityId}</span>
-          ) : null}
-          {m.tags?.map((t) => (
-            <span key={t} className="rounded bg-black/20 px-1.5 py-0.5">
-              #{t}
-            </span>
-          ))}
-          {m.persistent ? <span className="text-amber-200/90">★ значимое</span> : null}
-        </div>
+        {m.persistent ? (
+          <div className="mt-1.5 text-[9px] text-amber-200/90">★ значимое</div>
+        ) : null}
       </li>
     );
   };
