@@ -10,7 +10,7 @@ describe('intro opening GLB visual uniform extra multiplier', () => {
     const base = getExplorationPlayerGlbVisualUniformMultiplier('volodka_room');
     const intro = base * INTRO_OPENING_PLAYER_GLB_VISUAL_UNIFORM_EXTRA_MULTIPLIER;
     expect(intro).toBeLessThan(base);
-    expect(intro).toBeCloseTo(0.52 * INTRO_OPENING_PLAYER_GLB_VISUAL_UNIFORM_EXTRA_MULTIPLIER, 5);
+    expect(intro).toBeCloseTo(base * INTRO_OPENING_PLAYER_GLB_VISUAL_UNIFORM_EXTRA_MULTIPLIER, 5);
   });
 
   it('caps GLB target height in intro below volodka_room gameplay', () => {

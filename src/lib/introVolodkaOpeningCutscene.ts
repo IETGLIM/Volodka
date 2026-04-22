@@ -5,17 +5,17 @@ import { PLAYER_FEET_SPAWN_Y } from '@/lib/playerScaleConstants';
 import { smoothBlend01 } from '@/lib/cinematicEasing';
 
 /**
- * Целевая высота GLB (м сцены) в `intro_cutscene`: ниже, чем в `volodka_room` геймплее (**0.96**),
+ * Целевая высота GLB (м сцены) в `intro_cutscene`: ниже, чем в `volodka_room` геймплее,
  * иначе при близкой кинокамере силуэт всё равно доминирует кадр.
  */
-export const INTRO_OPENING_PLAYER_GLTF_TARGET_METERS = 0.74;
+export const INTRO_OPENING_PLAYER_GLTF_TARGET_METERS = 0.62;
 
 /**
  * Дополнительный множитель к `explorationPlayerGlbVisualUniformMultiplier` только на фазе `intro_cutscene`
  * (после bbox и целевой высоты выше).
  */
-/** Чуть ниже — при близкой кинокамере иначе силуэт «съедает» кадр. */
-export const INTRO_OPENING_PLAYER_GLB_VISUAL_UNIFORM_EXTRA_MULTIPLIER = 0.38;
+/** Доп. ужатие на интро-камере (TPS + киношный dolly). */
+export const INTRO_OPENING_PLAYER_GLB_VISUAL_UNIFORM_EXTRA_MULTIPLIER = 0.28;
 
 /** Сцена до финала 3D-интро (комната Володьки). */
 export const INTRO_OPENING_SCENE_ID: SceneId = 'volodka_room';

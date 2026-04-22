@@ -79,7 +79,7 @@ export interface SceneConfig {
   explorationPlayerGltfTargetMeters?: number;
   /**
    * Множитель к **итоговому** uniform GLB игрока после `computeExplorationPlayerGlbUniformFromBBox` (1 = как считает формула).
-   * Используйте, когда в проде визуально почти нет ответа на `target`/`roomScale` (bbox/кэш); например **0.52** в `volodka_room`.
+   * Используйте, когда в проде визуально почти нет ответа на `target`/`roomScale` (bbox/кэш); например **0.32** в `volodka_room`.
    */
   explorationPlayerGlbVisualUniformMultiplier?: number;
 }
@@ -164,9 +164,9 @@ export const SCENE_CONFIG = {
     explorationCharacterModelScale: 0.48,
     explorationInteriorCeilingMeters: 2.85,
     /** Ниже глобального 1.38: в узкой комнате иначе персонаж доминирует кадр при TPS. */
-    explorationPlayerGltfTargetMeters: 0.96,
-    /** Явный множитель меша поверх bbox-формулы — гарантирует видимое уменьшение в проде (Vercel). */
-    explorationPlayerGlbVisualUniformMultiplier: 0.52,
+    explorationPlayerGltfTargetMeters: 0.78,
+    /** Явный множитель меша поверх bbox-формулы — сильнее ужали силуэт (прод / близкая камера). */
+    explorationPlayerGlbVisualUniformMultiplier: 0.32,
     explorationLocomotionScale: 0.9,
     size: [14, 10],
     spawnPoint: { x: 2.2, y: 0.06, z: 1.8, rotation: 0 } as PlayerPosition,

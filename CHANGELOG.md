@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Changed
+
+- **Обход / масштаб GLB игрока в `volodka_room`:** `**explorationPlayerGltfTargetMeters**` **0.78**, `**explorationPlayerGlbVisualUniformMultiplier**` **0.32**; интро — целевая высота **0.62** м и доп. множитель **0.28** (`**introVolodkaOpeningCutscene**`).
+
 ### Fixed
 
 - **Обход / 3D-интро:** поза из `introCutscenePlayerBridge` больше не телепортирует RigidBody напрямую — шаг через `computeColliderMovement` (`PhysicsPlayer`), чтобы не проходить сквозь стены и не проваливаться после выхода из кат-сцены; оверлей лифта и субтитры подняты по `z-index` над брифингом (`IntroCutsceneOverlays`); брифинг не показывается поверх интро (`RPGGameCanvas`); чуть уменьшен интро-множитель GLB (`introVolodkaOpeningCutscene`).
@@ -45,7 +49,7 @@
 
 ### Added
 
-- **`explorationPlayerGlbVisualUniformMultiplier`** в `**SCENE_CONFIG**` + `**getExplorationPlayerGlbVisualUniformMultiplier**` — явный множитель к uniform GLB игрока **после** bbox-формулы (`**applyExplorationPlayerGlbVisualUniformMultiplier**` в `**PhysicsPlayer**`); в **`volodka_room`** задано **0.52**, в **`volodka_corridor`** **0.58**, в **`zarema_albert_room`** **0.56**, чтобы размер в кадре гарантированно менялся в проде.
+- **`explorationPlayerGlbVisualUniformMultiplier`** в `**SCENE_CONFIG**` + `**getExplorationPlayerGlbVisualUniformMultiplier**` — явный множитель к uniform GLB игрока **после** bbox-формулы (`**applyExplorationPlayerGlbVisualUniformMultiplier**` в `**PhysicsPlayer**`); в **`volodka_room`** значение ужимали по мере правок прод-кадра (см. актуальные числа в `**scenes.ts**` / `## [Unreleased]`); в **`volodka_corridor`** **0.58**, в **`zarema_albert_room`** **0.56**.
 
 ### Fixed
 
