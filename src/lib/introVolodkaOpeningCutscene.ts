@@ -3,6 +3,12 @@ import type { PlayerPosition } from '@/data/rpgTypes';
 import * as THREE from 'three';
 import { PLAYER_FEET_SPAWN_Y } from '@/lib/playerScaleConstants';
 
+/**
+ * Дополнительный множитель к `explorationPlayerGlbVisualUniformMultiplier` только на фазе `intro_cutscene`:
+ * кинокамера ближе, чем `FollowCamera`, плюс bbox скина в позе за столом может давать более крупный визуал, чем в геймплее.
+ */
+export const INTRO_OPENING_PLAYER_GLB_VISUAL_UNIFORM_EXTRA_MULTIPLIER = 0.72;
+
 /** Сцена до финала 3D-интро (комната Володьки). */
 export const INTRO_OPENING_SCENE_ID: SceneId = 'volodka_room';
 

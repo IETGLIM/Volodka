@@ -90,6 +90,10 @@ import { HomeEveningVisual } from './exploration/HomeEveningVisual';
 import { NpcProximityBarks } from './NpcProximityBarks';
 import { ExplorationBriefingOverlay } from '@/components/game/exploration/ExplorationBriefingOverlay';
 import { IntroCutsceneCinematicDirector } from '@/components/Cutscenes/IntroCutscene';
+import {
+  INTRO_OPENING_PLAYER_GLB_VISUAL_UNIFORM_EXTRA_MULTIPLIER,
+  INTRO_OPENING_SCENE_ID,
+} from '@/lib/introVolodkaOpeningCutscene';
 import { EXPLORATION_SCENE_FRAMELOOP, getExplorationSceneGlProps } from '@/components/3d/Scene';
 import { ExplorationLighting, getExplorationDirectionalShadowMapSize } from '@/components/3d/Lighting';
 import {
@@ -183,6 +187,8 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
   const explorationBriefingPendingRef = useRef(true);
   const explorationPhase = useGamePhaseStore((s) => s.phase);
   const introCutsceneActive = explorationPhase === 'intro_cutscene';
+  /** В 3D-интро игрок всегда в `volodka_room`; не тянуть множители с другого `sceneId` (иначе `m` может быть 1 и интро выглядит крупнее геймплея). */
+  const playerSceneTuningId = introCutsceneActive ? INTRO_OPENING_SCENE_ID : sceneId;
   const playerInputLocked = isDialogueActive || introCutsceneActive;
   const interactionHintTick = useExplorationLivePlayerTick(!playerInputLocked, 120);
 
@@ -310,26 +316,29 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
   const groundGeometryArgs = groundGeometryArgsProp ?? sceneConfig.groundGeometryArgs;
 
   const explorationCharacterModelScale = useMemo(
-    () => getExplorationCharacterModelScale(sceneId),
-    [sceneId],
+    () => getExplorationCharacterModelScale(playerSceneTuningId),
+    [playerSceneTuningId],
   );
 
   const explorationLocomotionScale = useMemo(
-    () => getExplorationLocomotionScale(sceneId),
-    [sceneId],
+    () => getExplorationLocomotionScale(playerSceneTuningId),
+    [playerSceneTuningId],
   );
 
   const explorationNpcModelScale = useMemo(() => getExplorationNpcModelScale(sceneId), [sceneId]);
 
   const explorationPlayerGltfTargetMeters = useMemo(
-    () => getExplorationPlayerGltfTargetMeters(sceneId),
-    [sceneId],
+    () => getExplorationPlayerGltfTargetMeters(playerSceneTuningId),
+    [playerSceneTuningId],
   );
 
-  const explorationPlayerGlbVisualUniformMultiplier = useMemo(
-    () => getExplorationPlayerGlbVisualUniformMultiplier(sceneId),
-    [sceneId],
-  );
+  const explorationPlayerGlbVisualUniformMultiplier = useMemo(() => {
+    const m = getExplorationPlayerGlbVisualUniformMultiplier(playerSceneTuningId);
+    if (explorationPhase === 'intro_cutscene') {
+      return m * INTRO_OPENING_PLAYER_GLB_VISUAL_UNIFORM_EXTRA_MULTIPLIER;
+    }
+    return m;
+  }, [playerSceneTuningId, explorationPhase]);
 
   const findNavPath = useMemo(() => {
     const [fw, , fd] = groundGeometryArgs;

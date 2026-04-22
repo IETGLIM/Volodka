@@ -8,6 +8,8 @@
 
 ### Fixed
 
+- **Обход / 3D-интро — масштаб GLB игрока**: в **`intro_cutscene`** множители игрока (в т.ч. **`explorationPlayerGlbVisualUniformMultiplier`** и **`INTRO_OPENING_PLAYER_GLB_VISUAL_UNIFORM_EXTRA_MULTIPLIER`**) считаются от **`INTRO_OPENING_SCENE_ID`** (`volodka_room`), а не от «текущего» **`sceneId`**, чтобы не подставлялся дефолт **`m = 1`** и интро не раздувало модель относительно геймплея; тест **`introVolodkaOpeningCutscene.playerScale.test.ts`**.
+
 - **Обход / камера и масштаб игрока**: clamp uniform GLB (**`PLAYER_GLB_VISUAL_UNIFORM_MAX` 0.92**); на мешах GLB игрока — **`userData.isPlayer`**; **`volodka_room`**: **`explorationPlayerGltfTargetMeters` 0.96**, **`explorationCharacterModelScale` 0.48**; пресет **`FollowCamera`** — дальше/выше, **`minDistance`**, **`collisionRayOriginY`**, опционально **`pitchMin`/`pitchMax`** (меньше кадр «из-под ног» на Vercel).
 
 ### Changed
