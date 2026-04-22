@@ -89,11 +89,18 @@ export function PanelWrapper({ children, onClose }: { children: React.ReactNode;
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
+      transition={{ duration: 0.18 }}
     >
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
-      <div className="relative z-10 max-h-[85vh] max-w-[95vw] overflow-y-auto overflow-x-hidden">
+      <motion.div
+        className="relative z-10 max-h-[85vh] max-w-[95vw] overflow-y-auto overflow-x-hidden"
+        initial={{ opacity: 0, y: 14, scale: 0.96 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        exit={{ opacity: 0, y: 10, scale: 0.98 }}
+        transition={{ type: 'spring', stiffness: 420, damping: 32 }}
+      >
         {children}
-      </div>
+      </motion.div>
     </motion.div>
   );
 }

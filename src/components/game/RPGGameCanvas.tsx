@@ -820,6 +820,9 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
         stress={playerState.stress}
         compactIndoor={isNarrowApartment}
         cinematicIntro={introCutsceneActive}
+        explorationCyberGrade={
+          sceneId === 'volodka_room' && explorationPhase === 'gameplay' && !introCutsceneActive
+        }
       />
       <ExplorationParticles sceneId={sceneId} timeOfDay={timeOfDay} visualLite={visualLite} />
       <ExplorationFootprints sceneId={sceneId} />

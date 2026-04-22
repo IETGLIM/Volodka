@@ -120,6 +120,39 @@ export const QUEST_DEFINITIONS: Record<string, ExtendedQuest> = {
     /** Сторинод-хаб 3D-обхода (`explore_mode` в `storyNodes`). */
     startNode: 'explore_mode',
   },
+
+  /**
+   * Обход `volodka_room`: форс через мини-игру узлов (ветка A) или «честный» IT-путь только осмотром
+   * трёх панелей без ACL (ветка B — описание и метки; прогресс B можно нарастить отдельным тикетом).
+   */
+  exploration_volodka_rack: {
+    id: 'exploration_volodka_rack',
+    title: '⚡ Разрыв синхронизации',
+    description:
+      'Стойка мониторинга помнит два сценария: **форс** — краткая матрица узлов у стола; **аудит** — три спокойных осмотра Kibana / Zabbix / Grafana без изменения прав. Сейчас в игре завершение идёт по ветке форса; ветка аудита оставлена для расширения (флаги + increment).',
+    type: 'side',
+    faction: 'Работа · IT',
+    status: 'active',
+    objectives: [
+      createObjective('rack_force_nodes', 'Свести узлы стека в безопасную последовательность (зона стойки, E)', {
+        targetValue: 1,
+        currentValue: 0,
+        hint: 'Триггер «матрица узлов» у рабочего стола с тремя экранами.',
+        targetLocation: 'volodka_room',
+        mapHint: { x: 3.45, z: 0.08 },
+        stageType: 'minigame',
+      }),
+      createObjective('rack_audit_panels', 'Честный путь: осмотреть Kibana, Zabbix и Grafana без взлома', {
+        targetValue: 3,
+        currentValue: 0,
+        hint: 'Три отдельных осмотра (радиальное меню) — ветка для будущего инкремента.',
+        targetLocation: 'volodka_room',
+        stageType: 'exploration',
+      }),
+    ],
+    reward: createReward({ experience: 55, karma: -2, stability: 6, mood: -1, creativity: 9 }),
+    startNode: 'explore_mode',
+  },
   
   // ========== ТЕХНИЧЕСКИЕ IT-КВЕСТЫ (НОВЫЕ!) ==========
   

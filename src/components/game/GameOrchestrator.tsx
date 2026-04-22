@@ -50,6 +50,7 @@ import { getNPCById, getNPCsForScene, getNpcExplorationPosition } from '@/data/n
 import { getSceneConfig, getInteractiveObjectsForScene } from '@/config/scenes';
 import { homeApartmentInspectLine, tryHomeApartmentUse } from '@/lib/homeApartmentInteract';
 import { volodkaRoomInspectLine, tryVolodkaRoomUse } from '@/lib/volodkaRoomInteract';
+import { tryApplyVolodkaRackAuditInspect } from '@/lib/volodkaRackQuestBranch';
 import { volodkaCorridorInspectLine, tryVolodkaCorridorUse } from '@/lib/volodkaCorridorInteract';
 import { getInteractiveSkillBlockMessage } from '@/lib/interactiveSkillRequirements';
 import { getExplorationAmbientStressPerTick } from '@/lib/explorationAtmosphere';
@@ -58,6 +59,7 @@ import { MoralCompassHUD } from '@/components/game/MoralCompassHUD';
 import { SceneTransition } from '@/components/game/CinematicEffects';
 import { LootNotification, SkillUpNotification } from '@/components/game/LootNotification';
 import { TutorialOverlay } from '@/components/game/TutorialOverlay';
+import { HackingWireMinigameOverlay } from '@/components/game/exploration/HackingWireMinigameOverlay';
 import { MiniMap } from '@/components/game/MiniMap';
 import { SCENE_VISUALS } from '@/engine/SceneManager';
 import type { VisualState } from '@/data/types';
@@ -369,7 +371,14 @@ export default function GameOrchestrator() {
           if (homeLine) {
             toast(skillHint ? `${homeLine} ${skillHint}` : homeLine);
           } else if (volLine) {
-            toast(skillHint ? `${volLine} ${skillHint}` : volLine);
+            if (
+              sid === 'volodka_room' &&
+              tryApplyVolodkaRackAuditInspect(obj, toast, volLine, skillHint ? `${skillHint}` : null)
+            ) {
+              /* одно сообщение: осмотр + прогресс аудита внутри helper */
+            } else {
+              toast(skillHint ? `${volLine} ${skillHint}` : volLine);
+            }
           } else if (corLine) {
             toast(skillHint ? `${corLine} ${skillHint}` : corLine);
           } else if (obj.canBeRead && obj.poemId) {
@@ -709,6 +718,8 @@ export default function GameOrchestrator() {
           />
         </div>
       )}
+
+      {gameMode === 'exploration' && <HackingWireMinigameOverlay />}
 
       {gameMode === 'exploration' && !introOpening3dActive && (
         <MiniMap

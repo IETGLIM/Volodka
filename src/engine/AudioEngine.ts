@@ -160,6 +160,59 @@ class AudioEngineImpl {
     }
   }
 
+  /**
+   * Низкий «гул кабины» для интро-лифта (WebAudio, без обязательного MP3 в `public/`).
+   * Короткий спад громкости в конце — чтобы не резать обрывком.
+   */
+  playElevatorHum(durationSec: number, volume = 0.18) {
+    if (this.muted || typeof window === 'undefined') return;
+    try {
+      const ctx = createBrowserAudioContext();
+      if (!ctx) return;
+      void ctx.resume().catch(() => {});
+      const dur = Math.min(22, Math.max(0.5, durationSec));
+      const t0 = ctx.currentTime;
+      const osc = ctx.createOscillator();
+      const lfo = ctx.createOscillator();
+      const lfoGain = ctx.createGain();
+      const band = ctx.createBiquadFilter();
+      const out = ctx.createGain();
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(48, t0);
+      lfo.type = 'sine';
+      lfo.frequency.setValueAtTime(2.4, t0);
+      lfoGain.gain.setValueAtTime(14, t0);
+      lfo.connect(lfoGain);
+      lfoGain.connect(osc.detune);
+      band.type = 'lowpass';
+      band.frequency.setValueAtTime(420, t0);
+      band.Q.setValueAtTime(0.7, t0);
+      out.gain.setValueAtTime(0.0001, t0);
+      out.gain.exponentialRampToValueAtTime(volume * 0.055, t0 + 0.35);
+      out.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+      osc.connect(band);
+      band.connect(out);
+      out.connect(ctx.destination);
+      osc.start(t0);
+      lfo.start(t0);
+      osc.stop(t0 + dur + 0.05);
+      lfo.stop(t0 + dur + 0.05);
+      osc.onended = () => {
+        try {
+          osc.disconnect();
+          lfo.disconnect();
+          lfoGain.disconnect();
+          band.disconnect();
+          out.disconnect();
+        } catch {
+          /* ignore */
+        }
+      };
+    } catch {
+      /* ignore */
+    }
+  }
+
   stop() {
     if (this.current) {
       this.current.pause();

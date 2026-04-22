@@ -249,6 +249,16 @@ export const STORY_TRIGGERS: TriggerZone[] = [
     promptText: 'E — заставка у рабочего стола',
   },
   {
+    id: 'trigger_volodka_rack_hack',
+    position: { x: 3.45, y: 0.95, z: 0.08 },
+    size: { x: 1.75, y: 1.45, z: 1.25 },
+    sceneId: 'volodka_room',
+    type: 'quest',
+    requiresInteraction: true,
+    interactionId: 'volodka_rack_hack',
+    promptText: 'E — мини-игра: матрица узлов стойки',
+  },
+  {
     id: 'trigger_volodka_sofa_cutscene',
     position: { x: -3.75, y: 0.45, z: 1.15 },
     size: { x: 2.0, y: 1.2, z: 1.6 },

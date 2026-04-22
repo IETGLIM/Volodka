@@ -940,3 +940,20 @@
     will-change: auto;
   }
 }
+
+/* Успешный взлом в обходе (`HackingWireMinigameOverlay`): краткий глитч на корне страницы */
+@keyframes exploration-hack-glitch-key {
+  0% {
+    filter: hue-rotate(0deg) contrast(1);
+  }
+  35% {
+    filter: hue-rotate(88deg) contrast(1.15) saturate(1.25);
+  }
+  100% {
+    filter: hue-rotate(0deg) contrast(1);
+  }
+}
+
+body.exploration-hack-glitch-flash {
+  animation: exploration-hack-glitch-key 0.42s ease-out;
+}

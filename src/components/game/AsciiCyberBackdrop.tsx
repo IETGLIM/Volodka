@@ -6,8 +6,10 @@ import { sceneManager } from '@/engine/SceneManager';
 import { NPC_DEFINITIONS } from '@/data/npcDefinitions';
 import type { SceneId } from '@/data/types';
 import type { PlayerState } from '@/data/types';
+import { CYBER_MATRIX_CHARSET } from '@/lib/cyberMatrixRainCanvas';
 
-const MATRIX_CHARS = 'アイウエオ0123456789█▓▒░[]{}<>ВОЛОДЬКА';
+/** Синхрон с `cyberMatrixRainCanvas` / мониторами в 3D (`MatrixRainScreenMesh`). */
+const MATRIX_CHARS = CYBER_MATRIX_CHARSET;
 
 function hashStr(s: string): number {
   let h = 0;

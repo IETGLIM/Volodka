@@ -74,6 +74,7 @@ export function IntroCutsceneCinematicDirector() {
   const lastElevatorOverlayRef = useRef<boolean | undefined>(undefined);
   const playedAmbientRef = useRef(false);
   const playedLiftRef = useRef(false);
+  const playedElevatorHumRef = useRef(false);
 
   useEffect(() => {
     if (phase !== 'intro_cutscene') {
@@ -86,6 +87,7 @@ export function IntroCutsceneCinematicDirector() {
     lastElevatorOverlayRef.current = undefined;
     playedAmbientRef.current = false;
     playedLiftRef.current = false;
+    playedElevatorHumRef.current = false;
     startMsRef.current = performance.now();
     return () => {
       setIntroCutscenePlayerPose(null);
@@ -120,6 +122,13 @@ export function IntroCutsceneCinematicDirector() {
     if (elevatorOn && !playedLiftRef.current) {
       playedLiftRef.current = true;
       audioEngine.playSfx('ui', 0.22);
+    }
+    if (elevatorOn && !playedElevatorHumRef.current) {
+      playedElevatorHumRef.current = true;
+      audioEngine.playElevatorHum(
+        Math.max(0.6, INTRO_ELEVATOR_OVERLAY_END_SEC - INTRO_ELEVATOR_OVERLAY_START_SEC),
+        0.2,
+      );
     }
 
     const kf = INTRO_OPENING_CAM_KEYFRAMES;

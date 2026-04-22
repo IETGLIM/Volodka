@@ -5,8 +5,10 @@ import { RigidBody, CuboidCollider } from '@react-three/rapier';
 import type { SceneId } from '@/data/types';
 import { footstepColliderName, type FootstepMaterial } from '@/lib/footstepMaterials';
 import {
+  INTERIOR_REF_COMPACT_SOFA_GROUP_CENTER_Y_M,
   INTERIOR_REF_SOFA_GROUP_CENTER_Y_M,
   INTERIOR_REF_WARDROBE_HEIGHT_M,
+  interiorCoffeeTableGroupCenterY,
   interiorDeskColliderCenterY,
   interiorWardrobeCenterYFromFloor,
 } from '@/lib/explorationInteriorReference';
@@ -512,6 +514,14 @@ export const BattleColliders = memo(function BattleColliders() {
 // ============================================
 
 export const ZaremaAlbertColliders = memo(function ZaremaAlbertColliders() {
+  const coffeeTable: [number, number, number][] = useMemo(
+    () => [[0, interiorCoffeeTableGroupCenterY(0), -1.8]],
+    [],
+  );
+  const sofa: [number, number, number][] = useMemo(
+    () => [[-2.4, INTERIOR_REF_COMPACT_SOFA_GROUP_CENTER_Y_M, 1.6]],
+    [],
+  );
   return (
     <group>
       {/* Пол с физикой */}
@@ -525,6 +535,8 @@ export const ZaremaAlbertColliders = memo(function ZaremaAlbertColliders() {
       </mesh>
       {/* Границы комнаты */}
       <BoundaryWalls size={10} height={3} />
+      <InstancedObstacles positions={coffeeTable} size={[1.65, 0.1, 0.88]} footstepMaterial="wood" />
+      <InstancedObstacles positions={sofa} size={[2.25, 0.48, 0.98]} footstepMaterial="carpet" />
     </group>
   );
 });
