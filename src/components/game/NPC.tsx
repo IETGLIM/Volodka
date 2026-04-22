@@ -39,7 +39,14 @@ import { getNpcQuestMarkerForExploration } from '@/lib/npcQuestMarker';
 import { retainGltfModelUrl, releaseGltfModelUrl } from '@/lib/gltfModelCache';
 import { applyGltfExplorationCharacterMaterialPolicies } from '@/lib/gltfCharacterMaterialPolicy';
 import { getGltfSkinnedVisualHeightMeters } from '@/lib/gltfSkinnedBoundingHeight';
-import { PLAYER_GLB_TARGET_VISUAL_METERS } from '@/lib/playerScaleConstants';
+import {
+  applyExplorationPlayerGlbVisualUniformMultiplier,
+  computeExplorationPlayerGlbUniformFromBBox,
+} from '@/lib/playerScaleConstants';
+import {
+  getExplorationPlayerGlbVisualUniformMultiplier,
+  getExplorationPlayerGltfTargetMeters,
+} from '@/config/scenes';
 import type { FindNavPathXZ } from '@/lib/explorationNavMesh';
 import {
   NPC_SHADOW_MID_IN_M,
@@ -99,7 +106,11 @@ const NPC_WALK_CLIP_NOMINAL_MPS = 1.4;
 
 interface GLTFModelProps {
   modelPath: string;
-  scale?: number;
+  /** Масштаб комнаты в обходе (`getExplorationCharacterModelScale`), как у игрока. */
+  roomModelScale: number;
+  /** Поле `definition.scale` карточки NPC (1 по умолчанию). */
+  definitionModelScale?: number;
+  explorationSceneId: SceneId;
   isNearPlayer: boolean;
   isDialogueActive: boolean;
   /** `mid` — дальше порога: меши GLB не отбрасывают тень (дешевле для GPU). */
@@ -231,7 +242,9 @@ const GLTFModelInner = memo(function GLTFModelInner({
 // Компонент загрузки GLTF - всегда вызывается с валидным путём
 const GLTFLoader = memo(function GLTFLoader({
   modelPath,
-  scale,
+  roomModelScale,
+  definitionModelScale = 1,
+  explorationSceneId,
   isNearPlayer,
   isDialogueActive,
   shadowTier,
@@ -287,7 +300,6 @@ const GLTFLoader = memo(function GLTFLoader({
 
   const { scene, bakedVisualScale } = useMemo(() => {
     if (!loadedScene) return { scene: null, bakedVisualScale: 1 };
-    const scaleSafe = scale ?? 1;
     try {
       const clone = loadedScene.clone(true);
       clone.traverse((child: any) => {
@@ -299,17 +311,24 @@ const GLTFLoader = memo(function GLTFLoader({
       applyGltfExplorationCharacterMaterialPolicies(clone);
       const scratchVec = new THREE.Vector3();
       const hRaw = getGltfSkinnedVisualHeightMeters(clone, scratchVec);
-      /** Верхняя граница ниже, чем у старых демо (было 18): при битом bbox клона иначе NPC превращается в «колосс» рядом с игроком. */
-      const bakedVisualScale = THREE.MathUtils.clamp(
-        (PLAYER_GLB_TARGET_VISUAL_METERS * scaleSafe) / hRaw,
-        0.0025,
-        2.85,
+      const targetM = getExplorationPlayerGltfTargetMeters(explorationSceneId);
+      const rs = Number.isFinite(roomModelScale) ? roomModelScale : 1;
+      const def = Number.isFinite(definitionModelScale) && definitionModelScale > 0 ? definitionModelScale : 1;
+      const baseUniform =
+        !Number.isFinite(hRaw) || hRaw < 1e-4
+          ? 0.12 * rs
+          : computeExplorationPlayerGlbUniformFromBBox(hRaw, targetM, rs);
+      const withRoomMul = applyExplorationPlayerGlbVisualUniformMultiplier(
+        baseUniform,
+        getExplorationPlayerGlbVisualUniformMultiplier(explorationSceneId),
       );
+      /** Та же цепочка, что у `PhysicsPlayer`: цель по сцене + clamp + множитель комнаты; затем `definition.scale`. */
+      const bakedVisualScale = Math.max(0.02, withRoomMul * def);
       return { scene: clone, bakedVisualScale };
     } catch {
       return { scene: null, bakedVisualScale: 1 };
     }
-  }, [loadedScene, scale]);
+  }, [loadedScene, roomModelScale, definitionModelScale, explorationSceneId]);
 
   useEffect(() => {
     if (!scene) return;
@@ -405,7 +424,9 @@ const GLTFLoader = memo(function GLTFLoader({
 
 const GLTFModel = memo(function GLTFModel({
   modelPath,
-  scale = 1,
+  roomModelScale,
+  definitionModelScale = 1,
+  explorationSceneId,
   isNearPlayer,
   isDialogueActive,
   shadowTier,
@@ -431,7 +452,9 @@ const GLTFModel = memo(function GLTFModel({
     <ModelErrorBoundary fallback={fallback}>
       <GLTFLoader
         modelPath={resolvedPath}
-        scale={scale}
+        roomModelScale={roomModelScale}
+        definitionModelScale={definitionModelScale}
+        explorationSceneId={explorationSceneId}
         isNearPlayer={isNearPlayer}
         isDialogueActive={isDialogueActive}
         shadowTier={shadowTier}
@@ -1298,7 +1321,9 @@ export const NPC = memo(function NPC({
                 <ModelErrorBoundary fallback={fallbackModel}>
                   <GLTFModel
                     modelPath={definition.modelPath}
-                    scale={effectiveModelScale}
+                    roomModelScale={locationModelScale}
+                    definitionModelScale={definition.scale ?? 1}
+                    explorationSceneId={explorationSceneId ?? 'volodka_room'}
                     isNearPlayer={isNearPlayer}
                     isDialogueActive={isDialogueActive}
                     shadowTier={npcShadowTier}

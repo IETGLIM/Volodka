@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- **Обход / масштаб GLB NPC**: расчёт uniform для NPC приведён к той же цепочке, что у игрока (`computeExplorationPlayerGlbUniformFromBBox` + `explorationPlayerGltfTargetMeters` + `explorationPlayerGlbVisualUniformMultiplier` по `sceneId`), вместо отдельной формулы с потолком **2.85** — устраняет «колоссов» в узких комнатах (в т.ч. квартира Заремы и Альберта).
+
 ### Added
 
 - **RPG: уровень персонажа и опыт**: кривая XP и потолок уровня (`src/lib/rpgLeveling.ts`, тесты); в `PlayerState` — `characterLevel`, `experience`, `experienceToNextLevel`; начисление XP за первый визит узла сюжета, первый сбор стиха и за завершение квестов (поле `experience` в награде + разумный дефолт); событие `player:level_up` и тост при росте уровня; полоса уровня/XP в `HUD`. Пошаговый бэклог с нарративной привязкой: `docs/rpg-leveling-story-backlog.md`; строка **E2.0** в `docs/exploration-expert-incremental-backlog.md`.
