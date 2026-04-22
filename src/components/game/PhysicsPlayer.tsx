@@ -590,7 +590,29 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
     if (useGamePhaseStore.getState().phase === 'intro_cutscene') {
       const cut = getIntroCutscenePlayerPose();
       if (cut) {
-        rb.setNextKinematicTranslation({ x: cut.x, y: cut.y, z: cut.z });
+        const t0 = rb.translation();
+        let dx = cut.x - t0.x;
+        let dy = cut.y - t0.y;
+        let dz = cut.z - t0.z;
+        const len = Math.hypot(dx, dy, dz);
+        const maxStep = 0.32;
+        if (len > maxStep && len > 1e-8) {
+          const s = maxStep / len;
+          dx *= s;
+          dy *= s;
+          dz *= s;
+        }
+        const n = rb.numColliders();
+        if (n >= 1) {
+          const collider = rb.collider(0);
+          cc.computeColliderMovement(collider, { x: dx, y: dy, z: dz });
+          const m = cc.computedMovement();
+          const t = rb.translation();
+          rb.setNextKinematicTranslation({ x: t.x + m.x, y: t.y + m.y, z: t.z + m.z });
+          groundedRef.current = cc.computedGrounded();
+        } else {
+          rb.setNextKinematicTranslation({ x: cut.x, y: cut.y, z: cut.z });
+        }
         rotationRef.current = cut.rotation;
         return;
       }
@@ -696,10 +718,11 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
           }
           moveYawRef.current = -getExplorationCameraOrbitYawRad();
           if (onPositionChange) {
+            const p = rb.translation();
             onPositionChange({
-              x: cut.x,
-              y: cut.y,
-              z: cut.z,
+              x: p.x,
+              y: p.y,
+              z: p.z,
               rotation: rotationRef.current,
             });
           }

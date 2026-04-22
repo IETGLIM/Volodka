@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- **Обход / 3D-интро:** поза из `introCutscenePlayerBridge` больше не телепортирует RigidBody напрямую — шаг через `computeColliderMovement` (`PhysicsPlayer`), чтобы не проходить сквозь стены и не проваливаться после выхода из кат-сцены; оверлей лифта и субтитры подняты по `z-index` над брифингом (`IntroCutsceneOverlays`); брифинг не показывается поверх интро (`RPGGameCanvas`); чуть уменьшен интро-множитель GLB (`introVolodkaOpeningCutscene`).
+
 ### Changed
 
 - **Обход / туман в узких комнатах:** в `**RPGGameCanvas**` смягчены `near` / `far` для `**intro_cutscene**` и для обычного `**gameplay**` (раньше 1.2 / 42 — слишком быстрый уход в `fogColor` при орбите).

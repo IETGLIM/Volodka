@@ -14,7 +14,8 @@ export const INTRO_OPENING_PLAYER_GLTF_TARGET_METERS = 0.74;
  * Дополнительный множитель к `explorationPlayerGlbVisualUniformMultiplier` только на фазе `intro_cutscene`
  * (после bbox и целевой высоты выше).
  */
-export const INTRO_OPENING_PLAYER_GLB_VISUAL_UNIFORM_EXTRA_MULTIPLIER = 0.5;
+/** Чуть ниже — при близкой кинокамере иначе силуэт «съедает» кадр. */
+export const INTRO_OPENING_PLAYER_GLB_VISUAL_UNIFORM_EXTRA_MULTIPLIER = 0.38;
 
 /** Сцена до финала 3D-интро (комната Володьки). */
 export const INTRO_OPENING_SCENE_ID: SceneId = 'volodka_room';

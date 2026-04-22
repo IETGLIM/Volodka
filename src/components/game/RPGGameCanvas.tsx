@@ -855,7 +855,7 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
 
     <ExplorationBriefingOverlay
       sceneId={sceneId}
-      open={explorationBriefingOpen}
+      open={explorationBriefingOpen && !introCutsceneActive}
       onDismiss={() => setExplorationBriefingOpen(false)}
     />
 

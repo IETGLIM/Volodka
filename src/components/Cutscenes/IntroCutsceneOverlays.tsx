@@ -16,7 +16,7 @@ export function IntroCutsceneOverlays() {
         {caption ? (
           <motion.div
             key={caption}
-            className="pointer-events-none fixed inset-x-0 bottom-[min(18vh,140px)] z-[62] flex justify-center px-4 font-[family-name:var(--font-geist-mono)]"
+            className="pointer-events-none fixed inset-x-0 bottom-[min(18vh,140px)] z-[96] flex justify-center px-4 font-[family-name:var(--font-geist-mono)]"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 6 }}
@@ -33,7 +33,7 @@ export function IntroCutsceneOverlays() {
         {elevator ? (
           <motion.div
             key="elevator"
-            className="fixed inset-0 z-[61] flex flex-col items-center justify-center bg-black font-[family-name:var(--font-geist-mono)] text-emerald-400"
+            className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-black font-[family-name:var(--font-geist-mono)] text-emerald-400"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
