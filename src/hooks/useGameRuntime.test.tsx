@@ -7,6 +7,7 @@ import { sceneManager } from '@/engine/SceneManager';
 import { eventBus } from '@/engine/EventBus';
 import { poemMechanics } from '@/engine/PoemMechanics';
 import { initConsequencesSystem } from '@/engine/ConsequencesSystem';
+import { experienceRequiredForNextLevel } from '@/lib/rpgLeveling';
 
 vi.mock('@/engine/CoreLoop', () => ({
   coreLoop: {
@@ -86,6 +87,9 @@ function createPlayerState(): PlayerState {
     selfEsteem: 40,
     stress: 0,
     panicMode: false,
+    characterLevel: 1,
+    experience: 0,
+    experienceToNextLevel: experienceRequiredForNextLevel(1),
     poemsCollected: [],
     path: 'none',
     act: 1,

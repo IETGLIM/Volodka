@@ -80,6 +80,10 @@ const LegacyScreen = dynamic(() => import('@/components/game/LegacyScreen'), { s
 /** Один раз за прохождение: тост при первом входе в диалог из 3D-обхода (E2.1). */
 const EXPLORATION_FIRST_DIALOGUE_QUEST_KARMA_FLAG = 'exploration_first_dialogue_quest_karma_hint_v1';
 
+/** Длительность кинематографического оверлея при смене 3D-локации (должна покрывать фазы `SceneTransition`). */
+const EXPLORATION_SCENE_GLITCH_MS = 2700;
+const EXPLORATION_SCENE_TRANSITION_DURATION_SEC = 1.65;
+
 const RPGGameCanvas = dynamic(
   () => import('@/components/game/RPGGameCanvas').then((m) => m.RPGGameCanvas),
   {
@@ -249,11 +253,10 @@ export default function GameOrchestrator() {
     if (prevSceneTransitionTsRef.current !== ts && ts !== 0) {
       if (explorationGlitchClearRef.current) clearTimeout(explorationGlitchClearRef.current);
       setExplorationSceneGlitch(true);
-      const duration = 0.55;
       explorationGlitchClearRef.current = setTimeout(() => {
         explorationGlitchClearRef.current = null;
         setExplorationSceneGlitch(false);
-      }, duration * 1500);
+      }, EXPLORATION_SCENE_GLITCH_MS);
       prevSceneTransitionTsRef.current = ts;
       return () => {
         if (explorationGlitchClearRef.current) {
@@ -685,15 +688,13 @@ export default function GameOrchestrator() {
       )}
 
       {phase === 'game' && gameMode === 'exploration' && (
-        <>
-          <SceneTransition isActive={explorationSceneGlitch} type="glitch" duration={0.55} />
-          {explorationSceneGlitch && (
-            <div className="pointer-events-none fixed inset-0 z-[51] flex justify-center pt-5 font-mono text-[10px] uppercase tracking-[0.35em] text-cyan-400/75 mix-blend-screen">
-              поток.sync //{' '}
-              {SCENE_VISUALS[exploration.currentSceneId]?.name ?? exploration.currentSceneId}
-            </div>
-          )}
-        </>
+        <SceneTransition
+          isActive={explorationSceneGlitch}
+          type="glitch"
+          duration={EXPLORATION_SCENE_TRANSITION_DURATION_SEC}
+          sceneTitle={getSceneConfig(exploration.currentSceneId).name}
+          sceneTagline="Кинематографический переход · поток.sync"
+        />
       )}
 
       {(gameMode === 'exploration' || (Boolean(activeDialogue) && explorationDialogueLayout)) && (

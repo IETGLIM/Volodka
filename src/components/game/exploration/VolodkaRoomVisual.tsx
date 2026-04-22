@@ -10,6 +10,9 @@ import {
 } from '@/components/game/exploration/volodkaRoomProceduralTextures';
 import { MatrixRainScreenMesh } from '@/components/game/exploration/MatrixRainScreenMesh';
 
+const VOLODKA_MONITOR_LEFT_LINES = ['STATUS: DEGRADED', 'Grafana · Prometheus', 'pod/monitoring-01'] as const;
+const VOLODKA_MONITOR_RIGHT_LINES = ['RETRO INCIDENT', 'on-call: Володька', 'silence: 0 active'] as const;
+
 /**
  * Комната Володьки в обходе: панелька, удалёнка (два ноутбука, стойка мониторов — как `scenes.ts` / коллайдеры).
  * Текстуры процедурные (canvas), без внешних PNG.
@@ -220,26 +223,38 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual() {
             polygonOffsetUnits={1}
           />
         </mesh>
-        {/* Два монитора: матричный дождь на CanvasTexture */}
+        {/* Два монитора: матричный дождь + читаемые строки; экран повёрнут к месту игрока (−X). */}
         <group position={[0.52, 0.52, -0.38]}>
           <mesh position={[0, 0, -0.014]}>
-            <boxGeometry args={[0.22, 0.26, 0.024]} />
+            <boxGeometry args={[0.36, 0.44, 0.028]} />
             <meshStandardMaterial color="#0b0f0c" roughness={0.75} metalness={0.35} />
           </mesh>
-          <group position={[0, 0, 0.013]} rotation={[0, Math.PI, 0]}>
-            <MatrixRainScreenMesh seed={41} width={0.17} height={0.22} emissiveIntensity={1.25} />
+          <group position={[0.19, 0, 0]} rotation={[0, Math.PI / 2, 0]}>
+            <MatrixRainScreenMesh
+              seed={41}
+              width={0.34}
+              height={0.4}
+              emissiveIntensity={1.45}
+              statusLines={VOLODKA_MONITOR_LEFT_LINES}
+            />
           </group>
-          <pointLight position={[0, 0, 0.35]} intensity={0.45} color="#4ade80" distance={1.2} decay={2} />
+          <pointLight position={[0.12, 0, 0.42]} intensity={0.55} color="#4ade80" distance={1.6} decay={2} />
         </group>
         <group position={[0.52, 0.52, 0.38]}>
           <mesh position={[0, 0, -0.014]}>
-            <boxGeometry args={[0.22, 0.26, 0.024]} />
+            <boxGeometry args={[0.36, 0.44, 0.028]} />
             <meshStandardMaterial color="#0b0f0c" roughness={0.75} metalness={0.35} />
           </mesh>
-          <group position={[0, 0, 0.013]} rotation={[0, Math.PI, 0]}>
-            <MatrixRainScreenMesh seed={73} width={0.17} height={0.22} emissiveIntensity={1.2} />
+          <group position={[0.19, 0, 0]} rotation={[0, Math.PI / 2, 0]}>
+            <MatrixRainScreenMesh
+              seed={73}
+              width={0.34}
+              height={0.4}
+              emissiveIntensity={1.4}
+              statusLines={VOLODKA_MONITOR_RIGHT_LINES}
+            />
           </group>
-          <pointLight position={[0, 0, 0.35]} intensity={0.42} color="#22d3ee" distance={1.15} decay={2} />
+          <pointLight position={[0.12, 0, 0.42]} intensity={0.52} color="#22d3ee" distance={1.55} decay={2} />
         </group>
         <pointLight position={[2.9, 1.85, 0.25]} intensity={0.62} color="#7dd3fc" distance={6} decay={2} />
         <pointLight position={[3.85, 1.65, -0.6]} intensity={0.38} color="#fdba74" distance={5} decay={2} />

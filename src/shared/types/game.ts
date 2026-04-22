@@ -90,6 +90,9 @@ export interface PlayerState {
   panicMode: boolean;    // Активен ли режим паники
   
   // Прогресс
+  characterLevel: number;
+  experience: number;
+  experienceToNextLevel: number;
   poemsCollected: string[];
   path: PlayerPath;
   act: 1 | 2 | 3 | 4;
@@ -400,6 +403,7 @@ export interface QuestObjective {
 }
 
 export interface QuestReward {
+  experience?: number;
   creativity?: number;
   mood?: number;
   stability?: number;

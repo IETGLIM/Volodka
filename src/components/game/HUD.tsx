@@ -234,6 +234,41 @@ function CyberEnergyBar({ energy, visualLite }: { energy: number; visualLite: bo
 // KARMA INDICATOR — DIAMOND
 // ============================================
 
+function CyberLevelXpBar({
+  level,
+  xp,
+  xpToNext,
+  visualLite,
+}: {
+  level: number;
+  xp: number;
+  xpToNext: number;
+  visualLite: boolean;
+}) {
+  const cap = Math.max(1, xpToNext);
+  const pct = Math.min(1, xp / cap);
+  return (
+    <div className="flex items-center gap-2">
+      <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-violet-400/80">lvl</span>
+      <span className="min-w-[1.5rem] font-mono text-xs text-violet-200/95">{level}</span>
+      <div
+        className="relative h-1.5 flex-1 max-w-[140px] overflow-hidden rounded-sm border border-violet-500/25 bg-black/50"
+        title={`Опыт: ${xp} / ${cap}`}
+      >
+        <motion.div
+          className="h-full bg-gradient-to-r from-violet-600/90 to-fuchsia-500/85"
+          initial={false}
+          animate={{ width: `${pct * 100}%` }}
+          transition={{ duration: visualLite ? 0.12 : 0.28, ease: 'easeOut' }}
+        />
+      </div>
+      <span className="font-mono text-[10px] text-violet-400/70">
+        {xp}/{cap}
+      </span>
+    </div>
+  );
+}
+
 function CyberKarmaBar({ karma }: { karma: number }) {
   return (
     <div className="flex items-center gap-2">
@@ -492,6 +527,15 @@ export default function HUD({
         {/* Stress indicator */}
         <div className="mt-2">
           <CyberStressBar stress={playerState.stress} panicMode={playerState.panicMode} visualLite={visualLite} />
+        </div>
+
+        <div className="mt-1.5">
+          <CyberLevelXpBar
+            level={playerState.characterLevel}
+            xp={playerState.experience}
+            xpToNext={playerState.experienceToNextLevel}
+            visualLite={visualLite}
+          />
         </div>
 
         {/* Energy bar */}

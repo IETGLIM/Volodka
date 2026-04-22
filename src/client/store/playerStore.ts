@@ -9,6 +9,7 @@ import { create } from 'zustand';
 import { useShallow } from 'zustand/react/shallow';
 import type { PlayerState, PlayerSkills, MoralChoice } from '@/shared/types/game';
 import { INITIAL_PLAYER_ENERGY, MAX_PLAYER_ENERGY } from '@/lib/energyConfig';
+import { experienceRequiredForNextLevel } from '@/lib/rpgLeveling';
 import { selectEnergyPercentageFromPlayer } from './playerStoreSelectors';
 
 // ============================================
@@ -38,6 +39,9 @@ const INITIAL_PLAYER: PlayerState = {
   selfEsteem: 40,
   stress: 0,
   panicMode: false,
+  characterLevel: 1,
+  experience: 0,
+  experienceToNextLevel: experienceRequiredForNextLevel(1),
   poemsCollected: [],
   path: 'none',
   act: 1,

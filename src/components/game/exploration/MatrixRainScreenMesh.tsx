@@ -26,6 +26,29 @@ function initDrops(cols: number, rows: number, seed: number): Drop[] {
   return drops;
 }
 
+function drawStatusOverlay(
+  ctx: CanvasRenderingContext2D,
+  w: number,
+  h: number,
+  lines: readonly string[],
+): void {
+  if (lines.length === 0) return;
+  const pad = 10;
+  const lineH = Math.max(11, Math.floor(h * 0.08));
+  ctx.save();
+  ctx.font = `${lineH}px monospace`;
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'top';
+  ctx.fillStyle = 'rgba(0, 24, 12, 0.55)';
+  ctx.fillRect(pad - 4, pad - 4, w - 2 * (pad - 4), lines.length * (lineH + 4) + 4);
+  for (let i = 0; i < lines.length; i += 1) {
+    const y = pad + i * (lineH + 4);
+    ctx.fillStyle = i === 0 ? 'rgba(220, 255, 230, 0.95)' : 'rgba(120, 220, 160, 0.88)';
+    ctx.fillText(lines[i]!, pad, y);
+  }
+  ctx.restore();
+}
+
 function drawMatrix(
   ctx: CanvasRenderingContext2D,
   w: number,
@@ -35,6 +58,7 @@ function drawMatrix(
   rows: number,
   t: number,
   seed: number,
+  statusLines: readonly string[],
 ): void {
   ctx.fillStyle = 'rgba(0, 6, 2, 0.22)';
   ctx.fillRect(0, 0, w, h);
@@ -66,6 +90,9 @@ function drawMatrix(
       ctx.fillText(ch, gx, gy + fontPx);
     }
   }
+  if (statusLines.length > 0) {
+    drawStatusOverlay(ctx, w, h, statusLines);
+  }
 }
 
 export type MatrixRainScreenMeshProps = {
@@ -73,6 +100,8 @@ export type MatrixRainScreenMeshProps = {
   width?: number;
   height?: number;
   emissiveIntensity?: number;
+  /** Статичные строки «интерфейса монитора» поверх матрицы (читаемый текст). */
+  statusLines?: readonly string[];
 };
 
 /**
@@ -83,9 +112,12 @@ export const MatrixRainScreenMesh = memo(function MatrixRainScreenMesh({
   width = 0.42,
   height = 0.28,
   emissiveIntensity = 1.15,
+  statusLines = [],
 }: MatrixRainScreenMeshProps) {
   const textureRef = useRef<THREE.CanvasTexture | null>(null);
   const dropsRef = useRef<Drop[] | null>(null);
+  const statusLinesRef = useRef(statusLines);
+  statusLinesRef.current = statusLines;
   const cols = 18;
   const rows = 28;
 
@@ -119,7 +151,7 @@ export const MatrixRainScreenMesh = memo(function MatrixRainScreenMesh({
     if (!ctx) return;
     ctx.fillStyle = '#000500';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
-    drawMatrix(ctx, canvas.width, canvas.height, drops, cols, rows, clock.elapsedTime, seed);
+    drawMatrix(ctx, canvas.width, canvas.height, drops, cols, rows, clock.elapsedTime, seed, statusLinesRef.current);
     tex.needsUpdate = true;
   });
 
@@ -134,6 +166,7 @@ export const MatrixRainScreenMesh = memo(function MatrixRainScreenMesh({
         roughness={0.42}
         metalness={0.12}
         toneMapped={false}
+        side={THREE.DoubleSide}
       />
     </mesh>
   );

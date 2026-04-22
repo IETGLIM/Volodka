@@ -1,13 +1,22 @@
 import { describe, expect, it } from 'vitest';
-import { INTRO_OPENING_PLAYER_GLB_VISUAL_UNIFORM_EXTRA_MULTIPLIER } from '@/lib/introVolodkaOpeningCutscene';
-import { getExplorationPlayerGlbVisualUniformMultiplier } from '@/config/scenes';
+import {
+  INTRO_OPENING_PLAYER_GLTF_TARGET_METERS,
+  INTRO_OPENING_PLAYER_GLB_VISUAL_UNIFORM_EXTRA_MULTIPLIER,
+} from '@/lib/introVolodkaOpeningCutscene';
+import { getExplorationPlayerGlbVisualUniformMultiplier, getExplorationPlayerGltfTargetMeters } from '@/config/scenes';
 
 describe('intro opening GLB visual uniform extra multiplier', () => {
   it('shrinks scene multiplier relative to gameplay (volodka_room)', () => {
     const base = getExplorationPlayerGlbVisualUniformMultiplier('volodka_room');
     const intro = base * INTRO_OPENING_PLAYER_GLB_VISUAL_UNIFORM_EXTRA_MULTIPLIER;
     expect(intro).toBeLessThan(base);
-    expect(intro).toBeCloseTo(0.52 * 0.72, 5);
+    expect(intro).toBeCloseTo(0.52 * 0.5, 5);
+  });
+
+  it('caps GLB target height in intro below volodka_room gameplay', () => {
+    const gameplay = getExplorationPlayerGltfTargetMeters('volodka_room');
+    expect(INTRO_OPENING_PLAYER_GLTF_TARGET_METERS).toBeLessThan(gameplay);
+    expect(Math.min(gameplay, INTRO_OPENING_PLAYER_GLTF_TARGET_METERS)).toBe(INTRO_OPENING_PLAYER_GLTF_TARGET_METERS);
   });
 
   it('intro must not use default m=1 from an unrelated scene (would look larger than volodka gameplay)', () => {

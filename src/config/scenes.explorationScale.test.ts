@@ -21,11 +21,10 @@ describe('getExplorationCharacterModelScale', () => {
     expect(getExplorationCharacterModelScale('volodka_corridor')).toBeLessThan(1);
   });
 
-  it('zarema_albert_room uses slightly smaller player scale than NPC scale for tight orbit', () => {
-    expect(getExplorationCharacterModelScale('zarema_albert_room')).toBeLessThan(
-      getExplorationNpcModelScale('zarema_albert_room'),
+  it('zarema_albert_room: NPC location scale matches player (unified human height)', () => {
+    expect(getExplorationNpcModelScale('zarema_albert_room')).toBe(
+      getExplorationCharacterModelScale('zarema_albert_room'),
     );
-    expect(getExplorationNpcModelScale('zarema_albert_room')).toBe(0.52);
   });
 
   it('getExplorationNpcModelScale defaults to character scale when not overridden', () => {

@@ -4,6 +4,7 @@
 // ============================================
 
 import type { PlayerSkills, Collections, GameStatistics, PlayerState, NPCRelation } from './types';
+import { experienceRequiredForNextLevel } from '@/lib/rpgLeveling';
 
 export const INITIAL_SKILLS: PlayerSkills = {
   writing: 10,
@@ -45,6 +46,9 @@ export const INITIAL_STATE: PlayerState = {
   selfEsteem: 40,
   stress: 0,
   panicMode: false,
+  characterLevel: 1,
+  experience: 0,
+  experienceToNextLevel: experienceRequiredForNextLevel(1),
   poemsCollected: [],
   path: 'none',
   act: 1,

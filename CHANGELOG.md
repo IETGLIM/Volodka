@@ -4,11 +4,19 @@
 
 ### Added
 
+- **RPG: уровень персонажа и опыт**: кривая XP и потолок уровня (`src/lib/rpgLeveling.ts`, тесты); в `PlayerState` — `characterLevel`, `experience`, `experienceToNextLevel`; начисление XP за первый визит узла сюжета, первый сбор стиха и за завершение квестов (поле `experience` в награде + разумный дефолт); событие `player:level_up` и тост при росте уровня; полоса уровня/XP в `HUD`. Пошаговый бэклог с нарративной привязкой: `docs/rpg-leveling-story-backlog.md`; строка **E2.0** в `docs/exploration-expert-incremental-backlog.md`.
+
+### Changed
+
+- **Обход / масштаб и кадр**: для локаций с полом **≤18 м** к `explorationCharacterModelScale` применяется мягкий множитель от **`explorationInteriorCeilingMeters`** / **`inferExplorationInteriorCeilingMeters`** (`scenes.ts`); **`getExplorationNpcModelScale`** возвращает тот же масштаб, что и игрок; убраны уменьшающие **`scale`** у NPC в **`kitchen_night`**. Переход между 3D-сценами: **`SceneTransition`** с названием локации и длительностью **~1.65 с** (`GameOrchestrator`, `CinematicEffects`). Комната Володьки: крупнее экраны мониторов, поворот к игроку, **`statusLines`** на **`MatrixRainScreenMesh`**.
+
+### Added
+
 - **`explorationPlayerGlbVisualUniformMultiplier`** в `**SCENE_CONFIG**` + `**getExplorationPlayerGlbVisualUniformMultiplier**` — явный множитель к uniform GLB игрока **после** bbox-формулы (`**applyExplorationPlayerGlbVisualUniformMultiplier**` в `**PhysicsPlayer**`); в **`volodka_room`** задано **0.52**, в **`volodka_corridor`** **0.58**, в **`zarema_albert_room`** **0.56**, чтобы размер в кадре гарантированно менялся в проде.
 
 ### Fixed
 
-- **Обход / 3D-интро — масштаб GLB игрока**: в **`intro_cutscene`** множители игрока (в т.ч. **`explorationPlayerGlbVisualUniformMultiplier`** и **`INTRO_OPENING_PLAYER_GLB_VISUAL_UNIFORM_EXTRA_MULTIPLIER`**) считаются от **`INTRO_OPENING_SCENE_ID`** (`volodka_room`), а не от «текущего» **`sceneId`**, чтобы не подставлялся дефолт **`m = 1`** и интро не раздувало модель относительно геймплея; тест **`introVolodkaOpeningCutscene.playerScale.test.ts`**.
+- **Обход / 3D-интро — масштаб GLB игрока**: в **`intro_cutscene`** множители игрока (в т.ч. **`explorationPlayerGlbVisualUniformMultiplier`** и **`INTRO_OPENING_PLAYER_GLB_VISUAL_UNIFORM_EXTRA_MULTIPLIER`**) считаются от **`INTRO_OPENING_SCENE_ID`** (`volodka_room`), а не от «текущего» **`sceneId`**, чтобы не подставлялся дефолт **`m = 1`** и интро не раздувало модель относительно геймплея; тест **`introVolodkaOpeningCutscene.playerScale.test.ts`**. Дополнительно: **`INTRO_OPENING_PLAYER_GLTF_TARGET_METERS`** (потолок целевой высоты GLB) и более низкий **`INTRO_OPENING_PLAYER_GLB_VISUAL_UNIFORM_EXTRA_MULTIPLIER`**, чтобы силуэт в кадре при близкой кинокамере не казался «как в TPS».
 
 - **Обход / камера и масштаб игрока**: clamp uniform GLB (**`PLAYER_GLB_VISUAL_UNIFORM_MAX` 0.92**); на мешах GLB игрока — **`userData.isPlayer`**; **`volodka_room`**: **`explorationPlayerGltfTargetMeters` 0.96**, **`explorationCharacterModelScale` 0.48**; пресет **`FollowCamera`** — дальше/выше, **`minDistance`**, **`collisionRayOriginY`**, опционально **`pitchMin`/`pitchMax`** (меньше кадр «из-под ног» на Vercel).
 

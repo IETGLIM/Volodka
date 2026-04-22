@@ -91,6 +91,7 @@ import { NpcProximityBarks } from './NpcProximityBarks';
 import { ExplorationBriefingOverlay } from '@/components/game/exploration/ExplorationBriefingOverlay';
 import { IntroCutsceneCinematicDirector } from '@/components/Cutscenes/IntroCutscene';
 import {
+  INTRO_OPENING_PLAYER_GLTF_TARGET_METERS,
   INTRO_OPENING_PLAYER_GLB_VISUAL_UNIFORM_EXTRA_MULTIPLIER,
   INTRO_OPENING_SCENE_ID,
 } from '@/lib/introVolodkaOpeningCutscene';
@@ -327,10 +328,13 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
 
   const explorationNpcModelScale = useMemo(() => getExplorationNpcModelScale(sceneId), [sceneId]);
 
-  const explorationPlayerGltfTargetMeters = useMemo(
-    () => getExplorationPlayerGltfTargetMeters(playerSceneTuningId),
-    [playerSceneTuningId],
-  );
+  const explorationPlayerGltfTargetMeters = useMemo(() => {
+    const base = getExplorationPlayerGltfTargetMeters(playerSceneTuningId);
+    if (explorationPhase === 'intro_cutscene') {
+      return Math.min(base, INTRO_OPENING_PLAYER_GLTF_TARGET_METERS);
+    }
+    return base;
+  }, [playerSceneTuningId, explorationPhase]);
 
   const explorationPlayerGlbVisualUniformMultiplier = useMemo(() => {
     const m = getExplorationPlayerGlbVisualUniformMultiplier(playerSceneTuningId);

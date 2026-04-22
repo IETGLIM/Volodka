@@ -41,6 +41,7 @@ function createObjective(
 function createReward(options: QuestReward): QuestReward {
   return {
     ...options,
+    experience: options.experience,
     creativity: options.creativity || 0,
     mood: options.mood || 0,
     stability: options.stability || 0,
@@ -88,6 +89,7 @@ export const QUEST_DEFINITIONS: Record<string, ExtendedQuest> = {
       }),
     ],
     reward: createReward({
+      experience: 220,
       creativity: 50,
       karma: 30,
       stability: 25,
@@ -114,7 +116,7 @@ export const QUEST_DEFINITIONS: Record<string, ExtendedQuest> = {
         mapHint: { x: -1.85, z: 1.1 },
       }),
     ],
-    reward: createReward({ mood: 5, creativity: 3, karma: 2 }),
+    reward: createReward({ experience: 45, mood: 5, creativity: 3, karma: 2 }),
     /** Сторинод-хаб 3D-обхода (`explore_mode` в `storyNodes`). */
     startNode: 'explore_mode',
   },

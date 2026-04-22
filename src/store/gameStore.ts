@@ -33,6 +33,11 @@ import {
 } from '@/lib/persistedGameSnapshot';
 import { getExplorationLivePlayerPositionOrNull } from '@/lib/explorationLivePlayerBridge';
 import { useGamePhaseStore } from '@/store/gamePhaseStore';
+import {
+  applyExperienceGain,
+  experienceRequiredForNextLevel,
+  RPG_XP_SKILL_POINTS_PER_LEVEL,
+} from '@/lib/rpgLeveling';
 
 export type TravelToSceneResult =
   | { ok: true }
@@ -78,6 +83,9 @@ const INITIAL_STATE: PlayerState = {
   selfEsteem: 40,
   stress: 0,
   panicMode: false,
+  characterLevel: 1,
+  experience: 0,
+  experienceToNextLevel: experienceRequiredForNextLevel(1),
   poemsCollected: [],
   path: 'none',
   act: 1,
@@ -266,6 +274,8 @@ interface GameState {
   // Skills
   addSkill: (skill: keyof PlayerSkills, amount: number) => void;
   addSkillPoints: (points: number) => void;
+  /** Начисление опыта персонажа (уровни + очки навыков за уровень); `source` — для шины и отладки. */
+  addExperience: (amount: number, source?: string) => void;
   
   // Inventory
   addItem: (itemId: string, quantity?: number) => void;
@@ -389,6 +399,33 @@ type SavedInventoryEntry = {
   obtainedAt?: number;
 };
 
+/** Миграция старых сейвов без полей уровня/опыта и починка переполненного бакета XP. */
+function normalizePlayerStateForLoad(raw: PlayerState | undefined): PlayerState {
+  const merged: PlayerState = raw
+    ? { ...INITIAL_STATE, ...raw, skills: { ...INITIAL_SKILLS, ...raw.skills } }
+    : { ...INITIAL_STATE };
+  let level =
+    typeof merged.characterLevel === 'number' && merged.characterLevel >= 1
+      ? Math.floor(merged.characterLevel)
+      : 1;
+  let xp = typeof merged.experience === 'number' && merged.experience >= 0 ? merged.experience : 0;
+  let toNext =
+    typeof merged.experienceToNextLevel === 'number' && merged.experienceToNextLevel > 0
+      ? merged.experienceToNextLevel
+      : experienceRequiredForNextLevel(level);
+  while (toNext > 0 && xp >= toNext) {
+    xp -= toNext;
+    level += 1;
+    toNext = experienceRequiredForNextLevel(level);
+  }
+  return {
+    ...merged,
+    characterLevel: level,
+    experience: xp,
+    experienceToNextLevel: toNext,
+  };
+}
+
 type SavedGameData = {
   playerState?: PlayerState;
   currentNodeId?: string;
@@ -434,7 +471,7 @@ const deserializeInventory = (entries: SavedInventoryEntry[] = []): InventoryIte
 let storageHydrationApplied = false;
 
 const normalizeLoadedState = (data: SavedGameData) => ({
-  playerState: data.playerState || INITIAL_STATE,
+  playerState: normalizePlayerStateForLoad(data.playerState),
   currentNodeId:
     typeof data.currentNodeId === 'string' && data.currentNodeId.length > 0
       ? data.currentNodeId
@@ -522,17 +559,19 @@ export const useGameStore = create<GameState>()((set, get) => ({
   // Node
   setCurrentNode: (nodeId) => {
     const { playerState } = get();
+    const already = playerState.visitedNodes.includes(nodeId);
     // Узел попадает в visitedNodes здесь; visitNode — для отметки без смены currentNodeId
     // (не вызывайте подряд с setCurrentNode для того же nodeId — двойное обновление state).
     set({ 
       currentNodeId: nodeId,
       playerState: {
         ...playerState,
-        visitedNodes: playerState.visitedNodes.includes(nodeId) 
-          ? playerState.visitedNodes 
-          : [...playerState.visitedNodes, nodeId]
+        visitedNodes: already ? playerState.visitedNodes : [...playerState.visitedNodes, nodeId]
       }
     });
+    if (!already) {
+      get().addExperience(6, `story_node:${nodeId}`);
+    }
   },
   
   // Stats
@@ -658,6 +697,42 @@ export const useGameStore = create<GameState>()((set, get) => ({
         }
       }
     });
+  },
+
+  addExperience: (amount, source) => {
+    if (!Number.isFinite(amount) || amount <= 0) return;
+    const { playerState } = get();
+    const res = applyExperienceGain(
+      playerState.characterLevel,
+      playerState.experience,
+      amount,
+    );
+    const spGain = res.levelsGained * RPG_XP_SKILL_POINTS_PER_LEVEL;
+    set({
+      playerState: {
+        ...playerState,
+        characterLevel: res.characterLevel,
+        experience: res.experience,
+        experienceToNextLevel: res.experienceToNextLevel,
+        skills: {
+          ...playerState.skills,
+          skillPoints: playerState.skills.skillPoints + spGain,
+        },
+      },
+    });
+    if (res.levelsGained > 0) {
+      eventBus.emit('player:level_up', {
+        newLevel: res.characterLevel,
+        levelsGained: res.levelsGained,
+        source,
+      });
+      eventBus.emit('ui:exploration_message', {
+        text:
+          res.levelsGained === 1
+            ? `Уровень ${res.characterLevel}. +${spGain} оч. навыков.`
+            : `Уровни +${res.levelsGained} → ${res.characterLevel}. +${spGain} оч. навыков.`,
+      });
+    }
   },
   
   // Inventory — uses real item data from items.ts
@@ -786,6 +861,7 @@ export const useGameStore = create<GameState>()((set, get) => ({
           poemsCollected: [...playerState.poemsCollected, poemId]
         }
       });
+      get().addExperience(22, `poem:${poemId}`);
     }
   },
   
@@ -1093,6 +1169,10 @@ export const useGameStore = create<GameState>()((set, get) => ({
       });
     }
     eventBus.emit('quest:completed', { questId });
+    const qxp = questDef?.reward?.experience;
+    const xpAward =
+      typeof qxp === 'number' && qxp > 0 ? qxp : questId === 'main_goal' ? 48 : 36;
+    get().addExperience(xpAward, `quest:${questId}`);
   },
   
   updateQuestObjective: (questId, objectiveId, value) => {
@@ -1339,7 +1419,10 @@ export const usePlayerStats = () => useGameStore(useShallow((state) => ({
   stability: state.playerState.stability,
   energy: state.playerState.energy,
   karma: state.playerState.karma,
-  stress: state.playerState.stress
+  stress: state.playerState.stress,
+  characterLevel: state.playerState.characterLevel,
+  experience: state.playerState.experience,
+  experienceToNextLevel: state.playerState.experienceToNextLevel,
 })));
 
 export const usePlayerSkills = () => useGameStore((state) => state.playerState.skills); // primitive — no useShallow needed

@@ -4,10 +4,16 @@ import * as THREE from 'three';
 import { PLAYER_FEET_SPAWN_Y } from '@/lib/playerScaleConstants';
 
 /**
- * Дополнительный множитель к `explorationPlayerGlbVisualUniformMultiplier` только на фазе `intro_cutscene`:
- * кинокамера ближе, чем `FollowCamera`, плюс bbox скина в позе за столом может давать более крупный визуал, чем в геймплее.
+ * Целевая высота GLB (м сцены) в `intro_cutscene`: ниже, чем в `volodka_room` геймплее (**0.96**),
+ * иначе при близкой кинокамере силуэт всё равно доминирует кадр.
  */
-export const INTRO_OPENING_PLAYER_GLB_VISUAL_UNIFORM_EXTRA_MULTIPLIER = 0.72;
+export const INTRO_OPENING_PLAYER_GLTF_TARGET_METERS = 0.74;
+
+/**
+ * Дополнительный множитель к `explorationPlayerGlbVisualUniformMultiplier` только на фазе `intro_cutscene`
+ * (после bbox и целевой высоты выше).
+ */
+export const INTRO_OPENING_PLAYER_GLB_VISUAL_UNIFORM_EXTRA_MULTIPLIER = 0.5;
 
 /** Сцена до финала 3D-интро (комната Володьки). */
 export const INTRO_OPENING_SCENE_ID: SceneId = 'volodka_room';

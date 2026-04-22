@@ -26,6 +26,9 @@ export interface SceneTransitionProps {
   type: TransitionType;
   duration?: number;
   onComplete?: () => void;
+  /** Подпись локации (показывается в «hold» фазе киноперехода). */
+  sceneTitle?: string;
+  sceneTagline?: string;
 }
 
 // ============================================
@@ -228,6 +231,8 @@ export const SceneTransition = memo(function SceneTransition({
   type,
   duration = 1,
   onComplete,
+  sceneTitle,
+  sceneTagline,
 }: SceneTransitionProps) {
   const [phase, setPhase] = useState<'in' | 'hold' | 'out' | 'idle'>('idle');
   const prevIsActiveRef = useRef(isActive);
@@ -349,16 +354,30 @@ export const SceneTransition = memo(function SceneTransition({
     }
   }, [type, phase]);
 
+  const showTitle = Boolean(sceneTitle && phase === 'hold');
+
   return (
     <AnimatePresence>
       {phase !== 'idle' && (
         <motion.div
-          className="fixed inset-0 z-50 bg-black"
+          className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black text-center"
           initial={transitionVariants.initial}
           animate={transitionVariants.animate}
           exit={transitionVariants.exit}
           transition={{ duration: duration / 2, ease: [0.4, 0, 0.2, 1] }}
-        />
+        >
+          {showTitle && (
+            <div className="pointer-events-none z-[1] max-w-[min(92vw,28rem)] px-6">
+              <p className="font-mono text-[10px] uppercase tracking-[0.45em] text-cyan-400/80">локация</p>
+              <p className="mt-2 font-mono text-lg font-medium leading-snug text-cyan-100/95 sm:text-xl">
+                {sceneTitle}
+              </p>
+              {sceneTagline ? (
+                <p className="mt-3 font-mono text-xs leading-relaxed text-slate-400/90">{sceneTagline}</p>
+              ) : null}
+            </div>
+          )}
+        </motion.div>
       )}
     </AnimatePresence>
   );

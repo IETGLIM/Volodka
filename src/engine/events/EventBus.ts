@@ -146,6 +146,9 @@ export interface EventMap {
 
   'loot:reward': { itemId: string; name: string; rarity: string };
   'skill:level_up': { skill: string; level: number };
+
+  /** Уровень персонажа вырос после начисления XP (`gameStore.addExperience`). */
+  'player:level_up': { newLevel: number; levelsGained: number; source?: string };
 }
 
 // ============================================

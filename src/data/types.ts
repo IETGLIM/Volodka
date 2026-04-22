@@ -90,6 +90,12 @@ export interface PlayerState {
   panicMode: boolean;    // Активен ли режим паники
   
   // Прогресс
+  /** Уровень персонажа (1…), классический RPG-слой поверх навыков и кармы. */
+  characterLevel: number;
+  /** Текущий опыт в бакете до следующего уровня. */
+  experience: number;
+  /** Порог до следующего уровня (денормализация для HUD/сейва). */
+  experienceToNextLevel: number;
   poemsCollected: string[];
   path: PlayerPath;
   act: 1 | 2 | 3 | 4;
@@ -418,6 +424,8 @@ export interface QuestObjective {
 }
 
 export interface QuestReward {
+  /** Опыт персонажа (XP) за завершение квеста. */
+  experience?: number;
   creativity?: number;
   mood?: number;
   stability?: number;

@@ -53,6 +53,10 @@ export interface SceneConfig {
    */
   explorationNpcModelScale?: number;
   /**
+   * Высота потолка интерьера (м) для мягкой подгонки масштаба персонажа; улицы / сцены с «небом» не задают (≥4 м — игнор).
+   */
+  explorationInteriorCeilingMeters?: number;
+  /**
    * Множитель скорости ходьбы/бега игрока и патруля NPC в 3D-исследовании (коллайдеры без изменений).
    * Если не задано — выводится из итогового масштаба персонажа (как пара 0.48 / 0.9 у `volodka_room`).
    */
@@ -97,27 +101,25 @@ export const SCENE_CONFIG = {
     directionalLights: [{ position: [5, 10, 5], intensity: 1.2 }],
     npcs: [
       // Зарема - стоит у окна
-      { 
-        id: 'zarema', 
-        name: 'Зарема', 
-        model: 'barista', 
+      {
+        id: 'zarema',
+        name: 'Зарема',
+        model: 'barista',
         modelPath: '/models/college_girl.glb',
-        position: [-3, 0, -2], 
-        rotation: [0, 0.8, 0], 
+        position: [-3, 0, -2],
+        rotation: [0, 0.8, 0],
         dialogueTree: 'zarema_room',
-        scale: 0.8
       },
       // Альберт - сидит за столом
-      { 
-        id: 'albert', 
-        name: 'Альберт', 
-        model: 'colleague', 
+      {
+        id: 'albert',
+        name: 'Альберт',
+        model: 'colleague',
         modelPath: '/models/lowpoly_anime_character_cyberstyle.glb',
-        position: [2, 0, -1], 
-        rotation: [0, -0.5, 0], 
+        position: [2, 0, -1],
+        rotation: [0, -0.5, 0],
         dialogueTree: 'albert_room',
-        scale: 0.7
-      }
+      },
     ],
     interactiveObjects: [
       { id: 'room_book', type: 'book', position: [0, 0.9, -2], poemId: 'poem_01', itemId: 'notebook', canBeRead: true, size: [0.3, 0.04, 0.2], color: '#8b4513' }
@@ -150,6 +152,7 @@ export const SCENE_CONFIG = {
     id: 'volodka_room',
     name: 'Комната Володьки',
     explorationCharacterModelScale: 0.48,
+    explorationInteriorCeilingMeters: 2.85,
     /** Ниже глобального 1.38: в узкой комнате иначе персонаж доминирует кадр при TPS. */
     explorationPlayerGltfTargetMeters: 0.96,
     /** Явный множитель меша поверх bbox-формулы — гарантирует видимое уменьшение в проде (Vercel). */
@@ -594,11 +597,11 @@ export const SCENE_CONFIG = {
     id: 'zarema_albert_room',
     name: 'Комната Заремы и Альберта',
     /**
-     * Игрок чуть меньше NPC — меньше «ботинок в кадре» при узкой орбите; NPC остаются читабельными.
+     * Компактная комната: низкий масштаб игрока; NPC в обходе используют тот же `locationModelScale`, что и игрок.
      * См. пресет камеры `zarema_albert_room` в `RPGGameCanvas`.
      */
     explorationCharacterModelScale: 0.38,
-    explorationNpcModelScale: 0.52,
+    explorationInteriorCeilingMeters: 2.72,
     explorationLocomotionScale: 0.86,
     /** Явная привязка к сцене: без этого `visualModelScale` слабо влияет на итоговый uniform GLB. */
     explorationPlayerGltfTargetMeters: 0.78,
@@ -666,20 +669,55 @@ export const getSceneConfig = (sceneId: SceneId): SceneConfig => {
   return SCENE_CONFIG[sceneId] ?? SCENE_CONFIG.kitchen_night!;
 };
 
-/** Множитель визуала игрока в 3D-исследовании для `sceneId` (1, если не задано в `SCENE_CONFIG`). */
-export function getExplorationCharacterModelScale(sceneId: SceneId): number {
-  const entry = SCENE_CONFIG[sceneId];
-  if (!entry) return 1;
-  return entry.explorationCharacterModelScale ?? 1;
+const REF_INTERIOR_CEILING_M = 2.85;
+
+function explorationSceneUsesInteriorRoomScaling(entry: SceneConfig): boolean {
+  const [a, b] = entry.size;
+  return Math.max(a, b) <= 18;
+}
+
+/** Потолок по умолчанию для интерьеров без явного поля в `SCENE_CONFIG`. */
+export function inferExplorationInteriorCeilingMeters(sceneId: SceneId): number {
+  switch (sceneId) {
+    case 'volodka_corridor':
+      return 2.62;
+    case 'zarema_albert_room':
+      return 2.72;
+    case 'cafe_evening':
+    case 'office_morning':
+      return 2.95;
+    case 'kitchen_night':
+    case 'kitchen_dawn':
+      return 2.78;
+    default:
+      return REF_INTERIOR_CEILING_M;
+  }
 }
 
 /**
- * Множитель визуала NPC в обходе: по умолчанию совпадает с игроком; можно задать `explorationNpcModelScale` только для NPC.
+ * Множитель визуала игрока в 3D-исследовании для `sceneId` (1, если не задано в `SCENE_CONFIG`).
+ * Для компактных локаций (max пола ≤ 18 м) слегка подстраивает базовый множитель под высоту потолка.
  */
-export function getExplorationNpcModelScale(sceneId: SceneId): number {
+export function getExplorationCharacterModelScale(sceneId: SceneId): number {
   const entry = SCENE_CONFIG[sceneId];
   if (!entry) return 1;
-  return entry.explorationNpcModelScale ?? getExplorationCharacterModelScale(sceneId);
+  const base = entry.explorationCharacterModelScale ?? 1;
+  if (!explorationSceneUsesInteriorRoomScaling(entry)) return base;
+  const ceilingRaw =
+    entry.explorationInteriorCeilingMeters ?? inferExplorationInteriorCeilingMeters(sceneId);
+  if (ceilingRaw >= 4) return base;
+  const ceiling = Math.max(2.12, Math.min(3.45, ceilingRaw));
+  const k = Math.sqrt(ceiling / REF_INTERIOR_CEILING_M);
+  return Math.min(1.18, Math.max(0.35, base * k));
+}
+
+/**
+ * Множитель визуала NPC в обходе: совпадает с игроком в той же локации (единый «человеческий» рост в кадре).
+ * Поле `explorationNpcModelScale` оставлено в типе для редких исключений (не используется в геттере).
+ */
+export function getExplorationNpcModelScale(sceneId: SceneId): number {
+  if (!SCENE_CONFIG[sceneId]) return 1;
+  return getExplorationCharacterModelScale(sceneId);
 }
 
 /** Множитель скорости в 3D-исследовании для `sceneId` (из масштаба персонажа, если не задано явно). */

@@ -747,7 +747,7 @@ interface NPCProps {
   onInteraction: (npcId: string) => void;
   onStateChange: (state: NPCState) => void;
   isDialogueActive: boolean;
-  /** Множитель из `getExplorationNpcModelScale(currentSceneId)` (или свой `explorationNpcModelScale` в сцене). */
+  /** Множитель из `getExplorationNpcModelScale(currentSceneId)` (совпадает с масштабом игрока в локации). */
   locationModelScale?: number;
   /** Множитель скорости патруля; `getExplorationLocomotionScale`. */
   locationLocomotionScale?: number;
