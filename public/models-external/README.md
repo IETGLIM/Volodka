@@ -2,6 +2,8 @@
 
 **Каноничная папка в этом репозитории:** `public/models-external` — пути в данных вида `/models/*.glb` автоматически перенаправляются сюда (см. `getModelsPublicBase` / `rewriteLegacyModelPath` в `src/config/modelUrls.ts`). Для CDN задайте `NEXT_PUBLIC_MODELS_BASE`.
 
+**Бесплатные CC0 (Khronos):** файлы `khronos_cc0_*.glb` и описание лицензий — в **[CC0_KHRONOS_MODELS.md](./CC0_KHRONOS_MODELS.md)**.
+
 ---
 
 ## Бесплатные варианты хранения моделей:

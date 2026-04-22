@@ -76,6 +76,16 @@ export const MODEL_URLS = {
   
   // Окружение
   blackhole: `${BASE_URL}/blackhole.glb`,
+
+  /**
+   * Бесплатные эталоны **Khronos glTF-Sample-Assets** (CC0 1.0) — см. `public/models-external/CC0_KHRONOS_MODELS.md`.
+   * Не персонажи: проп / тест пайплайна (`normalizePropHeight`, PBR, morph + анимация).
+   */
+  cc0KhronosBoxVertexColors: `${BASE_URL}/khronos_cc0_BoxVertexColors.glb`,
+  cc0KhronosAnimatedMorphCube: `${BASE_URL}/khronos_cc0_AnimatedMorphCube.glb`,
+  cc0KhronosNormalTangentTest: `${BASE_URL}/khronos_cc0_NormalTangentTest.glb`,
+  /** Ретро-бумбокс (Microsoft, CC0) — уместен как «железо» на столе в комнате. */
+  cc0KhronosBoomBox: `${BASE_URL}/khronos_cc0_BoomBox.glb`,
 } as const;
 
 /** Проверка пути к GLB игрока: абсолютный путь приложения или http(s) URL. */

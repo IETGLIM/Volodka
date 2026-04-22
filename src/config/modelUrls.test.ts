@@ -31,4 +31,9 @@ describe('isValidPlayerGlbPath', () => {
   it('volodka entry is a valid path', () => {
     expect(isValidPlayerGlbPath(MODEL_URLS.volodka)).toBe(true);
   });
+
+  it('exposes bundled Khronos CC0 sample URLs', () => {
+    expect(MODEL_URLS.cc0KhronosBoomBox).toContain('khronos_cc0_BoomBox.glb');
+    expect(MODEL_URLS.cc0KhronosBoxVertexColors).toContain('khronos_cc0_BoxVertexColors.glb');
+  });
 });
