@@ -24,7 +24,8 @@ export type MutableBoolRef = { current: boolean };
 /**
  * Horizontal acceleration toward target walk/run velocity (world XZ).
  */
-const HORIZONTAL_ACCEL = 14;
+/** Чуть ниже — дольше разгон/торможение, ощущение массы капсулы в TPS. */
+const HORIZONTAL_ACCEL = 10.5;
 
 /**
  * Capsule half-height (cylinder segment) and radius from room scale and base constants.

@@ -59,6 +59,23 @@ export function createVolodkaWallTexture(): THREE.CanvasTexture {
       const y = Math.random() * h;
       ctx.fillRect(x, y, 2 + Math.random() * 2, 1);
     }
+    /** «Дата-шахта» / кабель-канал: тонкие вертикали (IT / Blade Runner). */
+    const stripe = Math.max(5, Math.floor(w / 28));
+    ctx.lineWidth = 1;
+    ctx.strokeStyle = 'rgba(34, 197, 94, 0.055)';
+    for (let x = 0; x < w; x += stripe) {
+      ctx.beginPath();
+      ctx.moveTo(x + 0.5, 0);
+      ctx.lineTo(x + 0.5, h);
+      ctx.stroke();
+    }
+    ctx.strokeStyle = 'rgba(251, 191, 36, 0.045)';
+    for (let x = stripe * 2; x < w; x += stripe * 4) {
+      ctx.beginPath();
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x, h);
+      ctx.stroke();
+    }
   });
 }
 

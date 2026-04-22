@@ -8,8 +8,11 @@
 
 - **Обход / T1 масштаб мебели:** стол **~0.75 м** к столешнице (`INTERIOR_REF_DESK_SURFACE_Y_M`), шкафы **2.0 м**, диван и низкий стол в эталоне — `explorationInteriorReference.ts`; `VolodkaRoomVisual`, `scenes.ts` (`volodka_room` interactiveObjects), `PhysicsSceneColliders` (`VolodkaRoomColliders`); квартира Заремы — `ZaremaAlbertExplorationVisual` + книга на журнальном столе в `scenes.ts` (`zarema_albert_room`).
 
+- **Обход / кибер-эстетика и UX:** сглаживание таймлайна 3D-интро (`cinematicEasing.ts`, `introVolodkaOpeningCutscene`, `IntroCutscene`); чуть более инертный разгон WASD (`CharacterController`); общий Canvas2D-рендер матрицы (`cyberMatrixRainCanvas.ts`, `MatrixRainScreenMesh`); глитч-панель и IT-полосы на обоях (`glitchDataPlaneMaterial.ts`, `volodkaRoomProceduralTextures`); контур ближайшего интерактива для **E** (`ExplorationInteractionFocusOutline`, `RPGGameCanvas`); кабина лифта и табличка **III этаж** (`IntroElevatorShaftVisual`, `ZaremaAlbertExplorationVisual`); `public/textures/README.md`.
+
 ### Added
 
+- **`cinematicEasing`**, **`cinematicEasing.test.ts`**, **`cyberMatrixRainCanvas.ts`**, **`glitchDataPlaneMaterial.ts`**, **`ExplorationInteractionFocusOutline.tsx`** — опоры под Matrix / glitch / IT-интерфейс в обходе.
 - **План AAA-скоупа (ТД):** `docs/volodka-aaa-technical-director-roadmap.md` — этапы T1–T5 (масштаб/коллайдеры, интерьер Blade Runner + glitch, интерактив, квесты, PBR-ассеты, заметка про WebGPU-спайк); ссылка из `docs/exploration-expert-incremental-backlog.md`.
 - **RPG: уровень персонажа и опыт**: кривая XP и потолок уровня (`src/lib/rpgLeveling.ts`, тесты); в `PlayerState` — `characterLevel`, `experience`, `experienceToNextLevel`; начисление XP за первый визит узла сюжета, первый сбор стиха и за завершение квестов (поле `experience` в награде + разумный дефолт); событие `player:level_up` и тост при росте уровня; полоса уровня/XP в `HUD`. Пошаговый бэклог с нарративной привязкой: `docs/rpg-leveling-story-backlog.md`; строка **E2.0** в `docs/exploration-expert-incremental-backlog.md`.
 

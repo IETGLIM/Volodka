@@ -1,6 +1,7 @@
 'use client';
 
 import { memo, useEffect, useMemo } from 'react';
+import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import {
   createVolodkaCarpetTexture,
@@ -18,6 +19,7 @@ import {
   interiorDoorCenterYFromFloor,
   interiorWardrobeCenterYFromFloor,
 } from '@/lib/explorationInteriorReference';
+import { createGlitchDataPlaneMaterial } from '@/lib/glitchDataPlaneMaterial';
 
 const VOLODKA_MONITOR_LEFT_LINES = ['STATUS: DEGRADED', 'Grafana · Prometheus', 'pod/monitoring-01'] as const;
 const VOLODKA_MONITOR_RIGHT_LINES = ['RETRO INCIDENT', 'on-call: Володька', 'silence: 0 active'] as const;
@@ -114,6 +116,16 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual() {
     };
   }, [wallMat, floorMat, woodMat]);
 
+  const glitchPanelMat = useMemo(() => createGlitchDataPlaneMaterial('#38bdf8'), []);
+  useFrame(({ clock }) => {
+    glitchPanelMat.uniforms.uTime.value = clock.elapsedTime;
+  });
+  useEffect(() => {
+    return () => {
+      glitchPanelMat.dispose();
+    };
+  }, [glitchPanelMat]);
+
   return (
     <group name="VolodkaRoomVisual" userData={{ noCameraCollision: true }}>
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.015, 0]} receiveShadow material={floorMat}>
@@ -125,6 +137,16 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual() {
       </mesh>
       <mesh position={[w / 2 - t / 2, h / 2, 0]} castShadow receiveShadow material={wallMat}>
         <boxGeometry args={[t, h, d - 0.2]} />
+      </mesh>
+
+      {/* Голографический «сбой» у восточной стены — канал / VLAN-схема. */}
+      <mesh
+        position={[w / 2 - t - 0.04, 1.22, 0.15]}
+        rotation={[0, -Math.PI / 2, 0]}
+        userData={{ noCameraCollision: true }}
+        material={glitchPanelMat}
+      >
+        <planeGeometry args={[1.35, 0.62]} />
       </mesh>
 
       <mesh position={[0, h / 2, -hd + t / 2]} castShadow receiveShadow material={wallMat}>

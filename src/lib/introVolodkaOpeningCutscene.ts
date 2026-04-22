@@ -2,6 +2,7 @@ import type { SceneId } from '@/data/types';
 import type { PlayerPosition } from '@/data/rpgTypes';
 import * as THREE from 'three';
 import { PLAYER_FEET_SPAWN_Y } from '@/lib/playerScaleConstants';
+import { smoothBlend01 } from '@/lib/cinematicEasing';
 
 /**
  * Целевая высота GLB (м сцены) в `intro_cutscene`: ниже, чем в `volodka_room` геймплее (**0.96**),
@@ -101,7 +102,8 @@ export function sampleIntroPlayerPose(elapsedSec: number): { pose: PlayerPositio
   const a = kf[i];
   const b = kf[i + 1];
   const span = Math.max(1e-4, b.tSec - a.tSec);
-  const u = THREE.MathUtils.clamp((elapsedSec - a.tSec) / span, 0, 1);
+  const uLinear = THREE.MathUtils.clamp((elapsedSec - a.tSec) / span, 0, 1);
+  const u = smoothBlend01(uLinear);
   const x = THREE.MathUtils.lerp(a.x, b.x, u);
   const y = THREE.MathUtils.lerp(a.y, b.y, u);
   const z = THREE.MathUtils.lerp(a.z, b.z, u);

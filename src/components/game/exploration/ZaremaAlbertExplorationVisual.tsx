@@ -80,6 +80,36 @@ export const ZaremaAlbertExplorationVisual = memo(function ZaremaAlbertExplorati
     };
   }, [wallMat, woodMat]);
 
+  const landingPlateTex = useMemo(() => {
+    const c = document.createElement('canvas');
+    c.width = 640;
+    c.height = 200;
+    const ctx = c.getContext('2d');
+    if (!ctx) {
+      throw new Error('2D context unavailable for landing plate');
+    }
+    ctx.fillStyle = '#0c1220';
+    ctx.fillRect(0, 0, c.width, c.height);
+    ctx.strokeStyle = 'rgba(56, 189, 248, 0.4)';
+    ctx.lineWidth = 4;
+    ctx.strokeRect(6, 6, c.width - 12, c.height - 12);
+    ctx.fillStyle = '#fbbf24';
+    ctx.font = 'bold 56px ui-monospace, monospace';
+    ctx.fillText('III ЭТАЖ', 36, 78);
+    ctx.fillStyle = 'rgba(186, 230, 253, 0.92)';
+    ctx.font = '26px ui-monospace, monospace';
+    ctx.fillText('подъезд Б · кв. Зарема / Альберт', 36, 128);
+    const tex = new THREE.CanvasTexture(c);
+    tex.colorSpace = THREE.SRGBColorSpace;
+    return tex;
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      landingPlateTex.dispose();
+    };
+  }, [landingPlateTex]);
+
   return (
     <group name="ZaremaAlbertExplorationVisual" userData={{ noCameraCollision: true }}>
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.03, 0]} receiveShadow>
@@ -97,6 +127,21 @@ export const ZaremaAlbertExplorationVisual = memo(function ZaremaAlbertExplorati
       </mesh>
       <mesh position={[w / 2 - t / 2, h / 2, 0]} castShadow receiveShadow material={wallMat}>
         <boxGeometry args={[t, h, d - 0.2]} />
+      </mesh>
+      <mesh
+        position={[w / 2 - t - 0.035, 1.38, 0.55]}
+        rotation={[0, -Math.PI / 2, 0]}
+        userData={{ explorationProp: 'zarema_floor_plate' }}
+      >
+        <planeGeometry args={[1.15, 0.36]} />
+        <meshStandardMaterial
+          map={landingPlateTex}
+          emissive="#0ea5e9"
+          emissiveIntensity={0.14}
+          roughness={0.72}
+          metalness={0.1}
+          toneMapped={false}
+        />
       </mesh>
       <mesh position={[0, h / 2, -hd + t / 2]} castShadow receiveShadow material={wallMat}>
         <boxGeometry args={[w - 0.2, h, t]} />

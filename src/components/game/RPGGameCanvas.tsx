@@ -87,6 +87,7 @@ import { VolodkaCorridorVisual } from './exploration/VolodkaCorridorVisual';
 import { VolodkaRoomVisual } from './exploration/VolodkaRoomVisual';
 import { ZaremaAlbertExplorationVisual } from './exploration/ZaremaAlbertExplorationVisual';
 import { HomeEveningVisual } from './exploration/HomeEveningVisual';
+import { ExplorationInteractionFocusOutline } from '@/components/game/exploration/ExplorationInteractionFocusOutline';
 import { NpcProximityBarks } from './NpcProximityBarks';
 import { ExplorationBriefingOverlay } from '@/components/game/exploration/ExplorationBriefingOverlay';
 import { IntroCutsceneCinematicDirector } from '@/components/Cutscenes/IntroCutscene';
@@ -768,6 +769,14 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
           onTriggerEnter={handleTriggerEnter}
           onTriggerStateChange={handleTriggerStateChange}
           onInteractionAvailabilityChange={onInteractionAvailabilityChange}
+        />
+
+        <ExplorationInteractionFocusOutline
+          objects={sceneInteractiveObjects}
+          playerPositionRef={livePlayerPositionRef}
+          enabled={
+            explorationPhase === 'gameplay' && !playerInputLocked && sceneInteractiveObjects.length > 0
+          }
         />
 
         {introCutsceneActive && <IntroCutsceneCinematicDirector />}

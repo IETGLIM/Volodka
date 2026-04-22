@@ -19,6 +19,7 @@ import {
   sampleIntroPlayerPose,
 } from '@/lib/introVolodkaOpeningCutscene';
 import { IntroElevatorShaftVisual } from '@/components/game/exploration/IntroElevatorShaftVisual';
+import { smoothBlend01 } from '@/lib/cinematicEasing';
 
 const INTRO_CAMERA_R3F_PRIORITY = 55;
 
@@ -44,7 +45,8 @@ function sampleCamera(elapsed: number): { cam: THREE.Vector3; look: THREE.Vector
   const a = kf[i];
   const b = kf[i + 1];
   const span = Math.max(1e-4, b.tSec - a.tSec);
-  const u = THREE.MathUtils.clamp((elapsed - a.tSec) / span, 0, 1);
+  const uLinear = THREE.MathUtils.clamp((elapsed - a.tSec) / span, 0, 1);
+  const u = smoothBlend01(uLinear);
   tmpScratch.set(...a.cam);
   tmpCam.copy(tmpScratch);
   tmpScratch.set(...b.cam);
