@@ -4,7 +4,8 @@
 
 ### Changed
 
-- **Обход / 3D-интро:** в `**RPGGameCanvas**` для узких локаций на фазе `**intro_cutscene**` смягчён линейный туман (`near` / `far`), чтобы стены комнаты не «съедались» в чёрный кадр при кинокамере; в `**gameplay**` пороги прежние.
+- **Обход / туман в узких комнатах:** в `**RPGGameCanvas**` смягчены `near` / `far` для `**intro_cutscene**` и для обычного `**gameplay**` (раньше 1.2 / 42 — слишком быстрый уход в `fogColor` при орбите).
+- **Обход / NPC в комнате Володьки:** по умолчанию снова грузится GLB Димы; отключение только при `**NEXT_PUBLIC_EXPLORATION_VOLODKA_NPC_GLB=0**` (`**explorationDiagnostics.ts**`).
 
 - **Обход / масштаб интерьера (Volodka):** эталон двери **~2.06×0.92 м** и центр по высоте от пола — `explorationInteriorReference.ts`; визуал дверей в `VolodkaRoomVisual` / `VolodkaCorridorVisual` и объекты `volodka_door_corridor`, коридорные двери в `scenes.ts` приведены к одним числам (раньше дверь комнаты визуально «висела» с низким центром **y=0.55** при высоте **1.85**).
 
@@ -69,7 +70,7 @@
 
 - **UI диалога (обход / VN)**: `**DialogueRenderer`** — терминальный хром (`VOLODKA_OS…`), неон, spring-«глитч», без путей `volodka://` и без записи в память «разговор начат/завершён»; `**MemoryLog`** — убраны видимые `@id` и `#теги`. Звук квеста — опционально `**/sounds/quest_notify.mp3**` (если файла нет, тост всё равно показывается).
 - **Обход / масштаб игрока в коридоре**: в `**scenes.ts`** для `**volodka_corridor`** — `**explorationCharacterModelScale**` **0.58** вместо **0.48** (читабельнее модель на узкой сцене).
-- **Обход / NPC в комнате Володьки (временно)**: без `**NEXT_PUBLIC_EXPLORATION_VOLODKA_NPC_GLB=1`** в `**volodka_room`** не грузится GLB — только `**FallbackNPCModel**` (`**NPC.tsx**`, `**explorationDiagnostics.ts**`).
+- **Обход / NPC в комнате Володьки (история)**: раньше GLB требовал ручной `**=1**`; теперь по умолчанию включён, выключается только `**=0**` (см. актуальный пункт в `## [Unreleased]`).
 - **Обход / E2.2 радиальное меню и предметы**: `**getExplorationRadialMenuActions`** (`lib/explorationRadialMenuActions.ts`, тесты) — фильтр действий по объекту и сцене; `**RadialMenu`** — проп `**allowedActions**`, сетка 1×N / 2×N; `**RPGGameCanvas**` — подпись с `**itemId**`; при «Взять» — тост с именем предмета из `**data/items.ts**` (`**GameOrchestrator**`).
 - **Документация**: `**README.md`** — в блоке про 3D-обход добавлены пункты про брифинг (квесты, карма, камера и **R**), тост при первом диалоге из обхода и сглаженную GLB-локомоцию игрока/NPC; полный список по-прежнему в этом файле.
 - **Обход / E2.1 квесты и карма**: в `**ExplorationBriefingOverlay`** — одна выделенная строка про журнал квестов и влияние кармы на диалоги (`**EXPLORATION_QUESTS_KARMA_HINT_LINE_RU`**); в `**GameOrchestrator**` при первом входе в диалог из режима обхода — тост `**ui:exploration_message**` с тем же текстом и флаг `**exploration_first_dialogue_quest_karma_hint_v1**`.

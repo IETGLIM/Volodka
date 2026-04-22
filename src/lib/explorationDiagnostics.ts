@@ -36,9 +36,10 @@ export function isExplorationPlayerLocomotionLogEnabled(): boolean {
 }
 
 /**
- * В `volodka_room` не грузить GLB NPC — только упрощённый «человечек» для отладки сцены.
- * Вернуть GLB: `NEXT_PUBLIC_EXPLORATION_VOLODKA_NPC_GLB=1` (пересборка).
+ * В `volodka_room` отключить GLB NPC (только `FallbackNPCModel`) — явно
+ * `NEXT_PUBLIC_EXPLORATION_VOLODKA_NPC_GLB=0` (пересборка). По умолчанию GLB **включён**,
+ * чтобы прод не выглядел «пустым» без ручного флага на Vercel.
  */
 export function isExplorationVolodkaRoomNpcGlbDisabled(): boolean {
-  return process.env.NEXT_PUBLIC_EXPLORATION_VOLODKA_NPC_GLB !== '1';
+  return process.env.NEXT_PUBLIC_EXPLORATION_VOLODKA_NPC_GLB === '0';
 }

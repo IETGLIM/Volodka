@@ -359,15 +359,15 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
     sceneId === 'zarema_albert_room';
 
   /**
-   * В `intro_cutscene` камера низко и «киношно» обходит комнату — прежний туман (near 1.2 / far 42)
-   * давал ощущение «площадка в чёрной дыре»: стены уходили в fogColor почти по всему кадру.
-   * В геймплее оставляем прежние числа (меньше z-fight с дальними плоскостями).
+   * Узкие комнаты: линейный туман. Слишком близкий `near` + тёмный `fogColor` давали кадр «площадка в пустоте»
+   * при низкой орбите (и в интро, и в геймплее — не только кат-сцена).
+   * Интро — ещё мягче: кинокамера ближе к геометрии.
    */
   const narrowIndoorFog = useMemo(() => {
     if (introCutsceneActive) {
       return { near: 3.6, far: 56 } as const;
     }
-    return { near: 1.2, far: 42 } as const;
+    return { near: 2.65, far: 50 } as const;
   }, [introCutsceneActive]);
 
   const followCameraProps = useMemo((): ExplorationFollowCameraPreset => {
