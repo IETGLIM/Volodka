@@ -28,6 +28,8 @@
 
 ### Fixed
 
+- **Обход / подсказка E у `interactionId`:** в `**TriggerSystem**` (`InteractiveTrigger.tsx`) в набор доступных интеракций попадают только зарегистрированные id и с выполненным `**condition**` (например, мини-игра стойки скрывается после старта ветки аудита без выхода из зоны).
+
 - **Обход / масштаб GLB NPC**: расчёт uniform для NPC приведён к той же цепочке, что у игрока (`computeExplorationPlayerGlbUniformFromBBox` + `explorationPlayerGltfTargetMeters` + `explorationPlayerGlbVisualUniformMultiplier` по `sceneId`), вместо отдельной формулы с потолком **2.85** — устраняет «колоссов» в узких комнатах (в т.ч. квартира Заремы и Альберта).
 
 ### Changed

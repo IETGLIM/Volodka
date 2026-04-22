@@ -122,14 +122,14 @@ export const QUEST_DEFINITIONS: Record<string, ExtendedQuest> = {
   },
 
   /**
-   * Обход `volodka_room`: форс через мини-игру узлов (ветка A) или «честный» IT-путь только осмотром
-   * трёх панелей без ACL (ветка B — описание и метки; прогресс B можно нарастить отдельным тикетом).
+   * Обход `volodka_room`: взаимоисключающие ветки — мини-игра узлов (E у стойки) или три осмотра панелей.
+   * Логика ветвления: `registerBaseInteractions` + `volodkaRackQuestBranch`.
    */
   exploration_volodka_rack: {
     id: 'exploration_volodka_rack',
     title: '⚡ Разрыв синхронизации',
     description:
-      'Стойка мониторинга помнит два сценария: **форс** — краткая матрица узлов у стола; **аудит** — три спокойных осмотра Kibana / Zabbix / Grafana без изменения прав. Сейчас в игре завершение идёт по ветке форса; ветка аудита оставлена для расширения (флаги + increment).',
+      'Две ветки на выбор (в журнале обе цели — завершается **одна**): **форс** — мини-игра «матрица узлов» у стойки (E в зоне подсказки); **аудит** — три раза «Осмотреть» экраны Kibana, Zabbix и Grafana, без мини-игры. Начал аудит — форс до конца квеста недоступен; прошёл форс — честный аудит закрыт.',
     type: 'side',
     faction: 'Работа · IT',
     status: 'active',
@@ -137,7 +137,7 @@ export const QUEST_DEFINITIONS: Record<string, ExtendedQuest> = {
       createObjective('rack_force_nodes', 'Свести узлы стека в безопасную последовательность (зона стойки, E)', {
         targetValue: 1,
         currentValue: 0,
-        hint: 'Триггер «матрица узлов» у рабочего стола с тремя экранами.',
+        hint: 'Зона «матрица узлов» у стойки с мониторами; недоступно, если уже начат осмотр панелей (аудит).',
         targetLocation: 'volodka_room',
         mapHint: { x: 3.45, z: 0.08 },
         stageType: 'minigame',
@@ -145,7 +145,7 @@ export const QUEST_DEFINITIONS: Record<string, ExtendedQuest> = {
       createObjective('rack_audit_panels', 'Честный путь: осмотреть Kibana, Zabbix и Grafana без взлома', {
         targetValue: 3,
         currentValue: 0,
-        hint: 'Три отдельных осмотра (радиальное меню) — ветка для будущего инкремента.',
+        hint: 'Радиальное меню → «Осмотреть» на каждом из трёх экранов; мини-игра форса после первого осмотра отключена.',
         targetLocation: 'volodka_room',
         stageType: 'exploration',
       }),

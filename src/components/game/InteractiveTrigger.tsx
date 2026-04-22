@@ -6,6 +6,7 @@ import * as THREE from "three";
 import type { TriggerZone, TriggerState } from "@/data/rpgTypes";
 import type { SceneId } from "@/data/types";
 import { eventBus } from "@/engine/EventBus";
+import { explorationInteractionRegistry } from "@/game/interactions/registerBaseInteractions";
 
 // ============================================
 // Коллизия игрока с AABB триггера
@@ -112,9 +113,11 @@ export const TriggerSystem = memo(function TriggerSystem({
       const activeIds = new Set<string>();
       for (const trigger of sceneTriggers) {
         if (!trigger.interactionId) continue;
-        if (insideByTrigger[trigger.id]) {
-          activeIds.add(trigger.interactionId);
-        }
+        if (!insideByTrigger[trigger.id]) continue;
+        const reg = explorationInteractionRegistry.get(trigger.interactionId);
+        if (!reg) continue;
+        if (reg.condition && !reg.condition()) continue;
+        activeIds.add(trigger.interactionId);
       }
       const key = [...activeIds].sort().join('|');
       if (key !== prevInteractionAvailabilityKeyRef.current) {

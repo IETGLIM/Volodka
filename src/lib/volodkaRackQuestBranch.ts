@@ -81,7 +81,7 @@ export function tryApplyVolodkaRackAuditInspect(
     composeToast(
       inspectPrefix,
       skillHint,
-      `Аудит панелей: ${cur} / ${target}. Оставшиеся экраны — снова «Осмотреть».`,
+      `Аудит панелей: ${cur} / ${target}. Пока идёт эта ветка, зона мини-игры на стойке не предлагается. Оставшиеся экраны — снова «Осмотреть».`,
     ),
   );
   return true;
