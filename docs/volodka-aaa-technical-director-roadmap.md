@@ -14,7 +14,7 @@
 
 | ID    | Задача | Файлы / зона | Критерий готовности |
 | ----- | ------ | ------------- | ------------------- |
-| T1.1  | Каталог **референсных высот** (дверь 2.0–2.2 м, стол ~0.75 м, проём ≥0.9 м) и проверка процедурных комнат | `VolodkaRoomVisual.tsx`, `ZaremaAlbertExplorationVisual.tsx`, `VolodkaCorridorVisual.tsx`, `config/scenes.ts` | Чеклист в редакторе / скриншоты с линейкой (debug ruler) |
+| T1.1  | Каталог **референсных высот** (дверь 2.0–2.2 м, стол ~0.75 м, проём ≥0.9 м) и проверка процедурных комнат | `explorationInteriorReference.ts`, `VolodkaRoomVisual.tsx`, `VolodkaCorridorVisual.tsx`, `config/scenes.ts` (комната Володьки + коридор — **сделано:** двери ~2.06×0.92 м, центр по Y от пола); далее `ZaremaAlbertExplorationVisual.tsx` | Чеклист в редакторе / скриншоты с линейкой (debug ruler) |
 | T1.2  | Утилита **нормализации пропа** по AABB (целевая высота в м) для статичных мешей обхода | новый `src/lib/explorationPropNormalize.ts` + вызов из визуалов | Предмет не «в чашку» и не «в потолок» |
 | T1.3  | Коллайдеры ↔ визуал: нет прохода сквозь стены, проёмы ≥ ширина капсулы игрока + запас | `PhysicsSceneColliders.tsx`, `SceneColliders.tsx`, `PhysicsPlayer` capsule | Ручной проход + автотесты позиции при спавне |
 | T1.4  | Z-fighting: `polygonOffset` на стыках пол/стена, согласованные `depthWrite` у декалей | визуалы + материалы | Нет мерцания при орбите камеры |

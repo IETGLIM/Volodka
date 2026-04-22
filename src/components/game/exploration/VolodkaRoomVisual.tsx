@@ -9,6 +9,11 @@ import {
   createVolodkaWoodTexture,
 } from '@/components/game/exploration/volodkaRoomProceduralTextures';
 import { MatrixRainScreenMesh } from '@/components/game/exploration/MatrixRainScreenMesh';
+import {
+  INTERIOR_REF_DOOR_HEIGHT_M,
+  INTERIOR_REF_DOOR_WIDTH_M,
+  interiorDoorCenterYFromFloor,
+} from '@/lib/explorationInteriorReference';
 
 const VOLODKA_MONITOR_LEFT_LINES = ['STATUS: DEGRADED', 'Grafana · Prometheus', 'pod/monitoring-01'] as const;
 const VOLODKA_MONITOR_RIGHT_LINES = ['RETRO INCIDENT', 'on-call: Володька', 'silence: 0 active'] as const;
@@ -344,9 +349,9 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual() {
       </group>
 
       {/* Чуть вглубь комнаты (−Z): иначе коробка «въезжает» в слой передней стены (z≈4.9–5.0) → z-fight. */}
-      <group position={[0.05, 0.55, hd - t - 0.05]}>
+      <group position={[0.05, interiorDoorCenterYFromFloor(0), hd - t - 0.05]}>
         <mesh castShadow receiveShadow material={woodMat}>
-          <boxGeometry args={[1.0, 1.85, 0.06]} />
+          <boxGeometry args={[INTERIOR_REF_DOOR_WIDTH_M, INTERIOR_REF_DOOR_HEIGHT_M, 0.06]} />
         </mesh>
       </group>
 

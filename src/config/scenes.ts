@@ -2,6 +2,11 @@
 import type { SceneId } from '@/data/types';
 import type { PlayerPosition } from '@/data/rpgTypes';
 import { PLAYER_GLB_TARGET_VISUAL_METERS } from '@/lib/playerScaleConstants';
+import {
+  INTERIOR_REF_DOOR_HEIGHT_M,
+  INTERIOR_REF_DOOR_WIDTH_M,
+  interiorDoorCenterYFromFloor,
+} from '@/lib/explorationInteriorReference';
 
 export interface NPCConfig {
   id: string;
@@ -254,9 +259,9 @@ export const SCENE_CONFIG = {
       {
         id: 'volodka_door_corridor',
         type: 'generic',
-        position: [0.05, 0.55, 4.35],
+        position: [0.05, interiorDoorCenterYFromFloor(0), 4.35],
         rotation: [0, 0, 0],
-        size: [1.05, 1.9, 0.12],
+        size: [INTERIOR_REF_DOOR_WIDTH_M, INTERIOR_REF_DOOR_HEIGHT_M, 0.12],
         color: '#5c4a3a',
       },
     ],
@@ -280,15 +285,15 @@ export const SCENE_CONFIG = {
       {
         id: 'corridor_door_volodka_room',
         type: 'generic',
-        position: [0, 0.55, -5.58],
-        size: [1.0, 1.9, 0.1],
+        position: [0, interiorDoorCenterYFromFloor(0), -5.58],
+        size: [INTERIOR_REF_DOOR_WIDTH_M, INTERIOR_REF_DOOR_HEIGHT_M, 0.1],
         color: '#5c4a3a',
       },
       {
         id: 'corridor_door_home_common',
         type: 'generic',
-        position: [0, 0.55, 5.58],
-        size: [1.0, 1.9, 0.1],
+        position: [0, interiorDoorCenterYFromFloor(0), 5.58],
+        size: [INTERIOR_REF_DOOR_WIDTH_M, INTERIOR_REF_DOOR_HEIGHT_M, 0.1],
         color: '#4a3f35',
       },
       {
@@ -315,17 +320,17 @@ export const SCENE_CONFIG = {
       {
         id: 'corridor_door_wing_left',
         type: 'generic',
-        position: [-1.58, 0.55, 3.65],
+        position: [-1.58, interiorDoorCenterYFromFloor(0), 3.65],
         rotation: [0, Math.PI / 2, 0],
-        size: [0.1, 1.85, 0.92],
+        size: [0.1, INTERIOR_REF_DOOR_HEIGHT_M, 0.92],
         color: '#4a4036',
       },
       {
         id: 'corridor_door_wing_right',
         type: 'generic',
-        position: [1.58, 0.55, 3.65],
+        position: [1.58, interiorDoorCenterYFromFloor(0), 3.65],
         rotation: [0, -Math.PI / 2, 0],
-        size: [0.1, 1.85, 0.92],
+        size: [0.1, INTERIOR_REF_DOOR_HEIGHT_M, 0.92],
         color: '#4a4036',
       },
     ],

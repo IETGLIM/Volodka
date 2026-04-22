@@ -1,6 +1,11 @@
 'use client';
 
 import { memo } from 'react';
+import {
+  INTERIOR_REF_DOOR_HEIGHT_M,
+  INTERIOR_REF_DOOR_WIDTH_M,
+  interiorDoorCenterYFromFloor,
+} from '@/lib/explorationInteriorReference';
 
 /**
  * Визуал коридора: стены, потолок, дверные блоки + тумба обуви и батарея (как в коллайдерах).
@@ -24,12 +29,12 @@ export const VolodkaCorridorVisual = memo(function VolodkaCorridorVisual() {
         <boxGeometry args={[w - 0.12, 0.12, d - 0.28]} />
         <meshStandardMaterial color="#c8bdb0" roughness={0.9} />
       </mesh>
-      <mesh position={[0, h / 2, -d / 2 + 0.36]} castShadow>
-        <boxGeometry args={[1.06, h * 0.9, 0.12]} />
+      <mesh position={[0, interiorDoorCenterYFromFloor(0), -d / 2 + 0.36]} castShadow>
+        <boxGeometry args={[INTERIOR_REF_DOOR_WIDTH_M + 0.14, INTERIOR_REF_DOOR_HEIGHT_M, 0.12]} />
         <meshStandardMaterial color="#5c4a3a" roughness={0.78} />
       </mesh>
-      <mesh position={[0, h / 2, d / 2 - 0.36]} castShadow>
-        <boxGeometry args={[1.06, h * 0.9, 0.12]} />
+      <mesh position={[0, interiorDoorCenterYFromFloor(0), d / 2 - 0.36]} castShadow>
+        <boxGeometry args={[INTERIOR_REF_DOOR_WIDTH_M + 0.14, INTERIOR_REF_DOOR_HEIGHT_M, 0.12]} />
         <meshStandardMaterial color="#4a3f35" roughness={0.78} />
       </mesh>
 
