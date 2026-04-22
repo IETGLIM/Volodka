@@ -381,6 +381,22 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual() {
         </mesh>
       </group>
 
+      {/* Тёмный «коридор» за дверью — без отдельной сцены не видно лестничную клетку; пустота читается как баг. */}
+      <mesh
+        position={[0.05, interiorDoorCenterYFromFloor(0), hd + 1.05]}
+        receiveShadow
+        userData={{ noCameraCollision: true }}
+      >
+        <boxGeometry args={[INTERIOR_REF_DOOR_WIDTH_M * 1.08, INTERIOR_REF_DOOR_HEIGHT_M * 1.05, 2.15]} />
+        <meshStandardMaterial
+          color="#07090d"
+          roughness={0.97}
+          metalness={0.04}
+          emissive="#0c1220"
+          emissiveIntensity={0.06}
+        />
+      </mesh>
+
       <pointLight position={[0, 2.35, 0]} intensity={0.65} color="#e8dcc8" distance={18} decay={2} />
       <pointLight position={[2.2, 2.1, 1.5]} intensity={0.38} color="#fef3c7" distance={10} decay={2} />
       <pointLight position={[-4.5, 1.6, -4.8]} intensity={0.28} color="#b8d4f0" distance={8} decay={2} />

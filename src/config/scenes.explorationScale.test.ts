@@ -62,7 +62,7 @@ describe('getExplorationPlayerGltfTargetMeters', () => {
   });
 
   it('volodka_room uses explicit lower GLB target for tight interior', () => {
-    expect(getExplorationPlayerGltfTargetMeters('volodka_room')).toBe(0.78);
+    expect(getExplorationPlayerGltfTargetMeters('volodka_room')).toBe(0.66);
     expect(getExplorationPlayerGltfTargetMeters('volodka_room')).toBeLessThan(PLAYER_GLB_TARGET_VISUAL_METERS);
   });
 
@@ -74,7 +74,7 @@ describe('getExplorationPlayerGltfTargetMeters', () => {
 
 describe('getExplorationPlayerGlbVisualUniformMultiplier', () => {
   it('volodka_room uses explicit multiplier below 1', () => {
-    expect(getExplorationPlayerGlbVisualUniformMultiplier('volodka_room')).toBe(0.32);
+    expect(getExplorationPlayerGlbVisualUniformMultiplier('volodka_room')).toBe(0.22);
   });
 
   it('defaults to 1 when not configured', () => {

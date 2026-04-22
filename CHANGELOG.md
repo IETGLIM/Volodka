@@ -4,7 +4,7 @@
 
 ### Changed
 
-- **Обход / масштаб GLB игрока в `volodka_room`:** `**explorationPlayerGltfTargetMeters**` **0.78**, `**explorationPlayerGlbVisualUniformMultiplier**` **0.32**; интро — целевая высота **0.62** м и доп. множитель **0.28** (`**introVolodkaOpeningCutscene**`).
+- **Обход / масштаб GLB игрока в `volodka_room`:** `**explorationPlayerGltfTargetMeters**` **0.66**, `**explorationPlayerGlbVisualUniformMultiplier**` **0.22**; интро — целевая высота **0.54** м и доп. множитель **0.2**; ключевые кадры камеры к двери/лифту — выше и дальше от ног (`**introVolodkaOpeningCutscene**`); за дверью — тёмный объём «клетка» (`**VolodkaRoomVisual**`).
 
 ### Fixed
 

@@ -8,14 +8,14 @@ import { smoothBlend01 } from '@/lib/cinematicEasing';
  * Целевая высота GLB (м сцены) в `intro_cutscene`: ниже, чем в `volodka_room` геймплее,
  * иначе при близкой кинокамере силуэт всё равно доминирует кадр.
  */
-export const INTRO_OPENING_PLAYER_GLTF_TARGET_METERS = 0.62;
+export const INTRO_OPENING_PLAYER_GLTF_TARGET_METERS = 0.54;
 
 /**
  * Дополнительный множитель к `explorationPlayerGlbVisualUniformMultiplier` только на фазе `intro_cutscene`
  * (после bbox и целевой высоты выше).
  */
 /** Доп. ужатие на интро-камере (TPS + киношный dolly). */
-export const INTRO_OPENING_PLAYER_GLB_VISUAL_UNIFORM_EXTRA_MULTIPLIER = 0.28;
+export const INTRO_OPENING_PLAYER_GLB_VISUAL_UNIFORM_EXTRA_MULTIPLIER = 0.2;
 
 /** Сцена до финала 3D-интро (комната Володьки). */
 export const INTRO_OPENING_SCENE_ID: SceneId = 'volodka_room';
@@ -136,26 +136,26 @@ export const INTRO_OPENING_CAM_KEYFRAMES: IntroOpeningKeyframe[] = [
   },
   {
     tSec: 6.6,
-    cam: [3.35, 1.42, 1.05],
-    look: [2.0, 1.08, 0.95],
+    cam: [3.52, 1.62, 0.88],
+    look: [1.95, 1.42, 1.05],
     caption: 'Шаг к двери. Руки помнят раскладку — ноги вспоминают медленнее.',
   },
   {
     tSec: 9.4,
-    cam: [3.85, 1.52, 2.15],
-    look: [0.45, 1.02, 3.15],
+    cam: [4.12, 1.78, 1.82],
+    look: [0.42, 1.48, 3.22],
     caption: 'К лифту. Дальше — только вниз.',
   },
   {
     tSec: 10.85,
-    cam: [3.98, 1.5, 2.72],
-    look: [0.12, 1.02, 3.48],
+    cam: [4.22, 1.74, 2.58],
+    look: [0.1, 1.46, 3.42],
     caption: '',
   },
   {
     tSec: 11,
-    cam: [4.05, 1.48, 2.85],
-    look: [0.05, 1.0, 3.55],
+    cam: [4.28, 1.72, 2.68],
+    look: [0.06, 1.44, 3.48],
   },
 ];
 
