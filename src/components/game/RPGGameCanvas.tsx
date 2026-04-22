@@ -358,6 +358,18 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
     sceneId === 'home_evening' ||
     sceneId === 'zarema_albert_room';
 
+  /**
+   * В `intro_cutscene` камера низко и «киношно» обходит комнату — прежний туман (near 1.2 / far 42)
+   * давал ощущение «площадка в чёрной дыре»: стены уходили в fogColor почти по всему кадру.
+   * В геймплее оставляем прежние числа (меньше z-fight с дальними плоскостями).
+   */
+  const narrowIndoorFog = useMemo(() => {
+    if (introCutsceneActive) {
+      return { near: 3.6, far: 56 } as const;
+    }
+    return { near: 1.2, far: 42 } as const;
+  }, [introCutsceneActive]);
+
   const followCameraProps = useMemo((): ExplorationFollowCameraPreset => {
     if (sceneId === 'volodka_corridor') {
       return {
@@ -674,8 +686,8 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
           attach="fog"
           args={[
             sceneConfig.fogColor,
-            isPanelDistrict ? 14 : isNarrowApartment ? 1.2 : 8,
-            isPanelDistrict ? 48 : isNarrowApartment ? 42 : 25,
+            isPanelDistrict ? 14 : isNarrowApartment ? narrowIndoorFog.near : 8,
+            isPanelDistrict ? 48 : isNarrowApartment ? narrowIndoorFog.far : 25,
           ]}
         />
 
