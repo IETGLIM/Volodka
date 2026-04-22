@@ -399,7 +399,13 @@ export default function HUD({
     { key: 'quests', label: 'Квесты', colorClass: 'bg-purple-900/80', icon: '📋', ariaLabel: 'Открыть или закрыть панель квестов' },
     { key: 'terminal', label: '', colorClass: 'bg-green-900/80', icon: '💻', ariaLabel: 'Открыть или закрыть учебный терминал' },
     { key: 'factions', label: 'Фракции', colorClass: 'bg-amber-900/80', icon: '⚔️', ariaLabel: 'Открыть или закрыть панель фракций' },
-    { key: 'inventory', label: `(${inventory.length})`, colorClass: 'bg-cyan-900/80', icon: '🎒', ariaLabel: `Открыть или закрыть инвентарь, предметов: ${inventory.length}` },
+    {
+      key: 'inventory',
+      label: `(${inventory.length})`,
+      colorClass: 'bg-cyan-900/80',
+      icon: '🎒',
+      ariaLabel: `Открыть или закрыть инвентарь (клавиша I), предметов: ${inventory.length}`,
+    },
     { key: 'achievements', label: '', colorClass: 'bg-amber-900/80', icon: '🏆', ariaLabel: 'Открыть или закрыть панель достижений' },
     { key: 'poetry', label: `(${collectedPoems.length})`, colorClass: 'bg-purple-900/80', icon: '📖', ariaLabel: `Открыть или закрыть собранные стихи, штук: ${collectedPoems.length}` },
   ], [inventory.length, collectedPoems.length]);
