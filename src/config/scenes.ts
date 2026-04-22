@@ -82,6 +82,11 @@ export interface SceneConfig {
    * Используйте, когда в проде визуально почти нет ответа на `target`/`roomScale` (bbox/кэш); например **0.22** в `volodka_room`.
    */
   explorationPlayerGlbVisualUniformMultiplier?: number;
+  /**
+   * Короткие сценические строки для первого туториала движения в 3D-обходе (перед подсказками WASD/E/I).
+   * Тон — история и стих, без спойлеров; обычно 1–2 строки.
+   */
+  explorationTutorialHints?: readonly string[];
 }
 
 function inferredExplorationLocomotionFromCharacter(characterScale: number): number {
@@ -270,6 +275,10 @@ export const SCENE_CONFIG = {
         color: '#5c4a3a',
       },
     ],
+    explorationTutorialHints: [
+      'Комната в панельке — келья между сменами: здесь стихи и тишина рядом с буднями.',
+      'Ходи спокойно — пространство как сказка: никуда не торопит.',
+    ],
     backgroundMusic: '/audio/ambient-calm.mp3',
   },
 
@@ -338,6 +347,10 @@ export const SCENE_CONFIG = {
         size: [0.1, INTERIOR_REF_DOOR_HEIGHT_M, 0.92],
         color: '#4a4036',
       },
+    ],
+    explorationTutorialHints: [
+      'Узкий коридор трёшки — между своей комнатой и общим светом кухни: шаги глушит привычка и тёплый пол.',
+      'Двери молчат, но помнят, кто ушёл на смену и кто вернулся с улицы сказки.',
     ],
     backgroundMusic: '/audio/ambient-calm.mp3',
   },
@@ -431,6 +444,10 @@ export const SCENE_CONFIG = {
         size: [0.35, 0.55, 0.35],
         color: '#2d6a4f',
       },
+    ],
+    explorationTutorialHints: [
+      'Вечерние комнаты держат тепло: чайник, тихий фон и книга у кровати — как страницы между буднями.',
+      'Здесь можно дойти до порога стихов без спешки — свет уже настроен на полушёпот.',
     ],
   },
   
@@ -652,6 +669,10 @@ export const SCENE_CONFIG = {
         color: '#8b4513',
       },
     ],
+    explorationTutorialHints: [
+      'Комната Заремы и Альберта — тёплый остров до долгой дороги к бару и ночным сменам.',
+      'Книга на столе — не декорация: в ней слова, которые потом отзываются в коридорах памяти.',
+    ],
     backgroundMusic: '/audio/ambient-calm.mp3'
   },
   
@@ -666,6 +687,10 @@ export const SCENE_CONFIG = {
       { id: 'quester', name: 'Странник', model: 'colleague', modelPath: '/models/on_a_quest.glb', position: [2, 0, 1], dialogueTree: 'quester_greeting' }
     ],
     interactiveObjects: [],
+    explorationTutorialHints: [
+      'Сон раскладывает тропы иначе: метафора становится полом под ногами, а знакомые лица — ориентирами.',
+      'Иди мягко — здесь пространство меняется от намерения, а не от расписания смен.',
+    ],
   },
   
   battle: {

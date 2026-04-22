@@ -8,6 +8,7 @@ import { getNPCsForScene, getNpcExplorationPosition } from '@/data/npcDefinition
 import { getExplorationLivePlayerPositionOrNull } from '@/lib/explorationLivePlayerBridge';
 import { useExplorationLivePlayerTick } from '@/hooks/useExplorationLivePlayerTick';
 import type { GameMode } from '@/data/rpgTypes';
+import { getSceneConfig } from '@/config/scenes';
 
 export const TutorialOverlay = memo(function TutorialOverlay({
   gameMode,
@@ -53,9 +54,9 @@ export const TutorialOverlay = memo(function TutorialOverlay({
   const lines = useMemo(() => {
     const l: string[] = [];
     if (showMovement) {
-      if (exploration.currentSceneId === 'volodka_room') {
-        l.push('Комната в панельке — келья между сменами: здесь стихи и тишина рядом с буднями.');
-        l.push('Ходи спокойно — пространство как сказка: никуда не торопит.');
+      const hints = getSceneConfig(exploration.currentSceneId).explorationTutorialHints;
+      if (hints?.length) {
+        for (const h of hints) l.push(h);
       }
       l.push('WASD — движение');
       l.push('E — взаимодействие');

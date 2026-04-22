@@ -24,6 +24,8 @@
 
 ### Added
 
+- **Обход / туториал движения из сцен:** в `**SceneConfig**` — опциональное поле `**explorationTutorialHints**` (`**scenes.ts**`): сценические строки для `**volodka_room**`, `**volodka_corridor**`, `**home_evening**`, `**zarema_albert_room**`, `**dream**`; `**TutorialOverlay**` подставляет их через `**getSceneConfig**` перед подсказками WASD/E/I.
+
 - **Бесплатные CC0 GLB (Khronos glTF-Sample-Assets):** в `**public/models-external**` — `khronos_cc0_BoxVertexColors.glb`, `AnimatedMorphCube`, `NormalTangentTest`, `BoomBox`; описание — `**CC0_KHRONOS_MODELS.md**`; ключи `**MODEL_URLS.cc0Khronos…**` в `**modelUrls.ts**`.
 
 - **Обход / T1 нормализация пропов:** `**explorationPropNormalize`** (`normalizePropHeight`, `getModelDimensions`, `normalizePropMaxExtent`) + тесты; референсы стула, окна и мин. габарит стенового коллайдера в `**explorationInteriorReference**`; `**PhysicsWall**` не даёт стенам Rapier тоньше `**INTERIOR_PHYSICS_COLLIDER_WALL_MIN_EXTENT_M**`; `**ZaremaAlbertColliders**` = `**PhysicsFloor**` + `**RectangularBoundaryWalls**` 10×8; пол/ковёр/окно/«клетка» у двери — `**polygonOffset**` (`**ZaremaAlbertExplorationVisual**`, `**VolodkaRoomVisual**`); `**tsconfig.json**` — `**exports**` в `exclude`, чтобы локальный zip-стейджинг не ломал `tsc`.
