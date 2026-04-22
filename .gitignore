@@ -17,6 +17,10 @@ _volodka_upstream_check
 # Логи локального dev (`npm run dev` с tee и т.п.)
 *.log
 
+# Архив для Blender / анализа GLB (генерируется scripts/pack-model-blender-analysis.ps1)
+exports/volodka-models-blender-analysis.zip
+exports/volodka-models-blender-analysis/
+
 # Локальные сборки для коллег (генерируются скриптом)
 archives/*.zip
 archives/_stage_expert_review_*
