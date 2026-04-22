@@ -40,6 +40,7 @@
     "node_modules",
     "_volodka_upstream_check",
     ".next",
-    "browserbase-functions"
+    "browserbase-functions",
+    "exports"
   ]
 }

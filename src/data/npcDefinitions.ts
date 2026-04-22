@@ -200,6 +200,7 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
     model: 'generic',
     modelPath: '/models/smol_ame_in_an_upcycled_terrarium_hololiveen.glb',
     animations: NPC_ANIM_SMOL_AME,
+    /** ~0.55–0.62: смол-модель рядом с игроком после `getGltfSkinnedVisualHeightMeters` + цель сцены. */
     scale: 0.58,
     defaultPosition: { x: -2.15, y: 0, z: 2.35 },
     patrolRadius: 0.35,

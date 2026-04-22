@@ -44,7 +44,8 @@ export interface NPCDefinition {
   dialogueTree?: DialogueNode | string; // Может быть объектом или ID диалога
   sceneId: SceneId;
   schedule?: NPCSchedule[]; // Расписание появления
-  scale?: number; // Масштаб модели (по умолчанию 1)
+  /** Множитель поверх автомасштаба GLB по высоте скина в обходе (`NPC.tsx`); для «карликов/гигантов» подправить 0.5–1.2. */
+  scale?: number;
   storyTrigger?: string; // ID story node to trigger after dialogue ends
 }
 

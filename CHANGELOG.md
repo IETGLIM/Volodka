@@ -27,6 +27,8 @@
 
 ### Added
 
+- **Обход / T1 нормализация пропов:** `**explorationPropNormalize**` (`normalizePropHeight`, `getModelDimensions`, `normalizePropMaxExtent`) + тесты; референсы стула, окна и мин. габарит стенового коллайдера в `**explorationInteriorReference**`; `**PhysicsWall**` не даёт стенам Rapier тоньше `**INTERIOR_PHYSICS_COLLIDER_WALL_MIN_EXTENT_M**`; `**ZaremaAlbertColliders**` = `**PhysicsFloor**` + `**RectangularBoundaryWalls**` 10×8; пол/ковёр/окно/«клетка» у двери — `**polygonOffset**` (`**ZaremaAlbertExplorationVisual**`, `**VolodkaRoomVisual**`); `**tsconfig.json**` — `**exports**` в `exclude`, чтобы локальный zip-стейджинг не ломал `tsc`.
+
 - **Скрипт пакета для Blender:** `**scripts/pack-model-blender-analysis.ps1`** собирает `**exports/volodka-models-blender-analysis.zip**` (все GLB из `**public/models-external**` + ключевой код масштаба/загрузки); описание — `**exports/README-MODEL-BUNDLE.md**`; выход zip в `.gitignore`.
 
 - **Обход / мини-игра «проводка» и ветка стойки:** стор `**wireHackOverlayStore**`, оверлей `**HackingWireMinigameOverlay**` (узлы α–δ, Esc), квест `**exploration_volodka_rack**` с целями `**rack_force_nodes**` / `**rack_audit_panels**`, зона `**trigger_volodka_rack_hack**`, интеракция `**volodka_rack_hack**` в `**registerBaseInteractions**`, аудит по трём экранам через `**volodkaRackQuestBranch.ts**`; глитч-вспышка по успеху (`**globals.css**` — `**exploration-hack-glitch-flash**`).

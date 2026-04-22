@@ -33,6 +33,7 @@ $codeFiles = @(
   'src/data/npcDefinitions.ts',
   'src/lib/playerScaleConstants.ts',
   'src/lib/playerScaleConstants.playerGlbUniform.test.ts',
+  'src/lib/explorationPropNormalize.ts',
   'src/lib/gltfSkinnedBoundingHeight.ts',
   'src/lib/stripExplorationPlayerRootMotionFromClips.ts',
   'src/lib/gltfCharacterMaterialPolicy.ts',

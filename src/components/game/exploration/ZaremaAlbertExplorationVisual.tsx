@@ -9,12 +9,17 @@ import {
 } from '@/components/game/exploration/volodkaRoomProceduralTextures';
 import {
   INTERIOR_REF_COMPACT_SOFA_GROUP_CENTER_Y_M,
+  INTERIOR_REF_WINDOW_HEIGHT_M,
+  INTERIOR_REF_WINDOW_WIDTH_M,
   interiorCoffeeTableGroupCenterY,
 } from '@/lib/explorationInteriorReference';
 
 /**
  * Визуал квартиры Заремы и Альберта для режима обхода (`RPGGameCanvas`).
  * Только меши — коллайдеры уже в `ZaremaAlbertColliders` (`PhysicsSceneColliders`).
+ *
+ * GLB-мебель (если появится): после `useGLTF` / клона вызывать `normalizePropHeight` из `explorationPropNormalize`
+ * с целями из `INTERIOR_REF_DESK_SURFACE_Y_M`, `INTERIOR_REF_CHAIR_SEAT_SURFACE_Y_M` и т.д.
  */
 export const ZaremaAlbertExplorationVisual = memo(function ZaremaAlbertExplorationVisual() {
   const w = 10;
@@ -80,6 +85,43 @@ export const ZaremaAlbertExplorationVisual = memo(function ZaremaAlbertExplorati
     };
   }, [wallMat, woodMat]);
 
+  const floorMat = useMemo(
+    () =>
+      new THREE.MeshStandardMaterial({
+        map: woodMap,
+        roughness: 0.82,
+        metalness: 0.06,
+        depthWrite: true,
+        depthTest: true,
+        polygonOffset: true,
+        polygonOffsetFactor: 1,
+        polygonOffsetUnits: 1,
+      }),
+    [woodMap],
+  );
+
+  const carpetMat = useMemo(
+    () =>
+      new THREE.MeshStandardMaterial({
+        map: carpetMap,
+        color: '#fff7ed',
+        roughness: 0.9,
+        depthWrite: true,
+        depthTest: true,
+        polygonOffset: true,
+        polygonOffsetFactor: 1,
+        polygonOffsetUnits: 1,
+      }),
+    [carpetMap],
+  );
+
+  useEffect(() => {
+    return () => {
+      floorMat.dispose();
+      carpetMat.dispose();
+    };
+  }, [floorMat, carpetMat]);
+
   const landingPlateTex = useMemo(() => {
     const c = document.createElement('canvas');
     c.width = 640;
@@ -112,14 +154,12 @@ export const ZaremaAlbertExplorationVisual = memo(function ZaremaAlbertExplorati
 
   return (
     <group name="ZaremaAlbertExplorationVisual" userData={{ noCameraCollision: true }}>
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.03, 0]} receiveShadow>
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.03, 0]} receiveShadow material={floorMat}>
         <planeGeometry args={[w - 0.12, d - 0.12]} />
-        <meshStandardMaterial map={woodMap} roughness={0.82} metalness={0.06} />
       </mesh>
 
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.035, -0.6]} receiveShadow>
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.035, -0.6]} receiveShadow material={carpetMat}>
         <planeGeometry args={[3.6, 2.8]} />
-        <meshStandardMaterial map={carpetMap} color="#fff7ed" roughness={0.9} />
       </mesh>
 
       <mesh position={[-w / 2 + t / 2, h / 2, 0]} castShadow receiveShadow material={wallMat}>
@@ -149,7 +189,7 @@ export const ZaremaAlbertExplorationVisual = memo(function ZaremaAlbertExplorati
 
       {/* Окно / ночной силуэт за стеклом (южная стена, +Z). */}
       <mesh position={[0, 1.25, hd - 0.06]} rotation={[0, 0, 0]}>
-        <planeGeometry args={[3.2, 1.35]} />
+        <planeGeometry args={[INTERIOR_REF_WINDOW_WIDTH_M, INTERIOR_REF_WINDOW_HEIGHT_M]} />
         <meshStandardMaterial
           color="#0c1a2e"
           emissive="#38bdf8"
@@ -159,6 +199,9 @@ export const ZaremaAlbertExplorationVisual = memo(function ZaremaAlbertExplorati
           transparent
           opacity={0.92}
           depthWrite={false}
+          polygonOffset
+          polygonOffsetFactor={1}
+          polygonOffsetUnits={1}
         />
       </mesh>
 
@@ -170,11 +213,25 @@ export const ZaremaAlbertExplorationVisual = memo(function ZaremaAlbertExplorati
       >
         <mesh rotation={[0, -Math.PI / 2, 0]} receiveShadow>
           <planeGeometry args={[1.2, 1.5]} />
-          <meshStandardMaterial color="#0b1220" metalness={0.82} roughness={0.18} />
+          <meshStandardMaterial
+            color="#0b1220"
+            metalness={0.82}
+            roughness={0.18}
+            polygonOffset
+            polygonOffsetFactor={1}
+            polygonOffsetUnits={1}
+          />
         </mesh>
         <mesh rotation={[0, -Math.PI / 2, 0]} position={[0.04, 0, 0]}>
           <planeGeometry args={[1.32, 1.62]} />
-          <meshStandardMaterial color="#713f12" roughness={0.55} metalness={0.25} />
+          <meshStandardMaterial
+            color="#713f12"
+            roughness={0.55}
+            metalness={0.25}
+            polygonOffset
+            polygonOffsetFactor={1}
+            polygonOffsetUnits={1}
+          />
         </mesh>
       </group>
 

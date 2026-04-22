@@ -5,6 +5,7 @@ import { RigidBody, CuboidCollider } from '@react-three/rapier';
 import type { SceneId } from '@/data/types';
 import { footstepColliderName, type FootstepMaterial } from '@/lib/footstepMaterials';
 import {
+  INTERIOR_PHYSICS_COLLIDER_WALL_MIN_EXTENT_M,
   INTERIOR_REF_COMPACT_SOFA_GROUP_CENTER_Y_M,
   INTERIOR_REF_SOFA_GROUP_CENTER_Y_M,
   INTERIOR_REF_WARDROBE_HEIGHT_M,
@@ -38,9 +39,13 @@ const PhysicsWall = memo(function PhysicsWall({
   size,
   footstepMaterial = 'concrete',
 }: PhysicsWallProps) {
+  const minE = INTERIOR_PHYSICS_COLLIDER_WALL_MIN_EXTENT_M;
+  const sx = Math.max(minE, size[0]);
+  const sy = Math.max(minE, size[1]);
+  const sz = Math.max(minE, size[2]);
   return (
     <RigidBody type="fixed" position={position} colliders={false}>
-      <CuboidCollider args={[size[0] / 2, size[1] / 2, size[2] / 2]} name={footstepColliderName(footstepMaterial)} />
+      <CuboidCollider args={[sx / 2, sy / 2, sz / 2]} name={footstepColliderName(footstepMaterial)} />
     </RigidBody>
   );
 });
@@ -522,19 +527,11 @@ export const ZaremaAlbertColliders = memo(function ZaremaAlbertColliders() {
     () => [[-2.4, INTERIOR_REF_COMPACT_SOFA_GROUP_CENTER_Y_M, 1.6]],
     [],
   );
+  /** Совпадает с `ZaremaAlbertExplorationVisual` (w=10, d=8); раньше был `BoundaryWalls(10)` → квадрат 10×10 и дублирующий меш пола. */
   return (
     <group>
-      {/* Пол с физикой */}
-      <RigidBody type="fixed" colliders={false} position={[0, -0.05, 0]}>
-        <CuboidCollider args={[5, 0.05, 4]} name={footstepColliderName('wood')} />
-      </RigidBody>
-      {/* Визуальный пол */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.01, 0]} receiveShadow>
-        <planeGeometry args={[10, 8]} />
-        <meshStandardMaterial color="#5c4033" roughness={0.8} />
-      </mesh>
-      {/* Границы комнаты */}
-      <BoundaryWalls size={10} height={3} />
+      <PhysicsFloor size={[10, 8]} color="#5c4033" footstepMaterial="wood" showVisualPlane={false} />
+      <RectangularBoundaryWalls width={10} depth={8} height={3} wallInset={0} />
       <InstancedObstacles positions={coffeeTable} size={[1.65, 0.1, 0.88]} footstepMaterial="wood" />
       <InstancedObstacles positions={sofa} size={[2.25, 0.48, 0.98]} footstepMaterial="carpet" />
     </group>

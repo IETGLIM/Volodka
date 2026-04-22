@@ -39,8 +39,23 @@ export function interiorWardrobeCenterYFromFloor(floorY = 0): number {
   return floorY + INTERIOR_REF_WARDROBE_HEIGHT_M / 2 + 0.02;
 }
 
+/** Высота сиденья стула от пола (м) — типовой диапазон 0.42–0.48; для `normalizePropHeight` пропов. */
+export const INTERIOR_REF_CHAIR_SEAT_SURFACE_Y_M = 0.45;
+
+/** Типовая высота оконного проёма (м) — визуал «окно» в `ZaremaAlbertExplorationVisual` и проверка читаемости. */
+export const INTERIOR_REF_WINDOW_HEIGHT_M = 1.35;
+
+/** Ширина оконного блока в узкой гостиной (м). */
+export const INTERIOR_REF_WINDOW_WIDTH_M = 3.2;
+
 /** Низкий журнальный стол / тумба под ТВ в гостиной (м) — ниже письменного. */
 export const INTERIOR_REF_COFFEE_TABLE_SURFACE_Y_M = 0.52;
+
+/**
+ * Минимальный габарит **CuboidCollider** у вертикальных стен (`PhysicsWall`):
+ * тоньше 0.1–0.12 м капсула игрока может «просочиться» в углах Rapier.
+ */
+export const INTERIOR_PHYSICS_COLLIDER_WALL_MIN_EXTENT_M = 0.12;
 
 export function interiorCoffeeTableGroupCenterY(floorY = 0): number {
   const topT = 0.08;
