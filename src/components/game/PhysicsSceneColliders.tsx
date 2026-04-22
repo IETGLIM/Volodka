@@ -4,6 +4,12 @@ import { memo, useMemo } from 'react';
 import { RigidBody, CuboidCollider } from '@react-three/rapier';
 import type { SceneId } from '@/data/types';
 import { footstepColliderName, type FootstepMaterial } from '@/lib/footstepMaterials';
+import {
+  INTERIOR_REF_SOFA_GROUP_CENTER_Y_M,
+  INTERIOR_REF_WARDROBE_HEIGHT_M,
+  interiorDeskColliderCenterY,
+  interiorWardrobeCenterYFromFloor,
+} from '@/lib/explorationInteriorReference';
 
 // ============================================
 // ФИЗИЧЕСКИЕ КОЛЛАЙДЕРЫ ДЛЯ RAPIER
@@ -258,16 +264,25 @@ export const VolodkaRoomColliders = memo(function VolodkaRoomColliders() {
   const hd = 5;
   /** Глубина пола по Z чуть больше половины «коробки» стен + порог у двери, иначе через проём можно выйти за край пола. */
   const floorHalfZ = 6.35;
-  const deskMain: [number, number, number][] = useMemo(() => [[3.2, 0.45, 0.1]], []);
-  const deskSide: [number, number, number][] = useMemo(() => [[0.8, 0.45, -2.8]], []);
+  const deskMain: [number, number, number][] = useMemo(
+    () => [[3.2, interiorDeskColliderCenterY(0.08), 0.1]],
+    [],
+  );
+  const deskSide: [number, number, number][] = useMemo(
+    () => [[0.8, interiorDeskColliderCenterY(0.08), -2.8]],
+    [],
+  );
   const wardrobes: [number, number, number][] = useMemo(
     () => [
-      [5.2, 0.95, 0.2],
-      [5.2, 0.95, -1.4],
+      [5.2, interiorWardrobeCenterYFromFloor(0), 0.2],
+      [5.2, interiorWardrobeCenterYFromFloor(0), -1.4],
     ],
     [],
   );
-  const sofa: [number, number, number][] = useMemo(() => [[-3.8, 0.42, 1.2]], []);
+  const sofa: [number, number, number][] = useMemo(
+    () => [[-3.8, INTERIOR_REF_SOFA_GROUP_CENTER_Y_M, 1.2]],
+    [],
+  );
 
   return (
     <group>
@@ -284,8 +299,8 @@ export const VolodkaRoomColliders = memo(function VolodkaRoomColliders() {
       <PhysicsWall position={[0, h / 2, hd + 1.35]} size={[14 + wallT * 2, h, wallT]} />
       <InstancedObstacles positions={deskMain} size={[1.45, 0.08, 0.78]} footstepMaterial="wood" />
       <InstancedObstacles positions={deskSide} size={[1.05, 0.08, 0.58]} footstepMaterial="wood" />
-      <InstancedObstacles positions={wardrobes} size={[0.58, 1.75, 0.68]} footstepMaterial="wood" />
-      <InstancedObstacles positions={sofa} size={[1.85, 0.52, 0.88]} footstepMaterial="wood" />
+      <InstancedObstacles positions={wardrobes} size={[0.58, INTERIOR_REF_WARDROBE_HEIGHT_M, 0.68]} footstepMaterial="wood" />
+      <InstancedObstacles positions={sofa} size={[1.85, 0.55, 0.88]} footstepMaterial="wood" />
     </group>
   );
 });

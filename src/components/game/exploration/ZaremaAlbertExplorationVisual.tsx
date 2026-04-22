@@ -7,6 +7,10 @@ import {
   createVolodkaWallTexture,
   createVolodkaWoodTexture,
 } from '@/components/game/exploration/volodkaRoomProceduralTextures';
+import {
+  INTERIOR_REF_COMPACT_SOFA_GROUP_CENTER_Y_M,
+  interiorCoffeeTableGroupCenterY,
+} from '@/lib/explorationInteriorReference';
 
 /**
  * Визуал квартиры Заремы и Альберта для режима обхода (`RPGGameCanvas`).
@@ -143,7 +147,7 @@ export const ZaremaAlbertExplorationVisual = memo(function ZaremaAlbertExplorati
         </mesh>
       </group>
 
-      <group position={[-2.4, 0.35, 1.6]}>
+      <group position={[-2.4, INTERIOR_REF_COMPACT_SOFA_GROUP_CENTER_Y_M, 1.6]}>
         <mesh castShadow receiveShadow>
           <boxGeometry args={[2.2, 0.42, 0.95]} />
           <meshStandardMaterial color="#5c4033" roughness={0.9} map={carpetMap} />

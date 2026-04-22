@@ -6,6 +6,8 @@
 
 - **Обход / масштаб интерьера (Volodka):** эталон двери **~2.06×0.92 м** и центр по высоте от пола — `explorationInteriorReference.ts`; визуал дверей в `VolodkaRoomVisual` / `VolodkaCorridorVisual` и объекты `volodka_door_corridor`, коридорные двери в `scenes.ts` приведены к одним числам (раньше дверь комнаты визуально «висела» с низким центром **y=0.55** при высоте **1.85**).
 
+- **Обход / T1 масштаб мебели:** стол **~0.75 м** к столешнице (`INTERIOR_REF_DESK_SURFACE_Y_M`), шкафы **2.0 м**, диван и низкий стол в эталоне — `explorationInteriorReference.ts`; `VolodkaRoomVisual`, `scenes.ts` (`volodka_room` interactiveObjects), `PhysicsSceneColliders` (`VolodkaRoomColliders`); квартира Заремы — `ZaremaAlbertExplorationVisual` + книга на журнальном столе в `scenes.ts` (`zarema_albert_room`).
+
 ### Added
 
 - **План AAA-скоупа (ТД):** `docs/volodka-aaa-technical-director-roadmap.md` — этапы T1–T5 (масштаб/коллайдеры, интерьер Blade Runner + glitch, интерактив, квесты, PBR-ассеты, заметка про WebGPU-спайк); ссылка из `docs/exploration-expert-incremental-backlog.md`.

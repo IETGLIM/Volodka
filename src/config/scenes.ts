@@ -3,9 +3,14 @@ import type { SceneId } from '@/data/types';
 import type { PlayerPosition } from '@/data/rpgTypes';
 import { PLAYER_GLB_TARGET_VISUAL_METERS } from '@/lib/playerScaleConstants';
 import {
+  INTERIOR_REF_COFFEE_TABLE_SURFACE_Y_M,
   INTERIOR_REF_DOOR_HEIGHT_M,
   INTERIOR_REF_DOOR_WIDTH_M,
+  INTERIOR_REF_SOFA_GROUP_CENTER_Y_M,
+  INTERIOR_REF_WARDROBE_HEIGHT_M,
+  interiorDeskColliderCenterY,
   interiorDoorCenterYFromFloor,
+  interiorWardrobeCenterYFromFloor,
 } from '@/lib/explorationInteriorReference';
 
 export interface NPCConfig {
@@ -172,7 +177,7 @@ export const SCENE_CONFIG = {
       {
         id: 'volodka_laptop_work',
         type: 'notebook',
-        position: [2.95, 0.82, 0.35],
+        position: [2.95, 1.08, 0.35],
         rotation: [0, -0.35, 0],
         size: [0.34, 0.02, 0.22],
         color: '#2f3640',
@@ -181,7 +186,7 @@ export const SCENE_CONFIG = {
       {
         id: 'volodka_laptop_personal',
         type: 'notebook',
-        position: [3.15, 0.82, -0.25],
+        position: [3.15, 1.08, -0.25],
         rotation: [0, 0.2, 0],
         size: [0.32, 0.02, 0.2],
         color: '#1e272e',
@@ -189,63 +194,63 @@ export const SCENE_CONFIG = {
       {
         id: 'volodka_monitor_rack',
         type: 'generic',
-        position: [3.5, 1.05, 0.05],
+        position: [3.5, 1.31, 0.05],
         size: [1.15, 0.55, 0.18],
         color: '#1a1f28',
       },
       {
         id: 'volodka_kibana_tail',
         type: 'generic',
-        position: [3.35, 0.72, 0.55],
+        position: [3.35, 0.98, 0.55],
         size: [0.55, 0.04, 0.38],
         color: '#f4e6c2',
       },
       {
         id: 'volodka_zabbix_screen',
         type: 'generic',
-        position: [3.72, 0.88, -0.45],
+        position: [3.72, 1.14, -0.45],
         size: [0.22, 0.28, 0.02],
         color: '#c0392b',
       },
       {
         id: 'volodka_grafana_board',
         type: 'generic',
-        position: [3.72, 0.88, 0.55],
+        position: [3.72, 1.14, 0.55],
         size: [0.22, 0.28, 0.02],
         color: '#2980b9',
       },
       {
         id: 'volodka_desk_main',
         type: 'generic',
-        position: [3.2, 0.45, 0.1],
+        position: [3.2, interiorDeskColliderCenterY(0.06), 0.1],
         size: [1.4, 0.06, 0.75],
         color: '#3d2817',
       },
       {
         id: 'volodka_desk_side',
         type: 'generic',
-        position: [0.8, 0.45, -2.8],
+        position: [0.8, interiorDeskColliderCenterY(0.06), -2.8],
         size: [1.0, 0.06, 0.55],
         color: '#4a3728',
       },
       {
         id: 'volodka_wardrobe_right',
         type: 'crate',
-        position: [5.2, 0.95, 0.2],
-        size: [0.55, 1.75, 0.65],
+        position: [5.2, interiorWardrobeCenterYFromFloor(0), 0.2],
+        size: [0.58, INTERIOR_REF_WARDROBE_HEIGHT_M, 0.68],
         color: '#2d2419',
       },
       {
         id: 'volodka_wardrobe_left',
         type: 'crate',
-        position: [5.2, 0.95, -1.4],
-        size: [0.55, 1.75, 0.65],
+        position: [5.2, interiorWardrobeCenterYFromFloor(0), -1.4],
+        size: [0.58, INTERIOR_REF_WARDROBE_HEIGHT_M, 0.68],
         color: '#352a1f',
       },
       {
         id: 'volodka_sofa',
         type: 'chair',
-        position: [-3.8, 0.42, 1.2],
+        position: [-3.8, INTERIOR_REF_SOFA_GROUP_CENTER_Y_M, 1.2],
         size: [1.85, 0.55, 0.85],
         color: '#4a5568',
       },
@@ -635,7 +640,18 @@ export const SCENE_CONFIG = {
         scale: 1.0,
       },
     ],
-    interactiveObjects: [{ id: 'room_book', type: 'book', position: [0, 0.9, -1], poemId: 'poem_zarema_01', itemId: 'gift_pen', canBeRead: true, size: [0.3, 0.04, 0.2], color: '#8b4513' }],
+    interactiveObjects: [
+      {
+        id: 'room_book',
+        type: 'book',
+        position: [0, INTERIOR_REF_COFFEE_TABLE_SURFACE_Y_M + 0.02, -1],
+        poemId: 'poem_zarema_01',
+        itemId: 'gift_pen',
+        canBeRead: true,
+        size: [0.3, 0.04, 0.2],
+        color: '#8b4513',
+      },
+    ],
     backgroundMusic: '/audio/ambient-calm.mp3'
   },
   

@@ -12,7 +12,11 @@ import { MatrixRainScreenMesh } from '@/components/game/exploration/MatrixRainSc
 import {
   INTERIOR_REF_DOOR_HEIGHT_M,
   INTERIOR_REF_DOOR_WIDTH_M,
+  INTERIOR_REF_SOFA_GROUP_CENTER_Y_M,
+  INTERIOR_REF_WARDROBE_HEIGHT_M,
+  interiorDeskVisualGroupCenterY,
   interiorDoorCenterYFromFloor,
+  interiorWardrobeCenterYFromFloor,
 } from '@/lib/explorationInteriorReference';
 
 const VOLODKA_MONITOR_LEFT_LINES = ['STATUS: DEGRADED', 'Grafana · Prometheus', 'pod/monitoring-01'] as const;
@@ -169,7 +173,7 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual() {
         />
       </mesh>
 
-      <group position={[3.2, 0.45, 0.1]}>
+      <group position={[3.2, interiorDeskVisualGroupCenterY(0), 0.1]}>
         <mesh castShadow receiveShadow material={woodMat}>
           <boxGeometry args={[1.45, 0.08, 0.78]} />
         </mesh>
@@ -261,11 +265,11 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual() {
           </group>
           <pointLight position={[0.12, 0, 0.42]} intensity={0.52} color="#22d3ee" distance={1.55} decay={2} />
         </group>
-        <pointLight position={[2.9, 1.85, 0.25]} intensity={0.62} color="#7dd3fc" distance={6} decay={2} />
-        <pointLight position={[3.85, 1.65, -0.6]} intensity={0.38} color="#fdba74" distance={5} decay={2} />
+        <pointLight position={[2.9, 2.05, 0.25]} intensity={0.62} color="#7dd3fc" distance={6} decay={2} />
+        <pointLight position={[3.85, 1.88, -0.6]} intensity={0.38} color="#fdba74" distance={5} decay={2} />
       </group>
 
-      <group position={[0.8, 0.45, -2.8]}>
+      <group position={[0.8, interiorDeskVisualGroupCenterY(0), -2.8]}>
         <mesh castShadow receiveShadow material={woodMat}>
           <boxGeometry args={[1.05, 0.08, 0.58]} />
         </mesh>
@@ -284,15 +288,15 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual() {
       </group>
 
       {[
-        [5.2, 0.95, 0.2] as const,
-        [5.2, 0.95, -1.4] as const,
+        [5.2, interiorWardrobeCenterYFromFloor(0), 0.2] as const,
+        [5.2, interiorWardrobeCenterYFromFloor(0), -1.4] as const,
       ].map((p, i) => (
         <mesh key={`wardrobe-${i}`} position={p} castShadow receiveShadow material={woodMat}>
-          <boxGeometry args={[0.58, 1.75, 0.68]} />
+          <boxGeometry args={[0.58, INTERIOR_REF_WARDROBE_HEIGHT_M, 0.68]} />
         </mesh>
       ))}
 
-      <group position={[-3.8, 0.42, 1.2]}>
+      <group position={[-3.8, INTERIOR_REF_SOFA_GROUP_CENTER_Y_M, 1.2]}>
         <mesh castShadow receiveShadow>
           <boxGeometry args={[1.85, 0.52, 0.88]} />
           <meshStandardMaterial
