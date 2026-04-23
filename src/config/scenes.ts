@@ -632,7 +632,8 @@ export const SCENE_CONFIG = {
     explorationLocomotionScale: 0.86,
     /** Явная привязка к сцене: без этого `visualModelScale` слабо влияет на итоговый uniform GLB. */
     explorationPlayerGltfTargetMeters: 0.78,
-    explorationPlayerGlbVisualUniformMultiplier: 0.56,
+    /** Визуал в кадре: ~÷3 к прежнему uniform (узкая комната — силуэт не должен забивать TPS). */
+    explorationPlayerGlbVisualUniformMultiplier: 0.56 / 3,
     size: [10, 8],
     spawnPoint: { x: 0, y: 1, z: 0, rotation: 0 } as PlayerPosition,  // центр комнаты
     ambientLight: { intensity: 0.8, color: '#ffd93d' },  // усилен свет

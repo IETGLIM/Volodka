@@ -8,6 +8,7 @@
 
 ### Fixed
 
+- **Обход / `zarema_albert_room`:** визуальный uniform GLB игрока (и NPC на той же цепочке) уменьшен **~в 3 раза** — `**explorationPlayerGlbVisualUniformMultiplier**` **0.56/3** в `**scenes.ts**` (слишком крупный силуэт в TPS).
 - **Обход / 3D-интро:** поза из `introCutscenePlayerBridge` больше не телепортирует RigidBody напрямую — шаг через `computeColliderMovement` (`PhysicsPlayer`), чтобы не проходить сквозь стены и не проваливаться после выхода из кат-сцены; оверлей лифта и субтитры подняты по `z-index` над брифингом (`IntroCutsceneOverlays`); брифинг не показывается поверх интро (`RPGGameCanvas`); чуть уменьшен интро-множитель GLB (`introVolodkaOpeningCutscene`).
 
 ### Changed
