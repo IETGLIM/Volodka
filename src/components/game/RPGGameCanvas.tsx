@@ -49,6 +49,7 @@ import {
   getExplorationNpcModelScale,
   getExplorationPlayerGlbVisualUniformMultiplier,
   getExplorationPlayerGltfTargetMeters,
+  sanitizeExplorationPlayerPositionAgainstSpawn,
   type InteractiveObjectConfig,
 } from '@/config/scenes';
 
@@ -230,14 +231,41 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
     })(),
   );
   const setNPCState = useGameStore((state) => state.setNPCState);
+  const setPlayerPosition = useGameStore((state) => state.setPlayerPosition);
   const timeOfDay = useGameStore((state) => state.exploration.timeOfDay);
   const explorationStorePosition = useGameStore((state) => state.exploration.playerPosition);
 
   /** Снимок из стора: спавн `PhysicsPlayer` и бутстрап камеры/NPC при смене локации или телепорте из стора. */
   const explorationSpawnSnapshot = useMemo(() => {
     const p = explorationStorePosition;
-    return { x: p.x, y: p.y, z: p.z, rotation: p.rotation ?? 0 };
+    return sanitizeExplorationPlayerPositionAgainstSpawn(sceneId, {
+      x: p.x,
+      y: p.y,
+      z: p.z,
+      rotation: p.rotation ?? 0,
+    });
   }, [sceneId, explorationStorePosition.x, explorationStorePosition.y, explorationStorePosition.z, explorationStorePosition.rotation]);
+
+  /** Старые сейвы с `y: 1` в интерьерах с полом у ног — переписываем стор один раз, чтобы сейв не оставался «летающим». */
+  useEffect(() => {
+    const p = explorationStorePosition;
+    const next = sanitizeExplorationPlayerPositionAgainstSpawn(sceneId, {
+      x: p.x,
+      y: p.y,
+      z: p.z,
+      rotation: p.rotation ?? 0,
+    });
+    if (next.x !== p.x || next.y !== p.y || next.z !== p.z) {
+      setPlayerPosition(next);
+    }
+  }, [
+    sceneId,
+    explorationStorePosition.x,
+    explorationStorePosition.y,
+    explorationStorePosition.z,
+    explorationStorePosition.rotation,
+    setPlayerPosition,
+  ]);
 
   const playerPositionRef = useRef(explorationSpawnSnapshot);
   useEffect(() => {

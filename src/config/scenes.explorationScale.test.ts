@@ -5,10 +5,11 @@ import {
   getExplorationNpcModelScale,
   getExplorationPlayerGlbVisualUniformMultiplier,
   getExplorationPlayerGltfTargetMeters,
+  sanitizeExplorationPlayerPositionAgainstSpawn,
   sanitizeExplorationSceneId,
   suggestInteriorCharacterModelScale,
 } from './scenes';
-import { PLAYER_GLB_TARGET_VISUAL_METERS } from '@/lib/playerScaleConstants';
+import { PLAYER_FEET_SPAWN_Y, PLAYER_GLB_TARGET_VISUAL_METERS } from '@/lib/playerScaleConstants';
 
 describe('getExplorationCharacterModelScale', () => {
   it('returns >1 for wide plaza streets', () => {
@@ -50,6 +51,30 @@ describe('sanitizeExplorationSceneId', () => {
     expect(sanitizeExplorationSceneId('typo_scene')).toBe('volodka_room');
     expect(sanitizeExplorationSceneId(null)).toBe('volodka_room');
     expect(sanitizeExplorationSceneId(123)).toBe('volodka_room');
+  });
+});
+
+describe('sanitizeExplorationPlayerPositionAgainstSpawn', () => {
+  it('pulls floating legacy y down to floor spawn in zarema_albert_room', () => {
+    const out = sanitizeExplorationPlayerPositionAgainstSpawn('zarema_albert_room', {
+      x: 0,
+      y: 1,
+      z: 1.35,
+      rotation: 0,
+    });
+    expect(out.y).toBe(PLAYER_FEET_SPAWN_Y);
+    expect(out.x).toBe(0);
+    expect(out.z).toBe(1.35);
+  });
+
+  it('does not touch y when spawn anchor is high (e.g. mvd)', () => {
+    const out = sanitizeExplorationPlayerPositionAgainstSpawn('mvd', { x: 0, y: 1, z: 3, rotation: 0 });
+    expect(out.y).toBe(1);
+  });
+
+  it('leaves sane floor height unchanged', () => {
+    const pos = { x: 0, y: PLAYER_FEET_SPAWN_Y, z: 1.35, rotation: 0.2 };
+    expect(sanitizeExplorationPlayerPositionAgainstSpawn('zarema_albert_room', pos)).toEqual(pos);
   });
 });
 

@@ -823,6 +823,12 @@ export const NPC = memo(function NPC({
     [effectiveModelScale],
   );
 
+  /** Без `position` на `RigidBody` Rapier создаёт тело в (0,0,0) — все NPC с физикой слипаются в центре комнаты. */
+  const npcRigidSpawn = useMemo((): [number, number, number] => {
+    const p = scheduleEntry ? scheduleEntry.position : state.position;
+    return [p.x, p.y, p.z];
+  }, [scheduleEntry, state.position.x, state.position.y, state.position.z]);
+
   const groupRef = useRef<THREE.Group>(null);
   const rigidBodyRef = useRef<RapierRigidBody>(null);
   const modelRef = useRef<THREE.Group>(null);
@@ -1368,6 +1374,7 @@ export const NPC = memo(function NPC({
     return (
       <RigidBody
         ref={rigidBodyRef}
+        position={npcRigidSpawn}
         type="kinematicPosition"
         colliders={false}
         userData={{ isNPC: true }}

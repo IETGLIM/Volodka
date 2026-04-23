@@ -790,6 +790,26 @@ export function getExplorationPlayerGlbVisualUniformMultiplier(sceneId: SceneId)
   return Math.min(2.5, Math.max(0.12, v));
 }
 
+/**
+ * Сейвы / старые телепорты с `y: 1` в интерьерах с полом у ног (`spawnPoint.y` ≈ 0.06) ломают TPS-камеру
+ * («ноги на весь экран»). Подтягиваем к якорю спавна сцены только когда явно «в воздухе» над полом.
+ */
+export function sanitizeExplorationPlayerPositionAgainstSpawn(
+  sceneId: SceneId,
+  pos: PlayerPosition,
+): PlayerPosition {
+  const entry = SCENE_CONFIG[sceneId];
+  const sp = entry?.spawnPoint;
+  if (!sp || typeof sp.y !== 'number' || !Number.isFinite(sp.y)) return pos;
+  const anchorY = sp.y;
+  /** Интерьеры с ногами у пола (не сцены с `y: 1` как «общий» спавн). */
+  if (anchorY > 0.15) return pos;
+  let { x, y, z, rotation } = pos;
+  if (y > 0.42) y = anchorY;
+  if (y < -0.35) y = anchorY;
+  return { x, y, z, rotation };
+}
+
 export const getInteractiveObjectsForScene = (sceneId: SceneId): InteractiveObjectConfig[] => {
   const config = getSceneConfig(sceneId);
   return config.interactiveObjects;
