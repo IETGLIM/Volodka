@@ -5,7 +5,7 @@ import { ensureThreeClientPrep } from '@/lib/threeClientPrep';
 
 import dynamic from 'next/dynamic';
 import { Suspense, useState, useEffect, useRef, memo, useMemo } from 'react';
-import { motion } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import { FamilyWelcomeGate } from '@/components/game/FamilyWelcomeGate';
 import { LoadingProgressProvider, useLoadingProgress } from '@/context/LoadingProgressContext';
 
@@ -635,14 +635,52 @@ function GameOrchestratorBootShell() {
   );
 }
 
+/** Задержка после гидратации перед кроссфейдом; оркестратор монтируется сразу под оверлеем, чтобы грузился чанк. */
+const GAME_REVEAL_DELAY_MS = 100;
+
 // Main GameClient — just wraps GameOrchestrator with error boundary
 export default function GameClient() {
   ensureThreeClientPrep();
+  const [showGame, setShowGame] = useState(false);
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => setShowGame(true), GAME_REVEAL_DELAY_MS);
+    return () => window.clearTimeout(timer);
+  }, []);
+
   return (
     <ErrorBoundary>
       <FamilyWelcomeGate>
         <LoadingProgressProvider>
-          <GameOrchestratorBootShell />
+          <div className="relative min-h-screen">
+            <motion.div
+              key="game"
+              initial={{ opacity: 0 }}
+              animate={{
+                opacity: showGame ? 1 : 0,
+                transition: showGame
+                  ? { delay: 0.2, duration: 0.5 }
+                  : { duration: 0 },
+              }}
+              className="min-h-screen"
+              style={{ pointerEvents: showGame ? undefined : 'none' }}
+              aria-hidden={!showGame}
+            >
+              <GameOrchestratorBootShell />
+            </motion.div>
+            <AnimatePresence>
+              {!showGame && (
+                <motion.div
+                  key="loading"
+                  initial={{ opacity: 1 }}
+                  exit={{ opacity: 0, transition: { duration: 0.5 } }}
+                  className="fixed inset-0 z-50 pointer-events-none"
+                >
+                  <CyberpunkLoadingFallback />
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
         </LoadingProgressProvider>
       </FamilyWelcomeGate>
     </ErrorBoundary>
