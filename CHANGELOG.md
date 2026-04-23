@@ -8,6 +8,7 @@
 
 ### Fixed
 
+- **Обход / игрок, процедурный fallback:** в `**PhysicsPlayer**` (`FallbackPlayerModel`) масштаб визуала через `**applyExplorationPlayerGlobalVisualScale(rs)**` вместо ручного `* EXPLORATION_PLAYER_GLOBAL_VISUAL_SCALE`; в докблоке указано, что `**getExplorationCharacterModelScale**` / `**visualModelScale**` **не** вшивают ÷5 (глобальный шаг один раз, как у GLB после bbox).
 - **Обход / NPC GLB и тени:** `**castShadow**` / `**receiveShadow**` выставляются один раз при клоне в `**GLTFLoader**` (`**NPC.tsx**`); убран `**useLayoutEffect**` в `**GLTFModelInner**` и дистанционный `**shadowTier**` (экономия на порогах 4/8 м — за счёт `**visible**` LOD-группы дальний GLB уже не рендерится).
 - **Обход / GLB анимации (NPC + игрок):** перед сменой клипа останавливаются «третьи» запущенные `**AnimationAction**` на том же `actions` (быстрая смена маппинга / пропсов), партнёр кроссфейда не `**stop**` до `**crossFadeFrom**` — `**NPC.tsx**` (`GLTFLoader`), `**PhysicsPlayer.tsx**` (`GLBPlayerModel`).
 - **Обход / NPC — расписание и KCC:** при `**scheduleEntry**` и `**enableNpcPhysics**` не перезаписывать `**currentPositionRef**` идеальной точкой слота каждый кадр (остаётся синхрон с `**RigidBody**` после `**computeColliderMovement**`); цель `**npcKccIntentRef**` — с направлением к слоту с ограничением скорости (`**NPC_SCHEDULE_KCC_MAX_SPEED_MPS**` / snap), чтобы не дёргать тело против коллизий. В `**NPCProps**` / `**NPCSystemProps**` — пояснение: статичные NPC только по расписанию можно оставить без физики.

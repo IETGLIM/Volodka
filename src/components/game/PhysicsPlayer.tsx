@@ -18,7 +18,6 @@ import { usePlayerFootsteps } from '@/hooks/usePlayerFootsteps';
 import { getDefaultPlayerModelPath, isValidPlayerGlbPath, rewriteLegacyModelPath } from '@/config/modelUrls';
 import {
   PLAYER_GLB_TARGET_VISUAL_METERS,
-  EXPLORATION_PLAYER_GLOBAL_VISUAL_SCALE,
   applyExplorationPlayerGlbVisualUniformMultiplier,
   applyExplorationPlayerGlobalVisualScale,
   clampExplorationHumanoidGlbUniformForScene,
@@ -45,8 +44,9 @@ export interface PhysicsPlayerProps {
   position?: [number, number, number];
   modelPath?: string;
   /**
-   * Масштаб персонажа в помещении (`getExplorationCharacterModelScale`):
-   * умножает капсулу Rapier и множитель в формуле uniform GLB `(targetMeters / bboxH) * visualModelScale`.
+   * Масштаб персонажа в помещении (`getExplorationCharacterModelScale` из `scenes.ts`):
+   * **без** `EXPLORATION_PLAYER_GLOBAL_VISUAL_SCALE` — тот идёт отдельно в uniform GLB (`applyExplorationPlayerGlobalVisualScale`)
+   * и один раз в процедурном fallback (`FallbackPlayerModel`). Капсула и bbox используют этот же `roomScale`.
    */
   visualModelScale?: number;
   /**
@@ -103,7 +103,7 @@ const FallbackPlayerModel = memo(function FallbackPlayerModel({
 }: {
   isMoving: boolean;
   isLocked: boolean;
-  /** Согласован с `visualModelScale` сцены (узкие комнаты — меньше заглушка). */
+  /** Согласован с `visualModelScale` сцены (узкие комнаты — меньше заглушка); глобальный ÷5 — через `applyExplorationPlayerGlobalVisualScale`. */
   roomScale?: number;
 }) {
   const groupRef = useRef<THREE.Group>(null);
@@ -138,7 +138,8 @@ const FallbackPlayerModel = memo(function FallbackPlayerModel({
   });
 
   const rs = Math.max(0.28, Math.min(1.25, roomScale));
-  const vis = rs * EXPLORATION_PLAYER_GLOBAL_VISUAL_SCALE;
+  /** Один глобальный визуальный шаг, как у GLB после bbox — не «второй» раз на `visualModelScale` (он без ÷5). */
+  const vis = applyExplorationPlayerGlobalVisualScale(rs);
   return (
     <group ref={groupRef} scale={[vis, vis, vis]}>
       {/* ТЕЛО */}
