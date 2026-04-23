@@ -479,7 +479,7 @@ function CyberpunkLoadingFallback() {
 
         {/* Title — ЗАГРУЗКА ВОЛОДЬКИ */}
         <motion.h1
-          className={`relative text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold tracking-[0.12em] ${titleGlitch ? 'title-glitch' : ''}`}
+          className={`relative text-[clamp(2rem,10vw,6rem)] font-bold tracking-[0.12em] ${titleGlitch ? 'title-glitch' : ''}`}
           style={{
             textShadow: titleGlitch
               ? '-2px 0 #ff0000, 2px 0 #00ffff, 0 0 60px rgba(0, 255, 255, 0.6)'
@@ -496,7 +496,7 @@ function CyberpunkLoadingFallback() {
 
         {/* Title reflection */}
         <div
-          className="relative text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold tracking-[0.12em] pointer-events-none select-none -mt-1"
+          className="relative text-[clamp(2rem,10vw,6rem)] font-bold tracking-[0.12em] pointer-events-none select-none -mt-1"
           style={{
             animation: 'neon-reflection 4s ease-in-out infinite',
             maskImage: 'linear-gradient(to bottom, rgba(0,0,0,0.2) 0%, transparent 30%)',

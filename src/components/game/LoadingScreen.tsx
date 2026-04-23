@@ -574,7 +574,7 @@ const GlitchTitle = memo(function GlitchTitle({ text, subtitle }: GlitchTitlePro
 
       {/* Title */}
       <motion.h1
-        className={`relative text-5xl sm:text-6xl md:text-8xl lg:text-9xl font-bold tracking-widest ${glitching ? 'title-glitch' : ''}`}
+        className={`relative text-[clamp(2rem,11vw,8rem)] font-bold tracking-widest ${glitching ? 'title-glitch' : ''}`}
         style={{
           textShadow: glitching
             ? '-2px 0 #ff0000, 2px 0 #00ffff, 0 0 80px rgba(0, 255, 255, 0.6)'
@@ -591,7 +591,7 @@ const GlitchTitle = memo(function GlitchTitle({ text, subtitle }: GlitchTitlePro
 
       {/* Reflection */}
       <div
-        className="relative text-5xl sm:text-6xl md:text-8xl lg:text-9xl font-bold tracking-widest pointer-events-none select-none -mt-2"
+        className="relative text-[clamp(2rem,11vw,8rem)] font-bold tracking-widest pointer-events-none select-none -mt-2"
         style={{
           animation: 'neon-reflection 4s ease-in-out infinite',
           maskImage: 'linear-gradient(to bottom, rgba(0,0,0,0.25) 0%, transparent 35%)',

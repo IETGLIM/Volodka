@@ -8,6 +8,8 @@
 
 ### Changed
 
+- **Герой-заголовки (`GameClient` fallback, `MenuScreen`, `LoadingScreen`):** `text-[clamp(...)]` вместо ступенчатых `text-5xl` / `sm:` / `md:` / `lg:`; у экрана загрузки верх **8rem** (`11vw`), у меню и cyber-fallback **6rem** (`10vw`).
+
 - **`GameClient`:** после гидратации кроссфейд `AnimatePresence` — затухание полноэкранного `CyberpunkLoadingFallback` и появление слоя с `GameOrchestrator` (`motion` + задержка); оркестратор монтируется сразу под оверлеем, чтобы не блокировать загрузку чанка.
 
 - **`GameClient` / `MiniMatrixRain`:** учёт `prefers-reduced-motion` (~4 fps, пониженная непрозрачность), для слабых CPU/RAM — ~15 fps через порог по кадрам в `requestAnimationFrame`; подписка на смену медиазапроса.
