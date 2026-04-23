@@ -18,6 +18,8 @@ import { usePlayerFootsteps } from '@/hooks/usePlayerFootsteps';
 import { getDefaultPlayerModelPath, isValidPlayerGlbPath, rewriteLegacyModelPath } from '@/config/modelUrls';
 import {
   PLAYER_GLB_TARGET_VISUAL_METERS,
+  PLAYER_GLB_VISUAL_UNIFORM_MAX,
+  PLAYER_GLB_VISUAL_UNIFORM_MIN,
   applyExplorationPlayerGlbVisualUniformMultiplier,
   applyExplorationPlayerGlobalVisualScale,
   clampExplorationHumanoidGlbUniformForScene,
@@ -103,7 +105,7 @@ const FallbackPlayerModel = memo(function FallbackPlayerModel({
 }: {
   isMoving: boolean;
   isLocked: boolean;
-  /** Согласован с `visualModelScale` сцены (узкие комнаты — меньше заглушка); глобальный ÷5 — через `applyExplorationPlayerGlobalVisualScale`. */
+  /** Согласован с `visualModelScale` сцены (узкие комнаты — меньше заглушка); глобальный ÷5 — в `GLBPlayerModel` явно `* 0.2` + clamp (fallback ниже — `applyExplorationPlayerGlobalVisualScale`). */
   roomScale?: number;
 }) {
   const groupRef = useRef<THREE.Group>(null);
@@ -344,9 +346,15 @@ const GLBPlayerModel = memo(function GLBPlayerModel({
       if (h < 1e-4) base = 0.12 * rs;
       else base = computeExplorationPlayerGlbUniformFromBBox(h, targetVisualMeters, rs);
     }
-    const chained = applyExplorationPlayerGlobalVisualScale(
-      applyExplorationPlayerGlbVisualUniformMultiplier(base, visualUniformMultiplier),
-    );
+    const afterMultiplier = applyExplorationPlayerGlbVisualUniformMultiplier(base, visualUniformMultiplier);
+    // Явный ÷5: не полагаемся на `EXPLORATION_PLAYER_GLOBAL_VISUAL_SCALE` в `applyExplorationPlayerGlobalVisualScale` (при невалидной константе там factor=1).
+    const scaled = afterMultiplier * 0.2;
+    let chained = scaled;
+    if (!Number.isFinite(chained) || chained <= 0) {
+      chained = PLAYER_GLB_VISUAL_UNIFORM_MIN;
+    } else {
+      chained = Math.min(Math.max(chained, PLAYER_GLB_VISUAL_UNIFORM_MIN), PLAYER_GLB_VISUAL_UNIFORM_MAX);
+    }
     return clampExplorationHumanoidGlbUniformForScene(glbUniformClampSceneId, chained);
   }, [loadedScene, rs, targetVisualMeters, visualUniformMultiplier, glbUniformClampSceneId]);
 
