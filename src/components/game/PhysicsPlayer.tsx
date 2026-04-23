@@ -311,6 +311,15 @@ const GLBPlayerModel = memo(function GLBPlayerModel({
           m.userData.isPlayer = true;
         }
       });
+      /** Кривой экспорт: ненулевой `scale` на корне сцены умножается с нашим uniform → «нога на весь экран». */
+      if (
+        loadedScene.scale.x !== 1 ||
+        loadedScene.scale.y !== 1 ||
+        loadedScene.scale.z !== 1
+      ) {
+        loadedScene.scale.set(1, 1, 1);
+        loadedScene.updateMatrixWorld(true);
+      }
       applyGltfExplorationCharacterMaterialPolicies(loadedScene);
       return loadedScene;
     } catch {

@@ -305,6 +305,10 @@ const GLTFLoader = memo(function GLTFLoader({
     if (!loadedScene) return { scene: null, bakedVisualScale: 1 };
     try {
       const clone = loadedScene.clone(true);
+      if (clone.scale.x !== 1 || clone.scale.y !== 1 || clone.scale.z !== 1) {
+        clone.scale.set(1, 1, 1);
+        clone.updateMatrixWorld(true);
+      }
       clone.traverse((child: any) => {
         if (child.isMesh) {
           child.castShadow = true;
