@@ -8,6 +8,7 @@
 
 ### Fixed
 
+- **Обход / `zarema_albert_room`:** `**spawnPoint.y**` с **1** на **0.06** (ноги на полу, как после интро и как в других интерьерах обхода) — устраняет смещение капсулы/камеры TPS, из-за которого в кадре оказывались «гигантские ноги»; `**explorationPlayerGlbVisualUniformMultiplier**` выровнен с `**volodka_room**` (**0.22**).
 - **Обход / 3D-интро — масштаб GLB игрока:** ужаты `**INTRO_OPENING_PLAYER_GLTF_TARGET_METERS**` (**0.085** м) и `**INTRO_OPENING_PLAYER_GLB_VISUAL_UNIFORM_EXTRA_MULTIPLIER**` (**0.02** вместо **0.2**) в `**introVolodkaOpeningCutscene.ts**`, чтобы силуэт не перекрывал узкую площадку кадра (лифт/стол) при том же `**PhysicsPlayer**` и глобальном визуальном **÷5**.
 - **Обход / квартира Заремы и Альберта:** у `**zarema_home**` и `**albert_home**` в `**npcDefinitions.ts**` заданы `**modelPath**` и клипы анимаций, как у `**zarema**` / `**albert**` на улице (один персонаж — те же GLB в интерьере); в `**scenes.ts**` для `**zarema_albert_room.npcs**` путь Заремы приведён к тому же файлу.
 - **Обход / масштаб персонажей:** глобальный визуальный коэффициент **1/5** — `**EXPLORATION_PLAYER_GLOBAL_VISUAL_SCALE**` + `**applyExplorationPlayerGlobalVisualScale**` в `**playerScaleConstants.ts**`; применяется в `**PhysicsPlayer**` (`GLBPlayerModel` + процедурный fallback) и в `**NPC.tsx**` (GLB + `effectiveModelScale` для капсулы/процедурки); интро использует тот же `**PhysicsPlayer**`. Локальный **÷3** у `**zarema_albert_room**` в `**scenes.ts**` откатан — даёт общий **÷5** по проекту.

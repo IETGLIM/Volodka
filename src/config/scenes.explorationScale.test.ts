@@ -77,8 +77,8 @@ describe('getExplorationPlayerGlbVisualUniformMultiplier', () => {
     expect(getExplorationPlayerGlbVisualUniformMultiplier('volodka_room')).toBe(0.22);
   });
 
-  it('zarema_albert_room uses explicit multiplier below 1', () => {
-    expect(getExplorationPlayerGlbVisualUniformMultiplier('zarema_albert_room')).toBe(0.56);
+  it('zarema_albert_room uses explicit multiplier aligned with volodka_room tight interior', () => {
+    expect(getExplorationPlayerGlbVisualUniformMultiplier('zarema_albert_room')).toBe(0.22);
   });
 
   it('defaults to 1 when not configured', () => {

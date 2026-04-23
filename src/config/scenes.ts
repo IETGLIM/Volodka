@@ -1,7 +1,7 @@
 // src/config/scenes.ts
 import type { SceneId } from '@/data/types';
 import type { PlayerPosition } from '@/data/rpgTypes';
-import { PLAYER_GLB_TARGET_VISUAL_METERS } from '@/lib/playerScaleConstants';
+import { PLAYER_FEET_SPAWN_Y, PLAYER_GLB_TARGET_VISUAL_METERS } from '@/lib/playerScaleConstants';
 import {
   INTERIOR_REF_COFFEE_TABLE_SURFACE_Y_M,
   INTERIOR_REF_DOOR_HEIGHT_M,
@@ -632,9 +632,11 @@ export const SCENE_CONFIG = {
     explorationLocomotionScale: 0.86,
     /** Явная привязка к сцене: без этого `visualModelScale` слабо влияет на итоговый uniform GLB. */
     explorationPlayerGltfTargetMeters: 0.78,
-    explorationPlayerGlbVisualUniformMultiplier: 0.56,
+    /** С узким интерьером и глобальным ÷5 — как у `volodka_room`, иначе силуэт перебивает NPC в кадре. */
+    explorationPlayerGlbVisualUniformMultiplier: 0.22,
     size: [10, 8],
-    spawnPoint: { x: 0, y: 1, z: 0, rotation: 0 } as PlayerPosition,  // центр комнаты
+    /** Ноги на полу; как `INTRO_OPENING_ZAREMA_SPAWN` — не `y: 1`, иначе TPS «ныряет» в меш и ноги на весь экран. */
+    spawnPoint: { x: 0, y: PLAYER_FEET_SPAWN_Y, z: 1.35, rotation: 0 } as PlayerPosition,
     ambientLight: { intensity: 0.8, color: '#ffd93d' },  // усилен свет
     /** В 3D-обходе — `zarema_home` / `albert_home` из `npcDefinitions`; здесь те же пути GLB для справки и VN. */
     npcs: [
