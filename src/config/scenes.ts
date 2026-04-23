@@ -636,13 +636,13 @@ export const SCENE_CONFIG = {
     size: [10, 8],
     spawnPoint: { x: 0, y: 1, z: 0, rotation: 0 } as PlayerPosition,  // центр комнаты
     ambientLight: { intensity: 0.8, color: '#ffd93d' },  // усилен свет
-    /** В 3D-обходе используются `zarema_home` / `albert_home` из `npcDefinitions`; здесь — справочные слоты под VN/квесты. */
+    /** В 3D-обходе — `zarema_home` / `albert_home` из `npcDefinitions`; здесь те же пути GLB для справки и VN. */
     npcs: [
       {
         id: 'zarema',
         name: 'Зарема',
         model: 'barista',
-        modelPath: '/models/smol_ame_in_an_upcycled_terrarium_hololiveen.glb',
+        modelPath: '/models/cyberpunk_female_full-body_character.glb',
         position: [-1.55, 0, 0.65],
         dialogueTree: 'zarema_room',
         scale: 1.0,

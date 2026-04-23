@@ -8,6 +8,7 @@
 
 ### Fixed
 
+- **Обход / квартира Заремы и Альберта:** у `**zarema_home**` и `**albert_home**` в `**npcDefinitions.ts**` заданы `**modelPath**` и клипы анимаций, как у `**zarema**` / `**albert**` на улице (один персонаж — те же GLB в интерьере); в `**scenes.ts**` для `**zarema_albert_room.npcs**` путь Заремы приведён к тому же файлу.
 - **Обход / масштаб персонажей:** глобальный визуальный коэффициент **1/5** — `**EXPLORATION_PLAYER_GLOBAL_VISUAL_SCALE**` + `**applyExplorationPlayerGlobalVisualScale**` в `**playerScaleConstants.ts**`; применяется в `**PhysicsPlayer**` (`GLBPlayerModel` + процедурный fallback) и в `**NPC.tsx**` (GLB + `effectiveModelScale` для капсулы/процедурки); интро использует тот же `**PhysicsPlayer**`. Локальный **÷3** у `**zarema_albert_room**` в `**scenes.ts**` откатан — даёт общий **÷5** по проекту.
 - **Обход / 3D-интро:** поза из `introCutscenePlayerBridge` больше не телепортирует RigidBody напрямую — шаг через `computeColliderMovement` (`PhysicsPlayer`), чтобы не проходить сквозь стены и не проваливаться после выхода из кат-сцены; оверлей лифта и субтитры подняты по `z-index` над брифингом (`IntroCutsceneOverlays`); брифинг не показывается поверх интро (`RPGGameCanvas`); чуть уменьшен интро-множитель GLB (`introVolodkaOpeningCutscene`).
 
