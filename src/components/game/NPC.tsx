@@ -105,6 +105,10 @@ class ModelErrorBoundary extends React.Component<
 
 /** Номинальная скорость «ходьбы» в клипе (м/с) для подгонки `effectiveTimeScale` под фактическую скорость патруля. */
 const NPC_WALK_CLIP_NOMINAL_MPS = 1.4;
+/** Слот расписания: не дёргать `npcKccIntentRef` телепортом на полный вектор за кадр — KCC и коллизии иначе «дёргаются». */
+const NPC_SCHEDULE_KCC_MAX_SPEED_MPS = 22;
+/** В пределах этого расстояния до слота цель KCC = точная позиция расписания. */
+const NPC_SCHEDULE_KCC_SNAP_M = 0.03;
 
 interface GLTFModelProps {
   modelPath: string;
@@ -784,9 +788,16 @@ interface NPCProps {
   locationModelScale?: number;
   /** Множитель скорости патруля; `getExplorationLocomotionScale`. */
   locationLocomotionScale?: number;
-  /** Текущее окно расписания для этого NPC (если есть в `ScheduleEngine`). */
+  /**
+   * Текущее окно расписания (`ScheduleEngine`). При `enableNpcPhysics` слот задаёт **цель** для KCC;
+   * фактическая позиция и `currentPositionRef` следуют телу после `computeColliderMovement`, без
+   * ежекадровой подмены ref идеальной точкой слота (иначе рассинхрон и дёрганье).
+   */
   scheduleEntry?: ScheduleEntry | null;
-  /** Кинематический RigidBody для телепорта в Rapier-сцене. */
+  /**
+   * Кинематический `RigidBody` + KCC в `useBeforePhysicsStep`. Для NPC **только** со слотом
+   * расписания без патруля можно оставить `false` — позиция тогда жёстко из `scheduleEntry` в группе.
+   */
   enableNpcPhysics?: boolean;
   /** Путь по navmesh (three-pathfinding); если нет — прямой бег к waypoint. */
   findNavPath?: FindNavPathXZ | null;
@@ -972,11 +983,32 @@ export const NPC = memo(function NPC({
 
     if (scheduleEntry) {
       const p = scheduleEntry.position;
-      currentPositionRef.current = { x: p.x, y: p.y, z: p.z };
       if (enableNpcPhysics) {
-        npcKccIntentRef.current = { x: p.x, y: p.y, z: p.z };
+        const rb = rigidBodyRef.current;
+        if (rb) {
+          const t = rb.translation();
+          const dx = p.x - t.x;
+          const dy = p.y - t.y;
+          const dz = p.z - t.z;
+          const dist = Math.hypot(dx, dy, dz);
+          if (dist <= NPC_SCHEDULE_KCC_SNAP_M) {
+            npcKccIntentRef.current = { x: p.x, y: p.y, z: p.z };
+          } else {
+            const maxStep = NPC_SCHEDULE_KCC_MAX_SPEED_MPS * delta;
+            const k = Math.min(1, maxStep / dist);
+            npcKccIntentRef.current = {
+              x: t.x + dx * k,
+              y: t.y + dy * k,
+              z: t.z + dz * k,
+            };
+          }
+        } else {
+          npcKccIntentRef.current = { x: p.x, y: p.y, z: p.z };
+        }
+      } else {
+        currentPositionRef.current = { x: p.x, y: p.y, z: p.z };
+        syncWorldPosition(p);
       }
-      syncWorldPosition(p);
 
       const dx = px - p.x;
       const dz = pz - p.z;
@@ -1429,6 +1461,10 @@ interface NPCSystemProps {
   locationModelScale?: number;
   /** См. `getExplorationLocomotionScale`. */
   locationLocomotionScale?: number;
+  /**
+   * Включить Rapier KCC для NPC. Со `scheduleEntry` цель к слоту сглаживается по скорости, чтобы не
+   * конфликтовать с коллизиями; чисто статичные персонажи по расписанию можно оставить с `false`.
+   */
   enableNpcPhysics?: boolean;
   findNavPath?: FindNavPathXZ | null;
 }
