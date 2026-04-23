@@ -4,6 +4,7 @@
 
 ### Added
 
+- **Обход / диагностика GLB игрока:** `**NEXT_PUBLIC_EXPLORATION_PLAYER_GLB_SCALE_DEBUG=1`** → `**isExplorationPlayerGlbScaleDebugEnabled**` в `**explorationDiagnostics.ts**`, `**console.info**` цепочки uniform в `**PhysicsPlayer**` (`GLBPlayerModel`); тест что `**EXPLORATION_PLAYER_GLOBAL_VISUAL_SCALE**` = **0.2** в `**playerScaleConstants.playerGlbUniform.test.ts**`.
 - `**src/client/store/playerStore.test.ts`:** проверки `updateStatsBatch`, `EventBus` (`player:stress_high`, паника), `setRpgProgress`, сериализации.
 - `**loading-critical.css`:** подключается в `layout.tsx` перед `globals.css` — ранний фон `#030308` и `color-scheme: dark` для первой краски до полного CSS.
 - **Загрузка чанка `GameOrchestrator`:** контекст `LoadingProgressContext` (`src/context/LoadingProgressContext.tsx`), провайдер в `GameClient` вокруг `Suspense` + ленивого оркестратора; `CyberpunkLoadingFallback` / `CyberProgressIndicator` показывают прогресс и сообщение из `GameOrchestrator` (этапы бандла, инициализации, фазы `loading` / меню / игра).

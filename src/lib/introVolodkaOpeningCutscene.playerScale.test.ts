@@ -1,3 +1,7 @@
+/**
+ * Vitest подхватывает файл по шаблону `src` + `*.test.ts` (см. `vitest.config.ts`, поле `include`).
+ * Проверяет множители и кап интро относительно геймплея `volodka_room` в `scenes.ts` / `playerScaleConstants`.
+ */
 import { describe, expect, it } from 'vitest';
 import {
   INTRO_OPENING_GLTF_VISUAL_UNIFORM_HARD_MAX,

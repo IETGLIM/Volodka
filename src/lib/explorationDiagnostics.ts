@@ -36,6 +36,15 @@ export function isExplorationPlayerLocomotionLogEnabled(): boolean {
 }
 
 /**
+ * Однократный/редкий `console.info` цепочки uniform GLB игрока (`GLBPlayerModel` в `PhysicsPlayer`):
+ * bbox, `base`, множитель сцены, `applyExplorationPlayerGlobalVisualScale`, clamp, интро-кап.
+ * Включение: **`NEXT_PUBLIC_EXPLORATION_PLAYER_GLB_SCALE_DEBUG=1`** (пересборка дев-сервера / preview).
+ */
+export function isExplorationPlayerGlbScaleDebugEnabled(): boolean {
+  return process.env.NEXT_PUBLIC_EXPLORATION_PLAYER_GLB_SCALE_DEBUG === '1';
+}
+
+/**
  * В `volodka_room` отключить GLB NPC (только `FallbackNPCModel`) — явно
  * `NEXT_PUBLIC_EXPLORATION_VOLODKA_NPC_GLB=0` (пересборка). По умолчанию GLB **включён**,
  * чтобы прод не выглядел «пустым» без ручного флага на Vercel.

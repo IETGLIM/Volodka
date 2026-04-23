@@ -17,6 +17,7 @@ import {
 import { usePlayerFootsteps } from '@/hooks/usePlayerFootsteps';
 import { getDefaultPlayerModelPath, isValidPlayerGlbPath, rewriteLegacyModelPath } from '@/config/modelUrls';
 import {
+  EXPLORATION_PLAYER_GLOBAL_VISUAL_SCALE,
   PLAYER_GLB_TARGET_VISUAL_METERS,
   PLAYER_GLB_VISUAL_UNIFORM_MAX,
   PLAYER_GLB_VISUAL_UNIFORM_MIN,
@@ -32,7 +33,10 @@ import { applyGltfExplorationCharacterMaterialPolicies } from '@/lib/gltfCharact
 import { ThreeCanvasSuspenseFallback } from '@/components/3d/ThreeCanvasSuspenseFallback';
 import { cloneAnimationClipsWithoutExplorationPlayerRootMotion } from '@/lib/stripExplorationPlayerRootMotionFromClips';
 import { isExplorationPlayerDebugPrimitiveEnabled } from '@/lib/explorationPlayerDebugPrimitive';
-import { isExplorationPlayerLocomotionLogEnabled } from '@/lib/explorationDiagnostics';
+import {
+  isExplorationPlayerGlbScaleDebugEnabled,
+  isExplorationPlayerLocomotionLogEnabled,
+} from '@/lib/explorationDiagnostics';
 import { getExplorationCameraOrbitYawRad } from '@/lib/explorationCameraOrbitBridge';
 import { useGameStore } from '@/store/gameStore';
 import { useGamePhaseStore } from '@/store/gamePhaseStore';
@@ -345,11 +349,13 @@ const GLBPlayerModel = memo(function GLBPlayerModel({
 
   const visualUniform = useMemo(() => {
     let base: number;
+    let bboxHeight: number | undefined;
     if (!loadedScene) {
       base = 0.12 * rs;
     } else {
       const scratch = new THREE.Vector3();
       const h = getGltfSkinnedVisualHeightMeters(loadedScene, scratch);
+      bboxHeight = h;
       if (h < 1e-4) base = 0.12 * rs;
       else base = computeExplorationPlayerGlbUniformFromBBox(h, targetVisualMeters, rs);
     }
@@ -360,6 +366,23 @@ const GLBPlayerModel = memo(function GLBPlayerModel({
     const cap = introOpeningGlbUniformHardCap;
     if (cap != null && Number.isFinite(cap) && cap > 0) {
       u = Math.min(u, cap);
+    }
+    if (isExplorationPlayerGlbScaleDebugEnabled()) {
+      console.info('[GLBPlayerModel scale debug]', {
+        bboxHeight,
+        targetVisualMeters,
+        roomScale: rs,
+        baseUniform: base,
+        visualUniformMultiplier,
+        afterMultiplier,
+        explorationGlobalVisualScaleExport: EXPLORATION_PLAYER_GLOBAL_VISUAL_SCALE,
+        globalScaleOf1: applyExplorationPlayerGlobalVisualScale(1),
+        chained,
+        afterSceneClamp: clampExplorationHumanoidGlbUniformForScene(glbUniformClampSceneId, chained),
+        introOpeningGlbUniformHardCap: cap,
+        finalUniform: u,
+        glbUniformClampSceneId,
+      });
     }
     return u;
   }, [

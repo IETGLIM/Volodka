@@ -9,6 +9,13 @@ import {
   PLAYER_GLB_VISUAL_UNIFORM_MIN,
 } from '@/lib/playerScaleConstants';
 
+describe('EXPLORATION_PLAYER_GLOBAL_VISUAL_SCALE', () => {
+  it('is ÷5 (not ×5): runtime chain multiplies uniform by this factor', () => {
+    expect(EXPLORATION_PLAYER_GLOBAL_VISUAL_SCALE).toBe(0.2);
+    expect(applyExplorationPlayerGlobalVisualScale(1)).toBeCloseTo(0.2, 5);
+  });
+});
+
 describe('computeExplorationPlayerGlbUniformFromBBox', () => {
   it('clamps when skinned bbox is underestimated (large raw)', () => {
     const u = computeExplorationPlayerGlbUniformFromBBox(0.58, 1.38, 1);
