@@ -125,7 +125,7 @@ export const ExplorationBriefingOverlay = memo(function ExplorationBriefingOverl
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 8, opacity: 0 }}
             transition={{ type: 'spring', stiffness: 280, damping: 26 }}
-            className="game-fm-layer max-h-[min(78dvh,520px)] w-full max-w-md overflow-y-auto rounded-xl border border-cyan-500/45 bg-slate-950/95 p-5 pb-[max(1.25rem,calc(1.25rem+env(safe-area-inset-bottom)))] shadow-2xl outline-none ring-0"
+            className="game-critical-motion game-fm-layer game-panel max-h-[min(78dvh,520px)] w-full max-w-md overflow-y-auto rounded-xl border border-cyan-500/45 bg-slate-950/95 p-5 pb-[max(1.25rem,calc(1.25rem+env(safe-area-inset-bottom)))] shadow-2xl outline-none ring-0"
           >
             <h2
               id="exploration-briefing-title"

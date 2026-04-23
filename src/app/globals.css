@@ -85,18 +85,19 @@
   --card-foreground: oklch(0.985 0 0);
   --popover: oklch(0.205 0 0);
   --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
+  /* Киберпанк: неон cyan / amber, выше контраст muted-текста */
+  --primary: oklch(0.72 0.14 195);
+  --primary-foreground: oklch(0.08 0 0);
   --secondary: oklch(0.269 0 0);
   --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.22 0.02 250);
+  --muted-foreground: oklch(0.72 0.03 220);
+  --accent: oklch(0.62 0.12 55);
+  --accent-foreground: oklch(0.08 0 0);
   --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
+  --border: oklch(0.32 0.02 240);
   --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
+  --ring: oklch(0.58 0.16 195);
   --chart-1: oklch(0.488 0.243 264.376);
   --chart-2: oklch(0.696 0.17 162.48);
   --chart-3: oklch(0.769 0.188 70.08);
@@ -929,8 +930,14 @@
   contain: layout paint;
 }
 
+/* will-change только на время анимации (Framer / motion) */
 @media (min-width: 769px) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
   .game-fm-layer-promote {
+    will-change: transform, opacity;
+  }
+
+  .game-fm-layer.is-animating,
+  .game-fm-layer-promote.is-animating {
     will-change: transform, opacity;
   }
 }
@@ -938,6 +945,40 @@
 @media (max-width: 768px), (pointer: coarse), (prefers-reduced-motion: reduce) {
   .game-fm-layer-promote {
     will-change: auto;
+  }
+
+  .game-fm-layer.is-animating,
+  .game-fm-layer-promote.is-animating {
+    will-change: auto;
+  }
+}
+
+/* Крупные панели: откладываем layout/paint вне вьюпорта */
+.game-panel {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 500px;
+}
+
+/* Декоративные анимации off на мобильных и при reduced-motion; исключения — .game-critical-motion */
+@media (max-width: 768px), (prefers-reduced-motion: reduce) {
+  *:not(.game-critical-motion, .game-critical-motion *),
+  *:not(.game-critical-motion, .game-critical-motion *)::before,
+  *:not(.game-critical-motion, .game-critical-motion *)::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+@media (forced-colors: active) {
+  .game-panel {
+    border: 1px solid CanvasText;
+    background: Canvas;
+    color: CanvasText;
+  }
+
+  .game-critical-motion,
+  .game-critical-motion * {
+    animation: none !important;
   }
 }
 

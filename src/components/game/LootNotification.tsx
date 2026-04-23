@@ -34,7 +34,7 @@ export const LootNotification = memo(function LootNotification() {
       {loot && (
         <motion.div
           key={loot.itemId}
-          className="pointer-events-none fixed inset-0 z-[100] flex items-center justify-center"
+          className="game-critical-motion pointer-events-none fixed inset-0 z-[100] flex items-center justify-center"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}

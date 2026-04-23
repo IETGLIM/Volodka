@@ -356,7 +356,7 @@ export const PoetryBook = memo(function PoetryBook({ isOpen, onClose }: PoetryBo
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      className="game-critical-motion fixed inset-0 z-50 flex items-center justify-center p-4"
       style={{ background: 'rgba(0, 0, 0, 0.92)' }}
       onClick={onClose}
     >
@@ -364,7 +364,7 @@ export const PoetryBook = memo(function PoetryBook({ isOpen, onClose }: PoetryBo
         initial={{ scale: 0.9, y: 20 }}
         animate={{ scale: 1, y: 0 }}
         exit={{ scale: 0.9, y: 20 }}
-        className="relative h-[min(85vh,800px)] max-h-[85vh] w-full max-w-[min(95vw,42rem)] overflow-hidden"
+        className="game-panel relative h-[min(85vh,800px)] max-h-[85vh] w-full max-w-[min(95vw,42rem)] overflow-hidden"
         style={{
           background: 'linear-gradient(180deg, rgba(5, 8, 15, 0.98) 0%, rgba(10, 15, 25, 0.98) 100%)',
           border: '1px solid rgba(0, 255, 255, 0.2)',

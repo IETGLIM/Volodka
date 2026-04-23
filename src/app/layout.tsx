@@ -3,6 +3,7 @@ import { StrictMode } from 'react';
 import { Geist, Geist_Mono } from 'next/font/google';
 import { GameStoreHydration } from './GameStoreHydration';
 import { AppPerfWarmup } from './AppPerfWarmup';
+import './loading-critical.css';
 import './globals.css';
 
 const geistSans = Geist({

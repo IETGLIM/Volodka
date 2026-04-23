@@ -26,7 +26,7 @@ export const MoralCompassHUD = memo(function MoralCompassHUD() {
 
   return (
     <div className="pointer-events-none fixed bottom-6 left-4 z-40 w-[min(92vw,220px)] select-none">
-      <div className="game-fm-layer game-fm-layer-promote intro-recall-frame rounded-lg border border-cyan-500/35 bg-black/75 px-3 py-2 shadow-lg backdrop-blur-md">
+      <div className="game-critical-motion game-fm-layer game-fm-layer-promote intro-recall-frame rounded-lg border border-cyan-500/35 bg-black/75 px-3 py-2 shadow-lg backdrop-blur-md">
         <div className="mb-1 flex items-center justify-between text-[10px] font-mono uppercase tracking-wider text-slate-400">
           <span className="bg-gradient-to-r from-cyan-200 via-cyan-300 to-emerald-400/90 bg-clip-text text-transparent">
             Карма

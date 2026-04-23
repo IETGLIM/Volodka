@@ -49,7 +49,7 @@ export const JournalPanel = memo(function JournalPanel({ onClose }: { onClose: (
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      className="game-critical-motion fixed inset-0 z-50 flex items-center justify-center p-4"
       style={{ background: 'rgba(0,0,0,0.88)' }}
       onClick={onClose}
     >
@@ -57,7 +57,7 @@ export const JournalPanel = memo(function JournalPanel({ onClose }: { onClose: (
         initial={{ scale: 0.96, y: 10 }}
         animate={{ scale: 1, y: 0 }}
         exit={{ scale: 0.96, y: 10 }}
-        className="relative max-h-[85vh] w-full max-w-[min(95vw,32rem)] overflow-hidden"
+        className="game-panel relative max-h-[85vh] w-full max-w-[min(95vw,32rem)] overflow-hidden"
         style={{
           background: 'linear-gradient(180deg, rgba(5,8,15,0.98) 0%, rgba(8,12,22,0.98) 100%)',
           border: '1px solid rgba(0, 255, 255, 0.22)',
@@ -92,7 +92,7 @@ export const JournalPanel = memo(function JournalPanel({ onClose }: { onClose: (
           }}
         />
 
-        <div className="max-h-[calc(85vh-52px)] overflow-y-auto px-4 pb-4 pt-2 game-scrollbar">
+        <div className="game-panel max-h-[calc(85vh-52px)] overflow-y-auto px-4 pb-4 pt-2 game-scrollbar">
           {rows.length === 0 ? (
             <p className="py-8 text-center font-mono text-sm text-cyan-500/35">
               Лог пуст. Выборы появятся здесь по мере прохождения.

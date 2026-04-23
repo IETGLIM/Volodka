@@ -1,6 +1,6 @@
 'use client';
 
-import { Component, useMemo, type ErrorInfo, type ReactNode } from 'react';
+import { Component, useEffect, useMemo, useState, type ErrorInfo, type ReactNode } from 'react';
 import { motion } from 'framer-motion';
 import type { SceneId } from '@/data/types';
 import { POEMS } from '@/data/poems';
@@ -61,7 +61,7 @@ export function KernelPanicOverlay({ isActive, onCalmDown }: { isActive: boolean
   if (!isActive) return null;
 
   return (
-    <div className="fixed inset-0 z-[60] kernel-panic-overlay flex items-center justify-center">
+    <div className="game-critical-motion fixed inset-0 z-[60] kernel-panic-overlay flex items-center justify-center">
       <div className="text-center p-8">
         <h2 className="text-4xl font-bold text-red-500 kernel-panic-text mb-4">
           ⚠️ ПАНИКА ЯДРА ⚠️
@@ -83,9 +83,16 @@ export function KernelPanicOverlay({ isActive, onCalmDown }: { isActive: boolean
 }
 
 export function PanelWrapper({ children, onClose }: { children: React.ReactNode; onClose: () => void }) {
+  const [layerAnimating, setLayerAnimating] = useState(true);
+
+  useEffect(() => {
+    const t = window.setTimeout(() => setLayerAnimating(false), 2000);
+    return () => window.clearTimeout(t);
+  }, []);
+
   return (
     <motion.div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 game-fm-layer game-fm-layer-promote"
+      className={`game-critical-motion fixed inset-0 z-50 flex items-center justify-center p-4 game-fm-layer game-fm-layer-promote${layerAnimating ? ' is-animating' : ''}`}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
@@ -98,6 +105,7 @@ export function PanelWrapper({ children, onClose }: { children: React.ReactNode;
         animate={{ opacity: 1, y: 0, scale: 1 }}
         exit={{ opacity: 0, y: 10, scale: 0.98 }}
         transition={{ type: 'spring', stiffness: 420, damping: 32 }}
+        onAnimationComplete={() => setLayerAnimating(false)}
       >
         {children}
       </motion.div>

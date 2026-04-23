@@ -728,7 +728,7 @@ export const IntroScreen = memo(function IntroScreen({
   }, [introPhase, revealedPoem, poems, collectedPoems, onComplete]);
 
   return (
-    <div className="fixed inset-0 h-[100dvh] min-h-[100dvh] w-full bg-black overflow-hidden overscroll-none">
+    <div className="game-critical-motion fixed inset-0 h-[100dvh] min-h-[100dvh] w-full bg-black overflow-hidden overscroll-none">
       {/* Canvas-based Matrix rain */}
       <CanvasMatrixRain />
 

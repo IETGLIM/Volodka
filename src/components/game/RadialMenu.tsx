@@ -53,7 +53,7 @@ export const RadialMenu = memo(function RadialMenu({
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.9, opacity: 0 }}
             transition={{ type: 'spring', stiffness: 320, damping: 24 }}
-            className={`game-fm-layer game-fm-layer-promote intro-recall-frame grid w-[min(92vw,300px)] gap-2 rounded-xl border border-cyan-500/40 bg-slate-950/95 p-4 pb-[max(1rem,calc(1rem+env(safe-area-inset-bottom)))] pt-[max(1rem,env(safe-area-inset-top))] shadow-2xl touch-manipulation ${
+            className={`game-critical-motion game-fm-layer game-fm-layer-promote intro-recall-frame grid w-[min(92vw,300px)] gap-2 rounded-xl border border-cyan-500/40 bg-slate-950/95 p-4 pb-[max(1rem,calc(1rem+env(safe-area-inset-bottom)))] pt-[max(1rem,env(safe-area-inset-top))] shadow-2xl touch-manipulation ${
               visible.length === 1 ? 'grid-cols-1' : 'grid-cols-2'
             }`}
             onPointerDown={(e) => e.stopPropagation()}

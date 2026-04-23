@@ -1,0 +1,10 @@
+/**
+ * Минимальные стили до полного парса `globals.css`: фон первого кадра (LCP / cyber-loading),
+ * без Tailwind и без тяжёлых keyframes.
+ */
+html {
+  color-scheme: dark;
+}
+body {
+  background-color: #030308;
+}

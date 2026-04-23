@@ -685,7 +685,7 @@ const LoadingScreen = memo(function LoadingScreen({ onReady }: LoadingScreenProp
   }, []);
 
   return (
-    <div className="fixed inset-0 bg-black overflow-hidden pointer-events-none">
+    <div className="game-critical-motion fixed inset-0 bg-black overflow-hidden pointer-events-none">
       {/* Canvas Matrix rain */}
       <CanvasMatrixRain opacity={0.2} />
 

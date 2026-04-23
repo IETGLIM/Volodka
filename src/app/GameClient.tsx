@@ -450,7 +450,7 @@ function CyberpunkLoadingFallback() {
   }, []);
 
   return (
-    <div className="fixed inset-0 bg-black overflow-hidden pointer-events-none">
+    <div className="game-critical-motion fixed inset-0 bg-black overflow-hidden pointer-events-none">
       {/* Matrix rain */}
       <MiniMatrixRain />
 
@@ -617,7 +617,7 @@ function ErrorBoundary({ children }: { children: React.ReactNode }) {
           : 'UNKNOWN // Неизвестная ошибка';
 
     return (
-      <div className="min-h-screen bg-[#030308] flex items-center justify-center p-6 sm:p-10">
+      <div className="game-critical-motion min-h-screen bg-[#030308] flex items-center justify-center p-6 sm:p-10">
         <div
           className="max-w-lg w-full border border-cyan-500/25 bg-black/60 p-8 sm:p-10 text-center shadow-[0_0_40px_rgba(0,255,255,0.08)]"
           style={{ clipPath: 'polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px))' }}
@@ -699,7 +699,7 @@ export default function GameClient() {
                   ? { delay: 0.2, duration: 0.5 }
                   : { duration: 0 },
               }}
-              className="min-h-screen"
+              className="game-critical-motion min-h-screen"
               style={{ pointerEvents: showGame ? undefined : 'none' }}
               aria-hidden={!showGame}
             >
@@ -711,7 +711,7 @@ export default function GameClient() {
                   key="loading"
                   initial={{ opacity: 1 }}
                   exit={{ opacity: 0, transition: { duration: 0.5 } }}
-                  className="fixed inset-0 z-50 pointer-events-none"
+                  className="game-critical-motion fixed inset-0 z-50 pointer-events-none"
                 >
                   <CyberpunkLoadingFallback />
                 </motion.div>

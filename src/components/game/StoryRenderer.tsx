@@ -114,7 +114,7 @@ function CyberChoiceCard({ choice, index, nodeId, isLocked, lockReason, onSelect
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       aria-label={choiceAria}
-      className={`w-full text-left relative overflow-hidden transition-all duration-200 game-fm-layer game-fm-layer-promote ${
+      className={`game-critical-motion w-full text-left relative overflow-hidden transition-all duration-200 game-fm-layer game-fm-layer-promote ${
         isLocked
           ? 'opacity-50 cursor-not-allowed'
           : 'cursor-pointer'
@@ -386,7 +386,7 @@ export default function StoryRenderer({ node, onChoice, onPoemGameComplete }: St
 
   return (
     <motion.div
-      className="fixed bottom-0 left-0 right-0 z-40 p-4 max-md:p-5 game-fm-layer game-fm-layer-promote"
+      className="game-critical-motion fixed bottom-0 left-0 right-0 z-40 p-4 max-md:p-5 game-fm-layer game-fm-layer-promote"
       initial={{ opacity: 0, y: 50 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: 50 }}

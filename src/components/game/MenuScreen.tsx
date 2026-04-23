@@ -600,7 +600,7 @@ interface SettingsPanelProps {
 const SettingsPanel = memo(function SettingsPanel({ onClose }: SettingsPanelProps) {
   return (
     <motion.div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 game-fm-layer game-fm-layer-promote pointer-events-auto"
+      className="game-critical-motion fixed inset-0 z-50 flex items-center justify-center p-4 game-fm-layer game-fm-layer-promote pointer-events-auto"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}

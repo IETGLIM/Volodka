@@ -312,7 +312,7 @@ export const Inventory = memo(function Inventory({ isOpen, onClose }: InventoryP
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-50 flex items-center justify-center p-3"
+      className="game-critical-motion fixed inset-0 z-50 flex items-center justify-center p-3"
       style={{ background: 'rgba(0, 0, 0, 0.8)' }}
       onClick={onClose}
     >
@@ -320,7 +320,7 @@ export const Inventory = memo(function Inventory({ isOpen, onClose }: InventoryP
         initial={{ scale: 0.9, y: 20 }}
         animate={{ scale: 1, y: 0 }}
         exit={{ scale: 0.9, y: 20 }}
-        className="relative flex max-h-[85vh] w-full max-w-[min(95vw,28rem)] flex-col overflow-hidden"
+        className="game-panel relative flex max-h-[85vh] w-full max-w-[min(95vw,28rem)] flex-col overflow-hidden"
         style={{
           background: 'linear-gradient(180deg, rgba(10, 10, 20, 0.98) 0%, rgba(15, 15, 30, 0.98) 100%)',
           border: '1px solid rgba(34, 211, 238, 0.3)',
@@ -371,7 +371,7 @@ export const Inventory = memo(function Inventory({ isOpen, onClose }: InventoryP
         </div>
 
         {/* Inventory Grid */}
-        <div className="relative min-h-0 flex-1 overflow-y-auto p-4">
+        <div className="game-panel relative min-h-0 flex-1 overflow-y-auto p-4">
           <div
             className="grid gap-2"
             style={{

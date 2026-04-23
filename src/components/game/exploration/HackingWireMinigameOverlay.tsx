@@ -75,7 +75,7 @@ export const HackingWireMinigameOverlay = memo(function HackingWireMinigameOverl
       {active && (
         <motion.div
           key="wire-hack"
-          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/82 p-4 font-mono text-cyan-100 game-fm-layer game-fm-layer-promote"
+          className="game-critical-motion fixed inset-0 z-[100] flex items-center justify-center bg-black/82 p-4 font-mono text-cyan-100 game-fm-layer game-fm-layer-promote"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}

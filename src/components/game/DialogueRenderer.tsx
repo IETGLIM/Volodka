@@ -102,7 +102,7 @@ const CyberDialogueChoice = memo(function CyberDialogueChoice({
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       aria-label={dialogueChoiceAria}
-      className={`w-full text-left relative overflow-hidden transition-all duration-200 game-fm-layer game-fm-layer-promote ${
+      className={`game-critical-motion w-full text-left relative overflow-hidden transition-all duration-200 game-fm-layer game-fm-layer-promote ${
         isConditionMet ? 'cursor-pointer' : 'cursor-not-allowed opacity-50'
       }`}
       style={{
@@ -371,7 +371,7 @@ export default function DialogueRenderer({
     <AnimatePresence>
       {isOpen && (
         <motion.div
-          className="fixed inset-0 z-50 flex items-end justify-center game-fm-layer game-fm-layer-promote font-[family-name:var(--font-geist-mono)]"
+          className="game-critical-motion fixed inset-0 z-50 flex items-end justify-center game-fm-layer game-fm-layer-promote font-[family-name:var(--font-geist-mono)]"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}

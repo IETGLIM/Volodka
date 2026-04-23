@@ -4,10 +4,16 @@
 
 ### Added
 
+- **`loading-critical.css`:** подключается в `layout.tsx` перед `globals.css` — ранний фон `#030308` и `color-scheme: dark` для первой краски до полного CSS.
 - **Загрузка чанка `GameOrchestrator`:** контекст `LoadingProgressContext` (`src/context/LoadingProgressContext.tsx`), провайдер в `GameClient` вокруг `Suspense` + ленивого оркестратора; `CyberpunkLoadingFallback` / `CyberProgressIndicator` показывают прогресс и сообщение из `GameOrchestrator` (этапы бандла, инициализации, фазы `loading` / меню / игра).
 
 ### Changed
 
+- **Производительность / мобильные:** в `globals.css` при `(max-width: 768px)` или `prefers-reduced-motion: reduce` отключаются `animation` и `transition` для всех элементов, кроме ветки `.game-critical-motion`; класс добавлен к загрузочному fallback, кроссфейду `GameClient`, диалогу/истории/меню/интро/лоадингу, панелям, туториалу, радиальному меню, взлому, брифингу, компасу, лут-оверлею, `PanelWrapper` (spring + таймаут снятия `is-animating` / `will-change`).
+- **`.game-panel`:** `content-visibility: auto` и `contain-intrinsic-size` — на скролл-контейнерах инвентаря, журнала, списка квестов, обложки поэзии, брифинга; корневые карточки инвентаря/журнала/книги стихов.
+- **Тема `.dark`:** более насыщенные `--primary` / `--accent`, светлее `--muted-foreground`, чётче `--border` / `--ring` (киберпанк-читаемость).
+- **`@media (forced-colors: active)`:** базовые `Canvas` / `CanvasText` для `.game-panel`, отключение анимаций внутри `.game-critical-motion`.
+- **Compositor:** класс `.game-fm-layer.is-animating` (и таймаут в `PanelWrapper`) дополняет `game-fm-layer-promote` для `will-change` только на время анимации.
 - **`GameStoreHydration`:** `performance.mark` / `measure` для `gs:hydrate`, try/catch, лог при отсутствии снимка; `hydrateFromLocalStorage` возвращает **`boolean`**; один проход эффекта при StrictMode через модульный флаг.
 
 - **`GameClient` / `ErrorBoundary`:** киберпанк-панель (рамка, `KERNEL PANIC`), блок «Код ошибки» в `pre` (`Error` → `name` + сообщение), кнопка «⟳ ПЕРЕЗАГРУЗИТЬ СИСТЕМУ» в градиенте cyan/purple.
