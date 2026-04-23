@@ -20,6 +20,7 @@ _volodka_upstream_check
 # Архив для Blender / анализа GLB (генерируется scripts/pack-model-blender-analysis.ps1)
 exports/volodka-models-blender-analysis.zip
 exports/volodka-models-blender-analysis/
+exports/volodka-model-scale-analysis-bundle-*.zip
 
 # Локальные сборки для коллег (генерируются скриптом)
 archives/*.zip
