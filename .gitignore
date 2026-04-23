@@ -27,3 +27,6 @@ archives/_stage_expert_review_*
 
 # Записи Performance (Chrome DevTools), часто сотни МБ — не в репозиторий
 Trace-*.json
+
+# Записи экрана в корне (Windows «Запись экрана … .mp4») — только локально
+/Запись экрана*.mp4
