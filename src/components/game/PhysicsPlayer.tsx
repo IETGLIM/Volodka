@@ -18,7 +18,9 @@ import { usePlayerFootsteps } from '@/hooks/usePlayerFootsteps';
 import { getDefaultPlayerModelPath, isValidPlayerGlbPath, rewriteLegacyModelPath } from '@/config/modelUrls';
 import {
   PLAYER_GLB_TARGET_VISUAL_METERS,
+  EXPLORATION_PLAYER_GLOBAL_VISUAL_SCALE,
   applyExplorationPlayerGlbVisualUniformMultiplier,
+  applyExplorationPlayerGlobalVisualScale,
   computeExplorationPlayerGlbUniformFromBBox,
 } from '@/lib/playerScaleConstants';
 import { getGltfSkinnedVisualHeightMeters } from '@/lib/gltfSkinnedBoundingHeight';
@@ -129,8 +131,9 @@ const FallbackPlayerModel = memo(function FallbackPlayerModel({
   });
 
   const rs = Math.max(0.28, Math.min(1.25, roomScale));
+  const vis = rs * EXPLORATION_PLAYER_GLOBAL_VISUAL_SCALE;
   return (
-    <group ref={groupRef} scale={[rs, rs, rs]}>
+    <group ref={groupRef} scale={[vis, vis, vis]}>
       {/* ТЕЛО */}
       <group position={[0, 0.9, 0]}>
         <mesh castShadow>
@@ -317,7 +320,9 @@ const GLBPlayerModel = memo(function GLBPlayerModel({
       if (h < 1e-4) base = 0.12 * rs;
       else base = computeExplorationPlayerGlbUniformFromBBox(h, targetVisualMeters, rs);
     }
-    return applyExplorationPlayerGlbVisualUniformMultiplier(base, visualUniformMultiplier);
+    return applyExplorationPlayerGlobalVisualScale(
+      applyExplorationPlayerGlbVisualUniformMultiplier(base, visualUniformMultiplier),
+    );
   }, [loadedScene, rs, targetVisualMeters, visualUniformMultiplier]);
 
   useEffect(() => {

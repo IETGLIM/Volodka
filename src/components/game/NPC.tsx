@@ -41,7 +41,9 @@ import { applyGltfExplorationCharacterMaterialPolicies } from '@/lib/gltfCharact
 import { getGltfSkinnedVisualHeightMeters } from '@/lib/gltfSkinnedBoundingHeight';
 import {
   applyExplorationPlayerGlbVisualUniformMultiplier,
+  applyExplorationPlayerGlobalVisualScale,
   computeExplorationPlayerGlbUniformFromBBox,
+  EXPLORATION_PLAYER_GLOBAL_VISUAL_SCALE,
 } from '@/lib/playerScaleConstants';
 import {
   getExplorationPlayerGlbVisualUniformMultiplier,
@@ -322,8 +324,11 @@ const GLTFLoader = memo(function GLTFLoader({
         baseUniform,
         getExplorationPlayerGlbVisualUniformMultiplier(explorationSceneId),
       );
-      /** Та же цепочка, что у `PhysicsPlayer`: цель по сцене + clamp + множитель комнаты; затем `definition.scale`. */
-      const bakedVisualScale = Math.max(0.02, withRoomMul * def);
+      /** Та же цепочка, что у `PhysicsPlayer`: bbox + множитель сцены + `definition.scale`, затем глобальный визуальный масштаб обхода. */
+      const bakedVisualScale = Math.max(
+        0.02,
+        applyExplorationPlayerGlobalVisualScale(withRoomMul * def),
+      );
       return { scene: clone, bakedVisualScale };
     } catch {
       return { scene: null, bakedVisualScale: 1 };
@@ -805,7 +810,7 @@ export const NPC = memo(function NPC({
   );
 
   const effectiveModelScale = useMemo(
-    () => (definition.scale ?? 1) * locationModelScale,
+    () => (definition.scale ?? 1) * locationModelScale * EXPLORATION_PLAYER_GLOBAL_VISUAL_SCALE,
     [definition.scale, locationModelScale],
   );
 

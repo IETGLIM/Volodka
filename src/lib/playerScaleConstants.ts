@@ -19,6 +19,25 @@ export const PLAYER_GLB_VISUAL_UNIFORM_MIN = 0.045;
 export const PLAYER_GLB_VISUAL_UNIFORM_MAX = 0.92;
 
 /**
+ * Единый множитель визуала GLB игрока и NPC в 3D-обходе (включая интро: тот же `PhysicsPlayer` / цепочка NPC).
+ * Применяется к уже рассчитанному uniform после `applyExplorationPlayerGlbVisualUniformMultiplier`.
+ */
+export const EXPLORATION_PLAYER_GLOBAL_VISUAL_SCALE = 1 / 5;
+
+/**
+ * Финальный uniform визуала: глобальное уменьшение/увеличение сцены с reclamp в допустимый диапазон.
+ */
+export function applyExplorationPlayerGlobalVisualScale(uniform: number): number {
+  const g = EXPLORATION_PLAYER_GLOBAL_VISUAL_SCALE;
+  const factor = Number.isFinite(g) && g > 0 ? g : 1;
+  if (!Number.isFinite(uniform) || uniform <= 0) return PLAYER_GLB_VISUAL_UNIFORM_MIN;
+  const u = uniform * factor;
+  if (u < PLAYER_GLB_VISUAL_UNIFORM_MIN) return PLAYER_GLB_VISUAL_UNIFORM_MIN;
+  if (u > PLAYER_GLB_VISUAL_UNIFORM_MAX) return PLAYER_GLB_VISUAL_UNIFORM_MAX;
+  return u;
+}
+
+/**
  * Единая формула uniform для GLB игрока в обходе (метры сцены).
  */
 export function computeExplorationPlayerGlbUniformFromBBox(

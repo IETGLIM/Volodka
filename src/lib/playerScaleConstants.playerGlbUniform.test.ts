@@ -1,8 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import {
   applyExplorationPlayerGlbVisualUniformMultiplier,
+  applyExplorationPlayerGlobalVisualScale,
   computeExplorationPlayerGlbUniformFromBBox,
+  EXPLORATION_PLAYER_GLOBAL_VISUAL_SCALE,
   PLAYER_GLB_VISUAL_UNIFORM_MAX,
+  PLAYER_GLB_VISUAL_UNIFORM_MIN,
 } from '@/lib/playerScaleConstants';
 
 describe('computeExplorationPlayerGlbUniformFromBBox', () => {
@@ -38,5 +41,16 @@ describe('applyExplorationPlayerGlbVisualUniformMultiplier', () => {
 
   it('treats undefined multiplier as 1', () => {
     expect(applyExplorationPlayerGlbVisualUniformMultiplier(0.7, undefined)).toBeCloseTo(0.7, 5);
+  });
+});
+
+describe('applyExplorationPlayerGlobalVisualScale', () => {
+  it('shrinks uniform by project-wide exploration factor', () => {
+    expect(EXPLORATION_PLAYER_GLOBAL_VISUAL_SCALE).toBe(0.2);
+    expect(applyExplorationPlayerGlobalVisualScale(0.5)).toBeCloseTo(0.1, 5);
+  });
+
+  it('reclamps below min after global shrink', () => {
+    expect(applyExplorationPlayerGlobalVisualScale(0.1)).toBe(PLAYER_GLB_VISUAL_UNIFORM_MIN);
   });
 });

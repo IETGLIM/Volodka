@@ -8,7 +8,7 @@
 
 ### Fixed
 
-- **Обход / `zarema_albert_room`:** визуальный uniform GLB игрока (и NPC на той же цепочке) уменьшен **~в 3 раза** — `**explorationPlayerGlbVisualUniformMultiplier**` **0.56/3** в `**scenes.ts**` (слишком крупный силуэт в TPS).
+- **Обход / масштаб персонажей:** глобальный визуальный коэффициент **1/5** — `**EXPLORATION_PLAYER_GLOBAL_VISUAL_SCALE**` + `**applyExplorationPlayerGlobalVisualScale**` в `**playerScaleConstants.ts**`; применяется в `**PhysicsPlayer**` (`GLBPlayerModel` + процедурный fallback) и в `**NPC.tsx**` (GLB + `effectiveModelScale` для капсулы/процедурки); интро использует тот же `**PhysicsPlayer**`. Локальный **÷3** у `**zarema_albert_room**` в `**scenes.ts**` откатан — даёт общий **÷5** по проекту.
 - **Обход / 3D-интро:** поза из `introCutscenePlayerBridge` больше не телепортирует RigidBody напрямую — шаг через `computeColliderMovement` (`PhysicsPlayer`), чтобы не проходить сквозь стены и не проваливаться после выхода из кат-сцены; оверлей лифта и субтитры подняты по `z-index` над брифингом (`IntroCutsceneOverlays`); брифинг не показывается поверх интро (`RPGGameCanvas`); чуть уменьшен интро-множитель GLB (`introVolodkaOpeningCutscene`).
 
 ### Changed
