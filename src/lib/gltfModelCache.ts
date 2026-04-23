@@ -43,8 +43,15 @@ export function releaseGltfModelUrl(url: string) {
   const prev = refCount.get(url);
   if (prev === undefined) return;
   const next = prev - 1;
-  if (next <= 0) refCount.delete(url);
-  else refCount.set(url, next);
+  if (next <= 0) {
+    refCount.delete(url);
+    const i = accessOrder.indexOf(url);
+    if (i >= 0) accessOrder.splice(i, 1);
+    /** Последний потребитель отпустил URL — сразу чистим drei-кэш (иначе «зомби» в `accessOrder` до переполнения LRU). */
+    useGLTF.clear(url);
+  } else {
+    refCount.set(url, next);
+  }
   evictDownToMax();
 }
 

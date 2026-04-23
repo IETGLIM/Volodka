@@ -283,6 +283,11 @@ const GLBPlayerModel = memo(function GLBPlayerModel({
       .join('\0');
   }, [actions]);
 
+  /**
+   * Пара к `useGLTF(modelPath)`: `retain` при монтироване / смене пути, `release` в cleanup — и при смене
+   * `modelPath` (React сначала cleanup старого URL), и при **размонтировании** (в т.ч. из‑за `key` на родителе).
+   * Фактическая выгрузка из кэша drei — в `releaseGltfModelUrl` (`gltfModelCache.ts`).
+   */
   useEffect(() => {
     retainGltfModelUrl(modelPath);
     return () => releaseGltfModelUrl(modelPath);

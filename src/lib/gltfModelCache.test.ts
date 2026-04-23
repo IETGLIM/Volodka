@@ -23,7 +23,7 @@ describe('gltfModelCache', () => {
     __resetGltfModelCacheTestState();
   });
 
-  it('evicts LRU path with zero refs when a new path is retained over the limit', () => {
+  it('clears drei cache when last release drops refCount to zero (before LRU pressure)', () => {
     const { max } = __getGltfModelCacheTestState();
     for (let i = 0; i < max; i++) {
       retainGltfModelUrl(`/models/cache-${i}.glb`);
@@ -32,10 +32,11 @@ describe('gltfModelCache', () => {
     expect(clear).not.toHaveBeenCalled();
 
     releaseGltfModelUrl('/models/cache-0.glb');
-    retainGltfModelUrl('/models/newest.glb');
-
     expect(clear).toHaveBeenCalledTimes(1);
     expect(clear).toHaveBeenCalledWith('/models/cache-0.glb');
+
+    retainGltfModelUrl('/models/newest.glb');
+    expect(clear).toHaveBeenCalledTimes(1);
   });
 
   it('balances retain/release per URL', () => {
