@@ -48,8 +48,6 @@ import {
   getExplorationCharacterModelScale,
   getExplorationLocomotionScale,
   getExplorationNpcModelScale,
-  getExplorationPlayerGlbVisualUniformMultiplier,
-  getExplorationPlayerGltfTargetMeters,
   sanitizeExplorationPlayerPositionAgainstSpawn,
   type InteractiveObjectConfig,
 } from '@/config/scenes';
@@ -93,12 +91,7 @@ import { ExplorationInteractionFocusOutline } from '@/components/game/exploratio
 import { NpcProximityBarks } from './NpcProximityBarks';
 import { ExplorationBriefingOverlay } from '@/components/game/exploration/ExplorationBriefingOverlay';
 import { IntroCutsceneCinematicDirector } from '@/components/Cutscenes/IntroCutscene';
-import {
-  INTRO_OPENING_GLTF_VISUAL_UNIFORM_HARD_MAX,
-  INTRO_OPENING_PLAYER_GLTF_TARGET_METERS,
-  INTRO_OPENING_PLAYER_GLB_VISUAL_UNIFORM_EXTRA_MULTIPLIER,
-  INTRO_OPENING_SCENE_ID,
-} from '@/lib/introVolodkaOpeningCutscene';
+import { INTRO_OPENING_SCENE_ID } from '@/lib/introVolodkaOpeningCutscene';
 import { EXPLORATION_SCENE_FRAMELOOP, getExplorationSceneGlProps } from '@/components/3d/Scene';
 import { ExplorationLighting, getExplorationDirectionalShadowMapSize } from '@/components/3d/Lighting';
 import {
@@ -361,22 +354,6 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
 
   /** В квартире Заремы/Альберта слоты статичны — без Rapier KCC меньше дрейфа к одной точке и z-борьбы визуалов. */
   const enableExplorationNpcPhysics = sceneId !== 'zarema_albert_room';
-
-  const explorationPlayerGltfTargetMeters = useMemo(() => {
-    const base = getExplorationPlayerGltfTargetMeters(playerSceneTuningId);
-    if (explorationPhase === 'intro_cutscene') {
-      return Math.min(base, INTRO_OPENING_PLAYER_GLTF_TARGET_METERS);
-    }
-    return base;
-  }, [playerSceneTuningId, explorationPhase]);
-
-  const explorationPlayerGlbVisualUniformMultiplier = useMemo(() => {
-    const m = getExplorationPlayerGlbVisualUniformMultiplier(playerSceneTuningId);
-    if (explorationPhase === 'intro_cutscene') {
-      return m * INTRO_OPENING_PLAYER_GLB_VISUAL_UNIFORM_EXTRA_MULTIPLIER;
-    }
-    return m;
-  }, [playerSceneTuningId, explorationPhase]);
 
   const findNavPath = useMemo(() => {
     const [fw, , fd] = groundGeometryArgs;
@@ -762,9 +739,8 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
           <PhysicsPlayer
             spawnSyncKey={sceneId}
             explorationGlbClampSceneId={playerSceneTuningId}
-            introOpeningGlbUniformHardCap={
-              introCutsceneActive ? INTRO_OPENING_GLTF_VISUAL_UNIFORM_HARD_MAX : undefined
-            }
+            playerScaleTuningSceneId={playerSceneTuningId}
+            introCutsceneActive={introCutsceneActive}
             position={[
               explorationSpawnSnapshot.x,
               explorationSpawnSnapshot.y,
@@ -773,8 +749,6 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
             initialRotation={explorationSpawnSnapshot.rotation ?? 0}
             modelPath={getDefaultPlayerModelPath()}
             visualModelScale={explorationCharacterModelScale}
-            playerGltfTargetMeters={explorationPlayerGltfTargetMeters}
-            playerGlbVisualUniformMultiplier={explorationPlayerGlbVisualUniformMultiplier}
             locomotionScale={explorationLocomotionScale}
             onPositionChange={handlePositionChange}
             onInteraction={handlePlayerInteraction}

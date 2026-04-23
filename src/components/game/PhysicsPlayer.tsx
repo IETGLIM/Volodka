@@ -17,25 +17,25 @@ import {
 import { usePlayerFootsteps } from '@/hooks/usePlayerFootsteps';
 import { getDefaultPlayerModelPath, isValidPlayerGlbPath, rewriteLegacyModelPath } from '@/config/modelUrls';
 import {
-  EXPLORATION_PLAYER_GLOBAL_VISUAL_SCALE,
-  PLAYER_GLB_TARGET_VISUAL_METERS,
-  PLAYER_GLB_VISUAL_UNIFORM_MAX,
-  PLAYER_GLB_VISUAL_UNIFORM_MIN,
-  applyExplorationPlayerGlbVisualUniformMultiplier,
   applyExplorationPlayerGlobalVisualScale,
-  clampExplorationHumanoidGlbUniformForScene,
-  computeExplorationPlayerGlbUniformFromBBox,
+  PLAYER_GLB_TARGET_VISUAL_METERS,
 } from '@/lib/playerScaleConstants';
 import type { SceneId } from '@/data/types';
-import { getGltfSkinnedVisualHeightMeters } from '@/lib/gltfSkinnedBoundingHeight';
+import {
+  computeFinalVisualUniform,
+  computeFinalVisualUniformFromBboxHeight,
+  PLAYER_VISUAL_HEIGHT_FALLBACK_M,
+} from '@/lib/explorationScalePipeline';
 import { retainGltfModelUrl, releaseGltfModelUrl } from '@/lib/gltfModelCache';
 import { applyGltfExplorationCharacterMaterialPolicies } from '@/lib/gltfCharacterMaterialPolicy';
 import { ThreeCanvasSuspenseFallback } from '@/components/3d/ThreeCanvasSuspenseFallback';
 import { cloneAnimationClipsWithoutExplorationPlayerRootMotion } from '@/lib/stripExplorationPlayerRootMotionFromClips';
 import { isExplorationPlayerDebugPrimitiveEnabled } from '@/lib/explorationPlayerDebugPrimitive';
 import {
+  debugExplorationScalePipeline,
   isExplorationPlayerGlbScaleDebugEnabled,
   isExplorationPlayerLocomotionLogEnabled,
+  isExplorationScaleDebugEnabled,
 } from '@/lib/explorationDiagnostics';
 import { getExplorationCameraOrbitYawRad } from '@/lib/explorationCameraOrbitBridge';
 import { useGameStore } from '@/store/gameStore';
@@ -50,21 +50,17 @@ export interface PhysicsPlayerProps {
   position?: [number, number, number];
   modelPath?: string;
   /**
-   * Масштаб персонажа в помещении (`getExplorationCharacterModelScale` из `scenes.ts`):
-   * **без** `EXPLORATION_PLAYER_GLOBAL_VISUAL_SCALE` — тот идёт отдельно в uniform GLB (`applyExplorationPlayerGlobalVisualScale`)
-   * и один раз в процедурном fallback (`FallbackPlayerModel`). Капсула и bbox используют этот же `roomScale`.
+   * Масштаб персонажа в помещении (`getExplorationCharacterModelScale`): капсула Rapier и `roomModelScale` в `explorationScalePipeline`.
+   * Глобальный ÷5 для GLB — внутри пайплайна; процедурный fallback — `applyExplorationPlayerGlobalVisualScale(roomScale)` в `FallbackPlayerModel`.
    */
   visualModelScale?: number;
   /**
-   * Целевая высота GLB в метрах сцены (`getExplorationPlayerGltfTargetMeters(sceneId)` из `RPGGameCanvas`).
-   * По умолчанию `PLAYER_GLB_TARGET_VISUAL_METERS`.
+   * Сцена для расчёта uniform GLB (`getExplorationHumanoidGlbScaleTuning` + clamp в `explorationScalePipeline`).
+   * В интро обычно совпадает с `INTRO_OPENING_SCENE_ID` (`volodka_room`), как задаёт `RPGGameCanvas`.
    */
-  playerGltfTargetMeters?: number;
-  /**
-   * Множитель к uniform GLB после bbox (`getExplorationPlayerGlbVisualUniformMultiplier(sceneId)`).
-   * По умолчанию **1**; в `SCENE_CONFIG` — явное уменьшение меша в кадре.
-   */
-  playerGlbVisualUniformMultiplier?: number;
+  playerScaleTuningSceneId?: SceneId;
+  /** Фаза 3D-интро: ужатые target / multiplier / cap из `SCENE_CONFIG` для `playerScaleTuningSceneId`. */
+  introCutsceneActive?: boolean;
   /** Множитель ходьбы/бега/прыжка; см. `getExplorationLocomotionScale`. */
   locomotionScale?: number;
   /** Позиция и yaw модели каждый кадр (для камеры / ресета без отставания от стора). */
@@ -89,11 +85,6 @@ export interface PhysicsPlayerProps {
    * Передаётся как **`sceneId`** из **`RPGGameCanvas`**.
    */
   explorationGlbClampSceneId?: SceneId;
-  /**
-   * 3D-интро: кинокамера ближе TPS; дополнительный потолок uniform после `clampExplorationHumanoidGlbUniformForScene`
-   * (см. `INTRO_OPENING_GLTF_VISUAL_UNIFORM_HARD_MAX` в `introVolodkaOpeningCutscene.ts`).
-   */
-  introOpeningGlbUniformHardCap?: number;
 }
 
 export interface PhysicsPlayerRef {
@@ -253,24 +244,20 @@ const GLBPlayerModel = memo(function GLBPlayerModel({
   isLocked,
   onError,
   roomScale,
-  targetVisualMeters,
-  visualUniformMultiplier = 1,
+  tuningSceneId,
+  introCutsceneActive = false,
   glbUniformClampSceneId,
-  introOpeningGlbUniformHardCap,
 }: {
   modelPath: string;
   isMoving: boolean;
   isRunning: boolean;
   isLocked: boolean;
   onError: () => void;
-  /** Множитель комнаты; итоговая высота ≈ `targetVisualMeters * roomScale` (после деления на bbox). */
+  /** Множитель комнаты (`explorationCharacterModelScale`); bbox-формула и clamp в `explorationScalePipeline`. */
   roomScale: number;
-  /** Целевая высота визуала в метрах сцены (из `SCENE_CONFIG` или дефолт). */
-  targetVisualMeters: number;
-  /** Из `SCENE_CONFIG.explorationPlayerGlbVisualUniformMultiplier` — после bbox. */
-  visualUniformMultiplier?: number;
+  tuningSceneId: SceneId;
+  introCutsceneActive?: boolean;
   glbUniformClampSceneId?: SceneId;
-  introOpeningGlbUniformHardCap?: number;
 }) {
   const groupRef = useRef<THREE.Group>(null);
   const { scene: loadedScene, animations } = useGLTF(modelPath) as any;
@@ -331,11 +318,13 @@ const GLBPlayerModel = memo(function GLBPlayerModel({
         }
       });
       /** Кривой экспорт: ненулевой `scale` на корне сцены умножается с нашим uniform → «нога на весь экран». */
-      if (
-        loadedScene.scale.x !== 1 ||
-        loadedScene.scale.y !== 1 ||
-        loadedScene.scale.z !== 1
-      ) {
+      if (loadedScene.scale.x !== 1 || loadedScene.scale.y !== 1 || loadedScene.scale.z !== 1) {
+        if (process.env.NODE_ENV === 'development' || isExplorationScaleDebugEnabled()) {
+          console.warn('[GLBPlayerModel] GLB root had non-unit scale; reset to (1,1,1) before policies.', {
+            modelPath,
+            scale: [loadedScene.scale.x, loadedScene.scale.y, loadedScene.scale.z],
+          });
+        }
         loadedScene.scale.set(1, 1, 1);
         loadedScene.updateMatrixWorld(true);
       }
@@ -345,53 +334,56 @@ const GLBPlayerModel = memo(function GLBPlayerModel({
       onError();
       return null;
     }
-  }, [loadedScene, onError]);
+  }, [loadedScene, onError, modelPath]);
 
-  const visualUniform = useMemo(() => {
-    let base: number;
-    let bboxHeight: number | undefined;
+  const scaleStages = useMemo(() => {
     if (!loadedScene) {
-      base = 0.12 * rs;
-    } else {
-      const scratch = new THREE.Vector3();
-      const h = getGltfSkinnedVisualHeightMeters(loadedScene, scratch);
-      bboxHeight = h;
-      if (h < 1e-4) base = 0.12 * rs;
-      else base = computeExplorationPlayerGlbUniformFromBBox(h, targetVisualMeters, rs);
-    }
-    const afterMultiplier = applyExplorationPlayerGlbVisualUniformMultiplier(base, visualUniformMultiplier);
-    /** Та же цепочка, что у NPC в `NPC.tsx` → `applyExplorationPlayerGlobalVisualScale` + clamp по сцене. */
-    const chained = applyExplorationPlayerGlobalVisualScale(afterMultiplier);
-    let u = clampExplorationHumanoidGlbUniformForScene(glbUniformClampSceneId, chained);
-    const cap = introOpeningGlbUniformHardCap;
-    if (cap != null && Number.isFinite(cap) && cap > 0) {
-      u = Math.min(u, cap);
-    }
-    if (isExplorationPlayerGlbScaleDebugEnabled()) {
-      console.info('[GLBPlayerModel scale debug]', {
-        bboxHeight,
-        targetVisualMeters,
-        roomScale: rs,
-        baseUniform: base,
-        visualUniformMultiplier,
-        afterMultiplier,
-        explorationGlobalVisualScaleExport: EXPLORATION_PLAYER_GLOBAL_VISUAL_SCALE,
-        globalScaleOf1: applyExplorationPlayerGlobalVisualScale(1),
-        chained,
-        afterSceneClamp: clampExplorationHumanoidGlbUniformForScene(glbUniformClampSceneId, chained),
-        introOpeningGlbUniformHardCap: cap,
-        finalUniform: u,
-        glbUniformClampSceneId,
+      return computeFinalVisualUniformFromBboxHeight({
+        bboxHeightMeters: PLAYER_VISUAL_HEIGHT_FALLBACK_M,
+        tuningSceneId,
+        clampSceneId: glbUniformClampSceneId,
+        roomModelScale: rs,
+        definitionModelScale: 1,
+        introCutsceneActive,
+        isPlayer: true,
       });
     }
-    return u;
+    return computeFinalVisualUniform({
+      gltfRoot: loadedScene,
+      tuningSceneId,
+      clampSceneId: glbUniformClampSceneId,
+      roomModelScale: rs,
+      definitionModelScale: 1,
+      introCutsceneActive,
+      isPlayer: true,
+    });
+  }, [loadedScene, rs, tuningSceneId, glbUniformClampSceneId, introCutsceneActive]);
+
+  const visualUniform = scaleStages.finalUniform;
+
+  useEffect(() => {
+    if (!loadedScene) return;
+    if (!isExplorationScaleDebugEnabled() && !isExplorationPlayerGlbScaleDebugEnabled()) return;
+    const stages = computeFinalVisualUniform({
+      gltfRoot: loadedScene,
+      tuningSceneId,
+      clampSceneId: glbUniformClampSceneId,
+      roomModelScale: rs,
+      definitionModelScale: 1,
+      introCutsceneActive,
+      isPlayer: true,
+    });
+    debugExplorationScalePipeline('GLBPlayerModel', modelPath, tuningSceneId, stages);
+    if (isExplorationPlayerGlbScaleDebugEnabled()) {
+      console.info('[GLBPlayerModel scale debug]', stages);
+    }
   }, [
+    modelPath,
     loadedScene,
-    rs,
-    targetVisualMeters,
-    visualUniformMultiplier,
+    tuningSceneId,
     glbUniformClampSceneId,
-    introOpeningGlbUniformHardCap,
+    rs,
+    introCutsceneActive,
   ]);
 
   useEffect(() => {
@@ -495,8 +487,8 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
     position = [0, 0.06, 3],
     modelPath,
     visualModelScale = 1,
-    playerGltfTargetMeters = PLAYER_GLB_TARGET_VISUAL_METERS,
-    playerGlbVisualUniformMultiplier = 1,
+    playerScaleTuningSceneId = 'volodka_room',
+    introCutsceneActive = false,
     locomotionScale = 1,
     onPositionChange,
     onInteraction,
@@ -506,7 +498,6 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
     debugPlayerPrimitive = isExplorationPlayerDebugPrimitiveEnabled(),
     spawnSyncKey,
     explorationGlbClampSceneId,
-    introOpeningGlbUniformHardCap,
   },
   ref
 ) {
@@ -945,10 +936,9 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
                 isLocked={isLocked}
                 onError={handleModelError}
                 roomScale={roomScale}
-                targetVisualMeters={playerGltfTargetMeters}
-                visualUniformMultiplier={playerGlbVisualUniformMultiplier}
+                tuningSceneId={playerScaleTuningSceneId}
+                introCutsceneActive={introCutsceneActive}
                 glbUniformClampSceneId={explorationGlbClampSceneId}
-                introOpeningGlbUniformHardCap={introOpeningGlbUniformHardCap}
               />
             ) : (
               <FallbackPlayerModel isMoving={isMoving} isLocked={isLocked} roomScale={roomScale} />

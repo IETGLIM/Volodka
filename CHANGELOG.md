@@ -4,6 +4,7 @@
 
 ### Added
 
+- **Обход / единый пайплайн масштаба GLB:** `**src/lib/explorationScalePipeline.ts**` — `**computeFinalVisualUniform**` / `**computeFinalVisualUniformFromBboxHeight**`, `**measureSkinnedHeightForScalePipeline**`; подключены `**PhysicsPlayer**` (`GLBPlayerModel`) и `**NPC.tsx**` (`GLTFLoader`); `**getExplorationHumanoidGlbScaleTuning**` в `**scenes.ts**` + поля интро в `**SCENE_CONFIG.volodka_room**`; `**NEXT_PUBLIC_EXPLORATION_SCALE_DEBUG=1**` → `**debugExplorationScalePipeline**` в `**explorationDiagnostics.ts**`; тесты `**explorationScalePipeline.test.ts**`.
 - **Обход / диагностика GLB игрока:** `**NEXT_PUBLIC_EXPLORATION_PLAYER_GLB_SCALE_DEBUG=1`** → `**isExplorationPlayerGlbScaleDebugEnabled**` в `**explorationDiagnostics.ts**`, `**console.info**` цепочки uniform в `**PhysicsPlayer**` (`GLBPlayerModel`); тест что `**EXPLORATION_PLAYER_GLOBAL_VISUAL_SCALE**` = **0.2** в `**playerScaleConstants.playerGlbUniform.test.ts**`.
 - `**src/client/store/playerStore.test.ts`:** проверки `updateStatsBatch`, `EventBus` (`player:stress_high`, паника), `setRpgProgress`, сериализации.
 - `**loading-critical.css`:** подключается в `layout.tsx` перед `globals.css` — ранний фон `#030308` и `color-scheme: dark` для первой краски до полного CSS.

@@ -3,6 +3,9 @@
  * Все через `NEXT_PUBLIC_*` — после изменения `.env.local` нужна пересборка дев-сервера.
  */
 
+import type { SceneId } from '@/data/types';
+import type { FinalVisualUniformStages } from '@/lib/explorationScalePipeline';
+
 export function isExplorationRapierColliderDebugEnabled(): boolean {
   return process.env.NEXT_PUBLIC_EXPLORATION_RAPIER_DEBUG_COLLIDERS === '1';
 }
@@ -51,4 +54,26 @@ export function isExplorationPlayerGlbScaleDebugEnabled(): boolean {
  */
 export function isExplorationVolodkaRoomNpcGlbDisabled(): boolean {
   return process.env.NEXT_PUBLIC_EXPLORATION_VOLODKA_NPC_GLB === '0';
+}
+
+/**
+ * Подробный лог этапов `computeFinalVisualUniform` (после смены модели / в `useEffect`).
+ * **`NEXT_PUBLIC_EXPLORATION_SCALE_DEBUG=1`** — пересборка дев-сервера / preview.
+ */
+export function isExplorationScaleDebugEnabled(): boolean {
+  return process.env.NEXT_PUBLIC_EXPLORATION_SCALE_DEBUG === '1';
+}
+
+export function debugExplorationScalePipeline(
+  label: string,
+  modelUrl: string,
+  tuningSceneId: SceneId,
+  stages: FinalVisualUniformStages,
+): void {
+  if (!isExplorationScaleDebugEnabled()) return;
+  console.info(`[explorationScalePipeline debug] ${label}`, {
+    modelUrl,
+    tuningSceneId,
+    ...stages,
+  });
 }

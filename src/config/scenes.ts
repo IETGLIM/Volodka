@@ -83,6 +83,16 @@ export interface SceneConfig {
    */
   explorationPlayerGlbVisualUniformMultiplier?: number;
   /**
+   * Фаза `intro_cutscene` (игрок в `volodka_room`): целевая высота GLB, м — единый источник вместо отдельных констант в `introVolodkaOpeningCutscene`.
+   */
+  explorationIntroPlayerGltfTargetMeters?: number;
+  /**
+   * Интро: множитель к `explorationPlayerGlbVisualUniformMultiplier` после bbox (как прежде `m * extra`).
+   */
+  explorationIntroGlbVisualUniformExtraMultiplier?: number;
+  /** Интро: жёсткий потолок uniform после `clampExplorationHumanoidGlbUniformForScene`. */
+  explorationIntroGlbUniformHardMax?: number;
+  /**
    * Короткие сценические строки для первого туториала движения в 3D-обходе (перед подсказками WASD/E/I).
    * Тон — история и стих, без спойлеров; обычно 1–2 строки.
    */
@@ -172,6 +182,9 @@ export const SCENE_CONFIG = {
     explorationPlayerGltfTargetMeters: 0.66,
     /** Явный множитель меша поверх bbox-формулы — силуэт заметно ниже «на весь кадр». */
     explorationPlayerGlbVisualUniformMultiplier: 0.22,
+    explorationIntroPlayerGltfTargetMeters: 0.085,
+    explorationIntroGlbVisualUniformExtraMultiplier: 0.02,
+    explorationIntroGlbUniformHardMax: 0.055,
     explorationLocomotionScale: 0.9,
     size: [14, 10],
     spawnPoint: { x: 2.2, y: 0.06, z: 1.8, rotation: 0 } as PlayerPosition,
@@ -788,6 +801,59 @@ export function getExplorationPlayerGlbVisualUniformMultiplier(sceneId: SceneId)
   const v = entry?.explorationPlayerGlbVisualUniformMultiplier;
   if (v == null || !Number.isFinite(v) || v <= 0) return 1;
   return Math.min(2.5, Math.max(0.12, v));
+}
+
+const INTRO_FALLBACK_TARGET_M = 0.085;
+const INTRO_FALLBACK_EXTRA_MUL = 0.02;
+const INTRO_FALLBACK_HARD_MAX = 0.055;
+
+/**
+ * Единая подстройка цели / множителя / капа для GLB игрока (обход + интро).
+ * `introCutsceneActive` учитывается только вместе с полями `explorationIntro*` в `SCENE_CONFIG` для `tuningSceneId`.
+ */
+export function getExplorationHumanoidGlbScaleTuning(
+  tuningSceneId: SceneId,
+  introCutsceneActive: boolean,
+): {
+  targetMeters: number;
+  glbVisualUniformMultiplier: number;
+  introUniformHardCap: number | undefined;
+} {
+  const baseTarget = getExplorationPlayerGltfTargetMeters(tuningSceneId);
+  const baseMul = getExplorationPlayerGlbVisualUniformMultiplier(tuningSceneId);
+  const entry = SCENE_CONFIG[tuningSceneId];
+
+  if (!introCutsceneActive) {
+    return {
+      targetMeters: baseTarget,
+      glbVisualUniformMultiplier: baseMul,
+      introUniformHardCap: undefined,
+    };
+  }
+
+  const introTargetRaw = entry?.explorationIntroPlayerGltfTargetMeters;
+  const introTarget =
+    introTargetRaw != null && Number.isFinite(introTargetRaw) && introTargetRaw > 0
+      ? Math.min(2.5, Math.max(0.05, introTargetRaw))
+      : Math.min(baseTarget, INTRO_FALLBACK_TARGET_M);
+
+  const introExtraRaw = entry?.explorationIntroGlbVisualUniformExtraMultiplier;
+  const introExtra =
+    introExtraRaw != null && Number.isFinite(introExtraRaw) && introExtraRaw > 0
+      ? Math.min(1, Math.max(0.005, introExtraRaw))
+      : INTRO_FALLBACK_EXTRA_MUL;
+
+  const introCapRaw = entry?.explorationIntroGlbUniformHardMax;
+  const introCap =
+    introCapRaw != null && Number.isFinite(introCapRaw) && introCapRaw > 0
+      ? Math.min(0.35, Math.max(0.02, introCapRaw))
+      : INTRO_FALLBACK_HARD_MAX;
+
+  return {
+    targetMeters: introTarget,
+    glbVisualUniformMultiplier: baseMul * introExtra,
+    introUniformHardCap: introCap,
+  };
 }
 
 /**

@@ -1,28 +1,25 @@
 import type { SceneId } from '@/data/types';
 import type { PlayerPosition } from '@/data/rpgTypes';
 import * as THREE from 'three';
+import { SCENE_CONFIG } from '@/config/scenes';
 import { PLAYER_FEET_SPAWN_Y } from '@/lib/playerScaleConstants';
 import { smoothBlend01 } from '@/lib/cinematicEasing';
 
-/**
- * Целевая высота GLB (м сцены) в `intro_cutscene`: ниже, чем в `volodka_room` геймплее,
- * иначе при близкой кинокамере силуэт всё равно доминирует кадр (лифт / стол — маленькая площадка в кадре).
- */
-export const INTRO_OPENING_PLAYER_GLTF_TARGET_METERS = 0.085;
+const _VO = SCENE_CONFIG.volodka_room;
 
 /**
- * Дополнительный множитель к `explorationPlayerGlbVisualUniformMultiplier` только на фазе `intro_cutscene`
- * (после bbox и целевой высоты выше). Держим сильно ниже геймплея — иначе фигура перекрывает «площадку» интро.
+ * Целевая высота GLB (м) в `intro_cutscene` — из `SCENE_CONFIG.volodka_room.explorationIntroPlayerGltfTargetMeters`
+ * (единый источник с `getExplorationHumanoidGlbScaleTuning`).
  */
-/** Доп. ужатие на интро-камере (TPS + киношный dolly); с глобальным `EXPLORATION_PLAYER_GLOBAL_VISUAL_SCALE` не дублировать прежние 0.2+0.2 без нужды. */
-export const INTRO_OPENING_PLAYER_GLB_VISUAL_UNIFORM_EXTRA_MULTIPLIER = 0.02;
+export const INTRO_OPENING_PLAYER_GLTF_TARGET_METERS =
+  _VO.explorationIntroPlayerGltfTargetMeters ?? 0.085;
 
-/**
- * Финальный потолок uniform GLB **только** на фазе `intro_cutscene` (`PhysicsPlayer` → `GLBPlayerModel`).
- * Кинокамера ближе, чем TPS в геймплее; без этого при сбое bbox/кэша снова «макро на ноги».
- * Ниже геймплея `volodka_room` (**0.14** после `clampExplorationHumanoidGlbUniformForScene`).
- */
-export const INTRO_OPENING_GLTF_VISUAL_UNIFORM_HARD_MAX = 0.055;
+/** Доп. множитель к uniform на интро — `explorationIntroGlbVisualUniformExtraMultiplier`. */
+export const INTRO_OPENING_PLAYER_GLB_VISUAL_UNIFORM_EXTRA_MULTIPLIER =
+  _VO.explorationIntroGlbVisualUniformExtraMultiplier ?? 0.02;
+
+/** Потолок uniform на интро — `explorationIntroGlbUniformHardMax`. */
+export const INTRO_OPENING_GLTF_VISUAL_UNIFORM_HARD_MAX = _VO.explorationIntroGlbUniformHardMax ?? 0.055;
 
 /** Сцена до финала 3D-интро (комната Володьки). */
 export const INTRO_OPENING_SCENE_ID: SceneId = 'volodka_room';

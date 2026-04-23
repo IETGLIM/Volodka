@@ -38,17 +38,13 @@ import { useGameStore } from '@/store/gameStore';
 import { getNpcQuestMarkerForExploration } from '@/lib/npcQuestMarker';
 import { retainGltfModelUrl, releaseGltfModelUrl } from '@/lib/gltfModelCache';
 import { applyGltfExplorationCharacterMaterialPolicies } from '@/lib/gltfCharacterMaterialPolicy';
-import { getGltfSkinnedVisualHeightMeters } from '@/lib/gltfSkinnedBoundingHeight';
+import { applyExplorationPlayerGlobalVisualScale } from '@/lib/playerScaleConstants';
+import { computeFinalVisualUniform } from '@/lib/explorationScalePipeline';
 import {
-  applyExplorationPlayerGlbVisualUniformMultiplier,
-  applyExplorationPlayerGlobalVisualScale,
-  clampExplorationHumanoidGlbUniformForScene,
-  computeExplorationPlayerGlbUniformFromBBox,
-} from '@/lib/playerScaleConstants';
-import {
-  getExplorationPlayerGlbVisualUniformMultiplier,
-  getExplorationPlayerGltfTargetMeters,
-} from '@/config/scenes';
+  debugExplorationScalePipeline,
+  isExplorationPlayerGlbScaleDebugEnabled,
+  isExplorationScaleDebugEnabled,
+} from '@/lib/explorationDiagnostics';
 import type { FindNavPathXZ } from '@/lib/explorationNavMesh';
 import { resolveNpcModelLodUseFull } from '@/lib/npcLodConstants';
 import { isExplorationVolodkaRoomNpcGlbDisabled } from '@/lib/explorationDiagnostics';
@@ -293,6 +289,12 @@ const GLTFLoader = memo(function GLTFLoader({
     try {
       const clone = loadedScene.clone(true);
       if (clone.scale.x !== 1 || clone.scale.y !== 1 || clone.scale.z !== 1) {
+        if (process.env.NODE_ENV === 'development' || isExplorationScaleDebugEnabled()) {
+          console.warn('[GLTFLoader] NPC GLB root had non-unit scale; reset to (1,1,1).', {
+            modelPath,
+            scale: [clone.scale.x, clone.scale.y, clone.scale.z],
+          });
+        }
         clone.scale.set(1, 1, 1);
         clone.updateMatrixWorld(true);
       }
@@ -304,30 +306,43 @@ const GLTFLoader = memo(function GLTFLoader({
         }
       });
       applyGltfExplorationCharacterMaterialPolicies(clone);
-      const scratchVec = new THREE.Vector3();
-      const hRaw = getGltfSkinnedVisualHeightMeters(clone, scratchVec);
-      const targetM = getExplorationPlayerGltfTargetMeters(explorationSceneId);
       const rs = Number.isFinite(roomModelScale) ? roomModelScale : 1;
       const def = Number.isFinite(definitionModelScale) && definitionModelScale > 0 ? definitionModelScale : 1;
-      const baseUniform =
-        !Number.isFinite(hRaw) || hRaw < 1e-4
-          ? 0.12 * rs
-          : computeExplorationPlayerGlbUniformFromBBox(hRaw, targetM, rs);
-      const withRoomMul = applyExplorationPlayerGlbVisualUniformMultiplier(
-        baseUniform,
-        getExplorationPlayerGlbVisualUniformMultiplier(explorationSceneId),
-      );
-      /** Та же цепочка, что у `PhysicsPlayer`: bbox + множитель сцены + `definition.scale`, затем глобальный визуальный масштаб обхода. */
-      const chained = applyExplorationPlayerGlobalVisualScale(withRoomMul * def);
-      const bakedVisualScale = Math.max(
-        0.02,
-        clampExplorationHumanoidGlbUniformForScene(explorationSceneId, chained),
-      );
+      const stages = computeFinalVisualUniform({
+        gltfRoot: clone,
+        tuningSceneId: explorationSceneId,
+        clampSceneId: explorationSceneId,
+        roomModelScale: rs,
+        definitionModelScale: def,
+        introCutsceneActive: false,
+        isPlayer: false,
+      });
+      const bakedVisualScale = stages.finalUniform;
       return { scene: clone, bakedVisualScale };
     } catch {
       return { scene: null, bakedVisualScale: 1 };
     }
-  }, [loadedScene, roomModelScale, definitionModelScale, explorationSceneId]);
+  }, [loadedScene, roomModelScale, definitionModelScale, explorationSceneId, modelPath]);
+
+  useEffect(() => {
+    if (!loadedScene || !scene) return;
+    if (!isExplorationScaleDebugEnabled() && !isExplorationPlayerGlbScaleDebugEnabled()) return;
+    const rs = Number.isFinite(roomModelScale) ? roomModelScale : 1;
+    const def = Number.isFinite(definitionModelScale) && definitionModelScale > 0 ? definitionModelScale : 1;
+    const stages = computeFinalVisualUniform({
+      gltfRoot: scene,
+      tuningSceneId: explorationSceneId,
+      clampSceneId: explorationSceneId,
+      roomModelScale: rs,
+      definitionModelScale: def,
+      introCutsceneActive: false,
+      isPlayer: false,
+    });
+    debugExplorationScalePipeline('GLTFLoader NPC', modelPath, explorationSceneId, stages);
+    if (isExplorationPlayerGlbScaleDebugEnabled()) {
+      console.info('[NPC GLB scale debug]', stages);
+    }
+  }, [modelPath, loadedScene, scene, explorationSceneId, roomModelScale, definitionModelScale]);
 
   useEffect(() => {
     if (!scene) return;
