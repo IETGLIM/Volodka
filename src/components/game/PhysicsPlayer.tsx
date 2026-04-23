@@ -385,6 +385,12 @@ const GLBPlayerModel = memo(function GLBPlayerModel({
     const prevKey = prevTargetAnimRef.current;
     const prevAction = prevKey && act[prevKey] ? act[prevKey]! : null;
     const nextAction = act[targetAnim]!;
+    for (const key of Object.keys(act)) {
+      const a = act[key];
+      if (!a || a === nextAction) continue;
+      if (a === prevAction) continue;
+      if (a.isRunning()) a.stop();
+    }
     const duration = 0.3;
     nextAction.reset();
     nextAction.setEffectiveTimeScale(1);

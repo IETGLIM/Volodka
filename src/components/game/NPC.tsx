@@ -393,6 +393,18 @@ const GLTFLoader = memo(function GLTFLoader({
     const prevKey = prevNpcClipRef.current;
     const prevAction = prevKey && act[prevKey] ? act[prevKey]! : null;
     const nextAction = act[targetClip]!;
+    /**
+     * Быстрая смена `animMapping` / `npcAnimation`: без этого на микшере остаются «висящие» клипы
+     * (несколько `play` + веса), что даёт конфликты и лишнюю работу. Партнёра кроссфейда (`prevAction`)
+     * не гасим до `crossFadeFrom` — иначе Three.js не сможет плавно смешать.
+     */
+    for (const key of Object.keys(act)) {
+      const a = act[key];
+      if (!a || a === nextAction) continue;
+      if (a === prevAction) continue;
+      if (a.isRunning()) a.stop();
+    }
+
     const duration = 0.3;
     nextAction.reset();
     nextAction.setEffectiveTimeScale(1);
