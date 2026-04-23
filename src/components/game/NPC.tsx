@@ -44,7 +44,6 @@ import {
   applyExplorationPlayerGlobalVisualScale,
   clampExplorationHumanoidGlbUniformForScene,
   computeExplorationPlayerGlbUniformFromBBox,
-  EXPLORATION_PLAYER_GLOBAL_VISUAL_SCALE,
 } from '@/lib/playerScaleConstants';
 import {
   getExplorationPlayerGlbVisualUniformMultiplier,
@@ -815,9 +814,18 @@ export const NPC = memo(function NPC({
     [explorationSceneId],
   );
 
+  /** `definition.scale` × масштаб локации — без `EXPLORATION_PLAYER_GLOBAL_VISUAL_SCALE` (его даёт `bakedVisualScale` в `GLTFLoader`). */
   const effectiveModelScale = useMemo(
-    () => (definition.scale ?? 1) * locationModelScale * EXPLORATION_PLAYER_GLOBAL_VISUAL_SCALE,
+    () => (definition.scale ?? 1) * locationModelScale,
     [definition.scale, locationModelScale],
+  );
+  /**
+   * Примитивный fallback и дальний impostor не проходят bbox-цепочку GLB — один раз применяем тот же глобальный
+   * визуальный множитель обхода, что и `applyExplorationPlayerGlobalVisualScale` внутри загрузчика GLB.
+   */
+  const npcPrimitiveExplorationScale = useMemo(
+    () => applyExplorationPlayerGlobalVisualScale(effectiveModelScale),
+    [effectiveModelScale],
   );
 
   const { world } = useRapier();
@@ -1353,11 +1361,11 @@ export const NPC = memo(function NPC({
               </Suspense>
             </group>
             <group visible={!useFullModel}>
-              <NpcDistanceImpostor scale={effectiveModelScale} />
+              <NpcDistanceImpostor scale={npcPrimitiveExplorationScale} />
             </group>
           </>
         ) : (
-          <group scale={effectiveModelScale}>{fallbackModel}</group>
+          <group scale={npcPrimitiveExplorationScale}>{fallbackModel}</group>
         )}
       </group>
 
