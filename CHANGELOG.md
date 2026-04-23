@@ -4,10 +4,14 @@
 
 ### Added
 
+- **`src/client/store/playerStore.test.ts`:** проверки `updateStatsBatch`, `EventBus` (`player:stress_high`, паника), `setRpgProgress`, сериализации.
+
 - **`loading-critical.css`:** подключается в `layout.tsx` перед `globals.css` — ранний фон `#030308` и `color-scheme: dark` для первой краски до полного CSS.
 - **Загрузка чанка `GameOrchestrator`:** контекст `LoadingProgressContext` (`src/context/LoadingProgressContext.tsx`), провайдер в `GameClient` вокруг `Suspense` + ленивого оркестратора; `CyberpunkLoadingFallback` / `CyberProgressIndicator` показывают прогресс и сообщение из `GameOrchestrator` (этапы бандла, инициализации, фазы `loading` / меню / игра).
 
 ### Changed
+
+- **`client/playerStore` + `EventMap`:** события `player:stress_high`, `player:panic_enter` / `player:panic_leave`, `player:low_energy` (плюс существующие `panic:*`); `updateStatsBatch`, `setRpgProgress`, `serializePlayerState` / `deserializePlayerState`; `Number.isFinite` в числовых мутациях; комментарии про флаги и `useShallow`.
 
 - **Производительность / мобильные:** в `globals.css` при `(max-width: 768px)` или `prefers-reduced-motion: reduce` отключаются `animation` и `transition` для всех элементов, кроме ветки `.game-critical-motion`; класс добавлен к загрузочному fallback, кроссфейду `GameClient`, диалогу/истории/меню/интро/лоадингу, панелям, туториалу, радиальному меню, взлому, брифингу, компасу, лут-оверлею, `PanelWrapper` (spring + таймаут снятия `is-animating` / `will-change`).
 - **`.game-panel`:** `content-visibility: auto` и `contain-intrinsic-size` — на скролл-контейнерах инвентаря, журнала, списка квестов, обложки поэзии, брифинга; корневые карточки инвентаря/журнала/книги стихов.

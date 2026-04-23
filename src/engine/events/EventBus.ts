@@ -149,6 +149,15 @@ export interface EventMap {
 
   /** Уровень персонажа вырос после начисления XP (`gameStore.addExperience`). */
   'player:level_up': { newLevel: number; levelsGained: number; source?: string };
+
+  /** Стресс впервые достиг порога «высокий» (≥80). */
+  'player:stress_high': { stress: number; previousStress: number };
+  /** Режим паники включён (stress ≥ 100). */
+  'player:panic_enter': { stress: number };
+  /** Режим паники выключен. */
+  'player:panic_leave': { stress: number };
+  /** Энергия пересекла порог вниз (вошла в низкий запас). */
+  'player:low_energy': { energy: number; threshold: number };
 }
 
 // ============================================

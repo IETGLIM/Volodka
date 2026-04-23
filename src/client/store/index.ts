@@ -9,7 +9,14 @@ export {
   selectEnergyPercentage,
   selectEnergyPercentageFromPlayer,
 } from './playerStoreSelectors';
-export { usePlayerStore, usePlayerStats, usePlayerSkills, useStress, useEnergyPercentage } from './playerStore';
+export {
+  usePlayerStore,
+  usePlayerStats,
+  usePlayerSkills,
+  useStress,
+  useEnergyPercentage,
+  type PlayerCoreStatsBatch,
+} from './playerStore';
 export {
   useWorldStore,
   useExploration,

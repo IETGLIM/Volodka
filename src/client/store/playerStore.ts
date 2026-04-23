@@ -4,12 +4,18 @@
 // Отвечает за: характеристики, навыки, стресс,
 // самооценку, энергию, карму, флаги, моральные выборы.
 // Не содержит: NPC, инвентарь, квесты, фракции, UI-фазы.
+//
+// События порогов (стресс, паника, низкая энергия) — `eventBus` (`player:*`).
+// Селекторы-объекты: `usePlayerStats` / `useStress` уже на `useShallow`; для своих
+// `usePlayerStore(s => ({ ... }))` используйте `useShallow` из `zustand/react/shallow`.
+// Флаги: конвенция имён с префиксом (`quest:…`, `npcs:…`) снижает риск коллизий.
 
 import { create } from 'zustand';
 import { useShallow } from 'zustand/react/shallow';
 import type { PlayerState, PlayerSkills, MoralChoice } from '@/shared/types/game';
 import { INITIAL_PLAYER_ENERGY, MAX_PLAYER_ENERGY } from '@/lib/energyConfig';
 import { experienceRequiredForNextLevel } from '@/lib/rpgLeveling';
+import { eventBus } from '@/engine/EventBus';
 import { selectEnergyPercentageFromPlayer } from './playerStoreSelectors';
 
 // ============================================
@@ -76,9 +82,16 @@ interface PlayerStoreState {
   currentNodeId: string;
 }
 
+/** Поля для пакетного обновления числовых кор-статов (один `set`). */
+export type PlayerCoreStatsBatch = Partial<
+  Pick<PlayerState, 'mood' | 'creativity' | 'stability' | 'energy' | 'karma' | 'selfEsteem' | 'stress'>
+>;
+
 interface PlayerStoreActions {
   setCurrentNode: (nodeId: string) => void;
   addStat: (stat: 'mood' | 'creativity' | 'stability' | 'energy' | 'karma' | 'selfEsteem', amount: number) => void;
+  /** Несколько кор-статов за один рендер Zustand. */
+  updateStatsBatch: (changes: PlayerCoreStatsBatch) => void;
   addStress: (amount: number) => void;
   reduceStress: (amount: number) => void;
   triggerPanicMode: () => void;
@@ -93,6 +106,12 @@ interface PlayerStoreActions {
   visitNode: (nodeId: string) => void;
   addMoralChoice: (choice: MoralChoice) => void;
   setPlayerState: (state: Partial<PlayerState>) => void;
+  /** Синхронизация RPG-полей с внешним источником (например основной `gameStore`). */
+  setRpgProgress: (experience: number, characterLevel: number, experienceToNextLevel?: number) => void;
+  /** Снимок `playerState` для персиста / отладки. */
+  serializePlayerState: () => PlayerState;
+  /** Восстановление с валидацией чисел; неизвестные поля отбрасываются на уровне merge. */
+  deserializePlayerState: (data: Partial<PlayerState>) => void;
   resetPlayer: () => void;
 }
 
@@ -104,6 +123,32 @@ type PlayerStore = PlayerStoreState & PlayerStoreActions;
 
 const clamp = (value: number, min: number, max: number) =>
   Math.max(min, Math.min(max, value));
+
+const LOW_ENERGY_THRESHOLD = 20;
+const STRESS_HIGH_THRESHOLD = 80;
+
+function emitStressAndPanicEdges(
+  prev: PlayerState,
+  nextStress: number,
+  nextPanic: boolean,
+) {
+  if (nextPanic && !prev.panicMode) {
+    eventBus.emit('player:panic_enter', { stress: nextStress });
+    eventBus.emit('panic:triggered', { stress: nextStress });
+  } else if (!nextPanic && prev.panicMode) {
+    eventBus.emit('player:panic_leave', { stress: nextStress });
+    eventBus.emit('panic:cleared', { stress: nextStress });
+  }
+  if (nextStress >= STRESS_HIGH_THRESHOLD && prev.stress < STRESS_HIGH_THRESHOLD) {
+    eventBus.emit('player:stress_high', { stress: nextStress, previousStress: prev.stress });
+  }
+}
+
+function emitLowEnergyIfCrossed(prevEnergy: number, nextEnergy: number) {
+  if (nextEnergy <= LOW_ENERGY_THRESHOLD && prevEnergy > LOW_ENERGY_THRESHOLD) {
+    eventBus.emit('player:low_energy', { energy: nextEnergy, threshold: LOW_ENERGY_THRESHOLD });
+  }
+}
 
 // ============================================
 // STORE
@@ -131,42 +176,114 @@ export const usePlayerStore = create<PlayerStore>()((set, get) => ({
   },
 
   addStat: (stat, amount) => {
+    if (!Number.isFinite(amount)) {
+      console.error('[playerStore] addStat: amount is not finite', { stat, amount });
+      return;
+    }
     const { playerState } = get();
     const currentValue = playerState[stat];
-    if (typeof currentValue === 'number') {
-      set({
-        playerState: {
-          ...playerState,
-          [stat]: clamp(currentValue + amount, 0, stat === 'energy' ? MAX_PLAYER_ENERGY : 100),
-        },
-      });
+    if (typeof currentValue !== 'number') return;
+    const maxV = stat === 'energy' ? MAX_PLAYER_ENERGY : 100;
+    const newVal = clamp(currentValue + amount, 0, maxV);
+    set({
+      playerState: {
+        ...playerState,
+        [stat]: newVal,
+      },
+    });
+    if (stat === 'energy') {
+      emitLowEnergyIfCrossed(currentValue, newVal);
     }
+  },
+
+  updateStatsBatch: (changes) => {
+    const prev = get().playerState;
+    const next = { ...prev };
+    const apply = (key: keyof PlayerCoreStatsBatch, maxV: number) => {
+      const raw = changes[key];
+      if (raw === undefined) return;
+      if (!Number.isFinite(raw)) {
+        console.error('[playerStore] updateStatsBatch: value is not finite', { key, raw });
+        return;
+      }
+      const prevVal = next[key];
+      const bounded = clamp(raw, 0, maxV);
+      switch (key) {
+        case 'mood':
+          next.mood = bounded;
+          break;
+        case 'creativity':
+          next.creativity = bounded;
+          break;
+        case 'stability':
+          next.stability = bounded;
+          break;
+        case 'energy':
+          next.energy = bounded;
+          emitLowEnergyIfCrossed(prevVal, bounded);
+          break;
+        case 'karma':
+          next.karma = bounded;
+          break;
+        case 'selfEsteem':
+          next.selfEsteem = bounded;
+          break;
+        case 'stress':
+          next.stress = bounded;
+          break;
+        default:
+          break;
+      }
+    };
+    apply('mood', 100);
+    apply('creativity', 100);
+    apply('stability', 100);
+    apply('energy', MAX_PLAYER_ENERGY);
+    apply('karma', 100);
+    apply('selfEsteem', 100);
+    apply('stress', 100);
+    next.panicMode = next.stress >= 100;
+    emitStressAndPanicEdges(prev, next.stress, next.panicMode);
+    set({ playerState: next });
   },
 
   addStress: (amount) => {
+    if (!Number.isFinite(amount)) {
+      console.error('[playerStore] addStress: amount is not finite', { amount });
+      return;
+    }
     const { playerState } = get();
     const newStress = clamp(playerState.stress + amount, 0, 100);
     const panicMode = newStress >= 100;
+    emitStressAndPanicEdges(playerState, newStress, panicMode);
     set({ playerState: { ...playerState, stress: newStress, panicMode } });
-    if (panicMode && !playerState.panicMode) {
-      console.log('🔥 KERNEL PANIC TRIGGERED!');
-    }
   },
 
   reduceStress: (amount) => {
+    if (!Number.isFinite(amount)) {
+      console.error('[playerStore] reduceStress: amount is not finite', { amount });
+      return;
+    }
     const { playerState } = get();
     const newStress = clamp(playerState.stress - amount, 0, 100);
-    set({ playerState: { ...playerState, stress: newStress, panicMode: newStress >= 100 } });
+    const panicMode = newStress >= 100;
+    emitStressAndPanicEdges(playerState, newStress, panicMode);
+    set({ playerState: { ...playerState, stress: newStress, panicMode } });
   },
 
   triggerPanicMode: () => {
     const { playerState } = get();
-    set({ playerState: { ...playerState, stress: 100, panicMode: true } });
+    const next = { ...playerState, stress: 100, panicMode: true };
+    emitStressAndPanicEdges(playerState, 100, true);
+    set({ playerState: next });
   },
 
   clearPanicMode: () => {
     const { playerState } = get();
-    set({ playerState: { ...playerState, stress: Math.max(0, playerState.stress - 30), panicMode: false } });
+    const newStress = Math.max(0, playerState.stress - 30);
+    const next = { ...playerState, stress: newStress, panicMode: false };
+    emitStressAndPanicEdges(playerState, newStress, false);
+    set({ playerState: next });
   },
 
   incrementPlayTime: () => {
@@ -180,6 +297,10 @@ export const usePlayerStore = create<PlayerStore>()((set, get) => ({
   },
 
   addSkill: (skill, amount) => {
+    if (!Number.isFinite(amount)) {
+      console.error('[playerStore] addSkill: amount is not finite', { skill, amount });
+      return;
+    }
     const { playerState } = get();
     const currentSkill = playerState.skills[skill] as number;
     set({
@@ -191,6 +312,10 @@ export const usePlayerStore = create<PlayerStore>()((set, get) => ({
   },
 
   addSkillPoints: (points) => {
+    if (!Number.isFinite(points)) {
+      console.error('[playerStore] addSkillPoints: points is not finite', { points });
+      return;
+    }
     const { playerState } = get();
     set({
       playerState: {
@@ -241,6 +366,64 @@ export const usePlayerStore = create<PlayerStore>()((set, get) => ({
   setPlayerState: (partial) => {
     const { playerState } = get();
     set({ playerState: { ...playerState, ...partial } });
+  },
+
+  setRpgProgress: (experience, characterLevel, experienceToNextLevel) => {
+    if (!Number.isFinite(experience) || !Number.isFinite(characterLevel)) {
+      console.error('[playerStore] setRpgProgress: non-finite arguments', {
+        experience,
+        characterLevel,
+      });
+      return;
+    }
+    const level = Math.max(1, Math.floor(characterLevel));
+    const { playerState } = get();
+    const toNext =
+      experienceToNextLevel !== undefined && Number.isFinite(experienceToNextLevel) && experienceToNextLevel > 0
+        ? experienceToNextLevel
+        : experienceRequiredForNextLevel(level);
+    set({
+      playerState: {
+        ...playerState,
+        experience,
+        characterLevel: level,
+        experienceToNextLevel: toNext,
+      },
+    });
+  },
+
+  serializePlayerState: () => {
+    const { playerState } = get();
+    return JSON.parse(JSON.stringify(playerState)) as PlayerState;
+  },
+
+  deserializePlayerState: (data) => {
+    const merged: PlayerState = {
+      ...INITIAL_PLAYER,
+      ...data,
+      skills: { ...INITIAL_PLAYER.skills, ...(data.skills ?? {}) },
+      flags: { ...INITIAL_PLAYER.flags, ...(data.flags ?? {}) },
+      statistics: { ...INITIAL_PLAYER.statistics, ...(data.statistics ?? {}) },
+      visitedNodes: Array.isArray(data.visitedNodes) ? data.visitedNodes : INITIAL_PLAYER.visitedNodes,
+      collections: { ...INITIAL_PLAYER.collections, ...(data.collections ?? {}) },
+    };
+    const clampNum = (v: unknown, min: number, max: number, fallback: number) =>
+      typeof v === 'number' && Number.isFinite(v) ? clamp(v, min, max) : fallback;
+    merged.mood = clampNum(merged.mood, 0, 100, INITIAL_PLAYER.mood);
+    merged.creativity = clampNum(merged.creativity, 0, 100, INITIAL_PLAYER.creativity);
+    merged.stability = clampNum(merged.stability, 0, 100, INITIAL_PLAYER.stability);
+    merged.energy = clampNum(merged.energy, 0, MAX_PLAYER_ENERGY, INITIAL_PLAYER.energy);
+    merged.karma = clampNum(merged.karma, 0, 100, INITIAL_PLAYER.karma);
+    merged.selfEsteem = clampNum(merged.selfEsteem, 0, 100, INITIAL_PLAYER.selfEsteem);
+    merged.stress = clampNum(merged.stress, 0, 100, INITIAL_PLAYER.stress);
+    merged.experience = clampNum(merged.experience, 0, Number.MAX_SAFE_INTEGER, INITIAL_PLAYER.experience);
+    merged.characterLevel = Math.max(1, Math.floor(clampNum(merged.characterLevel, 1, 999, INITIAL_PLAYER.characterLevel)));
+    merged.experienceToNextLevel = Math.max(
+      1,
+      Math.floor(clampNum(merged.experienceToNextLevel, 1, Number.MAX_SAFE_INTEGER, experienceRequiredForNextLevel(merged.characterLevel))),
+    );
+    merged.panicMode = Boolean(merged.panicMode) && merged.stress >= 100;
+    set({ playerState: merged });
   },
 
   resetPlayer: () => set({ playerState: INITIAL_PLAYER, currentNodeId: 'start' }),
