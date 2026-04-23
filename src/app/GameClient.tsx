@@ -313,21 +313,29 @@ const CyberProgressIndicator = memo(function CyberProgressIndicator({
 
   // Animated dots
   useEffect(() => {
-    const interval = setInterval(() => {
+    const interval = window.setInterval(() => {
       setDots(prev => prev.length >= 3 ? '' : prev + '.');
     }, 400);
-    return () => clearInterval(interval);
+    return () => window.clearInterval(interval);
   }, []);
 
-  // Glitch jitter
+  // Glitch jitter (interval + nested reset timeout — оба снимаем при unmount)
   useEffect(() => {
-    const interval = setInterval(() => {
+    let resetId: number | undefined;
+    const interval = window.setInterval(() => {
       if (Math.random() > 0.7) {
+        if (resetId !== undefined) window.clearTimeout(resetId);
         setGlitchOffset(Math.random() * 4 - 2);
-        setTimeout(() => setGlitchOffset(0), 80);
+        resetId = window.setTimeout(() => {
+          resetId = undefined;
+          setGlitchOffset(0);
+        }, 80);
       }
     }, 500);
-    return () => clearInterval(interval);
+    return () => {
+      window.clearInterval(interval);
+      if (resetId !== undefined) window.clearTimeout(resetId);
+    };
   }, []);
 
   return (
@@ -422,15 +430,23 @@ function CyberpunkLoadingFallback() {
   const { progress, message } = useLoadingProgress();
   const [titleGlitch, setTitleGlitch] = useState(false);
 
-  // Periodic title glitch effect
+  // Periodic title glitch effect (interval + timeout — cleanup при unmount)
   useEffect(() => {
-    const interval = setInterval(() => {
+    let offId: number | undefined;
+    const interval = window.setInterval(() => {
       if (Math.random() > 0.75) {
+        if (offId !== undefined) window.clearTimeout(offId);
         setTitleGlitch(true);
-        setTimeout(() => setTitleGlitch(false), 200);
+        offId = window.setTimeout(() => {
+          offId = undefined;
+          setTitleGlitch(false);
+        }, 200);
       }
     }, 2000);
-    return () => clearInterval(interval);
+    return () => {
+      window.clearInterval(interval);
+      if (offId !== undefined) window.clearTimeout(offId);
+    };
   }, []);
 
   return (
