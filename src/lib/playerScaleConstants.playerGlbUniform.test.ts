@@ -65,8 +65,9 @@ describe('clampExplorationHumanoidGlbUniformForScene', () => {
     expect(clampExplorationHumanoidGlbUniformForScene('zarema_albert_room', 0.03)).toBe(PLAYER_GLB_VISUAL_UNIFORM_MIN);
   });
 
-  it('caps volodka_room below narrow interior ceiling', () => {
-    expect(clampExplorationHumanoidGlbUniformForScene('volodka_room', 0.9)).toBe(0.26);
+  it('caps volodka_room tighter than corridor/home_evening narrow ceiling', () => {
+    expect(clampExplorationHumanoidGlbUniformForScene('volodka_room', 0.9)).toBe(0.14);
+    expect(clampExplorationHumanoidGlbUniformForScene('volodka_corridor', 0.9)).toBe(0.26);
   });
 
   it('leaves street scale uncapped by narrow ceilings', () => {

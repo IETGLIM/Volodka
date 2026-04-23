@@ -41,6 +41,12 @@ export function applyExplorationPlayerGlobalVisualScale(uniform: number): number
 
 /** Квартира 10×8: при ошибочном bbox/кэше uniform не должен «взрывать» кадр (ноги на весь экран). */
 const ZAREMA_ALBERT_ROOM_GLTF_UNIFORM_HARD_MAX = 0.115;
+/**
+ * Комната Володьки (обход + 3D-интро на том же `sceneId`): раньше делили общий потолок **0.26** с коридором —
+ * при завышенном uniform TPS и коллизии камеры давали «макро» на ноги (Vercel / прод).
+ * Ниже, чем коридор/`home_evening`, но чуть выше квартиры Заремы из‑за большего пола.
+ */
+const VOLODKA_ROOM_GLTF_UNIFORM_HARD_MAX = 0.14;
 /** Другие узкие интерьеры обхода — чуть выше потолок, чем у квартиры Заремы. */
 const NARROW_INTERIOR_GLTF_UNIFORM_HARD_MAX = 0.26;
 
@@ -54,7 +60,10 @@ export function clampExplorationHumanoidGlbUniformForScene(sceneId: SceneId | un
   if (sceneId === 'zarema_albert_room') {
     return Math.min(ZAREMA_ALBERT_ROOM_GLTF_UNIFORM_HARD_MAX, Math.max(lo, uniform));
   }
-  const narrow: readonly SceneId[] = ['volodka_room', 'volodka_corridor', 'home_evening'];
+  if (sceneId === 'volodka_room') {
+    return Math.min(VOLODKA_ROOM_GLTF_UNIFORM_HARD_MAX, Math.max(lo, uniform));
+  }
+  const narrow: readonly SceneId[] = ['volodka_corridor', 'home_evening'];
   if (sceneId && narrow.includes(sceneId)) {
     return Math.min(NARROW_INTERIOR_GLTF_UNIFORM_HARD_MAX, Math.max(lo, uniform));
   }

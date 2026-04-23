@@ -418,17 +418,17 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
     }
     if (sceneId === 'volodka_room') {
       return {
-        distance: 2.62,
+        distance: 2.78,
         height: 1.58,
         smoothness: 0.11,
         shoulderOffset: 0.1,
-        lookAtHeightOffset: 1.22,
+        lookAtHeightOffset: 1.32,
         collisionSpring: 12,
-        minDistance: 1.58,
+        minDistance: 1.78,
         maxDistance: 3.35,
-        collisionRayOriginY: 1.38,
+        collisionRayOriginY: 1.48,
         collisionRadius: 0.2,
-        pitchMin: -0.18,
+        pitchMin: -0.06,
         pitchMax: 0.38,
       };
     }
