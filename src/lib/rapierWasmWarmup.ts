@@ -10,7 +10,8 @@ export function warmupRapierWasm(): Promise<void> {
     .then(async (RAPIER) => {
       await RAPIER.init();
     })
-    .catch(() => {
+    .catch((error: unknown) => {
+      console.error('[rapierWasmWarmup] Rapier WASM warmup failed:', error);
       rapierWarmupPromise = null;
     });
   return rapierWarmupPromise;

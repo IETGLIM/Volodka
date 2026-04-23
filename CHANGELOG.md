@@ -8,6 +8,7 @@
 
 ### Fixed
 
+- **LCP / `AppPerfWarmup`:** после Rapier и GLB игрока — низкоприоритетный прогрев частых NPC-GLB (`**requestIdleCallback**` / `**setTimeout**`, `**preloadGltf**` в `**model-cache.ts**`); логи ошибок в `**rapierWasmWarmup**` и при `**useGLTF.preload**`; `**performance.mark**` / `**measure**` для замера прогрева (имена `volodka-app-perf-warmup*`).
 - **Обход / кэш GLTF (`gltfModelCache`):** при последнем `**releaseGltfModelUrl**` для URL сразу вызывается `**useGLTF.clear**` и путь убирается из `**accessOrder**` (раньше «нулевые» ссылки висели до переполнения LRU — лишняя память при частой смене `**modelPath**`). Докблок у `**GLBPlayerModel**` (`**PhysicsPlayer**`): cleanup `**retain**`/`**release**` и при смене пути, и при размонтировании.
 - **Обход / PhysicsPlayer, телепорт:** при смене `**spawnSyncKey**` и в `**ref.teleport**` убран `**setTranslation(..., true)**` у кинематического тела — только `**setNextKinematicTranslation**`, чтобы не будить лишний пересчёт и не конфликтовать с `**useBeforePhysicsStep**` в том же кадре.
 - **Обход / игрок, процедурный fallback:** в `**PhysicsPlayer**` (`FallbackPlayerModel`) масштаб визуала через `**applyExplorationPlayerGlobalVisualScale(rs)**` вместо ручного `* EXPLORATION_PLAYER_GLOBAL_VISUAL_SCALE`; в докблоке указано, что `**getExplorationCharacterModelScale**` / `**visualModelScale**` **не** вшивают ÷5 (глобальный шаг один раз, как у GLB после bbox).
