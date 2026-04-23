@@ -593,25 +593,46 @@ function ErrorBoundary({ children }: { children: React.ReactNode }) {
   }, []);
 
   if (hasError) {
+    const errorCode =
+      error instanceof Error
+        ? `${error.name}${error.message ? ` // ${error.message}` : ''}`
+        : error != null
+          ? String(error)
+          : 'UNKNOWN // Неизвестная ошибка';
+
     return (
-      <div className="min-h-screen bg-slate-900 flex items-center justify-center p-8">
-        <div className="max-w-md text-center">
-          <div className="text-6xl mb-6">💥</div>
-          <h1 className="text-2xl font-bold text-white mb-4">
+      <div className="min-h-screen bg-[#030308] flex items-center justify-center p-6 sm:p-10">
+        <div
+          className="max-w-lg w-full border border-cyan-500/25 bg-black/60 p-8 sm:p-10 text-center shadow-[0_0_40px_rgba(0,255,255,0.08)]"
+          style={{ clipPath: 'polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px))' }}
+        >
+          <p className="font-mono text-[10px] tracking-[0.35em] text-cyan-500/60 uppercase mb-3">
+            KERNEL PANIC
+          </p>
+          <h1 className="text-xl sm:text-2xl font-bold tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-cyan-200 via-fuchsia-200 to-cyan-200 mb-6">
             Что-то пошло не так...
           </h1>
-          <p className="text-slate-400 mb-6">
-            {error?.message || 'Неизвестная ошибка'}
-          </p>
+          <div className="text-left mb-8">
+            <p className="font-mono text-[10px] text-cyan-600/70 tracking-widest uppercase mb-2">
+              Код ошибки
+            </p>
+            <pre
+              className="font-mono text-xs sm:text-sm text-cyan-300/90 whitespace-pre-wrap break-words max-h-40 overflow-y-auto p-4 bg-black/80 border border-cyan-500/20 text-left leading-relaxed"
+              style={{ boxShadow: 'inset 0 0 20px rgba(0,255,255,0.06)' }}
+            >
+              {errorCode}
+            </pre>
+          </div>
           <button
+            type="button"
             onClick={() => {
               setHasError(false);
               setError(null);
               window.location.reload();
             }}
-            className="px-6 py-3 bg-purple-600 hover:bg-purple-500 text-white rounded-lg transition-colors"
+            className="px-8 py-4 bg-gradient-to-r from-cyan-900 to-purple-900 hover:from-cyan-700 hover:to-purple-700 text-cyan-300 border border-cyan-500/30 rounded-none font-mono text-sm tracking-widest transition-all duration-300 shadow-[0_0_25px_rgba(0,255,255,0.2)]"
           >
-            Перезапустить
+            ⟳ ПЕРЕЗАГРУЗИТЬ СИСТЕМУ
           </button>
         </div>
       </div>
