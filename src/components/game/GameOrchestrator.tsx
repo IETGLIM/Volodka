@@ -44,6 +44,7 @@ import { useGamePhaseStore } from '@/store/gamePhaseStore';
 import { IntroCutsceneOverlays } from '@/components/Cutscenes/IntroCutsceneOverlays';
 import { eventBus } from '@/engine/EventBus';
 import { useGameAudioProfile } from '@/hooks/useAudio';
+import { useLoadingProgress } from '@/context/LoadingProgressContext';
 import { QUEST_DEFINITIONS, getNextTrackedObjective } from '@/data/quests';
 import { items as GAME_ITEM_TABLE } from '@/data/items';
 import { getNPCById, getNPCsForScene, getNpcExplorationPosition } from '@/data/npcDefinitions';
@@ -182,10 +183,27 @@ export default function GameOrchestrator() {
   const { message: autoSaveMsg, showMessage: showAutoSave } = useTimedMessage(900);
   const { message: loadMsg, showMessage: showLoadPulse } = useTimedMessage(1100);
   const { notifications: effectNotifs, showEffectNotif } = useEffectNotifications(5, 3000);
+  const { setProgress } = useLoadingProgress();
 
   useEffect(() => {
-    requestAnimationFrame(() => setMounted(true));
-  }, []);
+    setProgress(22, 'МОДУЛЬ ИГРЫ');
+    const id = requestAnimationFrame(() => {
+      setMounted(true);
+    });
+    return () => cancelAnimationFrame(id);
+  }, [setProgress]);
+
+  useEffect(() => {
+    if (phase === 'loading') {
+      setProgress(72, 'СИСТЕМА ЗАГРУЗКИ');
+    } else if (phase === 'menu') {
+      setProgress(100, 'МЕНЮ');
+    } else if (phase === 'intro') {
+      setProgress(100, 'ИНТРО');
+    } else if (phase === 'game') {
+      setProgress(100, 'ИГРА');
+    }
+  }, [phase, setProgress]);
 
   useEffect(() => {
     const unsub = eventBus.on('ui:exploration_message', ({ text }) => {

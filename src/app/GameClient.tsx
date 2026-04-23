@@ -4,18 +4,15 @@
 import { ensureThreeClientPrep } from '@/lib/threeClientPrep';
 
 import dynamic from 'next/dynamic';
-import { useState, useEffect, useRef, memo, useMemo } from 'react';
+import { Suspense, useState, useEffect, useRef, memo, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { FamilyWelcomeGate } from '@/components/game/FamilyWelcomeGate';
+import { LoadingProgressProvider, useLoadingProgress } from '@/context/LoadingProgressContext';
 
 // Dynamic import with SSR disabled — uses the new 2D GameOrchestrator
-const GameOrchestrator = dynamic(
-  () => import('@/components/game/GameOrchestrator'),
-  {
-    ssr: false,
-    loading: () => <CyberpunkLoadingFallback />,
-  }
-);
+const GameOrchestratorLazy = dynamic(() => import('@/components/game/GameOrchestrator'), {
+  ssr: false,
+});
 
 // ============================================
 // CYBERPUNK LOADING FALLBACK — Matrix/Blade Runner style
@@ -256,23 +253,19 @@ const HexDump = memo(function HexDump() {
   );
 });
 
-/** Pulsating cyberpunk progress indicator */
-const CyberProgressIndicator = memo(function CyberProgressIndicator() {
-  const [progress, setProgress] = useState(0);
+type CyberProgressIndicatorProps = {
+  progress: number;
+  message?: string;
+};
+
+/** Pulsating cyberpunk progress indicator (bar driven by `LoadingProgressContext` via props) */
+const CyberProgressIndicator = memo(function CyberProgressIndicator({
+  progress,
+  message = 'ЗАГРУЗКА МОДУЛЕЙ',
+}: CyberProgressIndicatorProps) {
+  const clamped = Math.min(100, Math.max(0, progress));
   const [dots, setDots] = useState('');
   const [glitchOffset, setGlitchOffset] = useState(0);
-
-  // Progress simulation
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setProgress(prev => {
-        if (prev >= 100) return 100;
-        const inc = prev < 30 ? 5 : prev < 70 ? 2 : prev < 90 ? 3 : 1;
-        return Math.min(prev + inc, 100);
-      });
-    }, 150);
-    return () => clearInterval(interval);
-  }, []);
 
   // Animated dots
   useEffect(() => {
@@ -307,7 +300,7 @@ const CyberProgressIndicator = memo(function CyberProgressIndicator() {
         <motion.div
           className="h-full"
           style={{
-            width: `${progress}%`,
+            width: `${clamped}%`,
             background: 'linear-gradient(90deg, #00ffff, #00cc99, #ff00ff, #00ffff)',
             backgroundSize: '300% 100%',
             animation: 'gradient-shift 3s linear infinite',
@@ -341,7 +334,8 @@ const CyberProgressIndicator = memo(function CyberProgressIndicator() {
           animate={{ opacity: [0.5, 1, 0.5] }}
           transition={{ duration: 1.5, repeat: Infinity }}
         >
-          ЗАГРУЗКА МОДУЛЕЙ{dots}
+          {message}
+          {dots}
         </motion.span>
         <motion.span
           className="font-mono text-sm text-cyan-400 font-bold"
@@ -349,7 +343,7 @@ const CyberProgressIndicator = memo(function CyberProgressIndicator() {
           animate={{ opacity: [0.7, 1, 0.7] }}
           transition={{ duration: 1, repeat: Infinity }}
         >
-          {progress}%
+          {clamped}%
         </motion.span>
       </div>
     </div>
@@ -381,6 +375,7 @@ const CornerBrackets = memo(function CornerBrackets() {
 
 /** Main cyberpunk loading fallback component */
 function CyberpunkLoadingFallback() {
+  const { progress, message } = useLoadingProgress();
   const [titleGlitch, setTitleGlitch] = useState(false);
 
   // Periodic title glitch effect
@@ -503,7 +498,7 @@ function CyberpunkLoadingFallback() {
           transition={{ delay: 1, duration: 0.5 }}
           className="mt-8"
         >
-          <CyberProgressIndicator />
+          <CyberProgressIndicator progress={progress} message={message} />
         </motion.div>
 
         {/* Bottom version info */}
@@ -582,13 +577,29 @@ function ErrorBoundary({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+function GameOrchestratorBootShell() {
+  const { setProgress } = useLoadingProgress();
+
+  useEffect(() => {
+    setProgress(8, 'ЗАГРУЗКА БАНДЛА');
+  }, [setProgress]);
+
+  return (
+    <Suspense fallback={<CyberpunkLoadingFallback />}>
+      <GameOrchestratorLazy />
+    </Suspense>
+  );
+}
+
 // Main GameClient — just wraps GameOrchestrator with error boundary
 export default function GameClient() {
   ensureThreeClientPrep();
   return (
     <ErrorBoundary>
       <FamilyWelcomeGate>
-        <GameOrchestrator />
+        <LoadingProgressProvider>
+          <GameOrchestratorBootShell />
+        </LoadingProgressProvider>
       </FamilyWelcomeGate>
     </ErrorBoundary>
   );

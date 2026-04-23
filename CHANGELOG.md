@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Added
+
+- **Загрузка чанка `GameOrchestrator`:** контекст `LoadingProgressContext` (`src/context/LoadingProgressContext.tsx`), провайдер в `GameClient` вокруг `Suspense` + ленивого оркестратора; `CyberpunkLoadingFallback` / `CyberProgressIndicator` показывают прогресс и сообщение из `GameOrchestrator` (этапы бандла, инициализации, фазы `loading` / меню / игра).
+
 ### Changed
 
 - **Обход / масштаб GLB игрока в `volodka_room`:** `**explorationPlayerGltfTargetMeters`** **0.66**, `**explorationPlayerGlbVisualUniformMultiplier`** **0.22**; интро — отдельные константы в `**introVolodkaOpeningCutscene`** (см. **Fixed** выше); кадры камеры к лифту отодвинуты/приподняты, чтобы не «макро» на голени при **60°** FOV; за дверью — тёмный объём «клетка» (`**VolodkaRoomVisual`**).
