@@ -526,7 +526,8 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
 
   /**
    * Смена сцены: телепорт без `key` на дереве GLB. `useLayoutEffect` — после commit Rapier, до paint.
-   * Варп: `setTranslation` + `setNextKinematicTranslation`; в игровом KCC-шаге — только `setNextKinematicTranslation`.
+   * Только `setNextKinematicTranslation`: `setTranslation(..., wake=true)` на кинематике даёт лишний wake и
+   * может конфликтовать с `useBeforePhysicsStep` в том же кадре; Rapier применит позицию на шаге симуляции.
    */
   useLayoutEffect(() => {
     if (spawnSyncKey === undefined) return;
@@ -535,7 +536,6 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
     const x = position[0];
     const y = position[1];
     const z = position[2];
-    rb.setTranslation({ x, y, z }, true);
     rb.setNextKinematicTranslation({ x, y, z });
     verticalVelRef.current = 0;
     horizVelXRef.current = 0;
@@ -586,11 +586,10 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
       return { x: position[0], y: position[1], z: position[2] };
     },
     getRotation: () => rotationRef.current,
-    /** Явный варп: `setTranslation` допустим только здесь (не в игровом KCC-кадре). */
+    /** Явный варп: как при смене `spawnSyncKey` — только `setNextKinematicTranslation` (кинематическое тело). */
     teleport: (x: number, y: number, z: number) => {
       if (rigidBodyRef.current) {
         const p = { x, y, z };
-        rigidBodyRef.current.setTranslation(p, true);
         rigidBodyRef.current.setNextKinematicTranslation(p);
         verticalVelRef.current = 0;
         horizVelXRef.current = 0;
