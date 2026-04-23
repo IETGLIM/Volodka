@@ -4,7 +4,7 @@
 // Стандартизирует формат промптов, добавляет
 // состояние игры, NPC-отношения, флаги, стресс.
 
-import type { PlayerState, NPCRelation } from '@/shared/types/game';
+import type { PlayerState, NPCRelation } from '@/data/types';
 import { MAX_PLAYER_ENERGY } from '@/lib/energyConfig';
 import type { NarrativeRequest, DialogueRequest } from './types';
 

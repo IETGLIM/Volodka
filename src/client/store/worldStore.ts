@@ -8,7 +8,7 @@ import { create } from 'zustand';
 import { useShallow } from 'zustand/react/shallow';
 import { ENERGY_COSTS } from '@/lib/energyConfig';
 import { eventBus } from '@/engine/EventBus';
-import type { NPCRelation, SceneId } from '@/shared/types/game';
+import type { NPCRelation, SceneId } from '@/data/types';
 import type {
   PlayerPosition,
   NPCState,

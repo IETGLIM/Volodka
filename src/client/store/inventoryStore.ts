@@ -6,7 +6,7 @@
 // независимо от статов.
 
 import { create } from 'zustand';
-import type { InventoryItem } from '@/shared/types/game';
+import type { InventoryItem } from '@/data/types';
 import { getItemById } from '@/data/items';
 
 // ============================================

@@ -4,11 +4,11 @@
 // Версионированные сохранения, авто-сохранение,
 // снапшоты прогресса. Работает с Prisma + localStorage.
 
-import type { PlayerState, NPCRelation, SaveData } from '@/shared/types/game';
+import type { PlayerState, NPCRelation, SaveData } from '@/data/types';
 import type { FactionReputation } from '@/shared/types/factions';
 import type { ExplorationState } from '@/shared/types/rpg';
 import { getItemById } from '@/data/items';
-import type { InventoryItem } from '@/shared/types/game';
+import type { InventoryItem } from '@/data/types';
 
 // ============================================
 // TYPES

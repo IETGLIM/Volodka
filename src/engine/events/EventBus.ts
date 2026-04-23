@@ -18,7 +18,7 @@
 //
 // Отладка: `eventBus.setDebug(true)` в dev — в консоль уйдут имя события и payload.
 
-import type { PlayerPath, SceneId, PlayerState, PlayerSkills } from '@/shared/types/game';
+import type { PlayerPath, SceneId, PlayerState, PlayerSkills } from '@/data/types';
 
 // ============================================
 // Строгие идентификаторы в payload (не «произвольная строка»)

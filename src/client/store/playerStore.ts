@@ -12,7 +12,7 @@
 
 import { create } from 'zustand';
 import { useShallow } from 'zustand/react/shallow';
-import type { PlayerState, PlayerSkills, MoralChoice } from '@/shared/types/game';
+import type { PlayerState, PlayerSkills, MoralChoice } from '@/data/types';
 import { INITIAL_PLAYER_ENERGY, MAX_PLAYER_ENERGY } from '@/lib/energyConfig';
 import { experienceRequiredForNextLevel } from '@/lib/rpgLeveling';
 import { eventBus } from '@/engine/EventBus';

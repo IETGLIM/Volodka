@@ -10,7 +10,8 @@
 
 ### Changed
 
-- **Типы:** `**src/shared/types/game.ts`** больше не дублирует `**src/data/types.ts`** — реэкспорт `**export * from '@/data/types'`**; канон один (`**data/types**`), старые импорты из `**@/shared/types/game**` сохраняются.
+- **Типы:** удалён `**src/shared/types/game.ts`**; импорты переведены на `**@/data/types**` (`**EventBus**`, сторы, `**save-manager**`, AI). `**src/shared/types/index.ts**`, `**rpg.ts**`, `**schedule.ts**` реэкспортируют `**SceneId**` и игровые типы из канона `**data/types**`.
+- **Инструменты:** dev-зависимость `**knip**`, скрипт `**npm run knip**`, `**knip.json**` с точками входа `**src/app/**` + `**GameOrchestrator**` (цепочка за `**next/dynamic**` в `**GameClient**` статически не видна — отчёт о «неиспользуемых» файлах фильтровать вручную).
 - **Обход / `zarema_albert_room`:** ужаты силуэт игрока и NPC (`**explorationCharacterModelScale**`, `**explorationPlayerGltfTargetMeters**`, `**explorationPlayerGlbVisualUniformMultiplier**`, `**explorationLocomotionScale**` в `**scenes.ts`**), жёсткий потолок uniform в `**playerScaleConstants.ts**` (**0.115**); пресет `**FollowCamera**` в `**RPGGameCanvas**` — выше `lookAt` / луч коллизий, лимиты `pitchMin`/`pitchMax`, чтобы TPS не «ныряла» в ноги; для квартиры отключён Rapier KCC у NPC (`**enableExplorationNpcPhysics**` → `**NPCSystem**`), позиция строго по слоту расписания.
 - `**PhysicsPlayer` (`GLBPlayerModel`):** после bbox и множителя сцены глобальный шаг визуала через `**applyExplorationPlayerGlobalVisualScale**` (как у NPC), затем `**clampExplorationHumanoidGlbUniformForScene**`; `**explorationGlbClampSceneId**` из `**playerSceneTuningId**` в `**RPGGameCanvas**`.
 - `**NPC.tsx` (`GLTFLoader`):** при смене `**modelPath**` сброс `**prevNpcClipRef**` — первый клип idle/walk снова запускается (меньше зависания в bind pose после ремоута).

@@ -37,7 +37,7 @@ import { usePlayerStore } from './playerStore';
 import { useWorldStore } from './worldStore';
 import { useQuestStore } from './questStore';
 import { useInventoryStore } from './inventoryStore';
-import type { InventoryItem } from '@/shared/types/game';
+import type { InventoryItem } from '@/data/types';
 
 /**
  * Backward-compatible facade for the old monolithic store.

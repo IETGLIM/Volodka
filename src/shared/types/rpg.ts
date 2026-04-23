@@ -2,7 +2,7 @@
 // ТИПЫ ДЛЯ RPG-СИСТЕМЫ
 // ============================================
 
-import type { SceneId } from './game';
+import type { SceneId } from '@/data/types';
 
 // Позиция игрока в 3D пространстве
 export interface PlayerPosition {

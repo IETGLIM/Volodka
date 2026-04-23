@@ -41,7 +41,7 @@ export type {
   InventoryItem,
   SaveData,
   GameSettings,
-} from './game';
+} from '@/data/types';
 
 export type {
   PlayerPosition,

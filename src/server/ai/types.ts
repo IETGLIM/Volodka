@@ -2,8 +2,7 @@
 // AI TYPES — Объединённые типы для AI-модулей
 // ============================================
 
-import type { PlayerState } from '@/shared/types/game';
-import type { NPCRelation } from '@/shared/types/game';
+import type { PlayerState, NPCRelation } from '@/data/types';
 
 // ============================================
 // NARRATIVE TYPES

@@ -5,7 +5,7 @@
 // usePlayerStore(s => fn(s)) — подписка сравнивает результат по Object.is,
 // примитивы не дают лишних ререндеров. Сложные объекты — useShallow.
 
-import type { PlayerState } from '@/shared/types/game';
+import type { PlayerState } from '@/data/types';
 import { MAX_PLAYER_ENERGY } from '@/lib/energyConfig';
 
 export function selectEnergyFraction(energy: number): number {

@@ -1,0 +1,17 @@
+{
+  "$schema": "https://unpkg.com/knip@5/schema.json",
+  "entry": [
+    "next.config.ts",
+    "src/app/layout.tsx",
+    "src/app/page.tsx",
+    "src/app/GameClient.tsx",
+    "src/app/GameStoreHydration.tsx",
+    "src/app/AppPerfWarmup.tsx",
+    "src/app/error.tsx",
+    "src/app/global-error.tsx",
+    "src/app/not-found.tsx",
+    "src/components/game/GameOrchestrator.tsx"
+  ],
+  "project": ["src/**/*.{ts,tsx}"],
+  "ignore": ["**/*.test.ts", "**/*.test.tsx", "**/__tests__/**"]
+}

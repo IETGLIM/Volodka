@@ -1,4 +1,4 @@
-import type { SceneId } from './game';
+import type { SceneId } from '@/data/types';
 
 /** Одна строка дневного расписания NPC (часы суток 0–24, дробные допустимы). */
 export interface ScheduleEntry {
