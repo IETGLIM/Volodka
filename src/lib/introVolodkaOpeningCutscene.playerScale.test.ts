@@ -1,8 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import {
+  INTRO_OPENING_GLTF_VISUAL_UNIFORM_HARD_MAX,
   INTRO_OPENING_PLAYER_GLTF_TARGET_METERS,
   INTRO_OPENING_PLAYER_GLB_VISUAL_UNIFORM_EXTRA_MULTIPLIER,
 } from '@/lib/introVolodkaOpeningCutscene';
+import { clampExplorationHumanoidGlbUniformForScene } from '@/lib/playerScaleConstants';
 import { getExplorationPlayerGlbVisualUniformMultiplier, getExplorationPlayerGltfTargetMeters } from '@/config/scenes';
 
 describe('intro opening GLB visual uniform extra multiplier', () => {
@@ -17,6 +19,12 @@ describe('intro opening GLB visual uniform extra multiplier', () => {
     const gameplay = getExplorationPlayerGltfTargetMeters('volodka_room');
     expect(INTRO_OPENING_PLAYER_GLTF_TARGET_METERS).toBeLessThan(gameplay);
     expect(Math.min(gameplay, INTRO_OPENING_PLAYER_GLTF_TARGET_METERS)).toBe(INTRO_OPENING_PLAYER_GLTF_TARGET_METERS);
+  });
+
+  it('intro GLB hard cap is stricter than volodka_room gameplay clamp (kinematic camera closer than TPS)', () => {
+    expect(INTRO_OPENING_GLTF_VISUAL_UNIFORM_HARD_MAX).toBeLessThan(
+      clampExplorationHumanoidGlbUniformForScene('volodka_room', 1),
+    );
   });
 
   it('intro must not use default m=1 from an unrelated scene (would look larger than volodka gameplay)', () => {

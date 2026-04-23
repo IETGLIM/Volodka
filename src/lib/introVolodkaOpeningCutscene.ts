@@ -17,6 +17,13 @@ export const INTRO_OPENING_PLAYER_GLTF_TARGET_METERS = 0.085;
 /** Доп. ужатие на интро-камере (TPS + киношный dolly); с глобальным `EXPLORATION_PLAYER_GLOBAL_VISUAL_SCALE` не дублировать прежние 0.2+0.2 без нужды. */
 export const INTRO_OPENING_PLAYER_GLB_VISUAL_UNIFORM_EXTRA_MULTIPLIER = 0.02;
 
+/**
+ * Финальный потолок uniform GLB **только** на фазе `intro_cutscene` (`PhysicsPlayer` → `GLBPlayerModel`).
+ * Кинокамера ближе, чем TPS в геймплее; без этого при сбое bbox/кэша снова «макро на ноги».
+ * Ниже геймплея `volodka_room` (**0.14** после `clampExplorationHumanoidGlbUniformForScene`).
+ */
+export const INTRO_OPENING_GLTF_VISUAL_UNIFORM_HARD_MAX = 0.055;
+
 /** Сцена до финала 3D-интро (комната Володьки). */
 export const INTRO_OPENING_SCENE_ID: SceneId = 'volodka_room';
 
@@ -124,27 +131,29 @@ export function sampleIntroPlayerPose(elapsedSec: number): { pose: PlayerPositio
 export const INTRO_OPENING_CAM_KEYFRAMES: IntroOpeningKeyframe[] = [
   {
     tSec: 0,
-    cam: [1.62, 1.48, 2.38],
-    look: [3.18, 0.98, 0.06],
+    /** Чуть дальше и выше стола — кинокамера не лезет под силуэт при 60° FOV. */
+    cam: [1.38, 1.62, 2.58],
+    look: [3.05, 1.12, 0.18],
     caption: 'Десятый этаж. Два монитора — два котла.',
   },
   {
     tSec: 3.8,
-    cam: [2.15, 1.58, 1.72],
-    look: [3.05, 1.02, -0.15],
+    cam: [2.62, 1.78, 1.52],
+    look: [2.92, 1.22, -0.02],
     caption: 'Встать. Кофе остынет быстрее, чем ретро-инцидент.',
   },
   {
     tSec: 6.6,
-    cam: [3.52, 1.62, 0.88],
-    look: [1.95, 1.42, 1.05],
+    /** Кадр «Шаг к двери»: раньше камера была ~2.4 м от трассы — доминировали голени; отодвигаем по +X / −Z, look выше. */
+    cam: [4.55, 1.9, 0.38],
+    look: [1.72, 1.62, 1.38],
     caption: 'Шаг к двери. Руки помнят раскладку — ноги вспоминают медленнее.',
   },
   {
     tSec: 9.4,
     /** Дальше от траектории игрока, чуть выше — иначе при 60° FOV кадр «съедают» голени (макро на ноги). */
-    cam: [5.2, 2.05, 1.42],
-    look: [0.55, 1.22, 3.08],
+    cam: [5.35, 2.12, 1.32],
+    look: [0.58, 1.32, 3.1],
     caption: 'К лифту. Дальше — только вниз.',
   },
   {

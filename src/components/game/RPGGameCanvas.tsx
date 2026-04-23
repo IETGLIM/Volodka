@@ -6,7 +6,8 @@
  * Ввод: клавиатура (WASD, Shift бег, E); тач — `ExplorationMobileHud` (в т.ч. Run) при узком экране или `(pointer: coarse)`.
  *
  * Canvas: **`camera.near` / `far`**, GL — **`getExplorationSceneGlProps`** (`Scene.tsx`). Игрок: **`spawnSyncKey={sceneId}`**
- * вместо **`key`** на дереве GLB; камера — **`useFrame(..., FOLLOW_CAMERA_R3F_PRIORITY)`** после физики Rapier.
+ * вместо **`key`** на дереве GLB; в **`gameplay`** камера — **`FollowCamera`** (`useFrame`, приоритет после Rapier).
+ * В **`intro_cutscene`** орбиту **`FollowCamera`** не крутим (`cutsceneActive`) — позиция из **`IntroCutsceneCinematicDirector`** / **`INTRO_OPENING_CAM_KEYFRAMES`**.
  *
  * Доп. флаги (`.env.local`, пересборка): **`NEXT_PUBLIC_EXPLORATION_RAPIER_DEBUG_COLLIDERS`** — проволочные коллайдеры (`<Physics debug>`);
  * **`NEXT_PUBLIC_EXPLORATION_MESH_AUDIT`** — `console.table` мешей и мировых позиций; **`NEXT_PUBLIC_EXPLORATION_NOCLIP`** — игрок без `RigidBody`;
@@ -93,6 +94,7 @@ import { NpcProximityBarks } from './NpcProximityBarks';
 import { ExplorationBriefingOverlay } from '@/components/game/exploration/ExplorationBriefingOverlay';
 import { IntroCutsceneCinematicDirector } from '@/components/Cutscenes/IntroCutscene';
 import {
+  INTRO_OPENING_GLTF_VISUAL_UNIFORM_HARD_MAX,
   INTRO_OPENING_PLAYER_GLTF_TARGET_METERS,
   INTRO_OPENING_PLAYER_GLB_VISUAL_UNIFORM_EXTRA_MULTIPLIER,
   INTRO_OPENING_SCENE_ID,
@@ -760,6 +762,9 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
           <PhysicsPlayer
             spawnSyncKey={sceneId}
             explorationGlbClampSceneId={playerSceneTuningId}
+            introOpeningGlbUniformHardCap={
+              introCutsceneActive ? INTRO_OPENING_GLTF_VISUAL_UNIFORM_HARD_MAX : undefined
+            }
             position={[
               explorationSpawnSnapshot.x,
               explorationSpawnSnapshot.y,

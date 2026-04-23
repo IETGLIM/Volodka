@@ -30,6 +30,7 @@
 
 ### Fixed
 
+- **Обход / 3D-интро (`intro_cutscene`):** камера **не** из `**FollowCamera**` — из `**IntroCutsceneCinematicDirector`** / `**INTRO_OPENING_CAM_KEYFRAMES**` в `**introVolodkaOpeningCutscene.ts**` (отодвинуты кадры у стола и на реплике «Шаг к двери…»); доп. потолок uniform `**INTRO_OPENING_GLTF_VISUAL_UNIFORM_HARD_MAX**` → `**PhysicsPlayer**` / `**GLBPlayerModel**` при `**introCutsceneActive**`.
 - **Обход / `volodka_room` — силуэт игрока и TPS:** отдельный жёсткий потолок uniform GLB **0.14** в `**playerScaleConstants.ts**` (раньше общий узкий **0.26** с коридором — при плохом bbox модель и коллизии камеры давали «ноги на весь кадр»); пресет `**FollowCamera**` в `**RPGGameCanvas**` — дальше `minDistance`, выше `lookAt` / луч коллизий, менее отрицательный `pitchMin`, чтобы не нырять в голени.
 - **Обход / `GLBPlayerModel` (`PhysicsPlayer`):** после `applyExplorationPlayerGlbVisualUniformMultiplier` глобальный шаг **÷5** задаётся явно как `* 0.2` с тем же min/max clamp, что в `applyExplorationPlayerGlobalVisualScale`, если константа глобального масштаба даёт `factor === 1`.
 - `**GameClient`:** в `CyberProgressIndicator` и `CyberpunkLoadingFallback` при размонтировании снимаются и вложенные `setTimeout` после глитча (раньше оставался только `clearInterval`).

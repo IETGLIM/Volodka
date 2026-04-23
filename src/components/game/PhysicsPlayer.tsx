@@ -85,6 +85,11 @@ export interface PhysicsPlayerProps {
    * Передаётся как **`sceneId`** из **`RPGGameCanvas`**.
    */
   explorationGlbClampSceneId?: SceneId;
+  /**
+   * 3D-интро: кинокамера ближе TPS; дополнительный потолок uniform после `clampExplorationHumanoidGlbUniformForScene`
+   * (см. `INTRO_OPENING_GLTF_VISUAL_UNIFORM_HARD_MAX` в `introVolodkaOpeningCutscene.ts`).
+   */
+  introOpeningGlbUniformHardCap?: number;
 }
 
 export interface PhysicsPlayerRef {
@@ -247,6 +252,7 @@ const GLBPlayerModel = memo(function GLBPlayerModel({
   targetVisualMeters,
   visualUniformMultiplier = 1,
   glbUniformClampSceneId,
+  introOpeningGlbUniformHardCap,
 }: {
   modelPath: string;
   isMoving: boolean;
@@ -260,6 +266,7 @@ const GLBPlayerModel = memo(function GLBPlayerModel({
   /** Из `SCENE_CONFIG.explorationPlayerGlbVisualUniformMultiplier` — после bbox. */
   visualUniformMultiplier?: number;
   glbUniformClampSceneId?: SceneId;
+  introOpeningGlbUniformHardCap?: number;
 }) {
   const groupRef = useRef<THREE.Group>(null);
   const { scene: loadedScene, animations } = useGLTF(modelPath) as any;
@@ -349,8 +356,20 @@ const GLBPlayerModel = memo(function GLBPlayerModel({
     const afterMultiplier = applyExplorationPlayerGlbVisualUniformMultiplier(base, visualUniformMultiplier);
     /** Та же цепочка, что у NPC в `NPC.tsx` → `applyExplorationPlayerGlobalVisualScale` + clamp по сцене. */
     const chained = applyExplorationPlayerGlobalVisualScale(afterMultiplier);
-    return clampExplorationHumanoidGlbUniformForScene(glbUniformClampSceneId, chained);
-  }, [loadedScene, rs, targetVisualMeters, visualUniformMultiplier, glbUniformClampSceneId]);
+    let u = clampExplorationHumanoidGlbUniformForScene(glbUniformClampSceneId, chained);
+    const cap = introOpeningGlbUniformHardCap;
+    if (cap != null && Number.isFinite(cap) && cap > 0) {
+      u = Math.min(u, cap);
+    }
+    return u;
+  }, [
+    loadedScene,
+    rs,
+    targetVisualMeters,
+    visualUniformMultiplier,
+    glbUniformClampSceneId,
+    introOpeningGlbUniformHardCap,
+  ]);
 
   useEffect(() => {
     const act = actionsRef.current;
@@ -464,6 +483,7 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
     debugPlayerPrimitive = isExplorationPlayerDebugPrimitiveEnabled(),
     spawnSyncKey,
     explorationGlbClampSceneId,
+    introOpeningGlbUniformHardCap,
   },
   ref
 ) {
@@ -905,6 +925,7 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
                 targetVisualMeters={playerGltfTargetMeters}
                 visualUniformMultiplier={playerGlbVisualUniformMultiplier}
                 glbUniformClampSceneId={explorationGlbClampSceneId}
+                introOpeningGlbUniformHardCap={introOpeningGlbUniformHardCap}
               />
             ) : (
               <FallbackPlayerModel isMoving={isMoving} isLocked={isLocked} roomScale={roomScale} />
