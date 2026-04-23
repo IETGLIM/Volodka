@@ -4,13 +4,14 @@
 
 ### Changed
 
-- **Обход / масштаб GLB игрока в `volodka_room`:** `**explorationPlayerGltfTargetMeters`** **0.66**, `**explorationPlayerGlbVisualUniformMultiplier`** **0.22**; интро — целевая высота **0.54** м и доп. множитель **0.2**; ключевые кадры камеры к двери/лифту — выше и дальше от ног (`**introVolodkaOpeningCutscene`**); за дверью — тёмный объём «клетка» (`**VolodkaRoomVisual**`).
+- **Обход / масштаб GLB игрока в `volodka_room`:** `**explorationPlayerGltfTargetMeters`** **0.66**, `**explorationPlayerGlbVisualUniformMultiplier`** **0.22**; интро — отдельные константы в `**introVolodkaOpeningCutscene**` (см. **Fixed** выше); ключевые кадры камеры к двери/лифту — выше и дальше от ног; за дверью — тёмный объём «клетка» (`**VolodkaRoomVisual**`).
 
 ### Fixed
 
+- **Обход / 3D-интро — масштаб GLB игрока:** ужаты `**INTRO_OPENING_PLAYER_GLTF_TARGET_METERS**` (**0.085** м) и `**INTRO_OPENING_PLAYER_GLB_VISUAL_UNIFORM_EXTRA_MULTIPLIER**` (**0.02** вместо **0.2**) в `**introVolodkaOpeningCutscene.ts**`, чтобы силуэт не перекрывал узкую площадку кадра (лифт/стол) при том же `**PhysicsPlayer**` и глобальном визуальном **÷5**.
 - **Обход / квартира Заремы и Альберта:** у `**zarema_home**` и `**albert_home**` в `**npcDefinitions.ts**` заданы `**modelPath**` и клипы анимаций, как у `**zarema**` / `**albert**` на улице (один персонаж — те же GLB в интерьере); в `**scenes.ts**` для `**zarema_albert_room.npcs**` путь Заремы приведён к тому же файлу.
 - **Обход / масштаб персонажей:** глобальный визуальный коэффициент **1/5** — `**EXPLORATION_PLAYER_GLOBAL_VISUAL_SCALE**` + `**applyExplorationPlayerGlobalVisualScale**` в `**playerScaleConstants.ts**`; применяется в `**PhysicsPlayer**` (`GLBPlayerModel` + процедурный fallback) и в `**NPC.tsx**` (GLB + `effectiveModelScale` для капсулы/процедурки); интро использует тот же `**PhysicsPlayer**`. Локальный **÷3** у `**zarema_albert_room**` в `**scenes.ts**` откатан — даёт общий **÷5** по проекту.
-- **Обход / 3D-интро:** поза из `introCutscenePlayerBridge` больше не телепортирует RigidBody напрямую — шаг через `computeColliderMovement` (`PhysicsPlayer`), чтобы не проходить сквозь стены и не проваливаться после выхода из кат-сцены; оверлей лифта и субтитры подняты по `z-index` над брифингом (`IntroCutsceneOverlays`); брифинг не показывается поверх интро (`RPGGameCanvas`); чуть уменьшен интро-множитель GLB (`introVolodkaOpeningCutscene`).
+- **Обход / 3D-интро:** поза из `introCutscenePlayerBridge` больше не телепортирует RigidBody напрямую — шаг через `computeColliderMovement` (`PhysicsPlayer`), чтобы не проходить сквозь стены и не проваливаться после выхода из кат-сцены; оверлей лифта и субтитры подняты по `z-index` над брифингом (`IntroCutsceneOverlays`); брифинг не показывается поверх интро (`RPGGameCanvas`).
 
 ### Changed
 
