@@ -8,6 +8,8 @@
 
 ### Changed
 
+- **`GameStoreHydration`:** `performance.mark` / `measure` для `gs:hydrate`, try/catch, лог при отсутствии снимка; `hydrateFromLocalStorage` возвращает **`boolean`**; один проход эффекта при StrictMode через модульный флаг.
+
 - **`GameClient` / `ErrorBoundary`:** киберпанк-панель (рамка, `KERNEL PANIC`), блок «Код ошибки» в `pre` (`Error` → `name` + сообщение), кнопка «⟳ ПЕРЕЗАГРУЗИТЬ СИСТЕМУ» в градиенте cyan/purple.
 
 - **Герой-заголовки (`GameClient` fallback, `MenuScreen`, `LoadingScreen`):** `text-[clamp(...)]` вместо ступенчатых `text-5xl` / `sm:` / `md:` / `lg:`; у экрана загрузки верх **8rem** (`11vw`), у меню и cyber-fallback **6rem** (`10vw`).

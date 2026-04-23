@@ -343,8 +343,8 @@ interface GameState {
   saveGame: (options?: SaveGameOptions) => void;
   loadGame: () => boolean;
   resetGame: () => void;
-  /** Merge persisted snapshot from localStorage (client-only; call once after mount). */
-  hydrateFromLocalStorage: () => void;
+  /** Merge persisted snapshot from localStorage (client-only; call once after mount). @returns true если снимок применён */
+  hydrateFromLocalStorage: () => boolean;
 }
 
 // ============================================
@@ -1400,12 +1400,13 @@ export const useGameStore = create<GameState>()((set, get) => ({
   },
 
   hydrateFromLocalStorage: () => {
-    if (typeof window === 'undefined' || storageHydrationApplied) return;
+    if (typeof window === 'undefined' || storageHydrationApplied) return false;
     storageHydrationApplied = true;
     const savedData = loadSavedState();
-    if (!savedData) return;
+    if (!savedData) return false;
     const normalized = normalizeLoadedState(savedData as SavedGameData);
     set({ ...normalized });
+    return true;
   },
 }));
 
