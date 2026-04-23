@@ -8,6 +8,8 @@
 
 ### Changed
 
+- **`GameClient` / `MiniMatrixRain`:** учёт `prefers-reduced-motion` (~4 fps, пониженная непрозрачность), для слабых CPU/RAM — ~15 fps через порог по кадрам в `requestAnimationFrame`; подписка на смену медиазапроса.
+
 - **Обход / масштаб GLB игрока в `volodka_room`:** `**explorationPlayerGltfTargetMeters`** **0.66**, `**explorationPlayerGlbVisualUniformMultiplier`** **0.22**; интро — отдельные константы в `**introVolodkaOpeningCutscene`** (см. **Fixed** выше); кадры камеры к лифту отодвинуты/приподняты, чтобы не «макро» на голени при **60°** FOV; за дверью — тёмный объём «клетка» (`**VolodkaRoomVisual`**).
 
 ### Fixed

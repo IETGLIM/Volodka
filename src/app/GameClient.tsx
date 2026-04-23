@@ -18,9 +18,34 @@ const GameOrchestratorLazy = dynamic(() => import('@/components/game/GameOrchest
 // CYBERPUNK LOADING FALLBACK — Matrix/Blade Runner style
 // ============================================
 
-/** Canvas-based Matrix digital rain — high performance */
+/** ~15 fps throttle (слабые устройства), ~4 fps при prefers-reduced-motion */
+const MATRIX_RAIN_FPS_WEAK = 15;
+const MATRIX_RAIN_INTERVAL_DEFAULT_MS = 1000 / 60;
+const MATRIX_RAIN_INTERVAL_WEAK_MS = 1000 / MATRIX_RAIN_FPS_WEAK;
+const MATRIX_RAIN_INTERVAL_REDUCED_MS = 250;
+
+function resolveMatrixRainTiming() {
+  const prefersReduced =
+    typeof window !== 'undefined' &&
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const hc = typeof navigator !== 'undefined' ? (navigator.hardwareConcurrency ?? 8) : 8;
+  const mem = typeof navigator !== 'undefined' ? (navigator as Navigator & { deviceMemory?: number }).deviceMemory : undefined;
+  const isWeakDevice =
+    (hc > 0 && hc <= 4) || (typeof mem === 'number' && mem > 0 && mem <= 4);
+
+  if (prefersReduced) {
+    return { frameIntervalMs: MATRIX_RAIN_INTERVAL_REDUCED_MS, opacity: 0.1 };
+  }
+  if (isWeakDevice) {
+    return { frameIntervalMs: MATRIX_RAIN_INTERVAL_WEAK_MS, opacity: 0.25 };
+  }
+  return { frameIntervalMs: MATRIX_RAIN_INTERVAL_DEFAULT_MS, opacity: 0.25 };
+}
+
+/** Canvas-based Matrix digital rain — high performance, throttled on weak / reduced-motion */
 const MiniMatrixRain = memo(function MiniMatrixRain() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const timingRef = useRef(resolveMatrixRainTiming());
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -29,9 +54,21 @@ const MiniMatrixRain = memo(function MiniMatrixRain() {
     if (!ctx) return;
 
     let animationId: number;
+    let lastTime = 0;
     const fontSize = 13;
     let columns: number;
     let drops: number[];
+
+    const applyTimingFromWindow = () => {
+      timingRef.current = resolveMatrixRainTiming();
+      canvas.style.opacity = String(timingRef.current.opacity);
+    };
+
+    applyTimingFromWindow();
+
+    const mql = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const onMotionPreferenceChange = () => applyTimingFromWindow();
+    mql.addEventListener('change', onMotionPreferenceChange);
 
     const resize = () => {
       canvas.width = window.innerWidth;
@@ -45,7 +82,14 @@ const MiniMatrixRain = memo(function MiniMatrixRain() {
 
     const chars = 'アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン0123456789ABCDEFВОЛОДЬКА';
 
-    const draw = () => {
+    const draw = (time: number) => {
+      const { frameIntervalMs } = timingRef.current;
+      if (time - lastTime < frameIntervalMs) {
+        animationId = requestAnimationFrame(draw);
+        return;
+      }
+      lastTime = time;
+
       ctx.fillStyle = 'rgba(0, 0, 0, 0.06)';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       ctx.font = `${fontSize}px monospace`;
@@ -90,14 +134,14 @@ const MiniMatrixRain = memo(function MiniMatrixRain() {
     return () => {
       cancelAnimationFrame(animationId);
       window.removeEventListener('resize', resize);
+      mql.removeEventListener('change', onMotionPreferenceChange);
     };
   }, []);
 
   return (
     <canvas
       ref={canvasRef}
-      className="absolute inset-0 pointer-events-none"
-      style={{ opacity: 0.25 }}
+      className="absolute inset-0 pointer-events-none opacity-25"
     />
   );
 });
