@@ -50,11 +50,7 @@ import {
   getExplorationPlayerGltfTargetMeters,
 } from '@/config/scenes';
 import type { FindNavPathXZ } from '@/lib/explorationNavMesh';
-import {
-  NPC_SHADOW_MID_IN_M,
-  NPC_SHADOW_NEAR_IN_M,
-  resolveNpcModelLodUseFull,
-} from '@/lib/npcLodConstants';
+import { resolveNpcModelLodUseFull } from '@/lib/npcLodConstants';
 import { isExplorationVolodkaRoomNpcGlbDisabled } from '@/lib/explorationDiagnostics';
 
 function scheduleActivityIcon(entry: ScheduleEntry | null | undefined): string {
@@ -119,8 +115,6 @@ interface GLTFModelProps {
   explorationSceneId: SceneId;
   isNearPlayer: boolean;
   isDialogueActive: boolean;
-  /** `mid` — дальше порога: меши GLB не отбрасывают тень (дешевле для GPU). */
-  shadowTier: 'near' | 'mid';
   fallback: React.ReactNode;
   npcAnimation: 'idle' | 'walk' | 'talk';
   animations?: AnimationMapping;
@@ -205,33 +199,20 @@ function disposeNpcGltfCloneResources(root: THREE.Object3D) {
   });
 }
 
-// Внутренний компонент для рендера загруженной модели
+// Внутренний компонент для рендера загруженной модели (`castShadow` / `receiveShadow` — один раз в `GLTFLoader` при клоне).
 const GLTFModelInner = memo(function GLTFModelInner({
   groupRef,
   scene,
   scale,
   isNearPlayer,
   isDialogueActive,
-  shadowTier,
 }: {
   groupRef: React.RefObject<THREE.Group | null>;
   scene: THREE.Group;
   scale: number | undefined;
   isNearPlayer: boolean;
   isDialogueActive: boolean;
-  shadowTier: 'near' | 'mid';
 }) {
-  useLayoutEffect(() => {
-    const cast = shadowTier === 'near';
-    scene.traverse((obj) => {
-      const mesh = obj as THREE.Mesh;
-      if (mesh.isMesh) {
-        mesh.castShadow = cast;
-        mesh.receiveShadow = true;
-      }
-    });
-  }, [scene, shadowTier]);
-
   return (
     <group ref={groupRef}>
       <primitive object={scene} scale={scale} />
@@ -253,7 +234,6 @@ const GLTFLoader = memo(function GLTFLoader({
   explorationSceneId,
   isNearPlayer,
   isDialogueActive,
-  shadowTier,
   fallback,
   npcAnimation,
   animations: animMapping,
@@ -312,6 +292,7 @@ const GLTFLoader = memo(function GLTFLoader({
         clone.scale.set(1, 1, 1);
         clone.updateMatrixWorld(true);
       }
+      /** Тени один раз при клоне; переключение LOD — только `visible` на родительских группах (`NPC` body). */
       clone.traverse((child: any) => {
         if (child.isMesh) {
           child.castShadow = true;
@@ -443,7 +424,6 @@ const GLTFLoader = memo(function GLTFLoader({
       scale={bakedVisualScale}
       isNearPlayer={isNearPlayer}
       isDialogueActive={isDialogueActive}
-      shadowTier={shadowTier}
     />
   );
 });
@@ -455,7 +435,6 @@ const GLTFModel = memo(function GLTFModel({
   explorationSceneId,
   isNearPlayer,
   isDialogueActive,
-  shadowTier,
   fallback,
   npcAnimation,
   animations,
@@ -483,7 +462,6 @@ const GLTFModel = memo(function GLTFModel({
         explorationSceneId={explorationSceneId}
         isNearPlayer={isNearPlayer}
         isDialogueActive={isDialogueActive}
-        shadowTier={shadowTier}
         fallback={fallback}
         npcAnimation={npcAnimation}
         animations={animations}
@@ -885,8 +863,6 @@ export const NPC = memo(function NPC({
   const wasNearPlayer = useRef(false);
   const lodFullModelRef = useRef(true);
   const [useFullModel, setUseFullModel] = useState(true);
-  const npcShadowTierRef = useRef<'near' | 'mid'>('near');
-  const [npcShadowTier, setNpcShadowTier] = useState<'near' | 'mid'>('near');
   // Ref для текущей анимации - чтобы не вызывать setState каждый кадр
   const currentAnimationRef = useRef<'idle' | 'walk' | 'talk'>('idle');
   const navCornersRef = useRef<{ x: number; z: number }[]>([]);
@@ -977,20 +953,6 @@ export const NPC = memo(function NPC({
     if (nextLodFull !== lodFullModelRef.current) {
       lodFullModelRef.current = nextLodFull;
       setUseFullModel(nextLodFull);
-    }
-
-    let nextShadow: 'near' | 'mid' = npcShadowTierRef.current;
-    if (isDialogueActive) {
-      nextShadow = 'near';
-    } else if (definition.modelPath && lodFullModelRef.current) {
-      if (dLod < NPC_SHADOW_NEAR_IN_M) nextShadow = 'near';
-      else if (dLod > NPC_SHADOW_MID_IN_M) nextShadow = 'mid';
-    } else {
-      nextShadow = 'near';
-    }
-    if (nextShadow !== npcShadowTierRef.current) {
-      npcShadowTierRef.current = nextShadow;
-      setNpcShadowTier(nextShadow);
     }
 
     if (scheduleEntry) {
@@ -1395,7 +1357,6 @@ export const NPC = memo(function NPC({
                     explorationSceneId={explorationSceneId ?? 'volodka_room'}
                     isNearPlayer={isNearPlayer}
                     isDialogueActive={isDialogueActive}
-                    shadowTier={npcShadowTier}
                     fallback={fallbackModel}
                     npcAnimation={currentAnimation}
                     animations={definition.animations}
