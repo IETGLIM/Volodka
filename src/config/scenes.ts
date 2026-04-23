@@ -627,13 +627,13 @@ export const SCENE_CONFIG = {
      * Компактная комната: низкий масштаб игрока; NPC в обходе используют тот же `locationModelScale`, что и игрок.
      * См. пресет камеры `zarema_albert_room` в `RPGGameCanvas`.
      */
-    explorationCharacterModelScale: 0.38,
+    explorationCharacterModelScale: 0.36,
     explorationInteriorCeilingMeters: 2.72,
-    explorationLocomotionScale: 0.86,
+    explorationLocomotionScale: 0.84,
     /** Явная привязка к сцене: без этого `visualModelScale` слабо влияет на итоговый uniform GLB. */
-    explorationPlayerGltfTargetMeters: 0.78,
+    explorationPlayerGltfTargetMeters: 0.7,
     /** С узким интерьером и глобальным ÷5 — как у `volodka_room`, иначе силуэт перебивает NPC в кадре. */
-    explorationPlayerGlbVisualUniformMultiplier: 0.22,
+    explorationPlayerGlbVisualUniformMultiplier: 0.2,
     size: [10, 8],
     /** Ноги на полу; как `INTRO_OPENING_ZAREMA_SPAWN` — не `y: 1`, иначе TPS «ныряет» в меш и ноги на весь экран. */
     spawnPoint: { x: 0, y: PLAYER_FEET_SPAWN_Y, z: 1.35, rotation: 0 } as PlayerPosition,

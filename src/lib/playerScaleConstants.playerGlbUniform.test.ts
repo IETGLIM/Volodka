@@ -58,7 +58,7 @@ describe('applyExplorationPlayerGlobalVisualScale', () => {
 
 describe('clampExplorationHumanoidGlbUniformForScene', () => {
   it('caps absurd uniform in zarema_albert_room', () => {
-    expect(clampExplorationHumanoidGlbUniformForScene('zarema_albert_room', 3)).toBe(0.14);
+    expect(clampExplorationHumanoidGlbUniformForScene('zarema_albert_room', 3)).toBe(0.115);
   });
 
   it('does not shrink below min in zarema_albert_room', () => {

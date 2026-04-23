@@ -80,7 +80,7 @@ describe('sanitizeExplorationPlayerPositionAgainstSpawn', () => {
 
 describe('getExplorationPlayerGltfTargetMeters', () => {
   it('zarema_albert_room overrides GLB target height below global default', () => {
-    expect(getExplorationPlayerGltfTargetMeters('zarema_albert_room')).toBe(0.78);
+    expect(getExplorationPlayerGltfTargetMeters('zarema_albert_room')).toBe(0.7);
     expect(getExplorationPlayerGltfTargetMeters('zarema_albert_room')).toBeLessThan(
       PLAYER_GLB_TARGET_VISUAL_METERS,
     );
@@ -103,7 +103,7 @@ describe('getExplorationPlayerGlbVisualUniformMultiplier', () => {
   });
 
   it('zarema_albert_room uses explicit multiplier aligned with volodka_room tight interior', () => {
-    expect(getExplorationPlayerGlbVisualUniformMultiplier('zarema_albert_room')).toBe(0.22);
+    expect(getExplorationPlayerGlbVisualUniformMultiplier('zarema_albert_room')).toBe(0.2);
   });
 
   it('defaults to 1 when not configured', () => {

@@ -40,7 +40,7 @@ export function applyExplorationPlayerGlobalVisualScale(uniform: number): number
 }
 
 /** Квартира 10×8: при ошибочном bbox/кэше uniform не должен «взрывать» кадр (ноги на весь экран). */
-const ZAREMA_ALBERT_ROOM_GLTF_UNIFORM_HARD_MAX = 0.14;
+const ZAREMA_ALBERT_ROOM_GLTF_UNIFORM_HARD_MAX = 0.115;
 /** Другие узкие интерьеры обхода — чуть выше потолок, чем у квартиры Заремы. */
 const NARROW_INTERIOR_GLTF_UNIFORM_HARD_MAX = 0.26;
 

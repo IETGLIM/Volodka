@@ -357,6 +357,9 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
 
   const explorationNpcModelScale = useMemo(() => getExplorationNpcModelScale(sceneId), [sceneId]);
 
+  /** В квартире Заремы/Альберта слоты статичны — без Rapier KCC меньше дрейфа к одной точке и z-борьбы визуалов. */
+  const enableExplorationNpcPhysics = sceneId !== 'zarema_albert_room';
+
   const explorationPlayerGltfTargetMeters = useMemo(() => {
     const base = getExplorationPlayerGltfTargetMeters(playerSceneTuningId);
     if (explorationPhase === 'intro_cutscene') {
@@ -450,12 +453,14 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
         height: 1.48,
         smoothness: 0.11,
         shoulderOffset: 0.1,
-        lookAtHeightOffset: 1.04,
+        lookAtHeightOffset: 1.12,
         collisionSpring: 11,
         minDistance: 1.48,
         maxDistance: 3.15,
-        collisionRayOriginY: 1.14,
+        collisionRayOriginY: 1.22,
         collisionRadius: 0.22,
+        pitchMin: -0.12,
+        pitchMax: 0.34,
       };
     }
     if (isPanelDistrict) {
@@ -754,7 +759,7 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
         ) : (
           <PhysicsPlayer
             spawnSyncKey={sceneId}
-            explorationGlbClampSceneId={sceneId}
+            explorationGlbClampSceneId={playerSceneTuningId}
             position={[
               explorationSpawnSnapshot.x,
               explorationSpawnSnapshot.y,
@@ -786,7 +791,7 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
           timeOfDay={timeOfDay}
           locationModelScale={explorationNpcModelScale}
           locationLocomotionScale={explorationLocomotionScale}
-          enableNpcPhysics
+          enableNpcPhysics={enableExplorationNpcPhysics}
           findNavPath={findNavPath}
         />
 

@@ -347,14 +347,8 @@ const GLBPlayerModel = memo(function GLBPlayerModel({
       else base = computeExplorationPlayerGlbUniformFromBBox(h, targetVisualMeters, rs);
     }
     const afterMultiplier = applyExplorationPlayerGlbVisualUniformMultiplier(base, visualUniformMultiplier);
-    // Явный ÷5: не полагаемся на `EXPLORATION_PLAYER_GLOBAL_VISUAL_SCALE` в `applyExplorationPlayerGlobalVisualScale` (при невалидной константе там factor=1).
-    const scaled = afterMultiplier * 0.2;
-    let chained = scaled;
-    if (!Number.isFinite(chained) || chained <= 0) {
-      chained = PLAYER_GLB_VISUAL_UNIFORM_MIN;
-    } else {
-      chained = Math.min(Math.max(chained, PLAYER_GLB_VISUAL_UNIFORM_MIN), PLAYER_GLB_VISUAL_UNIFORM_MAX);
-    }
+    /** Та же цепочка, что у NPC в `NPC.tsx` → `applyExplorationPlayerGlobalVisualScale` + clamp по сцене. */
+    const chained = applyExplorationPlayerGlobalVisualScale(afterMultiplier);
     return clampExplorationHumanoidGlbUniformForScene(glbUniformClampSceneId, chained);
   }, [loadedScene, rs, targetVisualMeters, visualUniformMultiplier, glbUniformClampSceneId]);
 

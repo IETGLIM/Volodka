@@ -250,6 +250,10 @@ const GLTFLoader = memo(function GLTFLoader({
   const prevNpcClipRef = useRef<string | null>(null);
   const walkClipNameRef = useRef<string | null>(null);
 
+  useLayoutEffect(() => {
+    prevNpcClipRef.current = null;
+  }, [modelPath]);
+
   const actionKeysSig = useMemo(() => {
     if (!actions) return '';
     return Object.keys(actions)
