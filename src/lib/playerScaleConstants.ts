@@ -1,3 +1,5 @@
+import type { SceneId } from '@/data/types';
+
 /**
  * Целевая высота визуала Володьки в метрах сцены **до** множителя комнаты `explorationCharacterModelScale`,
  * если в `SCENE_CONFIG` не задано переопределение `explorationPlayerGltfTargetMeters` (см. `getExplorationPlayerGltfTargetMeters`).
@@ -35,6 +37,28 @@ export function applyExplorationPlayerGlobalVisualScale(uniform: number): number
   if (u < PLAYER_GLB_VISUAL_UNIFORM_MIN) return PLAYER_GLB_VISUAL_UNIFORM_MIN;
   if (u > PLAYER_GLB_VISUAL_UNIFORM_MAX) return PLAYER_GLB_VISUAL_UNIFORM_MAX;
   return u;
+}
+
+/** Квартира 10×8: при ошибочном bbox/кэше uniform не должен «взрывать» кадр (ноги на весь экран). */
+const ZAREMA_ALBERT_ROOM_GLTF_UNIFORM_HARD_MAX = 0.14;
+/** Другие узкие интерьеры обхода — чуть выше потолок, чем у квартиры Заремы. */
+const NARROW_INTERIOR_GLTF_UNIFORM_HARD_MAX = 0.26;
+
+/**
+ * После всех множителей: жёсткий потолок uniform по `sceneId` для человекоподобных GLB (игрок + NPC).
+ * Улицы / площадки не трогаем (только clamp в общий `PLAYER_GLB_VISUAL_UNIFORM_MAX`).
+ */
+export function clampExplorationHumanoidGlbUniformForScene(sceneId: SceneId | undefined, uniform: number): number {
+  if (!Number.isFinite(uniform)) return PLAYER_GLB_VISUAL_UNIFORM_MIN;
+  const lo = PLAYER_GLB_VISUAL_UNIFORM_MIN;
+  if (sceneId === 'zarema_albert_room') {
+    return Math.min(ZAREMA_ALBERT_ROOM_GLTF_UNIFORM_HARD_MAX, Math.max(lo, uniform));
+  }
+  const narrow: readonly SceneId[] = ['volodka_room', 'volodka_corridor', 'home_evening'];
+  if (sceneId && narrow.includes(sceneId)) {
+    return Math.min(NARROW_INTERIOR_GLTF_UNIFORM_HARD_MAX, Math.max(lo, uniform));
+  }
+  return Math.min(PLAYER_GLB_VISUAL_UNIFORM_MAX, Math.max(lo, uniform));
 }
 
 /**

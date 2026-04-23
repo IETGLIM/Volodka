@@ -21,8 +21,10 @@ import {
   EXPLORATION_PLAYER_GLOBAL_VISUAL_SCALE,
   applyExplorationPlayerGlbVisualUniformMultiplier,
   applyExplorationPlayerGlobalVisualScale,
+  clampExplorationHumanoidGlbUniformForScene,
   computeExplorationPlayerGlbUniformFromBBox,
 } from '@/lib/playerScaleConstants';
+import type { SceneId } from '@/data/types';
 import { getGltfSkinnedVisualHeightMeters } from '@/lib/gltfSkinnedBoundingHeight';
 import { retainGltfModelUrl, releaseGltfModelUrl } from '@/lib/gltfModelCache';
 import { applyGltfExplorationCharacterMaterialPolicies } from '@/lib/gltfCharacterMaterialPolicy';
@@ -76,6 +78,11 @@ export interface PhysicsPlayerProps {
    * (например **`sceneId`** из **`RPGGameCanvas`**).
    */
   spawnSyncKey?: string;
+  /**
+   * Жёсткий потолок uniform GLB в узких интерьерах (bbox/кэш), без влияния на улицы.
+   * Передаётся как **`sceneId`** из **`RPGGameCanvas`**.
+   */
+  explorationGlbClampSceneId?: SceneId;
 }
 
 export interface PhysicsPlayerRef {
@@ -236,6 +243,7 @@ const GLBPlayerModel = memo(function GLBPlayerModel({
   roomScale,
   targetVisualMeters,
   visualUniformMultiplier = 1,
+  glbUniformClampSceneId,
 }: {
   modelPath: string;
   isMoving: boolean;
@@ -248,6 +256,7 @@ const GLBPlayerModel = memo(function GLBPlayerModel({
   targetVisualMeters: number;
   /** Из `SCENE_CONFIG.explorationPlayerGlbVisualUniformMultiplier` — после bbox. */
   visualUniformMultiplier?: number;
+  glbUniformClampSceneId?: SceneId;
 }) {
   const groupRef = useRef<THREE.Group>(null);
   const { scene: loadedScene, animations } = useGLTF(modelPath) as any;
@@ -320,10 +329,11 @@ const GLBPlayerModel = memo(function GLBPlayerModel({
       if (h < 1e-4) base = 0.12 * rs;
       else base = computeExplorationPlayerGlbUniformFromBBox(h, targetVisualMeters, rs);
     }
-    return applyExplorationPlayerGlobalVisualScale(
+    const chained = applyExplorationPlayerGlobalVisualScale(
       applyExplorationPlayerGlbVisualUniformMultiplier(base, visualUniformMultiplier),
     );
-  }, [loadedScene, rs, targetVisualMeters, visualUniformMultiplier]);
+    return clampExplorationHumanoidGlbUniformForScene(glbUniformClampSceneId, chained);
+  }, [loadedScene, rs, targetVisualMeters, visualUniformMultiplier, glbUniformClampSceneId]);
 
   useEffect(() => {
     const act = actionsRef.current;
@@ -430,6 +440,7 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
     virtualControlsRef,
     debugPlayerPrimitive = isExplorationPlayerDebugPrimitiveEnabled(),
     spawnSyncKey,
+    explorationGlbClampSceneId,
   },
   ref
 ) {
@@ -861,6 +872,7 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
                 roomScale={roomScale}
                 targetVisualMeters={playerGltfTargetMeters}
                 visualUniformMultiplier={playerGlbVisualUniformMultiplier}
+                glbUniformClampSceneId={explorationGlbClampSceneId}
               />
             ) : (
               <FallbackPlayerModel isMoving={isMoving} isLocked={isLocked} roomScale={roomScale} />

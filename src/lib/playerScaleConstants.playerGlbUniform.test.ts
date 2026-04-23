@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   applyExplorationPlayerGlbVisualUniformMultiplier,
   applyExplorationPlayerGlobalVisualScale,
+  clampExplorationHumanoidGlbUniformForScene,
   computeExplorationPlayerGlbUniformFromBBox,
   EXPLORATION_PLAYER_GLOBAL_VISUAL_SCALE,
   PLAYER_GLB_VISUAL_UNIFORM_MAX,
@@ -52,5 +53,27 @@ describe('applyExplorationPlayerGlobalVisualScale', () => {
 
   it('reclamps below min after global shrink', () => {
     expect(applyExplorationPlayerGlobalVisualScale(0.1)).toBe(PLAYER_GLB_VISUAL_UNIFORM_MIN);
+  });
+});
+
+describe('clampExplorationHumanoidGlbUniformForScene', () => {
+  it('caps absurd uniform in zarema_albert_room', () => {
+    expect(clampExplorationHumanoidGlbUniformForScene('zarema_albert_room', 3)).toBe(0.14);
+  });
+
+  it('does not shrink below min in zarema_albert_room', () => {
+    expect(clampExplorationHumanoidGlbUniformForScene('zarema_albert_room', 0.03)).toBe(PLAYER_GLB_VISUAL_UNIFORM_MIN);
+  });
+
+  it('caps volodka_room below narrow interior ceiling', () => {
+    expect(clampExplorationHumanoidGlbUniformForScene('volodka_room', 0.9)).toBe(0.26);
+  });
+
+  it('leaves street scale uncapped by narrow ceilings', () => {
+    expect(clampExplorationHumanoidGlbUniformForScene('street_winter', 0.55)).toBeCloseTo(0.55, 5);
+  });
+
+  it('still applies global max on open scenes', () => {
+    expect(clampExplorationHumanoidGlbUniformForScene('street_winter', 2)).toBe(PLAYER_GLB_VISUAL_UNIFORM_MAX);
   });
 });

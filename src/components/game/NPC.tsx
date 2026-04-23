@@ -42,6 +42,7 @@ import { getGltfSkinnedVisualHeightMeters } from '@/lib/gltfSkinnedBoundingHeigh
 import {
   applyExplorationPlayerGlbVisualUniformMultiplier,
   applyExplorationPlayerGlobalVisualScale,
+  clampExplorationHumanoidGlbUniformForScene,
   computeExplorationPlayerGlbUniformFromBBox,
   EXPLORATION_PLAYER_GLOBAL_VISUAL_SCALE,
 } from '@/lib/playerScaleConstants';
@@ -325,9 +326,10 @@ const GLTFLoader = memo(function GLTFLoader({
         getExplorationPlayerGlbVisualUniformMultiplier(explorationSceneId),
       );
       /** Та же цепочка, что у `PhysicsPlayer`: bbox + множитель сцены + `definition.scale`, затем глобальный визуальный масштаб обхода. */
+      const chained = applyExplorationPlayerGlobalVisualScale(withRoomMul * def);
       const bakedVisualScale = Math.max(
         0.02,
-        applyExplorationPlayerGlobalVisualScale(withRoomMul * def),
+        clampExplorationHumanoidGlbUniformForScene(explorationSceneId, chained),
       );
       return { scene: clone, bakedVisualScale };
     } catch {

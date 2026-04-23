@@ -726,6 +726,7 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
         ) : (
           <PhysicsPlayer
             spawnSyncKey={sceneId}
+            explorationGlbClampSceneId={sceneId}
             position={[
               explorationSpawnSnapshot.x,
               explorationSpawnSnapshot.y,
