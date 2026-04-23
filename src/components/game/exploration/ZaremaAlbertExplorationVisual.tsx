@@ -18,7 +18,7 @@ import {
  * Визуал квартиры Заремы и Альберта для режима обхода (`RPGGameCanvas`).
  * Только меши — коллайдеры уже в `ZaremaAlbertColliders` (`PhysicsSceneColliders`).
  *
- * GLB-мебель (если появится): после `useGLTF` / клона вызывать `normalizePropHeight` из `explorationPropNormalize`
+ * GLB-мебель (если появится): после `useGLTF` — ручной `scale` / правка в DCC; персонажи — `modelMeta`.
  * с целями из `INTERIOR_REF_DESK_SURFACE_Y_M`, `INTERIOR_REF_CHAIR_SEAT_SURFACE_Y_M` и т.д.
  */
 export const ZaremaAlbertExplorationVisual = memo(function ZaremaAlbertExplorationVisual() {

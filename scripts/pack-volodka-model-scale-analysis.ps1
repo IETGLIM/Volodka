@@ -28,16 +28,12 @@ $codeFiles = @(
   'src/data/npcDefinitions.ts',
   'src/lib/playerScaleConstants.ts',
   'src/lib/playerScaleConstants.playerGlbUniform.test.ts',
-  'src/lib/explorationScalePipeline.ts',
-  'src/lib/explorationScalePipeline.test.ts',
+  'src/data/modelMeta.ts',
+  'src/data/modelMeta.test.ts',
   'src/lib/explorationDiagnostics.ts',
   'src/lib/explorationDiagnostics.test.ts',
-  'src/lib/explorationPropNormalize.ts',
-  'src/lib/explorationPropNormalize.test.ts',
   'src/lib/explorationInteriorReference.ts',
   'src/lib/explorationInteriorReference.test.ts',
-  'src/lib/gltfSkinnedBoundingHeight.ts',
-  'src/lib/gltfSkinnedBoundingHeight.test.ts',
   'src/lib/gltfCharacterMaterialPolicy.ts',
   'src/lib/gltfCharacterMaterialPolicy.test.ts',
   'src/lib/gltfModelCache.ts',
@@ -92,7 +88,7 @@ if (Test-Path $extSrc) {
 $readmeBundle = @"
 Volodka — архив для разбора моделей и масштаба (собрано $stamp)
 
-code/ — зеркало исходников: пайплайн uniform (explorationScalePipeline), сцены, npcDefinitions,
+code/ — зеркало исходников: modelMeta (uniform по имени файла), сцены, npcDefinitions,
   PhysicsPlayer, NPC, RPGGameCanvas, кэш GLTF, материалы, интро, капсула игрока.
 
 inventory/*-files.txt — полные относительные пути и размеры файлов в public/models и public/models-external.

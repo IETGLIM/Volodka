@@ -1,25 +1,8 @@
 import type { SceneId } from '@/data/types';
 import type { PlayerPosition } from '@/data/rpgTypes';
 import * as THREE from 'three';
-import { SCENE_CONFIG } from '@/config/scenes';
 import { PLAYER_FEET_SPAWN_Y } from '@/lib/playerScaleConstants';
 import { smoothBlend01 } from '@/lib/cinematicEasing';
-
-const _VO = SCENE_CONFIG.volodka_room;
-
-/**
- * Целевая высота GLB (м) в `intro_cutscene` — из `SCENE_CONFIG.volodka_room.explorationIntroPlayerGltfTargetMeters`
- * (единый источник с `getExplorationHumanoidGlbScaleTuning`).
- */
-export const INTRO_OPENING_PLAYER_GLTF_TARGET_METERS =
-  _VO.explorationIntroPlayerGltfTargetMeters ?? 0.085;
-
-/** Доп. множитель к uniform на интро — `explorationIntroGlbVisualUniformExtraMultiplier`. */
-export const INTRO_OPENING_PLAYER_GLB_VISUAL_UNIFORM_EXTRA_MULTIPLIER =
-  _VO.explorationIntroGlbVisualUniformExtraMultiplier ?? 0.02;
-
-/** Потолок uniform на интро — `explorationIntroGlbUniformHardMax`. */
-export const INTRO_OPENING_GLTF_VISUAL_UNIFORM_HARD_MAX = _VO.explorationIntroGlbUniformHardMax ?? 0.055;
 
 /** Сцена до финала 3D-интро (комната Володьки). */
 export const INTRO_OPENING_SCENE_ID: SceneId = 'volodka_room';

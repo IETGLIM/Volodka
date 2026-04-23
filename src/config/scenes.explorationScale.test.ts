@@ -3,13 +3,11 @@ import {
   getExplorationCharacterModelScale,
   getExplorationLocomotionScale,
   getExplorationNpcModelScale,
-  getExplorationPlayerGlbVisualUniformMultiplier,
-  getExplorationPlayerGltfTargetMeters,
   sanitizeExplorationPlayerPositionAgainstSpawn,
   sanitizeExplorationSceneId,
   suggestInteriorCharacterModelScale,
 } from './scenes';
-import { PLAYER_FEET_SPAWN_Y, PLAYER_GLB_TARGET_VISUAL_METERS } from '@/lib/playerScaleConstants';
+import { PLAYER_FEET_SPAWN_Y } from '@/lib/playerScaleConstants';
 
 describe('getExplorationCharacterModelScale', () => {
   it('returns >1 for wide plaza streets', () => {
@@ -75,40 +73,6 @@ describe('sanitizeExplorationPlayerPositionAgainstSpawn', () => {
   it('leaves sane floor height unchanged', () => {
     const pos = { x: 0, y: PLAYER_FEET_SPAWN_Y, z: 1.35, rotation: 0.2 };
     expect(sanitizeExplorationPlayerPositionAgainstSpawn('zarema_albert_room', pos)).toEqual(pos);
-  });
-});
-
-describe('getExplorationPlayerGltfTargetMeters', () => {
-  it('zarema_albert_room overrides GLB target height below global default', () => {
-    expect(getExplorationPlayerGltfTargetMeters('zarema_albert_room')).toBe(0.7);
-    expect(getExplorationPlayerGltfTargetMeters('zarema_albert_room')).toBeLessThan(
-      PLAYER_GLB_TARGET_VISUAL_METERS,
-    );
-  });
-
-  it('volodka_room uses explicit lower GLB target for tight interior', () => {
-    expect(getExplorationPlayerGltfTargetMeters('volodka_room')).toBe(0.66);
-    expect(getExplorationPlayerGltfTargetMeters('volodka_room')).toBeLessThan(PLAYER_GLB_TARGET_VISUAL_METERS);
-  });
-
-  it('falls back to PLAYER_GLB_TARGET_VISUAL_METERS when scene has no override', () => {
-    expect(getExplorationPlayerGltfTargetMeters('volodka_corridor')).toBe(PLAYER_GLB_TARGET_VISUAL_METERS);
-    expect(getExplorationPlayerGltfTargetMeters('server_room')).toBe(PLAYER_GLB_TARGET_VISUAL_METERS);
-  });
-});
-
-describe('getExplorationPlayerGlbVisualUniformMultiplier', () => {
-  it('volodka_room uses explicit multiplier below 1', () => {
-    expect(getExplorationPlayerGlbVisualUniformMultiplier('volodka_room')).toBe(0.22);
-  });
-
-  it('zarema_albert_room uses explicit multiplier aligned with volodka_room tight interior', () => {
-    expect(getExplorationPlayerGlbVisualUniformMultiplier('zarema_albert_room')).toBe(0.2);
-  });
-
-  it('defaults to 1 when not configured', () => {
-    expect(getExplorationPlayerGlbVisualUniformMultiplier('kitchen_night')).toBe(1);
-    expect(getExplorationPlayerGlbVisualUniformMultiplier('server_room')).toBe(1);
   });
 });
 

@@ -1,7 +1,7 @@
 // src/config/scenes.ts
 import type { SceneId } from '@/data/types';
 import type { PlayerPosition } from '@/data/rpgTypes';
-import { PLAYER_FEET_SPAWN_Y, PLAYER_GLB_TARGET_VISUAL_METERS } from '@/lib/playerScaleConstants';
+import { PLAYER_FEET_SPAWN_Y } from '@/lib/playerScaleConstants';
 import {
   INTERIOR_REF_COFFEE_TABLE_SURFACE_Y_M,
   INTERIOR_REF_DOOR_HEIGHT_M,
@@ -71,27 +71,6 @@ export interface SceneConfig {
    * Если не задано — выводится из итогового масштаба персонажа (как пара 0.48 / 0.9 у `volodka_room`).
    */
   explorationLocomotionScale?: number;
-  /**
-   * Целевая высота визуала GLB **игрока** в метрах сцены (см. `PhysicsPlayer` / `GLBPlayerModel`).
-   * По умолчанию `PLAYER_GLB_TARGET_VISUAL_METERS` (~1.38). В узких комнатах уменьшайте явно — иначе
-   * `explorationCharacterModelScale` почти не меняет размер (доминирует `target / bboxHeight`).
-   */
-  explorationPlayerGltfTargetMeters?: number;
-  /**
-   * Множитель к **итоговому** uniform GLB игрока после `computeExplorationPlayerGlbUniformFromBBox` (1 = как считает формула).
-   * Используйте, когда в проде визуально почти нет ответа на `target`/`roomScale` (bbox/кэш); например **0.22** в `volodka_room`.
-   */
-  explorationPlayerGlbVisualUniformMultiplier?: number;
-  /**
-   * Фаза `intro_cutscene` (игрок в `volodka_room`): целевая высота GLB, м — единый источник вместо отдельных констант в `introVolodkaOpeningCutscene`.
-   */
-  explorationIntroPlayerGltfTargetMeters?: number;
-  /**
-   * Интро: множитель к `explorationPlayerGlbVisualUniformMultiplier` после bbox (как прежде `m * extra`).
-   */
-  explorationIntroGlbVisualUniformExtraMultiplier?: number;
-  /** Интро: жёсткий потолок uniform после `clampExplorationHumanoidGlbUniformForScene`. */
-  explorationIntroGlbUniformHardMax?: number;
   /**
    * Короткие сценические строки для первого туториала движения в 3D-обходе (перед подсказками WASD/E/I).
    * Тон — история и стих, без спойлеров; обычно 1–2 строки.
@@ -178,13 +157,6 @@ export const SCENE_CONFIG = {
     name: 'Комната Володьки',
     explorationCharacterModelScale: 0.48,
     explorationInteriorCeilingMeters: 2.85,
-    /** Ниже глобального 1.38: в узкой комнате иначе персонаж доминирует кадр при TPS. */
-    explorationPlayerGltfTargetMeters: 0.66,
-    /** Явный множитель меша поверх bbox-формулы — силуэт заметно ниже «на весь кадр». */
-    explorationPlayerGlbVisualUniformMultiplier: 0.22,
-    explorationIntroPlayerGltfTargetMeters: 0.085,
-    explorationIntroGlbVisualUniformExtraMultiplier: 0.02,
-    explorationIntroGlbUniformHardMax: 0.055,
     explorationLocomotionScale: 0.9,
     size: [14, 10],
     spawnPoint: { x: 2.2, y: 0.06, z: 1.8, rotation: 0 } as PlayerPosition,
@@ -301,7 +273,6 @@ export const SCENE_CONFIG = {
     name: 'Коридор',
     /** Чуть крупнее узкой комнаты: 0.48 давало «пропавшего» персонажа на некоторых клиентах (кэш GLB / масштаб). */
     explorationCharacterModelScale: 0.58,
-    explorationPlayerGlbVisualUniformMultiplier: 0.58,
     explorationLocomotionScale: 0.86,
     size: [3.5, 12],
     spawnPoint: { x: 0, y: 0.06, z: -3.92, rotation: 0 } as PlayerPosition,
@@ -643,10 +614,6 @@ export const SCENE_CONFIG = {
     explorationCharacterModelScale: 0.36,
     explorationInteriorCeilingMeters: 2.72,
     explorationLocomotionScale: 0.84,
-    /** Явная привязка к сцене: без этого `visualModelScale` слабо влияет на итоговый uniform GLB. */
-    explorationPlayerGltfTargetMeters: 0.7,
-    /** С узким интерьером и глобальным ÷5 — как у `volodka_room`, иначе силуэт перебивает NPC в кадре. */
-    explorationPlayerGlbVisualUniformMultiplier: 0.2,
     size: [10, 8],
     /** Ноги на полу; как `INTRO_OPENING_ZAREMA_SPAWN` — не `y: 1`, иначе TPS «ныряет» в меш и ноги на весь экран. */
     spawnPoint: { x: 0, y: PLAYER_FEET_SPAWN_Y, z: 1.35, rotation: 0 } as PlayerPosition,
@@ -787,73 +754,6 @@ export function getExplorationLocomotionScale(sceneId: SceneId): number {
   if (!entry) return 1;
   if (entry.explorationLocomotionScale != null) return entry.explorationLocomotionScale;
   return inferredExplorationLocomotionFromCharacter(getExplorationCharacterModelScale(sceneId));
-}
-
-/** Целевая высота GLB игрока в метрах сцены для `sceneId` (см. `explorationPlayerGltfTargetMeters` в `SCENE_CONFIG`). */
-export function getExplorationPlayerGltfTargetMeters(sceneId: SceneId): number {
-  const entry = SCENE_CONFIG[sceneId];
-  return entry?.explorationPlayerGltfTargetMeters ?? PLAYER_GLB_TARGET_VISUAL_METERS;
-}
-
-/** Множитель uniform GLB игрока после bbox-формулы (`explorationPlayerGlbVisualUniformMultiplier`, иначе 1). */
-export function getExplorationPlayerGlbVisualUniformMultiplier(sceneId: SceneId): number {
-  const entry = SCENE_CONFIG[sceneId];
-  const v = entry?.explorationPlayerGlbVisualUniformMultiplier;
-  if (v == null || !Number.isFinite(v) || v <= 0) return 1;
-  return Math.min(2.5, Math.max(0.12, v));
-}
-
-const INTRO_FALLBACK_TARGET_M = 0.085;
-const INTRO_FALLBACK_EXTRA_MUL = 0.02;
-const INTRO_FALLBACK_HARD_MAX = 0.055;
-
-/**
- * Единая подстройка цели / множителя / капа для GLB игрока (обход + интро).
- * `introCutsceneActive` учитывается только вместе с полями `explorationIntro*` в `SCENE_CONFIG` для `tuningSceneId`.
- */
-export function getExplorationHumanoidGlbScaleTuning(
-  tuningSceneId: SceneId,
-  introCutsceneActive: boolean,
-): {
-  targetMeters: number;
-  glbVisualUniformMultiplier: number;
-  introUniformHardCap: number | undefined;
-} {
-  const baseTarget = getExplorationPlayerGltfTargetMeters(tuningSceneId);
-  const baseMul = getExplorationPlayerGlbVisualUniformMultiplier(tuningSceneId);
-  const entry = SCENE_CONFIG[tuningSceneId];
-
-  if (!introCutsceneActive) {
-    return {
-      targetMeters: baseTarget,
-      glbVisualUniformMultiplier: baseMul,
-      introUniformHardCap: undefined,
-    };
-  }
-
-  const introTargetRaw = entry?.explorationIntroPlayerGltfTargetMeters;
-  const introTarget =
-    introTargetRaw != null && Number.isFinite(introTargetRaw) && introTargetRaw > 0
-      ? Math.min(2.5, Math.max(0.05, introTargetRaw))
-      : Math.min(baseTarget, INTRO_FALLBACK_TARGET_M);
-
-  const introExtraRaw = entry?.explorationIntroGlbVisualUniformExtraMultiplier;
-  const introExtra =
-    introExtraRaw != null && Number.isFinite(introExtraRaw) && introExtraRaw > 0
-      ? Math.min(1, Math.max(0.005, introExtraRaw))
-      : INTRO_FALLBACK_EXTRA_MUL;
-
-  const introCapRaw = entry?.explorationIntroGlbUniformHardMax;
-  const introCap =
-    introCapRaw != null && Number.isFinite(introCapRaw) && introCapRaw > 0
-      ? Math.min(0.35, Math.max(0.02, introCapRaw))
-      : INTRO_FALLBACK_HARD_MAX;
-
-  return {
-    targetMeters: introTarget,
-    glbVisualUniformMultiplier: baseMul * introExtra,
-    introUniformHardCap: introCap,
-  };
 }
 
 /**

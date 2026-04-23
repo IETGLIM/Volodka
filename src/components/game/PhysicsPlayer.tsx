@@ -16,26 +16,17 @@ import {
 } from '@/core/physics/CharacterController';
 import { usePlayerFootsteps } from '@/hooks/usePlayerFootsteps';
 import { getDefaultPlayerModelPath, isValidPlayerGlbPath, rewriteLegacyModelPath } from '@/config/modelUrls';
-import {
-  applyExplorationPlayerGlobalVisualScale,
-  PLAYER_GLB_TARGET_VISUAL_METERS,
-} from '@/lib/playerScaleConstants';
+import { applyExplorationPlayerGlobalVisualScale } from '@/lib/playerScaleConstants';
 import type { SceneId } from '@/data/types';
-import {
-  computeFinalVisualUniform,
-  computeFinalVisualUniformFromBboxHeight,
-  PLAYER_VISUAL_HEIGHT_FALLBACK_M,
-} from '@/lib/explorationScalePipeline';
+import { resolveCharacterMeshUniformScale } from '@/data/modelMeta';
 import { retainGltfModelUrl, releaseGltfModelUrl } from '@/lib/gltfModelCache';
 import { applyGltfExplorationCharacterMaterialPolicies } from '@/lib/gltfCharacterMaterialPolicy';
 import { ThreeCanvasSuspenseFallback } from '@/components/3d/ThreeCanvasSuspenseFallback';
 import { cloneAnimationClipsWithoutExplorationPlayerRootMotion } from '@/lib/stripExplorationPlayerRootMotionFromClips';
 import { isExplorationPlayerDebugPrimitiveEnabled } from '@/lib/explorationPlayerDebugPrimitive';
 import {
-  debugExplorationScalePipeline,
   isExplorationPlayerGlbScaleDebugEnabled,
   isExplorationPlayerLocomotionLogEnabled,
-  isExplorationScaleDebugEnabled,
 } from '@/lib/explorationDiagnostics';
 import { getExplorationCameraOrbitYawRad } from '@/lib/explorationCameraOrbitBridge';
 import { useGameStore } from '@/store/gameStore';
@@ -50,16 +41,15 @@ export interface PhysicsPlayerProps {
   position?: [number, number, number];
   modelPath?: string;
   /**
-   * Масштаб персонажа в помещении (`getExplorationCharacterModelScale`): капсула Rapier и `roomModelScale` в `explorationScalePipeline`.
-   * Глобальный ÷5 для GLB — внутри пайплайна; процедурный fallback — `applyExplorationPlayerGlobalVisualScale(roomScale)` в `FallbackPlayerModel`.
+   * Масштаб персонажа в помещении (`getExplorationCharacterModelScale`): капсула Rapier и множитель в `resolveCharacterMeshUniformScale`.
+   * Процедурный fallback — `applyExplorationPlayerGlobalVisualScale(roomScale)` в `FallbackPlayerModel`.
    */
   visualModelScale?: number;
   /**
-   * Сцена для расчёта uniform GLB (`getExplorationHumanoidGlbScaleTuning` + clamp в `explorationScalePipeline`).
-   * В интро обычно совпадает с `INTRO_OPENING_SCENE_ID` (`volodka_room`), как задаёт `RPGGameCanvas`.
+   * Сцена для clamp uniform GLB в узких интерьерах (`modelMeta`); в интро обычно `volodka_room`, как задаёт `RPGGameCanvas`.
    */
   playerScaleTuningSceneId?: SceneId;
-  /** Фаза 3D-интро: ужатые target / multiplier / cap из `SCENE_CONFIG` для `playerScaleTuningSceneId`. */
+  /** Фаза 3D-интро: ужимание uniform из `modelMeta` (`INTRO_CUTSCENE_*`). */
   introCutsceneActive?: boolean;
   /** Множитель ходьбы/бега/прыжка; см. `getExplorationLocomotionScale`. */
   locomotionScale?: number;
@@ -253,7 +243,7 @@ const GLBPlayerModel = memo(function GLBPlayerModel({
   isRunning: boolean;
   isLocked: boolean;
   onError: () => void;
-  /** Множитель комнаты (`explorationCharacterModelScale`); bbox-формула и clamp в `explorationScalePipeline`. */
+  /** Множитель комнаты (`explorationCharacterModelScale`); вход в `resolveCharacterMeshUniformScale`. */
   roomScale: number;
   tuningSceneId: SceneId;
   introCutsceneActive?: boolean;
@@ -319,7 +309,7 @@ const GLBPlayerModel = memo(function GLBPlayerModel({
       });
       /** Кривой экспорт: ненулевой `scale` на корне сцены умножается с нашим uniform → «нога на весь экран». */
       if (loadedScene.scale.x !== 1 || loadedScene.scale.y !== 1 || loadedScene.scale.z !== 1) {
-        if (process.env.NODE_ENV === 'development' || isExplorationScaleDebugEnabled()) {
+        if (process.env.NODE_ENV === 'development') {
           console.warn('[GLBPlayerModel] GLB root had non-unit scale; reset to (1,1,1) before policies.', {
             modelPath,
             scale: [loadedScene.scale.x, loadedScene.scale.y, loadedScene.scale.z],
@@ -336,55 +326,28 @@ const GLBPlayerModel = memo(function GLBPlayerModel({
     }
   }, [loadedScene, onError, modelPath]);
 
-  const scaleStages = useMemo(() => {
-    if (!loadedScene) {
-      return computeFinalVisualUniformFromBboxHeight({
-        bboxHeightMeters: PLAYER_VISUAL_HEIGHT_FALLBACK_M,
-        tuningSceneId,
-        clampSceneId: glbUniformClampSceneId,
+  const visualUniform = useMemo(
+    () =>
+      resolveCharacterMeshUniformScale(modelPath, {
         roomModelScale: rs,
         definitionModelScale: 1,
         introCutsceneActive,
-        isPlayer: true,
-      });
-    }
-    return computeFinalVisualUniform({
-      gltfRoot: loadedScene,
-      tuningSceneId,
-      clampSceneId: glbUniformClampSceneId,
-      roomModelScale: rs,
-      definitionModelScale: 1,
-      introCutsceneActive,
-      isPlayer: true,
-    });
-  }, [loadedScene, rs, tuningSceneId, glbUniformClampSceneId, introCutsceneActive]);
-
-  const visualUniform = scaleStages.finalUniform;
+        clampSceneId: glbUniformClampSceneId ?? tuningSceneId,
+      }),
+    [modelPath, rs, introCutsceneActive, glbUniformClampSceneId, tuningSceneId],
+  );
 
   useEffect(() => {
     if (!loadedScene) return;
-    if (!isExplorationScaleDebugEnabled() && !isExplorationPlayerGlbScaleDebugEnabled()) return;
-    const stages = computeFinalVisualUniform({
-      gltfRoot: loadedScene,
-      tuningSceneId,
-      clampSceneId: glbUniformClampSceneId,
+    if (!isExplorationPlayerGlbScaleDebugEnabled()) return;
+    const u = resolveCharacterMeshUniformScale(modelPath, {
       roomModelScale: rs,
       definitionModelScale: 1,
       introCutsceneActive,
-      isPlayer: true,
+      clampSceneId: glbUniformClampSceneId ?? tuningSceneId,
     });
-    debugExplorationScalePipeline('GLBPlayerModel', modelPath, tuningSceneId, stages);
-    if (isExplorationPlayerGlbScaleDebugEnabled()) {
-      console.info('[GLBPlayerModel scale debug]', stages);
-    }
-  }, [
-    modelPath,
-    loadedScene,
-    tuningSceneId,
-    glbUniformClampSceneId,
-    rs,
-    introCutsceneActive,
-  ]);
+    console.info('[GLBPlayerModel scale debug]', { modelPath, tuningSceneId, uniform: u });
+  }, [modelPath, loadedScene, tuningSceneId, glbUniformClampSceneId, rs, introCutsceneActive]);
 
   useEffect(() => {
     const act = actionsRef.current;

@@ -39,12 +39,8 @@ import { getNpcQuestMarkerForExploration } from '@/lib/npcQuestMarker';
 import { retainGltfModelUrl, releaseGltfModelUrl } from '@/lib/gltfModelCache';
 import { applyGltfExplorationCharacterMaterialPolicies } from '@/lib/gltfCharacterMaterialPolicy';
 import { applyExplorationPlayerGlobalVisualScale } from '@/lib/playerScaleConstants';
-import { computeFinalVisualUniform } from '@/lib/explorationScalePipeline';
-import {
-  debugExplorationScalePipeline,
-  isExplorationPlayerGlbScaleDebugEnabled,
-  isExplorationScaleDebugEnabled,
-} from '@/lib/explorationDiagnostics';
+import { resolveCharacterMeshUniformScale } from '@/data/modelMeta';
+import { isExplorationPlayerGlbScaleDebugEnabled } from '@/lib/explorationDiagnostics';
 import type { FindNavPathXZ } from '@/lib/explorationNavMesh';
 import { resolveNpcModelLodUseFull } from '@/lib/npcLodConstants';
 import { isExplorationVolodkaRoomNpcGlbDisabled } from '@/lib/explorationDiagnostics';
@@ -289,7 +285,7 @@ const GLTFLoader = memo(function GLTFLoader({
     try {
       const clone = loadedScene.clone(true);
       if (clone.scale.x !== 1 || clone.scale.y !== 1 || clone.scale.z !== 1) {
-        if (process.env.NODE_ENV === 'development' || isExplorationScaleDebugEnabled()) {
+        if (process.env.NODE_ENV === 'development') {
           console.warn('[GLTFLoader] NPC GLB root had non-unit scale; reset to (1,1,1).', {
             modelPath,
             scale: [clone.scale.x, clone.scale.y, clone.scale.z],
@@ -308,16 +304,12 @@ const GLTFLoader = memo(function GLTFLoader({
       applyGltfExplorationCharacterMaterialPolicies(clone);
       const rs = Number.isFinite(roomModelScale) ? roomModelScale : 1;
       const def = Number.isFinite(definitionModelScale) && definitionModelScale > 0 ? definitionModelScale : 1;
-      const stages = computeFinalVisualUniform({
-        gltfRoot: clone,
-        tuningSceneId: explorationSceneId,
-        clampSceneId: explorationSceneId,
+      const bakedVisualScale = resolveCharacterMeshUniformScale(modelPath, {
         roomModelScale: rs,
         definitionModelScale: def,
         introCutsceneActive: false,
-        isPlayer: false,
+        clampSceneId: explorationSceneId,
       });
-      const bakedVisualScale = stages.finalUniform;
       return { scene: clone, bakedVisualScale };
     } catch {
       return { scene: null, bakedVisualScale: 1 };
@@ -326,22 +318,16 @@ const GLTFLoader = memo(function GLTFLoader({
 
   useEffect(() => {
     if (!loadedScene || !scene) return;
-    if (!isExplorationScaleDebugEnabled() && !isExplorationPlayerGlbScaleDebugEnabled()) return;
+    if (!isExplorationPlayerGlbScaleDebugEnabled()) return;
     const rs = Number.isFinite(roomModelScale) ? roomModelScale : 1;
     const def = Number.isFinite(definitionModelScale) && definitionModelScale > 0 ? definitionModelScale : 1;
-    const stages = computeFinalVisualUniform({
-      gltfRoot: scene,
-      tuningSceneId: explorationSceneId,
-      clampSceneId: explorationSceneId,
+    const u = resolveCharacterMeshUniformScale(modelPath, {
       roomModelScale: rs,
       definitionModelScale: def,
       introCutsceneActive: false,
-      isPlayer: false,
+      clampSceneId: explorationSceneId,
     });
-    debugExplorationScalePipeline('GLTFLoader NPC', modelPath, explorationSceneId, stages);
-    if (isExplorationPlayerGlbScaleDebugEnabled()) {
-      console.info('[NPC GLB scale debug]', stages);
-    }
+    console.info('[NPC GLB scale debug]', { modelPath, explorationSceneId, uniform: u });
   }, [modelPath, loadedScene, scene, explorationSceneId, roomModelScale, definitionModelScale]);
 
   useEffect(() => {
@@ -834,15 +820,12 @@ export const NPC = memo(function NPC({
     [explorationSceneId],
   );
 
-  /** `definition.scale` × масштаб локации — без `EXPLORATION_PLAYER_GLOBAL_VISUAL_SCALE` (его даёт `bakedVisualScale` в `GLTFLoader`). */
+  /** `definition.scale` × масштаб локации; глобальный ÷5 уже в `resolveCharacterMeshUniformScale` → `bakedVisualScale` в `GLTFLoader`. */
   const effectiveModelScale = useMemo(
     () => (definition.scale ?? 1) * locationModelScale,
     [definition.scale, locationModelScale],
   );
-  /**
-   * Примитивный fallback и дальний impostor не проходят bbox-цепочку GLB — один раз применяем тот же глобальный
-   * визуальный множитель обхода, что и `applyExplorationPlayerGlobalVisualScale` внутри загрузчика GLB.
-   */
+  /** Fallback / impostor без таблицы по URL — тот же глобальный ÷5, что и у числового `effectiveModelScale` вне GLB. */
   const npcPrimitiveExplorationScale = useMemo(
     () => applyExplorationPlayerGlobalVisualScale(effectiveModelScale),
     [effectiveModelScale],
