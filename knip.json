@@ -13,10 +13,5 @@
     "src/ui/game/GameOrchestrator.tsx"
   ],
   "project": ["src/**/*.{ts,tsx}"],
-  "ignore": [
-    "**/*.test.ts",
-    "**/*.test.tsx",
-    "**/__tests__/**",
-    "src/ui/3d/exploration/PropModel.tsx"
-  ]
+  "ignore": ["**/*.test.ts", "**/*.test.tsx", "**/__tests__/**"]
 }

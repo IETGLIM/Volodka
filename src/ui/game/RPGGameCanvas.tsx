@@ -763,7 +763,9 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
         <Suspense fallback={<ThreeCanvasSuspenseFallback />}>
         {/* Интерьер квартиры в обходе (раньше был только в VN-слое — без стен сцена читалась как «чёрная дыра»). */}
         {sceneId === 'volodka_corridor' && <VolodkaCorridorVisual />}
-        {sceneId === 'volodka_room' && <VolodkaRoomVisual />}
+        {sceneId === 'volodka_room' && (
+          <VolodkaRoomVisual explorationCharacterModelScale={explorationCharacterModelScale} />
+        )}
         {sceneId === 'zarema_albert_room' && <ZaremaAlbertExplorationVisual />}
         {sceneId === 'home_evening' && <HomeEveningVisual />}
 

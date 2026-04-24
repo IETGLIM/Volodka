@@ -20,6 +20,7 @@ import {
   interiorWardrobeCenterYFromFloor,
 } from '@/lib/explorationInteriorReference';
 import { createGlitchDataPlaneMaterial } from '@/lib/glitchDataPlaneMaterial';
+import { PropModel } from '@/ui/3d/exploration/PropModel';
 
 const VOLODKA_MONITOR_LEFT_LINES = ['STATUS: DEGRADED', 'Grafana · Prometheus', 'pod/monitoring-01'] as const;
 const VOLODKA_MONITOR_RIGHT_LINES = ['RETRO INCIDENT', 'on-call: Володька', 'silence: 0 active'] as const;
@@ -33,8 +34,17 @@ const VOLODKA_MONITOR_RIGHT_LINES = ['RETRO INCIDENT', 'on-call: Володьк�
  *
  * GLB-мебель: при необходимости — ручной `scale` на примитиве или отдельный ассет в DCC; см. `modelMeta` для персонажей.
  * (цели — `INTERIOR_REF_DESK_SURFACE_Y_M`, `INTERIOR_REF_CHAIR_SEAT_SURFACE_Y_M` в `explorationInteriorReference`).
+ *
+ * Часть мебели — `PropModel` + `propsManifest` (`propId` в `scenes.ts`); процедурный fallback в метрах, GLB — с `sceneScale`.
  */
-export const VolodkaRoomVisual = memo(function VolodkaRoomVisual() {
+export type VolodkaRoomVisualProps = {
+  /** Для ветки GLB у `PropModel`; процедурные столы/шкафы остаются в метрах сцены. */
+  explorationCharacterModelScale?: number;
+};
+
+export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({
+  explorationCharacterModelScale = 1,
+}: VolodkaRoomVisualProps) {
   const w = 14;
   const d = 10;
   const h = 2.85;
@@ -199,9 +209,12 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual() {
       </mesh>
 
       <group position={[3.2, interiorDeskVisualGroupCenterY(0), 0.1]}>
-        <mesh castShadow receiveShadow material={woodMat}>
-          <boxGeometry args={[1.45, 0.08, 0.78]} />
-        </mesh>
+        <PropModel
+          propId="desk_volodka"
+          sceneScale={explorationCharacterModelScale}
+          proceduralBoxArgs={[1.45, 0.08, 0.78]}
+          proceduralColor="#3d2817"
+        />
         <mesh position={[0, 0.28, -0.05]} castShadow receiveShadow>
           <boxGeometry args={[1.12, 0.52, 0.04]} />
           <meshStandardMaterial
@@ -295,9 +308,12 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual() {
       </group>
 
       <group position={[0.8, interiorDeskVisualGroupCenterY(0), -2.8]}>
-        <mesh castShadow receiveShadow material={woodMat}>
-          <boxGeometry args={[1.05, 0.08, 0.58]} />
-        </mesh>
+        <PropModel
+          propId="desk_volodka"
+          sceneScale={explorationCharacterModelScale}
+          proceduralBoxArgs={[1.05, 0.08, 0.58]}
+          proceduralColor="#4a3728"
+        />
         <mesh position={[-0.2, 0.22, 0]} castShadow receiveShadow>
           <boxGeometry args={[0.35, 0.4, 0.25]} />
           <meshStandardMaterial
@@ -316,9 +332,14 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual() {
         [5.2, interiorWardrobeCenterYFromFloor(0), 0.2] as const,
         [5.2, interiorWardrobeCenterYFromFloor(0), -1.4] as const,
       ].map((p, i) => (
-        <mesh key={`wardrobe-${i}`} position={p} castShadow receiveShadow material={woodMat}>
-          <boxGeometry args={[0.58, INTERIOR_REF_WARDROBE_HEIGHT_M, 0.68]} />
-        </mesh>
+        <PropModel
+          key={`wardrobe-${i}`}
+          propId="wardrobe_soviet"
+          sceneScale={explorationCharacterModelScale}
+          position={[p[0], p[1], p[2]]}
+          proceduralBoxArgs={[0.58, INTERIOR_REF_WARDROBE_HEIGHT_M, 0.68]}
+          proceduralColor={i === 0 ? '#2d2419' : '#352a1f'}
+        />
       ))}
 
       <group position={[-3.8, INTERIOR_REF_SOFA_GROUP_CENTER_Y_M, 1.2]}>
