@@ -209,12 +209,11 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({
       </mesh>
 
       <group position={[3.2, interiorDeskVisualGroupCenterY(0), 0.1]}>
-        <PropModel
-          propId="desk_volodka"
-          sceneScale={explorationCharacterModelScale}
-          proceduralBoxArgs={[1.45, 0.08, 0.78]}
-          proceduralColor="#3d2817"
-        />
+        <PropModel propId="desk_volodka" sceneScale={explorationCharacterModelScale}>
+          <mesh castShadow receiveShadow material={woodMat}>
+            <boxGeometry args={[1.45, 0.08, 0.78]} />
+          </mesh>
+        </PropModel>
         <mesh position={[0, 0.28, -0.05]} castShadow receiveShadow>
           <boxGeometry args={[1.12, 0.52, 0.04]} />
           <meshStandardMaterial
@@ -308,12 +307,11 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({
       </group>
 
       <group position={[0.8, interiorDeskVisualGroupCenterY(0), -2.8]}>
-        <PropModel
-          propId="desk_volodka"
-          sceneScale={explorationCharacterModelScale}
-          proceduralBoxArgs={[1.05, 0.08, 0.58]}
-          proceduralColor="#4a3728"
-        />
+        <PropModel propId="desk_volodka" sceneScale={explorationCharacterModelScale}>
+          <mesh castShadow receiveShadow material={woodMat}>
+            <boxGeometry args={[1.05, 0.08, 0.58]} />
+          </mesh>
+        </PropModel>
         <mesh position={[-0.2, 0.22, 0]} castShadow receiveShadow>
           <boxGeometry args={[0.35, 0.4, 0.25]} />
           <meshStandardMaterial
