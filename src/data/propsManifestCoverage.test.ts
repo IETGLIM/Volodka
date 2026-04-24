@@ -22,4 +22,8 @@ describe('propsManifest coverage', () => {
       expect(key).toBe(def.id);
     }
   });
+
+  it('wires Chair.glb to the Volodka room chair prop', () => {
+    expect(getPropDefinition('chair_volodka')?.glbPath).toBe('/Chair.glb');
+  });
 });

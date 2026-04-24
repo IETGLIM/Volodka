@@ -42,7 +42,7 @@ export function rewriteLegacyModelPath(path: string): string {
 
 export const MODEL_URLS = {
   /**
-   * Главный персонаж. В идеале — root ~1.7 m, клипы `Idle` / `Walk` (сейчас в файле часто один клип).
+   * Главный персонаж-архивный Volodka. Оставлен как ассет, но не default: в файле один клип.
    * Визуальный uniform задаётся в `modelMeta` (`resolveCharacterMeshUniformScale`), не через bbox в рантайме.
    */
   volodka: `${BASE_URL}/Volodka.glb`,
@@ -107,7 +107,7 @@ export function getDefaultPlayerModelPath(): string {
   const fromEnv =
     typeof process !== 'undefined' ? process.env.NEXT_PUBLIC_DEFAULT_PLAYER_MODEL?.trim() : undefined;
   if (fromEnv && isValidPlayerGlbPath(fromEnv)) return rewriteLegacyModelPath(fromEnv);
-  return MODEL_URLS.volodka;
+  return MODEL_URLS.lowpolyCyberstyle;
 }
 
 // ============================================

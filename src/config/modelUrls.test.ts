@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { isValidPlayerGlbPath, MODEL_URLS, rewriteLegacyModelPath } from './modelUrls';
+import { getDefaultPlayerModelPath, isValidPlayerGlbPath, MODEL_URLS, rewriteLegacyModelPath } from './modelUrls';
 
 describe('rewriteLegacyModelPath', () => {
   it('maps legacy /models/ prefix onto the configured public base', () => {
@@ -30,6 +30,10 @@ describe('isValidPlayerGlbPath', () => {
 
   it('volodka entry is a valid path', () => {
     expect(isValidPlayerGlbPath(MODEL_URLS.volodka)).toBe(true);
+  });
+
+  it('uses the bundled lowpoly anime cyberstyle model as the default playable character', () => {
+    expect(getDefaultPlayerModelPath()).toBe(MODEL_URLS.lowpolyCyberstyle);
   });
 
   it('exposes bundled Khronos CC0 sample URLs', () => {

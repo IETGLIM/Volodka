@@ -335,6 +335,13 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({
         </mesh>
       </group>
 
+      <PropModel
+        propId="chair_volodka"
+        sceneScale={explorationCharacterModelScale}
+        position={[0.15, 0.22, -1.78]}
+        rotation={[-Math.PI / 2, Math.PI, 0]}
+      />
+
       {[
         [5.2, interiorWardrobeCenterYFromFloor(0), 0.2] as const,
         [5.2, interiorWardrobeCenterYFromFloor(0), -1.4] as const,

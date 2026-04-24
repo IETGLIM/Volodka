@@ -13,8 +13,10 @@ export const PROP_DEFINITIONS: Record<string, PropDefinition> = {
   chair_volodka: {
     id: 'chair_volodka',
     category: 'furniture',
-    glbPath: undefined,
-    estimatedGeometryBytes: 1024,
+    glbPath: '/Chair.glb',
+    estimatedGeometryBytes: 24_000,
+    /** `Chair.glb` экспортирован в миллиметровом масштабе и z-up; визуал поворачивается в `VolodkaRoomVisual`. */
+    baseUniform: 650,
   },
   wardrobe_soviet: {
     id: 'wardrobe_soviet',
