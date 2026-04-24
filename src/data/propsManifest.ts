@@ -35,6 +35,13 @@ export const PROP_DEFINITIONS: Record<string, PropDefinition> = {
     glbPath: undefined,
     estimatedTextureBytes: 512 * 512 * 4, // CanvasTexture
   },
+  carpet_zarema: {
+    id: 'carpet_zarema',
+    category: 'decor',
+    glbPath: undefined,
+    estimatedGeometryBytes: 1024,
+    estimatedTextureBytes: 512 * 512 * 3,
+  },
 
   // === Техника ===
   keyboard_ibm: {

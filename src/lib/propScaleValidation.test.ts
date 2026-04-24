@@ -34,4 +34,20 @@ describe('validatePropGlbScale', () => {
     expect(r).not.toBe('skipped-exempt');
     expect(r).toBe('ok');
   });
+
+  it('returns error when bbox×uniform exceeds character ceiling (CI guard for битые проп-GLB)', () => {
+    const def: PropDefinition = {
+      id: 'oversized_prop',
+      category: 'furniture',
+      glbPath: '/models/college_girl.glb',
+    };
+    const r = validatePropGlbScale(def, def.glbPath!, 200, 0.5);
+    expect(r).not.toBe('ok');
+    expect(r).not.toBe('skipped-procedural');
+    expect(r).not.toBe('skipped-exempt');
+    expect(typeof r).toBe('object');
+    if (typeof r === 'object' && 'error' in r) {
+      expect(r.error).toMatch(/выше допустимого|пола|потолка/i);
+    }
+  });
 });

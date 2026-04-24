@@ -11,8 +11,8 @@ import {
   INTERIOR_REF_COMPACT_SOFA_GROUP_CENTER_Y_M,
   INTERIOR_REF_WINDOW_HEIGHT_M,
   INTERIOR_REF_WINDOW_WIDTH_M,
-  interiorCoffeeTableGroupCenterY,
 } from '@/lib/explorationInteriorReference';
+import { PropModel } from '@/ui/3d/exploration/PropModel';
 
 /**
  * Визуал квартиры Заремы и Альберта для режима обхода (`RPGGameCanvas`).
@@ -20,8 +20,16 @@ import {
  *
  * GLB-мебель (если появится): после `useGLTF` — ручной `scale` / правка в DCC; персонажи — `modelMeta`.
  * с целями из `INTERIOR_REF_DESK_SURFACE_Y_M`, `INTERIOR_REF_CHAIR_SEAT_SURFACE_Y_M` и т.д.
+ *
+ * Ковёр — `PropModel` + `carpet_zarema` (`children`: прежняя процедурная геометрия и `carpetMat`).
  */
-export const ZaremaAlbertExplorationVisual = memo(function ZaremaAlbertExplorationVisual() {
+type ZaremaAlbertExplorationVisualProps = {
+  explorationCharacterModelScale?: number;
+};
+
+export const ZaremaAlbertExplorationVisual = memo(function ZaremaAlbertExplorationVisual({
+  explorationCharacterModelScale = 1,
+}: ZaremaAlbertExplorationVisualProps) {
   const w = 10;
   const d = 8;
   const h = 2.85;
@@ -158,9 +166,11 @@ export const ZaremaAlbertExplorationVisual = memo(function ZaremaAlbertExplorati
         <planeGeometry args={[w - 0.12, d - 0.12]} />
       </mesh>
 
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.035, -0.6]} receiveShadow material={carpetMat}>
-        <planeGeometry args={[3.6, 2.8]} />
-      </mesh>
+      <PropModel propId="carpet_zarema" sceneScale={explorationCharacterModelScale} position={[0, 0.035, -0.6]}>
+        <mesh rotation={[-Math.PI / 2, 0, 0]} receiveShadow material={carpetMat}>
+          <planeGeometry args={[3.6, 2.8]} />
+        </mesh>
+      </PropModel>
 
       <mesh position={[-w / 2 + t / 2, h / 2, 0]} castShadow receiveShadow material={wallMat}>
         <boxGeometry args={[t, h, d - 0.2]} />

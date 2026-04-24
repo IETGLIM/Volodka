@@ -1,7 +1,7 @@
 'use client';
 
 import { useGLTF } from '@react-three/drei';
-import { useLayoutEffect, useMemo } from 'react';
+import { useLayoutEffect, useMemo, type ReactNode } from 'react';
 import * as THREE from 'three';
 
 import { rewriteLegacyModelPath } from '@/config/modelUrls';
@@ -25,6 +25,11 @@ type PropModelProps = {
   proceduralBoxArgs?: [number, number, number];
   /** Цвет `meshStandardMaterial` для процедурного fallback. */
   proceduralColor?: string;
+  /**
+   * Если задано и у пропа нет `glbPath` — ренерится `children` внутри `<group position={…} rotation={…}>`
+   * (сохраняем кастомную геометрию/материалы без дублирования в `PropProcedural`).
+   */
+  children?: ReactNode;
 };
 
 function normalizePublicModelPath(glbPath: string): string {
@@ -35,7 +40,7 @@ function normalizePublicModelPath(glbPath: string): string {
 }
 
 /**
- * Проп: GLB из манифеста (`glbPath`) или процедурный fallback.
+ * Проп: при наличии `glbPath` — GLB; иначе при `children` — обёртка над кастомной геометрией; иначе процедурный fallback по `category`.
  * GLB: клон сцены (не мутируем кэш `useGLTF`), ÷5 через `applyExplorationPlayerGlobalVisualScale`, проверка `validatePropGlbScale`.
  */
 export function PropModel({
@@ -45,6 +50,7 @@ export function PropModel({
   rotation = [0, 0, 0],
   proceduralBoxArgs,
   proceduralColor,
+  children,
 }: PropModelProps) {
   const def = getPropDefinition(propId);
 
@@ -61,6 +67,14 @@ export function PropModel({
         position={position}
         rotation={rotation}
       />
+    );
+  }
+
+  if (children != null) {
+    return (
+      <group position={position} rotation={rotation} userData={{ propId: def.id }}>
+        {children}
+      </group>
     );
   }
 

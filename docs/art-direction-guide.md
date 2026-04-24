@@ -71,7 +71,7 @@
 3. `keyboard_ibm` — клавиатура на столе
 4. `poster_glory_to_labor` — постер на стене
 5. `lamp_desk` — настольная лампа
-6. `carpet_zarema` — ковёр в квартире Заремы (позже в `propsManifest` / визуал)
+6. `carpet_zarema` — ковёр в квартире Заремы (`propsManifest` + `PropModel` с `children` в `ZaremaAlbertExplorationVisual`)
 7. `mirror_albert` — зеркало (уже есть в `ZaremaAlbertExplorationVisual`)
 
 Все пропы с `glbPath` должны подчиняться глобальному масштабу (÷5 через `applyExplorationPlayerGlobalVisualScale`) и проходить `validatePropGlbScale`, если не задано `exemptFromScaleValidation`.

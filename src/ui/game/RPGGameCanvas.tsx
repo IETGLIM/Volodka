@@ -762,11 +762,15 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
         <PhysicsSceneColliders sceneId={sceneId} />
         <Suspense fallback={<ThreeCanvasSuspenseFallback />}>
         {/* Интерьер квартиры в обходе (раньше был только в VN-слое — без стен сцена читалась как «чёрная дыра»). */}
-        {sceneId === 'volodka_corridor' && <VolodkaCorridorVisual />}
+        {sceneId === 'volodka_corridor' && (
+          <VolodkaCorridorVisual explorationCharacterModelScale={explorationCharacterModelScale} />
+        )}
         {sceneId === 'volodka_room' && (
           <VolodkaRoomVisual explorationCharacterModelScale={explorationCharacterModelScale} />
         )}
-        {sceneId === 'zarema_albert_room' && <ZaremaAlbertExplorationVisual />}
+        {sceneId === 'zarema_albert_room' && (
+          <ZaremaAlbertExplorationVisual explorationCharacterModelScale={explorationCharacterModelScale} />
+        )}
         {sceneId === 'home_evening' && <HomeEveningVisual />}
 
         {isPanelDistrict && <PanelDistrictBuildings />}
