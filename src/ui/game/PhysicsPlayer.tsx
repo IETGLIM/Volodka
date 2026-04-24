@@ -13,7 +13,16 @@ import {
   computePlayerCapsule,
   createExplorationKinematicCharacterController,
   integrateKinematicLocomotionDelta,
-} from '@/engine/physics/CharacterController';
+} from '@/engine/physics/KCC';
+import {
+  computeMoveActiveFromHorizontalSpeed,
+  introCutsceneLocomotionFlags,
+  stepExplorationVisualYawTowardVelocity,
+} from '@/game/simulation/explorationMovementPresentation';
+import {
+  explorationGlbSingleClipTimeScale,
+  planExplorationGlbLocomotionClip,
+} from '@/game/simulation/explorationGlbAnimation';
 import { usePlayerFootsteps } from '@/hooks/usePlayerFootsteps';
 import { getDefaultPlayerModelPath, isValidPlayerGlbPath, rewriteLegacyModelPath } from '@/config/modelUrls';
 import { applyExplorationPlayerGlobalVisualScale } from '@/lib/playerScaleConstants';
@@ -21,7 +30,7 @@ import type { SceneId } from '@/data/types';
 import { resolveCharacterMeshUniformScale } from '@/data/modelMeta';
 import { retainGltfModelUrl, releaseGltfModelUrl } from '@/lib/gltfModelCache';
 import { applyGltfExplorationCharacterMaterialPolicies } from '@/lib/gltfCharacterMaterialPolicy';
-import { ThreeCanvasSuspenseFallback } from '@/components/3d/ThreeCanvasSuspenseFallback';
+import { ThreeCanvasSuspenseFallback } from '@/ui/3d/ThreeCanvasSuspenseFallback';
 import { cloneAnimationClipsWithoutExplorationPlayerRootMotion } from '@/lib/stripExplorationPlayerRootMotionFromClips';
 import { isExplorationPlayerDebugPrimitiveEnabled } from '@/lib/explorationPlayerDebugPrimitive';
 import {
@@ -354,37 +363,14 @@ const GLBPlayerModel = memo(function GLBPlayerModel({
     if (!act || Object.keys(act).length === 0) return;
 
     const animationNames = Object.keys(act);
-    const idleAnim =
-      animationNames.find((n) => n.toLowerCase().includes('idle')) || animationNames[0];
-    idleKeyForTimeScaleRef.current = idleAnim;
-    singleClipModeRef.current = animationNames.length === 1;
+    const plan = planExplorationGlbLocomotionClip(animationNames, isMoving, isRunning);
+    if (!plan) return;
 
-    const runPrefer =
-      animationNames.find((n) => {
-        const l = n.toLowerCase();
-        return l.includes('run') && !l.includes('walk');
-      }) ??
-      animationNames.find((n) => n.toLowerCase().includes('run')) ??
-      null;
+    idleKeyForTimeScaleRef.current = plan.idleAnim;
+    singleClipModeRef.current = plan.singleClipMode;
 
-    const walkPrefer =
-      animationNames.length === 1
-        ? idleAnim
-        : animationNames.find((n) => n.toLowerCase().includes('walk') && !n.toLowerCase().includes('run')) ??
-          animationNames.find((n) => n.toLowerCase().includes('walk')) ??
-          runPrefer ??
-          null;
-
-    let targetAnim = idleAnim;
-    if (isMoving) {
-      if (!singleClipModeRef.current && isRunning && runPrefer && act[runPrefer]) {
-        targetAnim = runPrefer;
-      } else if (walkPrefer && act[walkPrefer]) {
-        targetAnim = walkPrefer;
-      }
-    }
-
-    if (!targetAnim || !act[targetAnim]) return;
+    const targetAnim = plan.targetAnim;
+    if (!act[targetAnim]) return;
     if (targetAnim === prevTargetAnimRef.current) return;
 
     const prevKey = prevTargetAnimRef.current;
@@ -414,7 +400,7 @@ const GLBPlayerModel = memo(function GLBPlayerModel({
     const k = idleKeyForTimeScaleRef.current;
     const a = k && act?.[k];
     if (!a) return;
-    a.setEffectiveTimeScale(isMoving ? 1.22 : 1);
+    a.setEffectiveTimeScale(explorationGlbSingleClipTimeScale(isMoving));
   });
 
   if (!displayScene) return null;
@@ -737,8 +723,7 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
       if (useGamePhaseStore.getState().phase === 'intro_cutscene') {
         const cut = getIntroCutscenePlayerPose();
         if (cut) {
-          const walk = cut.horizontalSpeed > 0.12;
-          const run = cut.horizontalSpeed > 2.35;
+          const { walk, run } = introCutsceneLocomotionFlags(cut.horizontalSpeed);
           if (walk !== isMovingSyncRef.current) {
             isMovingSyncRef.current = walk;
             moveActiveRef.current = walk;
@@ -788,10 +773,8 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
     const hx = horizVelXRef.current;
     const hz = horizVelZRef.current;
     const speed = Math.hypot(hx, hz);
-    const MOVE_ENTER = 0.14;
-    const MOVE_EXIT = 0.055;
     const wasActive = moveActiveRef.current;
-    const nextActive = wasActive ? speed > MOVE_EXIT : speed > MOVE_ENTER;
+    const nextActive = computeMoveActiveFromHorizontalSpeed(speed, wasActive);
     moveActiveRef.current = nextActive;
     if (nextActive !== isMovingSyncRef.current) {
       isMovingSyncRef.current = nextActive;
@@ -817,20 +800,13 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
        * Альтернатива «как в классическом TPS»: зафиксировать `rotationRef` на `-orbit` (как при `isLocked`) и
        * различать назад только анимацией (walk back) — отдельная задача; текущий вариант осознанный компромисс.
        */
-      const backNoForward = ctrl.backward && !ctrl.forward;
-      let targetRotation = Math.atan2(hx, hz);
-      if (backNoForward) {
-        targetRotation = Math.atan2(-hx, -hz);
-      }
-      let prev = rotationRef.current;
-      let diff = targetRotation - prev;
-      while (diff > Math.PI) diff -= Math.PI * 2;
-      while (diff < -Math.PI) diff += Math.PI * 2;
-      const dt = clampPhysicsTimestep(frameDelta);
-      /** Экспоненциальное сглаживание к направлению ходьбы, независимо от FPS (раньше фиксированный 0.16/кадр давал рывки). */
-      const k = 10.5;
-      const blend = 1 - Math.exp(-k * dt);
-      rotationRef.current = prev + diff * blend;
+      rotationRef.current = stepExplorationVisualYawTowardVelocity({
+        prevYaw: rotationRef.current,
+        hx,
+        hz,
+        controls: ctrl,
+        frameDeltaSec: frameDelta,
+      });
     }
 
     if (modelRef.current) {

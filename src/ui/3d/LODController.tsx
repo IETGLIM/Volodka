@@ -2,7 +2,7 @@
 
 /**
  * Шаг 5 (анти-мерцание LOD): в проекте нет `<LOD distances={…}>` из drei — дистанционный уровень
- * для NPC задаётся в **`src/components/game/NPC.tsx`** (`useFullModel` / импостор).
+ * для NPC задаётся в **`src/ui/game/NPC.tsx`** (`useFullModel` / импостор).
  *
  * Логика и пороги с **гистерезисом** — **`resolveNpcModelLodUseFull`** и константы в
  * **`lib/npcLodConstants.ts`** (дальше отключаем полный GLB, ближе включаем — разные пороги).

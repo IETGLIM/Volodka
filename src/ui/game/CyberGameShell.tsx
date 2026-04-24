@@ -3,7 +3,7 @@
 import { memo, useEffect, useRef, useMemo } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 import { useMobileVisualPerf } from '@/hooks/useMobileVisualPerf';
-import { FilmGrain } from '@/components/game/CinematicEffects';
+import { FilmGrain } from '@/ui/game/CinematicEffects';
 import type { SceneId } from '@/data/types';
 
 /** Лёгкий digital rain — только вне lite-режима; resize через visualViewport + debounce */

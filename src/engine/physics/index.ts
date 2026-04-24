@@ -7,4 +7,5 @@ export {
   applyGroundingAfterCharacterProbe,
   createExplorationKinematicCharacterController,
 } from './CharacterController';
+export * as kcc from './KCC';
 export type { CharacterControllerWorld } from './CharacterController';

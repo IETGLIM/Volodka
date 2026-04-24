@@ -6,7 +6,7 @@
  */
 import type { InteractiveObjectConfig } from '@/config/scenes';
 import type { NPCDefinition, NPCState, TriggerState, TriggerZone } from '@/data/rpgTypes';
-import { getNearestInteractiveObjectWithDistance } from '@/components/game/InteractiveTriggers';
+import { getNearestInteractiveObjectWithDistance } from '@/ui/game/InteractiveTriggers';
 
 /** Горизонтальный радиус разговора с NPC (м), согласован с `RPGGameCanvas`. */
 export const EXPLORATION_NPC_INTERACT_RADIUS = 3;

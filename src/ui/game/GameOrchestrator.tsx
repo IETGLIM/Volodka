@@ -40,44 +40,44 @@ import {
 
 import { useGameStore } from '@/state/gameStore';
 import { useGamePhaseStore } from '@/state/gamePhaseStore';
-import { IntroCutsceneOverlays } from '@/components/Cutscenes/IntroCutsceneOverlays';
+import { IntroCutsceneOverlays } from '@/ui/cutscenes/IntroCutsceneOverlays';
 import { eventBus } from '@/engine/EventBus';
 import { useGameAudioProfile } from '@/hooks/useAudio';
 import { useLoadingProgress } from '@/context/LoadingProgressContext';
 import { QUEST_DEFINITIONS, getNextTrackedObjective } from '@/data/quests';
 import { getNPCById, getNPCsForScene, getNpcExplorationPosition } from '@/data/npcDefinitions';
 import { getSceneConfig } from '@/config/scenes';
-import type { MiniMapQuestMarker } from '@/components/game/MiniMap';
-import { MoralCompassHUD } from '@/components/game/MoralCompassHUD';
-import { SceneTransition } from '@/components/game/CinematicEffects';
-import { LootNotification, SkillUpNotification } from '@/components/game/LootNotification';
-import { TutorialOverlay } from '@/components/game/TutorialOverlay';
+import type { MiniMapQuestMarker } from '@/ui/game/MiniMap';
+import { MoralCompassHUD } from '@/ui/game/MoralCompassHUD';
+import { SceneTransition } from '@/ui/game/CinematicEffects';
+import { LootNotification, SkillUpNotification } from '@/ui/game/LootNotification';
+import { TutorialOverlay } from '@/ui/game/TutorialOverlay';
 import { HackingWireMinigameOverlay } from '@/ui/3d/exploration/HackingWireMinigameOverlay';
-import { MiniMap } from '@/components/game/MiniMap';
+import { MiniMap } from '@/ui/game/MiniMap';
 import { SCENE_VISUALS } from '@/engine/SceneManager';
 import type { VisualState } from '@/data/types';
 import { storyNodeShowsStoryOverlay } from '@/lib/storyOverlayEligibility';
-import { EXPLORATION_GAME_VIEWPORT_CLASS } from '@/components/3d/Scene';
+import { EXPLORATION_GAME_VIEWPORT_CLASS } from '@/ui/3d/Scene';
 import { initGameCore } from '@/game/core/gameCoreBootstrap';
 import { getWorldStateModifiers } from '@/game/world/worldReactivity';
-import MemoryLog from '@/components/ui/MemoryLog';
-import QuestTracker from '@/components/ui/QuestTracker';
+import MemoryLog from '@/ui/primitives/MemoryLog';
+import QuestTracker from '@/ui/primitives/QuestTracker';
 
-const QuestsPanel = dynamic(() => import('@/components/game/QuestsPanel'), { ssr: false });
-const FactionsPanel = dynamic(() => import('@/components/game/FactionsPanel'), { ssr: false });
-const Inventory = dynamic(() => import('@/components/game/Inventory'), { ssr: false });
-const AchievementsPanel = dynamic(() => import('@/components/game/AchievementsPanel'), { ssr: false });
-const PoetryBook = dynamic(() => import('@/components/game/PoetryBook'), { ssr: false });
-const SkillsPanel = dynamic(() => import('@/components/SkillsPanel'), { ssr: false });
-const ITTerminal = dynamic(() => import('@/components/game/ITTerminal'), { ssr: false });
-const JournalPanel = dynamic(() => import('@/components/game/JournalPanel'), { ssr: false });
-const LegacyScreen = dynamic(() => import('@/components/game/LegacyScreen'), { ssr: false });
+const QuestsPanel = dynamic(() => import('@/ui/game/QuestsPanel'), { ssr: false });
+const FactionsPanel = dynamic(() => import('@/ui/game/FactionsPanel'), { ssr: false });
+const Inventory = dynamic(() => import('@/ui/game/Inventory'), { ssr: false });
+const AchievementsPanel = dynamic(() => import('@/ui/game/AchievementsPanel'), { ssr: false });
+const PoetryBook = dynamic(() => import('@/ui/game/PoetryBook'), { ssr: false });
+const SkillsPanel = dynamic(() => import('@/ui/SkillsPanel'), { ssr: false });
+const ITTerminal = dynamic(() => import('@/ui/game/ITTerminal'), { ssr: false });
+const JournalPanel = dynamic(() => import('@/ui/game/JournalPanel'), { ssr: false });
+const LegacyScreen = dynamic(() => import('@/ui/game/LegacyScreen'), { ssr: false });
 /** Длительность кинематографического оверлея при смене 3D-локации (должна покрывать фазы `SceneTransition`). */
 const EXPLORATION_SCENE_GLITCH_MS = 2700;
 const EXPLORATION_SCENE_TRANSITION_DURATION_SEC = 1.65;
 
 const RPGGameCanvas = dynamic(
-  () => import('@/components/game/RPGGameCanvas').then((m) => m.RPGGameCanvas),
+  () => import('@/ui/game/RPGGameCanvas').then((m) => m.RPGGameCanvas),
   {
     ssr: false,
     loading: () => (

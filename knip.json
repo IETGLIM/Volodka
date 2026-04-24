@@ -10,7 +10,7 @@
     "src/app/error.tsx",
     "src/app/global-error.tsx",
     "src/app/not-found.tsx",
-    "src/components/game/GameOrchestrator.tsx"
+    "src/ui/game/GameOrchestrator.tsx"
   ],
   "project": ["src/**/*.{ts,tsx}"],
   "ignore": ["**/*.test.ts", "**/*.test.tsx", "**/__tests__/**"]

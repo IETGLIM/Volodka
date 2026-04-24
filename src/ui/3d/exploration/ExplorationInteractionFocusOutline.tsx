@@ -5,7 +5,7 @@ import type { RefObject } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import type { InteractiveObjectConfig } from '@/config/scenes';
-import { getNearestInteractiveObjectWithDistance, INTERACT_RANGE } from '@/components/game/InteractiveTriggers';
+import { getNearestInteractiveObjectWithDistance, INTERACT_RANGE } from '@/ui/game/InteractiveTriggers';
 
 export type ExplorationInteractionFocusOutlineProps = {
   objects: InteractiveObjectConfig[];

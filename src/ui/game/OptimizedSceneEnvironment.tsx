@@ -13,7 +13,7 @@ import {
 } from '@/lib/explorationShadowConstants';
 import { ZaremaAlbertRoom } from './RoomEnvironment';
 import { VolodkaCorridorVisual } from '@/ui/3d/exploration/VolodkaCorridorVisual';
-import { ThreeCanvasSuspenseFallback } from '@/components/3d/ThreeCanvasSuspenseFallback';
+import { ThreeCanvasSuspenseFallback } from '@/ui/3d/ThreeCanvasSuspenseFallback';
 
 // ============================================
 // INSTANCED MESHES FOR PERFORMANCE

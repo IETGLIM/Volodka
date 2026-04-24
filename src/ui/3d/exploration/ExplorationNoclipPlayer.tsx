@@ -17,7 +17,7 @@ import * as THREE from 'three';
 import { PHYSICS_CONSTANTS, usePlayerControls } from '@/hooks/useGamePhysics';
 import { clampPhysicsTimestep } from '@/engine/physics/CharacterController';
 import { getExplorationCameraOrbitYawRad } from '@/lib/explorationCameraOrbitBridge';
-import type { PhysicsPlayerProps, PhysicsPlayerRef } from '@/components/game/PhysicsPlayer';
+import type { PhysicsPlayerProps, PhysicsPlayerRef } from '@/ui/game/PhysicsPlayer';
 
 /**
  * Диагностика: без Rapier-тела — только `group` и интеграция позиции в `useFrame`.

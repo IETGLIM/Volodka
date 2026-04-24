@@ -25,7 +25,7 @@ import {
   isExplorationWebGlContextLogEnabled,
 } from '@/lib/explorationDiagnostics';
 import { ExplorationMeshWorldAudit, ExplorationWebGlContextLog } from '@/ui/3d/exploration/ExplorationSceneDiagnostics';
-import { ThreeCanvasSuspenseFallback } from '@/components/3d/ThreeCanvasSuspenseFallback';
+import { ThreeCanvasSuspenseFallback } from '@/ui/3d/ThreeCanvasSuspenseFallback';
 import { ExplorationNoclipPlayer } from '@/ui/3d/exploration/ExplorationNoclipPlayer';
 import * as THREE from 'three';
 
@@ -91,17 +91,17 @@ import { HomeEveningVisual } from '@/ui/3d/exploration/HomeEveningVisual';
 import { ExplorationInteractionFocusOutline } from '@/ui/3d/exploration/ExplorationInteractionFocusOutline';
 import { NpcProximityBarks } from './NpcProximityBarks';
 import { ExplorationBriefingOverlay } from '@/ui/3d/exploration/ExplorationBriefingOverlay';
-import { IntroCutsceneCinematicDirector } from '@/components/Cutscenes/IntroCutscene';
+import { IntroCutsceneCinematicDirector } from '@/ui/cutscenes/IntroCutscene';
 import { INTRO_OPENING_SCENE_ID } from '@/lib/introVolodkaOpeningCutscene';
-import { EXPLORATION_SCENE_FRAMELOOP, getExplorationSceneGlProps } from '@/components/3d/Scene';
-import { ExplorationLighting, getExplorationDirectionalShadowMapSize } from '@/components/3d/Lighting';
+import { EXPLORATION_SCENE_FRAMELOOP, getExplorationSceneGlProps } from '@/ui/3d/Scene';
+import { ExplorationLighting, getExplorationDirectionalShadowMapSize } from '@/ui/3d/Lighting';
 import {
   clearExplorationLivePlayerPosition,
   updateExplorationLivePlayerPosition,
 } from '@/lib/explorationLivePlayerBridge';
 import { resolveNearest, type InteractionCandidate } from '@/game/interactions/InteractionResolver';
 import { explorationInteractionRegistry, registerBaseInteractions } from '@/game/interactions/registerBaseInteractions';
-import { InteractionHint, EXPLORATION_INTERACTION_HINT_MAX_DISTANCE } from '@/components/ui/InteractionHint';
+import { InteractionHint, EXPLORATION_INTERACTION_HINT_MAX_DISTANCE } from '@/ui/primitives/InteractionHint';
 import { useExplorationLivePlayerTick } from '@/hooks/useExplorationLivePlayerTick';
 
 // ============================================

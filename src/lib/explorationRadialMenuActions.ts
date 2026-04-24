@@ -1,6 +1,6 @@
 import type { InteractiveObjectConfig } from '@/config/scenes';
 import type { SceneId } from '@/data/types';
-import type { RadialMenuAction } from '@/components/game/RadialMenu';
+import type { RadialMenuAction } from '@/ui/game/RadialMenu';
 
 const RADIAL_ACTION_ORDER: RadialMenuAction[] = ['inspect', 'take', 'use', 'drop'];
 

@@ -3,7 +3,7 @@
 import { memo, useEffect, useMemo, useRef, useState, Suspense } from 'react';
 import { RigidBody, CuboidCollider } from '@react-three/rapier';
 import { footstepColliderName } from '@/lib/footstepMaterials';
-import { ThreeCanvasSuspenseFallback } from '@/components/3d/ThreeCanvasSuspenseFallback';
+import { ThreeCanvasSuspenseFallback } from '@/ui/3d/ThreeCanvasSuspenseFallback';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 

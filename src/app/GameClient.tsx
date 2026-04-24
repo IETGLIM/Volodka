@@ -6,11 +6,11 @@ import { ensureThreeClientPrep } from '@/lib/threeClientPrep';
 import dynamic from 'next/dynamic';
 import { Suspense, useState, useEffect, useRef, memo, useMemo } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { FamilyWelcomeGate } from '@/components/game/FamilyWelcomeGate';
+import { FamilyWelcomeGate } from '@/ui/game/FamilyWelcomeGate';
 import { LoadingProgressProvider, useLoadingProgress } from '@/context/LoadingProgressContext';
 
 // Dynamic import with SSR disabled — uses the new 2D GameOrchestrator
-const GameOrchestratorLazy = dynamic(() => import('@/components/game/GameOrchestrator'), {
+const GameOrchestratorLazy = dynamic(() => import('@/ui/game/GameOrchestrator'), {
   ssr: false,
 });
 

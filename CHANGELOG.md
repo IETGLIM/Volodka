@@ -4,6 +4,7 @@
 
 ### Changed
 
+- **Архитектура / презентация (шаги 4–5):** `**src/game/simulation/**` — чистый TS для обхода: гистерезис скорости / поворот визуала (`**explorationMovementPresentation**`), выбор клипа GLB (`**explorationGlbAnimation**`); `**MovementSimSystem.ts**` в `game/simulation` — те же презентационные экспорты с комментарием о параллели к SoA-`**ecs/sim/MovementSimSystem**`. `**src/engine/physics/KCC.ts**` — единая точка импорта KCC для `**PhysicsPlayer**`. Папка `**src/components/**` удалена: весь React UI — в `**src/ui/**` (`**game**`, `**primitives**` (shadcn), `**3d**`, `**cutscenes**`, корневые виджеты); импорты `**@/components/…**` заменены на `**@/ui/…**`. Обновлены `**components.json**`, `**tailwind.config.ts**`, `**knip.json**`.
 - **Архитектура / слои:** удалён `**src/core/**` (шимы `physics` / `input` / `camera` убраны; импорты идут в `**@/engine/physics**`, `**@/engine/input**`). Доменный код перенесён в `**src/game/**`: `**conditions**`, `**dialogue**`, `**memory**`, `**world**`, `**entities**`, `**quests/***` (рядом с `**introQuest**`), `**interactions/***` (`**InteractionRegistry**`, `**InteractionResolver**`, `**InteractionExecutor**`, контексты). `**src/features/**` удалён: `**mountExplorationController**` — в `**src/game/interactions/explorationController.ts**`. Обходные 3D-компоненты — в `**src/ui/3d/exploration/**` (импорты `**@/ui/3d/exploration/…**`). `**engine/**` (`**DialogueEngine**`, `**StatsEngine**`, `**ConsequencesSystem**`) подключает условия из `**@/game/conditions**`.
 - **Архитектура / Zustand:** единая папка `**src/state/**` — перенесены монолитный `**gameStore**`, `**gamePhaseStore**`, `**wireHackOverlayStore**`, доменные сторы (`**playerStore**`, `**worldStore**`, `**questMetaStore**`, `**inventoryStore**`) и фасад `**index.ts**`; импорты `**@/store/…**` заменены на `**@/state/…**`. Удалены дубли `**src/store/worldStore.ts**` (реэкспорт), неиспользуемый barrel `**src/store/questStore.ts**`; доменный Zustand квестов/фракций переименован в файл `**questMetaStore.ts**` (по-прежнему `**useQuestStore**`), чтобы не путать с `**game/quests/questStore**` (раннер квестов в обходе).
 - **Мёртвые реэкспорты / VN-наследие:** удалён неиспользуемый barrel `**src/game/core/index.ts**` (все импорты — на конкретные файлы в `**game/core/**`); из `**data/index.ts**` убран реэкспорт `WORLD_ITEMS` (остаётся `getWorldItemsForScene` в `triggerZones`); из `**GameOrchestratorSubcomponents**` удалён неиспользуемый `SceneNPCList`.
@@ -12,6 +13,7 @@
 
 ### Added
 
+- `**src/game/simulation/explorationGlbAnimation.test.ts**` — выбор idle/walk/run для GLB в обходе.
 - **Отладка нарратива:** `**src/lib/narrativeDebug.ts**` (мутации стор только при `NODE_ENV === development` или `**NEXT_PUBLIC_GAME_DEBUG_PANEL=1**`), панель `**NarrativeDebugPanel**` в `**GameOrchestrator**` — статы, флаги, квесты (`gameStore`), клавиша `` ` `` и кнопка DBG.
 - **Unit-тесты движка:** `**EventBus.test.ts**`, `**StatsEngine.test.ts**`, `**DialogueEngine.test.ts**`; расширены `**ConditionMatcher.test.ts**`, `**QuestEngine.test.ts**` (условия диалога, квестовый раннер, шина событий).
 

@@ -3,7 +3,7 @@
 import { useMemo } from 'react';
 import type { RefObject } from 'react';
 import type { TriggerZone } from '@/data/rpgTypes';
-import { isPlayerInTriggerZone } from '@/components/game/InteractiveTrigger';
+import { isPlayerInTriggerZone } from '@/ui/game/InteractiveTrigger';
 
 export const EXPLORATION_INTERACTION_HINT_MAX_DISTANCE = 3.15;
 

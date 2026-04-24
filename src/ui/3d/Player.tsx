@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * Шаг 2 (анти-мерцание): «игрок» в 3D — это **`PhysicsPlayer`** (`@/components/game/PhysicsPlayer`).
+ * Шаг 2 (анти-мерцание): «игрок» в 3D — это **`PhysicsPlayer`** (`@/ui/game/PhysicsPlayer`).
  *
  * **Источник истины для позиции меша** — только Rapier **`RigidBody`** (kinematic + `setNextKinematicTranslation`
  * в `useBeforePhysicsStep`). Дочерний `group` с GLB **не** должен получать `position` из Zustand/`useEffect`:
@@ -16,4 +16,4 @@ export {
   PhysicsPlayer as default,
   type PhysicsPlayerProps,
   type PhysicsPlayerRef,
-} from '@/components/game/PhysicsPlayer';
+} from '@/ui/game/PhysicsPlayer';
