@@ -59,3 +59,14 @@ export {
   type DerivedEffects,
   type StatChangeResult,
 } from './StatsEngine';
+
+export {
+  SceneStreamingCoordinator,
+  getSceneStreamingCoordinator,
+  startSceneStreamingCoordinator,
+  disposeSceneStreamingCoordinator,
+  type SceneStreamingCoordinatorApi,
+  type StreamingPrefetchReason,
+  type StreamingDebugSnapshot,
+  type GetStreamingProfile,
+} from './streaming/SceneStreamingCoordinator';

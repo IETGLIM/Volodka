@@ -26,6 +26,10 @@ vi.mock('@/engine/SceneManager', () => ({
 vi.mock('@/engine/EventBus', () => ({
   eventBus: {
     emit: vi.fn(),
+    on: vi.fn(() => () => {}),
+    once: vi.fn(() => () => {}),
+    off: vi.fn(),
+    hasSubscribers: vi.fn(() => false),
   },
 }));
 

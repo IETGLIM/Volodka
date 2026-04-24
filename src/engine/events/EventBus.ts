@@ -19,6 +19,7 @@
 // Отладка: `eventBus.setDebug(true)` в dev — в консоль уйдут имя события и payload.
 
 import type { PlayerPath, SceneId, PlayerState, PlayerSkills } from '@/data/types';
+import type { StreamingChunkId } from '@/config/scenes';
 
 // ============================================
 // Строгие идентификаторы в payload (не «произвольная строка»)
@@ -56,6 +57,15 @@ export interface EventMap {
   // Переходы между сценами
   'scene:enter': { sceneId: SceneId; fromSceneId?: SceneId };
   'scene:exit': { sceneId: SceneId; toSceneId?: SceneId };
+
+  /**
+   * Стриминг чанков 3D-обхода — жизненный цикл React↔Rapier (`docs/scene-streaming-spec.md`).
+   * `*_requested` — координатор → UI; `*_activated` / `*_deactivated` — подтверждение от React после тел в мире / после снятия тел.
+   */
+  'streaming:chunk_activation_requested': { chunkId: StreamingChunkId; sceneId: SceneId };
+  'streaming:chunk_activated': { chunkId: StreamingChunkId; sceneId?: SceneId; rapierBodyCount?: number };
+  'streaming:chunk_deactivation_requested': { chunkId: StreamingChunkId; sceneId: SceneId };
+  'streaming:chunk_deactivated': { chunkId: StreamingChunkId; sceneId?: SceneId };
 
   // Изменение характеристик
   'stat:changed': {

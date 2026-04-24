@@ -8,6 +8,10 @@ import { sceneManager } from '@/engine/SceneManager';
 import { coreLoop } from '@/engine/CoreLoop';
 import { poemMechanics } from '@/engine/PoemMechanics';
 import { initConsequencesSystem } from '@/engine/ConsequencesSystem';
+import {
+  startSceneStreamingCoordinator,
+  disposeSceneStreamingCoordinator,
+} from '@/engine/streaming/SceneStreamingCoordinator';
 import { explorationHourToNarrativeTimeOfDay } from '@/game/conditions/timeOfDay';
 import type { NPCRelation, PlayerState, PlayerSkills, SceneId } from '@/data/types';
 import { asTrainablePlayerSkill } from '@/lib/trainablePlayerSkill';
@@ -102,6 +106,13 @@ export function useGameRuntime(params: UseGameRuntimeParams) {
   useEffect(() => {
     initConsequencesSystem(storeContext, dialogueStoreActions);
   }, [storeContext, dialogueStoreActions]);
+
+  useEffect(() => {
+    startSceneStreamingCoordinator();
+    return () => {
+      disposeSceneStreamingCoordinator();
+    };
+  }, []);
 
   useEffect(() => {
     poemMechanics.setCollectedPoems(collectedPoems);

@@ -1,5 +1,30 @@
 // src/config/scenes.ts
 import type { SceneId } from '@/data/types';
+
+// --- Стриминг 3D-обхода (`docs/scene-streaming-spec.md`) ---
+
+/** Идентификатор чанка внутри сцены, напр. `` `${SceneId}::courtyard` ``. */
+export type StreamingChunkId = string;
+
+/** Приоритет ассета для prefetch / LRU (не путать с LOD меша). */
+export type AssetTier = 'critical' | 'nearby' | 'optional';
+
+export type StreamingAssetManifestEntry = {
+  url: string;
+  tier: AssetTier;
+  estimatedTextureBytes?: number;
+  estimatedGeometryBytes?: number;
+  chunkId?: StreamingChunkId;
+};
+
+export type SceneStreamingProfile = {
+  neighborSceneIds: readonly SceneId[];
+  chunks?: readonly {
+    id: StreamingChunkId;
+    assets: readonly StreamingAssetManifestEntry[];
+    rapierBodyKeys?: readonly string[];
+  }[];
+};
 import type { PlayerPosition } from '@/data/rpgTypes';
 import { PLAYER_FEET_SPAWN_Y } from '@/lib/playerScaleConstants';
 import {
@@ -76,6 +101,10 @@ export interface SceneConfig {
    * Тон — история и стих, без спойлеров; обычно 1–2 строки.
    */
   explorationTutorialHints?: readonly string[];
+  /**
+   * Профиль стриминга чанков для этой локации. Если не задан — `SceneStreamingCoordinator` не меняет поведение (no-op).
+   */
+  streaming?: SceneStreamingProfile;
 }
 
 function inferredExplorationLocomotionFromCharacter(characterScale: number): number {
