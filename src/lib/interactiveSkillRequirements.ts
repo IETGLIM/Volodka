@@ -1,6 +1,6 @@
 import type { InteractiveObjectConfig } from '@/config/scenes';
 import type { PlayerSkills } from '@/data/types';
-import { matchRequiredSkills } from '@/core/conditions/ConditionMatcher';
+import { matchRequiredSkills } from '@/game/conditions/ConditionMatcher';
 
 /** Сообщение, если не хватает навыка для взаимодействия с объектом. */
 export function getInteractiveSkillBlockMessage(

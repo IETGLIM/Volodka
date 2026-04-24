@@ -5,7 +5,7 @@ import { useThree, useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { damp3 } from 'maath/easing';
 import { followCameraCollisionDamp, followCameraSmoothDamp } from '@/lib/followCameraDamp';
-import { clampPhysicsTimestep } from '@/core/physics/CharacterController';
+import { clampPhysicsTimestep } from '@/engine/physics/CharacterController';
 import { explorationPointerBlocksCameraOrbit } from '@/lib/explorationUiPointer';
 import { setExplorationCameraOrbitYawRad } from '@/lib/explorationCameraOrbitBridge';
 import { CAMERA_COLLISION_LAYER } from './SceneColliders';

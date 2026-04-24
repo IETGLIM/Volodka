@@ -12,7 +12,7 @@ import type {
   DialogueEffect,
 } from '@/data/rpgTypes';
 import type { NarrativeTimeOfDay, PlayerState, NPCRelation, PlayerSkills } from '@/data/types';
-import { matchDialogueCondition, type ConditionMatchContext } from '@/core/conditions/ConditionMatcher';
+import { matchDialogueCondition, type ConditionMatchContext } from '@/game/conditions/ConditionMatcher';
 
 // ============================================
 // ТИПЫ

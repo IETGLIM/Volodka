@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { eventBus } from '@/engine/EventBus';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { StoryNode, StoryChoice, ChoiceCondition, PoemLine, StoryEffect } from '@/data/types';
-import { explorationHourToNarrativeTimeOfDay } from '@/core/conditions/timeOfDay';
+import { explorationHourToNarrativeTimeOfDay } from '@/game/conditions/timeOfDay';
 import { statsEngine } from '@/engine/StatsEngine';
 import { useGameStore } from '@/state/gameStore';
 import { useStoryConditionSlice } from '@/hooks/useStoryConditionSlice';

@@ -1,6 +1,6 @@
-import { getDominantEmotion, hasMemory } from '@/core/memory/memoryQueries';
-import type { MemoryEmotion } from '@/core/memory/types';
-import { getRelationshipScore } from '@/core/memory/relationshipAccess';
+import { getDominantEmotion, hasMemory } from '@/game/memory/memoryQueries';
+import type { MemoryEmotion } from '@/game/memory/types';
+import { getRelationshipScore } from '@/game/memory/relationshipAccess';
 
 function parseHasMemory(part: string): boolean | null {
   const m = /hasMemory\s*\(\s*"([^"]+)"\s*\)/.exec(part);

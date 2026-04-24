@@ -2,9 +2,9 @@
 
 import type { MutableRefObject } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { PHYSICS_CONSTANTS } from '@/core/physics/constants';
-import { PlayerInputController } from '@/core/input/InputController';
-import type { PlayerControls } from '@/core/input/playerControlsTypes';
+import { PHYSICS_CONSTANTS } from '@/engine/physics/constants';
+import { PlayerInputController } from '@/engine/input/InputController';
+import type { PlayerControls } from '@/engine/input/playerControlsTypes';
 
 export { PHYSICS_CONSTANTS };
 export type { PlayerControls };

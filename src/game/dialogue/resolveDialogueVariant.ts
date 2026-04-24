@@ -1,5 +1,5 @@
-import { getDominantEmotion, hasMemory } from '@/core/memory/memoryQueries';
-import { getRelationshipScore } from '@/core/memory/relationshipAccess';
+import { getDominantEmotion, hasMemory } from '@/game/memory/memoryQueries';
+import { getRelationshipScore } from '@/game/memory/relationshipAccess';
 import type { DialogueNode } from '@/data/rpgTypes';
 import { DIALOGUE_NODES } from '@/data/npcDefinitions';
 

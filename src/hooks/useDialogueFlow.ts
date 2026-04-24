@@ -1,6 +1,6 @@
 import { useCallback, useRef, useState } from 'react';
 import type { DialogueNode, DialogueEffect, GameMode } from '@/data/rpgTypes';
-import { resolveDialogueVariant } from '@/core/dialogue/resolveDialogueVariant';
+import { resolveDialogueVariant } from '@/game/dialogue/resolveDialogueVariant';
 import { NPC_DEFINITIONS } from '@/data/npcDefinitions';
 import { eventBus } from '@/engine/EventBus';
 import { applyDialogueEffects } from '@/engine/DialogueEngine';

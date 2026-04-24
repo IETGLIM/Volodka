@@ -9,7 +9,7 @@ import { RigidBodyType, type Vector3 as RapierVector3 } from '@dimforge/rapier3d
 import { footstepSfxType, resolveFootstepMaterial, type FootstepMaterial } from '@/lib/footstepMaterials';
 import { audioEngine } from '@/engine/AudioEngine';
 import { eventBus } from '@/engine/EventBus';
-import { PHYSICS_CONSTANTS } from '@/core/physics/constants';
+import { PHYSICS_CONSTANTS } from '@/engine/physics/constants';
 
 const RAY_LEN = 2.8;
 const MIN_STEP_INTERVAL = 0.14;

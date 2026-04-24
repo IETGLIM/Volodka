@@ -6,7 +6,7 @@ import {
   createVolodkaCarpetTexture,
   createVolodkaWallTexture,
   createVolodkaWoodTexture,
-} from '@/components/game/exploration/volodkaRoomProceduralTextures';
+} from '@/ui/3d/exploration/volodkaRoomProceduralTextures';
 import {
   INTERIOR_REF_COMPACT_SOFA_GROUP_CENTER_Y_M,
   INTERIOR_REF_WINDOW_HEIGHT_M,

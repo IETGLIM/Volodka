@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { useMemoryStore } from '@/core/memory/memoryStore';
+import { useMemoryStore } from '@/game/memory/memoryStore';
 import { introQuest } from '@/game/quests/introQuest';
 
 import { handleInteractionForQuests, startQuestWithLog } from './QuestEngine';

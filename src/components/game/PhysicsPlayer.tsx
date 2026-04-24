@@ -13,7 +13,7 @@ import {
   computePlayerCapsule,
   createExplorationKinematicCharacterController,
   integrateKinematicLocomotionDelta,
-} from '@/core/physics/CharacterController';
+} from '@/engine/physics/CharacterController';
 import { usePlayerFootsteps } from '@/hooks/usePlayerFootsteps';
 import { getDefaultPlayerModelPath, isValidPlayerGlbPath, rewriteLegacyModelPath } from '@/config/modelUrls';
 import { applyExplorationPlayerGlobalVisualScale } from '@/lib/playerScaleConstants';

@@ -1,6 +1,6 @@
-import { InteractionRegistry } from '@/core/interaction/InteractionRegistry';
-import { checkDialogueCondition } from '@/core/dialogue/dialogueConditions';
-import { startQuestWithLog } from '@/core/quests/QuestEngine';
+import { InteractionRegistry } from '@/game/interactions/InteractionRegistry';
+import { checkDialogueCondition } from '@/game/dialogue/dialogueConditions';
+import { startQuestWithLog } from '@/game/quests/QuestEngine';
 import { eventBus } from '@/engine/EventBus';
 import { introQuest } from '@/game/quests/introQuest';
 import { useGameStore } from '@/state/gameStore';

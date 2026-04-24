@@ -1,4 +1,4 @@
-import type { Quest } from '@/core/quests/types';
+import type { Quest } from '@/game/quests/types';
 
 /** Стартовый модульный квест: взаимодействие `npc_intro` в 3D-обходе. */
 export const introQuest: Quest = {

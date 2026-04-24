@@ -1,4 +1,4 @@
-import { rememberCoreQuestCompleted, rememberCoreQuestStarted } from '@/core/memory/MemoryEngine';
+import { rememberCoreQuestCompleted, rememberCoreQuestStarted } from '@/game/memory/MemoryEngine';
 
 import type { Quest } from './types';
 import { useQuestStore } from './questStore';

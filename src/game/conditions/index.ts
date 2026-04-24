@@ -8,5 +8,5 @@ export {
   getConditionStatOrSkillValue,
   type ConditionMatchContext,
   type ConditionMatchResult,
-} from '@/core/conditions/ConditionMatcher';
-export { explorationHourToNarrativeTimeOfDay, narrativeTimeOrder, narrativeTimeInRange } from '@/core/conditions/timeOfDay';
+} from '@/game/conditions/ConditionMatcher';
+export { explorationHourToNarrativeTimeOfDay, narrativeTimeOrder, narrativeTimeInRange } from '@/game/conditions/timeOfDay';

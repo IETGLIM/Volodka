@@ -15,7 +15,7 @@ import type {
 import {
   consequenceContextToMatchContext,
   matchConsequenceCondition,
-} from '@/core/conditions/ConditionMatcher';
+} from '@/game/conditions/ConditionMatcher';
 
 // ============================================
 // ТИПЫ

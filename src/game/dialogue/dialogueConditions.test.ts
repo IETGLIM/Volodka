@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 
-import { useMemoryStore } from '@/core/memory/memoryStore';
+import { useMemoryStore } from '@/game/memory/memoryStore';
 
 import { checkDialogueCondition } from './dialogueConditions';
 

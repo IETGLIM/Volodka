@@ -3,9 +3,9 @@
 import { useMemo, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 
-import { getEmotionalProfile } from '@/core/memory/emotionalProfile';
-import type { MemoryEmotion } from '@/core/memory/types';
-import { useMemoryStore } from '@/core/memory/memoryStore';
+import { getEmotionalProfile } from '@/game/memory/emotionalProfile';
+import type { MemoryEmotion } from '@/game/memory/types';
+import { useMemoryStore } from '@/game/memory/memoryStore';
 
 const EMOTION_STYLES: Record<MemoryEmotion, string> = {
   neutral: 'border-slate-500/40 bg-slate-900/50 text-slate-200',

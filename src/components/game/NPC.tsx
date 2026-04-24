@@ -25,7 +25,7 @@ import type { KinematicCharacterController } from '@dimforge/rapier3d-compat';
 import {
   computePlayerCapsule,
   createExplorationKinematicCharacterController,
-} from '@/core/physics/CharacterController';
+} from '@/engine/physics/CharacterController';
 import { motion } from 'framer-motion';
 import { useShallow } from 'zustand/react/shallow';
 import * as THREE from 'three';

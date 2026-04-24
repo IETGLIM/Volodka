@@ -15,7 +15,7 @@ import { useFrame } from '@react-three/fiber';
 import type { RapierRigidBody } from '@react-three/rapier';
 import * as THREE from 'three';
 import { PHYSICS_CONSTANTS, usePlayerControls } from '@/hooks/useGamePhysics';
-import { clampPhysicsTimestep } from '@/core/physics/CharacterController';
+import { clampPhysicsTimestep } from '@/engine/physics/CharacterController';
 import { getExplorationCameraOrbitYawRad } from '@/lib/explorationCameraOrbitBridge';
 import type { PhysicsPlayerProps, PhysicsPlayerRef } from '@/components/game/PhysicsPlayer';
 

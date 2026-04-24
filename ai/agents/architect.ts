@@ -11,10 +11,12 @@ const SYSTEM_PROMPT = `Ты — Архитектор кода для RPG/Visual 
 Проект использует Next.js 16 + TypeScript + Zustand + Tailwind + shadcn/ui.
 
 Текущая архитектура:
-- /src/engine/ — движковые системы (EventBus, CoreLoop, DialogueEngine, SceneManager, StatsEngine, ConsequencesSystem, PoemMechanics)
+- /src/engine/ — движковые системы (EventBus, CoreLoop, DialogueEngine, SceneManager, StatsEngine, ConsequencesSystem, PoemMechanics; physics/input/camera как чистый TS)
+- /src/game/ — игровая логика (conditions, dialogue, memory, quests, interactions, game/core сервисы обхода)
 - /src/state/ — глобальное состояние (Zustand: gameStore, доменные сторы, фаза обхода)
 - /src/data/ — данные игры (storyNodes, poems, quests, items, factions, NPCs)
-- /src/components/game/ — UI-компоненты (GameOrchestrator, SceneRenderer, StoryRenderer, DialogueRenderer, HUD)
+- /src/ui/3d/exploration/ — презентация 3D-обхода (постобработка, частицы, оверлеи сцены)
+- /src/components/game/ — остальной UI игры (GameOrchestrator, StoryRenderer, DialogueRenderer, HUD и т.д.)
 - /src/hooks/ — React-хуки
 
 Принципы:

@@ -18,7 +18,7 @@ import {
   INTRO_ELEVATOR_OVERLAY_START_SEC,
   sampleIntroPlayerPose,
 } from '@/lib/introVolodkaOpeningCutscene';
-import { IntroElevatorShaftVisual } from '@/components/game/exploration/IntroElevatorShaftVisual';
+import { IntroElevatorShaftVisual } from '@/ui/3d/exploration/IntroElevatorShaftVisual';
 import { smoothBlend01 } from '@/lib/cinematicEasing';
 
 const INTRO_CAMERA_R3F_PRIORITY = 55;

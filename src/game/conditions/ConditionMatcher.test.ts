@@ -2,13 +2,13 @@ import { describe, it, expect } from 'vitest';
 import {
   explorationHourToNarrativeTimeOfDay,
   narrativeTimeInRange,
-} from '@/core/conditions/timeOfDay';
+} from '@/game/conditions/timeOfDay';
 import {
   matchRequiredSkills,
   matchChoiceCondition,
   matchDialogueCondition,
   matchConsequenceCondition,
-} from '@/core/conditions/ConditionMatcher';
+} from '@/game/conditions/ConditionMatcher';
 import type { PlayerState } from '@/data/types';
 import { INITIAL_PLAYER_ENERGY } from '@/lib/energyConfig';
 

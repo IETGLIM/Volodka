@@ -1,5 +1,5 @@
-import type { MemoryEmotion } from '@/core/memory/types';
-import { getDominantEmotion } from '@/core/memory/memoryQueries';
+import type { MemoryEmotion } from '@/game/memory/types';
+import { getDominantEmotion } from '@/game/memory/memoryQueries';
 
 export type WorldStateModifiers = {
   lighting: 'default' | 'dim' | 'warm';

@@ -3,10 +3,10 @@
 import { useMemo } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 
-import { useQuestStore } from '@/core/quests/questStore';
+import { useQuestStore } from '@/game/quests/questStore';
 
 /**
- * Минимальный оверлей модульных квестов (`src/core/quests`), не путать с панелью 📋 из `gameStore`.
+ * Минимальный оверлей модульных квестов (`src/game/quests`), не путать с панелью 📋 из `gameStore`.
  */
 export default function QuestTracker() {
   const quests = useQuestStore(useShallow((s) => s.quests));

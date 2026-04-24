@@ -12,7 +12,7 @@ import {
   SCENE_ENVIRONMENT_SHADOW_MAP_SIZE,
 } from '@/lib/explorationShadowConstants';
 import { ZaremaAlbertRoom } from './RoomEnvironment';
-import { VolodkaCorridorVisual } from './exploration/VolodkaCorridorVisual';
+import { VolodkaCorridorVisual } from '@/ui/3d/exploration/VolodkaCorridorVisual';
 import { ThreeCanvasSuspenseFallback } from '@/components/3d/ThreeCanvasSuspenseFallback';
 
 // ============================================

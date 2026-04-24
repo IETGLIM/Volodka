@@ -2,8 +2,8 @@
  * Графовые побочные квесты обхода: узлы (состояния) и рёбра (триггеры + условия + действия).
  * Текущий узел — ровно один флаг `qg_<graphId>__<nodeId>` среди перечисленных в `graph.nodes`.
  */
-import type { InteractionContext } from '@/core/interaction/interactionContext';
-import { rememberExplorationQuestCompleted } from '@/core/memory/MemoryEngine';
+import type { InteractionContext } from '@/game/interactions/interactionContext';
+import { rememberExplorationQuestCompleted } from '@/game/memory/MemoryEngine';
 import { QUEST_DEFINITIONS } from '@/data/quests';
 import { eventBus } from '@/engine/EventBus';
 import { useGameStore } from '@/state/gameStore';

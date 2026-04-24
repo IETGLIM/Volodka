@@ -8,8 +8,8 @@ import {
   createVolodkaFloorTexture,
   createVolodkaWallTexture,
   createVolodkaWoodTexture,
-} from '@/components/game/exploration/volodkaRoomProceduralTextures';
-import { MatrixRainScreenMesh } from '@/components/game/exploration/MatrixRainScreenMesh';
+} from '@/ui/3d/exploration/volodkaRoomProceduralTextures';
+import { MatrixRainScreenMesh } from '@/ui/3d/exploration/MatrixRainScreenMesh';
 import {
   INTERIOR_REF_DOOR_HEIGHT_M,
   INTERIOR_REF_DOOR_WIDTH_M,

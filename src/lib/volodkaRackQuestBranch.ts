@@ -1,5 +1,5 @@
 import type { InteractiveObjectConfig } from '@/config/scenes';
-import { rememberExplorationQuestCompleted } from '@/core/memory/MemoryEngine';
+import { rememberExplorationQuestCompleted } from '@/game/memory/MemoryEngine';
 import { QUEST_DEFINITIONS } from '@/data/quests';
 import { useGameStore } from '@/state/gameStore';
 

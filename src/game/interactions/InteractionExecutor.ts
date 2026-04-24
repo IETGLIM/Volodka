@@ -1,5 +1,5 @@
-import { rememberInteraction } from '@/core/memory/MemoryEngine';
-import { handleInteractionForQuests } from '@/core/quests/QuestEngine';
+import { rememberInteraction } from '@/game/memory/MemoryEngine';
+import { handleInteractionForQuests } from '@/game/quests/QuestEngine';
 
 import type { Interaction } from './interactionTypes';
 import type { InteractionContext } from './interactionContext';

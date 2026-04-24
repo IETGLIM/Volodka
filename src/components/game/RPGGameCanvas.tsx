@@ -24,9 +24,9 @@ import {
   isExplorationRapierColliderDebugEnabled,
   isExplorationWebGlContextLogEnabled,
 } from '@/lib/explorationDiagnostics';
-import { ExplorationMeshWorldAudit, ExplorationWebGlContextLog } from '@/components/game/exploration/ExplorationSceneDiagnostics';
+import { ExplorationMeshWorldAudit, ExplorationWebGlContextLog } from '@/ui/3d/exploration/ExplorationSceneDiagnostics';
 import { ThreeCanvasSuspenseFallback } from '@/components/3d/ThreeCanvasSuspenseFallback';
-import { ExplorationNoclipPlayer } from '@/components/game/exploration/ExplorationNoclipPlayer';
+import { ExplorationNoclipPlayer } from '@/ui/3d/exploration/ExplorationNoclipPlayer';
 import * as THREE from 'three';
 
 // Types
@@ -70,13 +70,13 @@ import { eventBus } from '@/engine/EventBus';
 import { getCurrentScheduleEntry } from '@/engine/ScheduleEngine';
 import { useIsMobile, useTouchGameControls } from '@/hooks/use-mobile';
 import { useMobileVisualPerf } from '@/hooks/useMobileVisualPerf';
-import { ExplorationPostFX } from '@/components/game/exploration/ExplorationPostFX';
-import { ExplorationParticles } from '@/components/game/exploration/ExplorationParticles';
-import { ExplorationFootprints } from '@/components/game/exploration/ExplorationFootprints';
-import { PanelDistrictBuildings } from '@/components/game/exploration/PanelDistrictBuildings';
-import { ExplorationFrameStats, useExplorationFrameStatsEnabled } from '@/components/game/exploration/ExplorationFrameStats';
-import { ExplorationSystemsTick } from '@/components/game/exploration/ExplorationSystemsTick';
-import { mountExplorationController } from '@/features/exploration/ExplorationController';
+import { ExplorationPostFX } from '@/ui/3d/exploration/ExplorationPostFX';
+import { ExplorationParticles } from '@/ui/3d/exploration/ExplorationParticles';
+import { ExplorationFootprints } from '@/ui/3d/exploration/ExplorationFootprints';
+import { PanelDistrictBuildings } from '@/ui/3d/exploration/PanelDistrictBuildings';
+import { ExplorationFrameStats, useExplorationFrameStatsEnabled } from '@/ui/3d/exploration/ExplorationFrameStats';
+import { ExplorationSystemsTick } from '@/ui/3d/exploration/ExplorationSystemsTick';
+import { mountExplorationController } from '@/game/interactions/explorationController';
 import { ExplorationMobileHud } from './ExplorationMobileHud';
 import { RadialMenu, type RadialMenuAction } from './RadialMenu';
 import { getExplorationRadialMenuActions } from '@/lib/explorationRadialMenuActions';
@@ -84,13 +84,13 @@ import { resolveExplorationPrimaryInteraction } from '@/lib/explorationPrimaryIn
 import type { PlayerControls } from '@/hooks/useGamePhysics';
 import { createFloorNavPathfinder } from '@/lib/explorationNavMesh';
 import { BattleClickLayer } from './BattleClickLayer';
-import { VolodkaCorridorVisual } from './exploration/VolodkaCorridorVisual';
-import { VolodkaRoomVisual } from './exploration/VolodkaRoomVisual';
-import { ZaremaAlbertExplorationVisual } from './exploration/ZaremaAlbertExplorationVisual';
-import { HomeEveningVisual } from './exploration/HomeEveningVisual';
-import { ExplorationInteractionFocusOutline } from '@/components/game/exploration/ExplorationInteractionFocusOutline';
+import { VolodkaCorridorVisual } from '@/ui/3d/exploration/VolodkaCorridorVisual';
+import { VolodkaRoomVisual } from '@/ui/3d/exploration/VolodkaRoomVisual';
+import { ZaremaAlbertExplorationVisual } from '@/ui/3d/exploration/ZaremaAlbertExplorationVisual';
+import { HomeEveningVisual } from '@/ui/3d/exploration/HomeEveningVisual';
+import { ExplorationInteractionFocusOutline } from '@/ui/3d/exploration/ExplorationInteractionFocusOutline';
 import { NpcProximityBarks } from './NpcProximityBarks';
-import { ExplorationBriefingOverlay } from '@/components/game/exploration/ExplorationBriefingOverlay';
+import { ExplorationBriefingOverlay } from '@/ui/3d/exploration/ExplorationBriefingOverlay';
 import { IntroCutsceneCinematicDirector } from '@/components/Cutscenes/IntroCutscene';
 import { INTRO_OPENING_SCENE_ID } from '@/lib/introVolodkaOpeningCutscene';
 import { EXPLORATION_SCENE_FRAMELOOP, getExplorationSceneGlProps } from '@/components/3d/Scene';
@@ -99,7 +99,7 @@ import {
   clearExplorationLivePlayerPosition,
   updateExplorationLivePlayerPosition,
 } from '@/lib/explorationLivePlayerBridge';
-import { resolveNearest, type InteractionCandidate } from '@/core/interaction/InteractionResolver';
+import { resolveNearest, type InteractionCandidate } from '@/game/interactions/InteractionResolver';
 import { explorationInteractionRegistry, registerBaseInteractions } from '@/game/interactions/registerBaseInteractions';
 import { InteractionHint, EXPLORATION_INTERACTION_HINT_MAX_DISTANCE } from '@/components/ui/InteractionHint';
 import { useExplorationLivePlayerTick } from '@/hooks/useExplorationLivePlayerTick';

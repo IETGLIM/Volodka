@@ -11,7 +11,7 @@
 import { eventBus, type StatBusId } from './EventBus';
 import type { NarrativeTimeOfDay, NPCRelation, PlayerState, PlayerSkills, ChoiceCondition } from '@/data/types';
 import { MAX_PLAYER_ENERGY } from '@/lib/energyConfig';
-import { matchChoiceCondition, type ConditionMatchContext } from '@/core/conditions/ConditionMatcher';
+import { matchChoiceCondition, type ConditionMatchContext } from '@/game/conditions/ConditionMatcher';
 
 // ============================================
 // ТИПЫ

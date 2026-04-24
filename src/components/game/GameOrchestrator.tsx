@@ -52,14 +52,14 @@ import { MoralCompassHUD } from '@/components/game/MoralCompassHUD';
 import { SceneTransition } from '@/components/game/CinematicEffects';
 import { LootNotification, SkillUpNotification } from '@/components/game/LootNotification';
 import { TutorialOverlay } from '@/components/game/TutorialOverlay';
-import { HackingWireMinigameOverlay } from '@/components/game/exploration/HackingWireMinigameOverlay';
+import { HackingWireMinigameOverlay } from '@/ui/3d/exploration/HackingWireMinigameOverlay';
 import { MiniMap } from '@/components/game/MiniMap';
 import { SCENE_VISUALS } from '@/engine/SceneManager';
 import type { VisualState } from '@/data/types';
 import { storyNodeShowsStoryOverlay } from '@/lib/storyOverlayEligibility';
 import { EXPLORATION_GAME_VIEWPORT_CLASS } from '@/components/3d/Scene';
 import { initGameCore } from '@/game/core/gameCoreBootstrap';
-import { getWorldStateModifiers } from '@/core/world/worldReactivity';
+import { getWorldStateModifiers } from '@/game/world/worldReactivity';
 import MemoryLog from '@/components/ui/MemoryLog';
 import QuestTracker from '@/components/ui/QuestTracker';
 

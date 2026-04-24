@@ -11,10 +11,10 @@ import type {
   PlayerState,
 } from '@/data/types';
 import type { ConsequenceCondition, ConsequenceEvaluationContext } from '@/engine/ConsequencesSystem';
-import { explorationHourToNarrativeTimeOfDay, narrativeTimeInRange } from '@/core/conditions/timeOfDay';
+import { explorationHourToNarrativeTimeOfDay, narrativeTimeInRange } from '@/game/conditions/timeOfDay';
 
 export type { NarrativeTimeOfDay } from '@/data/types';
-export { explorationHourToNarrativeTimeOfDay } from '@/core/conditions/timeOfDay';
+export { explorationHourToNarrativeTimeOfDay } from '@/game/conditions/timeOfDay';
 
 /** Общий контекст: стор + опционально фаза суток и экипировка. */
 export interface ConditionMatchContext {
