@@ -145,12 +145,7 @@ export {
 export { VERTICAL_SLICE_ENTRY_NODE_ID } from './verticalSliceStoryNodes';
 
 // Триггерные зоны
-export {
-  STORY_TRIGGERS,
-  WORLD_ITEMS,
-  getTriggersForScene,
-  getWorldItemsForScene,
-} from './triggerZones';
+export { STORY_TRIGGERS, getTriggersForScene, getWorldItemsForScene } from './triggerZones';
 
 // Предметы
 export {

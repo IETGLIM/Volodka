@@ -1,6 +1,7 @@
 'use client';
 
 import { memo, useCallback, useEffect, useState } from 'react';
+import { Billboard, Html } from '@react-three/drei';
 import { useGameStore } from '@/store/gameStore';
 import { eventBus } from '@/engine/EventBus';
 import { rollStrikeDamage } from '@/lib/combatDamage';
@@ -18,8 +19,60 @@ interface BattleClickLayerProps {
   active: boolean;
 }
 
+const BattleEnemyMesh = memo(function BattleEnemyMesh({
+  enemy,
+  onHit,
+}: {
+  enemy: EnemySlot;
+  onHit: (id: string) => void;
+}) {
+  const [hovered, setHovered] = useState(false);
+  const alive = enemy.hp > 0;
+
+  return (
+    <group position={enemy.position}>
+      <mesh
+        userData={{ battleEnemyId: enemy.id }}
+        castShadow
+        receiveShadow
+        onClick={(ev) => {
+          ev.stopPropagation();
+          if (alive) onHit(enemy.id);
+        }}
+        onPointerOver={() => {
+          if (!alive) return;
+          setHovered(true);
+          document.body.style.cursor = 'crosshair';
+        }}
+        onPointerOut={() => {
+          setHovered(false);
+          document.body.style.cursor = 'default';
+        }}
+      >
+        <boxGeometry args={[0.88, 1.08, 0.88]} />
+        <meshStandardMaterial
+          color={alive ? (hovered ? '#b8455f' : '#8b2942') : '#2d3436'}
+          metalness={alive ? 0.18 : 0}
+          roughness={alive ? 0.44 : 0.9}
+          emissive={alive ? '#3a0a18' : '#000000'}
+          emissiveIntensity={alive ? (hovered ? 0.48 : 0.3) : 0}
+        />
+      </mesh>
+      {alive && (
+        <Billboard follow position={[0, 1.38, 0]}>
+          <Html center style={{ pointerEvents: 'none' }}>
+            <div className="rounded border border-red-500/35 bg-black/78 px-2 py-0.5 font-mono text-[10px] text-red-100/95 tabular-nums shadow-md">
+              {enemy.hp} / {enemy.maxHp}
+            </div>
+          </Html>
+        </Billboard>
+      )}
+    </group>
+  );
+});
+
 /**
- * Прототип боя: клик / тап по «врагу» (примитив) — урон от навыков, без анимаций.
+ * Прототип боя: клик / тап по цели — урон от навыков; HP-лейбл и hover-эмиссия для читаемости.
  */
 export const BattleClickLayer = memo(function BattleClickLayer({ active }: BattleClickLayerProps) {
   const skills = useGameStore((s) => s.playerState.skills);
@@ -67,30 +120,7 @@ export const BattleClickLayer = memo(function BattleClickLayer({ active }: Battl
   return (
     <group>
       {enemies.map((e) => (
-        <mesh
-          key={e.id}
-          position={e.position}
-          userData={{ battleEnemyId: e.id }}
-          castShadow
-          onClick={(ev) => {
-            ev.stopPropagation();
-            onHit(e.id);
-          }}
-          onPointerOver={() => {
-            document.body.style.cursor = e.hp > 0 ? 'crosshair' : 'default';
-          }}
-          onPointerOut={() => {
-            document.body.style.cursor = 'default';
-          }}
-        >
-          <boxGeometry args={[0.85, 1.05, 0.85]} />
-          <meshStandardMaterial
-            color={e.hp > 0 ? '#8b2942' : '#2d3436'}
-            roughness={e.hp > 0 ? 0.55 : 0.9}
-            emissive={e.hp > 0 ? '#2a0610' : '#000000'}
-            emissiveIntensity={e.hp > 0 ? 0.25 : 0}
-          />
-        </mesh>
+        <BattleEnemyMesh key={e.id} enemy={e} onHit={onHit} />
       ))}
     </group>
   );

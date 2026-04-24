@@ -1,10 +1,8 @@
 'use client';
 
-import { Component, useEffect, useMemo, useState, type ErrorInfo, type ReactNode } from 'react';
+import { Component, useEffect, useState, type ErrorInfo, type ReactNode } from 'react';
 import { motion } from 'framer-motion';
-import type { SceneId } from '@/data/types';
 import { POEMS } from '@/data/poems';
-import { NPC_DEFINITIONS } from '@/data/npcDefinitions';
 import { PoemReveal } from './PoemComponents';
 
 /** Ошибка загрузки lazy-панели (dynamic import) — не роняет весь orchestrator. */
@@ -118,37 +116,6 @@ export function PoemRevealOverlay({ poemId, onClose }: { poemId: string; onClose
   if (!poem) return null;
 
   return <PoemReveal poem={poem} intro={poem.intro} onClose={onClose} />;
-}
-
-export function SceneNPCList({ sceneId, onInteract }: { sceneId: SceneId; onInteract: (npcId: string) => void }) {
-  const npcsForScene = useMemo(() => {
-    return Object.values(NPC_DEFINITIONS).filter((npc) => npc.sceneId === sceneId);
-  }, [sceneId]);
-
-  if (npcsForScene.length === 0) return null;
-
-  return (
-    <div className="absolute bottom-32 left-4 z-20 flex flex-col gap-2">
-      {npcsForScene.map((npc) => (
-        <motion.button
-          key={npc.id}
-          type="button"
-          onClick={() => onInteract(npc.id)}
-          className="px-3 py-2 bg-slate-800/80 hover:bg-slate-700/80 backdrop-blur-sm border border-slate-600/30 rounded-lg text-sm text-slate-300 transition-all flex items-center gap-2 game-fm-layer game-fm-layer-promote"
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          aria-label={`Поговорить с персонажем: ${npc.name}`}
-        >
-          <span className="w-6 h-6 rounded-full bg-gradient-to-br from-slate-600 to-slate-700 flex items-center justify-center text-xs text-white font-bold">
-            {npc.name.charAt(0)}
-          </span>
-          {npc.name}
-        </motion.button>
-      ))}
-    </div>
-  );
 }
 
 export function EnergyBar({

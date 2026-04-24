@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useEffect, memo, useMemo, type RefObject } from "react";
+import { useRef, useState, useEffect, memo, type RefObject } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import type { TriggerZone, TriggerState } from "@/data/rpgTypes";
@@ -178,36 +178,34 @@ export const TriggerSystem = memo(function TriggerSystem({
 // ============================================
 
 interface WorldItemProps {
-  id: string;
   itemId: string;
   position: [number, number, number];
   collected: boolean;
-  onCollect: (id: string) => void;
-  playerPosition: { x: number; y: number; z: number };
+  /** Позиция игрока из физики без лишних ре-рендеров React. */
+  playerPositionRef: RefObject<{ x: number; y: number; z: number } | null>;
 }
 
 export const WorldItem = memo(function WorldItem({
-  id,
   itemId,
   position,
   collected,
-  onCollect,
-  playerPosition,
+  playerPositionRef,
 }: WorldItemProps) {
   const meshRef = useRef<THREE.Mesh>(null);
-
-  const isNear = useMemo(() => {
-    const dx = playerPosition.x - position[0];
-    const dy = playerPosition.y - position[1];
-    const dz = playerPosition.z - position[2];
-    const distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
-    return distance < 1.5;
-  }, [playerPosition.x, playerPosition.y, playerPosition.z, position]);
+  const nearHintRef = useRef<THREE.Mesh>(null);
 
   useFrame(({ clock }, delta) => {
+    const pos = playerPositionRef.current;
     if (meshRef.current && !collected) {
       meshRef.current.rotation.y += delta * 2;
       meshRef.current.position.y = position[1] + 0.3 + Math.sin(clock.elapsedTime * 3) * 0.1;
+    }
+    if (nearHintRef.current && pos) {
+      const dx = pos.x - position[0];
+      const dy = pos.y - position[1];
+      const dz = pos.z - position[2];
+      const distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
+      nearHintRef.current.visible = distance < 1.5;
     }
   });
 
@@ -235,12 +233,10 @@ export const WorldItem = memo(function WorldItem({
         />
       </mesh>
 
-      {isNear && (
-        <mesh position={[0, 0.8, 0]}>
-          <sphereGeometry args={[0.1, 8, 8]} />
-          <meshBasicMaterial color="#fbbf24" />
-        </mesh>
-      )}
+      <mesh ref={nearHintRef} position={[0, 0.8, 0]} visible={false}>
+        <sphereGeometry args={[0.1, 8, 8]} />
+        <meshBasicMaterial color="#fbbf24" />
+      </mesh>
     </group>
   );
 });

@@ -4,7 +4,8 @@
  */
 
 export function followCameraSmoothDamp(smoothness: number, delta: number): number {
-  const lambda = 2.4 + smoothness * 52;
+  /** Чуть выше λ — камера догоняет цель заметно увереннее (TPS / коллизии без «ваты»). */
+  const lambda = 2.75 + smoothness * 56;
   return 1 - Math.exp(-lambda * delta);
 }
 

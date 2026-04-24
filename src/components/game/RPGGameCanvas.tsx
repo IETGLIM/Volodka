@@ -42,7 +42,8 @@ import type {
 
 // Data
 import { getNPCsForScene } from '../../data/npcDefinitions';
-import { getTriggersForScene } from '../../data/triggerZones';
+import { getTriggersForScene, getWorldItemsForScene } from '../../data/triggerZones';
+import { getItemById } from '@/data/items';
 import {
   getInteractiveObjectsForScene,
   getExplorationCharacterModelScale,
@@ -59,7 +60,7 @@ import { NPCSystem } from './NPC';
 import { SceneColliderSelector } from './SceneColliders';
 import { PhysicsSceneColliders } from './PhysicsSceneColliders';
 import { getDefaultPlayerModelPath } from '@/config/modelUrls';
-import { TriggerSystem, isPlayerInTriggerZone } from './InteractiveTrigger';
+import { TriggerSystem, isPlayerInTriggerZone, WorldItem } from './InteractiveTrigger';
 import CameraEffects from '../CameraEffects';
 
 // Store
@@ -145,6 +146,9 @@ const GROUND_VOLODKA_CORRIDOR: RpgGroundGeometryArgs = [3.5, 0.1, 13.2];
 const GROUND_PLAZA: RpgGroundGeometryArgs = [48, 0.1, 48];
 const GROUND_OPEN: RpgGroundGeometryArgs = [40, 0.1, 40];
 
+/** Подбор лута по `E`: совпадает с подсказкой «рядом» у `WorldItem` (~1.5 м). */
+const WORLD_LAYOUT_PICKUP_RADIUS = 1.42;
+
 /** Тик суток в обходе: глобальный `advanceTime` из стора (остальной `useFrame` — в дочерних компонентах). */
 const ExplorationWorldClock = memo(function ExplorationWorldClock() {
   const advanceTime = useGameStore((s) => s.advanceTime);
@@ -229,6 +233,7 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
   const setPlayerPosition = useGameStore((state) => state.setPlayerPosition);
   const timeOfDay = useGameStore((state) => state.exploration.timeOfDay);
   const explorationStorePosition = useGameStore((state) => state.exploration.playerPosition);
+  const explorationWorldItems = useGameStore((state) => state.exploration.worldItems);
 
   /** Снимок из стора: спавн `PhysicsPlayer` и бутстрап камеры/NPC при смене локации или телепорте из стора. */
   const explorationSpawnSnapshot = useMemo(() => {
@@ -320,7 +325,7 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
       case 'dream':
         return { ambient: 0.3, light: '#a855f7', fogColor: '#1a0a2e', groundGeometryArgs: GROUND_OPEN };
       case 'battle':
-        return { ambient: 0.25, light: '#ef4444', fogColor: '#1a0505', groundGeometryArgs: GROUND_OPEN };
+        return { ambient: 0.28, light: '#f97373', fogColor: '#140306', groundGeometryArgs: GROUND_OPEN };
       case 'street_winter':
       case 'street_night':
         return {
@@ -442,6 +447,22 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
         pitchMax: 0.34,
       };
     }
+    if (sceneId === 'battle') {
+      return {
+        distance: 4.35,
+        height: 2.55,
+        smoothness: 0.125,
+        shoulderOffset: 0.22,
+        lookAtHeightOffset: 1.22,
+        collisionSpring: 12,
+        minDistance: 2.1,
+        maxDistance: 12,
+        collisionRayOriginY: 1.45,
+        collisionRadius: 0.28,
+        pitchMin: -0.18,
+        pitchMax: 0.42,
+      };
+    }
     if (isPanelDistrict) {
       return {
         distance: 5.25,
@@ -459,7 +480,7 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
     return {
       distance: 4.75,
       height: 2.9,
-      smoothness: 0.11,
+      smoothness: 0.115,
       shoulderOffset: 0.24,
       lookAtHeightOffset: 1.28,
       collisionSpring: 11,
@@ -480,6 +501,19 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
 
   const sceneInteractiveObjects = useMemo(() => getInteractiveObjectsForScene(sceneId), [sceneId]);
   const sceneTriggers = useMemo(() => getTriggersForScene(sceneId), [sceneId]);
+
+  const mergedScenePickups = useMemo(() => {
+    const defs = getWorldItemsForScene(sceneId);
+    return defs.map((def) => {
+      const row = explorationWorldItems.find((w) => w.id === def.id);
+      return {
+        id: def.id,
+        itemId: def.itemId,
+        position: [def.position.x, def.position.y, def.position.z] as [number, number, number],
+        collected: row?.collected ?? false,
+      };
+    });
+  }, [sceneId, explorationWorldItems]);
 
   const radialMenuActions = useMemo((): RadialMenuAction[] => {
     if (!radialObject) return [];
@@ -536,6 +570,45 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
     setAvailableInteractionIds(ids);
   }, []);
 
+  const tryPickupNearestWorldLayoutItem = useCallback((): boolean => {
+    const pos = playerPositionRef.current;
+    if (!pos) return false;
+    const st = useGameStore.getState();
+    const defs = getWorldItemsForScene(sceneId);
+    let best: (typeof defs)[0] | null = null;
+    let bestD = WORLD_LAYOUT_PICKUP_RADIUS;
+    for (const def of defs) {
+      const row = st.exploration.worldItems.find((w) => w.id === def.id);
+      if (row?.collected) continue;
+      const dx = pos.x - def.position.x;
+      const dy = pos.y - def.position.y;
+      const dz = pos.z - def.position.z;
+      const d = Math.sqrt(dx * dx + dy * dy + dz * dz);
+      if (d < bestD) {
+        bestD = d;
+        best = def;
+      }
+    }
+    if (!best) return false;
+    const hasRow = st.exploration.worldItems.some((w) => w.id === best.id);
+    if (!hasRow) {
+      st.addWorldItem({
+        id: best.id,
+        itemId: best.itemId,
+        position: { x: best.position.x, y: best.position.y, z: best.position.z },
+        sceneId: best.sceneId as SceneId,
+        collected: false,
+      });
+    }
+    st.collectWorldItem(best.id);
+    st.addItem(best.itemId, 1);
+    const meta = getItemById(best.itemId);
+    eventBus.emit('ui:exploration_message', {
+      text: meta ? `В инвентарь: ${meta.name}` : 'Предмет подобран.',
+    });
+    return true;
+  }, [sceneId]);
+
   // Handle player interaction (E / тач) — единый резолвер: триггер → объект vs NPC по дистанции
   const handlePlayerInteraction = useCallback(() => {
     if (playerInputLocked) return;
@@ -543,6 +616,8 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
       setExplorationBriefingOpen(false);
       return;
     }
+
+    if (tryPickupNearestWorldLayoutItem()) return;
 
     if (radialObject) {
       setRadialObject(null);
@@ -638,6 +713,7 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
     sceneInteractiveObjects,
     availableInteractionIds,
     explorationBriefingOpen,
+    tryPickupNearestWorldLayoutItem,
   ]);
 
   return (
@@ -784,6 +860,17 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
         />
 
         <BattleClickLayer active={sceneId === 'battle'} />
+
+        {explorationPhase !== 'intro_cutscene' &&
+          mergedScenePickups.map((row) => (
+            <WorldItem
+              key={row.id}
+              itemId={row.itemId}
+              position={row.position}
+              collected={row.collected}
+              playerPositionRef={livePlayerPositionRef}
+            />
+          ))}
 
         {/* Triggers */}
         <TriggerSystem
