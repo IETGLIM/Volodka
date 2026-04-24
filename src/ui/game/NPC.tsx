@@ -14,6 +14,7 @@ import React, {
 } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { useGLTF, useAnimations, Html } from '@react-three/drei';
+import { clone as cloneSkeleton } from 'three/examples/jsm/utils/SkeletonUtils.js';
 import {
   RigidBody,
   type RapierRigidBody,
@@ -178,21 +179,6 @@ function isValidNpcModelPath(p: string): boolean {
   );
 }
 
-/** Клон сцены из `loadedScene.clone(true)` — освобождаем GPU при смене URL или размонтировании. */
-function disposeNpcGltfCloneResources(root: THREE.Object3D) {
-  root.traverse((obj) => {
-    const mesh = obj as THREE.Mesh & { isMesh?: boolean };
-    if (!mesh.isMesh) return;
-    mesh.geometry?.dispose();
-    const mat = mesh.material;
-    if (Array.isArray(mat)) {
-      for (const m of mat) m.dispose();
-    } else if (mat && typeof (mat as THREE.Material).dispose === 'function') {
-      (mat as THREE.Material).dispose();
-    }
-  });
-}
-
 // Внутренний компонент для рендера загруженной модели (`castShadow` / `receiveShadow` — один раз в `GLTFLoader` при клоне).
 const GLTFModelInner = memo(function GLTFModelInner({
   groupRef,
@@ -253,9 +239,12 @@ const GLTFLoader = memo(function GLTFLoader({
   }, [animations, modelPath]);
   const { actions } = useAnimations(npcMixerClips, groupRef);
   const actionsRef = useRef(actions);
-  actionsRef.current = actions;
   const prevNpcClipRef = useRef<string | null>(null);
   const walkClipNameRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    actionsRef.current = actions;
+  }, [actions]);
 
   useLayoutEffect(() => {
     prevNpcClipRef.current = null;
@@ -298,7 +287,7 @@ const GLTFLoader = memo(function GLTFLoader({
   const { scene, bakedVisualScale } = useMemo(() => {
     if (!loadedScene) return { scene: null, bakedVisualScale: 1 };
     try {
-      const clone = loadedScene.clone(true);
+      const clone = cloneSkeleton(loadedScene) as THREE.Group;
       if (clone.scale.x !== 1 || clone.scale.y !== 1 || clone.scale.z !== 1) {
         console.warn('[NPC GLB] root had non-unit scale; reset to (1,1,1) before policies.', {
           modelPath,
@@ -351,13 +340,6 @@ const GLTFLoader = memo(function GLTFLoader({
       { modelPath, explorationSceneId, ...detail },
     );
   }, [modelPath, loadedScene, scene, explorationSceneId, bakedVisualScale]);
-
-  useEffect(() => {
-    if (!scene) return;
-    return () => {
-      disposeNpcGltfCloneResources(scene);
-    };
-  }, [scene]);
 
   useEffect(() => {
     const act = actionsRef.current;

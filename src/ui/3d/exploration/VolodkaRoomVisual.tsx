@@ -1,6 +1,6 @@
 'use client';
 
-import { memo, useEffect, useMemo } from 'react';
+import { memo, useEffect, useMemo, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import {
@@ -40,6 +40,39 @@ type VolodkaRoomVisualProps = {
   /** Для ветки GLB у `PropModel`; процедурные столы/шкафы остаются в метрах сцены. */
   explorationCharacterModelScale?: number;
 };
+
+const VolodkaGlitchPanel = memo(function VolodkaGlitchPanel() {
+  const meshRef = useRef<THREE.Mesh>(null);
+  const materialRef = useRef<THREE.ShaderMaterial | null>(null);
+
+  useEffect(() => {
+    const material = createGlitchDataPlaneMaterial('#38bdf8');
+    materialRef.current = material;
+    if (meshRef.current) {
+      meshRef.current.material = material;
+    }
+    return () => {
+      materialRef.current = null;
+      material.dispose();
+    };
+  }, []);
+
+  useFrame(({ clock }) => {
+    const material = materialRef.current;
+    if (material) material.uniforms.uTime.value = clock.elapsedTime;
+  });
+
+  return (
+    <mesh
+      ref={meshRef}
+      position={[6.86, 1.22, 0.15]}
+      rotation={[0, -Math.PI / 2, 0]}
+      userData={{ noCameraCollision: true }}
+    >
+      <planeGeometry args={[1.35, 0.62]} />
+    </mesh>
+  );
+});
 
 export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({
   explorationCharacterModelScale = 1,
@@ -128,16 +161,6 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({
     };
   }, [wallMat, floorMat, woodMat]);
 
-  const glitchPanelMat = useMemo(() => createGlitchDataPlaneMaterial('#38bdf8'), []);
-  useFrame(({ clock }) => {
-    glitchPanelMat.uniforms.uTime.value = clock.elapsedTime;
-  });
-  useEffect(() => {
-    return () => {
-      glitchPanelMat.dispose();
-    };
-  }, [glitchPanelMat]);
-
   return (
     <group name="VolodkaRoomVisual" userData={{ noCameraCollision: true }}>
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.015, 0]} receiveShadow material={floorMat}>
@@ -152,14 +175,7 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({
       </mesh>
 
       {/* Голографический «сбой» у восточной стены — канал / VLAN-схема. */}
-      <mesh
-        position={[w / 2 - t - 0.04, 1.22, 0.15]}
-        rotation={[0, -Math.PI / 2, 0]}
-        userData={{ noCameraCollision: true }}
-        material={glitchPanelMat}
-      >
-        <planeGeometry args={[1.35, 0.62]} />
-      </mesh>
+      <VolodkaGlitchPanel />
 
       <mesh position={[0, h / 2, -hd + t / 2]} castShadow receiveShadow material={wallMat}>
         <boxGeometry args={[w - 0.2, h, t]} />

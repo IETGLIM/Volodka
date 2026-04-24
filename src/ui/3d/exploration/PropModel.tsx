@@ -100,7 +100,27 @@ function PropGLB({ def, sceneScale, position, rotation }: PropGLBProps) {
   const url = normalizePublicModelPath(def.glbPath!);
   const { scene } = useGLTF(url);
 
-  const cloned = useMemo(() => scene.clone(true) as THREE.Group, [scene]);
+  const { cloned, bbox } = useMemo(() => {
+    const next = scene.clone(true) as THREE.Group;
+    next.updateMatrixWorld(true);
+    const nextBbox = computeExplorationCharacterMeshUnionVerticalExtent(next);
+    applyGltfCharacterDepthWrite(next);
+    applyGltfMeshesFrustumCullOff(next);
+    next.traverse((child) => {
+      const mesh = child as THREE.Mesh;
+      if (mesh.isMesh) {
+        mesh.castShadow = true;
+        mesh.receiveShadow = true;
+      }
+    });
+    next.userData = {
+      ...next.userData,
+      propId: def.id,
+      propBoundingVerticalM: nextBbox,
+    };
+    delete next.userData.characterHeightM;
+    return { cloned: next, bbox: nextBbox };
+  }, [scene, def.id]);
 
   const finalUniform = useMemo(() => {
     const base = def.baseUniform ?? 1;
@@ -108,26 +128,11 @@ function PropGLB({ def, sceneScale, position, rotation }: PropGLBProps) {
   }, [def.baseUniform, sceneScale]);
 
   useLayoutEffect(() => {
-    cloned.updateMatrixWorld(true);
-    const bbox = computeExplorationCharacterMeshUnionVerticalExtent(cloned);
     const v = validatePropGlbScale(def, url, bbox, finalUniform);
     if (v !== 'ok' && v !== 'skipped-procedural' && v !== 'skipped-exempt') {
       console.warn(`[PropModel] Масштаб GLB пропа "${def.id}": ${v.error} (продукт≈${v.actualHeightM.toFixed(3)})`);
     }
-
-    applyGltfCharacterDepthWrite(cloned);
-    applyGltfMeshesFrustumCullOff(cloned);
-    cloned.traverse((child) => {
-      const mesh = child as THREE.Mesh;
-      if (mesh.isMesh) {
-        mesh.castShadow = true;
-        mesh.receiveShadow = true;
-      }
-    });
-    cloned.userData.propId = def.id;
-    cloned.userData.propBoundingVerticalM = bbox;
-    delete cloned.userData.characterHeightM;
-  }, [cloned, def, finalUniform, url]);
+  }, [bbox, def, finalUniform, url]);
 
   return (
     <primitive object={cloned} position={position} rotation={rotation} scale={finalUniform} />

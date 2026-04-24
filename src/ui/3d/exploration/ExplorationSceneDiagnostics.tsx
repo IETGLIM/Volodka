@@ -26,7 +26,6 @@ export const ExplorationMeshWorldAudit = memo(function ExplorationMeshWorldAudit
     let cancelled = false;
     const run = () => {
       if (cancelled) return;
-      // eslint-disable-next-line no-console -- диагностический режим по env
       console.log('[ExplorationMeshWorldAudit] THREE.Scene (разверните в DevTools → children)', scene);
 
       const rows = collectMeshWorldAuditRows(scene);
@@ -38,12 +37,10 @@ export const ExplorationMeshWorldAudit = memo(function ExplorationMeshWorldAudit
         mesh: r.meshUuid,
         geometry: r.geometryUuid,
       }));
-      // eslint-disable-next-line no-console -- диагностический режим по env
       console.table(tableRows);
 
       const geoDups = findGeometryPlacementDuplicates(rows);
       if (geoDups.length > 0) {
-        // eslint-disable-next-line no-console
         console.warn(
           `[ExplorationMeshWorldAudit] Дубликаты: одна и та же геометрия (uuid) в одной мировой позиции (${geoDups.length} групп). Часто — два одинаковых меша в GLTF.`,
           geoDups,
@@ -52,14 +49,12 @@ export const ExplorationMeshWorldAudit = memo(function ExplorationMeshWorldAudit
 
       const nameDups = findNamePlacementDuplicates(rows);
       if (nameDups.length > 0) {
-        // eslint-disable-next-line no-console
         console.warn(
           `[ExplorationMeshWorldAudit] Дубликаты: одно и то же имя меша в одной позиции (${nameDups.length} групп).`,
           nameDups,
         );
       }
 
-      // eslint-disable-next-line no-console
       console.info(
         `[ExplorationMeshWorldAudit] sceneId=${sceneId} meshes=${rows.length}. Колонка geometry — совпадение + одинаковые wx,wy,wz → дубликат узла; см. console.warn выше.`,
       );
@@ -85,11 +80,9 @@ export const ExplorationWebGlContextLog = memo(function ExplorationWebGlContextL
     const canvas = gl.domElement;
     const onLost = (e: Event) => {
       (e as WebGLContextEvent).preventDefault?.();
-      // eslint-disable-next-line no-console
       console.warn('[Exploration] webglcontextlost');
     };
     const onRestored = () => {
-      // eslint-disable-next-line no-console
       console.info('[Exploration] webglcontextrestored');
     };
     canvas.addEventListener('webglcontextlost', onLost);

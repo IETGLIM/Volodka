@@ -16,12 +16,16 @@ export interface UsePlayerControlsOptions {
 
 export function usePlayerControls(options?: UsePlayerControlsOptions) {
   const controllerRef = useRef<PlayerInputController | null>(null);
-  if (!controllerRef.current) {
+  if (controllerRef.current === null) {
     controllerRef.current = new PlayerInputController();
   }
-  const onInteractPressRef = useRef(options?.onInteractPress);
-  onInteractPressRef.current = options?.onInteractPress;
+  const onInteractPress = options?.onInteractPress;
+  const onInteractPressRef = useRef(onInteractPress);
   const virtualControlsRef = options?.virtualControlsRef;
+
+  useEffect(() => {
+    onInteractPressRef.current = onInteractPress;
+  }, [onInteractPress]);
 
   const getControls = useCallback(() => {
     return controllerRef.current!.getMergedControls(virtualControlsRef);

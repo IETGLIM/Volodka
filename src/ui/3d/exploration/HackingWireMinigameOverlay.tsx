@@ -21,19 +21,36 @@ function triggerHackGlitchFlash(): void {
 export const HackingWireMinigameOverlay = memo(function HackingWireMinigameOverlay() {
   const active = useWireHackOverlayStore((s) => s.active);
   const closeWireHack = useWireHackOverlayStore((s) => s.closeWireHack);
+  const activeKey = active ? `${active.title}:${active.sequence.join(',')}` : '';
+  return (
+    <AnimatePresence>
+      {active && (
+        <ActiveHackingWireMinigame
+          key={activeKey}
+          active={active}
+          closeWireHack={closeWireHack}
+        />
+      )}
+    </AnimatePresence>
+  );
+});
+
+type ActiveWireHack = NonNullable<ReturnType<typeof useWireHackOverlayStore.getState>['active']>;
+
+const ActiveHackingWireMinigame = memo(function ActiveHackingWireMinigame({
+  active,
+  closeWireHack,
+}: {
+  active: ActiveWireHack;
+  closeWireHack: () => void;
+}) {
   const [step, setStep] = useState(0);
   const [shake, setShake] = useState(0);
-
-  useEffect(() => {
-    setStep(0);
-    setShake(0);
-  }, [active?.title, active?.sequence]);
 
   const seqLen = active?.sequence.length ?? 0;
 
   const onKeyEscape = useCallback(
     (e: KeyboardEvent) => {
-      if (!active) return;
       if (e.key !== 'Escape') return;
       e.preventDefault();
       active.onFinished(false);
@@ -43,14 +60,13 @@ export const HackingWireMinigameOverlay = memo(function HackingWireMinigameOverl
   );
 
   useEffect(() => {
-    if (!active) return;
     window.addEventListener('keydown', onKeyEscape);
     return () => window.removeEventListener('keydown', onKeyEscape);
-  }, [active, onKeyEscape]);
+  }, [onKeyEscape]);
 
   const handleNodeClick = useCallback(
     (nodeIndex: number) => {
-      if (!active || seqLen === 0) return;
+      if (seqLen === 0) return;
       const expect = active.sequence[step];
       if (nodeIndex !== expect) {
         setStep(0);
@@ -71,8 +87,6 @@ export const HackingWireMinigameOverlay = memo(function HackingWireMinigameOverl
   );
 
   return (
-    <AnimatePresence>
-      {active && (
         <motion.div
           key="wire-hack"
           className="game-critical-motion fixed inset-0 z-[100] flex items-center justify-center bg-black/82 p-4 font-mono text-cyan-100 game-fm-layer game-fm-layer-promote"
@@ -128,7 +142,5 @@ export const HackingWireMinigameOverlay = memo(function HackingWireMinigameOverl
             </div>
           </motion.div>
         </motion.div>
-      )}
-    </AnimatePresence>
   );
 });

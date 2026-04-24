@@ -269,10 +269,13 @@ const GLBPlayerModel = memo(function GLBPlayerModel({
   const { actions } = useAnimations(mixerAnimations, groupRef);
   const rs = Math.max(0.28, Math.min(1.25, roomScale));
   const actionsRef = useRef(actions);
-  actionsRef.current = actions;
   const prevTargetAnimRef = useRef<string | null>(null);
   const idleKeyForTimeScaleRef = useRef<string>('');
   const singleClipModeRef = useRef(false);
+
+  useEffect(() => {
+    actionsRef.current = actions;
+  }, [actions]);
 
   /** Стабильный ключ набора экшенов: ссылка `actions` от drei может меняться без смены клипов. */
   const actionKeysSig = useMemo(() => {
@@ -703,7 +706,6 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
       locomotionLogCounterRef.current += 1;
       if (locomotionLogCounterRef.current % 48 === 0) {
         const p = rb.translation();
-        // eslint-disable-next-line no-console -- gated by NEXT_PUBLIC_EXPLORATION_PLAYER_LOCOMOTION_LOG
         console.info('[ExplorationPlayerLocomotion]', {
           grounded,
           vy: verticalVelRef.current,

@@ -51,6 +51,7 @@ const eslintConfig = [
       "out/**",
       "build/**",
       "browserbase-functions/**",
+      "exports/**",
       "**/next-env.d.ts",
       "examples/**",
       "skills",

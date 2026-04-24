@@ -27,16 +27,7 @@ export const ExplorationInteractionFocusOutline = memo(function ExplorationInter
   const linesRef = useRef<THREE.LineSegments>(null);
   const geomRef = useRef<THREE.EdgesGeometry | null>(null);
   const lastKeyRef = useRef('');
-  const material = useMemo(
-    () =>
-      new THREE.LineBasicMaterial({
-        color: '#38bdf8',
-        transparent: true,
-        opacity: 0.72,
-        depthTest: true,
-      }),
-    [],
-  );
+  const materialRef = useRef<THREE.LineBasicMaterial | null>(null);
 
   const placeholderGeom = useMemo(() => {
     const b = new THREE.BoxGeometry(1, 1, 1);
@@ -49,9 +40,8 @@ export const ExplorationInteractionFocusOutline = memo(function ExplorationInter
     return () => {
       geomRef.current?.dispose();
       placeholderGeom.dispose();
-      material.dispose();
     };
-  }, [material, placeholderGeom]);
+  }, [placeholderGeom]);
 
   useFrame(({ clock }) => {
     const g = groupRef.current;
@@ -96,12 +86,15 @@ export const ExplorationInteractionFocusOutline = memo(function ExplorationInter
     }
 
     const pulse = 0.52 + 0.28 * (0.5 + 0.5 * Math.sin(clock.elapsedTime * 4.2));
-    material.opacity = pulse;
+    const material = materialRef.current;
+    if (material) material.opacity = pulse;
   });
 
   return (
     <group ref={groupRef} name="ExplorationInteractionFocusOutline" userData={{ noCameraCollision: true }}>
-      <lineSegments ref={linesRef} geometry={placeholderGeom} material={material} frustumCulled={false} />
+      <lineSegments ref={linesRef} geometry={placeholderGeom} frustumCulled={false}>
+        <lineBasicMaterial ref={materialRef} color="#38bdf8" transparent opacity={0.72} depthTest />
+      </lineSegments>
     </group>
   );
 });

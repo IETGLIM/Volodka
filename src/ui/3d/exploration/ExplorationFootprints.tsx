@@ -17,19 +17,22 @@ export const ExplorationFootprints = memo(function ExplorationFootprints({
 }: {
   sceneId: SceneId;
 }) {
-  const [prints, setPrints] = useState<Print[]>([]);
-
-  useEffect(() => {
-    setPrints([]);
-  }, [sceneId]);
+  const [printState, setPrintState] = useState<{ sceneId: SceneId; prints: Print[] }>(() => ({
+    sceneId,
+    prints: [],
+  }));
+  const prints = printState.sceneId === sceneId ? printState.prints : [];
 
   useEffect(() => {
     if (!sceneAllowsFootprints(sceneId)) return;
     const off = eventBus.on('exploration:footstep', (p) => {
-      setPrints((prev) => [
-        ...prev.slice(-(MAX_PRINTS - 1)),
-        { id: p.timestamp, x: p.x, z: p.z, ry: p.yaw },
-      ]);
+      setPrintState((prev) => ({
+        sceneId,
+        prints: [
+          ...(prev.sceneId === sceneId ? prev.prints : []).slice(-(MAX_PRINTS - 1)),
+          { id: p.timestamp, x: p.x, z: p.z, ry: p.yaw },
+        ],
+      }));
     });
     return off;
   }, [sceneId]);

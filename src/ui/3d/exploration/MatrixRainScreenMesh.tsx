@@ -31,7 +31,6 @@ export const MatrixRainScreenMesh = memo(function MatrixRainScreenMesh({
   const textureRef = useRef<THREE.CanvasTexture | null>(null);
   const dropsRef = useRef<CyberMatrixDrop[] | null>(null);
   const statusLinesRef = useRef(statusLines);
-  statusLinesRef.current = statusLines;
   const cols = 18;
   const rows = 28;
 
@@ -46,6 +45,10 @@ export const MatrixRainScreenMesh = memo(function MatrixRainScreenMesh({
     tex.wrapS = tex.wrapT = THREE.ClampToEdgeWrapping;
     return { canvas: c, texture: tex };
   }, []);
+
+  useEffect(() => {
+    statusLinesRef.current = statusLines;
+  }, [statusLines]);
 
   useEffect(() => {
     textureRef.current = texture;

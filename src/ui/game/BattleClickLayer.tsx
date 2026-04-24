@@ -75,6 +75,12 @@ const BattleEnemyMesh = memo(function BattleEnemyMesh({
  * Прототип боя: клик / тап по цели — урон от навыков; HP-лейбл и hover-эмиссия для читаемости.
  */
 export const BattleClickLayer = memo(function BattleClickLayer({ active }: BattleClickLayerProps) {
+  if (!active) return null;
+
+  return <ActiveBattleClickLayer />;
+});
+
+const ActiveBattleClickLayer = memo(function ActiveBattleClickLayer() {
   const skills = useGameStore((s) => s.playerState.skills);
   const addSkill = useGameStore((s) => s.addSkill);
   const [enemies, setEnemies] = useState(() => INITIAL_ENEMIES.map((e) => ({ ...e })));
@@ -84,12 +90,6 @@ export const BattleClickLayer = memo(function BattleClickLayer({ active }: Battl
       document.body.style.cursor = 'default';
     };
   }, []);
-
-  useEffect(() => {
-    if (active) {
-      setEnemies(INITIAL_ENEMIES.map((e) => ({ ...e })));
-    }
-  }, [active]);
 
   const onHit = useCallback(
     (id: string) => {
@@ -114,8 +114,6 @@ export const BattleClickLayer = memo(function BattleClickLayer({ active }: Battl
     },
     [skills, addSkill],
   );
-
-  if (!active) return null;
 
   return (
     <group>

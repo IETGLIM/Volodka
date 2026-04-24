@@ -7,7 +7,6 @@ import { useQuestStore } from './questStore';
 export function startQuestWithLog(quest: Quest): void {
   useQuestStore.getState().startQuest(quest);
   rememberCoreQuestStarted(quest.id, quest.title, quest.description);
-  // eslint-disable-next-line no-console -- quest debug (Step 9)
   console.log(`[Quest] Started: ${quest.id}`);
 }
 
@@ -31,17 +30,14 @@ export function handleInteractionForQuests(interactionId: string): void {
 
       if (current + 1 >= required) {
         completeObjective(quest.id, obj.id);
-        // eslint-disable-next-line no-console -- quest debug (Step 9)
         console.log(`[Quest] Objective completed: ${obj.id}`);
         const after = useQuestStore.getState().quests[quest.id];
         if (after?.status === 'completed') {
           rememberCoreQuestCompleted(after.id, after.title, after.description, 'neutral');
-          // eslint-disable-next-line no-console -- quest debug (Step 9)
           console.log(`[Quest] Completed: ${quest.id}`);
         }
       } else {
         incrementObjectiveCount(quest.id, obj.id);
-        // eslint-disable-next-line no-console -- quest debug (Step 9)
         console.log(`[Quest] Objective progress: ${quest.id}/${obj.id} ${current + 1}/${required}`);
       }
     }
