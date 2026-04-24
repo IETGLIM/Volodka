@@ -23,6 +23,20 @@ export const PROP_DEFINITIONS: Record<string, PropDefinition> = {
     estimatedGeometryBytes: 80_000,
     baseUniform: 0.92,
   },
+  /** Процедурный диван в `VolodkaRoomVisual`; при появлении GLB — только `glbPath` в манифесте. */
+  volodka_sofa: {
+    id: 'volodka_sofa',
+    category: 'furniture',
+    glbPath: undefined,
+    estimatedGeometryBytes: 2048,
+  },
+  /** Окно в задней стене (плоскость); при GLB — замена одной строкой в манифесте. */
+  volodka_window: {
+    id: 'volodka_window',
+    category: 'decor',
+    glbPath: undefined,
+    estimatedGeometryBytes: 512,
+  },
 
   // === Декор ===
   mug_techsupport: {

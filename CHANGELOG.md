@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Added
+
+- **Пропы комнаты Володьки (манифест + сцена):** `**volodka_sofa**`, `**volodka_window**` в `**propsManifest.ts**` — процедурная геометрия в `**PropModel**` с `children` в `**VolodkaRoomVisual**`; `**propId**` в `**scenes.ts**`; коллайдер окна выровнен по Z с мешем задней стены. В `**propGlbScale.integration.test.ts**` — smoke высоты AABB×uniform при `sceneScale=0.48` для GLB-пропов (широкие полосы до донастройки `baseUniform`).
+
 ### Changed
 
 - **Инструменты (knip):** `**VolodkaRoomVisualProps**` и `**PropModelProps**` — внутренние типы без публичного `export` (убраны предупреждения unused exports).

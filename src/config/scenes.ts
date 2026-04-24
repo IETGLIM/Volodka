@@ -276,6 +276,7 @@ export const SCENE_CONFIG = {
       {
         id: 'volodka_sofa',
         type: 'chair',
+        propId: 'volodka_sofa',
         position: [-3.8, INTERIOR_REF_SOFA_GROUP_CENTER_Y_M, 1.2],
         size: [1.85, 0.55, 0.85],
         color: '#4a5568',
@@ -283,7 +284,9 @@ export const SCENE_CONFIG = {
       {
         id: 'volodka_window',
         type: 'generic',
-        position: [-5.85, 1.05, 0.4],
+        propId: 'volodka_window',
+        /** Совпадает с `VolodkaRoomVisual`: задняя стена z = −hd + t + 0.02 при d=10, t=0.1. */
+        position: [-5.85, 1.05, -4.88],
         size: [0.15, 1.1, 2.4],
         color: '#1e3a5f',
       },

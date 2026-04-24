@@ -164,23 +164,29 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({
       <mesh position={[0, h / 2, -hd + t / 2]} castShadow receiveShadow material={wallMat}>
         <boxGeometry args={[w - 0.2, h, t]} />
       </mesh>
-      <mesh position={[-5.85, 1.05, -hd + t + 0.02]} receiveShadow>
-        <planeGeometry args={[2.2, 1.15]} />
-        <meshStandardMaterial
-          color="#1a2840"
-          emissive="#4a7ab0"
-          emissiveIntensity={0.22}
-          roughness={0.35}
-          metalness={0.15}
-          transparent
-          opacity={0.92}
-          depthWrite={false}
-          depthTest
-          polygonOffset
-          polygonOffsetFactor={1}
-          polygonOffsetUnits={1}
-        />
-      </mesh>
+      <PropModel
+        propId="volodka_window"
+        sceneScale={explorationCharacterModelScale}
+        position={[-5.85, 1.05, -hd + t + 0.02]}
+      >
+        <mesh receiveShadow>
+          <planeGeometry args={[2.2, 1.15]} />
+          <meshStandardMaterial
+            color="#1a2840"
+            emissive="#4a7ab0"
+            emissiveIntensity={0.22}
+            roughness={0.35}
+            metalness={0.15}
+            transparent
+            opacity={0.92}
+            depthWrite={false}
+            depthTest
+            polygonOffset
+            polygonOffsetFactor={1}
+            polygonOffsetUnits={1}
+          />
+        </mesh>
+      </PropModel>
 
       <mesh position={[-4.12, h / 2, hd - t / 2]} castShadow receiveShadow material={wallMat}>
         <boxGeometry args={[5.9 + t, h, t]} />
@@ -342,7 +348,11 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({
         />
       ))}
 
-      <group position={[-3.8, INTERIOR_REF_SOFA_GROUP_CENTER_Y_M, 1.2]}>
+      <PropModel
+        propId="volodka_sofa"
+        sceneScale={explorationCharacterModelScale}
+        position={[-3.8, INTERIOR_REF_SOFA_GROUP_CENTER_Y_M, 1.2]}
+      >
         <mesh castShadow receiveShadow>
           <boxGeometry args={[1.85, 0.52, 0.88]} />
           <meshStandardMaterial
@@ -368,7 +378,7 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({
             polygonOffsetUnits={1}
           />
         </mesh>
-      </group>
+      </PropModel>
 
       <group position={[-4.8, 0.22, -3.2]}>
         <mesh castShadow receiveShadow>
