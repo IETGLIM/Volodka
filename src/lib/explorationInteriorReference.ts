@@ -39,7 +39,7 @@ export function interiorWardrobeCenterYFromFloor(floorY = 0): number {
   return floorY + INTERIOR_REF_WARDROBE_HEIGHT_M / 2 + 0.02;
 }
 
-/** Высота сиденья стула от пола (м) — типовой диапазон 0.42–0.48; для `normalizePropHeight` пропов. */
+/** Высота сиденья стула от пола (м) — типовой диапазон 0.42–0.48 (визуал / интерактивы). */
 export const INTERIOR_REF_CHAIR_SEAT_SURFACE_Y_M = 0.45;
 
 /** Типовая высота оконного проёма (м) — визуал «окно» в `ZaremaAlbertExplorationVisual` и проверка читаемости. */

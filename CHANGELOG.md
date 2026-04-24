@@ -12,6 +12,7 @@
 
 ### Changed
 
+- **ECS / камера:** `**EXPLORATION_TPS_CAMERA_OFFSET_LOCAL_M**` (**0**, **1.6**, **4**) в `**src/ecs/systems/CameraSystem.ts**` (экспорт из `**src/ecs/index.ts**`) — ориентир для будущего переноса TPS из `**FollowCamera**`; комментарий-ссылка в `**FollowCamera.tsx**`.
 - **Репозиторий:** в `**.gitignore`** — игнор распакованных папок `**exports/volodka-model-scale-analysis-bundle-*/**` (локальный стейджинг архива не должен попадать в коммиты).
 - **Типы:** удалён `**src/shared/types/game.ts`**; импорты переведены на `**@/data/types**` (`**EventBus**`, сторы, `**save-manager**`, AI). `**src/shared/types/index.ts**`, `**rpg.ts**`, `**schedule.ts**` реэкспортируют `**SceneId**` и игровые типы из канона `**data/types**`.
 - **Инструменты:** dev-зависимость `**knip**`, скрипт `**npm run knip**`, `**knip.json**` с точками входа `**src/app/**` + `**GameOrchestrator**` (цепочка за `**next/dynamic**` в `**GameClient**` статически не видна — отчёт о «неиспользуемых» файлах фильтровать вручную).

@@ -4,6 +4,6 @@
  */
 export * from '@/shared/ecs';
 export { SystemsRunner } from './systems/SystemsRunner';
-export { CameraSystem } from './systems/CameraSystem';
+export { CameraSystem, EXPLORATION_TPS_CAMERA_OFFSET_LOCAL_M } from './systems/CameraSystem';
 export { InteractionSystem } from './systems/InteractionSystem';
 export { AISystem } from './systems/AISystem';

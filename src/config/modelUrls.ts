@@ -43,7 +43,7 @@ export function rewriteLegacyModelPath(path: string): string {
 export const MODEL_URLS = {
   /**
    * Главный персонаж. В идеале — root ~1.7 m, клипы `Idle` / `Walk` (сейчас в файле часто один клип).
-   * Клиент масштабирует по bounding box SkinnedMesh; кривой экспорт с огромным root bbox больше не ломает рост.
+   * Визуальный uniform задаётся в `modelMeta` (`resolveCharacterMeshUniformScale`), не через bbox в рантайме.
    */
   volodka: `${BASE_URL}/Volodka.glb`,
   
@@ -79,7 +79,7 @@ export const MODEL_URLS = {
 
   /**
    * Бесплатные эталоны **Khronos glTF-Sample-Assets** (CC0 1.0) — см. `public/models-external/CC0_KHRONOS_MODELS.md`.
-   * Не персонажи: проп / тест пайплайна (`normalizePropHeight`, PBR, morph + анимация).
+   * Не персонажи: проп / тест (PBR, morph + анимация); масштаб при необходимости — вручную на примитиве или в DCC.
    */
   cc0KhronosBoxVertexColors: `${BASE_URL}/khronos_cc0_BoxVertexColors.glb`,
   cc0KhronosAnimatedMorphCube: `${BASE_URL}/khronos_cc0_AnimatedMorphCube.glb`,

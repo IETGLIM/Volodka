@@ -1,4 +1,12 @@
 import type { ISystem, SystemContext } from '@/shared/ecs';
+import * as THREE from 'three';
+
+/**
+ * Эталонное смещение камеры от цели в локальной системе «сзади + чуть выше глаз» (м).
+ * Сейчас TPS реализован орбитой в `FollowCamera` и числовыми пресетами в `RPGGameCanvas`;
+ * при переносе в ECS — строить world-space target из yaw игрока и этого вектора (без bbox-масштаба модели).
+ */
+export const EXPLORATION_TPS_CAMERA_OFFSET_LOCAL_M = new THREE.Vector3(0, 1.6, 4);
 
 /**
  * Только чтение позиции из Rapier (`rigidBody.translation()` / rotation) → цель камеры.
@@ -12,6 +20,6 @@ export class CameraSystem implements ISystem {
   readonly priority = 100;
 
   update(_ctx: SystemContext): void {
-    // TODO: перенести orbit + collision из FollowCamera после единого SoT rigid body.
+    // TODO: перенести orbit + collision из FollowCamera; ориентир offset — `EXPLORATION_TPS_CAMERA_OFFSET_LOCAL_M`.
   }
 }

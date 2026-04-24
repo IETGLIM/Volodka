@@ -71,7 +71,7 @@ export interface PhysicsPlayerProps {
    */
   spawnSyncKey?: string;
   /**
-   * Жёсткий потолок uniform GLB в узких интерьерах (bbox/кэш), без влияния на улицы.
+   * Жёсткий потолок uniform GLB в узких интерьерах (`modelMeta`), без влияния на улицы.
    * Передаётся как **`sceneId`** из **`RPGGameCanvas`**.
    */
   explorationGlbClampSceneId?: SceneId;
@@ -95,7 +95,7 @@ const FallbackPlayerModel = memo(function FallbackPlayerModel({
 }: {
   isMoving: boolean;
   isLocked: boolean;
-  /** Согласован с `visualModelScale` сцены (узкие комнаты — меньше заглушка); глобальный ÷5 — в `GLBPlayerModel` явно `* 0.2` + clamp (fallback ниже — `applyExplorationPlayerGlobalVisualScale`). */
+  /** Согласован с `visualModelScale` сцены (узкие комнаты — меньше заглушка); тот же глобальный ÷5, что у GLB (`applyExplorationPlayerGlobalVisualScale`). */
   roomScale?: number;
 }) {
   const groupRef = useRef<THREE.Group>(null);
@@ -130,7 +130,7 @@ const FallbackPlayerModel = memo(function FallbackPlayerModel({
   });
 
   const rs = Math.max(0.28, Math.min(1.25, roomScale));
-  /** Один глобальный визуальный шаг, как у GLB после bbox — не «второй» раз на `visualModelScale` (он без ÷5). */
+  /** Один глобальный визуальный шаг, как у GLB — не дублировать ÷5 на `visualModelScale` (он без ÷5). */
   const vis = applyExplorationPlayerGlobalVisualScale(rs);
   return (
     <group ref={groupRef} scale={[vis, vis, vis]}>
