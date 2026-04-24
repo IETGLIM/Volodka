@@ -99,11 +99,64 @@ export function applyGltfMeshesFrustumCullOff(root: THREE.Object3D): void {
 }
 
 /**
+ * Вертикаль объединённого AABB по всем `Mesh`/`SkinnedMesh` (boundingBox геометрии × `matrixWorld`).
+ * Стабильнее `setFromObject` на корне при «раздутых» иерархиях.
+ */
+export function computeExplorationCharacterMeshUnionVerticalExtent(root: THREE.Object3D): number {
+  root.updateMatrixWorld(true);
+  const box = new THREE.Box3();
+  const tmp = new THREE.Box3();
+  let any = false;
+  root.traverse((obj) => {
+    const mesh = obj as THREE.Mesh;
+    if (!mesh.isMesh || !mesh.geometry) return;
+    const geom = mesh.geometry;
+    if (!geom.boundingBox) geom.computeBoundingBox();
+    const b = geom.boundingBox!.clone();
+    b.applyMatrix4(mesh.matrixWorld);
+    if (!any) {
+      box.copy(b);
+      any = true;
+    } else {
+      box.union(b);
+    }
+  });
+  if (!any) {
+    const f = new THREE.Box3().setFromObject(root);
+    return Math.max(0, f.max.y - f.min.y);
+  }
+  return Math.max(0, box.max.y - box.min.y);
+}
+
+export type ExplorationCharacterMaterialPolicyOptions = {
+  /**
+   * Итоговый uniform визуала обхода (после ÷5 и капов из `resolveCharacterMeshUniformScale`).
+   * Если задан — `userData.characterHeightM` = `characterBoundingVerticalM × uniform` (сырой продукт для `validateCharacterScale`).
+   */
+  explorationVisualUniform?: number;
+};
+
+/**
  * Политика материалов и видимости персонажа в обходе: **`depthWrite`**, cutout волос, отключение
  * frustum culling на мешах GLB. Вызывать после загрузки (**`GLBPlayerModel`**, **`NPC`**).
+ *
+ * Записывает **`userData.characterBoundingVerticalM`**, **`userData.characterHeightM`** (при uniform).
  */
-export function applyGltfExplorationCharacterMaterialPolicies(root: THREE.Object3D): void {
+export function applyGltfExplorationCharacterMaterialPolicies(
+  root: THREE.Object3D,
+  options?: ExplorationCharacterMaterialPolicyOptions,
+): void {
   applyGltfCharacterDepthWrite(root);
   applyGltfHairLikeAlphaTestCutout(root);
   applyGltfMeshesFrustumCullOff(root);
+
+  const bboxH = computeExplorationCharacterMeshUnionVerticalExtent(root);
+  root.userData.characterBoundingVerticalM = bboxH;
+
+  const u = options?.explorationVisualUniform;
+  if (u != null && Number.isFinite(u) && u > 0) {
+    root.userData.characterHeightM = bboxH * u;
+  } else {
+    delete root.userData.characterHeightM;
+  }
 }

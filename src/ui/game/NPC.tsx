@@ -42,6 +42,7 @@ import { applyExplorationPlayerGlobalVisualScale } from '@/lib/playerScaleConsta
 import { glbBasenameFromUrl, resolveCharacterMeshUniformScale } from '@/data/modelMeta';
 import { cloneAnimationClipsWithoutExplorationPlayerRootMotion } from '@/lib/stripExplorationPlayerRootMotionFromClips';
 import { isExplorationPlayerGlbScaleDebugEnabled } from '@/lib/explorationDiagnostics';
+import { PLAYER_VISUAL_HEIGHT_M, validateCharacterScale } from '@/lib/characterScaleValidator';
 import type { FindNavPathXZ } from '@/lib/explorationNavMesh';
 import { resolveNpcModelLodUseFull } from '@/lib/npcLodConstants';
 import { isExplorationVolodkaRoomNpcGlbDisabled } from '@/lib/explorationDiagnostics';
@@ -299,12 +300,10 @@ const GLTFLoader = memo(function GLTFLoader({
     try {
       const clone = loadedScene.clone(true);
       if (clone.scale.x !== 1 || clone.scale.y !== 1 || clone.scale.z !== 1) {
-        if (process.env.NODE_ENV === 'development') {
-          console.warn('[GLTFLoader] NPC GLB root had non-unit scale; reset to (1,1,1).', {
-            modelPath,
-            scale: [clone.scale.x, clone.scale.y, clone.scale.z],
-          });
-        }
+        console.warn('[NPC GLB] root had non-unit scale; reset to (1,1,1) before policies.', {
+          modelPath,
+          scale: [clone.scale.x, clone.scale.y, clone.scale.z],
+        });
         clone.scale.set(1, 1, 1);
         clone.updateMatrixWorld(true);
       }
@@ -315,7 +314,6 @@ const GLTFLoader = memo(function GLTFLoader({
           child.receiveShadow = true;
         }
       });
-      applyGltfExplorationCharacterMaterialPolicies(clone);
       const rs = Number.isFinite(roomModelScale) ? roomModelScale : 1;
       const def = Number.isFinite(definitionModelScale) && definitionModelScale > 0 ? definitionModelScale : 1;
       const bakedVisualScale = resolveCharacterMeshUniformScale(modelPath, {
@@ -323,6 +321,9 @@ const GLTFLoader = memo(function GLTFLoader({
         definitionModelScale: def,
         introCutsceneActive: false,
         clampSceneId: explorationSceneId,
+      });
+      applyGltfExplorationCharacterMaterialPolicies(clone, {
+        explorationVisualUniform: bakedVisualScale,
       });
       return { scene: clone, bakedVisualScale };
     } catch {
@@ -333,16 +334,23 @@ const GLTFLoader = memo(function GLTFLoader({
   useEffect(() => {
     if (!loadedScene || !scene) return;
     if (!isExplorationPlayerGlbScaleDebugEnabled()) return;
-    const rs = Number.isFinite(roomModelScale) ? roomModelScale : 1;
-    const def = Number.isFinite(definitionModelScale) && definitionModelScale > 0 ? definitionModelScale : 1;
-    const u = resolveCharacterMeshUniformScale(modelPath, {
-      roomModelScale: rs,
-      definitionModelScale: def,
-      introCutsceneActive: false,
-      clampSceneId: explorationSceneId,
-    });
-    console.info('[NPC GLB scale debug]', { modelPath, explorationSceneId, uniform: u });
-  }, [modelPath, loadedScene, scene, explorationSceneId, roomModelScale, definitionModelScale]);
+    const u = bakedVisualScale;
+    const bbox = scene.userData.characterBoundingVerticalM as number | undefined;
+    const hM = scene.userData.characterHeightM as number | undefined;
+    const scaleOk = bbox != null && Number.isFinite(bbox) ? validateCharacterScale(modelPath, bbox, u) : 'ok';
+    const ok = scaleOk === 'ok';
+    const detail = scaleOk === 'ok' ? {} : { validation: scaleOk };
+    const rawLabel =
+      hM != null && Number.isFinite(hM)
+        ? `сырой bbox×uniform ${hM.toFixed(2)} (ориентир «~${PLAYER_VISUAL_HEIGHT_M} м» на экране — по политике сцены)`
+        : '(нет оценки bbox×uniform)';
+    console.info(
+      `%c[NPC GLB scale debug]%c ${rawLabel} · uniform ${u.toFixed(4)}`,
+      ok ? 'color:#16a34a;font-weight:bold' : 'color:#dc2626;font-weight:bold',
+      'color:inherit;font-weight:normal',
+      { modelPath, explorationSceneId, ...detail },
+    );
+  }, [modelPath, loadedScene, scene, explorationSceneId, bakedVisualScale]);
 
   useEffect(() => {
     if (!scene) return;

@@ -30,6 +30,7 @@ import type { SceneId } from '@/data/types';
 import { resolveCharacterMeshUniformScale } from '@/data/modelMeta';
 import { retainGltfModelUrl, releaseGltfModelUrl } from '@/lib/gltfModelCache';
 import { applyGltfExplorationCharacterMaterialPolicies } from '@/lib/gltfCharacterMaterialPolicy';
+import { PLAYER_VISUAL_HEIGHT_M, validateCharacterScale } from '@/lib/characterScaleValidator';
 import { ThreeCanvasSuspenseFallback } from '@/ui/3d/ThreeCanvasSuspenseFallback';
 import { cloneAnimationClipsWithoutExplorationPlayerRootMotion } from '@/lib/stripExplorationPlayerRootMotionFromClips';
 import { isExplorationPlayerDebugPrimitiveEnabled } from '@/lib/explorationPlayerDebugPrimitive';
@@ -282,6 +283,17 @@ const GLBPlayerModel = memo(function GLBPlayerModel({
       .join('\0');
   }, [actions]);
 
+  const visualUniform = useMemo(
+    () =>
+      resolveCharacterMeshUniformScale(modelPath, {
+        roomModelScale: rs,
+        definitionModelScale: 1,
+        introCutsceneActive,
+        clampSceneId: glbUniformClampSceneId ?? tuningSceneId,
+      }),
+    [modelPath, rs, introCutsceneActive, glbUniformClampSceneId, tuningSceneId],
+  );
+
   /**
    * Пара к `useGLTF(modelPath)`: `retain` при монтироване / смене пути, `release` в cleanup — и при смене
    * `modelPath` (React сначала cleanup старого URL), и при **размонтировании** (в т.ч. из‑за `key` на родителе).
@@ -318,45 +330,48 @@ const GLBPlayerModel = memo(function GLBPlayerModel({
       });
       /** Кривой экспорт: ненулевой `scale` на корне сцены умножается с нашим uniform → «нога на весь экран». */
       if (loadedScene.scale.x !== 1 || loadedScene.scale.y !== 1 || loadedScene.scale.z !== 1) {
-        if (process.env.NODE_ENV === 'development') {
-          console.warn('[GLBPlayerModel] GLB root had non-unit scale; reset to (1,1,1) before policies.', {
-            modelPath,
-            scale: [loadedScene.scale.x, loadedScene.scale.y, loadedScene.scale.z],
-          });
-        }
+        console.warn('[GLBPlayerModel] GLB root had non-unit scale; reset to (1,1,1) before policies.', {
+          modelPath,
+          scale: [loadedScene.scale.x, loadedScene.scale.y, loadedScene.scale.z],
+        });
         loadedScene.scale.set(1, 1, 1);
         loadedScene.updateMatrixWorld(true);
       }
-      applyGltfExplorationCharacterMaterialPolicies(loadedScene);
+      applyGltfExplorationCharacterMaterialPolicies(loadedScene, {
+        explorationVisualUniform: visualUniform,
+      });
       return loadedScene;
     } catch {
       onError();
       return null;
     }
-  }, [loadedScene, onError, modelPath]);
-
-  const visualUniform = useMemo(
-    () =>
-      resolveCharacterMeshUniformScale(modelPath, {
-        roomModelScale: rs,
-        definitionModelScale: 1,
-        introCutsceneActive,
-        clampSceneId: glbUniformClampSceneId ?? tuningSceneId,
-      }),
-    [modelPath, rs, introCutsceneActive, glbUniformClampSceneId, tuningSceneId],
-  );
+  }, [
+    loadedScene,
+    onError,
+    modelPath,
+    visualUniform,
+  ]);
 
   useEffect(() => {
     if (!loadedScene) return;
     if (!isExplorationPlayerGlbScaleDebugEnabled()) return;
-    const u = resolveCharacterMeshUniformScale(modelPath, {
-      roomModelScale: rs,
-      definitionModelScale: 1,
-      introCutsceneActive,
-      clampSceneId: glbUniformClampSceneId ?? tuningSceneId,
-    });
-    console.info('[GLBPlayerModel scale debug]', { modelPath, tuningSceneId, uniform: u });
-  }, [modelPath, loadedScene, tuningSceneId, glbUniformClampSceneId, rs, introCutsceneActive]);
+    const u = visualUniform;
+    const bbox = loadedScene.userData.characterBoundingVerticalM as number | undefined;
+    const hM = loadedScene.userData.characterHeightM as number | undefined;
+    const scaleOk = bbox != null && Number.isFinite(bbox) ? validateCharacterScale(modelPath, bbox, u) : 'ok';
+    const ok = scaleOk === 'ok';
+    const detail = scaleOk === 'ok' ? {} : { validation: scaleOk };
+    const rawLabel =
+      hM != null && Number.isFinite(hM)
+        ? `сырой bbox×uniform ${hM.toFixed(2)} (ориентир «~${PLAYER_VISUAL_HEIGHT_M} м» на экране — по политике сцены)`
+        : '(нет оценки bbox×uniform)';
+    console.info(
+      `%c[GLBPlayerModel scale debug]%c ${rawLabel} · uniform ${u.toFixed(4)}`,
+      ok ? 'color:#16a34a;font-weight:bold' : 'color:#dc2626;font-weight:bold',
+      'color:inherit;font-weight:normal',
+      { modelPath, tuningSceneId, ...detail },
+    );
+  }, [modelPath, loadedScene, tuningSceneId, visualUniform]);
 
   useEffect(() => {
     const act = actionsRef.current;

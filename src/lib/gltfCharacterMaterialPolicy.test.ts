@@ -5,9 +5,17 @@ import {
   applyGltfExplorationCharacterMaterialPolicies,
   applyGltfHairLikeAlphaTestCutout,
   applyGltfMeshesFrustumCullOff,
+  computeExplorationCharacterMeshUnionVerticalExtent,
 } from './gltfCharacterMaterialPolicy';
 
 describe('gltfCharacterMaterialPolicy', () => {
+  it('computeExplorationCharacterMeshUnionVerticalExtent uses geometry bounds', () => {
+    const root = new THREE.Group();
+    const mesh = new THREE.Mesh(new THREE.BoxGeometry(1, 3, 1), new THREE.MeshBasicMaterial());
+    root.add(mesh);
+    expect(computeExplorationCharacterMeshUnionVerticalExtent(root)).toBeCloseTo(3, 5);
+  });
+
   it('applyGltfCharacterDepthWrite forces depthWrite on mesh materials', () => {
     const root = new THREE.Group();
     const m = new THREE.MeshStandardMaterial({ color: 0xff0000, depthWrite: false });
@@ -55,6 +63,21 @@ describe('gltfCharacterMaterialPolicy', () => {
     expect(mat.transparent).toBe(false);
     expect(mat.alphaTest).toBe(0.42);
     expect(mesh.frustumCulled).toBe(false);
+    expect(typeof root.userData.characterBoundingVerticalM).toBe('number');
+    expect(root.userData.characterBoundingVerticalM).toBeGreaterThan(0);
+    expect(root.userData.characterHeightM).toBeUndefined();
+  });
+
+  it('applyGltfExplorationCharacterMaterialPolicies writes characterHeightM when uniform passed', () => {
+    const root = new THREE.Group();
+    const mesh = new THREE.Mesh(new THREE.BoxGeometry(1, 2, 1), new THREE.MeshBasicMaterial());
+    root.add(mesh);
+    applyGltfExplorationCharacterMaterialPolicies(root, { explorationVisualUniform: 0.5 });
+    expect(root.userData.characterBoundingVerticalM).toBeGreaterThan(0);
+    expect(root.userData.characterHeightM).toBeCloseTo(
+      root.userData.characterBoundingVerticalM * 0.5,
+      5,
+    );
   });
 
   it('applyGltfMeshesFrustumCullOff disables frustum culling on meshes', () => {

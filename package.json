@@ -11,6 +11,7 @@
     "test:watch": "vitest",
     "knip": "knip",
     "validate:content": "vitest run src/validation/contentValidator.test.ts",
+    "test:character-scale": "vitest run src/lib/characterScaleValidator.test.ts src/lib/characterScaleAssets.integration.test.ts src/data/characterModelMetaCoverage.test.ts src/lib/gltfCharacterMaterialPolicy.test.ts",
     "bb:volodka-smoke:dev": "npm run dev --prefix browserbase-functions/volodka-smoke",
     "bb:volodka-smoke:publish": "npm run publish --prefix browserbase-functions/volodka-smoke",
     "db:push": "prisma db push",
