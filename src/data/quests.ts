@@ -123,7 +123,7 @@ export const QUEST_DEFINITIONS: Record<string, ExtendedQuest> = {
 
   /**
    * Обход `volodka_room`: взаимоисключающие ветки — мини-игра узлов (E у стойки) или три осмотра панелей.
-   * Логика ветвления: `registerBaseInteractions` + `volodkaRackQuestBranch`.
+   * Логика ветвления: граф форса `explorationQuestGraphs` / `explorationQuestGraph` + аудит в `volodkaRackQuestBranch`.
    */
   exploration_volodka_rack: {
     id: 'exploration_volodka_rack',
