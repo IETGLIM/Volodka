@@ -1,7 +1,7 @@
 # Спецификация: стриминг сцен и управление памятью (3D-обход)
 
-Версия: 0.1 (черновик для согласования перед кодом)  
-Связанные модули: `SceneManager` (`scene:enter` / `scene:exit`), `src/config/scenes.ts` (`SceneConfig`), `src/lib/gltfModelCache.ts`, `RPGGameCanvas` / Rapier.
+Версия: **0.2** (дополнения: React↔Rapier, EventBus жизненного цикла, NPC/LOD, prefetch, persistent)  
+Связанные модули: `SceneManager` (`scene:enter` / `scene:exit`), `src/config/scenes.ts` (`SceneConfig`), `src/lib/gltfModelCache.ts`, `RPGGameCanvas` / Rapier, `NPC.tsx`.
 
 ---
 
@@ -52,7 +52,7 @@ export type SceneStreamingProfile = {
     id: StreamingChunkId;
     /** Ассеты, монтируемые вместе с чанком */
     assets: readonly StreamingAssetManifestEntry[];
-    /** Идентификаторы тел Rapier, регистрируемых только при activate (см. §4) */
+    /** Логические ключи тел Rapier, ожидаемых после mount (см. §3 и §5) */
     rapierBodyKeys?: readonly string[];
   }[];
 };
@@ -69,98 +69,163 @@ streaming?: SceneStreamingProfile;
 
 Пока **`streaming` не задан** — координатор не меняет поведение (только глобальные dev-счётчики, если включены).
 
+### 2.5 Persistent-сущности (v0.1)
+
+NPC (и прочие акторы), которые **переезжают между сценами** без полного размонтирования персонажа, помечаются в данных как **`persistent: true`** (или вынесены в отдельный слой вне `StreamingChunk`). Такие узлы **не** входят в выгрузку чанка: при `deactivateChunk` координатор не ожидает их тел в реестре чанка. До появления поля в данных v0.1 допускает «все NPC только внутри чанка» — без миграции между сценами в одном кадре.
+
 ---
 
-## 3. `SceneStreamingCoordinator` (интерфейс)
+## 3. React, Rapier и каденс (критично для тестов)
 
-Один экземпляр на приложение (или на «мир обхода»). Не заменяет `SceneManager`, а подписан на его события.
+Координатор остаётся **чистым TS**, но **активация/деактивация чанка** обязана иметь **императивное отражение в React**: монтирование/размонтирование `<StreamingChunk>` (или эквивалента) внутри дерева, где живёт `<Physics>`.
+
+### 3.1 Проблема каденса
+
+После команды «активируй чанк `X`» UI добавляет поддерево, но **`RigidBody` из `@react-three/rapier` появляется в мире Rapier не раньше, чем после соответствующего commit/кадра** внутри `<Physics>`. Между `activateChunk` (логика координатора) и фактической регистрацией тел проходит **≥ 1 кадр**.
+
+Симметрично: при `deactivateChunk` размонтирование React **асинхронно** снимает тела; пока они не удалены из WASM-мира, чанк **нельзя** считать полностью выгруженным.
+
+### 3.2 События шины (рекомендуемый контракт)
+
+Надёжнее, чем необязательные колбэки в интерфейсе координатора: **типизированные события в `EventBus`**, на которые подписан координатор (учёт состояния) и тесты.
+
+| Событие | Кто эмитит | Смысл |
+|---------|------------|--------|
+| `streaming:chunk_activation_requested` | координатор (или store после `activateChunk`) | «Разрешить mount UI для `chunkId`» (если нужен явный сигнал; можно заменить чтением `activeChunkIds` из store). |
+| `streaming:chunk_activated` | **React** (`StreamingChunk` / дочерний хук после регистрации тел) | Все ожидаемые для чанка тела **уже в мире** Rapier; координатор переводит чанк в `active` в своей машине состояний. |
+| `streaming:chunk_deactivation_requested` | координатор | «Снять mount UI для `chunkId`» (или сброс флага в store). |
+| `streaming:chunk_deactivated` | **React** (cleanup после `removeRigidBody` / размонтирования Rapier-компонентов) | Тела чанка **удалены** из мира; разрешены `release` GLB и LRU. |
+
+**Правило:** `deactivateChunk` в координаторе переводит чанк в состояние **`unloading`** и **не** считает выгрузку завершённой, пока не получен **`streaming:chunk_deactivated`** для этого `chunkId`. Повторный `activate` того же `chunkId` до `deactivated` — либо noop, либо очередь (решение реализации; в спеке зафиксировать один вариант в коде).
+
+**`activateChunk`:** после монтирования дерево обязано как можно раньше (после первого кадра с телами) эмитить **`streaming:chunk_activated`**, иначе координатор не знает, что префетч/логика «игрок в чанке» безопасны.
+
+Полезная нагрузка минимум: `{ chunkId: StreamingChunkId }`; при необходимости — `{ chunkId, rapierBodyCount }` для отладки.
+
+---
+
+## 4. `SceneStreamingCoordinator` (интерфейс)
+
+Один экземпляр на приложение (или на «мир обхода»). Не заменяет `SceneManager`, а подписан на `scene:enter` / `scene:exit` и на **`streaming:chunk_*`**.
 
 ```ts
 export interface SceneStreamingCoordinator {
-  /** Прогрев соседей и optional-tier без монтирования тяжёлых веток (GLTF preload / warm JSON). */
   prefetch(sceneId: SceneId, reason: 'scene_enter' | 'portal_hint' | 'manual'): void;
 
-  /** Чанк становится активным: разрешить mount в React + зарегистрировать коллайдеры/тела. */
+  /**
+   * Логическая активация: выставить store / событие, чтобы `<StreamingChunk chunkId>` смонтировался.
+   * Физическая активация завершается только после `streaming:chunk_activated`.
+   */
   activateChunk(chunkId: StreamingChunkId): void;
 
   /**
-   * Чанк снимается: размонтировать визуал + **обязательно** удалить все RigidBody/collider,
-   * зарегистрированные для этого chunkId (см. §4). Затем отложенный release GLB по политике tier/LRU.
+   * Запрос на выгрузку: снять mount; дождаться `streaming:chunk_deactivated` перед финальным release GLB.
    */
   deactivateChunk(chunkId: StreamingChunkId): void;
 
-  /** Текущее состояние для HUD / тестов */
   getDebugSnapshot(): StreamingDebugSnapshot;
 }
 
 export type StreamingDebugSnapshot = {
   activeSceneId: SceneId;
   activeChunkIds: readonly StreamingChunkId[];
+  /** Чанки в процессе размонтирования / ожидания Rapier */
+  unloadingChunkIds?: readonly StreamingChunkId[];
   prefetchQueueLength: number;
-  /** Сумма estimated* из активных манифестов, если известно */
   budgetTextureBytesApprox: number;
-  /** Прокси к Rapier: число активных динамических/кинематических тел в зоне обхода (если доступно) */
   rapierActiveBodiesApprox?: number;
 };
 ```
 
-Реализация **не** обязана жить в React; подписка на шину — в модуле `src/lib/sceneStreaming/` или `src/engine/streaming/` (чистый TS + колбэки в R3F при необходимости).
+Реализация в **`src/engine/streaming/`** (чистый TS); React — только исполнители mount и эмиттеры `chunk_activated` / `chunk_deactivated`.
 
 ---
 
-## 4. Физика (критично)
+## 5. Физика
 
-При **`deactivateChunk`**:
+При получении сигнала, что чанк снимается с UI (или в cleanup `StreamingChunk`):
 
-1. По реестру «тело ↔ chunkId» вызвать для каждого тела **`world.removeRigidBody`** (или эквивалент API `@react-three/rapier` / прямой Rapier, в зависимости от того, где создано тело).
-2. Снять коллайдеры, не привязанные к RB, если такие регистрировались отдельно.
-3. Только после этого уменьшать ref-count GLB / ставить в очередь LRU.
+1. Удалить все тела чанка из мира: **`world.removeRigidBody`** (или API R3F Rapier, согласованный с тем, как тела созданы).
+2. Снять висячие коллайдеры без RB, если были.
+3. Эмитить **`streaming:chunk_deactivated`**.
+4. Уменьшать ref-count GLB / LRU **после** `chunk_deactivated`.
 
-Иначе WASM-шаг Rapier продолжит обход «невидимых» тел — деградация без очевидного следа в JS-профайлере.
-
-Реестр тел: заводится при **`activateChunk`** (или при первом кадре после mount чанка), ключ — стабильный `rapierBodyKey` из манифеста или автоген из `chunkId + index`.
+Реестр «тело ↔ chunkId» ведёт React (регистрация при mount) и/или координатор по событиям от детей.
 
 ---
 
-## 5. Подключение (точки в коде)
+## 6. Компонент `<StreamingChunk>` (императивный слой UI)
+
+Расположение: например **`src/ui/3d/exploration/StreamingChunk.tsx`**.
+
+- Потребляет **флаг активности** из лёгкого store (Zustand) или контекста, который выставляет координатор в ответ на `activateChunk` / `deactivateChunk`.
+- При `active === true`: `return (<Suspense>{children}</Suspense>)`; в `useLayoutEffect` / кадре после появления `RigidBody` — **`eventBus.emit('streaming:chunk_activated', { chunkId })`** (один раз на цикл активации).
+- При снятии активности: cleanup удаляет тела и в конце — **`streaming:chunk_deactivated`**.
+- При монтировании: **`retainGltfModelUrl`** для URL из манифеста чанка (если список известен пропом/конфигом); при полной деактивации — **`releaseGltfModelUrl`**.
+
+Псевдологика не заменяет реализацию, но фиксирует порядок: **событие activated строго после Rapier**, **deactivated строго после remove**.
+
+---
+
+## 7. Подключение (точки в коде)
 
 | Событие / место | Действие |
 |-----------------|----------|
-| `eventBus` `scene:enter` | `prefetch` для `streaming.neighborSceneIds`; `activate` для чанка спавна (если есть `chunks`). |
-| `eventBus` `scene:exit` | Debounce 200–500 ms → `deactivateChunk` для чанков старой сцены, не пересекающихся с новой. |
-| `gltfModelCache` | Общие URL: существующие `retain`/`release`; координатор не дублирует ref-count внутри одного потребителя, а вызывает те же функции на границах activate/deactivate. |
-| `GameOrchestrator` или хук `useSceneStreaming` | Один `useEffect` при `phase === 'game'`: подписка на `scene:enter`/`exit`, cleanup = отписка. |
-| Dev HUD | Тот же флаг семейства `NEXT_PUBLIC_EXPLORATION_*`, что и прочая диагностика; панель читает `getDebugSnapshot()`. |
-
-**`RPGGameCanvas`** на первом этапе не раздувается: координатор только выставляет флаги в Zustand-lite store или `eventBus` `streaming:*`, а чанки — отдельные дочерние компоненты с `key={chunkId}`.
+| `scene:enter` / `scene:exit` | `prefetch`, постановка активных чанков, debounce выгрузки (как в v0.1). |
+| `streaming:chunk_activated` / `deactivated` | Координатор обновляет внутреннее состояние и snapshot для HUD/тестов. |
+| `gltfModelCache` | `retain` / `release` на границах жизни чанка; см. §8. |
+| `GameOrchestrator` или `useSceneStreaming` | Создание координатора, подписки, `destroy` при уходе из игры. |
+| `RPGGameCanvas` | Оборачивать части сцены в `<StreamingChunk>` **только** если у `SCENE_CONFIG[sceneId].streaming` заданы чанки. |
 
 ---
 
-## 6. LRU и вытеснение
+## 8. Prefetch и `useGLTF.preload` (drei)
 
-- **База:** текущий LRU в `gltfModelCache` (лимит URL + ref-count).
-- **Расширение:** для `optional` при `prefetch` не поднимать ref-count до фактического mount; при давлении бюджета — не начинать prefetch низкого приоритета.
-- **Время последнего использования:** обновлять при `activateChunk` и при успешном hit в кэше; при вытеснении — только URL с `refCount === 0` (как сейчас).
+**Проблема:** `useGLTF.preload(url)` пишет в **встроенный кэш drei**, а не в **`gltfModelCache`** (LRU на 14 URL + ref-count). Раздвоение кэшей даёт непредсказуемое давление на память и тесты.
 
----
+**v0.1 (проще):** не вызывать `preload` отдельно; для прогрева использовать **`retainGltfModelUrl(url)`** и загрузку через тот же путь, что и игровой код (`useGLTF` внутри краткоживущего скрытого дерева **или** явный `GLTFLoader` + ручная интеграция с тем же URL — по согласованию в PR). После прогрева — либо оставить retain до реального mount чанка, либо `release` с политикой «prefetch только для `nearby`».
 
-## 7. Параллельно: наблюдаемость (фаза 4)
-
-- **`StreamingDebugHUD`:** активен при `NEXT_PUBLIC_EXPLORATION_STREAMING_DEBUG=1` (или общий флаг диагностики обхода, если решите объединить).
-- Метрики минимум: длина очереди prefetch, список `activeChunkIds`, приблизительный суммарный `estimatedTextureBytes`, `rapierActiveBodiesApprox`.
+**v0.2+:** унифицировать один кэш (обёртка над drei или отказ от `preload` полностью).
 
 ---
 
-## 8. Следующий шаг после утверждения спека
+## 9. Конфликт с LOD NPC (`NPC.tsx`)
 
-1. Пустая реализация `SceneStreamingCoordinator` + no-op при отсутствии `streaming` в конфиге.  
-2. Один `SceneId` в `SCENE_CONFIG` с заполненным `streaming.neighborSceneIds` для проверки prefetch.  
-3. Тест: подписка на `scene:enter` увеличивает счётчик prefetch в snapshot (mock EventBus).
+Сейчас при **`useFullModel`** в дереве могут сосуществовать полный GLB и импостор, переключаемые **`visible`**. Для стриминга важно: при **размонтировании чанка** все узлы NPC этого чанка должны **размонтироваться**, а не только стать `visible={false}` — иначе ref-count и Rapier останутся живыми.
+
+- В коде NPC уже есть очистка при размонтировании (`useGLTF.clear` и т.д. по текущей логике) — при корректном **unmount** чанка этого достаточно.
+- **Тест (рекомендуемый):** «чанк с одним NPC выгружен → для всех URL моделей NPC в этом чанке `refCount` в тестовом состоянии кэша **0**» (через `__getGltfModelCacheTestState` или мок).
 
 ---
 
-## 9. Вне скоупа v0.1
+## 10. LRU и вытеснение
 
-- Полноценный world grid и HLOD.  
-- KTX2 / mip streaming (только задел полей в манифесте).  
-- WebGPU — отдельное решение после стабилизации метрик.
+- **База:** `gltfModelCache` (лимит URL + ref-count).
+- **`optional`:** не поднимать ref-count до фактического mount чанка.
+- **Вытеснение:** только URL с `refCount === 0`; не вытеснять URL чанков в состоянии **`unloading`** (ожидание `chunk_deactivated`).
+
+---
+
+## 11. Наблюдаемость (фаза 4)
+
+- **`StreamingDebugHUD`:** `NEXT_PUBLIC_EXPLORATION_STREAMING_DEBUG=1` (или общий флаг диагностики обхода).
+- Показывать: `activeChunkIds`, `unloadingChunkIds`, длина очереди prefetch, приблизительный бюджет текстур, **`rapierActiveBodiesApprox`**, счётчики событий `chunk_activated` / `chunk_deactivated`.
+
+---
+
+## 12. План v0.1 (без переписывания мира)
+
+1. Добавить **`streaming?: SceneStreamingProfile`** в тип `SceneConfig`; в данных пока можно не заполнять.  
+2. **`SceneStreamingCoordinator`** в `src/engine/streaming/` + подписка на `scene:enter` / `scene:exit` + на `streaming:chunk_activated` / `deactivated`; no-op, если `streaming` отсутствует.  
+3. **`StreamingChunk`** + тонкий store активных чанков.  
+4. Один тестовый сценарий: эмиссия `chunk_activated` после мока; координатор не помечает чанк активным до события; выгрузка — до `deactivated`.  
+5. Добавить типы событий в **`EventMap`** (`src/engine/events/EventBus.ts`) в том же PR, что и координатор.
+
+---
+
+## 13. Вне скоупа v0.1
+
+- World grid / HLOD глобальные.  
+- Полная унификация preload с LRU (§8 v0.2).  
+- KTX2 / mip streaming.  
+- WebGPU.
