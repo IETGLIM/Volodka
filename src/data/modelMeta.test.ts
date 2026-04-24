@@ -34,6 +34,16 @@ describe('resolveCharacterMeshUniformScale', () => {
     expect(u).toBeLessThanOrEqual(0.14);
   });
 
+  it('zarema_albert_room: потолок uniform не выше узкого капа комнаты', () => {
+    const rs = getExplorationCharacterModelScale('zarema_albert_room');
+    const u = resolveCharacterMeshUniformScale(playerUrl, {
+      roomModelScale: rs,
+      introCutsceneActive: false,
+      clampSceneId: 'zarema_albert_room',
+    });
+    expect(u).toBeLessThanOrEqual(0.095);
+  });
+
   it('учитывает definitionModelScale для NPC', () => {
     const url = '/models/college_girl.glb';
     const base = resolveCharacterMeshUniformScale(url, {

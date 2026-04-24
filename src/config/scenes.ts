@@ -611,7 +611,7 @@ export const SCENE_CONFIG = {
      * Компактная комната: низкий масштаб игрока; NPC в обходе используют тот же `locationModelScale`, что и игрок.
      * См. пресет камеры `zarema_albert_room` в `RPGGameCanvas`.
      */
-    explorationCharacterModelScale: 0.36,
+    explorationCharacterModelScale: 0.28,
     explorationInteriorCeilingMeters: 2.72,
     explorationLocomotionScale: 0.84,
     size: [10, 8],

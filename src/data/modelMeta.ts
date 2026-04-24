@@ -46,7 +46,8 @@ export const GLB_CHARACTER_UNIFORM_BASE_BY_FILENAME: Record<string, number> = {
 
 /** Потолок uniform по узким интерьерам (как прежние жёсткие капы в `playerScaleConstants`). */
 const NARROW_SCENE_UNIFORM_CAP: Partial<Record<SceneId, number>> = {
-  zarema_albert_room: 0.115,
+  /** Комната 10×8: ниже потолок — ещё ужимаем uniform, чтобы игрок не «съедал» кадр. */
+  zarema_albert_room: 0.088,
   volodka_room: 0.14,
   volodka_corridor: 0.26,
   home_evening: 0.26,

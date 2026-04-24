@@ -39,7 +39,8 @@ import { getNpcQuestMarkerForExploration } from '@/lib/npcQuestMarker';
 import { retainGltfModelUrl, releaseGltfModelUrl } from '@/lib/gltfModelCache';
 import { applyGltfExplorationCharacterMaterialPolicies } from '@/lib/gltfCharacterMaterialPolicy';
 import { applyExplorationPlayerGlobalVisualScale } from '@/lib/playerScaleConstants';
-import { resolveCharacterMeshUniformScale } from '@/data/modelMeta';
+import { glbBasenameFromUrl, resolveCharacterMeshUniformScale } from '@/data/modelMeta';
+import { cloneAnimationClipsWithoutExplorationPlayerRootMotion } from '@/lib/stripExplorationPlayerRootMotionFromClips';
 import { isExplorationPlayerGlbScaleDebugEnabled } from '@/lib/explorationDiagnostics';
 import type { FindNavPathXZ } from '@/lib/explorationNavMesh';
 import { resolveNpcModelLodUseFull } from '@/lib/npcLodConstants';
@@ -236,7 +237,20 @@ const GLTFLoader = memo(function GLTFLoader({
     scene: THREE.Group;
     animations?: THREE.AnimationClip[];
   };
-  const { actions } = useAnimations(animations ?? [], groupRef);
+  /** Mixamo-экспорты: root translation в клипе + статичный `RigidBody`/группа дают артефакты скина — как у игрока в `PhysicsPlayer`. */
+  const npcMixerClips = useMemo(() => {
+    const arr = animations ?? [];
+    if (!arr.length) return arr;
+    const b = glbBasenameFromUrl(modelPath);
+    if (
+      b === 'cyberpunk_female_full-body_character.glb' ||
+      b === 'lowpoly_anime_character_cyberstyle.glb'
+    ) {
+      return cloneAnimationClipsWithoutExplorationPlayerRootMotion(arr);
+    }
+    return arr;
+  }, [animations, modelPath]);
+  const { actions } = useAnimations(npcMixerClips, groupRef);
   const actionsRef = useRef(actions);
   actionsRef.current = actions;
   const prevNpcClipRef = useRef<string | null>(null);
