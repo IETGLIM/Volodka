@@ -4,6 +4,9 @@
 
 ### Added
 
+- **Отладка нарратива:** `**src/lib/narrativeDebug.ts**` (мутации стор только при `NODE_ENV === development` или `**NEXT_PUBLIC_GAME_DEBUG_PANEL=1**`), панель `**NarrativeDebugPanel**` в `**GameOrchestrator**` — статы, флаги, квесты (`gameStore`), клавиша `` ` `` и кнопка DBG.
+- **Unit-тесты движка:** `**EventBus.test.ts**`, `**StatsEngine.test.ts**`, `**DialogueEngine.test.ts**`; расширены `**ConditionMatcher.test.ts**`, `**QuestEngine.test.ts**` (условия диалога, квестовый раннер, шина событий).
+
 - **ECS / SoA-симуляция:** каталог `**src/ecs/sim/**` — `**ArchetypeRegistry**`, `**SoaArchetypeTable**` (архетип `**sim_mv_health**`), `**SimPipeline**` с детерминированным порядком `**ISimSystem**` (`order` + `name`), `**MovementSimSystem**` / `**HealthSimSystem**`; интеграция в `**SystemsRunner**` (после каждого `fixedUpdate` ECS — `sim.fixedUpdate`, между `update` и `lateUpdate` ECS — `sim.update`); регистрация в `**ExplorationSystemsTick**`; тесты `**simPipeline.test.ts**`. У `**ECSWorld**` — `**getSystemNamesInOrder**` и сортировка систем по `priority` затем `name`; тест `**ecsWorld.systemOrder.test.ts**`.
 - **Обход / метаданные масштаба GLB:** `**src/data/modelMeta.ts**` — таблица базового uniform по имени файла, `**resolveCharacterMeshUniformScale**` (комната × NPC `scale` × глобальный ÷5 × кап по сцене × интро); тесты `**modelMeta.test.ts**`.
 - **Обход / диагностика GLB игрока:** `**NEXT_PUBLIC_EXPLORATION_PLAYER_GLB_SCALE_DEBUG=1`** → `**isExplorationPlayerGlbScaleDebugEnabled**` в `**explorationDiagnostics.ts**`, `**console.info**` цепочки uniform в `**PhysicsPlayer**` (`GLBPlayerModel`); тест что `**EXPLORATION_PLAYER_GLOBAL_VISUAL_SCALE**` = **0.2** в `**playerScaleConstants.playerGlbUniform.test.ts**`.

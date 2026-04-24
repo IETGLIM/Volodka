@@ -30,6 +30,7 @@ import { getCutsceneById } from '@/data/animeCutscenes';
 import CoreLoopIndicator from './CoreLoopIndicator';
 import ConsequenceNotification from './ConsequenceNotification';
 import { CyberGameShell } from './CyberGameShell';
+import { NarrativeDebugPanel } from './NarrativeDebugPanel';
 import {
   KernelPanicOverlay,
   PanelErrorBoundary,
@@ -840,6 +841,7 @@ export default function GameOrchestrator() {
       </div>
 
       <EnergyBar energy={energySystem.energy} maxEnergy={energySystem.maxEnergy} energyLevel={energySystem.energyLevel} />
+      <NarrativeDebugPanel />
     </CyberGameShell>
   );
 }

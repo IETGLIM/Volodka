@@ -3,7 +3,12 @@ import {
   explorationHourToNarrativeTimeOfDay,
   narrativeTimeInRange,
 } from '@/core/conditions/timeOfDay';
-import { matchRequiredSkills, matchChoiceCondition } from '@/core/conditions/ConditionMatcher';
+import {
+  matchRequiredSkills,
+  matchChoiceCondition,
+  matchDialogueCondition,
+  matchConsequenceCondition,
+} from '@/core/conditions/ConditionMatcher';
 import type { PlayerState } from '@/data/types';
 import { INITIAL_PLAYER_ENERGY } from '@/lib/energyConfig';
 
@@ -110,5 +115,79 @@ describe('matchChoiceCondition', () => {
     };
     expect(matchChoiceCondition({ equippedAnyOf: ['boots_rare'] }, ctx).met).toBe(true);
     expect(matchChoiceCondition({ equippedAnyOf: ['cloak'] }, ctx).met).toBe(false);
+  });
+});
+
+describe('matchDialogueCondition', () => {
+  it('respects minSkill and maxKarma', () => {
+    const ctx = {
+      playerState: basePlayer,
+      npcRelations: [],
+      flags: {},
+      inventory: [],
+      visitedNodes: [],
+      skills: basePlayer.skills,
+      activeQuestIds: [],
+      completedQuestIds: [],
+    };
+    expect(matchDialogueCondition({ minSkill: { skill: 'writing', value: 15 } }, ctx)).toBe(true);
+    expect(matchDialogueCondition({ minSkill: { skill: 'writing', value: 99 } }, ctx)).toBe(false);
+    expect(matchDialogueCondition({ maxKarma: 60 }, ctx)).toBe(true);
+    expect(matchDialogueCondition({ maxKarma: 40 }, ctx)).toBe(false);
+  });
+
+  it('requires dialogueVisitedNodeIds for completedDialogue', () => {
+    const ctx = {
+      playerState: basePlayer,
+      npcRelations: [],
+      flags: {},
+      inventory: [],
+      visitedNodes: [],
+      skills: basePlayer.skills,
+      activeQuestIds: [],
+      completedQuestIds: [],
+      dialogueVisitedNodeIds: ['dlg_a'],
+    };
+    expect(matchDialogueCondition({ completedDialogue: 'dlg_a' }, ctx)).toBe(true);
+    expect(matchDialogueCondition({ completedDialogue: 'missing' }, ctx)).toBe(false);
+  });
+});
+
+describe('matchConsequenceCondition', () => {
+  it('combines minStat and nested choiceCondition', () => {
+    const ctx = {
+      playerState: basePlayer,
+      npcRelations: [],
+      flags: { gate: true },
+      inventory: [],
+      visitedNodes: ['n1'],
+      skills: basePlayer.skills,
+      activeQuestIds: [],
+      completedQuestIds: [],
+    };
+    expect(
+      matchConsequenceCondition(
+        { minStat: { stat: 'mood', value: 40 }, choiceCondition: { hasFlag: 'gate' } },
+        ctx,
+      ),
+    ).toBe(true);
+    expect(
+      matchConsequenceCondition({ minStat: { stat: 'mood', value: 99 } }, ctx),
+    ).toBe(false);
+  });
+
+  it('checks questCompleted', () => {
+    const ctx = {
+      playerState: basePlayer,
+      npcRelations: [],
+      flags: {},
+      inventory: [],
+      visitedNodes: [],
+      skills: basePlayer.skills,
+      activeQuestIds: [],
+      completedQuestIds: ['q_done'],
+    };
+    expect(matchConsequenceCondition({ questCompleted: 'q_done' }, ctx)).toBe(true);
+    expect(matchConsequenceCondition({ questCompleted: 'other' }, ctx)).toBe(false);
   });
 });

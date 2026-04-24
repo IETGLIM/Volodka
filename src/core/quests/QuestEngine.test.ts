@@ -55,4 +55,46 @@ describe('QuestEngine + questStore', () => {
     handleInteractionForQuests('quest_zarema_hearth');
     expect(useQuestStore.getState().quests.multi_hit?.status).toBe('completed');
   });
+
+  it('does not advance when interaction id does not match', () => {
+    startQuestWithLog(introQuest);
+    handleInteractionForQuests('wrong_interaction');
+    const q = useQuestStore.getState().quests.intro_quest;
+    expect(q?.status).toBe('active');
+    expect(q?.objectives[0]?.completed).toBe(false);
+  });
+
+  it('ignores quests that are not active in the store', () => {
+    useQuestStore.setState({
+      quests: {
+        paused_q: {
+          id: 'paused_q',
+          title: 'Paused',
+          description: '',
+          status: 'inactive',
+          objectives: [
+            {
+              id: 'o1',
+              description: 'Hit',
+              type: 'interact',
+              targetId: 'npc_intro',
+              completed: false,
+            },
+          ],
+        },
+      },
+    });
+    handleInteractionForQuests('npc_intro');
+    expect(useQuestStore.getState().quests.paused_q?.status).toBe('inactive');
+  });
+
+  it('skips already completed objectives', () => {
+    startQuestWithLog(introQuest);
+    const store = useQuestStore.getState();
+    store.completeObjective('intro_quest', store.quests.intro_quest!.objectives[0]!.id);
+    handleInteractionForQuests('npc_intro');
+    const q = useQuestStore.getState().quests.intro_quest;
+    expect(q?.objectives[0]?.completed).toBe(true);
+    expect(q?.status).toBe('completed');
+  });
 });
