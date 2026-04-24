@@ -5,8 +5,10 @@ export const PROP_DEFINITIONS: Record<string, PropDefinition> = {
   desk_volodka: {
     id: 'desk_volodka',
     category: 'furniture',
-    glbPath: undefined, // пока процедурный
-    estimatedGeometryBytes: 2048,
+    glbPath: '/desk_volodka.glb',
+    estimatedGeometryBytes: 120_000,
+    /** Подогнано под комнату 14×10 при `explorationCharacterModelScale` 0.48 и ÷5 в `PropModel`. */
+    baseUniform: 1.12,
   },
   chair_volodka: {
     id: 'chair_volodka',
@@ -17,17 +19,20 @@ export const PROP_DEFINITIONS: Record<string, PropDefinition> = {
   wardrobe_soviet: {
     id: 'wardrobe_soviet',
     category: 'furniture',
-    glbPath: undefined, // позже заменим на GLB
-    estimatedGeometryBytes: 4096,
+    glbPath: '/shelf.glb',
+    estimatedGeometryBytes: 80_000,
+    baseUniform: 0.92,
   },
 
   // === Декор ===
   mug_techsupport: {
     id: 'mug_techsupport',
     category: 'tableware',
-    glbPath: undefined,
-    estimatedGeometryBytes: 256,
-    baseUniform: 0.025, // кружка ~10 см высотой
+    glbPath: '/mug.glb',
+    estimatedGeometryBytes: 256_000,
+    baseUniform: 0.14,
+    /** Мелкий ассет — сырой продукт bbox×uniform не в диапазоне «гуманоид». */
+    exemptFromScaleValidation: true,
   },
   poster_glory_to_labor: {
     id: 'poster_glory_to_labor',
@@ -47,23 +52,37 @@ export const PROP_DEFINITIONS: Record<string, PropDefinition> = {
   keyboard_ibm: {
     id: 'keyboard_ibm',
     category: 'tech',
-    glbPath: undefined,
-    estimatedGeometryBytes: 512,
-    baseUniform: 0.01,
+    glbPath: '/Keyboard.glb',
+    estimatedGeometryBytes: 200_000,
+    baseUniform: 0.1,
+    exemptFromScaleValidation: true,
   },
 
   // === Освещение ===
   lamp_desk: {
     id: 'lamp_desk',
     category: 'lighting',
-    glbPath: undefined,
-    estimatedGeometryBytes: 512,
+    glbPath: '/lamp.glb',
+    estimatedGeometryBytes: 80_000,
+    baseUniform: 0.32,
   },
 };
 
 /** Получить проп по ID (с fallback на undefined) */
 export function getPropDefinition(id: string): PropDefinition | undefined {
   return PROP_DEFINITIONS[id];
+}
+
+/** GLB-пропы для CI (`propGlbScale.integration.test.ts`): путь как в `public/` (от корня сайта). */
+export function getPropGlbDefinitionsForScaleValidator(): { url: string; def: PropDefinition }[] {
+  const out: { url: string; def: PropDefinition }[] = [];
+  for (const def of Object.values(PROP_DEFINITIONS)) {
+    const p = def.glbPath?.trim();
+    if (!p) continue;
+    const url = p.startsWith('/') ? p : `/${p}`;
+    out.push({ url, def });
+  }
+  return out;
 }
 
 /** Валидация масштаба GLB-пропа (см. `propScaleValidation.ts`). */

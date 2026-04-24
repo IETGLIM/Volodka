@@ -14,7 +14,6 @@ import {
   INTERIOR_REF_DOOR_HEIGHT_M,
   INTERIOR_REF_DOOR_WIDTH_M,
   INTERIOR_REF_SOFA_GROUP_CENTER_Y_M,
-  INTERIOR_REF_WARDROBE_HEIGHT_M,
   interiorDeskVisualGroupCenterY,
   interiorDoorCenterYFromFloor,
   interiorWardrobeCenterYFromFloor,
@@ -209,11 +208,19 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({
       </mesh>
 
       <group position={[3.2, interiorDeskVisualGroupCenterY(0), 0.1]}>
-        <PropModel propId="desk_volodka" sceneScale={explorationCharacterModelScale}>
-          <mesh castShadow receiveShadow material={woodMat}>
-            <boxGeometry args={[1.45, 0.08, 0.78]} />
-          </mesh>
-        </PropModel>
+        <PropModel propId="desk_volodka" sceneScale={explorationCharacterModelScale} />
+        <PropModel
+          propId="mug_techsupport"
+          sceneScale={explorationCharacterModelScale}
+          position={[0.42, 0.48, 0.18]}
+          rotation={[0, 0.35, 0]}
+        />
+        <PropModel
+          propId="keyboard_ibm"
+          sceneScale={explorationCharacterModelScale}
+          position={[-0.28, 0.44, 0.12]}
+          rotation={[-Math.PI / 2 + 0.08, 0, 0.12]}
+        />
         <mesh position={[0, 0.28, -0.05]} castShadow receiveShadow>
           <boxGeometry args={[1.12, 0.52, 0.04]} />
           <meshStandardMaterial
@@ -307,11 +314,7 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({
       </group>
 
       <group position={[0.8, interiorDeskVisualGroupCenterY(0), -2.8]}>
-        <PropModel propId="desk_volodka" sceneScale={explorationCharacterModelScale}>
-          <mesh castShadow receiveShadow material={woodMat}>
-            <boxGeometry args={[1.05, 0.08, 0.58]} />
-          </mesh>
-        </PropModel>
+        <PropModel propId="desk_volodka" sceneScale={explorationCharacterModelScale} />
         <mesh position={[-0.2, 0.22, 0]} castShadow receiveShadow>
           <boxGeometry args={[0.35, 0.4, 0.25]} />
           <meshStandardMaterial
@@ -335,8 +338,7 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({
           propId="wardrobe_soviet"
           sceneScale={explorationCharacterModelScale}
           position={[p[0], p[1], p[2]]}
-          proceduralBoxArgs={[0.58, INTERIOR_REF_WARDROBE_HEIGHT_M, 0.68]}
-          proceduralColor={i === 0 ? '#2d2419' : '#352a1f'}
+          rotation={[0, i === 0 ? 0.04 : -0.03, 0]}
         />
       ))}
 

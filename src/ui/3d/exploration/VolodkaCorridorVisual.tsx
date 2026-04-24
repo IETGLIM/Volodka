@@ -85,15 +85,10 @@ export const VolodkaCorridorVisual = memo(function VolodkaCorridorVisual({
       ))}
 
       {/* Совпадает с `corridor_ceiling_lamp` в `scenes.ts` (propId `lamp_desk`). */}
-      <PropModel propId="lamp_desk" sceneScale={explorationCharacterModelScale} position={[0, 2.38, 0.4]}>
-        <group>
-          <mesh castShadow receiveShadow>
-            <boxGeometry args={[0.32, 0.07, 0.85]} />
-            <meshStandardMaterial color="#dcd6cf" emissive="#fff5e0" emissiveIntensity={0.18} roughness={0.78} />
-          </mesh>
-          <pointLight position={[0, -0.12, 0]} intensity={0.42} color="#fff5e0" distance={4.5} decay={2} />
-        </group>
-      </PropModel>
+      <group position={[0, 2.38, 0.4]}>
+        <PropModel propId="lamp_desk" sceneScale={explorationCharacterModelScale} rotation={[0, Math.PI, 0]} />
+        <pointLight position={[0, -0.18, 0]} intensity={0.42} color="#fff5e0" distance={4.5} decay={2} />
+      </group>
 
       <pointLight position={[0, 2.4, 0]} intensity={0.5} color="#f5e6d3" distance={16} decay={2} />
     </group>

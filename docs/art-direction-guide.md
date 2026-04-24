@@ -97,6 +97,6 @@
 - Новые персонажные GLB: `npm run test:character-scale`.
 - Визуальный тест: в `volodka_room` пропы и мебель читаемы с TPS-камеры, не сливаются со стенами, отбрасывают тени.
 
-## 9. Внешние GLB-пропы (политика репозитория)
+## 9. GLB-пропы в репозитории
 
-Файлы `.glb` / `.gltf` из маркетплейсов **не коммитим без явного файла** в репозитории: кладите ассеты в `public/models-external/` (или `public/models/`), затем прописывайте `glbPath` в `propsManifest.ts` и убирайте `children` у соответствующего `PropModel`. После этого — `npm run test:character-scale` и ручная проверка в сцене.
+Ассеты комнаты Володьки / коридора лежат в **`public/`** (корень): `desk_volodka.glb`, `shelf.glb`, `mug.glb`, `Keyboard.glb`, `lamp.glb` — пути в `propsManifest.ts` вида `/desk_volodka.glb` (без переписывания в `models-external`). Персонажи по-прежнему из `public/models-external/` через `NEXT_PUBLIC_MODELS_BASE`. После смены файла — `npm run test:character-scale` (включая `propGlbScale.integration.test.ts`) и ручная проверка в сцене.
