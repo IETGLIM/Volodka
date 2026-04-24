@@ -1,4 +1,5 @@
 // src/config/scenes.ts
+import { getPropDefinition } from '@/data/propsManifest';
 import type { SceneId } from '@/data/types';
 
 // --- Стриминг 3D-обхода (`docs/scene-streaming-spec.md`) ---
@@ -56,6 +57,8 @@ export interface InteractiveObjectConfig {
   id: string;
   type: 'book' | 'chair' | 'notebook' | 'crate' | 'lamp' | 'generic';
   position: [number, number, number];
+  /** Ссылка на проп в `PROP_DEFINITIONS` (`src/data/propsManifest.ts`), если задано — геометрия/бюджет берутся оттуда при миграции на GLB */
+  propId?: string;
   rotation?: [number, number, number];
   size?: [number, number, number];
   color?: string;
@@ -241,6 +244,7 @@ export const SCENE_CONFIG = {
       {
         id: 'volodka_desk_main',
         type: 'generic',
+        propId: 'desk_volodka',
         position: [3.2, interiorDeskColliderCenterY(0.06), 0.1],
         size: [1.4, 0.06, 0.75],
         color: '#3d2817',
@@ -248,6 +252,7 @@ export const SCENE_CONFIG = {
       {
         id: 'volodka_desk_side',
         type: 'generic',
+        propId: 'desk_volodka',
         position: [0.8, interiorDeskColliderCenterY(0.06), -2.8],
         size: [1.0, 0.06, 0.55],
         color: '#4a3728',
@@ -255,6 +260,7 @@ export const SCENE_CONFIG = {
       {
         id: 'volodka_wardrobe_right',
         type: 'crate',
+        propId: 'wardrobe_soviet',
         position: [5.2, interiorWardrobeCenterYFromFloor(0), 0.2],
         size: [0.58, INTERIOR_REF_WARDROBE_HEIGHT_M, 0.68],
         color: '#2d2419',
@@ -262,6 +268,7 @@ export const SCENE_CONFIG = {
       {
         id: 'volodka_wardrobe_left',
         type: 'crate',
+        propId: 'wardrobe_soviet',
         position: [5.2, interiorWardrobeCenterYFromFloor(0), -1.4],
         size: [0.58, INTERIOR_REF_WARDROBE_HEIGHT_M, 0.68],
         color: '#352a1f',
@@ -340,6 +347,7 @@ export const SCENE_CONFIG = {
       {
         id: 'corridor_ceiling_lamp',
         type: 'generic',
+        propId: 'lamp_desk',
         position: [0, 2.38, 0.4],
         size: [0.32, 0.07, 0.85],
         color: '#dcd6cf',
@@ -710,6 +718,19 @@ export const SCENE_CONFIG = {
     ambientLight: { intensity: 0.25, color: '#ef4444' }, npcs: [], interactiveObjects: [],
   },
 };
+
+if (process.env.NODE_ENV !== 'production') {
+  for (const scene of Object.values(SCENE_CONFIG)) {
+    for (const obj of scene.interactiveObjects) {
+      const propId = (obj as InteractiveObjectConfig).propId;
+      if (propId && !getPropDefinition(propId)) {
+        console.warn(
+          `[scenes] PROP_DEFINITIONS missing propId="${propId}" (object ${obj.id}, scene ${scene.id})`,
+        );
+      }
+    }
+  }
+}
 
 /**
  * Для 3D-исследования: только сцены из `SCENE_CONFIG`. Иначе — комната Володьки в панели
