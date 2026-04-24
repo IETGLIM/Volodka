@@ -9,8 +9,9 @@
 // - Карма: влияет на доступные концовки
 
 import { eventBus, type StatBusId } from './EventBus';
-import type { PlayerState, PlayerSkills, ChoiceCondition } from '@/data/types';
+import type { NarrativeTimeOfDay, NPCRelation, PlayerState, PlayerSkills, ChoiceCondition } from '@/data/types';
 import { MAX_PLAYER_ENERGY } from '@/lib/energyConfig';
+import { matchChoiceCondition, type ConditionMatchContext } from '@/core/conditions/ConditionMatcher';
 
 // ============================================
 // ТИПЫ
@@ -59,8 +60,8 @@ class StatsEngineClass {
 
     const derivedEffects = this.getDerivedEffects({
       ...currentState,
-      [stat]: newValue,
-    });
+      [stat as keyof PlayerState]: newValue,
+    } as PlayerState);
 
     // Emit event
     eventBus.emit('stat:changed', {
@@ -198,80 +199,25 @@ class StatsEngineClass {
     state: PlayerState,
     flags: Record<string, boolean>,
     inventory: string[],
-    npcRelations: Array<{ id: string; value: number }>,
+    npcRelations: NPCRelation[],
     visitedNodes: string[],
     activeQuestIds?: string[],
-    completedQuestIds?: string[]
+    completedQuestIds?: string[],
+    extras?: { narrativeTimeOfDay?: NarrativeTimeOfDay; equippedItemIds?: string[] },
   ): { met: boolean; reason?: string } {
-    // Flag checks
-    if (condition.hasFlag && !flags[condition.hasFlag]) {
-      return { met: false, reason: `Требуется: ${condition.hasFlag}` };
-    }
-    if (condition.notFlag && flags[condition.notFlag]) {
-      return { met: false, reason: `Заблокировано: ${condition.notFlag}` };
-    }
-
-    // Item checks
-    if (condition.hasItem && !inventory.includes(condition.hasItem)) {
-      return { met: false, reason: `Нужен предмет: ${condition.hasItem}` };
-    }
-
-    // Stat checks
-    if (condition.stat) {
-      const statValue = this.getStatValue(condition.stat, state);
-      if (condition.min !== undefined && statValue < condition.min) {
-        return { met: false, reason: `Нужно: ${condition.stat} ≥ ${condition.min}` };
-      }
-      if (condition.max !== undefined && statValue > condition.max) {
-        return { met: false, reason: `Нужно: ${condition.stat} ≤ ${condition.max}` };
-      }
-    }
-
-    // NPC relation checks
-    if (condition.minRelation) {
-      const npc = npcRelations.find(r => r.id === condition.minRelation!.npcId);
-      if (!npc || npc.value < condition.minRelation.value) {
-        return { met: false, reason: `Недостаточно отношений с NPC` };
-      }
-    }
-
-    // Visited node check
-    if (condition.visitedNode && !visitedNodes.includes(condition.visitedNode)) {
-      return { met: false, reason: 'Нужно посетить определённое место' };
-    }
-
-    // ===== КВЕСТОВЫЕ УСЛОВИЯ =====
-    const active = activeQuestIds || [];
-    const completed = completedQuestIds || [];
-
-    // Квест должен быть активен
-    if (condition.questActive && !active.includes(condition.questActive)) {
-      return { met: false, reason: 'Требуется активный квест' };
-    }
-
-    // Квест должен быть завершён
-    if (condition.questCompleted && !completed.includes(condition.questCompleted)) {
-      return { met: false, reason: 'Нужно завершить квест' };
-    }
-
-    // Квест ещё не начат
-    if (condition.questNotStarted) {
-      if (active.includes(condition.questNotStarted) || completed.includes(condition.questNotStarted)) {
-        return { met: false, reason: 'Квест уже начат' };
-      }
-    }
-
-    // Квест не завершён
-    if (condition.questNotCompleted && completed.includes(condition.questNotCompleted)) {
-      return { met: false, reason: 'Другой путь уже выбран' };
-    }
-
-    // Минимум завершённых квестов
-    if (condition.minQuestCount && completed.length < condition.minQuestCount) {
-      return { met: false, reason: `Завершите больше квестов (${completed.length}/${condition.minQuestCount})` };
-    }
-
-    return { met: true };
+    const ctx: ConditionMatchContext = {
+      playerState: state,
+      npcRelations,
+      flags,
+      inventory,
+      visitedNodes,
+      skills: state.skills,
+      activeQuestIds: activeQuestIds ?? [],
+      completedQuestIds: completedQuestIds ?? [],
+      narrativeTimeOfDay: extras?.narrativeTimeOfDay,
+      equippedItemIds: extras?.equippedItemIds ?? state.equippedItemIds,
+    };
+    return matchChoiceCondition(condition, ctx);
   }
 
   /** Get blocked choices based on current state */
@@ -286,7 +232,8 @@ class StatsEngineClass {
 
   // ---- Private helpers ----
 
-  private getStatValue(stat: StatBusId | string, state: PlayerState): number {
+  private getStatValue(stat: StatBusId | string | undefined, state: PlayerState): number {
+    if (stat == null) return 0;
     if (stat in state) {
       return state[stat as keyof PlayerState] as number;
     }

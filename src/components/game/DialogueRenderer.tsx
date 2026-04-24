@@ -15,6 +15,7 @@ import { DIALOGUE_NODES } from '@/data/npcDefinitions';
 import type { PlayerState, NPCRelation } from '@/data/types';
 import { asTrainablePlayerSkill } from '@/lib/trainablePlayerSkill';
 import { useGameStore } from '@/store/gameStore';
+import { explorationHourToNarrativeTimeOfDay } from '@/core/conditions/timeOfDay';
 import { CyberSkillCheckResult, type SkillCheckBannerPayload } from './CyberSkillCheckResult';
 import { QuestAcceptedGlitchToast } from './QuestAcceptedGlitchToast';
 
@@ -201,6 +202,7 @@ export default function DialogueRenderer({
   const updateQuestObjective = useGameStore(s => s.updateQuestObjective);
   const collectPoem = useGameStore(s => s.collectPoem);
   const addSkill = useGameStore(s => s.addSkill);
+  const explorationHour = useGameStore((s) => s.exploration.timeOfDay);
 
   const dialogueStoreActions = useMemo(() => ({
     addStat, addStress, reduceStress, setFlag, unsetFlag,
@@ -229,8 +231,10 @@ export default function DialogueRenderer({
       inventory,
       visitedNodes,
       skills: playerState.skills,
+      narrativeTimeOfDay: explorationHourToNarrativeTimeOfDay(explorationHour),
+      equippedItemIds: playerState.equippedItemIds ?? [],
     }),
-    [playerState, npcRelations, flags, inventory, visitedNodes],
+    [playerState, npcRelations, flags, inventory, visitedNodes, explorationHour],
   );
 
   useEffect(() => {

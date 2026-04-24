@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { eventBus } from '@/engine/EventBus';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { StoryNode, StoryChoice, ChoiceCondition, PoemLine, StoryEffect } from '@/data/types';
+import { explorationHourToNarrativeTimeOfDay } from '@/core/conditions/timeOfDay';
 import { statsEngine } from '@/engine/StatsEngine';
 import { useGameStore } from '@/store/gameStore';
 import { useStoryConditionSlice } from '@/hooks/useStoryConditionSlice';
@@ -336,6 +337,10 @@ export default function StoryRenderer({ node, onChoice, onPoemGameComplete }: St
       playerState.visitedNodes,
       activeQuestIds,
       completedQuestIds,
+      {
+        narrativeTimeOfDay: explorationHourToNarrativeTimeOfDay(state.exploration.timeOfDay),
+        equippedItemIds: playerState.equippedItemIds ?? [],
+      },
     );
   }, [conditionSlice, inventoryIds, npcRelationSig, activeQuestIds, completedQuestIds]);
 

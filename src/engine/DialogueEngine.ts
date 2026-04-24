@@ -11,7 +11,8 @@ import type {
   DialogueCondition,
   DialogueEffect,
 } from '@/data/rpgTypes';
-import type { PlayerState, NPCRelation, PlayerSkills } from '@/data/types';
+import type { NarrativeTimeOfDay, PlayerState, NPCRelation, PlayerSkills } from '@/data/types';
+import { matchDialogueCondition, type ConditionMatchContext } from '@/core/conditions/ConditionMatcher';
 
 // ============================================
 // ТИПЫ
@@ -31,6 +32,8 @@ export interface DialogueContext {
   inventory: string[];
   visitedNodes: string[];
   skills: PlayerSkills;
+  narrativeTimeOfDay?: NarrativeTimeOfDay;
+  equippedItemIds?: string[];
 }
 
 export interface DialogueChoiceResult {
@@ -72,44 +75,29 @@ export function clearAllMemories(): void {
 // ПРОВЕРКА УСЛОВИЙ
 // ============================================
 
+function dialogueContextToMatchContext(context: DialogueContext): ConditionMatchContext {
+  const memNpc = context.npcRelations[0]?.id || '';
+  const memory = getMemory(memNpc);
+  return {
+    playerState: context.playerState,
+    npcRelations: context.npcRelations,
+    flags: context.flags,
+    inventory: context.inventory,
+    visitedNodes: context.visitedNodes,
+    skills: context.skills,
+    activeQuestIds: [],
+    completedQuestIds: [],
+    dialogueVisitedNodeIds: memory.visitedNodes,
+    narrativeTimeOfDay: context.narrativeTimeOfDay,
+    equippedItemIds: context.equippedItemIds ?? context.playerState.equippedItemIds,
+  };
+}
+
 export function evaluateCondition(
   condition: DialogueCondition,
   context: DialogueContext
 ): boolean {
-  // Флаги
-  if (condition.hasFlag && !context.flags[condition.hasFlag]) return false;
-  if (condition.notFlag && context.flags[condition.notFlag]) return false;
-
-  // Предметы
-  if (condition.hasItem && !context.inventory.includes(condition.hasItem)) return false;
-
-  // NPC-отношения
-  if (condition.minRelation) {
-    const npc = context.npcRelations.find(
-      (r) => r.id === condition.minRelation!.npcId
-    );
-    if (!npc || npc.value < condition.minRelation.value) return false;
-  }
-
-  // Навыки
-  if (condition.minSkill) {
-    const skillValue = context.skills[condition.minSkill.skill as keyof PlayerSkills];
-    if (typeof skillValue !== 'number' || skillValue < condition.minSkill.value) return false;
-  }
-
-  if (condition.minKarma !== undefined && context.playerState.karma < condition.minKarma) return false;
-  if (condition.maxKarma !== undefined && context.playerState.karma > condition.maxKarma) return false;
-
-  // Посещённые узлы
-  if (condition.visitedNode && !context.visitedNodes.includes(condition.visitedNode)) return false;
-
-  // Пройденный диалог
-  if (condition.completedDialogue) {
-    const memory = getMemory(context.npcRelations[0]?.id || '');
-    if (!memory.visitedNodes.includes(condition.completedDialogue)) return false;
-  }
-
-  return true;
+  return matchDialogueCondition(condition, dialogueContextToMatchContext(context));
 }
 
 /** Проверяет все условия (если их несколько) */

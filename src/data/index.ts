@@ -16,6 +16,7 @@ export type {
   MoralChoice,
   StoryEffect,
   Condition,
+  NarrativeTimeOfDay,
   ChoiceCondition,
   StoryChoice,
   PoemLine,

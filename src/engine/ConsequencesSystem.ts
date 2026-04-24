@@ -10,7 +10,12 @@ import type {
   PlayerState,
   NPCRelation,
   ChoiceCondition,
+  NarrativeTimeOfDay,
 } from '@/data/types';
+import {
+  consequenceContextToMatchContext,
+  matchConsequenceCondition,
+} from '@/core/conditions/ConditionMatcher';
 
 // ============================================
 // ТИПЫ
@@ -66,6 +71,10 @@ export interface ConsequenceCondition {
 
   // Условие ChoiceCondition (для совместимости)
   choiceCondition?: ChoiceCondition;
+
+  minTimeOfDay?: NarrativeTimeOfDay;
+  maxTimeOfDay?: NarrativeTimeOfDay;
+  equippedAnyOf?: string[];
 }
 
 export interface ConsequenceDefinition {
@@ -99,56 +108,6 @@ export function registerConsequences(definitions: ConsequenceDefinition[]): void
 }
 
 // ============================================
-// ПРОВЕРКА УСЛОВИЙ
-// ============================================
-
-function checkCondition(
-  condition: ConsequenceCondition,
-  state: ConsequenceEvaluationContext
-): boolean {
-  // Флаги
-  if (condition.hasFlag && !state.flags[condition.hasFlag]) return false;
-  if (condition.notFlag && state.flags[condition.notFlag]) return false;
-
-  // Характеристики
-  if (condition.minStat) {
-    const val = state.playerState[condition.minStat.stat];
-    if (typeof val === 'number' && val < condition.minStat.value) return false;
-  }
-  if (condition.maxStat) {
-    const val = state.playerState[condition.maxStat.stat];
-    if (typeof val === 'number' && val > condition.maxStat.value) return false;
-  }
-
-  // NPC-отношения
-  if (condition.minRelation) {
-    const npc = state.npcRelations.find(
-      (r) => r.id === condition.minRelation!.npcId
-    );
-    if (!npc || npc.value < condition.minRelation.value) return false;
-  }
-
-  // Квесты
-  if (condition.questActive && !state.activeQuestIds.includes(condition.questActive)) return false;
-  if (condition.questCompleted && !state.completedQuestIds.includes(condition.questCompleted)) return false;
-
-  // Инвентарь
-  if (condition.hasItem && !state.inventory.includes(condition.hasItem)) return false;
-
-  // Посещённые узлы
-  if (condition.visitedNode && !state.visitedNodes.includes(condition.visitedNode)) return false;
-
-  return true;
-}
-
-function checkAllConditions(
-  conditions: ConsequenceCondition[],
-  state: ConsequenceEvaluationContext
-): boolean {
-  return conditions.every((c) => checkCondition(c, state));
-}
-
-// ============================================
 // КОНТЕКСТ ОЦЕНКИ
 // ============================================
 
@@ -160,6 +119,8 @@ export interface ConsequenceEvaluationContext {
   completedQuestIds: string[];
   inventory: string[];
   visitedNodes: string[];
+  narrativeTimeOfDay?: NarrativeTimeOfDay;
+  equippedItemIds?: string[];
 }
 
 // ============================================
@@ -176,12 +137,14 @@ export function evaluateConsequences(
     .filter((c) => c.triggerEvent === event || c.deferred)
     .sort((a, b) => b.priority - a.priority);
 
+  const matchCtx = consequenceContextToMatchContext(context);
+
   for (const consequence of sortedConsequences) {
     // Проверяем однократность
     if (consequence.once && firedConsequences.has(consequence.id)) continue;
 
     // Проверяем условия
-    if (!checkAllConditions(consequence.conditions, context)) continue;
+    if (!consequence.conditions.every((c) => matchConsequenceCondition(c, matchCtx))) continue;
 
     // Применяем
     firedConsequences.add(consequence.id);

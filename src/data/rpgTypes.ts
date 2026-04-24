@@ -2,7 +2,7 @@
 // ТИПЫ ДЛЯ RPG-СИСТЕМЫ
 // ============================================
 
-import type { SceneId } from './types';
+import type { NarrativeTimeOfDay, SceneId } from './types';
 
 // Позиция игрока в 3D пространстве
 export interface PlayerPosition {
@@ -95,6 +95,9 @@ export interface DialogueCondition {
   completedDialogue?: string; // Пройденный диалог
   minKarma?: number;
   maxKarma?: number;
+  minTimeOfDay?: NarrativeTimeOfDay;
+  maxTimeOfDay?: NarrativeTimeOfDay;
+  equippedAnyOf?: string[];
 }
 
 // Эффект диалога

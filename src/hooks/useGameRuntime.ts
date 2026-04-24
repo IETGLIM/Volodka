@@ -8,6 +8,7 @@ import { sceneManager } from '@/engine/SceneManager';
 import { coreLoop } from '@/engine/CoreLoop';
 import { poemMechanics } from '@/engine/PoemMechanics';
 import { initConsequencesSystem } from '@/engine/ConsequencesSystem';
+import { explorationHourToNarrativeTimeOfDay } from '@/core/conditions/timeOfDay';
 import type { NPCRelation, PlayerState, PlayerSkills, SceneId } from '@/data/types';
 import { asTrainablePlayerSkill } from '@/lib/trainablePlayerSkill';
 import type { TravelToSceneOptions, TravelToSceneResult } from '@/store/gameStore';
@@ -93,6 +94,8 @@ export function useGameRuntime(params: UseGameRuntimeParams) {
       completedQuestIds: state.completedQuestIds,
       inventory: state.inventory.map(i => i.item.id),
       visitedNodes: state.playerState.visitedNodes,
+      narrativeTimeOfDay: explorationHourToNarrativeTimeOfDay(state.exploration.timeOfDay),
+      equippedItemIds: state.playerState.equippedItemIds ?? [],
     };
   }, []);
 

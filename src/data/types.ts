@@ -106,6 +106,8 @@ export interface PlayerState {
   skills: PlayerSkills;
   collections: Collections;
   flags: Record<string, boolean>;
+  /** Экипировка (обход / RPG): id предметов; опционально до UI слота экипировки. */
+  equippedItemIds?: string[];
   statistics: GameStatistics;
   
   // Таймеры для Kernel Panic
@@ -241,6 +243,9 @@ export interface Condition {
   max?: number;
 }
 
+/** Фаза суток для условий (сюжет, обход, диалоги, последствия). */
+export type NarrativeTimeOfDay = 'dawn' | 'morning' | 'afternoon' | 'evening' | 'night';
+
 export interface ChoiceCondition {
   stat?: Condition['stat'];
   min?: number;
@@ -250,6 +255,12 @@ export interface ChoiceCondition {
   hasItem?: string;
   minRelation?: { npcId: string; value: number };
   visitedNode?: string;
+
+  /** Минимальная фаза суток (линейный порядок dawn→…→night), если задана вместе с контекстом `narrativeTimeOfDay`. */
+  minTimeOfDay?: NarrativeTimeOfDay;
+  maxTimeOfDay?: NarrativeTimeOfDay;
+  /** Хотя бы один id должен быть в списке экипировки контекста. */
+  equippedAnyOf?: string[];
   
   // Квестовые условия — квесты влияют на доступные выборы
   questActive?: string;       // Квест должен быть активен
