@@ -208,7 +208,7 @@ export interface ExplorationState {
 }
 
 // Режим игры
-export type GameMode = 'visual-novel' | 'exploration' | 'dialogue' | 'cutscene' | 'combat';
+export type GameMode = 'exploration' | 'dialogue' | 'cutscene' | 'combat';
 
 // Сообщение-подсказка
 export interface InteractionPrompt {

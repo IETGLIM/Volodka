@@ -113,7 +113,7 @@ const getNPCStage = (value: number): NPCRelation['stage'] => {
 
 export const useWorldStore = create<WorldStore>()((set, get) => ({
   npcRelations: INITIAL_NPC_RELATIONS,
-  gameMode: 'visual-novel',
+  gameMode: 'exploration',
   exploration: INITIAL_EXPLORATION,
   currentNPCId: null,
   interactionPrompt: null,
@@ -262,7 +262,7 @@ export const useWorldStore = create<WorldStore>()((set, get) => ({
   resetWorld: () =>
     set({
       npcRelations: INITIAL_NPC_RELATIONS,
-      gameMode: 'visual-novel',
+      gameMode: 'exploration',
       exploration: INITIAL_EXPLORATION,
       currentNPCId: null,
       interactionPrompt: null,

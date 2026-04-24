@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Changed
+
+- **Единый полевой цикл (3D RPG):** убран режим `visual-novel` и переключатель «Сцена / 3D» в `HUD`; слои `SceneRenderer` / `SceneNPCList` вынесены из `GameOrchestrator` — мир всегда рендерится через `RPGGameCanvas`, сюжетный узел по-прежнему синхронизирует `exploration.currentSceneId` через `useGameRuntime`. Тип `GameMode` в `rpgTypes` / `shared/types/rpg`, `isFieldGameState`, `useGameScene` (квестовая сцена по `explore_mode` vs узлу), `useGameUiLayout`, клиентский `worldStore`, миграция сейвов `visual-novel` → `exploration` в `gameStore`.
+
 ### Added
 
 - **Отладка нарратива:** `**src/lib/narrativeDebug.ts**` (мутации стор только при `NODE_ENV === development` или `**NEXT_PUBLIC_GAME_DEBUG_PANEL=1**`), панель `**NarrativeDebugPanel**` в `**GameOrchestrator**` — статы, флаги, квесты (`gameStore`), клавиша `` ` `` и кнопка DBG.

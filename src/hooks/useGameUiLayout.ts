@@ -25,8 +25,7 @@ export function useGameUiLayout({
     if (phase !== 'game' || !hasCurrentNode || currentNodeId === 'explore_mode') return false;
     if (!storyOverlayEligible) return false;
     if (gameMode === 'dialogue' || gameMode === 'cutscene') return false;
-    if (gameMode === 'visual-novel') return true;
-    if (gameMode === 'exploration') return true;
+    if (gameMode === 'exploration' || gameMode === 'combat') return true;
     return false;
   }, [phase, gameMode, hasCurrentNode, currentNodeId, storyOverlayEligible]);
 

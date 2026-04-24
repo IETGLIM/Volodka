@@ -21,7 +21,6 @@ import { AmbientMusicPlayer } from '@/hooks/useAmbientMusic';
 import { IntroScreen } from './IntroScreen';
 import { MenuScreen } from './MenuScreen';
 import CyberLoadingScreen from './LoadingScreen';
-import SceneRenderer from './SceneRenderer';
 import StoryRenderer from './StoryRenderer';
 import DialogueRenderer from './DialogueRenderer';
 import HUD from './HUD';
@@ -36,7 +35,6 @@ import {
   PanelErrorBoundary,
   PanelWrapper,
   PoemRevealOverlay,
-  SceneNPCList,
   EnergyBar,
 } from './GameOrchestratorSubcomponents';
 
@@ -307,7 +305,6 @@ export default function GameOrchestrator() {
 
   const scene = useGameScene({
     phase,
-    gameMode,
     explorationCurrentSceneId: exploration.currentSceneId,
     currentNodeId,
     playerState,
@@ -325,7 +322,7 @@ export default function GameOrchestrator() {
     showEffectNotif,
   });
 
-  const { currentNode, currentSceneId, trackQuestNpcTalk, emitQuestEvent, runtime } = scene;
+  const { currentNode, trackQuestNpcTalk, emitQuestEvent, runtime } = scene;
 
   /** Диалог из сюжета (`dialogueNpcId`) — тоже считается разговором для 📋 / `npc_talked`. */
   const openDialogueFromStoryWithQuest = useCallback(
@@ -443,7 +440,7 @@ export default function GameOrchestrator() {
     [trackQuestNpcTalk, openNpcDialogue],
   );
 
-  const displaySceneId = gameMode === 'exploration' ? exploration.currentSceneId : currentSceneId;
+  const displaySceneId = exploration.currentSceneId;
 
   useGameAudioProfile(displaySceneId, playerState.stress);
 
@@ -484,16 +481,6 @@ export default function GameOrchestrator() {
     },
     [setCurrentNode, requestCutscene],
   );
-
-  const handleEnterExplorationMode = useCallback(() => {
-    travelToScene(currentSceneId, { narrativeDriven: true });
-    setCurrentNode('explore_mode');
-    setGameMode('exploration');
-  }, [travelToScene, currentSceneId, setCurrentNode, setGameMode]);
-
-  const handleEnterVisualNovelMode = useCallback(() => {
-    setGameMode('visual-novel');
-  }, [setGameMode]);
 
   const actionsBundle = useActionHandler({
     playerSkills: playerState.skills,
@@ -581,14 +568,6 @@ export default function GameOrchestrator() {
         forceBattleMusic={playerState.stress > 80 || displaySceneId === 'battle'}
         narrativeMusic={getWorldStateModifiers().music}
       />
-      {gameMode !== 'exploration' && (
-        <SceneRenderer sceneId={currentSceneId} playerState={playerState} />
-      )}
-
-      {gameMode !== 'exploration' && (
-        <SceneNPCList sceneId={currentSceneId} onInteract={handleNPCInteraction} />
-      )}
-
       {phase === 'game' && gameMode === 'exploration' && (
         <SceneTransition
           isActive={explorationSceneGlitch}
@@ -599,7 +578,7 @@ export default function GameOrchestrator() {
         />
       )}
 
-      {(gameMode === 'exploration' || (Boolean(activeDialogue) && explorationDialogueLayout)) && (
+      {phase === 'game' && (
         <div className={EXPLORATION_GAME_VIEWPORT_CLASS}>
           <RPGGameCanvas
             sceneId={exploration.currentSceneId}
@@ -633,14 +612,7 @@ export default function GameOrchestrator() {
       {phase === 'game' && <QuestTracker />}
       {phase === 'game' && <MemoryLog />}
 
-      <HUD
-        onSave={handleSaveGame}
-        onTogglePanel={handleTogglePanel}
-        activePanels={panels}
-        gameMode={gameMode}
-        onEnterExploration={handleEnterExplorationMode}
-        onEnterVisualNovel={handleEnterVisualNovelMode}
-      />
+      <HUD onSave={handleSaveGame} onTogglePanel={handleTogglePanel} activePanels={panels} />
 
       <CoreLoopIndicator />
       <ConsequenceNotification />

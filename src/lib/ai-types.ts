@@ -1,6 +1,6 @@
 // ============================================
 // SHARED TYPES FOR AI PIPELINE
-// ВОЛОДЬКА — Psychological RPG / Visual Novel
+// ВОЛОДЬКА — narrative psychological RPG (3D exploration)
 // ============================================
 
 import type { PlayerState, NPCRelation } from '../data/types';

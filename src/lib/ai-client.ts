@@ -1,6 +1,6 @@
 // ============================================
 // AI CLIENT — Browser-safe wrapper for AI APIs
-// ВОЛОДЬКА — Psychological RPG / Visual Novel
+// ВОЛОДЬКА — narrative psychological RPG (3D exploration)
 // ============================================
 // This module runs on the client side only.
 // It wraps fetch calls to the backend API routes

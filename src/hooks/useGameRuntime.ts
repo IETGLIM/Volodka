@@ -114,7 +114,7 @@ export function useGameRuntime(params: UseGameRuntimeParams) {
   }, [phase, incrementPlayTime]);
 
   /**
-   * Синхрон VN-сцены с 3D-локацией.
+   * Синхрон сцены сюжетного узла с 3D-локацией (`exploration.currentSceneId`).
    * В `explore_mode` не вызываем `travelToScene` (игрок мог переехать в другую 3D-локацию),
    * но обновляем `sceneManager` по фактической `exploration.currentSceneId`.
    */

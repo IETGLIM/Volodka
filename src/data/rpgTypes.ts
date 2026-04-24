@@ -217,7 +217,8 @@ export interface ExplorationState {
 }
 
 // Режим игры
-export type GameMode = 'visual-novel' | 'exploration' | 'dialogue' | 'cutscene' | 'combat';
+/** Полевой цикл: обход 3D, диалог, кат-сцена, бой — без отдельного режима «визуальная новелла». */
+export type GameMode = 'exploration' | 'dialogue' | 'cutscene' | 'combat';
 
 // Сообщение-подсказка
 export interface InteractionPrompt {

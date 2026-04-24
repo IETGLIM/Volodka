@@ -48,8 +48,8 @@ export function useDialogueFlow({
   setCurrentNode,
 }: UseDialogueFlowParams) {
   const [activeDialogue, setActiveDialogue] = useState<ActiveDialogueState | null>(null);
-  /** После диалога возвращаемся в тот же режим (например `exploration`), а не всегда в VN. */
-  const gameModeBeforeDialogueRef = useRef<GameMode>('visual-novel');
+  /** После диалога возвращаемся в тот же полевой режим (обычно `exploration`). */
+  const gameModeBeforeDialogueRef = useRef<GameMode>('exploration');
 
   const handleDialogueEffect = useCallback((effect: DialogueEffect) => {
     applyDialogueEffects([effect], dialogueStoreActions);

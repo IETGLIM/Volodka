@@ -247,7 +247,7 @@ interface GameState {
   completedQuestIds: string[];
   questProgress: Record<string, Record<string, number>>; // questId -> objectiveId -> value
 
-  /** Журнал последних выборов в визуальной новелле */
+  /** Журнал последних сюжетных выборов */
   choiceLog: ChoiceLogEntry[];
   
   // Faction reputation
@@ -470,6 +470,14 @@ const deserializeInventory = (entries: SavedInventoryEntry[] = []): InventoryIte
 /** Ensures auto-load runs at most once per tab (Strict Mode double-invokes effects in dev). */
 let storageHydrationApplied = false;
 
+const GAME_MODES: GameMode[] = ['exploration', 'dialogue', 'cutscene', 'combat'];
+
+function normalizeGameModeForLoad(raw: unknown): GameMode {
+  if (raw === 'visual-novel') return 'exploration';
+  if (typeof raw === 'string' && (GAME_MODES as string[]).includes(raw)) return raw as GameMode;
+  return 'exploration';
+}
+
 const normalizeLoadedState = (data: SavedGameData) => ({
   playerState: normalizePlayerStateForLoad(data.playerState),
   currentNodeId:
@@ -481,7 +489,7 @@ const normalizeLoadedState = (data: SavedGameData) => ({
   collectedPoemIds: data.collectedPoemIds || [],
   unlockedAchievementIds: data.unlockedAchievementIds || [],
   unlockedLocations: data.unlockedLocations || [],
-  gameMode: data.gameMode ?? 'exploration',
+  gameMode: normalizeGameModeForLoad(data.gameMode),
   exploration: (() => {
     const raw =
       data.exploration && typeof data.exploration === 'object'
