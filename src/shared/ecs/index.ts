@@ -265,7 +265,20 @@ export class ECSWorld {
   /** Register a system */
   registerSystem(system: ISystem): void {
     this.systems.push(system);
-    this.systems.sort((a, b) => a.priority - b.priority);
+    this.sortSystemsDeterministic();
+  }
+
+  /** Порядок variable/fixed/late апдейта: `priority` по возрастанию, при равенстве — `name`. */
+  private sortSystemsDeterministic(): void {
+    this.systems.sort((a, b) => {
+      if (a.priority !== b.priority) return a.priority - b.priority;
+      return a.name.localeCompare(b.name);
+    });
+  }
+
+  /** Имена систем в порядке одного кадра (тесты / отладка). */
+  getSystemNamesInOrder(): string[] {
+    return this.systems.map((s) => s.name);
   }
 
   /** Remove a system by name */

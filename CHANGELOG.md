@@ -4,6 +4,7 @@
 
 ### Added
 
+- **ECS / SoA-симуляция:** каталог `**src/ecs/sim/**` — `**ArchetypeRegistry**`, `**SoaArchetypeTable**` (архетип `**sim_mv_health**`), `**SimPipeline**` с детерминированным порядком `**ISimSystem**` (`order` + `name`), `**MovementSimSystem**` / `**HealthSimSystem**`; интеграция в `**SystemsRunner**` (после каждого `fixedUpdate` ECS — `sim.fixedUpdate`, между `update` и `lateUpdate` ECS — `sim.update`); регистрация в `**ExplorationSystemsTick**`; тесты `**simPipeline.test.ts**`. У `**ECSWorld**` — `**getSystemNamesInOrder**` и сортировка систем по `priority` затем `name`; тест `**ecsWorld.systemOrder.test.ts**`.
 - **Обход / метаданные масштаба GLB:** `**src/data/modelMeta.ts**` — таблица базового uniform по имени файла, `**resolveCharacterMeshUniformScale**` (комната × NPC `scale` × глобальный ÷5 × кап по сцене × интро); тесты `**modelMeta.test.ts**`.
 - **Обход / диагностика GLB игрока:** `**NEXT_PUBLIC_EXPLORATION_PLAYER_GLB_SCALE_DEBUG=1`** → `**isExplorationPlayerGlbScaleDebugEnabled**` в `**explorationDiagnostics.ts**`, `**console.info**` цепочки uniform в `**PhysicsPlayer**` (`GLBPlayerModel`); тест что `**EXPLORATION_PLAYER_GLOBAL_VISUAL_SCALE**` = **0.2** в `**playerScaleConstants.playerGlbUniform.test.ts**`.
 - `**src/client/store/playerStore.test.ts`:** проверки `updateStatsBatch`, `EventBus` (`player:stress_high`, паника), `setRpgProgress`, сериализации.
