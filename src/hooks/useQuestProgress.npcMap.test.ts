@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { EVENT_OBJECTIVE_MAP } from '@/hooks/useQuestProgress';
+import { EVENT_OBJECTIVE_MAP } from '@/game/core/questEvents';
 import { NPC_DEFINITIONS } from '@/data/npcDefinitions';
 import { QUEST_DEFINITIONS } from '@/data/quests';
 

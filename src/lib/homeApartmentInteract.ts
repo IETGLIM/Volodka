@@ -4,7 +4,7 @@ import { explorationNarrativeTeleport } from '@/lib/explorationNarrativeTeleport
 import { POEMS } from '@/data/poems';
 import { eventBus } from '@/engine/EventBus';
 import { poemMechanics } from '@/engine/PoemMechanics';
-import type { QuestEvent } from '@/hooks/useQuestProgress';
+import type { QuestEvent } from '@/game/core/questTypes';
 import { useGameStore } from '@/store/gameStore';
 
 type StoreSnapshot = ReturnType<typeof useGameStore.getState>;

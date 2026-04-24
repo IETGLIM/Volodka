@@ -46,15 +46,8 @@ import { eventBus } from '@/engine/EventBus';
 import { useGameAudioProfile } from '@/hooks/useAudio';
 import { useLoadingProgress } from '@/context/LoadingProgressContext';
 import { QUEST_DEFINITIONS, getNextTrackedObjective } from '@/data/quests';
-import { items as GAME_ITEM_TABLE } from '@/data/items';
 import { getNPCById, getNPCsForScene, getNpcExplorationPosition } from '@/data/npcDefinitions';
-import { getSceneConfig, getInteractiveObjectsForScene } from '@/config/scenes';
-import { homeApartmentInspectLine, tryHomeApartmentUse } from '@/lib/homeApartmentInteract';
-import { volodkaRoomInspectLine, tryVolodkaRoomUse } from '@/lib/volodkaRoomInteract';
-import { tryApplyVolodkaRackAuditInspect } from '@/lib/volodkaRackQuestBranch';
-import { volodkaCorridorInspectLine, tryVolodkaCorridorUse } from '@/lib/volodkaCorridorInteract';
-import { getInteractiveSkillBlockMessage } from '@/lib/interactiveSkillRequirements';
-import { getExplorationAmbientStressPerTick } from '@/lib/explorationAtmosphere';
+import { getSceneConfig } from '@/config/scenes';
 import type { MiniMapQuestMarker } from '@/components/game/MiniMap';
 import { MoralCompassHUD } from '@/components/game/MoralCompassHUD';
 import { SceneTransition } from '@/components/game/CinematicEffects';
@@ -66,7 +59,7 @@ import { SCENE_VISUALS } from '@/engine/SceneManager';
 import type { VisualState } from '@/data/types';
 import { storyNodeShowsStoryOverlay } from '@/lib/storyOverlayEligibility';
 import { EXPLORATION_GAME_VIEWPORT_CLASS } from '@/components/3d/Scene';
-import { EXPLORATION_QUESTS_KARMA_HINT_LINE_RU } from '@/components/game/exploration/ExplorationBriefingOverlay';
+import { initGameCore } from '@/game/core/gameCoreBootstrap';
 import { getWorldStateModifiers } from '@/core/world/worldReactivity';
 import MemoryLog from '@/components/ui/MemoryLog';
 import QuestTracker from '@/components/ui/QuestTracker';
@@ -80,9 +73,6 @@ const SkillsPanel = dynamic(() => import('@/components/SkillsPanel'), { ssr: fal
 const ITTerminal = dynamic(() => import('@/components/game/ITTerminal'), { ssr: false });
 const JournalPanel = dynamic(() => import('@/components/game/JournalPanel'), { ssr: false });
 const LegacyScreen = dynamic(() => import('@/components/game/LegacyScreen'), { ssr: false });
-/** Один раз за прохождение: тост при первом входе в диалог из 3D-обхода (E2.1). */
-const EXPLORATION_FIRST_DIALOGUE_QUEST_KARMA_FLAG = 'exploration_first_dialogue_quest_karma_hint_v1';
-
 /** Длительность кинематографического оверлея при смене 3D-локации (должна покрывать фазы `SceneTransition`). */
 const EXPLORATION_SCENE_GLITCH_MS = 2700;
 const EXPLORATION_SCENE_TRANSITION_DURATION_SEC = 1.65;
@@ -212,18 +202,9 @@ export default function GameOrchestrator() {
     return unsub;
   }, [showEffectNotif]);
 
-  const prevGameModeRef = useRef<string | null>(null);
   useEffect(() => {
-    const prev = prevGameModeRef.current;
-    if (gameMode === 'dialogue' && prev === 'exploration') {
-      const { hasFlag, setFlag } = useGameStore.getState();
-      if (!hasFlag(EXPLORATION_FIRST_DIALOGUE_QUEST_KARMA_FLAG)) {
-        setFlag(EXPLORATION_FIRST_DIALOGUE_QUEST_KARMA_FLAG);
-        eventBus.emit('ui:exploration_message', { text: EXPLORATION_QUESTS_KARMA_HINT_LINE_RU });
-      }
-    }
-    prevGameModeRef.current = gameMode;
-  }, [gameMode]);
+    return initGameCore();
+  }, []);
 
   useEffect(() => {
     const offSaved = eventBus.on('game:saved', ({ source }) => {
@@ -238,18 +219,6 @@ export default function GameOrchestrator() {
       offLoaded();
     };
   }, [showManualSave, showAutoSave, showLoadPulse]);
-
-  /** Улица ночью / зима — лёгкий фоновый стресс (атмосфера). */
-  useEffect(() => {
-    if (phase !== 'game' || gameMode !== 'exploration') return;
-    const tick = () => {
-      const sceneId = exploration.currentSceneId;
-      const d = getExplorationAmbientStressPerTick(sceneId, exploration.timeOfDay);
-      if (d > 0) addStress(d);
-    };
-    const id = window.setInterval(tick, 3200);
-    return () => window.clearInterval(id);
-  }, [phase, gameMode, exploration.currentSceneId, exploration.timeOfDay, addStress]);
 
   /** Glitch-переход при смене 3D-локации (store `lastSceneTransition`); без вспышки при первом входе в обход. */
   useEffect(() => {
@@ -366,101 +335,6 @@ export default function GameOrchestrator() {
     },
     [trackQuestNpcTalk, openDialogueFromStory],
   );
-
-  useEffect(() => {
-    return eventBus.on('object:interact', ({ objectId, action }) => {
-      const sid = useGameStore.getState().exploration.currentSceneId;
-      const objects = getInteractiveObjectsForScene(sid);
-      const obj = objects.find((o) => o.id === objectId);
-      const toast = (text: string) => eventBus.emit('ui:exploration_message', { text });
-
-      if (!obj) {
-        toast('Объект не найден в этой сцене.');
-        return;
-      }
-
-      const store = useGameStore.getState();
-      switch (action) {
-        case 'inspect': {
-          const skillHint = getInteractiveSkillBlockMessage(obj, store.playerState.skills);
-          const homeLine = sid === 'home_evening' ? homeApartmentInspectLine(obj) : null;
-          const volLine = sid === 'volodka_room' ? volodkaRoomInspectLine(obj) : null;
-          const corLine = sid === 'volodka_corridor' ? volodkaCorridorInspectLine(obj) : null;
-          if (homeLine) {
-            toast(skillHint ? `${homeLine} ${skillHint}` : homeLine);
-          } else if (volLine) {
-            if (
-              sid === 'volodka_room' &&
-              tryApplyVolodkaRackAuditInspect(obj, toast, volLine, skillHint ? `${skillHint}` : null)
-            ) {
-              /* одно сообщение: осмотр + прогресс аудита внутри helper */
-            } else {
-              toast(skillHint ? `${volLine} ${skillHint}` : volLine);
-            }
-          } else if (corLine) {
-            toast(skillHint ? `${corLine} ${skillHint}` : corLine);
-          } else if (obj.canBeRead && obj.poemId) {
-            toast(
-              skillHint
-                ? `«${obj.type}»: можно прочитать — «Использовать». ${skillHint}`
-                : `«${obj.type}»: можно прочитать — действие «Использовать».`,
-            );
-          } else {
-            toast(
-              skillHint
-                ? `Объект «${obj.id}» (${obj.type}). ${skillHint}`
-                : `Объект «${obj.id}» (${obj.type}).`,
-            );
-          }
-          break;
-        }
-        case 'take': {
-          const block = getInteractiveSkillBlockMessage(obj, store.playerState.skills);
-          if (block) {
-            toast(block);
-            break;
-          }
-          if (obj.itemId) {
-            store.addItem(obj.itemId, 1);
-            const label = GAME_ITEM_TABLE[obj.itemId]?.name ?? obj.itemId;
-            toast(`В инвентарь: ${label}`);
-          } else {
-            toast('С объекта нечего взять.');
-          }
-          break;
-        }
-        case 'use': {
-          const blockUse = getInteractiveSkillBlockMessage(obj, store.playerState.skills);
-          if (blockUse) {
-            toast(blockUse);
-            break;
-          }
-          if (sid === 'home_evening' && tryHomeApartmentUse(obj, store, toast, emitQuestEvent)) {
-            break;
-          }
-          if (sid === 'volodka_room' && tryVolodkaRoomUse(obj, store, toast)) {
-            break;
-          }
-          if (sid === 'volodka_corridor' && tryVolodkaCorridorUse(obj, store, toast)) {
-            break;
-          }
-          toast('Использование привязано к сюжету — скоро.');
-          break;
-        }
-        case 'drop': {
-          if (obj.itemId) {
-            store.removeItem(obj.itemId, 1);
-            toast(`Выброшено: ${obj.itemId}`);
-          } else {
-            toast('Нельзя выбросить привязку к этому объекту.');
-          }
-          break;
-        }
-        default:
-          toast(`Действие «${action}» не обработано.`);
-      }
-    });
-  }, [emitQuestEvent]);
 
   const {
     revealedPoemId,

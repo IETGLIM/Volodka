@@ -13,6 +13,7 @@
 
 ### Changed
 
+- **Game Service (`@/game/core`):** квестовые события — `**questTypes**` / `**questEvents**` (`dispatchQuestEvent`, `runQuestCompletionScan`, `EVENT_OBJECTIVE_MAP`); обработка `**object:interact**`, амбиент-стресс обхода и тост E2.1 (первый диалог из 3D) — `**objectInteractionService**`, `**explorationAmbienceService**`, `**explorationDialogueHintService**`; `**initGameCore**` в `**GameOrchestrator**`; `**registerBaseInteractions**` перенесён в ядро, `**game/interactions/registerBaseInteractions**` — реэкспорт; строка `**EXPLORATION_QUESTS_KARMA_HINT_LINE_RU**` — `**explorationHints.ts**`; `**useQuestProgress**` делегирует в ядро.
 - **ECS / камера:** `**EXPLORATION_TPS_CAMERA_OFFSET_LOCAL_M**` (**0**, **1.6**, **4**) в `**src/ecs/systems/CameraSystem.ts**` (экспорт из `**src/ecs/index.ts**`) — ориентир для будущего переноса TPS из `**FollowCamera**`; комментарий-ссылка в `**FollowCamera.tsx**`.
 - **Репозиторий:** в `**.gitignore`** — игнор распакованных папок `**exports/volodka-model-scale-analysis-bundle-*/**` (локальный стейджинг архива не должен попадать в коммиты).
 - **Типы:** удалён `**src/shared/types/game.ts`**; импорты переведены на `**@/data/types**` (`**EventBus**`, сторы, `**save-manager**`, AI). `**src/shared/types/index.ts**`, `**rpg.ts**`, `**schedule.ts**` реэкспортируют `**SceneId**` и игровые типы из канона `**data/types**`.

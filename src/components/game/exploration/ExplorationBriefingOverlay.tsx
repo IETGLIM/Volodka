@@ -3,10 +3,10 @@
 import { memo, useCallback, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { SceneId } from '@/data/types';
+import { EXPLORATION_QUESTS_KARMA_HINT_LINE_RU } from '@/game/core/explorationHints';
 
 /** Одна строка для брифинга и тоста при первом диалоге из обхода (E2.1). */
-export const EXPLORATION_QUESTS_KARMA_HINT_LINE_RU =
-  'Квесты и цели — в журнале справа; карма влияет на тон реплик и ветки диалогов.';
+export { EXPLORATION_QUESTS_KARMA_HINT_LINE_RU };
 
 const CAMERA_ORBIT_HINT_RU =
   'Камера: мышь или перетаскивание пальца по экрану; R — сброс орбиты за спину.';
