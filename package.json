@@ -9,6 +9,7 @@
     "lint": "eslint .",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:player-animations": "node scripts/validate-player-animations.mjs",
     "knip": "knip",
     "validate:content": "vitest run src/validation/contentValidator.test.ts",
     "test:character-scale": "vitest run src/lib/characterScaleValidator.test.ts src/lib/characterScaleAssets.integration.test.ts src/lib/propGlbScale.integration.test.ts src/data/characterModelMetaCoverage.test.ts src/lib/gltfCharacterMaterialPolicy.test.ts",

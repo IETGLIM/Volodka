@@ -27,6 +27,9 @@ jobs:
       - name: Tests
         run: npm test
 
+      - name: Player animation gate
+        run: npm run test:player-animations
+
       - name: ESLint
         run: npm run lint
 

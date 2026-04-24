@@ -4,6 +4,8 @@
 
 ### Added
 
+- **P0 gate: player animations** — скрипт `scripts/validate-player-animations.mjs` (проверка `Idle`/`Walk` у player GLB), вызов `npm run test:player-animations` в CI.
+- **Визуальный smoke-тест для комнаты Володьки** в `docs/volodka-room-smoke.md`.
 - **AAA-аудит и стул Володьки:** экспертный обзор `docs/volodka-aaa-expert-audit-2026-04-25.md`; `Chair.glb` подключён как `chair_volodka` в `src/data/propsManifest.ts` и размещён отдельным `PropModel` у стола в `src/ui/3d/exploration/VolodkaRoomVisual.tsx`.
 - **Пропы комнаты Володьки (манифест + сцена):** `**volodka_sofa**`, `**volodka_window**` в `**propsManifest.ts**` — процедурная геометрия в `**PropModel**` с `children` в `**VolodkaRoomVisual**`; `**propId**` в `**scenes.ts**`; коллайдер окна выровнен по Z с мешем задней стены. В `**propGlbScale.integration.test.ts**` — smoke высоты AABB×uniform при `sceneScale=0.48` для GLB-пропов (широкие полосы до донастройки `baseUniform`).
 
