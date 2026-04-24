@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
-import { useGameStore } from '@/store/gameStore';
+import { useGameStore } from '@/state/gameStore';
 import {
   isNarrativeDebugEnabled,
   narrativeDebugActivateQuest,

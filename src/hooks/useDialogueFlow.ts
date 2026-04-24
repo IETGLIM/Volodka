@@ -4,7 +4,7 @@ import { resolveDialogueVariant } from '@/core/dialogue/resolveDialogueVariant';
 import { NPC_DEFINITIONS } from '@/data/npcDefinitions';
 import { eventBus } from '@/engine/EventBus';
 import { applyDialogueEffects } from '@/engine/DialogueEngine';
-import { useGameStore } from '@/store/gameStore';
+import { useGameStore } from '@/state/gameStore';
 
 interface DialogueStoreActions {
   addStat: (stat: 'mood' | 'creativity' | 'stability' | 'energy' | 'karma' | 'selfEsteem', amount: number) => void;

@@ -1,3 +1,3 @@
 export type { FieldGameState, GameState } from './gameState';
 export { isFieldGameState } from './gameState';
-export { useGameMode as useRpgGameState } from '@/store/gameStore';
+export { useGameMode as useRpgGameState } from '@/state/gameStore';

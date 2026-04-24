@@ -3,8 +3,8 @@ import { checkDialogueCondition } from '@/core/dialogue/dialogueConditions';
 import { startQuestWithLog } from '@/core/quests/QuestEngine';
 import { eventBus } from '@/engine/EventBus';
 import { introQuest } from '@/game/quests/introQuest';
-import { useGameStore } from '@/store/gameStore';
-import { useWireHackOverlayStore } from '@/store/wireHackOverlayStore';
+import { useGameStore } from '@/state/gameStore';
+import { useWireHackOverlayStore } from '@/state/wireHackOverlayStore';
 import { dispatchExplorationQuestGraph } from '@/game/core/explorationQuestGraph';
 import {
   HEARTH_EXPLORATION_QUEST_GRAPH,

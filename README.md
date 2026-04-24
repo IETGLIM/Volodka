@@ -51,7 +51,7 @@ npm test
 - **Миникарта**: маркеры целей квестов (зона / цель); масштаб карты под **реальный размер сцены** из `**getSceneConfig`**.
 - **Музыка**: более «боевая» процедурная подложка при высоком стрессе или сцене боя; лёгкий `**AudioEngine`** для меню/интро (при наличии файлов в `public/audio/ui/`).
 - **Туториал** в режиме обхода (WASD, E, I; контекст у NPC); отключение через флаг и **кнопку 💡 в HUD**.
-- **Стор мира (клиент)**: удобный импорт `**@/store/worldStore`** (реэкспорт с `src/client/store/worldStore.ts`).
+- **Стор мира**: импорт `**@/state/worldStore**` (`**useWorldStore**`, `**useExploration**`, `**useGameMode**`).
 - **Клавиша E в обходе**: один резолвер между интерактивным объектом и NPC по дистанции в XZ (`**src/lib/explorationPrimaryInteraction.ts`**, вызов из `**RPGGameCanvas**`).
 - **Камера и оверлеи обхода**: элементы с `**data-exploration-ui`** не вращают орбиту (`**src/lib/explorationUiPointer.ts**`, камеры `**FollowCamera**` / `**SimpleFollowCamera**`); удержание **Run** на таче, контейнер Canvas — `**100dvh`** в `**GameOrchestrator**`.
 - **Кэш GLB**: LRU для `**useGLTF`** (`**src/lib/gltfModelCache.ts**`, лимит URL и `**useGLTF.clear**` при вытеснении).

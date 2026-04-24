@@ -2,7 +2,7 @@
 
 import { memo, useMemo, useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useGameStore } from '@/store/gameStore';
+import { useGameStore } from '@/state/gameStore';
 import { POEMS, getPoemById, MAIN_ARCHIVE_POEM_COUNT, isBonusPoem } from '@/data/poems';
 import type { Poem } from '@/data/poems';
 

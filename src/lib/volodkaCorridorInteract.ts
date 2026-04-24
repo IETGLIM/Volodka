@@ -1,6 +1,6 @@
 import type { InteractiveObjectConfig } from '@/config/scenes';
 import { PLAYER_FEET_SPAWN_Y } from '@/lib/playerScaleConstants';
-import type { useGameStore } from '@/store/gameStore';
+import type { useGameStore } from '@/state/gameStore';
 import { explorationNarrativeTeleport } from '@/lib/explorationNarrativeTeleport';
 
 type StoreSnapshot = ReturnType<typeof useGameStore.getState>;

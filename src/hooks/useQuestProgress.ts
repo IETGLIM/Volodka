@@ -4,7 +4,7 @@
 
 import { useCallback, useEffect, useMemo } from 'react';
 import { useShallow } from 'zustand/react/shallow';
-import { useGameStore } from '../store/gameStore';
+import { useGameStore } from '@/state/gameStore';
 import { QUEST_DEFINITIONS, isObjectiveSatisfied } from '../data/quests';
 import { getFactionByNPC } from '../data/factions';
 import type { SceneId } from '../data/types';

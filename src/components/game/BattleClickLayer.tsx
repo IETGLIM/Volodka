@@ -2,7 +2,7 @@
 
 import { memo, useCallback, useEffect, useState } from 'react';
 import { Billboard, Html } from '@react-three/drei';
-import { useGameStore } from '@/store/gameStore';
+import { useGameStore } from '@/state/gameStore';
 import { eventBus } from '@/engine/EventBus';
 import { rollStrikeDamage } from '@/lib/combatDamage';
 

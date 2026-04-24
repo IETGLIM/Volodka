@@ -1,7 +1,7 @@
 import type { InteractiveObjectConfig } from '@/config/scenes';
 import { rememberExplorationQuestCompleted } from '@/core/memory/MemoryEngine';
 import { QUEST_DEFINITIONS } from '@/data/quests';
-import { useGameStore } from '@/store/gameStore';
+import { useGameStore } from '@/state/gameStore';
 
 const RACK_Q = 'exploration_volodka_rack';
 const AUDIT_OBJECTIVE = 'rack_audit_panels';

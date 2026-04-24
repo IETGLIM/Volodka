@@ -1,12 +1,12 @@
 import { useCallback, useMemo } from 'react';
 import type { GameMode } from '@/data/rpgTypes';
-import type { SaveGameOptions } from '@/store/gameStore';
+import type { SaveGameOptions } from '@/state/gameStore';
 import { explorationNarrativeTeleport } from '@/lib/explorationNarrativeTeleport';
 import {
   INTRO_OPENING_DESK_CHAIR,
   INTRO_OPENING_SCENE_ID,
 } from '@/lib/introVolodkaOpeningCutscene';
-import { useGamePhaseStore } from '@/store/gamePhaseStore';
+import { useGamePhaseStore } from '@/state/gamePhaseStore';
 
 interface UseGameSessionFlowParams {
   setPhase: (phase: 'loading' | 'intro' | 'menu' | 'game') => void;

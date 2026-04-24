@@ -1,7 +1,7 @@
 'use client';
 
 import { AnimatePresence, motion } from 'framer-motion';
-import { useGamePhaseStore } from '@/store/gamePhaseStore';
+import { useGamePhaseStore } from '@/state/gamePhaseStore';
 
 /**
  * Подписи и оверлей лифта поверх 3D-канваса во время `intro_cutscene`.

@@ -2,7 +2,7 @@
 
 import React, { useState, useCallback, useMemo, memo, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useGameStore } from '@/store/gameStore';
+import { useGameStore } from '@/state/gameStore';
 import type { InventoryItem, ItemRarity } from '@/data/types';
 
 // ============================================

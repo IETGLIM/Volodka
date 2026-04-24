@@ -11,7 +11,7 @@ import {
   type FactionId,
   type FactionReputation 
 } from '@/data/factions';
-import { useGameStore } from '@/store/gameStore';
+import { useGameStore } from '@/state/gameStore';
 
 // ============================================
 // FACTION BADGE

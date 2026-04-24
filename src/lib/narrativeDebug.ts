@@ -3,7 +3,7 @@
  */
 import { QUEST_DEFINITIONS } from '@/data/quests';
 import { MAX_PLAYER_ENERGY } from '@/lib/energyConfig';
-import { useGameStore } from '@/store/gameStore';
+import { useGameStore } from '@/state/gameStore';
 
 export function isNarrativeDebugEnabled(): boolean {
   return (

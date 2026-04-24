@@ -1,6 +1,6 @@
 import type { SceneId } from '@/data/types';
 import type { PlayerPosition } from '@/data/rpgTypes';
-import { useGameStore } from '@/store/gameStore';
+import { useGameStore } from '@/state/gameStore';
 
 /**
  * Одна запись в стор: `currentSceneId` + `playerPosition` + `lastSceneTransition`.

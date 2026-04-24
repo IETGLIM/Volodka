@@ -32,7 +32,7 @@ import {
   LOCAL_SAVE_WARN_BYTES,
 } from '@/lib/persistedGameSnapshot';
 import { getExplorationLivePlayerPositionOrNull } from '@/lib/explorationLivePlayerBridge';
-import { useGamePhaseStore } from '@/store/gamePhaseStore';
+import { useGamePhaseStore } from '@/state/gamePhaseStore';
 import {
   applyExperienceGain,
   experienceRequiredForNextLevel,

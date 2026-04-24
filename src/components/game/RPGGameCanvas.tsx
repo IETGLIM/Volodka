@@ -64,8 +64,8 @@ import { TriggerSystem, isPlayerInTriggerZone, WorldItem } from './InteractiveTr
 import CameraEffects from '../CameraEffects';
 
 // Store
-import { useGameStore } from '../../store/gameStore';
-import { useGamePhaseStore } from '@/store/gamePhaseStore';
+import { useGameStore } from '@/state/gameStore';
+import { useGamePhaseStore } from '@/state/gamePhaseStore';
 import { eventBus } from '@/engine/EventBus';
 import { getCurrentScheduleEntry } from '@/engine/ScheduleEngine';
 import { useIsMobile, useTouchGameControls } from '@/hooks/use-mobile';

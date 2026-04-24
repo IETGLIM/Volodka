@@ -4,7 +4,7 @@ import { asTrainablePlayerSkill } from '@/lib/trainablePlayerSkill';
 import { coreLoop } from '@/engine/CoreLoop';
 import { statsEngine } from '@/engine/StatsEngine';
 import { eventBus } from '@/engine/EventBus';
-import { useGameStore } from '@/store/gameStore';
+import { useGameStore } from '@/state/gameStore';
 import { ENERGY_COSTS } from '@/hooks/useEnergySystem';
 import { NPC_DEFINITIONS } from '@/data/npcDefinitions';
 

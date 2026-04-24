@@ -29,8 +29,8 @@ import {
   isExplorationPlayerLocomotionLogEnabled,
 } from '@/lib/explorationDiagnostics';
 import { getExplorationCameraOrbitYawRad } from '@/lib/explorationCameraOrbitBridge';
-import { useGameStore } from '@/store/gameStore';
-import { useGamePhaseStore } from '@/store/gamePhaseStore';
+import { useGameStore } from '@/state/gameStore';
+import { useGamePhaseStore } from '@/state/gamePhaseStore';
 import { getIntroCutscenePlayerPose } from '@/lib/introCutscenePlayerBridge';
 
 // ============================================

@@ -34,7 +34,7 @@ import type { SceneId } from '@/data/types';
 import type { ScheduleEntry } from '@/shared/types/schedule';
 import { rewriteLegacyModelPath } from '@/config/modelUrls';
 import { getCurrentScheduleEntry } from '@/engine/ScheduleEngine';
-import { useGameStore } from '@/store/gameStore';
+import { useGameStore } from '@/state/gameStore';
 import { getNpcQuestMarkerForExploration } from '@/lib/npcQuestMarker';
 import { retainGltfModelUrl, releaseGltfModelUrl } from '@/lib/gltfModelCache';
 import { applyGltfExplorationCharacterMaterialPolicies } from '@/lib/gltfCharacterMaterialPolicy';

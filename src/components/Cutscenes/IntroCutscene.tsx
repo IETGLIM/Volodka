@@ -4,7 +4,7 @@ import { useEffect, useRef } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 import { setExplorationCameraOrbitYawRad } from '@/lib/explorationCameraOrbitBridge';
-import { useGamePhaseStore } from '@/store/gamePhaseStore';
+import { useGamePhaseStore } from '@/state/gamePhaseStore';
 import { explorationNarrativeTeleport } from '@/lib/explorationNarrativeTeleport';
 import { eventBus } from '@/engine/EventBus';
 import { audioEngine } from '@/engine/AudioEngine';

@@ -7,7 +7,7 @@
 'use client';
 
 import { useEffect, useRef, useCallback } from 'react';
-import { useGameStore } from '@/store/gameStore';
+import { useGameStore } from '@/state/gameStore';
 import { eventBus } from '@/engine/EventBus';
 
 interface AutoSaveOptions {

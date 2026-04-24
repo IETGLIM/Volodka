@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef } from 'react';
-import { useGameStore } from '@/store/gameStore';
+import { useGameStore } from '@/state/gameStore';
 import { eventBus } from '@/engine/EventBus';
 import {
   MAX_PLAYER_ENERGY,

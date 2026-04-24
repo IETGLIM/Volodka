@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import type { StoryNode, StoryChoice, ChoiceCondition, PoemLine, StoryEffect } from '@/data/types';
 import { explorationHourToNarrativeTimeOfDay } from '@/core/conditions/timeOfDay';
 import { statsEngine } from '@/engine/StatsEngine';
-import { useGameStore } from '@/store/gameStore';
+import { useGameStore } from '@/state/gameStore';
 import { useStoryConditionSlice } from '@/hooks/useStoryConditionSlice';
 import { useMobileVisualPerf } from '@/hooks/useMobileVisualPerf';
 import { useIsMobile } from '@/hooks/use-mobile';

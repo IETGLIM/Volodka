@@ -38,8 +38,8 @@ import {
   EnergyBar,
 } from './GameOrchestratorSubcomponents';
 
-import { useGameStore } from '@/store/gameStore';
-import { useGamePhaseStore } from '@/store/gamePhaseStore';
+import { useGameStore } from '@/state/gameStore';
+import { useGamePhaseStore } from '@/state/gamePhaseStore';
 import { IntroCutsceneOverlays } from '@/components/Cutscenes/IntroCutsceneOverlays';
 import { eventBus } from '@/engine/EventBus';
 import { useGameAudioProfile } from '@/hooks/useAudio';

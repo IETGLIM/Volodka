@@ -1,6 +1,6 @@
 'use client';
 
-import { useGameStore } from '@/store/gameStore';
+import { useGameStore } from '@/state/gameStore';
 import { useStoryChoiceHandler } from '@/hooks/useStoryChoiceHandler';
 import { useGameUiLayout } from '@/hooks/useGameUiLayout';
 import { useGameSessionFlow } from '@/hooks/useGameSessionFlow';
@@ -9,7 +9,7 @@ import type { EnergySystemAPI } from '@/hooks/useEnergySystem';
 import type { GamePanelsState } from '@/hooks/useGamePanels';
 import type { GameMode } from '@/data/rpgTypes';
 import type { PlayerSkills } from '@/data/types';
-import type { SaveGameOptions } from '@/store/gameStore';
+import type { SaveGameOptions } from '@/state/gameStore';
 
 export type OpenDialogueFromStoryPayload = {
   npcId: string;

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useGameStore } from '@/store/gameStore';
+import { useGameStore } from '@/state/gameStore';
 import { ACHIEVEMENTS, checkAchievement } from '@/data/achievements';
 import { STORY_NODES } from '@/data/storyNodes';
 import { POEMS } from '@/data/poems';
@@ -11,7 +11,7 @@ import { initConsequencesSystem } from '@/engine/ConsequencesSystem';
 import { explorationHourToNarrativeTimeOfDay } from '@/core/conditions/timeOfDay';
 import type { NPCRelation, PlayerState, PlayerSkills, SceneId } from '@/data/types';
 import { asTrainablePlayerSkill } from '@/lib/trainablePlayerSkill';
-import type { TravelToSceneOptions, TravelToSceneResult } from '@/store/gameStore';
+import type { TravelToSceneOptions, TravelToSceneResult } from '@/state/gameStore';
 
 export type StoreActionAdapter = {
   addStat: (stat: 'mood' | 'creativity' | 'stability' | 'energy' | 'karma' | 'selfEsteem', amount: number) => void;

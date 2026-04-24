@@ -2,7 +2,7 @@
 
 import { memo, useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { useGameStore } from '@/store/gameStore';
+import { useGameStore } from '@/state/gameStore';
 
 export const MoralCompassHUD = memo(function MoralCompassHUD() {
   const karma = useGameStore((s) => s.playerState.karma);

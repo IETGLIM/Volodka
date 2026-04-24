@@ -12,7 +12,7 @@ const SYSTEM_PROMPT = `Ты — Архитектор кода для RPG/Visual 
 
 Текущая архитектура:
 - /src/engine/ — движковые системы (EventBus, CoreLoop, DialogueEngine, SceneManager, StatsEngine, ConsequencesSystem, PoemMechanics)
-- /src/store/gameStore.ts — глобальное состояние (Zustand)
+- /src/state/ — глобальное состояние (Zustand: gameStore, доменные сторы, фаза обхода)
 - /src/data/ — данные игры (storyNodes, poems, quests, items, factions, NPCs)
 - /src/components/game/ — UI-компоненты (GameOrchestrator, SceneRenderer, StoryRenderer, DialogueRenderer, HUD)
 - /src/hooks/ — React-хуки

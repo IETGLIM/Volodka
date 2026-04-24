@@ -64,7 +64,7 @@ vi.mock('@/data/achievements', () => ({
   checkAchievement: vi.fn(() => true),
 }));
 
-vi.mock('@/store/gameStore', () => ({
+vi.mock('@/state/gameStore', () => ({
   useGameStore: {
     getState: vi.fn(() => ({
       playerState: { flags: {}, visitedNodes: ['start'] },

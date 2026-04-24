@@ -6,7 +6,7 @@ import type { InteractionContext } from '@/core/interaction/interactionContext';
 import { rememberExplorationQuestCompleted } from '@/core/memory/MemoryEngine';
 import { QUEST_DEFINITIONS } from '@/data/quests';
 import { eventBus } from '@/engine/EventBus';
-import { useGameStore } from '@/store/gameStore';
+import { useGameStore } from '@/state/gameStore';
 
 export type QuestGraphNodeId = string;
 

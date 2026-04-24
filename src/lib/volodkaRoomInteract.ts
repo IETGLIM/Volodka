@@ -1,5 +1,5 @@
 import type { InteractiveObjectConfig } from '@/config/scenes';
-import type { useGameStore } from '@/store/gameStore';
+import type { useGameStore } from '@/state/gameStore';
 import { CORRIDOR_FROM_ROOM } from '@/lib/volodkaCorridorInteract';
 import { explorationNarrativeTeleport } from '@/lib/explorationNarrativeTeleport';
 

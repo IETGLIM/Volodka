@@ -24,7 +24,7 @@ export {
   type TravelToSceneResult,
   type TravelToSceneOptions,
 } from './worldStore';
-export { useQuestStore } from './questStore';
+export { useQuestStore } from './questMetaStore';
 export { useInventoryStore } from './inventoryStore';
 
 // ============================================
@@ -35,7 +35,7 @@ export { useInventoryStore } from './inventoryStore';
 
 import { usePlayerStore } from './playerStore';
 import { useWorldStore } from './worldStore';
-import { useQuestStore } from './questStore';
+import { useQuestStore } from './questMetaStore';
 import { useInventoryStore } from './inventoryStore';
 import type { InventoryItem } from '@/data/types';
 

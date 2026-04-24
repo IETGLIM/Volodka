@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useGameStore } from '@/store/gameStore';
+import { useGameStore } from '@/state/gameStore';
 
 const PERF_MARK_START = 'gs:hydrate:start';
 const PERF_MEASURE = 'gs:hydrate';

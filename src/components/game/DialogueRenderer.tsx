@@ -14,7 +14,7 @@ import {
 import { DIALOGUE_NODES } from '@/data/npcDefinitions';
 import type { PlayerState, NPCRelation } from '@/data/types';
 import { asTrainablePlayerSkill } from '@/lib/trainablePlayerSkill';
-import { useGameStore } from '@/store/gameStore';
+import { useGameStore } from '@/state/gameStore';
 import { explorationHourToNarrativeTimeOfDay } from '@/core/conditions/timeOfDay';
 import { CyberSkillCheckResult, type SkillCheckBannerPayload } from './CyberSkillCheckResult';
 import { QuestAcceptedGlitchToast } from './QuestAcceptedGlitchToast';

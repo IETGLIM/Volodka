@@ -2,7 +2,7 @@
 
 import { memo, useCallback, useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useWireHackOverlayStore } from '@/store/wireHackOverlayStore';
+import { useWireHackOverlayStore } from '@/state/wireHackOverlayStore';
 import { audioEngine } from '@/engine/AudioEngine';
 
 const NODE_LABELS = ['α', 'β', 'γ', 'δ'] as const;
