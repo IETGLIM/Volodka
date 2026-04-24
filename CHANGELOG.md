@@ -13,6 +13,7 @@
 
 ### Added
 
+- **`docs/scene-streaming-spec.md`:** черновик спека стриминга сцен (типы `SceneStreamingProfile`, `AssetTier`, интерфейс `SceneStreamingCoordinator`, подключение к `scene:enter`/`scene:exit`, LRU/`gltfModelCache`, **обязательное** снятие Rapier-тел в `deactivateChunk`, dev HUD); в **`Scene.tsx`** — ссылка на документ из блока про Canvas/WebGPU.
 - `**src/game/simulation/explorationGlbAnimation.test.ts**` — выбор idle/walk/run для GLB в обходе.
 - **Отладка нарратива:** `**src/lib/narrativeDebug.ts**` (мутации стор только при `NODE_ENV === development` или `**NEXT_PUBLIC_GAME_DEBUG_PANEL=1**`), панель `**NarrativeDebugPanel**` в `**GameOrchestrator**` — статы, флаги, квесты (`gameStore`), клавиша `` ` `` и кнопка DBG.
 - **Unit-тесты движка:** `**EventBus.test.ts**`, `**StatsEngine.test.ts**`, `**DialogueEngine.test.ts**`; расширены `**ConditionMatcher.test.ts**`, `**QuestEngine.test.ts**` (условия диалога, квестовый раннер, шина событий).
