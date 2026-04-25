@@ -222,7 +222,7 @@ export interface ExplorationState {
     prefetchQueueLength: number;
     budgetTextureBytesApprox: number;
     rapierActiveBodiesApprox?: number;
-    /** For model diagnostics in StreamingDebugHUD. */
+    /** For model diagnostics in StreamingDebugHUD (updated by PhysicsPlayer / StreamingChunk). */
     currentModelPath?: string;
     currentAnimation?: string;
   };

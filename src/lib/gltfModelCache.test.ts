@@ -24,7 +24,8 @@ describe('gltfModelCache', () => {
   });
 
   it('clears drei cache when last release drops refCount to zero (before LRU pressure)', () => {
-    const { max } = __getGltfModelCacheTestState();
+    const state = __getGltfModelCacheTestState();
+    const max = state.maxUrls ?? 14;
     for (let i = 0; i < max; i++) {
       retainGltfModelUrl(`/models/cache-${i}.glb`);
     }

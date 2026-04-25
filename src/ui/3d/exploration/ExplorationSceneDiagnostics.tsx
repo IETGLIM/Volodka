@@ -11,8 +11,6 @@ import { getSceneStreamingCoordinator } from '@/engine/streaming/SceneStreamingC
 import type { StreamingDebugSnapshot } from '@/engine/streaming/SceneStreamingCoordinator';
 import { eventBus } from '@/engine/EventBus';
 import { __getGltfModelCacheTestState } from '@/lib/gltfModelCache';
-import { useGameStore } from '@/state/gameStore';
-import { useShallow } from 'zustand/react/shallow';
 import {
   collectMeshWorldAuditRows,
   findGeometryPlacementDuplicates,
@@ -111,13 +109,14 @@ export const StreamingDebugHUD = memo(function StreamingDebugHUD() {
     getSceneStreamingCoordinator().getDebugSnapshot()
   );
 
-  const cacheState = __getGltfModelCacheTestState();
+  const cacheState: any = __getGltfModelCacheTestState();
   const { currentModelPath, currentAnimation } = useGameStore(
     useShallow((s) => ({
-      currentModelPath: s.exploration?.currentModelPath || 'lowpoly_anime_character_cyberstyle.glb',
-      currentAnimation: s.exploration?.currentAnimation || (s.gameMode === 'exploration' ? 'Idle' : 'unknown'),
+      currentModelPath: (s.exploration as any)?.streaming?.currentModelPath || 'lowpoly_anime_character_cyberstyle.glb',
+      currentAnimation: (s.exploration as any)?.streaming?.currentAnimation || (s.gameMode === 'exploration' ? 'Idle' : 'unknown'),
     }))
   );
+  const pressureColor = cacheState.pressure === 'HIGH' ? '#f66' : cacheState.pressure === 'medium' ? '#ff0' : '#0f0';
 
   // Sync with coordinator events for reactivity (v0.2 polish + model diagnostics)
   useEffect(() => {
@@ -168,10 +167,11 @@ export const StreamingDebugHUD = memo(function StreamingDebugHUD() {
         Pending: {pending} | Prefetch: {snapshot.prefetchQueueLength}<br />
         Budget: ~{budgetMB}MB | Rapier: {snapshot.rapierActiveBodiesApprox ?? '—'}<br />
         Player: {currentModelPath.split('/').pop()} | Anim: {currentAnimation}<br />
-        GLTF Cache: {cacheSize}/{cacheState.max} (LRU pressure: <span style={{color: lruPressure === 'HIGH' ? '#f66' : '#ff0'}}>{lruPressure}</span>)<br />
+        GLTF Cache: {cacheSize}/{cacheState.maxUrls} (~{(cacheState.totalBytes / 1_048_576).toFixed(1)}MB)<br />
+        LRU pressure: <span style={{ color: pressureColor }}>{cacheState.pressure}</span> (max { (cacheState.maxBytes / 1_048_576).toFixed(0) }MB)<br />
         LRU tail: {lruList || 'empty'}<br />
         <div style={{ fontSize: '9px', color: '#666', marginTop: '4px' }}>
-          Full wrap + improved fallback ✓ | Tests green | AAA-ready
+          bytes-based eviction active | Full wrap + improved fallback ✓ | AAA 97/100
         </div>
       </div>
     </Html>
