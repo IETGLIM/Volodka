@@ -527,6 +527,13 @@ export const SCENE_CONFIG = {
       }
     ],
     interactiveObjects: [{ id: 'office_poem', type: 'book', position: [-3, 0.8, 0.15], poemId: 'poem_office_01', itemId: 'cafe_invite', canBeRead: true, size: [0.2, 0.03, 0.15], color: '#8b4513' }],
+    /** Streaming для офисной рутины (Chapter 3). Чанк с мебелью/мониторами + соседи. */
+    streaming: {
+      chunks: [
+        { id: 'office_desks', assets: ['desk_volodka', 'keyboard_ibm', 'lamp_desk'], rapierBodyKeys: ['desk_collider', 'chair_collider'] },
+      ],
+      neighborSceneIds: ['library', 'street_night', 'blue_pit'],
+    },
     backgroundMusic: '/audio/ambient-tense.mp3'
   },
   
@@ -600,6 +607,13 @@ export const SCENE_CONFIG = {
     ambientLight: { intensity: 0.35, color: '#ffd9a0' },
     npcs: [],
     interactiveObjects: [{ id: 'park_poem', type: 'book', position: [0, 0.8, -9], poemId: 'poem_memorial_01', itemId: 'old_letter', canBeRead: true, size: [0.25, 0.03, 0.18], color: '#cd853f' }],
+    /** Streaming для большой открытой локации (22x22). Простые чанки для снега/скамеек + prefetch соседей. */
+    streaming: {
+      chunks: [
+        { id: 'memorial_core', assets: ['memorial_bench', 'snow_particles'], rapierBodyKeys: ['park_floor'] },
+      ],
+      neighborSceneIds: ['street_night', 'rooftop_night', 'blue_pit'],
+    },
     backgroundMusic: '/audio/ambient-calm.mp3'
   },
   
@@ -636,10 +650,67 @@ export const SCENE_CONFIG = {
   
   blue_pit: {
     id: 'blue_pit',
-    name: '«Синяя яма» (служебная сцена)',
-    size: [15, 15],
-    spawnPoint: { x: 0, y: 0.5, z: 0, rotation: 0 } as PlayerPosition,
-    ambientLight: { intensity: 0.3, color: '#0066ff' }, npcs: [], interactiveObjects: [],
+    name: '«Синяя яма»',
+    explorationCharacterModelScale: 0.93,
+    explorationLocomotionScale: 0.91,
+    size: [16, 16],
+    spawnPoint: { x: 0, y: 0.5, z: 2, rotation: Math.PI } as PlayerPosition,
+    ambientLight: { intensity: 0.4, color: '#0066ff' },
+    directionalLights: [{ position: [0, 8, -5], intensity: 0.6, color: '#44aaff' }],
+    npcs: [
+      {
+        id: 'barista',
+        name: 'Бариста',
+        model: 'barista',
+        modelPath: '/models/lowpoly_anime_character_cyberstyle.glb',
+        position: [4, 0, -2],
+        rotation: [0, -Math.PI / 2, 0],
+        dialogueTree: 'barista_blue_pit',
+      },
+    ],
+    interactiveObjects: [
+      {
+        id: 'mic_stand',
+        type: 'mic',
+        position: [0, 0.8, -6],
+        size: [0.2, 1.2, 0.2],
+        color: '#111111',
+        canBeRead: false,
+        propId: 'mic_stand',
+        storyNodeId: 'open_mic',
+      },
+      {
+        id: 'blue_pit_book',
+        type: 'book',
+        position: [2.5, 0.8, -4],
+        poemId: 'poem_cafe_01',
+        itemId: 'poem_fragment_2',
+        canBeRead: true,
+        size: [0.22, 0.04, 0.16],
+        color: '#a0522d',
+      },
+      {
+        id: 'neon_sign',
+        type: 'neon',
+        position: [0, 3.2, -8],
+        size: [4, 1, 0.2],
+        color: '#00ddff',
+        propId: 'neon_blue_pit',
+      },
+    ],
+    /** Полноценный streaming для ключевой нарративной локации. Чанки: stage + bar area. */
+    streaming: {
+      chunks: [
+        { id: 'stage', assets: ['mic_stand', 'stage_platform'], rapierBodyKeys: ['stage_collider'] },
+        { id: 'bar', assets: ['neon_blue_pit', 'bar_counter'], rapierBodyKeys: ['bar_collider'] },
+      ],
+      neighborSceneIds: ['cafe_evening', 'street_night', 'rooftop_night'],
+    },
+    backgroundMusic: '/audio/ambient-jazz-cafe.mp3',
+    explorationTutorialHints: [
+      'Синяя Яма — сердце поэзии. Микрофон ждёт тех, кто готов вынести слова наружу.',
+      'Здесь стихи становятся голосом. Не бойся поднять руку.',
+    ],
   },
   
   green_zone: {
@@ -712,9 +783,9 @@ export const SCENE_CONFIG = {
         scale: 1.0,
       },
     ],
-    /** Соседи для prefetch-счётчика; чанки не заданы — комната пока процедурная (без GLB `StreamingChunk`). */
+    /** Соседи для prefetch-счётчика; чанки не заданы — комната пока процедурная (без GLB `StreamingChunk`). Blue Pit теперь полноценный с чанками. */
     streaming: {
-      neighborSceneIds: ['kitchen_night', 'home_evening'],
+      neighborSceneIds: ['kitchen_night', 'home_evening', 'blue_pit', 'memorial_park'],
     },
     interactiveObjects: [
       {

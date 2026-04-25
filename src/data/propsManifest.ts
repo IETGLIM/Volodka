@@ -82,6 +82,38 @@ export const PROP_DEFINITIONS: Record<string, PropDefinition> = {
     estimatedGeometryBytes: 80_000,
     baseUniform: 0.32,
   },
+
+  // === Blue Pit / Cafe props (procedural-first for AAA performance) ===
+  mic_stand: {
+    id: 'mic_stand',
+    category: 'decor',
+    glbPath: undefined,
+    estimatedGeometryBytes: 12_000,
+    estimatedTextureBytes: 8_000,
+    /** Procedural mic stand with emissive head. Used in blue_pit stage. */
+  },
+  neon_blue_pit: {
+    id: 'neon_blue_pit',
+    category: 'decor',
+    glbPath: undefined,
+    estimatedGeometryBytes: 6_000,
+    estimatedTextureBytes: 32_000, // emissive canvas texture
+    /** Neon sign "Синяя Яма" with glow shader. */
+  },
+  stage_platform: {
+    id: 'stage_platform',
+    category: 'furniture',
+    glbPath: undefined,
+    estimatedGeometryBytes: 45_000,
+    baseUniform: 1.0,
+  },
+  bar_counter: {
+    id: 'bar_counter',
+    category: 'furniture',
+    glbPath: undefined,
+    estimatedGeometryBytes: 65_000,
+    baseUniform: 0.85,
+  },
 };
 
 /** Получить проп по ID (с fallback на undefined) */

@@ -3,7 +3,7 @@
 import { memo, useEffect, useState } from 'react';
 import { useThree } from '@react-three/fiber';
 import type { SceneId } from '@/data/types';
-import { isExplorationMeshAuditEnabled, isExplorationWebGlContextLogEnabled, isExplorationStreamingDebugEnabled } from '@/lib/explorationDiagnostics';
+import { isExplorationMeshAuditEnabled, isExplorationWebGlContextLogEnabled, isExplorationStreamingDebugEnabled, isExplorationBluePitDebugEnabled } from '@/lib/explorationDiagnostics';
 import { useGameStore } from '@/state/gameStore';
 import { useShallow } from 'zustand/react/shallow';
 import { Html } from '@react-three/drei';
@@ -139,7 +139,7 @@ export const StreamingDebugHUD = memo(function StreamingDebugHUD() {
     };
   }, []);
 
-  if (!isExplorationStreamingDebugEnabled()) return null;
+  if (!isExplorationStreamingDebugEnabled() && !isExplorationBluePitDebugEnabled()) return null;
 
   const active = snapshot.activeChunkIds.length;
   const unloading = snapshot.unloadingChunkIds.length;

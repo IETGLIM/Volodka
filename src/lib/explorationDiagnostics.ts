@@ -59,3 +59,11 @@ export function isExplorationVolodkaRoomNpcGlbDisabled(): boolean {
 export function isExplorationStreamingDebugEnabled(): boolean {
   return process.env.NEXT_PUBLIC_EXPLORATION_STREAMING_DEBUG === '1';
 }
+
+/**
+ * Quick debug for blue_pit polish (narrative triggers, mic interaction, neon glow).
+ * NEXT_PUBLIC_EXPLORATION_BLUE_PIT_DEBUG=1
+ */
+export function isExplorationBluePitDebugEnabled(): boolean {
+  return process.env.NEXT_PUBLIC_EXPLORATION_BLUE_PIT_DEBUG === '1';
+}
