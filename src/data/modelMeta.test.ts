@@ -31,7 +31,7 @@ describe('resolveCharacterMeshUniformScale', () => {
       introCutsceneActive: false,
       clampSceneId: 'volodka_room',
     });
-    expect(u).toBeLessThanOrEqual(0.14);
+    expect(u).toBeLessThanOrEqual(0.24);
   });
 
   it('zarema_albert_room: потолок uniform не выше узкого капа комнаты', () => {

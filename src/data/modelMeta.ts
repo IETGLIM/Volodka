@@ -23,7 +23,8 @@ const DEFAULT_CHARACTER_UNIFORM_BASE = 1.17;
  */
 export const GLB_CHARACTER_UNIFORM_BASE_BY_FILENAME: Record<string, number> = {
   'volodka.glb': 1.08,
-  'lowpoly_anime_character_cyberstyle.glb': 1.14,
+  /** Волдыкина комната 14×10: при ~1.14 персонаж читался «точкой» на кадре; поднято по скриншоту TPS. */
+  'lowpoly_anime_character_cyberstyle.glb': 1.65,
   'cyberpunk_female_full-body_character.glb': 1.11,
   'smol_ame_in_an_upcycled_terrarium_hololiveen.glb': 1.65,
   'lillian__vgdc.glb': 1.02,
@@ -48,14 +49,16 @@ export const GLB_CHARACTER_UNIFORM_BASE_BY_FILENAME: Record<string, number> = {
 const NARROW_SCENE_UNIFORM_CAP: Partial<Record<SceneId, number>> = {
   /** Комната 10×8: ниже потолок — ещё ужимаем uniform, чтобы игрок не «съедал» кадр. */
   zarema_albert_room: 0.088,
-  volodka_room: 0.14,
+  /** Запас под крупнее силуэт без клипа в узких углах; фактический uniform ниже капа при текущем base. */
+  volodka_room: 0.24,
   volodka_corridor: 0.26,
   home_evening: 0.26,
 };
 
 /** 3D-интро: чуть ужимаем относительно геймплея + абсолютный потолок (кинокамера ближе TPS). */
 export const INTRO_CUTSCENE_UNIFORM_SHRINK = 0.62;
-export const INTRO_CUTSCENE_UNIFORM_CAP = 0.055;
+/** Абсолютный потолок после shrink; 0.055 давал «муравья» в интро при нормальном геймплей-uniform. */
+export const INTRO_CUTSCENE_UNIFORM_CAP = 0.088;
 
 export function glbBasenameFromUrl(url: string): string {
   const u = rewriteLegacyModelPath(url.trim());

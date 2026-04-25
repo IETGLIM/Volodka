@@ -314,7 +314,7 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
       case 'home_evening':
         return { ambient: 0.4, light: '#ffcc00', fogColor: '#1a1a2e', groundGeometryArgs: GROUND_INDOOR };
       case 'volodka_room':
-        return { ambient: 0.38, light: '#c8dff0', fogColor: '#151a22', groundGeometryArgs: GROUND_VOLODKA_ROOM };
+        return { ambient: 0.44, light: '#c8dff0', fogColor: '#1e2530', groundGeometryArgs: GROUND_VOLODKA_ROOM };
       case 'volodka_corridor':
         return { ambient: 0.34, light: '#e8dcc8', fogColor: '#16140f', groundGeometryArgs: GROUND_VOLODKA_CORRIDOR };
       case 'office_morning':
@@ -380,11 +380,15 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
    * Интро — ещё мягче: кинокамера ближе к геометрии.
    */
   const narrowIndoorFog = useMemo(() => {
+    if (sceneId === 'volodka_room') {
+      if (introCutsceneActive) return { near: 4.2, far: 70 } as const;
+      return { near: 2.05, far: 68 } as const;
+    }
     if (introCutsceneActive) {
       return { near: 3.6, far: 56 } as const;
     }
     return { near: 2.65, far: 50 } as const;
-  }, [introCutsceneActive]);
+  }, [introCutsceneActive, sceneId]);
 
   const followCameraProps = useMemo((): ExplorationFollowCameraPreset => {
     if (sceneId === 'volodka_corridor') {
