@@ -1,5 +1,9 @@
+import type { Object3D } from 'three';
 import { useGLTF } from '@react-three/drei';
 import { PROP_DEFINITIONS } from '@/data/propsManifest';
+import { estimateObject3DGpuBytes } from '@/lib/gltfByteEstimate';
+
+export { estimateObject3DGpuBytes, logGltfLoadedFootprintDev } from '@/lib/gltfByteEstimate';
 
 /** Максимальное количество URL в кэше (LRU). При превышении вытесняем по размеру (bytes-based) + refCount. */
 const MAX_CACHED_GLTF_URLS = 14;
@@ -12,7 +16,7 @@ const MAX_CACHE_BYTES = 80_000_000; // ~80 MB — tunable under Vercel edge cons
  * загрузку с диска/сети при быстром remount (Strict Mode, смена чанка, prefetch ↔ сцена).
  * Повторный `retain` отменяет таймер; принудительное eviction — `clear` сразу + отмена таймера.
  */
-const GLTF_CLEAR_GRACE_MS = 2_500;
+export const GLTF_CLEAR_GRACE_MS = 2_000;
 
 const graceTimers = new Map<string, ReturnType<typeof setTimeout>>();
 
@@ -96,10 +100,35 @@ function syncEstimatedBytesWithAccessOrderAndSum(): number {
   return total;
 }
 
+/** Байтовое вытеснение: среди `refCount === 0` — самый «тяжёлый» по оценке (при равенстве — более LRU). */
+function pickUnreferencedEvictionTargetPreferLargestBytes(): { i: number; url: string } | null {
+  const candidates: { i: number; url: string; bytes: number }[] = [];
+  for (let i = 0; i < accessOrder.length; i++) {
+    const url = accessOrder[i];
+    if ((refCount.get(url) ?? 0) === 0) {
+      const bytes = estimatedBytes.get(url) ?? getEstimatedBytes(url);
+      candidates.push({ i, url, bytes });
+    }
+  }
+  if (candidates.length === 0) return null;
+  candidates.sort((a, b) => b.bytes - a.bytes || a.i - b.i);
+  const c = candidates[0]!;
+  return { i: c.i, url: c.url };
+}
+
 /**
- * Bytes / URL-cap eviction: среди кандидатов с `refCount === 0` вытесняем в порядке **LRU → MRU**
- * (индекс 0 — давно не трогали, конец массива — недавний `retain` / `touchGltfModelUrl`).
- * Обратный проход с конца выбирал «свежее» нулевое ref и ломал LRU-интуицию.
+ * После `useGLTF` обновить оценку байт по фактической сцене (геометрия + текстуры) и при необходимости
+ * запустить eviction. Вызывать только пока URL удерживается `retain` (`refCount > 0`).
+ */
+export function recordGltfGpuByteEstimateFromScene(url: string, root: Object3D) {
+  if (!url.trim() || !root) return;
+  if ((refCount.get(url) ?? 0) <= 0) return;
+  estimatedBytes.set(url, estimateObject3DGpuBytes(root));
+  evictDownToMax();
+}
+
+/**
+ * Bytes / URL-cap eviction: лимит URL — LRU среди `refCount === 0`; лимит байт — **крупнейший** нулевой ref.
  */
 function evictDownToMax() {
   let totalBytes = syncEstimatedBytesWithAccessOrderAndSum();
@@ -121,20 +150,14 @@ function evictDownToMax() {
     totalBytes = syncEstimatedBytesWithAccessOrderAndSum();
   }
 
-  // Additional bytes-based eviction if over soft VRAM budget (same LRU order as above)
+  // Bytes over budget: вытесняем самый большой незареференный ассет (оценка байт), затем полный пересчёт суммы.
   while (totalBytes > MAX_CACHE_BYTES) {
-    let evicted = false;
-    for (let i = 0; i < accessOrder.length; i++) {
-      const url = accessOrder[i];
-      if ((refCount.get(url) ?? 0) === 0) {
-        invokeDreiClearIfUnreferenced(url);
-        estimatedBytes.delete(url);
-        accessOrder.splice(i, 1);
-        evicted = true;
-        break;
-      }
-    }
-    if (!evicted) break; // all remaining are referenced
+    const pick = pickUnreferencedEvictionTargetPreferLargestBytes();
+    if (!pick) break;
+    const { i, url } = pick;
+    invokeDreiClearIfUnreferenced(url);
+    estimatedBytes.delete(url);
+    accessOrder.splice(i, 1);
     totalBytes = syncEstimatedBytesWithAccessOrderAndSum();
   }
 }

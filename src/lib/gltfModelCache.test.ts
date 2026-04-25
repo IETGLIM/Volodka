@@ -11,6 +11,7 @@ vi.mock('@react-three/drei', () => ({
 }));
 
 import {
+  GLTF_CLEAR_GRACE_MS,
   retainGltfModelUrl,
   releaseGltfModelUrl,
   touchGltfModelUrl,
@@ -40,7 +41,7 @@ describe('gltfModelCache', () => {
 
     releaseGltfModelUrl('/models/cache-0.glb');
     expect(clear).not.toHaveBeenCalled();
-    vi.advanceTimersByTime(2500);
+    vi.advanceTimersByTime(GLTF_CLEAR_GRACE_MS);
     expect(clear).toHaveBeenCalledTimes(1);
     expect(clear).toHaveBeenCalledWith('/models/cache-0.glb');
 
@@ -55,7 +56,7 @@ describe('gltfModelCache', () => {
     expect(__getGltfModelCacheTestState().refCount.get('/models/a.glb')).toBe(1);
     releaseGltfModelUrl('/models/a.glb');
     expect(__getGltfModelCacheTestState().refCount.get('/models/a.glb')).toBeUndefined();
-    vi.advanceTimersByTime(2500);
+    vi.advanceTimersByTime(GLTF_CLEAR_GRACE_MS);
   });
 
   it('ignores duplicate release after ref already zero (single deferred clear)', () => {
@@ -64,7 +65,7 @@ describe('gltfModelCache', () => {
     releaseGltfModelUrl('/models/dup-release.glb');
     releaseGltfModelUrl('/models/dup-release.glb');
     expect(clear).not.toHaveBeenCalled();
-    vi.advanceTimersByTime(2500);
+    vi.advanceTimersByTime(GLTF_CLEAR_GRACE_MS);
     expect(clear).toHaveBeenCalledTimes(1);
     expect(clear).toHaveBeenCalledWith('/models/dup-release.glb');
   });
@@ -74,10 +75,10 @@ describe('gltfModelCache', () => {
     releaseGltfModelUrl('/models/bounce.glb');
     expect(clear).not.toHaveBeenCalled();
     retainGltfModelUrl('/models/bounce.glb');
-    vi.advanceTimersByTime(2500);
+    vi.advanceTimersByTime(GLTF_CLEAR_GRACE_MS);
     expect(clear).not.toHaveBeenCalled();
     releaseGltfModelUrl('/models/bounce.glb');
-    vi.advanceTimersByTime(2500);
+    vi.advanceTimersByTime(GLTF_CLEAR_GRACE_MS);
     expect(clear).toHaveBeenCalledTimes(1);
     expect(clear).toHaveBeenCalledWith('/models/bounce.glb');
   });

@@ -37,7 +37,12 @@ import { rewriteLegacyModelPath } from '@/config/modelUrls';
 import { getCurrentScheduleEntry } from '@/engine/ScheduleEngine';
 import { useGameStore } from '@/state/gameStore';
 import { getNpcQuestMarkerForExploration } from '@/lib/npcQuestMarker';
-import { retainGltfModelUrl, releaseGltfModelUrl } from '@/lib/gltfModelCache';
+import {
+  logGltfLoadedFootprintDev,
+  recordGltfGpuByteEstimateFromScene,
+  retainGltfModelUrl,
+  releaseGltfModelUrl,
+} from '@/lib/gltfModelCache';
 import { applyGltfExplorationCharacterMaterialPolicies } from '@/lib/gltfCharacterMaterialPolicy';
 import { applyExplorationPlayerGlobalVisualScale } from '@/lib/playerScaleConstants';
 import { glbBasenameFromUrl, resolveCharacterMeshUniformScale } from '@/data/modelMeta';
@@ -271,6 +276,11 @@ const GLTFLoader = memo(function GLTFLoader({
     retainGltfModelUrl(modelPath);
     return () => releaseGltfModelUrl(modelPath);
   }, [modelPath]);
+
+  useEffect(() => {
+    recordGltfGpuByteEstimateFromScene(modelPath, loadedScene);
+    logGltfLoadedFootprintDev(modelPath, loadedScene);
+  }, [modelPath, loadedScene]);
 
   /** Размонтирование / смена `actions`: останавливаем клипы, иначе mixer держит ссылки. */
   useEffect(() => {

@@ -4,6 +4,8 @@
 
 ### Added
 
+- **Оценка VRAM по загруженному GLB:** `src/lib/gltfByteEstimate.ts` — обход `Object3D` (геометрия, morph, текстуры материалов, грубый mip-запас); `recordGltfGpuByteEstimateFromScene` в `gltfModelCache.ts` подменяет `estimatedBytes` после `useGLTF` и дергает eviction. В dev — `logGltfLoadedFootprintDev` (+ `performance.memory` в Chromium). Байтовое вытеснение: среди `refCount === 0` выбирается **максимальный** по байтам кандидат. `GLTF_CLEAR_GRACE_MS` = **2000** (экспорт). Интеграция: `PropModel` (GLB), `NPC`/`PhysicsPlayer`; реэкспорт в `ModelLoader.tsx`. Тест `gltfByteEstimate.test.ts`.
+
 - **Адаптация GLB (Draco в рантайме):** `ensureGltfDracoDecoderPathConfigured` в `src/lib/explorationGltfDecoders.ts` — `useGLTF.setDecoderPath` до preload/`useGLTF` (CDN 1.5.7 или `NEXT_PUBLIC_DRACO_DECODER_BASE`). `GltfDracoDecoderBootstrap` в `RPGGameCanvas`; вызов из `model-cache` и `AppPerfWarmup`. Тест `explorationGltfDecoders.test.ts`. `docs/MODEL_INTEGRATION.md`.
 
 ### Fixed
@@ -12,7 +14,7 @@
 
 - **`gltfModelCache` — гонки `release`:** декремент ref с повтором при изменении Map между чтением и записью (CAS-стиль, до 32 попыток); единая `invokeDreiClearIfUnreferenced` для grace и eviction — не вызывает `useGLTF.clear`, если ref снова > 0.
 
-- **`gltfModelCache` — отложенный `useGLTF.clear`:** после последнего `release` очистка drei-кэша по URL выполняется с задержкой **2.5 s** (`GLTF_CLEAR_GRACE_MS`); повторный `retain` отменяет таймер; принудительное eviction по-прежнему вызывает `clear` сразу. Снижает лишние перезагрузки GLB при быстром remount / смене чанка.
+- **`gltfModelCache` — отложенный `useGLTF.clear`:** после последнего `release` очистка drei-кэша по URL с задержкой **`GLTF_CLEAR_GRACE_MS` (2 s)**; повторный `retain` отменяет таймер; принудительное eviction по-прежнему вызывает `clear` сразу.
 
 - **`gltfModelCache` — сумма байт:** после вытеснения `totalBytes` пересчитывается через `syncEstimatedBytesWithAccessOrderAndSum()` (чистка ключей `estimatedBytes` без URL в `accessOrder`, восстановление оценок), а не только вычитание удалённого; `__getGltfModelCacheTestState().totalBytes` считается только по `accessOrder`, без «осиротевших» записей карты.
 

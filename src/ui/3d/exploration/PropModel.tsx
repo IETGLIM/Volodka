@@ -13,7 +13,12 @@ import {
   computeExplorationCharacterMeshUnionVerticalExtent,
 } from '@/lib/gltfCharacterMaterialPolicy';
 import { applyExplorationPlayerGlobalVisualScale } from '@/lib/playerScaleConstants';
-import { retainGltfModelUrl, releaseGltfModelUrl } from '@/lib/gltfModelCache';
+import {
+  logGltfLoadedFootprintDev,
+  recordGltfGpuByteEstimateFromScene,
+  retainGltfModelUrl,
+  releaseGltfModelUrl,
+} from '@/lib/gltfModelCache';
 import { validatePropGlbScale } from '@/lib/propScaleValidation';
 
 type PropModelProps = {
@@ -104,6 +109,11 @@ function PropGLB({ def, sceneScale, position, rotation }: PropGLBProps) {
     return () => releaseGltfModelUrl(url);
   }, [url]);
   const { scene } = useGLTF(url);
+
+  useEffect(() => {
+    recordGltfGpuByteEstimateFromScene(url, scene);
+    logGltfLoadedFootprintDev(url, scene);
+  }, [url, scene]);
 
   const { cloned, bbox } = useMemo(() => {
     const next = scene.clone(true) as THREE.Group;

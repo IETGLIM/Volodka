@@ -28,7 +28,12 @@ import { getDefaultPlayerModelPath, isValidPlayerGlbPath, rewriteLegacyModelPath
 import { applyExplorationPlayerGlobalVisualScale } from '@/lib/playerScaleConstants';
 import type { SceneId } from '@/data/types';
 import { resolveCharacterMeshUniformScale } from '@/data/modelMeta';
-import { retainGltfModelUrl, releaseGltfModelUrl } from '@/lib/gltfModelCache';
+import {
+  logGltfLoadedFootprintDev,
+  recordGltfGpuByteEstimateFromScene,
+  retainGltfModelUrl,
+  releaseGltfModelUrl,
+} from '@/lib/gltfModelCache';
 import { applyGltfExplorationCharacterMaterialPolicies } from '@/lib/gltfCharacterMaterialPolicy';
 import { PLAYER_VISUAL_HEIGHT_M, validateCharacterScale } from '@/lib/characterScaleValidator';
 import { ThreeCanvasSuspenseFallback } from '@/ui/3d/ThreeCanvasSuspenseFallback';
@@ -336,6 +341,12 @@ const GLBPlayerModel = memo(function GLBPlayerModel({
     retainGltfModelUrl(modelPath);
     return () => releaseGltfModelUrl(modelPath);
   }, [modelPath]);
+
+  useEffect(() => {
+    if (!loadedScene) return;
+    recordGltfGpuByteEstimateFromScene(modelPath, loadedScene);
+    logGltfLoadedFootprintDev(modelPath, loadedScene);
+  }, [modelPath, loadedScene]);
 
   useEffect(() => {
     return () => {
