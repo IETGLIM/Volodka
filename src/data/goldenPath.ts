@@ -11,7 +11,8 @@
 // Канон для «один проход до титров»: финал **Создатель** (`ending_creator`).
 // Условие выбора в `ending_choice`: завершён `first_words` + минимум 2 завершённых квеста всего.
 
-/** Финал золотого пути (тип `ending` + cutscene `finale`). */
+/** Финал золотого пути (тип `ending` + cutscene `finale`). 
+ * Exploration events (volodka_room entry, wire_hack_result via explorationQuestGraphs.ts, streaming chunk activation) now feed into quest progress and narrative via `explorationQuestGraph` + `QuestEngine.handleInteractionForQuests`. Refined for AAA streaming integration. */
 export const GOLDEN_PATH_TARGET_ENDING_NODE_ID = 'ending_creator' as const;
 
 /** Квесты, которые золотой путь гарантированно затрагивает (старт/завершение через сюжет). */

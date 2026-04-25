@@ -24,7 +24,7 @@ import {
   isExplorationRapierColliderDebugEnabled,
   isExplorationWebGlContextLogEnabled,
 } from '@/lib/explorationDiagnostics';
-import { ExplorationMeshWorldAudit, ExplorationWebGlContextLog } from '@/ui/3d/exploration/ExplorationSceneDiagnostics';
+import { ExplorationMeshWorldAudit, ExplorationWebGlContextLog, StreamingDebugHUD } from '@/ui/3d/exploration/ExplorationSceneDiagnostics';
 import { ThreeCanvasSuspenseFallback } from '@/ui/3d/ThreeCanvasSuspenseFallback';
 import { ExplorationNoclipPlayer } from '@/ui/3d/exploration/ExplorationNoclipPlayer';
 import * as THREE from 'three';
@@ -752,6 +752,7 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
       */}
       {explorationWebGlLog && <ExplorationWebGlContextLog />}
       {explorationMeshAudit && <ExplorationMeshWorldAudit sceneId={sceneId} />}
+      <StreamingDebugHUD />
       <Physics timeStep={1 / 60} gravity={[0, -9.81, 0]} debug={rapierColliderDebug}>
         <ExplorationSystemsTick />
         <ExplorationWorldClock />

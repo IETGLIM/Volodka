@@ -3,7 +3,10 @@
 import { memo, useEffect } from 'react';
 import { useThree } from '@react-three/fiber';
 import type { SceneId } from '@/data/types';
-import { isExplorationMeshAuditEnabled, isExplorationWebGlContextLogEnabled } from '@/lib/explorationDiagnostics';
+import { isExplorationMeshAuditEnabled, isExplorationWebGlContextLogEnabled, isExplorationStreamingDebugEnabled } from '@/lib/explorationDiagnostics';
+import { useGameStore } from '@/state/gameStore';
+import { useShallow } from 'zustand/react/shallow';
+import { Html } from '@react-three/drei';
 import {
   collectMeshWorldAuditRows,
   findGeometryPlacementDuplicates,
@@ -94,4 +97,26 @@ export const ExplorationWebGlContextLog = memo(function ExplorationWebGlContextL
   }, [gl]);
 
   return null;
+});
+
+/** Simple streaming debug overlay (v0.2). Shows active chunks when `NEXT_PUBLIC_EXPLORATION_STREAMING_DEBUG=1`. */
+export const StreamingDebugHUD = memo(function StreamingDebugHUD() {
+  const { activeChunkIds, unloadingChunkIds } = useGameStore(
+    useShallow((s) => ({
+      activeChunkIds: (s.exploration as any)?.streaming?.activeChunkIds ?? [],
+      unloadingChunkIds: (s.exploration as any)?.streaming?.unloadingChunkIds ?? [],
+    }))
+  );
+
+  if (!isExplorationStreamingDebugEnabled()) return null;
+
+  return (
+    <Html position={[0, 2, -5]} style={{ color: '#0ff', fontSize: '11px', pointerEvents: 'none', userSelect: 'none' }}>
+      <div style={{ background: 'rgba(0,0,0,0.7)', padding: '4px 8px', border: '1px solid #0ff' }}>
+        STREAMING DEBUG<br />
+        Active: {activeChunkIds.join(', ') || 'none'}<br />
+        Unloading: {unloadingChunkIds.join(', ') || 'none'}
+      </div>
+    </Html>
+  );
 });

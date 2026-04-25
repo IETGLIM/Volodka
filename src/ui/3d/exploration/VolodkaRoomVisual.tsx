@@ -20,6 +20,7 @@ import {
 } from '@/lib/explorationInteriorReference';
 import { createGlitchDataPlaneMaterial } from '@/lib/glitchDataPlaneMaterial';
 import { PropModel } from '@/ui/3d/exploration/PropModel';
+import { StreamingChunk } from '@/ui/3d/exploration/StreamingChunk';
 
 const VOLODKA_MONITOR_LEFT_LINES = ['STATUS: DEGRADED', 'Grafana · Prometheus', 'pod/monitoring-01'] as const;
 const VOLODKA_MONITOR_RIGHT_LINES = ['RETRO INCIDENT', 'on-call: Володька', 'silence: 0 active'] as const;
@@ -335,47 +336,52 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({
         <pointLight position={[3.85, 1.88, -0.6]} intensity={0.38} color="#fdba74" distance={5} decay={2} />
       </group>
 
-      <group position={[0.8, interiorDeskVisualGroupCenterY(0), -2.8]}>
-        <PropModel propId="desk_volodka" sceneScale={explorationCharacterModelScale} />
-        <mesh position={[-0.2, 0.22, 0]} castShadow receiveShadow>
-          <boxGeometry args={[0.35, 0.4, 0.25]} />
-          <meshStandardMaterial
-            color="#e8d4c0"
-            roughness={0.85}
-            depthWrite
-            depthTest
-            polygonOffset
-            polygonOffsetFactor={1}
-            polygonOffsetUnits={1}
-          />
-        </mesh>
-      </group>
+      {/* Streaming v0.2: furniture chunk (critical for player interaction) */}
+      <StreamingChunk chunkId="volodka_room::furniture" assets={['/desk_volodka.glb', '/Chair.glb']}>
+        <group position={[0.8, interiorDeskVisualGroupCenterY(0), -2.8]}>
+          <PropModel propId="desk_volodka" sceneScale={explorationCharacterModelScale} />
+          <mesh position={[-0.2, 0.22, 0]} castShadow receiveShadow>
+            <boxGeometry args={[0.35, 0.4, 0.25]} />
+            <meshStandardMaterial
+              color="#e8d4c0"
+              roughness={0.85}
+              depthWrite
+              depthTest
+              polygonOffset
+              polygonOffsetFactor={1}
+              polygonOffsetUnits={1}
+            />
+          </mesh>
+        </group>
 
-      <PropModel
-        propId="chair_volodka"
-        sceneScale={explorationCharacterModelScale}
-        position={[0.15, 0.22, -1.78]}
-        rotation={[-Math.PI / 2, Math.PI, 0]}
-      />
-
-      {[
-        [5.2, interiorWardrobeCenterYFromFloor(0), 0.2] as const,
-        [5.2, interiorWardrobeCenterYFromFloor(0), -1.4] as const,
-      ].map((p, i) => (
         <PropModel
-          key={`wardrobe-${i}`}
-          propId="wardrobe_soviet"
+          propId="chair_volodka"
           sceneScale={explorationCharacterModelScale}
-          position={[p[0], p[1], p[2]]}
-          rotation={[0, i === 0 ? 0.04 : -0.03, 0]}
+          position={[0.15, 0.22, -1.78]}
+          rotation={[-Math.PI / 2, Math.PI, 0]}
         />
-      ))}
+      </StreamingChunk>
 
-      <PropModel
-        propId="volodka_sofa"
-        sceneScale={explorationCharacterModelScale}
-        position={[-3.8, INTERIOR_REF_SOFA_GROUP_CENTER_Y_M, 1.2]}
-      >
+      {/* Streaming v0.2: props chunk (optional decor) */}
+      <StreamingChunk chunkId="volodka_room::props" assets={['/mug.glb', '/Keyboard.glb']}>
+        {[
+          [5.2, interiorWardrobeCenterYFromFloor(0), 0.2] as const,
+          [5.2, interiorWardrobeCenterYFromFloor(0), -1.4] as const,
+        ].map((p, i) => (
+          <PropModel
+            key={`wardrobe-${i}`}
+            propId="wardrobe_soviet"
+            sceneScale={explorationCharacterModelScale}
+            position={[p[0], p[1], p[2]]}
+            rotation={[0, i === 0 ? 0.04 : -0.03, 0]}
+          />
+        ))}
+
+        <PropModel
+          propId="volodka_sofa"
+          sceneScale={explorationCharacterModelScale}
+          position={[-3.8, INTERIOR_REF_SOFA_GROUP_CENTER_Y_M, 1.2]}
+        >
         <mesh castShadow receiveShadow>
           <boxGeometry args={[1.85, 0.52, 0.88]} />
           <meshStandardMaterial
@@ -402,6 +408,7 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({
           />
         </mesh>
       </PropModel>
+      </StreamingChunk>
 
       <group position={[-4.8, 0.22, -3.2]}>
         <mesh castShadow receiveShadow>
