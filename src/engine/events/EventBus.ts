@@ -66,6 +66,8 @@ export interface EventMap {
   'streaming:chunk_activated': { chunkId: StreamingChunkId; sceneId?: SceneId; rapierBodyCount?: number };
   'streaming:chunk_deactivation_requested': { chunkId: StreamingChunkId; sceneId: SceneId };
   'streaming:chunk_deactivated': { chunkId: StreamingChunkId; sceneId?: SceneId };
+  /** Prefetch: координатор снял цель с очереди и вызвал `retainGltfModelUrl` для перечисленных URL (см. `drainPrefetchHeadApplyRetain`). */
+  'streaming:prefetch_warm_applied': { targetSceneId: SceneId; urls: readonly string[] };
 
   // Изменение характеристик
   'stat:changed': {

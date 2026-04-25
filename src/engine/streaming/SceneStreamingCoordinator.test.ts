@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { eventBus } from '@/engine/events/EventBus';
 import type { SceneStreamingProfile } from '@/config/scenes';
 import type { SceneId } from '@/data/types';
+import { __resetGltfModelCacheTestState } from '@/lib/gltfModelCache';
 import { SceneStreamingCoordinator } from './SceneStreamingCoordinator';
 
 const testProfile: SceneStreamingProfile = {
@@ -33,6 +34,7 @@ describe('SceneStreamingCoordinator', () => {
 
   afterEach(() => {
     coordinator.detach();
+    __resetGltfModelCacheTestState();
     vi.restoreAllMocks();
   });
 
@@ -148,6 +150,8 @@ describe('SceneStreamingCoordinator (real SCENE_CONFIG prefetch)', () => {
 
   afterEach(() => {
     coordinator.detach();
+    __resetGltfModelCacheTestState();
+    vi.restoreAllMocks();
   });
 
   it('scene:enter on volodka_room enqueues volodka_corridor', () => {
@@ -155,5 +159,28 @@ describe('SceneStreamingCoordinator (real SCENE_CONFIG prefetch)', () => {
     const snap = coordinator.getDebugSnapshot();
     expect(snap.prefetchTargetsPreview).toContain('volodka_corridor');
     expect(snap.prefetchQueueLength).toBeGreaterThanOrEqual(1);
+  });
+
+  it('drainPrefetchHeadApplyRetain pops queue and emits prefetch_warm_applied', () => {
+    const spy = vi.spyOn(eventBus, 'emit');
+    eventBus.emit('scene:enter', { sceneId: 'volodka_room' });
+    expect(coordinator.getDebugSnapshot().prefetchQueueLength).toBeGreaterThanOrEqual(1);
+
+    const before = coordinator.getDebugSnapshot().prefetchQueueLength;
+    const did = coordinator.drainPrefetchHeadApplyRetain();
+    expect(did).toBe(true);
+    expect(coordinator.getDebugSnapshot().prefetchQueueLength).toBe(before - 1);
+
+    const warm = spy.mock.calls.filter((c) => c[0] === 'streaming:prefetch_warm_applied');
+    expect(warm.length).toBeGreaterThanOrEqual(1);
+    const last = warm[warm.length - 1][1] as { targetSceneId: string; urls: string[] };
+    expect(last.urls).toContain('/lamp.glb');
+  });
+
+  it('drainPrefetchHeadApplyRetain returns false when queue empty', () => {
+    const c = new SceneStreamingCoordinator(eventBus);
+    c.attach();
+    expect(c.drainPrefetchHeadApplyRetain()).toBe(false);
+    c.detach();
   });
 });

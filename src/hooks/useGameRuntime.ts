@@ -148,6 +148,7 @@ export function useGameRuntime(params: UseGameRuntimeParams) {
     const unsubs = [
       eventBus.on('streaming:chunk_activated', syncExplorationStreamingFromCoordinator),
       eventBus.on('streaming:chunk_deactivated', syncExplorationStreamingFromCoordinator),
+      eventBus.on('streaming:prefetch_warm_applied', syncExplorationStreamingFromCoordinator),
       eventBus.on('scene:enter', syncExplorationStreamingFromCoordinator),
     ];
     syncExplorationStreamingFromCoordinator();
@@ -156,6 +157,21 @@ export function useGameRuntime(params: UseGameRuntimeParams) {
       unsubs.forEach((u) => u());
     };
   }, []);
+
+  /** Периодически снимает голову очереди prefetch и прогревает `gltfModelCache` (см. `SceneStreamingCoordinator.drainPrefetchHeadApplyRetain`). */
+  useEffect(() => {
+    if (phase !== 'game') return;
+    const id = window.setInterval(() => {
+      try {
+        const c = getSceneStreamingCoordinator();
+        if (c.getDebugSnapshot().prefetchQueueLength <= 0) return;
+        c.drainPrefetchHeadApplyRetain();
+      } catch {
+        /* coordinator disposed */
+      }
+    }, 2000);
+    return () => window.clearInterval(id);
+  }, [phase]);
 
   useEffect(() => {
     poemMechanics.setCollectedPoems(collectedPoems);

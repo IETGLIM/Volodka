@@ -9,6 +9,8 @@ import type { SceneStreamingProfile } from '@/config/scenes';
 import type { StreamingChunkId } from '@/data/streamingChunkId';
 import { SCENE_CONFIG } from '@/config/scenes';
 import { eventBus } from '@/engine/EventBus';
+import { retainGltfModelUrl, releaseGltfModelUrl } from '@/lib/gltfModelCache';
+import { collectPrefetchGltfUrlsForScene } from '@/lib/streamingPrefetchAssets';
 
 export type StreamingPrefetchReason = 'scene_enter' | 'portal_hint' | 'manual';
 
@@ -40,6 +42,12 @@ export interface SceneStreamingCoordinatorApi {
   activateChunk(chunkId: StreamingChunkId): void;
   deactivateChunk(chunkId: StreamingChunkId): void;
   getDebugSnapshot(): StreamingDebugSnapshot;
+  /**
+   * Снимает голову очереди prefetch и вызывает `retainGltfModelUrl` для URL целевой сцены.
+   * Перед следующим `scene:enter` warm-retain снимается (`releaseGltfModelUrl` по счётчикам).
+   * @returns true если была обработана хотя бы одна цель.
+   */
+  drainPrefetchHeadApplyRetain(): boolean;
 }
 
 type Bus = {
@@ -80,6 +88,8 @@ export class SceneStreamingCoordinator implements SceneStreamingCoordinatorApi {
   private readonly pendingActivation = new Set<StreamingChunkId>();
   /** FIFO: соседние `SceneId` для мягкого prefetch (счётчики/HUD; обработчик retain — по мере появления). */
   private readonly prefetchQueue: StreamingPrefetchQueueEntry[] = [];
+  /** Сколько раз prefetch вызвал `retainGltfModelUrl` по URL (для симметричного release при смене сцены). */
+  private readonly prefetchWarmRefCount = new Map<string, number>();
   /** Последний переданный `StreamingChunk` / шиной heuristic для `rapierBodyCount` по чанку. */
   private readonly lastRapierBodyCountByChunk = new Map<StreamingChunkId, number>();
 
@@ -101,6 +111,7 @@ export class SceneStreamingCoordinator implements SceneStreamingCoordinatorApi {
 
     this.unsubscribers.push(
       this.bus.on('scene:enter', (p) => {
+        this.releasePrefetchWarmRetains();
         this.currentSceneId = p.sceneId;
         this.clearChunkState();
         this.prefetchQueue.length = 0;
@@ -125,9 +136,36 @@ export class SceneStreamingCoordinator implements SceneStreamingCoordinatorApi {
     }
     this.unsubscribers = [];
     this.attached = false;
+    this.releasePrefetchWarmRetains();
     this.clearChunkState();
     this.prefetchQueue.length = 0;
     this.currentSceneId = null;
+  }
+
+  drainPrefetchHeadApplyRetain(): boolean {
+    const entry = this.prefetchQueue.shift();
+    if (!entry) return false;
+
+    const urls = collectPrefetchGltfUrlsForScene(entry.targetSceneId);
+    for (const url of urls) {
+      retainGltfModelUrl(url);
+      this.prefetchWarmRefCount.set(url, (this.prefetchWarmRefCount.get(url) ?? 0) + 1);
+    }
+
+    this.bus.emit('streaming:prefetch_warm_applied', {
+      targetSceneId: entry.targetSceneId,
+      urls,
+    });
+    return true;
+  }
+
+  private releasePrefetchWarmRetains(): void {
+    for (const [url, n] of this.prefetchWarmRefCount) {
+      for (let i = 0; i < n; i++) {
+        releaseGltfModelUrl(url);
+      }
+    }
+    this.prefetchWarmRefCount.clear();
   }
 
   prefetch(sceneId: SceneId, reason: StreamingPrefetchReason): void {
