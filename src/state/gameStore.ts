@@ -211,6 +211,13 @@ const INITIAL_EXPLORATION_STATE: ExplorationState = {
   worldItems: [],
   exploredAreas: [],
   lastSceneTransition: 0,
+  streaming: {
+    activeChunkIds: [] as readonly string[],
+    unloadingChunkIds: [] as readonly string[],
+    prefetchQueueLength: 0,
+    budgetTextureBytesApprox: 0,
+    rapierActiveBodiesApprox: 0,
+  },
 };
 
 // ============================================
@@ -1452,6 +1459,7 @@ export const useExploration = () => useGameStore(useShallow((state) => ({
   npcStates: state.exploration.npcStates,
   triggerStates: state.exploration.triggerStates,
   worldItems: state.exploration.worldItems,
+  streaming: state.exploration.streaming,
   setPlayerPosition: state.setPlayerPosition,
   advanceTime: state.advanceTime,
   setCurrentScene: state.setCurrentScene,

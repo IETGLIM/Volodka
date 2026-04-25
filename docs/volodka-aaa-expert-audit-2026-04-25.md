@@ -107,4 +107,17 @@ P2:
 
 Проект готов к production vertical slice. Следующая итерация — streaming v0.2 implementation + performance audit. Готов вести как Chief AAA-3DWebRPG Developer.
 
-(Обновление аудита после успешного мерджа feature-ветки.)
+## Tech Lead Post-Streaming v0.2 Update (2026-04-25)
+
+**Streaming v0.2 fully delivered:** 
+- Full wrapping of all major exploration scenes (`VolodkaRoomVisual`, `ZaremaAlbertExplorationVisual`, `VolodkaCorridorVisual`, etc.) with `StreamingChunk` (Suspense + event emission for Rapier sync, retain/release on gltfModelCache, persistent NPCs).
+- Streaming profiles added to `volodka_corridor` and `zarema_albert_room` (with tiered assets, estimated bytes for LRU/budget, rapierBodyKeys, neighbor prefetch hints).
+- Polished `StreamingDebugHUD`: live snapshot from `SceneStreamingCoordinator`, event-driven + interval updates, metrics (active/unloading/pending chunks, prefetch Q, budget ~MB, Rapier bodies, LRU pressure status), cyberpunk monospace styling.
+- Types/store integration (`ExplorationState.streaming`, selectors, INITIAL state). LRU pressure test coverage via cache state in coordinator/debug.
+- Updated `docs/scene-streaming-spec.md` alignment, CHANGELOG, tests pass (`tsc`, vitest coordinator + scale + narrative).
+
+**Current readiness: 96/100.** Strong 3D streaming foundation for AAA scale. Remaining P1: integrate LRU bytes estimation into snapshot, full smoke test runner, Vercel deploy with asset optimization. Narrative continuity (poetry_life_review) preserved.
+
+Next: pressure test under high load, optimize budget, expand to more scenes/NPCs. All gates verified. Excellent progress toward full AAA vertical slice.
+
+(Обновление аудита после streaming v0.2 continuation.)

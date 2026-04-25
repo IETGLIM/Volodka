@@ -49,6 +49,8 @@ export type SceneId =
   | 'president_hotel'
   | 'zarema_albert_room';
 
+export type StreamingChunkId = string & { readonly __brand?: 'StreamingChunkId' };
+
 // Пути развития персонажа
 export type PlayerPath = 
   | 'none' 

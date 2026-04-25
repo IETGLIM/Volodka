@@ -2,7 +2,7 @@
 // ТИПЫ ДЛЯ RPG-СИСТЕМЫ
 // ============================================
 
-import type { NarrativeTimeOfDay, SceneId } from './types';
+import type { NarrativeTimeOfDay, SceneId, StreamingChunkId } from './types';
 
 // Позиция игрока в 3D пространстве
 export interface PlayerPosition {
@@ -214,6 +214,15 @@ export interface ExplorationState {
   worldItems: WorldItem[];
   exploredAreas: string[]; // ID исследованных зон
   lastSceneTransition: number;
+
+  /** Streaming v0.2 state (active chunks, unloading, metrics). See docs/scene-streaming-spec.md and SceneStreamingCoordinator. */
+  streaming?: {
+    activeChunkIds: readonly StreamingChunkId[];
+    unloadingChunkIds: readonly StreamingChunkId[];
+    prefetchQueueLength: number;
+    budgetTextureBytesApprox: number;
+    rapierActiveBodiesApprox?: number;
+  };
 }
 
 // Режим игры
