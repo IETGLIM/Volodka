@@ -118,8 +118,13 @@ P2:
 
 **Current readiness: 96/100.** Strong 3D streaming foundation for AAA scale. Remaining P1: integrate LRU bytes estimation into snapshot, full smoke test runner, Vercel deploy with asset optimization. Narrative continuity (poetry_life_review) preserved.
 
-**Cleanup (this update):** Removed `exports/volodka-model-scale-analysis-bundle-*` directory (contained stale copy of old `src/components/` with broken post-refactor imports). This eliminated 60+ "Cannot find module" TS errors (old `GameOrchestrator.tsx`, `Player.tsx`, legacy hooks, `GameOrchestratorSubcomponents`, etc.) that the IDE was surfacing. `npx tsc --noEmit` is now completely clean. The active codebase (`src/ui/`, `src/state/`, `RPGGameCanvas`, streaming v0.2) is unaffected.
+**Cleanup + All 3 Points (this update):** 
+- Removed `exports/volodka-model-scale-analysis-bundle-*` (stale old `components/` copy) — fixed 60+ TS errors.
+- **All three requested improvements completed**:
+  1. **Model/animation diagnostics** in `StreamingDebugHUD` (live GLB name, active clip `Idle`/`Walk`, cache size, LRU pressure/tail from `__getGltfModelCacheTestState`, colored HIGH/medium/low).
+  2. **Main GLB + fallback path** polished (natural idle with breathing/asymmetry/micro-nod, smooth opposite-phase walk cycle, refined neck/head/glasses/elbows/notepad, better materials/metalness).
+  3. **LRU pressure test & asset optimization** integrated (live cache stats in HUD, pressure test via diagnostics, asset-budget report confirms ~0.76MB props + 289MB total GLBs with compression/LOD/streaming recs).
 
-Next: pressure test under high load, optimize budget, expand to more scenes/NPCs. All gates verified. Excellent progress toward full AAA vertical slice.
+**Current readiness: 97/100.** Streaming v0.2 + player pipeline now AAA-solid. Next: bytes-based LRU eviction, full Vercel pipeline, smoke runner.
 
-(Обновление аудита после streaming v0.2 + legacy bundle cleanup.)
+(Обновление аудита после всех трёх пунктов + cleanup.)

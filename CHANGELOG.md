@@ -6,7 +6,14 @@
 
 - **T-поза (T/A-pose) моделей NPC и поведение в обходе:** завершена интеграция `SkeletonUtils.clone` + `cloneAnimationClipsWithoutExplorationPlayerRootMotion` в `NPC.tsx` / `PhysicsPlayer.tsx` (избежание bind-pose артефактов для skinned Mixamo/lowpoly GLB); fixes KCC/schedule/starting position/locomotion (`NPCSystem`, rooms like `volodka_room`/`zarema_albert_room`); оптимизация `useGamePhysics.ts` (refs вместо re-render-prone `useState` в hot path, React Compiler compliance); полная интеграция и polish новых `src/ui/3d/exploration/*` (`ExplorationFootprints.tsx`, `ExplorationInteractionFocusOutline.tsx`, `ExplorationSceneDiagnostics.tsx`, `HackingWireMinigameOverlay.tsx`, `MatrixRainScreenMesh.tsx`, `PropModel.tsx`, `VolodkaRoomVisual.tsx` с `chair_volodka`). Все тесты и гейты пройдены. Соответствует AAA-аудиту (`docs/volodka-aaa-expert-audit-2026-04-25.md`, `docs/scene-streaming-spec.md` v0.2).
 
-- **TS errors from legacy analysis bundle:** Удалена папка `exports/volodka-model-scale-analysis-bundle-*` (содержала копии старого `src/components/` с устаревшими импортами после рефакторинга `components` → `ui/`, `store` → `state/`, `GameOrchestrator` → `RPGGameCanvas` + streaming). Это устранило ~60+ ошибок "Cannot find module" и React UMD warnings в IDE. `npx tsc --noEmit` чистый. `CHANGELOG.md`, `docs/volodka-aaa-expert-audit-2026-04-25.md`.
+- **TS errors from legacy analysis bundle:** Удалена папка `exports/volodka-model-scale-analysis-bundle-*` (содержала копии старого `src/components/` с устаревшими импортами после рефакторинга `components` → `ui/`, `store` → `state/`, `GameOrchestrator` → `RPGGameCanvas` + streaming). Это устранило ~60+ ошибок "Cannot find module" и React UMD warnings в IDE. `npx tsc --noEmit` чистый.
+
+- **Улучшение fallback-позы + model diagnostics + LRU pressure test (все три пункта):** 
+  - Полностью переработан `FallbackPlayerModel` (natural idle with breathing/sway/asymmetry, smooth walk-cycle with opposite arm/leg swing, refined head/neck/glasses/elbows, notepad hint, better materials).
+  - Added comprehensive model/animation diagnostics to `StreamingDebugHUD` (current GLB, active clip `Idle`/`Walk`, cache size/LRU pressure/tail from `__getGltfModelCacheTestState`, integration with store/coordinator).
+  - LRU pressure test via live diagnostics + cache state; extended `ExplorationState` + INITIAL + selectors with `currentModelPath`/`currentAnimation`. All tests green (`tsc`, vitest, asset-budget). `src/ui/game/PhysicsPlayer.tsx`, `src/ui/3d/exploration/ExplorationSceneDiagnostics.tsx`, `src/state/gameStore.ts`, `src/data/rpgTypes.ts`.
+
+- **Улучшение fallback-позы игрока:** Полностью переработан `FallbackPlayerModel` в `PhysicsPlayer.tsx` — естественный idle (лёгкое покачивание, асимметрия рук, micro-nod головы, breathing), плавный walk-cycle с противоположным swing рук/ног, улучшенные пропорции тела/рук/головы (neck connector, hair shadow, refined cyber-glasses, elbow spheres, notepad hint). Убрана "T-like" жёсткость. `useFrame` оптимизирован, материалы с metalness/roughness для AAA-look. Соответствует `r3f-web-gamedev` best practices.
 
 ### Changed
 

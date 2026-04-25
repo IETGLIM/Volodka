@@ -118,24 +118,33 @@ const FallbackPlayerModel = memo(function FallbackPlayerModel({
   useFrame(({ clock }) => {
     const t = clock.elapsedTime;
 
+    // Improved idle breathing + subtle head bob; smoother walk cycle with opposite arm/leg swing
     if (groupRef.current) {
-      groupRef.current.position.y = isMoving ? Math.abs(Math.sin(t * 8)) * 0.03 : Math.sin(t * 2) * 0.01;
+      groupRef.current.position.y = isMoving 
+        ? Math.abs(Math.sin(t * 10)) * 0.025 
+        : Math.sin(t * 1.8) * 0.012; // gentler idle bob
     }
 
+    const walkSpeed = isMoving ? 11 : 0;
+    const idleSway = Math.sin(t * 1.2) * 0.08;
+
     if (isMoving) {
-      if (leftLegRef.current) leftLegRef.current.rotation.x = Math.sin(t * 12) * 0.4;
-      if (rightLegRef.current) rightLegRef.current.rotation.x = Math.sin(t * 12 + Math.PI) * 0.4;
-      if (leftArmRef.current) leftArmRef.current.rotation.x = Math.sin(t * 12 + Math.PI) * 0.3;
-      if (rightArmRef.current) rightArmRef.current.rotation.x = Math.sin(t * 12) * 0.3;
+      // Natural opposite-phase walk (left leg + right arm forward)
+      if (leftLegRef.current) leftLegRef.current.rotation.x = Math.sin(t * walkSpeed) * 0.55;
+      if (rightLegRef.current) rightLegRef.current.rotation.x = Math.sin(t * walkSpeed + Math.PI) * 0.55;
+      if (leftArmRef.current) leftArmRef.current.rotation.x = Math.sin(t * walkSpeed + Math.PI) * 0.45;
+      if (rightArmRef.current) rightArmRef.current.rotation.x = Math.sin(t * walkSpeed) * 0.45;
     } else {
-      if (leftLegRef.current) leftLegRef.current.rotation.x = 0;
-      if (rightLegRef.current) rightLegRef.current.rotation.x = 0;
-      if (leftArmRef.current) leftArmRef.current.rotation.x = 0;
-      if (rightArmRef.current) rightArmRef.current.rotation.x = 0.2;
+      // Relaxed idle: slight natural arm droop, micro-sway, no stiff T-pose arms
+      if (leftLegRef.current) leftLegRef.current.rotation.x = idleSway * 0.1;
+      if (rightLegRef.current) rightLegRef.current.rotation.x = -idleSway * 0.1;
+      if (leftArmRef.current) leftArmRef.current.rotation.x = 0.15 + idleSway * 0.2; // slight forward droop
+      if (rightArmRef.current) rightArmRef.current.rotation.x = 0.25 - idleSway * 0.15; // natural asymmetry
     }
 
     if (headRef.current) {
-      headRef.current.rotation.y = Math.sin(t * 0.5) * 0.1;
+      headRef.current.rotation.y = Math.sin(t * 0.6) * 0.07; // gentler, more natural head turn
+      headRef.current.rotation.x = isMoving ? 0 : Math.sin(t * 0.8) * 0.03; // subtle nod in idle
     }
   });
 
@@ -155,46 +164,67 @@ const FallbackPlayerModel = memo(function FallbackPlayerModel({
           <meshStandardMaterial color="#4a5568" roughness={0.8} />
         </mesh>
 
-        {/* Руки */}
-        <group ref={leftArmRef} position={[-0.35, 0.15, 0]}>
-          <mesh position={[0, -0.2, 0]} castShadow>
-            <capsuleGeometry args={[0.06, 0.25, 4, 8]} />
-            <meshStandardMaterial color="#4a5568" roughness={0.8} />
+        {/* Руки — improved proportions and slight natural bend for better idle (no T-pose) */}
+        <group ref={leftArmRef} position={[-0.28, 0.22, 0.02]}>
+          <mesh position={[0, -0.18, 0]} castShadow>
+            <capsuleGeometry args={[0.055, 0.28, 4, 12]} />
+            <meshStandardMaterial color="#4a5568" roughness={0.75} metalness={0.1} />
+          </mesh>
+          {/* subtle elbow */}
+          <mesh position={[0.02, -0.38, 0.04]} castShadow>
+            <sphereGeometry args={[0.055, 12, 12]} />
+            <meshStandardMaterial color="#3a4558" roughness={0.8} />
           </mesh>
         </group>
-        <group ref={rightArmRef} position={[0.35, 0.15, 0]}>
-          <mesh position={[0, -0.2, 0]} castShadow>
-            <capsuleGeometry args={[0.06, 0.25, 4, 8]} />
-            <meshStandardMaterial color="#4a5568" roughness={0.8} />
+        <group ref={rightArmRef} position={[0.28, 0.22, 0.02]}>
+          <mesh position={[0, -0.18, 0]} castShadow>
+            <capsuleGeometry args={[0.055, 0.28, 4, 12]} />
+            <meshStandardMaterial color="#4a5568" roughness={0.75} metalness={0.1} />
           </mesh>
-          <group position={[0.05, -0.45, 0.1]}>
+          {/* subtle elbow + techsupport notepad hint */}
+          <mesh position={[-0.02, -0.38, -0.03]} castShadow>
+            <sphereGeometry args={[0.055, 12, 12]} />
+            <meshStandardMaterial color="#3a4558" roughness={0.8} />
+          </mesh>
+          <group position={[0.08, -0.48, 0.12]}>
             <mesh castShadow>
-              <boxGeometry args={[0.15, 0.02, 0.2]} />
-              <meshStandardMaterial color="#f5e6d3" roughness={0.95} />
+              <boxGeometry args={[0.14, 0.02, 0.19]} />
+              <meshStandardMaterial color="#e8d5c4" roughness={0.9} />
             </mesh>
           </group>
         </group>
       </group>
 
-      {/* ГОЛОВА */}
-      <group ref={headRef} position={[0, 1.6, 0]}>
+      {/* ГОЛОВА — improved cyber-poet look with better neck, subtle hair shadow, refined glasses */}
+      <group ref={headRef} position={[0, 1.58, 0]}>
+        {/* Neck connector */}
+        <mesh position={[0, -0.18, 0]} castShadow>
+          <cylinderGeometry args={[0.09, 0.11, 0.18, 12]} />
+          <meshStandardMaterial color="#2d3748" roughness={0.85} />
+        </mesh>
         <mesh castShadow>
-          <sphereGeometry args={[0.22, 16, 16]} />
-          <meshStandardMaterial color="#e8d5c4" roughness={0.85} />
+          <sphereGeometry args={[0.23, 20, 20]} />
+          <meshStandardMaterial color="#e8d5c4" roughness={0.78} metalness={0.05} />
         </mesh>
-        <mesh position={[0, 0.08, -0.02]} castShadow>
-          <sphereGeometry args={[0.23, 16, 8, 0, Math.PI * 2, 0, Math.PI / 2]} />
-          <meshStandardMaterial color="#2d3748" roughness={0.9} />
+        {/* Hair/beard shadow layer */}
+        <mesh position={[0, 0.09, -0.04]} castShadow>
+          <sphereGeometry args={[0.245, 18, 18, 0, Math.PI * 2, 0, Math.PI * 0.65]} />
+          <meshStandardMaterial color="#1f2a38" roughness={0.9} transparent opacity={0.75} />
         </mesh>
-        {/* Очки */}
-        <group position={[0, 0, 0.2]}>
-          <mesh position={[-0.07, 0.02, 0]}>
-            <torusGeometry args={[0.04, 0.005, 8, 16]} />
-            <meshStandardMaterial color="#1a1a1a" metalness={0.8} roughness={0.2} />
+        {/* Refined glasses with slight reflection */}
+        <group position={[0, 0.05, 0.21]}>
+          <mesh position={[-0.09, 0.01, 0]}>
+            <torusGeometry args={[0.055, 0.006, 8, 20]} />
+            <meshStandardMaterial color="#111" metalness={0.9} roughness={0.15} />
           </mesh>
-          <mesh position={[0.07, 0.02, 0]}>
-            <torusGeometry args={[0.04, 0.005, 8, 16]} />
-            <meshStandardMaterial color="#1a1a1a" metalness={0.8} roughness={0.2} />
+          <mesh position={[0.09, 0.01, 0]}>
+            <torusGeometry args={[0.055, 0.006, 8, 20]} />
+            <meshStandardMaterial color="#111" metalness={0.9} roughness={0.15} />
+          </mesh>
+          {/* bridge */}
+          <mesh position={[0, 0.015, -0.01]}>
+            <boxGeometry args={[0.08, 0.008, 0.015]} />
+            <meshStandardMaterial color="#222" metalness={0.85} roughness={0.2} />
           </mesh>
         </group>
       </group>

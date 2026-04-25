@@ -217,6 +217,8 @@ const INITIAL_EXPLORATION_STATE: ExplorationState = {
     prefetchQueueLength: 0,
     budgetTextureBytesApprox: 0,
     rapierActiveBodiesApprox: 0,
+    currentModelPath: 'lowpoly_anime_character_cyberstyle.glb',
+    currentAnimation: 'Idle',
   },
 };
 
@@ -1460,6 +1462,8 @@ export const useExploration = () => useGameStore(useShallow((state) => ({
   triggerStates: state.exploration.triggerStates,
   worldItems: state.exploration.worldItems,
   streaming: state.exploration.streaming,
+  currentModelPath: state.exploration.streaming?.currentModelPath,
+  currentAnimation: state.exploration.streaming?.currentAnimation,
   setPlayerPosition: state.setPlayerPosition,
   advanceTime: state.advanceTime,
   setCurrentScene: state.setCurrentScene,

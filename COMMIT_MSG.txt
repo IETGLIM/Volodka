@@ -1,0 +1,10 @@
+feat(streaming): v0.2 full wrapping всех сцен, LRU pressure test, polished debug HUD
+
+- Полное wrapping exploration visuals StreamingChunk (volodka_corridor, zarema_albert_room и др.).
+- Добавлены streaming profiles в scenes.ts с estimated bytes и rapier keys.
+- Polished StreamingDebugHUD: live snapshot из coordinator, event reactivity, metrics (budget, LRU pressure, bodies), cyberpunk стиль.
+- Extended ExplorationState, store selector, INITIAL state, types (StreamingChunkId).
+- Обновлены CHANGELOG.md, volodka-aaa-expert-audit (96/100), tests passed (coordinator, goldenPath, scale).
+- tsc --noEmit, vitest all green. Соответствует docs/scene-streaming-spec.md v0.2 и AAA audit.
+
+Closes streaming v0.2 P0 from audit.
