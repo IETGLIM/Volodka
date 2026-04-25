@@ -11,6 +11,7 @@ import { initConsequencesSystem } from '@/engine/ConsequencesSystem';
 import {
   startSceneStreamingCoordinator,
   disposeSceneStreamingCoordinator,
+  getSceneStreamingCoordinator,
 } from '@/engine/streaming/SceneStreamingCoordinator';
 import { explorationHourToNarrativeTimeOfDay } from '@/game/conditions/timeOfDay';
 import type { NPCRelation, PlayerState, PlayerSkills, SceneId } from '@/data/types';
@@ -111,6 +112,47 @@ export function useGameRuntime(params: UseGameRuntimeParams) {
     startSceneStreamingCoordinator();
     return () => {
       disposeSceneStreamingCoordinator();
+    };
+  }, []);
+
+  /** HUD / вне Canvas: `exploration.streaming` зеркалит снимок координатора по шине сцен/чанков. */
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const syncExplorationStreamingFromCoordinator = () => {
+      try {
+        const snap = getSceneStreamingCoordinator().getDebugSnapshot();
+        useGameStore.setState((s) => {
+          const stream = s.exploration.streaming;
+          if (!stream) return s;
+          return {
+            exploration: {
+              ...s.exploration,
+              streaming: {
+                ...stream,
+                activeChunkIds: [...snap.activeChunkIds],
+                unloadingChunkIds: [...snap.unloadingChunkIds],
+                prefetchQueueLength: snap.prefetchQueueLength,
+                budgetTextureBytesApprox: snap.budgetTextureBytesApprox,
+                rapierActiveBodiesApprox: snap.rapierActiveBodiesApprox ?? 0,
+              },
+            },
+          };
+        });
+      } catch {
+        /* disposed coordinator (StrictMode / уход из игры) */
+      }
+    };
+
+    const unsubs = [
+      eventBus.on('streaming:chunk_activated', syncExplorationStreamingFromCoordinator),
+      eventBus.on('streaming:chunk_deactivated', syncExplorationStreamingFromCoordinator),
+      eventBus.on('scene:enter', syncExplorationStreamingFromCoordinator),
+    ];
+    syncExplorationStreamingFromCoordinator();
+
+    return () => {
+      unsubs.forEach((u) => u());
     };
   }, []);
 

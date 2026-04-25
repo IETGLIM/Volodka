@@ -1,11 +1,10 @@
 // src/config/scenes.ts
 import { getPropDefinition } from '@/data/propsManifest';
 import type { SceneId } from '@/data/types';
+import type { StreamingChunkId } from '@/data/streamingChunkId';
 
 // --- Стриминг 3D-обхода (`docs/scene-streaming-spec.md`) ---
-
-/** Идентификатор чанка внутри сцены, напр. `` `${SceneId}::courtyard` ``. */
-export type StreamingChunkId = string;
+export type { StreamingChunkId } from '@/data/streamingChunkId';
 
 /** Приоритет ассета для prefetch / LRU (не путать с LOD меша). */
 export type AssetTier = 'critical' | 'nearby' | 'optional';
@@ -339,22 +338,16 @@ export const SCENE_CONFIG = {
     ambientLight: { intensity: 0.32, color: '#e8dcc8' },
     directionalLights: [{ position: [0, 6, 2], intensity: 0.55 }],
     npcs: [],
-    /** Streaming v0.2 profile for corridor (full wrapping). Simple furniture/props chunks; neighbor to volodka_room and home. */
+    /** Streaming v0.2: один чанк под фактический GLB плафона (`lamp_desk` → `/lamp.glb` в `propsManifest`). Обувница — процедурная, без отдельного чанка. */
     streaming: {
       neighborSceneIds: ['volodka_room', 'home_evening'],
       chunks: [
         {
           id: 'volodka_corridor::furniture' as const,
           assets: [
-            { url: '/models/lamp.glb', tier: 'critical' as const, estimatedGeometryBytes: 85_000 },
+            { url: '/lamp.glb', tier: 'critical' as const, estimatedGeometryBytes: 80_000 },
           ],
           rapierBodyKeys: ['lamp_collider', 'radiator_collider'],
-        },
-        {
-          id: 'volodka_corridor::props' as const,
-          assets: [
-            { url: '/shoe_rack.glb', tier: 'optional' as const, estimatedGeometryBytes: 320_000 },
-          ],
         },
       ],
     },
@@ -719,24 +712,9 @@ export const SCENE_CONFIG = {
         scale: 1.0,
       },
     ],
-    /** Streaming v0.2 profile for zarema_albert_room (full wrapping of scenes). Furniture for NPCs/table, props for books/decor. Ties into narrative poetry review. */
+    /** Соседи для prefetch-счётчика; чанки не заданы — комната пока процедурная (без GLB `StreamingChunk`). */
     streaming: {
       neighborSceneIds: ['kitchen_night', 'home_evening'],
-      chunks: [
-        {
-          id: 'zarema_albert_room::furniture' as const,
-          assets: [
-            { url: '/table_zarema.glb', tier: 'critical' as const, estimatedGeometryBytes: 450_000 },
-          ],
-          rapierBodyKeys: ['table_collider'],
-        },
-        {
-          id: 'zarema_albert_room::props' as const,
-          assets: [
-            { url: '/book.glb', tier: 'optional' as const, estimatedGeometryBytes: 120_000 },
-          ],
-        },
-      ],
     },
     interactiveObjects: [
       {

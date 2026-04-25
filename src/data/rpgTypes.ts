@@ -2,7 +2,8 @@
 // ТИПЫ ДЛЯ RPG-СИСТЕМЫ
 // ============================================
 
-import type { NarrativeTimeOfDay, SceneId, StreamingChunkId } from './types';
+import type { NarrativeTimeOfDay, SceneId } from './types';
+import type { StreamingChunkId } from '@/data/streamingChunkId';
 
 // Позиция игрока в 3D пространстве
 export interface PlayerPosition {

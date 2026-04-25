@@ -76,8 +76,19 @@ vi.mock('@/state/gameStore', () => ({
       activeQuestIds: [],
       completedQuestIds: [],
       inventory: [],
-      exploration: { currentSceneId: 'kitchen_night', timeOfDay: 12 },
+      exploration: {
+        currentSceneId: 'kitchen_night',
+        timeOfDay: 12,
+        streaming: {
+          activeChunkIds: [],
+          unloadingChunkIds: [],
+          prefetchQueueLength: 0,
+          budgetTextureBytesApprox: 0,
+          rapierActiveBodiesApprox: 0,
+        },
+      },
     })),
+    setState: vi.fn(),
   },
 }));
 

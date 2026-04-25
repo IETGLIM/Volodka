@@ -7,6 +7,7 @@ import {
   interiorDoorCenterYFromFloor,
 } from '@/lib/explorationInteriorReference';
 import { PropModel } from '@/ui/3d/exploration/PropModel';
+import { StreamingChunk } from '@/ui/3d/exploration/StreamingChunk';
 
 type VolodkaCorridorVisualProps = {
   /** Для `PropModel` с GLB (`lamp_desk` и др.). */
@@ -84,11 +85,13 @@ export const VolodkaCorridorVisual = memo(function VolodkaCorridorVisual({
         </group>
       ))}
 
-      {/* Совпадает с `corridor_ceiling_lamp` в `scenes.ts` (propId `lamp_desk`). */}
-      <group position={[0, 2.38, 0.4]}>
-        <PropModel propId="lamp_desk" sceneScale={explorationCharacterModelScale} rotation={[0, Math.PI, 0]} />
-        <pointLight position={[0, -0.18, 0]} intensity={0.42} color="#fff5e0" distance={4.5} decay={2} />
-      </group>
+      {/* Совпадает с `corridor_ceiling_lamp` в `scenes.ts` (propId `lamp_desk` → `/lamp.glb`); чанк — `volodka_corridor::furniture` в `streaming`. */}
+      <StreamingChunk chunkId="volodka_corridor::furniture" assets={['/lamp.glb']}>
+        <group position={[0, 2.38, 0.4]}>
+          <PropModel propId="lamp_desk" sceneScale={explorationCharacterModelScale} rotation={[0, Math.PI, 0]} />
+          <pointLight position={[0, -0.18, 0]} intensity={0.42} color="#fff5e0" distance={4.5} decay={2} />
+        </group>
+      </StreamingChunk>
 
       <pointLight position={[0, 2.4, 0]} intensity={0.5} color="#f5e6d3" distance={16} decay={2} />
     </group>

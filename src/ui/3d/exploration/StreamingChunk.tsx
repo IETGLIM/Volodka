@@ -3,7 +3,7 @@
 import React, { useEffect, useRef, Suspense, memo, type ReactNode } from 'react';
 import { useThree } from '@react-three/fiber';
 import { eventBus } from '@/engine/events/EventBus';
-import type { StreamingChunkId } from '@/config/scenes';
+import type { StreamingChunkId } from '@/data/streamingChunkId';
 import { retainGltfModelUrl, releaseGltfModelUrl } from '@/lib/gltfModelCache';
 import { isExplorationStreamingDebugEnabled } from '@/lib/explorationDiagnostics';
 

@@ -5,7 +5,8 @@
  */
 
 import type { SceneId } from '@/data/types';
-import type { SceneStreamingProfile, StreamingChunkId } from '@/config/scenes';
+import type { SceneStreamingProfile } from '@/config/scenes';
+import type { StreamingChunkId } from '@/data/streamingChunkId';
 import { SCENE_CONFIG } from '@/config/scenes';
 import { eventBus } from '@/engine/EventBus';
 
