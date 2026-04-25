@@ -118,6 +118,8 @@ P2:
 
 **Current readiness: 96/100.** Strong 3D streaming foundation for AAA scale. Remaining P1: integrate LRU bytes estimation into snapshot, full smoke test runner, Vercel deploy with asset optimization. Narrative continuity (poetry_life_review) preserved.
 
+**Cleanup (this update):** Removed `exports/volodka-model-scale-analysis-bundle-*` directory (contained stale copy of old `src/components/` with broken post-refactor imports). This eliminated 60+ "Cannot find module" TS errors (old `GameOrchestrator.tsx`, `Player.tsx`, legacy hooks, `GameOrchestratorSubcomponents`, etc.) that the IDE was surfacing. `npx tsc --noEmit` is now completely clean. The active codebase (`src/ui/`, `src/state/`, `RPGGameCanvas`, streaming v0.2) is unaffected.
+
 Next: pressure test under high load, optimize budget, expand to more scenes/NPCs. All gates verified. Excellent progress toward full AAA vertical slice.
 
-(Обновление аудита после streaming v0.2 continuation.)
+(Обновление аудита после streaming v0.2 + legacy bundle cleanup.)
