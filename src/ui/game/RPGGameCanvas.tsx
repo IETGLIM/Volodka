@@ -25,6 +25,7 @@ import {
   isExplorationWebGlContextLogEnabled,
 } from '@/lib/explorationDiagnostics';
 import { ExplorationMeshWorldAudit, ExplorationWebGlContextLog, StreamingDebugHUD } from '@/ui/3d/exploration/ExplorationSceneDiagnostics';
+import { GltfDracoDecoderBootstrap } from '@/ui/3d/exploration/GltfDracoDecoderBootstrap';
 import { ThreeCanvasSuspenseFallback } from '@/ui/3d/ThreeCanvasSuspenseFallback';
 import { ExplorationNoclipPlayer } from '@/ui/3d/exploration/ExplorationNoclipPlayer';
 import * as THREE from 'three';
@@ -744,6 +745,7 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
         (e.target as HTMLCanvasElement | null)?.focus?.();
       }}
     >
+      <GltfDracoDecoderBootstrap />
       <PerformanceMonitor />
       {/*
         Rapier **вне** Suspense: коллайдеры и шаг мира не зависят от загрузки GLB.

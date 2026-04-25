@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Added
+
+- **Адаптация GLB (Draco в рантайме):** `ensureGltfDracoDecoderPathConfigured` в `src/lib/explorationGltfDecoders.ts` — `useGLTF.setDecoderPath` до preload/`useGLTF` (CDN 1.5.7 или `NEXT_PUBLIC_DRACO_DECODER_BASE`). `GltfDracoDecoderBootstrap` в `RPGGameCanvas`; вызов из `model-cache` и `AppPerfWarmup`. Тест `explorationGltfDecoders.test.ts`. `docs/MODEL_INTEGRATION.md`.
+
 ### Fixed
 
 - **Стриминг v0.2 — синхронизация координатора с `StreamingChunk`:** `SceneStreamingCoordinator` больше не требует предварительного `activateChunk()` для перехода в active: событие `streaming:chunk_activated` от React (после RAF, как в `StreamingChunk.tsx`) достаточно, если `chunkId` есть в `SceneConfig.streaming.chunks` текущей сцены. Это устраняло пустой `activeChunkIds` в `getDebugSnapshot()` / `StreamingDebugHUD` при реальном обходе `volodka_room`. Добавлены суммарный оценочный бюджет байт по манифесту активных чанков и агрегат `rapierActiveBodiesApprox` из последних `rapierBodyCount` по чанкам; сброс карт при `clearChunkState`. Тесты `SceneStreamingCoordinator.test.ts`. Подвал debug HUD без заявления «97/100» — `ExplorationSceneDiagnostics.tsx`.

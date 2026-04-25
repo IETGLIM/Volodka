@@ -2,6 +2,7 @@
 
 import { useGLTF } from '@react-three/drei';
 import { getDefaultPlayerModelPath, rewriteLegacyModelPath } from '@/config/modelUrls';
+import { ensureGltfDracoDecoderPathConfigured } from '@/lib/explorationGltfDecoders';
 
 /**
  * Предзагрузка произвольного GLB в кэш drei (`useLoader`) до монтирования `useGLTF` в сцене.
@@ -10,6 +11,7 @@ import { getDefaultPlayerModelPath, rewriteLegacyModelPath } from '@/config/mode
  */
 export function preloadGltf(path: string): Promise<void> {
   if (typeof window === 'undefined' || !path.trim()) return Promise.resolve();
+  ensureGltfDracoDecoderPathConfigured();
   const url = rewriteLegacyModelPath(path.trim());
   return Promise.resolve().then(() => {
     try {
@@ -26,6 +28,7 @@ export function preloadGltf(path: string): Promise<void> {
  */
 export function preloadExplorationPlayerGltf(): Promise<void> {
   if (typeof window === 'undefined') return Promise.resolve();
+  ensureGltfDracoDecoderPathConfigured();
   const url = getDefaultPlayerModelPath();
   return Promise.resolve().then(() => {
     try {

@@ -114,6 +114,7 @@ P2:
 - **`StreamingChunk` + профили `streaming` в `scenes.ts`:** комната Володьки (`volodka_room`) и коридор (`volodka_corridor`) с чанками, манифестом байт и событиями `streaming:chunk_*`. Комната Заремы/Альберта — **процедурная 3D без чанков**; в профиле только **`neighborSceneIds`** для prefetch-счётчика, без вымышленных GLB-чанков.
 - **Координатор:** React-first `chunk_activated`, очередь prefetch (FIFO по целям после **сортировки соседей по весу манифеста** — сначала соседи с большим объёмом заявленных чанков/байт), warm retain/release, idle-drain в `useGameRuntime`.
 - **`gltfModelCache`:** учёт по URL + **bytes-aware eviction** (`MAX_CACHE_BYTES`, оценки из `propsManifest`), плюс retain/release из `StreamingChunk` / prefetch.
+- **Draco в рантайме:** `ensureGltfDracoDecoderPathConfigured` + `GltfDracoDecoderBootstrap` в Canvas — GLB с `KHR_draco_mesh_compression` грузятся через `useGLTF` без отдельного пайплайна в репозитории.
 - **Инструменты:** `StreamingDebugHUD`, `npm run asset-budget`, ручной workflow **`.github/workflows/volodka-smoke.yml`** + чеклист **`docs/volodka-room-smoke.md`** (Browserbase — по секрету).
 
 **Оставшийся P1 по плану:** визуальный smoke расширен в `browserbase-functions/volodka-smoke` (меню → пропуск интро → ожидание WebGL); дальше — сценарии кликов по двери/E2E, production pipeline Vercel под тяжёлые GLB, при необходимости — чанки для других локаций после стабилизации среза.

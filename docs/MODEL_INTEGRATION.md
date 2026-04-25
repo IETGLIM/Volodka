@@ -93,4 +93,4 @@ public/
 1. **Текстуры**: Используйте сжатые текстуры (WebP, KTX2)
 2. **Полигонов**: < 5000 треугольников на персонажа
 3. **Анимации**: Удаляйте неиспользуемые ключевые кадры
-4. **Draco compression**: Включите для уменьшения размера файла
+4. **Draco compression**: Включите для уменьшения размера файла. В рантайме `useGLTF` (drei) получает декодер через **`ensureGltfDracoDecoderPathConfigured`** (`src/lib/explorationGltfDecoders.ts`): по умолчанию CDN `gstatic` (1.5.7), переопределение — **`NEXT_PUBLIC_DRACO_DECODER_BASE`** (URL или `/draco/` со статикой из `public/draco`). До первого GLB вызывается из `GltfDracoDecoderBootstrap` внутри `RPGGameCanvas`, из `model-cache` и из `AppPerfWarmup`. **EXT_meshopt_compression** в drei включён по умолчанию для `useGLTF`.

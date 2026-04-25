@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import { ensureGltfDracoDecoderPathConfigured } from '@/lib/explorationGltfDecoders';
 import { preloadExplorationPlayerGltf, preloadGltf } from '@/lib/model-cache';
 import { warmupRapierWasm } from '@/lib/rapierWasmWarmup';
 
@@ -35,6 +36,8 @@ export function AppPerfWarmup() {
     const run = async () => {
       const perf = typeof performance !== 'undefined' ? performance : null;
       perf?.mark?.(PERF_MARK_START);
+
+      ensureGltfDracoDecoderPathConfigured();
 
       try {
         await warmupRapierWasm();
