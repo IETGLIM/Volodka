@@ -24,12 +24,21 @@ function cancelScheduledDreiClear(url: string) {
   }
 }
 
+/**
+ * Идемпотентная очистка drei: не трогаем кэш, если снова есть `retain` (ref > 0).
+ * Отменяет отложенный таймер — вызывать из eviction, по таймауту grace и при необходимости извне.
+ */
+function invokeDreiClearIfUnreferenced(url: string) {
+  cancelScheduledDreiClear(url);
+  if ((refCount.get(url) ?? 0) > 0) return;
+  useGLTF.clear(url);
+}
+
 function scheduleDreiClear(url: string) {
   cancelScheduledDreiClear(url);
   const t = setTimeout(() => {
     graceTimers.delete(url);
-    if ((refCount.get(url) ?? 0) > 0) return;
-    useGLTF.clear(url);
+    invokeDreiClearIfUnreferenced(url);
   }, GLTF_CLEAR_GRACE_MS);
   graceTimers.set(url, t);
 }
@@ -101,8 +110,7 @@ function evictDownToMax() {
     for (let i = 0; i < accessOrder.length; i++) {
       const url = accessOrder[i];
       if ((refCount.get(url) ?? 0) === 0) {
-        cancelScheduledDreiClear(url);
-        useGLTF.clear(url);
+        invokeDreiClearIfUnreferenced(url);
         estimatedBytes.delete(url);
         accessOrder.splice(i, 1);
         evicted = true;
@@ -119,8 +127,7 @@ function evictDownToMax() {
     for (let i = 0; i < accessOrder.length; i++) {
       const url = accessOrder[i];
       if ((refCount.get(url) ?? 0) === 0) {
-        cancelScheduledDreiClear(url);
-        useGLTF.clear(url);
+        invokeDreiClearIfUnreferenced(url);
         estimatedBytes.delete(url);
         accessOrder.splice(i, 1);
         evicted = true;
@@ -151,23 +158,36 @@ export function retainGltfModelUrl(url: string) {
   evictDownToMax();
 }
 
-/** Вызвать в cleanup после `retainGltfModelUrl` для того же `url`. */
+const MAX_RELEASE_CAS_ATTEMPTS = 32;
+
+/**
+ * Декремент ref с повтором при гонке (два `release` подряд / эффекты стриминга): значение в Map
+ * сравнивается с моментом чтения; при расхождении — повтор. Финальный `useGLTF.clear` только через
+ * `invokeDreiClearIfUnreferenced` / grace, чтобы не дергать drei при уже отменённом состоянии.
+ */
 export function releaseGltfModelUrl(url: string) {
   if (!url) return;
-  const prev = refCount.get(url);
-  if (prev === undefined) return;
-  const next = prev - 1;
-  if (next <= 0) {
-    refCount.delete(url);
-    const i = accessOrder.indexOf(url);
-    if (i >= 0) accessOrder.splice(i, 1);
-    estimatedBytes.delete(url);
-    /** Отложенный `useGLTF.clear` — см. `GLTF_CLEAR_GRACE_MS`; повторный `retain` отменяет таймер. */
-    scheduleDreiClear(url);
-  } else {
-    refCount.set(url, next);
+  for (let attempt = 0; attempt < MAX_RELEASE_CAS_ATTEMPTS; attempt++) {
+    const prev = refCount.get(url);
+    if (prev === undefined) return;
+    if (prev < 1) return;
+
+    if (refCount.get(url) !== prev) continue;
+
+    const next = prev - 1;
+    if (next <= 0) {
+      refCount.delete(url);
+      const i = accessOrder.indexOf(url);
+      if (i >= 0) accessOrder.splice(i, 1);
+      estimatedBytes.delete(url);
+      /** Отложенный `useGLTF.clear` — см. `GLTF_CLEAR_GRACE_MS`; повторный `retain` отменяет таймер. */
+      scheduleDreiClear(url);
+    } else {
+      refCount.set(url, next);
+    }
+    evictDownToMax();
+    return;
   }
-  evictDownToMax();
 }
 
 /** Для тестов и отладки. */

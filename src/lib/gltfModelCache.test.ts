@@ -58,6 +58,17 @@ describe('gltfModelCache', () => {
     vi.advanceTimersByTime(2500);
   });
 
+  it('ignores duplicate release after ref already zero (single deferred clear)', () => {
+    retainGltfModelUrl('/models/dup-release.glb');
+    releaseGltfModelUrl('/models/dup-release.glb');
+    releaseGltfModelUrl('/models/dup-release.glb');
+    releaseGltfModelUrl('/models/dup-release.glb');
+    expect(clear).not.toHaveBeenCalled();
+    vi.advanceTimersByTime(2500);
+    expect(clear).toHaveBeenCalledTimes(1);
+    expect(clear).toHaveBeenCalledWith('/models/dup-release.glb');
+  });
+
   it('cancels deferred drei clear when same URL is retained within grace window', () => {
     retainGltfModelUrl('/models/bounce.glb');
     releaseGltfModelUrl('/models/bounce.glb');
