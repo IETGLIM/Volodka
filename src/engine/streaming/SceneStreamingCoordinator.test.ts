@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { eventBus } from '@/engine/events/EventBus';
+import { SCENE_CONFIG } from '@/config/scenes';
 import type { SceneStreamingProfile } from '@/config/scenes';
 import type { SceneId } from '@/data/types';
 import { __resetGltfModelCacheTestState } from '@/lib/gltfModelCache';
@@ -137,6 +138,25 @@ describe('SceneStreamingCoordinator', () => {
     const snap = coordinator.getDebugSnapshot();
     expect(snap.prefetchQueueLength).toBe(1);
     expect(snap.prefetchTargetsPreview[0]).toBe('kitchen_dawn');
+  });
+
+  it('scene:enter orders prefetch neighbors by streaming manifest weight (heavier first)', () => {
+    const originNeighbors: SceneStreamingProfile = {
+      neighborSceneIds: ['kitchen_dawn', 'volodka_room'],
+      chunks: [],
+    };
+    const coord = new SceneStreamingCoordinator(eventBus, (id: SceneId) => {
+      if (id === 'kitchen_night') return originNeighbors;
+      if (id === 'volodka_room')
+        return SCENE_CONFIG.volodka_room.streaming as SceneStreamingProfile | undefined;
+      return undefined;
+    });
+    coord.attach();
+    eventBus.emit('scene:enter', { sceneId: 'kitchen_night' });
+    const snap = coord.getDebugSnapshot();
+    expect(snap.prefetchTargetsPreview[0]).toBe('volodka_room');
+    expect(snap.prefetchTargetsPreview[1]).toBe('kitchen_dawn');
+    coord.detach();
   });
 });
 

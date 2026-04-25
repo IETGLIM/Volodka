@@ -173,7 +173,7 @@ export type StreamingDebugSnapshot = {
 
 | Событие / место | Действие |
 |-----------------|----------|
-| `scene:enter` / `scene:exit` | При `scene:enter` — сброс и заполнение **очереди prefetch** по `neighborSceneIds`; активные чанки; debounce выгрузки (как в v0.1). |
+| `scene:enter` / `scene:exit` | При `scene:enter` — сброс и заполнение **очереди prefetch** по `neighborSceneIds` (**порядок целей:** сначала соседи с большим суммарным манифестом чанков + числом чанков, затем остальные — стабильно к исходному списку); активные чанки; debounce выгрузки (как в v0.1). |
 | `streaming:chunk_activated` / `deactivated` | Координатор обновляет внутреннее состояние и snapshot для HUD/тестов. |
 | `gltfModelCache` | `retain` / `release` на границах жизни чанка; см. §8. |
 | `GameOrchestrator` или `useSceneStreaming` | Создание координатора, подписки, `destroy` при уходе из игры. |
@@ -183,7 +183,7 @@ export type StreamingDebugSnapshot = {
 
 ## 8. Prefetch и `useGLTF.preload` (drei)
 
-**Очередь (реализовано в координаторе):** при входе в сцену и при вызове `prefetch(sceneId, reason)` в FIFO попадают **соседние `SceneId`** из профиля (без дубликатов и без текущей сцены). **`drainPrefetchHeadApplyRetain`** (из `useGameRuntime` в фазе `game`: `requestIdleCallback` с fallback `setTimeout`, до двух drain за колбэк) снимает голову очереди и вызывает **`retainGltfModelUrl`** для всех URL из `streaming.chunks` целевой сцены (`collectPrefetchGltfUrlsForScene`). Перед каждым **`scene:enter`** и при **`detach`** координатор делает симметричный **`releaseGltfModelUrl`** по накопленным prefetch-счётчикам, чтобы не копить ref после перехода (новая сцена снова делает retain в `StreamingChunk`).
+**Очередь (реализовано в координаторе):** при входе в сцену и при вызове `prefetch(sceneId, reason)` в FIFO попадают **соседние `SceneId`** из профиля (без дубликатов и без текущей сцены). Соседи **сортируются по убыванию** оценочного веса их `streaming.chunks` (сумма `estimatedTextureBytes` + `estimatedGeometryBytes` по манифесту + небольшой бонус за число чанков), затем обходятся в этом порядке — чтобы раньше прогревался сосед с тяжёлыми GLB-чанками. **`drainPrefetchHeadApplyRetain`** (из `useGameRuntime` в фазе `game`: `requestIdleCallback` с fallback `setTimeout`, до двух drain за колбэк) снимает голову очереди и вызывает **`retainGltfModelUrl`** для всех URL из `streaming.chunks` целевой сцены (`collectPrefetchGltfUrlsForScene`). Перед каждым **`scene:enter`** и при **`detach`** координатор делает симметричный **`releaseGltfModelUrl`** по накопленным prefetch-счётчикам, чтобы не копить ref после перехода (новая сцена снова делает retain в `StreamingChunk`).
 
 **Проблема:** `useGLTF.preload(url)` пишет в **встроенный кэш drei**, а не в **`gltfModelCache`** (LRU на 14 URL + ref-count). Раздвоение кэшей даёт непредсказуемое давление на память и тесты.
 

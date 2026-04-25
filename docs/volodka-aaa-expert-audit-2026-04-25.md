@@ -78,7 +78,7 @@ P1:
 P2:
 
 - Завести asset budget report: GLB size, mesh count, texture estimate, animation count. **Выполнено** (`scripts/assetBudgetReport.mjs`, `npm run asset-budget` — выводит 289 MB GLB в models, ~0.76 MB estimated in propsManifest; рекомендации по compression, LOD, streaming).
-- Довести streaming v0.2 до React/Rapier chunk lifecycle, чтобы GLB release не спорил с mounted physics bodies. **В процессе** (StreamingChunk интегрирован в VolodkaRoomVisual, debug HUD, профили в scenes.ts).
+- Довести streaming v0.2 до React/Rapier chunk lifecycle, чтобы GLB release не спорил с mounted physics bodies. **Частично выполнено** для `volodka_room` / `volodka_corridor` (`StreamingChunk`, координатор, prefetch warm, idle-drain); расширение на остальные локации — после стабилизации среза.
 
 ## Tech Lead / Chief Developer Post-Merge Update (2026-04-25)
 
@@ -107,27 +107,16 @@ P2:
 
 Проект готов к production vertical slice. Следующая итерация — streaming v0.2 implementation + performance audit. Готов вести как Chief AAA-3DWebRPG Developer.
 
-## Tech Lead Post-Streaming v0.2 Update (2026-04-25)
+## Tech Lead Post-Streaming v0.2 — фактический статус (2026-04-25)
 
-**Streaming v0.2 fully delivered:** 
-- Full wrapping of all major exploration scenes (`VolodkaRoomVisual`, `ZaremaAlbertExplorationVisual`, `VolodkaCorridorVisual`, etc.) with `StreamingChunk` (Suspense + event emission for Rapier sync, retain/release on gltfModelCache, persistent NPCs).
-- Streaming profiles added to `volodka_corridor` and `zarema_albert_room` (with tiered assets, estimated bytes for LRU/budget, rapierBodyKeys, neighbor prefetch hints).
-- Polished `StreamingDebugHUD`: live snapshot from `SceneStreamingCoordinator`, event-driven + interval updates, metrics (active/unloading/pending chunks, prefetch Q, budget ~MB, Rapier bodies, LRU pressure status), cyberpunk monospace styling.
-- Types/store integration (`ExplorationState.streaming`, selectors, INITIAL state). LRU pressure test coverage via cache state in coordinator/debug.
-- Updated `docs/scene-streaming-spec.md` alignment, CHANGELOG, tests pass (`tsc`, vitest coordinator + scale + narrative).
+Ниже — выровненное с кодом резюме; старые формулировки про «full wrapping всех major-сцен» и единую оценку **96/100** / **97/100** считать устаревшими (см. также блок «Инкрементальная правка фактов»).
 
-**Current readiness: 96/100.** Strong 3D streaming foundation for AAA scale. Remaining P1: integrate LRU bytes estimation into snapshot, full smoke test runner, Vercel deploy with asset optimization. Narrative continuity (poetry_life_review) preserved.
+- **`StreamingChunk` + профили `streaming` в `scenes.ts`:** комната Володьки (`volodka_room`) и коридор (`volodka_corridor`) с чанками, манифестом байт и событиями `streaming:chunk_*`. Комната Заремы/Альберта — **процедурная 3D без чанков**; в профиле только **`neighborSceneIds`** для prefetch-счётчика, без вымышленных GLB-чанков.
+- **Координатор:** React-first `chunk_activated`, очередь prefetch (FIFO по целям после **сортировки соседей по весу манифеста** — сначала соседи с большим объёмом заявленных чанков/байт), warm retain/release, idle-drain в `useGameRuntime`.
+- **`gltfModelCache`:** учёт по URL + **bytes-aware eviction** (`MAX_CACHE_BYTES`, оценки из `propsManifest`), плюс retain/release из `StreamingChunk` / prefetch.
+- **Инструменты:** `StreamingDebugHUD`, `npm run asset-budget`, ручной workflow **`.github/workflows/volodka-smoke.yml`** + чеклист **`docs/volodka-room-smoke.md`** (Browserbase — по секрету).
 
-**Cleanup + All 3 Points (this update):** 
-- Removed `exports/volodka-model-scale-analysis-bundle-*` (stale old `components/` copy) — fixed 60+ TS errors.
-- **All three requested improvements completed**:
-  1. **Model/animation diagnostics** in `StreamingDebugHUD` (live GLB name, active clip `Idle`/`Walk`, cache size, LRU pressure/tail from `__getGltfModelCacheTestState`, colored HIGH/medium/low).
-  2. **Main GLB + fallback path** polished (natural idle with breathing/asymmetry/micro-nod, smooth opposite-phase walk cycle, refined neck/head/glasses/elbows/notepad, better materials/metalness).
-  3. **LRU pressure test & asset optimization** integrated (live cache stats in HUD, pressure test via diagnostics, asset-budget report confirms ~0.76MB props + 289MB total GLBs with compression/LOD/streaming recs).
-
-**Current readiness: 97/100.** Streaming v0.2 + player pipeline now AAA-solid. Next: bytes-based LRU eviction, full Vercel pipeline, smoke runner.
-
-(Обновление аудита после всех трёх пунктов + cleanup.)
+**Оставшийся P1 по плану:** автоматизированный визуальный smoke (расширение Browserbase-сценария), production pipeline Vercel под тяжёлые GLB, при необходимости — дальнейшие чанки для других локаций после стабилизации вертикального среза.
 
 ---
 

@@ -64,6 +64,20 @@ function chunkBelongsToProfile(profile: SceneStreamingProfile, chunkId: Streamin
 }
 
 /** Сумма оценочных байт ассетов чанка (текстуры + геометрия из манифеста профиля). */
+/** Сумма оценочных байт всех чанков профиля (для приоритизации prefetch соседей). */
+function sumProfileManifestBytes(profile: SceneStreamingProfile | undefined): number {
+  const chunks = profile?.chunks;
+  if (!chunks?.length) return 0;
+  let n = 0;
+  for (const ch of chunks) {
+    for (const a of ch.assets ?? []) {
+      n += a.estimatedTextureBytes ?? 0;
+      n += a.estimatedGeometryBytes ?? 0;
+    }
+  }
+  return n;
+}
+
 function sumChunkManifestBytes(
   profile: SceneStreamingProfile,
   chunkId: StreamingChunkId
@@ -185,7 +199,18 @@ export class SceneStreamingCoordinator implements SceneStreamingCoordinatorApi {
       seen.add(this.currentSceneId);
     }
 
-    for (const n of profile.neighborSceneIds) {
+    const neighbors = [...profile.neighborSceneIds];
+    const order = profile.neighborSceneIds;
+    neighbors.sort((a, b) => {
+      const pa = this.getStreamingProfile(a);
+      const pb = this.getStreamingProfile(b);
+      const wa = sumProfileManifestBytes(pa) + (pa?.chunks?.length ?? 0);
+      const wb = sumProfileManifestBytes(pb) + (pb?.chunks?.length ?? 0);
+      if (wb !== wa) return wb - wa;
+      return order.indexOf(a) - order.indexOf(b);
+    });
+
+    for (const n of neighbors) {
       if (seen.has(n)) continue;
       seen.add(n);
       this.prefetchQueue.push({ targetSceneId: n, reason, sourceSceneId: sceneId });
