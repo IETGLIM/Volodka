@@ -77,8 +77,8 @@ P1:
 
 P2:
 
-- Завести asset budget report: GLB size, mesh count, texture estimate, animation count.
-- Довести streaming v0.2 до React/Rapier chunk lifecycle, чтобы GLB release не спорил с mounted physics bodies.
+- Завести asset budget report: GLB size, mesh count, texture estimate, animation count. **Выполнено** (`scripts/assetBudgetReport.mjs`, `npm run asset-budget` — выводит 289 MB GLB в models, ~0.76 MB estimated in propsManifest; рекомендации по compression, LOD, streaming).
+- Довести streaming v0.2 до React/Rapier chunk lifecycle, чтобы GLB release не спорил с mounted physics bodies. **В процессе** (StreamingChunk интегрирован в VolodkaRoomVisual, debug HUD, профили в scenes.ts).
 
 ## Tech Lead / Chief Developer Post-Merge Update (2026-04-25)
 

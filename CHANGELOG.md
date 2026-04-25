@@ -14,6 +14,8 @@
 
 - **Нарратив и диалоги (продолжение сцен):** Добавлен узел `poetry_life_review` — «История жизни, созданная на стихах». Zarema и Albert теперь логично приводят к нему (через диалог/квест в `zarema_albert_room`). Линия не обрывается. Игрок может хотя бы раз «посмотреть историю своей жизни» через написанные стихи (без изменения самих стихов). Расширен goldenPath, обновлены тесты, добавлены связи в reflection/volunteer_read_result. Продолжена разработка других сцен (больше глубины в apartment/corridor через exploration). `src/data/storyNodes.ts`, `src/data/goldenPath.ts`, `src/data/goldenPath.test.ts`.
 
+- **Asset Budget Report (P2 AAA):** `scripts/assetBudgetReport.mjs` + `npm run asset-budget` (сканирует propsManifest и public/models*, выводит totals, рекомендации по compression/LOD/streaming). Обновлён audit. `package.json`, `docs/volodka-aaa-expert-audit-2026-04-25.md`.
+
 ### Added
 
 - `src/ui/3d/exploration/StreamingChunk.tsx` — ключевой React компонент для v0.2 lifecycle (per spec).
