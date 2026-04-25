@@ -6,7 +6,19 @@ import { SceneStreamingCoordinator } from './SceneStreamingCoordinator';
 
 const testProfile: SceneStreamingProfile = {
   neighborSceneIds: ['kitchen_dawn'],
-  chunks: [{ id: 'kitchen_night::test_chunk', assets: [] }],
+  chunks: [
+    {
+      id: 'kitchen_night::test_chunk',
+      assets: [
+        {
+          url: '/test-streaming.glb',
+          tier: 'critical',
+          estimatedGeometryBytes: 100_000,
+          estimatedTextureBytes: 50_000,
+        },
+      ],
+    },
+  ],
 };
 
 describe('SceneStreamingCoordinator', () => {
@@ -51,10 +63,21 @@ describe('SceneStreamingCoordinator', () => {
     expect(snap.activeChunkIds).toEqual([]);
     expect(snap.pendingActivationChunkIds).toContain('kitchen_night::test_chunk');
 
-    eventBus.emit('streaming:chunk_activated', { chunkId: 'kitchen_night::test_chunk' });
+    eventBus.emit('streaming:chunk_activated', { chunkId: 'kitchen_night::test_chunk', rapierBodyCount: 2 });
     snap = coordinator.getDebugSnapshot();
     expect(snap.activeChunkIds).toContain('kitchen_night::test_chunk');
     expect(snap.pendingActivationChunkIds).toEqual([]);
+    expect(snap.budgetTextureBytesApprox).toBe(150_000);
+    expect(snap.rapierActiveBodiesApprox).toBe(2);
+  });
+
+  it('chunk_activated without activateChunk still registers active (React-first path)', () => {
+    eventBus.emit('scene:enter', { sceneId: 'kitchen_night' });
+    eventBus.emit('streaming:chunk_activated', { chunkId: 'kitchen_night::test_chunk' });
+    const snap = coordinator.getDebugSnapshot();
+    expect(snap.activeChunkIds).toContain('kitchen_night::test_chunk');
+    expect(snap.pendingActivationChunkIds).toEqual([]);
+    expect(snap.budgetTextureBytesApprox).toBe(150_000);
   });
 
   it('deactivateChunk moves active chunk to unloading until chunk_deactivated', () => {

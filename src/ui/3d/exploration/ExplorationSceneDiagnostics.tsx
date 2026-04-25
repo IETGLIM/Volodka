@@ -171,7 +171,7 @@ export const StreamingDebugHUD = memo(function StreamingDebugHUD() {
         LRU pressure: <span style={{ color: pressureColor }}>{cacheState.pressure}</span> (max { (cacheState.maxBytes / 1_048_576).toFixed(0) }MB)<br />
         LRU tail: {lruList || 'empty'}<br />
         <div style={{ fontSize: '9px', color: '#666', marginTop: '4px' }}>
-          bytes-based eviction active | Full wrap + improved fallback ✓ | AAA 97/100
+          bytes-based eviction active · coordinator syncs active chunks from bus
         </div>
       </div>
     </Html>

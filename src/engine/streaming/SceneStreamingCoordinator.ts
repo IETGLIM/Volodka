@@ -44,6 +44,21 @@ function chunkBelongsToProfile(profile: SceneStreamingProfile, chunkId: Streamin
   return chunks.some((c) => c.id === chunkId);
 }
 
+/** Сумма оценочных байт ассетов чанка (текстуры + геометрия из манифеста профиля). */
+function sumChunkManifestBytes(
+  profile: SceneStreamingProfile,
+  chunkId: StreamingChunkId
+): number {
+  const chunk = profile.chunks?.find((c) => c.id === chunkId);
+  if (!chunk?.assets?.length) return 0;
+  let n = 0;
+  for (const a of chunk.assets) {
+    n += a.estimatedTextureBytes ?? 0;
+    n += a.estimatedGeometryBytes ?? 0;
+  }
+  return n;
+}
+
 export class SceneStreamingCoordinator implements SceneStreamingCoordinatorApi {
   private readonly bus: Bus;
   private readonly getStreamingProfile: GetStreamingProfile;
@@ -53,6 +68,8 @@ export class SceneStreamingCoordinator implements SceneStreamingCoordinatorApi {
   private readonly unloadingChunks = new Set<StreamingChunkId>();
   private readonly pendingActivation = new Set<StreamingChunkId>();
   private prefetchQueueLength = 0;
+  /** Последний переданный `StreamingChunk` / шиной heuristic для `rapierBodyCount` по чанку. */
+  private readonly lastRapierBodyCountByChunk = new Map<StreamingChunkId, number>();
 
   private unsubscribers: Array<() => void> = [];
   private attached = false;
@@ -80,7 +97,7 @@ export class SceneStreamingCoordinator implements SceneStreamingCoordinatorApi {
         // `scene:enter` следует в том же стеке и обновит `currentSceneId`; здесь только сбрасываем чанки старой сцены.
         this.clearChunkState();
       }),
-      this.bus.on('streaming:chunk_activated', (p) => this.onChunkActivated(p.chunkId)),
+      this.bus.on('streaming:chunk_activated', (p) => this.onChunkActivated(p)),
       this.bus.on('streaming:chunk_deactivated', (p) => this.onChunkDeactivated(p.chunkId))
     );
   }
@@ -146,14 +163,32 @@ export class SceneStreamingCoordinator implements SceneStreamingCoordinatorApi {
   }
 
   getDebugSnapshot(): StreamingDebugSnapshot {
+    const profile = this.profileForCurrentScene();
+    let budgetTextureBytesApprox = 0;
+    if (profile) {
+      for (const id of this.activeChunks) {
+        budgetTextureBytesApprox += sumChunkManifestBytes(profile, id);
+      }
+    }
+
+    let rapierSum = 0;
+    let rapierAny = false;
+    for (const id of this.activeChunks) {
+      const v = this.lastRapierBodyCountByChunk.get(id);
+      if (v != null) {
+        rapierAny = true;
+        rapierSum += v;
+      }
+    }
+
     return {
       activeSceneId: this.currentSceneId,
       activeChunkIds: [...this.activeChunks],
       unloadingChunkIds: [...this.unloadingChunks],
       pendingActivationChunkIds: [...this.pendingActivation],
       prefetchQueueLength: this.prefetchQueueLength,
-      budgetTextureBytesApprox: 0,
-      rapierActiveBodiesApprox: undefined,
+      budgetTextureBytesApprox,
+      rapierActiveBodiesApprox: rapierAny ? rapierSum : undefined,
     };
   }
 
@@ -166,17 +201,31 @@ export class SceneStreamingCoordinator implements SceneStreamingCoordinatorApi {
     this.activeChunks.clear();
     this.unloadingChunks.clear();
     this.pendingActivation.clear();
+    this.lastRapierBodyCountByChunk.clear();
   }
 
-  private onChunkActivated(chunkId: StreamingChunkId): void {
+  /**
+   * Подтверждение монтирования чанка в React (после кадра для Rapier).
+   * Поддерживает два пути: (1) `activateChunk` → pending → сюда; (2) только React (`StreamingChunk`) без явного activate — типично для текущего `volodka_room`.
+   */
+  private onChunkActivated(payload: {
+    chunkId: StreamingChunkId;
+    rapierBodyCount?: number;
+  }): void {
+    const chunkId = payload.chunkId;
     const profile = this.profileForCurrentScene();
     if (!profile) return;
     if (!chunkBelongsToProfile(profile, chunkId)) return;
-    if (!this.pendingActivation.has(chunkId)) return;
 
-    this.pendingActivation.delete(chunkId);
-    this.activeChunks.add(chunkId);
+    if (this.pendingActivation.has(chunkId)) {
+      this.pendingActivation.delete(chunkId);
+    }
     this.unloadingChunks.delete(chunkId);
+    this.activeChunks.add(chunkId);
+
+    if (payload.rapierBodyCount != null && Number.isFinite(payload.rapierBodyCount)) {
+      this.lastRapierBodyCountByChunk.set(chunkId, Math.max(0, Math.floor(payload.rapierBodyCount)));
+    }
   }
 
   private onChunkDeactivated(chunkId: StreamingChunkId): void {
@@ -187,6 +236,7 @@ export class SceneStreamingCoordinator implements SceneStreamingCoordinatorApi {
     this.unloadingChunks.delete(chunkId);
     this.activeChunks.delete(chunkId);
     this.pendingActivation.delete(chunkId);
+    this.lastRapierBodyCountByChunk.delete(chunkId);
   }
 }
 
