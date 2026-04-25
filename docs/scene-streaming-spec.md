@@ -183,7 +183,7 @@ export type StreamingDebugSnapshot = {
 
 ## 8. Prefetch и `useGLTF.preload` (drei)
 
-**Очередь (реализовано в координаторе):** при входе в сцену и при вызове `prefetch(sceneId, reason)` в FIFO попадают **соседние `SceneId`** из профиля (без дубликатов и без текущей сцены). **`drainPrefetchHeadApplyRetain`** (периодически из `useGameRuntime` в фазе `game`) снимает голову очереди и вызывает **`retainGltfModelUrl`** для всех URL из `streaming.chunks` целевой сцены (`collectPrefetchGltfUrlsForScene`). Перед каждым **`scene:enter`** и при **`detach`** координатор делает симметричный **`releaseGltfModelUrl`** по накопленным prefetch-счётчикам, чтобы не копить ref после перехода (новая сцена снова делает retain в `StreamingChunk`).
+**Очередь (реализовано в координаторе):** при входе в сцену и при вызове `prefetch(sceneId, reason)` в FIFO попадают **соседние `SceneId`** из профиля (без дубликатов и без текущей сцены). **`drainPrefetchHeadApplyRetain`** (из `useGameRuntime` в фазе `game`: `requestIdleCallback` с fallback `setTimeout`, до двух drain за колбэк) снимает голову очереди и вызывает **`retainGltfModelUrl`** для всех URL из `streaming.chunks` целевой сцены (`collectPrefetchGltfUrlsForScene`). Перед каждым **`scene:enter`** и при **`detach`** координатор делает симметричный **`releaseGltfModelUrl`** по накопленным prefetch-счётчикам, чтобы не копить ref после перехода (новая сцена снова делает retain в `StreamingChunk`).
 
 **Проблема:** `useGLTF.preload(url)` пишет в **встроенный кэш drei**, а не в **`gltfModelCache`** (LRU на 14 URL + ref-count). Раздвоение кэшей даёт непредсказуемое давление на память и тесты.
 

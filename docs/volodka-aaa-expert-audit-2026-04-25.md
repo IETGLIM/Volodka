@@ -128,3 +128,11 @@ P2:
 **Current readiness: 97/100.** Streaming v0.2 + player pipeline now AAA-solid. Next: bytes-based LRU eviction, full Vercel pipeline, smoke runner.
 
 (Обновление аудита после всех трёх пунктов + cleanup.)
+
+---
+
+## Инкрементальная правка фактов (после ревью кода, 2026-04-25)
+
+- **`StreamingChunk`** фактически подключён к **комнате Володьки** и **коридору**; у `zarema_albert_room` в `scenes.ts` профиль стриминга без чанков (процедурная комната) — не путать с формулировкой «full wrapping всех major-сцен» выше.
+- Координатор: **React-first** `chunk_activated`, **FIFO prefetch**, **warm retain/release** по `scene:enter` / `detach`, **idle-drain** в `useGameRuntime` (не фиксированный `setInterval` 2s).
+- Числовые **«96/100» / «97/100»** в этом файле — субъективная оценка эпохи мерджа; для релизных гейтов опираться на `tsc`, Vitest, smoke и бюджет ассетов.

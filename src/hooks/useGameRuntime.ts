@@ -158,19 +158,51 @@ export function useGameRuntime(params: UseGameRuntimeParams) {
     };
   }, []);
 
-  /** Периодически снимает голову очереди prefetch и прогревает `gltfModelCache` (см. `SceneStreamingCoordinator.drainPrefetchHeadApplyRetain`). */
+  /**
+   * Prefetch warm: `requestIdleCallback` (fallback `setTimeout` 2s), `timeout` 3s — не грузить горячий кадр.
+   * За один колбэк — не более 2× `drainPrefetchHeadApplyRetain` (см. координатор).
+   */
   useEffect(() => {
     if (phase !== 'game') return;
-    const id = window.setInterval(() => {
+    let cancelled = false;
+    const idleRef = { id: 0 as number, kind: 'none' as 'ric' | 'to' | 'none' };
+
+    function schedule() {
+      if (cancelled) return;
+      if (typeof window.requestIdleCallback === 'function') {
+        idleRef.kind = 'ric';
+        idleRef.id = window.requestIdleCallback(run, { timeout: 3000 }) as unknown as number;
+      } else {
+        idleRef.kind = 'to';
+        idleRef.id = window.setTimeout(run, 2000) as unknown as number;
+      }
+    }
+
+    function run() {
+      if (cancelled) return;
       try {
         const c = getSceneStreamingCoordinator();
-        if (c.getDebugSnapshot().prefetchQueueLength <= 0) return;
-        c.drainPrefetchHeadApplyRetain();
+        let n = 0;
+        while (n < 2 && c.getDebugSnapshot().prefetchQueueLength > 0) {
+          c.drainPrefetchHeadApplyRetain();
+          n += 1;
+        }
       } catch {
         /* coordinator disposed */
       }
-    }, 2000);
-    return () => window.clearInterval(id);
+      schedule();
+    }
+
+    schedule();
+
+    return () => {
+      cancelled = true;
+      if (idleRef.kind === 'ric') {
+        window.cancelIdleCallback?.(idleRef.id);
+      } else if (idleRef.kind === 'to') {
+        window.clearTimeout(idleRef.id);
+      }
+    };
   }, [phase]);
 
   useEffect(() => {
