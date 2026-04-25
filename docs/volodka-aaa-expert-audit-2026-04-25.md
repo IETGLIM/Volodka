@@ -116,7 +116,7 @@ P2:
 - **`gltfModelCache`:** учёт по URL + **bytes-aware eviction** (`MAX_CACHE_BYTES`, оценки из `propsManifest`), плюс retain/release из `StreamingChunk` / prefetch.
 - **Инструменты:** `StreamingDebugHUD`, `npm run asset-budget`, ручной workflow **`.github/workflows/volodka-smoke.yml`** + чеклист **`docs/volodka-room-smoke.md`** (Browserbase — по секрету).
 
-**Оставшийся P1 по плану:** автоматизированный визуальный smoke (расширение Browserbase-сценария), production pipeline Vercel под тяжёлые GLB, при необходимости — дальнейшие чанки для других локаций после стабилизации вертикального среза.
+**Оставшийся P1 по плану:** визуальный smoke расширен в `browserbase-functions/volodka-smoke` (меню → пропуск интро → ожидание WebGL); дальше — сценарии кликов по двери/E2E, production pipeline Vercel под тяжёлые GLB, при необходимости — чанки для других локаций после стабилизации среза.
 
 ---
 

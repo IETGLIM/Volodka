@@ -1,4 +1,5 @@
 # Ручной smoke комнаты Володьки через Browserbase (см. docs/volodka-room-smoke.md, browserbase-functions/volodka-smoke).
+# Функция по умолчанию делает deepBoot: меню → новая игра → пропуск интро → ожидание WebGL (R3F).
 # Секрет BROWSERBASE_API_KEY в настройках репозитория — опционально; без него job завершается успешно с пропуском.
 
 name: Volodka room smoke (Browserbase)

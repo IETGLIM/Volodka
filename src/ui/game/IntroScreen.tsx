@@ -337,6 +337,7 @@ const SkipButton = memo(function SkipButton({ onSkip }: SkipButtonProps) {
 
   return (
     <motion.button
+      type="button"
       initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ delay: 1, duration: 0.5 }}
@@ -344,6 +345,7 @@ const SkipButton = memo(function SkipButton({ onSkip }: SkipButtonProps) {
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       className="fixed top-6 right-6 z-[60] group"
+      aria-label="Пропустить вводную сцену и перейти к игре"
     >
       <div
         className="relative px-4 py-2 font-mono text-sm uppercase tracking-wider border border-cyan-500/40 rounded bg-black/80 backdrop-blur-sm overflow-hidden"
