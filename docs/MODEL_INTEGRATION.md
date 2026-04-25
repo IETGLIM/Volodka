@@ -39,6 +39,8 @@ public/
 
 ### Игрок
 
+По умолчанию загружается **`/lowpoly_anime_character_cyberstyle.glb`** из корня **`public/`** (не из `models-external`). Другой файл: **`NEXT_PUBLIC_DEFAULT_PLAYER_MODEL`**.
+
 ```tsx
 <PhysicsPlayer
   modelPath="/models/player.glb"

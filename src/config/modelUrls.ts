@@ -40,6 +40,12 @@ export function rewriteLegacyModelPath(path: string): string {
 // СПИСОК МОДЕЛЕЙ
 // ============================================
 
+/**
+ * Игрок по умолчанию: файл в **`public/`** (корень сайта), без привязки к `NEXT_PUBLIC_MODELS_BASE`.
+ * Имя совпадает с `modelMeta.ts` (`lowpoly_anime_character_cyberstyle.glb`). Переопределение: `NEXT_PUBLIC_DEFAULT_PLAYER_MODEL`.
+ */
+export const DEFAULT_PLAYER_GLB_PUBLIC_PATH = '/lowpoly_anime_character_cyberstyle.glb' as const;
+
 export const MODEL_URLS = {
   /**
    * Главный персонаж-архивный Volodka. Оставлен как ассет, но не default: в файле один клип.
@@ -54,7 +60,7 @@ export const MODEL_URLS = {
   missGalaxy: `${BASE_URL}/miss_galaxy.glb`,
   onAQuest: `${BASE_URL}/on_a_quest.glb`,
   sayuriDans: `${BASE_URL}/sayuri_dans.glb`,
-  lowpolyCyberstyle: `${BASE_URL}/lowpoly_anime_character_cyberstyle.glb`,
+  lowpolyCyberstyle: DEFAULT_PLAYER_GLB_PUBLIC_PATH,
   luoliRun: `${BASE_URL}/luoli_run.glb`,
   alleyana: `${BASE_URL}/alleyana.glb`,
   bladeSoul: `${BASE_URL}/blade__soul_kung_fu_sword_stick.glb`,
@@ -62,7 +68,7 @@ export const MODEL_URLS = {
   burntrap: `${BASE_URL}/burntrap_hd_-_fnaf_security_breach.glb`,
   shibahu: `${BASE_URL}/shibahu.glb`,
   /** @deprecated Используйте `lowpolyAnimeCyber` для NPC с idle/walk. */
-  cyberpunkChar: `${BASE_URL}/lowpoly_anime_character_cyberstyle.glb`,
+  cyberpunkChar: DEFAULT_PLAYER_GLB_PUBLIC_PATH,
   darkLantern: `${BASE_URL}/witchapprentice.glb`,
   calvin: `${BASE_URL}/calvin_freckle_mcmurray_from_lackadaisy.glb`,
   collegeGirl: `${BASE_URL}/college_girl.glb`,
@@ -107,7 +113,7 @@ export function getDefaultPlayerModelPath(): string {
   const fromEnv =
     typeof process !== 'undefined' ? process.env.NEXT_PUBLIC_DEFAULT_PLAYER_MODEL?.trim() : undefined;
   if (fromEnv && isValidPlayerGlbPath(fromEnv)) return rewriteLegacyModelPath(fromEnv);
-  return MODEL_URLS.lowpolyCyberstyle;
+  return DEFAULT_PLAYER_GLB_PUBLIC_PATH;
 }
 
 // ============================================

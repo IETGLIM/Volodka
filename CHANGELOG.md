@@ -25,6 +25,8 @@
 
 ### Changed
 
+- **Игрок по умолчанию:** GLB в корне `public/` — **`/lowpoly_anime_character_cyberstyle.glb`** (`DEFAULT_PLAYER_GLB_PUBLIC_PATH` в `modelUrls.ts`), вместо дубля только в `models-external`. `NEXT_PUBLIC_DEFAULT_PLAYER_MODEL` по-прежнему перекрывает. `validate-player-animations.mjs`: если в `public/` нет Idle/Walk, но эталон в `models-external` ок — CI зелёный с предупреждением (в рантайме грузится `public/`). `docs/MODEL_INTEGRATION.md`.
+
 - **Browserbase smoke (`volodka-smoke`):** по умолчанию `deepBoot` — клик «Начать новую игру», пропуск текстового интро, ожидание **любого** WebGL-canvas (раньше проверялся только первый canvas = 2D-матрица на меню). Параметр `deepBoot: false` — лёгкий ping без кликов. Кнопка пропуска интро: `type="button"` + `aria-label` для стабильного `getByRole` в Playwright. `docs/volodka-room-smoke.md`, `docs/volodka-aaa-expert-audit-2026-04-25.md`.
 
 - **Prefetch v0.2 (очередь + warm):** соседи в очереди упорядочиваются по убыванию веса манифеста чанков целевой сцены (байты + число чанков), затем FIFO; `prefetchTargetsPreview`, HUD/стор. **`drainPrefetchHeadApplyRetain`**: `retainGltfModelUrl` по URL из `collectPrefetchGltfUrlsForScene` (`src/lib/streamingPrefetchAssets.ts`); симметричный **`releaseGltfModelUrl`** перед каждым `scene:enter` и в `detach` (`prefetchWarmRefCount`). Шина `streaming:prefetch_warm_applied`; в фазе `game` — цикл `requestIdleCallback` (fallback `setTimeout` 2s, `timeout` 3s), до 2× drain за колбэк в `useGameRuntime`. Тесты `streamingPrefetchAssets.test.ts` + расширение `SceneStreamingCoordinator.test.ts`. Ручной workflow `.github/workflows/volodka-smoke.yml`. `docs/scene-streaming-spec.md` §8.
