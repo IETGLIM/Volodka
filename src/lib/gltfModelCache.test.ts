@@ -64,4 +64,17 @@ describe('gltfModelCache', () => {
     touchGltfModelUrl('/models/ghost.glb');
     expect(__getGltfModelCacheTestState().accessOrder).toHaveLength(0);
   });
+
+  it('reported totalBytes matches accessOrder only (no orphan estimated keys after retains)', () => {
+    retainGltfModelUrl('/models/sync-a.glb');
+    retainGltfModelUrl('/models/sync-b.glb');
+    const st = __getGltfModelCacheTestState();
+    for (const k of Object.keys(st.estimatedBytes)) {
+      expect(st.accessOrder).toContain(k);
+    }
+    expect(st.totalBytes).toBe(
+      (st.estimatedBytes['/models/sync-a.glb'] ?? 500_000) +
+        (st.estimatedBytes['/models/sync-b.glb'] ?? 500_000),
+    );
+  });
 });

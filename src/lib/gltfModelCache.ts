@@ -37,15 +37,36 @@ function moveToMRU(url: string) {
 }
 
 /**
+ * Синхронизирует `estimatedBytes` с `accessOrder` и возвращает сумму байт по **текущему** списку.
+ * - Удаляет ключи карты без URL в очереди (осиротевшие оценки после ручных правок / гонок).
+ * - Для каждого URL в очереди гарантирует валидную запись (как при `moveToMRU`).
+ * Используется в `evictDownToMax` после каждого вытеснения вместо инкрементального `totalBytes -= …`,
+ * чтобы не расходились сумма, карта и порядок (разные fallback `?? 500_000` vs `?? 0` и т.п.).
+ */
+function syncEstimatedBytesWithAccessOrderAndSum(): number {
+  const alive = new Set(accessOrder);
+  for (const k of [...estimatedBytes.keys()]) {
+    if (!alive.has(k)) estimatedBytes.delete(k);
+  }
+  let total = 0;
+  for (const u of accessOrder) {
+    let b = estimatedBytes.get(u);
+    if (b == null || !Number.isFinite(b) || b < 0) {
+      b = getEstimatedBytes(u);
+      estimatedBytes.set(u, b);
+    }
+    total += b;
+  }
+  return total;
+}
+
+/**
  * Bytes / URL-cap eviction: среди кандидатов с `refCount === 0` вытесняем в порядке **LRU → MRU**
  * (индекс 0 — давно не трогали, конец массива — недавний `retain` / `touchGltfModelUrl`).
  * Обратный проход с конца выбирал «свежее» нулевое ref и ломал LRU-интуицию.
  */
 function evictDownToMax() {
-  let totalBytes = 0;
-  for (const u of accessOrder) {
-    totalBytes += estimatedBytes.get(u) ?? 500_000;
-  }
+  let totalBytes = syncEstimatedBytesWithAccessOrderAndSum();
 
   // First enforce URL count limit (classic LRU for small number of assets)
   while (accessOrder.length > MAX_CACHED_GLTF_URLS) {
@@ -53,16 +74,15 @@ function evictDownToMax() {
     for (let i = 0; i < accessOrder.length; i++) {
       const url = accessOrder[i];
       if ((refCount.get(url) ?? 0) === 0) {
-        const bytes = estimatedBytes.get(url) ?? 0;
         useGLTF.clear(url);
         estimatedBytes.delete(url);
         accessOrder.splice(i, 1);
-        totalBytes -= bytes;
         evicted = true;
         break;
       }
     }
     if (!evicted) break;
+    totalBytes = syncEstimatedBytesWithAccessOrderAndSum();
   }
 
   // Additional bytes-based eviction if over soft VRAM budget (same LRU order as above)
@@ -71,16 +91,15 @@ function evictDownToMax() {
     for (let i = 0; i < accessOrder.length; i++) {
       const url = accessOrder[i];
       if ((refCount.get(url) ?? 0) === 0) {
-        const bytes = estimatedBytes.get(url) ?? 0;
         useGLTF.clear(url);
         estimatedBytes.delete(url);
         accessOrder.splice(i, 1);
-        totalBytes -= bytes;
         evicted = true;
         break;
       }
     }
     if (!evicted) break; // all remaining are referenced
+    totalBytes = syncEstimatedBytesWithAccessOrderAndSum();
   }
 }
 
@@ -129,9 +148,11 @@ export function __resetGltfModelCacheTestState() {
 }
 
 export function __getGltfModelCacheTestState() {
+  /** Только URL из `accessOrder` + те же правила оценки, что и в eviction (без суммы «хвостов» карты). */
   let totalBytes = 0;
-  for (const bytes of estimatedBytes.values()) {
-    totalBytes += bytes;
+  for (const u of accessOrder) {
+    const b = estimatedBytes.get(u);
+    totalBytes += b != null && Number.isFinite(b) && b >= 0 ? b : getEstimatedBytes(u);
   }
 
   return {
