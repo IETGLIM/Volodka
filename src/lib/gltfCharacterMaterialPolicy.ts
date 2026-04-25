@@ -1,7 +1,18 @@
 import * as THREE from 'three';
 
+/**
+ * Для блендинга и стекла (`transmission`) не форсируем `depthWrite: true` — иначе запись в depth
+ * ломает порядок отрисовки (очки, витрины). Волосы/ресницы обрабатываются отдельно через
+ * `applyGltfHairLikeAlphaTestCutout` (alphaTest + depthWrite).
+ */
+function shouldSkipDepthWriteForce(mat: THREE.Material): boolean {
+  if (mat.transparent) return true;
+  if (mat instanceof THREE.MeshPhysicalMaterial && mat.transmission > 0.001) return true;
+  return false;
+}
+
 function applyPerMaterialDepthAndPolygonDefaults(mat: THREE.Material): void {
-  if (typeof mat.depthWrite === 'boolean') {
+  if (typeof mat.depthWrite === 'boolean' && !shouldSkipDepthWriteForce(mat)) {
     mat.depthWrite = true;
   }
   /** Шаг «Глубина / Z»: импорт GLB иногда задаёт polygonOffset — при борьбе с полом даёт «пропадание». */
@@ -11,9 +22,9 @@ function applyPerMaterialDepthAndPolygonDefaults(mat: THREE.Material): void {
 }
 
 /**
- * Шаг 4 / В (мерцание / порядок с окружением): для загруженного персонажа GLB включить **`depthWrite`**
- * на всех материалах мешей. У прозрачных материалов Three.js часто ставит **`depthWrite: false`** —
- * тогда порядок относительно статичного окружения нестабилен и возможен z-fighting / «мигание».
+ * Шаг 4 / В (мерцание / порядок с окружением): для **непрозрачных** материалов мешей GLB включить
+ * **`depthWrite`** (если экспорт выключил — z-fighting с окружением). Пропуск для **`transparent`**
+ * и **`MeshPhysicalMaterial`** с **`transmission`** (стекло), чтобы не затирать себя в depth.
  *
  * Сброс **`polygonOffset`** на материалах — диагностика/профилактика Z-конфликтов с DCC.
  *
@@ -137,8 +148,9 @@ export type ExplorationCharacterMaterialPolicyOptions = {
 };
 
 /**
- * Политика материалов и видимости персонажа в обходе: **`depthWrite`**, cutout волос, отключение
- * frustum culling на мешах GLB. Вызывать после загрузки (**`GLBPlayerModel`**, **`NPC`**).
+ * Политика материалов и видимости персонажа в обходе: **`depthWrite`** (кроме прозрачного бленда /
+ * transmission-стекла), cutout волос, отключение frustum culling на мешах GLB. Вызывать после загрузки
+ * (**`GLBPlayerModel`**, **`NPC`**).
  *
  * Записывает **`userData.characterBoundingVerticalM`**, **`userData.characterHeightM`** (при uniform).
  */

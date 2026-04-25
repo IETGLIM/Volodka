@@ -4,7 +4,8 @@
  * Шаг 4 (анти-мерцание): прозрачность и порядок относительно окружения.
  *
  * - **`applyGltfExplorationCharacterMaterialPolicies`** (`lib/gltfCharacterMaterialPolicy.ts`) —
- *   **`depthWrite`** + сброс **`polygonOffset`** + cutout волос + **`frustumCulled: false`** на мешах GLB;
+ *   **`depthWrite`** на непрозрачных мешах (без форса для **`transparent`** / **`transmission`**-стекла),
+ *   сброс **`polygonOffset`**, cutout волос, **`frustumCulled: false`** на мешах GLB;
  *   вызывается в **`PhysicsPlayer` → `GLBPlayerModel`** и **`NPC` → `GLTFLoader`** (после настройки теней на мешах).
  * - Декоративные прозрачные меши сцены (**`OptimizedSceneEnvironment`**, **`SceneComponents`**, тени следов
  *   и т.д.) намеренно могут держать **`depthWrite={false}`** — это не тот же класс проблемы, что у

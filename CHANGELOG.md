@@ -10,6 +10,8 @@
 
 ### Fixed
 
+- **Обход / GLB `depthWrite`:** `applyGltfCharacterDepthWrite` в `gltfCharacterMaterialPolicy.ts` больше не принудительно включает `depthWrite` для **`transparent`** и для **`MeshPhysicalMaterial`** с **`transmission`** (стекло/очки), чтобы не ломать порядок блендинга; непрозрачные меши по-прежнему получают `depthWrite: true`. Волосы — по-прежнему `applyGltfHairLikeAlphaTestCutout`. Тесты `gltfCharacterMaterialPolicy.test.ts`.
+
 - **GLTF LRU (`gltfModelCache.ts`):** байтовое вытеснение обходило `accessOrder` с конца (MRU), из‑за чего при `refCount === 0` выбирался не LRU-кандидат; оба цикла (лимит URL и байты) теперь идут от начала массива. Добавлен `touchGltfModelUrl` для обновления MRU без инкремента ref; при последнем `release` чистится `estimatedBytes`; тестовый сброс сбрасывает карту байт. `PropModel` (ветка GLB) вызывает `retain`/`release` для согласованного учёта с `useGLTF`. Реэкспорт в `ModelLoader.tsx`.
 
 - **`gltfModelCache` — гонки `release`:** декремент ref с повтором при изменении Map между чтением и записью (CAS-стиль, до 32 попыток); единая `invokeDreiClearIfUnreferenced` для grace и eviction — не вызывает `useGLTF.clear`, если ref снова > 0.

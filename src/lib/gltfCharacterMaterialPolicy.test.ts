@@ -16,13 +16,45 @@ describe('gltfCharacterMaterialPolicy', () => {
     expect(computeExplorationCharacterMeshUnionVerticalExtent(root)).toBeCloseTo(3, 5);
   });
 
-  it('applyGltfCharacterDepthWrite forces depthWrite on mesh materials', () => {
+  it('applyGltfCharacterDepthWrite forces depthWrite on opaque mesh materials', () => {
     const root = new THREE.Group();
     const m = new THREE.MeshStandardMaterial({ color: 0xff0000, depthWrite: false });
     const mesh = new THREE.Mesh(new THREE.BoxGeometry(), m);
     root.add(mesh);
     applyGltfCharacterDepthWrite(root);
     expect(m.depthWrite).toBe(true);
+  });
+
+  it('applyGltfCharacterDepthWrite does not force depthWrite on transparent materials', () => {
+    const root = new THREE.Group();
+    const m = new THREE.MeshStandardMaterial({
+      color: 0xffffff,
+      transparent: true,
+      opacity: 0.35,
+      depthWrite: false,
+    });
+    const mesh = new THREE.Mesh(new THREE.BoxGeometry(), m);
+    mesh.name = 'Glasses_Lens';
+    root.add(mesh);
+    applyGltfCharacterDepthWrite(root);
+    expect(m.depthWrite).toBe(false);
+    expect(m.transparent).toBe(true);
+  });
+
+  it('applyGltfCharacterDepthWrite does not force depthWrite on MeshPhysicalMaterial with transmission', () => {
+    const root = new THREE.Group();
+    const m = new THREE.MeshPhysicalMaterial({
+      color: 0xffffff,
+      transmission: 0.95,
+      thickness: 0.1,
+      transparent: false,
+      depthWrite: false,
+    });
+    const mesh = new THREE.Mesh(new THREE.BoxGeometry(), m);
+    mesh.name = 'Glass';
+    root.add(mesh);
+    applyGltfCharacterDepthWrite(root);
+    expect(m.depthWrite).toBe(false);
   });
 
   it('applyGltfHairLikeAlphaTestCutout targets hair-named meshes', () => {
