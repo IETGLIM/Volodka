@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
 const clear = vi.fn();
 
@@ -20,8 +20,13 @@ import {
 
 describe('gltfModelCache', () => {
   beforeEach(() => {
+    vi.useFakeTimers();
     clear.mockClear();
     __resetGltfModelCacheTestState();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
   it('clears drei cache when last release drops refCount to zero (before LRU pressure)', () => {
@@ -34,6 +39,8 @@ describe('gltfModelCache', () => {
     expect(clear).not.toHaveBeenCalled();
 
     releaseGltfModelUrl('/models/cache-0.glb');
+    expect(clear).not.toHaveBeenCalled();
+    vi.advanceTimersByTime(2500);
     expect(clear).toHaveBeenCalledTimes(1);
     expect(clear).toHaveBeenCalledWith('/models/cache-0.glb');
 
@@ -48,6 +55,20 @@ describe('gltfModelCache', () => {
     expect(__getGltfModelCacheTestState().refCount.get('/models/a.glb')).toBe(1);
     releaseGltfModelUrl('/models/a.glb');
     expect(__getGltfModelCacheTestState().refCount.get('/models/a.glb')).toBeUndefined();
+    vi.advanceTimersByTime(2500);
+  });
+
+  it('cancels deferred drei clear when same URL is retained within grace window', () => {
+    retainGltfModelUrl('/models/bounce.glb');
+    releaseGltfModelUrl('/models/bounce.glb');
+    expect(clear).not.toHaveBeenCalled();
+    retainGltfModelUrl('/models/bounce.glb');
+    vi.advanceTimersByTime(2500);
+    expect(clear).not.toHaveBeenCalled();
+    releaseGltfModelUrl('/models/bounce.glb');
+    vi.advanceTimersByTime(2500);
+    expect(clear).toHaveBeenCalledTimes(1);
+    expect(clear).toHaveBeenCalledWith('/models/bounce.glb');
   });
 
   it('touchGltfModelUrl moves retained URL toward MRU without changing refCount', () => {

@@ -7,6 +7,33 @@ const MAX_CACHED_GLTF_URLS = 14;
 /** Примерный лимит VRAM для текстур/геометрии (bytes). Используется для bytes-based eviction. */
 const MAX_CACHE_BYTES = 80_000_000; // ~80 MB — tunable under Vercel edge constraints
 
+/**
+ * После последнего `release` не зовём `useGLTF.clear` сразу: короткая задержка снижает повторную
+ * загрузку с диска/сети при быстром remount (Strict Mode, смена чанка, prefetch ↔ сцена).
+ * Повторный `retain` отменяет таймер; принудительное eviction — `clear` сразу + отмена таймера.
+ */
+const GLTF_CLEAR_GRACE_MS = 2_500;
+
+const graceTimers = new Map<string, ReturnType<typeof setTimeout>>();
+
+function cancelScheduledDreiClear(url: string) {
+  const t = graceTimers.get(url);
+  if (t !== undefined) {
+    clearTimeout(t);
+    graceTimers.delete(url);
+  }
+}
+
+function scheduleDreiClear(url: string) {
+  cancelScheduledDreiClear(url);
+  const t = setTimeout(() => {
+    graceTimers.delete(url);
+    if ((refCount.get(url) ?? 0) > 0) return;
+    useGLTF.clear(url);
+  }, GLTF_CLEAR_GRACE_MS);
+  graceTimers.set(url, t);
+}
+
 const refCount = new Map<string, number>();
 /** Порядок от LRU (начало) к MRU (конец). */
 const accessOrder: string[] = [];
@@ -74,6 +101,7 @@ function evictDownToMax() {
     for (let i = 0; i < accessOrder.length; i++) {
       const url = accessOrder[i];
       if ((refCount.get(url) ?? 0) === 0) {
+        cancelScheduledDreiClear(url);
         useGLTF.clear(url);
         estimatedBytes.delete(url);
         accessOrder.splice(i, 1);
@@ -91,6 +119,7 @@ function evictDownToMax() {
     for (let i = 0; i < accessOrder.length; i++) {
       const url = accessOrder[i];
       if ((refCount.get(url) ?? 0) === 0) {
+        cancelScheduledDreiClear(url);
         useGLTF.clear(url);
         estimatedBytes.delete(url);
         accessOrder.splice(i, 1);
@@ -116,6 +145,7 @@ export function touchGltfModelUrl(url: string) {
 /** Вызвать при монтировании компонента, который использует `useGLTF(url)`. */
 export function retainGltfModelUrl(url: string) {
   if (!url) return;
+  cancelScheduledDreiClear(url);
   refCount.set(url, (refCount.get(url) ?? 0) + 1);
   moveToMRU(url);
   evictDownToMax();
@@ -132,8 +162,8 @@ export function releaseGltfModelUrl(url: string) {
     const i = accessOrder.indexOf(url);
     if (i >= 0) accessOrder.splice(i, 1);
     estimatedBytes.delete(url);
-    /** Последний потребитель отпустил URL — сразу чистим drei-кэш (иначе «зомби» в `accessOrder` до переполнения LRU). */
-    useGLTF.clear(url);
+    /** Отложенный `useGLTF.clear` — см. `GLTF_CLEAR_GRACE_MS`; повторный `retain` отменяет таймер. */
+    scheduleDreiClear(url);
   } else {
     refCount.set(url, next);
   }
@@ -142,6 +172,8 @@ export function releaseGltfModelUrl(url: string) {
 
 /** Для тестов и отладки. */
 export function __resetGltfModelCacheTestState() {
+  for (const t of graceTimers.values()) clearTimeout(t);
+  graceTimers.clear();
   refCount.clear();
   accessOrder.length = 0;
   estimatedBytes.clear();

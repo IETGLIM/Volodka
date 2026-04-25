@@ -10,6 +10,8 @@
 
 - **GLTF LRU (`gltfModelCache.ts`):** байтовое вытеснение обходило `accessOrder` с конца (MRU), из‑за чего при `refCount === 0` выбирался не LRU-кандидат; оба цикла (лимит URL и байты) теперь идут от начала массива. Добавлен `touchGltfModelUrl` для обновления MRU без инкремента ref; при последнем `release` чистится `estimatedBytes`; тестовый сброс сбрасывает карту байт. `PropModel` (ветка GLB) вызывает `retain`/`release` для согласованного учёта с `useGLTF`. Реэкспорт в `ModelLoader.tsx`.
 
+- **`gltfModelCache` — отложенный `useGLTF.clear`:** после последнего `release` очистка drei-кэша по URL выполняется с задержкой **2.5 s** (`GLTF_CLEAR_GRACE_MS`); повторный `retain` отменяет таймер; принудительное eviction по-прежнему вызывает `clear` сразу. Снижает лишние перезагрузки GLB при быстром remount / смене чанка.
+
 - **`gltfModelCache` — сумма байт:** после вытеснения `totalBytes` пересчитывается через `syncEstimatedBytesWithAccessOrderAndSum()` (чистка ключей `estimatedBytes` без URL в `accessOrder`, восстановление оценок), а не только вычитание удалённого; `__getGltfModelCacheTestState().totalBytes` считается только по `accessOrder`, без «осиротевших» записей карты.
 
 - **`volodka_room` (TPS):** слишком мелкий силуэт эталонного GLB и «чёрная» дальняя стена из‑за тумана/контраста — в `modelMeta.ts` подняты `GLB_CHARACTER_UNIFORM_BASE` для `lowpoly_anime_character_cyberstyle.glb`, потолок uniform комнаты **0.24**, абсолютный кап интро **0.088**; в `RPGGameCanvas.tsx` для этой сцены смягчены `fog` (near/far), светлее `fogColor`, чуть выше ambient. Тест `modelMeta.test.ts`.
