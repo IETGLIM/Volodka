@@ -6,6 +6,10 @@
 
 - **T-поза (T/A-pose) моделей NPC и поведение в обходе:** завершена интеграция `SkeletonUtils.clone` + `cloneAnimationClipsWithoutExplorationPlayerRootMotion` в `NPC.tsx` / `PhysicsPlayer.tsx` (избежание bind-pose артефактов для skinned Mixamo/lowpoly GLB); fixes KCC/schedule/starting position/locomotion (`NPCSystem`, rooms like `volodka_room`/`zarema_albert_room`); оптимизация `useGamePhysics.ts` (refs вместо re-render-prone `useState` в hot path, React Compiler compliance); полная интеграция и polish новых `src/ui/3d/exploration/*` (`ExplorationFootprints.tsx`, `ExplorationInteractionFocusOutline.tsx`, `ExplorationSceneDiagnostics.tsx`, `HackingWireMinigameOverlay.tsx`, `MatrixRainScreenMesh.tsx`, `PropModel.tsx`, `VolodkaRoomVisual.tsx` с `chair_volodka`). Все тесты и гейты пройдены. Соответствует AAA-аудиту (`docs/volodka-aaa-expert-audit-2026-04-25.md`, `docs/scene-streaming-spec.md` v0.2).
 
+### Changed
+
+- **Tech Lead AAA Audit Continuation + Merge:** `docs/volodka-aaa-expert-audit-2026-04-25.md` обновлён пост-мерджем (ветка `feat/scene-streaming-eventmap-coordinator` влита в `main`); P0-срез (`volodka_room` + NPC + exploration UI) доведён до 87/100. Обновлён backlog (streaming v0.2 P0, Vercel production pipeline, asset budget, observability). `CHANGELOG.md` + verification gates. Готовность к production vertical slice подтверждена.
+
 ### Added
 
 - **P0 gate: player animations** — скрипт `scripts/validate-player-animations.mjs` (проверка `Idle`/`Walk` у player GLB), вызов `npm run test:player-animations` в CI.

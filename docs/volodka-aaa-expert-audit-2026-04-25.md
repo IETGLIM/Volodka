@@ -79,3 +79,32 @@ P2:
 
 - Завести asset budget report: GLB size, mesh count, texture estimate, animation count.
 - Довести streaming v0.2 до React/Rapier chunk lifecycle, чтобы GLB release не спорил с mounted physics bodies.
+
+## Tech Lead / Chief Developer Post-Merge Update (2026-04-25)
+
+**Мердж завершён успешно.** Ветка `feat/scene-streaming-eventmap-coordinator` (с фиксом T/A-pose NPC, polish exploration UI, оптимизацией `useGamePhysics.ts`, обновлением `CHANGELOG.md`) влита в `main` merge-commit'ом. Привнесено ~52 файла (включая `SceneStreamingCoordinator.ts` + тесты, `PropModel.tsx`, `VolodkaRoomVisual.tsx` с `chair_volodka`, новые scale-валидаторы, UI-компоненты exploration, CI improvements).
+
+**Текущая готовность к AAA (вертикальный срез `volodka_room` + обход): 87/100.**
+
+**Сильные стороны (после мерджа):**
+- Полностью стабильный player (`lowpoly_anime_character_cyberstyle.glb` + Idle/Walk, KCC, root-motion stripping, scale pipeline через `modelMeta.ts` + `characterScaleValidator`).
+- NPC: T-pose устранена (`SkeletonUtils.clone`, clip stripping, mixer cleanup, one-time shadows). Поведение (schedule, KCC в комнатах, locomotion без дерга, crossfade) — production-ready.
+- UI/Immersion: `ExplorationFootprints`, `InteractionFocusOutline`, `HackingWireMinigameOverlay` (Zustand + audio + glitch), `MatrixRainScreenMesh`, `ExplorationSceneDiagnostics` (mesh audit на дубликаты), `PropModel` (GLB + procedural children для sofa/window/desk/chair), particles/postFX — всё интегрировано в `RPGGameCanvas`, dev-only guards, memoized, R3F-best-practices (refs, no hot-path re-renders).
+- Architecture: single Canvas, Zustand selectors + simulation layer (`game/simulation/` + `ecs/sim/`), GLTF cache, EventBus для streaming, quality gates (scale tests, player-animations validator, knip, React Compiler clean, tsc/lint/vitest в CI).
+- Product: "сказка между сменами" сохранена, chair_volodka корректно размещён, масштабы/камера/fog tuned, interaction hints, quest integration via `QuestEngine`.
+
+**Оставшиеся риски / P0-P1 (обновлённый backlog):**
+- **P0 (немедленно):** Реализовать **streaming v0.2** по spec (`SceneStreamingCoordinator` — full React↔Rapier chunk lifecycle via `streaming:chunk_activated/deactivated`, persistent NPC refCount, prefetch neighbors, LRU pressure testing). Добавить visual smoke-test runner (`docs/volodka-room-smoke.md` + Browserbase).
+- **P1:** Explicit `PlayerAnimationMap` + final licensed rig with Run. Asset budget script (GLB analyzer). Vercel production pipeline (prebuilt, edge caching for models/textures, Core Web Vitals for 3D, R3F performance budget <4ms/frame).
+- **P2:** Observability (integrate Firetiger/Elastic via MCP for GPU/CPU/memory tracing, LLM-augmented dialogue monitoring). Multiplayer readiness (state sync via EventBus + WebSockets). Full bundle analysis + code splitting for heavy GLTFs. Lighthouse/Playwright E2E для 60fps stability.
+
+**Рекомендации как Tech Lead:**
+1. Следовать **r3f-web-gamedev skill**: `useFrame` только для simulation, dispose resources, color management, instancing где возможно.
+2. Перед каждым PR: `npm run test:character-scale`, `test:player-animations`, `npx tsc --noEmit`, `npm run lint`, `vitest` (ключевые suites), visual smoke.
+3. Следующий вертикальный срез — **полный streaming + asset pipeline** перед добавлением новых локаций/NPC.
+4. Deploy на Vercel с `--turbo`, monitor bundle size (<8MB initial for 3D), use `NEXT_PUBLIC_*` только для debug flags.
+5. Сохранять narrative integrity (tests on goldenPath/poetry при любых изменениях quests).
+
+Проект готов к production vertical slice. Следующая итерация — streaming v0.2 implementation + performance audit. Готов вести как Chief AAA-3DWebRPG Developer.
+
+(Обновление аудита после успешного мерджа feature-ветки.)
