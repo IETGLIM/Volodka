@@ -7,15 +7,8 @@ const GLB_JSON_CHUNK = 0x4e4f534a; // 'JSON'
 
 const REQUIRED = ['Idle', 'Walk'];
 
-/** Совпадает с `DEFAULT_PLAYER_GLB_PUBLIC_PATH` в `modelUrls.ts`; иначе fallback на `models-external`. */
-function resolveDefaultPlayerGlbRelative() {
-  const cwd = process.cwd();
-  const root = resolve(cwd, 'public/lowpoly_anime_character_cyberstyle.glb');
-  const ext = resolve(cwd, 'public/models-external/lowpoly_anime_character_cyberstyle.glb');
-  if (existsSync(root)) return 'public/lowpoly_anime_character_cyberstyle.glb';
-  if (existsSync(ext)) return 'public/models-external/lowpoly_anime_character_cyberstyle.glb';
-  return 'public/lowpoly_anime_character_cyberstyle.glb';
-}
+/** Эталон игрока: `public/models-external/lowpoly_anime_character_cyberstyle.glb` (как `getDefaultPlayerModelPath` при дефолтном base). */
+const DEFAULT_PLAYER_GLB_RELATIVE = 'public/models-external/lowpoly_anime_character_cyberstyle.glb';
 
 function getGlbJson(buffer) {
   if (buffer.readUInt32LE(0) !== GLB_MAGIC) {
@@ -55,51 +48,21 @@ function checkPlayerAnimations(relativePath) {
 
 function validate() {
   const explicit = process.argv[2];
-  if (explicit) {
-    const { relativePath, animationNames, missing } = checkPlayerAnimations(explicit);
-    if (missing.length) {
-      console.error(`Missing animations in ${relativePath}: ${missing.join(', ')}`);
-      console.error(`Available animations: ${animationNames.join(', ') || '<none>'}`);
-      process.exit(1);
-    }
-    console.log(`Player animations OK: ${animationNames.join(', ')}`);
-    return;
+  const target = explicit || DEFAULT_PLAYER_GLB_RELATIVE;
+
+  if (!existsSync(resolve(process.cwd(), target))) {
+    console.error(`Player GLB not found: ${target}`);
+    process.exit(1);
   }
 
-  const primary = resolveDefaultPlayerGlbRelative();
-  let { relativePath, animationNames, missing } = checkPlayerAnimations(primary);
-
-  if (!missing.length) {
-    console.log(`Player animations OK: ${animationNames.join(', ')} (${relativePath})`);
-    return;
+  const { relativePath, animationNames, missing } = checkPlayerAnimations(target);
+  if (missing.length) {
+    console.error(`Missing animations in ${relativePath}: ${missing.join(', ')}`);
+    console.error(`Available animations: ${animationNames.join(', ') || '<none>'}`);
+    process.exit(1);
   }
 
-  const isPublicPrimary = relativePath === 'public/lowpoly_anime_character_cyberstyle.glb';
-  const extRel = 'public/models-external/lowpoly_anime_character_cyberstyle.glb';
-  const extFull = resolve(process.cwd(), 'public/models-external/lowpoly_anime_character_cyberstyle.glb');
-
-  if (isPublicPrimary && existsSync(extFull)) {
-    const second = checkPlayerAnimations(extRel);
-    if (!second.missing.length) {
-      console.warn(
-        '[validate-player-animations] В `public/lowpoly_anime_character_cyberstyle.glb` нет Idle/Walk — в игре всё равно грузится он. ' +
-          'Замените файл или задайте `NEXT_PUBLIC_DEFAULT_PLAYER_MODEL=/models-external/lowpoly_anime_character_cyberstyle.glb`. ' +
-          'CI принимает эталон из models-external.',
-      );
-      console.log(`Player animations OK (reference ${extRel}): ${second.animationNames.join(', ')}`);
-      return;
-    }
-  }
-
-  console.error(`Missing animations in ${relativePath}: ${missing.join(', ')}`);
-  console.error(`Available animations: ${animationNames.join(', ') || '<none>'}`);
-  if (isPublicPrimary) {
-    console.error(
-      'Подсказка: в корне `public/` ожидается тот же набор клипов, что и для обхода (Idle/Walk). ' +
-        'Экспорт Mixamo или переименование клипов; иначе временно уберите файл из `public/` и используйте копию в `models-external` + `NEXT_PUBLIC_DEFAULT_PLAYER_MODEL`.',
-    );
-  }
-  process.exit(1);
+  console.log(`Player animations OK: ${animationNames.join(', ')} (${relativePath})`);
 }
 
 validate();

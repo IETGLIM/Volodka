@@ -39,7 +39,7 @@ public/
 
 ### Игрок
 
-По умолчанию загружается **`/lowpoly_anime_character_cyberstyle.glb`** из корня **`public/`** (не из `models-external`). Другой файл: **`NEXT_PUBLIC_DEFAULT_PLAYER_MODEL`**.
+По умолчанию игрок — эталон **`lowpoly_anime_character_cyberstyle.glb`** в каталоге **`getModelsPublicBase()`** (обычно **`/models-external/…`**). Другой файл: **`NEXT_PUBLIC_DEFAULT_PLAYER_MODEL`**. Отдельный файл в корне `public/` не используется по умолчанию.
 
 ```tsx
 <PhysicsPlayer

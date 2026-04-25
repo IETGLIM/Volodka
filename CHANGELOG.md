@@ -25,7 +25,7 @@
 
 ### Changed
 
-- **Игрок по умолчанию:** GLB в корне `public/` — **`/lowpoly_anime_character_cyberstyle.glb`** (`DEFAULT_PLAYER_GLB_PUBLIC_PATH` в `modelUrls.ts`), вместо дубля только в `models-external`. `NEXT_PUBLIC_DEFAULT_PLAYER_MODEL` по-прежнему перекрывает. `validate-player-animations.mjs`: если в `public/` нет Idle/Walk, но эталон в `models-external` ок — CI зелёный с предупреждением (в рантайме грузится `public/`). `docs/MODEL_INTEGRATION.md`.
+- **Игрок по умолчанию:** снова эталон **`/models-external/lowpoly_anime_character_cyberstyle.glb`** (`MODEL_URLS.lowpolyCyberstyle`, константа имени файла `DEFAULT_PLAYER_GLB_FILENAME` в `modelUrls.ts`); убран приоритет корня `public/`. `validate-player-animations.mjs` проверяет только эталон (или путь из argv). `docs/MODEL_INTEGRATION.md`.
 
 - **Browserbase smoke (`volodka-smoke`):** по умолчанию `deepBoot` — клик «Начать новую игру», пропуск текстового интро, ожидание **любого** WebGL-canvas (раньше проверялся только первый canvas = 2D-матрица на меню). Параметр `deepBoot: false` — лёгкий ping без кликов. Кнопка пропуска интро: `type="button"` + `aria-label` для стабильного `getByRole` в Playwright. `docs/volodka-room-smoke.md`, `docs/volodka-aaa-expert-audit-2026-04-25.md`.
 
