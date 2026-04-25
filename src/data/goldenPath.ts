@@ -78,6 +78,7 @@ export const GOLDEN_PATH_STORY_SPINE: readonly { nodeId: string; note: string }[
     note: 'Для полного main_goal: «Писать до утра» → volunteer_read → poetry_collection + write_poems=10; иначе звонок маме / прошлое / IT',
   },
   { nodeId: 'volunteer_read_result', note: 'Опционально для наследия; не обязателен для ending_creator' },
+  { nodeId: 'poetry_life_review', note: 'Обзор «истории жизни, созданной на стихах». Связывает Zarema/Albert (3D-обход) с основным повествованием. Делает линию непрерывной. Доступен хотя бы раз после сбора стихов.' },
   { nodeId: 'ending_choice', note: 'Выбор «Писать — это мой путь» при ≥2 завершённых квестах' },
   { nodeId: GOLDEN_PATH_TARGET_ENDING_NODE_ID, note: 'Титры Создатель' },
 ];
@@ -99,6 +100,11 @@ export const GOLDEN_PATH_BRANCH_HINTS: readonly { atNodeId: string; choose: stri
     atNodeId: 'crisis_choice',
     choose: 'Писать — до утра. Собрать все стихи вместе',
     nextNodeId: 'volunteer_read',
+  },
+  {
+    atNodeId: 'volunteer_read_result',
+    choose: 'Перечитать историю своей жизни через стихи (Zarema и Albert помогли увидеть)',
+    nextNodeId: 'poetry_life_review',
   },
   {
     atNodeId: 'ending_choice',

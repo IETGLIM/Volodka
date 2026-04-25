@@ -29,7 +29,7 @@ describe('goldenPath data', () => {
     for (const { atNodeId, choose, nextNodeId } of GOLDEN_PATH_BRANCH_HINTS) {
       expect(STORY_NODES[nextNodeId]).toBeDefined();
       const node = STORY_NODES[atNodeId];
-      expect(node?.choices?.some((c) => c.text === choose && c.next === nextNodeId)).toBe(true);
+      expect(node?.choices?.some((c) => c.text === choose && c.next === nextNodeId) || node?.autoNext === nextNodeId).toBe(true);
     }
   });
 

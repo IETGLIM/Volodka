@@ -12,6 +12,8 @@
 
 - **Streaming v0.2 (P0 from audit):** Добавлен `StreamingChunk.tsx` (React lifecycle with Suspense, `streaming:chunk_activated` / `deactivated` emission after Rapier registration, gltf retain/release, debug logging). Добавлен `streaming` profile в `volodka_room` (`scenes.ts`) с chunks for furniture/props, estimatedBytes, rapierBodyKeys. Координатор (уже в v0.1) теперь имеет реальные данные. Интеграция в `VolodkaRoomVisual` / `RPGGameCanvas` готов а к расширению. Обновлён `docs/volodka-aaa-expert-audit-2026-04-25.md`. Все тесты и гейты пройдены (`src/engine/streaming/SceneStreamingCoordinator.test.ts` + scale/player-anim). `src/ui/3d/exploration/StreamingChunk.tsx`, `src/config/scenes.ts`.
 
+- **Нарратив и диалоги (продолжение сцен):** Добавлен узел `poetry_life_review` — «История жизни, созданная на стихах». Zarema и Albert теперь логично приводят к нему (через диалог/квест в `zarema_albert_room`). Линия не обрывается. Игрок может хотя бы раз «посмотреть историю своей жизни» через написанные стихи (без изменения самих стихов). Расширен goldenPath, обновлены тесты, добавлены связи в reflection/volunteer_read_result. Продолжена разработка других сцен (больше глубины в apartment/corridor через exploration). `src/data/storyNodes.ts`, `src/data/goldenPath.ts`, `src/data/goldenPath.test.ts`.
+
 ### Added
 
 - `src/ui/3d/exploration/StreamingChunk.tsx` — ключевой React компонент для v0.2 lifecycle (per spec).
