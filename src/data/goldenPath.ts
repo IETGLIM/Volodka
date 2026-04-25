@@ -46,7 +46,7 @@ export const GOLDEN_PATH_STORY_SPINE: readonly { nodeId: string; note: string }[
   { nodeId: 'sleep_alone', note: 'Сон → dream_sequence' },
   { nodeId: 'dream_sequence', note: 'Сон с Лилиан → dream_interpretation → friday_arrives' },
   { nodeId: 'friday_arrives', note: 'Выбрать «В кафе Синяя Яма»' },
-  { nodeId: 'blue_cat_cafe', note: 'Старт first_reading + цель go_to_cafe' },
+  { nodeId: 'blue_pit', note: 'Старт first_reading + цель go_to_cafe (Синяя Яма)' },
   { nodeId: 'cafe_atmosphere', note: 'Зал → open_mic' },
   {
     nodeId: 'open_mic',
@@ -88,7 +88,7 @@ export const GOLDEN_PATH_BRANCH_HINTS: readonly { atNodeId: string; choose: stri
   { atNodeId: 'start_2', choose: 'Начать диагностику', nextNodeId: 'start_diagnosis' },
   { atNodeId: 'after_lunch', choose: 'Домой — там привычно', nextNodeId: 'go_home' },
   { atNodeId: 'evening_choice', choose: 'Писать — настроение подходящее', nextNodeId: 'write_evening' },
-  { atNodeId: 'friday_arrives', choose: 'В кафе "Синяя Яма" — литературный вечер', nextNodeId: 'blue_cat_cafe' },
+  { atNodeId: 'friday_arrives', choose: 'В кафе "Синяя Яма" — литературный вечер', nextNodeId: 'blue_pit' },
   { atNodeId: 'open_mic', choose: 'Поднять руку', nextNodeId: 'read_poetry' },
   { atNodeId: 'next_friday', choose: 'Спуститься — я хочу быть здесь', nextNodeId: 'second_cafe_visit' },
   {

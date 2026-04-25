@@ -510,9 +510,9 @@ export const QUEST_DEFINITIONS: Record<string, ExtendedQuest> = {
       createObjective('go_to_cafe', 'Оказаться в «Синей Яме» (сцена кафе)', {
         targetValue: 1,
         hint: 'Следуйте сюжету в пятничный вечер или выберите ветку с кафе — засчитывается при входе в локацию.',
-        targetLocation: 'cafe_evening',
+        targetLocation: 'blue_pit',
         stageType: 'exploration',
-        linkedStoryNodeId: 'blue_cat_cafe',
+        linkedStoryNodeId: 'blue_pit',
       }),
       createObjective('read_poem', 'Прочитать стихотворение с микрофона', {
         targetValue: 1,

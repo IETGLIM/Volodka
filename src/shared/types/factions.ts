@@ -61,7 +61,7 @@ export const FACTIONS: Record<FactionId, Faction> = {
     name: 'Поэты',
     icon: '📜',
     color: 'from-purple-500 to-pink-500',
-    description: 'Творческие души, собирающиеся в "Синем коте". Верят в силу слова и искренность чувств.',
+    description: 'Творческие души, собирающиеся в "Синей Яме". Верят в силу слова и искренность чувств.',
     headquarters: 'cafe_evening',
     leader: 'poet',
     alliedFactions: ['dreamers', 'locals'],
