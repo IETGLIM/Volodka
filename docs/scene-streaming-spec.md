@@ -132,6 +132,8 @@ export type StreamingDebugSnapshot = {
   /** Чанки в процессе размонтирования / ожидания Rapier */
   unloadingChunkIds?: readonly StreamingChunkId[];
   prefetchQueueLength: number;
+  /** Первые цели prefetch (соседние SceneId), см. реализацию координатора */
+  prefetchTargetsPreview?: readonly SceneId[];
   budgetTextureBytesApprox: number;
   rapierActiveBodiesApprox?: number;
 };
@@ -171,7 +173,7 @@ export type StreamingDebugSnapshot = {
 
 | Событие / место | Действие |
 |-----------------|----------|
-| `scene:enter` / `scene:exit` | `prefetch`, постановка активных чанков, debounce выгрузки (как в v0.1). |
+| `scene:enter` / `scene:exit` | При `scene:enter` — сброс и заполнение **очереди prefetch** по `neighborSceneIds`; активные чанки; debounce выгрузки (как в v0.1). |
 | `streaming:chunk_activated` / `deactivated` | Координатор обновляет внутреннее состояние и snapshot для HUD/тестов. |
 | `gltfModelCache` | `retain` / `release` на границах жизни чанка; см. §8. |
 | `GameOrchestrator` или `useSceneStreaming` | Создание координатора, подписки, `destroy` при уходе из игры. |
@@ -180,6 +182,8 @@ export type StreamingDebugSnapshot = {
 ---
 
 ## 8. Prefetch и `useGLTF.preload` (drei)
+
+**Очередь (реализовано в координаторе):** при входе в сцену и при вызове `prefetch(sceneId, reason)` в FIFO попадают **соседние `SceneId`** из профиля (без дубликатов и без текущей сцены). Обработка `retainGltfModelUrl` по URL соседних чанков — отдельный шаг (idle / портал), чтобы не раздваивать ref-count с `StreamingChunk` без политики release.
 
 **Проблема:** `useGLTF.preload(url)` пишет в **встроенный кэш drei**, а не в **`gltfModelCache`** (LRU на 14 URL + ref-count). Раздвоение кэшей даёт непредсказуемое давление на память и тесты.
 
@@ -209,7 +213,7 @@ export type StreamingDebugSnapshot = {
 ## 11. Наблюдаемость (фаза 4)
 
 - **`StreamingDebugHUD`:** `NEXT_PUBLIC_EXPLORATION_STREAMING_DEBUG=1` (или общий флаг диагностики обхода).
-- Показывать: `activeChunkIds`, `unloadingChunkIds`, длина очереди prefetch, приблизительный бюджет текстур, **`rapierActiveBodiesApprox`**, счётчики событий `chunk_activated` / `chunk_deactivated`.
+- Показывать: `activeChunkIds`, `unloadingChunkIds`, длина очереди prefetch и **превью целей** (`prefetchTargetsPreview`), приблизительный бюджет текстур, **`rapierActiveBodiesApprox`**, счётчики событий `chunk_activated` / `chunk_deactivated`.
 
 ---
 

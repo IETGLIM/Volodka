@@ -67,6 +67,7 @@ export {
   disposeSceneStreamingCoordinator,
   type SceneStreamingCoordinatorApi,
   type StreamingPrefetchReason,
+  type StreamingPrefetchQueueEntry,
   type StreamingDebugSnapshot,
   type GetStreamingProfile,
 } from './streaming/SceneStreamingCoordinator';

@@ -83,6 +83,7 @@ vi.mock('@/state/gameStore', () => ({
           activeChunkIds: [],
           unloadingChunkIds: [],
           prefetchQueueLength: 0,
+          prefetchTargetsPreview: [],
           budgetTextureBytesApprox: 0,
           rapierActiveBodiesApprox: 0,
         },

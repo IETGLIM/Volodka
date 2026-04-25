@@ -164,7 +164,9 @@ export const StreamingDebugHUD = memo(function StreamingDebugHUD() {
         Scene: {snapshot.activeSceneId || 'none'}<br />
         Active: <span style={{color: '#0f0'}}>{active}</span> ({snapshot.activeChunkIds.join(', ') || '—'})<br />
         Unloading: <span style={{color: '#fa0'}}>{unloading}</span><br />
-        Pending: {pending} | Prefetch: {snapshot.prefetchQueueLength}<br />
+        Pending: {pending} | Prefetch: {snapshot.prefetchQueueLength}
+        {snapshot.prefetchTargetsPreview?.length ? ` → ${snapshot.prefetchTargetsPreview.join(', ')}` : ''}
+        <br />
         Budget: ~{budgetMB}MB | Rapier: {snapshot.rapierActiveBodiesApprox ?? '—'}<br />
         Player: {currentModelPath.split('/').pop()} | Anim: {currentAnimation}<br />
         GLTF Cache: {cacheSize}/{cacheState.maxUrls} (~{(cacheState.totalBytes / 1_048_576).toFixed(1)}MB)<br />

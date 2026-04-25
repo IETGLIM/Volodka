@@ -12,6 +12,14 @@ import { eventBus } from '@/engine/EventBus';
 
 export type StreamingPrefetchReason = 'scene_enter' | 'portal_hint' | 'manual';
 
+export type StreamingPrefetchQueueEntry = {
+  /** Сцена, для которой подгружаем соседний контент (манифест `streaming`). */
+  targetSceneId: SceneId;
+  reason: StreamingPrefetchReason;
+  /** Сцена, из профиля которой взяты соседи (источник prefetch). */
+  sourceSceneId: SceneId;
+};
+
 export type StreamingDebugSnapshot = {
   /** Последняя сцена из `scene:enter`; `null` до первого входа. */
   activeSceneId: SceneId | null;
@@ -19,6 +27,8 @@ export type StreamingDebugSnapshot = {
   unloadingChunkIds: readonly StreamingChunkId[];
   pendingActivationChunkIds: readonly StreamingChunkId[];
   prefetchQueueLength: number;
+  /** Первые цели prefetch (для HUD / отладки). */
+  prefetchTargetsPreview: readonly SceneId[];
   budgetTextureBytesApprox: number;
   rapierActiveBodiesApprox?: number;
 };
@@ -68,7 +78,8 @@ export class SceneStreamingCoordinator implements SceneStreamingCoordinatorApi {
   private readonly activeChunks = new Set<StreamingChunkId>();
   private readonly unloadingChunks = new Set<StreamingChunkId>();
   private readonly pendingActivation = new Set<StreamingChunkId>();
-  private prefetchQueueLength = 0;
+  /** FIFO: соседние `SceneId` для мягкого prefetch (счётчики/HUD; обработчик retain — по мере появления). */
+  private readonly prefetchQueue: StreamingPrefetchQueueEntry[] = [];
   /** Последний переданный `StreamingChunk` / шиной heuristic для `rapierBodyCount` по чанку. */
   private readonly lastRapierBodyCountByChunk = new Map<StreamingChunkId, number>();
 
@@ -92,7 +103,8 @@ export class SceneStreamingCoordinator implements SceneStreamingCoordinatorApi {
       this.bus.on('scene:enter', (p) => {
         this.currentSceneId = p.sceneId;
         this.clearChunkState();
-        this.prefetchQueueLength = 0;
+        this.prefetchQueue.length = 0;
+        this.enqueueNeighborsForScene(p.sceneId, 'scene_enter');
       }),
       this.bus.on('scene:exit', () => {
         // `scene:enter` следует в том же стеке и обновит `currentSceneId`; здесь только сбрасываем чанки старой сцены.
@@ -114,14 +126,32 @@ export class SceneStreamingCoordinator implements SceneStreamingCoordinatorApi {
     this.unsubscribers = [];
     this.attached = false;
     this.clearChunkState();
+    this.prefetchQueue.length = 0;
     this.currentSceneId = null;
   }
 
-  prefetch(sceneId: SceneId, _reason: StreamingPrefetchReason): void {
+  prefetch(sceneId: SceneId, reason: StreamingPrefetchReason): void {
+    this.enqueueNeighborsForScene(sceneId, reason);
+  }
+
+  /** Добавляет в очередь соседей из `SceneConfig.streaming.neighborSceneIds` для `sceneId` (без дубликатов цели). */
+  private enqueueNeighborsForScene(sceneId: SceneId, reason: StreamingPrefetchReason): void {
     const profile = this.getStreamingProfile(sceneId);
-    if (!profile) return;
-    // v0.1: только счётчик очереди для HUD/тестов; реальная очередь — в следующих PR.
-    this.prefetchQueueLength += profile.neighborSceneIds.length;
+    if (!profile?.neighborSceneIds?.length) return;
+
+    const seen = new Set<SceneId>();
+    for (const e of this.prefetchQueue) {
+      seen.add(e.targetSceneId);
+    }
+    if (this.currentSceneId) {
+      seen.add(this.currentSceneId);
+    }
+
+    for (const n of profile.neighborSceneIds) {
+      if (seen.has(n)) continue;
+      seen.add(n);
+      this.prefetchQueue.push({ targetSceneId: n, reason, sourceSceneId: sceneId });
+    }
   }
 
   activateChunk(chunkId: StreamingChunkId): void {
@@ -187,7 +217,8 @@ export class SceneStreamingCoordinator implements SceneStreamingCoordinatorApi {
       activeChunkIds: [...this.activeChunks],
       unloadingChunkIds: [...this.unloadingChunks],
       pendingActivationChunkIds: [...this.pendingActivation],
-      prefetchQueueLength: this.prefetchQueueLength,
+      prefetchQueueLength: this.prefetchQueue.length,
+      prefetchTargetsPreview: this.prefetchQueue.slice(0, 8).map((e) => e.targetSceneId),
       budgetTextureBytesApprox,
       rapierActiveBodiesApprox: rapierAny ? rapierSum : undefined,
     };

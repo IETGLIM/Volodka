@@ -215,6 +215,7 @@ const INITIAL_EXPLORATION_STATE: ExplorationState = {
     activeChunkIds: [] as readonly string[],
     unloadingChunkIds: [] as readonly string[],
     prefetchQueueLength: 0,
+    prefetchTargetsPreview: [] as readonly SceneId[],
     budgetTextureBytesApprox: 0,
     rapierActiveBodiesApprox: 0,
     currentModelPath: 'lowpoly_anime_character_cyberstyle.glb',

@@ -115,13 +115,45 @@ describe('SceneStreamingCoordinator', () => {
     expect(snap.activeChunkIds).toEqual([]);
   });
 
-  it('prefetch increments debug queue length when profile exists', () => {
+  it('prefetch enqueues neighbor scene ids (FIFO, deduped)', () => {
     coordinator.prefetch('kitchen_night', 'scene_enter');
+    const snap = coordinator.getDebugSnapshot();
+    expect(snap.prefetchQueueLength).toBe(1);
+    expect(snap.prefetchTargetsPreview).toContain('kitchen_dawn');
+
+    coordinator.prefetch('kitchen_night', 'manual');
     expect(coordinator.getDebugSnapshot().prefetchQueueLength).toBe(1);
   });
 
   it('prefetch is no-op when scene has no streaming profile', () => {
     coordinator.prefetch('volodka_room', 'scene_enter');
     expect(coordinator.getDebugSnapshot().prefetchQueueLength).toBe(0);
+  });
+
+  it('scene:enter fills prefetch queue from neighborSceneIds', () => {
+    eventBus.emit('scene:enter', { sceneId: 'kitchen_night' });
+    const snap = coordinator.getDebugSnapshot();
+    expect(snap.prefetchQueueLength).toBe(1);
+    expect(snap.prefetchTargetsPreview[0]).toBe('kitchen_dawn');
+  });
+});
+
+describe('SceneStreamingCoordinator (real SCENE_CONFIG prefetch)', () => {
+  let coordinator: SceneStreamingCoordinator;
+
+  beforeEach(() => {
+    coordinator = new SceneStreamingCoordinator(eventBus);
+    coordinator.attach();
+  });
+
+  afterEach(() => {
+    coordinator.detach();
+  });
+
+  it('scene:enter on volodka_room enqueues volodka_corridor', () => {
+    eventBus.emit('scene:enter', { sceneId: 'volodka_room' });
+    const snap = coordinator.getDebugSnapshot();
+    expect(snap.prefetchTargetsPreview).toContain('volodka_corridor');
+    expect(snap.prefetchQueueLength).toBeGreaterThanOrEqual(1);
   });
 });

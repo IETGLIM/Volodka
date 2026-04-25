@@ -133,6 +133,7 @@ export function useGameRuntime(params: UseGameRuntimeParams) {
                 activeChunkIds: [...snap.activeChunkIds],
                 unloadingChunkIds: [...snap.unloadingChunkIds],
                 prefetchQueueLength: snap.prefetchQueueLength,
+                prefetchTargetsPreview: [...snap.prefetchTargetsPreview],
                 budgetTextureBytesApprox: snap.budgetTextureBytesApprox,
                 rapierActiveBodiesApprox: snap.rapierActiveBodiesApprox ?? 0,
               },

@@ -221,6 +221,7 @@ export interface ExplorationState {
     activeChunkIds: readonly StreamingChunkId[];
     unloadingChunkIds: readonly StreamingChunkId[];
     prefetchQueueLength: number;
+    prefetchTargetsPreview?: readonly SceneId[];
     budgetTextureBytesApprox: number;
     rapierActiveBodiesApprox?: number;
     /** For model diagnostics in StreamingDebugHUD (updated by PhysicsPlayer / StreamingChunk). */
