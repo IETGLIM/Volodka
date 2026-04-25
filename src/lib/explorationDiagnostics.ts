@@ -51,3 +51,11 @@ export function isExplorationPlayerGlbScaleDebugEnabled(): boolean {
 export function isExplorationVolodkaRoomNpcGlbDisabled(): boolean {
   return process.env.NEXT_PUBLIC_EXPLORATION_VOLODKA_NPC_GLB === '0';
 }
+
+/**
+ * Debug for streaming v0.2 (chunk lifecycle, events, LRU, Rapier body count).
+ * NEXT_PUBLIC_EXPLORATION_STREAMING_DEBUG=1
+ */
+export function isExplorationStreamingDebugEnabled(): boolean {
+  return process.env.NEXT_PUBLIC_EXPLORATION_STREAMING_DEBUG === '1';
+}

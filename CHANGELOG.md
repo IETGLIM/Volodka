@@ -10,6 +10,12 @@
 
 - **Tech Lead AAA Audit Continuation + Merge:** `docs/volodka-aaa-expert-audit-2026-04-25.md` обновлён пост-мерджем (ветка `feat/scene-streaming-eventmap-coordinator` влита в `main`); P0-срез (`volodka_room` + NPC + exploration UI) доведён до 87/100. Обновлён backlog (streaming v0.2 P0, Vercel production pipeline, asset budget, observability). `CHANGELOG.md` + verification gates. Готовность к production vertical slice подтверждена.
 
+- **Streaming v0.2 (P0 from audit):** Добавлен `StreamingChunk.tsx` (React lifecycle with Suspense, `streaming:chunk_activated` / `deactivated` emission after Rapier registration, gltf retain/release, debug logging). Добавлен `streaming` profile в `volodka_room` (`scenes.ts`) с chunks for furniture/props, estimatedBytes, rapierBodyKeys. Координатор (уже в v0.1) теперь имеет реальные данные. Интеграция в `VolodkaRoomVisual` / `RPGGameCanvas` готов а к расширению. Обновлён `docs/volodka-aaa-expert-audit-2026-04-25.md`. Все тесты и гейты пройдены (`src/engine/streaming/SceneStreamingCoordinator.test.ts` + scale/player-anim). `src/ui/3d/exploration/StreamingChunk.tsx`, `src/config/scenes.ts`.
+
+### Added
+
+- `src/ui/3d/exploration/StreamingChunk.tsx` — ключевой React компонент для v0.2 lifecycle (per spec).
+
 ### Added
 
 - **P0 gate: player animations** — скрипт `scripts/validate-player-animations.mjs` (проверка `Idle`/`Walk` у player GLB), вызов `npm run test:player-animations` в CI.

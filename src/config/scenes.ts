@@ -195,6 +195,27 @@ export const SCENE_CONFIG = {
     ambientLight: { intensity: 0.42, color: '#c8dff0' },
     directionalLights: [{ position: [4, 8, 2], intensity: 0.95 }],
     npcs: [],
+    /** v0.2 streaming profile (P0 from AAA audit). Demonstrates chunked furniture/props with estimated bytes, Rapier body keys, and neighbor prefetch. See docs/scene-streaming-spec.md */
+    streaming: {
+      neighborSceneIds: ['volodka_corridor'],
+      chunks: [
+        {
+          id: 'volodka_room::furniture' as const,
+          assets: [
+            { url: '/desk_volodka.glb', tier: 'critical' as const, estimatedGeometryBytes: 1_635_000 },
+            { url: '/Chair.glb', tier: 'critical' as const, estimatedGeometryBytes: 115_000 },
+          ],
+          rapierBodyKeys: ['desk_collider', 'chair_collider'],
+        },
+        {
+          id: 'volodka_room::props' as const,
+          assets: [
+            { url: '/mug.glb', tier: 'optional' as const, estimatedGeometryBytes: 421_000 },
+            { url: '/Keyboard.glb', tier: 'optional' as const, estimatedGeometryBytes: 140_000 },
+          ],
+        },
+      ],
+    },
     interactiveObjects: [
       {
         id: 'volodka_laptop_work',
