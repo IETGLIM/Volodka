@@ -8,6 +8,8 @@
 
 ### Fixed
 
+- **GLTF LRU (`gltfModelCache.ts`):** байтовое вытеснение обходило `accessOrder` с конца (MRU), из‑за чего при `refCount === 0` выбирался не LRU-кандидат; оба цикла (лимит URL и байты) теперь идут от начала массива. Добавлен `touchGltfModelUrl` для обновления MRU без инкремента ref; при последнем `release` чистится `estimatedBytes`; тестовый сброс сбрасывает карту байт. `PropModel` (ветка GLB) вызывает `retain`/`release` для согласованного учёта с `useGLTF`. Реэкспорт в `ModelLoader.tsx`.
+
 - **`volodka_room` (TPS):** слишком мелкий силуэт эталонного GLB и «чёрная» дальняя стена из‑за тумана/контраста — в `modelMeta.ts` подняты `GLB_CHARACTER_UNIFORM_BASE` для `lowpoly_anime_character_cyberstyle.glb`, потолок uniform комнаты **0.24**, абсолютный кап интро **0.088**; в `RPGGameCanvas.tsx` для этой сцены смягчены `fog` (near/far), светлее `fogColor`, чуть выше ambient. Тест `modelMeta.test.ts`.
 
 - **Стриминг v0.2 — синхронизация координатора с `StreamingChunk`:** `SceneStreamingCoordinator` больше не требует предварительного `activateChunk()` для перехода в active: событие `streaming:chunk_activated` от React (после RAF, как в `StreamingChunk.tsx`) достаточно, если `chunkId` есть в `SceneConfig.streaming.chunks` текущей сцены. Это устраняло пустой `activeChunkIds` в `getDebugSnapshot()` / `StreamingDebugHUD` при реальном обходе `volodka_room`. Добавлены суммарный оценочный бюджет байт по манифесту активных чанков и агрегат `rapierActiveBodiesApprox` из последних `rapierBodyCount` по чанкам; сброс карт при `clearChunkState`. Тесты `SceneStreamingCoordinator.test.ts`. Подвал debug HUD без заявления «97/100» — `ExplorationSceneDiagnostics.tsx`.

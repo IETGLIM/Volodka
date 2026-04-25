@@ -36,7 +36,11 @@ function moveToMRU(url: string) {
   }
 }
 
-/** Bytes-based eviction: prefer to evict largest unused assets first when over budget. */
+/**
+ * Bytes / URL-cap eviction: среди кандидатов с `refCount === 0` вытесняем в порядке **LRU → MRU**
+ * (индекс 0 — давно не трогали, конец массива — недавний `retain` / `touchGltfModelUrl`).
+ * Обратный проход с конца выбирал «свежее» нулевое ref и ломал LRU-интуицию.
+ */
 function evictDownToMax() {
   let totalBytes = 0;
   for (const u of accessOrder) {
@@ -61,11 +65,10 @@ function evictDownToMax() {
     if (!evicted) break;
   }
 
-  // Additional bytes-based eviction if over soft VRAM budget
+  // Additional bytes-based eviction if over soft VRAM budget (same LRU order as above)
   while (totalBytes > MAX_CACHE_BYTES) {
     let evicted = false;
-    // Evict largest unused first (reverse scan for biggest impact)
-    for (let i = accessOrder.length - 1; i >= 0; i--) {
+    for (let i = 0; i < accessOrder.length; i++) {
       const url = accessOrder[i];
       if ((refCount.get(url) ?? 0) === 0) {
         const bytes = estimatedBytes.get(url) ?? 0;
@@ -79,6 +82,16 @@ function evictDownToMax() {
     }
     if (!evicted) break; // all remaining are referenced
   }
+}
+
+/**
+ * Пометить URL как недавно использованный **без** изменения ref (например повторный кадр с тем же GLB).
+ * Без этого порядок в `accessOrder` обновлялся только на `retain`, а не на фактическое обращение к кэшу.
+ */
+export function touchGltfModelUrl(url: string) {
+  if (!url) return;
+  if ((refCount.get(url) ?? 0) <= 0) return;
+  moveToMRU(url);
 }
 
 /** Вызвать при монтировании компонента, который использует `useGLTF(url)`. */
@@ -99,6 +112,7 @@ export function releaseGltfModelUrl(url: string) {
     refCount.delete(url);
     const i = accessOrder.indexOf(url);
     if (i >= 0) accessOrder.splice(i, 1);
+    estimatedBytes.delete(url);
     /** Последний потребитель отпустил URL — сразу чистим drei-кэш (иначе «зомби» в `accessOrder` до переполнения LRU). */
     useGLTF.clear(url);
   } else {
@@ -111,6 +125,7 @@ export function releaseGltfModelUrl(url: string) {
 export function __resetGltfModelCacheTestState() {
   refCount.clear();
   accessOrder.length = 0;
+  estimatedBytes.clear();
 }
 
 export function __getGltfModelCacheTestState() {

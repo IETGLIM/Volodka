@@ -13,6 +13,7 @@ vi.mock('@react-three/drei', () => ({
 import {
   retainGltfModelUrl,
   releaseGltfModelUrl,
+  touchGltfModelUrl,
   __resetGltfModelCacheTestState,
   __getGltfModelCacheTestState,
 } from './gltfModelCache';
@@ -47,5 +48,20 @@ describe('gltfModelCache', () => {
     expect(__getGltfModelCacheTestState().refCount.get('/models/a.glb')).toBe(1);
     releaseGltfModelUrl('/models/a.glb');
     expect(__getGltfModelCacheTestState().refCount.get('/models/a.glb')).toBeUndefined();
+  });
+
+  it('touchGltfModelUrl moves retained URL toward MRU without changing refCount', () => {
+    retainGltfModelUrl('/models/old.glb');
+    retainGltfModelUrl('/models/new.glb');
+    expect(__getGltfModelCacheTestState().accessOrder.at(-1)).toBe('/models/new.glb');
+
+    touchGltfModelUrl('/models/old.glb');
+    expect(__getGltfModelCacheTestState().refCount.get('/models/old.glb')).toBe(1);
+    expect(__getGltfModelCacheTestState().accessOrder.at(-1)).toBe('/models/old.glb');
+  });
+
+  it('touchGltfModelUrl is no-op without retain', () => {
+    touchGltfModelUrl('/models/ghost.glb');
+    expect(__getGltfModelCacheTestState().accessOrder).toHaveLength(0);
   });
 });

@@ -10,8 +10,12 @@
  * **Путь к файлу** должен быть стабильным строковым URL: не добавлять **`?v=${Date.now()}`** и другой
  * динамический query — иначе каждый кадр/рендер новый ключ кэша → перезагрузка и мерцание.
  * Нормализация legacy-путей: **`rewriteLegacyModelPath`** (`config/modelUrls.ts`).
- * Учёт LRU кэша drei: **`retainGltfModelUrl`** / **`releaseGltfModelUrl`** (`lib/gltfModelCache.ts`).
+ * Учёт LRU кэша drei: **`retainGltfModelUrl`** / **`releaseGltfModelUrl`**, опционально **`touchGltfModelUrl`** (`lib/gltfModelCache.ts`).
  */
 
 export { rewriteLegacyModelPath, getModelsPublicBase, MODEL_URLS } from '@/config/modelUrls';
-export { retainGltfModelUrl, releaseGltfModelUrl } from '@/lib/gltfModelCache';
+export {
+  retainGltfModelUrl,
+  releaseGltfModelUrl,
+  touchGltfModelUrl,
+} from '@/lib/gltfModelCache';

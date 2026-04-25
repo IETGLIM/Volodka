@@ -1,7 +1,7 @@
 'use client';
 
 import { useGLTF } from '@react-three/drei';
-import { useLayoutEffect, useMemo, type ReactNode } from 'react';
+import { useEffect, useLayoutEffect, useMemo, type ReactNode } from 'react';
 import * as THREE from 'three';
 
 import { rewriteLegacyModelPath } from '@/config/modelUrls';
@@ -13,6 +13,7 @@ import {
   computeExplorationCharacterMeshUnionVerticalExtent,
 } from '@/lib/gltfCharacterMaterialPolicy';
 import { applyExplorationPlayerGlobalVisualScale } from '@/lib/playerScaleConstants';
+import { retainGltfModelUrl, releaseGltfModelUrl } from '@/lib/gltfModelCache';
 import { validatePropGlbScale } from '@/lib/propScaleValidation';
 
 type PropModelProps = {
@@ -98,6 +99,10 @@ type PropGLBProps = {
 
 function PropGLB({ def, sceneScale, position, rotation }: PropGLBProps) {
   const url = normalizePublicModelPath(def.glbPath!);
+  useEffect(() => {
+    retainGltfModelUrl(url);
+    return () => releaseGltfModelUrl(url);
+  }, [url]);
   const { scene } = useGLTF(url);
 
   const { cloned, bbox } = useMemo(() => {
