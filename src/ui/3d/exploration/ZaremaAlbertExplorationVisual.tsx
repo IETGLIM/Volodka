@@ -1,6 +1,6 @@
 'use client';
 
-import { memo, useEffect, useMemo } from 'react';
+import { memo, useEffect, useState } from 'react';
 import * as THREE from 'three';
 import {
   createVolodkaCarpetTexture,
@@ -36,108 +36,76 @@ export const ZaremaAlbertExplorationVisual = memo(function ZaremaAlbertExplorati
   const t = 0.1;
   const hd = d / 2;
 
-  const { wallMap, woodMap, carpetMap } = useMemo(() => {
+  const [assets, setAssets] = useState<{
+    floorMat: THREE.MeshStandardMaterial;
+    carpetMat: THREE.MeshStandardMaterial;
+    wallMat: THREE.MeshStandardMaterial;
+    woodMat: THREE.MeshStandardMaterial;
+    landingPlateTex: THREE.CanvasTexture;
+  } | null>(null);
+
+  useEffect(() => {
     const wallMap = createVolodkaWallTexture();
     wallMap.repeat.set(2.8, 2.1);
     wallMap.offset.set(0, 0);
+
     const woodMap = createVolodkaWoodTexture();
     woodMap.repeat.set(2.4, 2.4);
+
     const carpetMap = createVolodkaCarpetTexture();
     carpetMap.repeat.set(2, 1.6);
-    return { wallMap, woodMap, carpetMap };
-  }, []);
 
-  useEffect(() => {
-    return () => {
-      wallMap.dispose();
-      woodMap.dispose();
-      carpetMap.dispose();
-    };
-  }, [wallMap, woodMap, carpetMap]);
+    const wallMat = new THREE.MeshStandardMaterial({
+      map: wallMap,
+      color: '#e8dcc8',
+      roughness: 0.86,
+      metalness: 0.04,
+      depthWrite: true,
+      depthTest: true,
+      polygonOffset: true,
+      polygonOffsetFactor: 1,
+      polygonOffsetUnits: 1,
+    });
 
-  const wallMat = useMemo(
-    () =>
-      new THREE.MeshStandardMaterial({
-        map: wallMap,
-        color: '#e8dcc8',
-        roughness: 0.86,
-        metalness: 0.04,
-        depthWrite: true,
-        depthTest: true,
-        polygonOffset: true,
-        polygonOffsetFactor: 1,
-        polygonOffsetUnits: 1,
-      }),
-    [wallMap],
-  );
+    const woodMat = new THREE.MeshStandardMaterial({
+      map: woodMap,
+      roughness: 0.78,
+      metalness: 0.1,
+      depthWrite: true,
+      depthTest: true,
+      polygonOffset: true,
+      polygonOffsetFactor: 1,
+      polygonOffsetUnits: 1,
+    });
 
-  const woodMat = useMemo(
-    () =>
-      new THREE.MeshStandardMaterial({
-        map: woodMap,
-        roughness: 0.78,
-        metalness: 0.1,
-        depthWrite: true,
-        depthTest: true,
-        polygonOffset: true,
-        polygonOffsetFactor: 1,
-        polygonOffsetUnits: 1,
-      }),
-    [woodMap],
-  );
+    const floorMat = new THREE.MeshStandardMaterial({
+      map: woodMap,
+      roughness: 0.82,
+      metalness: 0.06,
+      depthWrite: true,
+      depthTest: true,
+      polygonOffset: true,
+      polygonOffsetFactor: 1,
+      polygonOffsetUnits: 1,
+    });
 
-  useEffect(() => {
-    return () => {
-      wallMat.dispose();
-      woodMat.dispose();
-    };
-  }, [wallMat, woodMat]);
+    const carpetMat = new THREE.MeshStandardMaterial({
+      map: carpetMap,
+      color: '#fff7ed',
+      roughness: 0.9,
+      depthWrite: true,
+      depthTest: true,
+      polygonOffset: true,
+      polygonOffsetFactor: 1,
+      polygonOffsetUnits: 1,
+    });
 
-  const floorMat = useMemo(
-    () =>
-      new THREE.MeshStandardMaterial({
-        map: woodMap,
-        roughness: 0.82,
-        metalness: 0.06,
-        depthWrite: true,
-        depthTest: true,
-        polygonOffset: true,
-        polygonOffsetFactor: 1,
-        polygonOffsetUnits: 1,
-      }),
-    [woodMap],
-  );
-
-  const carpetMat = useMemo(
-    () =>
-      new THREE.MeshStandardMaterial({
-        map: carpetMap,
-        color: '#fff7ed',
-        roughness: 0.9,
-        depthWrite: true,
-        depthTest: true,
-        polygonOffset: true,
-        polygonOffsetFactor: 1,
-        polygonOffsetUnits: 1,
-      }),
-    [carpetMap],
-  );
-
-  useEffect(() => {
-    return () => {
-      floorMat.dispose();
-      carpetMat.dispose();
-    };
-  }, [floorMat, carpetMat]);
-
-  const landingPlateTex = useMemo(() => {
     const c = document.createElement('canvas');
     c.width = 640;
     c.height = 200;
     const ctx = c.getContext('2d');
-    if (!ctx) {
-      throw new Error('2D context unavailable for landing plate');
-    }
+    if (!ctx) throw new Error('2D context unavailable for landing plate');
+    
     ctx.fillStyle = '#0c1220';
     ctx.fillRect(0, 0, c.width, c.height);
     ctx.strokeStyle = 'rgba(56, 189, 248, 0.4)';
@@ -149,16 +117,26 @@ export const ZaremaAlbertExplorationVisual = memo(function ZaremaAlbertExplorati
     ctx.fillStyle = 'rgba(186, 230, 253, 0.92)';
     ctx.font = '26px ui-monospace, monospace';
     ctx.fillText('подъезд Б · кв. Зарема / Альберт', 36, 128);
-    const tex = new THREE.CanvasTexture(c);
-    tex.colorSpace = THREE.SRGBColorSpace;
-    return tex;
-  }, []);
+    
+    const landingPlateTex = new THREE.CanvasTexture(c);
+    landingPlateTex.colorSpace = THREE.SRGBColorSpace;
 
-  useEffect(() => {
+    setAssets({ floorMat, carpetMat, wallMat, woodMat, landingPlateTex });
+
     return () => {
+      wallMat.dispose();
+      woodMat.dispose();
+      floorMat.dispose();
+      carpetMat.dispose();
+      wallMap.dispose();
+      woodMap.dispose();
+      carpetMap.dispose();
       landingPlateTex.dispose();
     };
-  }, [landingPlateTex]);
+  }, []);
+
+  if (!assets) return null;
+  const { floorMat, carpetMat, wallMat, woodMat, landingPlateTex } = assets;
 
   return (
     <group name="ZaremaAlbertExplorationVisual" userData={{ noCameraCollision: true }}>
@@ -197,8 +175,13 @@ export const ZaremaAlbertExplorationVisual = memo(function ZaremaAlbertExplorati
         <boxGeometry args={[w - 0.2, h, t]} />
       </mesh>
 
+      {/* Южная стена (+Z) */}
+      <mesh position={[0, h / 2, hd - t / 2]} castShadow receiveShadow material={wallMat}>
+        <boxGeometry args={[w - 0.2, h, t]} />
+      </mesh>
+
       {/* Окно / ночной силуэт за стеклом (южная стена, +Z). */}
-      <mesh position={[0, 1.25, hd - 0.06]} rotation={[0, 0, 0]}>
+      <mesh position={[0, 1.25, hd - t / 2 - 0.02]} rotation={[0, Math.PI, 0]}>
         <planeGeometry args={[INTERIOR_REF_WINDOW_WIDTH_M, INTERIOR_REF_WINDOW_HEIGHT_M]} />
         <meshStandardMaterial
           color="#0c1a2e"
@@ -262,7 +245,7 @@ export const ZaremaAlbertExplorationVisual = memo(function ZaremaAlbertExplorati
       <group position={[-2.4, INTERIOR_REF_COMPACT_SOFA_GROUP_CENTER_Y_M, 1.6]}>
         <mesh castShadow receiveShadow>
           <boxGeometry args={[2.2, 0.42, 0.95]} />
-          <meshStandardMaterial color="#5c4033" roughness={0.9} map={carpetMap} />
+          <primitive object={assets?.carpetMat || new THREE.MeshStandardMaterial({ color: "#5c4033" })} attach="material" />
         </mesh>
         <mesh position={[0, 0.38, -0.35]} castShadow receiveShadow>
           <boxGeometry args={[2.05, 0.55, 0.12]} />

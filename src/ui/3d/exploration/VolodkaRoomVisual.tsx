@@ -1,6 +1,6 @@
 'use client';
 
-import { memo, useEffect, useMemo, useRef } from 'react';
+import { memo, useEffect, useRef, useState } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import {
@@ -84,7 +84,14 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({
   const t = 0.1;
   const hd = d / 2;
 
-  const { wallMap, floorMap, carpetMap, woodMap } = useMemo(() => {
+  const [assets, setAssets] = useState<{
+    floorMat: THREE.MeshStandardMaterial;
+    carpetMap: THREE.CanvasTexture;
+    wallMat: THREE.MeshStandardMaterial;
+    woodMat: THREE.MeshStandardMaterial;
+  } | null>(null);
+
+  useEffect(() => {
     const wallMap = createVolodkaWallTexture();
     wallMap.repeat.set(3.2, 2.4);
 
@@ -97,70 +104,54 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({
     const woodMap = createVolodkaWoodTexture();
     woodMap.repeat.set(2, 2);
 
-    return { wallMap, floorMap, carpetMap, woodMap };
-  }, []);
+    const wallMat = new THREE.MeshStandardMaterial({
+      map: wallMap,
+      roughness: 0.88,
+      metalness: 0.02,
+      depthWrite: true,
+      depthTest: true,
+      polygonOffset: true,
+      polygonOffsetFactor: 1,
+      polygonOffsetUnits: 1,
+    });
 
-  useEffect(() => {
-    return () => {
-      wallMap.dispose();
-      floorMap.dispose();
-      carpetMap.dispose();
-      woodMap.dispose();
-    };
-  }, [wallMap, floorMap, carpetMap, woodMap]);
+    const floorMat = new THREE.MeshStandardMaterial({
+      map: floorMap,
+      roughness: 0.82,
+      metalness: 0.04,
+      depthWrite: true,
+      depthTest: true,
+      polygonOffset: true,
+      polygonOffsetFactor: 1,
+      polygonOffsetUnits: 1,
+    });
 
-  const wallMat = useMemo(
-    () =>
-      new THREE.MeshStandardMaterial({
-        map: wallMap,
-        roughness: 0.88,
-        metalness: 0.02,
-        depthWrite: true,
-        depthTest: true,
-        polygonOffset: true,
-        polygonOffsetFactor: 1,
-        polygonOffsetUnits: 1,
-      }),
-    [wallMap],
-  );
+    const woodMat = new THREE.MeshStandardMaterial({
+      map: woodMap,
+      roughness: 0.78,
+      metalness: 0.08,
+      depthWrite: true,
+      depthTest: true,
+      polygonOffset: true,
+      polygonOffsetFactor: 1,
+      polygonOffsetUnits: 1,
+    });
 
-  const floorMat = useMemo(
-    () =>
-      new THREE.MeshStandardMaterial({
-        map: floorMap,
-        roughness: 0.82,
-        metalness: 0.04,
-        depthWrite: true,
-        depthTest: true,
-        polygonOffset: true,
-        polygonOffsetFactor: 1,
-        polygonOffsetUnits: 1,
-      }),
-    [floorMap],
-  );
+    setAssets({ floorMat, carpetMap, wallMat, woodMat });
 
-  const woodMat = useMemo(
-    () =>
-      new THREE.MeshStandardMaterial({
-        map: woodMap,
-        roughness: 0.78,
-        metalness: 0.08,
-        depthWrite: true,
-        depthTest: true,
-        polygonOffset: true,
-        polygonOffsetFactor: 1,
-        polygonOffsetUnits: 1,
-      }),
-    [woodMap],
-  );
-
-  useEffect(() => {
     return () => {
       wallMat.dispose();
-      floorMat.dispose();
       woodMat.dispose();
+      floorMat.dispose();
+      wallMap.dispose();
+      woodMap.dispose();
+      floorMap.dispose();
+      carpetMap.dispose();
     };
-  }, [wallMat, floorMat, woodMat]);
+  }, []);
+
+  if (!assets) return null;
+  const { floorMat, carpetMap, wallMat, woodMat } = assets;
 
   return (
     <group name="VolodkaRoomVisual" userData={{ noCameraCollision: true }}>
