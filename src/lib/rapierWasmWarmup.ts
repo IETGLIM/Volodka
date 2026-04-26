@@ -8,7 +8,8 @@ export function warmupRapierWasm(): Promise<void> {
   if (rapierWarmupPromise) return rapierWarmupPromise;
   rapierWarmupPromise = import('@dimforge/rapier3d-compat')
     .then(async (RAPIER) => {
-      await RAPIER.init();
+      // wasm-bindgen ожидает объект; типы `@dimforge/rapier3d-compat` пока без перегрузки (см. rapier.js#341).
+      await (RAPIER as { init: (config?: object) => Promise<void> }).init({});
     })
     .catch((error: unknown) => {
       console.error('[rapierWasmWarmup] Rapier WASM warmup failed:', error);
