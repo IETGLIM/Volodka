@@ -9,6 +9,7 @@ import { poemMechanics } from '@/engine/PoemMechanics';
 import { initConsequencesSystem } from '@/engine/ConsequencesSystem';
 import { experienceRequiredForNextLevel } from '@/lib/rpgLeveling';
 import { useAppStore } from '@/state/appStore';
+import { useGameStore } from '@/state/gameStore';
 
 vi.mock('@/engine/CoreLoop', () => ({
   coreLoop: {
@@ -80,6 +81,7 @@ const gameStoreTestState = vi.hoisted(() => ({
     currentNPCId: null as string | null,
     interactionPrompt: null,
     unlockedLocations: [] as string[],
+    revealedPoemId: null as string | null,
     exploration: {
       currentSceneId: 'kitchen_night' as const,
       timeOfDay: 12,
@@ -99,13 +101,23 @@ const gameStoreTestState = vi.hoisted(() => ({
       },
     },
   },
+  setRevealedPoemId(id: string | null) {
+    gameStoreTestState.state.revealedPoemId = id;
+  },
 }));
 
 vi.mock('@/state/gameStore', () => ({
   useGameStore: Object.assign(
-    (selector: (s: typeof gameStoreTestState.state) => unknown) => selector(gameStoreTestState.state),
+    (selector: (s: typeof gameStoreTestState.state & { setRevealedPoemId: (id: string | null) => void }) => unknown) =>
+      selector({
+        ...gameStoreTestState.state,
+        setRevealedPoemId: gameStoreTestState.setRevealedPoemId,
+      }),
     {
-      getState: () => gameStoreTestState.state,
+      getState: () => ({
+        ...gameStoreTestState.state,
+        setRevealedPoemId: gameStoreTestState.setRevealedPoemId,
+      }),
       setState: vi.fn((updater: unknown) => {
         const s = gameStoreTestState.state;
         const patch = typeof updater === 'function' ? (updater as (prev: typeof s) => unknown)(s) : updater;
@@ -215,7 +227,8 @@ function createBaseParams() {
 describe('useGameRuntime', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    useAppStore.setState({ phase: 'game', revealedPoemId: null });
+    useAppStore.setState({ phase: 'game' });
+    gameStoreTestState.state.revealedPoemId = null;
   });
 
   it('initializes runtime systems and core loop in game phase', () => {
@@ -245,7 +258,7 @@ describe('useGameRuntime', () => {
     expect(params.addSkill).toHaveBeenCalledWith('writing', 2);
     expect(params.setFlag).toHaveBeenCalledWith('poem_unlock_flag');
     expect(eventBus.emit).toHaveBeenCalledWith('poem:collected', { poemId: 'poem_1' });
-    expect(useAppStore.getState().revealedPoemId).toBe('poem_1');
+    expect(useGameStore.getState().revealedPoemId).toBe('poem_1');
   });
 
   it('unlocks achievement and emits achievement event when condition passes', async () => {

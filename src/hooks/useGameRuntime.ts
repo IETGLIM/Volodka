@@ -18,8 +18,8 @@ import { explorationHourToNarrativeTimeOfDay } from '@/game/conditions/timeOfDay
 import type { NPCRelation, PlayerState, PlayerSkills, SceneId } from '@/data/types';
 import { asTrainablePlayerSkill } from '@/lib/trainablePlayerSkill';
 import type { TravelToSceneOptions, TravelToSceneResult } from '@/state/gameStore';
+import { useGameStore } from '@/state/gameStore';
 import type { AppPhase } from '@/state/appStore';
-import { useAppStore } from '@/state/appStore';
 import { useWorldState } from '@/hooks/useWorldState';
 import { useWorldActions } from '@/hooks/useWorldActions';
 
@@ -80,7 +80,7 @@ export function useGameRuntime(params: UseGameRuntimeParams) {
     showEffectNotif,
   } = params;
 
-  const revealedPoemId = useAppStore((s) => s.revealedPoemId);
+  const revealedPoemId = useGameStore((s) => s.revealedPoemId);
   const [activeCutsceneId, setActiveCutsceneId] = useState<string | null>(null);
   const [showLegacy, setShowLegacy] = useState(false);
 
@@ -276,7 +276,7 @@ export function useGameRuntime(params: UseGameRuntimeParams) {
     const poem = POEMS.find((p) => p.unlocksAt === currentNodeId);
     if (poem && !collectedPoems.includes(poem.id)) {
       collectPoem(poem.id);
-      queueMicrotask(() => useAppStore.getState().setRevealedPoemId(poem.id));
+      queueMicrotask(() => useGameStore.getState().setRevealedPoemId(poem.id));
 
       const insight = poemMechanics.collectPoem(poem.id);
       queueMicrotask(() => showEffectNotif(`СТИХ: "${poem.title}"`, 'poem'));
@@ -357,7 +357,7 @@ export function useGameRuntime(params: UseGameRuntimeParams) {
 
   return {
     revealedPoemId,
-    closePoemReveal: () => useAppStore.getState().setRevealedPoemId(null),
+    closePoemReveal: () => useGameStore.getState().setRevealedPoemId(null),
     activeCutsceneId,
     requestCutscene,
     completeCutscene,

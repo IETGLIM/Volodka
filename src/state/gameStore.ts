@@ -258,6 +258,9 @@ interface GameState {
   
   // Faction reputation
   factionReputations: Record<FactionId, FactionReputation>;
+
+  /** UI: оверлей только что полученного стиха (не в сейве). */
+  revealedPoemId: string | null;
   
   // Actions
   setCurrentNode: (nodeId: string) => void;
@@ -296,6 +299,7 @@ interface GameState {
   
   // Poems
   collectPoem: (poemId: string) => void;
+  setRevealedPoemId: (poemId: string | null) => void;
   
   // Achievements
   unlockAchievement: (achievementId: string) => void;
@@ -559,6 +563,8 @@ export const useGameStore = create<GameState>()((set, get) => ({
   
   // Faction initial state
   factionReputations: INITIAL_FACTION_REPUTATIONS,
+
+  revealedPoemId: null,
   
   // Game mode
   setGameMode: (mode) => set({ gameMode: mode }),
@@ -871,6 +877,8 @@ export const useGameStore = create<GameState>()((set, get) => ({
       get().addExperience(22, `poem:${poemId}`);
     }
   },
+
+  setRevealedPoemId: (poemId) => set({ revealedPoemId: poemId }),
 
   // Achievements
   unlockAchievement: (achievementId) => {
@@ -1361,7 +1369,7 @@ export const useGameStore = create<GameState>()((set, get) => ({
           ...normalized,
         });
         useAppStore.getState().setPhase('game');
-        useAppStore.getState().setRevealedPoemId(null);
+        get().setRevealedPoemId(null);
         useGamePhaseStore.getState().completeIntroCutscene();
         eventBus.emit('game:loaded', { timestamp: Date.now() });
         return true;
@@ -1395,10 +1403,10 @@ export const useGameStore = create<GameState>()((set, get) => ({
       // Faction state
       factionReputations: INITIAL_FACTION_REPUTATIONS,
       choiceLog: [],
+      revealedPoemId: null,
     });
 
     useAppStore.getState().setPhase('menu');
-    useAppStore.getState().setRevealedPoemId(null);
     useGamePhaseStore.getState().completeIntroCutscene();
 
     if (storage) {

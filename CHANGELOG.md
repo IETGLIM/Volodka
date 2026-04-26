@@ -20,7 +20,7 @@
 
 - **Этап 1.8 — фасад энергии:** `src/hooks/useEnergyActions.ts` — `canAfford`, `consumeEnergy` (списание через `gameStore`), `maxEnergy` из `energyConfig`; текущее значение энергии — из `usePlayerState` / `useEnergySystem`.
 
-- **`appStore` (UI-домен):** `useAppStore` — `phase` (`loading` \| `intro` \| `menu` \| `game`), `revealedPoemId`, `setPhase`, `setRevealedPoemId`; исправлен некорректный реэкспорт `AppPhase` (конфликт `tsc`). `src/state/appStore.ts`.
+- **`appStore` (UI-домен):** `useAppStore` — только `phase` (`loading` \| `intro` \| `menu` \| `game`) и `setPhase`. `src/state/appStore.ts`.
 
 - **`worldStore`:** убран дублирующий `phase` / `setPhase`; при `resetWorld` вызывается `useAppStore.getState().setPhase('menu')`. `src/state/worldStore.ts`.
 
@@ -67,7 +67,7 @@
 
 ### Changed
 
-- **Фаза приложения и оверлей стиха:** `phase` / `setPhase` вынесены из `gameStore` в `useAppStore` (`GameOrchestrator`, `useEnergySystem`, `useAutoSave`, `explorationAmbienceService` + подписка на `appStore`). `revealedPoemId` — в `useAppStore`, запись из `useGameRuntime`; `loadGame` / `resetGame` синхронизируют фазу и сбрасывают оверлей. Тип `AppPhase` подключён в `useActionHandler`, `useGameSessionFlow`, `useGameUiLayout`, `useGameRuntime`. Удалены дубли из `inventoryStore`. `src/state/gameStore.ts`, `src/state/inventoryStore.ts`, перечисленные модули, `useGameRuntime.test.tsx`.
+- **Фаза приложения и оверлей стиха:** `phase` / `setPhase` — в `useAppStore` (`GameOrchestrator`, `useEnergySystem`, `useAutoSave`, `explorationAmbienceService` + подписка на `appStore`). `revealedPoemId` / `setRevealedPoemId` остаются в `gameStore` (оверлей из `useGameRuntime`); при `loadGame` / `resetGame` фаза через `appStore`, оверлей сбрасывается в сторе. Тип `AppPhase` в `useActionHandler`, `useGameSessionFlow`, `useGameUiLayout`, `useGameRuntime`. `src/state/gameStore.ts`, перечисленные модули, `useGameRuntime.test.tsx`.
 
 - **`useStoryChoiceHandler` / `useActionHandler`:** убран прямой `useGameStore` из обработчика выбора; `pushChoiceLog` через `usePlayerActions`, `currentNodeId` и `playerState` прокидываются снаружи (`GameOrchestrator` → `useActionHandler`). `src/hooks/useStoryChoiceHandler.ts`, `useActionHandler.ts`, `GameOrchestrator.tsx`, `useStoryChoiceHandler.test.tsx`.
 
