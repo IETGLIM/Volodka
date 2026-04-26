@@ -10,8 +10,9 @@ import {
   getStandingName,
   type FactionId,
   type FactionReputation 
-} from '@/data/factions';
+} from '@/shared/types/factions';
 import { useGameStore } from '@/state/gameStore';
+import { useFactionStore } from '@/state/factionStore';
 
 // ============================================
 // FACTION BADGE
@@ -102,7 +103,8 @@ interface FactionsPanelProps {
 }
 
 export const FactionsPanel = memo(function FactionsPanel({ onClose }: FactionsPanelProps) {
-  const factionReputations = useGameStore((s) => s.factionReputations);
+  // Use dedicated factionStore with persist for reputation state
+  const factionReputations = useFactionStore((s) => s.factionReputations);
 
   // Сортируем фракции по репутации
   const sortedFactions = useMemo(() => {
@@ -196,7 +198,8 @@ interface CompactFactionsProps {
 }
 
 export const CompactFactions = memo(function CompactFactions({ maxShow = 3 }: CompactFactionsProps) {
-  const factionReputations = useGameStore((s) => s.factionReputations);
+  // Use dedicated factionStore with persist for reputation state
+  const factionReputations = useFactionStore((s) => s.factionReputations);
 
   const topFactions = useMemo(() => {
     return Object.entries(factionReputations)

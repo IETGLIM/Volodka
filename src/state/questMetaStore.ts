@@ -7,6 +7,7 @@
 import { create } from 'zustand';
 import type { FactionId, FactionReputation } from '@/shared/types/factions';
 import { FACTIONS, createInitialReputation, updateReputationValue, getStandingLevel } from '@/shared/types/factions';
+import { useFactionStore } from './factionStore';
 import { QUEST_DEFINITIONS } from '@/data/quests';
 import type { ExtendedQuest } from '@/data/types';
 import { parseAIQuestPayload } from '@/validation/aiQuestSchema';
@@ -31,7 +32,8 @@ interface QuestStoreState {
   activeQuestIds: string[];
   completedQuestIds: string[];
   questProgress: Record<string, Record<string, number>>;
-  factionReputations: Record<FactionId, FactionReputation>;
+  // factionReputations moved to dedicated factionStore with persist
+  // Use useFactionStore().factionReputations or getFactionReputation()
   /** Квесты, пришедшие от LLM после Zod-валидации (не в data/quests.ts). */
   aiQuestDefinitions: Record<string, ExtendedQuest>;
 }
@@ -44,9 +46,8 @@ interface QuestStoreActions {
   isQuestActive: (questId: string) => boolean;
   isQuestCompleted: (questId: string) => boolean;
   getQuestProgress: (questId: string) => Record<string, number>;
-  updateFactionReputation: (factionId: FactionId, change: number) => void;
-  getFactionReputation: (factionId: FactionId) => number;
-  completeQuestForFaction: (questId: string, factionId: FactionId) => void;
+  // faction methods delegated to useFactionStore (with persist)
+  // updateFactionReputation, getFactionReputation, completeQuestForFaction now in factionStore
   resetQuests: () => void;
   /**
    * Принимает сырой JSON от модели: Zod → при успехе регистрирует определение и активирует квест.
@@ -149,53 +150,19 @@ export const useQuestStore = create<QuestStore>()((set, get) => ({
   isQuestCompleted: (questId) => get().completedQuestIds.includes(questId),
   getQuestProgress: (questId) => get().questProgress[questId] || {},
 
-  updateFactionReputation: (factionId, change) => {
-    const { factionReputations } = get();
-    const current = factionReputations[factionId];
-    const faction = FACTIONS[factionId];
-    if (!current || !faction) return;
+  // Delegated to useFactionStore (with persist middleware)
+  // Call useFactionStore.getState().updateFactionReputation(factionId, change) or use the hook
+  // This avoids duplication and ensures persistence
 
-    const otherReps = Object.fromEntries(
-      Object.entries(factionReputations).map(([id, rep]) => [id, rep.value])
-    ) as Record<FactionId, number>;
-
-    const newValue = updateReputationValue(current.value, change, faction, otherReps);
-    set({
-      factionReputations: {
-        ...factionReputations,
-        [factionId]: {
-          ...current,
-          value: newValue,
-          standing: getStandingLevel(newValue),
-          interactions: current.interactions + 1,
-          lastInteraction: Date.now(),
-        },
-      },
-    });
-  },
-
-  getFactionReputation: (factionId) => get().factionReputations[factionId]?.value || 0,
-
-  completeQuestForFaction: (questId, factionId) => {
-    const { factionReputations } = get();
-    const current = factionReputations[factionId];
-    if (!current) return;
-    set({
-      factionReputations: {
-        ...factionReputations,
-        [factionId]: { ...current, questsCompleted: [...current.questsCompleted, questId] },
-      },
-    });
-  },
-
-  resetQuests: () =>
+  resetQuests: () => {
+    useFactionStore.getState().resetFactions();
     set({
       activeQuestIds: ['main_goal', 'first_words'],
       completedQuestIds: [],
       questProgress: {},
-      factionReputations: INITIAL_FACTION_REPUTATIONS,
       aiQuestDefinitions: {},
-    }),
+    });
+  },
 
   generateQuestFromAI: (payload) => {
     const parsed = parseAIQuestPayload(payload);

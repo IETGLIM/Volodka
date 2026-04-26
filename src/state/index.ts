@@ -25,6 +25,7 @@ export {
   type TravelToSceneOptions,
 } from './worldStore';
 export { useQuestStore } from './questMetaStore';
+export { useFactionStore } from './factionStore';
 export { useInventoryStore } from './inventoryStore';
 
 // ============================================
@@ -36,6 +37,7 @@ export { useInventoryStore } from './inventoryStore';
 import { usePlayerStore } from './playerStore';
 import { useWorldStore } from './worldStore';
 import { useQuestStore } from './questMetaStore';
+import { useFactionStore } from './factionStore';
 import { useInventoryStore } from './inventoryStore';
 import type { InventoryItem } from '@/data/types';
 
@@ -51,6 +53,7 @@ export const useGameStore = Object.assign(
     // Access to other domain stores
     world: useWorldStore,
     quest: useQuestStore,
+    faction: useFactionStore,
     inventory: useInventoryStore,
   }
 );

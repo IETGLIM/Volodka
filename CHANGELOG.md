@@ -4,11 +4,15 @@
 
 ### Added
 
+- **Dedicated `factionStore.ts` with Zustand `persist` (localStorage):** `Record<FactionId, FactionReputation>`, full actions (`updateFactionReputation` using shared logic from `factions.ts`, `getFactionStanding`, `resetFactions`, `isQuestAvailableForFaction`, `getInteractionBonusForFaction`, `completeQuestForFaction`). Delegated from `questMetaStore` (removed duplication, `resetQuests` now calls faction reset). Updated `state/index.ts` facade (`useGameStore.faction`), `FactionsPanel.tsx` (switched selectors to `useFactionStore`). Prepares **State + Persist** iteration (save/load of reputation, migration). `src/state/factionStore.ts`, `questMetaStore.ts`, `index.ts`, `FactionsPanel.tsx`.
+
 - **Оценка VRAM по загруженному GLB:** `src/lib/gltfByteEstimate.ts` — обход `Object3D` (геометрия, morph, текстуры материалов, грубый mip-запас); `recordGltfGpuByteEstimateFromScene` в `gltfModelCache.ts` подменяет `estimatedBytes` после `useGLTF` и дергает eviction. В dev — `logGltfLoadedFootprintDev` (+ `performance.memory` в Chromium). Байтовое вытеснение: среди `refCount === 0` выбирается **максимальный** по байтам кандидат. `GLTF_CLEAR_GRACE_MS` = **2000** (экспорт). Интеграция: `PropModel` (GLB), `NPC`/`PhysicsPlayer`; реэкспорт в `ModelLoader.tsx`. Тест `gltfByteEstimate.test.ts`.
 
 - **Адаптация GLB (Draco в рантайме):** `ensureGltfDracoDecoderPathConfigured` в `src/lib/explorationGltfDecoders.ts` — `useGLTF.setDecoderPath` до preload/`useGLTF` (CDN 1.5.7 или `NEXT_PUBLIC_DRACO_DECODER_BASE`). `GltfDracoDecoderBootstrap` в `RPGGameCanvas`; вызов из `model-cache` и `AppPerfWarmup`. Тест `explorationGltfDecoders.test.ts`. `docs/MODEL_INTEGRATION.md`.
 
 ### Fixed
+
+- **Vercel Blob upload route TS error:** `request.body` (ReadableStream | null) now safely falls back to `new Blob()` for `@vercel/blob` `put()`. Fixed in `src/app/api/models/upload/route.ts`.
 
 - **Обход / GLB `depthWrite`:** `applyGltfCharacterDepthWrite` в `gltfCharacterMaterialPolicy.ts` больше не принудительно включает `depthWrite` для **`transparent`** и для **`MeshPhysicalMaterial`** с **`transmission`** (стекло/очки), чтобы не ломать порядок блендинга; непрозрачные меши по-прежнему получают `depthWrite: true`. Волосы — по-прежнему `applyGltfHairLikeAlphaTestCutout`. Тесты `gltfCharacterMaterialPolicy.test.ts`.
 
