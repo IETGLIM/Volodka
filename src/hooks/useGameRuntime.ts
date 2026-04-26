@@ -1,5 +1,6 @@
+'use client';
+
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useGameStore } from '@/state/gameStore';
 import { ACHIEVEMENTS, checkAchievement } from '@/data/achievements';
 import { STORY_NODES } from '@/data/storyNodes';
 import { POEMS } from '@/data/poems';
@@ -17,6 +18,8 @@ import { explorationHourToNarrativeTimeOfDay } from '@/game/conditions/timeOfDay
 import type { NPCRelation, PlayerState, PlayerSkills, SceneId } from '@/data/types';
 import { asTrainablePlayerSkill } from '@/lib/trainablePlayerSkill';
 import type { TravelToSceneOptions, TravelToSceneResult } from '@/state/gameStore';
+import { useWorldState } from '@/hooks/useWorldState';
+import { useWorldActions } from '@/hooks/useWorldActions';
 
 export type StoreActionAdapter = {
   addStat: (stat: 'mood' | 'creativity' | 'stability' | 'energy' | 'karma' | 'selfEsteem', amount: number) => void;
@@ -89,15 +92,24 @@ export function useGameRuntime(params: UseGameRuntimeParams) {
     activeCutsceneIdRef.current = activeCutsceneId;
   }, [activeCutsceneId]);
 
+  const worldState = useWorldState();
+  const { syncStreamingSnapshot } = useWorldActions();
+
+  /**
+   * ВРЕМЕННО: `require` не тянет `gameStore` в статический граф модуля хука.
+   * После миграции ConsequencesSystem — передать снимок стора параметром.
+   */
   const storeContext = useMemo(() => () => {
-    const state = useGameStore.getState();
+    // eslint-disable-next-line @typescript-eslint/no-require-imports -- см. комментарий выше
+    const { useGameStore: gameStore } = require('@/state/gameStore') as typeof import('@/state/gameStore');
+    const state = gameStore.getState();
     return {
       playerState: state.playerState,
       npcRelations: state.npcRelations,
       flags: state.playerState.flags,
       activeQuestIds: state.activeQuestIds,
       completedQuestIds: state.completedQuestIds,
-      inventory: state.inventory.map(i => i.item.id),
+      inventory: state.inventory.map((i) => i.item.id),
       visitedNodes: state.playerState.visitedNodes,
       narrativeTimeOfDay: explorationHourToNarrativeTimeOfDay(state.exploration.timeOfDay),
       equippedItemIds: state.playerState.equippedItemIds ?? [],
@@ -119,26 +131,16 @@ export function useGameRuntime(params: UseGameRuntimeParams) {
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
-    const syncExplorationStreamingFromCoordinator = () => {
+    const sync = () => {
       try {
         const snap = getSceneStreamingCoordinator().getDebugSnapshot();
-        useGameStore.setState((s) => {
-          const stream = s.exploration.streaming;
-          if (!stream) return s;
-          return {
-            exploration: {
-              ...s.exploration,
-              streaming: {
-                ...stream,
-                activeChunkIds: [...snap.activeChunkIds],
-                unloadingChunkIds: [...snap.unloadingChunkIds],
-                prefetchQueueLength: snap.prefetchQueueLength,
-                prefetchTargetsPreview: [...snap.prefetchTargetsPreview],
-                budgetTextureBytesApprox: snap.budgetTextureBytesApprox,
-                rapierActiveBodiesApprox: snap.rapierActiveBodiesApprox ?? 0,
-              },
-            },
-          };
+        syncStreamingSnapshot({
+          activeChunkIds: [...snap.activeChunkIds],
+          unloadingChunkIds: [...snap.unloadingChunkIds],
+          prefetchQueueLength: snap.prefetchQueueLength,
+          prefetchTargetsPreview: [...snap.prefetchTargetsPreview],
+          budgetTextureBytesApprox: snap.budgetTextureBytesApprox,
+          rapierActiveBodiesApprox: snap.rapierActiveBodiesApprox ?? 0,
         });
       } catch {
         /* disposed coordinator (StrictMode / уход из игры) */
@@ -146,17 +148,17 @@ export function useGameRuntime(params: UseGameRuntimeParams) {
     };
 
     const unsubs = [
-      eventBus.on('streaming:chunk_activated', syncExplorationStreamingFromCoordinator),
-      eventBus.on('streaming:chunk_deactivated', syncExplorationStreamingFromCoordinator),
-      eventBus.on('streaming:prefetch_warm_applied', syncExplorationStreamingFromCoordinator),
-      eventBus.on('scene:enter', syncExplorationStreamingFromCoordinator),
+      eventBus.on('streaming:chunk_activated', sync),
+      eventBus.on('streaming:chunk_deactivated', sync),
+      eventBus.on('streaming:prefetch_warm_applied', sync),
+      eventBus.on('scene:enter', sync),
     ];
-    syncExplorationStreamingFromCoordinator();
+    sync();
 
     return () => {
       unsubs.forEach((u) => u());
     };
-  }, []);
+  }, [syncStreamingSnapshot]);
 
   /**
    * Prefetch warm: `requestIdleCallback` (fallback `setTimeout` 2s), `timeout` 3s — не грузить горячий кадр.
@@ -223,13 +225,13 @@ export function useGameRuntime(params: UseGameRuntimeParams) {
   useEffect(() => {
     if (phase !== 'game') return;
     if (currentNodeId === 'explore_mode') {
-      const sid = explorationCurrentSceneId ?? useGameStore.getState().exploration.currentSceneId;
+      const sid = explorationCurrentSceneId ?? worldState.currentSceneId;
       sceneManager.transitionTo(sid);
       return;
     }
     sceneManager.transitionTo(currentSceneId);
     travelToScene(currentSceneId, { narrativeDriven: true });
-  }, [phase, currentNodeId, currentSceneId, explorationCurrentSceneId, travelToScene]);
+  }, [phase, currentNodeId, currentSceneId, explorationCurrentSceneId, travelToScene, worldState.currentSceneId]);
 
   useEffect(() => {
     if (phase === 'game') {
@@ -269,7 +271,7 @@ export function useGameRuntime(params: UseGameRuntimeParams) {
   useEffect(() => {
     if (phase !== 'game') return;
 
-    const poem = POEMS.find(p => p.unlocksAt === currentNodeId);
+    const poem = POEMS.find((p) => p.unlocksAt === currentNodeId);
     if (poem && !collectedPoems.includes(poem.id)) {
       collectPoem(poem.id);
       queueMicrotask(() => setRevealedPoemId(poem.id));
@@ -317,10 +319,13 @@ export function useGameRuntime(params: UseGameRuntimeParams) {
         flags: playerState.flags,
         playTime: playerState.playTime,
         completedQuests: [],
-        relations: npcRelations.reduce((acc, relation) => {
-          acc[relation.id] = relation.value;
-          return acc;
-        }, {} as Record<string, number>),
+        relations: npcRelations.reduce(
+          (acc, relation) => {
+            acc[relation.id] = relation.value;
+            return acc;
+          },
+          {} as Record<string, number>
+        ),
         visitedLocations: [],
         endingsSeen: [],
       };
@@ -342,8 +347,7 @@ export function useGameRuntime(params: UseGameRuntimeParams) {
 
   const completeCutscene = useCallback(() => {
     const id = activeCutsceneIdRef.current;
-    const key =
-      cutsceneCompletionKeyRef.current ?? (id ? `${currentNodeId}::${id}` : null);
+    const key = cutsceneCompletionKeyRef.current ?? (id ? `${currentNodeId}::${id}` : null);
     if (key) cutscenesCompletedRef.current.add(key);
     cutsceneCompletionKeyRef.current = null;
     setActiveCutsceneId(null);

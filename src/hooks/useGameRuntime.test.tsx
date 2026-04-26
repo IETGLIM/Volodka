@@ -68,29 +68,62 @@ vi.mock('@/data/achievements', () => ({
   checkAchievement: vi.fn(() => true),
 }));
 
-vi.mock('@/state/gameStore', () => ({
-  useGameStore: {
-    getState: vi.fn(() => ({
-      playerState: { flags: {}, visitedNodes: ['start'] },
-      npcRelations: [],
-      activeQuestIds: [],
-      completedQuestIds: [],
-      inventory: [],
-      exploration: {
-        currentSceneId: 'kitchen_night',
-        timeOfDay: 12,
-        streaming: {
-          activeChunkIds: [],
-          unloadingChunkIds: [],
-          prefetchQueueLength: 0,
-          prefetchTargetsPreview: [],
-          budgetTextureBytesApprox: 0,
-          rapierActiveBodiesApprox: 0,
-        },
+const gameStoreTestState = vi.hoisted(() => ({
+  state: {
+    playerState: { flags: {}, visitedNodes: ['start'] as string[], equippedItemIds: [] as string[] },
+    npcRelations: [] as NPCRelation[],
+    activeQuestIds: [] as string[],
+    completedQuestIds: [] as string[],
+    inventory: [] as { item: { id: string } }[],
+    gameMode: 'exploration' as const,
+    currentNPCId: null as string | null,
+    interactionPrompt: null,
+    unlockedLocations: [] as string[],
+    exploration: {
+      currentSceneId: 'kitchen_night' as const,
+      timeOfDay: 12,
+      npcStates: {},
+      triggerStates: {},
+      worldItems: [],
+      exploredAreas: [],
+      lastSceneTransition: 0,
+      playerPosition: { x: 0, y: 0, z: 0, rotation: 0 },
+      streaming: {
+        activeChunkIds: [] as string[],
+        unloadingChunkIds: [] as string[],
+        prefetchQueueLength: 0,
+        prefetchTargetsPreview: [] as string[],
+        budgetTextureBytesApprox: 0,
+        rapierActiveBodiesApprox: 0,
       },
-    })),
-    setState: vi.fn(),
+    },
   },
+}));
+
+vi.mock('@/state/gameStore', () => ({
+  useGameStore: Object.assign(
+    (selector: (s: typeof gameStoreTestState.state) => unknown) => selector(gameStoreTestState.state),
+    {
+      getState: () => gameStoreTestState.state,
+      setState: vi.fn((updater: unknown) => {
+        const s = gameStoreTestState.state;
+        const patch = typeof updater === 'function' ? (updater as (prev: typeof s) => unknown)(s) : updater;
+        if (!patch || typeof patch !== 'object') return;
+        const p = patch as Partial<typeof s> & { exploration?: Partial<(typeof s)['exploration']> };
+        if (p.exploration) {
+          const ex = p.exploration;
+          gameStoreTestState.state.exploration = {
+            ...s.exploration,
+            ...ex,
+            streaming:
+              ex.streaming != null
+                ? { ...(s.exploration.streaming ?? {}), ...ex.streaming }
+                : s.exploration.streaming,
+          };
+        }
+      }),
+    }
+  ),
 }));
 
 function createPlayerState(): PlayerState {

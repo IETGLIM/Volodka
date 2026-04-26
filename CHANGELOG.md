@@ -63,6 +63,10 @@
 
 ### Changed
 
+- **`useGameRuntime`:** убран прямой импорт `useGameStore`; стриминг в стор через `syncStreamingSnapshot` из `useWorldActions`; в `explore_mode` сцена для `sceneManager` из `useWorldState().currentSceneId`. `storeContext` для ConsequencesSystem временно через `require('@/state/gameStore')` внутри `useMemo`. Тест: мок `useGameStore` как вызываемый селектор + `vi.hoisted` для состояния. `src/hooks/useGameRuntime.ts`, `useGameRuntime.test.tsx`.
+
+- **`useWorldActions`:** добавлены `syncStreamingSnapshot` и тип `ExplorationStreamingSyncPayload` для зеркалирования `SceneStreamingCoordinator` в `exploration.streaming`. `src/hooks/useWorldActions.ts`.
+
 - **`useEnergyActions`:** убран `getEnergy` из возврата (энергию для UI брать из `usePlayerState` / `useEnergySystem`); комментарий про миграцию — только `playerStore`. `src/hooks/useEnergyActions.ts`.
 
 - **Игрок по умолчанию:** снова эталон **`/models-external/lowpoly_anime_character_cyberstyle.glb`** (`MODEL_URLS.lowpolyCyberstyle`, константа имени файла `DEFAULT_PLAYER_GLB_FILENAME` в `modelUrls.ts`); убран приоритет корня `public/`. `validate-player-animations.mjs` проверяет только эталон (или путь из argv). `docs/MODEL_INTEGRATION.md`.

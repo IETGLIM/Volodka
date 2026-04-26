@@ -3,6 +3,17 @@
 import { useCallback } from 'react';
 import { useGameStore } from '@/state/gameStore';
 import type { SceneId } from '@/data/types';
+import type { StreamingChunkId } from '@/data/streamingChunkId';
+
+/** Поля `exploration.streaming`, которые зеркалятся из `SceneStreamingCoordinator.getDebugSnapshot()`. */
+export type ExplorationStreamingSyncPayload = {
+  activeChunkIds: readonly StreamingChunkId[];
+  unloadingChunkIds: readonly StreamingChunkId[];
+  prefetchQueueLength: number;
+  prefetchTargetsPreview: readonly SceneId[];
+  budgetTextureBytesApprox: number;
+  rapierActiveBodiesApprox: number;
+};
 import type {
   PlayerPosition,
   NPCState,
@@ -60,6 +71,23 @@ export function useWorldActions() {
     useGameStore.getState().addExploredArea(areaId);
   }, []);
 
+  const syncStreamingSnapshot = useCallback((snapshot: ExplorationStreamingSyncPayload) => {
+    useGameStore.setState((s) => ({
+      exploration: {
+        ...s.exploration,
+        streaming: {
+          ...s.exploration.streaming,
+          activeChunkIds: [...snapshot.activeChunkIds],
+          unloadingChunkIds: [...snapshot.unloadingChunkIds],
+          prefetchQueueLength: snapshot.prefetchQueueLength,
+          prefetchTargetsPreview: [...snapshot.prefetchTargetsPreview],
+          budgetTextureBytesApprox: snapshot.budgetTextureBytesApprox,
+          rapierActiveBodiesApprox: snapshot.rapierActiveBodiesApprox,
+        },
+      },
+    }));
+  }, []);
+
   return {
     travelToScene,
     setCurrentScene,
@@ -71,5 +99,6 @@ export function useWorldActions() {
     collectWorldItem,
     setInteractionPrompt,
     addExploredArea,
+    syncStreamingSnapshot,
   };
 }
