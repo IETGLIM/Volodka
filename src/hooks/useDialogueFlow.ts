@@ -1,10 +1,13 @@
+'use client';
+
 import { useCallback, useRef, useState } from 'react';
 import type { DialogueNode, DialogueEffect, GameMode } from '@/data/rpgTypes';
 import { resolveDialogueVariant } from '@/game/dialogue/resolveDialogueVariant';
 import { NPC_DEFINITIONS } from '@/data/npcDefinitions';
 import { eventBus } from '@/engine/EventBus';
 import { applyDialogueEffects } from '@/engine/DialogueEngine';
-import { useGameStore } from '@/state/gameStore';
+import { useWorldState } from '@/hooks/useWorldState';
+import { usePlayerActions } from '@/hooks/usePlayerActions';
 
 interface DialogueStoreActions {
   addStat: (stat: 'mood' | 'creativity' | 'stability' | 'energy' | 'karma' | 'selfEsteem', amount: number) => void;
@@ -51,28 +54,34 @@ export function useDialogueFlow({
   /** После диалога возвращаемся в тот же полевой режим (обычно `exploration`). */
   const gameModeBeforeDialogueRef = useRef<GameMode>('exploration');
 
+  const { gameMode } = useWorldState();
+  const { pushChoiceLog } = usePlayerActions();
+
   const handleDialogueEffect = useCallback((effect: DialogueEffect) => {
     applyDialogueEffects([effect], dialogueStoreActions);
   }, [dialogueStoreActions]);
 
-  const handleNPCInteraction = useCallback((npcId: string) => {
-    const npcDef = NPC_DEFINITIONS[npcId];
-    if (!npcDef?.dialogueTree) return;
+  const handleNPCInteraction = useCallback(
+    (npcId: string) => {
+      const npcDef = NPC_DEFINITIONS[npcId];
+      if (!npcDef?.dialogueTree) return;
 
-    const root = npcDef.dialogueTree as DialogueNode;
-    const node = resolveDialogueVariant(npcId, root);
+      const root = npcDef.dialogueTree as DialogueNode;
+      const node = resolveDialogueVariant(npcId, root);
 
-    gameModeBeforeDialogueRef.current = useGameStore.getState().gameMode;
-    setCurrentNPC(npcId);
-    setActiveDialogue({
-      npcId,
-      npcName: npcDef.name,
-      node,
-    });
-    setGameMode('dialogue');
+      gameModeBeforeDialogueRef.current = gameMode;
+      setCurrentNPC(npcId);
+      setActiveDialogue({
+        npcId,
+        npcName: npcDef.name,
+        node,
+      });
+      setGameMode('dialogue');
 
-    eventBus.emit('npc:interacted', { npcId, npcName: npcDef.name });
-  }, [setCurrentNPC, setGameMode]);
+      eventBus.emit('npc:interacted', { npcId, npcName: npcDef.name });
+    },
+    [setCurrentNPC, setGameMode, gameMode]
+  );
 
   /** Встроенный диалог из сюжетного выбора: после закрытия — переход на nextNodeId */
   const openDialogueFromStory = useCallback(
@@ -83,7 +92,7 @@ export function useDialogueFlow({
       const root = npcDef.dialogueTree as DialogueNode;
       const node = resolveDialogueVariant(params.npcId, root);
 
-      gameModeBeforeDialogueRef.current = useGameStore.getState().gameMode;
+      gameModeBeforeDialogueRef.current = gameMode;
       setCurrentNPC(params.npcId);
       setActiveDialogue({
         npcId: params.npcId,
@@ -98,7 +107,7 @@ export function useDialogueFlow({
       setGameMode('dialogue');
       eventBus.emit('npc:interacted', { npcId: params.npcId, npcName: npcDef.name });
     },
-    [setCurrentNPC, setGameMode],
+    [setCurrentNPC, setGameMode, gameMode]
   );
 
   const closeDialogue = useCallback(() => {
@@ -107,7 +116,7 @@ export function useDialogueFlow({
         const { nextNodeId, fromNodeId, choiceText } = current.storyResume;
         queueMicrotask(() => {
           setCurrentNode(nextNodeId);
-          useGameStore.getState().pushChoiceLog({
+          pushChoiceLog({
             fromNodeId,
             choiceText,
             toNodeId: nextNodeId,
@@ -119,7 +128,7 @@ export function useDialogueFlow({
     });
     setCurrentNPC(null);
     setGameMode(gameModeBeforeDialogueRef.current);
-  }, [setCurrentNPC, setGameMode, setCurrentNode]);
+  }, [setCurrentNPC, setGameMode, setCurrentNode, pushChoiceLog]);
 
   return {
     activeDialogue,

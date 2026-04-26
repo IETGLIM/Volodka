@@ -2,7 +2,7 @@
 
 import { useCallback } from 'react';
 import { useGameStore } from '@/state/gameStore';
-import type { PlayerSkills, MoralChoice } from '@/data/types';
+import type { PlayerSkills, MoralChoice, ChoiceLogEntry } from '@/data/types';
 
 /**
  * Фасад над действиями игрока.
@@ -76,6 +76,13 @@ export function usePlayerActions() {
     useGameStore.getState().addMoralChoice(choice);
   }, []);
 
+  const pushChoiceLog = useCallback(
+    (entry: Omit<ChoiceLogEntry, 'id' | 'at'> & { id?: string; at?: number }) => {
+      useGameStore.getState().pushChoiceLog(entry);
+    },
+    []
+  );
+
   return {
     addStat,
     addStress,
@@ -92,5 +99,6 @@ export function usePlayerActions() {
     setPlayerAct,
     visitNode,
     addMoralChoice,
+    pushChoiceLog,
   };
 }

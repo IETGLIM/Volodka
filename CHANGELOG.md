@@ -63,6 +63,10 @@
 
 ### Changed
 
+- **`useDialogueFlow`:** без прямого `gameStore` — `gameMode` из `useWorldState`, `pushChoiceLog` из `usePlayerActions`; `'use client'`. `src/hooks/useDialogueFlow.ts`.
+
+- **`usePlayerActions`:** добавлен `pushChoiceLog` (сигнатура как в `gameStore`). `src/hooks/usePlayerActions.ts`.
+
 - **`useGameRuntime`:** убран прямой импорт `useGameStore`; стриминг в стор через `syncStreamingSnapshot` из `useWorldActions`; в `explore_mode` сцена для `sceneManager` из `useWorldState().currentSceneId`. `storeContext` для ConsequencesSystem временно через `require('@/state/gameStore')` внутри `useMemo`. Тест: мок `useGameStore` как вызываемый селектор + `vi.hoisted` для состояния. `src/hooks/useGameRuntime.ts`, `useGameRuntime.test.tsx`.
 
 - **`useWorldActions`:** добавлены `syncStreamingSnapshot` и тип `ExplorationStreamingSyncPayload` для зеркалирования `SceneStreamingCoordinator` в `exploration.streaming`. `src/hooks/useWorldActions.ts`.
