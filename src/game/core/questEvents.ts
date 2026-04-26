@@ -34,6 +34,8 @@ export const EVENT_OBJECTIVE_MAP: Partial<
     { questId: 'incident_scroll_4729', objectiveId: 'seal_with_colleague', condition: (d) => d.npcId === 'office_colleague' },
     { questId: 'vault_backup_trial', objectiveId: 'listen_oracle_dmitry', condition: (d) => d.npcId === 'office_dmitry' },
     { questId: 'dependency_sigil', objectiveId: 'consult_crypt_warden', condition: (d) => d.npcId === 'office_artyom' },
+    { questId: 'whitehat_uat_sprint', objectiveId: 'read_scope_brief', condition: (d) => d.npcId === 'office_artyom' },
+    { questId: 'whitehat_uat_sprint', objectiveId: 'jira_handoff_ibs', condition: (d) => d.npcId === 'office_colleague' },
   ],
   location_visited: [
     { questId: 'first_reading', objectiveId: 'go_to_cafe', condition: (d) => d.locationId === 'cafe_evening' },

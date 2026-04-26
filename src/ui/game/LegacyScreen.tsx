@@ -53,7 +53,7 @@ export default function LegacyScreen({ endingType, endingTitle, onRestart }: Leg
     });
 
     // IT-мастер
-    const itQuests = ['auth_crisis', 'kubernetes_orchestrator', 'database_pool_exhausted', 'openstack_server_find', 'rabbitmq_overflow', 'ssl_certificate_renewal', 'microservice_memory_leak'];
+    const itQuests = ['auth_crisis', 'kubernetes_orchestrator', 'database_pool_exhausted', 'openstack_server_find', 'rabbitmq_overflow', 'ssl_certificate_renewal', 'microservice_memory_leak', 'whitehat_uat_sprint'];
     const itCompleted = itQuests.filter(q => completedQuestIds.includes(q)).length;
     items.push({
       icon: itCompleted >= 4 ? '🖥️' : '⌨️',

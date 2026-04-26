@@ -465,6 +465,42 @@ export const QUEST_DEFINITIONS: Record<string, ExtendedQuest> = {
     reward: createReward({ skillPoints: 2, karma: 6, intuition: 4 }),
     startNode: 'start',
   },
+
+  /**
+   * Пентест / Burp / white-hat в **реалистичном** банковском смысле: заказной прогон по scope, UAT, отчёт в Jira/ИБ.
+   * Не «хакер из кино», а контроль + инструмент (Burp Suite) в песочнице и ответственное раскрытие.
+   */
+  whitehat_uat_sprint: {
+    id: 'whitehat_uat_sprint',
+    title: '🛡️ Scope: UAT и белая фуражка',
+    description:
+      'Внутренний заказ на **контролируемую** проверку веб-контура: письмо от ИБ, список хостов, окно в Change. Вне scope — не спрашивать, на прод — не смотреть. В лабе разрешён **Burp** (Proxy/Repeater — как рабочие калибры, не культ); итог — в тикет, не в чат. Двенадцать лет в саппорте: сначала бумага и границы, потом «рука на клавиатуре».',
+    type: 'side',
+    faction: 'Работа · IT',
+    status: 'active',
+    objectives: [
+      createObjective('read_scope_brief', 'Сверить письмо и scope с Артёмом (ИБ)', {
+        hint: 'Офис: диалог с Артёмом из ИБ — что можно трогать, что нет, куда писать находки.',
+        targetNPC: 'office_artyom',
+        targetLocation: 'office_morning',
+      }),
+      createObjective('verify_uat_boundary', 'Убедиться, что касаемся UAT, а не прода (HTTP-заголовки)', {
+        hint: 'В 💻: curl — проверь ответ UAT-стенда; если видишь prod-имя — остановись и в ИБ.',
+        targetLocation: 'office_morning',
+      }),
+      createObjective('burp_session_log', 'Зафиксировать сессию проверки (экспорт в рамках лабы)', {
+        hint: 'В 💻: команда с пометкой burp export — как отчётный снимок, не селфи «я вломал».',
+        targetLocation: 'office_morning',
+      }),
+      createObjective('jira_handoff_ibs', 'Передать пакет находок в цепочку Jira/ИБ через коллегу', {
+        hint: 'Офис: коллега с парты подтвердит, что пакет ушёл в нужную очередь — без выложенных наружу критиков.',
+        targetNPC: 'office_colleague',
+        targetLocation: 'office_morning',
+      }),
+    ],
+    reward: createReward({ skillPoints: 2, karma: 7, stability: 6, intuition: 2 }),
+    startNode: 'start',
+  },
   
   // ========== ОСНОВНЫЕ КВЕСТЫ ==========
   

@@ -55,6 +55,8 @@ const COMMANDS: Record<string, (args: string[]) => CommandResult> = {
       '  sha256sum -c manifest.sha256         — Печать целостности',
       '  npm audit --production               — Сигил зависимостей',
       '  npm uninstall phantom-left-pad --save — Снять проклятие',
+      '  curl -i https://uat-banking.internal  — UAT-стенд (квест white-hat; не prod)',
+      '  burp export --session uat             — Экспорт сессии Burp (только в рамках scope)',
       '  clear                                — Очистить экран',
     ],
   }),
@@ -327,6 +329,33 @@ const COMMANDS: Record<string, (args: string[]) => CommandResult> = {
     ],
     effect: {
       questObjective: { questId: 'dependency_sigil', objectiveId: 'banish_transitive', value: 1 },
+    },
+  }),
+
+  'curl -i https://uat-banking.internal': () => ({
+    output: [
+      'HTTP/1.1 200 OK',
+      'Server: nginx/1.24.0 (UAT-EDGE-02)',
+      'X-Env: uat',
+      'X-Policy: internal-scope-PT-2025-114; prod-hosts=deny',
+      'Set-Cookie: uat_session=REDACTED; Path=/; HttpOnly; Secure; SameSite=Lax',
+      '',
+      '✓ Заголовки — UAT; в письме ИБ тот же X-Policy. Продовый FQDN тут не всплыл — можно двигаться дальше в рамках scope.',
+    ],
+    effect: {
+      questObjective: { questId: 'whitehat_uat_sprint', objectiveId: 'verify_uat_boundary', value: 1 },
+    },
+  }),
+
+  'burp export --session uat': () => ({
+    output: [
+      'Burp Suite / project: uat-bank-2025 (read-only share)',
+      'Export: findings.uat.json  (~ requests in scope, cookies redacted)',
+      'Note: Repeater/Intruder used only on allowlisted paths — see scope PDF',
+      '✓ Сессия зафиксирована для вложения в Jira/ИБ (без выложенного наружу тела ответа).',
+    ],
+    effect: {
+      questObjective: { questId: 'whitehat_uat_sprint', objectiveId: 'burp_session_log', value: 1 },
     },
   }),
 };
