@@ -11,12 +11,15 @@
 // Флаги: конвенция имён с префиксом (`quest:…`, `npcs:…`) снижает риск коллизий.
 
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 import { useShallow } from 'zustand/react/shallow';
 import type { PlayerState, PlayerSkills, MoralChoice } from '@/data/types';
 import { INITIAL_PLAYER_ENERGY, MAX_PLAYER_ENERGY } from '@/lib/energyConfig';
 import { experienceRequiredForNextLevel } from '@/lib/rpgLeveling';
 import { eventBus } from '@/engine/EventBus';
 import { selectEnergyPercentageFromPlayer } from './playerStoreSelectors';
+import { migrateSaveData, CURRENT_PERSIST_VERSION } from './migrations';
+import type { SavePayload } from '@/server/persistence/save-manager';
 
 // ============================================
 // INITIAL STATE
@@ -36,7 +39,7 @@ const INITIAL_SKILLS: PlayerSkills = {
   skillPoints: 0,
 };
 
-const INITIAL_PLAYER: PlayerState = {
+export const INITIAL_PLAYER: PlayerState = {
   mood: 50,
   creativity: 30,
   stability: 60,
