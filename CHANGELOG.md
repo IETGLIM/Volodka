@@ -4,6 +4,7 @@
 
 ### Changed
 
+- **Репозиторий:** в `.gitignore` один паттерн `public/Volodka-main*.zip` (учитывает дубли `Volodka-main (1).zip` с загрузок Windows).
 - **Квесты 3D-обхода:** `startNode` у `exploration_zarema_hearth` и `exploration_volodka_rack` — `explore_hub_welcome` (согласовано с новым входом в хаб после интро).
 
 ### Added

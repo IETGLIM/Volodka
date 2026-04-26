@@ -36,5 +36,5 @@ Trace-*.json
 # Записи экрана в корне (Windows «Запись экрана … .mp4») — только локально
 /Запись экрана*.mp4
 
-# Локальный архив проекта в public (не в git)
-/public/Volodka-main.zip
+# Локальные архивы проекта в public (не в git) — в т.ч. копии «(1)» с Windows
+/public/Volodka-main*.zip
