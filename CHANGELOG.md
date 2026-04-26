@@ -12,6 +12,8 @@
 
 ### Fixed
 
+- **`vercel.json`:** удалена лишняя запятая после последнего элемента `headers` — иначе файл не является валидным JSON и Vercel отклоняет конфигурацию.
+
 - **Vercel / браузер:** убран catch-all заголовок `X-Content-Type-Options` + `X-Frame-Options` для шаблона `/(.*)` в `vercel.json` — при `nosniff` и неверном `Content-Type` у `/_next/static/chunks/*.css` Chromium отказывался применять стили. Те же заголовки безопасности перенесены на `/` и `/api/(.*)` только.
 - **Консоль:** прогрев Rapier WASM вызывает `init({})` вместо устаревшего вызова без аргумента (`rapierWasmWarmup.ts`).
 
