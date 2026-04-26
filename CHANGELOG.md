@@ -9,6 +9,8 @@
 
 ### Added
 
+- **Документация (канон сцены):** `docs/quest-scene-pipeline.md` — целевой пайплайн «квест как сцена» (принятие → бит → текст → задание → выбор → выполнение → награда → переход), mermaid-схема, привязка к `StoryRenderer`, `useGameRuntime` / `AnimeCutscene`, `questEvents`, 3D/терминал; в `docs/volodka-incremental-aaa-roadmap.md` — ссылка в блоке критериев.
+
 - **IT / ИБ-линия (квест):** `whitehat_uat_sprint` — заказной прогон по UAT, scope, **Burp** в лабе, `curl` на UAT, handoff в Jira через NPC; тон: банковская реальность и **white-hat**, не «хакер из кино». Старт с `start_diagnosis` / `escalate_now` / `check_database` (`storyNodes`), команды в `ITTerminal`, события `npc_talked` в `questEvents`. Легаси-стат «IT-квесты» в `LegacyScreen` учитывает цепочку.
 
 - **Полноэкранные биты для стихов и ачивок:** `gameStore` при первом `collectPoem` / `unlockAchievement` эмитит `poem:collected` / `achievement:unlocked` (без дубля из `useGameRuntime` и `PoemMechanics`). `useGameRuntime` по подписке на шину играет `cinematic_beat_poem_collected` и `cinematic_beat_achievement` (`cinematicQuestDefaults` / `animeCutscenes`); оверлей `revealedPoemId` — после бита или после чужой заставки (отложенный `deferredPoemRevealIdRef` в `completeCutscene`). `activeCutsceneIdRef` синхронно обновляется вместе с `setActiveCutsceneId`, чтобы конкурирующие microtask не затирали заставку (например сюжет `cutscene_1` — ачивка). Тесты: рабочий `eventBus` в `useGameRuntime.test.tsx`.
