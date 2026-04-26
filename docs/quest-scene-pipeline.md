@@ -60,10 +60,10 @@ flowchart LR
 
 ---
 
-## 4. Когда шаги «съезжают» (для будущей полировки)
+## 4. Кратко: известные «съезды» (детали — §6)
 
-- **Двойной старт заставок** в одном кадре — в коде выровнено через `activeCutsceneIdRef` + синхронное обновление в `useGameRuntime` (см. коммиты вокруг конкурирующих microtask).
-- **Квест активирован, сюжет ещё не в офисе** — часть IT-цепочек намеренно вешается с узла `start_diagnosis` (и соседей); 3D-хаб в другом «акте смены» — **не баг шаблона**, а привязка сценария к *окну повествования*.
+- Гонка **microtask** у заставок — см. `activeCutsceneIdRef` в `useGameRuntime`.
+- Расхождение **узел сюжета** vs **3D-локация** в хабе — см. `useGameScene` + `isExplorationHubStoryNodeId`.
 
 ---
 
@@ -77,4 +77,50 @@ flowchart LR
 
 ---
 
-*Документ введён в рамках **Фазы A** дорожной карты: канон «квест = сцена» зафиксирован до дальнейшей доработки инвентаря, кармы, портретов и мёртвого кода.*
+## 6. Сверка с реалом: где сейчас «рвётся» цепочка
+
+Ниже — не мораль, а **инженерный аудит** связок `STORY_NODES` + `animeCutscenes` + `useGameRuntime` (cutscene) + VN в `GameOrchestrator` + `ITTerminal` + 3D-хаб `explore_*`. Цель: знать, что **задумано**, а что **дыра UX/лора**.
+
+### 6.1. VN-оверлей (`StoryRenderer`) и `gameMode`
+
+- **Где:** `useGameUiLayout` → `showStoryOverlay`; рендер в `GameOrchestrator` (блок `AnimatePresence` + `StoryRenderer`).
+- **Когда показывается:** `phase === 'game'`, у узла есть контент по правилу `storyNodeShowsStoryOverlay` (`src/lib/storyOverlayEligibility.ts`: текст, выборы, `autoNext`, типы `poem_game` / `interpretation`).
+- **Когда скрывается:** `gameMode === 'dialogue' | 'cutscene'` — тогда VN **не** ведёт ленту, пока открыт полноэкранный диалог/режим катсцены 3D-интро. В **exploration** (дефолт) и **combat** — оверлей **разрешён**, если узел «не пустой».
+- **Разрыв A — пустой хаб:** у `explore_mode` нет текста/выборов **намеренно** — оверлея нет, игрок в «чистом» 3D; вступление — `explore_hub_welcome` (`src/data/explorationHubStory.ts`). Иначе игрок бы дублировал стену текста поверх хаба без нужды.
+- **Разрыв B — нет отдельного `gameMode` «только VN»:** в типе `GameMode` только `exploration | dialogue | cutscene | combat` (`rpgTypes.ts`). Сюжетная лента **всегда** идёт как оверлей **поверх** 3D, если `showStoryOverlay === true`. Это **склейка**, а не отдельный движок; фон 3D может **не совпадать** с `scene` узла, если `currentNodeId` и `exploration.currentSceneId` разъехались (см. 6.3).
+
+### 6.2. Полноэкранные заставки / биты (`animeCutscenes` + `useGameRuntime`)
+
+- **Сюжетные id из ноды:** `STORY_NODES[node].cutscene` → `useEffect` в `useGameRuntime` (очередь `queueMicrotask`, ключ завершения на узел).
+- **Биты квестов / стихов / ачивок:** `eventBus` + подписки в `useGameRuntime` → `requestCutscene` / `pendingCinematicAfterRef` (сюжетный выбор, reveal стиха после бита).
+- **Слой в UI:** `AnimeCutscene` рисуется **после** `StoryRenderer` в `GameOrchestrator` → заставка **визуально перекрывает** VN (ожидаемо).
+- **Разрыв C — нет данных по id:** если `getCutsceneById(activeCutsceneId)` вернул `undefined`, `GameOrchestrator` пишет предупреждение в консоль и вызывает `completeCutscene` — **обрыв без текста для игрока** (нужен маппинг id в `animeCutscenes.ts`).
+- **Разрыв D — очередь событий в одном кадре:** старт сюжетной заставки, бит квеста, стих и ачивка могли перетирать друг друга; сейчас **частично** сглажено синхронным `activeCutsceneIdRef` в `useGameRuntime` + повторная проверка в microtask `requestCutscene` (детали в коде). Полный «коллапс» всё ещё возможен при **новых** комбинациях событий — регрессия: ручной проход.
+- **Разрыв E — оверлей стиха (`revealedPoemId`)** после чужой заставки уходит в **deferred** + `completeCutscene`; игрок **не** видит reveal в тот же кадр, что бит — это **согласованный** разрыв по времени, не дублирование пайплайна.
+
+### 6.3. `STORY_NODES` (сцена узла) и 3D-хаб `explore_*`
+
+- **Мост:** `useGameScene` вычисляет `currentSceneId` из `STORY_NODES[currentNodeId].scene` и передаёт в `useGameRuntime` **и** `explorationCurrentSceneId` (фактическая 3D-сцена).
+- **Хаб:** если `isExplorationHubStoryNodeId(currentNodeId)` — для квестов `location_visited` и прогресса в `useQuestProgressBridge` берётся **`explorationCurrentSceneId`**, а не `scene` узла (`useGameScene` комментарий: не перетирать хаб сменой сцены узла).
+- **Разрыв F — сюжет говорит «офис» (`office_morning`), 3D показывает комнату Заремы:** возможно, если `currentNodeId` ещё `start` / `start_2` / `start_diagnosis`, а игрок уже **перешёл** в 3D к другой локации, или наоборот. Это **лудонарративный** разъезд: текст и фон **не гарантируют** одно место без дисциплины `setCurrentNode` при телепортах. Лечение дизайном: не менять 3D без смены узла, или в узле писать «теле-, не здесь».
+- **Explore-триггеры:** `handleExplorationStoryTrigger` в `GameOrchestrator` — сначала опционально `requestCutscene` + `pendingStoryAfterExplorationCutsceneRef` (потом `setCurrentNode` после `completeCutscene`); иначе сразу `setCurrentNode`. **Разрыв** при отмене/пропуске: нужно, чтобы `storyNodeId` в данных был валиден (иначе пустой переход).
+
+### 6.4. `ITTerminal` (💻) vs сюжет
+
+- **Где:** панель `panels.terminal` → динамический `ITTerminal` в `GameOrchestrator` (`HUD` открывает кнопку 💻).
+- **Связь с квестами:** команды `COMMANDS` в `ITTerminal.tsx` пишут прогресс через `questObjective` / `questObjectives` **без** проверки `currentNodeId` или `scene` узла.
+- **Разрыв G — глобальная «лаборатория»:** подсказки в квестах говорят «в офисе / в 💻»; **фактически** команда срабатывает **в любой** сцене, как только панель открыта. Игровая честность — на совести текста; технически это **оторвано** от VN и от 3D-локации.
+- **Разрыв H — `terminal_used`:** `useQuestProgress` эмитит `terminal_used`; **не** все цели в `questEvents`/`EVENT_OBJECTIVE_MAP` на него завязаны (часть только на конкретные команды из терминала через эффекты) — **не баг**, но два канала (карта событий vs жёсткий `questObjective` в `ITTerminal`).
+
+### 6.5. Сводка «что чинить в первую очередь» (приоритет)
+
+| Приоритет | Тема | Действие |
+|-----------|------|----------|
+| P0 | Id заставки без `animeCutscenes` | Скан узлов/квестов на `cutscene` / `cutsceneOn*` |
+| P1 | Текст сюжета vs 3D-локация | Координация `setCurrentNode` + выход из/в хаб, подсказки в узлах |
+| P2 | 💻 вне «офиса» | Опц.: soft-gate по `questSceneId` / флагу, или оставить как diegetic «удалёнка» в тексте |
+| P2 | Регресс cutscene-очереди | E2E / чеклист: офис + стих + квест + ачивка в одной сессии |
+
+---
+
+*Документ: канон **Фазы A** + раздел 6 (сверка с реалом, 2026). Дальше — фазы про инвентарь, карму, портреты, мёртвый код (см. роадмап).*
