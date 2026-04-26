@@ -24,6 +24,7 @@ import CyberLoadingScreen from './LoadingScreen';
 import StoryRenderer from './StoryRenderer';
 import DialogueRenderer from './DialogueRenderer';
 import HUD from './HUD';
+import { AriaLiveAnnouncer } from './AriaLiveAnnouncer';
 import { AnimeCutscene, type AnimeCutsceneData } from './AnimeCutscene';
 import { getCutsceneById } from '@/data/animeCutscenes';
 import CoreLoopIndicator from './CoreLoopIndicator';
@@ -54,6 +55,7 @@ import { SceneTransition } from '@/ui/game/CinematicEffects';
 import { LootNotification, SkillUpNotification } from '@/ui/game/LootNotification';
 import { TutorialOverlay } from '@/ui/game/TutorialOverlay';
 import { HackingWireMinigameOverlay } from '@/ui/3d/exploration/HackingWireMinigameOverlay';
+import { ExplorationRackConsoleOverlay } from '@/ui/3d/exploration/ExplorationRackConsoleOverlay';
 import { MiniMap } from '@/ui/game/MiniMap';
 import { SCENE_VISUALS } from '@/engine/SceneManager';
 import type { VisualState } from '@/data/types';
@@ -561,6 +563,7 @@ export default function GameOrchestrator() {
 
   return (
     <CyberGameShell sceneId={displaySceneId} stability={playerState.stability}>
+      <AriaLiveAnnouncer />
       <AmbientMusicPlayer
         sceneId={displaySceneId}
         mood={playerState.mood}
@@ -593,6 +596,7 @@ export default function GameOrchestrator() {
         </div>
       )}
 
+      {gameMode === 'exploration' && <ExplorationRackConsoleOverlay />}
       {gameMode === 'exploration' && <HackingWireMinigameOverlay />}
 
       {gameMode === 'exploration' && !introOpening3dActive && (

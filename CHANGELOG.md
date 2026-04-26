@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Added
+
+- **Слой IT-консоли перед взломом стойки:** взаимодействие `volodka_rack_hack` сначала открывает полноэкранную консоль (ночная смена, мониторинг, предупреждение о журнале изменений), затем по явному действию игрока — мини-игру узлов; подсказка на полный `ITTerminal` из HUD. Стор `explorationRackConsoleStore`, оверлей `ExplorationRackConsoleOverlay`, тексты `volodkaRackConsoleCopy` (`src/state/explorationRackConsoleStore.ts`, `src/ui/3d/exploration/ExplorationRackConsoleOverlay.tsx`, `src/lib/volodkaRackConsoleCopy.ts`, `src/game/core/registerBaseInteractions.ts`, `src/ui/game/GameOrchestrator.tsx`).
+
 ### Changed
 
 - **Кинематографичность hero-среза (`volodka_room`) и читаемый герой:** подняты `explorationCharacterModelScale` (0.48→0.60), базовый uniform GLB `lowpoly_anime_character_cyberstyle.glb` и потолок `NARROW_SCENE_UNIFORM_CAP.volodka_room` (0.24→0.275), чтобы силуэт не упирался в кап и не читался «муравьём»; TPS-камера ближе и ниже взгляд; туман/хемисфера — холоднее и контрастнее (Matrix / ночная смена). Усилен пост `ExplorationPostFX` для геймплея; второй `EffectComposer` в `CameraEffects` отключается на этих сценах, чтобы не «мыть» кадр двойным bloom (`src/config/scenes.ts`, `src/data/modelMeta.ts`, `src/ui/game/RPGGameCanvas.tsx`, `src/ui/CameraEffects.tsx`, `src/ui/3d/exploration/ExplorationPostFX.tsx`).

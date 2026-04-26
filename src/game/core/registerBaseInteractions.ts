@@ -5,6 +5,13 @@ import { eventBus } from '@/engine/EventBus';
 import { introQuest } from '@/game/quests/introQuest';
 import { useGameStore } from '@/state';
 import { useWireHackOverlayStore } from '@/state/wireHackOverlayStore';
+import { useExplorationRackConsoleStore } from '@/state/explorationRackConsoleStore';
+import {
+  VOLODKA_RACK_CONSOLE_DISMISS_LABEL,
+  VOLODKA_RACK_CONSOLE_HEADLINE,
+  VOLODKA_RACK_CONSOLE_LINES,
+  VOLODKA_RACK_CONSOLE_PROCEED_LABEL,
+} from '@/lib/volodkaRackConsoleCopy';
 import { dispatchExplorationQuestGraph } from '@/game/core/explorationQuestGraph';
 import {
   HEARTH_EXPLORATION_QUEST_GRAPH,
@@ -78,17 +85,26 @@ export function registerBaseInteractions(registry: InteractionRegistry = explora
     },
     execute: (ctx) => {
       const sequence = shuffleWireIndices();
-      useWireHackOverlayStore.getState().openWireHack({
-        title: 'МАТРИЦА УЗЛОВ · rack-01',
-        sequence,
-        onFinished: (success) => {
-          useWireHackOverlayStore.getState().closeWireHack();
-          dispatchExplorationQuestGraph(
-            RACK_FORCE_EXPLORATION_QUEST_GRAPH,
-            { kind: 'wire_hack_result', success },
-            ctx,
-          );
-        },
+      const openWireHack = () => {
+        useWireHackOverlayStore.getState().openWireHack({
+          title: 'МАТРИЦА УЗЛОВ · rack-01',
+          sequence,
+          onFinished: (success) => {
+            useWireHackOverlayStore.getState().closeWireHack();
+            dispatchExplorationQuestGraph(
+              RACK_FORCE_EXPLORATION_QUEST_GRAPH,
+              { kind: 'wire_hack_result', success },
+              ctx,
+            );
+          },
+        });
+      };
+      useExplorationRackConsoleStore.getState().openSession({
+        headline: VOLODKA_RACK_CONSOLE_HEADLINE,
+        lines: VOLODKA_RACK_CONSOLE_LINES,
+        proceedLabel: VOLODKA_RACK_CONSOLE_PROCEED_LABEL,
+        dismissLabel: VOLODKA_RACK_CONSOLE_DISMISS_LABEL,
+        onProceed: openWireHack,
       });
     },
   });
