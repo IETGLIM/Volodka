@@ -77,7 +77,16 @@ export const saveGame = (options?: SaveGameOptions) => {
       );
     }
   }
-  storage.setItem(SAVE_KEY, json);
+  try {
+    storage.setItem(SAVE_KEY, json);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'localStorage write failed';
+    console.error('[Volodka] Local save failed:', message);
+    eventBus.emit('ui:exploration_message', {
+      text: 'Не удалось сохранить прогресс на этом устройстве.',
+    });
+    return;
+  }
   eventBus.emit('game:saved', {
     timestamp: Date.now(),
     source: options?.source ?? 'manual',

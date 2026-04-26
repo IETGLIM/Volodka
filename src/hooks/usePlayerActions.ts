@@ -2,7 +2,7 @@
 
 import { useCallback } from 'react';
 import { useGameStore } from '@/state';
-import type { PlayerSkills, MoralChoice, ChoiceLogEntry } from '@/data/types';
+import type { PlayerSkills, PlayerPath, MoralChoice, ChoiceLogEntry } from '@/data/types';
 
 /**
  * Фасад над действиями игрока.
@@ -68,6 +68,10 @@ export function usePlayerActions() {
     useGameStore.getState().setPlayerAct(act);
   }, []);
 
+  const setPlayerPath = useCallback((path: PlayerPath) => {
+    useGameStore.getState().setPlayerPath(path);
+  }, []);
+
   const visitNode = useCallback((nodeId: string) => {
     useGameStore.getState().visitNode(nodeId);
   }, []);
@@ -97,6 +101,7 @@ export function usePlayerActions() {
     collectPoem,
     incrementPlayTime,
     setPlayerAct,
+    setPlayerPath,
     visitNode,
     addMoralChoice,
     pushChoiceLog,

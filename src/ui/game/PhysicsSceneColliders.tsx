@@ -263,7 +263,10 @@ export const HomeEveningColliders = memo(function HomeEveningColliders() {
   );
 });
 
-/** Комната Володьки: 14×10, проём в стене у двери в коридор (z+). */
+/**
+ * Комната Володьки: 14×10, проём в стене у двери в коридор (z+).
+ * Пол по Z расширен (`floorHalfZ`), см. `explorationHeroStreamingIntegrity.test.ts`.
+ */
 export const VolodkaRoomColliders = memo(function VolodkaRoomColliders() {
   const h = 3;
   const wallT = 0.5;

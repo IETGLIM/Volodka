@@ -247,7 +247,8 @@ export function registerDefaultConsequences(): void {
       id: 'public_reading_selfesteem',
       triggerEvent: 'choice:made',
       conditions: [
-        { hasFlag: 'read_at_cafe' },
+        /** Выставляется в `after_reading` после чтения на сцене (`storyNodes.ts`). */
+        { hasFlag: 'performed_live' },
         { notFlag: 'reading_boost_applied' },
       ],
       effects: [
@@ -298,7 +299,7 @@ export function registerDefaultConsequences(): void {
       id: 'maria_connection_opens',
       triggerEvent: 'npc:interacted',
       conditions: [
-        { hasFlag: 'read_at_cafe' },
+        { hasFlag: 'performed_live' },
         { notFlag: 'maria_path_opened' },
       ],
       effects: [

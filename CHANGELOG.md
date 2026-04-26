@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- **ESLint / CI:** правила React Hooks — `CameraEffects.tsx` (все `useMemo` до условного `return`, чтобы не вызывать хуки после раннего выхода при `deferPostProcessing`); процедурные комнаты `VolodkaRoomVisual.tsx`, `ZaremaAlbertExplorationVisual.tsx` — отложенный `setAssets` через `queueMicrotask` и флаг отмены при размонтировании, без синхронного `setState` в теле `useEffect`.
+
+### Changed
+
+- **Синхронизация `main` с дорожной картой:** в репозиторий добавлены накопленные правки — `useStoryChoiceHandler` / `playerStore` (`setPlayerPath`), `ConsequencesSystem`, `saveManager`, `registerBaseInteractions`, `GameOrchestratorSubcomponents`, `PhysicsSceneColliders`; тесты `explorationHeroStreamingIntegrity.test.ts`, `storyEffectCoverage.test.ts`, `explorationInteractionCoverage.test.ts`, `apiRouteSecurity.test.ts`. **GitHub Actions:** шаг `npm run asset-budget` в `ci.yml`. **Vercel:** `vercel.json` — установка и сборка через `npm ci` / `npm run build` (как в CI), без `bun`. `.gitignore` — не версионировать локальный дамп `public/Volodka-main.zip`. Обновлён `next-env.d.ts` (путь типов маршрутов Next.js после сборки).
+
 ### Changed
 
 - **Сюжет (`storyNodes`, заставки `volodka_*`):** уточнён и расширен текст узлов `poetry_life_review`, `volunteer_read_result`, `home_alone`, `crisis_choice`, `act3_start`, `story_cafe_poet`, `start_diagnosis`; подзаголовок игры; исправлена формулировка «Старик в парке»; усилены короткие вставки у окна, стола, дивана и двери в комнате Володьки (`src/data/storyNodes.ts`, `src/data/animeCutscenes.ts`). Золотой путь и выборы веток не менялись.

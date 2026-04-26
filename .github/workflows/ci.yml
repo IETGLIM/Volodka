@@ -32,6 +32,9 @@ jobs:
       - name: Player animation gate
         run: npm run test:player-animations
 
+      - name: Asset budget report
+        run: npm run asset-budget
+
       - name: ESLint
         run: npm run lint
 

@@ -17,6 +17,20 @@ const ENERGY_BLOCK_NOTIF_MS = 9_500;
 const ENERGY_BLOCK_MESSAGE =
   'Не хватает энергии на этот выбор. Что можно сделать: поговорить с NPC на сцене (диалог не тратит энергию), пройти отдых в сюжете («сон»), заглянуть в 📋 квесты, ⚔️ фракции или 💻 терминал. Энергия также медленно восстанавливается сама со временем.';
 
+/** Поля `StoryEffect`, которые мапятся на `addSkill` (в дополнение к `skillGains`). */
+const STORY_EFFECT_DIRECT_SKILLS = [
+  'perception',
+  'introspection',
+  'logic',
+  'coding',
+  'empathy',
+  'writing',
+  'imagination',
+  'persuasion',
+  'intuition',
+  'resilience',
+] as const satisfies readonly (keyof PlayerSkills)[];
+
 interface StoryChoiceHandlerParams {
   /** Текущий узел сюжета (для лога выбора и skill-check); источник — родитель, не exploration. */
   currentNodeId: string;
@@ -76,7 +90,7 @@ export function useStoryChoiceHandler(params: StoryChoiceHandlerParams) {
     openDialogueFromStory,
   } = params;
 
-  const { pushChoiceLog } = usePlayerActions();
+  const { pushChoiceLog, setPlayerPath } = usePlayerActions();
 
   const applyStoryEffect = useCallback(
     (effect: StoryEffect) => {
@@ -89,6 +103,11 @@ export function useStoryChoiceHandler(params: StoryChoiceHandlerParams) {
       if (effect.stress) {
         if (effect.stress > 0) addStress(effect.stress);
         else reduceStress(-effect.stress);
+      }
+      if (effect.pathShift) setPlayerPath(effect.pathShift);
+      for (const sk of STORY_EFFECT_DIRECT_SKILLS) {
+        const delta = effect[sk];
+        if (typeof delta === 'number' && delta !== 0) addSkill(sk, delta);
       }
       if (effect.poemId) collectPoem(effect.poemId);
       if (effect.setFlag) setFlag(effect.setFlag);
@@ -150,6 +169,7 @@ export function useStoryChoiceHandler(params: StoryChoiceHandlerParams) {
       addSkill,
       addItem,
       removeItem,
+      setPlayerPath,
     ]
   );
 

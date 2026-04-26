@@ -121,9 +121,13 @@ export const ZaremaAlbertExplorationVisual = memo(function ZaremaAlbertExplorati
     const landingPlateTex = new THREE.CanvasTexture(c);
     landingPlateTex.colorSpace = THREE.SRGBColorSpace;
 
-    setAssets({ floorMat, carpetMat, wallMat, woodMat, landingPlateTex });
+    let cancelled = false;
+    queueMicrotask(() => {
+      if (!cancelled) setAssets({ floorMat, carpetMat, wallMat, woodMat, landingPlateTex });
+    });
 
     return () => {
+      cancelled = true;
       wallMat.dispose();
       woodMat.dispose();
       floorMat.dispose();

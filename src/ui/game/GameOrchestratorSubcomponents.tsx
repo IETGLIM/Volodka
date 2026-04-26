@@ -1,6 +1,6 @@
 'use client';
 
-import { Component, useEffect, useState, type ErrorInfo, type ReactNode } from 'react';
+import { Component, useEffect, useRef, useState, type ErrorInfo, type ReactNode } from 'react';
 import { motion } from 'framer-motion';
 import { POEMS } from '@/data/poems';
 import { PoemReveal } from './PoemComponents';
@@ -82,11 +82,35 @@ export function KernelPanicOverlay({ isActive, onCalmDown }: { isActive: boolean
 
 export function PanelWrapper({ children, onClose }: { children: React.ReactNode; onClose: () => void }) {
   const [layerAnimating, setLayerAnimating] = useState(true);
+  const dialogRef = useRef<HTMLDivElement | null>(null);
+  const lastActiveRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
     const t = window.setTimeout(() => setLayerAnimating(false), 2000);
     return () => window.clearTimeout(t);
   }, []);
+
+  useEffect(() => {
+    lastActiveRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    const focusTarget =
+      dialogRef.current?.querySelector<HTMLElement>(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+      ) ?? dialogRef.current;
+    focusTarget?.focus();
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        onClose();
+      }
+    };
+
+    window.addEventListener('keydown', onKeyDown);
+    return () => {
+      window.removeEventListener('keydown', onKeyDown);
+      lastActiveRef.current?.focus?.();
+    };
+  }, [onClose]);
 
   return (
     <motion.div
@@ -96,9 +120,14 @@ export function PanelWrapper({ children, onClose }: { children: React.ReactNode;
       exit={{ opacity: 0 }}
       transition={{ duration: 0.18 }}
     >
-      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
+      <div className="absolute inset-0 bg-black/50" onClick={onClose} aria-hidden="true" />
       <motion.div
+        ref={dialogRef}
         className="relative z-10 max-h-[85vh] max-w-[95vw] overflow-y-auto overflow-x-hidden"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Игровая панель"
+        tabIndex={-1}
         initial={{ opacity: 0, y: 14, scale: 0.96 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         exit={{ opacity: 0, y: 10, scale: 0.98 }}

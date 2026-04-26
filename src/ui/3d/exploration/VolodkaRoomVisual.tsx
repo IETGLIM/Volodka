@@ -137,9 +137,13 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({
       polygonOffsetUnits: 1,
     });
 
-    setAssets({ floorMat, carpetMap, wallMat, woodMat });
+    let cancelled = false;
+    queueMicrotask(() => {
+      if (!cancelled) setAssets({ floorMat, carpetMap, wallMat, woodMat });
+    });
 
     return () => {
+      cancelled = true;
       wallMat.dispose();
       woodMat.dispose();
       floorMat.dispose();

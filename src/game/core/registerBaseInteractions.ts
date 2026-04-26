@@ -58,7 +58,10 @@ export function registerBaseInteractions(registry: InteractionRegistry = explora
     },
   });
 
-  /** Пример: память + раппорт (`checkDialogueCondition`) — доступно реестру / будущим зонам. */
+  /**
+   * Пример: память + раппорт (`checkDialogueCondition`).
+   * Пока нет `interactionId` в `STORY_TRIGGERS` — игрок не вызовет с клавиши E; см. allowlist в `explorationInteractionCoverage.test.ts`.
+   */
   registry.register({
     id: 'zarema_resonance_ping',
     type: 'event',

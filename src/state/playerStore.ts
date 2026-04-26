@@ -13,7 +13,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { useShallow } from 'zustand/react/shallow';
-import type { PlayerState, PlayerSkills, MoralChoice, ChoiceLogEntry } from '@/data/types';
+import type { PlayerState, PlayerSkills, PlayerPath, MoralChoice, ChoiceLogEntry } from '@/data/types';
 import { INITIAL_PLAYER_ENERGY, MAX_PLAYER_ENERGY } from '@/lib/energyConfig';
 import { experienceRequiredForNextLevel, applyExperienceGain, RPG_XP_SKILL_POINTS_PER_LEVEL } from '@/lib/rpgLeveling';
 import { eventBus } from '@/engine/EventBus';
@@ -104,6 +104,8 @@ interface PlayerStoreActions {
   clearPanicMode: () => void;
   incrementPlayTime: () => void;
   setPlayerAct: (act: number) => void;
+  /** Путь развития (`StoryEffect.pathShift`). */
+  setPlayerPath: (path: PlayerPath) => void;
   addSkill: (skill: keyof PlayerSkills, amount: number) => void;
   addSkillPoints: (points: number) => void;
   setFlag: (flag: string) => void;
@@ -315,6 +317,14 @@ export const usePlayerStore = create<PlayerStore>()(
   setPlayerAct: (act) => {
     const { playerState } = get();
     set({ playerState: { ...playerState, act: act as 1 | 2 | 3 | 4 } });
+  },
+
+  setPlayerPath: (path) => {
+    const { playerState } = get();
+    const oldPath = playerState.path;
+    if (oldPath === path) return;
+    set({ playerState: { ...playerState, path } });
+    eventBus.emit('path:changed', { oldPath, newPath: path });
   },
 
   addSkill: (skill, amount) => {
