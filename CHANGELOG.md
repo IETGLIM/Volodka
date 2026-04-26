@@ -6,6 +6,10 @@
 
 - **Сюжет (`storyNodes`, заставки `volodka_*`):** уточнён и расширен текст узлов `poetry_life_review`, `volunteer_read_result`, `home_alone`, `crisis_choice`, `act3_start`, `story_cafe_poet`, `start_diagnosis`; подзаголовок игры; исправлена формулировка «Старик в парке»; усилены короткие вставки у окна, стола, дивана и двери в комнате Володьки (`src/data/storyNodes.ts`, `src/data/animeCutscenes.ts`). Золотой путь и выборы веток не менялись.
 
+### Changed
+
+- **Документация и гигиена репозитория:** `README.md` — полная цепочка CI (`test:player-animations`, `asset-budget`, `build`), деплой без обязательных LLM/Blob/cloud env, ссылка на ручной Browserbase smoke. `docs/volodka-aaa-expert-audit-2026-04-25.md` — актуализация 2026-04-27 (Zod/лимиты `ai-dialogue`, upload, persist stores, политика smoke, mobile/roadmap). `.gitignore` — `volodka-aaa-current.zip` в корне не версионируется.
+
 ### Added
 
 - **Фаза 5 — production gates:** зафиксировано в `docs/volodka-incremental-aaa-roadmap.md` и `docs/volodka-room-smoke.md`: Browserbase smoke не в основном CI PR/push, только `workflow_dispatch` (`volodka-smoke.yml`). API: `src/validation/aiDialogueRequestSchema.ts` + лимит тела `MAX_AI_DIALOGUE_BODY_BYTES` для POST `/api/ai-dialogue`; для `/api/models/upload` — отказ при `Content-Length` > `MAX_MODEL_UPLOAD_BYTES` (флаг и bearer без изменений). Тест `aiDialogueRequestSchema.test.ts`. Чеклист релиза мемориала — roadmap §5.3.

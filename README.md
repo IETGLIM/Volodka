@@ -20,9 +20,12 @@ npm run build
 npm test
 ```
 
+**Деплой (Vercel и аналоги):** для прохождения игры в браузере **не обязательны** переменные LLM, Blob-загрузки моделей и облачного сейва. Прогресс по умолчанию в **localStorage**. Опционально: `ENABLE_AI_DIALOGUE_API=1` (иначе `/api/ai-dialogue` отдаёт локальный fallback), облако — пункт «Облачные сохранения» ниже, загрузка GLB — `ENABLE_MODEL_UPLOAD_API` и секреты из `src/app/api/models/upload/route.ts`.
+
 ## Инженерия, CI и безопасность (аудит 2026)
 
-- **GitHub Actions**: workflow `**.github/workflows/ci.yml`** — `npm ci` → `**npx tsc --noEmit**` → `**npm test**` (Vitest) → `**npm run lint**` на push/PR в `main` / `master`.
+- **GitHub Actions**: workflow `**.github/workflows/ci.yml`** на push/PR в `main` / `master`: `**npm ci**` → `**npx tsc --noEmit**` → `**npm test**` (Vitest) → `**npm run test:player-animations**` → `**npm run asset-budget**` → `**npm run lint**` → `**npm run build**`.
+- **Ручной smoke (Browserbase):** `**.github/workflows/volodka-smoke.yml**` — только ручной запуск (`workflow_dispatch`); в обычный CI не входит. См. `**docs/volodka-room-smoke.md**`.
 - **TypeScript**: в `**next.config.ts`** снято `**typescript.ignoreBuildErrors**` — ошибки типов снова **блокируют** `next build`.
 - **React**: включён `**reactStrictMode: true`** — в development возможны двойные эффекты; так ловятся утечки подписок и гонки в R3F.
 - **Облачные сохранения** (`/api/save`): по умолчанию API отвечает **403** с кодом `CLOUD_SAVE_DISABLED`. Включение только при `**ENABLE_CLOUD_GAME_SAVE=1`**, `**DATABASE_URL**` (Prisma) и секрете `**SAVE_API_SECRET**` на сервере; каждый запрос — с `**Authorization: Bearer <SAVE_API_SECRET>**`. Идентификатор строки в БД задаётся `**SAVE_USER_ID**` (без доверия к `userId` из тела или query). Клиентский прогресс по-прежнему в **localStorage** через стор.

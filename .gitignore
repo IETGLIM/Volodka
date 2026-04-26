@@ -27,6 +27,9 @@ exports/volodka-model-scale-analysis-bundle-*/
 archives/*.zip
 archives/_stage_expert_review_*
 
+# Снимки/дампы репозитория в корне (не версионировать)
+/volodka-aaa-current.zip
+
 # Записи Performance (Chrome DevTools), часто сотни МБ — не в репозиторий
 Trace-*.json
 

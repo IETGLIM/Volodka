@@ -119,6 +119,7 @@
 
 ## История изменений документа
 
+- **2026-04-27:** аудит `volodka-aaa-expert-audit` синхронизирован с кодом (API, CI/smoke, persist); README и `.gitignore` (zip-снимок в корне).
 - **2026-04-27:** фаза 5 — решение по Browserbase smoke, API-лимиты и Zod для `ai-dialogue`, чеклист релиза 5.3.
 - **2026-04-27:** фаза 4 — единый mobile breakpoint, тесты `mobileBreakpoints.test.tsx` + `explorationMobileHeroHints.test.ts`, чеклист 4.3.
 - **2026-04-27:** фаза 3 — интегритет hero streaming + спавн в коллайдерах (`explorationHeroStreamingIntegrity.test.ts`).
