@@ -14,6 +14,8 @@
 
 - **Этап 1.5 — фасад действий инвентаря:** `src/hooks/useInventoryActions.ts` — `addItem`, `removeItem`, `hasItem` через `useGameStore.getState()` для последующего `inventoryStore`.
 
+- **Этап 1.6 — фасад действий квестов:** `src/hooks/useQuestActions.ts` — `activateQuest`, `completeQuest`, `updateQuestObjective`, `incrementQuestObjective` через `gameStore` для последующего `questStore`.
+
 - **Полная persist-миграция с версионированием (State + Persist iteration):** `src/state/migrations.ts` ( `CURRENT_PERSIST_VERSION = 6`, `migrateSaveData` handles old saves, adds `factionReputations`, clamps values, merges with `INITIAL_PLAYER`). `playerStore.ts` exports `INITIAL_PLAYER`. `factionStore.ts` fully persisted with all methods. Updated `docs/volodka-aaa-expert-audit-2026-04-25.md` (Persist foundation closed, gap reduced to 4%). Existing `save-manager.ts` + `persistedGameSnapshot.ts` now aligned with v6. Prepares seamless rehydration, partialize for transient fields, and sync with `autoSaveManager`. `src/state/migrations.ts`, `playerStore.ts`.
 
 - **Dedicated `factionStore.ts` with Zustand `persist` (localStorage):** `Record<FactionId, FactionReputation>`, full actions (`updateFactionReputation` using shared logic from `factions.ts`, `getFactionStanding`, `resetFactions`, `isQuestAvailableForFaction`, `getInteractionBonusForFaction`, `completeQuestForFaction`). Delegated from `questMetaStore` (removed duplication, `resetQuests` now calls faction reset). Updated `state/index.ts` facade (`useGameStore.faction`), `FactionsPanel.tsx` (switched selectors to `useFactionStore`). Prepares **State + Persist** iteration (save/load of reputation, migration). `src/state/factionStore.ts`, `questMetaStore.ts`, `index.ts`, `FactionsPanel.tsx`.
