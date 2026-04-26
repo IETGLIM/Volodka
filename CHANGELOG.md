@@ -63,6 +63,8 @@
 
 ### Changed
 
+- **`useQuestProgress`:** квестовые селекторы и `activateQuest` через `useQuestState` / `useQuestActions`; репутация NPC — временный `useFactionActions` (делегат в `gameStore`). `useQuests` теперь совпадает с `useQuestState` (экшены квестов — отдельно `useQuestActions`). `useFactions` по-прежнему читает `factionReputations` из `gameStore` до Этапа 2.3. `src/hooks/useQuestProgress.ts`.
+
 - **`useDialogueFlow`:** без прямого `gameStore` — `gameMode` из `useWorldState`, `pushChoiceLog` из `usePlayerActions`; `'use client'`. `src/hooks/useDialogueFlow.ts`.
 
 - **`usePlayerActions`:** добавлен `pushChoiceLog` (сигнатура как в `gameStore`). `src/hooks/usePlayerActions.ts`.
