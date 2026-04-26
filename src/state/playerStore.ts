@@ -13,13 +13,14 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { useShallow } from 'zustand/react/shallow';
-import type { PlayerState, PlayerSkills, MoralChoice } from '@/data/types';
+import type { PlayerState, PlayerSkills, MoralChoice, ChoiceLogEntry } from '@/data/types';
 import { INITIAL_PLAYER_ENERGY, MAX_PLAYER_ENERGY } from '@/lib/energyConfig';
 import { experienceRequiredForNextLevel } from '@/lib/rpgLeveling';
 import { eventBus } from '@/engine/EventBus';
 import { selectEnergyPercentageFromPlayer } from './playerStoreSelectors';
 import { migrateSaveData, CURRENT_PERSIST_VERSION } from './migrations';
 import type { SavePayload } from '@/server/persistence/save-manager';
+import { saveGame, loadGame, resetGame, hydrateFromLocalStorage } from './saveManager';
 
 // ============================================
 // INITIAL STATE
@@ -83,6 +84,8 @@ export const INITIAL_PLAYER: PlayerState = {
 interface PlayerStoreState {
   playerState: PlayerState;
   currentNodeId: string;
+  choiceLog: ChoiceLogEntry[];
+  revealedPoemId: string | null;
 }
 
 /** Поля для пакетного обновления числовых кор-статов (один `set`). */
@@ -116,6 +119,11 @@ interface PlayerStoreActions {
   /** Восстановление с валидацией чисел; неизвестные поля отбрасываются на уровне merge. */
   deserializePlayerState: (data: Partial<PlayerState>) => void;
   resetPlayer: () => void;
+  pushChoiceLog: (entry: Omit<ChoiceLogEntry, 'id' | 'at'> & { id?: string; at?: number }) => void;
+  setRevealedPoemId: (poemId: string | null) => void;
+  saveGame: (options?: { source?: 'auto' | 'manual' }) => void;
+  loadGame: () => boolean;
+  hydrateFromLocalStorage: () => boolean;
 }
 
 type PlayerStore = PlayerStoreState & PlayerStoreActions;
@@ -159,11 +167,20 @@ function emitLowEnergyIfCrossed(prevEnergy: number, nextEnergy: number) {
 // Производные поля (проценты, агрегаты) не добавлять методами в state —
 // см. playerStoreSelectors + хуки ниже (или useShallow для объектов).
 
-export const usePlayerStore = create<PlayerStore>()((set, get) => ({
-  playerState: INITIAL_PLAYER,
-  currentNodeId: 'start',
+export const usePlayerStore = create<PlayerStore>()(
+  persist(
+    (set, get) => ({
+      playerState: INITIAL_PLAYER,
+      currentNodeId: 'start',
+      choiceLog: [],
+      revealedPoemId: null,
 
-  setCurrentNode: (nodeId) => {
+      saveGame,
+      loadGame,
+      resetGame,
+      hydrateFromLocalStorage,
+
+      setCurrentNode: (nodeId) => {
     const { playerState } = get();
     // Узел попадает в visitedNodes здесь; visitNode нужен отдельно,
     // если нужно отметить посещение без смены currentNodeId (без двойного set подряд с setCurrentNode).
@@ -429,8 +446,40 @@ export const usePlayerStore = create<PlayerStore>()((set, get) => ({
     set({ playerState: merged });
   },
 
-  resetPlayer: () => set({ playerState: INITIAL_PLAYER, currentNodeId: 'start' }),
-}));
+  resetPlayer: () => set({ playerState: INITIAL_PLAYER, currentNodeId: 'start', choiceLog: [], revealedPoemId: null }),
+
+  pushChoiceLog: (entry) => {
+    const id =
+      entry.id ||
+      (typeof crypto !== 'undefined' && 'randomUUID' in crypto && typeof crypto.randomUUID === 'function'
+        ? crypto.randomUUID()
+        : `log_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`);
+    const full: ChoiceLogEntry = {
+      id,
+      at: entry.at ?? Date.now(),
+      fromNodeId: entry.fromNodeId,
+      choiceText: entry.choiceText,
+      toNodeId: entry.toNodeId,
+      kind: entry.kind,
+      skillRollSuccess: entry.skillRollSuccess,
+    };
+    set((s) => ({
+      choiceLog: [...s.choiceLog, full].slice(-48),
+    }));
+  },
+
+  setRevealedPoemId: (poemId) => set({ revealedPoemId: poemId }),
+    }),
+    {
+      name: 'player-storage',
+      version: CURRENT_PERSIST_VERSION,
+      partialize: (state) => ({
+        playerState: state.playerState,
+        currentNodeId: state.currentNodeId,
+      }),
+    }
+  )
+);
 
 // ============================================
 // SELECTOR HOOKS

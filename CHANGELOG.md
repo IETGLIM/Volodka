@@ -4,6 +4,13 @@
 
 ### Added
 
+- **Аудит AAA завершен (Оптимизация и Polish)**:
+  1. **Demand Rendering**: `EXPLORATION_SCENE_FRAMELOOP` переведён на `demand` (рендеринг по необходимости) для экономии GPU. `RPGGameCanvas` больше не греет устройство в idle (`src/ui/3d/Scene.tsx`).
+  2. **Instancing**: `WorldItem` и `ExplorationFootprints` переведены на `InstancedMesh`. Меньше draw calls, лучшая производительность (`src/ui/game/InteractiveTrigger.tsx`, `src/ui/3d/exploration/ExplorationFootprints.tsx`).
+  3. **Persist State**: `playerStore` и `worldStore` переведены на `persist` из Zustand (`src/state/playerStore.ts`, `src/state/worldStore.ts`).
+  4. **Accessibility (a11y)**: Добавлен `AriaLiveAnnouncer` с `aria-live="polite"` для озвучивания событий (сообщения, получение лута, левелапы) скринридерами (`src/ui/game/AriaLiveAnnouncer.tsx`, `src/app/layout.tsx`).
+  5. **API Security**: Строгая Zod валидация добавлена в API эндпоинты: `/api/save` и `/api/ai-dialogue` (`src/app/api/save/route.ts`, `src/app/api/ai-dialogue/route.ts`).
+  
 - **Этап 1 — фасад действий игрока:** `src/hooks/usePlayerActions.ts` — единая точка вызова мутаций (статы, стресс, скиллы, XP, флаги, стихи, узлы, моральные выборы); пока делегирует в `useGameStore.getState()` для последующего переноса на `playerStore`.
 
 - **Этап 1.2 — фасад чтения состояния игрока:** `src/hooks/usePlayerState.ts` — плоский срез `playerState` через `useShallow`, чтобы UI не подписывался на весь `useGameStore` и позже можно было переключить источник на `playerStore`.

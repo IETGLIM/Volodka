@@ -5,7 +5,9 @@
 // текущего NPC, подсказки взаимодействия.
 
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 import { useShallow } from 'zustand/react/shallow';
+import { CURRENT_PERSIST_VERSION } from './migrations';
 import { ENERGY_COSTS } from '@/lib/energyConfig';
 import { eventBus } from '@/engine/EventBus';
 import type { NPCRelation, SceneId } from '@/data/types';
@@ -110,10 +112,12 @@ const getNPCStage = (value: number): NPCRelation['stage'] => {
 // STORE
 // ============================================
 
-export const useWorldStore = create<WorldStore>()((set, get) => ({
-  npcRelations: INITIAL_NPC_RELATIONS,
-  gameMode: 'exploration',
-  exploration: INITIAL_EXPLORATION,
+export const useWorldStore = create<WorldStore>()(
+  persist(
+    (set, get) => ({
+      npcRelations: INITIAL_NPC_RELATIONS,
+      gameMode: 'exploration',
+      exploration: INITIAL_EXPLORATION,
   currentNPCId: null,
   interactionPrompt: null,
   unlockedLocations: [],
@@ -267,7 +271,26 @@ export const useWorldStore = create<WorldStore>()((set, get) => ({
       unlockedLocations: [],
     });
   },
-}));
+    }),
+    {
+      name: 'world-storage',
+      version: CURRENT_PERSIST_VERSION,
+      partialize: (state) => ({
+        npcRelations: state.npcRelations,
+        gameMode: state.gameMode,
+        exploration: {
+          ...INITIAL_EXPLORATION,
+          playerPosition: state.exploration.playerPosition,
+          currentSceneId: state.exploration.currentSceneId,
+          timeOfDay: state.exploration.timeOfDay,
+          exploredAreas: state.exploration.exploredAreas,
+          // Exclude transient data like npcStates, triggerStates, etc.
+        },
+        unlockedLocations: state.unlockedLocations,
+      }),
+    }
+  )
+);
 
 // ============================================
 // SELECTOR HOOKS
