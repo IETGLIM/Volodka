@@ -452,6 +452,22 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
         pitchMax: 0.34,
       };
     }
+    if (sceneId === 'blue_pit') {
+      return {
+        distance: 2.35,
+        height: 1.55,
+        smoothness: 0.12,
+        shoulderOffset: 0.15,
+        lookAtHeightOffset: 1.15,
+        collisionSpring: 11,
+        minDistance: 1.25,
+        maxDistance: 3.25,
+        collisionRayOriginY: 1.25,
+        collisionRadius: 0.25,
+        pitchMin: -0.1,
+        pitchMax: 0.35,
+      };
+    }
     if (sceneId === 'battle') {
       return {
         distance: 4.35,
@@ -946,7 +962,7 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
         compactIndoor={isNarrowApartment}
         cinematicIntro={introCutsceneActive}
         explorationCyberGrade={
-          sceneId === 'volodka_room' && explorationPhase === 'gameplay' && !introCutsceneActive
+          (sceneId === 'volodka_room' || sceneId === 'blue_pit') && explorationPhase === 'gameplay' && !introCutsceneActive
         }
       />
       <ExplorationParticles sceneId={sceneId} timeOfDay={timeOfDay} visualLite={visualLite} />

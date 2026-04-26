@@ -14,13 +14,14 @@ export function useMobileVisualPerf(): boolean {
   useEffect(() => {
     const sync = () => {
       const coarse = window.matchMedia('(pointer: coarse)').matches;
-      const narrow = window.matchMedia('(max-width: 1023px)').matches;
+      // Используем 767px вместо 1023px, чтобы не отключать эффекты у десктоп-пользователей с разделенным экраном (например, при открытом IDE)
+      const narrow = window.matchMedia('(max-width: 767px)').matches;
       const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       setLite(coarse || narrow || reduce);
     };
     sync();
     const m1 = window.matchMedia('(pointer: coarse)');
-    const m2 = window.matchMedia('(max-width: 1023px)');
+    const m2 = window.matchMedia('(max-width: 767px)');
     const m3 = window.matchMedia('(prefers-reduced-motion: reduce)');
     m1.addEventListener('change', sync);
     m2.addEventListener('change', sync);
