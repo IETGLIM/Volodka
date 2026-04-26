@@ -23,7 +23,7 @@ export function useGameUiLayout({
 }: UseGameUiLayoutParams) {
   /** Показать нижний оверлей сюжета (`StoryRenderer`), не путать с удалённым `StoryPanel`. */
   const showStoryOverlay = useMemo(() => {
-    if (phase !== 'game' || !hasCurrentNode || currentNodeId === 'explore_mode') return false;
+    if (phase !== 'game' || !hasCurrentNode) return false;
     if (!storyOverlayEligible) return false;
     if (gameMode === 'dialogue' || gameMode === 'cutscene') return false;
     if (gameMode === 'exploration' || gameMode === 'combat') return true;

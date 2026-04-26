@@ -3,7 +3,7 @@ import { storyNodeShowsStoryOverlay } from '@/lib/storyOverlayEligibility';
 import type { StoryNode } from '@/data/types';
 
 describe('storyNodeShowsStoryOverlay', () => {
-  it('returns false for explore_mode and empty nodes', () => {
+  it('returns false for empty explore_mode and empty nodes', () => {
     expect(storyNodeShowsStoryOverlay(undefined)).toBe(false);
     expect(
       storyNodeShowsStoryOverlay({
@@ -14,6 +14,19 @@ describe('storyNodeShowsStoryOverlay', () => {
         text: '',
       } as StoryNode),
     ).toBe(false);
+  });
+
+  it('returns true for explore_hub_welcome (hub intro with text)', () => {
+    expect(
+      storyNodeShowsStoryOverlay({
+        id: 'explore_hub_welcome',
+        type: 'narration',
+        scene: 'volodka_room',
+        act: 1,
+        text: 'Hello hub',
+        choices: [{ text: 'Go', next: 'explore_mode' }],
+      } as StoryNode),
+    ).toBe(true);
   });
 
   it('returns true when there is text or choices', () => {

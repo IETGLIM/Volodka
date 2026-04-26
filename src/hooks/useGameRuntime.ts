@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ACHIEVEMENTS, checkAchievement } from '@/data/achievements';
 import { STORY_NODES } from '@/data/storyNodes';
+import { isExplorationHubStoryNodeId } from '@/data/explorationHubStory';
 import { POEMS } from '@/data/poems';
 import { eventBus } from '@/engine/EventBus';
 import { sceneManager } from '@/engine/SceneManager';
@@ -221,12 +222,12 @@ export function useGameRuntime(params: UseGameRuntimeParams) {
 
   /**
    * Синхрон сцены сюжетного узла с 3D-локацией (`exploration.currentSceneId`).
-   * В `explore_mode` не вызываем `travelToScene` (игрок мог переехать в другую 3D-локацию),
+   * В хабе обхода не вызываем `travelToScene` (игрок мог переехать в другую 3D-локацию),
    * но обновляем `sceneManager` по фактической `exploration.currentSceneId`.
    */
   useEffect(() => {
     if (phase !== 'game') return;
-    if (currentNodeId === 'explore_mode') {
+    if (isExplorationHubStoryNodeId(currentNodeId)) {
       const sid = explorationCurrentSceneId ?? worldState.currentSceneId;
       sceneManager.transitionTo(sid);
       return;

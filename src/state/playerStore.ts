@@ -174,7 +174,7 @@ export const usePlayerStore = create<PlayerStore>()(
   persist(
     (set, get) => ({
       playerState: INITIAL_PLAYER,
-      currentNodeId: 'start',
+      currentNodeId: 'explore_hub_welcome',
       choiceLog: [],
       revealedPoemId: null,
 
@@ -493,7 +493,13 @@ export const usePlayerStore = create<PlayerStore>()(
     set({ playerState: merged });
   },
 
-  resetPlayer: () => set({ playerState: INITIAL_PLAYER, currentNodeId: 'start', choiceLog: [], revealedPoemId: null }),
+  resetPlayer: () =>
+    set({
+      playerState: INITIAL_PLAYER,
+      currentNodeId: 'explore_hub_welcome',
+      choiceLog: [],
+      revealedPoemId: null,
+    }),
 
   pushChoiceLog: (entry) => {
     const id =

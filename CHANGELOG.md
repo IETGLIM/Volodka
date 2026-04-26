@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Added
+
+- **3D-хаб и сюжетный оверлей:** узел `explore_hub_welcome` в `storyNodes` — после интро игрок видит текст (где сюжет, где модели, как открыть полную ленту с `start`); стартовый и сброшенный прогресс — `playerStore.currentNodeId: explore_hub_welcome`. Хабовые id вынесены в `explorationHubStory.ts`; `storyOverlayEligibility` и `useGameUiLayout` больше не глушат оверлей только из‑за id `explore_mode` (пустой хаб по-прежнему без панели).
+
 ### Changed
 
 - **README:** позиционирование продукта как **3D web RPG** (R3F + Rapier + обход) с сохранением сюжетного/VN-слоя; убрана устаревшая формулировка «новелла / RPG-оболочка» как главный жанр.

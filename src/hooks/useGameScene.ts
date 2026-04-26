@@ -2,6 +2,7 @@
 
 import { useMemo } from 'react';
 import { STORY_NODES } from '@/data/storyNodes';
+import { isExplorationHubStoryNodeId } from '@/data/explorationHubStory';
 import type { SceneId } from '@/data/types';
 import { useGameRuntime, type UseGameRuntimeParams } from '@/hooks/useGameRuntime';
 import { useQuestProgressBridge } from '@/hooks/useQuestProgress';
@@ -25,8 +26,9 @@ export function useGameScene(params: UseGameSceneParams) {
   const currentSceneId = useMemo((): SceneId => (currentNode?.scene as SceneId) || 'kitchen_night', [currentNode]);
 
   /** В хабе обхода — фактическая 3D-локация; на сюжетном узле — сцена узла (синхрон с `travelToScene` в рантайме). */
-  const questSceneId =
-    runtimeParams.currentNodeId === 'explore_mode' ? explorationCurrentSceneId : currentSceneId;
+  const questSceneId = isExplorationHubStoryNodeId(runtimeParams.currentNodeId)
+    ? explorationCurrentSceneId
+    : currentSceneId;
 
   const { handleNPCInteraction: trackQuestNpcTalk, handleEvent: emitQuestEvent } =
     useQuestProgressBridge(questSceneId);

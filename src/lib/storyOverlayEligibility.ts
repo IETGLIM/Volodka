@@ -1,8 +1,8 @@
 import type { StoryNode } from '@/data/types';
 
-/** Узел `explore_mode` — маркер свободного 3D, без текста в оверлее. */
+/** Пустой хаб `explore_mode` без текста/выборов — без оверлея; см. `explore_hub_welcome` для вступления. */
 export function storyNodeShowsStoryOverlay(node: StoryNode | undefined): boolean {
-  if (!node || node.id === 'explore_mode') return false;
+  if (!node) return false;
   return (
     Boolean(node.text?.trim()) ||
     Boolean(node.choices?.length) ||

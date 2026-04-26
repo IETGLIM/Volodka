@@ -8,11 +8,13 @@ import { STORY_TRIGGERS } from '@/data/triggerZones';
 import { rewriteLegacyModelPath } from '@/config/modelUrls';
 
 describe('3D / exploration data integrity', () => {
-  it('defines explore_mode story node aligned with default 3D start (Volodka room)', () => {
-    const node = STORY_NODES.explore_mode;
-    expect(node).toBeDefined();
-    expect(node?.id).toBe('explore_mode');
-    expect(node?.scene).toBe('volodka_room');
+  it('defines explore_mode and explore_hub_welcome aligned with default 3D start (Volodka room)', () => {
+    const hub = STORY_NODES.explore_mode;
+    expect(hub).toBeDefined();
+    expect(hub?.id).toBe('explore_mode');
+    expect(hub?.scene).toBe('volodka_room');
+    const welcome = STORY_NODES.explore_hub_welcome;
+    expect(welcome?.scene).toBe('volodka_room');
   });
 
   it('maps every NPC legacy modelPath to an existing file under public/models-external', () => {
