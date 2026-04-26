@@ -1,0 +1,50 @@
+# Vercel deployment exclusions - keep only production-critical assets
+# Heavy / unused GLB models (total ~200+ MB reduction)
+public/models/burntrap_hd_-_fnaf_security_breach.glb
+public/models/spartan_armour_mkv_-_halo_reach.glb
+public/models/dark_lantern_huntress.glb
+public/models/antoni_gaudi.glb
+public/models/sayuri_dans.glb
+public/models/shibahu.glb
+public/models/college_girl.glb
+public/models/crimson_lace_confidence.glb
+public/models/crimson_lace_in_the_hallway.glb
+public/models/cyberpunk_character.glb
+public/models/destiny_2_character_bust.glb
+public/models/free_annie_anime_gerl_-_without_clothes.glb
+public/models/luoli_run.glb
+public/models/calvin_freckle_mcmurray_from_lackadaisy.glb
+public/models/blade__soul_kung_fu_sword_stick.glb
+
+# Khronos test samples (not used in game)
+public/models/khronos_cc0_*.glb
+public/models/khronos_cc0_BoomBox.glb
+public/models/khronos_cc0_NormalTangentTest.glb
+
+# Old / unused player models
+public/models/Volodka.glb
+
+# Temporary / dev assets
+**/*.tmp
+**/.DS_Store
+.env.local
+node_modules
+.next
+out
+
+# Keep only critical production models
+!public/models/lowpoly_anime_character_cyberstyle.glb
+!public/models/Chair.glb
+!public/models/desk_volodka.glb
+!public/models/shelf.glb
+!public/models/mug.glb
+!public/models/Keyboard.glb
+!public/models/lamp.glb
+!public/models/lillian__vgdc.glb
+!public/models/on_a_quest.glb
+!public/models/witchapprentice.glb
+!public/models/miss_galaxy.glb
+
+# Keep streaming / procedural critical files
+public/models-external/**
+!public/models-external/**/*.glb
