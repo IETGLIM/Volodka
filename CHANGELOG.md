@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Changed
+
+- **README:** позиционирование продукта как **3D web RPG** (R3F + Rapier + обход) с сохранением сюжетного/VN-слоя; убрана устаревшая формулировка «новелла / RPG-оболочка» как главный жанр.
+
 ### Fixed
 
 - **Vercel / браузер:** убран catch-all заголовок `X-Content-Type-Options` + `X-Frame-Options` для шаблона `/(.*)` в `vercel.json` — при `nosniff` и неверном `Content-Type` у `/_next/static/chunks/*.css` Chromium отказывался применять стили. Те же заголовки безопасности перенесены на `/` и `/api/(.*)` только.
