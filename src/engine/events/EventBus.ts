@@ -82,6 +82,17 @@ export interface EventMap {
   'quest:completed': { questId: string };
   'quest:objective_updated': { questId: string; objectiveId: string; value: number };
 
+  /**
+   * Сюжетный выбор с `StoryChoice.cutsceneId` — `useGameRuntime` дожимает `AnimeCutscene`,
+   * затем переводит узел (`setCurrentNode` + `pushChoiceLog`).
+   */
+  'cinematic:story_after_choice': {
+    cutsceneId: string;
+    nextNodeId: string;
+    fromNodeId: string;
+    choiceText: string;
+  };
+
   // NPC
   'npc:interacted': { npcId: string; npcName: string };
   'npc:relation_changed': { npcId: string; oldValue: number; newValue: number; delta: number };

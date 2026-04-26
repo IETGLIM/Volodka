@@ -251,6 +251,15 @@ export function useStoryChoiceHandler(params: StoryChoiceHandlerParams) {
       }
 
       if (choice.next) {
+        if (choice.cutsceneId) {
+          eventBus.emit('cinematic:story_after_choice', {
+            cutsceneId: choice.cutsceneId,
+            nextNodeId: choice.next,
+            fromNodeId,
+            choiceText: choice.text,
+          });
+          return;
+        }
         setCurrentNode(choice.next);
         pushChoiceLog({
           fromNodeId,

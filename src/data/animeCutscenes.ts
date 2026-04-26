@@ -225,6 +225,52 @@ export const ANIME_CUTSCENES: Record<string, AnimeCutsceneData> = {
       'За спиной остаётся стойка с мониторами — маленький дата-центр на коленке, который всё равно крутится, пока ты жив.',
     ],
   },
+
+  // Универсальные биты: квесты (по умолчанию, если в `QUEST_DEFINITIONS` нет override)
+  cinematic_beat_quest_start: {
+    id: 'cinematic_beat_quest_start',
+    title: 'Новая цель',
+    subtitle: 'Квест',
+    theme: 'hope',
+    duration: 2400,
+    text: [
+      'Ещё одна ветка в квест-логе — не срочно, пока важно.',
+      'Следы на карте, метки в журнале: это больше не набор тикетов, а путь с именем.',
+    ],
+  },
+  cinematic_beat_quest_milestone: {
+    id: 'cinematic_beat_quest_milestone',
+    title: 'Прогресс',
+    subtitle: 'Квест',
+    theme: 'hope',
+    duration: 2200,
+    text: [
+      'Вопрос снят с крючка, но в хвосте — новые вопросы. Так и живём.',
+      'Следующая строка в квест-логе: не апдейт, а веха.',
+    ],
+  },
+  cinematic_beat_quest_complete: {
+    id: 'cinematic_beat_quest_complete',
+    title: 'Снято',
+    subtitle: 'Квест',
+    theme: 'finale',
+    duration: 2600,
+    text: [
+      'Эта цепочка закрыта. Не флеш, не откат — снято.',
+      'Опыт, как коммит: остаётся в ветке, с которой можно жить дальше.',
+    ],
+  },
+  cinematic_beat_story_turn: {
+    id: 'cinematic_beat_story_turn',
+    title: 'Поворот',
+    subtitle: 'Сюжет',
+    theme: 'loneliness',
+    duration: 2200,
+    text: [
+      'Ступенька вниз, ступенька вверх — в жизни не сортировщик, и это не дебагер.',
+      'Следующая сцена уже пишет себя сама; надо лишь не сбить табуляцию.',
+    ],
+  },
 };
 
 // ============================================

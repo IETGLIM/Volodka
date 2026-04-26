@@ -5,6 +5,7 @@ import { NPC_DEFINITIONS } from '@/data/npcDefinitions';
 import { POEMS } from '@/data/poems';
 import { SCENE_CONFIG } from '@/config/scenes';
 import { items } from '@/data/items';
+import { getCutsceneById } from '@/data/animeCutscenes';
 import { INITIAL_NPC_RELATIONS } from '@/data/constants';
 import type { StoryEffect, StoryNode } from '@/data/types';
 
@@ -183,6 +184,20 @@ function validateQuests(): ValidationIssue[] {
           message: `Quest "${questId}" reward item missing: "${rewardItem}"`,
         });
       }
+    }
+    const requireCut = (id: string | undefined, field: string) => {
+      if (id == null || id === '') return;
+      if (!getCutsceneById(id)) {
+        issues.push({
+          code: 'QUEST_CUTSCENE_ID_UNKNOWN',
+          message: `Quest "${questId}" ${field}: unknown ANIME_CUTSCENES id "${id}"`,
+        });
+      }
+    };
+    requireCut(quest.cutsceneOnStart, 'cutsceneOnStart');
+    requireCut(quest.cutsceneOnComplete, 'cutsceneOnComplete');
+    for (const [objId, cid] of Object.entries(quest.cutsceneOnObjective ?? {})) {
+      requireCut(cid, `cutsceneOnObjective[${objId}]`);
     }
   }
   return issues;

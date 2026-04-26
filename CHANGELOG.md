@@ -8,6 +8,8 @@
 
 ### Added
 
+- **Кинематограф и квесты:** `questMetaStore` шлёт `quest:activated` / `quest:completed` / `quest:objective_updated` в `eventBus`. `useGameRuntime` по умолчанию поднимает полноэкранные биты из `animeCutscenes` (`cinematic_beat_quest_*`); в `QUEST_DEFINITIONS` — опциональные `cutsceneOnStart` / `cutsceneOnComplete` / `cutsceneOnObjective`. Сюжетный выбор: `StoryChoice.cutsceneId` + событие `cinematic:story_after_choice` (затем `setCurrentNode`); тестовый путь — выбор «Начать с офиса» в `explore_hub_welcome`. Справочник дефолтов: `cinematicQuestDefaults.ts`. **3D-камера** в сцене — отдельные профили (как `intro_cutscene`), не дублируют полноэкранный слой.
+
 - **3D-хаб и сюжетный оверлей:** узел `explore_hub_welcome` в `storyNodes` — после интро игрок видит текст (где сюжет, где модели, как открыть полную ленту с `start`); стартовый и сброшенный прогресс — `playerStore.currentNodeId: explore_hub_welcome`. Хабовые id вынесены в `explorationHubStory.ts`; `storyOverlayEligibility` и `useGameUiLayout` больше не глушат оверлей только из‑за id `explore_mode` (пустой хаб по-прежнему без панели).
 
 ### Changed

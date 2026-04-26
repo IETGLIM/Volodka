@@ -308,6 +308,9 @@ export interface StoryChoice {
     successEffect?: StoryEffect;
     failEffect?: StoryEffect;
   };
+
+  /** Показать `ANIME_CUTSCENES[cutsceneId]`, затем перейти на `next` (см. `cinematic:story_after_choice`). */
+  cutsceneId?: string;
 }
 
 export interface PoemLine {
@@ -474,6 +477,14 @@ export interface Quest {
   timeLimit?: number;
   startNode?: string;
   completeNode?: string;
+
+  /**
+   * Кинематографические вставки (полноэкранные `animeCutscenes.ts`).
+   * Отдельные 3D-скрипты камеры в сцене — планируются поверх `cutsceneId` (превью-режим / профиль).
+   */
+  cutsceneOnStart?: string;
+  cutsceneOnComplete?: string;
+  cutsceneOnObjective?: Partial<Record<string, string>>;
   
   // Для скрытых квестов
   discoveryCondition?: ChoiceCondition;

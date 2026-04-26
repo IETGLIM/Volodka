@@ -4,6 +4,11 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ACHIEVEMENTS, checkAchievement } from '@/data/achievements';
 import { STORY_NODES } from '@/data/storyNodes';
 import { isExplorationHubStoryNodeId } from '@/data/explorationHubStory';
+import { QUEST_DEFINITIONS, isObjectiveSatisfied } from '@/data/quests';
+import { getCutsceneById } from '@/data/animeCutscenes';
+import { usePlayerStore } from '@/state/playerStore';
+import { CINEMATIC_BEAT, resolveQuestCompleteCutsceneId, resolveQuestObjectiveCutsceneId, resolveQuestStartCutsceneId } from '@/lib/cinematicQuestDefaults';
+import type { ExtendedQuest } from '@/data/types';
 import { POEMS } from '@/data/poems';
 import { eventBus } from '@/engine/EventBus';
 import { sceneManager } from '@/engine/SceneManager';
@@ -90,10 +95,26 @@ export function useGameRuntime(params: UseGameRuntimeParams) {
   const activeCutsceneIdRef = useRef<string | null>(null);
   /** Ключ для `cutscenesCompletedRef` при старте заставки (узел сюжета или explore-триггер). */
   const cutsceneCompletionKeyRef = useRef<string | null>(null);
+  /**
+   * После полноэкранной `AnimeCutscene` (сюжетный выбор с `cutsceneId`):
+   * `setCurrentNode` + `pushChoiceLog` — в `completeCutscene`.
+   */
+  const pendingCinematicAfterRef = useRef<{
+    kind: 'story_choice';
+    nextNodeId: string;
+    fromNodeId: string;
+    choiceText: string;
+  } | null>(null);
 
   useEffect(() => {
     activeCutsceneIdRef.current = activeCutsceneId;
   }, [activeCutsceneId]);
+
+  const getQuestDef = useCallback((questId: string): ExtendedQuest | undefined => {
+    return (
+      (QUEST_DEFINITIONS as Record<string, ExtendedQuest>)[questId] ?? useGameStore.getState().aiQuestDefinitions[questId]
+    );
+  }, []);
 
   const worldState = useWorldState();
   const { syncStreamingSnapshot } = useWorldActions();
@@ -271,6 +292,90 @@ export function useGameRuntime(params: UseGameRuntimeParams) {
     });
   }, []);
 
+  /** Квесты (шина) + сюжетный выбор с `cutsceneId` — тот же полноэкранный слой, 3D-камера планируется отдельным профилем. */
+  useEffect(() => {
+    if (phase !== 'game') return;
+
+    const onQuestActivated = ({ questId }: { questId: string }) => {
+      if (activeCutsceneIdRef.current) return;
+      const def = getQuestDef(questId);
+      const cid = resolveQuestStartCutsceneId(def);
+      if (!cid || !getCutsceneById(cid)) return;
+      const key = `cinematic::quest::activated::${questId}::${cid}`;
+      if (cutscenesCompletedRef.current.has(key)) return;
+      requestCutscene(cid, key);
+    };
+
+    const onQuestCompleted = ({ questId }: { questId: string }) => {
+      if (activeCutsceneIdRef.current) return;
+      const def = getQuestDef(questId);
+      const cid = resolveQuestCompleteCutsceneId(def);
+      if (!cid || !getCutsceneById(cid)) return;
+      const key = `cinematic::quest::complete::${questId}::${cid}`;
+      if (cutscenesCompletedRef.current.has(key)) return;
+      requestCutscene(cid, key);
+    };
+
+    const onObjective = ({
+      questId,
+      objectiveId,
+      value,
+    }: {
+      questId: string;
+      objectiveId: string;
+      value: number;
+    }) => {
+      if (activeCutsceneIdRef.current) return;
+      const def = getQuestDef(questId);
+      if (!def) return;
+      const odef = def.objectives.find((o) => o.id === objectiveId);
+      if (!odef || odef.hidden) return;
+      if (!isObjectiveSatisfied(odef, value)) return;
+      const prog = useGameStore.getState().questProgress[questId] || {};
+      const allSatisfied = def.objectives.every((o) => isObjectiveSatisfied(o, prog[o.id] ?? 0));
+      if (allSatisfied) return;
+      const cid = resolveQuestObjectiveCutsceneId(def, objectiveId);
+      if (!cid || !getCutsceneById(cid)) return;
+      const key = `cinematic::quest::objective::${questId}::${objectiveId}::satisfied`;
+      if (cutscenesCompletedRef.current.has(key)) return;
+      requestCutscene(cid, key);
+    };
+
+    const onChoiceCinematic: (p: {
+      cutsceneId: string;
+      nextNodeId: string;
+      fromNodeId: string;
+      choiceText: string;
+    }) => void = (p) => {
+      if (activeCutsceneIdRef.current) return;
+      const id = p.cutsceneId?.trim() || CINEMATIC_BEAT.storyChoice;
+      if (!getCutsceneById(id)) return;
+      const transientKey = `__transient__::choice::${p.fromNodeId}::${p.nextNodeId}::${id}::${Date.now()}`;
+      queueMicrotask(() => {
+        if (activeCutsceneIdRef.current) return;
+        pendingCinematicAfterRef.current = {
+          kind: 'story_choice',
+          nextNodeId: p.nextNodeId,
+          fromNodeId: p.fromNodeId,
+          choiceText: p.choiceText,
+        };
+        cutsceneCompletionKeyRef.current = transientKey;
+        setActiveCutsceneId(id);
+      });
+    };
+
+    const offA = eventBus.on('quest:activated', onQuestActivated);
+    const offB = eventBus.on('quest:completed', onQuestCompleted);
+    const offC = eventBus.on('quest:objective_updated', onObjective);
+    const offD = eventBus.on('cinematic:story_after_choice', onChoiceCinematic);
+    return () => {
+      offA();
+      offB();
+      offC();
+      offD();
+    };
+  }, [phase, getQuestDef, requestCutscene]);
+
   useEffect(() => {
     if (phase !== 'game') return;
 
@@ -349,11 +454,25 @@ export function useGameRuntime(params: UseGameRuntimeParams) {
   ]);
 
   const completeCutscene = useCallback(() => {
+    const pending = pendingCinematicAfterRef.current;
+    pendingCinematicAfterRef.current = null;
     const id = activeCutsceneIdRef.current;
     const key = cutsceneCompletionKeyRef.current ?? (id ? `${currentNodeId}::${id}` : null);
-    if (key) cutscenesCompletedRef.current.add(key);
+    if (key && !key.startsWith('__transient__::')) {
+      cutscenesCompletedRef.current.add(key);
+    }
     cutsceneCompletionKeyRef.current = null;
     setActiveCutsceneId(null);
+    if (pending?.kind === 'story_choice') {
+      const ps = usePlayerStore.getState();
+      ps.setCurrentNode(pending.nextNodeId);
+      ps.pushChoiceLog({
+        fromNodeId: pending.fromNodeId,
+        choiceText: pending.choiceText,
+        toNodeId: pending.nextNodeId,
+        kind: 'story',
+      });
+    }
   }, [currentNodeId]);
 
   return {

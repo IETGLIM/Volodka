@@ -11,6 +11,7 @@ import { useFactionStore } from './factionStore';
 import { QUEST_DEFINITIONS } from '@/data/quests';
 import type { ExtendedQuest } from '@/data/types';
 import { parseAIQuestPayload } from '@/validation/aiQuestSchema';
+import { eventBus } from '@/engine/events/EventBus';
 
 // ============================================
 // INITIAL STATE
@@ -92,6 +93,7 @@ export const useQuestStore = create<QuestStore>()((set, get) => ({
     const { activeQuestIds, completedQuestIds } = get();
     if (!activeQuestIds.includes(questId) && !completedQuestIds.includes(questId)) {
       set({ activeQuestIds: [...activeQuestIds, questId] });
+      eventBus.emit('quest:activated', { questId });
     }
   },
 
@@ -121,29 +123,34 @@ export const useQuestStore = create<QuestStore>()((set, get) => ({
       questProgress: newQuestProgress,
       aiQuestDefinitions,
     });
+    eventBus.emit('quest:completed', { questId });
   },
 
   updateQuestObjective: (questId, objectiveId, value) => {
     const { questProgress } = get();
     const questObj = questProgress[questId] || {};
+    const next = value !== undefined ? value : (questObj[objectiveId] || 0) + 1;
     set({
       questProgress: {
         ...questProgress,
-        [questId]: { ...questObj, [objectiveId]: value !== undefined ? value : (questObj[objectiveId] || 0) + 1 },
+        [questId]: { ...questObj, [objectiveId]: next },
       },
     });
+    eventBus.emit('quest:objective_updated', { questId, objectiveId, value: next });
   },
 
   incrementQuestObjective: (questId, objectiveId) => {
     const { questProgress } = get();
     const questObj = questProgress[questId] || {};
     const currentValue = questObj[objectiveId] || 0;
+    const next = currentValue + 1;
     set({
       questProgress: {
         ...questProgress,
-        [questId]: { ...questObj, [objectiveId]: currentValue + 1 },
+        [questId]: { ...questObj, [objectiveId]: next },
       },
     });
+    eventBus.emit('quest:objective_updated', { questId, objectiveId, value: next });
   },
 
   isQuestActive: (questId) => get().activeQuestIds.includes(questId),
