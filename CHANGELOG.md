@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Changed
+
+- **Квесты 3D-обхода:** `startNode` у `exploration_zarema_hearth` и `exploration_volodka_rack` — `explore_hub_welcome` (согласовано с новым входом в хаб после интро).
+
 ### Added
 
 - **3D-хаб и сюжетный оверлей:** узел `explore_hub_welcome` в `storyNodes` — после интро игрок видит текст (где сюжет, где модели, как открыть полную ленту с `start`); стартовый и сброшенный прогресс — `playerStore.currentNodeId: explore_hub_welcome`. Хабовые id вынесены в `explorationHubStory.ts`; `storyOverlayEligibility` и `useGameUiLayout` больше не глушат оверлей только из‑за id `explore_mode` (пустой хаб по-прежнему без панели).

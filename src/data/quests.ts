@@ -117,8 +117,8 @@ export const QUEST_DEFINITIONS: Record<string, ExtendedQuest> = {
       }),
     ],
     reward: createReward({ experience: 45, mood: 5, creativity: 3, karma: 2 }),
-    /** Сторинод-хаб 3D-обхода (`explore_mode` в `storyNodes`). */
-    startNode: 'explore_mode',
+    /** Вход в 3D-хаб (`explore_hub_welcome`); игровой хаб без оверлея — `explore_mode`. */
+    startNode: 'explore_hub_welcome',
   },
 
   /**
@@ -151,7 +151,7 @@ export const QUEST_DEFINITIONS: Record<string, ExtendedQuest> = {
       }),
     ],
     reward: createReward({ experience: 55, karma: -2, stability: 6, mood: -1, creativity: 9 }),
-    startNode: 'explore_mode',
+    startNode: 'explore_hub_welcome',
   },
   
   // ========== ТЕХНИЧЕСКИЕ IT-КВЕСТЫ (НОВЫЕ!) ==========
