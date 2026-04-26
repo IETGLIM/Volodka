@@ -95,7 +95,7 @@ export interface SceneConfig {
   explorationInteriorCeilingMeters?: number;
   /**
    * Множитель скорости ходьбы/бега игрока и патруля NPC в 3D-исследовании (коллайдеры без изменений).
-   * Если не задано — выводится из итогового масштаба персонажа (как пара 0.48 / 0.9 у `volodka_room`).
+   * Если не задано — выводится из итогового масштаба персонажа (как пара ~0.60 / 0.9 у `volodka_room`).
    */
   explorationLocomotionScale?: number;
   /**
@@ -114,7 +114,7 @@ function inferredExplorationLocomotionFromCharacter(characterScale: number): num
 }
 
 /**
- * Подсказка масштаба персонажей для **новых** узких интерьеров: эталон `volodka_room` (max габарит пола ~14 м → ~0.48).
+ * Подсказка масштаба персонажей для **новых** узких интерьеров: эталон `volodka_room` (max габарит пола ~14 м → руками ~0.58–0.62 или формула ниже).
  * Подставьте в `SCENE_CONFIG.*.explorationCharacterModelScale` при заведении локации.
  */
 export function suggestInteriorCharacterModelScale(maxFloorDimensionMeters: number): number {
@@ -186,13 +186,19 @@ export const SCENE_CONFIG = {
   volodka_room: {
     id: 'volodka_room',
     name: 'Комната Володьки',
-    explorationCharacterModelScale: 0.48,
+    /** Согласовано с `volodka_corridor` (~0.58): читаемый герой в кадре, не «муравей». */
+    explorationCharacterModelScale: 0.6,
     explorationInteriorCeilingMeters: 2.85,
     explorationLocomotionScale: 0.9,
+    explorationTutorialHints: [
+      'Первая ночь начинается здесь: комната, мониторы, тишина между сменами.',
+      'Осмотрись и подойди к столу: это главный маршрут первого playable slice.',
+    ],
     size: [14, 10],
     spawnPoint: { x: 2.2, y: 0.06, z: 1.8, rotation: 0 } as PlayerPosition,
-    ambientLight: { intensity: 0.42, color: '#c8dff0' },
-    directionalLights: [{ position: [4, 8, 2], intensity: 0.95 }],
+    /** Ночная смена / мониторы: холоднее и ниже ключ, чем «дневная» панелька. */
+    ambientLight: { intensity: 0.36, color: '#8ec8d8' },
+    directionalLights: [{ position: [3.2, 7.5, 1.8], intensity: 0.72 }],
     npcs: [],
     /** v0.2 streaming profile (P0 from AAA audit). Demonstrates chunked furniture/props with estimated bytes, Rapier body keys, and neighbor prefetch. See docs/scene-streaming-spec.md */
     streaming: {
@@ -319,10 +325,6 @@ export const SCENE_CONFIG = {
         color: '#5c4a3a',
       },
     ],
-    explorationTutorialHints: [
-      'Комната в панельке — келья между сменами: здесь стихи и тишина рядом с буднями.',
-      'Ходи спокойно — пространство как сказка: никуда не торопит.',
-    ],
     backgroundMusic: '/audio/ambient-calm.mp3',
   },
 
@@ -330,7 +332,7 @@ export const SCENE_CONFIG = {
   volodka_corridor: {
     id: 'volodka_corridor',
     name: 'Коридор',
-    /** Чуть крупнее узкой комнаты: 0.48 давало «пропавшего» персонажа на некоторых клиентах (кэш GLB / масштаб). */
+    /** Чуть меньше эталона комнаты (0.60): узкий коридор без клипа в дверных проёмах. */
     explorationCharacterModelScale: 0.58,
     explorationLocomotionScale: 0.86,
     size: [3.5, 12],

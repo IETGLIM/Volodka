@@ -84,8 +84,8 @@ async function loadPropGltfBounds(absPath: string): Promise<PropGltfBounds> {
   return { bboxVertical, maxAxis, boxHeight: sz.y };
 }
 
-/** Ожидаемая высота/габарит в метрах мира при `volodka_room` (`explorationCharacterModelScale` 0.48). */
-const VOLODKA_SCENE_SCALE = 0.48 as const;
+/** Ожидаемая высота/габарит в метрах мира при `volodka_room` (актуальный `explorationCharacterModelScale`). */
+const VOLODKA_SCENE_SCALE = 0.6 as const;
 
 const PROP_WORLD_ENVELOPE_AT_VOLODKA: Partial<Record<string, { minM: number; maxM: number }>> = {
   /** Высота AABB × uniform — не `computeExplorationCharacter…` (для мебели занижает). */
@@ -125,7 +125,7 @@ describe.skipIf(!propGlbAssetsPresent)('prop GLB scale (integration)', () => {
 
   it('each manifest prop GLB passes validatePropGlbScale at Volodka-like scene scales', async () => {
     expect(propDefs.length).toBeGreaterThan(0);
-    const sceneScales = [0.28, 0.48, 1.0] as const;
+    const sceneScales = [0.28, 0.48, 0.6, 1.0] as const;
 
     for (const { url, def } of propDefs) {
       const abs = absPathFromPublicUrl(url);

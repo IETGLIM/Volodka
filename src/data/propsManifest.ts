@@ -7,7 +7,7 @@ export const PROP_DEFINITIONS: Record<string, PropDefinition> = {
     category: 'furniture',
     glbPath: '/desk_volodka.glb',
     estimatedGeometryBytes: 120_000,
-    /** Подогнано под комнату 14×10 при `explorationCharacterModelScale` 0.48 и ÷5 в `PropModel`. */
+    /** Подогнано под комнату 14×10 при актуальном `explorationCharacterModelScale` и ÷5 в `PropModel`. */
     baseUniform: 1.12,
   },
   chair_volodka: {

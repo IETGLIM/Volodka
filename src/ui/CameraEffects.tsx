@@ -10,14 +10,21 @@ interface CameraEffectsProps {
   panicMode: boolean;
   stability: number;
   creativity: number;
+  /** Не монтировать второй `EffectComposer` — пост уже задаёт `ExplorationPostFX` (volodka_room / blue_pit). */
+  deferPostProcessing?: boolean;
 }
 
-const CameraEffects = memo(function CameraEffects({ 
-  stress, 
+const CameraEffects = memo(function CameraEffects({
+  stress,
   panicMode,
   stability,
-  creativity 
+  creativity,
+  deferPostProcessing = false,
 }: CameraEffectsProps) {
+  if (deferPostProcessing) {
+    return null;
+  }
+
   // Вычисляем интенсивность эффектов на основе состояния игрока
   
   // Хроматическая аберрация - усиливается при стрессе

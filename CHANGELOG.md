@@ -2,16 +2,21 @@
 
 ## [Unreleased]
 
+### Changed
+
+- **Кинематографичность hero-среза (`volodka_room`) и читаемый герой:** подняты `explorationCharacterModelScale` (0.48→0.60), базовый uniform GLB `lowpoly_anime_character_cyberstyle.glb` и потолок `NARROW_SCENE_UNIFORM_CAP.volodka_room` (0.24→0.275), чтобы силуэт не упирался в кап и не читался «муравьём»; TPS-камера ближе и ниже взгляд; туман/хемисфера — холоднее и контрастнее (Matrix / ночная смена). Усилен пост `ExplorationPostFX` для геймплея; второй `EffectComposer` в `CameraEffects` отключается на этих сценах, чтобы не «мыть» кадр двойным bloom (`src/config/scenes.ts`, `src/data/modelMeta.ts`, `src/ui/game/RPGGameCanvas.tsx`, `src/ui/CameraEffects.tsx`, `src/ui/3d/exploration/ExplorationPostFX.tsx`).
+
 ### Fixed
 
 - **Обход / `zarema_albert_room`:** исправлен баг с крошечным размером игрока («как муравьи») и некорректным масштабом комнаты. Масштаб игрока (`explorationCharacterModelScale`) возвращен к `0.48` (как в `volodka_room`), а потолок uniform (`NARROW_SCENE_UNIFORM_CAP`) поднят с `0.088` до `0.24`. Пресет камеры `FollowCamera` в `RPGGameCanvas` скорректирован под новый размер персонажа. Теперь процедурные меши комнаты 10x8 воспринимаются в правильных пропорциях.
 
-- **Аудит AAA завершен (Оптимизация и Polish)**:
-  1. **Demand Rendering**: `EXPLORATION_SCENE_FRAMELOOP` переведён на `demand` (рендеринг по необходимости) для экономии GPU. `RPGGameCanvas` больше не греет устройство в idle (`src/ui/3d/Scene.tsx`).
+- **Hero slice + truthful readiness (desktop-first memorial pass)**:
+  1. **Hero route clarified**: первый showable маршрут закреплён вокруг `volodka_room` через `explorationTutorialHints` и меню, без ложного заявления о полном AAA-ready статусе (`src/config/scenes.ts`, `src/ui/game/MenuScreen.tsx`).
   2. **Instancing**: `WorldItem` и `ExplorationFootprints` переведены на `InstancedMesh`. Меньше draw calls, лучшая производительность (`src/ui/game/InteractiveTrigger.tsx`, `src/ui/3d/exploration/ExplorationFootprints.tsx`).
   3. **Persist State**: `playerStore` и `worldStore` переведены на `persist` из Zustand (`src/state/playerStore.ts`, `src/state/worldStore.ts`).
-  4. **Accessibility (a11y)**: Добавлен `AriaLiveAnnouncer` с `aria-live="polite"` для озвучивания событий (сообщения, получение лута, левелапы) скринридерами (`src/ui/game/AriaLiveAnnouncer.tsx`, `src/app/layout.tsx`).
-  5. **API Security**: Строгая Zod валидация добавлена в API эндпоинты: `/api/save` и `/api/ai-dialogue` (`src/app/api/save/route.ts`, `src/app/api/ai-dialogue/route.ts`).
+  4. **Accessibility (a11y)**: `AriaLiveAnnouncer` реально смонтирован в `GameOrchestrator`, а `PanelWrapper` получил базовые `role="dialog"`, `aria-modal`, фокус и закрытие по `Escape` (`src/ui/game/AriaLiveAnnouncer.tsx`, `src/ui/game/GameOrchestrator.tsx`, `src/ui/game/GameOrchestratorSubcomponents.tsx`).
+  5. **API Safety Baseline**: `ai-dialogue` по умолчанию уходит в локальный fallback без LLM, `models/upload` скрыт за `ENABLE_MODEL_UPLOAD_API` + bearer secret, а `saveManager` сообщает о сбое `localStorage` без «тихого» падения (`src/app/api/ai-dialogue/route.ts`, `src/app/api/models/upload/route.ts`, `src/state/saveManager.ts`).
+  6. **Mobile consistency**: `useIsMobile` и `useMobileVisualPerf` используют единый breakpoint, а `TutorialOverlay` показывает честные touch-подсказки рядом с `ExplorationMobileHud` (`src/hooks/use-mobile.ts`, `src/hooks/useMobileVisualPerf.ts`, `src/ui/game/TutorialOverlay.tsx`, `src/ui/game/ExplorationMobileHud.tsx`).
   
 - **Этап 1 — фасад действий игрока:** `src/hooks/usePlayerActions.ts` — единая точка вызова мутаций (статы, стресс, скиллы, XP, флаги, стихи, узлы, моральные выборы); пока делегирует в `useGameStore.getState()` для последующего переноса на `playerStore`.
 

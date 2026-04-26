@@ -23,8 +23,8 @@ const DEFAULT_CHARACTER_UNIFORM_BASE = 1.17;
  */
 export const GLB_CHARACTER_UNIFORM_BASE_BY_FILENAME: Record<string, number> = {
   'volodka.glb': 1.08,
-  /** Волдыкина комната 14×10: при ~1.14 персонаж читался «точкой» на кадре; поднято по скриншоту TPS. */
-  'lowpoly_anime_character_cyberstyle.glb': 1.65,
+  /** Hero TPS в комнате 14×10: читаемый силуэт у стола/мониторов; кап `volodka_room` в `NARROW_SCENE_UNIFORM_CAP`. */
+  'lowpoly_anime_character_cyberstyle.glb': 1.92,
   'cyberpunk_female_full-body_character.glb': 1.11,
   'smol_ame_in_an_upcycled_terrarium_hololiveen.glb': 1.65,
   'lillian__vgdc.glb': 1.02,
@@ -49,8 +49,8 @@ export const GLB_CHARACTER_UNIFORM_BASE_BY_FILENAME: Record<string, number> = {
 const NARROW_SCENE_UNIFORM_CAP: Partial<Record<SceneId, number>> = {
   /** Комната 10×8: ниже потолок — ещё ужимаем uniform, чтобы игрок не «съедал» кадр. */
   zarema_albert_room: 0.24,
-  /** Запас под крупнее силуэт без клипа в узких углах; фактический uniform ниже капа при текущем base. */
-  volodka_room: 0.24,
+  /** Кинокадр в комнате героя: выше старого 0.24, иначе персонаж остаётся «муравьём» при ÷5. */
+  volodka_room: 0.275,
   volodka_corridor: 0.26,
   home_evening: 0.26,
 };

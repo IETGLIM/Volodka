@@ -190,6 +190,11 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
   const explorationBriefingPendingRef = useRef(true);
   const explorationPhase = useGamePhaseStore((s) => s.phase);
   const introCutsceneActive = explorationPhase === 'intro_cutscene';
+  /** Один композер поста: `ExplorationPostFX` уже даёт bloom/виньетку для «кибер»-локаций. */
+  const deferCameraEffectsPost =
+    (sceneId === 'volodka_room' || sceneId === 'blue_pit') &&
+    explorationPhase === 'gameplay' &&
+    !introCutsceneActive;
   /** В 3D-интро игрок всегда в `volodka_room`; не тянуть множители с другого `sceneId` (иначе `m` может быть 1 и интро выглядит крупнее геймплея). */
   const playerSceneTuningId = introCutsceneActive ? INTRO_OPENING_SCENE_ID : sceneId;
   const playerInputLocked = isDialogueActive || introCutsceneActive;
@@ -314,7 +319,12 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
       case 'home_evening':
         return { ambient: 0.4, light: '#ffcc00', fogColor: '#1a1a2e', groundGeometryArgs: GROUND_INDOOR };
       case 'volodka_room':
-        return { ambient: 0.44, light: '#c8dff0', fogColor: '#1e2530', groundGeometryArgs: GROUND_VOLODKA_ROOM };
+        return {
+          ambient: 0.34,
+          light: '#6ee7c5',
+          fogColor: '#0a1214',
+          groundGeometryArgs: GROUND_VOLODKA_ROOM,
+        };
       case 'volodka_corridor':
         return { ambient: 0.34, light: '#e8dcc8', fogColor: '#16140f', groundGeometryArgs: GROUND_VOLODKA_CORRIDOR };
       case 'office_morning':
@@ -407,15 +417,15 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
     }
     if (sceneId === 'volodka_room') {
       return {
-        distance: 2.78,
-        height: 1.58,
+        distance: 2.38,
+        height: 1.52,
         smoothness: 0.11,
         shoulderOffset: 0.1,
-        lookAtHeightOffset: 1.32,
+        lookAtHeightOffset: 1.22,
         collisionSpring: 12,
-        minDistance: 1.78,
-        maxDistance: 3.35,
-        collisionRayOriginY: 1.48,
+        minDistance: 1.52,
+        maxDistance: 3.12,
+        collisionRayOriginY: 1.42,
         collisionRadius: 0.2,
         pitchMin: -0.06,
         pitchMax: 0.38,
@@ -952,6 +962,7 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
           panicMode={playerState.panicMode}
           stability={playerState.stability}
           creativity={playerState.creativity}
+          deferPostProcessing={deferCameraEffectsPost}
         />
         </Suspense>
       </Physics>

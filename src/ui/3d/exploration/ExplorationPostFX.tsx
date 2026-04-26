@@ -16,7 +16,7 @@ interface ExplorationPostFXProps {
    */
   cinematicIntro?: boolean;
   /**
-   * Лёгкий «кибер»-пост в геймплее (только `volodka_room`): слабый Bloom + виньетка, без хромы.
+   * «Кино» в геймплее (`volodka_room`, `blue_pit`): bloom мониторов/неона, виньетка, лёгкая хрома (Blade Runner / Matrix).
    */
   explorationCyberGrade?: boolean;
 }
@@ -57,12 +57,17 @@ export const ExplorationPostFX = memo(function ExplorationPostFX({
       <EffectComposer multisampling={0} enableNormalPass={false}>
         <Bloom
           mipmapBlur
-          luminanceThreshold={0.38}
-          luminanceSmoothing={0.55}
-          intensity={0.38}
-          radius={0.42}
+          luminanceThreshold={0.28}
+          luminanceSmoothing={0.48}
+          intensity={0.52}
+          radius={0.48}
         />
-        <Vignette eskil={false} offset={0.12} darkness={0.38} />
+        <Vignette eskil={false} offset={0.14} darkness={0.48} />
+        <ChromaticAberration
+          offset={chromaOffset}
+          radialModulation
+          modulationOffset={0.12}
+        />
       </EffectComposer>
     );
   }
