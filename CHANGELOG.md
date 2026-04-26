@@ -8,6 +8,8 @@
 
 ### Added
 
+- **Лента «цель локации» в 3D-обходе:** верхняя подсказка по активным шагам квестов 📋 для текущей сцены (тот же отбор шага, что у меток миникарты); скрывается на аниме-заставке. `getExplorationSceneObjectiveLines`, `ExplorationObjectiveStrip`, `GameOrchestrator` (`src/lib/explorationSceneQuestObjectives.ts`, `src/ui/game/ExplorationObjectiveStrip.tsx`, `src/ui/game/GameOrchestrator.tsx`).
+
 - **Слой IT-консоли перед взломом стойки:** взаимодействие `volodka_rack_hack` сначала открывает полноэкранную консоль (ночная смена, мониторинг, предупреждение о журнале изменений), затем по явному действию игрока — мини-игру узлов; подсказка на полный `ITTerminal` из HUD. Стор `explorationRackConsoleStore`, оверлей `ExplorationRackConsoleOverlay`, тексты `volodkaRackConsoleCopy` (`src/state/explorationRackConsoleStore.ts`, `src/ui/3d/exploration/ExplorationRackConsoleOverlay.tsx`, `src/lib/volodkaRackConsoleCopy.ts`, `src/game/core/registerBaseInteractions.ts`, `src/ui/game/GameOrchestrator.tsx`).
 
 ### Changed

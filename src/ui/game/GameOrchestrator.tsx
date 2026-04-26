@@ -47,6 +47,7 @@ import { eventBus } from '@/engine/EventBus';
 import { useGameAudioProfile } from '@/hooks/useAudio';
 import { useLoadingProgress } from '@/context/LoadingProgressContext';
 import { QUEST_DEFINITIONS, getNextTrackedObjective } from '@/data/quests';
+import { getExplorationSceneObjectiveLines } from '@/lib/explorationSceneQuestObjectives';
 import { getNPCById, getNPCsForScene, getNpcExplorationPosition } from '@/data/npcDefinitions';
 import { getSceneConfig } from '@/config/scenes';
 import type { MiniMapQuestMarker } from '@/ui/game/MiniMap';
@@ -57,6 +58,7 @@ import { TutorialOverlay } from '@/ui/game/TutorialOverlay';
 import { HackingWireMinigameOverlay } from '@/ui/3d/exploration/HackingWireMinigameOverlay';
 import { ExplorationRackConsoleOverlay } from '@/ui/3d/exploration/ExplorationRackConsoleOverlay';
 import { MiniMap } from '@/ui/game/MiniMap';
+import { ExplorationObjectiveStrip } from '@/ui/game/ExplorationObjectiveStrip';
 import { SCENE_VISUALS } from '@/engine/SceneManager';
 import type { VisualState } from '@/data/types';
 import { storyNodeShowsStoryOverlay } from '@/lib/storyOverlayEligibility';
@@ -426,6 +428,14 @@ export default function GameOrchestrator() {
     questProgress,
   ]);
 
+  const explorationObjectiveLines = useMemo(
+    () =>
+      gameMode === 'exploration'
+        ? getExplorationSceneObjectiveLines(activeQuestIds, questProgress, exploration.currentSceneId)
+        : [],
+    [gameMode, activeQuestIds, questProgress, exploration.currentSceneId],
+  );
+
   useEffect(() => {
     if (!activeCutsceneId) return;
     if (!getCutsceneById(activeCutsceneId)) {
@@ -598,6 +608,10 @@ export default function GameOrchestrator() {
 
       {gameMode === 'exploration' && <ExplorationRackConsoleOverlay />}
       {gameMode === 'exploration' && <HackingWireMinigameOverlay />}
+
+      {gameMode === 'exploration' && !introOpening3dActive && !activeCutsceneId && (
+        <ExplorationObjectiveStrip lines={explorationObjectiveLines} />
+      )}
 
       {gameMode === 'exploration' && !introOpening3dActive && (
         <MiniMap
