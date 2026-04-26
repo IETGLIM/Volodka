@@ -18,7 +18,7 @@
 
 - **Этап 1.7 — фасад чтения квестов:** `src/hooks/useQuestState.ts` — `activeQuestIds`, `completedQuestIds`, `questProgress` через `useShallow` для последующего `questStore`.
 
-- **Этап 1.8 — фасад энергии:** `src/hooks/useEnergyActions.ts` — `getEnergy`, `canAfford`, `consumeEnergy` (чтение/списание через `gameStore`), константа `maxEnergy` из `energyConfig`.
+- **Этап 1.8 — фасад энергии:** `src/hooks/useEnergyActions.ts` — `canAfford`, `consumeEnergy` (списание через `gameStore`), `maxEnergy` из `energyConfig`; текущее значение энергии — из `usePlayerState` / `useEnergySystem`.
 
 - **Полная persist-миграция с версионированием (State + Persist iteration):** `src/state/migrations.ts` ( `CURRENT_PERSIST_VERSION = 6`, `migrateSaveData` handles old saves, adds `factionReputations`, clamps values, merges with `INITIAL_PLAYER`). `playerStore.ts` exports `INITIAL_PLAYER`. `factionStore.ts` fully persisted with all methods. Updated `docs/volodka-aaa-expert-audit-2026-04-25.md` (Persist foundation closed, gap reduced to 4%). Existing `save-manager.ts` + `persistedGameSnapshot.ts` now aligned with v6. Prepares seamless rehydration, partialize for transient fields, and sync with `autoSaveManager`. `src/state/migrations.ts`, `playerStore.ts`.
 
@@ -62,6 +62,8 @@
 - **Улучшение fallback-позы игрока:** Полностью переработан `FallbackPlayerModel` в `PhysicsPlayer.tsx` — естественный idle (лёгкое покачивание, асимметрия рук, micro-nod головы, breathing), плавный walk-cycle с противоположным swing рук/ног, улучшенные пропорции тела/рук/головы (neck connector, hair shadow, refined cyber-glasses, elbow spheres, notepad hint). Убрана "T-like" жёсткость. `useFrame` оптимизирован, материалы с metalness/roughness для AAA-look. Соответствует `r3f-web-gamedev` best practices.
 
 ### Changed
+
+- **`useEnergyActions`:** убран `getEnergy` из возврата (энергию для UI брать из `usePlayerState` / `useEnergySystem`); комментарий про миграцию — только `playerStore`. `src/hooks/useEnergyActions.ts`.
 
 - **Игрок по умолчанию:** снова эталон **`/models-external/lowpoly_anime_character_cyberstyle.glb`** (`MODEL_URLS.lowpolyCyberstyle`, константа имени файла `DEFAULT_PLAYER_GLB_FILENAME` в `modelUrls.ts`); убран приоритет корня `public/`. `validate-player-animations.mjs` проверяет только эталон (или путь из argv). `docs/MODEL_INTEGRATION.md`.
 
