@@ -483,6 +483,8 @@ export default function GameOrchestrator() {
   );
 
   const actionsBundle = useActionHandler({
+    currentNodeId,
+    playerState,
     playerSkills: playerState.skills,
     energySystem,
     showEffectNotif,
@@ -504,7 +506,6 @@ export default function GameOrchestrator() {
     openDialogueFromStory: openDialogueFromStoryWithQuest,
     phase,
     gameMode,
-    currentNodeId,
     hasCurrentNode: Boolean(currentNode),
     storyOverlayEligible,
     togglePanel,

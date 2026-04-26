@@ -63,6 +63,8 @@
 
 ### Changed
 
+- **`useStoryChoiceHandler` / `useActionHandler`:** убран прямой `useGameStore` из обработчика выбора; `pushChoiceLog` через `usePlayerActions`, `currentNodeId` и `playerState` прокидываются снаружи (`GameOrchestrator` → `useActionHandler`). `src/hooks/useStoryChoiceHandler.ts`, `useActionHandler.ts`, `GameOrchestrator.tsx`, `useStoryChoiceHandler.test.tsx`.
+
 - **`useQuestProgress`:** квестовые селекторы и `activateQuest` через `useQuestState` / `useQuestActions`; репутация NPC — временный `useFactionActions` (делегат в `gameStore`). `useQuests` теперь совпадает с `useQuestState` (экшены квестов — отдельно `useQuestActions`). `useFactions` по-прежнему читает `factionReputations` из `gameStore` до Этапа 2.3. `src/hooks/useQuestProgress.ts`.
 
 - **`useDialogueFlow`:** без прямого `gameStore` — `gameMode` из `useWorldState`, `pushChoiceLog` из `usePlayerActions`; `'use client'`. `src/hooks/useDialogueFlow.ts`.

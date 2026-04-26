@@ -7,7 +7,10 @@ import { coreLoop } from '@/engine/CoreLoop';
 import { useGameStore } from '@/state/gameStore';
 
 function createBaseParams() {
+  const state = useGameStore.getState();
   return {
+    currentNodeId: state.currentNodeId,
+    playerState: state.playerState,
     playerSkills: { writing: 50, empathy: 25 } as PlayerSkills,
     energySystem: {
       canAfford: vi.fn(() => true),

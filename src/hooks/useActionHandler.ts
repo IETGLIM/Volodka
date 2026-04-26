@@ -8,7 +8,7 @@ import { usePanicFlow } from '@/hooks/usePanicFlow';
 import type { EnergySystemAPI } from '@/hooks/useEnergySystem';
 import type { GamePanelsState } from '@/hooks/useGamePanels';
 import type { GameMode } from '@/data/rpgTypes';
-import type { PlayerSkills } from '@/data/types';
+import type { PlayerSkills, PlayerState } from '@/data/types';
 import type { SaveGameOptions } from '@/state/gameStore';
 
 export type OpenDialogueFromStoryPayload = {
@@ -19,6 +19,10 @@ export type OpenDialogueFromStoryPayload = {
 };
 
 export interface UseActionHandlerParams {
+  /** Текущий узел сюжета — для лога выбора / skill-check в `useStoryChoiceHandler`. */
+  currentNodeId: string;
+  /** Состояние игрока — для `statsEngine.getDerivedEffects` при обработке выбора. */
+  playerState: PlayerState;
   /** Навыки игрока (как в сторе) — для skill check в сюжетных выборах без приведения к Record. */
   playerSkills: PlayerSkills;
   /** Списание энергии на выбор / skill check; прокидывается в `useStoryChoiceHandler`. */
@@ -46,7 +50,6 @@ export interface UseActionHandlerParams {
   openDialogueFromStory: (p: OpenDialogueFromStoryPayload) => void;
   phase: 'loading' | 'intro' | 'menu' | 'game';
   gameMode: GameMode;
-  currentNodeId: string;
   hasCurrentNode: boolean;
   storyOverlayEligible: boolean;
   togglePanel: (key: keyof GamePanelsState) => void;
@@ -63,6 +66,8 @@ export interface UseActionHandlerParams {
  */
 export function useActionHandler(params: UseActionHandlerParams) {
   const {
+    currentNodeId,
+    playerState,
     playerSkills,
     energySystem,
     showEffectNotif,
@@ -84,7 +89,6 @@ export function useActionHandler(params: UseActionHandlerParams) {
     openDialogueFromStory,
     phase,
     gameMode,
-    currentNodeId,
     hasCurrentNode,
     storyOverlayEligible,
     togglePanel,
@@ -97,6 +101,8 @@ export function useActionHandler(params: UseActionHandlerParams) {
   } = params;
 
   const { handleChoice } = useStoryChoiceHandler({
+    currentNodeId,
+    playerState,
     playerSkills,
     energySystem,
     showEffectNotif,
