@@ -65,7 +65,7 @@ import { TriggerSystem, isPlayerInTriggerZone, WorldItem } from './InteractiveTr
 import CameraEffects from '../CameraEffects';
 
 // Store
-import { useGameStore } from '@/state/gameStore';
+import { useGameStore } from '@/state';
 import { useGamePhaseStore } from '@/state/gamePhaseStore';
 import { eventBus } from '@/engine/EventBus';
 import { getCurrentScheduleEntry } from '@/engine/ScheduleEngine';

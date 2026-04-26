@@ -38,7 +38,7 @@ import {
   EnergyBar,
 } from './GameOrchestratorSubcomponents';
 
-import { useGameStore } from '@/state/gameStore';
+import { useGameStore } from '@/state';
 import { useAppStore } from '@/state/appStore';
 import { useGamePhaseStore } from '@/state/gamePhaseStore';
 import { IntroCutsceneOverlays } from '@/ui/cutscenes/IntroCutsceneOverlays';

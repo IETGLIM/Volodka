@@ -1,6 +1,6 @@
 import { EXPLORATION_QUESTS_KARMA_HINT_LINE_RU } from '@/game/core/explorationHints';
 import { eventBus } from '@/engine/EventBus';
-import { useGameStore } from '@/state/gameStore';
+import { useGameStore } from '@/state';
 
 const EXPLORATION_FIRST_DIALOGUE_QUEST_KARMA_FLAG = 'exploration_first_dialogue_quest_karma_hint_v1';
 

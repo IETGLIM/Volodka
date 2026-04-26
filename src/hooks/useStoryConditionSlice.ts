@@ -1,7 +1,7 @@
 'use client';
 
 import { useShallow } from 'zustand/react/shallow';
-import { useGameStore } from '@/state/gameStore';
+import { useGameStore } from '@/state';
 
 /**
  * Плоский срез полей игрока для проверки условий выборов (statsEngine / диалог).

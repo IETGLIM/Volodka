@@ -7,7 +7,7 @@
 'use client';
 
 import { useEffect, useRef, useCallback } from 'react';
-import { useGameStore } from '@/state/gameStore';
+import { useGameStore } from '@/state';
 import { useAppStore } from '@/state/appStore';
 import { eventBus } from '@/engine/EventBus';
 

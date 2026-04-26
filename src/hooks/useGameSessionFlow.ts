@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react';
 import type { GameMode } from '@/data/rpgTypes';
-import type { SaveGameOptions } from '@/state/gameStore';
+import type { SaveGameOptions } from '@/state';
 import { explorationNarrativeTeleport } from '@/lib/explorationNarrativeTeleport';
 import {
   INTRO_OPENING_DESK_CHAIR,

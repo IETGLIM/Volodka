@@ -6,7 +6,7 @@ import { getInteractiveSkillBlockMessage } from '@/lib/interactiveSkillRequireme
 import { tryApplyVolodkaRackAuditInspect } from '@/lib/volodkaRackQuestBranch';
 import { volodkaCorridorInspectLine, tryVolodkaCorridorUse } from '@/lib/volodkaCorridorInteract';
 import { volodkaRoomInspectLine, tryVolodkaRoomUse } from '@/lib/volodkaRoomInteract';
-import { useGameStore } from '@/state/gameStore';
+import { useGameStore } from '@/state';
 import { dispatchQuestEvent } from '@/game/core/questEvents';
 
 function explorationToast(text: string): void {

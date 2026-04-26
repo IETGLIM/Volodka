@@ -17,8 +17,8 @@ import {
 import { explorationHourToNarrativeTimeOfDay } from '@/game/conditions/timeOfDay';
 import type { NPCRelation, PlayerState, PlayerSkills, SceneId } from '@/data/types';
 import { asTrainablePlayerSkill } from '@/lib/trainablePlayerSkill';
-import type { TravelToSceneOptions, TravelToSceneResult } from '@/state/gameStore';
-import { useGameStore } from '@/state/gameStore';
+import type { TravelToSceneOptions, TravelToSceneResult } from '@/state';
+import { useGameStore } from '@/state';
 import type { AppPhase } from '@/state/appStore';
 import { useWorldState } from '@/hooks/useWorldState';
 import { useWorldActions } from '@/hooks/useWorldActions';
@@ -103,7 +103,7 @@ export function useGameRuntime(params: UseGameRuntimeParams) {
    */
   const storeContext = useMemo(() => () => {
     // eslint-disable-next-line @typescript-eslint/no-require-imports -- см. комментарий выше
-    const { useGameStore: gameStore } = require('@/state/gameStore') as typeof import('@/state/gameStore');
+    const { useGameStore: gameStore } = require('@/state') as typeof import('@/state');
     const state = gameStore.getState();
     return {
       playerState: state.playerState,

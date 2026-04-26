@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback } from 'react';
-import { useGameStore } from '@/state/gameStore';
+import { useGameStore } from '@/state';
 import type { PlayerSkills, MoralChoice, ChoiceLogEntry } from '@/data/types';
 
 /**

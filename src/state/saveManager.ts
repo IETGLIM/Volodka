@@ -14,7 +14,7 @@ import {
 } from '@/lib/persistedGameSnapshot';
 import { sanitizeExplorationSceneId } from '@/config/scenes';
 import { VERTICAL_SLICE_ENTRY_NODE_ID } from '@/data/verticalSliceStoryNodes';
-import type { GameMode, ExplorationState, NPCState, PlayerPosition } from '@/shared/types/rpg';
+import type { GameMode, ExplorationState, NPCState, PlayerPosition } from '@/data/rpgTypes';
 import type { PlayerState, ChoiceLogEntry, NPCRelation } from '@/data/types';
 import type { FactionId, FactionReputation } from '@/shared/types/factions';
 import { experienceRequiredForNextLevel } from '@/lib/rpgLeveling';

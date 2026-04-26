@@ -19,7 +19,7 @@ import type {
   GameMode,
   InteractionPrompt,
   ExplorationState,
-} from '@/shared/types/rpg';
+} from '@/data/rpgTypes';
 import { usePlayerStore } from './playerStore';
 import { useAppStore } from './appStore';
 

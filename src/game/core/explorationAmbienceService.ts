@@ -1,5 +1,5 @@
 import { getExplorationAmbientStressPerTick } from '@/lib/explorationAtmosphere';
-import { useGameStore } from '@/state/gameStore';
+import { useGameStore } from '@/state';
 import { useAppStore } from '@/state/appStore';
 
 /** DOM `setInterval`; без `ReturnType<typeof setInterval>` (конфликт Node `Timeout` vs `number`). */

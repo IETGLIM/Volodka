@@ -11,7 +11,7 @@ import {
   type FactionId,
   type FactionReputation 
 } from '@/shared/types/factions';
-import { useGameStore } from '@/state/gameStore';
+import { useGameStore } from '@/state';
 import { useFactionStore } from '@/state/factionStore';
 
 // ============================================

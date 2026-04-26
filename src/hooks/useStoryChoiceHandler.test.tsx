@@ -4,7 +4,7 @@ import type { StoryChoice, PlayerSkills } from '@/data/types';
 import { useStoryChoiceHandler } from './useStoryChoiceHandler';
 import { eventBus } from '@/engine/EventBus';
 import { coreLoop } from '@/engine/CoreLoop';
-import { useGameStore } from '@/state/gameStore';
+import { useGameStore } from '@/state';
 
 function createBaseParams() {
   const state = useGameStore.getState();

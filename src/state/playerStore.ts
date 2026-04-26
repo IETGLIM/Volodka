@@ -15,7 +15,7 @@ import { persist } from 'zustand/middleware';
 import { useShallow } from 'zustand/react/shallow';
 import type { PlayerState, PlayerSkills, MoralChoice, ChoiceLogEntry } from '@/data/types';
 import { INITIAL_PLAYER_ENERGY, MAX_PLAYER_ENERGY } from '@/lib/energyConfig';
-import { experienceRequiredForNextLevel } from '@/lib/rpgLeveling';
+import { experienceRequiredForNextLevel, applyExperienceGain, RPG_XP_SKILL_POINTS_PER_LEVEL } from '@/lib/rpgLeveling';
 import { eventBus } from '@/engine/EventBus';
 import { selectEnergyPercentageFromPlayer } from './playerStoreSelectors';
 import { migrateSaveData, CURRENT_PERSIST_VERSION } from './migrations';
@@ -110,6 +110,7 @@ interface PlayerStoreActions {
   unsetFlag: (flag: string) => void;
   hasFlag: (flag: string) => boolean;
   visitNode: (nodeId: string) => void;
+  addExperience: (amount: number, source?: string) => void;
   addMoralChoice: (choice: MoralChoice) => void;
   setPlayerState: (state: Partial<PlayerState>) => void;
   /** Синхронизация RPG-полей с внешним источником (например основной `gameStore`). */
@@ -386,6 +387,42 @@ export const usePlayerStore = create<PlayerStore>()(
   setPlayerState: (partial) => {
     const { playerState } = get();
     set({ playerState: { ...playerState, ...partial } });
+  },
+
+  addExperience: (amount, source) => {
+    if (!Number.isFinite(amount) || amount <= 0) return;
+    const { playerState } = get();
+    const res = applyExperienceGain(
+      playerState.characterLevel,
+      playerState.experience,
+      amount,
+    );
+    const spGain = res.levelsGained * RPG_XP_SKILL_POINTS_PER_LEVEL;
+    set({
+      playerState: {
+        ...playerState,
+        characterLevel: res.characterLevel,
+        experience: res.experience,
+        experienceToNextLevel: res.experienceToNextLevel,
+        skills: {
+          ...playerState.skills,
+          skillPoints: playerState.skills.skillPoints + spGain,
+        },
+      },
+    });
+    if (res.levelsGained > 0) {
+      eventBus.emit('player:level_up', {
+        newLevel: res.characterLevel,
+        levelsGained: res.levelsGained,
+        source,
+      });
+      eventBus.emit('ui:exploration_message', {
+        text:
+          res.levelsGained === 1
+            ? `Уровень ${res.characterLevel}. +${spGain} оч. навыков.`
+            : `Уровни +${res.levelsGained} → ${res.characterLevel}. +${spGain} оч. навыков.`,
+      });
+    }
   },
 
   setRpgProgress: (experience, characterLevel, experienceToNextLevel) => {

@@ -2,7 +2,7 @@
 
 import { memo, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useGameStore } from '@/state/gameStore';
+import { useGameStore } from '@/state';
 import { useShallow } from 'zustand/react/shallow';
 import { getNPCsForScene, getNpcExplorationPosition } from '@/data/npcDefinitions';
 import { getExplorationLivePlayerPositionOrNull } from '@/lib/explorationLivePlayerBridge';

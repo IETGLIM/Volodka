@@ -9,7 +9,7 @@ import { poemMechanics } from '@/engine/PoemMechanics';
 import { initConsequencesSystem } from '@/engine/ConsequencesSystem';
 import { experienceRequiredForNextLevel } from '@/lib/rpgLeveling';
 import { useAppStore } from '@/state/appStore';
-import { useGameStore } from '@/state/gameStore';
+import { useGameStore } from '@/state';
 
 vi.mock('@/engine/CoreLoop', () => ({
   coreLoop: {

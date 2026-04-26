@@ -48,12 +48,18 @@ import { useQuestStore } from './questMetaStore';
 import { useFactionStore } from './factionStore';
 import { useInventoryStore } from './inventoryStore';
 import { useStore } from 'zustand';
+import { saveGame, loadGame, resetGame, hydrateFromLocalStorage } from './saveManager';
 
 type CombinedState = ReturnType<typeof usePlayerStore.getState> &
   ReturnType<typeof useWorldStore.getState> &
   ReturnType<typeof useQuestStore.getState> &
   ReturnType<typeof useFactionStore.getState> &
-  ReturnType<typeof useInventoryStore.getState>;
+  ReturnType<typeof useInventoryStore.getState> & {
+    saveGame: typeof saveGame;
+    loadGame: typeof loadGame;
+    resetGame: typeof resetGame;
+    hydrateFromLocalStorage: typeof hydrateFromLocalStorage;
+  };
 
 const combinedStoreApi = {
   getState: (): CombinedState => ({
@@ -62,6 +68,10 @@ const combinedStoreApi = {
     ...useQuestStore.getState(),
     ...useFactionStore.getState(),
     ...useInventoryStore.getState(),
+    saveGame,
+    loadGame,
+    resetGame,
+    hydrateFromLocalStorage,
   }),
   subscribe: (listener: (state: CombinedState, prevState: CombinedState) => void) => {
     let prevState = combinedStoreApi.getState();

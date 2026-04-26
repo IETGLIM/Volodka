@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback } from 'react';
-import { useGameStore } from '@/state/gameStore';
+import { useGameStore } from '@/state';
 
 /**
  * Фасад над действиями с квестами.

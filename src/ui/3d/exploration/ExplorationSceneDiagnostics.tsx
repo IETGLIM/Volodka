@@ -4,7 +4,7 @@ import { memo, useEffect, useState } from 'react';
 import { useThree } from '@react-three/fiber';
 import type { SceneId } from '@/data/types';
 import { isExplorationMeshAuditEnabled, isExplorationWebGlContextLogEnabled, isExplorationStreamingDebugEnabled, isExplorationBluePitDebugEnabled } from '@/lib/explorationDiagnostics';
-import { useGameStore } from '@/state/gameStore';
+import { useGameStore } from '@/state';
 import { useShallow } from 'zustand/react/shallow';
 import { Html } from '@react-three/drei';
 import { getSceneStreamingCoordinator } from '@/engine/streaming/SceneStreamingCoordinator';

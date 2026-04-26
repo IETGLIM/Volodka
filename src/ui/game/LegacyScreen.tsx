@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { useGameStore } from '@/state/gameStore';
+import { useGameStore } from '@/state';
 import { QUEST_DEFINITIONS } from '@/data/quests';
 
 // ============================================

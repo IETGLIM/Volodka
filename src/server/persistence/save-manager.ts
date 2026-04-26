@@ -6,7 +6,7 @@
 
 import type { PlayerState, NPCRelation, SaveData } from '@/data/types';
 import type { FactionReputation } from '@/shared/types/factions';
-import type { ExplorationState } from '@/shared/types/rpg';
+import type { ExplorationState } from '@/data/rpgTypes';
 import { getItemById } from '@/data/items';
 import type { InventoryItem } from '@/data/types';
 

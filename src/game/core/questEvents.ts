@@ -1,4 +1,4 @@
-import { useGameStore } from '@/state/gameStore';
+import { useGameStore } from '@/state';
 import { QUEST_DEFINITIONS, isObjectiveSatisfied } from '@/data/quests';
 import { FACTIONS, type FactionId } from '@/data/factions';
 import type { QuestEvent, QuestEventType } from './questTypes';

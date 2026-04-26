@@ -3,7 +3,7 @@ import { checkDialogueCondition } from '@/game/dialogue/dialogueConditions';
 import { startQuestWithLog } from '@/game/quests/QuestEngine';
 import { eventBus } from '@/engine/EventBus';
 import { introQuest } from '@/game/quests/introQuest';
-import { useGameStore } from '@/state/gameStore';
+import { useGameStore } from '@/state';
 import { useWireHackOverlayStore } from '@/state/wireHackOverlayStore';
 import { dispatchExplorationQuestGraph } from '@/game/core/explorationQuestGraph';
 import {

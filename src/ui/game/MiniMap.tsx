@@ -4,7 +4,7 @@ import { memo, useMemo, useState, useCallback, useId } from 'react';
 import { getExplorationLivePlayerPositionOrNull } from '@/lib/explorationLivePlayerBridge';
 import { useExplorationLivePlayerTick } from '@/hooks/useExplorationLivePlayerTick';
 import { motion } from 'framer-motion';
-import { useGameStore } from '@/state/gameStore';
+import { useGameStore } from '@/state';
 
 // ============================================
 // TYPES

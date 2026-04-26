@@ -35,7 +35,7 @@ import type { SceneId } from '@/data/types';
 import type { ScheduleEntry } from '@/shared/types/schedule';
 import { rewriteLegacyModelPath } from '@/config/modelUrls';
 import { getCurrentScheduleEntry } from '@/engine/ScheduleEngine';
-import { useGameStore } from '@/state/gameStore';
+import { useGameStore } from '@/state';
 import { getNpcQuestMarkerForExploration } from '@/lib/npcQuestMarker';
 import {
   logGltfLoadedFootprintDev,

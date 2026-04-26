@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback } from 'react';
-import { useGameStore } from '@/state/gameStore';
+import { useGameStore } from '@/state';
 import type { SceneId } from '@/data/types';
 import type { StreamingChunkId } from '@/data/streamingChunkId';
 
@@ -20,8 +20,8 @@ import type {
   TriggerState,
   WorldItem,
   InteractionPrompt,
-} from '@/shared/types/rpg';
-import type { TravelToSceneOptions, TravelToSceneResult } from '@/state/gameStore';
+} from '@/data/rpgTypes';
+import type { TravelToSceneOptions, TravelToSceneResult } from '@/state';
 
 /**
  * Фасад над действиями мира (исследование, сцены, NPC, триггеры).

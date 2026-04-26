@@ -11,7 +11,7 @@ import {
   isObjectiveSatisfied,
 } from '@/data/quests';
 import type { ExtendedQuest, QuestObjective, QuestReward } from '@/data/types';
-import { useGameStore } from '@/state/gameStore';
+import { useGameStore } from '@/state';
 
 const FACTION_UNGROUPED = '__ungrouped';
 
