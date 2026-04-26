@@ -2,7 +2,9 @@
 
 ## [Unreleased]
 
-### Added
+### Fixed
+
+- **Обход / `zarema_albert_room`:** исправлен баг с крошечным размером игрока («как муравьи») и некорректным масштабом комнаты. Масштаб игрока (`explorationCharacterModelScale`) возвращен к `0.48` (как в `volodka_room`), а потолок uniform (`NARROW_SCENE_UNIFORM_CAP`) поднят с `0.088` до `0.24`. Пресет камеры `FollowCamera` в `RPGGameCanvas` скорректирован под новый размер персонажа. Теперь процедурные меши комнаты 10x8 воспринимаются в правильных пропорциях.
 
 - **Аудит AAA завершен (Оптимизация и Polish)**:
   1. **Demand Rendering**: `EXPLORATION_SCENE_FRAMELOOP` переведён на `demand` (рендеринг по необходимости) для экономии GPU. `RPGGameCanvas` больше не греет устройство в idle (`src/ui/3d/Scene.tsx`).

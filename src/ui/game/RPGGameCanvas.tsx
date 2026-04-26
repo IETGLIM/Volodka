@@ -438,15 +438,15 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
     /** Узкая квартира 10×8: без пресета срабатывал дефолт с большой `height` — при отбое коллизий камера «ныряла» к ботинкам. */
     if (sceneId === 'zarema_albert_room') {
       return {
-        distance: 2.42,
-        height: 1.48,
+        distance: 2.62,
+        height: 1.58,
         smoothness: 0.11,
         shoulderOffset: 0.1,
-        lookAtHeightOffset: 1.12,
+        lookAtHeightOffset: 1.32,
         collisionSpring: 11,
         minDistance: 1.48,
         maxDistance: 3.15,
-        collisionRayOriginY: 1.22,
+        collisionRayOriginY: 1.48,
         collisionRadius: 0.22,
         pitchMin: -0.12,
         pitchMax: 0.34,
