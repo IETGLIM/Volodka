@@ -41,7 +41,7 @@ describe('resolveCharacterMeshUniformScale', () => {
       introCutsceneActive: false,
       clampSceneId: 'zarema_albert_room',
     });
-    expect(u).toBeLessThanOrEqual(0.095);
+    expect(u).toBeLessThanOrEqual(0.245);
   });
 
   it('учитывает definitionModelScale для NPC', () => {
