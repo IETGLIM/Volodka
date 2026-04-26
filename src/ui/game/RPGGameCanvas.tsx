@@ -190,9 +190,11 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
   const explorationBriefingPendingRef = useRef(true);
   const explorationPhase = useGamePhaseStore((s) => s.phase);
   const introCutsceneActive = explorationPhase === 'intro_cutscene';
-  /** Один композер поста: `ExplorationPostFX` уже даёт bloom/виньетку для «кибер»-локаций. */
+  /** Один композер поста: `ExplorationPostFX` даёт bloom/виньетку; не дублировать вторым композером в `CameraEffects`. */
   const deferCameraEffectsPost =
-    (sceneId === 'volodka_room' || sceneId === 'blue_pit') &&
+    (sceneId === 'volodka_room' ||
+      sceneId === 'blue_pit' ||
+      sceneId === 'zarema_albert_room') &&
     explorationPhase === 'gameplay' &&
     !introCutsceneActive;
   /** В 3D-интро игрок всегда в `volodka_room`; не тянуть множители с другого `sceneId` (иначе `m` может быть 1 и интро выглядит крупнее геймплея). */
@@ -320,9 +322,9 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
         return { ambient: 0.4, light: '#ffcc00', fogColor: '#1a1a2e', groundGeometryArgs: GROUND_INDOOR };
       case 'volodka_room':
         return {
-          ambient: 0.34,
-          light: '#6ee7c5',
-          fogColor: '#0a1214',
+          ambient: 0.4,
+          light: '#7fe8d4',
+          fogColor: '#060d10',
           groundGeometryArgs: GROUND_VOLODKA_ROOM,
         };
       case 'volodka_corridor':
@@ -348,7 +350,12 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
       case 'memorial_park':
         return { ambient: 0.35, light: '#ffd9a0', fogColor: '#0a1510', groundGeometryArgs: GROUND_PLAZA };
       case 'zarema_albert_room':
-        return { ambient: 0.38, light: '#e8dcc8', fogColor: '#120c0a', groundGeometryArgs: GROUND_INDOOR };
+        return {
+          ambient: 0.46,
+          light: '#fff0dc',
+          fogColor: '#0c0806',
+          groundGeometryArgs: GROUND_INDOOR,
+        };
       default:
         return { ambient: 0.35, light: '#b2bec3', fogColor: '#1a1a2e', groundGeometryArgs: GROUND_INDOOR };
     }
@@ -391,14 +398,39 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
    */
   const narrowIndoorFog = useMemo(() => {
     if (sceneId === 'volodka_room') {
-      if (introCutsceneActive) return { near: 4.2, far: 70 } as const;
-      return { near: 2.05, far: 68 } as const;
+      if (introCutsceneActive) return { near: 4.2, far: 74 } as const;
+      return { near: 1.92, far: 74 } as const;
+    }
+    if (sceneId === 'zarema_albert_room') {
+      if (introCutsceneActive) return { near: 3.9, far: 60 } as const;
+      return { near: 2.15, far: 58 } as const;
     }
     if (introCutsceneActive) {
       return { near: 3.6, far: 56 } as const;
     }
     return { near: 2.65, far: 50 } as const;
   }, [introCutsceneActive, sceneId]);
+
+  const explorationLightTuning = useMemo(() => {
+    switch (sceneId) {
+      case 'volodka_room':
+        return {
+          directionalPosition: [3.2, 7.5, 1.8] as [number, number, number],
+          directionalIntensity: 0.76,
+          hemisphereIntensity: 0.92,
+          hemisphereGround: '#080f14',
+        };
+      case 'zarema_albert_room':
+        return {
+          directionalPosition: [-3.4, 7.9, 4.1] as [number, number, number],
+          directionalIntensity: 0.52,
+          hemisphereIntensity: 1.08,
+          hemisphereGround: '#1a100c',
+        };
+      default:
+        return null;
+    }
+  }, [sceneId]);
 
   const followCameraProps = useMemo((): ExplorationFollowCameraPreset => {
     if (sceneId === 'volodka_corridor') {
@@ -821,7 +853,17 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
         <ExplorationLighting
           ambientIntensity={sceneConfig.ambient + 0.3}
           hemisphereSky={sceneConfig.light}
-          directionalColor={visualState.colorTint !== 'transparent' ? visualState.colorTint : '#fff'}
+          hemisphereGround={explorationLightTuning?.hemisphereGround}
+          hemisphereIntensity={explorationLightTuning?.hemisphereIntensity}
+          directionalPosition={explorationLightTuning?.directionalPosition}
+          directionalIntensity={explorationLightTuning?.directionalIntensity}
+          directionalColor={
+            visualState.colorTint !== 'transparent'
+              ? visualState.colorTint
+              : sceneId === 'zarema_albert_room'
+                ? '#fff6ed'
+                : '#fff'
+          }
           pointColor={sceneConfig.light}
           simplifyLights={simplifyLights}
           shadowMapSize={shadowMapSize}
@@ -972,8 +1014,13 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
         stress={playerState.stress}
         compactIndoor={isNarrowApartment}
         cinematicIntro={introCutsceneActive}
+        explorationWarmInterior={
+          sceneId === 'zarema_albert_room' && explorationPhase === 'gameplay' && !introCutsceneActive
+        }
         explorationCyberGrade={
-          (sceneId === 'volodka_room' || sceneId === 'blue_pit') && explorationPhase === 'gameplay' && !introCutsceneActive
+          (sceneId === 'volodka_room' || sceneId === 'blue_pit') &&
+          explorationPhase === 'gameplay' &&
+          !introCutsceneActive
         }
       />
       <ExplorationParticles sceneId={sceneId} timeOfDay={timeOfDay} visualLite={visualLite} />

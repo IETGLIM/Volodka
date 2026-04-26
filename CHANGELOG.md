@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Changed
+
+- **Визуал hero-интерьеров:** комната Володьки — чуть ярче ключ/туман, сильнее кинематографичный bloom в геймплее (`ExplorationPostFX` + пресет направленного света в `RPGGameCanvas`). Комната Заремы и Альберта — тёплый пост без «кибер»-хромы, свои туман/свет, настольная лампа у стола, исправлен диван (ткань вместо ошибочного `carpetMat`), акцентные огни и окно; в `scenes.ts` смягчён общий ambient и добавлены `directionalLights` для согласованности с пресетом Canvas.
+
 ### Fixed
 
 - **ESLint / CI:** правила React Hooks — `CameraEffects.tsx` (все `useMemo` до условного `return`, чтобы не вызывать хуки после раннего выхода при `deferPostProcessing`); процедурные комнаты `VolodkaRoomVisual.tsx`, `ZaremaAlbertExplorationVisual.tsx` — отложенный `setAssets` через `queueMicrotask` и флаг отмены при размонтировании, без синхронного `setState` в теле `useEffect`.

@@ -19,6 +19,10 @@ interface ExplorationPostFXProps {
    * «Кино» в геймплее (`volodka_room`, `blue_pit`): bloom мониторов/неона, виньетка, лёгкая хрома (Blade Runner / Matrix).
    */
   explorationCyberGrade?: boolean;
+  /**
+   * Тёплый интерьер (`zarema_albert_room`): мягкий bloom ламп/окна, виньетка без «кибер»-хромы.
+   */
+  explorationWarmInterior?: boolean;
 }
 
 /**
@@ -26,8 +30,10 @@ interface ExplorationPostFXProps {
  * Включается для `cinematicIntro` или мягко для `explorationCyberGrade` в комнате Володьки.
  */
 export const ExplorationPostFX = memo(function ExplorationPostFX({
+  sceneId,
   cinematicIntro,
   explorationCyberGrade,
+  explorationWarmInterior,
   visualLite,
 }: ExplorationPostFXProps) {
   const chromaOffset = useMemo(() => new THREE.Vector2(0.00085, 0.0015), []);
@@ -52,17 +58,33 @@ export const ExplorationPostFX = memo(function ExplorationPostFX({
     );
   }
 
-  if (explorationCyberGrade) {
+  if (explorationWarmInterior) {
     return (
       <EffectComposer multisampling={0} enableNormalPass={false}>
         <Bloom
           mipmapBlur
-          luminanceThreshold={0.28}
-          luminanceSmoothing={0.48}
-          intensity={0.52}
-          radius={0.48}
+          luminanceThreshold={0.32}
+          luminanceSmoothing={0.55}
+          intensity={0.44}
+          radius={0.5}
         />
-        <Vignette eskil={false} offset={0.14} darkness={0.48} />
+        <Vignette eskil={false} offset={0.11} darkness={0.36} />
+      </EffectComposer>
+    );
+  }
+
+  if (explorationCyberGrade) {
+    const volodkaBoost = sceneId === 'volodka_room';
+    return (
+      <EffectComposer multisampling={0} enableNormalPass={false}>
+        <Bloom
+          mipmapBlur
+          luminanceThreshold={volodkaBoost ? 0.26 : 0.28}
+          luminanceSmoothing={volodkaBoost ? 0.44 : 0.48}
+          intensity={volodkaBoost ? 0.6 : 0.52}
+          radius={volodkaBoost ? 0.52 : 0.48}
+        />
+        <Vignette eskil={false} offset={0.14} darkness={volodkaBoost ? 0.44 : 0.48} />
         <ChromaticAberration
           offset={chromaOffset}
           radialModulation

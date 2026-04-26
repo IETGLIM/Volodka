@@ -196,9 +196,9 @@ export const SCENE_CONFIG = {
     ],
     size: [14, 10],
     spawnPoint: { x: 2.2, y: 0.06, z: 1.8, rotation: 0 } as PlayerPosition,
-    /** Ночная смена / мониторы: холоднее и ниже ключ, чем «дневная» панелька. */
-    ambientLight: { intensity: 0.36, color: '#8ec8d8' },
-    directionalLights: [{ position: [3.2, 7.5, 1.8], intensity: 0.72 }],
+    /** Ночная смена / мониторы: холодный ключ; контраст с тёплыми акцентами поста в `ExplorationPostFX`. */
+    ambientLight: { intensity: 0.42, color: '#9dd4e8' },
+    directionalLights: [{ position: [3.2, 7.5, 1.8], intensity: 0.78 }],
     npcs: [],
     /** v0.2 streaming profile (P0 from AAA audit). Demonstrates chunked furniture/props with estimated bytes, Rapier body keys, and neighbor prefetch. See docs/scene-streaming-spec.md */
     streaming: {
@@ -763,7 +763,8 @@ export const SCENE_CONFIG = {
     size: [10, 8],
     /** Ноги на полу; как `INTRO_OPENING_ZAREMA_SPAWN` — не `y: 1`, иначе TPS «ныряет» в меш и ноги на весь экран. */
     spawnPoint: { x: 0, y: PLAYER_FEET_SPAWN_Y, z: 1.35, rotation: 0 } as PlayerPosition,
-    ambientLight: { intensity: 0.8, color: '#ffd93d' },  // усилен свет
+    ambientLight: { intensity: 0.62, color: '#fff3e0' },
+    directionalLights: [{ position: [-3.2, 7.6, 4], intensity: 0.52 }],
     /** В 3D-обходе — `zarema_home` / `albert_home` из `npcDefinitions`; здесь те же пути GLB для справки и VN. */
     npcs: [
       {

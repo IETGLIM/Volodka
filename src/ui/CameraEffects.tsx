@@ -10,7 +10,7 @@ interface CameraEffectsProps {
   panicMode: boolean;
   stability: number;
   creativity: number;
-  /** Не монтировать второй `EffectComposer` — пост уже задаёт `ExplorationPostFX` (volodka_room / blue_pit). */
+  /** Не монтировать второй `EffectComposer` — пост задаёт `ExplorationPostFX` (volodka_room / blue_pit / zarema_albert_room). */
   deferPostProcessing?: boolean;
 }
 

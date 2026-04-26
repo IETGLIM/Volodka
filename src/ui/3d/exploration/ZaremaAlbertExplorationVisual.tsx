@@ -57,9 +57,9 @@ export const ZaremaAlbertExplorationVisual = memo(function ZaremaAlbertExplorati
 
     const wallMat = new THREE.MeshStandardMaterial({
       map: wallMap,
-      color: '#e8dcc8',
-      roughness: 0.86,
-      metalness: 0.04,
+      color: '#f2e6d4',
+      roughness: 0.84,
+      metalness: 0.035,
       depthWrite: true,
       depthTest: true,
       polygonOffset: true,
@@ -80,8 +80,9 @@ export const ZaremaAlbertExplorationVisual = memo(function ZaremaAlbertExplorati
 
     const floorMat = new THREE.MeshStandardMaterial({
       map: woodMap,
-      roughness: 0.82,
-      metalness: 0.06,
+      color: '#c4a574',
+      roughness: 0.8,
+      metalness: 0.05,
       depthWrite: true,
       depthTest: true,
       polygonOffset: true,
@@ -188,13 +189,13 @@ export const ZaremaAlbertExplorationVisual = memo(function ZaremaAlbertExplorati
       <mesh position={[0, 1.25, hd - t / 2 - 0.02]} rotation={[0, Math.PI, 0]}>
         <planeGeometry args={[INTERIOR_REF_WINDOW_WIDTH_M, INTERIOR_REF_WINDOW_HEIGHT_M]} />
         <meshStandardMaterial
-          color="#0c1a2e"
-          emissive="#38bdf8"
-          emissiveIntensity={0.35}
-          roughness={0.45}
-          metalness={0.15}
+          color="#0a1528"
+          emissive="#5ec8ff"
+          emissiveIntensity={0.42}
+          roughness={0.4}
+          metalness={0.12}
           transparent
-          opacity={0.92}
+          opacity={0.93}
           depthWrite={false}
           polygonOffset
           polygonOffsetFactor={1}
@@ -244,23 +245,45 @@ export const ZaremaAlbertExplorationVisual = memo(function ZaremaAlbertExplorati
           <boxGeometry args={[1.35, 0.52, 0.04]} />
           <meshStandardMaterial color="#1e293b" roughness={0.5} metalness={0.2} />
         </mesh>
+        {/* Тёплая настольная лампа — якорь света у книги */}
+        <group position={[0.55, 0.2, 0.12]}>
+          <mesh castShadow receiveShadow position={[0, 0.06, 0]}>
+            <cylinderGeometry args={[0.07, 0.09, 0.14, 16]} />
+            <meshStandardMaterial color="#3d2c1e" roughness={0.75} metalness={0.15} />
+          </mesh>
+          <mesh position={[0, 0.22, 0]}>
+            <sphereGeometry args={[0.11, 16, 12]} />
+            <meshStandardMaterial
+              color="#fff8e7"
+              emissive="#ffb84d"
+              emissiveIntensity={1.35}
+              toneMapped={false}
+              roughness={0.35}
+            />
+          </mesh>
+        </group>
       </group>
 
       <group position={[-2.4, INTERIOR_REF_COMPACT_SOFA_GROUP_CENTER_Y_M, 1.6]}>
         <mesh castShadow receiveShadow>
           <boxGeometry args={[2.2, 0.42, 0.95]} />
-          <primitive object={assets?.carpetMat || new THREE.MeshStandardMaterial({ color: "#5c4033" })} attach="material" />
+          <meshStandardMaterial color="#5c4838" roughness={0.93} metalness={0.04} />
         </mesh>
         <mesh position={[0, 0.38, -0.35]} castShadow receiveShadow>
           <boxGeometry args={[2.05, 0.55, 0.12]} />
-          <meshStandardMaterial color="#4a3528" roughness={0.92} />
+          <meshStandardMaterial color="#4a3a30" roughness={0.92} metalness={0.03} />
+        </mesh>
+        <mesh position={[0, 0.48, 0.12]} castShadow receiveShadow>
+          <boxGeometry args={[1.95, 0.22, 0.55]} />
+          <meshStandardMaterial color="#6b5645" roughness={0.9} metalness={0.02} />
         </mesh>
       </group>
 
-      <pointLight position={[0, 2.4, 0]} intensity={0.75} color="#fde68a" distance={14} decay={2} />
-      <pointLight position={[-2.5, 1.8, 2.2]} intensity={0.38} color="#7dd3fc" distance={9} decay={2} />
-      <pointLight position={[3.2, 1.5, -2.4]} intensity={0.28} color="#fb923c" distance={8} decay={2} />
-      <pointLight position={[2.35, 1.65, -0.4]} intensity={0.55} color="#fff7d6" distance={5.5} decay={2} />
+      <pointLight position={[0, 2.4, 0]} intensity={0.88} color="#fde68a" distance={16} decay={2} />
+      <pointLight position={[-2.5, 1.8, 2.2]} intensity={0.48} color="#bae6fd" distance={11} decay={2} />
+      <pointLight position={[3.2, 1.5, -2.4]} intensity={0.34} color="#fdba74" distance={9} decay={2} />
+      <pointLight position={[2.35, 1.65, -0.4]} intensity={0.62} color="#fff7d6" distance={6.5} decay={2} />
+      <pointLight position={[0.25, 1.95, -1.45]} intensity={1.05} color="#fff1d6" distance={7} decay={2} />
     </group>
   );
 });
