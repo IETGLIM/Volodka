@@ -18,6 +18,8 @@ import { explorationHourToNarrativeTimeOfDay } from '@/game/conditions/timeOfDay
 import type { NPCRelation, PlayerState, PlayerSkills, SceneId } from '@/data/types';
 import { asTrainablePlayerSkill } from '@/lib/trainablePlayerSkill';
 import type { TravelToSceneOptions, TravelToSceneResult } from '@/state/gameStore';
+import type { AppPhase } from '@/state/appStore';
+import { useAppStore } from '@/state/appStore';
 import { useWorldState } from '@/hooks/useWorldState';
 import { useWorldActions } from '@/hooks/useWorldActions';
 
@@ -37,7 +39,7 @@ export type StoreActionAdapter = {
 };
 
 export interface UseGameRuntimeParams {
-  phase: 'loading' | 'intro' | 'menu' | 'game';
+  phase: AppPhase;
   currentNodeId: string;
   currentSceneId: SceneId;
   /** Актуальная 3D-локация при узле `explore_mode` (не перезаписываем стором сценой узла). */
@@ -78,7 +80,7 @@ export function useGameRuntime(params: UseGameRuntimeParams) {
     showEffectNotif,
   } = params;
 
-  const [revealedPoemId, setRevealedPoemId] = useState<string | null>(null);
+  const revealedPoemId = useAppStore((s) => s.revealedPoemId);
   const [activeCutsceneId, setActiveCutsceneId] = useState<string | null>(null);
   const [showLegacy, setShowLegacy] = useState(false);
 
@@ -274,7 +276,7 @@ export function useGameRuntime(params: UseGameRuntimeParams) {
     const poem = POEMS.find((p) => p.unlocksAt === currentNodeId);
     if (poem && !collectedPoems.includes(poem.id)) {
       collectPoem(poem.id);
-      queueMicrotask(() => setRevealedPoemId(poem.id));
+      queueMicrotask(() => useAppStore.getState().setRevealedPoemId(poem.id));
 
       const insight = poemMechanics.collectPoem(poem.id);
       queueMicrotask(() => showEffectNotif(`СТИХ: "${poem.title}"`, 'poem'));
@@ -355,7 +357,7 @@ export function useGameRuntime(params: UseGameRuntimeParams) {
 
   return {
     revealedPoemId,
-    closePoemReveal: () => setRevealedPoemId(null),
+    closePoemReveal: () => useAppStore.getState().setRevealedPoemId(null),
     activeCutsceneId,
     requestCutscene,
     completeCutscene,

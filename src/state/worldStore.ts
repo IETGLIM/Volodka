@@ -19,6 +19,7 @@ import type {
   ExplorationState,
 } from '@/shared/types/rpg';
 import { usePlayerStore } from './playerStore';
+import { useAppStore } from './appStore';
 
 // ============================================
 // TRAVEL TYPES (зеркало gameStore для клиентского домена)
@@ -68,12 +69,10 @@ interface WorldStoreState {
   exploration: ExplorationState;
   currentNPCId: string | null;
   interactionPrompt: InteractionPrompt | null;
-  phase: 'loading' | 'intro' | 'menu' | 'game';
   unlockedLocations: string[];
 }
 
 interface WorldStoreActions {
-  setPhase: (phase: WorldStoreState['phase']) => void;
   setGameMode: (mode: GameMode) => void;
   updateNPCRelation: (npcId: string, change: number) => void;
   setNPCState: (npcId: string, state: NPCState) => void;
@@ -117,10 +116,8 @@ export const useWorldStore = create<WorldStore>()((set, get) => ({
   exploration: INITIAL_EXPLORATION,
   currentNPCId: null,
   interactionPrompt: null,
-  phase: 'loading',
   unlockedLocations: [],
 
-  setPhase: (phase) => set({ phase }),
   setGameMode: (mode) => set({ gameMode: mode }),
 
   updateNPCRelation: (npcId, change) => {
@@ -259,16 +256,17 @@ export const useWorldStore = create<WorldStore>()((set, get) => ({
     }
   },
 
-  resetWorld: () =>
+  resetWorld: () => {
+    useAppStore.getState().setPhase('menu');
     set({
       npcRelations: INITIAL_NPC_RELATIONS,
       gameMode: 'exploration',
       exploration: INITIAL_EXPLORATION,
       currentNPCId: null,
       interactionPrompt: null,
-      phase: 'menu',
       unlockedLocations: [],
-    }),
+    });
+  },
 }));
 
 // ============================================

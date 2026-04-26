@@ -7,9 +7,10 @@ import {
   INTRO_OPENING_SCENE_ID,
 } from '@/lib/introVolodkaOpeningCutscene';
 import { useGamePhaseStore } from '@/state/gamePhaseStore';
+import type { AppPhase } from '@/state/appStore';
 
 interface UseGameSessionFlowParams {
-  setPhase: (phase: 'loading' | 'intro' | 'menu' | 'game') => void;
+  setPhase: (phase: AppPhase) => void;
   /** Оставлены для совместимости с `useActionHandler`; сброс режима/узла делает `resetGameStore`. */
   setGameMode?: (mode: GameMode) => void;
   setCurrentNode?: (nodeId: string) => void;

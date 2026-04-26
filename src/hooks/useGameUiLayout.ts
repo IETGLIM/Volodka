@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useMemo } from 'react';
 import type { GamePanelsState } from '@/hooks/useGamePanels';
 import type { GameMode } from '@/data/rpgTypes';
+import type { AppPhase } from '@/state/appStore';
 
 interface UseGameUiLayoutParams {
-  phase: 'loading' | 'intro' | 'menu' | 'game';
+  phase: AppPhase;
   gameMode: GameMode;
   currentNodeId: string;
   hasCurrentNode: boolean;

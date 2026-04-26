@@ -10,6 +10,7 @@ import type { GamePanelsState } from '@/hooks/useGamePanels';
 import type { GameMode } from '@/data/rpgTypes';
 import type { PlayerSkills, PlayerState } from '@/data/types';
 import type { SaveGameOptions } from '@/state/gameStore';
+import type { AppPhase } from '@/state/appStore';
 
 export type OpenDialogueFromStoryPayload = {
   npcId: string;
@@ -48,12 +49,12 @@ export interface UseActionHandlerParams {
   addItem: (itemId: string, quantity?: number) => void;
   removeItem: (itemId: string, quantity?: number) => void;
   openDialogueFromStory: (p: OpenDialogueFromStoryPayload) => void;
-  phase: 'loading' | 'intro' | 'menu' | 'game';
+  phase: AppPhase;
   gameMode: GameMode;
   hasCurrentNode: boolean;
   storyOverlayEligible: boolean;
   togglePanel: (key: keyof GamePanelsState) => void;
-  setPhase: (phase: 'loading' | 'intro' | 'menu' | 'game') => void;
+  setPhase: (phase: AppPhase) => void;
   setGameMode: (mode: GameMode) => void;
   saveGameToStore: (options?: SaveGameOptions) => void;
   loadGameFromStore: () => boolean;

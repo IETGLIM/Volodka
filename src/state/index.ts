@@ -27,6 +27,7 @@ export {
 export { useQuestStore } from './questMetaStore';
 export { useFactionStore } from './factionStore';
 export { useInventoryStore } from './inventoryStore';
+export { useAppStore, type AppPhase } from './appStore';
 
 // ============================================
 // BACKWARD COMPATIBILITY FACADE

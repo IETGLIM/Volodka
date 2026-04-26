@@ -16,7 +16,6 @@ import { getItemById } from '@/data/items';
 interface InventoryStoreState {
   inventory: InventoryItem[];
   collectedPoemIds: string[];
-  revealedPoemId: string | null;
   unlockedAchievementIds: string[];
 }
 
@@ -25,7 +24,6 @@ interface InventoryStoreActions {
   removeItem: (itemId: string, quantity?: number) => void;
   hasItem: (itemId: string) => boolean;
   collectPoem: (poemId: string) => void;
-  revealPoem: (poemId: string | null) => void;
   unlockAchievement: (achievementId: string) => void;
   resetInventory: () => void;
 }
@@ -39,7 +37,6 @@ type InventoryStore = InventoryStoreState & InventoryStoreActions;
 export const useInventoryStore = create<InventoryStore>()((set, get) => ({
   inventory: [],
   collectedPoemIds: [],
-  revealedPoemId: null,
   unlockedAchievementIds: [],
 
   addItem: (itemId, quantity = 1) => {
@@ -105,8 +102,6 @@ export const useInventoryStore = create<InventoryStore>()((set, get) => ({
     }
   },
 
-  revealPoem: (poemId) => set({ revealedPoemId: poemId }),
-
   unlockAchievement: (achievementId) => {
     const { unlockedAchievementIds } = get();
     if (!unlockedAchievementIds.includes(achievementId)) {
@@ -118,7 +113,6 @@ export const useInventoryStore = create<InventoryStore>()((set, get) => ({
     set({
       inventory: [],
       collectedPoemIds: [],
-      revealedPoemId: null,
       unlockedAchievementIds: [],
     }),
 }));

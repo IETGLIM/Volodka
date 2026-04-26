@@ -8,6 +8,7 @@ import { eventBus } from '@/engine/EventBus';
 import { poemMechanics } from '@/engine/PoemMechanics';
 import { initConsequencesSystem } from '@/engine/ConsequencesSystem';
 import { experienceRequiredForNextLevel } from '@/lib/rpgLeveling';
+import { useAppStore } from '@/state/appStore';
 
 vi.mock('@/engine/CoreLoop', () => ({
   coreLoop: {
@@ -214,6 +215,7 @@ function createBaseParams() {
 describe('useGameRuntime', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    useAppStore.setState({ phase: 'game', revealedPoemId: null });
   });
 
   it('initializes runtime systems and core loop in game phase', () => {
@@ -243,6 +245,7 @@ describe('useGameRuntime', () => {
     expect(params.addSkill).toHaveBeenCalledWith('writing', 2);
     expect(params.setFlag).toHaveBeenCalledWith('poem_unlock_flag');
     expect(eventBus.emit).toHaveBeenCalledWith('poem:collected', { poemId: 'poem_1' });
+    expect(useAppStore.getState().revealedPoemId).toBe('poem_1');
   });
 
   it('unlocks achievement and emits achievement event when condition passes', async () => {

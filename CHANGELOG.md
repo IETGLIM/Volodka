@@ -20,6 +20,10 @@
 
 - **Этап 1.8 — фасад энергии:** `src/hooks/useEnergyActions.ts` — `canAfford`, `consumeEnergy` (списание через `gameStore`), `maxEnergy` из `energyConfig`; текущее значение энергии — из `usePlayerState` / `useEnergySystem`.
 
+- **`appStore` (UI-домен):** `useAppStore` — `phase` (`loading` \| `intro` \| `menu` \| `game`), `revealedPoemId`, `setPhase`, `setRevealedPoemId`; исправлен некорректный реэкспорт `AppPhase` (конфликт `tsc`). `src/state/appStore.ts`.
+
+- **`worldStore`:** убран дублирующий `phase` / `setPhase`; при `resetWorld` вызывается `useAppStore.getState().setPhase('menu')`. `src/state/worldStore.ts`.
+
 - **Полная persist-миграция с версионированием (State + Persist iteration):** `src/state/migrations.ts` ( `CURRENT_PERSIST_VERSION = 6`, `migrateSaveData` handles old saves, adds `factionReputations`, clamps values, merges with `INITIAL_PLAYER`). `playerStore.ts` exports `INITIAL_PLAYER`. `factionStore.ts` fully persisted with all methods. Updated `docs/volodka-aaa-expert-audit-2026-04-25.md` (Persist foundation closed, gap reduced to 4%). Existing `save-manager.ts` + `persistedGameSnapshot.ts` now aligned with v6. Prepares seamless rehydration, partialize for transient fields, and sync with `autoSaveManager`. `src/state/migrations.ts`, `playerStore.ts`.
 
 - **Dedicated `factionStore.ts` with Zustand `persist` (localStorage):** `Record<FactionId, FactionReputation>`, full actions (`updateFactionReputation` using shared logic from `factions.ts`, `getFactionStanding`, `resetFactions`, `isQuestAvailableForFaction`, `getInteractionBonusForFaction`, `completeQuestForFaction`). Delegated from `questMetaStore` (removed duplication, `resetQuests` now calls faction reset). Updated `state/index.ts` facade (`useGameStore.faction`), `FactionsPanel.tsx` (switched selectors to `useFactionStore`). Prepares **State + Persist** iteration (save/load of reputation, migration). `src/state/factionStore.ts`, `questMetaStore.ts`, `index.ts`, `FactionsPanel.tsx`.
@@ -62,6 +66,8 @@
 - **Улучшение fallback-позы игрока:** Полностью переработан `FallbackPlayerModel` в `PhysicsPlayer.tsx` — естественный idle (лёгкое покачивание, асимметрия рук, micro-nod головы, breathing), плавный walk-cycle с противоположным swing рук/ног, улучшенные пропорции тела/рук/головы (neck connector, hair shadow, refined cyber-glasses, elbow spheres, notepad hint). Убрана "T-like" жёсткость. `useFrame` оптимизирован, материалы с metalness/roughness для AAA-look. Соответствует `r3f-web-gamedev` best practices.
 
 ### Changed
+
+- **Фаза приложения и оверлей стиха:** `phase` / `setPhase` вынесены из `gameStore` в `useAppStore` (`GameOrchestrator`, `useEnergySystem`, `useAutoSave`, `explorationAmbienceService` + подписка на `appStore`). `revealedPoemId` — в `useAppStore`, запись из `useGameRuntime`; `loadGame` / `resetGame` синхронизируют фазу и сбрасывают оверлей. Тип `AppPhase` подключён в `useActionHandler`, `useGameSessionFlow`, `useGameUiLayout`, `useGameRuntime`. Удалены дубли из `inventoryStore`. `src/state/gameStore.ts`, `src/state/inventoryStore.ts`, перечисленные модули, `useGameRuntime.test.tsx`.
 
 - **`useStoryChoiceHandler` / `useActionHandler`:** убран прямой `useGameStore` из обработчика выбора; `pushChoiceLog` через `usePlayerActions`, `currentNodeId` и `playerState` прокидываются снаружи (`GameOrchestrator` → `useActionHandler`). `src/hooks/useStoryChoiceHandler.ts`, `useActionHandler.ts`, `GameOrchestrator.tsx`, `useStoryChoiceHandler.test.tsx`.
 

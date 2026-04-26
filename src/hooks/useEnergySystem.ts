@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef } from 'react';
 import { useGameStore } from '@/state/gameStore';
+import { useAppStore } from '@/state/appStore';
 import { eventBus } from '@/engine/EventBus';
 import {
   MAX_PLAYER_ENERGY,
@@ -38,7 +39,7 @@ export function useEnergySystem(): EnergySystemAPI {
   const addStat = useGameStore(s => s.addStat);
   const addStress = useGameStore(s => s.addStress);
   const currentNodeId = useGameStore(s => s.currentNodeId);
-  const phase = useGameStore(s => s.phase);
+  const phase = useAppStore((s) => s.phase);
 
   // Реф для отслеживания уведомления об истощении
   const exhaustionNotifiedRef = useRef(false);

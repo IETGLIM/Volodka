@@ -1,5 +1,6 @@
 import { getExplorationAmbientStressPerTick } from '@/lib/explorationAtmosphere';
 import { useGameStore } from '@/state/gameStore';
+import { useAppStore } from '@/state/appStore';
 
 /** DOM `setInterval`; без `ReturnType<typeof setInterval>` (конфликт Node `Timeout` vs `number`). */
 let intervalId: number | null = null;
@@ -11,12 +12,11 @@ function clearAmbientInterval(): void {
   }
 }
 
-function isExplorationGame(state: ReturnType<typeof useGameStore.getState>): boolean {
-  return state.phase === 'game' && state.gameMode === 'exploration';
+function isExplorationGame(gameState: ReturnType<typeof useGameStore.getState>): boolean {
+  return useAppStore.getState().phase === 'game' && gameState.gameMode === 'exploration';
 }
 
-/** Один интервал на сессию обхода; тик читает актуальную сцену из стора. */
-function ensureAmbientInterval(): void {
+function syncAmbientInterval(): void {
   if (!isExplorationGame(useGameStore.getState())) {
     clearAmbientInterval();
     return;
@@ -32,17 +32,18 @@ function ensureAmbientInterval(): void {
 }
 
 export function startExplorationAmbienceService(): () => void {
-  ensureAmbientInterval();
-  const unsub = useGameStore.subscribe((state, prevState) => {
-    const exploring = isExplorationGame(state);
-    const wasExploring = prevState ? isExplorationGame(prevState) : exploring;
-    if (exploring !== wasExploring) {
-      clearAmbientInterval();
-      ensureAmbientInterval();
-    }
+  syncAmbientInterval();
+  const unsubGame = useGameStore.subscribe(() => {
+    clearAmbientInterval();
+    syncAmbientInterval();
+  });
+  const unsubApp = useAppStore.subscribe(() => {
+    clearAmbientInterval();
+    syncAmbientInterval();
   });
   return () => {
-    unsub();
+    unsubGame();
+    unsubApp();
     clearAmbientInterval();
   };
 }

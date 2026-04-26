@@ -39,6 +39,7 @@ import {
 } from './GameOrchestratorSubcomponents';
 
 import { useGameStore } from '@/state/gameStore';
+import { useAppStore } from '@/state/appStore';
 import { useGamePhaseStore } from '@/state/gamePhaseStore';
 import { IntroCutsceneOverlays } from '@/ui/cutscenes/IntroCutsceneOverlays';
 import { eventBus } from '@/engine/EventBus';
@@ -101,7 +102,6 @@ export default function GameOrchestrator() {
   const energySystem = useEnergySystem();
 
   const actions = useGameStore(useShallow((s) => ({
-    setPhase: s.setPhase,
     setCurrentNode: s.setCurrentNode,
     addStat: s.addStat,
     addStress: s.addStress,
@@ -129,7 +129,7 @@ export default function GameOrchestrator() {
   })));
 
   const {
-    setPhase, setCurrentNode, addStat, addStress, reduceStress, clearPanicMode,
+    setCurrentNode, addStat, addStress, reduceStress, clearPanicMode,
     collectPoem, unlockAchievement, setGameMode, updateNPCRelation, setFlag,
     unsetFlag, addSkill, addItem, removeItem, activateQuest, completeQuest,
     incrementQuestObjective, updateQuestObjective, saveGame: saveGameToStore,
@@ -137,7 +137,8 @@ export default function GameOrchestrator() {
     incrementPlayTime, travelToScene,
   } = actions;
 
-  const phase = useGameStore((s) => s.phase);
+  const phase = useAppStore((s) => s.phase);
+  const setPhase = useAppStore((s) => s.setPhase);
   const playerState = useGameStore((s) => s.playerState);
   const currentNodeId = useGameStore((s) => s.currentNodeId);
   const collectedPoems = useGameStore((s) => s.collectedPoemIds);

@@ -33,6 +33,7 @@ import {
 } from '@/lib/persistedGameSnapshot';
 import { getExplorationLivePlayerPositionOrNull } from '@/lib/explorationLivePlayerBridge';
 import { useGamePhaseStore } from '@/state/gamePhaseStore';
+import { useAppStore } from '@/state/appStore';
 import {
   applyExperienceGain,
   experienceRequiredForNextLevel,
@@ -234,17 +235,12 @@ interface GameState {
   npcRelations: NPCRelation[];
   inventory: InventoryItem[];
   
-  // Flags
-  revealedPoemId: string | null;
   collectedPoemIds: string[];
   unlockedAchievementIds: string[];
   unlockedLocations: string[];
   
   // Panic timers
   activePanicTimer: PanicTimer | null;
-  
-  // UI state
-  phase: 'loading' | 'intro' | 'menu' | 'game';
   
   // RPG state
   gameMode: GameMode;
@@ -264,7 +260,6 @@ interface GameState {
   factionReputations: Record<FactionId, FactionReputation>;
   
   // Actions
-  setPhase: (phase: GameState['phase']) => void;
   setCurrentNode: (nodeId: string) => void;
   
   // Game mode
@@ -301,7 +296,6 @@ interface GameState {
   
   // Poems
   collectPoem: (poemId: string) => void;
-  revealPoem: (poemId: string | null) => void;
   
   // Achievements
   unlockAchievement: (achievementId: string) => void;
@@ -545,13 +539,11 @@ export const useGameStore = create<GameState>()((set, get) => ({
   currentNodeId: 'explore_mode',
   npcRelations: INITIAL_NPC_RELATIONS,
   inventory: [],
-  revealedPoemId: null,
   collectedPoemIds: [],
   unlockedAchievementIds: [],
   unlockedLocations: [],
   activePanicTimer: null,
-  phase: 'loading',
-  
+
   // RPG initial state — старт с 3D-локации; сюжет и квесты через NPC и триггеры
   gameMode: 'exploration',
   exploration: INITIAL_EXPLORATION_STATE,
@@ -567,9 +559,6 @@ export const useGameStore = create<GameState>()((set, get) => ({
   
   // Faction initial state
   factionReputations: INITIAL_FACTION_REPUTATIONS,
-  
-  // Phase
-  setPhase: (phase) => set({ phase }),
   
   // Game mode
   setGameMode: (mode) => set({ gameMode: mode }),
@@ -882,9 +871,7 @@ export const useGameStore = create<GameState>()((set, get) => ({
       get().addExperience(22, `poem:${poemId}`);
     }
   },
-  
-  revealPoem: (poemId) => set({ revealedPoemId: poemId }),
-  
+
   // Achievements
   unlockAchievement: (achievementId) => {
     const { unlockedAchievementIds } = get();
@@ -1372,8 +1359,9 @@ export const useGameStore = create<GameState>()((set, get) => ({
         const normalized = normalizeLoadedState(data);
         set({
           ...normalized,
-          phase: 'game'
         });
+        useAppStore.getState().setPhase('game');
+        useAppStore.getState().setRevealedPoemId(null);
         useGamePhaseStore.getState().completeIntroCutscene();
         eventBus.emit('game:loaded', { timestamp: Date.now() });
         return true;
@@ -1396,7 +1384,6 @@ export const useGameStore = create<GameState>()((set, get) => ({
       unlockedAchievementIds: [],
       unlockedLocations: [],
       activePanicTimer: null,
-      phase: 'menu',
       gameMode: 'exploration',
       exploration: INITIAL_EXPLORATION_STATE,
       currentNPCId: null,
@@ -1410,6 +1397,8 @@ export const useGameStore = create<GameState>()((set, get) => ({
       choiceLog: [],
     });
 
+    useAppStore.getState().setPhase('menu');
+    useAppStore.getState().setRevealedPoemId(null);
     useGamePhaseStore.getState().completeIntroCutscene();
 
     if (storage) {

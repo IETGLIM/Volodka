@@ -8,6 +8,7 @@
 
 import { useEffect, useRef, useCallback } from 'react';
 import { useGameStore } from '@/state/gameStore';
+import { useAppStore } from '@/state/appStore';
 import { eventBus } from '@/engine/EventBus';
 
 interface AutoSaveOptions {
@@ -30,7 +31,7 @@ export function useAutoSave(options: AutoSaveOptions = {}) {
   } = options;
 
   const saveGame = useGameStore(s => s.saveGame);
-  const phase = useGameStore(s => s.phase);
+  const phase = useAppStore((s) => s.phase);
   const lastSaveRef = useRef<number>(0);
 
   const doSave = useCallback(() => {
