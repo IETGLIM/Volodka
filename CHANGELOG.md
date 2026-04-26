@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Changed
+
+- **Сюжет (`storyNodes`, заставки `volodka_*`):** уточнён и расширен текст узлов `poetry_life_review`, `volunteer_read_result`, `home_alone`, `crisis_choice`, `act3_start`, `story_cafe_poet`, `start_diagnosis`; подзаголовок игры; исправлена формулировка «Старик в парке»; усилены короткие вставки у окна, стола, дивана и двери в комнате Володьки (`src/data/storyNodes.ts`, `src/data/animeCutscenes.ts`). Золотой путь и выборы веток не менялись.
+
 ### Added
 
 - **Слой IT-консоли перед взломом стойки:** взаимодействие `volodka_rack_hack` сначала открывает полноэкранную консоль (ночная смена, мониторинг, предупреждение о журнале изменений), затем по явному действию игрока — мини-игру узлов; подсказка на полный `ITTerminal` из HUD. Стор `explorationRackConsoleStore`, оверлей `ExplorationRackConsoleOverlay`, тексты `volodkaRackConsoleCopy` (`src/state/explorationRackConsoleStore.ts`, `src/ui/3d/exploration/ExplorationRackConsoleOverlay.tsx`, `src/lib/volodkaRackConsoleCopy.ts`, `src/game/core/registerBaseInteractions.ts`, `src/ui/game/GameOrchestrator.tsx`).
