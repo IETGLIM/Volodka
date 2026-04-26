@@ -10,6 +10,8 @@ import type { DialogueRequest, DialogueResponse } from '../../../lib/ai-types';
 import { parseDialogueFromModelRaw, withAbortTimeout, AI_DIALOGUE_SDK_TIMEOUT_MS } from '@/services/ai-service';
 import type { PlayerState, NPCRelation } from '../../../data/types';
 import { MAX_PLAYER_ENERGY } from '@/lib/energyConfig';
+import { isFeatureFlagEnabled, MAX_AI_DIALOGUE_BODY_BYTES } from '@/lib/apiRouteSecurity';
+import { safeParseDialogueRequest } from '@/validation/aiDialogueRequestSchema';
 
 type ZAIClient = {
   chat: {
@@ -325,14 +327,39 @@ function getFallbackDialogue(request: DialogueRequest): DialogueResponse {
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json() as DialogueRequest;
-
-    // Validate required fields
-    if (!body.npcId || !body.npcName) {
+    const rawText = await request.text();
+    if (rawText.length > MAX_AI_DIALOGUE_BODY_BYTES) {
       return NextResponse.json(
-        { error: 'Поля "npcId" и "npcName" обязательны' },
+        { error: 'Слишком большое тело запроса', code: 'DIALOGUE_PAYLOAD_TOO_LARGE' },
+        { status: 413 },
+      );
+    }
+
+    let json: unknown;
+    try {
+      json = JSON.parse(rawText) as unknown;
+    } catch {
+      return NextResponse.json(
+        { error: 'Ожидался JSON', code: 'DIALOGUE_INVALID_JSON' },
         { status: 400 },
       );
+    }
+
+    const parsed = safeParseDialogueRequest(json);
+    if (!parsed.ok) {
+      return NextResponse.json(
+        {
+          error: 'Неверная структура запроса диалога',
+          code: 'DIALOGUE_VALIDATION_ERROR',
+        },
+        { status: 400 },
+      );
+    }
+
+    const body: DialogueRequest = parsed.data;
+
+    if (!isFeatureFlagEnabled(process.env.ENABLE_AI_DIALOGUE_API)) {
+      return NextResponse.json(getFallbackDialogue(body));
     }
 
     const { npcId, npcName, playerState, npcRelations, dialogueHistory, currentTopic } = body;

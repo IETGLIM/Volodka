@@ -104,14 +104,22 @@
 
 | Шаг | Действие | Готово |
 |-----|----------|--------|
-| 5.1 | Решение: вшить ли Browserbase smoke в CI (или оставить manual + документировать) | ☐ |
-| 5.2 | API routes: Zod/лимиты по мере необходимости для публичного деплоя | ☐ |
-| 5.3 | Финальный проход CHANGELOG + тег версии при релизе мемориала | ☐ |
+| 5.1 | Решение по smoke: основной CI без Browserbase; ручной workflow `volodka-smoke.yml` + `docs/volodka-room-smoke.md` | ☑ |
+| 5.2 | API: Zod + лимит тела для `/api/ai-dialogue`; лимит `Content-Length` для `/api/models/upload` (включённый флаг + bearer по-прежнему) | ☑ |
+| 5.3 | Чеклист релиза мемориала (ниже); тег версии — вручную при публикации | ☑ *чеклист* |
+
+### Чеклист 5.3 (релиз мемориала)
+
+- `npx tsc --noEmit`, `npm test`, `npm run build` локально или по последнему зелёному CI на `main`.
+- Пройти чеклист `docs/volodka-room-smoke.md` (и при необходимости ручной Browserbase smoke на прод-URL).
+- Обновить `CHANGELOG.md`: секция версии вместо только `[Unreleased]`, кратко — пользовательские изменения.
+- Тег git: `git tag -a vX.Y.Z -m "…"` и push тегов; на Vercel — production deploy с этой ревизией.
 
 ---
 
 ## История изменений документа
 
+- **2026-04-27:** фаза 5 — решение по Browserbase smoke, API-лимиты и Zod для `ai-dialogue`, чеклист релиза 5.3.
 - **2026-04-27:** фаза 4 — единый mobile breakpoint, тесты `mobileBreakpoints.test.tsx` + `explorationMobileHeroHints.test.ts`, чеклист 4.3.
 - **2026-04-27:** фаза 3 — интегритет hero streaming + спавн в коллайдерах (`explorationHeroStreamingIntegrity.test.ts`).
 - **2026-04-27:** фаза 2 — эффекты сюжета, последствия, тест покрытия ключей `StoryEffect`.

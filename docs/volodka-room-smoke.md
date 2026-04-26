@@ -8,7 +8,7 @@
 
 Параметр **`deepBoot: false`** — только HTTP + заголовок «ВОЛОДЬКА» + подсчёт canvas/WebGL без кликов (лёгкий ping).
 
-CI: `.github/workflows/volodka-smoke.yml` (ручной запуск; нужен `BROWSERBASE_API_KEY` в secrets). Вызов функции в консоли Browserbase: `{ "baseUrl": "https://…" , "deepBoot": true }`.
+CI: `.github/workflows/volodka-smoke.yml` — **только `workflow_dispatch`** (ручной запуск; опционально `BROWSERBASE_API_KEY` в secrets; без ключа job завершается успешно с пропуском). В основной PR/push CI **не** вшито: стоимость Browserbase, флейки WebGL и длительность. Вызов функции в консоли Browserbase: `{ "baseUrl": "https://…" , "deepBoot": true }`.
 
 - [ ] Игрок загружен, проигрывается idle-анимация (двигается не только root, но и руки/ноги).
 - [ ] WASD — walk-анимация, персонаж перемещается без провалов и проскальзываний.

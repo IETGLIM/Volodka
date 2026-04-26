@@ -8,6 +8,8 @@
 
 ### Added
 
+- **Фаза 5 — production gates:** зафиксировано в `docs/volodka-incremental-aaa-roadmap.md` и `docs/volodka-room-smoke.md`: Browserbase smoke не в основном CI PR/push, только `workflow_dispatch` (`volodka-smoke.yml`). API: `src/validation/aiDialogueRequestSchema.ts` + лимит тела `MAX_AI_DIALOGUE_BODY_BYTES` для POST `/api/ai-dialogue`; для `/api/models/upload` — отказ при `Content-Length` > `MAX_MODEL_UPLOAD_BYTES` (флаг и bearer без изменений). Тест `aiDialogueRequestSchema.test.ts`. Чеклист релиза мемориала — roadmap §5.3.
+
 - **Фаза 4 — мобильный слой:** общий медиа-запрос `MOBILE_MAX_WIDTH_MEDIA` (`use-mobile.ts`, `useMobileVisualPerf.ts`); JSDoc для `useTouchGameControls`; тесты `mobileBreakpoints.test.tsx` (desktop + reduced motion, wide + fine pointer); тест `explorationMobileHeroHints.test.ts` — у hero-сцен `volodka_room` и `zarema_albert_room` есть `explorationTutorialHints` для туториала/тача. Чеклист ручной проверки — `docs/volodka-incremental-aaa-roadmap.md` (фаза 4.3).
 
 - **Фаза 3 — hero exploration / стриминг / физика:** тест `explorationHeroStreamingIntegrity.test.ts` — соседи `streaming.neighborSceneIds` существуют в `SCENE_CONFIG`; чанки `volodka_room` / `volodka_corridor` с префиксом `sceneId::`; URL GLB из манифеста hero — файлы в `public/`; спавн внутри AABB пола (константы синхронизированы с `PhysicsSceneColliders`).
