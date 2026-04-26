@@ -99,12 +99,18 @@ export function useGameRuntime(params: UseGameRuntimeParams) {
    * После полноэкранной `AnimeCutscene` (сюжетный выбор с `cutsceneId`):
    * `setCurrentNode` + `pushChoiceLog` — в `completeCutscene`.
    */
-  const pendingCinematicAfterRef = useRef<{
-    kind: 'story_choice';
-    nextNodeId: string;
-    fromNodeId: string;
-    choiceText: string;
-  } | null>(null);
+  const pendingCinematicAfterRef = useRef<
+    | {
+        kind: 'story_choice';
+        nextNodeId: string;
+        fromNodeId: string;
+        choiceText: string;
+      }
+    | { kind: 'poem_reveal'; poemId: string }
+    | null
+  >(null);
+  /** Стих открыли, пока уже шла чужая заставка — показать оверлей после её `completeCutscene`. */
+  const deferredPoemRevealIdRef = useRef<string | null>(null);
 
   useEffect(() => {
     activeCutsceneIdRef.current = activeCutsceneId;
@@ -278,8 +284,11 @@ export function useGameRuntime(params: UseGameRuntimeParams) {
     const key = `${currentNodeId}::${storyNode.cutscene}`;
     if (cutscenesCompletedRef.current.has(key)) return;
     queueMicrotask(() => {
-      cutsceneCompletionKeyRef.current = `${currentNodeId}::${storyNode.cutscene}`;
-      setActiveCutsceneId(storyNode.cutscene!);
+      if (activeCutsceneIdRef.current) return;
+      const sid = storyNode.cutscene!;
+      cutsceneCompletionKeyRef.current = `${currentNodeId}::${sid}`;
+      activeCutsceneIdRef.current = sid;
+      setActiveCutsceneId(sid);
     });
   }, [phase, currentNodeId, activeCutsceneId]);
 
@@ -287,7 +296,9 @@ export function useGameRuntime(params: UseGameRuntimeParams) {
     if (activeCutsceneIdRef.current) return;
     if (cutscenesCompletedRef.current.has(completionKey)) return;
     queueMicrotask(() => {
+      if (activeCutsceneIdRef.current) return;
       cutsceneCompletionKeyRef.current = completionKey;
+      activeCutsceneIdRef.current = cutsceneId;
       setActiveCutsceneId(cutsceneId);
     });
   }, []);
@@ -360,19 +371,61 @@ export function useGameRuntime(params: UseGameRuntimeParams) {
           choiceText: p.choiceText,
         };
         cutsceneCompletionKeyRef.current = transientKey;
+        activeCutsceneIdRef.current = id;
         setActiveCutsceneId(id);
       });
+    };
+
+    const onPoemCollected = ({ poemId }: { poemId: string }) => {
+      const cid = CINEMATIC_BEAT.poemCollected;
+      if (!getCutsceneById(cid)) {
+        queueMicrotask(() => {
+          useGameStore.getState().setRevealedPoemId(poemId);
+        });
+        return;
+      }
+      const key = `cinematic::poem::${poemId}::${cid}`;
+      if (cutscenesCompletedRef.current.has(key)) {
+        queueMicrotask(() => {
+          useGameStore.getState().setRevealedPoemId(poemId);
+        });
+        return;
+      }
+      queueMicrotask(() => {
+        if (activeCutsceneIdRef.current) {
+          deferredPoemRevealIdRef.current = poemId;
+          return;
+        }
+        if (cutscenesCompletedRef.current.has(key)) return;
+        pendingCinematicAfterRef.current = { kind: 'poem_reveal', poemId };
+        cutsceneCompletionKeyRef.current = key;
+        activeCutsceneIdRef.current = cid;
+        setActiveCutsceneId(cid);
+      });
+    };
+
+    const onAchievementUnlocked = ({ achievementId }: { achievementId: string }) => {
+      if (activeCutsceneIdRef.current) return;
+      const cid = CINEMATIC_BEAT.achievement;
+      if (!getCutsceneById(cid)) return;
+      const key = `cinematic::achievement::${achievementId}::${cid}`;
+      if (cutscenesCompletedRef.current.has(key)) return;
+      requestCutscene(cid, key);
     };
 
     const offA = eventBus.on('quest:activated', onQuestActivated);
     const offB = eventBus.on('quest:completed', onQuestCompleted);
     const offC = eventBus.on('quest:objective_updated', onObjective);
     const offD = eventBus.on('cinematic:story_after_choice', onChoiceCinematic);
+    const offE = eventBus.on('poem:collected', onPoemCollected);
+    const offF = eventBus.on('achievement:unlocked', onAchievementUnlocked);
     return () => {
       offA();
       offB();
       offC();
       offD();
+      offE();
+      offF();
     };
   }, [phase, getQuestDef, requestCutscene]);
 
@@ -382,7 +435,6 @@ export function useGameRuntime(params: UseGameRuntimeParams) {
     const poem = POEMS.find((p) => p.unlocksAt === currentNodeId);
     if (poem && !collectedPoems.includes(poem.id)) {
       collectPoem(poem.id);
-      queueMicrotask(() => useGameStore.getState().setRevealedPoemId(poem.id));
 
       const insight = poemMechanics.collectPoem(poem.id);
       queueMicrotask(() => showEffectNotif(`СТИХ: "${poem.title}"`, 'poem'));
@@ -402,8 +454,6 @@ export function useGameRuntime(params: UseGameRuntimeParams) {
           setFlag(unlock.flag);
         }
       }
-
-      eventBus.emit('poem:collected', { poemId: poem.id });
     }
   }, [phase, currentNodeId, collectedPoems, collectPoem, showEffectNotif, addStat, addSkill, setFlag]);
 
@@ -439,7 +489,6 @@ export function useGameRuntime(params: UseGameRuntimeParams) {
       };
       if (checkAchievement(achievement, stateForCheck)) {
         unlockAchievement(achievement.id);
-        eventBus.emit('achievement:unlocked', { achievementId: achievement.id });
       }
     });
   }, [
@@ -462,6 +511,7 @@ export function useGameRuntime(params: UseGameRuntimeParams) {
       cutscenesCompletedRef.current.add(key);
     }
     cutsceneCompletionKeyRef.current = null;
+    activeCutsceneIdRef.current = null;
     setActiveCutsceneId(null);
     if (pending?.kind === 'story_choice') {
       const ps = usePlayerStore.getState();
@@ -472,6 +522,13 @@ export function useGameRuntime(params: UseGameRuntimeParams) {
         toNodeId: pending.nextNodeId,
         kind: 'story',
       });
+    } else if (pending?.kind === 'poem_reveal') {
+      useGameStore.getState().setRevealedPoemId(pending.poemId);
+    }
+    const deferredReveal = deferredPoemRevealIdRef.current;
+    if (deferredReveal) {
+      deferredPoemRevealIdRef.current = null;
+      useGameStore.getState().setRevealedPoemId(deferredReveal);
     }
   }, [currentNodeId]);
 

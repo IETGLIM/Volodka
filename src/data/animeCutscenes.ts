@@ -271,6 +271,28 @@ export const ANIME_CUTSCENES: Record<string, AnimeCutsceneData> = {
       'Следующая сцена уже пишет себя сама; надо лишь не сбить табуляцию.',
     ],
   },
+  cinematic_beat_poem_collected: {
+    id: 'cinematic_beat_poem_collected',
+    title: 'Строчка в запасе',
+    subtitle: 'Стихи',
+    theme: 'memory',
+    duration: 2200,
+    text: [
+      'Ещё одна дырка в шуме закрывается рифмой — и не открывается как сырой квест.',
+      'Слова — не лут, но складываются в инвентарь, из которого потом дышат.',
+    ],
+  },
+  cinematic_beat_achievement: {
+    id: 'cinematic_beat_achievement',
+    title: 'Отмечено',
+    subtitle: 'Ачивка',
+    theme: 'hope',
+    duration: 2000,
+    text: [
+      'Система щёлкнула галочку — внешняя, но липкая: как пассивка, только про твой след.',
+      'Статистика не врёт, но тоже умеет льстить; бери как карту, не как приказ.',
+    ],
+  },
 };
 
 // ============================================

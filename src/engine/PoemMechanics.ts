@@ -8,7 +8,6 @@
 //   3. Раскрывает скрытые ветки истории
 //   4. Меняет визуальную атмосферу
 
-import { eventBus } from './EventBus';
 import { POEMS, getPoemById, type Poem } from '@/data/poems';
 import type { PlayerSkills } from '@/data/types';
 
@@ -183,9 +182,6 @@ class PoemMechanicsClass {
 
     this.collectedPoems.add(poemId);
     const insight = this.getPoemInsight(poemId);
-
-    // Emit event
-    eventBus.emit('poem:collected', { poemId });
 
     return insight;
   }

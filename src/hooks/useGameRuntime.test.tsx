@@ -11,6 +11,29 @@ import { experienceRequiredForNextLevel } from '@/lib/rpgLeveling';
 import { useAppStore } from '@/state/appStore';
 import { useGameStore } from '@/state';
 
+/** Минимальная шина, чтобы `useGameRuntime` мог подписаться на `poem:collected` / `achievement:unlocked`. */
+const eventBusTestHarness = vi.hoisted(() => {
+  const subs: Record<string, Set<(p: unknown) => void>> = {};
+  return {
+    add(event: string, fn: (p: unknown) => void) {
+      if (!subs[event]) subs[event] = new Set();
+      subs[event].add(fn);
+    },
+    remove(event: string, fn: (p: unknown) => void) {
+      subs[event]?.delete(fn);
+    },
+    dispatch(event: string, payload: unknown) {
+      for (const fn of subs[event] ?? []) (fn as (p: unknown) => void)(payload);
+    },
+    clear() {
+      for (const k of Object.keys(subs)) subs[k]?.clear();
+    },
+    hasSubscribers(event: string) {
+      return (subs[event]?.size ?? 0) > 0;
+    },
+  };
+});
+
 vi.mock('@/engine/CoreLoop', () => ({
   coreLoop: {
     init: vi.fn(),
@@ -27,11 +50,16 @@ vi.mock('@/engine/SceneManager', () => ({
 
 vi.mock('@/engine/EventBus', () => ({
   eventBus: {
-    emit: vi.fn(),
-    on: vi.fn(() => () => {}),
+    emit: vi.fn((event: string, payload: unknown) => {
+      eventBusTestHarness.dispatch(event, payload);
+    }),
+    on: vi.fn((event: string, fn: (p: unknown) => void) => {
+      eventBusTestHarness.add(event, fn);
+      return () => eventBusTestHarness.remove(event, fn);
+    }),
     once: vi.fn(() => () => {}),
     off: vi.fn(),
-    hasSubscribers: vi.fn(() => false),
+    hasSubscribers: vi.fn((event: string) => eventBusTestHarness.hasSubscribers(event)),
   },
 }));
 
@@ -215,11 +243,15 @@ function createBaseParams() {
     },
     incrementPlayTime: vi.fn(),
     travelToScene: vi.fn(() => ({ ok: true as const })),
-    collectPoem: vi.fn(),
+    collectPoem: vi.fn((poemId: string) => {
+      vi.mocked(eventBus.emit)('poem:collected', { poemId });
+    }),
     addStat: vi.fn(),
     addSkill: vi.fn(),
     setFlag: vi.fn(),
-    unlockAchievement: vi.fn(),
+    unlockAchievement: vi.fn((achievementId: string) => {
+      vi.mocked(eventBus.emit)('achievement:unlocked', { achievementId });
+    }),
     showEffectNotif: vi.fn(),
   };
 }
@@ -227,6 +259,7 @@ function createBaseParams() {
 describe('useGameRuntime', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    eventBusTestHarness.clear();
     useAppStore.setState({ phase: 'game' });
     gameStoreTestState.state.revealedPoemId = null;
   });
@@ -245,9 +278,9 @@ describe('useGameRuntime', () => {
     expect(coreLoop.stopLoop).toHaveBeenCalled();
   });
 
-  it('applies poem side effects and emits poem event', async () => {
+  it('applies poem side effects and reveals poem after blocking cutscene completes', async () => {
     const params = createBaseParams();
-    renderHook(() => useGameRuntime(params));
+    const { result } = renderHook(() => useGameRuntime(params));
     await act(async () => {
       await Promise.resolve();
     });
@@ -258,6 +291,13 @@ describe('useGameRuntime', () => {
     expect(params.addSkill).toHaveBeenCalledWith('writing', 2);
     expect(params.setFlag).toHaveBeenCalledWith('poem_unlock_flag');
     expect(eventBus.emit).toHaveBeenCalledWith('poem:collected', { poemId: 'poem_1' });
+    expect(result.current.activeCutsceneId).toBe('cutscene_1');
+    expect(useGameStore.getState().revealedPoemId).toBeNull();
+
+    await act(async () => {
+      result.current.completeCutscene();
+      await Promise.resolve();
+    });
     expect(useGameStore.getState().revealedPoemId).toBe('poem_1');
   });
 

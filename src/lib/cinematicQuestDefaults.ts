@@ -6,6 +6,8 @@ export const CINEMATIC_BEAT = {
   questMilestone: 'cinematic_beat_quest_milestone',
   questComplete: 'cinematic_beat_quest_complete',
   storyChoice: 'cinematic_beat_story_turn',
+  poemCollected: 'cinematic_beat_poem_collected',
+  achievement: 'cinematic_beat_achievement',
 } as const;
 
 export function resolveQuestStartCutsceneId(def: ExtendedQuest | undefined): string | null {

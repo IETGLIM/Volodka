@@ -875,6 +875,7 @@ export const useGameStore = create<GameState>()((set, get) => ({
         }
       });
       get().addExperience(22, `poem:${poemId}`);
+      eventBus.emit('poem:collected', { poemId });
     }
   },
 
@@ -887,6 +888,7 @@ export const useGameStore = create<GameState>()((set, get) => ({
       set({
         unlockedAchievementIds: [...unlockedAchievementIds, achievementId]
       });
+      eventBus.emit('achievement:unlocked', { achievementId });
     }
   },
   
