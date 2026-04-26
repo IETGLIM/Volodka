@@ -1,28 +1,31 @@
-# Vercel deployment exclusions - keep only production-critical assets
-# Heavy / unused GLB models (total ~200+ MB reduction)
-public/models/burntrap_hd_-_fnaf_security_breach.glb
-public/models/spartan_armour_mkv_-_halo_reach.glb
-public/models/dark_lantern_huntress.glb
-public/models/antoni_gaudi.glb
-public/models/sayuri_dans.glb
-public/models/shibahu.glb
-public/models/college_girl.glb
-public/models/crimson_lace_confidence.glb
-public/models/crimson_lace_in_the_hallway.glb
-public/models/cyberpunk_character.glb
-public/models/destiny_2_character_bust.glb
-public/models/free_annie_anime_gerl_-_without_clothes.glb
-public/models/luoli_run.glb
-public/models/calvin_freckle_mcmurray_from_lackadaisy.glb
-public/models/blade__soul_kung_fu_sword_stick.glb
+# Vercel deployment exclusions - keep only production-critical assets (target <100MB static)
+# Heavy / unused GLB models (total reduction ~180+ MB)
+public/models-external/burntrap_hd_-_fnaf_security_breach.glb
+public/models-external/spartan_armour_mkv_-_halo_reach.glb
+public/models-external/dark_lantern_huntress.glb
+public/models-external/antoni_gaudi.glb
+public/models-external/sayuri_dans.glb
+public/models-external/shibahu.glb
+public/models-external/college_girl.glb
+public/models-external/crimson_lace_confidence.glb
+public/models-external/crimson_lace_in_the_hallway.glb
+public/models-external/cyberpunk_character.glb
+public/models-external/destiny_2_character_bust.glb
+public/models-external/free_annie_anime_gerl_-_without_clothes.glb
+public/models-external/luoli_run.glb
+public/models-external/calvin_freckle_mcmurray_from_lackadaisy.glb
+public/models-external/blade__soul_kung_fu_sword_stick.glb
+public/models-external/alleyana.glb
+public/models-external/blackhole.glb
 
 # Khronos test samples (not used in game)
-public/models/khronos_cc0_*.glb
-public/models/khronos_cc0_BoomBox.glb
-public/models/khronos_cc0_NormalTangentTest.glb
+public/models-external/khronos_cc0_*.glb
+public/models-external/khronos_cc0_BoomBox.glb
+public/models-external/khronos_cc0_NormalTangentTest.glb
+public/models-external/khronos_cc0_BoxVertexColors.glb
 
 # Old / unused player models
-public/models/Volodka.glb
+public/models-external/Volodka.glb
 
 # Temporary / dev assets
 **/*.tmp
@@ -31,20 +34,23 @@ public/models/Volodka.glb
 node_modules
 .next
 out
+.vercel
 
-# Keep only critical production models
-!public/models/lowpoly_anime_character_cyberstyle.glb
-!public/models/Chair.glb
-!public/models/desk_volodka.glb
-!public/models/shelf.glb
-!public/models/mug.glb
-!public/models/Keyboard.glb
-!public/models/lamp.glb
-!public/models/lillian__vgdc.glb
-!public/models/on_a_quest.glb
-!public/models/witchapprentice.glb
-!public/models/miss_galaxy.glb
+# Keep only critical production models (player, props, key NPCs)
+!public/models-external/lowpoly_anime_character_cyberstyle.glb
+!public/Chair.glb
+!public/desk_volodka.glb
+!public/shelf.glb
+!public/mug.glb
+!public/Keyboard.glb
+!public/lamp.glb
+!public/models-external/lillian__vgdc.glb
+!public/models-external/on_a_quest.glb
+!public/models-external/witchapprentice.glb
+!public/models-external/miss_galaxy.glb
+!public/models-external/toon_cat_free.glb
+!public/models-external/smol_ame_in_an_upcycled_terrarium_hololiveen.glb
 
-# Keep streaming / procedural critical files
+# Keep streaming / procedural critical files and external critical models
 public/models-external/**
 !public/models-external/**/*.glb
