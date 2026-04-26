@@ -1,27 +1,27 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { MOBILE_MAX_WIDTH_MEDIA } from '@/hooks/use-mobile';
 
 /**
- * Упрощённый визуальный режим: узкий экран, тач или reduced-motion.
- * На мобильных Safari/Chromium постоянные full-screen слои + backdrop-blur
- * часто дают мерцание compositor — тогда выключаем тяжёлые эффекты.
- *
+ * Упрощённый визуальный режим: узкий экран, грубый указатель или `prefers-reduced-motion`.
+ * Ширина «узкого» экрана совпадает с `MOBILE_MAX_WIDTH_MEDIA` / `useIsMobile`.
+ * Тач-панель (`useTouchGameControls`) не включает reduced-motion на десктопе — только HUD/инпут.
  */
 export function useMobileVisualPerf(): boolean {
   const [lite, setLite] = useState(false);
 
   useEffect(() => {
+    const widthQuery = MOBILE_MAX_WIDTH_MEDIA;
     const sync = () => {
       const coarse = window.matchMedia('(pointer: coarse)').matches;
-      // Используем 767px вместо 1023px, чтобы не отключать эффекты у десктоп-пользователей с разделенным экраном (например, при открытом IDE)
-      const narrow = window.matchMedia('(max-width: 767px)').matches;
+      const narrow = window.matchMedia(widthQuery).matches;
       const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       setLite(coarse || narrow || reduce);
     };
     sync();
     const m1 = window.matchMedia('(pointer: coarse)');
-    const m2 = window.matchMedia('(max-width: 767px)');
+    const m2 = window.matchMedia(widthQuery);
     const m3 = window.matchMedia('(prefers-reduced-motion: reduce)');
     m1.addEventListener('change', sync);
     m2.addEventListener('change', sync);

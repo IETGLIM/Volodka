@@ -7,6 +7,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { getNPCsForScene, getNpcExplorationPosition } from '@/data/npcDefinitions';
 import { getExplorationLivePlayerPositionOrNull } from '@/lib/explorationLivePlayerBridge';
 import { useExplorationLivePlayerTick } from '@/hooks/useExplorationLivePlayerTick';
+import { useTouchGameControls } from '@/hooks/use-mobile';
 import type { GameMode } from '@/data/rpgTypes';
 import { getSceneConfig } from '@/config/scenes';
 
@@ -26,6 +27,7 @@ export const TutorialOverlay = memo(function TutorialOverlay({
   );
 
   const livePlayerTick = useExplorationLivePlayerTick(gameMode === 'exploration', 200);
+  const touchControls = useTouchGameControls();
 
   const nearNpc = useMemo(() => {
     if (gameMode !== 'exploration') return false;
@@ -58,14 +60,24 @@ export const TutorialOverlay = memo(function TutorialOverlay({
       if (hints?.length) {
         for (const h of hints) l.push(h);
       }
-      l.push('WASD — движение');
-      l.push('E — взаимодействие');
-      l.push('I — инвентарь');
+      if (touchControls) {
+        l.push('Левый блок снизу — движение');
+        l.push('Правая кнопка E — взаимодействие');
+        l.push('Камера — проведите пальцем по свободной части экрана');
+      } else {
+        l.push('WASD — движение');
+        l.push('E — взаимодействие');
+        l.push('I — инвентарь');
+      }
     } else if (showInteract) {
-      l.push('Нажмите E, чтобы поговорить или использовать объект');
+      l.push(
+        touchControls
+          ? 'Нажмите кнопку E справа, чтобы поговорить или использовать объект'
+          : 'Нажмите E, чтобы поговорить или использовать объект',
+      );
     }
     return l;
-  }, [showMovement, showInteract, exploration.currentSceneId]);
+  }, [showMovement, showInteract, exploration.currentSceneId, touchControls]);
 
   if (disabled || gameMode !== 'exploration' || lines.length === 0) return null;
 

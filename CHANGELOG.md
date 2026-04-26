@@ -8,6 +8,16 @@
 
 ### Added
 
+- **Фаза 4 — мобильный слой:** общий медиа-запрос `MOBILE_MAX_WIDTH_MEDIA` (`use-mobile.ts`, `useMobileVisualPerf.ts`); JSDoc для `useTouchGameControls`; тесты `mobileBreakpoints.test.tsx` (desktop + reduced motion, wide + fine pointer); тест `explorationMobileHeroHints.test.ts` — у hero-сцен `volodka_room` и `zarema_albert_room` есть `explorationTutorialHints` для туториала/тача. Чеклист ручной проверки — `docs/volodka-incremental-aaa-roadmap.md` (фаза 4.3).
+
+- **Фаза 3 — hero exploration / стриминг / физика:** тест `explorationHeroStreamingIntegrity.test.ts` — соседи `streaming.neighborSceneIds` существуют в `SCENE_CONFIG`; чанки `volodka_room` / `volodka_corridor` с префиксом `sceneId::`; URL GLB из манифеста hero — файлы в `public/`; спавн внутри AABB пола (константы синхронизированы с `PhysicsSceneColliders`).
+
+- **Фаза 2 — целостность сюжетных эффектов:** `useStoryChoiceHandler` применяет `pathShift` (`playerStore.setPlayerPath`, шина `path:changed`) и прямые поля навыков из `StoryEffect`; тест `storyEffectCoverage.test.ts` проверяет, что все ключи эффектов из `STORY_NODES` входят в поддерживаемый набор. `ConsequencesSystem`: условия `read_at_cafe` заменены на флаг `performed_live` (согласован с `after_reading` в `storyNodes.ts`).
+
+- **Фаза 1 — покрытие exploration `InteractionRegistry`:** тест `explorationInteractionCoverage.test.ts` — все `interactionId` из `triggerZones.ts` и interaction-триггеры из `explorationQuestGraphs.ts` согласованы с `registerBaseInteractions`; сироты реестра только через явный allowlist (`zarema_resonance_ping`). Обновлена сводка в `docs/volodka-incremental-aaa-roadmap.md`.
+
+- **Инкрементальная дорожная карта AAA / production:** фазы 0–5, карта систем (сюжет, квесты, интерактив, хуки, физика, мобильный слой, CI) и критерии Definition of Done — `docs/volodka-incremental-aaa-roadmap.md`; выровнена формулировка итогового вердикта в `docs/volodka-aaa-expert-audit-2026-04-25.md` (без противоречия «100/100» vs executive summary).
+
 - **Лента «цель локации» в 3D-обходе:** верхняя подсказка по активным шагам квестов 📋 для текущей сцены (тот же отбор шага, что у меток миникарты); скрывается на аниме-заставке. `getExplorationSceneObjectiveLines`, `ExplorationObjectiveStrip`, `GameOrchestrator` (`src/lib/explorationSceneQuestObjectives.ts`, `src/ui/game/ExplorationObjectiveStrip.tsx`, `src/ui/game/GameOrchestrator.tsx`).
 
 - **Слой IT-консоли перед взломом стойки:** взаимодействие `volodka_rack_hack` сначала открывает полноэкранную консоль (ночная смена, мониторинг, предупреждение о журнале изменений), затем по явному действию игрока — мини-игру узлов; подсказка на полный `ITTerminal` из HUD. Стор `explorationRackConsoleStore`, оверлей `ExplorationRackConsoleOverlay`, тексты `volodkaRackConsoleCopy` (`src/state/explorationRackConsoleStore.ts`, `src/ui/3d/exploration/ExplorationRackConsoleOverlay.tsx`, `src/lib/volodkaRackConsoleCopy.ts`, `src/game/core/registerBaseInteractions.ts`, `src/ui/game/GameOrchestrator.tsx`).

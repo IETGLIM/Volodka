@@ -902,6 +902,9 @@ export const MenuScreen = memo(function MenuScreen({
               Настройки
             </CyberButton>
           </div>
+          <p className="mt-4 px-1 text-center font-mono text-[10px] leading-relaxed text-cyan-400/55">
+            Первый маршрут ведёт в комнату Володьки: ночь, мониторы, стол, тишина между сменами.
+          </p>
         </div>
 
         {/* Footer */}
