@@ -1,0 +1,75 @@
+'use client';
+
+import { useCallback } from 'react';
+import { useGameStore } from '@/state/gameStore';
+import type { SceneId } from '@/data/types';
+import type {
+  PlayerPosition,
+  NPCState,
+  TriggerState,
+  WorldItem,
+  InteractionPrompt,
+} from '@/shared/types/rpg';
+import type { TravelToSceneOptions, TravelToSceneResult } from '@/state/gameStore';
+
+/**
+ * Фасад над действиями мира (исследование, сцены, NPC, триггеры).
+ * Пока делегирует в gameStore, после распила — напрямую в worldStore.
+ */
+export function useWorldActions() {
+  const travelToScene = useCallback(
+    (sceneId: SceneId, options?: TravelToSceneOptions): TravelToSceneResult => {
+      return useGameStore.getState().travelToScene(sceneId, options);
+    },
+    []
+  );
+
+  const setCurrentScene = useCallback((sceneId: SceneId) => {
+    useGameStore.getState().setCurrentScene(sceneId);
+  }, []);
+
+  const setPlayerPosition = useCallback((position: PlayerPosition) => {
+    useGameStore.getState().setPlayerPosition(position);
+  }, []);
+
+  const advanceTime = useCallback((deltaHours: number) => {
+    useGameStore.getState().advanceTime(deltaHours);
+  }, []);
+
+  const setNPCState = useCallback((npcId: string, state: NPCState) => {
+    useGameStore.getState().setNPCState(npcId, state);
+  }, []);
+
+  const setTriggerState = useCallback((triggerId: string, state: TriggerState) => {
+    useGameStore.getState().setTriggerState(triggerId, state);
+  }, []);
+
+  const addWorldItem = useCallback((item: WorldItem) => {
+    useGameStore.getState().addWorldItem(item);
+  }, []);
+
+  const collectWorldItem = useCallback((itemId: string) => {
+    useGameStore.getState().collectWorldItem(itemId);
+  }, []);
+
+  const setInteractionPrompt = useCallback((prompt: InteractionPrompt | null) => {
+    useGameStore.getState().setInteractionPrompt(prompt);
+  }, []);
+
+  const addExploredArea = useCallback((areaId: string) => {
+    useGameStore.getState().addExploredArea(areaId);
+  }, []);
+
+  return {
+    travelToScene,
+    setCurrentScene,
+    setPlayerPosition,
+    advanceTime,
+    setNPCState,
+    setTriggerState,
+    addWorldItem,
+    collectWorldItem,
+    setInteractionPrompt,
+    addExploredArea,
+  };
+}
