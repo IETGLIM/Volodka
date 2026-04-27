@@ -1,4 +1,5 @@
-# Модели и архивы — обычные Git-blobs (без LFS; см. CHANGELOG и GitHub Billing при квоте LFS).
+# Модели и архивы — обычные Git-blobs. LFS не используется (migrate export); не добавляйте `filter=lfs`
+# для *.glb — иначе снова пойдёт квота LFS. `-text` только отключает CRLF-нормализацию для бинарников.
 *.glb -text
 *.fbx -text
 *.zip -text
