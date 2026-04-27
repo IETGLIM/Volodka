@@ -134,4 +134,54 @@ describe('useStoryChoiceHandler', () => {
     expect(log[0].toNodeId).toBe('node_b');
     expect(log[0].kind).toBe('story');
   });
+
+  it('applyStoryEffect runs poem before quest completion in one effect object', () => {
+    const params = createBaseParams();
+    const order: string[] = [];
+    params.collectPoem.mockImplementation(() => {
+      order.push('poem');
+    });
+    params.completeQuest.mockImplementation(() => {
+      order.push('quest');
+    });
+    const { result } = renderHook(() => useStoryChoiceHandler(params));
+
+    act(() => {
+      result.current.applyStoryEffect({
+        poemId: 'poem_x',
+        questComplete: 'poetry_collection',
+      });
+    });
+
+    expect(order).toEqual(['poem', 'quest']);
+  });
+
+  it('applies choice.effect inside processChoiceCycle before setCurrentNode (no double effect)', () => {
+    const params = createBaseParams();
+    const order: string[] = [];
+    vi.spyOn(coreLoop, 'processChoiceCycle').mockImplementation((_nodeId, _text, applyEffects, getUnlocks) => {
+      order.push('cycle-start');
+      applyEffects();
+      order.push('cycle-end');
+      return { effects: [], unlocks: [], consequences: [] };
+    });
+    params.collectPoem.mockImplementation(() => {
+      order.push('effect');
+    });
+    params.setCurrentNode.mockImplementation(() => {
+      order.push('node');
+    });
+
+    const { result } = renderHook(() => useStoryChoiceHandler(params));
+
+    act(() => {
+      result.current.handleChoice({
+        text: 'Шаг',
+        next: 'node_next',
+        effect: { poemId: 'poem_1' },
+      });
+    });
+
+    expect(order).toEqual(['cycle-start', 'effect', 'cycle-end', 'node']);
+  });
 });

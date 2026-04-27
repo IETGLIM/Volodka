@@ -173,6 +173,20 @@ export function useStoryChoiceHandler(params: StoryChoiceHandlerParams) {
     ]
   );
 
+  /**
+   * Порядок последствий выбора (см. ADR `docs/ADR-single-exploration-narrative-layer.md`):
+   *
+   * - **Обычный выбор** (`next`): `coreLoop.processChoiceCycle` — сначала событие `choice:made` и
+   *   системные последствия, затем **один** вызов `applyStoryEffect(choice.effect)` внутри цикла;
+   *   после возврата из `processChoiceCycle` — переход узла (`openDialogueFromStory` / `setCurrentNode` / cinematic).
+   *   Эффект узла не применяется повторно при смене `currentNodeId` в том же тикe.
+   * - **Skill-check**: `successEffect` / `failEffect`, затем общий `choice.effect` (только при успехе),
+   *   затем `setCurrentNode`, затем `skill:check` на шине.
+   *
+   * Внутри одного `StoryEffect` поля обрабатываются в порядке объявления в `applyStoryEffect`
+   * (в т.ч. `poemId` до `questComplete` / `questObjective`), чтобы квестовые подписчики видели уже
+   * обновлённые статы / стихи там, где это важно для цепочки.
+   */
   const handleChoice = useCallback(
     (choice: StoryChoice) => {
       const energyCost = choice.skillCheck ? ENERGY_COSTS.skillCheck : ENERGY_COSTS.choice;
