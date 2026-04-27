@@ -8,7 +8,7 @@ import { usePanicFlow } from '@/hooks/usePanicFlow';
 import type { EnergySystemAPI } from '@/hooks/useEnergySystem';
 import type { GamePanelsState } from '@/hooks/useGamePanels';
 import type { GameMode } from '@/data/rpgTypes';
-import type { PlayerSkills, PlayerState } from '@/data/types';
+import type { PlayerSkills, PlayerState, StoryNode } from '@/data/types';
 import type { SaveGameOptions } from '@/state';
 import type { AppPhase } from '@/state/appStore';
 
@@ -52,7 +52,7 @@ export interface UseActionHandlerParams {
   phase: AppPhase;
   gameMode: GameMode;
   hasCurrentNode: boolean;
-  storyOverlayEligible: boolean;
+  currentNode: StoryNode | undefined;
   togglePanel: (key: keyof GamePanelsState) => void;
   setPhase: (phase: AppPhase) => void;
   setGameMode: (mode: GameMode) => void;
@@ -91,7 +91,7 @@ export function useActionHandler(params: UseActionHandlerParams) {
     phase,
     gameMode,
     hasCurrentNode,
-    storyOverlayEligible,
+    currentNode,
     togglePanel,
     setPhase,
     setGameMode,
@@ -128,9 +128,8 @@ export function useActionHandler(params: UseActionHandlerParams) {
   const { showStoryOverlay, handleTogglePanel } = useGameUiLayout({
     phase,
     gameMode,
-    currentNodeId,
     hasCurrentNode,
-    storyOverlayEligible,
+    currentNode,
     togglePanel,
   });
 

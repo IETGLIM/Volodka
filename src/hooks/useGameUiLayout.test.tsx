@@ -2,6 +2,24 @@ import { act, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { useGameUiLayout } from './useGameUiLayout';
 import { useGamePhaseStore } from '@/state/gamePhaseStore';
+import type { StoryNode } from '@/data/types';
+
+const nodeEligibleOverlay: StoryNode = {
+  id: 'hub',
+  type: 'narration',
+  scene: 'volodka_room',
+  act: 1,
+  text: 'Hello',
+  choices: [{ text: 'Go', next: 'explore_mode' }],
+} as StoryNode;
+
+const nodeNoOverlay: StoryNode = {
+  id: 'explore_mode',
+  type: 'narration',
+  scene: 'office_morning',
+  act: 1,
+  text: '',
+} as StoryNode;
 
 describe('useGameUiLayout', () => {
   afterEach(() => {
@@ -14,9 +32,8 @@ describe('useGameUiLayout', () => {
       useGameUiLayout({
         phase: 'menu',
         gameMode: 'exploration',
-        currentNodeId: 'start',
         hasCurrentNode: true,
-        storyOverlayEligible: true,
+        currentNode: nodeEligibleOverlay,
         togglePanel,
       }),
     );
@@ -32,9 +49,8 @@ describe('useGameUiLayout', () => {
       useGameUiLayout({
         phase: 'game',
         gameMode: 'exploration',
-        currentNodeId: 'explore_mode',
         hasCurrentNode: true,
-        storyOverlayEligible: false,
+        currentNode: nodeNoOverlay,
         togglePanel,
       }),
     );
@@ -51,9 +67,8 @@ describe('useGameUiLayout', () => {
       useGameUiLayout({
         phase: 'game',
         gameMode: 'exploration',
-        currentNodeId: 'explore_hub_welcome',
         hasCurrentNode: true,
-        storyOverlayEligible: true,
+        currentNode: nodeEligibleOverlay,
         togglePanel: vi.fn(),
       }),
     );
@@ -66,9 +81,8 @@ describe('useGameUiLayout', () => {
       useGameUiLayout({
         phase: 'game',
         gameMode: 'dialogue',
-        currentNodeId: 'x',
         hasCurrentNode: true,
-        storyOverlayEligible: true,
+        currentNode: nodeEligibleOverlay,
         togglePanel,
       }),
     );

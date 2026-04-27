@@ -480,6 +480,7 @@ let storageHydrationApplied = false;
 
 const GAME_MODES: GameMode[] = ['exploration', 'dialogue', 'cutscene', 'combat'];
 
+/** См. `docs/ADR-single-exploration-narrative-layer.md` — `visual-novel` только миграция старых сейвов. */
 function normalizeGameModeForLoad(raw: unknown): GameMode {
   if (raw === 'visual-novel') return 'exploration';
   if (typeof raw === 'string' && (GAME_MODES as string[]).includes(raw)) return raw as GameMode;

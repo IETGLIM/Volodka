@@ -144,6 +144,7 @@ const deserializeInventory = (entries: any[] = []) => {
   });
 };
 
+/** См. `docs/ADR-single-exploration-narrative-layer.md` — `visual-novel` только миграция старых сейвов. */
 const normalizeGameModeForLoad = (raw: unknown): GameMode => {
   if (raw === 'visual-novel') return 'exploration';
   if (typeof raw === 'string' && ['exploration', 'dialogue', 'cutscene', 'combat'].includes(raw)) return raw as GameMode;

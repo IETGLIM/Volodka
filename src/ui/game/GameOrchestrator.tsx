@@ -61,7 +61,6 @@ import { MiniMap } from '@/ui/game/MiniMap';
 import { ExplorationObjectiveStrip } from '@/ui/game/ExplorationObjectiveStrip';
 import { SCENE_VISUALS } from '@/engine/SceneManager';
 import type { VisualState } from '@/data/types';
-import { storyNodeShowsStoryOverlay } from '@/lib/storyOverlayEligibility';
 import { EXPLORATION_GAME_VIEWPORT_CLASS } from '@/ui/3d/Scene';
 import { initGameCore } from '@/game/core/gameCoreBootstrap';
 import { getWorldStateModifiers } from '@/game/world/worldReactivity';
@@ -481,8 +480,6 @@ export default function GameOrchestrator() {
     exploration.currentSceneId,
   ]);
 
-  const storyOverlayEligible = useMemo(() => storyNodeShowsStoryOverlay(currentNode), [currentNode]);
-
   const handleExplorationStoryTrigger = useCallback(
     (triggerId: string, storyNodeId?: string, cutsceneId?: string) => {
       if (cutsceneId) {
@@ -520,7 +517,7 @@ export default function GameOrchestrator() {
     phase,
     gameMode,
     hasCurrentNode: Boolean(currentNode),
-    storyOverlayEligible,
+    currentNode,
     togglePanel,
     setPhase,
     setGameMode,
@@ -543,7 +540,7 @@ export default function GameOrchestrator() {
     handleCalmDown,
   } = actionsBundle;
 
-  /** Не дублировать компактный трекер 📋 с VN, заставками `AnimeCutscene` и 3D-интро. */
+  /** Не дублировать компактный трекер 📋 со сюжетным оверлеем, заставками `AnimeCutscene` и 3D-интро. */
   const suppressQuestStrip = Boolean(activeCutsceneId) || Boolean(showStoryOverlay) || introOpening3dActive;
 
   useEffect(() => {
