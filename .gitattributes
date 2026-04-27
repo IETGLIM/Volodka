@@ -1,4 +1,4 @@
-# Модели и архивы — обычные Git-blobs (без LFS; см. FREE_HOSTING.md).
+# Модели и архивы — обычные Git-blobs (без LFS; см. CHANGELOG и GitHub Billing при квоте LFS).
 *.glb -text
 *.fbx -text
 *.zip -text

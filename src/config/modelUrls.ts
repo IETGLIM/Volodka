@@ -23,12 +23,18 @@ const BASE_URL = getModelsPublicBase();
  * Перенос legacy-путей `/models/…` на актуальный `BASE_URL` (или оставить http(s) как есть).
  * Не добавляйте cache-bust query (`?v=…`) к URL для GLB — иначе кэш загрузчика не стабилен и возможно мерцание.
  */
+/** Файлы из legacy `/models/…`, которых нет в репозитории — подмена на оставшийся CC0-ассет (сейвы, старые URL). */
+const LEGACY_MODEL_REDIRECTS: Record<string, string> = {
+  'Volodka.glb': 'khronos_cc0_RiggedFigure.glb',
+};
+
 export function rewriteLegacyModelPath(path: string): string {
   if (!path || typeof path !== 'string') return path;
   const t = path.trim();
   if (t.startsWith('/models/')) {
     const rest = t.slice('/models/'.length);
-    return `${BASE_URL}/${rest}`;
+    const file = LEGACY_MODEL_REDIRECTS[rest] ?? rest;
+    return `${BASE_URL}/${file}`;
   }
   return t;
 }
@@ -45,10 +51,10 @@ export const DEFAULT_PLAYER_GLB_FILENAME = 'khronos_cc0_CesiumMan.glb' as const;
 
 export const MODEL_URLS = {
   /**
-   * Главный персонаж-архивный Volodka. Оставлен как ассет, но не default: в файле один клип.
-   * Визуальный uniform задаётся в `modelMeta` (`resolveCharacterMeshUniformScale`), не через bbox в рантайме.
+   * Ключ «volodka» в данных: ранее отдельный `Volodka.glb` (вынесен из репо). Сейчас — тот же риг, что у части NPC (`khronos_cc0_RiggedFigure`).
+   * Визуальный uniform — в `modelMeta` (`resolveCharacterMeshUniformScale`).
    */
-  volodka: `${BASE_URL}/Volodka.glb`,
+  volodka: `${BASE_URL}/khronos_cc0_RiggedFigure.glb`,
   
   // NPC модели (аниме стиль)
   smolAme: `${BASE_URL}/khronos_cc0_Fox.glb`,
@@ -82,14 +88,13 @@ export const MODEL_URLS = {
   blackhole: `${BASE_URL}/khronos_cc0_Fox.glb`,
 
   /**
-   * Бесплатные эталоны **Khronos glTF-Sample-Assets** (CC0 1.0) — см. `public/models-external/CC0_KHRONOS_MODELS.md`.
-   * Не персонажи: проп / тест (PBR, morph + анимация); масштаб при необходимости — вручную на примитиве или в DCC.
+   * Ключи под эталоны **Khronos glTF-Sample-Assets** (см. `CC0_KHRONOS_MODELS.md`).
+   * Сами отдельные `.glb` (BoomBox, BoxVertexColors и т.д.) из репозитория убраны ради размера; URL временно указывают на один загруженный ассет с анимацией.
    */
-  cc0KhronosBoxVertexColors: `${BASE_URL}/khronos_cc0_BoxVertexColors.glb`,
-  cc0KhronosAnimatedMorphCube: `${BASE_URL}/khronos_cc0_AnimatedMorphCube.glb`,
-  cc0KhronosNormalTangentTest: `${BASE_URL}/khronos_cc0_NormalTangentTest.glb`,
-  /** Ретро-бумбокс (Microsoft, CC0) — уместен как «железо» на столе в комнате. */
-  cc0KhronosBoomBox: `${BASE_URL}/khronos_cc0_BoomBox.glb`,
+  cc0KhronosBoxVertexColors: `${BASE_URL}/khronos_cc0_Fox.glb`,
+  cc0KhronosAnimatedMorphCube: `${BASE_URL}/khronos_cc0_Fox.glb`,
+  cc0KhronosNormalTangentTest: `${BASE_URL}/khronos_cc0_Fox.glb`,
+  cc0KhronosBoomBox: `${BASE_URL}/khronos_cc0_Fox.glb`,
 } as const;
 
 /** Проверка пути к GLB игрока: абсолютный путь приложения или http(s) URL. */

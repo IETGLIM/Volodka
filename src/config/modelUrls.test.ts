@@ -3,9 +3,14 @@ import { getDefaultPlayerModelPath, isValidPlayerGlbPath, MODEL_URLS, rewriteLeg
 
 describe('rewriteLegacyModelPath', () => {
   it('maps legacy /models/ prefix onto the configured public base', () => {
-    const mapped = rewriteLegacyModelPath('/models/Volodka.glb');
-    expect(mapped.endsWith('/Volodka.glb')).toBe(true);
+    const mapped = rewriteLegacyModelPath('/models/khronos_cc0_CesiumMan.glb');
+    expect(mapped.endsWith('/khronos_cc0_CesiumMan.glb')).toBe(true);
     expect(mapped).toContain('models-external');
+  });
+
+  it('redirects removed Volodka.glb legacy path to bundled RiggedFigure', () => {
+    const mapped = rewriteLegacyModelPath('/models/Volodka.glb');
+    expect(mapped.endsWith('/khronos_cc0_RiggedFigure.glb')).toBe(true);
   });
 
   it('leaves non-legacy paths unchanged', () => {
@@ -37,8 +42,8 @@ describe('isValidPlayerGlbPath', () => {
     expect(getDefaultPlayerModelPath()).toContain('khronos_cc0_CesiumMan.glb');
   });
 
-  it('exposes bundled Khronos CC0 sample URLs', () => {
-    expect(MODEL_URLS.cc0KhronosBoomBox).toContain('khronos_cc0_BoomBox.glb');
-    expect(MODEL_URLS.cc0KhronosBoxVertexColors).toContain('khronos_cc0_BoxVertexColors.glb');
+  it('exposes bundled Khronos CC0 sample URLs (test props consolidated to Fox.glb in repo)', () => {
+    expect(MODEL_URLS.cc0KhronosBoomBox).toContain('khronos_cc0_Fox.glb');
+    expect(MODEL_URLS.cc0KhronosBoxVertexColors).toContain('khronos_cc0_Fox.glb');
   });
 });

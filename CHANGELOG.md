@@ -21,10 +21,12 @@
 ### Модели
 
 - GLB по умолчанию из `public/models-external/` (в т.ч. CC0 Khronos). Игрок: `getDefaultPlayerModelPath()` / `DEFAULT_PLAYER_GLB_FILENAME` в `modelUrls.ts` (override: `NEXT_PUBLIC_DEFAULT_PLAYER_MODEL`). Пути `/models/...` переписываются через `rewriteLegacyModelPath`.
+- В репозитории остаётся **минимальный набор** GLB: `khronos_cc0_CesiumMan`, `RiggedFigure`, `Fox`, `sayuri_dans`, `spartan_armour_mkv_-_halo_reach` (остальные внешние модели и тяжёлые Khronos Sample-Assets убраны; часть пересжата Draco). `MODEL_URLS.volodka` и редирект legacy `/models/Volodka.glb` → `khronos_cc0_RiggedFigure.glb`. Константы `cc0KhronosBoomBox` и др. временно указывают на `khronos_cc0_Fox.glb`. Скрипт: `npm run optimize-models` (`scripts/optimize-models/optimizeWithDraco.js`), devDependencies `@gltf-transform/*`, `gltf-pipeline`.
 
 ### Документация
 
 - `README.md` — короткий обзор без дублирования CHANGELOG; актуальный default player и ссылки на ADR. `worklog.md` — срез `main` на 2026-04-27. `docs/volodka-aaa-expert-audit-2026-04-25.md` — заголовок и блок «Validated» синхронизированы с комнатой и ADR.
+- Удалены неактуальные корневые заметки `FREE_HOSTING.md` и `archives/EXPERT_REVIEW.md`; `public/models-external/README.md` и `CC0_KHRONOS_MODELS.md` приведены к текущему набору файлов.
 
 ## [0.2.8] - 2026-04-19
 
