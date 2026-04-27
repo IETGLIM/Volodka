@@ -530,6 +530,7 @@ export function useGameRuntime(params: UseGameRuntimeParams) {
       deferredPoemRevealIdRef.current = null;
       useGameStore.getState().setRevealedPoemId(deferredReveal);
     }
+    eventBus.emit('cinematic:ended', { completionKey: key, cutsceneId: id });
   }, [currentNodeId]);
 
   return {

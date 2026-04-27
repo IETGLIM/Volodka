@@ -57,7 +57,22 @@
 
 ---
 
-## 3. Чеклист для остальных квестов
+## 3. Чеклист — «без обрыва» (📋, бит, VN)
+
+После `completeQuest` (через `questMetaStore` / `useGameStore`) и `completeCutscene` (полноэкранный бит в `useGameRuntime`) игроку должно быть ясно, **что в журнале**, **куда ведёт сцена** и **без дублирования** одной и той же «цели» в двух оверлеях.
+
+| Правило | В коде |
+|--------|--------|
+| Пока идёт `AnimeCutscene` (в т.ч. квестовый бит) или VN-оверлей сюжета — **компактный трекер** в `HUD` скрыт (`suppressQuestStrip` в `GameOrchestrator` + `activeCutsceneId` / `showStoryOverlay` / 3D-интро) | `HUD.tsx`, `GameOrchestrator.tsx` |
+| `QuestTracker` (модульные core-квесты) не показан **поверх** квестового бита | `GameOrchestrator`: рендер только `!activeCutsceneId` |
+| После **закрытия** любого `AnimeCutscene` шина `cinematic:ended` (payload: `completionKey`); по ключам `cinematic::quest::*` — тост «**Следующий шаг**» из `getNextTrackedObjective` (если ещё есть незавершённая цель) | `useGameRuntime.completeCutscene` → `eventBus.emit('cinematic:ended', …)` |
+| События `quest:activated` / `quest:completed` / `quest:objective_updated` по-прежнему ведут в биты **до** `cinematic:ended` (тайминг: стор квеста уже обновлён, HUD вернулся вместе с битом) | `questMetaStore.ts`, `useGameRuntime` |
+
+*Панель квестов 📋, открытая вручную* (`QuestsPanel`) — намеренный просмотр: не путать с «навязчивым дублем» в компактной полосе HUD.
+
+---
+
+## 4. Чеклист для остальных квестов (данные)
 
 1. **Заполнить `stageType` у каждой цели** (даже грубый ярлык: `terminal` для всех шагов 💻, `dialogue` для «поговори с NPC»).
 2. **Имеет сюжетный визуал —** добавить `linkedStoryNodeId` на существующий `STORY_NODES` id.
@@ -68,7 +83,7 @@
 
 ---
 
-## 4. Идентификаторы (быстрый указатель)
+## 5. Идентификаторы (быстрый указатель)
 
 | Среда | Квест-референс | `startNode` (если задан) |
 |--------|-----------------|-------------------------|
@@ -78,4 +93,4 @@
 | Обход | `exploration_zarema_hearth` | `explore_hub_welcome` |
 | Обход+ветки | `exploration_volodka_rack` | `explore_hub_welcome` |
 
-*Документ: 2026-04-27; выравнивание `stageType` в `QUEST_DEFINITIONS` ведите по чеклисту §3.*
+*Документ: 2026-04-27; согласование бита и 📋 — §3; `stageType` в `QUEST_DEFINITIONS` — §4.*

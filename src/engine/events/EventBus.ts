@@ -93,6 +93,12 @@ export interface EventMap {
     choiceText: string;
   };
 
+  /**
+   * Любое закрытие полноэкранного `AnimeCutscene` в `useGameRuntime.completeCutscene`.
+   * `completionKey` — внутренний маркер (в т.ч. `cinematic::quest::…`); для `__transient__::` в `cutscenesCompletedRef` не добавляется.
+   */
+  'cinematic:ended': { completionKey: string | null; cutsceneId: string | null };
+
   // NPC
   'npc:interacted': { npcId: string; npcName: string };
   'npc:relation_changed': { npcId: string; oldValue: number; newValue: number; delta: number };
