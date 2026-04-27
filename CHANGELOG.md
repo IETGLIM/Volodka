@@ -24,6 +24,7 @@
 - **Smoke Browserbase**: только `workflow_dispatch` (`volodka-smoke.yml`), не в PR — `docs/volodka-room-smoke.md`.
 - **API**: лимиты и Zod для POST `/api/ai-dialogue`; upload моделей за флагами — `docs/volodka-aaa-expert-audit-2026-04-25.md`.
 - **Документация**: `README.md` — для `DATABASE_URL` / облачного сейва: прод и превью только **Vercel Environment Variables** (Sensitive); `.env.local` только локально и уже в `.gitignore` (`.env*.local`).
+- **Vercel**: `vercel.json` — блок **`functions`** для `src/app/api/**/route.ts` (memory **1024**, maxDuration **60**); в `README.md` — публичные env для 3D в UI дашборда, без **`outputDirectory`: `.next`** для Next.
 
 ### Модели
 

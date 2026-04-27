@@ -22,6 +22,8 @@ npm test
 
 **Деплой (Vercel):** если в консоли браузера **«Refused to apply style … MIME type text/plain»** для `/_next/static/...css`, проверьте, что в `vercel.json` **нет** глобального `X-Content-Type-Options: nosniff` на все пути `/(.*)` — иначе при любом сбое `Content-Type` у чанка стили не применятся. В репозитории `nosniff` задаётся только для `/` и `/api/*`.
 
+В **Project → Settings → Environment Variables** (не в git) при необходимости задайте публичные оверрайды 3D: **`NEXT_PUBLIC_DEFAULT_PLAYER_MODEL`**, **`NEXT_PUBLIC_MODELS_BASE`**, опционально **`NEXT_PUBLIC_PHYSICS_DEBUG_HELPERS`**. Для Next.js на Vercel **не** выставляйте **`outputDirectory`: `.next`** вручную — сборку и выходную структуру задаёт пресет **Next.js**; в репозитории уже есть **`vercel.json`**: `buildCommand` / `installCommand`, лимиты **`functions`** для `src/app/api/**/route.ts` (**1024 MB**, **60 s**); при включённом **Fluid Compute** лимиты памяти для функций могут задаваться только в дашборде — см. [документацию Vercel](https://vercel.com/docs/functions/configuring-functions/memory).
+
 Предупреждение **`KHR_materials_pbrSpecularGlossiness`** у `GLTFLoader` на части старых GLB — ожидаемо в Three.js r182 (расширение снято из ядра); материалы обычно дают разумный fallback. Убрать шум можно конвертацией моделей в metallic-roughness в DCC/`gltf-transform`.
 
 **Деплой (Vercel и аналоги):** для прохождения игры в браузере **не обязательны** переменные LLM, Blob-загрузки моделей и облачного сейва. Прогресс по умолчанию в **localStorage**. Опционально: `ENABLE_AI_DIALOGUE_API=1` (иначе `/api/ai-dialogue` отдаёт локальный fallback), облако — пункт «Облачные сохранения» ниже, загрузка GLB — `ENABLE_MODEL_UPLOAD_API` и секреты из `src/app/api/models/upload/route.ts`.
