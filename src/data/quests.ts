@@ -118,10 +118,11 @@ export const QUEST_DEFINITIONS: Record<string, ExtendedQuest> = {
       createObjective('hearth_moment', 'Побыть у «очага разговора»', {
         targetValue: 1,
         currentValue: 0,
-        hint: 'Зона у дивана в 3D-обходе (отдельный триггер с E)',
+        hint: 'Зона у дивана в 3D-обходе (отдельный триггер с E); якорь сюжета — узел explore_hub_welcome после интро.',
         targetLocation: 'zarema_albert_room',
         mapHint: { x: -1.85, z: 1.1 },
         stageType: 'exploration',
+        linkedStoryNodeId: 'explore_hub_welcome',
       }),
     ],
     reward: createReward({
@@ -144,7 +145,7 @@ export const QUEST_DEFINITIONS: Record<string, ExtendedQuest> = {
     id: 'exploration_volodka_rack',
     title: '⚡ Разрыв синхронизации',
     description:
-      'Две ветки на выбор (в журнале обе цели — завершается **одна**): **форс** — мини-игра «матрица узлов» у стойки (E в зоне подсказки); **аудит** — три раза «Осмотреть» экраны Kibana, Zabbix и Grafana, без мини-игры. Начал аудит — форс до конца квеста недоступен; прошёл форс — честный аудит закрыт.',
+      'Две ветки на выбор (в журнале обе цели — завершается **одна**): **форс** — мини-игра «матрица узлов» у стойки (E в зоне подсказки), в духе ночного дежурства, когда хочется «просто починить»; **аудит** — три раза «Осмотреть» экраны Kibana, Zabbix и Grafana, без мини-игры. Начал аудит — форс до конца квеста недоступен; прошёл форс — честный аудит закрыт.',
     type: 'side',
     faction: 'Работа · IT',
     status: 'active',
@@ -152,17 +153,19 @@ export const QUEST_DEFINITIONS: Record<string, ExtendedQuest> = {
       createObjective('rack_force_nodes', 'Свести узлы стека в безопасную последовательность (зона стойки, E)', {
         targetValue: 1,
         currentValue: 0,
-        hint: 'Зона «матрица узлов» у стойки с мониторами; недоступно, если уже начат осмотр панелей (аудит).',
+        hint: 'Зона «матрица узлов» у стойки с мониторами; недоступно, если уже начат осмотр панелей (аудит). Вход в ветку — с узла explore_hub_welcome.',
         targetLocation: 'volodka_room',
         mapHint: { x: 3.45, z: 0.08 },
         stageType: 'minigame',
+        linkedStoryNodeId: 'explore_hub_welcome',
       }),
       createObjective('rack_audit_panels', 'Честный путь: осмотреть Kibana, Zabbix и Grafana без взлома', {
         targetValue: 3,
         currentValue: 0,
-        hint: 'Радиальное меню → «Осмотреть» на каждом из трёх экранов; мини-игра форса после первого осмотра отключена.',
+        hint: 'Радиальное меню → «Осмотреть» на каждом из трёх экранов; мини-игра форса после первого осмотра отключена. Точка входа в квест — explore_hub_welcome.',
         targetLocation: 'volodka_room',
         stageType: 'exploration',
+        linkedStoryNodeId: 'explore_hub_welcome',
       }),
     ],
     reward: createReward({ experience: 55, karma: -2, stability: 6, mood: -1, creativity: 9 }),

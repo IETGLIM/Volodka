@@ -351,14 +351,17 @@ export const Inventory = memo(function Inventory({ isOpen, onClose }: InventoryP
                 <span className="text-xl">🎒</span>
               </div>
               <div>
+                <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-cyan-500/70">
+                  duty_manifest // inv-01
+                </p>
                 <h2 className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400">
                   ИНВЕНТАРЬ
                 </h2>
                 <p className="text-xs text-slate-500">
-                  {inventory.length} / {slots.length} ячеек
+                  {inventory.length} / {slots.length} ячеек · слой носимого смысла (ключи, фрагменты, расходники)
                   {inventory.length === 0 && (
                     <span className="block mt-1 text-slate-500/90">
-                      Предметы — из обхода (E), диалогов и наград квестов. Клавиша I всегда открывает этот экран.
+                      Предметы — из обхода (E), диалогов и наград квестов; клавиша I открывает этот экран даже при пустых слотах.
                     </span>
                   )}
                 </p>

@@ -50,7 +50,8 @@ export const items: Record<string, Item> = {
   tea: {
     id: 'tea',
     name: 'Травяной чай',
-    description: 'Успокаивающий напиток. Улучшает стабильность.',
+    description:
+      'Успокаивающий напиток после смены — не energy drink из автомата, а то, что наливают, когда стек наконец зелёный. Улучшает стабильность.',
     type: 'consumable',
     rarity: 'common',
     icon: '🍵',

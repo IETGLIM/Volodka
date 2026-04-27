@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Changed
+
+- **Хаб 3D + квесты обхода:** узел `explore_hub_welcome` переписан в диэгетический тон (ночная смена, слои «тела» и «тикетов», стихи как закрытые инциденты); у целей `exploration_zarema_hearth` / `exploration_volodka_rack` добавлены `linkedStoryNodeId: explore_hub_welcome` и уточнены подсказки. **Инвентарь:** шапка в духе duty-manifest; **предмет** `tea` — описание после смены.
+
 ### Added
 
 - **Фаза G (проверка и закрепление):** `docs/phase-g-verification.md` — автопокрытие (`goldenPath.test.ts`, `narrativePoetryIntegrity.test.ts`, `contentValidator.test.ts`; Browserbase `volodka-smoke` без E2E «хаб → квест → награда → сцена»), ручной срез ~30–40 мин по золотой линии + IT-сайд `whitehat_uat_sprint` после офиса, 3D-проверка `exploration_zarema_hearth`. **ADP:** `docs/adp-inventory-karma-portraits.md` — инвентарь, карма, портреты NPC (источник правды, UI, `npcDialoguePresentation`).
