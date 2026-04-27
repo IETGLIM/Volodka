@@ -23,6 +23,7 @@
 - **Автосохранение**: `useAutoSave` — debounce по умолчанию 5 s на `scene:enter` / `choice:made`, минимум 30 s между реальными `saveGame` (реже нагрузка на localStorage и на облако при `ENABLE_CLOUD_GAME_SAVE`); тик по `intervalMs` без debounce; сброс debounce при уходе из фазы `game`. `GameOrchestrator` передаёт пороги явно.
 - **Smoke Browserbase**: только `workflow_dispatch` (`volodka-smoke.yml`), не в PR — `docs/volodka-room-smoke.md`.
 - **API**: лимиты и Zod для POST `/api/ai-dialogue`; upload моделей за флагами — `docs/volodka-aaa-expert-audit-2026-04-25.md`.
+- **Документация**: `README.md` — для `DATABASE_URL` / облачного сейва: прод и превью только **Vercel Environment Variables** (Sensitive); `.env.local` только локально и уже в `.gitignore` (`.env*.local`).
 
 ### Модели
 

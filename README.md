@@ -33,6 +33,7 @@ npm test
 - **TypeScript**: в `**next.config.ts`** снято `**typescript.ignoreBuildErrors**` — ошибки типов снова **блокируют** `next build`.
 - **React**: включён `**reactStrictMode: true`** — в development возможны двойные эффекты; так ловятся утечки подписок и гонки в R3F.
 - **Облачные сохранения** (`/api/save`): по умолчанию API отвечает **403** с кодом `CLOUD_SAVE_DISABLED`. Включение только при `**ENABLE_CLOUD_GAME_SAVE=1`**, `**DATABASE_URL**` (Prisma) и секрете `**SAVE_API_SECRET**` на сервере; каждый запрос — с `**Authorization: Bearer <SAVE_API_SECRET>**`. Идентификатор строки в БД задаётся `**SAVE_USER_ID**` (без доверия к `userId` из тела или query). Клиентский прогресс по-прежнему в **localStorage** через стор.
+  - **Где задавать `DATABASE_URL` и секреты:** в проде и на превью — только в панели **Vercel → Project → Settings → Environment Variables** (для секретов включите **Sensitive**). Не версионируйте реальные строки подключения в репозитории. Локально для Prisma/`next dev` можно использовать **`.env.local`**: каталог игнорируется git’ом (в **`.gitignore`** есть **`.env*.local`**), но сами значения всё равно не должны оказаться в коммите из‑за ошибки (не добавляйте `.env.local` вручную в `git add -f` и не дублируйте секреты в чат/PR).
 - **Черновик сюжета**: файл `**src/data/storyNodesExpansion.ts`** не смержен в `**STORY_NODES**` — не опирайтесь на узлы из него, пока явно не перенесены в `**storyNodes.ts**`.
 
 ## Что недавно появилось в проекте
