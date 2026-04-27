@@ -100,7 +100,13 @@ const RPGGameCanvas = dynamic(
 // ============================================
 
 export default function GameOrchestrator() {
-  useAutoSave({ intervalMs: 120_000, saveOnSceneChange: true, saveOnChoice: false });
+  useAutoSave({
+    intervalMs: 120_000,
+    saveOnSceneChange: true,
+    saveOnChoice: false,
+    minDelayMs: 30_000,
+    debounceMs: 5_000,
+  });
 
   const energySystem = useEnergySystem();
 
