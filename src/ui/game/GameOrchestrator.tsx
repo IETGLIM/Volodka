@@ -543,6 +543,32 @@ export default function GameOrchestrator() {
     handleCalmDown,
   } = actionsBundle;
 
+  /** Не дублировать компактный трекер 📋 с VN, заставками `AnimeCutscene` и 3D-интро. */
+  const suppressQuestStrip = Boolean(activeCutsceneId) || Boolean(showStoryOverlay) || introOpening3dActive;
+
+  useEffect(() => {
+    if (phase !== 'game') return;
+    return eventBus.on('cinematic:ended', ({ completionKey }) => {
+      if (!completionKey || completionKey.startsWith('__transient__::')) return;
+      if (!completionKey.includes('cinematic::quest::')) return;
+      const state = useGameStore.getState();
+      for (const questId of state.activeQuestIds) {
+        const def = QUEST_DEFINITIONS[questId] ?? state.aiQuestDefinitions[questId];
+        if (!def) continue;
+        const next = getNextTrackedObjective(def, state.questProgress[questId] || {});
+        if (next) {
+          const sub = next.hint ? ` — ${next.hint}` : '';
+          showEffectNotif(
+            `📋 Следующий шаг: ${next.text}${sub} · ${def.title}`,
+            'quest',
+            7500,
+          );
+          return;
+        }
+      }
+    });
+  }, [phase, showEffectNotif]);
+
   if (!mounted) return <div className="fixed inset-0 bg-black" />;
 
   if (phase === 'loading') {
@@ -629,10 +655,15 @@ export default function GameOrchestrator() {
       <SkillUpNotification />
       <TutorialOverlay gameMode={gameMode} isDialogue={Boolean(activeDialogue)} />
 
-      {phase === 'game' && <QuestTracker />}
+      {phase === 'game' && !activeCutsceneId && <QuestTracker />}
       {phase === 'game' && <MemoryLog />}
 
-      <HUD onSave={handleSaveGame} onTogglePanel={handleTogglePanel} activePanels={panels} />
+      <HUD
+        onSave={handleSaveGame}
+        onTogglePanel={handleTogglePanel}
+        activePanels={panels}
+        suppressQuestStrip={suppressQuestStrip}
+      />
 
       <CoreLoopIndicator />
       <ConsequenceNotification />
@@ -655,6 +686,10 @@ export default function GameOrchestrator() {
           explorationLayout={explorationDialogueLayout}
           npcId={activeDialogue.npcId}
           npcName={activeDialogue.npcName}
+          npcRole={activeDialogue.npcRole}
+          portraitUrl={activeDialogue.portraitUrl}
+          holoGradientClass={activeDialogue.holoGradientClass}
+          holoNeonClass={activeDialogue.holoNeonClass}
           dialogueTree={activeDialogue.node}
           storyLinked={Boolean(activeDialogue.storyResume)}
           onClose={closeDialogueAndLayout}

@@ -4,6 +4,7 @@ import { useCallback, useRef, useState } from 'react';
 import type { DialogueNode, DialogueEffect, GameMode } from '@/data/rpgTypes';
 import { resolveDialogueVariant } from '@/game/dialogue/resolveDialogueVariant';
 import { NPC_DEFINITIONS } from '@/data/npcDefinitions';
+import { getNpcDialoguePresentation } from '@/lib/npcDialoguePresentation';
 import { eventBus } from '@/engine/EventBus';
 import { applyDialogueEffects } from '@/engine/DialogueEngine';
 import { useWorldState } from '@/hooks/useWorldState';
@@ -33,6 +34,10 @@ export interface StoryDialogueResume {
 interface ActiveDialogueState {
   npcId: string;
   npcName: string;
+  npcRole: string;
+  portraitUrl?: string;
+  holoGradientClass: string;
+  holoNeonClass: string;
   node: DialogueNode;
   storyResume?: StoryDialogueResume;
 }
@@ -68,12 +73,17 @@ export function useDialogueFlow({
 
       const root = npcDef.dialogueTree as DialogueNode;
       const node = resolveDialogueVariant(npcId, root);
+      const pres = getNpcDialoguePresentation(npcDef);
 
       gameModeBeforeDialogueRef.current = gameMode;
       setCurrentNPC(npcId);
       setActiveDialogue({
         npcId,
         npcName: npcDef.name,
+        npcRole: pres.npcRole,
+        portraitUrl: pres.portraitUrl,
+        holoGradientClass: pres.holoGradientClass,
+        holoNeonClass: pres.holoNeonClass,
         node,
       });
       setGameMode('dialogue');
@@ -91,12 +101,17 @@ export function useDialogueFlow({
 
       const root = npcDef.dialogueTree as DialogueNode;
       const node = resolveDialogueVariant(params.npcId, root);
+      const pres = getNpcDialoguePresentation(npcDef);
 
       gameModeBeforeDialogueRef.current = gameMode;
       setCurrentNPC(params.npcId);
       setActiveDialogue({
         npcId: params.npcId,
         npcName: npcDef.name,
+        npcRole: pres.npcRole,
+        portraitUrl: pres.portraitUrl,
+        holoGradientClass: pres.holoGradientClass,
+        holoNeonClass: pres.holoNeonClass,
         node,
         storyResume: {
           nextNodeId: params.nextNodeId,

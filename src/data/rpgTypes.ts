@@ -48,6 +48,10 @@ export interface NPCDefinition {
   /** Множитель поверх автомасштаба GLB по высоте скина в обходе (`NPC.tsx`); для «карликов/гигантов» подправить 0.5–1.2. */
   scale?: number;
   storyTrigger?: string; // ID story node to trigger after dialogue ends
+  /** Короткая роль в шапке диалога (рядом с именем); для веток `dialogueNpcId` обязательна (`contentValidator`). */
+  dialogueRole?: string;
+  /** Путь под `public/` (например `/images/npc/id.png`); если нет — голограмма по имени и акценту. */
+  dialoguePortraitUrl?: string;
 }
 
 // Расписание NPC

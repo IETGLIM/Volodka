@@ -133,6 +133,7 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
   zarema_home: {
     id: 'zarema_home',
     name: 'Заремушка (мама, жена Альберта)',
+    dialogueRole: 'Дом · кухня и тишина после улицы',
     model: 'barista',
     modelPath: '/models/cyberpunk_female_full-body_character.glb',
     animations: NPC_ANIM_MIXAMO_FEMALE,
@@ -264,6 +265,7 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
   vs_slice_albert: {
     id: 'vs_slice_albert',
     name: 'Альберт',
+    dialogueRole: 'Сосед · ремонт и тишина в подъезде',
     model: 'colleague',
     modelPath: '/models/lowpoly_anime_character_cyberstyle.glb',
     animations: NPC_ANIM_LOWPOLY_CYBER,
@@ -298,6 +300,7 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
   vs_slice_coworker: {
     id: 'vs_slice_coworker',
     name: 'Александр (рабочий чат)',
+    dialogueRole: 'Сообщение в корпоративном чате',
     model: 'colleague',
     modelPath: '/models/lowpoly_anime_character_cyberstyle.glb',
     animations: NPC_ANIM_LOWPOLY_CYBER,
@@ -700,6 +703,7 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
   cafe_visitor: {
     id: 'cafe_visitor',
     name: 'Посетитель бара',
+    dialogueRole: 'Гость бара «Синяя яма»',
     model: 'generic',
     modelPath: '/models/lowpoly_anime_character_cyberstyle.glb',
     animations: NPC_ANIM_LOWPOLY_CYBER,
@@ -1000,6 +1004,7 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
   office_colleague: {
     id: 'office_colleague',
     name: 'Коллега',
+    dialogueRole: 'Линия поддержки · соседняя парта',
     model: 'colleague',
     modelPath: '/models/lowpoly_anime_character_cyberstyle.glb',
     animations: NPC_ANIM_LOWPOLY_CYBER,
@@ -1039,6 +1044,7 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
   office_boss: {
     id: 'office_boss',
     name: 'Начальник',
+    dialogueRole: 'Руководитель · формальные согласования',
     model: 'elder',
     modelPath: '/models/spartan_armour_mkv_-_halo_reach.glb',
     animations: NPC_ANIM_SPARTAN,
@@ -1070,6 +1076,7 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
   office_alexander: {
     id: 'office_alexander',
     name: 'Александр',
+    dialogueRole: 'Техлид',
     model: 'colleague',
     modelPath: '/models/lowpoly_anime_character_cyberstyle.glb',
     animations: NPC_ANIM_LOWPOLY_CYBER,
@@ -1091,6 +1098,7 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
   office_dmitry: {
     id: 'office_dmitry',
     name: 'Дмитрий',
+    dialogueRole: 'DevOps · мониторинг и графики',
     model: 'colleague',
     modelPath: '/models/lowpoly_anime_character_cyberstyle.glb',
     animations: NPC_ANIM_LOWPOLY_CYBER,
@@ -1112,6 +1120,7 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
   office_andrey: {
     id: 'office_andrey',
     name: 'Андрей (коллега)',
+    dialogueRole: 'Compliance · соседний блок',
     model: 'colleague',
     modelPath: '/models/lowpoly_anime_character_cyberstyle.glb',
     animations: NPC_ANIM_LOWPOLY_CYBER,
@@ -1133,6 +1142,7 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
   office_artyom: {
     id: 'office_artyom',
     name: 'Артём',
+    dialogueRole: 'ИБ · CVE, токены, песочница',
     model: 'colleague',
     modelPath: '/models/lowpoly_anime_character_cyberstyle.glb',
     animations: NPC_ANIM_LOWPOLY_CYBER,

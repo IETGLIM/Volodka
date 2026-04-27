@@ -18,11 +18,18 @@ import { useGameStore } from '@/state';
 import { explorationHourToNarrativeTimeOfDay } from '@/game/conditions/timeOfDay';
 import { CyberSkillCheckResult, type SkillCheckBannerPayload } from './CyberSkillCheckResult';
 import { QuestAcceptedGlitchToast } from './QuestAcceptedGlitchToast';
+import { npcDialogueInitial } from '@/lib/npcDialoguePresentation';
 
 interface DialogueRendererProps {
   isOpen: boolean;
   npcId: string;
   npcName: string;
+  /** Подпись под именем (роль, канал); не техно-плейсхолдер. */
+  npcRole: string;
+  /** Растровый портрет из `public/`; без него — голограмма-инициал. */
+  portraitUrl?: string;
+  holoGradientClass: string;
+  holoNeonClass: string;
   dialogueTree: DialogueNode;
   /** Диалог открыт из сюжетного выбора — после завершения продолжится история */
   storyLinked?: boolean;
@@ -41,7 +48,16 @@ interface DialogueRendererProps {
 // HOLOGRAPHIC NPC PORTRAIT FRAME
 // ============================================
 
-function HolographicPortrait({ npcName, npcColor }: { npcName: string; npcColor: string }) {
+function HolographicPortrait({
+  npcName,
+  holoGradientClass,
+  portraitUrl,
+}: {
+  npcName: string;
+  holoGradientClass: string;
+  portraitUrl?: string;
+}) {
+  const initial = npcDialogueInitial(npcName);
   return (
     <div className="relative">
       {/* Rotating ring animation */}
@@ -53,15 +69,20 @@ function HolographicPortrait({ npcName, npcColor }: { npcName: string; npcColor:
           borderRightColor: 'transparent',
         }}
       />
-      {/* Avatar */}
+      {/* Avatar: растровый портрет или голограмма (инициал + градиент) */}
       <div
-        className={`w-12 h-12 rounded-full bg-gradient-to-br ${npcColor} flex items-center justify-center text-white text-lg font-bold shadow-lg relative z-10`}
+        className={`relative z-10 flex h-12 w-12 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br ${holoGradientClass} text-lg font-bold text-white shadow-lg ${portraitUrl ? 'ring-1 ring-cyan-500/25' : ''}`}
         style={{
           boxShadow: '0 0 15px rgba(0, 255, 255, 0.2), 0 0 30px rgba(0, 255, 255, 0.1)',
         }}
       >
-        {npcName.charAt(0)}
+        {portraitUrl ? (
+          <img src={portraitUrl} alt="" className="h-full w-full object-cover" decoding="async" />
+        ) : (
+          <span aria-hidden>{initial}</span>
+        )}
       </div>
+      <span className="sr-only">{portraitUrl ? `${npcName}, портрет` : `${npcName}, монограмма`}</span>
     </div>
   );
 }
@@ -173,6 +194,10 @@ export default function DialogueRenderer({
   isOpen,
   npcId,
   npcName,
+  npcRole,
+  portraitUrl,
+  holoGradientClass,
+  holoNeonClass,
   dialogueTree,
   storyLinked = false,
   explorationLayout = false,
@@ -325,50 +350,6 @@ export default function DialogueRenderer({
     }
   }, [dialogueContext, npcId, currentNode, dialogueStoreActions, startTyping, closeDialogueSession, dialogueTree.id]);
 
-  // Get NPC avatar color based on name
-  const npcColor = useMemo(() => {
-    switch (npcId) {
-      case 'zarema_home':
-        return 'from-fuchsia-500 to-rose-700';
-      case 'maria':
-      case 'kitchen_maria':
-        return 'from-rose-600 to-pink-700';
-      case 'albert':
-      case 'cafe_barista':
-        return 'from-amber-600 to-orange-700';
-      case 'office_colleague':
-        return 'from-cyan-600 to-blue-700';
-      case 'dream_lillian':
-        return 'from-purple-600 to-violet-700';
-      case 'park_elder':
-        return 'from-emerald-600 to-green-700';
-      default:
-        return 'from-slate-600 to-slate-700';
-    }
-  }, [npcId]);
-
-  // Neon color for NPC name
-  const npcNeonColor = useMemo(() => {
-    switch (npcId) {
-      case 'zarema_home':
-        return 'text-fuchsia-200';
-      case 'maria':
-      case 'kitchen_maria':
-        return 'text-rose-300';
-      case 'albert':
-      case 'cafe_barista':
-        return 'text-amber-300';
-      case 'office_colleague':
-        return 'text-cyan-300';
-      case 'dream_lillian':
-        return 'text-purple-300';
-      case 'park_elder':
-        return 'text-emerald-300';
-      default:
-        return 'text-slate-300';
-    }
-  }, [npcId]);
-
   if (!isOpen) return null;
 
   return (
@@ -441,19 +422,25 @@ export default function DialogueRenderer({
 
               {/* Terminal header with NPC info */}
               <div className="flex items-center gap-4 border-b border-emerald-500/20 bg-black/50 p-4">
-                {/* NPC portrait with holographic frame */}
-                <HolographicPortrait npcName={npcName} npcColor={npcColor} />
+                {/* Портрет: растровый из `public/` или голограмма (инициал + акцент) */}
+                <HolographicPortrait
+                  npcName={npcName}
+                  holoGradientClass={holoGradientClass}
+                  portraitUrl={portraitUrl}
+                />
 
-                <div className="flex-1">
+                <div className="flex-1 min-w-0">
                   <h3
-                    className={`font-mono font-bold ${npcNeonColor}`}
+                    className={`font-mono font-bold truncate ${holoNeonClass}`}
                     style={{
                       textShadow: '0 0 12px rgba(52, 211, 153, 0.35)',
                     }}
                   >
                     {npcName}
                   </h3>
-                  <p className="mt-0.5 text-[10px] tracking-wide text-emerald-600/50">INCOMING_SIGNAL</p>
+                  <p className="mt-0.5 text-[10px] tracking-wide text-emerald-500/70 truncate" title={npcRole}>
+                    {npcRole}
+                  </p>
                 </div>
 
                 {/* System status indicators */}

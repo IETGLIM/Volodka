@@ -1,10 +1,13 @@
 import { describe, expect, it } from 'vitest';
+import { existsSync } from 'node:fs';
+import { join } from 'node:path';
 import { STORY_NODES } from '@/data/storyNodes';
 import { QUEST_DEFINITIONS } from '@/data/quests';
 import { NPC_DEFINITIONS } from '@/data/npcDefinitions';
 import { POEMS } from '@/data/poems';
 import { SCENE_CONFIG } from '@/config/scenes';
 import { items } from '@/data/items';
+import { WORLD_ITEMS } from '@/data/triggerZones';
 import { getCutsceneById } from '@/data/animeCutscenes';
 import { INITIAL_NPC_RELATIONS } from '@/data/constants';
 import type { StoryEffect, StoryNode } from '@/data/types';
@@ -21,6 +24,11 @@ const npcIds = new Set(Object.keys(NPC_DEFINITIONS));
 const relationNpcIds = new Set(INITIAL_NPC_RELATIONS.map((npc) => npc.id));
 const knownNpcIds = new Set([...npcIds, ...relationNpcIds]);
 const itemIds = new Set(Object.keys(items));
+
+function objectiveIdExistsInQuest(questId: string, objectiveId: string): boolean {
+  const quest = QUEST_DEFINITIONS[questId];
+  return quest?.objectives.some((o) => o.id === objectiveId) ?? false;
+}
 
 function collectNodeEffects(node: StoryNode): StoryEffect[] {
   const effects: StoryEffect[] = [];
@@ -82,11 +90,34 @@ function validateStoryGraph(): { errors: ValidationIssue[]; warnings: Validation
         });
       }
 
-      if (choice.dialogueNpcId && !npcIds.has(choice.dialogueNpcId)) {
-        errors.push({
-          code: 'CHOICE_DIALOGUE_NPC_MISSING',
-          message: `Node "${nodeKey}" choice references unknown dialogueNpcId "${choice.dialogueNpcId}"`,
-        });
+      if (choice.dialogueNpcId) {
+        if (!npcIds.has(choice.dialogueNpcId)) {
+          errors.push({
+            code: 'CHOICE_DIALOGUE_NPC_MISSING',
+            message: `Node "${nodeKey}" choice references unknown dialogueNpcId "${choice.dialogueNpcId}"`,
+          });
+        } else {
+          const def = NPC_DEFINITIONS[choice.dialogueNpcId];
+          const tree = def?.dialogueTree;
+          if (!tree || typeof tree !== 'object') {
+            errors.push({
+              code: 'CHOICE_DIALOGUE_NPC_NO_TREE',
+              message: `Node "${nodeKey}" choice dialogueNpcId "${choice.dialogueNpcId}" needs dialogueTree object in npcDefinitions`,
+            });
+          }
+          if (!def?.name?.trim()) {
+            errors.push({
+              code: 'CHOICE_DIALOGUE_NPC_NO_NAME',
+              message: `Node "${nodeKey}" choice dialogueNpcId "${choice.dialogueNpcId}" needs non-empty name in npcDefinitions`,
+            });
+          }
+          if (!def?.dialogueRole?.trim()) {
+            errors.push({
+              code: 'CHOICE_DIALOGUE_NPC_NO_ROLE',
+              message: `Node "${nodeKey}" choice dialogueNpcId "${choice.dialogueNpcId}" needs dialogueRole in npcDefinitions (шапка диалога)`,
+            });
+          }
+        }
       }
 
       if (choice.skillCheck) {
@@ -118,11 +149,18 @@ function validateStoryGraph(): { errors: ValidationIssue[]; warnings: Validation
           message: `Node "${nodeKey}" references missing questComplete "${effect.questComplete}"`,
         });
       }
-      if (effect.questObjective && !questIds.has(effect.questObjective.questId)) {
-        errors.push({
-          code: 'EFFECT_QUEST_OBJECTIVE_MISSING',
-          message: `Node "${nodeKey}" references missing questObjective quest "${effect.questObjective.questId}"`,
-        });
+      if (effect.questObjective) {
+        if (!questIds.has(effect.questObjective.questId)) {
+          errors.push({
+            code: 'EFFECT_QUEST_OBJECTIVE_MISSING',
+            message: `Node "${nodeKey}" references missing questObjective quest "${effect.questObjective.questId}"`,
+          });
+        } else if (!objectiveIdExistsInQuest(effect.questObjective.questId, effect.questObjective.objectiveId)) {
+          errors.push({
+            code: 'EFFECT_QUEST_OBJECTIVE_ID_UNKNOWN',
+            message: `Node "${nodeKey}" questObjective: unknown objective "${effect.questObjective.objectiveId}" for quest "${effect.questObjective.questId}"`,
+          });
+        }
       }
       for (const operation of effect.questOperations ?? []) {
         if (!questIds.has(operation.questId)) {
@@ -130,6 +168,20 @@ function validateStoryGraph(): { errors: ValidationIssue[]; warnings: Validation
             code: 'EFFECT_QUEST_OPERATION_MISSING',
             message: `Node "${nodeKey}" quest operation references missing quest "${operation.questId}"`,
           });
+          continue;
+        }
+        if (operation.type === 'objective') {
+          if (operation.objectiveId == null || String(operation.objectiveId).trim() === '') {
+            errors.push({
+              code: 'EFFECT_QUEST_OPERATION_OBJECTIVE_ID_REQUIRED',
+              message: `Node "${nodeKey}" quest operation type "objective" must set objectiveId (quest "${operation.questId}")`,
+            });
+          } else if (!objectiveIdExistsInQuest(operation.questId, operation.objectiveId)) {
+            errors.push({
+              code: 'EFFECT_QUEST_OPERATION_OBJECTIVE_UNKNOWN',
+              message: `Node "${nodeKey}" quest operation: unknown objective "${operation.objectiveId}" for quest "${operation.questId}"`,
+            });
+          }
         }
       }
       if (effect.npcId && !knownNpcIds.has(effect.npcId)) {
@@ -231,8 +283,34 @@ function validatePoems(): { errors: ValidationIssue[]; warnings: ValidationIssue
   return { errors, warnings };
 }
 
+function validateSceneInteractiveItemIds(): ValidationIssue[] {
+  const issues: ValidationIssue[] = [];
+  for (const scene of Object.values(SCENE_CONFIG)) {
+    for (const obj of scene.interactiveObjects ?? []) {
+      const oid = (obj as { id: string; itemId?: string }).itemId;
+      if (!oid) continue;
+      if (!itemIds.has(oid)) {
+        issues.push({
+          code: 'SCENE_INTERACTIVE_ITEM_MISSING',
+          message: `Scene "${scene.id}" object "${obj.id}" itemId missing in items: "${oid}"`,
+        });
+      }
+    }
+  }
+  for (const w of WORLD_ITEMS) {
+    if (!itemIds.has(w.itemId)) {
+      issues.push({
+        code: 'WORLD_ITEM_ID_MISSING',
+        message: `WORLD_ITEMS "${w.id}" itemId missing in items: "${w.itemId}"`,
+      });
+    }
+  }
+  return issues;
+}
+
 function validateNpcDefinitions(): ValidationIssue[] {
   const issues: ValidationIssue[] = [];
+  const publicRoot = join(process.cwd(), 'public');
   for (const [npcId, npc] of Object.entries(NPC_DEFINITIONS)) {
     if (npc.id !== npcId) {
       issues.push({
@@ -246,6 +324,23 @@ function validateNpcDefinitions(): ValidationIssue[] {
         message: `NPC "${npcId}" sceneId missing: "${npc.sceneId}"`,
       });
     }
+    const portrait = npc.dialoguePortraitUrl?.trim();
+    if (portrait) {
+      if (!portrait.startsWith('/')) {
+        issues.push({
+          code: 'NPC_PORTRAIT_URL_BAD',
+          message: `NPC "${npcId}" dialoguePortraitUrl must start with / (public path)`,
+        });
+      } else {
+        const full = join(publicRoot, portrait.slice(1));
+        if (!existsSync(full)) {
+          issues.push({
+            code: 'NPC_PORTRAIT_FILE_MISSING',
+            message: `NPC "${npcId}" dialoguePortraitUrl: missing file public/${portrait.slice(1)}`,
+          });
+        }
+      }
+    }
   }
   return issues;
 }
@@ -257,6 +352,7 @@ describe('Content Validator', () => {
     const errors = [
       ...story.errors,
       ...validateQuests(),
+      ...validateSceneInteractiveItemIds(),
       ...validateNpcDefinitions(),
       ...poems.errors,
     ];

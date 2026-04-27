@@ -6,6 +6,8 @@
 
 - **Фаза G (проверка и закрепление):** `docs/phase-g-verification.md` — автопокрытие (`goldenPath.test.ts`, `narrativePoetryIntegrity.test.ts`, `contentValidator.test.ts`; Browserbase `volodka-smoke` без E2E «хаб → квест → награда → сцена»), ручной срез ~30–40 мин по золотой линии + IT-сайд `whitehat_uat_sprint` после офиса, 3D-проверка `exploration_zarema_hearth`. **ADP:** `docs/adp-inventory-karma-portraits.md` — инвентарь, карма, портреты NPC (источник правды, UI, `npcDialoguePresentation`).
 
+- **Портреты NPC (фаза D):** шапка `DialogueRenderer` — опциональный растр `dialoguePortraitUrl` под `public/` или голограмма (`npcDialoguePresentation.ts`); подпись **`dialogueRole`**; прокидка из `useDialogueFlow`. В `contentValidator.test.ts` — для `dialogueNpcId`: дерево диалога, имя, роль; проверка файла портрета. `docs/npc-portraits-phase-d.md`.
+
 - **Квесты (фаза E):** `contentValidator.test.ts` — `questOperations` / `questObjective` ссылаются на реальные `objectiveId` в `QUEST_DEFINITIONS`; `src/data/questGraphIntegrity.test.ts` — согласованность `EVENT_OBJECTIVE_MAP` и проводка целей 3D-квестов `exploration_*` (граф E, форс, осмотр). `aiQuestSchema.ts` — `linkedStoryNodeId`, `startNode`, `completeNode` сверяются с ключами `STORY_NODES` (тесты в `aiQuestSchema.test.ts`).
 
 - **Карма (фаза C):** `docs/karma-scale.md` — канон `playerState.karma`, таблица источников изменений, различие с репутацией фракций, условия ветвления; тест `src/state/karmaScale.test.ts` (кламп, серия `addStat`, снимок save, условия, `StatsEngine`).
@@ -19,6 +21,8 @@
 - **Квесты 3D-обхода:** `startNode` у `exploration_zarema_hearth` и `exploration_volodka_rack` — `explore_hub_welcome` (согласовано с новым входом в хаб после интро).
 
 ### Added
+
+- **Согласование 📋 с квестовыми битами:** `EventMap` — `cinematic:ended` (закрытие `AnimeCutscene`); `useGameRuntime.completeCutscene` эмитит payload. `GameOrchestrator` — скрытие компактного трека в `HUD` при VN/бите/3D-интро (`suppressQuestStrip`), скрытие `QuestTracker` на время бита; тост «Следующий шаг» по квестовым заставкам. Чеклист в `docs/quest-reference-template.md` §3.
 
 - **Референс-флоу квестов:** `docs/quest-reference-template.md` — четыре эталонных сценария (офис `whitehat_uat_sprint`, дом `first_words`, кафе `first_reading`, 3D `exploration_zarema_hearth` + ветвление `exploration_volodka_rack`), чеклист выравнивания остальных квестов; `docs/quest-scene-pipeline.md` §5 и `docs/volodka-incremental-aaa-roadmap.md` ссылаются на документ. В `src/data/quests.ts` у целей выставлены `stageType` (и `startNode` у `rabbitmq_overflow` / `kubernetes_orchestrator`); JSDoc на референсных квестах.
 
