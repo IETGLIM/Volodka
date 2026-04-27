@@ -231,7 +231,7 @@ function SpeakerTag({ speaker }: { speaker: string }) {
 
 export default function StoryRenderer({ node, onChoice, onPoemGameComplete }: StoryRendererProps) {
   const visualLite = useMobileVisualPerf();
-  const isNarrow = useIsMobile();
+  const isNarrow = useIsMobile() ?? false;
   const [isTyping, setIsTyping] = useState(false);
   const [displayedText, setDisplayedText] = useState('');
   const typingRef = useRef<NodeJS.Timeout | null>(null);

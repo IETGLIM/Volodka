@@ -19,6 +19,7 @@
 - **NPC LOD**: `src/ui/3d/LODController.test.ts` — явные проверки гистерезиса (15 m и пороги 11 / 19 m) рядом с реэкспортом `LODController.tsx`.
 - **Сюжет / выбор**: `useStoryChoiceHandler.ts` — JSDoc порядка «эффекты → `processChoiceCycle` / узел» (ADR `docs/ADR-single-exploration-narrative-layer.md`); тесты порядка `applyStoryEffect` и `handleChoice` в `useStoryChoiceHandler.test.tsx`; интерлок `volunteer_read_result` ↔ `poetry_collection` ↔ `poem_12` в `src/hooks/narrativeDependencies.test.ts`.
 - **Золотой путь**: `goldenPath.test.ts` — нет самоссылки узла на переходах (`autoNext` / `choice.next` / skill / minigame / `randomEvent.nextNode`); нет циклов, состоящих только из рёбер `autoNext` (ветвления `choice` могут образовывать циклы намеренно).
+- **Тач / брейкпоинт**: `useIsMobile` и `useTouchGameControls` возвращают `undefined` до первой синхронизации с `matchMedia`; `ExplorationMobileHud` в `RPGGameCanvas` включается только при `showTouchHud === true` (без ложного «десктоп» до гидрации); для WebGL/теней — `narrow ?? false`. Остальной UI (`HUD`, `StoryRenderer`, `SceneBackgroundPhoto`, `sidebar`, `TutorialOverlay`) — явный `?? false` там, где нужен булев дефолт.
 - **Smoke Browserbase**: только `workflow_dispatch` (`volodka-smoke.yml`), не в PR — `docs/volodka-room-smoke.md`.
 - **API**: лимиты и Zod для POST `/api/ai-dialogue`; upload моделей за флагами — `docs/volodka-aaa-expert-audit-2026-04-25.md`.
 

@@ -176,6 +176,8 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
   const narrow = useIsMobile();
   const visualLite = useMobileVisualPerf();
   const showTouchHud = useTouchGameControls();
+  /** До гидрации `undefined` — для WebGL/теней безопасно считать широким экраном; тач-HUD см. `=== true` ниже. */
+  const narrowForGpu = narrow ?? false;
   const showExplorationStats = useExplorationFrameStatsEnabled();
   const rapierColliderDebug = isExplorationRapierColliderDebugEnabled();
   const explorationMeshAudit = isExplorationMeshAuditEnabled();
@@ -217,17 +219,17 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
 
   const playerState = useGameStore((state) => state.playerState);
   const shadowMapSize = useMemo(
-    () => getExplorationDirectionalShadowMapSize(narrow, visualLite),
-    [narrow, visualLite],
+    () => getExplorationDirectionalShadowMapSize(narrowForGpu, visualLite),
+    [narrowForGpu, visualLite],
   );
-  const simplifyLights = narrow || visualLite;
+  const simplifyLights = narrowForGpu || visualLite;
 
   const explorationGl = useMemo(
     () => ({
-      ...getExplorationSceneGlProps(visualLite, narrow),
+      ...getExplorationSceneGlProps(visualLite, narrowForGpu),
       powerPreference: 'high-performance' as const,
     }),
-    [visualLite, narrow],
+    [visualLite, narrowForGpu],
   );
 
   /** Позиция игрока из физики каждый кадр; без подписки на стор в этом компоненте — меньше ре-рендеров Canvas/UI. */
@@ -1036,7 +1038,7 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
       playerPositionRef={playerPositionRef}
     />
     <ExplorationMobileHud
-      active={showTouchHud && !playerInputLocked && !explorationBriefingOpen}
+      active={showTouchHud === true && !playerInputLocked && !explorationBriefingOpen}
       virtualControlsRef={virtualControlsRef}
       onInteract={handlePlayerInteraction}
     />

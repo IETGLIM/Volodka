@@ -42,7 +42,7 @@ export const SceneBackgroundPhoto = memo(function SceneBackgroundPhoto({
 }: {
   config: SceneVisualConfig;
 }) {
-  const isMobile = useIsMobile();
+  const isMobile = useIsMobile() ?? false;
 
   const src = isMobile && config.mobilePhotoUrl ? config.mobilePhotoUrl : config.photoUrl ?? config.mobilePhotoUrl;
 

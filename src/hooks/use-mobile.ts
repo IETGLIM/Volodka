@@ -9,31 +9,38 @@ export const MOBILE_BREAKPOINT_PX = 1024
  */
 export const MOBILE_MAX_WIDTH_MEDIA = `(max-width: ${MOBILE_BREAKPOINT_PX - 1}px)` as const
 
-export function useIsMobile() {
-  const [isMobile, setIsMobile] = React.useState<boolean | undefined>(undefined)
+/**
+ * `undefined` до первого `matchMedia` в `useEffect` (после гидрации на клиенте) — не трактовать как «десктоп»,
+ * если нужно избежать мигания тач-HUD при SSR/resize: используйте `=== true` / `=== false` или `?? false` только там,
+ * где безопасен дефолт «широкий экран» (например капы WebGL).
+ */
+export function useIsMobile(): boolean | undefined {
+  const [matches, setMatches] = React.useState<boolean | undefined>(undefined)
 
   React.useEffect(() => {
     const query = MOBILE_MAX_WIDTH_MEDIA
     const mql = window.matchMedia(query)
     const onChange = () => {
-      setIsMobile(window.matchMedia(query).matches)
+      setMatches(window.matchMedia(query).matches)
     }
     mql.addEventListener('change', onChange)
     onChange()
     return () => mql.removeEventListener('change', onChange)
   }, [])
 
-  return !!isMobile
+  return matches
 }
 
 /**
  * Показывать тач-панель в 3D (`ExplorationMobileHud`): узкий экран или грубый указатель.
  * Узкая ширина = та же граница, что у `useIsMobile` / `MOBILE_MAX_WIDTH_MEDIA`.
  * Для облегчённых шейдеров без тача см. `useMobileVisualPerf` (+ reduced-motion).
+ *
+ * `undefined`, пока не известны **и** ширина, **и** `(pointer: coarse)` — не включать тач-HUD по `||` с «ложным» стартом.
  */
-export function useTouchGameControls(): boolean {
+export function useTouchGameControls(): boolean | undefined {
   const narrow = useIsMobile()
-  const [coarsePointer, setCoarsePointer] = React.useState(false)
+  const [coarsePointer, setCoarsePointer] = React.useState<boolean | undefined>(undefined)
 
   React.useEffect(() => {
     const mql = window.matchMedia("(pointer: coarse)")
@@ -43,5 +50,6 @@ export function useTouchGameControls(): boolean {
     return () => mql.removeEventListener("change", sync)
   }, [])
 
+  if (narrow === undefined || coarsePointer === undefined) return undefined
   return narrow || coarsePointer
 }

@@ -27,7 +27,8 @@ export const TutorialOverlay = memo(function TutorialOverlay({
   );
 
   const livePlayerTick = useExplorationLivePlayerTick(gameMode === 'exploration', 200);
-  const touchControls = useTouchGameControls();
+  const touchControlsRaw = useTouchGameControls();
+  const touchControls = touchControlsRaw ?? false;
 
   const nearNpc = useMemo(() => {
     if (gameMode !== 'exploration') return false;

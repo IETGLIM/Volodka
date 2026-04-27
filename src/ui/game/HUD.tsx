@@ -42,7 +42,7 @@ const CyberStatBar = memo(function CyberStatBar({
   visualLite,
 }: CyberStatBarProps) {
   const [isHovered, setIsHovered] = useState(false);
-  const narrow = useIsMobile();
+  const narrow = useIsMobile() ?? false;
   const hexVal = Math.round(value).toString(16).toUpperCase().padStart(2, '0');
 
   return (
@@ -113,7 +113,7 @@ function CyberStressBar({
   panicMode: boolean;
   visualLite: boolean;
 }) {
-  const narrow = useIsMobile();
+  const narrow = useIsMobile() ?? false;
   const color = panicMode
     ? 'from-red-600 to-red-400'
     : stress > 70
@@ -283,7 +283,7 @@ interface CyberActionBtnProps {
 
 function CyberActionBtn({ label, isActive, onClick, colorClass, icon, ariaLabel }: CyberActionBtnProps) {
   const [isHovered, setIsHovered] = useState(false);
-  const narrow = useIsMobile();
+  const narrow = useIsMobile() ?? false;
 
   return (
     <button
@@ -331,7 +331,7 @@ export default function HUD({
   suppressQuestStrip = false,
 }: HUDProps) {
   const visualLite = useMobileVisualPerf();
-  const narrow = useIsMobile();
+  const narrow = useIsMobile() ?? false;
   const playerState = useGameStore(s => s.playerState);
   const setFlag = useGameStore(s => s.setFlag);
   const unsetFlag = useGameStore(s => s.unsetFlag);
