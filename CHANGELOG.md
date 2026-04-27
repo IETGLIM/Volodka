@@ -26,6 +26,8 @@
 
 ### Changed
 
+- **`gameStore` / сейв / путешествия**: проверка энергии и списание в `travelToScene` по актуальному `get()`; `addItem` / `collectPoem` обновляют state через `set((s) => …)`; `normalizeLoadedState` разбит на `normalizeExplorationForLoad` / `normalizeChoiceLogForLoad`; после `JSON.parse` сейв проходит `isValidSaveDataShape` (`lib/saveDataValidation.ts`); неверная структура — предупреждение и отмена `loadGame` / гидратации. `DEFAULT_ACTIVE_QUEST_IDS` вынесен в `config/defaultActiveQuests.ts`, подключён в `questMetaStore` и `gameStore`. `worldStore.travelToScene` — снимок `usePlayerStore` сразу перед веткой без `consumeEnergy`.
+
 - **Обход / E и камера**: единый `resolveExplorationInteractionPriority` в `explorationPrimaryInteraction.ts` (дистанция до якоря триггера + приоритет NPC > объект > зона; `registry` vs `story_trigger`); `RPGGameCanvas.tsx` без отдельного обхода реестра. `exploration.cameraOrbitResyncNonce` + `bumpCameraOrbitResyncNonce` в `worldStore` / `rpgTypes.ts`; после закрытия диалога в `useDialogueFlow.ts` — сброс орбиты `FollowCamera` через шаблон ключа `sceneId:nonce` в `orbitResyncKey`.
 
 ### Комната Володьки (`volodka_room`)

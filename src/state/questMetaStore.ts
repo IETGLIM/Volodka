@@ -11,6 +11,7 @@ import type { ExtendedQuest } from '@/data/types';
 import { parseAIQuestPayload } from '@/validation/aiQuestSchema';
 import { eventBus } from '@/engine/events/EventBus';
 import { applyQuestCompletionRewards } from '@/lib/questRewards';
+import { DEFAULT_ACTIVE_QUEST_IDS } from '@/config/defaultActiveQuests';
 
 // ============================================
 // TYPES
@@ -70,7 +71,7 @@ type QuestStore = QuestStoreState & QuestStoreActions;
 // ============================================
 
 export const useQuestStore = create<QuestStore>()((set, get) => ({
-  activeQuestIds: ['main_goal', 'first_words'],
+  activeQuestIds: [...DEFAULT_ACTIVE_QUEST_IDS],
   completedQuestIds: [],
   questProgress: {},
   aiQuestDefinitions: {},
@@ -152,7 +153,7 @@ export const useQuestStore = create<QuestStore>()((set, get) => ({
   resetQuests: () => {
     useFactionStore.getState().resetFactions();
     set({
-      activeQuestIds: ['main_goal', 'first_words'],
+      activeQuestIds: [...DEFAULT_ACTIVE_QUEST_IDS],
       completedQuestIds: [],
       questProgress: {},
       aiQuestDefinitions: {},

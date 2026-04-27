@@ -39,6 +39,8 @@ import {
   experienceRequiredForNextLevel,
   RPG_XP_SKILL_POINTS_PER_LEVEL,
 } from '@/lib/rpgLeveling';
+import { isValidSaveDataShape } from '@/lib/saveDataValidation';
+import { DEFAULT_ACTIVE_QUEST_IDS } from '@/config/defaultActiveQuests';
 
 export type TravelToSceneResult =
   | { ok: true }
@@ -364,7 +366,6 @@ const clamp = (value: number, min: number, max: number) =>
   Math.max(min, Math.min(max, value));
 
 const SAVE_KEY = 'volodka_save_v3';
-const DEFAULT_ACTIVE_QUEST_IDS = ['main_goal'] as const;
 
 const getNPCStage = (value: number): NPCRelation['stage'] => {
   if (value >= 50) return 'close';
@@ -379,23 +380,6 @@ const getLocalStorage = (): Storage | null => {
   if (typeof window === 'undefined') return null;
   try {
     return window.localStorage;
-  } catch {
-    return null;
-  }
-};
-
-// Load saved state from localStorage
-const loadSavedState = () => {
-  if (typeof window === 'undefined') return null;
-  
-  const storage = getLocalStorage();
-  if (!storage) return null;
-  
-  const saved = storage.getItem(SAVE_KEY);
-  if (!saved) return null;
-  
-  try {
-    return JSON.parse(saved);
   } catch {
     return null;
   }
@@ -452,6 +436,33 @@ type SavedGameData = {
   choiceLog?: ChoiceLogEntry[];
 };
 
+/** Сырой сейв из `localStorage` — parse + `isValidSaveDataShape` до `normalizeLoadedState`. */
+const loadSavedState = (): SavedGameData | null => {
+  if (typeof window === 'undefined') return null;
+
+  const storage = getLocalStorage();
+  if (!storage) return null;
+
+  const saved = storage.getItem(SAVE_KEY);
+  if (!saved) return null;
+
+  try {
+    const parsed: unknown = JSON.parse(saved);
+    if (!isValidSaveDataShape(parsed)) {
+      if (typeof console !== 'undefined' && console.warn) {
+        console.warn('[gameStore] Сейв: структура JSON не похожа на сохранение, гидратация пропущена');
+      }
+      return null;
+    }
+    return parsed as SavedGameData;
+  } catch (e) {
+    if (typeof console !== 'undefined' && console.warn) {
+      console.warn('[gameStore] Сейв: ошибка parse', e);
+    }
+    return null;
+  }
+};
+
 const createFallbackInventoryItem = (itemId: string) => ({
   id: itemId,
   name: itemId,
@@ -488,6 +499,40 @@ function normalizeGameModeForLoad(raw: unknown): GameMode {
   return 'exploration';
 }
 
+function normalizeExplorationForLoad(data: SavedGameData): ExplorationState {
+  const raw =
+    data.exploration && typeof data.exploration === 'object'
+      ? (data.exploration as Partial<ExplorationState>)
+      : {};
+  const npcStates =
+    raw.npcStates && typeof raw.npcStates === 'object' && !Array.isArray(raw.npcStates)
+      ? raw.npcStates
+      : {};
+  return {
+    ...INITIAL_EXPLORATION_STATE,
+    ...raw,
+    npcStates,
+    currentSceneId: sanitizeExplorationSceneId(raw.currentSceneId),
+    timeOfDay:
+      typeof raw.timeOfDay === 'number' ? raw.timeOfDay : INITIAL_EXPLORATION_STATE.timeOfDay,
+  };
+}
+
+function normalizeChoiceLogForLoad(raw: unknown): ChoiceLogEntry[] {
+  if (!Array.isArray(raw)) {
+    return [];
+  }
+  return raw
+    .filter(
+      (e): e is ChoiceLogEntry =>
+        e != null &&
+        typeof e === 'object' &&
+        typeof (e as ChoiceLogEntry).fromNodeId === 'string' &&
+        typeof (e as ChoiceLogEntry).toNodeId === 'string',
+    )
+    .slice(-48);
+}
+
 const normalizeLoadedState = (data: SavedGameData) => ({
   playerState: normalizePlayerStateForLoad(data.playerState),
   currentNodeId:
@@ -500,39 +545,14 @@ const normalizeLoadedState = (data: SavedGameData) => ({
   unlockedAchievementIds: data.unlockedAchievementIds || [],
   unlockedLocations: data.unlockedLocations || [],
   gameMode: normalizeGameModeForLoad(data.gameMode),
-  exploration: (() => {
-    const raw =
-      data.exploration && typeof data.exploration === 'object'
-        ? (data.exploration as Partial<ExplorationState>)
-        : {};
-    const npcStates =
-      raw.npcStates && typeof raw.npcStates === 'object' && !Array.isArray(raw.npcStates)
-        ? raw.npcStates
-        : {};
-    return {
-      ...INITIAL_EXPLORATION_STATE,
-      ...raw,
-      npcStates,
-      currentSceneId: sanitizeExplorationSceneId(raw.currentSceneId),
-      timeOfDay:
-        typeof raw.timeOfDay === 'number' ? raw.timeOfDay : INITIAL_EXPLORATION_STATE.timeOfDay,
-    };
-  })(),
-  activeQuestIds: data.activeQuestIds || [...DEFAULT_ACTIVE_QUEST_IDS],
+  exploration: normalizeExplorationForLoad(data),
+  activeQuestIds: Array.isArray(data.activeQuestIds)
+    ? data.activeQuestIds
+    : [...DEFAULT_ACTIVE_QUEST_IDS],
   completedQuestIds: data.completedQuestIds || [],
   questProgress: data.questProgress || {},
   factionReputations: data.factionReputations || INITIAL_FACTION_REPUTATIONS,
-  choiceLog: Array.isArray(data.choiceLog)
-    ? data.choiceLog
-        .filter(
-          (e): e is ChoiceLogEntry =>
-            e != null &&
-            typeof e === 'object' &&
-            typeof (e as ChoiceLogEntry).fromNodeId === 'string' &&
-            typeof (e as ChoiceLogEntry).toNodeId === 'string',
-        )
-        .slice(-48)
-    : [],
+  choiceLog: normalizeChoiceLogForLoad(data.choiceLog),
 });
 
 // ============================================
@@ -752,14 +772,13 @@ export const useGameStore = create<GameState>()((set, get) => ({
   
   // Inventory — uses real item data from items.ts
   addItem: (itemId, quantity = 1) => {
-    const { inventory } = get();
     const itemData = getItemById(itemId);
     if (!itemData) {
       console.warn(
         `[gameStore] Item with id "${itemId}" not found in data/items. Using fallback.`,
       );
     }
-    
+
     // Fallback: if item not found in database, create a basic entry
     const item = itemData || {
       id: itemId,
@@ -772,39 +791,51 @@ export const useGameStore = create<GameState>()((set, get) => ({
       stackable: true,
       maxStack: 99,
     };
-    
-    const existing = inventory.find(i => i.item.id === itemId);
-    
-    if (existing) {
-      const maxStack = item.maxStack || 99;
-      const newQuantity = Math.min(existing.quantity + quantity, maxStack);
-      set({
-        inventory: inventory.map(i => 
-          i.item.id === itemId 
-            ? { ...i, quantity: newQuantity }
-            : i
-        )
-      });
-      if (newQuantity > existing.quantity) {
-        eventBus.emit('loot:reward', {
-          itemId,
-          name: item.name,
-          rarity: String(item.rarity ?? 'common'),
-        });
+
+    let reward:
+      | { itemId: string; name: string; rarity: string }
+      | undefined;
+
+    set((state) => {
+      const { inventory } = state;
+      const existing = inventory.find((i) => i.item.id === itemId);
+
+      if (existing) {
+        const maxStack = item.maxStack || 99;
+        const newQuantity = Math.min(existing.quantity + quantity, maxStack);
+        if (newQuantity > existing.quantity) {
+          reward = {
+            itemId,
+            name: item.name,
+            rarity: String(item.rarity ?? 'common'),
+          };
+        }
+        return {
+          inventory: inventory.map((i) =>
+            i.item.id === itemId ? { ...i, quantity: newQuantity } : i,
+          ),
+        };
       }
-    } else {
-      set({
-        inventory: [...inventory, {
-          item,
-          quantity: Math.min(quantity, item.maxStack || 99),
-          obtainedAt: Date.now()
-        }]
-      });
-      eventBus.emit('loot:reward', {
+
+      reward = {
         itemId,
         name: item.name,
         rarity: String(item.rarity ?? 'common'),
-      });
+      };
+      return {
+        inventory: [
+          ...inventory,
+          {
+            item,
+            quantity: Math.min(quantity, item.maxStack || 99),
+            obtainedAt: Date.now(),
+          },
+        ],
+      };
+    });
+
+    if (reward) {
+      eventBus.emit('loot:reward', reward);
     }
   },
   
@@ -867,15 +898,21 @@ export const useGameStore = create<GameState>()((set, get) => ({
   
   // Poems
   collectPoem: (poemId) => {
-    const { collectedPoemIds, playerState } = get();
-    if (!collectedPoemIds.includes(poemId)) {
-      set({
-        collectedPoemIds: [...collectedPoemIds, poemId],
+    let didAdd = false;
+    set((s) => {
+      if (s.collectedPoemIds.includes(poemId)) {
+        return s;
+      }
+      didAdd = true;
+      return {
+        collectedPoemIds: [...s.collectedPoemIds, poemId],
         playerState: {
-          ...playerState,
-          poemsCollected: [...playerState.poemsCollected, poemId]
-        }
-      });
+          ...s.playerState,
+          poemsCollected: [...s.playerState.poemsCollected, poemId],
+        },
+      };
+    });
+    if (didAdd) {
       get().addExperience(22, `poem:${poemId}`);
       eventBus.emit('poem:collected', { poemId });
     }
@@ -988,7 +1025,7 @@ export const useGameStore = create<GameState>()((set, get) => ({
 
   travelToScene: (sceneId, options = {}) => {
     const narrative = options.narrativeDriven === true;
-    const { exploration, unlockedLocations, playerState } = get();
+    const { exploration, unlockedLocations } = get();
 
     if (narrative) {
       if (exploration.currentSceneId === sceneId) {
@@ -1020,17 +1057,20 @@ export const useGameStore = create<GameState>()((set, get) => ({
         if (!consume(cost)) {
           return { ok: false as const, reason: 'no_energy' as const };
         }
-      } else if (playerState.energy < cost) {
-        get().addStress(5);
-        eventBus.emit('stat:changed', {
-          stat: 'energy',
-          oldValue: playerState.energy,
-          newValue: playerState.energy,
-          delta: 0,
-        });
-        return { ok: false as const, reason: 'no_energy' as const };
       } else {
-        const oldE = playerState.energy;
+        const snap = get();
+        const energy = snap.playerState.energy;
+        if (energy < cost) {
+          snap.addStress(5);
+          eventBus.emit('stat:changed', {
+            stat: 'energy',
+            oldValue: energy,
+            newValue: energy,
+            delta: 0,
+          });
+          return { ok: false as const, reason: 'no_energy' as const };
+        }
+        const oldE = energy;
         get().addStat('energy', -cost);
         const newE = get().playerState.energy;
         eventBus.emit('stat:changed', {
@@ -1363,25 +1403,40 @@ export const useGameStore = create<GameState>()((set, get) => ({
   loadGame: () => {
     const storage = getLocalStorage();
     if (!storage) return false;
-    
+
     const saved = storage.getItem(SAVE_KEY);
-    if (saved) {
-      try {
-        const data = JSON.parse(saved) as SavedGameData;
-        const normalized = normalizeLoadedState(data);
-        set({
-          ...normalized,
-        });
-        useAppStore.getState().setPhase('game');
-        get().setRevealedPoemId(null);
-        useGamePhaseStore.getState().completeIntroCutscene();
-        eventBus.emit('game:loaded', { timestamp: Date.now() });
-        return true;
-      } catch {
-        return false;
-      }
+    if (!saved) {
+      return false;
     }
-    return false;
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(saved);
+    } catch (e) {
+      if (typeof console !== 'undefined' && console.warn) {
+        console.warn('[gameStore] loadGame: parse JSON', e);
+      }
+      return false;
+    }
+    if (!isValidSaveDataShape(parsed)) {
+      if (typeof console !== 'undefined' && console.warn) {
+        console.warn('[gameStore] loadGame: сейв не похож на валидную структуру, загрузка отменена');
+      }
+      return false;
+    }
+    try {
+      const normalized = normalizeLoadedState(parsed as SavedGameData);
+      set({ ...normalized });
+    } catch (e) {
+      if (typeof console !== 'undefined' && console.warn) {
+        console.warn('[gameStore] loadGame: нормализация сейва', e);
+      }
+      return false;
+    }
+    useAppStore.getState().setPhase('game');
+    get().setRevealedPoemId(null);
+    useGamePhaseStore.getState().completeIntroCutscene();
+    eventBus.emit('game:loaded', { timestamp: Date.now() });
+    return true;
   },
   
   resetGame: () => {
@@ -1423,8 +1478,14 @@ export const useGameStore = create<GameState>()((set, get) => ({
     storageHydrationApplied = true;
     const savedData = loadSavedState();
     if (!savedData) return false;
-    const normalized = normalizeLoadedState(savedData as SavedGameData);
-    set({ ...normalized });
+    try {
+      set({ ...normalizeLoadedState(savedData) });
+    } catch (e) {
+      if (typeof console !== 'undefined' && console.warn) {
+        console.warn('[gameStore] hydrateFromLocalStorage: нормализация сейва', e);
+      }
+      return false;
+    }
     return true;
   },
 }));

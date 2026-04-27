@@ -202,7 +202,6 @@ export const useWorldStore = create<WorldStore>()(
 
     const cost = options.energyCost ?? ENERGY_COSTS.sceneTravel;
     const consume = options.consumeEnergy;
-    const player = usePlayerStore.getState();
 
     if (cost > 0) {
       if (consume) {
@@ -210,9 +209,10 @@ export const useWorldStore = create<WorldStore>()(
           return { ok: false as const, reason: 'no_energy' as const };
         }
       } else {
-        const oldE = player.playerState.energy;
+        const p = usePlayerStore.getState();
+        const oldE = p.playerState.energy;
         if (oldE < cost) {
-          player.addStress(5);
+          p.addStress(5);
           eventBus.emit('stat:changed', {
             stat: 'energy',
             oldValue: oldE,
@@ -221,7 +221,7 @@ export const useWorldStore = create<WorldStore>()(
           });
           return { ok: false as const, reason: 'no_energy' as const };
         }
-        player.addStat('energy', -cost);
+        p.addStat('energy', -cost);
         const newE = usePlayerStore.getState().playerState.energy;
         eventBus.emit('stat:changed', {
           stat: 'energy',
