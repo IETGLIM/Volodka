@@ -17,10 +17,11 @@ export function getExplorationDirectionalShadowMapSize(narrow: boolean, visualLi
  * Отрицательный bias слегка отодвигает тень от поверхности (меньше shadow acne).
  * Шаг Г: −0.0005; при peter-panning можно ослабить (например −0.00025).
  */
-export const EXPLORATION_DIRECTIONAL_SHADOW_BIAS = -0.0005;
+/** PCFSoft: чуть сильнее к сцене, чем у жёсткого PCF, без peter-pan на персонажах. */
+export const EXPLORATION_DIRECTIONAL_SHADOW_BIAS = -0.00045;
 
 /** Шаг Г: 0.02 — меньше «ползания» по касательной при крупной карте теней. */
-export const EXPLORATION_DIRECTIONAL_SHADOW_NORMAL_BIAS = 0.02;
+export const EXPLORATION_DIRECTIONAL_SHADOW_NORMAL_BIAS = 0.021;
 
 /** `OptimizedSceneEnvironment`: directional с тенями — тот же порядок размера, что и обход (шаг Г). */
 export const SCENE_ENVIRONMENT_SHADOW_MAP_SIZE = 2048;

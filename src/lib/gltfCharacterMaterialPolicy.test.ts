@@ -3,6 +3,7 @@ import * as THREE from 'three';
 import {
   applyGltfCharacterDepthWrite,
   applyGltfExplorationCharacterMaterialPolicies,
+  applyGltfExplorationPbrNormalization,
   applyGltfHairLikeAlphaTestCutout,
   applyGltfMeshesFrustumCullOff,
   computeExplorationCharacterMeshUnionVerticalExtent,
@@ -107,6 +108,18 @@ describe('gltfCharacterMaterialPolicy', () => {
     expect(typeof root.userData.characterBoundingVerticalM).toBe('number');
     expect(root.userData.characterBoundingVerticalM).toBeGreaterThan(0);
     expect(root.userData.characterHeightM).toBeUndefined();
+  });
+
+  it('applyGltfExplorationPbrNormalization clamps roughness and emissive intensity', () => {
+    const root = new THREE.Group();
+    const m = new THREE.MeshStandardMaterial({ color: 0xff00ff, roughness: 1.8, metalness: 2 });
+    m.emissiveIntensity = 3;
+    const mesh = new THREE.Mesh(new THREE.BoxGeometry(), m);
+    root.add(mesh);
+    applyGltfExplorationPbrNormalization(root);
+    expect(m.roughness).toBeLessThanOrEqual(1);
+    expect(m.metalness).toBeLessThanOrEqual(1);
+    expect(m.emissiveIntensity).toBe(1.28);
   });
 
   it('applyGltfExplorationCharacterMaterialPolicies writes characterHeightM when uniform passed', () => {

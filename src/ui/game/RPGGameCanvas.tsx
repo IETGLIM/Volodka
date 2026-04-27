@@ -102,6 +102,8 @@ import {
   updateExplorationLivePlayerPosition,
 } from '@/lib/explorationLivePlayerBridge';
 import { isExplorationCyberGradeScene } from '@/lib/explorationPostFxState';
+import { explorationAmbientWithIbl, getExplorationIblProfile } from '@/lib/explorationIblProfiles';
+import { ExplorationEnvironmentIbl } from '@/ui/3d/exploration/ExplorationEnvironmentIbl';
 import { explorationInteractionRegistry, registerBaseInteractions } from '@/game/interactions/registerBaseInteractions';
 import { InteractionHint } from '@/ui/primitives/InteractionHint';
 import { useExplorationLivePlayerTick } from '@/hooks/useExplorationLivePlayerTick';
@@ -380,6 +382,14 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
           fogColor: '#020806',
           groundGeometryArgs: GROUND_PLAZA,
         };
+      case 'district':
+      case 'mvd':
+        return {
+          ambient: 0.2,
+          light: '#dbeafe',
+          fogColor: '#060912',
+          groundGeometryArgs: GROUND_PLAZA,
+        };
       case 'memorial_park':
         return { ambient: 0.35, light: '#ffd9a0', fogColor: '#0a1510', groundGeometryArgs: GROUND_PLAZA };
       default:
@@ -455,10 +465,40 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
           hemisphereIntensity: 1.08,
           hemisphereGround: '#1a100c',
         };
+      case 'district':
+      case 'mvd':
+        return {
+          directionalPosition: [8.5, 14.5, 6.2] as [number, number, number],
+          directionalIntensity: 0.74,
+          hemisphereIntensity: 0.56,
+          hemisphereGround: '#0b1018',
+        };
       default:
         return null;
     }
   }, [sceneId]);
+
+  const iblProfile = useMemo(
+    () =>
+      getExplorationIblProfile({
+        sceneId,
+        visualLite,
+        introCutsceneActive: introCutsceneActive,
+      }),
+    [sceneId, visualLite, introCutsceneActive],
+  );
+
+  const iblActive = iblProfile.preset !== null;
+
+  const explorationKeyLightLevels = useMemo(() => {
+    const tun = explorationLightTuning;
+    const dirBase = tun?.directionalIntensity ?? 0.6;
+    const hemBase = tun?.hemisphereIntensity ?? 0.8;
+    return {
+      directionalIntensity: iblActive ? dirBase * 0.93 : dirBase,
+      hemisphereIntensity: iblActive ? hemBase * 0.92 : hemBase,
+    };
+  }, [explorationLightTuning, iblActive]);
 
   const followCameraProps = useMemo((): ExplorationFollowCameraPreset => {
     if (sceneId === 'volodka_corridor') {
@@ -798,7 +838,7 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
       aria-label="Исследование локации"
       frameloop={EXPLORATION_SCENE_FRAMELOOP}
       dpr={[1, 1.5]}
-      shadows={{ type: THREE.PCFShadowMap }}
+      shadows={{ type: THREE.PCFSoftShadowMap }}
       camera={{ fov: 60, near: 0.5, far: 50, position: [0, 5, 8] }}
       style={{ 
         background: sceneConfig.fogColor,
@@ -836,6 +876,9 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
         */}
         <PhysicsSceneColliders sceneId={sceneId} />
         <Suspense fallback={<ThreeCanvasSuspenseFallback />}>
+        {iblProfile.preset ? (
+          <ExplorationEnvironmentIbl preset={iblProfile.preset} environmentIntensity={iblProfile.environmentIntensity} />
+        ) : null}
         {/* Интерьер квартиры в обходе (раньше был только в VN-слое — без стен сцена читалась как «чёрная дыра»). */}
         {sceneId === 'volodka_corridor' && (
           <VolodkaCorridorVisual explorationCharacterModelScale={explorationCharacterModelScale} />
@@ -861,12 +904,12 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
         />
 
         <ExplorationLighting
-          ambientIntensity={sceneConfig.ambient + 0.3}
+          ambientIntensity={explorationAmbientWithIbl(sceneConfig.ambient + 0.3, iblActive)}
           hemisphereSky={sceneConfig.light}
           hemisphereGround={explorationLightTuning?.hemisphereGround}
-          hemisphereIntensity={explorationLightTuning?.hemisphereIntensity}
+          hemisphereIntensity={explorationKeyLightLevels.hemisphereIntensity}
           directionalPosition={explorationLightTuning?.directionalPosition}
-          directionalIntensity={explorationLightTuning?.directionalIntensity}
+          directionalIntensity={explorationKeyLightLevels.directionalIntensity}
           directionalColor={
             visualState.colorTint !== 'transparent'
               ? visualState.colorTint
@@ -1025,6 +1068,7 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
         stress={playerState.stress}
         panicMode={playerState.panicMode}
         compactIndoor={isNarrowApartment}
+        enableSubtleDepthOfField={!narrowForGpu}
         cinematicIntro={introCutsceneActive}
         dialogueCinematic={isDialogueActive}
         explorationWarmInterior={

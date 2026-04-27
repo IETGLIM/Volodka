@@ -1,6 +1,7 @@
 'use client';
 
-import { memo } from 'react';
+import { memo, useLayoutEffect, useMemo, useRef } from 'react';
+import * as THREE from 'three';
 import {
   INTERIOR_REF_DOOR_HEIGHT_M,
   INTERIOR_REF_DOOR_WIDTH_M,
@@ -13,6 +14,37 @@ type VolodkaCorridorVisualProps = {
   /** Для `PropModel` с GLB (`lamp_desk` и др.). */
   explorationCharacterModelScale?: number;
 };
+
+const CEILING_LAMP_Z = [-4, 0, 4] as const;
+
+const CorridorCeilingLampInstanced = memo(function CorridorCeilingLampInstanced({ h }: { h: number }) {
+  const ref = useRef<THREE.InstancedMesh>(null);
+  const geo = useMemo(() => new THREE.CylinderGeometry(0.22, 0.28, 0.08, 16), []);
+  const mat = useMemo(
+    () =>
+      new THREE.MeshStandardMaterial({
+        color: '#f5f0e6',
+        emissive: '#fff7ed',
+        emissiveIntensity: 0.25,
+      }),
+    [],
+  );
+
+  useLayoutEffect(() => {
+    const mesh = ref.current;
+    if (!mesh) return;
+    const m = new THREE.Matrix4();
+    CEILING_LAMP_Z.forEach((z, i) => {
+      m.makeTranslation(0, h - 0.2, z);
+      mesh.setMatrixAt(i, m);
+    });
+    mesh.instanceMatrix.needsUpdate = true;
+  }, [h]);
+
+  return (
+    <instancedMesh ref={ref} args={[geo, mat, CEILING_LAMP_Z.length]} />
+  );
+});
 
 /**
  * Визуал коридора: стены, потолок, дверные блоки + тумба обуви и батарея (как в коллайдерах).
@@ -74,13 +106,10 @@ export const VolodkaCorridorVisual = memo(function VolodkaCorridorVisual({
         <meshStandardMaterial color="#9ca3af" roughness={0.45} metalness={0.35} />
       </mesh>
 
-      {/* Плафоны вдоль коридора */}
-      {[-4, 0, 4].map((z) => (
-        <group key={z} position={[0, h - 0.2, z]}>
-          <mesh>
-            <cylinderGeometry args={[0.22, 0.28, 0.08, 16]} />
-            <meshStandardMaterial color="#f5f0e6" emissive="#fff7ed" emissiveIntensity={0.25} />
-          </mesh>
+      {/* Плафоны вдоль коридора — один инстанс на три одинаковых цилиндра (меньше draw calls). */}
+      <CorridorCeilingLampInstanced h={h} />
+      {CEILING_LAMP_Z.map((z) => (
+        <group key={`pl-${z}`} position={[0, h - 0.2, z]}>
           <pointLight position={[0, -0.15, 0]} intensity={0.45} color="#fff5e0" distance={5} decay={2} />
         </group>
       ))}

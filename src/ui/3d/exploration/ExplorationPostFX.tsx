@@ -1,7 +1,13 @@
 'use client';
 
 import { memo, useMemo } from 'react';
-import { EffectComposer, Bloom, Vignette, ChromaticAberration } from '@react-three/postprocessing';
+import {
+  EffectComposer,
+  Bloom,
+  Vignette,
+  ChromaticAberration,
+  DepthOfField,
+} from '@react-three/postprocessing';
 import * as THREE from 'three';
 import type { SceneId } from '@/data/types';
 import { explorationChromaOffsetFromStress } from '@/lib/explorationPostFxState';
@@ -10,6 +16,8 @@ interface ExplorationPostFXProps {
   sceneId: SceneId;
   visualLite: boolean;
   compactIndoor?: boolean;
+  /** Лёгкий DOF только на достаточно быстром GPU (`RPGGameCanvas`: не узкий профиль по ширине). Tone mapping уже на WebGLRenderer. */
+  enableSubtleDepthOfField?: boolean;
   /**
    * Кинематографический стек для 3D-интро (Bloom + виньетка + лёгкая хроматическая аберрация).
    * Отключён при `visualLite` или без флага — чтобы не вернуть глобальные артефакты поста в обычном обходе.
@@ -43,6 +51,7 @@ export const ExplorationPostFX = memo(function ExplorationPostFX({
   explorationWarmInterior,
   dialogueCinematic,
   visualLite,
+  enableSubtleDepthOfField = false,
   stress = 0,
   panicMode = false,
 }: ExplorationPostFXProps) {
@@ -72,6 +81,11 @@ export const ExplorationPostFX = memo(function ExplorationPostFX({
         />
         <Vignette eskil={false} offset={0.17} darkness={0.5} />
         <ChromaticAberration offset={chromaOffset} radialModulation={false} modulationOffset={0} />
+        {enableSubtleDepthOfField ? (
+          <DepthOfField focusDistance={0.018} focalLength={0.018} bokehScale={1.35} height={520} />
+        ) : (
+          <></>
+        )}
       </EffectComposer>
     );
   }
@@ -91,6 +105,11 @@ export const ExplorationPostFX = memo(function ExplorationPostFX({
         />
         <Vignette eskil={false} offset={vo} darkness={Math.min(0.82, vd)} />
         <ChromaticAberration offset={warmStressChroma} radialModulation={false} modulationOffset={0} />
+        {enableSubtleDepthOfField ? (
+          <DepthOfField focusDistance={0.022} focalLength={0.016} bokehScale={1.15} height={520} />
+        ) : (
+          <></>
+        )}
       </EffectComposer>
     );
   }
@@ -114,6 +133,11 @@ export const ExplorationPostFX = memo(function ExplorationPostFX({
           radialModulation
           modulationOffset={0.12}
         />
+        {enableSubtleDepthOfField ? (
+          <DepthOfField focusDistance={0.02} focalLength={0.019} bokehScale={1.28} height={520} />
+        ) : (
+          <></>
+        )}
       </EffectComposer>
     );
   }

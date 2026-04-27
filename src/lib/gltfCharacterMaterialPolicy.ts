@@ -150,7 +150,65 @@ export type ExplorationCharacterMaterialPolicyOptions = {
    * Если задан — `userData.characterHeightM` = `characterBoundingVerticalM × uniform` (сырой продукт для `validateCharacterScale`).
    */
   explorationVisualUniform?: number;
+  /** Верхний предел `texture.anisotropy` для цветовых карт (до clamp по возможностям GPU при инстансе рендера). */
+  mapAnisotropyCap?: number;
 };
+
+function clamp01(n: number): number {
+  return Math.min(1, Math.max(0, n));
+}
+
+function applyStandardPhysicalPbrNormalization(
+  mat: THREE.MeshStandardMaterial | THREE.MeshPhysicalMaterial,
+  mapAnisotropyCap: number,
+): void {
+  const r = mat.roughness;
+  mat.roughness = Number.isFinite(r) ? clamp01(r) : 0.62;
+  const me = mat.metalness;
+  mat.metalness = Number.isFinite(me) ? clamp01(me) : 0;
+  const ei = mat.emissiveIntensity ?? 1;
+  if (typeof ei === 'number' && ei > 1.38) {
+    mat.emissiveIntensity = 1.28;
+  }
+  const cap = Math.min(Math.max(1, mapAnisotropyCap), 16);
+  const texKeys: Array<keyof THREE.MeshStandardMaterial> = [
+    'map',
+    'emissiveMap',
+    'normalMap',
+    'roughnessMap',
+    'metalnessMap',
+    'aoMap',
+  ];
+  for (const k of texKeys) {
+    const tx = mat[k];
+    if (tx && typeof tx === 'object' && 'isTexture' in tx && (tx as THREE.Texture).isTexture) {
+      (tx as THREE.Texture).anisotropy = Math.min(cap, Math.max((tx as THREE.Texture).anisotropy ?? 1, cap));
+    }
+  }
+  mat.needsUpdate = true;
+}
+
+/**
+ * Шаг lighting/PBR: clamp roughness/metalness/emissive по экспортам Mixamo/Khronos;
+ * анизотропный фильтр на картах — заметнее при IBL (`ExplorationEnvironmentIbl`).
+ */
+export function applyGltfExplorationPbrNormalization(
+  root: THREE.Object3D,
+  options?: Pick<ExplorationCharacterMaterialPolicyOptions, 'mapAnisotropyCap'>,
+): void {
+  const mapCap = options?.mapAnisotropyCap ?? 4;
+  root.traverse((obj) => {
+    const mesh = obj as THREE.Mesh;
+    if (!mesh.isMesh || !mesh.material) return;
+    const mats = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+    for (const mat of mats) {
+      if (!mat) continue;
+      if (mat instanceof THREE.MeshStandardMaterial || mat instanceof THREE.MeshPhysicalMaterial) {
+        applyStandardPhysicalPbrNormalization(mat, mapCap);
+      }
+    }
+  });
+}
 
 /**
  * Политика материалов и видимости персонажа в обходе: **`depthWrite`** (кроме прозрачного бленда /
@@ -165,6 +223,9 @@ export function applyGltfExplorationCharacterMaterialPolicies(
 ): void {
   applyGltfCharacterDepthWrite(root);
   applyGltfHairLikeAlphaTestCutout(root);
+  applyGltfExplorationPbrNormalization(root, {
+    mapAnisotropyCap: options?.mapAnisotropyCap,
+  });
   applyGltfMeshesFrustumCullOff(root);
 
   const bboxH = computeExplorationCharacterMeshUnionVerticalExtent(root);

@@ -23,6 +23,7 @@
  */
 
 import type { CanvasProps } from '@react-three/fiber';
+import * as THREE from 'three';
 
 /** Обёртка вокруг `<RPGGameCanvas>` в `GameOrchestrator` — жёсткий полноэкранный слот под WebGL. */
 export const EXPLORATION_GAME_VIEWPORT_CLASS =
@@ -31,7 +32,6 @@ export const EXPLORATION_GAME_VIEWPORT_CLASS =
 export const EXPLORATION_SCENE_FRAMELOOP: NonNullable<CanvasProps['frameloop']> = 'always';
 
 export function getExplorationSceneGlProps(visualLite: boolean, narrow: boolean) {
-  void visualLite;
   void narrow;
   return {
     antialias: true,
@@ -39,5 +39,9 @@ export function getExplorationSceneGlProps(visualLite: boolean, narrow: boolean)
     stencil: false,
     logarithmicDepthBuffer: false as const,
     powerPreference: 'high-performance' as const,
+    outputColorSpace: THREE.SRGBColorSpace,
+    toneMapping: THREE.ACESFilmicToneMapping,
+    /** IBL + Bloom: лёгче на mobile (`visualLite`). */
+    toneMappingExposure: visualLite ? 0.92 : 1.02,
   };
 }
