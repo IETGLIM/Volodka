@@ -12,6 +12,10 @@ interface HUDProps {
   onSave: () => void;
   onTogglePanel: (panel: string) => void;
   activePanels: GamePanelsState;
+  /**
+   * Не дублировать «текущую цель» с полноэкранным битом (`AnimeCutscene`) и VN-оверлеем сюжета.
+   */
+  suppressQuestStrip?: boolean;
 }
 
 // ============================================
@@ -264,35 +268,6 @@ function CyberLevelXpBar({
   );
 }
 
-function CyberKarmaBar({ karma }: { karma: number }) {
-  return (
-    <div className="flex items-center gap-2">
-      <div
-        className="w-3 h-3 rotate-45 border border-amber-500/60"
-        style={{
-          boxShadow: '0 0 8px rgba(245, 158, 11, 0.3)',
-          background: `linear-gradient(135deg, rgba(245, 158, 11, ${karma / 200}), transparent)`,
-        }}
-      />
-      <span className="font-mono text-xs text-amber-500/70">КАРМА</span>
-      <div
-        className="relative w-16 h-1.5 bg-slate-800/80 overflow-hidden"
-        style={{
-          clipPath: 'polygon(0 0, calc(100% - 3px) 0, 100% 3px, 100% 100%, 3px 100%, 0 calc(100% - 3px))',
-        }}
-      >
-        <motion.div
-          className="h-full bg-gradient-to-r from-yellow-600 to-amber-400"
-          style={{ boxShadow: '0 0 6px rgba(245, 158, 11, 0.3)' }}
-          animate={{ width: `${karma}%` }}
-          transition={{ duration: 0.5 }}
-        />
-      </div>
-      <span className="font-mono text-xs text-amber-500/70">{karma}</span>
-    </div>
-  );
-}
-
 // ============================================
 // CYBER ACTION BUTTON
 // ============================================
@@ -349,7 +324,12 @@ function CyberActionBtn({ label, isActive, onClick, colorClass, icon, ariaLabel 
 // MAIN HUD COMPONENT
 // ============================================
 
-export default function HUD({ onSave, onTogglePanel, activePanels }: HUDProps) {
+export default function HUD({
+  onSave,
+  onTogglePanel,
+  activePanels,
+  suppressQuestStrip = false,
+}: HUDProps) {
   const visualLite = useMobileVisualPerf();
   const narrow = useIsMobile();
   const playerState = useGameStore(s => s.playerState);
@@ -380,23 +360,38 @@ export default function HUD({ onSave, onTogglePanel, activePanels }: HUDProps) {
     { icon: '💪', label: 'Самооценка', value: playerState.selfEsteem, glowColor: 'rgba(245, 158, 11, 0.4)', gradientFrom: 'from-amber-500', gradientTo: 'to-yellow-400' },
   ], [playerState.mood, playerState.creativity, playerState.stability, playerState.selfEsteem]);
 
-  // Action buttons — cyberpunk
-  const actionButtons = useMemo(() => [
-    { key: 'skills', label: 'Навыки', colorClass: 'bg-teal-900/80', icon: '🎯', ariaLabel: 'Открыть или закрыть панель навыков' },
-    { key: 'journal', label: 'Лог', colorClass: 'bg-slate-800/90', icon: '📜', ariaLabel: 'Открыть или закрыть журнал событий' },
-    { key: 'quests', label: 'Квесты', colorClass: 'bg-purple-900/80', icon: '📋', ariaLabel: 'Открыть или закрыть панель квестов' },
-    { key: 'terminal', label: '', colorClass: 'bg-green-900/80', icon: '💻', ariaLabel: 'Открыть или закрыть учебный терминал' },
-    { key: 'factions', label: 'Фракции', colorClass: 'bg-amber-900/80', icon: '⚔️', ariaLabel: 'Открыть или закрыть панель фракций' },
-    {
-      key: 'inventory',
-      label: `(${inventory.length})`,
-      colorClass: 'bg-cyan-900/80',
-      icon: '🎒',
-      ariaLabel: `Открыть или закрыть инвентарь (клавиша I), предметов: ${inventory.length}`,
-    },
-    { key: 'achievements', label: '', colorClass: 'bg-amber-900/80', icon: '🏆', ariaLabel: 'Открыть или закрыть панель достижений' },
-    { key: 'poetry', label: `(${collectedPoems.length})`, colorClass: 'bg-purple-900/80', icon: '📖', ariaLabel: `Открыть или закрыть собранные стихи, штук: ${collectedPoems.length}` },
-  ], [inventory.length, collectedPoems.length]);
+  // Action buttons — cyberpunk. Инвентарь в HUD скрыт, пока пуст: стихи/квесты — основной контент; клавиша I по-прежнему открывает панель.
+  const actionButtons = useMemo(() => {
+    const all: {
+      key: string;
+      label: string;
+      colorClass: string;
+      icon: string;
+      ariaLabel: string;
+    }[] = [
+      { key: 'skills', label: 'Навыки', colorClass: 'bg-teal-900/80', icon: '🎯', ariaLabel: 'Открыть или закрыть панель навыков' },
+      { key: 'journal', label: 'Лог', colorClass: 'bg-slate-800/90', icon: '📜', ariaLabel: 'Открыть или закрыть журнал событий' },
+      { key: 'quests', label: 'Квесты', colorClass: 'bg-purple-900/80', icon: '📋', ariaLabel: 'Открыть или закрыть панель квестов' },
+      { key: 'terminal', label: '', colorClass: 'bg-green-900/80', icon: '💻', ariaLabel: 'Открыть или закрыть учебный терминал' },
+      { key: 'factions', label: 'Фракции', colorClass: 'bg-amber-900/80', icon: '⚔️', ariaLabel: 'Открыть или закрыть панель фракций' },
+      {
+        key: 'inventory',
+        label: `(${inventory.length})`,
+        colorClass: 'bg-cyan-900/80',
+        icon: '🎒',
+        ariaLabel: `Открыть или закрыть инвентарь (клавиша I), предметов: ${inventory.length}`,
+      },
+      { key: 'achievements', label: '', colorClass: 'bg-amber-900/80', icon: '🏆', ariaLabel: 'Открыть или закрыть панель достижений' },
+      {
+        key: 'poetry',
+        label: `(${collectedPoems.length})`,
+        colorClass: 'bg-purple-900/80',
+        icon: '📖',
+        ariaLabel: `Открыть или закрыть собранные стихи, штук: ${collectedPoems.length}`,
+      },
+    ];
+    return all.filter((b) => b.key !== 'inventory' || inventory.length > 0);
+  }, [inventory.length, collectedPoems.length]);
 
   return (
     <div className="relative z-30 min-h-0 min-w-0 shrink-0 pointer-events-none">
@@ -448,7 +443,7 @@ export default function HUD({ onSave, onTogglePanel, activePanels }: HUDProps) {
               className="w-full basis-full font-mono text-[9px] text-slate-500/80 leading-snug max-w-[min(36rem,92vw)] mt-1"
               title="Подсказка по системе"
             >
-              Показатели и стресс открывают или блокируют реплики; цели — в «Квесты» 📋 и в трекере ниже. Терминал 💻 — учебные задачи в духе смены; его можно открывать между сценами, как рабочий чек-лист.
+              Показатели и стресс открывают или блокируют реплики; цели — в «Квесты» 📋 и в трекере ниже. Терминал 💻 — учебные задачи в духе смены; его можно открывать между сценами, как рабочий чек-лист. Карма — компас внизу слева (одна шкала с панелью фракций ⚔️: там репутация групп, не личная карма).
             </p>
           </div>
 
@@ -511,13 +506,8 @@ export default function HUD({ onSave, onTogglePanel, activePanels }: HUDProps) {
           <CyberEnergyBar energy={playerState.energy} visualLite={visualLite} />
         </div>
 
-        {/* Karma indicator */}
-        <div className="mt-1">
-          <CyberKarmaBar karma={playerState.karma} />
-        </div>
-
-        {/* Компактный трекер квестов */}
-        {questTracker.length > 0 && (
+        {/* Компактный трекер квестов (скрыт во время VN/бита, см. `suppressQuestStrip`) */}
+        {!suppressQuestStrip && questTracker.length > 0 && (
           <div className="mt-2 space-y-1.5">
             <div className="font-mono text-[9px] uppercase tracking-[0.2em] text-cyan-500/35">TRACK // QUESTS</div>
             {questTracker.map((q) => (

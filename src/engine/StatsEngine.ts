@@ -176,8 +176,8 @@ class StatsEngineClass {
     }
 
     // ---- Karma effects ----
+    // Подсказка — единственный «потребитель» порога; токены в `availableActions` раньше уходили в CoreLoop.newUnlocks без UI/гейта — см. docs/karma-scale.md
     if (state.karma > 70) {
-      availableActions.push('redemption-path');
       narrativeHints.push('Хорошая карма открывает путь к примирению');
     }
 

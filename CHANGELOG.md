@@ -2,8 +2,19 @@
 
 ## [Unreleased]
 
+### Added
+
+- **Фаза G (проверка и закрепление):** `docs/phase-g-verification.md` — автопокрытие (`goldenPath.test.ts`, `narrativePoetryIntegrity.test.ts`, `contentValidator.test.ts`; Browserbase `volodka-smoke` без E2E «хаб → квест → награда → сцена»), ручной срез ~30–40 мин по золотой линии + IT-сайд `whitehat_uat_sprint` после офиса, 3D-проверка `exploration_zarema_hearth`. **ADP:** `docs/adp-inventory-karma-portraits.md` — инвентарь, карма, портреты NPC (источник правды, UI, `npcDialoguePresentation`).
+
+- **Квесты (фаза E):** `contentValidator.test.ts` — `questOperations` / `questObjective` ссылаются на реальные `objectiveId` в `QUEST_DEFINITIONS`; `src/data/questGraphIntegrity.test.ts` — согласованность `EVENT_OBJECTIVE_MAP` и проводка целей 3D-квестов `exploration_*` (граф E, форс, осмотр). `aiQuestSchema.ts` — `linkedStoryNodeId`, `startNode`, `completeNode` сверяются с ключами `STORY_NODES` (тесты в `aiQuestSchema.test.ts`).
+
+- **Карма (фаза C):** `docs/karma-scale.md` — канон `playerState.karma`, таблица источников изменений, различие с репутацией фракций, условия ветвления; тест `src/state/karmaScale.test.ts` (кламп, серия `addStat`, снимок save, условия, `StatsEngine`).
+- **Инвентарь (фаза B):** в `src/data/items.ts` зафиксирована роль каталога (ключи/документы/фрагменты/расходники), добавлен отсутствовавший `poem_fragment_2` для `blue_pit_book` в `scenes.ts`. Награда `exploration_zarema_hearth` выдаёт `tea`, чтобы счётчик предметов и квестовые награды не расходились с контентом только из стихов/флагов. В `contentValidator.test.ts` — проверка `itemId` у `interactiveObjects` и записей `WORLD_ITEMS`.
+
 ### Changed
 
+- **HUD карма:** убран дублирующий `CyberKarmaBar` из `HUD.tsx`; индикатор остаётся в `MoralCompassHUD`. В `StatsEngine` убран неиспользуемый токен `redemption-path` из `availableActions` (подсказка при `karma > 70` сохранена).
+- **HUD инвентарь:** кнопка рюкзака скрыта, пока в инвентаре нет ни одного предмета; клавиша I по-прежнему открывает панель (`HUD.tsx`, подсказка в `Inventory.tsx`).
 - **Репозиторий:** в `.gitignore` один паттерн `public/Volodka-main*.zip` (учитывает дубли `Volodka-main (1).zip` с загрузок Windows).
 - **Квесты 3D-обхода:** `startNode` у `exploration_zarema_hearth` и `exploration_volodka_rack` — `explore_hub_welcome` (согласовано с новым входом в хаб после интро).
 

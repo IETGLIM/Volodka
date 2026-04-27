@@ -1,5 +1,6 @@
 'use client';
 
+// Единственный постоянный индикатор playerState.karma в игровом HUD; канон — docs/karma-scale.md
 import { memo, useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useGameStore } from '@/state';
