@@ -679,6 +679,7 @@ export const PhysicsSceneColliders = memo(function PhysicsSceneColliders({ scene
   const colliders = useMemo(() => {
     switch (sceneId) {
       case 'kitchen_night':
+        return <ZaremaAlbertColliders />;
       case 'kitchen_dawn':
       case 'home_morning':
         return <KitchenColliders />;

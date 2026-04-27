@@ -1,6 +1,6 @@
 'use client';
 
-import { memo, Suspense, use, useEffect, useMemo, useRef } from 'react';
+import { memo, Suspense, useEffect, useMemo, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { BoxGeometry, BufferAttribute, BufferGeometry, type Mesh, MeshStandardMaterial, PlaneGeometry, ShaderMaterial } from 'three';
 
@@ -81,14 +81,7 @@ const VolodkaGlitchPanel = memo(function VolodkaGlitchPanel() {
 const VolodkaRoomVisualInner = memo(function VolodkaRoomVisualInner({
   explorationCharacterModelScale = 1,
 }: VolodkaRoomVisualProps) {
-  const mapsPromise = useMemo(
-    () =>
-      new Promise<VolodkaRoomCanvasMaps>((resolve) => {
-        requestAnimationFrame(() => resolve(createVolodkaRoomCanvasMapsSync()));
-      }),
-    [],
-  );
-  const maps = use(mapsPromise);
+  const maps = useMemo(() => createVolodkaRoomCanvasMapsSync(), []);
 
   const w = 14;
   const d = 10;
@@ -231,6 +224,11 @@ const VolodkaRoomVisualInner = memo(function VolodkaRoomVisualInner({
         <planeGeometry args={[4.2, 3.2]} />
       </mesh>
 
+      {/*
+        GLB (`PropModel`) подвешивает `useGLTF` → без своего Suspense всплывает к глобальному в `RPGGameCanvas`
+        и на время загрузки подменяется весь мир (пол/стены исчезают — «чёрная дыра»).
+      */}
+      <Suspense fallback={null}>
       <group position={[3.2, interiorDeskVisualGroupCenterY(0), 0.1]}>
         <PropModel propId="desk_volodka" sceneScale={explorationCharacterModelScale} />
         <PropModel
@@ -330,6 +328,7 @@ const VolodkaRoomVisualInner = memo(function VolodkaRoomVisualInner({
           </mesh>
         </PropModel>
       </StreamingChunk>
+      </Suspense>
 
       <group position={[-4.8, 0.22, -3.2]}>
         <mesh castShadow receiveShadow>
@@ -351,12 +350,8 @@ const VolodkaRoomVisualInner = memo(function VolodkaRoomVisualInner({
 
 /**
  * Комната Володьки: merged shell + lightmap-слоты (процедурно до Blender), один fill-свет, мониторы на emissive + Bloom (`ExplorationPostFX`).
- * Текстуры: промис на кадр + `createVolodkaRoomCanvasMapsSync` + `use` — fallback даёт родительский `<Suspense>` в `RPGGameCanvas`.
+ * Текстуры собираются синхронно; GLB — только внутри вложенного `<Suspense>`, чтобы не гасить оболочку комнаты.
  */
 export const VolodkaRoomVisual = memo(function VolodkaRoomVisual(props: VolodkaRoomVisualProps) {
-  return (
-    <Suspense fallback={null}>
-      <VolodkaRoomVisualInner {...props} />
-    </Suspense>
-  );
+  return <VolodkaRoomVisualInner {...props} />;
 });

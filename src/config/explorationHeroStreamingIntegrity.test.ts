@@ -88,4 +88,13 @@ describe('hero exploration spawn vs physics floor (фаза 3.1)', () => {
     expect(Math.abs(x)).toBeLessThanOrEqual(halfW - margin);
     expect(Math.abs(z)).toBeLessThanOrEqual(halfZ - margin);
   });
+
+  it('kitchen_night: спавн внутри пола 10×8 (тот же интерьер, что и zarema_albert_room)', () => {
+    const halfW = 5;
+    const halfZ = 4;
+    const { x, z } = SCENE_CONFIG.kitchen_night.spawnPoint;
+    const margin = 0.2;
+    expect(Math.abs(x)).toBeLessThanOrEqual(halfW - margin);
+    expect(Math.abs(z)).toBeLessThanOrEqual(halfZ - margin);
+  });
 });

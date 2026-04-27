@@ -22,7 +22,7 @@ export type VolodkaRoomCanvasMaps = {
   wallLightmap: CanvasTexture;
 };
 
-/** Синхронная сборка (canvas); вызывать из промиса на кадр — чтобы сработал родительский `<Suspense>`. */
+/** Синхронная сборка (canvas) для lightmap-слоёв комнаты Володьки. */
 export function createVolodkaRoomCanvasMapsSync(): VolodkaRoomCanvasMaps {
   const wallMap = createVolodkaWallTexture();
   wallMap.repeat.set(3.2, 2.4);

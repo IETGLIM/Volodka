@@ -833,6 +833,8 @@ export const OptimizedSceneEnvironment = memo(function OptimizedSceneEnvironment
   const config = useMemo(() => {
     switch (sceneId) {
       case 'kitchen_night':
+      case 'zarema_albert_room':
+        return { ambient: 0.8, light: '#ffd93d', fogColor: '#2a2520' };
       case 'kitchen_dawn':
       case 'home_morning':
       case 'home_evening':
@@ -854,9 +856,6 @@ export const OptimizedSceneEnvironment = memo(function OptimizedSceneEnvironment
         return { ambient: 0.25, light: '#87ceeb', fogColor: '#0a1020' };
       case 'memorial_park':
         return { ambient: 0.35, light: '#ffd9a0', fogColor: '#0a1510' };
-      // NEW: Сцена "Заремушка с Альбертом"
-      case 'zarema_albert_room':
-        return { ambient: 0.8, light: '#ffd93d', fogColor: '#2a2520' };
       // NEW: Дополнительные локации
       case 'blue_pit': // Синяя яма
         return { ambient: 0.3, light: '#0066ff', fogColor: '#0a0a1a' };
@@ -876,6 +875,8 @@ export const OptimizedSceneEnvironment = memo(function OptimizedSceneEnvironment
   const environment = useMemo(() => {
     switch (sceneId) {
       case 'kitchen_night':
+      case 'zarema_albert_room':
+        return <ZaremaAlbertRoom />;
       case 'kitchen_dawn':
       case 'home_morning':
       case 'home_evening':
@@ -898,9 +899,6 @@ export const OptimizedSceneEnvironment = memo(function OptimizedSceneEnvironment
         return <DreamEnvironment />;
       case 'battle':
         return <BattleEnvironment />;
-      // NEW: Сцена "Заремушка с Альбертом" - уютная комната
-      case 'zarema_albert_room':
-        return <ZaremaAlbertRoom />;
       // NEW: Дополнительные локации
       case 'blue_pit':
         return <BluePitEnvironment />;

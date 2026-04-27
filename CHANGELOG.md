@@ -8,9 +8,13 @@
 
 - Основной playable-слой — **3D exploration** (Next.js, R3F, Rapier, Zustand). Сюжет и диалоги из тех же данных (`STORY_NODES`), без отдельного маршрута «только VN». Оверлей `StoryRenderer`: `useGameUiLayout` + `storyNodeShowsStoryOverlay(currentNode)` — `docs/ADR-single-exploration-narrative-layer.md`.
 
+### Fixed
+
+- **3D exploration**: комната Володьки не пропадала в «чёрную дыру» при загрузке GLB — вложенный `<Suspense>` вокруг пропов со `useGLTF`, синхронные canvas-карты без `use()` (`VolodkaRoomVisual.tsx`, `volodkaRoomTextureBundle.ts`). Сюжетная **`kitchen_night`** (10×8) получает тот же процедурный интерьер и коллайдеры, что **`zarema_albert_room`**: `RPGGameCanvas.tsx`, `PhysicsSceneColliders.tsx`, `SceneColliders.tsx`, `OptimizedSceneEnvironment.tsx`; тест спавна в `explorationHeroStreamingIntegrity.test.ts`.
+
 ### Комната Володьки (`volodka_room`)
 
-- `VolodkaRoomVisual`: процедурные **lightmap** на пол/стены (`volodkaRoomLightmapTextures.ts`), **mergeGeometries** для оболочки стен/дерева/косяков (`volodkaRoomMergedGeometries.ts`), один **pointLight** с тенью; мониторы на **emissive** + Bloom (`ExplorationPostFX`, проп `emissive` у `MatrixRainScreenMesh`); карты — `createVolodkaRoomCanvasMapsSync` + `Suspense`/`use`; dispose материалов, мержа и геометрии пола.
+- `VolodkaRoomVisual`: процедурные **lightmap** на пол/стены (`volodkaRoomLightmapTextures.ts`), **mergeGeometries** для оболочки стен/дерева/косяков (`volodkaRoomMergedGeometries.ts`), один **pointLight** с тенью; мониторы на **emissive** + Bloom (`ExplorationPostFX`, проп `emissive` у `MatrixRainScreenMesh`); карты — `createVolodkaRoomCanvasMapsSync`; dispose материалов, мержа и геометрии пола.
 
 ### Инженерия
 

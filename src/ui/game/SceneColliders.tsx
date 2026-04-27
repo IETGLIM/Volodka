@@ -648,6 +648,7 @@ export const SceneColliderSelector = memo(function SceneColliderSelector({ scene
   const colliders = useMemo(() => {
     switch (sceneId) {
       case 'kitchen_night':
+        return <ZaremaAlbertColliders />;
       case 'kitchen_dawn':
       case 'home_morning':
         return <KitchenColliders />;

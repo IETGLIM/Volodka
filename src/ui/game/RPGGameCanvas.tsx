@@ -192,11 +192,14 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
   const explorationBriefingPendingRef = useRef(true);
   const explorationPhase = useGamePhaseStore((s) => s.phase);
   const introCutsceneActive = explorationPhase === 'intro_cutscene';
+  /** Та же квартира 10×8: сюжет — `kitchen_night`, свободный хаб — `zarema_albert_room`. */
+  const isZaremaAlbertApartmentInterior =
+    sceneId === 'zarema_albert_room' || sceneId === 'kitchen_night';
   /** Один композер поста: `ExplorationPostFX` даёт bloom/виньетку; не дублировать вторым композером в `CameraEffects`. */
   const deferCameraEffectsPost =
     (sceneId === 'volodka_room' ||
       sceneId === 'blue_pit' ||
-      sceneId === 'zarema_albert_room') &&
+      isZaremaAlbertApartmentInterior) &&
     explorationPhase === 'gameplay' &&
     !introCutsceneActive;
   /** В 3D-интро игрок всегда в `volodka_room`; не тянуть множители с другого `sceneId` (иначе `m` может быть 1 и интро выглядит крупнее геймплея). */
@@ -318,6 +321,13 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
   const sceneConfig = useMemo(() => {
     switch (sceneId) {
       case 'kitchen_night':
+      case 'zarema_albert_room':
+        return {
+          ambient: 0.46,
+          light: '#fff0dc',
+          fogColor: '#0c0806',
+          groundGeometryArgs: GROUND_INDOOR,
+        };
       case 'kitchen_dawn':
       case 'home_morning':
       case 'home_evening':
@@ -351,13 +361,6 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
         };
       case 'memorial_park':
         return { ambient: 0.35, light: '#ffd9a0', fogColor: '#0a1510', groundGeometryArgs: GROUND_PLAZA };
-      case 'zarema_albert_room':
-        return {
-          ambient: 0.46,
-          light: '#fff0dc',
-          fogColor: '#0c0806',
-          groundGeometryArgs: GROUND_INDOOR,
-        };
       default:
         return { ambient: 0.35, light: '#b2bec3', fogColor: '#1a1a2e', groundGeometryArgs: GROUND_INDOOR };
     }
@@ -378,7 +381,7 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
   const explorationNpcModelScale = useMemo(() => getExplorationNpcModelScale(sceneId), [sceneId]);
 
   /** В квартире Заремы/Альберта слоты статичны — без Rapier KCC меньше дрейфа к одной точке и z-борьбы визуалов. */
-  const enableExplorationNpcPhysics = sceneId !== 'zarema_albert_room';
+  const enableExplorationNpcPhysics = !isZaremaAlbertApartmentInterior;
 
   const findNavPath = useMemo(() => {
     const [fw, , fd] = groundGeometryArgs;
@@ -391,7 +394,8 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
     sceneId === 'volodka_room' ||
     sceneId === 'volodka_corridor' ||
     sceneId === 'home_evening' ||
-    sceneId === 'zarema_albert_room';
+    sceneId === 'zarema_albert_room' ||
+    sceneId === 'kitchen_night';
 
   /**
    * Узкие комнаты: линейный туман. Слишком близкий `near` + тёмный `fogColor` давали кадр «площадка в пустоте»
@@ -403,7 +407,7 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
       if (introCutsceneActive) return { near: 4.2, far: 74 } as const;
       return { near: 1.92, far: 74 } as const;
     }
-    if (sceneId === 'zarema_albert_room') {
+    if (sceneId === 'zarema_albert_room' || sceneId === 'kitchen_night') {
       if (introCutsceneActive) return { near: 3.9, far: 60 } as const;
       return { near: 2.15, far: 58 } as const;
     }
@@ -423,6 +427,7 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
           hemisphereGround: '#080f14',
         };
       case 'zarema_albert_room':
+      case 'kitchen_night':
         return {
           directionalPosition: [-3.4, 7.9, 4.1] as [number, number, number],
           directionalIntensity: 0.52,
@@ -480,7 +485,7 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
       };
     }
     /** Узкая квартира 10×8: без пресета срабатывал дефолт с большой `height` — при отбое коллизий камера «ныряла» к ботинкам. */
-    if (sceneId === 'zarema_albert_room') {
+    if (sceneId === 'zarema_albert_room' || sceneId === 'kitchen_night') {
       return {
         distance: 2.62,
         height: 1.58,
@@ -835,7 +840,7 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
         {sceneId === 'volodka_room' && (
           <VolodkaRoomVisual explorationCharacterModelScale={explorationCharacterModelScale} />
         )}
-        {sceneId === 'zarema_albert_room' && (
+        {isZaremaAlbertApartmentInterior && (
           <ZaremaAlbertExplorationVisual explorationCharacterModelScale={explorationCharacterModelScale} />
         )}
         {sceneId === 'home_evening' && <HomeEveningVisual />}
@@ -862,7 +867,7 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
           directionalColor={
             visualState.colorTint !== 'transparent'
               ? visualState.colorTint
-              : sceneId === 'zarema_albert_room'
+              : isZaremaAlbertApartmentInterior
                 ? '#fff6ed'
                 : '#fff'
           }
@@ -1018,7 +1023,7 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
         cinematicIntro={introCutsceneActive}
         dialogueCinematic={isDialogueActive}
         explorationWarmInterior={
-          sceneId === 'zarema_albert_room' && explorationPhase === 'gameplay' && !introCutsceneActive
+          isZaremaAlbertApartmentInterior && explorationPhase === 'gameplay' && !introCutsceneActive
         }
         explorationCyberGrade={
           (sceneId === 'volodka_room' || sceneId === 'blue_pit') &&
