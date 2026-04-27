@@ -27,8 +27,8 @@ export const GLB_CHARACTER_UNIFORM_BASE_BY_FILENAME: Record<string, number> = {
   'khronos_cc0_cesiumman.glb': 1.12,
   /** Тонкий скинированный манекен (RiggedFigure). */
   'khronos_cc0_riggedfigure.glb': 1.22,
-  /** Лиса — меньше по росту, чуть выше uniform. */
-  'khronos_cc0_fox.glb': 1.45,
+  /** Khronos Fox — компактное животное; без завышения «как люди» (иначе ломает кап bbox). */
+  'khronos_cc0_fox.glb': 0.42,
   'sayuri_dans.glb': 1.05,
   'spartan_armour_mkv_-_halo_reach.glb': 0.94,
 };
@@ -37,9 +37,9 @@ export const GLB_CHARACTER_UNIFORM_BASE_BY_FILENAME: Record<string, number> = {
 const NARROW_SCENE_UNIFORM_CAP: Partial<Record<SceneId, number>> = {
   /** Комната 10×8: ниже потолок — ещё ужимаем uniform, чтобы игрок не «съедал» кадр. */
   zarema_albert_room: 0.24,
-  /** Кинокадр в комнате героя: выше старого 0.24, иначе персонаж остаётся «муравьём» при ÷5. */
-  volodka_room: 0.275,
-  volodka_corridor: 0.26,
+  /** Кинокадр в комнате героя: баланс «читаемый рост» vs кадр узкой комнаты. */
+  volodka_room: 0.31,
+  volodka_corridor: 0.29,
   home_evening: 0.26,
 };
 

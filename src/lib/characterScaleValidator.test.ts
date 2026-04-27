@@ -27,9 +27,9 @@ describe('characterScaleValidator', () => {
     if (r !== 'ok') expect(r.actualHeightM).toBeLessThan(MIN_CHARACTER_BOUNDING_PRODUCT);
   });
 
-  it('Khronos Fox skips MIN bound; CesiumMan still hits MAX when огромный bbox', () => {
+  it('Khronos Fox obeys MAX like other models; CesiumMan still hits MAX when огромный bbox', () => {
     expect(validateCharacterScale('/models/khronos_cc0_Fox.glb', 0.2, 0.9)).toBe('ok');
-    expect(validateCharacterScale('/models/khronos_cc0_Fox.glb', 600, 0.5)).toBe('ok');
+    expect(validateCharacterScale('/models/khronos_cc0_Fox.glb', 600, 0.5)).not.toBe('ok');
     expect(validateCharacterScale('/models/khronos_cc0_CesiumMan.glb', 500, 0.9)).not.toBe('ok');
   });
 });

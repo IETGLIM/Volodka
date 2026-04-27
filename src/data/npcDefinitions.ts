@@ -139,8 +139,8 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
     model: 'generic',
     modelPath: '/models/khronos_cc0_Fox.glb',
     animations: NPC_ANIM_FOX,
-    /** ~0.55–0.62: компактный Khronos Fox рядом с игроком после `getGltfSkinnedVisualHeightMeters` + цель сцены. */
-    scale: 0.58,
+    /** Базовый табличный uniform для Fox занижен; карточка без дополнительного «сплющивания». */
+    scale: 1,
     defaultPosition: { x: -2.15, y: 0, z: 2.35 },
     patrolRadius: 0.35,
     sceneId: 'volodka_room',

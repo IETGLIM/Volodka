@@ -29,8 +29,8 @@ export const MIN_CHARACTER_BOUNDING_PRODUCT = 0.004;
  */
 export const GLB_BASE_NAMES_EXEMPT_FROM_MIN_VISUAL_HEIGHT: ReadonlySet<string> = new Set(['khronos_cc0_fox.glb']);
 
-/** Стилизованные / нечеловеческие пропорции — сырой bbox×uniform может быть огромным; MAX не применяем. */
-export const GLB_BASE_NAMES_EXEMPT_FROM_MAX_BOUNDING_PRODUCT: ReadonlySet<string> = new Set(['khronos_cc0_fox.glb']);
+/** Стилизованные / нечеловеческие пропорции — при необходимости освободить от MAX (лиса теперь через заниженный base в `modelMeta`). */
+export const GLB_BASE_NAMES_EXEMPT_FROM_MAX_BOUNDING_PRODUCT: ReadonlySet<string> = new Set([]);
 
 export function glbBasenameForScaleValidator(modelUrl: string): string {
   const u = rewriteLegacyModelPath(modelUrl.trim());

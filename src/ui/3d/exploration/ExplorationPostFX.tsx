@@ -23,6 +23,8 @@ interface ExplorationPostFXProps {
    * Тёплый интерьер (`zarema_albert_room`): мягкий bloom ламп/окна, виньетка без «кибер»-хромы.
    */
   explorationWarmInterior?: boolean;
+  /** Диалог в обходе — сильнее виньетка (фокус на панели / NPC). */
+  dialogueCinematic?: boolean;
 }
 
 /**
@@ -34,6 +36,7 @@ export const ExplorationPostFX = memo(function ExplorationPostFX({
   cinematicIntro,
   explorationCyberGrade,
   explorationWarmInterior,
+  dialogueCinematic,
   visualLite,
 }: ExplorationPostFXProps) {
   const chromaOffset = useMemo(() => new THREE.Vector2(0.00085, 0.0015), []);
@@ -59,6 +62,8 @@ export const ExplorationPostFX = memo(function ExplorationPostFX({
   }
 
   if (explorationWarmInterior) {
+    const vd = 0.36 + (dialogueCinematic ? 0.12 : 0);
+    const vo = 0.11 + (dialogueCinematic ? 0.04 : 0);
     return (
       <EffectComposer multisampling={0} enableNormalPass={false}>
         <Bloom
@@ -68,13 +73,15 @@ export const ExplorationPostFX = memo(function ExplorationPostFX({
           intensity={0.44}
           radius={0.5}
         />
-        <Vignette eskil={false} offset={0.11} darkness={0.36} />
+        <Vignette eskil={false} offset={vo} darkness={Math.min(0.78, vd)} />
       </EffectComposer>
     );
   }
 
   if (explorationCyberGrade) {
     const volodkaBoost = sceneId === 'volodka_room';
+    const vignetteDarkness = (volodkaBoost ? 0.44 : 0.48) + (dialogueCinematic ? 0.14 : 0);
+    const vignetteOffset = 0.14 + (dialogueCinematic ? 0.05 : 0);
     return (
       <EffectComposer multisampling={0} enableNormalPass={false}>
         <Bloom
@@ -84,7 +91,7 @@ export const ExplorationPostFX = memo(function ExplorationPostFX({
           intensity={volodkaBoost ? 0.6 : 0.52}
           radius={volodkaBoost ? 0.52 : 0.48}
         />
-        <Vignette eskil={false} offset={0.14} darkness={volodkaBoost ? 0.44 : 0.48} />
+        <Vignette eskil={false} offset={vignetteOffset} darkness={Math.min(0.82, vignetteDarkness)} />
         <ChromaticAberration
           offset={chromaOffset}
           radialModulation

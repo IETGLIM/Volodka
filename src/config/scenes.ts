@@ -95,7 +95,7 @@ export interface SceneConfig {
   explorationInteriorCeilingMeters?: number;
   /**
    * Множитель скорости ходьбы/бега игрока и патруля NPC в 3D-исследовании (коллайдеры без изменений).
-   * Если не задано — выводится из итогового масштаба персонажа (как пара ~0.60 / 0.9 у `volodka_room`).
+   * Если не задано — выводится из итогового масштаба персонажа (как пара ~0.64 / 0.9 у `volodka_room` / `volodka_corridor`).
    */
   explorationLocomotionScale?: number;
   /**
@@ -114,7 +114,7 @@ function inferredExplorationLocomotionFromCharacter(characterScale: number): num
 }
 
 /**
- * Подсказка масштаба персонажей для **новых** узких интерьеров: эталон `volodka_room` (max габарит пола ~14 м → руками ~0.58–0.62 или формула ниже).
+ * Подсказка масштаба персонажей для **новых** узких интерьеров: эталон `volodka_room` (max габарит пола ~14 м → руками ~0.62–0.72 или формула ниже).
  * Подставьте в `SCENE_CONFIG.*.explorationCharacterModelScale` при заведении локации.
  */
 export function suggestInteriorCharacterModelScale(maxFloorDimensionMeters: number): number {
@@ -186,8 +186,8 @@ export const SCENE_CONFIG = {
   volodka_room: {
     id: 'volodka_room',
     name: 'Комната Володьки',
-    /** Согласовано с `volodka_corridor` (~0.58): читаемый герой в кадре, не «муравей». */
-    explorationCharacterModelScale: 0.6,
+    /** Согласовано с `volodka_corridor`: чуть крупнее силуэт (~1.7–1.8 м в кадре при эталонном GLB). */
+    explorationCharacterModelScale: 0.68,
     explorationInteriorCeilingMeters: 2.85,
     explorationLocomotionScale: 0.9,
     explorationTutorialHints: [
@@ -332,8 +332,8 @@ export const SCENE_CONFIG = {
   volodka_corridor: {
     id: 'volodka_corridor',
     name: 'Коридор',
-    /** Чуть меньше эталона комнаты (0.60): узкий коридор без клипа в дверных проёмах. */
-    explorationCharacterModelScale: 0.58,
+    /** Чуть ниже эталона комнаты (~0.68): узкий коридор без клипа в дверных проёмах. */
+    explorationCharacterModelScale: 0.64,
     explorationLocomotionScale: 0.86,
     size: [3.5, 12],
     spawnPoint: { x: 0, y: 0.06, z: -3.92, rotation: 0 } as PlayerPosition,

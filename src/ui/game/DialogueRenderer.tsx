@@ -19,6 +19,7 @@ import { explorationHourToNarrativeTimeOfDay } from '@/game/conditions/timeOfDay
 import { CyberSkillCheckResult, type SkillCheckBannerPayload } from './CyberSkillCheckResult';
 import { QuestAcceptedGlitchToast } from './QuestAcceptedGlitchToast';
 import { npcDialogueInitial } from '@/lib/npcDialoguePresentation';
+import { DialoguePanelChrome } from '@/ui/game/DialoguePanel';
 
 interface DialogueRendererProps {
   isOpen: boolean;
@@ -52,15 +53,19 @@ function HolographicPortrait({
   npcName,
   holoGradientClass,
   portraitUrl,
+  presentation = 'holo',
 }: {
   npcName: string;
   holoGradientClass: string;
   portraitUrl?: string;
+  /** `noir` — без неонового кольца (обход в стиле комикс-нуар). */
+  presentation?: 'holo' | 'noir';
 }) {
   const initial = npcDialogueInitial(npcName);
+  const noir = presentation === 'noir';
   return (
     <div className="relative">
-      {/* Rotating ring animation */}
+      {!noir && (
       <div
         className="absolute -inset-1.5 rounded-full border border-cyan-500/20"
         style={{
@@ -69,12 +74,25 @@ function HolographicPortrait({
           borderRightColor: 'transparent',
         }}
       />
+      )}
       {/* Avatar: растровый портрет или голограмма (инициал + градиент) */}
       <div
-        className={`relative z-10 flex h-12 w-12 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br ${holoGradientClass} text-lg font-bold text-white shadow-lg ${portraitUrl ? 'ring-1 ring-cyan-500/25' : ''}`}
-        style={{
-          boxShadow: '0 0 15px rgba(0, 255, 255, 0.2), 0 0 30px rgba(0, 255, 255, 0.1)',
-        }}
+        className={`relative z-10 flex h-12 w-12 items-center justify-center overflow-hidden rounded-sm bg-gradient-to-br ${holoGradientClass} text-lg font-bold text-white shadow-lg ${
+          noir
+            ? portraitUrl
+              ? 'ring-2 ring-amber-900/70'
+              : 'ring-2 ring-zinc-600/80'
+            : portraitUrl
+              ? 'ring-1 ring-cyan-500/25'
+              : ''
+        }`}
+        style={
+          noir
+            ? { boxShadow: 'inset 0 0 20px rgba(0,0,0,0.65), 0 6px 18px rgba(0,0,0,0.55)' }
+            : {
+                boxShadow: '0 0 15px rgba(0, 255, 255, 0.2), 0 0 30px rgba(0, 255, 255, 0.1)',
+              }
+        }
       >
         {portraitUrl ? (
           <img src={portraitUrl} alt="" className="h-full w-full object-cover" decoding="async" />
@@ -98,6 +116,7 @@ const CyberDialogueChoice = memo(function CyberDialogueChoice({
   isConditionMet,
   flags,
   handleChoice,
+  visualVariant = 'cyber',
 }: {
   choice: DialogueChoice;
   index: number;
@@ -105,12 +124,15 @@ const CyberDialogueChoice = memo(function CyberDialogueChoice({
   isConditionMet: boolean;
   flags: Record<string, boolean>;
   handleChoice: (choice: DialogueChoice) => void;
+  visualVariant?: 'cyber' | 'noir';
 }) {
   const [isHovered, setIsHovered] = useState(false);
 
   const dialogueChoiceAria = !isConditionMet
     ? `Недоступная реплика ${index + 1}: ${choice.text}`
     : `Выбрать реплику ${index + 1}: ${choice.text}`;
+
+  const noir = visualVariant === 'noir';
 
   return (
     <motion.button
@@ -133,16 +155,25 @@ const CyberDialogueChoice = memo(function CyberDialogueChoice({
     >
       <div
         className={`relative px-4 py-3 border-l-2 ${
-          isConditionMet
-            ? 'bg-slate-900/80 border-cyan-500/40 hover:border-cyan-400/60'
-            : 'bg-red-950/20 border-red-500/30'
+          noir
+            ? isConditionMet
+              ? 'border-amber-700/55 bg-[#1a1518]/92 hover:border-amber-500/45'
+              : 'border-red-900/50 bg-red-950/15'
+            : isConditionMet
+              ? 'bg-slate-900/80 border-cyan-500/40 hover:border-cyan-400/60'
+              : 'bg-red-950/20 border-red-500/30'
         }`}
         style={{
-          boxShadow: isHovered && isConditionMet ? '0 0 12px rgba(0, 255, 255, 0.15)' : 'none',
+          boxShadow:
+            isHovered && isConditionMet
+              ? noir
+                ? '0 0 14px rgba(180, 120, 60, 0.12)'
+                : '0 0 12px rgba(0, 255, 255, 0.15)'
+              : 'none',
         }}
       >
         {/* Scan line on hover */}
-        {isHovered && isConditionMet && (
+        {isHovered && isConditionMet && !noir && (
           <div
             className="absolute inset-0 pointer-events-none"
             style={{
@@ -153,24 +184,39 @@ const CyberDialogueChoice = memo(function CyberDialogueChoice({
           />
         )}
 
-        <div className="flex items-center gap-2 relative z-10">
+        <div className={`flex items-center gap-2 relative z-10 ${noir ? 'font-[family-name:var(--font-geist-sans)]' : ''}`}>
           {/* Left indicator */}
           <div
             className={`w-1 h-5 rounded-full ${
-              isConditionMet ? 'bg-cyan-400/60' : 'bg-red-500/40'
+              noir
+                ? isConditionMet
+                  ? 'bg-amber-600/55'
+                  : 'bg-red-700/45'
+                : isConditionMet
+                  ? 'bg-cyan-400/60'
+                  : 'bg-red-500/40'
             }`}
             style={{
-              boxShadow: isConditionMet ? '0 0 6px rgba(0, 255, 255, 0.4)' : 'none',
+              boxShadow:
+                !noir && isConditionMet ? '0 0 6px rgba(0, 255, 255, 0.4)' : noir && isConditionMet ? '0 0 6px rgba(251,191,36,0.25)' : 'none',
             }}
           />
 
-          <span className="font-mono text-sm text-cyan-400/60">{index + 1}.</span>
-          <span className={`text-base font-medium ${isConditionMet ? 'text-white/90' : 'text-slate-500'}`}>
+          <span
+            className={`text-sm ${noir ? 'text-amber-700/65 tabular-nums' : 'font-mono text-cyan-400/60'}`}
+          >
+            {index + 1}.
+          </span>
+          <span
+            className={`text-base font-medium ${isConditionMet ? (noir ? 'text-[#f4ead8]/92' : 'text-white/90') : 'text-slate-500'}`}
+          >
             {choice.text}
           </span>
 
           {choice.skillCheck && (
-            <span className="ml-2 font-mono text-[10px] text-cyan-500/60">
+            <span
+              className={`ml-2 font-mono text-[10px] ${noir ? 'text-amber-600/55' : 'text-cyan-500/60'}`}
+            >
               [{choice.skillCheck.skill} ≥ {choice.skillCheck.difficulty}]
             </span>
           )}
@@ -386,15 +432,119 @@ export default function DialogueRenderer({
             role="presentation"
           />
 
-          {/* Dialogue window — cyberpunk terminal */}
-          <motion.div
-            className={`relative mx-4 mb-4 w-full max-w-4xl game-fm-layer ${explorationLayout ? 'z-[53]' : ''}`}
-            style={{ transformOrigin: 'bottom center' }}
-            initial={{ opacity: 0, scale: 0.97, skewX: -2 }}
-            animate={{ opacity: 1, scale: 1, skewX: 0 }}
-            exit={{ opacity: 0, scale: 0.97, skewX: 1.5 }}
-            transition={{ type: 'spring', stiffness: 380, damping: 32 }}
-          >
+          {explorationLayout ? (
+            <DialoguePanelChrome>
+              <div className="relative overflow-hidden">
+                <div className="border-b border-amber-900/35 bg-black/35 px-4 py-1.5">
+                  <p className="text-[9px] uppercase tracking-[0.28em] text-amber-700/75">Сцена · диалог</p>
+                </div>
+
+                {storyLinked && (
+                  <div className="border-b border-amber-600/25 bg-amber-950/20 px-4 py-2">
+                    <p className="text-[10px] leading-snug text-amber-100/78 font-[family-name:var(--font-geist-sans)]">
+                      ⟡ Встроенный диалог — после «Завершить разговор» или последней реплики вы вернётесь к сюжетной ветке.
+                    </p>
+                  </div>
+                )}
+
+                <div className="flex items-center gap-4 border-b border-zinc-800/90 bg-black/40 p-4">
+                  <HolographicPortrait
+                    npcName={npcName}
+                    holoGradientClass={holoGradientClass}
+                    portraitUrl={portraitUrl}
+                    presentation="noir"
+                  />
+
+                  <div className="flex-1 min-w-0">
+                    <h3 className="truncate font-semibold tracking-tight text-[#f5ebe0] drop-shadow-[0_1px_18px_rgba(0,0,0,0.85)]">
+                      {npcName}
+                    </h3>
+                    <p
+                      className="mt-0.5 truncate text-[10px] uppercase tracking-[0.18em] text-zinc-500"
+                      title={npcRole}
+                    >
+                      {npcRole}
+                    </p>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={closeDialogueSession}
+                    className="rounded-sm border border-zinc-700/60 p-2 text-sm text-zinc-400 transition-colors hover:border-amber-800/60 hover:text-amber-100/90"
+                    aria-label={`Закрыть диалог с ${npcName}`}
+                  >
+                    <span aria-hidden>✕</span>
+                  </button>
+                </div>
+
+                <div
+                  className="pointer-events-none absolute inset-0 z-20 opacity-[0.35]"
+                  style={{
+                    background:
+                      'repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0, 0, 0, 0.06) 3px, rgba(0, 0, 0, 0.06) 6px)',
+                  }}
+                  aria-hidden
+                />
+
+                <AnimatePresence>
+                  {lastSkillCheck && (
+                    <CyberSkillCheckResult result={lastSkillCheck} />
+                  )}
+                </AnimatePresence>
+
+                <div className="relative z-10 min-h-[100px] p-6">
+                  <p className="whitespace-pre-line text-lg leading-relaxed text-[#ebe3d6]/95 font-[family-name:var(--font-geist-sans)]">
+                    {isTyping ? displayedText : currentNode.text}
+                    {isTyping && <span className="animate-pulse text-amber-600/80">|</span>}
+                  </p>
+                </div>
+
+                {currentNode.choices && currentNode.choices.length > 0 && (
+                  <div className="relative z-10 space-y-2 px-4 pb-4">
+                    {currentNode.choices.map((choice, i) => {
+                      const isConditionMet = choice.skillCheck
+                        ? true
+                        : !choice.condition || evaluateCondition(choice.condition, dialogueContext);
+
+                      return (
+                        <CyberDialogueChoice
+                          key={`${currentNode.id}-${i}`}
+                          choice={choice}
+                          index={i}
+                          currentNodeId={currentNode.id}
+                          isConditionMet={isConditionMet}
+                          flags={flags}
+                          handleChoice={handleChoice}
+                          visualVariant="noir"
+                        />
+                      );
+                    })}
+                  </div>
+                )}
+
+                {(!currentNode.choices || currentNode.choices.length === 0) && (
+                  <div className="relative z-10 flex justify-end px-4 pb-4">
+                    <button
+                      type="button"
+                      onClick={closeDialogueSession}
+                      className="rounded-sm border border-amber-900/50 px-4 py-2 text-sm text-amber-200/70 transition-colors hover:border-amber-600/55 hover:text-amber-50/95"
+                      aria-label={`Завершить разговор с ${npcName} и закрыть окно`}
+                    >
+                      Завершить разговор
+                    </button>
+                  </div>
+                )}
+              </div>
+            </DialoguePanelChrome>
+          ) : (
+            <motion.div
+              className="relative mx-4 mb-4 w-full max-w-4xl game-fm-layer"
+              style={{ transformOrigin: 'bottom center' }}
+              initial={{ opacity: 0, scale: 0.97, skewX: -2 }}
+              animate={{ opacity: 1, scale: 1, skewX: 0 }}
+              exit={{ opacity: 0, scale: 0.97, skewX: 1.5 }}
+              transition={{ type: 'spring', stiffness: 380, damping: 32 }}
+            >
             <div
               className="overflow-hidden border border-orange-500/35 bg-black/95 shadow-[0_0_32px_rgba(34,197,94,0.22),0_0_56px_rgba(251,146,60,0.08)] backdrop-blur-md terminal-border-pulse"
               style={{
@@ -406,11 +556,6 @@ export default function DialogueRenderer({
                   VOLODKA_OS v.1.3 // USER: root // CONN: SECURE
                 </p>
               </div>
-              {explorationLayout && (
-                <div className="border-b border-orange-500/15 bg-black/40 px-4 py-1">
-                  <p className="text-[9px] uppercase tracking-[0.2em] text-orange-300/55">CHANNEL: DIALOGUE // MODE: LIVE</p>
-                </div>
-              )}
 
               {storyLinked && (
                 <div className="border-b border-amber-500/25 bg-amber-950/25 px-4 py-2">
@@ -531,6 +676,7 @@ export default function DialogueRenderer({
               )}
             </div>
           </motion.div>
+          )}
         </motion.div>
       )}
     </AnimatePresence>

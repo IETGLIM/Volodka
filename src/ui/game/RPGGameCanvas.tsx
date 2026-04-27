@@ -1014,6 +1014,7 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
         stress={playerState.stress}
         compactIndoor={isNarrowApartment}
         cinematicIntro={introCutsceneActive}
+        dialogueCinematic={isDialogueActive}
         explorationWarmInterior={
           sceneId === 'zarema_albert_room' && explorationPhase === 'gameplay' && !introCutsceneActive
         }

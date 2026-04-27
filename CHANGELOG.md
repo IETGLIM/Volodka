@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Changed
+
+- **Обход AAA / комната Володьки:** усилена геометрия дверного проёма (косяки, перемычка, затемнение «горла», глубже блок за дверью) в `VolodkaRoomVisual.tsx`; подняты масштабы сцены и потолок uniform для интерьеров (`scenes.ts`, `modelMeta.ts`), коридор `volodka_corridor` согласован; Khronos Fox — занижен базовый uniform, убрано освобождение от MAX в `characterScaleValidator.ts`, у соседа Димы `scale: 1`. Диалог в 3D: оболочка `DialoguePanel.tsx` / `DialoguePanelChrome`, нуар-стили в `DialogueRenderer.tsx` при `explorationLayout`; при активном диалоге сильнее виньетка в `ExplorationPostFX.tsx` (`dialogueCinematic`) из `RPGGameCanvas.tsx`.
+
 ### Fixed
 
 - **3D-интро + сюжетный оверлей:** при `explore_hub_welcome` и фазе `intro_cutscene` подписи `IntroCutsceneOverlays` больше не накладываются на `StoryRenderer` — `useGameUiLayout` скрывает нижний сюжетный слой на время вводной кат-сцены; подпись интро — непрозрачный фон `bg-zinc-950` вместо `bg-black/88` (`useGameUiLayout.ts`, `IntroCutsceneOverlays.tsx`).

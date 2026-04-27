@@ -157,6 +157,13 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({
   if (!assets) return null;
   const { floorMat, carpetMap, wallMat, woodMat } = assets;
 
+  const doorY = interiorDoorCenterYFromFloor(0);
+  const dw = INTERIOR_REF_DOOR_WIDTH_M;
+  const dh = INTERIOR_REF_DOOR_HEIGHT_M;
+  const doorFaceZ = hd - t - 0.02;
+  const jambW = 0.14;
+  const jambD = 0.12;
+
   return (
     <group name="VolodkaRoomVisual" userData={{ noCameraCollision: true }}>
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.015, 0]} receiveShadow material={floorMat}>
@@ -433,20 +440,43 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({
         </mesh>
       </group>
 
+      {/* Проём: косяки + перемычка — закрывают щели между сегментами передней стены и читаются как единая дверь. */}
+      <group name="VolodkaDoorFrame">
+        <mesh position={[-(dw / 2 + jambW / 2 + 0.02), doorY, doorFaceZ]} castShadow receiveShadow material={woodMat}>
+          <boxGeometry args={[jambW, dh, jambD]} />
+        </mesh>
+        <mesh position={[dw / 2 + jambW / 2 + 0.02, doorY, doorFaceZ]} castShadow receiveShadow material={woodMat}>
+          <boxGeometry args={[jambW, dh, jambD]} />
+        </mesh>
+        <mesh position={[0, doorY + dh / 2 + 0.09, doorFaceZ]} castShadow receiveShadow material={woodMat}>
+          <boxGeometry args={[dw + jambW * 2 + 0.16, 0.12, jambD + 0.04]} />
+        </mesh>
+      </group>
+
+      {/* Затемнение «горла» проёма — не видно пустоты по краям при ракурсе камеры. */}
+      <mesh position={[-(dw / 2 + 0.02), doorY, doorFaceZ + 0.06]} userData={{ noCameraCollision: true }}>
+        <boxGeometry args={[0.09, dh * 0.96, 0.28]} />
+        <meshStandardMaterial color="#050608" roughness={0.98} metalness={0.02} />
+      </mesh>
+      <mesh position={[dw / 2 + 0.02, doorY, doorFaceZ + 0.06]} userData={{ noCameraCollision: true }}>
+        <boxGeometry args={[0.09, dh * 0.96, 0.28]} />
+        <meshStandardMaterial color="#050608" roughness={0.98} metalness={0.02} />
+      </mesh>
+
       {/* Чуть вглубь комнаты (−Z): иначе коробка «въезжает» в слой передней стены (z≈4.9–5.0) → z-fight. */}
-      <group position={[0.05, interiorDoorCenterYFromFloor(0), hd - t - 0.05]}>
+      <group position={[0.05, doorY, hd - t - 0.05]}>
         <mesh castShadow receiveShadow material={woodMat}>
           <boxGeometry args={[INTERIOR_REF_DOOR_WIDTH_M, INTERIOR_REF_DOOR_HEIGHT_M, 0.06]} />
         </mesh>
       </group>
 
-      {/* Тёмный «коридор» за дверью — без отдельной сцены не видно лестничную клетку; пустота читается как баг. */}
+      {/* Тёмный «коридор» за дверью — без отдельной сцены не видно лестничную клетку; глубина и боковые грани скрывают void. */}
       <mesh
-        position={[0.05, interiorDoorCenterYFromFloor(0), hd + 1.05]}
+        position={[0.05, doorY, hd + 1.18]}
         receiveShadow
         userData={{ noCameraCollision: true }}
       >
-        <boxGeometry args={[INTERIOR_REF_DOOR_WIDTH_M * 1.08, INTERIOR_REF_DOOR_HEIGHT_M * 1.05, 2.15]} />
+        <boxGeometry args={[INTERIOR_REF_DOOR_WIDTH_M * 1.12, INTERIOR_REF_DOOR_HEIGHT_M * 1.06, 2.45]} />
         <meshStandardMaterial
           color="#07090d"
           roughness={0.97}
