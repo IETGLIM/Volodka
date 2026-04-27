@@ -1152,7 +1152,7 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
     sceneId: 'office_morning',
     dialogueTree: {
       id: 'artyom_greeting',
-      text: 'ИБ, Артём. Вижу auth-down — уже смотрю CVE и токены в песочнице. Если что-то утечет наружу — я первый ору, но пока это наша внутренняя грязь.',
+      text: 'ИБ, Артём. Вижу auth-down — уже смотрю CVE и токены в песочнице. Если что-то утечет наружу — я первый ору, но пока это наша внутренняя грязь. UAT-scope из сегодняшнего письма — только через меня; дома на ночном столе держи ту же дисциплину, даже если монитор один.',
       choices: [
         { text: 'Держи ухо востро — отпишусь по факту.', next: 'artyom_ok', effect: { karma: 2, npcId: 'office_artyom', npcChange: 3 } },
         { text: 'Скинешь чеклист по инциденту?', next: 'artyom_list', effect: { stability: 2, npcId: 'office_artyom', npcChange: 2 } },

@@ -959,6 +959,50 @@
   contain-intrinsic-size: auto 500px;
 }
 
+/**
+ * Лёгкий «VHS / glitch» только на UI-панелях (не на canvas сюжета).
+ * pointer-events: none — не перехватывает клики; не задаём position — чтобы не ломать fixed.
+ * Контент панели: добавьте `relative z-[2]` на блоки поверх слоя.
+ */
+.game-panel-cyber-glitch::before {
+  content: '';
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  opacity: 0.04;
+  mix-blend-mode: overlay;
+  background: repeating-linear-gradient(
+    -4deg,
+    transparent,
+    transparent 3px,
+    rgba(34, 211, 238, 0.07) 3px,
+    rgba(168, 85, 247, 0.05) 6px
+  );
+}
+
+@keyframes game-panel-glitch-drift {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+    opacity: 0.03;
+  }
+  48% {
+    transform: translate3d(0.5px, -1px, 0);
+    opacity: 0.055;
+  }
+  50% {
+    transform: translate3d(-1px, 0.5px, 0);
+    opacity: 0.045;
+  }
+}
+
+@media (min-width: 769px) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .game-panel-cyber-glitch::before {
+    animation: game-panel-glitch-drift 22s ease-in-out infinite;
+  }
+}
+
 /* Декоративные анимации off на мобильных и при reduced-motion; исключения — .game-critical-motion */
 @media (max-width: 768px), (prefers-reduced-motion: reduce) {
   *:not(.game-critical-motion, .game-critical-motion *),
@@ -974,6 +1018,10 @@
     border: 1px solid CanvasText;
     background: Canvas;
     color: CanvasText;
+  }
+
+  .game-panel-cyber-glitch::before {
+    display: none;
   }
 
   .game-critical-motion,

@@ -57,7 +57,7 @@ export const JournalPanel = memo(function JournalPanel({ onClose }: { onClose: (
         initial={{ scale: 0.96, y: 10 }}
         animate={{ scale: 1, y: 0 }}
         exit={{ scale: 0.96, y: 10 }}
-        className="game-panel relative max-h-[85vh] w-full max-w-[min(95vw,32rem)] overflow-hidden"
+        className="game-panel game-panel-cyber-glitch relative max-h-[85vh] w-full max-w-[min(95vw,32rem)] overflow-hidden"
         style={{
           background: 'linear-gradient(180deg, rgba(5,8,15,0.98) 0%, rgba(8,12,22,0.98) 100%)',
           border: '1px solid rgba(0, 255, 255, 0.22)',
@@ -66,7 +66,7 @@ export const JournalPanel = memo(function JournalPanel({ onClose }: { onClose: (
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between border-b border-cyan-500/15 bg-black/40 px-4 py-2">
+        <div className="relative z-[2] flex items-center justify-between border-b border-cyan-500/15 bg-black/40 px-4 py-2">
           <div className="flex items-center gap-2">
             <span className="h-2 w-2 rounded-full bg-emerald-500/80" />
             <span className="h-2 w-2 rounded-full bg-yellow-500/80" />
@@ -85,14 +85,14 @@ export const JournalPanel = memo(function JournalPanel({ onClose }: { onClose: (
           </button>
         </div>
 
-        <div className="pointer-events-none absolute inset-0 opacity-[0.04]" aria-hidden
+        <div className="pointer-events-none absolute inset-0 z-[1] opacity-[0.04]" aria-hidden
           style={{
             background:
               'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,255,255,0.12) 2px, rgba(0,255,255,0.12) 4px)',
           }}
         />
 
-        <div className="game-panel max-h-[calc(85vh-52px)] overflow-y-auto px-4 pb-4 pt-2 game-scrollbar">
+        <div className="game-panel relative z-[2] max-h-[calc(85vh-52px)] overflow-y-auto px-4 pb-4 pt-2 game-scrollbar">
           {rows.length === 0 ? (
             <p className="py-8 text-center font-mono text-sm text-cyan-500/35">
               Лог пуст. Выборы появятся здесь по мере прохождения.

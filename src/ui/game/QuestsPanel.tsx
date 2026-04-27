@@ -366,13 +366,13 @@ export const QuestsPanel = memo(function QuestsPanel({
       initial={{ opacity: 0, x: 300 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: 300 }}
-      className="game-critical-motion fixed right-2 top-16 z-50 w-[min(95vw,20rem)] max-h-[85vh] overflow-hidden border border-cyan-500/25 bg-[linear-gradient(180deg,rgba(0,0,0,0.88)_0%,rgba(15,23,42,0.92)_55%,rgba(2,6,23,0.96)_100%)] shadow-[0_0_24px_rgba(34,211,238,0.12)] backdrop-blur-md sm:right-4 sm:top-20"
+      className="game-critical-motion game-panel-cyber-glitch fixed right-2 top-16 z-50 w-[min(95vw,20rem)] max-h-[85vh] overflow-hidden border border-cyan-500/25 bg-[linear-gradient(180deg,rgba(0,0,0,0.88)_0%,rgba(15,23,42,0.92)_55%,rgba(2,6,23,0.96)_100%)] shadow-[0_0_24px_rgba(34,211,238,0.12)] backdrop-blur-md sm:right-4 sm:top-20"
       style={{
         clipPath: 'polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px))',
       }}
     >
       {/* Header — в духе верхней панели HUD (кибер, mono, cyan accent) */}
-      <div className="flex items-center justify-between border-b border-cyan-500/20 bg-gradient-to-r from-teal-950/80 to-slate-950/80 p-3">
+      <div className="relative z-[2] flex items-center justify-between border-b border-cyan-500/20 bg-gradient-to-r from-teal-950/80 to-slate-950/80 p-3">
         <h2 className="flex items-center gap-2 font-mono text-sm font-semibold uppercase tracking-wider text-white/95">
           <span aria-hidden>📋</span>
           Журнал квестов
@@ -394,7 +394,7 @@ export const QuestsPanel = memo(function QuestsPanel({
         )}
       </div>
 
-      <div className="border-b border-cyan-500/10 bg-black/35 px-3 py-2">
+      <div className="relative z-[2] border-b border-cyan-500/10 bg-black/35 px-3 py-2">
         <p className="font-mono text-[10px] leading-snug text-cyan-500/75">
           💡 Сюжетные цели: примите квест → выполните шаг (мини-игра / сцена). IT-цели — в терминале (💻), команды из подсказек или{' '}
           <span className="text-cyan-400/90">help</span>. Репутация — ⚔️.
@@ -402,7 +402,7 @@ export const QuestsPanel = memo(function QuestsPanel({
       </div>
 
       {/* Content */}
-      <div className="game-panel max-h-[calc(85vh-60px)] space-y-3 overflow-y-auto p-3">
+      <div className="game-panel relative z-[2] max-h-[calc(85vh-60px)] space-y-3 overflow-y-auto p-3">
         {activeQuests.length === 0 && completedQuests.length === 0 && availableQuests.length === 0 && (
           <div className="text-center text-slate-400 py-8">
             <p className="text-4xl mb-2">📜</p>

@@ -320,7 +320,7 @@ export const Inventory = memo(function Inventory({ isOpen, onClose }: InventoryP
         initial={{ scale: 0.9, y: 20 }}
         animate={{ scale: 1, y: 0 }}
         exit={{ scale: 0.9, y: 20 }}
-        className="game-panel relative flex max-h-[85vh] w-full max-w-[min(95vw,28rem)] flex-col overflow-hidden"
+        className="game-panel game-panel-cyber-glitch relative flex max-h-[85vh] w-full max-w-[min(95vw,28rem)] flex-col overflow-hidden"
         style={{
           background: 'linear-gradient(180deg, rgba(10, 10, 20, 0.98) 0%, rgba(15, 15, 30, 0.98) 100%)',
           border: '1px solid rgba(34, 211, 238, 0.3)',
@@ -330,21 +330,21 @@ export const Inventory = memo(function Inventory({ isOpen, onClose }: InventoryP
         onClick={(e) => e.stopPropagation()}
       >
         {/* Cyberpunk corner decorations */}
-        <div className="absolute top-0 left-0 w-5 h-5 border-t-2 border-l-2 border-cyan-400/50" />
-        <div className="absolute top-0 right-0 w-5 h-5 border-t-2 border-r-2 border-cyan-400/50" />
-        <div className="absolute bottom-0 left-0 w-5 h-5 border-b-2 border-l-2 border-cyan-400/50" />
-        <div className="absolute bottom-0 right-0 w-5 h-5 border-b-2 border-r-2 border-cyan-400/50" />
+        <div className="pointer-events-none absolute top-0 left-0 z-[2] w-5 h-5 border-t-2 border-l-2 border-cyan-400/50" />
+        <div className="pointer-events-none absolute top-0 right-0 z-[2] w-5 h-5 border-t-2 border-r-2 border-cyan-400/50" />
+        <div className="pointer-events-none absolute bottom-0 left-0 z-[2] w-5 h-5 border-b-2 border-l-2 border-cyan-400/50" />
+        <div className="pointer-events-none absolute bottom-0 right-0 z-[2] w-5 h-5 border-b-2 border-r-2 border-cyan-400/50" />
         
         {/* Scanlines */}
         <div 
-          className="absolute inset-0 pointer-events-none opacity-5"
+          className="pointer-events-none absolute inset-0 z-[1] opacity-5"
           style={{
             background: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0, 255, 255, 0.1) 2px, rgba(0, 255, 255, 0.1) 4px)',
           }}
         />
 
         {/* Header */}
-        <div className="relative shrink-0 border-b border-cyan-500/20 p-4">
+        <div className="relative z-[2] shrink-0 border-b border-cyan-500/20 p-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded bg-cyan-500/20 flex items-center justify-center border border-cyan-500/30">
@@ -379,7 +379,7 @@ export const Inventory = memo(function Inventory({ isOpen, onClose }: InventoryP
         </div>
 
         {/* Inventory Grid */}
-        <div className="game-panel relative min-h-0 flex-1 overflow-y-auto p-4">
+        <div className="game-panel relative z-[2] min-h-0 flex-1 overflow-y-auto p-4">
           <div
             className="grid gap-2"
             style={{
@@ -401,7 +401,7 @@ export const Inventory = memo(function Inventory({ isOpen, onClose }: InventoryP
 
         {/* Действия с выбранным предметом (логика use/drop — позже) */}
         {selectedIndex !== null && slots[selectedIndex] != null && (
-          <div className="relative shrink-0 border-t border-cyan-500/20 bg-slate-950/40 px-4 py-2">
+          <div className="relative z-[2] shrink-0 border-t border-cyan-500/20 bg-slate-950/40 px-4 py-2">
             <p className="mb-2 font-mono text-[10px] uppercase tracking-wide text-slate-500">
               Выбрано: {slots[selectedIndex]!.item.name}
             </p>
