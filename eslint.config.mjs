@@ -1,8 +1,28 @@
 import nextCoreWebVitals from "eslint-config-next/core-web-vitals";
 import nextTypescript from "eslint-config-next/typescript";
 
+// Глобальные ignores — первым блоком (ESLint flat config: иначе правила с других конфигов
+// по-прежнему обходят `scripts/optimize-models/**` и т.д.).
+// См. https://eslint.org/docs/latest/use/configure/configuration-files#globally-ignoring-files
+const globalIgnores = {
+  ignores: [
+    "node_modules/**",
+    ".next/**",
+    "out/**",
+    "build/**",
+    "browserbase-functions/**",
+    "exports/**",
+    "**/next-env.d.ts",
+    "examples/**",
+    "skills",
+    "_volodka_upstream_check/**",
+    "scripts/optimize-models/**",
+  ],
+};
+
 // Конфиги Next.js уже являются массивами, не функциями
 const eslintConfig = [
+  globalIgnores,
   ...nextCoreWebVitals,
   ...nextTypescript,
   {
@@ -43,22 +63,6 @@ const eslintConfig = [
       "no-useless-escape": "off",
     },
   },
-  {
-    // Используем **/next-env.d.ts для игнорирования в любой вложенности
-    ignores: [
-      "node_modules/**",
-      ".next/**",
-      "out/**",
-      "build/**",
-      "browserbase-functions/**",
-      "exports/**",
-      "**/next-env.d.ts",
-      "examples/**",
-      "skills",
-      "_volodka_upstream_check/**",
-      "scripts/optimize-models/**",
-    ]
-  }
 ];
 
 export default eslintConfig;

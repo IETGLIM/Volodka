@@ -18,6 +18,8 @@
 
 ### Fixed
 
+- **ESLint:** глобальные `ignores` вынесены в первый блок `eslint.config.mjs` (flat config), чтобы `scripts/optimize-models/**` и прочие пути реально не линтились.
+
 - **`questMetaStore`:** убрано дублирование `factionReputations` в начальном снимке (источник правды — `factionStore`); комментарий в шапке модуля уточнён.
 
 - **Zustand / прогрессия**: `NpcProximityBarks.tsx` — `useGameStore` из единого фасада `@/state` (вместо прямого `@/state/gameStore`). `playerStore.setCurrentNode` начисляет `STORY_NODE_FIRST_VISIT_XP` (константа в `rpgLeveling.ts`) при **первом** визите узла, как в legacy. `questMetaStore.completeQuest` по умолчанию применяет награду и XP квеста через `lib/questRewards.ts` (согласовано с monolithic `gameStore`); кастомный `applyReward` остаётся opt-in.
