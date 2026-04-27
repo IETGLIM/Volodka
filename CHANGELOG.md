@@ -9,6 +9,8 @@
 
 ### Added
 
+- **Референс-флоу квестов:** `docs/quest-reference-template.md` — четыре эталонных сценария (офис `whitehat_uat_sprint`, дом `first_words`, кафе `first_reading`, 3D `exploration_zarema_hearth` + ветвление `exploration_volodka_rack`), чеклист выравнивания остальных квестов; `docs/quest-scene-pipeline.md` §5 и `docs/volodka-incremental-aaa-roadmap.md` ссылаются на документ. В `src/data/quests.ts` у целей выставлены `stageType` (и `startNode` у `rabbitmq_overflow` / `kubernetes_orchestrator`); JSDoc на референсных квестах.
+
 - **Валидация заставок в данных:** `src/validation/contentValidator.test.ts` проверяет, что `STORY_NODES[].cutscene` и `choices[].cutsceneId` разрешаются в `animeCutscenes` (коды `NODE_CUTSCENE_UNKNOWN`, `CHOICE_CUTSCENE_ID_UNKNOWN`). Поля квестов `cutsceneOn*` — в том же файле; триггеры exploration — `npcExplorationIntegrity.test.ts`.
 
 - **Документация (канон сцены):** `docs/quest-scene-pipeline.md` — целевой пайплайн «квест как сцена» (принятие → бит → текст → задание → выбор → выполнение → награда → переход), mermaid-схема, привязка к `StoryRenderer`, `useGameRuntime` / `AnimeCutscene`, `questEvents`, 3D/терминал; в `docs/volodka-incremental-aaa-roadmap.md` — ссылка в блоке критериев. **§6:** сверка с реалом (где «рвётся»: `storyOverlayEligibility`, `GameMode` без «чистого VN», хаб `explore_mode`, очередь cutscene, `ITTerminal` без привязки к локации, приоритеты P0–P2).

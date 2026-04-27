@@ -76,16 +76,20 @@ export const QUEST_DEFINITIONS: Record<string, ExtendedQuest> = {
       }),
       createObjective('perform_live', 'Выступить публично', {
         hint: 'Посети кафе "Синяя Яма" в пятницу вечером',
-        targetLocation: 'cafe_evening'
+        targetLocation: 'cafe_evening',
+        stageType: 'narration',
       }),
       createObjective('find_listener', 'Найти того, кто услышит', {
-        hint: 'Поговори с посетителями кафе после выступления'
+        hint: 'Поговори с посетителями кафе после выступления',
+        stageType: 'dialogue',
       }),
       createObjective('make_peace', 'Примириться с прошлым', {
-        hint: 'Вспомни и прими свою историю'
+        hint: 'Вспомни и прими свою историю',
+        stageType: 'narration',
       }),
       createObjective('leave_legacy', 'Оставить наследие', {
-        hint: 'Собери сборник стихов и поделись с миром'
+        hint: 'Собери сборник стихов и поделись с миром',
+        stageType: 'narration',
       }),
     ],
     reward: createReward({
@@ -99,7 +103,10 @@ export const QUEST_DEFINITIONS: Record<string, ExtendedQuest> = {
     startNode: 'start',
   },
 
-  /** Короткий побочный квест 3D-обхода комнаты Заремы (связка с `InteractionRegistry`). */
+  /**
+   * **Референс «обход» (мин.)** — хаб → сцена `zarema_albert_room` → E у «очага». См. `docs/quest-reference-template.md`.
+   * Побочный 3D-обход; связка с `InteractionRegistry`.
+   */
   exploration_zarema_hearth: {
     id: 'exploration_zarema_hearth',
     title: '🏠 Тёплый угол',
@@ -114,6 +121,7 @@ export const QUEST_DEFINITIONS: Record<string, ExtendedQuest> = {
         hint: 'Зона у дивана в 3D-обходе (отдельный триггер с E)',
         targetLocation: 'zarema_albert_room',
         mapHint: { x: -1.85, z: 1.1 },
+        stageType: 'exploration',
       }),
     ],
     reward: createReward({ experience: 45, mood: 5, creativity: 3, karma: 2 }),
@@ -122,8 +130,8 @@ export const QUEST_DEFINITIONS: Record<string, ExtendedQuest> = {
   },
 
   /**
-   * Обход `volodka_room`: взаимоисключающие ветки — мини-игра узлов (E у стойки) или три осмотра панелей.
-   * Логика ветвления: граф форса `explorationQuestGraphs` / `explorationQuestGraph` + аудит в `volodkaRackQuestBranch`.
+   * **Референс «обход+ветки»** — форс (minigame) vs аудит (exploration) в `volodka_room`. См. `docs/quest-reference-template.md`.
+   * Логика ветвления: `explorationQuestGraphs` / `explorationQuestGraph` + `volodkaRackQuestBranch`.
    */
   exploration_volodka_rack: {
     id: 'exploration_volodka_rack',
@@ -167,17 +175,21 @@ export const QUEST_DEFINITIONS: Record<string, ExtendedQuest> = {
       createObjective('get_ip', 'Получить IP-адрес от начальника', {
         hint: 'Поговори с Начальником в офисе',
         targetNPC: 'office_boss',
-        targetLocation: 'office_morning'
+        targetLocation: 'office_morning',
+        stageType: 'dialogue',
       }),
       createObjective('use_cli', 'Использовать OpenStack CLI', {
         hint: 'Подойди к терминалу и введи команду openstack server list',
-        targetLocation: 'office_morning'
+        targetLocation: 'office_morning',
+        stageType: 'terminal',
       }),
       createObjective('find_server', 'Найти сервер по IP', {
-        hint: 'Используй: openstack server show <ID> --format json'
+        hint: 'Используй: openstack server show <ID> --format json',
+        stageType: 'terminal',
       }),
       createObjective('get_console', 'Получить ссылку на консоль', {
-        hint: 'Найди в выводе поле "console_url"'
+        hint: 'Найди в выводе поле "console_url"',
+        stageType: 'terminal',
       }),
     ],
     reward: createReward({
@@ -198,17 +210,21 @@ export const QUEST_DEFINITIONS: Record<string, ExtendedQuest> = {
     objectives: [
       createObjective('detect_overflow', 'Обнаружить накопление >100000', {
         hint: 'Проверь мониторинг в терминале: rabbitmqctl list_queues',
-        targetLocation: 'office_morning'
+        targetLocation: 'office_morning',
+        stageType: 'terminal',
       }),
       createObjective('ask_admins', 'Спросить админов про ACK', {
         hint: 'Поговори с коллегой о проблеме',
-        targetNPC: 'office_colleague'
+        targetNPC: 'office_colleague',
+        stageType: 'dialogue',
       }),
       createObjective('decide_action', 'Принять решение', {
-        hint: 'Выбери: собрать ACK, эскалировать или написать владельцам'
+        hint: 'Выбери: собрать ACK, эскалировать или написать владельцам',
+        stageType: 'narration',
       }),
       createObjective('notify_owners', 'Направить письмо владельцам', {
-        hint: 'Выбери "Написать владельцам" в диалоге'
+        hint: 'Выбери "Написать владельцам" в диалоге',
+        stageType: 'dialogue',
       }),
     ],
     reward: createReward({
@@ -216,6 +232,7 @@ export const QUEST_DEFINITIONS: Record<string, ExtendedQuest> = {
       karma: 10,
       stability: 5,
     }),
+    startNode: 'start',
   },
   
   kubernetes_orchestrator: {
@@ -228,19 +245,24 @@ export const QUEST_DEFINITIONS: Record<string, ExtendedQuest> = {
     objectives: [
       createObjective('check_status', 'Проверить статус кластера', {
         hint: 'Введи в терминале: kubectl get nodes',
-        targetLocation: 'office_morning'
+        targetLocation: 'office_morning',
+        stageType: 'terminal',
       }),
       createObjective('check_logs', 'Проверить логи оркестратора', {
-        hint: 'kubectl logs -n kube-system <pod-name>'
+        hint: 'kubectl logs -n kube-system <pod-name>',
+        stageType: 'terminal',
       }),
       createObjective('find_cause', 'Найти причину падения', {
-        hint: 'Проанализируй логи на ошибки'
+        hint: 'Проанализируй логи на ошибки',
+        stageType: 'narration',
       }),
       createObjective('restart_orchestrator', 'Перезапустить оркестратор', {
-        hint: 'kubectl rollout restart deployment/orchestrator -n internal-cloud'
+        hint: 'kubectl rollout restart deployment/orchestrator -n internal-cloud',
+        stageType: 'terminal',
       }),
       createObjective('verify_recovery', 'Проверить восстановление', {
-        hint: 'Убедись что все pods в Running состоянии'
+        hint: 'Убедись что все pods в Running состоянии',
+        stageType: 'terminal',
       }),
     ],
     reward: createReward({
@@ -248,6 +270,7 @@ export const QUEST_DEFINITIONS: Record<string, ExtendedQuest> = {
       stability: 15,
       karma: 5,
     }),
+    startNode: 'start',
   },
   
   auth_crisis: {
@@ -260,19 +283,24 @@ export const QUEST_DEFINITIONS: Record<string, ExtendedQuest> = {
     objectives: [
       createObjective('check_logs', 'Проверить логи Kibana', {
         hint: 'Подойди к среднему монитору и проверь логи',
-        targetLocation: 'office_morning'
+        targetLocation: 'office_morning',
+        stageType: 'narration',
       }),
       createObjective('find_root_cause', 'Найти корневую причину', {
-        hint: 'Ищи: Connection refused, Pool exhausted, Timeout'
+        hint: 'Ищи: Connection refused, Pool exhausted, Timeout',
+        stageType: 'narration',
       }),
       createObjective('apply_fix', 'Применить исправление', {
-        hint: 'Откатить деплой: kubectl rollout undo deployment/loyalty-points'
+        hint: 'Откатить деплой: kubectl rollout undo deployment/loyalty-points',
+        stageType: 'terminal',
       }),
       createObjective('verify_fix', 'Проверить решение', {
-        hint: 'Проверь SHOW PROCESSLIST — должно быть < 800 соединений'
+        hint: 'Проверь SHOW PROCESSLIST — должно быть < 800 соединений',
+        stageType: 'terminal',
       }),
       createObjective('document_incident', 'Задокументировать инцидент', {
-        hint: 'Напиши постмортем в тикете'
+        hint: 'Напиши постмортем в тикете',
+        stageType: 'narration',
       }),
     ],
     reward: createReward({
@@ -293,16 +321,20 @@ export const QUEST_DEFINITIONS: Record<string, ExtendedQuest> = {
     objectives: [
       createObjective('check_processlist', 'Проверить SHOW PROCESSLIST', {
         hint: 'Выполни в терминале: SHOW PROCESSLIST',
-        targetLocation: 'office_morning'
+        targetLocation: 'office_morning',
+        stageType: 'terminal',
       }),
       createObjective('identify_culprit', 'Определить виновника', {
-        hint: 'Найди микросервис с максимальным числом соединений'
+        hint: 'Найди микросервис с максимальным числом соединений',
+        stageType: 'narration',
       }),
       createObjective('check_deploy_time', 'Проверить время деплоя', {
-        hint: 'CI/CD деплой был в 3:47 ночи'
+        hint: 'CI/CD деплой был в 3:47 ночи',
+        stageType: 'narration',
       }),
       createObjective('notify_developers', 'Уведомить разработчиков', {
-        hint: 'Напиши в Slack канал разработки'
+        hint: 'Напиши в Slack канал разработки',
+        stageType: 'narration',
       }),
     ],
     reward: createReward({
@@ -324,16 +356,20 @@ export const QUEST_DEFINITIONS: Record<string, ExtendedQuest> = {
     objectives: [
       createObjective('check_expiry', 'Проверить срок действия', {
         hint: 'openssl s_client -connect banking.example.com:443',
-        targetLocation: 'office_morning'
+        targetLocation: 'office_morning',
+        stageType: 'terminal',
       }),
       createObjective('request_new_cert', 'Запросить новый сертификат', {
-        hint: 'Напиши в security-team@company.com'
+        hint: 'Напиши в security-team@company.com',
+        stageType: 'narration',
       }),
       createObjective('deploy_cert', 'Развернуть сертификат', {
-        hint: 'kubectl create secret tls banking-cert --cert=... --key=...'
+        hint: 'kubectl create secret tls banking-cert --cert=... --key=...',
+        stageType: 'terminal',
       }),
       createObjective('verify_https', 'Проверить HTTPS', {
-        hint: 'Проверь что сертификат валиден в браузере'
+        hint: 'Проверь что сертификат валиден в браузере',
+        stageType: 'narration',
       }),
     ],
     reward: createReward({
@@ -355,19 +391,24 @@ export const QUEST_DEFINITIONS: Record<string, ExtendedQuest> = {
     objectives: [
       createObjective('check_memory', 'Проверить потребление памяти', {
         hint: 'kubectl top pods -n banking-prod',
-        targetLocation: 'office_morning'
+        targetLocation: 'office_morning',
+        stageType: 'terminal',
       }),
       createObjective('get_heap_dump', 'Получить heap dump', {
-        hint: 'jmap -dump:format=b,file=heap.bin <pid>'
+        hint: 'jmap -dump:format=b,file=heap.bin <pid>',
+        stageType: 'terminal',
       }),
       createObjective('analyze_dump', 'Проанализировать heap dump', {
-        hint: 'Используй VisualVM или MAT'
+        hint: 'Используй VisualVM или MAT',
+        stageType: 'narration',
       }),
       createObjective('find_leak', 'Найти источник утечки', {
-        hint: 'Ищи объекты с максимальным retained size'
+        hint: 'Ищи объекты с максимальным retained size',
+        stageType: 'narration',
       }),
       createObjective('create_fix', 'Создать патч', {
-        hint: 'Добавь правильное закрытие ресурсов'
+        hint: 'Добавь правильное закрытие ресурсов',
+        stageType: 'narration',
       }),
     ],
     reward: createReward({
@@ -393,19 +434,23 @@ export const QUEST_DEFINITIONS: Record<string, ExtendedQuest> = {
         hint: 'В офисе откройте диалог с Александром — он у Grafana.',
         targetNPC: 'office_alexander',
         targetLocation: 'office_morning',
+        stageType: 'dialogue',
       }),
       createObjective('read_service_journal', 'Прочесть журнал службы auth (камень памяти)', {
         hint: 'В 💻: journalctl -u auth-service -n 40 --no-pager',
         targetLocation: 'office_morning',
+        stageType: 'terminal',
       }),
       createObjective('seal_with_colleague', 'Получить печать согласования у цехового брата', {
         hint: 'Поговорите в офисе с коллегой с парты.',
         targetNPC: 'office_colleague',
         targetLocation: 'office_morning',
+        stageType: 'dialogue',
       }),
       createObjective('close_incident_rune', 'Начертить руну закрытия тикета', {
         hint: 'В 💻: incident close 4729 --note resolved',
         targetLocation: 'office_morning',
+        stageType: 'terminal',
       }),
     ],
     reward: createReward({ skillPoints: 2, stability: 8, karma: 4, introspection: 3 }),
@@ -425,14 +470,17 @@ export const QUEST_DEFINITIONS: Record<string, ExtendedQuest> = {
         hint: 'В офисе — диалог с Дмитрием из DevOps.',
         targetNPC: 'office_dmitry',
         targetLocation: 'office_morning',
+        stageType: 'dialogue',
       }),
       createObjective('list_reliquary', 'Сверить сосуды в реликварии S3', {
         hint: 'В 💻: aws s3 ls s3://banking-vault/',
         targetLocation: 'office_morning',
+        stageType: 'terminal',
       }),
       createObjective('verify_manifest_sigil', 'Сверить печать манифеста (SHA256)', {
         hint: 'В 💻: sha256sum -c manifest.sha256',
         targetLocation: 'office_morning',
+        stageType: 'terminal',
       }),
     ],
     reward: createReward({ skillPoints: 2, stability: 10, mood: 3, intuition: 3 }),
@@ -451,15 +499,18 @@ export const QUEST_DEFINITIONS: Record<string, ExtendedQuest> = {
       createObjective('cast_audit_sigil', 'Наложить сигил аудита (--production)', {
         hint: 'В 💻: npm audit --production',
         targetLocation: 'office_morning',
+        stageType: 'terminal',
       }),
       createObjective('consult_crypt_warden', 'Спросить у стража склепа (ИБ) про CVE', {
         hint: 'Диалог в офисе с Артёмом из информационной безопасности.',
         targetNPC: 'office_artyom',
         targetLocation: 'office_morning',
+        stageType: 'dialogue',
       }),
       createObjective('banish_transitive', 'Изгнать проклятый транзитив', {
         hint: 'В 💻: npm uninstall phantom-left-pad --save',
         targetLocation: 'office_morning',
+        stageType: 'terminal',
       }),
     ],
     reward: createReward({ skillPoints: 2, karma: 6, intuition: 4 }),
@@ -467,6 +518,7 @@ export const QUEST_DEFINITIONS: Record<string, ExtendedQuest> = {
   },
 
   /**
+   * **Референс «офис» (прод-ритм):** white-hat UAT — согласование, терминал, handoff. См. `docs/quest-reference-template.md`.
    * Пентест / Burp / white-hat в **реалистичном** банковском смысле: заказной прогон по scope, UAT, отчёт в Jira/ИБ.
    * Не «хакер из кино», а контроль + инструмент (Burp Suite) в песочнице и ответственное раскрытие.
    */
@@ -483,19 +535,23 @@ export const QUEST_DEFINITIONS: Record<string, ExtendedQuest> = {
         hint: 'Офис: диалог с Артёмом из ИБ — что можно трогать, что нет, куда писать находки.',
         targetNPC: 'office_artyom',
         targetLocation: 'office_morning',
+        stageType: 'dialogue',
       }),
       createObjective('verify_uat_boundary', 'Убедиться, что касаемся UAT, а не прода (HTTP-заголовки)', {
         hint: 'В 💻: curl — проверь ответ UAT-стенда; если видишь prod-имя — остановись и в ИБ.',
         targetLocation: 'office_morning',
+        stageType: 'terminal',
       }),
       createObjective('burp_session_log', 'Зафиксировать сессию проверки (экспорт в рамках лабы)', {
         hint: 'В 💻: команда с пометкой burp export — как отчётный снимок, не селфи «я вломал».',
         targetLocation: 'office_morning',
+        stageType: 'terminal',
       }),
       createObjective('jira_handoff_ibs', 'Передать пакет находок в цепочку Jira/ИБ через коллегу', {
         hint: 'Офис: коллега с парты подтвердит, что пакет ушёл в нужную очередь — без выложенных наружу критиков.',
         targetNPC: 'office_colleague',
         targetLocation: 'office_morning',
+        stageType: 'dialogue',
       }),
     ],
     reward: createReward({ skillPoints: 2, karma: 7, stability: 6, intuition: 2 }),
@@ -504,6 +560,9 @@ export const QUEST_DEFINITIONS: Record<string, ExtendedQuest> = {
   
   // ========== ОСНОВНЫЕ КВЕСТЫ ==========
   
+  /**
+   * **Референс «дом»:** мини-игра стиха + рефлексия. См. `docs/quest-reference-template.md`.
+   */
   first_words: {
     id: 'first_words',
     title: '✍️ Первые слова',
@@ -535,6 +594,9 @@ export const QUEST_DEFINITIONS: Record<string, ExtendedQuest> = {
     startNode: 'start',
   },
   
+  /**
+   * **Референс «кафе / open mic»:** `blue_pit` → `open_mic` → знакомство. См. `docs/quest-reference-template.md`.
+   */
   first_reading: {
     id: 'first_reading',
     title: '📖 Первое чтение',
@@ -586,16 +648,20 @@ export const QUEST_DEFINITIONS: Record<string, ExtendedQuest> = {
       createObjective('talk_maria', 'Поговорить с Викторией о творчестве', {
         hint: 'Найди Викторию в кафе и поговори',
         targetNPC: 'cafe_college_girl',
-        targetLocation: 'cafe_evening'
+        targetLocation: 'cafe_evening',
+        stageType: 'dialogue',
       }),
       createObjective('learn_past', 'Узнать о её прошлом', {
-        hint: 'Спроси "Ты тоже пишешь?"'
+        hint: 'Спроси "Ты тоже пишешь?"',
+        stageType: 'dialogue',
       }),
       createObjective('share_story', 'Поделиться своей историей', {
-        hint: 'Расскажи о 8 годах одиночества'
+        hint: 'Расскажи о 8 годах одиночества',
+        stageType: 'dialogue',
       }),
       createObjective('exchange_contacts', 'Обменяться контактами', {
-        hint: 'Предложи обменяться телефонами'
+        hint: 'Предложи обменяться телефонами',
+        stageType: 'dialogue',
       }),
     ],
     reward: createReward({
@@ -617,7 +683,8 @@ export const QUEST_DEFINITIONS: Record<string, ExtendedQuest> = {
       createObjective('write_nights', 'Написать ночью', { 
         targetValue: 3, 
         currentValue: 0,
-        hint: 'Дома ночью — пиши, когда не спится'
+        hint: 'Дома ночью — пиши, когда не спится',
+        stageType: 'minigame',
       }),
     ],
     reward: createReward({
@@ -641,12 +708,14 @@ export const QUEST_DEFINITIONS: Record<string, ExtendedQuest> = {
         targetValue: 5, 
         currentValue: 0,
         hint: 'Ходи в "Синяя Яма" регулярно',
-        targetLocation: 'cafe_evening'
+        targetLocation: 'cafe_evening',
+        stageType: 'exploration',
       }),
       createObjective('try_drinks', 'Попробовать разные напитки', { 
         targetValue: 3, 
         currentValue: 0,
-        hint: 'Закажи что-то новое у бариста'
+        hint: 'Закажи что-то новое у бариста',
+        stageType: 'dialogue',
       }),
     ],
     reward: createReward({
@@ -665,13 +734,16 @@ export const QUEST_DEFINITIONS: Record<string, ExtendedQuest> = {
       createObjective('write_poems', 'Написать стихотворений', { 
         targetValue: 10, 
         currentValue: 0,
-        hint: 'Пиши каждый раз когда есть вдохновение'
+        hint: 'Пиши каждый раз когда есть вдохновение',
+        stageType: 'minigame',
       }),
       createObjective('edit_poems', 'Отредактировать их', {
-        hint: 'Перечитай и исправь неточности'
+        hint: 'Перечитай и исправь неточности',
+        stageType: 'narration',
       }),
       createObjective('share_collection', 'Показать кому-то', {
-        hint: 'Покажи сборник Виктории в кафе или выступи снова публично'
+        hint: 'Покажи сборник Виктории в кафе или выступи снова публично',
+        stageType: 'dialogue',
       }),
     ],
     reward: createReward({
@@ -693,20 +765,25 @@ export const QUEST_DEFINITIONS: Record<string, ExtendedQuest> = {
       createObjective('meet_stranger', 'Встретить Странника в мире снов', {
         hint: 'Во сне ищи человека в плаще',
         targetNPC: 'dream_quester',
-        targetLocation: 'dream'
+        targetLocation: 'dream',
+        stageType: 'dialogue',
       }),
       createObjective('speak_to_lillian', 'Поговорить с Лилиан о потере', {
         hint: 'Лилиан — хранительница снов, найди её',
-        targetNPC: 'dream_lillian'
+        targetNPC: 'dream_lillian',
+        stageType: 'dialogue',
       }),
       createObjective('agree_journey', 'Согласиться на путешествие к Озеру', {
-        hint: 'Выбери "Я хочу увидеть их снова"'
+        hint: 'Выбери "Я хочу увидеть их снова"',
+        stageType: 'narration',
       }),
       createObjective('reach_lake', 'Достичь Озера Памяти', {
-        hint: 'Следуй за светом'
+        hint: 'Следуй за светом',
+        stageType: 'exploration',
       }),
       createObjective('see_memory', 'Увидеть потерянное воспоминание', {
-        hint: 'Посмотри в воду озера'
+        hint: 'Посмотри в воду озера',
+        stageType: 'narration',
       }),
     ],
     reward: createReward({
@@ -733,16 +810,20 @@ export const QUEST_DEFINITIONS: Record<string, ExtendedQuest> = {
       createObjective('meet_astra', 'Встретить Астру — Мисс Галактику', {
         hint: 'В мире снов найди сияющую женщину',
         targetNPC: 'dream_galaxy',
-        targetLocation: 'dream'
+        targetLocation: 'dream',
+        stageType: 'dialogue',
       }),
       createObjective('ask_about_stars', 'Спросить о природе звёзд', {
-        hint: 'Спроси: "Звёзды — они как люди?"'
+        hint: 'Спроси: "Звёзды — они как люди?"',
+        stageType: 'dialogue',
       }),
       createObjective('find_constellation', 'Найти своё созвездие', {
-        hint: 'Попроси Астру показать твоё созвездие'
+        hint: 'Попроси Астру показать твоё созвездие',
+        stageType: 'narration',
       }),
       createObjective('connect_with_loved_one', 'Почувствовать связь с ушедшим', {
-        hint: 'Посмотри на три звезды вместе'
+        hint: 'Посмотри на три звезды вместе',
+        stageType: 'narration',
       }),
     ],
     reward: createReward({

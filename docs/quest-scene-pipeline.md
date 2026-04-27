@@ -67,13 +67,15 @@ flowchart LR
 
 ---
 
-## 5. Референс-флоу для выравнивания контента (идея)
+## 5. Референс-флоу для выравнивания контента
 
-1. **Офис, один полный круг:** `start` → `start_diagnosis` → (квесты + 💻) → `fix_success` / обед.  
+**Канон (четыре среды):** подробно — [quest-reference-template.md](quest-reference-template.md): эталонные квесты `whitehat_uat_sprint` (офис), `first_words` (дом), `first_reading` (кафе), `exploration_zarema_hearth` (обход) и расширенный 3D — `exploration_volodka_rack`. Каждый — полный путь *принятие → выполнение → награда* в данных (`stageType`, `hint`, привязки к `STORY_NODES` / 💻 / триггерам). Остальные квесты **подтягивать** к чеклисту из того файла (§3).
+
+1. **Офис, один полный сюжетный круг:** `start` → `start_diagnosis` → (квесты + 💻) → `fix_success` / обед.  
 2. **Дом + стих** — `evening_choice` / `write_evening` (мини-игра) → результат.  
-3. **3D** — `explore_hub_welcome` → одна квестовая ветка обхода (Zarema/Volodka) до награды.
+3. **3D** — `explore_hub_welcome` → ветка `exploration_zarema_hearth` или `exploration_volodka_rack` до награды.
 
-Новые сцены **подгонять** под тот же ритм, пока весь порт сюжета не станет **предсказуемо** по UX.
+Новые сцены **подгонять** под тот же ритм, пока порт сюжета не станет **предсказуем** по UX.
 
 ---
 

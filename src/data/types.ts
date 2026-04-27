@@ -431,7 +431,7 @@ export interface QuestObjective {
   mapHint?: { x: number; z: number };
   targetItem?: string;     // Какой предмет нужен
 
-  /** Тип шага для UX (трекер, журнал) */
+  /** Тип шага для UX (трекер, журнал). Сводка и эталонные квесты — `docs/quest-reference-template.md`. */
   stageType?: 'minigame' | 'narration' | 'exploration' | 'dialogue' | 'terminal';
   /** Узел сюжета, к которому привязан шаг (подсказка «где это») */
   linkedStoryNodeId?: string;
