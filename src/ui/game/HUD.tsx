@@ -6,8 +6,8 @@ import { useGameStore } from '@/state';
 import { useMobileVisualPerf } from '@/hooks/useMobileVisualPerf';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { QUEST_DEFINITIONS, getNextTrackedObjective } from '@/data/quests';
-import { MAX_PLAYER_ENERGY } from '@/lib/energyConfig';
 import type { GamePanelsState } from '@/hooks/useGamePanels';
+import { PlayerOrbitHeader } from '@/ui/game/PlayerOrbitHeader';
 interface HUDProps {
   onSave: () => void;
   onTogglePanel: (panel: string) => void;
@@ -180,95 +180,6 @@ function CyberStressBar({
 }
 
 // ============================================
-// ENERGY BAR — BATTERY CELLS
-// ============================================
-
-const HUD_ENERGY_BUCKETS = 16;
-
-function CyberEnergyBar({ energy, visualLite }: { energy: number; visualLite: boolean }) {
-  const maxEnergy = MAX_PLAYER_ENERGY;
-  const filledBuckets = Math.max(0, Math.ceil((energy / maxEnergy) * HUD_ENERGY_BUCKETS));
-  const cells = useMemo(
-    () =>
-      Array.from({ length: HUD_ENERGY_BUCKETS }, (_, i) => ({
-        id: i,
-        active: i < filledBuckets,
-      })),
-    [filledBuckets],
-  );
-
-  const pct = energy / maxEnergy;
-  const cellColor = pct <= 0.12 ? 'bg-red-500' : pct <= 0.33 ? 'bg-orange-500' : 'bg-cyan-500';
-
-  const cellGlow =
-    pct <= 0.12 ? 'rgba(239, 68, 68, 0.4)' : pct <= 0.33 ? 'rgba(249, 115, 22, 0.3)' : 'rgba(0, 255, 255, 0.3)';
-
-  return (
-    <div className="flex items-center gap-2">
-      <span className="text-xs text-slate-500" title="Энергия">⚡</span>
-      <div className="flex gap-px">
-        {cells.map((cell) => (
-          <div
-            key={cell.id}
-            className={`h-3 w-2 rounded-sm transition-all duration-300 ${
-              cell.active
-                ? `${cellColor}`
-                : 'bg-slate-800/60'
-            }`}
-            style={{
-              boxShadow: cell.active ? `0 0 4px ${cellGlow}` : 'none',
-              animation:
-                cell.active && !visualLite ? 'cell-flicker 3s ease-in-out infinite' : undefined,
-              animationDelay: `${cell.id * 0.2}s`,
-            }}
-          />
-        ))}
-      </div>
-      <span className="font-mono text-xs text-slate-500">{energy}/{maxEnergy}</span>
-    </div>
-  );
-}
-
-// ============================================
-// KARMA INDICATOR — DIAMOND
-// ============================================
-
-function CyberLevelXpBar({
-  level,
-  xp,
-  xpToNext,
-  visualLite,
-}: {
-  level: number;
-  xp: number;
-  xpToNext: number;
-  visualLite: boolean;
-}) {
-  const cap = Math.max(1, xpToNext);
-  const pct = Math.min(1, xp / cap);
-  return (
-    <div className="flex items-center gap-2">
-      <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-violet-400/80">lvl</span>
-      <span className="min-w-[1.5rem] font-mono text-xs text-violet-200/95">{level}</span>
-      <div
-        className="relative h-1.5 flex-1 max-w-[140px] overflow-hidden rounded-sm border border-violet-500/25 bg-black/50"
-        title={`Опыт: ${xp} / ${cap}`}
-      >
-        <motion.div
-          className="h-full bg-gradient-to-r from-violet-600/90 to-fuchsia-500/85"
-          initial={false}
-          animate={{ width: `${pct * 100}%` }}
-          transition={{ duration: visualLite ? 0.12 : 0.28, ease: 'easeOut' }}
-        />
-      </div>
-      <span className="font-mono text-[10px] text-violet-400/70">
-        {xp}/{cap}
-      </span>
-    </div>
-  );
-}
-
-// ============================================
 // CYBER ACTION BUTTON
 // ============================================
 
@@ -416,8 +327,10 @@ export default function HUD({
         }}
       >
         <div className={`flex justify-between items-start gap-2 ${narrow ? 'flex-col sm:flex-row' : ''}`}>
-          {/* Left side: stat bars */}
-          <div className={`flex flex-wrap gap-1.5 items-center ${narrow ? 'max-w-full' : ''}`}>
+          {/* Левый верх: портрет, жизнь (энергия), карма-«мана», уровень в «годах» */}
+          <div className={`flex min-w-0 flex-1 flex-col gap-2 ${narrow ? 'w-full' : ''}`}>
+            <PlayerOrbitHeader playerState={playerState} visualLite={visualLite} />
+            <div className={`flex flex-wrap gap-1.5 items-center ${narrow ? 'max-w-full' : ''}`}>
             {statBars.map((stat, i) => (
               <CyberStatBar
                 key={i}
@@ -443,8 +356,9 @@ export default function HUD({
               className="w-full basis-full font-mono text-[9px] text-slate-500/80 leading-snug max-w-[min(36rem,92vw)] mt-1"
               title="Подсказка по системе"
             >
-              Показатели и стресс открывают или блокируют реплики; цели — в «Квесты» 📋 и в трекере ниже. Терминал 💻 — учебные задачи в духе смены; его можно открывать между сценами, как рабочий чек-лист. Карма — компас внизу слева (одна шкала с панелью фракций ⚔️: там репутация групп, не личная карма).
+              Слева: уровень как «годы» опыта (макс. 35), жизнь = энергия ⚡, карма — моральный ресурс (как мана) для ветвлений. Моральный компас и вспышки смены кармы — внизу слева на широком экране. Фракции ⚔️ — отдельная репутация. Цели в «Квесты» 📋 и в трекере; терминал 💻 — учебные задачи.
             </p>
+            </div>
           </div>
 
           {/* Right side: action buttons */}
@@ -490,20 +404,6 @@ export default function HUD({
         {/* Stress indicator */}
         <div className="mt-2">
           <CyberStressBar stress={playerState.stress} panicMode={playerState.panicMode} visualLite={visualLite} />
-        </div>
-
-        <div className="mt-1.5">
-          <CyberLevelXpBar
-            level={playerState.characterLevel}
-            xp={playerState.experience}
-            xpToNext={playerState.experienceToNextLevel}
-            visualLite={visualLite}
-          />
-        </div>
-
-        {/* Energy bar */}
-        <div className="mt-1">
-          <CyberEnergyBar energy={playerState.energy} visualLite={visualLite} />
         </div>
 
         {/* Компактный трекер квестов (скрыт во время VN/бита, см. `suppressQuestStrip`) */}

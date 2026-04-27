@@ -6,6 +6,7 @@
 
 ### Added
 
+- **RPG-уровень 35 «лет»:** `RPG_MAX_CHARACTER_LEVEL = 35` в `rpgLeveling.ts`; `PlayerOrbitHeader` (портрет-голо, жизнь = энергия, **карма // mana**); `LevelUpCinematicOverlay` при `player:level_up` (стилистика смен / glitch). `MoralCompassHUD`: компас с `md`, на мобилке всплески кармы; сейв мигрирует уровень к потолку 35. Док: `docs/adp-inventory-karma-portraits.md`.
 - **Побочные квесты 3D:** `exploration_district_chronicle` («Хроника двора») и `exploration_mvd_bureau` («Бумажный circuit breaker») в `quests.ts`, графы `DISTRICT_CHRONICLE_EXPLORATION_QUEST_GRAPH` / `MVD_BUREAU_EXPLORATION_QUEST_GRAPH` в `explorationQuestGraphs.ts`, зоны E в `triggerZones.ts`, обработчики в `registerBaseInteractions.ts`. Тесты: `questGraphIntegrity.test.ts`, `explorationInteractionCoverage.test.ts`.
 - **Планирование контента и перф:** `docs/content-budget-8h.md` (таблица локация → сайд-квест, эвристика ~8 ч), `docs/perf-exploration-notes.md` (frameloop, GLB cache, mobile).
 - **Пост обхода:** `lib/explorationPostFxState.ts` (Bloom/хрома от креатива, кармы, стресса; `isExplorationCyberGradeScene`); `RPGGameCanvas` + `CameraEffects` используют это для согласованности. Кибер-пост `ExplorationPostFX` на сценах `district` и `mvd` (как на `volodka_room` / `blue_pit`). Тест: `explorationPostFxState.test.ts`.

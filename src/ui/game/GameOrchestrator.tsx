@@ -52,6 +52,7 @@ import { getNPCById, getNPCsForScene, getNpcExplorationPosition } from '@/data/n
 import { getSceneConfig } from '@/config/scenes';
 import type { MiniMapQuestMarker } from '@/ui/game/MiniMap';
 import { MoralCompassHUD } from '@/ui/game/MoralCompassHUD';
+import { LevelUpCinematicOverlay } from '@/ui/game/LevelUpCinematicOverlay';
 import { SceneTransition } from '@/ui/game/CinematicEffects';
 import { LootNotification, SkillUpNotification } from '@/ui/game/LootNotification';
 import { TutorialOverlay } from '@/ui/game/TutorialOverlay';
@@ -653,6 +654,7 @@ export default function GameOrchestrator() {
 
       {introOpening3dActive && <IntroCutsceneOverlays />}
 
+      {phase === 'game' && <LevelUpCinematicOverlay />}
       <MoralCompassHUD />
       <LootNotification />
       <SkillUpNotification />

@@ -18,6 +18,7 @@ import { INITIAL_PLAYER_ENERGY, MAX_PLAYER_ENERGY } from '@/lib/energyConfig';
 import {
   experienceRequiredForNextLevel,
   applyExperienceGain,
+  RPG_MAX_CHARACTER_LEVEL,
   RPG_XP_SKILL_POINTS_PER_LEVEL,
   STORY_NODE_FIRST_VISIT_XP,
 } from '@/lib/rpgLeveling';
@@ -452,12 +453,14 @@ export const usePlayerStore = create<PlayerStore>()(
       });
       return;
     }
-    const level = Math.max(1, Math.floor(characterLevel));
+    const level = Math.min(RPG_MAX_CHARACTER_LEVEL, Math.max(1, Math.floor(characterLevel)));
     const { playerState } = get();
     const toNext =
-      experienceToNextLevel !== undefined && Number.isFinite(experienceToNextLevel) && experienceToNextLevel > 0
-        ? experienceToNextLevel
-        : experienceRequiredForNextLevel(level);
+      level >= RPG_MAX_CHARACTER_LEVEL
+        ? 0
+        : experienceToNextLevel !== undefined && Number.isFinite(experienceToNextLevel) && experienceToNextLevel > 0
+          ? experienceToNextLevel
+          : experienceRequiredForNextLevel(level);
     set({
       playerState: {
         ...playerState,
@@ -492,12 +495,23 @@ export const usePlayerStore = create<PlayerStore>()(
     merged.karma = clampNum(merged.karma, 0, 100, INITIAL_PLAYER.karma);
     merged.selfEsteem = clampNum(merged.selfEsteem, 0, 100, INITIAL_PLAYER.selfEsteem);
     merged.stress = clampNum(merged.stress, 0, 100, INITIAL_PLAYER.stress);
-    merged.experience = clampNum(merged.experience, 0, Number.MAX_SAFE_INTEGER, INITIAL_PLAYER.experience);
-    merged.characterLevel = Math.max(1, Math.floor(clampNum(merged.characterLevel, 1, 999, INITIAL_PLAYER.characterLevel)));
-    merged.experienceToNextLevel = Math.max(
+    merged.characterLevel = Math.max(
       1,
-      Math.floor(clampNum(merged.experienceToNextLevel, 1, Number.MAX_SAFE_INTEGER, experienceRequiredForNextLevel(merged.characterLevel))),
+      Math.floor(clampNum(merged.characterLevel, 1, RPG_MAX_CHARACTER_LEVEL, INITIAL_PLAYER.characterLevel)),
     );
+    if (merged.characterLevel >= RPG_MAX_CHARACTER_LEVEL) {
+      merged.experience = 0;
+      merged.experienceToNextLevel = 0;
+    } else {
+      merged.experience = clampNum(merged.experience, 0, Number.MAX_SAFE_INTEGER, INITIAL_PLAYER.experience);
+      const capNext = experienceRequiredForNextLevel(merged.characterLevel);
+      merged.experienceToNextLevel = Math.max(
+        1,
+        Math.floor(
+          clampNum(merged.experienceToNextLevel, 1, Number.MAX_SAFE_INTEGER, capNext),
+        ),
+      );
+    }
     merged.panicMode = Boolean(merged.panicMode) && merged.stress >= 100;
     set({ playerState: merged });
   },

@@ -38,4 +38,11 @@ describe('applyExperienceGain', () => {
     expect(r.levelsGained).toBe(1);
     expect(r.experience).toBe(0);
   });
+
+  it('does not pass max level (35 years narrative cap)', () => {
+    const r = applyExperienceGain(RPG_MAX_CHARACTER_LEVEL, 0, 9_999_999);
+    expect(r.characterLevel).toBe(RPG_MAX_CHARACTER_LEVEL);
+    expect(r.levelsGained).toBe(0);
+    expect(r.experienceToNextLevel).toBe(0);
+  });
 });

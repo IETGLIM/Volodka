@@ -1,6 +1,6 @@
 'use client';
 
-// Единственный постоянный индикатор playerState.karma в игровом HUD; канон — docs/karma-scale.md
+// Дополнительный моральный компас (стрелка); линейная «мана // карма» в `PlayerOrbitHeader`. Канон — docs/karma-scale.md
 import { memo, useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useGameStore } from '@/state';
@@ -26,8 +26,8 @@ export const MoralCompassHUD = memo(function MoralCompassHUD() {
   const needleRotate = -70 + (Math.max(0, Math.min(100, karma)) / 100) * 140;
 
   return (
-    <div className="pointer-events-none fixed bottom-6 left-4 z-40 w-[min(92vw,220px)] select-none">
-      <div className="game-critical-motion game-fm-layer game-fm-layer-promote intro-recall-frame rounded-lg border border-cyan-500/35 bg-black/75 px-3 py-2 shadow-lg backdrop-blur-md">
+    <div className="pointer-events-none fixed bottom-6 left-4 z-40 w-[min(92vw,220px)] select-none max-md:bottom-[max(5.5rem,env(safe-area-inset-bottom))]">
+      <div className="game-critical-motion game-fm-layer game-fm-layer-promote intro-recall-frame hidden rounded-lg border border-cyan-500/35 bg-black/75 px-3 py-2 shadow-lg backdrop-blur-md md:block">
         <div className="mb-1 flex items-center justify-between text-[10px] font-mono uppercase tracking-wider text-slate-400">
           <span className="bg-gradient-to-r from-cyan-200 via-cyan-300 to-emerald-400/90 bg-clip-text text-transparent">
             Карма
