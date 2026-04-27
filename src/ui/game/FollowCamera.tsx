@@ -8,11 +8,7 @@ import { followCameraCollisionDamp, followCameraSmoothDamp } from '@/lib/followC
 import { clampPhysicsTimestep } from '@/engine/physics/CharacterController';
 import { explorationPointerBlocksCameraOrbit } from '@/lib/explorationUiPointer';
 import { setExplorationCameraOrbitYawRad } from '@/lib/explorationCameraOrbitBridge';
-import { eventBus } from '@/engine/EventBus';
-import {
-  applyExplorationInteractionCameraShake,
-  bumpExplorationInteractionShake,
-} from './explorationCameraShake';
+import { applyExplorationInteractionCameraShake } from './explorationCameraShake';
 import { CAMERA_COLLISION_LAYER } from './SceneColliders';
 
 // ============================================
@@ -211,15 +207,6 @@ export default function FollowCamera({
   const framingLookRef = useRef(new THREE.Vector3());
   /** Цель lookAt до `damp3` — сглаживание точки взгляда, иначе `camera.position` демпфируется, а орбита дёргается. */
   const lookAtGoalRef = useRef(new THREE.Vector3());
-  const interactionShakeAmpRef = useRef(0);
-
-  useEffect(() => {
-    return eventBus.on('ui:interaction_feedback', (e) => {
-      if (e.kind === 'success') {
-        bumpExplorationInteractionShake(interactionShakeAmpRef);
-      }
-    });
-  }, []);
 
   const checkCameraCollision = useCallback(
     (targetPos: THREE.Vector3, desiredCamPos: THREE.Vector3, radius: number, minDist: number): THREE.Vector3 => {
@@ -488,7 +475,7 @@ export default function FollowCamera({
         dt,
       );
       camera.lookAt(currentLookAt.current);
-      applyExplorationInteractionCameraShake(camera, interactionShakeAmpRef, dt);
+      applyExplorationInteractionCameraShake(camera, dt);
       return;
     }
 
@@ -553,7 +540,7 @@ export default function FollowCamera({
     );
     damp3(currentLookAt.current, lookAtGoalRef.current, cameraPositionSmoothTime(smoothness), dt);
     camera.lookAt(currentLookAt.current);
-    applyExplorationInteractionCameraShake(camera, interactionShakeAmpRef, dt);
+    applyExplorationInteractionCameraShake(camera, dt);
 
     setExplorationCameraOrbitYawRad(currentAngle.current);
   }, FOLLOW_CAMERA_R3F_PRIORITY);

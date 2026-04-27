@@ -70,6 +70,7 @@ import { useGameStore } from '@/state';
 import { useGamePhaseStore } from '@/state/gamePhaseStore';
 import { eventBus } from '@/engine/EventBus';
 import { emitInteractionFeedback } from '@/lib/interactionFeedback';
+import { InteractionFeedbackListener } from '@/ui/game/InteractionFeedbackListener';
 import { getCurrentScheduleEntry } from '@/engine/ScheduleEngine';
 import { useIsMobile, useTouchGameControls } from '@/hooks/use-mobile';
 import { useMobileVisualPerf } from '@/hooks/useMobileVisualPerf';
@@ -847,6 +848,7 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
 
   return (
     <Fragment>
+    <InteractionFeedbackListener />
     <Canvas
       className="block h-full w-full touch-none"
       tabIndex={0}

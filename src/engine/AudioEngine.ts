@@ -4,6 +4,7 @@
  */
 
 import { createBrowserAudioContext } from '@/lib/browserAudioContext';
+import { UI_SFX_FILE_OVERRIDES } from '@/lib/uiSfxMap';
 
 type TrackId = 'menu' | 'intro' | 'ambient';
 
@@ -42,6 +43,18 @@ class AudioEngineImpl {
   /** Короткий SFX по событию `sound:play` (файлы опциональны — есть программный fallback). */
   playSfx(type: string, volume = 0.35) {
     if (this.muted || typeof window === 'undefined') return;
+    const mapped = UI_SFX_FILE_OVERRIDES[type];
+    if (mapped) {
+      try {
+        const a = new Audio(mapped);
+        a.volume = volume;
+        a.muted = this.muted;
+        void a.play().catch(() => this.playSfxBeep(type, volume));
+      } catch {
+        this.playSfxBeep(type, volume);
+      }
+      return;
+    }
     /** Шаги по материалу — только процедурный звук (нет `sfx_footstep_*.mp3` в `public/` → без 404 в консоли). */
     if (type.startsWith('footstep_')) {
       this.playFootstepBeep(type.slice('footstep_'.length), volume);
@@ -72,7 +85,17 @@ class AudioEngineImpl {
       osc.connect(gain);
       gain.connect(ctx.destination);
       const freq =
-        type === 'loot' ? 560 : type === 'skill' ? 720 : type === 'ui' ? 480 : 440;
+        type === 'ui_success'
+          ? 620
+          : type === 'ui_fail'
+            ? 280
+            : type === 'loot'
+              ? 560
+              : type === 'skill'
+                ? 720
+                : type === 'ui'
+                  ? 480
+                  : 440;
       osc.frequency.value = freq;
       gain.gain.value = volume * 0.12;
       osc.start();

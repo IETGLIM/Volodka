@@ -170,6 +170,13 @@ export interface EventMap {
   /** Тактиальный маркер взаимодействия E (подписчики: камера, звук, HUD). */
   'ui:interaction_feedback': { kind: 'success' | 'fail'; timestamp: number };
 
+  /** Короткий системный буллет над игрой (`showEffectNotif`, без канала exploration_message — меньше спама рядом с локальными тостами). */
+  'ui:effect_notif': {
+    text: string;
+    type: 'poem' | 'stat' | 'quest' | 'flag' | 'energy' | 'system';
+    durationMs?: number;
+  };
+
   /** Звук UI / мира (см. AudioEngine / обработчики). */
   'sound:play': { type: SfxBusType; volume?: number };
 
