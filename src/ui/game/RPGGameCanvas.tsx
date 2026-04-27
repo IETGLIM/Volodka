@@ -15,6 +15,7 @@
  */
 
 import { memo, useRef, useEffect, useMemo, useCallback, useState, Fragment, Suspense } from 'react';
+import { useShallow } from 'zustand/react/shallow';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { PerformanceMonitor } from '@react-three/drei';
 import { Physics } from '@react-three/rapier';
@@ -216,17 +217,37 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
     return mountExplorationController();
   }, []);
 
-  const npcStates = useGameStore((s) => s.exploration.npcStates);
-  const cameraOrbitResyncNonce = useGameStore((s) => s.exploration.cameraOrbitResyncNonce ?? 0);
+  const {
+    npcStates,
+    cameraOrbitResyncNonce,
+    triggerStates,
+    setTriggerState,
+    hasItem,
+    playerState,
+    setNPCState,
+    setPlayerPosition,
+    timeOfDay,
+    explorationStorePosition,
+    explorationWorldItems,
+  } = useGameStore(
+    useShallow((s) => ({
+      npcStates: s.exploration.npcStates,
+      cameraOrbitResyncNonce: s.exploration.cameraOrbitResyncNonce ?? 0,
+      triggerStates: s.exploration.triggerStates,
+      setTriggerState: s.setTriggerState,
+      hasItem: s.hasItem,
+      playerState: s.playerState,
+      setNPCState: s.setNPCState,
+      setPlayerPosition: s.setPlayerPosition,
+      timeOfDay: s.exploration.timeOfDay,
+      explorationStorePosition: s.exploration.playerPosition,
+      explorationWorldItems: s.exploration.worldItems,
+    })),
+  );
   const orbitResyncKey = useMemo(
     () => `${sceneId}:${cameraOrbitResyncNonce}`,
     [sceneId, cameraOrbitResyncNonce],
   );
-  const triggerStates = useGameStore((s) => s.exploration.triggerStates);
-  const setTriggerState = useGameStore((s) => s.setTriggerState);
-  const hasItem = useGameStore((s) => s.hasItem);
-
-  const playerState = useGameStore((state) => state.playerState);
   const shadowMapSize = useMemo(
     () => getExplorationDirectionalShadowMapSize(narrowForGpu, visualLite),
     [narrowForGpu, visualLite],
@@ -248,12 +269,6 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
       return { x: p.x, y: p.y, z: p.z, rotation: p.rotation ?? 0 };
     })(),
   );
-  const setNPCState = useGameStore((state) => state.setNPCState);
-  const setPlayerPosition = useGameStore((state) => state.setPlayerPosition);
-  const timeOfDay = useGameStore((state) => state.exploration.timeOfDay);
-  const explorationStorePosition = useGameStore((state) => state.exploration.playerPosition);
-  const explorationWorldItems = useGameStore((state) => state.exploration.worldItems);
-
   /** Снимок из стора: спавн `PhysicsPlayer` и бутстрап камеры/NPC при смене локации или телепорте из стора. */
   const explorationSpawnSnapshot = useMemo(() => {
     const p = explorationStorePosition;

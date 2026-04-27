@@ -50,7 +50,7 @@ import { cloneAnimationClipsWithoutExplorationPlayerRootMotion } from '@/lib/str
 import { isExplorationPlayerGlbScaleDebugEnabled } from '@/lib/explorationDiagnostics';
 import { PLAYER_VISUAL_HEIGHT_M, validateCharacterScale } from '@/lib/characterScaleValidator';
 import type { FindNavPathXZ } from '@/lib/explorationNavMesh';
-import { resolveNpcModelLodUseFull } from '@/lib/npcLodConstants';
+import { resolveNpcModelLodUseFull, smoothNpcLodDistanceForHysteresis } from '@/lib/npcLodConstants';
 import { isExplorationVolodkaRoomNpcGlbDisabled } from '@/lib/explorationDiagnostics';
 
 function scheduleActivityIcon(entry: ScheduleEntry | null | undefined): string {
@@ -879,6 +879,8 @@ export const NPC = memo(function NPC({
   const lastStateChangeTime = useRef(0);
   const wasNearPlayer = useRef(false);
   const lodFullModelRef = useRef(true);
+  /** Сглаженная XZ-дистанция для `resolveNpcModelLodUseFull` (сбрасывается в `forceFull`). */
+  const lodDistanceSmoothRef = useRef<number | null>(null);
   const [useFullModel, setUseFullModel] = useState(true);
   // Ref для текущей анимации - чтобы не вызывать setState каждый кадр
   const currentAnimationRef = useRef<'idle' | 'walk' | 'talk'>('idle');
@@ -961,11 +963,22 @@ export const NPC = memo(function NPC({
     }
 
     const posForLod = scheduleEntry ? scheduleEntry.position : currentPositionRef.current;
-    const dLod = Math.hypot(px - posForLod.x, pz - posForLod.z);
+    const dLodRaw = Math.hypot(px - posForLod.x, pz - posForLod.z);
+    const forceFullLod = Boolean(isDialogueActive || !definition.modelPath);
+    if (forceFullLod) {
+      lodDistanceSmoothRef.current = null;
+    }
+    const dLod = forceFullLod
+      ? dLodRaw
+      : (() => {
+          const sm = smoothNpcLodDistanceForHysteresis(lodDistanceSmoothRef.current, dLodRaw, delta);
+          lodDistanceSmoothRef.current = sm.store;
+          return sm.value;
+        })();
     const nextLodFull = resolveNpcModelLodUseFull({
       wasFull: lodFullModelRef.current,
       distanceXZ: dLod,
-      forceFull: Boolean(isDialogueActive || !definition.modelPath),
+      forceFull: forceFullLod,
     });
     if (nextLodFull !== lodFullModelRef.current) {
       lodFullModelRef.current = nextLodFull;

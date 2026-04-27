@@ -12,6 +12,11 @@ function shouldSkipDepthWriteForce(mat: THREE.Material): boolean {
 }
 
 function applyPerMaterialDepthAndPolygonDefaults(mat: THREE.Material): void {
+  /** DCC часто оставляет `opacity` < 1 без `transparent` — неверный бленд / мерцание относительно окружения. */
+  if (mat.opacity < 1 - 1e-4 && !mat.transparent) {
+    mat.transparent = true;
+    mat.needsUpdate = true;
+  }
   if (typeof mat.depthWrite === 'boolean' && !shouldSkipDepthWriteForce(mat)) {
     mat.depthWrite = true;
   }

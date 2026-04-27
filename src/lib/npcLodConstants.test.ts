@@ -3,7 +3,22 @@ import {
   NPC_LOD_FULL_TO_IMPOSTOR_M,
   NPC_LOD_IMPOSTOR_TO_FULL_M,
   resolveNpcModelLodUseFull,
+  smoothNpcLodDistanceForHysteresis,
 } from './npcLodConstants';
+
+describe('smoothNpcLodDistanceForHysteresis', () => {
+  it('snaps when no previous sample', () => {
+    const { value, store } = smoothNpcLodDistanceForHysteresis(null, 12, 1 / 60);
+    expect(value).toBe(12);
+    expect(store).toBe(12);
+  });
+
+  it('pulls toward raw over time', () => {
+    const first = smoothNpcLodDistanceForHysteresis(10, 20, 1 / 60);
+    expect(first.value).toBeGreaterThan(10);
+    expect(first.value).toBeLessThan(20);
+  });
+});
 
 describe('resolveNpcModelLodUseFull', () => {
   it('forces full when forceFull', () => {

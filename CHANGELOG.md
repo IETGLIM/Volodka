@@ -19,6 +19,8 @@
 
 ### Fixed
 
+- **Обход / камера / LOD / GLB:** `FollowCamera` / `SimpleFollowCamera` — `damp3` на цель `lookAt` и приоритет `useFrame` **75** (меньше джиттера при сглаженной позиции); без сброса внутренней «пружины» при смене дистанции пресета. **NPC:** EMA дистанции перед гистерезисом LOD (`smoothNpcLodDistanceForHysteresis`, `npcLodConstants.ts`). **Материалы GLB:** `opacity` < 1 без `transparent` → `transparent` + `needsUpdate` в `gltfCharacterMaterialPolicy.ts`. **Zustand:** единый `useShallow` для среза exploration + actions в `RPGGameCanvas.tsx`.
+
 - **ESLint:** глобальные `ignores` вынесены в первый блок `eslint.config.mjs` (flat config), чтобы `scripts/optimize-models/**` и прочие пути реально не линтились.
 
 - **`questMetaStore`:** убрано дублирование `factionReputations` в начальном снимке (источник правды — `factionStore`); комментарий в шапке модуля уточнён.

@@ -103,7 +103,8 @@ function cameraPositionSmoothTime(smoothness: number): number {
  * Приоритет `useFrame` в R3F: **больше** → **позже** в кадре. Rapier шагает на ~0 — камера читает
  * `targetPositionRef` / меш после интеграции и интерполяции rigid body.
  */
-const FOLLOW_CAMERA_R3F_PRIORITY = 50;
+/** Выше типичного `useFrame(0)` (анимации/игрок) — камера читает сглаженный итог кадра. */
+const FOLLOW_CAMERA_R3F_PRIORITY = 75;
 
 /**
  * Проверяет, является ли объект коллайдером для камеры
@@ -178,10 +179,10 @@ export default function FollowCamera({
     collisionSpringRef.current = collisionSpring;
   }, [collisionSpring]);
 
-  /** Смена сцены / лимитов зума: `currentDistance` не выше `maxDistance` (узкая комната и т.п.). */
+  /** Смена сцены / лимитов зума: `currentDistance` не выше `maxDistance` (узкая комната и т.п.).
+   * Без сброса `springCamInitialized` — иначе мгновенный сдвиг `damp3` даёт рывок при смене пресета. */
   useEffect(() => {
     currentDistance.current = Math.max(minDistance, Math.min(maxDistance, distance));
-    springCamInitialized.current = false;
   }, [distance, minDistance, maxDistance]);
 
   /** Диалог / блокировка: иначе орбита может «ехать» от последнего удержания кнопки до lock. */
@@ -202,6 +203,8 @@ export default function FollowCamera({
   const framingFlatRef = useRef(new THREE.Vector3());
   const framingCamRef = useRef(new THREE.Vector3());
   const framingLookRef = useRef(new THREE.Vector3());
+  /** Цель lookAt до `damp3` — сглаживание точки взгляда, иначе `camera.position` демпфируется, а орбита дёргается. */
+  const lookAtGoalRef = useRef(new THREE.Vector3());
 
   const checkCameraCollision = useCallback(
     (targetPos: THREE.Vector3, desiredCamPos: THREE.Vector3, radius: number, minDist: number): THREE.Vector3 => {
@@ -455,12 +458,21 @@ export default function FollowCamera({
       );
       if (!springCamInitialized.current) {
         springCamPos.current.copy(camera.position);
+        lookAtGoalRef.current.copy(framingLookRef.current);
+        currentLookAt.current.copy(framingLookRef.current);
         springCamInitialized.current = true;
       }
       const colT = dampCollisionFactor(collisionSpringRef.current, dt);
       springCamPos.current.lerp(framingCamRef.current, colT);
       damp3(camera.position, springCamPos.current, cameraPositionSmoothTime(smoothness), dt);
-      camera.lookAt(framingLookRef.current);
+      lookAtGoalRef.current.copy(framingLookRef.current);
+      damp3(
+        currentLookAt.current,
+        lookAtGoalRef.current,
+        cameraPositionSmoothTime(smoothness),
+        dt,
+      );
+      camera.lookAt(currentLookAt.current);
       return;
     }
 
@@ -505,6 +517,12 @@ export default function FollowCamera({
 
     if (!springCamInitialized.current) {
       springCamPos.current.copy(camera.position);
+      lookAtGoalRef.current.set(
+        currentTarget.current.x,
+        currentTarget.current.y + lookAtHeightOffset,
+        currentTarget.current.z,
+      );
+      currentLookAt.current.copy(lookAtGoalRef.current);
       springCamInitialized.current = true;
     }
     const colT = dampCollisionFactor(collisionSpringRef.current, dt);
@@ -512,8 +530,12 @@ export default function FollowCamera({
 
     damp3(camera.position, springCamPos.current, cameraPositionSmoothTime(smoothness), dt);
 
-    const lookY = currentTarget.current.y + lookAtHeightOffset;
-    currentLookAt.current.set(currentTarget.current.x, lookY, currentTarget.current.z);
+    lookAtGoalRef.current.set(
+      currentTarget.current.x,
+      currentTarget.current.y + lookAtHeightOffset,
+      currentTarget.current.z,
+    );
+    damp3(currentLookAt.current, lookAtGoalRef.current, cameraPositionSmoothTime(smoothness), dt);
     camera.lookAt(currentLookAt.current);
 
     setExplorationCameraOrbitYawRad(currentAngle.current);
@@ -567,6 +589,7 @@ export function SimpleFollowCamera({
   const currentDistance = useRef(distance);
   const isDragging = useRef(false);
   const lastMousePos = useRef({ x: 0, y: 0 });
+  const simpleLookGoalRef = useRef(new THREE.Vector3());
 
   useEffect(() => {
     currentDistance.current = distance;
@@ -716,8 +739,12 @@ export function SimpleFollowCamera({
 
     damp3(camera.position, simpleFrameCamRef.current, cameraPositionSmoothTime(smoothness), dt);
 
-    const lookY = currentTarget.current.y + lookAtHeightOffset;
-    currentLookAt.current.set(currentTarget.current.x, lookY, currentTarget.current.z);
+    simpleLookGoalRef.current.set(
+      currentTarget.current.x,
+      currentTarget.current.y + lookAtHeightOffset,
+      currentTarget.current.z,
+    );
+    damp3(currentLookAt.current, simpleLookGoalRef.current, cameraPositionSmoothTime(smoothness), dt);
     camera.lookAt(currentLookAt.current);
   }, FOLLOW_CAMERA_R3F_PRIORITY);
 

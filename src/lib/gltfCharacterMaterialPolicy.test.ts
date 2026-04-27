@@ -16,6 +16,15 @@ describe('gltfCharacterMaterialPolicy', () => {
     expect(computeExplorationCharacterMeshUnionVerticalExtent(root)).toBeCloseTo(3, 5);
   });
 
+  it('applyGltfCharacterDepthWrite sets transparent when opacity < 1 without transparent flag', () => {
+    const root = new THREE.Group();
+    const m = new THREE.MeshStandardMaterial({ color: 0x00ff00, opacity: 0.85, transparent: false });
+    const mesh = new THREE.Mesh(new THREE.BoxGeometry(), m);
+    root.add(mesh);
+    applyGltfCharacterDepthWrite(root);
+    expect(m.transparent).toBe(true);
+  });
+
   it('applyGltfCharacterDepthWrite forces depthWrite on opaque mesh materials', () => {
     const root = new THREE.Group();
     const m = new THREE.MeshStandardMaterial({ color: 0xff0000, depthWrite: false });
