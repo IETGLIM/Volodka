@@ -23,6 +23,12 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Validate model URLs
+        run: npm run models:validate-urls
+
+      - name: Check story / poetry integrity
+        run: npx vitest run src/data/narrativePoetryIntegrity.test.ts
+
       - name: TypeScript
         run: npx tsc --noEmit
 
@@ -32,7 +38,7 @@ jobs:
       - name: Player animation gate
         run: npm run test:player-animations
 
-      - name: Asset budget report
+      - name: Asset budget (public GLB / props)
         run: npm run asset-budget
 
       - name: ESLint
@@ -40,3 +46,6 @@ jobs:
 
       - name: Production build (Turbopack)
         run: npm run build
+
+      - name: Next static bundle budget (.next/static ≤ 400 MiB)
+        run: npm run check:next-static-budget

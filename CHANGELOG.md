@@ -14,7 +14,7 @@
 
 ### Инженерия
 
-- **CI** (`.github/workflows/ci.yml`): `npm ci` → `tsc` → `vitest` → `test:player-animations` → `asset-budget` → `lint` → `build`.
+- **CI** (`.github/workflows/ci.yml`): `npm ci` → `models:validate-urls` → `narrativePoetryIntegrity.test.ts` → `tsc` → `vitest` → `test:player-animations` → `asset-budget` → `lint` → `build` → `check:next-static-budget` (лимит **400 MiB** на `.next/static`).
 - **Сборка / Turbopack**: `next.config.ts` — `turbopack.resolveExtensions` (+ `.glb`), правило `*.glb` → `asset`; скрипт `build` с `NODE_OPTIONS=--max-old-space-size=4096` через `cross-env` (Vercel и локально). Контроль размера клиентского вывода: после `npm run build` смотреть объём `.next/static/` (очень большой каталог — признак лишнего попадания тяжёлых бинарников в бандл, а не только в `public/`).
 - **NPC LOD**: `src/ui/3d/LODController.test.ts` — явные проверки гистерезиса (15 m и пороги 11 / 19 m) рядом с реэкспортом `LODController.tsx`.
 - **Сюжет / выбор**: `useStoryChoiceHandler.ts` — JSDoc порядка «эффекты → `processChoiceCycle` / узел» (ADR `docs/ADR-single-exploration-narrative-layer.md`); тесты порядка `applyStoryEffect` и `handleChoice` в `useStoryChoiceHandler.test.tsx`; интерлок `volunteer_read_result` ↔ `poetry_collection` ↔ `poem_12` в `src/hooks/narrativeDependencies.test.ts`.

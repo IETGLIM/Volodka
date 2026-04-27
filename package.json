@@ -14,6 +14,8 @@
     "validate:content": "vitest run src/validation/contentValidator.test.ts",
     "test:character-scale": "vitest run src/lib/characterScaleValidator.test.ts src/lib/characterScaleAssets.integration.test.ts src/lib/propGlbScale.integration.test.ts src/data/characterModelMetaCoverage.test.ts src/lib/gltfCharacterMaterialPolicy.test.ts",
     "asset-budget": "node scripts/assetBudgetReport.mjs",
+    "models:validate-urls": "vitest run src/config/modelUrls.test.ts",
+    "check:next-static-budget": "node scripts/checkNextStaticBudget.mjs",
     "optimize-models": "node scripts/optimize-models/optimizeWithDraco.js",
     "bb:volodka-smoke:dev": "npm run dev --prefix browserbase-functions/volodka-smoke",
     "bb:volodka-smoke:publish": "npm run publish --prefix browserbase-functions/volodka-smoke",
