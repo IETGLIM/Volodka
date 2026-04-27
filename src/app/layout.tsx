@@ -40,7 +40,10 @@ export const metadata: Metadata = {
   authors: [{ name: 'Владимир Лебедев' }],
 };
 
-/** Мобильные браузеры: вписать в экран с вырезами, без лишнего масштабирования страницы. */
+/**
+ * Мобильные браузеры: вписать в экран с вырезами, без лишнего масштабирования страницы.
+ * `viewportFit: 'cover'` обязателен для ненулевых `env(safe-area-inset-*)` (notch / home indicator) в CSS.
+ */
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
