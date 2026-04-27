@@ -15,6 +15,7 @@
 ### Инженерия
 
 - **CI** (`.github/workflows/ci.yml`): `npm ci` → `tsc` → `vitest` → `test:player-animations` → `asset-budget` → `lint` → `build`.
+- **Сборка / Turbopack**: `next.config.ts` — `turbopack.resolveExtensions` (+ `.glb`), правило `*.glb` → `asset`; скрипт `build` с `NODE_OPTIONS=--max-old-space-size=4096` через `cross-env` (Vercel и локально). Контроль размера клиентского вывода: после `npm run build` смотреть объём `.next/static/` (очень большой каталог — признак лишнего попадания тяжёлых бинарников в бандл, а не только в `public/`).
 - **Smoke Browserbase**: только `workflow_dispatch` (`volodka-smoke.yml`), не в PR — `docs/volodka-room-smoke.md`.
 - **API**: лимиты и Zod для POST `/api/ai-dialogue`; upload моделей за флагами — `docs/volodka-aaa-expert-audit-2026-04-25.md`.
 

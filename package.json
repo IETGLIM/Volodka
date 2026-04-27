@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbo -p 3000 2>&1 | tee dev.log",
-    "build": "next build --turbo",
+    "build": "cross-env NODE_OPTIONS=--max-old-space-size=4096 next build --turbo",
     "start": "cross-env NODE_ENV=production bun .next/standalone/server.js 2>&1 | tee server.log",
     "lint": "eslint .",
     "test": "vitest run",
