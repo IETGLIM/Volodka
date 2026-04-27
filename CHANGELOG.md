@@ -4,6 +4,8 @@
 
 ### Changed
 
+- **`VolodkaRoomVisual`:** материалы комнаты через `useMemo` + dispose в `useEffect`; общие `BoxGeometry` для монитора/перемычки/коридора; панель глитча — шейдер без `useEffect`-подвески материала на меш, урезаны лишние `pointLight` и второй «плейсхолдер» ноутбука; ковёр `renderOrder={1}`.
+
 - **Архитектура нарратива:** единый источник правды для оверлея `StoryRenderer` — `currentNode` и `storyNodeShowsStoryOverlay` внутри `useGameUiLayout.ts` (без отдельного флага из оркестратора); задокументирован целевой поток в `docs/ADR-single-exploration-narrative-layer.md`. Комментарии в `GameOrchestrator.tsx` без устаревшего «VN».
 
 - **Обход AAA / комната Володьки:** усилена геометрия дверного проёма (косяки, перемычка, затемнение «горла», глубже блок за дверью) в `VolodkaRoomVisual.tsx`; подняты масштабы сцены и потолок uniform для интерьеров (`scenes.ts`, `modelMeta.ts`), коридор `volodka_corridor` согласован; Khronos Fox — занижен базовый uniform, убрано освобождение от MAX в `characterScaleValidator.ts`, у соседа Димы `scale: 1`. Диалог в 3D: оболочка `DialoguePanel.tsx` / `DialoguePanelChrome`, нуар-стили в `DialogueRenderer.tsx` при `explorationLayout`; при активном диалоге сильнее виньетка в `ExplorationPostFX.tsx` (`dialogueCinematic`) из `RPGGameCanvas.tsx`.
