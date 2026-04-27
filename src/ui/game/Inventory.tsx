@@ -356,6 +356,11 @@ export const Inventory = memo(function Inventory({ isOpen, onClose }: InventoryP
                 </h2>
                 <p className="text-xs text-slate-500">
                   {inventory.length} / {slots.length} ячеек
+                  {inventory.length === 0 && (
+                    <span className="block mt-1 text-slate-500/90">
+                      Предметы — из обхода (E), диалогов и наград квестов. Клавиша I всегда открывает этот экран.
+                    </span>
+                  )}
                 </p>
               </div>
             </div>

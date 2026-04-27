@@ -124,7 +124,14 @@ export const QUEST_DEFINITIONS: Record<string, ExtendedQuest> = {
         stageType: 'exploration',
       }),
     ],
-    reward: createReward({ experience: 45, mood: 5, creativity: 3, karma: 2 }),
+    reward: createReward({
+      experience: 45,
+      mood: 5,
+      creativity: 3,
+      karma: 2,
+      /** Связка награды с этапом: после «тёплого угла» в инвентаре появляется осмысленный расходник, счётчик HUD не вечно 0. */
+      itemRewards: ['tea'],
+    }),
     /** Вход в 3D-хаб (`explore_hub_welcome`); игровой хаб без оверлея — `explore_mode`. */
     startNode: 'explore_hub_welcome',
   },
