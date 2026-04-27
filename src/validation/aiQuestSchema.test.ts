@@ -34,6 +34,20 @@ describe('parseAIQuestPayload', () => {
     expect(r.success).toBe(false);
   });
 
+  it('rejects unknown linkedStoryNodeId, startNode, and completeNode', () => {
+    const badLink = parseAIQuestPayload({
+      ...minimalValid,
+      objectives: [{ ...minimalValid.objectives[0], linkedStoryNodeId: 'not_a_real_story_node_xyz' }],
+    });
+    expect(badLink.success).toBe(false);
+
+    const badStart = parseAIQuestPayload({ ...minimalValid, startNode: 'not_a_node' });
+    expect(badStart.success).toBe(false);
+
+    const badEnd = parseAIQuestPayload({ ...minimalValid, completeNode: 'also_missing' });
+    expect(badEnd.success).toBe(false);
+  });
+
   it('rejects invalid enum and missing objectives', () => {
     const badType = parseAIQuestPayload({ ...minimalValid, type: 'boss' });
     expect(badType.success).toBe(false);

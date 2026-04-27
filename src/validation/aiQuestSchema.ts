@@ -6,6 +6,7 @@
 import { z } from 'zod';
 import type { ExtendedQuest } from '@/data/types';
 import { QUEST_DEFINITIONS } from '@/data/quests';
+import { STORY_NODES } from '@/data/storyNodes';
 
 const statKey = z.enum([
   'mood',
@@ -115,6 +116,30 @@ export const extendedQuestFromAISchema = z
         message: `Quest id "${data.id}" is reserved by built-in QUEST_DEFINITIONS`,
         path: ['id'],
       });
+    }
+    const storyNodeKeys = new Set(Object.keys(STORY_NODES));
+    if (data.startNode && !storyNodeKeys.has(data.startNode)) {
+      ctx.addIssue({
+        code: 'custom',
+        message: `startNode "${data.startNode}" is not a key in STORY_NODES`,
+        path: ['startNode'],
+      });
+    }
+    if (data.completeNode && !storyNodeKeys.has(data.completeNode)) {
+      ctx.addIssue({
+        code: 'custom',
+        message: `completeNode "${data.completeNode}" is not a key in STORY_NODES`,
+        path: ['completeNode'],
+      });
+    }
+    for (const [i, o] of data.objectives.entries()) {
+      if (o.linkedStoryNodeId && !storyNodeKeys.has(o.linkedStoryNodeId)) {
+        ctx.addIssue({
+          code: 'custom',
+          message: `linkedStoryNodeId "${o.linkedStoryNodeId}" is not a key in STORY_NODES`,
+          path: ['objectives', i, 'linkedStoryNodeId'],
+        });
+      }
     }
   });
 
