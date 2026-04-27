@@ -69,6 +69,7 @@ import CameraEffects from '../CameraEffects';
 import { useGameStore } from '@/state';
 import { useGamePhaseStore } from '@/state/gamePhaseStore';
 import { eventBus } from '@/engine/EventBus';
+import { emitInteractionFeedback } from '@/lib/interactionFeedback';
 import { getCurrentScheduleEntry } from '@/engine/ScheduleEngine';
 import { useIsMobile, useTouchGameControls } from '@/hooks/use-mobile';
 import { useMobileVisualPerf } from '@/hooks/useMobileVisualPerf';
@@ -748,7 +749,10 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
       return;
     }
 
-    if (tryPickupNearestWorldLayoutItem()) return;
+    if (tryPickupNearestWorldLayoutItem()) {
+      emitInteractionFeedback('success');
+      return;
+    }
 
     if (radialObject) {
       setRadialObject(null);
@@ -780,7 +784,12 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
         isQuestCompleted: st.isQuestCompleted,
         getQuestProgress: st.getQuestProgress,
       });
-      if (ran) return;
+      if (ran) {
+        emitInteractionFeedback('success');
+        return;
+      }
+      emitInteractionFeedback('fail');
+      return;
     }
 
     if (target.kind === 'story_trigger') {
@@ -794,11 +803,13 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
           triggeredAt: Date.now(),
         });
       }
+      emitInteractionFeedback('success');
       return;
     }
 
     if (target.kind === 'world_object') {
       setRadialObject(target.object);
+      emitInteractionFeedback('success');
       return;
     }
 
@@ -808,10 +819,15 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
       const entry = getCurrentScheduleEntry(nearestNPC.id, timeOfDay);
       if (entry && !entry.dialogueAvailable) {
         eventBus.emit('ui:exploration_message', { text: 'Персонаж сейчас недоступен' });
+        emitInteractionFeedback('fail');
         return;
       }
       onNPCInteraction(nearestNPC.id);
+      emitInteractionFeedback('success');
+      return;
     }
+
+    emitInteractionFeedback('fail');
   }, [
     playerInputLocked,
     sceneTriggers,

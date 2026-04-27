@@ -22,10 +22,11 @@ export type MutableScalarRef = { current: number };
 export type MutableBoolRef = { current: boolean };
 
 /**
- * Horizontal acceleration toward target walk/run velocity (world XZ).
+ * Horizontal response toward target walk/run velocity (world XZ).
+ * Разный rate: ускорение при вводе / сильнее гашение при отпускании — меньше «деревянных» стопов.
  */
-/** Чуть ниже — дольше разгон/торможение, ощущение массы капсулы в TPS. */
-const HORIZONTAL_ACCEL = 10.5;
+const HORIZONTAL_ACCEL = 12;
+const HORIZONTAL_DECEL = 18;
 
 /**
  * Capsule half-height (cylinder segment) and radius from room scale and base constants.
@@ -89,6 +90,8 @@ export function integrateKinematicLocomotionDelta(input: {
   if (controls.left) moveX -= 1;
   if (controls.right) moveX += 1;
 
+  const hasInput = moveX !== 0 || moveZ !== 0;
+
   const len = Math.hypot(moveX, moveZ);
   if (len > 0) {
     moveX /= len;
@@ -113,7 +116,8 @@ export function integrateKinematicLocomotionDelta(input: {
     targetVelZ = rotatedZ * speed;
   }
 
-  const t = 1 - Math.exp(-HORIZONTAL_ACCEL * dt);
+  const rate = hasInput ? HORIZONTAL_ACCEL : HORIZONTAL_DECEL;
+  const t = 1 - Math.exp(-rate * dt);
   horizVelX.current = THREE.MathUtils.lerp(horizVelX.current, targetVelX, t);
   horizVelZ.current = THREE.MathUtils.lerp(horizVelZ.current, targetVelZ, t);
 

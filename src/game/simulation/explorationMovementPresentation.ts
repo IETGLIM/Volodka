@@ -35,7 +35,7 @@ export function stepExplorationVisualYawTowardVelocity(input: {
   /** Экспоненциальный коэффициент сглаживания (чем выше — быстрее догон). */
   yawBlendRate?: number;
 }): number {
-  const { prevYaw, hx, hz, controls, frameDeltaSec, yawBlendRate = 10.5 } = input;
+  const { prevYaw, hx, hz, controls, frameDeltaSec, yawBlendRate = 9 } = input;
   const backNoForward = controls.backward && !controls.forward;
   let targetRotation = Math.atan2(hx, hz);
   if (backNoForward) {

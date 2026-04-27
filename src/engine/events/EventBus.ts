@@ -167,6 +167,9 @@ export interface EventMap {
   /** Короткое сообщение поверх исследования (тост / эффект). */
   'ui:exploration_message': { text: string };
 
+  /** Тактиальный маркер взаимодействия E (подписчики: камера, звук, HUD). */
+  'ui:interaction_feedback': { kind: 'success' | 'fail'; timestamp: number };
+
   /** Звук UI / мира (см. AudioEngine / обработчики). */
   'sound:play': { type: SfxBusType; volume?: number };
 

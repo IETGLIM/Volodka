@@ -441,7 +441,7 @@ const GLBPlayerModel = memo(function GLBPlayerModel({
       if (a === prevAction) continue;
       if (a.isRunning()) a.stop();
     }
-    const duration = 0.3;
+    const duration = 0.26;
     nextAction.reset();
     nextAction.setEffectiveTimeScale(1);
     nextAction.play();
