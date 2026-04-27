@@ -201,6 +201,28 @@ export const STORY_TRIGGERS: TriggerZone[] = [
     enterToast: 'Ветер с края крыши звучит громче любого совещания.',
   },
 
+  // ========== РАЙОН / МВД (побочные квесты обхода) ==========
+  {
+    id: 'trigger_district_chronicle_quest',
+    position: { x: 1.2, y: 0.45, z: -0.2 },
+    size: { x: 2.8, y: 1.8, z: 2.2 },
+    sceneId: 'district',
+    type: 'quest',
+    requiresInteraction: true,
+    interactionId: 'quest_district_chronicle',
+    promptText: 'E — у лавки: хроника двора',
+  },
+  {
+    id: 'trigger_mvd_bureau_quest',
+    position: { x: 0, y: 0.5, z: 0.5 },
+    size: { x: 2.4, y: 1.8, z: 1.6 },
+    sceneId: 'mvd',
+    type: 'quest',
+    requiresInteraction: true,
+    interactionId: 'quest_mvd_bureau',
+    promptText: 'E — стойка: печать и очередь',
+  },
+
   // ========== АТМОСФЕРНЫЕ ЗОНЫ (только тост при входе, без узла) ==========
   {
     id: 'ambience_street_plaza',

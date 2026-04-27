@@ -35,6 +35,7 @@ export { useQuestStore } from './questMetaStore';
 export { useFactionStore } from './factionStore';
 export { useInventoryStore } from './inventoryStore';
 export { useAppStore, type AppPhase } from './appStore';
+export { applyQuestCompletionRewards } from '@/lib/questRewards';
 
 // ============================================
 // BACKWARD COMPATIBILITY FACADE

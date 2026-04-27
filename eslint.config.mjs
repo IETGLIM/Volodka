@@ -56,6 +56,7 @@ const eslintConfig = [
       "examples/**",
       "skills",
       "_volodka_upstream_check/**",
+      "scripts/optimize-models/**",
     ]
   }
 ];

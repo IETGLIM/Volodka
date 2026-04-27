@@ -100,6 +100,7 @@ import {
   clearExplorationLivePlayerPosition,
   updateExplorationLivePlayerPosition,
 } from '@/lib/explorationLivePlayerBridge';
+import { isExplorationCyberGradeScene } from '@/lib/explorationPostFxState';
 import { explorationInteractionRegistry, registerBaseInteractions } from '@/game/interactions/registerBaseInteractions';
 import { InteractionHint } from '@/ui/primitives/InteractionHint';
 import { useExplorationLivePlayerTick } from '@/hooks/useExplorationLivePlayerTick';
@@ -997,6 +998,7 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
           panicMode={playerState.panicMode}
           stability={playerState.stability}
           creativity={playerState.creativity}
+          karma={playerState.karma}
           deferPostProcessing={deferCameraEffectsPost}
         />
         </Suspense>
@@ -1012,7 +1014,7 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
           isZaremaAlbertApartmentInterior && explorationPhase === 'gameplay' && !introCutsceneActive
         }
         explorationCyberGrade={
-          (sceneId === 'volodka_room' || sceneId === 'blue_pit') &&
+          isExplorationCyberGradeScene(sceneId) &&
           explorationPhase === 'gameplay' &&
           !introCutsceneActive
         }

@@ -171,6 +171,58 @@ export const QUEST_DEFINITIONS: Record<string, ExtendedQuest> = {
     reward: createReward({ experience: 55, karma: -2, stability: 6, mood: -1, creativity: 9 }),
     startNode: 'explore_hub_welcome',
   },
+
+  /**
+   * Побочный 3D: район, лавка у Сергеича. Граф `DISTRICT_CHRONICLE_EXPLORATION_QUEST_GRAPH`.
+   * Тон: Gothic (устные хроники) × быт.
+   */
+  exploration_district_chronicle: {
+    id: 'exploration_district_chronicle',
+    title: '🧱 Хроника двора',
+    description:
+      'Сергеич помнит больше, чем любой Jira-лог. Трижды у лавки — слушай, как район копит «квитанции на серость».',
+    type: 'side',
+    faction: 'Район',
+    status: 'active',
+    objectives: [
+      createObjective('chronicle_whisper', 'Услышать фрагменты «хроники двора»', {
+        targetValue: 3,
+        currentValue: 0,
+        hint: 'Сцена «Район»: зона у лавки; после старта квеста — E три раза.',
+        targetLocation: 'district',
+        mapHint: { x: 2, z: -0.5 },
+        stageType: 'exploration',
+        linkedStoryNodeId: 'explore_mode',
+      }),
+    ],
+    reward: createReward({ experience: 40, mood: 4, karma: 3, creativity: 5 }),
+    startNode: 'explore_mode',
+  },
+
+  /**
+   * Побочный 3D: МВД, бюрократия. Граф `MVD_BUREAU_EXPLORATION_QUEST_GRAPH`.
+   */
+  exploration_mvd_bureau: {
+    id: 'exploration_mvd_bureau',
+    title: '📋 Бумажный circuit breaker',
+    description:
+      'Очередь, печать, ещё одна очередь. Три раза — и ты снова веришь, что бюрократия замкнулась на саму себя.',
+    type: 'side',
+    status: 'active',
+    objectives: [
+      createObjective('bureau_stamp', 'Получить «ход» по бумагам (печать ×3)', {
+        targetValue: 3,
+        currentValue: 0,
+        hint: 'Сцена «МВД»: зона у стойки; E ×3.',
+        targetLocation: 'mvd',
+        mapHint: { x: 0, z: -0.5 },
+        stageType: 'exploration',
+        linkedStoryNodeId: 'explore_mode',
+      }),
+    ],
+    reward: createReward({ experience: 38, stability: 6, karma: -1, mood: -3 }),
+    startNode: 'explore_mode',
+  },
   
   // ========== ТЕХНИЧЕСКИЕ IT-КВЕСТЫ (НОВЫЕ!) ==========
   

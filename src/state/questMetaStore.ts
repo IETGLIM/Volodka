@@ -1,30 +1,16 @@
 // ============================================
-// QUEST STORE — Доменный стор: квесты и фракции
+// QUEST STORE — Доменный стор: квесты
 // ============================================
-// Отвечает за: квесты (активные/завершённые/прогресс),
-// фракции (репутация, взаимодействия).
+// Репутация фракций — `factionStore` (persist).
+// Отвечает за: активные/завершённые квесты, прогресс, AI-определения.
 
 import { create } from 'zustand';
-import type { FactionId, FactionReputation } from '@/shared/types/factions';
-import { FACTIONS, createInitialReputation, updateReputationValue, getStandingLevel } from '@/shared/types/factions';
 import { useFactionStore } from './factionStore';
 import { QUEST_DEFINITIONS } from '@/data/quests';
 import type { ExtendedQuest } from '@/data/types';
 import { parseAIQuestPayload } from '@/validation/aiQuestSchema';
 import { eventBus } from '@/engine/events/EventBus';
 import { applyQuestCompletionRewards } from '@/lib/questRewards';
-
-// ============================================
-// INITIAL STATE
-// ============================================
-
-const INITIAL_FACTION_REPUTATIONS: Record<FactionId, FactionReputation> = {
-  poets: createInitialReputation('poets'),
-  it_workers: createInitialReputation('it_workers'),
-  dreamers: createInitialReputation('dreamers'),
-  locals: createInitialReputation('locals'),
-  shadow_network: createInitialReputation('shadow_network'),
-};
 
 // ============================================
 // TYPES
@@ -87,7 +73,6 @@ export const useQuestStore = create<QuestStore>()((set, get) => ({
   activeQuestIds: ['main_goal', 'first_words'],
   completedQuestIds: [],
   questProgress: {},
-  factionReputations: INITIAL_FACTION_REPUTATIONS,
   aiQuestDefinitions: {},
 
   activateQuest: (questId) => {

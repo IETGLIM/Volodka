@@ -4,6 +4,8 @@ import { QUEST_DEFINITIONS } from '@/data/quests';
 import {
   HEARTH_EXPLORATION_QUEST_GRAPH,
   RACK_FORCE_EXPLORATION_QUEST_GRAPH,
+  DISTRICT_CHRONICLE_EXPLORATION_QUEST_GRAPH,
+  MVD_BUREAU_EXPLORATION_QUEST_GRAPH,
 } from '@/game/quests/explorationQuestGraphs';
 import { tryApplyVolodkaRackAuditInspect } from '@/lib/volodkaRackQuestBranch';
 import { startObjectInteractionService } from '@/game/core/objectInteractionService';
@@ -43,5 +45,13 @@ describe('quest graph integrity (phase E)', () => {
 
     expect(typeof tryApplyVolodkaRackAuditInspect).toBe('function');
     expect(typeof startObjectInteractionService).toBe('function');
+
+    const dist = QUEST_DEFINITIONS.exploration_district_chronicle;
+    expect(dist?.objectives.map((o) => o.id)).toEqual(['chronicle_whisper']);
+    expect(DISTRICT_CHRONICLE_EXPLORATION_QUEST_GRAPH.questId).toBe('exploration_district_chronicle');
+
+    const mvd = QUEST_DEFINITIONS.exploration_mvd_bureau;
+    expect(mvd?.objectives.map((o) => o.id)).toEqual(['bureau_stamp']);
+    expect(MVD_BUREAU_EXPLORATION_QUEST_GRAPH.questId).toBe('exploration_mvd_bureau');
   });
 });

@@ -4,11 +4,20 @@
 
 Сводка актуального `main` (2026-04-27). Релизная история по датам — ниже, от **[0.2.8]**.
 
+### Added
+
+- **Побочные квесты 3D:** `exploration_district_chronicle` («Хроника двора») и `exploration_mvd_bureau` («Бумажный circuit breaker») в `quests.ts`, графы `DISTRICT_CHRONICLE_EXPLORATION_QUEST_GRAPH` / `MVD_BUREAU_EXPLORATION_QUEST_GRAPH` в `explorationQuestGraphs.ts`, зоны E в `triggerZones.ts`, обработчики в `registerBaseInteractions.ts`. Тесты: `questGraphIntegrity.test.ts`, `explorationInteractionCoverage.test.ts`.
+- **Планирование контента и перф:** `docs/content-budget-8h.md` (таблица локация → сайд-квест, эвристика ~8 ч), `docs/perf-exploration-notes.md` (frameloop, GLB cache, mobile).
+- **Пост обхода:** `lib/explorationPostFxState.ts` (Bloom/хрома от креатива, кармы, стресса; `isExplorationCyberGradeScene`); `RPGGameCanvas` + `CameraEffects` используют это для согласованности. Кибер-пост `ExplorationPostFX` на сценах `district` и `mvd` (как на `volodka_room` / `blue_pit`). Тест: `explorationPostFxState.test.ts`.
+- **Фасад `@/state`:** реэкспорт `applyQuestCompletionRewards` из `lib/questRewards.ts`.
+
 ### Продукт и нарратив
 
 - Основной playable-слой — **3D exploration** (Next.js, R3F, Rapier, Zustand). Сюжет и диалоги из тех же данных (`STORY_NODES`), без отдельного маршрута «только VN». Оверлей `StoryRenderer`: `useGameUiLayout` + `storyNodeShowsStoryOverlay(currentNode)` — `docs/ADR-single-exploration-narrative-layer.md`.
 
 ### Fixed
+
+- **`questMetaStore`:** убрано дублирование `factionReputations` в начальном снимке (источник правды — `factionStore`); комментарий в шапке модуля уточнён.
 
 - **Zustand / прогрессия**: `NpcProximityBarks.tsx` — `useGameStore` из единого фасада `@/state` (вместо прямого `@/state/gameStore`). `playerStore.setCurrentNode` начисляет `STORY_NODE_FIRST_VISIT_XP` (константа в `rpgLeveling.ts`) при **первом** визите узла, как в legacy. `questMetaStore.completeQuest` по умолчанию применяет награду и XP квеста через `lib/questRewards.ts` (согласовано с monolithic `gameStore`); кастомный `applyReward` остаётся opt-in.
 

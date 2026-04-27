@@ -11,6 +11,12 @@ const HEARTH_OBJECTIVE_ID = 'hearth_moment';
 const RACK_QUEST_ID = 'exploration_volodka_rack';
 const RACK_FORCE_OBJECTIVE_ID = 'rack_force_nodes';
 
+const DISTRICT_CHRONICLE_QUEST_ID = 'exploration_district_chronicle';
+const DISTRICT_CHRONICLE_OBJECTIVE_ID = 'chronicle_whisper';
+
+const MVD_BUREAU_QUEST_ID = 'exploration_mvd_bureau';
+const MVD_BUREAU_OBJECTIVE_ID = 'bureau_stamp';
+
 export function shuffleWireIndices(): number[] {
   const a = [0, 1, 2, 3];
   for (let i = a.length - 1; i > 0; i--) {
@@ -120,6 +126,100 @@ export const RACK_FORCE_EXPLORATION_QUEST_GRAPH: ExplorationQuestGraph = {
           'Квест «Разрыв синхронизации» закрыт веткой форса. Ветка честного аудита для этого прохождения больше не считается.',
         );
         audioEngine.playSfx('loot', 0.18);
+      },
+    },
+  ],
+};
+
+/** Район: линейный счётчик — три «заседания» у лавки (Gothic: устная хроника двора). */
+export const DISTRICT_CHRONICLE_EXPLORATION_QUEST_GRAPH: ExplorationQuestGraph = {
+  id: 'district_chronicle',
+  questId: DISTRICT_CHRONICLE_QUEST_ID,
+  initialNode: 'collecting',
+  nodes: ['collecting', 'completed'],
+  edges: [
+    {
+      id: 'district_chronicle_partial',
+      from: 'collecting',
+      to: 'collecting',
+      trigger: { kind: 'interaction', interactionId: 'quest_district_chronicle' },
+      when: (api) => {
+        const cur = api.progress(DISTRICT_CHRONICLE_OBJECTIVE_ID);
+        const target = api.objectiveTarget(DISTRICT_CHRONICLE_OBJECTIVE_ID);
+        return cur + 1 < target;
+      },
+      run: (api) => {
+        api.activateQuest();
+        api.incrementObjective(DISTRICT_CHRONICLE_OBJECTIVE_ID);
+        api.emitUi('Лавка запоминает чужие ноги. Ещё один фрагмент — в записи квеста.');
+      },
+    },
+    {
+      id: 'district_chronicle_done',
+      from: 'collecting',
+      to: 'completed',
+      trigger: { kind: 'interaction', interactionId: 'quest_district_chronicle' },
+      when: (api) => {
+        const cur = api.progress(DISTRICT_CHRONICLE_OBJECTIVE_ID);
+        const target = api.objectiveTarget(DISTRICT_CHRONICLE_OBJECTIVE_ID);
+        return cur + 1 >= target;
+      },
+      run: (api) => {
+        api.activateQuest();
+        api.incrementObjective(DISTRICT_CHRONICLE_OBJECTIVE_ID);
+        api.completeQuest();
+        api.rememberCompletion(
+          'Ты выслушал хронику двора — не как тикет, а как петлю, где один и тот же день крутится, пока кто-то не выйдет за грань.',
+        );
+        api.emitUi('Квест «Хроника двора» выполнен.');
+        audioEngine.playSfx('loot', 0.12);
+      },
+    },
+  ],
+};
+
+/** МВД: бюрократия как minigame без кода — три печати. */
+export const MVD_BUREAU_EXPLORATION_QUEST_GRAPH: ExplorationQuestGraph = {
+  id: 'mvd_bureau',
+  questId: MVD_BUREAU_QUEST_ID,
+  initialNode: 'stamping',
+  nodes: ['stamping', 'done'],
+  edges: [
+    {
+      id: 'mvd_bureau_partial',
+      from: 'stamping',
+      to: 'stamping',
+      trigger: { kind: 'interaction', interactionId: 'quest_mvd_bureau' },
+      when: (api) => {
+        const cur = api.progress(MVD_BUREAU_OBJECTIVE_ID);
+        const target = api.objectiveTarget(MVD_BUREAU_OBJECTIVE_ID);
+        return cur + 1 < target;
+      },
+      run: (api) => {
+        api.activateQuest();
+        api.incrementObjective(MVD_BUREAU_OBJECTIVE_ID);
+        api.emitUi('Печать хлопнула. Очередь сдвинулась на одну сиротскую ссылку вперёд.');
+      },
+    },
+    {
+      id: 'mvd_bureau_complete',
+      from: 'stamping',
+      to: 'done',
+      trigger: { kind: 'interaction', interactionId: 'quest_mvd_bureau' },
+      when: (api) => {
+        const cur = api.progress(MVD_BUREAU_OBJECTIVE_ID);
+        const target = api.objectiveTarget(MVD_BUREAU_OBJECTIVE_ID);
+        return cur + 1 >= target;
+      },
+      run: (api) => {
+        api.activateQuest();
+        api.incrementObjective(MVD_BUREAU_OBJECTIVE_ID);
+        api.completeQuest();
+        api.rememberCompletion(
+          'Ты закрыл петлю бумажного circuit breaker: печать, печать, печать — и человек снова допущен в реальность.',
+        );
+        api.emitUi('Квест «Бумажный circuit breaker» выполнен.');
+        audioEngine.playSfx('loot', 0.1);
       },
     },
   ],

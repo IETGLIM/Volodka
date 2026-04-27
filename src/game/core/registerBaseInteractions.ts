@@ -16,6 +16,8 @@ import { dispatchExplorationQuestGraph } from '@/game/core/explorationQuestGraph
 import {
   HEARTH_EXPLORATION_QUEST_GRAPH,
   RACK_FORCE_EXPLORATION_QUEST_GRAPH,
+  DISTRICT_CHRONICLE_EXPLORATION_QUEST_GRAPH,
+  MVD_BUREAU_EXPLORATION_QUEST_GRAPH,
   shuffleWireIndices,
 } from '@/game/quests/explorationQuestGraphs';
 
@@ -26,6 +28,8 @@ let didRegisterBase = false;
 
 const HEARTH_QUEST_ID = HEARTH_EXPLORATION_QUEST_GRAPH.questId;
 const VOLODKA_RACK_QUEST_ID = RACK_FORCE_EXPLORATION_QUEST_GRAPH.questId;
+const DISTRICT_CHRONICLE_QUEST_ID = DISTRICT_CHRONICLE_EXPLORATION_QUEST_GRAPH.questId;
+const MVD_BUREAU_QUEST_ID = MVD_BUREAU_EXPLORATION_QUEST_GRAPH.questId;
 
 /**
  * Registers default `InteractionRegistry` entries (idempotent).
@@ -53,6 +57,32 @@ export function registerBaseInteractions(registry: InteractionRegistry = explora
       dispatchExplorationQuestGraph(
         HEARTH_EXPLORATION_QUEST_GRAPH,
         { kind: 'interaction', interactionId: 'quest_zarema_hearth' },
+        ctx,
+      );
+    },
+  });
+
+  registry.register({
+    id: 'quest_district_chronicle',
+    type: 'event',
+    condition: () => !useGameStore.getState().completedQuestIds.includes(DISTRICT_CHRONICLE_QUEST_ID),
+    execute: (ctx) => {
+      dispatchExplorationQuestGraph(
+        DISTRICT_CHRONICLE_EXPLORATION_QUEST_GRAPH,
+        { kind: 'interaction', interactionId: 'quest_district_chronicle' },
+        ctx,
+      );
+    },
+  });
+
+  registry.register({
+    id: 'quest_mvd_bureau',
+    type: 'event',
+    condition: () => !useGameStore.getState().completedQuestIds.includes(MVD_BUREAU_QUEST_ID),
+    execute: (ctx) => {
+      dispatchExplorationQuestGraph(
+        MVD_BUREAU_EXPLORATION_QUEST_GRAPH,
+        { kind: 'interaction', interactionId: 'quest_mvd_bureau' },
         ctx,
       );
     },
