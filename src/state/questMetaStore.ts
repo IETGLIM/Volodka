@@ -12,6 +12,7 @@ import { QUEST_DEFINITIONS } from '@/data/quests';
 import type { ExtendedQuest } from '@/data/types';
 import { parseAIQuestPayload } from '@/validation/aiQuestSchema';
 import { eventBus } from '@/engine/events/EventBus';
+import { applyQuestCompletionRewards } from '@/lib/questRewards';
 
 // ============================================
 // INITIAL STATE
@@ -108,8 +109,10 @@ export const useQuestStore = create<QuestStore>()((set, get) => ({
     const questDef = QUEST_DEFINITIONS[questId] ?? get().aiQuestDefinitions[questId];
     const reward = questDef?.reward;
 
-    if (reward && applyReward) {
-      applyReward(reward as unknown as QuestRewardData);
+    if (applyReward) {
+      if (reward) applyReward(reward as unknown as QuestRewardData);
+    } else {
+      applyQuestCompletionRewards(questId, reward);
     }
 
     const aiQuestDefinitions = { ...get().aiQuestDefinitions };

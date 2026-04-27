@@ -15,7 +15,12 @@ import { persist } from 'zustand/middleware';
 import { useShallow } from 'zustand/react/shallow';
 import type { PlayerState, PlayerSkills, PlayerPath, MoralChoice, ChoiceLogEntry } from '@/data/types';
 import { INITIAL_PLAYER_ENERGY, MAX_PLAYER_ENERGY } from '@/lib/energyConfig';
-import { experienceRequiredForNextLevel, applyExperienceGain, RPG_XP_SKILL_POINTS_PER_LEVEL } from '@/lib/rpgLeveling';
+import {
+  experienceRequiredForNextLevel,
+  applyExperienceGain,
+  RPG_XP_SKILL_POINTS_PER_LEVEL,
+  STORY_NODE_FIRST_VISIT_XP,
+} from '@/lib/rpgLeveling';
 import { eventBus } from '@/engine/EventBus';
 import { selectEnergyPercentageFromPlayer } from './playerStoreSelectors';
 import { migrateSaveData, CURRENT_PERSIST_VERSION } from './migrations';
@@ -185,17 +190,21 @@ export const usePlayerStore = create<PlayerStore>()(
 
       setCurrentNode: (nodeId) => {
     const { playerState } = get();
+    const already = playerState.visitedNodes.includes(nodeId);
     // Узел попадает в visitedNodes здесь; visitNode нужен отдельно,
     // если нужно отметить посещение без смены currentNodeId (без двойного set подряд с setCurrentNode).
     set({
       currentNodeId: nodeId,
       playerState: {
         ...playerState,
-        visitedNodes: playerState.visitedNodes.includes(nodeId)
+        visitedNodes: already
           ? playerState.visitedNodes
           : [...playerState.visitedNodes, nodeId],
       },
     });
+    if (!already) {
+      get().addExperience(STORY_NODE_FIRST_VISIT_XP, `story_node:${nodeId}`);
+    }
   },
 
   addStat: (stat, amount) => {

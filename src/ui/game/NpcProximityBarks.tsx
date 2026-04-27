@@ -8,7 +8,7 @@ import type { SceneId } from "@/data/types";
 import { getNpcExplorationPosition } from "@/data/npcDefinitions";
 import { getCurrentScheduleEntry } from "@/engine/ScheduleEngine";
 import { eventBus } from "@/engine/EventBus";
-import { useGameStore } from "@/state/gameStore";
+import { useGameStore } from "@/state";
 import {
   NPC_BARK_COOLDOWN_MS,
   NPC_BARK_RADIUS_XZ,

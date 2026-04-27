@@ -10,6 +10,8 @@
 
 ### Fixed
 
+- **Zustand / прогрессия**: `NpcProximityBarks.tsx` — `useGameStore` из единого фасада `@/state` (вместо прямого `@/state/gameStore`). `playerStore.setCurrentNode` начисляет `STORY_NODE_FIRST_VISIT_XP` (константа в `rpgLeveling.ts`) при **первом** визите узла, как в legacy. `questMetaStore.completeQuest` по умолчанию применяет награду и XP квеста через `lib/questRewards.ts` (согласовано с monolithic `gameStore`); кастомный `applyReward` остаётся opt-in.
+
 - **3D exploration**: комната Володьки не пропадала в «чёрную дыру» при загрузке GLB — вложенный `<Suspense>` вокруг пропов со `useGLTF`, синхронные canvas-карты без `use()` (`VolodkaRoomVisual.tsx`, `volodkaRoomTextureBundle.ts`). Сюжетная **`kitchen_night`** (10×8) получает тот же процедурный интерьер и коллайдеры, что **`zarema_albert_room`**: `RPGGameCanvas.tsx`, `PhysicsSceneColliders.tsx`, `SceneColliders.tsx`, `OptimizedSceneEnvironment.tsx`; тест спавна в `explorationHeroStreamingIntegrity.test.ts`.
 
 ### Changed

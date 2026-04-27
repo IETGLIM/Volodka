@@ -3,7 +3,14 @@ import {
   applyExperienceGain,
   experienceRequiredForNextLevel,
   RPG_MAX_CHARACTER_LEVEL,
+  STORY_NODE_FIRST_VISIT_XP,
 } from '@/lib/rpgLeveling';
+
+describe('STORY_NODE_FIRST_VISIT_XP', () => {
+  it('matches legacy first-visit node grant', () => {
+    expect(STORY_NODE_FIRST_VISIT_XP).toBe(6);
+  });
+});
 
 describe('experienceRequiredForNextLevel', () => {
   it('increases with level', () => {

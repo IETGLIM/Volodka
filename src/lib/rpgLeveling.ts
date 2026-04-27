@@ -9,6 +9,9 @@ export const RPG_MAX_CHARACTER_LEVEL = 60;
 /** Очков навыков за каждый полученный уровень (дальше — в традиционную ветку навыков). */
 export const RPG_XP_SKILL_POINTS_PER_LEVEL = 1;
 
+/** Начисление за первый визит сюжетного узла (`setCurrentNode`), согласовано с legacy `gameStore`. */
+export const STORY_NODE_FIRST_VISIT_XP = 6;
+
 /**
  * Опыт, нужный чтобы перейти с `level` на `level + 1` (на текущем уровне в бакете до level up).
  * `level` — 1-based. На максимуме — 0.
