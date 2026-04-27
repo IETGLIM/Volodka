@@ -530,6 +530,18 @@ export const ZaremaAlbertColliders = memo(function ZaremaAlbertColliders() {
     () => [[-2.4, INTERIOR_REF_COMPACT_SOFA_GROUP_CENTER_Y_M, 1.6]],
     [],
   );
+  const deskWork: [number, number, number][] = useMemo(
+    () => [[-3.45, interiorDeskColliderCenterY(0.08), 1.92]],
+    [],
+  );
+  const deskChair: [number, number, number][] = useMemo(
+    () => [[-2.4, 0.27, 1.92]],
+    [],
+  );
+  const wardrobeEast: [number, number, number][] = useMemo(
+    () => [[4.32, interiorWardrobeCenterYFromFloor(0), 0.38]],
+    [],
+  );
   /** Совпадает с `ZaremaAlbertExplorationVisual` (w=10, d=8); раньше был `BoundaryWalls(10)` → квадрат 10×10 и дублирующий меш пола. */
   return (
     <group>
@@ -537,6 +549,13 @@ export const ZaremaAlbertColliders = memo(function ZaremaAlbertColliders() {
       <RectangularBoundaryWalls width={10} depth={8} height={3} wallInset={0} />
       <InstancedObstacles positions={coffeeTable} size={[1.65, 0.1, 0.88]} footstepMaterial="wood" />
       <InstancedObstacles positions={sofa} size={[2.25, 0.48, 0.98]} footstepMaterial="carpet" />
+      <InstancedObstacles positions={deskWork} size={[1.4, 0.08, 0.75]} footstepMaterial="wood" />
+      <InstancedObstacles positions={deskChair} size={[0.52, 0.52, 0.52]} footstepMaterial="carpet" />
+      <InstancedObstacles
+        positions={wardrobeEast}
+        size={[0.58, INTERIOR_REF_WARDROBE_HEIGHT_M, 0.68]}
+        footstepMaterial="wood"
+      />
     </group>
   );
 });

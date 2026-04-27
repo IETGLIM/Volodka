@@ -138,6 +138,31 @@ export const QUEST_DEFINITIONS: Record<string, ExtendedQuest> = {
   },
 
   /**
+   * Побочный 3D: настенный «лог» (матрица) в квартире Заремы. Граф `ZAREMA_TV_EXPLORATION_QUEST_GRAPH`.
+   */
+  exploration_zarema_tv_feed: {
+    id: 'exploration_zarema_tv_feed',
+    title: '📺 Лог подъезда',
+    description:
+      'Секунда внимания к чужим тикетам и чужим дежурствам — на стене, как на дашборде, только в подъезде, а не в Kibana.',
+    type: 'side',
+    status: 'active',
+    objectives: [
+      createObjective('tv_log_ack', 'Прослушать настенный «лог» (экран у северной стены)', {
+        targetValue: 1,
+        currentValue: 0,
+        hint: '3D-обход квартиры: северная стена, E у зоны подсказки.',
+        targetLocation: 'zarema_albert_room',
+        mapHint: { x: 0.35, z: -3.4 },
+        stageType: 'exploration',
+        linkedStoryNodeId: 'explore_hub_welcome',
+      }),
+    ],
+    reward: createReward({ experience: 28, creativity: 4, mood: 3, karma: 1 }),
+    startNode: 'explore_hub_welcome',
+  },
+
+  /**
    * **Референс «обход+ветки»** — форс (minigame) vs аудит (exploration) в `volodka_room`. См. `docs/quest-reference-template.md`.
    * Логика ветвления: `explorationQuestGraphs` / `explorationQuestGraph` + `volodkaRackQuestBranch`.
    */

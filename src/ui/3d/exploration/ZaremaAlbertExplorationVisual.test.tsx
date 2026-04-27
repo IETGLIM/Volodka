@@ -1,4 +1,5 @@
 import '@testing-library/jest-dom/vitest';
+import { Canvas } from '@react-three/fiber';
 import { Component, type ReactNode } from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import { describe, expect, test, vi, afterEach } from 'vitest';
@@ -28,6 +29,14 @@ describe('ZaremaAlbertExplorationVisual', () => {
   });
 
   test('does not crash after materials are created', async () => {
+    vi.stubGlobal(
+      'ResizeObserver',
+      class {
+        observe() {}
+        unobserve() {}
+        disconnect() {}
+      },
+    );
     vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockImplementation(() => {
       const noop = vi.fn();
       return new Proxy(
@@ -67,13 +76,15 @@ describe('ZaremaAlbertExplorationVisual', () => {
 
     render(
       <TestErrorBoundary>
-        <ZaremaAlbertExplorationVisual />
+        <Canvas>
+          <ZaremaAlbertExplorationVisual />
+        </Canvas>
       </TestErrorBoundary>,
     );
 
     await waitFor(() => {
       expect(screen.queryByTestId('render-error')).toBeNull();
-      expect(document.querySelector('group[name="ZaremaAlbertExplorationVisual"]')).toBeTruthy();
+      expect(document.querySelector('canvas')).toBeTruthy();
     });
   });
 });

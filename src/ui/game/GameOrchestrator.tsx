@@ -57,6 +57,7 @@ import { SceneTransition } from '@/ui/game/CinematicEffects';
 import { LootNotification, SkillUpNotification } from '@/ui/game/LootNotification';
 import { TutorialOverlay } from '@/ui/game/TutorialOverlay';
 import { HackingWireMinigameOverlay } from '@/ui/3d/exploration/HackingWireMinigameOverlay';
+import { ItGlitchPulseOverlay } from '@/ui/game/ItGlitchPulseOverlay';
 import { ExplorationRackConsoleOverlay } from '@/ui/3d/exploration/ExplorationRackConsoleOverlay';
 import { MiniMap } from '@/ui/game/MiniMap';
 import { ExplorationObjectiveStrip } from '@/ui/game/ExplorationObjectiveStrip';
@@ -777,6 +778,8 @@ export default function GameOrchestrator() {
           </PanelErrorBoundary>
         )}
       </AnimatePresence>
+
+      <ItGlitchPulseOverlay />
 
       <KernelPanicOverlay isActive={playerState.panicMode} onCalmDown={handleCalmDown} />
 

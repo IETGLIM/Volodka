@@ -6,6 +6,7 @@ import {
   RACK_FORCE_EXPLORATION_QUEST_GRAPH,
   DISTRICT_CHRONICLE_EXPLORATION_QUEST_GRAPH,
   MVD_BUREAU_EXPLORATION_QUEST_GRAPH,
+  ZAREMA_TV_EXPLORATION_QUEST_GRAPH,
 } from '@/game/quests/explorationQuestGraphs';
 import { tryApplyVolodkaRackAuditInspect } from '@/lib/volodkaRackQuestBranch';
 import { startObjectInteractionService } from '@/game/core/objectInteractionService';
@@ -53,5 +54,9 @@ describe('quest graph integrity (phase E)', () => {
     const mvd = QUEST_DEFINITIONS.exploration_mvd_bureau;
     expect(mvd?.objectives.map((o) => o.id)).toEqual(['bureau_stamp']);
     expect(MVD_BUREAU_EXPLORATION_QUEST_GRAPH.questId).toBe('exploration_mvd_bureau');
+
+    const ztv = QUEST_DEFINITIONS.exploration_zarema_tv_feed;
+    expect(ztv?.objectives.map((o) => o.id)).toEqual(['tv_log_ack']);
+    expect(ZAREMA_TV_EXPLORATION_QUEST_GRAPH.questId).toBe('exploration_zarema_tv_feed');
   });
 });

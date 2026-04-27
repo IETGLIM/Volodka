@@ -4,6 +4,7 @@ import { memo, useCallback, useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useWireHackOverlayStore } from '@/state/wireHackOverlayStore';
 import { audioEngine } from '@/engine/AudioEngine';
+import { eventBus } from '@/engine/EventBus';
 
 const NODE_LABELS = ['α', 'β', 'γ', 'δ'] as const;
 
@@ -13,6 +14,7 @@ function triggerHackGlitchFlash(): void {
   window.setTimeout(() => {
     document.body.classList.remove('exploration-hack-glitch-flash');
   }, 420);
+  eventBus.emit('ui:it_glitch_pulse', { durationMs: 480 });
 }
 
 /**

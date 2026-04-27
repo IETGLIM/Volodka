@@ -18,11 +18,12 @@ describe('explorationPostFxState', () => {
     expect(hot.x).toBeGreaterThan(calm.x);
   });
 
-  it('кибер-грейд для volodka_room, blue_pit, district, mvd', () => {
+  it('кибер-грейд для volodka_room, blue_pit, district, mvd, office_morning', () => {
     expect(isExplorationCyberGradeScene('volodka_room')).toBe(true);
     expect(isExplorationCyberGradeScene('blue_pit')).toBe(true);
     expect(isExplorationCyberGradeScene('district')).toBe(true);
     expect(isExplorationCyberGradeScene('mvd')).toBe(true);
+    expect(isExplorationCyberGradeScene('office_morning')).toBe(true);
     expect(isExplorationCyberGradeScene('memorial_park')).toBe(false);
   });
 });

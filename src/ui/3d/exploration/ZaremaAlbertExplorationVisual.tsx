@@ -1,6 +1,6 @@
 'use client';
 
-import { memo, useEffect, useState } from 'react';
+import { memo, Suspense, useEffect, useState } from 'react';
 import * as THREE from 'three';
 import {
   createVolodkaCarpetTexture,
@@ -11,8 +11,11 @@ import {
   INTERIOR_REF_COMPACT_SOFA_GROUP_CENTER_Y_M,
   INTERIOR_REF_WINDOW_HEIGHT_M,
   INTERIOR_REF_WINDOW_WIDTH_M,
+  interiorDeskVisualGroupCenterY,
+  interiorWardrobeCenterYFromFloor,
 } from '@/lib/explorationInteriorReference';
 import { PropModel } from '@/ui/3d/exploration/PropModel';
+import { MatrixRainScreenMesh } from '@/ui/3d/exploration/MatrixRainScreenMesh';
 
 /**
  * Визуал квартиры Заремы и Альберта для режима обхода (`RPGGameCanvas`).
@@ -22,7 +25,14 @@ import { PropModel } from '@/ui/3d/exploration/PropModel';
  * с целями из `INTERIOR_REF_DESK_SURFACE_Y_M`, `INTERIOR_REF_CHAIR_SEAT_SURFACE_Y_M` и т.д.
  *
  * Ковёр — `PropModel` + `carpet_zarema` (`children`: прежняя процедурная геометрия и `carpetMat`).
+ * GLB-пропы: стол, стул, лампа, кружка, клавиатура, шкаф (см. `PROP_DEFINITIONS`); настенный «фид» — `MatrixRainScreenMesh`.
  */
+const ZAREMA_TV_STATUS_LINES = [
+  'duty: OK',
+  'Grafana: idle',
+  'IB: session token refresh',
+] as const;
+
 type ZaremaAlbertExplorationVisualProps = {
   explorationCharacterModelScale?: number;
 };
@@ -203,6 +213,18 @@ export const ZaremaAlbertExplorationVisual = memo(function ZaremaAlbertExplorati
         />
       </mesh>
 
+      {/* Настенный «умный» экран (матрица + строки статуса); пост warm-interior даёт мягкий bloom. */}
+      <group position={[0.35, 1.42, -hd + t + 0.04]} name="ZaremaWallFeed" userData={{ explorationProp: 'zarema_matrix_tv' }}>
+        <MatrixRainScreenMesh
+          seed={19}
+          width={0.58}
+          height={0.36}
+          emissive="#22d3ee"
+          emissiveIntensity={1.35}
+          statusLines={ZAREMA_TV_STATUS_LINES}
+        />
+      </group>
+
       {/* «Зеркало Альберта»: восточная стена (+X), рядом с зоной стола — не пересекается с позициями NPC. */}
       <group
         name="AlbertMirror"
@@ -241,28 +263,48 @@ export const ZaremaAlbertExplorationVisual = memo(function ZaremaAlbertExplorati
         <mesh castShadow receiveShadow material={woodMat}>
           <boxGeometry args={[1.6, 0.08, 0.85]} />
         </mesh>
-        <mesh position={[0, 0.32, 0.06]} castShadow>
-          <boxGeometry args={[1.35, 0.52, 0.04]} />
-          <meshStandardMaterial color="#1e293b" roughness={0.5} metalness={0.2} />
+        {/* Процедурный «томик» вместо плоского «ноутбука» — кибер-экран вынесен на стену. */}
+        <mesh position={[0, 0.2, 0.02]} castShadow>
+          <boxGeometry args={[0.22, 0.06, 0.28]} />
+          <meshStandardMaterial color="#3d2f25" roughness={0.88} metalness={0.04} />
         </mesh>
-        {/* Тёплая настольная лампа — якорь света у книги */}
-        <group position={[0.55, 0.2, 0.12]}>
-          <mesh castShadow receiveShadow position={[0, 0.06, 0]}>
-            <cylinderGeometry args={[0.07, 0.09, 0.14, 16]} />
-            <meshStandardMaterial color="#3d2c1e" roughness={0.75} metalness={0.15} />
-          </mesh>
-          <mesh position={[0, 0.22, 0]}>
-            <sphereGeometry args={[0.11, 16, 12]} />
-            <meshStandardMaterial
-              color="#fff8e7"
-              emissive="#ffb84d"
-              emissiveIntensity={1.35}
-              toneMapped={false}
-              roughness={0.35}
-            />
-          </mesh>
-        </group>
       </group>
+
+      <Suspense fallback={null}>
+        <group position={[-3.45, interiorDeskVisualGroupCenterY(0), 1.92]} rotation={[0, Math.PI / 2, 0]}>
+          <PropModel propId="desk_volodka" sceneScale={explorationCharacterModelScale} />
+          <PropModel
+            propId="mug_techsupport"
+            sceneScale={explorationCharacterModelScale}
+            position={[0.4, 0.48, 0.16]}
+            rotation={[0, 0.28, 0]}
+          />
+          <PropModel
+            propId="keyboard_ibm"
+            sceneScale={explorationCharacterModelScale}
+            position={[-0.26, 0.44, 0.1]}
+            rotation={[-Math.PI / 2 + 0.06, 0, 0.1]}
+          />
+          <PropModel
+            propId="lamp_desk"
+            sceneScale={explorationCharacterModelScale}
+            position={[0.32, 0.5, -0.2]}
+            rotation={[0, -0.2, 0]}
+          />
+        </group>
+        <PropModel
+          propId="chair_volodka"
+          sceneScale={explorationCharacterModelScale}
+          position={[-2.38, 0.22, 1.92]}
+          rotation={[-Math.PI / 2, Math.PI * 0.78, 0]}
+        />
+        <PropModel
+          propId="wardrobe_soviet"
+          sceneScale={explorationCharacterModelScale}
+          position={[4.32, interiorWardrobeCenterYFromFloor(0), 0.38]}
+          rotation={[0, Math.PI, 0.04]}
+        />
+      </Suspense>
 
       <group position={[-2.4, INTERIOR_REF_COMPACT_SOFA_GROUP_CENTER_Y_M, 1.6]}>
         <mesh castShadow receiveShadow>
@@ -279,11 +321,12 @@ export const ZaremaAlbertExplorationVisual = memo(function ZaremaAlbertExplorati
         </mesh>
       </group>
 
-      <pointLight position={[0, 2.4, 0]} intensity={0.88} color="#fde68a" distance={16} decay={2} />
-      <pointLight position={[-2.5, 1.8, 2.2]} intensity={0.48} color="#bae6fd" distance={11} decay={2} />
-      <pointLight position={[3.2, 1.5, -2.4]} intensity={0.34} color="#fdba74" distance={9} decay={2} />
-      <pointLight position={[2.35, 1.65, -0.4]} intensity={0.62} color="#fff7d6" distance={6.5} decay={2} />
-      <pointLight position={[0.25, 1.95, -1.45]} intensity={1.05} color="#fff1d6" distance={7} decay={2} />
+      {/* Акцент на рабочий угол (стол + GLB): тёплый point без теней. */}
+      <pointLight position={[-3.05, 1.65, 1.25]} intensity={1.35} color="#ffd6a8" distance={8.5} decay={2} />
+      <pointLight position={[0, 2.35, 0]} intensity={0.75} color="#fde68a" distance={16} decay={2} />
+      <pointLight position={[-2.5, 1.75, 2.1]} intensity={0.44} color="#bae6fd" distance={11} decay={2} />
+      <pointLight position={[3, 1.5, -2.2]} intensity={0.32} color="#fdba74" distance={9} decay={2} />
+      <pointLight position={[2.2, 1.55, -0.35]} intensity={0.55} color="#fff7d6" distance={7} decay={2} />
     </group>
   );
 });

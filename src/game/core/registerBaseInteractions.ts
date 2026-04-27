@@ -18,6 +18,7 @@ import {
   RACK_FORCE_EXPLORATION_QUEST_GRAPH,
   DISTRICT_CHRONICLE_EXPLORATION_QUEST_GRAPH,
   MVD_BUREAU_EXPLORATION_QUEST_GRAPH,
+  ZAREMA_TV_EXPLORATION_QUEST_GRAPH,
   shuffleWireIndices,
 } from '@/game/quests/explorationQuestGraphs';
 
@@ -30,6 +31,7 @@ const HEARTH_QUEST_ID = HEARTH_EXPLORATION_QUEST_GRAPH.questId;
 const VOLODKA_RACK_QUEST_ID = RACK_FORCE_EXPLORATION_QUEST_GRAPH.questId;
 const DISTRICT_CHRONICLE_QUEST_ID = DISTRICT_CHRONICLE_EXPLORATION_QUEST_GRAPH.questId;
 const MVD_BUREAU_QUEST_ID = MVD_BUREAU_EXPLORATION_QUEST_GRAPH.questId;
+const ZAREMA_TV_QUEST_ID = ZAREMA_TV_EXPLORATION_QUEST_GRAPH.questId;
 
 /**
  * Registers default `InteractionRegistry` entries (idempotent).
@@ -57,6 +59,19 @@ export function registerBaseInteractions(registry: InteractionRegistry = explora
       dispatchExplorationQuestGraph(
         HEARTH_EXPLORATION_QUEST_GRAPH,
         { kind: 'interaction', interactionId: 'quest_zarema_hearth' },
+        ctx,
+      );
+    },
+  });
+
+  registry.register({
+    id: 'quest_zarema_tv',
+    type: 'event',
+    condition: () => !useGameStore.getState().completedQuestIds.includes(ZAREMA_TV_QUEST_ID),
+    execute: (ctx) => {
+      dispatchExplorationQuestGraph(
+        ZAREMA_TV_EXPLORATION_QUEST_GRAPH,
+        { kind: 'interaction', interactionId: 'quest_zarema_tv' },
         ctx,
       );
     },

@@ -26,6 +26,8 @@ export const EXPLORATION_CYBER_GRADE_SCENE_IDS = [
   'blue_pit',
   'district',
   'mvd',
+  /** Утренний офис в 3D-обходе: мониторы/дэшборды × кибер-пост без тёплого интерьера. */
+  'office_morning',
 ] as const;
 
 export type ExplorationCyberGradeSceneId = (typeof EXPLORATION_CYBER_GRADE_SCENE_IDS)[number];

@@ -224,3 +224,32 @@ export const MVD_BUREAU_EXPLORATION_QUEST_GRAPH: ExplorationQuestGraph = {
     },
   ],
 };
+
+const ZAREMA_TV_QUEST_ID = 'exploration_zarema_tv_feed' as const;
+const ZAREMA_TV_OBJECTIVE_ID = 'tv_log_ack' as const;
+
+/** Квартира Заремы: осмотр «настенного лога» (экран с матрицей у северной стены). */
+export const ZAREMA_TV_EXPLORATION_QUEST_GRAPH: ExplorationQuestGraph = {
+  id: 'zarema_tv',
+  questId: ZAREMA_TV_QUEST_ID,
+  initialNode: 'idle',
+  nodes: ['idle', 'done'],
+  edges: [
+    {
+      id: 'zarema_tv_once',
+      from: 'idle',
+      to: 'done',
+      trigger: { kind: 'interaction', interactionId: 'quest_zarema_tv' },
+      run: (api) => {
+        api.activateQuest();
+        api.incrementObjective(ZAREMA_TV_OBJECTIVE_ID);
+        api.completeQuest();
+        api.rememberCompletion(
+          'Секунда — и «лог» на стене сливается с дежурством: тикеты, Grafana, чужие голоса лифта.',
+        );
+        api.emitUi('Квест «Лог подъезда» выполнен.');
+        audioEngine.playSfx('ui', 0.12);
+      },
+    },
+  ],
+};

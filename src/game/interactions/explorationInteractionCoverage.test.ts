@@ -6,6 +6,7 @@ import {
   RACK_FORCE_EXPLORATION_QUEST_GRAPH,
   DISTRICT_CHRONICLE_EXPLORATION_QUEST_GRAPH,
   MVD_BUREAU_EXPLORATION_QUEST_GRAPH,
+  ZAREMA_TV_EXPLORATION_QUEST_GRAPH,
 } from '@/game/quests/explorationQuestGraphs';
 import { explorationInteractionRegistry, registerBaseInteractions } from '@/game/interactions/registerBaseInteractions';
 
@@ -35,6 +36,7 @@ describe('exploration InteractionRegistry coverage (фаза 1)', () => {
         'quest_district_chronicle',
         'quest_mvd_bureau',
         'quest_zarema_hearth',
+        'quest_zarema_tv',
         'volodka_rack_hack',
         'zarema_resonance_ping',
       ].sort(),
@@ -54,6 +56,7 @@ describe('exploration InteractionRegistry coverage (фаза 1)', () => {
         'quest_district_chronicle',
         'quest_mvd_bureau',
         'quest_zarema_hearth',
+        'quest_zarema_tv',
         'volodka_rack_hack',
       ].sort(),
     );
@@ -70,10 +73,11 @@ describe('exploration InteractionRegistry coverage (фаза 1)', () => {
         ...collectInteractionIdsFromQuestGraph(RACK_FORCE_EXPLORATION_QUEST_GRAPH),
         ...collectInteractionIdsFromQuestGraph(DISTRICT_CHRONICLE_EXPLORATION_QUEST_GRAPH),
         ...collectInteractionIdsFromQuestGraph(MVD_BUREAU_EXPLORATION_QUEST_GRAPH),
+        ...collectInteractionIdsFromQuestGraph(ZAREMA_TV_EXPLORATION_QUEST_GRAPH),
       ]),
     ];
     expect(fromGraphs.sort()).toEqual(
-      ['quest_district_chronicle', 'quest_mvd_bureau', 'quest_zarema_hearth'].sort(),
+      ['quest_district_chronicle', 'quest_mvd_bureau', 'quest_zarema_hearth', 'quest_zarema_tv'].sort(),
     );
     for (const id of fromGraphs) {
       expect(explorationInteractionRegistry.get(id), `квестовый граф ссылается на неизвестный registry id: ${id}`).toBeDefined();

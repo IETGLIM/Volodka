@@ -199,6 +199,7 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
   const deferCameraEffectsPost =
     (sceneId === 'volodka_room' ||
       sceneId === 'blue_pit' ||
+      sceneId === 'office_morning' ||
       isZaremaAlbertApartmentInterior) &&
     explorationPhase === 'gameplay' &&
     !introCutsceneActive;
@@ -1007,6 +1008,7 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
         sceneId={sceneId}
         visualLite={visualLite}
         stress={playerState.stress}
+        panicMode={playerState.panicMode}
         compactIndoor={isNarrowApartment}
         cinematicIntro={introCutsceneActive}
         dialogueCinematic={isDialogueActive}

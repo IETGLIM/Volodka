@@ -4,11 +4,11 @@ import { memo, useMemo } from 'react';
 import { EffectComposer, Bloom, Vignette, ChromaticAberration } from '@react-three/postprocessing';
 import * as THREE from 'three';
 import type { SceneId } from '@/data/types';
+import { explorationChromaOffsetFromStress } from '@/lib/explorationPostFxState';
 
 interface ExplorationPostFXProps {
   sceneId: SceneId;
   visualLite: boolean;
-  stress: number;
   compactIndoor?: boolean;
   /**
    * Кинематографический стек для 3D-интро (Bloom + виньетка + лёгкая хроматическая аберрация).
@@ -20,17 +20,22 @@ interface ExplorationPostFXProps {
    */
   explorationCyberGrade?: boolean;
   /**
-   * Тёплый интерьер (`zarema_albert_room`): мягкий bloom ламп/окна, виньетка без «кибер»-хромы.
+   * Тёплый интерьер (`zarema_albert_room`): мягкий bloom ламп/окна; при высоком стрессе — лёгкая хрома (не смешивается с cyber-веткой).
    */
   explorationWarmInterior?: boolean;
   /** Диалог в обходе — сильнее виньетка (фокус на панели / NPC). */
   dialogueCinematic?: boolean;
+  stress?: number;
+  panicMode?: boolean;
 }
+
 
 /**
  * Постобработка обхода: по умолчанию выключена (исторический шаг А диагностики мерцания).
  * Включается для `cinematicIntro` или мягко для `explorationCyberGrade` в комнате Володьки.
  */
+const WARM_INTERIOR_STRESS_CHROMA_SCALE = 0.38;
+
 export const ExplorationPostFX = memo(function ExplorationPostFX({
   sceneId,
   cinematicIntro,
@@ -38,8 +43,18 @@ export const ExplorationPostFX = memo(function ExplorationPostFX({
   explorationWarmInterior,
   dialogueCinematic,
   visualLite,
+  stress = 0,
+  panicMode = false,
 }: ExplorationPostFXProps) {
   const chromaOffset = useMemo(() => new THREE.Vector2(0.00085, 0.0015), []);
+  const warmStressChroma = useMemo(() => {
+    if (!explorationWarmInterior) return new THREE.Vector2(0, 0);
+    const t = Math.max(0, stress - 32);
+    if (t < 0.5 && !panicMode) return new THREE.Vector2(0, 0);
+    const { x, y } = explorationChromaOffsetFromStress(stress, panicMode);
+    const s = WARM_INTERIOR_STRESS_CHROMA_SCALE;
+    return new THREE.Vector2(x * s, y * s);
+  }, [explorationWarmInterior, stress, panicMode]);
 
   if (visualLite) {
     return null;
@@ -62,8 +77,9 @@ export const ExplorationPostFX = memo(function ExplorationPostFX({
   }
 
   if (explorationWarmInterior) {
-    const vd = 0.36 + (dialogueCinematic ? 0.12 : 0);
-    const vo = 0.11 + (dialogueCinematic ? 0.04 : 0);
+    const stressV = Math.min(0.12, (stress / 100) * 0.1) + (panicMode ? 0.05 : 0);
+    const vd = 0.36 + (dialogueCinematic ? 0.12 : 0) + stressV;
+    const vo = 0.11 + (dialogueCinematic ? 0.04 : 0) + stressV * 0.35;
     return (
       <EffectComposer multisampling={0} enableNormalPass={false}>
         <Bloom
@@ -73,7 +89,8 @@ export const ExplorationPostFX = memo(function ExplorationPostFX({
           intensity={0.44}
           radius={0.5}
         />
-        <Vignette eskil={false} offset={vo} darkness={Math.min(0.78, vd)} />
+        <Vignette eskil={false} offset={vo} darkness={Math.min(0.82, vd)} />
+        <ChromaticAberration offset={warmStressChroma} radialModulation={false} modulationOffset={0} />
       </EffectComposer>
     );
   }

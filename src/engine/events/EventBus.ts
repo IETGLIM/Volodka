@@ -187,6 +187,9 @@ export interface EventMap {
   'player:panic_leave': { stress: number };
   /** Энергия пересекла порог вниз (вошла в низкий запас). */
   'player:low_energy': { energy: number; threshold: number };
+
+  /** Полноэкранная краткая вспышка «ИБ / хак» (DOM, без второго `EffectComposer`). */
+  'ui:it_glitch_pulse': { durationMs: number };
 }
 
 // ============================================

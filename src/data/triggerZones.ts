@@ -42,6 +42,27 @@ export const STORY_TRIGGERS: TriggerZone[] = [
     interactionId: 'quest_zarema_hearth',
     promptText: 'Осмотреть угол у дивана',
   },
+  /** Побочный квест «Лог подъезда» — экран у северной стены (`exploration_zarema_tv_feed`). */
+  {
+    id: 'trigger_zarema_quest_tv_feed',
+    position: { x: 0.4, y: 0.95, z: -3.2 },
+    size: { x: 2.6, y: 2.2, z: 1.8 },
+    sceneId: 'zarema_albert_room',
+    type: 'quest',
+    requiresInteraction: true,
+    interactionId: 'quest_zarema_tv',
+    promptText: 'Всмотреться в настенный «лог»',
+  },
+  {
+    id: 'trigger_kitchen_night_quest_tv_feed',
+    position: { x: 0.4, y: 0.95, z: -3.2 },
+    size: { x: 2.6, y: 2.2, z: 1.8 },
+    sceneId: 'kitchen_night',
+    type: 'quest',
+    requiresInteraction: true,
+    interactionId: 'quest_zarema_tv',
+    promptText: 'Всмотреться в настенный «лог»',
+  },
   {
     id: 'trigger_kitchen_fridge',
     position: { x: 4, y: 0.5, z: -2 },
