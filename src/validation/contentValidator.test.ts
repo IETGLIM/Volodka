@@ -60,7 +60,21 @@ function validateStoryGraph(): { errors: ValidationIssue[]; warnings: Validation
       });
     }
 
+    if (node.cutscene && !getCutsceneById(node.cutscene)) {
+      errors.push({
+        code: 'NODE_CUTSCENE_UNKNOWN',
+        message: `Node "${nodeKey}" cutscene: unknown ANIME_CUTSCENES id "${node.cutscene}"`,
+      });
+    }
+
     for (const choice of node.choices ?? []) {
+      if (choice.cutsceneId && !getCutsceneById(choice.cutsceneId)) {
+        errors.push({
+          code: 'CHOICE_CUTSCENE_ID_UNKNOWN',
+          message: `Node "${nodeKey}" choice cutsceneId: unknown ANIME_CUTSCENES id "${choice.cutsceneId}"`,
+        });
+      }
+
       if (choice.next && !nodeIds.has(choice.next)) {
         errors.push({
           code: 'CHOICE_NEXT_MISSING',

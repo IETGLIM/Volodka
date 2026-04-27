@@ -9,6 +9,8 @@
 
 ### Added
 
+- **Валидация заставок в данных:** `src/validation/contentValidator.test.ts` проверяет, что `STORY_NODES[].cutscene` и `choices[].cutsceneId` разрешаются в `animeCutscenes` (коды `NODE_CUTSCENE_UNKNOWN`, `CHOICE_CUTSCENE_ID_UNKNOWN`). Поля квестов `cutsceneOn*` — в том же файле; триггеры exploration — `npcExplorationIntegrity.test.ts`.
+
 - **Документация (канон сцены):** `docs/quest-scene-pipeline.md` — целевой пайплайн «квест как сцена» (принятие → бит → текст → задание → выбор → выполнение → награда → переход), mermaid-схема, привязка к `StoryRenderer`, `useGameRuntime` / `AnimeCutscene`, `questEvents`, 3D/терминал; в `docs/volodka-incremental-aaa-roadmap.md` — ссылка в блоке критериев. **§6:** сверка с реалом (где «рвётся»: `storyOverlayEligibility`, `GameMode` без «чистого VN», хаб `explore_mode`, очередь cutscene, `ITTerminal` без привязки к локации, приоритеты P0–P2).
 
 - **IT / ИБ-линия (квест):** `whitehat_uat_sprint` — заказной прогон по UAT, scope, **Burp** в лабе, `curl` на UAT, handoff в Jira через NPC; тон: банковская реальность и **white-hat**, не «хакер из кино». Старт с `start_diagnosis` / `escalate_now` / `check_database` (`storyNodes`), команды в `ITTerminal`, события `npc_talked` в `questEvents`. Легаси-стат «IT-квесты» в `LegacyScreen` учитывает цепочку.

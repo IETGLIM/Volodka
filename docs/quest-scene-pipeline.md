@@ -116,7 +116,7 @@ flowchart LR
 
 | Приоритет | Тема | Действие |
 |-----------|------|----------|
-| P0 | Id заставки без `animeCutscenes` | Скан узлов/квестов на `cutscene` / `cutsceneOn*` |
+| P0 | Id заставки без `animeCutscenes` | **Закрыто в CI:** `contentValidator.test.ts` — `StoryNode.cutscene`, `StoryChoice.cutsceneId`, поля квестов `cutsceneOnStart` / `OnComplete` / `OnObjective`; `npcExplorationIntegrity.test.ts` — `STORY_TRIGGERS[].cutsceneId` |
 | P1 | Текст сюжета vs 3D-локация | Координация `setCurrentNode` + выход из/в хаб, подсказки в узлах |
 | P2 | 💻 вне «офиса» | Опц.: soft-gate по `questSceneId` / флагу, или оставить как diegetic «удалёнка» в тексте |
 | P2 | Регресс cutscene-очереди | E2E / чеклист: офис + стих + квест + ачивка в одной сессии |
