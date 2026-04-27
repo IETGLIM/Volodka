@@ -9,6 +9,7 @@ import { eventBus } from '@/engine/EventBus';
 import { applyDialogueEffects } from '@/engine/DialogueEngine';
 import { useWorldState } from '@/hooks/useWorldState';
 import { usePlayerActions } from '@/hooks/usePlayerActions';
+import { useWorldStore } from '@/state/worldStore';
 
 interface DialogueStoreActions {
   addStat: (stat: 'mood' | 'creativity' | 'stability' | 'energy' | 'karma' | 'selfEsteem', amount: number) => void;
@@ -142,7 +143,11 @@ export function useDialogueFlow({
       return null;
     });
     setCurrentNPC(null);
-    setGameMode(gameModeBeforeDialogueRef.current);
+    const resumeMode = gameModeBeforeDialogueRef.current;
+    setGameMode(resumeMode);
+    if (resumeMode === 'exploration') {
+      useWorldStore.getState().bumpCameraOrbitResyncNonce();
+    }
   }, [setCurrentNPC, setGameMode, setCurrentNode, pushChoiceLog]);
 
   return {

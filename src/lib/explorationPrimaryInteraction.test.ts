@@ -37,9 +37,10 @@ function npc(id: string, xz: { x: number; z: number }): NPCDefinition {
 }
 
 describe('resolveExplorationPrimaryInteraction', () => {
-  it('prefers requiresInteraction trigger when player is inside AABB', () => {
+  it('prefers NPC over large door trigger when NPC is closer to trigger anchor than door center', () => {
     const playerPosition = { x: 0, y: 0, z: 0 };
-    const triggers = [trig('door', { x: 0, y: 0, z: 0 }, { x: 4, y: 4, z: 4 })];
+    /** Центр «двери» далеко по +X, но AABB всё ещё охватывает игрока — приоритет по дистанции до центра → NPC. */
+    const triggers = [trig('door', { x: 6, y: 0, z: 0 }, { x: 14, y: 4, z: 4 })];
     const triggerStates: Record<string, TriggerState> = {};
     const objects = [obj('crate', [0.5, 0])];
     const npcs = [npc('alice', { x: 0.2, z: 0.2 })];
@@ -63,7 +64,8 @@ describe('resolveExplorationPrimaryInteraction', () => {
       sceneNPCs: npcs,
       npcStates,
     });
-    expect(r).toEqual({ kind: 'trigger', triggerId: 'door' });
+    expect(r.kind).toBe('npc');
+    if (r.kind === 'npc') expect(r.npcId).toBe('alice');
   });
 
   it('chooses NPC when clearly closer than interactive object', () => {

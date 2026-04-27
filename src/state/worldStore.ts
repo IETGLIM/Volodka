@@ -59,6 +59,7 @@ const INITIAL_EXPLORATION: ExplorationState = {
   worldItems: [],
   exploredAreas: [],
   lastSceneTransition: 0,
+  cameraOrbitResyncNonce: 0,
 };
 
 // ============================================
@@ -88,6 +89,8 @@ interface WorldStoreActions {
   collectWorldItem: (itemId: string) => void;
   setInteractionPrompt: (prompt: InteractionPrompt | null) => void;
   addExploredArea: (areaId: string) => void;
+  /** После диалога / оверлеев — пересинхрон орбиты `FollowCamera` (см. `orbitResyncKey`). */
+  bumpCameraOrbitResyncNonce: () => void;
   resetWorld: () => void;
 }
 
@@ -123,6 +126,17 @@ export const useWorldStore = create<WorldStore>()(
   unlockedLocations: [],
 
   setGameMode: (mode) => set({ gameMode: mode }),
+
+  bumpCameraOrbitResyncNonce: () => {
+    const { exploration } = get();
+    const n = exploration.cameraOrbitResyncNonce ?? 0;
+    set({
+      exploration: {
+        ...exploration,
+        cameraOrbitResyncNonce: n + 1,
+      },
+    });
+  },
 
   updateNPCRelation: (npcId, change) => {
     set({

@@ -219,6 +219,11 @@ export interface ExplorationState {
   worldItems: WorldItem[];
   exploredAreas: string[]; // ID исследованных зон
   lastSceneTransition: number;
+  /**
+   * Счётчик для `FollowCamera` `orbitResyncKey`: после диалога увеличивается, чтобы орбита снова встала за игроком.
+   * Не сериализуется в persist-слой `worldStore` (см. `partialize`).
+   */
+  cameraOrbitResyncNonce?: number;
 
   /** Streaming v0.2 state (active chunks, unloading, metrics). See docs/scene-streaming-spec.md and SceneStreamingCoordinator. */
   streaming?: {

@@ -212,6 +212,7 @@ const INITIAL_EXPLORATION_STATE: ExplorationState = {
   worldItems: [],
   exploredAreas: [],
   lastSceneTransition: 0,
+  cameraOrbitResyncNonce: 0,
   streaming: {
     activeChunkIds: [] as readonly string[],
     unloadingChunkIds: [] as readonly string[],

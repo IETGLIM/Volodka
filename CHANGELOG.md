@@ -12,6 +12,10 @@
 
 - **3D exploration**: комната Володьки не пропадала в «чёрную дыру» при загрузке GLB — вложенный `<Suspense>` вокруг пропов со `useGLTF`, синхронные canvas-карты без `use()` (`VolodkaRoomVisual.tsx`, `volodkaRoomTextureBundle.ts`). Сюжетная **`kitchen_night`** (10×8) получает тот же процедурный интерьер и коллайдеры, что **`zarema_albert_room`**: `RPGGameCanvas.tsx`, `PhysicsSceneColliders.tsx`, `SceneColliders.tsx`, `OptimizedSceneEnvironment.tsx`; тест спавна в `explorationHeroStreamingIntegrity.test.ts`.
 
+### Changed
+
+- **Обход / E и камера**: единый `resolveExplorationInteractionPriority` в `explorationPrimaryInteraction.ts` (дистанция до якоря триггера + приоритет NPC > объект > зона; `registry` vs `story_trigger`); `RPGGameCanvas.tsx` без отдельного обхода реестра. `exploration.cameraOrbitResyncNonce` + `bumpCameraOrbitResyncNonce` в `worldStore` / `rpgTypes.ts`; после закрытия диалога в `useDialogueFlow.ts` — сброс орбиты `FollowCamera` через шаблон ключа `sceneId:nonce` в `orbitResyncKey`.
+
 ### Комната Володьки (`volodka_room`)
 
 - `VolodkaRoomVisual`: процедурные **lightmap** на пол/стены (`volodkaRoomLightmapTextures.ts`), **mergeGeometries** для оболочки стен/дерева/косяков (`volodkaRoomMergedGeometries.ts`), один **pointLight** с тенью; мониторы на **emissive** + Bloom (`ExplorationPostFX`, проп `emissive` у `MatrixRainScreenMesh`); карты — `createVolodkaRoomCanvasMapsSync`; dispose материалов, мержа и геометрии пола.

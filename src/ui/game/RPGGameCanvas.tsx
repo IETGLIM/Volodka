@@ -61,7 +61,7 @@ import { NPCSystem } from './NPC';
 import { SceneColliderSelector } from './SceneColliders';
 import { PhysicsSceneColliders } from './PhysicsSceneColliders';
 import { getDefaultPlayerModelPath } from '@/config/modelUrls';
-import { TriggerSystem, isPlayerInTriggerZone, WorldItem } from './InteractiveTrigger';
+import { TriggerSystem, WorldItem } from './InteractiveTrigger';
 import CameraEffects from '../CameraEffects';
 
 // Store
@@ -81,7 +81,7 @@ import { mountExplorationController } from '@/game/interactions/explorationContr
 import { ExplorationMobileHud } from './ExplorationMobileHud';
 import { RadialMenu, type RadialMenuAction } from './RadialMenu';
 import { getExplorationRadialMenuActions } from '@/lib/explorationRadialMenuActions';
-import { resolveExplorationPrimaryInteraction } from '@/lib/explorationPrimaryInteraction';
+import { resolveExplorationInteractionPriority } from '@/lib/explorationPrimaryInteraction';
 import type { PlayerControls } from '@/hooks/useGamePhysics';
 import { createFloorNavPathfinder } from '@/lib/explorationNavMesh';
 import { BattleClickLayer } from './BattleClickLayer';
@@ -100,9 +100,8 @@ import {
   clearExplorationLivePlayerPosition,
   updateExplorationLivePlayerPosition,
 } from '@/lib/explorationLivePlayerBridge';
-import { resolveNearest, type InteractionCandidate } from '@/game/interactions/InteractionResolver';
 import { explorationInteractionRegistry, registerBaseInteractions } from '@/game/interactions/registerBaseInteractions';
-import { InteractionHint, EXPLORATION_INTERACTION_HINT_MAX_DISTANCE } from '@/ui/primitives/InteractionHint';
+import { InteractionHint } from '@/ui/primitives/InteractionHint';
 import { useExplorationLivePlayerTick } from '@/hooks/useExplorationLivePlayerTick';
 
 // ============================================
@@ -216,6 +215,11 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
   }, []);
 
   const npcStates = useGameStore((s) => s.exploration.npcStates);
+  const cameraOrbitResyncNonce = useGameStore((s) => s.exploration.cameraOrbitResyncNonce ?? 0);
+  const orbitResyncKey = useMemo(
+    () => `${sceneId}:${cameraOrbitResyncNonce}`,
+    [sceneId, cameraOrbitResyncNonce],
+  );
   const triggerStates = useGameStore((s) => s.exploration.triggerStates);
   const setTriggerState = useGameStore((s) => s.setTriggerState);
   const hasItem = useGameStore((s) => s.hasItem);
@@ -679,7 +683,7 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
     return true;
   }, [sceneId]);
 
-  // Handle player interaction (E / тач) — единый резолвер: триггер → объект vs NPC по дистанции
+  // Handle player interaction (E / тач) — `resolveExplorationInteractionPriority` (NPC / объект / триггеры по дистанции + тиры)
   const handlePlayerInteraction = useCallback(() => {
     if (playerInputLocked) return;
     if (explorationBriefingOpen) {
@@ -695,52 +699,34 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
     }
 
     const currentPos = playerPositionRef.current;
-    if (currentPos) {
-      const byInteractionId = new Map<string, number>();
-      for (const trigger of sceneTriggers) {
-        if (!trigger.interactionId) continue;
-        if (!availableInteractionIds.has(trigger.interactionId)) continue;
-        if (!isPlayerInTriggerZone(currentPos, trigger)) continue;
-        const dx = currentPos.x - trigger.position.x;
-        const dy = currentPos.y - trigger.position.y;
-        const dz = currentPos.z - trigger.position.z;
-        const distance = Math.hypot(dx, dy, dz);
-        if (distance > EXPLORATION_INTERACTION_HINT_MAX_DISTANCE) continue;
-        const prev = byInteractionId.get(trigger.interactionId);
-        if (prev === undefined || distance < prev) {
-          byInteractionId.set(trigger.interactionId, distance);
-        }
-      }
-      const registryCandidates: InteractionCandidate[] = [...byInteractionId.entries()].map(
-        ([id, distance]) => ({ id, distance }),
-      );
-      const nearestRegistry = resolveNearest(registryCandidates);
-      if (nearestRegistry) {
-        const st = useGameStore.getState();
-        const ran = explorationInteractionRegistry.tryExecute(nearestRegistry.id, {
-          setGameMode: st.setGameMode,
-          onNPCInteraction,
-          activateQuest: st.activateQuest,
-          incrementQuestObjective: st.incrementQuestObjective,
-          completeQuest: st.completeQuest,
-          isQuestActive: st.isQuestActive,
-          isQuestCompleted: st.isQuestCompleted,
-          getQuestProgress: st.getQuestProgress,
-        });
-        if (ran) return;
-      }
-    }
+    if (!currentPos) return;
 
-    const target = resolveExplorationPrimaryInteraction({
+    const target = resolveExplorationInteractionPriority({
       playerPosition: currentPos,
       sceneTriggers,
       triggerStates,
       sceneInteractiveObjects,
       sceneNPCs,
       npcStates,
+      availableInteractionIds,
     });
 
-    if (target.kind === 'trigger') {
+    if (target.kind === 'registry') {
+      const st = useGameStore.getState();
+      const ran = explorationInteractionRegistry.tryExecute(target.interactionId, {
+        setGameMode: st.setGameMode,
+        onNPCInteraction,
+        activateQuest: st.activateQuest,
+        incrementQuestObjective: st.incrementQuestObjective,
+        completeQuest: st.completeQuest,
+        isQuestActive: st.isQuestActive,
+        isQuestCompleted: st.isQuestCompleted,
+        getQuestProgress: st.getQuestProgress,
+      });
+      if (ran) return;
+    }
+
+    if (target.kind === 'story_trigger') {
       const trigger = sceneTriggers.find((t) => t.id === target.triggerId);
       if (!trigger) return;
       handleTriggerEnter(trigger.id);
@@ -996,7 +982,7 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
           collisionRadius={followCameraProps.collisionRadius}
           minDistance={followCameraProps.minDistance}
           maxDistance={followCameraProps.maxDistance}
-          orbitResyncKey={sceneId}
+          orbitResyncKey={orbitResyncKey}
           isLocked={isDialogueActive}
           cutsceneActive={introCutsceneActive}
           dialogueFraming={Boolean(isDialogueActive && dialogueSubjectPosition)}
