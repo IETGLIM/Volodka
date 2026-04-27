@@ -1,8 +1,13 @@
 import { act, renderHook } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { useGameUiLayout } from './useGameUiLayout';
+import { useGamePhaseStore } from '@/state/gamePhaseStore';
 
 describe('useGameUiLayout', () => {
+  afterEach(() => {
+    useGamePhaseStore.getState().setExplorationPhase('gameplay');
+  });
+
   it('does not register inventory hotkey outside game phase', () => {
     const togglePanel = vi.fn();
     renderHook(() =>
@@ -38,6 +43,21 @@ describe('useGameUiLayout', () => {
     });
     expect(togglePanel).toHaveBeenCalledTimes(1);
     expect(togglePanel).toHaveBeenCalledWith('inventory');
+  });
+
+  it('hides story overlay during exploration intro cutscene (no stack with IntroCutsceneOverlays)', () => {
+    useGamePhaseStore.getState().setExplorationPhase('intro_cutscene');
+    const { result } = renderHook(() =>
+      useGameUiLayout({
+        phase: 'game',
+        gameMode: 'exploration',
+        currentNodeId: 'explore_hub_welcome',
+        hasCurrentNode: true,
+        storyOverlayEligible: true,
+        togglePanel: vi.fn(),
+      }),
+    );
+    expect(result.current.showStoryOverlay).toBe(false);
   });
 
   it('does not toggle inventory in dialogue mode', () => {

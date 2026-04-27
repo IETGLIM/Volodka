@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- **3D-интро + сюжетный оверлей:** при `explore_hub_welcome` и фазе `intro_cutscene` подписи `IntroCutsceneOverlays` больше не накладываются на `StoryRenderer` — `useGameUiLayout` скрывает нижний сюжетный слой на время вводной кат-сцены; подпись интро — непрозрачный фон `bg-zinc-950` вместо `bg-black/88` (`useGameUiLayout.ts`, `IntroCutsceneOverlays.tsx`).
+
 ### Changed
 
 - **NPC и дефолтный игрок — открытые сэмплы Khronos:** в `public/models-external/` добавлены `khronos_cc0_CesiumMan.glb`, `khronos_cc0_RiggedFigure.glb`, `khronos_cc0_Fox.glb` (источник и лицензии — `public/models-external/CC0_KHRONOS_MODELS.md`); `npcDefinitions`, `scenes`, `modelUrls`, `modelMeta`, `NPC.tsx`, `AppPerfWarmup`, `validate-player-animations.mjs`, тесты и `.vercelignore` переведены с отсутствующих в репо коммерческих GLB на эти файлы + локальные `sayuri_dans.glb` / `spartan_armour_mkv_-_halo_reach.glb`. `explorationGlbAnimation.ts` — idle по `Survey` для Fox. `docs/MODEL_INTEGRATION.md` обновлён под CC BY / смешанную лицензию Fox.

@@ -22,7 +22,7 @@ export function IntroCutsceneOverlays() {
             exit={{ opacity: 0, y: 6 }}
             transition={{ duration: 0.35 }}
           >
-            <div className="max-w-xl rounded border border-emerald-500/35 bg-black/88 px-4 py-2.5 text-center text-sm leading-snug text-emerald-100/95 shadow-[0_0_24px_rgba(16,185,129,0.2)]">
+            <div className="max-w-xl rounded border border-emerald-500/35 bg-zinc-950 px-4 py-2.5 text-center text-sm leading-snug text-emerald-100/95 shadow-[0_0_24px_rgba(16,185,129,0.2)]">
               {caption}
             </div>
           </motion.div>

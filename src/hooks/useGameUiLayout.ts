@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo } from 'react';
 import type { GamePanelsState } from '@/hooks/useGamePanels';
 import type { GameMode } from '@/data/rpgTypes';
 import type { AppPhase } from '@/state/appStore';
+import { useGamePhaseStore } from '@/state/gamePhaseStore';
 
 interface UseGameUiLayoutParams {
   phase: AppPhase;
@@ -21,14 +22,18 @@ export function useGameUiLayout({
   storyOverlayEligible,
   togglePanel,
 }: UseGameUiLayoutParams) {
+  /** Фаза 3D-ввода (`IntroCutsceneOverlays` / подписи) — не смешивать с нижним `StoryRenderer` (иначе z-index и полупрозрачность дают «двойной» текст). */
+  const explorationPhase = useGamePhaseStore((s) => s.phase);
+
   /** Показать нижний оверлей сюжета (`StoryRenderer`), не путать с удалённым `StoryPanel`. */
   const showStoryOverlay = useMemo(() => {
     if (phase !== 'game' || !hasCurrentNode) return false;
     if (!storyOverlayEligible) return false;
     if (gameMode === 'dialogue' || gameMode === 'cutscene') return false;
+    if (gameMode === 'exploration' && explorationPhase === 'intro_cutscene') return false;
     if (gameMode === 'exploration' || gameMode === 'combat') return true;
     return false;
-  }, [phase, gameMode, hasCurrentNode, currentNodeId, storyOverlayEligible]);
+  }, [phase, gameMode, hasCurrentNode, currentNodeId, storyOverlayEligible, explorationPhase]);
 
   const handleTogglePanel = useCallback((key: string) => {
     togglePanel(key as keyof GamePanelsState);
