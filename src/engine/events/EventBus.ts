@@ -42,6 +42,17 @@ export type SfxBusType =
   | `footstep_${string}`;
 
 // ============================================
+// UI priority (расширяемо: cinematic interrupts, blocking UI, boss events)
+// ============================================
+
+/** Приоритет UI на шине — подписчики пока не сортируются; поле в payload для будущей маршрутизации. */
+export type UiPriority = 'low' | 'normal' | 'high';
+
+export interface UiEventMeta {
+  priority?: UiPriority;
+}
+
+// ============================================
 // ТИПЫ СОБЫТИЙ И ПЕЙЛОАДОВ
 // ============================================
 
@@ -175,7 +186,7 @@ export interface EventMap {
     text: string;
     type: 'poem' | 'stat' | 'quest' | 'flag' | 'energy' | 'system';
     durationMs?: number;
-  };
+  } & UiEventMeta;
 
   /** Звук UI / мира (см. AudioEngine / обработчики). */
   'sound:play': { type: SfxBusType; volume?: number };

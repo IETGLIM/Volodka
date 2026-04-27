@@ -13,4 +13,6 @@ export {
   type PostEmitMiddleware,
   type StatBusId,
   type SfxBusType,
+  type UiPriority,
+  type UiEventMeta,
 } from '@/engine/events/EventBus';

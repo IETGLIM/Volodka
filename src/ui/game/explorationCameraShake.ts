@@ -3,6 +3,8 @@ import { eventBus } from '@/engine/EventBus';
 
 /** Накопленная амплитуда тряски от успешных взаимодействий (централизованно через EventBus). */
 let shakeStrength = 0;
+let lastShakeTs = 0;
+const SHAKE_COOLDOWN_MS = 80;
 
 let busAttached = false;
 
@@ -11,6 +13,8 @@ function attachInteractionShakeBus(): void {
   busAttached = true;
   eventBus.on('ui:interaction_feedback', (e) => {
     if (e.kind === 'success') {
+      if (e.timestamp - lastShakeTs < SHAKE_COOLDOWN_MS) return;
+      lastShakeTs = e.timestamp;
       shakeStrength = Math.min(shakeStrength + 0.02, 0.08);
     }
   });

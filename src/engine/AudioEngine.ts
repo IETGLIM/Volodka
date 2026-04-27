@@ -43,7 +43,13 @@ class AudioEngineImpl {
   /** Короткий SFX по событию `sound:play` (файлы опциональны — есть программный fallback). */
   playSfx(type: string, volume = 0.35) {
     if (this.muted || typeof window === 'undefined') return;
-    const mapped = UI_SFX_FILE_OVERRIDES[type];
+    const entry = UI_SFX_FILE_OVERRIDES[type];
+    const mapped =
+      entry === undefined
+        ? undefined
+        : Array.isArray(entry)
+          ? entry[Math.floor(Math.random() * entry.length)]
+          : entry;
     if (mapped) {
       try {
         const a = new Audio(mapped);
