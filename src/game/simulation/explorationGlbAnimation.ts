@@ -20,7 +20,9 @@ export function planExplorationGlbLocomotionClip(
   if (animationNames.length === 0) return null;
 
   const idleAnim =
-    animationNames.find((n) => n.toLowerCase().includes('idle')) ?? animationNames[0];
+    animationNames.find((n) => n.toLowerCase().includes('idle')) ??
+    animationNames.find((n) => n.toLowerCase().includes('survey')) ??
+    animationNames[0];
 
   const runPrefer =
     animationNames.find((n) => {

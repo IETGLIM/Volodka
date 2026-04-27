@@ -14,9 +14,9 @@ const PERF_MEASURE = 'volodka-app-perf-warmup';
  * Пути legacy `/models/…` переписываются в `preloadGltf` через `rewriteLegacyModelPath`.
  */
 const CRITICAL_NPC_GLTF_PATHS = [
-  '/models/lowpoly_anime_character_cyberstyle.glb',
-  '/models/cyberpunk_female_full-body_character.glb',
-  '/models/on_a_quest.glb',
+  '/models/khronos_cc0_CesiumMan.glb',
+  '/models/khronos_cc0_RiggedFigure.glb',
+  '/models/khronos_cc0_Fox.glb',
 ];
 
 function scheduleIdleWork(fn: () => void) {

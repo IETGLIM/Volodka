@@ -27,13 +27,10 @@ export const MIN_CHARACTER_BOUNDING_PRODUCT = 0.004;
  * Имена файлов, для которых не проверяем нижнюю границу (бюст, стилизованный коротыш и т.п.).
  * Верхняя граница (MAX) для них по-прежнему обязательна.
  */
-export const GLB_BASE_NAMES_EXEMPT_FROM_MIN_VISUAL_HEIGHT: ReadonlySet<string> = new Set([
-  'destiny_2_character_bust.glb',
-  'toon_cat_free.glb',
-]);
+export const GLB_BASE_NAMES_EXEMPT_FROM_MIN_VISUAL_HEIGHT: ReadonlySet<string> = new Set(['khronos_cc0_fox.glb']);
 
 /** Стилизованные / нечеловеческие пропорции — сырой bbox×uniform может быть огромным; MAX не применяем. */
-export const GLB_BASE_NAMES_EXEMPT_FROM_MAX_BOUNDING_PRODUCT: ReadonlySet<string> = new Set(['toon_cat_free.glb']);
+export const GLB_BASE_NAMES_EXEMPT_FROM_MAX_BOUNDING_PRODUCT: ReadonlySet<string> = new Set(['khronos_cc0_fox.glb']);
 
 export function glbBasenameForScaleValidator(modelUrl: string): string {
   const u = rewriteLegacyModelPath(modelUrl.trim());

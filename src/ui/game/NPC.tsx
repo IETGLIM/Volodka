@@ -235,8 +235,9 @@ const GLTFLoader = memo(function GLTFLoader({
     if (!arr.length) return arr;
     const b = glbBasenameFromUrl(modelPath);
     if (
-      b === 'cyberpunk_female_full-body_character.glb' ||
-      b === 'lowpoly_anime_character_cyberstyle.glb'
+      b === 'khronos_cc0_cesiumman.glb' ||
+      b === 'khronos_cc0_riggedfigure.glb' ||
+      b === 'khronos_cc0_fox.glb'
     ) {
       return cloneAnimationClipsWithoutExplorationPlayerRootMotion(arr);
     }

@@ -1,103 +1,37 @@
 import type { NPCDefinition } from './rpgTypes';
 import { getCurrentScheduleEntry, resolveScheduleNpcId } from '@/engine/ScheduleEngine';
 
-/** Клипы в `lowpoly_anime_character_cyberstyle.glb` (Mixamo idle/walk). */
-const NPC_ANIM_LOWPOLY_CYBER: NonNullable<NPCDefinition['animations']> = {
-  idle: 'Armature|Idle',
-  walk: 'Armature|Walk',
+/**
+ * Один цикл без display name в glTF (Khronos `CesiumMan` / `RiggedFigure` из glTF-Sample-Models):
+ * Three.js GLTFLoader называет клип `animation_0` — для NPC и idle, и walk (см. `resolveNpcAnimationClip` fallback в `NPC.tsx`).
+ */
+const NPC_ANIM_KHR0: NonNullable<NPCDefinition['animations']> = {
+  idle: 'animation_0',
+  walk: 'animation_0',
 };
 
-/** Один клип «Take 001» (Sketchfab и т.п.). */
-const NPC_ANIM_TAKE001: NonNullable<NPCDefinition['animations']> = {
-  idle: 'Take 001',
-  walk: 'Take 001',
+/** Khronos `Fox` — клипы Survey / Walk / Run (официальный образец glTF). */
+const NPC_ANIM_FOX: NonNullable<NPCDefinition['animations']> = {
+  idle: 'Survey',
+  walk: 'Walk',
+  run: 'Run',
 };
 
-/** Клип в `cyberpunk_female_full-body_character.glb`. */
-const NPC_ANIM_MIXAMO_FEMALE: NonNullable<NPCDefinition['animations']> = {
-  idle: 'Armature|mixamo.com|Layer0',
-  walk: 'Armature|mixamo.com|Layer0',
-};
-
-/** Клип в `alleyana.glb`. */
-const NPC_ANIM_ALLEYANA: NonNullable<NPCDefinition['animations']> = {
-  idle: 'Alleyana',
-  walk: 'Alleyana',
-};
-
-const NPC_ANIM_MISS_GALAXY: NonNullable<NPCDefinition['animations']> = {
-  idle: 'walking',
-  walk: 'walking',
-};
-
-const NPC_ANIM_SHIBAHU: NonNullable<NPCDefinition['animations']> = {
-  idle: 'Take 001',
-  walk: 'Take 001',
-};
-
-const NPC_ANIM_SMOL_AME: NonNullable<NPCDefinition['animations']> = {
-  idle: 'Animation',
-  walk: 'Animation',
-};
-
-const NPC_ANIM_LILLIAN: NonNullable<NPCDefinition['animations']> = {
-  idle: 'Idle_g',
-  walk: 'Idle_g',
-};
-
-const NPC_ANIM_COLLEGE_GIRL: NonNullable<NPCDefinition['animations']> = {
-  idle: 'All2',
-  walk: 'All2',
-};
-
-const NPC_ANIM_CALVIN: NonNullable<NPCDefinition['animations']> = {
-  idle: 'rig_deform|G_Pose1',
-  walk: 'rig_deform|G_Pose1',
-};
-
-const NPC_ANIM_DESTINY_BUST: NonNullable<NPCDefinition['animations']> = {
-  idle: 'Take 001',
-  walk: 'Take 001',
-};
-
+/** Локальный GLB в репозитории — танцевальный цикл. */
 const NPC_ANIM_SAYURI: NonNullable<NPCDefinition['animations']> = {
   idle: 'Dans',
   walk: 'Dans',
 };
 
-const NPC_ANIM_BURNT_TRAP: NonNullable<NPCDefinition['animations']> = {
-  idle: 'RIG_Burntrap.ao|BurnTrap_Idle',
-  walk: 'RIG_Burntrap.ao|BurnTrap_Idle',
-};
-
-const NPC_ANIM_BLADE_SOUL: NonNullable<NPCDefinition['animations']> = {
-  idle: 'Take 001',
-  walk: 'Take 001',
-};
-
-const NPC_ANIM_ANNIE: NonNullable<NPCDefinition['animations']> = {
-  idle: 'Walk',
-  walk: 'Walk',
-};
-
-const NPC_ANIM_LUOLI: NonNullable<NPCDefinition['animations']> = {
-  idle: 'CINEMA_4D___',
-  walk: 'CINEMA_4D___',
-};
-
+/** Локальный GLB в репозитории. */
 const NPC_ANIM_SPARTAN: NonNullable<NPCDefinition['animations']> = {
   idle: 'Take 001',
   walk: 'Take 001',
 };
 
-const NPC_ANIM_TOON_CAT: NonNullable<NPCDefinition['animations']> = {
-  idle: 'Scene',
-  walk: 'Scene',
-};
-
 // ============================================
 // ПОЛНЫЕ ОПРЕДЕЛЕНИЯ NPC С ФЭНТЕЗИ-ПЕРСОНАЖАМИ
-// 25 уникальных персонажей для мира Володьки
+// Визуалы обхода: CC0-образцы Khronos + локальные `sayuri_dans` / `spartan_*` (см. `public/models-external/CC0_KHRONOS_MODELS.md`).
 // ============================================
 
 export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
@@ -107,8 +41,8 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
     id: 'zarema',
     name: 'Заремушка (мама, жена Альберта)',
     model: 'barista',
-    modelPath: '/models/cyberpunk_female_full-body_character.glb',
-    animations: NPC_ANIM_MIXAMO_FEMALE,
+    modelPath: '/models/khronos_cc0_RiggedFigure.glb',
+    animations: NPC_ANIM_KHR0,
     scale: 1,
     defaultPosition: { x: -2, y: 0, z: 0 },
     patrolRadius: 1.5,
@@ -135,8 +69,8 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
     name: 'Заремушка (мама, жена Альберта)',
     dialogueRole: 'Дом · кухня и тишина после улицы',
     model: 'barista',
-    modelPath: '/models/cyberpunk_female_full-body_character.glb',
-    animations: NPC_ANIM_MIXAMO_FEMALE,
+    modelPath: '/models/khronos_cc0_RiggedFigure.glb',
+    animations: NPC_ANIM_KHR0,
     scale: 1,
     defaultPosition: { x: -1.55, y: 0, z: 0.65 },
     patrolRadius: 0.85,
@@ -156,8 +90,8 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
     id: 'albert',
     name: 'Альберт',
     model: 'colleague',
-    modelPath: '/models/lowpoly_anime_character_cyberstyle.glb',
-    animations: NPC_ANIM_LOWPOLY_CYBER,
+    modelPath: '/models/khronos_cc0_CesiumMan.glb',
+    animations: NPC_ANIM_KHR0,
     scale: 1,
     defaultPosition: { x: 2, y: 0, z: 0 },
     patrolRadius: 1.2,
@@ -182,8 +116,8 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
     id: 'albert_home',
     name: 'Альберт',
     model: 'colleague',
-    modelPath: '/models/lowpoly_anime_character_cyberstyle.glb',
-    animations: NPC_ANIM_LOWPOLY_CYBER,
+    modelPath: '/models/khronos_cc0_CesiumMan.glb',
+    animations: NPC_ANIM_KHR0,
     scale: 1,
     defaultPosition: { x: 2.05, y: 0, z: -0.35 },
     patrolRadius: 0.75,
@@ -203,9 +137,9 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
     id: 'volodka_dima_neighbor',
     name: 'Дима с пятого',
     model: 'generic',
-    modelPath: '/models/smol_ame_in_an_upcycled_terrarium_hololiveen.glb',
-    animations: NPC_ANIM_SMOL_AME,
-    /** ~0.55–0.62: смол-модель рядом с игроком после `getGltfSkinnedVisualHeightMeters` + цель сцены. */
+    modelPath: '/models/khronos_cc0_Fox.glb',
+    animations: NPC_ANIM_FOX,
+    /** ~0.55–0.62: компактный Khronos Fox рядом с игроком после `getGltfSkinnedVisualHeightMeters` + цель сцены. */
     scale: 0.58,
     defaultPosition: { x: -2.15, y: 0, z: 2.35 },
     patrolRadius: 0.35,
@@ -227,8 +161,8 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
     id: 'kitchen_maria',
     name: 'Виктория',
     model: 'generic',
-    modelPath: '/models/smol_ame_in_an_upcycled_terrarium_hololiveen.glb',
-    animations: NPC_ANIM_SMOL_AME,
+    modelPath: '/models/khronos_cc0_Fox.glb',
+    animations: NPC_ANIM_FOX,
     scale: 1,
     defaultPosition: { x: -2, y: 0, z: 0 },
     patrolRadius: 1.5,
@@ -267,8 +201,8 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
     name: 'Альберт',
     dialogueRole: 'Сосед · ремонт и тишина в подъезде',
     model: 'colleague',
-    modelPath: '/models/lowpoly_anime_character_cyberstyle.glb',
-    animations: NPC_ANIM_LOWPOLY_CYBER,
+    modelPath: '/models/khronos_cc0_CesiumMan.glb',
+    animations: NPC_ANIM_KHR0,
     scale: 1,
     defaultPosition: { x: 2.2, y: 0, z: 0.5 },
     patrolRadius: 0.8,
@@ -302,8 +236,8 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
     name: 'Александр (рабочий чат)',
     dialogueRole: 'Сообщение в корпоративном чате',
     model: 'colleague',
-    modelPath: '/models/lowpoly_anime_character_cyberstyle.glb',
-    animations: NPC_ANIM_LOWPOLY_CYBER,
+    modelPath: '/models/khronos_cc0_CesiumMan.glb',
+    animations: NPC_ANIM_KHR0,
     scale: 1,
     defaultPosition: { x: -2.5, y: 0, z: 1.2 },
     patrolRadius: 0.6,
@@ -337,8 +271,8 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
     id: 'dream_lillian',
     name: 'Лилиан',
     model: 'generic',
-    modelPath: '/models/lillian__vgdc.glb',
-    animations: NPC_ANIM_LILLIAN,
+    modelPath: '/models/khronos_cc0_RiggedFigure.glb',
+    animations: NPC_ANIM_KHR0,
     scale: 1.2,
     defaultPosition: { x: 0, y: 0, z: -4 },
     sceneId: 'dream',
@@ -369,8 +303,8 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
     id: 'dream_witch',
     name: 'Эмбер — Ученица Ведьмы',
     model: 'generic',
-    modelPath: '/models/witchapprentice.glb',
-    animations: NPC_ANIM_TAKE001,
+    modelPath: '/models/khronos_cc0_RiggedFigure.glb',
+    animations: NPC_ANIM_KHR0,
     scale: 1.1,
     defaultPosition: { x: -3, y: 0, z: -2 },
     sceneId: 'dream',
@@ -400,8 +334,8 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
     id: 'dream_galaxy',
     name: 'Астра — Мисс Галактика',
     model: 'generic',
-    modelPath: '/models/miss_galaxy.glb',
-    animations: NPC_ANIM_MISS_GALAXY,
+    modelPath: '/models/khronos_cc0_RiggedFigure.glb',
+    animations: NPC_ANIM_KHR0,
     scale: 1.3,
     defaultPosition: { x: 3, y: 0.5, z: -3 },
     sceneId: 'dream',
@@ -432,8 +366,8 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
     id: 'dream_quester',
     name: 'Странник',
     model: 'generic',
-    modelPath: '/models/on_a_quest.glb',
-    animations: NPC_ANIM_TAKE001,
+    modelPath: '/models/khronos_cc0_CesiumMan.glb',
+    animations: NPC_ANIM_KHR0,
     scale: 1,
     defaultPosition: { x: 2, y: 0, z: 1 },
     patrolRadius: 2,
@@ -497,8 +431,8 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
     id: 'dream_cyber',
     name: 'Нексус',
     model: 'generic',
-    modelPath: '/models/lowpoly_anime_character_cyberstyle.glb',
-    animations: NPC_ANIM_LOWPOLY_CYBER,
+    modelPath: '/models/khronos_cc0_CesiumMan.glb',
+    animations: NPC_ANIM_KHR0,
     scale: 1.1,
     defaultPosition: { x: -2, y: 0, z: 3 },
     sceneId: 'dream',
@@ -528,8 +462,8 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
     id: 'dream_luoli',
     name: 'Лу',
     model: 'generic',
-    modelPath: '/models/luoli_run.glb',
-    animations: NPC_ANIM_LUOLI,
+    modelPath: '/models/khronos_cc0_CesiumMan.glb',
+    animations: NPC_ANIM_KHR0,
     scale: 1,
     defaultPosition: { x: 4, y: 0, z: 0 },
     waypoints: [
@@ -567,8 +501,8 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
     id: 'dream_alleyana',
     name: 'Аллеяна — Тень Переулка',
     model: 'generic',
-    modelPath: '/models/alleyana.glb',
-    animations: NPC_ANIM_ALLEYANA,
+    modelPath: '/models/khronos_cc0_RiggedFigure.glb',
+    animations: NPC_ANIM_KHR0,
     scale: 1.1,
     defaultPosition: { x: -4, y: 0, z: -4 },
     sceneId: 'dream',
@@ -598,8 +532,8 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
     id: 'dream_blade',
     name: 'Клинок — Воин Души',
     model: 'generic',
-    modelPath: '/models/blade__soul_kung_fu_sword_stick.glb',
-    animations: NPC_ANIM_BLADE_SOUL,
+    modelPath: '/models/khronos_cc0_CesiumMan.glb',
+    animations: NPC_ANIM_KHR0,
     scale: 1.2,
     defaultPosition: { x: 3, y: 0, z: 3 },
     sceneId: 'dream',
@@ -629,8 +563,8 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
     id: 'dream_annie',
     name: 'Энни — Невинная Душа',
     model: 'generic',
-    modelPath: '/models/free_annie_anime_gerl_-_without_clothes.glb',
-    animations: NPC_ANIM_ANNIE,
+    modelPath: '/models/khronos_cc0_RiggedFigure.glb',
+    animations: NPC_ANIM_KHR0,
     scale: 0.9,
     defaultPosition: { x: -1, y: 0, z: 4 },
     sceneId: 'dream',
@@ -663,8 +597,8 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
     id: 'battle_burntrap',
     name: 'Сожжённый',
     model: 'shadow',
-    modelPath: '/models/burntrap_hd_-_fnaf_security_breach.glb',
-    animations: NPC_ANIM_BURNT_TRAP,
+    modelPath: '/models/khronos_cc0_Fox.glb',
+    animations: NPC_ANIM_FOX,
     scale: 1.5,
     defaultPosition: { x: 0, y: 0, z: -5 },
     waypoints: [
@@ -705,8 +639,8 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
     name: 'Посетитель бара',
     dialogueRole: 'Гость бара «Синяя яма»',
     model: 'generic',
-    modelPath: '/models/lowpoly_anime_character_cyberstyle.glb',
-    animations: NPC_ANIM_LOWPOLY_CYBER,
+    modelPath: '/models/khronos_cc0_CesiumMan.glb',
+    animations: NPC_ANIM_KHR0,
     scale: 1,
     defaultPosition: { x: 3, y: 0, z: 0 },
     waypoints: [
@@ -740,8 +674,8 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
     id: 'pit_timur',
     name: 'Тимур',
     model: 'colleague',
-    modelPath: '/models/lowpoly_anime_character_cyberstyle.glb',
-    animations: NPC_ANIM_LOWPOLY_CYBER,
+    modelPath: '/models/khronos_cc0_CesiumMan.glb',
+    animations: NPC_ANIM_KHR0,
     scale: 1,
     defaultPosition: { x: 3.2, y: 0, z: -3.5 },
     patrolRadius: 1.2,
@@ -767,8 +701,8 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
     id: 'cafe_calvin',
     name: 'Калвин',
     model: 'generic',
-    modelPath: '/models/calvin_freckle_mcmurray_from_lackadaisy.glb',
-    animations: NPC_ANIM_CALVIN,
+    modelPath: '/models/khronos_cc0_CesiumMan.glb',
+    animations: NPC_ANIM_KHR0,
     scale: 1,
     defaultPosition: { x: 2, y: 0, z: 2 },
     patrolRadius: 1.5,
@@ -799,8 +733,8 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
     id: 'cafe_college_girl',
     name: 'Виктория',
     model: 'generic',
-    modelPath: '/models/college_girl.glb',
-    animations: NPC_ANIM_COLLEGE_GIRL,
+    modelPath: '/models/khronos_cc0_RiggedFigure.glb',
+    animations: NPC_ANIM_KHR0,
     scale: 1,
     defaultPosition: { x: -2, y: 0, z: 3 },
     sceneId: 'cafe_evening',
@@ -831,8 +765,8 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
     id: 'cafe_cyberpunk_girl',
     name: 'Рей',
     model: 'generic',
-    modelPath: '/models/cyberpunk_female_full-body_character.glb',
-    animations: NPC_ANIM_MIXAMO_FEMALE,
+    modelPath: '/models/khronos_cc0_RiggedFigure.glb',
+    animations: NPC_ANIM_KHR0,
     scale: 1.1,
     defaultPosition: { x: 4, y: 0, z: -2 },
     sceneId: 'cafe_evening',
@@ -864,8 +798,8 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
     id: 'park_elder',
     name: 'Старик в парке',
     model: 'elder',
-    modelPath: '/models/on_a_quest.glb',
-    animations: NPC_ANIM_TAKE001,
+    modelPath: '/models/khronos_cc0_CesiumMan.glb',
+    animations: NPC_ANIM_KHR0,
     scale: 1,
     defaultPosition: { x: -5, y: 0, z: 0 },
     waypoints: [
@@ -902,8 +836,8 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
     id: 'park_destiny_statue',
     name: 'Статуя Судьбы',
     model: 'generic',
-    modelPath: '/models/destiny_2_character_bust.glb',
-    animations: NPC_ANIM_DESTINY_BUST,
+    modelPath: '/models/khronos_cc0_CesiumMan.glb',
+    animations: NPC_ANIM_KHR0,
     scale: 1.5,
     defaultPosition: { x: 0, y: 0, z: -8 },
     sceneId: 'memorial_park',
@@ -934,8 +868,8 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
     id: 'park_dog_walker',
     name: 'Выгуливатель собак',
     model: 'generic',
-    modelPath: '/models/toon_cat_free.glb',
-    animations: NPC_ANIM_TOON_CAT,
+    modelPath: '/models/khronos_cc0_Fox.glb',
+    animations: NPC_ANIM_FOX,
     scale: 1,
     defaultPosition: { x: 5, y: 0, z: 3 },
     patrolRadius: 3,
@@ -967,8 +901,8 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
     id: 'rooftop_shadow',
     name: 'Тень на крыше',
     model: 'shadow',
-    modelPath: '/models/witchapprentice.glb',
-    animations: NPC_ANIM_TAKE001,
+    modelPath: '/models/khronos_cc0_RiggedFigure.glb',
+    animations: NPC_ANIM_KHR0,
     scale: 1,
     defaultPosition: { x: -3, y: 0, z: -5 },
     sceneId: 'rooftop_night',
@@ -1006,8 +940,8 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
     name: 'Коллега',
     dialogueRole: 'Линия поддержки · соседняя парта',
     model: 'colleague',
-    modelPath: '/models/lowpoly_anime_character_cyberstyle.glb',
-    animations: NPC_ANIM_LOWPOLY_CYBER,
+    modelPath: '/models/khronos_cc0_CesiumMan.glb',
+    animations: NPC_ANIM_KHR0,
     scale: 1,
     defaultPosition: { x: 3, y: 0, z: 1 },
     patrolRadius: 1.5,
@@ -1078,8 +1012,8 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
     name: 'Александр',
     dialogueRole: 'Техлид',
     model: 'colleague',
-    modelPath: '/models/lowpoly_anime_character_cyberstyle.glb',
-    animations: NPC_ANIM_LOWPOLY_CYBER,
+    modelPath: '/models/khronos_cc0_CesiumMan.glb',
+    animations: NPC_ANIM_KHR0,
     scale: 1,
     defaultPosition: { x: -3.2, y: 0, z: 1.2 },
     patrolRadius: 1,
@@ -1100,8 +1034,8 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
     name: 'Дмитрий',
     dialogueRole: 'DevOps · мониторинг и графики',
     model: 'colleague',
-    modelPath: '/models/lowpoly_anime_character_cyberstyle.glb',
-    animations: NPC_ANIM_LOWPOLY_CYBER,
+    modelPath: '/models/khronos_cc0_CesiumMan.glb',
+    animations: NPC_ANIM_KHR0,
     scale: 1,
     defaultPosition: { x: -1.2, y: 0, z: 2 },
     patrolRadius: 1.2,
@@ -1122,8 +1056,8 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
     name: 'Андрей (коллега)',
     dialogueRole: 'Compliance · соседний блок',
     model: 'colleague',
-    modelPath: '/models/lowpoly_anime_character_cyberstyle.glb',
-    animations: NPC_ANIM_LOWPOLY_CYBER,
+    modelPath: '/models/khronos_cc0_CesiumMan.glb',
+    animations: NPC_ANIM_KHR0,
     scale: 1,
     defaultPosition: { x: 1.4, y: 0, z: 0.5 },
     patrolRadius: 1,
@@ -1144,8 +1078,8 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
     name: 'Артём',
     dialogueRole: 'ИБ · CVE, токены, песочница',
     model: 'colleague',
-    modelPath: '/models/lowpoly_anime_character_cyberstyle.glb',
-    animations: NPC_ANIM_LOWPOLY_CYBER,
+    modelPath: '/models/khronos_cc0_CesiumMan.glb',
+    animations: NPC_ANIM_KHR0,
     scale: 0.95,
     defaultPosition: { x: -2.4, y: 0, z: -1.5 },
     patrolRadius: 0.8,
@@ -1167,8 +1101,8 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
     id: 'district_vika',
     name: 'Вика с Зелёнки',
     model: 'generic',
-    modelPath: '/models/college_girl.glb',
-    animations: NPC_ANIM_COLLEGE_GIRL,
+    modelPath: '/models/khronos_cc0_RiggedFigure.glb',
+    animations: NPC_ANIM_KHR0,
     scale: 1,
     defaultPosition: { x: -3.5, y: 0, z: 2.5 },
     patrolRadius: 1.8,
@@ -1188,8 +1122,8 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
     id: 'district_renata',
     name: 'Рената',
     model: 'generic',
-    modelPath: '/models/cyberpunk_female_full-body_character.glb',
-    animations: NPC_ANIM_MIXAMO_FEMALE,
+    modelPath: '/models/khronos_cc0_RiggedFigure.glb',
+    animations: NPC_ANIM_KHR0,
     scale: 1,
     defaultPosition: { x: 4, y: 0, z: 1 },
     patrolRadius: 1.2,
@@ -1209,8 +1143,8 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
     id: 'district_damien',
     name: 'Дамьен',
     model: 'colleague',
-    modelPath: '/models/calvin_freckle_mcmurray_from_lackadaisy.glb',
-    animations: NPC_ANIM_CALVIN,
+    modelPath: '/models/khronos_cc0_CesiumMan.glb',
+    animations: NPC_ANIM_KHR0,
     scale: 1,
     defaultPosition: { x: 4.3, y: 0, z: -0.5 },
     sceneId: 'street_night',
@@ -1228,8 +1162,8 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
     id: 'district_konstantin',
     name: 'Константин',
     model: 'colleague',
-    modelPath: '/models/lowpoly_anime_character_cyberstyle.glb',
-    animations: NPC_ANIM_LOWPOLY_CYBER,
+    modelPath: '/models/khronos_cc0_CesiumMan.glb',
+    animations: NPC_ANIM_KHR0,
     scale: 1.05,
     defaultPosition: { x: 0.5, y: 0, z: 3 },
     sceneId: 'street_night',
@@ -1248,8 +1182,8 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
     id: 'district_timur',
     name: 'Тимур',
     model: 'generic',
-    modelPath: '/models/lowpoly_anime_character_cyberstyle.glb',
-    animations: NPC_ANIM_LOWPOLY_CYBER,
+    modelPath: '/models/khronos_cc0_CesiumMan.glb',
+    animations: NPC_ANIM_KHR0,
     scale: 1,
     defaultPosition: { x: 1.2, y: 0, z: 3.2 },
     sceneId: 'street_night',
@@ -1267,8 +1201,8 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
     id: 'district_polikarp',
     name: 'Поликарп',
     model: 'elder',
-    modelPath: '/models/on_a_quest.glb',
-    animations: NPC_ANIM_TAKE001,
+    modelPath: '/models/khronos_cc0_CesiumMan.glb',
+    animations: NPC_ANIM_KHR0,
     scale: 1,
     defaultPosition: { x: -1, y: 0, z: -2.5 },
     sceneId: 'street_winter',
@@ -1288,8 +1222,8 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
     id: 'district_polikarp_night',
     name: 'Поликарп',
     model: 'elder',
-    modelPath: '/models/on_a_quest.glb',
-    animations: NPC_ANIM_TAKE001,
+    modelPath: '/models/khronos_cc0_CesiumMan.glb',
+    animations: NPC_ANIM_KHR0,
     scale: 1,
     defaultPosition: { x: -3.8, y: 0, z: 1.6 },
     patrolRadius: 1.2,
@@ -1309,8 +1243,8 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
     id: 'district_rimma',
     name: 'Римма',
     model: 'generic',
-    modelPath: '/models/shibahu.glb',
-    animations: NPC_ANIM_SHIBAHU,
+    modelPath: '/models/khronos_cc0_RiggedFigure.glb',
+    animations: NPC_ANIM_KHR0,
     scale: 0.95,
     defaultPosition: { x: 2.5, y: 0, z: -2 },
     sceneId: 'street_winter',
@@ -1330,8 +1264,8 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
     id: 'district_rimma_night',
     name: 'Римма',
     model: 'generic',
-    modelPath: '/models/shibahu.glb',
-    animations: NPC_ANIM_SHIBAHU,
+    modelPath: '/models/khronos_cc0_RiggedFigure.glb',
+    animations: NPC_ANIM_KHR0,
     scale: 0.95,
     defaultPosition: { x: 2.35, y: 0, z: -1.95 },
     sceneId: 'street_night',
@@ -1350,8 +1284,8 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
     id: 'district_nastya',
     name: 'Настя',
     model: 'generic',
-    modelPath: '/models/smol_ame_in_an_upcycled_terrarium_hololiveen.glb',
-    animations: NPC_ANIM_SMOL_AME,
+    modelPath: '/models/khronos_cc0_Fox.glb',
+    animations: NPC_ANIM_FOX,
     scale: 1,
     defaultPosition: { x: 3, y: 0, z: -2.2 },
     sceneId: 'street_night',
@@ -1371,8 +1305,8 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
     id: 'street_stranger',
     name: 'Незнакомец',
     model: 'shadow',
-    modelPath: '/models/alleyana.glb',
-    animations: NPC_ANIM_ALLEYANA,
+    modelPath: '/models/khronos_cc0_RiggedFigure.glb',
+    animations: NPC_ANIM_KHR0,
     scale: 1,
     defaultPosition: { x: -4, y: 0, z: 2 },
     patrolRadius: 2,
@@ -1402,8 +1336,8 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
     id: 'street_crimson',
     name: 'Алая',
     model: 'generic',
-    modelPath: '/models/miss_galaxy.glb',
-    animations: NPC_ANIM_MISS_GALAXY,
+    modelPath: '/models/khronos_cc0_RiggedFigure.glb',
+    animations: NPC_ANIM_KHR0,
     scale: 1.1,
     defaultPosition: { x: 3, y: 0, z: -3 },
     sceneId: 'street_night',

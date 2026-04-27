@@ -39,7 +39,7 @@ public/
 
 ### Игрок
 
-По умолчанию игрок — эталон **`lowpoly_anime_character_cyberstyle.glb`** в каталоге **`getModelsPublicBase()`** (обычно **`/models-external/…`**). Другой файл: **`NEXT_PUBLIC_DEFAULT_PLAYER_MODEL`**. Отдельный файл в корне `public/` не используется по умолчанию.
+По умолчанию игрок — эталон **`khronos_cc0_CesiumMan.glb`** из [KhronosGroup/glTF-Sample-Models](https://github.com/KhronosGroup/glTF-Sample-Models) (`2.0/CesiumMan/glTF-Binary/CesiumMan.glb`): **CC BY 4.0** (см. README модели + [условия товарного знака Cesium](https://github.com/AnalyticalGraphicsInc/cesium/wiki/CesiumTrademark.pdf)). Файл лежит в **`getModelsPublicBase()`** (обычно **`/models-external/…`**). Другой путь: **`NEXT_PUBLIC_DEFAULT_PLAYER_MODEL`**. Отдельный файл в корне `public/` не используется по умолчанию.
 
 ```tsx
 <PhysicsPlayer

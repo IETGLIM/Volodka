@@ -112,7 +112,7 @@ export const StreamingDebugHUD = memo(function StreamingDebugHUD() {
   const cacheState: any = __getGltfModelCacheTestState();
   const { currentModelPath, currentAnimation } = useGameStore(
     useShallow((s) => ({
-      currentModelPath: (s.exploration as any)?.streaming?.currentModelPath || 'lowpoly_anime_character_cyberstyle.glb',
+      currentModelPath: (s.exploration as any)?.streaming?.currentModelPath || 'khronos_cc0_CesiumMan.glb',
       currentAnimation: (s.exploration as any)?.streaming?.currentAnimation || (s.gameMode === 'exploration' ? 'Idle' : 'unknown'),
     }))
   );

@@ -4,6 +4,8 @@
 
 ### Changed
 
+- **NPC и дефолтный игрок — открытые сэмплы Khronos:** в `public/models-external/` добавлены `khronos_cc0_CesiumMan.glb`, `khronos_cc0_RiggedFigure.glb`, `khronos_cc0_Fox.glb` (источник и лицензии — `public/models-external/CC0_KHRONOS_MODELS.md`); `npcDefinitions`, `scenes`, `modelUrls`, `modelMeta`, `NPC.tsx`, `AppPerfWarmup`, `validate-player-animations.mjs`, тесты и `.vercelignore` переведены с отсутствующих в репо коммерческих GLB на эти файлы + локальные `sayuri_dans.glb` / `spartan_armour_mkv_-_halo_reach.glb`. `explorationGlbAnimation.ts` — idle по `Survey` для Fox. `docs/MODEL_INTEGRATION.md` обновлён под CC BY / смешанную лицензию Fox.
+
 - **Хаб 3D + квесты обхода:** узел `explore_hub_welcome` переписан в диэгетический тон (ночная смена, слои «тела» и «тикетов», стихи как закрытые инциденты); у целей `exploration_zarema_hearth` / `exploration_volodka_rack` добавлены `linkedStoryNodeId: explore_hub_welcome` и уточнены подсказки. **Инвентарь:** шапка в духе duty-manifest; **предмет** `tea` — описание после смены.
 
 - **Офис ↔ ночной хаб / white-hat:** в `storyNodes` смягчены мета-формулировки у `start`, `start_2`, `database_analysis`; у `start_diagnosis` — мост «UAT дома = та же дисциплина». У `office_artyom` (`npcDefinitions`, `artyom_greeting`) — явная связка UAT-scope и ночного стола. **UI:** `globals.css` — класс `game-panel-cyber-glitch` (лёгкий шум/дрейф, без поломки `position: fixed`); панели `QuestsPanel`, `Inventory`, `JournalPanel` — слой и `z-index` контента над декором.

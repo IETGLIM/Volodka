@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest';
 import {
   estimateCharacterBoundingProduct,
   validateCharacterScale,
-  GLB_BASE_NAMES_EXEMPT_FROM_MIN_VISUAL_HEIGHT,
   MAX_CHARACTER_BOUNDING_PRODUCT,
   MIN_CHARACTER_BOUNDING_PRODUCT,
 } from './characterScaleValidator';
@@ -23,18 +22,14 @@ describe('characterScaleValidator', () => {
   });
 
   it('validateCharacterScale rejects below MIN raw product for non-exempt basename', () => {
-    const r = validateCharacterScale('/models/college_girl.glb', 0.2, 0.015);
+    const r = validateCharacterScale('/models/khronos_cc0_RiggedFigure.glb', 0.2, 0.015);
     expect(r).not.toBe('ok');
     if (r !== 'ok') expect(r.actualHeightM).toBeLessThan(MIN_CHARACTER_BOUNDING_PRODUCT);
   });
 
-  it('exempt basenames skip MIN check only', () => {
-    const bust = [...GLB_BASE_NAMES_EXEMPT_FROM_MIN_VISUAL_HEIGHT][0];
-    expect(validateCharacterScale(`/models/${bust}`, 0.2, 0.9)).toBe('ok');
-    expect(validateCharacterScale(`/models/${bust}`, 500, 0.9)).not.toBe('ok');
-  });
-
-  it('toon cat exempt skips MAX bound', () => {
-    expect(validateCharacterScale('/models/toon_cat_free.glb', 600, 0.5)).toBe('ok');
+  it('Khronos Fox skips MIN bound; CesiumMan still hits MAX when огромный bbox', () => {
+    expect(validateCharacterScale('/models/khronos_cc0_Fox.glb', 0.2, 0.9)).toBe('ok');
+    expect(validateCharacterScale('/models/khronos_cc0_Fox.glb', 600, 0.5)).toBe('ok');
+    expect(validateCharacterScale('/models/khronos_cc0_CesiumMan.glb', 500, 0.9)).not.toBe('ok');
   });
 });

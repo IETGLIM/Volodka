@@ -45,7 +45,7 @@ describe('resolveCharacterMeshUniformScale', () => {
   });
 
   it('учитывает definitionModelScale для NPC', () => {
-    const url = '/models/college_girl.glb';
+    const url = '/models/khronos_cc0_RiggedFigure.glb';
     const base = resolveCharacterMeshUniformScale(url, {
       roomModelScale: 0.9,
       definitionModelScale: 1,

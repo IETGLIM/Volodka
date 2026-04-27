@@ -16,19 +16,17 @@ const MODELS_DIRS = [
 ];
 
 const CRITICAL_MODELS = [
-  'lowpoly_anime_character_cyberstyle.glb',
+  'khronos_cc0_CesiumMan.glb',
+  'khronos_cc0_RiggedFigure.glb',
+  'khronos_cc0_Fox.glb',
+  'sayuri_dans.glb',
+  'spartan_armour_mkv_-_halo_reach.glb',
   'Chair.glb',
   'desk_volodka.glb',
   'shelf.glb',
   'mug.glb',
   'Keyboard.glb',
   'lamp.glb',
-  'lillian__vgdc.glb',
-  'on_a_quest.glb',
-  'witchapprentice.glb',
-  'miss_galaxy.glb',
-  'toon_cat_free.glb',
-  'smol_ame_in_an_upcycled_terrarium_hololiveen.glb',
 ];
 
 console.log('🚀 Uploading critical models to Vercel Blob via API...');

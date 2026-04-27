@@ -41,7 +41,7 @@ export function rewriteLegacyModelPath(path: string): string {
 // ============================================
 
 /** Имя файла эталона игрока (папка — `getModelsPublicBase()`, по умолчанию `public/models-external`). */
-export const DEFAULT_PLAYER_GLB_FILENAME = 'lowpoly_anime_character_cyberstyle.glb' as const;
+export const DEFAULT_PLAYER_GLB_FILENAME = 'khronos_cc0_CesiumMan.glb' as const;
 
 export const MODEL_URLS = {
   /**
@@ -51,34 +51,35 @@ export const MODEL_URLS = {
   volodka: `${BASE_URL}/Volodka.glb`,
   
   // NPC модели (аниме стиль)
-  smolAme: `${BASE_URL}/smol_ame_in_an_upcycled_terrarium_hololiveen.glb`,
-  lillian: `${BASE_URL}/lillian__vgdc.glb`,
-  witchApprentice: `${BASE_URL}/witchapprentice.glb`,
-  missGalaxy: `${BASE_URL}/miss_galaxy.glb`,
-  onAQuest: `${BASE_URL}/on_a_quest.glb`,
+  smolAme: `${BASE_URL}/khronos_cc0_Fox.glb`,
+  lillian: `${BASE_URL}/khronos_cc0_RiggedFigure.glb`,
+  witchApprentice: `${BASE_URL}/khronos_cc0_RiggedFigure.glb`,
+  missGalaxy: `${BASE_URL}/khronos_cc0_RiggedFigure.glb`,
+  onAQuest: `${BASE_URL}/khronos_cc0_CesiumMan.glb`,
   sayuriDans: `${BASE_URL}/sayuri_dans.glb`,
+  /** Базовый humanoid (Khronos `CesiumMan`, glTF-Sample-Models). */
   lowpolyCyberstyle: `${BASE_URL}/${DEFAULT_PLAYER_GLB_FILENAME}`,
-  luoliRun: `${BASE_URL}/luoli_run.glb`,
-  alleyana: `${BASE_URL}/alleyana.glb`,
-  bladeSoul: `${BASE_URL}/blade__soul_kung_fu_sword_stick.glb`,
-  annie: `${BASE_URL}/free_annie_anime_gerl_-_without_clothes.glb`,
-  burntrap: `${BASE_URL}/burntrap_hd_-_fnaf_security_breach.glb`,
-  shibahu: `${BASE_URL}/shibahu.glb`,
+  luoliRun: `${BASE_URL}/khronos_cc0_CesiumMan.glb`,
+  alleyana: `${BASE_URL}/khronos_cc0_RiggedFigure.glb`,
+  bladeSoul: `${BASE_URL}/khronos_cc0_CesiumMan.glb`,
+  annie: `${BASE_URL}/khronos_cc0_RiggedFigure.glb`,
+  burntrap: `${BASE_URL}/khronos_cc0_Fox.glb`,
+  shibahu: `${BASE_URL}/khronos_cc0_Fox.glb`,
   /** @deprecated Используйте `lowpolyAnimeCyber` для NPC с idle/walk. */
   cyberpunkChar: `${BASE_URL}/${DEFAULT_PLAYER_GLB_FILENAME}`,
-  darkLantern: `${BASE_URL}/witchapprentice.glb`,
-  calvin: `${BASE_URL}/calvin_freckle_mcmurray_from_lackadaisy.glb`,
-  collegeGirl: `${BASE_URL}/college_girl.glb`,
-  cyberpunkFemale: `${BASE_URL}/cyberpunk_female_full-body_character.glb`,
-  antoniGaudi: `${BASE_URL}/on_a_quest.glb`,
-  destinyBust: `${BASE_URL}/destiny_2_character_bust.glb`,
-  toonCat: `${BASE_URL}/toon_cat_free.glb`,
+  darkLantern: `${BASE_URL}/khronos_cc0_RiggedFigure.glb`,
+  calvin: `${BASE_URL}/khronos_cc0_CesiumMan.glb`,
+  collegeGirl: `${BASE_URL}/khronos_cc0_RiggedFigure.glb`,
+  cyberpunkFemale: `${BASE_URL}/khronos_cc0_RiggedFigure.glb`,
+  antoniGaudi: `${BASE_URL}/khronos_cc0_CesiumMan.glb`,
+  destinyBust: `${BASE_URL}/khronos_cc0_CesiumMan.glb`,
+  toonCat: `${BASE_URL}/khronos_cc0_Fox.glb`,
   spartanArmour: `${BASE_URL}/spartan_armour_mkv_-_halo_reach.glb`,
-  crimsonLaceConfidence: `${BASE_URL}/alleyana.glb`,
-  crimsonLaceHallway: `${BASE_URL}/miss_galaxy.glb`,
-  
-  // Окружение
-  blackhole: `${BASE_URL}/blackhole.glb`,
+  crimsonLaceConfidence: `${BASE_URL}/khronos_cc0_RiggedFigure.glb`,
+  crimsonLaceHallway: `${BASE_URL}/khronos_cc0_RiggedFigure.glb`,
+
+  // Окружение: legacy `blackhole.glb` вынесен из репо — ключ оставлен для совместимости, URL указывает на лёгкий CC0-ассет в `models-external`.
+  blackhole: `${BASE_URL}/khronos_cc0_Fox.glb`,
 
   /**
    * Бесплатные эталоны **Khronos glTF-Sample-Assets** (CC0 1.0) — см. `public/models-external/CC0_KHRONOS_MODELS.md`.

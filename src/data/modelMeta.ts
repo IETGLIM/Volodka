@@ -23,26 +23,14 @@ const DEFAULT_CHARACTER_UNIFORM_BASE = 1.17;
  */
 export const GLB_CHARACTER_UNIFORM_BASE_BY_FILENAME: Record<string, number> = {
   'volodka.glb': 1.08,
-  /** Hero TPS в комнате 14×10: читаемый силуэт у стола/мониторов; кап `volodka_room` в `NARROW_SCENE_UNIFORM_CAP`. */
-  'lowpoly_anime_character_cyberstyle.glb': 1.92,
-  'cyberpunk_female_full-body_character.glb': 1.11,
-  'smol_ame_in_an_upcycled_terrarium_hololiveen.glb': 1.65,
-  'lillian__vgdc.glb': 1.02,
-  'witchapprentice.glb': 1.05,
-  'miss_galaxy.glb': 1.08,
-  'on_a_quest.glb': 1.12,
+  /** Khronos glTF-Sample-Models — humanoid walk (CesiumMan). */
+  'khronos_cc0_cesiumman.glb': 1.12,
+  /** Тонкий скинированный манекен (RiggedFigure). */
+  'khronos_cc0_riggedfigure.glb': 1.22,
+  /** Лиса — меньше по росту, чуть выше uniform. */
+  'khronos_cc0_fox.glb': 1.45,
   'sayuri_dans.glb': 1.05,
-  'luoli_run.glb': 1.02,
-  'alleyana.glb': 1.05,
-  'blade__soul_kung_fu_sword_stick.glb': 0.98,
-  'free_annie_anime_gerl_-_without_clothes.glb': 0.99,
-  'burntrap_hd_-_fnaf_security_breach.glb': 0.96,
-  'calvin_freckle_mcmurray_from_lackadaisy.glb': 1.04,
-  'college_girl.glb': 1.05,
-  'destiny_2_character_bust.glb': 0.93,
-  'toon_cat_free.glb': 1.2,
   'spartan_armour_mkv_-_halo_reach.glb': 0.94,
-  'shibahu.glb': 1.28,
 };
 
 /** Потолок uniform по узким интерьерам (как прежние жёсткие капы в `playerScaleConstants`). */

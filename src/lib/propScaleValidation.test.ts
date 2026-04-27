@@ -17,7 +17,7 @@ describe('validatePropGlbScale', () => {
     const def: PropDefinition = {
       id: 'stylized',
       category: 'decor',
-      glbPath: '/models/toon_cat_free.glb',
+      glbPath: '/models/khronos_cc0_Fox.glb',
       exemptFromScaleValidation: true,
     };
     expect(validatePropGlbScale(def, def.glbPath!, 900, 0.5)).toBe('skipped-exempt');
@@ -27,7 +27,7 @@ describe('validatePropGlbScale', () => {
     const def: PropDefinition = {
       id: 'z',
       category: 'tech',
-      glbPath: '/models/destiny_2_character_bust.glb',
+      glbPath: '/models/khronos_cc0_CesiumMan.glb',
     };
     const r = validatePropGlbScale(def, def.glbPath!, 0.5, 0.2);
     expect(r).not.toBe('skipped-procedural');
@@ -39,7 +39,7 @@ describe('validatePropGlbScale', () => {
     const def: PropDefinition = {
       id: 'oversized_prop',
       category: 'furniture',
-      glbPath: '/models/college_girl.glb',
+      glbPath: '/models/khronos_cc0_RiggedFigure.glb',
     };
     const r = validatePropGlbScale(def, def.glbPath!, 200, 0.5);
     expect(r).not.toBe('ok');

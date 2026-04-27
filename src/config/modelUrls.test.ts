@@ -32,8 +32,9 @@ describe('isValidPlayerGlbPath', () => {
     expect(isValidPlayerGlbPath(MODEL_URLS.volodka)).toBe(true);
   });
 
-  it('uses the bundled lowpoly anime cyberstyle model as the default playable character', () => {
+  it('uses the bundled Khronos CesiumMan sample as the default playable character', () => {
     expect(getDefaultPlayerModelPath()).toBe(MODEL_URLS.lowpolyCyberstyle);
+    expect(getDefaultPlayerModelPath()).toContain('khronos_cc0_CesiumMan.glb');
   });
 
   it('exposes bundled Khronos CC0 sample URLs', () => {

@@ -1,6 +1,22 @@
-# Бесплатные модели (CC0) для Vercel / WebGL
+# Модели Khronos / сэмплы для Vercel / WebGL
 
-Файлы в этой папке с префиксом **`khronos_cc0_*`** скачаны из репозитория **[KhronosGroup/glTF-Sample-Assets](https://github.com/KhronosGroup/glTF-Sample-Assets)** (официальные примеры формата glTF 2.0).
+Часть файлов с префиксом **`khronos_cc0_*`** — из **[KhronosGroup/glTF-Sample-Assets](https://github.com/KhronosGroup/glTF-Sample-Assets)**; персонажные **`khronos_cc0_*.glb`** ниже — из **[KhronosGroup/glTF-Sample-Models](https://github.com/KhronosGroup/glTF-Sample-Models)** (ветка `master`, папка `2.0/<Model>/glTF-Binary/*.glb`). **Лицензии разные** — сверяйте таблицу перед публикацией.
+
+## Персонажи обхода / игрок (`npcDefinitions`, дефолтный игрок)
+
+| Файл | Источник (raw GitHub) | Лицензия |
+|------|------------------------|----------|
+| `khronos_cc0_CesiumMan.glb` | `2.0/CesiumMan/glTF-Binary/CesiumMan.glb` | **CC BY 4.0** — donated by Cesium; товарный знак: [Cesium Trademark](https://github.com/AnalyticalGraphicsInc/cesium/wiki/CesiumTrademark.pdf) |
+| `khronos_cc0_RiggedFigure.glb` | `2.0/RiggedFigure/glTF-Binary/RiggedFigure.glb` | **CC BY 4.0** — donated by Cesium |
+| `khronos_cc0_Fox.glb` | `2.0/Fox/glTF-Binary/Fox.glb` | **Смешанная:** сетка **CC0** (PixelMannen); **риг и анимации CC BY 4.0** (@tomkranis / Sketchfab); конвертация glTF — см. README в репозитории Khronos |
+
+Клипы: `CesiumMan` / `RiggedFigure` — один безымянный цикл → в Three.js обычно `animation_0`; `Fox` — `Survey`, `Walk`, `Run`.
+
+---
+
+## Прочие CC0-пропы (префикс `khronos_cc0_*`)
+
+Файлы ниже скачаны из репозитория **[KhronosGroup/glTF-Sample-Assets](https://github.com/KhronosGroup/glTF-Sample-Assets)** (официальные примеры формата glTF 2.0).
 
 | Файл | Источник (raw) | Лицензия |
 |------|----------------|----------|

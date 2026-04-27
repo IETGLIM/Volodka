@@ -219,7 +219,7 @@ const INITIAL_EXPLORATION_STATE: ExplorationState = {
     prefetchTargetsPreview: [] as readonly SceneId[],
     budgetTextureBytesApprox: 0,
     rapierActiveBodiesApprox: 0,
-    currentModelPath: 'lowpoly_anime_character_cyberstyle.glb',
+    currentModelPath: 'khronos_cc0_CesiumMan.glb',
     currentAnimation: 'Idle',
   },
 };
