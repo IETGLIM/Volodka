@@ -86,10 +86,10 @@ export const ExplorationPostFX = memo(function ExplorationPostFX({
       <EffectComposer multisampling={0} enableNormalPass={false}>
         <Bloom
           mipmapBlur
-          luminanceThreshold={volodkaBoost ? 0.26 : 0.28}
-          luminanceSmoothing={volodkaBoost ? 0.44 : 0.48}
-          intensity={volodkaBoost ? 0.6 : 0.52}
-          radius={volodkaBoost ? 0.52 : 0.48}
+          luminanceThreshold={volodkaBoost ? 0.2 : 0.28}
+          luminanceSmoothing={volodkaBoost ? 0.42 : 0.48}
+          intensity={volodkaBoost ? 0.68 : 0.52}
+          radius={volodkaBoost ? 0.55 : 0.48}
         />
         <Vignette eskil={false} offset={vignetteOffset} darkness={Math.min(0.82, vignetteDarkness)} />
         <ChromaticAberration

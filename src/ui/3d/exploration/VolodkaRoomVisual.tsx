@@ -1,14 +1,10 @@
 'use client';
 
-import { memo, useEffect, useMemo, useRef } from 'react';
+import { memo, Suspense, use, useEffect, useMemo, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
-import { BoxGeometry, type Mesh, MeshStandardMaterial, ShaderMaterial } from 'three';
-import {
-  createVolodkaCarpetTexture,
-  createVolodkaFloorTexture,
-  createVolodkaWallTexture,
-  createVolodkaWoodTexture,
-} from '@/ui/3d/exploration/volodkaRoomProceduralTextures';
+import { BoxGeometry, BufferAttribute, BufferGeometry, type Mesh, MeshStandardMaterial, PlaneGeometry, ShaderMaterial } from 'three';
+
+import { createVolodkaRoomCanvasMapsSync, type VolodkaRoomCanvasMaps } from '@/ui/3d/exploration/volodkaRoomTextureBundle';
 import { MatrixRainScreenMesh } from '@/ui/3d/exploration/MatrixRainScreenMesh';
 import {
   INTERIOR_REF_DOOR_HEIGHT_M,
@@ -21,24 +17,15 @@ import {
 import { createGlitchDataPlaneMaterial } from '@/lib/glitchDataPlaneMaterial';
 import { PropModel } from '@/ui/3d/exploration/PropModel';
 import { StreamingChunk } from '@/ui/3d/exploration/StreamingChunk';
+import { buildVolodkaRoomMergedShell } from '@/ui/3d/exploration/volodkaRoomMergedGeometries';
 
 const VOLODKA_MONITOR_LEFT_LINES = ['STATUS: DEGRADED', 'Grafana · Prometheus', 'pod/monitoring-01'] as const;
 const VOLODKA_MONITOR_RIGHT_LINES = ['RETRO INCIDENT', 'on-call: Володька', 'silence: 0 active'] as const;
 
-/**
- * Комната Володьки в обходе: панелька, удалёнка (два монитора, стойка — как `scenes.ts` / коллайдеры).
- * Текстуры процедурные (canvas), без внешних PNG.
- *
- * Z-fight: у процедурных мешей `depthWrite` / `depthTest` и `polygonOffset` (factor/units 1).
- * GLB — `PropModel` + `sceneScale`; см. `explorationInteriorReference` для опорных высот.
- */
-
-// Переиспользуемая геометрия — один инстанс на тип, без лишних аллокаций в кадре.
 const GEO = {
   monitorBack: new BoxGeometry(0.36, 0.44, 0.028),
   deskPartition: new BoxGeometry(1.12, 0.52, 0.04),
   laptopBase: new BoxGeometry(0.5, 0.28, 0.025),
-  doorFrameTop: new BoxGeometry(INTERIOR_REF_DOOR_WIDTH_M + 0.44, 0.12, 0.16),
   corridorVoid: new BoxGeometry(
     INTERIOR_REF_DOOR_WIDTH_M * 1.12,
     INTERIOR_REF_DOOR_HEIGHT_M * 1.06,
@@ -53,6 +40,13 @@ const SHARED_ZFIGHT_MAT_PROPS = {
   polygonOffsetFactor: 1,
   polygonOffsetUnits: 1,
 } as const;
+
+function ensureUv2(geo: BufferGeometry): void {
+  const uv = geo.attributes.uv as BufferAttribute | undefined;
+  if (uv && !geo.attributes.uv2) {
+    geo.setAttribute('uv2', uv.clone());
+  }
+}
 
 type VolodkaRoomVisualProps = {
   explorationCharacterModelScale?: number;
@@ -84,45 +78,79 @@ const VolodkaGlitchPanel = memo(function VolodkaGlitchPanel() {
   );
 });
 
-export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({
+const VolodkaRoomVisualInner = memo(function VolodkaRoomVisualInner({
   explorationCharacterModelScale = 1,
 }: VolodkaRoomVisualProps) {
+  const mapsPromise = useMemo(
+    () =>
+      new Promise<VolodkaRoomCanvasMaps>((resolve) => {
+        requestAnimationFrame(() => resolve(createVolodkaRoomCanvasMapsSync()));
+      }),
+    [],
+  );
+  const maps = use(mapsPromise);
+
   const w = 14;
   const d = 10;
   const h = 2.85;
   const t = 0.1;
   const hd = d / 2;
+  const doorY = interiorDoorCenterYFromFloor(0);
+  const dw = INTERIOR_REF_DOOR_WIDTH_M;
+  const dh = INTERIOR_REF_DOOR_HEIGHT_M;
+  const doorFaceZ = hd - t - 0.02;
+  const jambW = 0.14;
+  const jambD = 0.12;
+
+  const merged = useMemo(
+    () =>
+      buildVolodkaRoomMergedShell({
+        w,
+        h,
+        t,
+        hd,
+        dw,
+        dh,
+        doorY,
+        doorFaceZ,
+        jambW,
+        jambD,
+      }),
+    [w, h, t, hd, dw, dh, doorY, doorFaceZ, jambW, jambD],
+  );
+
+  const floorGeometry = useMemo(() => {
+    const g = new PlaneGeometry(w - 0.08, d - 0.08);
+    g.rotateX(-Math.PI / 2);
+    ensureUv2(g);
+    return g;
+  }, [w, d]);
 
   const roomMaterials = useMemo(() => {
-    const wallMap = createVolodkaWallTexture();
-    wallMap.repeat.set(3.2, 2.4);
-    const floorMap = createVolodkaFloorTexture();
-    floorMap.repeat.set(5, 4);
-    const carpetMap = createVolodkaCarpetTexture();
-    carpetMap.repeat.set(2.2, 1.7);
-    const woodMap = createVolodkaWoodTexture();
-    woodMap.repeat.set(2, 2);
-
     const floorMat = new MeshStandardMaterial({
-      map: floorMap,
+      map: maps.floorMap,
+      lightMap: maps.floorLightmap,
+      lightMapIntensity: 0.95,
       roughness: 0.82,
       metalness: 0.04,
       ...SHARED_ZFIGHT_MAT_PROPS,
     });
     const carpetMat = new MeshStandardMaterial({
-      map: carpetMap,
+      map: maps.carpetMap,
       roughness: 0.92,
       color: '#ffffff',
       ...SHARED_ZFIGHT_MAT_PROPS,
     });
     const wallMat = new MeshStandardMaterial({
-      map: wallMap,
+      map: maps.wallMap,
+      lightMap: maps.wallLightmap,
+      lightMapIntensity: 0.88,
       roughness: 0.88,
       metalness: 0.02,
       ...SHARED_ZFIGHT_MAT_PROPS,
     });
     const woodMat = new MeshStandardMaterial({
-      map: woodMap,
+      map: maps.woodMap,
       roughness: 0.78,
       metalness: 0.08,
       ...SHARED_ZFIGHT_MAT_PROPS,
@@ -137,62 +165,47 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({
       woodMat,
       darkMat,
       monitorMat,
-      maps: { wallMap, floorMap, carpetMap, woodMap },
     };
-  }, []);
+  }, [maps]);
 
   useEffect(
     () => () => {
-      const {
-        floorMat,
-        carpetMat,
-        wallMat,
-        woodMat,
-        darkMat,
-        monitorMat,
-        maps,
-      } = roomMaterials;
+      const { floorMat, carpetMat, wallMat, woodMat, darkMat, monitorMat } = roomMaterials;
       floorMat.dispose();
       carpetMat.dispose();
       wallMat.dispose();
       woodMat.dispose();
       darkMat.dispose();
       monitorMat.dispose();
-      maps.wallMap.dispose();
-      maps.floorMap.dispose();
-      maps.carpetMap.dispose();
-      maps.woodMap.dispose();
+      merged.dispose();
+      floorGeometry.dispose();
     },
-    [roomMaterials],
+    [roomMaterials, merged, floorGeometry],
   );
 
   const { floorMat, carpetMat, wallMat, woodMat, darkMat, monitorMat } = roomMaterials;
 
-  const doorY = interiorDoorCenterYFromFloor(0);
-  const dw = INTERIOR_REF_DOOR_WIDTH_M;
-  const dh = INTERIOR_REF_DOOR_HEIGHT_M;
-  const doorFaceZ = hd - t - 0.02;
-  const jambW = 0.14;
-  const jambD = 0.12;
-
   return (
     <group name="VolodkaRoomVisual" userData={{ noCameraCollision: true }}>
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.015, 0]} receiveShadow material={floorMat}>
-        <planeGeometry args={[w - 0.08, d - 0.08]} />
-      </mesh>
+      {/* Одна люстра: динамические тени персонажа; остальной fill — lightmap + Bloom на emissive мониторов. */}
+      <pointLight
+        position={[0, 2.35, 0]}
+        intensity={0.92}
+        color="#e8dcc8"
+        distance={22}
+        decay={2}
+        castShadow
+        shadow-mapSize={[1024, 1024]}
+        shadow-bias={-0.00025}
+      />
 
-      <mesh position={[-w / 2 + t / 2, h / 2, 0]} castShadow receiveShadow material={wallMat}>
-        <boxGeometry args={[t, h, d - 0.2]} />
-      </mesh>
-      <mesh position={[w / 2 - t / 2, h / 2, 0]} castShadow receiveShadow material={wallMat}>
-        <boxGeometry args={[t, h, d - 0.2]} />
-      </mesh>
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.015, 0]} receiveShadow geometry={floorGeometry} material={floorMat} />
+
+      <mesh geometry={merged.wallShell} castShadow receiveShadow material={wallMat} />
+      <mesh geometry={merged.woodShell} castShadow receiveShadow material={woodMat} />
+      <mesh geometry={merged.darkShell} userData={{ noCameraCollision: true }} material={darkMat} />
 
       <VolodkaGlitchPanel />
-
-      <mesh position={[0, h / 2, -hd + t / 2]} castShadow receiveShadow material={wallMat}>
-        <boxGeometry args={[w - 0.2, h, t]} />
-      </mesh>
 
       <PropModel propId="volodka_window" sceneScale={explorationCharacterModelScale} position={[-5.85, 1.05, -hd + t + 0.02]}>
         <mesh receiveShadow>
@@ -200,7 +213,7 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({
           <meshStandardMaterial
             color="#1a2840"
             emissive="#4a7ab0"
-            emissiveIntensity={0.22}
+            emissiveIntensity={0.42}
             roughness={0.35}
             metalness={0.15}
             transparent
@@ -213,17 +226,6 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({
           />
         </mesh>
       </PropModel>
-
-      <mesh position={[-4.12, h / 2, hd - t / 2]} castShadow receiveShadow material={wallMat}>
-        <boxGeometry args={[5.9 + t, h, t]} />
-      </mesh>
-      <mesh position={[4.12, h / 2, hd - t / 2]} castShadow receiveShadow material={wallMat}>
-        <boxGeometry args={[5.9 + t, h, t]} />
-      </mesh>
-
-      <mesh position={[0, h - 0.06, 0]} receiveShadow material={wallMat}>
-        <boxGeometry args={[w - 0.15, 0.12, d - 0.15]} />
-      </mesh>
 
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.022, -2.2]} receiveShadow renderOrder={1} material={carpetMat}>
         <planeGeometry args={[4.2, 3.2]} />
@@ -252,7 +254,7 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({
           <meshStandardMaterial
             color="#1a2430"
             emissive="#0ea5e9"
-            emissiveIntensity={0.08}
+            emissiveIntensity={0.22}
             roughness={0.55}
             metalness={0.25}
           />
@@ -265,11 +267,11 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({
               seed={41}
               width={0.34}
               height={0.4}
-              emissiveIntensity={1.45}
+              emissive="#4ade80"
+              emissiveIntensity={2.55}
               statusLines={VOLODKA_MONITOR_LEFT_LINES}
             />
           </group>
-          <pointLight position={[0.12, 0, 0.42]} intensity={0.55} color="#4ade80" distance={1.6} decay={2} />
         </group>
 
         <group position={[0.52, 0.52, 0.38]}>
@@ -279,14 +281,12 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({
               seed={73}
               width={0.34}
               height={0.4}
-              emissiveIntensity={1.4}
+              emissive="#22d3ee"
+              emissiveIntensity={2.45}
               statusLines={VOLODKA_MONITOR_RIGHT_LINES}
             />
           </group>
-          <pointLight position={[0.12, 0, 0.42]} intensity={0.52} color="#22d3ee" distance={1.55} decay={2} />
         </group>
-
-        <pointLight position={[2.9, 2.05, 0.25]} intensity={0.62} color="#7dd3fc" distance={6} decay={2} />
       </group>
 
       <StreamingChunk chunkId="volodka_room::furniture" assets={['/desk_volodka.glb', '/Chair.glb']}>
@@ -342,34 +342,21 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({
         </mesh>
       </group>
 
-      <group name="VolodkaDoorFrame">
-        <mesh position={[-(dw / 2 + jambW / 2 + 0.02), doorY, doorFaceZ]} castShadow receiveShadow material={woodMat}>
-          <boxGeometry args={[jambW, dh, jambD]} />
-        </mesh>
-        <mesh position={[dw / 2 + jambW / 2 + 0.02, doorY, doorFaceZ]} castShadow receiveShadow material={woodMat}>
-          <boxGeometry args={[jambW, dh, jambD]} />
-        </mesh>
-        <mesh position={[0, doorY + dh / 2 + 0.09, doorFaceZ]} castShadow receiveShadow material={woodMat} geometry={GEO.doorFrameTop} />
-      </group>
-
-      <mesh position={[-(dw / 2 + 0.02), doorY, doorFaceZ + 0.06]} userData={{ noCameraCollision: true }} material={darkMat}>
-        <boxGeometry args={[0.09, dh * 0.96, 0.28]} />
-      </mesh>
-      <mesh position={[dw / 2 + 0.02, doorY, doorFaceZ + 0.06]} userData={{ noCameraCollision: true }} material={darkMat}>
-        <boxGeometry args={[0.09, dh * 0.96, 0.28]} />
-      </mesh>
-
-      <group position={[0.05, doorY, hd - t - 0.05]}>
-        <mesh castShadow receiveShadow material={woodMat}>
-          <boxGeometry args={[INTERIOR_REF_DOOR_WIDTH_M, INTERIOR_REF_DOOR_HEIGHT_M, 0.06]} />
-        </mesh>
-      </group>
-
       <mesh position={[0.05, doorY, hd + 1.18]} receiveShadow userData={{ noCameraCollision: true }} geometry={GEO.corridorVoid}>
         <meshStandardMaterial color="#07090d" roughness={0.97} metalness={0.04} emissive="#0c1220" emissiveIntensity={0.06} />
       </mesh>
-
-      <pointLight position={[0, 2.35, 0]} intensity={0.65} color="#e8dcc8" distance={18} decay={2} />
     </group>
+  );
+});
+
+/**
+ * Комната Володьки: merged shell + lightmap-слоты (процедурно до Blender), один fill-свет, мониторы на emissive + Bloom (`ExplorationPostFX`).
+ * Текстуры: промис на кадр + `createVolodkaRoomCanvasMapsSync` + `use` — fallback даёт родительский `<Suspense>` в `RPGGameCanvas`.
+ */
+export const VolodkaRoomVisual = memo(function VolodkaRoomVisual(props: VolodkaRoomVisualProps) {
+  return (
+    <Suspense fallback={null}>
+      <VolodkaRoomVisualInner {...props} />
+    </Suspense>
   );
 });

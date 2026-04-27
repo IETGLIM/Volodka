@@ -14,6 +14,8 @@ export type MatrixRainScreenMeshProps = {
   width?: number;
   height?: number;
   emissiveIntensity?: number;
+  /** Цвет emissive под пост Bloom (без PointLight на экране). */
+  emissive?: string;
   /** Статичные строки «интерфейса монитора» поверх матрицы (читаемый текст). */
   statusLines?: readonly string[];
 };
@@ -26,6 +28,7 @@ export const MatrixRainScreenMesh = memo(function MatrixRainScreenMesh({
   width = 0.42,
   height = 0.28,
   emissiveIntensity = 1.15,
+  emissive = '#22ff66',
   statusLines = [],
 }: MatrixRainScreenMeshProps) {
   const textureRef = useRef<THREE.CanvasTexture | null>(null);
@@ -88,7 +91,7 @@ export const MatrixRainScreenMesh = memo(function MatrixRainScreenMesh({
       <meshStandardMaterial
         map={texture}
         emissiveMap={texture}
-        emissive="#22ff66"
+        emissive={emissive}
         emissiveIntensity={emissiveIntensity}
         roughness={0.42}
         metalness={0.12}

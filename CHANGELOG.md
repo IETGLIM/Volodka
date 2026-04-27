@@ -4,7 +4,7 @@
 
 ### Changed
 
-- **`VolodkaRoomVisual`:** материалы комнаты через `useMemo` + dispose в `useEffect`; общие `BoxGeometry` для монитора/перемычки/коридора; панель глитча — шейдер без `useEffect`-подвески материала на меш, урезаны лишние `pointLight` и второй «плейсхолдер» ноутбука; ковёр `renderOrder={1}`.
+- **`VolodkaRoomVisual`:** один `pointLight` с тенью; fill — процедурные `lightMap`+`uv2` (`volodkaRoomLightmapTextures.ts`); стены/дерево/косяки — `mergeGeometries` (`volodkaRoomMergedGeometries.ts`); карты — `requestAnimationFrame` + `createVolodkaRoomCanvasMapsSync` + `use` + `Suspense`; мониторы на emissive + Bloom (`ExplorationPostFX` для `volodka_room`), без `PointLight` на столе; dispose материалов/мержа/пола; ковёр `renderOrder={1}`.
 
 - **Архитектура нарратива:** единый источник правды для оверлея `StoryRenderer` — `currentNode` и `storyNodeShowsStoryOverlay` внутри `useGameUiLayout.ts` (без отдельного флага из оркестратора); задокументирован целевой поток в `docs/ADR-single-exploration-narrative-layer.md`. Комментарии в `GameOrchestrator.tsx` без устаревшего «VN».
 
