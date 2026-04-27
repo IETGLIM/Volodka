@@ -8,6 +8,8 @@
 
 - **Офис ↔ ночной хаб / white-hat:** в `storyNodes` смягчены мета-формулировки у `start`, `start_2`, `database_analysis`; у `start_diagnosis` — мост «UAT дома = та же дисциплина». У `office_artyom` (`npcDefinitions`, `artyom_greeting`) — явная связка UAT-scope и ночного стола. **UI:** `globals.css` — класс `game-panel-cyber-glitch` (лёгкий шум/дрейф, без поломки `position: fixed`); панели `QuestsPanel`, `Inventory`, `JournalPanel` — слой и `z-index` контента над декором.
 
+- **`explore_hub_welcome`:** «оверлей» заменён на «ленту реплик». **`QuestsPanel`:** подсказка в шапке и пустое состояние очереди — тон duty/tickets. **`PoetryBook`:** тот же `game-panel-cyber-glitch`, порядок слоёв (сканлайны, углы, контент).
+
 ### Added
 
 - **Фаза G (проверка и закрепление):** `docs/phase-g-verification.md` — автопокрытие (`goldenPath.test.ts`, `narrativePoetryIntegrity.test.ts`, `contentValidator.test.ts`; Browserbase `volodka-smoke` без E2E «хаб → квест → награда → сцена»), ручной срез ~30–40 мин по золотой линии + IT-сайд `whitehat_uat_sprint` после офиса, 3D-проверка `exploration_zarema_hearth`. **ADP:** `docs/adp-inventory-karma-portraits.md` — инвентарь, карма, портреты NPC (источник правды, UI, `npcDialoguePresentation`).

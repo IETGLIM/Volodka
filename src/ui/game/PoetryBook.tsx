@@ -21,7 +21,7 @@ interface PoetryBookProps {
 
 const TerminalHeader = memo(function TerminalHeader({ title, subtitle }: { title: string; subtitle: string }) {
   return (
-    <div className="flex items-center justify-between px-4 py-2 border-b border-cyan-500/15 bg-black/40">
+    <div className="relative z-[2] flex items-center justify-between border-b border-cyan-500/15 bg-black/40 px-4 py-2">
       <div className="flex items-center gap-2">
         <span className="w-2.5 h-2.5 rounded-full bg-red-500/80" />
         <span className="w-2.5 h-2.5 rounded-full bg-yellow-500/80" />
@@ -364,7 +364,7 @@ export const PoetryBook = memo(function PoetryBook({ isOpen, onClose }: PoetryBo
         initial={{ scale: 0.9, y: 20 }}
         animate={{ scale: 1, y: 0 }}
         exit={{ scale: 0.9, y: 20 }}
-        className="game-panel relative h-[min(85vh,800px)] max-h-[85vh] w-full max-w-[min(95vw,42rem)] overflow-hidden"
+        className="game-panel game-panel-cyber-glitch relative h-[min(85vh,800px)] max-h-[85vh] w-full max-w-[min(95vw,42rem)] overflow-hidden"
         style={{
           background: 'linear-gradient(180deg, rgba(5, 8, 15, 0.98) 0%, rgba(10, 15, 25, 0.98) 100%)',
           border: '1px solid rgba(0, 255, 255, 0.2)',
@@ -378,14 +378,14 @@ export const PoetryBook = memo(function PoetryBook({ isOpen, onClose }: PoetryBo
 
         {/* Scanlines */}
         <div
-          className="absolute inset-0 pointer-events-none opacity-[0.03]"
+          className="pointer-events-none absolute inset-0 z-[1] opacity-[0.03]"
           style={{
             background: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0, 255, 255, 0.1) 2px, rgba(0, 255, 255, 0.1) 4px)',
           }}
         />
 
         {/* CRT sweep */}
-        <div className="absolute inset-0 pointer-events-none z-40 overflow-hidden">
+        <div className="pointer-events-none absolute inset-0 z-40 overflow-hidden">
           <motion.div
             className="absolute left-0 right-0 h-px"
             style={{
@@ -397,13 +397,13 @@ export const PoetryBook = memo(function PoetryBook({ isOpen, onClose }: PoetryBo
         </div>
 
         {/* Corner brackets */}
-        <div className="absolute top-2 left-2 w-8 h-8 border-l border-t border-cyan-500/30" />
-        <div className="absolute top-2 right-2 w-8 h-8 border-r border-t border-cyan-500/30" />
-        <div className="absolute bottom-2 left-2 w-8 h-8 border-l border-b border-cyan-500/30" />
-        <div className="absolute bottom-2 right-2 w-8 h-8 border-r border-b border-cyan-500/30" />
+        <div className="pointer-events-none absolute top-2 left-2 z-[2] h-8 w-8 border-l border-t border-cyan-500/30" />
+        <div className="pointer-events-none absolute top-2 right-2 z-[2] h-8 w-8 border-r border-t border-cyan-500/30" />
+        <div className="pointer-events-none absolute bottom-2 left-2 z-[2] h-8 w-8 border-l border-b border-cyan-500/30" />
+        <div className="pointer-events-none absolute bottom-2 right-2 z-[2] h-8 w-8 border-r border-b border-cyan-500/30" />
 
         {/* Content */}
-        <div className="relative flex h-full min-h-0 flex-col overflow-hidden p-5" style={{ paddingTop: '2.5rem' }}>
+        <div className="relative z-[2] flex h-full min-h-0 flex-col overflow-hidden p-5" style={{ paddingTop: '2.5rem' }}>
           <AnimatePresence mode="wait">
             {selectedPoem ? (
               <PoemView

@@ -396,8 +396,8 @@ export const QuestsPanel = memo(function QuestsPanel({
 
       <div className="relative z-[2] border-b border-cyan-500/10 bg-black/35 px-3 py-2">
         <p className="font-mono text-[10px] leading-snug text-cyan-500/75">
-          💡 Сюжетные цели: примите квест → выполните шаг (мини-игра / сцена). IT-цели — в терминале (💻), команды из подсказек или{' '}
-          <span className="text-cyan-400/90">help</span>. Репутация — ⚔️.
+          💡 Сюжет: возьмите цель в 📋 → шаг (сцена или мини-игра). Стек и команды — в 💻; строки из подсказок шагов или{' '}
+          <span className="text-cyan-400/90">help</span>. Отношение групп — ⚔️.
         </p>
       </div>
 
@@ -405,9 +405,12 @@ export const QuestsPanel = memo(function QuestsPanel({
       <div className="game-panel relative z-[2] max-h-[calc(85vh-60px)] space-y-3 overflow-y-auto p-3">
         {activeQuests.length === 0 && completedQuests.length === 0 && availableQuests.length === 0 && (
           <div className="text-center text-slate-400 py-8">
+            <p className="mb-1 font-mono text-[10px] uppercase tracking-[0.25em] text-cyan-600/45">queue_empty</p>
             <p className="text-4xl mb-2">📜</p>
-            <p>Нет активных квестов</p>
-            <p className="text-sm mt-1">Исследуйте мир, чтобы найти приключения</p>
+            <p className="text-slate-300">Очередь тикетов пуста</p>
+            <p className="mt-2 max-w-[16rem] mx-auto text-sm leading-snug text-slate-500">
+              Пройдите вступление в офисе или откройте раздел «доступные» ниже — там появятся цепочки сюжета и IT-смены.
+            </p>
           </div>
         )}
 
