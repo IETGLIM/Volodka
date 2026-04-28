@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { getTriggersForScene, getWorldItemsForScene } from './triggerZones';
+import {
+  explorationRuntimeTriggerSceneIds,
+  getTriggersForScene,
+  getWorldItemsForScene,
+} from './triggerZones';
 
 describe('getTriggersForScene', () => {
   it('includes kitchen room triggers for zarema_albert_room (shared layout)', () => {
@@ -11,6 +15,13 @@ describe('getTriggersForScene', () => {
   it('does not mix unrelated scenes', () => {
     const kitchen = getTriggersForScene('kitchen_night');
     expect(kitchen.some((t) => t.sceneId === 'cafe_evening')).toBe(false);
+  });
+
+  it('explorationRuntimeTriggerSceneIds merges zarema with kitchen_night for markers/collisions', () => {
+    const ids = explorationRuntimeTriggerSceneIds('zarema_albert_room');
+    expect(ids.has('zarema_albert_room')).toBe(true);
+    expect(ids.has('kitchen_night')).toBe(true);
+    expect(explorationRuntimeTriggerSceneIds('volodka_room').size).toBe(1);
   });
 });
 

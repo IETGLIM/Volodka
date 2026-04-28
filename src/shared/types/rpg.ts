@@ -205,6 +205,8 @@ export interface ExplorationState {
   worldItems: WorldItem[];
   exploredAreas: string[]; // ID исследованных зон
   lastSceneTransition: number;
+  /** См. `src/data/rpgTypes.ts` — возврат из `dream` после location-триггера. */
+  dreamWakeReturn?: { sceneId: SceneId; position: PlayerPosition };
 }
 
 // Режим игры

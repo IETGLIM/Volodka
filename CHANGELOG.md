@@ -38,6 +38,8 @@
 
 ### Fixed
 
+- **Обход — триггеры `location` (сон / пробуждение):** в `RPGGameCanvas` обработка `type: 'location'` + `targetSceneId` (раньше E на кровать/выход из сна ничего не делал). Снимок `exploration.dreamWakeReturn` для возврата из `dream` туда, откуда зашли (по умолчанию — `zarema_albert_room`, не «левый» `kitchen_night`). `InteractiveTrigger` / `TriggerSystem` — учёт `explorationRuntimeTriggerSceneIds` (маркеры и зоны `kitchen_night` в комнате Заремы). Новый триггер `trigger_volodka_dream_nap` в `triggerZones.ts` — сон из комнаты Володьки без обхода к Зареме.
+
 - **3D масштаб фигур (лилипуты / великаны):** в `scenes.ts` у `dream` и `battle` убран уличный множитель (~1.05–1.08) на площадке 20×20; явные `explorationCharacterModelScale` для `kitchen_dawn`, `home_morning`, `green_zone`, `district`, `mvd`, `president_hotel` (раньше срабатывал дефолт `1`). В `modelMeta.ts` — верхний кап uniform для `dream`/`battle`, чтобы Khronos-GLB не разъезжались по росту между локациями.
 
 - **Обход / камера / LOD / GLB:** `FollowCamera` / `SimpleFollowCamera` — `damp3` на цель `lookAt` и приоритет `useFrame` **75** (меньше джиттера при сглаженной позиции); без сброса внутренней «пружины» при смене дистанции пресета. **NPC:** EMA дистанции перед гистерезисом LOD (`smoothNpcLodDistanceForHysteresis`, `npcLodConstants.ts`). **Материалы GLB:** `opacity` < 1 без `transparent` → `transparent` + `needsUpdate` в `gltfCharacterMaterialPolicy.ts`. **Zustand:** единый `useShallow` для среза exploration + actions в `RPGGameCanvas.tsx`.

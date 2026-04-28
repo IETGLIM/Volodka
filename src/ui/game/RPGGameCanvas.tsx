@@ -100,6 +100,7 @@ import { NpcProximityBarks } from './NpcProximityBarks';
 import { ExplorationBriefingOverlay } from '@/ui/3d/exploration/ExplorationBriefingOverlay';
 import { IntroCutsceneCinematicDirector } from '@/ui/cutscenes/IntroCutscene';
 import { INTRO_OPENING_SCENE_ID } from '@/lib/introVolodkaOpeningCutscene';
+import { applyExplorationLocationTrigger } from '@/lib/explorationLocationTrigger';
 import { EXPLORATION_SCENE_FRAMELOOP, getExplorationSceneGlProps } from '@/ui/3d/Scene';
 import { ExplorationLighting, getExplorationDirectionalShadowMapSize } from '@/ui/3d/Lighting';
 import {
@@ -694,14 +695,34 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
     [setTriggerState],
   );
 
-  // Handle trigger enter
-  const handleTriggerEnter = useCallback((triggerId: string) => {
-    const trigger = sceneTriggers.find(t => t.id === triggerId);
-    if (!trigger) return;
-    if (trigger.storyNodeId || trigger.cutsceneId) {
-      onTriggerEnter(triggerId, trigger.storyNodeId, trigger.cutsceneId);
-    }
-  }, [sceneTriggers, onTriggerEnter]);
+  // Handle trigger enter (сюжет / кат-сцена / смена локации `type: 'location'`)
+  const handleTriggerEnter = useCallback(
+    (triggerId: string) => {
+      const trigger = sceneTriggers.find((t) => t.id === triggerId);
+      if (!trigger) return;
+
+      if (trigger.type === 'location' && trigger.targetSceneId) {
+        const now = Date.now();
+        useGameStore.setState((s) => ({
+          exploration: applyExplorationLocationTrigger(s.exploration, trigger, now),
+        }));
+
+        if (trigger.targetSceneId === 'dream') {
+          eventBus.emit('ui:exploration_message', {
+            text: 'Тишина смещает границы — ты в мире, где метафора держит пол под ногами.',
+          });
+        } else if (trigger.sceneId === 'dream') {
+          eventBus.emit('ui:exploration_message', { text: 'Веки тяжелеют — ты снова там, где есть стены и расписание.' });
+        }
+        return;
+      }
+
+      if (trigger.storyNodeId || trigger.cutsceneId) {
+        onTriggerEnter(triggerId, trigger.storyNodeId, trigger.cutsceneId);
+      }
+    },
+    [sceneTriggers, onTriggerEnter],
+  );
 
   const onInteractionAvailabilityChange = useCallback((ids: ReadonlySet<string>) => {
     setAvailableInteractionIds(ids);

@@ -324,6 +324,18 @@ export const STORY_TRIGGERS: TriggerZone[] = [
     requiresInteraction: true,
     promptText: 'E — заставка у двери в коридор',
   },
+  /** Вход в мир снов без обязательного визита к Зареме: зона у «лежака»/угла, не на диване с cutscene. */
+  {
+    id: 'trigger_volodka_dream_nap',
+    position: { x: -2.1, y: 0.42, z: -1.5 },
+    size: { x: 1.9, y: 1.1, z: 2.0 },
+    sceneId: 'volodka_room',
+    type: 'location',
+    targetSceneId: 'dream',
+    targetPosition: { x: 0, y: 1, z: 0 },
+    requiresInteraction: true,
+    promptText: 'E — закрыть глаза и провалиться в сон',
+  },
 
   // ========== КОМНАТА ЗАРЕМЫ И АЛЬБЕРТА ==========
   {
@@ -446,6 +458,12 @@ const SCENE_TRIGGER_FALLBACK: Record<string, string> = {
 const SCENE_WORLD_ITEMS_FALLBACK: Record<string, string> = {
   zarema_albert_room: 'kitchen_night',
 };
+
+/** Сцены, по которым фильтруем триггеры в рантайме (сама сцена + «наследие» kitchen для Заремы). */
+export function explorationRuntimeTriggerSceneIds(sceneId: string): Set<string> {
+  const fallback = SCENE_TRIGGER_FALLBACK[sceneId];
+  return new Set(fallback != null ? [sceneId, fallback] : [sceneId]);
+}
 
 export function getTriggersForScene(sceneId: string): TriggerZone[] {
   const fallback = SCENE_TRIGGER_FALLBACK[sceneId];

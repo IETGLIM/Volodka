@@ -5,6 +5,7 @@ import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import type { TriggerZone, TriggerState } from "@/data/rpgTypes";
 import type { SceneId } from "@/data/types";
+import { explorationRuntimeTriggerSceneIds } from "@/data/triggerZones";
 import { eventBus } from "@/engine/EventBus";
 import { explorationInteractionRegistry } from "@/game/interactions/registerBaseInteractions";
 
@@ -53,7 +54,8 @@ export const TriggerSystem = memo(function TriggerSystem({
   onTriggerStateChange,
   onInteractionAvailabilityChange,
 }: TriggerSystemProps) {
-  const sceneTriggers = triggers.filter((t) => t.sceneId === currentSceneId);
+  const runtimeSceneIds = explorationRuntimeTriggerSceneIds(currentSceneId);
+  const sceneTriggers = triggers.filter((t) => runtimeSceneIds.has(t.sceneId));
 
   const wasInsideRef = useRef<Record<string, boolean>>({});
   const markerInsideRef = useRef<Record<string, boolean>>({});

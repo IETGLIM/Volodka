@@ -225,6 +225,12 @@ export interface ExplorationState {
    */
   cameraOrbitResyncNonce?: number;
 
+  /**
+   * Куда вернуться после «проснуться» из `dream` (заполняется при входе через location-триггер).
+   * Без этого просыпание снова вело в `kitchen_night`, даже если игрок зашёл в сон из Заремы или Володьки.
+   */
+  dreamWakeReturn?: { sceneId: SceneId; position: PlayerPosition };
+
   /** Streaming v0.2 state (active chunks, unloading, metrics). See docs/scene-streaming-spec.md and SceneStreamingCoordinator. */
   streaming?: {
     activeChunkIds: readonly StreamingChunkId[];
