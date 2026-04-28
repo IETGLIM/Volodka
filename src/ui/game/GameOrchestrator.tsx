@@ -214,8 +214,8 @@ export default function GameOrchestrator() {
   }, [showEffectNotif]);
 
   useEffect(() => {
-    return eventBus.on('ui:effect_notif', ({ text, type, durationMs }) => {
-      showEffectNotif(text, type, durationMs);
+    return eventBus.on('ui:effect_notif', ({ text, type, durationMs, priority }) => {
+      showEffectNotif(text, type, durationMs, priority);
     });
   }, [showEffectNotif]);
 

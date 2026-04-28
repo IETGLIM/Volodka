@@ -15,7 +15,10 @@ function attachInteractionShakeBus(): void {
     if (e.kind === 'success') {
       if (e.timestamp - lastShakeTs < SHAKE_COOLDOWN_MS) return;
       lastShakeTs = e.timestamp;
-      shakeStrength = Math.min(shakeStrength + 0.02, 0.08);
+      const id = e.actionId;
+      const delta =
+        id === 'loot' ? 0.015 : id === 'npc' ? 0.01 : 0.02;
+      shakeStrength = Math.min(shakeStrength + delta, 0.08);
     }
   });
 }

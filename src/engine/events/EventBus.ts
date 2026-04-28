@@ -178,8 +178,12 @@ export interface EventMap {
   /** Короткое сообщение поверх исследования (тост / эффект). */
   'ui:exploration_message': { text: string };
 
-  /** Тактиальный маркер взаимодействия E (подписчики: камера, звук, HUD). */
-  'ui:interaction_feedback': { kind: 'success' | 'fail'; timestamp: number };
+  /** Тактиальный маркер взаимодействия E (подписчики: камера, звук, HUD). `actionId` — дедуп/интенсивность shake. */
+  'ui:interaction_feedback': {
+    kind: 'success' | 'fail';
+    timestamp: number;
+    actionId?: string;
+  };
 
   /** Короткий системный буллет над игрой (`showEffectNotif`, без канала exploration_message — меньше спама рядом с локальными тостами). */
   'ui:effect_notif': {

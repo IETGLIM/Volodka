@@ -751,7 +751,7 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
     }
 
     if (tryPickupNearestWorldLayoutItem()) {
-      emitInteractionFeedback('success');
+      emitInteractionFeedback('success', 'loot');
       return;
     }
 
@@ -786,10 +786,10 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
         getQuestProgress: st.getQuestProgress,
       });
       if (ran) {
-        emitInteractionFeedback('success');
+        emitInteractionFeedback('success', 'registry');
         return;
       }
-      emitInteractionFeedback('fail');
+      emitInteractionFeedback('fail', 'registry');
       return;
     }
 
@@ -804,13 +804,13 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
           triggeredAt: Date.now(),
         });
       }
-      emitInteractionFeedback('success');
+      emitInteractionFeedback('success', 'trigger');
       return;
     }
 
     if (target.kind === 'world_object') {
       setRadialObject(target.object);
-      emitInteractionFeedback('success');
+      emitInteractionFeedback('success', 'object');
       return;
     }
 
@@ -820,11 +820,11 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
       const entry = getCurrentScheduleEntry(nearestNPC.id, timeOfDay);
       if (entry && !entry.dialogueAvailable) {
         eventBus.emit('ui:exploration_message', { text: 'Персонаж сейчас недоступен' });
-        emitInteractionFeedback('fail');
+        emitInteractionFeedback('fail', 'npc');
         return;
       }
       onNPCInteraction(nearestNPC.id);
-      emitInteractionFeedback('success');
+      emitInteractionFeedback('success', 'npc');
       return;
     }
 

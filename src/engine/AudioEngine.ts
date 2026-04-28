@@ -90,7 +90,7 @@ class AudioEngineImpl {
       const gain = ctx.createGain();
       osc.connect(gain);
       gain.connect(ctx.destination);
-      const freq =
+      const base =
         type === 'ui_success'
           ? 620
           : type === 'ui_fail'
@@ -102,7 +102,8 @@ class AudioEngineImpl {
                 : type === 'ui'
                   ? 480
                   : 440;
-      osc.frequency.value = freq;
+      const variance = Math.random() * 40 - 20;
+      osc.frequency.value = base + variance;
       gain.gain.value = volume * 0.12;
       osc.start();
       osc.stop(ctx.currentTime + 0.09);
