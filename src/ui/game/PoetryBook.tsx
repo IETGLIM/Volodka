@@ -364,12 +364,9 @@ export const PoetryBook = memo(function PoetryBook({ isOpen, onClose }: PoetryBo
         initial={{ scale: 0.9, y: 20 }}
         animate={{ scale: 1, y: 0 }}
         exit={{ scale: 0.9, y: 20 }}
-        className="game-panel game-panel-cyber-glitch relative h-[min(85vh,800px)] max-h-[85vh] w-full max-w-[min(95vw,42rem)] overflow-hidden"
+        className="game-panel game-panel-cyber-glitch game-panel-skin--poetry relative h-[min(85vh,800px)] max-h-[85vh] w-full max-w-[min(95vw,42rem)] overflow-hidden"
         style={{
-          background: 'linear-gradient(180deg, rgba(5, 8, 15, 0.98) 0%, rgba(10, 15, 25, 0.98) 100%)',
-          border: '1px solid rgba(0, 255, 255, 0.2)',
           clipPath: 'polygon(0 0, calc(100% - 16px) 0, 100% 16px, 100% 100%, 16px 100%, 0 calc(100% - 16px))',
-          boxShadow: '0 0 40px rgba(0, 255, 255, 0.1), 0 0 80px rgba(0, 255, 255, 0.05), inset 0 0 60px rgba(0, 0, 0, 0.5)',
         }}
         onClick={(e) => e.stopPropagation()}
       >

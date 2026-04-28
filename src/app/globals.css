@@ -76,6 +76,40 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+
+  /* Game UI skin (wave 2) — см. docs/ui-skin-tokens.md */
+  --game-ui-rgb-cyan: 34 211 238;
+  --game-ui-rgb-cyan-pure: 0 255 255;
+  --game-ui-border: rgb(var(--game-ui-rgb-cyan) / 0.25);
+  --game-ui-border-medium: rgb(var(--game-ui-rgb-cyan) / 0.3);
+  --game-ui-border-subtle: rgb(var(--game-ui-rgb-cyan) / 0.15);
+  --game-ui-border-briefing: rgb(var(--game-ui-rgb-cyan) / 0.45);
+  --game-ui-bg-floating: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0.88) 0%,
+    rgba(15, 23, 42, 0.92) 55%,
+    rgba(2, 6, 23, 0.96) 100%
+  );
+  --game-ui-bg-journal: linear-gradient(180deg, rgba(5, 8, 15, 0.98) 0%, rgba(8, 12, 22, 0.98) 100%);
+  --game-ui-bg-inventory: linear-gradient(180deg, rgba(10, 10, 20, 0.98) 0%, rgba(15, 15, 30, 0.98) 100%);
+  --game-ui-bg-poetry: linear-gradient(180deg, rgba(5, 8, 15, 0.98) 0%, rgba(10, 15, 25, 0.98) 100%);
+  --game-ui-shadow-floating: 0 0 24px rgba(34, 211, 238, 0.12);
+  --game-ui-shadow-journal: 0 0 40px rgba(0, 255, 255, 0.08), inset 0 0 40px rgba(0, 0, 0, 0.45);
+  --game-ui-shadow-inventory: 0 0 40px rgba(34, 211, 238, 0.15), 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+  --game-ui-shadow-poetry: 0 0 40px rgba(0, 255, 255, 0.1), 0 0 80px rgba(0, 255, 255, 0.05),
+    inset 0 0 60px rgba(0, 0, 0, 0.5);
+  --game-ui-glow-mood: rgba(0, 255, 255, 0.4);
+  --game-ui-glow-creativity: rgba(168, 85, 247, 0.4);
+  --game-ui-glow-stability: rgba(34, 197, 94, 0.4);
+  --game-ui-glow-esteem: rgba(245, 158, 11, 0.4);
+  --game-ui-terminal-glow-outer: 0 0 32px rgba(34, 197, 94, 0.22), 0 0 56px rgba(251, 146, 60, 0.08);
+  --game-ui-terminal-shadow-name: 0 0 12px rgba(52, 211, 153, 0.35);
+  --game-ui-terminal-text-glow: 0 0 8px rgba(0, 255, 255, 0.1);
+  --game-ui-dialogue-choice-glow: 0 0 12px rgba(0, 255, 255, 0.15);
+  --game-ui-dialogue-indicator-glow: 0 0 6px rgba(0, 255, 255, 0.4);
+  --game-ui-noir-choice-glow: 0 0 14px rgba(180, 120, 60, 0.12);
+  --game-ui-noir-indicator-glow: 0 0 6px rgba(251, 191, 36, 0.25);
+  --game-ui-holo-portrait-glow: 0 0 15px rgba(0, 255, 255, 0.2), 0 0 30px rgba(0, 255, 255, 0.1);
 }
 
 .dark {
@@ -959,6 +993,38 @@
   contain-intrinsic-size: auto 500px;
 }
 
+/* Композитные оболочки панелей (wave 2) — с `game-panel` + `game-panel-cyber-glitch` */
+.game-panel-skin--floating {
+  border: 1px solid var(--game-ui-border);
+  background: var(--game-ui-bg-floating);
+  box-shadow: var(--game-ui-shadow-floating);
+}
+
+.game-panel-skin--journal {
+  background: var(--game-ui-bg-journal);
+  border: 1px solid rgb(var(--game-ui-rgb-cyan-pure) / 0.22);
+  box-shadow: var(--game-ui-shadow-journal);
+}
+
+.game-panel-skin--inventory {
+  background: var(--game-ui-bg-inventory);
+  border: 1px solid var(--game-ui-border-medium);
+  border-radius: 12px;
+  box-shadow: var(--game-ui-shadow-inventory);
+}
+
+.game-panel-skin--poetry {
+  background: var(--game-ui-bg-poetry);
+  border: 1px solid rgb(var(--game-ui-rgb-cyan-pure) / 0.2);
+  box-shadow: var(--game-ui-shadow-poetry);
+}
+
+.game-panel-skin--briefing {
+  border: 1px solid var(--game-ui-border-briefing);
+  background: rgba(2, 6, 23, 0.95);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.55);
+}
+
 /**
  * Лёгкий «VHS / glitch» только на UI-панелях (не на canvas сюжета).
  * pointer-events: none — не перехватывает клики; не задаём position — чтобы не ломать fixed.
@@ -976,7 +1042,7 @@
     -4deg,
     transparent,
     transparent 3px,
-    rgba(34, 211, 238, 0.07) 3px,
+    rgb(var(--game-ui-rgb-cyan) / 0.07) 3px,
     rgba(168, 85, 247, 0.05) 6px
   );
 }
@@ -1018,6 +1084,17 @@
     border: 1px solid CanvasText;
     background: Canvas;
     color: CanvasText;
+  }
+
+  .game-panel-skin--floating,
+  .game-panel-skin--journal,
+  .game-panel-skin--inventory,
+  .game-panel-skin--poetry,
+  .game-panel-skin--briefing {
+    border: 1px solid CanvasText !important;
+    background: Canvas !important;
+    color: CanvasText !important;
+    box-shadow: none !important;
   }
 
   .game-panel-cyber-glitch::before {

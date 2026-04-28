@@ -366,7 +366,7 @@ export const QuestsPanel = memo(function QuestsPanel({
       initial={{ opacity: 0, x: 300 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: 300 }}
-      className="game-critical-motion game-panel-cyber-glitch fixed right-2 top-16 z-50 w-[min(95vw,20rem)] max-h-[85vh] overflow-hidden border border-cyan-500/25 bg-[linear-gradient(180deg,rgba(0,0,0,0.88)_0%,rgba(15,23,42,0.92)_55%,rgba(2,6,23,0.96)_100%)] shadow-[0_0_24px_rgba(34,211,238,0.12)] backdrop-blur-md sm:right-4 sm:top-20"
+      className="game-critical-motion game-panel-cyber-glitch game-panel-skin--floating fixed right-2 top-16 z-50 w-[min(95vw,20rem)] max-h-[85vh] overflow-hidden backdrop-blur-md sm:right-4 sm:top-20"
       style={{
         clipPath: 'polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px))',
       }}

@@ -78,3 +78,4 @@
 - Квесты: `src/data/quests.ts`.
 - Золотой путь: `src/data/goldenPath.ts`.
 - Аудит скелета: [narrative-golden-path-audit.md](./narrative-golden-path-audit.md).
+- UI-скин панелей и токены (волна 2): [ui-skin-tokens.md](./ui-skin-tokens.md).

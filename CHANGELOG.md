@@ -19,6 +19,8 @@
 
 ### Changed
 
+- **UI волна 2 (skin tokens):** в `globals.css` — переменные `--game-ui-*`, композитные классы `game-panel-skin--floating|journal|inventory|poetry|briefing`, `forced-colors` для них; панели: `QuestsPanel`, `JournalPanel`, `Inventory`, `PoetryBook`, `ExplorationBriefingOverlay`. `DialogueRenderer` — токены рамки терминала, тени имени/текста, hover вариантов ответа и голопортрета; `HUD` — свечение stat bars через `var(--game-ui-glow-*)`. Док: `docs/ui-skin-tokens.md`.
+
 - **HUD `PlayerOrbitHeader`:** у портрета в левом верхнем углу — две полосы в духе WoW: **Здоровье (Health)** = сюжетная энергия, **Карма (Karma)** = слот «маны»; полоса опыта — под ними. `HUD` — подсказка под барами обновлена.
 - **Тексты и квесты (согласованность с золотым путём):** `src/data/storyNodes.ts` — ужат и выровнен тон пролога ИТ (`start_diagnosis`, `escalate_now`), «вечерний» и итог мини-игры стиха (`evening_choice`, `write_evening_result`); `src/data/quests.ts` — `main_goal`, `first_words` (описания и подсказки `write_poems` / черновик / пути к мини-играм).
 

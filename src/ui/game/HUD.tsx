@@ -265,10 +265,10 @@ export default function HUD({
 
   // Stat bars configuration — cyberpunk colors
   const statBars = useMemo(() => [
-    { icon: '😊', label: 'Настроение', value: playerState.mood, glowColor: 'rgba(0, 255, 255, 0.4)', gradientFrom: 'from-cyan-500', gradientTo: 'to-cyan-300' },
-    { icon: '🎨', label: 'Креативность', value: playerState.creativity, glowColor: 'rgba(168, 85, 247, 0.4)', gradientFrom: 'from-purple-500', gradientTo: 'to-pink-400' },
-    { icon: '🧠', label: 'Стабильность', value: playerState.stability, glowColor: 'rgba(34, 197, 94, 0.4)', gradientFrom: 'from-green-500', gradientTo: 'to-emerald-400' },
-    { icon: '💪', label: 'Самооценка', value: playerState.selfEsteem, glowColor: 'rgba(245, 158, 11, 0.4)', gradientFrom: 'from-amber-500', gradientTo: 'to-yellow-400' },
+    { icon: '😊', label: 'Настроение', value: playerState.mood, glowColor: 'var(--game-ui-glow-mood)', gradientFrom: 'from-cyan-500', gradientTo: 'to-cyan-300' },
+    { icon: '🎨', label: 'Креативность', value: playerState.creativity, glowColor: 'var(--game-ui-glow-creativity)', gradientFrom: 'from-purple-500', gradientTo: 'to-pink-400' },
+    { icon: '🧠', label: 'Стабильность', value: playerState.stability, glowColor: 'var(--game-ui-glow-stability)', gradientFrom: 'from-green-500', gradientTo: 'to-emerald-400' },
+    { icon: '💪', label: 'Самооценка', value: playerState.selfEsteem, glowColor: 'var(--game-ui-glow-esteem)', gradientFrom: 'from-amber-500', gradientTo: 'to-yellow-400' },
   ], [playerState.mood, playerState.creativity, playerState.stability, playerState.selfEsteem]);
 
   // Action buttons — cyberpunk. Инвентарь в HUD скрыт, пока пуст: стихи/квесты — основной контент; клавиша I по-прежнему открывает панель.

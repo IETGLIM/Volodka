@@ -57,12 +57,9 @@ export const JournalPanel = memo(function JournalPanel({ onClose }: { onClose: (
         initial={{ scale: 0.96, y: 10 }}
         animate={{ scale: 1, y: 0 }}
         exit={{ scale: 0.96, y: 10 }}
-        className="game-panel game-panel-cyber-glitch relative max-h-[85vh] w-full max-w-[min(95vw,32rem)] overflow-hidden"
+        className="game-panel game-panel-cyber-glitch game-panel-skin--journal relative max-h-[85vh] w-full max-w-[min(95vw,32rem)] overflow-hidden"
         style={{
-          background: 'linear-gradient(180deg, rgba(5,8,15,0.98) 0%, rgba(8,12,22,0.98) 100%)',
-          border: '1px solid rgba(0, 255, 255, 0.22)',
           clipPath: 'polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 14px 100%, 0 calc(100% - 14px))',
-          boxShadow: '0 0 40px rgba(0, 255, 255, 0.08), inset 0 0 40px rgba(0,0,0,0.45)',
         }}
         onClick={(e) => e.stopPropagation()}
       >

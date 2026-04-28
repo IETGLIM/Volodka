@@ -90,7 +90,7 @@ function HolographicPortrait({
           noir
             ? { boxShadow: 'inset 0 0 20px rgba(0,0,0,0.65), 0 6px 18px rgba(0,0,0,0.55)' }
             : {
-                boxShadow: '0 0 15px rgba(0, 255, 255, 0.2), 0 0 30px rgba(0, 255, 255, 0.1)',
+                boxShadow: 'var(--game-ui-holo-portrait-glow)',
               }
         }
       >
@@ -167,8 +167,8 @@ const CyberDialogueChoice = memo(function CyberDialogueChoice({
           boxShadow:
             isHovered && isConditionMet
               ? noir
-                ? '0 0 14px rgba(180, 120, 60, 0.12)'
-                : '0 0 12px rgba(0, 255, 255, 0.15)'
+                ? 'var(--game-ui-noir-choice-glow)'
+                : 'var(--game-ui-dialogue-choice-glow)'
               : 'none',
         }}
       >
@@ -198,7 +198,11 @@ const CyberDialogueChoice = memo(function CyberDialogueChoice({
             }`}
             style={{
               boxShadow:
-                !noir && isConditionMet ? '0 0 6px rgba(0, 255, 255, 0.4)' : noir && isConditionMet ? '0 0 6px rgba(251,191,36,0.25)' : 'none',
+                !noir && isConditionMet
+                  ? 'var(--game-ui-dialogue-indicator-glow)'
+                  : noir && isConditionMet
+                    ? 'var(--game-ui-noir-indicator-glow)'
+                    : 'none',
             }}
           />
 
@@ -546,9 +550,10 @@ export default function DialogueRenderer({
               transition={{ type: 'spring', stiffness: 380, damping: 32 }}
             >
             <div
-              className="overflow-hidden border border-orange-500/35 bg-black/95 shadow-[0_0_32px_rgba(34,197,94,0.22),0_0_56px_rgba(251,146,60,0.08)] backdrop-blur-md terminal-border-pulse"
+              className="overflow-hidden border border-orange-500/35 bg-black/95 backdrop-blur-md terminal-border-pulse"
               style={{
                 clipPath: 'polygon(0 0, calc(100% - 16px) 0, 100% 16px, 100% 100%, 16px 100%, 0 calc(100% - 16px))',
+                boxShadow: 'var(--game-ui-terminal-glow-outer)',
               }}
             >
               <div className="border-b border-emerald-500/25 bg-emerald-950/15 px-4 py-1.5">
@@ -578,7 +583,7 @@ export default function DialogueRenderer({
                   <h3
                     className={`font-mono font-bold truncate ${holoNeonClass}`}
                     style={{
-                      textShadow: '0 0 12px rgba(52, 211, 153, 0.35)',
+                      textShadow: 'var(--game-ui-terminal-shadow-name)',
                     }}
                   >
                     {npcName}
@@ -627,7 +632,7 @@ export default function DialogueRenderer({
                 <p
                   className="text-white/90 text-lg leading-relaxed whitespace-pre-line"
                   style={{
-                    textShadow: '0 0 8px rgba(0, 255, 255, 0.1)',
+                    textShadow: 'var(--game-ui-terminal-text-glow)',
                   }}
                 >
                   {isTyping ? displayedText : currentNode.text}

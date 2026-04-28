@@ -320,13 +320,7 @@ export const Inventory = memo(function Inventory({ isOpen, onClose }: InventoryP
         initial={{ scale: 0.9, y: 20 }}
         animate={{ scale: 1, y: 0 }}
         exit={{ scale: 0.9, y: 20 }}
-        className="game-panel game-panel-cyber-glitch relative flex max-h-[85vh] w-full max-w-[min(95vw,28rem)] flex-col overflow-hidden"
-        style={{
-          background: 'linear-gradient(180deg, rgba(10, 10, 20, 0.98) 0%, rgba(15, 15, 30, 0.98) 100%)',
-          border: '1px solid rgba(34, 211, 238, 0.3)',
-          borderRadius: '12px',
-          boxShadow: '0 0 40px rgba(34, 211, 238, 0.15), 0 25px 50px -12px rgba(0, 0, 0, 0.7)',
-        }}
+        className="game-panel game-panel-cyber-glitch game-panel-skin--inventory relative flex max-h-[85vh] w-full max-w-[min(95vw,28rem)] flex-col overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Cyberpunk corner decorations */}
