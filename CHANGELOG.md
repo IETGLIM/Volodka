@@ -38,6 +38,8 @@
 
 ### Fixed
 
+- **3D масштаб фигур (лилипуты / великаны):** в `scenes.ts` у `dream` и `battle` убран уличный множитель (~1.05–1.08) на площадке 20×20; явные `explorationCharacterModelScale` для `kitchen_dawn`, `home_morning`, `green_zone`, `district`, `mvd`, `president_hotel` (раньше срабатывал дефолт `1`). В `modelMeta.ts` — верхний кап uniform для `dream`/`battle`, чтобы Khronos-GLB не разъезжались по росту между локациями.
+
 - **Обход / камера / LOD / GLB:** `FollowCamera` / `SimpleFollowCamera` — `damp3` на цель `lookAt` и приоритет `useFrame` **75** (меньше джиттера при сглаженной позиции); без сброса внутренней «пружины» при смене дистанции пресета. **NPC:** EMA дистанции перед гистерезисом LOD (`smoothNpcLodDistanceForHysteresis`, `npcLodConstants.ts`). **Материалы GLB:** `opacity` < 1 без `transparent` → `transparent` + `needsUpdate` в `gltfCharacterMaterialPolicy.ts`. **Zustand:** единый `useShallow` для среза exploration + actions в `RPGGameCanvas.tsx`.
 
 - **ESLint:** глобальные `ignores` вынесены в первый блок `eslint.config.mjs` (flat config), чтобы `scripts/optimize-models/**` и прочие пути реально не линтились.

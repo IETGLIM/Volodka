@@ -20,6 +20,12 @@ describe('getExplorationCharacterModelScale', () => {
     expect(getExplorationCharacterModelScale('volodka_corridor')).toBeLessThan(1);
   });
 
+  it('dream and battle use interior-like multipliers, not street-scale (~1.1) on 20×20', () => {
+    expect(getExplorationCharacterModelScale('dream')).toBeLessThan(0.85);
+    expect(getExplorationCharacterModelScale('battle')).toBeLessThan(0.85);
+    expect(getExplorationCharacterModelScale('street_night')).toBeGreaterThan(1);
+  });
+
   it('zarema_albert_room: NPC location scale matches player (unified human height)', () => {
     expect(getExplorationNpcModelScale('zarema_albert_room')).toBe(
       getExplorationCharacterModelScale('zarema_albert_room'),

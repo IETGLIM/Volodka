@@ -165,7 +165,9 @@ export const SCENE_CONFIG = {
   kitchen_dawn: {
     id: 'kitchen_dawn',
     name: 'Кухня (рассвет)',
-    explorationLocomotionScale: 1,
+    /** Явно, иначе `?? 1` + интерьерный k даёт фигуры крупнее, чем в `volodka_room` / `home_evening`. */
+    explorationCharacterModelScale: 0.56,
+    explorationLocomotionScale: 0.9,
     size: [14, 14],
     spawnPoint: { x: 0, y: 1, z: 3, rotation: 0 } as PlayerPosition,
     ambientLight: { intensity: 0.6, color: '#ffddaa' },
@@ -176,7 +178,8 @@ export const SCENE_CONFIG = {
   home_morning: {
     id: 'home_morning',
     name: 'Дом (утро)',
-    explorationLocomotionScale: 1,
+    explorationCharacterModelScale: 0.56,
+    explorationLocomotionScale: 0.9,
     size: [14, 14],
     spawnPoint: { x: 0, y: 1, z: 3, rotation: 0 } as PlayerPosition,
     ambientLight: { intensity: 0.5, color: '#ffffff' }, npcs: [], interactiveObjects: [],
@@ -716,13 +719,22 @@ export const SCENE_CONFIG = {
   },
   
   green_zone: {
-    id: 'green_zone', name: 'Зелёнка', size: [18, 18],
+    id: 'green_zone',
+    name: 'Зелёнка',
+    explorationCharacterModelScale: 0.5,
+    explorationLocomotionScale: 0.88,
+    size: [18, 18],
     spawnPoint: { x: 0, y: 0.2, z: 0, rotation: 0 } as PlayerPosition,
     ambientLight: { intensity: 0.4, color: '#00ff66' }, npcs: [], interactiveObjects: [],
   },
   
   district: {
-    id: 'district', name: 'Район', size: [20, 20],
+    id: 'district',
+    name: 'Район',
+    /** Не дефолт `1` на 20×20 — иначе NPC и игрок «переростки» относительно плитки пола. */
+    explorationCharacterModelScale: 0.74,
+    explorationLocomotionScale: 0.94,
+    size: [20, 20],
     spawnPoint: { x: 0, y: 1, z: 4, rotation: 0 } as PlayerPosition,
     ambientLight: { intensity: 0.35, color: '#ffa500' },
     npcs: [
@@ -739,13 +751,21 @@ export const SCENE_CONFIG = {
   },
   
   mvd: {
-    id: 'mvd', name: 'Отделение МВД', size: [12, 10],
+    id: 'mvd',
+    name: 'Отделение МВД',
+    explorationCharacterModelScale: 0.58,
+    explorationLocomotionScale: 0.9,
+    size: [12, 10],
     spawnPoint: { x: 0, y: 1, z: 3, rotation: 0 } as PlayerPosition,
     ambientLight: { intensity: 0.45, color: '#4a90d9' }, npcs: [], interactiveObjects: [],
   },
   
   president_hotel: {
-    id: 'president_hotel', name: 'Президент Отель', size: [14, 10],
+    id: 'president_hotel',
+    name: 'Президент Отель',
+    explorationCharacterModelScale: 0.54,
+    explorationLocomotionScale: 0.9,
+    size: [14, 10],
     spawnPoint: { x: 0, y: 1, z: 5, rotation: 0 } as PlayerPosition,
     ambientLight: { intensity: 0.5, color: '#ffd700' }, npcs: [], interactiveObjects: [],
   },
@@ -810,7 +830,15 @@ export const SCENE_CONFIG = {
   },
   
   dream: {
-    id: 'dream', name: 'Сон', explorationCharacterModelScale: 1.08, explorationLocomotionScale: 1.04, size: [20, 20],
+    id: 'dream',
+    name: 'Сон',
+    /**
+     * Ограниченная площадка 20×20 — не множитель «улица» (~1.14): иначе те же GLB, что в комнатах,
+     * выглядят как великаны в пустом фиолетовом боксе (лилипуты мебели / гиганты людей).
+     */
+    explorationCharacterModelScale: 0.58,
+    explorationLocomotionScale: 0.88,
+    size: [20, 20],
     spawnPoint: { x: 0, y: 1, z: 0, rotation: 0 } as PlayerPosition,
     ambientLight: { intensity: 0.4, color: '#a855f7' },
     npcs: [
@@ -827,7 +855,11 @@ export const SCENE_CONFIG = {
   },
   
   battle: {
-    id: 'battle', name: 'Битва', explorationCharacterModelScale: 1.05, explorationLocomotionScale: 1.02, size: [20, 20],
+    id: 'battle',
+    name: 'Битва',
+    explorationCharacterModelScale: 0.62,
+    explorationLocomotionScale: 0.9,
+    size: [20, 20],
     spawnPoint: { x: 0, y: 1, z: 0, rotation: 0 } as PlayerPosition,
     ambientLight: { intensity: 0.25, color: '#ef4444' }, npcs: [], interactiveObjects: [],
   },

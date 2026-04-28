@@ -41,6 +41,9 @@ const NARROW_SCENE_UNIFORM_CAP: Partial<Record<SceneId, number>> = {
   volodka_room: 0.31,
   volodka_corridor: 0.29,
   home_evening: 0.26,
+  /** Сон / битва: 20×20 без мебели — без верхнего капа Khronos-манекены разъезжаются по высоте между сессиями. */
+  dream: 0.3,
+  battle: 0.3,
 };
 
 /** 3D-интро: чуть ужимаем относительно геймплея + абсолютный потолок (кинокамера ближе TPS). */
