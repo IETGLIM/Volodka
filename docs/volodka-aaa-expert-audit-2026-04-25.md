@@ -88,6 +88,7 @@ Current state: Next.js API routes for LLM, save (disabled by default), optional 
 - Опциональный E2E smoke в CI vs стоимость Browserbase (см. roadmap фаза 5).
 - a11y/i18n + UX journal.
 - Индексная дорожная карта: `docs/volodka-incremental-aaa-roadmap.md` (фазы 0–5; чеклисты релиза и mobile).
+- Визуальный / UI аудит: карта референсов → канон проекта и бэклог матриц (токены, сцены × постFX, P0–P2) — [visual-reference-mapping.md](./visual-reference-mapping.md), [visual-ui-aaa-audit-backlog.md](./visual-ui-aaa-audit-backlog.md).
 
 **Persist Migration Summary:** Existing save-manager (v5, compacting, AutoSave) + new migrations.ts provides robust versioning. Transient fields (npcStates, timers) excluded via partialize/compact*. Readiness for saves now **solid**.
 

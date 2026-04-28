@@ -14,6 +14,8 @@
 
 **Канон сюжетного шага (квест как сцена):** см. `docs/quest-scene-pipeline.md` — единый пайплайн от принятия квеста до перехода, с привязкой к коду. **Четыре референс-флоу (офис / дом / кафе / обход) и чеклист выравнивания:** `docs/quest-reference-template.md`.
 
+**Визуальный / UI слой (референсы, токены, сцены × пост):** `docs/visual-reference-mapping.md`, `docs/visual-ui-aaa-audit-backlog.md` — матрицы для аудита и P0–P2 без смешения жанров в одном кадре.
+
 ## Карта систем (якорные файлы)
 
 | Домен | Назначение | Ключевые пути |
@@ -121,6 +123,7 @@
 
 ## История изменений документа
 
+- **2026-04-28:** добавлены ссылки на визуальный/UI аудит: `visual-reference-mapping.md`, `visual-ui-aaa-audit-backlog.md`.
 - **2026-04-27:** аудит `volodka-aaa-expert-audit` синхронизирован с кодом (API, CI/smoke, persist); README и `.gitignore` (zip-снимок в корне).
 - **2026-04-27:** фаза 5 — решение по Browserbase smoke, API-лимиты и Zod для `ai-dialogue`, чеклист релиза 5.3.
 - **2026-04-27:** фаза 4 — единый mobile breakpoint, тесты `mobileBreakpoints.test.tsx` + `explorationMobileHeroHints.test.ts`, чеклист 4.3.

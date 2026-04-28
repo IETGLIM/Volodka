@@ -79,3 +79,4 @@
 - Золотой путь: `src/data/goldenPath.ts`.
 - Аудит скелета: [narrative-golden-path-audit.md](./narrative-golden-path-audit.md).
 - UI-скин панелей и токены (волна 2): [ui-skin-tokens.md](./ui-skin-tokens.md).
+- Визуальные референсы (внешний список жанров) → канон и поверхности продукта: [visual-reference-mapping.md](./visual-reference-mapping.md); матрица UI/сцен и P0–P2: [visual-ui-aaa-audit-backlog.md](./visual-ui-aaa-audit-backlog.md).

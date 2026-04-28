@@ -31,7 +31,7 @@
 | `game-panel-skin--poetry` | Книга стихов |
 | `game-panel-skin--briefing` | Брифинг обхода (`ExplorationBriefingOverlay`) |
 
-Связка с нарративом: [narrative-style-bible.md](./narrative-style-bible.md) (режимы сцены). Визуальная палитра ART: [ART_BIBLE.md](./ART_BIBLE.md).
+Связка с нарративом: [narrative-style-bible.md](./narrative-style-bible.md) (режимы сцены). Визуальная палитра ART: [ART_BIBLE.md](./ART_BIBLE.md). Аудит покрытия панелей и приоритеты: [visual-ui-aaa-audit-backlog.md](./visual-ui-aaa-audit-backlog.md).
 
 ## Forced colors
 

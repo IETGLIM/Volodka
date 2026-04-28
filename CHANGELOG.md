@@ -6,6 +6,8 @@
 
 ### Added
 
+- **Документация визуального/UI аудита:** `docs/visual-reference-mapping.md` (референсы → слои style bible и поверхности продукта), `docs/visual-ui-aaa-audit-backlog.md` (матрица UI vs токены, сцены обхода × IBL × кибер-пост, метрики, бэклог P0–P2). Перекрёстные ссылки в `docs/volodka-aaa-expert-audit-2026-04-25.md`, `docs/volodka-incremental-aaa-roadmap.md`.
+
 - **AAA+ polish (план backlog):** `StoryRenderer` / `CyberChoiceCard` — акценты dream/poem/cyan через `--game-ui-story-*` в `globals.css` (едино с панелями волны 2). Док: `docs/exploration-postfx-art-checklist.md` (пост обхода vs `ART_BIBLE`), `docs/exploration-interaction-feedback.md`, `docs/quest-faction-mapping.md`, `docs/narrative-acts-2-3-hooks.md`. **Аудио:** `--audio-sfx-master|ui|footstep|world` и применение в `AudioEngine.playSfx`. **Фракции:** поле `factionId` в `Quest` (`types.ts`), значения в `quests.ts`, учёт завершения в `questRewards.ts` через `completeQuestForFaction`.
 
 - **Нарратив волна 1 (style bible + аудит):** `docs/narrative-style-bible.md` — иерархия референсов, голос, режимы сцен, бюджет длины; `docs/narrative-golden-path-audit.md` — таблица скелета золотого пути и сверка с квестами. В `docs/ART_BIBLE.md` — отсылка на narrative bible и канон географии в прозе.
