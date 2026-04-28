@@ -8,9 +8,12 @@ import { UI_SFX_FILE_OVERRIDES } from '@/lib/uiSfxMap';
 
 type TrackId = 'menu' | 'intro' | 'ambient';
 
+const UI_SFX_MIN_INTERVAL_MS = 60;
+
 class AudioEngineImpl {
   private muted = false;
   private current: HTMLAudioElement | null = null;
+  private lastUiTactileSfxAt = 0;
 
   setMuted(muted: boolean) {
     this.muted = muted;
@@ -43,6 +46,11 @@ class AudioEngineImpl {
   /** Короткий SFX по событию `sound:play` (файлы опциональны — есть программный fallback). */
   playSfx(type: string, volume = 0.35) {
     if (this.muted || typeof window === 'undefined') return;
+    if (type === 'ui_success' || type === 'ui_fail') {
+      const now = performance.now();
+      if (now - this.lastUiTactileSfxAt < UI_SFX_MIN_INTERVAL_MS) return;
+      this.lastUiTactileSfxAt = now;
+    }
     const entry = UI_SFX_FILE_OVERRIDES[type];
     const mapped =
       entry === undefined

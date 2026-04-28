@@ -3,10 +3,14 @@ import type { UiPriority } from '@/engine/EventBus';
 
 export type EffectNotifType = 'poem' | 'stat' | 'quest' | 'flag' | 'energy' | 'system';
 
+/** Визуальный вес от `UiPriority` в `showEffectNotif`. */
+export type EffectNotifDisplayStyle = 'strong' | 'subtle' | 'normal';
+
 export interface EffectNotification {
   id: string;
   text: string;
   type: EffectNotifType;
+  displayStyle: EffectNotifDisplayStyle;
 }
 
 export function useEffectNotifications(maxVisible = 5, defaultTimeoutMs = 3000) {
@@ -23,8 +27,13 @@ export function useEffectNotifications(maxVisible = 5, defaultTimeoutMs = 3000) 
       if (priority === 'high') {
         ms = Math.max(ms, 1200);
       }
+      const displayStyle: EffectNotifDisplayStyle =
+        priority === 'high' ? 'strong' : priority === 'low' ? 'subtle' : 'normal';
       const id = Date.now().toString();
-      setNotifications((prev) => [...prev.slice(-(maxVisible - 1)), { id, text, type }]);
+      setNotifications((prev) => [
+        ...prev.slice(-(maxVisible - 1)),
+        { id, text, type, displayStyle },
+      ]);
       setTimeout(() => {
         setNotifications((prev) => prev.filter((notif) => notif.id !== id));
       }, ms);

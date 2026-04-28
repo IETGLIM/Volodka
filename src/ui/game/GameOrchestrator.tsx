@@ -835,7 +835,13 @@ export default function GameOrchestrator() {
               initial={{ opacity: 0, x: 40 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 40 }}
-              className={`px-4 py-2 backdrop-blur-sm border ${notif.type === 'energy' ? 'max-w-[min(92vw,22rem)]' : ''}`}
+              className={`px-4 py-2 backdrop-blur-sm border ${notif.type === 'energy' ? 'max-w-[min(92vw,22rem)]' : ''} ${
+                notif.displayStyle === 'strong'
+                  ? 'ring-1 ring-cyan-400/35 shadow-[0_0_14px_rgba(34,211,238,0.14)]'
+                  : notif.displayStyle === 'subtle'
+                    ? 'opacity-[0.82] py-1.5 scale-[0.98]'
+                    : ''
+              }`}
               style={{
                 background:
                   notif.type === 'energy' ? 'rgba(251, 191, 36, 0.15)' :
@@ -855,7 +861,13 @@ export default function GameOrchestrator() {
               }}
             >
               <span
-                className={`font-mono text-xs tracking-wider ${notif.type === 'energy' ? 'leading-snug whitespace-normal' : ''}`}
+                className={`font-mono tracking-wider ${
+                  notif.displayStyle === 'strong'
+                    ? 'text-sm'
+                    : notif.displayStyle === 'subtle'
+                      ? 'text-[10px] opacity-90'
+                      : 'text-xs'
+                } ${notif.type === 'energy' ? 'leading-snug whitespace-normal' : ''}`}
                 style={{
                   color:
                     notif.type === 'energy' ? 'rgba(251, 191, 36, 0.9)' :

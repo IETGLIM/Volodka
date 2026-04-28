@@ -71,6 +71,7 @@ import { useGamePhaseStore } from '@/state/gamePhaseStore';
 import { eventBus } from '@/engine/EventBus';
 import { emitInteractionFeedback } from '@/lib/interactionFeedback';
 import { InteractionFeedbackListener } from '@/ui/game/InteractionFeedbackListener';
+import { useInteractionAnticipation } from '@/ui/game/useInteractionAnticipation';
 import { getCurrentScheduleEntry } from '@/engine/ScheduleEngine';
 import { useIsMobile, useTouchGameControls } from '@/hooks/use-mobile';
 import { useMobileVisualPerf } from '@/hooks/useMobileVisualPerf';
@@ -212,6 +213,7 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
   const playerSceneTuningId = introCutsceneActive ? INTRO_OPENING_SCENE_ID : sceneId;
   const playerInputLocked = isDialogueActive || introCutsceneActive;
   const interactionHintTick = useExplorationLivePlayerTick(!playerInputLocked, 120);
+  useInteractionAnticipation(availableInteractionIds.size > 0 && !playerInputLocked);
 
   useEffect(() => {
     registerBaseInteractions();

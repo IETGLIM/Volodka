@@ -6,11 +6,12 @@ let shakeStrength = 0;
 let lastShakeTs = 0;
 const SHAKE_COOLDOWN_MS = 80;
 
-let busAttached = false;
+let isInitialized = false;
 
-function attachInteractionShakeBus(): void {
-  if (busAttached || typeof window === 'undefined') return;
-  busAttached = true;
+function ensureInit(): void {
+  if (isInitialized) return;
+  if (typeof window === 'undefined') return;
+  isInitialized = true;
   eventBus.on('ui:interaction_feedback', (e) => {
     if (e.kind === 'success') {
       if (e.timestamp - lastShakeTs < SHAKE_COOLDOWN_MS) return;
@@ -27,7 +28,7 @@ function attachInteractionShakeBus(): void {
  * Декрементирует амплитуду и добавляет кадровый оффсет к позиции камеры (после damp3 + lookAt).
  */
 export function applyExplorationInteractionCameraShake(camera: Camera, deltaSec: number): void {
-  attachInteractionShakeBus();
+  ensureInit();
   const a = shakeStrength;
   if (a < 1e-6) return;
   camera.position.x += (Math.random() - 0.5) * a * 2.2;

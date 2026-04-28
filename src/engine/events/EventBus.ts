@@ -185,6 +185,9 @@ export interface EventMap {
     actionId?: string;
   };
 
+  /** Минимальный pre-feedback: рядом с целью для E (подписки: HUD / мобильный FAB). */
+  'ui:interaction_hint': { text: string };
+
   /** Короткий системный буллет над игрой (`showEffectNotif`, без канала exploration_message — меньше спама рядом с локальными тостами). */
   'ui:effect_notif': {
     text: string;

@@ -8,19 +8,31 @@ import { audioEngine } from '@/engine/AudioEngine';
  * Централизованный consumer `ui:interaction_feedback`: звук + короткий hit-toast через `ui:effect_notif`
  * (обрабатывается в `GameOrchestrator`). Тряска камеры — модуль `explorationCameraShake.ts`.
  */
-const lastSuccessMap = new Map<string, number>();
 const SUCCESS_DEBOUNCE_MS = 250;
-let lastFailTs = 0;
+const SUCCESS_TTL_MS = 2000;
 const FAIL_COOLDOWN_MS = 400;
+const KEY_TTL_MS = 2000;
+
+let lastSuccessMap = new Map<string, number>();
+let lastFailMap = new Map<string, number>();
+
+function gcStaleKeys(map: Map<string, number>, now: number, ttlMs: number): void {
+  for (const [k, ts] of map) {
+    if (now - ts > ttlMs) {
+      map.delete(k);
+    }
+  }
+}
 
 export function InteractionFeedbackListener() {
   useEffect(() => {
-    return eventBus.on('ui:interaction_feedback', ({ kind, timestamp, actionId }) => {
+    const off = eventBus.on('ui:interaction_feedback', ({ kind, timestamp, actionId }) => {
       if (kind === 'success') {
         const key = actionId ?? 'default';
         const last = lastSuccessMap.get(key) ?? 0;
         if (timestamp - last < SUCCESS_DEBOUNCE_MS) return;
         lastSuccessMap.set(key, timestamp);
+        gcStaleKeys(lastSuccessMap, timestamp, SUCCESS_TTL_MS);
 
         audioEngine.playSfx('ui_success', 0.32);
         eventBus.emit('ui:effect_notif', {
@@ -30,8 +42,11 @@ export function InteractionFeedbackListener() {
           priority: 'low',
         });
       } else {
-        if (timestamp - lastFailTs < FAIL_COOLDOWN_MS) return;
-        lastFailTs = timestamp;
+        const key = actionId ?? 'default';
+        const lastF = lastFailMap.get(key) ?? 0;
+        if (timestamp - lastF < FAIL_COOLDOWN_MS) return;
+        lastFailMap.set(key, timestamp);
+        gcStaleKeys(lastFailMap, timestamp, KEY_TTL_MS);
 
         audioEngine.playSfx('ui_fail', 0.26);
         eventBus.emit('ui:effect_notif', {
@@ -41,6 +56,11 @@ export function InteractionFeedbackListener() {
         });
       }
     });
+    return () => {
+      lastSuccessMap.clear();
+      lastFailMap.clear();
+      off();
+    };
   }, []);
 
   return null;
