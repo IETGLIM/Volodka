@@ -337,6 +337,56 @@ export const STORY_TRIGGERS: TriggerZone[] = [
     promptText: 'E — закрыть глаза и провалиться в сон',
   },
 
+  // ========== КОРИДОР ВОЛОДЬКИ (дигетический хаб переходов) ==========
+  {
+    id: 'trigger_corridor_to_room',
+    /** У южной двери: обратно в комнату Володьки. */
+    position: { x: 0, y: 0.55, z: -4.82 },
+    size: { x: 1.35, y: 1.8, z: 1.05 },
+    sceneId: 'volodka_corridor',
+    type: 'location',
+    targetSceneId: 'volodka_room',
+    targetPosition: { x: 0.05, y: 0.06, z: 3.45 },
+    requiresInteraction: true,
+    promptText: 'E — в комнату Володьки',
+  },
+  {
+    id: 'trigger_corridor_to_home_common',
+    /** У северной двери: в общую зону квартиры (кухня/гостиная). */
+    position: { x: 0, y: 0.55, z: 4.88 },
+    size: { x: 1.35, y: 1.8, z: 1.05 },
+    sceneId: 'volodka_corridor',
+    type: 'location',
+    targetSceneId: 'home_evening',
+    targetPosition: { x: 4.55, y: 0.06, z: 4.05 },
+    requiresInteraction: true,
+    promptText: 'E — в общую зону квартиры',
+  },
+  {
+    id: 'trigger_corridor_to_zarema_room',
+    /** Левая створка в северной части коридора: путь к Зареме и Альберту. */
+    position: { x: -1.32, y: 0.55, z: 3.68 },
+    size: { x: 0.9, y: 1.8, z: 1.2 },
+    sceneId: 'volodka_corridor',
+    type: 'location',
+    targetSceneId: 'zarema_albert_room',
+    targetPosition: { x: 0, y: 0.06, z: 1.35 },
+    requiresInteraction: true,
+    promptText: 'E — к Зареме и Альберту',
+  },
+  {
+    id: 'trigger_corridor_to_blue_pit',
+    /** Правая створка в северной части коридора: «Синяя Яма». */
+    position: { x: 1.32, y: 0.55, z: 3.68 },
+    size: { x: 0.9, y: 1.8, z: 1.2 },
+    sceneId: 'volodka_corridor',
+    type: 'location',
+    targetSceneId: 'blue_pit',
+    targetPosition: { x: 0, y: 0.06, z: 4.2 },
+    requiresInteraction: true,
+    promptText: 'E — в «Синюю Яму»',
+  },
+
   // ========== КОМНАТА ЗАРЕМЫ И АЛЬБЕРТА ==========
   {
     id: 'trigger_room_bed',

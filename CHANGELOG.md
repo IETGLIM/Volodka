@@ -39,6 +39,7 @@
 ### Fixed
 
 - **Обход — триггеры `location` (сон / пробуждение):** в `RPGGameCanvas` обработка `type: 'location'` + `targetSceneId` (раньше E на кровать/выход из сна ничего не делал). Снимок `exploration.dreamWakeReturn` для возврата из `dream` туда, откуда зашли (по умолчанию — `zarema_albert_room`, не «левый» `kitchen_night`). `InteractiveTrigger` / `TriggerSystem` — учёт `explorationRuntimeTriggerSceneIds` (маркеры и зоны `kitchen_night` в комнате Заремы). Новый триггер `trigger_volodka_dream_nap` в `triggerZones.ts` — сон из комнаты Володьки без обхода к Зареме. `explorationLocationTrigger.ts` — проверка выхода из сна без ложного сужения `tsc` по `targetSceneId`.
+- **Дигетический хаб в `volodka_corridor`:** добавлены location-триггеры дверей `trigger_corridor_to_room`, `trigger_corridor_to_home_common`, `trigger_corridor_to_zarema_room`, `trigger_corridor_to_blue_pit` в `src/data/triggerZones.ts` (явные E-переходы из коридора без меню), плюс покрытие в `src/data/triggerZones.test.ts`.
 
 - **3D масштаб фигур (лилипуты / великаны):** в `scenes.ts` у `dream` и `battle` убран уличный множитель (~1.05–1.08) на площадке 20×20; явные `explorationCharacterModelScale` для `kitchen_dawn`, `home_morning`, `green_zone`, `district`, `mvd`, `president_hotel` (раньше срабатывал дефолт `1`). В `modelMeta.ts` — верхний кап uniform для `dream`/`battle`, чтобы Khronos-GLB не разъезжались по росту между локациями.
 

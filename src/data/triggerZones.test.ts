@@ -17,6 +17,14 @@ describe('getTriggersForScene', () => {
     expect(kitchen.some((t) => t.sceneId === 'cafe_evening')).toBe(false);
   });
 
+  it('volodka_corridor exposes digetic hub location triggers', () => {
+    const corridor = getTriggersForScene('volodka_corridor');
+    expect(corridor.some((t) => t.id === 'trigger_corridor_to_room')).toBe(true);
+    expect(corridor.some((t) => t.id === 'trigger_corridor_to_home_common')).toBe(true);
+    expect(corridor.some((t) => t.id === 'trigger_corridor_to_zarema_room')).toBe(true);
+    expect(corridor.some((t) => t.id === 'trigger_corridor_to_blue_pit')).toBe(true);
+  });
+
   it('explorationRuntimeTriggerSceneIds merges zarema with kitchen_night for markers/collisions', () => {
     const ids = explorationRuntimeTriggerSceneIds('zarema_albert_room');
     expect(ids.has('zarema_albert_room')).toBe(true);
