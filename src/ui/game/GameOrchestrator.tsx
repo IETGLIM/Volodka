@@ -646,9 +646,12 @@ export default function GameOrchestrator() {
       {gameMode === 'exploration' && <ExplorationRackConsoleOverlay />}
       {gameMode === 'exploration' && <HackingWireMinigameOverlay />}
 
-      {gameMode === 'exploration' && !introOpening3dActive && !activeCutsceneId && (
-        <ExplorationObjectiveStrip lines={explorationObjectiveLines} />
-      )}
+      {gameMode === 'exploration' &&
+        !introOpening3dActive &&
+        !activeCutsceneId &&
+        !showStoryOverlay && (
+          <ExplorationObjectiveStrip lines={explorationObjectiveLines} />
+        )}
 
       {gameMode === 'exploration' && !introOpening3dActive && (
         <MiniMap

@@ -21,6 +21,8 @@
 
 ### Changed
 
+- **Обход / HUD:** при полноэкранном сюжете (`showStoryOverlay`) скрыта лента «Цель · локация» (`ExplorationObjectiveStrip`), в одной логике с компактным трекером квестов (`suppressQuestStrip` в `HUD`). Док: `docs/hud-quest-and-objective-strips.md`.
+
 - **AAA+ UI (токены):** `MoralCompassHUD` и `PlayerOrbitHeader` — бордеры, тени полос и портрета на `var(--game-ui-border-*)` / `var(--game-ui-glow-*)` / `var(--game-ui-shadow-floating)`; `InteractionFeedbackListener` — чуть разная громкость `ui_success` по `actionId` (loot / npc / registry). `docs/ui-skin-tokens.md` — строки для `--game-ui-story-*` и аудио-мультипликаторов.
 
 - **UI волна 2 (skin tokens):** в `globals.css` — переменные `--game-ui-*`, композитные классы `game-panel-skin--floating|journal|inventory|poetry|briefing`, `forced-colors` для них; панели: `QuestsPanel`, `JournalPanel`, `Inventory`, `PoetryBook`, `ExplorationBriefingOverlay`. `DialogueRenderer` — токены рамки терминала, тени имени/текста, hover вариантов ответа и голопортрета; `HUD` — свечение stat bars через `var(--game-ui-glow-*)`. Док: `docs/ui-skin-tokens.md`.
