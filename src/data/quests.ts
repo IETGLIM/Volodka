@@ -62,14 +62,15 @@ export const QUEST_DEFINITIONS: Record<string, ExtendedQuest> = {
   main_goal: {
     id: 'main_goal',
     title: '🎯 Наследие Володьки',
-    description: 'Оставить после себя что-то важное. Найти смысл в 12 годах техподдержки и превратить боль в искусство. Прогресс по шагам — здесь, в панели 📋; параллельные IT-цепочки дублируй в 💻.',
+    description:
+      'Оставить после себя что-то важное: не «гильдия квестов», а жизнь — стихи, кто-то кто услышит, примирение с прошлым, сборник. Двенадцать лет тикетов — сырьё для текста, не оправдание. Шаги — в 📋; параллельные IT-цепочки — в 💻.',
     type: 'main',
     status: 'active',
     objectives: [
       createObjective('write_poems', 'Написать 10 стихотворений', {
         targetValue: 10,
         currentValue: 0,
-        hint: 'Пиши стихи ночью на кухне или дома; в комнате — у стола или в черновиках на ноутбуке.',
+        hint: 'Дом: вечером «Писать» (сборка строк), ночью на кухне; на крыше — отдельная мини-игра; в 3D-комнате — стол и черновики.',
         targetLocation: 'volodka_room',
         mapHint: { x: 2.85, z: 0.15 },
         stageType: 'exploration',
@@ -653,20 +654,20 @@ export const QUEST_DEFINITIONS: Record<string, ExtendedQuest> = {
   first_words: {
     id: 'first_words',
     title: '✍️ Первые слова',
-    description: 'Написать своё первое стихотворение за долгое время',
+    description: 'Первый черновик за долгое время — мини-игра из строк, дома вечером по золотому пути.',
     type: 'main',
     status: 'available',
     objectives: [
       createObjective('write_poem', 'Мини-игра: собери стих из строк', {
         targetValue: 1,
-        hint: 'Примите квест в 📋, затем вечером дома выберите «Писать» — откроется сборка строк.',
+        hint: 'Вечер в квартире: выбор «Писать» — сборка строк (другие мини-игры стиха, напр. крыша, вне кратчайшего скелета).',
         targetLocation: 'home_evening',
         stageType: 'minigame',
         linkedStoryNodeId: 'write_evening',
       }),
       createObjective('reflect', 'Прочитать результат и отпустить мысль', {
         targetValue: 1,
-        hint: 'После мини-игры дочитайте сцену и нажмите «дальше» — рефлексия засчитается.',
+        hint: 'После мини-игры дочитай узел с рефлексией — засчитывается автоматически с прогрессом квеста.',
         targetLocation: 'home_evening',
         stageType: 'narration',
         linkedStoryNodeId: 'write_evening_result',

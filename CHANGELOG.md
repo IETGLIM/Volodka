@@ -6,6 +6,8 @@
 
 ### Added
 
+- **Нарратив волна 1 (style bible + аудит):** `docs/narrative-style-bible.md` — иерархия референсов, голос, режимы сцен, бюджет длины; `docs/narrative-golden-path-audit.md` — таблица скелета золотого пути и сверка с квестами. В `docs/ART_BIBLE.md` — отсылка на narrative bible и канон географии в прозе.
+
 - **Обход — подсказка E (HUD):** стор `interactionHintStore.ts`, `InteractionHintListener.tsx` + `InteractionHintOverlay.tsx` в `RPGGameCanvas.tsx`; мобильная кнопка «E» в `ExplorationMobileHud.tsx` подсвечивается при активном хинте; сброс при успехе E и при выходе из зоны (`kind: 'hint_clear'` в `ui:interaction_feedback`, `useInteractionAnticipation.ts`). `InteractionFeedbackListener` не реагирует на `hint_clear`.
 
 - **3D квартира Заремы / Альберт (полировка):** GLB-пропы из `propsManifest` (стол, стул, лампа, кружка, клавиатура, шкаф), настенный экран `MatrixRainScreenMesh` + коллайдеры стола/стула/шкафа в `PhysicsSceneColliders` / `ZaremaAlbertExplorationVisual.tsx`. Побочный квест `exploration_zarema_tv_feed` («Лог подъезда»), граф `ZAREMA_TV_EXPLORATION_QUEST_GRAPH`, зоны E в `triggerZones.ts`, `quest_zarema_tv` в `registerBaseInteractions.ts`. **Пост / глитч:** тёплый интерьер — слабая хрома и виньетка от стресса в `ExplorationPostFX`, событие `ui:it_glitch_pulse` + `ItGlitchPulseOverlay` (и `HackingWireMinigameOverlay`); кибер-грейд для `office_morning`. Док: `docs/narrative-playtime-estimate.md`.
@@ -14,6 +16,10 @@
 - **Планирование контента и перф:** `docs/content-budget-8h.md` (таблица локация → сайд-квест, эвристика ~8 ч), `docs/perf-exploration-notes.md` (frameloop, GLB cache, mobile).
 - **Пост обхода:** `lib/explorationPostFxState.ts` (Bloom/хрома от креатива, кармы, стресса; `isExplorationCyberGradeScene`); `RPGGameCanvas` + `CameraEffects` используют это для согласованности. Кибер-пост `ExplorationPostFX` на сценах `district` и `mvd` (как на `volodka_room` / `blue_pit`). Тест: `explorationPostFxState.test.ts`.
 - **Фасад `@/state`:** реэкспорт `applyQuestCompletionRewards` из `lib/questRewards.ts`.
+
+### Changed
+
+- **Тексты и квесты (согласованность с золотым путём):** `src/data/storyNodes.ts` — ужат и выровнен тон пролога ИТ (`start_diagnosis`, `escalate_now`), «вечерний» и итог мини-игры стиха (`evening_choice`, `write_evening_result`); `src/data/quests.ts` — `main_goal`, `first_words` (описания и подсказки `write_poems` / черновик / пути к мини-играм).
 
 ### Продукт и нарратив
 
