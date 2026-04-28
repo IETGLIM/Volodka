@@ -51,10 +51,10 @@ export const DEFAULT_PLAYER_GLB_FILENAME = 'khronos_cc0_CesiumMan.glb' as const;
 
 export const MODEL_URLS = {
   /**
-   * Ключ «volodka» в данных: ранее отдельный `Volodka.glb` (вынесен из репо). Сейчас — тот же риг, что у части NPC (`khronos_cc0_RiggedFigure`).
+   * Ключ «volodka» в данных: ранее отдельный `Volodka.glb` (вынесен из репо). Human-first профиль — `khronos_cc0_CesiumMan`.
    * Визуальный uniform — в `modelMeta` (`resolveCharacterMeshUniformScale`).
    */
-  volodka: `${BASE_URL}/khronos_cc0_RiggedFigure.glb`,
+  volodka: `${BASE_URL}/khronos_cc0_CesiumMan.glb`,
   
   // NPC модели (аниме стиль)
   smolAme: `${BASE_URL}/khronos_cc0_Fox.glb`,

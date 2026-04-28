@@ -20,6 +20,7 @@
 - **Планирование контента и перф:** `docs/content-budget-8h.md` (таблица локация → сайд-квест, эвристика ~8 ч), `docs/perf-exploration-notes.md` (frameloop, GLB cache, mobile).
 - **Пост обхода:** `lib/explorationPostFxState.ts` (Bloom/хрома от креатива, кармы, стресса; `isExplorationCyberGradeScene`); `RPGGameCanvas` + `CameraEffects` используют это для согласованности. Кибер-пост `ExplorationPostFX` на сценах `district` и `mvd` (как на `volodka_room` / `blue_pit`). Тест: `explorationPostFxState.test.ts`.
 - **Фасад `@/state`:** реэкспорт `applyQuestCompletionRewards` из `lib/questRewards.ts`.
+- **Архив для проверки Vercel:** скрипт `npm run archive:vercel` (`scripts/create-vercel-archive.mjs`) создаёт `artifacts/volodka-vercel-src.zip` через `git archive` для чистой проверки `npm ci && npm run build`.
 
 ### Changed
 
@@ -31,6 +32,7 @@
 
 - **HUD `PlayerOrbitHeader`:** у портрета в левом верхнем углу — две полосы в духе WoW: **Здоровье (Health)** = сюжетная энергия, **Карма (Karma)** = слот «маны»; полоса опыта — под ними. `HUD` — подсказка под барами обновлена.
 - **Тексты и квесты (согласованность с золотым путём):** `src/data/storyNodes.ts` — ужат и выровнен тон пролога ИТ (`start_diagnosis`, `escalate_now`), «вечерний» и итог мини-игры стиха (`evening_choice`, `write_evening_result`); `src/data/quests.ts` — `main_goal`, `first_words` (описания и подсказки `write_poems` / черновик / пути к мини-играм).
+- **Старт хаба без «двух режимов»:** `explore_hub_welcome` в `src/data/storyNodes.ts` теперь даёт единый вход `Продолжить в 3D-хаб` → `explore_mode` (без стартовой развилки «офис vs 3D»).
 
 ### Продукт и нарратив
 
@@ -40,6 +42,8 @@
 
 - **Обход — триггеры `location` (сон / пробуждение):** в `RPGGameCanvas` обработка `type: 'location'` + `targetSceneId` (раньше E на кровать/выход из сна ничего не делал). Снимок `exploration.dreamWakeReturn` для возврата из `dream` туда, откуда зашли (по умолчанию — `zarema_albert_room`, не «левый» `kitchen_night`). `InteractiveTrigger` / `TriggerSystem` — учёт `explorationRuntimeTriggerSceneIds` (маркеры и зоны `kitchen_night` в комнате Заремы). Новый триггер `trigger_volodka_dream_nap` в `triggerZones.ts` — сон из комнаты Володьки без обхода к Зареме. `explorationLocationTrigger.ts` — проверка выхода из сна без ложного сужения `tsc` по `targetSceneId`.
 - **Дигетический хаб в `volodka_corridor`:** добавлены location-триггеры дверей `trigger_corridor_to_room`, `trigger_corridor_to_home_common`, `trigger_corridor_to_zarema_room`, `trigger_corridor_to_blue_pit` в `src/data/triggerZones.ts` (явные E-переходы из коридора без меню), плюс покрытие в `src/data/triggerZones.test.ts`.
+- **Наложение текстовых слоёв и читаемость:** в `IntroScreen` фазе `prose` оставлены последние 2 завершённые строки + текущая печать (без «простыни» старых реплик), урезаны тяжёлые VFX/декор в текст-фокус фазах; в `GameOrchestrator` `StoryRenderer` скрывается, когда активны полноэкранные слои (`PoemReveal`/диалог/катсцена), чтобы исключить двойной текст.
+- **Human-first модели в ключевых сценах:** `MODEL_URLS.volodka` переключён на `khronos_cc0_CesiumMan.glb`; в `npcDefinitions.ts` legacy `khronos_cc0_Fox.glb` для NPC заменён на `khronos_cc0_CesiumMan.glb` c анимационным пресетом `NPC_ANIM_KHR0`.
 
 - **3D масштаб фигур (лилипуты / великаны):** в `scenes.ts` у `dream` и `battle` убран уличный множитель (~1.05–1.08) на площадке 20×20; явные `explorationCharacterModelScale` для `kitchen_dawn`, `home_morning`, `green_zone`, `district`, `mvd`, `president_hotel` (раньше срабатывал дефолт `1`). В `modelMeta.ts` — верхний кап uniform для `dream`/`battle`, чтобы Khronos-GLB не разъезжались по росту между локациями.
 
@@ -87,7 +91,7 @@
 ### Модели
 
 - GLB по умолчанию из `public/models-external/` (в т.ч. CC0 Khronos). Игрок: `getDefaultPlayerModelPath()` / `DEFAULT_PLAYER_GLB_FILENAME` в `modelUrls.ts` (override: `NEXT_PUBLIC_DEFAULT_PLAYER_MODEL`). Пути `/models/...` переписываются через `rewriteLegacyModelPath`.
-- В репозитории остаётся **минимальный набор** GLB: `khronos_cc0_CesiumMan`, `RiggedFigure`, `Fox`, `sayuri_dans`, `spartan_armour_mkv_-_halo_reach` (остальные внешние модели и тяжёлые Khronos Sample-Assets убраны; часть пересжата Draco). `MODEL_URLS.volodka` и редирект legacy `/models/Volodka.glb` → `khronos_cc0_RiggedFigure.glb`. Константы `cc0KhronosBoomBox` и др. временно указывают на `khronos_cc0_Fox.glb`. Скрипт: `npm run optimize-models` (`scripts/optimize-models/optimizeWithDraco.js`), devDependencies `@gltf-transform/*`, `gltf-pipeline`.
+- В репозитории остаётся **минимальный набор** GLB: `khronos_cc0_CesiumMan`, `RiggedFigure`, `Fox`, `sayuri_dans`, `spartan_armour_mkv_-_halo_reach` (остальные внешние модели и тяжёлые Khronos Sample-Assets убраны; часть пересжата Draco). `MODEL_URLS.volodka` и редирект legacy `/models/Volodka.glb` → `khronos_cc0_CesiumMan.glb` (human-first). Константы `cc0KhronosBoomBox` и др. временно указывают на `khronos_cc0_Fox.glb`. Скрипт: `npm run optimize-models` (`scripts/optimize-models/optimizeWithDraco.js`), devDependencies `@gltf-transform/*`, `gltf-pipeline`.
 
 ### Документация
 

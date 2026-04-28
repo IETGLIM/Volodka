@@ -628,6 +628,10 @@ export const IntroScreen = memo(function IntroScreen({
   const [revealedPoem, setRevealedPoem] = useState<Poem | null>(null);
   const [collectedPoems, setCollectedPoems] = useState<string[]>([]);
   const proseScrollRef = useRef<HTMLDivElement>(null);
+  const textFocusPhase = introPhase === 'prose' || introPhase === 'poem';
+  const useReducedFx = textFocusPhase || Boolean(reduceMotion);
+  const proseHistoryStart = Math.max(0, beatIndex - 2);
+  const proseHistory = storyBeats.slice(proseHistoryStart, beatIndex);
 
   useEffect(() => {
     audioEngine.playMusic('intro');
@@ -735,19 +739,19 @@ export const IntroScreen = memo(function IntroScreen({
       <CanvasMatrixRain />
 
       {/* Scanlines */}
-      <Scanlines />
+      {!useReducedFx && <Scanlines />}
 
       {/* CRT sweep line */}
-      <CRTSweep />
+      {!useReducedFx && <CRTSweep />}
 
       {/* Blade Runner fog/mist */}
       <FogLayers />
 
       {/* Particle system */}
-      <ParticleSystem />
+      {!useReducedFx && <ParticleSystem />}
 
       {/* Sound wave visualization */}
-      <SoundWave />
+      {!textFocusPhase && <SoundWave />}
 
       {/* Cinematic letterbox bars */}
       <CinematicBars />
@@ -869,14 +873,15 @@ export const IntroScreen = memo(function IntroScreen({
                   ref={proseScrollRef}
                   className="relative z-[2] max-h-[min(52dvh,520px)] overflow-y-auto px-3 py-3 pr-2 font-mono text-left game-scrollbar sm:px-4 sm:py-4"
                 >
-                  {storyBeats.slice(0, beatIndex).map((beat, i) => {
+                  {proseHistory.map((beat, i) => {
                     const line = beat.text;
+                    const order = proseHistoryStart + i;
                     return (
                       <motion.p
-                        key={`prose-beat-${i}`}
+                        key={`prose-beat-${order}`}
                         initial={{ opacity: 0, x: -6, filter: 'blur(3px)' }}
-                        animate={{ opacity: 1, x: 0, filter: 'blur(0px)' }}
-                        transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1] }}
+                        animate={{ opacity: 0.42, x: 0, filter: 'blur(0px)' }}
+                        transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
                         className={`mb-2 text-base leading-relaxed sm:text-lg ${
                           beat.paragraphGap ? 'mt-5 border-t border-cyan-500/10 pt-4 sm:mt-6 sm:pt-5' : ''
                         } ${
@@ -888,11 +893,11 @@ export const IntroScreen = memo(function IntroScreen({
                             ? 'text-amber-400/85 drop-shadow-[0_0_8px_rgba(255,140,0,0.28)]'
                             : line.toLowerCase().includes('уфа') || line.toLowerCase().includes('тридцать три')
                             ? 'text-cyan-100/90 drop-shadow-[0_0_12px_rgba(0,255,255,0.18)]'
-                            : 'text-slate-300/90'
+                            : 'text-slate-300/70'
                         }`}
                       >
                         <span className="mr-2 inline-block w-5 select-none text-right text-cyan-500/35 tabular-nums">
-                          {(i + 1).toString().padStart(2, '0')}
+                          {(order + 1).toString().padStart(2, '0')}
                         </span>
                         <span className="text-cyan-500/40">&gt;</span>{' '}
                         {line}
@@ -943,26 +948,30 @@ export const IntroScreen = memo(function IntroScreen({
       )}
 
       {/* Corner decorations */}
-      <motion.div
-        className="absolute top-4 left-4 w-20 h-20 border-l-2 border-t-2 border-cyan-500/20 z-30"
-        animate={{ opacity: [0.2, 0.5, 0.2] }}
-        transition={{ duration: 2, repeat: Infinity }}
-      />
-      <motion.div
-        className="absolute top-4 right-4 w-20 h-20 border-r-2 border-t-2 border-cyan-500/20 z-30"
-        animate={{ opacity: [0.2, 0.5, 0.2] }}
-        transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}
-      />
-      <motion.div
-        className="absolute bottom-4 left-4 w-20 h-20 border-l-2 border-b-2 border-amber-500/15 z-30"
-        animate={{ opacity: [0.2, 0.4, 0.2] }}
-        transition={{ duration: 2, repeat: Infinity, delay: 1 }}
-      />
-      <motion.div
-        className="absolute bottom-4 right-4 w-20 h-20 border-r-2 border-b-2 border-amber-500/15 z-30"
-        animate={{ opacity: [0.2, 0.4, 0.2] }}
-        transition={{ duration: 2, repeat: Infinity, delay: 1.5 }}
-      />
+      {!textFocusPhase && (
+        <>
+          <motion.div
+            className="absolute top-4 left-4 w-20 h-20 border-l-2 border-t-2 border-cyan-500/20 z-30"
+            animate={{ opacity: [0.2, 0.5, 0.2] }}
+            transition={{ duration: 2, repeat: Infinity }}
+          />
+          <motion.div
+            className="absolute top-4 right-4 w-20 h-20 border-r-2 border-t-2 border-cyan-500/20 z-30"
+            animate={{ opacity: [0.2, 0.5, 0.2] }}
+            transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}
+          />
+          <motion.div
+            className="absolute bottom-4 left-4 w-20 h-20 border-l-2 border-b-2 border-amber-500/15 z-30"
+            animate={{ opacity: [0.2, 0.4, 0.2] }}
+            transition={{ duration: 2, repeat: Infinity, delay: 1 }}
+          />
+          <motion.div
+            className="absolute bottom-4 right-4 w-20 h-20 border-r-2 border-b-2 border-amber-500/15 z-30"
+            animate={{ opacity: [0.2, 0.4, 0.2] }}
+            transition={{ duration: 2, repeat: Infinity, delay: 1.5 }}
+          />
+        </>
+      )}
     </div>
   );
 });

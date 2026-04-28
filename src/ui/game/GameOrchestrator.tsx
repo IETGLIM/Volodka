@@ -556,6 +556,8 @@ export default function GameOrchestrator() {
 
   /** Не дублировать компактный трекер 📋 со сюжетным оверлеем, заставками `AnimeCutscene` и 3D-интро. */
   const suppressQuestStrip = Boolean(activeCutsceneId) || Boolean(showStoryOverlay) || introOpening3dActive;
+  /** Полноэкранные слои выше истории: стих, диалог, катсцена. */
+  const suppressStoryOverlayByFullscreen = Boolean(revealedPoemId || activeDialogue || activeCutsceneId);
 
   useEffect(() => {
     if (phase !== 'game') return;
@@ -684,7 +686,7 @@ export default function GameOrchestrator() {
       <ConsequenceNotification />
 
       <AnimatePresence>
-        {showStoryOverlay && (
+        {showStoryOverlay && !suppressStoryOverlayByFullscreen && (
           <StoryRenderer
             node={currentNode}
             onChoice={handleChoice}

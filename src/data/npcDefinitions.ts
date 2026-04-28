@@ -10,13 +10,6 @@ const NPC_ANIM_KHR0: NonNullable<NPCDefinition['animations']> = {
   walk: 'animation_0',
 };
 
-/** Khronos `Fox` — клипы Survey / Walk / Run (официальный образец glTF). */
-const NPC_ANIM_FOX: NonNullable<NPCDefinition['animations']> = {
-  idle: 'Survey',
-  walk: 'Walk',
-  run: 'Run',
-};
-
 /** Локальный GLB в репозитории — танцевальный цикл. */
 const NPC_ANIM_SAYURI: NonNullable<NPCDefinition['animations']> = {
   idle: 'Dans',
@@ -137,8 +130,8 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
     id: 'volodka_dima_neighbor',
     name: 'Дима с пятого',
     model: 'generic',
-    modelPath: '/models/khronos_cc0_Fox.glb',
-    animations: NPC_ANIM_FOX,
+    modelPath: '/models/khronos_cc0_CesiumMan.glb',
+    animations: NPC_ANIM_KHR0,
     /** Базовый табличный uniform для Fox занижен; карточка без дополнительного «сплющивания». */
     scale: 1,
     defaultPosition: { x: -2.15, y: 0, z: 2.35 },
@@ -161,8 +154,8 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
     id: 'kitchen_maria',
     name: 'Виктория',
     model: 'generic',
-    modelPath: '/models/khronos_cc0_Fox.glb',
-    animations: NPC_ANIM_FOX,
+    modelPath: '/models/khronos_cc0_CesiumMan.glb',
+    animations: NPC_ANIM_KHR0,
     scale: 1,
     defaultPosition: { x: -2, y: 0, z: 0 },
     patrolRadius: 1.5,
@@ -597,8 +590,8 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
     id: 'battle_burntrap',
     name: 'Сожжённый',
     model: 'shadow',
-    modelPath: '/models/khronos_cc0_Fox.glb',
-    animations: NPC_ANIM_FOX,
+    modelPath: '/models/khronos_cc0_CesiumMan.glb',
+    animations: NPC_ANIM_KHR0,
     scale: 1.5,
     defaultPosition: { x: 0, y: 0, z: -5 },
     waypoints: [
@@ -868,8 +861,8 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
     id: 'park_dog_walker',
     name: 'Выгуливатель собак',
     model: 'generic',
-    modelPath: '/models/khronos_cc0_Fox.glb',
-    animations: NPC_ANIM_FOX,
+    modelPath: '/models/khronos_cc0_CesiumMan.glb',
+    animations: NPC_ANIM_KHR0,
     scale: 1,
     defaultPosition: { x: 5, y: 0, z: 3 },
     patrolRadius: 3,
@@ -1284,8 +1277,8 @@ export const NPC_DEFINITIONS: Record<string, NPCDefinition> = {
     id: 'district_nastya',
     name: 'Настя',
     model: 'generic',
-    modelPath: '/models/khronos_cc0_Fox.glb',
-    animations: NPC_ANIM_FOX,
+    modelPath: '/models/khronos_cc0_CesiumMan.glb',
+    animations: NPC_ANIM_KHR0,
     scale: 1,
     defaultPosition: { x: 3, y: 0, z: -2.2 },
     sceneId: 'street_night',

@@ -115,6 +115,7 @@
 ### Чеклист 5.3 (релиз мемориала)
 
 - `npx tsc --noEmit`, `npm test`, `npm run build` локально или по последнему зелёному CI на `main`.
+- Для ручной проверки deploy-пакета: `npm run archive:vercel` (получить `artifacts/volodka-vercel-src.zip`), распаковать в чистую папку и прогнать `npm ci && npm run build`.
 - Пройти чеклист `docs/volodka-room-smoke.md` (и при необходимости ручной Browserbase smoke на прод-URL).
 - Обновить `CHANGELOG.md`: секция версии вместо только `[Unreleased]`, кратко — пользовательские изменения.
 - Тег git: `git tag -a vX.Y.Z -m "…"` и push тегов; на Vercel — production deploy с этой ревизией.

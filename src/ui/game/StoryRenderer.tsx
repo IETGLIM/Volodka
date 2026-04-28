@@ -454,7 +454,7 @@ export default function StoryRenderer({ node, onChoice, onPoemGameComplete }: St
             aria-hidden
             style={{ background: bodyBackdropCss }}
           />
-          {!visualLite && (
+          {!visualLite && !isTyping && (
             <div
               className="pointer-events-none absolute inset-0 z-[1] opacity-[0.4]"
               aria-hidden
@@ -463,16 +463,6 @@ export default function StoryRenderer({ node, onChoice, onPoemGameComplete }: St
                   'repeating-linear-gradient(90deg, transparent, transparent 22px, rgba(0,255,255,0.028) 22px, rgba(0,255,255,0.028) 23px)',
                   'repeating-linear-gradient(0deg, transparent, transparent 22px, rgba(0,255,255,0.022) 22px, rgba(0,255,255,0.022) 23px)',
                 ].join(', '),
-              }}
-            />
-          )}
-          {!visualLite && (
-            <div
-              className="pointer-events-none absolute inset-0 z-[2]"
-              aria-hidden
-              style={{
-                background:
-                  'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0, 0, 0, 0.05) 2px, rgba(0, 0, 0, 0.05) 4px)',
               }}
             />
           )}
