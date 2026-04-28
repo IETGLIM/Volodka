@@ -10,6 +10,11 @@ export function useInteractionAnticipation(canInteract: boolean) {
   useEffect(() => {
     if (canInteract) {
       eventBus.emit('ui:interaction_hint', { text: 'E' });
+    } else {
+      eventBus.emit('ui:interaction_feedback', {
+        kind: 'hint_clear',
+        timestamp: performance.now(),
+      });
     }
   }, [canInteract]);
 }

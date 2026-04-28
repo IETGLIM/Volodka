@@ -180,7 +180,7 @@ export interface EventMap {
 
   /** Тактиальный маркер взаимодействия E (подписчики: камера, звук, HUD). `actionId` — дедуп/интенсивность shake. */
   'ui:interaction_feedback': {
-    kind: 'success' | 'fail';
+    kind: 'success' | 'fail' | 'hint_clear';
     timestamp: number;
     actionId?: string;
   };

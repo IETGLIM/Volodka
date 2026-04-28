@@ -71,6 +71,8 @@ import { useGamePhaseStore } from '@/state/gamePhaseStore';
 import { eventBus } from '@/engine/EventBus';
 import { emitInteractionFeedback } from '@/lib/interactionFeedback';
 import { InteractionFeedbackListener } from '@/ui/game/InteractionFeedbackListener';
+import { InteractionHintListener } from '@/ui/game/InteractionHintListener';
+import { InteractionHintOverlay } from '@/ui/game/InteractionHintOverlay';
 import { useInteractionAnticipation } from '@/ui/game/useInteractionAnticipation';
 import { getCurrentScheduleEntry } from '@/engine/ScheduleEngine';
 import { useIsMobile, useTouchGameControls } from '@/hooks/use-mobile';
@@ -851,6 +853,7 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
   return (
     <Fragment>
     <InteractionFeedbackListener />
+    <InteractionHintListener />
     <Canvas
       className="block h-full w-full touch-none"
       tabIndex={0}
@@ -1104,6 +1107,7 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
       <ExplorationFootprints sceneId={sceneId} />
       {showExplorationStats && <ExplorationFrameStats />}
     </Canvas>
+    <InteractionHintOverlay />
     <InteractionHint
       enabled={!playerInputLocked}
       tick={interactionHintTick}

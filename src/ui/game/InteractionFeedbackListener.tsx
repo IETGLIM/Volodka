@@ -27,6 +27,8 @@ function gcStaleKeys(map: Map<string, number>, now: number, ttlMs: number): void
 export function InteractionFeedbackListener() {
   useEffect(() => {
     const off = eventBus.on('ui:interaction_feedback', ({ kind, timestamp, actionId }) => {
+      if (kind === 'hint_clear') return;
+
       if (kind === 'success') {
         const key = actionId ?? 'default';
         const last = lastSuccessMap.get(key) ?? 0;
@@ -41,7 +43,7 @@ export function InteractionFeedbackListener() {
           durationMs: 600,
           priority: 'low',
         });
-      } else {
+      } else if (kind === 'fail') {
         const key = actionId ?? 'default';
         const lastF = lastFailMap.get(key) ?? 0;
         if (timestamp - lastF < FAIL_COOLDOWN_MS) return;

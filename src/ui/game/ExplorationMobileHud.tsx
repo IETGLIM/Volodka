@@ -3,6 +3,7 @@
 import { memo, useCallback, useEffect, useRef, type ReactNode } from 'react';
 import type { MutableRefObject } from 'react';
 import type { PlayerControls } from '@/hooks/useGamePhysics';
+import { useInteractionHintStore } from '@/state/interactionHintStore';
 
 interface ExplorationMobileHudProps {
   active: boolean;
@@ -71,6 +72,7 @@ export const ExplorationMobileHud = memo(function ExplorationMobileHud({
   virtualControlsRef,
   onInteract,
 }: ExplorationMobileHudProps) {
+  const hintVisible = useInteractionHintStore((s) => s.visible);
   const lastInteractAt = useRef(0);
 
   const setKey = useCallback(
@@ -165,7 +167,9 @@ export const ExplorationMobileHud = memo(function ExplorationMobileHud({
           </VirtualPadHoldButton>
           <button
             type="button"
-            className="min-h-[52px] min-w-[52px] touch-manipulation select-none rounded border border-amber-500/40 bg-amber-950/50 px-3 font-mono text-xs uppercase tracking-wide text-amber-100/90 active:bg-amber-900/70 sm:min-h-12 sm:min-w-0"
+            className={`min-h-[52px] min-w-[52px] touch-manipulation select-none rounded border border-amber-500/40 bg-amber-950/50 px-3 font-mono text-xs uppercase tracking-wide text-amber-100/90 transition-transform duration-150 active:bg-amber-900/70 sm:min-h-12 sm:min-w-0 ${
+              hintVisible ? 'scale-110 ring-2 ring-white/60' : ''
+            }`}
             aria-label="Действие, как клавиша E"
             onPointerDown={(e) => {
               e.preventDefault();
