@@ -15,6 +15,33 @@ class AudioEngineImpl {
   private current: HTMLAudioElement | null = null;
   private lastUiTactileSfxAt = 0;
 
+  /** Читает шкалу громкости из `:root` (`--audio-sfx-master`, категории); SSR → без изменений. */
+  private readSfxGainVar(name: string, fallback = 1): number {
+    if (typeof document === 'undefined') return fallback;
+    const raw = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+    const n = parseFloat(raw);
+    if (!Number.isFinite(n) || n < 0) return fallback;
+    return Math.min(2, n);
+  }
+
+  private sfxVolumeMultiplier(type: string): number {
+    const master = this.readSfxGainVar('--audio-sfx-master');
+    let cat = 1;
+    if (type.startsWith('footstep_')) {
+      cat = this.readSfxGainVar('--audio-sfx-footstep');
+    } else if (
+      type === 'ui' ||
+      type === 'ui_success' ||
+      type === 'ui_fail' ||
+      type.startsWith('ui_')
+    ) {
+      cat = this.readSfxGainVar('--audio-sfx-ui');
+    } else {
+      cat = this.readSfxGainVar('--audio-sfx-world');
+    }
+    return master * cat;
+  }
+
   setMuted(muted: boolean) {
     this.muted = muted;
     if (this.current) this.current.muted = muted;
@@ -46,6 +73,7 @@ class AudioEngineImpl {
   /** Короткий SFX по событию `sound:play` (файлы опциональны — есть программный fallback). */
   playSfx(type: string, volume = 0.35) {
     if (this.muted || typeof window === 'undefined') return;
+    volume *= this.sfxVolumeMultiplier(type);
     if (type === 'ui_success' || type === 'ui_fail') {
       const now = performance.now();
       if (now - this.lastUiTactileSfxAt < UI_SFX_MIN_INTERVAL_MS) return;

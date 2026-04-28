@@ -45,7 +45,7 @@
 
 | Шаг | Действие | Готово |
 |-----|----------|--------|
-| 1.1 | Выгрузить список `interactiveObjects` / `interactionId` из `src/config/scenes.ts` (и связанных визуалов) | ☐ *`interactionId` живут в `triggerZones.ts`; `interactiveObjects` — отдельный слой (книги/NPC/E в `RPGGameCanvas`)* |
+| 1.1 | Выгрузить список `interactiveObjects` / `interactionId` из `src/config/scenes.ts` (и связанных визуалов) | ☑ *таблица реестра и триггеров: `docs/exploration-interaction-inventory.md`; KCC: `docs/exploration-kcc-tuning.md`* |
 | 1.2 | Сверить с `explorationInteractionRegistry` в `registerBaseInteractions.ts` + `InteractionRegistry` | ☑ |
 | 1.3 | Точки входа UI: `InteractiveTrigger`, `explorationController`, `useGameRuntime` — нет ли обхода фасадов туда, где нужен `useWorldActions` | ☐ *E→`tryExecute` использует `useGameStore.getState()` в контексте — ок для фазы 1; миграция на фасады — позже* |
 | 1.4 | Тесты покрытия: `explorationInteractionCoverage.test.ts` (триггеры + графы квестов + allowlist сирот) | ☑ |

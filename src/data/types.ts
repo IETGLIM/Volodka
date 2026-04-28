@@ -2,6 +2,8 @@
 // БАЗОВЫЕ ТИПЫ ИГРЫ
 // ============================================
 
+import type { FactionId } from '@/shared/types/factions';
+
 // Типы узлов истории
 export type NodeType = 
   | 'dialogue' 
@@ -465,6 +467,8 @@ export interface Quest {
   type: 'main' | 'side' | 'hidden' | 'personal';
   /** Подгруппа в журнале квестов (например «Работа · IT»); без поля — общий список */
   faction?: string;
+  /** Канонический id для учёта квеста у фракции (`factionStore.completeQuestForFaction`); см. `docs/quest-faction-mapping.md`. */
+  factionId?: FactionId;
   status: 'locked' | 'available' | 'active' | 'completed' | 'failed';
   objectives: QuestObjective[];
   reward: QuestReward;

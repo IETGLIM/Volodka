@@ -36,7 +36,9 @@ export function InteractionFeedbackListener() {
         lastSuccessMap.set(key, timestamp);
         gcStaleKeys(lastSuccessMap, timestamp, SUCCESS_TTL_MS);
 
-        audioEngine.playSfx('ui_success', 0.32);
+        const vol =
+          actionId === 'loot' ? 0.34 : actionId === 'npc' ? 0.3 : actionId === 'registry' ? 0.31 : 0.32;
+        audioEngine.playSfx('ui_success', vol);
         eventBus.emit('ui:effect_notif', {
           text: 'OK',
           type: 'system',

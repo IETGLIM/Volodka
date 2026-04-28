@@ -15,6 +15,9 @@
 | `--game-ui-dialogue-choice-glow`, `--game-ui-dialogue-indicator-glow` | Hover и индикатор вариантов ответа (cyber) |
 | `--game-ui-noir-choice-glow`, `--game-ui-noir-indicator-glow` | То же для варианта `noir` в обходе |
 | `--game-ui-holo-portrait-glow` | Портрет NPC в голографическом режиме |
+| `--game-ui-story-*` | Карточки выбора в `StoryRenderer` (dream / poem / cyan): бордеры, hover, индикатор, sweep |
+
+Аудио SFX (мультипликаторы к базовой громкости в `AudioEngine.playSfx`): `--audio-sfx-master`, `--audio-sfx-ui`, `--audio-sfx-footstep`, `--audio-sfx-world` в `globals.css`.
 
 ## Композитные классы
 

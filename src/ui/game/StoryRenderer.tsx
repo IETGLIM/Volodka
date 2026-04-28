@@ -84,17 +84,42 @@ interface CyberChoiceProps {
 function CyberChoiceCard({ choice, index, nodeId, isLocked, lockReason, onSelect, isDream, isPoem, skillHint }: CyberChoiceProps) {
   const [isHovered, setIsHovered] = useState(false);
 
-  const accentColor = isDream
-    ? 'border-purple-500/40'
-    : isPoem
-    ? 'border-amber-500/40'
-    : 'border-cyan-500/40';
-
-  const hoverAccent = isDream
-    ? 'hover:border-purple-400/60'
-    : isPoem
-    ? 'hover:border-amber-400/60'
-    : 'hover:border-cyan-400/60';
+  const choiceTheme = useMemo(() => {
+    if (isDream) {
+      return {
+        border: 'var(--game-ui-story-dream-border)',
+        borderHover: 'var(--game-ui-story-dream-border-hover)',
+        cardGlow: 'var(--game-ui-story-dream-choice-glow)',
+        indicatorBg: 'var(--game-ui-story-dream-indicator)',
+        indicatorGlow: 'var(--game-ui-story-dream-indicator-glow)',
+        scanSweep: 'linear-gradient(90deg, transparent 0%, rgba(168, 85, 247, 0.1) 50%, transparent 100%)',
+        indexMuted: 'rgb(192 132 252 / 0.6)',
+        skillHint: 'rgb(192 132 252 / 0.55)',
+      };
+    }
+    if (isPoem) {
+      return {
+        border: 'var(--game-ui-story-poem-border)',
+        borderHover: 'var(--game-ui-story-poem-border-hover)',
+        cardGlow: 'var(--game-ui-story-poem-choice-glow)',
+        indicatorBg: 'var(--game-ui-story-poem-indicator)',
+        indicatorGlow: 'var(--game-ui-story-poem-indicator-glow)',
+        scanSweep: 'linear-gradient(90deg, transparent 0%, rgba(251, 191, 36, 0.1) 50%, transparent 100%)',
+        indexMuted: 'rgb(251 191 36 / 0.6)',
+        skillHint: 'rgb(245 158 11 / 0.55)',
+      };
+    }
+    return {
+      border: 'var(--game-ui-story-cyan-border)',
+      borderHover: 'var(--game-ui-story-cyan-border-hover)',
+      cardGlow: 'var(--game-ui-story-cyan-choice-glow)',
+      indicatorBg: 'var(--game-ui-story-cyan-indicator)',
+      indicatorGlow: 'var(--game-ui-story-cyan-indicator-glow)',
+      scanSweep: 'var(--game-ui-story-scan-sweep-cyan)',
+      indexMuted: 'rgb(var(--game-ui-rgb-cyan) / 0.6)',
+      skillHint: 'rgb(var(--game-ui-rgb-cyan) / 0.55)',
+    };
+  }, [isDream, isPoem]);
 
   const choiceAria = isLocked
     ? `Недоступный вариант ${index + 1}: ${choice.text}${lockReason ? `. ${lockReason}` : ''}`
@@ -125,15 +150,11 @@ function CyberChoiceCard({ choice, index, nodeId, isLocked, lockReason, onSelect
       }}
     >
       <div
-        className={`relative px-4 py-3 border-l-2 ${
-          isLocked
-            ? 'bg-red-950/20 border-red-500/30'
-            : `bg-slate-900/80 ${accentColor} ${hoverAccent}`
-        }`}
+        className="relative px-4 py-3 border-l-2"
         style={{
-          boxShadow: isHovered && !isLocked
-            ? `0 0 15px ${isDream ? 'rgba(168, 85, 247, 0.2)' : isPoem ? 'rgba(245, 158, 11, 0.2)' : 'rgba(0, 255, 255, 0.2)'}`
-            : 'none',
+          borderLeftColor: isLocked ? 'rgb(239 68 68 / 0.3)' : isHovered ? choiceTheme.borderHover : choiceTheme.border,
+          background: isLocked ? 'rgb(69 10 10 / 0.2)' : 'rgb(15 23 42 / 0.8)',
+          boxShadow: isHovered && !isLocked ? `0 0 15px ${choiceTheme.cardGlow}` : 'none',
         }}
       >
         {/* Scan line sweep on hover */}
@@ -141,7 +162,7 @@ function CyberChoiceCard({ choice, index, nodeId, isLocked, lockReason, onSelect
           <div
             className="absolute inset-0 pointer-events-none"
             style={{
-              background: 'linear-gradient(90deg, transparent 0%, rgba(0, 255, 255, 0.08) 50%, transparent 100%)',
+              background: choiceTheme.scanSweep,
               backgroundSize: '50% 100%',
               animation: 'cyber-scan 1.5s linear infinite',
             }}
@@ -151,17 +172,21 @@ function CyberChoiceCard({ choice, index, nodeId, isLocked, lockReason, onSelect
         <div className="flex items-center gap-3 relative z-10">
           {/* Left indicator bar */}
           <div
-            className={`w-1 h-6 rounded-full ${
-              isLocked ? 'bg-red-500/40' : isDream ? 'bg-purple-400/60' : isPoem ? 'bg-amber-400/60' : 'bg-cyan-400/60'
-            }`}
-            style={{
-              boxShadow: !isLocked
-                ? `0 0 6px ${isDream ? 'rgba(168, 85, 247, 0.4)' : isPoem ? 'rgba(245, 158, 11, 0.4)' : 'rgba(0, 255, 255, 0.4)'}`
-                : 'none',
-            }}
+            className={`w-1 h-6 rounded-full ${isLocked ? 'bg-red-500/40' : ''}`}
+            style={
+              isLocked
+                ? undefined
+                : {
+                    background: choiceTheme.indicatorBg,
+                    boxShadow: `0 0 6px ${choiceTheme.indicatorGlow}`,
+                  }
+            }
           />
 
-          <span className={`font-mono text-sm mr-1 ${isLocked ? 'text-red-600' : 'text-cyan-400/60'}`}>
+          <span
+            className={`font-mono text-sm mr-1 ${isLocked ? 'text-red-600' : ''}`}
+            style={!isLocked ? { color: choiceTheme.indexMuted } : undefined}
+          >
             {isLocked ? '🔒' : `${index + 1}.`}
           </span>
 
@@ -181,8 +206,11 @@ function CyberChoiceCard({ choice, index, nodeId, isLocked, lockReason, onSelect
         </div>
 
         {skillHint && !isLocked && (
-          <p className="mt-1.5 pl-9 font-mono text-[10px] leading-snug tracking-wide text-cyan-500/55 relative z-10">
-            <span className="text-cyan-600/40">CHK</span> {skillHint}
+          <p
+            className="mt-1.5 pl-9 font-mono text-[10px] leading-snug tracking-wide relative z-10"
+            style={{ color: choiceTheme.skillHint }}
+          >
+            <span className="opacity-50">CHK</span> {skillHint}
           </p>
         )}
 

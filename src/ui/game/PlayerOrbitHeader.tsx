@@ -34,13 +34,16 @@ function WoWStyleResourceBar({
   const safeMax = Math.max(1, max);
   const pct = Math.min(100, Math.max(0, (current / safeMax) * 100));
   const rounded = Math.round(current);
-  const borderClass = variant === 'health' ? 'border-green-700/55' : 'border-sky-500/45';
+  const borderStyle =
+    variant === 'health'
+      ? { borderColor: 'rgb(21 128 61 / 0.55)' }
+      : { borderColor: 'var(--game-ui-border-medium)' };
   const fillClass =
     variant === 'health'
       ? 'bg-gradient-to-r from-emerald-950/90 via-green-600 to-lime-400'
       : 'bg-gradient-to-r from-indigo-950/90 via-blue-600 to-cyan-300';
   const glow =
-    variant === 'health' ? 'rgba(34, 197, 94, 0.35)' : 'rgba(56, 189, 248, 0.35)';
+    variant === 'health' ? 'var(--game-ui-glow-stability)' : 'var(--game-ui-glow-mood)';
 
   return (
     <div
@@ -57,7 +60,8 @@ function WoWStyleResourceBar({
         </span>
       </div>
       <div
-        className={`relative h-2 sm:h-2.5 overflow-hidden rounded-sm border bg-black/60 ${borderClass}`}
+        className="relative h-2 sm:h-2.5 overflow-hidden rounded-sm border bg-black/60"
+        style={borderStyle}
         role="img"
         aria-label={`${labelRu}: ${rounded} из ${max}`}
       >
@@ -102,11 +106,18 @@ export const PlayerOrbitHeader = memo(function PlayerOrbitHeader({
   return (
     <div
       data-exploration-ui
-      className={`mr-1 flex shrink-0 items-center gap-2 sm:gap-3 ${narrow ? 'w-full max-w-full border-b border-cyan-500/15 pb-2' : ''}`}
+      className={`mr-1 flex shrink-0 items-center gap-2 sm:gap-3 ${narrow ? 'w-full max-w-full border-b pb-2' : ''}`}
+      style={
+        narrow
+          ? { borderBottomColor: 'var(--game-ui-border-subtle)', borderBottomWidth: 1, borderBottomStyle: 'solid' }
+          : undefined
+      }
     >
       <div
-        className={`relative flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-cyan-400/40 font-mono text-lg font-bold text-white shadow-lg sm:h-14 sm:w-14 sm:text-xl ${!visualLite ? 'shadow-cyan-500/20' : ''}`}
+        className="relative flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-lg border font-mono text-lg font-bold text-white shadow-lg sm:h-14 sm:w-14 sm:text-xl"
         style={{
+          borderColor: 'var(--game-ui-border-medium)',
+          boxShadow: !visualLite ? 'var(--game-ui-shadow-floating)' : undefined,
           background: `linear-gradient(135deg, rgba(6,182,212,0.5), rgba(192,38,211,0.45), rgba(15,23,42,0.9))`,
         }}
         aria-hidden
@@ -154,7 +165,10 @@ export const PlayerOrbitHeader = memo(function PlayerOrbitHeader({
               {atCap ? '—' : `${Math.floor(xp)} / ${cap}`}
             </span>
           </div>
-          <div className="relative h-1 overflow-hidden rounded-sm border border-violet-500/25 bg-black/50">
+          <div
+            className="relative h-1 overflow-hidden rounded-sm border bg-black/50"
+            style={{ borderColor: 'var(--game-ui-border-subtle)' }}
+          >
             <motion.div
               className="h-full bg-gradient-to-r from-violet-600/90 to-fuchsia-500/80"
               initial={false}

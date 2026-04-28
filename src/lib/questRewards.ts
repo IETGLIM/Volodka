@@ -4,8 +4,10 @@
  */
 
 import type { PlayerSkills, PlayerState, QuestReward } from '@/data/types';
+import { QUEST_DEFINITIONS } from '@/data/quests';
 import { usePlayerStore } from '@/state/playerStore';
 import { useInventoryStore } from '@/state/inventoryStore';
+import { useFactionStore } from '@/state/factionStore';
 
 const clamp = (value: number, min: number, max: number) => Math.max(min, Math.min(max, value));
 
@@ -94,4 +96,10 @@ export function applyQuestCompletionRewards(
   const xpAward =
     typeof qxp === 'number' && qxp > 0 ? qxp : questId === 'main_goal' ? 48 : 36;
   usePlayerStore.getState().addExperience(xpAward, `quest:${questId}`);
+
+  const questDef = QUEST_DEFINITIONS[questId];
+  const factionId = questDef?.factionId;
+  if (factionId) {
+    useFactionStore.getState().completeQuestForFaction(questId, factionId);
+  }
 }

@@ -6,6 +6,8 @@
 
 ### Added
 
+- **AAA+ polish (план backlog):** `StoryRenderer` / `CyberChoiceCard` — акценты dream/poem/cyan через `--game-ui-story-*` в `globals.css` (едино с панелями волны 2). Док: `docs/exploration-postfx-art-checklist.md` (пост обхода vs `ART_BIBLE`), `docs/exploration-interaction-feedback.md`, `docs/quest-faction-mapping.md`, `docs/narrative-acts-2-3-hooks.md`. **Аудио:** `--audio-sfx-master|ui|footstep|world` и применение в `AudioEngine.playSfx`. **Фракции:** поле `factionId` в `Quest` (`types.ts`), значения в `quests.ts`, учёт завершения в `questRewards.ts` через `completeQuestForFaction`.
+
 - **Нарратив волна 1 (style bible + аудит):** `docs/narrative-style-bible.md` — иерархия референсов, голос, режимы сцен, бюджет длины; `docs/narrative-golden-path-audit.md` — таблица скелета золотого пути и сверка с квестами. В `docs/ART_BIBLE.md` — отсылка на narrative bible и канон географии в прозе.
 
 - **Обход — подсказка E (HUD):** стор `interactionHintStore.ts`, `InteractionHintListener.tsx` + `InteractionHintOverlay.tsx` в `RPGGameCanvas.tsx`; мобильная кнопка «E» в `ExplorationMobileHud.tsx` подсвечивается при активном хинте; сброс при успехе E и при выходе из зоны (`kind: 'hint_clear'` в `ui:interaction_feedback`, `useInteractionAnticipation.ts`). `InteractionFeedbackListener` не реагирует на `hint_clear`.
@@ -18,6 +20,8 @@
 - **Фасад `@/state`:** реэкспорт `applyQuestCompletionRewards` из `lib/questRewards.ts`.
 
 ### Changed
+
+- **AAA+ UI (токены):** `MoralCompassHUD` и `PlayerOrbitHeader` — бордеры, тени полос и портрета на `var(--game-ui-border-*)` / `var(--game-ui-glow-*)` / `var(--game-ui-shadow-floating)`; `InteractionFeedbackListener` — чуть разная громкость `ui_success` по `actionId` (loot / npc / registry). `docs/ui-skin-tokens.md` — строки для `--game-ui-story-*` и аудио-мультипликаторов.
 
 - **UI волна 2 (skin tokens):** в `globals.css` — переменные `--game-ui-*`, композитные классы `game-panel-skin--floating|journal|inventory|poetry|briefing`, `forced-colors` для них; панели: `QuestsPanel`, `JournalPanel`, `Inventory`, `PoetryBook`, `ExplorationBriefingOverlay`. `DialogueRenderer` — токены рамки терминала, тени имени/текста, hover вариантов ответа и голопортрета; `HUD` — свечение stat bars через `var(--game-ui-glow-*)`. Док: `docs/ui-skin-tokens.md`.
 

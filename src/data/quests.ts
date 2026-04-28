@@ -174,6 +174,7 @@ export const QUEST_DEFINITIONS: Record<string, ExtendedQuest> = {
       'Две ветки на выбор (в журнале обе цели — завершается **одна**): **форс** — мини-игра «матрица узлов» у стойки (E в зоне подсказки), в духе ночного дежурства, когда хочется «просто починить»; **аудит** — три раза «Осмотреть» экраны Kibana, Zabbix и Grafana, без мини-игры. Начал аудит — форс до конца квеста недоступен; прошёл форс — честный аудит закрыт.',
     type: 'side',
     faction: 'Работа · IT',
+    factionId: 'it_workers',
     status: 'active',
     objectives: [
       createObjective('rack_force_nodes', 'Свести узлы стека в безопасную последовательность (зона стойки, E)', {
@@ -209,6 +210,7 @@ export const QUEST_DEFINITIONS: Record<string, ExtendedQuest> = {
       'Сергеич помнит больше, чем любой Jira-лог. Трижды у лавки — слушай, как район копит «квитанции на серость».',
     type: 'side',
     faction: 'Район',
+    factionId: 'locals',
     status: 'active',
     objectives: [
       createObjective('chronicle_whisper', 'Услышать фрагменты «хроники двора»', {
@@ -258,6 +260,7 @@ export const QUEST_DEFINITIONS: Record<string, ExtendedQuest> = {
     description: 'Найти сервер по IP-адресу через CLI. Получить имя сервера и ссылку на консоль.',
     type: 'main',
     faction: 'Работа · IT',
+    factionId: 'it_workers',
     status: 'active',
     objectives: [
       createObjective('get_ip', 'Получить IP-адрес от начальника', {
@@ -294,6 +297,7 @@ export const QUEST_DEFINITIONS: Record<string, ExtendedQuest> = {
     description: 'Очередь переполнена — более 100000 сообщений. Принять решение: собирать ACK? Спросить админов? Написать владельцам?',
     type: 'main',
     faction: 'Работа · IT',
+    factionId: 'it_workers',
     status: 'active',
     objectives: [
       createObjective('detect_overflow', 'Обнаружить накопление >100000', {
@@ -329,6 +333,7 @@ export const QUEST_DEFINITIONS: Record<string, ExtendedQuest> = {
     description: 'Внутреннее облако. Оркестратор упал. Проверить причину и перезапустить.',
     type: 'main',
     faction: 'Работа · IT',
+    factionId: 'it_workers',
     status: 'active',
     objectives: [
       createObjective('check_status', 'Проверить статус кластера', {
@@ -367,6 +372,7 @@ export const QUEST_DEFINITIONS: Record<string, ExtendedQuest> = {
     description: 'Банк "Северный Капитал" — 5000+ пользователей не могут войти. 15 минут до эскалации. Найти и исправить проблему.',
     type: 'main',
     faction: 'Работа · IT',
+    factionId: 'it_workers',
     status: 'active',
     objectives: [
       createObjective('check_logs', 'Проверить логи Kibana', {
@@ -405,6 +411,7 @@ export const QUEST_DEFINITIONS: Record<string, ExtendedQuest> = {
     description: 'База данных перегружена. 847 соединений при лимите 800. Новый микросервис не возвращает соединения.',
     type: 'side',
     faction: 'Работа · IT',
+    factionId: 'it_workers',
     status: 'locked',
     objectives: [
       createObjective('check_processlist', 'Проверить SHOW PROCESSLIST', {
@@ -440,6 +447,7 @@ export const QUEST_DEFINITIONS: Record<string, ExtendedQuest> = {
     description: 'Сертификат для banking.example.com истекает через 48 часов. Обновить без простоя.',
     type: 'side',
     faction: 'Работа · IT',
+    factionId: 'it_workers',
     status: 'locked',
     objectives: [
       createObjective('check_expiry', 'Проверить срок действия', {
@@ -475,6 +483,7 @@ export const QUEST_DEFINITIONS: Record<string, ExtendedQuest> = {
     description: 'loyalty-points потребляет 8GB RAM и растёт. Профилирование показало утечку.',
     type: 'side',
     faction: 'Работа · IT',
+    factionId: 'it_workers',
     status: 'locked',
     objectives: [
       createObjective('check_memory', 'Проверить потребление памяти', {
@@ -516,6 +525,7 @@ export const QUEST_DEFINITIONS: Record<string, ExtendedQuest> = {
       'Гильдия облака вывесила задание: банк стонет, тикет горит, SLA тает как свеча у алтаря. Сначала — наставление «мага кластера», потом чтение «камня памяти» (журнал службы), печать согласия у собрата по цеху и руну закрытия в терминале.',
     type: 'side',
     faction: 'Работа · IT',
+    factionId: 'it_workers',
     status: 'active',
     objectives: [
       createObjective('invoke_techlead', 'Получить наставление у мага кластера (техлид)', {
@@ -552,6 +562,7 @@ export const QUEST_DEFINITIONS: Record<string, ExtendedQuest> = {
       'В подземелье дата-центра шепчут о «реликварии» — холодном хранилище снимков мира. Оракул DevOps (Дмитрий) подскажет путь; ты должен увидеть список сосудов и проверить печать целостности манифеста, иначе восстановление — ложный сон.',
     type: 'side',
     faction: 'Работа · IT',
+    factionId: 'it_workers',
     status: 'active',
     objectives: [
       createObjective('listen_oracle_dmitry', 'Выслушать оракула резервных копий', {
@@ -582,6 +593,7 @@ export const QUEST_DEFINITIONS: Record<string, ExtendedQuest> = {
       'В корнях проекта затаилась «проклятая транзитивная» зависимость — как проклятая вещь в старом RPG. Страж ИБ (Артём) знает обряд аудита; в терминале нужно вызвать сигил проверки и снять проклятие удалением пакета.',
     type: 'side',
     faction: 'Работа · IT',
+    factionId: 'it_workers',
     status: 'active',
     objectives: [
       createObjective('cast_audit_sigil', 'Наложить сигил аудита (--production)', {
@@ -617,6 +629,7 @@ export const QUEST_DEFINITIONS: Record<string, ExtendedQuest> = {
       'Внутренний заказ на **контролируемую** проверку веб-контура: письмо от ИБ, список хостов, окно в Change. Вне scope — не спрашивать, на прод — не смотреть. В лабе разрешён **Burp** (Proxy/Repeater — как рабочие калибры, не культ); итог — в тикет, не в чат. Двенадцать лет в саппорте: сначала бумага и границы, потом «рука на клавиатуре».',
     type: 'side',
     faction: 'Работа · IT',
+    factionId: 'it_workers',
     status: 'active',
     objectives: [
       createObjective('read_scope_brief', 'Сверить письмо и scope с Артёмом (ИБ)', {

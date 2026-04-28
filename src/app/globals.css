@@ -110,6 +110,35 @@
   --game-ui-noir-choice-glow: 0 0 14px rgba(180, 120, 60, 0.12);
   --game-ui-noir-indicator-glow: 0 0 6px rgba(251, 191, 36, 0.25);
   --game-ui-holo-portrait-glow: 0 0 15px rgba(0, 255, 255, 0.2), 0 0 30px rgba(0, 255, 255, 0.1);
+
+  /* VN StoryRenderer — карточки выбора (dream / poem / cyber default), см. docs/ui-skin-tokens.md */
+  --game-ui-story-dream-border: rgb(168 85 247 / 0.4);
+  --game-ui-story-dream-border-hover: rgb(192 132 252 / 0.6);
+  --game-ui-story-dream-choice-glow: rgba(168, 85, 247, 0.22);
+  --game-ui-story-dream-indicator: rgb(192 132 252 / 0.65);
+  --game-ui-story-dream-indicator-glow: rgba(168, 85, 247, 0.42);
+  --game-ui-story-poem-border: rgb(245 158 11 / 0.4);
+  --game-ui-story-poem-border-hover: rgb(251 191 36 / 0.6);
+  --game-ui-story-poem-choice-glow: rgba(245, 158, 11, 0.2);
+  --game-ui-story-poem-indicator: rgb(251 191 36 / 0.65);
+  --game-ui-story-poem-indicator-glow: rgba(245, 158, 11, 0.4);
+  --game-ui-story-cyan-border: rgb(var(--game-ui-rgb-cyan) / 0.4);
+  --game-ui-story-cyan-border-hover: rgb(var(--game-ui-rgb-cyan) / 0.6);
+  --game-ui-story-cyan-choice-glow: rgba(0, 255, 255, 0.2);
+  --game-ui-story-cyan-indicator: rgb(var(--game-ui-rgb-cyan) / 0.65);
+  --game-ui-story-cyan-indicator-glow: rgba(0, 255, 255, 0.42);
+  --game-ui-story-scan-sweep-cyan: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgb(var(--game-ui-rgb-cyan-pure) / 0.08) 50%,
+    transparent 100%
+  );
+
+  /* Аудио SFX — мастер и категории (читаются в AudioEngine.playSfx); 0–2 */
+  --audio-sfx-master: 1;
+  --audio-sfx-ui: 1;
+  --audio-sfx-footstep: 1;
+  --audio-sfx-world: 1;
 }
 
 .dark {
