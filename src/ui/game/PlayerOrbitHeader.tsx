@@ -1,10 +1,10 @@
 'use client';
 
 /**
- * Верхняя «орбита» героя: портрет, жизнь (энергия), карма как аналог маны (класс. RPG), уровень = «N лет».
+ * Верхняя «орбита» героя: портрет слева; справа — полосы в духе WoW: Здоровье (энергия), Карма (слот «маны»), ниже — опыт.
  * Мобилка: компактные отступы, `safe-area`, без фиксированного перекрытия миникарты (она снизу справа).
  */
-import { memo, useMemo } from 'react';
+import { memo } from 'react';
 import { motion } from 'framer-motion';
 import type { PlayerState } from '@/data/types';
 import { MAX_PLAYER_ENERGY } from '@/lib/energyConfig';
@@ -13,59 +13,68 @@ import { useIsMobile } from '@/hooks/use-mobile';
 
 const PORTRAIT_HOLO = 'from-cyan-500/90 via-fuchsia-600/80 to-slate-900/90';
 
-const ORBIT_ENERGY_BUCKETS = 12;
+/** Ресурсные полосы в духе WoW: портрет слева, справа — стек Health / «мана» (у нас — карма). */
+function WoWStyleResourceBar({
+  labelRu,
+  labelEn,
+  current,
+  max,
+  variant,
+  visualLite,
+  title,
+}: {
+  labelRu: string;
+  labelEn: string;
+  current: number;
+  max: number;
+  variant: 'health' | 'karma';
+  visualLite: boolean;
+  title: string;
+}) {
+  const safeMax = Math.max(1, max);
+  const pct = Math.min(100, Math.max(0, (current / safeMax) * 100));
+  const rounded = Math.round(current);
+  const borderClass = variant === 'health' ? 'border-green-700/55' : 'border-sky-500/45';
+  const fillClass =
+    variant === 'health'
+      ? 'bg-gradient-to-r from-emerald-950/90 via-green-600 to-lime-400'
+      : 'bg-gradient-to-r from-indigo-950/90 via-blue-600 to-cyan-300';
+  const glow =
+    variant === 'health' ? 'rgba(34, 197, 94, 0.35)' : 'rgba(56, 189, 248, 0.35)';
 
-function OrbitEnergyCells({ energy, visualLite }: { energy: number; visualLite: boolean }) {
-  const maxEnergy = MAX_PLAYER_ENERGY;
-  const filled = Math.max(0, Math.ceil((energy / maxEnergy) * ORBIT_ENERGY_BUCKETS));
-  const cells = useMemo(
-    () => Array.from({ length: ORBIT_ENERGY_BUCKETS }, (_, i) => ({ id: i, active: i < filled })),
-    [filled],
-  );
-  return (
-    <div className="flex gap-px" role="img" aria-label={`Энергия жизни ${energy} из ${maxEnergy}`}>
-      {cells.map((c) => (
-        <div
-          key={c.id}
-          className={`h-2 w-1.5 rounded-sm ${c.active ? 'bg-cyan-400' : 'bg-slate-800/70'}`}
-          style={{
-            boxShadow: c.active && !visualLite ? '0 0 3px rgba(34, 211, 238, 0.45)' : undefined,
-          }}
-        />
-      ))}
-    </div>
-  );
-}
-
-function OrbitKarmaMana({ karma, visualLite }: { karma: number; visualLite: boolean }) {
-  const v = Math.max(0, Math.min(100, karma));
   return (
     <div
-      className="w-full min-w-[6.5rem] max-w-[10rem] sm:max-w-[12rem]"
-      title="Карма — моральный ресурс, аналог маны: влияет на ветвления и исходы, не тратится как MP в бою."
+      className="min-w-0 w-full"
+      title={title}
     >
-      <div className="mb-0.5 flex items-center justify-between text-[8px] font-mono uppercase tracking-wider text-fuchsia-300/90 sm:text-[9px]">
-        <span className="bg-gradient-to-r from-fuchsia-300 to-violet-300 bg-clip-text text-transparent">mana // karma</span>
-        <span className="text-fuchsia-200/80">{Math.round(v)}</span>
+      <div className="mb-0.5 flex items-center justify-between gap-1 font-mono text-[8px] uppercase tracking-wide sm:text-[9px]">
+        <span className={variant === 'health' ? 'text-green-200/90' : 'text-sky-200/90'}>
+          {labelRu}{' '}
+          <span className="text-slate-500 normal-case">({labelEn})</span>
+        </span>
+        <span className="tabular-nums text-slate-300/90">
+          {rounded}/{max}
+        </span>
       </div>
       <div
-        className="relative h-1.5 overflow-hidden rounded-sm border border-fuchsia-500/30 bg-black/50"
+        className={`relative h-2 sm:h-2.5 overflow-hidden rounded-sm border bg-black/60 ${borderClass}`}
         role="img"
-        aria-label={`Карма ${Math.round(v)} из 100`}
+        aria-label={`${labelRu}: ${rounded} из ${max}`}
       >
         <motion.div
-          className="h-full bg-gradient-to-r from-violet-600/95 via-fuchsia-500/90 to-amber-200/80"
+          className={`h-full ${fillClass}`}
           initial={false}
-          animate={{ width: `${v}%` }}
-          transition={{ duration: visualLite ? 0.1 : 0.25, ease: 'easeOut' }}
+          style={{ boxShadow: visualLite ? undefined : `0 0 6px ${glow}` }}
+          animate={{ width: `${pct}%` }}
+          transition={{ duration: visualLite ? 0.1 : 0.22, ease: 'easeOut' }}
         />
         {!visualLite && (
           <div
-            className="pointer-events-none absolute inset-0 opacity-40"
+            className="pointer-events-none absolute inset-0 opacity-30"
             style={{
-              background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.2) 50%, transparent 100%)',
-              backgroundSize: '40% 100%',
-              animation: 'cyber-scan 2.2s linear infinite',
+              background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.12) 50%, transparent 100%)',
+              backgroundSize: '45% 100%',
+              animation: 'cyber-scan 2.4s linear infinite',
             }}
           />
         )}
@@ -93,7 +102,7 @@ export const PlayerOrbitHeader = memo(function PlayerOrbitHeader({
   return (
     <div
       data-exploration-ui
-      className={`mr-1 flex shrink-0 gap-2 sm:gap-3 ${narrow ? 'w-full max-w-full border-b border-cyan-500/15 pb-2' : ''}`}
+      className={`mr-1 flex shrink-0 items-center gap-2 sm:gap-3 ${narrow ? 'w-full max-w-full border-b border-cyan-500/15 pb-2' : ''}`}
     >
       <div
         className={`relative flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-cyan-400/40 font-mono text-lg font-bold text-white shadow-lg sm:h-14 sm:w-14 sm:text-xl ${!visualLite ? 'shadow-cyan-500/20' : ''}`}
@@ -107,7 +116,7 @@ export const PlayerOrbitHeader = memo(function PlayerOrbitHeader({
           className={`pointer-events-none absolute inset-0 bg-gradient-to-br ${PORTRAIT_HOLO} opacity-35 mix-blend-overlay`}
         />
       </div>
-      <div className="min-w-0 flex-1">
+      <div className="flex min-w-0 flex-1 flex-col gap-1.5">
         <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
           <span className="truncate font-mono text-[11px] uppercase tracking-wide text-cyan-200/90 sm:text-xs">
             Володька
@@ -116,7 +125,29 @@ export const PlayerOrbitHeader = memo(function PlayerOrbitHeader({
             {level} {atCap ? 'лет (макс.)' : 'лет'}
           </span>
         </div>
-        <div className="mt-1 w-full max-w-[14rem] sm:max-w-[16rem]">
+
+        <div className="w-full max-w-[15rem] space-y-1 sm:max-w-[17rem]">
+          <WoWStyleResourceBar
+            labelRu="Здоровье"
+            labelEn="Health"
+            current={playerState.energy}
+            max={MAX_PLAYER_ENERGY}
+            variant="health"
+            visualLite={visualLite}
+            title="Здоровье: сюжетная энергия (как HP). Трата на выборы, путешествия и проверки; сон и пассивная регенерация."
+          />
+          <WoWStyleResourceBar
+            labelRu="Карма"
+            labelEn="Karma"
+            current={Math.max(0, Math.min(100, playerState.karma))}
+            max={100}
+            variant="karma"
+            visualLite={visualLite}
+            title="Карма — моральный ресурс (слот «маны»): ветвления, тон сцены, исходы; 0–100."
+          />
+        </div>
+
+        <div className="w-full max-w-[15rem] sm:max-w-[17rem]">
           <div className="mb-0.5 flex justify-between text-[8px] font-mono text-slate-500 sm:text-[9px]">
             <span>опыт</span>
             <span>
@@ -131,21 +162,6 @@ export const PlayerOrbitHeader = memo(function PlayerOrbitHeader({
               transition={{ duration: visualLite ? 0.1 : 0.28, ease: 'easeOut' }}
             />
           </div>
-        </div>
-        <div className="mt-1.5 flex flex-col gap-1.5 sm:flex-row sm:items-end sm:gap-3">
-          <div>
-            <div className="mb-0.5 text-[8px] font-mono uppercase tracking-wider text-cyan-500/70 sm:text-[9px]">жизнь</div>
-            <div className="flex items-center gap-1.5">
-              <span className="text-xs" title="Энергия / жизнь">
-                ⚡
-              </span>
-              <OrbitEnergyCells energy={playerState.energy} visualLite={visualLite} />
-              <span className="font-mono text-[9px] text-slate-500 sm:text-[10px]">
-                {playerState.energy}/{MAX_PLAYER_ENERGY}
-              </span>
-            </div>
-          </div>
-          <OrbitKarmaMana karma={playerState.karma} visualLite={visualLite} />
         </div>
       </div>
     </div>

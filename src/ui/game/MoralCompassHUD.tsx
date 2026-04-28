@@ -1,6 +1,6 @@
 'use client';
 
-// Дополнительный моральный компас (стрелка); линейная «мана // карма» в `PlayerOrbitHeader`. Канон — docs/karma-scale.md
+// Дополнительный моральный компас (стрелка); карма также дублируется полосой Karma в `PlayerOrbitHeader`. Канон — docs/karma-scale.md
 import { memo, useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useGameStore } from '@/state';
