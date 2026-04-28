@@ -32,7 +32,8 @@ export function applyExplorationLocationTrigger(
     };
   }
 
-  if (ex.currentSceneId === 'dream' && tid !== 'dream') {
+  // После ветки `tid === 'dream'` выше, здесь `tid` уже не сон — выход из `dream` по «проснуться» и т.п.
+  if (String(ex.currentSceneId) === 'dream') {
     const ret = ex.dreamWakeReturn;
     const sceneId: SceneId = ret?.sceneId ?? 'zarema_albert_room';
     const rawPos: PlayerPosition = ret?.position ?? { ...INTRO_OPENING_ZAREMA_SPAWN };
