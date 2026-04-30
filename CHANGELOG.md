@@ -40,6 +40,8 @@
 
 ### Fixed
 
+- **Автосохранение:** после debounce по `scene:enter` / `choice:made` сохранение больше не пропускается, если недавно сработал тик интервала внутри `minDelayMs` (иначе возможна потеря прогресса при закрытии вкладки до следующего тика). `useAutoSave.ts`, тест `useAutoSave.test.tsx`.
+
 - **Обход — триггеры `location` (сон / пробуждение):** в `RPGGameCanvas` обработка `type: 'location'` + `targetSceneId` (раньше E на кровать/выход из сна ничего не делал). Снимок `exploration.dreamWakeReturn` для возврата из `dream` туда, откуда зашли (по умолчанию — `zarema_albert_room`, не «левый» `kitchen_night`). `InteractiveTrigger` / `TriggerSystem` — учёт `explorationRuntimeTriggerSceneIds` (маркеры и зоны `kitchen_night` в комнате Заремы). Новый триггер `trigger_volodka_dream_nap` в `triggerZones.ts` — сон из комнаты Володьки без обхода к Зареме. `explorationLocationTrigger.ts` — проверка выхода из сна без ложного сужения `tsc` по `targetSceneId`.
 - **Дигетический хаб в `volodka_corridor`:** добавлены location-триггеры дверей `trigger_corridor_to_room`, `trigger_corridor_to_home_common`, `trigger_corridor_to_zarema_room`, `trigger_corridor_to_blue_pit` в `src/data/triggerZones.ts` (явные E-переходы из коридора без меню), плюс покрытие в `src/data/triggerZones.test.ts`.
 - **Наложение текстовых слоёв и читаемость:** в `IntroScreen` фазе `prose` оставлены последние 2 завершённые строки + текущая печать (без «простыни» старых реплик), урезаны тяжёлые VFX/декор в текст-фокус фазах; в `GameOrchestrator` `StoryRenderer` скрывается, когда активны полноэкранные слои (`PoemReveal`/диалог/катсцена), чтобы исключить двойной текст.
