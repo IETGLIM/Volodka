@@ -45,18 +45,23 @@ export function useAutoSave(options: AutoSaveOptions = {}) {
     }
   }, []);
 
-  const doSave = useCallback(() => {
-    const now = Date.now();
-    if (now - lastSaveRef.current < minDelayMs) return;
-    lastSaveRef.current = now;
-    saveGame({ source: 'auto' });
-  }, [saveGame, minDelayMs]);
+  const doSave = useCallback(
+    (opts?: { force?: boolean }) => {
+      const now = Date.now();
+      if (!opts?.force && now - lastSaveRef.current < minDelayMs) return;
+      lastSaveRef.current = now;
+      saveGame({ source: 'auto' });
+    },
+    [saveGame, minDelayMs],
+  );
 
   const scheduleDebouncedSave = useCallback(() => {
     clearDebounce();
     debounceRef.current = setTimeout(() => {
       debounceRef.current = null;
-      doSave();
+      // События сцены/выбора — критичный путь: не глотаем сохранение из‑за недавнего тика интервала
+      // (иначе закрытие вкладки до следующего тика = потеря прогресса после перехода).
+      doSave({ force: true });
     }, debounceMs);
   }, [clearDebounce, debounceMs, doSave]);
 
@@ -98,5 +103,5 @@ export function useAutoSave(options: AutoSaveOptions = {}) {
     };
   }, [saveOnChoice, scheduleDebouncedSave, clearDebounce]);
 
-  return { saveNow: doSave };
+  return { saveNow: () => doSave({ force: true }) };
 }
