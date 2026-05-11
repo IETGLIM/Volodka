@@ -182,29 +182,32 @@ function TerminalBootText() {
    HEX DUMP — random hex addresses scrolling in background
    ════════════════════════════════════════════════════════════════ */
 
+/** Deterministic hex dump generator using xorshift32 PRNG.
+ *  Pure function — same seed always produces same output.
+ *  Defined outside the component to satisfy react-hooks/immutability lint. */
+function generateHexDumpLines(seed: number, count: number): string[] {
+  let s = seed;
+  const next = () => { s ^= s << 13; s ^= s >> 17; s ^= s << 5; return s >>> 0; };
+  return Array.from({ length: count }, (_, i) => {
+    const addr = (0x7f000000 + i * 0x10).toString(16).padStart(8, '0');
+    const hex = Array.from({ length: 16 }, () => (next() % 256).toString(16).padStart(2, '0')).join(' ');
+    const ascii = Array.from({ length: 16 }, () => String.fromCharCode((next() % 95) + 32)).join('');
+    return `${addr}  ${hex}  |${ascii}|`;
+  });
+}
+
 function HexDumpOverlay() {
-  // Generate random hex dump using useMemo to avoid setState-in-effect.
-  // Decorative content only — any SSR hydration mismatch is cosmetically negligible.
-  const lines = useMemo(() =>
-    Array.from({ length: 12 }, (_, i) => {
-      const addr = (0x7f000000 + i * 0x10).toString(16).padStart(8, '0');
-      const hex = Array.from({ length: 16 }, () =>
-        Math.floor(Math.random() * 256).toString(16).padStart(2, '0')
-      ).join(' ');
-      const ascii = Array.from({ length: 16 }, () => {
-        const c = Math.floor(Math.random() * 95 + 32);
-        return String.fromCharCode(c);
-      }).join('');
-      return `${addr}  ${hex}  |${ascii}|`;
-    }),
-  [],
-  );
+  // Deterministic hex dump — seeded PRNG generates the same output on server and client.
+  // This avoids the hydration mismatch that Math.random() caused.
+  // PRNG is a pure function outside render to satisfy react-hooks/immutability lint.
+  const lines = useMemo(() => generateHexDumpLines(0x7f000001, 12), []);
 
   if (lines.length === 0) return null;
 
   return (
     <div
       className="absolute top-0 right-0 w-80 max-w-[40vw] pointer-events-none z-[3] overflow-hidden"
+      suppressHydrationWarning
       style={{
         maskImage: 'linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.4) 20%, rgba(0,0,0,0.4) 80%, transparent 100%)',
         WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.4) 20%, rgba(0,0,0,0.4) 80%, transparent 100%)',

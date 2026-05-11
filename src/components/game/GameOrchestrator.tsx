@@ -180,7 +180,6 @@ export function GameOrchestrator() {
     examineOpen, setExamineOpen,
     examineData, setExamineData,
     examineHasLinkedContent, setExamineHasLinkedContent,
-    autoTriggerTimerRef,
     handleExamineContinue,
     clearPendingTriggerZone,
   } = interaction;
@@ -400,8 +399,6 @@ export function GameOrchestrator() {
       setExamineOpen(false);
       setExamineData(null);
       setExamineHasLinkedContent(false);
-      // Cancel any pending auto-trigger timer
-      if (autoTriggerTimerRef.current) { clearTimeout(autoTriggerTimerRef.current); autoTriggerTimerRef.current = null; }
       // Close mini-games too
       setCodebreakerOpen(false);
       setOpenstackTerminalOpen(false);
@@ -574,7 +571,7 @@ export function GameOrchestrator() {
       if (e.code === 'KeyF') { dispatchPanel('fastTravel'); }
       if (e.code === 'KeyV') { dispatchPanel('perks'); }
       if (e.code === 'KeyB') { dispatchPanel('questBoard'); }
-      if (e.code === 'KeyS' && !e.shiftKey && !e.ctrlKey) { dispatchPanel('stats'); }
+      if (e.code === 'KeyS' && e.shiftKey && !e.ctrlKey) { e.preventDefault(); dispatchPanel('stats'); }
       if (e.shiftKey && e.code === 'KeyT') { e.preventDefault(); dispatchPanel('trading'); }
       if (e.code === 'KeyR') {
         const store = useGameStore.getState();
@@ -607,8 +604,6 @@ export function GameOrchestrator() {
           store.setJournalOpen(false);
         } else if (ps.examineOpen) {
           setExamineOpen(false); setExamineData(null); setExamineHasLinkedContent(false);
-          // Cancel auto-trigger if player manually closes examine panel
-          if (autoTriggerTimerRef.current) { clearTimeout(autoTriggerTimerRef.current); autoTriggerTimerRef.current = null; }
         }
         else if (ps.codebreakerOpen) setCodebreakerOpen(false);
         else if (ps.openstackTerminalOpen) setOpenstackTerminalOpen(false);
@@ -934,8 +929,6 @@ export function GameOrchestrator() {
                 onContinue={handleExamineContinue}
                 onClose={() => {
                   setExamineOpen(false); setExamineData(null); setExamineHasLinkedContent(false);
-                  // Cancel auto-trigger if player manually closes examine panel
-                  if (autoTriggerTimerRef.current) { clearTimeout(autoTriggerTimerRef.current); autoTriggerTimerRef.current = null; }
                   // Clear pending trigger zone so it doesn't trigger later
                   clearPendingTriggerZone();
                 }}

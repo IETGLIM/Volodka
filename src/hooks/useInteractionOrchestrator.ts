@@ -40,9 +40,6 @@ export function useInteractionOrchestrator(
   const [examineOpen, setExamineOpen] = useState(false);
   const [examineData, setExamineData] = useState<import('@/shared/types/game').ExamineData | null>(null);
   const [examineHasLinkedContent, setExamineHasLinkedContent] = useState(false);
-  // Timer for auto-triggering linked content after showing ExaminePanel briefly
-  const autoTriggerTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
   // ── Pending trigger zone: stored when ExaminePanel is shown with linked content ──
   // When the user presses E or clicks "Continue" in ExaminePanel, this zone's
   // linked content (dialogue/story/minigame) will be triggered.
@@ -339,7 +336,6 @@ export function useInteractionOrchestrator(
     setExamineData,
     examineHasLinkedContent,
     setExamineHasLinkedContent,
-    autoTriggerTimerRef,
     handleExamineContinue,
     clearPendingTriggerZone,
   };

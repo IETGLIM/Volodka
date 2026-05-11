@@ -682,7 +682,8 @@ export function FollowCamera({
     };
 
     const onKeyDown = (e: KeyboardEvent) => {
-      if (e.code === 'KeyR') {
+      if (e.code === 'KeyR' && e.shiftKey) {
+        e.preventDefault();
         const config = getSceneConfig(useGameStore.getState().exploration.currentSceneId);
         // Camera yaw must be BEHIND the player
         yawRef.current = (config.initialRotation ?? 0) + Math.PI;

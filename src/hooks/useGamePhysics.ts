@@ -151,9 +151,17 @@ export function usePlayerControls(
     window.addEventListener('keydown', onKeyDown);
     window.addEventListener('keyup', onKeyUp);
 
+    // Reset all key states when window loses focus (Alt+Tab, notification, etc.)
+    // Without this, keys remain "pressed" because keyup never fires during blur.
+    const onBlur = () => {
+      keys.current = { forward: false, backward: false, left: false, right: false, run: false, jump: false, interact: false };
+    };
+    window.addEventListener('blur', onBlur);
+
     return () => {
       window.removeEventListener('keydown', onKeyDown);
       window.removeEventListener('keyup', onKeyUp);
+      window.removeEventListener('blur', onBlur);
     };
   }, [isEditable]);
 

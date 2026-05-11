@@ -21,6 +21,8 @@ export interface FloatingTextEntry {
   x: number;
   y: number;
   createdAt: number;
+  /** Pre-computed random X offset to avoid Math.random() in render (hydration) */
+  animateOffsetX: number;
 }
 
 /* ── Color map ── */
@@ -88,6 +90,7 @@ export function spawnFloatingText(
     x: x ?? (window.innerWidth / 2 + (Math.random() - 0.5) * 120),
     y: y ?? (window.innerHeight * 0.35 + (Math.random() - 0.5) * 60),
     createdAt: Date.now(),
+    animateOffsetX: (Math.random() - 0.5) * 20,
   };
 
   pool.push(entry);
@@ -210,7 +213,7 @@ export function FloatingTextLayer() {
                 opacity: 0,
                 y: isLevelUp ? -120 : -70,
                 scale: isLevelUp ? 1.3 : 1,
-                x: entry.x + (Math.random() - 0.5) * 20,
+                x: entry.x + entry.animateOffsetX,
               }}
               exit={{ opacity: 0 }}
               transition={{

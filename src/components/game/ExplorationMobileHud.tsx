@@ -71,6 +71,7 @@ export function ExplorationMobileHud({ onInteractPress, onOpenInventory }: Explo
               aria-label="Двигаться вперёд"
               onTouchStart={(e) => { e.preventDefault(); startControl('forward'); }}
               onTouchEnd={(e) => { e.preventDefault(); stopControl('forward'); }}
+              onTouchCancel={(e) => { e.preventDefault(); stopControl('forward'); }}
             >
               ▲
             </button>
@@ -81,6 +82,7 @@ export function ExplorationMobileHud({ onInteractPress, onOpenInventory }: Explo
                 aria-label="Двигаться влево"
                 onTouchStart={(e) => { e.preventDefault(); startControl('left'); }}
                 onTouchEnd={(e) => { e.preventDefault(); stopControl('left'); }}
+                onTouchCancel={(e) => { e.preventDefault(); stopControl('left'); }}
               >
                 ◀
               </button>
@@ -90,6 +92,7 @@ export function ExplorationMobileHud({ onInteractPress, onOpenInventory }: Explo
                 aria-label="Двигаться назад"
                 onTouchStart={(e) => { e.preventDefault(); startControl('backward'); }}
                 onTouchEnd={(e) => { e.preventDefault(); stopControl('backward'); }}
+                onTouchCancel={(e) => { e.preventDefault(); stopControl('backward'); }}
               >
                 ▼
               </button>
@@ -99,6 +102,7 @@ export function ExplorationMobileHud({ onInteractPress, onOpenInventory }: Explo
                 aria-label="Двигаться вправо"
                 onTouchStart={(e) => { e.preventDefault(); startControl('right'); }}
                 onTouchEnd={(e) => { e.preventDefault(); stopControl('right'); }}
+                onTouchCancel={(e) => { e.preventDefault(); stopControl('right'); }}
               >
                 ▶
               </button>
@@ -141,6 +145,7 @@ export function ExplorationMobileHud({ onInteractPress, onOpenInventory }: Explo
               aria-label="Прыжок"
               onTouchStart={(e) => { e.preventDefault(); startControl('jump'); }}
               onTouchEnd={(e) => { e.preventDefault(); stopControl('jump'); }}
+              onTouchCancel={(e) => { e.preventDefault(); stopControl('jump'); }}
             >
               ⬆
             </button>
