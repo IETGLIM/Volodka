@@ -1,21 +1,20 @@
 ---
-Task ID: 1
+Task ID: 2
 Agent: main
-Task: Expert analysis of Volodka RPG project and fix "continue interaction does nothing" bug
+Task: Full codebase audit for inconsistencies + build Vercel deployment archive
 
 Work Log:
-- Extracted and analyzed uploaded tar.gz project (200+ files, RPG game with Three.js, Zustand, 50+ components)
-- Traced the full interaction flow: E key → object:interact → ExaminePanel → linked content
-- Identified root cause: G10 fix removed auto-trigger timer but provided NO alternative mechanism for continuing interaction
-- ExaminePanel showed text "[E] продолжить взаимодействие" but had no button/handler for it
-- Pressing E re-triggered the same object:interact event, showing ExaminePanel again (infinite loop)
-- Applied 3-file fix:
-  1. `useInteractionOrchestrator.ts`: Added `pendingTriggerZoneRef` to store zone with linked content, `handleExamineContinue` callback to trigger linked content, `clearPendingTriggerZone` for cleanup
-  2. `ExaminePanel.tsx`: Added `onContinue` prop, "Продолжить" button with ChevronRight icon, E key handler (capture phase + global debounce consumption), proper cleanup
-  3. `GameOrchestrator.tsx`: Wired `handleExamineContinue` and `clearPendingTriggerZone` to ExaminePanel
+- Ran comprehensive audit via sub-agent: lint, types, imports, deps, data consistency
+- Lint: 0 errors, TypeScript: 0 errors, runtime: no errors
+- Found and fixed CRITICAL: Tailwind content paths missing src/ prefix
+- Found and fixed: 13 unused dependencies removed from package.json (sharp, next-auth, z-ai-web-dev-sdk, three-pathfinding, @mdxeditor/editor, @tanstack/react-query, @tanstack/react-table, react-markdown, react-syntax-highlighter, next-intl, date-fns, @dnd-kit/*, @reactuses/core, @types/react-syntax-highlighter, bun-types)
+- Updated next.config.ts: added transpilePackages for Three.js ESM, kept allowedDevOrigins
+- Moved prisma + @types packages to devDependencies (proper separation)
+- Created .env.example for Vercel deployment
+- Built deployment archive: volodka-rpg-vercel-deploy.tar.gz (40MB, 2092 files)
+- Excluded from archive: node_modules, .next, dev.log, upload, Caddyfile, mini-services, qa-screenshots
 
 Stage Summary:
-- Bug root cause: G10 fix removed auto-trigger but forgot to add Continue button/handler
-- Fix: Added full "continue" flow: pending zone storage → Continue button + E key → trigger linked content
-- Lint: passes cleanly
-- Dev server: running on port 3000, compiles successfully
+- 13 unused deps removed (saves ~10MB+ install size, prevents sharp build failures on Vercel)
+- Tailwind content paths fixed (was missing src/ prefix → CSS purge would be wrong in production)
+- Archive ready at: /home/z/my-project/deploy-archive/volodka-rpg-vercel-deploy.tar.gz

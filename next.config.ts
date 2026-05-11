@@ -9,10 +9,10 @@ const nextConfig: NextConfig = {
     ignoreBuildErrors: false,
   },
   reactStrictMode: true,
-  // Allow cross-origin requests from the preview panel
-  allowedDevOrigins: [
-    '.space-z.ai',
-  ],
+  // Transpile Three.js ESM packages for proper bundling
+  transpilePackages: ['three', '@react-three/fiber', '@react-three/drei', '@react-three/postprocessing', '@react-three/rapier'],
+  // Allow cross-origin requests from the preview panel (dev only)
+  allowedDevOrigins: ['.space-z.ai'],
   // Allow loading GLB models from external paths
   async headers() {
     return [
