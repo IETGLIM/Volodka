@@ -92,19 +92,34 @@ export function useInteractionOrchestrator(
           return; // Already used — skip interaction
         }
 
-        // Apply trigger-level effects
-        if (zone.effects && zone.effects.length > 0) {
-          applyInteractionEffects(zone.effects);
+        const hasLinkedContent = !!(zone.linkedDialogueNodeId || zone.linkedStoryNodeId || zone.linkedMinigame);
+
+        // Ignore repeat E while the same zone's ExaminePanel is already open (prevents double-firing
+        // before pendingTriggerZoneRef is consumed).
+        if (pendingTriggerZoneRef.current?.id === zone.id) {
+          return;
         }
 
-        // Mark one-time trigger as used
-        if (zone.isOneTime) {
-          store.toggleInteractiveObject(triggerZoneId);
-        }
+        // One-time + examine + linked story/dialogue/minigame: do NOT apply effects, mark used,
+        // or activate quest until the player presses Continue. Otherwise Escape / overlay close
+        // burns the one-time flag and locks out linked content forever (e.g. room_window).
+        const deferOneTimeLinkedExamine = !!(zone.isOneTime && zone.examineData && hasLinkedContent);
 
-        // Activate linked quest
-        if (zone.linkedQuestId) {
-          store.activateQuest(zone.linkedQuestId);
+        if (!deferOneTimeLinkedExamine) {
+          // Apply trigger-level effects
+          if (zone.effects && zone.effects.length > 0) {
+            applyInteractionEffects(zone.effects);
+          }
+
+          // Mark one-time trigger as used
+          if (zone.isOneTime) {
+            store.toggleInteractiveObject(triggerZoneId);
+          }
+
+          // Activate linked quest
+          if (zone.linkedQuestId) {
+            store.activateQuest(zone.linkedQuestId);
+          }
         }
 
         // ── Helper: trigger the linked content (dialogue/story/minigame) for a zone ──
@@ -128,8 +143,6 @@ export function useInteractionOrchestrator(
         };
 
         // ── Show ExaminePanel, then wait for user to press "Continue" (G10 fix) ──
-        const hasLinkedContent = !!(zone.linkedDialogueNodeId || zone.linkedStoryNodeId || zone.linkedMinigame);
-
         if (zone.examineData) {
           // Show ExaminePanel and wait for explicit user confirmation
           setExamineData(zone.examineData);
@@ -285,6 +298,20 @@ export function useInteractionOrchestrator(
     const zone = pendingTriggerZoneRef.current;
     if (!zone) return;
 
+    const hasLinked = !!(zone.linkedDialogueNodeId || zone.linkedStoryNodeId || zone.linkedMinigame);
+    const deferredCommit = !!(zone.isOneTime && zone.examineData && hasLinked);
+
+    if (deferredCommit) {
+      const store = useGameStore.getState();
+      if (zone.effects && zone.effects.length > 0) {
+        applyInteractionEffects(zone.effects);
+      }
+      store.toggleInteractiveObject(zone.id);
+      if (zone.linkedQuestId) {
+        store.activateQuest(zone.linkedQuestId);
+      }
+    }
+
     // Close the ExaminePanel first
     setExamineOpen(false);
     setExamineData(null);
@@ -306,7 +333,7 @@ export function useInteractionOrchestrator(
       store.setCurrentNodeId(zone.linkedStoryNodeId);
       store.setShowStoryOverlay(true);
     }
-  }, []);
+  }, [applyInteractionEffects]);
 
   // ── Clear pending trigger zone (called when ExaminePanel is closed without continuing) ──
   const clearPendingTriggerZone = useCallback(() => {
