@@ -92,26 +92,36 @@ export function useInteractionOrchestrator(
           return; // Already used — skip interaction
         }
 
-        // Apply trigger-level effects
-        if (zone.effects && zone.effects.length > 0) {
-          applyInteractionEffects(zone.effects);
+        const hasLinkedContent = !!(zone.linkedDialogueNodeId || zone.linkedStoryNodeId || zone.linkedMinigame);
+
+        // One-time + examine + linked story/dialogue/minigame: defer effects, quest activation,
+        // and the one-time flag until the player confirms "Continue". Otherwise closing the
+        // examine panel (ESC / backdrop) would burn the trigger and permanently skip content,
+        // while effects had already run (room_window, kitchen_window).
+        const deferUntilExamineContinue =
+          !!(zone.isOneTime && zone.examineData && hasLinkedContent);
+
+        if (!deferUntilExamineContinue) {
+          if (zone.effects && zone.effects.length > 0) {
+            applyInteractionEffects(zone.effects);
+          }
+          if (zone.linkedQuestId) {
+            store.activateQuest(zone.linkedQuestId);
+          }
         }
 
-        // Mark one-time trigger as used
-        if (zone.isOneTime) {
-          store.toggleInteractiveObject(triggerZoneId);
-        }
-
-        // Activate linked quest
-        if (zone.linkedQuestId) {
-          store.activateQuest(zone.linkedQuestId);
-        }
+        const markOneTimeUsed = () => {
+          if (zone.isOneTime) {
+            useGameStore.getState().toggleInteractiveObject(triggerZoneId);
+          }
+        };
 
         // ── Helper: trigger the linked content (dialogue/story/minigame) for a zone ──
         const triggerLinkedContent = (z: typeof zone) => {
           // G7: Declarative mini-game dispatch — replaces hardcoded ID checks
           if (z.linkedMinigame) {
             eventBus.emit('minigame:open', { gameType: z.linkedMinigame });
+            markOneTimeUsed();
             return;
           }
 
@@ -120,16 +130,16 @@ export function useInteractionOrchestrator(
           if (z.linkedDialogueNodeId && DIALOGUE_NODES[z.linkedDialogueNodeId]) {
             currentStore.setMode('visual-novel');
             currentStore.setCurrentNodeId(z.linkedDialogueNodeId);
+            markOneTimeUsed();
           } else if (z.linkedStoryNodeId && STORY_NODES[z.linkedStoryNodeId]) {
             currentStore.setMode('visual-novel');
             currentStore.setCurrentNodeId(z.linkedStoryNodeId);
             currentStore.setShowStoryOverlay(true);
+            markOneTimeUsed();
           }
         };
 
         // ── Show ExaminePanel, then wait for user to press "Continue" (G10 fix) ──
-        const hasLinkedContent = !!(zone.linkedDialogueNodeId || zone.linkedStoryNodeId || zone.linkedMinigame);
-
         if (zone.examineData) {
           // Show ExaminePanel and wait for explicit user confirmation
           setExamineData(zone.examineData);
@@ -144,6 +154,10 @@ export function useInteractionOrchestrator(
             pendingTriggerZoneRef.current = zone;
           } else {
             pendingTriggerZoneRef.current = null;
+            // Examine-only one-time (e.g. hidden poem): nothing to continue into — mark now.
+            if (zone.isOneTime) {
+              markOneTimeUsed();
+            }
           }
         } else {
           // No examineData — trigger linked content immediately
@@ -285,6 +299,41 @@ export function useInteractionOrchestrator(
     const zone = pendingTriggerZoneRef.current;
     if (!zone) return;
 
+    const hasLinked = !!(
+      zone.linkedDialogueNodeId ||
+      zone.linkedStoryNodeId ||
+      zone.linkedMinigame
+    );
+    const deferred =
+      !!(zone.isOneTime && zone.examineData && hasLinked);
+
+    const willOpenMinigame = !!zone.linkedMinigame;
+    const willOpenDialogue = !!(
+      zone.linkedDialogueNodeId &&
+      DIALOGUE_NODES[zone.linkedDialogueNodeId]
+    );
+    const willOpenStory = !!(
+      zone.linkedStoryNodeId &&
+      STORY_NODES[zone.linkedStoryNodeId]
+    );
+    const willDispatch = willOpenMinigame || willOpenDialogue || willOpenStory;
+
+    if (deferred && willDispatch) {
+      if (zone.effects && zone.effects.length > 0) {
+        applyInteractionEffects(zone.effects);
+      }
+      const st = useGameStore.getState();
+      if (zone.linkedQuestId) {
+        st.activateQuest(zone.linkedQuestId);
+      }
+    }
+
+    const markOneTimeUsedForZone = () => {
+      if (zone.isOneTime) {
+        useGameStore.getState().toggleInteractiveObject(zone.id);
+      }
+    };
+
     // Close the ExaminePanel first
     setExamineOpen(false);
     setExamineData(null);
@@ -294,6 +343,7 @@ export function useInteractionOrchestrator(
     // Trigger the linked content
     if (zone.linkedMinigame) {
       eventBus.emit('minigame:open', { gameType: zone.linkedMinigame });
+      markOneTimeUsedForZone();
       return;
     }
 
@@ -301,12 +351,14 @@ export function useInteractionOrchestrator(
     if (zone.linkedDialogueNodeId && DIALOGUE_NODES[zone.linkedDialogueNodeId]) {
       store.setMode('visual-novel');
       store.setCurrentNodeId(zone.linkedDialogueNodeId);
+      markOneTimeUsedForZone();
     } else if (zone.linkedStoryNodeId && STORY_NODES[zone.linkedStoryNodeId]) {
       store.setMode('visual-novel');
       store.setCurrentNodeId(zone.linkedStoryNodeId);
       store.setShowStoryOverlay(true);
+      markOneTimeUsedForZone();
     }
-  }, []);
+  }, [applyInteractionEffects]);
 
   // ── Clear pending trigger zone (called when ExaminePanel is closed without continuing) ──
   const clearPendingTriggerZone = useCallback(() => {
