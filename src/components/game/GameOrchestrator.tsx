@@ -399,6 +399,7 @@ export function GameOrchestrator() {
       setExamineOpen(false);
       setExamineData(null);
       setExamineHasLinkedContent(false);
+      clearPendingTriggerZone();
       // Close mini-games too
       setCodebreakerOpen(false);
       setOpenstackTerminalOpen(false);
@@ -411,7 +412,7 @@ export function GameOrchestrator() {
       // Close all panels — dialogue/story takes priority
       closeAllPanels();
     }
-  }, [isOverlayActive, closeAllPanels]);
+  }, [isOverlayActive, closeAllPanels, clearPendingTriggerZone]);
 
   // ── Close lower overlays when panels (inventory/journal/quests/poetry) open ──
   useEffect(() => {
@@ -419,8 +420,9 @@ export function GameOrchestrator() {
       setExamineOpen(false);
       setExamineData(null);
       setExamineHasLinkedContent(false);
+      clearPendingTriggerZone();
     }
-  }, [activePanel]);
+  }, [activePanel, clearPendingTriggerZone]);
 
   // Scene transition tracking
   const prevSceneId = useRef(useGameStore.getState().exploration.currentSceneId);
@@ -604,6 +606,7 @@ export function GameOrchestrator() {
           store.setJournalOpen(false);
         } else if (ps.examineOpen) {
           setExamineOpen(false); setExamineData(null); setExamineHasLinkedContent(false);
+          clearPendingTriggerZone();
         }
         else if (ps.codebreakerOpen) setCodebreakerOpen(false);
         else if (ps.openstackTerminalOpen) setOpenstackTerminalOpen(false);

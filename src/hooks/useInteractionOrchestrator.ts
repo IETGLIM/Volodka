@@ -97,11 +97,6 @@ export function useInteractionOrchestrator(
           applyInteractionEffects(zone.effects);
         }
 
-        // Mark one-time trigger as used
-        if (zone.isOneTime) {
-          store.toggleInteractiveObject(triggerZoneId);
-        }
-
         // Activate linked quest
         if (zone.linkedQuestId) {
           store.activateQuest(zone.linkedQuestId);
@@ -129,6 +124,16 @@ export function useInteractionOrchestrator(
 
         // ── Show ExaminePanel, then wait for user to press "Continue" (G10 fix) ──
         const hasLinkedContent = !!(zone.linkedDialogueNodeId || zone.linkedStoryNodeId || zone.linkedMinigame);
+
+        // One-time objects: mark as used only after the interaction chain completes,
+        // OR immediately when there is no examine+linked flow (user cannot get "stuck"
+        // with the object burned before linked content runs — e.g. opening inventory
+        // while ExaminePanel is open used to close the UI but leave the trigger consumed).
+        const deferOneTimeToggle =
+          zone.isOneTime && !!zone.examineData && hasLinkedContent;
+        if (zone.isOneTime && !deferOneTimeToggle) {
+          store.toggleInteractiveObject(triggerZoneId);
+        }
 
         if (zone.examineData) {
           // Show ExaminePanel and wait for explicit user confirmation
@@ -290,6 +295,11 @@ export function useInteractionOrchestrator(
     setExamineData(null);
     setExamineHasLinkedContent(false);
     pendingTriggerZoneRef.current = null;
+
+    // Consume one-time trigger only after the player commits past ExaminePanel
+    if (zone.isOneTime) {
+      useGameStore.getState().toggleInteractiveObject(zone.id);
+    }
 
     // Trigger the linked content
     if (zone.linkedMinigame) {
