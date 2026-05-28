@@ -57,6 +57,7 @@ import { VisualizationLayers } from './VisualizationLayers';
 import { EnvironmentalAnimator } from './EnvironmentalAnimator';
 import { InteractionSystemBridge, getInteractionState, getInteractionTargetNPCId } from './InteractionSystemBridge';
 import { RendererInfoBridge } from './RendererInfoBridge';
+import { useGameStore } from '@/store/gameStore';
 import { useIsMobileVisual, useMobileVisualPerf } from '@/hooks/use-mobile';
 import { useDynamicDPR } from '@/hooks/useDynamicDPR';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
@@ -244,7 +245,12 @@ function SimpleSceneFallback({
 /** Main 3D canvas for the RPG exploration mode */
 export function RPGGameCanvas() {
   const containerRef = useRef<HTMLDivElement>(null);
-  const livePlayerPositionRef = useRef(new THREE.Vector3(0, 0.01, -1.0));
+  const livePlayerPositionRef = useRef<THREE.Vector3>(
+    (() => {
+      const [x, y, z] = useGameStore.getState().exploration.playerPosition;
+      return new THREE.Vector3(x, y, z);
+    })(),
+  );
   const livePlayerRotationRef = useRef(Math.PI);
   const virtualControlsRef = useVirtualControlsRef();
 

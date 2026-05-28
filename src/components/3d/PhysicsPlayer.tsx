@@ -81,6 +81,24 @@ const COYOTE_TIME = 0.15;            // 150ms jump grace after leaving edge
 const JUMP_COOLDOWN = 0.3;           // 300ms between jumps
 const TERMINAL_VELOCITY = GRAVITY * 2; // max fall speed
 
+/** Sync Rapier body and live refs to exploration.playerPosition in the store. */
+function applyStorePlayerPosition(
+  rb: RapierRigidBody | null,
+  livePlayerPositionRef: React.MutableRefObject<THREE.Vector3>,
+  livePlayerRotationRef: React.MutableRefObject<number>,
+  velocityRef: React.MutableRefObject<THREE.Vector3>,
+) {
+  const { exploration } = useGameStore.getState();
+  const [x, y, z] = exploration.playerPosition;
+  const rot = getSceneConfig(exploration.currentSceneId).initialRotation ?? 0;
+  if (rb && rb.isValid()) {
+    rb.setTranslation({ x, y, z }, true);
+  }
+  velocityRef.current.set(0, 0, 0);
+  livePlayerPositionRef.current.set(x, y, z);
+  livePlayerRotationRef.current = rot;
+}
+
 /* ─── Character Controller Constants ─── */
 
 interface PhysicsPlayerProps {
@@ -231,24 +249,37 @@ export function PhysicsPlayer({
   const modelScale = getExplorationCharacterModelScale(sceneId);
   const config = getSceneConfig(sceneId);
 
-  // Teleport player on scene change
+  // Teleport player on scene change (use store position — door exits set spawnAt there)
   useEffect(() => {
     if (sceneId !== prevSceneIdRef.current) {
       prevSceneIdRef.current = sceneId;
-      const newConfig = getSceneConfig(sceneId);
-      const spawn = newConfig.spawnPoint;
-      if (rigidBodyRef.current) {
-        rigidBodyRef.current.setTranslation(
-          { x: spawn[0], y: spawn[1], z: spawn[2] },
-          true,
-        );
-        velocityRef.current.set(0, 0, 0);
-      }
-      livePlayerRotationRef.current = newConfig.initialRotation ?? 0;
+      applyStorePlayerPosition(
+        rigidBodyRef.current,
+        livePlayerPositionRef,
+        livePlayerRotationRef,
+        velocityRef,
+      );
       isGroundedRef.current = true;
       coyoteTimerRef.current = 0;
+      warmupFramesRef.current = 0;
     }
-  }, [sceneId, livePlayerRotationRef]);
+  }, [sceneId, livePlayerPositionRef, livePlayerRotationRef]);
+
+  // Restore saved position after loadGame()
+  useEffect(() => {
+    const unsub = eventBus.on('game:loaded', () => {
+      applyStorePlayerPosition(
+        rigidBodyRef.current,
+        livePlayerPositionRef,
+        livePlayerRotationRef,
+        velocityRef,
+      );
+      isGroundedRef.current = true;
+      coyoteTimerRef.current = 0;
+      warmupFramesRef.current = 0;
+    });
+    return unsub;
+  }, [livePlayerPositionRef, livePlayerRotationRef]);
 
   // Pre-allocated temp vectors (avoid GC in useFrame)
   const tempCameraForward = useRef(new THREE.Vector3());
@@ -276,11 +307,11 @@ export function PhysicsPlayer({
     warmupFramesRef.current++;
     if (warmupFramesRef.current < 10) {
       vel.set(0, 0, 0);
-      const spawn = config.spawnPoint;
+      const [sx, sy, sz] = useGameStore.getState().exploration.playerPosition;
       if (rb) {
-        rb.setTranslation({ x: spawn[0], y: spawn[1], z: spawn[2] }, true);
+        rb.setTranslation({ x: sx, y: sy, z: sz }, true);
       }
-      livePlayerPositionRef.current.set(spawn[0], spawn[1], spawn[2]);
+      livePlayerPositionRef.current.set(sx, sy, sz);
       isGroundedRef.current = true;
       return;
     }
@@ -721,13 +752,16 @@ export function PhysicsPlayer({
     return '#888888';
   }, [karma]);
 
-  const spawnPoint = config.spawnPoint;
+  const [ix, iy, iz] = useMemo(
+    () => useGameStore.getState().exploration.playerPosition,
+    [],
+  );
 
   return (
     <RigidBody
       ref={rigidBodyRef}
       type="kinematicPosition"
-      position={[spawnPoint[0], spawnPoint[1] + 0.05, spawnPoint[2]]}
+      position={[ix, iy + 0.05, iz]}
       colliders={false}
       lockRotations
     >

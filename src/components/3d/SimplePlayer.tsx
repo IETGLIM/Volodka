@@ -65,20 +65,34 @@ export function SimplePlayer({
   const modelScale = getExplorationCharacterModelScale(sceneId);
   const config = getSceneConfig(sceneId);
 
-  // Reset position on scene change
+  // Reset position on scene change (store holds door-specific spawnAt from transitions)
   useEffect(() => {
     if (sceneId !== prevSceneIdRef.current) {
       prevSceneIdRef.current = sceneId;
-      const newConfig = getSceneConfig(sceneId);
-      const spawn = newConfig.spawnPoint;
-      livePlayerPositionRef.current.set(spawn[0], spawn[1], spawn[2]);
-      livePlayerRotationRef.current = newConfig.initialRotation ?? 0;
+      const [x, y, z] = useGameStore.getState().exploration.playerPosition;
+      const rot = getSceneConfig(sceneId).initialRotation ?? 0;
+      livePlayerPositionRef.current.set(x, y, z);
+      livePlayerRotationRef.current = rot;
       velocityRef.current.set(0, 0, 0);
       if (groupRef.current) {
-        groupRef.current.position.set(spawn[0], spawn[1], spawn[2]);
+        groupRef.current.position.set(x, y, z);
       }
     }
   }, [sceneId, livePlayerRotationRef, livePlayerPositionRef]);
+
+  useEffect(() => {
+    const unsub = eventBus.on('game:loaded', () => {
+      const [x, y, z] = useGameStore.getState().exploration.playerPosition;
+      const rot = getSceneConfig(useGameStore.getState().exploration.currentSceneId).initialRotation ?? 0;
+      livePlayerPositionRef.current.set(x, y, z);
+      livePlayerRotationRef.current = rot;
+      velocityRef.current.set(0, 0, 0);
+      if (groupRef.current) {
+        groupRef.current.position.set(x, y, z);
+      }
+    });
+    return unsub;
+  }, [livePlayerPositionRef, livePlayerRotationRef]);
 
   const tempCameraForward = useRef(new THREE.Vector3());
   const tempCameraRight = useRef(new THREE.Vector3());
