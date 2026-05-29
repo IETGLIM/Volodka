@@ -47,11 +47,10 @@ export function useCombatOrchestrator() {
       }),
     );
 
-    // Handle combat:victory for loot notifications
+    // Handle combat:victory for loot notifications (XP is applied in CombatSystem.handleVictory)
     unsubs.push(
-      eventBus.on('combat:victory', ({ xpGained, karmaGained, lootItemId }) => {
+      eventBus.on('combat:victory', ({ lootItemId }) => {
         const store = useGameStore.getState();
-        store.addXp(xpGained);
 
         // Push notification for loot
         if (lootItemId) {

@@ -12,7 +12,7 @@ import { SCENE_CONFIG } from '@/config/scenes';
 import { AUTO_SAVE_INTERVAL_MS } from '@/data/constants';
 import { STORY_NODES } from '@/data/storyNodes';
 import { DIALOGUE_NODES } from '@/data/dialogueNodes';
-import { getCutsceneForNode } from '@/data/cutscenes';
+import { CUTSCENES, getCutsceneForNode, getCutsceneReturnMode } from '@/data/cutscenes';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { CUTSCENE_TIMINGS } from '@/shared/constants/transitionTimings';
 import { VirtualControlsContext, sharedVirtualControlsRef } from '@/engine/VirtualControlsState';
@@ -323,9 +323,7 @@ export function GameOrchestrator() {
     // Determine which mode to return to after cutscene:
     // - For character_intro / story_moment / revelation: return to visual-novel so story text is shown
     // - For act_transition: return to exploration (story was already read before transition)
-    const returnMode = (cutscene.type === 'character_intro' || cutscene.type === 'story_moment' || cutscene.type === 'revelation')
-      ? 'visual-novel' as const
-      : 'exploration' as const;
+    const returnMode = getCutsceneReturnMode(cutscene.type);
 
     cutsceneEndTimerRef.current = setTimeout(() => {
       // Only switch back if we're still in cutscene mode
@@ -399,6 +397,7 @@ export function GameOrchestrator() {
       setExamineOpen(false);
       setExamineData(null);
       setExamineHasLinkedContent(false);
+      clearPendingTriggerZone();
       // Close mini-games too
       setCodebreakerOpen(false);
       setOpenstackTerminalOpen(false);
@@ -411,7 +410,7 @@ export function GameOrchestrator() {
       // Close all panels — dialogue/story takes priority
       closeAllPanels();
     }
-  }, [isOverlayActive, closeAllPanels]);
+  }, [isOverlayActive, closeAllPanels, clearPendingTriggerZone]);
 
   // ── Close lower overlays when panels (inventory/journal/quests/poetry) open ──
   useEffect(() => {
@@ -419,8 +418,9 @@ export function GameOrchestrator() {
       setExamineOpen(false);
       setExamineData(null);
       setExamineHasLinkedContent(false);
+      clearPendingTriggerZone();
     }
-  }, [activePanel]);
+  }, [activePanel, clearPendingTriggerZone]);
 
   // Scene transition tracking
   const prevSceneId = useRef(useGameStore.getState().exploration.currentSceneId);
@@ -507,11 +507,13 @@ export function GameOrchestrator() {
     return unsub;
   }, []);
 
-  // ── Auto-save after combat victory (L-02) ──
+  // ── Auto-save after combat ends (L-02) — save on combat:end so mode is exploration/VN, not combat
   useEffect(() => {
-    const unsub = eventBus.on('combat:victory', () => {
+    const unsub = eventBus.on('combat:end', () => {
       const store = useGameStore.getState();
-      store.saveGame({ source: 'auto' });
+      if (store.mode !== 'combat') {
+        store.saveGame({ source: 'auto' });
+      }
     });
     return unsub;
   }, []);
@@ -590,9 +592,15 @@ export function GameOrchestrator() {
           // Clear any pending cutscene timers
           if (cutsceneOverlayTimerRef.current) { clearTimeout(cutsceneOverlayTimerRef.current); cutsceneOverlayTimerRef.current = null; }
           if (cutsceneEndTimerRef.current) { clearTimeout(cutsceneEndTimerRef.current); cutsceneEndTimerRef.current = null; }
-          // Clear cutscene state and return to exploration
+          const activeCutscene = store.activeCutsceneId
+            ? Object.values(CUTSCENES).find((c) => c.id === store.activeCutsceneId)
+            : getCutsceneForNode(store.currentNodeId);
+          const returnMode = getCutsceneReturnMode(activeCutscene?.type);
           store.setCutscene(null, []);
-          store.setMode('exploration');
+          store.setMode(returnMode);
+          if (returnMode === 'visual-novel') {
+            store.setShowStoryOverlay(true);
+          }
           eventBus.emit('cutscene:overlay_end', {});
           eventBus.emit('camera:cutscene_end', {});
           return;
@@ -604,6 +612,7 @@ export function GameOrchestrator() {
           store.setJournalOpen(false);
         } else if (ps.examineOpen) {
           setExamineOpen(false); setExamineData(null); setExamineHasLinkedContent(false);
+          clearPendingTriggerZone();
         }
         else if (ps.codebreakerOpen) setCodebreakerOpen(false);
         else if (ps.openstackTerminalOpen) setOpenstackTerminalOpen(false);
