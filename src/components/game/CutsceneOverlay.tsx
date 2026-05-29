@@ -17,7 +17,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { eventBus } from '@/engine/EventBus';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { useGameStore } from '@/store/gameStore';
-import type { CutsceneDef } from '@/data/cutscenes';
+import { getCutsceneReturnMode, type CutsceneDef } from '@/data/cutscenes';
 
 // ════════════════════════════════════════════════════════════════
 //  EMBER PARTICLES — drifting upward (reused from IntroScreen)
@@ -250,14 +250,18 @@ export function CutsceneOverlay() {
     // 3. End cutscene in the store
     const store = useGameStore.getState();
     if (store.mode === 'cutscene') {
+      const returnMode = getCutsceneReturnMode(cutsceneType);
       store.setCutscene(null, []);
-      store.setMode('exploration');
+      store.setMode(returnMode);
+      if (returnMode === 'visual-novel') {
+        store.setShowStoryOverlay(true);
+      }
     }
 
     // 4. Emit events so camera system & other listeners clean up
     eventBus.emit('cutscene:overlay_end', {});
     eventBus.emit('camera:cutscene_end', {});
-  }, [clearTimer, clearSkipDelayTimer]);
+  }, [clearTimer, clearSkipDelayTimer, cutsceneType]);
 
   useEffect(() => {
     const unsub = eventBus.on('cutscene:overlay', (payload) => {

@@ -521,6 +521,17 @@ export function getCutsceneForNode(storyNodeId: string): CutsceneDef | undefined
   return Object.values(CUTSCENES).find((c) => c.triggerStoryNode === storyNodeId);
 }
 
+/** Mode to restore after a cutscene ends or is skipped. */
+export function getCutsceneReturnMode(
+  cutsceneType: CutsceneDef['type'] | undefined,
+): 'visual-novel' | 'exploration' {
+  return cutsceneType === 'character_intro' ||
+    cutsceneType === 'story_moment' ||
+    cutsceneType === 'revelation'
+    ? 'visual-novel'
+    : 'exploration';
+}
+
 /** Get all cutscene IDs */
 export function getAllCutsceneIds(): string[] {
   return Object.keys(CUTSCENES);
