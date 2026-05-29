@@ -166,6 +166,14 @@ const UnlockedAchievementSchema = z.object({
   unlockedAt: z.number(),
 });
 
+const AcceptedDailyMissionSchema = z.object({
+  missionId: z.string().min(1),
+  acceptedAt: z.number(),
+  progress: z.record(z.string(), z.number()),
+  completed: z.boolean(),
+  claimed: z.boolean(),
+});
+
 const GameModeSchema = z.enum([
   'menu',
   'intro',
@@ -206,6 +214,10 @@ export const SavePayloadSchema = z.object({
   unlockedAchievements: z.array(UnlockedAchievementSchema).optional().default([]),
   /** Scene IDs that have been visited/discovered */
   discoveredScenes: z.array(z.string()).optional().default(['volodka_room']),
+  acceptedDailyMissions: z.array(AcceptedDailyMissionSchema).optional().default([]),
+  lastDailyReset: z.number().optional().default(0),
+  npcAffinity: z.record(z.string(), z.number()).optional().default({}),
+  triggeredCutscenes: z.array(z.string()).optional().default([]),
   savedAt: z.number(),
 });
 

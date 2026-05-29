@@ -50,6 +50,16 @@ interface FullStoreForSave {
   introSeen: boolean;
   unlockedAchievements: Array<{ id: string; unlockedAt: number }>;
   discoveredScenes: string[];
+  acceptedDailyMissions: Array<{
+    missionId: string;
+    acceptedAt: number;
+    progress: Record<string, number>;
+    completed: boolean;
+    claimed: boolean;
+  }>;
+  lastDailyReset: number;
+  npcAffinity: Record<string, number>;
+  triggeredCutscenes: string[];
 }
 
 /* ─── Slice types ─── */
@@ -139,6 +149,10 @@ export const createSaveSlice: StateCreator<
       introSeen: state.introSeen,
       unlockedAchievements: state.unlockedAchievements,
       discoveredScenes: state.discoveredScenes,
+      acceptedDailyMissions: state.acceptedDailyMissions,
+      lastDailyReset: state.lastDailyReset,
+      npcAffinity: state.npcAffinity,
+      triggeredCutscenes: state.triggeredCutscenes,
       savedAt: Date.now(),
     };
 
@@ -192,11 +206,17 @@ export const createSaveSlice: StateCreator<
 
       const payload = validation.data;
 
+      // Saves written during combat victory autosave had mode 'combat' but no in-memory combat state after reload
+      const safeMode =
+        payload.mode === 'combat' || payload.mode === 'cutscene'
+          ? 'exploration'
+          : payload.mode;
+
       // Sanitize the loaded scene ID (extra safety layer)
       const sanitizedSceneId = sanitizeExplorationSceneId(payload.exploration.currentSceneId);
 
       set({
-        mode: payload.mode,
+        mode: safeMode,
         currentNodeId: payload.currentNodeId,
         playerState: {
           ...payload.playerState,
@@ -225,6 +245,10 @@ export const createSaveSlice: StateCreator<
         introSeen: payload.introSeen,
         unlockedAchievements: payload.unlockedAchievements,
         discoveredScenes: payload.discoveredScenes,
+        acceptedDailyMissions: payload.acceptedDailyMissions,
+        lastDailyReset: payload.lastDailyReset,
+        npcAffinity: payload.npcAffinity,
+        triggeredCutscenes: payload.triggeredCutscenes,
       } as unknown as Partial<FullStoreForSave>);
 
       eventBus.emit('game:loaded', {} as Record<string, never>);
