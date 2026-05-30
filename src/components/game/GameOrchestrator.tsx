@@ -507,10 +507,13 @@ export function GameOrchestrator() {
     return unsub;
   }, []);
 
-  // ── Auto-save after combat victory (L-02) ──
+  // ── Auto-save after combat ends (L-02) ──
+  // Save on combat:end (not combat:victory) so mode is exploration/visual-novel,
+  // not combat — saving during victory left mode=combat and softlocked on reload.
   useEffect(() => {
-    const unsub = eventBus.on('combat:victory', () => {
+    const unsub = eventBus.on('combat:end', () => {
       const store = useGameStore.getState();
+      if (store.mode === 'combat') return;
       store.saveGame({ source: 'auto' });
     });
     return unsub;
