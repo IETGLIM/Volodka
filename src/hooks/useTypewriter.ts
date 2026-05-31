@@ -6,7 +6,7 @@ import { useState, useEffect, useCallback } from 'react';
  * Typewriter hook — requestAnimationFrame-based for smooth animation.
  * Shared between StoryRenderer and DialogueRenderer.
  */
-export function useTypewriter(text: string, speed = 30) {
+export function useTypewriter(text: string, speed = 22) {
   const [displayed, setDisplayed] = useState('');
   const [done, setDone] = useState(false);
 

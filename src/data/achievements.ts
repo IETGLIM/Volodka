@@ -246,7 +246,7 @@ export const ACHIEVEMENTS: AchievementDefinition[] = [
   {
     id: 'poetry_word_keeper',
     title: 'Хранитель слова',
-    description: 'Собрать все 23 стихотворения',
+    description: 'Собрать все стихотворения',
     icon: '✨',
     category: 'poetry',
     hidden: false,

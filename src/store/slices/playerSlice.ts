@@ -199,7 +199,16 @@ export const createPlayerSlice: StateCreator<
       } else if (inventory.length < MAX_INVENTORY_SLOTS) {
         inventory.push({ ...item, quantity: item.quantity ?? 1 });
       } else {
-        return state; // Inventory full — silently drop
+        // Inventory full — notify the player instead of silently dropping
+        const updatedNotifications = pushNotification(
+          state.notifications,
+          'quest',
+          `Инвентарь полон! Предмет «${item.id}» не помещается (${MAX_INVENTORY_SLOTS}/${MAX_INVENTORY_SLOTS})`,
+        );
+        return {
+          notifications: updatedNotifications,
+          playerState: state.playerState,
+        };
       }
 
       return {

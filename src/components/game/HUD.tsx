@@ -1142,7 +1142,7 @@ export function HUD({ onOpenQuests, onOpenInventory, onOpenPoetry, onToggleTutor
           </div>
           {/* Version indicator */}
           <div className="absolute bottom-1.5 right-3 pointer-events-none">
-            <span className="text-[8px] text-slate-600/50 font-mono">v0.4.2</span>
+            <span className="text-[8px] text-slate-600/50 font-mono">v2.1.0</span>
           </div>
         </div>
       </div>

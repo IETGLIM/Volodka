@@ -13,7 +13,7 @@ import { audioEngine } from '@/engine/AudioEngine';
 import { useTypewriter } from '@/hooks/useTypewriter';
 
 const TOTAL_POEMS = POEMS.length;
-const VERSION = '2.0.7';
+const VERSION = '2.1.0';
 
 // ============================================
 // MENU ITEM DEFINITIONS
@@ -471,7 +471,7 @@ function TypewriterSubtitle({ text, delay = 0 }: { text: string; delay?: number 
     return () => clearTimeout(t);
   }, [delay]);
 
-  const { displayed, done } = useTypewriter(started ? text : '', 65);
+  const { displayed, done } = useTypewriter(started ? text : '', 35);
 
   return (
     <motion.div
