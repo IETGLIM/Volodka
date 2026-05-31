@@ -1,53 +1,97 @@
 'use client';
 
-/* ─── Volodka RPG – Dreamscape procedural 3D visual ─── */
+/* ─── Volodka RPG – Dreamscape procedural 3D visual (v2.1 — FastNoiseLite) ─── */
 
 import { useMemo, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
+import FastNoiseLite from 'fastnoise-lite';
+import { useProceduralTerrain, DREAM_TERRAIN } from '@/hooks/useProceduralTerrain';
 
-/** Dark Fantasy/Psychonauts2 dreamscape (50×50m) */
+/** Dark Fantasy/Psychonauts2 dreamscape (50×50m) with procedural terrain */
 export function SleepDreamVisual() {
-  const groundTexture = useMemo(() => createDreamGroundTexture(), []);
-
   const W = 50;
   const D = 50;
 
+  // ── Procedural terrain with FastNoiseLite ──
+  const { geometry, getHeightAt } = useProceduralTerrain({
+    width: W,
+    depth: D,
+    segments: 128,
+    preset: DREAM_TERRAIN,
+  });
+
+  // ── Animated terrain mesh ──
+  const terrainRef = useRef<THREE.Mesh>(null);
+  const originalPositions = useMemo(() => {
+    return new Float32Array((geometry.attributes.position as THREE.BufferAttribute).array as Float32Array);
+  }, [geometry]);
+
+  // ── Dream ground texture (now more detailed) ──
+  const groundTexture = useMemo(() => createDreamGroundTexture(), []);
+
+  // ── Slow terrain animation ──
+  useFrame((state) => {
+    if (!terrainRef.current) return;
+    const posAttr = terrainRef.current.geometry.attributes.position as THREE.BufferAttribute;
+    const t = state.clock.elapsedTime;
+
+    for (let i = 0; i < posAttr.count; i++) {
+      const ox = originalPositions[i * 3];
+      const oz = originalPositions[i * 3 + 2];
+      const oy = originalPositions[i * 3 + 1];
+
+      // Slow dreamy undulation — waves ripple across the landscape
+      const wave = Math.sin(ox * 0.12 + t * 0.15) * 0.4
+                 + Math.cos(oz * 0.09 + t * 0.12) * 0.25
+                 + Math.sin((ox + oz) * 0.06 + t * 0.08) * 0.15;
+
+      posAttr.setY(i, oy + wave);
+    }
+    posAttr.needsUpdate = true;
+    terrainRef.current.geometry.computeVertexNormals();
+  });
+
   return (
     <group>
-      {/* ── Ethereal ground ── */}
-      <mesh rotation-x={-Math.PI / 2} receiveShadow position-y={0.001}>
-        <planeGeometry args={[W, D]} />
+      {/* ═══════════════════════════════════════════════ */}
+      {/* ── PROCEDURAL TERRAIN (FastNoiseLite) ──       */}
+      {/* ═══════════════════════════════════════════════ */}
+      <mesh ref={terrainRef} geometry={geometry} receiveShadow>
         <meshStandardMaterial
           map={groundTexture}
           color="#0a0515"
           roughness={0.95}
+          metalness={0.05}
           transparent
-          opacity={0.8}
+          opacity={0.9}
           polygonOffset
           polygonOffsetFactor={1}
           polygonOffsetUnits={1}
         />
       </mesh>
 
-      {/* ═══════════════════════════════════════════════ */}
-      {/* ── FLOATING ISLANDS ── */}
-      {/* ═══════════════════════════════════════════════ */}
-      <FloatingIsland position={[-12, 4, -10]} scale={2.5} />
-      <FloatingIsland position={[15, 6, -8]} scale={1.8} />
-      <FloatingIsland position={[-8, 8, 12]} scale={2.0} />
-      <FloatingIsland position={[10, 3, 14]} scale={1.5} />
-      <FloatingIsland position={[0, 10, -18]} scale={3.0} />
-      <FloatingIsland position={[-18, 5, 0]} scale={1.3} />
+      {/* ── Secondary terrain layer — glowing vein network ── */}
+      <VeinOverlay width={W} depth={D} segments={64} />
 
       {/* ═══════════════════════════════════════════════ */}
-      {/* ── IMPOSSIBLE GEOMETRY ── */}
+      {/* ── FLOATING ISLANDS ──                          */}
+      {/* ═══════════════════════════════════════════════ */}
+      <FloatingIsland position={[-12, 6, -10]} scale={2.5} />
+      <FloatingIsland position={[15, 8, -8]} scale={1.8} />
+      <FloatingIsland position={[-8, 10, 12]} scale={2.0} />
+      <FloatingIsland position={[10, 5, 14]} scale={1.5} />
+      <FloatingIsland position={[0, 12, -18]} scale={3.0} />
+      <FloatingIsland position={[-18, 7, 0]} scale={1.3} />
+
+      {/* ═══════════════════════════════════════════════ */}
+      {/* ── IMPOSSIBLE GEOMETRY ──                       */}
       {/* ═══════════════════════════════════════════════ */}
       <ImpossibleStructure position={[8, 2, -5]} />
       <ImpossibleStructure position={[-15, 3, 8]} />
 
       {/* ═══════════════════════════════════════════════ */}
-      {/* ── FLOATING POEM TEXT ── */}
+      {/* ── FLOATING POEM TEXT ──                        */}
       {/* ═══════════════════════════════════════════════ */}
       <FloatingPoemFragment position={[-5, 5, -12]} text="СМЕРТЬ" />
       <FloatingPoemFragment position={[12, 7, 5]} text="СВЕТ" />
@@ -55,124 +99,247 @@ export function SleepDreamVisual() {
       <FloatingPoemFragment position={[6, 9, -15]} text="ТИШИНА" />
 
       {/* ═══════════════════════════════════════════════ */}
-      {/* ── MEMORY FRAGMENTS (glowing cubes) ── */}
+      {/* ── MEMORY FRAGMENTS (glowing cubes) ──          */}
       {/* ═══════════════════════════════════════════════ */}
-      <MemoryFragment position={[-3, 1.5, -6]} color="#ffcc44" />
-      <MemoryFragment position={[7, 2.0, -3]} color="#00cccc" />
-      <MemoryFragment position={[-8, 1.0, 4]} color="#ffcc44" />
-      <MemoryFragment position={[4, 3.0, 8]} color="#ff44aa" />
-      <MemoryFragment position={[-14, 2.5, -3]} color="#00cccc" />
-      <MemoryFragment position={[0, 1.8, -10]} color="#ffcc44" />
-      <MemoryFragment position={[16, 1.2, -2]} color="#00cccc" />
-      <MemoryFragment position={[-5, 4.0, -18]} color="#ffcc44" />
+      {MEMORY_FRAGMENT_DATA.map((data, i) => (
+        <MemoryFragment key={`mem-${i}`} position={data.pos} color={data.color} />
+      ))}
 
       {/* ═══════════════════════════════════════════════ */}
-      {/* ── SPIRAL PILLARS ── */}
+      {/* ── SPIRAL PILLARS ──                            */}
       {/* ═══════════════════════════════════════════════ */}
-      <SpiralPillar position={[-6, 0, -3]} />
-      <SpiralPillar position={[10, 0, -8]} />
-      <SpiralPillar position={[-4, 0, 10]} />
-      <SpiralPillar position={[0, 0, -15]} />
+      {SPIRAL_PILLAR_POSITIONS.map((pos, i) => (
+        <SpiralPillar key={`pillar-${i}`} position={pos} />
+      ))}
 
       {/* ═══════════════════════════════════════════════ */}
-      {/* ── ETHEREAL FOG LAYERS ── */}
+      {/* ── ETHEREAL FOG LAYERS ──                       */}
       {/* ═══════════════════════════════════════════════ */}
-      <FogLayer y={0.3} />
-      <FogLayer y={3.0} />
+      <AnimatedFogLayer y={0.3} speed={0.1} />
+      <AnimatedFogLayer y={3.0} speed={0.06} />
 
       {/* ═══════════════════════════════════════════════ */}
-      {/* ── LIGHTS ── */}
+      {/* ── LIGHTS ──                                    */}
       {/* ═══════════════════════════════════════════════ */}
-
-      {/* Central floating orb */}
       <pointLight position={[0, 6, 0]} color="#00cccc" intensity={3.5} distance={30} />
-
-      {/* Memory fragment glows */}
       <pointLight position={[-3, 2, -6]} color="#ffcc44" intensity={2.0} distance={10} />
       <pointLight position={[4, 4, 8]} color="#ff44aa" intensity={1.5} distance={10} />
-
-      {/* Deep purple ambient */}
       <pointLight position={[0, 0.5, 0]} color="#2a1a50" intensity={1.0} distance={30} />
-
-      {/* Ethereal cyan highlights */}
       <pointLight position={[-15, 5, -10]} color="#00cccc" intensity={2.0} distance={18} />
       <pointLight position={[15, 5, 10]} color="#00cccc" intensity={2.0} distance={18} />
 
       {/* ═══════════════════════════════════════════════ */}
-      {/* ── ENVIRONMENTAL CLUTTER / STORYTELLING ── */}
+      {/* ── ENVIRONMENTAL CLUTTER ──                     */}
       {/* ═══════════════════════════════════════════════ */}
+      <FloatingClock position={[5, 6, -3]} />
+      <GlowingOrbs />
+      <TornPhoto position={[-6, 4, 8]} />
+      <MeltingChair position={[2, 0, -8]} />
+      <InvertedDoorFrame position={[-10, 4, -5]} />
 
-      {/* ── Floating clock ── */}
-      <group position={[5, 6, -3]}>
-        <mesh>
-          <cylinderGeometry args={[0.3, 0.3, 0.04, 16]} />
-          <meshStandardMaterial color="#1a0a30" emissive="#ffcc44" emissiveIntensity={0.5} transparent opacity={0.7} />
-        </mesh>
-        {/* Clock hands */}
-        <mesh position={[0, 0.025, 0]} rotation={[0, 0, 0.8]}>
-          <boxGeometry args={[0.15, 0.01, 0.005]} />
-          <meshStandardMaterial color="#ffcc44" emissive="#ffcc44" emissiveIntensity={1} />
-        </mesh>
-        <mesh position={[0, 0.025, 0]} rotation={[0, 0, -0.3]}>
-          <boxGeometry args={[0.1, 0.01, 0.005]} />
-          <meshStandardMaterial color="#ffcc44" emissive="#ffcc44" emissiveIntensity={1} />
-        </mesh>
-      </group>
-
-      {/* ── Ethereal glowing orbs ── */}
-      {[[-3, 3, 5], [8, 7, -12], [-12, 2, -8]].map((pos, i) => (
-        <mesh key={`orb-${i}`} position={pos as [number, number, number]}>
-          <sphereGeometry args={[0.15, 8, 8]} />
-          <meshStandardMaterial
-            color={['#ff44aa', '#00cccc', '#ffcc44'][i]}
-            emissive={['#ff44aa', '#00cccc', '#ffcc44'][i]}
-            emissiveIntensity={2}
-            transparent
-            opacity={0.6}
-          />
-        </mesh>
-      ))}
-
-      {/* ── Torn photo floating ── */}
-      <group position={[-6, 4, 8]}>
-        <mesh rotation={[0.2, 0.4, 0.1]}>
-          <planeGeometry args={[0.2, 0.15]} />
-          <meshStandardMaterial color="#c8b8a0" roughness={0.9} side={THREE.DoubleSide} transparent opacity={0.7} />
-        </mesh>
-        {/* Torn edge */}
-        <mesh position={[0.08, -0.04, 0]} rotation={[0.2, 0.4, 0.3]}>
-          <planeGeometry args={[0.08, 0.06]} />
-          <meshStandardMaterial color="#c8b8a0" roughness={0.9} side={THREE.DoubleSide} transparent opacity={0.5} />
-        </mesh>
-      </group>
-
-      {/* ── Melting furniture (distorted chair) ── */}
-      <group position={[2, 0, -8]}>
-        <mesh position={[0, 0.3, 0]} castShadow scale={[1, 0.6, 1]}>
-          <boxGeometry args={[0.4, 0.04, 0.4]} />
-          <meshStandardMaterial color="#2a1a40" emissive="#1a0a30" emissiveIntensity={0.1} roughness={0.9} />
-        </mesh>
-        <mesh position={[0, 0.5, -0.15]} scale={[1, 1.3, 0.5]}>
-          <boxGeometry args={[0.4, 0.4, 0.04]} />
-          <meshStandardMaterial color="#2a1a40" emissive="#1a0a30" emissiveIntensity={0.1} roughness={0.9} />
-        </mesh>
-        {/* Dripping leg */}
-        <mesh position={[0.15, 0.1, 0.15]}>
-          <cylinderGeometry args={[0.015, 0.008, 0.25, 4]} />
-          <meshStandardMaterial color="#2a1a40" emissive="#00cccc" emissiveIntensity={0.15} roughness={0.9} />
-        </mesh>
-      </group>
-
-      {/* ── Inverted perspective elements (upside-down door frame) ── */}
-      <group position={[-10, 4, -5]} rotation={[Math.PI, 0.3, 0]}>
-        <mesh>
-          <boxGeometry args={[0.9, 2.2, 0.08]} />
-          <meshStandardMaterial color="#2a1a40" emissive="#1a0a30" emissiveIntensity={0.15} roughness={0.8} />
-        </mesh>
-      </group>
+      {/* ═══════════════════════════════════════════════ */}
+      {/* ── PARTICLE DUST (noise-driven density) ──      */}
+      {/* ═══════════════════════════════════════════════ */}
+      <DreamDustField width={W} depth={D} />
     </group>
   );
 }
+
+/* ═══════════════════════════════════════════════════════════════════ */
+/*  DATA CONSTANTS                                                   */
+/* ═══════════════════════════════════════════════════════════════════ */
+
+const MEMORY_FRAGMENT_DATA = [
+  { pos: [-3, 1.5, -6] as [number, number, number], color: '#ffcc44' },
+  { pos: [7, 2.0, -3] as [number, number, number], color: '#00cccc' },
+  { pos: [-8, 1.0, 4] as [number, number, number], color: '#ffcc44' },
+  { pos: [4, 3.0, 8] as [number, number, number], color: '#ff44aa' },
+  { pos: [-14, 2.5, -3] as [number, number, number], color: '#00cccc' },
+  { pos: [0, 1.8, -10] as [number, number, number], color: '#ffcc44' },
+  { pos: [16, 1.2, -2] as [number, number, number], color: '#00cccc' },
+  { pos: [-5, 4.0, -18] as [number, number, number], color: '#ffcc44' },
+];
+
+const SPIRAL_PILLAR_POSITIONS: [number, number, number][] = [
+  [-6, 0, -3],
+  [10, 0, -8],
+  [-4, 0, 10],
+  [0, 0, -15],
+];
+
+/* ═══════════════════════════════════════════════════════════════════ */
+/*  VEIN OVERLAY — glowing crack network using FastNoiseLite         */
+/* ═══════════════════════════════════════════════════════════════════ */
+
+function VeinOverlay({ width, depth, segments }: { width: number; depth: number; segments: number }) {
+  const geometry = useMemo(() => {
+    const noise = new FastNoiseLite(42 + 500);
+    noise.SetNoiseType(FastNoiseLite.NoiseType.Cellular);
+    noise.SetFrequency(0.08);
+    noise.SetCellularDistanceFunction(FastNoiseLite.CellularDistanceFunction.Euclidean);
+    noise.SetCellularReturnType(FastNoiseLite.CellularReturnType.Distance2Div);
+
+    const halfW = width / 2;
+    const halfD = depth / 2;
+    const stepX = width / segments;
+    const stepZ = depth / segments;
+
+    const positions = new Float32Array((segments + 1) * (segments + 1) * 3);
+    const colors = new Float32Array((segments + 1) * (segments + 1) * 3);
+    let idx = 0;
+
+    for (let iz = 0; iz <= segments; iz++) {
+      for (let ix = 0; ix <= segments; ix++) {
+        const x = -halfW + ix * stepX;
+        const z = -halfD + iz * stepZ;
+
+        // Cellular noise creates vein-like patterns
+        const val = noise.GetNoise(x, z);
+        const veinIntensity = Math.max(0, 1 - Math.abs(val * 3));
+
+        // Slightly above the terrain to prevent z-fighting
+        positions[idx] = x;
+        positions[idx + 1] = 0.05;
+        positions[idx + 2] = z;
+
+        // Cyan glow color for veins
+        colors[idx] = 0 * veinIntensity;
+        colors[idx + 1] = 0.8 * veinIntensity;
+        colors[idx + 2] = 0.8 * veinIntensity;
+
+        idx += 3;
+      }
+    }
+
+    // Build indices
+    const indices = new Uint32Array(segments * segments * 6);
+    let iidx = 0;
+    for (let iz = 0; iz < segments; iz++) {
+      for (let ix = 0; ix < segments; ix++) {
+        const a = iz * (segments + 1) + ix;
+        const b = a + 1;
+        const c = a + (segments + 1);
+        const d = c + 1;
+        indices[iidx++] = a;
+        indices[iidx++] = c;
+        indices[iidx++] = b;
+        indices[iidx++] = b;
+        indices[iidx++] = c;
+        indices[iidx++] = d;
+      }
+    }
+
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+    geo.setIndex(new THREE.BufferAttribute(indices, 1));
+    geo.computeVertexNormals();
+    return geo;
+  }, [width, depth, segments]);
+
+  return (
+    <mesh geometry={geometry} rotation-x={-Math.PI / 2}>
+      <meshStandardMaterial
+        vertexColors
+        transparent
+        opacity={0.4}
+        emissive="#00cccc"
+        emissiveIntensity={0.3}
+        depthWrite={false}
+        blending={THREE.AdditiveBlending}
+      />
+    </mesh>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════════ */
+/*  DREAM DUST — particles with noise-driven spawn density           */
+/* ═══════════════════════════════════════════════════════════════════ */
+
+function DreamDustField({ width, depth }: { width: number; depth: number }) {
+  const { count, positions, colors } = useMemo(() => {
+    const noise = new FastNoiseLite(42 + 200);
+    noise.SetNoiseType(FastNoiseLite.NoiseType.OpenSimplex2S);
+    noise.SetFrequency(0.04);
+    noise.SetFractalType(FastNoiseLite.FractalType.FBm);
+    noise.SetFractalOctaves(3);
+
+    const maxParticles = 300;
+    const posArr: number[] = [];
+    const colArr: number[] = [];
+    const halfW = width / 2;
+    const halfD = depth / 2;
+
+    // Spawn particles with density proportional to noise value
+    for (let i = 0; i < maxParticles * 3 && posArr.length < maxParticles * 3; i++) {
+      const x = (Math.random() - 0.5) * width;
+      const z = (Math.random() - 0.5) * depth;
+
+      const density = (noise.GetNoise(x, z) + 1) / 2; // 0..1
+
+      // Higher noise = more likely to spawn a particle (creates clusters)
+      if (Math.random() > density * 0.7) continue;
+
+      const y = Math.random() * 5 + 0.5;
+
+      posArr.push(x, y, z);
+
+      // Color variation based on position
+      const colorChoice = Math.random();
+      if (colorChoice < 0.4) {
+        colArr.push(0, 0.8, 0.8); // cyan
+      } else if (colorChoice < 0.7) {
+        colArr.push(1, 0.8, 0.27); // gold
+      } else {
+        colArr.push(1, 0.27, 0.67); // pink
+      }
+    }
+
+    return {
+      count: posArr.length / 3,
+      positions: new Float32Array(posArr),
+      colors: new Float32Array(colArr),
+    };
+  }, [width, depth]);
+
+  const pointsRef = useRef<THREE.Points>(null);
+
+  useFrame((state) => {
+    if (!pointsRef.current) return;
+    const t = state.clock.elapsedTime;
+    pointsRef.current.rotation.y = t * 0.01;
+
+    // Gentle floating motion
+    const posAttr = pointsRef.current.geometry.attributes.position as THREE.BufferAttribute;
+    for (let i = 0; i < count; i++) {
+      const oy = positions[i * 3 + 1];
+      posAttr.setY(i, oy + Math.sin(t * 0.3 + i * 0.1) * 0.2);
+    }
+    posAttr.needsUpdate = true;
+  });
+
+  return (
+    <points ref={pointsRef}>
+      <bufferGeometry>
+        <bufferAttribute attach="attributes-position" args={[positions, 3]} count={count} />
+        <bufferAttribute attach="attributes-color" args={[colors, 3]} count={count} />
+      </bufferGeometry>
+      <pointsMaterial
+        size={0.06}
+        vertexColors
+        transparent
+        opacity={0.7}
+        depthWrite={false}
+        blending={THREE.AdditiveBlending}
+        sizeAttenuation
+      />
+    </points>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════════ */
+/*  EXISTING COMPONENTS (preserved from original)                    */
+/* ═══════════════════════════════════════════════════════════════════ */
 
 /** Floating island with impossible terrain */
 function FloatingIsland({ position, scale = 1 }: { position: [number, number, number]; scale?: number }) {
@@ -186,17 +353,14 @@ function FloatingIsland({ position, scale = 1 }: { position: [number, number, nu
 
   return (
     <group ref={groupRef} position={position}>
-      {/* Island base (inverted truncated cone) */}
       <mesh position={[0, -0.5, 0]} scale={scale} castShadow>
         <cylinderGeometry args={[0.3, 1.2, 1.5, 6]} />
         <meshStandardMaterial color="#1a0a30" roughness={0.9} />
       </mesh>
-      {/* Island top surface */}
       <mesh position={[0, 0.25, 0]} scale={scale} castShadow>
         <cylinderGeometry args={[1.2, 1.2, 0.1, 6]} />
         <meshStandardMaterial color="#2a1a40" roughness={0.8} />
       </mesh>
-      {/* Terrain feature */}
       <mesh position={[0, 0.6, 0]} scale={scale * 0.4}>
         <sphereGeometry args={[1, 6, 6]} />
         <meshStandardMaterial color="#1a2a1a" roughness={0.95} />
@@ -209,7 +373,6 @@ function FloatingIsland({ position, scale = 1 }: { position: [number, number, nu
 function ImpossibleStructure({ position }: { position: [number, number, number] }) {
   return (
     <group position={position}>
-      {/* Penrose-like triangle approximation */}
       <mesh position={[0, 1.5, 0]} rotation={[0, 0, 0.5]} castShadow>
         <boxGeometry args={[0.15, 3, 0.15]} />
         <meshStandardMaterial color="#2a1a40" emissive="#00cccc" emissiveIntensity={0.2} roughness={0.7} />
@@ -287,12 +450,10 @@ function MemoryFragment({ position, color }: { position: [number, number, number
 function SpiralPillar({ position }: { position: [number, number, number] }) {
   return (
     <group position={position}>
-      {/* Central column */}
       <mesh position={[0, 2, 0]} castShadow>
         <cylinderGeometry args={[0.15, 0.15, 4, 8]} />
         <meshStandardMaterial color="#2a1a40" emissive="#1a0a30" emissiveIntensity={0.2} roughness={0.7} />
       </mesh>
-      {/* Spiral segments */}
       {Array.from({ length: 8 }).map((_, i) => {
         const angle = (i / 8) * Math.PI * 3;
         const y = (i / 8) * 3.5 + 0.3;
@@ -307,18 +468,125 @@ function SpiralPillar({ position }: { position: [number, number, number] }) {
   );
 }
 
-/** Ethereal fog layer */
-function FogLayer({ y }: { y: number }) {
+/** Animated fog layer — now with subtle drift */
+function AnimatedFogLayer({ y, speed }: { y: number; speed: number }) {
+  const meshRef = useRef<THREE.Mesh>(null);
+
+  useFrame((state) => {
+    if (meshRef.current) {
+      meshRef.current.rotation.z = state.clock.elapsedTime * speed;
+    }
+  });
+
   return (
-    <mesh position={[0, y, 0]} rotation-x={-Math.PI / 2}>
+    <mesh ref={meshRef} position={[0, y, 0]} rotation-x={-Math.PI / 2}>
       <planeGeometry args={[50, 50]} />
       <meshStandardMaterial color="#1a0a30" transparent opacity={0.08} side={THREE.DoubleSide} />
     </mesh>
   );
 }
 
+/* ═══════════════════════════════════════════════════════════════════ */
+/*  EXTRACTED CLUTTER COMPONENTS                                     */
+/* ═══════════════════════════════════════════════════════════════════ */
+
+function FloatingClock({ position }: { position: [number, number, number] }) {
+  const groupRef = useRef<THREE.Group>(null);
+
+  useFrame((state) => {
+    if (groupRef.current) {
+      groupRef.current.rotation.z = Math.sin(state.clock.elapsedTime * 0.2) * 0.15;
+    }
+  });
+
+  return (
+    <group ref={groupRef} position={position}>
+      <mesh>
+        <cylinderGeometry args={[0.3, 0.3, 0.04, 16]} />
+        <meshStandardMaterial color="#1a0a30" emissive="#ffcc44" emissiveIntensity={0.5} transparent opacity={0.7} />
+      </mesh>
+      <mesh position={[0, 0.025, 0]} rotation={[0, 0, 0.8]}>
+        <boxGeometry args={[0.15, 0.01, 0.005]} />
+        <meshStandardMaterial color="#ffcc44" emissive="#ffcc44" emissiveIntensity={1} />
+      </mesh>
+      <mesh position={[0, 0.025, 0]} rotation={[0, 0, -0.3]}>
+        <boxGeometry args={[0.1, 0.01, 0.005]} />
+        <meshStandardMaterial color="#ffcc44" emissive="#ffcc44" emissiveIntensity={1} />
+      </mesh>
+    </group>
+  );
+}
+
+function GlowingOrbs() {
+  return (
+    <>
+      {[[-3, 3, 5], [8, 7, -12], [-12, 2, -8]].map((pos, i) => (
+        <mesh key={`orb-${i}`} position={pos as [number, number, number]}>
+          <sphereGeometry args={[0.15, 8, 8]} />
+          <meshStandardMaterial
+            color={['#ff44aa', '#00cccc', '#ffcc44'][i]}
+            emissive={['#ff44aa', '#00cccc', '#ffcc44'][i]}
+            emissiveIntensity={2}
+            transparent
+            opacity={0.6}
+          />
+        </mesh>
+      ))}
+    </>
+  );
+}
+
+function TornPhoto({ position }: { position: [number, number, number] }) {
+  return (
+    <group position={position}>
+      <mesh rotation={[0.2, 0.4, 0.1]}>
+        <planeGeometry args={[0.2, 0.15]} />
+        <meshStandardMaterial color="#c8b8a0" roughness={0.9} side={THREE.DoubleSide} transparent opacity={0.7} />
+      </mesh>
+      <mesh position={[0.08, -0.04, 0]} rotation={[0.2, 0.4, 0.3]}>
+        <planeGeometry args={[0.08, 0.06]} />
+        <meshStandardMaterial color="#c8b8a0" roughness={0.9} side={THREE.DoubleSide} transparent opacity={0.5} />
+      </mesh>
+    </group>
+  );
+}
+
+function MeltingChair({ position }: { position: [number, number, number] }) {
+  return (
+    <group position={position}>
+      <mesh position={[0, 0.3, 0]} castShadow scale={[1, 0.6, 1]}>
+        <boxGeometry args={[0.4, 0.04, 0.4]} />
+        <meshStandardMaterial color="#2a1a40" emissive="#1a0a30" emissiveIntensity={0.1} roughness={0.9} />
+      </mesh>
+      <mesh position={[0, 0.5, -0.15]} scale={[1, 1.3, 0.5]}>
+        <boxGeometry args={[0.4, 0.4, 0.04]} />
+        <meshStandardMaterial color="#2a1a40" emissive="#1a0a30" emissiveIntensity={0.1} roughness={0.9} />
+      </mesh>
+      <mesh position={[0.15, 0.1, 0.15]}>
+        <cylinderGeometry args={[0.015, 0.008, 0.25, 4]} />
+        <meshStandardMaterial color="#2a1a40" emissive="#00cccc" emissiveIntensity={0.15} roughness={0.9} />
+      </mesh>
+    </group>
+  );
+}
+
+function InvertedDoorFrame({ position }: { position: [number, number, number] }) {
+  return (
+    <group position={position} rotation={[Math.PI, 0.3, 0]}>
+      <mesh>
+        <boxGeometry args={[0.9, 2.2, 0.08]} />
+        <meshStandardMaterial color="#2a1a40" emissive="#1a0a30" emissiveIntensity={0.15} roughness={0.8} />
+      </mesh>
+    </group>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════════ */
+/*  GROUND TEXTURE (enhanced with noise-based patterns)              */
+/* ═══════════════════════════════════════════════════════════════════ */
+
 function createDreamGroundTexture(): THREE.CanvasTexture {
-  const size = 256;
+  const size = 512; // Increased from 256 for better detail on hilly terrain
   const canvas = document.createElement('canvas');
   canvas.width = size;
   canvas.height = size;
@@ -328,29 +596,55 @@ function createDreamGroundTexture(): THREE.CanvasTexture {
   ctx.fillStyle = '#0a0515';
   ctx.fillRect(0, 0, size, size);
 
-  // Ethereal swirl patterns
-  ctx.globalAlpha = 0.05;
-  for (let i = 0; i < 30; i++) {
-    const x = Math.random() * size;
-    const y = Math.random() * size;
-    const r = Math.random() * 40 + 10;
-    const gradient = ctx.createRadialGradient(x, y, 0, x, y, r);
-    gradient.addColorStop(0, '#00cccc');
-    gradient.addColorStop(1, 'transparent');
-    ctx.fillStyle = gradient;
-    ctx.fillRect(x - r, y - r, r * 2, r * 2);
-  }
+  // Use FastNoiseLite for coherent swirl patterns (replaces Math.random)
+  const swirlNoise = new FastNoiseLite(42 + 300);
+  swirlNoise.SetNoiseType(FastNoiseLite.NoiseType.OpenSimplex2S);
+  swirlNoise.SetFrequency(0.015);
+  swirlNoise.SetFractalType(FastNoiseLite.FractalType.FBm);
+  swirlNoise.SetFractalOctaves(4);
 
-  // Subtle cracks
-  ctx.globalAlpha = 0.08;
+  const imageData = ctx.getImageData(0, 0, size, size);
+  const data = imageData.data;
+
+  for (let y = 0; y < size; y++) {
+    for (let x = 0; x < size; x++) {
+      const idx = (y * size + x) * 4;
+      const noiseVal = (swirlNoise.GetNoise(x, y) + 1) / 2; // 0..1
+
+      // Mix purple base with cyan/gold highlights based on noise
+      const cyanMix = Math.pow(noiseVal, 3) * 0.15;
+      const goldMix = Math.pow(1 - noiseVal, 4) * 0.08;
+
+      data[idx] = Math.min(255, data[idx] + cyanMix * 0 + goldMix * 255);     // R
+      data[idx + 1] = Math.min(255, data[idx + 1] + cyanMix * 200 + goldMix * 180); // G
+      data[idx + 2] = Math.min(255, data[idx + 2] + cyanMix * 200 + goldMix * 50);  // B
+    }
+  }
+  ctx.putImageData(imageData, 0, 0);
+
+  // Subtle cracks (noise-driven paths instead of random lines)
+  ctx.globalAlpha = 0.1;
   ctx.strokeStyle = '#ffcc44';
   ctx.lineWidth = 0.5;
-  for (let i = 0; i < 10; i++) {
-    const x = Math.random() * size;
-    const y = Math.random() * size;
+  const crackNoise = new FastNoiseLite(42 + 400);
+  crackNoise.SetNoiseType(FastNoiseLite.NoiseType.Ridged);
+  crackNoise.SetFrequency(0.03);
+  crackNoise.SetFractalType(FastNoiseLite.FractalType.Ridged);
+  crackNoise.SetFractalOctaves(3);
+
+  for (let i = 0; i < 12; i++) {
+    const startX = (i * 43) % size;
+    const startY = (i * 67) % size;
     ctx.beginPath();
-    ctx.moveTo(x, y);
-    ctx.lineTo(x + (Math.random() - 0.5) * 60, y + (Math.random() - 0.5) * 60);
+    ctx.moveTo(startX, startY);
+    let cx = startX;
+    let cy = startY;
+    for (let step = 0; step < 20; step++) {
+      const angle = crackNoise.GetNoise(cx * 0.1, cy * 0.1) * Math.PI;
+      cx += Math.cos(angle) * 5;
+      cy += Math.sin(angle) * 5;
+      ctx.lineTo(cx, cy);
+    }
     ctx.stroke();
   }
   ctx.globalAlpha = 1.0;
@@ -358,6 +652,6 @@ function createDreamGroundTexture(): THREE.CanvasTexture {
   const tex = new THREE.CanvasTexture(canvas);
   tex.wrapS = THREE.RepeatWrapping;
   tex.wrapT = THREE.RepeatWrapping;
-  tex.repeat.set(12, 12);
+  tex.repeat.set(8, 8); // Reduced repeat since texture is now 512px
   return tex;
 }
