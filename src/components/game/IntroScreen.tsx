@@ -45,14 +45,18 @@ function useCinematicAudio(phase: CinematicPhase) {
       }
       window.removeEventListener('click', handleInteraction);
       window.removeEventListener('keydown', handleInteraction);
+      window.removeEventListener('touchstart', handleInteraction);
     };
 
+    // Mobile Safari requires touchstart for AudioContext unlock
     window.addEventListener('click', handleInteraction);
     window.addEventListener('keydown', handleInteraction);
+    window.addEventListener('touchstart', handleInteraction, { passive: true });
 
     return () => {
       window.removeEventListener('click', handleInteraction);
       window.removeEventListener('keydown', handleInteraction);
+      window.removeEventListener('touchstart', handleInteraction);
       // Cleanup oscillators
       for (const osc of nodesRef.current) {
         try { osc.stop(); } catch { /* ignore */ }

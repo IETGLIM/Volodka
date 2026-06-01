@@ -466,11 +466,14 @@ export function GameOrchestrator() {
       // Touch device in portrait (phone) → always mobile
       if (hasTouch && narrowPortrait) return true;
       // Touch device in landscape but small height (phone rotated) → still mobile
-      if (hasTouch && window.innerHeight < 500) return true;
+      // IMPORTANT: raised threshold from 500 to 768 to catch more landscape phones
+      if (hasTouch && window.innerHeight < 768) return true;
       // Non-touch small screen → mobile
       if (tabletPortrait && !hasTouch) return true;
       // Touch device up to 1024px width (tablet portrait)
       if (hasTouch && tabletPortrait) return true;
+      // Any touch device with height < 500 (very wide landscape)
+      if (hasTouch && window.innerHeight < 500) return true;
       return false;
     };
     setIsMobile(checkMobile());
@@ -478,9 +481,13 @@ export function GameOrchestrator() {
     window.addEventListener('resize', handleResize);
     // Also re-check on orientation change (more reliable on mobile)
     window.addEventListener('orientationchange', handleResize);
+    // matchMedia for instant orientation detection
+    const mql = window.matchMedia('(orientation: landscape)');
+    mql.addEventListener('change', handleResize);
     return () => {
       window.removeEventListener('resize', handleResize);
       window.removeEventListener('orientationchange', handleResize);
+      mql.removeEventListener('change', handleResize);
     };
   }, []);
 
@@ -904,8 +911,9 @@ export function GameOrchestrator() {
               {/* Floating damage/heal numbers — combat & exploration */}
               <DamageNumberFloat />
 
-              {/* Mobile controls — always visible during exploration */}
-              {mode === 'exploration' && isMobile && <ExplorationMobileHud onOpenInventory={handleOpenInventory} />}
+              {/* Mobile controls — visible during exploration and visual-novel/cutscene
+                  (player needs D-pad + interact button to advance dialogue on mobile) */}
+              {(mode === 'exploration' || mode === 'visual-novel') && isMobile && <ExplorationMobileHud onOpenInventory={handleOpenInventory} />}
 
               {/* Story overlay — mutually exclusive with dialogue */}
               {!isDialogueActive && (
