@@ -329,10 +329,16 @@ export function StoryRenderer() {
         if (hasWokeUpFlag) {
           setShowStoryOverlay(false);
           setMode('exploration');
-          setTimeout(() => {
-            eventBus.emit('player:stand_up', {});
-            eventBus.emit('camera:intro_wake', {});
-          }, 150);
+          // Only emit stand_up / camera events if the intro was NOT seen.
+          // If the intro played, PhaseWaking already emitted these events
+          // during the cinematic — emitting them again causes a double
+          // stand-up animation glitch.
+          if (!useGameStore.getState().introSeen) {
+            setTimeout(() => {
+              eventBus.emit('player:stand_up', {});
+              eventBus.emit('camera:intro_wake', {});
+            }, 150);
+          }
           return;
         }
 

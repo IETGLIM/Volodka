@@ -1455,7 +1455,11 @@ export function IntroScreen() {
   const onComplete = useCallback(() => {
     collectPoem('poem_2');
     setCurrentNodeId('start');
-    setShowStoryOverlay(true);
+    // Don't show story overlay yet — the act1_prologue cutscene will play
+    // first (triggered by currentNodeId='start' in GameOrchestrator).
+    // After the cutscene finishes, GameOrchestrator will set
+    // showStoryOverlay=true so StoryRenderer displays the 'start' node.
+    setShowStoryOverlay(false);
     setIntroSeen(true);
     setMode('exploration');
   }, [collectPoem, setCurrentNodeId, setShowStoryOverlay, setIntroSeen, setMode]);

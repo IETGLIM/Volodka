@@ -299,6 +299,14 @@ export function GameOrchestrator() {
   useEffect(() => {
     if (!currentNodeId) return;
 
+    // Don't trigger cutscenes during intro — the intro cinematic handles
+    // its own flow. The 'start' node cutscene (act1_prologue) should only
+    // play AFTER the intro completes, which it does because IntroScreen's
+    // onComplete re-sets currentNodeId='start' after setting mode='exploration',
+    // but by then act1_prologue is already in triggeredCutscenes (marked below).
+    const currentMode = useGameStore.getState().mode;
+    if (currentMode === 'intro' || currentMode === 'menu') return;
+
     const cutscene = getCutsceneForNode(currentNodeId);
     if (!cutscene) return;
 
@@ -364,8 +372,18 @@ export function GameOrchestrator() {
         currentStore.setCutscene(null, []);
         // Return to the appropriate mode
         currentStore.setMode(returnMode);
-        // For story-driven cutscenes, show the story overlay so the player can read the narrative
+        // Show story overlay if there's a story node for the current node.
+        // This handles both:
+        //   - character_intro/story_moment/revelation → returnMode='visual-novel'
+        //   - act_transition after intro → returnMode='exploration' but
+        //     currentNodeId='start' has a story node that needs to display.
         if (returnMode === 'visual-novel') {
+          currentStore.setShowStoryOverlay(true);
+        } else if (STORY_NODES[currentStore.currentNodeId]) {
+          // For act_transition cutscenes (like act1_prologue), show the
+          // story overlay so the player sees the narrative text after the
+          // title card. This is critical after the intro cinematic — the
+          // player needs to see "Ты просыпаешься от назойливого писка..."
           currentStore.setShowStoryOverlay(true);
         }
       }
