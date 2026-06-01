@@ -166,9 +166,8 @@ function NeonSigns({ isWinter }: { isWinter: boolean }) {
   const kafeOnRef = useRef(true);
   const kafeNextToggleRef = useRef(0);
 
-  useFrame((state) => {
+  useFrame((state, delta) => {
     const t = state.clock.elapsedTime;
-    const delta = state.clock.getDelta();
 
     // Red neon flicker — occasional quick flashes
     if (redSignRef.current) {
@@ -332,49 +331,4 @@ function NeonSigns({ isWinter }: { isWinter: boolean }) {
   );
 }
 
-/** Street lamps with point lights */
-function StreetLamps() {
-  const lampPositions: [number, number, number][] = [
-    [-3, 0, -5],
-    [3, 0, 5],
-    [-3, 0, 12],
-    [3, 0, -12],
-  ];
 
-  return (
-    <group>
-      {lampPositions.map((pos, i) => (
-        <group key={i} position={pos}>
-          {/* Pole */}
-          <mesh position={[0, 2.5, 0]} castShadow>
-            <cylinderGeometry args={[0.03, 0.05, 5, 6]} />
-            <meshStandardMaterial color="#444" metalness={0.7} roughness={0.3} />
-          </mesh>
-          {/* Lamp head */}
-          <mesh position={[0, 5.1, 0]}>
-            <boxGeometry args={[0.3, 0.1, 0.2]} />
-            <meshStandardMaterial color="#555" metalness={0.6} />
-          </mesh>
-          {/* Light glow */}
-          <mesh position={[0, 4.95, 0]}>
-            <sphereGeometry args={[0.08, 8, 8]} />
-            <meshStandardMaterial
-              color="#ffe8a0"
-              emissive="#ffdd80"
-              emissiveIntensity={3}
-            />
-          </mesh>
-          <pointLight
-            position={[0, 4.9, 0]}
-            color="#ffdd80"
-            intensity={2.8}
-            distance={15}
-            castShadow
-            shadow-mapSize-width={256}
-            shadow-bias={-0.002}
-          />
-        </group>
-      ))}
-    </group>
-  );
-}

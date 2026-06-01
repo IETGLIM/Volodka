@@ -2,7 +2,7 @@
 
 /* ─── Volodka RPG – Cafe "Blue Pit" procedural 3D visual ─── */
 
-import { useMemo, useRef } from 'react';
+import { useMemo, useRef, useEffect } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { FloorLamp, PastryCase, Window, Plant } from './InteriorModels';
@@ -48,6 +48,15 @@ export function CafeVisual() {
     geo.setAttribute('position', new THREE.BufferAttribute(steamData.positions.slice(), 3));
     return geo;
   }, [steamData.positions]);
+
+  // ── Dispose CanvasTextures and BufferGeometry on unmount ──
+  useEffect(() => {
+    return () => {
+      floorTexture?.dispose();
+      wallTexture?.dispose();
+      steamGeometry?.dispose();
+    };
+  }, [floorTexture, wallTexture, steamGeometry]);
 
   // ── Animations via useFrame ──
   useFrame((_, delta) => {

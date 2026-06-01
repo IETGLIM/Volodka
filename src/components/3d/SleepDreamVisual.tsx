@@ -627,7 +627,7 @@ function createDreamGroundTexture(): THREE.CanvasTexture {
   ctx.strokeStyle = '#ffcc44';
   ctx.lineWidth = 0.5;
   const crackNoise = new FastNoiseLite(42 + 400);
-  crackNoise.SetNoiseType(FastNoiseLite.NoiseType.Ridged);
+  crackNoise.SetNoiseType(FastNoiseLite.NoiseType.Cellular);
   crackNoise.SetFrequency(0.03);
   crackNoise.SetFractalType(FastNoiseLite.FractalType.Ridged);
   crackNoise.SetFractalOctaves(3);

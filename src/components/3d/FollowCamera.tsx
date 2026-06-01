@@ -17,6 +17,7 @@ import { useRef, useEffect, useLayoutEffect } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 import { useGameStore } from '@/store/gameStore';
+import { useShallow } from 'zustand/react/shallow';
 import { getSceneConfig } from '@/config/scenes';
 import {
   createSpringCameraState,
@@ -122,18 +123,39 @@ export function FollowCamera({
   livePlayerPositionRef,
   livePlayerRotationRef,
 }: FollowCameraProps) {
-  const threeState = useThree();
-  const camera = threeState.camera;
-  const threeScene = threeState.scene;
-  const sceneId = useGameStore((s) => s.exploration.currentSceneId);
-  const gameMode = useGameStore((s) => s.mode);
-  const activeCutsceneId = useGameStore((s) => s.activeCutsceneId);
-  const cutsceneWaypoints = useGameStore((s) => s.cutsceneWaypoints);
-  const currentNodeId = useGameStore((s) => s.currentNodeId);
+  const camera = useThree((s) => s.camera);
+  const threeScene = useThree((s) => s.scene);
+  const gl = useThree((s) => s.gl);
+  // P3-FIX: useShallow for object/array selectors to prevent unnecessary re-renders.
+  // Without useShallow, cutsceneWaypoints (array) returns a new reference on
+  // every store update, causing FollowCamera to re-render even when waypoints
+  // haven't changed. sceneId, gameMode, and currentNodeId are primitives and
+  // don't need useShallow.
+  const { sceneId, gameMode, activeCutsceneId, cutsceneWaypoints, currentNodeId } = useGameStore(
+    useShallow((s) => ({
+      sceneId: s.exploration.currentSceneId,
+      gameMode: s.mode,
+      activeCutsceneId: s.activeCutsceneId,
+      cutsceneWaypoints: s.cutsceneWaypoints,
+      currentNodeId: s.currentNodeId,
+    })),
+  );
 
   // Camera ref for imperative updates (standard R3F pattern)
   const cameraRef = useRef(camera);
-  useEffect(() => { cameraRef.current = camera; });
+  useEffect(() => { cameraRef.current = camera; }, [camera]);
+
+  // P3-FIX: Enable all visualization layers on the camera ONCE via useEffect,
+  // not every frame in useFrame. The layer mask doesn't change at runtime,
+  // so there's no need to check and enable layers 60 times per second.
+  useEffect(() => {
+    const cam = camera as THREE.PerspectiveCamera;
+    if (cam) {
+      for (let i = 0; i <= 4; i++) {
+        cam.layers.enable(i);
+      }
+    }
+  }, [camera]);
 
   // ── Orbit controls state ──
   const yawRef = useRef(0);
@@ -541,9 +563,14 @@ export function FollowCamera({
     }
   }, [sceneId]);
 
-  // ── Auto-follow: track when player was last moving for camera auto-rotate ──
+    // ── Auto-follow: track when player was last moving for camera auto-rotate ──
   const playerMovingTimerRef = useRef(0); // time since player stopped moving
   const wasDraggingRef = useRef(false);   // was the player orbiting the camera last frame?
+
+  // P3-FIX: Pre-allocated fallback NPC position for dialogue mode.
+  // Previously, playerPos.clone().add(...) created a new Vector3 every frame
+  // when no NPC group was found. This caused GC pressure during dialogue.
+  const _fallbackNpcPos = useRef(new THREE.Vector3());
 
   // ── Mouse drag for orbit + scroll for zoom + touch support ──
   useEffect(() => {
@@ -693,11 +720,7 @@ export function FollowCamera({
       }
     };
 
-    // CRITICAL: Register wheel listener with capture:true to ensure it fires
-    // BEFORE R3F's internal event system can intercept or stopPropagation.
-    // Using useThree().gl.domElement gives us the ACTUAL canvas element
-    // (not a stale querySelector result that might be null on first render).
-    const canvasEl = threeState.gl.domElement;
+    const canvasEl = gl.domElement;
 
     window.addEventListener('mousedown', onMouseDown);
     window.addEventListener('mouseup', onMouseUp);
@@ -734,13 +757,8 @@ export function FollowCamera({
 
   // ── Main camera update loop ──
   useFrame((_, rawDelta) => {
-    // Enable all visualization layers on the camera so it can see objects on layers 0-4
+    // P3-FIX: Camera layer enabling moved to useEffect (runs once, not every frame).
     const cam = cameraRef.current as THREE.PerspectiveCamera;
-    if (cam && !(cam.layers as any).test(1)) {
-      for (let i = 0; i <= 4; i++) {
-        (cam.layers as any).enable(i);
-      }
-    }
 
     const spring = springRef.current;
     if (!spring) return;
@@ -920,7 +938,9 @@ export function FollowCamera({
     else if (isInDialogue) {
       const npcId = getInteractionTargetNPCId();
       const npcGroup = npcId ? getNPCGroup(npcId) : undefined;
-      const npcPos = npcGroup ? npcGroup.position : playerPos.clone().add(_tempVec.current.set(0, 0, 2));
+      // P3-FIX: Use pre-allocated temp vector instead of clone() + add().
+      // playerPos.clone() creates a new Vector3 every frame (GC pressure).
+      const npcPos = npcGroup ? npcGroup.position : _fallbackNpcPos.current.copy(playerPos).add(_tempVec.current.set(0, 0, 2));
 
       const controller = dialogueControllerRef.current;
       if (!controller) return;

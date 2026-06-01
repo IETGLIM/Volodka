@@ -398,7 +398,7 @@ export function LoadingScreen({ progress, message = 'Загрузка...', showT
   const [showBootText, setShowBootText] = useState(true);
 
   const quoteIndex = useMemo(() => {
-    return POEM_QUOTES.length > 0 ? (POEM_QUOTES.length * 7 + 3) % POEM_QUOTES.length : 0;
+    return Math.floor(Math.random() * POEM_QUOTES.length);
   }, []);
 
   const [tipIndex, setTipIndex] = useState(0);

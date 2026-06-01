@@ -603,7 +603,7 @@ export const DIALOGUE_NODES: Record<string, DialogueNode> = {
         text: 'Я прочту.',
         next: null,
         effects: [
-          { type: 'collectPoem', poemId: 'poem_4' },
+          { type: 'collectPoem', poemId: 'poem_6' },
           { type: 'addKarma', value: 5 },
           { type: 'setFlag', flag: 'read_maria_poem', flagValue: true },
         ],

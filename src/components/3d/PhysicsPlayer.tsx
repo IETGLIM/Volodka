@@ -194,6 +194,7 @@ export function PhysicsPlayer({
   const controllerFailCountRef = useRef(0);
   const movementBlockedCountRef = useRef(0);
   const useDirectMovementRef = useRef(false);
+  const successfulMovementTimerRef = useRef(0);
 
   // ─── Create & configure KinematicCharacterController ───
   useEffect(() => {
@@ -247,6 +248,12 @@ export function PhysicsPlayer({
       livePlayerRotationRef.current = newConfig.initialRotation ?? 0;
       isGroundedRef.current = true;
       coyoteTimerRef.current = 0;
+
+      // Reset direct movement mode — new scene gets a fresh character controller
+      useDirectMovementRef.current = false;
+      controllerFailCountRef.current = 0;
+      movementBlockedCountRef.current = 0;
+      successfulMovementTimerRef.current = 0;
     }
   }, [sceneId, livePlayerRotationRef]);
 
@@ -624,14 +631,26 @@ export function PhysicsPlayer({
       if (movementBlockedCountRef.current === 30) {
         console.warn('[PhysicsPlayer] Character controller blocked movement for 30 frames — consider switching to direct mode');
       }
-      if (movementBlockedCountRef.current >= 120) {
+      // Reset successful movement timer while stuck
+      successfulMovementTimerRef.current = 0;
+
+      if (movementBlockedCountRef.current >= 45) {
         // Controller has been blocking movement consistently — switch to direct mode
-        console.warn('[PhysicsPlayer] Character controller consistently blocking movement — switching to direct movement mode permanently');
+        console.warn('[PhysicsPlayer] Character controller consistently blocking movement — switching to direct movement mode');
         useDirectMovementRef.current = true;
       }
     } else {
       // Reset blocked counter — controller is working
       movementBlockedCountRef.current = 0;
+
+      // Periodic reset: after 5 seconds of continuous successful movement,
+      // hard-reset the stuck counter. This prevents false positives from
+      // slow walking or brief wall touches that accumulate over time.
+      successfulMovementTimerRef.current += dt;
+      if (successfulMovementTimerRef.current >= 5.0) {
+        movementBlockedCountRef.current = 0;
+        successfulMovementTimerRef.current = 0;
+      }
 
       // ─── Apply computed movement (normal path) ───
       rb.setTranslation({

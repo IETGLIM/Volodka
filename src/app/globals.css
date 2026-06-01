@@ -274,28 +274,24 @@ html { background: #000 !important; }
   will-change: transform, opacity;
 }
 
-/* Unified cyberpunk scrollbar — use .game-scrollbar or .custom-scrollbar */
-.game-scrollbar,
-.custom-scrollbar {
-  scrollbar-width: thin;
-  scrollbar-color: rgba(0, 229, 255, 0.3) rgba(0, 0, 0, 0.3);
+/* (custom-scrollbar rules merged with .game-scrollbar below) */
+
+/* ─── Combat screen shake animation (translate-based, NOT opacity pulse) ─── */
+@keyframes combat-shake {
+  0%, 100% { transform: translate(0, 0); }
+  10% { transform: translate(-4px, 2px); }
+  20% { transform: translate(4px, -2px); }
+  30% { transform: translate(-2px, 4px); }
+  40% { transform: translate(2px, -4px); }
+  50% { transform: translate(-4px, -2px); }
+  60% { transform: translate(4px, 2px); }
+  70% { transform: translate(-2px, -4px); }
+  80% { transform: translate(2px, 4px); }
+  90% { transform: translate(-4px, 2px); }
 }
-.game-scrollbar::-webkit-scrollbar,
-.custom-scrollbar::-webkit-scrollbar {
-  width: 4px;
-}
-.game-scrollbar::-webkit-scrollbar-track,
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.3);
-}
-.game-scrollbar::-webkit-scrollbar-thumb,
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(0, 229, 255, 0.3);
-  border-radius: 2px;
-}
-.game-scrollbar::-webkit-scrollbar-thumb:hover,
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 229, 255, 0.5);
+
+.combat-shake {
+  animation: combat-shake 0.3s ease-in-out;
 }
 
 .glitch-text {

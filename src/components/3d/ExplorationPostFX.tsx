@@ -22,6 +22,7 @@ import {
 } from '@react-three/postprocessing';
 import { BlendFunction, KernelSize, ToneMappingMode } from 'postprocessing';
 import { useGameStore } from '@/store/gameStore';
+import { useShallow } from 'zustand/react/shallow';
 import { getSceneConfig } from '@/config/scenes';
 import { useMobileVisualPerf } from '@/hooks/use-mobile';
 import { eventBus } from '@/engine/EventBus';
@@ -124,12 +125,15 @@ function useRendererReady(): boolean {
   // context isn't initialized yet, causing EffectComposer to crash with
   // "Cannot read properties of null (reading 'alpha')".
   const prevGlRef = useRef(gl);
-  if (prevGlRef.current !== gl) {
-    prevGlRef.current = gl;
-    // React will re-render with ready=false, preventing the crash.
-    // The useEffect below will then poll the new gl until it's ready.
-    setReady(false);
-  }
+  // P3-FIX: Move ref access from render phase to useEffect to comply with
+  // React strict mode rules (Cannot access/update ref during render).
+  useEffect(() => {
+    if (prevGlRef.current !== gl) {
+      prevGlRef.current = gl;
+      // React will re-render with ready=false, preventing the crash.
+      setReady(false);
+    }
+  }, [gl]);
 
   useEffect(() => {
     let cancelled = false;
@@ -230,8 +234,13 @@ export function ExplorationPostFX() {
 
 /** Inner component — all hooks called unconditionally (Rules of Hooks compliant) */
 function PostFXPipeline() {
-  const sceneId = useGameStore((s) => s.exploration.currentSceneId);
-  const noirMode = useGameStore((s) => s.noirMode);
+  // P3-FIX: Combined selectors into one useShallow call to reduce re-render frequency.
+  const { sceneId, noirMode } = useGameStore(
+    useShallow((s) => ({
+      sceneId: s.exploration.currentSceneId,
+      noirMode: s.noirMode,
+    })),
+  );
   const { visualLite } = useMobileVisualPerf();
 
   // NOTE: Renderer toneMapping is set to NoToneMapping in RPGGameCanvas.tsx
@@ -294,7 +303,7 @@ function PostFXPipeline() {
   );
 
   // Stress-driven effects: higher stress = heavier vignette, more noise, more chromatic aberration
-  const stress = useGameStore((s) => s.playerState.stress);
+  const stress = useGameStore((s) => s.playerState.stress);  // primitive selector — no useShallow needed
   const stressFactor = stress / 100; // 0-1
 
   // Dynamic bloom: boost slightly with stress for a "pressure" feel

@@ -14,6 +14,14 @@ export function HomeEveningVisual() {
   const floorTexture = useMemo(() => createHomeFloorTexture(), []);
   const wallTexture = useMemo(() => createHomeWallTexture(), []);
 
+  // ── Dispose CanvasTextures on unmount ──
+  useEffect(() => {
+    return () => {
+      floorTexture?.dispose();
+      wallTexture?.dispose();
+    };
+  }, [floorTexture, wallTexture]);
+
   const W = 14;
   const D = 14;
   const H = 3;
@@ -33,9 +41,18 @@ export function HomeEveningVisual() {
     return unsub;
   }, []);
 
+  // ── Sync interactive object states via ref (avoids getState in useFrame) ──
+  const interactiveStatesRef = useRef(useGameStore.getState().interactiveObjectStates);
+  useEffect(() => {
+    const unsub = useGameStore.subscribe((state) => {
+      interactiveStatesRef.current = state.interactiveObjectStates;
+    });
+    return unsub;
+  }, []);
+
   // ── Interactive object animations ──
   useFrame((_, delta) => {
-    const states = useGameStore.getState().interactiveObjectStates;
+    const states = interactiveStatesRef.current;
 
     // Wardrobe doors: swing open
     if (wardrobeLeftDoorRef.current) {

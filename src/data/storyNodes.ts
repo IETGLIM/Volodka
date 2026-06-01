@@ -171,7 +171,7 @@ export const STORY_NODES: Record<string, StoryNode> = {
       { text: 'Подойти к баристе', next: 'cafe_barista' },
       {
         text: 'Сесть рядом с Альбертом',
-        next: 'explore_mode',
+        next: 'cafe_barista',
         effects: [
           { type: 'setFlag', flag: 'met_albert', flagValue: true },
           { type: 'npcChange', npcId: 'albert', npcChange: { relation: 3 } },
@@ -179,7 +179,7 @@ export const STORY_NODES: Record<string, StoryNode> = {
       },
       {
         text: 'Найти свободный столик',
-        next: 'explore_mode',
+        next: 'cafe_barista',
         effects: [{ type: 'addStat', stat: 'energy', value: 5 }],
       },
     ],

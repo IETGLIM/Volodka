@@ -166,6 +166,18 @@ const UnlockedAchievementSchema = z.object({
   unlockedAt: z.number(),
 });
 
+/** Persisted achievement tracking data (survives page refresh) */
+const AchievementProgressSchema = z.object({
+  visitedScenes: z.array(z.string()).optional().default([]),
+  combatVictories: z.number().min(0).optional().default(0),
+  consecutiveVictories: z.number().min(0).optional().default(0),
+  maxComboAchieved: z.number().min(0).optional().default(0),
+  hasCriticalHit: z.boolean().optional().default(false),
+  defeatedEnemyTypes: z.array(z.string()).optional().default([]),
+  nightTimeHours: z.number().min(0).optional().default(0),
+  poemPowerUsedInCombat: z.boolean().optional().default(false),
+});
+
 const GameModeSchema = z.enum([
   'menu',
   'intro',
@@ -206,6 +218,17 @@ export const SavePayloadSchema = z.object({
   unlockedAchievements: z.array(UnlockedAchievementSchema).optional().default([]),
   /** Scene IDs that have been visited/discovered */
   discoveredScenes: z.array(z.string()).optional().default(['volodka_room']),
+  /** Persisted achievement tracking data (survives page refresh) */
+  achievementProgress: AchievementProgressSchema.optional().default({
+    visitedScenes: [],
+    combatVictories: 0,
+    consecutiveVictories: 0,
+    maxComboAchieved: 0,
+    hasCriticalHit: false,
+    defeatedEnemyTypes: [],
+    nightTimeHours: 0,
+    poemPowerUsedInCombat: false,
+  }),
   savedAt: z.number(),
 });
 

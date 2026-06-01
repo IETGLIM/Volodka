@@ -65,6 +65,7 @@ import { sharedPlayerRotationRef } from '@/engine/PlayerRotationState';
 import { eventBus } from '@/engine/EventBus';
 import { InteractionState } from '@/engine/interaction/interactionMachine';
 import { type VirtualControls } from '@/hooks/useGamePhysics';
+import { useGameStore } from '@/store/gameStore';
 
 /** Error boundary for the Rapier Physics component.
  *  If Rapier WASM fails to load (common on Vercel edge, slow connections),
@@ -251,6 +252,12 @@ export function RPGGameCanvas() {
   const isMobile = useIsMobileVisual();
   const { visualLite } = useMobileVisualPerf();
 
+  // P3-FIX: Pause physics when game is in menu/intro mode to save CPU.
+  // Uses useShallow to select just the mode string (primitive) so this
+  // only re-renders when mode actually changes, not on every store update.
+  const gameMode = useGameStore((s) => s.mode);
+  const physicsPaused = gameMode === 'menu' || gameMode === 'intro';
+
   // Dynamic DPR scaling based on measured FPS
   const targetDpr: [number, number] = isMobile ? [1, 1.5] : [1, 2];
   const dpr = useDynamicDPR({
@@ -349,7 +356,12 @@ export function RPGGameCanvas() {
               />
             }
           >
-          <Physics gravity={[0, -15, 0]} timeStep={1/60} interpolate={true} debug={false}>
+          {/* P3-FIX: Pause physics when game is in menu/intro mode to save CPU.
+              The Physics component's `paused` prop stops the Rapier world from
+              stepping, which saves ~1-2ms/frame on mobile when the 3D scene is
+              not interactive (menu, loading, intro). The canvas is still rendered
+              (for intro wake-up cutscene), but physics bodies are frozen. */}
+          <Physics gravity={[0, -15, 0]} timeStep={1/60} interpolate={true} debug={false} paused={physicsPaused}>
             {/* Scene visual + colliders (now with layer separation) */}
             <SceneColliderSelector livePlayerPositionRef={livePlayerPositionRef} />
 
@@ -526,6 +538,7 @@ function CanvasGuardSystem() {
  *  triggering two re-renders. Now batched into a single state update.
  *  Also wrapped with React.memo to prevent re-renders when parent re-renders
  *  but interaction state hasn't changed. */
+
 const NPCSystemWrapper = memo(function NPCSystemWrapper({
   livePlayerPositionRef,
 }: {

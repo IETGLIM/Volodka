@@ -765,7 +765,7 @@ export function HUD({ onOpenQuests, onOpenInventory, onOpenPoetry, onToggleTutor
               <div className="h-1 w-full bg-slate-800/60 rounded-full overflow-hidden">
                 <motion.div
                   className="h-full rounded-full"
-                  style={{ background: 'linear-gradient(90deg, from-cyan-600/60 to-cyan-400/60)' }}
+                  style={{ background: 'linear-gradient(90deg, rgba(8,145,178,0.6), rgba(34,211,238,0.6))' }}
                   initial={false}
                   animate={{ width: `${(xp / xpToNext) * 100}%` }}
                   transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}

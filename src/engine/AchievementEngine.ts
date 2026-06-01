@@ -3,38 +3,23 @@
    Called periodically and on significant state transitions.
    Delegates unlocking to the Zustand store (single source of truth).
 
-   ARCHITECTURE: The engine is a PURE condition checker — no local state,
-   no localStorage. The store's unlockAchievement() is the single source of
-   truth for all unlock state, events, rewards, and persistence. This eliminates
-   the desync bug that occurred when the engine and store had separate state. */
+   ARCHITECTURE: The engine is a PURE condition checker. All tracking
+   state lives in the Zustand store's achievementProgress field, so it
+   persists across page refreshes (F5). The store's unlockAchievement()
+   is the single source of truth for all unlock state, events, rewards,
+   and persistence. */
 
 import { getGameStore } from '@/store/gameStore';
 import { ACHIEVEMENT_MAP, TOTAL_ACHIEVEMENTS } from '@/data/achievements';
-import type { SceneId, EnemyType } from '@/shared/types/game';
+import type { EnemyType } from '@/shared/types/game';
 
-/* ─── Tracking state (session-only, not persisted) ─── */
-
-/** Set of scene IDs visited during this session (accumulated) */
-const visitedScenes = new Set<string>();
+/* ─── Session-only tracking (not persisted — ephemeral per page load) ─── */
 
 /** Previous game mode for transition detection */
 let prevMode: string | null = null;
 
 /** Previous energy value for recovery detection */
 let prevEnergy = 0;
-
-/** Combat stats accumulated across the session */
-let combatVictories = 0;
-let consecutiveVictories = 0;
-let maxComboAchieved = 0;
-let hasCriticalHit = false;
-const defeatedEnemyTypes = new Set<string>();
-
-/** Night time accumulation (in-game hours) */
-let nightTimeHours = 0;
-
-/** Whether a poem power was used in combat */
-let poemPowerUsedInCombat = false;
 
 /** Whether we already checked the "first awakening" this session */
 let firstAwakeningChecked = false;
@@ -110,8 +95,14 @@ export function checkAchievements(state: AchievementCheckState): void {
   const npcRelations = state.npcRelations;
   const timeOfDay = state.timeOfDay;
 
-  // Track visited scenes
-  visitedScenes.add(sceneId);
+  // Track visited scenes (write to store)
+  const currentProgress = getGameStore().achievementProgress;
+  if (!currentProgress.visitedScenes.includes(sceneId)) {
+    getGameStore().trackSceneVisit(sceneId);
+  }
+
+  // Read persisted progress from the store (after potential write)
+  const progress = getGameStore().achievementProgress;
 
   // ─── STORY ACHIEVEMENTS ───
 
@@ -155,22 +146,22 @@ export function checkAchievements(state: AchievementCheckState): void {
   // ─── COMBAT ACHIEVEMENTS ───
 
   // "Первая кровь" — first combat victory
-  if (combatVictories >= 1) {
+  if (progress.combatVictories >= 1) {
     tryUnlock('combat_first_blood');
   }
 
   // "Комбо-мастер" — combo 3x
-  if (maxComboAchieved >= 3) {
+  if (progress.maxComboAchieved >= 3) {
     tryUnlock('combat_combo_master');
   }
 
   // "Критический удар"
-  if (hasCriticalHit) {
+  if (progress.hasCriticalHit) {
     tryUnlock('combat_critical_hit');
   }
 
   // "Непобедимый" — 5 victories without defeat
-  if (consecutiveVictories >= 5) {
+  if (progress.consecutiveVictories >= 5) {
     tryUnlock('combat_invincible');
   }
 
@@ -179,14 +170,14 @@ export function checkAchievements(state: AchievementCheckState): void {
     'system_daemon', 'corporate_golem', 'shadow_agent', 'data_phantom',
     'code_inquisitor', 'guild_enforcer', 'data_wraith', 'censor_drone', 'poetry_hunter',
   ];
-  if (allEnemyTypes.every((t) => defeatedEnemyTypes.has(t))) {
+  if (allEnemyTypes.every((t) => progress.defeatedEnemyTypes.includes(t))) {
     tryUnlock('combat_demon_hunter');
   }
 
   // ─── EXPLORATION ACHIEVEMENTS ───
 
   // "Исследователь" — 5 scenes
-  if (visitedScenes.size >= 5) {
+  if (progress.visitedScenes.length >= 5) {
     tryUnlock('explorer_explorer');
   }
 
@@ -197,14 +188,16 @@ export function checkAchievements(state: AchievementCheckState): void {
     'library_day', 'sleep_dream', 'rooftop_edge', 'abandoned_factory',
     'zarema_albert_room',
   ];
-  if (allScenes.every((s) => visitedScenes.has(s))) {
+  if (allScenes.every((s) => progress.visitedScenes.includes(s))) {
     tryUnlock('explorer_wanderer');
   }
 
   // "Ночная сова" — night time (22:00 - 06:00)
   if (timeOfDay >= 22 || timeOfDay < 6) {
-    nightTimeHours += 0.01; // Each check is ~1 second, so ~0.01 game hours
-    if (nightTimeHours >= 2) {
+    getGameStore().trackNightHour();
+    // Re-read after write
+    const progressAfterNight = getGameStore().achievementProgress;
+    if (progressAfterNight.nightTimeHours >= 2) {
       tryUnlock('explorer_night_owl');
     }
   }
@@ -232,7 +225,7 @@ export function checkAchievements(state: AchievementCheckState): void {
   }
 
   // "Сила стиха"
-  if (poemPowerUsedInCombat) {
+  if (progress.poemPowerUsedInCombat) {
     tryUnlock('poetry_power_verse');
   }
 
@@ -267,7 +260,7 @@ export function checkAchievements(state: AchievementCheckState): void {
     tryUnlock('hidden_sacrifice');
   }
 
-  // Update previous state
+  // Update previous state (session-only, not persisted)
   prevMode = mode;
   prevEnergy = energy;
 }
@@ -276,46 +269,41 @@ export function checkAchievements(state: AchievementCheckState): void {
 
 /** Call when combat victory occurs */
 export function notifyCombatVictory(enemyType: string): void {
-  combatVictories++;
-  consecutiveVictories++;
-  defeatedEnemyTypes.add(enemyType);
+  const store = getGameStore();
+  // combo=0 here; notifyCombo handles combo tracking separately
+  store.trackCombatVictory(enemyType, 0);
 }
 
 /** Call when combat defeat occurs */
 export function notifyCombatDefeat(): void {
-  consecutiveVictories = 0;
+  const store = getGameStore();
+  store.resetConsecutiveVictories();
 }
 
-/** Call when combo reaches a new max */
+/** Call when combo reaches a new max — updates only maxComboAchieved */
 export function notifyCombo(comboCount: number): void {
-  if (comboCount > maxComboAchieved) {
-    maxComboAchieved = comboCount;
-  }
+  const store = getGameStore();
+  store.trackMaxCombo(comboCount);
 }
 
 /** Call when critical hit lands */
 export function notifyCriticalHit(): void {
-  hasCriticalHit = true;
+  const store = getGameStore();
+  store.trackCriticalHit();
 }
 
 /** Call when poem power used in combat */
 export function notifyPoemPowerUsed(): void {
-  poemPowerUsedInCombat = true;
+  const store = getGameStore();
+  store.trackPoemPowerInCombat();
 }
 
 /** Reset tracking state (for new game) */
 export function resetAchievementTracking(): void {
-  visitedScenes.clear();
   prevMode = null;
   prevEnergy = 0;
-  combatVictories = 0;
-  consecutiveVictories = 0;
-  maxComboAchieved = 0;
-  hasCriticalHit = false;
-  defeatedEnemyTypes.clear();
-  nightTimeHours = 0;
-  poemPowerUsedInCombat = false;
   firstAwakeningChecked = false;
+  // Persisted progress is reset via the save slice's resetGame,
+  // which sets achievementProgress to defaults.
   // No need to clear localStorage — the store is the source of truth.
-  // Clearing the store's unlockedAchievements is handled by the save system.
 }

@@ -86,6 +86,7 @@ export const ProceduralPlayerModel = memo(function ProceduralPlayerModel({
     hairBack: new THREE.SphereGeometry(0.07, 5, 4),
     hairSideLeft: new THREE.SphereGeometry(0.03, 4, 3),
     hairSideRight: new THREE.SphereGeometry(0.03, 4, 3),
+    sneakerToeCap: new THREE.SphereGeometry(0.035, 4, 4, 0, Math.PI * 2, 0, Math.PI * 0.5),
   }), []);
 
   /* ─── Shared material instances (optimization 3) ─── */
@@ -112,19 +113,13 @@ export const ProceduralPlayerModel = memo(function ProceduralPlayerModel({
     noseTip: new THREE.MeshStandardMaterial({ color: '#b89a72', roughness: 0.7, metalness: 0.05 }),
   }), []);
 
-  /* ─── Dispose shared geometries on unmount ─── */
+  /* ─── Dispose shared geometries and materials on unmount ─── */
   useEffect(() => {
     return () => {
       Object.values(sharedGeo).forEach(g => g.dispose());
-    };
-  }, [sharedGeo]);
-
-  /* ─── Dispose shared materials on unmount ─── */
-  useEffect(() => {
-    return () => {
       Object.values(sharedMat).forEach(m => m.dispose());
     };
-  }, [sharedMat]);
+  }, []);
 
   /* ─── Karma-dependent materials (optimization 5) ─── */
   const karmaMat = useMemo(() => ({
@@ -563,9 +558,7 @@ export const ProceduralPlayerModel = memo(function ProceduralPlayerModel({
         {/* Sneaker body */}
         <mesh position={[0, -0.55, 0.02]} castShadow geometry={sharedGeo.sneakerBox} material={sharedMat.sneaker} />
         {/* Sneaker toe cap */}
-        <mesh position={[0, -0.55, 0.085]} material={sharedMat.sneaker}>
-          <sphereGeometry args={[0.035, 4, 4, 0, Math.PI * 2, 0, Math.PI * 0.5]} />
-        </mesh>
+        <mesh position={[0, -0.55, 0.085]} geometry={sharedGeo.sneakerToeCap} material={sharedMat.sneaker} />
         {/* Sneaker sole */}
         <mesh position={[0, -0.58, 0.02]} geometry={sharedGeo.soleBox} material={sharedMat.sole} />
         {/* Sneaker stripe accent (karma-dependent) */}
@@ -589,9 +582,7 @@ export const ProceduralPlayerModel = memo(function ProceduralPlayerModel({
         {/* Sneaker body */}
         <mesh position={[0, -0.55, 0.02]} castShadow geometry={sharedGeo.sneakerBox} material={sharedMat.sneaker} />
         {/* Sneaker toe cap */}
-        <mesh position={[0, -0.55, 0.085]} material={sharedMat.sneaker}>
-          <sphereGeometry args={[0.035, 4, 4, 0, Math.PI * 2, 0, Math.PI * 0.5]} />
-        </mesh>
+        <mesh position={[0, -0.55, 0.085]} geometry={sharedGeo.sneakerToeCap} material={sharedMat.sneaker} />
         {/* Sneaker sole */}
         <mesh position={[0, -0.58, 0.02]} geometry={sharedGeo.soleBox} material={sharedMat.sole} />
         {/* Sneaker stripe accent (karma-dependent) */}

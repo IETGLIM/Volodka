@@ -314,16 +314,6 @@ export const ACHIEVEMENTS: AchievementDefinition[] = [
     rewards: [{ type: 'xp', value: 50 }, { type: 'credits', value: 50 }],
   },
   {
-    id: 'hidden_sacrifice',
-    title: 'Жертва',
-    description: 'Открыть концовку «Жертва»',
-    icon: '🕊️',
-    category: 'hidden',
-    hidden: true,
-    conditionDescription: '???',
-    rewards: [{ type: 'xp', value: 100 }, { type: 'karma', value: 30 }],
-  },
-  {
     id: 'hidden_all_achievements',
     title: 'Полное собрание',
     description: 'Открыть все остальные достижения',

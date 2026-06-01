@@ -14,6 +14,7 @@ import {
   pushNotification,
   type GameNotification,
 } from '../shared';
+import { resetAllPoemEffects } from '@/engine/PoemPowerSystem';
 
 /* ─── localStorage key ─── */
 const SAVE_KEY = 'volodka_save';
@@ -50,6 +51,20 @@ interface FullStoreForSave {
   introSeen: boolean;
   unlockedAchievements: Array<{ id: string; unlockedAt: number }>;
   discoveredScenes: string[];
+  triggeredCutscenes: string[];
+  npcAffinity: Record<string, number>;
+  acceptedDailyMissions: unknown[];
+  lastDailyReset: number;
+  achievementProgress: {
+    visitedScenes: string[];
+    combatVictories: number;
+    consecutiveVictories: number;
+    maxComboAchieved: number;
+    hasCriticalHit: boolean;
+    defeatedEnemyTypes: string[];
+    nightTimeHours: number;
+    poemPowerUsedInCombat: boolean;
+  };
 }
 
 /* ─── Slice types ─── */
@@ -77,7 +92,10 @@ export const createSaveSlice: StateCreator<
 > = (set, get) => ({
   /* ── No additional state — lastSaveTimestamp is in UISlice ── */
 
-  resetGame: () =>
+  resetGame: () => {
+    // Clear module-scoped poem effects (activeEffects array + TTL flags)
+    resetAllPoemEffects();
+
     set({
       mode: 'menu',
       currentNodeId: 'start',
@@ -104,13 +122,28 @@ export const createSaveSlice: StateCreator<
       musicEnabled: true,
       interactiveObjectStates: {},
       discoveredScenes: ['volodka_room'],
+      triggeredCutscenes: [],
+      npcAffinity: {},
+      acceptedDailyMissions: [],
+      lastDailyReset: 0,
       journalOpen: false,
       journalTab: 'notes',
       loreEntries: [],
       conversationLog: {},
       introSeen: false,
       unlockedAchievements: [],
-    } as unknown as Partial<FullStoreForSave>),
+      achievementProgress: {
+        visitedScenes: [],
+        combatVictories: 0,
+        consecutiveVictories: 0,
+        maxComboAchieved: 0,
+        hasCriticalHit: false,
+        defeatedEnemyTypes: [],
+        nightTimeHours: 0,
+        poemPowerUsedInCombat: false,
+      },
+    } as unknown as Partial<FullStoreForSave>);
+  },
 
   saveGame: (options) => {
     const state = get();
@@ -139,6 +172,9 @@ export const createSaveSlice: StateCreator<
       introSeen: state.introSeen,
       unlockedAchievements: state.unlockedAchievements,
       discoveredScenes: state.discoveredScenes,
+      triggeredCutscenes: (state as any).triggeredCutscenes ?? [],
+      npcAffinity: (state as any).npcAffinity ?? {},
+      achievementProgress: state.achievementProgress,
       savedAt: Date.now(),
     };
 
@@ -225,6 +261,9 @@ export const createSaveSlice: StateCreator<
         introSeen: payload.introSeen,
         unlockedAchievements: payload.unlockedAchievements,
         discoveredScenes: payload.discoveredScenes,
+        triggeredCutscenes: (payload as any).triggeredCutscenes ?? [],
+        npcAffinity: (payload as any).npcAffinity ?? {},
+        achievementProgress: payload.achievementProgress,
       } as unknown as Partial<FullStoreForSave>);
 
       eventBus.emit('game:loaded', {} as Record<string, never>);

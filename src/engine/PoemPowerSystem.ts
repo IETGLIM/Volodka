@@ -6,12 +6,25 @@
    §4 Fix: Replaced setTimeout flag cleanup with TTL-based expiry model.
    Flags are now stored in game store as ActiveEffect with expiryTimestamp,
    ensuring they survive save/load and are correctly cleaned up.
+
+   §5 Fix: Reverse-effect tracking for temporary skill/stat boosts.
+   When TTL flags expire, reverseOnExpiry entries are applied so that
+   temporary boosts (e.g. +persuasion) are correctly reverted.
+   processExpiredTTLFlags() is now called from GameOrchestrator's game loop.
+   activeEffects is cleared on game reset via resetAllPoemEffects().
 */
 
 import { eventBus } from '@/engine/EventBus';
 import { getGameStore } from '@/store/gameStore';
 
 /* ─── Power definition ─── */
+/** A single reversible effect entry — applied in reverse when the TTL flag expires */
+export interface ReverseOnExpiryEntry {
+  type: 'skill' | 'energy' | 'stress' | 'karma' | 'npcRelation';
+  key?: string;
+  value: number;
+}
+
 export interface PoemPower {
   poemId: string;
   name: string;
@@ -21,6 +34,8 @@ export interface PoemPower {
   effect: () => void;
   /** TTL-based flags to set — will be stored with expiryTimestamp for save/load safety */
   flagsToSet?: Array<{ key: string; durationMs: number }>;
+  /** Effects to reverse when TTL flags expire (for temporary skill/stat boosts) */
+  reverseOnExpiry?: ReverseOnExpiryEntry[];
 }
 
 /* ─── Active TTL Effect (stored in game store for serialization) ─── */
@@ -46,6 +61,24 @@ export function clearAllPowerTimers(): void {
   activeEffects.length = 0;
 }
 
+/** Reset all poem effects — call from saveSlice on game reset.
+ *  Clears the non-serializable activeEffects array and all TTL flags in the store. */
+export function resetAllPoemEffects(): void {
+  activeEffects.length = 0;
+  const store = getGameStore();
+  // Clear all TTL flags (and their corresponding store flags)
+  const flags = store.activeTTLFlags ?? [];
+  for (const f of flags) {
+    store.setFlag(f.key, false);
+  }
+  store.setActiveTTLFlags([]);
+}
+
+/** How often (ms) the game loop should call processExpiredTTLFlags */
+export function getTTLCheckInterval(): number {
+  return 1000;
+}
+
 /* ─── Helper: set a flag with TTL in the game store ─── */
 function setTTLFlag(key: string, durationMs: number, poemId: string): void {
   const store = getGameStore();
@@ -66,9 +99,39 @@ export function processExpiredTTLFlags(): void {
   const expired = flags.filter((f: ActiveTTLFlag) => now >= f.expiryTimestamp);
   const remaining = flags.filter((f: ActiveTTLFlag) => now < f.expiryTimestamp);
 
-  // Clear expired flags and emit events
+  // Clear expired flags, apply reversals, and emit events
   for (const f of expired) {
     store.setFlag(f.key, false);
+
+    // Apply reverse effects for this poem's power
+    const power = POEM_POWERS[f.poemId];
+    if (power?.reverseOnExpiry) {
+      for (const rev of power.reverseOnExpiry) {
+        switch (rev.type) {
+          case 'skill':
+            if (rev.key) store.addSkill(rev.key as any, rev.value);
+            break;
+          case 'energy':
+            store.addEnergy(rev.value);
+            break;
+          case 'stress':
+            store.addStress(rev.value);
+            break;
+          case 'karma':
+            store.addKarma(rev.value);
+            break;
+          // npcRelation requires knowing the specific NPC — not auto-reversed
+        }
+      }
+    }
+
+    // Remove matching activeEffects entries
+    for (let i = activeEffects.length - 1; i >= 0; i--) {
+      if (activeEffects[i].poemId === f.poemId) {
+        activeEffects.splice(i, 1);
+      }
+    }
+
     eventBus.emit('poem:power_expired', {
       flagKey: f.key,
       poemId: f.poemId,
@@ -94,6 +157,7 @@ const POEM_POWERS: Record<string, PoemPower> = {
       store.addSkill('persuasion', 3);
     },
     flagsToSet: [{ key: 'truth_voice_active', durationMs: 30000 }],
+    reverseOnExpiry: [{ type: 'skill', key: 'persuasion', value: -3 }],
   },
   poem_2: {
     poemId: 'poem_2',
@@ -141,6 +205,7 @@ const POEM_POWERS: Record<string, PoemPower> = {
       store.addSkill('logic', 5);
     },
     flagsToSet: [{ key: 'storm_wind_active', durationMs: 30000 }],
+    reverseOnExpiry: [{ type: 'skill', key: 'intuition', value: -5 }, { type: 'skill', key: 'logic', value: -5 }],
   },
   poem_6: {
     poemId: 'poem_6',
@@ -152,6 +217,7 @@ const POEM_POWERS: Record<string, PoemPower> = {
       store.addSkill('writing', 4);
       store.addSkill('persuasion', 4);
     },
+    reverseOnExpiry: [{ type: 'skill', key: 'writing', value: -4 }, { type: 'skill', key: 'persuasion', value: -4 }],
   },
   poem_7: {
     poemId: 'poem_7',
@@ -164,6 +230,7 @@ const POEM_POWERS: Record<string, PoemPower> = {
       eventBus.emit('ui:exploration_message', { text: '👁 Детский Взгляд раскрывает скрытое...' });
     },
     flagsToSet: [{ key: 'child_gaze_active', durationMs: 45000 }],
+    reverseOnExpiry: [{ type: 'skill', key: 'intuition', value: -3 }],
   },
   poem_8: {
     poemId: 'poem_8',
@@ -175,6 +242,7 @@ const POEM_POWERS: Record<string, PoemPower> = {
       store.addSkill('coding', 5);
     },
     flagsToSet: [{ key: 'breakthrough_active', durationMs: 30000 }],
+    reverseOnExpiry: [{ type: 'skill', key: 'coding', value: -5 }],
   },
   poem_9: {
     poemId: 'poem_9',
@@ -186,6 +254,7 @@ const POEM_POWERS: Record<string, PoemPower> = {
       store.addKarma(3);
       store.addSkill('persuasion', 2);
     },
+    reverseOnExpiry: [{ type: 'karma', value: -3 }, { type: 'skill', key: 'persuasion', value: -2 }],
   },
   poem_10: {
     poemId: 'poem_10',
@@ -209,6 +278,7 @@ const POEM_POWERS: Record<string, PoemPower> = {
       eventBus.emit('ui:exploration_message', { text: '🌆 Голос Улиц шепчет секреты...' });
     },
     flagsToSet: [{ key: 'city_voice_active', durationMs: 45000 }],
+    reverseOnExpiry: [{ type: 'skill', key: 'intuition', value: -4 }],
   },
   poem_12: {
     poemId: 'poem_12',
@@ -220,6 +290,7 @@ const POEM_POWERS: Record<string, PoemPower> = {
       store.addSkill('coding', 3);
     },
     flagsToSet: [{ key: 'star_path_active', durationMs: 30000 }],
+    reverseOnExpiry: [{ type: 'skill', key: 'coding', value: -3 }],
   },
   poem_13: {
     poemId: 'poem_13',
@@ -245,6 +316,7 @@ const POEM_POWERS: Record<string, PoemPower> = {
       eventBus.emit('ui:exploration_message', { text: '🧠 Глубокое Размышление... Мысли тяжелеют, но обретают ясность.' });
     },
     flagsToSet: [{ key: 'deep_thought_active', durationMs: 45000 }],
+    reverseOnExpiry: [{ type: 'skill', key: 'writing', value: -5 }, { type: 'skill', key: 'logic', value: -5 }, { type: 'stress', value: -5 }],
   },
   poem_15: {
     poemId: 'poem_15',
@@ -257,6 +329,7 @@ const POEM_POWERS: Record<string, PoemPower> = {
       eventBus.emit('ui:exploration_message', { text: '😏 Ироничный Шёпот раскрывает скрытые смыслы...' });
     },
     flagsToSet: [{ key: 'ironic_whisper_active', durationMs: 45000 }],
+    reverseOnExpiry: [{ type: 'skill', key: 'persuasion', value: -4 }],
   },
   poem_16: {
     poemId: 'poem_16',
@@ -270,6 +343,7 @@ const POEM_POWERS: Record<string, PoemPower> = {
       eventBus.emit('ui:exploration_message', { text: '👶 Эхо Детства... Воспоминания придают сил.' });
     },
     flagsToSet: [{ key: 'childhood_echo_active', durationMs: 30000 }],
+    reverseOnExpiry: [{ type: 'energy', value: -40 }, { type: 'skill', key: 'empathy', value: -3 }],
   },
   poem_17: {
     poemId: 'poem_17',

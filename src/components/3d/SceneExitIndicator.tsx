@@ -2,12 +2,13 @@
 
 /* ─── Volodka RPG – Scene exit indicators with proximity detection ─── */
 
-import { useRef, useState, useCallback, useEffect } from 'react';
+import { useRef, useState, useCallback, useEffect, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { Html } from '@react-three/drei';
 import * as THREE from 'three';
 import type { SceneExit, SceneId } from '@/shared/types/game';
 import { useGameStore } from '@/store/gameStore';
+import { useShallow } from 'zustand/react/shallow';
 import { getSceneExits } from '@/config/scenes';
 import { eventBus } from '@/engine/EventBus';
 import { isInteractionLocked } from './InteractionSystemBridge';
@@ -28,11 +29,17 @@ interface SceneExitIndicatorProps {
 
 /** Renders exit markers at scene boundaries and triggers scene transitions */
 export function SceneExitIndicator({ livePlayerPositionRef }: SceneExitIndicatorProps) {
-  const sceneId = useGameStore((s) => s.exploration.currentSceneId);
-  const playerFlags = useGameStore((s) => s.playerState.flags);
-  const playerKarma = useGameStore((s) => s.playerState.karma);
+  // P3-FIX: useShallow for flags object selector — without it, playerState.flags
+  // returns a new object reference on every store update, causing unnecessary re-renders.
+  const { sceneId, playerFlags, playerKarma } = useGameStore(
+    useShallow((s) => ({
+      sceneId: s.exploration.currentSceneId,
+      playerFlags: s.playerState.flags,
+      playerKarma: s.playerState.karma,
+    })),
+  );
 
-  const exits = getSceneExits(sceneId, playerFlags, playerKarma);
+  const exits = useMemo(() => getSceneExits(sceneId, playerFlags, playerKarma), [sceneId, playerFlags, playerKarma]);
 
   return (
     <group>
@@ -61,6 +68,7 @@ function ExitMarker({
   const meshRef = useRef<THREE.Mesh>(null);
   const glowRef = useRef<THREE.PointLight>(null);
   const showIndicatorRef = useRef(false);
+  const _exitPosRef = useRef(new THREE.Vector3()); // P3-FIX: pre-allocated for proximity calc
   const [showIndicator, setShowIndicator] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const cooldownRef = useRef(0);
@@ -135,8 +143,10 @@ function ExitMarker({
 
     // Proximity detection
     const playerPos = livePlayerPositionRef.current;
-    const exitPos = new THREE.Vector3(...exit.position);
-    const dist = playerPos.distanceTo(exitPos);
+    // P3-FIX: Reuse pre-allocated temp vector instead of creating new THREE.Vector3 every frame.
+    // new THREE.Vector3(...exit.position) was allocating a new object 60x/sec per exit marker.
+    _exitPosRef.current.set(exit.position[0], exit.position[1], exit.position[2]);
+    const dist = playerPos.distanceTo(_exitPosRef.current);
 
     const isNear = dist < EXIT_PROXIMITY_RANGE;
     if (isNear !== showIndicatorRef.current) {

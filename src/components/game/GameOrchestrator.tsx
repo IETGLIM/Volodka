@@ -23,6 +23,33 @@ import { processExpiredTTLFlags } from '@/engine/PoemPowerSystem';
 // Previously this file also did a duplicate preload via dynamic import,
 // which was removed to avoid double-fetching the same model.
 
+// ──────────────────────────────────────────────────────────────────────────
+// P3-TODO: CODE-SPLITTING PLAN (deferred — dev server OOM prevents React.lazy)
+// ──────────────────────────────────────────────────────────────────────────
+// Currently all 40+ panel components are statically imported because the
+// dev server runs out of memory after the first compilation, causing
+// ChunkLoadError on subsequent lazy chunk requests. In production builds,
+// we should switch to React.lazy() for rarely-opened panels:
+//
+// Tier 1 (keep static — always-mounted or frequently opened):
+//   HUD, MiniMap, MenuScreen, IntroScreen, StoryRenderer, DialogueRenderer,
+//   LoadingScreen, CombatUI, NotificationToasts, FloatingTextLayer, ScreenEffects
+//
+// Tier 2 (React.lazy — opened occasionally):
+//   QuestsPanel, Inventory, PoetryBook, JournalPanel, RestPanel,
+//   SettingsPanel, SaveSlotManager, CompassHUD, MoralCompassHUD,
+//   MiniGameHub, NPCRelationshipPanel, CharacterProfilePanel
+//
+// Tier 3 (React.lazy — rarely opened):
+//   CodexPanel, DialogueHistoryPanel, AchievementDetailsPanel, SkillTreePanel,
+//   FastTravelPanel, PerksPanel, QuestBoardPanel, PlayerStatsPanel,
+//   DevPanel, CraftingPanel, TradingPanel, ShortcutsOverlay
+//
+// Implementation: wrap React.lazy imports in <Suspense fallback={null}>
+// and ensure each panel has a stable key for AnimatePresence transitions.
+// Production-only: use process.env.NODE_ENV === 'production' guard.
+// ──────────────────────────────────────────────────────────────────────────
+
 // Sub-orchestrator hooks
 import { useCombatOrchestrator } from '@/hooks/useCombatOrchestrator';
 import { useAudioOrchestrator } from '@/hooks/useAudioOrchestrator';
@@ -108,6 +135,7 @@ const RPGGameCanvas = dynamic(
 /* ── Static imports — all panels loaded eagerly to avoid ChunkLoadError ── */
 /* Previously these were React.lazy() for code-splitting, but the dev server ── */
 /* OOMs after first compilation, causing subsequent chunk requests to fail.  ── */
+/* P3-TODO: In production, convert Tier 2+3 panels to React.lazy (see plan above). ──*/
 import { ShortcutsOverlay } from './ShortcutsOverlay';
 import { DevPanel } from './DevPanel';
 import { SettingsPanel } from './SettingsPanel';

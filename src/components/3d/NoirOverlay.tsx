@@ -8,6 +8,7 @@
    CSS-based for performance — no 3D rendering. */
 
 import { useGameStore } from '@/store/gameStore';
+import { useShallow } from 'zustand/react/shallow';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 
 /** Scenes that auto-enable noir overlay regardless of store flag */
@@ -20,9 +21,15 @@ const NOIR_SCENES = new Set([
 ]);
 
 export function NoirOverlay() {
-  const sceneId = useGameStore((s) => s.exploration.currentSceneId);
-  const noirMode = useGameStore((s) => s.noirMode);
-  const stress = useGameStore((s) => s.playerState.stress);
+  // P3-FIX: Combined selectors into one useShallow call to reduce re-render frequency.
+  // stress changes frequently during combat; combining avoids 3 separate subscriptions.
+  const { sceneId, noirMode, stress } = useGameStore(
+    useShallow((s) => ({
+      sceneId: s.exploration.currentSceneId,
+      noirMode: s.noirMode,
+      stress: s.playerState.stress,
+    })),
+  );
 
   // Determine if noir should be active for this scene
   const isNoirScene = NOIR_SCENES.has(sceneId);

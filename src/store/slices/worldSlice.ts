@@ -34,6 +34,17 @@ export interface WorldSliceState {
   lastDailyReset: number;
   /** NPC affinity scores: npcId → affinity (-100 to 100) */
   npcAffinity: Record<string, number>;
+  /** Persisted achievement tracking data (survives page refresh) */
+  achievementProgress: {
+    visitedScenes: string[];
+    combatVictories: number;
+    consecutiveVictories: number;
+    maxComboAchieved: number;
+    hasCriticalHit: boolean;
+    defeatedEnemyTypes: string[];
+    nightTimeHours: number;
+    poemPowerUsedInCombat: boolean;
+  };
 }
 
 export interface WorldSliceActions {
@@ -65,6 +76,20 @@ export interface WorldSliceActions {
   adjustNpcAffinity: (npcId: string, delta: number) => void;
   /** Get NPC affinity score. Returns 0 if no entry exists. */
   getNpcAffinity: (npcId: string) => number;
+  /** Track a scene visit for achievement progress */
+  trackSceneVisit: (sceneId: string) => void;
+  /** Track a combat victory for achievement progress */
+  trackCombatVictory: (enemyType: string, combo: number) => void;
+  /** Track a critical hit for achievement progress */
+  trackCriticalHit: () => void;
+  /** Track a night-time hour for achievement progress */
+  trackNightHour: () => void;
+  /** Track poem power used in combat for achievement progress */
+  trackPoemPowerInCombat: () => void;
+  /** Reset combat consecutive victories (on defeat) */
+  resetConsecutiveVictories: () => void;
+  /** Update max combo if the new value is higher (does not increment victories) */
+  trackMaxCombo: (combo: number) => void;
 }
 
 export type WorldSlice = WorldSliceState & WorldSliceActions;
@@ -91,6 +116,16 @@ export const createWorldSlice: StateCreator<
   acceptedDailyMissions: [],
   lastDailyReset: 0,
   npcAffinity: {},
+  achievementProgress: {
+    visitedScenes: [],
+    combatVictories: 0,
+    consecutiveVictories: 0,
+    maxComboAchieved: 0,
+    hasCriticalHit: false,
+    defeatedEnemyTypes: [],
+    nightTimeHours: 0,
+    poemPowerUsedInCombat: false,
+  },
 
   /* ── Actions ── */
 
@@ -202,6 +237,7 @@ export const createWorldSlice: StateCreator<
       // Formula: new_value = old_value + delta * (100 - old_value) / 100 (for positive)
       //          new_value = old_value + delta * old_value / 100 (for negative)
       const applyFairmath = (current: number, change: number): number => {
+        if (change === 0) return current;
         if (change >= 0) {
           // Positive change: harder to increase when already high
           const gain = Math.round(change * (100 - current) / 100);
@@ -454,7 +490,9 @@ export const createWorldSlice: StateCreator<
     void getDaySeed();
 
     set({
-      acceptedDailyMissions: [],
+      acceptedDailyMissions: state.acceptedDailyMissions.filter(
+        (m) => m.completed && !m.claimed  // Keep unclaimed completed missions
+      ),
       lastDailyReset: now,
     });
   },
@@ -474,4 +512,82 @@ export const createWorldSlice: StateCreator<
   getNpcAffinity: (npcId) => {
     return get().npcAffinity[npcId] ?? 0;
   },
+
+  /* ── Achievement progress tracking actions ── */
+
+  trackSceneVisit: (sceneId) =>
+    set((state) => {
+      if (state.achievementProgress.visitedScenes.includes(sceneId)) return state;
+      return {
+        achievementProgress: {
+          ...state.achievementProgress,
+          visitedScenes: [...state.achievementProgress.visitedScenes, sceneId],
+        },
+      };
+    }),
+
+  trackCombatVictory: (enemyType, combo) =>
+    set((state) => {
+      const newDefeated = state.achievementProgress.defeatedEnemyTypes.includes(enemyType)
+        ? state.achievementProgress.defeatedEnemyTypes
+        : [...state.achievementProgress.defeatedEnemyTypes, enemyType];
+      return {
+        achievementProgress: {
+          ...state.achievementProgress,
+          combatVictories: state.achievementProgress.combatVictories + 1,
+          consecutiveVictories: state.achievementProgress.consecutiveVictories + 1,
+          maxComboAchieved: Math.max(state.achievementProgress.maxComboAchieved, combo),
+          defeatedEnemyTypes: newDefeated,
+        },
+      };
+    }),
+
+  trackCriticalHit: () =>
+    set((state) => {
+      if (state.achievementProgress.hasCriticalHit) return state;
+      return {
+        achievementProgress: {
+          ...state.achievementProgress,
+          hasCriticalHit: true,
+        },
+      };
+    }),
+
+  trackNightHour: () =>
+    set((state) => ({
+      achievementProgress: {
+        ...state.achievementProgress,
+        nightTimeHours: state.achievementProgress.nightTimeHours + 0.01,
+      },
+    })),
+
+  trackPoemPowerInCombat: () =>
+    set((state) => {
+      if (state.achievementProgress.poemPowerUsedInCombat) return state;
+      return {
+        achievementProgress: {
+          ...state.achievementProgress,
+          poemPowerUsedInCombat: true,
+        },
+      };
+    }),
+
+  resetConsecutiveVictories: () =>
+    set((state) => ({
+      achievementProgress: {
+        ...state.achievementProgress,
+        consecutiveVictories: 0,
+      },
+    })),
+
+  trackMaxCombo: (combo) =>
+    set((state) => {
+      if (combo <= state.achievementProgress.maxComboAchieved) return state;
+      return {
+        achievementProgress: {
+          ...state.achievementProgress,
+          maxComboAchieved: combo,
+        },
+      };
+    }),
 });

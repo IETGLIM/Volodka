@@ -4,7 +4,7 @@
 /* Task 8: Complete visual overhaul with cyberpunk terminal aesthetic,
    combo counter, critical hit animations, status effects, victory/defeat screens */
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { Sword, Shield, Sparkles, LogOut, ChevronDown, Heart, Clock, Zap, Flame, Skull, Trophy, RotateCcw, Eye, Bug, ShieldAlert, Music2 } from 'lucide-react';
@@ -386,8 +386,9 @@ export function CombatUI() {
             setFlashColor('rgba(255,255,100,0.15)');
             setTimeout(() => { setScreenShake(false); setFlashColor(null); }, 300);
           } else if (entry.type === 'enemy_attack' || entry.type === 'enemy_special') {
+            setScreenShake(true);
             setFlashColor('rgba(239,68,68,0.1)');
-            setTimeout(() => setFlashColor(null), 200);
+            setTimeout(() => { setScreenShake(false); setFlashColor(null); }, 300);
           }
         }
       }
@@ -402,6 +403,7 @@ export function CombatUI() {
     }
   }, [combatState?.isPlayerTurn, combatState?.turn]);
 
+  const availablePowers = useMemo(() => getAvailableCombatPowers(), [combatState]);
   const handleAttack = useCallback(() => {
     if (pendingAction || !combatState?.isPlayerTurn) return;
     setPendingAction(true);
@@ -430,13 +432,37 @@ export function CombatUI() {
     setShowPowers(false);
   }, [pendingAction, combatState]);
 
+  // Keyboard shortcuts for combat actions (1-4)
+  // Must be declared AFTER handleAttack/handleDefend/handlePower/handleFlee
+  useEffect(() => {
+    if (mode !== 'combat' || !combatState) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+      const isPlayerTurn = combatState.isPlayerTurn && combatState.status === 'active';
+      if (!isPlayerTurn || pendingAction) return;
+      switch (e.key) {
+        case '1': handleAttack(); break;
+        case '2': handleDefend(); break;
+        case '3':
+          if (availablePowers.length === 1) {
+            handlePower(availablePowers[0].poemId);
+          } else {
+            setShowPowers((p) => !p);
+          }
+          break;
+        case '4': handleFlee(); break;
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [mode, combatState, pendingAction, handleAttack, handleDefend, handlePower, handleFlee, availablePowers]);
+
   if (mode !== 'combat' || !combatState) return null;
 
   const enemy = combatState.enemy;
   const isActive = combatState.status === 'active';
   const isPlayerTurn = combatState.isPlayerTurn && isActive;
 
-  const availablePowers = getAvailableCombatPowers();
   const playerBuffs = getActiveBuffs('player');
   const enemyBuffs = getActiveBuffs('enemy');
 
@@ -445,7 +471,7 @@ export function CombatUI() {
 
   return (
     <div
-      className={`fixed inset-0 flex flex-col pointer-events-none ${screenShake ? 'animate-pulse' : ''}`}
+      className={`fixed inset-0 flex flex-col pointer-events-none ${screenShake ? 'combat-shake' : ''}`}
       style={{ zIndex: UI_LAYERS.COMBAT }}
     >
       {/* Screen flash overlay */}
@@ -642,7 +668,7 @@ export function CombatUI() {
         )}
 
         {/* Combat Log — terminal output */}
-        <div className="max-h-28 overflow-y-auto bg-black/70 border border-slate-800/30 rounded-lg p-2 font-mono"
+        <div aria-live="polite" aria-label="Combat log" className="max-h-28 overflow-y-auto bg-black/70 border border-slate-800/30 rounded-lg p-2 font-mono"
           style={{ scrollbarWidth: 'thin', scrollbarColor: '#334155 transparent' }}>
           {combatState.log.map((entry: CombatLogEntry, i: number) => (
             <CombatLogLine key={i} entry={entry} className="typing-cursor" />

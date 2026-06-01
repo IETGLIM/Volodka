@@ -375,11 +375,6 @@ export const createPlayerSlice: StateCreator<
       if (currentEquipped) {
         // Remove the previously equipped item's effects
         const prevDef = getItemDefinition(currentEquipped.id);
-        if (prevDef) {
-          for (const effect of prevDef.effects) {
-            // We'll handle skill/stat reversal below
-          }
-        }
         newInventory.push(currentEquipped);
       }
 

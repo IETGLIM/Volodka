@@ -241,78 +241,7 @@ export const NPC_CUTSCENES: Record<string, NPCCutsceneDef> = {
     ],
   },
 
-  /* ── Svetlana: Gentle, motherly figure ── */
-  svetlana_intro: {
-    id: 'svetlana_intro',
-    npcId: 'svetlana',
-    durationSeconds: 1.8,
-    textOverlay: 'Светлана',
-    subtitle: 'Хранительница уюта',
-    textDurationMs: 1800,
-    textAccentColor: '#22d3ee', // cyan
-    waypoints: [
-      {
-        position: [0, 2.3, 4],
-        lookAt: [0, 1.2, 0],
-        fov: 50,
-        duration: 0,
-      },
-      {
-        position: [0.8, 1.7, 2.5],
-        lookAt: [0, 1.3, 0],
-        fov: 44,
-        duration: 0.9,
-        controlPoint: [0.4, 2.0, 3.2],
-      },
-      {
-        position: [0.6, 1.4, 1.7],
-        lookAt: [0, 1.4, 0],
-        fov: 40,
-        duration: 0.9,
-        controlPoint: [0.7, 1.5, 2.1],
-      },
-    ],
-  },
 
-  /* ── Nikolai: Mysterious, shadowy figure ── */
-  nikolai_intro: {
-    id: 'nikolai_intro',
-    npcId: 'nikolai',
-    durationSeconds: 2.3,
-    textOverlay: 'Николай',
-    subtitle: 'Голос из тени',
-    textDurationMs: 2200,
-    textAccentColor: '#6366f1', // indigo
-    waypoints: [
-      {
-        position: [3, 2.5, 5],
-        lookAt: [0, 1.2, 0],
-        fov: 58,
-        duration: 0,
-      },
-      {
-        position: [2, 2.0, 3.5],
-        lookAt: [0, 1.3, 0],
-        fov: 52,
-        duration: 0.9,
-        controlPoint: [2.5, 2.2, 4.2],
-      },
-      {
-        position: [1.2, 1.6, 2.2],
-        lookAt: [0, 1.4, 0],
-        fov: 45,
-        duration: 0.8,
-        controlPoint: [1.6, 1.8, 2.8],
-      },
-      {
-        position: [0.8, 1.4, 1.5],
-        lookAt: [0, 1.5, 0],
-        fov: 38,
-        duration: 0.6,
-        controlPoint: [1.0, 1.5, 1.8],
-      },
-    ],
-  },
 };
 
 /* ══════════════════════════════════════════════════════════════

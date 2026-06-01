@@ -8,6 +8,7 @@ import { useRef, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { useGameStore } from '@/store/gameStore';
+import { useShallow } from 'zustand/react/shallow';
 import { SCENE_CONFIG } from '@/config/scenes';
 import type { SceneId, SceneExit } from '@/shared/types/game';
 
@@ -17,10 +18,17 @@ interface QuestWaypointsProps {
 
 /** 3D quest waypoint arrows pointing toward active quest target scenes */
 export function QuestWaypoints({ livePlayerPositionRef }: QuestWaypointsProps) {
-  const quests = useGameStore((s) => s.quests);
-  const currentSceneId = useGameStore((s) => s.exploration.currentSceneId);
-  const playerFlags = useGameStore((s) => s.playerState.flags);
-  const playerKarma = useGameStore((s) => s.playerState.karma);
+  // P3-FIX: useShallow for object/array selectors. Without it, quests (array)
+  // and playerFlags (object) return new references on every store update,
+  // causing unnecessary re-renders of this component and its children.
+  const { quests, currentSceneId, playerFlags, playerKarma } = useGameStore(
+    useShallow((s) => ({
+      quests: s.quests,
+      currentSceneId: s.exploration.currentSceneId,
+      playerFlags: s.playerState.flags,
+      playerKarma: s.playerState.karma,
+    })),
+  );
 
   // Determine if there are any active quests
   const hasActiveQuests = useMemo(() => {
