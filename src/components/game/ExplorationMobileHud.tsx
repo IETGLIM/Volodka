@@ -74,7 +74,7 @@ export function ExplorationMobileHud({ onInteractPress, onOpenInventory }: Explo
     <div
       className="fixed bottom-0 left-0 right-0 pointer-events-none"
       data-exploration-ui
-      style={{ zIndex: UI_LAYERS.HUD, paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
+      style={{ zIndex: UI_LAYERS.DIALOGUE + 5, paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
     >
       <div className="flex items-end justify-between px-3 pb-3 sm:px-4 sm:pb-4">
 

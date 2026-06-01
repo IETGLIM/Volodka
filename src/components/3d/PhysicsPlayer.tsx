@@ -186,6 +186,8 @@ export function PhysicsPlayer({
   const stuckLockTimerRef = useRef(0);
   const lastDebugLogRef = useRef(0);
   const warmupFramesRef = useRef(0);
+  const prevRbPosRef = useRef(new THREE.Vector3());
+  const noMovementFramesRef = useRef(0);
 
   const { world, rapier } = useRapier();
 
@@ -459,6 +461,15 @@ export function PhysicsPlayer({
     const rgt = (keys.right ? 1 : 0) + (virtual?.right ?? 0);
     const running = keys.run || (virtual?.run ?? 0) > 0;
 
+    // ─── Mobile debug: log virtual controls periodically (first 5s only) ───
+    if (virtual && (fwd || bwd || lft || rgt)) {
+      const now = performance.now();
+      if (now - lastDebugLogRef.current > 2000) {
+        console.log('[PhysicsPlayer] Input:', { fwd, bwd, lft, rgt, running, virtualForward: virtual.forward, isMoving: fwd+bwd+lft+rgt > 0 });
+        lastDebugLogRef.current = now;
+      }
+    }
+
     moveDir.set(0, 0, 0);
     moveDir.addScaledVector(camFwd, fwd - bwd);
     moveDir.addScaledVector(camRight, rgt - lft);
@@ -731,6 +742,40 @@ export function PhysicsPlayer({
     // ─── Update position ref for camera + other systems ───
     const finalPos = rb.translation();
     livePlayerPositionRef.current.set(finalPos.x, finalPos.y, finalPos.z);
+
+    // ─── EMERGENCY MOBILE FALLBACK ───
+    // If the player has input (isMoving) but the RigidBody position hasn't
+    // changed for 15+ frames, the character controller is silently blocking
+    // movement. This happens on some mobile devices where Rapier WASM
+    // computeColliderMovement returns near-zero displacement despite valid input.
+    // Fix: force-apply velocity directly as a last resort.
+    if (isMoving) {
+      const dx = finalPos.x - prevRbPosRef.current.x;
+      const dz = finalPos.z - prevRbPosRef.current.z;
+      const posDelta = Math.sqrt(dx * dx + dz * dz);
+      if (posDelta < 0.001) {
+        noMovementFramesRef.current++;
+        if (noMovementFramesRef.current >= 15 && !useDirectMovementRef.current) {
+          console.warn('[PhysicsPlayer] Position unchanged for 15 frames despite input — forcing direct movement mode (mobile fallback)');
+          useDirectMovementRef.current = true;
+        }
+        // Even in direct mode, if position still doesn't change, force-apply
+        if (noMovementFramesRef.current >= 30) {
+          const emergencyX = finalPos.x + vel.x * dt;
+          const emergencyZ = finalPos.z + vel.z * dt;
+          const clampedEmerX = Math.max(-halfW, Math.min(halfW, emergencyX));
+          const clampedEmerZ = Math.max(-halfD, Math.min(halfD, emergencyZ));
+          rb.setTranslation({ x: clampedEmerX, y: finalPos.y, z: clampedEmerZ }, true);
+          livePlayerPositionRef.current.set(clampedEmerX, finalPos.y, clampedEmerZ);
+          noMovementFramesRef.current = 15; // Keep in emergency mode but don't let counter grow forever
+        }
+      } else {
+        noMovementFramesRef.current = 0;
+      }
+    } else {
+      noMovementFramesRef.current = 0;
+    }
+    prevRbPosRef.current.set(finalPos.x, finalPos.y, finalPos.z);
   });
 
   // Determine karma glow color
