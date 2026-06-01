@@ -40,6 +40,7 @@ interface FullStoreForSave {
   conversationLog: Record<string, unknown[]>;
   poemPowers: Record<string, { lastUsed: number; cooldownMs: number }>;
   activeTTLFlags: Array<{ key: string; poemId: string; expiryTimestamp: number }>;
+  showStoryOverlay: boolean;
   journalTab: string;
   weatherEnabled: boolean;
   rainIntensity: number;
@@ -172,8 +173,11 @@ export const createSaveSlice: StateCreator<
       introSeen: state.introSeen,
       unlockedAchievements: state.unlockedAchievements,
       discoveredScenes: state.discoveredScenes,
-      triggeredCutscenes: (state as any).triggeredCutscenes ?? [],
-      npcAffinity: (state as any).npcAffinity ?? {},
+      triggeredCutscenes: state.triggeredCutscenes ?? [],
+      npcAffinity: state.npcAffinity ?? {},
+      showStoryOverlay: state.showStoryOverlay ?? false,
+      acceptedDailyMissions: state.acceptedDailyMissions ?? [],
+      lastDailyReset: state.lastDailyReset ?? 0,
       achievementProgress: state.achievementProgress,
       savedAt: Date.now(),
     };
@@ -261,8 +265,11 @@ export const createSaveSlice: StateCreator<
         introSeen: payload.introSeen,
         unlockedAchievements: payload.unlockedAchievements,
         discoveredScenes: payload.discoveredScenes,
-        triggeredCutscenes: (payload as any).triggeredCutscenes ?? [],
-        npcAffinity: (payload as any).npcAffinity ?? {},
+        triggeredCutscenes: payload.triggeredCutscenes ?? [],
+        npcAffinity: payload.npcAffinity ?? {},
+        showStoryOverlay: payload.showStoryOverlay ?? false,
+        acceptedDailyMissions: payload.acceptedDailyMissions ?? [],
+        lastDailyReset: payload.lastDailyReset ?? 0,
         achievementProgress: payload.achievementProgress,
       } as unknown as Partial<FullStoreForSave>);
 

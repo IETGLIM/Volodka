@@ -214,10 +214,20 @@ export const SavePayloadSchema = z.object({
   musicEnabled: z.boolean(),
   musicVolume: boundedNumber(0, 1),
   introSeen: z.boolean().optional().default(false),
+  /** Whether the story overlay is currently shown (P5-FIX: was missing, caused mid-chain save loss) */
+  showStoryOverlay: z.boolean().optional().default(false),
   /** Achievement IDs that have been unlocked, with timestamps */
   unlockedAchievements: z.array(UnlockedAchievementSchema).optional().default([]),
   /** Scene IDs that have been visited/discovered */
   discoveredScenes: z.array(z.string()).optional().default(['volodka_room']),
+  /** Cutscene IDs that have already played (prevents re-triggering on load) */
+  triggeredCutscenes: z.array(z.string()).optional().default([]),
+  /** NPC affinity scores (gift system) */
+  npcAffinity: z.record(z.string(), z.number()).optional().default({}),
+  /** Accepted daily/weekly missions (P5-FIX: was missing from save payload) */
+  acceptedDailyMissions: z.array(z.unknown()).optional().default([]),
+  /** Timestamp of last daily mission reset */
+  lastDailyReset: z.number().optional().default(0),
   /** Persisted achievement tracking data (survives page refresh) */
   achievementProgress: AchievementProgressSchema.optional().default({
     visitedScenes: [],

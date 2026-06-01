@@ -683,6 +683,12 @@ export function GameOrchestrator() {
           store.setMode('exploration');
           eventBus.emit('cutscene:overlay_end', {});
           eventBus.emit('camera:cutscene_end', {});
+          // P5-FIX: Show story overlay if current node has a story node —
+          // previously ESC-skip dumped the player into exploration without
+          // showing the narrative text that was supposed to follow the cutscene.
+          if (STORY_NODES[store.currentNodeId]) {
+            store.setShowStoryOverlay(true);
+          }
           return;
         }
         // Close any active panel (managed by useReducer — mutual exclusivity)

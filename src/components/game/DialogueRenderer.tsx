@@ -449,15 +449,17 @@ export function DialogueRenderer() {
     (choice: DialogueChoice) => {
       audioEngine.playSfx('confirm');
 
-      if (choice.effects) {
-        applyEffects(choice.effects);
-      }
-
+      // P5-FIX: Check skill BEFORE applying effects — previously effects were
+      // applied unconditionally, meaning a failed skill check still gave rewards.
       if (choice.condition?.minSkillCheck) {
         const result = performSkillCheck(choice.condition.minSkillCheck.skill, choice.condition.minSkillCheck.difficulty, playerState.skills);
         setSkillCheckBanner({ skill: choice.condition.minSkillCheck.skill, success: result });
-        if (!result) return;
+        if (!result) return; // Failed — do NOT apply effects or advance
         setTimeout(() => setSkillCheckBanner(null), 1500);
+      }
+
+      if (choice.effects) {
+        applyEffects(choice.effects);
       }
 
       if (choice.next === null) {
@@ -470,13 +472,20 @@ export function DialogueRenderer() {
   );
 
   // ── Auto-advance timer ──
+  // P5-FIX: Pass the actual npcId to checkDialogueCondition instead of ''.
+  // Previously, minNpcRelation conditions were always failing during auto-advance
+  // because the npcId was empty, causing npcRelations.find() to never match.
   useEffect(() => {
     if (!autoAdvance || !done || !node || node.choices.length === 0) return;
+
+    // Resolve the npcId from the current node's speaker for condition checking
+    const currentNpcDef = NPC_DEFINITIONS.find((n) => n.name === node.speaker);
+    const currentNpcId = currentNpcDef?.id ?? '';
 
     // Auto-pick first available choice after delay
     const timer = setTimeout(() => {
       const availableChoice = node.choices.find((c) => {
-        const cond = checkDialogueCondition(c.condition, playerState, npcRelations, '', timeOfDay);
+        const cond = checkDialogueCondition(c.condition, playerState, npcRelations, currentNpcId, timeOfDay);
         return cond.pass;
       });
       if (availableChoice) {

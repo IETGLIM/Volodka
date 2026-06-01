@@ -571,7 +571,7 @@ export const DIALOGUE_NODES: Record<string, DialogueNode> = {
           { type: 'addSkill', skill: 'empathy', value: 2 },
           { type: 'addKarma', value: 3 },
           { type: 'setFlag', flag: 'maria_revealed_past', flagValue: true },
-          { type: 'npcChange', npcId: 'office_colleague', npcChange: { relation: -5 } },
+          { type: 'npcChange', npcId: 'maria', npcChange: { relation: -5 } },
         ],
       },
       {
@@ -613,7 +613,7 @@ export const DIALOGUE_NODES: Record<string, DialogueNode> = {
         next: null,
         effects: [
           { type: 'addSkill', skill: 'empathy', value: 2 },
-          { type: 'npcChange', npcId: 'office_colleague', npcChange: { relation: 3 } },
+          { type: 'npcChange', npcId: 'maria', npcChange: { relation: 3 } },
         ],
       },
     ],
