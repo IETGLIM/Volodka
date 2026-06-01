@@ -382,6 +382,7 @@ export function CutsceneOverlay() {
                 exit={{ opacity: 0, y: 10 }}
                 transition={{ duration: 0.3, ease: 'easeOut' }}
                 onClick={skipCutscene}
+                onTouchStart={(e) => { e.preventDefault(); skipCutscene(); }}
                 className="fixed bottom-6 right-6 z-50 px-5 py-2.5 rounded-lg
                            bg-black/50 backdrop-blur-sm border border-white/10
                            text-white/80 text-sm tracking-wide
@@ -389,10 +390,10 @@ export function CutsceneOverlay() {
                            active:bg-black/80 active:scale-95
                            transition-colors duration-200
                            pointer-events-auto cursor-pointer
-                           select-none"
+                           select-none touch-manipulation"
                 style={{ fontFamily: '"Georgia", "Times New Roman", serif' }}
               >
-                Пропустить (ESC)
+                Пропустить
               </motion.button>
             )}
           </AnimatePresence>

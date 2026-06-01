@@ -390,9 +390,11 @@ const SkipButton = memo(function SkipButton({ onSkip }: SkipButtonProps) {
       animate={{ opacity: 1 }}
       transition={{ delay: 2, duration: 1 }}
       onClick={onSkip}
+      onTouchStart={(e) => { e.preventDefault(); onSkip(); }}
       className="fixed top-8 right-8 z-[70] px-4 py-2 font-mono text-xs tracking-[0.2em] uppercase
                  text-white/30 hover:text-white/70 border border-white/10 hover:border-white/30
-                 bg-black/40 backdrop-blur-sm rounded transition-all duration-300"
+                 bg-black/40 backdrop-blur-sm rounded transition-all duration-300
+                 touch-manipulation select-none active:bg-white/10 active:scale-95"
       aria-label="Пропустить вступление"
     >
       Пропустить ▸▸

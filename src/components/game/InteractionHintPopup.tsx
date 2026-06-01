@@ -7,7 +7,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { User, Package, DoorOpen, Sparkles } from 'lucide-react';
+import { User, Package, DoorOpen, Sparkles, Hand } from 'lucide-react';
 import { useGameStore } from '@/store/gameStore';
 import { eventBus } from '@/engine/EventBus';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
@@ -140,7 +140,7 @@ export function InteractionHintPopup() {
           exit={{ y: 10, opacity: 0 }}
           transition={{ duration: 0.25, ease: 'easeOut' }}
           className="interaction-hint-popup fixed left-1/2 -translate-x-1/2 pointer-events-none select-none"
-          style={{ zIndex: UI_LAYERS.HUD, bottom: 120 }}
+          style={{ zIndex: UI_LAYERS.HUD, bottom: 'env(safe-area-inset-bottom, 0px)' ? 140 : 120 }}
         >
           <div
             className="relative overflow-hidden"
@@ -191,7 +191,7 @@ export function InteractionHintPopup() {
                 <HintIcon type={hint.type} color={accent.color} />
               </div>
 
-              {/* Key binding badge */}
+              {/* Key binding badge — shows touch icon on mobile, [E] on desktop */}
               <div
                 className="hint-key-badge flex-shrink-0 font-mono text-base font-bold px-2 py-0.5 rounded"
                 style={{
@@ -202,7 +202,7 @@ export function InteractionHintPopup() {
                   animation: 'hint-key-pulse 2s ease-in-out infinite',
                 }}
               >
-                [{hint.key}]
+                {'ontouchstart' in window ? <Hand size={16} /> : `[${hint.key}]`}
               </div>
 
               {/* Text content */}

@@ -796,21 +796,20 @@ export function MenuScreen() {
     if (isFadingOut) return;
     setIsFadingOut(true);
     audioEngine.playSfx('confirm');
-    // After fade animation, reset game state and go directly to exploration
-    // (skip the heavy cinematic intro that can cause hangs)
+    // After fade animation, reset game state and show the cinematic intro
     setTimeout(() => {
       try {
         resetGame();
       } catch (e) {
         console.warn('[MenuScreen] resetGame error:', e);
       }
-      // Go directly to exploration with the first story node showing
-      // This avoids the multi-phase cinematic intro that can hang
+      // Go to intro mode — the cinematic intro will play, then auto-transition
+      // to exploration with the first story node. Previously this skipped
+      // the intro entirely which removed the narrative experience.
       const store = useGameStore.getState();
       store.setCurrentNodeId('start');
-      store.setShowStoryOverlay(true);
-      store.setIntroSeen(true);
-      store.setMode('exploration');
+      store.setIntroSeen(false);
+      store.setMode('intro');
     }, 800);
   }, [resetGame, isFadingOut]);
 
@@ -1085,6 +1084,12 @@ export function MenuScreen() {
                     onClick={() => {
                       if (!isDisabled) handleMenuAction(item.id);
                     }}
+                    onTouchStart={(e) => {
+                      if (!isDisabled) {
+                        e.preventDefault();
+                        handleMenuAction(item.id);
+                      }
+                    }}
                     onMouseEnter={() => {
                       if (!isDisabled) {
                         setSelectedIndex(i);
@@ -1109,6 +1114,7 @@ export function MenuScreen() {
                       rounded transition-all duration-300 overflow-hidden
                       ${!isDisabled ? 'menu-btn-enhanced menu-btn-signal-line ripple-out' : ''}
                       ${isDisabled ? 'opacity-30 cursor-not-allowed menu-btn-disabled' : 'cursor-pointer'}
+                      touch-manipulation select-none
                     `}
                   >
                     {/* Selection indicator (keyboard nav) — accent bar with breathing glow */}

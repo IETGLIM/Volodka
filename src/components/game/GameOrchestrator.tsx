@@ -453,13 +453,35 @@ export function GameOrchestrator() {
   // Scene transition tracking
   const prevSceneId = useRef(useGameStore.getState().exploration.currentSceneId);
 
-  // Mobile detection
+  // Mobile detection — uses touch capability + screen size so that
+  // landscape phones (width > 1024 but touch device) still get mobile HUD.
+  // A phone rotated to landscape still needs D-pad / touch controls.
   const [isMobile, setIsMobile] = useState(false);
   useEffect(() => {
-    setIsMobile(typeof window !== 'undefined' && window.innerWidth < 1024);
-    const handleResize = () => setIsMobile(window.innerWidth < 1024);
+    const checkMobile = () => {
+      if (typeof window === 'undefined') return false;
+      const hasTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+      const narrowPortrait = window.innerWidth < 768;
+      const tabletPortrait = window.innerWidth < 1024;
+      // Touch device in portrait (phone) → always mobile
+      if (hasTouch && narrowPortrait) return true;
+      // Touch device in landscape but small height (phone rotated) → still mobile
+      if (hasTouch && window.innerHeight < 500) return true;
+      // Non-touch small screen → mobile
+      if (tabletPortrait && !hasTouch) return true;
+      // Touch device up to 1024px width (tablet portrait)
+      if (hasTouch && tabletPortrait) return true;
+      return false;
+    };
+    setIsMobile(checkMobile());
+    const handleResize = () => setIsMobile(checkMobile());
     window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    // Also re-check on orientation change (more reliable on mobile)
+    window.addEventListener('orientationchange', handleResize);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      window.removeEventListener('orientationchange', handleResize);
+    };
   }, []);
 
   // Scene name banner
