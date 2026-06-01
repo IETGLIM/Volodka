@@ -124,8 +124,34 @@ function ExitMarker({
       });
     };
 
+    // EventBus listener for mobile interact button — same logic as KeyE
+    // but triggered via EventBus instead of synthetic keyboard event
+    const handleInteractPress = () => {
+      if (!showIndicatorRef.current) return;
+      if (cooldownRef.current > 0) return;
+      if (isInteractionLocked()) return;
+      if (hasOverlappingTriggerZone) return;
+      if ((window as any).__volodka_ekey_consumed) return;
+
+      (window as any).__volodka_ekey_consumed = true;
+      setTimeout(() => { (window as any).__volodka_ekey_consumed = false; }, 200);
+
+      cooldownRef.current = EXIT_COOLDOWN;
+      eventBus.emit('scene:transition', {
+        targetScene: exit.targetScene,
+        spawnAt: exit.spawnAt,
+      });
+      eventBus.emit('ui:exploration_message', {
+        text: `Переход: ${exit.label.replace('→ ', '')}`,
+      });
+    };
+
     window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    const unsubInteract = eventBus.on('interact:press', handleInteractPress);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      unsubInteract();
+    };
   }, [exit.targetScene, exit.spawnAt, exit.label, hasOverlappingTriggerZone]);
 
   // E-key handler is registered via useEffect above

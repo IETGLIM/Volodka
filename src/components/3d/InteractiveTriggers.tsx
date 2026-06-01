@@ -389,8 +389,30 @@ function NPCProximityTrigger({
       eventBus.emit('interaction:start', { npcId });
     };
 
+    // EventBus listener for mobile interact button
+    const handleInteractPress = () => {
+      if (!showIndicatorRef.current) return;
+      if (isInteractionLocked()) return;
+      if (globalEKeyConsumed) return;
+      if (eKeyConsumedRef.current) return;
+      if (!allowedIdsRef.current.has(promptId)) return;
+      globalEKeyConsumed = true;
+      eKeyConsumedRef.current = true;
+      (window as any).__volodka_ekey_consumed = true;
+      setTimeout(() => {
+        globalEKeyConsumed = false;
+        eKeyConsumedRef.current = false;
+        (window as any).__volodka_ekey_consumed = false;
+      }, 200);
+      eventBus.emit('interaction:start', { npcId });
+    };
+
     window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    const unsubInteract = eventBus.on('interact:press', handleInteractPress);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      unsubInteract();
+    };
   }, [npcId, promptId, allowedIdsRef]);
 
   // Cleanup on unmount
@@ -688,9 +710,61 @@ function TriggerZoneComponent({
       }, 200);
     };
 
+    // EventBus listener for mobile interact button — same logic as KeyE
+    const handleInteractPress = () => {
+      if (!showIndicatorRef.current) return;
+      if (isInteractionLocked()) return;
+      if (!allowedIdsRef.current.has(zone.id)) return;
+      if (globalEKeyConsumed) return;
+      if (eKeyConsumedRef.current) return;
+      globalEKeyConsumed = true;
+      eKeyConsumedRef.current = true;
+      (window as any).__volodka_ekey_consumed = true;
+      setTimeout(() => {
+        globalEKeyConsumed = false;
+        eKeyConsumedRef.current = false;
+        (window as any).__volodka_ekey_consumed = false;
+      }, 200);
+
+      const sceneId = useGameStore.getState().exploration.currentSceneId;
+
+      if (zone.linkedDialogueNodeId) {
+        const npcDef = NPC_DEFINITIONS.find(
+          (n) => n.dialogueNodeId === zone.linkedDialogueNodeId,
+        );
+        if (npcDef) {
+          eventBus.emit('interaction:start', { npcId: npcDef.id });
+          spawnParticles();
+          return;
+        }
+      }
+
+      eventBus.emit('object:interact', {
+        objectId: zone.id,
+        sceneId,
+        triggerZoneId: zone.id,
+      });
+
+      eventBus.emit('object:highlight', {
+        triggerZoneId: zone.id,
+        position: zone.position,
+        size: zone.size,
+      });
+
+      spawnParticles();
+
+      outlineFlashRef.current = true;
+      if (outlineFlashTimer.current) clearTimeout(outlineFlashTimer.current);
+      outlineFlashTimer.current = setTimeout(() => {
+        outlineFlashRef.current = false;
+      }, 200);
+    };
+
     window.addEventListener('keydown', handleKeyDown);
+    const unsubInteract = eventBus.on('interact:press', handleInteractPress);
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
+      unsubInteract();
       if (outlineFlashTimer.current) clearTimeout(outlineFlashTimer.current);
     };
   }, [zone.id, zone.linkedDialogueNodeId, spawnParticles, allowedIdsRef]);

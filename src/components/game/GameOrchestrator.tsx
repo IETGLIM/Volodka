@@ -456,24 +456,33 @@ export function GameOrchestrator() {
   // Mobile detection — uses touch capability + screen size so that
   // landscape phones (width > 1024 but touch device) still get mobile HUD.
   // A phone rotated to landscape still needs D-pad / touch controls.
+  // v3 FIX: Also detect via pointer:coarse (tablets in landscape) and
+  // screen diagonal (catches large tablets that don't report touch).
   const [isMobile, setIsMobile] = useState(false);
   useEffect(() => {
     const checkMobile = () => {
       if (typeof window === 'undefined') return false;
       const hasTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+      // pointer:coarse detects devices with touch/pen as primary input
+      const hasCoarsePointer = window.matchMedia('(pointer: coarse)').matches;
+      const isTouchDevice = hasTouch || hasCoarsePointer;
       const narrowPortrait = window.innerWidth < 768;
       const tabletPortrait = window.innerWidth < 1024;
-      // Touch device in portrait (phone) → always mobile
-      if (hasTouch && narrowPortrait) return true;
+      // ANY touch device with small viewport → mobile
+      if (isTouchDevice && narrowPortrait) return true;
       // Touch device in landscape but small height (phone rotated) → still mobile
-      // IMPORTANT: raised threshold from 500 to 768 to catch more landscape phones
-      if (hasTouch && window.innerHeight < 768) return true;
+      if (isTouchDevice && window.innerHeight < 768) return true;
       // Non-touch small screen → mobile
-      if (tabletPortrait && !hasTouch) return true;
+      if (tabletPortrait && !isTouchDevice) return true;
       // Touch device up to 1024px width (tablet portrait)
-      if (hasTouch && tabletPortrait) return true;
-      // Any touch device with height < 500 (very wide landscape)
-      if (hasTouch && window.innerHeight < 500) return true;
+      if (isTouchDevice && tabletPortrait) return true;
+      // Any touch device with height < 500 (very wide landscape phone)
+      if (isTouchDevice && window.innerHeight < 500) return true;
+      // Large tablet in landscape (e.g., iPad Pro 12.9") — still touch, still needs controls
+      // Use screen size as fallback: if screen < 14" diagonal ≈ 1200px shortest side
+      if (isTouchDevice && Math.min(window.screen.width, window.screen.height) < 1200) return true;
+      // Any coarse-pointer device that's not a desktop
+      if (hasCoarsePointer && window.innerWidth < 1400) return true;
       return false;
     };
     setIsMobile(checkMobile());
@@ -484,10 +493,14 @@ export function GameOrchestrator() {
     // matchMedia for instant orientation detection
     const mql = window.matchMedia('(orientation: landscape)');
     mql.addEventListener('change', handleResize);
+    // Also re-check when pointer changes (e.g., connecting/disconnecting keyboard)
+    const pql = window.matchMedia('(pointer: coarse)');
+    pql.addEventListener('change', handleResize);
     return () => {
       window.removeEventListener('resize', handleResize);
       window.removeEventListener('orientationchange', handleResize);
       mql.removeEventListener('change', handleResize);
+      pql.removeEventListener('change', handleResize);
     };
   }, []);
 
@@ -691,6 +704,21 @@ export function GameOrchestrator() {
     store.setFlag('tutorialsDisabled', !store.tutorialFlags.tutorialsDisabled);
   }, []);
   const handleOpenMenu = useCallback(() => dispatchPanel('menu'), []);
+
+  // ── Mobile interact callback ──
+  // When the mobile interact button is pressed, advance dialogue/story if active,
+  // otherwise let the synthetic KeyE and EventBus handle the interaction.
+  const handleMobileInteract = useCallback(() => {
+    const store = useGameStore.getState();
+    // In visual-novel mode, advance dialogue/story
+    if (store.mode === 'visual-novel') {
+      // StoryRenderer and DialogueRenderer listen for KeyE keydown to advance.
+      // The synthetic KeyE from ExplorationMobileHud will handle this.
+      // No additional action needed here.
+    }
+    // In combat mode, use attack (synthetic KeyE will work if combat has E-key handlers)
+    // In exploration, the triple-fallback in ExplorationMobileHud handles it
+  }, []);
 
   // ── Render ──
   return (
@@ -911,9 +939,9 @@ export function GameOrchestrator() {
               {/* Floating damage/heal numbers — combat & exploration */}
               <DamageNumberFloat />
 
-              {/* Mobile controls — visible during exploration and visual-novel/cutscene
-                  (player needs D-pad + interact button to advance dialogue on mobile) */}
-              {(mode === 'exploration' || mode === 'visual-novel') && isMobile && <ExplorationMobileHud onOpenInventory={handleOpenInventory} />}
+              {/* Mobile controls — visible during ALL gameplay modes on touch devices
+                  (player needs D-pad to move + interact button to advance/interact) */}
+              {isMobile && <ExplorationMobileHud onInteractPress={handleMobileInteract} onOpenInventory={handleOpenInventory} />}
 
               {/* Story overlay — mutually exclusive with dialogue */}
               {!isDialogueActive && (

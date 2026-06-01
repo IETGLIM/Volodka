@@ -604,6 +604,9 @@ export interface EventMap {
   'npc:animation': { npcId: string; state: 'idle' | 'talk' | 'listen' | 'gesture' };
   'npc:interact_staged': { npcId: string };
 
+  /* ── Mobile interact event (from virtual HUD button) ── */
+  'interact:press': { source?: string };
+
   /* ── Canvas lifecycle events ── */
   'canvas:first-frame': Record<string, never>;
   'canvas:context-lost': Record<string, never>;
