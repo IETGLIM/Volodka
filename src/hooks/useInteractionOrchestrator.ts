@@ -97,8 +97,12 @@ export function useInteractionOrchestrator(
           applyInteractionEffects(zone.effects);
         }
 
-        // Mark one-time trigger as used
-        if (zone.isOneTime) {
+        const hasLinkedContent = !!(
+          zone.linkedDialogueNodeId || zone.linkedStoryNodeId || zone.linkedMinigame
+        );
+        // Defer one-time mark when examine has linked content — user must press Continue
+        const deferOneTimeMark = zone.isOneTime && !!zone.examineData && hasLinkedContent;
+        if (zone.isOneTime && !deferOneTimeMark) {
           store.toggleInteractiveObject(triggerZoneId);
         }
 
@@ -128,8 +132,6 @@ export function useInteractionOrchestrator(
         };
 
         // ── Show ExaminePanel, then wait for user to press "Continue" (G10 fix) ──
-        const hasLinkedContent = !!(zone.linkedDialogueNodeId || zone.linkedStoryNodeId || zone.linkedMinigame);
-
         if (zone.examineData) {
           // Show ExaminePanel and wait for explicit user confirmation
           setExamineData(zone.examineData);
@@ -298,6 +300,9 @@ export function useInteractionOrchestrator(
     }
 
     const store = useGameStore.getState();
+    if (zone.isOneTime) {
+      store.toggleInteractiveObject(zone.id);
+    }
     if (zone.linkedDialogueNodeId && DIALOGUE_NODES[zone.linkedDialogueNodeId]) {
       store.setMode('visual-novel');
       store.setCurrentNodeId(zone.linkedDialogueNodeId);

@@ -87,10 +87,29 @@ function CornerBrackets({ accentColor }: { accentColor: string }) {
 }
 
 /* ── Main component ── */
+function useTouchMobileLayout(): boolean {
+  const [isTouchMobile, setIsTouchMobile] = useState(false);
+  useEffect(() => {
+    const check = () => {
+      const hasTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+      setIsTouchMobile(hasTouch && window.innerWidth < 1024);
+    };
+    check();
+    window.addEventListener('resize', check);
+    window.addEventListener('orientationchange', check);
+    return () => {
+      window.removeEventListener('resize', check);
+      window.removeEventListener('orientationchange', check);
+    };
+  }, []);
+  return isTouchMobile;
+}
+
 export function InteractionHintPopup() {
   const mode = useGameStore((s) => s.mode);
   const [hint, setHint] = useState<InteractionHint | null>(null);
   const [isVisible, setIsVisible] = useState(false);
+  const isTouchMobile = useTouchMobileLayout();
 
   /* ── Listen for interaction:hint event ── */
   useEffect(() => {
@@ -140,7 +159,12 @@ export function InteractionHintPopup() {
           exit={{ y: 10, opacity: 0 }}
           transition={{ duration: 0.25, ease: 'easeOut' }}
           className="interaction-hint-popup fixed left-1/2 -translate-x-1/2 pointer-events-none select-none"
-          style={{ zIndex: UI_LAYERS.HUD, bottom: 'env(safe-area-inset-bottom, 0px)' ? 140 : 120 }}
+          style={{
+            zIndex: UI_LAYERS.HUD,
+            bottom: isTouchMobile
+              ? 'calc(140px + env(safe-area-inset-bottom, 0px))'
+              : 'calc(120px + env(safe-area-inset-bottom, 0px))',
+          }}
         >
           <div
             className="relative overflow-hidden"
