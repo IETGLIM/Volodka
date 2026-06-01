@@ -42,6 +42,28 @@ export function ExplorationMobileHud({ onInteractPress, onOpenInventory }: Explo
 
   const handleInteract = useCallback(() => {
     onInteractPress?.();
+    // CRITICAL FIX: Mobile has no keyboard, so the E-key interaction system
+    // (InteractiveTriggers, SceneExitIndicator, NPCSystem) never fires.
+    // Dispatch a synthetic KeyE event so all keydown listeners pick it up.
+    // This makes the "Action" button work for: opening doors, examining objects,
+    // talking to NPCs, and transitioning between scenes.
+    try {
+      window.dispatchEvent(new KeyboardEvent('keydown', {
+        code: 'KeyE',
+        key: 'e',
+        bubbles: true,
+        cancelable: true,
+      }));
+      // Auto-release after a frame so interact state resets properly
+      requestAnimationFrame(() => {
+        window.dispatchEvent(new KeyboardEvent('keyup', {
+          code: 'KeyE',
+          key: 'e',
+          bubbles: true,
+          cancelable: true,
+        }));
+      });
+    } catch { /* ignore on SSR */ }
   }, [onInteractPress]);
 
   /* Base button class: 44px+ touch targets, focus-visible ring, active state */

@@ -1766,6 +1766,16 @@ function transitionToPlayerTurn(state: CombatState): void {
   let workingState: CombatState = {
     ...afterBuffTick,
     turn: afterBuffTick.turn + 1,
+    // Reset backward-compat flags at the start of each player turn.
+    // These are consumed during the enemy's turn and must not persist;
+    // the buff system handles duration-based effects.
+    enemyDefending: false,
+    doubleAttack: false,
+    playerDefending: false,
+    // Safety: clear any stale side effects that survived from a previous turn.
+    // consumeSideEffects() is the primary clearing mechanism, but this
+    // prevents re-application if a consumer reads the state between turns.
+    _sideEffects: [],
     log: [...afterBuffTick.log, ...expiredLog, ...drainLog],
   };
 

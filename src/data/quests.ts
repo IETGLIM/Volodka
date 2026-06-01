@@ -20,7 +20,7 @@ export const QUEST_DEFINITIONS: QuestDefinition[] = [
     objectives: [
       {
         id: 'find_first_poem',
-        description: 'Найти первое стихотворение на рабочем столе',
+        description: 'Расшифровать послание в коде гильдии',
         type: 'poem_collected',
         target: 'poem_1',
         completed: false,
@@ -37,7 +37,7 @@ export const QUEST_DEFINITIONS: QuestDefinition[] = [
       { type: 'addSkill', skill: 'writing', value: 2 },
       { type: 'addKarma', value: 5 },
     ],
-    linkedStoryNodeId: 'room_table',
+    linkedStoryNodeId: 'fix_success',
   },
 
   /* ─────────────── QUEST 2: Connection with Maria ─────────────── */
