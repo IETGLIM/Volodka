@@ -219,23 +219,28 @@ export function GameOrchestrator() {
   //   setIsTransitioning(false) → mode change effect → setCanvasReady(false) → LOOP
   //   By using refs, we break the cycle — React state changes only once (isTransitioning).
   const [isTransitioning, setIsTransitioning] = useState(false);
+  // P6-FIX: Add canvasReady STATE (not just ref) so React re-renders when
+  // the canvas becomes ready. Previously, canvasReadyRef was a ref only,
+  // so the LoadingScreen condition `!canvasReadyRef.current` was never
+  // re-evaluated, causing the loading overlay to block the menu forever.
+  const [canvasReady, setCanvasReady] = useState(false);
   const canvasReadyRef = useRef(false);
   const prevModeRef = useRef(mode);
   const fallbackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const fadeOutTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Listen for canvas:first-frame event — sets ref, triggers fade-out
+  // Listen for canvas:first-frame event — sets ref AND state, triggers fade-out
   useEffect(() => {
     const unsub = eventBus.on('canvas:first-frame', () => {
-      if (!canvasReadyRef.current && isTransitioning) {
-        canvasReadyRef.current = true;
+      canvasReadyRef.current = true;
+      setCanvasReady(true);
+      if (isTransitioning) {
         // Clear fallback timer
         if (fallbackTimerRef.current) { clearTimeout(fallbackTimerRef.current); fallbackTimerRef.current = null; }
         // Start fade-out
         if (fadeOutTimerRef.current) clearTimeout(fadeOutTimerRef.current);
         fadeOutTimerRef.current = setTimeout(() => setIsTransitioning(false), 300);
       }
-      canvasReadyRef.current = true;
     });
     return unsub;
   }, [isTransitioning]);
@@ -265,6 +270,7 @@ export function GameOrchestrator() {
       const isComingFromHiddenCanvas = prevMode === 'menu';
       if (isComingFromHiddenCanvas) {
         canvasReadyRef.current = false;
+        setCanvasReady(false);
       }
 
       // Check if canvas is already ready (e.g. already rendered a frame)
@@ -278,6 +284,7 @@ export function GameOrchestrator() {
 
       // Canvas not ready yet — show overlay until first frame
       canvasReadyRef.current = false;
+      setCanvasReady(false);
       setIsTransitioning(true);
 
       // SAFETY: Fallback timer — if canvas:first-frame never fires,
@@ -286,6 +293,7 @@ export function GameOrchestrator() {
       fallbackTimerRef.current = setTimeout(() => {
         console.warn('[GameOrchestrator] Canvas first-frame timeout — forcing transition overlay off');
         canvasReadyRef.current = true;
+        setCanvasReady(true);
         if (fadeOutTimerRef.current) clearTimeout(fadeOutTimerRef.current);
         fadeOutTimerRef.current = setTimeout(() => setIsTransitioning(false), 200);
       }, CUTSCENE_TIMINGS.CANVAS_TIMEOUT_MS);
@@ -769,8 +777,14 @@ export function GameOrchestrator() {
           {mode === 'menu' && <MenuScreen />}
 
           {/* ── Initial loading — canvas warming up ── */}
-          {mode === 'menu' && !canvasReadyRef.current && (
-            <LoadingScreen showTitle={true} message="Инициализация..." />
+          {/* P6-FIX: Use canvasReady STATE instead of canvasReadyRef.current.
+              The ref doesn't trigger re-renders, so the LoadingScreen was
+              blocking the menu forever. Also add pointer-events: none as a
+              safety net — even if briefly visible, it won't block clicks. */}
+          {mode === 'menu' && !canvasReady && (
+            <div style={{ pointerEvents: 'none' }}>
+              <LoadingScreen showTitle={true} message="Инициализация..." />
+            </div>
           )}
 
           {/* ── Intro mode — skip if already seen ── */}
