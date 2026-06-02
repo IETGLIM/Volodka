@@ -80,6 +80,10 @@ interface NPCProps {
   activity?: string;
   /** Patrol waypoints for wandering behavior */
   patrolWaypoints?: [number, number, number][];
+  /** Internal LOD override: enable expensive shadow casting only on near NPCs */
+  _lodShadows?: boolean;
+  /** Internal LOD override for animation complexity */
+  _lodAnimationDetail?: 'full' | 'reduced' | 'idle-only';
 }
 
 /** Single NPC with LOD, animations, quest markers, bark, speech bubble,
@@ -93,6 +97,8 @@ export function NPC({
   isInteractionTarget = false,
   activity = 'idle',
   patrolWaypoints,
+  _lodShadows = true,
+  _lodAnimationDetail = 'full',
 }: NPCProps) {
   const groupRef = useRef<THREE.Group>(null);
   const [lodState, setLodState] = useState<'far' | 'near'>('far');
@@ -272,6 +278,8 @@ export function NPC({
             interactionState={interactionState}
             isInteractionTarget={isInteractionTarget}
             activity={shouldPatrol(activity, isInteractionTarget, !!patrolWaypoints?.length) ? patrolActivity : activity}
+            castShadows={_lodShadows}
+            animationDetail={_lodAnimationDetail}
           />
         </Suspense>
       )}
@@ -395,11 +403,15 @@ function NPCModel({
   interactionState,
   isInteractionTarget,
   activity,
+  castShadows,
+  animationDetail,
 }: {
   definition: NPCDefinition;
   interactionState: InteractionState;
   isInteractionTarget: boolean;
   activity: string;
+  castShadows: boolean;
+  animationDetail: 'full' | 'reduced' | 'idle-only';
 }) {
   const groupRef = useRef<THREE.Group>(null);
   const modelPath = rewriteLegacyModelPath(definition.modelPath ?? '/models-external/khronos_cc0_CesiumMan.glb');
@@ -553,7 +565,7 @@ function NPCModel({
 
   // ── Animation state management with crossfade ──
   const currentAnimRef = useRef<string>('idle');
-  const crossfadeDuration = 0.3;
+  const crossfadeDuration = animationDetail === 'full' ? 0.3 : animationDetail === 'reduced' ? 0.2 : 0.1;
 
   /** Find best matching animation action for a state name */
   const findAction = useCallback((stateName: string): THREE.AnimationAction | null => {
@@ -731,7 +743,7 @@ function NPCModel({
       />
 
       {/* Main model */}
-      <primitive object={clonedScene} castShadow />
+      <primitive object={clonedScene} castShadow={castShadows} />
 
       {/* Head accessories */}
       <NPCHeadAccessory
@@ -770,11 +782,15 @@ function NPCModelWithErrorBoundary({
   interactionState,
   isInteractionTarget,
   activity,
+  castShadows,
+  animationDetail,
 }: {
   definition: NPCDefinition;
   interactionState: InteractionState;
   isInteractionTarget: boolean;
   activity: string;
+  castShadows: boolean;
+  animationDetail: 'full' | 'reduced' | 'idle-only';
 }) {
   const appearance = definition.appearance ?? DEFAULT_APPEARANCE;
 
@@ -816,6 +832,8 @@ function NPCModelWithErrorBoundary({
         interactionState={interactionState}
         isInteractionTarget={isInteractionTarget}
         activity={activity}
+        castShadows={castShadows}
+        animationDetail={animationDetail}
       />
     </NPCGLBModelErrorBoundary>
   );
