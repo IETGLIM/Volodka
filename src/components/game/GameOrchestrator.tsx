@@ -17,6 +17,7 @@ import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { CUTSCENE_TIMINGS } from '@/shared/constants/transitionTimings';
 import { VirtualControlsContext, sharedVirtualControlsRef } from '@/engine/VirtualControlsState';
 import { processExpiredTTLFlags } from '@/engine/PoemPowerSystem';
+import { initGuidedStoryManager, disposeGuidedStoryManager, getActQuote } from '@/engine/GuidedStoryManager';
 
 // ── GLB model preloading is handled inside GLBPlayerModel.tsx ──
 // (single preload call for the player model — CesiumMan)
@@ -153,6 +154,18 @@ import { PerksPanel } from './PerksPanel';
 import { QuestBoardPanel } from './QuestBoardPanel';
 import { PlayerStatsPanel } from './PlayerStatsPanel';
 
+// ── Orphan integration: quest dialogs, notifications, story HUD, karma/poem, level-up ──
+import { QuestAcceptDialog } from './QuestAcceptDialog';
+import { QuestCompleteDialog } from './QuestCompleteDialog';
+import { QuestNotificationSystem } from './QuestNotificationSystem';
+import { StoryGuidanceHUD } from './StoryGuidanceHUD';
+import { KarmaPoemInfoPanel } from './KarmaPoemInfoPanel';
+import { LevelUpSummary } from './LevelUpSummary';
+import { RewardDisplay } from './RewardDisplay';
+import { MatrixRainQuote } from './MatrixRainQuote';
+import { CinematicMatrixIntro } from './CinematicMatrixIntro';
+import { CyberpunkThemeProvider } from './CyberpunkTheme';
+
 
 
 /* ── Helper: Auto-skip intro via useEffect (avoids render-phase mutation) ── */
@@ -170,7 +183,7 @@ function IntroAutoSkip() {
 }
 
 /* ── Panel state types & reducer (P0-2.5) ── */
-type PanelType = 'quests' | 'inventory' | 'poetry' | 'menu' | 'rest' | 'shortcuts' | 'settings' | 'saveSlot' | 'miniGameHub' | 'npcRelation' | 'characterProfile' | 'codex' | 'dialogueHistory' | 'achievements' | 'skillTree' | 'crafting' | 'trading' | 'fastTravel' | 'perks' | 'questBoard' | 'stats' | null;
+type PanelType = 'quests' | 'inventory' | 'poetry' | 'menu' | 'rest' | 'shortcuts' | 'settings' | 'saveSlot' | 'miniGameHub' | 'npcRelation' | 'characterProfile' | 'codex' | 'dialogueHistory' | 'achievements' | 'skillTree' | 'crafting' | 'trading' | 'fastTravel' | 'perks' | 'questBoard' | 'stats' | 'karmaPoem' | null;
 
 function panelReducer(prev: PanelType, next: PanelType): PanelType {
   return prev === next ? null : next;
@@ -200,6 +213,14 @@ export function GameOrchestrator() {
   useAchievementChecker();
   // ── World Clock: single pulse for NPC schedules, weather, quests ──
   useWorldClock();
+
+  // ── Guided Story Manager: linear story progression ──
+  // Initializes once and subscribes to EventBus events to auto-advance golden path.
+  // Emits 'story:guidance_update' and 'story:act_transition' events.
+  useEffect(() => {
+    initGuidedStoryManager();
+    return () => { disposeGuidedStoryManager(); };
+  }, []);
 
   // Destructure interaction state for convenience
   const {
@@ -436,6 +457,51 @@ export function GameOrchestrator() {
   const perksOpen = activePanel === 'perks';
   const questBoardOpen = activePanel === 'questBoard';
   const statsOpen = activePanel === 'stats';
+  const karmaPoemOpen = activePanel === 'karmaPoem';
+
+  // ── Quest dialog state (controlled by EventBus events) ──
+  const [questAcceptId, setQuestAcceptId] = useState<string | null>(null);
+  const [questAcceptNpcId, setQuestAcceptNpcId] = useState<string | undefined>(undefined);
+  const [questCompleteId, setQuestCompleteId] = useState<string | null>(null);
+  const [questCompleteNpcId, setQuestCompleteNpcId] = useState<string | undefined>(undefined);
+
+  // ── MatrixRainQuote state (act transition cinematic) ──
+  const [matrixQuote, setMatrixQuote] = useState<{ text: string; actNumber: number } | null>(null);
+
+  // ── Cinematic Matrix Intro state ──
+  const [showCinematicIntro, setShowCinematicIntro] = useState(false);
+
+  // ── Listen for quest dialog events ──
+  useEffect(() => {
+    const unsubAvailable = eventBus.on('story:quest_available', (data) => {
+      setQuestAcceptId(data.questId);
+      setQuestAcceptNpcId(data.npcId);
+    });
+    const unsubComplete = eventBus.on('quest:completed', (data) => {
+      setQuestCompleteId(data.questId);
+      setQuestCompleteNpcId(undefined);
+    });
+    return () => { unsubAvailable(); unsubComplete(); };
+  }, []);
+
+  // ── Listen for act transition events → show MatrixRainQuote ──
+  useEffect(() => {
+    const unsub = eventBus.on('story:act_transition', (data) => {
+      const actNum = data.toAct;
+      const quote = getActQuote(actNum);
+      if (quote) {
+        setMatrixQuote({ text: quote, actNumber: actNum });
+      }
+    });
+    return unsub;
+  }, []);
+
+  // ── Show cinematic intro on first game start ──
+  useEffect(() => {
+    if (mode === 'exploration' && !introSeen) {
+      setShowCinematicIntro(true);
+    }
+  }, [mode, introSeen]);
 
   // ── Close all panels (used for mutual exclusivity) ──
   const closeAllPanels = useCallback(() => {
@@ -667,6 +733,7 @@ export function GameOrchestrator() {
       if (e.code === 'KeyF') { dispatchPanel('fastTravel'); }
       if (e.code === 'KeyV') { dispatchPanel('perks'); }
       if (e.code === 'KeyB') { dispatchPanel('questBoard'); }
+      if (e.code === 'KeyY') { dispatchPanel('karmaPoem'); }
       if (e.code === 'KeyS' && e.shiftKey && !e.ctrlKey) { e.preventDefault(); dispatchPanel('stats'); }
       if (e.shiftKey && e.code === 'KeyT') { e.preventDefault(); dispatchPanel('trading'); }
       if (e.code === 'KeyR') {
@@ -752,6 +819,7 @@ export function GameOrchestrator() {
   // ── Render ──
   return (
     <VirtualControlsContext.Provider value={sharedVirtualControlsRef}>
+    <CyberpunkThemeProvider>
     <div className="fixed inset-0 bg-black overflow-hidden" style={{ touchAction: 'none' }}>
       <>
           {/* ── Mode transition overlay — persistent black backdrop that ONLY fades
@@ -818,11 +886,43 @@ export function GameOrchestrator() {
             <RPGGameCanvas />
           </div>
 
+          {/* ── Cinematic Matrix Intro (one-time, shown before first gameplay) ── */}
+          <AnimatePresence>
+            {showCinematicIntro && (
+              <CinematicMatrixIntro
+                onComplete={() => {
+                  setShowCinematicIntro(false);
+                  useGameStore.getState().setIntroSeen(true);
+                }}
+              />
+            )}
+          </AnimatePresence>
+
+          {/* ── Matrix Rain Quote overlay (act transitions) ── */}
+          <AnimatePresence>
+            {matrixQuote && (
+              <MatrixRainQuote
+                text={matrixQuote.text}
+                actNumber={matrixQuote.actNumber}
+                onDismiss={() => setMatrixQuote(null)}
+              />
+            )}
+          </AnimatePresence>
+
           {/* ── Exploration / visual-novel / cutscene / combat UI layers ── */}
           {(mode === 'exploration' || mode === 'visual-novel' || mode === 'cutscene' || mode === 'combat') && (
             <>
               {/* ── Global notification toasts ── */}
               <NotificationToasts />
+
+              {/* ── Quest notification system (auto-triggers on quest events) ── */}
+              <QuestNotificationSystem />
+
+              {/* ── Story guidance HUD (top-center, shows current objective) ── */}
+              <StoryGuidanceHUD />
+
+              {/* ── Level-up summary overlay (auto-triggers on level-up) ── */}
+              <LevelUpSummary />
 
               {/* ── Event notification popups (combat, scene, quest, achievement) ── */}
               <EventNotificationPopup />
@@ -1227,8 +1327,32 @@ export function GameOrchestrator() {
 
           {/* ── Keyboard Shortcuts Help ── */}
           <ShortcutsOverlay open={shortcutsOpen} onClose={() => dispatchPanel(null)} />
+
+          {/* ── Quest Accept Dialog (Warcraft-style with portrait) ── */}
+          <QuestAcceptDialog
+            questId={questAcceptId}
+            npcId={questAcceptNpcId}
+            onClose={() => { setQuestAcceptId(null); setQuestAcceptNpcId(undefined); }}
+            onAccept={(qid) => {
+              useGameStore.getState().activateQuest(qid);
+              setQuestAcceptId(null);
+              setQuestAcceptNpcId(undefined);
+              eventBus.emit('quest:accepted', { questId: qid });
+            }}
+          />
+
+          {/* ── Quest Complete Dialog (reward display) ── */}
+          <QuestCompleteDialog
+            questId={questCompleteId}
+            npcId={questCompleteNpcId}
+            onClose={() => { setQuestCompleteId(null); setQuestCompleteNpcId(undefined); }}
+          />
+
+          {/* ── Karma & Poem Info Panel ── */}
+          <KarmaPoemInfoPanel open={karmaPoemOpen} onClose={() => dispatchPanel(null)} />
       </>
     </div>
+    </CyberpunkThemeProvider>
     </VirtualControlsContext.Provider>
   );
 }

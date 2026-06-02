@@ -10,6 +10,7 @@ import type {
   EquipmentSlot,
   InventoryItem,
 } from '@/shared/types/game';
+import { createInventoryItem } from '@/data/items';
 import {
   INITIAL_PLAYER_NAME,
   INITIAL_KARMA,
@@ -101,7 +102,13 @@ export function createDefaultPlayerState(): PlayerState {
     energy: INITIAL_ENERGY,
     stress: INITIAL_STRESS,
     credits: 100,
-    inventory: [],
+    inventory: [
+      createInventoryItem('coffee', 2),
+      createInventoryItem('tea', 1),
+      createInventoryItem('lighter', 1),
+      createInventoryItem('scraps', 3),
+      createInventoryItem('usb_drive', 1),
+    ],
     equippedItems: {
       head: null,
       body: null,

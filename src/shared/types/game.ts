@@ -575,6 +575,7 @@ export interface EventMap {
   'ui:exploration_message': { text: string };
   'exploration:footstep': { position: [number, number, number]; yaw: number };
   'quest:activated': { questId: string };
+  'quest:accepted': { questId: string };
   'quest:completed': { questId: string };
   'quest:failed': { questId: string; reason: string };
   'quest:objective_updated': { questId: string; objectiveId: string };
