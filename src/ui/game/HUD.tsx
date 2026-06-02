@@ -305,7 +305,7 @@ export default function HUD({
   }, [inventory.length, collectedPoems.length]);
 
   return (
-    <div className="relative z-30 min-h-0 min-w-0 shrink-0 pointer-events-none">
+    <div className="relative z-40 min-h-0 min-w-0 shrink-0 pointer-events-none">
       {/* Semi-transparent dark panel with grid pattern — без `layout`: меньше CLS от FLIP */}
       <motion.div
         data-exploration-ui
@@ -353,7 +353,7 @@ export default function HUD({
               АКТ {playerState.act}
             </div>
             <p
-              className="w-full basis-full font-mono text-[9px] text-slate-500/80 leading-snug max-w-[min(36rem,92vw)] mt-1"
+              className="mt-1 hidden w-full basis-full max-w-[min(30rem,92vw)] font-mono text-[9px] leading-snug text-slate-500/80 xl:block"
               title="Подсказка по системе"
             >
               Слева: уровень как «годы» опыта (макс. 35); у портрета полосы Здоровье (энергия) и Карма (как «мана»). Моральный компас и вспышки смены кармы — внизу слева на широком экране. Фракции ⚔️ — отдельная репутация. Цели в «Квесты» 📋 и в трекере; терминал 💻 — учебные задачи.
@@ -363,7 +363,7 @@ export default function HUD({
 
           {/* Right side: action buttons */}
           <div
-            className={`flex gap-1.5 ${narrow ? 'max-w-full flex-nowrap overflow-x-auto pb-1 [-webkit-overflow-scrolling:touch]' : 'flex-wrap'}`}
+            className={`flex gap-1.5 ${narrow ? 'max-w-full flex-nowrap overflow-x-auto pb-1 [-webkit-overflow-scrolling:touch]' : 'max-w-[min(45vw,38rem)] flex-wrap justify-end'}`}
           >
             {actionButtons.map((btn) => (
               <CyberActionBtn

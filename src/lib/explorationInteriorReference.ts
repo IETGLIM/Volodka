@@ -54,6 +54,8 @@ export const INTERIOR_REF_COFFEE_TABLE_SURFACE_Y_M = 0.52;
 /**
  * Минимальный габарит **CuboidCollider** у вертикальных стен (`PhysicsWall`):
  * тоньше 0.1–0.12 м капсула игрока может «просочиться» в углах Rapier.
+ * Применяется только к wall-коллайдерам (периметры/косяки); obstacle/furniture-коллайдеры
+ * остаются в авторском размере и клампятся вручную только при явной необходимости.
  */
 export const INTERIOR_PHYSICS_COLLIDER_WALL_MIN_EXTENT_M = 0.12;
 

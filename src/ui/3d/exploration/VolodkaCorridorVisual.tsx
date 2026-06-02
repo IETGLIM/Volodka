@@ -80,6 +80,20 @@ export const VolodkaCorridorVisual = memo(function VolodkaCorridorVisual({
         <meshStandardMaterial color="#4a3f35" roughness={0.78} />
       </mesh>
 
+      {/* Номера дверей + лужа у окна */}
+      <mesh position={[-0.55, 1.62, -d / 2 + 0.42]}>
+        <boxGeometry args={[0.12, 0.08, 0.02]} />
+        <meshStandardMaterial color="#94a3b8" emissive="#64748b" emissiveIntensity={0.15} />
+      </mesh>
+      <mesh position={[0.55, 1.62, d / 2 - 0.42]}>
+        <boxGeometry args={[0.12, 0.08, 0.02]} />
+        <meshStandardMaterial color="#94a3b8" emissive="#64748b" emissiveIntensity={0.15} />
+      </mesh>
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[w / 2 - 0.35, 0.012, 3.8]} receiveShadow>
+        <planeGeometry args={[0.55, 0.35]} />
+        <meshStandardMaterial color="#6b7280" roughness={0.2} metalness={0.35} transparent opacity={0.55} />
+      </mesh>
+
       {/* Дорожка по центру пола */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.018, 0]} receiveShadow>
         <planeGeometry args={[1.1, 10.5]} />

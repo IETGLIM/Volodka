@@ -8,6 +8,7 @@ export function storyNodeShowsStoryOverlay(node: StoryNode | undefined): boolean
     Boolean(node.choices?.length) ||
     Boolean(node.autoNext) ||
     node.type === 'poem_game' ||
-    node.type === 'interpretation'
+    node.type === 'interpretation' ||
+    (node.type === 'minigame' && Boolean(node.minigame))
   );
 }

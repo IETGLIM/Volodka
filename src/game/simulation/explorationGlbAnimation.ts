@@ -9,6 +9,12 @@ export type ExplorationGlbAnimPlan = {
   singleClipMode: boolean;
 };
 
+export type ExplorationMoveDirection =
+  | 'forward'
+  | 'backward'
+  | 'strafe_left'
+  | 'strafe_right';
+
 /**
  * По списку имён экшенов и флагам движения возвращает ключ целевого клипа или `null`, если играть нечего.
  */
@@ -16,6 +22,7 @@ export function planExplorationGlbLocomotionClip(
   animationNames: string[],
   isMoving: boolean,
   isRunning: boolean,
+  moveDirection: ExplorationMoveDirection = 'forward',
 ): ExplorationGlbAnimPlan | null {
   if (animationNames.length === 0) return null;
 
@@ -42,9 +49,50 @@ export function planExplorationGlbLocomotionClip(
         runPrefer ??
         null;
 
+  const backwardWalkPrefer =
+    animationNames.find((n) => {
+      const l = n.toLowerCase();
+      return (
+        (l.includes('back') || l.includes('backward') || l.includes('reverse')) &&
+        !l.includes('run')
+      );
+    }) ?? null;
+
+  const strafeLeftWalkPrefer =
+    animationNames.find((n) => {
+      const l = n.toLowerCase();
+      return (
+        (l.includes('strafe') && l.includes('left')) ||
+        (l.includes('left') && l.includes('walk'))
+      );
+    }) ?? null;
+
+  const strafeRightWalkPrefer =
+    animationNames.find((n) => {
+      const l = n.toLowerCase();
+      return (
+        (l.includes('strafe') && l.includes('right')) ||
+        (l.includes('right') && l.includes('walk'))
+      );
+    }) ?? null;
+
   let targetAnim = idleAnim;
   if (isMoving) {
-    if (!singleClipMode && isRunning && runPrefer && animationNames.includes(runPrefer)) {
+    if (moveDirection === 'backward' && backwardWalkPrefer && animationNames.includes(backwardWalkPrefer)) {
+      targetAnim = backwardWalkPrefer;
+    } else if (
+      moveDirection === 'strafe_left' &&
+      strafeLeftWalkPrefer &&
+      animationNames.includes(strafeLeftWalkPrefer)
+    ) {
+      targetAnim = strafeLeftWalkPrefer;
+    } else if (
+      moveDirection === 'strafe_right' &&
+      strafeRightWalkPrefer &&
+      animationNames.includes(strafeRightWalkPrefer)
+    ) {
+      targetAnim = strafeRightWalkPrefer;
+    } else if (!singleClipMode && isRunning && runPrefer && animationNames.includes(runPrefer)) {
       targetAnim = runPrefer;
     } else if (walkPrefer && animationNames.includes(walkPrefer)) {
       targetAnim = walkPrefer;

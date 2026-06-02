@@ -127,7 +127,7 @@ export const PlayerOrbitHeader = memo(function PlayerOrbitHeader({
           className={`pointer-events-none absolute inset-0 bg-gradient-to-br ${PORTRAIT_HOLO} opacity-35 mix-blend-overlay`}
         />
       </div>
-      <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+      <div className="flex min-w-0 flex-1 flex-col gap-1.5 overflow-hidden">
         <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
           <span className="truncate font-mono text-[11px] uppercase tracking-wide text-cyan-200/90 sm:text-xs">
             Володька
@@ -137,7 +137,7 @@ export const PlayerOrbitHeader = memo(function PlayerOrbitHeader({
           </span>
         </div>
 
-        <div className="w-full max-w-[15rem] space-y-1 sm:max-w-[17rem]">
+        <div className="w-full max-w-[13.5rem] space-y-1 sm:max-w-[15.5rem]">
           <WoWStyleResourceBar
             labelRu="Здоровье"
             labelEn="Health"
@@ -158,7 +158,7 @@ export const PlayerOrbitHeader = memo(function PlayerOrbitHeader({
           />
         </div>
 
-        <div className="w-full max-w-[15rem] sm:max-w-[17rem]">
+        <div className="w-full max-w-[13.5rem] sm:max-w-[15.5rem]">
           <div className="mb-0.5 flex justify-between text-[8px] font-mono text-slate-500 sm:text-[9px]">
             <span>опыт</span>
             <span>

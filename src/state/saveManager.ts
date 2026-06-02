@@ -5,6 +5,7 @@ import { useFactionStore } from './factionStore';
 import { useInventoryStore } from './inventoryStore';
 import { useAppStore } from './appStore';
 import { useGamePhaseStore } from './gamePhaseStore';
+import { useSessionPresetStore } from './sessionPresetStore';
 import { eventBus } from '@/engine/EventBus';
 import { getExplorationLivePlayerPositionOrNull } from '@/lib/explorationLivePlayerBridge';
 import {
@@ -13,19 +14,29 @@ import {
   LOCAL_SAVE_WARN_BYTES,
 } from '@/lib/persistedGameSnapshot';
 import { sanitizeExplorationSceneId } from '@/config/scenes';
+import {
+  FULL_STORY_SAVE_KEY,
+  getSessionPreset,
+  resolveSessionPresetFromSaveMeta,
+  type SessionGamePreset,
+} from '@/config/gameModePresets';
 import { VERTICAL_SLICE_ENTRY_NODE_ID } from '@/data/verticalSliceStoryNodes';
-import type { GameMode, ExplorationState, NPCState, PlayerPosition } from '@/data/rpgTypes';
+import type { GameMode, ExplorationState } from '@/data/rpgTypes';
 import type { PlayerState, ChoiceLogEntry, NPCRelation } from '@/data/types';
 import type { FactionId, FactionReputation } from '@/shared/types/factions';
 import { experienceRequiredForNextLevel } from '@/lib/rpgLeveling';
 import { INITIAL_PLAYER } from './playerStore';
 import { getItemById } from '@/data/items';
 
-const SAVE_KEY = 'volodka_save_v3';
-
 export type SaveGameOptions = {
   source?: 'auto' | 'manual';
 };
+
+export type ResetGameOptions = {
+  preset?: SessionGamePreset;
+};
+
+export { FULL_STORY_SAVE_KEY };
 
 const getLocalStorage = (): Storage | null => {
   if (typeof window === 'undefined') return null;
@@ -36,9 +47,22 @@ const getLocalStorage = (): Storage | null => {
   }
 };
 
+function getSaveKeyForPreset(preset: SessionGamePreset): string {
+  return getSessionPreset(preset).saveKey;
+}
+
+export function hasSaveForPreset(preset: SessionGamePreset): boolean {
+  const storage = getLocalStorage();
+  if (!storage) return false;
+  return Boolean(storage.getItem(getSaveKeyForPreset(preset)));
+}
+
 export const saveGame = (options?: SaveGameOptions) => {
   const storage = getLocalStorage();
   if (!storage) return;
+
+  const sessionPreset = useSessionPresetStore.getState().preset;
+  const saveKey = getSaveKeyForPreset(sessionPreset);
 
   const worldStore = useWorldStore.getState();
   const playerStore = usePlayerStore.getState();
@@ -66,6 +90,7 @@ export const saveGame = (options?: SaveGameOptions) => {
     questProgress: questStore.questProgress,
     factionReputations: factionStore.factionReputations,
     choiceLog: playerStore.choiceLog || [],
+    sessionPreset,
   });
 
   const json = JSON.stringify(payload);
@@ -78,7 +103,7 @@ export const saveGame = (options?: SaveGameOptions) => {
     }
   }
   try {
-    storage.setItem(SAVE_KEY, json);
+    storage.setItem(saveKey, json);
   } catch (error) {
     const message = error instanceof Error ? error.message : 'localStorage write failed';
     console.error('[Volodka] Local save failed:', message);
@@ -151,11 +176,11 @@ const normalizeGameModeForLoad = (raw: unknown): GameMode => {
   return 'exploration';
 };
 
-const loadSavedState = () => {
+const loadSavedState = (saveKey: string) => {
   if (typeof window === 'undefined') return null;
   const storage = getLocalStorage();
   if (!storage) return null;
-  const saved = storage.getItem(SAVE_KEY);
+  const saved = storage.getItem(saveKey);
   if (!saved) return null;
   try {
     return JSON.parse(saved);
@@ -164,41 +189,47 @@ const loadSavedState = () => {
   }
 };
 
-export const loadGame = () => {
-  const savedData = loadSavedState();
-  if (!savedData) return false;
-
-  const playerState = normalizePlayerStateForLoad(savedData.playerState);
-  const currentNodeId = typeof savedData.currentNodeId === 'string' && savedData.currentNodeId.length > 0 ? savedData.currentNodeId : VERTICAL_SLICE_ENTRY_NODE_ID;
+function applyLoadedSave(savedData: Record<string, unknown>, sessionPreset: SessionGamePreset): boolean {
+  const playerState = normalizePlayerStateForLoad(savedData.playerState as PlayerState | undefined);
+  const presetConfig = getSessionPreset(sessionPreset);
+  const currentNodeId =
+    typeof savedData.currentNodeId === 'string' && savedData.currentNodeId.length > 0
+      ? savedData.currentNodeId
+      : presetConfig.entryNodeId;
   const choiceLog = Array.isArray(savedData.choiceLog) ? savedData.choiceLog.slice(-48) : [];
-  
+
+  useSessionPresetStore.getState().setPreset(sessionPreset);
   usePlayerStore.setState({ playerState, currentNodeId, choiceLog });
-  
-  if (savedData.npcRelations) useWorldStore.setState({ npcRelations: savedData.npcRelations });
-  if (savedData.unlockedLocations) useWorldStore.setState({ unlockedLocations: savedData.unlockedLocations });
+
+  if (savedData.npcRelations) useWorldStore.setState({ npcRelations: savedData.npcRelations as NPCRelation[] });
+  if (savedData.unlockedLocations) useWorldStore.setState({ unlockedLocations: savedData.unlockedLocations as string[] });
   if (savedData.gameMode) useWorldStore.setState({ gameMode: normalizeGameModeForLoad(savedData.gameMode) });
-  
+
   if (savedData.exploration) {
-    const raw = savedData.exploration;
-    useWorldStore.setState(s => ({
+    const raw = savedData.exploration as ExplorationState;
+    useWorldStore.setState((s) => ({
       exploration: {
         ...s.exploration,
         ...raw,
         currentSceneId: sanitizeExplorationSceneId(raw.currentSceneId),
         npcStates: raw.npcStates || {},
-      }
+      },
     }));
   }
 
-  if (savedData.inventory) useInventoryStore.setState({ inventory: deserializeInventory(savedData.inventory) });
-  if (savedData.collectedPoemIds) useInventoryStore.setState({ collectedPoemIds: savedData.collectedPoemIds });
-  if (savedData.unlockedAchievementIds) useInventoryStore.setState({ unlockedAchievementIds: savedData.unlockedAchievementIds });
+  if (savedData.inventory) useInventoryStore.setState({ inventory: deserializeInventory(savedData.inventory as any[]) });
+  if (savedData.collectedPoemIds) useInventoryStore.setState({ collectedPoemIds: savedData.collectedPoemIds as string[] });
+  if (savedData.unlockedAchievementIds) {
+    useInventoryStore.setState({ unlockedAchievementIds: savedData.unlockedAchievementIds as string[] });
+  }
 
-  if (savedData.activeQuestIds) useQuestStore.setState({ activeQuestIds: savedData.activeQuestIds });
-  if (savedData.completedQuestIds) useQuestStore.setState({ completedQuestIds: savedData.completedQuestIds });
-  if (savedData.questProgress) useQuestStore.setState({ questProgress: savedData.questProgress });
+  if (savedData.activeQuestIds) useQuestStore.setState({ activeQuestIds: savedData.activeQuestIds as string[] });
+  if (savedData.completedQuestIds) useQuestStore.setState({ completedQuestIds: savedData.completedQuestIds as string[] });
+  if (savedData.questProgress) useQuestStore.setState({ questProgress: savedData.questProgress as Record<string, Record<string, number>> });
 
-  if (savedData.factionReputations) useFactionStore.setState({ factionReputations: savedData.factionReputations });
+  if (savedData.factionReputations) {
+    useFactionStore.setState({ factionReputations: savedData.factionReputations as Record<FactionId, FactionReputation> });
+  }
 
   useAppStore.getState().setPhase('game');
   usePlayerStore.setState({ revealedPoemId: null });
@@ -206,28 +237,52 @@ export const loadGame = () => {
   eventBus.emit('game:loaded', { timestamp: Date.now() });
 
   return true;
+}
+
+export const loadGame = (options?: { preset?: SessionGamePreset }) => {
+  const preset = options?.preset ?? useSessionPresetStore.getState().preset;
+  const savedData = loadSavedState(getSaveKeyForPreset(preset));
+  if (!savedData) return false;
+
+  const saveMeta = savedData.saveMeta as { gameMode?: unknown } | undefined;
+  const resolvedPreset = resolveSessionPresetFromSaveMeta(saveMeta?.gameMode ?? preset);
+  return applyLoadedSave(savedData, resolvedPreset);
 };
 
-export const resetGame = () => {
+export const resetGame = (options?: ResetGameOptions) => {
+  const presetId = options?.preset ?? useSessionPresetStore.getState().preset;
+  const preset = getSessionPreset(presetId);
+  useSessionPresetStore.getState().setPreset(presetId);
+
   const storage = getLocalStorage();
-  usePlayerStore.getState().resetPlayer();
+  usePlayerStore.getState().resetPlayer({ entryNodeId: preset.entryNodeId });
   useWorldStore.getState().resetWorld();
-  useQuestStore.getState().resetQuests();
+  useQuestStore.getState().resetQuests({ activeQuestIds: [...preset.activeQuestIds] });
   useInventoryStore.getState().resetInventory();
   useFactionStore.getState().resetFactions();
-  
+
   useAppStore.getState().setPhase('menu');
   useGamePhaseStore.getState().completeIntroCutscene();
 
   if (storage) {
-    storage.removeItem(SAVE_KEY);
+    storage.removeItem(preset.saveKey);
   }
 };
 
 let storageHydrationApplied = false;
 
+/** Автогидратация только полной истории — demo-save не подменяет меню. */
 export const hydrateFromLocalStorage = () => {
   if (typeof window === 'undefined' || storageHydrationApplied) return false;
   storageHydrationApplied = true;
-  return loadGame();
+  const savedData = loadSavedState(FULL_STORY_SAVE_KEY);
+  if (!savedData) return false;
+  const saveMeta = savedData.saveMeta as { gameMode?: unknown } | undefined;
+  const preset = resolveSessionPresetFromSaveMeta(saveMeta?.gameMode);
+  if (preset === 'arcadeSlice') return false;
+  return applyLoadedSave(savedData, 'fullStory');
 };
+
+export const resetGameWithPreset = (preset: SessionGamePreset) => resetGame({ preset });
+
+export const getDefaultEntryNodeForLoad = () => VERTICAL_SLICE_ENTRY_NODE_ID;

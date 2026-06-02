@@ -12,6 +12,7 @@ import { useMobileVisualPerf } from '@/hooks/useMobileVisualPerf';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { formatSkillCheckHint } from '@/lib/skillCheckHint';
 import { PoemGameComponent, InterpretationComponent } from './PoemComponents';
+import { ArcadeMinigamePanel } from './ArcadeMinigamePanel';
 import { CyberSkillCheckResult, type SkillCheckBannerPayload } from './CyberSkillCheckResult';
 
 interface StoryRendererProps {
@@ -405,7 +406,8 @@ export default function StoryRenderer({ node, onChoice, onPoemGameComplete }: St
     !!node.choices?.length ||
     !!node.autoNext ||
     node.type === 'poem_game' ||
-    node.type === 'interpretation';
+    node.type === 'interpretation' ||
+    (node.type === 'minigame' && Boolean(node.minigame));
 
   if (!hasRenderableContent) return null;
 
@@ -577,6 +579,11 @@ export default function StoryRenderer({ node, onChoice, onPoemGameComplete }: St
               </motion.div>
             )}
           </AnimatePresence>
+
+          {/* Arcade / story minigames (vertical slice demo) */}
+          {node.type === 'minigame' && node.minigame && !isTyping && (
+            <ArcadeMinigamePanel minigame={node.minigame} onChoice={onChoice} />
+          )}
 
           {/* Poem Game mini-game */}
           {node.type === 'poem_game' && node.lines && !isTyping && (

@@ -155,19 +155,19 @@ const CRTSweep = memo(function CRTSweep() {
 
 const FogLayers = memo(function FogLayers() {
   return (
-    <div className="absolute inset-0 pointer-events-none overflow-hidden">
+    <div className="absolute inset-0 z-[1] pointer-events-none overflow-hidden">
       {/* Deep amber/orange glow from below — Blade Runner cityscape */}
       <div
         className="absolute bottom-0 left-0 right-0 h-2/5"
         style={{
-          background: 'linear-gradient(to top, rgba(255, 120, 0, 0.12) 0%, rgba(255, 80, 0, 0.05) 50%, transparent 100%)',
+          background: 'linear-gradient(to top, rgba(255, 140, 0, 0.12) 0%, rgba(255, 100, 0, 0.05) 50%, transparent 100%)',
         }}
       />
       {/* Cyan neon from upper left */}
       <motion.div
         className="absolute top-0 left-0 w-1/2 h-1/3"
         style={{
-          background: 'radial-gradient(ellipse, rgba(0, 255, 255, 0.07) 0%, transparent 70%)',
+          background: 'radial-gradient(ellipse, rgba(0, 255, 255, 0.08) 0%, transparent 70%)',
         }}
         animate={{ opacity: [0.5, 1, 0.5] }}
         transition={{ duration: 8, repeat: Infinity }}
@@ -176,7 +176,7 @@ const FogLayers = memo(function FogLayers() {
       <motion.div
         className="absolute top-0 right-0 w-1/3 h-1/3"
         style={{
-          background: 'radial-gradient(ellipse, rgba(255, 0, 128, 0.06) 0%, transparent 70%)',
+          background: 'radial-gradient(ellipse, rgba(255, 0, 128, 0.08) 0%, transparent 70%)',
         }}
         animate={{ opacity: [0.3, 0.7, 0.3] }}
         transition={{ duration: 6, repeat: Infinity, delay: 2 }}
@@ -591,6 +591,8 @@ interface IntroScreenProps {
   subtitleText: string;
   gameIntro: string;
   poems: Poem[];
+  /** Демо-режим: короткий title без prose/poem. */
+  compact?: boolean;
   onComplete: () => void;
 }
 
@@ -618,13 +620,14 @@ export const IntroScreen = memo(function IntroScreen({
   subtitleText,
   gameIntro,
   poems,
+  compact = false,
   onComplete,
 }: IntroScreenProps) {
   const storyBeats = useMemo(() => splitIntroStoryBeats(gameIntro), [gameIntro]);
   const [beatIndex, setBeatIndex] = useState(0);
   const [charIndex, setCharIndex] = useState(0);
   const reduceMotion = useReducedMotion();
-  const [introPhase, setIntroPhase] = useState<'boot' | 'title' | 'prose' | 'poem' | 'done'>('boot');
+  const [introPhase, setIntroPhase] = useState<'boot' | 'title' | 'prose' | 'poem' | 'done'>(compact ? 'title' : 'boot');
   const [revealedPoem, setRevealedPoem] = useState<Poem | null>(null);
   const [collectedPoems, setCollectedPoems] = useState<string[]>([]);
   const proseScrollRef = useRef<HTMLDivElement>(null);
@@ -659,18 +662,23 @@ export const IntroScreen = memo(function IntroScreen({
     setIntroPhase('title');
   }, []);
 
-  // Phase 2: Title (4 seconds)
+  // Phase 2: Title (4 seconds full / 2 seconds compact demo)
   useEffect(() => {
     if (introPhase !== 'title') return;
 
     const timer = setTimeout(() => {
+      if (compact) {
+        setIntroPhase('done');
+        onComplete();
+        return;
+      }
       setIntroPhase('prose');
       setBeatIndex(0);
       setCharIndex(0);
-    }, 4500);
+    }, compact ? 2000 : 4500);
 
     return () => clearTimeout(timer);
-  }, [introPhase]);
+  }, [introPhase, compact, onComplete]);
 
   // Phase 3: Prose — посимвольно внутри фразы, затем пауза и следующая фраза
   useEffect(() => {
@@ -745,7 +753,7 @@ export const IntroScreen = memo(function IntroScreen({
       {!useReducedFx && <CRTSweep />}
 
       {/* Blade Runner fog/mist */}
-      <FogLayers />
+      {!textFocusPhase && <FogLayers />}
 
       {/* Particle system */}
       {!useReducedFx && <ParticleSystem />}
@@ -758,7 +766,7 @@ export const IntroScreen = memo(function IntroScreen({
 
       {/* Vignette */}
       <div
-        className="absolute inset-0 pointer-events-none z-30"
+        className="absolute inset-0 pointer-events-none z-[12]"
         style={{
           background: 'radial-gradient(ellipse at center, transparent 25%, rgba(0, 0, 0, 0.85) 100%)',
         }}
@@ -770,7 +778,7 @@ export const IntroScreen = memo(function IntroScreen({
       )}
 
       {/* Content */}
-      <div className="relative z-10 flex min-h-[100dvh] w-full flex-col items-center justify-center p-4 pt-[max(1rem,env(safe-area-inset-top))]">
+      <div className="relative z-20 flex min-h-[100dvh] w-full flex-col items-center justify-center p-4 pt-[max(1rem,env(safe-area-inset-top))]">
         <AnimatePresence mode="wait">
           {/* Phase 1: Boot sequence */}
           {introPhase === 'boot' && (

@@ -19,6 +19,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { PerformanceMonitor } from '@react-three/drei';
 import { Physics } from '@react-three/rapier';
+import { PHYSICS_CONSTANTS } from '@/engine/physics/constants';
 import {
   isExplorationMeshAuditEnabled,
   isExplorationNoclipEnabled,
@@ -51,9 +52,15 @@ import {
   getExplorationCharacterModelScale,
   getExplorationLocomotionScale,
   getExplorationNpcModelScale,
-  sanitizeExplorationPlayerPositionAgainstSpawn,
   type InteractiveObjectConfig,
 } from '@/config/scenes';
+import {
+  getExplorationFollowCameraPreset,
+  getExplorationLightTuning,
+  getExplorationScenePreset,
+  getNarrowIndoorFogConfig,
+  type ExplorationFollowCameraPreset,
+} from '@/config/explorationScenePresets';
 
 // Components
 import { PhysicsPlayer } from './PhysicsPlayer';
@@ -103,16 +110,14 @@ import { INTRO_OPENING_SCENE_ID } from '@/lib/introVolodkaOpeningCutscene';
 import { applyExplorationLocationTrigger } from '@/lib/explorationLocationTrigger';
 import { EXPLORATION_SCENE_FRAMELOOP, getExplorationSceneGlProps } from '@/ui/3d/Scene';
 import { ExplorationLighting, getExplorationDirectionalShadowMapSize } from '@/ui/3d/Lighting';
-import {
-  clearExplorationLivePlayerPosition,
-  updateExplorationLivePlayerPosition,
-} from '@/lib/explorationLivePlayerBridge';
 import { isExplorationCyberGradeScene } from '@/lib/explorationPostFxState';
 import { explorationAmbientWithIbl, getExplorationIblProfile } from '@/lib/explorationIblProfiles';
 import { ExplorationEnvironmentIbl } from '@/ui/3d/exploration/ExplorationEnvironmentIbl';
 import { explorationInteractionRegistry, registerBaseInteractions } from '@/game/interactions/registerBaseInteractions';
 import { InteractionHint } from '@/ui/primitives/InteractionHint';
 import { useExplorationLivePlayerTick } from '@/hooks/useExplorationLivePlayerTick';
+import { useExplorationBootstrap } from './useExplorationBootstrap';
+import { useExplorationInteraction } from './useExplorationInteraction';
 
 // ============================================
 // TYPES
@@ -134,30 +139,7 @@ interface RPGGameCanvasProps {
   groundGeometryArgs?: RpgGroundGeometryArgs;
 }
 
-/** Пресет `FollowCamera` по `sceneId` (опционально — лимит pitch, чтобы не «есть» ноги при отрицательном наклоне). */
-interface ExplorationFollowCameraPreset {
-  distance: number;
-  height: number;
-  smoothness: number;
-  shoulderOffset: number;
-  lookAtHeightOffset: number;
-  collisionSpring: number;
-  minDistance: number;
-  maxDistance: number;
-  collisionRayOriginY: number;
-  collisionRadius: number;
-  pitchMin?: number;
-  pitchMax?: number;
-}
-
-const GROUND_INDOOR: RpgGroundGeometryArgs = [20, 0.1, 20];
-const GROUND_VOLODKA_ROOM: RpgGroundGeometryArgs = [14, 0.1, 11.2];
-const GROUND_VOLODKA_CORRIDOR: RpgGroundGeometryArgs = [3.5, 0.1, 13.2];
-const GROUND_PLAZA: RpgGroundGeometryArgs = [48, 0.1, 48];
-const GROUND_OPEN: RpgGroundGeometryArgs = [40, 0.1, 40];
-
-/** Подбор лута по `E`: совпадает с подсказкой «рядом» у `WorldItem` (~1.5 м). */
-const WORLD_LAYOUT_PICKUP_RADIUS = 1.42;
+const INTRO_PLAYER_VISUAL_SCALE_BOOST = 1.16;
 
 /** Тик суток в обходе: глобальный `advanceTime` из стора (остальной `useFrame` — в дочерних компонентах). */
 const ExplorationWorldClock = memo(function ExplorationWorldClock() {
@@ -193,12 +175,6 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
   const explorationNoclip = isExplorationNoclipEnabled();
   const explorationWebGlLog = isExplorationWebGlContextLogEnabled();
   const virtualControlsRef = useRef<Partial<PlayerControls>>({});
-  const [radialObject, setRadialObject] = useState<InteractiveObjectConfig | null>(null);
-  const [availableInteractionIds, setAvailableInteractionIds] = useState<ReadonlySet<string>>(
-    () => new Set(),
-  );
-  const [explorationBriefingOpen, setExplorationBriefingOpen] = useState(false);
-  const explorationBriefingPendingRef = useRef(true);
   const explorationPhase = useGamePhaseStore((s) => s.phase);
   const introCutsceneActive = explorationPhase === 'intro_cutscene';
   /** Та же квартира 10×8: сюжет — `kitchen_night`, свободный хаб — `zarema_albert_room`. */
@@ -216,7 +192,6 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
   const playerSceneTuningId = introCutsceneActive ? INTRO_OPENING_SCENE_ID : sceneId;
   const playerInputLocked = isDialogueActive || introCutsceneActive;
   const interactionHintTick = useExplorationLivePlayerTick(!playerInputLocked, 120);
-  useInteractionAnticipation(availableInteractionIds.size > 0 && !playerInputLocked);
 
   useEffect(() => {
     registerBaseInteractions();
@@ -226,32 +201,43 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
     return mountExplorationController();
   }, []);
 
-  const {
-    npcStates,
-    cameraOrbitResyncNonce,
-    triggerStates,
-    setTriggerState,
-    hasItem,
-    playerState,
-    setNPCState,
-    setPlayerPosition,
-    timeOfDay,
-    explorationStorePosition,
-    explorationWorldItems,
-  } = useGameStore(
+  const { npcStates, setNPCState, timeOfDay } = useGameStore(
     useShallow((s) => ({
       npcStates: s.exploration.npcStates,
-      cameraOrbitResyncNonce: s.exploration.cameraOrbitResyncNonce ?? 0,
+      setNPCState: s.setNPCState,
+      timeOfDay: s.exploration.timeOfDay,
+    })),
+  );
+  const { triggerStates, setTriggerState } = useGameStore(
+    useShallow((s) => ({
       triggerStates: s.exploration.triggerStates,
       setTriggerState: s.setTriggerState,
+    })),
+  );
+  const { cameraOrbitResyncNonce, explorationStorePosition } = useGameStore(
+    useShallow((s) => ({
+      cameraOrbitResyncNonce: s.exploration.cameraOrbitResyncNonce ?? 0,
+      explorationStorePosition: s.exploration.playerPosition,
+    })),
+  );
+  const { hasItem, playerState, setPlayerPosition, explorationWorldItems } = useGameStore(
+    useShallow((s) => ({
       hasItem: s.hasItem,
       playerState: s.playerState,
-      setNPCState: s.setNPCState,
       setPlayerPosition: s.setPlayerPosition,
-      timeOfDay: s.exploration.timeOfDay,
-      explorationStorePosition: s.exploration.playerPosition,
       explorationWorldItems: s.exploration.worldItems,
     })),
+  );
+  const setExplorationPlayerPosition = useCallback(
+    (position: { x: number; y: number; z: number; rotation?: number }) => {
+      setPlayerPosition({
+        x: position.x,
+        y: position.y,
+        z: position.z,
+        rotation: position.rotation ?? 0,
+      });
+    },
+    [setPlayerPosition],
   );
   const orbitResyncKey = useMemo(
     () => `${sceneId}:${cameraOrbitResyncNonce}`,
@@ -271,144 +257,36 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
     [visualLite, narrowForGpu],
   );
 
-  /** Позиция игрока из физики каждый кадр; без подписки на стор в этом компоненте — меньше ре-рендеров Canvas/UI. */
-  const livePlayerPositionRef = useRef(
-    (() => {
-      const p = useGameStore.getState().exploration.playerPosition;
-      return { x: p.x, y: p.y, z: p.z, rotation: p.rotation ?? 0 };
-    })(),
-  );
-  /** Снимок из стора: спавн `PhysicsPlayer` и бутстрап камеры/NPC при смене локации или телепорте из стора. */
-  const explorationSpawnSnapshot = useMemo(() => {
-    const p = explorationStorePosition;
-    return sanitizeExplorationPlayerPositionAgainstSpawn(sceneId, {
-      x: p.x,
-      y: p.y,
-      z: p.z,
-      rotation: p.rotation ?? 0,
-    });
-  }, [sceneId, explorationStorePosition.x, explorationStorePosition.y, explorationStorePosition.z, explorationStorePosition.rotation]);
-
-  /** Старые сейвы с `y: 1` в интерьерах с полом у ног — переписываем стор один раз, чтобы сейв не оставался «летающим». */
-  useEffect(() => {
-    const p = explorationStorePosition;
-    const next = sanitizeExplorationPlayerPositionAgainstSpawn(sceneId, {
-      x: p.x,
-      y: p.y,
-      z: p.z,
-      rotation: p.rotation ?? 0,
-    });
-    if (next.x !== p.x || next.y !== p.y || next.z !== p.z) {
-      setPlayerPosition(next);
-    }
-  }, [
+  const {
+    explorationSpawnSnapshot,
+    playerPositionRef,
+    livePlayerPositionRef,
+    explorationBriefingOpen,
+    setExplorationBriefingOpen,
+    handlePositionChange,
+  } = useExplorationBootstrap({
     sceneId,
-    explorationStorePosition.x,
-    explorationStorePosition.y,
-    explorationStorePosition.z,
-    explorationStorePosition.rotation,
-    setPlayerPosition,
-  ]);
-
-  const playerPositionRef = useRef(explorationSpawnSnapshot);
-  useEffect(() => {
-    playerPositionRef.current = explorationSpawnSnapshot;
-  }, [explorationSpawnSnapshot]);
-
-  useEffect(() => {
-    const p = useGameStore.getState().exploration.playerPosition;
-    livePlayerPositionRef.current = { x: p.x, y: p.y, z: p.z, rotation: p.rotation ?? 0 };
-    updateExplorationLivePlayerPosition(livePlayerPositionRef.current);
-  }, [sceneId]);
-
-  /** Телепорты из 3D-интро без смены `sceneId`: синхронизируем ref камеры с стором. */
-  useEffect(() => {
-    if (!introCutsceneActive) return;
-    const p = explorationStorePosition;
-    const snap = { x: p.x, y: p.y, z: p.z, rotation: p.rotation ?? 0 };
-    livePlayerPositionRef.current = snap;
-    updateExplorationLivePlayerPosition(snap);
-  }, [
     introCutsceneActive,
-    explorationStorePosition.x,
-    explorationStorePosition.y,
-    explorationStorePosition.z,
-    explorationStorePosition.rotation,
-  ]);
-
-  useEffect(() => {
-    explorationBriefingPendingRef.current = true;
-    setExplorationBriefingOpen(false);
-  }, [sceneId]);
-
-  useEffect(() => {
-    return () => {
-      clearExplorationLivePlayerPosition();
-    };
-  }, []);
+    playerInputLocked,
+    explorationStorePosition,
+    setPlayerPosition: setExplorationPlayerPosition,
+  });
 
   // Scene config (свет / туман + размер поля под тип локации; при необходимости — проп `groundGeometryArgs`)
-  const sceneConfig = useMemo(() => {
-    switch (sceneId) {
-      case 'kitchen_night':
-      case 'zarema_albert_room':
-        return {
-          ambient: 0.46,
-          light: '#fff0dc',
-          fogColor: '#0c0806',
-          groundGeometryArgs: GROUND_INDOOR,
-        };
-      case 'kitchen_dawn':
-      case 'home_morning':
-      case 'home_evening':
-        return { ambient: 0.4, light: '#ffcc00', fogColor: '#1a1a2e', groundGeometryArgs: GROUND_INDOOR };
-      case 'volodka_room':
-        return {
-          ambient: 0.4,
-          light: '#7fe8d4',
-          fogColor: '#060d10',
-          groundGeometryArgs: GROUND_VOLODKA_ROOM,
-        };
-      case 'volodka_corridor':
-        return { ambient: 0.34, light: '#e8dcc8', fogColor: '#16140f', groundGeometryArgs: GROUND_VOLODKA_CORRIDOR };
-      case 'office_morning':
-        return { ambient: 0.5, light: '#ffffff', fogColor: '#2a2a3a', groundGeometryArgs: GROUND_INDOOR };
-      case 'cafe_evening':
-        return { ambient: 0.35, light: '#ffa500', fogColor: '#1a1510', groundGeometryArgs: GROUND_INDOOR };
-      case 'rooftop_night':
-        return { ambient: 0.15, light: '#4a5568', fogColor: '#0a0a15', groundGeometryArgs: GROUND_OPEN };
-      case 'dream':
-        return { ambient: 0.3, light: '#a855f7', fogColor: '#1a0a2e', groundGeometryArgs: GROUND_OPEN };
-      case 'battle':
-        return { ambient: 0.28, light: '#f97373', fogColor: '#140306', groundGeometryArgs: GROUND_OPEN };
-      case 'street_winter':
-      case 'street_night':
-        return {
-          ambient: 0.14,
-          light: '#39ff9c',
-          fogColor: '#020806',
-          groundGeometryArgs: GROUND_PLAZA,
-        };
-      case 'district':
-      case 'mvd':
-        return {
-          ambient: 0.2,
-          light: '#dbeafe',
-          fogColor: '#060912',
-          groundGeometryArgs: GROUND_PLAZA,
-        };
-      case 'memorial_park':
-        return { ambient: 0.35, light: '#ffd9a0', fogColor: '#0a1510', groundGeometryArgs: GROUND_PLAZA };
-      default:
-        return { ambient: 0.35, light: '#b2bec3', fogColor: '#1a1a2e', groundGeometryArgs: GROUND_INDOOR };
-    }
-  }, [sceneId]);
+  const sceneConfig = useMemo(() => getExplorationScenePreset(sceneId), [sceneId]);
 
   const groundGeometryArgs = groundGeometryArgsProp ?? sceneConfig.groundGeometryArgs;
 
   const explorationCharacterModelScale = useMemo(
     () => getExplorationCharacterModelScale(playerSceneTuningId),
     [playerSceneTuningId],
+  );
+  const effectivePlayerVisualScale = useMemo(
+    () =>
+      introCutsceneActive
+        ? Math.min(1.25, explorationCharacterModelScale * INTRO_PLAYER_VISUAL_SCALE_BOOST)
+        : explorationCharacterModelScale,
+    [introCutsceneActive, explorationCharacterModelScale],
   );
 
   const explorationLocomotionScale = useMemo(
@@ -440,50 +318,12 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
    * при низкой орбите (и в интро, и в геймплее — не только кат-сцена).
    * Интро — ещё мягче: кинокамера ближе к геометрии.
    */
-  const narrowIndoorFog = useMemo(() => {
-    if (sceneId === 'volodka_room') {
-      if (introCutsceneActive) return { near: 4.2, far: 74 } as const;
-      return { near: 1.92, far: 74 } as const;
-    }
-    if (sceneId === 'zarema_albert_room' || sceneId === 'kitchen_night') {
-      if (introCutsceneActive) return { near: 3.9, far: 60 } as const;
-      return { near: 2.15, far: 58 } as const;
-    }
-    if (introCutsceneActive) {
-      return { near: 3.6, far: 56 } as const;
-    }
-    return { near: 2.65, far: 50 } as const;
-  }, [introCutsceneActive, sceneId]);
+  const narrowIndoorFog = useMemo(
+    () => getNarrowIndoorFogConfig(sceneId, introCutsceneActive),
+    [introCutsceneActive, sceneId],
+  );
 
-  const explorationLightTuning = useMemo(() => {
-    switch (sceneId) {
-      case 'volodka_room':
-        return {
-          directionalPosition: [3.2, 7.5, 1.8] as [number, number, number],
-          directionalIntensity: 0.76,
-          hemisphereIntensity: 0.92,
-          hemisphereGround: '#080f14',
-        };
-      case 'zarema_albert_room':
-      case 'kitchen_night':
-        return {
-          directionalPosition: [-3.4, 7.9, 4.1] as [number, number, number],
-          directionalIntensity: 0.52,
-          hemisphereIntensity: 1.08,
-          hemisphereGround: '#1a100c',
-        };
-      case 'district':
-      case 'mvd':
-        return {
-          directionalPosition: [8.5, 14.5, 6.2] as [number, number, number],
-          directionalIntensity: 0.74,
-          hemisphereIntensity: 0.56,
-          hemisphereGround: '#0b1018',
-        };
-      default:
-        return null;
-    }
-  }, [sceneId]);
+  const explorationLightTuning = useMemo(() => getExplorationLightTuning(sceneId), [sceneId]);
 
   const iblProfile = useMemo(
     () =>
@@ -507,127 +347,10 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
     };
   }, [explorationLightTuning, iblActive]);
 
-  const followCameraProps = useMemo((): ExplorationFollowCameraPreset => {
-    if (sceneId === 'volodka_corridor') {
-      return {
-        distance: 1.82,
-        height: 1.48,
-        smoothness: 0.12,
-        shoulderOffset: 0.05,
-        lookAtHeightOffset: 0.98,
-        collisionSpring: 12,
-        minDistance: 1.05,
-        maxDistance: 2.55,
-        collisionRayOriginY: 1.05,
-        collisionRadius: 0.2,
-      };
-    }
-    if (sceneId === 'volodka_room') {
-      return {
-        distance: 2.38,
-        height: 1.52,
-        smoothness: 0.11,
-        shoulderOffset: 0.1,
-        lookAtHeightOffset: 1.22,
-        collisionSpring: 12,
-        minDistance: 1.52,
-        maxDistance: 3.12,
-        collisionRayOriginY: 1.42,
-        collisionRadius: 0.2,
-        pitchMin: -0.06,
-        pitchMax: 0.38,
-      };
-    }
-    if (sceneId === 'home_evening') {
-      return {
-        distance: 2.28,
-        height: 1.78,
-        smoothness: 0.11,
-        shoulderOffset: 0.12,
-        lookAtHeightOffset: 1.1,
-        collisionSpring: 11,
-        minDistance: 1.22,
-        maxDistance: 3.05,
-        collisionRayOriginY: 1.22,
-        collisionRadius: 0.24,
-      };
-    }
-    /** Узкая квартира 10×8: без пресета срабатывал дефолт с большой `height` — при отбое коллизий камера «ныряла» к ботинкам. */
-    if (sceneId === 'zarema_albert_room' || sceneId === 'kitchen_night') {
-      return {
-        distance: 2.62,
-        height: 1.58,
-        smoothness: 0.11,
-        shoulderOffset: 0.1,
-        lookAtHeightOffset: 1.32,
-        collisionSpring: 11,
-        minDistance: 1.48,
-        maxDistance: 3.15,
-        collisionRayOriginY: 1.48,
-        collisionRadius: 0.22,
-        pitchMin: -0.12,
-        pitchMax: 0.34,
-      };
-    }
-    if (sceneId === 'blue_pit') {
-      return {
-        distance: 2.35,
-        height: 1.55,
-        smoothness: 0.12,
-        shoulderOffset: 0.15,
-        lookAtHeightOffset: 1.15,
-        collisionSpring: 11,
-        minDistance: 1.25,
-        maxDistance: 3.25,
-        collisionRayOriginY: 1.25,
-        collisionRadius: 0.25,
-        pitchMin: -0.1,
-        pitchMax: 0.35,
-      };
-    }
-    if (sceneId === 'battle') {
-      return {
-        distance: 4.35,
-        height: 2.55,
-        smoothness: 0.125,
-        shoulderOffset: 0.22,
-        lookAtHeightOffset: 1.22,
-        collisionSpring: 12,
-        minDistance: 2.1,
-        maxDistance: 12,
-        collisionRayOriginY: 1.45,
-        collisionRadius: 0.28,
-        pitchMin: -0.18,
-        pitchMax: 0.42,
-      };
-    }
-    if (isPanelDistrict) {
-      return {
-        distance: 5.25,
-        height: 3.05,
-        smoothness: 0.11,
-        shoulderOffset: 0.26,
-        lookAtHeightOffset: 1.3,
-        collisionSpring: 10,
-        minDistance: 2,
-        maxDistance: 15,
-        collisionRayOriginY: 1.5,
-        collisionRadius: 0.3,
-      };
-    }
-    return {
-      distance: 4.75,
-      height: 2.9,
-      smoothness: 0.115,
-      shoulderOffset: 0.24,
-      lookAtHeightOffset: 1.28,
-      collisionSpring: 11,
-      minDistance: 2,
-      maxDistance: 15,
-      collisionRayOriginY: 1.5,
-      collisionRadius: 0.3,
-    };
-  }, [sceneId, isPanelDistrict]);
+  const followCameraProps = useMemo(
+    (): ExplorationFollowCameraPreset => getExplorationFollowCameraPreset(sceneId, isPanelDistrict),
+    [sceneId, isPanelDistrict],
+  );
 
   // Get NPCs and triggers for current scene
   const sceneNPCs = useMemo((): NPCDefinition[] => {
@@ -652,33 +375,6 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
       };
     });
   }, [sceneId, explorationWorldItems]);
-
-  const radialMenuActions = useMemo((): RadialMenuAction[] => {
-    if (!radialObject) return [];
-    return getExplorationRadialMenuActions(sceneId, radialObject, hasItem);
-  }, [sceneId, radialObject, hasItem]);
-
-  const radialMenuAnchorLabel = useMemo(() => {
-    if (!radialObject) return undefined;
-    const parts = [`${radialObject.type} · ${radialObject.id}`];
-    if (radialObject.itemId) parts.push(`item: ${radialObject.itemId}`);
-    return parts.join(' · ');
-  }, [radialObject]);
-
-  // Позиция только в ref + мост: не вызывать setPlayerPosition здесь (конфликт с kinematic / мерцание).
-  const handlePositionChange = useCallback(
-    (pos: { x: number; y: number; z: number; rotation: number }) => {
-      const next = { x: pos.x, y: pos.y, z: pos.z, rotation: pos.rotation };
-      livePlayerPositionRef.current = next;
-      playerPositionRef.current = next;
-      updateExplorationLivePlayerPosition(next);
-      if (explorationBriefingPendingRef.current && !playerInputLocked) {
-        explorationBriefingPendingRef.current = false;
-        queueMicrotask(() => setExplorationBriefingOpen(true));
-      }
-    },
-    [playerInputLocked],
-  );
 
   // Handle NPC state changes
   const handleNPCStateChange = useCallback(
@@ -724,152 +420,32 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
     [sceneTriggers, onTriggerEnter],
   );
 
-  const onInteractionAvailabilityChange = useCallback((ids: ReadonlySet<string>) => {
-    setAvailableInteractionIds(ids);
-  }, []);
-
-  const tryPickupNearestWorldLayoutItem = useCallback((): boolean => {
-    const pos = playerPositionRef.current;
-    if (!pos) return false;
-    const st = useGameStore.getState();
-    const defs = getWorldItemsForScene(sceneId);
-    let best: (typeof defs)[0] | null = null;
-    let bestD = WORLD_LAYOUT_PICKUP_RADIUS;
-    for (const def of defs) {
-      const row = st.exploration.worldItems.find((w) => w.id === def.id);
-      if (row?.collected) continue;
-      const dx = pos.x - def.position.x;
-      const dy = pos.y - def.position.y;
-      const dz = pos.z - def.position.z;
-      const d = Math.sqrt(dx * dx + dy * dy + dz * dz);
-      if (d < bestD) {
-        bestD = d;
-        best = def;
-      }
-    }
-    if (!best) return false;
-    const hasRow = st.exploration.worldItems.some((w) => w.id === best.id);
-    if (!hasRow) {
-      st.addWorldItem({
-        id: best.id,
-        itemId: best.itemId,
-        position: { x: best.position.x, y: best.position.y, z: best.position.z },
-        sceneId: best.sceneId as SceneId,
-        collected: false,
-      });
-    }
-    st.collectWorldItem(best.id);
-    st.addItem(best.itemId, 1);
-    const meta = getItemById(best.itemId);
-    eventBus.emit('ui:exploration_message', {
-      text: meta ? `В инвентарь: ${meta.name}` : 'Предмет подобран.',
-    });
-    return true;
-  }, [sceneId]);
-
-  // Handle player interaction (E / тач) — `resolveExplorationInteractionPriority` (NPC / объект / триггеры по дистанции + тиры)
-  const handlePlayerInteraction = useCallback(() => {
-    if (playerInputLocked) return;
-    if (explorationBriefingOpen) {
-      setExplorationBriefingOpen(false);
-      return;
-    }
-
-    if (tryPickupNearestWorldLayoutItem()) {
-      emitInteractionFeedback('success', 'loot');
-      return;
-    }
-
-    if (radialObject) {
-      setRadialObject(null);
-      return;
-    }
-
-    const currentPos = playerPositionRef.current;
-    if (!currentPos) return;
-
-    const target = resolveExplorationInteractionPriority({
-      playerPosition: currentPos,
-      sceneTriggers,
-      triggerStates,
-      sceneInteractiveObjects,
-      sceneNPCs,
-      npcStates,
-      availableInteractionIds,
-    });
-
-    if (target.kind === 'registry') {
-      const st = useGameStore.getState();
-      const ran = explorationInteractionRegistry.tryExecute(target.interactionId, {
-        setGameMode: st.setGameMode,
-        onNPCInteraction,
-        activateQuest: st.activateQuest,
-        incrementQuestObjective: st.incrementQuestObjective,
-        completeQuest: st.completeQuest,
-        isQuestActive: st.isQuestActive,
-        isQuestCompleted: st.isQuestCompleted,
-        getQuestProgress: st.getQuestProgress,
-      });
-      if (ran) {
-        emitInteractionFeedback('success', 'registry');
-        return;
-      }
-      emitInteractionFeedback('fail', 'registry');
-      return;
-    }
-
-    if (target.kind === 'story_trigger') {
-      const trigger = sceneTriggers.find((t) => t.id === target.triggerId);
-      if (!trigger) return;
-      handleTriggerEnter(trigger.id);
-      if (trigger.oneTime) {
-        handleTriggerStateChange(trigger.id, {
-          id: trigger.id,
-          triggered: true,
-          triggeredAt: Date.now(),
-        });
-      }
-      emitInteractionFeedback('success', 'trigger');
-      return;
-    }
-
-    if (target.kind === 'world_object') {
-      setRadialObject(target.object);
-      emitInteractionFeedback('success', 'object');
-      return;
-    }
-
-    if (target.kind === 'npc') {
-      const nearestNPC = sceneNPCs.find((n) => n.id === target.npcId);
-      if (!nearestNPC) return;
-      const entry = getCurrentScheduleEntry(nearestNPC.id, timeOfDay);
-      if (entry && !entry.dialogueAvailable) {
-        eventBus.emit('ui:exploration_message', { text: 'Персонаж сейчас недоступен' });
-        emitInteractionFeedback('fail', 'npc');
-        return;
-      }
-      onNPCInteraction(nearestNPC.id);
-      emitInteractionFeedback('success', 'npc');
-      return;
-    }
-
-    emitInteractionFeedback('fail');
-  }, [
+  const {
+    radialObject,
+    setRadialObject,
+    radialMenuActions,
+    radialMenuAnchorLabel,
+    availableInteractionIds,
+    onInteractionAvailabilityChange,
+    handlePlayerInteraction,
+  } = useExplorationInteraction({
+    sceneId,
     playerInputLocked,
+    explorationBriefingOpen,
+    setExplorationBriefingOpen,
+    playerPositionRef,
     sceneTriggers,
     triggerStates,
-    handleTriggerEnter,
-    handleTriggerStateChange,
+    sceneInteractiveObjects,
     sceneNPCs,
     npcStates,
-    onNPCInteraction,
+    hasItem,
     timeOfDay,
-    radialObject,
-    sceneInteractiveObjects,
-    availableInteractionIds,
-    explorationBriefingOpen,
-    tryPickupNearestWorldLayoutItem,
-  ]);
+    onNPCInteraction,
+    handleTriggerEnter,
+    handleTriggerStateChange,
+  });
+  useInteractionAnticipation(availableInteractionIds.size > 0 && !playerInputLocked);
 
   return (
     <Fragment>
@@ -883,7 +459,7 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
       frameloop={EXPLORATION_SCENE_FRAMELOOP}
       dpr={[1, 1.5]}
       shadows={{ type: THREE.PCFSoftShadowMap }}
-      camera={{ fov: 60, near: 0.5, far: 50, position: [0, 5, 8] }}
+      camera={{ fov: 60, near: 0.75, far: 96, position: [0, 5, 8] }}
       style={{ 
         background: sceneConfig.fogColor,
         width: '100%',
@@ -911,7 +487,7 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
       {explorationWebGlLog && <ExplorationWebGlContextLog />}
       {explorationMeshAudit && <ExplorationMeshWorldAudit sceneId={sceneId} />}
       <StreamingDebugHUD />
-      <Physics timeStep={1 / 60} gravity={[0, -9.81, 0]} debug={rapierColliderDebug}>
+      <Physics timeStep={1 / 60} gravity={[0, PHYSICS_CONSTANTS.GRAVITY, 0]} debug={rapierColliderDebug}>
         <ExplorationSystemsTick />
         <ExplorationWorldClock />
         {/*
@@ -982,7 +558,7 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
             ]}
             initialRotation={explorationSpawnSnapshot.rotation ?? 0}
             modelPath={getDefaultPlayerModelPath()}
-            visualModelScale={explorationCharacterModelScale}
+            visualModelScale={effectivePlayerVisualScale}
             locomotionScale={explorationLocomotionScale}
             onPositionChange={handlePositionChange}
             onInteraction={handlePlayerInteraction}
@@ -1002,7 +578,7 @@ const RPGGameCanvas = memo(function RPGGameCanvas({
             ]}
             initialRotation={explorationSpawnSnapshot.rotation ?? 0}
             modelPath={getDefaultPlayerModelPath()}
-            visualModelScale={explorationCharacterModelScale}
+            visualModelScale={effectivePlayerVisualScale}
             locomotionScale={explorationLocomotionScale}
             onPositionChange={handlePositionChange}
             onInteraction={handlePlayerInteraction}

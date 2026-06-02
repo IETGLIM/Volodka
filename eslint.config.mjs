@@ -61,6 +61,18 @@ const eslintConfig = [
       "no-undef": "off",
       "no-unreachable": "off",
       "no-useless-escape": "off",
+      "no-restricted-imports": [
+        "error",
+        {
+          patterns: [
+            {
+              group: ["@/engine/physics/CharacterController", "@/engine/physics/CharacterController.*"],
+              message:
+                "Import KCC physics API from '@/engine/physics/KCC' to keep a stable public contract.",
+            },
+          ],
+        },
+      ],
     },
   },
 ];

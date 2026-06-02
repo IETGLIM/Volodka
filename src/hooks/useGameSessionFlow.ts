@@ -7,7 +7,15 @@ import {
   INTRO_OPENING_SCENE_ID,
 } from '@/lib/introVolodkaOpeningCutscene';
 import { useGamePhaseStore } from '@/state/gamePhaseStore';
+import { useSessionPresetStore } from '@/state/sessionPresetStore';
+import { useArcadeScoreStore } from '@/state/arcadeScoreStore';
 import type { AppPhase } from '@/state/appStore';
+import {
+  FULL_STORY_SAVE_KEY,
+  hasSaveForPreset,
+  type ResetGameOptions,
+} from '@/state/saveManager';
+import type { SessionGamePreset } from '@/config/gameModePresets';
 
 interface UseGameSessionFlowParams {
   setPhase: (phase: AppPhase) => void;
@@ -15,11 +23,9 @@ interface UseGameSessionFlowParams {
   setGameMode?: (mode: GameMode) => void;
   setCurrentNode?: (nodeId: string) => void;
   saveGameToStore: (options?: SaveGameOptions) => void;
-  loadGameFromStore: () => boolean;
-  resetGameStore: () => void;
+  loadGameFromStore: (options?: { preset?: SessionGamePreset }) => boolean;
+  resetGameStore: (options?: ResetGameOptions) => void;
 }
-
-const SAVE_KEY = 'volodka_save_v3';
 
 export function useGameSessionFlow({
   setPhase,
@@ -27,10 +33,8 @@ export function useGameSessionFlow({
   loadGameFromStore,
   resetGameStore,
 }: UseGameSessionFlowParams) {
-  const hasSavedGame = useMemo(() => {
-    if (typeof window === 'undefined') return false;
-    return !!localStorage.getItem(SAVE_KEY);
-  }, []);
+  const hasSavedGame = useMemo(() => hasSaveForPreset('fullStory'), []);
+  const hasDemoSave = useMemo(() => hasSaveForPreset('arcadeSlice'), []);
 
   const handleLoadingReady = useCallback(() => {
     setPhase('menu');
@@ -40,14 +44,35 @@ export function useGameSessionFlow({
     saveGameToStore({ source: 'manual' });
   }, [saveGameToStore]);
 
+  const startGameWithPreset = useCallback(
+    (preset: SessionGamePreset) => {
+      resetGameStore({ preset });
+      useSessionPresetStore.getState().setPreset(preset);
+      if (preset === 'arcadeSlice') {
+        useArcadeScoreStore.getState().reset();
+      }
+      useGamePhaseStore.getState().completeIntroCutscene();
+      setPhase('intro');
+    },
+    [resetGameStore, setPhase],
+  );
+
   const handleStartNewGame = useCallback(() => {
-    resetGameStore();
-    useGamePhaseStore.getState().completeIntroCutscene();
-    setPhase('intro');
-  }, [resetGameStore, setPhase]);
+    startGameWithPreset('fullStory');
+  }, [startGameWithPreset]);
+
+  const handleStartArcadeDemo = useCallback(() => {
+    startGameWithPreset('arcadeSlice');
+  }, [startGameWithPreset]);
 
   const handleLoadGame = useCallback(() => {
-    if (loadGameFromStore()) setPhase('game');
+    useSessionPresetStore.getState().setPreset('fullStory');
+    if (loadGameFromStore({ preset: 'fullStory' })) setPhase('game');
+  }, [loadGameFromStore, setPhase]);
+
+  const handleLoadDemoGame = useCallback(() => {
+    useSessionPresetStore.getState().setPreset('arcadeSlice');
+    if (loadGameFromStore({ preset: 'arcadeSlice' })) setPhase('game');
   }, [loadGameFromStore, setPhase]);
 
   const handleIntroComplete = useCallback(() => {
@@ -59,10 +84,15 @@ export function useGameSessionFlow({
 
   return {
     hasSavedGame,
+    hasDemoSave,
     handleLoadingReady,
     handleSaveGame,
     handleStartNewGame,
+    handleStartArcadeDemo,
     handleLoadGame,
+    handleLoadDemoGame,
     handleIntroComplete,
   };
 }
+
+export { FULL_STORY_SAVE_KEY };

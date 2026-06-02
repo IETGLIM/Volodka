@@ -123,7 +123,7 @@ export const QUEST_DEFINITIONS: Record<string, ExtendedQuest> = {
         targetLocation: 'zarema_albert_room',
         mapHint: { x: -1.85, z: 1.1 },
         stageType: 'exploration',
-        linkedStoryNodeId: 'explore_hub_welcome',
+        linkedStoryNodeId: 'vs_slice_intro',
       }),
     ],
     reward: createReward({
@@ -156,11 +156,11 @@ export const QUEST_DEFINITIONS: Record<string, ExtendedQuest> = {
         targetLocation: 'zarema_albert_room',
         mapHint: { x: 0.35, z: -3.4 },
         stageType: 'exploration',
-        linkedStoryNodeId: 'explore_hub_welcome',
+        linkedStoryNodeId: 'vs_slice_intro',
       }),
     ],
     reward: createReward({ experience: 28, creativity: 4, mood: 3, karma: 1 }),
-    startNode: 'explore_hub_welcome',
+    startNode: 'vs_slice_intro',
   },
 
   /**
@@ -180,23 +180,23 @@ export const QUEST_DEFINITIONS: Record<string, ExtendedQuest> = {
       createObjective('rack_force_nodes', 'Свести узлы стека в безопасную последовательность (зона стойки, E)', {
         targetValue: 1,
         currentValue: 0,
-        hint: 'Зона «матрица узлов» у стойки с мониторами; недоступно, если уже начат осмотр панелей (аудит). Вход в ветку — с узла explore_hub_welcome.',
+        hint: 'Зона «матрица узлов» у стойки с мониторами; недоступно, если уже начат осмотр панелей (аудит). Точка входа в демо — vs_slice_intro.',
         targetLocation: 'volodka_room',
         mapHint: { x: 3.45, z: 0.08 },
         stageType: 'minigame',
-        linkedStoryNodeId: 'explore_hub_welcome',
+        linkedStoryNodeId: 'vs_slice_intro',
       }),
       createObjective('rack_audit_panels', 'Честный путь: осмотреть Kibana, Zabbix и Grafana без взлома', {
         targetValue: 3,
         currentValue: 0,
-        hint: 'Радиальное меню → «Осмотреть» на каждом из трёх экранов; мини-игра форса после первого осмотра отключена. Точка входа в квест — explore_hub_welcome.',
+        hint: 'Радиальное меню → «Осмотреть» на каждом из трёх экранов; мини-игра форса после первого осмотра отключена. Точка входа — vs_slice_intro.',
         targetLocation: 'volodka_room',
         stageType: 'exploration',
-        linkedStoryNodeId: 'explore_hub_welcome',
+        linkedStoryNodeId: 'vs_slice_intro',
       }),
     ],
     reward: createReward({ experience: 55, karma: -2, stability: 6, mood: -1, creativity: 9 }),
-    startNode: 'explore_hub_welcome',
+    startNode: 'vs_slice_intro',
   },
 
   /**

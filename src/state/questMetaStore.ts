@@ -37,7 +37,7 @@ interface QuestStoreActions {
   getQuestProgress: (questId: string) => Record<string, number>;
   // faction methods delegated to useFactionStore (with persist)
   // updateFactionReputation, getFactionReputation, completeQuestForFaction now in factionStore
-  resetQuests: () => void;
+  resetQuests: (options?: { activeQuestIds?: string[] }) => void;
   /**
    * Принимает сырой JSON от модели: Zod → при успехе регистрирует определение и активирует квест.
    */
@@ -150,10 +150,12 @@ export const useQuestStore = create<QuestStore>()((set, get) => ({
   // Call useFactionStore.getState().updateFactionReputation(factionId, change) or use the hook
   // This avoids duplication and ensures persistence
 
-  resetQuests: () => {
+  resetQuests: (options) => {
     useFactionStore.getState().resetFactions();
     set({
-      activeQuestIds: [...DEFAULT_ACTIVE_QUEST_IDS],
+      activeQuestIds: options?.activeQuestIds
+        ? [...options.activeQuestIds]
+        : [...DEFAULT_ACTIVE_QUEST_IDS],
       completedQuestIds: [],
       questProgress: {},
       aiQuestDefinitions: {},

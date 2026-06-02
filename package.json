@@ -2,6 +2,7 @@
   "name": "nextjs_tailwind_shadcn_ts",
   "version": "0.2.8",
   "private": true,
+  "sideEffects": false,
   "scripts": {
     "dev": "next dev --turbo -p 3000 2>&1 | tee dev.log",
     "build": "cross-env NODE_OPTIONS=--max-old-space-size=4096 next build --turbo",

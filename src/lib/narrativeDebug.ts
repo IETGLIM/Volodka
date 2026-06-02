@@ -6,10 +6,11 @@ import { MAX_PLAYER_ENERGY } from '@/lib/energyConfig';
 import { useGameStore } from '@/state';
 
 export function isNarrativeDebugEnabled(): boolean {
-  return (
-    process.env.NODE_ENV === 'development' ||
-    process.env.NEXT_PUBLIC_GAME_DEBUG_PANEL === '1'
-  );
+  const devMode = process.env.NODE_ENV === 'development';
+  const debugFlag = process.env.NEXT_PUBLIC_GAME_DEBUG_PANEL === '1';
+  const allowProdDebug = process.env.NEXT_PUBLIC_ENABLE_PROD_DEBUG_PANEL === '1';
+  if (!devMode && !allowProdDebug) return false;
+  return devMode || debugFlag;
 }
 
 function clamp(n: number, lo: number, hi: number): number {

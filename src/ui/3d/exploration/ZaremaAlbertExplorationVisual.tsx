@@ -220,7 +220,7 @@ export const ZaremaAlbertExplorationVisual = memo(function ZaremaAlbertExplorati
           width={0.58}
           height={0.36}
           emissive="#22d3ee"
-          emissiveIntensity={1.35}
+          emissiveIntensity={1.55}
           statusLines={ZAREMA_TV_STATUS_LINES}
         />
       </group>

@@ -53,6 +53,7 @@ import { getSceneConfig } from '@/config/scenes';
 import type { MiniMapQuestMarker } from '@/ui/game/MiniMap';
 import { MoralCompassHUD } from '@/ui/game/MoralCompassHUD';
 import { LevelUpCinematicOverlay } from '@/ui/game/LevelUpCinematicOverlay';
+import { DemoResultsStrip } from '@/ui/game/DemoResultsStrip';
 import { SceneTransition } from '@/ui/game/CinematicEffects';
 import { LootNotification, SkillUpNotification } from '@/ui/game/LootNotification';
 import { TutorialOverlay } from '@/ui/game/TutorialOverlay';
@@ -68,6 +69,9 @@ import { initGameCore } from '@/game/core/gameCoreBootstrap';
 import { getWorldStateModifiers } from '@/game/world/worldReactivity';
 import MemoryLog from '@/ui/primitives/MemoryLog';
 import QuestTracker from '@/ui/primitives/QuestTracker';
+import { useSessionPresetStore } from '@/state/sessionPresetStore';
+import { getSessionPreset } from '@/config/gameModePresets';
+import { isNarrativeDebugEnabled } from '@/lib/narrativeDebug';
 
 const QuestsPanel = dynamic(() => import('@/ui/game/QuestsPanel'), { ssr: false });
 const FactionsPanel = dynamic(() => import('@/ui/game/FactionsPanel'), { ssr: false });
@@ -102,6 +106,7 @@ const RPGGameCanvas = dynamic(
 // ============================================
 
 export default function GameOrchestrator() {
+  const showNarrativeDebugUi = isNarrativeDebugEnabled();
   useAutoSave({
     intervalMs: 120_000,
     saveOnSceneChange: true,
@@ -150,6 +155,8 @@ export default function GameOrchestrator() {
 
   const phase = useAppStore((s) => s.phase);
   const setPhase = useAppStore((s) => s.setPhase);
+  const sessionPreset = useSessionPresetStore((s) => s.preset);
+  const presetConfig = useMemo(() => getSessionPreset(sessionPreset), [sessionPreset]);
   const playerState = useGameStore((s) => s.playerState);
   const currentNodeId = useGameStore((s) => s.currentNodeId);
   const collectedPoems = useGameStore((s) => s.collectedPoemIds);
@@ -546,10 +553,13 @@ export default function GameOrchestrator() {
     showStoryOverlay,
     handleTogglePanel,
     hasSavedGame,
+    hasDemoSave,
     handleLoadingReady,
     handleSaveGame,
     handleStartNewGame,
+    handleStartArcadeDemo,
     handleLoadGame,
+    handleLoadDemoGame,
     handleIntroComplete,
     handleCalmDown,
   } = actionsBundle;
@@ -594,6 +604,7 @@ export default function GameOrchestrator() {
         subtitleText={SUBTITLE_TEXT}
         gameIntro={GAME_INTRO}
         poems={POEMS}
+        compact={presetConfig.introCompact}
         onComplete={handleIntroComplete}
       />
     );
@@ -604,8 +615,12 @@ export default function GameOrchestrator() {
         titleText={TITLE_TEXT}
         subtitleText={SUBTITLE_TEXT}
         hasSave={hasSavedGame}
+        hasDemoSave={hasDemoSave}
         onNewGame={handleStartNewGame}
+        onArcadeDemo={handleStartArcadeDemo}
         onContinue={handleLoadGame}
+        onContinueDemo={handleLoadDemoGame}
+        menuHint={getSessionPreset('fullStory').menuHint}
       />
     );
   }
@@ -666,7 +681,8 @@ export default function GameOrchestrator() {
 
       {introOpening3dActive && <IntroCutsceneOverlays />}
 
-      {phase === 'game' && <LevelUpCinematicOverlay />}
+      {phase === 'game' && sessionPreset === 'fullStory' && <LevelUpCinematicOverlay />}
+      {phase === 'game' && <DemoResultsStrip />}
       <MoralCompassHUD />
       <LootNotification />
       <SkillUpNotification />
@@ -899,7 +915,7 @@ export default function GameOrchestrator() {
       </div>
 
       <EnergyBar energy={energySystem.energy} maxEnergy={energySystem.maxEnergy} energyLevel={energySystem.energyLevel} />
-      <NarrativeDebugPanel />
+      {showNarrativeDebugUi && <NarrativeDebugPanel />}
     </CyberGameShell>
   );
 }

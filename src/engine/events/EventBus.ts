@@ -175,6 +175,9 @@ export interface EventMap {
   // Проверка навыков
   'skill:check': { skill: string; difficulty: number; success: boolean; roll: number };
 
+  /** Аркадный сегмент battle-click: все shard-цели сняты. */
+  'arcade:battle_complete': { timestamp: number };
+
   /** Короткое сообщение поверх исследования (тост / эффект). */
   'ui:exploration_message': { text: string };
 

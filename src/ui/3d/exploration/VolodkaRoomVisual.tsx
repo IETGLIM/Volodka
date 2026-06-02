@@ -341,6 +341,20 @@ const VolodkaRoomVisualInner = memo(function VolodkaRoomVisualInner({
         </mesh>
       </group>
 
+      {/* Demo якоря: sticky + LED у стойки */}
+      <mesh position={[3.2, 1.05, 0.35]} castShadow>
+        <boxGeometry args={[0.18, 0.12, 0.02]} />
+        <meshStandardMaterial color="#f5e6a8" emissive="#fbbf24" emissiveIntensity={0.08} roughness={0.95} />
+      </mesh>
+      <mesh position={[3.45, 0.62, -0.05]} castShadow>
+        <boxGeometry args={[0.04, 0.04, 0.04]} />
+        <meshStandardMaterial color="#22c55e" emissive="#22c55e" emissiveIntensity={0.85} roughness={0.4} />
+      </mesh>
+      <mesh position={[3.1, 0.08, 0.2]}>
+        <boxGeometry args={[0.02, 0.02, 1.2]} />
+        <meshStandardMaterial color="#1a1a1a" roughness={0.7} metalness={0.2} />
+      </mesh>
+
       <mesh position={[0.05, doorY, hd + 1.18]} receiveShadow userData={{ noCameraCollision: true }} geometry={GEO.corridorVoid}>
         <meshStandardMaterial color="#07090d" roughness={0.97} metalness={0.04} emissive="#0c1220" emissiveIntensity={0.06} />
       </mesh>

@@ -105,6 +105,7 @@ const ActiveBattleClickLayer = memo(function ActiveBattleClickLayer() {
         if (alive === 0) {
           addSkill('logic', 2);
           addSkill('coding', 1);
+          eventBus.emit('arcade:battle_complete', { timestamp: Date.now() });
           eventBus.emit('ui:exploration_message', {
             text: 'Волна снята. Награда прототипа: +2 логики, +1 кодинга.',
           });

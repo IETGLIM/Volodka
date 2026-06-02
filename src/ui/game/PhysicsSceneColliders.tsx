@@ -39,6 +39,7 @@ const PhysicsWall = memo(function PhysicsWall({
   size,
   footstepMaterial = 'concrete',
 }: PhysicsWallProps) {
+  // Wall policy: clamp to minimum extent for stable capsule contact in corners.
   const minE = INTERIOR_PHYSICS_COLLIDER_WALL_MIN_EXTENT_M;
   const sx = Math.max(minE, size[0]);
   const sy = Math.max(minE, size[1]);
@@ -206,6 +207,10 @@ interface ObstacleProps {
   footstepMaterial?: FootstepMaterial;
 }
 
+/**
+ * Obstacle/prop colliders keep authored dimensions as-is (no min-clamp), unlike `PhysicsWall`.
+ * This preserves tight furniture fit against visuals; thin tabletops (0.08 m) are intentional.
+ */
 const PhysicsObstacle = memo(function PhysicsObstacle({ position, size, footstepMaterial = 'wood' }: ObstacleProps) {
   return (
     <RigidBody type="fixed" position={position} colliders={false}>
@@ -263,6 +268,10 @@ export const HomeEveningColliders = memo(function HomeEveningColliders() {
   );
 });
 
+const VOLODKA_DOOR_JAMB_X_HALF = 0.88;
+const VOLODKA_DOOR_JAMB_Z_INSET = 0.12;
+const VOLODKA_DOOR_BACKSTOP_Z_OFFSET = 1.35;
+
 /**
  * Комната Володьки: 14×10, проём в стене у двери в коридор (z+).
  * Пол по Z расширен (`floorHalfZ`), см. `explorationHeroStreamingIntegrity.test.ts`.
@@ -302,12 +311,19 @@ export const VolodkaRoomColliders = memo(function VolodkaRoomColliders() {
       <PhysicsWall position={[hw, h / 2, 0]} size={[wallT, h, floorHalfZ * 2]} />
       <PhysicsWall position={[-4.12, h / 2, hd]} size={[5.9 + wallT, h, wallT]} />
       <PhysicsWall position={[4.12, h / 2, hd]} size={[5.9 + wallT, h, wallT]} />
-      {/* Косяки дверного проёма: узкий зазор у стыка с боковыми стенами — без доборных кубоидов капсула иногда «скользит» сквозь угол. */}
-      <PhysicsWall position={[-0.88, h / 2, hd - 0.12]} size={[0.26, h, 0.42]} />
-      <PhysicsWall position={[0.88, h / 2, hd - 0.12]} size={[0.26, h, 0.42]} />
+      {/*
+        Контракт дверного проёма в координатах комнаты:
+        - X: ±VOLODKA_DOOR_JAMB_X_HALF от центра проёма;
+        - Z: косяки утоплены на VOLODKA_DOOR_JAMB_Z_INSET относительно плоскости передней стены z=hd;
+        - +Z backstop стоит на hd + VOLODKA_DOOR_BACKSTOP_Z_OFFSET и блокирует «уход в коридор» без телепорта.
+      */}
+      <PhysicsWall position={[-VOLODKA_DOOR_JAMB_X_HALF, h / 2, hd - VOLODKA_DOOR_JAMB_Z_INSET]} size={[0.26, h, 0.42]} />
+      <PhysicsWall position={[VOLODKA_DOOR_JAMB_X_HALF, h / 2, hd - VOLODKA_DOOR_JAMB_Z_INSET]} size={[0.26, h, 0.42]} />
       {/* Замыкает +Z за проёмом двери: без этого капсула проходит «в коридор» без телепорта и падает. */}
-      <PhysicsWall position={[0, h / 2, hd + 1.35]} size={[14 + wallT * 2, h, wallT]} />
+      <PhysicsWall position={[0, h / 2, hd + VOLODKA_DOOR_BACKSTOP_Z_OFFSET]} size={[14 + wallT * 2, h, wallT]} />
+      {/* Тонкая столешница 0.08 м намеренно совпадает с визуалом и `interiorDeskColliderCenterY(0.08)` (без автоклампа obstacles). */}
       <InstancedObstacles positions={deskMain} size={[1.45, 0.08, 0.78]} footstepMaterial="wood" />
+      {/* Тонкая столешница 0.08 м намеренно совпадает с визуалом и `interiorDeskColliderCenterY(0.08)` (без автоклампа obstacles). */}
       <InstancedObstacles positions={deskSide} size={[1.05, 0.08, 0.58]} footstepMaterial="wood" />
       <InstancedObstacles positions={wardrobes} size={[0.58, INTERIOR_REF_WARDROBE_HEIGHT_M, 0.68]} footstepMaterial="wood" />
       <InstancedObstacles positions={sofa} size={[1.85, 0.55, 0.88]} footstepMaterial="wood" />
@@ -549,6 +565,7 @@ export const ZaremaAlbertColliders = memo(function ZaremaAlbertColliders() {
       <RectangularBoundaryWalls width={10} depth={8} height={3} wallInset={0} />
       <InstancedObstacles positions={coffeeTable} size={[1.65, 0.1, 0.88]} footstepMaterial="wood" />
       <InstancedObstacles positions={sofa} size={[2.25, 0.48, 0.98]} footstepMaterial="carpet" />
+      {/* Тонкая столешница 0.08 м намеренно совпадает с визуалом и `interiorDeskColliderCenterY(0.08)` (без автоклампа obstacles). */}
       <InstancedObstacles positions={deskWork} size={[1.4, 0.08, 0.75]} footstepMaterial="wood" />
       <InstancedObstacles positions={deskChair} size={[0.52, 0.52, 0.52]} footstepMaterial="carpet" />
       <InstancedObstacles

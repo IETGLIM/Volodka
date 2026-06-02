@@ -328,7 +328,15 @@ export interface Interpretation {
 }
 
 export interface MiniGame {
-  type: 'word_puzzle' | 'memory_match' | 'rhythm' | 'drawing';
+  type:
+    | 'word_puzzle'
+    | 'memory_match'
+    | 'rhythm'
+    | 'drawing'
+    | 'drill_qte'
+    | 'chat_spam'
+    | 'wire_hack'
+    | 'battle_shards';
   difficulty: number;
   successThreshold: number;
   successNext: string;

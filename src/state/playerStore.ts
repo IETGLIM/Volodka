@@ -127,7 +127,7 @@ interface PlayerStoreActions {
   serializePlayerState: () => PlayerState;
   /** Восстановление с валидацией чисел; неизвестные поля отбрасываются на уровне merge. */
   deserializePlayerState: (data: Partial<PlayerState>) => void;
-  resetPlayer: () => void;
+  resetPlayer: (options?: { entryNodeId?: string }) => void;
   pushChoiceLog: (entry: Omit<ChoiceLogEntry, 'id' | 'at'> & { id?: string; at?: number }) => void;
   setRevealedPoemId: (poemId: string | null) => void;
   saveGame: (options?: { source?: 'auto' | 'manual' }) => void;
@@ -516,10 +516,10 @@ export const usePlayerStore = create<PlayerStore>()(
     set({ playerState: merged });
   },
 
-  resetPlayer: () =>
+  resetPlayer: (options) =>
     set({
       playerState: INITIAL_PLAYER,
-      currentNodeId: 'explore_hub_welcome',
+      currentNodeId: options?.entryNodeId ?? 'explore_hub_welcome',
       choiceLog: [],
       revealedPoemId: null,
     }),

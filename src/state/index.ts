@@ -22,8 +22,12 @@ export {
   loadGame,
   resetGame,
   hydrateFromLocalStorage,
+  hasSaveForPreset,
   type SaveGameOptions,
+  type ResetGameOptions,
 } from './saveManager';
+export { useSessionPresetStore, getActiveSessionPreset } from './sessionPresetStore';
+export { useArcadeScoreStore, computeArcadeRank } from './arcadeScoreStore';
 export {
   useWorldStore,
   useExploration,

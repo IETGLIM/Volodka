@@ -57,8 +57,8 @@ export interface UseActionHandlerParams {
   setPhase: (phase: AppPhase) => void;
   setGameMode: (mode: GameMode) => void;
   saveGameToStore: (options?: SaveGameOptions) => void;
-  loadGameFromStore: () => boolean;
-  resetGameStore: () => void;
+  loadGameFromStore: (options?: { preset?: import('@/config/gameModePresets').SessionGamePreset }) => boolean;
+  resetGameStore: (options?: import('@/state/saveManager').ResetGameOptions) => void;
   clearPanicMode: () => void;
 }
 

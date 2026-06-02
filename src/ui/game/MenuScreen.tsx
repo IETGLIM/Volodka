@@ -692,16 +692,24 @@ interface MenuScreenProps {
   titleText: string;
   subtitleText: string;
   hasSave: boolean;
+  hasDemoSave?: boolean;
   onNewGame: () => void;
+  onArcadeDemo?: () => void;
   onContinue: () => void;
+  onContinueDemo?: () => void;
+  menuHint?: string;
 }
 
 export const MenuScreen = memo(function MenuScreen({
   titleText,
   subtitleText,
   hasSave,
+  hasDemoSave = false,
   onNewGame,
+  onArcadeDemo,
   onContinue,
+  onContinueDemo,
+  menuHint = 'Первый маршрут ведёт в комнату Володьки: ночь, мониторы, стол, тишина между сменами.',
 }: MenuScreenProps) {
   const [systemStatus, setSystemStatus] = useState('ИНИЦИАЛИЗАЦИЯ');
   const [titleGlitch, setTitleGlitch] = useState(false);
@@ -883,19 +891,43 @@ export const MenuScreen = memo(function MenuScreen({
               </CyberButton>
             )}
 
+            {hasDemoSave && onContinueDemo && (
+              <CyberButton
+                onClick={onContinueDemo}
+                primary={!hasSave}
+                delay={hasSave ? 0.35 : 0.3}
+                variant={hasSave ? 'secondary' : 'primary'}
+                ariaLabel="Продолжить демо главы 1"
+              >
+                Продолжить демо
+              </CyberButton>
+            )}
+
+            {onArcadeDemo && (
+              <CyberButton
+                onClick={onArcadeDemo}
+                primary={!hasSave && !hasDemoSave}
+                delay={0.4}
+                variant={hasSave || hasDemoSave ? 'secondary' : 'primary'}
+                ariaLabel="Начать демо главы 1 — аркада и reflex"
+              >
+                Демо · Глава 1
+              </CyberButton>
+            )}
+
             <CyberButton
               onClick={onNewGame}
-              primary={!hasSave}
-              delay={hasSave ? 0.4 : 0.3}
-              variant={hasSave ? 'secondary' : 'primary'}
-              ariaLabel={hasSave ? 'Начать новую игру' : 'Начать новую игру с главного меню'}
+              primary={!hasSave && !hasDemoSave}
+              delay={hasSave || hasDemoSave ? 0.45 : 0.35}
+              variant={hasSave || hasDemoSave ? 'secondary' : 'primary'}
+              ariaLabel={hasSave ? 'Начать новую игру' : 'Начать полную историю с главного меню'}
             >
-              Новая игра
+              {hasSave || hasDemoSave ? 'Полная история' : 'Новая игра'}
             </CyberButton>
 
             <CyberButton
               onClick={() => setShowSettings(true)}
-              delay={0.5}
+              delay={0.55}
               variant="secondary"
               ariaLabel="Открыть настройки"
             >
@@ -903,7 +935,7 @@ export const MenuScreen = memo(function MenuScreen({
             </CyberButton>
           </div>
           <p className="mt-4 px-1 text-center font-mono text-[10px] leading-relaxed text-cyan-400/55">
-            Первый маршрут ведёт в комнату Володьки: ночь, мониторы, стол, тишина между сменами.
+            {menuHint}
           </p>
         </div>
 

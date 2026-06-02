@@ -21,6 +21,7 @@ import {
 } from '@/game/simulation/explorationMovementPresentation';
 import {
   explorationGlbSingleClipTimeScale,
+  type ExplorationMoveDirection,
   planExplorationGlbLocomotionClip,
 } from '@/game/simulation/explorationGlbAnimation';
 import { usePlayerFootsteps } from '@/hooks/usePlayerFootsteps';
@@ -97,6 +98,25 @@ export interface PhysicsPlayerRef {
   getRotation: () => number;
   teleport: (x: number, y: number, z: number) => void;
   getRigidBody: () => RapierRigidBody | null;
+}
+
+function arePhysicsPlayerPropsEqual(prev: PhysicsPlayerProps, next: PhysicsPlayerProps): boolean {
+  return (
+    prev.position?.[0] === next.position?.[0] &&
+    prev.position?.[1] === next.position?.[1] &&
+    prev.position?.[2] === next.position?.[2] &&
+    prev.modelPath === next.modelPath &&
+    prev.visualModelScale === next.visualModelScale &&
+    prev.playerScaleTuningSceneId === next.playerScaleTuningSceneId &&
+    prev.introCutsceneActive === next.introCutsceneActive &&
+    prev.locomotionScale === next.locomotionScale &&
+    prev.isLocked === next.isLocked &&
+    prev.initialRotation === next.initialRotation &&
+    prev.virtualControlsRef === next.virtualControlsRef &&
+    prev.debugPlayerPrimitive === next.debugPlayerPrimitive &&
+    prev.spawnSyncKey === next.spawnSyncKey &&
+    prev.explorationGlbClampSceneId === next.explorationGlbClampSceneId
+  );
 }
 
 // ============================================
@@ -279,6 +299,7 @@ const GLBPlayerModel = memo(function GLBPlayerModel({
   isLocked,
   onError,
   roomScale,
+  moveDirection,
   tuningSceneId,
   introCutsceneActive = false,
   glbUniformClampSceneId,
@@ -290,6 +311,7 @@ const GLBPlayerModel = memo(function GLBPlayerModel({
   onError: () => void;
   /** Множитель комнаты (`explorationCharacterModelScale`); вход в `resolveCharacterMeshUniformScale`. */
   roomScale: number;
+  moveDirection: ExplorationMoveDirection;
   tuningSceneId: SceneId;
   introCutsceneActive?: boolean;
   glbUniformClampSceneId?: SceneId;
@@ -422,7 +444,7 @@ const GLBPlayerModel = memo(function GLBPlayerModel({
     if (!act || Object.keys(act).length === 0) return;
 
     const animationNames = Object.keys(act);
-    const plan = planExplorationGlbLocomotionClip(animationNames, isMoving, isRunning);
+    const plan = planExplorationGlbLocomotionClip(animationNames, isMoving, isRunning, moveDirection);
     if (!plan) return;
 
     idleKeyForTimeScaleRef.current = plan.idleAnim;
@@ -451,7 +473,7 @@ const GLBPlayerModel = memo(function GLBPlayerModel({
       nextAction.fadeIn(duration);
     }
     prevTargetAnimRef.current = targetAnim;
-  }, [actionKeysSig, isMoving, isRunning]);
+  }, [actionKeysSig, isMoving, isRunning, moveDirection]);
 
   useFrame(() => {
     if (!singleClipModeRef.current || isLocked) return;
@@ -523,6 +545,9 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
   const verticalVelRef = useRef(0);
   const horizVelXRef = useRef(0);
   const horizVelZRef = useRef(0);
+  const coyoteTimerRef = useRef(0);
+  const jumpBufferTimerRef = useRef(0);
+  const jumpHeldTimeRef = useRef(0);
   const moveYawRef = useRef(initialRotation);
   /** Поворот визуала — только ref, без setState в useFrame (иначе ~60 React commit/сек). */
   const rotationRef = useRef(initialRotation);
@@ -533,9 +558,12 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
   const moveActiveRef = useRef(false);
   const [isRunning, setIsRunning] = useState(false);
   const isRunningSyncRef = useRef(false);
+  const [moveDirection, setMoveDirection] = useState<ExplorationMoveDirection>('forward');
+  const moveDirectionSyncRef = useRef<ExplorationMoveDirection>('forward');
   const locomotionLogCounterRef = useRef(0);
   const [modelError, setModelError] = useState(false);
   const onInteractionRef = useRef(onInteraction);
+  const onPositionChangeRef = useRef(onPositionChange);
   const isLockedRef = useRef(isLocked);
   const locomotionScaleRef = useRef(locomotionScale);
   useLayoutEffect(() => {
@@ -555,11 +583,15 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
     [spawnSyncKey, position[0], position[1], position[2]],
   );
 
-  const capsule = useMemo(() => computePlayerCapsule(roomScale), [roomScale]);
+  const capsule = useMemo(() => computePlayerCapsule(roomScale, visualModelScale), [roomScale, visualModelScale]);
 
   useEffect(() => {
     onInteractionRef.current = onInteraction;
   }, [onInteraction]);
+
+  useEffect(() => {
+    onPositionChangeRef.current = onPositionChange;
+  }, [onPositionChange]);
 
   useEffect(() => {
     isLockedRef.current = isLocked;
@@ -589,9 +621,13 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
     verticalVelRef.current = 0;
     horizVelXRef.current = 0;
     horizVelZRef.current = 0;
+    coyoteTimerRef.current = 0;
+    jumpBufferTimerRef.current = 0;
+    jumpHeldTimeRef.current = 0;
     moveActiveRef.current = false;
     isMovingSyncRef.current = false;
     isRunningSyncRef.current = false;
+    moveDirectionSyncRef.current = 'forward';
     const r0 = initialRotation;
     rotationRef.current = r0;
     moveYawRef.current = r0;
@@ -617,13 +653,13 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
   }, [getControls]);
 
   useEffect(() => {
-    const cc = createExplorationKinematicCharacterController(world);
+    const cc = createExplorationKinematicCharacterController(world, roomScale);
     characterControllerRef.current = cc;
     return () => {
       world.removeCharacterController(cc);
       characterControllerRef.current = null;
     };
-  }, [world]);
+  }, [world, roomScale]);
 
   // Экспозиция методов через ref
   useImperativeHandle(ref, () => ({
@@ -643,9 +679,13 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
         verticalVelRef.current = 0;
         horizVelXRef.current = 0;
         horizVelZRef.current = 0;
+        coyoteTimerRef.current = 0;
+        jumpBufferTimerRef.current = 0;
+        jumpHeldTimeRef.current = 0;
         moveActiveRef.current = false;
         isMovingSyncRef.current = false;
         isRunningSyncRef.current = false;
+        moveDirectionSyncRef.current = 'forward';
       }
     },
     getRigidBody: () => rigidBodyRef.current,
@@ -726,6 +766,10 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
       horizVelZ: horizVelZRef,
       canJump: canJumpRef,
       isRunning: isRunningRef,
+      coyoteTimer: coyoteTimerRef,
+      jumpBufferTimer: jumpBufferTimerRef,
+      jumpHeldTime: jumpHeldTimeRef,
+      capsuleRadius: capsule.r,
       horizontalWorldSpace: false,
     });
 
@@ -741,6 +785,11 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
       jumpHeld: controls.jump,
       verticalVel: verticalVelRef,
       canJump: canJumpRef,
+      coyoteTimer: coyoteTimerRef,
+      jumpBufferTimer: jumpBufferTimerRef,
+      jumpHeldTime: jumpHeldTimeRef,
+      horizVelX: horizVelXRef,
+      horizVelZ: horizVelZRef,
     });
 
     if (isExplorationPlayerLocomotionLogEnabled()) {
@@ -774,6 +823,10 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
         isRunningSyncRef.current = false;
         setIsRunning(false);
       }
+      if (moveDirectionSyncRef.current !== 'forward') {
+        moveDirectionSyncRef.current = 'forward';
+        setMoveDirection('forward');
+      }
       return;
     }
 
@@ -795,9 +848,9 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
             modelRef.current.rotation.y = rotationRef.current;
           }
           moveYawRef.current = -getExplorationCameraOrbitYawRad();
-          if (onPositionChange) {
+          if (onPositionChangeRef.current) {
             const p = rb.translation();
-            onPositionChange({
+            onPositionChangeRef.current({
               x: p.x,
               y: p.y,
               z: p.z,
@@ -817,13 +870,17 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
         isRunningSyncRef.current = false;
         setIsRunning(false);
       }
+      if (moveDirectionSyncRef.current !== 'forward') {
+        moveDirectionSyncRef.current = 'forward';
+        setMoveDirection('forward');
+      }
       if (modelRef.current) {
         modelRef.current.rotation.y = rotationRef.current;
       }
       moveYawRef.current = -getExplorationCameraOrbitYawRad();
-      if (onPositionChange) {
+      if (onPositionChangeRef.current) {
         const p = rb.translation();
-        onPositionChange({ x: p.x, y: p.y, z: p.z, rotation: rotationRef.current });
+        onPositionChangeRef.current({ x: p.x, y: p.y, z: p.z, rotation: rotationRef.current });
       }
       return;
     }
@@ -847,6 +904,18 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
 
     if (nextActive) {
       const ctrl = getControlsRef.current();
+      let nextDirection: ExplorationMoveDirection = 'forward';
+      if (ctrl.backward && !ctrl.forward && !ctrl.left && !ctrl.right) {
+        nextDirection = 'backward';
+      } else if (ctrl.left && !ctrl.right) {
+        nextDirection = 'strafe_left';
+      } else if (ctrl.right && !ctrl.left) {
+        nextDirection = 'strafe_right';
+      }
+      if (nextDirection !== moveDirectionSyncRef.current) {
+        moveDirectionSyncRef.current = nextDirection;
+        setMoveDirection(nextDirection);
+      }
       /**
        * Поворот визуала к направлению **мировой** горизонтальной скорости (`hx`,`hz` из KCC), не к орбите камеры.
        *
@@ -865,6 +934,9 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
         controls: ctrl,
         frameDeltaSec: frameDelta,
       });
+    } else if (moveDirectionSyncRef.current !== 'forward') {
+      moveDirectionSyncRef.current = 'forward';
+      setMoveDirection('forward');
     }
 
     if (modelRef.current) {
@@ -873,9 +945,9 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
 
     moveYawRef.current = -getExplorationCameraOrbitYawRad();
 
-    if (onPositionChange) {
+    if (onPositionChangeRef.current) {
       const p = rb.translation();
-      onPositionChange({ x: p.x, y: p.y, z: p.z, rotation: rotationRef.current });
+      onPositionChangeRef.current({ x: p.x, y: p.y, z: p.z, rotation: rotationRef.current });
     }
   });
 
@@ -930,6 +1002,7 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
                 modelPath={modelPathToUse}
                 isMoving={isMoving}
                 isRunning={isRunning}
+                moveDirection={moveDirection}
                 isLocked={isLocked}
                 onError={handleModelError}
                 roomScale={roomScale}
@@ -985,6 +1058,6 @@ export const PhysicsPlayer = memo(forwardRef<PhysicsPlayerRef, PhysicsPlayerProp
       </mesh>
     </RigidBody>
   );
-}));
+}), arePhysicsPlayerPropsEqual);
 
 export default PhysicsPlayer;

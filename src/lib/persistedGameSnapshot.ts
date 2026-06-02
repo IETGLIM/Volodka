@@ -2,6 +2,7 @@
  * Компактный снимок для localStorage / облака: без «тяжёлых» transient-полей обхода,
  * обрезка журналов и пустых квестовых счётчиков — меньше JSON и риск упереться в ~5MB.
  */
+import type { SessionGamePreset } from '@/config/gameModePresets';
 import type { PlayerState, ChoiceLogEntry, InventoryItem, NPCRelation } from '@/data/types';
 import type { ExplorationState, GameMode, TriggerState } from '@/data/rpgTypes';
 import type { FactionId, FactionReputation } from '@/data/factions';
@@ -103,6 +104,7 @@ export interface GameSaveSource {
   questProgress: Record<string, Record<string, number>>;
   factionReputations: Record<FactionId, FactionReputation>;
   choiceLog: ChoiceLogEntry[];
+  sessionPreset?: SessionGamePreset;
 }
 
 /** Компактный JSON-serializable объект (без `npcStates` в exploration, обрезанные журналы). */
@@ -125,6 +127,9 @@ export function buildLocalSavePayload(src: GameSaveSource): Record<string, unkno
     factionReputations: src.factionReputations,
     choiceLog: compactChoiceLogForSave(src.choiceLog),
     savedAt: Date.now(),
+    saveMeta: {
+      gameMode: src.sessionPreset ?? 'fullStory',
+    },
   };
 
   if (src.gameMode !== 'exploration') {

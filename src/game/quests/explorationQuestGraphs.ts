@@ -3,6 +3,7 @@
  * Раннер: `dispatchExplorationQuestGraph` из `@/game/core/explorationQuestGraph`.
  */
 import { audioEngine } from '@/engine/AudioEngine';
+import { useGameStore } from '@/state';
 import type { ExplorationQuestGraph } from '@/game/core/explorationQuestGraph';
 
 const HEARTH_QUEST_ID = 'exploration_zarema_hearth';
@@ -126,6 +127,15 @@ export const RACK_FORCE_EXPLORATION_QUEST_GRAPH: ExplorationQuestGraph = {
           'Квест «Разрыв синхронизации» закрыт веткой форса. Ветка честного аудита для этого прохождения больше не считается.',
         );
         audioEngine.playSfx('loot', 0.18);
+        const st = useGameStore.getState();
+        st.setFlag('vs_rack_cleared');
+        if (
+          st.currentNodeId === 'vs_slice_explore_free' ||
+          st.currentNodeId === 'vs_slice_intro'
+        ) {
+          st.travelToScene('kitchen_night');
+          st.setCurrentNode('vs_slice_conflict');
+        }
       },
     },
   ],
