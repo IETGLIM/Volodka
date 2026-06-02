@@ -109,7 +109,6 @@ export function useWorldState() {
   return useGameStore(
     useShallow((s) => ({
       timeOfDay: s.exploration.timeOfDay,
-      day: s.exploration.day,
       weather: s.exploration.weather,
       weatherIntensity: s.exploration.weatherIntensity,
     }))
