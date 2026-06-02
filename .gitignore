@@ -59,3 +59,9 @@ server.log
 deploy-archive/
 examples/
 upload/
+
+# wrangler files
+.wrangler
+.dev.vars*
+!.dev.vars.example
+!.env.example
