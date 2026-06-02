@@ -54,6 +54,8 @@ import type { MiniMapQuestMarker } from '@/ui/game/MiniMap';
 import { MoralCompassHUD } from '@/ui/game/MoralCompassHUD';
 import { LevelUpCinematicOverlay } from '@/ui/game/LevelUpCinematicOverlay';
 import { DemoResultsStrip } from '@/ui/game/DemoResultsStrip';
+import { ArcadeScoreStrip } from '@/ui/game/ArcadeScoreStrip';
+import { ArcadeQtePulseOverlay } from '@/ui/game/ArcadeQtePulseOverlay';
 import { SceneTransition } from '@/ui/game/CinematicEffects';
 import { LootNotification, SkillUpNotification } from '@/ui/game/LootNotification';
 import { TutorialOverlay } from '@/ui/game/TutorialOverlay';
@@ -683,6 +685,8 @@ export default function GameOrchestrator() {
 
       {phase === 'game' && sessionPreset === 'fullStory' && <LevelUpCinematicOverlay />}
       {phase === 'game' && <DemoResultsStrip />}
+      {phase === 'game' && <ArcadeScoreStrip />}
+      <ArcadeQtePulseOverlay />
       <MoralCompassHUD />
       <LootNotification />
       <SkillUpNotification />

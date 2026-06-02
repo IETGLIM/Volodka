@@ -26,6 +26,8 @@
 
 ### Changed
 
+- **Arcade Demo polish:** демо после интро остаётся в `volodka_room` (без 14-с кат-сцены до Заремы); HUD счёта `ArcadeScoreStrip`, мобильный QTE (`arcadeQteHudStore`, `ArcadeQtePulseOverlay`, кнопка в `ExplorationMobileHud`); брифинг управления в `vs_slice_intro`.
+
 - **Arcade Demo flow:** wire-hack `exploration_volodka_rack` после успеха — телепорт на `kitchen_night` и узел `vs_slice_conflict`; gravity Rapier = `PHYSICS_CONSTANTS.GRAVITY` в `RPGGameCanvas.tsx`; якоря в `VolodkaRoomVisual` / `VolodkaCorridorVisual`; подсказка E для demo в `useExplorationBootstrap.ts`; level-up cinematic отключён в demo (`GameOrchestrator`).
 
 - **Рефакторинг `RPGGameCanvas` (orchestration-first):** scene-specific пресеты света/тумана/камеры/пола вынесены в `src/config/explorationScenePresets.ts`; bootstrap синхронизация позиции и брифинга — в `src/ui/game/useExplorationBootstrap.ts`; интеракции (pickup/priority/radial/registry) — в `src/ui/game/useExplorationInteraction.ts`; в `src/ui/game/RPGGameCanvas.tsx` разделены Zustand-селекторы на более узкие срезы без изменения поведения камеры, NPC, триггеров и UI.

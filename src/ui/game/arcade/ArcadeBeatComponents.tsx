@@ -4,6 +4,7 @@ import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useArcadeScoreStore } from '@/state/arcadeScoreStore';
 import { emitInteractionFeedback } from '@/lib/interactionFeedback';
+import { useArcadeQteHudStore } from '@/state/arcadeQteHudStore';
 
 const ROUNDS = 4;
 const WINDOW_MS = 700;
@@ -56,6 +57,11 @@ export const DrillQteBeat = memo(function DrillQteBeat({ onComplete }: DrillQteP
       setPhase('wait');
     }
   }, [phase, addScore]);
+
+  useEffect(() => {
+    useArcadeQteHudStore.getState().bind(tryHit, phase === 'open' ? 'СЕЙЧАС' : 'QTE');
+    return () => useArcadeQteHudStore.getState().unbind();
+  }, [tryHit, phase]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {

@@ -16,6 +16,7 @@ import {
   type ResetGameOptions,
 } from '@/state/saveManager';
 import type { SessionGamePreset } from '@/config/gameModePresets';
+import { getActiveSessionPreset } from '@/state/sessionPresetStore';
 
 interface UseGameSessionFlowParams {
   setPhase: (phase: AppPhase) => void;
@@ -76,9 +77,13 @@ export function useGameSessionFlow({
   }, [loadGameFromStore, setPhase]);
 
   const handleIntroComplete = useCallback(() => {
-    /** Сразу комната + стол: первый кадр 3D — кат-сцена, не свободный спавн у дивана. */
+    /** Сразу комната + стол; в демо без 14-сек. кат-сцены до Заремы — квест стойки в `volodka_room`. */
     explorationNarrativeTeleport(INTRO_OPENING_SCENE_ID, { ...INTRO_OPENING_DESK_CHAIR });
-    useGamePhaseStore.getState().beginOpeningCutsceneAfterTextIntro();
+    if (getActiveSessionPreset() === 'arcadeSlice') {
+      useGamePhaseStore.getState().completeIntroCutscene();
+    } else {
+      useGamePhaseStore.getState().beginOpeningCutsceneAfterTextIntro();
+    }
     setPhase('game');
   }, [setPhase]);
 

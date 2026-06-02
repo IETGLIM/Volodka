@@ -4,6 +4,8 @@ import { memo, useCallback, useEffect, useRef, type ReactNode } from 'react';
 import type { MutableRefObject } from 'react';
 import type { PlayerControls } from '@/hooks/useGamePhysics';
 import { useInteractionHintStore } from '@/state/interactionHintStore';
+import { useArcadeQteHudStore } from '@/state/arcadeQteHudStore';
+import { useSessionPresetStore } from '@/state/sessionPresetStore';
 
 interface ExplorationMobileHudProps {
   active: boolean;
@@ -73,6 +75,10 @@ export const ExplorationMobileHud = memo(function ExplorationMobileHud({
   onInteract,
 }: ExplorationMobileHudProps) {
   const hintVisible = useInteractionHintStore((s) => s.visible);
+  const arcadePreset = useSessionPresetStore((s) => s.preset) === 'arcadeSlice';
+  const qteActive = useArcadeQteHudStore((s) => s.active);
+  const qteLabel = useArcadeQteHudStore((s) => s.label);
+  const qteFire = useArcadeQteHudStore((s) => s.fire);
   const lastInteractAt = useRef(0);
 
   const setKey = useCallback(
@@ -178,6 +184,19 @@ export const ExplorationMobileHud = memo(function ExplorationMobileHud({
           >
             E · Действие
           </button>
+          {arcadePreset && qteActive && (
+            <button
+              type="button"
+              className="min-h-[52px] touch-manipulation select-none rounded border border-emerald-400/50 bg-emerald-950/60 px-3 font-mono text-xs uppercase tracking-wide text-emerald-100/95 active:bg-emerald-900/70 sm:min-h-12"
+              aria-label="QTE — поймать момент"
+              onPointerDown={(e) => {
+                e.preventDefault();
+                qteFire();
+              }}
+            >
+              ▶ {qteLabel}
+            </button>
+          )}
         </div>
       </div>
       <p className="pointer-events-none px-3 pb-[max(0.25rem,env(safe-area-inset-bottom))] text-center font-mono text-[9px] text-cyan-600/50">
