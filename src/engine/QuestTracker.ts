@@ -84,6 +84,15 @@ export class QuestTracker {
         this.onPoemPowerUsed(payload.poemId);
       }),
     );
+
+    // Subscribe to minigame completion — check minigame_completed objectives
+    this.unsubscribeEvents.push(
+      eventBus.on('minigame:complete', (payload) => {
+        if (payload.success !== false) {
+          this.onMinigameCompleted(payload.gameType);
+        }
+      }),
+    );
   }
 
   /** Stop tracking — clean up all subscriptions */
@@ -233,6 +242,23 @@ export class QuestTracker {
         if (objective.type !== 'poem_collected') continue;
         if (quest.objectives[objective.id]) continue;
         if (objective.target && newPoems.includes(objective.target)) {
+          this.completeObjective(quest.questId, objective.id);
+        }
+      }
+    }
+  }
+
+  /** Minigame completed — check minigame_completed objectives */
+  private onMinigameCompleted(gameType: string): void {
+    const activeQuests = this.getActiveQuests();
+    for (const quest of activeQuests) {
+      const definition = QUEST_DEFINITIONS.find((d) => d.id === quest.questId);
+      if (!definition) continue;
+
+      for (const objective of definition.objectives) {
+        if (objective.type !== 'minigame_completed') continue;
+        if (quest.objectives[objective.id]) continue;
+        if (objective.target === gameType) {
           this.completeObjective(quest.questId, objective.id);
         }
       }

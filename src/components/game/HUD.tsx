@@ -53,6 +53,7 @@ import { eventBus } from '@/engine/EventBus';
 import { floatXP, floatKarma, floatEnergy, floatStress, floatLevelUp, floatSkill } from '@/components/game/FloatingText';
 import { type WeatherType, determineWeatherType, WEATHER_EFFECTS } from '@/data/weatherEffects';
 import { StatusEffectsBar } from '@/components/game/StatusEffectsBar';
+import { MoralCompassHUD } from '@/components/game/MoralCompassHUD';
 
 const TOTAL_POEMS = POEMS.length;
 
@@ -1068,6 +1069,26 @@ export function HUD({ onOpenQuests, onOpenInventory, onOpenPoetry, onToggleTutor
             </div>
           </div>
 
+          {/* XP Progress bar — prominent cyan bar */}
+          <div className="mb-3">
+            <div className="flex items-center gap-2 mb-1.5 relative">
+              <div className="w-5 h-5 rounded-md flex items-center justify-center bg-cyan-500/10" style={{ boxShadow: '0 0 8px rgba(34,211,238,0.2)' }}>
+                <TrendingUp className="size-3 text-cyan-400" />
+              </div>
+              <span className="text-sm font-semibold text-cyan-300">Опыт</span>
+              <span className="text-[11px] text-cyan-400/70 font-mono ml-auto tabular-nums" style={{ textShadow: '0 0 4px rgba(34,211,238,0.3)' }}>
+                {xp}<span className="text-cyan-500/40">/</span>{xpToNext}
+              </span>
+            </div>
+            <CyberStatBar
+              value={xp}
+              max={xpToNext}
+              color="linear-gradient(90deg, #0891b2, #22d3ee)"
+              glowColor="rgba(34,211,238,0.4)"
+              showSegments={false}
+            />
+          </div>
+
           {/* Energy bar — ENHANCED with bigger fonts and glow */}
           <div className="mb-3">
             <div className="flex items-center gap-2 mb-1.5 relative">
@@ -1198,6 +1219,9 @@ export function HUD({ onOpenQuests, onOpenInventory, onOpenPoetry, onToggleTutor
       <div className="absolute left-1/2 -translate-x-1/2 pointer-events-auto lg:hidden" style={{ bottom: 52 }}>
         <StatusEffectsBar />
       </div>
+
+      {/* ── Moral Compass / Karma HUD ── */}
+      <MoralCompassHUD />
 
       {/* ── Interaction hint ── */}
       <div className="absolute bottom-16 right-3 pointer-events-none hidden lg:block">

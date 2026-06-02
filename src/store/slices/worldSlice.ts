@@ -148,6 +148,7 @@ export const createWorldSlice: StateCreator<
       quests.push({ questId, status: 'active', objectives, startedAtTime: timeOfDay });
 
       eventBus.emit('quest:activated', { questId });
+      eventBus.emit('quest:accepted', { questId, questTitle: definition.title });
 
       const questTitle = definition.title;
       const currentNotifications = (get() as unknown as CrossSliceReads).notifications;

@@ -15,6 +15,7 @@ interface LevelUpState {
   newLevel: number;
   prevLevel: number;
   id: string;
+  perkPointGained: boolean;
 }
 
 /** Number of CSS particle dots for the burst effect */
@@ -24,12 +25,12 @@ export function LevelUpEffect() {
   const [levelUp, setLevelUp] = useState<LevelUpState | null>(null);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const triggerLevelUp = useCallback((newLevel: number, prevLevel: number) => {
+  const triggerLevelUp = useCallback((newLevel: number, prevLevel: number, perkPointGained = false) => {
     // Clear any previous timer
     if (timerRef.current) clearTimeout(timerRef.current);
 
     const id = `levelup-${Date.now()}-${newLevel}`;
-    setLevelUp({ newLevel, prevLevel, id });
+    setLevelUp({ newLevel, prevLevel, id, perkPointGained });
 
     // Auto-dismiss after ~3 seconds
     timerRef.current = setTimeout(() => {
@@ -40,7 +41,7 @@ export function LevelUpEffect() {
   // ── Watch EventBus for player:levelup ──
   useEffect(() => {
     const unsub = eventBus.on('player:levelup', (payload) => {
-      triggerLevelUp(payload.newLevel, payload.prevLevel);
+      triggerLevelUp(payload.newLevel, payload.prevLevel, payload.perkPointGained ?? false);
     });
     return () => {
       unsub();
@@ -209,15 +210,30 @@ export function LevelUpEffect() {
               />
 
               {/* Subtitle */}
-              <motion.p
-                className="text-sm font-mono tracking-wider text-amber-300/60"
-                style={{ textShadow: '0 0 8px rgba(251,191,36,0.3)' }}
+              <motion.div
+                className="flex items-center gap-2"
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4, delay: 0.4 }}
               >
-                +1 очко навыка
-              </motion.p>
+                <motion.p
+                  className="text-sm font-mono tracking-wider text-amber-300/60"
+                  style={{ textShadow: '0 0 8px rgba(251,191,36,0.3)' }}
+                >
+                  +1 очко навыка
+                </motion.p>
+                {levelUp.perkPointGained && (
+                  <motion.p
+                    className="text-sm font-mono tracking-wider text-cyan-300/70"
+                    style={{ textShadow: '0 0 8px rgba(34,211,238,0.4)' }}
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.3, delay: 0.6 }}
+                  >
+                    ★ +1 очко черты
+                  </motion.p>
+                )}
+              </motion.div>
             </motion.div>
           </div>
 

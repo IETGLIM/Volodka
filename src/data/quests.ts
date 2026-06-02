@@ -36,8 +36,10 @@ export const QUEST_DEFINITIONS: QuestDefinition[] = [
     rewards: [
       { type: 'addSkill', skill: 'writing', value: 2 },
       { type: 'addKarma', value: 5 },
+      { type: 'addXp', value: 50 },
     ],
     linkedStoryNodeId: 'fix_success',
+    questGiverNpcId: undefined, // Self-discovered quest (no NPC giver)
   },
 
   /* ─────────────── QUEST 2: Connection with Maria ─────────────── */
@@ -77,8 +79,10 @@ export const QUEST_DEFINITIONS: QuestDefinition[] = [
       { type: 'addSkill', skill: 'intuition', value: 3 },
       { type: 'addSkill', skill: 'empathy', value: 2 },
       { type: 'addKarma', value: 5 },
+      { type: 'addXp', value: 75 },
     ],
     linkedStoryNodeId: 'maria_curious',
+    questGiverNpcId: 'maria',
   },
 
   /* ─────────────── QUEST 3: IT guild incident ─────────────── */
@@ -107,6 +111,13 @@ export const QUEST_DEFINITIONS: QuestDefinition[] = [
         completed: false,
       },
       {
+        id: 'crack_the_code',
+        description: 'Взломать шифр инцидента (мини-игра «Взломщик кода»)',
+        type: 'minigame_completed',
+        target: 'codebreaker',
+        completed: false,
+      },
+      {
         id: 'start_diagnosis',
         description: 'Начать диагностику кода инцидента',
         type: 'flag_set',
@@ -118,8 +129,10 @@ export const QUEST_DEFINITIONS: QuestDefinition[] = [
       { type: 'addSkill', skill: 'coding', value: 3 },
       { type: 'addSkill', skill: 'logic', value: 2 },
       { type: 'addItem', itemId: 'guild_access_badge', value: 1 },
+      { type: 'addXp', value: 100 },
     ],
     linkedStoryNodeId: 'office_alexander',
+    questGiverNpcId: 'office_alexander',
   },
 
   /* ─────────────── QUEST 4: Vault backup trial ─────────────── */
@@ -138,6 +151,13 @@ export const QUEST_DEFINITIONS: QuestDefinition[] = [
         description: 'Узнать о существовании Хранилища',
         type: 'npc_talked',
         target: 'office_colleague',
+        completed: false,
+      },
+      {
+        id: 'hack_vault_terminal',
+        description: 'Взломать терминал Хранилища (мини-игра «Терминал»)',
+        type: 'minigame_completed',
+        target: 'bash_terminal',
         completed: false,
       },
       {
@@ -162,8 +182,10 @@ export const QUEST_DEFINITIONS: QuestDefinition[] = [
       { type: 'addSkill', skill: 'persuasion', value: 2 },
       { type: 'addKarma', value: 8 },
       { type: 'addItem', itemId: 'vault_key_fragment', value: 1 },
+      { type: 'addXp', value: 150 },
     ],
     linkedStoryNodeId: 'colleague_persuasion_line',
+    questGiverNpcId: 'office_colleague',
   },
 
   /* ─────────────── QUEST 5: Collect all poems ─────────────── */
@@ -234,13 +256,16 @@ export const QUEST_DEFINITIONS: QuestDefinition[] = [
       { id: 'collect_poem_19', description: 'Стихотворение XIX — Неоновая Панихида', type: 'poem_collected', target: 'poem_19', completed: false },
       { id: 'collect_poem_20', description: 'Стихотворение XX — Чип в затылке', type: 'poem_collected', target: 'poem_20', completed: false },
       { id: 'collect_poem_21', description: 'Стихотворение XXI — Белая Река', type: 'poem_collected', target: 'poem_21', completed: false },
+      { id: 'enter_poetry_trance', description: 'Войти в поэтический транс (мини-игра «Поэтическая композиция»)', type: 'minigame_completed', target: 'poetry_composition', completed: false },
     ],
     rewards: [
       { type: 'addSkill', skill: 'writing', value: 7 },
       { type: 'addKarma', value: 20 },
       { type: 'setFlag', flag: 'all_poems_collected', flagValue: true },
+      { type: 'addXp', value: 200 },
     ],
     linkedStoryNodeId: 'volodka_inner',
+    questGiverNpcId: undefined, // Self-discovered collection quest
   },
 
   /* ─────────────── QUEST 6: Night shift mystery ─────────────── */
@@ -288,8 +313,10 @@ export const QUEST_DEFINITIONS: QuestDefinition[] = [
       { type: 'addSkill', skill: 'logic', value: 2 },
       { type: 'addKarma', value: 3 },
       { type: 'addItem', itemId: 'encrypted_scroll', value: 1 },
+      { type: 'addXp', value: 80 },
     ],
     linkedStoryNodeId: 'office_alexander',
+    questGiverNpcId: 'office_alexander',
   },
 
   /* ─────────────── QUEST 7: Albert's lesson ─────────────── */
@@ -332,8 +359,10 @@ export const QUEST_DEFINITIONS: QuestDefinition[] = [
       { type: 'addSkill', skill: 'writing', value: 2 },
       { type: 'addKarma', value: 5 },
       { type: 'setFlag', flag: 'albert_trained', flagValue: true },
+      { type: 'addXp', value: 100 },
     ],
     linkedStoryNodeId: 'cafe_enter',
+    questGiverNpcId: 'albert',
   },
 
   /* ═══════════════════════════════════════════════════════════════════
@@ -356,6 +385,13 @@ export const QUEST_DEFINITIONS: QuestDefinition[] = [
         description: 'Встретиться с Викторией для посвящения',
         type: 'npc_talked',
         target: 'maria',
+        completed: false,
+      },
+      {
+        id: 'navigate_network',
+        description: 'Пройти проверку Сети — навигация по сети (мини-игра «Взлом»)',
+        type: 'minigame_completed',
+        target: 'hacking',
         completed: false,
       },
       {
@@ -385,8 +421,10 @@ export const QUEST_DEFINITIONS: QuestDefinition[] = [
       { type: 'addSkill', skill: 'writing', value: 2 },
       { type: 'addKarma', value: 8 },
       { type: 'setFlag', flag: 'network_member', flagValue: true },
+      { type: 'addXp', value: 150 },
     ],
     linkedStoryNodeId: 'act2_network_initiation',
+    questGiverNpcId: 'maria',
   },
 
   /* ─────────────── QUEST 9: Dmitry defection ─────────────── */
@@ -436,8 +474,10 @@ export const QUEST_DEFINITIONS: QuestDefinition[] = [
       { type: 'addSkill', skill: 'empathy', value: 2 },
       { type: 'addKarma', value: 10 },
       { type: 'setFlag', flag: 'dmitry_defected', flagValue: true },
+      { type: 'addXp', value: 150 },
     ],
     linkedStoryNodeId: 'office_colleague',
+    questGiverNpcId: 'office_dmitry',
   },
 
   /* ─────────────── QUEST 10: Vault key fragments ─────────────── */
@@ -484,8 +524,10 @@ export const QUEST_DEFINITIONS: QuestDefinition[] = [
       { type: 'addSkill', skill: 'coding', value: 2 },
       { type: 'addKarma', value: 10 },
       { type: 'setFlag', flag: 'full_vault_access', flagValue: true },
+      { type: 'addXp', value: 150 },
     ],
     linkedStoryNodeId: 'act2_vault_revealed',
+    questGiverNpcId: 'maria',
   },
 
   /* ─────────────── QUEST 11: Cafe safehouse ─────────────── */
@@ -532,8 +574,10 @@ export const QUEST_DEFINITIONS: QuestDefinition[] = [
       { type: 'addSkill', skill: 'coding', value: 1 },
       { type: 'addKarma', value: 6 },
       { type: 'setFlag', flag: 'cafe_safehouse_established', flagValue: true },
+      { type: 'addXp', value: 100 },
     ],
     linkedStoryNodeId: 'cafe_enter',
+    questGiverNpcId: 'cafe_barista',
   },
 
   /* ─────────────── QUEST 12: Poetry smuggling ─────────────── */
@@ -581,8 +625,10 @@ export const QUEST_DEFINITIONS: QuestDefinition[] = [
       { type: 'addSkill', skill: 'logic', value: 1 },
       { type: 'addKarma', value: 8 },
       { type: 'setFlag', flag: 'poems_smuggled', flagValue: true },
+      { type: 'addXp', value: 100 },
     ],
     linkedStoryNodeId: 'street_bench',
+    questGiverNpcId: 'cafe_barista',
   },
 
   /* ═══════════════════════════════════════════════════════════════════
@@ -644,8 +690,10 @@ export const QUEST_DEFINITIONS: QuestDefinition[] = [
       { type: 'addSkill', skill: 'empathy', value: 3 },
       { type: 'addKarma', value: 15 },
       { type: 'setFlag', flag: 'zarema_rescued', flagValue: true },
+      { type: 'addXp', value: 200 },
     ],
     linkedStoryNodeId: 'act3_zarema_arrest',
+    questGiverNpcId: 'zarema',
   },
 
   /* ─────────────── QUEST 14: Vault defense ─────────────── */
@@ -695,8 +743,10 @@ export const QUEST_DEFINITIONS: QuestDefinition[] = [
       { type: 'addSkill', skill: 'logic', value: 3 },
       { type: 'addKarma', value: 12 },
       { type: 'setFlag', flag: 'vault_defended', flagValue: true },
+      { type: 'addXp', value: 200 },
     ],
     linkedStoryNodeId: 'act3_guild_counterattack',
+    questGiverNpcId: 'albert',
   },
 
   /* ─────────────── QUEST 15: Maria truth ─────────────── */
@@ -743,8 +793,10 @@ export const QUEST_DEFINITIONS: QuestDefinition[] = [
       { type: 'addSkill', skill: 'empathy', value: 3 },
       { type: 'addKarma', value: 10 },
       { type: 'setFlag', flag: 'maria_truth_accepted', flagValue: true },
+      { type: 'addXp', value: 200 },
     ],
     linkedStoryNodeId: 'act3_maria_mystery',
+    questGiverNpcId: 'maria',
   },
 
   /* ═══════════════════════════════════════════════════════════════════
@@ -806,8 +858,10 @@ export const QUEST_DEFINITIONS: QuestDefinition[] = [
       { type: 'addSkill', skill: 'persuasion', value: 3 },
       { type: 'addKarma', value: 12 },
       { type: 'setFlag', flag: 'guild_infiltrated', flagValue: true },
+      { type: 'addXp', value: 250 },
     ],
     linkedStoryNodeId: 'act4_infiltration_prep',
+    questGiverNpcId: 'office_colleague',
   },
 
   /* ─────────────── QUEST 17: Poetry broadcast ─────────────── */
@@ -856,8 +910,10 @@ export const QUEST_DEFINITIONS: QuestDefinition[] = [
       { type: 'addSkill', skill: 'coding', value: 3 },
       { type: 'addKarma', value: 20 },
       { type: 'setFlag', flag: 'poetry_broadcast_sent', flagValue: true },
+      { type: 'addXp', value: 300 },
     ],
     linkedStoryNodeId: 'volodka_inner',
+    questGiverNpcId: undefined,
   },
 
   /* ═══════════════════════════════════════════════════════════════════
@@ -910,8 +966,10 @@ export const QUEST_DEFINITIONS: QuestDefinition[] = [
       { type: 'addSkill', skill: 'intuition', value: 3 },
       { type: 'addKarma', value: 8 },
       { type: 'setFlag', flag: 'digital_ghost_resolved', flagValue: true },
+      { type: 'addXp', value: 120 },
     ],
     linkedStoryNodeId: 'office_alexander',
+    questGiverNpcId: 'office_alexander',
   },
 
   /* ─────────────── QUEST 19: Банковский Перевод ─────────────── */
@@ -958,8 +1016,10 @@ export const QUEST_DEFINITIONS: QuestDefinition[] = [
       { type: 'addSkill', skill: 'persuasion', value: 2 },
       { type: 'addKarma', value: 10 },
       { type: 'setFlag', flag: 'bank_transfer_resolved', flagValue: true },
+      { type: 'addXp', value: 100 },
     ],
     linkedStoryNodeId: 'kitchen_table',
+    questGiverNpcId: 'zarema',
   },
 
   /* ─────────────── QUEST 20: Ночной Дозор ─────────────── */
@@ -1007,8 +1067,10 @@ export const QUEST_DEFINITIONS: QuestDefinition[] = [
       { type: 'addSkill', skill: 'empathy', value: 2 },
       { type: 'addKarma', value: 8 },
       { type: 'setFlag', flag: 'night_watch_completed', flagValue: true },
+      { type: 'addXp', value: 100 },
     ],
     linkedStoryNodeId: 'street_bench',
+    questGiverNpcId: 'albert',
   },
 
   /* ─────────────── QUEST 21: Стих под Прикрытием ─────────────── */
@@ -1057,8 +1119,10 @@ export const QUEST_DEFINITIONS: QuestDefinition[] = [
       { type: 'addSkill', skill: 'writing', value: 2 },
       { type: 'addKarma', value: 6 },
       { type: 'setFlag', flag: 'undercover_mission_complete', flagValue: true },
+      { type: 'addXp', value: 100 },
     ],
     linkedStoryNodeId: 'cafe_enter',
+    questGiverNpcId: 'maria',
   },
 
   /* ─────────────── QUEST 22: Сломанный Терминал ─────────────── */
@@ -1100,8 +1164,10 @@ export const QUEST_DEFINITIONS: QuestDefinition[] = [
       { type: 'addSkill', skill: 'logic', value: 2 },
       { type: 'addKarma', value: 5 },
       { type: 'setFlag', flag: 'all_terminals_fixed', flagValue: true },
+      { type: 'addXp', value: 80 },
     ],
     linkedStoryNodeId: 'office_alexander',
+    questGiverNpcId: 'office_dmitry',
   },
 
   /* ─────────────── QUEST 23: Голос Прошлого ─────────────── */
@@ -1148,8 +1214,10 @@ export const QUEST_DEFINITIONS: QuestDefinition[] = [
       { type: 'addSkill', skill: 'writing', value: 3 },
       { type: 'addKarma', value: 15 },
       { type: 'setFlag', flag: 'vladimir_voice_heard', flagValue: true },
+      { type: 'addXp', value: 150 },
     ],
     linkedStoryNodeId: 'volodka_inner',
+    questGiverNpcId: 'cafe_barista',
   },
 
   /* ─────────────── QUEST 24: Крыша Мира ─────────────── */
@@ -1193,8 +1261,10 @@ export const QUEST_DEFINITIONS: QuestDefinition[] = [
       { type: 'addSkill', skill: 'writing', value: 5 },
       { type: 'addKarma', value: 20 },
       { type: 'setFlag', flag: 'roof_confrontation_ended', flagValue: true },
+      { type: 'addXp', value: 250 },
     ],
     linkedStoryNodeId: 'office_alexander',
+    questGiverNpcId: 'office_alexander',
   },
 
   /* ─────────────── QUEST 25: Последнее Стихотворение ─────────────── */
@@ -1242,8 +1312,10 @@ export const QUEST_DEFINITIONS: QuestDefinition[] = [
       { type: 'addSkill', skill: 'empathy', value: 5 },
       { type: 'addKarma', value: 25 },
       { type: 'setFlag', flag: 'last_poem_written', flagValue: true },
+      { type: 'addXp', value: 500 },
     ],
     linkedStoryNodeId: 'volodka_inner',
+    questGiverNpcId: 'last_poem',
   },
 
   /* ═══════════════════════════════════════════════════════════════════
@@ -1287,8 +1359,10 @@ export const QUEST_DEFINITIONS: QuestDefinition[] = [
       { type: 'addSkill', skill: 'logic', value: 3 },
       { type: 'addKarma', value: 8 },
       { type: 'setFlag', flag: 'openstack_crisis_resolved', flagValue: true },
+      { type: 'addXp', value: 150 },
     ],
     linkedStoryNodeId: 'office_alexander',
+    questGiverNpcId: 'office_alexander',
   },
 
   /* ─────────────── QUEST: Банковская Авария ─────────────── */
@@ -1337,8 +1411,10 @@ export const QUEST_DEFINITIONS: QuestDefinition[] = [
       { type: 'addKarma', value: 12 },
       { type: 'setFlag', flag: 'banking_crash_resolved', flagValue: true },
       { type: 'addItem', itemId: 'bank_access_token', value: 1 },
+      { type: 'addXp', value: 150 },
     ],
     linkedStoryNodeId: 'kitchen_table',
+    questGiverNpcId: 'zarema',
   },
 
   /* ═══════════════════════════════════════════════════════════════════
@@ -1393,8 +1469,10 @@ export const QUEST_DEFINITIONS: QuestDefinition[] = [
       { type: 'addSkill', skill: 'writing', value: 3 },
       { type: 'addKarma', value: 10 },
       { type: 'setFlag', flag: 'old_code_quest_completed', flagValue: true },
+      { type: 'addXp', value: 150 },
     ],
     linkedStoryNodeId: 'old_code',
+    questGiverNpcId: 'office_dmitry',
   },
 
   /* ─────────────── QUEST: Голоса завода ─────────────── */
@@ -1453,7 +1531,9 @@ export const QUEST_DEFINITIONS: QuestDefinition[] = [
       { type: 'addSkill', skill: 'coding', value: 3 },
       { type: 'addKarma', value: 12 },
       { type: 'setFlag', flag: 'factory_voices_completed', flagValue: true },
+      { type: 'addXp', value: 150 },
     ],
     linkedStoryNodeId: 'abandoned_workshop',
+    questGiverNpcId: 'maria',
   },
 ];

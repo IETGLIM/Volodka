@@ -11,8 +11,10 @@ import type {
 } from '@/shared/types/game';
 import type { PerkEffect } from '@/data/perks';
 import type { GiftPreference } from '@/data/npcGifts';
+import type { StoryEffect, QuestType } from '@/shared/types/game';
 import { MAX_INVENTORY_SLOTS } from '@/data/constants';
 import { getItemDefinition, getEquipmentSlot, createInventoryItem } from '@/data/items';
+import { QUEST_DEFINITIONS } from '@/data/quests';
 import { getRecipeById } from '@/data/craftingRecipes';
 import {
   getMerchantInventory,
@@ -86,6 +88,8 @@ export interface PlayerSliceActions {
   getActivePerkEffects: () => PerkEffect[];
   /** Gift an item to an NPC. Determines preference, adjusts affinity, removes item, emits event. */
   giftItemToNPC: (itemId: string, npcId: string) => GiftPreference | null;
+  /** Complete a quest and auto-apply its rewards (skills, karma, XP, items, flags). */
+  completeQuestAndApplyRewards: (questId: string) => void;
 }
 
 export type PlayerSlice = PlayerSliceState & PlayerSliceActions;
@@ -282,7 +286,7 @@ export const createPlayerSlice: StateCreator<
       if (newLevel > prog.level) {
         // Use queueMicrotask to avoid emitting during Zustand set() which can cause issues
         queueMicrotask(() => {
-          eventBus.emit('player:levelup', { newLevel, prevLevel: prog.level });
+          eventBus.emit('player:levelup', { newLevel, prevLevel: prog.level, perkPointGained });
         });
       }
 
@@ -956,5 +960,95 @@ export const createPlayerSlice: StateCreator<
     state.pushNotification('skill', reactionText);
 
     return preference;
+  },
+
+  /* ── Quest reward auto-application ── */
+
+  completeQuestAndApplyRewards: (questId) => {
+    const store = get() as PlayerSlice & CrossSliceReads & {
+      completeQuest: (id: string) => void;
+      setFlag: (key: string, value: boolean) => void;
+      addItem: (item: InventoryItem) => void;
+    };
+
+    // Find quest definition
+    const questDef = QUEST_DEFINITIONS.find((d) => d.id === questId);
+    if (!questDef) return;
+
+    // Mark quest as completed in world slice
+    store.completeQuest(questId);
+
+    // Collect applied reward descriptions for the UI toast
+    const appliedRewards: string[] = [];
+
+    // Apply each reward from the quest definition
+    const rewards = questDef.rewards ?? [];
+    for (const reward of rewards) {
+      switch (reward.type) {
+        case 'addSkill':
+          if (reward.skill && reward.value) {
+            store.addSkill(reward.skill, reward.value);
+            appliedRewards.push(`${reward.skill} +${reward.value}`);
+          }
+          break;
+        case 'addKarma':
+          if (reward.value) {
+            store.addKarma(reward.value);
+            appliedRewards.push(`Карма +${reward.value}`);
+          }
+          break;
+        case 'addXp':
+          if (reward.value) {
+            store.addXp(reward.value);
+            appliedRewards.push(`Опыт +${reward.value}`);
+          }
+          break;
+        case 'addStat':
+          if (reward.stat === 'energy' && reward.value) {
+            store.addEnergy(reward.value);
+            appliedRewards.push(`Энергия +${reward.value}`);
+          } else if (reward.stat === 'stress' && reward.value) {
+            store.addStress(reward.value);
+            appliedRewards.push(`Стресс +${reward.value}`);
+          }
+          break;
+        case 'addItem':
+          if (reward.itemId && reward.value) {
+            store.addItem(createInventoryItem(reward.itemId, reward.value));
+            const itemDef = getItemDefinition(reward.itemId);
+            appliedRewards.push(`${itemDef?.name ?? reward.itemId} x${reward.value}`);
+          }
+          break;
+        case 'setFlag':
+          if (reward.flag) {
+            store.setFlag(reward.flag, reward.flagValue ?? true);
+            appliedRewards.push(`Флаг: ${reward.flag}`);
+          }
+          break;
+        default:
+          // Other reward types (triggerQuest, collectPoem, etc.) are handled
+          // by the story engine — not applied here
+          break;
+      }
+    }
+
+    // Add XP for quest completion based on quest type
+    const questTypeXp: Record<QuestType, number> = {
+      main: 50,
+      side: 25,
+      hidden: 75,
+      daily: 15,
+    };
+    const xpGained = questTypeXp[questDef.questType] ?? 25;
+    store.addXp(xpGained);
+    appliedRewards.push(`Опыт за задание +${xpGained}`);
+
+    // Emit reward_applied event for UI toast notification
+    eventBus.emit('quest:reward_applied', {
+      questId,
+      questTitle: questDef.title,
+      xpGained,
+      rewards: appliedRewards,
+    });
   },
 });

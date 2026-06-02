@@ -311,6 +311,21 @@ export function NotificationToasts() {
       }),
     );
 
+    // Quest accepted notification
+    unsubs.push(
+      eventBus.on('quest:accepted', ({ questTitle }) => {
+        toastManager.addToast('quest', `Задание принято: ${questTitle}`);
+      }),
+    );
+
+    // Quest reward applied notification
+    unsubs.push(
+      eventBus.on('quest:reward_applied', ({ questTitle, rewards }) => {
+        const rewardText = rewards.length > 0 ? rewards.join(', ') : 'нет';
+        toastManager.addToast('quest', `Награда за «${questTitle}»: ${rewardText}`);
+      }),
+    );
+
     return () => unsubs.forEach((u) => u());
   }, []);
 

@@ -154,6 +154,108 @@ export function getNextTrackedObjective(
   return null; // all objectives completed
 }
 
+/* ─── Quest indicator helpers for NPC quest markers ─── */
+
+export type QuestIndicatorType = 'available' | 'active' | 'completed';
+
+/**
+ * Get the quest indicator type for a specific NPC.
+ *
+ * Priority order (highest wins):
+ * 1. 'available' — NPC has a quest that can be taken (not yet in quest state,
+ *    dependencies met, required flags set)
+ * 2. 'active' — NPC has an in-progress quest with incomplete objectives
+ * 3. 'completed' — NPC has a recently completed quest (last quest giver)
+ *
+ * Returns null if the NPC has no quest association.
+ *
+ * Karma thresholds for quest availability (documented here for reference):
+ *   - Some quests may require karma >= 40 (neutral+) to unlock moral choices
+ *   - Dark path quests may require karma <= 30 (Тьма alignment)
+ *   - Most side quests have no karma gate
+ *   - Main questline is karma-independent until Act 3 choices
+ */
+export function getQuestIndicatorForNpc(npcId: string): QuestIndicatorType | null {
+  const { quests } = getGameStore();
+
+  let hasAvailable = false;
+  let hasActive = false;
+  let hasCompleted = false;
+
+  for (const def of QUEST_DEFINITIONS) {
+    // Only consider quests where this NPC is the quest giver
+    if (def.questGiverNpcId !== npcId) continue;
+
+    // Check quest state
+    const questState = quests.find((q) => q.questId === def.id);
+
+    if (!questState || questState.status === 'inactive') {
+      // Quest not yet taken — check if available (dependencies met)
+      const deps = areDependenciesMet(def.id);
+      // Check required flag
+      const flagMet = !def.requiredFlag || getGameStore().playerState.flags[def.requiredFlag] === true;
+      if (deps.met && flagMet) {
+        hasAvailable = true;
+      }
+    } else if (questState.status === 'active') {
+      // Quest is active — check if it has incomplete objectives
+      const hasIncomplete = Object.values(questState.objectives).some((v) => !v);
+      if (hasIncomplete) {
+        hasActive = true;
+      }
+    } else if (questState.status === 'completed') {
+      hasCompleted = true;
+    }
+  }
+
+  // Priority: available > active > completed
+  if (hasAvailable) return 'available';
+  if (hasActive) return 'active';
+  if (hasCompleted) return 'completed';
+  return null;
+}
+
+/**
+ * React hook: get the quest indicator type for a specific NPC.
+ * Re-renders when quest state changes.
+ */
+export function useQuestIndicatorForNpc(npcId: string): QuestIndicatorType | null {
+  const quests = useGameStore(
+    useShallow((state) => state.quests),
+  );
+
+  // Use the same logic as getQuestIndicatorForNpc but via hook for reactivity
+  let hasAvailable = false;
+  let hasActive = false;
+  let hasCompleted = false;
+
+  for (const def of QUEST_DEFINITIONS) {
+    if (def.questGiverNpcId !== npcId) continue;
+
+    const questState = quests.find((q) => q.questId === def.id);
+
+    if (!questState || questState.status === 'inactive') {
+      const deps = areDependenciesMet(def.id);
+      const flagMet = !def.requiredFlag || getGameStore().playerState.flags[def.requiredFlag] === true;
+      if (deps.met && flagMet) {
+        hasAvailable = true;
+      }
+    } else if (questState.status === 'active') {
+      const hasIncomplete = Object.values(questState.objectives).some((v) => !v);
+      if (hasIncomplete) {
+        hasActive = true;
+      }
+    } else if (questState.status === 'completed') {
+      hasCompleted = true;
+    }
+  }
+
+  if (hasAvailable) return 'available';
+  if (hasActive) return 'active';
+  if (hasCompleted) return 'completed';
+  return null;
+}
+
 /* ─── React hook wrappers ─── */
 
 /** Hook: get active quests, re-renders on quest changes */
