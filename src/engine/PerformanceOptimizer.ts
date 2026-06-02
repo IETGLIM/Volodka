@@ -4,7 +4,7 @@
  */
 
 import { useRef, useEffect, useCallback, useMemo } from 'react';
-import { useFrame, useThree } from '@react-three/fiber';
+import { useFrame, useThree, type RootState } from '@react-three/fiber';
 import * as THREE from 'three';
 
 /* ═══════════════════════════════════════════════════════════════
@@ -62,7 +62,7 @@ export function useLOD(
    Replaces multiple useFrame hooks with a single prioritized loop
    ═══════════════════════════════════════════════════════════════ */
 
-export type FrameCallback = (delta: number, state: THREE.Renderer) => void;
+export type FrameCallback = (delta: number, state: RootState) => void;
 export type FramePriority = 'critical' | 'high' | 'normal' | 'low';
 
 interface FrameJob {
