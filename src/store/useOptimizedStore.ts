@@ -6,6 +6,7 @@
 import { useCallback, useRef, useState, useEffect } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useGameStore } from './gameStore';
+import { QUEST_DEFINITIONS } from '@/data/quests';
 
 /* ═══════════════════════════════════════════════════════════════
    Type-safe shallow selectors for common use cases
@@ -94,9 +95,9 @@ export function useNPCRelations() {
 export function useQuests() {
   return useGameStore(
     useShallow((s) => ({
-      activeQuests: s.activeQuests,
-      completedQuests: s.completedQuests,
-      failedQuests: s.failedQuests,
+      activeQuests: s.quests.filter((q) => q.status === 'active'),
+      completedQuests: s.quests.filter((q) => q.status === 'completed'),
+      failedQuests: s.quests.filter((q) => q.status === 'failed'),
     }))
   );
 }
@@ -199,16 +200,17 @@ export function useBatchActions() {
    */
   const completeQuestWithRewards = useCallback((questId: string) => {
     const store = useGameStore.getState();
-    const quest = store.activeQuests.find(q => q.id === questId);
+    const quest = store.quests.find(q => q.questId === questId);
     if (!quest) return;
+    const questDef = QUEST_DEFINITIONS.find((q) => q.id === quest.questId);
 
     // Batch: remove quest + add XP + add items + notification
     store.completeQuest(questId);
-    if (quest.xpReward) {
-      store.addXp(quest.xpReward);
+    if (questDef?.xpReward) {
+      store.addXp(questDef.xpReward);
     }
-    if (quest.itemRewards) {
-      for (const item of quest.itemRewards) {
+    if (questDef?.itemRewards) {
+      for (const item of questDef.itemRewards) {
         store.addItem(item);
       }
     }
