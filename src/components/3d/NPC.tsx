@@ -21,6 +21,9 @@ import { updateHeadTracking, cleanupHeadTracking } from '@/engine/npc/headTracki
 import { InteractionState } from '@/engine/interaction/interactionMachine';
 import { ProceduralNPCModel } from '@/components/3d/ProceduralNPCModels';
 import { createPatrolState, updatePatrol, shouldPatrol, type PatrolState } from '@/engine/npc/npcPatrol';
+import { QUEST_DEFINITIONS } from '@/data/quests';
+import { GOLDEN_PATH_QUEST_SPINE } from '@/data/goldenPath';
+import { canStartQuest } from '@/engine/GuidedStoryManager';
 
 /* ─── Lazy NPC model preloading ───
  *  REMOVED aggressive module-level preloading of ALL 6 GLB models (~12MB).
@@ -1143,53 +1146,113 @@ function ThinkingDots() {
   );
 }
 
-/** Quest marker (!/?) floating above NPC head with pulse/glow */
+/** Quest marker (!/?) floating above NPC head with pulse/glow
+ *  Three indicator types:
+ *  - Yellow ! — Quest available from this NPC
+ *  - Blue ?  — Quest in progress with this NPC
+ *  - Green ✓ — Quest ready to turn in (all objectives complete) */
 function QuestMarker({ npcId }: { npcId: string }) {
   const quests = useGameStore((s) => s.quests);
-  const timeRef = useRef(0);
-
-  // Compute marker directly from state — only show for quests associated with THIS NPC
-  // Match by checking if any objective targets this NPC (e.g. npc_talked target = npcId)
-  // or if the quest's linkedStoryNodeId contains the npcId
-  const marker = useMemo(() => {
-    // Get quest definitions for richer matching
-    let hasActive = false;
-    for (const q of quests) {
-      if (q.status !== 'active') continue;
-      if (!Object.values(q.objectives).some((v) => !v)) continue;
-      // Check if this NPC is involved: objective keys matching npcId pattern
-      // QuestState.objectives keys often follow pattern like "meet_maria", "talk_albert"
-      // We check if any incomplete objective key contains the npcId
-      for (const [objKey, completed] of Object.entries(q.objectives)) {
-        if (!completed && objKey.toLowerCase().includes(npcId.toLowerCase())) {
-          hasActive = true;
-          break;
-        }
-      }
-      if (hasActive) break;
-    }
-    return hasActive ? '!' : null;
-  }, [quests, npcId]);
-
   const [glowIntensity, setGlowIntensity] = useState(1);
 
-  // Pulse animation — faster and brighter for visibility
+  // Compute marker info: type, color, pulse speed, quest name
+  const markerInfo = useMemo(() => {
+    // 1. Check for quests ready to turn in (green ✓) — highest priority
+    for (const q of quests) {
+      if (q.status !== 'active') continue;
+      // Check if ALL objectives are complete
+      if (Object.values(q.objectives).some((v) => !v)) continue;
+      // Check if this NPC is involved in this quest
+      const questDef = QUEST_DEFINITIONS.find((d) => d.id === q.questId);
+      if (!questDef) continue;
+      const npcInvolved = questDef.objectives.some(
+        (o) => o.type === 'npc_talked' && o.target === npcId,
+      );
+      if (npcInvolved) {
+        return {
+          icon: '✓',
+          color: '#00ff66',
+          glowPrefix: 'rgba(0, 255, 102,',
+          pulseSpeed: 0.7,
+          questName: questDef.title,
+          type: 'complete' as const,
+        };
+      }
+    }
+
+    // 2. Check for active quests with this NPC (blue ?)
+    for (const q of quests) {
+      if (q.status !== 'active') continue;
+      // Still has incomplete objectives
+      if (!Object.values(q.objectives).some((v) => !v)) continue;
+      const questDef = QUEST_DEFINITIONS.find((d) => d.id === q.questId);
+      if (!questDef) continue;
+      // Check if any incomplete npc_talked objective targets this NPC
+      const hasNpcObjective = questDef.objectives.some(
+        (o) => o.type === 'npc_talked' && o.target === npcId && !q.objectives[o.id],
+      );
+      if (hasNpcObjective) {
+        return {
+          icon: '?',
+          color: '#66ccff',
+          glowPrefix: 'rgba(102, 204, 255,',
+          pulseSpeed: 1.0,
+          questName: questDef.title,
+          type: 'active' as const,
+        };
+      }
+    }
+
+    // 3. Check for available quests from this NPC (yellow !)
+    for (const qDef of QUEST_DEFINITIONS) {
+      // Check if this quest has an npc_talked objective targeting this NPC
+      const hasNpcObj = qDef.objectives.some(
+        (o) => o.type === 'npc_talked' && o.target === npcId,
+      );
+      if (!hasNpcObj) continue;
+
+      // Check if quest is not already started or completed
+      const existing = quests.find((q) => q.questId === qDef.id);
+      if (existing && existing.status !== 'inactive') continue;
+
+      // Check if player can start this quest
+      if (!canStartQuest(qDef.id)) continue;
+
+      // Prefer golden path quests
+      const isGoldenPath = GOLDEN_PATH_QUEST_SPINE.includes(qDef.id);
+      if (!isGoldenPath && qDef.questType !== 'main' && qDef.questType !== 'side') continue;
+
+      return {
+        icon: '!',
+        color: '#ffdd00',
+        glowPrefix: 'rgba(255, 221, 0,',
+        pulseSpeed: 1.5,
+        questName: qDef.title,
+        type: 'available' as const,
+      };
+    }
+
+    return null;
+  }, [quests, npcId]);
+
+  // Pulse animation — speed depends on marker type
   useEffect(() => {
+    if (!markerInfo) return
     let frame: number;
     let t = 0;
+    const speed = markerInfo.pulseSpeed;
     const animate = () => {
-      t += 0.04;
+      t += 0.04 * (1.5 / speed);
       setGlowIntensity(0.7 + Math.sin(t * 3.0) * 0.5);
       frame = requestAnimationFrame(animate);
     };
     frame = requestAnimationFrame(animate);
     return () => cancelAnimationFrame(frame);
-  }, []);
+  }, [markerInfo]);
 
-  if (!marker) return null;
+  if (!markerInfo) return null;
 
-  const markerColor = marker === '!' ? '#ffdd00' : '#66ccff';
-  const glowColor = marker === '!' ? 'rgba(255, 221, 0,' : 'rgba(102, 204, 255,';
+  const isComplete = markerInfo.type === 'complete';
 
   return (
     <Html
@@ -1201,29 +1264,34 @@ function QuestMarker({ npcId }: { npcId: string }) {
         style={{
           position: 'relative',
           display: 'flex',
+          flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
         }}
       >
-        {/* Outer glow ring — much brighter */}
+        {/* Outer glow ring */}
         <div
           style={{
             position: 'absolute',
             width: '44px',
             height: '44px',
             borderRadius: '50%',
-            background: `${glowColor} ${0.25 * glowIntensity})`,
-            boxShadow: `0 0 ${18 * glowIntensity}px ${glowColor} ${0.6 * glowIntensity}), 0 0 ${6 * glowIntensity}px ${glowColor} ${0.3 * glowIntensity})`,
-            animation: 'questPulse 1.5s ease-in-out infinite',
+            background: `${markerInfo.glowPrefix} ${0.25 * glowIntensity})`,
+            boxShadow: isComplete
+              ? `0 0 ${18 * glowIntensity}px ${markerInfo.glowPrefix} ${0.6 * glowIntensity}), 0 0 ${6 * glowIntensity}px ${markerInfo.glowPrefix} ${0.3 * glowIntensity}), 0 0 ${30 * glowIntensity}px rgba(255,204,0,${0.2 * glowIntensity})`
+              : `0 0 ${18 * glowIntensity}px ${markerInfo.glowPrefix} ${0.6 * glowIntensity}), 0 0 ${6 * glowIntensity}px ${markerInfo.glowPrefix} ${0.3 * glowIntensity})`,
+            animation: `questPulse${markerInfo.type} ${markerInfo.pulseSpeed}s ease-in-out infinite`,
           }}
         />
-        {/* Marker text — larger and brighter */}
+        {/* Marker text */}
         <div
           style={{
-            color: markerColor,
-            fontSize: '26px',
+            color: markerInfo.color,
+            fontSize: isComplete ? '20px' : '26px',
             fontWeight: 'bold',
-            textShadow: `0 0 ${10 * glowIntensity}px ${glowColor} 0.9), 0 0 ${20 * glowIntensity}px ${glowColor} 0.5), 0 0 ${30 * glowIntensity}px ${glowColor} 0.25)`,
+            textShadow: isComplete
+              ? `0 0 ${10 * glowIntensity}px ${markerInfo.glowPrefix} 0.9), 0 0 ${20 * glowIntensity}px ${markerInfo.glowPrefix} 0.5), 0 0 ${30 * glowIntensity}px rgba(255,204,0,${0.25 * glowIntensity})`
+              : `0 0 ${10 * glowIntensity}px ${markerInfo.glowPrefix} 0.9), 0 0 ${20 * glowIntensity}px ${markerInfo.glowPrefix} 0.5), 0 0 ${30 * glowIntensity}px ${markerInfo.glowPrefix} 0.25)`,
             userSelect: 'none',
             position: 'relative',
             zIndex: UI_LAYERS.WORLD_LABELS,
@@ -1231,13 +1299,40 @@ function QuestMarker({ npcId }: { npcId: string }) {
             transition: 'transform 0.1s ease',
           }}
         >
-          {marker}
+          {markerInfo.icon}
         </div>
-        {/* Inject keyframes for pulse */}
+        {/* Quest name below */}
+        <div
+          style={{
+            color: markerInfo.color,
+            fontSize: '8px',
+            fontFamily: 'monospace',
+            letterSpacing: '0.03em',
+            marginTop: '2px',
+            maxWidth: '80px',
+            textAlign: 'center',
+            opacity: 0.7,
+            textShadow: `0 0 4px ${markerInfo.glowPrefix} 0.5)`,
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+          }}
+        >
+          {markerInfo.questName}
+        </div>
+        {/* Inject keyframes for pulse variants */}
         <style>{`
-          @keyframes questPulse {
+          @keyframes questPulseavailable {
+            0%, 100% { transform: scale(1); opacity: 0.6; }
+            50% { transform: scale(1.2); opacity: 1; }
+          }
+          @keyframes questPulseactive {
             0%, 100% { transform: scale(1); opacity: 0.6; }
             50% { transform: scale(1.3); opacity: 1; }
+          }
+          @keyframes questPulsecomplete {
+            0%, 100% { transform: scale(1); opacity: 0.7; }
+            50% { transform: scale(1.4); opacity: 1; }
           }
         `}</style>
       </div>

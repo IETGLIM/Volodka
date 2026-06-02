@@ -694,6 +694,18 @@ export interface EventMap {
   'world:hour_changed': { hour: number; previousHour: number; npcStates: Record<string, { position: [number, number, number]; sceneId: SceneId }> };
   /** Emitted when the world clock performs a periodic tick */
   'world:tick': { hour: number; deltaHours: number };
+
+  /* ── Guided Story events ── */
+  /** Emitted when the player needs guidance (next objective) */
+  'story:guidance_update': { objectiveText: string; objectiveType: 'talk_to_npc' | 'visit_location' | 'complete_quest' | 'collect_item' | 'make_choice'; targetId: string; urgency: 'optional' | 'recommended' | 'required'; actNumber: number; chapterTitle: string };
+  /** Emitted when transitioning between acts */
+  'story:act_transition': { fromAct: number; toAct: number; chapterTitle: string };
+  /** Emitted when a new quest should be offered to the player */
+  'story:quest_available': { questId: string; questTitle: string; questType: string; npcId?: string };
+  /** Emitted when a quest is mandatory to progress */
+  'story:quest_required': { questId: string; questTitle: string };
+  /** Emitted when a story quote should be displayed (act transitions, key choices) */
+  'story:quote': { text: string; actNumber: number };
 }
 
 /** Waypoint data for cutscene camera (serializable) */
