@@ -117,13 +117,15 @@ export function useInteractionOrchestrator(
 
           // Priority: dialogue > story (dialogue is more specific)
           const currentStore = useGameStore.getState();
+          // ── World Director: stay in exploration, show narrative as overlay ──
+          // Before: setMode('visual-novel') — switches away from 3D world (WRONG)
+          // Now: setShowStoryOverlay(true) — narrative overlays on top of 3D
           if (z.linkedDialogueNodeId && DIALOGUE_NODES[z.linkedDialogueNodeId]) {
-            currentStore.setMode('visual-novel');
+            currentStore.setShowStoryOverlay(true);
             currentStore.setCurrentNodeId(z.linkedDialogueNodeId);
           } else if (z.linkedStoryNodeId && STORY_NODES[z.linkedStoryNodeId]) {
-            currentStore.setMode('visual-novel');
-            currentStore.setCurrentNodeId(z.linkedStoryNodeId);
             currentStore.setShowStoryOverlay(true);
+            currentStore.setCurrentNodeId(z.linkedStoryNodeId);
           }
         };
 
@@ -184,16 +186,16 @@ export function useInteractionOrchestrator(
         }
 
         // Open dialogue or story for this NPC
+        // ── World Director: stay in exploration, show narrative as overlay ──
         if (npcDef.dialogueNodeId && DIALOGUE_NODES[npcDef.dialogueNodeId]) {
-          store.setMode('visual-novel');
+          store.setShowStoryOverlay(true);
           store.setCurrentNodeId(npcDef.dialogueNodeId);
         } else if (npcZone?.linkedDialogueNodeId && DIALOGUE_NODES[npcZone.linkedDialogueNodeId]) {
-          store.setMode('visual-novel');
+          store.setShowStoryOverlay(true);
           store.setCurrentNodeId(npcZone.linkedDialogueNodeId);
         } else if (npcZone?.linkedStoryNodeId && STORY_NODES[npcZone.linkedStoryNodeId]) {
-          store.setMode('visual-novel');
-          store.setCurrentNodeId(npcZone.linkedStoryNodeId);
           store.setShowStoryOverlay(true);
+          store.setCurrentNodeId(npcZone.linkedStoryNodeId);
         }
 
         // Emit npc:talked event
@@ -241,29 +243,25 @@ export function useInteractionOrchestrator(
       }),
     );
 
-    // ── When dialogue/story closes, emit interaction:end ──
-    // Handles ALL interaction states (not just Dialogue) to ensure
-    // the interaction system is always cleaned up when returning to exploration.
-    // This prevents the player from being permanently frozen if the interaction
-    // was interrupted before reaching the Dialogue state.
+    // ── When narrative overlay closes, emit interaction:end ──
+    // World Director: since we stay in exploration mode, we detect
+    // narrative closing by watching showStoryOverlay instead of mode changes.
     unsubs.push(
       useGameStore.subscribe((state, prev) => {
-        // When mode transitions FROM visual-novel back to exploration
+        // When showStoryOverlay transitions from true to false
         // AND we're in an active interaction, end the interaction
         if (
-          prev.mode === 'visual-novel' &&
+          prev.showStoryOverlay &&
+          !state.showStoryOverlay &&
           state.mode === 'exploration'
         ) {
-          // Always emit interaction:end when returning to exploration from visual-novel
-          // This handles ALL cases: stuck Approach, Cutscene, Align, Lock, Dialogue states
+          // Always emit interaction:end when narrative overlay closes
           const interactionState = getInteractionState();
           if (interactionState !== InteractionState.Idle) {
             eventBus.emit('interaction:end', {});
           }
           // SAFETY: Also directly force-reset the interaction state if it's stuck
-          // This handles the case where interaction:end doesn't fully reset
           if (isInteractionLocked()) {
-            // Force reset via a small delay to avoid race conditions
             setTimeout(() => {
               if (isInteractionLocked()) {
                 eventBus.emit('interaction:end', {});
@@ -298,13 +296,13 @@ export function useInteractionOrchestrator(
     }
 
     const store = useGameStore.getState();
+    // ── World Director: stay in exploration, show narrative as overlay ──
     if (zone.linkedDialogueNodeId && DIALOGUE_NODES[zone.linkedDialogueNodeId]) {
-      store.setMode('visual-novel');
+      store.setShowStoryOverlay(true);
       store.setCurrentNodeId(zone.linkedDialogueNodeId);
     } else if (zone.linkedStoryNodeId && STORY_NODES[zone.linkedStoryNodeId]) {
-      store.setMode('visual-novel');
-      store.setCurrentNodeId(zone.linkedStoryNodeId);
       store.setShowStoryOverlay(true);
+      store.setCurrentNodeId(zone.linkedStoryNodeId);
     }
   }, []);
 

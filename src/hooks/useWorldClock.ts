@@ -1,0 +1,85 @@
+'use client';
+
+/* ─── Volodka RPG – World Clock Hook ─── */
+/* Provides a periodic world tick that drives NPC schedules, weather,
+ * quest time limits, and achievement checks. The world is always
+ * simulating, even when the player isn't looking at a scene.
+ *
+ * This is the single pulse that turns a "visual novel with 3D backdrop"
+ * into a "living hub city" — the core of the World Director pattern.
+ *
+ * Tick sources:
+ * 1. Periodic interval (every WORLD_TICK_INTERVAL_S seconds during exploration)
+ * 2. advanceTime() in explorationSlice (fast travel, rest, story events)
+ * 3. world:hour_changed events from any source
+ *
+ * On each tick:
+ *  - NPC states are rebuilt via buildNPCStatesForTime()
+ *  - world:tick event is emitted for downstream systems
+ *  - Quest time limits are checked
+ *  - Weather cycles are evaluated
+ */
+
+import { useEffect, useRef } from 'react';
+import { useGameStore } from '@/store/gameStore';
+import { eventBus } from '@/engine/EventBus';
+import { buildNPCStatesForTime } from '@/engine/ScheduleEngine';
+
+/** How often the world clock ticks in seconds (game minutes per tick) */
+const WORLD_TICK_INTERVAL_S = 60; // Every 60 real seconds = 1 game hour
+
+/** How many game hours pass per periodic tick */
+const HOURS_PER_TICK = 0.25; // 15 game minutes per tick
+
+/**
+ * World Clock hook — call once in GameOrchestrator.
+ * Ticks the world forward periodically and keeps NPC states synchronized.
+ */
+export function useWorldClock() {
+  const mode = useGameStore((s) => s.mode);
+
+  useEffect(() => {
+    // Only tick when the player is in exploration mode (the "living world" mode)
+    // Combat, cutscene, and menu pause the world clock
+    if (mode !== 'exploration') return;
+
+    const interval = setInterval(() => {
+      const store = useGameStore.getState();
+      // Double-check we're still in exploration
+      if (store.mode !== 'exploration') return;
+
+      const previousHour = store.exploration.timeOfDay;
+      // Advance time by a small increment
+      const newHour = (previousHour + HOURS_PER_TICK) % 24;
+
+      // Rebuild NPC states for the new time
+      const npcStates = buildNPCStatesForTime(newHour);
+
+      // Update store with new time and NPC states
+      store.setExplorationTimeOfDay(newHour);
+      store.setExplorationNPCStates(npcStates);
+
+      // Emit world events
+      eventBus.emit('world:tick', { hour: newHour, deltaHours: HOURS_PER_TICK });
+      eventBus.emit('world:hour_changed', {
+        hour: newHour,
+        previousHour,
+        npcStates,
+      });
+    }, WORLD_TICK_INTERVAL_S * 1000);
+
+    return () => clearInterval(interval);
+  }, [mode]);
+
+  // ── Initialize NPC states on mount / scene change ──
+  const initRef = useRef(false);
+  useEffect(() => {
+    if (initRef.current) return;
+    initRef.current = true;
+
+    const store = useGameStore.getState();
+    const hour = store.exploration.timeOfDay;
+    const npcStates = buildNPCStatesForTime(hour);
+    store.setExplorationNPCStates(npcStates);
+  }, []);
+}

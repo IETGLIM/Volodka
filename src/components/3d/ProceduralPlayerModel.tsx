@@ -191,13 +191,13 @@ export const ProceduralPlayerModel = memo(function ProceduralPlayerModel({
   //   2. The player:stand_up event was emitted BEFORE this component mounted
   //      (race condition: StoryRenderer emits before 3D canvas is ready)
   //
-  // We also check on MOUNT: if the game is already in exploration/visual-novel
-  // mode with the 'woke_up' flag set, the stand_up event was missed — trigger it.
+  // We also check on MOUNT: if the game is already in exploration mode
+  // with the 'woke_up' flag set, the stand_up event was missed — trigger it.
   useEffect(() => {
     // Check on mount — was the event already emitted before we mounted?
     const store = useGameStore.getState();
     if (
-      (store.mode === 'exploration' || store.mode === 'visual-novel') &&
+      (store.mode === 'exploration') &&
       isSeatedInitiallyRef.current &&
       !standUpActiveRef.current
     ) {

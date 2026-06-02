@@ -7,6 +7,7 @@ import type { ExplorationState, SceneId } from '@/shared/types/game';
 import { sanitizeExplorationSceneId, SCENE_CONFIG } from '@/config/scenes';
 import { clamp, createDefaultExploration } from '../shared';
 import { eventBus } from '@/engine/EventBus';
+import { buildNPCStatesForTime } from '@/engine/ScheduleEngine';
 
 /* ─── Auto-close timer tracking for interactive objects ─── */
 const autoCloseTimers = new Map<string, ReturnType<typeof setTimeout>>();
@@ -58,6 +59,10 @@ export interface ExplorationSliceActions {
   discoverScene: (sceneId: SceneId) => void;
   /** Fast travel to a discovered scene. Checks discovery + flag gates. Advances time. */
   fastTravelTo: (sceneId: SceneId) => void;
+  /** Set time of day directly (used by WorldClock) */
+  setExplorationTimeOfDay: (hour: number) => void;
+  /** Set NPC states directly (used by WorldClock) */
+  setExplorationNPCStates: (npcStates: Record<string, { position: [number, number, number]; sceneId: SceneId }>) => void;
 }
 
 export type ExplorationSlice = ExplorationSliceState & ExplorationSliceActions;
@@ -105,14 +110,21 @@ export const createExplorationSlice: StateCreator<
 
   advanceTime: (hours) =>
     set((state) => {
-      const newTime = (state.exploration.timeOfDay + hours) % 24;
+      const previousHour = state.exploration.timeOfDay;
+      let newTime = (state.exploration.timeOfDay + hours) % 24;
       if (newTime < 0) {
-        return {
-          exploration: { ...state.exploration, timeOfDay: newTime + 24 },
-        };
+        newTime = newTime + 24;
       }
+      // ── World Clock: rebuild NPC states when time changes ──
+      const npcStates = buildNPCStatesForTime(newTime);
+      // Emit world:hour_changed so other systems (quests, weather, achievements) can react
+      // Use setTimeout to avoid emitting during Zustand setState (can cause issues)
+      const hour = newTime;
+      setTimeout(() => {
+        eventBus.emit('world:hour_changed', { hour, previousHour, npcStates });
+      }, 0);
       return {
-        exploration: { ...state.exploration, timeOfDay: newTime },
+        exploration: { ...state.exploration, timeOfDay: newTime, npcStates },
       };
     }),
 
@@ -212,4 +224,14 @@ export const createExplorationSlice: StateCreator<
       spawnAt: [...targetConfig.spawnPoint] as [number, number, number],
     });
   },
+
+  setExplorationTimeOfDay: (hour) =>
+    set((state) => ({
+      exploration: { ...state.exploration, timeOfDay: ((hour % 24) + 24) % 24 },
+    })),
+
+  setExplorationNPCStates: (npcStates) =>
+    set((state) => ({
+      exploration: { ...state.exploration, npcStates },
+    })),
 });

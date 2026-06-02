@@ -57,6 +57,7 @@ import { useInteractionOrchestrator } from '@/hooks/useInteractionOrchestrator';
 import { useLoreDiscovery } from '@/hooks/useLoreDiscovery';
 import { useQuestTracker } from '@/hooks/useQuestTracker';
 import { useAchievementChecker } from '@/hooks/useAchievementChecker';
+import { useWorldClock } from '@/hooks/useWorldClock';
 
 // Direct imports
 import { CodeBreakerGame } from './CodeBreakerGame';
@@ -183,7 +184,10 @@ export function GameOrchestrator() {
   const introSeen = useGameStore((s) => s.introSeen);
 
   // Compute which overlay is active to enforce mutual exclusivity
-  const isDialogueActive = mode === 'visual-novel' && !!DIALOGUE_NODES[currentNodeId];
+  // ── World Director pattern: visual-novel is DEPRECATED ──
+  // Narrative is now an overlay ON TOP of exploration mode, not a separate mode.
+  // isDialogueActive checks for dialogue regardless of mode (was: mode === 'visual-novel')
+  const isDialogueActive = !!DIALOGUE_NODES[currentNodeId] && showStoryOverlay;
   const isStoryActive = showStoryOverlay && !!STORY_NODES[currentNodeId];
   const isOverlayActive = isDialogueActive || isStoryActive;
 
@@ -194,6 +198,8 @@ export function GameOrchestrator() {
   useLoreDiscovery();
   useQuestTracker();
   useAchievementChecker();
+  // ── World Clock: single pulse for NPC schedules, weather, quests ──
+  useWorldClock();
 
   // Destructure interaction state for convenience
   const {
@@ -364,13 +370,11 @@ export function GameOrchestrator() {
     // Text duration + buffer for camera animation to complete
     const totalDuration = cutscene.textDurationMs + 2000;
 
-    // Determine which mode to return to after cutscene:
-    // - For character_intro / story_moment / revelation: return to visual-novel so story text is shown
-    // - For act_transition: return to exploration (story was already read before transition)
-    const returnMode = (cutscene.type === 'character_intro' || cutscene.type === 'story_moment' || cutscene.type === 'revelation')
-      ? 'visual-novel' as const
-      : 'exploration' as const;
-
+    // ── World Director: ALWAYS return to exploration after cutscene ──
+    // Narrative is now an overlay, not a separate mode.
+    // Before: character_intro/story_moment/revelation → visual-novel (WRONG: hides 3D world)
+    // Now: ALL cutscene types → exploration + showStoryOverlay when story exists
+    // This keeps the 3D canvas always visible and NPCs always moving.
     cutsceneEndTimerRef.current = setTimeout(() => {
       // Only switch back if we're still in cutscene mode
       // (player might have triggered another mode change)
@@ -378,20 +382,13 @@ export function GameOrchestrator() {
       if (currentStore.mode === 'cutscene') {
         // Clear cutscene state
         currentStore.setCutscene(null, []);
-        // Return to the appropriate mode
-        currentStore.setMode(returnMode);
-        // Show story overlay if there's a story node for the current node.
-        // This handles both:
-        //   - character_intro/story_moment/revelation → returnMode='visual-novel'
-        //   - act_transition after intro → returnMode='exploration' but
-        //     currentNodeId='start' has a story node that needs to display.
-        if (returnMode === 'visual-novel') {
-          currentStore.setShowStoryOverlay(true);
-        } else if (STORY_NODES[currentStore.currentNodeId]) {
-          // For act_transition cutscenes (like act1_prologue), show the
-          // story overlay so the player sees the narrative text after the
-          // title card. This is critical after the intro cinematic — the
-          // player needs to see "Ты просыпаешься от назойливого писка..."
+        // ALWAYS return to exploration — the 3D world is the primary game mode
+        currentStore.setMode('exploration');
+        // Show story overlay if there's a story/dialogue node for the current node.
+        // This handles all cutscene types:
+        //   - character_intro/story_moment/revelation → show narrative overlay in 3D
+        //   - act_transition after intro → show "Ты просыпаешься от назойливого писка..."
+        if (STORY_NODES[currentStore.currentNodeId] || DIALOGUE_NODES[currentStore.currentNodeId]) {
           currentStore.setShowStoryOverlay(true);
         }
       }
@@ -742,14 +739,11 @@ export function GameOrchestrator() {
   // otherwise let the synthetic KeyE and EventBus handle the interaction.
   const handleMobileInteract = useCallback(() => {
     const store = useGameStore.getState();
-    // In visual-novel mode, advance dialogue/story
-    if (store.mode === 'visual-novel') {
-      // StoryRenderer and DialogueRenderer listen for KeyE keydown to advance.
-      // The synthetic KeyE from ExplorationMobileHud will handle this.
-      // No additional action needed here.
-    }
-    // In combat mode, use attack (synthetic KeyE will work if combat has E-key handlers)
-    // In exploration, the triple-fallback in ExplorationMobileHud handles it
+    // If story overlay is showing, advance dialogue/story
+    // (StoryRenderer/DialogueRenderer listen for KeyE keydown to advance)
+    // The synthetic KeyE from ExplorationMobileHud will handle this.
+    // No additional action needed here — the narrative overlay works on top of exploration.
+    void store; // suppress unused warning
   }, []);
 
   // ── Render ──

@@ -554,8 +554,9 @@ export function useAudioOrchestrator() {
       }
     }
 
-    // Dialogue muffle filter + ambient ducking
-    if (mode === 'visual-novel') {
+    // ── World Director: dialogue muffle when narrative overlay is active ──
+    const showStoryOverlay = useGameStore.getState().showStoryOverlay;
+    if (showStoryOverlay) {
       audioEngine.enableDialogueMuffle();
       ambientPlayerRef.current?.setDialogueDucked(true);
     } else if (mode === 'exploration') {
@@ -686,8 +687,8 @@ export function useAudioOrchestrator() {
           }
         }
 
-        // Dialogue muffle + ambient ducking
-        if (state.mode === 'visual-novel') {
+        // ── World Director: dialogue muffle when narrative overlay is active ──
+        if (state.showStoryOverlay) {
           audioEngine.enableDialogueMuffle();
           ambientPlayerRef.current?.setDialogueDucked(true);
         } else if (state.mode === 'exploration') {

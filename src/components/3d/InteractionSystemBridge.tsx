@@ -253,8 +253,9 @@ export function InteractionSystemBridge({
       });
 
       const storeState = useGameStore.getState();
-      if (storeState.mode === 'visual-novel') {
-        storeState.setMode('exploration');
+      // ── World Director: just hide overlay, already in exploration ──
+      if (storeState.showStoryOverlay) {
+        storeState.setShowStoryOverlay(false);
       }
       return;
     }
@@ -447,12 +448,13 @@ export function InteractionSystemBridge({
         // No movement during dialogue
         clearPlayerExternalVelocity();
 
-        // Safety: if we're in Dialogue state but the game mode is NOT
-        // visual-novel (dialogue closed without emitting interaction:end),
+        // Safety: if we're in Dialogue state but the narrative overlay
+        // is NOT showing (dialogue closed without emitting interaction:end),
         // force the interaction to end.
         if (phaseTimerRef.current >= 0.3) {
           const currentMode = useGameStore.getState().mode;
-          if (currentMode !== 'visual-novel') {
+          const showStoryOverlay = useGameStore.getState().showStoryOverlay;
+          if (currentMode !== 'cutscene' && !showStoryOverlay) {
             stateRef.current = InteractionState.Exit;
             phaseTimerRef.current = 0;
             currentInteractionState = InteractionState.Exit;

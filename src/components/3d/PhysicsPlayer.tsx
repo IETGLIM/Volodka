@@ -324,7 +324,11 @@ export function PhysicsPlayer({
     // one render cycle, causing the player to remain frozen even after mode
     // has already changed to 'exploration'.
     const currentMode = useGameStore.getState().mode;
-    const isLocked = currentMode === 'visual-novel' || currentMode === 'cutscene' || currentMode === 'intro' || isInteractionLocked();
+    const showStoryOverlay = useGameStore.getState().showStoryOverlay;
+    // ── World Director: lock movement during narrative overlay or cutscene ──
+    // Before: locked when mode === 'visual-novel' (separate mode)
+    // Now: locked when showStoryOverlay is true (narrative overlay on exploration)
+    const isLocked = showStoryOverlay || currentMode === 'cutscene' || currentMode === 'intro' || isInteractionLocked();
 
     // Stuck lock safety — if interaction lock is stuck in exploration mode
     if (isLocked && isInteractionLocked() && currentMode === 'exploration') {

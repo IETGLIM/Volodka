@@ -688,6 +688,12 @@ export interface EventMap {
   'photo:toggle': Record<string, never>;
   'photo:active': Record<string, never>;
   'photo:inactive': Record<string, never>;
+
+  /* ── World Clock events ── */
+  /** Emitted when the world clock ticks (time advances organically or via action) */
+  'world:hour_changed': { hour: number; previousHour: number; npcStates: Record<string, { position: [number, number, number]; sceneId: SceneId }> };
+  /** Emitted when the world clock performs a periodic tick */
+  'world:tick': { hour: number; deltaHours: number };
 }
 
 /** Waypoint data for cutscene camera (serializable) */

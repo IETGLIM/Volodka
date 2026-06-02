@@ -90,7 +90,9 @@ export function SimplePlayer({
     const vel = velocityRef.current;
 
     const currentMode = useGameStore.getState().mode;
-    const isLocked = currentMode === 'visual-novel' || currentMode === 'cutscene' || isInteractionLocked();
+    const showStoryOverlay = useGameStore.getState().showStoryOverlay;
+    // ── World Director: lock movement during narrative overlay ──
+    const isLocked = showStoryOverlay || currentMode === 'cutscene' || isInteractionLocked();
 
     if (isLocked) {
       vel.x = 0;

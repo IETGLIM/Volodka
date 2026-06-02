@@ -575,9 +575,10 @@ export function FollowCamera({
   // ── Mouse drag for orbit + scroll for zoom + touch support ──
   useEffect(() => {
     const onMouseDown = (e: MouseEvent) => {
-      // Don't orbit camera during active dialogue / cutscene — disorienting for the player
+      // Don't orbit camera during active narrative overlay / cutscene — disorienting for the player
       const currentMode = useGameStore.getState().mode;
-      if (currentMode === 'visual-novel' || currentMode === 'cutscene') return;
+      const showStoryOverlay = useGameStore.getState().showStoryOverlay;
+      if (showStoryOverlay || currentMode === 'cutscene') return;
       const interactionState = getInteractionState();
       if (interactionState === InteractionState.Dialogue) return;
 
@@ -622,9 +623,10 @@ export function FollowCamera({
     };
 
     const onWheel = (e: WheelEvent) => {
-      // Only allow zoom during exploration mode (not during cutscene/visual-novel)
+      // Only allow zoom during exploration mode without narrative overlay
       const currentMode = useGameStore.getState().mode;
-      if (currentMode !== 'exploration') return;
+      const showStoryOverlay = useGameStore.getState().showStoryOverlay;
+      if (currentMode !== 'exploration' || showStoryOverlay) return;
 
       // Only block zoom during active Dialogue — allow zoom during Approach/Align/Lock
       // so players can adjust camera while walking toward NPC
@@ -672,9 +674,10 @@ export function FollowCamera({
 
     // Touch support for mobile camera orbit
     const onTouchStart = (e: TouchEvent) => {
-      // Don't orbit camera during active dialogue / cutscene
+      // Don't orbit camera during active narrative overlay / cutscene
       const currentMode = useGameStore.getState().mode;
-      if (currentMode === 'visual-novel' || currentMode === 'cutscene') return;
+      const showStoryOverlay = useGameStore.getState().showStoryOverlay;
+      if (showStoryOverlay || currentMode === 'cutscene') return;
       const interactionState = getInteractionState();
       if (interactionState === InteractionState.Dialogue) return;
 

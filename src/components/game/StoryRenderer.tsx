@@ -328,7 +328,7 @@ export function StoryRenderer() {
         const hasWokeUpFlag = choice.effects?.some((e: StoryEffect) => e.type === 'setFlag' && e.flag === 'woke_up');
         if (hasWokeUpFlag) {
           setShowStoryOverlay(false);
-          setMode('exploration');
+          // ── World Director: no need to setMode('exploration') — already in exploration ──
           // Only emit stand_up / camera events if the intro was NOT seen.
           // If the intro played, PhaseWaking already emitted these events
           // during the cinematic — emitting them again causes a double
@@ -343,7 +343,6 @@ export function StoryRenderer() {
         }
 
         setShowStoryOverlay(false);
-        setMode('exploration');
       } else {
         setCurrentNodeId(choice.next);
         const nextNode = STORY_NODES[choice.next];
@@ -374,8 +373,8 @@ export function StoryRenderer() {
       eventBus.emit('scene:enter', { sceneId: currentNode.sceneId, fromSceneId: currentScene });
     }
     setShowStoryOverlay(false);
-    setMode('exploration');
-  }, [setMode, setShowStoryOverlay]);
+    // ── World Director: already in exploration, just hide overlay ──
+  }, [setShowStoryOverlay]);
 
   // Keyboard shortcuts
   useEffect(() => {

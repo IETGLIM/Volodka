@@ -53,7 +53,8 @@ function buildColumns(width: number): ColumnData[] {
 export function MatrixRain() {
   const mode = useGameStore((s) => s.mode);
   const showStoryOverlay = useGameStore((s) => s.showStoryOverlay);
-  const enabled = mode === 'visual-novel' || mode === 'cutscene' || showStoryOverlay;
+  // ── World Director: show during narrative overlay or cutscene ──
+  const enabled = mode === 'cutscene' || showStoryOverlay;
 
   // SSR-safe: only compute columns on client
   const mounted = useSyncExternalStore(

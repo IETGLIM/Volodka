@@ -389,11 +389,13 @@ interface HistoryLine {
 /* ── Component ── */
 export function DialogueRenderer() {
   const mode = useGameStore((s) => s.mode);
+  const showStoryOverlay = useGameStore((s) => s.showStoryOverlay);
   const currentNodeId = useGameStore((s) => s.currentNodeId);
   const playerState = useGameStore((s) => s.playerState);
   const npcRelations = useGameStore((s) => s.npcRelations);
   const timeOfDay = useGameStore((s) => s.exploration.timeOfDay);
   const setMode = useGameStore((s) => s.setMode);
+  const setShowStoryOverlay = useGameStore((s) => s.setShowStoryOverlay);
   const setCurrentNodeId = useGameStore((s) => s.setCurrentNodeId);
 
   const [skillCheckBanner, setSkillCheckBanner] = useState<{
@@ -409,7 +411,10 @@ export function DialogueRenderer() {
   const [autoAdvance, setAutoAdvance] = useState(false);
   const autoAdvanceDelay = 2500; // ms
 
-  const isOpen = mode === 'visual-novel' && !!DIALOGUE_NODES[currentNodeId];
+  // ── World Director: dialogue is now an overlay, not a separate mode ──
+  // Before: isOpen = mode === 'visual-novel' (requires switching away from exploration)
+  // Now: isOpen = showStoryOverlay + has dialogue node (narrative overlay on 3D world)
+  const isOpen = showStoryOverlay && !!DIALOGUE_NODES[currentNodeId];
   const node = useMemo(() => DIALOGUE_NODES[currentNodeId], [currentNodeId]);
   const { displayed, done, skip } = useTypewriter(node?.text ?? '', 30);
 
@@ -442,8 +447,10 @@ export function DialogueRenderer() {
 
   const handleClose = useCallback(() => {
     audioEngine.playSfx('ui_close');
-    setMode('exploration');
-  }, [setMode]);
+    // ── World Director: close dialogue by hiding overlay, not switching mode ──
+    // The player is already in exploration mode — just hide the narrative overlay
+    setShowStoryOverlay(false);
+  }, [setShowStoryOverlay]);
 
   const handleChoice = useCallback(
     (choice: DialogueChoice) => {
@@ -463,7 +470,8 @@ export function DialogueRenderer() {
       }
 
       if (choice.next === null) {
-        setMode('exploration');
+        // ── World Director: end dialogue by hiding overlay ──
+        setShowStoryOverlay(false);
       } else {
         setCurrentNodeId(choice.next);
       }
