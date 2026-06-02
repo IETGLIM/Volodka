@@ -101,9 +101,10 @@ class AssetPreloader {
   async preloadPriority(priority: keyof typeof ASSET_PRIORITIES): Promise<void[]> {
     const assets = ASSET_PRIORITIES[priority];
     const promises: Promise<void>[] = [];
+    const normalizedPriority = priority.toLowerCase() as 'critical' | 'high' | 'normal' | 'low';
 
     for (const model of assets.models) {
-      promises.push(this.preloadModel(model, priority));
+      promises.push(this.preloadModel(model, normalizedPriority));
     }
 
     return Promise.all(promises);
