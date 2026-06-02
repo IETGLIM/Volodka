@@ -38,7 +38,7 @@ export function useExplorationState() {
       currentSceneId: s.exploration.currentSceneId,
       timeOfDay: s.exploration.timeOfDay,
       playerPosition: s.exploration.playerPosition,
-      discoveredScenes: s.exploration.discoveredScenes,
+      discoveredScenes: s.discoveredScenes,
     }))
   );
 }
