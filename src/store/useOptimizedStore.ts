@@ -109,8 +109,8 @@ export function useWorldState() {
   return useGameStore(
     useShallow((s) => ({
       timeOfDay: s.exploration.timeOfDay,
-      weather: s.exploration.weather,
-      weatherIntensity: s.exploration.weatherIntensity,
+      weatherEnabled: s.exploration.weatherEnabled,
+      rainIntensity: s.exploration.rainIntensity,
     }))
   );
 }
