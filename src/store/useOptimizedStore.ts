@@ -6,7 +6,6 @@
 import { useCallback, useRef, useState, useEffect } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useGameStore } from './gameStore';
-import { QUEST_DEFINITIONS } from '@/data/quests';
 
 /* ═══════════════════════════════════════════════════════════════
    Type-safe shallow selectors for common use cases
@@ -200,18 +199,9 @@ export function useBatchActions() {
     const store = useGameStore.getState();
     const quest = store.quests.find(q => q.questId === questId);
     if (!quest) return;
-    const questDef = QUEST_DEFINITIONS.find((q) => q.id === quest.questId);
 
-    // Batch: remove quest + add XP + add items + notification
+    // Complete quest; rewards are handled by quest/combat systems.
     store.completeQuest(questId);
-    if (questDef?.xpReward) {
-      store.addXp(questDef.xpReward);
-    }
-    if (questDef?.itemRewards) {
-      for (const item of questDef.itemRewards) {
-        store.addItem(item);
-      }
-    }
   }, []);
 
   /**
