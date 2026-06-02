@@ -193,7 +193,11 @@ class AssetPreloader {
    * Clear all cached assets (useful for memory management)
    */
   clearCache(): void {
-    useGLTF.clear();
+    // Newer drei typings require an explicit key/path for cache eviction.
+    // Clear only assets tracked by this preloader instance.
+    this.loadedAssets.forEach((path) => {
+      useGLTF.clear(path);
+    });
     this.loadedAssets.clear();
     this.loadingAssets.clear();
     this.loadingProgress.clear();
