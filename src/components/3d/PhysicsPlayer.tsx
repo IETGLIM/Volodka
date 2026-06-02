@@ -93,45 +93,87 @@ interface PhysicsPlayerProps {
 /** Get the first collider attached to a RigidBody from the physics world.
  *  We need the Collider object (not handle) for computeColliderMovement().
  *
- *  Tries multiple approaches to find the collider:
- *  1. Direct colliderHandles() on the RigidBody (Rapier WASM API)
- *  2. Raw RigidBody handle lookup through rapier World
- *  3. Walking the world's collider list matching parent RigidBody
+ *  FIX: @react-three/rapier's RapierRigidBody is a Proxy wrapper around the
+ *  raw RAPIER.RigidBody. The raw body is accessible via `rb.raw()` in
+ *  @react-three/rapier v1.x+, or via internal properties in older versions.
+ *  Once we have the raw body, colliderHandles() gives us the collider handles.
+ *
+ *  Fallback: iterate the world's collider list and match by parent handle.
  */
 function getPlayerCollider(rb: RapierRigidBody, world: any, rapierModule: any): any {
   try {
-    // Approach 1: Direct colliderHandles() — works on raw Rapier WASM RigidBody
-    if (typeof (rb as any).colliderHandles === 'function') {
-      const handles = (rb as any).colliderHandles();
-      if (handles && handles.length > 0) {
-        const collider = world.getCollider(handles[0]);
-        if (collider) return collider;
+    // Approach 1: Try rb.raw() — @react-three/rapier v1.x+ exposes the raw RAPIER body
+    let rawBody: any = null;
+    if (typeof (rb as any).raw === 'function') {
+      rawBody = (rb as any).raw();
+    }
+    // Fallback: try internal property names used by different wrapper versions
+    if (!rawBody) {
+      rawBody = (rb as any)._raw ?? (rb as any)._body ?? (rb as any).inner;
+    }
+    // Fallback: try using the handle to look up the raw body from the world
+    if (!rawBody) {
+      const handle = (rb as any).handle ?? (rb as any)._handle;
+      if (handle !== undefined) {
+        rawBody = world.getRigidBody(handle);
       }
     }
 
-    // Approach 2: Use the RigidBody's internal raw handle to look up colliders
-    // @react-three/rapier wraps the raw RigidBody — we can try to access the handle
-    const rawHandle = (rb as any).handle ?? (rb as any)._handle;
-    if (rawHandle !== undefined) {
-      const rawBody = world.getRigidBody(rawHandle);
-      if (rawBody && typeof rawBody.colliderHandles === 'function') {
-        const handles = rawBody.colliderHandles();
-        if (handles && handles.length > 0) {
-          const collider = world.getCollider(handles[0]);
+    // If we have a raw body, get collider handles from it
+    if (rawBody && typeof rawBody.colliderHandles === 'function') {
+      const handles = rawBody.colliderHandles();
+      // handles is a FloatArray/Array-like of collider handle indices
+      if (handles) {
+        const len = typeof handles.length === 'number' ? handles.length : 0;
+        for (let i = 0; i < len; i++) {
+          const handle = handles[i];
+          const collider = world.getCollider(handle);
           if (collider) return collider;
         }
       }
     }
 
-    // Approach 3: If rapier module is available, iterate all colliders to find one
-    // whose parent is our RigidBody
-    if (rapierModule && rawHandle !== undefined) {
+    // Approach 2: Iterate all colliders in the world and find one whose
+    // parent() matches our RigidBody handle.
+    // This is O(n) but there are typically < 50 colliders per scene.
+    const rbHandle = (rb as any).handle ?? (rb as any)._handle;
+    if (rbHandle !== undefined) {
+      try {
+        // Try forEachCollider (RAPIER World method)
+        if (typeof world.forEachCollider === 'function') {
+          let found: any = null;
+          world.forEachCollider((collider: any) => {
+            if (!found) {
+              try {
+                const parent = collider.parent();
+                if (parent === rbHandle) {
+                  found = collider;
+                }
+              } catch {
+                // Some collider types don't have parent() — skip
+              }
+            }
+          });
+          if (found) return found;
+        }
+      } catch {
+        // forEachCollider not available — skip
+      }
+
+      // Approach 3: Manual iteration via colliders() iterator
       try {
         const colliders = world.colliders();
         if (colliders) {
-          for (let i = 0; i < (colliders.len ? colliders.len() : 0); i++) {
-            const c = colliders.at(i);
-            if (c && c.parent() === rawHandle) return c;
+          const len = typeof colliders.len === 'function' ? colliders.len() : (colliders.length ?? 0);
+          for (let i = 0; i < len; i++) {
+            const c = typeof colliders.at === 'function' ? colliders.at(i) : colliders[i];
+            if (c) {
+              try {
+                if (c.parent() === rbHandle) return c;
+              } catch {
+                // skip
+              }
+            }
           }
         }
       } catch {
@@ -465,14 +507,10 @@ export function PhysicsPlayer({
     const rgt = (keys.right ? 1 : 0) + (virtual?.right ?? 0);
     const running = keys.run || (virtual?.run ?? 0) > 0;
 
-    // ─── Mobile debug: log virtual controls periodically (first 5s only) ───
-    if (virtual && (fwd || bwd || lft || rgt)) {
-      const now = performance.now();
-      if (now - lastDebugLogRef.current > 2000) {
-        console.log('[PhysicsPlayer] Input:', { fwd, bwd, lft, rgt, running, virtualForward: virtual.forward, isMoving: fwd+bwd+lft+rgt > 0 });
-        lastDebugLogRef.current = now;
-      }
-    }
+    // ─── Mobile debug: disabled in production to reduce console noise ───
+    // Previously logged every 2s — caused rAF violations and console spam.
+    // Re-enable with debug flag if needed for mobile input debugging.
+    // if (virtual && (fwd || bwd || lft || rgt)) { ... }
 
     moveDir.set(0, 0, 0);
     moveDir.addScaledVector(camFwd, fwd - bwd);

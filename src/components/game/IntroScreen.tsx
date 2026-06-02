@@ -7,6 +7,7 @@ import { GAME_INTRO, GAME_INTRO_PARAGRAPHS, POEMS } from '@/data/poems';
 import type { Poem } from '@/shared/types/game';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { eventBus } from '@/engine/EventBus';
+import { getSharedAudioContext } from '@/engine/SharedAudioContext';
 
 // ════════════════════════════════════════════════════════════════
 //  AAA CINEMATIC INTRO — VOLADKA RPG
@@ -16,7 +17,6 @@ import { eventBus } from '@/engine/EventBus';
 // ─── Procedural Ambient Audio via Web Audio API ───
 
 function useCinematicAudio(phase: CinematicPhase) {
-  const ctxRef = useRef<AudioContext | null>(null);
   const masterGainRef = useRef<GainNode | null>(null);
   const nodesRef = useRef<OscillatorNode[]>([]);
   const gainNodesRef = useRef<GainNode[]>([]);
@@ -24,11 +24,15 @@ function useCinematicAudio(phase: CinematicPhase) {
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
+    // FIX: Use shared AudioContext instead of creating a separate one.
+    // Previously created `new AudioContext()` which violates the singleton
+    // pattern and can cause "MaxListenersExceededWarning" / AudioContext
+    // limit issues in Chrome (max 6 simultaneous contexts).
     const initAudio = () => {
-      if (ctxRef.current) return;
+      if (masterGainRef.current) return;
       try {
-        const ctx = new AudioContext({ latencyHint: 'interactive' });
-        ctxRef.current = ctx;
+        const ctx = getSharedAudioContext();
+        if (!ctx) return;
         const master = ctx.createGain();
         master.gain.value = 0;
         master.connect(ctx.destination);
@@ -40,9 +44,7 @@ function useCinematicAudio(phase: CinematicPhase) {
 
     const handleInteraction = () => {
       initAudio();
-      if (ctxRef.current?.state === 'suspended') {
-        void ctxRef.current.resume();
-      }
+      // SharedAudioContext handles resume internally
       window.removeEventListener('click', handleInteraction);
       window.removeEventListener('keydown', handleInteraction);
       window.removeEventListener('touchstart', handleInteraction);
@@ -63,9 +65,10 @@ function useCinematicAudio(phase: CinematicPhase) {
       }
       nodesRef.current = [];
       gainNodesRef.current = [];
-      if (ctxRef.current) {
-        void ctxRef.current.close();
-        ctxRef.current = null;
+      // Don't close the shared AudioContext — it's a singleton
+      // Just disconnect our master gain node
+      if (masterGainRef.current) {
+        try { masterGainRef.current.disconnect(); } catch { /* ignore */ }
         masterGainRef.current = null;
       }
     };
@@ -73,10 +76,9 @@ function useCinematicAudio(phase: CinematicPhase) {
 
   // Phase-driven ambient sound
   useEffect(() => {
-    const ctx = ctxRef.current;
+    const ctx = getSharedAudioContext();
     const master = masterGainRef.current;
     if (!ctx || !master) return;
-    if (ctx.state === 'suspended') void ctx.resume();
 
     const now = ctx.currentTime;
 

@@ -58,6 +58,10 @@ export class EventBusClass {
   /** Whether this bus has been disposed and needs re-initialisation on next use */
   private disposed = false;
 
+  /** Safety limit: warn if more than this many handlers are registered for a single event.
+   *  Catches subscription leaks early (e.g., component subscribing in render instead of useEffect). */
+  private static MAX_HANDLERS_PER_EVENT = 20;
+
   constructor() {
     // Timer is NOT started here — see ensureCleanupTimer() for lazy start
   }
@@ -125,6 +129,14 @@ export class EventBusClass {
       this.handlers.set(event, set);
     }
     set.add(handler);
+
+    // Safety: warn about potential subscription leaks
+    if (set.size > EventBusClass.MAX_HANDLERS_PER_EVENT) {
+      console.warn(
+        `[EventBus] ${String(event)} has ${set.size} handlers (limit: ${EventBusClass.MAX_HANDLERS_PER_EVENT}). ` +
+        `Possible subscription leak — ensure each eventBus.on() is cleaned up in useEffect return.`
+      );
+    }
 
     // Return unsubscribe closure
     return () => {
