@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── Volodka RPG – Abandoned Factory procedural 3D visual ─── */
 

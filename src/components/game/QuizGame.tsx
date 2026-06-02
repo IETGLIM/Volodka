@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── Volodka RPG – QuizGame (Cyberpunk Trivia Mini-game) ─── */
 

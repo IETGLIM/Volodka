@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── Volodka RPG – Karma/moral compass HUD */
 

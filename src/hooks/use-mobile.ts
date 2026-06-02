@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── Volodka RPG – Unified mobile detection hooks ─── */
 /* Single source for all mobile/viewport detection.

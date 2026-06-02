@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── Volodka RPG – Developer Debug Panel (F3) ─── */
 

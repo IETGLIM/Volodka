@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── Volodka RPG – Dialogue History Panel ───
    Two-column layout: NPC list (2/5) + conversation log (3/5).

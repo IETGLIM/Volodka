@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── Volodka RPG – Compass HUD ───
    Top-center compass strip showing the player's facing direction

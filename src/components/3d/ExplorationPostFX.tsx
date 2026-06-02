@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── Volodka RPG – AAA Post-Processing Pipeline ───
  *  Dynamic bloom per scene, scene-specific chromatic aberration,

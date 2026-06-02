@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── Volodka RPG – Cutscene Text Overlay (AAA+ Enhanced) ───
    Full-screen text overlay that fades in/out during cutscenes.

@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── Volodka RPG – Weather Alert Notification ─── */
 /* Dramatic cyberpunk notification that appears when weather changes.

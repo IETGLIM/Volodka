@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── Volodka RPG – main Zustand game store (composed from slices) ─── */
 /* Each domain (player, exploration, world, UI, cutscene, save) lives in

@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── Volodka RPG – Day/Night Cycle Indicator (HUD Widget) ─── */
 /* Arc-shaped visual indicator showing current position in the

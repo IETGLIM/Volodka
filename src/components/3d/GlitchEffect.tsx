@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── Volodka RPG – Glitch Effect ─── */
 /* Random screen tears, color splits, and pixel displacement.

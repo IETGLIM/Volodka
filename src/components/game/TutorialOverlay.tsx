@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── Volodka RPG – Tutorial tips overlay (enhanced) ─── */
 

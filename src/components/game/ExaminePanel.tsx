@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── Volodka RPG – Examine Panel ───
  *  When the player interacts with an object that has examineData, this panel shows:

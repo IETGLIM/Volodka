@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── Volodka RPG – Cafe "Blue Pit" procedural 3D visual ─── */
 

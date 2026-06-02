@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── Volodka RPG – Choice Reactivity ─── */
 /* Visual feedback system: moral choices trigger 3D world reactions.

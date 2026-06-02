@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── Volodka RPG – Scene Transition Overlay (Enhanced v2) ───
  *  Cyberpunk cinematic transition effect when the player moves between scenes.

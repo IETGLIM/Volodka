@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── Volodka RPG – Rest Panel ─── */
 /* Simple UI for resting at home to recover energy and reduce stress. */

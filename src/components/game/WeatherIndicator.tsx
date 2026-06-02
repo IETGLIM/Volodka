@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── Volodka RPG – Weather Indicator (HUD Widget) ─── */
 /* Compact weather widget showing current conditions derived

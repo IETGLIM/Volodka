@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── Volodka RPG – AAA+ Floating Notification Toasts ───
    Beautiful animated toasts that appear when player stats change.

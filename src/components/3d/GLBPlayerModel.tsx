@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── GLB Player Model — loads CesiumMan, with animation ───
  *  Single-animation fallback: when GLB has only animation_0,

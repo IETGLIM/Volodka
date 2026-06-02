@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── Volodka RPG – Weather & Atmospheric Particle Systems ───
  *  Scene-specific animated particle systems for atmospheric effects:

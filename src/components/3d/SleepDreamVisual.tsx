@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── Volodka RPG – Dreamscape procedural 3D visual (v2.1 — FastNoiseLite) ─── */
 

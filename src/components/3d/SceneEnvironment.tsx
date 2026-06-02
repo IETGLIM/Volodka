@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── Volodka RPG – Scene environment (fog, background, env map, animated fog) ─── */
 

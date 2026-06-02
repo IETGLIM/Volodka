@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── Volodka RPG – Quest journal panel (AAA+ Overhaul v2) ───
    Grouped by status, difficulty indicators, progress bars, hints, rewards.

@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── Volodka RPG – Directional Damage Indicator ───
    Shows a directional red flash on the screen edge when the player takes damage,

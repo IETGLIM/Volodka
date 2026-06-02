@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── Volodka RPG – Winter Street procedural 3D visual ─── */
 

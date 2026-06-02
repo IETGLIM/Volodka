@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── Volodka RPG – Street scene procedural 3D visual ─── */
 

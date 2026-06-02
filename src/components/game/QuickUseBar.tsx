@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── Volodka RPG – Quick Use Bar ─── */
 /* Bottom-center bar showing consumable items for quick access.

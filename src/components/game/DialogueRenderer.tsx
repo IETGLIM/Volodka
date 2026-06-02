@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── Volodka RPG – NPC dialogue overlay (AAA+ v2) ───
    Enhanced with: colored speaker name background, dialogue history,

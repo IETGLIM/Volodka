@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── Volodka RPG – MatrixRain Effect ─── */
 /* Green cascading characters (Cyrillic + Latin + code symbols)

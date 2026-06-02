@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── Volodka RPG – Matrix-Style Digital Fog Particles ───
  *  Green-tinted particles with a digital, matrix-like appearance

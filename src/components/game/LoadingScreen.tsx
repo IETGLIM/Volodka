@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── Volodka RPG – Loading Screen (AAA+ CYBERPUNK / MATRIX / GOTHIC / HACKING) ─── */
 

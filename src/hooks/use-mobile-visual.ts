@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── Volodka RPG – Re-exports from unified mobile hooks ─── */
 /* Backward-compatibility shim. All mobile detection logic has been

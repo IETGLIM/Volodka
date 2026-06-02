@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── Volodka RPG – Lore auto-discovery hook ───
  * Automatically discovers lore entries when the player enters a scene.

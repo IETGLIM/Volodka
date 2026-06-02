@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── Volodka RPG – Crafting Discovery Toast ─── */
 /* Cyberpunk toast notification that appears when a player discovers
@@ -127,7 +126,7 @@ function CraftingToastCard({ toast, index }: { toast: CraftingToastData; index: 
             boxShadow: accent.shadow,
             minWidth: '220px',
             maxWidth: '300px',
-            fontFamily: 'var(--font-geist-mono), monospace',
+            fontFamily: "'Geist Mono', monospace",
           }}
           initial={{ opacity: 0, x: -60, scale: 0.9, filter: 'blur(4px)' }}
           animate={{ opacity: 1, x: 0, scale: 1, filter: 'blur(0px)' }}

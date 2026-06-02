@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── Volodka RPG – Keyboard Shortcuts Help Overlay ─── */
 /* Enhanced with hex-grid bg, corner brackets, scan-line sweep,

@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── Volodka RPG – Combat Arena procedural 3D visual ─── */
 

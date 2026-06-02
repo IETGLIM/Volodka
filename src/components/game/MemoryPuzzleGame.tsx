@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── Volodka RPG – Memory Puzzle Minigame "НЕЙРОСЕТЬ" ─── */
 /* Cyberpunk Simon-Says pattern matching game: a 4x4 grid of neural cells

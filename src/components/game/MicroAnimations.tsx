@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── Volodka RPG – MicroAnimations ───
  *  A collection of micro-interaction components for stat changes,

@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── Volodka RPG – Library procedural 3D visual ─── */
 

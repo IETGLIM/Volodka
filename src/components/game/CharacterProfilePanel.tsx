@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── Volodka RPG – Character Profile Panel (Cyberpunk Stats Overlay) ─── */
 

@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── Volodka RPG – Weather Controller ───
  *  Automatically activates rain/snow based on current scene

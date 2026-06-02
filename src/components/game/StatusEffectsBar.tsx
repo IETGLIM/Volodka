@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── Volodka RPG – Status Effects Bar ───
    Compact horizontal bar showing active buffs/debuffs as icon badges.

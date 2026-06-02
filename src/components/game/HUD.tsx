@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── Volodka RPG – Exploration HUD (AAA+ Cyberpunk Polish v2) ───
    Enhanced with: smooth counter animations, quest notification badge,

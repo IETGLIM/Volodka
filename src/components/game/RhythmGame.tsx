@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── Volodka RPG – RhythmGame "КИБЕР-РИТМ" ─── */
 /* A rhythm game where notes fall down 4 lanes (D, F, J, K) and the player

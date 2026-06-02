@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── Volodka RPG – Skill Tree Panel (Enhanced) ─── */
 /* Cyberpunk circuit board / neural network visualization

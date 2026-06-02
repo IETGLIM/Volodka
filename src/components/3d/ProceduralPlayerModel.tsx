@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── Procedural human-like model — "Уставший Инженер" (Tired Engineer)
  *  AAA-quality procedural humanoid with:

@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── Volodka RPG – Perks Panel (Polished) ───
  * Displays available perks organized by category tabs.

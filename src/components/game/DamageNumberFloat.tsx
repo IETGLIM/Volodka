@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── Volodka RPG – Damage Number Float ───
    Shows floating damage/heal/stress/XP numbers during combat and exploration.

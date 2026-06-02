@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── Volodka RPG – Achievement Checker Hook ───
    Runs the AchievementEngine's checkAchievements() on game state changes.

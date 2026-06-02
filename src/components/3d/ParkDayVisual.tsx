@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── Volodka RPG – Memorial Park procedural 3D visual ─── */
 

@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── Volodka RPG – Reusable Error Boundary ─── */
 /* Catches rendering errors in child components and displays

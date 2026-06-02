@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── Volodka RPG – Bash Terminal mini-game ─── */
 
@@ -676,7 +675,7 @@ export function BashTerminalGame({ onClose }: BashTerminalGameProps) {
         </div>
 
         {/* CSS animations */}
-        <style jsx>{`
+        <style>{`
           @keyframes crtFlicker {
             0% { opacity: 0.97; }
             50% { opacity: 1; }

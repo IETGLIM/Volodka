@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── Volodka RPG – AutoSave Indicator ─── */
 /* Brief cyberpunk notification that appears when the game auto-saves,

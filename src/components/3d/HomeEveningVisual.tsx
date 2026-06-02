@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── Volodka RPG – Home Evening room procedural 3D visual ─── */
 

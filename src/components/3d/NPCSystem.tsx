@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── Volodka RPG – NPC system for current scene ─── */
 

@@ -9,8 +9,8 @@ html { background: #000 !important; }
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: 'Geist', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'Geist Mono', ui-monospace, monospace;
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -317,7 +317,7 @@ html { background: #000 !important; }
 
 /* Game font */
 .game-fm-layer {
-  font-family: var(--font-geist-mono), monospace;
+  font-family: 'Geist Mono', monospace;
 }
 
 /* ─── Menu Screen polish keyframes ─── */
@@ -1392,7 +1392,7 @@ html { background: #000 !important; }
 
 /* Photo mode viewfinder base styles */
 .photo-mode-viewfinder {
-  font-family: var(--font-geist-mono), monospace;
+  font-family: 'Geist Mono', monospace;
   isolation: isolate;
   user-select: none;
 }
@@ -1796,7 +1796,7 @@ html { background: #000 !important; }
 
 /* ─── 15. Terminal text — Terminal-style text with monospace and tracking ─── */
 .terminal-text {
-  font-family: var(--font-geist-mono), 'JetBrains Mono', 'Fira Code', monospace;
+  font-family: 'Geist Mono', 'JetBrains Mono', 'Fira Code', monospace;
   letter-spacing: 0.05em;
   text-shadow: 0 0 6px rgba(0, 229, 255, 0.2), 0 0 12px rgba(0, 229, 255, 0.08);
 }
@@ -1805,7 +1805,7 @@ html { background: #000 !important; }
 .data-chip {
   display: inline-flex;
   align-items: center;
-  font-family: var(--font-geist-mono), monospace;
+  font-family: 'Geist Mono', monospace;
   font-size: 0.625rem;
   line-height: 1;
   padding: 2px 6px;
@@ -2273,7 +2273,7 @@ html { background: #000 !important; }
   border-radius: 4px;
   color: rgba(226, 232, 240, 0.9);
   font-size: 10px;
-  font-family: var(--font-geist-mono), monospace;
+  font-family: 'Geist Mono', monospace;
   letter-spacing: 0.05em;
   white-space: nowrap;
   pointer-events: none;
@@ -2333,7 +2333,7 @@ html { background: #000 !important; }
   top: 2px;
   left: 4px;
   font-size: 8px;
-  font-family: var(--font-geist-mono), monospace;
+  font-family: 'Geist Mono', monospace;
   color: rgba(34, 211, 238, 0.5);
 }
 
@@ -2427,7 +2427,7 @@ html { background: #000 !important; }
   background: rgba(0, 0, 0, 0.3);
   backdrop-filter: blur(4px);
   color: rgba(34, 211, 238, 0.7);
-  font-family: var(--font-geist-mono), monospace;
+  font-family: 'Geist Mono', monospace;
   font-size: 11px;
   transition: all 0.2s ease;
   cursor: pointer;
@@ -2896,7 +2896,7 @@ html { background: #000 !important; }
 .event-notification-popup {
   position: relative;
   overflow: hidden;
-  font-family: var(--font-geist-mono), monospace;
+  font-family: 'Geist Mono', monospace;
   isolation: isolate;
 }
 
@@ -2966,7 +2966,7 @@ html { background: #000 !important; }
 /* ─── Level-up overlay base styles ─── */
 .level-up-overlay {
   isolation: isolate;
-  font-family: var(--font-geist-mono), monospace;
+  font-family: 'Geist Mono', monospace;
 }
 
 /* ─── Stat bar shimmer effect (triggered on value change) ─── */
@@ -3105,7 +3105,7 @@ html { background: #000 !important; }
   border: 1px solid rgba(34, 211, 238, 0.2);
   box-shadow: 0 0 6px rgba(34, 211, 238, 0.1), inset 0 0 3px rgba(34, 211, 238, 0.05);
   color: #e2e8f0;
-  font-family: var(--font-geist-mono), monospace;
+  font-family: 'Geist Mono', monospace;
   font-size: 9px;
   font-weight: 700;
   padding: 1px 5px;
@@ -3360,13 +3360,13 @@ html { background: #000 !important; }
 
 .ingredient-count-available {
   color: #34d399;
-  font-family: var(--font-geist-mono), monospace;
+  font-family: 'Geist Mono', monospace;
   font-size: 10px;
 }
 
 .ingredient-count-missing {
   color: #fb7185;
-  font-family: var(--font-geist-mono), monospace;
+  font-family: 'Geist Mono', monospace;
   font-size: 10px;
 }
 
@@ -3377,7 +3377,7 @@ html { background: #000 !important; }
 /* ─── Stats panel container base ─── */
 .stats-panel-container {
   isolation: isolate;
-  font-family: var(--font-geist-mono), monospace;
+  font-family: 'Geist Mono', monospace;
 }
 
 /* ─── Stats panel bar shimmer animation ─── */
@@ -3457,7 +3457,7 @@ html { background: #000 !important; }
 
 /* ─── CompassHUD base styles ─── */
 .compass-hud {
-  font-family: var(--font-geist-mono), monospace;
+  font-family: 'Geist Mono', monospace;
   isolation: isolate;
 }
 
@@ -3607,7 +3607,7 @@ html { background: #000 !important; }
 
 /* ─── Interaction hint popup base styles ─── */
 .interaction-hint-popup {
-  font-family: var(--font-geist-mono), monospace;
+  font-family: 'Geist Mono', monospace;
   isolation: isolate;
 }
 
@@ -3647,7 +3647,7 @@ html { background: #000 !important; }
 
 /* ─── Damage number base styles ─── */
 .damage-number-float {
-  font-family: var(--font-geist-mono), monospace;
+  font-family: 'Geist Mono', monospace;
   isolation: isolate;
   will-change: transform, opacity;
 }
@@ -3818,7 +3818,7 @@ html { background: #000 !important; }
   color: rgba(34, 211, 238, 0.9);
   text-shadow: 0 0 4px rgba(34, 211, 238, 0.5);
   animation: type-cursor-blink 1s step-end infinite;
-  font-family: var(--font-geist-mono), monospace;
+  font-family: 'Geist Mono', monospace;
   margin-left: 1px;
 }
 
@@ -4069,7 +4069,7 @@ html { background: #000 !important; }
   inset: 0;
   pointer-events: none;
   isolation: isolate;
-  font-family: var(--font-geist-mono), monospace;
+  font-family: 'Geist Mono', monospace;
 }
 
 /* Heal indicator overlay base styles */
@@ -4078,7 +4078,7 @@ html { background: #000 !important; }
   inset: 0;
   pointer-events: none;
   isolation: isolate;
-  font-family: var(--font-geist-mono), monospace;
+  font-family: 'Geist Mono', monospace;
 }
 
 /* ══════════════════════════════════════════════════════════════
@@ -4089,7 +4089,7 @@ html { background: #000 !important; }
 .weather-alert-notification {
   position: relative;
   overflow: hidden;
-  font-family: var(--font-geist-mono), monospace;
+  font-family: 'Geist Mono', monospace;
   isolation: isolate;
 }
 
@@ -4370,6 +4370,6 @@ html { background: #000 !important; }
 .crafting-discovery-toast {
   position: relative;
   overflow: hidden;
-  font-family: var(--font-geist-mono), monospace;
+  font-family: 'Geist Mono', monospace;
   isolation: isolate;
 }

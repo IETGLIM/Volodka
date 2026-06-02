@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── Volodka RPG – Level Up Effect ───
    Dramatic full-screen effect when the player levels up.

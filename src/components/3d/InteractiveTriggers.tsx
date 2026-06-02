@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── Volodka RPG – Interactive triggers with glow ring, particle burst, pulse tooltip,
      NPC staged interaction routing, and centralized prompt stacking ─── */

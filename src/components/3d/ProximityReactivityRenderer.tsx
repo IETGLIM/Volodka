@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── Volodka RPG – Proximity Reactivity Renderer ───
  *  Renders visual effects based on player proximity to ProximityEffects.

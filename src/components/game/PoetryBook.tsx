@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── Volodka RPG – Poetry collection viewer with Poem Powers (v3) ───
    Parchment/paper texture, decorative borders, page-turn animation,

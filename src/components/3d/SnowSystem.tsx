@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── Volodka RPG – AAA Snow Particle System ───
  *  Gentle snowflakes with organic drift, for winter street scene

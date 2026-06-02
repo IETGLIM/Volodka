@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── Volodka RPG – Crafting Panel (Polished) ─── */
 

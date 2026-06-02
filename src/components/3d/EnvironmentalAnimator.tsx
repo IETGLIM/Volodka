@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── Volodka RPG – Environmental Animator ─── */
 /* Renders per-scene environmental animations defined in EnvironmentalAnimations.ts */

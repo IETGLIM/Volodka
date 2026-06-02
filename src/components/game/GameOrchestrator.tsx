@@ -1,5 +1,3 @@
-'use client';
-
 /* ─── Volodka RPG – Main game orchestrator (thin coordinator) ─── */
 
 import { useState, useEffect, useCallback, useRef, useReducer } from 'react';
@@ -126,12 +124,11 @@ import { DirectionalDamageIndicator } from '@/components/game/DirectionalDamageI
 import { PhotoMode } from '@/components/game/PhotoMode';
 import { DamageNumberFloat } from '@/components/game/DamageNumberFloat';
 
-// Dynamic import — only RPGGameCanvas needs ssr: false (WebGL canvas)
-import dynamic from 'next/dynamic';
+// Dynamic import — only RPGGameCanvas needs no SSR (WebGL canvas)
+import { lazy, Suspense } from 'react';
 
-const RPGGameCanvas = dynamic(
-  () => import('@/components/3d/RPGGameCanvas').then((m) => m.RPGGameCanvas),
-  { ssr: false, loading: () => <div className="fixed inset-0 bg-black" style={{ zIndex: 100 }} /> },
+const RPGGameCanvas = lazy(
+  () => import('@/components/3d/RPGGameCanvas').then((m) => ({ default: m.RPGGameCanvas })),
 );
 
 /* ── Static imports — all panels loaded eagerly to avoid ChunkLoadError ── */
@@ -883,7 +880,9 @@ export function GameOrchestrator() {
               pointerEvents: (mode === 'exploration' || mode === 'visual-novel' || mode === 'cutscene' || mode === 'combat') ? 'auto' : 'none',
             }}
           >
-            <RPGGameCanvas />
+            <Suspense fallback={<div className="fixed inset-0 bg-black" style={{ zIndex: 100 }} />}>
+              <RPGGameCanvas />
+            </Suspense>
           </div>
 
           {/* ── Cinematic Matrix Intro (one-time, shown before first gameplay) ── */}

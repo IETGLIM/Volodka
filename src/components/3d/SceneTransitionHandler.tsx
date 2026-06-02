@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── Volodka RPG – Scene transition handler (wired via EventBus) ───
  *  Handles scene transitions with:

@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── Volodka RPG – Inventory panel (Task 6: Grid-based visual redesign) ─── */
 

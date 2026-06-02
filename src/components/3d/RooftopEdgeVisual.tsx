@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── Volodka RPG – Rooftop Edge procedural 3D visual ─── */
 

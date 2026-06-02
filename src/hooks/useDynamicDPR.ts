@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── Volodka RPG – Dynamic DPR scaling hook ─── */
 

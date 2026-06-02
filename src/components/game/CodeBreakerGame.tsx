@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── Volodka RPG – CodeBreaker mini-game (Mastermind-style) ─── */
 

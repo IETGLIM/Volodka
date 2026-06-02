@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── Volodka RPG – Trading Panel ───
  * Barter/trading system where players can buy and sell items with NPCs.

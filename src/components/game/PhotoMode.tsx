@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── Volodka RPG – Photo Mode ───
  * A screenshot capture feature with cyberpunk viewfinder overlay.

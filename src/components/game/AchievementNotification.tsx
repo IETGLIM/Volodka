@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── Volodka RPG – Achievement Notification ───
    Animated popup that appears when an achievement is unlocked.

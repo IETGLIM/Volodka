@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── Volodka RPG – Epic RPG Main Menu (Enhanced) ─── */
 

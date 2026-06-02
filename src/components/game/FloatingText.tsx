@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── Volodka RPG – Floating text numbers/effects ───
    Shows floating +XP, +Karma, +Skill, damage numbers, item gained

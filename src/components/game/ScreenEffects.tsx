@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── Volodka RPG – Screen Effects Manager ───
    Screen flash, shake, vignette, chromatic aberration, slow-motion.

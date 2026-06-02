@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── Volodka RPG – Visualization Layer System ─── */
 /* Three.js layer separation for depth, parallax, and performance control */

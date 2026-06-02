@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── Volodka RPG – Steam / Coffee Steam Particles ───
  *  Small upward-drifting particles simulating steam from coffee

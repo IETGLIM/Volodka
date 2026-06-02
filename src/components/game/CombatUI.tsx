@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── Volodka RPG – Enhanced Combat UI Overlay ─── */
 /* Task 8: Complete visual overhaul with cyberpunk terminal aesthetic,

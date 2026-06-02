@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── Volodka RPG – Scene Transition Progress Bar ─── */
 /* Thin cyberpunk progress bar at the top of the screen that shows

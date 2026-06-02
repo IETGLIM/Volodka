@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── Volodka RPG – Zarema & Albert Room procedural 3D visual ─── */
 

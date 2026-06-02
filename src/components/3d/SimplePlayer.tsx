@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── SimplePlayer — Fallback player without Rapier physics ───
  *  Used when Rapier WASM fails to load (Vercel edge, slow connections, etc.)

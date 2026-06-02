@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── Volodka RPG – Event Notification Popup ─── */
 /* Dramatic in-game event notifications with cyberpunk styling.

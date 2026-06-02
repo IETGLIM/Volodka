@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── Volodka RPG – derived quest store for UI (AAA+ Overhaul) ─── */
 

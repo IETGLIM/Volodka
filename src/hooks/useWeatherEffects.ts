@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── Volodka RPG – useWeatherEffects hook ─── */
 /* Reads weather state from the game store, determines the active weather type,

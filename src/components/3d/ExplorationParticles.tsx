@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── Volodka RPG – AAA Weather & Atmospheric Particles ───
  *  Rain, snow, dust motes, embers, fireflies — per scene

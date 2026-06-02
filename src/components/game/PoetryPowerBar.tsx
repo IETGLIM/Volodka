@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── Volodka RPG – Poetry Power Quick-Bar ───
    Action bar at the bottom of the screen showing collected poem powers.

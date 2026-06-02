@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── Volodka RPG – Codex Panel (Lore Encyclopedia) ───
    Two-column layout: entry list (2/5) + entry detail (3/5).

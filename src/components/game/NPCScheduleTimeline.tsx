@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── Volodka RPG – NPC Schedule Timeline Visual ───
    Compact 24-hour timeline bar showing where each NPC is throughout the day.

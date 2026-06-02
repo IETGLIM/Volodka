@@ -1,23 +1,24 @@
+# Volodka Project Worklog
+
 ---
+
 Task ID: 2
-Agent: main
-Task: Full codebase audit for inconsistencies + build Vercel deployment archive
+Agent: Explore
+Task: Comprehensive codebase analysis of Volodka RPG web application
 
 Work Log:
-- Ran comprehensive audit via sub-agent: lint, types, imports, deps, data consistency
-- Lint: 0 errors, TypeScript: 0 errors, runtime: no errors
-- Found and fixed CRITICAL: Tailwind content paths missing src/ prefix
-- Found and fixed: 13 unused dependencies removed from package.json (sharp, next-auth, z-ai-web-dev-sdk, three-pathfinding, @mdxeditor/editor, @tanstack/react-query, @tanstack/react-table, react-markdown, react-syntax-highlighter, next-intl, date-fns, @dnd-kit/*, @reactuses/core, @types/react-syntax-highlighter, bun-types)
-- Updated next.config.ts: added transpilePackages for Three.js ESM, kept allowedDevOrigins
-- Moved prisma + @types packages to devDependencies (proper separation)
-- Created .env.example for Vercel deployment
-- Built deployment archive: volodka-rpg-vercel-deploy.tar.gz (40MB, 2092 files)
-- Excluded from archive: node_modules, .next, dev.log, upload, Caddyfile, mini-services, qa-screenshots
+- Read all configuration files: package.json, next.config.ts, tsconfig.json, tailwind.config.ts, vercel.json, .env, .gitignore, components.json, Caddyfile
+- Mapped full directory structure: src/, public/, db/, examples/, upload/
+- Read all store slices: gameStore.ts, playerSlice.ts, explorationSlice.ts, worldSlice.ts, uiSlice.ts, cutsceneSlice.ts, saveSlice.ts, questStore.ts, shared.ts
+- Read all shared types: game.ts, sceneDefinition.ts, saveSchema.ts, uiLayers.ts, transitionTimings.ts
+- Read main app entry: layout.tsx, page.tsx, globals.css (4375 lines)
+- Read core game components: GamePage.tsx, GameOrchestrator.tsx (870+ lines), RPGGameCanvas.tsx
+- Read scene definitions (all 14 scenes), model URLs, constants, EventBus
+- Counted: 269 total .ts/.tsx source files, 76 game components, 53 3D components, 48 UI components, 27 data files, 24 engine files, 15 hooks
 
 Stage Summary:
-- 13 unused deps removed (saves ~10MB+ install size, prevents sharp build failures on Vercel)
-- Tailwind content paths fixed (was missing src/ prefix → CSS purge would be wrong in production)
-- Archive ready at: /home/z/my-project/deploy-archive/volodka-rpg-vercel-deploy.tar.gz
+- Comprehensive analysis complete. See detailed report in agent response.
+- Key findings: Next.js 16 App Router, React 19, Three.js/R3F 3D engine, Zustand state management, Tailwind CSS 4, shadcn/ui design system, Zod save validation, Rapier physics, 14 explorable scenes, 5-act story structure
 
 ---
 Task ID: 3
@@ -44,3 +45,31 @@ Stage Summary:
 - Hydration error fully resolved
 - Controls no longer conflict (S=backward only, Shift+S=stats, R=rest, Shift+R=camera)
 - Archive: /home/z/my-project/deploy-archive/volodka-rpg-vercel-deploy.tar.gz (211MB)
+
+---
+Task ID: 4
+Agent: security-auditor
+Task: Security and Best Practices Audit of Volodka project
+
+Work Log:
+- Scanned entire codebase (~32K LOC) for secrets, credentials, hardcoded tokens
+- Analyzed .env file — contains plaintext PostgreSQL credentials for Prisma Accelerate
+- Checked git history — .env WAS committed in initial commit (850db73), later untracked in fa9e2bc — credentials remain in git history
+- .env is currently tracked by git (git ls-files shows .env)
+- No hardcoded API keys found in src/ code
+- No API routes in src/app/api/ — no server-side attack surface
+- No Prisma/SQL usage in main src/ code
+- 2 dangerouslySetInnerHTML usages — both safe (static CSS only)
+- 31 `as unknown as` and 17 `as any` type assertions (code smell)
+- No @ts-ignore or @ts-nocheck directives
+- Wildcard CORS on /models-external/* in next.config.ts
+- CSP present but permissive ('unsafe-eval', 'unsafe-inline')
+- Missing: HSTS, Referrer-Policy, Permissions-Policy headers
+- CRITICAL SSRF via Caddyfile XTransformPort query parameter
+- DevPanel accessible in production (no env guard)
+- Cookie without Secure/SameSite in sidebar.tsx
+- Inconsistent JSON parsing (SaveSlotManager/MenuScreen skip Zod)
+- 30+ console.log/warn/error in production code
+
+Stage Summary:
+- 2 CRITICAL, 3 HIGH, 6 MEDIUM, 4 LOW/INFO findings

@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── Volodka RPG – Touch controls for mobile (v3 — ACTUALLY WORKING) ───
    v3 fixes (real fixes, not pretend):

@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── Volodka RPG – Settings Panel (Cyberpunk Terminal Aesthetic) ─── */
 

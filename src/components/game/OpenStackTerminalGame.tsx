@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── Volodka RPG – OpenStack Terminal mini-game ─── */
 

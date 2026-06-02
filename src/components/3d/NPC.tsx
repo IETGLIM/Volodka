@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── Volodka RPG – Single NPC component with LOD, speech bubbles, quest markers,
      NPC animation states, head tracking, interaction system integration,

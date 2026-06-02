@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── Volodka RPG – Save Slot Manager (Cyberpunk Terminal Aesthetic) ─── */
 /* Full-screen modal for managing 3 save slots with preview metadata,

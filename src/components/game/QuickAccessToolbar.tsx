@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── Volodka RPG – Quick Access Toolbar ─── */
 /* Compact bottom-center toolbar showing key player stats at a glance.

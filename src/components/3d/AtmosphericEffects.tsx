@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── Volodka RPG – Atmospheric Effects Controller ───
  *  Reads the current scene from the game store and renders the

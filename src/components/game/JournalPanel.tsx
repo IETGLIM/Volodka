@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── Volodka RPG – AAA+ Journal/Codex Panel (v2) ───
    Full-screen overlay with tabs: Записи (Notes), Навыки (Skills), Стихи (Poems), Лор (Lore).

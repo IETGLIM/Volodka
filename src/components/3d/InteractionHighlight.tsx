@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── Volodka RPG – Interaction Highlight ───
  *  When the player presses E on an interactive object, this component

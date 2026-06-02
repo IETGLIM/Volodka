@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── Volodka RPG – Poem Power Visual Effect ───
    Full-screen glow effect + text notification when a poem power is activated.

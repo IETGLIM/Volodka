@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── Volodka RPG – Quest Board Panel ───
  * Daily & weekly mission board with rotating missions.

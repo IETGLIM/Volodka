@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── Volodka RPG – Main story/narrative overlay (AAA+ Polish v2) ───
    Enhanced with: speaker portrait, atmospheric background tint,

@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── Volodka RPG – God Rays (simulated light shafts with dust motes) ───
  *  Creates volumetric-looking light shafts using cylinder/cone meshes

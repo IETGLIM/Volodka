@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── Volodka RPG – Ambient Sound Mixer ─── */
 /* Small floating panel that lets the player adjust ambient sound volumes

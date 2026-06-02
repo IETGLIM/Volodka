@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── Volodka RPG – AAA Rain Particle System ───
  *  High-performance rain using THREE.Points with BufferGeometry

@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── Volodka RPG – Player character with Rapier KinematicCharacterController ───
  *

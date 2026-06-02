@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── Volodka RPG – NPC Relationship Panel ───
    Shows the player's relationship with each NPC they've interacted with.

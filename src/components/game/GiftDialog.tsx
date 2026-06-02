@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── Volodka RPG – Gift Dialog ───
  * A compact dialog/modal for gifting items to NPCs.

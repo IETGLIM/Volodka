@@ -1,5 +1,3 @@
-'use client';
-
 import { GameErrorBoundary } from '@/components/game/GameErrorBoundary';
 import { GameOrchestrator } from '@/components/game/GameOrchestrator';
 

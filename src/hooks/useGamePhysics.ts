@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── Volodka RPG – player controls hook ─── */
 

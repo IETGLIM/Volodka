@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── Volodka RPG – MiniGameHub (Cyberpunk Arcade Quick-Access Terminal) ─── */
 /* Full-screen modal displaying 3 mini-game cards with holographic effects.

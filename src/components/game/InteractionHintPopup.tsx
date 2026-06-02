@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── Volodka RPG – Interaction Hint Popup ───
    Shows contextual action hints when the player is near

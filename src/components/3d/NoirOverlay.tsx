@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── Volodka RPG – Noir Atmosphere Overlay ─── */
 /* Film grain + warm flicker for Noir atmosphere.

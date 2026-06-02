@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── Volodka RPG – PanelWrapper ───
  *  Reusable wrapper for all game panels with:

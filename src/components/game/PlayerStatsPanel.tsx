@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── Volodka RPG – Player Stats Panel ───
    Compact, detailed stats overview panel with cyberpunk styling.

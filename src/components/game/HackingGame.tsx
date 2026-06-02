@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── Volodka RPG – Hacking Minigame "Network Intrusion" ─── */
 /* Cyberpunk pathfinding puzzle: navigate a network grid to reach

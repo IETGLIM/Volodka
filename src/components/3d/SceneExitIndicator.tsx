@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── Volodka RPG – Scene exit indicators with proximity detection ─── */
 

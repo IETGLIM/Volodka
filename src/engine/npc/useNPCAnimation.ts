@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── Volodka RPG – NPC Animation State Hook ─── */
 

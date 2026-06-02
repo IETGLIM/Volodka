@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── Volodka RPG – Fast Travel Panel ───
    Top-down schematic city map showing discovered/undiscovered locations.

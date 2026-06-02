@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── Volodka RPG – Reusable procedural interior model components ─── */
 /* Low-poly furniture, electronics, decorations, and kitchen items     */

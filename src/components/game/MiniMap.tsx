@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── Volodka RPG – Mini-map (AAA+ Overhaul) ───
    Cardinal directions (N, S, E, W), scene exit indicators,

@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── Volodka RPG – 3D Quest Waypoints ─── */
 /* Floating octahedron arrows at scene exits pointing toward active quest objectives.

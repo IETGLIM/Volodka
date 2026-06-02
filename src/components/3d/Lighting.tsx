@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── Volodka RPG – Exploration lighting ───
  *  Per-scene lighting with noir-friendly indoor settings.

@@ -1,4 +1,3 @@
-'use client';
 
 /**
  * R3F component that runs inside <Canvas> and writes renderer.info

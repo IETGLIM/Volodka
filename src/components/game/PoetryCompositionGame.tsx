@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── Volodka RPG – Poetry Composition mini-game (Cyberpunk "Mad Libs") ─── */
 

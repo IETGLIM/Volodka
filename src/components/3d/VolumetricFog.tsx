@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── Volodka RPG – Volumetric Fog (layered semi-transparent planes) ───
  *  Creates the illusion of volume by stacking multiple semi-transparent

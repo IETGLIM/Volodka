@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── Volodka RPG – Main 3D Canvas ─── */
 

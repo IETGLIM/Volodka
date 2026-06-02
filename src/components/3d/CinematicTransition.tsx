@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── Volodka RPG – Cinematic Transition Controller ───
  *  Handles camera freeze events during scene transitions.

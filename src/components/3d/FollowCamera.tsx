@@ -1,4 +1,3 @@
-'use client';
 
 /* ─── Volodka RPG – AAA Cinematic Follow Camera ───
  *  Five camera modes + cinematic enhancements:
