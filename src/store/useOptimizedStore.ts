@@ -138,9 +138,8 @@ export function usePlayerProgression() {
 export function usePoetryCollection() {
   return useGameStore(
     useShallow((s) => ({
-      collectedPoems: s.playerState.collectedPoems,
-      poemPower: s.playerState.poemPower,
-      activePoemPower: s.playerState.activePoemPower,
+      collectedPoems: s.collectedPoems,
+      poemPowers: s.poemPowers,
     }))
   );
 }
