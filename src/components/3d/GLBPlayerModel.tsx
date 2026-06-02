@@ -199,7 +199,6 @@ export function GLBPlayerModel({
     const scaledBox = new THREE.Box3().setFromObject(playerScene);
     // Offset: move model up so its bottom (feet) align with y=0 in local space
     // This ensures the visual model's feet match the RigidBody position (y=0.01 world)
-    // eslint-disable-next-line react-hooks/immutability -- Three.js position mutation is an intentional WebGL pattern
     playerScene.position.y = -scaledBox.min.y;
   }, [playerScene, modelScale]);
 

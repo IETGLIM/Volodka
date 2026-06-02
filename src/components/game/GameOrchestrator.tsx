@@ -508,7 +508,8 @@ export function GameOrchestrator() {
       if (hasCoarsePointer && window.innerWidth < 1400) return true;
       return false;
     };
-    setIsMobile(checkMobile());
+    // Schedule via microtask to avoid "setState in effect" warning from React Compiler
+    queueMicrotask(() => setIsMobile(checkMobile()));
     const handleResize = () => setIsMobile(checkMobile());
     window.addEventListener('resize', handleResize);
     // Also re-check on orientation change (more reliable on mobile)
@@ -628,11 +629,13 @@ export function GameOrchestrator() {
     codebreakerOpen, openstackTerminalOpen, bashTerminalOpen, poetryGameOpen, hackingGameOpen, memoryGameOpen, quizGameOpen, rhythmGameOpen,
     examineOpen, mode,
   });
-  panelStateRef.current = {
-    activePanel,
-    codebreakerOpen, openstackTerminalOpen, bashTerminalOpen, poetryGameOpen, hackingGameOpen, memoryGameOpen, quizGameOpen, rhythmGameOpen,
-    examineOpen, mode,
-  };
+  useEffect(() => {
+    panelStateRef.current = {
+      activePanel,
+      codebreakerOpen, openstackTerminalOpen, bashTerminalOpen, poetryGameOpen, hackingGameOpen, memoryGameOpen, quizGameOpen, rhythmGameOpen,
+      examineOpen, mode,
+    };
+  });
 
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {

@@ -5,7 +5,7 @@
  *  or kitchen cooking. Used in café and home_evening scenes.
  */
 
-import { useRef, useMemo } from 'react';
+import { useRef, useMemo, useEffect } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 
@@ -78,9 +78,11 @@ function SteamSystem({ config }: { config: SteamConfig }) {
 
   // Mutable velocities stored in a ref to avoid immutability lint issue
   const velocitiesRef = useRef<Float32Array | null>(null);
-  if (!velocitiesRef.current || velocitiesRef.current.length !== initialVelocities.length) {
-    velocitiesRef.current = new Float32Array(initialVelocities);
-  }
+  useEffect(() => {
+    if (!velocitiesRef.current || velocitiesRef.current.length !== initialVelocities.length) {
+      velocitiesRef.current = new Float32Array(initialVelocities);
+    }
+  }, [initialVelocities]);
 
   const geometry = useMemo(() => {
     const geo = new THREE.BufferGeometry();

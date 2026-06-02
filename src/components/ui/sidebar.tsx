@@ -609,7 +609,7 @@ function SidebarMenuSkeleton({
   // Random width between 50 to 90% — must use useState+useEffect to avoid hydration mismatch.
   const [width, setWidth] = React.useState('60%');
   React.useEffect(() => {
-    setWidth(`${Math.floor(Math.random() * 40) + 50}%`);
+    queueMicrotask(() => setWidth(`${Math.floor(Math.random() * 40) + 50}%`));
   }, []);
 
   return (

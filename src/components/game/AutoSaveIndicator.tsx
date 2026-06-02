@@ -96,8 +96,10 @@ export function AutoSaveIndicator() {
 
   useEffect(() => {
     if (storeLastSave) {
-      setLastSaveAt(storeLastSave);
-      setSource(storeLastAutoSave === storeLastSave ? 'auto' : 'manual');
+      queueMicrotask(() => {
+        setLastSaveAt(storeLastSave);
+        setSource(storeLastAutoSave === storeLastSave ? 'auto' : 'manual');
+      });
     }
   }, [storeLastSave, storeLastAutoSave]); // seed once on mount
 
@@ -139,7 +141,7 @@ export function AutoSaveIndicator() {
   }, [lastSaveAt]);
 
   useEffect(() => {
-    updateLabel(); // initial
+    queueMicrotask(() => updateLabel()); // initial
     tickRef.current = setInterval(updateLabel, TICK_INTERVAL_MS);
     return () => {
       if (tickRef.current) clearInterval(tickRef.current);

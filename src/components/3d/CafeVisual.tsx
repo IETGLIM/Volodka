@@ -25,7 +25,6 @@ export function CafeVisual() {
   const H = 3.2;
 
   // ── Coffee machine steam particles ──
-  const steamVelocitiesRef = useRef<Float32Array | null>(null);
   const steamData = useMemo(() => {
     const count = 30;
     const pos = new Float32Array(count * 3);
@@ -39,9 +38,9 @@ export function CafeVisual() {
       pha[i] = Math.random() * Math.PI * 2;
       vel[i] = 0.3 + Math.random() * 0.3;
     }
-    steamVelocitiesRef.current = vel;
-    return { positions: pos, phases: pha };
+    return { positions: pos, phases: pha, velocities: vel };
   }, []);
+  const steamVelocitiesRef = useRef(steamData.velocities);
 
   const steamGeometry = useMemo(() => {
     const geo = new THREE.BufferGeometry();

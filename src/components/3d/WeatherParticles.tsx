@@ -8,7 +8,7 @@
  *  - Snow drift (street_winter)
  */
 
-import { useRef, useMemo } from 'react';
+import { useRef, useMemo, useEffect } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 
@@ -187,13 +187,15 @@ function RainSystem({ config }: { config: RainConfig }) {
 
   // Mutable velocities stored in a ref to avoid immutability lint issue
   const velocitiesRef = useRef<Float32Array | null>(null);
-  if (!velocitiesRef.current || velocitiesRef.current.length !== config.count) {
-    const vel = new Float32Array(config.count);
-    for (let i = 0; i < config.count; i++) {
-      vel[i] = config.fallSpeed * (0.8 + Math.random() * 0.4);
+  useEffect(() => {
+    if (!velocitiesRef.current || velocitiesRef.current.length !== config.count) {
+      const vel = new Float32Array(config.count);
+      for (let i = 0; i < config.count; i++) {
+        vel[i] = config.fallSpeed * (0.8 + Math.random() * 0.4);
+      }
+      velocitiesRef.current = vel;
     }
-    velocitiesRef.current = vel;
-  }
+  }, [config]);
 
   const geometry = useMemo(() => {
     const geo = new THREE.BufferGeometry();
@@ -415,13 +417,15 @@ function SnowSystem({ config }: { config: SnowConfig }) {
 
   // Mutable velocities stored in a ref to avoid immutability lint issue
   const velocitiesRef = useRef<Float32Array | null>(null);
-  if (!velocitiesRef.current || velocitiesRef.current.length !== config.count) {
-    const vel = new Float32Array(config.count);
-    for (let i = 0; i < config.count; i++) {
-      vel[i] = config.fallSpeed * (0.5 + Math.random() * 1.0);
+  useEffect(() => {
+    if (!velocitiesRef.current || velocitiesRef.current.length !== config.count) {
+      const vel = new Float32Array(config.count);
+      for (let i = 0; i < config.count; i++) {
+        vel[i] = config.fallSpeed * (0.5 + Math.random() * 1.0);
+      }
+      velocitiesRef.current = vel;
     }
-    velocitiesRef.current = vel;
-  }
+  }, [config]);
 
   const geometry = useMemo(() => {
     const geo = new THREE.BufferGeometry();

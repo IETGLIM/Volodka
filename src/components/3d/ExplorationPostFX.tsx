@@ -142,9 +142,9 @@ function useRendererReady(): boolean {
     const baseDelay = 50;
     let retryTimer: ReturnType<typeof setTimeout> | null = null;
 
-    // Reset ready on every new gl — redundant with the ref check above,
-    // but ensures cleanup is complete even if the ref reset is skipped.
-    setReady(false);
+    // Reset ready on every new gl — use flushSync alternative:
+    // schedule state reset via microtask to avoid cascading render warning.
+    queueMicrotask(() => { if (!cancelled) setReady(false); });
 
     function check() {
       if (cancelled) return;

@@ -52,6 +52,7 @@ export function useWeatherEffects(): WeatherEffectsState {
   // ── Duration tracking ──
   const weatherStartRef = useRef<number>(Date.now());
   const prevWeatherTypeRef = useRef<WeatherType>('clear');
+  const [durationSeconds, setDurationSeconds] = useState(0);
 
   // ── Compute current weather type ──
   const weatherType = determineWeatherType(
@@ -66,13 +67,21 @@ export function useWeatherEffects(): WeatherEffectsState {
   const effect = getWeatherEffect(weatherType);
 
   // ── Reset duration timer when weather type changes ──
-  if (weatherType !== prevWeatherTypeRef.current) {
+  useEffect(() => {
     prevWeatherTypeRef.current = weatherType;
     weatherStartRef.current = Date.now();
-  }
+    queueMicrotask(() => setDurationSeconds(0));
+  }, [weatherType]);
+
+  // ── Tick duration counter ──
+  useEffect(() => {
+    const tick = setInterval(() => {
+      setDurationSeconds((Date.now() - weatherStartRef.current) / 1000);
+    }, 1000);
+    return () => clearInterval(tick);
+  }, []);
 
   const isActive = weatherType !== 'clear';
-  const durationSeconds = (Date.now() - weatherStartRef.current) / 1000;
 
   // ── Listen for weather events on the eventBus ──
   useEffect(() => {

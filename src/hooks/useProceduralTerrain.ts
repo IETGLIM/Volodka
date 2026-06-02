@@ -2,7 +2,7 @@
 
 /* ─── Volodka RPG – Procedural terrain generation with FastNoiseLite ─── */
 
-import { useMemo, useRef } from 'react';
+import { useMemo, useRef, useEffect } from 'react';
 import * as THREE from 'three';
 import FastNoiseLite from 'fastnoise-lite';
 
@@ -225,11 +225,13 @@ export function useAnimatedTerrain(config: TerrainConfig, timeScale = 0.15) {
   const positionsRef = useRef<Float32Array | null>(null);
 
   // Store original positions for animation
-  if (geometry.attributes.position && !positionsRef.current) {
-    positionsRef.current = new Float32Array(
-      (geometry.attributes.position as THREE.BufferAttribute).array as Float32Array
-    );
-  }
+  useEffect(() => {
+    if (geometry.attributes.position && !positionsRef.current) {
+      positionsRef.current = new Float32Array(
+        (geometry.attributes.position as THREE.BufferAttribute).array as Float32Array
+      );
+    }
+  }, [geometry]);
 
   useFrame?.((state) => {
     if (!meshRef.current || !positionsRef.current) return;

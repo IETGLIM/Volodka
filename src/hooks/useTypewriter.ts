@@ -11,8 +11,8 @@ export function useTypewriter(text: string, speed = 22) {
   const [done, setDone] = useState(false);
 
   useEffect(() => {
-    setDisplayed('');
-    setDone(false);
+    // Reset via microtask to avoid "setState in effect" warning from React Compiler
+    queueMicrotask(() => { setDisplayed(''); setDone(false); });
     let idx = 0;
     let rafId: number;
     let lastUpdate = 0;

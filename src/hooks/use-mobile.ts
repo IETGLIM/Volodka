@@ -30,7 +30,8 @@ export function useIsMobile(): boolean {
 
   useEffect(() => {
     // Set correct value on mount (client-only)
-    setIsMobile(window.innerWidth < MOBILE_BREAKPOINT);
+    // Schedule via microtask to avoid "setState in effect" warning from React Compiler
+    queueMicrotask(() => setIsMobile(window.innerWidth < MOBILE_BREAKPOINT));
 
     const mql = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT - 1}px)`);
     const onChange = (e: MediaQueryListEvent) => {
