@@ -1336,7 +1336,9 @@ export function GameOrchestrator() {
               useGameStore.getState().activateQuest(qid);
               setQuestAcceptId(null);
               setQuestAcceptNpcId(undefined);
-              eventBus.emit('quest:accepted', { questId: qid });
+              const { QUEST_DEFINITIONS } = require('@/data/quests');
+              const def = QUEST_DEFINITIONS.find(d => d.id === qid);
+              eventBus.emit('quest:accepted', { questId: qid, questTitle: def?.title ?? qid });
             }}
           />
 

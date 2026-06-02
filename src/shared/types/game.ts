@@ -241,7 +241,7 @@ export type QuestType = 'main' | 'side' | 'hidden' | 'daily';
 export interface QuestObjective {
   id: string;
   description: string;
-  type: 'location_visited' | 'npc_talked' | 'item_collected' | 'poem_collected' | 'flag_set' | 'custom';
+  type: 'location_visited' | 'npc_talked' | 'item_collected' | 'poem_collected' | 'flag_set' | 'minigame_completed' | 'custom';
   target?: string;
   completed: boolean;
   /** If set, this objective can be bypassed by using the specified poem power */
@@ -273,6 +273,10 @@ export interface QuestDefinition {
   canRetry?: boolean;
   /** Flag that must be set for this quest to become available */
   requiredFlag?: string;
+  /** NPC ID that gives this quest (used for quest indicators above NPCs) */
+  questGiverNpcId?: string;
+  /** Items given as rewards when quest is completed */
+  rewardItems?: { itemId: string; quantity: number }[];
 }
 
 export type QuestStatus = 'inactive' | 'active' | 'completed' | 'failed';
@@ -575,8 +579,9 @@ export interface EventMap {
   'ui:exploration_message': { text: string };
   'exploration:footstep': { position: [number, number, number]; yaw: number };
   'quest:activated': { questId: string };
-  'quest:accepted': { questId: string };
+  'quest:accepted': { questId: string; questTitle: string };
   'quest:completed': { questId: string };
+  'quest:reward_applied': { questId: string; questTitle: string; xpGained: number; rewards: string[] };
   'quest:failed': { questId: string; reason: string };
   'quest:objective_updated': { questId: string; objectiveId: string };
   'quest:poem_bypass': { questId: string; objectiveId: string; poemId: string };
@@ -666,7 +671,7 @@ export interface EventMap {
   'game:notification': { title: string; subtitle?: string; type: 'combat' | 'scene' | 'achievement' | 'quest' | 'info' };
 
   /* ── Player level-up events ── */
-  'player:levelup': { newLevel: number; prevLevel: number };
+  'player:levelup': { newLevel: number; prevLevel: number; perkPointGained?: boolean };
 
   /* ── Player heal events ── */
   'player:heal': { amount: number };
