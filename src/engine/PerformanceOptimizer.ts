@@ -105,7 +105,7 @@ class FrameLoopManager {
       .sort((a, b) => priorityOrder[a.priority] - priorityOrder[b.priority]);
   }
 
-  execute(delta: number, state: THREE.Renderer) {
+  execute(delta: number, state: RootState) {
     for (const job of this.sortedJobs) {
       try {
         job.callback(delta, state);
