@@ -83,6 +83,7 @@ export interface TutorialFlags {
   tutorial_seen_interact: boolean;
   tutorial_seen_controls: boolean;
   tutorialsDisabled: boolean;
+  tutorialsCompleted: boolean;
 }
 
 /* ─── Poem power cooldown tracking ─── */
@@ -150,5 +151,6 @@ export function createDefaultTutorialFlags(): TutorialFlags {
     tutorial_seen_interact: false,
     tutorial_seen_controls: false,
     tutorialsDisabled: false,
+    tutorialsCompleted: false,
   };
 }

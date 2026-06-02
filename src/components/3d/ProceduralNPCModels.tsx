@@ -1,6 +1,6 @@
 
 /* ─── Volodka RPG – Unique Procedural Humanoid NPC Models
-     Each of the 7 NPCs has a distinct silhouette, clothing, accessories,
+     Each of the 12 NPCs has a distinct silhouette, clothing, accessories,
      and idle/walk/talk animations built entirely from Three.js primitives.
      Quality matches the ProceduralPlayerModel in PhysicsPlayer.tsx. ─── */
 
@@ -1441,6 +1441,728 @@ const DEFAULT_APPEARANCE: NPCAppearance = {
   silhouette: 'average',
 };
 
+/* ═══════════════════════════════════════════════════════════════════
+    8. VERA – Archive keeper, older woman, warm scholarly look, scarf, book
+    ═══════════════════════════════════════════════════════════════════ */
+function VeraModel({ appearance, animState = 'idle' }: { appearance: NPCAppearance; animState?: 'idle' | 'walk' | 'talk' }) {
+  const groupRef = useRef<THREE.Group>(null);
+  useNPCAnimation(groupRef, animState, 0.03); // Gentle forward lean (scholarly)
+
+  const bodyColor = appearance.bodyColor; // '#e8e0a0'
+  const accentColor = appearance.accentColor; // '#e8e0a0'
+  const glowColor = appearance.glowColor; // '#e8e0a0'
+
+  const coatColor = bodyColor;
+  const coatDark = '#c8c080';
+  const blouseColor = '#f0e8d0';
+  const pantsColor = '#5a5040';
+  const pantsDark = '#4a4030';
+  const skinColor = SKIN_LIGHT;
+  const skinShadow = SKIN_SHADOW_LIGHT;
+  const scarfColor = '#c8a030';
+  const scarfAccent = glowColor;
+
+  return (
+    <group ref={groupRef}>
+      {/* TORSO — slim, shorter scholarly build */}
+      <group name="torso" position={[0, 1.05, 0.01]} rotation={[0.03, 0, 0]}>
+        {/* Long coat — warm yellow tones */}
+        <mesh castShadow>
+          <boxGeometry args={[0.36, 0.48, 0.22]} />
+          <meshStandardMaterial color={coatColor} emissive={glowColor} emissiveIntensity={0.06} roughness={0.85} metalness={0.05} />
+        </mesh>
+        {/* Coat front panels — darker shade */}
+        <mesh position={[-0.08, 0.0, 0.115]} rotation={[0, 0, 0.05]}>
+          <boxGeometry args={[0.10, 0.46, 0.01]} />
+          <meshStandardMaterial color={coatDark} roughness={0.85} />
+        </mesh>
+        <mesh position={[0.08, 0.0, 0.115]} rotation={[0, 0, -0.05]}>
+          <boxGeometry args={[0.10, 0.46, 0.01]} />
+          <meshStandardMaterial color={coatDark} roughness={0.85} />
+        </mesh>
+        {/* Blouse visible at collar */}
+        <mesh position={[0, 0.16, 0.115]}>
+          <boxGeometry args={[0.12, 0.12, 0.008]} />
+          <meshStandardMaterial color={blouseColor} roughness={0.7} />
+        </mesh>
+        {/* Scarf at neck */}
+        <mesh position={[0, 0.20, 0.12]}>
+          <boxGeometry args={[0.22, 0.05, 0.02]} />
+          <meshStandardMaterial color={scarfColor} emissive={scarfAccent} emissiveIntensity={0.15} roughness={0.7} />
+        </mesh>
+        {/* Scarf tails hanging down front */}
+        <mesh position={[-0.06, 0.02, 0.13]} rotation={[0, 0, 0.1]}>
+          <boxGeometry args={[0.04, 0.22, 0.01]} />
+          <meshStandardMaterial color={scarfColor} roughness={0.8} />
+        </mesh>
+        <mesh position={[0.06, 0.02, 0.13]} rotation={[0, 0, -0.1]}>
+          <boxGeometry args={[0.04, 0.22, 0.01]} />
+          <meshStandardMaterial color={scarfColor} roughness={0.8} />
+        </mesh>
+        {/* Coat pockets */}
+        <mesh position={[-0.10, -0.10, 0.115]}>
+          <boxGeometry args={[0.06, 0.06, 0.005]} />
+          <meshStandardMaterial color={coatDark} roughness={0.85} />
+        </mesh>
+        <mesh position={[0.10, -0.10, 0.115]}>
+          <boxGeometry args={[0.06, 0.06, 0.005]} />
+          <meshStandardMaterial color={coatDark} roughness={0.85} />
+        </mesh>
+
+        {/* Book / holographic pad in left hand */}
+        <group position={[0.24, -0.30, 0.06]} rotation={[0.2, 0, 0.1]}>
+          <mesh>
+            <boxGeometry args={[0.08, 0.10, 0.02]} />
+            <meshStandardMaterial color={coatDark} roughness={0.8} />
+          </mesh>
+          {/* Holographic page glow */}
+          <mesh position={[0, 0, 0.012]}>
+            <boxGeometry args={[0.06, 0.08, 0.002]} />
+            <meshStandardMaterial color={glowColor} emissive={glowColor} emissiveIntensity={0.5} roughness={0.1} transparent opacity={0.6} />
+          </mesh>
+          {/* Point light for holographic display */}
+          <pointLight position={[0, 0, 0.05]} color={glowColor} intensity={0.3} distance={1.5} />
+        </group>
+
+        {/* Neck */}
+        <mesh position={[0, 0.26, 0]}>
+          <cylinderGeometry args={[0.042, 0.048, 0.06, 6]} />
+          <meshStandardMaterial color={skinColor} roughness={0.7} />
+        </mesh>
+
+        {/* HEAD */}
+        <group name="head" position={[0, 0.46, 0.02]}>
+          {/* Skull — softer, oval */}
+          <mesh castShadow>
+            <sphereGeometry args={[0.10, 8, 8]} />
+            <meshStandardMaterial color={skinColor} roughness={0.7} />
+          </mesh>
+          {/* Jaw */}
+          <mesh position={[0, -0.05, 0.025]} castShadow>
+            <boxGeometry args={[0.14, 0.05, 0.10]} />
+            <meshStandardMaterial color={skinColor} roughness={0.7} />
+          </mesh>
+          {/* Chin — delicate */}
+          <mesh position={[0, -0.065, 0.035]}>
+            <sphereGeometry args={[0.022, 4, 4]} />
+            <meshStandardMaterial color={skinColor} roughness={0.7} />
+          </mesh>
+          <Eyes browAngle={0.08} irisColor="#6a5a30" />
+          <FaceFeatures skinColor={skinColor} shadowColor={skinShadow} mouthWidth={0.035} mouthCornersDown={false} />
+
+          {/* Hair — gray, tied back */}
+          <mesh position={[0, 0.08, -0.01]}>
+            <sphereGeometry args={[0.085, 5, 4]} />
+            <meshStandardMaterial color={HAIR_GRAY} roughness={0.9} />
+          </mesh>
+          <mesh position={[-0.075, 0.04, 0.0]}>
+            <sphereGeometry args={[0.03, 4, 3]} />
+            <meshStandardMaterial color={HAIR_GRAY} roughness={0.9} />
+          </mesh>
+          <mesh position={[0.075, 0.04, 0.0]}>
+            <sphereGeometry args={[0.03, 4, 3]} />
+            <meshStandardMaterial color={HAIR_GRAY} roughness={0.9} />
+          </mesh>
+          {/* Hair bun at back */}
+          <mesh position={[0, 0.06, -0.10]}>
+            <sphereGeometry args={[0.05, 5, 4]} />
+            <meshStandardMaterial color={HAIR_GRAY} roughness={0.9} />
+          </mesh>
+
+          {/* Scarf wrap on head */}
+          <mesh position={[0, 0.05, 0.04]}>
+            <sphereGeometry args={[0.105, 6, 4, 0, Math.PI * 2, 0, Math.PI * 0.4]} />
+            <meshStandardMaterial color={scarfColor} emissive={scarfAccent} emissiveIntensity={0.08} roughness={0.8} />
+          </mesh>
+        </group>
+
+        <Arms sleeveColor={coatColor} skinColor={skinColor} armWidth={0.040} forearmWidth={0.035} />
+      </group>
+
+      <Legs pantsColor={pantsColor} pantsDark={pantsDark} shoeColor="#3a2a1a" accentGlow={glowColor} accentColor={accentColor} legWidth={0.050} lowerLegWidth={0.044} />
+    </group>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+    9. SERGEY – Sysadmin, stocky tech guy, slightly hunched, tool belt
+    ═══════════════════════════════════════════════════════════════════ */
+function SergeyModel({ appearance, animState = 'idle' }: { appearance: NPCAppearance; animState?: 'idle' | 'walk' | 'talk' }) {
+  const groupRef = useRef<THREE.Group>(null);
+  useNPCAnimation(groupRef, animState, 0.07); // Hunched tech posture
+
+  const bodyColor = appearance.bodyColor; // '#40a0c0'
+  const accentColor = appearance.accentColor; // '#40a0c0'
+  const glowColor = appearance.glowColor; // '#40a0c0'
+
+  const hoodieColor = bodyColor;
+  const hoodieDark = '#2a8090';
+  const shirtColor = '#3a3a4a';
+  const pantsColor = '#2a2a3a';
+  const pantsDark = '#1a1a2a';
+  const skinColor = SKIN_MEDIUM;
+  const skinShadow = SKIN_SHADOW_MED;
+  const beltColor = '#4a4a4a';
+
+  return (
+    <group ref={groupRef}>
+      <group name="torso" position={[0, 1.05, 0.03]} rotation={[0.07, 0, 0]}>
+        {/* Hoodie — average build, slightly stocky */}
+        <mesh castShadow>
+          <boxGeometry args={[0.42, 0.48, 0.24]} />
+          <meshStandardMaterial color={hoodieColor} emissive={glowColor} emissiveIntensity={0.06} roughness={0.85} metalness={0.05} />
+        </mesh>
+        {/* Hoodie hood hanging behind */}
+        <mesh position={[0, 0.20, -0.10]} rotation={[0.2, 0, 0]}>
+          <sphereGeometry args={[0.09, 6, 5, 0, Math.PI * 2, Math.PI * 0.3, Math.PI * 0.5]} />
+          <meshStandardMaterial color={hoodieDark} roughness={0.85} />
+        </mesh>
+        {/* Dark shirt visible at neckline */}
+        <mesh position={[0, 0.16, 0.125]}>
+          <boxGeometry args={[0.14, 0.08, 0.008]} />
+          <meshStandardMaterial color={shirtColor} roughness={0.7} />
+        </mesh>
+        {/* Hoodie front pocket (kangaroo pocket) */}
+        <mesh position={[0, -0.08, 0.125]}>
+          <boxGeometry args={[0.28, 0.12, 0.005]} />
+          <meshStandardMaterial color={hoodieDark} roughness={0.85} />
+        </mesh>
+        {/* Hoodie zipper */}
+        <mesh position={[0, 0.0, 0.122]}>
+          <boxGeometry args={[0.004, 0.46, 0.004]} />
+          <meshStandardMaterial color="#888" roughness={0.3} metalness={0.8} />
+        </mesh>
+
+        {/* Tool belt around waist */}
+        <mesh position={[0, -0.20, 0.13]}>
+          <boxGeometry args={[0.44, 0.04, 0.02]} />
+          <meshStandardMaterial color={beltColor} roughness={0.6} metalness={0.4} />
+        </mesh>
+        {/* Belt buckle */}
+        <mesh position={[0, -0.20, 0.145]}>
+          <boxGeometry args={[0.03, 0.035, 0.01]} />
+          <meshStandardMaterial color={accentColor} emissive={glowColor} emissiveIntensity={0.2} roughness={0.3} metalness={0.8} />
+        </mesh>
+        {/* Tool pouches on belt */}
+        <mesh position={[-0.14, -0.22, 0.14]}>
+          <boxGeometry args={[0.04, 0.06, 0.03]} />
+          <meshStandardMaterial color={beltColor} roughness={0.6} metalness={0.4} />
+        </mesh>
+        <mesh position={[0.14, -0.22, 0.14]}>
+          <boxGeometry args={[0.04, 0.06, 0.03]} />
+          <meshStandardMaterial color={beltColor} roughness={0.6} metalness={0.4} />
+        </mesh>
+
+        {/* Glowing tablet / tool in right hand */}
+        <group position={[-0.24, -0.30, 0.08]} rotation={[0.3, 0, -0.1]}>
+          <mesh>
+            <boxGeometry args={[0.06, 0.08, 0.008]} />
+            <meshStandardMaterial color="#2a2a2a" roughness={0.5} metalness={0.6} />
+          </mesh>
+          {/* Screen glow */}
+          <mesh position={[0, 0, 0.006]}>
+            <boxGeometry args={[0.048, 0.06, 0.002]} />
+            <meshStandardMaterial color={glowColor} emissive={glowColor} emissiveIntensity={0.7} roughness={0.1} transparent opacity={0.8} />
+          </mesh>
+          <pointLight position={[0, 0, 0.05]} color={glowColor} intensity={0.4} distance={2.0} />
+        </group>
+
+        {/* Neck — average */}
+        <mesh position={[0, 0.27, 0]}>
+          <cylinderGeometry args={[0.048, 0.055, 0.06, 6]} />
+          <meshStandardMaterial color={skinColor} roughness={0.7} />
+        </mesh>
+
+        {/* HEAD */}
+        <group name="head" position={[0, 0.47, 0.02]}>
+          {/* Skull — slightly wider */}
+          <mesh castShadow>
+            <sphereGeometry args={[0.105, 8, 8]} />
+            <meshStandardMaterial color={skinColor} roughness={0.7} />
+          </mesh>
+          {/* Jaw */}
+          <mesh position={[0, -0.055, 0.025]} castShadow>
+            <boxGeometry args={[0.15, 0.055, 0.11]} />
+            <meshStandardMaterial color={skinColor} roughness={0.7} />
+          </mesh>
+          <Eyes browAngle={0.10} irisColor="#3a5a6a" />
+          <FaceFeatures skinColor={skinColor} shadowColor={skinShadow} mouthWidth={0.04} />
+          {/* Stubble */}
+          <mesh position={[0, -0.055, 0.065]}>
+            <boxGeometry args={[0.13, 0.04, 0.005]} />
+            <meshStandardMaterial color={skinShadow} roughness={0.9} transparent opacity={0.2} />
+          </mesh>
+
+          {/* Short messy hair */}
+          <mesh position={[0, 0.08, -0.01]}>
+            <sphereGeometry args={[0.08, 5, 4]} />
+            <meshStandardMaterial color={HAIR_BROWN} roughness={0.9} />
+          </mesh>
+          <mesh position={[-0.06, 0.06, 0.03]}>
+            <sphereGeometry args={[0.03, 4, 3]} />
+            <meshStandardMaterial color={HAIR_BROWN} roughness={0.9} />
+          </mesh>
+          <mesh position={[0.06, 0.06, 0.03]}>
+            <sphereGeometry args={[0.03, 4, 3]} />
+            <meshStandardMaterial color={HAIR_BROWN} roughness={0.9} />
+          </mesh>
+          {/* Bedhead tuft */}
+          <mesh position={[0, 0.12, 0.02]} rotation={[0.1, 0, 0.15]}>
+            <boxGeometry args={[0.04, 0.04, 0.03]} />
+            <meshStandardMaterial color={HAIR_BROWN} roughness={0.9} />
+          </mesh>
+        </group>
+
+        <Arms sleeveColor={hoodieColor} skinColor={skinColor} armWidth={0.050} forearmWidth={0.044} />
+      </group>
+
+      <Legs pantsColor={pantsColor} pantsDark={pantsDark} shoeColor="#2a2a2a" accentGlow={glowColor} accentColor={accentColor} legWidth={0.056} lowerLegWidth={0.048} shoeScale={1.05} />
+    </group>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+    10. LENA – Hacker, mysterious hooded figure, face partially hidden
+    ═══════════════════════════════════════════════════════════════════ */
+function LenaModel({ appearance, animState = 'idle' }: { appearance: NPCAppearance; animState?: 'idle' | 'walk' | 'talk' }) {
+  const groupRef = useRef<THREE.Group>(null);
+  useNPCAnimation(groupRef, animState, 0.02); // Subtle, cautious lean
+
+  const bodyColor = appearance.bodyColor; // '#d040d0'
+  const accentColor = appearance.accentColor; // '#d040d0'
+  const glowColor = appearance.glowColor; // '#d040d0'
+
+  const hoodieColor = bodyColor;
+  const hoodieDark = '#a030a0';
+  const pantsColor = '#1a1a2a';
+  const pantsDark = '#0e0e1a';
+  const skinColor = '#c4a882';
+  const skinShadow = SKIN_SHADOW_LIGHT;
+
+  return (
+    <group ref={groupRef}>
+      {/* TORSO — slim, compact, mysterious */}
+      <group name="torso" position={[0, 1.05, 0.01]} rotation={[0.02, 0, 0]}>
+        {/* Dark hoodie with purple glow */}
+        <mesh castShadow>
+          <boxGeometry args={[0.32, 0.44, 0.20]} />
+          <meshStandardMaterial color={hoodieColor} emissive={glowColor} emissiveIntensity={0.08} roughness={0.85} metalness={0.05} />
+        </mesh>
+        {/* Hoodie pocket */}
+        <mesh position={[0, -0.08, 0.105]}>
+          <boxGeometry args={[0.20, 0.08, 0.005]} />
+          <meshStandardMaterial color={hoodieDark} roughness={0.85} />
+        </mesh>
+        {/* Cyberpunk accent lines on torso */}
+        <mesh position={[-0.10, 0.06, 0.105]}>
+          <boxGeometry args={[0.005, 0.20, 0.005]} />
+          <meshStandardMaterial color={accentColor} emissive={glowColor} emissiveIntensity={0.6} roughness={0.2} />
+        </mesh>
+        <mesh position={[0.10, 0.06, 0.105]}>
+          <boxGeometry args={[0.005, 0.20, 0.005]} />
+          <meshStandardMaterial color={accentColor} emissive={glowColor} emissiveIntensity={0.6} roughness={0.2} />
+        </mesh>
+
+        {/* Neck — mostly hidden by hoodie */}
+        <mesh position={[0, 0.24, 0]}>
+          <cylinderGeometry args={[0.035, 0.040, 0.04, 6]} />
+          <meshStandardMaterial color={skinColor} roughness={0.7} />
+        </mesh>
+
+        {/* HEAD */}
+        <group name="head" position={[0, 0.44, 0.02]}>
+          {/* Skull — partially hidden */}
+          <mesh castShadow>
+            <sphereGeometry args={[0.095, 8, 8]} />
+            <meshStandardMaterial color={skinColor} roughness={0.7} />
+          </mesh>
+          {/* Jaw — slim */}
+          <mesh position={[0, -0.045, 0.02]} castShadow>
+            <boxGeometry args={[0.12, 0.04, 0.08]} />
+            <meshStandardMaterial color={skinColor} roughness={0.7} />
+          </mesh>
+
+          {/* Eyes with glowing visor effect */}
+          <Eyes browAngle={0.04} irisColor="#d040d0" />
+
+          {/* Glowing visor / cyber-eye overlay */}
+          <mesh position={[0, 0.015, 0.095]}>
+            <boxGeometry args={[0.10, 0.015, 0.003]} />
+            <meshStandardMaterial color={accentColor} emissive={glowColor} emissiveIntensity={0.8} roughness={0.1} transparent opacity={0.5} />
+          </mesh>
+          <pointLight position={[0, 0.015, 0.12]} color={glowColor} intensity={0.3} distance={1.5} />
+
+          <FaceFeatures skinColor={skinColor} shadowColor={skinShadow} mouthWidth={0.03} mouthCornersDown={true} />
+
+          {/* HOOD — large, overshadows face */}
+          <group position={[0, 0.04, -0.02]}>
+            {/* Hood dome */}
+            <mesh position={[0, 0.06, 0.0]}>
+              <sphereGeometry args={[0.12, 6, 5]} />
+              <meshStandardMaterial color={hoodieDark} emissive={glowColor} emissiveIntensity={0.04} roughness={0.85} />
+            </mesh>
+            {/* Hood front rim */}
+            <mesh position={[0, -0.02, 0.08]}>
+              <boxGeometry args={[0.22, 0.025, 0.02]} />
+              <meshStandardMaterial color={hoodieDark} roughness={0.85} />
+            </mesh>
+            {/* Hood side shadows */}
+            <mesh position={[-0.10, -0.02, 0.04]}>
+              <boxGeometry args={[0.02, 0.08, 0.06]} />
+              <meshStandardMaterial color={hoodieDark} roughness={0.85} />
+            </mesh>
+            <mesh position={[0.10, -0.02, 0.04]}>
+              <boxGeometry args={[0.02, 0.08, 0.06]} />
+              <meshStandardMaterial color={hoodieDark} roughness={0.85} />
+            </mesh>
+          </group>
+
+          {/* Dark hair barely visible under hood */}
+          <mesh position={[0, 0.06, -0.03]}>
+            <sphereGeometry args={[0.07, 5, 4]} />
+            <meshStandardMaterial color={HAIR_BLACK} roughness={0.9} />
+          </mesh>
+        </group>
+
+        <Arms sleeveColor={hoodieColor} skinColor={skinColor} armWidth={0.038} forearmWidth={0.033} />
+      </group>
+
+      <Legs pantsColor={pantsColor} pantsDark={pantsDark} shoeColor="#1a1a1a" accentGlow={glowColor} accentColor={accentColor} legWidth={0.048} lowerLegWidth={0.042} />
+    </group>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+    11. OLEG – Guild guard, large imposing figure, armored shoulders
+    ═══════════════════════════════════════════════════════════════════ */
+function OlegModel({ appearance, animState = 'idle' }: { appearance: NPCAppearance; animState?: 'idle' | 'walk' | 'talk' }) {
+  const groupRef = useRef<THREE.Group>(null);
+  useNPCAnimation(groupRef, animState, 0.05); // Upright military posture
+
+  const bodyColor = appearance.bodyColor; // '#a0a0a0'
+  const accentColor = appearance.accentColor; // '#a0a0a0'
+  const glowColor = appearance.glowColor; // '#a0a0a0'
+
+  const armorColor = bodyColor;
+  const armorDark = '#707070';
+  const undersuitColor = '#2a2a30';
+  const pantsColor = '#303038';
+  const pantsDark = '#202028';
+  const skinColor = SKIN_MEDIUM;
+  const skinShadow = SKIN_SHADOW_MED;
+  const bootColor = '#1a1a1a';
+
+  return (
+    <group ref={groupRef}>
+      <group name="torso" position={[0, 1.05, 0.02]} rotation={[0.05, 0, 0]}>
+        {/* Heavy armor torso — broad and imposing */}
+        <mesh castShadow>
+          <boxGeometry args={[0.52, 0.52, 0.28]} />
+          <meshStandardMaterial color={armorColor} emissive={glowColor} emissiveIntensity={0.05} roughness={0.5} metalness={0.3} />
+        </mesh>
+        {/* Chest plate detail */}
+        <mesh position={[0, 0.04, 0.145]}>
+          <boxGeometry args={[0.30, 0.22, 0.01]} />
+          <meshStandardMaterial color={armorDark} roughness={0.5} metalness={0.4} />
+        </mesh>
+        {/* Center line on chest */}
+        <mesh position={[0, 0.04, 0.15]}>
+          <boxGeometry args={[0.006, 0.30, 0.006]} />
+          <meshStandardMaterial color={accentColor} emissive={glowColor} emissiveIntensity={0.3} roughness={0.2} metalness={0.8} />
+        </mesh>
+        {/* Undersuit at collar */}
+        <mesh position={[0, 0.20, 0.145]}>
+          <boxGeometry args={[0.12, 0.08, 0.008]} />
+          <meshStandardMaterial color={undersuitColor} roughness={0.7} />
+        </mesh>
+
+        {/* SHOULDER ARMOR PLATES — large, distinctive */}
+        {/* Left shoulder plate */}
+        <group position={[0.28, 0.18, 0]}>
+          <mesh castShadow>
+            <boxGeometry args={[0.14, 0.08, 0.16]} />
+            <meshStandardMaterial color={armorColor} emissive={glowColor} emissiveIntensity={0.08} roughness={0.4} metalness={0.5} />
+          </mesh>
+          {/* Shoulder plate rim */}
+          <mesh position={[0, 0.02, 0.085]}>
+            <boxGeometry args={[0.14, 0.04, 0.01]} />
+            <meshStandardMaterial color={accentColor} emissive={glowColor} emissiveIntensity={0.2} roughness={0.3} metalness={0.7} />
+          </mesh>
+          {/* Rivet details */}
+          <mesh position={[-0.04, 0.02, 0.08]}>
+            <sphereGeometry args={[0.008, 4, 4]} />
+            <meshStandardMaterial color="#888" roughness={0.3} metalness={0.9} />
+          </mesh>
+          <mesh position={[0.04, 0.02, 0.08]}>
+            <sphereGeometry args={[0.008, 4, 4]} />
+            <meshStandardMaterial color="#888" roughness={0.3} metalness={0.9} />
+          </mesh>
+        </group>
+        {/* Right shoulder plate */}
+        <group position={[-0.28, 0.18, 0]}>
+          <mesh castShadow>
+            <boxGeometry args={[0.14, 0.08, 0.16]} />
+            <meshStandardMaterial color={armorColor} emissive={glowColor} emissiveIntensity={0.08} roughness={0.4} metalness={0.5} />
+          </mesh>
+          <mesh position={[0, 0.02, 0.085]}>
+            <boxGeometry args={[0.14, 0.04, 0.01]} />
+            <meshStandardMaterial color={accentColor} emissive={glowColor} emissiveIntensity={0.2} roughness={0.3} metalness={0.7} />
+          </mesh>
+          <mesh position={[-0.04, 0.02, 0.08]}>
+            <sphereGeometry args={[0.008, 4, 4]} />
+            <meshStandardMaterial color="#888" roughness={0.3} metalness={0.9} />
+          </mesh>
+          <mesh position={[0.04, 0.02, 0.08]}>
+            <sphereGeometry args={[0.008, 4, 4]} />
+            <meshStandardMaterial color="#888" roughness={0.3} metalness={0.9} />
+          </mesh>
+        </group>
+
+        {/* Belt with utility pouches */}
+        <mesh position={[0, -0.22, 0.145]}>
+          <boxGeometry args={[0.50, 0.04, 0.02]} />
+          <meshStandardMaterial color={armorDark} roughness={0.5} metalness={0.4} />
+        </mesh>
+        <mesh position={[-0.16, -0.24, 0.15]}>
+          <boxGeometry args={[0.05, 0.06, 0.03]} />
+          <meshStandardMaterial color={armorDark} roughness={0.5} metalness={0.4} />
+        </mesh>
+        <mesh position={[0.16, -0.24, 0.15]}>
+          <boxGeometry args={[0.05, 0.06, 0.03]} />
+          <meshStandardMaterial color={armorDark} roughness={0.5} metalness={0.4} />
+        </mesh>
+
+        {/* Neck — thick, military */}
+        <mesh position={[0, 0.28, 0]}>
+          <cylinderGeometry args={[0.058, 0.065, 0.07, 6]} />
+          <meshStandardMaterial color={skinColor} roughness={0.7} />
+        </mesh>
+
+        {/* HEAD */}
+        <group name="head" position={[0, 0.48, 0.02]}>
+          {/* Skull — blocky, strong */}
+          <mesh castShadow>
+            <sphereGeometry args={[0.11, 8, 8]} />
+            <meshStandardMaterial color={skinColor} roughness={0.7} />
+          </mesh>
+          {/* Jaw — heavy, square */}
+          <mesh position={[0, -0.06, 0.025]} castShadow>
+            <boxGeometry args={[0.18, 0.06, 0.12]} />
+            <meshStandardMaterial color={skinColor} roughness={0.7} />
+          </mesh>
+          <Eyes browAngle={0.14} irisColor="#4a4a30" />
+          <FaceFeatures skinColor={skinColor} shadowColor={skinShadow} mouthWidth={0.045} />
+          {/* Stubble */}
+          <mesh position={[0, -0.06, 0.07]}>
+            <boxGeometry args={[0.16, 0.05, 0.005]} />
+            <meshStandardMaterial color={skinShadow} roughness={0.9} transparent opacity={0.25} />
+          </mesh>
+
+          {/* Short military buzz cut */}
+          <mesh position={[0, 0.08, -0.01]}>
+            <sphereGeometry args={[0.09, 5, 4]} />
+            <meshStandardMaterial color={HAIR_DARK} roughness={0.9} />
+          </mesh>
+
+          {/* Military-style cap / beret */}
+          <mesh position={[0, 0.10, 0.02]} rotation={[0.05, 0, 0.08]}>
+            <cylinderGeometry args={[0.10, 0.10, 0.025, 8]} />
+            <meshStandardMaterial color={armorDark} roughness={0.8} />
+          </mesh>
+          {/* Cap top */}
+          <mesh position={[0, 0.12, 0.01]} rotation={[0.05, 0, 0.08]}>
+            <sphereGeometry args={[0.10, 6, 4, 0, Math.PI * 2, 0, Math.PI * 0.35]} />
+            <meshStandardMaterial color={armorDark} emissive={glowColor} emissiveIntensity={0.04} roughness={0.8} />
+          </mesh>
+          {/* Cap badge */}
+          <mesh position={[0, 0.10, 0.10]}>
+            <sphereGeometry args={[0.012, 4, 4]} />
+            <meshStandardMaterial color={accentColor} emissive={glowColor} emissiveIntensity={0.4} roughness={0.2} metalness={0.9} />
+          </mesh>
+        </group>
+
+        <Arms sleeveColor={armorDark} skinColor={skinColor} armWidth={0.054} forearmWidth={0.048} />
+      </group>
+
+      <Legs pantsColor={pantsColor} pantsDark={pantsDark} shoeColor={bootColor} accentGlow={glowColor} accentColor={accentColor} legWidth={0.062} lowerLegWidth={0.054} shoeScale={1.15} />
+    </group>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+    12. KATE – Librarian, bookish woman, round glasses, carrying a book
+    ═══════════════════════════════════════════════════════════════════ */
+function KateModel({ appearance, animState = 'idle' }: { appearance: NPCAppearance; animState?: 'idle' | 'walk' | 'talk' }) {
+  const groupRef = useRef<THREE.Group>(null);
+  useNPCAnimation(groupRef, animState, 0.03); // Slight lean (bookish)
+
+  const bodyColor = appearance.bodyColor; // '#60c060'
+  const accentColor = appearance.accentColor; // '#60c060'
+  const glowColor = appearance.glowColor; // '#60c060'
+
+  const cardiganColor = bodyColor;
+  const cardiganDark = '#40a040';
+  const blouseColor = '#e8e0d8';
+  const pantsColor = '#3a3a40';
+  const pantsDark = '#2a2a30';
+  const skinColor = SKIN_LIGHT;
+  const skinShadow = SKIN_SHADOW_LIGHT;
+  const hairColor = '#5a3a20';
+
+  return (
+    <group ref={groupRef}>
+      <group name="torso" position={[0, 1.05, 0.01]} rotation={[0.03, 0, 0]}>
+        {/* Cardigan — slim, bookish */}
+        <mesh castShadow>
+          <boxGeometry args={[0.34, 0.46, 0.20]} />
+          <meshStandardMaterial color={cardiganColor} emissive={glowColor} emissiveIntensity={0.06} roughness={0.85} metalness={0.05} />
+        </mesh>
+        {/* Cardigan front panels */}
+        <mesh position={[-0.08, 0.0, 0.105]} rotation={[0, 0, 0.05]}>
+          <boxGeometry args={[0.08, 0.44, 0.008]} />
+          <meshStandardMaterial color={cardiganDark} roughness={0.85} />
+        </mesh>
+        <mesh position={[0.08, 0.0, 0.105]} rotation={[0, 0, -0.05]}>
+          <boxGeometry args={[0.08, 0.44, 0.008]} />
+          <meshStandardMaterial color={cardiganDark} roughness={0.85} />
+        </mesh>
+        {/* Blouse visible under cardigan */}
+        <mesh position={[0, 0.08, 0.108]}>
+          <boxGeometry args={[0.10, 0.16, 0.006]} />
+          <meshStandardMaterial color={blouseColor} roughness={0.7} />
+        </mesh>
+        {/* Cardigan buttons */}
+        <mesh position={[-0.02, 0.08, 0.112]}>
+          <sphereGeometry args={[0.005, 4, 4]} />
+          <meshStandardMaterial color={accentColor} roughness={0.3} metalness={0.7} />
+        </mesh>
+        <mesh position={[-0.02, 0.02, 0.112]}>
+          <sphereGeometry args={[0.005, 4, 4]} />
+          <meshStandardMaterial color={accentColor} roughness={0.3} metalness={0.7} />
+        </mesh>
+        <mesh position={[-0.02, -0.04, 0.112]}>
+          <sphereGeometry args={[0.005, 4, 4]} />
+          <meshStandardMaterial color={accentColor} roughness={0.3} metalness={0.7} />
+        </mesh>
+
+        {/* Book in left hand */}
+        <group position={[0.24, -0.28, 0.06]} rotation={[0.2, 0, 0.1]}>
+          {/* Book cover */}
+          <mesh>
+            <boxGeometry args={[0.07, 0.09, 0.025]} />
+            <meshStandardMaterial color={cardiganDark} roughness={0.8} />
+          </mesh>
+          {/* Book spine */}
+          <mesh position={[-0.038, 0, 0]}>
+            <boxGeometry args={[0.006, 0.09, 0.028]} />
+            <meshStandardMaterial color={accentColor} emissive={glowColor} emissiveIntensity={0.15} roughness={0.6} />
+          </mesh>
+          {/* Book pages */}
+          <mesh position={[0.01, 0, 0.014]}>
+            <boxGeometry args={[0.05, 0.085, 0.002]} />
+            <meshStandardMaterial color="#f0ece0" roughness={0.9} />
+          </mesh>
+        </group>
+
+        {/* Neck — slender */}
+        <mesh position={[0, 0.26, 0]}>
+          <cylinderGeometry args={[0.038, 0.045, 0.06, 6]} />
+          <meshStandardMaterial color={skinColor} roughness={0.7} />
+        </mesh>
+
+        {/* HEAD */}
+        <group name="head" position={[0, 0.46, 0.02]}>
+          {/* Skull */}
+          <mesh castShadow>
+            <sphereGeometry args={[0.10, 8, 8]} />
+            <meshStandardMaterial color={skinColor} roughness={0.7} />
+          </mesh>
+          {/* Jaw — soft */}
+          <mesh position={[0, -0.05, 0.025]} castShadow>
+            <boxGeometry args={[0.14, 0.05, 0.10]} />
+            <meshStandardMaterial color={skinColor} roughness={0.7} />
+          </mesh>
+          {/* Chin */}
+          <mesh position={[0, -0.065, 0.035]}>
+            <sphereGeometry args={[0.022, 4, 4]} />
+            <meshStandardMaterial color={skinColor} roughness={0.7} />
+          </mesh>
+          <Eyes browAngle={0.06} irisColor="#4a6a3a" />
+          <FaceFeatures skinColor={skinColor} shadowColor={skinShadow} mouthWidth={0.035} mouthCornersDown={false} />
+
+          {/* Glasses — rounder than Albert's */}
+          <group position={[0, 0.015, 0.1]}>
+            {/* Left lens — rounder */}
+            <mesh position={[-0.038, 0, 0]}>
+              <torusGeometry args={[0.022, 0.003, 6, 16]} />
+              <meshStandardMaterial color={accentColor} emissive={glowColor} emissiveIntensity={0.3} roughness={0.2} metalness={0.8} />
+            </mesh>
+            {/* Right lens — rounder */}
+            <mesh position={[0.038, 0, 0]}>
+              <torusGeometry args={[0.022, 0.003, 6, 16]} />
+              <meshStandardMaterial color={accentColor} emissive={glowColor} emissiveIntensity={0.3} roughness={0.2} metalness={0.8} />
+            </mesh>
+            {/* Bridge */}
+            <mesh position={[0, 0, 0]}>
+              <boxGeometry args={[0.016, 0.003, 0.003]} />
+              <meshStandardMaterial color={accentColor} roughness={0.3} metalness={0.9} />
+            </mesh>
+            {/* Left temple arm */}
+            <mesh position={[-0.065, 0, -0.04]} rotation={[0, Math.PI * 0.15, 0]}>
+              <boxGeometry args={[0.05, 0.003, 0.003]} />
+              <meshStandardMaterial color={accentColor} roughness={0.3} metalness={0.9} />
+            </mesh>
+            {/* Right temple arm */}
+            <mesh position={[0.065, 0, -0.04]} rotation={[0, -Math.PI * 0.15, 0]}>
+              <boxGeometry args={[0.05, 0.003, 0.003]} />
+              <meshStandardMaterial color={accentColor} roughness={0.3} metalness={0.9} />
+            </mesh>
+          </group>
+
+          {/* Hair — brown, shoulder-length, tidy */}
+          <mesh position={[0, 0.08, -0.01]}>
+            <sphereGeometry args={[0.085, 5, 4]} />
+            <meshStandardMaterial color={hairColor} roughness={0.9} />
+          </mesh>
+          {/* Front bangs — neat */}
+          <mesh position={[0, 0.07, 0.065]}>
+            <sphereGeometry args={[0.055, 5, 4]} />
+            <meshStandardMaterial color={hairColor} roughness={0.9} />
+          </mesh>
+          {/* Side hair */}
+          <mesh position={[-0.08, 0.03, 0.02]}>
+            <sphereGeometry args={[0.035, 4, 3]} />
+            <meshStandardMaterial color={hairColor} roughness={0.9} />
+          </mesh>
+          <mesh position={[0.08, 0.03, 0.02]}>
+            <sphereGeometry args={[0.035, 4, 3]} />
+            <meshStandardMaterial color={hairColor} roughness={0.9} />
+          </mesh>
+          {/* Back hair — longer for librarian bun */}
+          <mesh position={[0, 0.04, -0.07]}>
+            <sphereGeometry args={[0.07, 5, 4]} />
+            <meshStandardMaterial color={hairColor} roughness={0.9} />
+          </mesh>
+          {/* Hair bun */}
+          <mesh position={[0, 0.08, -0.10]}>
+            <sphereGeometry args={[0.04, 5, 4]} />
+            <meshStandardMaterial color={hairColor} roughness={0.9} />
+          </mesh>
+          {/* Hair pin in bun */}
+          <mesh position={[0, 0.08, -0.12]} rotation={[0.3, 0, 0]}>
+            <cylinderGeometry args={[0.003, 0.003, 0.06, 4]} />
+            <meshStandardMaterial color={accentColor} emissive={glowColor} emissiveIntensity={0.3} roughness={0.2} metalness={0.8} />
+          </mesh>
+        </group>
+
+        <Arms sleeveColor={cardiganColor} skinColor={skinColor} armWidth={0.038} forearmWidth={0.034} />
+      </group>
+
+      <Legs pantsColor={pantsColor} pantsDark={pantsDark} shoeColor="#2a2a2a" accentGlow={glowColor} accentColor={accentColor} legWidth={0.050} lowerLegWidth={0.044} />
+    </group>
+  );
+}
+
 export interface ProceduralNPCModelProps {
   definitionId: string;
   appearance: NPCAppearance;
@@ -1530,6 +2252,36 @@ export function ProceduralNPCModel({
       return (
         <group scale={[widthScale, heightScale, widthScale]}>
           <BaristaModel appearance={app} animState={animState} />
+        </group>
+      );
+    case 'vera':
+      return (
+        <group scale={[widthScale, heightScale, widthScale]}>
+          <VeraModel appearance={app} animState={animState} />
+        </group>
+      );
+    case 'sergey':
+      return (
+        <group scale={[widthScale, heightScale, widthScale]}>
+          <SergeyModel appearance={app} animState={animState} />
+        </group>
+      );
+    case 'lena':
+      return (
+        <group scale={[widthScale, heightScale, widthScale]}>
+          <LenaModel appearance={app} animState={animState} />
+        </group>
+      );
+    case 'oleg':
+      return (
+        <group scale={[widthScale, heightScale, widthScale]}>
+          <OlegModel appearance={app} animState={animState} />
+        </group>
+      );
+    case 'kate':
+      return (
+        <group scale={[widthScale, heightScale, widthScale]}>
+          <KateModel appearance={app} animState={animState} />
         </group>
       );
     default:

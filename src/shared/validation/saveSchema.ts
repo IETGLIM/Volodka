@@ -123,6 +123,7 @@ const TutorialFlagsSchema = z.object({
   tutorial_seen_interact: z.boolean(),
   tutorial_seen_controls: z.boolean(),
   tutorialsDisabled: z.boolean(),
+  tutorialsCompleted: z.boolean().optional().default(false),
 });
 
 const LoreCategorySchema = z.enum(['history', 'factions', 'technology', 'culture', 'mysteries']);

@@ -17,9 +17,11 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { eventBus } from '@/engine/EventBus'
 import { getCurrentGuidance, type GuidanceInfo } from '@/engine/GuidedStoryManager'
 import { useGameStore } from '@/store/gameStore'
-import { getNextTrackedObjective, getActiveQuests, areDependenciesMet } from '@/store/questStore'
+import { getNextTrackedObjective, getActiveQuests, areDependenciesMet, getQuestMarker } from '@/store/questStore'
 import { QUEST_DEFINITIONS } from '@/data/quests'
 import { GOLDEN_PATH_QUEST_SPINE } from '@/data/goldenPath'
+import { getSceneConfig } from '@/config/scenes'
+import type { SceneId } from '@/shared/types/game'
 
 export function StoryGuidanceHUD() {
   const [guidance, setGuidance] = useState<GuidanceInfo | null>(null)
@@ -29,6 +31,7 @@ export function StoryGuidanceHUD() {
   // Get active quests from store (reactive)
   const quests = useGameStore((s) => s.quests)
   const mode = useGameStore((s) => s.mode)
+  const currentSceneId = useGameStore((s) => s.exploration.currentSceneId)
 
   // Derive the current objective text from active quests or golden path
   const currentObjective = useMemo(() => {
@@ -38,11 +41,26 @@ export function StoryGuidanceHUD() {
       const obj = getNextTrackedObjective(aq.questId)
       if (obj) {
         const questDef = QUEST_DEFINITIONS.find((d) => d.id === aq.questId)
+        // Get quest marker for directional guidance
+        const marker = getQuestMarker(aq.questId)
+        let directionHint: string | null = null
+        let targetSceneId: SceneId | null = null
+        if (marker) {
+          targetSceneId = marker.sceneId
+          if (marker.sceneId === currentSceneId) {
+            directionHint = 'Идите к цели'
+          } else {
+            const sceneConfig = getSceneConfig(marker.sceneId)
+            directionHint = `Перейдите в: ${sceneConfig.name}`
+          }
+        }
         return {
           text: obj.description,
           questTitle: questDef?.title ?? '',
           questType: questDef?.questType ?? 'main',
           objectiveType: 'active_quest' as const,
+          directionHint,
+          targetSceneId,
         }
       }
     }
@@ -66,11 +84,13 @@ export function StoryGuidanceHUD() {
         questTitle: questDef.title,
         questType: questDef.questType,
         objectiveType: 'available_quest' as const,
+        directionHint: null as string | null,
+        targetSceneId: null as SceneId | null,
       }
     }
 
     return null
-  }, [quests])
+  }, [quests, currentSceneId])
 
   // Listen for guidance updates from GuidedStoryManager
   useEffect(() => {
@@ -272,6 +292,53 @@ export function StoryGuidanceHUD() {
               {displayText}
             </span>
           </motion.div>
+
+          {/* Directional guidance — where to go */}
+          <AnimatePresence>
+            {currentObjective?.directionHint && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.3 }}
+                className="overflow-hidden"
+              >
+                <div className="mt-1.5 flex items-center gap-1.5">
+                  <motion.span
+                    className="text-xs font-mono font-bold flex-shrink-0"
+                    style={{
+                      color: '#00ffee',
+                      textShadow: '0 0 6px rgba(0,255,238,0.5)',
+                    }}
+                    animate={{
+                      x: [0, 4, 0],
+                      opacity: [1, 0.6, 1],
+                    }}
+                    transition={{
+                      duration: 1.5,
+                      repeat: Infinity,
+                      ease: 'easeInOut',
+                    }}
+                  >
+                    →
+                  </motion.span>
+                  <span
+                    className="text-xs font-mono font-semibold tracking-wide"
+                    style={{
+                      color: currentObjective.targetSceneId === currentSceneId
+                        ? '#00ffcc'
+                        : '#66ccff',
+                      textShadow: currentObjective.targetSceneId === currentSceneId
+                        ? '0 0 6px rgba(0,255,204,0.4)'
+                        : '0 0 6px rgba(102,204,255,0.4)',
+                    }}
+                  >
+                    {currentObjective.directionHint}
+                  </span>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           {/* Quest title (if available) */}
           {currentObjective?.questTitle && (

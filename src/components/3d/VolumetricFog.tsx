@@ -77,8 +77,8 @@ export const FOG_PRESETS: Record<string, Partial<VolumetricFogConfig>> = {
   },
   street_night: {
     planeCount: 8,
-    color: '#0a0a1a',
-    opacity: 0.06,
+    color: '#0a1a1a',  // cyan/green cyberpunk tint
+    opacity: 0.07,
     spreadX: 10,
     spreadZ: 10,
     height: 2.0,
@@ -88,7 +88,7 @@ export const FOG_PRESETS: Record<string, Partial<VolumetricFogConfig>> = {
   },
   street_winter: {
     planeCount: 7,
-    color: '#8090a8',
+    color: '#406878',  // cyan-tinted winter fog
     opacity: 0.05,
     spreadX: 12,
     spreadZ: 12,
@@ -131,20 +131,20 @@ export const FOG_PRESETS: Record<string, Partial<VolumetricFogConfig>> = {
     planeWidth: 8,
   },
   rooftop_edge: {
-    planeCount: 4,
-    color: '#2a1820',
-    opacity: 0.03,
-    spreadX: 5,
-    spreadZ: 4,
-    height: 1.5,
+    planeCount: 6,  // boosted for cyberpunk atmosphere
+    color: '#0a2020',  // cyan/green neon-tinted fog
+    opacity: 0.045,
+    spreadX: 6,
+    spreadZ: 5,
+    height: 1.8,
     baseY: 0.2,
-    driftSpeed: 0.15,
-    planeWidth: 8,
+    driftSpeed: 0.18,
+    planeWidth: 10,
   },
   abandoned_factory: {
     planeCount: 8,
-    color: '#2a1a0a',
-    opacity: 0.07,
+    color: '#0a2018',  // green/cyan cyberpunk industrial tint
+    opacity: 0.08,
     spreadX: 10,
     spreadZ: 9,
     height: 2.5,

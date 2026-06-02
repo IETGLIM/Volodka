@@ -566,6 +566,7 @@ export interface GameState {
     tutorial_seen_interact: boolean;
     tutorial_seen_controls: boolean;
     tutorialsDisabled: boolean;
+    tutorialsCompleted: boolean;
   };
   lastSaveTimestamp: number | null;
 }
@@ -580,7 +581,7 @@ export interface EventMap {
   'exploration:footstep': { position: [number, number, number]; yaw: number };
   'quest:activated': { questId: string };
   'quest:accepted': { questId: string; questTitle: string };
-  'quest:completed': { questId: string };
+  'quest:completed': { questId: string; npcId?: string };
   'quest:reward_applied': { questId: string; questTitle: string; xpGained: number; rewards: string[] };
   'quest:failed': { questId: string; reason: string };
   'quest:objective_updated': { questId: string; objectiveId: string };

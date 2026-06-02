@@ -36,6 +36,7 @@ import { PhysicsPlayer } from './PhysicsPlayer';
 import { SimplePlayer } from './SimplePlayer';
 import { FollowCamera } from './FollowCamera';
 import { NPCSystem } from './NPCSystem';
+import { AmbientNPCs } from './AmbientNPCs';
 import { InteractiveTriggers } from './InteractiveTriggers';
 import { InteractionHighlight } from './InteractionHighlight';
 import { SceneExitIndicator } from './SceneExitIndicator';
@@ -383,6 +384,9 @@ export function RPGGameCanvas() {
 
             {/* NPCs — passes interaction state from module-level store */}
             <NPCSystemWrapper livePlayerPositionRef={livePlayerPositionRef} />
+
+            {/* Background ambient NPCs — lightweight, non-interactable, scene-populating */}
+            <AmbientNPCs />
 
             {/* Interactive triggers */}
             <InteractiveTriggers livePlayerPositionRef={livePlayerPositionRef} />

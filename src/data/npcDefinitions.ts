@@ -7,7 +7,7 @@ export const NPC_DEFINITIONS: NPCDefinition[] = [
   {
     id: 'albert',
     name: 'Альберт',
-    modelPath: '/models-external/cc0_Soldier.glb',
+    modelPath: '',
     scale: 1.0,
     animations: { idle: 'idle', walk: 'walk', talk: 'talk' },
     defaultPosition: [-2.5, 0, -3.0],
@@ -34,7 +34,7 @@ export const NPC_DEFINITIONS: NPCDefinition[] = [
   {
     id: 'zarema',
     name: 'Зарема',
-    modelPath: '/models-external/cc0_Michelle.glb',
+    modelPath: '',
     scale: 0.95,
     animations: { idle: 'idle', walk: 'walk', talk: 'talk' },
     defaultPosition: [1.5, 0, 2.0],
@@ -61,7 +61,7 @@ export const NPC_DEFINITIONS: NPCDefinition[] = [
   {
     id: 'cafe_barista',
     name: 'Бариста',
-    modelPath: '/models-external/khronos_cc0_CesiumMan.glb',
+    modelPath: '',
     scale: 1.0,
     animations: { idle: 'idle', walk: 'walk', talk: 'talk' },
     defaultPosition: [0, 0, -4.0],
@@ -88,7 +88,7 @@ export const NPC_DEFINITIONS: NPCDefinition[] = [
   {
     id: 'office_alexander',
     name: 'Александр',
-    modelPath: '/models-external/cc0_Xbot.glb',
+    modelPath: '',
     scale: 1.05,
     animations: { idle: 'idle', walk: 'walk', talk: 'talk' },
     defaultPosition: [3.0, 0, -2.0],
@@ -121,7 +121,7 @@ export const NPC_DEFINITIONS: NPCDefinition[] = [
   {
     id: 'office_colleague',
     name: 'Коллега',
-    modelPath: '/models-external/khronos_cc0_RiggedFigure.glb',
+    modelPath: '',
     scale: 0.95,
     animations: { idle: 'idle', walk: 'walk', talk: 'talk' },
     defaultPosition: [1.0, 0, 0.5],
@@ -148,7 +148,7 @@ export const NPC_DEFINITIONS: NPCDefinition[] = [
   {
     id: 'maria',
     name: 'Виктория',
-    modelPath: '/models-external/cc0_Michelle.glb',
+    modelPath: '',
     scale: 0.8,
     animations: { idle: 'idle', walk: 'walk', talk: 'talk' },
     defaultPosition: [-3.0, 0, 2.0],
@@ -181,7 +181,7 @@ export const NPC_DEFINITIONS: NPCDefinition[] = [
   {
     id: 'office_dmitry',
     name: 'Дмитрий',
-    modelPath: '/models-external/cc0_Soldier.glb',
+    modelPath: '',
     scale: 1.1,
     animations: { idle: 'idle', walk: 'walk', talk: 'talk' },
     defaultPosition: [-2.0, 0, 1.5],

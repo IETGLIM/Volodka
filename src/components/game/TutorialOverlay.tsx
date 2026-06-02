@@ -160,6 +160,8 @@ export function TutorialOverlay() {
   const activeTutorial: TutorialType | null = (() => {
     if (tutorialFlags.tutorialsDisabled || isTutorialDisabled()) return null;
     if (mode !== 'exploration') return null;
+    // Don't show contextual tips if the first-play tutorial hasn't been completed yet
+    if (!tutorialFlags.tutorialsCompleted) return null;
 
     if (!tutorialFlags.tutorial_seen_movement && !dismissed.has('movement')) {
       return 'movement';

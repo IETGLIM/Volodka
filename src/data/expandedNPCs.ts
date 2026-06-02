@@ -54,7 +54,7 @@ export const EXPANDED_NPCS: NPCDefinition[] = [
   {
     id: 'vera',
     name: 'Вера',
-    modelPath: '/models-external/cc0_Michelle.glb',
+    modelPath: '',
     scale: 0.9,
     animations: { idle: 'idle', walk: 'walk', talk: 'talk' },
     defaultPosition: [-1.0, 0, 3.0],
@@ -86,7 +86,7 @@ export const EXPANDED_NPCS: NPCDefinition[] = [
   {
     id: 'sergey',
     name: 'Сергей',
-    modelPath: '/models-external/cc0_Soldier.glb',
+    modelPath: '',
     scale: 1.05,
     animations: { idle: 'idle', walk: 'walk', talk: 'talk' },
     defaultPosition: [2.5, 0, -1.0],
@@ -118,7 +118,7 @@ export const EXPANDED_NPCS: NPCDefinition[] = [
   {
     id: 'lena',
     name: 'Лена',
-    modelPath: '/models-external/cc0_Michelle.glb',
+    modelPath: '',
     scale: 0.85,
     animations: { idle: 'idle', walk: 'walk', talk: 'talk' },
     defaultPosition: [0, 0, 3.5],
@@ -150,7 +150,7 @@ export const EXPANDED_NPCS: NPCDefinition[] = [
   {
     id: 'oleg',
     name: 'Олег',
-    modelPath: '/models-external/khronos_cc0_CesiumMan.glb',
+    modelPath: '',
     scale: 1.1,
     animations: { idle: 'idle', walk: 'walk', talk: 'talk' },
     defaultPosition: [4.0, 0, 0],
@@ -182,7 +182,7 @@ export const EXPANDED_NPCS: NPCDefinition[] = [
   {
     id: 'kate',
     name: 'Катя',
-    modelPath: '/models-external/cc0_Michelle.glb',
+    modelPath: '',
     scale: 0.9,
     animations: { idle: 'idle', walk: 'walk', talk: 'talk' },
     defaultPosition: [-2.0, 0, -2.0],

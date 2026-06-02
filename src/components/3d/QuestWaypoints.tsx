@@ -1,7 +1,9 @@
 
 /* ─── Volodka RPG – 3D Quest Waypoints ─── */
 /* Floating octahedron arrows at scene exits pointing toward active quest objectives.
-   Bobs vertically and rotates to face the player for easy navigation. */
+   Bobs vertically and rotates to face the player for easy navigation.
+   Also renders a pulsing vertical beam of light at the quest target position
+   when the target is in the current scene. */
 
 import { useRef, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
@@ -9,6 +11,7 @@ import * as THREE from 'three';
 import { useGameStore } from '@/store/gameStore';
 import { useShallow } from 'zustand/react/shallow';
 import { SCENE_CONFIG } from '@/config/scenes';
+import { getQuestMarker } from '@/store/questStore';
 import type { SceneId, SceneExit } from '@/shared/types/game';
 
 interface QuestWaypointsProps {
@@ -46,11 +49,24 @@ export function QuestWaypoints({ livePlayerPositionRef }: QuestWaypointsProps) {
     });
   }, [currentSceneId, playerFlags, playerKarma]);
 
-  // Don't render anything if no active quests or no exits
-  if (!hasActiveQuests || exits.length === 0) return null;
+  // Get the quest target marker if it's in the current scene
+  const sameSceneMarker = useMemo<{ position: [number, number, number]; questId: string } | null>(() => {
+    const activeQuests = quests.filter((q) => q.status === 'active');
+    for (const aq of activeQuests) {
+      const marker = getQuestMarker(aq.questId);
+      if (marker && marker.sceneId === currentSceneId) {
+        return { position: marker.position, questId: aq.questId };
+      }
+    }
+    return null;
+  }, [quests, currentSceneId]);
+
+  // Don't render anything if no active quests or no exits and no same-scene marker
+  if (!hasActiveQuests) return null;
 
   return (
     <group>
+      {/* Exit arrows — pointing toward quest target exits */}
       {exits.map((exit, i) => (
         <QuestArrow
           key={`quest-arrow-${exit.targetScene}-${i}`}
@@ -60,9 +76,19 @@ export function QuestWaypoints({ livePlayerPositionRef }: QuestWaypointsProps) {
           targetScene={exit.targetScene}
         />
       ))}
+
+      {/* Vertical waypoint beam at quest target position in current scene */}
+      {sameSceneMarker && (
+        <QuestTargetBeam
+          position={sameSceneMarker.position}
+          playerPosRef={livePlayerPositionRef}
+        />
+      )}
     </group>
   );
 }
+
+/* ─── Quest Arrow (exit indicator) ─── */
 
 function QuestArrow({
   position,
@@ -112,9 +138,112 @@ function QuestArrow({
           opacity={0.7}
         />
       </mesh>
-      {/* Label using Html from drei would be nice, but keeping it simple
-          with just the 3D arrow for perf. The exit label is already shown
-          by SceneExitIndicator. */}
+    </group>
+  );
+}
+
+/* ─── Quest Target Beam ─── */
+/* A vertical pulsing beam of light at the quest target position.
+   Like a lighthouse beacon — thin, translucent, cyan pulsing.
+   Height: 4 meters, subtle but visible. */
+
+function QuestTargetBeam({
+  position,
+  playerPosRef,
+}: {
+  position: [number, number, number];
+  playerPosRef: React.MutableRefObject<THREE.Vector3>;
+}) {
+  const beamRef = useRef<THREE.Group>(null);
+  const glowRef = useRef<THREE.Mesh>(null);
+  const baseGlowRef = useRef<THREE.Mesh>(null);
+  const timeRef = useRef(0);
+
+  const BEAM_HEIGHT = 4;
+  const BEAM_RADIUS = 0.03; // thin cylinder
+  const GLOW_RADIUS = 0.12;
+
+  useFrame((_, delta) => {
+    timeRef.current += delta;
+    const t = timeRef.current;
+
+    // Pulse the emissive intensity
+    const pulse = 0.5 + 0.5 * Math.sin(t * 2.5);
+
+    if (glowRef.current) {
+      const mat = glowRef.current.material as THREE.MeshStandardMaterial;
+      mat.emissiveIntensity = 0.3 + pulse * 0.7;
+      mat.opacity = 0.15 + pulse * 0.15;
+    }
+
+    if (baseGlowRef.current) {
+      const mat = baseGlowRef.current.material as THREE.MeshStandardMaterial;
+      mat.emissiveIntensity = 0.4 + pulse * 0.6;
+      mat.opacity = 0.2 + pulse * 0.15;
+      // Gentle scale pulse
+      const s = 1 + pulse * 0.2;
+      baseGlowRef.current.scale.set(s, 0.3, s);
+    }
+  });
+
+  return (
+    <group
+      ref={beamRef}
+      position={[position[0], 0, position[2]]}
+    >
+      {/* Core beam — thin bright cylinder */}
+      <mesh position={[0, BEAM_HEIGHT / 2, 0]}>
+        <cylinderGeometry args={[BEAM_RADIUS, BEAM_RADIUS, BEAM_HEIGHT, 8]} />
+        <meshStandardMaterial
+          color="#00ffee"
+          emissive="#00ffee"
+          emissiveIntensity={1.2}
+          transparent
+          opacity={0.6}
+          side={THREE.DoubleSide}
+          depthWrite={false}
+        />
+      </mesh>
+
+      {/* Outer glow — slightly wider, more translucent */}
+      <mesh ref={glowRef} position={[0, BEAM_HEIGHT / 2, 0]}>
+        <cylinderGeometry args={[GLOW_RADIUS, GLOW_RADIUS, BEAM_HEIGHT, 8]} />
+        <meshStandardMaterial
+          color="#00ffee"
+          emissive="#00ffee"
+          emissiveIntensity={0.5}
+          transparent
+          opacity={0.15}
+          side={THREE.DoubleSide}
+          depthWrite={false}
+        />
+      </mesh>
+
+      {/* Base glow — disc on the ground */}
+      <mesh
+        ref={baseGlowRef}
+        rotation-x={-Math.PI / 2}
+        position={[0, 0.02, 0]}
+      >
+        <circleGeometry args={[0.5, 16]} />
+        <meshStandardMaterial
+          color="#00ffee"
+          emissive="#00ffee"
+          emissiveIntensity={0.6}
+          transparent
+          opacity={0.25}
+          depthWrite={false}
+        />
+      </mesh>
+
+      {/* Top point light for ambient glow */}
+      <pointLight
+        position={[0, BEAM_HEIGHT + 0.5, 0]}
+        color="#00ffee"
+        intensity={0.8}
+        distance={5}
+        decay={2}
+      />
     </group>
   );
 }

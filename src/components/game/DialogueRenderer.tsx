@@ -297,6 +297,27 @@ function performSkillCheck(skill: TrainablePlayerSkill, difficulty: number, play
   return (playerSkills[skill] ?? 0) >= difficulty;
 }
 
+/* ── Skill icons & labels (consistent with LevelUpSummary) ── */
+const SKILL_LABELS: Record<TrainablePlayerSkill, string> = {
+  logic: 'Логика',
+  coding: 'Кодирование',
+  empathy: 'Эмпатия',
+  persuasion: 'Убеждение',
+  intuition: 'Интуиция',
+  writing: 'Письмо',
+  rhythm: 'Ритм',
+};
+
+const SKILL_ICONS: Record<TrainablePlayerSkill, string> = {
+  logic: '🧠',
+  coding: '💻',
+  empathy: '💛',
+  persuasion: '🗣️',
+  intuition: '👁️',
+  writing: '✍️',
+  rhythm: '🎵',
+};
+
 /* ── Condition check ── */
 function checkDialogueCondition(
   condition: DialogueChoice['condition'],
@@ -310,6 +331,7 @@ function checkDialogueCondition(
   skillCheckNeeded?: { skill: TrainablePlayerSkill; needed: number; current: number };
   relationNeeded?: { needed: number; current: number };
   actNeeded?: { needed: number; current: number };
+  karmaNeeded?: { type: 'min' | 'max'; needed: number; current: number };
 } {
   if (!condition) return { pass: true };
   if (condition.requiredAct !== undefined && playerState.progression.currentAct < condition.requiredAct) {
@@ -319,8 +341,12 @@ function checkDialogueCondition(
     if (condition.minTimeOfDay !== undefined && timeOfDay < condition.minTimeOfDay) return { pass: false };
     if (condition.maxTimeOfDay !== undefined && timeOfDay > condition.maxTimeOfDay) return { pass: false };
   }
-  if (condition.minKarma !== undefined && playerState.karma < condition.minKarma) return { pass: false };
-  if (condition.maxKarma !== undefined && playerState.karma > condition.maxKarma) return { pass: false };
+  if (condition.minKarma !== undefined && playerState.karma < condition.minKarma) {
+    return { pass: false, karmaNeeded: { type: 'min', needed: condition.minKarma, current: playerState.karma } };
+  }
+  if (condition.maxKarma !== undefined && playerState.karma > condition.maxKarma) {
+    return { pass: false, karmaNeeded: { type: 'max', needed: condition.maxKarma, current: playerState.karma } };
+  }
   if (condition.flag && !playerState.flags[condition.flag]) return { pass: false };
   if (condition.minNpcRelation !== undefined && npcId) {
     const rel = npcRelations.find((r) => r.npcId === npcId);
@@ -796,7 +822,23 @@ export function DialogueRenderer() {
                         />
                         <div className="flex items-center gap-2">
                           <ChevronRight className="size-3.5 text-cyan-500/70 group-hover:text-cyan-300 transition-colors shrink-0" />
-                          <span className="flex-1">{choice.text}</span>
+                          <span className="flex-1">
+                            {choice.text}
+                            {/* Karma-gated indicator: subtle when met */}
+                            {cond.pass && choice.condition?.minKarma !== undefined && (
+                              <span className="ml-1.5 text-[10px] font-mono text-emerald-400/70" title={`☯ Карма ≥ ${choice.condition.minKarma} (У вас: ${playerState.karma})`}>☯</span>
+                            )}
+                            {cond.pass && choice.condition?.maxKarma !== undefined && (
+                              <span className="ml-1.5 text-[10px] font-mono text-cyan-400/70" title={`☯ Карма ≤ ${choice.condition.maxKarma} (У вас: ${playerState.karma})`}>☯</span>
+                            )}
+                            {/* Skill-gated indicator: subtle when met */}
+                            {cond.pass && choice.condition?.minSkill && Object.keys(choice.condition.minSkill).length > 0 && (
+                              <span className="ml-1.5 text-[10px] font-mono text-emerald-400/70" title={Object.entries(choice.condition.minSkill).map(([sk, val]) => `${SKILL_ICONS[sk as TrainablePlayerSkill] ?? ''} ${SKILL_LABELS[sk as TrainablePlayerSkill] ?? sk} ≥ ${val}`).join(', ')}>⚡</span>
+                            )}
+                            {cond.pass && choice.condition?.minSkillCheck && (
+                              <span className="ml-1.5 text-[10px] font-mono text-emerald-400/70" title={`${SKILL_ICONS[choice.condition.minSkillCheck.skill]} ${SKILL_LABELS[choice.condition.minSkillCheck.skill]} ≥ ${choice.condition.minSkillCheck.difficulty}`}>⚡</span>
+                            )}
+                          </span>
                           {/* Impact preview badges — show on hover for passable choices */}
                           {cond.pass && hasImpact && (
                             <div className="flex items-center gap-1.5 shrink-0">
@@ -835,24 +877,55 @@ export function DialogueRenderer() {
                               )}
                             </div>
                           )}
-                          {/* Locked condition indicators */}
-                          {cond.skillCheckNeeded && (
-                            <span className="flex items-center gap-1 text-xs text-rose-400">
-                              <Zap className="size-3" />
-                              {cond.skillCheckNeeded.skill} {cond.skillCheckNeeded.needed}
-                            </span>
-                          )}
-                          {cond.relationNeeded && (
-                            <span className="flex items-center gap-1 text-xs text-amber-400">
-                              <Shield className="size-3" />
-                              Отнош. {cond.relationNeeded.needed}
-                            </span>
-                          )}
-                          {cond.actNeeded && (
-                            <span className="flex items-center gap-1 text-xs text-violet-400">
-                              <Zap className="size-3" />
-                              Акт {cond.actNeeded.needed}
-                            </span>
+                          {/* ── Locked requirement indicators (detailed, cyberpunk-styled) ── */}
+                          {!cond.pass && (
+                            <div className="flex flex-wrap items-center justify-end gap-1 shrink-0">
+                              {/* Karma requirement not met */}
+                              {cond.karmaNeeded && (
+                                <span
+                                  className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-rose-950/40 border border-rose-500/30 text-rose-300"
+                                  title={`Текущая карма: ${cond.karmaNeeded.current}`}
+                                >
+                                  ☯ {cond.karmaNeeded.type === 'min' ? `≥${cond.karmaNeeded.needed}` : `≤${cond.karmaNeeded.needed}`} <span className="text-rose-400/60">({cond.karmaNeeded.current})</span>
+                                </span>
+                              )}
+                              {/* Skill requirement not met */}
+                              {cond.skillCheckNeeded && (
+                                <span
+                                  className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-rose-950/40 border border-rose-500/30 text-rose-300"
+                                  title={`${SKILL_LABELS[cond.skillCheckNeeded.skill]}: ${cond.skillCheckNeeded.current}`}
+                                >
+                                  {SKILL_ICONS[cond.skillCheckNeeded.skill]} {cond.skillCheckNeeded.needed}+ <span className="text-rose-400/60">({cond.skillCheckNeeded.current})</span>
+                                </span>
+                              )}
+                              {/* Skill check (probabilistic) not met */}
+                              {cond.skillCheckResult && !cond.skillCheckResult.success && (
+                                <span
+                                  className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-rose-950/40 border border-rose-500/30 text-rose-300"
+                                  title={`Проверка: ${SKILL_LABELS[cond.skillCheckResult.skill]} ≥ ${cond.skillCheckResult.difficulty}`}
+                                >
+                                  {SKILL_ICONS[cond.skillCheckResult.skill]} {cond.skillCheckResult.difficulty}+ <span className="text-rose-400/60">✗</span>
+                                </span>
+                              )}
+                              {/* NPC relation requirement not met */}
+                              {cond.relationNeeded && (
+                                <span
+                                  className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-amber-950/40 border border-amber-500/30 text-amber-300"
+                                  title={`Текущие отношения: ${cond.relationNeeded.current}`}
+                                >
+                                  👥 {cond.relationNeeded.needed}+ <span className="text-amber-400/60">({cond.relationNeeded.current})</span>
+                                </span>
+                              )}
+                              {/* Act requirement not met */}
+                              {cond.actNeeded && (
+                                <span
+                                  className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-violet-950/40 border border-violet-500/30 text-violet-300"
+                                  title={`Текущий акт: ${cond.actNeeded.current}`}
+                                >
+                                  📜 Акт {cond.actNeeded.needed}
+                                </span>
+                              )}
+                            </div>
                           )}
                           {/* Keyboard shortcut display */}
                           {cond.pass && shortcutKey <= 9 && (

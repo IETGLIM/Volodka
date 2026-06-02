@@ -189,9 +189,9 @@ export const createWorldSlice: StateCreator<
         };
       });
 
-      eventBus.emit('quest:completed', { questId });
-
       const questDef = QUEST_DEFINITIONS.find((d) => d.id === questId);
+
+      eventBus.emit('quest:completed', { questId, npcId: questDef?.questGiverNpcId });
       const questTitle = questDef?.title ?? questId;
       const currentNotifications = (get() as unknown as CrossSliceReads).notifications;
       return {

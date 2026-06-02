@@ -10,6 +10,7 @@ import { SCENE_CONFIG } from '@/config/scenes';
 import { AUTO_SAVE_INTERVAL_MS } from '@/data/constants';
 import { STORY_NODES } from '@/data/storyNodes';
 import { DIALOGUE_NODES } from '@/data/dialogueNodes';
+import { QUEST_DEFINITIONS } from '@/data/quests';
 import { getCutsceneForNode } from '@/data/cutscenes';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { CUTSCENE_TIMINGS } from '@/shared/constants/transitionTimings';
@@ -85,6 +86,7 @@ import { HUD } from './HUD';
 import { MiniMap } from './MiniMap';
 import { MoralCompassHUD } from './MoralCompassHUD';
 import { TutorialOverlay } from './TutorialOverlay';
+import { FirstPlayTutorial } from './FirstPlayTutorial';
 import { StressIndicator } from './StressIndicator';
 import { QuickAccessToolbar } from './QuickAccessToolbar';
 import { AutoSaveIndicator } from './AutoSaveIndicator';
@@ -485,7 +487,7 @@ export function GameOrchestrator() {
     });
     const unsubComplete = eventBus.on('quest:completed', (data) => {
       setQuestCompleteId(data.questId);
-      setQuestCompleteNpcId(undefined);
+      setQuestCompleteNpcId(data.npcId);
     });
     // ── Quest chain unlock notification ──
     // When a golden path quest is completed and the next one becomes available,
@@ -1073,6 +1075,8 @@ export function GameOrchestrator() {
                   <WeatherIndicator />
                   <DayNightCycleIndicator />
                   <TutorialOverlay />
+                  {/* First-play progressive tutorial — blocks gameplay until completed */}
+                  <FirstPlayTutorial />
                   {/* Poetry Power quick-bar — action bar for poem powers */}
                   <PoetryPowerBar />
                 </>
@@ -1359,7 +1363,6 @@ export function GameOrchestrator() {
               useGameStore.getState().activateQuest(qid);
               setQuestAcceptId(null);
               setQuestAcceptNpcId(undefined);
-              const { QUEST_DEFINITIONS } = require('@/data/quests');
               const def = QUEST_DEFINITIONS.find(d => d.id === qid);
               eventBus.emit('quest:accepted', { questId: qid, questTitle: def?.title ?? qid });
             }}
