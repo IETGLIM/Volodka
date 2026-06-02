@@ -462,6 +462,15 @@ export function GameOrchestrator() {
   const [questCompleteId, setQuestCompleteId] = useState<string | null>(null);
   const [questCompleteNpcId, setQuestCompleteNpcId] = useState<string | undefined>(undefined);
 
+  // ── Quest chain unlock notification state ──
+  const [questChainUnlock, setQuestChainUnlock] = useState<{
+    nextQuestTitle: string;
+    nextQuestType: string;
+    completedQuestTitle: string;
+    npcId?: string;
+    actNumber: number;
+  } | null>(null);
+
   // ── MatrixRainQuote state (act transition cinematic) ──
   const [matrixQuote, setMatrixQuote] = useState<{ text: string; actNumber: number } | null>(null);
 
@@ -478,7 +487,21 @@ export function GameOrchestrator() {
       setQuestCompleteId(data.questId);
       setQuestCompleteNpcId(undefined);
     });
-    return () => { unsubAvailable(); unsubComplete(); };
+    // ── Quest chain unlock notification ──
+    // When a golden path quest is completed and the next one becomes available,
+    // show a prominent notification (don't auto-activate — let the player choose).
+    const unsubChainUnlock = eventBus.on('story:quest_chain_unlock', (data) => {
+      setQuestChainUnlock({
+        nextQuestTitle: data.nextQuestTitle,
+        nextQuestType: data.nextQuestType,
+        completedQuestTitle: data.completedQuestTitle,
+        npcId: data.npcId,
+        actNumber: data.actNumber,
+      });
+      // Auto-dismiss after 8 seconds
+      setTimeout(() => setQuestChainUnlock(null), 8000);
+    });
+    return () => { unsubAvailable(); unsubComplete(); unsubChainUnlock(); };
   }, []);
 
   // ── Listen for act transition events → show MatrixRainQuote ──
@@ -1348,6 +1371,89 @@ export function GameOrchestrator() {
             npcId={questCompleteNpcId}
             onClose={() => { setQuestCompleteId(null); setQuestCompleteNpcId(undefined); }}
           />
+
+          {/* ── Quest Chain Unlock Notification ── */}
+          {/* Prominent notification when completing a golden path quest unlocks the next */}
+          <AnimatePresence>
+            {questChainUnlock && (
+              <motion.div
+                key="quest-chain-unlock"
+                initial={{ opacity: 0, y: 40, scale: 0.9 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 20, scale: 0.95 }}
+                transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                className="fixed bottom-8 left-1/2 -translate-x-1/2 pointer-events-auto"
+                style={{ zIndex: UI_LAYERS.TOASTS + 3 }}
+                onClick={() => setQuestChainUnlock(null)}
+              >
+                <div
+                  className="flex items-center gap-4 px-6 py-4 rounded-xl border backdrop-blur-md cursor-pointer"
+                  style={{
+                    background: 'linear-gradient(135deg, rgba(0,16,8,0.95) 0%, rgba(0,40,30,0.92) 50%, rgba(0,16,8,0.88) 100%)',
+                    borderColor: 'rgba(0,255,238,0.4)',
+                    boxShadow: '0 0 40px rgba(0,255,238,0.15), 0 0 15px rgba(0,255,238,0.08), 0 8px 32px rgba(0,0,0,0.5)',
+                  }}
+                >
+                  {/* Icon */}
+                  <div
+                    className="flex items-center justify-center w-12 h-12 rounded-lg text-xl"
+                    style={{
+                      background: 'rgba(0,255,238,0.12)',
+                      border: '1px solid rgba(0,255,238,0.3)',
+                      boxShadow: '0 0 12px rgba(0,255,238,0.15)',
+                    }}
+                  >
+                    ⚑
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    {/* Header */}
+                    <div className="flex items-center gap-2">
+                      <span
+                        className="text-[10px] font-mono tracking-wider font-bold"
+                        style={{
+                          color: '#00ffee',
+                          textShadow: '0 0 8px rgba(0,255,238,0.4)',
+                        }}
+                      >
+                        НОВОЕ ЗАДАНИЕ ДОСТУПНО
+                      </span>
+                      {questChainUnlock.nextQuestType === 'main' && (
+                        <span
+                          className="text-[9px] font-mono tracking-wider px-1.5 py-0.5 rounded"
+                          style={{
+                            color: '#ff6644',
+                            background: 'rgba(255,102,68,0.1)',
+                            border: '1px solid rgba(255,102,68,0.3)',
+                          }}
+                        >
+                          ОСНОВНОЕ
+                        </span>
+                      )}
+                    </div>
+                    {/* Quest title */}
+                    <span
+                      className="text-sm font-mono font-bold"
+                      style={{
+                        color: '#e0f8f8',
+                        textShadow: '0 0 6px rgba(0,255,238,0.2)',
+                      }}
+                    >
+                      {questChainUnlock.nextQuestTitle}
+                    </span>
+                    {/* Context */}
+                    <span className="text-[11px] font-mono" style={{ color: '#88aaaa' }}>
+                      После «{questChainUnlock.completedQuestTitle}»
+                      {questChainUnlock.actNumber > 1 && ` · Акт ${questChainUnlock.actNumber}`}
+                    </span>
+                  </div>
+                  {/* Dismiss hint */}
+                  <span className="text-[9px] font-mono ml-2" style={{ color: 'rgba(0,255,238,0.3)' }}>
+                    ✕
+                  </span>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           {/* ── Karma & Poem Info Panel ── */}
           <KarmaPoemInfoPanel open={karmaPoemOpen} onClose={() => dispatchPanel(null)} />

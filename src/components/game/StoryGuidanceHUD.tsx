@@ -1,21 +1,78 @@
 'use client'
 
-/* ─── Volodka RPG – StoryGuidanceHUD ─── */
+/* ─── Volodka RPG – StoryGuidanceHUD (Enhanced) ─── */
 /* Persistent HUD element that shows the player what to do next.
  * Top-center of screen, cyberpunk-styled with neon cyan text,
- * scanlines backdrop, matrix-green accents, and pulse animation. */
+ * scanlines backdrop, matrix-green accents, and pulse animation.
+ *
+ * Enhanced with:
+ * - "Текущая цель" (Current Objective) label
+ * - Integration with questStore's getNextTrackedObjective for active quests
+ * - Fallback to golden path quest when no active quests exist
+ * - Small arrow icon with pulse animation
+ */
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { eventBus } from '@/engine/EventBus'
 import { getCurrentGuidance, type GuidanceInfo } from '@/engine/GuidedStoryManager'
+import { useGameStore } from '@/store/gameStore'
+import { getNextTrackedObjective, getActiveQuests, areDependenciesMet } from '@/store/questStore'
+import { QUEST_DEFINITIONS } from '@/data/quests'
+import { GOLDEN_PATH_QUEST_SPINE } from '@/data/goldenPath'
 
 export function StoryGuidanceHUD() {
   const [guidance, setGuidance] = useState<GuidanceInfo | null>(null)
   const [expanded, setExpanded] = useState(false)
   const [visible, setVisible] = useState(false)
 
-  // Listen for guidance updates
+  // Get active quests from store (reactive)
+  const quests = useGameStore((s) => s.quests)
+  const mode = useGameStore((s) => s.mode)
+
+  // Derive the current objective text from active quests or golden path
+  const currentObjective = useMemo(() => {
+    // 1. Check active quests for the next uncompleted objective
+    const activeQuests = quests.filter((q) => q.status === 'active')
+    for (const aq of activeQuests) {
+      const obj = getNextTrackedObjective(aq.questId)
+      if (obj) {
+        const questDef = QUEST_DEFINITIONS.find((d) => d.id === aq.questId)
+        return {
+          text: obj.description,
+          questTitle: questDef?.title ?? '',
+          questType: questDef?.questType ?? 'main',
+          objectiveType: 'active_quest' as const,
+        }
+      }
+    }
+
+    // 2. No active quest objectives — find next available quest in golden path
+    for (const questId of GOLDEN_PATH_QUEST_SPINE) {
+      const questState = quests.find((q) => q.questId === questId)
+      // Skip if already completed or active
+      if (questState?.status === 'completed') continue
+      if (questState?.status === 'active') continue
+
+      const questDef = QUEST_DEFINITIONS.find((d) => d.id === questId)
+      if (!questDef) continue
+
+      // Check if dependencies are met
+      const deps = areDependenciesMet(questId)
+      if (!deps.met) continue
+
+      return {
+        text: `Прими задание: ${questDef.title}`,
+        questTitle: questDef.title,
+        questType: questDef.questType,
+        objectiveType: 'available_quest' as const,
+      }
+    }
+
+    return null
+  }, [quests])
+
+  // Listen for guidance updates from GuidedStoryManager
   useEffect(() => {
     // Get initial guidance
     const initial = getCurrentGuidance()
@@ -32,21 +89,42 @@ export function StoryGuidanceHUD() {
     return unsub
   }, [])
 
+  // Show/hide based on game mode — only in exploration/cutscene
+  useEffect(() => {
+    if (mode === 'exploration' || mode === 'cutscene') {
+      if (currentObjective || guidance) {
+        setVisible(true)
+      }
+    } else {
+      setVisible(false)
+    }
+  }, [mode, currentObjective, guidance])
+
   const toggleExpand = useCallback(() => {
     setExpanded((prev) => !prev)
   }, [])
 
-  if (!guidance || !visible) return null
+  if (!visible) return null
 
-  const urgencyColor = guidance.urgency === 'required'
+  // Determine what to display
+  // Priority: active quest objective > golden path guidance > guidance event
+  const displayText = currentObjective?.text ?? guidance?.objectiveText ?? ''
+  const actNumber = guidance?.actNumber ?? 1
+  const urgency = currentObjective
+    ? (currentObjective.questType === 'main' ? 'required' : 'recommended')
+    : (guidance?.urgency ?? 'recommended')
+
+  if (!displayText) return null
+
+  const urgencyColor = urgency === 'required'
     ? '#00ffee'
-    : guidance.urgency === 'recommended'
+    : urgency === 'recommended'
       ? '#66ffaa'
       : '#888888'
 
-  const urgencyLabel = guidance.urgency === 'required'
+  const urgencyLabel = urgency === 'required'
     ? 'ОБЯЗАТЕЛЬНО'
-    : guidance.urgency === 'recommended'
+    : urgency === 'recommended'
       ? 'РЕКОМЕНДОВАНО'
       : 'ОПЦИОНАЛЬНО'
 
@@ -58,7 +136,7 @@ export function StoryGuidanceHUD() {
         exit={{ opacity: 0, y: -20 }}
         transition={{ duration: 0.4, ease: 'easeOut' }}
         className="fixed top-4 left-1/2 -translate-x-1/2 z-[100] pointer-events-auto"
-        style={{ maxWidth: '400px', width: '90vw' }}
+        style={{ maxWidth: '420px', width: '90vw' }}
       >
         {/* Scanlines backdrop */}
         <div
@@ -118,18 +196,30 @@ export function StoryGuidanceHUD() {
             }}
           />
 
-          {/* Header line */}
+          {/* Header line with "Текущая цель" label */}
           <div className="flex items-center justify-between gap-2 mb-1">
-            {/* Act indicator */}
-            <span
-              className="text-[10px] font-mono tracking-wider"
-              style={{
-                color: '#00ff6688',
-                textShadow: '0 0 4px rgba(0,255,102,0.3)',
-              }}
-            >
-              АКТ {guidance.actNumber}
-            </span>
+            {/* "Текущая цель" label */}
+            <div className="flex items-center gap-1.5">
+              <span
+                className="text-[10px] font-mono tracking-wider font-bold"
+                style={{
+                  color: '#00ffee',
+                  textShadow: '0 0 6px rgba(0,255,238,0.4)',
+                }}
+              >
+                ТЕКУЩАЯ ЦЕЛЬ
+              </span>
+              {/* Act indicator */}
+              <span
+                className="text-[9px] font-mono tracking-wider"
+                style={{
+                  color: '#00ff6688',
+                  textShadow: '0 0 4px rgba(0,255,102,0.3)',
+                }}
+              >
+                · АКТ {actNumber}
+              </span>
+            </div>
 
             {/* Urgency badge */}
             <span
@@ -145,15 +235,15 @@ export function StoryGuidanceHUD() {
             </span>
           </div>
 
-          {/* Objective text with pulse */}
+          {/* Objective text with pulse arrow */}
           <motion.div
-            key={guidance.objectiveText}
+            key={displayText}
             initial={{ opacity: 0.5, x: -4 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5, ease: 'easeOut' }}
             className="flex items-center gap-2"
           >
-            {/* Arrow indicator */}
+            {/* Arrow indicator with pulse */}
             <motion.span
               className="text-sm font-bold flex-shrink-0"
               style={{
@@ -179,13 +269,31 @@ export function StoryGuidanceHUD() {
                 textShadow: '0 0 6px rgba(0,255,238,0.2)',
               }}
             >
-              {guidance.objectiveText}
+              {displayText}
             </span>
           </motion.div>
 
+          {/* Quest title (if available) */}
+          {currentObjective?.questTitle && (
+            <div className="mt-1 flex items-center gap-1.5">
+              <span className="text-[9px] font-mono" style={{ color: '#668888' }}>
+                Задание:
+              </span>
+              <span
+                className="text-[10px] font-mono font-semibold"
+                style={{
+                  color: currentObjective.questType === 'main' ? '#ff8866' : '#66ccff',
+                  textShadow: `0 0 4px ${currentObjective.questType === 'main' ? 'rgba(255,136,102,0.3)' : 'rgba(102,204,255,0.3)'}`,
+                }}
+              >
+                {currentObjective.questTitle}
+              </span>
+            </div>
+          )}
+
           {/* Expanded details */}
           <AnimatePresence>
-            {expanded && (
+            {expanded && guidance && (
               <motion.div
                 initial={{ height: 0, opacity: 0 }}
                 animate={{ height: 'auto', opacity: 1 }}

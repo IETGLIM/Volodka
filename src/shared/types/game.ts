@@ -712,6 +712,16 @@ export interface EventMap {
   'story:quest_required': { questId: string; questTitle: string };
   /** Emitted when a story quote should be displayed (act transitions, key choices) */
   'story:quote': { text: string; actNumber: number };
+  /** Emitted when completing a golden path quest unlocks the next one in the chain */
+  'story:quest_chain_unlock': {
+    completedQuestId: string;
+    completedQuestTitle: string;
+    nextQuestId: string;
+    nextQuestTitle: string;
+    nextQuestType: string;
+    npcId?: string;
+    actNumber: number;
+  };
 }
 
 /** Waypoint data for cutscene camera (serializable) */

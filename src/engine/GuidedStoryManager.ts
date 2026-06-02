@@ -364,7 +364,7 @@ function advanceQuestSpine(completedQuestId: string) {
     }
   }
 
-  // Offer next quest
+  // Offer next quest — emit both generic and chain-specific events
   const nextQuest = getNextQuestInSpine()
   if (nextQuest) {
     eventBus.emit('story:quest_available', {
@@ -378,6 +378,24 @@ function advanceQuestSpine(completedQuestId: string) {
       eventBus.emit('story:quest_required', {
         questId: nextQuest.questId,
         questTitle: nextQuest.def.title,
+      })
+    }
+
+    // Emit quest chain unlock event — this is a more prominent notification
+    // that the next quest in the golden path is available after completing
+    // the previous one. The UI can show a flashy notification for this.
+    const isDirectChainSuccessor = spineIdx >= 0 && spineIdx < GOLDEN_PATH_QUEST_SPINE.length - 1
+    if (isDirectChainSuccessor) {
+      const prevQuestDef = QUEST_DEFINITIONS.find((d) => d.id === completedQuestId)
+      const npcId = nextQuest.def.questGiverNpcId ?? findNpcForQuest(nextQuest.def)
+      eventBus.emit('story:quest_chain_unlock', {
+        completedQuestId,
+        completedQuestTitle: prevQuestDef?.title ?? completedQuestId,
+        nextQuestId: nextQuest.questId,
+        nextQuestTitle: nextQuest.def.title,
+        nextQuestType: nextQuest.def.questType,
+        npcId,
+        actNumber: nextQuest.def.act ?? currentAct,
       })
     }
   }

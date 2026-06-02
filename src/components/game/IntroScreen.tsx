@@ -1463,6 +1463,15 @@ export function IntroScreen() {
     setShowStoryOverlay(false);
     setIntroSeen(true);
     setMode('exploration');
+
+    // Auto-start the first quest from the golden path if no quests are active.
+    // This ensures the player always has an active quest from the beginning.
+    // The GuidedStoryManager also does this on init, but this provides a
+    // reliable fallback at the exact moment the player enters exploration.
+    const store = useGameStore.getState();
+    if (store.quests.length === 0 || !store.quests.some((q) => q.status === 'active')) {
+      store.activateQuest('first_reading');
+    }
   }, [collectPoem, setCurrentNodeId, setShowStoryOverlay, setIntroSeen, setMode]);
 
   const handleSkip = useCallback(() => {
