@@ -256,6 +256,7 @@ const pageTurnVariants = {
 /* ── Component ── */
 export function StoryRenderer() {
   const showStoryOverlay = useGameStore((s) => s.showStoryOverlay);
+  const mode = useGameStore((s) => s.mode);
   const currentNodeId = useGameStore((s) => s.currentNodeId);
   const playerState = useGameStore((s) => s.playerState);
   const currentAct = useGameStore((s) => s.playerState.progression.currentAct);
@@ -400,7 +401,7 @@ export function StoryRenderer() {
     return () => window.removeEventListener('keydown', handleKey);
   }, [done, node, playerState, handleChoice]);
 
-  if (!showStoryOverlay || !node) return null;
+  if (!showStoryOverlay || !node || mode !== 'cutscene') return null;
 
   const karmaLevel =
     playerState.karma >= KARMA_HIGH_THRESHOLD
