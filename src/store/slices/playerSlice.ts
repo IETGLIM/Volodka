@@ -610,6 +610,15 @@ export const createPlayerSlice: StateCreator<
           recipeName: recipe.name,
           rarity: recipe.outputRarity,
         });
+
+        // Emit item:crafted event so daily mission system can track crafting progress.
+        // The listener in GameOrchestrator or QuestBoardPanel handles the actual
+        // updateDailyMissionProgress() call, avoiding circular slice dependencies.
+        eventBus.emit('item:crafted', {
+          recipeId,
+          recipeName: recipe.name,
+          category: recipe.category,
+        });
       });
 
       return {

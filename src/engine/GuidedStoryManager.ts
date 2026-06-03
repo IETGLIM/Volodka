@@ -35,6 +35,9 @@ export interface GuidanceInfo {
 let currentStepIndex = 0
 let currentQuestSpineIndex = 0
 let initialized = false
+// Guard against double advanceAct() — both advanceStorySpine and
+// advanceQuestSpine can trigger act transitions independently.
+let lastAdvancedToAct = 0
 let unsubVisitNode: (() => void) | null = null
 let unsubQuestCompleted: (() => void) | null = null
 let unsubNpcTalked: (() => void) | null = null
@@ -300,16 +303,18 @@ function advanceStorySpine(visitedNodeId: string) {
     : prevAct
 
   if (newAct > prevAct) {
-    const store = useGameStore.getState()
-    store.advanceAct()
+    // Guard: skip if this act was already advanced in this session
+    if (newAct > lastAdvancedToAct) {
+      lastAdvancedToAct = newAct
+      const store = useGameStore.getState()
+      store.advanceAct()
 
-    eventBus.emit('story:act_transition', {
-      fromAct: prevAct,
-      toAct: newAct,
-      chapterTitle: ACT_CHAPTERS[newAct] ?? `Акт ${newAct}`,
-    })
-
-    // story:act_transition is already emitted above — MatrixRainQuote listens to it
+      eventBus.emit('story:act_transition', {
+        fromAct: prevAct,
+        toAct: newAct,
+        chapterTitle: ACT_CHAPTERS[newAct] ?? `Акт ${newAct}`,
+      })
+    }
   }
 
   // Emit guidance update
@@ -338,15 +343,17 @@ function advanceQuestSpine(completedQuestId: string) {
   })
 
   if (allActQuestsComplete && currentAct < 5) {
-    store.advanceAct()
     const nextAct = currentAct + 1
-    eventBus.emit('story:act_transition', {
-      fromAct: currentAct,
-      toAct: nextAct,
-      chapterTitle: ACT_CHAPTERS[nextAct] ?? `Акт ${nextAct}`,
-    })
-
-    // story:act_transition is already emitted above — MatrixRainQuote listens to it
+    // Guard: skip if this act was already advanced in this session
+    if (nextAct > lastAdvancedToAct) {
+      lastAdvancedToAct = nextAct
+      store.advanceAct()
+      eventBus.emit('story:act_transition', {
+        fromAct: currentAct,
+        toAct: nextAct,
+        chapterTitle: ACT_CHAPTERS[nextAct] ?? `Акт ${nextAct}`,
+      })
+    }
   }
 
   // Offer next quest — emit both generic and chain-specific events
@@ -470,6 +477,10 @@ export function initGuidedStoryManager() {
   const store = useGameStore.getState()
   const visitedNodes = store.playerState.visitedNodes
 
+  // Initialize lastAdvancedToAct from store so we don't re-advance
+  // an act that was already advanced in a previous session
+  lastAdvancedToAct = store.playerState.progression.currentAct
+
   // Find the highest visited node in the spine
   for (let i = GOLDEN_PATH_STORY_SPINE.length - 1; i >= 0; i--) {
     if (visitedNodes.includes(GOLDEN_PATH_STORY_SPINE[i])) {
@@ -577,6 +588,7 @@ export function disposeGuidedStoryManager() {
 
   currentStepIndex = 0
   currentQuestSpineIndex = 0
+  lastAdvancedToAct = 0
 }
 
 /* ─── Get the act quotes ─── */

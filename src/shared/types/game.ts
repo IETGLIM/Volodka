@@ -688,6 +688,7 @@ export interface EventMap {
 
   /* ── Crafting discovery events ── */
   'crafting:discovered': { recipeId: string; recipeName: string; rarity: import('@/data/items').ItemRarity };
+  'item:crafted': { recipeId: string; recipeName: string; category: string };
 
   /* ── Photo mode events ── */
   'photo:toggle': Record<string, never>;

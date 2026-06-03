@@ -327,6 +327,7 @@ export function StoryRenderer() {
         const hasWokeUpFlag = choice.effects?.some((e: StoryEffect) => e.type === 'setFlag' && e.flag === 'woke_up');
         if (hasWokeUpFlag) {
           setShowStoryOverlay(false);
+          setCurrentNodeId(''); // Clear so cutscene/scene:enter can't re-show overlay
           // ── World Director: no need to setMode('exploration') — already in exploration ──
           // Only emit stand_up / camera events if the intro was NOT seen.
           // If the intro played, PhaseWaking already emitted these events
@@ -373,8 +374,11 @@ export function StoryRenderer() {
       eventBus.emit('scene:enter', { sceneId: currentNode.sceneId, fromSceneId: currentScene });
     }
     setShowStoryOverlay(false);
-    // ── World Director: already in exploration, just hide overlay ──
-  }, [setShowStoryOverlay]);
+    // Clear currentNodeId so that cutscene end handlers and scene:enter
+    // listeners in GameOrchestrator/GuidedStoryManager cannot re-show the
+    // overlay after the player has explicitly dismissed it.
+    setCurrentNodeId('');
+  }, [setShowStoryOverlay, setCurrentNodeId]);
 
   // Keyboard shortcuts
   useEffect(() => {

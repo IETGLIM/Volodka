@@ -683,6 +683,31 @@ export function GameOrchestrator() {
     return unsub;
   }, []);
 
+  // ── Daily mission progress for crafting ──
+  // Listens for item:crafted events emitted by craftItem() and
+  // updates the corresponding daily mission objectives.
+  useEffect(() => {
+    const unsub = eventBus.on('item:crafted', ({ category }) => {
+      const store = useGameStore.getState();
+      const categoryToObjective: Record<string, string> = {
+        equipment: 'craft_equipment',
+        consumable: 'craft_consumables',
+        quest: 'craft_items',
+      };
+      const objectiveId = categoryToObjective[category] ?? 'craft_items';
+
+      for (const mission of store.acceptedDailyMissions) {
+        if (mission.completed || mission.claimed) continue;
+        // Check if this mission has the matching objective
+        const hasObjective = mission.progress[objectiveId] !== undefined || objectiveId === 'craft_items';
+        if (hasObjective) {
+          store.updateDailyMissionProgress(mission.missionId, objectiveId, 1);
+        }
+      }
+    });
+    return unsub;
+  }, []);
+
   // ── TTL flag cleanup (PoemPowerSystem) — runs once per second ──
   useEffect(() => {
     const ttlInterval = setInterval(() => {
