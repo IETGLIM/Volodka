@@ -18,11 +18,6 @@ import { VirtualControlsContext, sharedVirtualControlsRef } from '@/engine/Virtu
 import { processExpiredTTLFlags } from '@/engine/PoemPowerSystem';
 import { initGuidedStoryManager, disposeGuidedStoryManager, getActQuote } from '@/engine/GuidedStoryManager';
 
-// ── GLB model preloading is handled inside GLBPlayerModel.tsx ──
-// (single preload call for the player model — CesiumMan)
-// Previously this file also did a duplicate preload via dynamic import,
-// which was removed to avoid double-fetching the same model.
-
 // ──────────────────────────────────────────────────────────────────────────
 // P3-TODO: CODE-SPLITTING PLAN (deferred — dev server OOM prevents React.lazy)
 // ──────────────────────────────────────────────────────────────────────────
@@ -1363,8 +1358,6 @@ export function GameOrchestrator() {
               useGameStore.getState().activateQuest(qid);
               setQuestAcceptId(null);
               setQuestAcceptNpcId(undefined);
-              const def = QUEST_DEFINITIONS.find(d => d.id === qid);
-              eventBus.emit('quest:accepted', { questId: qid, questTitle: def?.title ?? qid });
             }}
           />
 

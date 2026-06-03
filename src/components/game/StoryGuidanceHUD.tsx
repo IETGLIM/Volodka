@@ -1,4 +1,3 @@
-'use client'
 
 /* ─── Volodka RPG – StoryGuidanceHUD (Enhanced) ─── */
 /* Persistent HUD element that shows the player what to do next.

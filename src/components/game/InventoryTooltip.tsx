@@ -1,4 +1,3 @@
-'use client'
 
 /* ─── Volodka RPG – Inventory Tooltip ───
  * An enhanced inventory item tooltip that shows on hover.
@@ -8,7 +7,6 @@
 
 import { motion, AnimatePresence } from 'framer-motion'
 import { getItemDefinition, getRarityColor, getRarityLabel, type ItemRarity } from '@/data/items'
-import { QUEST_MINIGAME_MAP } from './MinigameQuestBridge'
 import { CYBERPUNK_COLORS, cyberGlowText } from './CyberpunkTheme'
 import type { InventoryItem, TrainablePlayerSkill } from '@/shared/types/game'
 

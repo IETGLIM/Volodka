@@ -1,4 +1,3 @@
-'use client'
 
 /* ─── Volodka RPG – QuestCompleteDialog (Enhanced) ─── */
 /* Quest completion dialog with green/gold color scheme, NPC portrait,

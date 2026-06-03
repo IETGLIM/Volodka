@@ -1,4 +1,3 @@
-'use client'
 
 /* ─── Volodka RPG – Quest Notification System ─── */
 /* Comprehensive notification system for quest events.
@@ -505,9 +504,9 @@ export function QuestNotificationSystem() {
   useEffect(() => {
     const unsubs: (() => void)[] = []
 
-    // Quest activated event
+    // Quest accepted event
     unsubs.push(
-      eventBus.on('quest:activated', ({ questId }) => {
+      eventBus.on('quest:accepted', ({ questId }) => {
         const def = QUEST_DEFINITIONS.find((d) => d.id === questId)
         if (!def) return
 

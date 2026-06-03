@@ -1,4 +1,3 @@
-'use client'
 
 /* ─── Volodka RPG – Minigame Quest Bridge ───
  * Connects minigames to quests: maps quest IDs to the minigame

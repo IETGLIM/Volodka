@@ -592,9 +592,9 @@ export function useAudioOrchestrator() {
       }),
     );
 
-    // Stinger: quest activated
+    // Stinger: quest accepted
     unsubs.push(
-      eventBus.on('quest:activated', () => {
+      eventBus.on('quest:accepted', () => {
         audioEngine.playStinger('mystery');
       }),
     );

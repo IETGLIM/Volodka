@@ -1,4 +1,3 @@
-'use client'
 
 /* ─── Volodka RPG – QuestAcceptDialog (Enhanced) ─── */
 /* Warcraft-style quest acceptance dialog with cyberpunk terminal styling.

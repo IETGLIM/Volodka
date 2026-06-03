@@ -1,4 +1,3 @@
-'use client'
 
 /* ─── Volodka RPG – Cyberpunk Theme Provider ───
  * Shared theme provider that applies consistent cyberpunk visual effects

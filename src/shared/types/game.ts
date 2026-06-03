@@ -579,7 +579,6 @@ export interface EventMap {
   'sound:play': { type: string };
   'ui:exploration_message': { text: string };
   'exploration:footstep': { position: [number, number, number]; yaw: number };
-  'quest:activated': { questId: string };
   'quest:accepted': { questId: string; questTitle: string };
   'quest:completed': { questId: string; npcId?: string };
   'quest:reward_applied': { questId: string; questTitle: string; xpGained: number; rewards: string[] };
@@ -709,10 +708,6 @@ export interface EventMap {
   'story:act_transition': { fromAct: number; toAct: number; chapterTitle: string };
   /** Emitted when a new quest should be offered to the player */
   'story:quest_available': { questId: string; questTitle: string; questType: string; npcId?: string };
-  /** Emitted when a quest is mandatory to progress */
-  'story:quest_required': { questId: string; questTitle: string };
-  /** Emitted when a story quote should be displayed (act transitions, key choices) */
-  'story:quote': { text: string; actNumber: number };
   /** Emitted when completing a golden path quest unlocks the next one in the chain */
   'story:quest_chain_unlock': {
     completedQuestId: string;

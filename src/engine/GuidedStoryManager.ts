@@ -317,11 +317,7 @@ function advanceStorySpine(visitedNodeId: string) {
       chapterTitle: ACT_CHAPTERS[newAct] ?? `Акт ${newAct}`,
     })
 
-    // Emit a story quote for the act transition
-    const quote = ACT_QUOTES[newAct]
-    if (quote) {
-      eventBus.emit('story:quote', { text: quote, actNumber: newAct })
-    }
+    // story:act_transition is already emitted above — MatrixRainQuote listens to it
   }
 
   // Emit guidance update
@@ -358,10 +354,7 @@ function advanceQuestSpine(completedQuestId: string) {
       chapterTitle: ACT_CHAPTERS[nextAct] ?? `Акт ${nextAct}`,
     })
 
-    const quote = ACT_QUOTES[nextAct]
-    if (quote) {
-      eventBus.emit('story:quote', { text: quote, actNumber: nextAct })
-    }
+    // story:act_transition is already emitted above — MatrixRainQuote listens to it
   }
 
   // Offer next quest — emit both generic and chain-specific events
@@ -375,10 +368,8 @@ function advanceQuestSpine(completedQuestId: string) {
     })
 
     if (nextQuest.def.questType === 'main') {
-      eventBus.emit('story:quest_required', {
-        questId: nextQuest.questId,
-        questTitle: nextQuest.def.title,
-      })
+      // Main quests are shown via story:quest_available above
+      // No separate event needed — story:quest_chain_unlock handles prominent notification
     }
 
     // Emit quest chain unlock event — this is a more prominent notification
@@ -439,10 +430,7 @@ function autoStartFirstQuest() {
   })
 
   if (def.questType === 'main') {
-    eventBus.emit('story:quest_required', {
-      questId: firstQuestId,
-      questTitle: def.title,
-    })
+    // Main quest — already announced via story:quest_available above
   }
 }
 

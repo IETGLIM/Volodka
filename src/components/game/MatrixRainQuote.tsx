@@ -1,4 +1,3 @@
-'use client'
 
 /* ─── Volodka RPG – MatrixRainQuote ─── */
 /* Full-screen matrix rain overlay with typewriter quote text.

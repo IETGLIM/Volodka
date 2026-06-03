@@ -1,4 +1,3 @@
-'use client'
 
 /* ─── Volodka RPG – Level Up Summary ───
  * A detailed level-up screen that explains what changed when the

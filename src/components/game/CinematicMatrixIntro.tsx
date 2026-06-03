@@ -1,4 +1,3 @@
-'use client'
 
 /* ─── Volodka RPG – Cinematic Matrix Intro ─── */
 /* A dramatic 3D-style intro with Matrix Rain that plays when the game starts.

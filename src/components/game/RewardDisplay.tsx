@@ -1,4 +1,3 @@
-'use client'
 
 /* ─── Volodka RPG – Reward Display ───
  * A reusable component for showing quest rewards clearly.

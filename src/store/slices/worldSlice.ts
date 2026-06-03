@@ -147,7 +147,6 @@ export const createWorldSlice: StateCreator<
       const timeOfDay = (get() as unknown as CrossSliceReads).exploration.timeOfDay;
       quests.push({ questId, status: 'active', objectives, startedAtTime: timeOfDay });
 
-      eventBus.emit('quest:activated', { questId });
       eventBus.emit('quest:accepted', { questId, questTitle: definition.title });
 
       const questTitle = definition.title;

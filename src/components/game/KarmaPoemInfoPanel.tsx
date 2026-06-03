@@ -1,4 +1,3 @@
-'use client'
 
 /* ─── Volodka RPG – KarmaPoemInfoPanel ─── */
 /* Panel that explains karma and poem mechanics to the player.
