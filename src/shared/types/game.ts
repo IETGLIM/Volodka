@@ -114,7 +114,6 @@ export type StoryEffectType =
   | 'triggerQuest'
   | 'collectPoem'
   | 'discoverLore'
-  | 'advanceAct'
   | 'combat';
 
 export interface StoryEffect {

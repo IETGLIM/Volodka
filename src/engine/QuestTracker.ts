@@ -75,6 +75,11 @@ export class QuestTracker {
         this.previousFlags = { ...s.playerState.flags };
         this.previousInventoryIds = new Set(s.playerState.inventory.map((i) => i.id));
         this.previousPoems = new Set(s.collectedPoems);
+
+        // Retroactive check after load: active quests may have objectives
+        // that were already met before the save (e.g. due to a previously
+        // missed state change). Re-check all active quests.
+        this.retroactiveCheck();
       }),
     );
 
@@ -98,6 +103,14 @@ export class QuestTracker {
     // already met (race condition between initGuidedStoryManager and quest
     // activation), complete those objectives now.
     this.retroactiveCheck();
+
+    // Also run retroactive check whenever a quest is accepted/activated,
+    // so objectives that were already met before activation are detected.
+    this.unsubscribeEvents.push(
+      eventBus.on('quest:accepted', () => {
+        this.retroactiveCheck();
+      }),
+    );
   }
 
   /** Retroactive check: for each active quest, check if any objectives are

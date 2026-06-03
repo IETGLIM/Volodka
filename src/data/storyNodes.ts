@@ -97,6 +97,7 @@ export const STORY_NODES: Record<string, StoryNode> = {
     speaker: 'narrator',
     sceneId: 'volodka_corridor',
     choices: [
+      { text: 'Осмотреться', next: 'explore_mode' },
       { text: 'Пойти на кухню', next: 'kitchen_table' },
       { text: 'Выйти на улицу', next: 'street_bench' },
       { text: 'Вернуться в комнату', next: 'go_home' },
@@ -109,6 +110,7 @@ export const STORY_NODES: Record<string, StoryNode> = {
     speaker: 'narrator',
     sceneId: 'volodka_room',
     choices: [
+      { text: 'Осмотреться', next: 'explore_mode' },
       { text: 'Сесть за стол', next: 'room_table' },
       { text: 'Осмотреть полку', next: 'room_bookshelf' },
       { text: 'Снова выйти в коридор', next: 'corridor_door' },

@@ -13,7 +13,7 @@ import type { StoryEffect } from '@/shared/types/game'
 
 /* ─── Minigame Types ─── */
 
-export type MinigameType = 'hacking' | 'codebreaker' | 'openstack' | 'bash' | 'poetry' | 'memory' | 'quiz' | 'rhythm'
+export type MinigameType = 'hacking' | 'codebreaker' | 'openstack_terminal' | 'bash_terminal' | 'poetry' | 'memory' | 'quiz' | 'rhythm'
 
 /* ─── Quest-Minigame Mapping ─── */
 
@@ -29,75 +29,60 @@ export interface QuestMinigameMapping {
 export const QUEST_MINIGAME_MAP: Record<string, QuestMinigameMapping> = {
   'incident_scroll_4729': {
     questId: 'incident_scroll_4729',
-    objectiveId: 'diagnose_server',
-    minigameType: 'hacking',
+    objectiveId: 'crack_the_code',       // Fixed: was 'diagnose_server' which doesn't exist in quest definition
+    minigameType: 'codebreaker',         // Fixed: was 'hacking' but quest expects target 'codebreaker'
     difficulty: 2,
-    failureText: 'Сервер не поддаётся... Нужно попробовать снова.',
-    successText: 'Диагностика завершена! Инцидент #4729 раскрыт.',
+    failureText: 'Шифр не поддаётся... Нужно попробовать снова.',
+    successText: 'Шифр взломан! Инцидент #4729 раскрыт.',
   },
   'vault_backup_trial': {
     questId: 'vault_backup_trial',
-    objectiveId: 'break_encryption',
-    minigameType: 'codebreaker',
+    objectiveId: 'hack_vault_terminal',   // Fixed: was 'break_encryption' which doesn't exist in quest definition
+    minigameType: 'bash_terminal',         // Must match gameType emitted by BashTerminalGame
     difficulty: 3,
-    failureText: 'Шифр слишком сложен. Попробуй ещё раз.',
-    successText: 'Шифр взломан! Хранилище открыто.',
+    failureText: 'Терминал не отвечает. Попробуй ещё раз.',
+    successText: 'Терминал Хранилища взломан!',
   },
   'network_initiation': {
     questId: 'network_initiation',
-    objectiveId: 'prove_skills',
-    minigameType: 'openstack',
+    objectiveId: 'navigate_network',      // Fixed: was 'prove_skills' which doesn't exist in quest definition
+    minigameType: 'hacking',               // Must match gameType emitted by HackingGame
     difficulty: 3,
     failureText: 'Сеть не принимает тебя. Докажи свои навыки.',
     successText: 'Сеть признала тебя. Посвящение пройдено.',
   },
   'poetry_collection': {
     questId: 'poetry_collection',
-    objectiveId: 'compose_poem',
-    minigameType: 'poetry',
+    objectiveId: 'enter_poetry_trance',   // Fixed: was 'compose_poem' which doesn't exist in quest definition
+    minigameType: 'poetry',                // Must match gameType emitted by PoetryCompositionGame
     difficulty: 2,
     failureText: 'Стихотворение не сложилось... Попробуй снова.',
     successText: 'Твои стихи пронзают тишину. Поэзия жива!',
   },
-  'guild_infiltration': {
-    questId: 'guild_infiltration',
-    objectiveId: 'bypass_security',
-    minigameType: 'hacking',
-    difficulty: 3,
-    failureText: 'Система безопасности обнаружила тебя!',
-    successText: 'Обход безопасности завершён. Ты внутри.',
-  },
-  'digital_ghost': {
-    questId: 'digital_ghost',
-    objectiveId: 'trace_ghost',
-    minigameType: 'memory',
-    difficulty: 2,
-    failureText: 'Призрак ускользнул... Попробуй снова.',
-    successText: 'Цифровой Призрак найден!',
-  },
-  'broken_terminal': {
-    questId: 'broken_terminal',
-    objectiveId: 'fix_terminal',
-    minigameType: 'bash',
-    difficulty: 2,
-    failureText: 'Терминал не отвечает... Попробуй снова.',
-    successText: 'Терминал восстановлен!',
-  },
-  'openstack_crisis': {
-    questId: 'openstack_crisis',
-    objectiveId: 'stabilize_cloud',
-    minigameType: 'openstack',
-    difficulty: 3,
-    failureText: 'Облако рушится! Нужна ещё попытка.',
-    successText: 'Облако стабилизировано!',
-  },
-  'banking_crash': {
-    questId: 'banking_crash',
-    objectiveId: 'recover_data',
+  // ── Quests with actual minigame_completed objectives ──
+  'archive_of_forgotten': {
+    questId: 'archive_of_forgotten',
+    objectiveId: 'unlock_archive',
     minigameType: 'codebreaker',
-    difficulty: 2,
-    failureText: 'Данные не восстановлены...',
-    successText: 'Данные банка восстановлены!',
+    difficulty: 3,
+    failureText: 'Архив заблокирован... Попробуй снова.',
+    successText: 'Архив стихов разблокирован!',
+  },
+  'final_code': {
+    questId: 'final_code',
+    objectiveId: 'write_freedom_virus',
+    minigameType: 'openstack_terminal',
+    difficulty: 4,
+    failureText: 'Код не компилируется... Нужна ещё попытка.',
+    successText: 'Вирус свободы написан!',
+  },
+  'echo_of_vladimir': {
+    questId: 'echo_of_vladimir',
+    objectiveId: 'unlock_final_poem',
+    minigameType: 'poetry',
+    difficulty: 3,
+    failureText: 'Стихотворение не открывается...',
+    successText: 'Финальное стихотворение Владимира раскрыто!',
   },
 }
 

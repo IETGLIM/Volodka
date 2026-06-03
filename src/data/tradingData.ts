@@ -5,12 +5,8 @@
 
 import type { ItemRarity } from '@/data/items';
 
-/* ─── Currency type ─── */
-export type Currency = 'кредиты';
-
-export const CURRENCY_NAME: Currency = 'кредиты';
+/* ─── Currency constants ─── */
 export const CURRENCY_SYMBOL = '₴';
-export const INITIAL_CREDITS = 100;
 
 /* ─── Merchant item entry ─── */
 export interface MerchantItem {
@@ -169,13 +165,6 @@ export function getMerchantInventory(npcId: string): MerchantInventory | undefin
 }
 
 /**
- * Get all merchant NPC IDs.
- */
-export function getMerchantNpcIds(): string[] {
-  return MERCHANT_INVENTORIES.map((m) => m.npcId);
-}
-
-/**
  * Calculate the buy price for an item from a specific merchant,
  * accounting for the player's relationship with that NPC.
  * Better relationship → lower price (up to maxRelationDiscount).
@@ -212,15 +201,6 @@ export function getSellPrice(
   const relationBonus = (relationValue / 100) * 0.10;
   const price = Math.round(itemBasePrice * (buyEntry.buyPricePercent + relationBonus));
   return Math.max(1, price);
-}
-
-/**
- * Check if a merchant sells a specific item.
- */
-export function merchantSellsItem(npcId: string, itemId: string): boolean {
-  const merchant = MERCHANT_MAP.get(npcId);
-  if (!merchant) return false;
-  return merchant.sells.some((s) => s.itemId === itemId);
 }
 
 /**

@@ -213,13 +213,3 @@ const RECIPE_MAP = new Map<string, CraftingRecipe>(CRAFTING_RECIPES.map((r) => [
 export function getRecipeById(recipeId: string): CraftingRecipe | undefined {
   return RECIPE_MAP.get(recipeId);
 }
-
-/** Get all recipes */
-export function getAllRecipes(): CraftingRecipe[] {
-  return [...CRAFTING_RECIPES];
-}
-
-/** Get recipes by category */
-export function getRecipesByCategory(category: CraftingCategory): CraftingRecipe[] {
-  return CRAFTING_RECIPES.filter((r) => r.category === category);
-}

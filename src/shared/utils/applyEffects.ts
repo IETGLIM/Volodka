@@ -7,7 +7,7 @@ import type { StoryEffect, TrainablePlayerSkill, EnemyType } from '@/shared/type
  * Apply story/dialogue effects to the game store.
  * Unified version handling ALL effect types:
  * - Common: setFlag, addSkill, addKarma, addStat, addItem, npcChange, collectPoem, triggerQuest
- * - From shared version: discoverLore, advanceAct
+ * - From shared version: discoverLore
  * - From orchestrator version: removeItem, combat
  *
  * Optional callbacks:
@@ -87,9 +87,8 @@ export function applyEffects(
           }
         }
         break;
-      case 'advanceAct':
-        store.advanceAct();
-        break;
+      // advanceAct removed from applyEffects to prevent double-advance bug.
+      // Act advancement is handled exclusively by GuidedStoryManager.
       case 'combat':
         if (fx.enemyType) {
           callbacks?.startCombat?.(fx.enemyType as EnemyType);

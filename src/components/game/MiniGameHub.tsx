@@ -16,7 +16,7 @@ interface MiniGameHubProps {
   onClose: () => void;
 }
 
-type GameType = 'codebreaker' | 'openstack' | 'bash' | 'poetry' | 'hacking' | 'memory' | 'quiz' | 'rhythm';
+type GameType = 'codebreaker' | 'openstack_terminal' | 'bash_terminal' | 'poetry' | 'hacking' | 'memory' | 'quiz' | 'rhythm';
 
 interface MiniGameDef {
   gameType: GameType;
@@ -45,7 +45,7 @@ const GAMES: MiniGameDef[] = [
     maxDifficulty: 5,
   },
   {
-    gameType: 'openstack',
+    gameType: 'openstack_terminal',
     icon: '☁️',
     name: 'Терминал OpenStack',
     description: 'Управляйте облачной инфраструктурой через терминал',
@@ -56,7 +56,7 @@ const GAMES: MiniGameDef[] = [
     maxDifficulty: 5,
   },
   {
-    gameType: 'bash',
+    gameType: 'bash_terminal',
     icon: '⌨️',
     name: 'Терминал Bash',
     description: 'Выполняйте команды Linux для решения задач',

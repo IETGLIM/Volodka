@@ -403,10 +403,16 @@ function emitGuidanceUpdate() {
 /* ─── Auto-start the first quest ─── */
 function autoStartFirstQuest() {
   const store = useGameStore.getState()
-  if (store.quests.some((q) => q.status === 'active' || q.status === 'completed')) return
-
   const firstQuestId = GOLDEN_PATH_QUEST_SPINE[0]
   if (!firstQuestId) return
+
+  // Check specifically if the first quest is already active or completed,
+  // rather than blocking on ANY active quest. The old guard
+  //   if (store.quests.some((q) => q.status === 'active' || q.status === 'completed')) return
+  // prevented first_reading from being activated when any other quest
+  // existed (e.g. after loading a save with other quests active).
+  const existing = store.quests.find((q) => q.questId === firstQuestId)
+  if (existing && existing.status !== 'inactive' && existing.status !== 'failed') return
 
   const def = QUEST_DEFINITIONS.find((d) => d.id === firstQuestId)
   if (!def) return

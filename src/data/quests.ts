@@ -256,7 +256,7 @@ export const QUEST_DEFINITIONS: QuestDefinition[] = [
       { id: 'collect_poem_19', description: 'Стихотворение XIX — Неоновая Панихида', type: 'poem_collected', target: 'poem_19', completed: false },
       { id: 'collect_poem_20', description: 'Стихотворение XX — Чип в затылке', type: 'poem_collected', target: 'poem_20', completed: false },
       { id: 'collect_poem_21', description: 'Стихотворение XXI — Белая Река', type: 'poem_collected', target: 'poem_21', completed: false },
-      { id: 'enter_poetry_trance', description: 'Войти в поэтический транс (мини-игра «Поэтическая композиция»)', type: 'minigame_completed', target: 'poetry_composition', completed: false },
+      { id: 'enter_poetry_trance', description: 'Войти в поэтический транс (мини-игра «Поэтическая композиция»)', type: 'minigame_completed', target: 'poetry', completed: false },
     ],
     rewards: [
       { type: 'addSkill', skill: 'writing', value: 7 },
@@ -1681,7 +1681,7 @@ export const QUEST_DEFINITIONS: QuestDefinition[] = [
         id: 'write_freedom_virus',
         description: 'Написать вирус свободы на основе стихов',
         type: 'minigame_completed',
-        target: 'openstack',
+        target: 'openstack_terminal',
         completed: false,
         poemPowerBypass: 'poem_21',
         poemPowerHint: 'Стихотворение «Белая Река, Чёрный Кабель» — ключ к финальному коду',
