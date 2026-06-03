@@ -572,6 +572,24 @@ export function initGuidedStoryManager() {
     }
   })
 
+  // Listen for flag changes (story-advancing flags like act transitions)
+  unsubFlagSet = useGameStore.subscribe((state) => {
+    const flags = state.activeTTLFlags
+    // Check if any flag corresponds to a golden path story node
+    const storyFlagKeywords = ['act', 'vault', 'guild', 'broadcast', 'rescue', 'defection', 'infiltrated']
+    for (const flag of flags) {
+      const flagKey = flag.key.toLowerCase()
+      if (storyFlagKeywords.some((kw) => flagKey.includes(kw))) {
+        const nodeMatch = GOLDEN_PATH_STORY_SPINE.find(
+          (n) => n.toLowerCase().includes(flagKey.replace(/_/g, '')),
+        )
+        if (nodeMatch && GOLDEN_PATH_STORY_SPINE.indexOf(nodeMatch) >= currentStepIndex) {
+          advanceStorySpine(nodeMatch)
+        }
+      }
+    }
+  })
+
   // Emit initial guidance
   emitGuidanceUpdate()
 }

@@ -1,7 +1,10 @@
 /* ─── Volodka RPG – NPC daily schedules ─── */
 /* Defines where each NPC is at any given hour of the day.
  * Each NPC follows a daily routine with schedule entries that
- * map time ranges to scenes, positions, and activities. */
+ * map time ranges to scenes, positions, and activities.
+ *
+ * Act-conditional schedules override the base schedule when
+ * story flags or quest completions change NPC behavior. */
 
 import type { ScheduleEntry, SceneId } from '@/shared/types/game';
 
@@ -10,6 +13,23 @@ import type { ScheduleEntry, SceneId } from '@/shared/types/game';
 export interface NPCSchedule {
   id: string;
   npcId: string;
+  entries: ScheduleEntry[];
+}
+
+/** An act-conditional schedule override that replaces the base schedule
+ *  when all required flags are set. First matching override wins. */
+export interface ActScheduleOverride {
+  /** Unique ID for this override */
+  id: string;
+  /** Which NPC this applies to */
+  npcId: string;
+  /** Minimum act (1-5) required for this override to activate */
+  minAct: number;
+  /** Quest IDs that must be completed for this override to activate */
+  requiredCompletedQuests?: string[];
+  /** Story flags that must be set for this override to activate */
+  requiredFlags?: string[];
+  /** The replacement schedule entries */
   entries: ScheduleEntry[];
 }
 
@@ -250,3 +270,106 @@ export const NPC_SCHEDULES: NPCSchedule[] = [
 export const NPC_SCHEDULES_MAP: Record<string, NPCSchedule> = Object.fromEntries(
   NPC_SCHEDULES.map((s) => [s.npcId, s]),
 );
+
+/* ─── Act-conditional schedule overrides ─── */
+/* These replace the base schedule when story conditions are met.
+ * The ScheduleEngine checks these overrides before falling back to base. */
+
+export const ACT_SCHEDULE_OVERRIDES: ActScheduleOverride[] = [
+  /* ── Act 3: Zarema is captured → removed from normal locations ── */
+  {
+    id: 'override_zarema_act3_captured',
+    npcId: 'zarema',
+    minAct: 3,
+    requiredCompletedQuests: ['zarema_rescue'],
+    requiredFlags: ['zarema_captured'],
+    entries: [
+      { startHour: 0, endHour: 24, sceneId: 'abandoned_factory', position: [0, 0, 2.0], activity: 'rest' },
+    ],
+  },
+
+  /* ── Act 3: Maria is more active in the streets, less hiding ── */
+  {
+    id: 'override_maria_act3',
+    npcId: 'maria',
+    minAct: 3,
+    entries: [
+      { startHour: 0, endHour: 6, sceneId: 'street_night', position: [-2.0, 0, 1.0], activity: 'walk' },
+      { startHour: 6, endHour: 10, sceneId: 'cafe_evening', position: [-1.0, 0, 2.5], activity: 'talk' },
+      { startHour: 10, endHour: 14, sceneId: 'office_day', position: [2.0, 0, 1.0], activity: 'work' },
+      { startHour: 14, endHour: 18, sceneId: 'abandoned_factory', position: [1.0, 0, -1.0], activity: 'work' },
+      { startHour: 18, endHour: 22, sceneId: 'street_night', position: [-3.0, 0, 2.0], activity: 'walk' },
+      { startHour: 22, endHour: 24, sceneId: 'rooftop_edge', position: [0.0, 0, -2.0], activity: 'rest' },
+    ],
+  },
+
+  /* ── Act 3: Dmitry defected → hangs out in the factory with the resistance ── */
+  {
+    id: 'override_dmitry_act3_defected',
+    npcId: 'office_dmitry',
+    minAct: 3,
+    requiredCompletedQuests: ['dmitry_defection'],
+    entries: [
+      { startHour: 0, endHour: 6, sceneId: 'abandoned_factory', position: [-1.0, 0, 2.0], activity: 'sleep' },
+      { startHour: 6, endHour: 8, sceneId: 'abandoned_factory', position: [0.5, 0, 1.5], activity: 'work' },
+      { startHour: 8, endHour: 12, sceneId: 'cafe_evening', position: [-2.0, 0, 0.5], activity: 'talk' },
+      { startHour: 12, endHour: 18, sceneId: 'abandoned_factory', position: [0.5, 0, 1.0], activity: 'work' },
+      { startHour: 18, endHour: 22, sceneId: 'street_night', position: [-2.0, 0, 0.0], activity: 'walk' },
+      { startHour: 22, endHour: 24, sceneId: 'abandoned_factory', position: [-1.0, 0, 2.0], activity: 'rest' },
+    ],
+  },
+
+  /* ── Act 4: Alexander is under pressure → stays late at office ── */
+  {
+    id: 'override_alexander_act4',
+    npcId: 'office_alexander',
+    minAct: 4,
+    entries: [
+      { startHour: 0, endHour: 4, sceneId: 'office_day', position: [3.5, 0, -1.0], activity: 'work' },
+      { startHour: 4, endHour: 7, sceneId: 'street_night', position: [2.0, 0, -1.0], activity: 'walk' },
+      { startHour: 7, endHour: 8, sceneId: 'home_evening', position: [-1.0, 0, 0.5], activity: 'rest' },
+      { startHour: 8, endHour: 22, sceneId: 'office_day', position: [3.5, 0, -1.0], activity: 'work' },
+      { startHour: 22, endHour: 24, sceneId: 'cafe_evening', position: [1.5, 0, -1.0], activity: 'talk' },
+    ],
+  },
+
+  /* ── Act 4: Lena goes full resistance → rarely at home ── */
+  {
+    id: 'override_lena_act4',
+    npcId: 'lena',
+    minAct: 4,
+    entries: [
+      { startHour: 0, endHour: 6, sceneId: 'abandoned_factory', position: [0, 0, 3.5], activity: 'work' },
+      { startHour: 6, endHour: 8, sceneId: 'street_night', position: [-1.5, 0, 1.0], activity: 'walk' },
+      { startHour: 8, endHour: 12, sceneId: 'abandoned_factory', position: [1.0, 0, 2.0], activity: 'work' },
+      { startHour: 12, endHour: 14, sceneId: 'cafe_evening', position: [-0.5, 0, 2.0], activity: 'talk' },
+      { startHour: 14, endHour: 18, sceneId: 'office_day', position: [2.5, 0, 1.0], activity: 'work' },
+      { startHour: 18, endHour: 24, sceneId: 'abandoned_factory', position: [0, 0, 3.5], activity: 'work' },
+    ],
+  },
+
+  /* ── Act 4: Albert joins the resistance meetings ── */
+  {
+    id: 'override_albert_act4',
+    npcId: 'albert',
+    minAct: 4,
+    entries: [
+      { startHour: 0, endHour: 7, sceneId: 'zarema_albert_room', position: [-1.5, 0, 1.0], activity: 'sleep' },
+      { startHour: 7, endHour: 9, sceneId: 'cafe_evening', position: [-2.5, 0, -3.0], activity: 'read' },
+      { startHour: 9, endHour: 14, sceneId: 'abandoned_factory', position: [-1.0, 0, 3.0], activity: 'talk' },
+      { startHour: 14, endHour: 18, sceneId: 'library_day', position: [2.0, 0, -1.0], activity: 'read' },
+      { startHour: 18, endHour: 22, sceneId: 'abandoned_factory', position: [-1.0, 0, 3.0], activity: 'talk' },
+      { startHour: 22, endHour: 24, sceneId: 'street_night', position: [1.0, 0, -2.0], activity: 'walk' },
+    ],
+  },
+
+  /* ── Act 5: Sergey defends the vault → always at office ── */
+  {
+    id: 'override_sergey_act5',
+    npcId: 'sergey',
+    minAct: 5,
+    entries: [
+      { startHour: 0, endHour: 24, sceneId: 'office_day', position: [2.5, 0, -1.0], activity: 'work' },
+    ],
+  },
+];

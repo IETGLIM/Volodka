@@ -1,10 +1,59 @@
 /* ─── Volodka RPG – NPC schedule system ─── */
 /* Provides functions for looking up where NPCs are at any given time,
  * and which NPCs are in a given scene. Delegates schedule data to
- * src/data/npcSchedules.ts and integrates with the exploration state. */
+ * src/data/npcSchedules.ts and integrates with the exploration state.
+ *
+ * Supports act-conditional schedule overrides: when story conditions
+ * change (act progression, quest completions, flags), NPCs relocate. */
 
 import type { ScheduleEntry, SceneId } from '@/shared/types/game';
-import { NPC_SCHEDULES_MAP } from '@/data/npcSchedules';
+import { NPC_SCHEDULES_MAP, ACT_SCHEDULE_OVERRIDES } from '@/data/npcSchedules';
+import { getGameStore } from '@/store/gameStore';
+
+/* ─── Override resolution ─── */
+
+/**
+ * Resolve the effective schedule entries for an NPC by checking
+ * act-conditional overrides first. First matching override wins.
+ * Falls back to the base schedule if no override matches.
+ */
+export function resolveEffectiveSchedule(npcId: string): ScheduleEntry[] {
+  const store = getGameStore();
+  const currentAct = store.playerState.progression.currentAct ?? 1;
+  const completedQuests = new Set(
+    store.quests.filter((q) => q.status === 'completed').map((q) => q.questId),
+  );
+  const activeFlags = new Set(store.activeTTLFlags.map((f) => f.key));
+  // Also check permanent flags stored in playerState
+  const playerFlags = store.playerState.flags ?? {};
+
+  for (const override of ACT_SCHEDULE_OVERRIDES) {
+    if (override.npcId !== npcId) continue;
+    if (currentAct < override.minAct) continue;
+
+    // Check quest completion requirements
+    if (override.requiredCompletedQuests) {
+      const allCompleted = override.requiredCompletedQuests.every((qId) =>
+        completedQuests.has(qId),
+      );
+      if (!allCompleted) continue;
+    }
+
+    // Check flag requirements
+    if (override.requiredFlags) {
+      const allFlagsSet = override.requiredFlags.every(
+        (flag) => activeFlags.has(flag) || playerFlags[flag],
+      );
+      if (!allFlagsSet) continue;
+    }
+
+    // All conditions met — use this override
+    return override.entries;
+  }
+
+  // No override matched — use base schedule
+  return NPC_SCHEDULES_MAP[npcId]?.entries ?? [];
+}
 
 /* ─── Core lookup functions ─── */
 
@@ -19,10 +68,8 @@ export function getNPCLocationForTime(
   npcId: string,
   hour: number,
 ): ScheduleEntry | null {
-  const schedule = NPC_SCHEDULES_MAP[npcId];
-  if (!schedule) return null;
-
-  const { entries } = schedule;
+  const entries = resolveEffectiveSchedule(npcId);
+  if (!entries.length) return null;
 
   for (const entry of entries) {
     if (hour >= entry.startHour && hour < entry.endHour) {
@@ -43,8 +90,9 @@ export function getNPCLocationForTime(
 export function getNPCsInScene(sceneId: SceneId, hour: number): string[] {
   const result: string[] = [];
 
-  for (const [npcId, schedule] of Object.entries(NPC_SCHEDULES_MAP)) {
-    for (const entry of schedule.entries) {
+  for (const npcId of Object.keys(NPC_SCHEDULES_MAP)) {
+    const entries = resolveEffectiveSchedule(npcId);
+    for (const entry of entries) {
       if (hour >= entry.startHour && hour < entry.endHour) {
         if (entry.sceneId === sceneId) {
           result.push(npcId);
@@ -93,7 +141,7 @@ export function buildNPCStatesForTime(hour: number): Record<
 > {
   const result: Record<string, { position: [number, number, number]; sceneId: SceneId }> = {};
 
-  for (const [npcId, schedule] of Object.entries(NPC_SCHEDULES_MAP)) {
+  for (const npcId of Object.keys(NPC_SCHEDULES_MAP)) {
     const entry = getNPCLocationForTime(npcId, hour);
     if (entry) {
       result[npcId] = {
@@ -113,7 +161,7 @@ export function buildNPCStatesForTime(hour: number): Record<
  * @param npcId — the NPC's identifier
  */
 export function getNPCSchedule(npcId: string): ScheduleEntry[] {
-  return NPC_SCHEDULES_MAP[npcId]?.entries ?? [];
+  return resolveEffectiveSchedule(npcId);
 }
 
 /**

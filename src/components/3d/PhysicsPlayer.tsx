@@ -27,7 +27,7 @@
  *  • Autostep handles stairs and small obstacles
  */
 
-import { useRef, useEffect, useMemo, Suspense } from 'react';
+import { useRef, useEffect, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { RigidBody, CapsuleCollider, useRapier, type RapierRigidBody } from '@react-three/rapier';
 import * as THREE from 'three';
@@ -46,7 +46,6 @@ import { audioEngine } from '@/engine/AudioEngine';
 
 import { isInteractionLocked } from './InteractionSystemBridge';
 import { setPlayerRigidBody, getPlayerExternalVelocity, clearPlayerRigidBody } from '@/engine/PlayerRigidBodyState';
-import { GLBModelErrorBoundary, GLBPlayerModel } from './GLBPlayerModel';
 import { ProceduralPlayerModel } from './ProceduralPlayerModel';
 
 /** Lerp angle with wraparound — smooth rotation without 360 jumps */
@@ -846,14 +845,8 @@ export function PhysicsPlayer({
       {/* Contact shadow — flat circle at player feet */}
       <ContactShadow />
 
-      {/* Player model — GLB primary (CesiumMan with animations), procedural fallback */}
-      <Suspense fallback={<ProceduralPlayerModel modelScale={modelScale} karmaGlow={karmaGlow} currentAnimRef={currentAnimRef} rotationRef={livePlayerRotationRef} />}>
-        <GLBModelErrorBoundary
-          fallback={<ProceduralPlayerModel modelScale={modelScale} karmaGlow={karmaGlow} currentAnimRef={currentAnimRef} rotationRef={livePlayerRotationRef} />}
-        >
-          <GLBPlayerModel modelScale={modelScale} karmaGlow={karmaGlow} currentAnimRef={currentAnimRef} rotationRef={livePlayerRotationRef} />
-        </GLBModelErrorBoundary>
-      </Suspense>
+      {/* Procedural model — default for cyberpunk aesthetic, no external GLB dependency */}
+      <ProceduralPlayerModel modelScale={modelScale} karmaGlow={karmaGlow} currentAnimRef={currentAnimRef} rotationRef={livePlayerRotationRef} />
 
       {/* Karma glow point light — strong aura for visibility in dark scenes */}
       <pointLight

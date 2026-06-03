@@ -375,6 +375,51 @@ const POEM_POWERS: Record<string, PoemPower> = {
     },
     flagsToSet: [{ key: 'truth_return_active', durationMs: 30000 }],
   },
+  poem_19: {
+    poemId: 'poem_19',
+    name: 'Неоновая Панихида',
+    description: 'Память павших даёт силу. +8 кармы, +30 энергии и временное улучшение эмпатии на +4. Неон горит в их честь.',
+    cooldownMs: 160000,
+    effect: () => {
+      const store = getGameStore();
+      store.addKarma(8);
+      store.addEnergy(30);
+      store.addSkill('empathy', 4);
+      eventBus.emit('ui:exploration_message', { text: '🕯️ Неоновая Панихида... Память павших наполняет силой.' });
+    },
+    flagsToSet: [{ key: 'neon_requiem_active', durationMs: 35000 }],
+    reverseOnExpiry: [{ type: 'skill', key: 'empathy', value: -4 }],
+  },
+  poem_20: {
+    poemId: 'poem_20',
+    name: 'Чип в затылке',
+    description: 'Отказ от контроля пробуждает волю. +15 к хакингу, -20 стресса, временное сопротивление корпоративным флагам.',
+    cooldownMs: 170000,
+    effect: () => {
+      const store = getGameStore();
+      store.addSkill('coding', 15);
+      store.addStress(-20);
+      eventBus.emit('ui:exploration_message', { text: '🔓 Чип в затылке... Свобода думать — величайшая сила.' });
+    },
+    flagsToSet: [{ key: 'chip_resistance_active', durationMs: 40000 }, { key: 'corporate_immune', durationMs: 40000 }],
+    reverseOnExpiry: [{ type: 'skill', key: 'coding', value: -15 }],
+  },
+  poem_21: {
+    poemId: 'poem_21',
+    name: 'Белая Река, Чёрный Кабель',
+    description: 'Древняя река смывает корпоративную скверну. +20 кармы, полное восстановление энергии, очистка негативных статус-эффектов.',
+    cooldownMs: 200000,
+    effect: () => {
+      const store = getGameStore();
+      store.addKarma(20);
+      store.addEnergy(Math.max(0, 100 - store.playerState.energy)); // Full restore
+      store.addStress(-50);
+      store.addSkill('persuasion', 5);
+      eventBus.emit('ui:exploration_message', { text: '🌊 Белая Река... Древняя сила смывает тьму. Чёрный Кабель разорван.' });
+    },
+    flagsToSet: [{ key: 'white_river_purification', durationMs: 45000 }],
+    reverseOnExpiry: [{ type: 'skill', key: 'persuasion', value: -5 }],
+  },
 };
 
 /* ─── Public API ─── */

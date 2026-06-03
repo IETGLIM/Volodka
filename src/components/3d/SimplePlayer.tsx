@@ -19,7 +19,6 @@ import {
 import { eventBus } from '@/engine/EventBus';
 import { audioEngine } from '@/engine/AudioEngine';
 import { isInteractionLocked } from './InteractionSystemBridge';
-import { GLBModelErrorBoundary, GLBPlayerModel } from './GLBPlayerModel';
 import { ProceduralPlayerModel } from './ProceduralPlayerModel';
 
 function lerpAngle(a: number, b: number, t: number): number {
@@ -222,11 +221,8 @@ export function SimplePlayer({
       position={[spawnPoint[0], spawnPoint[1], spawnPoint[2]]}
       rotation={[0, 0, 0]}
     >
-      <GLBModelErrorBoundary
-        fallback={<ProceduralPlayerModel modelScale={modelScale} karmaGlow={karmaGlow} currentAnimRef={currentAnimRef} rotationRef={livePlayerRotationRef} />}
-      >
-        <GLBPlayerModel modelScale={modelScale} karmaGlow={karmaGlow} currentAnimRef={currentAnimRef} rotationRef={livePlayerRotationRef} />
-      </GLBModelErrorBoundary>
+      {/* Procedural model — default for cyberpunk aesthetic, no external GLB dependency */}
+      <ProceduralPlayerModel modelScale={modelScale} karmaGlow={karmaGlow} currentAnimRef={currentAnimRef} rotationRef={livePlayerRotationRef} />
 
       <pointLight
         position={[0, 1.0, 0]}
