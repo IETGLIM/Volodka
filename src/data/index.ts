@@ -22,6 +22,7 @@ export { DIALOGUE_NODES } from './dialogueNodes';
 
 // NPCs
 export { NPC_DEFINITIONS } from './npcDefinitions';
+export { EXPANDED_NPCS, EXPANDED_NPC_BARK_TEXTS, EXPANDED_NPC_QUEST_LINKS } from './expandedNPCs';
 
 // Quests
 export { QUEST_DEFINITIONS } from './quests';

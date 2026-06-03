@@ -688,7 +688,7 @@ export interface EventMap {
   'fx:stat_change': { stat: string; delta: number; type: 'positive' | 'negative' };
 
   /* ── Crafting discovery events ── */
-  'crafting:discovered': { recipeId: string; recipeName: string; rarity: 'common' | 'rare' | 'epic' };
+  'crafting:discovered': { recipeId: string; recipeName: string; rarity: import('@/data/items').ItemRarity };
 
   /* ── Photo mode events ── */
   'photo:toggle': Record<string, never>;

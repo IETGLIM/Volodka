@@ -603,6 +603,15 @@ export const createPlayerSlice: StateCreator<
         };
       }
 
+      // Emit crafting:discovered event for UI toast (outside Zustand set via queueMicrotask)
+      queueMicrotask(() => {
+        eventBus.emit('crafting:discovered', {
+          recipeId,
+          recipeName: recipe.name,
+          rarity: recipe.outputRarity,
+        });
+      });
+
       return {
         playerState: {
           ...state.playerState,

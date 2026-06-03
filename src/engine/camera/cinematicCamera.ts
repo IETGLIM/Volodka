@@ -526,9 +526,6 @@ export function applyEnhancedBreathingIdle(
   );
 }
 
-/** Legacy alias for compatibility */
-export const applyMicroIdleAnimation = applyEnhancedBreathingIdle;
-
 /* ════════════════════════════════════════════════════
  * CUTSCENE CAMERA
  * Waypoint-based camera with cubic bezier interpolation.

@@ -177,30 +177,7 @@ export const MATRIX_QUOTES: MatrixQuote[] = [
 
 /* ─── Lookup helpers ─── */
 
-/** Build a trigger → quote lookup map */
-const TRIGGER_MAP = new Map<string, MatrixQuote>()
-for (const quote of MATRIX_QUOTES) {
-  TRIGGER_MAP.set(quote.trigger, quote)
-}
-
-/** Get a quote by its trigger (story node, quest, or event name) */
-export function getQuoteByTrigger(trigger: string): MatrixQuote | undefined {
-  return TRIGGER_MAP.get(trigger)
-}
-
 /** Get all quotes for a given act */
 export function getQuotesByAct(act: number): MatrixQuote[] {
   return MATRIX_QUOTES.filter((q) => q.act === act)
-}
-
-/** Get all quotes with a specific mood */
-export function getQuotesByMood(mood: MatrixQuote['mood']): MatrixQuote[] {
-  return MATRIX_QUOTES.filter((q) => q.mood === mood)
-}
-
-/** Get a random quote for a given act */
-export function getRandomQuoteForAct(act: number): MatrixQuote | undefined {
-  const actQuotes = getQuotesByAct(act)
-  if (actQuotes.length === 0) return undefined
-  return actQuotes[Math.floor(Math.random() * actQuotes.length)]
 }

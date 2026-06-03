@@ -8,44 +8,8 @@ import {
   Check,
   AlertCircle,
   Package,
-  Zap,
-  Coffee,
-  Shield,
-  Key,
-  BookOpen,
-  Cpu,
-  HardDrive,
-  CircuitBoard,
-  Headphones,
-  Cable,
-  Ghost,
-  Bandage,
-  Hexagon,
-  Sparkles,
-  Usb,
-  ShieldCheck,
-  Terminal,
-  Brain,
-  Stethoscope,
-  Heart,
-  Gem,
-  Unlock,
-  Bug,
-  ScrollText,
-  Feather,
-  Flame,
-  Flower2,
-  File,
-  Award,
-  Braces,
-  Smartphone,
-  Laptop,
-  Syringe,
-  Shirt,
-  Wine,
-  Leaf,
-  FileText,
 } from 'lucide-react';
+import { ItemIcon } from './shared/ItemIcon';
 import { useGameStore } from '@/store/gameStore';
 import {
   getItemDefinition,
@@ -63,54 +27,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { PanelWrapper } from '@/components/game/PanelWrapper';
 
-/* ─── Icon renderer ─── */
-function ItemIcon({ iconName, className }: { iconName?: string; className?: string }) {
-  switch (iconName) {
-    case 'Coffee': return <Coffee className={className} />;
-    case 'Cigarette': return <Flame className={className} />;
-    case 'Zap': return <Zap className={className} />;
-    case 'Pill': return <Syringe className={className} />;
-    case 'Wine': return <Wine className={className} />;
-    case 'Leaf': return <Leaf className={className} />;
-    case 'Chip': return <CircuitBoard className={className} />;
-    case 'FileText': return <FileText className={className} />;
-    case 'Badge': return <Award className={className} />;
-    case 'Key': return <Key className={className} />;
-    case 'ScrollText': return <ScrollText className={className} />;
-    case 'Usb': return <Usb className={className} />;
-    case 'Smartphone': return <Smartphone className={className} />;
-    case 'Laptop': return <Laptop className={className} />;
-    case 'BookOpen': return <BookOpen className={className} />;
-    case 'Cpu': return <Cpu className={className} />;
-    case 'Braces': return <Braces className={className} />;
-    case 'Award': return <Award className={className} />;
-    case 'Shield': return <Shield className={className} />;
-    case 'Feather': return <Feather className={className} />;
-    case 'File': return <File className={className} />;
-    case 'Syringe': return <Syringe className={className} />;
-    case 'Flower2': return <Flower2 className={className} />;
-    case 'ShieldCheck': return <ShieldCheck className={className} />;
-    case 'Terminal': return <Terminal className={className} />;
-    case 'Flame': return <Flame className={className} />;
-    case 'Shirt': return <Shirt className={className} />;
-    case 'Candy': return <Flower2 className={className} />;
-    case 'HardDrive': return <HardDrive className={className} />;
-    case 'Headphones': return <Headphones className={className} />;
-    case 'Cable': return <Cable className={className} />;
-    case 'Ghost': return <Ghost className={className} />;
-    case 'Bandage': return <Bandage className={className} />;
-    case 'Hexagon': return <Hexagon className={className} />;
-    case 'Sparkles': return <Sparkles className={className} />;
-    case 'Brain': return <Brain className={className} />;
-    case 'Stethoscope': return <Stethoscope className={className} />;
-    case 'Heart': return <Heart className={className} />;
-    case 'Gem': return <Gem className={className} />;
-    case 'Unlock': return <Unlock className={className} />;
-    case 'Bug': return <Bug className={className} />;
-    case 'Package': return <Package className={className} />;
-    default: return <Package className={className} />;
-  }
-}
+
 
 /* ─── Category visual config ─── */
 const CATEGORY_VISUAL: Record<CraftingCategory, { emoji: string; color: string; glowColor: string; bgGradient: string }> = {
@@ -374,7 +291,7 @@ export function CraftingPanel({ open, onClose }: CraftingPanelProps) {
                           className={`w-9 h-9 rounded-md border flex items-center justify-center shrink-0 ${getRarityBg(recipe.outputRarity)}`}
                           style={{ borderColor: `${catVis.color}20` }}
                         >
-                          <ItemIcon iconName={outputDef?.icon} className="size-4 text-slate-100" />
+                          <ItemIcon icon={outputDef?.icon} className="size-4 text-slate-100" />
                         </div>
 
                         <div className="flex-1 min-w-0">
@@ -525,7 +442,7 @@ function RecipeDetail({
             }}
             transition={isCrafting ? { duration: 1, repeat: Infinity } : {}}
           >
-            <ItemIcon iconName={outputDef?.icon} className="size-6 text-slate-100 relative z-10" />
+            <ItemIcon icon={outputDef?.icon} className="size-6 text-slate-100 relative z-10" />
             {/* Shimmer overlay on result item */}
             <div
               className="absolute inset-0 shimmer pointer-events-none z-20"
@@ -600,7 +517,7 @@ function RecipeDetail({
                   : <span className="ingredient-cross shrink-0">✗</span>
                 }
                 <span className={`size-3.5 shrink-0 ${hasEnough ? 'text-emerald-400' : 'text-rose-400'}`}>
-                  <ItemIcon iconName={inputDef?.icon} className="size-3.5" />
+                  <ItemIcon icon={inputDef?.icon} className="size-3.5" />
                 </span>
                 <span className={`flex-1 truncate ${hasEnough ? 'text-emerald-400' : 'text-rose-400'}`}>
                   {inputDef?.name ?? input.itemId}

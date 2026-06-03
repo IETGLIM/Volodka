@@ -93,6 +93,52 @@ export class QuestTracker {
         }
       }),
     );
+
+    // Retroactive check: if a quest was activated after its objectives were
+    // already met (race condition between initGuidedStoryManager and quest
+    // activation), complete those objectives now.
+    this.retroactiveCheck();
+  }
+
+  /** Retroactive check: for each active quest, check if any objectives are
+   *  already satisfied by the current game state. This handles the race
+   *  condition where a quest is activated AFTER its objective conditions
+   *  have already been met (e.g. poem collected before quest was active). */
+  private retroactiveCheck(): void {
+    const state = useGameStore.getState();
+    const activeQuests = state.quests.filter((q) => q.status === 'active');
+
+    for (const quest of activeQuests) {
+      const definition = QUEST_DEFINITIONS.find((d) => d.id === quest.questId);
+      if (!definition) continue;
+
+      for (const objective of definition.objectives) {
+        // Skip already-completed objectives
+        if (quest.objectives[objective.id]) continue;
+
+        let alreadyMet = false;
+
+        switch (objective.type) {
+          case 'location_visited':
+            alreadyMet = objective.target === state.exploration.currentSceneId;
+            break;
+          case 'flag_set':
+            alreadyMet = !!objective.target && !!state.playerState.flags[objective.target];
+            break;
+          case 'item_collected':
+            alreadyMet = !!objective.target && state.playerState.inventory.some((i) => i.id === objective.target);
+            break;
+          case 'poem_collected':
+            alreadyMet = !!objective.target && state.collectedPoems.includes(objective.target);
+            break;
+          // npc_talked, minigame_completed, custom — can't be retroactively checked
+        }
+
+        if (alreadyMet) {
+          this.completeObjective(quest.questId, objective.id);
+        }
+      }
+    }
   }
 
   /** Stop tracking — clean up all subscriptions */

@@ -1,6 +1,7 @@
-/* ─── Volodka RPG – dialogue nodes (deep trees, 98 nodes) ─── */
+/* ─── Volodka RPG – dialogue nodes (deep trees, 98 + expanded 16 nodes) ─── */
 
 import type { DialogueNode } from '@/shared/types/game';
+import { EXPANDED_DIALOGUE_NODES } from './expandedDialogueNodes';
 
 export const DIALOGUE_NODES: Record<string, DialogueNode> = {
   /* ═══════════════════════════════════════════════════════════
@@ -4456,4 +4457,5 @@ export const DIALOGUE_NODES: Record<string, DialogueNode> = {
     ],
   },
 
+  ...EXPANDED_DIALOGUE_NODES,
 };

@@ -10,6 +10,7 @@ import { eventBus } from '@/engine/EventBus'
 import { useGameStore } from '@/store/gameStore'
 import { areDependenciesMet } from '@/store/questStore'
 import type { QuestDefinition, QuestObjective } from '@/shared/types/game'
+import { getQuotesByAct } from '@/data/matrixQuotes'
 
 /* ─── Act chapter titles ─── */
 const ACT_CHAPTERS: Record<number, string> = {
@@ -18,15 +19,6 @@ const ACT_CHAPTERS: Record<number, string> = {
   3: 'Война за правду',
   4: 'Революция',
   5: 'Финал',
-}
-
-/* ─── Story quotes by act ─── */
-const ACT_QUOTES: Record<number, string> = {
-  1: 'Каждый код — это стихотворение, которое ещё не дописано',
-  2: 'Сеть помнит тех, кто не боится задавать вопросы',
-  3: 'Дружба — это единственный протокол, который нельзя взломать',
-  4: 'Революция начинается со слова',
-  5: 'В каждом сервере живёт чья-то душа',
 }
 
 /* ─── Guidance info type ─── */
@@ -463,28 +455,6 @@ export function canStartQuest(questId: string): boolean {
   return true
 }
 
-/* ─── Try to auto-advance quest spine (offer next quest) ─── */
-export function tryOfferNextQuest() {
-  const nextQuest = getNextQuestInSpine()
-  if (!nextQuest) return
-
-  const store = useGameStore.getState()
-  // Auto-activate main quests
-  if (nextQuest.def.questType === 'main') {
-    const existing = store.quests.find((q) => q.questId === nextQuest.questId)
-    if (!existing || existing.status === 'inactive') {
-      store.activateQuest(nextQuest.questId)
-    }
-  }
-
-  eventBus.emit('story:quest_available', {
-    questId: nextQuest.questId,
-    questTitle: nextQuest.def.title,
-    questType: nextQuest.def.questType,
-    npcId: findNpcForQuest(nextQuest.def),
-  })
-}
-
 /* ─── Initialize the guided story manager ─── */
 export function initGuidedStoryManager() {
   if (initialized) return
@@ -605,5 +575,6 @@ export function disposeGuidedStoryManager() {
 
 /* ─── Get the act quotes ─── */
 export function getActQuote(actNumber: number): string | undefined {
-  return ACT_QUOTES[actNumber]
+  const actQuotes = getQuotesByAct(actNumber)
+  return actQuotes.length > 0 ? actQuotes[0].text : undefined
 }

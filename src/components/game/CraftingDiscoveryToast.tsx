@@ -9,19 +9,18 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FlaskConical, Sparkles, Crown } from 'lucide-react';
+import { FlaskConical, Sparkles, Crown, Gem, Star } from 'lucide-react';
 import { eventBus } from '@/engine/EventBus';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
+import { type ItemRarity } from '@/data/items';
 
 /* ─── Types ─── */
-
-type CraftingRarity = 'common' | 'rare' | 'epic';
 
 interface CraftingToastData {
   id: string;
   recipeId: string;
   recipeName: string;
-  rarity: CraftingRarity;
+  rarity: ItemRarity;
   createdAt: number;
 }
 
@@ -33,7 +32,7 @@ const STAGGER_MS = 100;
 
 /* ─── Rarity visual config ─── */
 
-const RARITY_CONFIG: Record<CraftingRarity, {
+const RARITY_CONFIG: Record<ItemRarity, {
   primary: string;
   glow: string;
   border: string;
@@ -53,7 +52,7 @@ const RARITY_CONFIG: Record<CraftingRarity, {
     textColor: '#94a3b8',
     countdownBg: '#94a3b8',
   },
-  rare: {
+  uncommon: {
     primary: '#22d3ee',     // cyan-400
     glow: 'rgba(34, 211, 238, 0.18)',
     border: 'rgba(34, 211, 238, 0.35)',
@@ -63,7 +62,17 @@ const RARITY_CONFIG: Record<CraftingRarity, {
     textColor: '#22d3ee',
     countdownBg: '#22d3ee',
   },
-  epic: {
+  rare: {
+    primary: '#a78bfa',     // violet-400
+    glow: 'rgba(167, 139, 250, 0.20)',
+    border: 'rgba(167, 139, 250, 0.40)',
+    bg: 'rgba(16, 8, 30, 0.82)',
+    shadow: '0 0 14px rgba(167, 139, 250, 0.14)',
+    iconBg: 'rgba(167, 139, 250, 0.12)',
+    textColor: '#a78bfa',
+    countdownBg: '#a78bfa',
+  },
+  legendary: {
     primary: '#fbbf24',     // amber-400
     glow: 'rgba(251, 191, 36, 0.20)',
     border: 'rgba(251, 191, 36, 0.40)',
@@ -77,13 +86,15 @@ const RARITY_CONFIG: Record<CraftingRarity, {
 
 /* ─── Icon renderer by rarity ─── */
 
-function RarityIcon({ rarity, className, style }: { rarity: CraftingRarity; className?: string; style?: React.CSSProperties }) {
+function RarityIcon({ rarity, className, style }: { rarity: ItemRarity; className?: string; style?: React.CSSProperties }) {
   switch (rarity) {
     case 'common':
       return <FlaskConical className={className} style={style} />;
+    case 'uncommon':
+      return <Gem className={className} style={style} />;
     case 'rare':
       return <Sparkles className={className} style={style} />;
-    case 'epic':
+    case 'legendary':
       return <Crown className={className} style={style} />;
   }
 }

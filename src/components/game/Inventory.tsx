@@ -9,50 +9,11 @@ import {
   Hand,
   Lock,
   Shield,
-  Coffee,
-  Zap,
-  Wine,
-  Leaf,
-  FileText,
-  Key,
-  Badge as BadgeIcon,
-  ScrollText,
-  Usb,
-  Smartphone,
-  Laptop,
-  BookOpen,
-  Cpu,
-  Braces,
-  Award,
-  Feather,
-  File,
-  Syringe,
-  Flower2,
-  ShieldCheck,
-  Terminal,
-  Flame,
-  Shirt,
-  Sparkles,
   Search,
   ChevronDown,
   X,
-  Gem,
-  Heart,
-  Bug,
-  Brain,
-  Stethoscope,
-  Unlock,
-  Wifi,
-  Radio,
-  HardDrive,
-  Headphones,
-  Cable,
-  Ghost,
-  Bandage,
-  Hexagon,
-  Utensils,
-  Lock as LockIcon,
 } from 'lucide-react';
+import { ItemIcon } from './shared/ItemIcon';
 import { useGameStore } from '@/store/gameStore';
 import { MAX_INVENTORY_SLOTS } from '@/data/constants';
 import {
@@ -67,57 +28,7 @@ import { PanelWrapper } from '@/components/game/PanelWrapper';
 import type { InventoryItem, EquipmentSlot } from '@/shared/types/game';
 import type { ItemRarity } from '@/data/items';
 
-/* ─── Item icon renderer ─── */
-function ItemIcon({ iconName, className }: { iconName?: string; className?: string }) {
-  switch (iconName) {
-    case 'Coffee': return <Coffee className={className} />;
-    case 'Cigarette': return <Flame className={className} />;
-    case 'Zap': return <Zap className={className} />;
-    case 'Pill': return <Syringe className={className} />;
-    case 'Wine': return <Wine className={className} />;
-    case 'Leaf': return <Leaf className={className} />;
-    case 'Chip': return <Cpu className={className} />;
-    case 'FileText': return <FileText className={className} />;
-    case 'Badge': return <BadgeIcon className={className} />;
-    case 'Key': return <Key className={className} />;
-    case 'ScrollText': return <ScrollText className={className} />;
-    case 'Usb': return <Usb className={className} />;
-    case 'Smartphone': return <Smartphone className={className} />;
-    case 'Laptop': return <Laptop className={className} />;
-    case 'BookOpen': return <BookOpen className={className} />;
-    case 'Cpu': return <Cpu className={className} />;
-    case 'Braces': return <Braces className={className} />;
-    case 'Award': return <Award className={className} />;
-    case 'Shield': return <Shield className={className} />;
-    case 'Feather': return <Feather className={className} />;
-    case 'File': return <File className={className} />;
-    case 'Syringe': return <Syringe className={className} />;
-    case 'Flower2': return <Flower2 className={className} />;
-    case 'ShieldCheck': return <ShieldCheck className={className} />;
-    case 'Terminal': return <Terminal className={className} />;
-    case 'Flame': return <Flame className={className} />;
-    case 'Shirt': return <Shirt className={className} />;
-    case 'Candy': return <Flower2 className={className} />;
-    case 'Gem': return <Gem className={className} />;
-    case 'Heart': return <Heart className={className} />;
-    case 'Bug': return <Bug className={className} />;
-    case 'Brain': return <Brain className={className} />;
-    case 'Stethoscope': return <Stethoscope className={className} />;
-    case 'Unlock': return <Unlock className={className} />;
-    case 'Wifi': return <Wifi className={className} />;
-    case 'Radio': return <Radio className={className} />;
-    case 'HardDrive': return <HardDrive className={className} />;
-    case 'Headphones': return <Headphones className={className} />;
-    case 'Cable': return <Cable className={className} />;
-    case 'Ghost': return <Ghost className={className} />;
-    case 'Bandage': return <Bandage className={className} />;
-    case 'Hexagon': return <Hexagon className={className} />;
-    case 'Utensils': return <Utensils className={className} />;
-    case 'Lock': return <LockIcon className={className} />;
-    case 'Sparkles': return <Sparkles className={className} />;
-    default: return null;
-  }
-}
+
 
 interface InventoryProps {
   open: boolean;
@@ -678,7 +589,7 @@ export function Inventory({ open, onClose, onOpenPoetryBook }: InventoryProps) {
                     </div>
                     {equipped && equipDef ? (
                       <div className="flex items-center gap-1.5">
-                        <ItemIcon iconName={equipDef.icon} className="size-4 text-slate-100" />
+                        <ItemIcon icon={equipDef.icon} className="size-4 text-slate-100" />
                         <span className="text-xs text-slate-200 truncate">{equipped.name}</span>
                       </div>
                     ) : (
@@ -787,7 +698,7 @@ export function Inventory({ open, onClose, onOpenPoetryBook }: InventoryProps) {
                           {/* Item icon */}
                           <div className="flex items-center justify-center h-10 mb-1.5">
                             {hasIcon ? (
-                              <ItemIcon iconName={itemDef!.icon} className="size-6 text-slate-200 drop-shadow-[0_0_3px_rgba(255,255,255,0.1)]" />
+                              <ItemIcon icon={itemDef!.icon} className="size-6 text-slate-200 drop-shadow-[0_0_3px_rgba(255,255,255,0.1)]" />
                             ) : (
                               <span className="text-[10px] text-slate-200 font-medium text-center leading-tight px-0.5">
                                 {item.name.length > 8 ? item.name.slice(0, 7) + '…' : item.name}
@@ -963,7 +874,7 @@ function ItemDetail({
         }}
       >
         {hasIcon ? (
-          <ItemIcon iconName={iconName} className="size-7 text-slate-100 drop-shadow-[0_0_4px_rgba(255,255,255,0.2)]" />
+          <ItemIcon icon={iconName} className="size-7 text-slate-100 drop-shadow-[0_0_4px_rgba(255,255,255,0.2)]" />
         ) : (
           <span className="text-xs text-slate-100 font-medium text-center px-1 leading-tight">
             {item.name}

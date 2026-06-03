@@ -112,7 +112,6 @@ import { FloatingTextLayer } from './FloatingText';
 import { InteractionHintPopup } from './InteractionHintPopup';
 import { ScreenEffects } from './ScreenEffects';
 // FastTravelPanel, PerksPanel, QuestBoardPanel
-import { CinematicTransition } from '@/components/3d/CinematicTransition';
 import { CutsceneOverlay } from '@/components/game/CutsceneOverlay';
 import { PoetryPowerBar } from '@/components/game/PoetryPowerBar';
 import { PoemPowerEffect } from '@/components/game/PoemPowerEffect';
@@ -157,7 +156,6 @@ import { KarmaPoemInfoPanel } from './KarmaPoemInfoPanel';
 import { LevelUpSummary } from './LevelUpSummary';
 import { RewardDisplay } from './RewardDisplay';
 import { MatrixRainQuote } from './MatrixRainQuote';
-import { CinematicMatrixIntro } from './CinematicMatrixIntro';
 import { CyberpunkThemeProvider } from './CyberpunkTheme';
 
 
@@ -399,11 +397,11 @@ export function GameOrchestrator() {
         currentStore.setCutscene(null, []);
         // ALWAYS return to exploration — the 3D world is the primary game mode
         currentStore.setMode('exploration');
-        // Show story overlay if there's a story/dialogue node for the current node.
-        // This handles all cutscene types:
-        //   - character_intro/story_moment/revelation → show narrative overlay in 3D
-        //   - act_transition after intro → show "Ты просыпаешься от назойливого писка..."
-        if (STORY_NODES[currentStore.currentNodeId] || DIALOGUE_NODES[currentStore.currentNodeId]) {
+        // Show story overlay ONLY if the player hasn't already dismissed it.
+        // Guard: currentNodeId is cleared when the player dismisses the overlay
+        // (see StoryRenderer explore_mode handler), so if it's empty, the
+        // player explicitly exited the story — don't re-show the overlay.
+        if (currentStore.currentNodeId && (STORY_NODES[currentStore.currentNodeId] || DIALOGUE_NODES[currentStore.currentNodeId])) {
           currentStore.setShowStoryOverlay(true);
         }
       }
@@ -471,8 +469,6 @@ export function GameOrchestrator() {
   // ── MatrixRainQuote state (act transition cinematic) ──
   const [matrixQuote, setMatrixQuote] = useState<{ text: string; actNumber: number } | null>(null);
 
-  // ── Cinematic Matrix Intro state ──
-  const [showCinematicIntro, setShowCinematicIntro] = useState(false);
 
   // ── Listen for quest dialog events ──
   useEffect(() => {
@@ -513,12 +509,6 @@ export function GameOrchestrator() {
     return unsub;
   }, []);
 
-  // ── Show cinematic intro on first game start ──
-  useEffect(() => {
-    if (mode === 'exploration' && !introSeen) {
-      setShowCinematicIntro(true);
-    }
-  }, [mode, introSeen]);
 
   // ── Close all panels (used for mutual exclusivity) ──
   const closeAllPanels = useCallback(() => {
@@ -778,7 +768,8 @@ export function GameOrchestrator() {
           // P5-FIX: Show story overlay if current node has a story node —
           // previously ESC-skip dumped the player into exploration without
           // showing the narrative text that was supposed to follow the cutscene.
-          if (STORY_NODES[store.currentNodeId]) {
+          // Guard: only show if currentNodeId is non-empty (player hasn't dismissed it)
+          if (store.currentNodeId && STORY_NODES[store.currentNodeId]) {
             store.setShowStoryOverlay(true);
           }
           return;
@@ -905,17 +896,6 @@ export function GameOrchestrator() {
             </Suspense>
           </div>
 
-          {/* ── Cinematic Matrix Intro (one-time, shown before first gameplay) ── */}
-          <AnimatePresence>
-            {showCinematicIntro && (
-              <CinematicMatrixIntro
-                onComplete={() => {
-                  setShowCinematicIntro(false);
-                  useGameStore.getState().setIntroSeen(true);
-                }}
-              />
-            )}
-          </AnimatePresence>
 
           {/* ── Matrix Rain Quote overlay (act transitions) ── */}
           <AnimatePresence>
@@ -961,8 +941,6 @@ export function GameOrchestrator() {
               {/* ── Screen effects (flash, shake, vignette, chromatic aberration) ── */}
               <ScreenEffects />
 
-              {/* Cinematic transition overlay (fade to black / fade in) — renders OUTSIDE canvas */}
-              <CinematicTransition />
 
               {/* Cutscene text overlay — shows act transition text during cutscenes */}
               <CutsceneOverlay />

@@ -565,7 +565,7 @@ export const STORY_NODES: Record<string, StoryNode> = {
       {
         text: 'Вернуться в кафе — там могут быть ответы',
         next: 'act2_albert_hint',
-        effects: [{ type: 'setFlag', flag: 'act2_started', flagValue: true }, { type: 'setFlag', flag: 'advanced_to_act2', flagValue: true }, { type: 'advanceAct' }],
+        effects: [{ type: 'setFlag', flag: 'act2_started', flagValue: true }, { type: 'setFlag', flag: 'advanced_to_act2', flagValue: true }],
       },
       {
         text: 'Искать Викторию — она знает больше',
@@ -574,7 +574,6 @@ export const STORY_NODES: Record<string, StoryNode> = {
           { type: 'addSkill', skill: 'intuition', value: 1 },
           { type: 'setFlag', flag: 'act2_started', flagValue: true },
           { type: 'setFlag', flag: 'advanced_to_act2', flagValue: true },
-          { type: 'advanceAct' },
         ],
       },
     ],
@@ -1216,7 +1215,6 @@ export const STORY_NODES: Record<string, StoryNode> = {
         effects: [
           { type: 'setFlag', flag: 'act3_started', flagValue: true },
           { type: 'addKarma', value: 3 },
-          { type: 'advanceAct' },
         ],
       },
       {
@@ -1225,7 +1223,6 @@ export const STORY_NODES: Record<string, StoryNode> = {
         effects: [
           { type: 'addSkill', skill: 'intuition', value: 1 },
           { type: 'setFlag', flag: 'act3_started', flagValue: true },
-          { type: 'advanceAct' },
         ],
       },
     ],
@@ -1591,7 +1588,6 @@ export const STORY_NODES: Record<string, StoryNode> = {
         effects: [
           { type: 'setFlag', flag: 'act4_started', flagValue: true },
           { type: 'addStat', stat: 'energy', value: 10 },
-          { type: 'advanceAct' },
         ],
       },
       {
@@ -1600,7 +1596,6 @@ export const STORY_NODES: Record<string, StoryNode> = {
         effects: [
           { type: 'setFlag', flag: 'act4_started', flagValue: true },
           { type: 'addSkill', skill: 'coding', value: 1 },
-          { type: 'advanceAct' },
         ],
       },
     ],
@@ -2726,7 +2721,6 @@ export const STORY_NODES: Record<string, StoryNode> = {
     effects: [
       { type: 'setFlag', flag: 'act3_started', flagValue: true },
       { type: 'setFlag', flag: 'advanced_to_act3', flagValue: true },
-      { type: 'advanceAct' },
     ],
   },
 

@@ -342,6 +342,7 @@ export function StoryRenderer() {
         }
 
         setShowStoryOverlay(false);
+        setCurrentNodeId(''); // Clear node ID so cutscene end handler can't re-show overlay
       } else {
         setCurrentNodeId(choice.next);
         const nextNode = STORY_NODES[choice.next];

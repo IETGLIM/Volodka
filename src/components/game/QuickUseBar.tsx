@@ -5,18 +5,7 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import {
-  Coffee,
-  Zap,
-  Wine,
-  Leaf,
-  Syringe,
-  Flower2,
-  ShieldCheck,
-  Heart,
-  Flame,
-  Pill,
-} from 'lucide-react';
+import { ItemIcon } from './shared/ItemIcon';
 import { useGameStore } from '@/store/gameStore';
 import { getItemDefinition } from '@/data/items';
 import type { ItemDefinition } from '@/data/items';
@@ -28,23 +17,7 @@ import { UI_LAYERS } from '@/shared/constants/uiLayers';
 const SLOT_COUNT = 4;
 const COOLDOWN_MS = 300;
 
-/* ─── Icon mapper (simplified inline version of Inventory's ItemIcon) ─── */
 
-function QuickItemIcon({ iconName, className }: { iconName?: string; className?: string }) {
-  switch (iconName) {
-    case 'Coffee': return <Coffee className={className} />;
-    case 'Zap': return <Zap className={className} />;
-    case 'Pill': return <Syringe className={className} />;
-    case 'Wine': return <Wine className={className} />;
-    case 'Leaf': return <Leaf className={className} />;
-    case 'Syringe': return <Syringe className={className} />;
-    case 'Flower2': return <Flower2 className={className} />;
-    case 'ShieldCheck': return <ShieldCheck className={className} />;
-    case 'Heart': return <Heart className={className} />;
-    case 'Cigarette': return <Flame className={className} />;
-    default: return <Pill className={className} />;
-  }
-}
 
 /* ─── Toast notification for item use ─── */
 
@@ -285,8 +258,8 @@ export function QuickUseBar() {
                 {hasItem ? (
                   <>
                     {/* Item icon */}
-                    <QuickItemIcon
-                      iconName={slot.def?.icon}
+                    <ItemIcon
+                      icon={slot.def?.icon}
                       className="size-5 text-slate-200"
                     />
 
