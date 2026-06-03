@@ -1,5 +1,5 @@
 /* ─── Model URL configuration ─── */
-const MODELS_BASE = import.meta.env.VITE_MODELS_BASE ?? '';
+const MODELS_BASE = (typeof process !== 'undefined' && process.env?.VITE_MODELS_BASE) ?? '';
 
 export interface ModelUrls {
   volodka: string;
@@ -36,7 +36,7 @@ export const MODEL_URLS: ModelUrls = {
 export const DEFAULT_PLAYER_GLB_FILENAME = 'khronos_cc0_CesiumMan.glb';
 
 export function getDefaultPlayerModelPath(): string {
-  const override = import.meta.env.VITE_DEFAULT_PLAYER_MODEL;
+  const override = (typeof process !== 'undefined' && process.env?.VITE_DEFAULT_PLAYER_MODEL) || '';
   if (override) return override;
   return `/models-external/${DEFAULT_PLAYER_GLB_FILENAME}`;
 }
