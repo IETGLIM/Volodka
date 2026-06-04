@@ -16,6 +16,7 @@ import { audioEngine } from '@/engine/AudioEngine';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 import { PanelWrapper } from '@/components/game/PanelWrapper';
+import { CyberpunkPoemOverlay } from '@/components/game/CyberpunkPoemOverlay';
 
 type PoetryBookTab = 'poems' | 'powers';
 
@@ -630,6 +631,14 @@ export function PoetryBook({ open, onClose }: PoetryBookProps) {
                         className="h-full"
                         style={{ perspective: '800px' }}
                       >
+                        {/* Cinematic cyberpunk poem cutscene — fullscreen overlay */}
+                        <CyberpunkPoemOverlay
+                          open={true}
+                          poem={selectedPoem}
+                          onComplete={() => setSelectedPoemId(null)}
+                          showMatrix={true}
+                        />
+
                         <ScrollArea className="h-[calc(90vh-170px)]">
                           <div className="px-6 py-5" onClick={!done ? skipAll : undefined}>
                             {/* Back button */}

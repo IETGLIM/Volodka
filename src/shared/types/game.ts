@@ -662,6 +662,8 @@ export interface EventMap {
 
   /* ── Poem events ── */
   'poem:collected': { poemId: string };
+  'poem:show_cutscene': { poemId: string };
+  'poem:cutscene_end': Record<string, never>;
 
   /* ── Lore discovery events ── */
   'lore:discovered': { id: string; title: string; rarity: string };
