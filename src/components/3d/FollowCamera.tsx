@@ -359,18 +359,20 @@ export function FollowCamera({
       const playerRotation = livePlayerRotationRef.current;
       yawRef.current = playerRotation + Math.PI; // Camera looks at player from behind
       pitchRef.current = 0.3;
-      distanceRef.current = DEFAULT_DISTANCE;
-      interactionDistanceRef.current = DEFAULT_DISTANCE;
+      const sceneDist = getSceneDefaultDistance(sceneId);
+      distanceRef.current = sceneDist;
+      interactionDistanceRef.current = sceneDist;
       initializedRef.current = false; // Force re-initialization
 
       // Immediately teleport spring camera to player position
       if (springRef.current) {
         const playerPos = livePlayerPositionRef.current;
         const cameraYaw = playerRotation + Math.PI;
+        const sceneDist = getSceneDefaultDistance(sceneId);
         const newCamPos = new THREE.Vector3(
-          playerPos.x + Math.sin(cameraYaw) * Math.cos(0.3) * DEFAULT_DISTANCE,
-          playerPos.y + LOOK_HEIGHT + Math.sin(0.3) * DEFAULT_DISTANCE,
-          playerPos.z + Math.cos(cameraYaw) * Math.cos(0.3) * DEFAULT_DISTANCE,
+          playerPos.x + Math.sin(cameraYaw) * Math.cos(0.3) * sceneDist,
+          playerPos.y + LOOK_HEIGHT + Math.sin(0.3) * sceneDist,
+          playerPos.z + Math.cos(cameraYaw) * Math.cos(0.3) * sceneDist,
         );
         const newLookAt = new THREE.Vector3(playerPos.x, playerPos.y + LOOK_HEIGHT, playerPos.z);
         springRef.current.position.copy(newCamPos);
@@ -428,10 +430,11 @@ export function FollowCamera({
       const playerPos = livePlayerPositionRef.current;
       const playerRotation = livePlayerRotationRef.current;
       const cameraYaw = playerRotation + Math.PI;
+      const sceneDist = getSceneDefaultDistance(sceneId);
       const newCamPos = new THREE.Vector3(
-        playerPos.x + Math.sin(cameraYaw) * Math.cos(0.3) * DEFAULT_DISTANCE,
-        playerPos.y + LOOK_HEIGHT + Math.sin(0.3) * DEFAULT_DISTANCE,
-        playerPos.z + Math.cos(cameraYaw) * Math.cos(0.3) * DEFAULT_DISTANCE,
+        playerPos.x + Math.sin(cameraYaw) * Math.cos(0.3) * sceneDist,
+        playerPos.y + LOOK_HEIGHT + Math.sin(0.3) * sceneDist,
+        playerPos.z + Math.cos(cameraYaw) * Math.cos(0.3) * sceneDist,
       );
       const newLookAt = new THREE.Vector3(playerPos.x, playerPos.y + LOOK_HEIGHT, playerPos.z);
 
@@ -453,8 +456,8 @@ export function FollowCamera({
       // Reset orbit parameters
       yawRef.current = cameraYaw;
       pitchRef.current = 0.3;
-      distanceRef.current = DEFAULT_DISTANCE;
-      interactionDistanceRef.current = DEFAULT_DISTANCE;
+      distanceRef.current = sceneDist;
+      interactionDistanceRef.current = sceneDist;
       initializedRef.current = false;
     }
     prevGameModeRef.current = gameMode;
@@ -560,10 +563,11 @@ export function FollowCamera({
         const spawn = config.spawnPoint;
         // Camera yaw must be BEHIND the player
         const cameraYaw = (config.initialRotation ?? 0) + Math.PI;
+        const sceneDist = getSceneDefaultDistance(sceneId);
         const targetPos = new THREE.Vector3(
-          spawn[0] + Math.sin(cameraYaw) * Math.cos(0.3) * DEFAULT_DISTANCE,
-          spawn[1] + LOOK_HEIGHT + Math.sin(0.3) * DEFAULT_DISTANCE,
-          spawn[2] + Math.cos(cameraYaw) * Math.cos(0.3) * DEFAULT_DISTANCE,
+          spawn[0] + Math.sin(cameraYaw) * Math.cos(0.3) * sceneDist,
+          spawn[1] + LOOK_HEIGHT + Math.sin(0.3) * sceneDist,
+          spawn[2] + Math.cos(cameraYaw) * Math.cos(0.3) * sceneDist,
         );
         const targetLook = new THREE.Vector3(spawn[0], spawn[1] + LOOK_HEIGHT, spawn[2]);
 
@@ -729,12 +733,14 @@ export function FollowCamera({
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.code === 'KeyR' && e.shiftKey) {
         e.preventDefault();
-        const config = getSceneConfig(useGameStore.getState().exploration.currentSceneId);
+        const currentSceneId = useGameStore.getState().exploration.currentSceneId;
+        const config = getSceneConfig(currentSceneId);
+        const sceneDist = getSceneDefaultDistance(currentSceneId);
         // Camera yaw must be BEHIND the player
         yawRef.current = (config.initialRotation ?? 0) + Math.PI;
         pitchRef.current = 0.3;
-        distanceRef.current = DEFAULT_DISTANCE;
-        interactionDistanceRef.current = DEFAULT_DISTANCE;
+        distanceRef.current = sceneDist;
+        interactionDistanceRef.current = sceneDist;
       }
     };
 
