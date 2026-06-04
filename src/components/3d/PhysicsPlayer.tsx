@@ -240,6 +240,16 @@ export function PhysicsPlayer({
   const successfulMovementTimerRef = useRef(0);
 
   // ─── Create & configure KinematicCharacterController ───
+  // FIX: Create an explicit collider via the Rapier world API instead of
+  // relying on getPlayerCollider() to find the CapsuleCollider attached
+  // to the RigidBody. In production/Vercel builds, the @react-three/rapier
+  // wrapper's proxy API (rb.raw(), ._raw, .handle etc.) often fails to
+  // resolve the Rapier Collider object, causing the physics to fall back
+  // to direct movement mode (no collision). By creating the collider
+  // explicitly here, we guarantee it exists and can be passed directly to
+  // computeColliderMovement().
+  const explicitColliderRef = useRef<any>(null);
+
   useEffect(() => {
     const controller = world.createCharacterController(SKIN_WIDTH);
     controller.setUp({ x: 0, y: 1, z: 0 });
@@ -249,17 +259,40 @@ export function PhysicsPlayer({
     controller.enableSnapToGround(SNAP_DISTANCE);
     controller.setSlideEnabled(true);
     controller.setApplyImpulsesToDynamicBodies(true);
-    controller.setCharacterMass(75); // 75 kg — pushes dynamic objects realistically
+    controller.setCharacterMass(75);
     controller.setNormalNudgeFactor(0.5);
     controllerRef.current = controller;
+
+    // Create explicit capsule collider for the character controller.
+    // In production/Vercel builds, getPlayerCollider() often fails to find
+    // the collider from the RigidBody proxy. This explicit collider bypasses
+    // the lookup entirely — guaranteed to exist.
+    try {
+      // Use the raw Rapier module's ColliderDesc API
+      const RAPIER = rapier;
+      if (RAPIER && RAPIER.ColliderDesc) {
+        const desc = RAPIER.ColliderDesc.capsule(
+          PLAYER_HEIGHT / 2 - PLAYER_RADIUS,
+          PLAYER_RADIUS,
+        );
+        const collider = world.createCollider(desc);
+        explicitColliderRef.current = collider;
+      }
+    } catch {
+      explicitColliderRef.current = null;
+    }
 
     return () => {
       try {
         world.removeCharacterController(controller);
-      } catch { /* already removed during scene transition */ }
+      } catch { /* already removed */ }
       controllerRef.current = null;
+      if (explicitColliderRef.current) {
+        try { world.removeCollider(explicitColliderRef.current, true); } catch {}
+        explicitColliderRef.current = null;
+      }
     };
-  }, [world]);
+  }, [world, rapier]);
 
   // Share rigid body ref with the interaction system
   useEffect(() => {
@@ -429,7 +462,7 @@ export function PhysicsPlayer({
       // Compute collision-safe displacement via character controller
       const desiredDisp = { x: vel.x * dt, y: vel.y * dt, z: vel.z * dt };
       const posBeforeMovement = rb.translation(); // fresh position after ground enforcement
-      const lockedCollider = getPlayerCollider(rb, world, rapier);
+      const lockedCollider = explicitColliderRef.current ?? getPlayerCollider(rb, world, rapier);
       if (lockedCollider && controller) {
         controller.computeColliderMovement(lockedCollider, desiredDisp);
         const actual = controller.computedMovement();
@@ -583,7 +616,7 @@ export function PhysicsPlayer({
     // This is the CORE: the controller checks the physics world state,
     // resolves collisions with slopes/steps/walls, and returns the
     // actual safe displacement. No more fighting Rapier's solver!
-    const collider = getPlayerCollider(rb, world, rapier);
+    const collider = explicitColliderRef.current ?? getPlayerCollider(rb, world, rapier);
 
     // Pre-compute boundary clamping values (shared between fallback and failsafe)
     const [sceneW, sceneD] = config.size;
