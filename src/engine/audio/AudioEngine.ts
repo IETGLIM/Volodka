@@ -22,6 +22,7 @@ import {
   getSharedAudioContext,
   createReverbImpulse,
   createAmbientReverbImpulse,
+  safeResume,
 } from './AudioEngineCore';
 
 /**
@@ -118,9 +119,7 @@ class AudioEngine {
 
   /** Ensure context is running (browsers require user gesture) */
   private resume(): void {
-    if (this.ctx?.state === 'suspended') {
-      void this.ctx.resume();
-    }
+    safeResume();
   }
 
   /**

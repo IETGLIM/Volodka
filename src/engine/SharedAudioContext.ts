@@ -13,6 +13,7 @@
  */
 
 let sharedCtx: AudioContext | null = null;
+let _userInteracted = false;
 
 /**
  * Get the shared AudioContext, creating it lazily if needed.
@@ -30,12 +31,34 @@ export function getSharedAudioContext(): AudioContext | null {
     }
   }
 
-  // Resume if suspended (browser autoplay policy)
-  if (sharedCtx.state === 'suspended') {
-    sharedCtx.resume().catch(() => {});
-  }
-
   return sharedCtx;
+}
+
+/**
+ * Resume the shared AudioContext. Returns the promise so callers can
+ * catch and ignore autoplay policy errors gracefully.
+ * Only actually resumes if user has interacted (browser policy).
+ */
+export function safeResume(): Promise<void> {
+  if (!sharedCtx) return Promise.resolve();
+  if (!_userInteracted) return Promise.resolve();
+  if (sharedCtx.state === 'suspended') {
+    return sharedCtx.resume().catch(() => {});
+  }
+  return Promise.resolve();
+}
+
+// ── Browser autoplay policy: resume AudioContext on first user gesture ──
+if (typeof window !== 'undefined') {
+  const resumeOnce = () => {
+    _userInteracted = true;
+    if (sharedCtx && sharedCtx.state === 'suspended') {
+      sharedCtx.resume().catch(() => {});
+    }
+  };
+  window.addEventListener('click', resumeOnce, { once: true });
+  window.addEventListener('keydown', resumeOnce, { once: true });
+  window.addEventListener('touchstart', resumeOnce, { once: true });
 }
 
 /**

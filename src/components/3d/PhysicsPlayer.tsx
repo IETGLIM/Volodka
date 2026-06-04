@@ -599,10 +599,19 @@ export function PhysicsPlayer({
       // character controller has issues.
       if (!collider && !useDirectMovementRef.current) {
         controllerFailCountRef.current++;
-        if (controllerFailCountRef.current === 10) {
-          // Log ONCE when switching to direct mode (not every frame)
-          console.warn('[PhysicsPlayer] Collider not found for 10 frames — switching to direct movement mode');
+        if (controllerFailCountRef.current === 60) {
+          // Retry for 60 frames (~1s) before giving up.
+          // Rapier sometimes needs more time to initialize colliders
+          // in production builds where WASM loads asynchronously.
+          console.warn('[PhysicsPlayer] Collider not found for 60 frames — switching to direct movement mode');
           useDirectMovementRef.current = true;
+        }
+      } else if (collider && controllerFailCountRef.current > 0) {
+        // Collider appeared! Reset failure count and restore physics.
+        controllerFailCountRef.current = 0;
+        if (useDirectMovementRef.current) {
+          console.log('[PhysicsPlayer] Collider found — restoring full physics mode');
+          useDirectMovementRef.current = false;
         }
       }
 
