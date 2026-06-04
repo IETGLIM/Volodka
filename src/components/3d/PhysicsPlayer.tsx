@@ -29,7 +29,7 @@
 
 import { useRef, useEffect, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
-import { RigidBody, CapsuleCollider, useRapier, type RapierRigidBody } from '@react-three/rapier';
+import { RigidBody, CapsuleCollider, useRapier, type RapierRigidBody, type RapierCollider } from '@react-three/rapier';
 import * as THREE from 'three';
 
 import { useGameStore } from '@/store/gameStore';
@@ -89,74 +89,7 @@ interface PhysicsPlayerProps {
   onInteractPress?: () => void;
 }
 
-/** Get the first collider attached to a RigidBody from the physics world.
- *  We need the Collider object (not handle) for computeColliderMovement().
- *
- *  FIX: @react-three/rapier's RapierRigidBody is a Proxy wrapper around the
- *  raw RAPIER.RigidBody. The raw body is accessible via `rb.raw()` in
- *  @react-three/rapier v1.x+, or via internal properties in older versions.
- *  Once we have the raw body, colliderHandles() gives us the collider handles.
- *
- *  Fallback: iterate the world's collider list and match by parent handle.
- */
-function getPlayerCollider(rb: RapierRigidBody, world: any, rapierModule: any): any {
-  // ── Get the player RigidBody handle ──
-  const rbHandle: number | undefined =
-    (rb as any).handle ?? (rb as any)._handle ?? (rb as any)._rawHandle;
-  
-  if (rbHandle === undefined) return null;
 
-  try {
-    // Approach 1: Use world.collider(handle) directly
-    // In @react-three/rapier v2, the world proxy provides collider(handle)
-    // which returns the Rapier Collider for the given handle.
-    // The player's CapsuleCollider is the first collider attached to the RB.
-    // Collider handle = RB handle (Rapier assigns them sequentially).
-    // Try the RB handle itself first — the collider often has the same handle.
-    const possibleCollider = world.collider?.(rbHandle);
-    if (possibleCollider) return possibleCollider;
-  } catch {
-    // world.collider not available — fall through
-  }
-
-  try {
-    // Approach 2: Iterate all colliders and find one whose parent matches our RB
-    if (typeof world.forEachCollider === 'function') {
-      let found: any = null;
-      world.forEachCollider((collider: any) => {
-        if (found) return;
-        try {
-          const parent = collider.parent?.();
-          if (parent === rbHandle || (typeof parent === 'object' && parent?.handle === rbHandle)) {
-            found = collider;
-          }
-        } catch {}
-      });
-      if (found) return found;
-    }
-  } catch {}
-
-  return null;
-}
-
-/** Player character with FULL Rapier physics via KinematicCharacterController.
- *
- *  The controller handles:
- *  ─ collision resolution (slopes, walls, corners)
- *  ─ step climbing (autostep)
- *  ─ ground snapping (no hovering on edges)
- *  ─ slope sliding (too steep → slide down)
- *  ─ impulse transfer to dynamic bodies (push objects)
- *  ─ combat collision manifold (accurate contact data)
- *
- *  We handle manually:
- *  ─ horizontal velocity (acceleration/damping for game feel)
- *  ─ vertical velocity (gravity + jump)
- *  ─ rotation (camera-relative facing)
- *  ─ animation state
- *  ─ footstep audio
- *  ─ external velocity from InteractionSystemBridge
- */
 export function PhysicsPlayer({
   livePlayerPositionRef,
   livePlayerRotationRef,
@@ -168,6 +101,7 @@ export function PhysicsPlayer({
   const karma = useGameStore((s) => s.playerState.karma);
 
   const rigidBodyRef = useRef<RapierRigidBody>(null!);
+  const capsuleColliderRef = useRef<RapierCollider | null>(null); // Direct Rapier Collider ref from CapsuleCollider JSX
   const controllerRef = useRef<any>(null); // Rapier KinematicCharacterController
   const velocityRef = useRef(new THREE.Vector3(0, 0, 0));
   const isGroundedRef = useRef(true);
@@ -384,7 +318,7 @@ export function PhysicsPlayer({
       // Compute collision-safe displacement via character controller
       const desiredDisp = { x: vel.x * dt, y: vel.y * dt, z: vel.z * dt };
       const posBeforeMovement = rb.translation(); // fresh position after ground enforcement
-      const lockedCollider = getPlayerCollider(rb, world, rapier);
+      const lockedCollider = capsuleColliderRef.current;
       if (lockedCollider && controller) {
         controller.computeColliderMovement(lockedCollider, desiredDisp);
         const actual = controller.computedMovement();
@@ -538,7 +472,7 @@ export function PhysicsPlayer({
     // This is the CORE: the controller checks the physics world state,
     // resolves collisions with slopes/steps/walls, and returns the
     // actual safe displacement. No more fighting Rapier's solver!
-    const collider = getPlayerCollider(rb, world, rapier);
+    const collider = capsuleColliderRef.current;
 
     // Pre-compute boundary clamping values (shared between fallback and failsafe)
     const [sceneW, sceneD] = config.size;
@@ -801,6 +735,7 @@ export function PhysicsPlayer({
       lockRotations
     >
       <CapsuleCollider
+        ref={capsuleColliderRef}
         args={[PLAYER_HEIGHT / 2 - PLAYER_RADIUS, PLAYER_RADIUS]}
         position={[0, PLAYER_HEIGHT / 2, 0]}
         friction={0.7}
