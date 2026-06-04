@@ -629,6 +629,10 @@ export interface EventMap {
   'camera:recenter': Record<string, never>;
   'camera:intro_wake': Record<string, never>;
 
+  /* ── Intro wake-up 3D cutscene events ── */
+  'intro:wakeup_sequence': Record<string, never>;
+  'intro:wakeup_complete': Record<string, never>;
+
   /* ── Combat events ── */
   'combat:start': { enemyType: EnemyType };
   'combat:turn': { turn: number; isPlayerTurn: boolean };

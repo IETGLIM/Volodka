@@ -1456,18 +1456,20 @@ export function IntroScreen() {
   const onComplete = useCallback(() => {
     collectPoem('poem_2');
     setCurrentNodeId('start');
-    // Don't show story overlay yet — the act1_prologue cutscene will play
-    // first (triggered by currentNodeId='start' in GameOrchestrator).
-    // After the cutscene finishes, GameOrchestrator will set
-    // showStoryOverlay=true so StoryRenderer displays the 'start' node.
     setShowStoryOverlay(false);
     setIntroSeen(true);
+
+    // ── Wake-up 3D cinematic: Volodka gets up from bed, walks to desk ──
+    // The WakeUpSequence component listens for this event and animates the
+    // player model + camera through the wake-up sequence. When it finishes,
+    // it emits 'intro:wakeup_complete' which triggers the game start below.
+    eventBus.emit('intro:wakeup_sequence', {});
+
+    // Set mode to exploration so the 3D canvas renders the wakeup scene.
+    // The WakeUpSequence will animate inside the volodka_room scene.
     setMode('exploration');
 
     // Auto-start the first quest from the golden path if no quests are active.
-    // This ensures the player always has an active quest from the beginning.
-    // The GuidedStoryManager also does this on init, but this provides a
-    // reliable fallback at the exact moment the player enters exploration.
     const store = useGameStore.getState();
     if (store.quests.length === 0 || !store.quests.some((q) => q.status === 'active')) {
       store.activateQuest('first_reading');

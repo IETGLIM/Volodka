@@ -31,6 +31,7 @@ class PostFXErrorBoundary extends Component<
     return this.props.children;
   }
 }
+import { WakeUpSequence } from './WakeUpSequence';
 import { SceneColliderSelector } from './SceneColliderSelector';
 import { PhysicsPlayer } from './PhysicsPlayer';
 import { SimplePlayer } from './SimplePlayer';
@@ -387,6 +388,9 @@ export function RPGGameCanvas() {
 
             {/* Background ambient NPCs — lightweight, non-interactable, scene-populating */}
             <AmbientNPCs />
+
+            {/* Wake-up cinematic sequence (intro only) */}
+            <WakeUpSequence />
 
             {/* Interactive triggers */}
             <InteractiveTriggers livePlayerPositionRef={livePlayerPositionRef} />
