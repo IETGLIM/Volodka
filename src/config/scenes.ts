@@ -9,8 +9,8 @@
  * getExplorationCharacterModelScale, getExplorationLocomotionScale) remain here
  * for backward compatibility with all existing imports. */
 
-import type { SceneId, SceneConfig, SceneExit } from '@/shared/types/game';
-import { SCENE_DEFINITIONS } from '@/config/sceneDefinitions';
+import type { SceneConfig, SceneExit } from '@/shared/types/game';
+import { SCENE_DEFINITIONS, SCENE_IDS, type SceneId } from '@/config/sceneDefinitions';
 import { generateSceneConfig, generateAllSceneConfigs } from '@/config/sceneDefinitionGenerator';
 
 /** Complete scene configuration map — GENERATED from SceneDefinitions.
@@ -27,8 +27,8 @@ export function getSceneConfig(sceneId: SceneId): SceneConfig {
   return SCENE_CONFIG[sceneId] ?? SCENE_CONFIG['volodka_room'];
 }
 
-/** All valid SceneId values — derived from SCENE_CONFIG keys at runtime. */
-const VALID_SCENE_IDS: SceneId[] = Object.keys(SCENE_CONFIG) as SceneId[];
+/** All valid SceneId values — derived from SCENE_DEFINITIONS keys. */
+const VALID_SCENE_IDS: SceneId[] = SCENE_IDS;
 
 /**
  * Sanitize an exploration scene ID to ensure it's a valid SceneId.

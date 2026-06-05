@@ -13,7 +13,8 @@ import { QUEST_DEFINITIONS } from '@/data/quests';
 import { ACHIEVEMENT_MAP, TOTAL_ACHIEVEMENTS } from '@/data/achievements';
 import { getDailyMissionById, getDaySeed } from '@/data/dailyMissions';
 import { eventBus } from '@/engine/EventBus';
-import { clamp, pushNotification, type GameNotification, type PoemPowerState, type GameStoreState } from '../shared';
+import { clamp, pushNotification, type GameNotification, type PoemPowerState } from '../shared';
+import type { GameStoreState } from '../types';
 
 /* ─── Slice types ─── */
 
@@ -212,7 +213,8 @@ export const createWorldSlice: StateCreator<
     set((state) => {
       if (state.collectedPoems.includes(poemId)) return state;
       const poem = getPoemById(poemId);
-      const poemTitle = poem?.title ?? poemId;
+      if (!poem) return state;
+      const poemTitle = poem.title;
       try { eventBus.emit('poem:collected', { poemId }); } catch { /* ignore */ }
       const currentNotifications = get().notifications;
       return {

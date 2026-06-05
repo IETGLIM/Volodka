@@ -15,7 +15,8 @@ interface LevelUpState {
   newLevel: number;
   prevLevel: number;
   id: string;
-  perkPointGained: boolean;
+  levelsGained: number;
+  perkPointsGained: number;
 }
 
 /** Number of CSS particle dots for the burst effect */
@@ -25,12 +26,17 @@ export function LevelUpEffect() {
   const [levelUp, setLevelUp] = useState<LevelUpState | null>(null);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const triggerLevelUp = useCallback((newLevel: number, prevLevel: number, perkPointGained = false) => {
+  const triggerLevelUp = useCallback((
+    newLevel: number,
+    prevLevel: number,
+    levelsGained = newLevel - prevLevel,
+    perkPointsGained = 0,
+  ) => {
     // Clear any previous timer
     if (timerRef.current) clearTimeout(timerRef.current);
 
     const id = `levelup-${Date.now()}-${newLevel}`;
-    setLevelUp({ newLevel, prevLevel, id, perkPointGained });
+    setLevelUp({ newLevel, prevLevel, id, levelsGained, perkPointsGained });
 
     // Auto-dismiss after ~3 seconds
     timerRef.current = setTimeout(() => {
@@ -41,7 +47,12 @@ export function LevelUpEffect() {
   // ── Watch EventBus for player:levelup ──
   useEffect(() => {
     const unsub = eventBus.on('player:levelup', (payload) => {
-      triggerLevelUp(payload.newLevel, payload.prevLevel, payload.perkPointGained ?? false);
+      triggerLevelUp(
+        payload.newLevel,
+        payload.prevLevel,
+        payload.levelsGained ?? payload.newLevel - payload.prevLevel,
+        payload.perkPointsGained ?? (payload.perkPointGained ? 1 : 0),
+      );
     });
     return () => {
       unsub();
@@ -220,9 +231,11 @@ export function LevelUpEffect() {
                   className="text-sm font-mono tracking-wider text-amber-300/60"
                   style={{ textShadow: '0 0 8px rgba(251,191,36,0.3)' }}
                 >
-                  +1 очко навыка
+                  {levelUp.levelsGained === 1
+                    ? '+1 очко навыка'
+                    : `+${levelUp.levelsGained} очков навыка`}
                 </motion.p>
-                {levelUp.perkPointGained && (
+                {levelUp.perkPointsGained > 0 && (
                   <motion.p
                     className="text-sm font-mono tracking-wider text-cyan-300/70"
                     style={{ textShadow: '0 0 8px rgba(34,211,238,0.4)' }}
@@ -230,7 +243,9 @@ export function LevelUpEffect() {
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ duration: 0.3, delay: 0.6 }}
                   >
-                    ★ +1 очко черты
+                    ★ {levelUp.perkPointsGained === 1
+                      ? '+1 очко черты'
+                      : `+${levelUp.perkPointsGained} очков черты`}
                   </motion.p>
                 )}
               </motion.div>

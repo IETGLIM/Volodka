@@ -8,7 +8,12 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronRight, Zap, SkipForward } from 'lucide-react';
-import { useGameStore } from '@/store/gameStore';
+import {
+  useSetCurrentNodeId,
+  useSetShowStoryOverlay,
+  useStoryContext,
+  useVisitNode,
+} from '@/store/selectors';
 import { STORY_NODES } from '@/data/storyNodes';
 import { audioEngine } from '@/engine/AudioEngine';
 import { KARMA_LOW_THRESHOLD, KARMA_HIGH_THRESHOLD } from '@/data/constants';
@@ -100,6 +105,16 @@ function StatChangeChip({ effect }: { effect: StoryEffect }) {
   return null;
 }
 
+/** Scene hub nodes — story overlay menus while in 3D exploration */
+const EXPLORE_HUB_NODE_IDS = new Set(['explore_mode', 'corridor_explore_mode']);
+
+/** Nodes that open a scene hub; all other hub targets dismiss the overlay */
+const EXPLORE_HUB_ENTRY: Record<string, string> = {
+  start: 'explore_mode',
+  corridor_door: 'corridor_explore_mode',
+  go_home: 'explore_mode',
+};
+
 /* ── Page turn animation variants ── */
 const pageTurnVariants = {
   enter: (direction: number) => ({
@@ -121,14 +136,10 @@ const pageTurnVariants = {
 
 /* ── Component ── */
 export function StoryRenderer() {
-  const showStoryOverlay = useGameStore((s) => s.showStoryOverlay);
-  const mode = useGameStore((s) => s.mode);
-  const currentNodeId = useGameStore((s) => s.currentNodeId);
-  const playerState = useGameStore((s) => s.playerState);
-  const currentAct = useGameStore((s) => s.playerState.progression.currentAct);
-  const setCurrentNodeId = useGameStore((s) => s.setCurrentNodeId);
-  const setShowStoryOverlay = useGameStore((s) => s.setShowStoryOverlay);
-  const visitNode = useGameStore((s) => s.visitNode);
+  const { showStoryOverlay, mode, currentNodeId, playerState, currentAct } = useStoryContext();
+  const setCurrentNodeId = useSetCurrentNodeId();
+  const setShowStoryOverlay = useSetShowStoryOverlay();
+  const visitNode = useVisitNode();
 
   const [pageDirection, setPageDirection] = useState(0);
   const [appliedEffects, setAppliedEffects] = useState<StoryEffect[]>([]);
@@ -171,15 +182,19 @@ export function StoryRenderer() {
         // End of game — hide the overlay and clear the story node
         setShowStoryOverlay(false);
         setCurrentNodeId('');
-      } else if (choice.next === 'explore_mode') {
-        // Just hide the overlay — scene transitions are handled by the 3D world
-        setShowStoryOverlay(false);
-        setCurrentNodeId('');
+      } else if (choice.next && EXPLORE_HUB_NODE_IDS.has(choice.next)) {
+        const hubFromEntry = EXPLORE_HUB_ENTRY[currentNodeId];
+        if (hubFromEntry === choice.next) {
+          setCurrentNodeId(choice.next);
+        } else {
+          setShowStoryOverlay(false);
+          setCurrentNodeId('');
+        }
       } else {
         setCurrentNodeId(choice.next);
       }
     },
-    [setCurrentNodeId, setShowStoryOverlay],
+    [currentNodeId, setCurrentNodeId, setShowStoryOverlay],
   );
 
   const handleContinue = useCallback(() => {

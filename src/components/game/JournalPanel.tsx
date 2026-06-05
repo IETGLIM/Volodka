@@ -24,7 +24,17 @@ import {
   ChevronRight,
   FileText,
 } from 'lucide-react';
-import { useGameStore, type JournalTab, type LoreEntry } from '@/store/gameStore';
+import type { JournalTab, LoreEntry } from '@/store/gameStore';
+import {
+  useAddLoreEntry,
+  useCollectedPoems,
+  useJournalShell,
+  useLoreEntries,
+  usePlayerState,
+  useSetJournalOpen,
+  useSetJournalTab,
+  useVisitedNodes,
+} from '@/store/selectors';
 import { POEMS, getMainPoems, getHiddenPoems } from '@/data/poems';
 import { getPoemPower, canUsePower, activatePoemPowerById, getCooldownRemaining } from '@/engine/PoemPowerSystem';
 import { NPC_DEFINITIONS } from '@/data/npcDefinitions';
@@ -98,7 +108,7 @@ const THEME_COLORS: Record<string, string> = {
    NOTES TAB — Discovered story nodes with timestamps
    ══════════════════════════════════════════════════════════════ */
 function NotesTab({ searchQuery }: { searchQuery: string }) {
-  const visitedNodes = useGameStore((s) => s.playerState.visitedNodes);
+  const visitedNodes = useVisitedNodes();
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
 
   // Build notes from visited story nodes
@@ -232,7 +242,7 @@ function NotesTab({ searchQuery }: { searchQuery: string }) {
    SKILLS TAB
    ══════════════════════════════════════════════════════════════ */
 function SkillsTab({ searchQuery }: { searchQuery: string }) {
-  const playerState = useGameStore((s) => s.playerState);
+  const playerState = usePlayerState();
   const { skills, progression } = playerState;
 
   const filteredSkills = useMemo(() => {
@@ -303,7 +313,7 @@ function SkillsTab({ searchQuery }: { searchQuery: string }) {
    POEMS TAB
    ══════════════════════════════════════════════════════════════ */
 function PoemsTab({ searchQuery }: { searchQuery: string }) {
-  const collectedPoems = useGameStore((s) => s.collectedPoems);
+  const collectedPoems = useCollectedPoems();
   const [selectedPoemId, setSelectedPoemId] = useState<string | null>(null);
 
   const mainPoems = getMainPoems();
@@ -593,7 +603,7 @@ function PoemsTab({ searchQuery }: { searchQuery: string }) {
    LORE TAB
    ══════════════════════════════════════════════════════════════ */
 function LoreTab({ searchQuery }: { searchQuery: string }) {
-  const loreEntries = useGameStore((s) => s.loreEntries);
+  const loreEntries = useLoreEntries();
   const [selectedLore, setSelectedLore] = useState<string | null>(null);
 
   const discoveredEntries = loreEntries.filter((e) => e.discovered);
@@ -703,12 +713,10 @@ function LoreTab({ searchQuery }: { searchQuery: string }) {
    MAIN JOURNAL PANEL
    ══════════════════════════════════════════════════════════════ */
 export function JournalPanel() {
-  const journalOpen = useGameStore((s) => s.journalOpen);
-  const journalTab = useGameStore((s) => s.journalTab);
-  const setJournalTab = useGameStore((s) => s.setJournalTab);
-  const setJournalOpen = useGameStore((s) => s.setJournalOpen);
-  const loreEntries = useGameStore((s) => s.loreEntries);
-  const addLoreEntry = useGameStore((s) => s.addLoreEntry);
+  const { journalOpen, journalTab, loreEntries } = useJournalShell();
+  const setJournalTab = useSetJournalTab();
+  const setJournalOpen = useSetJournalOpen();
+  const addLoreEntry = useAddLoreEntry();
 
   const [searchQuery, setSearchQuery] = useState('');
 

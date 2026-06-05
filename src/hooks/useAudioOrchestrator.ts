@@ -62,6 +62,10 @@ interface PlayingAmbient {
   filter: BiquadFilterNode;
   /** Random sound timers */
   randomTimers: Array<ReturnType<typeof setTimeout>>;
+  /** Monotonic counter — stale random-sound callbacks are ignored */
+  randomSoundGeneration: number;
+  /** Scheduled fade-out cleanup timer for this instance */
+  fadeOutTimer?: ReturnType<typeof setTimeout>;
   /** Whether this instance is being faded out */
   fadingOut: boolean;
 }
@@ -70,7 +74,6 @@ class AmbientSoundPlayer {
   private ctx: AudioContext | null = null;
   private destination: GainNode | null = null;
   private currentAmbient: PlayingAmbient | null = null;
-  private previousAmbient: PlayingAmbient | null = null;
   private currentType: AmbientSoundType | null = null;
   private disposed = false;
 
@@ -79,8 +82,11 @@ class AmbientSoundPlayer {
   private combatMuted = false;
   private dialogueDucked = false;
 
-  // Crossfade timer
-  private crossfadeTimer: ReturnType<typeof setTimeout> | null = null;
+  /** Monotonic counter — stale crossfade transitions are ignored */
+  private transitionGeneration = 0;
+
+  /** Ambients currently fading out (may still be audible) */
+  private fadingAmbients = new Set<PlayingAmbient>();
 
   /** Initialize the audio context (lazy, called on first play) */
   private initContext(): void {
@@ -129,16 +135,29 @@ class AmbientSoundPlayer {
     const def = AMBIENT_SOUNDS[type];
     if (!def) return;
 
+    const generation = ++this.transitionGeneration;
     const now = ctx.currentTime;
     const crossfadeSec = crossfadeMs / 1000;
 
-    // ── Fade out current ambient ──
+    // ── Fade out current ambient (per-instance timer, not cancelled by later transitions) ──
     if (this.currentAmbient) {
       this.fadeOutAmbient(this.currentAmbient, crossfadeSec);
     }
 
     // ── Create new ambient ──
     const newAmbient = this.createAmbientInstance(def, now, crossfadeSec);
+
+    if (this.disposed) {
+      this.cleanupAmbient(newAmbient);
+      return;
+    }
+
+    // A newer play() superseded this transition — discard the orphaned instance
+    if (generation !== this.transitionGeneration) {
+      this.cleanupAmbient(newAmbient);
+      return;
+    }
+
     this.currentAmbient = newAmbient;
     this.currentType = type;
   }
@@ -155,6 +174,7 @@ class AmbientSoundPlayer {
       oscillators: [],
       filter: ctx.createBiquadFilter(),
       randomTimers: [],
+      randomSoundGeneration: 0,
       fadingOut: false,
     };
 
@@ -281,24 +301,36 @@ class AmbientSoundPlayer {
     return instance;
   }
 
+  /** Cancel all pending random-sound timers for an instance */
+  private clearRandomTimers(ambient: PlayingAmbient): void {
+    ambient.randomSoundGeneration++;
+    for (const timer of ambient.randomTimers) {
+      clearTimeout(timer);
+    }
+    ambient.randomTimers = [];
+  }
+
   /** Schedule a random sound event at a random interval */
   private scheduleRandomSound(
     instance: PlayingAmbient,
     rs: NonNullable<AmbientSoundDef['randomSounds']>[number],
     _def: AmbientSoundDef,
   ): void {
-    if (this.disposed) return;
+    if (this.disposed || instance.fadingOut) return;
 
+    const capturedGen = instance.randomSoundGeneration;
     const interval =
       rs.minInterval + Math.random() * (rs.maxInterval - rs.minInterval);
 
     const timer = setTimeout(() => {
+      const idx = instance.randomTimers.indexOf(timer);
+      if (idx !== -1) instance.randomTimers.splice(idx, 1);
+
       if (this.disposed || instance.fadingOut) return;
-      if (this.currentAmbient !== instance) return; // Instance was replaced
+      if (this.currentAmbient !== instance) return;
+      if (capturedGen !== instance.randomSoundGeneration) return;
 
       this.playRandomSound(rs);
-
-      // Schedule next occurrence
       this.scheduleRandomSound(instance, rs, _def);
     }, interval * 1000);
 
@@ -307,6 +339,8 @@ class AmbientSoundPlayer {
 
   /** Play a single random sound event */
   private playRandomSound(rs: NonNullable<AmbientSoundDef['randomSounds']>[number]): void {
+    if (this.disposed) return;
+
     const ctx = this.ctx;
     const dest = this.destination;
     if (!ctx || !dest) return;
@@ -341,12 +375,8 @@ class AmbientSoundPlayer {
     }
 
     ambient.fadingOut = true;
-
-    // Clear random timers
-    for (const timer of ambient.randomTimers) {
-      clearTimeout(timer);
-    }
-    ambient.randomTimers = [];
+    this.fadingAmbients.add(ambient);
+    this.clearRandomTimers(ambient);
 
     // Fade out master gain
     const now = ctx.currentTime;
@@ -357,31 +387,22 @@ class AmbientSoundPlayer {
       // Gain may already be at 0
     }
 
-    // Schedule cleanup after fade
-    const timer = setTimeout(() => {
+    if (ambient.fadeOutTimer) {
+      clearTimeout(ambient.fadeOutTimer);
+    }
+
+    // Per-instance timer — never cancel another ambient's scheduled cleanup
+    ambient.fadeOutTimer = setTimeout(() => {
+      ambient.fadeOutTimer = undefined;
+      if (this.disposed) return;
       this.cleanupAmbient(ambient);
     }, (durationSec + 0.5) * 1000);
-
-    // Track for cleanup
-    if (this.previousAmbient && this.previousAmbient !== ambient) {
-      // Clean up any older previous ambient
-      this.cleanupAmbient(this.previousAmbient);
-    }
-    this.previousAmbient = ambient;
-
-    // Clear crossfade timer if exists
-    if (this.crossfadeTimer) {
-      clearTimeout(this.crossfadeTimer);
-    }
-    this.crossfadeTimer = timer;
   }
 
   /** Stop and disconnect all nodes for an ambient instance */
   private cleanupAmbient(ambient: PlayingAmbient): void {
-    // Clear random timers
-    for (const timer of ambient.randomTimers) {
-      clearTimeout(timer);
-    }
+    this.fadingAmbients.delete(ambient);
+    this.clearRandomTimers(ambient);
 
     // Stop oscillators
     for (const oscLayer of ambient.oscillators) {
@@ -424,10 +445,11 @@ class AmbientSoundPlayer {
     try { ambient.filter.disconnect(); } catch { /* ignore */ }
     try { ambient.masterGain.disconnect(); } catch { /* ignore */ }
 
-    // Clear reference if this is the previous ambient
-    if (this.previousAmbient === ambient) {
-      this.previousAmbient = null;
+    if (ambient.fadeOutTimer) {
+      clearTimeout(ambient.fadeOutTimer);
+      ambient.fadeOutTimer = undefined;
     }
+
     if (this.currentAmbient === ambient) {
       this.currentAmbient = null;
       this.currentType = null;
@@ -436,42 +458,46 @@ class AmbientSoundPlayer {
 
   /** Stop all ambient sounds immediately */
   stopAll(): void {
+    if (this.disposed) return;
+    this.doStopAll();
+  }
+
+  private doStopAll(): void {
+    ++this.transitionGeneration;
     if (this.currentAmbient) {
       this.cleanupAmbient(this.currentAmbient);
       this.currentAmbient = null;
       this.currentType = null;
     }
-    if (this.previousAmbient) {
-      this.cleanupAmbient(this.previousAmbient);
-      this.previousAmbient = null;
-    }
-    if (this.crossfadeTimer) {
-      clearTimeout(this.crossfadeTimer);
-      this.crossfadeTimer = null;
+    for (const ambient of [...this.fadingAmbients]) {
+      this.cleanupAmbient(ambient);
     }
   }
 
   /** Set combat mute state */
   setCombatMuted(muted: boolean): void {
+    if (this.disposed) return;
     this.combatMuted = muted;
     this.applyVolume();
   }
 
   /** Set dialogue duck state */
   setDialogueDucked(ducked: boolean): void {
+    if (this.disposed) return;
     this.dialogueDucked = ducked;
     this.applyVolume();
   }
 
   /** Set the base volume (0–1) */
   setVolume(vol: number): void {
+    if (this.disposed) return;
     this.baseVolume = Math.max(0, Math.min(1, vol));
     this.applyVolume();
   }
 
   /** Apply the effective volume to the current ambient's master gain */
   private applyVolume(): void {
-    if (!this.currentAmbient || !this.ctx) return;
+    if (this.disposed || !this.currentAmbient || !this.ctx) return;
 
     const effectiveVol = this.getEffectiveVolume();
     const now = this.ctx.currentTime;
@@ -489,13 +515,15 @@ class AmbientSoundPlayer {
 
   /** Get the currently playing ambient type */
   getCurrentType(): AmbientSoundType | null {
+    if (this.disposed) return null;
     return this.currentType;
   }
 
   /** Dispose of all resources */
   dispose(): void {
+    if (this.disposed) return;
     this.disposed = true;
-    this.stopAll();
+    this.doStopAll();
 
     if (this.destination) {
       try { this.destination.disconnect(); } catch { /* ignore */ }
@@ -515,6 +543,14 @@ function getAmbientPlayer(): AmbientSoundPlayer {
   return ambientPlayerInstance;
 }
 
+/** Dispose orphaned singleton on Vite HMR reload */
+if (import.meta.hot) {
+  import.meta.hot.dispose(() => {
+    ambientPlayerInstance?.dispose();
+    ambientPlayerInstance = null;
+  });
+}
+
 /**
  * Sub-orchestrator that handles all audio-related EventBus subscriptions:
  * - Music control based on game mode (play/stop, dialogue muffle)
@@ -526,17 +562,22 @@ function getAmbientPlayer(): AmbientSoundPlayer {
  */
 export function useAudioOrchestrator() {
   const ambientPlayerRef = useRef<AmbientSoundPlayer | null>(null);
+  const disposedRef = useRef(false);
 
   // Ensure ambient player is created
   useEffect(() => {
+    disposedRef.current = false;
     ambientPlayerRef.current = getAmbientPlayer();
     return () => {
+      disposedRef.current = true;
       // Don't dispose the singleton on unmount — it persists across re-renders
     };
   }, []);
 
   // Music control + dialogue muffle + ambient initial state based on game mode
   useEffect(() => {
+    if (disposedRef.current) return;
+
     const mode = useGameStore.getState().mode;
     if (mode === 'menu' || mode === 'intro') {
       musicEngine.stopMusic(1);
@@ -585,6 +626,7 @@ export function useAudioOrchestrator() {
     // Stinger: combat start
     unsubs.push(
       eventBus.on('combat:start', () => {
+        if (disposedRef.current) return;
         audioEngine.playStinger('danger');
         // Switch ambient to combat type
         ambientPlayerRef.current?.setCombatMuted(false);
@@ -602,6 +644,8 @@ export function useAudioOrchestrator() {
     // Reverb preset on scene change + ambient sound change
     unsubs.push(
       eventBus.on('scene:enter', ({ sceneId }) => {
+        if (disposedRef.current) return;
+
         const reverbPresets: Partial<Record<string, string>> = {
           volodka_room: 'small_room',
           zarema_albert_room: 'small_room',
@@ -637,6 +681,8 @@ export function useAudioOrchestrator() {
     // Combat end: restore scene ambient
     unsubs.push(
       eventBus.on('combat:end', () => {
+        if (disposedRef.current) return;
+
         const state = useGameStore.getState();
         const sceneId = state.exploration.currentSceneId;
         const timeOfDay = state.exploration.timeOfDay;
@@ -669,6 +715,8 @@ export function useAudioOrchestrator() {
   // Mode-based audio control: react to mode changes reactively
   useEffect(() => {
     const unsub = useGameStore.subscribe((state, prev) => {
+      if (disposedRef.current) return;
+
       if (state.mode !== prev.mode) {
         if (state.mode === 'menu' || state.mode === 'intro') {
           musicEngine.stopMusic(1);

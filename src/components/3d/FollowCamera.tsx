@@ -16,7 +16,7 @@ import { useRef, useEffect, useLayoutEffect } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 import { useGameStore } from '@/store/gameStore';
-import { useShallow } from 'zustand/react/shallow';
+import { useCameraFollowState } from '@/store/selectors';
 import { getSceneConfig } from '@/config/scenes';
 import {
   createSpringCameraState,
@@ -139,20 +139,7 @@ export function FollowCamera({
   const camera = useThree((s) => s.camera);
   const threeScene = useThree((s) => s.scene);
   const gl = useThree((s) => s.gl);
-  // P3-FIX: useShallow for object/array selectors to prevent unnecessary re-renders.
-  // Without useShallow, cutsceneWaypoints (array) returns a new reference on
-  // every store update, causing FollowCamera to re-render even when waypoints
-  // haven't changed. sceneId, gameMode, and currentNodeId are primitives and
-  // don't need useShallow.
-  const { sceneId, gameMode, activeCutsceneId, cutsceneWaypoints, currentNodeId } = useGameStore(
-    useShallow((s) => ({
-      sceneId: s.exploration.currentSceneId,
-      gameMode: s.mode,
-      activeCutsceneId: s.activeCutsceneId,
-      cutsceneWaypoints: s.cutsceneWaypoints,
-      currentNodeId: s.currentNodeId,
-    })),
-  );
+  const { sceneId, gameMode, activeCutsceneId, cutsceneWaypoints, currentNodeId } = useCameraFollowState();
 
   // Camera ref for imperative updates (standard R3F pattern)
   const cameraRef = useRef(camera);

@@ -182,7 +182,6 @@ export const DIALOGUE_NODES: Record<string, DialogueNode> = {
           { type: 'addSkill', skill: 'empathy', value: 2 },
           { type: 'npcChange', npcId: 'albert', npcChange: { relation: 10 } },
           { type: 'setFlag', flag: 'albert_relation_warm', flagValue: true },
-          { type: 'collectPoem', poemId: 'poem_11' },
         ],
       },
       {
@@ -3074,14 +3073,14 @@ export const DIALOGUE_NODES: Record<string, DialogueNode> = {
      VOLODKA INNER MONOLOGUE (2 nodes)
      ═══════════════════════════════════════════════════════════ */
 
-  volodka_inner: {
-    id: 'volodka_inner',
+  volodka_inner_dialogue: {
+    id: 'volodka_inner_dialogue',
     speaker: 'Володька',
     text: '...Что со мной происходит? Я уставший инженер. Я работаю с логикой, с алгоритмами, с чёткими структурами. Но с недавних пор код кажется мне... живым. Как будто между строк прячется что-то, что я не могу увидеть, но чувствую. Может быть, я просто не выспался.',
     choices: [
       {
         text: 'Нет. Это не бессонница. Это что-то настоящее.',
-        next: 'volodka_inner_accept',
+        next: 'volodka_inner_pledge',
         effects: [
           { type: 'addSkill', skill: 'intuition', value: 2 },
           { type: 'addKarma', value: 2 },
@@ -3099,8 +3098,8 @@ export const DIALOGUE_NODES: Record<string, DialogueNode> = {
     ],
   },
 
-  volodka_inner_accept: {
-    id: 'volodka_inner_accept',
+  volodka_inner_pledge: {
+    id: 'volodka_inner_pledge',
     speaker: 'Володька',
     text: 'Я чувствую это. В каждом скрипте, в каждой функции — отголоски чего-то большего. Стихи, сплетённые с кодом. Кто-то оставил их для нас. Для меня. И я найду их все.',
     choices: [

@@ -853,7 +853,7 @@ export const zarema_albert_room_def: SceneDefinition = {
 };
 
 /** Map of all scene definitions — single source of truth */
-export const SCENE_DEFINITIONS: Record<string, SceneDefinition> = {
+export const SCENE_DEFINITIONS = {
   volodka_room: volodka_room_def,
   volodka_corridor: volodka_corridor_def,
   home_evening: home_evening_def,
@@ -868,4 +868,10 @@ export const SCENE_DEFINITIONS: Record<string, SceneDefinition> = {
   rooftop_edge: rooftop_edge_def,
   abandoned_factory: abandoned_factory_def,
   zarema_albert_room: zarema_albert_room_def,
-};
+} as const satisfies Record<string, SceneDefinition>;
+
+/** Scene identifier — derived from SCENE_DEFINITIONS keys (no manual union). */
+export type SceneId = keyof typeof SCENE_DEFINITIONS;
+
+/** Runtime list of valid scene IDs — derived from SCENE_DEFINITIONS keys. */
+export const SCENE_IDS = Object.keys(SCENE_DEFINITIONS) as SceneId[];

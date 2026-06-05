@@ -1,8 +1,20 @@
 /* ─── Volodka RPG – Main game orchestrator (thin coordinator) ─── */
 
-import { useState, useEffect, useCallback, useRef, useReducer } from 'react';
+import {
+  useState,
+  useEffect,
+  useCallback,
+  useRef,
+  useReducer,
+  useMemo,
+  memo,
+  lazy,
+  Suspense,
+  type ComponentType,
+} from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useGameStore } from '@/store/gameStore';
+import { useOrchestratorOverlay } from '@/store/selectors';
 import { eventBus } from '@/engine/EventBus';
 import { audioEngine } from '@/engine/AudioEngine';
 import { musicEngine } from '@/engine/MusicEngine';
@@ -10,7 +22,6 @@ import { SCENE_CONFIG } from '@/config/scenes';
 import { AUTO_SAVE_INTERVAL_MS } from '@/data/constants';
 import { STORY_NODES } from '@/data/storyNodes';
 import { DIALOGUE_NODES } from '@/data/dialogueNodes';
-import { QUEST_DEFINITIONS } from '@/data/quests';
 import { getCutsceneForNode } from '@/data/cutscenes';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { CUTSCENE_TIMINGS } from '@/shared/constants/transitionTimings';
@@ -18,58 +29,19 @@ import { VirtualControlsContext, sharedVirtualControlsRef } from '@/engine/Virtu
 import { processExpiredTTLFlags } from '@/engine/PoemPowerSystem';
 import { initGuidedStoryManager, disposeGuidedStoryManager, getActQuote } from '@/engine/GuidedStoryManager';
 
-// ──────────────────────────────────────────────────────────────────────────
-// P3-TODO: CODE-SPLITTING PLAN (deferred — dev server OOM prevents React.lazy)
-// ──────────────────────────────────────────────────────────────────────────
-// Currently all 40+ panel components are statically imported because the
-// dev server runs out of memory after the first compilation, causing
-// ChunkLoadError on subsequent lazy chunk requests. In production builds,
-// we should switch to React.lazy() for rarely-opened panels:
-//
-// Tier 1 (keep static — always-mounted or frequently opened):
-//   HUD, MiniMap, MenuScreen, IntroScreen, StoryRenderer, DialogueRenderer,
-//   LoadingScreen, CombatUI, NotificationToasts, FloatingTextLayer, ScreenEffects
-//
-// Tier 2 (React.lazy — opened occasionally):
-//   QuestsPanel, Inventory, PoetryBook, JournalPanel, RestPanel,
-//   SettingsPanel, SaveSlotManager, CompassHUD, MoralCompassHUD,
-//   MiniGameHub, NPCRelationshipPanel, CharacterProfilePanel
-//
-// Tier 3 (React.lazy — rarely opened):
-//   CodexPanel, DialogueHistoryPanel, AchievementDetailsPanel, SkillTreePanel,
-//   FastTravelPanel, PerksPanel, QuestBoardPanel, PlayerStatsPanel,
-//   DevPanel, CraftingPanel, TradingPanel, ShortcutsOverlay
-//
-// Implementation: wrap React.lazy imports in <Suspense fallback={null}>
-// and ensure each panel has a stable key for AnimatePresence transitions.
-// Production-only: use process.env.NODE_ENV === 'production' guard.
-// ──────────────────────────────────────────────────────────────────────────
-
 // Sub-orchestrator hooks
 import { useCombatOrchestrator } from '@/hooks/useCombatOrchestrator';
 import { useAudioOrchestrator } from '@/hooks/useAudioOrchestrator';
 import { useInteractionOrchestrator } from '@/hooks/useInteractionOrchestrator';
 import { useLoreDiscovery } from '@/hooks/useLoreDiscovery';
 import { useQuestTracker } from '@/hooks/useQuestTracker';
+import { useMinigameForQuest } from './MinigameQuestBridge';
 import { useAchievementChecker } from '@/hooks/useAchievementChecker';
 import { useWorldClock } from '@/hooks/useWorldClock';
 
-// Direct imports
-import { CodeBreakerGame } from './CodeBreakerGame';
-import { OpenStackTerminalGame } from './OpenStackTerminalGame';
-import { BashTerminalGame } from './BashTerminalGame';
-import { PoetryCompositionGame } from './PoetryCompositionGame';
-import { HackingGame } from './HackingGame';
-import { MemoryPuzzleGame } from './MemoryPuzzleGame';
-import { QuizGame } from './QuizGame';
-import { RhythmGame } from './RhythmGame';
-import { MenuScreen } from './MenuScreen';
-import { IntroScreen } from './IntroScreen';
-import { StoryRenderer } from './StoryRenderer';
-import { DialogueRenderer } from './DialogueRenderer';
+// Tier 1 — always-mounted or frequently opened (static)
 import { LootNotification } from './LootNotification';
 import { LoadingScreen } from './LoadingScreen';
-import { CombatUI } from './CombatUI';
 import { NotificationToasts } from './NotificationToasts';
 import { ExaminePanel } from './ExaminePanel';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
@@ -101,72 +73,92 @@ import { ScreenEffects } from './ScreenEffects';
 import { CutsceneOverlay } from '@/components/game/CutsceneOverlay';
 import { PoetryPowerBar } from '@/components/game/PoetryPowerBar';
 import { PoemPowerEffect } from '@/components/game/PoemPowerEffect';
-import { LevelUpEffect } from '@/components/game/LevelUpEffect';
 import { DirectionalDamageIndicator } from '@/components/game/DirectionalDamageIndicator';
-import { PhotoMode } from '@/components/game/PhotoMode';
 import { DamageNumberFloat } from '@/components/game/DamageNumberFloat';
 
 // Dynamic import — only RPGGameCanvas needs no SSR (WebGL canvas)
-import { lazy, Suspense } from 'react';
-
 const RPGGameCanvas = lazy(
   () => import('@/components/3d/RPGGameCanvas').then((m) => ({ default: m.RPGGameCanvas })),
 );
 
-/* ── Code-splitting: Tier 2/3 panels loaded on demand via React.lazy ── */
-/* Previously all panels were statically imported due to Vite dev server OOM.  */
-/* Now resolved: use NODE_OPTIONS=--max-old-space-size=4096 for dev builds.   */
+/* ── Code-splitting: Tier 2/3 panels + mini-games loaded on demand via React.lazy ── */
 
-// Lazy panel wrapper with null fallback (panels render instantly from cache)
-function LazyPanel({ children }: { children: React.ReactNode }) {
-  return <Suspense fallback={null}>{children}</Suspense>;
-}
+// Memoized lazy panel slot — stable across parent re-renders when open/onClose unchanged
+const LazyPanelSlot = memo(function LazyPanelSlot({
+  Panel,
+  open,
+  onClose,
+  panelProps,
+}: {
+  Panel: ComponentType<any>;
+  open?: boolean;
+  onClose?: () => void;
+  panelProps?: Readonly<Record<string, unknown>>;
+}) {
+  return (
+    <Suspense fallback={null}>
+      <Panel open={open} onClose={onClose} {...panelProps} />
+    </Suspense>
+  );
+});
 
 // Tier 2 panels (opened occasionally)
-const LazyQuestsPanel = lazy(() => import('./QuestsPanel').then(m => ({ default: (p: any) => <m.QuestsPanel {...p} /> })));
-const LazyInventory = lazy(() => import('./Inventory').then(m => ({ default: (p: any) => <m.Inventory {...p} /> })));
-const LazyPoetryBook = lazy(() => import('./PoetryBook').then(m => ({ default: (p: any) => <m.PoetryBook {...p} /> })));
-const LazyJournalPanel = lazy(() => import('./JournalPanel').then(m => ({ default: () => <m.JournalPanel /> })));
-const LazyRestPanel = lazy(() => import('./RestPanel').then(m => ({ default: (p: any) => <m.RestPanel {...p} /> })));
-const LazySaveSlotManager = lazy(() => import('./SaveSlotManager').then(m => ({ default: (p: any) => <m.SaveSlotManager {...p} /> })));
-const LazyMiniGameHub = lazy(() => import('./MiniGameHub').then(m => ({ default: (p: any) => <m.MiniGameHub {...p} /> })));
-const LazyNPCRelationshipPanel = lazy(() => import('./NPCRelationshipPanel').then(m => ({ default: (p: any) => <m.NPCRelationshipPanel {...p} /> })));
-const LazyCharacterProfilePanel = lazy(() => import('./CharacterProfilePanel').then(m => ({ default: (p: any) => <m.CharacterProfilePanel {...p} /> })));
+const LazyQuestsPanel = lazy(() => import('./QuestsPanel').then((m) => ({ default: m.QuestsPanel })));
+const LazyInventory = lazy(() => import('./Inventory').then((m) => ({ default: m.Inventory })));
+const LazyPoetryBook = lazy(() => import('./PoetryBook').then((m) => ({ default: m.PoetryBook })));
+const LazyJournalPanel = lazy(() => import('./JournalPanel').then((m) => ({ default: m.JournalPanel })));
+const LazyRestPanel = lazy(() => import('./RestPanel').then((m) => ({ default: m.RestPanel })));
+const LazySaveSlotManager = lazy(() => import('./SaveSlotManager').then((m) => ({ default: m.SaveSlotManager })));
+const LazyMiniGameHub = lazy(() => import('./MiniGameHub').then((m) => ({ default: m.MiniGameHub })));
+const LazyNPCRelationshipPanel = lazy(() => import('./NPCRelationshipPanel').then((m) => ({ default: m.NPCRelationshipPanel })));
+const LazyCharacterProfilePanel = lazy(() => import('./CharacterProfilePanel').then((m) => ({ default: m.CharacterProfilePanel })));
 
 // Tier 3 panels (rarely opened)
-const LazyCodexPanel = lazy(() => import('./CodexPanel').then(m => ({ default: (p: any) => <m.CodexPanel {...p} /> })));
-const LazyDialogueHistoryPanel = lazy(() => import('./DialogueHistoryPanel').then(m => ({ default: (p: any) => <m.DialogueHistoryPanel {...p} /> })));
-const LazyAchievementDetailsPanel = lazy(() => import('./AchievementDetailsPanel').then(m => ({ default: (p: any) => <m.AchievementDetailsPanel {...p} /> })));
-const LazySkillTreePanel = lazy(() => import('./SkillTreePanel').then(m => ({ default: (p: any) => <m.SkillTreePanel {...p} /> })));
-const LazyFastTravelPanel = lazy(() => import('./FastTravelPanel').then(m => ({ default: (p: any) => <m.FastTravelPanel {...p} /> })));
-const LazyPerksPanel = lazy(() => import('./PerksPanel').then(m => ({ default: (p: any) => <m.PerksPanel {...p} /> })));
-const LazyQuestBoardPanel = lazy(() => import('./QuestBoardPanel').then(m => ({ default: (p: any) => <m.QuestBoardPanel {...p} /> })));
-const LazyPlayerStatsPanel = lazy(() => import('./PlayerStatsPanel').then(m => ({ default: (p: any) => <m.PlayerStatsPanel {...p} /> })));
-const LazyCraftingPanel = lazy(() => import('./CraftingPanel').then(m => ({ default: (p: any) => <m.CraftingPanel {...p} /> })));
-const LazyTradingPanel = lazy(() => import('./TradingPanel').then(m => ({ default: (p: any) => <m.TradingPanel {...p} /> })));
-const LazyDevPanel = lazy(() => import('./DevPanel').then(m => ({ default: () => <m.DevPanel /> })));
-const LazyShortcutsOverlay = lazy(() => import('./ShortcutsOverlay').then(m => ({ default: (p: any) => <m.ShortcutsOverlay {...p} /> })));
+const LazyCodexPanel = lazy(() => import('./CodexPanel').then((m) => ({ default: m.CodexPanel })));
+const LazyDialogueHistoryPanel = lazy(() => import('./DialogueHistoryPanel').then((m) => ({ default: m.DialogueHistoryPanel })));
+const LazyAchievementDetailsPanel = lazy(() => import('./AchievementDetailsPanel').then((m) => ({ default: m.AchievementDetailsPanel })));
+const LazySkillTreePanel = lazy(() => import('./SkillTreePanel').then((m) => ({ default: m.SkillTreePanel })));
+const LazyFastTravelPanel = lazy(() => import('./FastTravelPanel').then((m) => ({ default: m.FastTravelPanel })));
+const LazyPerksPanel = lazy(() => import('./PerksPanel').then((m) => ({ default: m.PerksPanel })));
+const LazyQuestBoardPanel = lazy(() => import('./QuestBoardPanel').then((m) => ({ default: m.QuestBoardPanel })));
+const LazyPlayerStatsPanel = lazy(() => import('./PlayerStatsPanel').then((m) => ({ default: m.PlayerStatsPanel })));
+const LazyCraftingPanel = lazy(() => import('./CraftingPanel').then((m) => ({ default: m.CraftingPanel })));
+const LazyTradingPanel = lazy(() => import('./TradingPanel').then((m) => ({ default: m.TradingPanel })));
+const LazyDevPanel = lazy(() => import('./DevPanel').then((m) => ({ default: m.DevPanel })));
+const LazyShortcutsOverlay = lazy(() => import('./ShortcutsOverlay').then((m) => ({ default: m.ShortcutsOverlay })));
 
-// SettingsPanel stays static — used frequently from pause menu
-import { SettingsPanel } from './SettingsPanel';
+// Mini-games — loaded on demand when a game is opened
+const LazyCodeBreakerGame = lazy(() => import('./CodeBreakerGame').then((m) => ({ default: m.CodeBreakerGame })));
+const LazyOpenStackTerminalGame = lazy(() => import('./OpenStackTerminalGame').then((m) => ({ default: m.OpenStackTerminalGame })));
+const LazyBashTerminalGame = lazy(() => import('./BashTerminalGame').then((m) => ({ default: m.BashTerminalGame })));
+const LazyPoetryCompositionGame = lazy(() => import('./PoetryCompositionGame').then((m) => ({ default: m.PoetryCompositionGame })));
+const LazyHackingGame = lazy(() => import('./HackingGame').then((m) => ({ default: m.HackingGame })));
+const LazyMemoryPuzzleGame = lazy(() => import('./MemoryPuzzleGame').then((m) => ({ default: m.MemoryPuzzleGame })));
+const LazyQuizGame = lazy(() => import('./QuizGame').then((m) => ({ default: m.QuizGame })));
+const LazyRhythmGame = lazy(() => import('./RhythmGame').then((m) => ({ default: m.RhythmGame })));
 
-// ── Orphan integration: quest dialogs, notifications, story HUD, karma/poem, level-up ──
-import { QuestAcceptDialog } from './QuestAcceptDialog';
-import { QuestCompleteDialog } from './QuestCompleteDialog';
 import { QuestNotificationSystem } from './QuestNotificationSystem';
 import { StoryGuidanceHUD } from './StoryGuidanceHUD';
-import { KarmaPoemInfoPanel } from './KarmaPoemInfoPanel';
 import { LevelUpSummary } from './LevelUpSummary';
-import { RewardDisplay } from './RewardDisplay';
-import { MatrixRainQuote } from './MatrixRainQuote';
 import { CyberpunkThemeProvider } from './CyberpunkTheme';
 
-
+// Lazy — mode-specific screens, minigames, and secondary overlays
+const LazyMenuScreen = lazy(() => import('./MenuScreen').then((m) => ({ default: m.MenuScreen })));
+const LazyIntroScreen = lazy(() => import('./IntroScreen').then((m) => ({ default: m.IntroScreen })));
+const LazyStoryRenderer = lazy(() => import('./StoryRenderer').then((m) => ({ default: m.StoryRenderer })));
+const LazyDialogueRenderer = lazy(() => import('./DialogueRenderer').then((m) => ({ default: m.DialogueRenderer })));
+const LazyCombatUI = lazy(() => import('./CombatUI').then((m) => ({ default: m.CombatUI })));
+const LazySettingsPanel = lazy(() => import('./SettingsPanel').then((m) => ({ default: m.SettingsPanel })));
+const LazyQuestAcceptDialog = lazy(() => import('./QuestAcceptDialog').then((m) => ({ default: m.QuestAcceptDialog })));
+const LazyQuestCompleteDialog = lazy(() => import('./QuestCompleteDialog').then((m) => ({ default: m.QuestCompleteDialog })));
+const LazyKarmaPoemInfoPanel = lazy(() => import('./KarmaPoemInfoPanel').then((m) => ({ default: m.KarmaPoemInfoPanel })));
+const LazyMatrixRainQuote = lazy(() => import('./MatrixRainQuote').then((m) => ({ default: m.MatrixRainQuote })));
+const LazyLevelUpEffect = lazy(() => import('./LevelUpEffect').then((m) => ({ default: m.LevelUpEffect })));
+const LazyPhotoMode = lazy(() => import('./PhotoMode').then((m) => ({ default: m.PhotoMode })));
 
 /* ── Helper: Auto-skip intro via useEffect (avoids render-phase mutation) ── */
 function IntroAutoSkip() {
-  const introSeen = useGameStore((s) => s.introSeen);
-  const mode = useGameStore((s) => s.mode);
+  const { introSeen, mode } = useOrchestratorOverlay();
 
   useEffect(() => {
     if (mode === 'intro' && introSeen) {
@@ -184,12 +176,18 @@ function panelReducer(prev: PanelType, next: PanelType): PanelType {
   return prev === next ? null : next;
 }
 
+type CanvasTransitionState = { canvasReady: boolean; isTransitioning: boolean };
+
+function canvasTransitionReducer(
+  prev: CanvasTransitionState,
+  patch: Partial<CanvasTransitionState>,
+): CanvasTransitionState {
+  return { ...prev, ...patch };
+}
+
 /* ── Component ── */
 export function GameOrchestrator() {
-  const mode = useGameStore((s) => s.mode);
-  const showStoryOverlay = useGameStore((s) => s.showStoryOverlay);
-  const currentNodeId = useGameStore((s) => s.currentNodeId);
-  const introSeen = useGameStore((s) => s.introSeen);
+  const { mode, showStoryOverlay, currentNodeId, introSeen } = useOrchestratorOverlay();
 
   // Compute which overlay is active to enforce mutual exclusivity
   // ── World Director pattern: visual-novel is DEPRECATED ──
@@ -205,6 +203,7 @@ export function GameOrchestrator() {
   const interaction = useInteractionOrchestrator(startCombatFromStory);
   useLoreDiscovery();
   useQuestTracker();
+  useMinigameForQuest();
   useAchievementChecker();
   // ── World Clock: single pulse for NPC schedules, weather, quests ──
   useWorldClock();
@@ -240,46 +239,77 @@ export function GameOrchestrator() {
   //   setCanvasReady(false) → canvas:first-frame → setCanvasReady(true) →
   //   setIsTransitioning(false) → mode change effect → setCanvasReady(false) → LOOP
   //   By using refs, we break the cycle — React state changes only once (isTransitioning).
-  const [isTransitioning, setIsTransitioning] = useState(false);
-  // P6-FIX: Add canvasReady STATE (not just ref) so React re-renders when
-  // the canvas becomes ready. Previously, canvasReadyRef was a ref only,
-  // so the LoadingScreen condition `!canvasReadyRef.current` was never
-  // re-evaluated, causing the loading overlay to block the menu forever.
-  const [canvasReady, setCanvasReady] = useState(false);
+  // P6-FIX: canvasReady must be React state (not just ref) so LoadingScreen
+  // re-evaluates when the canvas renders. P1-1.4: paired with isTransitioning
+  // in one reducer so synchronous updates batch into a single dispatch.
+  const [canvasTransition, dispatchCanvasTransition] = useReducer(
+    canvasTransitionReducer,
+    { canvasReady: false, isTransitioning: false },
+  );
+  const { canvasReady, isTransitioning } = canvasTransition;
   const canvasReadyRef = useRef(false);
   const prevModeRef = useRef(mode);
   const fallbackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const fadeOutTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const transitionGenRef = useRef(0);
+  const canvasWaitGenRef = useRef<number | null>(null);
+
+  const clearTransitionTimers = () => {
+    if (fallbackTimerRef.current) {
+      clearTimeout(fallbackTimerRef.current);
+      fallbackTimerRef.current = null;
+    }
+    if (fadeOutTimerRef.current) {
+      clearTimeout(fadeOutTimerRef.current);
+      fadeOutTimerRef.current = null;
+    }
+  };
+
+  const scheduleTransitionFadeOut = (gen: number, delayMs: number) => {
+    if (fadeOutTimerRef.current) {
+      clearTimeout(fadeOutTimerRef.current);
+      fadeOutTimerRef.current = null;
+    }
+    fadeOutTimerRef.current = setTimeout(() => {
+      if (gen !== transitionGenRef.current) return;
+      fadeOutTimerRef.current = null;
+      dispatchCanvasTransition({ isTransitioning: false });
+    }, delayMs);
+  };
 
   // Listen for canvas:first-frame event — sets ref AND state, triggers fade-out
   useEffect(() => {
     const unsub = eventBus.on('canvas:first-frame', () => {
       canvasReadyRef.current = true;
-      setCanvasReady(true);
-      if (isTransitioning) {
-        // Clear fallback timer
-        if (fallbackTimerRef.current) { clearTimeout(fallbackTimerRef.current); fallbackTimerRef.current = null; }
-        // Start fade-out
-        if (fadeOutTimerRef.current) clearTimeout(fadeOutTimerRef.current);
-        fadeOutTimerRef.current = setTimeout(() => setIsTransitioning(false), 300);
+      dispatchCanvasTransition({ canvasReady: true });
+
+      const waitGen = canvasWaitGenRef.current;
+      if (waitGen === null || transitionGenRef.current !== waitGen) return;
+
+      canvasWaitGenRef.current = null;
+      if (fallbackTimerRef.current) {
+        clearTimeout(fallbackTimerRef.current);
+        fallbackTimerRef.current = null;
       }
+      scheduleTransitionFadeOut(waitGen, 300);
     });
     return unsub;
-  }, [isTransitioning]);
+  }, []);
 
   useEffect(() => {
     if (mode !== prevModeRef.current) {
       const prevMode = prevModeRef.current;
       prevModeRef.current = mode;
 
-      // Clear previous timers
-      if (fallbackTimerRef.current) clearTimeout(fallbackTimerRef.current);
-      if (fadeOutTimerRef.current) clearTimeout(fadeOutTimerRef.current);
+      transitionGenRef.current += 1;
+      const gen = transitionGenRef.current;
+      canvasWaitGenRef.current = null;
+      clearTransitionTimers();
 
       // For non-exploration mode changes (light transitions), use a short timer
       if (mode !== 'exploration' && mode !== 'cutscene' && mode !== 'combat') {
-        const timer = setTimeout(() => setIsTransitioning(false), 300);
-        return () => clearTimeout(timer);
+        scheduleTransitionFadeOut(gen, 300);
+        return clearTransitionTimers;
       }
 
       // When transitioning FROM menu TO cutscene/exploration, the canvas
@@ -292,33 +322,36 @@ export function GameOrchestrator() {
       const isComingFromHiddenCanvas = prevMode === 'menu';
       if (isComingFromHiddenCanvas) {
         canvasReadyRef.current = false;
-        setCanvasReady(false);
+        dispatchCanvasTransition({ canvasReady: false });
       }
 
       // Check if canvas is already ready (e.g. already rendered a frame)
       // This avoids unnecessary transition overlay for mode changes when canvas is already visible
       if (canvasReadyRef.current) {
         // Canvas already rendered — minimal transition
-        setIsTransitioning(true);
-        fadeOutTimerRef.current = setTimeout(() => setIsTransitioning(false), 300);
-        return;
+        dispatchCanvasTransition({ isTransitioning: true });
+        scheduleTransitionFadeOut(gen, 300);
+        return clearTransitionTimers;
       }
 
       // Canvas not ready yet — show overlay until first frame
       canvasReadyRef.current = false;
-      setCanvasReady(false);
-      setIsTransitioning(true);
+      dispatchCanvasTransition({ canvasReady: false, isTransitioning: true });
+      canvasWaitGenRef.current = gen;
 
       // SAFETY: Fallback timer — if canvas:first-frame never fires,
       // force-remove the overlay after 1.0s (reduced from 1.5s to minimize
       // the visible "stuck on black" time that players see as a "timeout").
       fallbackTimerRef.current = setTimeout(() => {
+        if (gen !== transitionGenRef.current) return;
         console.warn('[GameOrchestrator] Canvas first-frame timeout — forcing transition overlay off');
+        canvasWaitGenRef.current = null;
         canvasReadyRef.current = true;
-        setCanvasReady(true);
-        if (fadeOutTimerRef.current) clearTimeout(fadeOutTimerRef.current);
-        fadeOutTimerRef.current = setTimeout(() => setIsTransitioning(false), 200);
+        dispatchCanvasTransition({ canvasReady: true });
+        scheduleTransitionFadeOut(gen, 200);
       }, CUTSCENE_TIMINGS.CANVAS_TIMEOUT_MS);
+
+      return clearTransitionTimers;
     }
   }, [mode]);
 
@@ -549,9 +582,6 @@ export function GameOrchestrator() {
     }
   }, [activePanel]);
 
-  // Scene transition tracking
-  const prevSceneId = useRef(useGameStore.getState().exploration.currentSceneId);
-
   // Mobile detection — uses touch capability + screen size so that
   // landscape phones (width > 1024 but touch device) still get mobile HUD.
   // A phone rotated to landscape still needs D-pad / touch controls.
@@ -610,27 +640,26 @@ export function GameOrchestrator() {
 
   // ── Scene transition glitch (via EventBus) ──
   useEffect(() => {
-    const unsub = useGameStore.subscribe((state) => {
+    const unsub = useGameStore.subscribe((state, prev) => {
       const newScene = state.exploration.currentSceneId;
-      if (newScene !== prevSceneId.current) {
-        prevSceneId.current = newScene;
+      const oldScene = prev.exploration.currentSceneId;
+      if (newScene === oldScene) return;
 
-        // Trigger glitch effect via EventBus instead of local state
-        eventBus.emit('fx:glitch', { duration: 300, intensity: 0.5 });
+      // Trigger glitch effect via EventBus instead of local state
+      eventBus.emit('fx:glitch', { duration: 300, intensity: 0.5 });
 
-        // Auto-regen between scenes
-        useGameStore.getState().autoRegenBetweenScenes();
+      // Auto-regen between scenes
+      useGameStore.getState().autoRegenBetweenScenes();
 
-        // Auto-discover the scene for fast travel
-        useGameStore.getState().discoverScene(newScene);
+      // Auto-discover the scene for fast travel
+      useGameStore.getState().discoverScene(newScene);
 
-        // Show scene name banner
-        const sceneName = SCENE_CONFIG[newScene]?.name ?? '';
-        if (sceneName) {
-          if (sceneBannerTimeout.current) clearTimeout(sceneBannerTimeout.current);
-          setSceneBanner(sceneName);
-          sceneBannerTimeout.current = setTimeout(() => setSceneBanner(null), 2500);
-        }
+      // Show scene name banner
+      const sceneName = SCENE_CONFIG[newScene]?.name ?? '';
+      if (sceneName) {
+        if (sceneBannerTimeout.current) clearTimeout(sceneBannerTimeout.current);
+        setSceneBanner(sceneName);
+        sceneBannerTimeout.current = setTimeout(() => setSceneBanner(null), 2500);
       }
     });
     return () => {
@@ -839,6 +868,74 @@ export function GameOrchestrator() {
     store.setFlag('tutorialsDisabled', !store.tutorialFlags.tutorialsDisabled);
   }, []);
   const handleOpenMenu = useCallback(() => dispatchPanel('menu'), []);
+  const closePanel = useCallback(() => dispatchPanel(null), []);
+
+  const inventoryPanelProps = useMemo(
+    () => ({ onOpenPoetryBook: handleOpenPoetryBook }),
+    [handleOpenPoetryBook],
+  );
+
+  const statsPanelSlot = useMemo(
+    () => <LazyPanelSlot Panel={LazyPlayerStatsPanel} open={statsOpen} onClose={closePanel} />,
+    [statsOpen, closePanel],
+  );
+
+  const lazyPanelsBeforeMenu = useMemo(
+    () => (
+      <>
+        {questsOpen && (
+          <LazyPanelSlot Panel={LazyQuestsPanel} open={questsOpen} onClose={closePanel} />
+        )}
+        {inventoryOpen && (
+          <ErrorBoundary name="inventory">
+            <LazyPanelSlot
+              Panel={LazyInventory}
+              open={inventoryOpen}
+              onClose={closePanel}
+              panelProps={inventoryPanelProps}
+            />
+          </ErrorBoundary>
+        )}
+        {poetryOpen && (
+          <LazyPanelSlot Panel={LazyPoetryBook} open={poetryOpen} onClose={closePanel} />
+        )}
+        <LazyPanelSlot Panel={LazyCraftingPanel} open={craftingOpen} onClose={closePanel} />
+        <LazyPanelSlot Panel={LazyTradingPanel} open={tradingOpen} onClose={closePanel} />
+        <LazyPanelSlot Panel={LazyFastTravelPanel} open={fastTravelOpen} onClose={closePanel} />
+        <LazyPanelSlot Panel={LazyRestPanel} open={restOpen} onClose={closePanel} />
+        <LazyPanelSlot Panel={LazyJournalPanel} />
+      </>
+    ),
+    [activePanel, closePanel, inventoryPanelProps],
+  );
+
+  const lazyPanelsAfterSettings = useMemo(
+    () => (
+      <>
+        <LazyPanelSlot Panel={LazySaveSlotManager} open={saveSlotOpen} onClose={closePanel} />
+        <LazyPanelSlot Panel={LazyMiniGameHub} open={miniGameHubOpen} onClose={closePanel} />
+        <LazyPanelSlot Panel={LazyNPCRelationshipPanel} open={npcRelationOpen} onClose={closePanel} />
+        <LazyPanelSlot Panel={LazyCharacterProfilePanel} open={characterProfileOpen} onClose={closePanel} />
+        <LazyPanelSlot Panel={LazyCodexPanel} open={codexOpen} onClose={closePanel} />
+        <LazyPanelSlot Panel={LazyAchievementDetailsPanel} open={achievementsOpen} onClose={closePanel} />
+        <LazyPanelSlot Panel={LazySkillTreePanel} open={skillTreeOpen} onClose={closePanel} />
+        <LazyPanelSlot Panel={LazyPerksPanel} open={perksOpen} onClose={closePanel} />
+        <LazyPanelSlot Panel={LazyQuestBoardPanel} open={questBoardOpen} onClose={closePanel} />
+        <LazyPanelSlot Panel={LazyDialogueHistoryPanel} open={dialogueHistoryOpen} onClose={closePanel} />
+      </>
+    ),
+    [activePanel, closePanel],
+  );
+
+  const devPanelSlot = useMemo(
+    () => <LazyPanelSlot Panel={LazyDevPanel} />,
+    [],
+  );
+
+  const shortcutsPanelSlot = useMemo(
+    () => <LazyPanelSlot Panel={LazyShortcutsOverlay} open={shortcutsOpen} onClose={closePanel} />,
+    [shortcutsOpen, closePanel],
+  );
 
   // ── Mobile interact callback ──
   // When the mobile interact button is pressed, advance dialogue/story if active,
@@ -875,7 +972,11 @@ export function GameOrchestrator() {
           </AnimatePresence>
 
           {/* ── Menu mode ── */}
-          {mode === 'menu' && <MenuScreen />}
+          {mode === 'menu' && (
+            <Suspense fallback={null}>
+              <LazyMenuScreen />
+            </Suspense>
+          )}
 
           {/* ── Initial loading — canvas warming up ── */}
           {/* P6-FIX: Use canvasReady STATE instead of canvasReadyRef.current.
@@ -889,7 +990,11 @@ export function GameOrchestrator() {
           )}
 
           {/* ── Intro mode — skip if already seen ── */}
-          {mode === 'intro' && !introSeen && <IntroScreen />}
+          {mode === 'intro' && !introSeen && (
+            <Suspense fallback={null}>
+              <LazyIntroScreen />
+            </Suspense>
+          )}
           {mode === 'intro' && introSeen && (
             <div className="fixed inset-0 bg-black" style={{ zIndex: UI_LAYERS.LOADING }} />
           )}
@@ -928,11 +1033,13 @@ export function GameOrchestrator() {
           {/* ── Matrix Rain Quote overlay (act transitions) ── */}
           <AnimatePresence>
             {matrixQuote && (
-              <MatrixRainQuote
-                text={matrixQuote.text}
-                actNumber={matrixQuote.actNumber}
-                onDismiss={() => setMatrixQuote(null)}
-              />
+              <Suspense fallback={null}>
+                <LazyMatrixRainQuote
+                  text={matrixQuote.text}
+                  actNumber={matrixQuote.actNumber}
+                  onDismiss={() => setMatrixQuote(null)}
+                />
+              </Suspense>
             )}
           </AnimatePresence>
 
@@ -1084,19 +1191,23 @@ export function GameOrchestrator() {
               )}
 
               {/* Player stats panel — slide-in from left (toggle with S key) */}
-              <LazyPanel><LazyPlayerStatsPanel open={statsOpen} onClose={() => dispatchPanel(null)} /></LazyPanel>
+              {statsPanelSlot}
 
               {/* Poem power visual effects — visible in all game modes */}
               <PoemPowerEffect />
 
               {/* Level-up full-screen effect — visible in all game modes */}
-              <LevelUpEffect />
+              <Suspense fallback={null}>
+                <LazyLevelUpEffect />
+              </Suspense>
 
               {/* Directional damage/heal indicators — red flash on damage, emerald on heal */}
               <DirectionalDamageIndicator />
 
               {/* Photo mode — screenshot capture with viewfinder overlay */}
-              <PhotoMode />
+              <Suspense fallback={null}>
+                <LazyPhotoMode />
+              </Suspense>
 
               {/* Floating damage/heal numbers — combat & exploration */}
               <DamageNumberFloat />
@@ -1108,14 +1219,18 @@ export function GameOrchestrator() {
               {/* Story overlay — mutually exclusive with dialogue */}
               {!isDialogueActive && (
                 <ErrorBoundary name="story">
-                  <StoryRenderer />
+                  <Suspense fallback={null}>
+                    <LazyStoryRenderer />
+                  </Suspense>
                 </ErrorBoundary>
               )}
 
               {/* Dialogue overlay — mutually exclusive with story */}
               {!isStoryActive && (
                 <ErrorBoundary name="dialogue">
-                  <DialogueRenderer />
+                  <Suspense fallback={null}>
+                    <LazyDialogueRenderer />
+                  </Suspense>
                 </ErrorBoundary>
               )}
 
@@ -1125,48 +1240,66 @@ export function GameOrchestrator() {
               {/* Mini-games */}
               <AnimatePresence>
                 {codebreakerOpen && (
-                  <CodeBreakerGame onClose={() => setCodebreakerOpen(false)} />
+                  <Suspense fallback={null}>
+                    <LazyCodeBreakerGame onClose={() => setCodebreakerOpen(false)} />
+                  </Suspense>
                 )}
               </AnimatePresence>
               <AnimatePresence>
                 {openstackTerminalOpen && (
-                  <OpenStackTerminalGame onClose={() => setOpenstackTerminalOpen(false)} />
+                  <Suspense fallback={null}>
+                    <LazyOpenStackTerminalGame onClose={() => setOpenstackTerminalOpen(false)} />
+                  </Suspense>
                 )}
               </AnimatePresence>
               <AnimatePresence>
                 {bashTerminalOpen && (
-                  <BashTerminalGame onClose={() => setBashTerminalOpen(false)} />
+                  <Suspense fallback={null}>
+                    <LazyBashTerminalGame onClose={() => setBashTerminalOpen(false)} />
+                  </Suspense>
                 )}
               </AnimatePresence>
               <AnimatePresence>
                 {poetryGameOpen && (
-                  <PoetryCompositionGame onClose={() => setPoetryGameOpen(false)} />
+                  <Suspense fallback={null}>
+                    <LazyPoetryCompositionGame onClose={() => setPoetryGameOpen(false)} />
+                  </Suspense>
                 )}
               </AnimatePresence>
               <AnimatePresence>
                 {hackingGameOpen && (
-                  <HackingGame onClose={() => setHackingGameOpen(false)} />
+                  <Suspense fallback={null}>
+                    <LazyHackingGame onClose={() => setHackingGameOpen(false)} />
+                  </Suspense>
                 )}
               </AnimatePresence>
               <AnimatePresence>
                 {memoryGameOpen && (
-                  <MemoryPuzzleGame onClose={() => setMemoryGameOpen(false)} />
+                  <Suspense fallback={null}>
+                    <LazyMemoryPuzzleGame onClose={() => setMemoryGameOpen(false)} />
+                  </Suspense>
                 )}
               </AnimatePresence>
               <AnimatePresence>
                 {quizGameOpen && (
-                  <QuizGame onClose={() => setQuizGameOpen(false)} />
+                  <Suspense fallback={null}>
+                    <LazyQuizGame onClose={() => setQuizGameOpen(false)} />
+                  </Suspense>
                 )}
               </AnimatePresence>
               <AnimatePresence>
                 {rhythmGameOpen && (
-                  <RhythmGame onClose={() => setRhythmGameOpen(false)} />
+                  <Suspense fallback={null}>
+                    <LazyRhythmGame onClose={() => setRhythmGameOpen(false)} />
+                  </Suspense>
                 )}
               </AnimatePresence>
 
               {/* Combat UI overlay */}
               <ErrorBoundary name="combat">
-                <CombatUI />
+                <Suspense fallback={null}>
+                  <LazyCombatUI />
+                </Suspense>
               </ErrorBoundary>
 
               {/* Examine Panel */}
@@ -1184,29 +1317,8 @@ export function GameOrchestrator() {
             </>
           )}
 
-          {/* ── Panels ── */}
-          {questsOpen && <LazyPanel><LazyQuestsPanel open={questsOpen} onClose={() => dispatchPanel(null)} /></LazyPanel>}
-          {inventoryOpen && (
-            <ErrorBoundary name="inventory">
-              <LazyPanel><LazyInventory open={inventoryOpen} onClose={() => dispatchPanel(null)} onOpenPoetryBook={handleOpenPoetryBook} /></LazyPanel>
-            </ErrorBoundary>
-          )}
-          {poetryOpen && <LazyPanel><LazyPoetryBook open={poetryOpen} onClose={() => dispatchPanel(null)} /></LazyPanel>}
-
-          {/* ── Crafting Panel ── */}
-          <LazyPanel><LazyCraftingPanel open={craftingOpen} onClose={() => dispatchPanel(null)} /></LazyPanel>
-
-          {/* ── Trading Panel ── */}
-          <LazyPanel><LazyTradingPanel open={tradingOpen} onClose={() => dispatchPanel(null)} /></LazyPanel>
-
-          {/* ── Fast Travel Panel ── */}
-          <LazyPanel><LazyFastTravelPanel open={fastTravelOpen} onClose={() => dispatchPanel(null)} /></LazyPanel>
-
-          {/* ── Rest Panel ── */}
-          <LazyPanel><LazyRestPanel open={restOpen} onClose={() => dispatchPanel(null)} /></LazyPanel>
-
-          {/* ── Journal Panel ── */}
-          <LazyPanel><LazyJournalPanel /></LazyPanel>
+          {/* ── Panels (memoized — see lazyPanelsBeforeMenu) ── */}
+          {lazyPanelsBeforeMenu}
 
           {/* ── Pause menu ── */}
           <AnimatePresence>
@@ -1315,64 +1427,49 @@ export function GameOrchestrator() {
           </AnimatePresence>
 
           {/* ── Settings Panel ── */}
-          <SettingsPanel open={settingsOpen} onClose={() => dispatchPanel(null)} />
+          <LazyPanelSlot Panel={LazySettingsPanel} open={settingsOpen} onClose={closePanel} />
 
-          {/* ── Save Slot Manager ── */}
-          <LazyPanel><LazySaveSlotManager open={saveSlotOpen} onClose={() => dispatchPanel(null)} /></LazyPanel>
-
-          {/* ── Mini Game Hub ── */}
-          <LazyPanel><LazyMiniGameHub open={miniGameHubOpen} onClose={() => dispatchPanel(null)} /></LazyPanel>
-
-          {/* ── NPC Relationship Panel ── */}
-          <LazyPanel><LazyNPCRelationshipPanel open={npcRelationOpen} onClose={() => dispatchPanel(null)} /></LazyPanel>
-
-          {/* ── Character Profile Panel ── */}
-          <LazyPanel><LazyCharacterProfilePanel open={characterProfileOpen} onClose={() => dispatchPanel(null)} /></LazyPanel>
-
-          {/* ── Codex Panel ── */}
-          <LazyPanel><LazyCodexPanel open={codexOpen} onClose={() => dispatchPanel(null)} /></LazyPanel>
-
-          {/* ── Achievement Details Panel ── */}
-          <LazyPanel><LazyAchievementDetailsPanel open={achievementsOpen} onClose={() => dispatchPanel(null)} /></LazyPanel>
-          <LazyPanel><LazySkillTreePanel open={skillTreeOpen} onClose={() => dispatchPanel(null)} /></LazyPanel>
-          <LazyPanel><LazyPerksPanel open={perksOpen} onClose={() => dispatchPanel(null)} /></LazyPanel>
-
-          {/* ── Quest Board Panel ── */}
-          <LazyPanel><LazyQuestBoardPanel open={questBoardOpen} onClose={() => dispatchPanel(null)} /></LazyPanel>
-
-          {/* ── Dialogue History Panel ── */}
-          <LazyPanel><LazyDialogueHistoryPanel open={dialogueHistoryOpen} onClose={() => dispatchPanel(null)} /></LazyPanel>
+          {/* ── Save Slot / Hub / Profile panels (memoized) ── */}
+          {lazyPanelsAfterSettings}
 
           {/* ── Scene Transition Overlay ── */}
           <SceneTransitionOverlay />
 
           {/* ── Dev Panel (F3) ── */}
-          <LazyPanel><LazyDevPanel /></LazyPanel>
+          {devPanelSlot}
 
           {/* ── Achievement Notifications ── */}
           <AchievementNotification />
 
           {/* ── Keyboard Shortcuts Help ── */}
-          <LazyPanel><LazyShortcutsOverlay open={shortcutsOpen} onClose={() => dispatchPanel(null)} /></LazyPanel>
+          {shortcutsPanelSlot}
 
           {/* ── Quest Accept Dialog (Warcraft-style with portrait) ── */}
-          <QuestAcceptDialog
-            questId={questAcceptId}
-            npcId={questAcceptNpcId}
-            onClose={() => { setQuestAcceptId(null); setQuestAcceptNpcId(undefined); }}
-            onAccept={(qid) => {
-              useGameStore.getState().activateQuest(qid);
-              setQuestAcceptId(null);
-              setQuestAcceptNpcId(undefined);
-            }}
-          />
+          {questAcceptId && (
+            <Suspense fallback={null}>
+              <LazyQuestAcceptDialog
+                questId={questAcceptId}
+                npcId={questAcceptNpcId}
+                onClose={() => { setQuestAcceptId(null); setQuestAcceptNpcId(undefined); }}
+                onAccept={(qid) => {
+                  useGameStore.getState().activateQuest(qid);
+                  setQuestAcceptId(null);
+                  setQuestAcceptNpcId(undefined);
+                }}
+              />
+            </Suspense>
+          )}
 
           {/* ── Quest Complete Dialog (reward display) ── */}
-          <QuestCompleteDialog
-            questId={questCompleteId}
-            npcId={questCompleteNpcId}
-            onClose={() => { setQuestCompleteId(null); setQuestCompleteNpcId(undefined); }}
-          />
+          {questCompleteId && (
+            <Suspense fallback={null}>
+              <LazyQuestCompleteDialog
+                questId={questCompleteId}
+                npcId={questCompleteNpcId}
+                onClose={() => { setQuestCompleteId(null); setQuestCompleteNpcId(undefined); }}
+              />
+            </Suspense>
+          )}
 
           {/* ── Quest Chain Unlock Notification ── */}
           {/* Prominent notification when completing a golden path quest unlocks the next */}
@@ -1458,7 +1555,7 @@ export function GameOrchestrator() {
           </AnimatePresence>
 
           {/* ── Karma & Poem Info Panel ── */}
-          <KarmaPoemInfoPanel open={karmaPoemOpen} onClose={() => dispatchPanel(null)} />
+          <LazyPanelSlot Panel={LazyKarmaPoemInfoPanel} open={karmaPoemOpen} onClose={() => dispatchPanel(null)} />
       </>
     </div>
     </CyberpunkThemeProvider>

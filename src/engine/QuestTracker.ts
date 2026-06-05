@@ -5,6 +5,7 @@ import { QUEST_DEFINITIONS } from '@/data/quests';
 import { useGameStore, type GameStoreState } from '@/store/gameStore';
 import { eventBus } from '@/engine/EventBus';
 import { applyEffects } from '@/shared/utils/applyEffects';
+import { isKnownMinigameId, MINIGAME_COMPLETION_FLAGS } from '@/shared/constants/minigames';
 
 /**
  * QuestTracker subscribes to game state changes and EventBus events,
@@ -111,6 +112,10 @@ export class QuestTracker {
         this.retroactiveCheck();
       }),
     );
+
+    if (import.meta.env.DEV) {
+      this.validateQuestMinigameTargets();
+    }
   }
 
   /** Retroactive check: for each active quest, check if any objectives are
@@ -144,11 +149,38 @@ export class QuestTracker {
           case 'poem_collected':
             alreadyMet = !!objective.target && state.collectedPoems.includes(objective.target);
             break;
-          // npc_talked, minigame_completed, custom — can't be retroactively checked
+          case 'minigame_completed': {
+            const target = objective.target;
+            const completionFlag =
+              target && isKnownMinigameId(target) ? MINIGAME_COMPLETION_FLAGS[target] : undefined;
+            alreadyMet = !!completionFlag && !!state.playerState.flags[completionFlag];
+            break;
+          }
+          // npc_talked, custom — can't be retroactively checked
         }
 
         if (alreadyMet) {
           this.completeObjective(quest.questId, objective.id);
+        }
+      }
+    }
+  }
+
+  /** Dev-only: warn when quest objectives reference unimplemented minigame ids. */
+  private validateQuestMinigameTargets(): void {
+    for (const quest of QUEST_DEFINITIONS) {
+      for (const objective of quest.objectives) {
+        if (objective.type !== 'minigame_completed') continue;
+        if (!objective.target) {
+          console.warn(
+            `[QuestTracker] Quest "${quest.id}" objective "${objective.id}" has minigame_completed without target.`,
+          );
+          continue;
+        }
+        if (!isKnownMinigameId(objective.target)) {
+          console.warn(
+            `[QuestTracker] Quest "${quest.id}" objective "${objective.id}" references unknown minigame "${objective.target}".`,
+          );
         }
       }
     }
@@ -309,6 +341,23 @@ export class QuestTracker {
 
   /** Minigame completed — check minigame_completed objectives */
   private onMinigameCompleted(gameType: string): void {
+    if (!gameType || typeof gameType !== 'string') {
+      if (import.meta.env.DEV) {
+        console.warn('[QuestTracker] minigame:complete received invalid gameType:', gameType);
+      }
+      return;
+    }
+
+    if (!isKnownMinigameId(gameType)) {
+      if (import.meta.env.DEV) {
+        console.warn(
+          `[QuestTracker] Unknown minigame id "${gameType}" — no quest objectives will match. ` +
+            'Check quest targets against src/shared/constants/minigames.ts.',
+        );
+      }
+      return;
+    }
+
     const activeQuests = this.getActiveQuests();
     for (const quest of activeQuests) {
       const definition = QUEST_DEFINITIONS.find((d) => d.id === quest.questId);
@@ -317,6 +366,7 @@ export class QuestTracker {
       for (const objective of definition.objectives) {
         if (objective.type !== 'minigame_completed') continue;
         if (quest.objectives[objective.id]) continue;
+        if (!objective.target) continue;
         if (objective.target === gameType) {
           this.completeObjective(quest.questId, objective.id);
         }

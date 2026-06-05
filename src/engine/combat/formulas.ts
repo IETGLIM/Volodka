@@ -22,11 +22,12 @@ export function getPlayerMaxHp(): number {
 
 /* ─── Poem Power Cooldown Helpers ─── */
 
-/** Tick all power cooldowns by 1. Returns updated cooldowns map. */
+/** Tick all power cooldowns by 1. Returns updated cooldowns map (expired entries removed). */
 export function tickPowerCooldowns(cooldowns: Record<string, number>): Record<string, number> {
   const updated: Record<string, number> = {};
   for (const [id, cd] of Object.entries(cooldowns)) {
-    updated[id] = Math.max(0, cd - 1);
+    const remaining = cd - 1;
+    if (remaining > 0) updated[id] = remaining;
   }
   return updated;
 }

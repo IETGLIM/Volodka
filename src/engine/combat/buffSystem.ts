@@ -16,11 +16,22 @@ export function createBuff(
   return { id, name, source, kind, target, duration, effect };
 }
 
+/** Identity key for refreshable buffs — same source + target + effect type replaces instead of stacking. */
+function buffStackKey(buff: CombatBuff): string {
+  return `${buff.target}:${buff.source}:${buff.effect.type}`;
+}
+
 /** Add a buff to combat state with stack limit and mutual exclusion rules.
+ *  Re-applying the same buff (e.g. spam Defend) refreshes duration instead of stacking.
  *  Max 2 active buffs per target. defense_reduction and damage_multiplier
  *  on the same target are mutually exclusive (the weaker one is removed). */
 export function addBuff(state: CombatState, buff: CombatBuff): CombatState {
-  let filtered = state.buffs.filter((b) => b.source !== buff.source || b.target !== buff.target || b.effect.type !== buff.effect.type);
+  const key = buffStackKey(buff);
+  const existing = state.buffs.find((b) => buffStackKey(b) === key);
+  let filtered = state.buffs.filter((b) => buffStackKey(b) !== key);
+  const buffToAdd: CombatBuff = existing
+    ? { ...buff, duration: Math.max(existing.duration, buff.duration) }
+    : buff;
 
   // Mutual exclusion: defense_reduction and damage_multiplier are incompatible on the same target
   const MUTUALLY_EXCLUSIVE: Record<BuffEffect['type'], BuffEffect['type'][]> = {
@@ -48,7 +59,7 @@ export function addBuff(state: CombatState, buff: CombatBuff): CombatState {
     filtered = filtered.filter((b) => b.id !== oldestId);
   }
 
-  return { ...state, buffs: [...filtered, buff], _nextBuffId: state._nextBuffId + 1 };
+  return { ...state, buffs: [...filtered, buffToAdd], _nextBuffId: state._nextBuffId + 1 };
 }
 
 /** Calculate total buff effect of a given type for a target */

@@ -43,6 +43,12 @@ import {
   Camera,
 } from 'lucide-react';
 import { useGameStore } from '@/store/gameStore';
+import {
+  useCollectedPoems,
+  useHUDExploration,
+  useHUDPlayerVitals,
+  useSaveGame,
+} from '@/store/selectors';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { SCENE_CONFIG } from '@/config/scenes';
 import { KARMA_LOW_THRESHOLD, KARMA_HIGH_THRESHOLD } from '@/data/constants';
@@ -508,13 +514,10 @@ interface HUDProps {
 }
 
 export function HUD({ onOpenQuests, onOpenInventory, onOpenPoetry, onToggleTutorials, onOpenMenu, onOpenMiniGames, onOpenCharacterProfile, onOpenNPCRelations, onOpenCodex, onOpenDialogueHistory, onOpenAchievements, onOpenSkillTree, onOpenCrafting, onOpenTrading, onOpenFastTravel, onOpenPerks, onOpenQuestBoard, onOpenStats }: HUDProps) {
-  const currentSceneId = useGameStore((s) => s.exploration.currentSceneId);
-  const timeOfDay = useGameStore((s) => s.exploration.timeOfDay);
-  const weatherEnabled = useGameStore((s) => s.exploration.weatherEnabled);
-  const rainIntensity = useGameStore((s) => s.exploration.rainIntensity);
-  const playerState = useGameStore((s) => s.playerState);
-  const saveGame = useGameStore((s) => s.saveGame);
-  const collectedPoems = useGameStore((s) => s.collectedPoems);
+  const { currentSceneId, timeOfDay, weatherEnabled, rainIntensity } = useHUDExploration();
+  const playerVitals = useHUDPlayerVitals();
+  const saveGame = useSaveGame();
+  const collectedPoems = useCollectedPoems();
 
   // ── Weather type computation ──
   const [snowActive, setSnowActive] = useState(false);
@@ -547,17 +550,13 @@ export function HUD({ onOpenQuests, onOpenInventory, onOpenPoetry, onToggleTutor
     setTimeout(() => setShowSaveIndicator(false), 2000);
   }, [saveGame]);
 
-  const { karma, energy, stress } = playerState;
-  const level = playerState.progression?.level ?? 1;
-  const xp = playerState.progression?.xp ?? 0;
-  const xpToNext = playerState.progression?.xpToNextLevel ?? 100;
-  const perkCount = playerState.progression?.unlockedPerks?.length ?? 0;
+  const { karma, energy, stress, level, xp, xpToNextLevel: xpToNext, unlockedPerks } = playerVitals;
+  const perkCount = unlockedPerks?.length ?? 0;
 
   // ── Active status effects count (mirrors StatusEffectsBar logic) ──
   const activeStatusEffectCount = useMemo(() => {
     let count = 0;
     if (currentWeather !== 'clear') count += 1;
-    const unlockedPerks = playerState.progression?.unlockedPerks ?? [];
     const PERK_EFFECT_MAP: Record<string, boolean> = {
       night_watch: true, iron_stomach: true, counterattack: true, poetic_trance: true,
     };
@@ -567,7 +566,7 @@ export function HUD({ onOpenQuests, onOpenInventory, onOpenPoetry, onToggleTutor
     if (energy < 25) count += 1;
     if (stress > 70) count += 1;
     return count;
-  }, [currentWeather, playerState.progression?.unlockedPerks, energy, stress]);
+  }, [currentWeather, unlockedPerks, energy, stress]);
 
   // ── Karma direction indicator ──
   const [karmaDirection, setKarmaDirection] = useState<'up' | 'down' | null>(null);

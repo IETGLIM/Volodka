@@ -3,8 +3,15 @@
  * Tracks which step the player is on, auto-advances on node visits
  * and quest completions, and emits events for UI guidance. */
 
-import { GOLDEN_PATH_STORY_SPINE, GOLDEN_PATH_QUEST_SPINE, GOLDEN_PATH_BRANCH_HINTS } from '@/data/goldenPath'
+import {
+  GOLDEN_PATH_STORY_SPINE,
+  GOLDEN_PATH_QUEST_SPINE,
+  GOLDEN_PATH_BRANCH_HINTS,
+  ACT_TRANSITIONS,
+  ACT_CHAPTER_TITLES,
+} from '@/data/goldenPath'
 import { QUEST_DEFINITIONS } from '@/data/quests'
+import { STORY_NODES } from '@/data/storyNodes'
 import { NPC_DEFINITIONS } from '@/data/npcDefinitions'
 import { eventBus } from '@/engine/EventBus'
 import { useGameStore } from '@/store/gameStore'
@@ -12,14 +19,19 @@ import { areDependenciesMet } from '@/store/questStore'
 import type { QuestDefinition, QuestObjective } from '@/shared/types/game'
 import { getQuotesByAct } from '@/data/matrixQuotes'
 
-/* ─── Act chapter titles ─── */
-const ACT_CHAPTERS: Record<number, string> = {
-  1: 'Пробуждение',
-  2: 'Сеть',
-  3: 'Война за правду',
-  4: 'Революция',
-  5: 'Финал',
-}
+/* ─── Story node parent map (for quest-node fallback matching) ─── */
+const STORY_NODE_PARENTS: Map<string, string[]> = (() => {
+  const parents = new Map<string, string[]>()
+  for (const [nodeId, node] of Object.entries(STORY_NODES)) {
+    for (const choice of node.choices ?? []) {
+      if (!choice.next) continue
+      const list = parents.get(choice.next) ?? []
+      if (!list.includes(nodeId)) list.push(nodeId)
+      parents.set(choice.next, list)
+    }
+  }
+  return parents
+})()
 
 /* ─── Guidance info type ─── */
 export interface GuidanceInfo {
@@ -46,25 +58,47 @@ let unsubFlagSet: (() => void) | null = null
 
 /* ─── Get act number from story node position ─── */
 function getActForNode(nodeId: string): number {
-  const actTransitionNodes = [
-    'start', // Act 1 begins
-    'act2_transition', // Act 2 begins
-    'act3_transition', // Act 3 begins
-    'act4_transition', // Act 4 begins
-    'act5_peaceful_path', // Act 5 begins
-  ]
-  const idx = actTransitionNodes.indexOf(nodeId)
-  if (idx >= 0) return idx + 1
+  const direct = ACT_TRANSITIONS.find((t) => t.entryNodeId === nodeId)
+  if (direct) return direct.act
 
-  // Find which act this node falls in based on spine position
   const spineIdx = GOLDEN_PATH_STORY_SPINE.indexOf(nodeId)
   if (spineIdx < 0) return 1
 
-  for (let i = actTransitionNodes.length - 1; i >= 0; i--) {
-    const transIdx = GOLDEN_PATH_STORY_SPINE.indexOf(actTransitionNodes[i])
-    if (spineIdx >= transIdx) return i + 1
+  for (let i = ACT_TRANSITIONS.length - 1; i >= 0; i--) {
+    const transIdx = GOLDEN_PATH_STORY_SPINE.indexOf(ACT_TRANSITIONS[i].entryNodeId)
+    if (transIdx >= 0 && spineIdx >= transIdx) return ACT_TRANSITIONS[i].act
   }
   return 1
+}
+
+function getActTransition(act: number) {
+  return ACT_TRANSITIONS.find((t) => t.act === act)
+}
+
+function getAncestorNodeIds(nodeId: string, maxDepth = 8): string[] {
+  const ancestors: string[] = []
+  const queue = [nodeId]
+  const seen = new Set<string>()
+  let depth = 0
+
+  while (queue.length > 0 && depth < maxDepth) {
+    const current = queue.shift()!
+    const parents = STORY_NODE_PARENTS.get(current) ?? []
+    for (const parent of parents) {
+      if (seen.has(parent)) continue
+      seen.add(parent)
+      ancestors.push(parent)
+      queue.push(parent)
+    }
+    depth++
+  }
+
+  return ancestors
+}
+
+function questMatchesNode(def: QuestDefinition, nodeId: string): boolean {
+  if (def.linkedStoryNodeId === nodeId) return true
+  return def.linkedStoryNodeIds?.includes(nodeId) ?? false
 }
 
 /* ─── Get act for a quest ─── */
@@ -102,7 +136,7 @@ function deriveObjectiveFromStep(stepIndex: number): GuidanceInfo | null {
       targetId: questDef.id,
       urgency: questDef.questType === 'main' ? 'required' : 'recommended',
       actNumber: act,
-      chapterTitle: ACT_CHAPTERS[act] ?? `Акт ${act}`,
+      chapterTitle: ACT_CHAPTER_TITLES[act] ?? `Акт ${act}`,
     }
   }
 
@@ -116,13 +150,131 @@ function deriveObjectiveFromStep(stepIndex: number): GuidanceInfo | null {
     targetId: nodeId,
     urgency: 'recommended',
     actNumber: act,
-    chapterTitle: ACT_CHAPTERS[act] ?? `Акт ${act}`,
+    chapterTitle: ACT_CHAPTER_TITLES[act] ?? `Акт ${act}`,
   }
+}
+
+/* ─── Story graph: nodes reachable via choice.next from a hub/branch ─── */
+const storyDescendantCache = new Map<string, Set<string>>()
+
+function getStoryDescendants(nodeId: string): Set<string> {
+  const cached = storyDescendantCache.get(nodeId)
+  if (cached) return cached
+
+  const descendants = new Set<string>()
+  const queue = [nodeId]
+  const visited = new Set<string>()
+
+  while (queue.length > 0 && visited.size < 64) {
+    const current = queue.shift()!
+    if (visited.has(current)) continue
+    visited.add(current)
+
+    const node = STORY_NODES[current]
+    if (!node?.choices) continue
+
+    for (const choice of node.choices) {
+      const next = choice.next
+      if (!next || next === nodeId || descendants.has(next)) continue
+      descendants.add(next)
+      queue.push(next)
+    }
+  }
+
+  storyDescendantCache.set(nodeId, descendants)
+  return descendants
+}
+
+function pickQuestFromSpine(candidates: QuestDefinition[]): QuestDefinition | null {
+  const store = useGameStore.getState()
+
+  for (let i = currentQuestSpineIndex; i < GOLDEN_PATH_QUEST_SPINE.length; i++) {
+    const questId = GOLDEN_PATH_QUEST_SPINE[i]
+    const def = candidates.find((d) => d.id === questId)
+    if (!def) continue
+
+    const questState = store.quests.find((q) => q.questId === def.id)
+    if (questState?.status === 'completed') continue
+    return def
+  }
+
+  return null
+}
+
+function questLinkedNodes(def: QuestDefinition): string[] {
+  const nodes: string[] = []
+  if (def.linkedStoryNodeId) nodes.push(def.linkedStoryNodeId)
+  if (def.linkedStoryNodeIds) nodes.push(...def.linkedStoryNodeIds)
+  return nodes
+}
+
+function questLinkedOnSpine(def: QuestDefinition, spineIdx: number): boolean {
+  return questLinkedNodes(def).some((linkedId) => {
+    const linkedIdx = GOLDEN_PATH_STORY_SPINE.indexOf(linkedId)
+    return linkedIdx >= spineIdx
+  })
 }
 
 /* ─── Find quest linked to a story node ─── */
 function findQuestForNode(nodeId: string): QuestDefinition | null {
-  return QUEST_DEFINITIONS.find((d) => d.linkedStoryNodeId === nodeId) ?? null
+  const spineIdx = GOLDEN_PATH_STORY_SPINE.indexOf(nodeId)
+
+  // 1. Exact linkedStoryNodeId / linkedStoryNodeIds — disambiguate shared nodes via quest spine
+  const exactMatches = QUEST_DEFINITIONS.filter((d) => questMatchesNode(d, nodeId))
+  if (exactMatches.length > 0) {
+    return pickQuestFromSpine(exactMatches) ?? exactMatches[0]
+  }
+
+  // 1b. Ancestor fallback — golden-path main quests only (renamed / intermediate nodes)
+  const ancestors = getAncestorNodeIds(nodeId)
+  const ancestorMatches = QUEST_DEFINITIONS.filter(
+    (d) => GOLDEN_PATH_QUEST_SPINE.includes(d.id) && ancestors.some((a) => questMatchesNode(d, a)),
+  )
+  if (ancestorMatches.length > 0) {
+    return pickQuestFromSpine(ancestorMatches) ?? ancestorMatches[0]
+  }
+
+  if (spineIdx < 0) return null
+
+  const descendants = getStoryDescendants(nodeId)
+
+  // 2. Main-spine quest whose linked node is a forward branch from this hub/choice
+  const graphMatches: QuestDefinition[] = []
+  for (let i = currentQuestSpineIndex; i < GOLDEN_PATH_QUEST_SPINE.length; i++) {
+    const questId = GOLDEN_PATH_QUEST_SPINE[i]
+    const def = QUEST_DEFINITIONS.find((d) => d.id === questId)
+    if (!def || questLinkedNodes(def).length === 0) continue
+
+    const questState = useGameStore.getState().quests.find((q) => q.questId === def.id)
+    if (questState?.status === 'completed') continue
+
+    if (questLinkedNodes(def).some((linkedId) => descendants.has(linkedId))) {
+      graphMatches.push(def)
+      break
+    }
+  }
+  if (graphMatches.length > 0) {
+    return graphMatches[0]
+  }
+
+  // 3. Main-spine quest at or after current story position (covers off-spine nodes like volodka_inner)
+  for (let i = currentQuestSpineIndex; i < GOLDEN_PATH_QUEST_SPINE.length; i++) {
+    const questId = GOLDEN_PATH_QUEST_SPINE[i]
+    const def = QUEST_DEFINITIONS.find((d) => d.id === questId)
+    if (!def || questLinkedNodes(def).length === 0) continue
+
+    const questState = useGameStore.getState().quests.find((q) => q.questId === def.id)
+    if (questState?.status === 'completed') continue
+
+    if (questLinkedOnSpine(def, spineIdx)) return def
+
+    const hasOffSpineLink = questLinkedNodes(def).every(
+      (linkedId) => GOLDEN_PATH_STORY_SPINE.indexOf(linkedId) < 0,
+    )
+    if (hasOffSpineLink && i === currentQuestSpineIndex) return def
+  }
+
+  return null
 }
 
 /* ─── Build guidance from a quest objective ─── */
@@ -166,7 +318,7 @@ function buildGuidanceFromObjective(
     targetId,
     urgency: questDef.questType === 'main' ? 'required' : 'recommended',
     actNumber: act,
-    chapterTitle: ACT_CHAPTERS[act] ?? `Акт ${act}`,
+    chapterTitle: ACT_CHAPTER_TITLES[act] ?? `Акт ${act}`,
   }
 }
 
@@ -312,7 +464,7 @@ function advanceStorySpine(visitedNodeId: string) {
       eventBus.emit('story:act_transition', {
         fromAct: prevAct,
         toAct: newAct,
-        chapterTitle: ACT_CHAPTERS[newAct] ?? `Акт ${newAct}`,
+        chapterTitle: ACT_CHAPTER_TITLES[newAct] ?? `Акт ${newAct}`,
       })
     }
   }
@@ -332,17 +484,17 @@ function advanceQuestSpine(completedQuestId: string) {
   const store = useGameStore.getState()
   const currentAct = store.playerState.progression.currentAct
 
-  const actQuests = GOLDEN_PATH_QUEST_SPINE.filter((qId) => {
-    const def = QUEST_DEFINITIONS.find((d) => d.id === qId)
-    return def?.act === currentAct
-  })
+  const actTransition = getActTransition(currentAct)
+  const actQuests = actTransition?.questSpineIds ?? []
 
-  const allActQuestsComplete = actQuests.every((qId) => {
+  const allActQuestsComplete = actQuests.length > 0 && actQuests.every((qId) => {
     const qs = store.quests.find((q) => q.questId === qId)
     return qs?.status === 'completed'
   })
 
-  if (allActQuestsComplete && currentAct < 5) {
+  const questAdvanceAllowed = actTransition?.advanceTrigger !== 'story_node'
+
+  if (allActQuestsComplete && questAdvanceAllowed && currentAct < ACT_TRANSITIONS.length) {
     const nextAct = currentAct + 1
     // Guard: skip if this act was already advanced in this session
     if (nextAct > lastAdvancedToAct) {
@@ -351,7 +503,7 @@ function advanceQuestSpine(completedQuestId: string) {
       eventBus.emit('story:act_transition', {
         fromAct: currentAct,
         toAct: nextAct,
-        chapterTitle: ACT_CHAPTERS[nextAct] ?? `Акт ${nextAct}`,
+        chapterTitle: ACT_CHAPTER_TITLES[nextAct] ?? `Акт ${nextAct}`,
       })
     }
   }
@@ -395,6 +547,7 @@ function advanceQuestSpine(completedQuestId: string) {
 
 /* ─── Find the NPC associated with a quest ─── */
 function findNpcForQuest(questDef: QuestDefinition): string | undefined {
+  if (questDef.questGiverNpcId) return questDef.questGiverNpcId
   const npcObj = questDef.objectives.find((o) => o.type === 'npc_talked')
   return npcObj?.target
 }

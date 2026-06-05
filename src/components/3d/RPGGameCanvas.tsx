@@ -1,7 +1,7 @@
 
 /* ─── Volodka RPG – Main 3D Canvas ─── */
 
-import { useRef, useEffect, useState, Component, type ReactNode, type ErrorInfo, Suspense, memo } from 'react';
+import { useRef, useEffect, useState, useMemo, Component, Fragment, type ReactNode, type ErrorInfo, Suspense, memo } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { Physics } from '@react-three/rapier';
 import * as THREE from 'three';
@@ -66,7 +66,7 @@ import { sharedPlayerRotationRef } from '@/engine/PlayerRotationState';
 import { eventBus } from '@/engine/EventBus';
 import { InteractionState } from '@/engine/interaction/interactionMachine';
 import { type VirtualControls } from '@/hooks/useGamePhysics';
-import { useGameStore } from '@/store/gameStore';
+import { useGameMode } from '@/store/selectors';
 
 /** Error boundary for the Rapier Physics component.
  *  If Rapier WASM fails to load (common on Vercel edge, slow connections),
@@ -95,55 +95,88 @@ class PhysicsErrorBoundary extends Component<
 /** Error boundary for Three.js / R3F components — catches rendering errors
  *  and auto-retries up to MAX_RETRIES times before showing a permanent fallback.
  *
- *  FIX (Code Review #1): Timer ID is now stored and cleared in componentWillUnmount
- *  to prevent setState on unmounted component. */
+ *  FIX (Code Review #1): Timer ID is stored and cleared on unmount.
+ *  FIX (Code Review #9): Retry generation counter ignores stale timer completions;
+ *  canvasKey forces atomic subtree remount; isRemounting disables rapid manual retry. */
 class Canvas3DErrorBoundary extends Component<
   { children: ReactNode },
-  { hasError: boolean; retryCount: number }
+  { hasError: boolean; retryCount: number; canvasKey: number; isRemounting: boolean }
 > {
   static MAX_RETRIES = 3;
 
-  state = { hasError: false, retryCount: 0 };
+  state = { hasError: false, retryCount: 0, canvasKey: 0, isRemounting: false };
 
-  /** FIX: Store retry timer ID so it can be cleared on unmount */
   private retryTimerId: ReturnType<typeof setTimeout> | null = null;
+  /** Bumped on every new error or manual retry — stale timer callbacks no-op. */
+  private retryGeneration = 0;
 
   static getDerivedStateFromError(): Partial<Canvas3DErrorBoundary['state']> {
-    return { hasError: true };
+    return { hasError: true, isRemounting: false };
+  }
+
+  private clearRetryTimer() {
+    if (this.retryTimerId !== null) {
+      clearTimeout(this.retryTimerId);
+      this.retryTimerId = null;
+    }
+  }
+
+  /** Atomically clear error state and remount the Canvas subtree via canvasKey. */
+  private applyRetry(retryCount: number) {
+    this.setState(
+      (prev) => ({
+        hasError: false,
+        retryCount,
+        canvasKey: prev.canvasKey + 1,
+        isRemounting: true,
+      }),
+      () => this.finishRemountGuard(),
+    );
+  }
+
+  private scheduleAutoRetry(nextCount: number) {
+    const generation = this.retryGeneration;
+    this.clearRetryTimer();
+    this.retryTimerId = setTimeout(() => {
+      this.retryTimerId = null;
+      if (generation !== this.retryGeneration) return;
+      this.applyRetry(nextCount);
+    }, 500 * nextCount);
+  }
+
+  /** Clear isRemounting after the keyed subtree has had a chance to mount. */
+  private finishRemountGuard() {
+    requestAnimationFrame(() => {
+      this.setState((prev) => (prev.hasError ? null : { isRemounting: false }));
+    });
   }
 
   componentDidCatch(error: Error, info: ErrorInfo) {
     console.error('[RPGGameCanvas] 3D rendering error:', error, info);
 
-    // Auto-retry with a short delay if under the retry limit
-    if (this.state.retryCount < Canvas3DErrorBoundary.MAX_RETRIES) {
-      const nextCount = this.state.retryCount + 1;
+    // Invalidate any in-flight retry and cancel its timer before scheduling anew.
+    this.retryGeneration += 1;
+    this.clearRetryTimer();
+
+    const { retryCount } = this.state;
+    if (retryCount < Canvas3DErrorBoundary.MAX_RETRIES) {
+      const nextCount = retryCount + 1;
       console.log(`[RPGGameCanvas] Auto-retry ${nextCount}/${Canvas3DErrorBoundary.MAX_RETRIES}...`);
-      // FIX: Save timer ID and clear any existing timer before setting a new one
-      if (this.retryTimerId !== null) {
-        clearTimeout(this.retryTimerId);
-      }
-      this.retryTimerId = setTimeout(() => {
-        this.retryTimerId = null;
-        this.setState({ hasError: false, retryCount: nextCount });
-      }, 500 * nextCount); // Exponential backoff: 500ms, 1000ms, 1500ms
+      this.scheduleAutoRetry(nextCount);
     }
   }
 
-  /** FIX: Clear pending retry timer to prevent setState on unmounted component */
   componentWillUnmount() {
-    if (this.retryTimerId !== null) {
-      clearTimeout(this.retryTimerId);
-      this.retryTimerId = null;
-    }
+    this.retryGeneration += 1;
+    this.clearRetryTimer();
   }
 
   handleManualRetry = () => {
-    if (this.retryTimerId !== null) {
-      clearTimeout(this.retryTimerId);
-      this.retryTimerId = null;
-    }
-    this.setState({ hasError: false, retryCount: 0 });
+    if (this.state.isRemounting) return;
+
+    this.retryGeneration += 1;
+    this.clearRetryTimer();
+    this.applyRetry(0);
   };
 
   render() {
@@ -168,18 +201,20 @@ class Canvas3DErrorBoundary extends Component<
           <div>3D engine error</div>
           <button
             onClick={this.handleManualRetry}
+            disabled={this.state.isRemounting}
             style={{
               padding: '8px 16px',
               border: '1px solid rgba(0, 229, 255, 0.4)',
               background: 'rgba(0, 229, 255, 0.1)',
               color: 'rgba(0, 229, 255, 0.8)',
-              cursor: 'pointer',
+              cursor: this.state.isRemounting ? 'wait' : 'pointer',
+              opacity: this.state.isRemounting ? 0.5 : 1,
               fontFamily: 'monospace',
               fontSize: '12px',
               letterSpacing: '0.1em',
             }}
           >
-            RETRY
+            {this.state.isRemounting ? 'RETRYING...' : 'RETRY'}
           </button>
         </div>
       );
@@ -204,7 +239,7 @@ class Canvas3DErrorBoundary extends Component<
         </div>
       );
     }
-    return this.props.children;
+    return <Fragment key={this.state.canvasKey}>{this.props.children}</Fragment>;
   }
 }
 
@@ -256,7 +291,7 @@ export function RPGGameCanvas() {
   // P3-FIX: Pause physics when game is in menu/intro mode to save CPU.
   // Uses useShallow to select just the mode string (primitive) so this
   // only re-renders when mode actually changes, not on every store update.
-  const gameMode = useGameStore((s) => s.mode);
+  const gameMode = useGameMode();
   const physicsPaused = gameMode === 'menu' || gameMode === 'intro';
 
   // Dynamic DPR scaling based on measured FPS
@@ -474,16 +509,33 @@ function RotationSyncBridge({ livePlayerRotationRef }: { livePlayerRotationRef: 
   return null;
 }
 
+/** Per-canvas first-frame session — keyed by WebGL canvas element so the guard
+ *  survives React Strict Mode child remounts (same canvas) but resets naturally
+ *  when the Canvas is destroyed and a new element is created (error-boundary retry). */
+type CanvasFirstFrameSession = { emitted: boolean; contextLost: boolean };
+const canvasFirstFrameSessions = new WeakMap<HTMLCanvasElement, CanvasFirstFrameSession>();
+
+function getCanvasFirstFrameSession(canvas: HTMLCanvasElement): CanvasFirstFrameSession {
+  let session = canvasFirstFrameSessions.get(canvas);
+  if (!session) {
+    session = { emitted: false, contextLost: false };
+    canvasFirstFrameSessions.set(canvas, session);
+  }
+  return session;
+}
+
 /** FIX (Code Review #6): Consolidated canvas guard system.
  *  Combines ToneMappingGuard, WebGLContextGuard, and CanvasFirstFrameSignal
  *  into a single component with one useFrame callback instead of three.
  *  This reduces the overhead of multiple per-frame hooks while preserving
- *  all the same functionality. */
+ *  all the same functionality.
+ *
+ *  FIX (Code Review #11): first-frame emit is guarded by a per-canvas session
+ *  flag so Strict Mode remounts and duplicate useFrame invocations cannot
+ *  double-emit; the flag resets only on context loss or a new canvas element. */
 function CanvasGuardSystem() {
   const gl = useThree((state) => state.gl);
   const toneMappingEnforced = useRef(false);
-  const firstFrameEmitted = useRef(false);
-  const contextLost = useRef(false);
 
   // WebGL context loss handlers (attached to canvas element)
   useEffect(() => {
@@ -493,8 +545,11 @@ function CanvasGuardSystem() {
     const handleContextLost = (e: Event) => {
       e.preventDefault();
       console.warn('[CanvasGuard] WebGL context LOST — attempting recovery...');
-      contextLost.current = true;
-      firstFrameEmitted.current = false;
+      const session = canvasFirstFrameSessions.get(canvas);
+      if (session) {
+        session.emitted = false;
+        session.contextLost = true;
+      }
       toneMappingEnforced.current = false;
       eventBus.emit('canvas:context-lost', {});
     };
@@ -513,8 +568,11 @@ function CanvasGuardSystem() {
     };
   }, [gl]);
 
-  // Single useFrame that handles all guard duties
+  // Single useFrame that handles all guard duties (priority 1 = after render)
   useFrame((state) => {
+    const canvas = state.gl.domElement;
+    if (!canvas) return;
+
     // ── Guard 1: Enforce NoToneMapping ──
     try {
       if (state.gl.toneMapping !== THREE.NoToneMapping) {
@@ -525,16 +583,19 @@ function CanvasGuardSystem() {
       // WebGL context lost or renderer disposed — ignore silently
     }
 
-    // ── Guard 2: Emit first-frame signal ──
-    if (!firstFrameEmitted.current) {
-      firstFrameEmitted.current = true;
-      if (contextLost.current) {
-        console.log('[CanvasGuard] Re-signalling after context restore');
-        contextLost.current = false;
-      }
-      eventBus.emit('canvas:first-frame', {});
+    // ── Guard 2: Emit first-frame signal (at most once per canvas session) ──
+    const session = getCanvasFirstFrameSession(canvas);
+    if (session.emitted) return;
+    // Wait until the renderer has completed at least one draw call
+    if (state.gl.info.render.frame < 1) return;
+
+    session.emitted = true;
+    if (session.contextLost) {
+      console.log('[CanvasGuard] Re-signalling after context restore');
+      session.contextLost = false;
     }
-  });
+    eventBus.emit('canvas:first-frame', {});
+  }, 1);
 
   return null;
 }
@@ -544,41 +605,63 @@ function CanvasGuardSystem() {
  *  interaction:state_change event caused TWO setState calls (state + target),
  *  triggering two re-renders. Now batched into a single state update.
  *  Also wrapped with React.memo to prevent re-renders when parent re-renders
- *  but interaction state hasn't changed. */
+ *  but interaction state hasn't changed.
+ *
+ *  FIX (Code Review #10): Module-level interaction snapshot and NPCSystem props
+ *  are derived via useMemo. livePlayerPositionRef stays a ref (mutable runtime
+ *  position, not derived config). Scene/NPC roster updates remain in NPCSystem's
+ *  own useMemo([sceneId, timeOfDay]). */
+
+type InteractionSnapshot = {
+  state: InteractionState;
+  targetNPCId: string | null;
+};
 
 const NPCSystemWrapper = memo(function NPCSystemWrapper({
   livePlayerPositionRef,
 }: {
   livePlayerPositionRef: React.MutableRefObject<THREE.Vector3>;
 }) {
-  // Batch interaction state and target into a single state object
-  // to reduce re-renders from two setState calls to one
-  const [interaction, setInteraction] = useState<{
-    state: InteractionState;
-    targetNPCId: string | null;
-  }>(() => ({
-    state: getInteractionState(),
-    targetNPCId: getInteractionTargetNPCId(),
-  }));
+  // One-time read of module-level interaction store on mount (remount after
+  // error-boundary retry also re-syncs). Empty deps — not re-derived on re-render.
+  const initialInteraction = useMemo<InteractionSnapshot>(
+    () => ({
+      state: getInteractionState(),
+      targetNPCId: getInteractionTargetNPCId(),
+    }),
+    [],
+  );
+
+  const [interaction, setInteraction] = useState<InteractionSnapshot>(initialInteraction);
 
   useEffect(() => {
     const unsub = eventBus.on('interaction:state_change', ({ state, npcId }) => {
-      // Batch both updates into a single setState call
-      setInteraction({
-        state,
-        // When transitioning to Idle, always clear the target NPC ID
-        // so isInteractionTarget becomes false for the previously-targeted NPC.
-        targetNPCId: state === InteractionState.Idle ? null : (npcId ?? null),
+      const targetNPCId =
+        state === InteractionState.Idle ? null : (npcId ?? null);
+
+      setInteraction((prev) => {
+        if (prev.state === state && prev.targetNPCId === targetNPCId) {
+          return prev;
+        }
+        return { state, targetNPCId };
       });
     });
     return unsub;
   }, []);
 
+  const npcInteractionProps = useMemo(
+    () => ({
+      interactionState: interaction.state,
+      interactionTargetNPCId: interaction.targetNPCId,
+    }),
+    [interaction.state, interaction.targetNPCId],
+  );
+
   return (
     <NPCSystem
       livePlayerPositionRef={livePlayerPositionRef}
-      interactionState={interaction.state}
-      interactionTargetNPCId={interaction.targetNPCId}
+      interactionState={npcInteractionProps.interactionState}
+      interactionTargetNPCId={npcInteractionProps.interactionTargetNPCId}
     />
   );
 });

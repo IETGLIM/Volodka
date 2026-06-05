@@ -6,7 +6,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ItemIcon } from './shared/ItemIcon';
-import { useGameStore } from '@/store/gameStore';
+import { useConsumableActions, useGameMode, useInventory } from '@/store/selectors';
 import { getItemDefinition } from '@/data/items';
 import type { ItemDefinition } from '@/data/items';
 import { eventBus } from '@/engine/EventBus';
@@ -50,13 +50,9 @@ function UseToast({ text, onDone }: { text: string; onDone: () => void }) {
 /* ─── Main Component ─── */
 
 export function QuickUseBar() {
-  const mode = useGameStore((s) => s.mode);
-  const inventory = useGameStore((s) => s.playerState.inventory);
-  const addEnergy = useGameStore((s) => s.addEnergy);
-  const addStress = useGameStore((s) => s.addStress);
-  const addKarma = useGameStore((s) => s.addKarma);
-  const addSkill = useGameStore((s) => s.addSkill);
-  const removeItem = useGameStore((s) => s.removeItem);
+  const mode = useGameMode();
+  const inventory = useInventory();
+  const { addEnergy, addStress, addKarma, addSkill, removeItem } = useConsumableActions();
 
   /* ── Cooldown state per slot ── */
   const [cooldownSlots, setCooldownSlots] = useState<Set<number>>(new Set());

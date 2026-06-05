@@ -9,6 +9,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useGameStore } from '@/store/gameStore'
 import { QUEST_DEFINITIONS } from '@/data/quests'
 import { NPC_DEFINITIONS } from '@/data/npcDefinitions'
+import { resolveCanonicalNpcId } from '@/data/goldenPath'
 import { eventBus } from '@/engine/EventBus'
 import { UI_LAYERS } from '@/shared/constants/uiLayers'
 import type { QuestDefinition, QuestObjective } from '@/shared/types/game'
@@ -36,7 +37,10 @@ export function QuestAcceptDialog({ questId, npcId, onClose, onAccept }: QuestAc
 
   // Resolve NPC: prefer npcId prop, fall back to questGiverNpcId from quest definition
   const resolvedNpcId = useMemo(
-    () => npcId ?? questDef?.questGiverNpcId ?? undefined,
+    () => {
+      const raw = npcId ?? questDef?.questGiverNpcId ?? undefined
+      return raw ? resolveCanonicalNpcId(raw) : undefined
+    },
     [npcId, questDef],
   )
 

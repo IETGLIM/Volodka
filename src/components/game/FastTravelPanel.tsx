@@ -9,6 +9,7 @@ import { useMemo, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Compass, Lock, Clock, MapPin } from 'lucide-react';
 import { useGameStore } from '@/store/gameStore';
+import { useFastTravelState } from '@/store/selectors';
 import { SCENE_CONFIG } from '@/config/scenes';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import type { SceneId } from '@/shared/types/game';
@@ -124,10 +125,7 @@ interface FastTravelPanelProps {
 
 /* ─── Component ─── */
 export function FastTravelPanel({ open, onClose }: FastTravelPanelProps) {
-  const currentSceneId = useGameStore((s) => s.exploration.currentSceneId);
-  const timeOfDay = useGameStore((s) => s.exploration.timeOfDay);
-  const discoveredScenes = useGameStore((s) => s.discoveredScenes);
-  const playerFlags = useGameStore((s) => s.playerState.flags);
+  const { currentSceneId, timeOfDay, discoveredScenes, playerFlags } = useFastTravelState();
   const fastTravelTo = useGameStore((s) => s.fastTravelTo);
 
   const [hoveredScene, setHoveredScene] = useState<SceneId | null>(null);

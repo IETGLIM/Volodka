@@ -23,7 +23,7 @@ import {
   Lightbulb,
   PenTool,
 } from 'lucide-react';
-import { useGameStore } from '@/store/gameStore';
+import { useStatusEffectsContext } from '@/store/selectors';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import {
   type StatusEffectType,
@@ -294,11 +294,7 @@ function StatusEffectRow({
    ══════════════════════════════════════════════════════════════ */
 
 export function PlayerStatsPanel({ open, onClose }: { open: boolean; onClose: () => void }) {
-  const playerState = useGameStore((s) => s.playerState);
-  const weatherEnabled = useGameStore((s) => s.exploration.weatherEnabled);
-  const rainIntensity = useGameStore((s) => s.exploration.rainIntensity);
-  const currentSceneId = useGameStore((s) => s.exploration.currentSceneId);
-  const timeOfDay = useGameStore((s) => s.exploration.timeOfDay);
+  const { playerState, weatherEnabled, rainIntensity, currentSceneId, timeOfDay } = useStatusEffectsContext();
 
   // Track snow state via eventBus
   const [snowActive, setSnowActive] = useState(false);

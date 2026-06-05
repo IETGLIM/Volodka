@@ -7,7 +7,7 @@
 
 import { useMemo, useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useGameStore } from '@/store/gameStore';
+import { useStatusEffectsContext } from '@/store/selectors';
 import {
   type StatusEffectType,
   type StatusEffectDef,
@@ -245,11 +245,7 @@ function OverflowBadge({ count }: { count: number }) {
 const MAX_VISIBLE_EFFECTS = 8;
 
 export function StatusEffectsBar() {
-  const playerState = useGameStore((s) => s.playerState);
-  const weatherEnabled = useGameStore((s) => s.exploration.weatherEnabled);
-  const rainIntensity = useGameStore((s) => s.exploration.rainIntensity);
-  const currentSceneId = useGameStore((s) => s.exploration.currentSceneId);
-  const timeOfDay = useGameStore((s) => s.exploration.timeOfDay);
+  const { playerState, weatherEnabled, rainIntensity, currentSceneId, timeOfDay } = useStatusEffectsContext();
 
   // Track snow state via eventBus — similar to HUD.tsx
   const [snowActive, setSnowActive] = useState(false);

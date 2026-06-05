@@ -1,5 +1,10 @@
 /* ─── Volodka RPG – shared game types ─── */
 
+import type { FloorMaterial } from './sceneDefinition';
+import type { SceneId } from '@/config/sceneDefinitions';
+
+export type { SceneId };
+
 // ─── Skills ───
 export interface PlayerSkills {
   logic: number;
@@ -12,6 +17,12 @@ export interface PlayerSkills {
 }
 
 export type TrainablePlayerSkill = keyof PlayerSkills;
+
+/** Dialogue/story skill gate; difficulty validated as integer 1–20 at runtime. */
+export interface MinSkillCheck {
+  skill: TrainablePlayerSkill;
+  difficulty: number;
+}
 
 // ─── Karma ───
 export type KarmaLevel = 'low' | 'mid' | 'high';
@@ -37,21 +48,7 @@ export interface LinkedContent {
 }
 
 // ─── Scene / Location ───
-export type SceneId =
-  | 'volodka_room'
-  | 'volodka_corridor'
-  | 'home_evening'
-  | 'street_night'
-  | 'street_winter'
-  | 'cafe_evening'
-  | 'office_day'
-  | 'park_day'
-  | 'library_day'
-  | 'battle'
-  | 'sleep_dream'
-  | 'rooftop_edge'
-  | 'abandoned_factory'
-  | 'zarema_albert_room';
+// SceneId is derived from SCENE_DEFINITIONS in @/config/sceneDefinitions (re-exported above).
 
 // ─── Scene Exit ───
 export type ExitDirection = 'north' | 'south' | 'east' | 'west' | 'door';
@@ -78,9 +75,8 @@ export interface SceneConfig {
   explorationCharacterModelScale: number;
   explorationLocomotionScale: number;
   hasCeiling: boolean;
-  /** Floor surface material for footstep sounds — single source of truth.
-   *  Type aligned with FloorMaterial from sceneDefinition.ts */
-  floorMaterial: 'wood' | 'concrete' | 'metal' | 'carpet' | 'snow' | 'grass' | 'stone' | 'dream' | 'default';
+  /** Floor surface material for footstep sounds */
+  floorMaterial: FloorMaterial;
   fogNear?: number;
   fogFar?: number;
   ambientColor?: string;
@@ -179,7 +175,8 @@ export interface DialogueChoice {
     minKarma?: number;
     maxKarma?: number;
     minSkill?: Partial<PlayerSkills>;
-    minSkillCheck?: { skill: TrainablePlayerSkill; difficulty: number };
+    /** Probabilistic skill gate; difficulty is validated as integer 1–20 at runtime. */
+    minSkillCheck?: MinSkillCheck;
     flag?: string;
     /** G11: Minimum NPC relationship level required to see this choice */
     minNpcRelation?: number;
@@ -264,6 +261,8 @@ export interface QuestDefinition {
   objectives: QuestObjective[];
   rewards?: StoryEffect[];
   linkedStoryNodeId?: string;
+  /** Additional story nodes that also map to this quest (renamed nodes, branch variants) */
+  linkedStoryNodeIds?: string[];
   /** Quest IDs that must be completed before this quest can activate */
   requiresQuests?: string[];
   /** Optional time limit in in-game hours. Quest fails if not completed in time. */
@@ -679,7 +678,13 @@ export interface EventMap {
   'toast:add': { id: string; type: 'karma' | 'energy' | 'stress' | 'skill' | 'poem' | 'quest'; message: string; delta?: number; timestamp: number };
 
   /* ── Player level-up events ── */
-  'player:levelup': { newLevel: number; prevLevel: number; perkPointGained?: boolean };
+  'player:levelup': {
+    newLevel: number;
+    prevLevel: number;
+    levelsGained?: number;
+    perkPointsGained?: number;
+    perkPointGained?: boolean;
+  };
 
   /* ── Player heal events ── */
   'player:heal': { amount: number };
@@ -709,6 +714,13 @@ export interface EventMap {
   'world:hour_changed': { hour: number; previousHour: number; npcStates: Record<string, { position: [number, number, number]; sceneId: SceneId }> };
   /** Emitted when the world clock performs a periodic tick */
   'world:tick': { hour: number; deltaHours: number };
+  /** Emitted when open-world chunk streaming loads/unloads regions */
+  'world:chunks_changed': {
+    toLoad: string[];
+    toUnload: string[];
+    active: string[];
+    playerChunk: string;
+  };
 
   /* ── Guided Story events ── */
   /** Emitted when the player needs guidance (next objective) */

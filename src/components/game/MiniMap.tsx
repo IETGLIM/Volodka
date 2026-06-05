@@ -6,7 +6,7 @@
 */
 
 import { useRef, useEffect, useMemo } from 'react';
-import { useGameStore } from '@/store/gameStore';
+import { selectNpcRelations, useMiniMapState } from '@/store/selectors';
 import { SCENE_CONFIG } from '@/config/scenes';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { NPC_DEFINITIONS } from '@/data/npcDefinitions';
@@ -32,10 +32,7 @@ export function MiniMap() {
   const animFrameRef = useRef<number>(0);
   const pulsePhaseRef = useRef(0);
 
-  const currentSceneId = useGameStore((s) => s.exploration.currentSceneId);
-  const playerPos = useGameStore((s) => s.exploration.playerPosition);
-  const playerRotation = useGameStore((s) => s.exploration.playerRotation);
-  const npcStates = useGameStore((s) => s.exploration.npcStates);
+  const { currentSceneId, playerPos, playerRotation, npcStates } = useMiniMapState();
 
   const activeQuests = useActiveQuests();
   const sceneConfig = SCENE_CONFIG[currentSceneId];
@@ -43,7 +40,7 @@ export function MiniMap() {
   // Get NPCs in current scene
   const npcsInScene = useMemo(() => {
     const result: { id: string; name: string; position: [number, number, number]; relation: number }[] = [];
-    const relations = useGameStore.getState().npcRelations;
+    const relations = selectNpcRelations();
 
     for (const npcDef of NPC_DEFINITIONS) {
       const state = npcStates[npcDef.id];

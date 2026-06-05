@@ -35,6 +35,7 @@ export const STORY_NODES: Record<string, StoryNode> = {
       { text: 'Подойти к столу', next: 'room_table' },
       { text: 'Осмотреть книжную полку', next: 'room_bookshelf' },
       { text: 'Выйти в коридор', next: 'corridor_door' },
+      { text: 'Свободно исследовать комнату', next: 'explore_mode' },
     ],
   },
 
@@ -80,6 +81,7 @@ export const STORY_NODES: Record<string, StoryNode> = {
         text: 'Поднять листок — это стихи',
         next: 'explore_mode',
         effects: [
+          { type: 'collectPoem', poemId: 'poem_2' },
           { type: 'addKarma', value: 2 },
         ],
       },
@@ -97,10 +99,23 @@ export const STORY_NODES: Record<string, StoryNode> = {
     speaker: 'narrator',
     sceneId: 'volodka_corridor',
     choices: [
-      { text: 'Осмотреться', next: 'explore_mode' },
+      { text: 'Осмотреться', next: 'corridor_explore_mode' },
       { text: 'Пойти на кухню', next: 'kitchen_table' },
       { text: 'Выйти на улицу', next: 'street_bench' },
       { text: 'Вернуться в комнату', next: 'go_home' },
+    ],
+  },
+
+  corridor_explore_mode: {
+    id: 'corridor_explore_mode',
+    text: 'Коридор тянется в обе стороны — потёртый линолеум, облупившаяся краска, таблички с фамилиями на дверях соседей. Лампочка под потолком то гаснет, то вспыхивает, и на мгновение стены кажутся ещё уже. Из кухни доносится тихий разговор, а за входной дверью — эхо чьих-то шагов по лестнице.',
+    speaker: 'narrator',
+    sceneId: 'volodka_corridor',
+    choices: [
+      { text: 'Пойти на кухню', next: 'kitchen_table' },
+      { text: 'Выйти на улицу', next: 'street_bench' },
+      { text: 'Вернуться в комнату', next: 'go_home' },
+      { text: 'Свободно исследовать коридор', next: 'corridor_explore_mode' },
     ],
   },
 
@@ -390,7 +405,6 @@ export const STORY_NODES: Record<string, StoryNode> = {
         ],
       },
     ],
-    effects: [{ type: 'triggerQuest', questId: 'vault_backup_trial' }],
   },
 
   colleague_persuasion_line: {
@@ -398,6 +412,7 @@ export const STORY_NODES: Record<string, StoryNode> = {
     text: 'Ты наклоняешься ближе и говоришь тихо: «Послушай, если тут замешаны старые архивы — мне нужно знать. Не ради гильдии. Ради правды.» Коллега колеблется. Он оглядывается по сторонам и наконец шепчет: «После Краха были стёрты целые разделы. Но копия... копия может быть в Хранилище. Только доступ туда — только для старших.»',
     speaker: 'narrator',
     sceneId: 'office_day',
+    effects: [{ type: 'triggerQuest', questId: 'vault_backup_trial' }],
     choices: [
       {
         text: 'Попросить его помочь с доступом',
@@ -405,6 +420,7 @@ export const STORY_NODES: Record<string, StoryNode> = {
         effects: [
           { type: 'addSkill', skill: 'persuasion', value: 2 },
           { type: 'setFlag', flag: 'colleague_help_access', flagValue: true },
+          { type: 'setFlag', flag: 'vault_access_granted', flagValue: true },
           { type: 'npcChange', npcId: 'office_colleague', npcChange: { relation: 10 } },
         ],
       },
@@ -711,6 +727,7 @@ export const STORY_NODES: Record<string, StoryNode> = {
         next: 'act2_network_initiation',
         effects: [
           { type: 'addSkill', skill: 'persuasion', value: 1 },
+          { type: 'setFlag', flag: 'recited_poem_initiation', flagValue: true },
           { type: 'triggerQuest', questId: 'network_initiation' },
         ],
         condition: { flag: 'accepted_maria_chip' },
@@ -733,6 +750,7 @@ export const STORY_NODES: Record<string, StoryNode> = {
         text: 'Вернуться к двери — я готов',
         next: 'act2_network_initiation',
         effects: [
+          { type: 'setFlag', flag: 'recited_poem_initiation', flagValue: true },
           { type: 'triggerQuest', questId: 'network_initiation' },
           { type: 'addStat', stat: 'stress', value: 5 },
         ],
@@ -905,6 +923,7 @@ export const STORY_NODES: Record<string, StoryNode> = {
         text: 'Это может быть ловушкой. Действовать осторожно.',
         next: 'act2_dmitry_office_meeting',
         effects: [
+          { type: 'triggerQuest', questId: 'dmitry_defection' },
           { type: 'addSkill', skill: 'intuition', value: 2 },
           { type: 'setFlag', flag: 'dmitry_caution', flagValue: true },
         ],
@@ -1136,6 +1155,8 @@ export const STORY_NODES: Record<string, StoryNode> = {
         effects: [
           { type: 'addSkill', skill: 'coding', value: 2 },
           { type: 'setFlag', flag: 'knows_protocol', flagValue: true },
+          { type: 'setFlag', flag: 'heard_dmitry_story', flagValue: true },
+          { type: 'setFlag', flag: 'dmitry_escape_planned', flagValue: true },
           { type: 'npcChange', npcId: 'maria', npcChange: { relation: 5 } },
         ],
       },
@@ -1145,6 +1166,7 @@ export const STORY_NODES: Record<string, StoryNode> = {
         effects: [
           { type: 'addSkill', skill: 'intuition', value: 2 },
           { type: 'setFlag', flag: 'alexander_mystery', flagValue: true },
+          { type: 'setFlag', flag: 'heard_dmitry_story', flagValue: true },
         ],
       },
     ],
@@ -1162,6 +1184,7 @@ export const STORY_NODES: Record<string, StoryNode> = {
         effects: [
           { type: 'collectPoem', poemId: 'poem_5' },
           { type: 'collectPoem', poemId: 'poem_15' },
+          { type: 'setFlag', flag: 'dmitry_defected', flagValue: true },
           { type: 'addSkill', skill: 'writing', value: 2 },
           { type: 'addStat', stat: 'stress', value: -5 },
         ],
@@ -1171,6 +1194,7 @@ export const STORY_NODES: Record<string, StoryNode> = {
         next: 'act2_closing',
         effects: [
           { type: 'collectPoem', poemId: 'poem_5' },
+          { type: 'setFlag', flag: 'dmitry_defected', flagValue: true },
           { type: 'addStat', stat: 'energy', value: 10 },
         ],
       },
@@ -1296,6 +1320,7 @@ export const STORY_NODES: Record<string, StoryNode> = {
         effects: [
           { type: 'addSkill', skill: 'coding', value: 1 },
           { type: 'setFlag', flag: 'stealth_infiltration', flagValue: true },
+          { type: 'setFlag', flag: 'detention_breached', flagValue: true },
         ],
         condition: { minSkill: { coding: 5 } },
       },
@@ -1305,6 +1330,7 @@ export const STORY_NODES: Record<string, StoryNode> = {
         effects: [
           { type: 'addSkill', skill: 'persuasion', value: 1 },
           { type: 'addStat', stat: 'stress', value: 5 },
+          { type: 'setFlag', flag: 'detention_breached', flagValue: true },
         ],
       },
       {
@@ -1313,6 +1339,7 @@ export const STORY_NODES: Record<string, StoryNode> = {
         effects: [
           { type: 'addSkill', skill: 'coding', value: 2 },
           { type: 'setFlag', flag: 'hacked_security', flagValue: true },
+          { type: 'setFlag', flag: 'detention_breached', flagValue: true },
         ],
         condition: { minSkill: { logic: 6 } },
       },
@@ -1386,6 +1413,7 @@ export const STORY_NODES: Record<string, StoryNode> = {
           { type: 'addKarma', value: 3 },
           { type: 'npcChange', npcId: 'cafe_barista', npcChange: { relation: 5 } },
           { type: 'setFlag', flag: 'zarema_rescued', flagValue: true },
+          { type: 'setFlag', flag: 'escaped_with_zarema', flagValue: true },
           { type: 'collectPoem', poemId: 'poem_17' },
         ],
       },
@@ -1761,6 +1789,7 @@ export const STORY_NODES: Record<string, StoryNode> = {
     text: 'Внутри башни — холод и гул серверов. Стены из стекла и хрома отражают твоё напряжённое лицо. Коридоры пусты — Дмитрий молодец, отвёл патрули. Но ты знаешь: на нижних уровнях ждут системные демоны — программы-стражи, которые атакуют любой незнакомый код. Дыхание перехватывает.',
     speaker: 'narrator',
     sceneId: 'office_day',
+    effects: [{ type: 'setFlag', flag: 'guild_ally_found', flagValue: true }],
     choices: [
       {
         text: 'Двигаться к серверному ядру',
@@ -1768,6 +1797,7 @@ export const STORY_NODES: Record<string, StoryNode> = {
         effects: [
           { type: 'addStat', stat: 'stress', value: 5 },
           { type: 'combat', enemyType: 'system_daemon' },
+          { type: 'setFlag', flag: 'guild_core_accessed', flagValue: true },
         ],
       },
       {
@@ -1776,6 +1806,7 @@ export const STORY_NODES: Record<string, StoryNode> = {
         effects: [
           { type: 'addSkill', skill: 'coding', value: 1 },
           { type: 'setFlag', flag: 'tech_corridor_used', flagValue: true },
+          { type: 'setFlag', flag: 'guild_core_accessed', flagValue: true },
         ],
         condition: { minSkill: { coding: 7 } },
       },
@@ -1822,6 +1853,7 @@ export const STORY_NODES: Record<string, StoryNode> = {
         effects: [
           { type: 'addKarma', value: 10 },
           { type: 'setFlag', flag: 'protocol_disabled', flagValue: true },
+          { type: 'setFlag', flag: 'guild_evidence_downloaded', flagValue: true },
         ],
       },
       {
@@ -1830,6 +1862,7 @@ export const STORY_NODES: Record<string, StoryNode> = {
         effects: [
           { type: 'addSkill', skill: 'coding', value: 2 },
           { type: 'setFlag', flag: 'protocol_disabled', flagValue: true },
+          { type: 'setFlag', flag: 'guild_evidence_downloaded', flagValue: true },
           { type: 'setFlag', flag: 'broadcast_from_core', flagValue: true },
         ],
       },
@@ -1849,6 +1882,7 @@ export const STORY_NODES: Record<string, StoryNode> = {
           { type: 'addStat', stat: 'stress', value: 10 },
           { type: 'combat', enemyType: 'shadow_agent' },
           { type: 'addKarma', value: 3 },
+          { type: 'setFlag', flag: 'escaped_guild_hq', flagValue: true },
         ],
       },
       {
@@ -1857,6 +1891,7 @@ export const STORY_NODES: Record<string, StoryNode> = {
         effects: [
           { type: 'addSkill', skill: 'intuition', value: 1 },
           { type: 'addStat', stat: 'energy', value: -10 },
+          { type: 'setFlag', flag: 'escaped_guild_hq', flagValue: true },
         ],
       },
     ],
@@ -1867,6 +1902,7 @@ export const STORY_NODES: Record<string, StoryNode> = {
     text: 'Ты на крыше. Ветер бьёт в лицо, но ты не чувствуешь холода. Виктория уже подключена к городским передатчикам — её цифровая половина пронизывает каждую антенну, каждый ретранслятор. «Я готова,» — говорит она. «Текст — в системе. Одно слово — и весь город увидит стихи. Все экраны. Все терминалы. Все голограммы.»',
     speaker: 'narrator',
     sceneId: 'rooftop_edge',
+    effects: [{ type: 'collectPoem', poemId: 'poem_21' }],
     choices: [
       {
         text: 'Начать трансляцию. Пусть весь город услышит.',
@@ -1882,6 +1918,7 @@ export const STORY_NODES: Record<string, StoryNode> = {
         effects: [
           { type: 'addSkill', skill: 'empathy', value: 2 },
           { type: 'addStat', stat: 'stress', value: 3 },
+          { type: 'setFlag', flag: 'broadcast_ready', flagValue: true },
         ],
       },
     ],
@@ -1892,6 +1929,13 @@ export const STORY_NODES: Record<string, StoryNode> = {
     text: '«Сейчас.» Экраны по всему городу мигают. Реклама, новости, прогноз погоды — всё заменяется стихами. Пушкин на рекламном щите. Ахматова на терминале метро. Мандельштам в голограмме над площадью. Город замирает. Люди останавливаются, поднимают головы. Стихи — повсюду. Слово — свободно.',
     speaker: 'narrator',
     sceneId: 'rooftop_edge',
+    effects: [
+      { type: 'setFlag', flag: 'broadcast_hacked', flagValue: true },
+      { type: 'setFlag', flag: 'poetry_transmitted', flagValue: true },
+      { type: 'setFlag', flag: 'poetry_broadcast_sent', flagValue: true },
+      { type: 'setFlag', flag: 'all_poems_collected', flagValue: true },
+      { type: 'triggerQuest', questId: 'poetry_broadcast' },
+    ],
     choices: [
       {
         text: 'Продолжать трансляцию — все 21 стихотворение',
@@ -1899,6 +1943,7 @@ export const STORY_NODES: Record<string, StoryNode> = {
         effects: [
           { type: 'addKarma', value: 8 },
           { type: 'addSkill', skill: 'writing', value: 2 },
+          { type: 'setFlag', flag: 'all_poems_collected', flagValue: true },
         ],
       },
       {
@@ -2733,6 +2778,8 @@ export const STORY_NODES: Record<string, StoryNode> = {
         effects: [
           { type: 'addSkill', skill: 'writing', value: 3 },
           { type: 'addKarma', value: 5 },
+          { type: 'setFlag', flag: 'inner_pledge_poems', flagValue: true },
+          { type: 'triggerQuest', questId: 'poetry_collection' },
         ],
       },
     ],
@@ -2768,6 +2815,7 @@ export const STORY_NODES: Record<string, StoryNode> = {
           { type: 'addStat', stat: 'stress', value: 5 },
           { type: 'setFlag', flag: 'zarema_arrested', flagValue: true },
           { type: 'setFlag', flag: 'noted_guild_agents', flagValue: true },
+          { type: 'triggerQuest', questId: 'zarema_rescue' },
         ],
       },
       {
@@ -2800,6 +2848,7 @@ export const STORY_NODES: Record<string, StoryNode> = {
         effects: [
           { type: 'addSkill', skill: 'persuasion', value: 1 },
           { type: 'npcChange', npcId: 'maria', npcChange: { relation: 3 } },
+          { type: 'triggerQuest', questId: 'zarema_rescue' },
         ],
       },
       {
@@ -2824,6 +2873,7 @@ export const STORY_NODES: Record<string, StoryNode> = {
         next: 'act3_underground_meeting',
         effects: [
           { type: 'addSkill', skill: 'logic', value: 1 },
+          { type: 'triggerQuest', questId: 'zarema_rescue' },
         ],
       },
       {
@@ -2850,6 +2900,7 @@ export const STORY_NODES: Record<string, StoryNode> = {
           { type: 'addKarma', value: 5 },
           { type: 'addSkill', skill: 'coding', value: 2 },
           { type: 'setFlag', flag: 'vault_under_attack', flagValue: true },
+          { type: 'setFlag', flag: 'rally_defenders_met', flagValue: true },
           { type: 'triggerQuest', questId: 'vault_defense' },
         ],
       },
@@ -2878,6 +2929,7 @@ export const STORY_NODES: Record<string, StoryNode> = {
     text: 'Ты садишься за терминал и начинаешь копать. Чип, который подбросили Зареме, — не случайная подделка. Серийный номер ведёт к партии, которую гильдия заказывала три месяца назад. Но самое странное — на чипе есть следы кода, который ты уже видел. Тот же почерк. Те же поэтические переменные. Кто-то изнутри гильдии использовал «живой код», чтобы подставить Зарему. Но зачем?',
     speaker: 'narrator',
     sceneId: 'volodka_room',
+    effects: [{ type: 'triggerQuest', questId: 'maria_truth' }],
     choices: [
       {
         text: 'Сравнить с инцидентом #4729 — тот же автор?',
@@ -2918,11 +2970,12 @@ export const STORY_NODES: Record<string, StoryNode> = {
     choices: [
       {
         text: 'Мы спасаем Зарему. Это приоритет.',
-        next: 'act3_choice_betrayal',
+        next: 'act3_detention_infiltration',
         effects: [
           { type: 'addKarma', value: 5 },
           { type: 'npcChange', npcId: 'zarema', npcChange: { relation: 10 } },
           { type: 'setFlag', flag: 'priority_rescue_zarema', flagValue: true },
+          { type: 'triggerQuest', questId: 'zarema_rescue' },
         ],
       },
       {
@@ -2933,7 +2986,9 @@ export const STORY_NODES: Record<string, StoryNode> = {
           { type: 'addKarma', value: -5 },
           { type: 'setFlag', flag: 'priority_defend_vault', flagValue: true },
           { type: 'setFlag', flag: 'vault_under_attack', flagValue: true },
+          { type: 'setFlag', flag: 'rally_defenders_met', flagValue: true },
           { type: 'setFlag', flag: 'low_empathy', flagValue: true },
+          { type: 'triggerQuest', questId: 'vault_defense' },
         ],
       },
       {
@@ -2964,6 +3019,7 @@ export const STORY_NODES: Record<string, StoryNode> = {
           { type: 'addStat', stat: 'stress', value: -5 },
           { type: 'setFlag', flag: 'chose_zarema_over_vault', flagValue: true },
           { type: 'setFlag', flag: 'zarema_rescued', flagValue: true },
+          { type: 'setFlag', flag: 'escaped_with_zarema', flagValue: true },
         ],
       },
       {
@@ -3014,6 +3070,8 @@ export const STORY_NODES: Record<string, StoryNode> = {
           { type: 'addSkill', skill: 'logic', value: 2 },
           { type: 'addKarma', value: 3 },
           { type: 'setFlag', flag: 'vault_counterattack', flagValue: true },
+          { type: 'setFlag', flag: 'vault_firewall_deployed', flagValue: true },
+          { type: 'setFlag', flag: 'vault_defense_held', flagValue: true },
         ],
       },
       {
@@ -3128,6 +3186,7 @@ export const STORY_NODES: Record<string, StoryNode> = {
           { type: 'addSkill', skill: 'persuasion', value: 2 },
           { type: 'npcChange', npcId: 'office_colleague', npcChange: { relation: 5 } },
           { type: 'setFlag', flag: 'colleague_as_ally', flagValue: true },
+          { type: 'setFlag', flag: 'guild_ally_found', flagValue: true },
         ],
       },
       {
@@ -3136,6 +3195,7 @@ export const STORY_NODES: Record<string, StoryNode> = {
         effects: [
           { type: 'addSkill', skill: 'coding', value: 2 },
           { type: 'setFlag', flag: 'dmitry_as_ally', flagValue: true },
+          { type: 'setFlag', flag: 'guild_ally_found', flagValue: true },
         ],
         condition: { flag: 'dmitry_defected' },
       },
@@ -3168,6 +3228,7 @@ export const STORY_NODES: Record<string, StoryNode> = {
           { type: 'addSkill', skill: 'coding', value: 2 },
           { type: 'addStat', stat: 'stress', value: 10 },
           { type: 'setFlag', flag: 'guild_core_accessed', flagValue: true },
+          { type: 'setFlag', flag: 'guild_evidence_downloaded', flagValue: true },
         ],
       },
       {
@@ -3176,6 +3237,7 @@ export const STORY_NODES: Record<string, StoryNode> = {
         effects: [
           { type: 'addSkill', skill: 'logic', value: 2 },
           { type: 'setFlag', flag: 'guild_evidence_downloaded', flagValue: true },
+          { type: 'setFlag', flag: 'guild_core_accessed', flagValue: true },
         ],
       },
       {
@@ -3185,6 +3247,8 @@ export const STORY_NODES: Record<string, StoryNode> = {
           { type: 'addSkill', skill: 'writing', value: 2 },
           { type: 'addKarma', value: 5 },
           { type: 'setFlag', flag: 'poem_bypassed_security', flagValue: true },
+          { type: 'setFlag', flag: 'guild_core_accessed', flagValue: true },
+          { type: 'setFlag', flag: 'guild_evidence_downloaded', flagValue: true },
         ],
         condition: { minSkill: { writing: 6, coding: 5 } },
       },
@@ -3279,9 +3343,11 @@ export const STORY_NODES: Record<string, StoryNode> = {
         effects: [
           { type: 'addKarma', value: 15 },
           { type: 'addSkill', skill: 'writing', value: 3 },
+          { type: 'setFlag', flag: 'broadcast_ready', flagValue: true },
           { type: 'setFlag', flag: 'broadcast_hacked', flagValue: true },
           { type: 'setFlag', flag: 'poetry_transmitted', flagValue: true },
           { type: 'setFlag', flag: 'poetry_broadcast_sent', flagValue: true },
+          { type: 'setFlag', flag: 'all_poems_collected', flagValue: true },
           { type: 'triggerQuest', questId: 'poetry_broadcast' },
         ],
       },
@@ -3291,9 +3357,12 @@ export const STORY_NODES: Record<string, StoryNode> = {
         effects: [
           { type: 'addStat', stat: 'stress', value: 5 },
           { type: 'addSkill', skill: 'logic', value: 1 },
+          { type: 'setFlag', flag: 'broadcast_ready', flagValue: true },
           { type: 'setFlag', flag: 'broadcast_hacked', flagValue: true },
           { type: 'setFlag', flag: 'poetry_transmitted', flagValue: true },
           { type: 'setFlag', flag: 'poetry_broadcast_sent', flagValue: true },
+          { type: 'setFlag', flag: 'all_poems_collected', flagValue: true },
+          { type: 'triggerQuest', questId: 'poetry_broadcast' },
         ],
       },
       {
@@ -3306,6 +3375,7 @@ export const STORY_NODES: Record<string, StoryNode> = {
           { type: 'setFlag', flag: 'poetry_transmitted', flagValue: true },
           { type: 'setFlag', flag: 'poetry_broadcast_sent', flagValue: true },
           { type: 'setFlag', flag: 'volodka_personal_broadcast', flagValue: true },
+          { type: 'triggerQuest', questId: 'poetry_broadcast' },
         ],
         condition: { minSkill: { writing: 8 }, minKarma: 65 },
       },
@@ -3320,7 +3390,7 @@ export const STORY_NODES: Record<string, StoryNode> = {
     choices: [
       {
         text: 'Смотреть, как город оживает',
-        next: 'act5_dawn',
+        next: 'act4_final_choice',
         effects: [
           { type: 'addKarma', value: 10 },
           { type: 'addStat', stat: 'stress', value: -15 },
@@ -3329,7 +3399,7 @@ export const STORY_NODES: Record<string, StoryNode> = {
       },
       {
         text: 'Виктория, ты это чувствуешь? Город слушает!',
-        next: 'act5_dawn',
+        next: 'act4_final_choice',
         effects: [
           { type: 'npcChange', npcId: 'maria', npcChange: { relation: 15 } },
           { type: 'addSkill', skill: 'empathy', value: 3 },

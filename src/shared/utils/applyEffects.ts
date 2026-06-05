@@ -46,9 +46,10 @@ export function applyEffects(
         break;
       case 'addItem':
         if (fx.itemId) {
-          store.addItem(createInventoryItem(fx.itemId, fx.value ?? 1));
-          // Notify via callback if provided (e.g., for loot notification)
-          callbacks?.onItemAdded?.(fx.itemId, fx.value ?? 1);
+          const added = store.addItem(createInventoryItem(fx.itemId, fx.value ?? 1));
+          if (added) {
+            callbacks?.onItemAdded?.(fx.itemId, fx.value ?? 1);
+          }
         }
         break;
       case 'removeItem':

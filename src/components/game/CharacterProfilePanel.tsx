@@ -25,7 +25,14 @@ import {
   Swords,
   Wind,
 } from 'lucide-react';
-import { useGameStore } from '@/store/gameStore';
+import {
+  usePlayerState,
+  useNpcRelations,
+  useCollectedPoems,
+  useQuests,
+  usePlayerInventory,
+  useTimeOfDay,
+} from '@/store/selectors';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { NPC_DEFINITIONS } from '@/data/npcDefinitions';
 import { POEMS } from '@/data/poems';
@@ -301,12 +308,12 @@ const SKILL_DISPLAY: Record<string, { label: string; color: string }> = {
    ══════════════════════════════════════════════════════════════ */
 
 export function CharacterProfilePanel({ open, onClose }: { open: boolean; onClose: () => void }) {
-  const playerState = useGameStore((s) => s.playerState);
-  const npcRelations = useGameStore((s) => s.npcRelations);
-  const collectedPoems = useGameStore((s) => s.collectedPoems);
-  const quests = useGameStore((s) => s.quests);
-  const inventory = useGameStore((s) => s.playerState.inventory);
-  const timeOfDay = useGameStore((s) => s.exploration.timeOfDay);
+  const playerState = usePlayerState();
+  const npcRelations = useNpcRelations();
+  const collectedPoems = useCollectedPoems();
+  const quests = useQuests();
+  const inventory = usePlayerInventory();
+  const timeOfDay = useTimeOfDay();
 
   const { karma, energy, stress, skills, equippedItems, progression } = playerState;
   const { level, xp, xpToNextLevel, currentAct } = progression;

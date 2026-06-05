@@ -5,7 +5,8 @@
 import type { StateCreator } from 'zustand';
 import type { ExplorationState, SceneId } from '@/shared/types/game';
 import { sanitizeExplorationSceneId, SCENE_CONFIG } from '@/config/scenes';
-import { clamp, createDefaultExploration, type GameStoreState } from '../shared';
+import { clamp, createDefaultExploration } from '../shared';
+import type { GameStoreState } from '../types';
 import { eventBus } from '@/engine/EventBus';
 import { buildNPCStatesForTime } from '@/engine/ScheduleEngine';
 

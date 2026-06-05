@@ -12,6 +12,7 @@ export const GOLDEN_PATH_STORY_SPINE: string[] = [
   'room_table',
   'room_bookshelf',
   'corridor_door',
+  'corridor_explore_mode',
   'kitchen_table',
   'kitchen_window',
   'go_to_cafe',
@@ -86,6 +87,96 @@ export const GOLDEN_PATH_STORY_SPINE: string[] = [
   'ending_reconciliation', // → poem_18 «Вся клевета - вернется в сто крат»
   'ending_creator', // → poem_13 «Эпитафия»
 ];
+
+/**
+ * Maps VN story-node ids to canonical 3D NPC entity ids when names diverge.
+ * linkedStoryNodeId uses story nodes; questGiverNpcId uses npcDefinitions.id.
+ */
+export const STORY_NODE_TO_NPC_ID: Record<string, string> = {
+  maria_curious: 'maria',
+};
+
+/** Resolve a story-node or alias id to the canonical NPC entity id. */
+export function resolveCanonicalNpcId(id: string): string {
+  return STORY_NODE_TO_NPC_ID[id] ?? id;
+}
+
+/** How an act advances to the next one. */
+export type ActAdvanceTrigger = 'story_node' | 'quest_spine_complete' | 'either';
+
+/** Single source of truth for act boundaries, aligned with story + quest spines. */
+export interface ActTransition {
+  act: number;
+  chapterTitle: string;
+  /** Story node that marks the start of this act on the golden path. */
+  entryNodeId: string;
+  /** Main-quest spine IDs that belong to this act (from GOLDEN_PATH_QUEST_SPINE). */
+  questSpineIds: string[];
+  /** Story node whose visit advances the story spine into the next act. */
+  nextActEntryNodeId?: string;
+  /** What can trigger advancing currentAct in GuidedStoryManager. */
+  advanceTrigger: ActAdvanceTrigger;
+}
+
+/**
+ * ACT_TRANSITIONS — explicit act boundary mapping.
+ * Replaces hard-coded act lists in GuidedStoryManager.
+ */
+export const ACT_TRANSITIONS: ActTransition[] = [
+  {
+    act: 1,
+    chapterTitle: 'Пробуждение',
+    entryNodeId: 'start',
+    questSpineIds: [
+      'first_reading',
+      'maria_connection',
+      'incident_scroll_4729',
+      'vault_backup_trial',
+      'poetry_collection',
+    ],
+    nextActEntryNodeId: 'act2_transition',
+    advanceTrigger: 'either',
+  },
+  {
+    act: 2,
+    chapterTitle: 'Сеть',
+    entryNodeId: 'act2_transition',
+    questSpineIds: ['network_initiation', 'dmitry_defection', 'cafe_safehouse'],
+    nextActEntryNodeId: 'act3_transition',
+    advanceTrigger: 'either',
+  },
+  {
+    act: 3,
+    chapterTitle: 'Война за правду',
+    entryNodeId: 'act3_transition',
+    questSpineIds: ['zarema_rescue', 'vault_defense', 'maria_truth'],
+    nextActEntryNodeId: 'act4_transition',
+    advanceTrigger: 'either',
+  },
+  {
+    act: 4,
+    chapterTitle: 'Революция',
+    entryNodeId: 'act4_transition',
+    questSpineIds: ['guild_infiltration', 'poetry_broadcast'],
+    nextActEntryNodeId: 'act5_peaceful_path',
+    advanceTrigger: 'either',
+  },
+  {
+    act: 5,
+    chapterTitle: 'Финал',
+    entryNodeId: 'act5_peaceful_path',
+    questSpineIds: [],
+    advanceTrigger: 'story_node',
+  },
+];
+
+/** Entry node IDs derived from ACT_TRANSITIONS (kept for backward compatibility). */
+export const GOLDEN_PATH_ACT_TRANSITION_NODES: string[] = ACT_TRANSITIONS.map((t) => t.entryNodeId);
+
+/** act number → chapter title */
+export const ACT_CHAPTER_TITLES: Record<number, string> = Object.fromEntries(
+  ACT_TRANSITIONS.map((t) => [t.act, t.chapterTitle]),
+) as Record<number, string>;
 
 /**
  * GOLDEN_PATH_BRANCH_HINTS — hints for key branch decisions.

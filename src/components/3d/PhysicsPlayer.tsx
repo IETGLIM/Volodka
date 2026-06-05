@@ -32,7 +32,8 @@ import { useFrame } from '@react-three/fiber';
 import { RigidBody, CapsuleCollider, useRapier, type RapierRigidBody, type RapierCollider } from '@react-three/rapier';
 import * as THREE from 'three';
 
-import { useGameStore } from '@/store/gameStore';
+import { getGameStore } from '@/store/gameStore';
+import { useCurrentSceneId, usePlayerKarma } from '@/store/selectors';
 import { usePlayerControls, type VirtualControls } from '@/hooks/useGamePhysics';
 
 import {
@@ -97,8 +98,8 @@ export function PhysicsPlayer({
   onInteractPress,
 }: PhysicsPlayerProps) {
   const controls = usePlayerControls(onInteractPress);
-  const sceneId = useGameStore((s) => s.exploration.currentSceneId);
-  const karma = useGameStore((s) => s.playerState.karma);
+  const sceneId = useCurrentSceneId();
+  const karma = usePlayerKarma();
 
   const rigidBodyRef = useRef<RapierRigidBody>(null!);
   const capsuleColliderRef = useRef<RapierCollider | null>(null); // Direct Rapier Collider ref from CapsuleCollider JSX
@@ -212,10 +213,10 @@ export function PhysicsPlayer({
     // During warmup, we hold the player at spawn height and skip gravity.
     // Also extend warmup while locked (intro, tutorial, interaction) to prevent
     // the character from falling/jumping when controls are first released.
-    const isLockedCheck = useGameStore.getState().showStoryOverlay
-      || useGameStore.getState().mode === 'cutscene'
-      || useGameStore.getState().mode === 'intro'
-      || useGameStore.getState().tutorialFlags?.tutorialsCompleted === false;
+    const isLockedCheck = getGameStore().showStoryOverlay
+      || getGameStore().mode === 'cutscene'
+      || getGameStore().mode === 'intro'
+      || getGameStore().tutorialFlags?.tutorialsCompleted === false;
 
     if (isLockedCheck) {
       warmupFramesRef.current = 0; // reset warmup while locked
@@ -261,8 +262,8 @@ export function PhysicsPlayer({
     // stale closures — React state may lag behind the actual store state by
     // one render cycle, causing the player to remain frozen even after mode
     // has already changed to 'exploration'.
-    const currentMode = useGameStore.getState().mode;
-    const showStoryOverlay = useGameStore.getState().showStoryOverlay;
+    const currentMode = getGameStore().mode;
+    const showStoryOverlay = getGameStore().showStoryOverlay;
     // ── World Director: lock movement during narrative overlay or cutscene ──
     // Before: locked when mode === 'visual-novel' (separate mode)
     // Now: locked when showStoryOverlay is true (narrative overlay on exploration)

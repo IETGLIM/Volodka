@@ -7,7 +7,7 @@ import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { Sword, Shield, Sparkles, LogOut, ChevronDown, Heart, Clock, Zap, Flame, Skull, Trophy, RotateCcw, Eye, Bug, ShieldAlert, Music2 } from 'lucide-react';
-import { useGameStore } from '@/store/gameStore';
+import { useGameMode } from '@/store/selectors';
 import {
   getCombatState,
   playerAttack,
@@ -340,7 +340,7 @@ function DefeatScreen() {
 
 /* ── Main Component ── */
 export function CombatUI() {
-  const mode = useGameStore((s) => s.mode);
+  const mode = useGameMode();
   const [combatState, setCombatState] = useState<CombatState | null>(null);
   const [showPowers, setShowPowers] = useState(false);
   const [damageNumbers, setDamageNumbers] = useState<Array<{ id: number; damage: number; type: string; isCritical?: boolean }>>([]);

@@ -156,36 +156,5 @@ export function createDefaultTutorialFlags(): TutorialFlags {
 }
 
 /* ─── Cross-slice type composition ─── */
-/* These types enable proper typing for Zustand slice composition.
- * All imports are type-only (`import type`) to ensure zero runtime
- * circular dependencies — shared.ts never imports runtime values
- * from slices, and slices never import runtime values from gameStore. */
-
-import type { PlayerSliceState, PlayerSlice } from './slices/playerSlice';
-import type { ExplorationSliceState, ExplorationSlice } from './slices/explorationSlice';
-import type { WorldSliceState, WorldSlice } from './slices/worldSlice';
-import type { UISliceState, UISlice } from './slices/uiSlice';
-import type { CutsceneSliceState, CutsceneSlice } from './slices/cutsceneSlice';
-import type { SaveSliceState, SaveSlice } from './slices/saveSlice';
-
-/** Read-only state selectors from all slices (no actions).
- * Use this type when a function should only read state, not dispatch actions. */
-export type CrossSliceReads =
-  & PlayerSliceState
-  & ExplorationSliceState
-  & WorldSliceState
-  & UISliceState
-  & CutsceneSliceState
-  & SaveSliceState;
-
-/** Full composed game store type — the intersection of all slice state + actions.
- * This is used as the first type parameter of StateCreator in each slice so
- * that `get()` returns the full store type, enabling type-safe cross-slice
- * access without any unsafe casts. */
-export type GameStoreState =
-  & PlayerSlice
-  & ExplorationSlice
-  & WorldSlice
-  & UISlice
-  & CutsceneSlice
-  & SaveSlice;
+/* GameStoreState and CrossSliceReads live in ./types.ts to avoid
+ * circular imports between this utilities module and slice files. */

@@ -6,7 +6,7 @@
  * ARCHITECTURE: SceneDefinition is the internal model; SceneConfig is generated
  * on-the-fly via sceneDefinitionGenerator.ts — no duplicate data maintenance. */
 
-import type { SceneId } from './game';
+import type { SceneId } from '@/config/sceneDefinitions';
 
 // ─── Floor Material ───
 

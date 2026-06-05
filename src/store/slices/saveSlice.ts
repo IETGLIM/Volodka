@@ -13,8 +13,8 @@ import {
   createDefaultTutorialFlags,
   pushNotification,
   type GameNotification,
-  type GameStoreState,
 } from '../shared';
+import type { GameStoreState } from '../types';
 import { resetAllPoemEffects } from '@/engine/PoemPowerSystem';
 
 /* ─── localStorage key ─── */

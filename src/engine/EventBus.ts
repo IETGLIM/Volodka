@@ -20,6 +20,9 @@ const DEDUP_EXEMPT = new Set([
 /** Dedup window in milliseconds — suppress identical (event+payload) repeats within this window */
 const DEDUP_WINDOW_MS = 500;
 
+/** Max dedup cache entries — prevents unbounded growth from large payload keys */
+const MAX_DEDUP_CACHE_SIZE = 64;
+
 /**
  * A lightweight, typed pub/sub event bus with payload-aware deduplication.
  *
@@ -27,8 +30,8 @@ const DEDUP_WINDOW_MS = 500;
  * Never use for intra-layer communication.
  *
  * Dedup logic:
- *  - Key is `${event}:${JSON.stringify(payload)}` so different payloads for the
- *    same event are NOT suppressed.
+ *  - Key uses event name + primitive payload fields (no JSON.stringify) so
+ *    different payloads for the same event are NOT suppressed.
  *  - Entries older than DEDUP_WINDOW_MS are pruned on every emit and via a
  *    periodic cleanup timer (lazily started on first activity).
  *  - Events listed in DEDUP_EXEMPT always fire, bypassing dedup entirely.
@@ -46,11 +49,17 @@ export class EventBusClass {
   private handlers = new Map<keyof EventMap, Set<EventHandler<any>>>();
   private debug = false;
 
-  /** Dedup cache: key = `${event}:${JSON.stringify(payload)}`, value = timestamp when added */
+  /** Dedup cache: compact key → timestamp when added */
   private dedupCache = new Map<string, number>();
 
   /** Handle for the periodic TTL cleanup timer */
   private cleanupTimer: ReturnType<typeof setInterval> | null = null;
+
+  /**
+   * Bumped on dispose/stop so in-flight interval callbacks from a prior
+   * generation become no-ops instead of touching cleared state.
+   */
+  private cleanupGeneration = 0;
 
   /** Catch-all handlers — called for every emitted event (used by DevPanel) */
   private anyHandlers = new Set<(event: string, payload: unknown) => void>();
@@ -66,6 +75,16 @@ export class EventBusClass {
     // Timer is NOT started here — see ensureCleanupTimer() for lazy start
   }
 
+  /** Stop the periodic cleanup timer and invalidate any in-flight callbacks. */
+  private stopCleanupTimer(): void {
+    this.cleanupGeneration++;
+    const timer = this.cleanupTimer;
+    this.cleanupTimer = null;
+    if (timer !== null) {
+      clearInterval(timer);
+    }
+  }
+
   /**
    * Lazily start the periodic cleanup timer.
    * Called on first `emit()` or `on()` so the timer only runs when needed.
@@ -74,10 +93,13 @@ export class EventBusClass {
     if (this.cleanupTimer !== null) return;
     this.disposed = false;
 
+    const generation = this.cleanupGeneration;
     this.cleanupTimer = setInterval(() => {
+      if (generation !== this.cleanupGeneration) return;
+
       const now = Date.now();
       for (const [key, ts] of this.dedupCache) {
-        if (now - ts > 1000) {
+        if (now - ts > DEDUP_WINDOW_MS) {
           this.dedupCache.delete(key);
         }
       }
@@ -90,15 +112,55 @@ export class EventBusClass {
   }
 
   /**
-   * Build the dedup key for an event + payload pair.
-   * Falls back to event-only key if payload serialization fails.
+   * Build a compact dedup key from event name + primitive payload fields.
+   * Skips nested objects/arrays to avoid retaining large serialized blobs.
    */
   private dedupKey(event: string, payload: unknown): string {
-    try {
-      return `${event}:${JSON.stringify(payload)}`;
-    } catch {
-      return `${event}:<unserializable>`;
+    if (payload === null || payload === undefined) return event;
+    if (typeof payload !== 'object') return `${event}:${String(payload)}`;
+
+    const obj = payload as Record<string, unknown>;
+    const keys = Object.keys(obj);
+    if (keys.length === 0) return event;
+
+    const parts: string[] = [event];
+    for (const key of keys.sort()) {
+      const value = obj[key];
+      if (value === undefined) continue;
+      if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
+        parts.push(`${key}=${value}`);
+      } else if (
+        Array.isArray(value) &&
+        value.every((entry) => typeof entry === 'number' || typeof entry === 'string')
+      ) {
+        parts.push(`${key}=${value.join(',')}`);
+      }
     }
+    return parts.join('|');
+  }
+
+  /** Log handler errors without letting logging failures abort dispatch */
+  private logHandlerError(message: string, err: unknown): void {
+    try {
+      console.error(message, err);
+    } catch {
+      try {
+        console.warn(message);
+      } catch {
+        // Swallow — must not prevent remaining handlers from running
+      }
+    }
+  }
+
+  /** Record a dedup key with bounded cache size */
+  private recordDedup(key: string, now: number): void {
+    if (this.dedupCache.size >= MAX_DEDUP_CACHE_SIZE) {
+      const oldest = this.dedupCache.keys().next().value;
+      if (oldest !== undefined) {
+        this.dedupCache.delete(oldest);
+      }
+    }
+    this.dedupCache.set(key, now);
   }
 
   /**
@@ -188,7 +250,7 @@ export class EventBusClass {
       }
 
       // Record this emission
-      this.dedupCache.set(key, now);
+      this.recordDedup(key, now);
     }
 
     // Notify catch-all handlers
@@ -196,7 +258,7 @@ export class EventBusClass {
       try {
         anyHandler(eventStr, payload);
       } catch (err) {
-        console.error('[EventBus] Error in onAny handler:', err);
+        this.logHandlerError('[EventBus] Error in onAny handler:', err);
       }
     }
 
@@ -207,7 +269,7 @@ export class EventBusClass {
       try {
         handler(payload);
       } catch (err) {
-        console.error(`[EventBus] Error in handler for "${String(event)}":`, err);
+        this.logHandlerError(`[EventBus] Error in handler for "${String(event)}":`, err);
       }
     }
   }
@@ -236,10 +298,7 @@ export class EventBusClass {
    * call will automatically re-initialise the timer (lazy start pattern).
    */
   dispose(): void {
-    if (this.cleanupTimer !== null) {
-      clearInterval(this.cleanupTimer);
-      this.cleanupTimer = null;
-    }
+    this.stopCleanupTimer();
     this.dedupCache.clear();
     this.handlers.clear();
     this.anyHandlers.clear();

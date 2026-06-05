@@ -8,7 +8,12 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, ChevronRight, Zap, Shield, Skull, Circle, Clock, FastForward, History, Eye } from 'lucide-react';
-import { useGameStore } from '@/store/gameStore';
+import {
+  useDialogueContext,
+  useSetCurrentNodeId,
+  useSetMode,
+  useSetShowStoryOverlay,
+} from '@/store/selectors';
 import { DIALOGUE_NODES } from '@/data/dialogueNodes';
 import { NPC_DEFINITIONS } from '@/data/npcDefinitions';
 import { createInventoryItem } from '@/data/items';
@@ -22,6 +27,7 @@ import type {
   TrainablePlayerSkill,
   NPCRelation,
 } from '@/shared/types/game';
+import { performSkillCheck } from '@/shared/validation/skillCheck';
 import { NPCPortrait, NPC_PORTRAIT_COLORS } from './shared/NPCPortrait';
 
 /* ── Emotion detection from text ── */
@@ -60,11 +66,6 @@ import { useTypewriter } from '@/hooks/useTypewriter';
 
 /* ── Apply effects ── */
 import { applyEffects } from '@/shared/utils/applyEffects';
-
-/* ── Skill check ── */
-function performSkillCheck(skill: TrainablePlayerSkill, difficulty: number, playerSkills: PlayerSkills): boolean {
-  return (playerSkills[skill] ?? 0) >= difficulty;
-}
 
 /* ── Skill icons & labels (consistent with LevelUpSummary) ── */
 const SKILL_LABELS: Record<TrainablePlayerSkill, string> = {
@@ -182,15 +183,10 @@ interface HistoryLine {
 
 /* ── Component ── */
 export function DialogueRenderer() {
-  const mode = useGameStore((s) => s.mode);
-  const showStoryOverlay = useGameStore((s) => s.showStoryOverlay);
-  const currentNodeId = useGameStore((s) => s.currentNodeId);
-  const playerState = useGameStore((s) => s.playerState);
-  const npcRelations = useGameStore((s) => s.npcRelations);
-  const timeOfDay = useGameStore((s) => s.exploration.timeOfDay);
-  const setMode = useGameStore((s) => s.setMode);
-  const setShowStoryOverlay = useGameStore((s) => s.setShowStoryOverlay);
-  const setCurrentNodeId = useGameStore((s) => s.setCurrentNodeId);
+  const { mode, showStoryOverlay, currentNodeId, playerState, npcRelations, timeOfDay } = useDialogueContext();
+  const setMode = useSetMode();
+  const setShowStoryOverlay = useSetShowStoryOverlay();
+  const setCurrentNodeId = useSetCurrentNodeId();
 
   const [skillCheckBanner, setSkillCheckBanner] = useState<{
     skill: TrainablePlayerSkill;

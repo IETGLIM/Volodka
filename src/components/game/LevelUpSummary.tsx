@@ -290,7 +290,9 @@ export function LevelUpSummary() {
                 transition={{ delay: 0.4 }}
               >
                 <div className="text-center">
-                  <p className="font-mono text-2xl font-bold text-amber-400">+1</p>
+                  <p className="font-mono text-2xl font-bold text-amber-400">
+                    +{levelUpData.newLevel - levelUpData.prevLevel}
+                  </p>
                   <p className="font-mono text-[10px] uppercase tracking-wider text-amber-500/50">Очко навыка</p>
                 </div>
                 {perkPointsGained > 0 && (

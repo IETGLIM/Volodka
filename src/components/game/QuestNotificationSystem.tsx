@@ -11,6 +11,7 @@ import { UI_LAYERS } from '@/shared/constants/uiLayers'
 import { eventBus } from '@/engine/EventBus'
 import { QUEST_DEFINITIONS } from '@/data/quests'
 import { useGameStore } from '@/store/gameStore'
+import { useQuests } from '@/store/selectors'
 import type { QuestState, QuestDefinition } from '@/shared/types/game'
 
 /* ─── Notification types ─── */
@@ -419,7 +420,7 @@ export function QuestNotificationSystem() {
   }, [])
 
   /* ── Watch gameStore quest state changes ── */
-  const quests = useGameStore((s) => s.quests)
+  const quests = useQuests()
   const prevQuestsRef = useRef<QuestState[]>([])
 
   useEffect(() => {

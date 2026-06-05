@@ -12,10 +12,11 @@ import {
   type LoreRarity,
   type ConversationLogEntry,
   type TutorialFlags,
-  type GameStoreState,
 } from '../shared';
+import type { GameStoreState } from '../types';
 import { INITIAL_LORE_ENTRIES } from '@/data/loreEntries';
 import { eventBus } from '@/engine/EventBus';
+import { musicEngine } from '@/engine/MusicEngine';
 
 /* ─── Slice types ─── */
 
@@ -101,25 +102,17 @@ export const createUISlice: StateCreator<
   setMusicVolume: (volume) => {
     const clampedVolume = clamp(volume, 0, 1);
     set({ musicVolume: clampedVolume });
-    // Update the music engine in real time
-    import('@/engine/MusicEngine').then(({ musicEngine }) => {
-      musicEngine.setVolume(clampedVolume);
-    });
+    musicEngine.setVolume(clampedVolume);
   },
 
   toggleMusic: () =>
     set((state) => {
       const newEnabled = !state.musicEnabled;
       if (!newEnabled) {
-        import('@/engine/MusicEngine').then(({ musicEngine }) => {
-          musicEngine.stopMusic(1);
-        });
+        musicEngine.stopMusic(1);
       } else {
-        // Cross-slice read: get current scene ID for resuming music
         const sceneId = get().exploration.currentSceneId;
-        import('@/engine/MusicEngine').then(({ musicEngine }) => {
-          musicEngine.playSceneMusic(sceneId);
-        });
+        musicEngine.playSceneMusic(sceneId);
       }
       return { musicEnabled: newEnabled };
     }),

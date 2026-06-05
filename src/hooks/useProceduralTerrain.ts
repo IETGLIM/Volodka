@@ -2,6 +2,7 @@
 /* ─── Volodka RPG – Procedural terrain generation with FastNoiseLite ─── */
 
 import { useMemo, useRef, useEffect } from 'react';
+import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import FastNoiseLite from 'fastnoise-lite';
 
@@ -207,6 +208,11 @@ export function useProceduralTerrain(config: TerrainConfig) {
       preset.fractalType, preset.octaves, preset.lacunarity, preset.gain,
       preset.amplitude, preset.warpAmp, preset.warpType]);
 
+  // Dispose previous geometry when config changes or component unmounts
+  useEffect(() => () => {
+    geometry.dispose();
+  }, [geometry]);
+
   return { geometry, getHeightAt };
 }
 
@@ -232,7 +238,7 @@ export function useAnimatedTerrain(config: TerrainConfig, timeScale = 0.15) {
     }
   }, [geometry]);
 
-  useFrame?.((state) => {
+  useFrame((state) => {
     if (!meshRef.current || !positionsRef.current) return;
 
     const posAttr = meshRef.current.geometry.attributes.position as THREE.BufferAttribute;
@@ -256,6 +262,3 @@ export function useAnimatedTerrain(config: TerrainConfig, timeScale = 0.15) {
 
   return { geometry, getHeightAt, meshRef };
 }
-
-// Import useFrame conditionally to avoid SSR issues
-import { useFrame } from '@react-three/fiber';

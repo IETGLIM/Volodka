@@ -1,7 +1,7 @@
 
 /* ─── Volodka RPG – Dreamscape procedural 3D visual (v2.1 — FastNoiseLite) ─── */
 
-import { useMemo, useRef } from 'react';
+import { useMemo, useRef, useEffect } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import FastNoiseLite from 'fastnoise-lite';
@@ -28,6 +28,10 @@ export function SleepDreamVisual() {
 
   // ── Dream ground texture (now more detailed) ──
   const groundTexture = useMemo(() => createDreamGroundTexture(), []);
+
+  useEffect(() => () => {
+    groundTexture.dispose();
+  }, [groundTexture]);
 
   // ── Slow terrain animation ──
   useFrame((state) => {

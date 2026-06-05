@@ -6,6 +6,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useGameStore } from '@/store/gameStore';
+import { useWeatherEffectsInput } from '@/store/selectors';
 import { eventBus } from '@/engine/EventBus';
 import {
   type WeatherType,
@@ -37,10 +38,7 @@ export interface WeatherEffectsState {
 
 export function useWeatherEffects(): WeatherEffectsState {
   // ── Store state ──
-  const weatherEnabled = useGameStore((s) => s.weatherEnabled);
-  const rainIntensity = useGameStore((s) => s.rainIntensity);
-  const currentSceneId = useGameStore((s) => s.exploration.currentSceneId);
-  const timeOfDay = useGameStore((s) => s.exploration.timeOfDay);
+  const { weatherEnabled, rainIntensity, currentSceneId, timeOfDay } = useWeatherEffectsInput();
   const addEnergy = useGameStore((s) => s.addEnergy);
   const addStress = useGameStore((s) => s.addStress);
 

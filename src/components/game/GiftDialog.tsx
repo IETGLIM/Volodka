@@ -95,18 +95,18 @@ export function GiftDialog({ open, onClose, npcId }: GiftDialogProps) {
   const handleGift = useCallback((itemId: string) => {
     setGiftingItemId(itemId);
 
-    const preference = getItemPreference(npcId, itemId);
+    const preference = giftItemToNPC(itemId, npcId);
+    if (!preference) {
+      setGiftingItemId(null);
+      return;
+    }
+
     const affinityChange = getAffinityChange(preference);
     const npcName = npcDef?.name ?? npcId;
     const reactionText = getGiftReactionText(npcName, preference);
 
-    // Execute the gift
-    giftItemToNPC(itemId, npcId);
-
-    // Show reaction
     setLastReaction({ text: reactionText, preference, affinityChange });
 
-    // Clear reaction after delay
     setTimeout(() => {
       setLastReaction(null);
       setGiftingItemId(null);

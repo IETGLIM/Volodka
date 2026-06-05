@@ -15,8 +15,8 @@ import { useState, useEffect, useCallback, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { eventBus } from '@/engine/EventBus'
 import { getCurrentGuidance, type GuidanceInfo } from '@/engine/GuidedStoryManager'
-import { useGameStore } from '@/store/gameStore'
 import { getNextTrackedObjective, getActiveQuests, areDependenciesMet, getQuestMarker } from '@/store/questStore'
+import { useQuests, useGameMode, useCurrentSceneId } from '@/store/selectors'
 import { QUEST_DEFINITIONS } from '@/data/quests'
 import { GOLDEN_PATH_QUEST_SPINE } from '@/data/goldenPath'
 import { getSceneConfig } from '@/config/scenes'
@@ -28,9 +28,9 @@ export function StoryGuidanceHUD() {
   const [visible, setVisible] = useState(false)
 
   // Get active quests from store (reactive)
-  const quests = useGameStore((s) => s.quests)
-  const mode = useGameStore((s) => s.mode)
-  const currentSceneId = useGameStore((s) => s.exploration.currentSceneId)
+  const quests = useQuests()
+  const mode = useGameMode()
+  const currentSceneId = useCurrentSceneId()
 
   // Derive the current objective text from active quests or golden path
   const currentObjective = useMemo(() => {

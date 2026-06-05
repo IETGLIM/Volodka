@@ -21,7 +21,7 @@ import {
 } from '@react-three/postprocessing';
 import { BlendFunction, KernelSize, ToneMappingMode } from 'postprocessing';
 import { useGameStore } from '@/store/gameStore';
-import { useShallow } from 'zustand/react/shallow';
+import { usePostFxSceneState, usePlayerStress } from '@/store/selectors';
 import { getSceneConfig } from '@/config/scenes';
 import { useMobileVisualPerf } from '@/hooks/use-mobile';
 import { eventBus } from '@/engine/EventBus';
@@ -233,13 +233,7 @@ export function ExplorationPostFX() {
 
 /** Inner component — all hooks called unconditionally (Rules of Hooks compliant) */
 function PostFXPipeline() {
-  // P3-FIX: Combined selectors into one useShallow call to reduce re-render frequency.
-  const { sceneId, noirMode } = useGameStore(
-    useShallow((s) => ({
-      sceneId: s.exploration.currentSceneId,
-      noirMode: s.noirMode,
-    })),
-  );
+  const { sceneId, noirMode } = usePostFxSceneState();
   const { visualLite } = useMobileVisualPerf();
 
   // NOTE: Renderer toneMapping is set to NoToneMapping in RPGGameCanvas.tsx
@@ -302,7 +296,7 @@ function PostFXPipeline() {
   );
 
   // Stress-driven effects: higher stress = heavier vignette, more noise, more chromatic aberration
-  const stress = useGameStore((s) => s.playerState.stress);  // primitive selector — no useShallow needed
+  const stress = usePlayerStress();
   const stressFactor = stress / 100; // 0-1
 
   // Dynamic bloom: boost slightly with stress for a "pressure" feel

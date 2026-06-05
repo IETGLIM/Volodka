@@ -9,11 +9,11 @@
 import { useEffect, useCallback, useState } from 'react'
 import { eventBus } from '@/engine/EventBus'
 import { useGameStore } from '@/store/gameStore'
+import { useQuests } from '@/store/selectors'
 import type { StoryEffect } from '@/shared/types/game'
+import type { MinigameType } from '@/shared/constants/minigames'
 
-/* ─── Minigame Types ─── */
-
-export type MinigameType = 'hacking' | 'codebreaker' | 'openstack_terminal' | 'bash_terminal' | 'poetry' | 'memory' | 'quiz' | 'rhythm'
+export type { MinigameType } from '@/shared/constants/minigames'
 
 /* ─── Quest-Minigame Mapping ─── */
 
@@ -84,6 +84,22 @@ export const QUEST_MINIGAME_MAP: Record<string, QuestMinigameMapping> = {
     failureText: 'Стихотворение не открывается...',
     successText: 'Финальное стихотворение Владимира раскрыто!',
   },
+  'system_takedown': {
+    questId: 'system_takedown',
+    objectiveId: 'execute_shutdown',
+    minigameType: 'bash_terminal',
+    difficulty: 4,
+    failureText: 'Процедура отключения прервана. Попробуй снова.',
+    successText: 'Процедура отключения «Надзора» запущена!',
+  },
+  'final_poem': {
+    questId: 'final_poem',
+    objectiveId: 'compose_masterpiece',
+    minigameType: 'poetry',
+    difficulty: 3,
+    failureText: 'Стих не сложился... Попробуй снова.',
+    successText: 'Финальное стихотворение написано!',
+  },
 }
 
 /* ─── Reverse lookup: minigame type → quest mapping ─── */
@@ -138,7 +154,7 @@ export interface MinigameForQuestResult {
 /* ─── Hook: useMinigameForQuest ─── */
 
 export function useMinigameForQuest(questId?: string): MinigameForQuestResult {
-  const quests = useGameStore((s) => s.quests)
+  const quests = useQuests()
   const completeQuestObjective = useGameStore((s) => s.completeQuestObjective)
   const pushNotification = useGameStore((s) => s.pushNotification)
 

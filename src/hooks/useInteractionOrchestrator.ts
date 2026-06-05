@@ -44,12 +44,8 @@ export function useInteractionOrchestrator(
   // When the user presses E or clicks "Continue" in ExaminePanel, this zone's
   // linked content (dialogue/story/minigame) will be triggered.
   const pendingTriggerZoneRef = useRef<typeof TRIGGER_ZONES[number] | null>(null);
-
-  // ── Stable callback ref for applyEffects callbacks ──
-  const startCombatRef = useRef(startCombatFromStory);
-  useEffect(() => {
-    startCombatRef.current = startCombatFromStory;
-  }, [startCombatFromStory]);
+  // Guard: emit interaction:end at most once per overlay-close / interaction session
+  const interactionEndEmittedRef = useRef(false);
 
   // ── Apply effects helper using unified applyEffects ──
   const applyInteractionEffects = useCallback((effects: import('@/shared/types/game').StoryEffect[]) => {
@@ -59,16 +55,42 @@ export function useInteractionOrchestrator(
         const def = getItemDefinition(itemId);
         notifyItemReceived(def?.name ?? itemId, def?.rarity);
       },
-      startCombat: (enemyType: EnemyType) => {
-        startCombatRef.current(enemyType);
-      },
+      startCombat: startCombatFromStory,
     });
-  }, []);
+  }, [startCombatFromStory]);
 
   // ── EventBus subscriptions for interactions ──
   useEffect(() => {
     const unsubs: (() => void)[] = [];
+    const pendingTimers = new Set<ReturnType<typeof setTimeout>>();
 
+    const scheduleTimer = (fn: () => void, ms: number) => {
+      const timer = setTimeout(() => {
+        pendingTimers.delete(timer);
+        fn();
+      }, ms);
+      pendingTimers.add(timer);
+      return timer;
+    };
+
+    const cleanup = () => {
+      try {
+        for (const unsub of unsubs) {
+          try {
+            unsub();
+          } catch (err) {
+            console.error('[useInteractionOrchestrator] Unsubscribe error:', err);
+          }
+        }
+      } finally {
+        for (const timer of pendingTimers) {
+          clearTimeout(timer);
+        }
+        pendingTimers.clear();
+      }
+    };
+
+    try {
     // ── Handle E-key interaction from trigger zones ──
     unsubs.push(
       eventBus.on('object:interact', ({ triggerZoneId }) => {
@@ -256,7 +278,7 @@ export function useInteractionOrchestrator(
     unsubs.push(
       eventBus.on('minigame:complete', ({ gameType }) => {
         // Auto-close mini-game after a brief delay so player sees the result
-        setTimeout(() => {
+        scheduleTimer(() => {
           if (gameType === 'codebreaker') setCodebreakerOpen(false);
           else if (gameType === 'openstack_terminal') setOpenstackTerminalOpen(false);
           else if (gameType === 'bash_terminal') setBashTerminalOpen(false);
@@ -270,42 +292,59 @@ export function useInteractionOrchestrator(
       }),
     );
 
+    const endInteraction = () => {
+      if (interactionEndEmittedRef.current) return;
+      const interactionState = getInteractionState();
+      if (interactionState === InteractionState.Idle && !isInteractionLocked()) return;
+      interactionEndEmittedRef.current = true;
+      eventBus.emit('interaction:end', {});
+    };
+
+    // Reset guard when a new narrative session or NPC interaction begins
+    unsubs.push(
+      eventBus.on('interaction:start', () => {
+        interactionEndEmittedRef.current = false;
+      }),
+    );
+
     // ── When narrative overlay closes, emit interaction:end ──
     // World Director: since we stay in exploration mode, we detect
     // narrative closing by watching showStoryOverlay instead of mode changes.
     unsubs.push(
       useGameStore.subscribe((state, prev) => {
+        if (!prev.showStoryOverlay && state.showStoryOverlay) {
+          interactionEndEmittedRef.current = false;
+          return;
+        }
+
         // When showStoryOverlay transitions from true to false
-        // AND we're in an active interaction, end the interaction
+        // AND we're in exploration mode, end the interaction (once)
         if (
           prev.showStoryOverlay &&
           !state.showStoryOverlay &&
           state.mode === 'exploration'
         ) {
-          // Always emit interaction:end when narrative overlay closes
-          const interactionState = getInteractionState();
-          if (interactionState !== InteractionState.Idle) {
-            eventBus.emit('interaction:end', {});
-          }
-          // SAFETY: Also directly force-reset the interaction state if it's stuck
+          endInteraction();
+          // SAFETY: retry once if the interaction lock is still stuck
           if (isInteractionLocked()) {
-            setTimeout(() => {
-              if (isInteractionLocked()) {
-                eventBus.emit('interaction:end', {});
-              }
-            }, 100);
+            scheduleTimer(() => endInteraction(), 100);
           }
         }
       }),
     );
+    } catch (err) {
+      cleanup();
+      throw err;
+    }
 
-    return () => unsubs.forEach((u) => u());
+    return cleanup;
   }, [applyInteractionEffects]);
 
   // ── Handle ExaminePanel "Continue" action ──
   // Triggers the linked content (dialogue/story/minigame) for the pending trigger zone,
   // then closes the ExaminePanel. Called when the user presses E or clicks "Continue"
   // while ExaminePanel is open with linked content.
+  // Ref object is stable; [] deps is intentional — we read pendingTriggerZoneRef.current at invoke time.
   const handleExamineContinue = useCallback(() => {
     const zone = pendingTriggerZoneRef.current;
     if (!zone) return;
@@ -356,6 +395,7 @@ export function useInteractionOrchestrator(
   }, []);
 
   // ── Clear pending trigger zone (called when ExaminePanel is closed without continuing) ──
+  // Ref object is stable; [] deps is intentional — we write pendingTriggerZoneRef.current at invoke time.
   const clearPendingTriggerZone = useCallback(() => {
     pendingTriggerZoneRef.current = null;
   }, []);

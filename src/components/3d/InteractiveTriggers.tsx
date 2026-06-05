@@ -6,7 +6,8 @@ import { useRef, useState, useEffect, useCallback, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { Html } from '@react-three/drei';
 import * as THREE from 'three';
-import { useGameStore } from '@/store/gameStore';
+import { getGameStore } from '@/store/gameStore';
+import { useCurrentSceneId, useInteractionOverlay, useTimeOfDay } from '@/store/selectors';
 import { TRIGGER_ZONES, type TriggerZone, INTERACTION_LABELS } from '@/data/triggerZones';
 import { NPC_DEFINITIONS } from '@/data/npcDefinitions';
 import { getNPCsForScene, getCurrentScheduleEntry } from '@/engine/ScheduleEngine';
@@ -38,9 +39,7 @@ interface InteractiveTriggersProps {
 
 /** Trigger zones and "Press E" indicators with centralized prompt management */
 export function InteractiveTriggers({ livePlayerPositionRef }: InteractiveTriggersProps) {
-  const sceneId = useGameStore((s) => s.exploration.currentSceneId);
-  const gameMode = useGameStore((s) => s.mode);
-  const showStoryOverlay = useGameStore((s) => s.showStoryOverlay);
+  const { sceneId, gameMode, showStoryOverlay } = useInteractionOverlay();
   const zones = TRIGGER_ZONES.filter((z) => z.sceneId === sceneId);
 
   // Hide all prompts when not in exploration mode or when story overlay is active
@@ -82,7 +81,7 @@ export function InteractiveTriggers({ livePlayerPositionRef }: InteractiveTrigge
     }
 
     // Check NPCs — only those in the current scene, using schedule-driven positions
-    const timeOfDay = useGameStore.getState().exploration.timeOfDay;
+    const timeOfDay = getGameStore().exploration.timeOfDay;
     const npcIdsInScene = getNPCsForScene(sceneId, timeOfDay);
     for (const npcId of npcIdsInScene) {
       const npc = NPC_DEFINITIONS.find((n) => n.id === npcId);
@@ -263,8 +262,8 @@ function NPCProximityTriggers({
   unregisterPrompt: (id: string) => void;
 }) {
   // Get NPCs in current scene using schedule engine
-  const sceneId = useGameStore((s) => s.exploration.currentSceneId);
-  const timeOfDay = useGameStore((s) => s.exploration.timeOfDay);
+  const sceneId = useCurrentSceneId();
+  const timeOfDay = useTimeOfDay();
   const npcsInScene = useMemo(() => {
     const npcIds = getNPCsForScene(sceneId, timeOfDay);
     return npcIds
@@ -668,7 +667,7 @@ function TriggerZoneComponent({
         (window as any).__volodka_ekey_consumed = false;
       }, 200);
 
-      const sceneId = useGameStore.getState().exploration.currentSceneId;
+      const sceneId = getGameStore().exploration.currentSceneId;
 
       // Check if this trigger zone is linked to an NPC dialogue
       // If so, route through the staged interaction system
@@ -725,7 +724,7 @@ function TriggerZoneComponent({
         (window as any).__volodka_ekey_consumed = false;
       }, 200);
 
-      const sceneId = useGameStore.getState().exploration.currentSceneId;
+      const sceneId = getGameStore().exploration.currentSceneId;
 
       if (zone.linkedDialogueNodeId) {
         const npcDef = NPC_DEFINITIONS.find(
@@ -866,7 +865,7 @@ export function WorldItem({
           onPickup?.(id);
           eventBus.emit('object:interact', {
             objectId: id,
-            sceneId: useGameStore.getState().exploration.currentSceneId,
+            sceneId: getGameStore().exploration.currentSceneId,
           });
         }}
       >

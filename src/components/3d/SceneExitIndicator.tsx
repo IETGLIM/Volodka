@@ -6,8 +6,7 @@ import { useFrame } from '@react-three/fiber';
 import { Html } from '@react-three/drei';
 import * as THREE from 'three';
 import type { SceneExit, SceneId } from '@/shared/types/game';
-import { useGameStore } from '@/store/gameStore';
-import { useShallow } from 'zustand/react/shallow';
+import { useSceneExitState } from '@/store/selectors';
 import { getSceneExits } from '@/config/scenes';
 import { eventBus } from '@/engine/EventBus';
 import { isInteractionLocked } from './InteractionSystemBridge';
@@ -28,15 +27,7 @@ interface SceneExitIndicatorProps {
 
 /** Renders exit markers at scene boundaries and triggers scene transitions */
 export function SceneExitIndicator({ livePlayerPositionRef }: SceneExitIndicatorProps) {
-  // P3-FIX: useShallow for flags object selector — without it, playerState.flags
-  // returns a new object reference on every store update, causing unnecessary re-renders.
-  const { sceneId, playerFlags, playerKarma } = useGameStore(
-    useShallow((s) => ({
-      sceneId: s.exploration.currentSceneId,
-      playerFlags: s.playerState.flags,
-      playerKarma: s.playerState.karma,
-    })),
-  );
+  const { sceneId, playerFlags, playerKarma } = useSceneExitState();
 
   const exits = useMemo(() => getSceneExits(sceneId, playerFlags, playerKarma), [sceneId, playerFlags, playerKarma]);
 

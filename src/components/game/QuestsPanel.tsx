@@ -11,9 +11,10 @@ import {
   Clock, AlertTriangle, RotateCcw, ChevronRight, Sparkles,
   Lightbulb, Shield, Swords, Zap, Star,
 } from 'lucide-react';
-import { useGameStore } from '@/store/gameStore';
 import { QUEST_DEFINITIONS } from '@/data/quests';
 import { useActiveQuests, useFailedQuests, getQuestProgress, areDependenciesMet } from '@/store/questStore';
+import { getGameStore } from '@/store/gameStore';
+import { useQuests } from '@/store/selectors';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
@@ -76,7 +77,7 @@ function RewardBadge({ reward, index }: { reward: { type: string; skill?: string
 }
 
 export function QuestsPanel({ open, onClose }: QuestsPanelProps) {
-  const quests = useGameStore((s) => s.quests);
+  const quests = useQuests();
   const [showCompleted, setShowCompleted] = useState(false);
   const [showFailed, setShowFailed] = useState(true);
   const [expandedQuests, setExpandedQuests] = useState<Set<string>>(new Set());
@@ -361,7 +362,7 @@ export function QuestsPanel({ open, onClose }: QuestsPanelProps) {
                                 size="sm"
                                 className="text-[10px] text-red-400 hover:text-red-300 h-6 px-2"
                                 onClick={() => {
-                                  useGameStore.getState().activateQuest(qs.questId);
+                                  getGameStore().activateQuest(qs.questId);
                                 }}
                               >
                                 <RotateCcw className="size-3 mr-1" />

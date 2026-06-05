@@ -40,11 +40,9 @@ import { createUISlice } from './slices/uiSlice';
 import { createCutsceneSlice } from './slices/cutsceneSlice';
 import { createSaveSlice } from './slices/saveSlice';
 
-// Import and re-export composed store type (defined in shared.ts to avoid circular imports with slices)
-import type { GameStoreState } from './shared';
-export type { GameStoreState };
-
-/* ─── Composed store type is now defined in shared.ts ─── */
+// Import and re-export composed store type (defined in types.ts — no slice imports in shared.ts)
+import type { GameStoreState } from './types';
+export type { GameStoreState, CrossSliceReads } from './types';
 
 /* ─── Composed store ─── */
 

@@ -11,6 +11,7 @@ import * as THREE from 'three';
 import type { NPCDefinition, NPCAppearance } from '@/shared/types/game';
 
 import { useGameStore } from '@/store/gameStore';
+import { useQuests } from '@/store/selectors';
 import { eventBus } from '@/engine/EventBus';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { registerNPCGroup, unregisterNPCGroup } from '@/engine/interaction/npcRegistry';
@@ -571,7 +572,7 @@ function ThinkingDots() {
  *  - Blue ?  — Quest in progress with this NPC
  *  - Green ✓ — Quest ready to turn in (all objectives complete) */
 function QuestMarker({ npcId }: { npcId: string }) {
-  const quests = useGameStore((s) => s.quests);
+  const quests = useQuests();
   const [glowIntensity, setGlowIntensity] = useState(1);
 
   // Compute marker info: type, color, pulse speed, quest name

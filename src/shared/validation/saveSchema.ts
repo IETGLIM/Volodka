@@ -4,6 +4,7 @@
  * providing clear error messages when save files are corrupted or outdated. */
 
 import { z } from 'zod';
+import { SCENE_IDS } from '@/config/sceneDefinitions';
 
 /* ─── Constants ─── */
 
@@ -24,6 +25,7 @@ const PlayerSkillsSchema = z.object({
   persuasion: z.number().min(0),
   intuition: z.number().min(0),
   writing: z.number().min(0),
+  rhythm: z.number().min(0).optional().default(5),
 });
 
 const PlayerProgressionSchema = z.object({
@@ -74,22 +76,8 @@ const PlayerStateSchema = z.object({
   progression: PlayerProgressionSchema,
 });
 
-const SceneIdSchema = z.enum([
-  'volodka_room',
-  'volodka_corridor',
-  'home_evening',
-  'street_night',
-  'street_winter',
-  'cafe_evening',
-  'office_day',
-  'park_day',
-  'library_day',
-  'battle',
-  'sleep_dream',
-  'rooftop_edge',
-  'abandoned_factory',
-  'zarema_albert_room',
-]);
+/** Derived from SCENE_DEFINITIONS — stays in sync with scene registry. */
+const SceneIdSchema = z.enum(SCENE_IDS as [string, ...string[]]);
 
 const NpcPositionSchema = z.object({
   position: z.tuple([z.number(), z.number(), z.number()]),

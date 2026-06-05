@@ -140,7 +140,7 @@ export const QUEST_DEFINITIONS: QuestDefinition[] = [
     id: 'vault_backup_trial',
     title: 'Испытание Хранилища',
     description: 'Коллега рассказал о Хранилище — месте, где хранятся стёртые архивы. Но доступ туда есть только у старших членов гильдии. Нужно найти способ проникнуть внутрь.',
-    act: 1,
+    act: 2,
     faction: 'it_guild',
     questType: 'main',
     difficulty: 'hard',
@@ -193,7 +193,7 @@ export const QUEST_DEFINITIONS: QuestDefinition[] = [
     id: 'poetry_collection',
     title: 'Собрание стихов',
     description: 'Разбросанные по городу стихотворения — не просто текст. Каждое — фрагмент целого послания, скрытого в коде города. Собери их все, чтобы узнать правду.',
-    act: 1,
+    act: 5,
     faction: undefined,
     questType: 'main',
     difficulty: 'hard',
@@ -443,8 +443,8 @@ export const QUEST_DEFINITIONS: QuestDefinition[] = [
       {
         id: 'gain_dmitry_trust',
         description: 'Завоевать доверие Дмитрия',
-        type: 'npc_talked',
-        target: 'office_dmitry',
+        type: 'flag_set',
+        target: 'heard_dmitry_story',
         completed: false,
       },
       {
@@ -464,8 +464,8 @@ export const QUEST_DEFINITIONS: QuestDefinition[] = [
       {
         id: 'escort_dmitry',
         description: 'Сопроводить Дмитрия до безопасного места',
-        type: 'location_visited',
-        target: 'abandoned_factory',
+        type: 'flag_set',
+        target: 'dmitry_defected',
         completed: false,
       },
     ],
@@ -537,7 +537,7 @@ export const QUEST_DEFINITIONS: QuestDefinition[] = [
     description: 'Кафе «Синяя яма» может стать явочной квартирой для Сети. Но для этого нужно договориться с баристой и убедить Альберта хранить тайну. Один промах — и гильдия узнает.',
     act: 2,
     faction: 'network',
-    questType: 'side',
+    questType: 'main',
     requiresQuests: ['network_initiation'],
     objectives: [
       {
@@ -657,8 +657,8 @@ export const QUEST_DEFINITIONS: QuestDefinition[] = [
       {
         id: 'infiltrate_detention',
         description: 'Проникнуть в блок задержания гильдии',
-        type: 'location_visited',
-        target: 'office_day',
+        type: 'flag_set',
+        target: 'detention_breached',
         completed: false,
       },
       {
@@ -673,15 +673,15 @@ export const QUEST_DEFINITIONS: QuestDefinition[] = [
       {
         id: 'free_zarema',
         description: 'Освободить Зарему из камеры',
-        type: 'npc_talked',
-        target: 'zarema',
+        type: 'flag_set',
+        target: 'zarema_rescued',
         completed: false,
       },
       {
         id: 'escape_together',
         description: 'Выбраться из здания гильдии вместе',
-        type: 'location_visited',
-        target: 'street_night',
+        type: 'flag_set',
+        target: 'escaped_with_zarema',
         completed: false,
       },
     ],
@@ -719,8 +719,8 @@ export const QUEST_DEFINITIONS: QuestDefinition[] = [
       {
         id: 'rally_defenders',
         description: 'Собрать защитников из числа Сети',
-        type: 'npc_talked',
-        target: 'albert',
+        type: 'flag_set',
+        target: 'rally_defenders_met',
         completed: false,
       },
       {
@@ -825,8 +825,8 @@ export const QUEST_DEFINITIONS: QuestDefinition[] = [
       {
         id: 'find_ally_inside',
         description: 'Найти союзника внутри здания гильдии',
-        type: 'npc_talked',
-        target: 'office_colleague',
+        type: 'flag_set',
+        target: 'guild_ally_found',
         completed: false,
       },
       {
@@ -848,8 +848,8 @@ export const QUEST_DEFINITIONS: QuestDefinition[] = [
       {
         id: 'escape_headquarters',
         description: 'Выбраться из штаб-квартиры живым',
-        type: 'location_visited',
-        target: 'street_night',
+        type: 'flag_set',
+        target: 'escaped_guild_hq',
         completed: false,
       },
     ],
@@ -874,7 +874,7 @@ export const QUEST_DEFINITIONS: QuestDefinition[] = [
     questType: 'main',
     difficulty: 'hard',
     hint: 'Все стихи должны быть собраны, прежде чем зажечь эфир.',
-    requiresQuests: ['guild_infiltration', 'poetry_collection'],
+    requiresQuests: ['guild_infiltration'],
     objectives: [
       {
         id: 'gather_all_poems',
@@ -886,8 +886,8 @@ export const QUEST_DEFINITIONS: QuestDefinition[] = [
       {
         id: 'reach_broadcast_tower',
         description: 'Добраться до передающей башни на крыше',
-        type: 'location_visited',
-        target: 'rooftop_edge',
+        type: 'flag_set',
+        target: 'broadcast_ready',
         completed: false,
       },
       {
@@ -912,7 +912,8 @@ export const QUEST_DEFINITIONS: QuestDefinition[] = [
       { type: 'setFlag', flag: 'poetry_broadcast_sent', flagValue: true },
       { type: 'addXp', value: 300 },
     ],
-    linkedStoryNodeId: 'volodka_inner',
+    linkedStoryNodeId: 'act4_rooftop_broadcast',
+    linkedStoryNodeIds: ['act4_broadcast_prep', 'act4_broadcast_execute'],
     questGiverNpcId: undefined,
   },
 
@@ -1591,7 +1592,7 @@ export const QUEST_DEFINITIONS: QuestDefinition[] = [
       { type: 'setFlag', flag: 'mole_exposed', flagValue: true },
       { type: 'addXp', value: 200 },
     ],
-    linkedStoryNodeId: 'network_hideout',
+    linkedStoryNodeId: 'act3_hide_network',
     questGiverNpcId: 'office_alexander',
   },
 
@@ -1650,7 +1651,7 @@ export const QUEST_DEFINITIONS: QuestDefinition[] = [
       { type: 'setFlag', flag: 'archive_saved', flagValue: true },
       { type: 'addXp', value: 200 },
     ],
-    linkedStoryNodeId: 'library_vault',
+    linkedStoryNodeId: 'library_entrance',
     questGiverNpcId: 'vera',
   },
 
@@ -1715,7 +1716,7 @@ export const QUEST_DEFINITIONS: QuestDefinition[] = [
       { type: 'setFlag', flag: 'final_code_completed', flagValue: true },
       { type: 'addXp', value: 500 },
     ],
-    linkedStoryNodeId: 'final_battle',
+    linkedStoryNodeId: 'act4_core_server',
     questGiverNpcId: 'office_alexander',
   },
 
@@ -1760,7 +1761,7 @@ export const QUEST_DEFINITIONS: QuestDefinition[] = [
       { type: 'setFlag', flag: 'machine_confessed', flagValue: true },
       { type: 'addXp', value: 250 },
     ],
-    linkedStoryNodeId: 'quantum_core',
+    linkedStoryNodeId: 'factory_basement',
     questGiverNpcId: 'maria',
   },
 
@@ -1814,7 +1815,7 @@ export const QUEST_DEFINITIONS: QuestDefinition[] = [
       { type: 'setFlag', flag: 'echo_of_vladimir_completed', flagValue: true },
       { type: 'addXp', value: 400 },
     ],
-    linkedStoryNodeId: 'vladimir_legacy',
+    linkedStoryNodeId: 'library_entrance',
     questGiverNpcId: 'kate',
   },
 
@@ -1866,7 +1867,7 @@ export const QUEST_DEFINITIONS: QuestDefinition[] = [
       { type: 'setFlag', flag: 'all_allies_confirmed', flagValue: true },
       { type: 'addXp', value: 300 },
     ],
-    linkedStoryNodeId: 'night_before_dawn_node',
+    linkedStoryNodeId: 'act5_dawn',
     questGiverNpcId: 'albert',
   },
 

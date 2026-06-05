@@ -14,7 +14,14 @@ import {
   X,
 } from 'lucide-react';
 import { ItemIcon } from './shared/ItemIcon';
-import { useGameStore } from '@/store/gameStore';
+import {
+  useAddLoreEntry,
+  useConsumableActions,
+  useEquipItem,
+  useEquippedItems,
+  usePlayerInventory,
+  useUnequipItem,
+} from '@/store/selectors';
 import { MAX_INVENTORY_SLOTS } from '@/data/constants';
 import {
   getItemDefinition,
@@ -188,16 +195,12 @@ const detailPanelVariants = {
    MAIN COMPONENT
    ══════════════════════════════════════════════════════════════ */
 export function Inventory({ open, onClose, onOpenPoetryBook }: InventoryProps) {
-  const inventory = useGameStore((s) => s.playerState.inventory);
-  const equippedItems = useGameStore((s) => s.playerState.equippedItems);
-  const removeItem = useGameStore((s) => s.removeItem);
-  const addEnergy = useGameStore((s) => s.addEnergy);
-  const addStress = useGameStore((s) => s.addStress);
-  const addKarma = useGameStore((s) => s.addKarma);
-  const addSkill = useGameStore((s) => s.addSkill);
-  const equipItem = useGameStore((s) => s.equipItem);
-  const unequipItem = useGameStore((s) => s.unequipItem);
-  const addLoreEntry = useGameStore((s) => s.addLoreEntry);
+  const inventory = usePlayerInventory();
+  const equippedItems = useEquippedItems();
+  const { removeItem, addEnergy, addStress, addKarma, addSkill } = useConsumableActions();
+  const equipItem = useEquipItem();
+  const unequipItem = useUnequipItem();
+  const addLoreEntry = useAddLoreEntry();
 
   const [selectedIdx, setSelectedIdx] = useState<number | null>(null);
   const [selectedSlot, setSelectedSlot] = useState<EquipmentSlot | null>(null);
