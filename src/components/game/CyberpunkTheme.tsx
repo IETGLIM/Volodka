@@ -6,6 +6,7 @@
  */
 
 import { createContext, useContext, type ReactNode } from 'react'
+import '@/styles/cyberpunk-theme.css';
 
 /* ─── Theme Color Constants ─── */
 
@@ -108,7 +109,9 @@ export function CyberpunkThemeProvider({ children }: CyberpunkThemeProviderProps
           --cyber-muted-olive: ${CYBERPUNK_COLORS.mutedOlive};
         }
       `}} />
-      {children}
+      <div data-cyberpunk style={{ display: 'contents' }}>
+        {children}
+      </div>
     </CyberpunkThemeContext.Provider>
   )
 }
