@@ -1,8 +1,8 @@
 /* ─── Volodka RPG – Core audio engine infrastructure ─── */
 
-import { getSharedAudioContext, safeResume } from '../SharedAudioContext';
+import { getSharedAudioContext, safeResume, whenAudioReady, isSharedAudioContextReady } from '../SharedAudioContext';
 
-export { getSharedAudioContext, safeResume };
+export { getSharedAudioContext, safeResume, whenAudioReady, isSharedAudioContextReady };
 
 /**
  * Create an artificial reverb impulse response.

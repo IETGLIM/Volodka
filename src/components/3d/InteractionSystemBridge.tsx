@@ -215,17 +215,26 @@ export function InteractionSystemBridge({
     globalTimerRef.current += dt;
 
     // ── Global interaction timeout safety ──
-    // BUG FIX: Do NOT timeout during the Dialogue state — conversations
-    // can last arbitrarily long. Only timeout during stuck Approach/Cutscene/
-    // Align/Lock/Exit states that should complete quickly.
-    // Previously, the 5-second timeout would fire during normal dialogues,
-    // force-resetting the interaction and closing the dialogue mid-conversation,
-    // which made E "only work for the first interaction" because subsequent
-    // interactions would also be interrupted by the timeout.
-    const shouldCheckTimeout = stateRef.current !== InteractionState.Dialogue;
-    if (shouldCheckTimeout && globalTimerRef.current >= GLOBAL_INTERACTION_TIMEOUT) {
+    // Dialogue can last arbitrarily long for conversations, but we still
+    // need a failsafe: if the dialogue system crashes/leaves without cleanup,
+    // force-reset after 8s. In exploration mode without active story overlay,
+    // the timeout is shorter (4s) since there shouldn't be any dialogue.
+    let shouldCheckTimeout: boolean;
+    let timeoutDuration: number;
+    if (stateRef.current === InteractionState.Dialogue) {
+      // Only timeout Dialogue in exploration mode without story overlay
+      const currentMode = useGameStore.getState().mode;
+      const showStoryOverlay = useGameStore.getState().showStoryOverlay;
+      shouldCheckTimeout = currentMode === 'exploration' && !showStoryOverlay;
+      timeoutDuration = 4.0;
+    } else {
+      shouldCheckTimeout = true;
+      timeoutDuration = GLOBAL_INTERACTION_TIMEOUT;
+    }
+
+    if (shouldCheckTimeout && globalTimerRef.current >= timeoutDuration) {
       console.warn(
-        `[InteractionSystemBridge] Global timeout (${GLOBAL_INTERACTION_TIMEOUT}s) reached ` +
+        `[InteractionSystemBridge] Global timeout (${timeoutDuration}s) reached ` +
         `in state ${stateRef.current}. Force-resetting to Idle.`,
       );
 

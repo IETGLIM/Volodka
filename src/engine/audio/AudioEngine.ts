@@ -23,6 +23,7 @@ import {
   createReverbImpulse,
   createAmbientReverbImpulse,
   safeResume,
+  whenAudioReady,
 } from './AudioEngineCore';
 
 /**
@@ -128,6 +129,12 @@ class AudioEngine {
    */
   playSfx(type: string): void {
     if (this.disposed) return;
+    whenAudioReady(() => {
+      this._playSfxInternal(type);
+    });
+  }
+
+  private _playSfxInternal(type: string): void {
     this.initContext();
     this.resume();
 
@@ -1491,6 +1498,12 @@ class AudioEngine {
    */
   playStinger(type: 'tension' | 'discovery' | 'danger' | 'emotional' | 'mystery'): void {
     if (this.disposed) return;
+    whenAudioReady(() => {
+      this._playStingerInternal(type);
+    });
+  }
+
+  private _playStingerInternal(type: 'tension' | 'discovery' | 'danger' | 'emotional' | 'mystery'): void {
     this.initContext();
     this.resume();
 

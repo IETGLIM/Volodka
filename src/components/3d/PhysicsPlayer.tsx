@@ -210,6 +210,16 @@ export function PhysicsPlayer({
     // ─── Physics warmup: skip gravity for first N frames ───
     // The KinematicCharacterController needs a few frames to initialize.
     // During warmup, we hold the player at spawn height and skip gravity.
+    // Also extend warmup while locked (intro, tutorial, interaction) to prevent
+    // the character from falling/jumping when controls are first released.
+    const isLockedCheck = useGameStore.getState().showStoryOverlay
+      || useGameStore.getState().mode === 'cutscene'
+      || useGameStore.getState().mode === 'intro'
+      || useGameStore.getState().tutorialFlags?.tutorialsCompleted === false;
+
+    if (isLockedCheck) {
+      warmupFramesRef.current = 0; // reset warmup while locked
+    }
     warmupFramesRef.current++;
     if (warmupFramesRef.current < 10) {
       vel.set(0, 0, 0);

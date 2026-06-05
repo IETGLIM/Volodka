@@ -14,11 +14,13 @@
 
 let sharedCtx: AudioContext | null = null;
 let _userInteracted = false;
+/** Queue of callbacks to run once AudioContext is resumed */
+let _pendingQueue: Array<() => void> = [];
 
 /**
  * Get the shared AudioContext, creating it lazily if needed.
- * Must be called from a user gesture handler (click, keydown, touchstart).
- * Returns null in SSR or if AudioContext is not available.
+ * The context is created in suspended state — it will be resumed
+ * on the first user gesture (click/keydown/touchstart).
  */
 export function getSharedAudioContext(): AudioContext | null {
   if (typeof window === 'undefined') return null;
@@ -26,6 +28,10 @@ export function getSharedAudioContext(): AudioContext | null {
   if (!sharedCtx) {
     try {
       sharedCtx = new AudioContext({ latencyHint: 'interactive' });
+      // Immediately suspend to satisfy browser policy, then attempt resume
+      if (sharedCtx.state === 'running') {
+        sharedCtx.suspend().catch(() => {});
+      }
     } catch {
       return null;
     }
@@ -35,15 +41,30 @@ export function getSharedAudioContext(): AudioContext | null {
 }
 
 /**
- * Resume the shared AudioContext. Returns the promise so callers can
- * catch and ignore autoplay policy errors gracefully.
- * Only actually resumes if user has interacted (browser policy).
+ * Queue a callback to run once AudioContext is running.
+ * Use this to defer all sound playback until user gesture.
+ */
+export function whenAudioReady(fn: () => void): void {
+  if (isSharedAudioContextReady()) {
+    fn();
+  } else {
+    _pendingQueue.push(fn);
+  }
+}
+
+/**
+ * Resume the shared AudioContext. Always attempts resume — browser
+ * will reject if no user gesture, which we catch silently.
  */
 export function safeResume(): Promise<void> {
   if (!sharedCtx) return Promise.resolve();
-  if (!_userInteracted) return Promise.resolve();
   if (sharedCtx.state === 'suspended') {
-    return sharedCtx.resume().catch(() => {});
+    return sharedCtx.resume().then(() => {
+      // Flush pending sound queue
+      const queue = _pendingQueue;
+      _pendingQueue = [];
+      queue.forEach(fn => { try { fn(); } catch {} });
+    }).catch(() => {});
   }
   return Promise.resolve();
 }
