@@ -706,11 +706,13 @@ export function GameOrchestrator() {
     return unsub;
   }, []);
 
-  // ── Auto-save after combat victory (L-02) ──
+  // ── Auto-save after combat ends (L-02) — save only once mode is exploration ──
   useEffect(() => {
-    const unsub = eventBus.on('combat:victory', () => {
+    const unsub = eventBus.on('combat:end', () => {
       const store = useGameStore.getState();
-      store.saveGame({ source: 'auto' });
+      if (store.mode === 'exploration') {
+        store.saveGame({ source: 'auto' });
+      }
     });
     return unsub;
   }, []);

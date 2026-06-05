@@ -102,9 +102,12 @@ export const createSaveSlice: StateCreator<
     const state = get();
     const source = options?.source ?? 'manual';
 
+    // Combat mode is ephemeral (combat state is not persisted) — never write mode:'combat'
+    const persistableMode = state.mode === 'combat' ? 'exploration' : state.mode;
+
     // Build compact save payload from full store state
     const payload = {
-      mode: state.mode,
+      mode: persistableMode,
       currentNodeId: state.currentNodeId,
       playerState: state.playerState,
       exploration: state.exploration,
@@ -187,8 +190,11 @@ export const createSaveSlice: StateCreator<
       // Sanitize the loaded scene ID (extra safety layer)
       const sanitizedSceneId = sanitizeExplorationSceneId(payload.exploration.currentSceneId);
 
+      // Combat sessions cannot be restored — coerce stale combat saves to exploration
+      const loadedMode = payload.mode === 'combat' ? 'exploration' : payload.mode;
+
       set({
-        mode: payload.mode,
+        mode: loadedMode,
         currentNodeId: payload.currentNodeId,
         playerState: {
           ...payload.playerState,

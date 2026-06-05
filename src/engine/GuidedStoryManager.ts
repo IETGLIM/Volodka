@@ -55,6 +55,37 @@ let unsubQuestCompleted: (() => void) | null = null
 let unsubNpcTalked: (() => void) | null = null
 let unsubSceneEnter: (() => void) | null = null
 let unsubFlagSet: (() => void) | null = null
+let unsubGameLoaded: (() => void) | null = null
+
+/** Recompute spine indices from the store without advancing acts or emitting events. */
+function syncSpineIndicesFromStore() {
+  const store = useGameStore.getState()
+  const visitedNodes = store.playerState.visitedNodes
+
+  lastAdvancedToAct = store.playerState.progression.currentAct
+
+  currentStepIndex = 0
+  for (let i = GOLDEN_PATH_STORY_SPINE.length - 1; i >= 0; i--) {
+    if (visitedNodes.includes(GOLDEN_PATH_STORY_SPINE[i])) {
+      currentStepIndex = i + 1
+      break
+    }
+  }
+
+  currentQuestSpineIndex = 0
+  for (let i = 0; i < GOLDEN_PATH_QUEST_SPINE.length; i++) {
+    const questId = GOLDEN_PATH_QUEST_SPINE[i]
+    const questState = store.quests.find((q) => q.questId === questId)
+    if (questState?.status === 'completed') {
+      currentQuestSpineIndex = i + 1
+    } else if (questState?.status === 'active') {
+      currentQuestSpineIndex = i
+      break
+    } else {
+      break
+    }
+  }
+}
 
 /* ─── Get act number from story node position ─── */
 function getActForNode(nodeId: string): number {
@@ -455,10 +486,11 @@ function advanceStorySpine(visitedNodeId: string) {
     : prevAct
 
   if (newAct > prevAct) {
-    // Guard: skip if this act was already advanced in this session
-    if (newAct > lastAdvancedToAct) {
+    const store = useGameStore.getState()
+    const storeAct = store.playerState.progression.currentAct
+    // Guard: skip if this act was already advanced in this session or is already in the save
+    if (newAct > lastAdvancedToAct && newAct > storeAct) {
       lastAdvancedToAct = newAct
-      const store = useGameStore.getState()
       store.advanceAct()
 
       eventBus.emit('story:act_transition', {
@@ -466,6 +498,8 @@ function advanceStorySpine(visitedNodeId: string) {
         toAct: newAct,
         chapterTitle: ACT_CHAPTER_TITLES[newAct] ?? `Акт ${newAct}`,
       })
+    } else if (newAct > lastAdvancedToAct) {
+      lastAdvancedToAct = Math.max(lastAdvancedToAct, newAct, storeAct)
     }
   }
 
@@ -496,8 +530,9 @@ function advanceQuestSpine(completedQuestId: string) {
 
   if (allActQuestsComplete && questAdvanceAllowed && currentAct < ACT_TRANSITIONS.length) {
     const nextAct = currentAct + 1
-    // Guard: skip if this act was already advanced in this session
-    if (nextAct > lastAdvancedToAct) {
+    const storeAct = store.playerState.progression.currentAct
+    // Guard: skip if this act was already advanced in this session or is already in the save
+    if (nextAct > lastAdvancedToAct && nextAct > storeAct) {
       lastAdvancedToAct = nextAct
       store.advanceAct()
       eventBus.emit('story:act_transition', {
@@ -505,6 +540,8 @@ function advanceQuestSpine(completedQuestId: string) {
         toAct: nextAct,
         chapterTitle: ACT_CHAPTER_TITLES[nextAct] ?? `Акт ${nextAct}`,
       })
+    } else if (nextAct > lastAdvancedToAct) {
+      lastAdvancedToAct = Math.max(lastAdvancedToAct, nextAct, storeAct)
     }
   }
 
@@ -626,38 +663,15 @@ export function initGuidedStoryManager() {
   if (initialized) return
   initialized = true
 
-  // Sync state from store on init
-  const store = useGameStore.getState()
-  const visitedNodes = store.playerState.visitedNodes
-
-  // Initialize lastAdvancedToAct from store so we don't re-advance
-  // an act that was already advanced in a previous session
-  lastAdvancedToAct = store.playerState.progression.currentAct
-
-  // Find the highest visited node in the spine
-  for (let i = GOLDEN_PATH_STORY_SPINE.length - 1; i >= 0; i--) {
-    if (visitedNodes.includes(GOLDEN_PATH_STORY_SPINE[i])) {
-      currentStepIndex = i + 1
-      break
-    }
-  }
-
-  // Find current quest spine position
-  for (let i = 0; i < GOLDEN_PATH_QUEST_SPINE.length; i++) {
-    const questId = GOLDEN_PATH_QUEST_SPINE[i]
-    const questState = store.quests.find((q) => q.questId === questId)
-    if (questState?.status === 'completed') {
-      currentQuestSpineIndex = i + 1
-    } else if (questState?.status === 'active') {
-      currentQuestSpineIndex = i
-      break
-    } else {
-      break
-    }
-  }
+  syncSpineIndicesFromStore()
 
   // Auto-start first quest if none active
   autoStartFirstQuest()
+
+  unsubGameLoaded = eventBus.on('game:loaded', () => {
+    syncSpineIndicesFromStore()
+    emitGuidanceUpdate()
+  })
 
   // Listen for node visits
   unsubVisitNode = useGameStore.subscribe((state) => {
@@ -732,12 +746,14 @@ export function disposeGuidedStoryManager() {
   unsubNpcTalked?.()
   unsubSceneEnter?.()
   unsubFlagSet?.()
+  unsubGameLoaded?.()
 
   unsubVisitNode = null
   unsubQuestCompleted = null
   unsubNpcTalked = null
   unsubSceneEnter = null
   unsubFlagSet = null
+  unsubGameLoaded = null
 
   currentStepIndex = 0
   currentQuestSpineIndex = 0

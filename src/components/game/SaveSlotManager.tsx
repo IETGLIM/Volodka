@@ -7,6 +7,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { useGameStore } from '@/store/gameStore';
+import { validateSaveData } from '@/shared/validation/saveSchema';
 import { SCENE_CONFIG } from '@/config/scenes';
 import type { SceneId } from '@/shared/types/game';
 import { POEMS } from '@/data/poems';
@@ -547,7 +548,13 @@ function SaveSlotManagerContent({ onClose }: { onClose: () => void }) {
           return;
         }
 
-        // Copy slot data to the main save key, then call loadGame
+        const validation = validateSaveData(raw);
+        if (!validation.success) {
+          setNotification(validation.error);
+          return;
+        }
+
+        // Copy validated slot data to the main save key, then call loadGame
         localStorage.setItem('volodka_save', raw);
         loadGame();
         setNotification(`Загружен Слот ${slot}`);
