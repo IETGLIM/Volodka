@@ -6,6 +6,7 @@ import type { TrainablePlayerSkill } from '@/shared/types/game';
 import type { PlayerState } from '@/shared/types/game';
 import { clamp, createDefaultPlayerState, pushNotification, type GameNotification } from '../shared';
 import type { GameStoreState } from '../types';
+import { pickPlayerCoreCrossActions, readPlayerFromExploration } from '../crossSliceReads';
 import { eventBus } from '@/engine/EventBus';
 
 /* ─── Slice types ─── */
@@ -131,12 +132,12 @@ export const createPlayerCoreSlice: StateCreator<
     })),
 
   restAtHome: () => {
-    const store = get();
-    const currentScene = store.exploration.currentSceneId;
+    const { currentSceneId } = readPlayerFromExploration(get());
+    const { advanceTime } = pickPlayerCoreCrossActions(get);
 
-    if (currentScene !== 'volodka_room' && currentScene !== 'home_evening') return;
+    if (currentSceneId !== 'volodka_room' && currentSceneId !== 'home_evening') return;
 
-    store.advanceTime(8);
+    advanceTime(8);
 
     set((state) => ({
       playerState: {

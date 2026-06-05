@@ -6,11 +6,12 @@ import { useRef, useState, useEffect, useCallback, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { Html } from '@react-three/drei';
 import * as THREE from 'three';
-import { getGameStore } from '@/store/gameStore';
+import { getGameStore, useGameStore } from '@/store/gameStore';
 import { useCurrentSceneId, useInteractionOverlay, useTimeOfDay } from '@/store/selectors';
 import { TRIGGER_ZONES, type TriggerZone, INTERACTION_LABELS } from '@/data/triggerZones';
 import { NPC_DEFINITIONS } from '@/data/npcDefinitions';
 import { getNPCsForScene, getCurrentScheduleEntry } from '@/engine/ScheduleEngine';
+import { buildScheduleContext } from '@/shared/scheduleContext';
 import { eventBus } from '@/engine/EventBus';
 import { isInteractionLocked } from './InteractionSystemBridge';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
@@ -81,12 +82,14 @@ export function InteractiveTriggers({ livePlayerPositionRef }: InteractiveTrigge
     }
 
     // Check NPCs — only those in the current scene, using schedule-driven positions
-    const timeOfDay = getGameStore().exploration.timeOfDay;
-    const npcIdsInScene = getNPCsForScene(sceneId, timeOfDay);
+    const store = getGameStore();
+    const timeOfDay = store.exploration.timeOfDay;
+    const scheduleCtx = buildScheduleContext(store);
+    const npcIdsInScene = getNPCsForScene(sceneId, timeOfDay, scheduleCtx);
     for (const npcId of npcIdsInScene) {
       const npc = NPC_DEFINITIONS.find((n) => n.id === npcId);
       if (!npc) continue;
-      const entry = getCurrentScheduleEntry(npcId, timeOfDay);
+      const entry = getCurrentScheduleEntry(npcId, timeOfDay, scheduleCtx);
       const npcPosArr = entry?.position ?? npc.defaultPosition;
       tempVecRef.current.set(...npcPosArr);
       const dist = playerPos.distanceTo(tempVecRef.current);
@@ -264,13 +267,14 @@ function NPCProximityTriggers({
   // Get NPCs in current scene using schedule engine
   const sceneId = useCurrentSceneId();
   const timeOfDay = useTimeOfDay();
+  const scheduleCtx = useGameStore((s) => buildScheduleContext(s));
   const npcsInScene = useMemo(() => {
-    const npcIds = getNPCsForScene(sceneId, timeOfDay);
+    const npcIds = getNPCsForScene(sceneId, timeOfDay, scheduleCtx);
     return npcIds
       .map((id) => {
         const def = NPC_DEFINITIONS.find((n) => n.id === id);
         if (!def) return null;
-        const entry = getCurrentScheduleEntry(id, timeOfDay);
+        const entry = getCurrentScheduleEntry(id, timeOfDay, scheduleCtx);
         return {
           definition: def,
           position: entry?.position ?? def.defaultPosition,
@@ -280,7 +284,7 @@ function NPCProximityTriggers({
         definition: typeof NPC_DEFINITIONS[number];
         position: [number, number, number];
       }>;
-  }, [sceneId, timeOfDay]);
+  }, [sceneId, timeOfDay, scheduleCtx]);
 
   return (
     <group>

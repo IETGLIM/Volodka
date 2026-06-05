@@ -7,6 +7,8 @@
 import { useRef, useMemo, useEffect } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
+import { useIsMobileVisual, useMobileVisualPerf } from '@/hooks/use-mobile';
+import { getParticleCount } from '@/shared/utils/mobileParticleScale';
 import { useGameStore } from '@/store/gameStore';
 import { eventBus } from '@/engine/EventBus';
 
@@ -59,6 +61,8 @@ const SNOW_CONFIGS: Record<'light' | 'medium' | 'heavy', SnowConfig> = {
 export function SnowSystem({ intensity = 1 }: { intensity?: number }) {
   const weatherEnabled = useGameStore((s) => s.weatherEnabled);
   const rainIntensity = useGameStore((s) => s.rainIntensity);
+  const isMobile = useIsMobileVisual();
+  const { visualLite } = useMobileVisualPerf();
 
   const configLevel = useMemo(() => {
     const effective = intensity * rainIntensity;
@@ -67,9 +71,17 @@ export function SnowSystem({ intensity = 1 }: { intensity?: number }) {
     return 'heavy' as const;
   }, [intensity, rainIntensity]);
 
+  const config = useMemo(() => {
+    const base = SNOW_CONFIGS[configLevel];
+    return {
+      ...base,
+      count: getParticleCount(base.count, isMobile, visualLite),
+    };
+  }, [configLevel, isMobile, visualLite]);
+
   if (!weatherEnabled) return null;
 
-  return <SnowParticles config={SNOW_CONFIGS[configLevel]} intensity={intensity * rainIntensity} />;
+  return <SnowParticles config={config} intensity={intensity * rainIntensity} />;
 }
 
 function SnowParticles({ config, intensity }: { config: SnowConfig; intensity: number }) {
@@ -119,6 +131,12 @@ function SnowParticles({ config, intensity }: { config: SnowConfig; intensity: n
     geo.setAttribute('size', new THREE.BufferAttribute(sizes.slice(), 1));
     return geo;
   }, [positions, sizes]);
+
+  useEffect(() => {
+    return () => {
+      geometry.dispose();
+    };
+  }, [geometry]);
 
   // Emit weather:snow event once when snow starts
   useEffect(() => {

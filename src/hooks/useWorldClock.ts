@@ -24,6 +24,7 @@ import { useEffect, useRef } from 'react';
 import { useGameStore } from '@/store/gameStore';
 import { eventBus } from '@/engine/EventBus';
 import { buildNPCStatesForTime } from '@/engine/ScheduleEngine';
+import { buildScheduleContext } from '@/shared/scheduleContext';
 
 /** How often the world clock ticks in seconds (game minutes per tick) */
 const WORLD_TICK_INTERVAL_S = 60; // Every 60 real seconds = 1 game hour
@@ -53,7 +54,8 @@ export function useWorldClock() {
       const newHour = (previousHour + HOURS_PER_TICK) % 24;
 
       // Rebuild NPC states for the new time
-      const npcStates = buildNPCStatesForTime(newHour);
+      const scheduleCtx = buildScheduleContext(store);
+      const npcStates = buildNPCStatesForTime(newHour, scheduleCtx);
 
       // Update store with new time and NPC states
       store.setExplorationTimeOfDay(newHour);
@@ -79,7 +81,8 @@ export function useWorldClock() {
 
     const store = useGameStore.getState();
     const hour = store.exploration.timeOfDay;
-    const npcStates = buildNPCStatesForTime(hour);
+    const scheduleCtx = buildScheduleContext(store);
+    const npcStates = buildNPCStatesForTime(hour, scheduleCtx);
     store.setExplorationNPCStates(npcStates);
   }, []);
 }

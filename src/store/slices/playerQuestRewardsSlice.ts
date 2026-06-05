@@ -9,59 +9,28 @@ import { getItemDefinition, createInventoryItem } from '@/data/items';
 import { getItemPreference, getAffinityChange, getGiftXpReward, getGiftReactionText } from '@/data/npcGifts';
 import { NPC_DEFINITIONS } from '@/data/npcDefinitions';
 import { eventBus } from '@/engine/EventBus';
-import { clamp, pushNotification } from '../shared';
+import { applyXpGain, clamp, pushNotification } from '../shared';
+import { applyFairmathRelation } from '@/shared/fairmath';
+import {
+  findInventoryItemIndex,
+  removeInventoryItem,
+} from '../inventoryHelpers';
 import type { GameStoreState } from '../types';
-import type { PlayerProgression } from '@/shared/types/game';
+import { readPlayerFromWorld } from '../crossSliceReads';
+import {
+  batchAddEnergy,
+  batchAddItem,
+  batchAddKarma,
+  batchAddSkill,
+  batchAddStress,
+  batchAddXp,
+  batchSetFlag,
+  createRewardBatchDraft,
+  createRewardBatchSideEffects,
+  flushRewardBatchSideEffects,
+} from '../rewardBatchHelpers';
 
 const GIFT_QUANTITY = 1;
-
-function applyFairmathRelation(current: number, change: number): number {
-  if (change === 0) return current;
-  if (change >= 0) {
-    const gain = Math.round(change * (100 - current) / 100);
-    return Math.min(100, current + Math.max(gain, 1));
-  }
-  const loss = Math.round(Math.abs(change) * current / 100);
-  return Math.max(0, current - Math.max(loss, 1));
-}
-
-function applyGiftXp(
-  prog: PlayerProgression,
-  amount: number,
-): { progression: PlayerProgression; leveledUp: boolean; perkPointGained: boolean; prevLevel: number } {
-  let newXp = prog.xp + amount;
-  let newLevel = prog.level;
-  let newXpToNext = prog.xpToNextLevel;
-  let newSkillPoints = prog.skillPoints;
-  let newPerkPoints = prog.perkPoints;
-  let perkPointGained = false;
-  const prevLevel = prog.level;
-
-  while (newXp >= newXpToNext) {
-    newXp -= newXpToNext;
-    newLevel += 1;
-    newSkillPoints += 1;
-    if (newLevel % 3 === 0) {
-      newPerkPoints += 1;
-      perkPointGained = true;
-    }
-    newXpToNext = Math.floor(100 * Math.pow(1.25, newLevel - 1));
-  }
-
-  return {
-    progression: {
-      ...prog,
-      level: newLevel,
-      xp: newXp,
-      xpToNextLevel: newXpToNext,
-      skillPoints: newSkillPoints,
-      perkPoints: newPerkPoints,
-    },
-    leveledUp: newLevel > prevLevel,
-    perkPointGained,
-    prevLevel,
-  };
-}
 
 /* ─── Slice types ─── */
 
@@ -100,7 +69,7 @@ export const createPlayerQuestRewardsSlice: StateCreator<
     let levelUpInfo: { newLevel: number; prevLevel: number; perkPointGained: boolean } | null = null;
 
     set((state) => {
-      const invIdx = state.playerState.inventory.findIndex((i) => i.id === itemId);
+      const invIdx = findInventoryItemIndex(state.playerState.inventory, itemId);
       if (invIdx < 0) {
         return {
           notifications: pushNotification(state.notifications, 'stress', 'У вас нет этого предмета'),
@@ -121,24 +90,25 @@ export const createPlayerQuestRewardsSlice: StateCreator<
         };
       }
 
-      const inventory = [...state.playerState.inventory];
-      const item = { ...inventory[invIdx] };
-      item.quantity -= GIFT_QUANTITY;
-      if (item.quantity <= 0) {
-        inventory.splice(invIdx, 1);
-      } else {
-        inventory[invIdx] = item;
+      const { inventory, removed } = removeInventoryItem(
+        state.playerState.inventory,
+        itemId,
+        GIFT_QUANTITY,
+      );
+      if (!removed) {
+        return state;
       }
 
-      const currentAffinity = state.npcAffinity[npcId] ?? 0;
+      const { npcAffinity: worldAffinity, npcRelations: worldRelations } = readPlayerFromWorld(state);
+      const currentAffinity = worldAffinity[npcId] ?? 0;
       const npcAffinity = {
-        ...state.npcAffinity,
+        ...worldAffinity,
         [npcId]: clamp(currentAffinity + affinityChange, -100, 100),
       };
 
-      let npcRelations = state.npcRelations;
+      let npcRelations = worldRelations;
       if (relationDelta !== 0) {
-        const relations = [...state.npcRelations];
+        const relations = [...worldRelations];
         const relIdx = relations.findIndex((r) => r.npcId === npcId);
         if (relIdx >= 0) {
           const updated = { ...relations[relIdx] };
@@ -157,7 +127,7 @@ export const createPlayerQuestRewardsSlice: StateCreator<
       let progression = state.playerState.progression;
 
       if (xpReward > 0) {
-        const xpResult = applyGiftXp(progression, xpReward);
+        const xpResult = applyXpGain(progression, xpReward);
         progression = xpResult.progression;
         if (xpResult.leveledUp) {
           levelUpInfo = {
@@ -208,64 +178,8 @@ export const createPlayerQuestRewardsSlice: StateCreator<
   },
 
   completeQuestAndApplyRewards: (questId) => {
-    const store = get();
-
     const questDef = QUEST_DEFINITIONS.find((d) => d.id === questId);
     if (!questDef) return;
-
-    store.completeQuest(questId);
-
-    const appliedRewards: string[] = [];
-
-    const rewards = questDef.rewards ?? [];
-    for (const reward of rewards) {
-      switch (reward.type) {
-        case 'addSkill':
-          if (reward.skill && reward.value) {
-            store.addSkill(reward.skill, reward.value);
-            appliedRewards.push(`${reward.skill} +${reward.value}`);
-          }
-          break;
-        case 'addKarma':
-          if (reward.value) {
-            store.addKarma(reward.value);
-            appliedRewards.push(`Карма +${reward.value}`);
-          }
-          break;
-        case 'addXp':
-          if (reward.value) {
-            store.addXp(reward.value);
-            appliedRewards.push(`Опыт +${reward.value}`);
-          }
-          break;
-        case 'addStat':
-          if (reward.stat === 'energy' && reward.value) {
-            store.addEnergy(reward.value);
-            appliedRewards.push(`Энергия +${reward.value}`);
-          } else if (reward.stat === 'stress' && reward.value) {
-            store.addStress(reward.value);
-            appliedRewards.push(`Стресс +${reward.value}`);
-          }
-          break;
-        case 'addItem':
-          if (reward.itemId && reward.value) {
-            const added = store.addItem(createInventoryItem(reward.itemId, reward.value));
-            if (added) {
-              const itemDef = getItemDefinition(reward.itemId);
-              appliedRewards.push(`${itemDef?.name ?? reward.itemId} x${reward.value}`);
-            }
-          }
-          break;
-        case 'setFlag':
-          if (reward.flag) {
-            store.setFlag(reward.flag, reward.flagValue ?? true);
-            appliedRewards.push(`Флаг: ${reward.flag}`);
-          }
-          break;
-        default:
-          break;
-      }
-    }
 
     const questTypeXp: Record<QuestType, number> = {
       main: 50,
@@ -274,8 +188,93 @@ export const createPlayerQuestRewardsSlice: StateCreator<
       daily: 15,
     };
     const xpGained = questTypeXp[questDef.questType] ?? 25;
-    store.addXp(xpGained);
-    appliedRewards.push(`Опыт за задание +${xpGained}`);
+
+    const appliedRewards: string[] = [];
+    const sideEffects = createRewardBatchSideEffects();
+
+    set((state) => {
+      const draft = createRewardBatchDraft(state.playerState, state.notifications);
+
+      const quests = state.quests.map((q) => {
+        if (q.questId !== questId) return q;
+        return {
+          ...q,
+          status: 'completed' as const,
+          objectives: Object.fromEntries(
+            Object.keys(q.objectives).map((k) => [k, true]),
+          ),
+        };
+      });
+
+      draft.notifications = pushNotification(
+        draft.notifications,
+        'quest',
+        `Задание выполнено: ${questDef.title}`,
+      );
+
+      const rewards = questDef.rewards ?? [];
+      for (const reward of rewards) {
+        switch (reward.type) {
+          case 'addSkill':
+            if (reward.skill && reward.value) {
+              batchAddSkill(draft, reward.skill, reward.value);
+              appliedRewards.push(`${reward.skill} +${reward.value}`);
+            }
+            break;
+          case 'addKarma':
+            if (reward.value) {
+              batchAddKarma(draft, sideEffects, reward.value);
+              appliedRewards.push(`Карма +${reward.value}`);
+            }
+            break;
+          case 'addXp':
+            if (reward.value) {
+              batchAddXp(draft, sideEffects, reward.value);
+              appliedRewards.push(`Опыт +${reward.value}`);
+            }
+            break;
+          case 'addStat':
+            if (reward.stat === 'energy' && reward.value) {
+              batchAddEnergy(draft, reward.value);
+              appliedRewards.push(`Энергия +${reward.value}`);
+            } else if (reward.stat === 'stress' && reward.value) {
+              batchAddStress(draft, reward.value);
+              appliedRewards.push(`Стресс +${reward.value}`);
+            }
+            break;
+          case 'addItem':
+            if (reward.itemId && reward.value) {
+              const item = createInventoryItem(reward.itemId, reward.value);
+              const added = batchAddItem(draft, item);
+              if (added) {
+                const itemDef = getItemDefinition(reward.itemId);
+                appliedRewards.push(`${itemDef?.name ?? reward.itemId} x${reward.value}`);
+              }
+            }
+            break;
+          case 'setFlag':
+            if (reward.flag) {
+              batchSetFlag(draft, reward.flag, reward.flagValue ?? true);
+              appliedRewards.push(`Флаг: ${reward.flag}`);
+            }
+            break;
+          default:
+            break;
+        }
+      }
+
+      batchAddXp(draft, sideEffects, xpGained);
+      appliedRewards.push(`Опыт за задание +${xpGained}`);
+
+      return {
+        quests,
+        playerState: draft.playerState,
+        notifications: draft.notifications,
+      };
+    });
+
+    eventBus.emit('quest:completed', { questId, npcId: questDef.questGiverNpcId });
+    flushRewardBatchSideEffects(sideEffects);
 
     eventBus.emit('quest:reward_applied', {
       questId,

@@ -3,6 +3,7 @@
 import type { CombatState, CombatLogEntry, SideEffect } from './types';
 import type { PoemCombatAbility } from './types';
 import { getGameStore } from '@/store/gameStore';
+import { isGameMode, isTrainablePlayerSkill, warnInvalidValue } from '@/shared/validation/typeGuards';
 import { createBuff, addBuff } from './buffSystem';
 import { getEnemyDefenseReduction } from './buffSystem';
 
@@ -511,9 +512,21 @@ export function applyCombatSideEffects(effects: SideEffect[] | undefined): void 
       case 'addEnergy': store.addEnergy(eff.value); break;
       case 'addKarma': store.addKarma(eff.value); break;
       case 'addStress': store.addStress(eff.value); break;
-      case 'addSkill': store.addSkill(eff.skill as import('@/shared/types/game').TrainablePlayerSkill, eff.value); break;
+      case 'addSkill':
+        if (isTrainablePlayerSkill(eff.skill)) {
+          store.addSkill(eff.skill, eff.value);
+        } else {
+          warnInvalidValue('combat side effect skill', eff.skill);
+        }
+        break;
       case 'addXp': store.addXp(eff.value); break;
-      case 'setMode': store.setMode(eff.mode as any); break;
+      case 'setMode':
+        if (isGameMode(eff.mode)) {
+          store.setMode(eff.mode);
+        } else {
+          warnInvalidValue('combat side effect mode', eff.mode);
+        }
+        break;
       case 'addPoemPower': store.activatePoemPower(eff.poemId); break;
     }
   }

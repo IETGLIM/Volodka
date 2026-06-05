@@ -28,6 +28,7 @@ import type {
   NPCRelation,
 } from '@/shared/types/game';
 import { performSkillCheck } from '@/shared/validation/skillCheck';
+import { checkStoryCondition } from '@/shared/storyConditions';
 import { NPCPortrait, NPC_PORTRAIT_COLORS } from './shared/NPCPortrait';
 
 /* ── Emotion detection from text ── */
@@ -87,59 +88,6 @@ const SKILL_ICONS: Record<TrainablePlayerSkill, string> = {
   writing: '✍️',
   rhythm: '🎵',
 };
-
-/* ── Condition check ── */
-function checkDialogueCondition(
-  condition: DialogueChoice['condition'],
-  playerState: { karma: number; skills: PlayerSkills; flags: Record<string, boolean>; progression: { currentAct: number } },
-  npcRelations: NPCRelation[],
-  npcId?: string,
-  timeOfDay?: number,
-): {
-  pass: boolean;
-  skillCheckResult?: { skill: TrainablePlayerSkill; difficulty: number; success: boolean };
-  skillCheckNeeded?: { skill: TrainablePlayerSkill; needed: number; current: number };
-  relationNeeded?: { needed: number; current: number };
-  actNeeded?: { needed: number; current: number };
-  karmaNeeded?: { type: 'min' | 'max'; needed: number; current: number };
-} {
-  if (!condition) return { pass: true };
-  if (condition.requiredAct !== undefined && playerState.progression.currentAct < condition.requiredAct) {
-    return { pass: false, actNeeded: { needed: condition.requiredAct, current: playerState.progression.currentAct } };
-  }
-  if (timeOfDay !== undefined) {
-    if (condition.minTimeOfDay !== undefined && timeOfDay < condition.minTimeOfDay) return { pass: false };
-    if (condition.maxTimeOfDay !== undefined && timeOfDay > condition.maxTimeOfDay) return { pass: false };
-  }
-  if (condition.minKarma !== undefined && playerState.karma < condition.minKarma) {
-    return { pass: false, karmaNeeded: { type: 'min', needed: condition.minKarma, current: playerState.karma } };
-  }
-  if (condition.maxKarma !== undefined && playerState.karma > condition.maxKarma) {
-    return { pass: false, karmaNeeded: { type: 'max', needed: condition.maxKarma, current: playerState.karma } };
-  }
-  if (condition.flag && !playerState.flags[condition.flag]) return { pass: false };
-  if (condition.minNpcRelation !== undefined && npcId) {
-    const rel = npcRelations.find((r) => r.npcId === npcId);
-    const currentRel = rel?.value ?? 50;
-    if (currentRel < condition.minNpcRelation) {
-      return { pass: false, relationNeeded: { needed: condition.minNpcRelation, current: currentRel } };
-    }
-  }
-  if (condition.minSkill) {
-    for (const [skill, needed] of Object.entries(condition.minSkill)) {
-      const current = playerState.skills[skill as TrainablePlayerSkill] ?? 0;
-      if (current < (needed as number)) {
-        return { pass: false, skillCheckNeeded: { skill: skill as TrainablePlayerSkill, needed: needed as number, current } };
-      }
-    }
-  }
-  if (condition.minSkillCheck) {
-    const { skill, difficulty } = condition.minSkillCheck;
-    const success = performSkillCheck(skill, difficulty, playerState.skills);
-    return { pass: success, skillCheckResult: { skill, difficulty, success } };
-  }
-  return { pass: true };
-}
 
 /* ── Impact preview ── */
 interface ChoiceImpact {
@@ -283,7 +231,15 @@ export function DialogueRenderer() {
     // Auto-pick first available choice after delay
     const timer = setTimeout(() => {
       const availableChoice = node.choices.find((c) => {
-        const cond = checkDialogueCondition(c.condition, playerState, npcRelations, currentNpcId, timeOfDay);
+        const cond = checkStoryCondition(c.condition, {
+          karma: playerState.karma,
+          skills: playerState.skills,
+          flags: playerState.flags,
+          currentAct: playerState.progression.currentAct,
+          npcRelations,
+          npcId: currentNpcId,
+          timeOfDay,
+        });
         return cond.pass;
       });
       if (availableChoice) {
@@ -516,7 +472,15 @@ export function DialogueRenderer() {
                   className="flex flex-col gap-1"
                 >
                   {node.choices.map((choice, i) => {
-                    const cond = checkDialogueCondition(choice.condition, playerState, npcRelations, npcId, timeOfDay);
+                    const cond = checkStoryCondition(choice.condition, {
+                      karma: playerState.karma,
+                      skills: playerState.skills,
+                      flags: playerState.flags,
+                      currentAct: playerState.progression.currentAct,
+                      npcRelations,
+                      npcId,
+                      timeOfDay,
+                    });
 
                     const handleClick = () => {
                       if (!cond.pass) return;

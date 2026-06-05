@@ -10,6 +10,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Clock } from 'lucide-react';
 import { NPC_SCHEDULES_MAP } from '@/data/npcSchedules';
 import { getNPCLocationForTime } from '@/engine/ScheduleEngine';
+import { useGameStore } from '@/store/gameStore';
+import { buildScheduleContext } from '@/shared/scheduleContext';
 import { SCENE_CONFIG } from '@/config/scenes';
 import type { SceneId, ScheduleEntry } from '@/shared/types/game';
 
@@ -170,6 +172,7 @@ export function NPCScheduleTimeline({
   npcId: string;
   currentHour: number;
 }) {
+  const scheduleCtx = useGameStore((s) => buildScheduleContext(s));
   const [hoveredSegment, setHoveredSegment] = useState<number | null>(null);
   const [tooltipPos, setTooltipPos] = useState<{ left: number; top: number }>({ left: 0, top: 0 });
 
@@ -195,7 +198,7 @@ export function NPCScheduleTimeline({
 
   // Current NPC location info
   const currentLocation = useMemo(() => {
-    const entry = getNPCLocationForTime(npcId, currentHour);
+    const entry = getNPCLocationForTime(npcId, currentHour, scheduleCtx);
     if (!entry) return null;
     const category = classifyScene(entry.sceneId);
     const sceneName = SCENE_CONFIG[entry.sceneId]?.name ?? entry.sceneId;
@@ -205,7 +208,7 @@ export function NPCScheduleTimeline({
       category,
       color: LOCATION_COLORS[category],
     };
-  }, [npcId, currentHour]);
+  }, [npcId, currentHour, scheduleCtx]);
 
   // Handle segment hover for tooltip
   const handleSegmentHover = useCallback(

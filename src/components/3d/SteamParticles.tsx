@@ -7,6 +7,8 @@
 import { useRef, useMemo, useEffect } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
+import { useIsMobileVisual, useMobileVisualPerf } from '@/hooks/use-mobile';
+import { getParticleCount } from '@/shared/utils/mobileParticleScale';
 
 /* ── Per-scene steam config ── */
 
@@ -42,7 +44,18 @@ const STEAM_CONFIGS: Record<string, SteamConfig> = {
 };
 
 export function SteamParticles({ sceneId }: { sceneId: string }) {
-  const config = STEAM_CONFIGS[sceneId];
+  const baseConfig = STEAM_CONFIGS[sceneId];
+  const isMobile = useIsMobileVisual();
+  const { visualLite } = useMobileVisualPerf();
+
+  const config = useMemo(() => {
+    if (!baseConfig) return null;
+    return {
+      ...baseConfig,
+      count: getParticleCount(baseConfig.count, isMobile, visualLite),
+    };
+  }, [baseConfig, isMobile, visualLite]);
+
   if (!config) return null;
 
   return <SteamSystem config={config} />;
@@ -88,6 +101,12 @@ function SteamSystem({ config }: { config: SteamConfig }) {
     geo.setAttribute('position', new THREE.BufferAttribute(positions.slice(), 3));
     return geo;
   }, [positions]);
+
+  useEffect(() => {
+    return () => {
+      geometry.dispose();
+    };
+  }, [geometry]);
 
   useFrame((_, delta) => {
     if (!pointsRef.current) return;

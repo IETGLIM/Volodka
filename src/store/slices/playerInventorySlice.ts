@@ -2,10 +2,16 @@
 /* Inventory management and equipment. */
 
 import type { StateCreator } from 'zustand';
-import type { InventoryItem, TrainablePlayerSkill, EquipmentSlot } from '@/shared/types/game';
 import { MAX_INVENTORY_SLOTS } from '@/data/constants';
 import { getItemDefinition, getEquipmentSlot } from '@/data/items';
 import { clamp, pushNotification } from '../shared';
+import {
+  addInventoryItem,
+  findInventoryItemIndex,
+  getInventoryFullMessage,
+  removeInventoryItem,
+} from '../inventoryHelpers';
+import type { InventoryItem, TrainablePlayerSkill, EquipmentSlot } from '@/shared/types/game';
 import type { GameStoreState } from '../types';
 
 /* ─── Slice types ─── */
@@ -31,24 +37,11 @@ export const createPlayerInventorySlice: StateCreator<
   addItem: (item) => {
     let added = false;
     set((state) => {
-      const inventory = [...state.playerState.inventory];
-      const existingIdx = inventory.findIndex((i) => i.id === item.id);
-
-      if (existingIdx >= 0 && inventory[existingIdx].stackable) {
-        const updated = { ...inventory[existingIdx] };
-        updated.quantity = updated.quantity + (item.quantity ?? 1);
-        inventory[existingIdx] = updated;
+      const result = addInventoryItem(state.playerState.inventory, item);
+      if (result.ok) {
         added = true;
         return {
-          playerState: { ...state.playerState, inventory },
-        };
-      }
-
-      if (inventory.length < MAX_INVENTORY_SLOTS) {
-        inventory.push({ ...item, quantity: item.quantity ?? 1 });
-        added = true;
-        return {
-          playerState: { ...state.playerState, inventory },
+          playerState: { ...state.playerState, inventory: result.inventory },
         };
       }
 
@@ -56,7 +49,7 @@ export const createPlayerInventorySlice: StateCreator<
         notifications: pushNotification(
           state.notifications,
           'stress',
-          `Инвентарь полон — предмет «${item.name}» не помещается (${MAX_INVENTORY_SLOTS}/${MAX_INVENTORY_SLOTS})`,
+          getInventoryFullMessage(result.itemName),
         ),
       };
     });
@@ -65,18 +58,8 @@ export const createPlayerInventorySlice: StateCreator<
 
   removeItem: (itemId, quantity) =>
     set((state) => {
-      const inventory = [...state.playerState.inventory];
-      const idx = inventory.findIndex((i) => i.id === itemId);
-      if (idx < 0) return state;
-
-      const item = { ...inventory[idx] };
-      item.quantity -= quantity;
-
-      if (item.quantity <= 0) {
-        inventory.splice(idx, 1);
-      } else {
-        inventory[idx] = item;
-      }
+      const { inventory, removed } = removeInventoryItem(state.playerState.inventory, itemId, quantity);
+      if (!removed) return state;
 
       return {
         playerState: { ...state.playerState, inventory },
@@ -85,7 +68,7 @@ export const createPlayerInventorySlice: StateCreator<
 
   equipItem: (itemId) =>
     set((state) => {
-      const invIdx = state.playerState.inventory.findIndex((i) => i.id === itemId);
+      const invIdx = findInventoryItemIndex(state.playerState.inventory, itemId);
       if (invIdx < 0) return state;
 
       const slot = getEquipmentSlot(itemId) as EquipmentSlot | undefined;

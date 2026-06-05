@@ -10,6 +10,8 @@
 import { useRef, useMemo, useEffect } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
+import { useIsMobileVisual, useMobileVisualPerf } from '@/hooks/use-mobile';
+import { getParticleCount } from '@/shared/utils/mobileParticleScale';
 
 // ═══════════════════════════════════════════════════
 //  DUST MOTES — small, slow particles caught in light
@@ -44,7 +46,18 @@ const DUST_CONFIGS: Record<string, DustConfig> = {
 };
 
 export function DustMotes({ sceneId }: { sceneId: string }) {
-  const config = DUST_CONFIGS[sceneId];
+  const baseConfig = DUST_CONFIGS[sceneId];
+  const isMobile = useIsMobileVisual();
+  const { visualLite } = useMobileVisualPerf();
+
+  const config = useMemo(() => {
+    if (!baseConfig) return null;
+    return {
+      ...baseConfig,
+      count: getParticleCount(baseConfig.count, isMobile, visualLite),
+    };
+  }, [baseConfig, isMobile, visualLite]);
+
   if (!config) return null;
   return <DustSystem config={config} />;
 }
@@ -82,6 +95,12 @@ function DustSystem({ config }: { config: DustConfig }) {
     geo.setAttribute('position', new THREE.BufferAttribute(positions.slice(), 3));
     return geo;
   }, [positions]);
+
+  useEffect(() => {
+    return () => {
+      geometry.dispose();
+    };
+  }, [geometry]);
 
   useFrame((_, delta) => {
     if (!pointsRef.current) return;
@@ -162,7 +181,18 @@ const RAIN_CONFIGS: Record<string, RainConfig> = {
 };
 
 export function RainStreaks({ sceneId }: { sceneId: string }) {
-  const config = RAIN_CONFIGS[sceneId];
+  const baseConfig = RAIN_CONFIGS[sceneId];
+  const isMobile = useIsMobileVisual();
+  const { visualLite } = useMobileVisualPerf();
+
+  const config = useMemo(() => {
+    if (!baseConfig) return null;
+    return {
+      ...baseConfig,
+      count: getParticleCount(baseConfig.count, isMobile, visualLite),
+    };
+  }, [baseConfig, isMobile, visualLite]);
+
   if (!config) return null;
   return <RainSystem config={config} />;
 }
@@ -201,6 +231,12 @@ function RainSystem({ config }: { config: RainConfig }) {
     geo.setAttribute('position', new THREE.BufferAttribute(positions.slice(), 3));
     return geo;
   }, [positions]);
+
+  useEffect(() => {
+    return () => {
+      geometry.dispose();
+    };
+  }, [geometry]);
 
   useFrame((_, delta) => {
     if (!pointsRef.current) return;
@@ -277,7 +313,18 @@ const EMBER_CONFIGS: Record<string, EmberConfig> = {
 };
 
 export function EmberParticles({ sceneId }: { sceneId: string }) {
-  const config = EMBER_CONFIGS[sceneId];
+  const baseConfig = EMBER_CONFIGS[sceneId];
+  const isMobile = useIsMobileVisual();
+  const { visualLite } = useMobileVisualPerf();
+
+  const config = useMemo(() => {
+    if (!baseConfig) return null;
+    return {
+      ...baseConfig,
+      count: getParticleCount(baseConfig.count, isMobile, visualLite),
+    };
+  }, [baseConfig, isMobile, visualLite]);
+
   if (!config) return null;
   return <EmberSystem config={config} />;
 }
@@ -311,6 +358,12 @@ function EmberSystem({ config }: { config: EmberConfig }) {
     geo.setAttribute('position', new THREE.BufferAttribute(positions.slice(), 3));
     return geo;
   }, [positions]);
+
+  useEffect(() => {
+    return () => {
+      geometry.dispose();
+    };
+  }, [geometry]);
 
   useFrame((_, delta) => {
     if (!pointsRef.current) return;
@@ -387,7 +440,18 @@ const SNOW_CONFIGS: Record<string, SnowConfig> = {
 };
 
 export function SnowDrift({ sceneId }: { sceneId: string }) {
-  const config = SNOW_CONFIGS[sceneId];
+  const baseConfig = SNOW_CONFIGS[sceneId];
+  const isMobile = useIsMobileVisual();
+  const { visualLite } = useMobileVisualPerf();
+
+  const config = useMemo(() => {
+    if (!baseConfig) return null;
+    return {
+      ...baseConfig,
+      count: getParticleCount(baseConfig.count, isMobile, visualLite),
+    };
+  }, [baseConfig, isMobile, visualLite]);
+
   if (!config) return null;
   return <SnowSystem config={config} />;
 }
@@ -431,6 +495,12 @@ function SnowSystem({ config }: { config: SnowConfig }) {
     geo.setAttribute('position', new THREE.BufferAttribute(positions.slice(), 3));
     return geo;
   }, [positions]);
+
+  useEffect(() => {
+    return () => {
+      geometry.dispose();
+    };
+  }, [geometry]);
 
   useFrame((_, delta) => {
     if (!pointsRef.current) return;

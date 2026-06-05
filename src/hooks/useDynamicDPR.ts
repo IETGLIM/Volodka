@@ -53,8 +53,15 @@ export function useDynamicDPR(options: DynamicDPROptions): [number, number] {
 
   const [dpr, setDpr] = useState<[number, number]>(targetDpr);
 
-  // Store timestamp+fps pairs for rolling window
-  const frameBuffer = useRef<Array<{ time: number; fps: number }>>([]);
+  // Ring buffer for O(1) push/trim (replaces Array.shift O(n) pruning)
+  const bufferCapacityRef = useRef(Math.max(120, Math.ceil(120 * windowMs / 1000)));
+  bufferCapacityRef.current = Math.max(120, Math.ceil(120 * windowMs / 1000));
+  const frameBuffer = useRef<Array<{ time: number; fps: number }>>(
+    new Array(bufferCapacityRef.current),
+  );
+  const writeIndex = useRef(0);
+  const readIndex = useRef(0);
+  const bufferCount = useRef(0);
   const lastTime = useRef(performance.now());
 
   // FIX: Stabilization counters to prevent rapid DPR oscillation
@@ -63,6 +70,12 @@ export function useDynamicDPR(options: DynamicDPROptions): [number, number] {
 
   // Continuously measure FPS
   useEffect(() => {
+    const capacity = bufferCapacityRef.current;
+    frameBuffer.current = new Array(capacity);
+    writeIndex.current = 0;
+    readIndex.current = 0;
+    bufferCount.current = 0;
+
     let rafId: number;
     const measure = () => {
       const now = performance.now();
@@ -70,15 +83,24 @@ export function useDynamicDPR(options: DynamicDPROptions): [number, number] {
       lastTime.current = now;
       const fps = delta > 0 ? 1000 / delta : 60;
 
-      frameBuffer.current.push({ time: now, fps });
+      const buf = frameBuffer.current;
+      const cap = bufferCapacityRef.current;
+      buf[writeIndex.current] = { time: now, fps };
+      writeIndex.current = (writeIndex.current + 1) % cap;
+      if (bufferCount.current < cap) {
+        bufferCount.current++;
+      } else {
+        readIndex.current = (readIndex.current + 1) % cap;
+      }
 
-      // Prune old entries outside the measurement window
+      // Prune expired entries from the read side — O(1) amortized per frame
       const cutoff = now - windowMs;
       while (
-        frameBuffer.current.length > 0 &&
-        frameBuffer.current[0].time < cutoff
+        bufferCount.current > 0 &&
+        buf[readIndex.current].time < cutoff
       ) {
-        frameBuffer.current.shift();
+        readIndex.current = (readIndex.current + 1) % cap;
+        bufferCount.current--;
       }
 
       rafId = requestAnimationFrame(measure);
@@ -90,10 +112,17 @@ export function useDynamicDPR(options: DynamicDPROptions): [number, number] {
   // Adjust DPR periodically with stabilization
   useEffect(() => {
     const interval = setInterval(() => {
-      const buffer = frameBuffer.current;
-      if (buffer.length < 20) return; // Not enough data yet
+      const buf = frameBuffer.current;
+      const count = bufferCount.current;
+      if (count < 20) return; // Not enough data yet
 
-      const avgFps = buffer.reduce((sum, e) => sum + e.fps, 0) / buffer.length;
+      let sum = 0;
+      const cap = bufferCapacityRef.current;
+      for (let i = 0; i < count; i++) {
+        const idx = (readIndex.current + i) % cap;
+        sum += buf[idx].fps;
+      }
+      const avgFps = sum / count;
 
       // FIX: Track consecutive windows before adjusting DPR
       if (avgFps < lowFpsThreshold) {

@@ -4,26 +4,35 @@
  *  used exclusively in the battle scene.
  */
 
-import { useRef, useMemo } from 'react';
+import { useRef, useMemo, useEffect } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
+import { useIsMobileVisual, useMobileVisualPerf } from '@/hooks/use-mobile';
+import { getParticleCount } from '@/shared/utils/mobileParticleScale';
 
-const PARTICLE_COUNT = 200;
+const BASE_PARTICLE_COUNT = 200;
 const BOX_SIZE: [number, number, number] = [12, 8, 12];
 
 export function MatrixFogParticles() {
+  const isMobile = useIsMobileVisual();
+  const { visualLite } = useMobileVisualPerf();
+  const particleCount = useMemo(
+    () => getParticleCount(BASE_PARTICLE_COUNT, isMobile, visualLite),
+    [isMobile, visualLite],
+  );
+
   const pointsRef = useRef<THREE.Points>(null);
   const materialRef = useRef<THREE.PointsMaterial>(null);
   const timeRef = useRef(0);
 
   const { positions, phases, velocities } = useMemo(() => {
-    const pos = new Float32Array(PARTICLE_COUNT * 3);
-    const pha = new Float32Array(PARTICLE_COUNT);
-    const vel = new Float32Array(PARTICLE_COUNT * 3);
+    const pos = new Float32Array(particleCount * 3);
+    const pha = new Float32Array(particleCount);
+    const vel = new Float32Array(particleCount * 3);
 
     const [bx, by, bz] = BOX_SIZE;
 
-    for (let i = 0; i < PARTICLE_COUNT; i++) {
+    for (let i = 0; i < particleCount; i++) {
       const i3 = i * 3;
 
       pos[i3] = (Math.random() - 0.5) * bx;
@@ -39,13 +48,19 @@ export function MatrixFogParticles() {
     }
 
     return { positions: pos, phases: pha, velocities: vel };
-  }, []);
+  }, [particleCount]);
 
   const geometry = useMemo(() => {
     const geo = new THREE.BufferGeometry();
     geo.setAttribute('position', new THREE.BufferAttribute(positions.slice(), 3));
     return geo;
   }, [positions]);
+
+  useEffect(() => {
+    return () => {
+      geometry.dispose();
+    };
+  }, [geometry]);
 
   useFrame((_, delta) => {
     if (!pointsRef.current) return;
@@ -56,7 +71,7 @@ export function MatrixFogParticles() {
     const posArray = posAttr.array as Float32Array;
     const [bx, by, bz] = BOX_SIZE;
 
-    for (let i = 0; i < PARTICLE_COUNT; i++) {
+    for (let i = 0; i < particleCount; i++) {
       const i3 = i * 3;
       const phase = phases[i];
 

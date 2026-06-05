@@ -4,18 +4,18 @@
  * data across all slices. */
 
 import type { StateCreator } from 'zustand';
-import { sanitizeExplorationSceneId } from '@/config/scenes';
 import { eventBus } from '@/engine/EventBus';
 import { validateSaveData, SAVE_VERSION } from '@/shared/validation/saveSchema';
-import {
-  createDefaultPlayerState,
-  createDefaultExploration,
-  createDefaultTutorialFlags,
-  pushNotification,
-  type GameNotification,
-} from '../shared';
+import { pushNotification } from '../shared';
 import type { GameStoreState } from '../types';
+import { readWorldFromPlayer } from '../crossSliceReads';
+import {
+  createDefaultResetState,
+  pickSavePayload,
+  storePatchFromSave,
+} from '../persistedState';
 import { resetAllPoemEffects } from '@/engine/PoemPowerSystem';
+import { clearAutoCloseTimers } from './explorationSlice';
 
 /* ─── localStorage key ─── */
 const SAVE_KEY = 'volodka_save';
@@ -48,91 +48,17 @@ export const createSaveSlice: StateCreator<
   resetGame: () => {
     // Clear module-scoped poem effects (activeEffects array + TTL flags)
     resetAllPoemEffects();
+    // Clear module-scoped interactive-object auto-close timers
+    clearAutoCloseTimers();
 
-    set({
-      mode: 'menu',
-      currentNodeId: 'start',
-      playerState: createDefaultPlayerState(),
-      exploration: createDefaultExploration(),
-      quests: [],
-      collectedPoems: [],
-      npcRelations: [],
-      tutorialFlags: createDefaultTutorialFlags(),
-      lastSaveTimestamp: null,
-      lastAutoSaveTimestamp: null,
-      showStoryOverlay: false,
-      matrixRainEnabled: true,
-      glitchIntensity: 0,
-      noirMode: false,
-      poemPowers: {},
-      notifications: [],
-      activeTTLFlags: [],
-      activeCutsceneId: null,
-      cutsceneWaypoints: [],
-      weatherEnabled: true,
-      rainIntensity: 0.7,
-      musicVolume: 0.5,
-      musicEnabled: true,
-      interactiveObjectStates: {},
-      discoveredScenes: ['volodka_room'],
-      triggeredCutscenes: [],
-      npcAffinity: {},
-      acceptedDailyMissions: [],
-      lastDailyReset: 0,
-      journalOpen: false,
-      journalTab: 'notes',
-      loreEntries: [],
-      conversationLog: {},
-      introSeen: false,
-      unlockedAchievements: [],
-      achievementProgress: {
-        visitedScenes: [],
-        combatVictories: 0,
-        consecutiveVictories: 0,
-        maxComboAchieved: 0,
-        hasCriticalHit: false,
-        defeatedEnemyTypes: [],
-        nightTimeHours: 0,
-        poemPowerUsedInCombat: false,
-      },
-    } as Partial<GameStoreState>);
+    set(createDefaultResetState());
   },
 
   saveGame: (options) => {
     const state = get();
     const source = options?.source ?? 'manual';
 
-    // Build compact save payload from full store state
-    const payload = {
-      mode: state.mode,
-      currentNodeId: state.currentNodeId,
-      playerState: state.playerState,
-      exploration: state.exploration,
-      quests: state.quests,
-      collectedPoems: state.collectedPoems,
-      npcRelations: state.npcRelations,
-      tutorialFlags: state.tutorialFlags,
-      interactiveObjectStates: state.interactiveObjectStates,
-      loreEntries: state.loreEntries,
-      conversationLog: state.conversationLog,
-      poemPowers: state.poemPowers,
-      activeTTLFlags: state.activeTTLFlags,
-      journalTab: state.journalTab,
-      weatherEnabled: state.weatherEnabled,
-      rainIntensity: state.rainIntensity,
-      musicEnabled: state.musicEnabled,
-      musicVolume: state.musicVolume,
-      introSeen: state.introSeen,
-      unlockedAchievements: state.unlockedAchievements,
-      discoveredScenes: state.discoveredScenes,
-      triggeredCutscenes: state.triggeredCutscenes ?? [],
-      npcAffinity: state.npcAffinity ?? {},
-      showStoryOverlay: state.showStoryOverlay ?? false,
-      acceptedDailyMissions: state.acceptedDailyMissions ?? [],
-      lastDailyReset: state.lastDailyReset ?? 0,
-      achievementProgress: state.achievementProgress,
-      savedAt: Date.now(),
-    };
+    const payload = pickSavePayload(state);
 
     try {
       const payloadWithVersion = { ...payload, saveVersion: SAVE_VERSION };
@@ -151,7 +77,7 @@ export const createSaveSlice: StateCreator<
       // Notify the user instead of silently failing
       set({
         notifications: pushNotification(
-          get().notifications,
+          readWorldFromPlayer(get()).notifications,
           'quest',
           'Ошибка сохранения',
         ),
@@ -173,7 +99,7 @@ export const createSaveSlice: StateCreator<
 
         set({
           notifications: pushNotification(
-            get().notifications,
+            readWorldFromPlayer(get()).notifications,
             'quest',
             validation.error,
           ),
@@ -182,48 +108,8 @@ export const createSaveSlice: StateCreator<
         return;
       }
 
-      const payload = validation.data;
-
-      // Sanitize the loaded scene ID (extra safety layer)
-      const sanitizedSceneId = sanitizeExplorationSceneId(payload.exploration.currentSceneId);
-
-      set({
-        mode: payload.mode,
-        currentNodeId: payload.currentNodeId,
-        playerState: {
-          ...payload.playerState,
-          // Migration: ensure credits field exists for old saves
-          credits: payload.playerState.credits ?? 100,
-        },
-        exploration: {
-          ...payload.exploration,
-          currentSceneId: sanitizedSceneId,
-        },
-        quests: payload.quests,
-        collectedPoems: payload.collectedPoems,
-        npcRelations: payload.npcRelations,
-        tutorialFlags: payload.tutorialFlags,
-        interactiveObjectStates: payload.interactiveObjectStates,
-        loreEntries: payload.loreEntries,
-        conversationLog: payload.conversationLog,
-        poemPowers: payload.poemPowers,
-        activeTTLFlags: payload.activeTTLFlags,
-        journalTab: payload.journalTab,
-        weatherEnabled: payload.weatherEnabled,
-        rainIntensity: payload.rainIntensity,
-        musicEnabled: payload.musicEnabled,
-        musicVolume: payload.musicVolume,
-        lastSaveTimestamp: payload.savedAt,
-        introSeen: payload.introSeen,
-        unlockedAchievements: payload.unlockedAchievements,
-        discoveredScenes: payload.discoveredScenes,
-        triggeredCutscenes: payload.triggeredCutscenes ?? [],
-        npcAffinity: payload.npcAffinity ?? {},
-        showStoryOverlay: payload.showStoryOverlay ?? false,
-        acceptedDailyMissions: payload.acceptedDailyMissions ?? [],
-        lastDailyReset: payload.lastDailyReset ?? 0,
-        achievementProgress: payload.achievementProgress,
-      } as Partial<GameStoreState>);
+      clearAutoCloseTimers();
+      set(storePatchFromSave(validation.data));
 
       eventBus.emit('game:loaded', {} as Record<string, never>);
     } catch (err) {
@@ -232,7 +118,7 @@ export const createSaveSlice: StateCreator<
 
       set({
         notifications: pushNotification(
-          get().notifications,
+          readWorldFromPlayer(get()).notifications,
           'quest',
           'Ошибка загрузки',
         ),

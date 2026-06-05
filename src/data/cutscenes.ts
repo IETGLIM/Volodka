@@ -4,7 +4,7 @@
    Сцены между актами — кинематографические переходы.
 */
 
-import type { CameraWaypointData } from '@/shared/types/game';
+import type { CameraWaypointData } from '@/engine/events';
 
 /* ─── Cutscene definition ─── */
 export interface CutsceneDef {

@@ -16,6 +16,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { useGameStore } from '@/store/gameStore';
 import { useOrchestratorOverlay } from '@/store/selectors';
 import { eventBus } from '@/engine/EventBus';
+import { PHOTO_EVENTS, PHOTO_EMPTY_PAYLOAD } from '@/engine/events';
 import { audioEngine } from '@/engine/AudioEngine';
 import { musicEngine } from '@/engine/MusicEngine';
 import { SCENE_CONFIG } from '@/config/scenes';
@@ -24,6 +25,7 @@ import { STORY_NODES } from '@/data/storyNodes';
 import { DIALOGUE_NODES } from '@/data/dialogueNodes';
 import { getCutsceneForNode } from '@/data/cutscenes';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
+import { closeOpenMinigame, type MinigamePanelSetters } from '@/shared/constants/minigames';
 import { CUTSCENE_TIMINGS } from '@/shared/constants/transitionTimings';
 import { VirtualControlsContext, sharedVirtualControlsRef } from '@/engine/VirtualControlsState';
 import { processExpiredTTLFlags } from '@/engine/PoemPowerSystem';
@@ -232,6 +234,29 @@ export function GameOrchestrator() {
     handleExamineContinue,
     clearPendingTriggerZone,
   } = interaction;
+
+  const minigameSetters = useMemo<MinigamePanelSetters>(
+    () => ({
+      setCodebreakerOpen,
+      setOpenstackTerminalOpen,
+      setBashTerminalOpen,
+      setPoetryGameOpen,
+      setHackingGameOpen,
+      setMemoryGameOpen,
+      setQuizGameOpen,
+      setRhythmGameOpen,
+    }),
+    [
+      setCodebreakerOpen,
+      setOpenstackTerminalOpen,
+      setBashTerminalOpen,
+      setPoetryGameOpen,
+      setHackingGameOpen,
+      setMemoryGameOpen,
+      setQuizGameOpen,
+      setRhythmGameOpen,
+    ],
+  );
 
   // ── Mode transition overlay — persistent black backdrop that fades only when
   //    the 3D canvas signals it has rendered its first valid frame ──
@@ -715,6 +740,11 @@ export function GameOrchestrator() {
     return unsub;
   }, []);
 
+  // ── Daily mission reset check on load ──
+  useEffect(() => {
+    useGameStore.getState().checkDailyMissionResets();
+  }, []);
+
   // ── Daily mission progress for crafting ──
   // Listens for item:crafted events emitted by craftItem() and
   // updates the corresponding daily mission objectives.
@@ -759,12 +789,14 @@ export function GameOrchestrator() {
     codebreakerOpen, openstackTerminalOpen, bashTerminalOpen, poetryGameOpen, hackingGameOpen, memoryGameOpen, quizGameOpen, rhythmGameOpen,
     examineOpen, mode,
   });
+  const minigameSettersRef = useRef(minigameSetters);
   useEffect(() => {
     panelStateRef.current = {
       activePanel,
       codebreakerOpen, openstackTerminalOpen, bashTerminalOpen, poetryGameOpen, hackingGameOpen, memoryGameOpen, quizGameOpen, rhythmGameOpen,
       examineOpen, mode,
     };
+    minigameSettersRef.current = minigameSetters;
   });
 
   useEffect(() => {
@@ -784,7 +816,7 @@ export function GameOrchestrator() {
       }
       if (e.code === 'KeyQ') { dispatchPanel('quests'); }
       if (e.code === 'KeyI' || e.code === 'Tab') { e.preventDefault(); dispatchPanel('inventory'); }
-      if (e.code === 'KeyP' && !e.ctrlKey && !e.shiftKey) { eventBus.emit('photo:toggle', {}); }
+      if (e.code === 'KeyP' && !e.ctrlKey && !e.shiftKey) { eventBus.emit(PHOTO_EVENTS.toggle, PHOTO_EMPTY_PAYLOAD); }
       if (e.code === 'KeyP' && e.shiftKey) { e.preventDefault(); dispatchPanel('poetry'); }
       if (e.code === 'KeyM') { dispatchPanel('miniGameHub'); }
       if (e.code === 'KeyN') { dispatchPanel('npcRelation'); }
@@ -839,15 +871,8 @@ export function GameOrchestrator() {
           clearPendingTriggerZone();
           return;
         }
-        // Close mini-game overlays
-        if (ps.codebreakerOpen) { setCodebreakerOpen(false); return; }
-        if (ps.openstackTerminalOpen) { setOpenstackTerminalOpen(false); return; }
-        if (ps.bashTerminalOpen) { setBashTerminalOpen(false); return; }
-        if (ps.poetryGameOpen) { setPoetryGameOpen(false); return; }
-        if (ps.hackingGameOpen) { setHackingGameOpen(false); return; }
-        if (ps.memoryGameOpen) { setMemoryGameOpen(false); return; }
-        if (ps.quizGameOpen) { setQuizGameOpen(false); return; }
-        if (ps.rhythmGameOpen) { setRhythmGameOpen(false); return; }
+        // Close mini-game overlays (first open minigame wins)
+        if (closeOpenMinigame(ps, minigameSettersRef.current)) return;
         // Close any active panel (managed by useReducer — mutual exclusivity)
         if (ps.activePanel !== null) { dispatchPanel(null); return; }
         // Close journal (managed by gameStore)

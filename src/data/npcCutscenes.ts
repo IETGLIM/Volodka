@@ -3,7 +3,7 @@
    Each cutscene creates a dramatic reveal before dialogue starts.
 */
 
-import type { CameraWaypointData } from '@/shared/types/game';
+import type { CameraWaypointData } from '@/engine/events';
 
 /* ─── NPC Cutscene definition ─── */
 export interface NPCCutsceneDef {

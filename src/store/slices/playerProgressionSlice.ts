@@ -4,7 +4,7 @@
 import type { StateCreator } from 'zustand';
 import type { TrainablePlayerSkill } from '@/shared/types/game';
 import type { PerkEffect } from '@/data/perks';
-import { pushNotification } from '../shared';
+import { applyXpGain, pushNotification } from '../shared';
 import type { GameStoreState } from '../types';
 import { eventBus } from '@/engine/EventBus';
 import { SKILL_TREE_MAP, SKILL_EFFECT_MAP } from '@/data/skillTree';
@@ -36,27 +36,10 @@ export const createPlayerProgressionSlice: StateCreator<
 > = (set, get) => ({
   addXp: (amount) =>
     set((state) => {
-      const prog = state.playerState.progression;
-      const prevLevel = prog.level;
-      let newXp = prog.xp + amount;
-      let newLevel = prevLevel;
-      let newXpToNext = prog.xpToNextLevel;
-      let newSkillPoints = prog.skillPoints;
-      let newPerkPoints = prog.perkPoints;
-      let perkPointsGained = 0;
+      const result = applyXpGain(state.playerState.progression, amount);
+      const { progression, prevLevel, levelsGained, perkPointsGained } = result;
+      const newLevel = progression.level;
 
-      while (newXp >= newXpToNext) {
-        newXp -= newXpToNext;
-        newLevel += 1;
-        newSkillPoints += 1;
-        if (newLevel % 3 === 0) {
-          newPerkPoints += 1;
-          perkPointsGained += 1;
-        }
-        newXpToNext = Math.floor(100 * Math.pow(1.25, newLevel - 1));
-      }
-
-      const levelsGained = newLevel - prevLevel;
       const levelUpMessage = (() => {
         if (levelsGained <= 0) return '';
         const skillPart =
@@ -92,14 +75,7 @@ export const createPlayerProgressionSlice: StateCreator<
       return {
         playerState: {
           ...state.playerState,
-          progression: {
-            ...prog,
-            level: newLevel,
-            xp: newXp,
-            xpToNextLevel: newXpToNext,
-            skillPoints: newSkillPoints,
-            perkPoints: newPerkPoints,
-          },
+          progression,
         },
         notifications,
       };

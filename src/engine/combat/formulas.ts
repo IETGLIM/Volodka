@@ -2,6 +2,7 @@
 
 import type { CombatState } from './types';
 import { getGameStore } from '@/store/gameStore';
+import { calculateXpToNextLevel as storeCalculateXpToNextLevel } from '@/store/shared';
 
 /* ─── Player Stats from Game Store ─── */
 
@@ -42,9 +43,7 @@ export function isPowerAvailable(poemId: string, state: CombatState): boolean {
 
 /* ─── XP / Leveling ─── */
 
-export function calculateXpToNextLevel(level: number): number {
-  return Math.floor(100 * Math.pow(1.25, level - 1));
-}
+export const calculateXpToNextLevel = storeCalculateXpToNextLevel;
 
 export function addXp(amount: number): void {
   const store = getGameStore();

@@ -133,18 +133,29 @@ export interface StoryEffect {
 // ─── Game Effect (reusable for triggers) ───
 export type GameEffect = StoryEffect;
 
+/** Shared gate for story and dialogue choices. */
+export interface ChoiceCondition {
+  minKarma?: number;
+  maxKarma?: number;
+  minSkill?: Partial<PlayerSkills>;
+  /** Probabilistic skill gate; difficulty is validated as integer 1–20 at runtime. */
+  minSkillCheck?: MinSkillCheck;
+  flag?: string;
+  /** G11: Minimum NPC relationship level required to see this choice */
+  minNpcRelation?: number;
+  /** Minimum act required to see this choice (1 or 2) */
+  requiredAct?: number;
+  /** G14: Time-of-day range when this choice is visible (hour: 0-24) */
+  minTimeOfDay?: number;
+  /** G14: Time-of-day upper bound (hour: 0-24) */
+  maxTimeOfDay?: number;
+}
+
 export interface StoryChoice {
   text: string;
   next: string | null;
   effects?: StoryEffect[];
-  condition?: {
-    minKarma?: number;
-    maxKarma?: number;
-    minSkill?: Partial<PlayerSkills>;
-    flag?: string;
-    /** Minimum act required to see this choice (1 or 2) */
-    requiredAct?: number;
-  };
+  condition?: ChoiceCondition;
 }
 
 export interface StoryNode {
@@ -171,22 +182,7 @@ export interface DialogueChoice {
   text: string;
   next: string | null;
   effects?: StoryEffect[];
-  condition?: {
-    minKarma?: number;
-    maxKarma?: number;
-    minSkill?: Partial<PlayerSkills>;
-    /** Probabilistic skill gate; difficulty is validated as integer 1–20 at runtime. */
-    minSkillCheck?: MinSkillCheck;
-    flag?: string;
-    /** G11: Minimum NPC relationship level required to see this choice */
-    minNpcRelation?: number;
-    /** Minimum act required to see this choice (1 or 2) */
-    requiredAct?: number;
-    /** G14: Time-of-day range when this choice is visible (hour: 0-24) */
-    minTimeOfDay?: number;
-    /** G14: Time-of-day upper bound (hour: 0-24) */
-    maxTimeOfDay?: number;
-  };
+  condition?: ChoiceCondition;
 }
 
 // ─── NPC ───
@@ -572,180 +568,4 @@ export interface GameState {
 // ─── Weather (for events) ───
 export type EventWeatherType = 'clear' | 'rain' | 'snow' | 'fog' | 'storm';
 
-// ─── Events ───
-export interface EventMap {
-  'sound:play': { type: string };
-  'ui:exploration_message': { text: string };
-  'exploration:footstep': { position: [number, number, number]; yaw: number };
-  'quest:accepted': { questId: string; questTitle: string };
-  'quest:completed': { questId: string; npcId?: string };
-  'quest:reward_applied': { questId: string; questTitle: string; xpGained: number; rewards: string[] };
-  'quest:failed': { questId: string; reason: string };
-  'quest:objective_updated': { questId: string; objectiveId: string };
-  'quest:poem_bypass': { questId: string; objectiveId: string; poemId: string };
-  'loot:reward': { itemId: string; name: string };
-  'skill:level_up': { skill: TrainablePlayerSkill; level: number };
-  'game:saved': { timestamp: number; source: 'auto' | 'manual' };
-  'game:loaded': Record<string, never>;
-  'npc:talked': { npcId: string; dialogueNodeId?: string };
-  'object:interact': { objectId: string; sceneId: SceneId; triggerZoneId?: string };
-  'object:highlight': { triggerZoneId: string; position: [number, number, number]; size: [number, number, number] };
-  'skill:check': { skill: TrainablePlayerSkill; difficulty: number; success: boolean };
-  'scene:transition': { targetScene: SceneId; spawnAt: [number, number, number] };
-  'scene:enter': { sceneId: SceneId; fromSceneId: SceneId };
-  'quest:complete_objective': { questId: string; objectiveId: string };
-  'minigame:open': { gameType: string };
-  'minigame:close': Record<string, never>;
-  'minigame:complete': { gameType: string; success: boolean; reward?: StoryEffect[] };
-  'fx:glitch': { intensity: number; duration: number };
-  'poem:power_used': { poemId: string; powerName: string };
-  'poem:power_expired': { flagKey: string; poemId: string; expiredAt: number };
-  'interaction:start': { npcId: string };
-  'interaction:state_change': { state: number; npcId?: string };
-  'interaction:end': Record<string, never>;
-  'interaction:hint': { label: string; key: string; description?: string; type: 'npc' | 'object' | 'exit' | 'item' };
-  'player:stand_up': Record<string, never>;
-  'npc:animation': { npcId: string; state: 'idle' | 'talk' | 'listen' | 'gesture' };
-  'npc:interact_staged': { npcId: string };
-
-  /* ── Mobile interact event (from virtual HUD button) ── */
-  'interact:press': { source?: string };
-
-  /* ── Canvas lifecycle events ── */
-  'canvas:first-frame': Record<string, never>;
-  'canvas:context-lost': Record<string, never>;
-
-  /* ── Camera events ── */
-  'camera:cutscene_start': { cutsceneId: string; waypoints: CameraWaypointData[] };
-  'camera:cutscene_end': Record<string, never>;
-  'camera:npc_cutscene_start': { npcId: string; waypoints: CameraWaypointData[] };
-  'camera:npc_cutscene_end': { npcId: string };
-  'camera:combat_impact': { intensity: number };
-  'camera:combat_shake': { intensity: number };
-  'camera:dialogue_speaker': { speaker: 'npc' | 'player' | 'narrator' | 'unknown' };
-  'camera:scene_flythrough': { targetPos: [number, number, number]; targetLookAt: [number, number, number] };
-  'camera:cinematic_transition': { phase: 'fadeOut' | 'hold' | 'fadeIn'; sceneId: SceneId };
-  'camera:recenter': Record<string, never>;
-  'camera:intro_wake': Record<string, never>;
-
-  /* ── Intro wake-up 3D cutscene events ── */
-  'intro:wakeup_sequence': Record<string, never>;
-  'intro:wakeup_complete': Record<string, never>;
-
-  /* ── Combat events ── */
-  'combat:start': { enemyType: EnemyType };
-  'combat:turn': { turn: number; isPlayerTurn: boolean };
-  'combat:action': { action: CombatAction; damage?: number };
-  'combat:victory': { enemyType: EnemyType; xpGained: number; karmaGained: number; lootItemId?: string };
-  'combat:defeat': { enemyType: EnemyType; energyLost: number; karmaLost: number };
-  'combat:fled': { enemyType: EnemyType };
-  'combat:end': Record<string, never>;
-  'combat:hit': { damage: number; isPlayerHit: boolean; direction?: 'left' | 'right' | 'front' | 'back'; source?: string };
-  /** Explicit damage number event for floating damage display */
-  'combat:damage': { amount: number; source?: string; critical?: boolean };
-  /** Explicit heal number event for floating heal display */
-  'combat:heal': { amount: number; source?: string };
-  /** G12: Emitted when returning to a story node after combat */
-  'combat:story_continue': { nodeId: string };
-
-  /* ── Weather events ── */
-  'weather:rain': { active: boolean; intensity: number };
-  'weather:snow': { active: boolean; intensity: number };
-  'weather:changed': { weatherType: EventWeatherType; temperature: number; debuffs?: string[] };
-
-  /* ── NPC gift events ── */
-  'npc:gift': { npcId: string; itemId: string; preference: string; affinityChange: number };
-
-  /* ── Choice reactivity events ── */
-  'choice:made': { karmaChange: number; npcId?: string; relationChange?: number };
-
-  /* ── Poem events ── */
-  'poem:collected': { poemId: string };
-  'poem:show_cutscene': { poemId: string };
-  'poem:cutscene_end': Record<string, never>;
-
-  /* ── Lore discovery events ── */
-  'lore:discovered': { id: string; title: string; rarity: string };
-
-  /* ── Cutscene events ── */
-  'cutscene:overlay': { text: string; subtitle?: string; accentColor: string; durationMs: number; type?: 'act_transition' | 'character_intro' | 'story_moment' | 'revelation'; letterboxStyle?: 'full' | 'thin' | 'none'; showEmbers?: boolean; glitchIntensity?: number };
-  'cutscene:overlay_end': Record<string, never>;
-
-  /* ── Game notification events ── */
-  'game:notification': { title: string; subtitle?: string; type: 'combat' | 'scene' | 'achievement' | 'quest' | 'info' };
-
-  /* ── Toast notification events (unified: replaces ToastManager's internal pub/sub) ── */
-  'toast:add': { id: string; type: 'karma' | 'energy' | 'stress' | 'skill' | 'poem' | 'quest'; message: string; delta?: number; timestamp: number };
-
-  /* ── Player level-up events ── */
-  'player:levelup': {
-    newLevel: number;
-    prevLevel: number;
-    levelsGained?: number;
-    perkPointsGained?: number;
-    perkPointGained?: boolean;
-  };
-
-  /* ── Player heal events ── */
-  'player:heal': { amount: number };
-
-  /* ── Screen effect events ── */
-  'fx:flash': { color: string; opacity: number; duration: number };
-  'fx:shake': { intensity: number; duration: number };
-  'fx:vignette': { intensity: number; duration: number };
-  'fx:chromatic': { intensity: number; duration: number };
-  'fx:slowmo': { duration: number };
-  'fx:achievement': { title: string; description: string; icon?: string };
-  'achievement:unlocked': { achievementId: string; title: string; description: string; icon: string; category: string };
-  'fx:xp_gain': { amount: number; source?: string };
-  'fx:stat_change': { stat: string; delta: number; type: 'positive' | 'negative' };
-
-  /* ── Crafting discovery events ── */
-  'crafting:discovered': { recipeId: string; recipeName: string; rarity: import('@/data/items').ItemRarity };
-  'item:crafted': { recipeId: string; recipeName: string; category: string };
-
-  /* ── Photo mode events ── */
-  'photo:toggle': Record<string, never>;
-  'photo:active': Record<string, never>;
-  'photo:inactive': Record<string, never>;
-
-  /* ── World Clock events ── */
-  /** Emitted when the world clock ticks (time advances organically or via action) */
-  'world:hour_changed': { hour: number; previousHour: number; npcStates: Record<string, { position: [number, number, number]; sceneId: SceneId }> };
-  /** Emitted when the world clock performs a periodic tick */
-  'world:tick': { hour: number; deltaHours: number };
-  /** Emitted when open-world chunk streaming loads/unloads regions */
-  'world:chunks_changed': {
-    toLoad: string[];
-    toUnload: string[];
-    active: string[];
-    playerChunk: string;
-  };
-
-  /* ── Guided Story events ── */
-  /** Emitted when the player needs guidance (next objective) */
-  'story:guidance_update': { objectiveText: string; objectiveType: 'talk_to_npc' | 'visit_location' | 'complete_quest' | 'collect_item' | 'make_choice'; targetId: string; urgency: 'optional' | 'recommended' | 'required'; actNumber: number; chapterTitle: string };
-  /** Emitted when transitioning between acts */
-  'story:act_transition': { fromAct: number; toAct: number; chapterTitle: string };
-  /** Emitted when a new quest should be offered to the player */
-  'story:quest_available': { questId: string; questTitle: string; questType: string; npcId?: string };
-  /** Emitted when completing a golden path quest unlocks the next one in the chain */
-  'story:quest_chain_unlock': {
-    completedQuestId: string;
-    completedQuestTitle: string;
-    nextQuestId: string;
-    nextQuestTitle: string;
-    nextQuestType: string;
-    npcId?: string;
-    actNumber: number;
-  };
-}
-
-/** Waypoint data for cutscene camera (serializable) */
-export interface CameraWaypointData {
-  position: [number, number, number];
-  lookAt: [number, number, number];
-  fov: number;
-  duration: number;
-  controlPoint?: [number, number, number];
-}
+// EventMap / CameraWaypointData: import from '@/engine/events' (no re-export here — avoids cycle).

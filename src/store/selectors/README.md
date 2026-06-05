@@ -46,6 +46,12 @@ For engine code and event handlers outside React:
 - `selectQuests()`, `selectPlayerState()` — read current store reference
 - `getActiveQuests()`, `getQuestsByType()` — derived getters with reference-keyed memo cache
 
+## Cross-slice reads inside slices
+
+Store slices must **not** read other domains via `get().<otherSlice>.*`.
+Use typed accessors from `src/store/crossSliceReads.ts` (e.g. `readPlayerFromExploration`, `readWorldFromPlayer`).
+React/components continue to use hooks and `selectX()` from this folder.
+
 ## Adding a new selector
 
 1. **Primitive** → `useGamePrimitive` in the matching `*Selectors.ts` file

@@ -6,6 +6,7 @@ import * as THREE from 'three';
 import type { SceneId, NPCDefinition } from '@/shared/types/game';
 import { useGameStore } from '@/store/gameStore';
 import { getNPCsForScene, getCurrentScheduleEntry } from '@/engine/ScheduleEngine';
+import { buildScheduleContext } from '@/shared/scheduleContext';
 import { NPC_DEFINITIONS } from '@/data/npcDefinitions';
 import { EXPANDED_NPCS } from '@/data/expandedNPCs';
 import { NPC } from './NPC';
@@ -30,15 +31,16 @@ export function NPCSystem({
 }: NPCSystemProps) {
   const sceneId = useGameStore((s) => s.exploration.currentSceneId);
   const timeOfDay = useGameStore((s) => s.exploration.timeOfDay);
+  const scheduleCtx = useGameStore((s) => buildScheduleContext(s));
 
   // Compute visible NPCs from schedule
   const visibleNPCs = useMemo(() => {
-    const npcIds = getNPCsForScene(sceneId, timeOfDay);
+    const npcIds = getNPCsForScene(sceneId, timeOfDay, scheduleCtx);
     return npcIds
       .map((id) => {
         const def = ALL_NPC_DEFINITIONS.find((n) => n.id === id);
         if (!def) return null;
-        const entry = getCurrentScheduleEntry(id, timeOfDay);
+        const entry = getCurrentScheduleEntry(id, timeOfDay, scheduleCtx);
         return {
           definition: def,
           position: entry?.position ?? def.defaultPosition,
@@ -54,7 +56,7 @@ export function NPCSystem({
       activity: string;
       patrolWaypoints?: [number, number, number][];
     }>;
-  }, [sceneId, timeOfDay]);
+  }, [sceneId, timeOfDay, scheduleCtx]);
 
   return (
     <group>

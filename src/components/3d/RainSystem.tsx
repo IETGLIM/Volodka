@@ -1,8 +1,8 @@
 
 /* ─── Volodka RPG – AAA Rain Particle System ───
- *  High-performance rain using THREE.Points with BufferGeometry
- *  Supports configurable intensity, wind angle, ground splashes
- *  Emits weather:rain event for AudioEngine integration
+ *  GPU-driven rain via vertex shader (uTime uniform only per frame)
+ *  Adaptive particle counts for mobile / desktop
+ *  Probabilistic ground splashes with shader-based expansion
  */
 
 import { useRef, useMemo, useEffect } from 'react';
@@ -10,30 +10,25 @@ import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { useGameStore } from '@/store/gameStore';
 import { eventBus } from '@/engine/EventBus';
+import { useIsMobileVisual, useMobileVisualPerf } from '@/hooks/use-mobile';
+import { getParticleCount } from '@/shared/utils/mobileParticleScale';
 
 /** Rain configuration */
 interface RainConfig {
-  /** Number of rain particles */
   count: number;
-  /** Spawn box dimensions [width, height, depth] */
   boxSize: [number, number, number];
-  /** Fall speed range [min, max] */
   fallSpeedRange: [number, number];
-  /** Wind angle in radians (0 = straight down, positive = rightward lean) */
   windAngle: number;
-  /** Wind strength (horizontal push per second) */
   windStrength: number;
-  /** Rain drop length (visual elongation) */
   dropLength: number;
-  /** Color of rain drops */
   color: string;
-  /** Opacity of rain drops */
   opacity: number;
 }
 
-const RAIN_CONFIGS: Record<'light' | 'medium' | 'heavy', RainConfig> = {
+type RainLevel = 'light' | 'medium' | 'heavy';
+
+const RAIN_BASE: Record<RainLevel, Omit<RainConfig, 'count'>> = {
   light: {
-    count: 3000,
     boxSize: [30, 25, 30],
     fallSpeedRange: [10, 14],
     windAngle: 0.1,
@@ -43,7 +38,6 @@ const RAIN_CONFIGS: Record<'light' | 'medium' | 'heavy', RainConfig> = {
     opacity: 0.35,
   },
   medium: {
-    count: 8000,
     boxSize: [40, 28, 40],
     fallSpeedRange: [12, 18],
     windAngle: 0.15,
@@ -53,7 +47,6 @@ const RAIN_CONFIGS: Record<'light' | 'medium' | 'heavy', RainConfig> = {
     opacity: 0.45,
   },
   heavy: {
-    count: 14000,
     boxSize: [50, 30, 50],
     fallSpeedRange: [14, 22],
     windAngle: 0.2,
@@ -64,24 +57,108 @@ const RAIN_CONFIGS: Record<'light' | 'medium' | 'heavy', RainConfig> = {
   },
 };
 
-/* ─── Splash System ─── */
-const MAX_SPLASHES = 300;
-const SPLASH_LIFETIME = 0.4; // seconds
+/** Desktop particle counts (heavy was 14 000) */
+const DESKTOP_COUNTS: Record<RainLevel, number> = {
+  light: 3000,
+  medium: 5500,
+  heavy: 7000,
+};
 
-interface SplashData {
-  x: number;
-  z: number;
-  age: number;
-  alive: boolean;
-  size: number;
+const MAX_SPLASHES_BASE = 300;
+const SPLASH_LIFETIME = 0.4;
+
+function buildRainConfig(level: RainLevel, isMobile: boolean, visualLite: boolean): RainConfig {
+  return {
+    ...RAIN_BASE[level],
+    count: getParticleCount(DESKTOP_COUNTS[level], isMobile, visualLite),
+  };
 }
+
+const RAIN_VERT = /* glsl */ `
+  attribute vec3 aVelocity;
+
+  uniform float uTime;
+  uniform float uIntensity;
+  uniform vec3 uBoxSize;
+  uniform float uPointSize;
+
+  void main() {
+    float t = uTime * uIntensity;
+    float bx = uBoxSize.x;
+    float bz = uBoxSize.z;
+    float minY = -0.5;
+    float maxY = uBoxSize.y + 5.0;
+    float yRange = maxY - minY;
+
+    float rawY = position.y + aVelocity.y * t;
+    float y = minY + mod(rawY - minY + yRange, yRange);
+
+    float rawX = position.x + aVelocity.x * t;
+    float x = mod(rawX + bx * 0.5, bx) - bx * 0.5;
+
+    float rawZ = position.z + aVelocity.z * t;
+    float z = mod(rawZ + bz * 0.5, bz) - bz * 0.5;
+
+    vec4 mvPosition = modelViewMatrix * vec4(x, y, z, 1.0);
+    gl_PointSize = uPointSize * 300.0 / -mvPosition.z;
+    gl_Position = projectionMatrix * mvPosition;
+  }
+`;
+
+const RAIN_FRAG = /* glsl */ `
+  uniform vec3 uColor;
+  uniform float uOpacity;
+
+  void main() {
+    float dist = length(gl_PointCoord - vec2(0.5));
+    if (dist > 0.5) discard;
+    float alpha = smoothstep(0.5, 0.1, dist) * uOpacity;
+    gl_FragColor = vec4(uColor, alpha);
+  }
+`;
+
+const SPLASH_VERT = /* glsl */ `
+  attribute float aBirthTime;
+  attribute float aBaseSize;
+
+  uniform float uTime;
+  uniform float uSplashLifetime;
+
+  void main() {
+    float age = uTime - aBirthTime;
+    if (age < 0.0 || age > uSplashLifetime) {
+      gl_Position = vec4(0.0, 0.0, -2.0, 1.0);
+      gl_PointSize = 0.0;
+      return;
+    }
+
+    float t = age / uSplashLifetime;
+    float size = aBaseSize * t * (1.0 - t * t) * 2.0;
+    vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+    gl_PointSize = size * 300.0 / -mvPosition.z;
+    gl_Position = projectionMatrix * mvPosition;
+  }
+`;
+
+const SPLASH_FRAG = /* glsl */ `
+  uniform vec3 uColor;
+  uniform float uOpacity;
+
+  void main() {
+    float dist = length(gl_PointCoord - vec2(0.5));
+    if (dist > 0.5) discard;
+    float alpha = smoothstep(0.5, 0.2, dist) * uOpacity;
+    gl_FragColor = vec4(uColor, alpha);
+  }
+`;
 
 /** High-performance rain particle system */
 export function RainSystem({ intensity = 1 }: { intensity?: number }) {
   const rainEnabled = useGameStore((s) => s.weatherEnabled);
   const rainIntensity = useGameStore((s) => s.rainIntensity);
+  const isMobile = useIsMobileVisual();
+  const { visualLite } = useMobileVisualPerf();
 
-  // Determine config based on intensity
   const configLevel = useMemo(() => {
     const effectiveIntensity = intensity * rainIntensity;
     if (effectiveIntensity < 0.33) return 'light' as const;
@@ -89,80 +166,142 @@ export function RainSystem({ intensity = 1 }: { intensity?: number }) {
     return 'heavy' as const;
   }, [intensity, rainIntensity]);
 
-  const config = RAIN_CONFIGS[configLevel];
+  const config = useMemo(
+    () => buildRainConfig(configLevel, isMobile, visualLite),
+    [configLevel, isMobile, visualLite],
+  );
+
+  const maxSplashes = useMemo(
+    () => getParticleCount(MAX_SPLASHES_BASE, isMobile, visualLite),
+    [isMobile, visualLite],
+  );
 
   if (!rainEnabled) return null;
 
-  return <RainParticles config={config} intensity={intensity * rainIntensity} />;
+  return (
+    <RainParticles
+      config={config}
+      intensity={intensity * rainIntensity}
+      maxSplashes={maxSplashes}
+    />
+  );
 }
 
-function RainParticles({ config, intensity }: { config: RainConfig; intensity: number }) {
+function RainParticles({
+  config,
+  intensity,
+  maxSplashes,
+}: {
+  config: RainConfig;
+  intensity: number;
+  maxSplashes: number;
+}) {
   const pointsRef = useRef<THREE.Points>(null);
-  const materialRef = useRef<THREE.PointsMaterial>(null);
+  const splashRef = useRef<THREE.Points>(null);
   const timeRef = useRef(0);
   const hasEmittedEvent = useRef(false);
-
-  // Splash state
-  const splashRef = useRef<THREE.Points>(null);
-  const splashMaterialRef = useRef<THREE.PointsMaterial>(null);
-  const splashesRef = useRef<SplashData[]>([]);
   const splashPoolIdx = useRef(0);
+  const splashSpawnAccum = useRef(0);
+  const splashDirty = useRef(false);
 
   const [bx, by, bz] = config.boxSize;
 
-  // Pre-compute particle data
-  const { positions, velocities, phases } = useMemo(() => {
+  const { rainGeometry, rainMaterial, rainUniforms } = useMemo(() => {
     const count = config.count;
-    const pos = new Float32Array(count * 3);
-    const vel = new Float32Array(count * 3);
-    const pha = new Float32Array(count);
+    const positions = new Float32Array(count * 3);
+    const velocities = new Float32Array(count * 3);
 
     for (let i = 0; i < count; i++) {
       const i3 = i * 3;
+      positions[i3] = (Math.random() - 0.5) * bx;
+      positions[i3 + 1] = Math.random() * by;
+      positions[i3 + 2] = (Math.random() - 0.5) * bz;
 
-      // Random spawn within box
-      pos[i3] = (Math.random() - 0.5) * bx;
-      pos[i3 + 1] = Math.random() * by;
-      pos[i3 + 2] = (Math.random() - 0.5) * bz;
-
-      // Velocity: fast downward with wind drift
-      const fallSpeed = config.fallSpeedRange[0] + Math.random() * (config.fallSpeedRange[1] - config.fallSpeedRange[0]);
-      vel[i3] = Math.sin(config.windAngle) * config.windStrength * (0.8 + Math.random() * 0.4);  // wind X
-      vel[i3 + 1] = -fallSpeed;  // fast fall
-      vel[i3 + 2] = (Math.random() - 0.5) * 0.3;  // slight Z drift
-
-      // Phase for varied animation
-      pha[i] = Math.random() * Math.PI * 2;
+      const fallSpeed =
+        config.fallSpeedRange[0] +
+        Math.random() * (config.fallSpeedRange[1] - config.fallSpeedRange[0]);
+      velocities[i3] = Math.sin(config.windAngle) * config.windStrength * (0.8 + Math.random() * 0.4);
+      velocities[i3 + 1] = -fallSpeed;
+      velocities[i3 + 2] = (Math.random() - 0.5) * 0.3;
     }
 
-    return { positions: pos, velocities: vel, phases: pha };
-  }, [config, bx, by, bz]);
-
-  // Rain geometry
-  const geometry = useMemo(() => {
     const geo = new THREE.BufferGeometry();
-    geo.setAttribute('position', new THREE.BufferAttribute(positions.slice(), 3));
-    return geo;
-  }, [positions]);
+    geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    geo.setAttribute('aVelocity', new THREE.BufferAttribute(velocities, 3));
 
-  // Splash geometry
-  const splashGeometry = useMemo(() => {
+    const uniforms = {
+      uTime: { value: 0 },
+      uIntensity: { value: intensity },
+      uBoxSize: { value: new THREE.Vector3(bx, by, bz) },
+      uPointSize: { value: config.dropLength },
+      uColor: { value: new THREE.Color(config.color) },
+      uOpacity: { value: config.opacity * intensity },
+    };
+
+    const mat = new THREE.ShaderMaterial({
+      transparent: true,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+      uniforms,
+      vertexShader: RAIN_VERT,
+      fragmentShader: RAIN_FRAG,
+    });
+
+    return { rainGeometry: geo, rainMaterial: mat, rainUniforms: uniforms };
+  }, [config, bx, by, bz, intensity]);
+
+  const { splashGeometry, splashMaterial, splashUniforms, splashAttrs } = useMemo(() => {
+    const positions = new Float32Array(maxSplashes * 3);
+    const birthTimes = new Float32Array(maxSplashes);
+    const baseSizes = new Float32Array(maxSplashes);
+
+    for (let i = 0; i < maxSplashes; i++) {
+      birthTimes[i] = -SPLASH_LIFETIME - 1;
+      baseSizes[i] = 0;
+    }
+
+    const posAttr = new THREE.BufferAttribute(positions, 3);
+    const birthAttr = new THREE.BufferAttribute(birthTimes, 1);
+    const sizeAttr = new THREE.BufferAttribute(baseSizes, 1);
+
     const geo = new THREE.BufferGeometry();
-    const splashPositions = new Float32Array(MAX_SPLASHES * 3);
-    const splashSizes = new Float32Array(MAX_SPLASHES);
-    geo.setAttribute('position', new THREE.BufferAttribute(splashPositions, 3));
-    geo.setAttribute('size', new THREE.BufferAttribute(splashSizes, 1));
-    return geo;
-  }, []);
+    geo.setAttribute('position', posAttr);
+    geo.setAttribute('aBirthTime', birthAttr);
+    geo.setAttribute('aBaseSize', sizeAttr);
 
-  // Initialize splash pool
+    const uniforms = {
+      uTime: { value: 0 },
+      uSplashLifetime: { value: SPLASH_LIFETIME },
+      uColor: { value: new THREE.Color('#b0c8e0') },
+      uOpacity: { value: 0.4 * intensity },
+    };
+
+    const mat = new THREE.ShaderMaterial({
+      transparent: true,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+      uniforms,
+      vertexShader: SPLASH_VERT,
+      fragmentShader: SPLASH_FRAG,
+    });
+
+    return {
+      splashGeometry: geo,
+      splashMaterial: mat,
+      splashUniforms: uniforms,
+      splashAttrs: { posAttr, birthAttr, sizeAttr },
+    };
+  }, [maxSplashes, intensity]);
+
   useEffect(() => {
-    splashesRef.current = Array.from({ length: MAX_SPLASHES }, () => ({
-      x: 0, z: 0, age: SPLASH_LIFETIME + 1, alive: false, size: 0,
-    }));
-  }, []);
+    return () => {
+      rainGeometry.dispose();
+      rainMaterial.dispose();
+      splashGeometry.dispose();
+      splashMaterial.dispose();
+    };
+  }, [rainGeometry, rainMaterial, splashGeometry, splashMaterial]);
 
-  // Emit weather:rain event once when rain starts
   useEffect(() => {
     if (!hasEmittedEvent.current) {
       eventBus.emit('weather:rain', { active: true, intensity });
@@ -176,141 +315,57 @@ function RainParticles({ config, intensity }: { config: RainConfig; intensity: n
     };
   }, [intensity]);
 
+  useEffect(() => {
+    rainUniforms.uBoxSize.value.set(bx, by, bz);
+    rainUniforms.uPointSize.value = config.dropLength;
+    rainUniforms.uColor.value.set(config.color);
+  }, [rainUniforms, bx, by, bz, config.dropLength, config.color]);
+
   useFrame((_, delta) => {
-    if (!pointsRef.current) return;
     timeRef.current += delta;
+    const t = timeRef.current;
+    const clampedDelta = Math.min(delta, 0.05);
 
-    const posAttr = pointsRef.current.geometry.getAttribute('position') as THREE.BufferAttribute;
-    const posArray = posAttr.array as Float32Array;
-    const count = config.count;
-    const clampedDelta = Math.min(delta, 0.05); // prevent huge jumps on tab switch
+    rainUniforms.uTime.value = t;
+    rainUniforms.uIntensity.value = intensity;
+    const breathe = config.opacity + Math.sin(t * 0.5) * 0.03;
+    rainUniforms.uOpacity.value = breathe * intensity;
 
-    for (let i = 0; i < count; i++) {
-      const i3 = i * 3;
+    splashUniforms.uTime.value = t;
+    splashUniforms.uOpacity.value = 0.4 * intensity;
 
-      // Move particle
-      posArray[i3] += velocities[i3] * clampedDelta * intensity;
-      posArray[i3 + 1] += velocities[i3 + 1] * clampedDelta * intensity;
-      posArray[i3 + 2] += velocities[i3 + 2] * clampedDelta * intensity;
+    const spawnRate = config.count * 0.006 * intensity;
+    splashSpawnAccum.current += spawnRate * clampedDelta;
+    while (splashSpawnAccum.current >= 1) {
+      splashSpawnAccum.current -= 1;
+      const idx = splashPoolIdx.current % maxSplashes;
+      splashPoolIdx.current++;
 
-      // Recycle when below ground
-      if (posArray[i3 + 1] < -0.5) {
-        // Spawn a splash at ground level
-        spawnSplash(splashesRef, splashPoolIdx, posArray[i3], posArray[i3 + 2]);
+      const posArr = splashAttrs.posAttr.array as Float32Array;
+      const birthArr = splashAttrs.birthAttr.array as Float32Array;
+      const sizeArr = splashAttrs.sizeAttr.array as Float32Array;
+      const i3 = idx * 3;
 
-        // Reset to top
-        posArray[i3] = (Math.random() - 0.5) * bx;
-        posArray[i3 + 1] = by + Math.random() * 5;
-        posArray[i3 + 2] = (Math.random() - 0.5) * bz;
-      }
-
-      // Wrap horizontally
-      if (posArray[i3] > bx / 2) posArray[i3] = -bx / 2;
-      if (posArray[i3] < -bx / 2) posArray[i3] = bx / 2;
-      if (posArray[i3 + 2] > bz / 2) posArray[i3 + 2] = -bz / 2;
-      if (posArray[i3 + 2] < -bz / 2) posArray[i3 + 2] = bz / 2;
+      posArr[i3] = (Math.random() - 0.5) * bx;
+      posArr[i3 + 1] = 0.02;
+      posArr[i3 + 2] = (Math.random() - 0.5) * bz;
+      birthArr[idx] = t;
+      sizeArr[idx] = 0.1 + Math.random() * 0.15;
+      splashDirty.current = true;
     }
 
-    posAttr.needsUpdate = true;
-
-    // Update splashes
-    if (splashRef.current) {
-      const splashPosAttr = splashRef.current.geometry.getAttribute('position') as THREE.BufferAttribute;
-      const splashSizeAttr = splashRef.current.geometry.getAttribute('size') as THREE.BufferAttribute;
-      const splashPosArray = splashPosAttr.array as Float32Array;
-      const splashSizeArray = splashSizeAttr.array as Float32Array;
-      const splashes = splashesRef.current;
-
-      for (let i = 0; i < MAX_SPLASHES; i++) {
-        const splash = splashes[i];
-        if (!splash.alive) {
-          splashSizeArray[i] = 0;
-          continue;
-        }
-
-        splash.age += clampedDelta;
-        if (splash.age >= SPLASH_LIFETIME) {
-          splash.alive = false;
-          splashSizeArray[i] = 0;
-          continue;
-        }
-
-        const t = splash.age / SPLASH_LIFETIME;
-        const spread = splash.size * t;
-        splashPosArray[i * 3] = splash.x;
-        splashPosArray[i * 3 + 1] = 0.02;
-        splashPosArray[i * 3 + 2] = splash.z;
-
-        // Size expands then shrinks
-        splashSizeArray[i] = spread * (1 - t * t) * 2;
-      }
-
-      splashPosAttr.needsUpdate = true;
-      splashSizeAttr.needsUpdate = true;
-    }
-
-    // Subtle material opacity animation for depth
-    if (materialRef.current) {
-      const breathe = config.opacity + Math.sin(timeRef.current * 0.5) * 0.03;
-      materialRef.current.opacity = breathe * intensity;
-    }
-
-    if (splashMaterialRef.current) {
-      splashMaterialRef.current.opacity = 0.4 * intensity;
+    if (splashDirty.current) {
+      splashAttrs.posAttr.needsUpdate = true;
+      splashAttrs.birthAttr.needsUpdate = true;
+      splashAttrs.sizeAttr.needsUpdate = true;
+      splashDirty.current = false;
     }
   });
 
   return (
     <group>
-      {/* Rain streaks */}
-      <points ref={pointsRef} geometry={geometry}>
-        <pointsMaterial
-          ref={materialRef}
-          color={config.color}
-          size={config.dropLength}
-          transparent
-          opacity={config.opacity * intensity}
-          depthWrite={false}
-          sizeAttenuation
-          blending={THREE.AdditiveBlending}
-        />
-      </points>
-
-      {/* Ground splashes */}
-      <points ref={splashRef} geometry={splashGeometry}>
-        <pointsMaterial
-          ref={splashMaterialRef}
-          color="#b0c8e0"
-          size={0.3}
-          transparent
-          opacity={0.4 * intensity}
-          depthWrite={false}
-          sizeAttenuation
-          blending={THREE.AdditiveBlending}
-        />
-      </points>
+      <points ref={pointsRef} geometry={rainGeometry} material={rainMaterial} />
+      <points ref={splashRef} geometry={splashGeometry} material={splashMaterial} />
     </group>
   );
-}
-
-/** Spawn a splash particle at the given world position */
-function spawnSplash(
-  splashesRef: React.MutableRefObject<SplashData[]>,
-  poolIdx: React.MutableRefObject<number>,
-  x: number,
-  z: number,
-): void {
-  const splashes = splashesRef.current;
-  if (!splashes.length) return;
-
-  const idx = poolIdx.current % MAX_SPLASHES;
-  poolIdx.current++;
-
-  splashes[idx] = {
-    x,
-    z,
-    age: 0,
-    alive: true,
-    size: 0.1 + Math.random() * 0.15,
-  };
 }

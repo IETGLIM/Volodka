@@ -2,7 +2,6 @@
 /* Crafting and merchant trading. */
 
 import type { StateCreator } from 'zustand';
-import { MAX_INVENTORY_SLOTS } from '@/data/constants';
 import { getItemDefinition, createInventoryItem } from '@/data/items';
 import { getRecipeById } from '@/data/craftingRecipes';
 import {
@@ -13,7 +12,15 @@ import {
   merchantBuysItem,
 } from '@/data/tradingData';
 import { pushNotification } from '../shared';
+import {
+  addInventoryItem,
+  canAddInventoryItem,
+  findInventoryItem,
+  findInventoryItemIndex,
+  removeInventoryItem,
+} from '../inventoryHelpers';
 import type { GameStoreState } from '../types';
+import { readNpcRelationValue } from '../crossSliceReads';
 import { eventBus } from '@/engine/EventBus';
 
 /* ─── Slice types ─── */
@@ -55,16 +62,16 @@ export const createPlayerEconomySlice: StateCreator<
     }
 
     for (const input of recipe.inputs) {
-      const invItem = state.playerState.inventory.find((i) => i.id === input.itemId);
+      const invItem = findInventoryItem(state.playerState.inventory, input.itemId);
       if (!invItem || invItem.quantity < input.quantity) return false;
     }
 
     const outputDef = getItemDefinition(recipe.output.itemId);
-    const existingOutput = state.playerState.inventory.find((i) => i.id === recipe.output.itemId);
-    if (!existingOutput && outputDef && !outputDef.stackable && state.playerState.inventory.length >= MAX_INVENTORY_SLOTS) {
-      return false;
-    }
-    if (!existingOutput && !outputDef && state.playerState.inventory.length >= MAX_INVENTORY_SLOTS) {
+    const existingOutput = findInventoryItem(state.playerState.inventory, recipe.output.itemId);
+    if (!existingOutput && !canAddInventoryItem(
+      state.playerState.inventory,
+      outputDef ?? { id: recipe.output.itemId, stackable: false },
+    )) {
       return false;
     }
 
@@ -84,36 +91,26 @@ export const createPlayerEconomySlice: StateCreator<
         }
       }
 
-      const newInventory = [...state.playerState.inventory];
+      let newInventory = [...state.playerState.inventory];
       for (const input of recipe.inputs) {
-        const idx = newInventory.findIndex((i) => i.id === input.itemId);
-        if (idx < 0 || newInventory[idx].quantity < input.quantity) {
+        const invItem = findInventoryItem(newInventory, input.itemId);
+        if (!invItem || invItem.quantity < input.quantity) {
           return {
             notifications: pushNotification(state.notifications, 'stress', `Не хватает ингредиентов для: ${recipe.name}`),
           };
         }
-        const updated = { ...newInventory[idx] };
-        updated.quantity -= input.quantity;
-        if (updated.quantity <= 0) {
-          newInventory.splice(idx, 1);
-        } else {
-          newInventory[idx] = updated;
-        }
+        const removed = removeInventoryItem(newInventory, input.itemId, input.quantity);
+        newInventory = removed.inventory;
       }
 
       const outputItem = createInventoryItem(recipe.output.itemId, recipe.output.quantity);
-      const existingOutputIdx = newInventory.findIndex((i) => i.id === outputItem.id);
-      if (existingOutputIdx >= 0 && outputItem.stackable) {
-        const updated = { ...newInventory[existingOutputIdx] };
-        updated.quantity += outputItem.quantity;
-        newInventory[existingOutputIdx] = updated;
-      } else if (newInventory.length < MAX_INVENTORY_SLOTS) {
-        newInventory.push(outputItem);
-      } else {
+      const addResult = addInventoryItem(newInventory, outputItem);
+      if (!addResult.ok) {
         return {
           notifications: pushNotification(state.notifications, 'stress', 'Инвентарь полон — крафт невозможен'),
         };
       }
+      newInventory = addResult.inventory;
 
       queueMicrotask(() => {
         eventBus.emit('crafting:discovered', {
@@ -147,9 +144,7 @@ export const createPlayerEconomySlice: StateCreator<
         };
       }
 
-      const store = get();
-      const relation = store.npcRelations.find((r) => r.npcId === npcId);
-      const relationValue = relation?.value ?? 50;
+      const relationValue = readNpcRelationValue(get(), npcId);
 
       const price = getBuyPrice(merchant, itemId, relationValue);
 
@@ -172,17 +167,9 @@ export const createPlayerEconomySlice: StateCreator<
         };
       }
 
-      const inventory = [...state.playerState.inventory];
       const itemDef = getItemDefinition(itemId);
-      const existingIdx = inventory.findIndex((i) => i.id === itemId);
-
-      if (existingIdx >= 0 && inventory[existingIdx].stackable) {
-        const updated = { ...inventory[existingIdx] };
-        updated.quantity += 1;
-        inventory[existingIdx] = updated;
-      } else if (inventory.length < MAX_INVENTORY_SLOTS) {
-        inventory.push(createInventoryItem(itemId, 1));
-      } else {
+      const addResult = addInventoryItem(state.playerState.inventory, createInventoryItem(itemId, 1));
+      if (!addResult.ok) {
         return {
           notifications: pushNotification(state.notifications, 'stress', 'Инвентарь полон — покупка невозможна'),
         };
@@ -194,7 +181,7 @@ export const createPlayerEconomySlice: StateCreator<
         playerState: {
           ...state.playerState,
           credits: state.playerState.credits - price,
-          inventory,
+          inventory: addResult.inventory,
         },
         notifications: pushNotification(state.notifications, 'skill', `Куплено: ${itemName} (-${price}₴)`),
       };
@@ -209,9 +196,7 @@ export const createPlayerEconomySlice: StateCreator<
         };
       }
 
-      const store = get();
-      const relation = store.npcRelations.find((r) => r.npcId === npcId);
-      const relationValue = relation?.value ?? 50;
+      const relationValue = readNpcRelationValue(get(), npcId);
 
       if (!merchantBuysItem(npcId, itemId, relationValue)) {
         return {
@@ -219,7 +204,7 @@ export const createPlayerEconomySlice: StateCreator<
         };
       }
 
-      const invIdx = state.playerState.inventory.findIndex((i) => i.id === itemId);
+      const invIdx = findInventoryItemIndex(state.playerState.inventory, itemId);
       if (invIdx < 0) {
         return {
           notifications: pushNotification(state.notifications, 'stress', 'У вас нет этого предмета'),
@@ -240,13 +225,11 @@ export const createPlayerEconomySlice: StateCreator<
       const effectiveBasePrice = merchantSellEntry?.basePrice ?? basePrice;
       const price = getSellPrice(merchant, itemId, effectiveBasePrice, relationValue);
 
-      const inventory = [...state.playerState.inventory];
-      const item = { ...inventory[invIdx] };
-      item.quantity -= 1;
-      if (item.quantity <= 0) {
-        inventory.splice(invIdx, 1);
-      } else {
-        inventory[invIdx] = item;
+      const { inventory, removed } = removeInventoryItem(state.playerState.inventory, itemId, 1);
+      if (!removed) {
+        return {
+          notifications: pushNotification(state.notifications, 'stress', 'У вас нет этого предмета'),
+        };
       }
 
       const itemName = itemDef?.name ?? itemId;
@@ -266,8 +249,7 @@ export const createPlayerEconomySlice: StateCreator<
     const merchant = getMerchantInventory(npcId);
     if (!merchant) return false;
 
-    const relation = state.npcRelations.find((r) => r.npcId === npcId);
-    const relationValue = relation?.value ?? 50;
+    const relationValue = readNpcRelationValue(state, npcId);
     const price = getBuyPrice(merchant, itemId, relationValue);
 
     if (state.playerState.credits < price) return false;
@@ -276,9 +258,12 @@ export const createPlayerEconomySlice: StateCreator<
     if (!sellEntry) return false;
     if (sellEntry.minRelation && relationValue < sellEntry.minRelation) return false;
 
-    const existingItem = state.playerState.inventory.find((i) => i.id === itemId);
+    const existingItem = findInventoryItem(state.playerState.inventory, itemId);
     const itemDef = getItemDefinition(itemId);
-    if (!existingItem && itemDef && !itemDef.stackable && state.playerState.inventory.length >= MAX_INVENTORY_SLOTS) {
+    if (!existingItem && !canAddInventoryItem(
+      state.playerState.inventory,
+      itemDef ?? { id: itemId, stackable: false },
+    )) {
       return false;
     }
 
@@ -290,8 +275,7 @@ export const createPlayerEconomySlice: StateCreator<
     const merchant = getMerchantInventory(npcId);
     if (!merchant) return false;
 
-    const relation = state.npcRelations.find((r) => r.npcId === npcId);
-    const relationValue = relation?.value ?? 50;
+    const relationValue = readNpcRelationValue(state, npcId);
 
     if (!merchantBuysItem(npcId, itemId, relationValue)) return false;
 

@@ -1,8 +1,13 @@
 /* ─── Volodka RPG – Quest Tracking Engine (AAA+ Overhaul) ─── */
 
-import type { SceneId, StoryEffect, QuestState, QuestDefinition } from '@/shared/types/game';
+import type { SceneId, StoryEffect, QuestDefinition } from '@/shared/types/game';
 import { QUEST_DEFINITIONS } from '@/data/quests';
-import { useGameStore, type GameStoreState } from '@/store/gameStore';
+import {
+  dispatchGameAction,
+  getGameSnapshot,
+  subscribeGameSnapshot,
+  type GameStoreSnapshot,
+} from '@/engine/GameActionDispatcher';
 import { eventBus } from '@/engine/EventBus';
 import { applyEffects } from '@/shared/utils/applyEffects';
 import { isKnownMinigameId, MINIGAME_COMPLETION_FLAGS } from '@/shared/constants/minigames';
@@ -37,14 +42,14 @@ export class QuestTracker {
   /** Start tracking — subscribe to store changes and events */
   start(): void {
     // Snapshot initial state
-    const state = useGameStore.getState();
+    const state = getGameSnapshot();
     this.previousSceneId = state.exploration.currentSceneId;
     this.previousFlags = { ...state.playerState.flags };
     this.previousInventoryIds = new Set(state.playerState.inventory.map((i) => i.id));
     this.previousPoems = new Set(state.collectedPoems);
 
     // Subscribe to Zustand store changes
-    this.unsubscribeStore = useGameStore.subscribe((state) => {
+    this.unsubscribeStore = subscribeGameSnapshot((state) => {
       this.onStateChanged(state);
     });
 
@@ -71,7 +76,7 @@ export class QuestTracker {
     this.unsubscribeEvents.push(
       eventBus.on('game:loaded', () => {
         // Reset snapshot after load
-        const s = useGameStore.getState();
+        const s = getGameSnapshot();
         this.previousSceneId = s.exploration.currentSceneId;
         this.previousFlags = { ...s.playerState.flags };
         this.previousInventoryIds = new Set(s.playerState.inventory.map((i) => i.id));
@@ -123,7 +128,7 @@ export class QuestTracker {
    *  condition where a quest is activated AFTER its objective conditions
    *  have already been met (e.g. poem collected before quest was active). */
   private retroactiveCheck(): void {
-    const state = useGameStore.getState();
+    const state = getGameSnapshot();
     const activeQuests = state.quests.filter((q) => q.status === 'active');
 
     for (const quest of activeQuests) {
@@ -199,7 +204,7 @@ export class QuestTracker {
   }
 
   /** Called on every Zustand state change */
-  private onStateChanged(state: GameStoreState): void {
+  private onStateChanged(state: GameStoreSnapshot): void {
     const currentSceneId = state.exploration.currentSceneId;
     const currentFlags = state.playerState.flags;
     const currentInventoryIds = new Set(state.playerState.inventory.map((i) => i.id));
@@ -375,7 +380,7 @@ export class QuestTracker {
   }
 
   /** Check time limits for active quests with timeLimitHours */
-  private checkTimeLimits(state: GameStoreState): void {
+  private checkTimeLimits(state: GameStoreSnapshot): void {
     const currentTime = state.exploration.timeOfDay;
 
     for (const quest of state.quests) {
@@ -404,8 +409,8 @@ export class QuestTracker {
 
   /** Called when a poem power is used — check for quest bypasses */
   private onPoemPowerUsed(poemId: string): void {
-    const store = useGameStore.getState();
-    const activeQuests = store.quests.filter((q) => q.status === 'active');
+    const snapshot = getGameSnapshot();
+    const activeQuests = snapshot.quests.filter((q) => q.status === 'active');
 
     for (const quest of activeQuests) {
       const definition = QUEST_DEFINITIONS.find((d) => d.id === quest.questId);
@@ -428,8 +433,8 @@ export class QuestTracker {
 
   /** Try to bypass an objective using a poem power */
   private tryPoemBypass(questId: string, objectiveId: string, poemId: string): void {
-    const store = useGameStore.getState();
-    const quest = store.quests.find((q) => q.questId === questId);
+    const snapshot = getGameSnapshot();
+    const quest = snapshot.quests.find((q) => q.questId === questId);
     if (!quest || quest.status !== 'active') return;
     if (quest.objectives[objectiveId]) return;
 
@@ -441,14 +446,14 @@ export class QuestTracker {
     if (objective.poemPowerBypass !== poemId) return;
 
     // Verify the player has this poem collected
-    if (!store.collectedPoems.includes(poemId)) return;
+    if (!snapshot.collectedPoems.includes(poemId)) return;
 
     this.completeObjective(questId, objectiveId);
   }
 
   /** Try to complete a specific objective by quest+objective ID */
   private tryCompleteObjective(questId: string, objectiveId: string): void {
-    const quest = useGameStore.getState().quests.find((q) => q.questId === questId);
+    const quest = getGameSnapshot().quests.find((q) => q.questId === questId);
     if (!quest || quest.status !== 'active') return;
     if (quest.objectives[objectiveId]) return; // already complete
 
@@ -457,15 +462,13 @@ export class QuestTracker {
 
   /** Complete an objective and check if the entire quest is now done */
   private completeObjective(questId: string, objectiveId: string): void {
-    const store = useGameStore.getState();
+    const snapshot = getGameSnapshot();
 
-    // Verify the quest is active and the objective isn't already done
-    const quest = store.quests.find((q) => q.questId === questId);
+    const quest = snapshot.quests.find((q) => q.questId === questId);
     if (!quest || quest.status !== 'active') return;
     if (quest.objectives[objectiveId]) return;
 
-    // Complete the objective via the store action
-    store.completeQuestObjective(questId, objectiveId);
+    dispatchGameAction({ type: 'quest/completeObjective', questId, objectiveId });
 
     // Check if all objectives are now complete
     this.checkQuestCompletion(questId);
@@ -473,7 +476,7 @@ export class QuestTracker {
 
   /** Check if all objectives of a quest are complete, and if so, complete the quest */
   private checkQuestCompletion(questId: string): void {
-    const state = useGameStore.getState();
+    const state = getGameSnapshot();
     const quest = state.quests.find((q) => q.questId === questId);
     if (!quest || quest.status !== 'active') return;
 
@@ -491,21 +494,20 @@ export class QuestTracker {
       }
 
       // Complete the quest
-      state.completeQuest(questId);
+      dispatchGameAction({ type: 'quest/complete', questId });
     }
   }
 
   /** Fail a quest with a reason */
   private failQuest(questId: string, reason: string): void {
-    const store = useGameStore.getState();
-    const quest = store.quests.find((q) => q.questId === questId);
+    const snapshot = getGameSnapshot();
+    const quest = snapshot.quests.find((q) => q.questId === questId);
     if (!quest || quest.status !== 'active') return;
 
     const definition = QUEST_DEFINITIONS.find((d) => d.id === questId);
     if (!definition) return;
 
-    // Use the store's failQuest action
-    store.failQuest(questId);
+    dispatchGameAction({ type: 'quest/fail', questId });
 
     eventBus.emit('quest:failed', { questId, reason });
   }
@@ -522,7 +524,7 @@ export class QuestTracker {
     const definition = QUEST_DEFINITIONS.find((d) => d.id === questId);
     if (!definition) return false;
 
-    const state = useGameStore.getState();
+    const state = getGameSnapshot();
 
     // Check if quest is already active or completed
     const existing = state.quests.find((q) => q.questId === questId);
@@ -555,13 +557,13 @@ export class QuestTracker {
   }
 
   /** Get all currently active quests */
-  private getActiveQuests(): QuestState[] {
-    return useGameStore.getState().quests.filter((q) => q.status === 'active');
+  private getActiveQuests(): GameStoreSnapshot['quests'] {
+    return getGameSnapshot().quests.filter((q) => q.status === 'active');
   }
 
   /** Get quest progress as a percentage */
   getQuestProgress(questId: string): number {
-    const state = useGameStore.getState();
+    const state = getGameSnapshot();
     const quest = state.quests.find((q) => q.questId === questId);
     if (!quest) return 0;
 

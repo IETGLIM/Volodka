@@ -9,6 +9,8 @@ import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { useGameStore } from '@/store/gameStore';
 import { SCENE_CONFIG } from '@/config/scenes';
 import type { SceneId } from '@/shared/types/game';
+import type { SavePayload } from '@/shared/validation/saveSchema';
+import { validateSaveData } from '@/shared/validation/saveSchema';
 import { POEMS } from '@/data/poems';
 
 const TOTAL_POEMS = POEMS.length;
@@ -20,34 +22,8 @@ interface SaveSlotManagerProps {
   onClose: () => void;
 }
 
-interface SaveSlotData {
-  mode: string;
-  currentNodeId: string;
-  playerState: {
-    name: string;
-    karma: number;
-    energy: number;
-    stress: number;
-    progression: {
-      level: number;
-      xp: number;
-      xpToNextLevel: number;
-      skillPoints: number;
-      unlockedSkills: string[];
-      currentAct: number;
-    };
-    [key: string]: unknown;
-  };
-  exploration: {
-    currentSceneId: string;
-    timeOfDay: number;
-    [key: string]: unknown;
-  };
-  collectedPoems: string[];
-  savedAt?: number;
-  playTimeSeconds?: number;
-  [key: string]: unknown;
-}
+/** Validated save payload plus optional slot-manager UI metadata */
+type SaveSlotPreview = SavePayload & { playTimeSeconds?: number };
 
 // ─── LocalStorage helpers ───
 
@@ -55,15 +31,27 @@ function getSaveSlotKey(slot: number): string {
   return `volodka_save_slot_${slot}`;
 }
 
-function readSaveSlot(slot: number): SaveSlotData | null {
+function readSaveSlot(slot: number): SaveSlotPreview | null {
   if (typeof window === 'undefined') return null;
   const raw = localStorage.getItem(getSaveSlotKey(slot));
   if (!raw) return null;
+
+  const validation = validateSaveData(raw);
+  if (!validation.success) return null;
+
+  let playTimeSeconds: number | undefined;
   try {
-    return JSON.parse(raw) as SaveSlotData;
+    const extra = JSON.parse(raw) as { playTimeSeconds?: unknown };
+    if (typeof extra.playTimeSeconds === 'number') {
+      playTimeSeconds = extra.playTimeSeconds;
+    }
   } catch {
-    return null;
+    // playTimeSeconds is optional slot metadata
   }
+
+  return playTimeSeconds !== undefined
+    ? { ...validation.data, playTimeSeconds }
+    : validation.data;
 }
 
 /** Look up a human-readable scene name from the scene config */
@@ -140,7 +128,7 @@ function SaveSlotCard({
   onDelete,
 }: {
   slotNumber: number;
-  data: SaveSlotData | null;
+  data: SaveSlotPreview | null;
   isAutoSave: boolean;
   onSave: (slot: number) => void;
   onLoad: (slot: number) => void;
@@ -483,7 +471,7 @@ function SaveSlotManagerContent({ onClose }: { onClose: () => void }) {
   const saveGame = useGameStore((s) => s.saveGame);
   const loadGame = useGameStore((s) => s.loadGame);
 
-  const [slots, setSlots] = useState<(SaveSlotData | null)[]>(() =>
+  const [slots, setSlots] = useState<(SaveSlotPreview | null)[]>(() =>
     [1, 2, 3].map((n) => readSaveSlot(n)),
   );
   const [notification, setNotification] = useState<string | null>(null);

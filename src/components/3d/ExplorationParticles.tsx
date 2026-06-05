@@ -207,6 +207,12 @@ function ParticleSystem({ type }: { type: ParticleType }) {
     return geo;
   }, [positions, sizes]);
 
+  useEffect(() => {
+    return () => {
+      geometry.dispose();
+    };
+  }, [geometry]);
+
   // Material properties for declarative rendering (avoids immutability lint issues)
   const matProps = useMemo(() => {
     const baseColor = config.colors[0];

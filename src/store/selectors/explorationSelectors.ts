@@ -10,6 +10,8 @@ export const selectExploration = (s = getGameStore()): ExplorationState => s.exp
 
 export const selectCurrentSceneId = (s = getGameStore()) => s.exploration.currentSceneId;
 
+export const selectTimeOfDay = (s = getGameStore()) => s.exploration.timeOfDay;
+
 export const selectPlayerPosition = (s = getGameStore()) => s.exploration.playerPosition;
 
 export const selectNpcStates = (s = getGameStore()) => s.exploration.npcStates;

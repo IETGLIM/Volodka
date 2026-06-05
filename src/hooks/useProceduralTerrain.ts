@@ -61,6 +61,22 @@ export const PARK_TERRAIN: TerrainPreset = {
   warpType: FastNoiseLite.DomainWarpType.OpenSimplex2Reduced,
 };
 
+/** Stable serialized key for terrain preset — avoids fragile per-field useMemo deps */
+export function serializePreset(preset: TerrainPreset): string {
+  return [
+    preset.seed,
+    preset.noiseType,
+    preset.frequency,
+    preset.fractalType,
+    preset.octaves,
+    preset.lacunarity,
+    preset.gain,
+    preset.amplitude,
+    preset.warpAmp,
+    preset.warpType,
+  ].join('|');
+}
+
 /** Winter street — snow drifts and frozen mounds */
 export const WINTER_TERRAIN: TerrainPreset = {
   seed: 777,
@@ -97,6 +113,8 @@ export interface TerrainConfig {
  */
 export function useProceduralTerrain(config: TerrainConfig) {
   const { width, depth, segments, preset } = config;
+
+  const presetKey = useMemo(() => serializePreset(preset), [preset]);
 
   const { geometry, getHeightAt } = useMemo(() => {
     // ── Configure noise generator ──
@@ -204,9 +222,7 @@ export function useProceduralTerrain(config: TerrainConfig) {
     };
 
     return { geometry: geo, getHeightAt: getHeightAtPoint };
-  }, [width, depth, segments, preset.seed, preset.noiseType, preset.frequency,
-      preset.fractalType, preset.octaves, preset.lacunarity, preset.gain,
-      preset.amplitude, preset.warpAmp, preset.warpType]);
+  }, [width, depth, segments, presetKey]);
 
   // Dispose previous geometry when config changes or component unmounts
   useEffect(() => () => {

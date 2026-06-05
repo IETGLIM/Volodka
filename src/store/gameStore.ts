@@ -15,8 +15,8 @@ import type {
   NPCRelation,
   TrainablePlayerSkill,
   SceneId,
-  CameraWaypointData,
 } from '@/shared/types/game';
+import type { CameraWaypointData } from '@/engine/events';
 
 // Re-export shared types that consumers currently import from gameStore
 export type {
@@ -39,6 +39,11 @@ import { createWorldSlice } from './slices/worldSlice';
 import { createUISlice } from './slices/uiSlice';
 import { createCutsceneSlice } from './slices/cutsceneSlice';
 import { createSaveSlice } from './slices/saveSlice';
+import {
+  registerGameActionBridge,
+  type GameAction,
+  type GameStoreSnapshot,
+} from '@/engine/GameActionDispatcher';
 
 // Import and re-export composed store type (defined in types.ts — no slice imports in shared.ts)
 import type { GameStoreState } from './types';
@@ -59,3 +64,44 @@ export const useGameStore = create<GameStoreState>()((...a) => ({
 export function getGameStore() {
   return useGameStore.getState();
 }
+
+function toGameSnapshot(state: GameStoreState): GameStoreSnapshot {
+  return {
+    exploration: {
+      currentSceneId: state.exploration.currentSceneId,
+      timeOfDay: state.exploration.timeOfDay,
+    },
+    playerState: {
+      flags: state.playerState.flags,
+      inventory: state.playerState.inventory,
+    },
+    collectedPoems: state.collectedPoems,
+    quests: state.quests,
+    activeTTLFlags: state.activeTTLFlags,
+  };
+}
+
+registerGameActionBridge({
+  dispatch(action: GameAction) {
+    const store = useGameStore.getState();
+    switch (action.type) {
+      case 'quest/completeObjective':
+        store.completeQuestObjective(action.questId, action.objectiveId);
+        break;
+      case 'quest/complete':
+        store.completeQuest(action.questId);
+        break;
+      case 'quest/fail':
+        store.failQuest(action.questId);
+        break;
+    }
+  },
+  getSnapshot() {
+    return toGameSnapshot(useGameStore.getState());
+  },
+  subscribe(listener) {
+    return useGameStore.subscribe((state) => {
+      listener(toGameSnapshot(state));
+    });
+  },
+});

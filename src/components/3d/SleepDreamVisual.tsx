@@ -240,6 +240,12 @@ function VeinOverlay({ width, depth, segments }: { width: number; depth: number;
     return geo;
   }, [width, depth, segments]);
 
+  useEffect(() => {
+    return () => {
+      geometry.dispose();
+    };
+  }, [geometry]);
+
   return (
     <mesh geometry={geometry} rotation-x={-Math.PI / 2}>
       <meshStandardMaterial

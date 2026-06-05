@@ -1,6 +1,6 @@
 /* ─── Volodka RPG – typed event bus ─── */
 
-import type { EventMap } from '@/shared/types/game';
+import type { EventMap } from '@/engine/events';
 
 type EventHandler<T> = (payload: T) => void;
 

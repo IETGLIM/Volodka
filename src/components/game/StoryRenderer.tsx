@@ -18,35 +18,14 @@ import { STORY_NODES } from '@/data/storyNodes';
 import { audioEngine } from '@/engine/AudioEngine';
 import { KARMA_LOW_THRESHOLD, KARMA_HIGH_THRESHOLD } from '@/data/constants';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
-import type { StoryChoice, StoryEffect, PlayerSkills, TrainablePlayerSkill } from '@/shared/types/game';
+import type { StoryChoice, StoryEffect } from '@/shared/types/game';
+import { checkStoryCondition } from '@/shared/storyConditions';
 
 /* ── Typewriter hook — shared ── */
 import { useTypewriter } from '@/hooks/useTypewriter';
 
 /* ── Apply effects — shared ── */
 import { applyEffects } from '@/shared/utils/applyEffects';
-
-/* ── Check choice conditions ── */
-function checkCondition(
-  condition: StoryChoice['condition'],
-  playerState: { karma: number; skills: PlayerSkills; flags: Record<string, boolean>; currentAct: number },
-): { pass: boolean; skillCheck?: { skill: TrainablePlayerSkill; needed: number; current: number } } {
-  if (!condition) return { pass: true };
-
-  if (condition.minKarma !== undefined && playerState.karma < condition.minKarma) return { pass: false };
-  if (condition.maxKarma !== undefined && playerState.karma > condition.maxKarma) return { pass: false };
-  if (condition.flag && !playerState.flags[condition.flag]) return { pass: false };
-  if (condition.requiredAct !== undefined && playerState.currentAct < condition.requiredAct) return { pass: false };
-  if (condition.minSkill) {
-    for (const [skill, needed] of Object.entries(condition.minSkill)) {
-      const current = playerState.skills[skill as TrainablePlayerSkill] ?? 0;
-      if (current < (needed as number)) {
-        return { pass: false, skillCheck: { skill: skill as TrainablePlayerSkill, needed: needed as number, current } };
-      }
-    }
-  }
-  return { pass: true };
-}
 
 /* ── Stat change highlight chip ── */
 function StatChangeChip({ effect }: { effect: StoryEffect }) {
@@ -214,7 +193,12 @@ export function StoryRenderer() {
       const num = parseInt(e.key);
       if (num >= 1 && num <= node.choices.length) {
         const choice = node.choices[num - 1];
-        const cond = checkCondition(choice.condition, { ...playerState, currentAct });
+        const cond = checkStoryCondition(choice.condition, {
+          karma: playerState.karma,
+          skills: playerState.skills,
+          flags: playerState.flags,
+          currentAct,
+        });
         if (cond.pass) handleChoice(choice);
       }
     };
@@ -327,7 +311,12 @@ export function StoryRenderer() {
             >
               {node.choices.length > 0 ? (
                 node.choices.map((choice, i) => {
-                  const cond = checkCondition(choice.condition, { ...playerState, currentAct });
+                  const cond = checkStoryCondition(choice.condition, {
+          karma: playerState.karma,
+          skills: playerState.skills,
+          flags: playerState.flags,
+          currentAct,
+        });
                   return (
                     <motion.button
                       key={`${currentNodeId}-choice-${i}`}

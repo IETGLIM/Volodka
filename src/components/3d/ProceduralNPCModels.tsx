@@ -4,11 +4,24 @@
      and idle/walk/talk animations built entirely from Three.js primitives.
      Quality matches the ProceduralPlayerModel in PhysicsPlayer.tsx. ─── */
 
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import type { NPCAppearance } from '@/shared/types/game';
 import { InteractionState } from '@/engine/interaction/interactionMachine';
+import {
+  sharedGeo,
+  sharedMat,
+  mergedGeo,
+  npcMat,
+  skinMat,
+  skinShadowMat,
+  clothingMat,
+  DEFAULT_ARM_WIDTH,
+  DEFAULT_FOREARM_WIDTH,
+  DEFAULT_LEG_WIDTH,
+  DEFAULT_LOWER_LEG_WIDTH,
+} from './proceduralNpcShared';
 
 /* ─── Shared color constants ─── */
 const SKIN_LIGHT = '#c4a882';
@@ -16,10 +29,6 @@ const SKIN_MEDIUM = '#b09070';
 const SKIN_DARK = '#8a6a50';
 const SKIN_SHADOW_LIGHT = '#b89a72';
 const SKIN_SHADOW_MED = '#9a7a60';
-const EYE_WHITE = '#f0eeea';
-const PUPIL = '#1e100a';
-const MOUTH = '#8a6a52';
-const BROW = '#2a1e12';
 const HAIR_DARK = '#2a1e12';
 const HAIR_BROWN = '#4a3020';
 const HAIR_GRAY = '#888890';
@@ -27,130 +36,65 @@ const HAIR_BLACK = '#0e0a08';
 
 /* ─── Shared body parts ─── */
 
-/** Reusable eye cluster (both eyes with pupils, iris, eyebrows) */
+/** Reusable eye cluster (both eyes with pupils, iris, eyebrows) — shared geo/mat */
 function Eyes({
-  color = EYE_WHITE,
-  pupilColor = PUPIL,
-  browColor = BROW,
   browAngle = 0.1,
   irisColor = '#4a3520',
 }: {
-  color?: string;
-  pupilColor?: string;
-  browColor?: string;
   browAngle?: number;
   irisColor?: string;
 }) {
+  const irisMat = useMemo(
+    () => npcMat({ color: irisColor, roughness: 0.4, metalness: 0.2 }),
+    [irisColor],
+  );
   return (
     <>
-      {/* Left eye */}
-      <mesh position={[-0.038, 0.015, 0.092]}>
-        <sphereGeometry args={[0.018, 6, 6]} />
-        <meshStandardMaterial color={color} roughness={0.3} metalness={0.1} />
-        <mesh position={[0, 0, 0.014]}>
-          <sphereGeometry args={[0.009, 4, 4]} />
-          <meshStandardMaterial color={pupilColor} roughness={0.2} metalness={0.3} />
-        </mesh>
-        <mesh position={[0, 0, 0.012]}>
-          <sphereGeometry args={[0.012, 5, 5]} />
-          <meshStandardMaterial color={irisColor} roughness={0.4} metalness={0.2} />
-        </mesh>
+      <mesh position={[-0.038, 0.015, 0.092]} geometry={sharedGeo.eyeSphere} material={sharedMat.eyeWhite}>
+        <mesh position={[0, 0, 0.014]} geometry={sharedGeo.pupilSphere} material={sharedMat.pupil} />
+        <mesh position={[0, 0, 0.012]} geometry={sharedGeo.irisSphere} material={irisMat} />
       </mesh>
-      {/* Right eye */}
-      <mesh position={[0.038, 0.015, 0.092]}>
-        <sphereGeometry args={[0.018, 6, 6]} />
-        <meshStandardMaterial color={color} roughness={0.3} metalness={0.1} />
-        <mesh position={[0, 0, 0.014]}>
-          <sphereGeometry args={[0.009, 4, 4]} />
-          <meshStandardMaterial color={pupilColor} roughness={0.2} metalness={0.3} />
-        </mesh>
-        <mesh position={[0, 0, 0.012]}>
-          <sphereGeometry args={[0.012, 5, 5]} />
-          <meshStandardMaterial color={irisColor} roughness={0.4} metalness={0.2} />
-        </mesh>
+      <mesh position={[0.038, 0.015, 0.092]} geometry={sharedGeo.eyeSphere} material={sharedMat.eyeWhite}>
+        <mesh position={[0, 0, 0.014]} geometry={sharedGeo.pupilSphere} material={sharedMat.pupil} />
+        <mesh position={[0, 0, 0.012]} geometry={sharedGeo.irisSphere} material={irisMat} />
       </mesh>
-      {/* Left eyebrow */}
-      <mesh position={[-0.038, 0.035, 0.095]} rotation={[0, 0, browAngle]}>
-        <boxGeometry args={[0.032, 0.006, 0.008]} />
-        <meshStandardMaterial color={browColor} roughness={0.8} />
-      </mesh>
-      {/* Right eyebrow */}
-      <mesh position={[0.038, 0.035, 0.095]} rotation={[0, 0, -browAngle]}>
-        <boxGeometry args={[0.032, 0.006, 0.008]} />
-        <meshStandardMaterial color={browColor} roughness={0.8} />
-      </mesh>
+      <mesh position={[-0.038, 0.035, 0.095]} rotation={[0, 0, browAngle]} geometry={sharedGeo.browBox} material={sharedMat.brow} />
+      <mesh position={[0.038, 0.035, 0.095]} rotation={[0, 0, -browAngle]} geometry={sharedGeo.browBox} material={sharedMat.brow} />
     </>
   );
 }
 
-/** Nose, mouth, chin, ears */
+/** Nose, mouth, chin, ears — shared geo/mat, merged mouth draw call */
 function FaceFeatures({
   skinColor = SKIN_LIGHT,
   shadowColor = SKIN_SHADOW_LIGHT,
-  mouthColor = MOUTH,
-  mouthWidth = 0.045,
   mouthCornersDown = true,
 }: {
   skinColor?: string;
   shadowColor?: string;
-  mouthColor?: string;
-  mouthWidth?: number;
   mouthCornersDown?: boolean;
 }) {
+  const skin = skinMat(skinColor);
+  const shadow = skinShadowMat(shadowColor);
+  const mouthGeo = mouthCornersDown ? mergedGeo.mouthWithCornersDown : mergedGeo.mouthLineOnly;
   return (
     <>
-      {/* Nose bridge */}
-      <mesh position={[0, 0.008, 0.1]}>
-        <boxGeometry args={[0.012, 0.025, 0.01]} />
-        <meshStandardMaterial color={skinColor} roughness={0.7} />
-      </mesh>
-      {/* Nose tip */}
-      <mesh position={[0, -0.008, 0.105]}>
-        <sphereGeometry args={[0.014, 4, 4]} />
-        <meshStandardMaterial color={shadowColor} roughness={0.7} metalness={0.05} />
-      </mesh>
-      {/* Mouth line */}
-      <mesh position={[0, -0.035, 0.095]}>
-        <boxGeometry args={[mouthWidth, 0.004, 0.008]} />
-        <meshStandardMaterial color={mouthColor} roughness={0.8} />
-      </mesh>
-      {mouthCornersDown && (
-        <>
-          <mesh position={[-0.025, -0.032, 0.094]} rotation={[0, 0, -0.3]}>
-            <boxGeometry args={[0.01, 0.004, 0.005]} />
-            <meshStandardMaterial color={mouthColor} roughness={0.8} />
-          </mesh>
-          <mesh position={[0.025, -0.032, 0.094]} rotation={[0, 0, 0.3]}>
-            <boxGeometry args={[0.01, 0.004, 0.005]} />
-            <meshStandardMaterial color={mouthColor} roughness={0.8} />
-          </mesh>
-        </>
-      )}
-      {/* Chin */}
-      <mesh position={[0, -0.085, 0.045]}>
-        <sphereGeometry args={[0.028, 5, 4]} />
-        <meshStandardMaterial color={skinColor} roughness={0.7} metalness={0.05} />
-      </mesh>
-      {/* Left ear */}
-      <mesh position={[-0.1, 0.0, 0.0]} rotation={[0, -0.2, 0]}>
-        <sphereGeometry args={[0.02, 4, 4]} />
-        <meshStandardMaterial color={shadowColor} roughness={0.7} />
-      </mesh>
-      {/* Right ear */}
-      <mesh position={[0.1, 0.0, 0.0]} rotation={[0, 0.2, 0]}>
-        <sphereGeometry args={[0.02, 4, 4]} />
-        <meshStandardMaterial color={shadowColor} roughness={0.7} />
-      </mesh>
+      <mesh position={[0, 0.008, 0.1]} geometry={sharedGeo.noseBridge} material={skin} />
+      <mesh position={[0, -0.008, 0.105]} geometry={sharedGeo.noseTip} material={shadow} />
+      <mesh geometry={mouthGeo} material={sharedMat.mouth} />
+      <mesh position={[0, -0.085, 0.045]} geometry={sharedGeo.chinSphere} material={skin} />
+      <mesh position={[-0.1, 0.0, 0.0]} rotation={[0, -0.2, 0]} geometry={sharedGeo.earSphere} material={shadow} />
+      <mesh position={[0.1, 0.0, 0.0]} rotation={[0, 0.2, 0]} geometry={sharedGeo.earSphere} material={shadow} />
     </>
   );
 }
 
-/** Arms with clothing and hands */
+/** Arms with clothing and hands — shared geo/mat, width via scale */
 function Arms({
   sleeveColor,
   skinColor = SKIN_LIGHT,
-  armWidth = 0.048,
-  forearmWidth = 0.042,
+  armWidth = DEFAULT_ARM_WIDTH,
+  forearmWidth = DEFAULT_FOREARM_WIDTH,
   wristAccessory,
 }: {
   sleeveColor: string;
@@ -159,68 +103,43 @@ function Arms({
   forearmWidth?: number;
   wristAccessory?: React.ReactNode;
 }) {
+  const sleeveMat = useMemo(() => clothingMat(sleeveColor), [sleeveColor]);
+  const skin = skinMat(skinColor);
+  const armScale: [number, number, number] = [armWidth / DEFAULT_ARM_WIDTH, 1, armWidth / DEFAULT_ARM_WIDTH];
+  const forearmScale: [number, number, number] = [forearmWidth / DEFAULT_FOREARM_WIDTH, 1, forearmWidth / DEFAULT_FOREARM_WIDTH];
+
+  const armSegment = (side: 'left' | 'right') => (
+    <group
+      name={side === 'left' ? 'leftArm' : 'rightArm'}
+      position={[side === 'left' ? 0.24 : -0.24, 0.18, 0]}
+      rotation={[0, 0, side === 'left' ? 0.12 : -0.12]}
+    >
+      <mesh position={[0, -0.14, 0]} castShadow scale={armScale} geometry={sharedGeo.upperArmCapsule} material={sleeveMat} />
+      <mesh position={[0, -0.3, 0]} castShadow scale={forearmScale} geometry={sharedGeo.forearmCapsule} material={sleeveMat} />
+      <mesh position={[0, -0.38, 0]} geometry={sharedGeo.wristCapsule} material={skin} />
+      <mesh position={[0, -0.42, 0]} castShadow geometry={sharedGeo.handSphere} material={skin} />
+      <mesh position={[0, -0.45, 0.01]} geometry={sharedGeo.fingerBox} material={skin} />
+      {side === 'left' && wristAccessory}
+    </group>
+  );
+
   return (
     <>
-      {/* Left arm */}
-      <group name="leftArm" position={[0.24, 0.18, 0]} rotation={[0, 0, 0.12]}>
-        <mesh position={[0, -0.14, 0]} castShadow>
-          <capsuleGeometry args={[armWidth, 0.18, 4, 6]} />
-          <meshStandardMaterial color={sleeveColor} roughness={0.85} metalness={0.05} />
-        </mesh>
-        <mesh position={[0, -0.3, 0]} castShadow>
-          <capsuleGeometry args={[forearmWidth, 0.14, 4, 6]} />
-          <meshStandardMaterial color={sleeveColor} roughness={0.85} metalness={0.05} />
-        </mesh>
-        <mesh position={[0, -0.38, 0]}>
-          <capsuleGeometry args={[0.032, 0.03, 3, 5]} />
-          <meshStandardMaterial color={skinColor} roughness={0.7} />
-        </mesh>
-        <mesh position={[0, -0.42, 0]} castShadow>
-          <sphereGeometry args={[0.028, 5, 4]} />
-          <meshStandardMaterial color={skinColor} roughness={0.7} metalness={0.05} />
-        </mesh>
-        <mesh position={[0, -0.45, 0.01]}>
-          <boxGeometry args={[0.035, 0.02, 0.03]} />
-          <meshStandardMaterial color={skinColor} roughness={0.7} />
-        </mesh>
-        {wristAccessory}
-      </group>
-      {/* Right arm */}
-      <group name="rightArm" position={[-0.24, 0.18, 0]} rotation={[0, 0, -0.12]}>
-        <mesh position={[0, -0.14, 0]} castShadow>
-          <capsuleGeometry args={[armWidth, 0.18, 4, 6]} />
-          <meshStandardMaterial color={sleeveColor} roughness={0.85} metalness={0.05} />
-        </mesh>
-        <mesh position={[0, -0.3, 0]} castShadow>
-          <capsuleGeometry args={[forearmWidth, 0.14, 4, 6]} />
-          <meshStandardMaterial color={sleeveColor} roughness={0.85} metalness={0.05} />
-        </mesh>
-        <mesh position={[0, -0.38, 0]}>
-          <capsuleGeometry args={[0.032, 0.03, 3, 5]} />
-          <meshStandardMaterial color={skinColor} roughness={0.7} />
-        </mesh>
-        <mesh position={[0, -0.42, 0]} castShadow>
-          <sphereGeometry args={[0.028, 5, 4]} />
-          <meshStandardMaterial color={skinColor} roughness={0.7} metalness={0.05} />
-        </mesh>
-        <mesh position={[0, -0.45, 0.01]}>
-          <boxGeometry args={[0.035, 0.02, 0.03]} />
-          <meshStandardMaterial color={skinColor} roughness={0.7} />
-        </mesh>
-      </group>
+      {armSegment('left')}
+      {armSegment('right')}
     </>
   );
 }
 
-/** Legs with shoes */
+/** Legs with shoes — shared geo/mat, width & shoe size via scale */
 function Legs({
   pantsColor,
   pantsDark,
   shoeColor = '#1a1a1a',
   soleColor = '#e8e0d8',
   shoeScale = 1.0,
-  legWidth = 0.058,
-  lowerLegWidth = 0.05,
+  legWidth = DEFAULT_LEG_WIDTH,
+  lowerLegWidth = DEFAULT_LOWER_LEG_WIDTH,
   accentGlow,
   accentColor,
 }: {
@@ -234,69 +153,44 @@ function Legs({
   accentGlow?: string;
   accentColor?: string;
 }) {
-  const sw = 0.085 * shoeScale;
-  const sh = 0.055 * shoeScale;
-  const sd = 0.15 * shoeScale;
+  const pantsMat = useMemo(() => clothingMat(pantsColor), [pantsColor]);
+  const pantsDarkMat = useMemo(() => npcMat({ color: pantsDark, roughness: 0.85 }), [pantsDark]);
+  const shoeMat = useMemo(
+    () => (shoeColor === '#1a1a1a' ? sharedMat.sneaker : npcMat({ color: shoeColor, roughness: 0.9, metalness: 0.05 })),
+    [shoeColor],
+  );
+  const soleMat = useMemo(
+    () => (soleColor === '#e8e0d8' ? sharedMat.sole : npcMat({ color: soleColor, roughness: 0.95 })),
+    [soleColor],
+  );
+  const glowMat = useMemo(
+    () => (accentGlow && accentColor
+      ? npcMat({ color: accentColor, emissive: accentGlow, emissiveIntensity: 0.12, transparent: true, opacity: 0.3 })
+      : null),
+    [accentGlow, accentColor],
+  );
+
+  const legScale: [number, number, number] = [legWidth / DEFAULT_LEG_WIDTH, 1, legWidth / DEFAULT_LEG_WIDTH];
+  const lowerLegScale: [number, number, number] = [lowerLegWidth / DEFAULT_LOWER_LEG_WIDTH, 1, lowerLegWidth / DEFAULT_LOWER_LEG_WIDTH];
+  const shoeScaleVec: [number, number, number] = [shoeScale, shoeScale, shoeScale];
+
+  const legSegment = (side: 'left' | 'right') => (
+    <group name={side === 'left' ? 'leftLeg' : 'rightLeg'} position={[side === 'left' ? 0.09 : -0.09, 0.9, 0]}>
+      <mesh position={[0, -0.18, 0]} castShadow scale={legScale} geometry={sharedGeo.upperLegCapsule} material={pantsMat} />
+      <mesh position={[0, -0.4, 0]} castShadow scale={lowerLegScale} geometry={sharedGeo.lowerLegCapsule} material={pantsMat} />
+      <mesh position={[0, -0.5, 0]} geometry={sharedGeo.jeansCuffCylinder} material={pantsDarkMat} />
+      <mesh position={[0, -0.55, 0.02]} castShadow scale={shoeScaleVec} geometry={sharedGeo.sneakerBox} material={shoeMat} />
+      <mesh position={[0, -0.58, 0.02]} scale={shoeScaleVec} geometry={sharedGeo.soleBox} material={soleMat} />
+      {glowMat && (
+        <mesh position={[0, -0.59, 0.02]} scale={shoeScaleVec} geometry={sharedGeo.sneakerGlowStrip} material={glowMat} />
+      )}
+    </group>
+  );
+
   return (
     <>
-      {/* Left leg */}
-      <group name="leftLeg" position={[0.09, 0.9, 0]}>
-        <mesh position={[0, -0.18, 0]} castShadow>
-          <capsuleGeometry args={[legWidth, 0.24, 4, 6]} />
-          <meshStandardMaterial color={pantsColor} roughness={0.85} metalness={0.05} />
-        </mesh>
-        <mesh position={[0, -0.4, 0]} castShadow>
-          <capsuleGeometry args={[lowerLegWidth, 0.2, 4, 6]} />
-          <meshStandardMaterial color={pantsColor} roughness={0.85} metalness={0.05} />
-        </mesh>
-        <mesh position={[0, -0.5, 0]}>
-          <cylinderGeometry args={[0.055, 0.052, 0.03, 6]} />
-          <meshStandardMaterial color={pantsDark} roughness={0.85} />
-        </mesh>
-        <mesh position={[0, -0.55, 0.02]} castShadow>
-          <boxGeometry args={[sw, sh, sd]} />
-          <meshStandardMaterial color={shoeColor} roughness={0.9} metalness={0.05} />
-        </mesh>
-        <mesh position={[0, -0.58, 0.02]}>
-          <boxGeometry args={[sw + 0.005, 0.02, sd + 0.005]} />
-          <meshStandardMaterial color={soleColor} roughness={0.95} />
-        </mesh>
-        {accentGlow && accentColor && (
-          <mesh position={[0, -0.59, 0.02]}>
-            <boxGeometry args={[sw + 0.005, 0.005, sd + 0.005]} />
-            <meshStandardMaterial color={accentColor} emissive={accentGlow} emissiveIntensity={0.12} transparent opacity={0.3} />
-          </mesh>
-        )}
-      </group>
-      {/* Right leg */}
-      <group name="rightLeg" position={[-0.09, 0.9, 0]}>
-        <mesh position={[0, -0.18, 0]} castShadow>
-          <capsuleGeometry args={[legWidth, 0.24, 4, 6]} />
-          <meshStandardMaterial color={pantsColor} roughness={0.85} metalness={0.05} />
-        </mesh>
-        <mesh position={[0, -0.4, 0]} castShadow>
-          <capsuleGeometry args={[lowerLegWidth, 0.2, 4, 6]} />
-          <meshStandardMaterial color={pantsColor} roughness={0.85} metalness={0.05} />
-        </mesh>
-        <mesh position={[0, -0.5, 0]}>
-          <cylinderGeometry args={[0.055, 0.052, 0.03, 6]} />
-          <meshStandardMaterial color={pantsDark} roughness={0.85} />
-        </mesh>
-        <mesh position={[0, -0.55, 0.02]} castShadow>
-          <boxGeometry args={[sw, sh, sd]} />
-          <meshStandardMaterial color={shoeColor} roughness={0.9} metalness={0.05} />
-        </mesh>
-        <mesh position={[0, -0.58, 0.02]}>
-          <boxGeometry args={[sw + 0.005, 0.02, sd + 0.005]} />
-          <meshStandardMaterial color={soleColor} roughness={0.95} />
-        </mesh>
-        {accentGlow && accentColor && (
-          <mesh position={[0, -0.59, 0.02]}>
-            <boxGeometry args={[sw + 0.005, 0.005, sd + 0.005]} />
-            <meshStandardMaterial color={accentColor} emissive={accentGlow} emissiveIntensity={0.12} transparent opacity={0.3} />
-          </mesh>
-        )}
-      </group>
+      {legSegment('left')}
+      {legSegment('right')}
     </>
   );
 }
@@ -310,6 +204,16 @@ function useNPCAnimation(
   const animTimeRef = useRef(0);
   // Use useEffect to sync animState into a ref for useFrame access
   const animStateRef = useRef(animState);
+  /* Cached body-part lookups (matches ProceduralPlayerModel bodyPartsRef) */
+  const bodyPartsRef = useRef<{
+    head: THREE.Group | null;
+    torso: THREE.Group | null;
+    leftArm: THREE.Group | null;
+    rightArm: THREE.Group | null;
+    leftLeg: THREE.Group | null;
+    rightLeg: THREE.Group | null;
+  } | null>(null);
+
   useEffect(() => {
     animStateRef.current = animState;
   }, [animState]);
@@ -322,12 +226,18 @@ function useNPCAnimation(
     const body = groupRef.current;
     const currentAnimState = animStateRef.current;
 
-    const head = body.getObjectByName('head') as THREE.Group | undefined;
-    const torso = body.getObjectByName('torso') as THREE.Group | undefined;
-    const leftArm = body.getObjectByName('leftArm') as THREE.Group | undefined;
-    const rightArm = body.getObjectByName('rightArm') as THREE.Group | undefined;
-    const leftLeg = body.getObjectByName('leftLeg') as THREE.Group | undefined;
-    const rightLeg = body.getObjectByName('rightLeg') as THREE.Group | undefined;
+    if (!bodyPartsRef.current) {
+      bodyPartsRef.current = {
+        head: body.getObjectByName('head') as THREE.Group | null,
+        torso: body.getObjectByName('torso') as THREE.Group | null,
+        leftArm: body.getObjectByName('leftArm') as THREE.Group | null,
+        rightArm: body.getObjectByName('rightArm') as THREE.Group | null,
+        leftLeg: body.getObjectByName('leftLeg') as THREE.Group | null,
+        rightLeg: body.getObjectByName('rightLeg') as THREE.Group | null,
+      };
+    }
+
+    const { head, torso, leftArm, rightArm, leftLeg, rightLeg } = bodyPartsRef.current;
 
     if (currentAnimState === 'walk') {
       const speed = 8;
@@ -417,9 +327,8 @@ function AlbertModel({ appearance, animState = 'idle' }: { appearance: NPCAppear
       {/* TORSO — broader, heavier build */}
       <group name="torso" position={[0, 1.05, 0.02]} rotation={[0.04, 0, 0]}>
         {/* Tweed jacket body — wider for heavy build */}
-        <mesh castShadow>
+        <mesh castShadow material={clothingMat(tweedJacket, glowColor, 0.06)}>
           <boxGeometry args={[0.46, 0.50, 0.26]} />
-          <meshStandardMaterial color={tweedJacket} emissive={glowColor} emissiveIntensity={0.06} roughness={0.85} metalness={0.05} />
         </mesh>
         {/* Jacket lapels — V-shape in front */}
         <mesh position={[-0.06, 0.12, 0.135]} rotation={[0, 0, 0.25]}>
@@ -465,34 +374,25 @@ function AlbertModel({ appearance, animState = 'idle' }: { appearance: NPCAppear
         </mesh>
 
         {/* Neck */}
-        <mesh position={[0, 0.27, 0]}>
-          <cylinderGeometry args={[0.055, 0.06, 0.07, 6]} />
-          <meshStandardMaterial color={SKIN_MEDIUM} roughness={0.7} />
-        </mesh>
+        <mesh position={[0, 0.27, 0]} geometry={sharedGeo.neckCylinderLg} material={sharedMat.skinMedium} />
 
         {/* HEAD */}
         <group name="head" position={[0, 0.47, 0.02]}>
           {/* Skull — slightly larger for older professor */}
-          <mesh castShadow>
-            <sphereGeometry args={[0.11, 8, 8]} />
-            <meshStandardMaterial color={SKIN_MEDIUM} roughness={0.7} metalness={0.05} />
-          </mesh>
+          <mesh castShadow geometry={sharedGeo.skullSphereLg} material={sharedMat.skinMedium} />
           {/* Jaw — heavier */}
-          <mesh position={[0, -0.055, 0.025]} castShadow>
+          <mesh position={[0, -0.055, 0.025]} castShadow material={sharedMat.skinMedium}>
             <boxGeometry args={[0.16, 0.06, 0.11]} />
-            <meshStandardMaterial color={SKIN_MEDIUM} roughness={0.7} />
           </mesh>
           {/* Jaw taper */}
-          <mesh position={[0, -0.075, 0.03]} rotation={[0.2, 0, 0]}>
+          <mesh position={[0, -0.075, 0.03]} rotation={[0.2, 0, 0]} material={sharedMat.skinMedium}>
             <boxGeometry args={[0.12, 0.03, 0.09]} />
-            <meshStandardMaterial color={SKIN_MEDIUM} roughness={0.7} />
           </mesh>
           <Eyes browAngle={0.15} />
-          <FaceFeatures skinColor={SKIN_MEDIUM} shadowColor={SKIN_SHADOW_MED} mouthWidth={0.04} />
+          <FaceFeatures skinColor={SKIN_MEDIUM} shadowColor={SKIN_SHADOW_MED} />
           {/* Stubble */}
-          <mesh position={[0, -0.06, 0.065]}>
+          <mesh position={[0, -0.06, 0.065]} material={npcMat({ color: SKIN_SHADOW_MED, roughness: 0.9, transparent: true, opacity: 0.2 })}>
             <boxGeometry args={[0.14, 0.05, 0.005]} />
-            <meshStandardMaterial color={SKIN_SHADOW_MED} roughness={0.9} transparent opacity={0.2} />
           </mesh>
 
           {/* Glasses — round, scholarly */}
@@ -525,24 +425,12 @@ function AlbertModel({ appearance, animState = 'idle' }: { appearance: NPCAppear
           </group>
 
           {/* Hair — receding gray hair */}
-          <mesh position={[0, 0.09, -0.01]}>
-            <sphereGeometry args={[0.085, 5, 4]} />
-            <meshStandardMaterial color={HAIR_GRAY} roughness={0.9} />
-          </mesh>
+          <mesh position={[0, 0.09, -0.01]} geometry={sharedGeo.hairSphere} material={sharedMat.hairGray} />
           {/* Sides */}
-          <mesh position={[-0.075, 0.04, 0.0]}>
-            <sphereGeometry args={[0.03, 4, 3]} />
-            <meshStandardMaterial color={HAIR_GRAY} roughness={0.9} />
-          </mesh>
-          <mesh position={[0.075, 0.04, 0.0]}>
-            <sphereGeometry args={[0.03, 4, 3]} />
-            <meshStandardMaterial color={HAIR_GRAY} roughness={0.9} />
-          </mesh>
+          <mesh position={[-0.075, 0.04, 0.0]} geometry={sharedGeo.hairSide} material={sharedMat.hairGray} />
+          <mesh position={[0.075, 0.04, 0.0]} geometry={sharedGeo.hairSide} material={sharedMat.hairGray} />
           {/* Back */}
-          <mesh position={[0, 0.06, -0.075]}>
-            <sphereGeometry args={[0.07, 5, 4]} />
-            <meshStandardMaterial color={HAIR_GRAY} roughness={0.9} />
-          </mesh>
+          <mesh position={[0, 0.06, -0.075]} geometry={sharedGeo.hairBack} material={sharedMat.hairGray} />
         </group>
 
         <Arms sleeveColor={tweedJacket} skinColor={SKIN_MEDIUM} armWidth={0.052} forearmWidth={0.046} />
@@ -626,7 +514,7 @@ function ZaremaModel({ appearance, animState = 'idle' }: { appearance: NPCAppear
             <meshStandardMaterial color={skinColor} roughness={0.7} />
           </mesh>
           <Eyes browAngle={0.05} irisColor="#3a5a40" />
-          <FaceFeatures skinColor={skinColor} shadowColor={skinShadow} mouthWidth={0.035} mouthCornersDown={false} />
+          <FaceFeatures skinColor={skinColor} shadowColor={skinShadow} mouthCornersDown={false} />
 
           {/* Headscarf — wrapped around head, draped */}
           <group position={[0, 0.05, 0]}>
@@ -675,24 +563,12 @@ function ZaremaModel({ appearance, animState = 'idle' }: { appearance: NPCAppear
 
       {/* Legs hidden by long dress, just shoes visible */}
       <group name="leftLeg" position={[0.09, 0.9, 0]}>
-        <mesh position={[0, -0.18, 0]}>
-          <capsuleGeometry args={[0.045, 0.24, 4, 6]} />
-          <meshStandardMaterial color={dressColor} roughness={0.85} />
-        </mesh>
-        <mesh position={[0, -0.55, 0.02]} castShadow>
-          <boxGeometry args={[0.07, 0.05, 0.12]} />
-          <meshStandardMaterial color="#2a1a1a" roughness={0.9} />
-        </mesh>
+        <mesh position={[0, -0.18, 0]} scale={[0.045 / DEFAULT_LEG_WIDTH, 1, 0.045 / DEFAULT_LEG_WIDTH]} geometry={sharedGeo.upperLegCapsule} material={clothingMat(dressColor)} />
+        <mesh position={[0, -0.55, 0.02]} castShadow geometry={sharedGeo.sneakerBox} material={npcMat({ color: '#2a1a1a', roughness: 0.9 })} scale={[0.07 / 0.085, 0.05 / 0.055, 0.12 / 0.15]} />
       </group>
       <group name="rightLeg" position={[-0.09, 0.9, 0]}>
-        <mesh position={[0, -0.18, 0]}>
-          <capsuleGeometry args={[0.045, 0.24, 4, 6]} />
-          <meshStandardMaterial color={dressColor} roughness={0.85} />
-        </mesh>
-        <mesh position={[0, -0.55, 0.02]} castShadow>
-          <boxGeometry args={[0.07, 0.05, 0.12]} />
-          <meshStandardMaterial color="#2a1a1a" roughness={0.9} />
-        </mesh>
+        <mesh position={[0, -0.18, 0]} scale={[0.045 / DEFAULT_LEG_WIDTH, 1, 0.045 / DEFAULT_LEG_WIDTH]} geometry={sharedGeo.upperLegCapsule} material={clothingMat(dressColor)} />
+        <mesh position={[0, -0.55, 0.02]} castShadow geometry={sharedGeo.sneakerBox} material={npcMat({ color: '#2a1a1a', roughness: 0.9 })} scale={[0.07 / 0.085, 0.05 / 0.055, 0.12 / 0.15]} />
       </group>
     </group>
   );
@@ -789,7 +665,7 @@ function MariaModel({ appearance, animState = 'idle' }: { appearance: NPCAppeara
             <meshStandardMaterial color={skinColor} roughness={0.7} />
           </mesh>
           <Eyes browAngle={0.06} irisColor="#4a6a8a" />
-          <FaceFeatures skinColor={skinColor} shadowColor={skinShadow} mouthWidth={0.04} mouthCornersDown={false} />
+          <FaceFeatures skinColor={skinColor} shadowColor={skinShadow} mouthCornersDown={false} />
 
           {/* Hair — brown, shoulder-length with ponytail */}
           <mesh position={[0, 0.08, -0.01]}>
@@ -923,7 +799,7 @@ function DmitryModel({ appearance, animState = 'idle' }: { appearance: NPCAppear
             <meshStandardMaterial color={skinColor} roughness={0.7} />
           </mesh>
           <Eyes browAngle={0.12} irisColor="#4a3a20" />
-          <FaceFeatures skinColor={skinColor} shadowColor={skinShadow} mouthWidth={0.05} />
+          <FaceFeatures skinColor={skinColor} shadowColor={skinShadow} />
           {/* Stubble */}
           <mesh position={[0, -0.065, 0.07]}>
             <boxGeometry args={[0.15, 0.05, 0.005]} />
@@ -1063,7 +939,7 @@ function AlexanderModel({ appearance, animState = 'idle' }: { appearance: NPCApp
             <meshStandardMaterial color={SKIN_LIGHT} roughness={0.7} />
           </mesh>
           <Eyes browAngle={0.08} irisColor="#3a3020" />
-          <FaceFeatures skinColor={SKIN_LIGHT} shadowColor={SKIN_SHADOW_LIGHT} mouthWidth={0.04} />
+          <FaceFeatures skinColor={SKIN_LIGHT} shadowColor={SKIN_SHADOW_LIGHT} />
           {/* Neatly trimmed hair */}
           <mesh position={[0, 0.08, -0.01]}>
             <sphereGeometry args={[0.085, 5, 4]} />
@@ -1132,7 +1008,6 @@ function ColleagueModel({ appearance, animState = 'idle' }: { appearance: NPCApp
   const jeansDark = '#2e3545';
   const backpackColor = '#2a2a35';
   const backpackAccent = accentColor;
-  const earbudsColor = '#e8e8e8';
   const skinColor = SKIN_LIGHT;
   const skinShadow = SKIN_SHADOW_LIGHT;
   const hairColor = HAIR_DARK;
@@ -1224,27 +1099,16 @@ function ColleagueModel({ appearance, animState = 'idle' }: { appearance: NPCApp
             <meshStandardMaterial color={skinColor} roughness={0.7} />
           </mesh>
           <Eyes browAngle={0.08} irisColor="#3a4a3a" />
-          <FaceFeatures skinColor={skinColor} shadowColor={skinShadow} mouthWidth={0.038} />
+          <FaceFeatures skinColor={skinColor} shadowColor={skinShadow} />
 
           {/* Earbuds — white cords and buds */}
-          {/* Left earbud */}
-          <mesh position={[-0.09, 0.0, 0.02]}>
-            <sphereGeometry args={[0.012, 5, 5]} />
-            <meshStandardMaterial color={earbudsColor} roughness={0.3} metalness={0.2} />
-          </mesh>
-          {/* Right earbud */}
-          <mesh position={[0.09, 0.0, 0.02]}>
-            <sphereGeometry args={[0.012, 5, 5]} />
-            <meshStandardMaterial color={earbudsColor} roughness={0.3} metalness={0.2} />
-          </mesh>
-          {/* Earbud cord */}
-          <mesh position={[-0.05, -0.04, 0.08]} rotation={[0, 0, 0.3]}>
+          <mesh position={[-0.09, 0.0, 0.02]} geometry={sharedGeo.pupilSphere} material={sharedMat.earbuds} scale={[1.33, 1.33, 1.33]} />
+          <mesh position={[0.09, 0.0, 0.02]} geometry={sharedGeo.pupilSphere} material={sharedMat.earbuds} scale={[1.33, 1.33, 1.33]} />
+          <mesh position={[-0.05, -0.04, 0.08]} rotation={[0, 0, 0.3]} material={sharedMat.cord}>
             <boxGeometry args={[0.08, 0.003, 0.003]} />
-            <meshStandardMaterial color={earbudsColor} roughness={0.5} />
           </mesh>
-          <mesh position={[0.05, -0.04, 0.08]} rotation={[0, 0, -0.3]}>
+          <mesh position={[0.05, -0.04, 0.08]} rotation={[0, 0, -0.3]} material={sharedMat.cord}>
             <boxGeometry args={[0.08, 0.003, 0.003]} />
-            <meshStandardMaterial color={earbudsColor} roughness={0.5} />
           </mesh>
 
           {/* Messy hair — young guy style */}
@@ -1387,7 +1251,7 @@ function BaristaModel({ appearance, animState = 'idle' }: { appearance: NPCAppea
             <meshStandardMaterial color={skinColor} roughness={0.7} />
           </mesh>
           <Eyes browAngle={0.05} irisColor="#4a3a20" />
-          <FaceFeatures skinColor={skinColor} shadowColor={skinShadow} mouthWidth={0.04} mouthCornersDown={false} />
+          <FaceFeatures skinColor={skinColor} shadowColor={skinShadow} mouthCornersDown={false} />
           {/* Friendly slight upturn at mouth corners */}
 
           {/* Cap / visor beanie */}
@@ -1548,7 +1412,7 @@ function VeraModel({ appearance, animState = 'idle' }: { appearance: NPCAppearan
             <meshStandardMaterial color={skinColor} roughness={0.7} />
           </mesh>
           <Eyes browAngle={0.08} irisColor="#6a5a30" />
-          <FaceFeatures skinColor={skinColor} shadowColor={skinShadow} mouthWidth={0.035} mouthCornersDown={false} />
+          <FaceFeatures skinColor={skinColor} shadowColor={skinShadow} mouthCornersDown={false} />
 
           {/* Hair — gray, tied back */}
           <mesh position={[0, 0.08, -0.01]}>
@@ -1686,7 +1550,7 @@ function SergeyModel({ appearance, animState = 'idle' }: { appearance: NPCAppear
             <meshStandardMaterial color={skinColor} roughness={0.7} />
           </mesh>
           <Eyes browAngle={0.10} irisColor="#3a5a6a" />
-          <FaceFeatures skinColor={skinColor} shadowColor={skinShadow} mouthWidth={0.04} />
+          <FaceFeatures skinColor={skinColor} shadowColor={skinShadow} />
           {/* Stubble */}
           <mesh position={[0, -0.055, 0.065]}>
             <boxGeometry args={[0.13, 0.04, 0.005]} />
@@ -1792,7 +1656,7 @@ function LenaModel({ appearance, animState = 'idle' }: { appearance: NPCAppearan
           </mesh>
           <pointLight position={[0, 0.015, 0.12]} color={glowColor} intensity={0.3} distance={1.5} />
 
-          <FaceFeatures skinColor={skinColor} shadowColor={skinShadow} mouthWidth={0.03} mouthCornersDown={true} />
+          <FaceFeatures skinColor={skinColor} shadowColor={skinShadow} mouthCornersDown={true} />
 
           {/* HOOD — large, overshadows face */}
           <group position={[0, 0.04, -0.02]}>
@@ -1951,7 +1815,7 @@ function OlegModel({ appearance, animState = 'idle' }: { appearance: NPCAppearan
             <meshStandardMaterial color={skinColor} roughness={0.7} />
           </mesh>
           <Eyes browAngle={0.14} irisColor="#4a4a30" />
-          <FaceFeatures skinColor={skinColor} shadowColor={skinShadow} mouthWidth={0.045} />
+          <FaceFeatures skinColor={skinColor} shadowColor={skinShadow} />
           {/* Stubble */}
           <mesh position={[0, -0.06, 0.07]}>
             <boxGeometry args={[0.16, 0.05, 0.005]} />
@@ -2088,7 +1952,7 @@ function KateModel({ appearance, animState = 'idle' }: { appearance: NPCAppearan
             <meshStandardMaterial color={skinColor} roughness={0.7} />
           </mesh>
           <Eyes browAngle={0.06} irisColor="#4a6a3a" />
-          <FaceFeatures skinColor={skinColor} shadowColor={skinShadow} mouthWidth={0.035} mouthCornersDown={false} />
+          <FaceFeatures skinColor={skinColor} shadowColor={skinShadow} mouthCornersDown={false} />
 
           {/* Glasses — rounder than Albert's */}
           <group position={[0, 0.015, 0.1]}>

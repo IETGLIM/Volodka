@@ -5,9 +5,11 @@
  *  vertical pulsing add life without hurting performance.
  */
 
-import { useRef, useMemo } from 'react';
+import { useRef, useMemo, useEffect } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
+import { useIsMobileVisual, useMobileVisualPerf } from '@/hooks/use-mobile';
+import { getFogPlaneCount } from '@/shared/utils/mobileParticleScale';
 
 /* ── Config ── */
 
@@ -252,10 +254,17 @@ interface VolumetricFogProps {
 }
 
 export function VolumetricFog({ config: userConfig, sceneId }: VolumetricFogProps) {
+  const isMobile = useIsMobileVisual();
+  const { visualLite } = useMobileVisualPerf();
+
   const mergedConfig = useMemo<VolumetricFogConfig>(() => {
     const preset = sceneId ? FOG_PRESETS[sceneId] ?? {} : {};
-    return { ...DEFAULT_CONFIG, ...preset, ...userConfig };
-  }, [sceneId, userConfig]);
+    const merged = { ...DEFAULT_CONFIG, ...preset, ...userConfig };
+    return {
+      ...merged,
+      planeCount: getFogPlaneCount(merged.planeCount, isMobile, visualLite),
+    };
+  }, [sceneId, userConfig, isMobile, visualLite]);
 
   const planeData = useMemo(() => generatePlaneLayout(mergedConfig), [mergedConfig]);
 
@@ -288,6 +297,12 @@ function FogPlane({ data, config }: { data: FogPlaneData; config: VolumetricFogC
   );
 
   const baseOpacity = config.opacity * data.opacityScale;
+
+  useEffect(() => {
+    return () => {
+      geometry.dispose();
+    };
+  }, [geometry]);
 
   useFrame((_, delta) => {
     if (!meshRef.current) return;

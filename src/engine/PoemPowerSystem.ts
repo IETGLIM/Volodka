@@ -16,6 +16,7 @@
 
 import { eventBus } from '@/engine/EventBus';
 import { getGameStore } from '@/store/gameStore';
+import { isTrainablePlayerSkill, warnInvalidValue } from '@/shared/validation/typeGuards';
 
 /* ─── Power definition ─── */
 /** A single reversible effect entry — applied in reverse when the TTL flag expires */
@@ -109,7 +110,13 @@ export function processExpiredTTLFlags(): void {
       for (const rev of power.reverseOnExpiry) {
         switch (rev.type) {
           case 'skill':
-            if (rev.key) store.addSkill(rev.key as any, rev.value);
+            if (rev.key) {
+              if (isTrainablePlayerSkill(rev.key)) {
+                store.addSkill(rev.key, rev.value);
+              } else {
+                warnInvalidValue('poem reverseOnExpiry skill', rev.key);
+              }
+            }
             break;
           case 'energy':
             store.addEnergy(rev.value);

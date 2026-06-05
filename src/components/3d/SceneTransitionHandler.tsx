@@ -9,11 +9,11 @@
  */
 
 import { useEffect, useRef } from 'react';
-import { useThree } from '@react-three/fiber';
 import { useGameStore } from '@/store/gameStore';
 import { eventBus } from '@/engine/EventBus';
 import { audioEngine } from '@/engine/AudioEngine';
 import { musicEngine } from '@/engine/MusicEngine';
+import { triggerCameraShake } from '@/engine/camera/cameraShake';
 import type { SceneId } from '@/shared/types/game';
 import { SCENE_TRANSITION, CAMERA_SHAKE } from '@/shared/constants/transitionTimings';
 
@@ -30,71 +30,7 @@ import { SCENE_TRANSITION, CAMERA_SHAKE } from '@/shared/constants/transitionTim
  */
 export function SceneTransitionHandler() {
   const transitioningRef = useRef(false);
-  const camera = useThree((s) => s.camera);
-  const shakeRef = useRef({ active: false, elapsed: 0, intensity: 0 });
-  const prevCamPos = useRef({ x: 0, y: 0, z: 0 });
-  // Freeze camera position during cinematic fade
-  const freezeRef = useRef(false);
-  const frozenPosRef = useRef({ x: 0, y: 0, z: 0 });
-  // Track timers for cleanup on unmount
   const timersRef = useRef<Array<ReturnType<typeof setTimeout>>>([]);
-
-  // Camera shake + freeze in requestAnimationFrame loop
-  useEffect(() => {
-    let animFrame: number;
-
-    const tick = () => {
-      if (freezeRef.current) {
-        // Keep camera at frozen position during cinematic transition
-        camera.position.x = frozenPosRef.current.x;
-        camera.position.y = frozenPosRef.current.y;
-        camera.position.z = frozenPosRef.current.z;
-      } else if (shakeRef.current.active) {
-        shakeRef.current.elapsed += 16; // ~60fps
-        const progress = shakeRef.current.elapsed / CAMERA_SHAKE.DURATION_MS; // shake duration
-        if (progress >= 1) {
-          shakeRef.current.active = false;
-          // Restore camera position
-          camera.position.x = prevCamPos.current.x;
-          camera.position.y = prevCamPos.current.y;
-          camera.position.z = prevCamPos.current.z;
-        } else {
-          // Decaying shake
-          const decay = 1 - progress;
-          const offset = shakeRef.current.intensity * decay;
-          camera.position.x = prevCamPos.current.x + (Math.random() - 0.5) * offset;
-          camera.position.y = prevCamPos.current.y + (Math.random() - 0.5) * offset * 0.5;
-          camera.position.z = prevCamPos.current.z + (Math.random() - 0.5) * offset * 0.3;
-        }
-      }
-      animFrame = requestAnimationFrame(tick);
-    };
-
-    animFrame = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(animFrame);
-  }, [camera]);
-
-  // ── Listen for cinematic transition phases to control camera freeze ──
-  useEffect(() => {
-    const unsub = eventBus.on('camera:cinematic_transition', ({ phase }) => {
-      if (phase === 'fadeOut') {
-        // Freeze camera at current position during fade-out
-        freezeRef.current = true;
-        frozenPosRef.current = {
-          x: camera.position.x,
-          y: camera.position.y,
-          z: camera.position.z,
-        };
-      } else if (phase === 'hold') {
-        // Still frozen during hold
-        freezeRef.current = true;
-      } else if (phase === 'fadeIn') {
-        // Unfreeze — let the spring camera settle into new position
-        freezeRef.current = false;
-      }
-    });
-    return unsub;
-  }, [camera]);
 
   useEffect(() => {
     const unsub = eventBus.on('scene:transition', (payload) => {
@@ -109,13 +45,9 @@ export function SceneTransitionHandler() {
       // Play door sounds
       audioEngine.playDoorOpen();
 
-      // Start camera shake (reduced intensity — cinematic overlay handles the drama now)
-      prevCamPos.current = {
-        x: camera.position.x,
-        y: camera.position.y,
-        z: camera.position.z,
-      };
-      shakeRef.current = { active: true, elapsed: 0, intensity: CAMERA_SHAKE.TRANSITION_INTENSITY };
+      // Shake via shared cameraShake module — updated in FollowCamera useFrame (single loop)
+      const shakeDecay = -Math.log(0.001) / (CAMERA_SHAKE.DURATION_MS / 1000);
+      triggerCameraShake(CAMERA_SHAKE.TRANSITION_INTENSITY, shakeDecay);
 
       // Apply scene + position in the store
       store.setExplorationScene(targetScene);
@@ -162,7 +94,7 @@ export function SceneTransitionHandler() {
       }
       timersRef.current = [];
     };
-  }, [camera]);
+  }, []);
 
   return null; // No visual output
 }

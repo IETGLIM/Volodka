@@ -11,10 +11,21 @@ import type {
 import { getPoemById } from '@/data/poems';
 import { QUEST_DEFINITIONS } from '@/data/quests';
 import { ACHIEVEMENT_MAP, TOTAL_ACHIEVEMENTS } from '@/data/achievements';
-import { getDailyMissionById, getDaySeed } from '@/data/dailyMissions';
+import { getDailyMissionById } from '@/data/dailyMissions';
 import { eventBus } from '@/engine/EventBus';
 import { clamp, pushNotification, type GameNotification, type PoemPowerState } from '../shared';
+import { applyFairmathRelation } from '@/shared/fairmath';
 import type { GameStoreState } from '../types';
+import { readWorldFromExploration, readWorldFromPlayer } from '../crossSliceReads';
+import {
+  batchAddCredits,
+  batchAddKarma,
+  batchAddSkill,
+  batchAddXp,
+  createRewardBatchDraft,
+  createRewardBatchSideEffects,
+  flushRewardBatchSideEffects,
+} from '../rewardBatchHelpers';
 
 /* ─── Slice types ─── */
 
@@ -139,14 +150,13 @@ export const createWorldSlice: StateCreator<
       }
 
       const quests = state.quests.filter((q) => q.questId !== questId);
-      // Cross-slice read: exploration.timeOfDay for startedAtTime
-      const timeOfDay = get().exploration.timeOfDay;
+      const { timeOfDay } = readWorldFromExploration(get());
       quests.push({ questId, status: 'active', objectives, startedAtTime: timeOfDay });
 
       eventBus.emit('quest:accepted', { questId, questTitle: definition.title });
 
       const questTitle = definition.title;
-      const currentNotifications = get().notifications;
+      const { notifications: currentNotifications } = readWorldFromPlayer(get());
       return {
         quests,
         notifications: pushNotification(currentNotifications, 'quest', `Новое задание: ${questTitle}`),
@@ -188,7 +198,7 @@ export const createWorldSlice: StateCreator<
 
       eventBus.emit('quest:completed', { questId, npcId: questDef?.questGiverNpcId });
       const questTitle = questDef?.title ?? questId;
-      const currentNotifications = get().notifications;
+      const { notifications: currentNotifications } = readWorldFromPlayer(get());
       return {
         quests,
         notifications: pushNotification(currentNotifications, 'quest', `Задание выполнено: ${questTitle}`),
@@ -216,7 +226,7 @@ export const createWorldSlice: StateCreator<
       if (!poem) return state;
       const poemTitle = poem.title;
       try { eventBus.emit('poem:collected', { poemId }); } catch { /* ignore */ }
-      const currentNotifications = get().notifications;
+      const { notifications: currentNotifications } = readWorldFromPlayer(get());
       return {
         collectedPoems: [...state.collectedPoems, poemId],
         notifications: pushNotification(currentNotifications, 'poem', `Стих собран: ${poemTitle}`),
@@ -228,32 +238,14 @@ export const createWorldSlice: StateCreator<
       const relations = [...state.npcRelations];
       const idx = relations.findIndex((r) => r.npcId === npcId);
 
-      // Fairmath algorithm: diminishing returns for reputation changes.
-      // Positive deltas: the closer to 100, the harder to increase.
-      // Negative deltas: the closer to 0, the harder to decrease.
-      // Formula: new_value = old_value + delta * (100 - old_value) / 100 (for positive)
-      //          new_value = old_value + delta * old_value / 100 (for negative)
-      const applyFairmath = (current: number, change: number): number => {
-        if (change === 0) return current;
-        if (change >= 0) {
-          // Positive change: harder to increase when already high
-          const gain = Math.round(change * (100 - current) / 100);
-          return Math.min(100, current + Math.max(gain, 1)); // At least +1 if delta > 0
-        } else {
-          // Negative change: harder to decrease when already low
-          const loss = Math.round(Math.abs(change) * current / 100);
-          return Math.max(0, current - Math.max(loss, 1)); // At least -1 if delta < 0
-        }
-      };
-
       if (idx >= 0) {
         const updated = { ...relations[idx] };
-        updated.value = clamp(applyFairmath(updated.value, delta), 0, 100);
+        updated.value = clamp(applyFairmathRelation(updated.value, delta), 0, 100);
         relations[idx] = updated;
       } else {
         relations.push({
           npcId,
-          value: clamp(applyFairmath(50, delta), 0, 100), // Start at neutral 50
+          value: clamp(applyFairmathRelation(50, delta), 0, 100), // Start at neutral 50
         });
       }
 
@@ -386,7 +378,7 @@ export const createWorldSlice: StateCreator<
         claimed: false,
       };
 
-      const currentNotifications = get().notifications;
+      const { notifications: currentNotifications } = readWorldFromPlayer(get());
       return {
         acceptedDailyMissions: [...state.acceptedDailyMissions, newMission],
         notifications: pushNotification(currentNotifications, 'quest', `Ежедневное задание принято`),
@@ -436,7 +428,7 @@ export const createWorldSlice: StateCreator<
       );
 
       if (newlyCompleted) {
-        const currentNotifications = get().notifications;
+        const { notifications: currentNotifications } = readWorldFromPlayer(get());
         return {
           acceptedDailyMissions: missions,
           notifications: pushNotification(currentNotifications, 'quest', `Ежедневное задание выполнено: ${missionDef.title}`),
@@ -446,7 +438,9 @@ export const createWorldSlice: StateCreator<
       return { acceptedDailyMissions: missions };
     }),
 
-  claimDailyMissionReward: (missionId) =>
+  claimDailyMissionReward: (missionId) => {
+    const sideEffects = createRewardBatchSideEffects();
+
     set((state) => {
       const mission = state.acceptedDailyMissions.find((m) => m.missionId === missionId);
       if (!mission || !mission.completed || mission.claimed) return state;
@@ -454,16 +448,15 @@ export const createWorldSlice: StateCreator<
       const missionDef = getDailyMissionById(missionId);
       if (!missionDef) return state;
 
-      // Apply rewards via cross-slice actions
-      const crossState = get();
+      const draft = createRewardBatchDraft(state.playerState, state.notifications);
       const rewards = missionDef.rewards;
 
-      if (rewards.xp) crossState.addXp(rewards.xp);
-      if (rewards.karma) crossState.addKarma(rewards.karma);
-      if (rewards.credits) crossState.addCredits(rewards.credits);
+      if (rewards.xp) batchAddXp(draft, sideEffects, rewards.xp);
+      if (rewards.karma) batchAddKarma(draft, sideEffects, rewards.karma);
+      if (rewards.credits) batchAddCredits(draft, rewards.credits);
       if (rewards.skillXp) {
         for (const [skill, xp] of Object.entries(rewards.skillXp)) {
-          if (xp) crossState.addSkill(skill as TrainablePlayerSkill, xp);
+          if (xp) batchAddSkill(draft, skill as TrainablePlayerSkill, xp);
         }
       }
 
@@ -471,8 +464,15 @@ export const createWorldSlice: StateCreator<
         m.missionId === missionId ? { ...m, claimed: true } : m,
       );
 
-      return { acceptedDailyMissions: missions };
-    }),
+      return {
+        acceptedDailyMissions: missions,
+        playerState: draft.playerState,
+        notifications: draft.notifications,
+      };
+    });
+
+    flushRewardBatchSideEffects(sideEffects);
+  },
 
   checkDailyMissionResets: () => {
     const state = get();
@@ -483,13 +483,27 @@ export const createWorldSlice: StateCreator<
     const MS_PER_DAY = 86400000;
     if (now - lastReset < MS_PER_DAY && lastReset > 0) return;
 
-    // Reset: remove claimed and old missions
-    void getDaySeed();
+    const acceptedDailyMissions = state.acceptedDailyMissions
+      .filter((m) => !m.claimed)
+      .map((m) => {
+        // Completed-but-unclaimed: keep for reward pickup
+        if (m.completed) return m;
+
+        const missionDef = getDailyMissionById(m.missionId);
+        // Weekly missions survive daily reset with progress intact
+        if (missionDef?.resetSchedule === 'weekly') return m;
+
+        // Daily incomplete: reset progress but keep the accepted slot
+        return {
+          ...m,
+          progress: {},
+          completed: false,
+          acceptedAt: now,
+        };
+      });
 
     set({
-      acceptedDailyMissions: state.acceptedDailyMissions.filter(
-        (m) => m.completed && !m.claimed  // Keep unclaimed completed missions
-      ),
+      acceptedDailyMissions,
       lastDailyReset: now,
     });
   },

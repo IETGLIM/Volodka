@@ -14,6 +14,7 @@ import {
   type TutorialFlags,
 } from '../shared';
 import type { GameStoreState } from '../types';
+import { readUIFromExploration } from '../crossSliceReads';
 import { INITIAL_LORE_ENTRIES } from '@/data/loreEntries';
 import { eventBus } from '@/engine/EventBus';
 import { musicEngine } from '@/engine/MusicEngine';
@@ -111,8 +112,8 @@ export const createUISlice: StateCreator<
       if (!newEnabled) {
         musicEngine.stopMusic(1);
       } else {
-        const sceneId = get().exploration.currentSceneId;
-        musicEngine.playSceneMusic(sceneId);
+        const { currentSceneId } = readUIFromExploration(get());
+        musicEngine.playSceneMusic(currentSceneId);
       }
       return { musicEnabled: newEnabled };
     }),

@@ -7,11 +7,29 @@ import type { ExplorationState, SceneId } from '@/shared/types/game';
 import { sanitizeExplorationSceneId, SCENE_CONFIG } from '@/config/scenes';
 import { clamp, createDefaultExploration } from '../shared';
 import type { GameStoreState } from '../types';
+import { readExplorationFromPlayer } from '../crossSliceReads';
 import { eventBus } from '@/engine/EventBus';
 import { buildNPCStatesForTime } from '@/engine/ScheduleEngine';
+import { buildScheduleContext } from '@/shared/scheduleContext';
 
 /* ─── Auto-close timer tracking for interactive objects ─── */
 const autoCloseTimers = new Map<string, ReturnType<typeof setTimeout>>();
+let autoCloseGeneration = 0;
+
+/** Clear all pending auto-close timers (game reset / HMR). */
+export function clearAutoCloseTimers(): void {
+  autoCloseGeneration++;
+  for (const timer of autoCloseTimers.values()) {
+    clearTimeout(timer);
+  }
+  autoCloseTimers.clear();
+}
+
+if (import.meta.hot) {
+  import.meta.hot.dispose(() => {
+    clearAutoCloseTimers();
+  });
+}
 
 /* ─── Scene gate definitions: scenes that require a story flag ─── */
 const SCENE_GATES: Partial<Record<SceneId, string>> = {
@@ -111,7 +129,8 @@ export const createExplorationSlice: StateCreator<
         newTime = newTime + 24;
       }
       // ── World Clock: rebuild NPC states when time changes ──
-      const npcStates = buildNPCStatesForTime(newTime);
+      const scheduleCtx = buildScheduleContext(state);
+      const npcStates = buildNPCStatesForTime(newTime, scheduleCtx);
       // Emit world:hour_changed so other systems (quests, weather, achievements) can react
       // Use setTimeout to avoid emitting during Zustand setState (can cause issues)
       const hour = newTime;
@@ -148,8 +167,10 @@ export const createExplorationSlice: StateCreator<
 
     // Auto-close after 5 seconds if opening
     if (newState) {
+      const capturedGeneration = autoCloseGeneration;
       const timer = setTimeout(() => {
         autoCloseTimers.delete(id);
+        if (capturedGeneration !== autoCloseGeneration) return;
         const checkState = get().interactiveObjectStates[id];
         if (checkState) {
           set((state) => ({
@@ -185,8 +206,8 @@ export const createExplorationSlice: StateCreator<
     // Check story flag gate
     const requiredFlag = SCENE_GATES[sceneId];
     if (requiredFlag) {
-      const store = get();
-      if (!store.playerState.flags[requiredFlag]) return;
+      const { flags } = readExplorationFromPlayer(get());
+      if (!flags[requiredFlag]) return;
     }
 
     // Get target scene config for spawn point

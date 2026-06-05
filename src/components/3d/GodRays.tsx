@@ -5,7 +5,7 @@
  *  float inside the ray for added realism.
  */
 
-import { useRef, useMemo } from 'react';
+import { useRef, useMemo, useEffect } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 
@@ -429,6 +429,12 @@ function GodRayShaft({ config }: { config: GodRayConfig }) {
     [c.topRadius, c.bottomRadius, c.height],
   );
 
+  useEffect(() => {
+    return () => {
+      geometry.dispose();
+    };
+  }, [geometry]);
+
   useFrame((_, delta) => {
     if (!meshRef.current) return;
     timeRef.current += delta;
@@ -500,6 +506,12 @@ function RayDustMotes({ config }: { config: GodRayConfig }) {
     geo.setAttribute('position', new THREE.BufferAttribute(positions.slice(), 3));
     return geo;
   }, [positions]);
+
+  useEffect(() => {
+    return () => {
+      geometry.dispose();
+    };
+  }, [geometry]);
 
   useFrame((_, delta) => {
     if (!pointsRef.current) return;

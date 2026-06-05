@@ -6,7 +6,7 @@
  * and causes issues with save/load and devtools). */
 
 import type { StateCreator } from 'zustand';
-import type { CameraWaypointData } from '@/shared/types/game';
+import type { CameraWaypointData } from '@/engine/events';
 
 /* ─── Slice types ─── */
 

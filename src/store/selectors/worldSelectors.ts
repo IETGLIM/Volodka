@@ -14,6 +14,9 @@ export const selectCollectedPoems = (s = getGameStore()) => s.collectedPoems;
 
 export const selectNpcAffinity = (s = getGameStore()) => s.npcAffinity;
 
+export const selectNpcRelationValue = (s: ReturnType<typeof getGameStore>, npcId: string) =>
+  s.npcRelations.find((r) => r.npcId === npcId)?.value ?? 50;
+
 /* ─── React hooks ─── */
 
 export function useQuests(): QuestState[] {

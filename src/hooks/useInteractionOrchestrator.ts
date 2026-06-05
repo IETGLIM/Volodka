@@ -1,7 +1,13 @@
 
-import { useEffect, useCallback, useState, useRef } from 'react';
+import { useEffect, useCallback, useState, useRef, useMemo } from 'react';
 import { useGameStore } from '@/store/gameStore';
 import { eventBus } from '@/engine/EventBus';
+import {
+  closeMinigame,
+  isKnownMinigameId,
+  openMinigame,
+  type MinigamePanelSetters,
+} from '@/shared/constants/minigames';
 import { audioEngine } from '@/engine/AudioEngine';
 import { TRIGGER_ZONES } from '@/data/triggerZones';
 import { STORY_NODES } from '@/data/storyNodes';
@@ -37,6 +43,19 @@ export function useInteractionOrchestrator(
   const [memoryGameOpen, setMemoryGameOpen] = useState(false);
   const [quizGameOpen, setQuizGameOpen] = useState(false);
   const [rhythmGameOpen, setRhythmGameOpen] = useState(false);
+  const minigameSetters = useMemo<MinigamePanelSetters>(
+    () => ({
+      setCodebreakerOpen,
+      setOpenstackTerminalOpen,
+      setBashTerminalOpen,
+      setPoetryGameOpen,
+      setHackingGameOpen,
+      setMemoryGameOpen,
+      setQuizGameOpen,
+      setRhythmGameOpen,
+    }),
+    [],
+  );
   const [examineOpen, setExamineOpen] = useState(false);
   const [examineData, setExamineData] = useState<import('@/shared/types/game').ExamineData | null>(null);
   const [examineHasLinkedContent, setExamineHasLinkedContent] = useState(false);
@@ -255,23 +274,8 @@ export function useInteractionOrchestrator(
     // ── Handle mini-game open/close events ──
     unsubs.push(
       eventBus.on('minigame:open', ({ gameType }) => {
-        if (gameType === 'codebreaker') {
-          setCodebreakerOpen(true);
-        } else if (gameType === 'openstack_terminal') {
-          setOpenstackTerminalOpen(true);
-        } else if (gameType === 'bash_terminal') {
-          setBashTerminalOpen(true);
-        } else if (gameType === 'poetry') {
-          setPoetryGameOpen(true);
-        } else if (gameType === 'hacking') {
-          setHackingGameOpen(true);
-        } else if (gameType === 'memory') {
-          setMemoryGameOpen(true);
-        } else if (gameType === 'quiz') {
-          setQuizGameOpen(true);
-        } else if (gameType === 'rhythm') {
-          setRhythmGameOpen(true);
-        }
+        if (!isKnownMinigameId(gameType)) return;
+        openMinigame(gameType, minigameSetters);
       }),
     );
 
@@ -279,15 +283,8 @@ export function useInteractionOrchestrator(
       eventBus.on('minigame:complete', ({ gameType }) => {
         // Auto-close mini-game after a brief delay so player sees the result
         scheduleTimer(() => {
-          if (gameType === 'codebreaker') setCodebreakerOpen(false);
-          else if (gameType === 'openstack_terminal') setOpenstackTerminalOpen(false);
-          else if (gameType === 'bash_terminal') setBashTerminalOpen(false);
-          else if (gameType === 'poetry') setPoetryGameOpen(false);
-          else if (gameType === 'hacking') setHackingGameOpen(false);
-          else if (gameType === 'memory') setMemoryGameOpen(false);
-          else if (gameType === 'quiz') setQuizGameOpen(false);
-          else if (gameType === 'rhythm') setRhythmGameOpen(false);
-          else setCodebreakerOpen(false);
+          if (!isKnownMinigameId(gameType)) return;
+          closeMinigame(gameType, minigameSetters);
         }, 2000);
       }),
     );
@@ -338,7 +335,7 @@ export function useInteractionOrchestrator(
     }
 
     return cleanup;
-  }, [applyInteractionEffects]);
+  }, [applyInteractionEffects, minigameSetters]);
 
   // ── Handle ExaminePanel "Continue" action ──
   // Triggers the linked content (dialogue/story/minigame) for the pending trigger zone,

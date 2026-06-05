@@ -9,6 +9,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { eventBus } from '@/engine/EventBus';
+import { PHOTO_EVENTS, PHOTO_EMPTY_PAYLOAD } from '@/engine/events';
 import { useGameStore } from '@/store/gameStore';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { SCENE_CONFIG } from '@/config/scenes';
@@ -29,10 +30,6 @@ const CORNER_BRACKET_SIZE = 16;
 /* ─── Shared state for HUD visibility ─── */
 /** Other components can read this to decide whether to hide themselves. */
 export const photoModeActive = { current: false };
-
-/* Event names for photo mode state tracking */
-const PHOTO_ACTIVE_EVENT = 'photo:active' as const;
-const PHOTO_INACTIVE_EVENT = 'photo:inactive' as const;
 
 /* ─── Component ─── */
 
@@ -63,7 +60,7 @@ export function PhotoMode() {
     setActive(true);
     activeRef.current = true;
     photoModeActive.current = true;
-    eventBus.emit(PHOTO_ACTIVE_EVENT, {});
+    eventBus.emit(PHOTO_EVENTS.active, PHOTO_EMPTY_PAYLOAD);
   }, []);
 
   // ── Exit photo mode ──
@@ -71,7 +68,7 @@ export function PhotoMode() {
     setActive(false);
     activeRef.current = false;
     photoModeActive.current = false;
-    eventBus.emit(PHOTO_INACTIVE_EVENT, {});
+    eventBus.emit(PHOTO_EVENTS.inactive, PHOTO_EMPTY_PAYLOAD);
   }, []);
 
   // ── Capture screenshot ──
@@ -109,7 +106,7 @@ export function PhotoMode() {
 
   // ── Listen for external toggle (HUD button, Ctrl+P) ──
   useEffect(() => {
-    const unsub = eventBus.on('photo:toggle', () => {
+    const unsub = eventBus.on(PHOTO_EVENTS.toggle, () => {
       if (activeRef.current) {
         exitPhotoMode();
       } else {

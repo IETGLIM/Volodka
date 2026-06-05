@@ -179,6 +179,9 @@ const GameModeSchema = z.enum([
 const JournalTabSchema = z.enum(['notes', 'skills', 'poems', 'lore']);
 
 /* ─── Full save payload schema ─── */
+/* When adding a persisted field: extend this schema, then add its default in
+ * store/persistedState.ts → createDefaultPersistedState().
+ * saveGame/loadGame derive field lists from SavePayloadSchema automatically. */
 
 export const SavePayloadSchema = z.object({
   /** Save format version for future migration support */

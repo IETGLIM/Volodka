@@ -56,6 +56,7 @@ import { useNextTrackedObjective, useActiveQuests } from '@/store/questStore';
 import { QUEST_DEFINITIONS } from '@/data/quests';
 import { POEMS } from '@/data/poems';
 import { eventBus } from '@/engine/EventBus';
+import { PHOTO_EVENTS, PHOTO_EMPTY_PAYLOAD } from '@/engine/events';
 import { floatXP, floatKarma, floatEnergy, floatStress, floatLevelUp, floatSkill } from '@/components/game/FloatingText';
 import { type WeatherType, determineWeatherType, WEATHER_EFFECTS } from '@/data/weatherEffects';
 import { StatusEffectsBar } from '@/components/game/StatusEffectsBar';
@@ -690,8 +691,8 @@ export function HUD({ onOpenQuests, onOpenInventory, onOpenPoetry, onToggleTutor
   // ── Photo mode: hide HUD when active ──
   const [photoModeOn, setPhotoModeOn] = useState(false);
   useEffect(() => {
-    const activeSub = eventBus.on('photo:active', () => setPhotoModeOn(true));
-    const inactiveSub = eventBus.on('photo:inactive', () => setPhotoModeOn(false));
+    const activeSub = eventBus.on(PHOTO_EVENTS.active, () => setPhotoModeOn(true));
+    const inactiveSub = eventBus.on(PHOTO_EVENTS.inactive, () => setPhotoModeOn(false));
     return () => { activeSub(); inactiveSub(); };
   }, []);
 
@@ -848,7 +849,7 @@ export function HUD({ onOpenQuests, onOpenInventory, onOpenPoetry, onToggleTutor
               <HUDButton icon={<Hammer className="size-3.5 sm:size-4" />} label="Крафт [G]" onClick={onOpenCrafting} tooltip="Крафт [G]" />
             </div>
             <HUDButton icon={<Save className="size-3.5 sm:size-4" />} label="Сохранить" onClick={handleSave} tooltip="Сохранить [F5]" />
-            <HUDButton icon={<Camera className="size-3.5 sm:size-4" />} label="Фото" onClick={() => eventBus.emit('photo:toggle', {})} tooltip="Фото [P]" />
+            <HUDButton icon={<Camera className="size-3.5 sm:size-4" />} label="Фото" onClick={() => eventBus.emit(PHOTO_EVENTS.toggle, PHOTO_EMPTY_PAYLOAD)} tooltip="Фото [P]" />
             <HUDButton icon={<BarChart3 className="size-3.5 sm:size-4" />} label="Статистика" onClick={onOpenStats} tooltip="Статистика [S]" />
 
             {/* Weather status indicator */}

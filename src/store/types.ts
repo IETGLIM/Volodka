@@ -9,14 +9,18 @@ import type { UISliceState, UISlice } from './slices/uiSlice';
 import type { CutsceneSliceState, CutsceneSlice } from './slices/cutsceneSlice';
 import type { SaveSliceState, SaveSlice } from './slices/saveSlice';
 
-/** Read-only state selectors from all slices (no actions). */
-export type CrossSliceReads =
-  & PlayerSliceState
-  & ExplorationSliceState
-  & WorldSliceState
-  & UISliceState
-  & CutsceneSliceState
-  & SaveSliceState;
+/** @deprecated God-type removed — use per-slice contracts in ./crossSliceReads.ts */
+export type CrossSliceReads = never;
+
+export type {
+  PlayerReadsFromExploration,
+  PlayerReadsFromWorld,
+  WorldReadsFromExploration,
+  WorldReadsFromPlayer,
+  UIReadsFromExploration,
+  ExplorationReadsFromPlayer,
+  SaveReadsSnapshot,
+} from './crossSliceReads';
 
 /** Full composed game store — intersection of all slice state + actions. */
 export type GameStoreState =

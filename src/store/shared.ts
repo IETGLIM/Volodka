@@ -5,6 +5,7 @@
 import type {
   GameMode,
   PlayerState,
+  PlayerProgression,
   ExplorationState,
   TrainablePlayerSkill,
   EquipmentSlot,
@@ -23,6 +24,61 @@ import {
 
 export function clamp(value: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, value));
+}
+
+/* ─── XP / leveling ─── */
+
+export function calculateXpToNextLevel(level: number): number {
+  return Math.floor(100 * Math.pow(1.25, level - 1));
+}
+
+export interface XpGainResult {
+  progression: PlayerProgression;
+  prevLevel: number;
+  levelsGained: number;
+  perkPointsGained: number;
+  perkPointGained: boolean;
+  leveledUp: boolean;
+}
+
+/** Apply XP to progression state; callers handle notifications and eventBus. */
+export function applyXpGain(prog: PlayerProgression, amount: number): XpGainResult {
+  const prevLevel = prog.level;
+  let newXp = prog.xp + amount;
+  let newLevel = prevLevel;
+  let newXpToNext = prog.xpToNextLevel;
+  let newSkillPoints = prog.skillPoints;
+  let newPerkPoints = prog.perkPoints;
+  let perkPointsGained = 0;
+
+  while (newXp >= newXpToNext) {
+    newXp -= newXpToNext;
+    newLevel += 1;
+    newSkillPoints += 1;
+    if (newLevel % 3 === 0) {
+      newPerkPoints += 1;
+      perkPointsGained += 1;
+    }
+    newXpToNext = calculateXpToNextLevel(newLevel);
+  }
+
+  const levelsGained = newLevel - prevLevel;
+
+  return {
+    progression: {
+      ...prog,
+      level: newLevel,
+      xp: newXp,
+      xpToNextLevel: newXpToNext,
+      skillPoints: newSkillPoints,
+      perkPoints: newPerkPoints,
+    },
+    prevLevel,
+    levelsGained,
+    perkPointsGained,
+    perkPointGained: perkPointsGained > 0,
+    leveledUp: levelsGained > 0,
+  };
 }
 
 /* ─── Notification system ─── */
@@ -156,5 +212,5 @@ export function createDefaultTutorialFlags(): TutorialFlags {
 }
 
 /* ─── Cross-slice type composition ─── */
-/* GameStoreState and CrossSliceReads live in ./types.ts to avoid
- * circular imports between this utilities module and slice files. */
+/* GameStoreState and per-slice read contracts live in ./types.ts and
+ * ./crossSliceReads.ts to avoid circular imports in this utilities module. */
