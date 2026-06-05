@@ -9,6 +9,7 @@ import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { UI_LAYERS } from '@/shared/constants/uiLayers'
 import { eventBus } from '@/engine/EventBus'
+import { AriaLiveRegion } from '@/components/a11y/AriaLiveRegion'
 import { QUEST_DEFINITIONS } from '@/data/quests'
 import { useGameStore } from '@/store/gameStore'
 import { useQuests } from '@/store/selectors'
@@ -605,12 +606,17 @@ export function QuestNotificationSystem() {
   if (mode === 'menu' || mode === 'intro') return null
 
   const visibleNotifs = notifications.slice(-MAX_VISIBLE)
+  const latestNotif = visibleNotifs[visibleNotifs.length - 1]
+  const latestNotifMessage = latestNotif
+    ? `${QUEST_NOTIF_STYLES[latestNotif.type].label}: ${latestNotif.questTitle}${latestNotif.objectiveDescription ? `. ${latestNotif.objectiveDescription}` : ''}`
+    : ''
 
   return (
     <div
       className="fixed bottom-4 right-3 sm:bottom-6 sm:right-4 flex flex-col-reverse items-end gap-2 pointer-events-none"
       style={{ zIndex: UI_LAYERS.TOASTS, pointerEvents: 'none' }}
     >
+      <AriaLiveRegion message={latestNotifMessage} priority="polite" />
       <AnimatePresence mode="popLayout">
         {visibleNotifs.map((notif) => (
           <QuestNotifCard

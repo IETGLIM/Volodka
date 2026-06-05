@@ -232,6 +232,8 @@ export const SavePayloadSchema = z.object({
     poemPowerUsedInCombat: false,
   }),
   savedAt: z.number(),
+  /** Optional slot-manager metadata (not applied to game state) */
+  playTimeSeconds: z.number().min(0).optional(),
 });
 
 /** Inferred TypeScript type from the Zod schema — matches the save payload shape */

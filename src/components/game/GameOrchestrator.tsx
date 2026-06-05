@@ -25,7 +25,12 @@ import { STORY_NODES } from '@/data/storyNodes';
 import { DIALOGUE_NODES } from '@/data/dialogueNodes';
 import { getCutsceneForNode } from '@/data/cutscenes';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
-import { closeOpenMinigame, type MinigamePanelSetters } from '@/shared/constants/minigames';
+import {
+  closeAllMinigames,
+  closeMinigame,
+  closeOpenMinigame,
+  type MinigamePanelSetters,
+} from '@/shared/constants/minigames';
 import { CUTSCENE_TIMINGS } from '@/shared/constants/transitionTimings';
 import { VirtualControlsContext, sharedVirtualControlsRef } from '@/engine/VirtualControlsState';
 import { processExpiredTTLFlags } from '@/engine/PoemPowerSystem';
@@ -585,18 +590,11 @@ export function GameOrchestrator() {
       setExamineData(null);
       setExamineHasLinkedContent(false);
       // Close mini-games too
-      setCodebreakerOpen(false);
-      setOpenstackTerminalOpen(false);
-      setBashTerminalOpen(false);
-      setPoetryGameOpen(false);
-      setHackingGameOpen(false);
-      setMemoryGameOpen(false);
-      setQuizGameOpen(false);
-      setRhythmGameOpen(false);
+      closeAllMinigames(minigameSetters);
       // Close all panels — dialogue/story takes priority
       closeAllPanels();
     }
-  }, [isOverlayActive, closeAllPanels]);
+  }, [isOverlayActive, closeAllPanels, minigameSetters]);
 
   // ── Close lower overlays when panels (inventory/journal/quests/poetry) open ──
   useEffect(() => {
@@ -740,9 +738,11 @@ export function GameOrchestrator() {
     return unsub;
   }, []);
 
-  // ── Daily mission reset check on load ──
+  // ── Daily mission reset check on boot and after save load ──
   useEffect(() => {
-    useGameStore.getState().checkDailyMissionResets();
+    const checkResets = () => useGameStore.getState().checkDailyMissionResets();
+    checkResets();
+    return eventBus.on('game:loaded', checkResets);
   }, []);
 
   // ── Daily mission progress for crafting ──
@@ -1274,56 +1274,56 @@ export function GameOrchestrator() {
               <AnimatePresence>
                 {codebreakerOpen && (
                   <Suspense fallback={null}>
-                    <LazyCodeBreakerGame onClose={() => setCodebreakerOpen(false)} />
+                    <LazyCodeBreakerGame onClose={() => closeMinigame('codebreaker', minigameSetters)} />
                   </Suspense>
                 )}
               </AnimatePresence>
               <AnimatePresence>
                 {openstackTerminalOpen && (
                   <Suspense fallback={null}>
-                    <LazyOpenStackTerminalGame onClose={() => setOpenstackTerminalOpen(false)} />
+                    <LazyOpenStackTerminalGame onClose={() => closeMinigame('openstack_terminal', minigameSetters)} />
                   </Suspense>
                 )}
               </AnimatePresence>
               <AnimatePresence>
                 {bashTerminalOpen && (
                   <Suspense fallback={null}>
-                    <LazyBashTerminalGame onClose={() => setBashTerminalOpen(false)} />
+                    <LazyBashTerminalGame onClose={() => closeMinigame('bash_terminal', minigameSetters)} />
                   </Suspense>
                 )}
               </AnimatePresence>
               <AnimatePresence>
                 {poetryGameOpen && (
                   <Suspense fallback={null}>
-                    <LazyPoetryCompositionGame onClose={() => setPoetryGameOpen(false)} />
+                    <LazyPoetryCompositionGame onClose={() => closeMinigame('poetry', minigameSetters)} />
                   </Suspense>
                 )}
               </AnimatePresence>
               <AnimatePresence>
                 {hackingGameOpen && (
                   <Suspense fallback={null}>
-                    <LazyHackingGame onClose={() => setHackingGameOpen(false)} />
+                    <LazyHackingGame onClose={() => closeMinigame('hacking', minigameSetters)} />
                   </Suspense>
                 )}
               </AnimatePresence>
               <AnimatePresence>
                 {memoryGameOpen && (
                   <Suspense fallback={null}>
-                    <LazyMemoryPuzzleGame onClose={() => setMemoryGameOpen(false)} />
+                    <LazyMemoryPuzzleGame onClose={() => closeMinigame('memory', minigameSetters)} />
                   </Suspense>
                 )}
               </AnimatePresence>
               <AnimatePresence>
                 {quizGameOpen && (
                   <Suspense fallback={null}>
-                    <LazyQuizGame onClose={() => setQuizGameOpen(false)} />
+                    <LazyQuizGame onClose={() => closeMinigame('quiz', minigameSetters)} />
                   </Suspense>
                 )}
               </AnimatePresence>
               <AnimatePresence>
                 {rhythmGameOpen && (
                   <Suspense fallback={null}>
-                    <LazyRhythmGame onClose={() => setRhythmGameOpen(false)} />
+                    <LazyRhythmGame onClose={() => closeMinigame('rhythm', minigameSetters)} />
                   </Suspense>
                 )}
               </AnimatePresence>

@@ -23,13 +23,14 @@ import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import type {
   DialogueChoice,
   StoryEffect,
-  PlayerSkills,
   TrainablePlayerSkill,
   NPCRelation,
 } from '@/shared/types/game';
-import { performSkillCheck } from '@/shared/validation/skillCheck';
-import { checkStoryCondition } from '@/shared/storyConditions';
+import { checkStoryCondition, buildStoryConditionContext } from '@/shared/storyConditions';
 import { NPCPortrait, NPC_PORTRAIT_COLORS } from './shared/NPCPortrait';
+import { AriaLiveRegion } from '@/components/a11y/AriaLiveRegion';
+import { FocusTrap } from '@/components/a11y/FocusTrap';
+import { buildChoiceAriaLabel } from '@/shared/utils/choiceAriaLabel';
 
 /* ── Emotion detection from text ── */
 function detectEmotion(text: string): 'calm' | 'angry' | 'sad' | 'happy' {
@@ -154,6 +155,14 @@ export function DialogueRenderer() {
   // Now: isOpen = showStoryOverlay + has dialogue node (narrative overlay on 3D world)
   const isOpen = showStoryOverlay && !!DIALOGUE_NODES[currentNodeId];
   const node = useMemo(() => DIALOGUE_NODES[currentNodeId], [currentNodeId]);
+  const conditionCtx = useMemo(() => {
+    const npcDef = node ? NPC_DEFINITIONS.find((n) => n.name === node.speaker) : undefined;
+    return buildStoryConditionContext(playerState, {
+      npcRelations,
+      npcId: npcDef?.id ?? '',
+      timeOfDay,
+    });
+  }, [playerState, npcRelations, timeOfDay, node]);
   const { displayed, done, skip } = useTypewriter(node?.text ?? '', 30);
 
   // Apply node-level effects on mount
@@ -194,15 +203,6 @@ export function DialogueRenderer() {
     (choice: DialogueChoice) => {
       audioEngine.playSfx('confirm');
 
-      // P5-FIX: Check skill BEFORE applying effects — previously effects were
-      // applied unconditionally, meaning a failed skill check still gave rewards.
-      if (choice.condition?.minSkillCheck) {
-        const result = performSkillCheck(choice.condition.minSkillCheck.skill, choice.condition.minSkillCheck.difficulty, playerState.skills);
-        setSkillCheckBanner({ skill: choice.condition.minSkillCheck.skill, success: result });
-        if (!result) return; // Failed — do NOT apply effects or advance
-        setTimeout(() => setSkillCheckBanner(null), 1500);
-      }
-
       if (choice.effects) {
         applyEffects(choice.effects);
       }
@@ -214,41 +214,24 @@ export function DialogueRenderer() {
         setCurrentNodeId(choice.next);
       }
     },
-    [setMode, setCurrentNodeId, playerState.skills],
+    [setShowStoryOverlay, setCurrentNodeId],
   );
 
-  // ── Auto-advance timer ──
-  // P5-FIX: Pass the actual npcId to checkDialogueCondition instead of ''.
-  // Previously, minNpcRelation conditions were always failing during auto-advance
-  // because the npcId was empty, causing npcRelations.find() to never match.
+  // Auto-advance: pick first choice that passes checkStoryCondition (incl. npcId for relation gates).
   useEffect(() => {
     if (!autoAdvance || !done || !node || node.choices.length === 0) return;
 
-    // Resolve the npcId from the current node's speaker for condition checking
-    const currentNpcDef = NPC_DEFINITIONS.find((n) => n.name === node.speaker);
-    const currentNpcId = currentNpcDef?.id ?? '';
-
-    // Auto-pick first available choice after delay
     const timer = setTimeout(() => {
-      const availableChoice = node.choices.find((c) => {
-        const cond = checkStoryCondition(c.condition, {
-          karma: playerState.karma,
-          skills: playerState.skills,
-          flags: playerState.flags,
-          currentAct: playerState.progression.currentAct,
-          npcRelations,
-          npcId: currentNpcId,
-          timeOfDay,
-        });
-        return cond.pass;
-      });
+      const availableChoice = node.choices.find((c) =>
+        checkStoryCondition(c.condition, conditionCtx).pass,
+      );
       if (availableChoice) {
         handleChoice(availableChoice);
       }
     }, autoAdvanceDelay);
 
     return () => clearTimeout(timer);
-  }, [autoAdvance, done, node, playerState, npcRelations, timeOfDay, handleChoice]);
+  }, [autoAdvance, done, node, conditionCtx, handleChoice]);
 
   if (!isOpen || !node) return null;
 
@@ -270,6 +253,11 @@ export function DialogueRenderer() {
       }
     : {};
 
+  const speakerTitleId = `dialogue-speaker-${currentNodeId}`;
+  const typewriterLiveMessage = node.speaker
+    ? `${node.speaker}: ${displayed}${done ? '' : '…'}`
+    : `${displayed}${done ? '' : '…'}`;
+
   return (
     <AnimatePresence>
       <motion.div
@@ -281,17 +269,22 @@ export function DialogueRenderer() {
         style={{ zIndex: UI_LAYERS.DIALOGUE }}
         onClick={done ? undefined : skip}
       >
+        <AriaLiveRegion message={typewriterLiveMessage} priority="polite" />
         {/* Subtle backdrop — only behind the widget area */}
-        <div className="absolute inset-0 bg-black/20" />
+        <div className="absolute inset-0 bg-black/20" aria-hidden="true" />
 
         {/* Compact dialogue widget */}
-        <motion.div
-          initial={{ y: 40, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          exit={{ y: 20, opacity: 0 }}
-          transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-          className="relative z-10 w-full max-w-[700px] mx-3 mb-3 pointer-events-auto"
-        >
+        <FocusTrap>
+          <motion.div
+            initial={{ y: 40, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 20, opacity: 0 }}
+            transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+            className="relative z-10 w-full max-w-[700px] mx-3 mb-3 pointer-events-auto"
+            role="dialog"
+            aria-modal="true"
+            {...(node.speaker ? { 'aria-labelledby': speakerTitleId } : { 'aria-label': 'Диалог' })}
+          >
           <div
             className={`relative border ${emotionBorder} backdrop-blur-md overflow-hidden transition-colors duration-500`}
             style={{
@@ -314,6 +307,8 @@ export function DialogueRenderer() {
                   autoAdvance ? 'bg-cyan-900/40 text-cyan-300 border border-cyan-500/30' : 'text-slate-500 hover:text-slate-300 border border-transparent'
                 }`}
                 title="Авто-продолжение"
+                aria-label={autoAdvance ? 'Выключить авто-продолжение' : 'Включить авто-продолжение'}
+                aria-pressed={autoAdvance}
               >
                 <FastForward className="size-2" />
                 Авто
@@ -325,6 +320,8 @@ export function DialogueRenderer() {
                   showHistory ? 'bg-amber-900/40 text-amber-300 border border-amber-500/30' : 'text-slate-500 hover:text-slate-300 border border-transparent'
                 }`}
                 title="История диалога"
+                aria-label={showHistory ? 'Скрыть историю диалога' : 'Показать историю диалога'}
+                aria-pressed={showHistory}
               >
                 <History className="size-2" />
                 История
@@ -380,6 +377,7 @@ export function DialogueRenderer() {
                       {/* Corner bracket left */}
                       <span className="text-[7px] leading-none" style={{ color: `${RELATION_GLOW[relationLevel]?.color ?? '#22d3ee'}66` }}>⟨</span>
                       <span
+                        id={speakerTitleId}
                         className="font-medium text-xs tracking-wide uppercase"
                         style={{
                           color: portraitColors.primary,
@@ -472,22 +470,18 @@ export function DialogueRenderer() {
                   className="flex flex-col gap-1"
                 >
                   {node.choices.map((choice, i) => {
-                    const cond = checkStoryCondition(choice.condition, {
-                      karma: playerState.karma,
-                      skills: playerState.skills,
-                      flags: playerState.flags,
-                      currentAct: playerState.progression.currentAct,
-                      npcRelations,
-                      npcId,
-                      timeOfDay,
-                    });
+                    const cond = checkStoryCondition(choice.condition, conditionCtx);
 
                     const handleClick = () => {
                       if (!cond.pass) return;
 
                       if (choice.condition?.minSkillCheck && cond.skillCheckResult) {
-                        setSkillCheckBanner(cond.skillCheckResult);
+                        setSkillCheckBanner({
+                          skill: cond.skillCheckResult.skill,
+                          success: cond.skillCheckResult.success,
+                        });
                         if (!cond.skillCheckResult.success) return;
+                        setTimeout(() => setSkillCheckBanner(null), 1500);
                       }
 
                       handleChoice(choice);
@@ -499,6 +493,12 @@ export function DialogueRenderer() {
                     // Keyboard shortcut key (1-9)
                     const shortcutKey = i + 1;
 
+                    const choiceAriaLabel = buildChoiceAriaLabel({
+                      index: i,
+                      text: choice.text,
+                      cond,
+                    });
+
                     return (
                       <motion.button
                         key={`${currentNodeId}-dlg-${i}`}
@@ -507,6 +507,8 @@ export function DialogueRenderer() {
                         transition={{ delay: i * 0.08, duration: 0.2 }}
                         onClick={handleClick}
                         disabled={!cond.pass}
+                        aria-label={choiceAriaLabel}
+                        aria-disabled={!cond.pass}
                         className={`
                           dialogue-choice-btn group relative text-left pl-6 pr-3 py-1.5 border transition-all duration-200 text-xs overflow-hidden
                           ${cond.pass
@@ -683,7 +685,8 @@ export function DialogueRenderer() {
               </div>
             </div>
           </div>
-        </motion.div>
+          </motion.div>
+        </FocusTrap>
       </motion.div>
     </AnimatePresence>
   );

@@ -14,30 +14,19 @@
 */
 
 import { eventBus } from '@/engine/EventBus';
-import { useGameStore } from '@/store/gameStore';
+import { dispatchGameAction } from '@/engine/GameActionDispatcher';
 import type { NotificationType } from '@/store/shared';
 
 /** All toast/notification types used across the game */
 export type UnifiedNotificationType = NotificationType;
 
-/* ─── Notify: push to Zustand + emit on EventBus ─── */
-
-/**
- * Fire a notification that reaches BOTH the Zustand store (for history/persistence)
- * AND the EventBus (for real-time toast UI rendering).
- *
- * This is the recommended single entry point for all in-game notifications.
- * Replaces the old pattern of calling both pushNotification() + toastManager.addToast().
- */
 export function notify(
   type: UnifiedNotificationType,
   text: string,
   delta?: number,
 ): void {
-  // 1. Push to Zustand notification state (source of truth)
-  useGameStore.getState().pushNotification(type, text);
+  dispatchGameAction({ type: 'notification/push', notificationType: type, text });
 
-  // 2. Emit on EventBus for real-time toast UI
   eventBus.emit('toast:add', {
     id: `unified-${type}-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
     type,
@@ -47,23 +36,12 @@ export function notify(
   });
 }
 
-/* ─── Subscribe: listen for notification events ─── */
-
-/**
- * Subscribe to all toast notification events flowing through EventBus.
- * Returns an unsubscribe function.
- */
 export function onNotification(
   handler: (payload: { id: string; type: UnifiedNotificationType; message: string; delta?: number; timestamp: number }) => void,
 ): () => void {
   return eventBus.on('toast:add', handler);
 }
 
-/* ─── Dismiss: remove from Zustand store ─── */
-
-/**
- * Dismiss a notification by ID (removes from Zustand state).
- */
 export function dismissNotification(id: string): void {
-  useGameStore.getState().dismissNotification(id);
+  dispatchGameAction({ type: 'notification/dismiss', id });
 }

@@ -61,6 +61,8 @@ import { floatXP, floatKarma, floatEnergy, floatStress, floatLevelUp, floatSkill
 import { type WeatherType, determineWeatherType, WEATHER_EFFECTS } from '@/data/weatherEffects';
 import { StatusEffectsBar } from '@/components/game/StatusEffectsBar';
 import { MoralCompassHUD } from '@/components/game/MoralCompassHUD';
+import { AriaLiveRegion } from '@/components/a11y/AriaLiveRegion';
+import { getKarmaTierLabel } from '@/shared/utils/karmaTier';
 
 const TOTAL_POEMS = POEMS.length;
 
@@ -386,7 +388,12 @@ function AchievementPopup() {
   return (
     <AnimatePresence>
       {achievement && (
-        <motion.div
+        <>
+          <AriaLiveRegion
+            message={`${achievement.title}. ${achievement.description}`}
+            priority="polite"
+          />
+          <motion.div
           initial={{ opacity: 0, y: 30, scale: 0.9 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: -20, scale: 0.9 }}
@@ -417,6 +424,7 @@ function AchievementPopup() {
             </div>
           </div>
         </motion.div>
+        </>
       )}
     </AnimatePresence>
   );
@@ -436,6 +444,7 @@ function HUDMenuItem({ icon, label, shortcut, onClick, badge }: SecondaryAction)
     <button
       onClick={() => { onClick?.(); }}
       className="flex items-center gap-3 w-full px-3 py-2 text-left text-slate-300 hover:text-cyan-300 hover:bg-cyan-950/30 transition-colors duration-150 rounded-md relative"
+      aria-label={shortcut ? `${label}, ${shortcut}` : label}
     >
       <span className="shrink-0 relative">
         {icon}
@@ -788,6 +797,7 @@ export function HUD({ onOpenQuests, onOpenInventory, onOpenPoetry, onToggleTutor
               onClick={onOpenPoetry}
               className="flex items-center gap-1 sm:gap-1.5 px-1.5 sm:px-2.5 py-1 rounded-md text-xs border transition-all hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/60"
               title="Стихи [⇧P]"
+              aria-label={`Стихи: ${collectedPoems.length} из ${TOTAL_POEMS}`}
               style={{
                 background: 'rgba(120,60,10,0.25)',
                 borderColor: 'rgba(251,191,36,0.35)',
@@ -954,6 +964,7 @@ export function HUD({ onOpenQuests, onOpenInventory, onOpenPoetry, onToggleTutor
               <button
                 onClick={onOpenQuests}
                 className="flex flex-col items-center gap-0.5 px-5 py-2.5 rounded-lg border border-amber-500/30 backdrop-blur-md transition-colors hover:border-amber-400/50"
+                aria-label={`Текущее задание: ${questTitle}. ${nextObjective.description}. Открыть журнал заданий`}
                 style={{
                   background: 'linear-gradient(180deg, rgba(15,12,5,0.88) 0%, rgba(10,8,3,0.92) 100%)',
                   boxShadow: '0 0 20px rgba(251,191,36,0.08), 0 2px 8px rgba(0,0,0,0.4)',
@@ -1064,7 +1075,7 @@ export function HUD({ onOpenQuests, onOpenInventory, onOpenPoetry, onToggleTutor
                 </div>
               </div>
               <span className="text-[10px] text-slate-400/80 font-mono mt-0.5">
-                {karma >= 70 ? 'Светлая сторона' : karma <= 30 ? 'Тёмная сторона' : 'Баланс'}
+                {getKarmaTierLabel(karma)}
               </span>
               <div className="h-1.5 bg-slate-800/70 rounded-full mt-1.5 overflow-hidden">
                 <motion.div
@@ -1185,8 +1196,9 @@ export function HUD({ onOpenQuests, onOpenInventory, onOpenPoetry, onToggleTutor
           }}
         >
           <div className="flex items-center gap-1.5">
-            <span className="text-xs font-mono" style={{ color: karmaStroke(karma), textShadow: `0 0 6px ${karmaStroke(karma)}40` }}>☯</span>
+            <span className="text-xs font-mono" style={{ color: karmaStroke(karma), textShadow: `0 0 6px ${karmaStroke(karma)}40` }} aria-hidden="true">☯</span>
             <AnimatedCounter value={karma} className={`text-xs font-mono font-bold ${karmaColor(karma)}`} style={{ textShadow: '0 0 4px currentColor' }} />
+            <span className="sr-only">{getKarmaTierLabel(karma)} карма {karma}</span>
           </div>
           <div className="w-px h-4 bg-slate-700/30" />
           <div className="flex items-center gap-1.5 flex-1">
@@ -1265,7 +1277,7 @@ function HUDButton({
       onClick={onClick}
       className={`group w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center rounded-md text-slate-400 hover:text-cyan-300 hover:bg-cyan-950/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/60 focus-visible:ring-offset-1 focus-visible:ring-offset-black transition-all duration-200 relative overflow-hidden hud-btn-shimmer ${active ? 'bg-cyan-950/40 text-cyan-300' : ''} ${tooltip ? 'cyber-tooltip' : ''}`}
       aria-label={label}
-      title={label}
+      title={tooltip ?? label}
       data-tooltip={tooltip}
     >
       <div className="absolute inset-0 rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"

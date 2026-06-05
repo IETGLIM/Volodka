@@ -5,4 +5,5 @@ export interface PoemEvents {
   'poem:collected': { poemId: string };
   'poem:show_cutscene': { poemId: string };
   'poem:cutscene_end': Record<string, never>;
+  'poem:reset_all_effects': Record<string, never>;
 }

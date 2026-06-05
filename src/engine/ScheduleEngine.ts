@@ -10,8 +10,37 @@
  * module does NOT import the game store. */
 
 import type { ScheduleEntry, SceneId } from '@/shared/types/game';
-import type { ScheduleContext } from '@/shared/scheduleContext';
+import { hashScheduleContext, type ScheduleContext } from '@/shared/scheduleContext';
 import { NPC_SCHEDULES_MAP, ACT_SCHEDULE_OVERRIDES } from '@/data/npcSchedules';
+
+type NPCStateRecord = Record<string, { position: [number, number, number]; sceneId: SceneId }>;
+
+let activeContextHash: string | null = null;
+const effectiveScheduleCache = new Map<string, ScheduleEntry[]>();
+const locationCache = new Map<string, ScheduleEntry | null>();
+const npcsInSceneCache = new Map<string, string[]>();
+const npcStatesCache = new Map<string, NPCStateRecord>();
+
+function ensureCacheGeneration(ctx: ScheduleContext): string {
+  const ctxHash = hashScheduleContext(ctx);
+  if (ctxHash !== activeContextHash) {
+    effectiveScheduleCache.clear();
+    locationCache.clear();
+    npcsInSceneCache.clear();
+    npcStatesCache.clear();
+    activeContextHash = ctxHash;
+  }
+  return ctxHash;
+}
+
+/** Clears schedule result caches (tests / hot reload). */
+export function resetScheduleEngineCache(): void {
+  activeContextHash = null;
+  effectiveScheduleCache.clear();
+  locationCache.clear();
+  npcsInSceneCache.clear();
+  npcStatesCache.clear();
+}
 
 /* ─── Override resolution ─── */
 
@@ -24,6 +53,11 @@ export function resolveEffectiveSchedule(
   npcId: string,
   ctx: ScheduleContext,
 ): ScheduleEntry[] {
+  const ctxHash = ensureCacheGeneration(ctx);
+  const cacheKey = `${npcId}:${ctxHash}`;
+  const cached = effectiveScheduleCache.get(cacheKey);
+  if (cached) return cached;
+
   const currentAct = ctx.currentAct;
   const completedQuests = ctx.completedQuestIds;
   const activeFlags = ctx.activeFlagKeys;
@@ -47,10 +81,13 @@ export function resolveEffectiveSchedule(
       if (!allFlagsSet) continue;
     }
 
+    effectiveScheduleCache.set(cacheKey, override.entries);
     return override.entries;
   }
 
-  return NPC_SCHEDULES_MAP[npcId]?.entries ?? [];
+  const entries = NPC_SCHEDULES_MAP[npcId]?.entries ?? [];
+  effectiveScheduleCache.set(cacheKey, entries);
+  return entries;
 }
 
 /* ─── Core lookup functions ─── */
@@ -60,16 +97,28 @@ export function getNPCLocationForTime(
   hour: number,
   ctx: ScheduleContext,
 ): ScheduleEntry | null {
+  const ctxHash = ensureCacheGeneration(ctx);
+  const cacheKey = `${npcId}:${hour}:${ctxHash}`;
+  if (locationCache.has(cacheKey)) {
+    return locationCache.get(cacheKey) ?? null;
+  }
+
   const entries = resolveEffectiveSchedule(npcId, ctx);
-  if (!entries.length) return null;
+  if (!entries.length) {
+    locationCache.set(cacheKey, null);
+    return null;
+  }
 
   for (const entry of entries) {
     if (hour >= entry.startHour && hour < entry.endHour) {
+      locationCache.set(cacheKey, entry);
       return entry;
     }
   }
 
-  return entries[entries.length - 1] ?? null;
+  const fallback = entries[entries.length - 1] ?? null;
+  locationCache.set(cacheKey, fallback);
+  return fallback;
 }
 
 export function getNPCsInScene(
@@ -77,6 +126,11 @@ export function getNPCsInScene(
   hour: number,
   ctx: ScheduleContext,
 ): string[] {
+  const ctxHash = ensureCacheGeneration(ctx);
+  const cacheKey = `${sceneId}:${hour}:${ctxHash}`;
+  const cached = npcsInSceneCache.get(cacheKey);
+  if (cached) return cached;
+
   const result: string[] = [];
 
   for (const npcId of Object.keys(NPC_SCHEDULES_MAP)) {
@@ -91,6 +145,7 @@ export function getNPCsInScene(
     }
   }
 
+  npcsInSceneCache.set(cacheKey, result);
   return result;
 }
 
@@ -119,8 +174,13 @@ export function getNPCsForScene(
 export function buildNPCStatesForTime(
   hour: number,
   ctx: ScheduleContext,
-): Record<string, { position: [number, number, number]; sceneId: SceneId }> {
-  const result: Record<string, { position: [number, number, number]; sceneId: SceneId }> = {};
+): NPCStateRecord {
+  const ctxHash = ensureCacheGeneration(ctx);
+  const cacheKey = `${hour}:${ctxHash}`;
+  const cached = npcStatesCache.get(cacheKey);
+  if (cached) return cached;
+
+  const result: NPCStateRecord = {};
 
   for (const npcId of Object.keys(NPC_SCHEDULES_MAP)) {
     const entry = getNPCLocationForTime(npcId, hour, ctx);
@@ -132,6 +192,7 @@ export function buildNPCStatesForTime(
     }
   }
 
+  npcStatesCache.set(cacheKey, result);
   return result;
 }
 

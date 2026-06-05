@@ -41,7 +41,7 @@ function manualChunks(id: string): string | undefined {
   if (id.includes('/data/') || id.includes('\\data\\')) {
     return 'data';
   }
-  // ScheduleEngine is store-free; remaining engine↔store cycles (combat, poems) stay in graph
+  // Engine modules use GameActionDispatcher; no engine↔store import cycles remain
   return undefined;
 }
 

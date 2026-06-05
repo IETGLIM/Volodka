@@ -9,6 +9,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { eventBus } from '@/engine/EventBus';
+import { AriaLiveRegion } from '@/components/a11y/AriaLiveRegion';
 
 /* ── Types ── */
 export type FloatingTextType = 'xp' | 'karma' | 'skill' | 'damage' | 'heal' | 'item' | 'stress' | 'energy' | 'levelup' | 'custom';
@@ -183,12 +184,19 @@ export function FloatingTextLayer() {
   }, []);
 
   const now = Date.now();
+  const latestEntry = pool.length > 0 ? pool[pool.length - 1] : null;
+  const latestLiveMessage = latestEntry
+    ? `${TYPE_PREFIX[latestEntry.type]}${latestEntry.text}`
+    : '';
 
   return (
-    <div
-      className="fixed inset-0 pointer-events-none overflow-hidden"
-      style={{ zIndex: UI_LAYERS.TOASTS + 1 }}
-    >
+    <>
+      <AriaLiveRegion message={latestLiveMessage} priority="assertive" />
+      <div
+        className="fixed inset-0 pointer-events-none overflow-hidden"
+        style={{ zIndex: UI_LAYERS.TOASTS + 1 }}
+        aria-hidden="true"
+      >
       <AnimatePresence>
         {pool.map((entry) => {
           const age = now - entry.createdAt;
@@ -248,6 +256,7 @@ export function FloatingTextLayer() {
           );
         })}
       </AnimatePresence>
-    </div>
+      </div>
+    </>
   );
 }

@@ -9,7 +9,10 @@
    is the single source of truth for all unlock state, events, rewards,
    and persistence. */
 
-import { getGameStore } from '@/store/gameStore';
+import {
+  dispatchGameAction,
+  getGameSnapshot,
+} from '@/engine/GameActionDispatcher';
 import { ACHIEVEMENT_MAP, TOTAL_ACHIEVEMENTS } from '@/data/achievements';
 import type { EnemyType } from '@/shared/types/game';
 
@@ -32,33 +35,25 @@ export function initAchievementEngine(): void {
 
 /** Get the set of unlocked achievement IDs from the store (read-only) */
 export function getUnlockedAchievementIds(): Set<string> {
-  const store = getGameStore();
-  return new Set(store.unlockedAchievements.map((a) => a.id));
+  return new Set(getGameSnapshot().unlockedAchievements.map((a) => a.id));
 }
 
 /** Get unlocked achievements with timestamps from the store */
 export function getUnlockedAchievementsWithTimestamps(): Array<{ id: string; unlockedAt: number }> {
-  const store = getGameStore();
-  return [...store.unlockedAchievements];
+  return [...getGameSnapshot().unlockedAchievements];
 }
 
 /* ─── Core unlock logic ─── */
 
 function tryUnlock(achievementId: string): void {
-  const store = getGameStore();
+  const snapshot = getGameSnapshot();
 
-  // Check if already unlocked in the store
-  if (store.unlockedAchievements.some((a) => a.id === achievementId)) return;
+  if (snapshot.unlockedAchievements.some((a) => a.id === achievementId)) return;
 
   const def = ACHIEVEMENT_MAP[achievementId];
   if (!def) return;
 
-  // Delegate to the store — it handles:
-  //   - Adding to unlockedAchievements array
-  //   - Emitting 'achievement:unlocked' and 'fx:achievement' events
-  //   - Applying rewards (xp, karma, skill, credits, flags)
-  //   - Checking meta-achievement ("Полное собрание")
-  store.unlockAchievement(achievementId);
+  dispatchGameAction({ type: 'achievement/unlock', achievementId });
 }
 
 /* ─── State check interface ─── */
@@ -95,49 +90,40 @@ export function checkAchievements(state: AchievementCheckState): void {
   const npcRelations = state.npcRelations;
   const timeOfDay = state.timeOfDay;
 
-  // Track visited scenes (write to store)
-  const currentProgress = getGameStore().achievementProgress;
+  const currentProgress = getGameSnapshot().achievementProgress;
   if (!currentProgress.visitedScenes.includes(sceneId)) {
-    getGameStore().trackSceneVisit(sceneId);
+    dispatchGameAction({ type: 'achievement/trackSceneVisit', sceneId });
   }
 
-  // Read persisted progress from the store (after potential write)
-  const progress = getGameStore().achievementProgress;
+  const progress = getGameSnapshot().achievementProgress;
 
   // ─── STORY ACHIEVEMENTS ───
 
-  // "Первое пробуждение" — mode transitioned from intro → exploration
   if (!firstAwakeningChecked && prevMode === 'intro' && mode === 'exploration') {
     firstAwakeningChecked = true;
     tryUnlock('story_first_awakening');
   }
 
-  // "Тень Гильдии" — visit office_day
   if (sceneId === 'office_day') {
     tryUnlock('story_guild_shadow');
   }
 
-  // "Встреча с Викторией" — flag met_victoria or visited street_night
   if (flags['met_maria'] || flags['met_victoria']) {
     tryUnlock('story_meet_victoria');
   }
 
-  // "Выбор сердца" — zarema rescued
   if (flags['zarema_rescued']) {
     tryUnlock('story_save_zarema');
   }
 
-  // "Голос города" — poetry broadcast sent
   if (flags['poetry_broadcast_sent'] || flags['poetry_transmitted']) {
     tryUnlock('story_poetry_broadcast');
   }
 
-  // "Живой код" — Victoria is AI revealed
   if (flags['maria_truth_revealed'] || flags['maria_truth_accepted'] || flags['victoria_ai_revealed']) {
     tryUnlock('story_living_code');
   }
 
-  // "Рассвет" — any ending reached
   if (flags['ending_reached'] || flags['ending_sacrifice'] || flags['ending_freedom'] ||
       flags['ending_poetry'] || flags['ending_guild'] || flags['act5_ending']) {
     tryUnlock('story_dawn');
@@ -145,27 +131,22 @@ export function checkAchievements(state: AchievementCheckState): void {
 
   // ─── COMBAT ACHIEVEMENTS ───
 
-  // "Первая кровь" — first combat victory
   if (progress.combatVictories >= 1) {
     tryUnlock('combat_first_blood');
   }
 
-  // "Комбо-мастер" — combo 3x
   if (progress.maxComboAchieved >= 3) {
     tryUnlock('combat_combo_master');
   }
 
-  // "Критический удар"
   if (progress.hasCriticalHit) {
     tryUnlock('combat_critical_hit');
   }
 
-  // "Непобедимый" — 5 victories without defeat
   if (progress.consecutiveVictories >= 5) {
     tryUnlock('combat_invincible');
   }
 
-  // "Охотник на демонов" — defeat all enemy types
   const allEnemyTypes: EnemyType[] = [
     'system_daemon', 'corporate_golem', 'shadow_agent', 'data_phantom',
     'code_inquisitor', 'guild_enforcer', 'data_wraith', 'censor_drone', 'poetry_hunter',
@@ -176,12 +157,10 @@ export function checkAchievements(state: AchievementCheckState): void {
 
   // ─── EXPLORATION ACHIEVEMENTS ───
 
-  // "Исследователь" — 5 scenes
   if (progress.visitedScenes.length >= 5) {
     tryUnlock('explorer_explorer');
   }
 
-  // "Странник" — all scenes
   const allScenes: string[] = [
     'volodka_room', 'volodka_corridor', 'home_evening', 'street_night',
     'street_winter', 'cafe_evening', 'office_day', 'park_day',
@@ -192,57 +171,47 @@ export function checkAchievements(state: AchievementCheckState): void {
     tryUnlock('explorer_wanderer');
   }
 
-  // "Ночная сова" — night time (22:00 - 06:00)
   if (timeOfDay >= 22 || timeOfDay < 6) {
-    getGameStore().trackNightHour();
-    // Re-read after write
-    const progressAfterNight = getGameStore().achievementProgress;
+    dispatchGameAction({ type: 'achievement/trackNightHour' });
+    const progressAfterNight = getGameSnapshot().achievementProgress;
     if (progressAfterNight.nightTimeHours >= 2) {
       tryUnlock('explorer_night_owl');
     }
   }
 
-  // "Крыши города" — visit rooftop
   if (sceneId === 'rooftop_edge') {
     tryUnlock('explorer_rooftops');
   }
 
   // ─── POETRY ACHIEVEMENTS ───
 
-  // "Первый стих"
   if (poems.length >= 1) {
     tryUnlock('poetry_first_verse');
   }
 
-  // "Собиратель рифм"
   if (poems.length >= 10) {
     tryUnlock('poetry_rhyme_collector');
   }
 
-  // "Хранитель слова" — all 23 poems (21 base + 2 bonus = 23 in the game)
   if (poems.length >= 21) {
     tryUnlock('poetry_word_keeper');
   }
 
-  // "Сила стиха"
   if (progress.poemPowerUsedInCombat) {
     tryUnlock('poetry_power_verse');
   }
 
   // ─── SOCIAL ACHIEVEMENTS ───
 
-  // "Друг Заремы" — 80+ with Zarema
   const zaremaRelation = npcRelations.find((r) => r.npcId === 'zarema');
   if (zaremaRelation && zaremaRelation.value >= 80) {
     tryUnlock('social_zarema_friend');
   }
 
-  // "Союзник Сети" — network member flag
   if (flags['network_member'] || flags['network_oath_taken']) {
     tryUnlock('social_network_ally');
   }
 
-  // "Мастер переговоров" — 80+ with 3 NPCs
   const highRelationCount = npcRelations.filter((r) => r.value >= 80).length;
   if (highRelationCount >= 3) {
     tryUnlock('social_negotiator');
@@ -250,60 +219,42 @@ export function checkAchievements(state: AchievementCheckState): void {
 
   // ─── HIDDEN ACHIEVEMENTS ───
 
-  // "Между строк" — easter egg flag
   if (flags['easter_egg_found'] || flags['found_easter_egg'] || flags['between_lines']) {
     tryUnlock('hidden_between_lines');
   }
 
-  // "Жертва" — sacrifice ending
   if (flags['ending_sacrifice'] || flags['sacrifice_ending']) {
     tryUnlock('hidden_sacrifice');
   }
 
-  // Update previous state (session-only, not persisted)
   prevMode = mode;
   prevEnergy = energy;
 }
 
 /* ─── Event-driven updates ─── */
 
-/** Call when combat victory occurs */
 export function notifyCombatVictory(enemyType: string): void {
-  const store = getGameStore();
-  // combo=0 here; notifyCombo handles combo tracking separately
-  store.trackCombatVictory(enemyType, 0);
+  dispatchGameAction({ type: 'achievement/trackCombatVictory', enemyType, combo: 0 });
 }
 
-/** Call when combat defeat occurs */
 export function notifyCombatDefeat(): void {
-  const store = getGameStore();
-  store.resetConsecutiveVictories();
+  dispatchGameAction({ type: 'achievement/resetConsecutiveVictories' });
 }
 
-/** Call when combo reaches a new max — updates only maxComboAchieved */
 export function notifyCombo(comboCount: number): void {
-  const store = getGameStore();
-  store.trackMaxCombo(comboCount);
+  dispatchGameAction({ type: 'achievement/trackMaxCombo', comboCount });
 }
 
-/** Call when critical hit lands */
 export function notifyCriticalHit(): void {
-  const store = getGameStore();
-  store.trackCriticalHit();
+  dispatchGameAction({ type: 'achievement/trackCriticalHit' });
 }
 
-/** Call when poem power used in combat */
 export function notifyPoemPowerUsed(): void {
-  const store = getGameStore();
-  store.trackPoemPowerInCombat();
+  dispatchGameAction({ type: 'achievement/trackPoemPowerInCombat' });
 }
 
-/** Reset tracking state (for new game) */
 export function resetAchievementTracking(): void {
   prevMode = null;
   prevEnergy = 0;
   firstAwakeningChecked = false;
-  // Persisted progress is reset via the save slice's resetGame,
-  // which sets achievementProgress to defaults.
-  // No need to clear localStorage — the store is the source of truth.
 }

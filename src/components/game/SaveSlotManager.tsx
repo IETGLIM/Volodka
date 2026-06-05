@@ -6,6 +6,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
+import { AriaLiveRegion } from '@/components/a11y/AriaLiveRegion';
+import { FocusTrap } from '@/components/a11y/FocusTrap';
 import { useGameStore } from '@/store/gameStore';
 import { SCENE_CONFIG } from '@/config/scenes';
 import type { SceneId } from '@/shared/types/game';
@@ -39,19 +41,7 @@ function readSaveSlot(slot: number): SaveSlotPreview | null {
   const validation = validateSaveData(raw);
   if (!validation.success) return null;
 
-  let playTimeSeconds: number | undefined;
-  try {
-    const extra = JSON.parse(raw) as { playTimeSeconds?: unknown };
-    if (typeof extra.playTimeSeconds === 'number') {
-      playTimeSeconds = extra.playTimeSeconds;
-    }
-  } catch {
-    // playTimeSeconds is optional slot metadata
-  }
-
-  return playTimeSeconds !== undefined
-    ? { ...validation.data, playTimeSeconds }
-    : validation.data;
+  return validation.data;
 }
 
 /** Look up a human-readable scene name from the scene config */
@@ -309,6 +299,7 @@ function SaveSlotCard({
             onClick={() => onSave(slotNumber)}
             whileHover={{ scale: 1.04 }}
             whileTap={{ scale: 0.96 }}
+            aria-label={`Сохранить игру в слот ${slotNumber}`}
             className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-md font-mono text-xs tracking-wide transition-colors"
             style={{
               color: 'rgba(0, 229, 255, 0.85)',
@@ -340,6 +331,7 @@ function SaveSlotCard({
             whileHover={{ scale: isEmpty ? 1 : 1.04 }}
             whileTap={{ scale: isEmpty ? 1 : 0.96 }}
             disabled={isEmpty}
+            aria-label={isEmpty ? `Слот ${slotNumber} пуст, загрузка недоступна` : `Загрузить игру из слота ${slotNumber}`}
             className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-md font-mono text-xs tracking-wide transition-colors"
             style={{
               color: isEmpty
@@ -380,6 +372,7 @@ function SaveSlotCard({
               onClick={() => setConfirmDelete(true)}
               whileHover={{ scale: 1.04 }}
               whileTap={{ scale: 0.96 }}
+              aria-label={`Удалить сохранение в слоте ${slotNumber}`}
               className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-md font-mono text-xs tracking-wide transition-colors"
               style={{
                 color: 'rgba(244, 63, 94, 0.7)',
@@ -424,6 +417,7 @@ function SaveSlotCard({
                   onDelete(slotNumber);
                   setConfirmDelete(false);
                 }}
+                aria-label={`Подтвердить удаление слота ${slotNumber}`}
                 className="px-2 py-1 rounded font-mono text-[10px] tracking-wide"
                 style={{
                   color: 'rgba(244, 63, 94, 0.9)',
@@ -435,6 +429,7 @@ function SaveSlotCard({
               </button>
               <button
                 onClick={() => setConfirmDelete(false)}
+                aria-label="Отменить удаление"
                 className="px-2 py-1 rounded font-mono text-[10px] tracking-wide"
                 style={{
                   color: 'rgba(148, 163, 184, 0.6)',
@@ -510,10 +505,17 @@ function SaveSlotManagerContent({ onClose }: { onClose: () => void }) {
           return;
         }
 
-        const payload = JSON.parse(raw);
-        // Add extra metadata
-        payload.savedAt = Date.now();
-        payload.playTimeSeconds = estimatePlayTimeSeconds();
+        const validation = validateSaveData(raw);
+        if (!validation.success) {
+          setNotification(validation.error);
+          return;
+        }
+
+        const payload = {
+          ...validation.data,
+          savedAt: Date.now(),
+          playTimeSeconds: estimatePlayTimeSeconds(),
+        };
 
         localStorage.setItem(getSaveSlotKey(slot), JSON.stringify(payload));
         refreshSlots();
@@ -535,7 +537,13 @@ function SaveSlotManagerContent({ onClose }: { onClose: () => void }) {
           return;
         }
 
-        // Copy slot data to the main save key, then call loadGame
+        const validation = validateSaveData(raw);
+        if (!validation.success) {
+          setNotification(validation.error);
+          return;
+        }
+
+        // Copy validated slot data to the main save key, then call loadGame (re-validates)
         localStorage.setItem('volodka_save', raw);
         loadGame();
         setNotification(`Загружен Слот ${slot}`);
@@ -565,6 +573,10 @@ function SaveSlotManagerContent({ onClose }: { onClose: () => void }) {
   return (
     <motion.div
       className="relative z-10 w-full max-w-2xl mx-4"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="save-slot-manager-title"
+      aria-describedby={notification ? 'save-slot-notification' : undefined}
       initial={{ scale: 0.9, opacity: 0, y: 30 }}
       animate={{ scale: 1, opacity: 1, y: 0 }}
       exit={{ scale: 0.9, opacity: 0, y: 30 }}
@@ -573,6 +585,7 @@ function SaveSlotManagerContent({ onClose }: { onClose: () => void }) {
         ease: [0.25, 0.46, 0.45, 0.94],
       }}
     >
+      <AriaLiveRegion message={notification ?? ''} priority="polite" />
       <div
         className="rounded-lg border overflow-hidden"
         style={{
@@ -598,7 +611,7 @@ function SaveSlotManagerContent({ onClose }: { onClose: () => void }) {
             <span className="h-2 w-2 rounded-full bg-emerald-500/80" />
             <span className="h-2 w-2 rounded-full bg-amber-400/80" />
             <span className="h-2 w-2 rounded-full bg-red-500/80" />
-            <span className="ml-2 font-mono text-[9px] uppercase tracking-[0.2em] text-cyan-500/35">
+            <span id="save-slot-manager-title" className="ml-2 font-mono text-[9px] uppercase tracking-[0.2em] text-cyan-500/35">
               volodka://saves
             </span>
           </div>
@@ -615,10 +628,12 @@ function SaveSlotManagerContent({ onClose }: { onClose: () => void }) {
         <AnimatePresence>
           {notification && (
             <motion.div
+              id="save-slot-notification"
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
               className="overflow-hidden"
+              role="status"
             >
               <div
                 className="px-4 py-2 text-center font-mono text-xs"
@@ -746,6 +761,7 @@ export function SaveSlotManager({ open, onClose }: SaveSlotManagerProps) {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.25 }}
+          role="presentation"
         >
           {/* Backdrop with blur */}
           <motion.div
@@ -754,6 +770,7 @@ export function SaveSlotManager({ open, onClose }: SaveSlotManagerProps) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
+            aria-hidden="true"
           />
 
           {/* Scanlines overlay on backdrop */}
@@ -763,10 +780,15 @@ export function SaveSlotManager({ open, onClose }: SaveSlotManagerProps) {
               background:
                 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0, 0, 0, 0.04) 2px, rgba(0, 0, 0, 0.04) 4px)',
             }}
+            aria-hidden="true"
           />
 
+          <AriaLiveRegion message="Менеджер сохранений открыт" priority="polite" />
+
           {/* Panel content — remounts on each open for fresh data */}
-          <SaveSlotManagerContent onClose={onClose} />
+          <FocusTrap>
+            <SaveSlotManagerContent onClose={onClose} />
+          </FocusTrap>
         </motion.div>
       )}
     </AnimatePresence>

@@ -6,7 +6,7 @@ import * as THREE from 'three';
 import type { SceneId, NPCDefinition } from '@/shared/types/game';
 import { useGameStore } from '@/store/gameStore';
 import { getNPCsForScene, getCurrentScheduleEntry } from '@/engine/ScheduleEngine';
-import { buildScheduleContext } from '@/shared/scheduleContext';
+import { selectScheduleContext } from '@/shared/scheduleContext';
 import { NPC_DEFINITIONS } from '@/data/npcDefinitions';
 import { EXPANDED_NPCS } from '@/data/expandedNPCs';
 import { NPC } from './NPC';
@@ -31,7 +31,7 @@ export function NPCSystem({
 }: NPCSystemProps) {
   const sceneId = useGameStore((s) => s.exploration.currentSceneId);
   const timeOfDay = useGameStore((s) => s.exploration.timeOfDay);
-  const scheduleCtx = useGameStore((s) => buildScheduleContext(s));
+  const scheduleCtx = useGameStore(selectScheduleContext);
 
   // Compute visible NPCs from schedule
   const visibleNPCs = useMemo(() => {

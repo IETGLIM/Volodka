@@ -4,6 +4,7 @@ import type {
   DialogueChoice,
   NPCRelation,
   PlayerSkills,
+  PlayerState,
   StoryChoice,
   TrainablePlayerSkill,
 } from '@/shared/types/game';
@@ -19,6 +20,30 @@ export interface StoryConditionContext {
   npcRelations?: NPCRelation[];
   npcId?: string;
   timeOfDay?: number;
+}
+
+export interface StoryConditionExtras {
+  npcRelations?: NPCRelation[];
+  npcId?: string;
+  timeOfDay?: number;
+  /** Override act; defaults to playerState.progression.currentAct */
+  currentAct?: number;
+}
+
+/** Build condition context from player state — shared by StoryRenderer & DialogueRenderer. */
+export function buildStoryConditionContext(
+  playerState: Pick<PlayerState, 'karma' | 'skills' | 'flags' | 'progression'>,
+  extras: StoryConditionExtras = {},
+): StoryConditionContext {
+  return {
+    karma: playerState.karma,
+    skills: playerState.skills,
+    flags: playerState.flags,
+    currentAct: extras.currentAct ?? playerState.progression.currentAct,
+    npcRelations: extras.npcRelations,
+    npcId: extras.npcId,
+    timeOfDay: extras.timeOfDay,
+  };
 }
 
 export interface StoryConditionResult {

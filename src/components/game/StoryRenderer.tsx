@@ -19,13 +19,16 @@ import { audioEngine } from '@/engine/AudioEngine';
 import { KARMA_LOW_THRESHOLD, KARMA_HIGH_THRESHOLD } from '@/data/constants';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import type { StoryChoice, StoryEffect } from '@/shared/types/game';
-import { checkStoryCondition } from '@/shared/storyConditions';
+import { checkStoryCondition, buildStoryConditionContext } from '@/shared/storyConditions';
 
 /* ── Typewriter hook — shared ── */
 import { useTypewriter } from '@/hooks/useTypewriter';
 
 /* ── Apply effects — shared ── */
 import { applyEffects } from '@/shared/utils/applyEffects';
+import { AriaLiveRegion } from '@/components/a11y/AriaLiveRegion';
+import { FocusTrap } from '@/components/a11y/FocusTrap';
+import { buildChoiceAriaLabel } from '@/shared/utils/choiceAriaLabel';
 
 /* ── Stat change highlight chip ── */
 function StatChangeChip({ effect }: { effect: StoryEffect }) {
@@ -115,13 +118,18 @@ const pageTurnVariants = {
 
 /* ── Component ── */
 export function StoryRenderer() {
-  const { showStoryOverlay, mode, currentNodeId, playerState, currentAct } = useStoryContext();
+  const { showStoryOverlay, mode, currentNodeId, playerState } = useStoryContext();
   const setCurrentNodeId = useSetCurrentNodeId();
   const setShowStoryOverlay = useSetShowStoryOverlay();
   const visitNode = useVisitNode();
 
   const [pageDirection, setPageDirection] = useState(0);
   const [appliedEffects, setAppliedEffects] = useState<StoryEffect[]>([]);
+
+  const conditionCtx = useMemo(
+    () => buildStoryConditionContext(playerState),
+    [playerState],
+  );
 
   const node = useMemo(() => STORY_NODES[currentNodeId], [currentNodeId]);
 
@@ -193,19 +201,14 @@ export function StoryRenderer() {
       const num = parseInt(e.key);
       if (num >= 1 && num <= node.choices.length) {
         const choice = node.choices[num - 1];
-        const cond = checkStoryCondition(choice.condition, {
-          karma: playerState.karma,
-          skills: playerState.skills,
-          flags: playerState.flags,
-          currentAct,
-        });
+        const cond = checkStoryCondition(choice.condition, conditionCtx);
         if (cond.pass) handleChoice(choice);
       }
     };
 
     window.addEventListener('keydown', handleKey);
     return () => window.removeEventListener('keydown', handleKey);
-  }, [done, node, playerState, handleChoice]);
+  }, [done, node, conditionCtx, handleChoice]);
 
   if (!showStoryOverlay || !node || mode !== 'cutscene') return null;
 
@@ -225,6 +228,12 @@ export function StoryRenderer() {
           ? 'text-rose-400'
           : 'text-slate-200';
 
+  const speakerTitleId = `story-speaker-${currentNodeId}`;
+  const speakerLabel = node.speaker === 'narrator' ? 'Голос' : node.speaker;
+  const typewriterLiveMessage = node.speaker
+    ? `${speakerLabel}: ${displayed}${done ? '' : '…'}`
+    : `${displayed}${done ? '' : '…'}`;
+
   return (
     <AnimatePresence mode="wait">
       <motion.div
@@ -238,11 +247,16 @@ export function StoryRenderer() {
         className="fixed inset-0 flex items-center justify-center"
         style={{ zIndex: UI_LAYERS.DIALOGUE, perspective: '800px' }}
         onClick={done ? undefined : skip}
+        role="dialog"
+        aria-modal="true"
+        {...(node.speaker ? { 'aria-labelledby': speakerTitleId } : { 'aria-label': 'Сюжетная сцена' })}
       >
+        <AriaLiveRegion message={typewriterLiveMessage} priority="polite" />
         {/* Clean dark semi-transparent background */}
-        <div className="absolute inset-0 bg-black/60" />
+        <div className="absolute inset-0 bg-black/60" aria-hidden="true" />
 
         {/* Content */}
+        <FocusTrap>
         <motion.div
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
@@ -258,14 +272,15 @@ export function StoryRenderer() {
               className={`mb-4 flex items-center gap-3 ${speakerColor}`}
             >
               <div>
-                <span className="text-sm font-medium tracking-wider uppercase">
-                  {node.speaker === 'narrator' ? 'Голос' : node.speaker}
+                <span id={speakerTitleId} className="text-sm font-medium tracking-wider uppercase">
+                  {speakerLabel}
                 </span>
                 {/* Skip button */}
                 {!done && (
                   <button
                     onClick={(e) => { e.stopPropagation(); skip(); }}
                     className="ml-3 flex items-center gap-1 text-xs text-slate-500 hover:text-cyan-400 transition-colors"
+                    aria-label="Пропустить анимацию текста"
                   >
                     <SkipForward className="size-3" />
                     Пропустить
@@ -311,12 +326,7 @@ export function StoryRenderer() {
             >
               {node.choices.length > 0 ? (
                 node.choices.map((choice, i) => {
-                  const cond = checkStoryCondition(choice.condition, {
-          karma: playerState.karma,
-          skills: playerState.skills,
-          flags: playerState.flags,
-          currentAct,
-        });
+                  const cond = checkStoryCondition(choice.condition, conditionCtx);
                   return (
                     <motion.button
                       key={`${currentNodeId}-choice-${i}`}
@@ -327,6 +337,8 @@ export function StoryRenderer() {
                       whileTap={cond.pass ? { scale: 0.98 } : {}}
                       onClick={() => { if (cond.pass) handleChoice(choice); }}
                       disabled={!cond.pass}
+                      aria-label={buildChoiceAriaLabel({ index: i, text: choice.text, cond })}
+                      aria-disabled={!cond.pass}
                       className={`
                         group relative text-left px-5 py-3 rounded-lg transition-all duration-200 overflow-hidden
                         ${cond.pass
@@ -364,6 +376,7 @@ export function StoryRenderer() {
                   whileHover={{ scale: 1.02, x: 4 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={handleContinue}
+                  aria-label="Продолжить"
                   className="group relative text-left px-5 py-3 rounded-lg border border-cyan-800/60 bg-cyan-950/30 hover:bg-cyan-900/40 hover:border-cyan-500/70 text-slate-100 cursor-pointer transition-all duration-200 hover:shadow-[0_0_15px_rgba(34,211,238,0.1)]"
                 >
                   <div className="flex items-center gap-3">
@@ -375,6 +388,7 @@ export function StoryRenderer() {
             </motion.div>
           )}
         </motion.div>
+        </FocusTrap>
       </motion.div>
     </AnimatePresence>
   );

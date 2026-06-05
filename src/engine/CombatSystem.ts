@@ -17,8 +17,17 @@
 */
 
 import { eventBus } from '@/engine/EventBus';
-import { getGameStore } from '@/store/gameStore';
+import {
+  dispatchGameAction,
+  getGameSnapshot,
+  tryActivatePoemPower,
+  tryAddInventoryItem,
+} from '@/engine/GameActionDispatcher';
 import { createInventoryItem } from '@/data/items';
+
+function snap() {
+  return getGameSnapshot();
+}
 
 // ── Sub-module imports ──
 import type { CombatState, CombatLogEntry, CombatBuff, EnemyType, CombatEnemy } from './combat/types';
@@ -173,16 +182,14 @@ export function startCombat(enemyType: EnemyType): CombatState {
   const resolvedType = resolveEnemyType(enemyType);
 
   const template = ENEMY_TEMPLATES[resolvedType];
-  const store = getGameStore();
+  const state = snap();
 
-  // G12: Save current story node for return after combat
-  const currentNodeId = store.currentNodeId;
-  if (currentNodeId && store.showStoryOverlay) {
+  const currentNodeId = state.currentNodeId;
+  if (currentNodeId && state.showStoryOverlay) {
     combat.pushReturnNode(currentNodeId);
   }
 
-  // Scale enemy to player level
-  const playerLevel = store.playerState.progression?.level ?? 1;
+  const playerLevel = state.playerState.progression.level;
   const scaleFactor = 1 + (playerLevel - 1) * 0.12; // +12% per level
 
   const enemy: CombatEnemy = {
@@ -227,7 +234,7 @@ export function startCombat(enemyType: EnemyType): CombatState {
     lastPoemPowersUsed: [null, null],
   };
 
-  store.setMode('combat');
+  dispatchGameAction({ type: 'story/setMode', mode: 'combat' });
   eventBus.emit('combat:start', { enemyType });
 
   combat.notifyListeners();
@@ -261,8 +268,7 @@ export function playerAttack(): CombatState | null {
   damage = Math.floor(damage * comboMultiplier);
 
   /* ── Critical Hit: 10% base + (writing skill * 2%) bonus, 1.8x damage ── */
-  const store = getGameStore();
-  const critChance = 0.10 + store.playerState.skills.writing * 0.02;
+  const critChance = 0.10 + snap().playerState.skills.writing * 0.02;
   const isCritical = Math.random() < Math.min(0.5, critChance);
   if (isCritical) {
     damage = Math.floor(damage * 1.8);
@@ -342,8 +348,7 @@ export function playerUsePoemPower(poemId: string): CombatState | null {
   const newCooldowns = { ...combat.state.powerCooldowns, [poemId]: ability.cooldown };
 
   // Activate global cooldown in game store (for between-combat tracking)
-  const store = getGameStore();
-  store.activatePoemPower(poemId);
+  tryActivatePoemPower(poemId);
 
   // Track poem power usage for combo detection
   const lastPowers: [string | null, string | null] = [combat.state.lastPoemPowersUsed[1], poemId];
@@ -399,25 +404,19 @@ export function playerUsePoemPower(poemId: string): CombatState | null {
 export function playerFlee(): CombatState | null {
   if (!combat.state || !combat.state.isPlayerTurn || combat.state.status !== 'active') return null;
 
-  const store = getGameStore();
-  const playerSpeed = store.playerState.skills.intuition + store.playerState.skills.logic;
+  const playerState = snap().playerState;
+  const playerSpeed = playerState.skills.intuition + playerState.skills.logic;
   const enemySpeed = combat.state.enemy.speed;
 
-  // Base flee chance from speed comparison
   let fleeChance = 0.35 + (playerSpeed - enemySpeed) * 0.04;
 
-  // Cumulative bonus: +15% per failed attempt
   fleeChance += combat.state.fleeAttempts * 0.15;
 
-  // Skill tree bonuses
-  const unlockedSkills = store.playerState.progression?.unlockedSkills ?? [];
-  // tech_4a "Цифровой Призрак" gives +20% flee chance
+  const unlockedSkills = playerState.progression.unlockedSkills;
   if (unlockedSkills.includes('tech_4a')) fleeChance += 0.2;
-  // social_2a "Дипломатия" gives +15% flee chance
   if (unlockedSkills.includes('social_2a')) fleeChance += 0.15;
 
-  // Karma bonus: high karma gives slight advantage
-  const karma = store.playerState.karma;
+  const karma = playerState.karma;
   if (karma >= 70) fleeChance += 0.05;
 
   // Clamp to [0.15, 0.95]
@@ -444,7 +443,7 @@ export function playerFlee(): CombatState | null {
 
     // Return to exploration after a brief delay
     combat.schedule(1500, () => {
-      getGameStore().setMode('exploration');
+      dispatchGameAction({ type: 'story/setMode', mode: 'exploration' });
       combat.endSession();
       combat.notifyListeners();
       eventBus.emit('combat:end', {});
@@ -500,19 +499,18 @@ function transitionToPlayerTurn(state: CombatState): void {
   const { state: afterBuffTick, expiredLog } = tickBuffs(state, 'player');
 
   // ── Process stat drain debuffs on player ──
-  const store = getGameStore();
   const drainLog: CombatLogEntry[] = [];
   for (const buff of afterBuffTick.buffs) {
     if (buff.target === 'player' && buff.effect.type === 'stat_drain') {
       const eff = buff.effect as { type: 'stat_drain'; stat: 'logic' | 'energy' | 'karma'; value: number };
       if (eff.stat === 'energy') {
-        store.addEnergy(-eff.value);
+        dispatchGameAction({ type: 'player/addEnergy', amount: -eff.value });
         drainLog.push({ turn: afterBuffTick.turn, text: `💀 ${buff.name}: Энергия -${eff.value}`, type: 'info' });
       } else if (eff.stat === 'karma') {
-        store.addKarma(-eff.value);
+        dispatchGameAction({ type: 'player/addKarma', amount: -eff.value });
         drainLog.push({ turn: afterBuffTick.turn, text: `💀 ${buff.name}: Карма -${eff.value}`, type: 'info' });
       } else if (eff.stat === 'logic') {
-        store.addSkill('logic', -eff.value);
+        dispatchGameAction({ type: 'player/addSkill', skill: 'logic', amount: -eff.value });
         drainLog.push({ turn: afterBuffTick.turn, text: `💀 ${buff.name}: Логика -${eff.value}`, type: 'info' });
       }
     }
@@ -615,19 +613,15 @@ function executeEnemyTurn() {
 
   // Player buffs and stat drain are now processed at the start of the player's turn (see transitionToPlayerTurn)
 
-  const store = getGameStore();
-
   let workingState: CombatState = {
     ...afterBuffTick,
     log: [...afterBuffTick.log, ...expiredLog],
   };
 
-  // ── Enemy special attack check ──
   const template = ENEMY_TEMPLATES[workingState.enemy.type];
   const enemySpecialCooldown = workingState.enemy.specialCooldown;
 
   if (enemySpecialCooldown <= 0 && template.specialAttacks.length > 0) {
-    // Try special attacks (check each, use first that procs)
     for (const special of template.specialAttacks) {
       if (Math.random() < special.chance) {
         const specialResult = special.execute(workingState, workingState.enemy);
@@ -636,51 +630,41 @@ function executeEnemyTurn() {
           ...workingState,
           enemy: { ...workingState.enemy, specialCooldown: special.cooldown },
         };
-        // Skip basic attack this turn
         gotoEnemyTurnEnd(workingState);
         return;
       }
     }
   }
 
-  // ── Enemy basic attack ──
-  // Apply enemy attack_boost buff (flat bonus)
   const enemyAtkBoost = getEnemyAttackBoost(workingState);
   const effectiveEnemyAttack = workingState.enemy.attack + enemyAtkBoost;
-
-  // Apply enemy damage_multiplier buff
   const enemyDmgMultiplier = getEnemyDamageMultiplier(workingState);
 
   let enemyDamage = Math.max(1, Math.floor(effectiveEnemyAttack * enemyDmgMultiplier * (0.85 + Math.random() * 0.3)));
 
-  // Player defense reduces damage
   if (workingState.playerDefending) {
     const playerDef = getPlayerDefense();
     enemyDamage = Math.max(1, Math.floor(enemyDamage * 0.5 - playerDef * 0.3));
   }
 
-  // Apply player defense_boost buff (flat damage reduction)
   const playerDefBoost = getPlayerDefenseBoost(workingState);
   if (playerDefBoost > 0) {
     enemyDamage = Math.max(1, enemyDamage - playerDefBoost);
   }
 
-  // Apply buff-based damage reduction
   const playerDmgReduction = getPlayerDamageReduction(workingState);
   if (playerDmgReduction > 0) {
     enemyDamage = Math.max(1, Math.floor(enemyDamage * (1 - playerDmgReduction)));
   }
 
-  // Apply player vulnerability from defense_reduction debuffs (e.g. Цифровая Тюрьма)
   const playerVulnerability = getPlayerVulnerability(workingState);
   if (playerVulnerability > 0) {
     enemyDamage = Math.max(1, Math.floor(enemyDamage * (1 + playerVulnerability)));
   }
 
-  // Apply spiritual branch bonus (resilience)
-  const spiritualLevel = store.playerState.progression?.unlockedSkills?.filter(
+  const spiritualLevel = snap().playerState.progression.unlockedSkills.filter(
     (id) => id.startsWith('spiritual_'),
-  ).length ?? 0;
+  ).length;
   if (spiritualLevel > 0) {
     enemyDamage = Math.max(1, Math.floor(enemyDamage * (1 - spiritualLevel * 0.05)));
   }
@@ -692,17 +676,17 @@ function executeEnemyTurn() {
   let statEffectText = '';
   if (targetedStat === 'logic') {
     if (Math.random() < 0.3) {
-      store.addSkill('logic', -1);
+      dispatchGameAction({ type: 'player/addSkill', skill: 'logic', amount: -1 });
       statEffectText = ' Логика -1!';
     }
   } else if (targetedStat === 'energy') {
     if (Math.random() < 0.4) {
-      store.addEnergy(-5);
+      dispatchGameAction({ type: 'player/addEnergy', amount: -5 });
       statEffectText = ' Энергия -5!';
     }
   } else if (targetedStat === 'karma') {
     if (Math.random() < 0.3) {
-      store.addKarma(-3);
+      dispatchGameAction({ type: 'player/addKarma', amount: -3 });
       statEffectText = ' Карма -3!';
     }
   }
@@ -773,13 +757,11 @@ function handleVictory(): CombatState {
   const returnNodeId = combat.popReturnNode();
   combat.beginSession();
 
-  const store = getGameStore();
   const enemy = combat.state.enemy;
 
-  // Karma reward (increased with combo)
   const comboBonus = Math.min(combat.state.maxCombo * 2, 10);
   const karmaGained = 3 + Math.floor(Math.random() * 5) + comboBonus;
-  store.addKarma(karmaGained);
+  dispatchGameAction({ type: 'player/addKarma', amount: karmaGained });
 
   // XP reward
   const xpGained = enemy.xpReward + comboBonus;
@@ -791,7 +773,7 @@ function handleVictory(): CombatState {
   if (enemy.lootTable.length > 0 && Math.random() < Math.min(0.9, lootChance)) {
     const lootItemId = enemy.lootTable[Math.floor(Math.random() * enemy.lootTable.length)];
     const item = createInventoryItem(lootItemId);
-    if (store.addItem(item)) {
+    if (tryAddInventoryItem(item)) {
       lootItems.push(lootItemId);
     }
   }
@@ -836,12 +818,12 @@ function handleVictory(): CombatState {
   // Return to story node or exploration after delay (G12)
   combat.schedule(3000, () => {
     if (returnNodeId) {
-      store.setMode('exploration');
-      store.setCurrentNodeId(returnNodeId);
-      store.setShowStoryOverlay(true);
+      dispatchGameAction({ type: 'story/setMode', mode: 'exploration' });
+      dispatchGameAction({ type: 'story/setCurrentNodeId', nodeId: returnNodeId });
+      dispatchGameAction({ type: 'story/setShowStoryOverlay', show: true });
       eventBus.emit('combat:story_continue', { nodeId: returnNodeId });
     } else {
-      store.setMode('exploration');
+      dispatchGameAction({ type: 'story/setMode', mode: 'exploration' });
     }
     combat.endSession();
     combat.notifyListeners();
@@ -854,18 +836,15 @@ function handleVictory(): CombatState {
 function handleDefeat(): void {
   if (!combat.state) return;
 
-  // Pop synchronously — delayed exit callbacks may be cancelled by a new session
   const returnNodeId = combat.popReturnNode();
   combat.beginSession();
 
-  const store = getGameStore();
   const enemy = combat.state.enemy;
 
-  // Not game over — just penalties
   const energyLost = 15 + Math.floor(Math.random() * 10);
   const karmaLost = 5 + Math.floor(Math.random() * 5);
-  store.addEnergy(-energyLost);
-  store.addKarma(-karmaLost);
+  dispatchGameAction({ type: 'player/addEnergy', amount: -energyLost });
+  dispatchGameAction({ type: 'player/addKarma', amount: -karmaLost });
 
   combat.state = {
     ...combat.state,
@@ -892,12 +871,12 @@ function handleDefeat(): void {
   // Return to story node or exploration after defeat (G12)
   combat.schedule(3000, () => {
     if (returnNodeId) {
-      store.setMode('exploration');
-      store.setCurrentNodeId(returnNodeId);
-      store.setShowStoryOverlay(true);
+      dispatchGameAction({ type: 'story/setMode', mode: 'exploration' });
+      dispatchGameAction({ type: 'story/setCurrentNodeId', nodeId: returnNodeId });
+      dispatchGameAction({ type: 'story/setShowStoryOverlay', show: true });
       eventBus.emit('combat:story_continue', { nodeId: returnNodeId });
     } else {
-      store.setMode('exploration');
+      dispatchGameAction({ type: 'story/setMode', mode: 'exploration' });
     }
     combat.endSession();
     combat.notifyListeners();
@@ -910,11 +889,10 @@ function handleDefeat(): void {
    ═══════════════════════════════════════════════════════════════ */
 
 export function getAvailableCombatPowers(): Array<{ poemId: string; name: string; description: string; cooldownRemaining: number }> {
-  const store = getGameStore();
   const combatState = combat.state;
   if (!combatState) return [];
 
-  return store.collectedPoems
+  return snap().collectedPoems
     .map((poemId) => {
       const ability = POEM_COMBAT_ABILITIES[poemId];
       if (!ability) return null;

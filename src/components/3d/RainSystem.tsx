@@ -57,20 +57,35 @@ const RAIN_BASE: Record<RainLevel, Omit<RainConfig, 'count'>> = {
   },
 };
 
-/** Desktop particle counts (heavy was 14 000) */
+/** Desktop particle counts — medium rain: 5000 */
 const DESKTOP_COUNTS: Record<RainLevel, number> = {
   light: 3000,
-  medium: 5500,
+  medium: 5000,
   heavy: 7000,
+};
+
+/** Mobile particle counts — medium rain: 2000 */
+const MOBILE_COUNTS: Record<RainLevel, number> = {
+  light: 1200,
+  medium: 2000,
+  heavy: 2800,
 };
 
 const MAX_SPLASHES_BASE = 300;
 const SPLASH_LIFETIME = 0.4;
 
 function buildRainConfig(level: RainLevel, isMobile: boolean, visualLite: boolean): RainConfig {
+  const desktop = DESKTOP_COUNTS[level];
+  const mobile = MOBILE_COUNTS[level];
+  const count = visualLite
+    ? getParticleCount(isMobile ? mobile : desktop, false, true)
+    : isMobile
+      ? mobile
+      : desktop;
+
   return {
     ...RAIN_BASE[level],
-    count: getParticleCount(DESKTOP_COUNTS[level], isMobile, visualLite),
+    count,
   };
 }
 

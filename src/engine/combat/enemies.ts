@@ -2,7 +2,7 @@
 
 import type { EnemyType, CombatState, EnemySpecialAttack, SideEffect } from './types';
 import type { EnemyTemplate } from './types';
-import { getGameStore } from '@/store/gameStore';
+import { getGameSnapshot } from '@/engine/GameActionDispatcher';
 import { createBuff, addBuff } from './buffSystem';
 import {
   getEnemyAttackBoost,
@@ -299,8 +299,7 @@ export const ENEMY_TEMPLATES: Record<EnemyType, EnemyTemplate> = {
         chance: 0.3,
         cooldown: 3,
         execute: (state, enemy) => {
-          const store = getGameStore();
-          const karma = store.playerState.karma;
+          const karma = getGameSnapshot().playerState.karma;
           let damage = karma > 50 ? Math.floor(karma * 0.15) : 5;
           const playerDefBoost = getPlayerDefenseBoost(state);
           if (playerDefBoost > 0) damage = Math.max(1, damage - playerDefBoost);
@@ -487,8 +486,7 @@ export const ENEMY_TEMPLATES: Record<EnemyType, EnemyTemplate> = {
         chance: 0.25,
         cooldown: 4,
         execute: (state, enemy) => {
-          const store = getGameStore();
-          const poemCount = store.collectedPoems.length;
+          const poemCount = getGameSnapshot().collectedPoems.length;
           const effectiveAttack = enemy.attack + getEnemyAttackBoost(state);
           let damage = Math.max(1, Math.floor(effectiveAttack * (1.5 + poemCount * 0.1) * (0.85 + Math.random() * 0.3)));
           const playerDmgReduction = getPlayerDamageReduction(state);
@@ -513,9 +511,9 @@ export const ENEMY_TEMPLATES: Record<EnemyType, EnemyTemplate> = {
  *  Late game (Act 2): +data_phantom, code_inquisitor
  *  If an enemy type is not available for the current phase, a fallback is used. */
 export function resolveEnemyType(requestedType: EnemyType): EnemyType {
-  const store = getGameStore();
-  const playerLevel = store.playerState.progression?.level ?? 1;
-  const currentAct = store.playerState.progression?.currentAct ?? 1;
+  const snapshot = getGameSnapshot();
+  const playerLevel = snapshot.playerState.progression.level;
+  const currentAct = snapshot.playerState.progression.currentAct;
 
   // Phase restrictions by act and level
   const PHASE_UNLOCKS: Partial<Record<EnemyType, { minLevel: number; minAct: number }>> = {

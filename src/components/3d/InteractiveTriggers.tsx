@@ -11,7 +11,7 @@ import { useCurrentSceneId, useInteractionOverlay, useTimeOfDay } from '@/store/
 import { TRIGGER_ZONES, type TriggerZone, INTERACTION_LABELS } from '@/data/triggerZones';
 import { NPC_DEFINITIONS } from '@/data/npcDefinitions';
 import { getNPCsForScene, getCurrentScheduleEntry } from '@/engine/ScheduleEngine';
-import { buildScheduleContext } from '@/shared/scheduleContext';
+import { selectScheduleContext } from '@/shared/scheduleContext';
 import { eventBus } from '@/engine/EventBus';
 import { isInteractionLocked } from './InteractionSystemBridge';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
@@ -41,7 +41,27 @@ interface InteractiveTriggersProps {
 /** Trigger zones and "Press E" indicators with centralized prompt management */
 export function InteractiveTriggers({ livePlayerPositionRef }: InteractiveTriggersProps) {
   const { sceneId, gameMode, showStoryOverlay } = useInteractionOverlay();
+  const timeOfDay = useTimeOfDay();
+  const scheduleCtx = useGameStore(selectScheduleContext);
   const zones = TRIGGER_ZONES.filter((z) => z.sceneId === sceneId);
+
+  const npcProximityTargets = useMemo(() => {
+    const npcIdsInScene = getNPCsForScene(sceneId, timeOfDay, scheduleCtx);
+    return npcIdsInScene
+      .map((npcId) => {
+        const npc = NPC_DEFINITIONS.find((n) => n.id === npcId);
+        if (!npc) return null;
+        const entry = getCurrentScheduleEntry(npcId, timeOfDay, scheduleCtx);
+        return {
+          id: `npc_${npcId}`,
+          position: (entry?.position ?? npc.defaultPosition) as [number, number, number],
+        };
+      })
+      .filter(Boolean) as Array<{ id: string; position: [number, number, number] }>;
+  }, [sceneId, timeOfDay, scheduleCtx]);
+
+  const npcProximityTargetsRef = useRef(npcProximityTargets);
+  npcProximityTargetsRef.current = npcProximityTargets;
 
   // Hide all prompts when not in exploration mode or when story overlay is active
   const isOverlayBlocking = gameMode !== 'exploration' || showStoryOverlay;
@@ -81,20 +101,12 @@ export function InteractiveTriggers({ livePlayerPositionRef }: InteractiveTrigge
       }
     }
 
-    // Check NPCs — only those in the current scene, using schedule-driven positions
-    const store = getGameStore();
-    const timeOfDay = store.exploration.timeOfDay;
-    const scheduleCtx = buildScheduleContext(store);
-    const npcIdsInScene = getNPCsForScene(sceneId, timeOfDay, scheduleCtx);
-    for (const npcId of npcIdsInScene) {
-      const npc = NPC_DEFINITIONS.find((n) => n.id === npcId);
-      if (!npc) continue;
-      const entry = getCurrentScheduleEntry(npcId, timeOfDay, scheduleCtx);
-      const npcPosArr = entry?.position ?? npc.defaultPosition;
-      tempVecRef.current.set(...npcPosArr);
+    // Check NPCs — positions refreshed when time/scene/schedule context changes (not every frame)
+    for (const target of npcProximityTargetsRef.current) {
+      tempVecRef.current.set(...target.position);
       const dist = playerPos.distanceTo(tempVecRef.current);
       if (dist < 3.0 && !isInteractionLocked()) {
-        entries.push({ id: `npc_${npcId}`, distance: dist });
+        entries.push({ id: target.id, distance: dist });
       }
     }
 
@@ -267,7 +279,7 @@ function NPCProximityTriggers({
   // Get NPCs in current scene using schedule engine
   const sceneId = useCurrentSceneId();
   const timeOfDay = useTimeOfDay();
-  const scheduleCtx = useGameStore((s) => buildScheduleContext(s));
+  const scheduleCtx = useGameStore(selectScheduleContext);
   const npcsInScene = useMemo(() => {
     const npcIds = getNPCsForScene(sceneId, timeOfDay, scheduleCtx);
     return npcIds

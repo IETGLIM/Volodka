@@ -15,7 +15,6 @@
 import { useRef, useEffect, useLayoutEffect } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
-import { useGameStore } from '@/store/gameStore';
 import { useCameraFollowState } from '@/store/selectors';
 import { getSceneConfig } from '@/config/scenes';
 import {
@@ -42,8 +41,6 @@ import {
 } from '@/engine/camera/cinematicCamera';
 import {
   DEFAULT_DISTANCE,
-  MIN_DISTANCE,
-  MAX_DISTANCE,
   LOOK_HEIGHT,
   CINEMATIC_FREEZE_TIMEOUT,
   INTRO_WAKE_DURATION,
@@ -57,10 +54,10 @@ import {
   getSceneSpecificFov,
 } from '@/engine/camera/cameraConstants';
 import { resolveCameraMode } from '@/engine/camera/strategies';
+import { useCameraOrbitInput } from '@/engine/camera/useCameraOrbitInput';
 import { applyCameraFrame, isInDialogueInteraction } from '@/engine/camera/applyCameraFrame';
 import type { CameraModeContext } from '@/engine/camera/types';
-import { getInteractionState, isInteractionLocked } from './InteractionSystemBridge';
-import { InteractionState } from '@/engine/interaction/interactionMachine';
+import { isInteractionLocked } from './InteractionSystemBridge';
 import { getNPCGroup } from '@/engine/interaction/npcRegistry';
 import { eventBus } from '@/engine/EventBus';
 import type { CameraWaypointData } from '@/engine/events';
@@ -69,15 +66,6 @@ interface FollowCameraProps {
   livePlayerPositionRef: React.MutableRefObject<THREE.Vector3>;
   livePlayerRotationRef: React.MutableRefObject<number>;
 }
-
-/* ── Orbit / zoom input parameters ── */
-const PITCH_MIN = -0.5;
-const PITCH_MAX = 1.3;
-const ORBIT_SENSITIVITY = 0.004;
-const ZOOM_SENSITIVITY = 0.002;
-const ZOOM_LINE_MULTIPLIER = 40;
-const ZOOM_PAGE_MULTIPLIER = 800;
-const ZOOM_PIXEL_STEP = 0.15;
 
 /** AAA cinematic follow camera with five camera modes */
 export function FollowCamera({
@@ -520,193 +508,14 @@ export function FollowCamera({
   // when no NPC group was found. This caused GC pressure during dialogue.
   const _fallbackNpcPos = useRef(new THREE.Vector3());
 
-  // ── Mouse drag for orbit + scroll for zoom + touch support ──
-  useEffect(() => {
-    const onMouseDown = (e: MouseEvent) => {
-      // Don't orbit camera during active narrative overlay / cutscene — disorienting for the player
-      const currentMode = useGameStore.getState().mode;
-      const showStoryOverlay = useGameStore.getState().showStoryOverlay;
-      if (showStoryOverlay || currentMode === 'cutscene') return;
-      const interactionState = getInteractionState();
-      if (interactionState === InteractionState.Dialogue) return;
-
-      // Orbit on right-click (button 2), middle-click (button 1),
-      // or left-click (button 0) ONLY when clicking on the 3D canvas (not UI)
-      if (e.button === 2 || e.button === 1) {
-        isDraggingRef.current = true;
-        lastMouseRef.current = { x: e.clientX, y: e.clientY };
-        e.preventDefault();
-      } else if (e.button === 0) {
-        // Left-click: allow orbit when clicking on the 3D canvas.
-        // CRITICAL FIX: Removed [tabindex] from the exclusion selector because
-        // the canvas container div has tabIndex={0} for keyboard focus.
-        // Previously, closest('[tabindex]') matched the container → left-click
-        // orbit NEVER worked. Now we check for actual UI elements only.
-        // Also: if the target is a <canvas> element, always allow orbit.
-        const target = e.target as HTMLElement;
-        const isCanvasElement = target.tagName === 'CANVAS';
-        const isCanvasArea = isCanvasElement || !target.closest('[data-exploration-ui], [data-panel], dialog, [role="dialog"], button, a, input, textarea');
-        if (isCanvasArea) {
-          isDraggingRef.current = true;
-          lastMouseRef.current = { x: e.clientX, y: e.clientY };
-        }
-      }
-    };
-
-    const onMouseUp = () => {
-      isDraggingRef.current = false;
-    };
-
-    const onMouseMove = (e: MouseEvent) => {
-      if (!isDraggingRef.current) return;
-      const dx = e.clientX - lastMouseRef.current.x;
-      const dy = e.clientY - lastMouseRef.current.y;
-      lastMouseRef.current = { x: e.clientX, y: e.clientY };
-
-      yawRef.current -= dx * ORBIT_SENSITIVITY;
-      pitchRef.current = Math.max(
-        PITCH_MIN,
-        Math.min(PITCH_MAX, pitchRef.current + dy * ORBIT_SENSITIVITY),
-      );
-    };
-
-    const onWheel = (e: WheelEvent) => {
-      // Only allow zoom during exploration mode without narrative overlay
-      const currentMode = useGameStore.getState().mode;
-      const showStoryOverlay = useGameStore.getState().showStoryOverlay;
-      if (currentMode !== 'exploration' || showStoryOverlay) return;
-
-      // Only block zoom during active Dialogue — allow zoom during Approach/Align/Lock
-      // so players can adjust camera while walking toward NPC
-      const interactionState = getInteractionState();
-      if (interactionState === InteractionState.Dialogue) return;
-
-      e.preventDefault();
-      e.stopPropagation();
-
-      // Normalize deltaY across different deltaMode values:
-      //   DOM_DELTA_PIXEL (0): deltaY is already in pixels — use as-is
-      //   DOM_DELTA_LINE  (1): deltaY is in lines — multiply by ~40px per line
-      //   DOM_DELTA_PAGE  (2): deltaY is in pages — multiply by ~800px per page
-      let normalizedDelta = e.deltaY;
-      if (e.deltaMode === 1) {
-        normalizedDelta *= ZOOM_LINE_MULTIPLIER;
-      } else if (e.deltaMode === 2) {
-        normalizedDelta *= ZOOM_PAGE_MULTIPLIER;
-      }
-
-      // Calculate raw distance change
-      let rawChange = normalizedDelta * ZOOM_SENSITIVITY;
-
-      // Ensure minimum step per scroll notch for responsive feel.
-      // Many mice report very small deltaY (e.g., ±3 pixels), which results
-      // in tiny zoom changes (0.006) that feel like "zoom doesn't work".
-      // Enforce a minimum absolute step of ZOOM_PIXEL_STEP.
-      if (Math.abs(rawChange) < ZOOM_PIXEL_STEP && Math.abs(rawChange) > 0.001) {
-        rawChange = rawChange > 0 ? ZOOM_PIXEL_STEP : -ZOOM_PIXEL_STEP;
-      }
-
-      const newDist = Math.max(
-        MIN_DISTANCE,
-        Math.min(MAX_DISTANCE, distanceRef.current + rawChange),
-      );
-      distanceRef.current = newDist;
-      // Also immediately update interactionDistanceRef for responsive zoom
-      // (otherwise the lerp makes zoom feel sluggish or unresponsive)
-      interactionDistanceRef.current = newDist;
-    };
-
-    const onContextMenu = (e: Event) => {
-      e.preventDefault();
-    };
-
-    // Touch support for mobile camera orbit
-    const onTouchStart = (e: TouchEvent) => {
-      // Don't orbit camera during active narrative overlay / cutscene
-      const currentMode = useGameStore.getState().mode;
-      const showStoryOverlay = useGameStore.getState().showStoryOverlay;
-      if (showStoryOverlay || currentMode === 'cutscene') return;
-      const interactionState = getInteractionState();
-      if (interactionState === InteractionState.Dialogue) return;
-
-      // Only single-finger touch on canvas area (not UI)
-      if (e.touches.length === 1) {
-        const target = e.target as HTMLElement;
-        // FIX: Removed [tabindex] from exclusion — same bug as mouse handler
-        const isCanvasElement = target.tagName === 'CANVAS';
-        const isCanvasArea = isCanvasElement || !target.closest('[data-exploration-ui], [data-panel], dialog, [role="dialog"], button, a, input, textarea');
-        if (isCanvasArea) {
-          isDraggingRef.current = true;
-          lastMouseRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
-        }
-      }
-    };
-
-    const onTouchMove = (e: TouchEvent) => {
-      if (!isDraggingRef.current || e.touches.length !== 1) return;
-      const dx = e.touches[0].clientX - lastMouseRef.current.x;
-      const dy = e.touches[0].clientY - lastMouseRef.current.y;
-      lastMouseRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
-
-      yawRef.current -= dx * ORBIT_SENSITIVITY * 1.5; // slightly more sensitive for touch
-      pitchRef.current = Math.max(
-        PITCH_MIN,
-        Math.min(PITCH_MAX, pitchRef.current + dy * ORBIT_SENSITIVITY * 1.5),
-      );
-    };
-
-    const onTouchEnd = () => {
-      isDraggingRef.current = false;
-    };
-
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.code === 'KeyR' && e.shiftKey) {
-        e.preventDefault();
-        const currentSceneId = useGameStore.getState().exploration.currentSceneId;
-        const config = getSceneConfig(currentSceneId);
-        const sceneDist = getSceneDefaultDistance(currentSceneId);
-        // Camera yaw must be BEHIND the player
-        yawRef.current = (config.initialRotation ?? 0) + Math.PI;
-        pitchRef.current = 0.3;
-        distanceRef.current = sceneDist;
-        interactionDistanceRef.current = sceneDist;
-      }
-    };
-
-    const canvasEl = gl.domElement;
-
-    window.addEventListener('mousedown', onMouseDown);
-    window.addEventListener('mouseup', onMouseUp);
-    window.addEventListener('mousemove', onMouseMove);
-    // Register wheel on canvas (primary) with capture phase for reliability,
-    // and on window (fallback) also with capture phase.
-    // capture:true ensures our handler fires before R3F's event system
-    // can call stopPropagation on wheel events.
-    if (canvasEl) {
-      canvasEl.addEventListener('wheel', onWheel, { passive: false, capture: true });
-    }
-    window.addEventListener('wheel', onWheel, { passive: false, capture: true });
-    window.addEventListener('contextmenu', onContextMenu);
-    window.addEventListener('touchstart', onTouchStart, { passive: true });
-    window.addEventListener('touchmove', onTouchMove, { passive: true });
-    window.addEventListener('touchend', onTouchEnd);
-    window.addEventListener('keydown', onKeyDown);
-
-    return () => {
-      window.removeEventListener('mousedown', onMouseDown);
-      window.removeEventListener('mouseup', onMouseUp);
-      window.removeEventListener('mousemove', onMouseMove);
-      if (canvasEl) {
-        canvasEl.removeEventListener('wheel', onWheel, { capture: true } as EventListenerOptions);
-      }
-      window.removeEventListener('wheel', onWheel, { capture: true } as EventListenerOptions);
-      window.removeEventListener('contextmenu', onContextMenu);
-      window.removeEventListener('touchstart', onTouchStart);
-      window.removeEventListener('touchmove', onTouchMove);
-      window.removeEventListener('touchend', onTouchEnd);
-      window.removeEventListener('keydown', onKeyDown);
-    };
-  }, []);
+  useCameraOrbitInput(gl, {
+    yawRef,
+    pitchRef,
+    distanceRef,
+    interactionDistanceRef,
+    isDraggingRef,
+    lastMouseRef,
+  });
 
   // ── Post-mode frame state (auto-follow timer, drag tracking) ──
   const postFrameStateRef = useRef({

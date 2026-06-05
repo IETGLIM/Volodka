@@ -5,6 +5,7 @@ import { motion, useMotionValue, animate } from 'framer-motion';
 import { useGameStore } from '@/store/gameStore';
 import { KARMA_LOW_THRESHOLD, KARMA_HIGH_THRESHOLD } from '@/data/constants';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
+import { getKarmaTierLabel } from '@/shared/utils/karmaTier';
 import { useEffect, useRef } from 'react';
 
 export function MoralCompassHUD() {
@@ -37,9 +38,16 @@ export function MoralCompassHUD() {
 
   // Map karma 0-100 to rotation -135 to 135 degrees
   const rotation = -135 + (karma / 100) * 270;
+  const tierLabel = getKarmaTierLabel(karma);
 
   return (
-    <div className="fixed bottom-16 right-12 pointer-events-none hidden lg:block" data-exploration-ui style={{ zIndex: UI_LAYERS.HUD }}>
+    <div
+      className="fixed bottom-16 right-12 pointer-events-none hidden lg:block"
+      data-exploration-ui
+      style={{ zIndex: UI_LAYERS.HUD }}
+      role="img"
+      aria-label={`Карма ${karma}, ${tierLabel}`}
+    >
       <div className="relative w-12 h-12">
         {/* Outer ring */}
         <svg width="48" height="48" viewBox="0 0 48 48" className="absolute inset-0">
@@ -95,8 +103,13 @@ export function MoralCompassHUD() {
         />
 
         {/* Value */}
-        <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 text-[9px] font-medium" style={{ color: color.main }}>
-          {karma}
+        <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 text-center">
+          <div className="text-[9px] font-medium leading-none" style={{ color: color.main }}>
+            {karma}
+          </div>
+          <div className="text-[7px] font-mono uppercase tracking-wide mt-0.5 whitespace-nowrap" style={{ color: color.main, opacity: 0.85 }}>
+            {tierLabel}
+          </div>
         </div>
       </div>
     </div>

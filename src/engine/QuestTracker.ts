@@ -1,6 +1,6 @@
 /* ─── Volodka RPG – Quest Tracking Engine (AAA+ Overhaul) ─── */
 
-import type { SceneId, StoryEffect, QuestDefinition } from '@/shared/types/game';
+import type { SceneId, QuestDefinition } from '@/shared/types/game';
 import { QUEST_DEFINITIONS } from '@/data/quests';
 import {
   dispatchGameAction,
@@ -9,8 +9,78 @@ import {
   type GameStoreSnapshot,
 } from '@/engine/GameActionDispatcher';
 import { eventBus } from '@/engine/EventBus';
-import { applyEffects } from '@/shared/utils/applyEffects';
 import { isKnownMinigameId, MINIGAME_COMPLETION_FLAGS } from '@/shared/constants/minigames';
+
+/** Slice of store state that QuestTracker reacts to (scene, flags, inventory, poems, quests, time). */
+interface QuestTrackerRelevantSlice {
+  currentSceneId: SceneId;
+  timeOfDay: number;
+  flags: Record<string, boolean>;
+  inventoryIds: string[];
+  collectedPoems: string[];
+  quests: Array<{
+    questId: string;
+    status: string;
+    startedAtTime?: number;
+    objectives: Record<string, boolean>;
+  }>;
+}
+
+function selectQuestTrackerSlice(snapshot: GameStoreSnapshot): QuestTrackerRelevantSlice {
+  return {
+    currentSceneId: snapshot.exploration.currentSceneId,
+    timeOfDay: snapshot.exploration.timeOfDay,
+    flags: snapshot.playerState.flags,
+    inventoryIds: snapshot.playerState.inventory.map((i) => i.id).sort(),
+    collectedPoems: [...snapshot.collectedPoems].sort(),
+    quests: snapshot.quests.map((q) => ({
+      questId: q.questId,
+      status: q.status,
+      startedAtTime: q.startedAtTime,
+      objectives: q.objectives,
+    })),
+  };
+}
+
+function flagsEqual(a: Record<string, boolean>, b: Record<string, boolean>): boolean {
+  const aKeys = Object.keys(a);
+  const bKeys = Object.keys(b);
+  if (aKeys.length !== bKeys.length) return false;
+  for (const key of aKeys) {
+    if (a[key] !== b[key]) return false;
+  }
+  return true;
+}
+
+function stringArraysEqual(a: string[], b: string[]): boolean {
+  if (a.length !== b.length) return false;
+  for (let i = 0; i < a.length; i++) {
+    if (a[i] !== b[i]) return false;
+  }
+  return true;
+}
+
+function questTrackerSliceEqual(a: QuestTrackerRelevantSlice, b: QuestTrackerRelevantSlice): boolean {
+  if (a.currentSceneId !== b.currentSceneId) return false;
+  if (a.timeOfDay !== b.timeOfDay) return false;
+  if (!flagsEqual(a.flags, b.flags)) return false;
+  if (!stringArraysEqual(a.inventoryIds, b.inventoryIds)) return false;
+  if (!stringArraysEqual(a.collectedPoems, b.collectedPoems)) return false;
+  if (a.quests.length !== b.quests.length) return false;
+  for (let i = 0; i < a.quests.length; i++) {
+    const aq = a.quests[i];
+    const bq = b.quests[i];
+    if (
+      aq.questId !== bq.questId
+      || aq.status !== bq.status
+      || aq.startedAtTime !== bq.startedAtTime
+    ) {
+      return false;
+    }
+    if (!flagsEqual(aq.objectives, bq.objectives)) return false;
+  }
+  return true;
+}
 
 /**
  * QuestTracker subscribes to game state changes and EventBus events,
@@ -48,10 +118,16 @@ export class QuestTracker {
     this.previousInventoryIds = new Set(state.playerState.inventory.map((i) => i.id));
     this.previousPoems = new Set(state.collectedPoems);
 
-    // Subscribe to Zustand store changes
-    this.unsubscribeStore = subscribeGameSnapshot((state) => {
-      this.onStateChanged(state);
-    });
+    // Subscribe only to quest-relevant store slices (not HUD, camera, notifications, etc.)
+    this.unsubscribeStore = subscribeGameSnapshot(
+      (state) => {
+        this.onStateChanged(state);
+      },
+      {
+        selector: selectQuestTrackerSlice,
+        equalityFn: questTrackerSliceEqual,
+      },
+    );
 
     // Subscribe to EventBus events
     this.unsubscribeEvents.push(
@@ -203,7 +279,7 @@ export class QuestTracker {
     this.unsubscribeEvents = [];
   }
 
-  /** Called on every Zustand state change */
+  /** Called when quest-relevant store slices change */
   private onStateChanged(state: GameStoreSnapshot): void {
     const currentSceneId = state.exploration.currentSceneId;
     const currentFlags = state.playerState.flags;
@@ -488,13 +564,7 @@ export class QuestTracker {
     );
 
     if (allComplete) {
-      // Apply quest rewards
-      if (definition.rewards && definition.rewards.length > 0) {
-        this.applyQuestRewards(definition.rewards);
-      }
-
-      // Complete the quest
-      dispatchGameAction({ type: 'quest/complete', questId });
+      dispatchGameAction({ type: 'quest/completeAndApplyRewards', questId });
     }
   }
 
@@ -510,13 +580,6 @@ export class QuestTracker {
     dispatchGameAction({ type: 'quest/fail', questId });
 
     eventBus.emit('quest:failed', { questId, reason });
-  }
-
-  /** Apply quest reward effects via the centralized applyEffects utility */
-  private applyQuestRewards(rewards: StoryEffect[]): void {
-    applyEffects(rewards, {
-      shouldActivateQuest: (questId: string) => this.canActivateQuest(questId),
-    });
   }
 
   /** Check if a quest can be activated (dependencies, required flags, etc.) */

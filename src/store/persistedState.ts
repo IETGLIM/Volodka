@@ -19,9 +19,12 @@ import {
 import type { GameStoreState } from './types';
 
 /** Store keys written to / restored from localStorage (derived from Zod schema). */
-export type PersistedStoreKey = Exclude<keyof SavePayload, 'saveVersion' | 'savedAt'>;
+export type PersistedStoreKey = Exclude<
+  keyof SavePayload,
+  'saveVersion' | 'savedAt' | 'playTimeSeconds'
+>;
 
-const SAVE_META_KEYS = new Set(['saveVersion', 'savedAt']);
+const SAVE_META_KEYS = new Set(['saveVersion', 'savedAt', 'playTimeSeconds']);
 
 export function getPersistedStateKeys(): PersistedStoreKey[] {
   return Object.keys(SavePayloadSchema.shape).filter(

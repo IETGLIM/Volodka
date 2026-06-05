@@ -152,6 +152,15 @@ export function AmbientNPCs() {
   const bodyGeometry = useMemo(() => new THREE.CapsuleGeometry(0.2, 0.7, 2, 6), []);
   const headGeometry = useMemo(() => new THREE.SphereGeometry(0.14, 6, 5), []);
 
+  useEffect(() => {
+    const body = bodyGeometry;
+    const head = headGeometry;
+    return () => {
+      body.dispose();
+      head.dispose();
+    };
+  }, [bodyGeometry, headGeometry]);
+
   // Per-instance state — plain mutable array, no React state
   const instanceStates = useRef<InstanceState[]>([]);
 

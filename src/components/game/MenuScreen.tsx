@@ -11,6 +11,7 @@ import { POEMS } from '@/data/poems';
 import { audioEngine } from '@/engine/AudioEngine';
 import { useTypewriter } from '@/hooks/useTypewriter';
 import { CanvasMatrixRain } from './shared/CanvasMatrixRain';
+import { validateSaveData } from '@/shared/validation/saveSchema';
 
 const TOTAL_POEMS = POEMS.length;
 const VERSION = '3.0.0';
@@ -1186,9 +1187,11 @@ export function MenuScreen() {
                       try {
                         const raw = localStorage.getItem('volodka_save');
                         if (!raw) return null;
-                        const data = JSON.parse(raw);
-                        const ps = data?.playerState;
-                        const expl = data?.exploration;
+                        const validation = validateSaveData(raw);
+                        if (!validation.success) return null;
+                        const data = validation.data;
+                        const ps = data.playerState;
+                        const expl = data.exploration;
                         const SCENE_LABELS: Record<string, string> = { volodka_room: 'Комната', volodka_corridor: 'Коридор', street_night: 'Улица', cafe_evening: 'Кафе', office_day: 'Офис', park_day: 'Парк', library_day: 'Библиотека' };
                         const sceneName = expl?.currentSceneId
                           ? SCENE_LABELS[expl.currentSceneId] ?? expl.currentSceneId
@@ -1197,7 +1200,7 @@ export function MenuScreen() {
                           <span className="relative z-10 flex items-center justify-center gap-1.5 mt-1">
                             <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-400/80 continue-emerald-indicator" />
                             <span className="text-[11px] text-emerald-400/70 font-mono tracking-wide">
-                              Ур.{ps?.progression?.level ?? '?'} • {sceneName} • 📖 {(data?.collectedPoems?.length ?? 0)}/{TOTAL_POEMS}
+                              Ур.{ps.progression.level} • {sceneName} • 📖 {data.collectedPoems.length}/{TOTAL_POEMS}
                             </span>
                           </span>
                         );

@@ -90,7 +90,7 @@ export const createUISlice: StateCreator<
 
   setMode: (mode) => set({ mode }),
 
-  setCurrentNodeId: (id) => set({ currentNodeId: id }),
+  setCurrentNodeId: (id) => set({ currentNodeId: id ?? '' }),
 
   setShowStoryOverlay: (show) => set({ showStoryOverlay: show }),
 

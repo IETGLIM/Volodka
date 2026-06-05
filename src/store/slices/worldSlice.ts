@@ -22,6 +22,7 @@ import {
   batchAddKarma,
   batchAddSkill,
   batchAddXp,
+  batchSetFlag,
   createRewardBatchDraft,
   createRewardBatchSideEffects,
   flushRewardBatchSideEffects,
@@ -294,10 +295,39 @@ export const createWorldSlice: StateCreator<
     if (!def) return false;
 
     const timestamp = Date.now();
+    const sideEffects = createRewardBatchSideEffects();
 
-    set((state) => ({
-      unlockedAchievements: [...state.unlockedAchievements, { id: achievementId, unlockedAt: timestamp }],
-    }));
+    set((state) => {
+      const draft = createRewardBatchDraft(state.playerState, state.notifications);
+
+      for (const reward of def.rewards) {
+        switch (reward.type) {
+          case 'xp':
+            if (reward.value) batchAddXp(draft, sideEffects, reward.value);
+            break;
+          case 'karma':
+            if (reward.value) batchAddKarma(draft, sideEffects, reward.value);
+            break;
+          case 'skill':
+            if (reward.skill && reward.value) {
+              batchAddSkill(draft, reward.skill as TrainablePlayerSkill, reward.value);
+            }
+            break;
+          case 'credits':
+            if (reward.value) batchAddCredits(draft, reward.value);
+            break;
+          case 'flag':
+            if (reward.flag) batchSetFlag(draft, reward.flag, reward.flagValue ?? true);
+            break;
+        }
+      }
+
+      return {
+        unlockedAchievements: [...state.unlockedAchievements, { id: achievementId, unlockedAt: timestamp }],
+        playerState: draft.playerState,
+        notifications: draft.notifications,
+      };
+    });
 
     // Emit achievement events for UI
     eventBus.emit('achievement:unlocked', {
@@ -314,27 +344,7 @@ export const createWorldSlice: StateCreator<
       icon: def.icon,
     });
 
-    // Apply rewards via cross-slice actions
-    const crossState = get();
-    for (const reward of def.rewards) {
-      switch (reward.type) {
-        case 'xp':
-          if (reward.value) crossState.addXp(reward.value);
-          break;
-        case 'karma':
-          if (reward.value) crossState.addKarma(reward.value);
-          break;
-        case 'skill':
-          if (reward.skill && reward.value) crossState.addSkill(reward.skill as TrainablePlayerSkill, reward.value);
-          break;
-        case 'credits':
-          if (reward.value) crossState.addCredits(reward.value);
-          break;
-        case 'flag':
-          if (reward.flag) crossState.setFlag(reward.flag, reward.flagValue ?? true);
-          break;
-      }
-    }
+    flushRewardBatchSideEffects(sideEffects);
 
     // Check for "all achievements" meta-achievement
     const newUnlockedCount = state.unlockedAchievements.length + 1;
@@ -477,11 +487,19 @@ export const createWorldSlice: StateCreator<
   checkDailyMissionResets: () => {
     const state = get();
     const now = Date.now();
-    const lastReset = state.lastDailyReset;
-
-    // Check if a day has passed (86400000 ms)
     const MS_PER_DAY = 86400000;
-    if (now - lastReset < MS_PER_DAY && lastReset > 0) return;
+
+    // Legacy saves without lastDailyReset: use last save time as baseline
+    let lastReset = state.lastDailyReset;
+    if (lastReset === 0) {
+      lastReset = state.lastSaveTimestamp ?? now;
+      if (now - lastReset < MS_PER_DAY) {
+        set({ lastDailyReset: lastReset });
+        return;
+      }
+    } else if (now - lastReset < MS_PER_DAY) {
+      return;
+    }
 
     const acceptedDailyMissions = state.acceptedDailyMissions
       .filter((m) => !m.claimed)

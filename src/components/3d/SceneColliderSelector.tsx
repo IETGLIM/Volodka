@@ -1,31 +1,29 @@
 
 /* ─── Volodka RPG – Scene collider selector ───
  *
- *  ONE SOURCE OF TRUTH: Visual geometry IS the collider.
- *
- *  Architecture:
+ *  Architecture (M7 — lightweight physics colliders):
  *  ─────────────
- *  1. Visual scene meshes → wrapped in <RigidBody type="fixed" colliders="trimesh">
- *     → Rapier auto-generates exact triangle-mesh colliders from visual geometry
- *     → No manual position/size duplication → zero drift
+ *  1. Visual scene meshes → render-only (NO trimesh colliders).
+ *     Full visual geometry (50–100+ meshes per scene) previously generated
+ *     dense Rapier trimesh colliders (~2k–8k triangles). Visuals stay in MIDGROUND
+ *     for rendering; physics uses simplified proxies instead.
  *
- *  2. Floor + boundary walls → auto-generated from SceneConfig (size, hasCeiling, floorMaterial)
- *     → Thick floor prevents tunneling, named collider for footstep material
- *     → Boundary walls for outdoor scenes prevent walking off the map
+ *  2. SceneDefinition cuboids → walls, obstacles, ceilings from sceneDefinitions.ts
+ *     → Cached per sceneId via useMemo; ~8–20 cuboids per scene vs 50–100 trimeshes
  *
- *  3. Footstep sounds → determined by SceneConfig.floorMaterial (not collider names)
- *     → PhysicsPlayer reads directly from scene config
+ *  3. Structural colliders → thick floor + boundary walls from SceneConfig
+ *     → Prevents tunneling; footstep material via fs: name prefix
  *
- *  This eliminates the old PhysicsSceneColliders.tsx which manually maintained
- *  ~109 CuboidColliders with hardcoded positions that drifted from the visual
- *  scene positions over time. Now the visual IS the physics — if you move a desk
- *  in the visual component, its collider moves automatically.
+ *  4. Foreground decorative meshes → never collided (parallax layer only)
  */
 
 import { Suspense, lazy, useRef, useMemo, useEffect } from 'react';
-import { RigidBody, CuboidCollider } from '@react-three/rapier';
+import { CuboidCollider } from '@react-three/rapier';
 import { useGameStore } from '@/store/gameStore';
 import { getSceneConfig } from '@/config/scenes';
+import { SCENE_DEFINITIONS } from '@/config/sceneDefinitions';
+import { generateColliders } from '@/config/sceneDefinitionGenerator';
+import type { ColliderDef } from '@/shared/types/sceneDefinition';
 import { SceneLayer, LayeredForeground } from './VisualizationLayers';
 import type { SceneId } from '@/shared/types/game';
 import type { MutableRefObject } from 'react';
@@ -70,10 +68,9 @@ interface SceneColliderSelectorProps {
 }
 
 /** Selects and renders the appropriate visual + physics components based on current sceneId.
- *  Visual meshes are wrapped in RigidBody trimesh — the visual IS the collider. */
+ *  Visuals are render-only; physics uses SceneDefinition cuboids + structural safety colliders. */
 export function SceneColliderSelector({ livePlayerPositionRef }: SceneColliderSelectorProps) {
   const sceneId = useGameStore((s) => s.exploration.currentSceneId);
-  const config = getSceneConfig(sceneId);
 
   return (
     <group>
@@ -84,25 +81,10 @@ export function SceneColliderSelector({ livePlayerPositionRef }: SceneColliderSe
         </Suspense>
       </SceneLayer>
 
-      {/* Midground layer — architecture, walls, floors, furniture.
-          Wrapped in RigidBody trimesh: visual geometry = collider geometry.
-          This is the SINGLE SOURCE OF TRUTH — no manual collider positions. */}
+      {/* Midground layer — architecture, walls, floors, furniture (visual only). */}
       <SceneLayer layer="MIDGROUND">
         <Suspense fallback={<SceneLoadingFallback />}>
-          {/* CRITICAL: key={sceneId} forces complete RigidBody remount on scene change.
-              Without this, Rapier's trimesh colliders are NOT regenerated when the
-              visual scene changes — the player walks through walls because the
-              colliders still belong to the OLD scene geometry. */}
-          <RigidBody
-            key={sceneId}
-            type="fixed"
-            colliders="trimesh"
-            friction={0.7}
-            restitution={0}
-            name={`scene-geometry:${sceneId}`}
-          >
-            <VisualScene sceneId={sceneId} livePlayerPositionRef={livePlayerPositionRef} />
-          </RigidBody>
+          <VisualScene key={sceneId} sceneId={sceneId} livePlayerPositionRef={livePlayerPositionRef} />
         </Suspense>
       </SceneLayer>
 
@@ -111,12 +93,54 @@ export function SceneColliderSelector({ livePlayerPositionRef }: SceneColliderSe
         <ForegroundElements sceneId={sceneId} livePlayerPositionRef={livePlayerPositionRef} />
       </Suspense>
 
-      {/* Structural colliders auto-generated from scene config.
-          Floor: thick cuboid (prevents tunneling) + footstep material name.
-          Walls: boundary walls for outdoor scenes.
-          These are NOT visual — they exist purely for physics safety. */}
+      {/* SceneDefinition cuboid colliders — walls, furniture, buildings (cached per sceneId). */}
+      <SceneDefinitionColliders sceneId={sceneId} />
+
+      {/* Structural colliders: thick floor + boundary walls (+ ceiling when indoor). */}
       <SceneStructuralColliders sceneId={sceneId} />
     </group>
+  );
+}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   SCENE DEFINITION COLLIDERS — cuboid proxies from sceneDefinitions.ts
+   ══════════════════════════════════════════════════════════════════════════════
+   Replaces per-mesh trimesh colliders with lightweight cuboids defined alongside
+   each scene. Descriptor arrays are memoized per sceneId (no rebuild on re-render).
+   Floors are skipped here — SceneStructuralColliders provides the thick safety floor.
+   ══════════════════════════════════════════════════════════════════════════════ */
+
+function SceneDefinitionColliders({ sceneId }: { sceneId: SceneId }) {
+  const colliders = useMemo(() => generateColliders(SCENE_DEFINITIONS[sceneId]), [sceneId]);
+
+  return (
+    <group key={`def-colliders:${sceneId}`}>
+      {colliders.walls.map((def, i) => (
+        <DefinitionCuboidCollider key={`wall-${i}`} def={def} />
+      ))}
+      {colliders.obstacles.map((def, i) => (
+        <DefinitionCuboidCollider key={`obs-${i}`} def={def} />
+      ))}
+      {colliders.ceilings.map((def, i) => (
+        <DefinitionCuboidCollider key={`ceil-${i}`} def={def} />
+      ))}
+    </group>
+  );
+}
+
+function DefinitionCuboidCollider({ def }: { def: ColliderDef }) {
+  const name = def.footstepMaterial ? `fs:${def.footstepMaterial}` : def.name ?? 'obstacle';
+  const rotationY = def.rotation ?? 0;
+
+  return (
+    <CuboidCollider
+      args={def.size}
+      position={def.position}
+      rotation={rotationY !== 0 ? [0, rotationY, 0] : undefined}
+      name={name}
+      restitution={0}
+      friction={0.7}
+    />
   );
 }
 

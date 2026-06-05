@@ -5,6 +5,7 @@
 
 import type { StateCreator } from 'zustand';
 import { eventBus } from '@/engine/EventBus';
+import { dispatchGameAction } from '@/engine/GameActionDispatcher';
 import { validateSaveData, SAVE_VERSION } from '@/shared/validation/saveSchema';
 import { pushNotification } from '../shared';
 import type { GameStoreState } from '../types';
@@ -14,7 +15,7 @@ import {
   pickSavePayload,
   storePatchFromSave,
 } from '../persistedState';
-import { resetAllPoemEffects } from '@/engine/PoemPowerSystem';
+import { resetGuidedStoryManager } from '@/engine/GuidedStoryManager';
 import { clearAutoCloseTimers } from './explorationSlice';
 
 /* ─── localStorage key ─── */
@@ -47,11 +48,12 @@ export const createSaveSlice: StateCreator<
 
   resetGame: () => {
     // Clear module-scoped poem effects (activeEffects array + TTL flags)
-    resetAllPoemEffects();
+    dispatchGameAction({ type: 'poem/clearAllEffects' });
     // Clear module-scoped interactive-object auto-close timers
     clearAutoCloseTimers();
 
     set(createDefaultResetState());
+    resetGuidedStoryManager();
   },
 
   saveGame: (options) => {
@@ -110,6 +112,7 @@ export const createSaveSlice: StateCreator<
 
       clearAutoCloseTimers();
       set(storePatchFromSave(validation.data));
+      resetGuidedStoryManager();
 
       eventBus.emit('game:loaded', {} as Record<string, never>);
     } catch (err) {

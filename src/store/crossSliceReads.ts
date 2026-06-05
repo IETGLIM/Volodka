@@ -3,7 +3,7 @@
  * not via raw get().<otherSlice>.* on GameStoreState.
  * Intentionally does NOT import ./selectors to avoid gameStore cycles. */
 
-import type { SceneId, NPCRelation, TrainablePlayerSkill, InventoryItem } from '@/shared/types/game';
+import type { SceneId, NPCRelation, QuestState, TrainablePlayerSkill, InventoryItem } from '@/shared/types/game';
 import type { GameNotification } from './shared';
 import type { GameStoreState } from './types';
 
@@ -18,6 +18,7 @@ export interface PlayerReadsFromExploration {
 export interface PlayerReadsFromWorld {
   npcRelations: NPCRelation[];
   npcAffinity: Record<string, number>;
+  quests: QuestState[];
 }
 
 /** World slice → exploration */
@@ -71,6 +72,7 @@ export function readPlayerFromWorld(state: GameStoreState): PlayerReadsFromWorld
   return {
     npcRelations: state.npcRelations,
     npcAffinity: state.npcAffinity,
+    quests: state.quests,
   };
 }
 

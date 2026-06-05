@@ -2,10 +2,23 @@
 
 import type { CombatState, CombatLogEntry, SideEffect } from './types';
 import type { PoemCombatAbility } from './types';
-import { getGameStore } from '@/store/gameStore';
+import {
+  dispatchGameAction,
+  getGameSnapshot,
+  tryActivatePoemPower,
+} from '@/engine/GameActionDispatcher';
 import { isGameMode, isTrainablePlayerSkill, warnInvalidValue } from '@/shared/validation/typeGuards';
 import { createBuff, addBuff } from './buffSystem';
 import { getEnemyDefenseReduction } from './buffSystem';
+
+function snap() {
+  return getGameSnapshot();
+}
+
+function getSnapshotAttack(): number {
+  const { skills } = snap().playerState;
+  return skills.coding + skills.logic;
+}
 
 /* ═══════════════════════════════════════════════════════════════
    §3 — POEM COMBAT ABILITIES (with cooldowns)
@@ -89,8 +102,7 @@ export const POEM_COMBAT_ABILITIES: Record<string, PoemCombatAbility> = {
     description: 'Мощный удар. Наносит 200% урона от атаки.',
     cooldown: 3,
     execute: (state) => {
-      const store = getGameStore();
-      const playerAttack = store.playerState.skills.coding + store.playerState.skills.logic;
+      const playerAttack = getSnapshotAttack();
       const enemyDef = Math.max(0, state.enemy.defense * (1 - getEnemyDefenseReduction(state)));
       const damage = Math.max(1, Math.floor((playerAttack * 2 - enemyDef) * (0.9 + Math.random() * 0.2)));
       const newEnemyHp = Math.max(0, state.enemy.hp - damage);
@@ -146,8 +158,7 @@ export const POEM_COMBAT_ABILITIES: Record<string, PoemCombatAbility> = {
     description: 'Прорвать оборону. Игнорирует защиту врага, наносит чистый урон.',
     cooldown: 4,
     execute: (state) => {
-      const store = getGameStore();
-      const playerAttack = store.playerState.skills.coding + store.playerState.skills.logic;
+      const playerAttack = getSnapshotAttack();
       const damage = Math.max(1, Math.floor(playerAttack * 1.5 * (0.9 + Math.random() * 0.2)));
       const newEnemyHp = Math.max(0, state.enemy.hp - damage);
       return {
@@ -166,8 +177,7 @@ export const POEM_COMBAT_ABILITIES: Record<string, PoemCombatAbility> = {
     description: 'Двойная атака. Атакует дважды за этот ход.',
     cooldown: 4,
     execute: (state) => {
-      const store = getGameStore();
-      const playerAttack = store.playerState.skills.coding + store.playerState.skills.logic;
+      const playerAttack = getSnapshotAttack();
       const enemyDef = Math.max(0, state.enemy.defense * (1 - getEnemyDefenseReduction(state)));
       const dmg1 = Math.max(1, Math.floor((playerAttack - enemyDef) * (0.9 + Math.random() * 0.2)));
       const dmg2 = Math.max(1, Math.floor((playerAttack - enemyDef) * (0.9 + Math.random() * 0.2)));
@@ -226,9 +236,8 @@ export const POEM_COMBAT_ABILITIES: Record<string, PoemCombatAbility> = {
     description: 'Космический удар. Наносит урон, зависящий от кармы.',
     cooldown: 3,
     execute: (state) => {
-      const store = getGameStore();
-      const karmaBonus = Math.floor(store.playerState.karma / 10);
-      const playerAttack = store.playerState.skills.coding + store.playerState.skills.logic;
+      const karmaBonus = Math.floor(snap().playerState.karma / 10);
+      const playerAttack = getSnapshotAttack();
       const enemyDef = Math.max(0, state.enemy.defense * (1 - getEnemyDefenseReduction(state)));
       const damage = Math.max(1, Math.floor((playerAttack + karmaBonus * 2 - enemyDef) * (0.9 + Math.random() * 0.2)));
       const newEnemyHp = Math.max(0, state.enemy.hp - damage);
@@ -248,8 +257,7 @@ export const POEM_COMBAT_ABILITIES: Record<string, PoemCombatAbility> = {
     description: 'Финальный удар. +8 кармы, мощная атака.',
     cooldown: 4,
     execute: (state) => {
-      const store = getGameStore();
-      const playerAttack = store.playerState.skills.coding + store.playerState.skills.logic;
+      const playerAttack = getSnapshotAttack();
       const enemyDef = Math.max(0, state.enemy.defense * (1 - getEnemyDefenseReduction(state)));
       const damage = Math.max(1, Math.floor((playerAttack * 1.8 - enemyDef) * (0.9 + Math.random() * 0.2)));
       const newEnemyHp = Math.max(0, state.enemy.hp - damage);
@@ -361,9 +369,8 @@ export const POEM_COMBAT_ABILITIES: Record<string, PoemCombatAbility> = {
     description: 'Мощнейшая атака. Урон = (атака + карма×0.5) × 1.5. Трата 50% HP и 30 энергии.',
     cooldown: 6,
     execute: (state) => {
-      const store = getGameStore();
-      const playerAttack = store.playerState.skills.coding + store.playerState.skills.logic;
-      const karmaBonus = Math.floor(store.playerState.karma * 0.5);
+      const playerAttack = getSnapshotAttack();
+      const karmaBonus = Math.floor(snap().playerState.karma * 0.5);
       const damage = Math.max(1, Math.floor((playerAttack + karmaBonus) * 1.5 * (0.9 + Math.random() * 0.2)));
       const newEnemyHp = Math.max(0, state.enemy.hp - damage);
       // Side effect: player sacrifices 50% of current HP
@@ -429,10 +436,7 @@ export const POEM_COMBAT_ABILITIES: Record<string, PoemCombatAbility> = {
     description: 'Перегрузка системы. Наносит чистый урон, игнорируя всю защиту.',
     cooldown: 5,
     execute: (state) => {
-      const store = getGameStore();
-      // Note: +5 coding and +5 logic are pending as _sideEffects below;
-      // account for them in the damage calculation since they haven't been applied yet.
-      const playerAttack = store.playerState.skills.coding + store.playerState.skills.logic + 10;
+      const playerAttack = getSnapshotAttack() + 10;
       const damage = Math.max(1, Math.floor(playerAttack * 2.0 * (0.9 + Math.random() * 0.2)));
       const newEnemyHp = Math.max(0, state.enemy.hp - damage);
       return {
@@ -479,8 +483,7 @@ export const POEM_COMBAT_ABILITIES: Record<string, PoemCombatAbility> = {
     description: 'Ветер свободы обрушивается на врага. Наносит 180% урона и +4 к интуиции.',
     cooldown: 4,
     execute: (state) => {
-      const store = getGameStore();
-      const playerAttack = store.playerState.skills.coding + store.playerState.skills.logic;
+      const playerAttack = getSnapshotAttack();
       const enemyDef = Math.max(0, state.enemy.defense * (1 - getEnemyDefenseReduction(state)));
       const damage = Math.max(1, Math.floor((playerAttack * 1.8 - enemyDef) * (0.9 + Math.random() * 0.2)));
       const newEnemyHp = Math.max(0, state.enemy.hp - damage);
@@ -501,33 +504,40 @@ export const POEM_COMBAT_ABILITIES: Record<string, PoemCombatAbility> = {
    §3.5 — SIDE-EFFECT APPLICATION (P0-2.6)
    ═══════════════════════════════════════════════════════════════ */
 
-/** Apply deferred side effects to the Zustand store.
- *  Called by the combat system's orchestration layer after execute()
- *  returns a CombatState with _sideEffects. */
+/** Apply deferred side effects via the game action bridge. */
 export function applyCombatSideEffects(effects: SideEffect[] | undefined): void {
   if (!effects || effects.length === 0) return;
-  const store = getGameStore();
   for (const eff of effects) {
     switch (eff.type) {
-      case 'addEnergy': store.addEnergy(eff.value); break;
-      case 'addKarma': store.addKarma(eff.value); break;
-      case 'addStress': store.addStress(eff.value); break;
+      case 'addEnergy':
+        dispatchGameAction({ type: 'player/addEnergy', amount: eff.value });
+        break;
+      case 'addKarma':
+        dispatchGameAction({ type: 'player/addKarma', amount: eff.value });
+        break;
+      case 'addStress':
+        dispatchGameAction({ type: 'player/addStress', amount: eff.value });
+        break;
       case 'addSkill':
         if (isTrainablePlayerSkill(eff.skill)) {
-          store.addSkill(eff.skill, eff.value);
+          dispatchGameAction({ type: 'player/addSkill', skill: eff.skill, amount: eff.value });
         } else {
           warnInvalidValue('combat side effect skill', eff.skill);
         }
         break;
-      case 'addXp': store.addXp(eff.value); break;
+      case 'addXp':
+        dispatchGameAction({ type: 'player/addXp', amount: eff.value });
+        break;
       case 'setMode':
         if (isGameMode(eff.mode)) {
-          store.setMode(eff.mode);
+          dispatchGameAction({ type: 'story/setMode', mode: eff.mode });
         } else {
           warnInvalidValue('combat side effect mode', eff.mode);
         }
         break;
-      case 'addPoemPower': store.activatePoemPower(eff.poemId); break;
+      case 'addPoemPower':
+        tryActivatePoemPower(eff.poemId);
+        break;
     }
   }
 }
@@ -563,8 +573,7 @@ export function checkPoemPowerCombo(
       name: 'Истина и Шторм',
       description: 'Правда Глас + Штормовой Ветер = обнажение + сокрушительный удар',
       execute: (s) => {
-        const store = getGameStore();
-        const playerAttack = store.playerState.skills.coding + store.playerState.skills.logic;
+        const playerAttack = getSnapshotAttack();
         const enemyDef = Math.max(0, s.enemy.defense * (1 - getEnemyDefenseReduction(s)) * 0.5);
         const damage = Math.max(1, Math.floor((playerAttack * 2.5 - enemyDef) * (0.9 + Math.random() * 0.2)));
         const newEnemyHp = Math.max(0, s.enemy.hp - damage);
@@ -586,9 +595,8 @@ export function checkPoemPowerCombo(
       name: 'Последний Шторм',
       description: 'Штормовой Ветер + Последнее Слово = финальная буря',
       execute: (s) => {
-        const store = getGameStore();
-        const playerAttack = store.playerState.skills.coding + store.playerState.skills.logic;
-        const karmaBonus = Math.floor(store.playerState.karma * 0.3);
+        const playerAttack = getSnapshotAttack();
+        const karmaBonus = Math.floor(snap().playerState.karma * 0.3);
         const damage = Math.max(1, Math.floor((playerAttack * 2.5 + karmaBonus) * (0.9 + Math.random() * 0.2)));
         const newEnemyHp = Math.max(0, s.enemy.hp - damage);
         return { ...s, enemy: { ...s.enemy, hp: newEnemyHp }, _sideEffects: [{ type: 'addKarma', value: 12 } as SideEffect], log: [...s.log, { turn: s.turn, text: `✦✦ Последний Шторм! ${damage} урона, +12 кармы!`, type: 'poem_combo' as const, damage, isCritical: true }] };
@@ -659,8 +667,7 @@ export const SKILL_TREE: import('@/shared/types/game').SkillTreeNode[] = [
 
 /** Check if a skill tree node can be unlocked */
 export function canUnlockSkill(skillId: string): boolean {
-  const store = getGameStore();
-  const prog = store.playerState.progression;
+  const prog = snap().playerState.progression;
   if (prog.skillPoints <= 0) return false;
   if (prog.unlockedSkills.includes(skillId)) return false;
 
@@ -679,24 +686,24 @@ export function canUnlockSkill(skillId: string): boolean {
 export function unlockSkill(skillId: string): boolean {
   if (!canUnlockSkill(skillId)) return false;
 
-  const store = getGameStore();
   const node = SKILL_TREE.find((n) => n.id === skillId);
   if (!node) return false;
 
-  // Apply the effect
   applySkillEffect(node.effect);
 
-  // Update progression through the store action
-  store.unlockSkillTreeNode(skillId);
+  dispatchGameAction({ type: 'skill/unlockTreeNode', skillId });
 
-  store.pushNotification('skill', `Способность разблокирована: ${node.name}`);
+  dispatchGameAction({
+    type: 'notification/push',
+    notificationType: 'skill',
+    text: `Способность разблокирована: ${node.name}`,
+  });
   return true;
 }
 
 /** Parse and apply skill effect string */
 export function applySkillEffect(effect: string): void {
-  const store = getGameStore();
-  // Parse simple effect strings like "coding +2, attack +3"
+  const skills = snap().playerState.skills;
   const parts = effect.split(', ');
   for (const part of parts) {
     const match = part.match(/^(\w+)\s*\+(\d+)(%)?$/);
@@ -705,10 +712,13 @@ export function applySkillEffect(effect: string): void {
       const value = parseInt(match[2]);
       const isPercent = !!match[3];
 
-      if (!isPercent && stat in store.playerState.skills) {
-        store.addSkill(stat as import('@/shared/types/game').TrainablePlayerSkill, value);
+      if (!isPercent && stat in skills) {
+        dispatchGameAction({
+          type: 'player/addSkill',
+          skill: stat as import('@/shared/types/game').TrainablePlayerSkill,
+          amount: value,
+        });
       }
-      // Percent-based effects are checked at runtime in combat/interaction code
     }
   }
 }

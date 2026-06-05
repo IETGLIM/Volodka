@@ -89,12 +89,115 @@ export const GOLDEN_PATH_STORY_SPINE: string[] = [
 ];
 
 /**
- * Maps VN story-node ids to canonical 3D NPC entity ids when names diverge.
- * linkedStoryNodeId uses story nodes; questGiverNpcId uses npcDefinitions.id.
+ * Maps golden-path story-node ids to canonical 3D NPC entity ids.
+ * Exact lookup only — no substring / includes matching.
  */
 export const STORY_NODE_TO_NPC_ID: Record<string, string> = {
+  corridor_door: 'zarema',
   maria_curious: 'maria',
+  cafe_barista: 'cafe_barista',
+  office_alexander: 'office_alexander',
+  office_colleague: 'office_colleague',
+  colleague_persuasion_line: 'office_colleague',
+  act2_albert_hint: 'albert',
+  act2_albert_network_hint: 'albert',
+  act2_maria_search: 'maria',
+  maria_introduction: 'maria',
+  act2_maria_meeting_place: 'maria',
+  act2_dmitry_contact: 'office_dmitry',
+  act2_dmitry_office_meeting: 'office_dmitry',
+  act3_zarema_warning: 'zarema',
+  act3_zarema_arrest: 'zarema',
+  act3_zarema_cell: 'zarema',
+  act3_zarema_rescue_choice: 'zarema',
+  act3_save_zarema: 'zarema',
+  maria_warm: 'maria',
+  act3_maria_mystery: 'maria',
+  act3_maria_revelation: 'maria',
+  act3_maria_truth_accepted: 'maria',
+  act3_albert_loyalty: 'albert',
+  act3_albert_choice: 'albert',
+  act4_infiltration_prep: 'office_colleague',
 };
+
+/** Human-readable location labels for guidance (exact node → label). */
+export const STORY_NODE_TO_SCENE_LABEL: Record<string, string> = {
+  go_to_cafe: 'кафе «Синяя яма»',
+  cafe_enter: 'кафе «Синяя яма»',
+  cafe_evening_end: 'кафе «Синяя яма»',
+  kitchen_table: 'кухню',
+  kitchen_window: 'кухню',
+  street_bench: 'улицу',
+  street_bench_view: 'улицу',
+  park_entrance: 'парк',
+  office_alexander: 'офис IT-гильдии',
+  office_colleague: 'офис IT-гильдии',
+  act2_dmitry_office_meeting: 'офис IT-гильдии',
+  act2_safehouse_terminal: 'кафе «Синяя яма»',
+  act3_detention_infiltration: 'центр задержания',
+  act4_infiltration_inside: 'штаб-квартиру гильдии',
+  act4_core_server: 'штаб-квартиру гильдии',
+  act4_broadcast_prep: 'крышу',
+  act4_broadcast_execute: 'крышу',
+};
+
+/** Objective type overrides for nodes that are not NPC-dialogue steps. */
+export const STORY_NODE_OBJECTIVE_TYPE: Record<
+  string,
+  'talk_to_npc' | 'visit_location' | 'complete_quest' | 'collect_item' | 'make_choice'
+> = {
+  go_to_cafe: 'visit_location',
+  cafe_enter: 'visit_location',
+  kitchen_table: 'visit_location',
+  kitchen_window: 'visit_location',
+  street_bench: 'visit_location',
+  street_bench_view: 'visit_location',
+  park_entrance: 'visit_location',
+  act2_transition: 'visit_location',
+  act2_maria_meeting_place: 'visit_location',
+  act3_transition: 'visit_location',
+  act3_detention_infiltration: 'visit_location',
+  act4_transition: 'visit_location',
+  act4_infiltration_inside: 'visit_location',
+  act4_core_server: 'visit_location',
+  act4_infiltration_prep: 'visit_location',
+  act3_decision_point: 'make_choice',
+  act4_final_choice: 'make_choice',
+  fix_success: 'collect_item',
+  reading_reaction: 'collect_item',
+  volunteer_read: 'collect_item',
+  act2_bridge: 'collect_item',
+  cafe_evening_end: 'collect_item',
+  maria_warm: 'collect_item',
+  vera_inspiration: 'collect_item',
+};
+
+/** Story flags that may advance the golden path (exact flag key → spine node). */
+export const STORY_FLAG_TO_NODE_ID: Record<string, string> = {
+  act2_started: 'act2_transition',
+  advanced_to_act2: 'act2_transition',
+  advanced_to_act3: 'act3_transition',
+  vault_protect_vowed: 'act2_vault_revealed',
+  vault_access_granted: 'act2_vault_revealed',
+  contacted_dmitry_network: 'act2_dmitry_contact',
+  dmitry_meeting_agreed: 'act2_dmitry_office_meeting',
+  stealth_infiltration: 'act3_detention_infiltration',
+  zarema_rescued: 'act3_save_zarema',
+  pledge_rescue_zarema: 'act3_zarema_warning',
+  vault_under_attack: 'act3_guild_counterattack',
+  vault_defense_held: 'act3_hide_network',
+  ready_for_infiltration: 'act4_infiltration_prep',
+  guild_ally_found: 'act4_infiltration_inside',
+  guild_core_accessed: 'act4_core_server',
+  broadcast_ready: 'act4_broadcast_prep',
+  poetry_broadcast_sent: 'act4_broadcast_execute',
+  broadcast_hacked: 'act4_broadcast_execute',
+};
+
+/** Canonical NPC id for a golden-path story node, or undefined if not an NPC step. */
+export function getNpcIdForStoryNode(nodeId: string): string | undefined {
+  return STORY_NODE_TO_NPC_ID[nodeId];
+}
 
 /** Resolve a story-node or alias id to the canonical NPC entity id. */
 export function resolveCanonicalNpcId(id: string): string {

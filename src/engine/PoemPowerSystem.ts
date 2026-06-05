@@ -15,8 +15,45 @@
 */
 
 import { eventBus } from '@/engine/EventBus';
-import { getGameStore } from '@/store/gameStore';
+import {
+  dispatchGameAction,
+  getGameSnapshot,
+  tryActivatePoemPower,
+} from '@/engine/GameActionDispatcher';
+import type { TrainablePlayerSkill } from '@/shared/types/game';
 import { isTrainablePlayerSkill, warnInvalidValue } from '@/shared/validation/typeGuards';
+
+function snap() {
+  return getGameSnapshot();
+}
+
+function addSkill(skill: TrainablePlayerSkill, amount: number) {
+  dispatchGameAction({ type: 'player/addSkill', skill, amount });
+}
+
+function addEnergy(amount: number) {
+  dispatchGameAction({ type: 'player/addEnergy', amount });
+}
+
+function addStress(amount: number) {
+  dispatchGameAction({ type: 'player/addStress', amount });
+}
+
+function addKarma(amount: number) {
+  dispatchGameAction({ type: 'player/addKarma', amount });
+}
+
+function setFlag(key: string, value: boolean) {
+  dispatchGameAction({ type: 'player/setFlag', key, value });
+}
+
+function setNpcRelation(npcId: string, delta: number) {
+  dispatchGameAction({ type: 'player/setNpcRelation', npcId, delta });
+}
+
+function setTTLFlags(flags: ActiveTTLFlag[]) {
+  dispatchGameAction({ type: 'poem/setTTLFlags', flags });
+}
 
 /* ─── Power definition ─── */
 /** A single reversible effect entry — applied in reverse when the TTL flag expires */
@@ -66,14 +103,12 @@ export function clearAllPowerTimers(): void {
  *  Clears the non-serializable activeEffects array and all TTL flags in the store. */
 export function resetAllPoemEffects(): void {
   activeEffects.length = 0;
-  const store = getGameStore();
-  // Clear all TTL flags (and their corresponding store flags)
-  const flags = store.activeTTLFlags ?? [];
-  for (const f of flags) {
-    store.setFlag(f.key, false);
-  }
-  store.setActiveTTLFlags([]);
+  dispatchGameAction({ type: 'poem/clearAllEffects' });
 }
+
+eventBus.on('poem:reset_all_effects', () => {
+  activeEffects.length = 0;
+});
 
 /** How often (ms) the game loop should call processExpiredTTLFlags */
 export function getTTLCheckInterval(): number {
@@ -82,29 +117,22 @@ export function getTTLCheckInterval(): number {
 
 /* ─── Helper: set a flag with TTL in the game store ─── */
 function setTTLFlag(key: string, durationMs: number, poemId: string): void {
-  const store = getGameStore();
-  // Set the flag immediately
-  store.setFlag(key, true);
-  // Store the TTL entry for later cleanup
-  const existing = store.activeTTLFlags ?? [];
-  // Remove any existing entry for this key (refresh)
+  setFlag(key, true);
+  const existing = snap().activeTTLFlags ?? [];
   const filtered = existing.filter((f: ActiveTTLFlag) => f.key !== key);
-  store.setActiveTTLFlags([...filtered, { key, poemId, expiryTimestamp: Date.now() + durationMs }]);
+  setTTLFlags([...filtered, { key, poemId, expiryTimestamp: Date.now() + durationMs }]);
 }
 
 /* ─── Helper: process expired TTL flags (call from game loop or on load) ─── */
 export function processExpiredTTLFlags(): void {
-  const store = getGameStore();
-  const flags = store.activeTTLFlags ?? [];
+  const flags = snap().activeTTLFlags ?? [];
   const now = Date.now();
   const expired = flags.filter((f: ActiveTTLFlag) => now >= f.expiryTimestamp);
   const remaining = flags.filter((f: ActiveTTLFlag) => now < f.expiryTimestamp);
 
-  // Clear expired flags, apply reversals, and emit events
   for (const f of expired) {
-    store.setFlag(f.key, false);
+    setFlag(f.key, false);
 
-    // Apply reverse effects for this poem's power
     const power = POEM_POWERS[f.poemId];
     if (power?.reverseOnExpiry) {
       for (const rev of power.reverseOnExpiry) {
@@ -112,27 +140,25 @@ export function processExpiredTTLFlags(): void {
           case 'skill':
             if (rev.key) {
               if (isTrainablePlayerSkill(rev.key)) {
-                store.addSkill(rev.key, rev.value);
+                addSkill(rev.key, rev.value);
               } else {
                 warnInvalidValue('poem reverseOnExpiry skill', rev.key);
               }
             }
             break;
           case 'energy':
-            store.addEnergy(rev.value);
+            addEnergy(rev.value);
             break;
           case 'stress':
-            store.addStress(rev.value);
+            addStress(rev.value);
             break;
           case 'karma':
-            store.addKarma(rev.value);
+            addKarma(rev.value);
             break;
-          // npcRelation requires knowing the specific NPC — not auto-reversed
         }
       }
     }
 
-    // Remove matching activeEffects entries
     for (let i = activeEffects.length - 1; i >= 0; i--) {
       if (activeEffects[i].poemId === f.poemId) {
         activeEffects.splice(i, 1);
@@ -146,9 +172,8 @@ export function processExpiredTTLFlags(): void {
     });
   }
 
-  // Update the stored list
   if (expired.length > 0) {
-    store.setActiveTTLFlags(remaining);
+    setTTLFlags(remaining);
   }
 }
 
@@ -160,8 +185,7 @@ const POEM_POWERS: Record<string, PoemPower> = {
     description: 'Обнажить скрытую правду в диалоге. Следующая проверка убеждения автоматически проходит.',
     cooldownMs: 60000,
     effect: () => {
-      const store = getGameStore();
-      store.addSkill('persuasion', 3);
+      addSkill('persuasion', 3);
     },
     flagsToSet: [{ key: 'truth_voice_active', durationMs: 30000 }],
     reverseOnExpiry: [{ type: 'skill', key: 'persuasion', value: -3 }],
@@ -172,9 +196,8 @@ const POEM_POWERS: Record<string, PoemPower> = {
     description: 'Возродиться из отчаяния. Восстанавливает 30 энергии и снимает 20 стресса.',
     cooldownMs: 90000,
     effect: () => {
-      const store = getGameStore();
-      store.addEnergy(30);
-      store.addStress(-20);
+      addEnergy(30);
+      addStress(-20);
     },
   },
   poem_3: {
@@ -193,11 +216,10 @@ const POEM_POWERS: Record<string, PoemPower> = {
     description: 'Укрепить связь с союзником. +15 к отношению ближайшего NPC.',
     cooldownMs: 90000,
     effect: () => {
-      const store = getGameStore();
-      const relations = store.npcRelations;
+      const relations = snap().npcRelations;
       if (relations.length > 0) {
         const best = relations.reduce((a, b) => (a.value > b.value ? a : b));
-        store.setNpcRelation(best.npcId, 15);
+        setNpcRelation(best.npcId, 15);
       }
     },
   },
@@ -207,9 +229,8 @@ const POEM_POWERS: Record<string, PoemPower> = {
     description: 'Прорвать преграды. +5 к интуиции и логике на 30 секунд.',
     cooldownMs: 90000,
     effect: () => {
-      const store = getGameStore();
-      store.addSkill('intuition', 5);
-      store.addSkill('logic', 5);
+      addSkill('intuition', 5);
+      addSkill('logic', 5);
     },
     flagsToSet: [{ key: 'storm_wind_active', durationMs: 30000 }],
     reverseOnExpiry: [{ type: 'skill', key: 'intuition', value: -5 }, { type: 'skill', key: 'logic', value: -5 }],
@@ -220,9 +241,8 @@ const POEM_POWERS: Record<string, PoemPower> = {
     description: 'Сила поэтического слова. +4 к навыку письма и убеждения.',
     cooldownMs: 60000,
     effect: () => {
-      const store = getGameStore();
-      store.addSkill('writing', 4);
-      store.addSkill('persuasion', 4);
+      addSkill('writing', 4);
+      addSkill('persuasion', 4);
     },
     reverseOnExpiry: [{ type: 'skill', key: 'writing', value: -4 }, { type: 'skill', key: 'persuasion', value: -4 }],
   },
@@ -232,8 +252,7 @@ const POEM_POWERS: Record<string, PoemPower> = {
     description: 'Увидеть мир глазами ребёнка. Раскрывает скрытые стихи в текущей локации.',
     cooldownMs: 180000,
     effect: () => {
-      const store = getGameStore();
-      store.addSkill('intuition', 3);
+      addSkill('intuition', 3);
       eventBus.emit('ui:exploration_message', { text: '👁 Детский Взгляд раскрывает скрытое...' });
     },
     flagsToSet: [{ key: 'child_gaze_active', durationMs: 45000 }],
@@ -245,8 +264,7 @@ const POEM_POWERS: Record<string, PoemPower> = {
     description: 'Свершить невозможное. Следующая проверка кодинга проходит автоматически.',
     cooldownMs: 120000,
     effect: () => {
-      const store = getGameStore();
-      store.addSkill('coding', 5);
+      addSkill('coding', 5);
     },
     flagsToSet: [{ key: 'breakthrough_active', durationMs: 30000 }],
     reverseOnExpiry: [{ type: 'skill', key: 'coding', value: -5 }],
@@ -257,9 +275,8 @@ const POEM_POWERS: Record<string, PoemPower> = {
     description: 'Обернуть насмешку в оружие. Враги теряют уверенность, +3 кармы.',
     cooldownMs: 60000,
     effect: () => {
-      const store = getGameStore();
-      store.addKarma(3);
-      store.addSkill('persuasion', 2);
+      addKarma(3);
+      addSkill('persuasion', 2);
     },
     reverseOnExpiry: [{ type: 'karma', value: -3 }, { type: 'skill', key: 'persuasion', value: -2 }],
   },
@@ -269,8 +286,7 @@ const POEM_POWERS: Record<string, PoemPower> = {
     description: 'Стать твёрже камня. Снижает входящий стресс на 50% на 60 секунд.',
     cooldownMs: 90000,
     effect: () => {
-      const store = getGameStore();
-      store.addStress(-15);
+      addStress(-15);
     },
     flagsToSet: [{ key: 'stone_skin_active', durationMs: 60000 }],
   },
@@ -280,8 +296,7 @@ const POEM_POWERS: Record<string, PoemPower> = {
     description: 'Услышать шёпот города. Раскрывает слухи и подсказки о квестах.',
     cooldownMs: 120000,
     effect: () => {
-      const store = getGameStore();
-      store.addSkill('intuition', 4);
+      addSkill('intuition', 4);
       eventBus.emit('ui:exploration_message', { text: '🌆 Голос Улиц шепчет секреты...' });
     },
     flagsToSet: [{ key: 'city_voice_active', durationMs: 45000 }],
@@ -293,8 +308,7 @@ const POEM_POWERS: Record<string, PoemPower> = {
     description: 'Путеводная звезда ведёт к цели. Автоматически завершает одно задание квеста.',
     cooldownMs: 180000,
     effect: () => {
-      const store = getGameStore();
-      store.addSkill('coding', 3);
+      addSkill('coding', 3);
     },
     flagsToSet: [{ key: 'star_path_active', durationMs: 30000 }],
     reverseOnExpiry: [{ type: 'skill', key: 'coding', value: -3 }],
@@ -305,9 +319,8 @@ const POEM_POWERS: Record<string, PoemPower> = {
     description: 'Произнести финальное слово. +8 кармы, но +10 стресса от тяжести правды.',
     cooldownMs: 120000,
     effect: () => {
-      const store = getGameStore();
-      store.addKarma(8);
-      store.addStress(10);
+      addKarma(8);
+      addStress(10);
     },
   },
   poem_14: {
@@ -316,10 +329,9 @@ const POEM_POWERS: Record<string, PoemPower> = {
     description: 'Погрузиться в глубокое раздумье. +5 к письму и логике, но +5 стресса от тяжести мыслей.',
     cooldownMs: 180000,
     effect: () => {
-      const store = getGameStore();
-      store.addSkill('writing', 5);
-      store.addSkill('logic', 5);
-      store.addStress(5);
+      addSkill('writing', 5);
+      addSkill('logic', 5);
+      addStress(5);
       eventBus.emit('ui:exploration_message', { text: '🧠 Глубокое Размышление... Мысли тяжелеют, но обретают ясность.' });
     },
     flagsToSet: [{ key: 'deep_thought_active', durationMs: 45000 }],
@@ -331,8 +343,7 @@ const POEM_POWERS: Record<string, PoemPower> = {
     description: 'Прошептать иронию и раскрыть скрытые смыслы. Показывает скрытые варианты диалогов, +4 к убеждению.',
     cooldownMs: 150000,
     effect: () => {
-      const store = getGameStore();
-      store.addSkill('persuasion', 4);
+      addSkill('persuasion', 4);
       eventBus.emit('ui:exploration_message', { text: '😏 Ироничный Шёпот раскрывает скрытые смыслы...' });
     },
     flagsToSet: [{ key: 'ironic_whisper_active', durationMs: 45000 }],
@@ -344,9 +355,8 @@ const POEM_POWERS: Record<string, PoemPower> = {
     description: 'Вспомнить детство и обрести силы. +40 энергии и +3 эмпатии от эха памяти.',
     cooldownMs: 120000,
     effect: () => {
-      const store = getGameStore();
-      store.addEnergy(40);
-      store.addSkill('empathy', 3);
+      addEnergy(40);
+      addSkill('empathy', 3);
       eventBus.emit('ui:exploration_message', { text: '👶 Эхо Детства... Воспоминания придают сил.' });
     },
     flagsToSet: [{ key: 'childhood_echo_active', durationMs: 30000 }],
@@ -358,13 +368,12 @@ const POEM_POWERS: Record<string, PoemPower> = {
     description: 'Почувствовать невидимую нить между людьми. +10 к отношению ближайшего NPC и -10 стресса.',
     cooldownMs: 150000,
     effect: () => {
-      const store = getGameStore();
-      const relations = store.npcRelations;
+      const relations = snap().npcRelations;
       if (relations.length > 0) {
         const best = relations.reduce((a, b) => (a.value > b.value ? a : b));
-        store.setNpcRelation(best.npcId, 10);
+        setNpcRelation(best.npcId, 10);
       }
-      store.addStress(-10);
+      addStress(-10);
       eventBus.emit('ui:exploration_message', { text: '🤝 Невидимая Связь... Мы не одни в этом мире.' });
     },
     flagsToSet: [{ key: 'invisible_bond_active', durationMs: 30000 }],
@@ -375,9 +384,8 @@ const POEM_POWERS: Record<string, PoemPower> = {
     description: 'Клевета вернётся в сто крат. +12 кармы и -25 стресса — истина приносит покой.',
     cooldownMs: 180000,
     effect: () => {
-      const store = getGameStore();
-      store.addKarma(12);
-      store.addStress(-25);
+      addKarma(12);
+      addStress(-25);
       eventBus.emit('ui:exploration_message', { text: '⚖️ Возвращение Правды... Истина освобождает.' });
     },
     flagsToSet: [{ key: 'truth_return_active', durationMs: 30000 }],
@@ -388,10 +396,9 @@ const POEM_POWERS: Record<string, PoemPower> = {
     description: 'Память павших даёт силу. +8 кармы, +30 энергии и временное улучшение эмпатии на +4. Неон горит в их честь.',
     cooldownMs: 160000,
     effect: () => {
-      const store = getGameStore();
-      store.addKarma(8);
-      store.addEnergy(30);
-      store.addSkill('empathy', 4);
+      addKarma(8);
+      addEnergy(30);
+      addSkill('empathy', 4);
       eventBus.emit('ui:exploration_message', { text: '🕯️ Неоновая Панихида... Память павших наполняет силой.' });
     },
     flagsToSet: [{ key: 'neon_requiem_active', durationMs: 35000 }],
@@ -403,9 +410,8 @@ const POEM_POWERS: Record<string, PoemPower> = {
     description: 'Отказ от контроля пробуждает волю. +15 к хакингу, -20 стресса, временное сопротивление корпоративным флагам.',
     cooldownMs: 170000,
     effect: () => {
-      const store = getGameStore();
-      store.addSkill('coding', 15);
-      store.addStress(-20);
+      addSkill('coding', 15);
+      addStress(-20);
       eventBus.emit('ui:exploration_message', { text: '🔓 Чип в затылке... Свобода думать — величайшая сила.' });
     },
     flagsToSet: [{ key: 'chip_resistance_active', durationMs: 40000 }, { key: 'corporate_immune', durationMs: 40000 }],
@@ -417,11 +423,11 @@ const POEM_POWERS: Record<string, PoemPower> = {
     description: 'Древняя река смывает корпоративную скверну. +20 кармы, полное восстановление энергии, очистка негативных статус-эффектов.',
     cooldownMs: 200000,
     effect: () => {
-      const store = getGameStore();
-      store.addKarma(20);
-      store.addEnergy(Math.max(0, 100 - store.playerState.energy)); // Full restore
-      store.addStress(-50);
-      store.addSkill('persuasion', 5);
+      const energy = snap().playerState.energy;
+      addKarma(20);
+      addEnergy(Math.max(0, 100 - energy));
+      addStress(-50);
+      addSkill('persuasion', 5);
       eventBus.emit('ui:exploration_message', { text: '🌊 Белая Река... Древняя сила смывает тьму. Чёрный Кабель разорван.' });
     },
     flagsToSet: [{ key: 'white_river_purification', durationMs: 45000 }],
@@ -438,11 +444,11 @@ export function getPoemPower(poemId: string): PoemPower | undefined {
 
 /** Check if a poem power can be used (not on cooldown, poem is collected). */
 export function canUsePower(poemId: string): boolean {
-  const store = getGameStore();
-  if (!store.collectedPoems.includes(poemId)) return false;
+  const state = snap();
+  if (!state.collectedPoems.includes(poemId)) return false;
 
-  const powerState = store.poemPowers[poemId];
-  if (!powerState) return true; // Never used
+  const powerState = state.poemPowers[poemId];
+  if (!powerState) return true;
 
   const now = Date.now();
   const elapsed = now - powerState.lastUsed;
@@ -451,8 +457,7 @@ export function canUsePower(poemId: string): boolean {
 
 /** Get remaining cooldown in ms for a poem power. Returns 0 if ready. */
 export function getCooldownRemaining(poemId: string): number {
-  const store = getGameStore();
-  const powerState = store.poemPowers[poemId];
+  const powerState = snap().poemPowers[poemId];
   if (!powerState) return 0;
 
   const now = Date.now();
@@ -468,9 +473,7 @@ export function activatePoemPowerById(poemId: string): boolean {
   const power = POEM_POWERS[poemId];
   if (!power) return false;
 
-  // Set cooldown in store FIRST — if store rejects (e.g. poem not collected), don't apply effect
-  const store = getGameStore();
-  const success = store.activatePoemPower(poemId);
+  const success = tryActivatePoemPower(poemId);
   if (!success) return false;
 
   // Execute the power effect only after store confirms activation

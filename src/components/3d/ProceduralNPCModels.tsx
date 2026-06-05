@@ -17,6 +17,18 @@ import {
   skinMat,
   skinShadowMat,
   clothingMat,
+  hairMat,
+  metalMat,
+  glowScreenMat,
+  stubbleMat,
+  emissiveMat,
+  buildMerged,
+  boxGeo,
+  sphereGeo,
+  cylinderGeo,
+  capsuleGeo,
+  torusGeo,
+  circleGeo,
   DEFAULT_ARM_WIDTH,
   DEFAULT_FOREARM_WIDTH,
   DEFAULT_LEG_WIDTH,
@@ -108,17 +120,30 @@ function Arms({
   const armScale: [number, number, number] = [armWidth / DEFAULT_ARM_WIDTH, 1, armWidth / DEFAULT_ARM_WIDTH];
   const forearmScale: [number, number, number] = [forearmWidth / DEFAULT_FOREARM_WIDTH, 1, forearmWidth / DEFAULT_FOREARM_WIDTH];
 
+  const sleeveGeo = useMemo(
+    () => buildMerged([
+      { geo: sharedGeo.upperArmCapsule, position: [0, -0.14, 0], scale: armScale },
+      { geo: sharedGeo.forearmCapsule, position: [0, -0.3, 0], scale: forearmScale },
+    ]),
+    [armWidth, forearmWidth],
+  );
+  const handGeo = useMemo(
+    () => buildMerged([
+      { geo: sharedGeo.wristCapsule, position: [0, -0.38, 0] },
+      { geo: sharedGeo.handSphere, position: [0, -0.42, 0] },
+      { geo: sharedGeo.fingerBox, position: [0, -0.45, 0.01] },
+    ]),
+    [],
+  );
+
   const armSegment = (side: 'left' | 'right') => (
     <group
       name={side === 'left' ? 'leftArm' : 'rightArm'}
       position={[side === 'left' ? 0.24 : -0.24, 0.18, 0]}
       rotation={[0, 0, side === 'left' ? 0.12 : -0.12]}
     >
-      <mesh position={[0, -0.14, 0]} castShadow scale={armScale} geometry={sharedGeo.upperArmCapsule} material={sleeveMat} />
-      <mesh position={[0, -0.3, 0]} castShadow scale={forearmScale} geometry={sharedGeo.forearmCapsule} material={sleeveMat} />
-      <mesh position={[0, -0.38, 0]} geometry={sharedGeo.wristCapsule} material={skin} />
-      <mesh position={[0, -0.42, 0]} castShadow geometry={sharedGeo.handSphere} material={skin} />
-      <mesh position={[0, -0.45, 0.01]} geometry={sharedGeo.fingerBox} material={skin} />
+      <mesh castShadow geometry={sleeveGeo} material={sleeveMat} />
+      <mesh castShadow geometry={handGeo} material={skin} />
       {side === 'left' && wristAccessory}
     </group>
   );
@@ -174,10 +199,17 @@ function Legs({
   const lowerLegScale: [number, number, number] = [lowerLegWidth / DEFAULT_LOWER_LEG_WIDTH, 1, lowerLegWidth / DEFAULT_LOWER_LEG_WIDTH];
   const shoeScaleVec: [number, number, number] = [shoeScale, shoeScale, shoeScale];
 
+  const pantsGeo = useMemo(
+    () => buildMerged([
+      { geo: sharedGeo.upperLegCapsule, position: [0, -0.18, 0], scale: legScale },
+      { geo: sharedGeo.lowerLegCapsule, position: [0, -0.4, 0], scale: lowerLegScale },
+    ]),
+    [legWidth, lowerLegWidth],
+  );
+
   const legSegment = (side: 'left' | 'right') => (
     <group name={side === 'left' ? 'leftLeg' : 'rightLeg'} position={[side === 'left' ? 0.09 : -0.09, 0.9, 0]}>
-      <mesh position={[0, -0.18, 0]} castShadow scale={legScale} geometry={sharedGeo.upperLegCapsule} material={pantsMat} />
-      <mesh position={[0, -0.4, 0]} castShadow scale={lowerLegScale} geometry={sharedGeo.lowerLegCapsule} material={pantsMat} />
+      <mesh castShadow geometry={pantsGeo} material={pantsMat} />
       <mesh position={[0, -0.5, 0]} geometry={sharedGeo.jeansCuffCylinder} material={pantsDarkMat} />
       <mesh position={[0, -0.55, 0.02]} castShadow scale={shoeScaleVec} geometry={sharedGeo.sneakerBox} material={shoeMat} />
       <mesh position={[0, -0.58, 0.02]} scale={shoeScaleVec} geometry={sharedGeo.soleBox} material={soleMat} />
@@ -192,6 +224,84 @@ function Legs({
       {legSegment('left')}
       {legSegment('right')}
     </>
+  );
+}
+
+/** Skull + jaw + optional chin — shared geo/mat pattern (matches Albert) */
+function NpcHead({
+  skullGeo,
+  jawGeo,
+  jawPos = [0, -0.05, 0.025] as [number, number, number],
+  chinGeo,
+  chinPos,
+  skinColor,
+  hasStubble,
+  stubbleGeo,
+  stubbleColor,
+  stubbleOpacity = 0.2,
+  children,
+}: {
+  skullGeo: THREE.BufferGeometry;
+  jawGeo: THREE.BufferGeometry;
+  jawPos?: [number, number, number];
+  chinGeo?: THREE.BufferGeometry;
+  chinPos?: [number, number, number];
+  skinColor: string;
+  hasStubble?: boolean;
+  stubbleGeo?: THREE.BufferGeometry;
+  stubbleColor?: string;
+  stubbleOpacity?: number;
+  children?: React.ReactNode;
+}) {
+  const skin = skinMat(skinColor);
+  return (
+    <>
+      <mesh castShadow geometry={skullGeo} material={skin} />
+      <mesh position={jawPos} castShadow geometry={jawGeo} material={skin} />
+      {chinGeo && chinPos && <mesh position={chinPos} geometry={chinGeo} material={skin} />}
+      {children}
+      {hasStubble && stubbleGeo && stubbleColor && (
+        <mesh geometry={stubbleGeo} material={stubbleMat(stubbleColor, stubbleOpacity)} />
+      )}
+    </>
+  );
+}
+
+/** Round scholarly glasses — merged lenses + temples */
+function GlassesScholarly({ accentColor, glowColor }: { accentColor: string; glowColor: string }) {
+  const lensMat = useMemo(
+    () => emissiveMat(accentColor, glowColor, 0.3, 0.2, 0.8),
+    [accentColor, glowColor],
+  );
+  const frameMat = useMemo(
+    () => npcMat({ color: accentColor, roughness: 0.3, metalness: 0.9 }),
+    [accentColor],
+  );
+  return (
+    <group position={[0, 0.015, 0.1]}>
+      <mesh geometry={mergedGeo.glassesLenses} material={lensMat} />
+      <mesh position={[0, 0, 0]} geometry={sharedGeo.glassesBridge} material={frameMat} />
+      <mesh geometry={mergedGeo.glassesTemples} material={frameMat} />
+    </group>
+  );
+}
+
+/** Round librarian glasses — merged lenses + temples */
+function GlassesRound({ accentColor, glowColor }: { accentColor: string; glowColor: string }) {
+  const lensMat = useMemo(
+    () => emissiveMat(accentColor, glowColor, 0.3, 0.2, 0.8),
+    [accentColor, glowColor],
+  );
+  const frameMat = useMemo(
+    () => npcMat({ color: accentColor, roughness: 0.3, metalness: 0.9 }),
+    [accentColor],
+  );
+  return (
+    <group position={[0, 0.015, 0.1]}>
+      <mesh geometry={mergedGeo.glassesLensesRound} material={lensMat} />
+      <mesh position={[0, 0, 0]} geometry={sharedGeo.glassesBridgeRound} material={frameMat} />
+      <mesh geometry={mergedGeo.glassesTemplesRound} material={frameMat} />
+    </group>
   );
 }
 
@@ -327,110 +437,40 @@ function AlbertModel({ appearance, animState = 'idle' }: { appearance: NPCAppear
       {/* TORSO — broader, heavier build */}
       <group name="torso" position={[0, 1.05, 0.02]} rotation={[0.04, 0, 0]}>
         {/* Tweed jacket body — wider for heavy build */}
-        <mesh castShadow material={clothingMat(tweedJacket, glowColor, 0.06)}>
-          <boxGeometry args={[0.46, 0.50, 0.26]} />
-        </mesh>
-        {/* Jacket lapels — V-shape in front */}
-        <mesh position={[-0.06, 0.12, 0.135]} rotation={[0, 0, 0.25]}>
-          <boxGeometry args={[0.05, 0.16, 0.01]} />
-          <meshStandardMaterial color={tweedDark} roughness={0.8} />
-        </mesh>
-        <mesh position={[0.06, 0.12, 0.135]} rotation={[0, 0, -0.25]}>
-          <boxGeometry args={[0.05, 0.16, 0.01]} />
-          <meshStandardMaterial color={tweedDark} roughness={0.8} />
-        </mesh>
+        <mesh castShadow geometry={boxGeo(0.46, 0.50, 0.26)} material={clothingMat(tweedJacket, glowColor, 0.06)} />
+        {/* Jacket lapels + pockets + elbow patches — merged tweedDark */}
+        <mesh geometry={mergedGeo.lapelPair} material={npcMat({ color: tweedDark, roughness: 0.8 })} />
+        <mesh geometry={mergedGeo.pocketLinePair} material={npcMat({ color: tweedDark, roughness: 0.8 })} />
+        <mesh geometry={mergedGeo.elbowPatchPair} material={npcMat({ color: tweedDark, roughness: 0.8 })} />
         {/* Shirt visible between lapels */}
-        <mesh position={[0, 0.08, 0.132]}>
-          <boxGeometry args={[0.08, 0.18, 0.008]} />
-          <meshStandardMaterial color={shirtColor} roughness={0.7} />
-        </mesh>
+        <mesh position={[0, 0.08, 0.132]} geometry={boxGeo(0.08, 0.18, 0.008)} material={npcMat({ color: shirtColor, roughness: 0.7 })} />
         {/* Bow tie */}
-        <mesh position={[0, 0.16, 0.138]}>
-          <boxGeometry args={[0.07, 0.035, 0.015]} />
-          <meshStandardMaterial color={bowTieColor} emissive={glowColor} emissiveIntensity={0.2} roughness={0.6} />
-        </mesh>
+        <mesh position={[0, 0.16, 0.138]} geometry={boxGeo(0.07, 0.035, 0.015)} material={npcMat({ color: bowTieColor, emissive: glowColor, emissiveIntensity: 0.2, roughness: 0.6 })} />
         {/* Bow tie center knot */}
-        <mesh position={[0, 0.16, 0.142]}>
-          <sphereGeometry args={[0.012, 4, 4]} />
-          <meshStandardMaterial color={bowTieColor} roughness={0.6} />
-        </mesh>
-        {/* Jacket pockets */}
-        <mesh position={[-0.12, -0.08, 0.132]}>
-          <boxGeometry args={[0.06, 0.005, 0.008]} />
-          <meshStandardMaterial color={tweedDark} roughness={0.8} />
-        </mesh>
-        <mesh position={[0.12, -0.08, 0.132]}>
-          <boxGeometry args={[0.06, 0.005, 0.008]} />
-          <meshStandardMaterial color={tweedDark} roughness={0.8} />
-        </mesh>
-        {/* Elbow patches on jacket */}
-        <mesh position={[0.24, -0.1, -0.06]} rotation={[0.3, 0, 0]}>
-          <circleGeometry args={[0.04, 8]} />
-          <meshStandardMaterial color={tweedDark} roughness={0.8} />
-        </mesh>
-        <mesh position={[-0.24, -0.1, -0.06]} rotation={[0.3, 0, 0]}>
-          <circleGeometry args={[0.04, 8]} />
-          <meshStandardMaterial color={tweedDark} roughness={0.8} />
-        </mesh>
+        <mesh position={[0, 0.16, 0.142]} geometry={sharedGeo.bowTieKnot} material={npcMat({ color: bowTieColor, roughness: 0.6 })} />
 
         {/* Neck */}
         <mesh position={[0, 0.27, 0]} geometry={sharedGeo.neckCylinderLg} material={sharedMat.skinMedium} />
 
         {/* HEAD */}
         <group name="head" position={[0, 0.47, 0.02]}>
-          {/* Skull — slightly larger for older professor */}
-          <mesh castShadow geometry={sharedGeo.skullSphereLg} material={sharedMat.skinMedium} />
-          {/* Jaw — heavier */}
-          <mesh position={[0, -0.055, 0.025]} castShadow material={sharedMat.skinMedium}>
-            <boxGeometry args={[0.16, 0.06, 0.11]} />
-          </mesh>
-          {/* Jaw taper */}
-          <mesh position={[0, -0.075, 0.03]} rotation={[0.2, 0, 0]} material={sharedMat.skinMedium}>
-            <boxGeometry args={[0.12, 0.03, 0.09]} />
-          </mesh>
+          <NpcHead
+            skullGeo={sharedGeo.skullSphereLg}
+            jawGeo={sharedGeo.jawTaperLg}
+            jawPos={[0, -0.055, 0.025]}
+            skinColor={SKIN_MEDIUM}
+            hasStubble
+            stubbleGeo={sharedGeo.stubblePlane}
+            stubbleColor={SKIN_SHADOW_MED}
+            stubbleOpacity={0.2}
+          >
+            <mesh position={[0, -0.075, 0.03]} rotation={[0.2, 0, 0]} geometry={sharedGeo.jawTaperMd} material={sharedMat.skinMedium} />
+          </NpcHead>
           <Eyes browAngle={0.15} />
           <FaceFeatures skinColor={SKIN_MEDIUM} shadowColor={SKIN_SHADOW_MED} />
-          {/* Stubble */}
-          <mesh position={[0, -0.06, 0.065]} material={npcMat({ color: SKIN_SHADOW_MED, roughness: 0.9, transparent: true, opacity: 0.2 })}>
-            <boxGeometry args={[0.14, 0.05, 0.005]} />
-          </mesh>
-
-          {/* Glasses — round, scholarly */}
-          <group position={[0, 0.015, 0.1]}>
-            {/* Left lens */}
-            <mesh position={[-0.04, 0, 0]}>
-              <torusGeometry args={[0.025, 0.003, 6, 12]} />
-              <meshStandardMaterial color={accentColor} emissive={glowColor} emissiveIntensity={0.3} roughness={0.2} metalness={0.8} />
-            </mesh>
-            {/* Right lens */}
-            <mesh position={[0.04, 0, 0]}>
-              <torusGeometry args={[0.025, 0.003, 6, 12]} />
-              <meshStandardMaterial color={accentColor} emissive={glowColor} emissiveIntensity={0.3} roughness={0.2} metalness={0.8} />
-            </mesh>
-            {/* Bridge */}
-            <mesh position={[0, 0, 0]}>
-              <boxGeometry args={[0.02, 0.004, 0.003]} />
-              <meshStandardMaterial color={accentColor} roughness={0.3} metalness={0.9} />
-            </mesh>
-            {/* Left temple arm */}
-            <mesh position={[-0.07, 0, -0.04]} rotation={[0, Math.PI * 0.15, 0]}>
-              <boxGeometry args={[0.06, 0.004, 0.003]} />
-              <meshStandardMaterial color={accentColor} roughness={0.3} metalness={0.9} />
-            </mesh>
-            {/* Right temple arm */}
-            <mesh position={[0.07, 0, -0.04]} rotation={[0, -Math.PI * 0.15, 0]}>
-              <boxGeometry args={[0.06, 0.004, 0.003]} />
-              <meshStandardMaterial color={accentColor} roughness={0.3} metalness={0.9} />
-            </mesh>
-          </group>
-
-          {/* Hair — receding gray hair */}
-          <mesh position={[0, 0.09, -0.01]} geometry={sharedGeo.hairSphere} material={sharedMat.hairGray} />
-          {/* Sides */}
-          <mesh position={[-0.075, 0.04, 0.0]} geometry={sharedGeo.hairSide} material={sharedMat.hairGray} />
-          <mesh position={[0.075, 0.04, 0.0]} geometry={sharedGeo.hairSide} material={sharedMat.hairGray} />
-          {/* Back */}
-          <mesh position={[0, 0.06, -0.075]} geometry={sharedGeo.hairBack} material={sharedMat.hairGray} />
+          <GlassesScholarly accentColor={accentColor} glowColor={glowColor} />
+          {/* Hair — receding gray hair (merged) */}
+          <mesh geometry={mergedGeo.hairGrayCluster} material={sharedMat.hairGray} />
         </group>
 
         <Arms sleeveColor={tweedJacket} skinColor={SKIN_MEDIUM} armWidth={0.052} forearmWidth={0.046} />
@@ -464,96 +504,47 @@ function ZaremaModel({ appearance, animState = 'idle' }: { appearance: NPCAppear
       {/* TORSO — slim, elegant */}
       <group name="torso" position={[0, 1.05, 0.01]} rotation={[0.03, 0, 0]}>
         {/* Dress top */}
-        <mesh castShadow>
-          <boxGeometry args={[0.34, 0.46, 0.20]} />
-          <meshStandardMaterial color={dressColor} emissive={glowColor} emissiveIntensity={0.08} roughness={0.8} metalness={0.05} />
-        </mesh>
+        <mesh castShadow geometry={boxGeo(0.34, 0.46, 0.20)} material={npcMat({ color: dressColor, emissive: glowColor, emissiveIntensity: 0.08, roughness: 0.8, metalness: 0.05 })} />
         {/* Dress neckline — decorative border */}
-        <mesh position={[0, 0.2, 0.105]} rotation={[0.3, 0, 0]}>
-          <boxGeometry args={[0.28, 0.015, 0.01]} />
-          <meshStandardMaterial color={dressAccent} emissive={glowColor} emissiveIntensity={0.3} roughness={0.5} />
-        </mesh>
+        <mesh position={[0, 0.2, 0.105]} rotation={[0.3, 0, 0]} geometry={boxGeo(0.28, 0.015, 0.01)} material={npcMat({ color: dressAccent, emissive: glowColor, emissiveIntensity: 0.3, roughness: 0.5 })} />
         {/* Belt / sash at waist */}
-        <mesh position={[0, -0.02, 0.105]}>
-          <boxGeometry args={[0.35, 0.03, 0.01]} />
-          <meshStandardMaterial color={dressAccent} emissive={glowColor} emissiveIntensity={0.15} roughness={0.6} />
-        </mesh>
+        <mesh position={[0, -0.02, 0.105]} geometry={boxGeo(0.35, 0.03, 0.01)} material={npcMat({ color: dressAccent, emissive: glowColor, emissiveIntensity: 0.15, roughness: 0.6 })} />
 
         {/* Long skirt (overlapping legs) — A-line shape */}
-        <mesh position={[0, -0.45, 0]} castShadow>
-          <cylinderGeometry args={[0.17, 0.26, 0.7, 8]} />
-          <meshStandardMaterial color={dressColor} emissive={glowColor} emissiveIntensity={0.05} roughness={0.85} />
-        </mesh>
+        <mesh position={[0, -0.45, 0]} castShadow geometry={cylinderGeo(0.17, 0.26, 0.7, 8)} material={npcMat({ color: dressColor, emissive: glowColor, emissiveIntensity: 0.05, roughness: 0.85 })} />
         {/* Skirt decorative hem */}
-        <mesh position={[0, -0.78, 0.15]} rotation={[0.5, 0, 0]}>
-          <boxGeometry args={[0.45, 0.015, 0.01]} />
-          <meshStandardMaterial color={dressAccent} emissive={glowColor} emissiveIntensity={0.2} roughness={0.5} />
-        </mesh>
+        <mesh position={[0, -0.78, 0.15]} rotation={[0.5, 0, 0]} geometry={boxGeo(0.45, 0.015, 0.01)} material={npcMat({ color: dressAccent, emissive: glowColor, emissiveIntensity: 0.2, roughness: 0.5 })} />
 
         {/* Neck — slender */}
-        <mesh position={[0, 0.26, 0]}>
-          <cylinderGeometry args={[0.04, 0.048, 0.06, 6]} />
-          <meshStandardMaterial color={skinColor} roughness={0.7} />
-        </mesh>
+        <mesh position={[0, 0.26, 0]} geometry={sharedGeo.neckCylinderZarema} material={skinMat(skinColor)} />
 
         {/* HEAD */}
         <group name="head" position={[0, 0.46, 0.02]}>
           {/* Skull — slightly softer, more oval */}
-          <mesh castShadow>
-            <sphereGeometry args={[0.10, 8, 8]} />
-            <meshStandardMaterial color={skinColor} roughness={0.7} />
-          </mesh>
+          <mesh castShadow geometry={sharedGeo.skullSphereMd} material={skinMat(skinColor)} />
           {/* Jaw — softer */}
-          <mesh position={[0, -0.05, 0.025]} castShadow>
-            <boxGeometry args={[0.14, 0.05, 0.10]} />
-            <meshStandardMaterial color={skinColor} roughness={0.7} />
-          </mesh>
+          <mesh position={[0, -0.05, 0.025]} castShadow geometry={sharedGeo.jawBoxMd} material={skinMat(skinColor)} />
           {/* Chin — delicate */}
-          <mesh position={[0, -0.07, 0.04]}>
-            <sphereGeometry args={[0.022, 4, 4]} />
-            <meshStandardMaterial color={skinColor} roughness={0.7} />
-          </mesh>
+          <mesh position={[0, -0.07, 0.04]} geometry={sharedGeo.chinSphereSm} material={skinMat(skinColor)} />
           <Eyes browAngle={0.05} irisColor="#3a5a40" />
           <FaceFeatures skinColor={skinColor} shadowColor={skinShadow} mouthCornersDown={false} />
 
           {/* Headscarf — wrapped around head, draped */}
           <group position={[0, 0.05, 0]}>
             {/* Main scarf wrap */}
-            <mesh position={[0, 0.04, 0]}>
-              <sphereGeometry args={[0.11, 6, 5]} />
-              <meshStandardMaterial color={headscarfColor} emissive={headscarfAccent} emissiveIntensity={0.1} roughness={0.8} />
-            </mesh>
-            {/* Scarf drape over ears */}
-            <mesh position={[-0.09, -0.03, 0.02]}>
-              <boxGeometry args={[0.03, 0.08, 0.06]} />
-              <meshStandardMaterial color={headscarfColor} roughness={0.8} />
-            </mesh>
-            <mesh position={[0.09, -0.03, 0.02]}>
-              <boxGeometry args={[0.03, 0.08, 0.06]} />
-              <meshStandardMaterial color={headscarfColor} roughness={0.8} />
-            </mesh>
+            <mesh position={[0, 0.04, 0]} geometry={sphereGeo(0.11, 6, 5)} material={npcMat({ color: headscarfColor, emissive: headscarfAccent, emissiveIntensity: 0.1, roughness: 0.8 })} />
+            {/* Scarf drape over ears — merged */}
+            <mesh geometry={mergedGeo.scarfEarPair} material={npcMat({ color: headscarfColor, roughness: 0.8 })} />
             {/* Scarf tail hanging down back */}
-            <mesh position={[0, -0.12, -0.08]} rotation={[-0.2, 0, 0]}>
-              <boxGeometry args={[0.12, 0.2, 0.02]} />
-              <meshStandardMaterial color={headscarfColor} emissive={headscarfAccent} emissiveIntensity={0.05} roughness={0.85} />
-            </mesh>
+            <mesh position={[0, -0.12, -0.08]} rotation={[-0.2, 0, 0]} geometry={boxGeo(0.12, 0.2, 0.02)} material={npcMat({ color: headscarfColor, emissive: headscarfAccent, emissiveIntensity: 0.05, roughness: 0.85 })} />
             {/* Decorative pattern on scarf */}
-            <mesh position={[0, 0.08, 0.08]}>
-              <boxGeometry args={[0.08, 0.02, 0.01]} />
-              <meshStandardMaterial color={headscarfAccent} emissive={headscarfAccent} emissiveIntensity={0.3} roughness={0.5} />
-            </mesh>
+            <mesh position={[0, 0.08, 0.08]} geometry={boxGeo(0.08, 0.02, 0.01)} material={npcMat({ color: headscarfAccent, emissive: headscarfAccent, emissiveIntensity: 0.3, roughness: 0.5 })} />
           </group>
 
           {/* Earring — left side */}
           <group position={[0.09, -0.02, 0.04]}>
-            <mesh>
-              <sphereGeometry args={[0.012, 6, 6]} />
-              <meshStandardMaterial color={accentColor} emissive={glowColor} emissiveIntensity={0.5} roughness={0.1} metalness={0.95} />
-            </mesh>
-            <mesh position={[0, -0.03, 0]}>
-              <sphereGeometry args={[0.015, 6, 6]} />
-              <meshStandardMaterial color={glowColor} emissive={glowColor} emissiveIntensity={0.6} roughness={0.1} metalness={0.95} />
-            </mesh>
+            <mesh geometry={sphereGeo(0.012, 6, 6)} material={npcMat({ color: accentColor, emissive: glowColor, emissiveIntensity: 0.5, roughness: 0.1, metalness: 0.95 })} />
+            <mesh position={[0, -0.03, 0]} geometry={sphereGeo(0.015, 6, 6)} material={npcMat({ color: glowColor, emissive: glowColor, emissiveIntensity: 0.6, roughness: 0.1, metalness: 0.95 })} />
           </group>
         </group>
 
@@ -598,109 +589,45 @@ function MariaModel({ appearance, animState = 'idle' }: { appearance: NPCAppeara
     <group ref={groupRef}>
       <group name="torso" position={[0, 1.05, 0.02]} rotation={[0.05, 0, 0]}>
         {/* Casual jacket */}
-        <mesh castShadow>
-          <boxGeometry args={[0.38, 0.46, 0.22]} />
-          <meshStandardMaterial color={jacketColor} emissive={glowColor} emissiveIntensity={0.06} roughness={0.8} />
-        </mesh>
+        <mesh castShadow geometry={boxGeo(0.38, 0.46, 0.22)} material={npcMat({ color: jacketColor, emissive: glowColor, emissiveIntensity: 0.06, roughness: 0.8 })} />
         {/* Jacket collar turned up */}
-        <mesh position={[-0.08, 0.2, 0.06]} rotation={[0, 0, 0.3]}>
-          <boxGeometry args={[0.06, 0.08, 0.02]} />
-          <meshStandardMaterial color={jacketDark} roughness={0.8} />
-        </mesh>
-        <mesh position={[0.08, 0.2, 0.06]} rotation={[0, 0, -0.3]}>
-          <boxGeometry args={[0.06, 0.08, 0.02]} />
-          <meshStandardMaterial color={jacketDark} roughness={0.8} />
-        </mesh>
+        <mesh position={[-0.08, 0.2, 0.06]} rotation={[0, 0, 0.3]} geometry={boxGeo(0.06, 0.08, 0.02)} material={npcMat({ color: jacketDark, roughness: 0.8 })} />
+        <mesh position={[0.08, 0.2, 0.06]} rotation={[0, 0, -0.3]} geometry={boxGeo(0.06, 0.08, 0.02)} material={npcMat({ color: jacketDark, roughness: 0.8 })} />
         {/* T-shirt visible under jacket */}
-        <mesh position={[0, 0.1, 0.115]}>
-          <boxGeometry args={[0.18, 0.12, 0.008]} />
-          <meshStandardMaterial color={topColor} roughness={0.7} />
-        </mesh>
+        <mesh position={[0, 0.1, 0.115]} geometry={boxGeo(0.18, 0.12, 0.008)} material={npcMat({ color: topColor, roughness: 0.7 })} />
         {/* Jacket zipper line */}
-        <mesh position={[0, 0.0, 0.112]}>
-          <boxGeometry args={[0.005, 0.46, 0.005]} />
-          <meshStandardMaterial color="#888" roughness={0.3} metalness={0.8} />
-        </mesh>
+        <mesh position={[0, 0.0, 0.112]} geometry={boxGeo(0.005, 0.46, 0.005)} material={sharedMat.metalGray} />
         {/* Jacket pockets */}
-        <mesh position={[-0.1, -0.1, 0.115]}>
-          <boxGeometry args={[0.08, 0.06, 0.005]} />
-          <meshStandardMaterial color={jacketDark} roughness={0.8} />
-        </mesh>
-        <mesh position={[0.1, -0.1, 0.115]}>
-          <boxGeometry args={[0.08, 0.06, 0.005]} />
-          <meshStandardMaterial color={jacketDark} roughness={0.8} />
-        </mesh>
+        <mesh position={[-0.1, -0.1, 0.115]} geometry={boxGeo(0.08, 0.06, 0.005)} material={npcMat({ color: jacketDark, roughness: 0.8 })} />
+        <mesh position={[0.1, -0.1, 0.115]} geometry={boxGeo(0.08, 0.06, 0.005)} material={npcMat({ color: jacketDark, roughness: 0.8 })} />
 
         {/* Phone in right hand — glowing screen */}
-        <mesh position={[-0.24, -0.28, 0.08]} rotation={[0.3, 0, 0]}>
-          <boxGeometry args={[0.03, 0.05, 0.005]} />
-          <meshStandardMaterial
-            color={glowColor}
-            emissive={glowColor}
-            emissiveIntensity={0.6}
-            roughness={0.2}
-            transparent
-            opacity={0.7}
-          />
-        </mesh>
+        <mesh position={[-0.24, -0.28, 0.08]} rotation={[0.3, 0, 0]} geometry={boxGeo(0.03, 0.05, 0.005)} material={npcMat({ color: glowColor, emissive: glowColor, emissiveIntensity: 0.6, roughness: 0.2, transparent: true, opacity: 0.7 })} />
 
         {/* Neck */}
-        <mesh position={[0, 0.26, 0]}>
-          <cylinderGeometry args={[0.042, 0.05, 0.06, 6]} />
-          <meshStandardMaterial color={skinColor} roughness={0.7} />
-        </mesh>
+        <mesh position={[0, 0.26, 0]} geometry={sharedGeo.neckCylinderMd} material={skinMat(skinColor)} />
 
         {/* HEAD */}
         <group name="head" position={[0, 0.46, 0.02]}>
-          <mesh castShadow>
-            <sphereGeometry args={[0.10, 8, 8]} />
-            <meshStandardMaterial color={skinColor} roughness={0.7} />
-          </mesh>
-          <mesh position={[0, -0.05, 0.025]} castShadow>
-            <boxGeometry args={[0.14, 0.05, 0.10]} />
-            <meshStandardMaterial color={skinColor} roughness={0.7} />
-          </mesh>
-          <mesh position={[0, -0.065, 0.035]}>
-            <sphereGeometry args={[0.024, 4, 4]} />
-            <meshStandardMaterial color={skinColor} roughness={0.7} />
-          </mesh>
+          <mesh castShadow geometry={sharedGeo.skullSphereMd} material={skinMat(skinColor)} />
+          <mesh position={[0, -0.05, 0.025]} castShadow geometry={sharedGeo.jawBoxMd} material={skinMat(skinColor)} />
+          <mesh position={[0, -0.065, 0.035]} geometry={sharedGeo.chinSphereMd} material={skinMat(skinColor)} />
           <Eyes browAngle={0.06} irisColor="#4a6a8a" />
           <FaceFeatures skinColor={skinColor} shadowColor={skinShadow} mouthCornersDown={false} />
 
           {/* Hair — brown, shoulder-length with ponytail */}
-          <mesh position={[0, 0.08, -0.01]}>
-            <sphereGeometry args={[0.085, 5, 4]} />
-            <meshStandardMaterial color={hairColor} roughness={0.9} />
-          </mesh>
+          <mesh position={[0, 0.08, -0.01]} geometry={sphereGeo(0.085, 5, 4)} material={hairMat(hairColor)} />
           {/* Front bangs */}
-          <mesh position={[0, 0.07, 0.065]}>
-            <sphereGeometry args={[0.06, 5, 4]} />
-            <meshStandardMaterial color={hairColor} roughness={0.9} />
-          </mesh>
+          <mesh position={[0, 0.07, 0.065]} geometry={sphereGeo(0.06, 5, 4)} material={hairMat(hairColor)} />
           {/* Side hair */}
-          <mesh position={[-0.08, 0.03, 0.02]}>
-            <sphereGeometry args={[0.035, 4, 3]} />
-            <meshStandardMaterial color={hairColor} roughness={0.9} />
-          </mesh>
-          <mesh position={[0.08, 0.03, 0.02]}>
-            <sphereGeometry args={[0.035, 4, 3]} />
-            <meshStandardMaterial color={hairColor} roughness={0.9} />
-          </mesh>
+          <mesh position={[-0.08, 0.03, 0.02]} geometry={sphereGeo(0.035, 4, 3)} material={hairMat(hairColor)} />
+          <mesh position={[0.08, 0.03, 0.02]} geometry={sphereGeo(0.035, 4, 3)} material={hairMat(hairColor)} />
           {/* Back hair */}
-          <mesh position={[0, 0.04, -0.07]}>
-            <sphereGeometry args={[0.07, 5, 4]} />
-            <meshStandardMaterial color={hairColor} roughness={0.9} />
-          </mesh>
+          <mesh position={[0, 0.04, -0.07]} geometry={sphereGeo(0.07, 5, 4)} material={hairMat(hairColor)} />
           {/* Ponytail */}
-          <mesh position={[0, 0.0, -0.14]} rotation={[0.3, 0, 0]}>
-            <capsuleGeometry args={[0.03, 0.18, 4, 6]} />
-            <meshStandardMaterial color={hairColor} roughness={0.9} />
-          </mesh>
+          <mesh position={[0, 0.0, -0.14]} rotation={[0.3, 0, 0]} geometry={capsuleGeo(0.03, 0.18, 4, 6)} material={hairMat(hairColor)} />
           {/* Ponytail band */}
-          <mesh position={[0, 0.02, -0.08]}>
-            <torusGeometry args={[0.035, 0.006, 4, 8]} />
-            <meshStandardMaterial color={accentColor} emissive={glowColor} emissiveIntensity={0.3} roughness={0.3} metalness={0.6} />
-          </mesh>
+          <mesh position={[0, 0.02, -0.08]} geometry={torusGeo(0.035, 0.006, 4, 8)} material={npcMat({ color: accentColor, emissive: glowColor, emissiveIntensity: 0.3, roughness: 0.3, metalness: 0.6 })} />
         </group>
 
         <Arms sleeveColor={jacketColor} skinColor={skinColor} />
@@ -735,95 +662,44 @@ function DmitryModel({ appearance, animState = 'idle' }: { appearance: NPCAppear
     <group ref={groupRef}>
       <group name="torso" position={[0, 1.05, 0.03]} rotation={[0.08, 0, 0]}>
         {/* Work jacket — broad, heavy */}
-        <mesh castShadow>
-          <boxGeometry args={[0.50, 0.52, 0.28]} />
-          <meshStandardMaterial color={workJacket} emissive={glowColor} emissiveIntensity={0.06} roughness={0.9} metalness={0.05} />
-        </mesh>
+        <mesh castShadow geometry={boxGeo(0.50, 0.52, 0.28)} material={npcMat({ color: workJacket, emissive: glowColor, emissiveIntensity: 0.06, roughness: 0.9, metalness: 0.05 })} />
         {/* Jacket front panels */}
-        <mesh position={[-0.1, 0.0, 0.145]} rotation={[0, 0, 0.05]}>
-          <boxGeometry args={[0.12, 0.50, 0.01]} />
-          <meshStandardMaterial color={workJacketDark} roughness={0.85} />
-        </mesh>
-        <mesh position={[0.1, 0.0, 0.145]} rotation={[0, 0, -0.05]}>
-          <boxGeometry args={[0.12, 0.50, 0.01]} />
-          <meshStandardMaterial color={workJacketDark} roughness={0.85} />
-        </mesh>
+        <mesh position={[-0.1, 0.0, 0.145]} rotation={[0, 0, 0.05]} geometry={boxGeo(0.12, 0.50, 0.01)} material={npcMat({ color: workJacketDark, roughness: 0.85 })} />
+        <mesh position={[0.1, 0.0, 0.145]} rotation={[0, 0, -0.05]} geometry={boxGeo(0.12, 0.50, 0.01)} material={npcMat({ color: workJacketDark, roughness: 0.85 })} />
         {/* Undershirt at collar */}
-        <mesh position={[0, 0.18, 0.145]}>
-          <boxGeometry args={[0.10, 0.10, 0.008]} />
-          <meshStandardMaterial color={undershirtColor} roughness={0.7} />
-        </mesh>
+        <mesh position={[0, 0.18, 0.145]} geometry={boxGeo(0.10, 0.10, 0.008)} material={npcMat({ color: undershirtColor, roughness: 0.7 })} />
         {/* Work jacket pockets — utility chest pockets */}
-        <mesh position={[-0.12, 0.08, 0.145]}>
-          <boxGeometry args={[0.08, 0.06, 0.01]} />
-          <meshStandardMaterial color={workJacketDark} roughness={0.85} />
-        </mesh>
-        <mesh position={[0.12, 0.08, 0.145]}>
-          <boxGeometry args={[0.08, 0.06, 0.01]} />
-          <meshStandardMaterial color={workJacketDark} roughness={0.85} />
-        </mesh>
+        <mesh position={[-0.12, 0.08, 0.145]} geometry={boxGeo(0.08, 0.06, 0.01)} material={npcMat({ color: workJacketDark, roughness: 0.85 })} />
+        <mesh position={[0.12, 0.08, 0.145]} geometry={boxGeo(0.08, 0.06, 0.01)} material={npcMat({ color: workJacketDark, roughness: 0.85 })} />
         {/* Side pockets with flaps */}
-        <mesh position={[-0.15, -0.1, 0.145]}>
-          <boxGeometry args={[0.08, 0.08, 0.01]} />
-          <meshStandardMaterial color={workJacketDark} roughness={0.85} />
-        </mesh>
-        <mesh position={[0.15, -0.1, 0.145]}>
-          <boxGeometry args={[0.08, 0.08, 0.01]} />
-          <meshStandardMaterial color={workJacketDark} roughness={0.85} />
-        </mesh>
+        <mesh position={[-0.15, -0.1, 0.145]} geometry={boxGeo(0.08, 0.08, 0.01)} material={npcMat({ color: workJacketDark, roughness: 0.85 })} />
+        <mesh position={[0.15, -0.1, 0.145]} geometry={boxGeo(0.08, 0.08, 0.01)} material={npcMat({ color: workJacketDark, roughness: 0.85 })} />
         {/* Tool clip on jacket */}
-        <mesh position={[0.20, 0.0, 0.12]}>
-          <boxGeometry args={[0.01, 0.15, 0.02]} />
-          <meshStandardMaterial color="#555" roughness={0.5} metalness={0.6} />
-        </mesh>
+        <mesh position={[0.20, 0.0, 0.12]} geometry={boxGeo(0.01, 0.15, 0.02)} material={sharedMat.metalDark} />
 
         {/* Neck — thick */}
-        <mesh position={[0, 0.28, 0]}>
-          <cylinderGeometry args={[0.06, 0.065, 0.07, 6]} />
-          <meshStandardMaterial color={skinColor} roughness={0.7} />
-        </mesh>
+        <mesh position={[0, 0.26, 0]} geometry={sharedGeo.neckCylinderLg} material={skinMat(skinColor)} />
 
         {/* HEAD */}
         <group name="head" position={[0, 0.48, 0.02]}>
           {/* Skull — wider, heavier */}
-          <mesh castShadow>
-            <sphereGeometry args={[0.11, 8, 8]} />
-            <meshStandardMaterial color={skinColor} roughness={0.7} />
-          </mesh>
-          <mesh position={[0, -0.06, 0.025]} castShadow>
-            <boxGeometry args={[0.17, 0.06, 0.12]} />
-            <meshStandardMaterial color={skinColor} roughness={0.7} />
-          </mesh>
-          <mesh position={[0, -0.08, 0.035]}>
-            <sphereGeometry args={[0.03, 4, 4]} />
-            <meshStandardMaterial color={skinColor} roughness={0.7} />
-          </mesh>
+          <mesh castShadow geometry={sharedGeo.skullSphereLg} material={skinMat(skinColor)} />
+          <mesh position={[0, -0.06, 0.025]} castShadow geometry={sharedGeo.jawBoxLg} material={skinMat(skinColor)} />
+          <mesh position={[0, -0.08, 0.035]} geometry={sharedGeo.chinSphereXL} material={skinMat(skinColor)} />
           <Eyes browAngle={0.12} irisColor="#4a3a20" />
           <FaceFeatures skinColor={skinColor} shadowColor={skinShadow} />
           {/* Stubble */}
-          <mesh position={[0, -0.065, 0.07]}>
-            <boxGeometry args={[0.15, 0.05, 0.005]} />
-            <meshStandardMaterial color={skinShadow} roughness={0.9} transparent opacity={0.25} />
-          </mesh>
+          <mesh position={[0, -0.065, 0.07]} geometry={sharedGeo.stubblePlaneMd} material={stubbleMat(skinShadow, 0.25)} />
 
           {/* Beanie cap */}
           <group position={[0, 0.06, 0]}>
-            <mesh position={[0, 0.04, 0]}>
-              <sphereGeometry args={[0.11, 6, 5, 0, Math.PI * 2, 0, Math.PI * 0.55]} />
-              <meshStandardMaterial color={accentColor} emissive={glowColor} emissiveIntensity={0.1} roughness={0.9} />
-            </mesh>
+            <mesh position={[0, 0.04, 0]} geometry={sphereGeo(0.11, 6, 5, 0, Math.PI * 2, 0, Math.PI * 0.55)} material={npcMat({ color: accentColor, emissive: glowColor, emissiveIntensity: 0.1, roughness: 0.9 })} />
             {/* Beanie cuff */}
-            <mesh position={[0, -0.02, 0]} rotation={[0, 0, 0]}>
-              <cylinderGeometry args={[0.11, 0.11, 0.04, 8]} />
-              <meshStandardMaterial color={workJacket} roughness={0.9} />
-            </mesh>
+            <mesh position={[0, -0.02, 0]} rotation={[0, 0, 0]} geometry={cylinderGeo(0.11, 0.11, 0.04, 8)} material={npcMat({ color: workJacket, roughness: 0.9 })} />
           </group>
 
           {/* Short hair under beanie */}
-          <mesh position={[0, 0.02, -0.06]}>
-            <sphereGeometry args={[0.08, 5, 4]} />
-            <meshStandardMaterial color={HAIR_DARK} roughness={0.9} />
-          </mesh>
+          <mesh position={[0, 0.02, -0.06]} geometry={sphereGeo(0.08, 5, 4)} material={sharedMat.hairDark} />
         </group>
 
         <Arms sleeveColor={workJacket} skinColor={skinColor} armWidth={0.055} forearmWidth={0.048} />
@@ -869,117 +745,50 @@ function AlexanderModel({ appearance, animState = 'idle' }: { appearance: NPCApp
     <group ref={groupRef}>
       <group name="torso" position={[0, 1.05, 0.01]} rotation={[0.04, 0, 0]}>
         {/* Suit jacket */}
-        <mesh castShadow>
-          <boxGeometry args={[0.40, 0.48, 0.23]} />
-          <meshStandardMaterial color={suitColor} emissive={glowColor} emissiveIntensity={0.04} roughness={0.7} metalness={0.1} />
-        </mesh>
+        <mesh castShadow geometry={boxGeo(0.40, 0.48, 0.23)} material={npcMat({ color: suitColor, emissive: glowColor, emissiveIntensity: 0.04, roughness: 0.7, metalness: 0.1 })} />
         {/* Suit lapels */}
-        <mesh position={[-0.06, 0.12, 0.12]} rotation={[0, 0, 0.2]}>
-          <boxGeometry args={[0.05, 0.16, 0.008]} />
-          <meshStandardMaterial color={suitDark} roughness={0.7} metalness={0.1} />
-        </mesh>
-        <mesh position={[0.06, 0.12, 0.12]} rotation={[0, 0, -0.2]}>
-          <boxGeometry args={[0.05, 0.16, 0.008]} />
-          <meshStandardMaterial color={suitDark} roughness={0.7} metalness={0.1} />
-        </mesh>
+        <mesh position={[-0.06, 0.12, 0.12]} rotation={[0, 0, 0.2]} geometry={boxGeo(0.05, 0.16, 0.008)} material={npcMat({ color: suitDark, roughness: 0.7, metalness: 0.1 })} />
+        <mesh position={[0.06, 0.12, 0.12]} rotation={[0, 0, -0.2]} geometry={boxGeo(0.05, 0.16, 0.008)} material={npcMat({ color: suitDark, roughness: 0.7, metalness: 0.1 })} />
         {/* Shirt */}
-        <mesh position={[0, 0.08, 0.118]}>
-          <boxGeometry args={[0.10, 0.20, 0.005]} />
-          <meshStandardMaterial color={shirtColor} roughness={0.6} />
-        </mesh>
+        <mesh position={[0, 0.08, 0.118]} geometry={boxGeo(0.10, 0.20, 0.005)} material={npcMat({ color: shirtColor, roughness: 0.6 })} />
         {/* Tie */}
-        <mesh position={[0, 0.04, 0.122]}>
-          <boxGeometry args={[0.025, 0.22, 0.006]} />
-          <meshStandardMaterial color={tieColor} emissive={glowColor} emissiveIntensity={0.2} roughness={0.5} />
-        </mesh>
+        <mesh position={[0, 0.04, 0.122]} geometry={boxGeo(0.025, 0.22, 0.006)} material={npcMat({ color: tieColor, emissive: glowColor, emissiveIntensity: 0.2, roughness: 0.5 })} />
         {/* Tie knot */}
-        <mesh position={[0, 0.15, 0.122]}>
-          <boxGeometry args={[0.03, 0.025, 0.008]} />
-          <meshStandardMaterial color={tieColor} roughness={0.5} />
-        </mesh>
-        {/* Suit buttons */}
-        <mesh position={[0, 0.0, 0.118]}>
-          <sphereGeometry args={[0.006, 4, 4]} />
-          <meshStandardMaterial color="#555" roughness={0.3} metalness={0.8} />
-        </mesh>
-        <mesh position={[0, -0.08, 0.118]}>
-          <sphereGeometry args={[0.006, 4, 4]} />
-          <meshStandardMaterial color="#555" roughness={0.3} metalness={0.8} />
-        </mesh>
+        <mesh position={[0, 0.15, 0.122]} geometry={boxGeo(0.03, 0.025, 0.008)} material={npcMat({ color: tieColor, roughness: 0.5 })} />
+        {/* Suit buttons — merged */}
+        <mesh geometry={mergedGeo.suitButtons} material={sharedMat.metalDark} />
 
         {/* Scarf wrapped around neck */}
-        <mesh position={[0, 0.22, 0.02]} rotation={[Math.PI * 0.5, 0, 0]}>
-          <torusGeometry args={[0.08, 0.03, 6, 12]} />
-          <meshStandardMaterial color={scarfColor} emissive={glowColor} emissiveIntensity={0.1} roughness={0.8} />
-        </mesh>
+        <mesh position={[0, 0.22, 0.02]} rotation={[Math.PI * 0.5, 0, 0]} geometry={torusGeo(0.08, 0.03, 6, 12)} material={npcMat({ color: scarfColor, emissive: glowColor, emissiveIntensity: 0.1, roughness: 0.8 })} />
         {/* Scarf tail */}
-        <mesh position={[0.08, 0.08, 0.1]} rotation={[0, 0, -0.15]}>
-          <boxGeometry args={[0.04, 0.18, 0.015]} />
-          <meshStandardMaterial color={scarfColor} roughness={0.85} />
-        </mesh>
+        <mesh position={[0.08, 0.08, 0.1]} rotation={[0, 0, -0.15]} geometry={boxGeo(0.04, 0.18, 0.015)} material={npcMat({ color: scarfColor, roughness: 0.85 })} />
 
         {/* Neck */}
-        <mesh position={[0, 0.27, 0]}>
-          <cylinderGeometry args={[0.05, 0.055, 0.07, 6]} />
-          <meshStandardMaterial color={SKIN_LIGHT} roughness={0.7} />
-        </mesh>
+        <mesh position={[0, 0.27, 0]} geometry={sharedGeo.neckCylinder} material={sharedMat.skinLight} />
 
         {/* HEAD */}
         <group name="head" position={[0, 0.47, 0.02]}>
-          <mesh castShadow>
-            <sphereGeometry args={[0.105, 8, 8]} />
-            <meshStandardMaterial color={SKIN_LIGHT} roughness={0.7} />
-          </mesh>
-          <mesh position={[0, -0.055, 0.025]} castShadow>
-            <boxGeometry args={[0.155, 0.055, 0.11]} />
-            <meshStandardMaterial color={SKIN_LIGHT} roughness={0.7} />
-          </mesh>
-          <mesh position={[0, -0.075, 0.035]}>
-            <sphereGeometry args={[0.026, 4, 4]} />
-            <meshStandardMaterial color={SKIN_LIGHT} roughness={0.7} />
-          </mesh>
+          <mesh castShadow geometry={sphereGeo(0.105, 8, 8)} material={sharedMat.skinLight} />
+          <mesh position={[0, -0.055, 0.025]} castShadow geometry={boxGeo(0.155, 0.055, 0.11)} material={sharedMat.skinLight} />
+          <mesh position={[0, -0.075, 0.035]} geometry={sphereGeo(0.026, 4, 4)} material={sharedMat.skinLight} />
           <Eyes browAngle={0.08} irisColor="#3a3020" />
           <FaceFeatures skinColor={SKIN_LIGHT} shadowColor={SKIN_SHADOW_LIGHT} />
           {/* Neatly trimmed hair */}
-          <mesh position={[0, 0.08, -0.01]}>
-            <sphereGeometry args={[0.085, 5, 4]} />
-            <meshStandardMaterial color={HAIR_BROWN} roughness={0.9} />
-          </mesh>
-          <mesh position={[0, 0.04, -0.07]}>
-            <sphereGeometry args={[0.06, 5, 4]} />
-            <meshStandardMaterial color={HAIR_BROWN} roughness={0.9} />
-          </mesh>
-          <mesh position={[-0.08, 0.03, 0.0]}>
-            <sphereGeometry args={[0.025, 4, 3]} />
-            <meshStandardMaterial color={HAIR_BROWN} roughness={0.9} />
-          </mesh>
-          <mesh position={[0.08, 0.03, 0.0]}>
-            <sphereGeometry args={[0.025, 4, 3]} />
-            <meshStandardMaterial color={HAIR_BROWN} roughness={0.9} />
-          </mesh>
+          <mesh position={[0, 0.08, -0.01]} geometry={sphereGeo(0.085, 5, 4)} material={sharedMat.hairBrown} />
+          <mesh position={[0, 0.04, -0.07]} geometry={sphereGeo(0.06, 5, 4)} material={sharedMat.hairBrown} />
+          <mesh position={[-0.08, 0.03, 0.0]} geometry={sphereGeo(0.025, 4, 3)} material={sharedMat.hairBrown} />
+          <mesh position={[0.08, 0.03, 0.0]} geometry={sphereGeo(0.025, 4, 3)} material={sharedMat.hairBrown} />
 
           {/* Fedora hat */}
           <group position={[0, 0.08, 0]}>
             {/* Crown */}
-            <mesh position={[0, 0.06, 0]}>
-              <cylinderGeometry args={[0.09, 0.10, 0.10, 10]} />
-              <meshStandardMaterial color={hatColor} roughness={0.75} />
-            </mesh>
+            <mesh position={[0, 0.06, 0]} geometry={cylinderGeo(0.09, 0.10, 0.10, 10)} material={npcMat({ color: hatColor, roughness: 0.75 })} />
             {/* Crown indent */}
-            <mesh position={[0, 0.10, 0]}>
-              <cylinderGeometry args={[0.06, 0.08, 0.03, 8]} />
-              <meshStandardMaterial color={hatColor} roughness={0.75} />
-            </mesh>
+            <mesh position={[0, 0.10, 0]} geometry={cylinderGeo(0.06, 0.08, 0.03, 8)} material={npcMat({ color: hatColor, roughness: 0.75 })} />
             {/* Brim */}
-            <mesh position={[0, 0.0, 0]}>
-              <cylinderGeometry args={[0.17, 0.18, 0.015, 14]} />
-              <meshStandardMaterial color={hatColor} roughness={0.75} />
-            </mesh>
+            <mesh position={[0, 0.0, 0]} geometry={cylinderGeo(0.17, 0.18, 0.015, 14)} material={npcMat({ color: hatColor, roughness: 0.75 })} />
             {/* Hat band */}
-            <mesh position={[0, 0.025, 0.095]}>
-              <boxGeometry args={[0.19, 0.015, 0.015]} />
-              <meshStandardMaterial color={hatBandColor} emissive={glowColor} emissiveIntensity={0.3} roughness={0.4} />
-            </mesh>
+            <mesh position={[0, 0.025, 0.095]} geometry={boxGeo(0.19, 0.015, 0.015)} material={npcMat({ color: hatBandColor, emissive: glowColor, emissiveIntensity: 0.3, roughness: 0.4 })} />
           </group>
         </group>
 
@@ -1016,126 +825,54 @@ function ColleagueModel({ appearance, animState = 'idle' }: { appearance: NPCApp
     <group ref={groupRef}>
       <group name="torso" position={[0, 1.05, 0.03]} rotation={[0.07, 0, 0]}>
         {/* Hoodie — slim fit */}
-        <mesh castShadow>
-          <boxGeometry args={[0.36, 0.46, 0.22]} />
-          <meshStandardMaterial color={hoodieColor} emissive={glowColor} emissiveIntensity={0.06} roughness={0.85} />
-        </mesh>
+        <mesh castShadow geometry={boxGeo(0.36, 0.46, 0.22)} material={npcMat({ color: hoodieColor, emissive: glowColor, emissiveIntensity: 0.06, roughness: 0.85 })} />
         {/* Hoodie pocket */}
-        <mesh position={[0, -0.12, 0.115]}>
-          <boxGeometry args={[0.22, 0.08, 0.01]} />
-          <meshStandardMaterial color={hoodieDark} roughness={0.9} />
-        </mesh>
-        {/* Hoodie drawstrings */}
-        <mesh position={[-0.02, 0.15, 0.115]}>
-          <boxGeometry args={[0.003, 0.12, 0.003]} />
-          <meshStandardMaterial color="#ccc" roughness={0.6} />
-        </mesh>
-        <mesh position={[0.02, 0.12, 0.115]}>
-          <boxGeometry args={[0.003, 0.10, 0.003]} />
-          <meshStandardMaterial color="#ccc" roughness={0.6} />
-        </mesh>
+        <mesh position={[0, -0.12, 0.115]} geometry={boxGeo(0.22, 0.08, 0.01)} material={npcMat({ color: hoodieDark, roughness: 0.9 })} />
+        {/* Hoodie drawstrings — merged */}
+        <mesh geometry={mergedGeo.drawstringPair} material={sharedMat.drawstring} />
         {/* Hood (down) */}
-        <mesh position={[0, 0.22, -0.06]} rotation={[-0.3, 0, 0]} castShadow>
-          <sphereGeometry args={[0.12, 6, 4, 0, Math.PI * 2, 0, Math.PI * 0.6]} />
-          <meshStandardMaterial color={hoodieColor} roughness={0.85} side={THREE.DoubleSide} />
-        </mesh>
+        <mesh position={[0, 0.22, -0.06]} rotation={[-0.3, 0, 0]} castShadow geometry={sphereGeo(0.12, 6, 4, 0, Math.PI * 2, 0, Math.PI * 0.6)} material={npcMat({ color: hoodieColor, roughness: 0.85, side: THREE.DoubleSide })} />
         {/* Hoodie zipper */}
-        <mesh position={[0, 0.0, 0.112]}>
-          <boxGeometry args={[0.004, 0.46, 0.004]} />
-          <meshStandardMaterial color="#888" roughness={0.3} metalness={0.7} />
-        </mesh>
+        <mesh position={[0, 0.0, 0.112]} geometry={boxGeo(0.004, 0.46, 0.004)} material={metalMat("#888", 0.7, 0.3)} />
 
         {/* Backpack */}
         <group position={[0, 0.05, -0.14]}>
           {/* Main body */}
-          <mesh castShadow>
-            <boxGeometry args={[0.24, 0.30, 0.10]} />
-            <meshStandardMaterial color={backpackColor} roughness={0.8} />
-          </mesh>
+          <mesh castShadow geometry={boxGeo(0.24, 0.30, 0.10)} material={npcMat({ color: backpackColor, roughness: 0.8 })} />
           {/* Top flap */}
-          <mesh position={[0, 0.14, 0.02]}>
-            <boxGeometry args={[0.24, 0.04, 0.12]} />
-            <meshStandardMaterial color={backpackColor} roughness={0.8} />
-          </mesh>
+          <mesh position={[0, 0.14, 0.02]} geometry={boxGeo(0.24, 0.04, 0.12)} material={npcMat({ color: backpackColor, roughness: 0.8 })} />
           {/* Backpack straps (visible over shoulders) */}
-          <mesh position={[-0.08, 0.1, 0.06]} rotation={[0.1, 0, 0.05]}>
-            <boxGeometry args={[0.03, 0.30, 0.02]} />
-            <meshStandardMaterial color={backpackColor} roughness={0.8} />
-          </mesh>
-          <mesh position={[0.08, 0.1, 0.06]} rotation={[0.1, 0, -0.05]}>
-            <boxGeometry args={[0.03, 0.30, 0.02]} />
-            <meshStandardMaterial color={backpackColor} roughness={0.8} />
-          </mesh>
+          <mesh position={[-0.08, 0.1, 0.06]} rotation={[0.1, 0, 0.05]} geometry={boxGeo(0.03, 0.30, 0.02)} material={npcMat({ color: backpackColor, roughness: 0.8 })} />
+          <mesh position={[0.08, 0.1, 0.06]} rotation={[0.1, 0, -0.05]} geometry={boxGeo(0.03, 0.30, 0.02)} material={npcMat({ color: backpackColor, roughness: 0.8 })} />
           {/* Accent stripe on backpack */}
-          <mesh position={[0, 0.0, 0.052]}>
-            <boxGeometry args={[0.22, 0.02, 0.005]} />
-            <meshStandardMaterial color={backpackAccent} emissive={glowColor} emissiveIntensity={0.3} roughness={0.5} />
-          </mesh>
+          <mesh position={[0, 0.0, 0.052]} geometry={boxGeo(0.22, 0.02, 0.005)} material={npcMat({ color: backpackAccent, emissive: glowColor, emissiveIntensity: 0.3, roughness: 0.5 })} />
           {/* Buckle */}
-          <mesh position={[0, 0.12, 0.055]}>
-            <boxGeometry args={[0.04, 0.02, 0.01]} />
-            <meshStandardMaterial color="#888" roughness={0.3} metalness={0.8} />
-          </mesh>
+          <mesh position={[0, 0.12, 0.055]} geometry={boxGeo(0.04, 0.02, 0.01)} material={sharedMat.metalGray} />
         </group>
 
         {/* Neck */}
-        <mesh position={[0, 0.26, 0]}>
-          <cylinderGeometry args={[0.042, 0.05, 0.06, 6]} />
-          <meshStandardMaterial color={skinColor} roughness={0.7} />
-        </mesh>
+        <mesh position={[0, 0.26, 0]} geometry={sharedGeo.neckCylinderMd} material={skinMat(skinColor)} />
 
         {/* HEAD */}
         <group name="head" position={[0, 0.46, 0.02]}>
-          <mesh castShadow>
-            <sphereGeometry args={[0.10, 8, 8]} />
-            <meshStandardMaterial color={skinColor} roughness={0.7} />
-          </mesh>
-          <mesh position={[0, -0.05, 0.025]} castShadow>
-            <boxGeometry args={[0.14, 0.05, 0.10]} />
-            <meshStandardMaterial color={skinColor} roughness={0.7} />
-          </mesh>
-          <mesh position={[0, -0.065, 0.035]}>
-            <sphereGeometry args={[0.024, 4, 4]} />
-            <meshStandardMaterial color={skinColor} roughness={0.7} />
-          </mesh>
+          <mesh castShadow geometry={sharedGeo.skullSphereMd} material={skinMat(skinColor)} />
+          <mesh position={[0, -0.05, 0.025]} castShadow geometry={sharedGeo.jawBoxMd} material={skinMat(skinColor)} />
+          <mesh position={[0, -0.065, 0.035]} geometry={sharedGeo.chinSphereMd} material={skinMat(skinColor)} />
           <Eyes browAngle={0.08} irisColor="#3a4a3a" />
           <FaceFeatures skinColor={skinColor} shadowColor={skinShadow} />
 
           {/* Earbuds — white cords and buds */}
           <mesh position={[-0.09, 0.0, 0.02]} geometry={sharedGeo.pupilSphere} material={sharedMat.earbuds} scale={[1.33, 1.33, 1.33]} />
           <mesh position={[0.09, 0.0, 0.02]} geometry={sharedGeo.pupilSphere} material={sharedMat.earbuds} scale={[1.33, 1.33, 1.33]} />
-          <mesh position={[-0.05, -0.04, 0.08]} rotation={[0, 0, 0.3]} material={sharedMat.cord}>
-            <boxGeometry args={[0.08, 0.003, 0.003]} />
-          </mesh>
-          <mesh position={[0.05, -0.04, 0.08]} rotation={[0, 0, -0.3]} material={sharedMat.cord}>
-            <boxGeometry args={[0.08, 0.003, 0.003]} />
-          </mesh>
+          <mesh geometry={mergedGeo.earbudCords} material={sharedMat.cord} />
 
           {/* Messy hair — young guy style */}
-          <mesh position={[0, 0.09, -0.01]}>
-            <sphereGeometry args={[0.08, 5, 4]} />
-            <meshStandardMaterial color={hairColor} roughness={0.9} />
-          </mesh>
-          <mesh position={[0, 0.07, 0.06]}>
-            <sphereGeometry args={[0.06, 5, 4]} />
-            <meshStandardMaterial color={hairColor} roughness={0.9} />
-          </mesh>
-          <mesh position={[-0.03, 0.09, 0.05]}>
-            <sphereGeometry args={[0.03, 4, 3]} />
-            <meshStandardMaterial color={hairColor} roughness={0.9} />
-          </mesh>
-          <mesh position={[0.03, 0.10, 0.04]}>
-            <sphereGeometry args={[0.025, 4, 3]} />
-            <meshStandardMaterial color={hairColor} roughness={0.9} />
-          </mesh>
-          <mesh position={[-0.02, 0.11, 0.0]}>
-            <sphereGeometry args={[0.022, 3, 3]} />
-            <meshStandardMaterial color={hairColor} roughness={0.9} />
-          </mesh>
-          <mesh position={[0.04, 0.09, -0.02]}>
-            <sphereGeometry args={[0.02, 3, 3]} />
-            <meshStandardMaterial color={hairColor} roughness={0.9} />
-          </mesh>
+          <mesh position={[0, 0.09, -0.01]} geometry={sphereGeo(0.08, 5, 4)} material={hairMat(hairColor)} />
+          <mesh position={[0, 0.07, 0.06]} geometry={sphereGeo(0.06, 5, 4)} material={hairMat(hairColor)} />
+          <mesh position={[-0.03, 0.09, 0.05]} geometry={sphereGeo(0.03, 4, 3)} material={hairMat(hairColor)} />
+          <mesh position={[0.03, 0.10, 0.04]} geometry={sphereGeo(0.025, 4, 3)} material={hairMat(hairColor)} />
+          <mesh position={[-0.02, 0.11, 0.0]} geometry={sphereGeo(0.022, 3, 3)} material={hairMat(hairColor)} />
+          <mesh position={[0.04, 0.09, -0.02]} geometry={sphereGeo(0.02, 3, 3)} material={hairMat(hairColor)} />
         </group>
 
         <Arms sleeveColor={hoodieColor} skinColor={skinColor} armWidth={0.040} forearmWidth={0.035} />
@@ -1172,84 +909,35 @@ function BaristaModel({ appearance, animState = 'idle' }: { appearance: NPCAppea
     <group ref={groupRef}>
       <group name="torso" position={[0, 1.05, 0.02]} rotation={[0.04, 0, 0]}>
         {/* T-shirt */}
-        <mesh castShadow>
-          <boxGeometry args={[0.38, 0.46, 0.22]} />
-          <meshStandardMaterial color={shirtColor} emissive={glowColor} emissiveIntensity={0.04} roughness={0.8} />
-        </mesh>
+        <mesh castShadow geometry={boxGeo(0.38, 0.46, 0.22)} material={npcMat({ color: shirtColor, emissive: glowColor, emissiveIntensity: 0.04, roughness: 0.8 })} />
         {/* T-shirt collar */}
-        <mesh position={[0, 0.22, 0.04]} rotation={[0.3, 0, 0]}>
-          <torusGeometry args={[0.06, 0.012, 4, 8, Math.PI]} />
-          <meshStandardMaterial color={shirtColor} roughness={0.8} />
-        </mesh>
+        <mesh position={[0, 0.22, 0.04]} rotation={[0.3, 0, 0]} geometry={torusGeo(0.06, 0.012, 4, 8, Math.PI)} material={npcMat({ color: shirtColor, roughness: 0.8 })} />
 
         {/* Apron over shirt */}
-        <mesh position={[0, -0.02, 0.12]} castShadow>
-          <boxGeometry args={[0.36, 0.40, 0.01]} />
-          <meshStandardMaterial color={apronColor} emissive={glowColor} emissiveIntensity={0.1} roughness={0.85} />
-        </mesh>
+        <mesh position={[0, -0.02, 0.12]} castShadow geometry={boxGeo(0.36, 0.40, 0.01)} material={npcMat({ color: apronColor, emissive: glowColor, emissiveIntensity: 0.1, roughness: 0.85 })} />
         {/* Apron bib top */}
-        <mesh position={[0, 0.12, 0.12]}>
-          <boxGeometry args={[0.20, 0.12, 0.01]} />
-          <meshStandardMaterial color={apronColor} roughness={0.85} />
-        </mesh>
+        <mesh position={[0, 0.12, 0.12]} geometry={boxGeo(0.20, 0.12, 0.01)} material={npcMat({ color: apronColor, roughness: 0.85 })} />
         {/* Apron neck strap */}
-        <mesh position={[-0.08, 0.2, 0.04]} rotation={[0, 0, 0.2]}>
-          <boxGeometry args={[0.01, 0.12, 0.005]} />
-          <meshStandardMaterial color={apronColor} roughness={0.85} />
-        </mesh>
-        <mesh position={[0.08, 0.2, 0.04]} rotation={[0, 0, -0.2]}>
-          <boxGeometry args={[0.01, 0.12, 0.005]} />
-          <meshStandardMaterial color={apronColor} roughness={0.85} />
-        </mesh>
+        <mesh position={[-0.08, 0.2, 0.04]} rotation={[0, 0, 0.2]} geometry={boxGeo(0.01, 0.12, 0.005)} material={npcMat({ color: apronColor, roughness: 0.85 })} />
+        <mesh position={[0.08, 0.2, 0.04]} rotation={[0, 0, -0.2]} geometry={boxGeo(0.01, 0.12, 0.005)} material={npcMat({ color: apronColor, roughness: 0.85 })} />
         {/* Apron waist tie */}
-        <mesh position={[0, 0.02, 0.13]}>
-          <boxGeometry args={[0.38, 0.02, 0.008]} />
-          <meshStandardMaterial color={apronAccent} emissive={glowColor} emissiveIntensity={0.15} roughness={0.7} />
-        </mesh>
+        <mesh position={[0, 0.02, 0.13]} geometry={boxGeo(0.38, 0.02, 0.008)} material={npcMat({ color: apronAccent, emissive: glowColor, emissiveIntensity: 0.15, roughness: 0.7 })} />
         {/* Apron waist tie bow — right side */}
-        <mesh position={[0.20, 0.02, 0.13]} rotation={[0, 0, -0.3]}>
-          <boxGeometry args={[0.06, 0.03, 0.008]} />
-          <meshStandardMaterial color={apronAccent} roughness={0.7} />
-        </mesh>
+        <mesh position={[0.20, 0.02, 0.13]} rotation={[0, 0, -0.3]} geometry={boxGeo(0.06, 0.03, 0.008)} material={npcMat({ color: apronAccent, roughness: 0.7 })} />
         {/* Apron pocket */}
-        <mesh position={[0, -0.10, 0.128]}>
-          <boxGeometry args={[0.12, 0.08, 0.005]} />
-          <meshStandardMaterial color={apronAccent} roughness={0.8} />
-        </mesh>
+        <mesh position={[0, -0.10, 0.128]} geometry={boxGeo(0.12, 0.08, 0.005)} material={npcMat({ color: apronAccent, roughness: 0.8 })} />
 
         {/* Name tag on apron */}
-        <mesh position={[0.08, 0.08, 0.128]}>
-          <boxGeometry args={[0.04, 0.025, 0.003]} />
-          <meshStandardMaterial
-            color="#ffffff"
-            emissive={glowColor}
-            emissiveIntensity={0.3}
-            roughness={0.3}
-            transparent
-            opacity={0.8}
-          />
-        </mesh>
+        <mesh position={[0.08, 0.08, 0.128]} geometry={boxGeo(0.04, 0.025, 0.003)} material={sharedMat.nameTag} />
 
         {/* Neck */}
-        <mesh position={[0, 0.26, 0]}>
-          <cylinderGeometry args={[0.042, 0.05, 0.06, 6]} />
-          <meshStandardMaterial color={skinColor} roughness={0.7} />
-        </mesh>
+        <mesh position={[0, 0.26, 0]} geometry={sharedGeo.neckCylinderMd} material={skinMat(skinColor)} />
 
         {/* HEAD */}
         <group name="head" position={[0, 0.46, 0.02]}>
-          <mesh castShadow>
-            <sphereGeometry args={[0.10, 8, 8]} />
-            <meshStandardMaterial color={skinColor} roughness={0.7} />
-          </mesh>
-          <mesh position={[0, -0.05, 0.025]} castShadow>
-            <boxGeometry args={[0.14, 0.05, 0.10]} />
-            <meshStandardMaterial color={skinColor} roughness={0.7} />
-          </mesh>
-          <mesh position={[0, -0.065, 0.035]}>
-            <sphereGeometry args={[0.024, 4, 4]} />
-            <meshStandardMaterial color={skinColor} roughness={0.7} />
-          </mesh>
+          <mesh castShadow geometry={sharedGeo.skullSphereMd} material={skinMat(skinColor)} />
+          <mesh position={[0, -0.05, 0.025]} castShadow geometry={sharedGeo.jawBoxMd} material={skinMat(skinColor)} />
+          <mesh position={[0, -0.065, 0.035]} geometry={sharedGeo.chinSphereMd} material={skinMat(skinColor)} />
           <Eyes browAngle={0.05} irisColor="#4a3a20" />
           <FaceFeatures skinColor={skinColor} shadowColor={skinShadow} mouthCornersDown={false} />
           {/* Friendly slight upturn at mouth corners */}
@@ -1257,31 +945,16 @@ function BaristaModel({ appearance, animState = 'idle' }: { appearance: NPCAppea
           {/* Cap / visor beanie */}
           <group position={[0, 0.07, 0]}>
             {/* Cap dome */}
-            <mesh position={[0, 0.03, 0]}>
-              <sphereGeometry args={[0.10, 6, 4, 0, Math.PI * 2, 0, Math.PI * 0.5]} />
-              <meshStandardMaterial color={capColor} roughness={0.85} />
-            </mesh>
+            <mesh position={[0, 0.03, 0]} geometry={sphereGeo(0.10, 6, 4, 0, Math.PI * 2, 0, Math.PI * 0.5)} material={npcMat({ color: capColor, roughness: 0.85 })} />
             {/* Cap visor */}
-            <mesh position={[0, -0.01, 0.08]} rotation={[0.15, 0, 0]}>
-              <boxGeometry args={[0.16, 0.008, 0.08]} />
-              <meshStandardMaterial color={capColor} roughness={0.85} />
-            </mesh>
+            <mesh position={[0, -0.01, 0.08]} rotation={[0.15, 0, 0]} geometry={boxGeo(0.16, 0.008, 0.08)} material={npcMat({ color: capColor, roughness: 0.85 })} />
             {/* Cap logo accent */}
-            <mesh position={[0, 0.04, 0.065]}>
-              <boxGeometry args={[0.04, 0.015, 0.005]} />
-              <meshStandardMaterial color={capAccent} emissive={glowColor} emissiveIntensity={0.4} roughness={0.4} />
-            </mesh>
+            <mesh position={[0, 0.04, 0.065]} geometry={boxGeo(0.04, 0.015, 0.005)} material={npcMat({ color: capAccent, emissive: glowColor, emissiveIntensity: 0.4, roughness: 0.4 })} />
           </group>
 
           {/* Hair peaking below cap */}
-          <mesh position={[-0.08, -0.02, 0.02]}>
-            <sphereGeometry args={[0.025, 4, 3]} />
-            <meshStandardMaterial color={hairColor} roughness={0.9} />
-          </mesh>
-          <mesh position={[0.08, -0.02, 0.02]}>
-            <sphereGeometry args={[0.025, 4, 3]} />
-            <meshStandardMaterial color={hairColor} roughness={0.9} />
-          </mesh>
+          <mesh position={[-0.08, -0.02, 0.02]} geometry={sphereGeo(0.025, 4, 3)} material={hairMat(hairColor)} />
+          <mesh position={[0.08, -0.02, 0.02]} geometry={sphereGeo(0.025, 4, 3)} material={hairMat(hairColor)} />
         </group>
 
         <Arms sleeveColor={shirtColor} skinColor={skinColor} />
@@ -1331,113 +1004,46 @@ function VeraModel({ appearance, animState = 'idle' }: { appearance: NPCAppearan
       {/* TORSO — slim, shorter scholarly build */}
       <group name="torso" position={[0, 1.05, 0.01]} rotation={[0.03, 0, 0]}>
         {/* Long coat — warm yellow tones */}
-        <mesh castShadow>
-          <boxGeometry args={[0.36, 0.48, 0.22]} />
-          <meshStandardMaterial color={coatColor} emissive={glowColor} emissiveIntensity={0.06} roughness={0.85} metalness={0.05} />
-        </mesh>
+        <mesh castShadow geometry={boxGeo(0.36, 0.48, 0.22)} material={npcMat({ color: coatColor, emissive: glowColor, emissiveIntensity: 0.06, roughness: 0.85, metalness: 0.05 })} />
         {/* Coat front panels — darker shade */}
-        <mesh position={[-0.08, 0.0, 0.115]} rotation={[0, 0, 0.05]}>
-          <boxGeometry args={[0.10, 0.46, 0.01]} />
-          <meshStandardMaterial color={coatDark} roughness={0.85} />
-        </mesh>
-        <mesh position={[0.08, 0.0, 0.115]} rotation={[0, 0, -0.05]}>
-          <boxGeometry args={[0.10, 0.46, 0.01]} />
-          <meshStandardMaterial color={coatDark} roughness={0.85} />
-        </mesh>
+        <mesh position={[-0.08, 0.0, 0.115]} rotation={[0, 0, 0.05]} geometry={boxGeo(0.10, 0.46, 0.01)} material={npcMat({ color: coatDark, roughness: 0.85 })} />
+        <mesh position={[0.08, 0.0, 0.115]} rotation={[0, 0, -0.05]} geometry={boxGeo(0.10, 0.46, 0.01)} material={npcMat({ color: coatDark, roughness: 0.85 })} />
         {/* Blouse visible at collar */}
-        <mesh position={[0, 0.16, 0.115]}>
-          <boxGeometry args={[0.12, 0.12, 0.008]} />
-          <meshStandardMaterial color={blouseColor} roughness={0.7} />
-        </mesh>
+        <mesh position={[0, 0.16, 0.115]} geometry={boxGeo(0.12, 0.12, 0.008)} material={npcMat({ color: blouseColor, roughness: 0.7 })} />
         {/* Scarf at neck */}
-        <mesh position={[0, 0.20, 0.12]}>
-          <boxGeometry args={[0.22, 0.05, 0.02]} />
-          <meshStandardMaterial color={scarfColor} emissive={scarfAccent} emissiveIntensity={0.15} roughness={0.7} />
-        </mesh>
-        {/* Scarf tails hanging down front */}
-        <mesh position={[-0.06, 0.02, 0.13]} rotation={[0, 0, 0.1]}>
-          <boxGeometry args={[0.04, 0.22, 0.01]} />
-          <meshStandardMaterial color={scarfColor} roughness={0.8} />
-        </mesh>
-        <mesh position={[0.06, 0.02, 0.13]} rotation={[0, 0, -0.1]}>
-          <boxGeometry args={[0.04, 0.22, 0.01]} />
-          <meshStandardMaterial color={scarfColor} roughness={0.8} />
-        </mesh>
-        {/* Coat pockets */}
-        <mesh position={[-0.10, -0.10, 0.115]}>
-          <boxGeometry args={[0.06, 0.06, 0.005]} />
-          <meshStandardMaterial color={coatDark} roughness={0.85} />
-        </mesh>
-        <mesh position={[0.10, -0.10, 0.115]}>
-          <boxGeometry args={[0.06, 0.06, 0.005]} />
-          <meshStandardMaterial color={coatDark} roughness={0.85} />
-        </mesh>
+        <mesh position={[0, 0.20, 0.12]} geometry={boxGeo(0.22, 0.05, 0.02)} material={npcMat({ color: scarfColor, emissive: scarfAccent, emissiveIntensity: 0.15, roughness: 0.7 })} />
+        {/* Scarf tails + coat pockets — merged */}
+        <mesh geometry={mergedGeo.scarfTailPair} material={npcMat({ color: scarfColor, roughness: 0.8 })} />
+        <mesh geometry={mergedGeo.coatPocketPair} material={npcMat({ color: coatDark, roughness: 0.85 })} />
 
         {/* Book / holographic pad in left hand */}
         <group position={[0.24, -0.30, 0.06]} rotation={[0.2, 0, 0.1]}>
-          <mesh>
-            <boxGeometry args={[0.08, 0.10, 0.02]} />
-            <meshStandardMaterial color={coatDark} roughness={0.8} />
-          </mesh>
+          <mesh geometry={boxGeo(0.08, 0.10, 0.02)} material={npcMat({ color: coatDark, roughness: 0.8 })} />
           {/* Holographic page glow */}
-          <mesh position={[0, 0, 0.012]}>
-            <boxGeometry args={[0.06, 0.08, 0.002]} />
-            <meshStandardMaterial color={glowColor} emissive={glowColor} emissiveIntensity={0.5} roughness={0.1} transparent opacity={0.6} />
-          </mesh>
-          {/* Point light for holographic display */}
-          <pointLight position={[0, 0, 0.05]} color={glowColor} intensity={0.3} distance={1.5} />
+          <mesh position={[0, 0, 0.012]} geometry={sharedGeo.holoScreen} material={glowScreenMat(glowColor, 0.5, 0.6)} />
         </group>
 
         {/* Neck */}
-        <mesh position={[0, 0.26, 0]}>
-          <cylinderGeometry args={[0.042, 0.048, 0.06, 6]} />
-          <meshStandardMaterial color={skinColor} roughness={0.7} />
-        </mesh>
+        <mesh position={[0, 0.26, 0]} geometry={cylinderGeo(0.042, 0.048, 0.06, 6)} material={skinMat(skinColor)} />
 
         {/* HEAD */}
         <group name="head" position={[0, 0.46, 0.02]}>
-          {/* Skull — softer, oval */}
-          <mesh castShadow>
-            <sphereGeometry args={[0.10, 8, 8]} />
-            <meshStandardMaterial color={skinColor} roughness={0.7} />
-          </mesh>
-          {/* Jaw */}
-          <mesh position={[0, -0.05, 0.025]} castShadow>
-            <boxGeometry args={[0.14, 0.05, 0.10]} />
-            <meshStandardMaterial color={skinColor} roughness={0.7} />
-          </mesh>
-          {/* Chin — delicate */}
-          <mesh position={[0, -0.065, 0.035]}>
-            <sphereGeometry args={[0.022, 4, 4]} />
-            <meshStandardMaterial color={skinColor} roughness={0.7} />
-          </mesh>
+          {/* Skull — slightly softer, more oval */}
+          <mesh castShadow geometry={sharedGeo.skullSphereMd} material={skinMat(skinColor)} />
+          <mesh position={[0, -0.05, 0.025]} castShadow geometry={sharedGeo.jawBoxMd} material={skinMat(skinColor)} />
+          <mesh position={[0, -0.065, 0.035]} geometry={sharedGeo.chinSphereMd} material={skinMat(skinColor)} />
           <Eyes browAngle={0.08} irisColor="#6a5a30" />
           <FaceFeatures skinColor={skinColor} shadowColor={skinShadow} mouthCornersDown={false} />
 
           {/* Hair — gray, tied back */}
-          <mesh position={[0, 0.08, -0.01]}>
-            <sphereGeometry args={[0.085, 5, 4]} />
-            <meshStandardMaterial color={HAIR_GRAY} roughness={0.9} />
-          </mesh>
-          <mesh position={[-0.075, 0.04, 0.0]}>
-            <sphereGeometry args={[0.03, 4, 3]} />
-            <meshStandardMaterial color={HAIR_GRAY} roughness={0.9} />
-          </mesh>
-          <mesh position={[0.075, 0.04, 0.0]}>
-            <sphereGeometry args={[0.03, 4, 3]} />
-            <meshStandardMaterial color={HAIR_GRAY} roughness={0.9} />
-          </mesh>
+          <mesh position={[0, 0.08, -0.01]} geometry={sphereGeo(0.085, 5, 4)} material={sharedMat.hairGray} />
+          <mesh position={[-0.075, 0.04, 0.0]} geometry={sphereGeo(0.03, 4, 3)} material={sharedMat.hairGray} />
+          <mesh position={[0.075, 0.04, 0.0]} geometry={sphereGeo(0.03, 4, 3)} material={sharedMat.hairGray} />
           {/* Hair bun at back */}
-          <mesh position={[0, 0.06, -0.10]}>
-            <sphereGeometry args={[0.05, 5, 4]} />
-            <meshStandardMaterial color={HAIR_GRAY} roughness={0.9} />
-          </mesh>
+          <mesh position={[0, 0.06, -0.10]} geometry={sphereGeo(0.05, 5, 4)} material={sharedMat.hairGray} />
 
           {/* Scarf wrap on head */}
-          <mesh position={[0, 0.05, 0.04]}>
-            <sphereGeometry args={[0.105, 6, 4, 0, Math.PI * 2, 0, Math.PI * 0.4]} />
-            <meshStandardMaterial color={scarfColor} emissive={scarfAccent} emissiveIntensity={0.08} roughness={0.8} />
-          </mesh>
+          <mesh position={[0, 0.05, 0.04]} geometry={sphereGeo(0.105, 6, 4, 0, Math.PI * 2, 0, Math.PI * 0.4)} material={npcMat({ color: scarfColor, emissive: scarfAccent, emissiveIntensity: 0.08, roughness: 0.8 })} />
         </group>
 
         <Arms sleeveColor={coatColor} skinColor={skinColor} armWidth={0.040} forearmWidth={0.035} />
@@ -1472,109 +1078,50 @@ function SergeyModel({ appearance, animState = 'idle' }: { appearance: NPCAppear
     <group ref={groupRef}>
       <group name="torso" position={[0, 1.05, 0.03]} rotation={[0.07, 0, 0]}>
         {/* Hoodie — average build, slightly stocky */}
-        <mesh castShadow>
-          <boxGeometry args={[0.42, 0.48, 0.24]} />
-          <meshStandardMaterial color={hoodieColor} emissive={glowColor} emissiveIntensity={0.06} roughness={0.85} metalness={0.05} />
-        </mesh>
+        <mesh castShadow geometry={boxGeo(0.42, 0.48, 0.24)} material={npcMat({ color: hoodieColor, emissive: glowColor, emissiveIntensity: 0.06, roughness: 0.85, metalness: 0.05 })} />
         {/* Hoodie hood hanging behind */}
-        <mesh position={[0, 0.20, -0.10]} rotation={[0.2, 0, 0]}>
-          <sphereGeometry args={[0.09, 6, 5, 0, Math.PI * 2, Math.PI * 0.3, Math.PI * 0.5]} />
-          <meshStandardMaterial color={hoodieDark} roughness={0.85} />
-        </mesh>
+        <mesh position={[0, 0.20, -0.10]} rotation={[0.2, 0, 0]} geometry={sphereGeo(0.09, 6, 5, 0, Math.PI * 2, Math.PI * 0.3, Math.PI * 0.5)} material={npcMat({ color: hoodieDark, roughness: 0.85 })} />
         {/* Dark shirt visible at neckline */}
-        <mesh position={[0, 0.16, 0.125]}>
-          <boxGeometry args={[0.14, 0.08, 0.008]} />
-          <meshStandardMaterial color={shirtColor} roughness={0.7} />
-        </mesh>
+        <mesh position={[0, 0.16, 0.125]} geometry={boxGeo(0.14, 0.08, 0.008)} material={npcMat({ color: shirtColor, roughness: 0.7 })} />
         {/* Hoodie front pocket (kangaroo pocket) */}
-        <mesh position={[0, -0.08, 0.125]}>
-          <boxGeometry args={[0.28, 0.12, 0.005]} />
-          <meshStandardMaterial color={hoodieDark} roughness={0.85} />
-        </mesh>
+        <mesh position={[0, -0.08, 0.125]} geometry={boxGeo(0.28, 0.12, 0.005)} material={npcMat({ color: hoodieDark, roughness: 0.85 })} />
         {/* Hoodie zipper */}
-        <mesh position={[0, 0.0, 0.122]}>
-          <boxGeometry args={[0.004, 0.46, 0.004]} />
-          <meshStandardMaterial color="#888" roughness={0.3} metalness={0.8} />
-        </mesh>
+        <mesh position={[0, 0.0, 0.122]} geometry={boxGeo(0.004, 0.46, 0.004)} material={sharedMat.metalGray} />
 
         {/* Tool belt around waist */}
-        <mesh position={[0, -0.20, 0.13]}>
-          <boxGeometry args={[0.44, 0.04, 0.02]} />
-          <meshStandardMaterial color={beltColor} roughness={0.6} metalness={0.4} />
-        </mesh>
+        <mesh position={[0, -0.20, 0.13]} geometry={boxGeo(0.44, 0.04, 0.02)} material={npcMat({ color: beltColor, roughness: 0.6, metalness: 0.4 })} />
         {/* Belt buckle */}
-        <mesh position={[0, -0.20, 0.145]}>
-          <boxGeometry args={[0.03, 0.035, 0.01]} />
-          <meshStandardMaterial color={accentColor} emissive={glowColor} emissiveIntensity={0.2} roughness={0.3} metalness={0.8} />
-        </mesh>
-        {/* Tool pouches on belt */}
-        <mesh position={[-0.14, -0.22, 0.14]}>
-          <boxGeometry args={[0.04, 0.06, 0.03]} />
-          <meshStandardMaterial color={beltColor} roughness={0.6} metalness={0.4} />
-        </mesh>
-        <mesh position={[0.14, -0.22, 0.14]}>
-          <boxGeometry args={[0.04, 0.06, 0.03]} />
-          <meshStandardMaterial color={beltColor} roughness={0.6} metalness={0.4} />
-        </mesh>
+        <mesh position={[0, -0.20, 0.145]} geometry={boxGeo(0.03, 0.035, 0.01)} material={npcMat({ color: accentColor, emissive: glowColor, emissiveIntensity: 0.2, roughness: 0.3, metalness: 0.8 })} />
+        {/* Tool pouches on belt — merged */}
+        <mesh geometry={mergedGeo.beltPouchPair} material={npcMat({ color: beltColor, roughness: 0.6, metalness: 0.4 })} />
 
         {/* Glowing tablet / tool in right hand */}
         <group position={[-0.24, -0.30, 0.08]} rotation={[0.3, 0, -0.1]}>
-          <mesh>
-            <boxGeometry args={[0.06, 0.08, 0.008]} />
-            <meshStandardMaterial color="#2a2a2a" roughness={0.5} metalness={0.6} />
-          </mesh>
+          <mesh geometry={boxGeo(0.06, 0.08, 0.008)} material={npcMat({ color: "#2a2a2a", roughness: 0.5, metalness: 0.6 })} />
           {/* Screen glow */}
-          <mesh position={[0, 0, 0.006]}>
-            <boxGeometry args={[0.048, 0.06, 0.002]} />
-            <meshStandardMaterial color={glowColor} emissive={glowColor} emissiveIntensity={0.7} roughness={0.1} transparent opacity={0.8} />
-          </mesh>
-          <pointLight position={[0, 0, 0.05]} color={glowColor} intensity={0.4} distance={2.0} />
+          <mesh position={[0, 0, 0.006]} geometry={sharedGeo.tabletScreen} material={glowScreenMat(glowColor, 0.7, 0.8)} />
         </group>
 
         {/* Neck — average */}
-        <mesh position={[0, 0.27, 0]}>
-          <cylinderGeometry args={[0.048, 0.055, 0.06, 6]} />
-          <meshStandardMaterial color={skinColor} roughness={0.7} />
-        </mesh>
+        <mesh position={[0, 0.26, 0]} geometry={sharedGeo.neckCylinder} material={skinMat(skinColor)} />
 
         {/* HEAD */}
         <group name="head" position={[0, 0.47, 0.02]}>
           {/* Skull — slightly wider */}
-          <mesh castShadow>
-            <sphereGeometry args={[0.105, 8, 8]} />
-            <meshStandardMaterial color={skinColor} roughness={0.7} />
-          </mesh>
+          <mesh castShadow geometry={sharedGeo.skullSphere} material={skinMat(skinColor)} />
           {/* Jaw */}
-          <mesh position={[0, -0.055, 0.025]} castShadow>
-            <boxGeometry args={[0.15, 0.055, 0.11]} />
-            <meshStandardMaterial color={skinColor} roughness={0.7} />
-          </mesh>
+          <mesh position={[0, -0.055, 0.025]} castShadow geometry={sharedGeo.jawBox} material={skinMat(skinColor)} />
           <Eyes browAngle={0.10} irisColor="#3a5a6a" />
           <FaceFeatures skinColor={skinColor} shadowColor={skinShadow} />
           {/* Stubble */}
-          <mesh position={[0, -0.055, 0.065]}>
-            <boxGeometry args={[0.13, 0.04, 0.005]} />
-            <meshStandardMaterial color={skinShadow} roughness={0.9} transparent opacity={0.2} />
-          </mesh>
+          <mesh position={[0, -0.055, 0.065]} geometry={sharedGeo.stubblePlaneSm} material={stubbleMat(skinShadow, 0.2)} />
 
           {/* Short messy hair */}
-          <mesh position={[0, 0.08, -0.01]}>
-            <sphereGeometry args={[0.08, 5, 4]} />
-            <meshStandardMaterial color={HAIR_BROWN} roughness={0.9} />
-          </mesh>
-          <mesh position={[-0.06, 0.06, 0.03]}>
-            <sphereGeometry args={[0.03, 4, 3]} />
-            <meshStandardMaterial color={HAIR_BROWN} roughness={0.9} />
-          </mesh>
-          <mesh position={[0.06, 0.06, 0.03]}>
-            <sphereGeometry args={[0.03, 4, 3]} />
-            <meshStandardMaterial color={HAIR_BROWN} roughness={0.9} />
-          </mesh>
+          <mesh position={[0, 0.08, -0.01]} geometry={sphereGeo(0.08, 5, 4)} material={sharedMat.hairBrown} />
+          <mesh position={[-0.06, 0.06, 0.03]} geometry={sphereGeo(0.03, 4, 3)} material={sharedMat.hairBrown} />
+          <mesh position={[0.06, 0.06, 0.03]} geometry={sphereGeo(0.03, 4, 3)} material={sharedMat.hairBrown} />
           {/* Bedhead tuft */}
-          <mesh position={[0, 0.12, 0.02]} rotation={[0.1, 0, 0.15]}>
-            <boxGeometry args={[0.04, 0.04, 0.03]} />
-            <meshStandardMaterial color={HAIR_BROWN} roughness={0.9} />
-          </mesh>
+          <mesh position={[0, 0.12, 0.02]} rotation={[0.1, 0, 0.15]} geometry={boxGeo(0.04, 0.04, 0.03)} material={sharedMat.hairBrown} />
         </group>
 
         <Arms sleeveColor={hoodieColor} skinColor={skinColor} armWidth={0.050} forearmWidth={0.044} />
@@ -1608,84 +1155,41 @@ function LenaModel({ appearance, animState = 'idle' }: { appearance: NPCAppearan
       {/* TORSO — slim, compact, mysterious */}
       <group name="torso" position={[0, 1.05, 0.01]} rotation={[0.02, 0, 0]}>
         {/* Dark hoodie with purple glow */}
-        <mesh castShadow>
-          <boxGeometry args={[0.32, 0.44, 0.20]} />
-          <meshStandardMaterial color={hoodieColor} emissive={glowColor} emissiveIntensity={0.08} roughness={0.85} metalness={0.05} />
-        </mesh>
+        <mesh castShadow geometry={boxGeo(0.32, 0.44, 0.20)} material={npcMat({ color: hoodieColor, emissive: glowColor, emissiveIntensity: 0.08, roughness: 0.85, metalness: 0.05 })} />
         {/* Hoodie pocket */}
-        <mesh position={[0, -0.08, 0.105]}>
-          <boxGeometry args={[0.20, 0.08, 0.005]} />
-          <meshStandardMaterial color={hoodieDark} roughness={0.85} />
-        </mesh>
-        {/* Cyberpunk accent lines on torso */}
-        <mesh position={[-0.10, 0.06, 0.105]}>
-          <boxGeometry args={[0.005, 0.20, 0.005]} />
-          <meshStandardMaterial color={accentColor} emissive={glowColor} emissiveIntensity={0.6} roughness={0.2} />
-        </mesh>
-        <mesh position={[0.10, 0.06, 0.105]}>
-          <boxGeometry args={[0.005, 0.20, 0.005]} />
-          <meshStandardMaterial color={accentColor} emissive={glowColor} emissiveIntensity={0.6} roughness={0.2} />
-        </mesh>
+        <mesh position={[0, -0.08, 0.105]} geometry={boxGeo(0.20, 0.08, 0.005)} material={npcMat({ color: hoodieDark, roughness: 0.85 })} />
+        {/* Cyberpunk accent lines — merged */}
+        <mesh geometry={mergedGeo.cyberAccentPair} material={npcMat({ color: accentColor, emissive: glowColor, emissiveIntensity: 0.6, roughness: 0.2 })} />
 
         {/* Neck — mostly hidden by hoodie */}
-        <mesh position={[0, 0.24, 0]}>
-          <cylinderGeometry args={[0.035, 0.040, 0.04, 6]} />
-          <meshStandardMaterial color={skinColor} roughness={0.7} />
-        </mesh>
+        <mesh position={[0, 0.26, 0]} geometry={sharedGeo.neckCylinderSm} material={skinMat(skinColor)} />
 
         {/* HEAD */}
         <group name="head" position={[0, 0.44, 0.02]}>
           {/* Skull — partially hidden */}
-          <mesh castShadow>
-            <sphereGeometry args={[0.095, 8, 8]} />
-            <meshStandardMaterial color={skinColor} roughness={0.7} />
-          </mesh>
+          <mesh castShadow geometry={sharedGeo.skullSphereSm} material={skinMat(skinColor)} />
           {/* Jaw — slim */}
-          <mesh position={[0, -0.045, 0.02]} castShadow>
-            <boxGeometry args={[0.12, 0.04, 0.08]} />
-            <meshStandardMaterial color={skinColor} roughness={0.7} />
-          </mesh>
+          <mesh position={[0, -0.045, 0.02]} castShadow geometry={sharedGeo.jawBoxSm} material={skinMat(skinColor)} />
 
           {/* Eyes with glowing visor effect */}
           <Eyes browAngle={0.04} irisColor="#d040d0" />
 
           {/* Glowing visor / cyber-eye overlay */}
-          <mesh position={[0, 0.015, 0.095]}>
-            <boxGeometry args={[0.10, 0.015, 0.003]} />
-            <meshStandardMaterial color={accentColor} emissive={glowColor} emissiveIntensity={0.8} roughness={0.1} transparent opacity={0.5} />
-          </mesh>
-          <pointLight position={[0, 0.015, 0.12]} color={glowColor} intensity={0.3} distance={1.5} />
-
+          <mesh position={[0, 0.015, 0.095]} geometry={sharedGeo.visorGlow} material={glowScreenMat(accentColor, 0.8, 0.5)} />
           <FaceFeatures skinColor={skinColor} shadowColor={skinShadow} mouthCornersDown={true} />
 
           {/* HOOD — large, overshadows face */}
           <group position={[0, 0.04, -0.02]}>
             {/* Hood dome */}
-            <mesh position={[0, 0.06, 0.0]}>
-              <sphereGeometry args={[0.12, 6, 5]} />
-              <meshStandardMaterial color={hoodieDark} emissive={glowColor} emissiveIntensity={0.04} roughness={0.85} />
-            </mesh>
+            <mesh position={[0, 0.06, 0.0]} geometry={sphereGeo(0.12, 6, 5)} material={npcMat({ color: hoodieDark, emissive: glowColor, emissiveIntensity: 0.04, roughness: 0.85 })} />
             {/* Hood front rim */}
-            <mesh position={[0, -0.02, 0.08]}>
-              <boxGeometry args={[0.22, 0.025, 0.02]} />
-              <meshStandardMaterial color={hoodieDark} roughness={0.85} />
-            </mesh>
-            {/* Hood side shadows */}
-            <mesh position={[-0.10, -0.02, 0.04]}>
-              <boxGeometry args={[0.02, 0.08, 0.06]} />
-              <meshStandardMaterial color={hoodieDark} roughness={0.85} />
-            </mesh>
-            <mesh position={[0.10, -0.02, 0.04]}>
-              <boxGeometry args={[0.02, 0.08, 0.06]} />
-              <meshStandardMaterial color={hoodieDark} roughness={0.85} />
-            </mesh>
+            <mesh position={[0, -0.02, 0.08]} geometry={boxGeo(0.22, 0.025, 0.02)} material={npcMat({ color: hoodieDark, roughness: 0.85 })} />
+            {/* Hood side shadows — merged */}
+            <mesh geometry={mergedGeo.hoodShadowPair} material={npcMat({ color: hoodieDark, roughness: 0.85 })} />
           </group>
 
           {/* Dark hair barely visible under hood */}
-          <mesh position={[0, 0.06, -0.03]}>
-            <sphereGeometry args={[0.07, 5, 4]} />
-            <meshStandardMaterial color={HAIR_BLACK} roughness={0.9} />
-          </mesh>
+          <mesh position={[0, 0.06, -0.03]} geometry={sphereGeo(0.07, 5, 4)} material={sharedMat.hairBlack} />
         </group>
 
         <Arms sleeveColor={hoodieColor} skinColor={skinColor} armWidth={0.038} forearmWidth={0.033} />
@@ -1720,129 +1224,60 @@ function OlegModel({ appearance, animState = 'idle' }: { appearance: NPCAppearan
     <group ref={groupRef}>
       <group name="torso" position={[0, 1.05, 0.02]} rotation={[0.05, 0, 0]}>
         {/* Heavy armor torso — broad and imposing */}
-        <mesh castShadow>
-          <boxGeometry args={[0.52, 0.52, 0.28]} />
-          <meshStandardMaterial color={armorColor} emissive={glowColor} emissiveIntensity={0.05} roughness={0.5} metalness={0.3} />
-        </mesh>
+        <mesh castShadow geometry={boxGeo(0.52, 0.52, 0.28)} material={npcMat({ color: armorColor, emissive: glowColor, emissiveIntensity: 0.05, roughness: 0.5, metalness: 0.3 })} />
         {/* Chest plate detail */}
-        <mesh position={[0, 0.04, 0.145]}>
-          <boxGeometry args={[0.30, 0.22, 0.01]} />
-          <meshStandardMaterial color={armorDark} roughness={0.5} metalness={0.4} />
-        </mesh>
+        <mesh position={[0, 0.04, 0.145]} geometry={boxGeo(0.30, 0.22, 0.01)} material={npcMat({ color: armorDark, roughness: 0.5, metalness: 0.4 })} />
         {/* Center line on chest */}
-        <mesh position={[0, 0.04, 0.15]}>
-          <boxGeometry args={[0.006, 0.30, 0.006]} />
-          <meshStandardMaterial color={accentColor} emissive={glowColor} emissiveIntensity={0.3} roughness={0.2} metalness={0.8} />
-        </mesh>
+        <mesh position={[0, 0.04, 0.15]} geometry={boxGeo(0.006, 0.30, 0.006)} material={npcMat({ color: accentColor, emissive: glowColor, emissiveIntensity: 0.3, roughness: 0.2, metalness: 0.8 })} />
         {/* Undersuit at collar */}
-        <mesh position={[0, 0.20, 0.145]}>
-          <boxGeometry args={[0.12, 0.08, 0.008]} />
-          <meshStandardMaterial color={undersuitColor} roughness={0.7} />
-        </mesh>
+        <mesh position={[0, 0.20, 0.145]} geometry={boxGeo(0.12, 0.08, 0.008)} material={npcMat({ color: undersuitColor, roughness: 0.7 })} />
 
         {/* SHOULDER ARMOR PLATES — large, distinctive */}
         {/* Left shoulder plate */}
         <group position={[0.28, 0.18, 0]}>
-          <mesh castShadow>
-            <boxGeometry args={[0.14, 0.08, 0.16]} />
-            <meshStandardMaterial color={armorColor} emissive={glowColor} emissiveIntensity={0.08} roughness={0.4} metalness={0.5} />
-          </mesh>
+          <mesh castShadow geometry={boxGeo(0.14, 0.08, 0.16)} material={npcMat({ color: armorColor, emissive: glowColor, emissiveIntensity: 0.08, roughness: 0.4, metalness: 0.5 })} />
           {/* Shoulder plate rim */}
-          <mesh position={[0, 0.02, 0.085]}>
-            <boxGeometry args={[0.14, 0.04, 0.01]} />
-            <meshStandardMaterial color={accentColor} emissive={glowColor} emissiveIntensity={0.2} roughness={0.3} metalness={0.7} />
-          </mesh>
+          <mesh position={[0, 0.02, 0.085]} geometry={boxGeo(0.14, 0.04, 0.01)} material={npcMat({ color: accentColor, emissive: glowColor, emissiveIntensity: 0.2, roughness: 0.3, metalness: 0.7 })} />
           {/* Rivet details */}
-          <mesh position={[-0.04, 0.02, 0.08]}>
-            <sphereGeometry args={[0.008, 4, 4]} />
-            <meshStandardMaterial color="#888" roughness={0.3} metalness={0.9} />
-          </mesh>
-          <mesh position={[0.04, 0.02, 0.08]}>
-            <sphereGeometry args={[0.008, 4, 4]} />
-            <meshStandardMaterial color="#888" roughness={0.3} metalness={0.9} />
-          </mesh>
+          <mesh position={[-0.04, 0.02, 0.08]} geometry={sphereGeo(0.008, 4, 4)} material={npcMat({ color: "#888", roughness: 0.3, metalness: 0.9 })} />
+          <mesh position={[0.04, 0.02, 0.08]} geometry={sphereGeo(0.008, 4, 4)} material={npcMat({ color: "#888", roughness: 0.3, metalness: 0.9 })} />
         </group>
         {/* Right shoulder plate */}
         <group position={[-0.28, 0.18, 0]}>
-          <mesh castShadow>
-            <boxGeometry args={[0.14, 0.08, 0.16]} />
-            <meshStandardMaterial color={armorColor} emissive={glowColor} emissiveIntensity={0.08} roughness={0.4} metalness={0.5} />
-          </mesh>
-          <mesh position={[0, 0.02, 0.085]}>
-            <boxGeometry args={[0.14, 0.04, 0.01]} />
-            <meshStandardMaterial color={accentColor} emissive={glowColor} emissiveIntensity={0.2} roughness={0.3} metalness={0.7} />
-          </mesh>
-          <mesh position={[-0.04, 0.02, 0.08]}>
-            <sphereGeometry args={[0.008, 4, 4]} />
-            <meshStandardMaterial color="#888" roughness={0.3} metalness={0.9} />
-          </mesh>
-          <mesh position={[0.04, 0.02, 0.08]}>
-            <sphereGeometry args={[0.008, 4, 4]} />
-            <meshStandardMaterial color="#888" roughness={0.3} metalness={0.9} />
-          </mesh>
+          <mesh castShadow geometry={boxGeo(0.14, 0.08, 0.16)} material={npcMat({ color: armorColor, emissive: glowColor, emissiveIntensity: 0.08, roughness: 0.4, metalness: 0.5 })} />
+          <mesh position={[0, 0.02, 0.085]} geometry={boxGeo(0.14, 0.04, 0.01)} material={npcMat({ color: accentColor, emissive: glowColor, emissiveIntensity: 0.2, roughness: 0.3, metalness: 0.7 })} />
+          <mesh position={[-0.04, 0.02, 0.08]} geometry={sphereGeo(0.008, 4, 4)} material={npcMat({ color: "#888", roughness: 0.3, metalness: 0.9 })} />
+          <mesh position={[0.04, 0.02, 0.08]} geometry={sphereGeo(0.008, 4, 4)} material={npcMat({ color: "#888", roughness: 0.3, metalness: 0.9 })} />
         </group>
 
         {/* Belt with utility pouches */}
-        <mesh position={[0, -0.22, 0.145]}>
-          <boxGeometry args={[0.50, 0.04, 0.02]} />
-          <meshStandardMaterial color={armorDark} roughness={0.5} metalness={0.4} />
-        </mesh>
-        <mesh position={[-0.16, -0.24, 0.15]}>
-          <boxGeometry args={[0.05, 0.06, 0.03]} />
-          <meshStandardMaterial color={armorDark} roughness={0.5} metalness={0.4} />
-        </mesh>
-        <mesh position={[0.16, -0.24, 0.15]}>
-          <boxGeometry args={[0.05, 0.06, 0.03]} />
-          <meshStandardMaterial color={armorDark} roughness={0.5} metalness={0.4} />
-        </mesh>
+        <mesh position={[0, -0.22, 0.145]} geometry={boxGeo(0.50, 0.04, 0.02)} material={npcMat({ color: armorDark, roughness: 0.5, metalness: 0.4 })} />
+        <mesh position={[-0.16, -0.24, 0.15]} geometry={boxGeo(0.05, 0.06, 0.03)} material={npcMat({ color: armorDark, roughness: 0.5, metalness: 0.4 })} />
+        <mesh position={[0.16, -0.24, 0.15]} geometry={boxGeo(0.05, 0.06, 0.03)} material={npcMat({ color: armorDark, roughness: 0.5, metalness: 0.4 })} />
 
         {/* Neck — thick, military */}
-        <mesh position={[0, 0.28, 0]}>
-          <cylinderGeometry args={[0.058, 0.065, 0.07, 6]} />
-          <meshStandardMaterial color={skinColor} roughness={0.7} />
-        </mesh>
+        <mesh position={[0, 0.28, 0]} geometry={sharedGeo.neckCylinderLg} material={skinMat(skinColor)} />
 
         {/* HEAD */}
         <group name="head" position={[0, 0.48, 0.02]}>
           {/* Skull — blocky, strong */}
-          <mesh castShadow>
-            <sphereGeometry args={[0.11, 8, 8]} />
-            <meshStandardMaterial color={skinColor} roughness={0.7} />
-          </mesh>
+          <mesh castShadow geometry={sharedGeo.skullSphereLg} material={skinMat(skinColor)} />
           {/* Jaw — heavy, square */}
-          <mesh position={[0, -0.06, 0.025]} castShadow>
-            <boxGeometry args={[0.18, 0.06, 0.12]} />
-            <meshStandardMaterial color={skinColor} roughness={0.7} />
-          </mesh>
+          <mesh position={[0, -0.06, 0.025]} castShadow geometry={sharedGeo.jawBoxXL} material={skinMat(skinColor)} />
           <Eyes browAngle={0.14} irisColor="#4a4a30" />
           <FaceFeatures skinColor={skinColor} shadowColor={skinShadow} />
           {/* Stubble */}
-          <mesh position={[0, -0.06, 0.07]}>
-            <boxGeometry args={[0.16, 0.05, 0.005]} />
-            <meshStandardMaterial color={skinShadow} roughness={0.9} transparent opacity={0.25} />
-          </mesh>
+          <mesh position={[0, -0.06, 0.07]} geometry={sharedGeo.stubblePlaneLg} material={stubbleMat(skinShadow, 0.25)} />
 
           {/* Short military buzz cut */}
-          <mesh position={[0, 0.08, -0.01]}>
-            <sphereGeometry args={[0.09, 5, 4]} />
-            <meshStandardMaterial color={HAIR_DARK} roughness={0.9} />
-          </mesh>
+          <mesh position={[0, 0.08, -0.01]} geometry={sphereGeo(0.09, 5, 4)} material={sharedMat.hairDark} />
 
           {/* Military-style cap / beret */}
-          <mesh position={[0, 0.10, 0.02]} rotation={[0.05, 0, 0.08]}>
-            <cylinderGeometry args={[0.10, 0.10, 0.025, 8]} />
-            <meshStandardMaterial color={armorDark} roughness={0.8} />
-          </mesh>
+          <mesh position={[0, 0.10, 0.02]} rotation={[0.05, 0, 0.08]} geometry={cylinderGeo(0.10, 0.10, 0.025, 8)} material={npcMat({ color: armorDark, roughness: 0.8 })} />
           {/* Cap top */}
-          <mesh position={[0, 0.12, 0.01]} rotation={[0.05, 0, 0.08]}>
-            <sphereGeometry args={[0.10, 6, 4, 0, Math.PI * 2, 0, Math.PI * 0.35]} />
-            <meshStandardMaterial color={armorDark} emissive={glowColor} emissiveIntensity={0.04} roughness={0.8} />
-          </mesh>
+          <mesh position={[0, 0.12, 0.01]} rotation={[0.05, 0, 0.08]} geometry={sphereGeo(0.10, 6, 4, 0, Math.PI * 2, 0, Math.PI * 0.35)} material={npcMat({ color: armorDark, emissive: glowColor, emissiveIntensity: 0.04, roughness: 0.8 })} />
           {/* Cap badge */}
-          <mesh position={[0, 0.10, 0.10]}>
-            <sphereGeometry args={[0.012, 4, 4]} />
-            <meshStandardMaterial color={accentColor} emissive={glowColor} emissiveIntensity={0.4} roughness={0.2} metalness={0.9} />
-          </mesh>
+          <mesh position={[0, 0.10, 0.10]} geometry={sphereGeo(0.012, 4, 4)} material={npcMat({ color: accentColor, emissive: glowColor, emissiveIntensity: 0.4, roughness: 0.2, metalness: 0.9 })} />
         </group>
 
         <Arms sleeveColor={armorDark} skinColor={skinColor} armWidth={0.054} forearmWidth={0.048} />
@@ -1877,146 +1312,47 @@ function KateModel({ appearance, animState = 'idle' }: { appearance: NPCAppearan
     <group ref={groupRef}>
       <group name="torso" position={[0, 1.05, 0.01]} rotation={[0.03, 0, 0]}>
         {/* Cardigan — slim, bookish */}
-        <mesh castShadow>
-          <boxGeometry args={[0.34, 0.46, 0.20]} />
-          <meshStandardMaterial color={cardiganColor} emissive={glowColor} emissiveIntensity={0.06} roughness={0.85} metalness={0.05} />
-        </mesh>
+        <mesh castShadow geometry={boxGeo(0.34, 0.46, 0.20)} material={npcMat({ color: cardiganColor, emissive: glowColor, emissiveIntensity: 0.06, roughness: 0.85, metalness: 0.05 })} />
         {/* Cardigan front panels */}
-        <mesh position={[-0.08, 0.0, 0.105]} rotation={[0, 0, 0.05]}>
-          <boxGeometry args={[0.08, 0.44, 0.008]} />
-          <meshStandardMaterial color={cardiganDark} roughness={0.85} />
-        </mesh>
-        <mesh position={[0.08, 0.0, 0.105]} rotation={[0, 0, -0.05]}>
-          <boxGeometry args={[0.08, 0.44, 0.008]} />
-          <meshStandardMaterial color={cardiganDark} roughness={0.85} />
-        </mesh>
+        <mesh position={[-0.08, 0.0, 0.105]} rotation={[0, 0, 0.05]} geometry={boxGeo(0.08, 0.44, 0.008)} material={npcMat({ color: cardiganDark, roughness: 0.85 })} />
+        <mesh position={[0.08, 0.0, 0.105]} rotation={[0, 0, -0.05]} geometry={boxGeo(0.08, 0.44, 0.008)} material={npcMat({ color: cardiganDark, roughness: 0.85 })} />
         {/* Blouse visible under cardigan */}
-        <mesh position={[0, 0.08, 0.108]}>
-          <boxGeometry args={[0.10, 0.16, 0.006]} />
-          <meshStandardMaterial color={blouseColor} roughness={0.7} />
-        </mesh>
-        {/* Cardigan buttons */}
-        <mesh position={[-0.02, 0.08, 0.112]}>
-          <sphereGeometry args={[0.005, 4, 4]} />
-          <meshStandardMaterial color={accentColor} roughness={0.3} metalness={0.7} />
-        </mesh>
-        <mesh position={[-0.02, 0.02, 0.112]}>
-          <sphereGeometry args={[0.005, 4, 4]} />
-          <meshStandardMaterial color={accentColor} roughness={0.3} metalness={0.7} />
-        </mesh>
-        <mesh position={[-0.02, -0.04, 0.112]}>
-          <sphereGeometry args={[0.005, 4, 4]} />
-          <meshStandardMaterial color={accentColor} roughness={0.3} metalness={0.7} />
-        </mesh>
+        <mesh position={[0, 0.08, 0.108]} geometry={boxGeo(0.10, 0.16, 0.006)} material={npcMat({ color: blouseColor, roughness: 0.7 })} />
+        {/* Cardigan buttons — merged */}
+        <mesh position={[-0.02, 0, 0.112]} geometry={mergedGeo.cardiganButtons} material={npcMat({ color: accentColor, roughness: 0.3, metalness: 0.7 })} />
 
         {/* Book in left hand */}
         <group position={[0.24, -0.28, 0.06]} rotation={[0.2, 0, 0.1]}>
           {/* Book cover */}
-          <mesh>
-            <boxGeometry args={[0.07, 0.09, 0.025]} />
-            <meshStandardMaterial color={cardiganDark} roughness={0.8} />
-          </mesh>
+          <mesh geometry={boxGeo(0.07, 0.09, 0.025)} material={npcMat({ color: cardiganDark, roughness: 0.8 })} />
           {/* Book spine */}
-          <mesh position={[-0.038, 0, 0]}>
-            <boxGeometry args={[0.006, 0.09, 0.028]} />
-            <meshStandardMaterial color={accentColor} emissive={glowColor} emissiveIntensity={0.15} roughness={0.6} />
-          </mesh>
+          <mesh position={[-0.038, 0, 0]} geometry={boxGeo(0.006, 0.09, 0.028)} material={npcMat({ color: accentColor, emissive: glowColor, emissiveIntensity: 0.15, roughness: 0.6 })} />
           {/* Book pages */}
-          <mesh position={[0.01, 0, 0.014]}>
-            <boxGeometry args={[0.05, 0.085, 0.002]} />
-            <meshStandardMaterial color="#f0ece0" roughness={0.9} />
-          </mesh>
+          <mesh position={[0.01, 0, 0.014]} geometry={boxGeo(0.05, 0.085, 0.002)} material={sharedMat.bookPages} />
         </group>
 
         {/* Neck — slender */}
-        <mesh position={[0, 0.26, 0]}>
-          <cylinderGeometry args={[0.038, 0.045, 0.06, 6]} />
-          <meshStandardMaterial color={skinColor} roughness={0.7} />
-        </mesh>
+        <mesh position={[0, 0.26, 0]} geometry={sharedGeo.neckCylinderSlim} material={skinMat(skinColor)} />
 
         {/* HEAD */}
         <group name="head" position={[0, 0.46, 0.02]}>
-          {/* Skull */}
-          <mesh castShadow>
-            <sphereGeometry args={[0.10, 8, 8]} />
-            <meshStandardMaterial color={skinColor} roughness={0.7} />
-          </mesh>
-          {/* Jaw — soft */}
-          <mesh position={[0, -0.05, 0.025]} castShadow>
-            <boxGeometry args={[0.14, 0.05, 0.10]} />
-            <meshStandardMaterial color={skinColor} roughness={0.7} />
-          </mesh>
-          {/* Chin */}
-          <mesh position={[0, -0.065, 0.035]}>
-            <sphereGeometry args={[0.022, 4, 4]} />
-            <meshStandardMaterial color={skinColor} roughness={0.7} />
-          </mesh>
+          {/* Skull — slightly softer, more oval */}
+          <mesh castShadow geometry={sharedGeo.skullSphereMd} material={skinMat(skinColor)} />
+          <mesh position={[0, -0.05, 0.025]} castShadow geometry={sharedGeo.jawBoxMd} material={skinMat(skinColor)} />
+          <mesh position={[0, -0.065, 0.035]} geometry={sharedGeo.chinSphereMd} material={skinMat(skinColor)} />
           <Eyes browAngle={0.06} irisColor="#4a6a3a" />
           <FaceFeatures skinColor={skinColor} shadowColor={skinShadow} mouthCornersDown={false} />
 
-          {/* Glasses — rounder than Albert's */}
-          <group position={[0, 0.015, 0.1]}>
-            {/* Left lens — rounder */}
-            <mesh position={[-0.038, 0, 0]}>
-              <torusGeometry args={[0.022, 0.003, 6, 16]} />
-              <meshStandardMaterial color={accentColor} emissive={glowColor} emissiveIntensity={0.3} roughness={0.2} metalness={0.8} />
-            </mesh>
-            {/* Right lens — rounder */}
-            <mesh position={[0.038, 0, 0]}>
-              <torusGeometry args={[0.022, 0.003, 6, 16]} />
-              <meshStandardMaterial color={accentColor} emissive={glowColor} emissiveIntensity={0.3} roughness={0.2} metalness={0.8} />
-            </mesh>
-            {/* Bridge */}
-            <mesh position={[0, 0, 0]}>
-              <boxGeometry args={[0.016, 0.003, 0.003]} />
-              <meshStandardMaterial color={accentColor} roughness={0.3} metalness={0.9} />
-            </mesh>
-            {/* Left temple arm */}
-            <mesh position={[-0.065, 0, -0.04]} rotation={[0, Math.PI * 0.15, 0]}>
-              <boxGeometry args={[0.05, 0.003, 0.003]} />
-              <meshStandardMaterial color={accentColor} roughness={0.3} metalness={0.9} />
-            </mesh>
-            {/* Right temple arm */}
-            <mesh position={[0.065, 0, -0.04]} rotation={[0, -Math.PI * 0.15, 0]}>
-              <boxGeometry args={[0.05, 0.003, 0.003]} />
-              <meshStandardMaterial color={accentColor} roughness={0.3} metalness={0.9} />
-            </mesh>
-          </group>
+          <GlassesRound accentColor={accentColor} glowColor={glowColor} />
 
           {/* Hair — brown, shoulder-length, tidy */}
-          <mesh position={[0, 0.08, -0.01]}>
-            <sphereGeometry args={[0.085, 5, 4]} />
-            <meshStandardMaterial color={hairColor} roughness={0.9} />
-          </mesh>
-          {/* Front bangs — neat */}
-          <mesh position={[0, 0.07, 0.065]}>
-            <sphereGeometry args={[0.055, 5, 4]} />
-            <meshStandardMaterial color={hairColor} roughness={0.9} />
-          </mesh>
-          {/* Side hair */}
-          <mesh position={[-0.08, 0.03, 0.02]}>
-            <sphereGeometry args={[0.035, 4, 3]} />
-            <meshStandardMaterial color={hairColor} roughness={0.9} />
-          </mesh>
-          <mesh position={[0.08, 0.03, 0.02]}>
-            <sphereGeometry args={[0.035, 4, 3]} />
-            <meshStandardMaterial color={hairColor} roughness={0.9} />
-          </mesh>
-          {/* Back hair — longer for librarian bun */}
-          <mesh position={[0, 0.04, -0.07]}>
-            <sphereGeometry args={[0.07, 5, 4]} />
-            <meshStandardMaterial color={hairColor} roughness={0.9} />
-          </mesh>
+          <mesh position={[0, 0.08, -0.01]} geometry={sharedGeo.hairSphere} material={hairMat(hairColor)} />
+          <mesh position={[0, 0.07, 0.065]} geometry={sharedGeo.hairBangsSm} material={hairMat(hairColor)} />
+          <mesh geometry={mergedGeo.hairDarkSidesBack} material={hairMat(hairColor)} />
           {/* Hair bun */}
-          <mesh position={[0, 0.08, -0.10]}>
-            <sphereGeometry args={[0.04, 5, 4]} />
-            <meshStandardMaterial color={hairColor} roughness={0.9} />
-          </mesh>
+          <mesh position={[0, 0.08, -0.10]} geometry={sphereGeo(0.04, 5, 4)} material={hairMat(hairColor)} />
           {/* Hair pin in bun */}
-          <mesh position={[0, 0.08, -0.12]} rotation={[0.3, 0, 0]}>
-            <cylinderGeometry args={[0.003, 0.003, 0.06, 4]} />
-            <meshStandardMaterial color={accentColor} emissive={glowColor} emissiveIntensity={0.3} roughness={0.2} metalness={0.8} />
-          </mesh>
+          <mesh position={[0, 0.08, -0.12]} rotation={[0.3, 0, 0]} geometry={cylinderGeo(0.003, 0.003, 0.06, 4)} material={npcMat({ color: accentColor, emissive: glowColor, emissiveIntensity: 0.3, roughness: 0.2, metalness: 0.8 })} />
         </group>
 
         <Arms sleeveColor={cardiganColor} skinColor={skinColor} armWidth={0.038} forearmWidth={0.034} />

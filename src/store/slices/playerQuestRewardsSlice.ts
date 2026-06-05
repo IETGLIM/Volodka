@@ -16,7 +16,7 @@ import {
   removeInventoryItem,
 } from '../inventoryHelpers';
 import type { GameStoreState } from '../types';
-import { readPlayerFromWorld } from '../crossSliceReads';
+import { pickPlayerQuestRewardsCrossActions, readPlayerFromWorld } from '../crossSliceReads';
 import {
   batchAddEnergy,
   batchAddItem,
@@ -54,7 +54,7 @@ export const createPlayerQuestRewardsSlice: StateCreator<
   giftItemToNPC: (itemId, npcId) => {
     const npcDef = NPC_DEFINITIONS.find((n) => n.id === npcId);
     if (!npcDef) {
-      get().pushNotification('stress', 'Персонаж не найден');
+      pickPlayerQuestRewardsCrossActions(get).pushNotification('stress', 'Персонаж не найден');
       return null;
     }
 
@@ -195,7 +195,8 @@ export const createPlayerQuestRewardsSlice: StateCreator<
     set((state) => {
       const draft = createRewardBatchDraft(state.playerState, state.notifications);
 
-      const quests = state.quests.map((q) => {
+      const { quests: worldQuests } = readPlayerFromWorld(state);
+      const quests = worldQuests.map((q) => {
         if (q.questId !== questId) return q;
         return {
           ...q,
