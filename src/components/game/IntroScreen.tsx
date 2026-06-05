@@ -1148,11 +1148,11 @@ const PhaseTransition = memo(function PhaseTransition({ onContinue }: PhaseTrans
       animate={{ opacity: 1 }}
       transition={{ duration: 2 }}
     >
-      {/* Screen brightens slightly */}
+      {/* Cyberpunk teal glow */}
       <motion.div
         className="absolute inset-0 pointer-events-none -z-10"
         style={{
-          background: 'radial-gradient(ellipse at center, rgba(150, 180, 255, 0.06) 0%, transparent 50%)',
+          background: 'radial-gradient(ellipse at center, rgba(0, 200, 180, 0.08) 0%, transparent 50%)',
         }}
         animate={{ opacity: [0.5, 1, 0.5] }}
         transition={{ duration: 3, repeat: Infinity }}
@@ -1162,7 +1162,7 @@ const PhaseTransition = memo(function PhaseTransition({ onContinue }: PhaseTrans
       <motion.div
         className="mb-6 mx-auto w-16 h-px"
         style={{
-          background: 'linear-gradient(90deg, transparent, rgba(150, 180, 255, 0.3), transparent)',
+          background: 'linear-gradient(90deg, transparent, rgba(0, 255, 100, 0.4), transparent)',
         }}
         initial={{ scaleX: 0 }}
         animate={{ scaleX: 1 }}
@@ -1171,10 +1171,11 @@ const PhaseTransition = memo(function PhaseTransition({ onContinue }: PhaseTrans
 
       {/* Pulsing prompt */}
       <motion.p
-        className="text-sm sm:text-base md:text-lg tracking-[0.25em] uppercase"
+        className="text-sm sm:text-base md:text-lg tracking-[0.2em] uppercase"
         style={{
-          fontFamily: '"Georgia", "Times New Roman", serif',
-          color: 'rgba(180, 200, 240, 0.7)',
+          fontFamily: '"Courier New", "Consolas", "Monaco", monospace',
+          color: 'rgba(0, 255, 100, 0.7)',
+          textShadow: '0 0 15px rgba(0, 255, 100, 0.3)',
         }}
         animate={{
           opacity: [0.3, 0.8, 0.3],
@@ -1299,11 +1300,11 @@ const PhaseWaking = memo(function PhaseWaking({ onContinue, onRevealCanvas }: Ph
   // Vignette intensity: 0.95 → 0.5
   const vignetteIntensity = stage <= 1 ? 0.95 : stage === 2 ? 0.8 : stage === 3 ? 0.65 : stage === 4 ? 0.5 : 0.3;
 
-  // Warm amber light opacity: 0 → 0.25
-  const warmLightOpacity = stage <= 1 ? 0 : stage === 2 ? 0.06 : stage === 3 ? 0.12 : 0.25;
+  // Cyberpunk teal light opacity (replaces warm amber): 0 → 0.25
+  const tealLightOpacity = stage <= 1 ? 0 : stage === 2 ? 0.06 : stage === 3 ? 0.12 : 0.25;
 
-  // Warm light size (radial gradient spread)
-  const warmLightSize = stage <= 1 ? 15 : stage === 2 ? 25 : stage === 3 ? 40 : 55;
+  // Teal light size (radial gradient spread)
+  const tealLightSize = stage <= 1 ? 15 : stage === 2 ? 25 : stage === 3 ? 40 : 55;
 
   // Text opacity based on stage
   const textOpacity = stage <= 1 ? 0.15 : stage === 2 ? 0.5 : stage === 3 ? 0.7 : 0.9;
@@ -1338,11 +1339,11 @@ const PhaseWaking = memo(function PhaseWaking({ onContinue, onRevealCanvas }: Ph
         }}
       />
 
-      {/* ── Warm amber light growing from center ── */}
+      {/* ── Cyberpunk teal light growing from center ── */}
       <div
         className="absolute inset-0 pointer-events-none z-[38]"
         style={{
-          background: `radial-gradient(ellipse ${warmLightSize}% ${warmLightSize * 0.7}% at center, rgba(200, 160, 100, ${warmLightOpacity}) 0%, rgba(180, 120, 60, ${warmLightOpacity * 0.4}) 40%, transparent 70%)`,
+          background: `radial-gradient(ellipse ${tealLightSize}% ${tealLightSize * 0.7}% at center, rgba(0, 200, 180, ${tealLightOpacity}) 0%, rgba(0, 150, 130, ${tealLightOpacity * 0.4}) 40%, transparent 70%)`,
           transition: 'background 2s ease-out',
         }}
       />
@@ -1351,7 +1352,7 @@ const PhaseWaking = memo(function PhaseWaking({ onContinue, onRevealCanvas }: Ph
       <div
         className="absolute inset-0 pointer-events-none z-[37]"
         style={{
-          background: 'radial-gradient(ellipse at center, rgba(200, 160, 100, 0.03) 0%, transparent 50%)',
+          background: 'radial-gradient(ellipse at center, rgba(0, 200, 180, 0.04) 0%, transparent 50%)',
           animation: 'waking-breathe 4s ease-in-out infinite',
         }}
       />
@@ -1367,9 +1368,9 @@ const PhaseWaking = memo(function PhaseWaking({ onContinue, onRevealCanvas }: Ph
             key={`waking-text-${stage}`}
             className="text-base sm:text-lg md:text-xl tracking-[0.06em] text-center px-4"
             style={{
-              fontFamily: '"Georgia", "Times New Roman", serif',
-              color: `rgba(210, 195, 175, ${textOpacity})`,
-              textShadow: `0 0 20px rgba(200, 160, 100, ${textOpacity * 0.2}), 0 0 40px rgba(180, 120, 60, ${textOpacity * 0.08})`,
+              fontFamily: '"Courier New", "Consolas", "Monaco", monospace',
+              color: `rgba(0, 255, 100, ${textOpacity})`,
+              textShadow: `0 0 20px rgba(0, 255, 100, ${textOpacity * 0.3}), 0 0 40px rgba(0, 180, 140, ${textOpacity * 0.1})`,
             }}
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
@@ -1380,10 +1381,10 @@ const PhaseWaking = memo(function PhaseWaking({ onContinue, onRevealCanvas }: Ph
               <span
                 style={{
                   animation: 'cinematic-cursor 1s step-end infinite',
-                  color: `rgba(210, 195, 175, ${textOpacity * 0.7})`,
+                  color: `rgba(0, 255, 100, ${textOpacity * 0.7})`,
                 }}
               >
-                │
+                █
               </span>
             )}
           </motion.p>
@@ -1395,9 +1396,9 @@ const PhaseWaking = memo(function PhaseWaking({ onContinue, onRevealCanvas }: Ph
             key="prev-text-2"
             className="text-sm sm:text-base tracking-[0.06em] text-center px-4 mb-3"
             style={{
-              fontFamily: '"Georgia", "Times New Roman", serif',
-              color: 'rgba(210, 195, 175, 0.3)',
-              textShadow: '0 0 15px rgba(200, 160, 100, 0.05)',
+              fontFamily: '"Courier New", "Consolas", "Monaco", monospace',
+              color: 'rgba(0, 255, 100, 0.25)',
+              textShadow: '0 0 15px rgba(0, 200, 150, 0.05)',
             }}
             initial={{ opacity: 0 }}
             animate={{ opacity: 0.3 }}
