@@ -831,23 +831,31 @@ export function GameOrchestrator() {
           }
           return;
         }
+        // ── Examine overlay first: must close before pause menu (React 19 sync flush race) ──
+        if (ps.examineOpen) {
+          setExamineOpen(false);
+          setExamineData(null);
+          setExamineHasLinkedContent(false);
+          clearPendingTriggerZone();
+          return;
+        }
+        // Close mini-game overlays
+        if (ps.codebreakerOpen) { setCodebreakerOpen(false); return; }
+        if (ps.openstackTerminalOpen) { setOpenstackTerminalOpen(false); return; }
+        if (ps.bashTerminalOpen) { setBashTerminalOpen(false); return; }
+        if (ps.poetryGameOpen) { setPoetryGameOpen(false); return; }
+        if (ps.hackingGameOpen) { setHackingGameOpen(false); return; }
+        if (ps.memoryGameOpen) { setMemoryGameOpen(false); return; }
+        if (ps.quizGameOpen) { setQuizGameOpen(false); return; }
+        if (ps.rhythmGameOpen) { setRhythmGameOpen(false); return; }
         // Close any active panel (managed by useReducer — mutual exclusivity)
         if (ps.activePanel !== null) { dispatchPanel(null); return; }
         // Close journal (managed by gameStore)
         if (store.journalOpen) {
           store.setJournalOpen(false);
-        } else if (ps.examineOpen) {
-          setExamineOpen(false); setExamineData(null); setExamineHasLinkedContent(false);
+          return;
         }
-        else if (ps.codebreakerOpen) setCodebreakerOpen(false);
-        else if (ps.openstackTerminalOpen) setOpenstackTerminalOpen(false);
-        else if (ps.bashTerminalOpen) setBashTerminalOpen(false);
-        else if (ps.poetryGameOpen) setPoetryGameOpen(false);
-        else if (ps.hackingGameOpen) setHackingGameOpen(false);
-        else if (ps.memoryGameOpen) setMemoryGameOpen(false);
-        else if (ps.quizGameOpen) setQuizGameOpen(false);
-        else if (ps.rhythmGameOpen) setRhythmGameOpen(false);
-        else if (ps.mode === 'exploration') dispatchPanel('menu');
+        if (ps.mode === 'exploration') dispatchPanel('menu');
       }
     };
 

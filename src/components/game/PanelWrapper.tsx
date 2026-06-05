@@ -122,6 +122,7 @@ export function PanelWrapper({
     const handler = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         e.preventDefault();
+        e.stopPropagation();
         handleClose();
       }
     };
