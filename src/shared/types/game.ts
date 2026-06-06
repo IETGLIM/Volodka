@@ -113,7 +113,8 @@ export type StoryEffectType =
   | 'triggerQuest'
   | 'collectPoem'
   | 'discoverLore'
-  | 'combat';
+  | 'combat'
+  | 'transitionScene';
 
 export interface StoryEffect {
   type: StoryEffectType;
@@ -131,6 +132,8 @@ export interface StoryEffect {
   loreId?: string;
   /** Enemy type for combat trigger (e.g. 'system_daemon') */
   enemyType?: string;
+  /** Target scene for transitionScene effect */
+  sceneId?: SceneId;
 }
 
 // ─── Game Effect (reusable for triggers) ───
@@ -179,6 +182,8 @@ export interface DialogueNode {
   text: string;
   choices: DialogueChoice[];
   effects?: StoryEffect[];
+  /** Sync 3D scene when this exploration dialogue opens */
+  sceneId?: SceneId;
 }
 
 export interface DialogueChoice {

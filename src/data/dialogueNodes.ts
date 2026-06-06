@@ -3,6 +3,7 @@
 import type { DialogueNode } from '@/shared/types/game';
 import { EXPANDED_DIALOGUE_NODES } from './expandedDialogueNodes';
 import { CHK_DIALOGUE_NODES } from './chkTolpa/dialogues';
+import { EXPLORATION_DIALOGUE_NODES } from './explorationDialogueNodes';
 
 export const DIALOGUE_NODES: Record<string, DialogueNode> = {
   /* ═══════════════════════════════════════════════════════════
@@ -4507,4 +4508,5 @@ export const DIALOGUE_NODES: Record<string, DialogueNode> = {
 
   ...EXPANDED_DIALOGUE_NODES,
   ...CHK_DIALOGUE_NODES,
+  ...EXPLORATION_DIALOGUE_NODES,
 };

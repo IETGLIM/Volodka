@@ -1,7 +1,8 @@
 import { useGameStore } from '@/store/gameStore';
 import { createInventoryItem } from '@/data/items';
 import { eventBus } from '@/engine/EventBus';
-import type { StoryEffect, TrainablePlayerSkill, EnemyType } from '@/shared/types/game';
+import { requestSceneTransition } from '@/engine/scene/sceneTransition';
+import type { StoryEffect, TrainablePlayerSkill, EnemyType, SceneId } from '@/shared/types/game';
 
 /**
  * Apply story/dialogue effects to the game store.
@@ -96,6 +97,11 @@ export function applyEffects(
       case 'combat':
         if (fx.enemyType) {
           callbacks?.startCombat?.(fx.enemyType as EnemyType);
+        }
+        break;
+      case 'transitionScene':
+        if (fx.sceneId) {
+          requestSceneTransition(fx.sceneId as SceneId);
         }
         break;
     }

@@ -26,6 +26,24 @@ import type { EnemyType, SceneId } from '@/shared/types/game';
 import { getInteractionState, isInteractionLocked } from '@/components/3d/InteractionSystemBridge';
 import { InteractionState } from '@/engine/interaction/interactionMachine';
 
+/** Open exploration dialogue with scene sync and revisit skip (door fast-travel). */
+function openLinkedDialogue(nodeId: string): void {
+  const dlgNode = getDialogueNodes()[nodeId];
+  if (!dlgNode) return;
+
+  const store = useGameStore.getState();
+  const alreadyVisited = store.playerState.visitedNodes.includes(nodeId);
+  if (alreadyVisited && dlgNode.sceneId) {
+    requestSceneTransition(dlgNode.sceneId as SceneId);
+    return;
+  }
+
+  if (dlgNode.sceneId) {
+    requestSceneTransitionForStoryNode(nodeId, dlgNode.sceneId);
+  }
+  openNarrativeOverlay(nodeId, 'dialogue');
+}
+
 /**
  * Sub-orchestrator that handles all interaction-related logic:
  * - E-key object interactions (trigger zones → examine + linked content)
@@ -172,7 +190,7 @@ export function useInteractionOrchestrator(
             requestSceneTransitionForStoryNode(z.linkedStoryNodeId, storyNode.sceneId);
             openNarrativeOverlay(z.linkedStoryNodeId, 'story');
           } else if (z.linkedDialogueNodeId && getDialogueNodes()[z.linkedDialogueNodeId]) {
-            openNarrativeOverlay(z.linkedDialogueNodeId, 'dialogue');
+            openLinkedDialogue(z.linkedDialogueNodeId);
           }
         };
 
@@ -361,7 +379,7 @@ export function useInteractionOrchestrator(
       requestSceneTransitionForStoryNode(zone.linkedStoryNodeId, storyNode.sceneId);
       openNarrativeOverlay(zone.linkedStoryNodeId, 'story');
     } else if (zone.linkedDialogueNodeId && getDialogueNodes()[zone.linkedDialogueNodeId]) {
-      openNarrativeOverlay(zone.linkedDialogueNodeId, 'dialogue');
+      openLinkedDialogue(zone.linkedDialogueNodeId);
     }
   }, []);
 

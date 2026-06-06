@@ -248,6 +248,7 @@ export function MatrixRain({ sceneId: sceneIdProp }: MatrixRainProps) {
   const [speedMultiplier, setSpeedMultiplier] = useState(1.0);
   // Track whether a minigame boosted speed so we know the base
   const minigameBoostRef = useRef(false);
+  const glitchTimersRef = useRef<Set<ReturnType<typeof setTimeout>>>(new Set());
 
   useEffect(() => {
     const unsubs: (() => void)[] = [];
@@ -276,13 +277,20 @@ export function MatrixRain({ sceneId: sceneIdProp }: MatrixRainProps) {
       eventBus.on('fx:glitch', () => {
         setSpeedMultiplier((prev) => Math.min(prev + 1.5, 5.0));
         const timer = setTimeout(() => {
+          glitchTimersRef.current.delete(timer);
           setSpeedMultiplier((prev) => Math.max(prev - 1.5, minigameBoostRef.current ? 3.0 : activePreset.speed));
         }, 600);
-        return () => clearTimeout(timer);
+        glitchTimersRef.current.add(timer);
       }),
     );
 
-    return () => unsubs.forEach((u) => u());
+    return () => {
+      unsubs.forEach((u) => u());
+      for (const timer of glitchTimersRef.current) {
+        clearTimeout(timer);
+      }
+      glitchTimersRef.current.clear();
+    };
   }, [activePreset.speed]);
 
   // Reset speed when preset changes (scene change)

@@ -52,7 +52,7 @@ export const TRIGGER_ZONES: TriggerZone[] = [
     position: [0, 0.5, -2.5],
     size: [2.0, 1.5, 1.0],
     enterToast: 'Рабочий стол — три монитора и остывший кофе.',
-    linkedStoryNodeId: 'room_table',
+    linkedDialogueNodeId: 'explore_room_table',
     interactionType: 'examine',
     examineData: {
       title: 'Рабочий стол',
@@ -68,7 +68,7 @@ export const TRIGGER_ZONES: TriggerZone[] = [
     position: [-3.5, 1.0, 0],
     size: [0.8, 2.0, 2.5],
     enterToast: 'Книжная полка — стихи рядом с руководствами.',
-    linkedStoryNodeId: 'room_bookshelf',
+    linkedDialogueNodeId: 'explore_room_bookshelf',
     interactionType: 'read',
     examineData: {
       title: 'Книжная полка',
@@ -84,7 +84,7 @@ export const TRIGGER_ZONES: TriggerZone[] = [
     position: [3.0, 1.0, -3.0],
     size: [1.5, 2.0, 0.5],
     enterToast: 'За окном — серый город и дождь.',
-    linkedStoryNodeId: 'kitchen_window',
+    linkedDialogueNodeId: 'explore_room_window',
     isOneTime: true,
     interactionType: 'examine',
     examineData: {
@@ -104,7 +104,7 @@ export const TRIGGER_ZONES: TriggerZone[] = [
     position: [0, 0, 3.5],
     size: [1.2, 2.2, 0.5],
     enterToast: 'Дверь в коридор приоткрыта.',
-    linkedStoryNodeId: 'corridor_door',
+    linkedDialogueNodeId: 'explore_corridor_door',
     interactionType: 'open',
     examineData: {
       title: 'Дверь в коридор',
@@ -156,7 +156,7 @@ export const TRIGGER_ZONES: TriggerZone[] = [
     position: [1.4, 0, -1.0],
     size: [1.2, 2.2, 0.5],
     enterToast: 'Из кухни пахнет чаем.',
-    linkedStoryNodeId: 'kitchen_table',
+    linkedDialogueNodeId: 'explore_kitchen_table',
     interactionType: 'open',
     examineData: {
       title: 'Дверь на кухню',
@@ -171,7 +171,7 @@ export const TRIGGER_ZONES: TriggerZone[] = [
     position: [-1.4, 0, -1.0],
     size: [1.2, 2.2, 0.5],
     enterToast: 'Дверь на лестничную клетку — оттуда тянет холодом.',
-    linkedStoryNodeId: 'street_bench',
+    linkedDialogueNodeId: 'explore_street_entry',
     interactionType: 'open',
     examineData: {
       title: 'Входная дверь',
@@ -186,7 +186,7 @@ export const TRIGGER_ZONES: TriggerZone[] = [
     position: [0, 0, 3.5],
     size: [1.2, 2.2, 0.5],
     enterToast: 'Твоя комната.',
-    linkedStoryNodeId: 'go_home',
+    linkedDialogueNodeId: 'explore_go_home',
     interactionType: 'open',
     examineData: {
       title: 'Дверь в комнату',
@@ -219,7 +219,7 @@ export const TRIGGER_ZONES: TriggerZone[] = [
     position: [3.0, 1.0, -2.5],
     size: [1.5, 2.0, 0.5],
     enterToast: 'За окном — панельные дома и неон.',
-    linkedStoryNodeId: 'kitchen_window',
+    linkedDialogueNodeId: 'explore_kitchen_window',
     isOneTime: true,
     interactionType: 'examine',
     examineData: {
@@ -239,7 +239,7 @@ export const TRIGGER_ZONES: TriggerZone[] = [
     position: [-2.0, 0.8, -1.5],
     size: [0.5, 0.5, 0.5],
     enterToast: 'Старый радиоприёмник шипит статикой.',
-    linkedStoryNodeId: 'volodka_inner',
+    linkedDialogueNodeId: 'explore_volodka_inner',
     interactionType: 'use',
     examineData: {
       title: 'Радиоприёмник',
@@ -317,7 +317,7 @@ export const TRIGGER_ZONES: TriggerZone[] = [
     position: [2.5, 0, 0],
     size: [1.5, 1.0, 1.5],
     enterToast: 'Свободный столик у стены.',
-    linkedStoryNodeId: 'cafe_enter',
+    linkedDialogueNodeId: 'explore_cafe_enter',
     examineData: {
       title: 'Свободный столик',
       description: 'Пустой столик у стены. На столе — следы от кружки и меню.',
@@ -332,7 +332,7 @@ export const TRIGGER_ZONES: TriggerZone[] = [
     position: [0, 0, 4.5],
     size: [1.5, 2.2, 0.5],
     enterToast: 'Выход из кафе — обратно на улицу.',
-    linkedStoryNodeId: 'street_bench',
+    linkedDialogueNodeId: 'explore_cafe_exit',
     interactionType: 'open',
     examineData: {
       title: 'Выход из кафе',
@@ -349,7 +349,7 @@ export const TRIGGER_ZONES: TriggerZone[] = [
     position: [0, 0, 0],
     size: [2.0, 1.0, 1.5],
     enterToast: 'Скамейка — влажная от дождя, но сидеть можно.',
-    linkedStoryNodeId: 'street_bench_view',
+    linkedDialogueNodeId: 'explore_street_bench_view',
     interactionType: 'examine',
     examineData: {
       title: 'Скамейка',
@@ -364,7 +364,7 @@ export const TRIGGER_ZONES: TriggerZone[] = [
     position: [4.0, 0, -2.0],
     size: [1.5, 2.5, 1.0],
     enterToast: 'Вывеска «Синяя яма» мигает неоном.',
-    linkedStoryNodeId: 'cafe_enter',
+    linkedDialogueNodeId: 'explore_cafe_enter',
     interactionType: 'open',
     examineData: {
       title: 'Вход в кафе',
@@ -393,7 +393,7 @@ export const TRIGGER_ZONES: TriggerZone[] = [
     position: [-2.0, 0, 4.0],
     size: [1.5, 2.5, 1.0],
     enterToast: 'Подъезд — можно вернуться домой.',
-    linkedStoryNodeId: 'go_home',
+    linkedDialogueNodeId: 'explore_go_home',
     interactionType: 'open',
     examineData: {
       title: 'Подъезд',
@@ -430,7 +430,7 @@ export const TRIGGER_ZONES: TriggerZone[] = [
     position: [-1.5, 0.5, -3.0],
     size: [1.0, 1.5, 1.0],
     enterToast: 'Терминал с логами инцидента #4729.',
-    linkedStoryNodeId: 'start_diagnosis',
+    linkedDialogueNodeId: 'explore_start_diagnosis',
     linkedQuestId: 'vault_backup_trial',
     interactionType: 'hack',
     examineData: {

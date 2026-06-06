@@ -12,6 +12,7 @@ import {
   useDialogueContext,
   useSetCurrentNodeId,
   useSetMode,
+  useVisitNode,
 } from '@/store/selectors';
 import { DIALOGUE_NODES } from '@/data/dialogueNodes';
 import { findNpcByName } from '@/data/allNpcDefinitions';
@@ -19,6 +20,7 @@ import { createInventoryItem } from '@/data/items';
 import { audioEngine } from '@/engine/AudioEngine';
 import { eventBus } from '@/engine/EventBus';
 import { closeNarrativeOverlay } from '@/engine/scene/narrativeOverlay';
+import { requestSceneTransitionForStoryNode } from '@/engine/scene/sceneTransition';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import type {
   DialogueChoice,
@@ -135,6 +137,7 @@ export function DialogueRenderer() {
   const { mode, showStoryOverlay, currentNodeId, playerState, npcRelations, timeOfDay } = useDialogueContext();
   const setMode = useSetMode();
   const setCurrentNodeId = useSetCurrentNodeId();
+  const visitNode = useVisitNode();
 
   const [skillCheckBanner, setSkillCheckBanner] = useState<{
     skill: TrainablePlayerSkill;
@@ -170,6 +173,11 @@ export function DialogueRenderer() {
     if (node && appliedRef.current !== node.id) {
       appliedRef.current = node.id;
 
+      visitNode(node.id);
+      if (node.sceneId) {
+        requestSceneTransitionForStoryNode(node.id, node.sceneId);
+      }
+
       // Add to history (deferred to avoid sync setState in effect)
       if (node.speaker && node.text) {
         const speaker = node.speaker;
@@ -189,7 +197,7 @@ export function DialogueRenderer() {
         applyEffects(node.effects);
       }
     }
-  }, [node]);
+  }, [node, visitNode]);
 
   const handleClose = useCallback(() => {
     audioEngine.playSfx('ui_close');
