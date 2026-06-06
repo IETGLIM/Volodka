@@ -75,6 +75,7 @@ export type GameAction =
   | { type: 'player/addStress'; amount: number }
   | { type: 'player/addKarma'; amount: number }
   | { type: 'player/addXp'; amount: number }
+  | { type: 'player/addCredits'; amount: number }
   | { type: 'player/setFlag'; key: string; value: boolean }
   | { type: 'player/setNpcRelation'; npcId: string; delta: number }
   /* ── Poem powers ── */
@@ -84,6 +85,8 @@ export type GameAction =
   | { type: 'story/setMode'; mode: GameMode }
   | { type: 'story/setCurrentNodeId'; nodeId: string }
   | { type: 'story/setShowStoryOverlay'; show: boolean }
+  | { type: 'story/openNarrativeOverlay'; nodeId: string }
+  | { type: 'story/closeNarrativeOverlay' }
   | { type: 'story/advanceAct' }
   /* ── Inventory ── */
   | { type: 'inventory/addItem'; item: InventoryItem }

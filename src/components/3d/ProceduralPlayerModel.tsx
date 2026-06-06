@@ -307,7 +307,27 @@ export const ProceduralPlayerModel = memo(function ProceduralPlayerModel({
       return;
     }
 
-    if (animState === 'walk') {
+    if (animState === 'jump' || animState === 'fall') {
+      const airborne = animState === 'jump';
+      const legTuck = airborne ? -0.45 : -0.15;
+      const armRaise = airborne ? -0.35 : 0.15;
+
+      if (torso) {
+        torso.position.y = 1.05 + (airborne ? 0.04 : 0);
+        torso.rotation.x = airborne ? -0.08 : 0.1;
+      }
+      if (leftArm) {
+        leftArm.rotation.x = armRaise;
+        leftArm.rotation.z = 0.15;
+      }
+      if (rightArm) {
+        rightArm.rotation.x = armRaise;
+        rightArm.rotation.z = -0.15;
+      }
+      if (leftLeg) leftLeg.rotation.x = legTuck;
+      if (rightLeg) rightLeg.rotation.x = legTuck * 0.85;
+      if (head) head.rotation.x = airborne ? -0.05 : 0.08;
+    } else if (animState === 'walk') {
       const speed = 8;
       const armSwing = 0.4;
       const legSwing = 0.4;

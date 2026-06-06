@@ -9,6 +9,7 @@ import type { SceneExit, SceneId } from '@/shared/types/game';
 import { useSceneExitState } from '@/store/selectors';
 import { getSceneExits } from '@/config/scenes';
 import { eventBus } from '@/engine/EventBus';
+import { requestSceneTransition } from '@/engine/scene/sceneTransition';
 import { isInteractionLocked } from './InteractionSystemBridge';
 import { TRIGGER_ZONES } from '@/data/triggerZones';
 
@@ -105,17 +106,9 @@ function ExitMarker({
 
       // Trigger transition
       cooldownRef.current = EXIT_COOLDOWN;
-      eventBus.emit('scene:transition', {
-        targetScene: exit.targetScene,
-        spawnAt: exit.spawnAt,
-      });
-      eventBus.emit('ui:exploration_message', {
-        text: `Переход: ${exit.label.replace('→ ', '')}`,
-      });
+      requestSceneTransition(exit.targetScene, exit.spawnAt);
     };
 
-    // EventBus listener for mobile interact button — same logic as KeyE
-    // but triggered via EventBus instead of synthetic keyboard event
     const handleInteractPress = () => {
       if (!showIndicatorRef.current) return;
       if (cooldownRef.current > 0) return;
@@ -127,15 +120,8 @@ function ExitMarker({
       setTimeout(() => { (window as any).__volodka_ekey_consumed = false; }, 200);
 
       cooldownRef.current = EXIT_COOLDOWN;
-      eventBus.emit('scene:transition', {
-        targetScene: exit.targetScene,
-        spawnAt: exit.spawnAt,
-      });
-      eventBus.emit('ui:exploration_message', {
-        text: `Переход: ${exit.label.replace('→ ', '')}`,
-      });
+      requestSceneTransition(exit.targetScene, exit.spawnAt);
     };
-
     window.addEventListener('keydown', handleKeyDown);
     const unsubInteract = eventBus.on('interact:press', handleInteractPress);
     return () => {

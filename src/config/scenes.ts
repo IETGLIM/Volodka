@@ -59,6 +59,11 @@ export function getExplorationLocomotionScale(sceneId: SceneId): number {
   return config.explorationLocomotionScale;
 }
 
+/** Walkable floor height for a scene (RigidBody Y when grounded). */
+export function getSceneFloorY(sceneId: SceneId): number {
+  return getSceneConfig(sceneId).floorY;
+}
+
 /**
  * Get the exits for a given scene, filtered by player flags and karma.
  * Returns only exits the player can currently use.

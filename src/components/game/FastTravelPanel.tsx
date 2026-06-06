@@ -18,6 +18,7 @@ import type { SceneId } from '@/shared/types/game';
 const SCENE_GATES: Partial<Record<SceneId, string>> = {
   rooftop_edge: 'rooftop_unlocked',
   abandoned_factory: 'factory_unlocked',
+  chk_forest_zorge: 'chk_path_known',
 };
 
 /* ─── Travel time cost (same as explorationSlice) ─── */
@@ -31,6 +32,7 @@ const TRAVEL_TIME: Partial<Record<SceneId, number>> = {
   cafe_evening: 0.5,
   office_day: 0.5,
   park_day: 0.75,
+  chk_forest_zorge: 1.0,
   library_day: 0.75,
   rooftop_edge: 1.0,
   abandoned_factory: 1.0,
@@ -64,6 +66,7 @@ const MAP_NODES: MapNode[] = [
 
   // Outdoor (right side)
   { id: 'park_day', x: 75, y: 55, icon: '🌳', group: 'outdoor' },
+  { id: 'chk_forest_zorge', x: 82, y: 42, icon: '🏕️', group: 'outdoor' },
   { id: 'library_day', x: 85, y: 70, icon: '📚', group: 'outdoor' },
 
   // Special / gated
@@ -88,6 +91,7 @@ const CONNECTIONS: [SceneId, SceneId][] = [
   ['street_night', 'abandoned_factory'],
   ['street_night', 'street_winter'],
   ['park_day', 'library_day'],
+  ['park_day', 'chk_forest_zorge'],
   ['volodka_room', 'sleep_dream'],
 ];
 
@@ -110,6 +114,7 @@ const SCENE_DESCRIPTIONS: Partial<Record<SceneId, string>> = {
   cafe_evening: 'Кафе «Синяя яма». Синий неон и кофе.',
   office_day: 'Офис IT-гильдии. Белый свет, ряды мониторов.',
   park_day: 'Городской парк. Редкие деревья и тишина.',
+  chk_forest_zorge: 'Лес на Зорге. Костёр ЧК, портвейн и металл.',
   library_day: 'Старая библиотека. Запах бумаги и пыли.',
   rooftop_edge: 'Край крыши. Весь город как на ладони.',
   abandoned_factory: 'Заброшенный завод. Ржавчина и эхо.',

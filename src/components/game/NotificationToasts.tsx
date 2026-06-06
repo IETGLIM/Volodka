@@ -290,8 +290,8 @@ export function NotificationToasts() {
 
     // Combat victory — show a quest toast
     unsubs.push(
-      eventBus.on('combat:victory', ({ karmaGained, xpGained }) => {
-        toastManager.addToast('quest', `Победа! +${karmaGained} кармы, +${xpGained} опыта`);
+      eventBus.on('combat:victory', ({ karmaGained, xpGained, creditsGained }) => {
+        toastManager.addToast('quest', `Победа! +${karmaGained} кармы, +${xpGained} опыта, +${creditsGained} кредитов`);
       }),
     );
 

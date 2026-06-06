@@ -19,6 +19,7 @@ import { useVirtualControlsRef } from '@/engine/VirtualControlsState';
 import type { VirtualControls } from '@/hooks/useGamePhysics';
 import { useGameStore } from '@/store/gameStore';
 import { eventBus } from '@/engine/EventBus';
+import { requestSceneTransition } from '@/engine/scene/sceneTransition';
 import { getSceneExits } from '@/config/scenes';
 import { TRIGGER_ZONES } from '@/data/triggerZones';
 
@@ -137,13 +138,7 @@ export function ExplorationMobileHud({ onInteractPress, onOpenInventory }: Explo
                 Math.abs(z.position[2] - exit.position[2]) < 1.5,
             );
             if (!hasOverlap) {
-              eventBus.emit('scene:transition', {
-                targetScene: exit.targetScene,
-                spawnAt: exit.spawnAt,
-              });
-              eventBus.emit('ui:exploration_message', {
-                text: `Переход: ${exit.label.replace('→ ', '')}`,
-              });
+              requestSceneTransition(exit.targetScene, exit.spawnAt);
             }
             break; // Only transition to the nearest exit
           }

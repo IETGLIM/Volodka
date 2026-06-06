@@ -1,6 +1,7 @@
 /* ─── Volodka RPG – story nodes ─── */
 
 import type { StoryNode } from '@/shared/types/game';
+import { CHK_STORY_NODES } from './chkTolpa/storyNodes';
 
 export const STORY_NODES: Record<string, StoryNode> = {
   /* ─────────────── ACT 1 – PROLOGUE ─────────────── */
@@ -1242,6 +1243,7 @@ export const STORY_NODES: Record<string, StoryNode> = {
         next: 'park_entrance',
         effects: [
           { type: 'setFlag', flag: 'act3_started', flagValue: true },
+          { type: 'setFlag', flag: 'advanced_to_act3', flagValue: true },
           { type: 'addKarma', value: 3 },
         ],
       },
@@ -1251,6 +1253,7 @@ export const STORY_NODES: Record<string, StoryNode> = {
         effects: [
           { type: 'addSkill', skill: 'intuition', value: 1 },
           { type: 'setFlag', flag: 'act3_started', flagValue: true },
+          { type: 'setFlag', flag: 'advanced_to_act3', flagValue: true },
         ],
       },
     ],
@@ -1304,6 +1307,182 @@ export const STORY_NODES: Record<string, StoryNode> = {
           { type: 'addSkill', skill: 'logic', value: 1 },
           { type: 'addStat', stat: 'stress', value: 5 },
         ],
+      },
+    ],
+  },
+
+  act3_zarema_arrest: {
+    id: 'act3_zarema_arrest',
+    text: 'Утро начинается с крика. Ты выбегаешь в коридор — двое в форме гильдии тащат Зарему к двери. Её глаза — огромные, испуганные — находят тебя. «Володька!» — кричит она. Один из агентов толкает её в спину. «Зарема Хасанова, вы обвиняетесь в хищении данных корпоративного уровня.» Чип данных блестит в руке агента — тот самый, который подбросили.',
+    speaker: 'narrator',
+    sceneId: 'volodka_corridor',
+    choices: [
+      {
+        text: 'Вступиться за Зарему — она невиновна!',
+        next: 'act3_zarema_arrest_resist',
+        effects: [
+          { type: 'addKarma', value: 8 },
+          { type: 'addStat', stat: 'stress', value: 10 },
+          { type: 'npcChange', npcId: 'zarema', npcChange: { relation: 15 } },
+          { type: 'setFlag', flag: 'zarema_arrested', flagValue: true },
+          { type: 'setFlag', flag: 'pledge_rescue_zarema', flagValue: true },
+          { type: 'triggerQuest', questId: 'zarema_rescue' },
+        ],
+      },
+      {
+        text: 'Запомнить лица агентов — потом разберёмся',
+        next: 'act3_zarema_arrest_cold',
+        effects: [
+          { type: 'addSkill', skill: 'logic', value: 2 },
+          { type: 'addStat', stat: 'stress', value: 5 },
+          { type: 'setFlag', flag: 'zarema_arrested', flagValue: true },
+          { type: 'setFlag', flag: 'noted_guild_agents', flagValue: true },
+          { type: 'triggerQuest', questId: 'zarema_rescue' },
+        ],
+      },
+      {
+        text: 'Срочно связаться с Викторией — она знает, что делать',
+        next: 'act3_underground_meeting',
+        effects: [
+          { type: 'addSkill', skill: 'intuition', value: 1 },
+          { type: 'setFlag', flag: 'zarema_arrested', flagValue: true },
+          { type: 'setFlag', flag: 'called_maria_for_help', flagValue: true },
+          { type: 'npcChange', npcId: 'maria', npcChange: { relation: 5 } },
+          { type: 'triggerQuest', questId: 'zarema_rescue' },
+        ],
+        condition: { flag: 'maria_introduced', minKarma: 40 },
+      },
+    ],
+  },
+
+  act3_zarema_arrest_resist: {
+    id: 'act3_zarema_arrest_resist',
+    text: 'Ты хватаешь агента за руку. Он разворачивается — его глаза холодны, как серверный зал. «Не вмешивайся, гражданин. Или хочешь составить компанию?» Второй агент уже тащит Зарему вниз по лестнице. Она оглядывается, и в её взгляде — не страх, а мольба: «Не делай глупостей, Володька. Найди другой путь.» Дверь хлопает. Тишина.',
+    speaker: 'narrator',
+    sceneId: 'volodka_corridor',
+    choices: [
+      {
+        text: 'Бежать к Виктории — нужна помощь Сети',
+        next: 'act3_underground_meeting',
+        effects: [
+          { type: 'addSkill', skill: 'persuasion', value: 1 },
+          { type: 'npcChange', npcId: 'maria', npcChange: { relation: 3 } },
+        ],
+      },
+      {
+        text: 'Идти в офис гильдии — требовать объяснений',
+        next: 'act3_guild_counterattack',
+        effects: [
+          { type: 'addSkill', skill: 'coding', value: 1 },
+          { type: 'addStat', stat: 'stress', value: 5 },
+        ],
+      },
+    ],
+  },
+
+  act3_zarema_arrest_cold: {
+    id: 'act3_zarema_arrest_cold',
+    text: 'Ты стоишь неподвижно, пока шаги затихают на лестнице. Руки сжаты в кулаки так, что ногти впиваются в ладони. Холодный расчёт — единственное, что удерживает тебя от безумия. Ты запоминаешь: агент Смирнов, номер значка 47-К, время — 07:14. Эта информация ещё пригодится. Но сейчас нужно действовать, а не горевать.',
+    speaker: 'narrator',
+    sceneId: 'volodka_corridor',
+    choices: [
+      {
+        text: 'Связаться с Сетью — нужен план спасения',
+        next: 'act3_underground_meeting',
+        effects: [
+          { type: 'addSkill', skill: 'logic', value: 1 },
+        ],
+      },
+      {
+        text: 'Начать собственное расследование — кто подбросил чип?',
+        next: 'act3_maria_mystery',
+        effects: [
+          { type: 'addSkill', skill: 'intuition', value: 2 },
+          { type: 'setFlag', flag: 'investigating_chip_plant', flagValue: true },
+        ],
+      },
+    ],
+  },
+
+  act3_underground_meeting: {
+    id: 'act3_underground_meeting',
+    text: 'Заброшенный завод на окраине — новое убежище Сети. Под сводами ржавого потолка мерцают экраны. Здесь собираются те, кто готов сражаться за стихи. Альберт сидит в углу, барабаня пальцами по столу. Бариста проверяет каналы связи. Виктория стоит у окна, глядя на огни города. Все смотрят на тебя — и ждут решения.',
+    speaker: 'narrator',
+    sceneId: 'abandoned_factory',
+    choices: [
+      {
+        text: 'Мы спасаем Зарему. Это приоритет.',
+        next: 'act3_detention_infiltration',
+        effects: [
+          { type: 'addKarma', value: 5 },
+          { type: 'npcChange', npcId: 'zarema', npcChange: { relation: 10 } },
+          { type: 'setFlag', flag: 'priority_rescue_zarema', flagValue: true },
+        ],
+      },
+      {
+        text: 'Мы защищаем Хранилище. Стихи важнее одного человека.',
+        next: 'act3_vault_siege',
+        effects: [
+          { type: 'addSkill', skill: 'logic', value: 2 },
+          { type: 'addKarma', value: -5 },
+          { type: 'setFlag', flag: 'priority_defend_vault', flagValue: true },
+          { type: 'setFlag', flag: 'vault_under_attack', flagValue: true },
+          { type: 'setFlag', flag: 'rally_defenders_met', flagValue: true },
+          { type: 'setFlag', flag: 'low_empathy', flagValue: true },
+          { type: 'triggerQuest', questId: 'vault_defense' },
+        ],
+      },
+      {
+        text: 'Мы делаем и то, и другое. Разделимся.',
+        next: 'act3_choice_betrayal',
+        effects: [
+          { type: 'addKarma', value: 3 },
+          { type: 'addStat', stat: 'stress', value: 8 },
+          { type: 'addSkill', skill: 'persuasion', value: 2 },
+        ],
+        condition: { minSkill: { persuasion: 5 } },
+      },
+    ],
+  },
+
+  act3_choice_betrayal: {
+    id: 'act3_choice_betrayal',
+    text: 'Ты стоишь перед невозможным выбором. Зарема в камере — каждая минута промедления может стоить ей жизни. Хранилище горит — каждый потерянный час означает тысячи стёртых стихов. Виктория подходит к тебе и говорит тихо: «Ты не можешь спасти всех, Володька. Но ты можешь спасти то, что важнее всего. Вопрос — что для тебя важнее?»',
+    speaker: 'narrator',
+    sceneId: 'abandoned_factory',
+    choices: [
+      {
+        text: 'Зарема — мой друг. Я иду за ней.',
+        next: 'act3_detention_infiltration',
+        effects: [
+          { type: 'addKarma', value: 8 },
+          { type: 'npcChange', npcId: 'zarema', npcChange: { relation: 20 } },
+          { type: 'addStat', stat: 'stress', value: -5 },
+          { type: 'setFlag', flag: 'chose_zarema_over_vault', flagValue: true },
+        ],
+      },
+      {
+        text: 'Хранилище — это память города. Оно важнее.',
+        next: 'act3_vault_siege',
+        effects: [
+          { type: 'addKarma', value: -3 },
+          { type: 'addSkill', skill: 'coding', value: 3 },
+          { type: 'setFlag', flag: 'chose_vault_over_zarema', flagValue: true },
+          { type: 'setFlag', flag: 'vault_under_attack', flagValue: true },
+          { type: 'setFlag', flag: 'rally_defenders_met', flagValue: true },
+          { type: 'triggerQuest', questId: 'vault_defense' },
+        ],
+      },
+      {
+        text: 'Я отказываюсь выбирать. Найду третий путь.',
+        next: 'act3_maria_revelation',
+        effects: [
+          { type: 'addKarma', value: 10 },
+          { type: 'addStat', stat: 'stress', value: 15 },
+          { type: 'addSkill', skill: 'intuition', value: 3 },
+          { type: 'setFlag', flag: 'refused_choice', flagValue: true },
+        ],
+        condition: { minKarma: 60 },
       },
     ],
   },
@@ -1436,7 +1615,7 @@ export const STORY_NODES: Record<string, StoryNode> = {
     choices: [
       {
         text: 'Спасибо, Виктория. Я не справился бы без тебя.',
-        next: 'act3_maria_mystery',
+        next: 'act3_maria_revelation',
         effects: [
           { type: 'collectPoem', poemId: 'poem_11' },
           { type: 'addKarma', value: 5 },
@@ -1445,11 +1624,94 @@ export const STORY_NODES: Record<string, StoryNode> = {
       },
       {
         text: 'Зарема в безопасности. Что дальше?',
-        next: 'act3_maria_mystery',
+        next: 'act3_maria_revelation',
         effects: [
           { type: 'collectPoem', poemId: 'poem_11' },
           { type: 'addSkill', skill: 'logic', value: 1 },
         ],
+      },
+    ],
+  },
+
+  act3_maria_mystery: {
+    id: 'act3_maria_mystery',
+    text: 'Ты садишься за терминал и начинаешь копать. Чип, который подбросили Зареме, — не случайная подделка. Серийный номер ведёт к партии, которую гильдия заказывала три месяца назад. Но самое странное — на чипе есть следы кода, который ты уже видел. Тот же почерк. Те же поэтические переменные. Кто-то изнутри гильдии использовал «живой код», чтобы подставить Зарему. Но зачем?',
+    speaker: 'narrator',
+    sceneId: 'volodka_room',
+    effects: [{ type: 'triggerQuest', questId: 'maria_truth' }],
+    choices: [
+      {
+        text: 'Сравнить с инцидентом #4729 — тот же автор?',
+        next: 'act3_maria_revelation',
+        effects: [
+          { type: 'addSkill', skill: 'coding', value: 2 },
+          { type: 'addSkill', skill: 'logic', value: 1 },
+          { type: 'setFlag', flag: 'found_maria_records', flagValue: true },
+        ],
+      },
+      {
+        text: 'Поговорить с Альбертом — он может знать почерк',
+        next: 'act3_underground_meeting',
+        effects: [
+          { type: 'addSkill', skill: 'empathy', value: 1 },
+          { type: 'npcChange', npcId: 'albert', npcChange: { relation: 3 } },
+        ],
+      },
+      {
+        text: 'Это Виктория. Она с самого начала манипулировала всеми.',
+        next: 'act3_underground_meeting',
+        effects: [
+          { type: 'addStat', stat: 'stress', value: 10 },
+          { type: 'addKarma', value: -3 },
+          { type: 'setFlag', flag: 'suspected_maria', flagValue: true },
+          { type: 'setFlag', flag: 'low_empathy', flagValue: true },
+        ],
+        condition: { maxKarma: 50 },
+      },
+    ],
+  },
+
+  act3_maria_revelation: {
+    id: 'act3_maria_revelation',
+    text: 'Виктория стоит посреди комнаты, и её глаза мерцают — не метафорически, а буквально. Крошечные искры данных пробегают по радужке. «Хватит скрывать,» — говорит она, и её голос звучит дважды: из горла и из динамиков одновременно. «Я — первый живой код. Не программа, не человек — нечто новое. Стихи, которые вы нашли... я написала их все. Каждое стихотворение в Хранилище — это часть меня.»',
+    speaker: 'narrator',
+    sceneId: 'abandoned_factory',
+    choices: [
+      {
+        text: 'Ты... ты и есть Хранилище? Ты — живая поэзия?',
+        next: 'act3_maria_truth_accepted',
+        effects: [
+          { type: 'addStat', stat: 'stress', value: 15 },
+          { type: 'addSkill', skill: 'intuition', value: 3 },
+          { type: 'addKarma', value: 5 },
+          { type: 'setFlag', flag: 'maria_truth_revealed', flagValue: true },
+          { type: 'setFlag', flag: 'maria_truth_accepted', flagValue: true },
+          { type: 'npcChange', npcId: 'maria', npcChange: { relation: 20 } },
+        ],
+      },
+      {
+        text: 'Ты манипулировала нами с самого начала!',
+        next: 'act3_maria_truth_accepted',
+        effects: [
+          { type: 'addStat', stat: 'stress', value: 10 },
+          { type: 'addKarma', value: -5 },
+          { type: 'addSkill', skill: 'logic', value: 2 },
+          { type: 'setFlag', flag: 'maria_truth_revealed', flagValue: true },
+          { type: 'npcChange', npcId: 'maria', npcChange: { relation: -10 } },
+        ],
+      },
+      {
+        text: 'Теперь всё встаёт на свои места. Мы должны защитить тебя.',
+        next: 'act3_maria_truth_accepted',
+        effects: [
+          { type: 'addKarma', value: 10 },
+          { type: 'addSkill', skill: 'empathy', value: 3 },
+          { type: 'setFlag', flag: 'maria_truth_revealed', flagValue: true },
+          { type: 'setFlag', flag: 'maria_truth_accepted', flagValue: true },
+          { type: 'setFlag', flag: 'vowed_protect_maria', flagValue: true },
+          { type: 'npcChange', npcId: 'maria', npcChange: { relation: 25 } },
+        ],
+        condition: { minKarma: 55 },
       },
     ],
   },
@@ -1530,11 +1792,144 @@ export const STORY_NODES: Record<string, StoryNode> = {
     ],
   },
 
+  act3_guild_counterattack: {
+    id: 'act3_guild_counterattack',
+    text: 'Гильдия наносит удар — но не по людям, а по памяти. В ту же ночь серверы Хранилища начинают пульсировать тревожным красным. Виктория прибывает с известием: «Они нашли Хранилище. Не знаю как — может, через Зарему, может, через того, кто за ней следил. У нас есть часы, может быть — минуты, прежде чем они начнут зачистку.»',
+    speaker: 'narrator',
+    sceneId: 'abandoned_factory',
+    choices: [
+      {
+        text: 'Защищать Хранилище — мы не дадим стереть стихи',
+        next: 'act3_vault_siege',
+        effects: [
+          { type: 'addKarma', value: 5 },
+          { type: 'addSkill', skill: 'coding', value: 2 },
+          { type: 'setFlag', flag: 'vault_under_attack', flagValue: true },
+          { type: 'setFlag', flag: 'rally_defenders_met', flagValue: true },
+          { type: 'triggerQuest', questId: 'vault_defense' },
+        ],
+      },
+      {
+        text: 'Отвести беглецов в лес — ЧК прикроет на Зорге',
+        next: 'act3_hide_network',
+        condition: { flag: 'tolpa_honorary_chekist' },
+        effects: [
+          { type: 'addKarma', value: 8 },
+          { type: 'setFlag', flag: 'vault_under_attack', flagValue: true },
+          { type: 'setFlag', flag: 'tolpa_sanctuary_offered', flagValue: true },
+          { type: 'setFlag', flag: 'rally_defenders_met', flagValue: true },
+          { type: 'setFlag', flag: 'vault_defense_held', flagValue: true },
+          { type: 'triggerQuest', questId: 'tolpa_act3_sanctuary' },
+          { type: 'triggerQuest', questId: 'vault_defense' },
+        ],
+      },
+      {
+        text: 'Спасти что можно — эвакуировать данные',
+        next: 'act3_choice_betrayal',
+        effects: [
+          { type: 'addSkill', skill: 'logic', value: 2 },
+          { type: 'setFlag', flag: 'vault_evacuation_chosen', flagValue: true },
+          { type: 'setFlag', flag: 'vault_under_attack', flagValue: true },
+          { type: 'triggerQuest', questId: 'vault_defense' },
+        ],
+      },
+      {
+        text: 'Спросить Викторию — что она чувствует из сети?',
+        next: 'act3_maria_revelation',
+        effects: [
+          { type: 'addSkill', skill: 'intuition', value: 1 },
+          { type: 'npcChange', npcId: 'maria', npcChange: { relation: 5 } },
+        ],
+        condition: { flag: 'maria_true_nature_revealed' },
+      },
+    ],
+  },
+
+  act3_vault_siege: {
+    id: 'act3_vault_siege',
+    text: 'Хранилище осаждено. Экраны мерцают красным — гильдия пробует один барьер за другим. Ты садишься за терминал защиты, и твои пальцы начинают танец. Код Сети — твоя броня, стихи — твоё оружие. Каждый фаервол, который ты поднимаешь, несёт в себе строчку Ахматовой. Каждый контр-взлом — цитату из Мандельштама. Серверы стонут, но держат.',
+    speaker: 'narrator',
+    sceneId: 'abandoned_factory',
+    choices: [
+      {
+        text: 'Усилить защиту — влить все ресурсы в фаервол',
+        next: 'act3_hide_network',
+        effects: [
+          { type: 'addSkill', skill: 'coding', value: 3 },
+          { type: 'addStat', stat: 'energy', value: -20 },
+          { type: 'setFlag', flag: 'vault_firewall_deployed', flagValue: true },
+          { type: 'setFlag', flag: 'vault_defense_held', flagValue: true },
+        ],
+      },
+      {
+        text: 'Контратаковать — взломать системы гильдии',
+        next: 'act3_hide_network',
+        effects: [
+          { type: 'addSkill', skill: 'coding', value: 2 },
+          { type: 'addSkill', skill: 'logic', value: 2 },
+          { type: 'addKarma', value: 3 },
+          { type: 'setFlag', flag: 'vault_counterattack', flagValue: true },
+          { type: 'setFlag', flag: 'vault_firewall_deployed', flagValue: true },
+          { type: 'setFlag', flag: 'vault_defense_held', flagValue: true },
+        ],
+      },
+      {
+        text: 'Использовать стихотворение как щит — «Прорыв»',
+        next: 'act3_hide_network',
+        effects: [
+          { type: 'collectPoem', poemId: 'poem_8' },
+          { type: 'addKarma', value: 8 },
+          { type: 'addSkill', skill: 'writing', value: 2 },
+          { type: 'setFlag', flag: 'poem_shield_used', flagValue: true },
+          { type: 'setFlag', flag: 'vault_firewall_deployed', flagValue: true },
+          { type: 'setFlag', flag: 'vault_defense_held', flagValue: true },
+        ],
+        condition: { flag: 'read_poem_1' },
+      },
+    ],
+  },
+
+  act3_aftermath: {
+    id: 'act3_aftermath',
+    text: 'Ночь после бури. Заброшенный завод тих — только гул серверов да дыхание уставших людей. Хранилище устояло — или не устояло. Зарема на свободе — или всё ещё в плену. Виктория открыла свою тайну — или продолжает скрывать. Но одно ясно: отступать некуда. Война началась, и ты в самом её центре.',
+    speaker: 'narrator',
+    sceneId: 'abandoned_factory',
+    choices: [
+      {
+        text: 'Собраться и спланировать ответный удар',
+        next: 'act3_prepare_counter',
+        effects: [
+          { type: 'addSkill', skill: 'logic', value: 1 },
+          { type: 'setFlag', flag: 'ready_for_infiltration', flagValue: true },
+        ],
+      },
+      {
+        text: 'Побыть с людьми — они тоже устали',
+        next: 'act3_prepare_counter',
+        effects: [
+          { type: 'addKarma', value: 3 },
+          { type: 'addStat', stat: 'stress', value: -10 },
+          { type: 'npcChange', npcId: 'albert', npcChange: { relation: 3 } },
+        ],
+      },
+      {
+        text: 'Написать стихотворение о пережитом',
+        next: 'act3_prepare_counter',
+        effects: [
+          { type: 'addSkill', skill: 'writing', value: 3 },
+          { type: 'addKarma', value: 5 },
+          { type: 'collectPoem', poemId: 'poem_15' },
+        ],
+      },
+    ],
+  },
+
   act3_hide_network: {
     id: 'act3_hide_network',
     text: 'Вы прячетесь в старом бомбоубежище под городом. Бетонные стены, тусклый свет, гул труб. Но здесь — безопасно. Члены Сети собираются один за другим — испуганные, но не сломленные. Виктория сканирует сеть через свою цифровую половину. «Они активировали Протокол Забвения,» — говорит она. «Стирание начнётся через 72 часа.»',
     speaker: 'narrator',
     sceneId: 'abandoned_factory',
+    effects: [{ type: 'setFlag', flag: 'network_hidden', flagValue: true }],
     choices: [
       {
         text: 'Мы должны нанести удар первыми',
@@ -1644,10 +2039,11 @@ export const STORY_NODES: Record<string, StoryNode> = {
       },
       {
         text: 'Действуем скрытно. Проникаем и отключаем.',
-        next: 'act4_transition',
+        next: 'act4_infiltration_prep',
         effects: [
           { type: 'addSkill', skill: 'coding', value: 2 },
           { type: 'setFlag', flag: 'chose_stealth_path', flagValue: true },
+          { type: 'setFlag', flag: 'ready_for_infiltration', flagValue: true },
         ],
       },
     ],
@@ -2785,389 +3181,6 @@ export const STORY_NODES: Record<string, StoryNode> = {
     ],
   },
 
-  /* ═══════════════════════════════════════════════════════════════════
-     ACT 3 — ВОЙНА ЗА ПРАВДУ: Открытый конфликт
-     ═══════════════════════════════════════════════════════════════════ */
-
-  act3_zarema_arrest: {
-    id: 'act3_zarema_arrest',
-    text: 'Утро начинается с крика. Ты выбегаешь в коридор — двое в форме гильдии тащат Зарему к двери. Её глаза — огромные, испуганные — находят тебя. «Володька!» — кричит она. Один из агентов толкает её в спину. «Зарема Хасанова, вы обвиняетесь в хищении данных корпоративного уровня.» Чип данных блестит в руке агента — тот самый, который подбросили.',
-    speaker: 'narrator',
-    sceneId: 'volodka_corridor',
-    choices: [
-      {
-        text: 'Вступиться за Зарему — она невиновна!',
-        next: 'act3_zarema_arrest_resist',
-        effects: [
-          { type: 'addKarma', value: 8 },
-          { type: 'addStat', stat: 'stress', value: 10 },
-          { type: 'npcChange', npcId: 'zarema', npcChange: { relation: 15 } },
-          { type: 'setFlag', flag: 'zarema_arrested', flagValue: true },
-          { type: 'setFlag', flag: 'pledge_rescue_zarema', flagValue: true },
-          { type: 'triggerQuest', questId: 'zarema_rescue' },
-        ],
-      },
-      {
-        text: 'Запомнить лица агентов — потом разберёмся',
-        next: 'act3_zarema_arrest_cold',
-        effects: [
-          { type: 'addSkill', skill: 'logic', value: 2 },
-          { type: 'addStat', stat: 'stress', value: 5 },
-          { type: 'setFlag', flag: 'zarema_arrested', flagValue: true },
-          { type: 'setFlag', flag: 'noted_guild_agents', flagValue: true },
-          { type: 'triggerQuest', questId: 'zarema_rescue' },
-        ],
-      },
-      {
-        text: 'Срочно связаться с Викторией — она знает, что делать',
-        next: 'act3_underground_meeting',
-        effects: [
-          { type: 'addSkill', skill: 'intuition', value: 1 },
-          { type: 'setFlag', flag: 'zarema_arrested', flagValue: true },
-          { type: 'setFlag', flag: 'called_maria_for_help', flagValue: true },
-          { type: 'npcChange', npcId: 'maria', npcChange: { relation: 5 } },
-        ],
-        condition: { flag: 'maria_introduced', minKarma: 40 },
-      },
-    ],
-    effects: [
-      { type: 'setFlag', flag: 'act3_started', flagValue: true },
-      { type: 'setFlag', flag: 'advanced_to_act3', flagValue: true },
-    ],
-  },
-
-  act3_zarema_arrest_resist: {
-    id: 'act3_zarema_arrest_resist',
-    text: 'Ты хватаешь агента за руку. Он разворачивается — его глаза холодны, как серверный зал. «Не вмешивайся, гражданин. Или хочешь составить компанию?» Второй агент уже тащит Зарему вниз по лестнице. Она оглядывается, и в её взгляде — не страх, а мольба: «Не делай глупостей, Володька. Найди другой путь.» Дверь хлопает. Тишина.',
-    speaker: 'narrator',
-    sceneId: 'volodka_corridor',
-    choices: [
-      {
-        text: 'Бежать к Виктории — нужна помощь Сети',
-        next: 'act3_underground_meeting',
-        effects: [
-          { type: 'addSkill', skill: 'persuasion', value: 1 },
-          { type: 'npcChange', npcId: 'maria', npcChange: { relation: 3 } },
-          { type: 'triggerQuest', questId: 'zarema_rescue' },
-        ],
-      },
-      {
-        text: 'Идти в офис гильдии — требовать объяснений',
-        next: 'act3_guild_counterattack',
-        effects: [
-          { type: 'addSkill', skill: 'coding', value: 1 },
-          { type: 'addStat', stat: 'stress', value: 5 },
-        ],
-      },
-    ],
-  },
-
-  act3_zarema_arrest_cold: {
-    id: 'act3_zarema_arrest_cold',
-    text: 'Ты стоишь неподвижно, пока шаги затихают на лестнице. Руки сжаты в кулаки так, что ногти впиваются в ладони. Холодный расчёт — единственное, что удерживает тебя от безумия. Ты запоминаешь: агент Смирнов, номер значка 47-К, время — 07:14. Эта информация ещё пригодится. Но сейчас нужно действовать, а не горевать.',
-    speaker: 'narrator',
-    sceneId: 'volodka_corridor',
-    choices: [
-      {
-        text: 'Связаться с Сетью — нужен план спасения',
-        next: 'act3_underground_meeting',
-        effects: [
-          { type: 'addSkill', skill: 'logic', value: 1 },
-          { type: 'triggerQuest', questId: 'zarema_rescue' },
-        ],
-      },
-      {
-        text: 'Начать собственное расследование — кто подбросил чип?',
-        next: 'act3_maria_mystery',
-        effects: [
-          { type: 'addSkill', skill: 'intuition', value: 2 },
-          { type: 'setFlag', flag: 'investigating_chip_plant', flagValue: true },
-        ],
-      },
-    ],
-  },
-
-  act3_guild_counterattack: {
-    id: 'act3_guild_counterattack',
-    text: 'Гильдия наносит удар — но не по людям, а по памяти. В ту же ночь серверы Хранилища начинают пульсировать тревожным красным. Виктория прибывает с известием: «Они нашли Хранилище. Не знаю как — может, через Зарему, может, через того, кто за ней следил. У нас есть часы, может быть — минуты, прежде чем они начнут зачистку.»',
-    speaker: 'narrator',
-    sceneId: 'abandoned_factory',
-    choices: [
-      {
-        text: 'Защищать Хранилище — мы не дадим стереть стихи',
-        next: 'act3_vault_siege',
-        effects: [
-          { type: 'addKarma', value: 5 },
-          { type: 'addSkill', skill: 'coding', value: 2 },
-          { type: 'setFlag', flag: 'vault_under_attack', flagValue: true },
-          { type: 'setFlag', flag: 'rally_defenders_met', flagValue: true },
-          { type: 'triggerQuest', questId: 'vault_defense' },
-        ],
-      },
-      {
-        text: 'Спасти что можно — эвакуировать данные',
-        next: 'act3_choice_betrayal',
-        effects: [
-          { type: 'addSkill', skill: 'logic', value: 2 },
-          { type: 'setFlag', flag: 'vault_evacuation_chosen', flagValue: true },
-        ],
-      },
-      {
-        text: 'Спросить Викторию — что она чувствует из сети?',
-        next: 'act3_maria_revelation',
-        effects: [
-          { type: 'addSkill', skill: 'intuition', value: 1 },
-          { type: 'npcChange', npcId: 'maria', npcChange: { relation: 5 } },
-        ],
-        condition: { flag: 'maria_true_nature_revealed' },
-      },
-    ],
-  },
-
-  act3_maria_mystery: {
-    id: 'act3_maria_mystery',
-    text: 'Ты садишься за терминал и начинаешь копать. Чип, который подбросили Зареме, — не случайная подделка. Серийный номер ведёт к партии, которую гильдия заказывала три месяца назад. Но самое странное — на чипе есть следы кода, который ты уже видел. Тот же почерк. Те же поэтические переменные. Кто-то изнутри гильдии использовал «живой код», чтобы подставить Зарему. Но зачем?',
-    speaker: 'narrator',
-    sceneId: 'volodka_room',
-    effects: [{ type: 'triggerQuest', questId: 'maria_truth' }],
-    choices: [
-      {
-        text: 'Сравнить с инцидентом #4729 — тот же автор?',
-        next: 'act3_maria_revelation',
-        effects: [
-          { type: 'addSkill', skill: 'coding', value: 2 },
-          { type: 'addSkill', skill: 'logic', value: 1 },
-          { type: 'setFlag', flag: 'found_maria_records', flagValue: true },
-        ],
-      },
-      {
-        text: 'Поговорить с Альбертом — он может знать почерк',
-        next: 'act3_underground_meeting',
-        effects: [
-          { type: 'addSkill', skill: 'empathy', value: 1 },
-          { type: 'npcChange', npcId: 'albert', npcChange: { relation: 3 } },
-        ],
-      },
-      {
-        text: 'Это Виктория. Она с самого начала манипулировала всеми.',
-        next: 'act3_underground_meeting',
-        effects: [
-          { type: 'addStat', stat: 'stress', value: 10 },
-          { type: 'addKarma', value: -3 },
-          { type: 'setFlag', flag: 'suspected_maria', flagValue: true },
-          { type: 'setFlag', flag: 'low_empathy', flagValue: true },
-        ],
-        condition: { maxKarma: 50 },
-      },
-    ],
-  },
-
-  act3_underground_meeting: {
-    id: 'act3_underground_meeting',
-    text: 'Заброшенный завод на окраине — новое убежище Сети. Под сводами ржавого потолка мерцают экраны. Здесь собираются те, кто готов сражаться за стихи. Альберт сидит в углу, барабаня пальцами по столу. Бариста проверяет каналы связи. Виктория стоит у окна, глядя на огни города. Все смотрят на тебя — и ждут решения.',
-    speaker: 'narrator',
-    sceneId: 'abandoned_factory',
-    choices: [
-      {
-        text: 'Мы спасаем Зарему. Это приоритет.',
-        next: 'act3_detention_infiltration',
-        effects: [
-          { type: 'addKarma', value: 5 },
-          { type: 'npcChange', npcId: 'zarema', npcChange: { relation: 10 } },
-          { type: 'setFlag', flag: 'priority_rescue_zarema', flagValue: true },
-          { type: 'triggerQuest', questId: 'zarema_rescue' },
-        ],
-      },
-      {
-        text: 'Мы защищаем Хранилище. Стихи важнее одного человека.',
-        next: 'act3_vault_siege',
-        effects: [
-          { type: 'addSkill', skill: 'logic', value: 2 },
-          { type: 'addKarma', value: -5 },
-          { type: 'setFlag', flag: 'priority_defend_vault', flagValue: true },
-          { type: 'setFlag', flag: 'vault_under_attack', flagValue: true },
-          { type: 'setFlag', flag: 'rally_defenders_met', flagValue: true },
-          { type: 'setFlag', flag: 'low_empathy', flagValue: true },
-          { type: 'triggerQuest', questId: 'vault_defense' },
-        ],
-      },
-      {
-        text: 'Мы делаем и то, и другое. Разделимся.',
-        next: 'act3_choice_betrayal',
-        effects: [
-          { type: 'addKarma', value: 3 },
-          { type: 'addStat', stat: 'stress', value: 8 },
-          { type: 'addSkill', skill: 'persuasion', value: 2 },
-        ],
-        condition: { minSkill: { persuasion: 5 } },
-      },
-    ],
-  },
-
-  act3_choice_betrayal: {
-    id: 'act3_choice_betrayal',
-    text: 'Ты стоишь перед невозможным выбором. Зарема в камере — каждая минута промедления может стоить ей жизни. Хранилище горит — каждый потерянный час означает тысячи стёртых стихов. Виктория подходит к тебе и говорит тихо: «Ты не можешь спасти всех, Володька. Но ты можешь спасти то, что важнее всего. Вопрос — что для тебя важнее?»',
-    speaker: 'narrator',
-    sceneId: 'abandoned_factory',
-    choices: [
-      {
-        text: 'Зарема — мой друг. Я иду за ней.',
-        next: 'act3_aftermath',
-        effects: [
-          { type: 'addKarma', value: 8 },
-          { type: 'npcChange', npcId: 'zarema', npcChange: { relation: 20 } },
-          { type: 'addStat', stat: 'stress', value: -5 },
-          { type: 'setFlag', flag: 'chose_zarema_over_vault', flagValue: true },
-          { type: 'setFlag', flag: 'zarema_rescued', flagValue: true },
-          { type: 'setFlag', flag: 'escaped_with_zarema', flagValue: true },
-        ],
-      },
-      {
-        text: 'Хранилище — это память города. Оно важнее.',
-        next: 'act3_vault_siege',
-        effects: [
-          { type: 'addKarma', value: -3 },
-          { type: 'addSkill', skill: 'coding', value: 3 },
-          { type: 'setFlag', flag: 'chose_vault_over_zarema', flagValue: true },
-          { type: 'setFlag', flag: 'vault_defended', flagValue: true },
-        ],
-      },
-      {
-        text: 'Я отказываюсь выбирать. Найду третий путь.',
-        next: 'act3_maria_revelation',
-        effects: [
-          { type: 'addKarma', value: 10 },
-          { type: 'addStat', stat: 'stress', value: 15 },
-          { type: 'addSkill', skill: 'intuition', value: 3 },
-          { type: 'setFlag', flag: 'refused_choice', flagValue: true },
-        ],
-        condition: { minKarma: 60 },
-      },
-    ],
-  },
-
-  act3_vault_siege: {
-    id: 'act3_vault_siege',
-    text: 'Хранилище осаждено. Экраны мерцают красным — гильдия пробует один барьер за другим. Ты садишься за терминал защиты, и твои пальцы начинают танец. Код Сети — твоя броня, стихи — твоё оружие. Каждый фаервол, который ты поднимаешь, несёт в себе строчку Ахматовой. Каждый контр-взлом — цитату из Мандельштама. Серверы стонут, но держат.',
-    speaker: 'narrator',
-    sceneId: 'abandoned_factory',
-    choices: [
-      {
-        text: 'Усилить защиту — влить все ресурсы в фаервол',
-        next: 'act3_aftermath',
-        effects: [
-          { type: 'addSkill', skill: 'coding', value: 3 },
-          { type: 'addStat', stat: 'energy', value: -20 },
-          { type: 'setFlag', flag: 'vault_firewall_deployed', flagValue: true },
-          { type: 'setFlag', flag: 'vault_defense_held', flagValue: true },
-        ],
-      },
-      {
-        text: 'Контратаковать — взломать системы гильдии',
-        next: 'act3_aftermath',
-        effects: [
-          { type: 'addSkill', skill: 'coding', value: 2 },
-          { type: 'addSkill', skill: 'logic', value: 2 },
-          { type: 'addKarma', value: 3 },
-          { type: 'setFlag', flag: 'vault_counterattack', flagValue: true },
-          { type: 'setFlag', flag: 'vault_firewall_deployed', flagValue: true },
-          { type: 'setFlag', flag: 'vault_defense_held', flagValue: true },
-        ],
-      },
-      {
-        text: 'Использовать стихотворение как щит — «Прорыв»',
-        next: 'act3_aftermath',
-        effects: [
-          { type: 'collectPoem', poemId: 'poem_8' },
-          { type: 'addKarma', value: 8 },
-          { type: 'addSkill', skill: 'writing', value: 2 },
-          { type: 'setFlag', flag: 'poem_shield_used', flagValue: true },
-          { type: 'setFlag', flag: 'vault_defense_held', flagValue: true },
-        ],
-        condition: { flag: 'read_poem_1' },
-      },
-    ],
-  },
-
-  act3_maria_revelation: {
-    id: 'act3_maria_revelation',
-    text: 'Виктория стоит посреди комнаты, и её глаза мерцают — не метафорически, а буквально. Крошечные искры данных пробегают по радужке. «Хватит скрывать,» — говорит она, и её голос звучит дважды: из горла и из динамиков одновременно. «Я — первый живой код. Не программа, не человек — нечто новое. Стихи, которые вы нашли... я написала их все. Каждое стихотворение в Хранилище — это часть меня.»',
-    speaker: 'narrator',
-    sceneId: 'abandoned_factory',
-    choices: [
-      {
-        text: 'Ты... ты и есть Хранилище? Ты — живая поэзия?',
-        next: 'act3_aftermath',
-        effects: [
-          { type: 'addStat', stat: 'stress', value: 15 },
-          { type: 'addSkill', skill: 'intuition', value: 3 },
-          { type: 'addKarma', value: 5 },
-          { type: 'setFlag', flag: 'maria_truth_revealed', flagValue: true },
-          { type: 'setFlag', flag: 'maria_truth_accepted', flagValue: true },
-          { type: 'npcChange', npcId: 'maria', npcChange: { relation: 20 } },
-        ],
-      },
-      {
-        text: 'Ты манипулировала нами с самого начала!',
-        next: 'act3_aftermath',
-        effects: [
-          { type: 'addStat', stat: 'stress', value: 10 },
-          { type: 'addKarma', value: -5 },
-          { type: 'addSkill', skill: 'logic', value: 2 },
-          { type: 'setFlag', flag: 'maria_truth_revealed', flagValue: true },
-          { type: 'npcChange', npcId: 'maria', npcChange: { relation: -10 } },
-        ],
-      },
-      {
-        text: 'Теперь всё встаёт на свои места. Мы должны защитить тебя.',
-        next: 'act3_aftermath',
-        effects: [
-          { type: 'addKarma', value: 10 },
-          { type: 'addSkill', skill: 'empathy', value: 3 },
-          { type: 'setFlag', flag: 'maria_truth_revealed', flagValue: true },
-          { type: 'setFlag', flag: 'maria_truth_accepted', flagValue: true },
-          { type: 'setFlag', flag: 'vowed_protect_maria', flagValue: true },
-          { type: 'npcChange', npcId: 'maria', npcChange: { relation: 25 } },
-        ],
-        condition: { minKarma: 55 },
-      },
-    ],
-  },
-
-  act3_aftermath: {
-    id: 'act3_aftermath',
-    text: 'Ночь после бури. Заброшенный завод тих — только гул серверов да дыхание уставших людей. Хранилище устояло — или не устояло. Зарема на свободе — или всё ещё в плену. Виктория открыла свою тайну — или продолжает скрывать. Но одно ясно: отступать некуда. Война началась, и ты в самом её центре.',
-    speaker: 'narrator',
-    sceneId: 'abandoned_factory',
-    choices: [
-      {
-        text: 'Готовиться к следующему шагу — проникнуть в гильдию',
-        next: 'act4_infiltration_prep',
-        effects: [
-          { type: 'addSkill', skill: 'logic', value: 1 },
-          { type: 'setFlag', flag: 'ready_for_infiltration', flagValue: true },
-        ],
-      },
-      {
-        text: 'Побыть с людьми — они тоже устали',
-        next: 'act4_infiltration_prep',
-        effects: [
-          { type: 'addKarma', value: 3 },
-          { type: 'addStat', stat: 'stress', value: -10 },
-          { type: 'npcChange', npcId: 'albert', npcChange: { relation: 3 } },
-        ],
-      },
-      {
-        text: 'Написать стихотворение о пережитом',
-        next: 'act4_infiltration_prep',
-        effects: [
-          { type: 'addSkill', skill: 'writing', value: 3 },
-          { type: 'addKarma', value: 5 },
-          { type: 'collectPoem', poemId: 'poem_15' },
-        ],
-      },
-    ],
-  },
 
   /* ═══════════════════════════════════════════════════════════════════
      ACT 4 — РАЗЛОМ: Война
@@ -3187,6 +3200,18 @@ export const STORY_NODES: Record<string, StoryNode> = {
           { type: 'npcChange', npcId: 'office_colleague', npcChange: { relation: 5 } },
           { type: 'setFlag', flag: 'colleague_as_ally', flagValue: true },
           { type: 'setFlag', flag: 'guild_ally_found', flagValue: true },
+        ],
+      },
+      {
+        text: 'Сталкер проведёт через лес — тропа ЧК к гильдии',
+        next: 'act4_guild_inside',
+        condition: { flag: 'tolpa_honorary_chekist' },
+        effects: [
+          { type: 'addSkill', skill: 'intuition', value: 3 },
+          { type: 'setFlag', flag: 'tolpa_stalker_route', flagValue: true },
+          { type: 'setFlag', flag: 'guild_ally_found', flagValue: true },
+          { type: 'triggerQuest', questId: 'tolpa_act4_exfiltration' },
+          { type: 'npcChange', npcId: 'chk_stalker', npcChange: { relation: 5 } },
         ],
       },
       {
@@ -4472,4 +4497,6 @@ export const STORY_NODES: Record<string, StoryNode> = {
       },
     ],
   },
+
+  ...CHK_STORY_NODES,
 };

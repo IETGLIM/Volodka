@@ -1,21 +1,22 @@
 
-/* ─── Volodka RPG – Cutscene-only story overlay (v3) ───
+/* ─── Volodka RPG – Story narrative overlay (v3) ───
    Clean minimal overlay: text + choices on dark semi-transparent bg.
-   Scene transitions are handled by the 3D world/interaction system.
-   StoryRenderer is ONLY for cutscene mode.
+   Renders on top of exploration mode when showStoryOverlay is true
+   (World Director pattern — 3D world stays visible underneath).
 */
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronRight, Zap, SkipForward } from 'lucide-react';
 import {
   useSetCurrentNodeId,
-  useSetShowStoryOverlay,
   useStoryContext,
   useVisitNode,
 } from '@/store/selectors';
 import { STORY_NODES } from '@/data/storyNodes';
 import { audioEngine } from '@/engine/AudioEngine';
+import { requestSceneTransitionForStoryNode } from '@/engine/scene/sceneTransition';
+import { closeNarrativeOverlay } from '@/engine/scene/narrativeOverlay';
 import { KARMA_LOW_THRESHOLD, KARMA_HIGH_THRESHOLD } from '@/data/constants';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import type { StoryChoice, StoryEffect } from '@/shared/types/game';
@@ -118,10 +119,10 @@ const pageTurnVariants = {
 
 /* ── Component ── */
 export function StoryRenderer() {
-  const { showStoryOverlay, mode, currentNodeId, playerState } = useStoryContext();
+  const { showStoryOverlay, currentNodeId, playerState } = useStoryContext();
   const setCurrentNodeId = useSetCurrentNodeId();
-  const setShowStoryOverlay = useSetShowStoryOverlay();
   const visitNode = useVisitNode();
+  const nodeEffectGenRef = useRef(0);
 
   const [pageDirection, setPageDirection] = useState(0);
   const [appliedEffects, setAppliedEffects] = useState<StoryEffect[]>([]);
@@ -135,22 +136,32 @@ export function StoryRenderer() {
 
   const { displayed, done, skip } = useTypewriter(node?.text ?? '', 28);
 
-  // Visit node on mount & apply effects
+  // Visit node on mount, apply effects, sync 3D scene when the node defines sceneId
   useEffect(() => {
-    if (node) {
-      visitNode(node.id);
-      if (node.effects && node.effects.length > 0) {
-        applyEffects(node.effects);
-        const effectsToShow = node.effects;
+    if (!node) return;
+
+    const effectGen = ++nodeEffectGenRef.current;
+    visitNode(node.id);
+    requestSceneTransitionForStoryNode(node.id, node.sceneId);
+
+    if (node.effects && node.effects.length > 0) {
+      applyEffects(node.effects);
+      const effectsToShow = node.effects;
+      setTimeout(() => {
+        if (effectGen !== nodeEffectGenRef.current) return;
+        setAppliedEffects(effectsToShow);
         setTimeout(() => {
-          setAppliedEffects(effectsToShow);
-          setTimeout(() => setAppliedEffects([]), 3000);
-        }, 0);
-      } else {
-        setTimeout(() => setAppliedEffects([]), 0);
-      }
+          if (effectGen !== nodeEffectGenRef.current) return;
+          setAppliedEffects([]);
+        }, 3000);
+      }, 0);
+    } else {
+      setTimeout(() => {
+        if (effectGen !== nodeEffectGenRef.current) return;
+        setAppliedEffects([]);
+      }, 0);
     }
-  }, [node, visitNode]);
+  }, [node?.id, visitNode]);
 
   const handleChoice = useCallback(
     (choice: StoryChoice) => {
@@ -166,29 +177,25 @@ export function StoryRenderer() {
       setPageDirection(1);
 
       if (choice.next === null) {
-        // End of game — hide the overlay and clear the story node
-        setShowStoryOverlay(false);
-        setCurrentNodeId('');
+        closeNarrativeOverlay();
       } else if (choice.next && EXPLORE_HUB_NODE_IDS.has(choice.next)) {
         const hubFromEntry = EXPLORE_HUB_ENTRY[currentNodeId];
         if (hubFromEntry === choice.next) {
           setCurrentNodeId(choice.next);
         } else {
-          setShowStoryOverlay(false);
-          setCurrentNodeId('');
+          closeNarrativeOverlay();
         }
       } else {
         setCurrentNodeId(choice.next);
       }
     },
-    [currentNodeId, setCurrentNodeId, setShowStoryOverlay],
+    [currentNodeId, setCurrentNodeId],
   );
 
   const handleContinue = useCallback(() => {
     audioEngine.playSfx('confirm');
-    setShowStoryOverlay(false);
-    setCurrentNodeId('');
-  }, [setShowStoryOverlay, setCurrentNodeId]);
+    closeNarrativeOverlay();
+  }, []);
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -210,7 +217,9 @@ export function StoryRenderer() {
     return () => window.removeEventListener('keydown', handleKey);
   }, [done, node, conditionCtx, handleChoice]);
 
-  if (!showStoryOverlay || !node || mode !== 'cutscene') return null;
+  // World Director: story overlay renders during exploration (and cutscene handoff)
+  const isOpen = showStoryOverlay && !!node && !!STORY_NODES[currentNodeId];
+  if (!isOpen) return null;
 
   const karmaLevel =
     playerState.karma >= KARMA_HIGH_THRESHOLD

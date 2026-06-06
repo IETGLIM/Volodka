@@ -72,6 +72,8 @@ export interface SceneConfig {
   size: [number, number]; // [width, depth]
   spawnPoint: [number, number, number];
   initialRotation: number;
+  /** Walkable floor height — RigidBody Y when grounded (feet level). */
+  floorY: number;
   explorationCharacterModelScale: number;
   explorationLocomotionScale: number;
   hasCeiling: boolean;
@@ -106,6 +108,7 @@ export type StoryEffectType =
   | 'setFlag'
   | 'addKarma'
   | 'addXp'
+  | 'addCredits'
   | 'npcChange'
   | 'triggerQuest'
   | 'collectPoem'
@@ -417,6 +420,7 @@ export interface EnemySpecialAttack {
 export interface CombatReward {
   xp: number;
   karma: number;
+  credits: number;
   /** Item IDs dropped by the enemy */
   lootItems: string[];
   /** Skill experience gains: skill -> xp amount */

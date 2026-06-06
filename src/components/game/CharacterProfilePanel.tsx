@@ -34,7 +34,7 @@ import {
   useTimeOfDay,
 } from '@/store/selectors';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
-import { NPC_DEFINITIONS } from '@/data/npcDefinitions';
+import { findNpcById } from '@/data/allNpcDefinitions';
 import { POEMS } from '@/data/poems';
 import { KARMA_LOW_THRESHOLD, KARMA_HIGH_THRESHOLD } from '@/data/constants';
 import { Card, CardContent } from '@/components/ui/card';
@@ -252,7 +252,7 @@ function KarmaAlignmentIndicator({ karma }: { karma: number }) {
 
 /* ── NPC relationship bar ── */
 function NpcRelationBar({ npcId, value }: { npcId: string; value: number }) {
-  const npcDef = NPC_DEFINITIONS.find((n) => n.id === npcId);
+  const npcDef = findNpcById(npcId);
   const name = npcDef?.name ?? npcId;
   const glowColor = npcDef?.appearance?.glowColor ?? '#94a3b8';
 

@@ -1,6 +1,7 @@
 /* ─── Volodka RPG – trigger zones for interactive objects ─── */
 
 import type { SceneId, GameEffect, InteractionType, ExamineData } from '@/shared/types/game';
+import { CHK_TRIGGER_ZONES } from './chkTolpa/triggerZones';
 
 export interface TriggerZone {
   id: string;
@@ -807,4 +808,5 @@ export const TRIGGER_ZONES: TriggerZone[] = [
       { type: 'setFlag', flag: 'home_banking_investigated', flagValue: true },
     ],
   },
+  ...CHK_TRIGGER_ZONES,
 ];

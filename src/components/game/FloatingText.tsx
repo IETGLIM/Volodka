@@ -12,7 +12,7 @@ import { eventBus } from '@/engine/EventBus';
 import { AriaLiveRegion } from '@/components/a11y/AriaLiveRegion';
 
 /* ── Types ── */
-export type FloatingTextType = 'xp' | 'karma' | 'skill' | 'damage' | 'heal' | 'item' | 'stress' | 'energy' | 'levelup' | 'custom';
+export type FloatingTextType = 'xp' | 'karma' | 'skill' | 'damage' | 'heal' | 'item' | 'stress' | 'energy' | 'levelup' | 'credits' | 'custom';
 
 export interface FloatingTextEntry {
   id: number;
@@ -36,6 +36,7 @@ const TYPE_COLORS: Record<FloatingTextType, string> = {
   stress: '#fb923c',       // orange-400
   energy: '#4ade80',       // green-400
   levelup: '#fbbf24',      // amber-400 (with extra glow)
+  credits: '#fcd34d',      // amber-300
   custom: '#94a3b8',       // slate-400
 };
 
@@ -49,6 +50,7 @@ const TYPE_GLOW: Record<FloatingTextType, string> = {
   stress: '0 0 12px rgba(251,146,60,0.6)',
   energy: '0 0 12px rgba(74,222,128,0.6)',
   levelup: '0 0 20px rgba(251,191,36,0.8), 0 0 40px rgba(251,191,36,0.4)',
+  credits: '0 0 12px rgba(252,211,77,0.6)',
   custom: '0 0 8px rgba(148,163,184,0.4)',
 };
 
@@ -62,6 +64,7 @@ const TYPE_PREFIX: Record<FloatingTextType, string> = {
   stress: '+',
   energy: '+',
   levelup: '⬆ ',
+  credits: '+',
   custom: '',
 };
 
@@ -113,6 +116,7 @@ export const floatItem = (name: string) => spawnFloatingText(name, 'item');
 export const floatStress = (amount: number) => spawnFloatingText(`${amount > 0 ? '+' : ''}${amount} Стресс`, 'stress');
 export const floatEnergy = (amount: number) => spawnFloatingText(`${amount > 0 ? '+' : ''}${amount} Энергия`, 'energy');
 export const floatLevelUp = (level: number) => spawnFloatingText(`Уровень ${level}!`, 'levelup');
+export const floatCredits = (amount: number) => spawnFloatingText(`${amount} кредитов`, 'credits');
 
 /* ── Component ── */
 export function FloatingTextLayer() {
@@ -159,6 +163,9 @@ export function FloatingTextLayer() {
       floatXP(payload.xpGained);
       if (payload.karmaGained > 0) {
         setTimeout(() => floatKarma(payload.karmaGained), 300);
+      }
+      if (payload.creditsGained > 0) {
+        setTimeout(() => floatCredits(payload.creditsGained), 450);
       }
       if (payload.lootItemId) {
         const lootId = payload.lootItemId;

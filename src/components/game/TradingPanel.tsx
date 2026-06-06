@@ -18,7 +18,7 @@ import {
 } from 'lucide-react';
 import { ItemIcon } from './shared/ItemIcon';
 import { useGameStore } from '@/store/gameStore';
-import { NPC_DEFINITIONS } from '@/data/npcDefinitions';
+import { findNpcById } from '@/data/allNpcDefinitions';
 import {
   getItemDefinition,
   getRarityColor,
@@ -113,7 +113,7 @@ export function TradingPanel({ open, onClose, initialNpcId }: TradingPanelProps)
   }, [npcRelations, selectedNpcId]);
 
   const npcDef = useMemo(
-    () => NPC_DEFINITIONS.find((n) => n.id === selectedNpcId),
+    () => (selectedNpcId ? findNpcById(selectedNpcId) : undefined),
     [selectedNpcId],
   );
 
@@ -235,7 +235,7 @@ export function TradingPanel({ open, onClose, initialNpcId }: TradingPanelProps)
         {/* Merchant selector */}
         <div className="flex items-center gap-2 overflow-x-auto pb-1 custom-scrollbar px-4 pt-3">
           {MERCHANT_INVENTORIES.map((m) => {
-            const npc = NPC_DEFINITIONS.find((n) => n.id === m.npcId);
+            const npc = findNpcById(m.npcId);
             const isSelected = selectedNpcId === m.npcId;
             const rel = npcRelations.find((r) => r.npcId === m.npcId);
             const relVal = rel?.value ?? 50;

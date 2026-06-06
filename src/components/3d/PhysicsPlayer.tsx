@@ -123,9 +123,7 @@ export function PhysicsPlayer({
   // Track whether character controller works — if it fails consistently,
   // switch to direct movement mode (no collision resolution, but the player MOVES).
   const controllerFailCountRef = useRef(0);
-  const movementBlockedCountRef = useRef(0);
   const useDirectMovementRef = useRef(false);
-  const successfulMovementTimerRef = useRef(0);
 
   // ─── Create & configure KinematicCharacterController ───
   useEffect(() => {
@@ -163,12 +161,18 @@ export function PhysicsPlayer({
   const modelScale = getExplorationCharacterModelScale(sceneId);
   const config = getSceneConfig(sceneId);
 
-  // Teleport player on scene change
+  // Teleport player on scene change — use store spawn (set by SceneTransitionHandler)
   useEffect(() => {
     if (sceneId !== prevSceneIdRef.current) {
       prevSceneIdRef.current = sceneId;
       const newConfig = getSceneConfig(sceneId);
-      const spawn = newConfig.spawnPoint;
+      const storeSpawn = getGameStore().exploration.playerPosition;
+      const spawn = storeSpawn ?? newConfig.spawnPoint;
+
+      warmupFramesRef.current = 0;
+      jumpCooldownRef.current = 0;
+      noMovementFramesRef.current = 0;
+
       if (rigidBodyRef.current) {
         rigidBodyRef.current.setTranslation(
           { x: spawn[0], y: spawn[1], z: spawn[2] },
@@ -176,17 +180,45 @@ export function PhysicsPlayer({
         );
         velocityRef.current.set(0, 0, 0);
       }
+      livePlayerPositionRef.current.set(spawn[0], spawn[1], spawn[2]);
       livePlayerRotationRef.current = newConfig.initialRotation ?? 0;
       isGroundedRef.current = true;
       coyoteTimerRef.current = 0;
 
-      // Reset direct movement mode — new scene gets a fresh character controller
       useDirectMovementRef.current = false;
       controllerFailCountRef.current = 0;
-      movementBlockedCountRef.current = 0;
-      successfulMovementTimerRef.current = 0;
     }
-  }, [sceneId, livePlayerRotationRef]);
+  }, [sceneId, livePlayerRotationRef, livePlayerPositionRef]);
+
+  // Immediate teleport on scene:enter — runs before React re-renders sceneId,
+  // closing the one-frame gap where store position and RigidBody diverge.
+  useEffect(() => {
+    const unsub = eventBus.on('scene:enter', ({ sceneId: enteredScene }) => {
+      const spawn = getGameStore().exploration.playerPosition;
+      prevSceneIdRef.current = enteredScene;
+      warmupFramesRef.current = 0;
+      jumpCooldownRef.current = 0;
+      noMovementFramesRef.current = 0;
+      velocityRef.current.set(0, 0, 0);
+      isGroundedRef.current = true;
+      coyoteTimerRef.current = 0;
+
+      const config = getSceneConfig(enteredScene);
+      livePlayerRotationRef.current = config.initialRotation ?? 0;
+
+      if (rigidBodyRef.current?.isValid()) {
+        rigidBodyRef.current.setTranslation(
+          { x: spawn[0], y: spawn[1], z: spawn[2] },
+          true,
+        );
+      }
+      livePlayerPositionRef.current.set(spawn[0], spawn[1], spawn[2]);
+
+      useDirectMovementRef.current = false;
+      controllerFailCountRef.current = 0;
+    });
+    return unsub;
+  }, [livePlayerPositionRef, livePlayerRotationRef]);
 
   // Pre-allocated temp vectors (avoid GC in useFrame)
   const tempCameraForward = useRef(new THREE.Vector3());
@@ -200,6 +232,8 @@ export function PhysicsPlayer({
     const controller = controllerRef.current;
     if (!rb || !controller) return;
 
+    const floorY = config.floorY;
+
     // Guard against disposed RigidBody during scene transitions
     if (!rb.isValid()) return;
 
@@ -211,15 +245,14 @@ export function PhysicsPlayer({
     // ─── Physics warmup: skip gravity for first N frames ───
     // The KinematicCharacterController needs a few frames to initialize.
     // During warmup, we hold the player at spawn height and skip gravity.
-    // Also extend warmup while locked (intro, tutorial, interaction) to prevent
-    // the character from falling/jumping when controls are first released.
-    const isLockedCheck = getGameStore().showStoryOverlay
-      || getGameStore().mode === 'cutscene'
-      || getGameStore().mode === 'intro'
-      || getGameStore().tutorialFlags?.tutorialsCompleted === false;
+    // Hold warmup only during intro/cutscene modes where Rapier may still be settling.
+    // Narrative overlay (showStoryOverlay) and tutorials use the isLocked branch below —
+    // resetting warmup for those caused infinite warmup (player frozen, camera stuck).
+    const shouldHoldWarmup =
+      getGameStore().mode === 'cutscene' || getGameStore().mode === 'intro';
 
-    if (isLockedCheck) {
-      warmupFramesRef.current = 0; // reset warmup while locked
+    if (shouldHoldWarmup) {
+      warmupFramesRef.current = 0;
     }
     warmupFramesRef.current++;
     if (warmupFramesRef.current < 10) {
@@ -234,22 +267,16 @@ export function PhysicsPlayer({
     }
 
     // ─── Safety: if player fell below the scene floor, snap back ───
-    // The CuboidCollider floor top is at y=0.01. If the player drops
-    // below FLOOR_Y - 0.1 (i.e. y < -0.09), something went wrong —
-    // teleport back to floor level. This catches tunneling through
-    // both the trimesh and CuboidCollider.
-    // The capsule bottom = rb.y (since CapsuleCollider offset = PLAYER_HEIGHT/2,
-    // capsule bottom = rb.y).
+    // If the RigidBody drops well below floorY, teleport back to floor level.
     const currentPos = rb.translation();
-    const FLOOR_Y = 0.01; // Matches CuboidCollider top + spawn point
-    if (currentPos.y < FLOOR_Y - 0.1) {
+    if (currentPos.y < floorY - 0.1) {
       // Player fell below floor — snap back to spawn point
       const spawn = config.spawnPoint;
-      rb.setTranslation({ x: currentPos.x, y: FLOOR_Y, z: currentPos.z }, true);
+      rb.setTranslation({ x: currentPos.x, y: floorY, z: currentPos.z }, true);
       vel.set(0, 0, 0);
       isGroundedRef.current = true;
       coyoteTimerRef.current = 0;
-      livePlayerPositionRef.current.set(currentPos.x, FLOOR_Y, currentPos.z);
+      livePlayerPositionRef.current.set(currentPos.x, floorY, currentPos.z);
       return;
     }
 
@@ -319,8 +346,8 @@ export function PhysicsPlayer({
       // because the desiredDisplacement has a large downward component.
       {
         const pos = rb.translation();
-        if (pos.y <= FLOOR_Y + 0.02 && vel.y < 0) {
-          rb.setTranslation({ x: pos.x, y: FLOOR_Y, z: pos.z }, true);
+        if (pos.y <= floorY + 0.02 && vel.y < 0) {
+          rb.setTranslation({ x: pos.x, y: floorY, z: pos.z }, true);
           vel.y = 0;
           isGroundedRef.current = true;
         }
@@ -368,11 +395,11 @@ export function PhysicsPlayer({
       // ─── Ground enforcement in locked state (cutscenes/dialogues) ───
       // Same as the main movement path: if player is at floor level and falling,
       // snap to floor. This prevents the character from sinking during cutscenes.
-      if (pos.y <= FLOOR_Y + 0.02 && vel.y < 0) {
-        rb.setTranslation({ x: pos.x, y: FLOOR_Y, z: pos.z }, true);
+      if (pos.y <= floorY + 0.02 && vel.y < 0) {
+        rb.setTranslation({ x: pos.x, y: floorY, z: pos.z }, true);
         vel.y = 0;
         isGroundedRef.current = true;
-        livePlayerPositionRef.current.set(pos.x, FLOOR_Y, pos.z);
+        livePlayerPositionRef.current.set(pos.x, floorY, pos.z);
       } else {
         livePlayerPositionRef.current.set(pos.x, pos.y, pos.z);
       }
@@ -454,16 +481,16 @@ export function PhysicsPlayer({
     // ─── Ground enforcement: if player is at floor level and falling (not jumping), snap to floor ───
     // This prevents the character from slowly sinking through the floor due to
     // floating-point drift or the controller not detecting ground on a particular frame.
-    // The CuboidCollider floor top is at FLOOR_Y (0.01). If the player's RigidBody
+    // The CuboidCollider floor top is at config.floorY. If the player's RigidBody
     // is at or below this level AND falling AND not jumping, force them to floor level.
     {
       const pos = rb.translation();
-      if (pos.y <= FLOOR_Y + 0.02 && vel.y < 0 && !keys.jump) {
-        rb.setTranslation({ x: pos.x, y: FLOOR_Y, z: pos.z }, true);
+      if (pos.y <= floorY + 0.02 && vel.y < 0 && !keys.jump) {
+        rb.setTranslation({ x: pos.x, y: floorY, z: pos.z }, true);
         vel.y = 0;
         isGroundedRef.current = true;
         coyoteTimerRef.current = 0;
-        livePlayerPositionRef.current.set(pos.x, FLOOR_Y, pos.z);
+        livePlayerPositionRef.current.set(pos.x, floorY, pos.z);
       }
     }
 
@@ -528,8 +555,8 @@ export function PhysicsPlayer({
       const clampedZ = Math.max(-halfD, Math.min(halfD, newZ));
 
       // Ground enforcement
-      if (newY <= FLOOR_Y + 0.02 && vel.y < 0) {
-        newY = FLOOR_Y;
+      if (newY <= floorY + 0.02 && vel.y < 0) {
+        newY = floorY;
         vel.y = 0;
         isGroundedRef.current = true;
         coyoteTimerRef.current = 0;
@@ -548,113 +575,52 @@ export function PhysicsPlayer({
     const actualDisplacement = controller.computedMovement();
     const isGroundedNow = controller.computedGrounded();
 
-    // ─── MOVEMENT FAILSAFE ───
-    // If the character controller is blocking horizontal movement
-    // (actual displacement near zero while desired is significant),
-    // apply the desired horizontal displacement directly with boundary clamping.
-    // This ensures the player can ALWAYS move when there's input,
-    // even if the Rapier character controller is misbehaving.
-    const desiredHLen = Math.sqrt(desiredDisplacement.x ** 2 + desiredDisplacement.z ** 2);
-    const actualHLen = Math.sqrt(actualDisplacement.x ** 2 + actualDisplacement.z ** 2);
-    const movementBlocked = desiredHLen > 0.001 && actualHLen < desiredHLen * 0.3;
+    // Always apply collision-resolved displacement — never bypass the controller
+    // when it blocks horizontal movement (walls, obstacles, slopes).
+    rb.setTranslation({
+      x: posAfterGroundEnforcement.x + actualDisplacement.x,
+      y: posAfterGroundEnforcement.y + actualDisplacement.y,
+      z: posAfterGroundEnforcement.z + actualDisplacement.z,
+    }, true);
 
-    if (movementBlocked) {
-      // Character controller blocked most horizontal movement — bypass it
-      // Use desired horizontal displacement + actual vertical displacement
-      const newX = posAfterGroundEnforcement.x + desiredDisplacement.x;
-      const newZ = posAfterGroundEnforcement.z + desiredDisplacement.z;
-      const newY = posAfterGroundEnforcement.y + actualDisplacement.y;
-
-      // Boundary clamping
-      const clampedX = Math.max(-halfW, Math.min(halfW, newX));
-      const clampedZ = Math.max(-halfD, Math.min(halfD, newZ));
-
-      // Ground enforcement for Y
-      let finalY = newY;
-      if (finalY <= FLOOR_Y + 0.02 && vel.y < 0) {
-        finalY = FLOOR_Y;
-        vel.y = 0;
-        isGroundedRef.current = true;
-        coyoteTimerRef.current = 0;
-      } else {
-        if (isGroundedNow) {
-          vel.y = 0;
-          isGroundedRef.current = true;
-          coyoteTimerRef.current = 0;
-        }
+    // ─── Post-movement velocity correction ───
+    // The controller may have changed the displacement (slope slide,
+    // wall collision, ceiling hit). We correct velocity to match
+    // the actual movement so the next frame's input is coherent.
+    if (isGroundedNow) {
+      vel.y = 0;
+      if (!wasGrounded) {
+        // Just landed — reset jump state
+        jumpCooldownRef.current = 0;
       }
-
-      rb.setTranslation({ x: clampedX, y: finalY, z: clampedZ }, true);
-      livePlayerPositionRef.current.set(clampedX, finalY, clampedZ);
-
-      // Track how often the controller blocks movement
-      movementBlockedCountRef.current++;
-      if (movementBlockedCountRef.current === 30) {
-        console.warn('[PhysicsPlayer] Character controller blocked movement for 30 frames — consider switching to direct mode');
-      }
-      // Reset successful movement timer while stuck
-      successfulMovementTimerRef.current = 0;
-
-      if (movementBlockedCountRef.current >= 45) {
-        // Controller has been blocking movement consistently — switch to direct mode
-        console.warn('[PhysicsPlayer] Character controller consistently blocking movement — switching to direct movement mode');
-        useDirectMovementRef.current = true;
-      }
+      isGroundedRef.current = true;
+      coyoteTimerRef.current = 0;
     } else {
-      // Reset blocked counter — controller is working
-      movementBlockedCountRef.current = 0;
-
-      // Periodic reset: after 5 seconds of continuous successful movement,
-      // hard-reset the stuck counter. This prevents false positives from
-      // slow walking or brief wall touches that accumulate over time.
-      successfulMovementTimerRef.current += dt;
-      if (successfulMovementTimerRef.current >= 5.0) {
-        movementBlockedCountRef.current = 0;
-        successfulMovementTimerRef.current = 0;
+      if (wasGrounded && !isGroundedNow && vel.y <= 0) {
+        // Walked off an edge (not jumping) — start coyote time
+        coyoteTimerRef.current = COYOTE_TIME;
       }
+      isGroundedRef.current = false;
 
-      // ─── Apply computed movement (normal path) ───
-      rb.setTranslation({
-        x: posAfterGroundEnforcement.x + actualDisplacement.x,
-        y: posAfterGroundEnforcement.y + actualDisplacement.y,
-        z: posAfterGroundEnforcement.z + actualDisplacement.z,
-      }, true);
-
-      // ─── Post-movement velocity correction ───
-      // The controller may have changed the displacement (slope slide,
-      // wall collision, ceiling hit). We correct velocity to match
-      // the actual movement so the next frame's input is coherent.
-      if (isGroundedNow) {
-        vel.y = 0;
-        if (!wasGrounded) {
-          // Just landed — reset jump state
-          jumpCooldownRef.current = 0;
+      // Correct vertical velocity based on actual movement
+      // Controller may reduce displacement on slopes/contacts
+      if (dt > 0.001) {
+        const actualVy = actualDisplacement.y / dt;
+        const desiredVy = vel.y;
+        // Slope sliding: controller prevented downward movement
+        if (desiredVy < 0 && actualVy > desiredVy + 2.0) {
+          vel.y = actualVy;
         }
-        isGroundedRef.current = true;
-        coyoteTimerRef.current = 0;
-      } else {
-        if (wasGrounded && !isGroundedNow && vel.y <= 0) {
-          // Walked off an edge (not jumping) — start coyote time
-          coyoteTimerRef.current = COYOTE_TIME;
-        }
-        isGroundedRef.current = false;
-
-        // Correct vertical velocity based on actual movement
-        // Controller may reduce displacement on slopes/contacts
-        if (dt > 0.001) {
-          const actualVy = actualDisplacement.y / dt;
-          const desiredVy = vel.y;
-          // Slope sliding: controller prevented downward movement
-          if (desiredVy < 0 && actualVy > desiredVy + 2.0) {
-            vel.y = actualVy;
-          }
-          // Ceiling hit: controller stopped upward movement
-          if (desiredVy > 0 && actualVy < desiredVy - 2.0) {
-            vel.y = 0;
-          }
+        // Ceiling hit: controller stopped upward movement
+        if (desiredVy > 0 && actualVy < desiredVy - 2.0) {
+          vel.y = 0;
         }
       }
     }
+
+    const desiredHLen = Math.sqrt(desiredDisplacement.x ** 2 + desiredDisplacement.z ** 2);
+    const actualHLen = Math.sqrt(actualDisplacement.x ** 2 + actualDisplacement.z ** 2);
+    const blockedByCollider = desiredHLen > 0.001 && actualHLen < desiredHLen * 0.3;
 
     // ─── Floor material from scene config (single source of truth) ───
     // Previously, we read the collider name (fs:<material>) via raycast.
@@ -665,6 +631,12 @@ export function PhysicsPlayer({
 
     // ─── Animation state ───
     const horizontalSpeed = Math.sqrt(vel.x * vel.x + vel.z * vel.z);
+    const animPos = rb.translation();
+    // If feet are at floor level with low vertical velocity, treat as grounded
+    // even when the character controller briefly loses ground contact while walking.
+    if (animPos.y <= floorY + 0.04 && Math.abs(vel.y) < 0.75) {
+      isGroundedRef.current = true;
+    }
     if (!isGroundedRef.current) {
       currentAnimRef.current = vel.y > 0.5 ? 'jump' : 'fall';
     } else if (horizontalSpeed > 0.5) {
@@ -694,12 +666,10 @@ export function PhysicsPlayer({
     livePlayerPositionRef.current.set(finalPos.x, finalPos.y, finalPos.z);
 
     // ─── EMERGENCY MOBILE FALLBACK ───
-    // If the player has input (isMoving) but the RigidBody position hasn't
-    // changed for 15+ frames, the character controller is silently blocking
-    // movement. This happens on some mobile devices where Rapier WASM
-    // computeColliderMovement returns near-zero displacement despite valid input.
-    // Fix: force-apply velocity directly as a last resort.
-    if (isMoving) {
+    // If the player has input but position hasn't changed, the controller may
+    // be broken (common on some mobile WASM builds). Do NOT treat legitimate
+    // wall blocking as a failure — that would re-enable collision bypass.
+    if (isMoving && !blockedByCollider) {
       const dx = finalPos.x - prevRbPosRef.current.x;
       const dz = finalPos.z - prevRbPosRef.current.z;
       const posDelta = Math.sqrt(dx * dx + dz * dz);
@@ -708,16 +678,6 @@ export function PhysicsPlayer({
         if (noMovementFramesRef.current >= 15 && !useDirectMovementRef.current) {
           console.warn('[PhysicsPlayer] Position unchanged for 15 frames despite input — forcing direct movement mode (mobile fallback)');
           useDirectMovementRef.current = true;
-        }
-        // Even in direct mode, if position still doesn't change, force-apply
-        if (noMovementFramesRef.current >= 30) {
-          const emergencyX = finalPos.x + vel.x * dt;
-          const emergencyZ = finalPos.z + vel.z * dt;
-          const clampedEmerX = Math.max(-halfW, Math.min(halfW, emergencyX));
-          const clampedEmerZ = Math.max(-halfD, Math.min(halfD, emergencyZ));
-          rb.setTranslation({ x: clampedEmerX, y: finalPos.y, z: clampedEmerZ }, true);
-          livePlayerPositionRef.current.set(clampedEmerX, finalPos.y, clampedEmerZ);
-          noMovementFramesRef.current = 15; // Keep in emergency mode but don't let counter grow forever
         }
       } else {
         noMovementFramesRef.current = 0;
@@ -741,7 +701,7 @@ export function PhysicsPlayer({
     <RigidBody
       ref={rigidBodyRef}
       type="kinematicPosition"
-      position={[spawnPoint[0], spawnPoint[1] + 0.05, spawnPoint[2]]}
+      position={[spawnPoint[0], spawnPoint[1], spawnPoint[2]]}
       colliders={false}
       lockRotations
     >

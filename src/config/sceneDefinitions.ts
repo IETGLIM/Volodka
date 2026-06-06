@@ -453,7 +453,7 @@ export const office_day_def: SceneDefinition = {
   ceilings: [
     { type: 'cuboid', size: [7, 0.1, 6], position: [0, 3.1, 0] },
   ],
-  visualComponent: 'OfficeVisual',
+  visualComponent: 'OfficeDayVisual',
   lights: [
     { position: [0, 2.8, 0], intensity: 2.0, color: '#ffffff', distance: 12 },
     { position: [-4, 2.5, -2], intensity: 1.0, color: '#eef4ff', distance: 8 },
@@ -480,6 +480,7 @@ export const park_day_def: SceneDefinition = {
   doorways: [
     { id: 'park_to_street', position: [-12.0, 1, 0], width: 2.0, height: 2.5 },
     { id: 'park_to_library', position: [0, 1, -12.0], width: 1.0, height: 2.2 },
+    { id: 'park_to_chk', position: [0, 1, -14.0], width: 2.0, height: 2.5 },
   ],
   exits: [
     {
@@ -499,6 +500,16 @@ export const park_day_def: SceneDefinition = {
       spawnRotation: Math.PI,
       label: '→ Библиотека',
       doorwayId: 'park_to_library',
+    },
+    {
+      id: 'park_to_chk',
+      targetScene: 'chk_forest_zorge',
+      position: [0, 1, -14.0],
+      spawnPosition: [0, 0.01, -12],
+      spawnRotation: 0,
+      label: '→ Лес · Зорге (ЧК)',
+      requiredFlag: 'chk_forest_unlocked',
+      doorwayId: 'park_to_chk',
     },
   ],
   floors: [
@@ -852,6 +863,55 @@ export const zarema_albert_room_def: SceneDefinition = {
   fog: { near: 5, far: 12 },
 };
 
+/** ЧК · Лес · Зорге — secret TOLPA gathering in the forest (night) */
+export const chk_forest_zorge_def: SceneDefinition = {
+  id: 'chk_forest_zorge',
+  name: 'ЧК · Лес · Зорге',
+  dimensions: [36, 6, 36],
+  type: 'outdoor',
+  hasCeiling: false,
+  defaultSpawn: [0, 0.01, -12],
+  defaultSpawnRotation: 0,
+  characterModelScale: 1.0,
+  locomotionScale: 1.2,
+  doorways: [
+    { id: 'chk_to_park', position: [0, 1, -16], width: 2.5, height: 2.5 },
+  ],
+  exits: [
+    {
+      id: 'chk_to_park',
+      targetScene: 'park_day',
+      position: [0, 1, -16],
+      spawnPosition: [0, 0.01, -12],
+      spawnRotation: Math.PI,
+      label: '→ Тропа к парку',
+      doorwayId: 'chk_to_park',
+    },
+  ],
+  floors: [
+    { type: 'cuboid', size: [18, 0.05, 18], position: [0, -0.05, 0], footstepMaterial: 'grass' },
+  ],
+  walls: [],
+  obstacles: [
+    { type: 'cuboidObstacle', size: [0.8, 2.5, 0.8], position: [-8, 2.5, -6], footstepMaterial: 'grass' },
+    { type: 'cuboidObstacle', size: [0.9, 2.8, 0.9], position: [9, 2.8, -7], footstepMaterial: 'grass' },
+    { type: 'cuboidObstacle', size: [1.0, 2.2, 1.0], position: [-10, 2.2, 5], footstepMaterial: 'grass' },
+    { type: 'cuboidObstacle', size: [0.7, 2.0, 0.7], position: [7, 2.0, 8], footstepMaterial: 'grass' },
+    { type: 'cuboidObstacle', size: [0.5, 0.3, 0.5], position: [0, 0.3, 0], footstepMaterial: 'stone' },
+  ],
+  ceilings: [],
+  visualComponent: 'ChkForestVisual',
+  lights: [
+    { position: [0, 2.5, 0], intensity: 0.4, color: '#334422', distance: 20 },
+  ],
+  ambientColor: '#1a2218',
+  ambientIntensity: 0.35,
+  groundColor: '#2a4a22',
+  fogEnabled: true,
+  fog: { near: 8, far: 28 },
+  transitionStyle: 'dissolve',
+};
+
 /** Map of all scene definitions — single source of truth */
 export const SCENE_DEFINITIONS = {
   volodka_room: volodka_room_def,
@@ -868,6 +928,7 @@ export const SCENE_DEFINITIONS = {
   rooftop_edge: rooftop_edge_def,
   abandoned_factory: abandoned_factory_def,
   zarema_albert_room: zarema_albert_room_def,
+  chk_forest_zorge: chk_forest_zorge_def,
 } as const satisfies Record<string, SceneDefinition>;
 
 /** Scene identifier — derived from SCENE_DEFINITIONS keys (no manual union). */

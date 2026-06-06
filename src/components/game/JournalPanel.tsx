@@ -37,7 +37,6 @@ import {
 } from '@/store/selectors';
 import { POEMS, getMainPoems, getHiddenPoems } from '@/data/poems';
 import { getPoemPower, canUsePower, activatePoemPowerById, getCooldownRemaining } from '@/engine/PoemPowerSystem';
-import { NPC_DEFINITIONS } from '@/data/npcDefinitions';
 import { SCENE_CONFIG } from '@/config/scenes';
 import { STORY_NODES } from '@/data/storyNodes';
 import { audioEngine } from '@/engine/AudioEngine';

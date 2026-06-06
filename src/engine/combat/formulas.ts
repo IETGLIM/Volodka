@@ -19,7 +19,13 @@ export function getPlayerDefense(): number {
 }
 
 export function getPlayerMaxHp(): number {
-  return snap().playerState.energy * 2;
+  const { energy } = snap().playerState;
+  return Math.max(20, energy * 2);
+}
+
+/** Credits earned on combat victory — scales with enemy tier and combo. */
+export function computeCombatCredits(xpReward: number, comboBonus: number): number {
+  return Math.max(8, Math.floor(xpReward * 0.5) + comboBonus * 2);
 }
 
 export function tickPowerCooldowns(cooldowns: Record<string, number>): Record<string, number> {

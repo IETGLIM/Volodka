@@ -196,6 +196,7 @@ export class QuestTracker {
 
     if (import.meta.env.DEV) {
       this.validateQuestMinigameTargets();
+      this.validateQuestFlagTargets();
     }
   }
 
@@ -242,6 +243,38 @@ export class QuestTracker {
 
         if (alreadyMet) {
           this.completeObjective(quest.questId, objective.id);
+        }
+      }
+    }
+  }
+
+  /** Dev-only: warn when multiple flag_set objectives share the same target flag. */
+  private validateQuestFlagTargets(): void {
+    for (const quest of QUEST_DEFINITIONS) {
+      const flagObjectives = quest.objectives.filter((o) => o.type === 'flag_set' && o.target);
+      const byTarget = new Map<string, string[]>();
+      for (const objective of flagObjectives) {
+        const target = objective.target!;
+        const ids = byTarget.get(target) ?? [];
+        ids.push(objective.id);
+        byTarget.set(target, ids);
+      }
+      for (const [target, objectiveIds] of byTarget) {
+        if (objectiveIds.length > 1) {
+          console.warn(
+            `[QuestTracker] Quest "${quest.id}" has duplicate flag_set target "${target}" ` +
+              `on objectives: ${objectiveIds.join(', ')}.`,
+          );
+        }
+      }
+      for (const reward of quest.rewards ?? []) {
+        if (reward.type !== 'setFlag' || !reward.flag) continue;
+        const match = flagObjectives.find((o) => o.target === reward.flag);
+        if (match) {
+          console.warn(
+            `[QuestTracker] Quest "${quest.id}" reward setFlag "${reward.flag}" duplicates ` +
+              `objective "${match.id}" — remove the reward flag.`,
+          );
         }
       }
     }

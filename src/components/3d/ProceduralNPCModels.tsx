@@ -1484,6 +1484,38 @@ export function ProceduralNPCModel({
           <KateModel appearance={app} animState={animState} />
         </group>
       );
+    case 'chk_ru':
+    case 'chk_guest_devops':
+      return (
+        <group scale={[widthScale, heightScale, widthScale]}>
+          <ColleagueModel appearance={app} animState={animState} />
+        </group>
+      );
+    case 'chk_based':
+      return (
+        <group scale={[widthScale, heightScale, widthScale]}>
+          <SergeyModel appearance={app} animState={animState} />
+        </group>
+      );
+    case 'chk_smert':
+    case 'chk_guest_analyst':
+      return (
+        <group scale={[widthScale, heightScale, widthScale]}>
+          <VeraModel appearance={app} animState={animState} />
+        </group>
+      );
+    case 'chk_stalker':
+      return (
+        <group scale={[widthScale, heightScale, widthScale]}>
+          <LenaModel appearance={app} animState={animState} />
+        </group>
+      );
+    case 'chk_elis':
+      return (
+        <group scale={[widthScale, heightScale, widthScale]}>
+          <KateModel appearance={app} animState={animState} />
+        </group>
+      );
     default:
       // Fallback generic model using Albert as base with custom colors
       return (

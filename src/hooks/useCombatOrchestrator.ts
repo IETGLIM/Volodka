@@ -10,7 +10,7 @@ import type { EnemyType } from '@/shared/types/game';
 /**
  * Sub-orchestrator that handles all combat-related EventBus subscriptions:
  * - Starting combat from battle scene entry or story effects
- * - Processing combat victory (XP, loot notifications)
+ * - Processing combat victory (loot notifications; XP/karma applied in CombatSystem)
  * - Processing combat defeat (energy/karma loss notification)
  * - Camera shake on combat hits
  *
@@ -46,16 +46,12 @@ export function useCombatOrchestrator() {
       }),
     );
 
-    // Handle combat:victory for loot notifications
+    // Handle combat:victory for loot notifications (XP/karma already applied in CombatSystem)
     unsubs.push(
-      eventBus.on('combat:victory', ({ xpGained, karmaGained, lootItemId }) => {
-        const store = useGameStore.getState();
-        store.addXp(xpGained);
-
-        // Push notification for loot
+      eventBus.on('combat:victory', ({ lootItemId }) => {
         if (lootItemId) {
           const def = getItemDefinition(lootItemId);
-          store.pushNotification('quest', `Найден предмет: ${def?.name ?? lootItemId}`);
+          useGameStore.getState().pushNotification('quest', `Найден предмет: ${def?.name ?? lootItemId}`);
         }
       }),
     );

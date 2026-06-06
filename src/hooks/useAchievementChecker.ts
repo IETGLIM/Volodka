@@ -8,6 +8,7 @@
    No sync logic needed — the store IS the single source of truth. */
 
 import { useEffect, useRef } from 'react';
+import { shallow } from 'zustand/shallow';
 import { useGameStore } from '@/store/gameStore';
 import { eventBus } from '@/engine/EventBus';
 import {
@@ -55,10 +56,10 @@ export function useAchievementChecker() {
     };
   }, []);
 
-  // Check achievements on game state changes
+  // Check achievements only when achievement-relevant state changes
   useEffect(() => {
-    const unsub = useGameStore.subscribe((state) => {
-      const checkState: AchievementCheckState = {
+    const unsub = useGameStore.subscribe(
+      (state): AchievementCheckState => ({
         mode: state.mode,
         currentSceneId: state.exploration.currentSceneId,
         collectedPoems: state.collectedPoems,
@@ -69,10 +70,12 @@ export function useAchievementChecker() {
         flags: state.playerState.flags,
         timeOfDay: state.exploration.timeOfDay,
         unlockedAchievements: state.unlockedAchievements,
-      };
-
-      checkAchievements(checkState);
-    });
+      }),
+      (checkState) => {
+        checkAchievements(checkState);
+      },
+      { equalityFn: shallow },
+    );
 
     return unsub;
   }, []);

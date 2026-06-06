@@ -12,13 +12,13 @@ import {
   useDialogueContext,
   useSetCurrentNodeId,
   useSetMode,
-  useSetShowStoryOverlay,
 } from '@/store/selectors';
 import { DIALOGUE_NODES } from '@/data/dialogueNodes';
-import { NPC_DEFINITIONS } from '@/data/npcDefinitions';
+import { findNpcByName } from '@/data/allNpcDefinitions';
 import { createInventoryItem } from '@/data/items';
 import { audioEngine } from '@/engine/AudioEngine';
 import { eventBus } from '@/engine/EventBus';
+import { closeNarrativeOverlay } from '@/engine/scene/narrativeOverlay';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import type {
   DialogueChoice,
@@ -134,7 +134,6 @@ interface HistoryLine {
 export function DialogueRenderer() {
   const { mode, showStoryOverlay, currentNodeId, playerState, npcRelations, timeOfDay } = useDialogueContext();
   const setMode = useSetMode();
-  const setShowStoryOverlay = useSetShowStoryOverlay();
   const setCurrentNodeId = useSetCurrentNodeId();
 
   const [skillCheckBanner, setSkillCheckBanner] = useState<{
@@ -156,7 +155,7 @@ export function DialogueRenderer() {
   const isOpen = showStoryOverlay && !!DIALOGUE_NODES[currentNodeId];
   const node = useMemo(() => DIALOGUE_NODES[currentNodeId], [currentNodeId]);
   const conditionCtx = useMemo(() => {
-    const npcDef = node ? NPC_DEFINITIONS.find((n) => n.name === node.speaker) : undefined;
+    const npcDef = node ? findNpcByName(node.speaker) : undefined;
     return buildStoryConditionContext(playerState, {
       npcRelations,
       npcId: npcDef?.id ?? '',
@@ -181,7 +180,7 @@ export function DialogueRenderer() {
       }
 
       if (node.speaker) {
-        const npcDef = NPC_DEFINITIONS.find((n) => n.name === node.speaker);
+        const npcDef = findNpcByName(node.speaker);
         const npcId = npcDef?.id ?? node.speaker.toLowerCase().replace(/\s+/g, '_');
         eventBus.emit('npc:talked', { npcId, dialogueNodeId: node.id });
       }
@@ -194,10 +193,8 @@ export function DialogueRenderer() {
 
   const handleClose = useCallback(() => {
     audioEngine.playSfx('ui_close');
-    // ── World Director: close dialogue by hiding overlay, not switching mode ──
-    // The player is already in exploration mode — just hide the narrative overlay
-    setShowStoryOverlay(false);
-  }, [setShowStoryOverlay]);
+    closeNarrativeOverlay();
+  }, []);
 
   const handleChoice = useCallback(
     (choice: DialogueChoice) => {
@@ -208,13 +205,12 @@ export function DialogueRenderer() {
       }
 
       if (choice.next === null) {
-        // ── World Director: end dialogue by hiding overlay ──
-        setShowStoryOverlay(false);
+        closeNarrativeOverlay();
       } else {
         setCurrentNodeId(choice.next);
       }
     },
-    [setShowStoryOverlay, setCurrentNodeId],
+    [setCurrentNodeId],
   );
 
   // Auto-advance: pick first choice that passes checkStoryCondition (incl. npcId for relation gates).
@@ -235,7 +231,7 @@ export function DialogueRenderer() {
 
   if (!isOpen || !node) return null;
 
-  const npcDef = NPC_DEFINITIONS.find((n) => n.name === node.speaker);
+  const npcDef = findNpcByName(node.speaker);
   const npcId = npcDef?.id ?? '';
   const portraitColors = npcId ? (NPC_PORTRAIT_COLORS[npcId] ?? NPC_PORTRAIT_COLORS.cafe_barista) : NPC_PORTRAIT_COLORS.cafe_barista;
   const emotion = detectEmotion(node.text);

@@ -30,6 +30,7 @@ const SCENE_WEATHER: Record<SceneId, WeatherType> = {
   sleep_dream: 'none',
   abandoned_factory: 'none',
   zarema_albert_room: 'none',
+  chk_forest_zorge: 'none',
 };
 
 /** Weather controller — activates appropriate weather system per scene */

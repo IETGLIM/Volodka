@@ -17,6 +17,11 @@ export const EXPANDED_DIALOGUE_NODES: Record<string, DialogueNode> = {
       { text: 'Расскажи о мире до Краха.', next: 'vera_before_crash', effects: [{ type: 'addSkill', skill: 'intuition', value: 1 }] },
       { text: 'Какие архивы ты хранишь?', next: 'vera_archives' },
       { text: 'Спасибо, может позже.', next: null },
+      {
+        text: 'Гильдия бьёт по Хранилищу. Что помнишь из архивов?',
+        next: 'vera_act3_vault',
+        condition: { requiredAct: 3, flag: 'vault_under_attack' },
+      },
     ],
   },
 
@@ -61,6 +66,11 @@ export const EXPANDED_DIALOGUE_NODES: Record<string, DialogueNode> = {
       { text: 'Что интересного в логах?', next: 'sergey_logs' },
       { text: 'Расскажи о ночной смене.', next: 'sergey_night_shift' },
       { text: 'Ничего, пока.', next: null },
+      {
+        text: 'Гильдия атакует Хранилище. Что видно в логах?',
+        next: 'sergey_act3_raid',
+        condition: { requiredAct: 3, flag: 'vault_under_attack' },
+      },
     ],
   },
 
@@ -96,6 +106,11 @@ export const EXPANDED_DIALOGUE_NODES: Record<string, DialogueNode> = {
       { text: 'Что значит "из Сети"?', next: 'lena_from_network' },
       { text: 'Чем ты можешь помочь?', next: 'lena_help' },
       { text: 'Я не доверяю теням.', next: null, effects: [{ type: 'addKarma', value: -1 }] },
+      {
+        text: 'Зарему арестовали. Можешь помочь с камерами?',
+        next: 'lena_act3_detention',
+        condition: { requiredAct: 3, flag: 'zarema_arrested' },
+      },
     ],
   },
 
@@ -131,6 +146,11 @@ export const EXPANDED_DIALOGUE_NODES: Record<string, DialogueNode> = {
       { text: 'Ты не похож на типичного охранника.', next: 'oleg_not_typical' },
       { text: 'Что ты имеешь в виду — "закроет глаза"?', next: 'oleg_loophole' },
       { text: 'Понял. Без проблем.', next: null },
+      {
+        text: 'Нужны три минуты слепой зоны — для Заремы.',
+        next: 'oleg_act3_detention',
+        condition: { requiredAct: 3, flag: 'zarema_arrested', minNpcRelation: 45 },
+      },
     ],
   },
 
@@ -165,6 +185,11 @@ export const EXPANDED_DIALOGUE_NODES: Record<string, DialogueNode> = {
       { text: 'Покажи мне запрещённые книги.', next: 'kate_forbidden_books' },
       { text: 'Зачем ты рискуешь?', next: 'kate_why_risk' },
       { text: 'Я вернусь позже.', next: null },
+      {
+        text: 'Виктория — это Хранилище. Что у тебя есть о ней?',
+        next: 'kate_act3_maria',
+        condition: { requiredAct: 3, flag: 'maria_truth_revealed' },
+      },
     ],
   },
 
@@ -199,6 +224,11 @@ export const EXPANDED_DIALOGUE_NODES: Record<string, DialogueNode> = {
       { text: 'Потому что его не подключили к общей сети.', next: 'viktor_network' },
       { text: 'Потому что ты его чинишь.', next: 'viktor_repair' },
       { text: 'Расскажи о Сбое. Что ты видел?', next: 'viktor_crash' },
+      {
+        text: 'Гильдия атакует Хранилище. Что в твоём архиве?',
+        next: 'viktor_act3_vault',
+        condition: { requiredAct: 3, flag: 'vault_under_attack' },
+      },
     ],
   },
 
@@ -243,6 +273,11 @@ export const EXPANDED_DIALOGUE_NODES: Record<string, DialogueNode> = {
       { text: 'Что ты знаешь?', next: 'kira_info' },
       { text: 'У меня нет денег.', next: 'kira_barter' },
       { text: 'Ты работаешь на гильдию?', next: 'kira_guild' },
+      {
+        text: 'Кто предал Зарему? У тебя есть имя?',
+        next: 'kira_act3_betrayal',
+        condition: { requiredAct: 3, flag: 'zarema_arrested' },
+      },
     ],
   },
 
@@ -287,6 +322,11 @@ export const EXPANDED_DIALOGUE_NODES: Record<string, DialogueNode> = {
       { text: 'Покажи.', next: 'boris_poem' },
       { text: 'Почему я?', next: 'boris_why' },
       { text: 'Ты рискуешь. Зачем тебе это?', next: 'boris_risk' },
+      {
+        text: '«Заря-М» на заводе — ты слышал, как она «поёт»?',
+        next: 'boris_act3_factory',
+        condition: { requiredAct: 2, flag: 'wants_visit_factory' },
+      },
     ],
   },
 
@@ -330,6 +370,11 @@ export const EXPANDED_DIALOGUE_NODES: Record<string, DialogueNode> = {
       { text: 'Запрещённые тексты. Те, что не в Сети.', next: 'tamara_forbidden' },
       { text: 'Информацию о Великом Сбое.', next: 'tamara_crash' },
       { text: 'Просто тишины. И книг.', next: 'tamara_peace' },
+      {
+        text: 'Нужны слова, которые остановят гильдию.',
+        next: 'tamara_act3_resistance',
+        condition: { requiredAct: 3, flag: 'vault_under_attack' },
+      },
     ],
   },
 
@@ -373,6 +418,11 @@ export const EXPANDED_DIALOGUE_NODES: Record<string, DialogueNode> = {
       { text: 'Что ты видишь с крыши?', next: 'grisha_vision' },
       { text: 'Ты живёшь здесь, на крыше?', next: 'grisha_home' },
       { text: 'Красиво. Но холодно.', next: 'grisha_cold' },
+      {
+        text: 'Видишь атаку на Хранилище с крыши?',
+        next: 'grisha_act3_vault',
+        condition: { requiredAct: 3, flag: 'vault_under_attack' },
+      },
     ],
   },
 
@@ -403,6 +453,180 @@ export const EXPANDED_DIALOGUE_NODES: Record<string, DialogueNode> = {
     choices: [
       { text: 'Давай. Расскажи мне о городе.', next: 'grisha_vision' },
       { text: 'Нет, спасибо. Я пойду.', next: null },
+    ],
+  },
+
+  /* ═══════════════════════════════════════════════════════════
+     Act 3+ branches for expanded NPCs
+     ═══════════════════════════════════════════════════════════ */
+
+  vera_act3_vault: {
+    id: 'vera_act3_vault',
+    speaker: 'Вера',
+    text: 'Хранилище... Я видела его описание в бумажном отчёте — до чистки. Не сервер, а «узел памяти». Гильдия боится не данных, а того, что они оживут. Если у тебя есть доступ — не стирай. Копируй. На бумагу. На чип. На кожу, если придётся.',
+    choices: [
+      {
+        text: 'Запомню. Память — это оружие.',
+        next: null,
+        effects: [
+          { type: 'addKarma', value: 5 },
+          { type: 'setFlag', flag: 'vera_vault_intel', flagValue: true },
+          { type: 'npcChange', npcId: 'vera', npcChange: { relation: 8 } },
+        ],
+      },
+    ],
+  },
+
+  sergey_act3_raid: {
+    id: 'sergey_act3_raid',
+    speaker: 'Сергей',
+    text: 'В логах — DDoS с внутренних IP. Не снаружи. Кто-то из гильдии бьёт по Хранилищу изнутри, маскируясь под «оптимизацию». Я могу оставить бэкдор в мониторинге — на один час. Дальше — сам.',
+    choices: [
+      {
+        text: 'Один час — достаточно.',
+        next: null,
+        effects: [
+          { type: 'setFlag', flag: 'sergey_monitor_backdoor', flagValue: true },
+          { type: 'addSkill', skill: 'coding', value: 1 },
+          { type: 'npcChange', npcId: 'sergey', npcChange: { relation: 10 } },
+        ],
+      },
+      { text: 'Слишком рискованно для тебя.', next: null },
+    ],
+  },
+
+  lena_act3_detention: {
+    id: 'lena_act3_detention',
+    speaker: 'Лена',
+    text: 'Камеры в блоке задержания — слепые в углу B, секунда на секунду, как у Олега. Я могу подменить badge-лог на три минуты. Цена — один стих из твоей коллекции. Не для продажи. Для Сети.',
+    choices: [
+      {
+        text: 'Беру стих. Спаси её.',
+        next: null,
+        effects: [
+          { type: 'setFlag', flag: 'lena_detention_help', flagValue: true },
+          { type: 'addKarma', value: 3 },
+          { type: 'npcChange', npcId: 'lena', npcChange: { relation: 12 } },
+        ],
+      },
+      { text: 'Найду другой путь.', next: null },
+    ],
+  },
+
+  oleg_act3_detention: {
+    id: 'oleg_act3_detention',
+    speaker: 'Олег',
+    text: 'Три минуты — 3:14. Я расширю окно до 3:20. Один раз. Больше — заметят. Идите быстро, без терминалов на виду. И если спросят — вы не видели меня.',
+    choices: [
+      {
+        text: 'Спасибо, Олег.',
+        next: null,
+        effects: [
+          { type: 'setFlag', flag: 'oleg_detention_window', flagValue: true },
+          { type: 'npcChange', npcId: 'oleg', npcChange: { relation: 15 } },
+        ],
+      },
+    ],
+  },
+
+  kate_act3_maria: {
+    id: 'kate_act3_maria',
+    speaker: 'Катя',
+    text: 'Виктория... В запрещённом фонде есть дневник «Архитектора Хранилища». Там не имя — там чертежи сознания. Если гильдия добьёт узел — умрёт не сервер. Умрёт она. Я могу спрятать копию у себя. Но ты должен защитить оригинал.',
+    choices: [
+      {
+        text: 'Защищу. Дай копию.',
+        next: null,
+        effects: [
+          { type: 'setFlag', flag: 'kate_vault_diary', flagValue: true },
+          { type: 'addSkill', skill: 'intuition', value: 2 },
+          { type: 'npcChange', npcId: 'kate', npcChange: { relation: 10 } },
+        ],
+      },
+    ],
+  },
+
+  viktor_act3_vault: {
+    id: 'viktor_act3_vault',
+    speaker: 'Виктор',
+    text: 'На терминале — запись атаки 2029 года. Тот же паттерн, что сейчас. Гильдия не «защищается» — она повторяет Сбой, но контролируемо. У меня есть ключ-фраза из стиха. Она может замедлить их на минуту. Одноразово.',
+    choices: [
+      {
+        text: 'Дай ключ-фразу.',
+        next: null,
+        effects: [
+          { type: 'setFlag', flag: 'viktor_vault_keyphrase', flagValue: true },
+          { type: 'collectPoem', poemId: 'poem_18' },
+          { type: 'npcChange', npcId: 'viktor', npcChange: { relation: 8 } },
+        ],
+      },
+    ],
+  },
+
+  kira_act3_betrayal: {
+    id: 'kira_act3_betrayal',
+    speaker: 'Кира',
+    text: 'Имя? Дорого. Но для тебя — скидка. Код подписан «OKO-7». Не человек — роль. Тот, кто пишет «просто код» и не спит. Звучит знакомо? Проверь коллегу. И не говори, что это я.',
+    choices: [
+      {
+        text: 'Проверю.',
+        next: null,
+        effects: [
+          { type: 'setFlag', flag: 'kira_oko_hint', flagValue: true },
+          { type: 'addSkill', skill: 'logic', value: 2 },
+        ],
+      },
+    ],
+  },
+
+  boris_act3_factory: {
+    id: 'boris_act3_factory',
+    speaker: 'Борис',
+    text: 'Слышал. В третью смену станки стихают — и из подвала доносится голос. Не человеческий. Я записал на телефон — старый, без сети. Могу передать. Но если гильдия узнает — меня уволят. Или хуже.',
+    choices: [
+      {
+        text: 'Передай запись.',
+        next: null,
+        effects: [
+          { type: 'setFlag', flag: 'boris_zarya_recording', flagValue: true },
+          { type: 'triggerQuest', questId: 'voices_of_factory' },
+          { type: 'npcChange', npcId: 'boris', npcChange: { relation: 10 } },
+        ],
+      },
+      { text: 'Не рискуй ради меня.', next: null },
+    ],
+  },
+
+  tamara_act3_resistance: {
+    id: 'tamara_act3_resistance',
+    speaker: 'Тамара',
+    text: 'Есть стих — «Пробуждение». Оригинал на бумаге. Его нельзя оцифровать без потери... чего-то. Сущности. Прочти вслух у входа в Хранилище — и система гильдии на секунду «забудет» себя. Одна попытка. Больше — книга сгорит.',
+    choices: [
+      {
+        text: 'Я прочту. Когда придёт время.',
+        next: null,
+        effects: [
+          { type: 'setFlag', flag: 'tamara_awakening_ready', flagValue: true },
+          { type: 'addSkill', skill: 'writing', value: 2 },
+          { type: 'npcChange', npcId: 'tamara', npcChange: { relation: 12 } },
+        ],
+      },
+    ],
+  },
+
+  grisha_act3_vault: {
+    id: 'grisha_act3_vault',
+    speaker: 'Гриша',
+    text: 'Вижу. Фиолетовый луч пульсирует — как сердце перед остановкой. С западной стороны к Хранилищу идут три группы. Одна — гильдия. Две — нет. Одна из них — ваши. С крыши видно больше, чем в их отчётах.',
+    choices: [
+      {
+        text: 'Следи за западным флангом. Предупреди, если что.',
+        next: null,
+        effects: [
+          { type: 'setFlag', flag: 'grisha_vault_scout', flagValue: true },
+          { type: 'addSkill', skill: 'intuition', value: 2 },
+        ],
+      },
     ],
   },
 }

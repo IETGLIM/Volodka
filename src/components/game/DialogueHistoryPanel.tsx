@@ -12,7 +12,7 @@ import {
   User, Clock,
 } from 'lucide-react';
 import { useGameStore } from '@/store/gameStore';
-import { NPC_DEFINITIONS } from '@/data/npcDefinitions';
+import { findNpcById } from '@/data/allNpcDefinitions';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
@@ -215,7 +215,7 @@ export function DialogueHistoryPanel({ open, onClose }: DialogueHistoryPanelProp
     // Map to NPC info
     return npcIds
       .map((npcId) => {
-        const def = NPC_DEFINITIONS.find((n) => n.id === npcId);
+        const def = findNpcById(npcId);
         const name = def?.name ?? npcId;
         const entries = conversationLog[npcId];
         return { npcId, name, entries };
@@ -238,7 +238,7 @@ export function DialogueHistoryPanel({ open, onClose }: DialogueHistoryPanelProp
   const selectedEntries = selectedNpcId ? (conversationLog[selectedNpcId] ?? []) : [];
 
   // Selected NPC definition
-  const selectedNpcDef = selectedNpcId ? NPC_DEFINITIONS.find((n) => n.id === selectedNpcId) : null;
+  const selectedNpcDef = selectedNpcId ? findNpcById(selectedNpcId) : null;
 
   const hasConversations = npcList.length > 0;
 

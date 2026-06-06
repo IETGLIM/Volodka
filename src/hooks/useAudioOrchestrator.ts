@@ -1,5 +1,6 @@
 
 import { useEffect, useRef } from 'react';
+import { shallow } from 'zustand/shallow';
 import { useGameStore } from '@/store/gameStore';
 import { eventBus } from '@/engine/EventBus';
 import { musicEngine } from '@/engine/MusicEngine';
@@ -714,81 +715,83 @@ export function useAudioOrchestrator() {
 
   // Mode-based audio control: react to mode changes reactively
   useEffect(() => {
-    const unsub = useGameStore.subscribe((state, prev) => {
-      if (disposedRef.current) return;
+    const unsub = useGameStore.subscribe(
+      (state) => ({
+        mode: state.mode,
+        showStoryOverlay: state.showStoryOverlay,
+        sceneId: state.exploration.currentSceneId,
+        timeOfDay: state.exploration.timeOfDay,
+      }),
+      (selected, prev) => {
+        if (disposedRef.current) return;
 
-      if (state.mode !== prev.mode) {
-        if (state.mode === 'menu' || state.mode === 'intro') {
-          musicEngine.stopMusic(1);
-          ambientPlayerRef.current?.stopAll();
-        } else if (state.mode === 'exploration' && prev.mode !== 'exploration') {
-          const sceneId = state.exploration.currentSceneId;
-          musicEngine.playSceneMusic(sceneId);
+        if (selected.mode !== prev.mode) {
+          if (selected.mode === 'menu' || selected.mode === 'intro') {
+            musicEngine.stopMusic(1);
+            ambientPlayerRef.current?.stopAll();
+          } else if (selected.mode === 'exploration' && prev.mode !== 'exploration') {
+            musicEngine.playSceneMusic(selected.sceneId);
 
-          // Start ambient for current scene
-          const timeOfDay = state.exploration.timeOfDay;
-          const ambientType = getAmbienceForScene(sceneId, timeOfDay);
+            const ambientType = getAmbienceForScene(selected.sceneId, selected.timeOfDay);
+            if (ambientType) {
+              const crossfadeMs = getAmbientTransitionDuration(selected.sceneId);
+              ambientPlayerRef.current?.play(ambientType, crossfadeMs);
+            }
+          }
+
+          // ── World Director: dialogue muffle when narrative overlay is active ──
+          if (selected.showStoryOverlay) {
+            audioEngine.enableDialogueMuffle();
+            ambientPlayerRef.current?.setDialogueDucked(true);
+          } else if (selected.mode === 'exploration') {
+            audioEngine.disableDialogueMuffle();
+            ambientPlayerRef.current?.setDialogueDucked(false);
+          }
+
+          // Combat mute
+          if (selected.mode === 'combat') {
+            ambientPlayerRef.current?.setCombatMuted(true);
+          } else {
+            ambientPlayerRef.current?.setCombatMuted(false);
+          }
+        }
+
+        // ── React to scene changes within exploration mode ──
+        if (
+          selected.mode === 'exploration' &&
+          selected.sceneId !== prev.sceneId
+        ) {
+          const ambientType = getAmbienceForScene(selected.sceneId, selected.timeOfDay);
           if (ambientType) {
-            const crossfadeMs = getAmbientTransitionDuration(sceneId);
+            const crossfadeMs = getAmbientTransitionDuration(selected.sceneId);
             ambientPlayerRef.current?.play(ambientType, crossfadeMs);
           }
         }
 
-        // ── World Director: dialogue muffle when narrative overlay is active ──
-        if (state.showStoryOverlay) {
-          audioEngine.enableDialogueMuffle();
-          ambientPlayerRef.current?.setDialogueDucked(true);
-        } else if (state.mode === 'exploration') {
-          audioEngine.disableDialogueMuffle();
-          ambientPlayerRef.current?.setDialogueDucked(false);
-        }
+        // ── React to time-of-day changes that might switch day/night ambient ──
+        if (
+          selected.mode === 'exploration' &&
+          selected.timeOfDay !== prev.timeOfDay
+        ) {
+          const prevTime = prev.timeOfDay;
+          const currTime = selected.timeOfDay;
+          const crossedBoundary =
+            (prevTime < 6 && currTime >= 6) ||
+            (prevTime < 20 && currTime >= 20) ||
+            (prevTime >= 6 && currTime < 6) ||
+            (prevTime >= 20 && currTime < 20);
 
-        // Combat mute
-        if (state.mode === 'combat') {
-          ambientPlayerRef.current?.setCombatMuted(true);
-        } else {
-          ambientPlayerRef.current?.setCombatMuted(false);
-        }
-      }
-
-      // ── React to scene changes within exploration mode ──
-      if (
-        state.mode === 'exploration' &&
-        state.exploration.currentSceneId !== prev.exploration.currentSceneId
-      ) {
-        const sceneId = state.exploration.currentSceneId;
-        const timeOfDay = state.exploration.timeOfDay;
-        const ambientType = getAmbienceForScene(sceneId, timeOfDay);
-        if (ambientType) {
-          const crossfadeMs = getAmbientTransitionDuration(sceneId);
-          ambientPlayerRef.current?.play(ambientType, crossfadeMs);
-        }
-      }
-
-      // ── React to time-of-day changes that might switch day/night ambient ──
-      if (
-        state.mode === 'exploration' &&
-        state.exploration.timeOfDay !== prev.exploration.timeOfDay
-      ) {
-        // Check if we crossed the day/night boundary (6:00 or 20:00)
-        const prevTime = prev.exploration.timeOfDay;
-        const currTime = state.exploration.timeOfDay;
-        const crossedBoundary =
-          (prevTime < 6 && currTime >= 6) ||
-          (prevTime < 20 && currTime >= 20) ||
-          (prevTime >= 6 && currTime < 6) ||
-          (prevTime >= 20 && currTime < 20);
-
-        if (crossedBoundary) {
-          const sceneId = state.exploration.currentSceneId;
-          const ambientType = getAmbienceForScene(sceneId, currTime);
-          if (ambientType) {
-            const crossfadeMs = getAmbientTransitionDuration(sceneId);
-            ambientPlayerRef.current?.play(ambientType, crossfadeMs);
+          if (crossedBoundary) {
+            const ambientType = getAmbienceForScene(selected.sceneId, currTime);
+            if (ambientType) {
+              const crossfadeMs = getAmbientTransitionDuration(selected.sceneId);
+              ambientPlayerRef.current?.play(ambientType, crossfadeMs);
+            }
           }
         }
-      }
-    });
+      },
+      { equalityFn: shallow },
+    );
     return unsub;
   }, []);
 }

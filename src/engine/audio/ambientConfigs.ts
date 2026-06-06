@@ -450,6 +450,28 @@ const AMBIENT_CONFIGS: Record<SceneId, AmbientConfig> = {
       { type: 'sawtooth', frequency: 200, duration: 1.5, gain: 0.018, minInterval: 6, maxInterval: 15, useNoise: true, noiseFilterFreq: 600 },
     ],
   },
+
+  /* ─── 15. chk_forest_zorge — Night forest, campfire crackle, distant metal ─── */
+  chk_forest_zorge: {
+    layers: [
+      {
+        type: 'sine',
+        frequency: 70,
+        gain: 0.025,
+        lfoFreq: 0.08,
+        lfoDepth: 5,
+        harmonic: { type: 'sine', frequency: 140, gain: 0.012 },
+        randomInterval: 0,
+      },
+    ],
+    noiseLayers: [
+      { filterType: 'bandpass', filterFreq: 500, filterQ: 0.5, gain: 0.025, lfoFreq: 0.12, lfoDepth: 250 },
+    ],
+    randomSounds: [
+      { type: 'sawtooth', frequency: 120, duration: 0.15, gain: 0.02, minInterval: 0.4, maxInterval: 1.2, useNoise: true, noiseFilterFreq: 900 },
+      { type: 'sine', frequency: 80, duration: 0.6, gain: 0.015, minInterval: 8, maxInterval: 20, frequencyRamp: 65 },
+    ],
+  },
 };
 
 /* ─── Ambient Music Configurations ─── */
@@ -741,6 +763,7 @@ const SCENE_REVERB_PRESETS: Partial<Record<SceneId, string>> = {
   library_day: 'corridor',
   street_night: 'large_space',
   park_day: 'large_space',
+  chk_forest_zorge: 'large_space',
   street_winter: 'large_space',
   rooftop_edge: 'large_space',
   abandoned_factory: 'large_space',

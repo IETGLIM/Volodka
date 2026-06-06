@@ -9,7 +9,7 @@ import { useRef, useEffect, useMemo } from 'react';
 import { selectNpcRelations, useMiniMapState } from '@/store/selectors';
 import { SCENE_CONFIG } from '@/config/scenes';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
-import { NPC_DEFINITIONS } from '@/data/npcDefinitions';
+import { ALL_NPC_DEFINITIONS } from '@/data/allNpcDefinitions';
 import { useActiveQuests, getQuestMarker } from '@/store/questStore';
 
 const MAP_SIZE = 160;
@@ -42,7 +42,7 @@ export function MiniMap() {
     const result: { id: string; name: string; position: [number, number, number]; relation: number }[] = [];
     const relations = selectNpcRelations();
 
-    for (const npcDef of NPC_DEFINITIONS) {
+    for (const npcDef of ALL_NPC_DEFINITIONS) {
       const state = npcStates[npcDef.id];
       if (state && state.sceneId === currentSceneId) {
         const rel = relations.find((r) => r.npcId === npcDef.id);

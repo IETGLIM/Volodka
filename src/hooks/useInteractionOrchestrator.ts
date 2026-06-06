@@ -1,5 +1,6 @@
 
 import { useEffect, useCallback, useState, useRef, useMemo } from 'react';
+import { shallow } from 'zustand/shallow';
 import { useGameStore } from '@/store/gameStore';
 import { eventBus } from '@/engine/EventBus';
 import {
@@ -12,11 +13,12 @@ import { audioEngine } from '@/engine/AudioEngine';
 import { TRIGGER_ZONES } from '@/data/triggerZones';
 import { STORY_NODES } from '@/data/storyNodes';
 import { DIALOGUE_NODES } from '@/data/dialogueNodes';
-import { NPC_DEFINITIONS } from '@/data/npcDefinitions';
+import { findNpcById } from '@/data/allNpcDefinitions';
 import { getItemDefinition } from '@/data/items';
 import { notifyItemReceived } from '@/components/game/LootNotification';
 import { applyEffects } from '@/shared/utils/applyEffects';
-import { SCENE_CONFIG } from '@/config/scenes';
+import { requestSceneTransition, requestSceneTransitionForStoryNode } from '@/engine/scene/sceneTransition';
+import { openNarrativeOverlay } from '@/engine/scene/narrativeOverlay';
 import type { EnemyType, SceneId } from '@/shared/types/game';
 import { getInteractionState, isInteractionLocked } from '@/components/3d/InteractionSystemBridge';
 import { InteractionState } from '@/engine/interaction/interactionMachine';
@@ -150,50 +152,24 @@ export function useInteractionOrchestrator(
 
         // ── Helper: trigger the linked content (dialogue/story/minigame) for a zone ──
         const triggerLinkedContent = (z: typeof zone) => {
-          // G7: Declarative mini-game dispatch — replaces hardcoded ID checks
           if (z.linkedMinigame) {
             eventBus.emit('minigame:open', { gameType: z.linkedMinigame });
             return;
           }
 
-          // Priority: dialogue > story (dialogue is more specific)
           const currentStore = useGameStore.getState();
 
-          // ── VN-skip optimization for visited story nodes ──
-          // If a linked story node has already been visited AND it has a sceneId
-          // (meaning it's a door/transition node like corridor_door or go_home),
-          // skip the VN overlay and just do the scene transition directly.
-          // This prevents the VN from re-triggering every time the player walks
-          // through a door they've already used, which would cover the 3D
-          // interactive layer and force the player through narrative choices
-          // instead of allowing free exploration.
           if (z.linkedStoryNodeId && STORY_NODES[z.linkedStoryNodeId]) {
             const storyNode = STORY_NODES[z.linkedStoryNodeId];
             const alreadyVisited = currentStore.playerState.visitedNodes.includes(z.linkedStoryNodeId);
             if (alreadyVisited && storyNode.sceneId) {
-              // Already seen this narrative — just transition to the scene
-              const targetSceneId = storyNode.sceneId as SceneId;
-              const currentSceneId = currentStore.exploration.currentSceneId;
-              if (targetSceneId !== currentSceneId) {
-                currentStore.setExplorationScene(targetSceneId);
-                const spawn = SCENE_CONFIG[targetSceneId]?.spawnPoint ?? [0, 0.01, 0] as [number, number, number];
-                currentStore.setPlayerPosition(spawn);
-                eventBus.emit('scene:transition', {
-                  targetScene: targetSceneId,
-                  spawnAt: spawn,
-                });
-              }
-              return; // Skip VN overlay — player already knows this story
+              requestSceneTransition(storyNode.sceneId as SceneId);
+              return;
             }
-            // First visit — show the VN overlay as normal
-            currentStore.setShowStoryOverlay(true);
-            currentStore.setCurrentNodeId(z.linkedStoryNodeId);
+            requestSceneTransitionForStoryNode(z.linkedStoryNodeId, storyNode.sceneId);
+            openNarrativeOverlay(z.linkedStoryNodeId);
           } else if (z.linkedDialogueNodeId && DIALOGUE_NODES[z.linkedDialogueNodeId]) {
-            // ── World Director: stay in exploration, show narrative as overlay ──
-            // Before: setMode('visual-novel') — switches away from 3D world (WRONG)
-            // Now: setShowStoryOverlay(true) — narrative overlays on top of 3D
-            currentStore.setShowStoryOverlay(true);
-            currentStore.setCurrentNodeId(z.linkedDialogueNodeId);
+            openNarrativeOverlay(z.linkedDialogueNodeId);
           }
         };
 
@@ -229,7 +205,7 @@ export function useInteractionOrchestrator(
         if (store.mode !== 'exploration') return;
 
         // Find NPC definition
-        const npcDef = NPC_DEFINITIONS.find((n) => n.id === npcId);
+        const npcDef = findNpcById(npcId);
         if (!npcDef) return;
 
         // Find trigger zone linked to this NPC
@@ -256,14 +232,13 @@ export function useInteractionOrchestrator(
         // Open dialogue or story for this NPC
         // ── World Director: stay in exploration, show narrative as overlay ──
         if (npcDef.dialogueNodeId && DIALOGUE_NODES[npcDef.dialogueNodeId]) {
-          store.setShowStoryOverlay(true);
-          store.setCurrentNodeId(npcDef.dialogueNodeId);
+          openNarrativeOverlay(npcDef.dialogueNodeId);
         } else if (npcZone?.linkedDialogueNodeId && DIALOGUE_NODES[npcZone.linkedDialogueNodeId]) {
-          store.setShowStoryOverlay(true);
-          store.setCurrentNodeId(npcZone.linkedDialogueNodeId);
+          openNarrativeOverlay(npcZone.linkedDialogueNodeId);
         } else if (npcZone?.linkedStoryNodeId && STORY_NODES[npcZone.linkedStoryNodeId]) {
-          store.setShowStoryOverlay(true);
-          store.setCurrentNodeId(npcZone.linkedStoryNodeId);
+          const storyNode = STORY_NODES[npcZone.linkedStoryNodeId];
+          requestSceneTransitionForStoryNode(npcZone.linkedStoryNodeId, storyNode.sceneId);
+          openNarrativeOverlay(npcZone.linkedStoryNodeId);
         }
 
         // Emit npc:talked event
@@ -308,26 +283,35 @@ export function useInteractionOrchestrator(
     // World Director: since we stay in exploration mode, we detect
     // narrative closing by watching showStoryOverlay instead of mode changes.
     unsubs.push(
-      useGameStore.subscribe((state, prev) => {
-        if (!prev.showStoryOverlay && state.showStoryOverlay) {
-          interactionEndEmittedRef.current = false;
-          return;
-        }
-
-        // When showStoryOverlay transitions from true to false
-        // AND we're in exploration mode, end the interaction (once)
-        if (
-          prev.showStoryOverlay &&
-          !state.showStoryOverlay &&
-          state.mode === 'exploration'
-        ) {
-          endInteraction();
-          // SAFETY: retry once if the interaction lock is still stuck
-          if (isInteractionLocked()) {
-            scheduleTimer(() => endInteraction(), 100);
+      useGameStore.subscribe(
+        (state) => ({
+          showStoryOverlay: state.showStoryOverlay,
+          mode: state.mode,
+        }),
+        (selected, prev) => {
+          if (!prev.showStoryOverlay && selected.showStoryOverlay) {
+            interactionEndEmittedRef.current = false;
+            return;
           }
-        }
-      }),
+
+          // When showStoryOverlay transitions from true to false
+          // AND we're in exploration mode, end the interaction (once)
+          if (
+            prev.showStoryOverlay &&
+            !selected.showStoryOverlay &&
+            selected.mode === 'exploration'
+          ) {
+            // Defer until overlay + node id are fully committed
+            queueMicrotask(() => {
+              endInteraction();
+              if (isInteractionLocked()) {
+                scheduleTimer(() => endInteraction(), 100);
+              }
+            });
+          }
+        },
+        { equalityFn: shallow },
+      ),
     );
     } catch (err) {
       cleanup();
@@ -368,26 +352,13 @@ export function useInteractionOrchestrator(
       const storyNode = STORY_NODES[zone.linkedStoryNodeId];
       const alreadyVisited = store.playerState.visitedNodes.includes(zone.linkedStoryNodeId);
       if (alreadyVisited && storyNode.sceneId) {
-        // Already seen this narrative — just transition to the scene
-        const targetSceneId = storyNode.sceneId as SceneId;
-        const currentSceneId = store.exploration.currentSceneId;
-        if (targetSceneId !== currentSceneId) {
-          store.setExplorationScene(targetSceneId);
-          const spawn = SCENE_CONFIG[targetSceneId]?.spawnPoint ?? [0, 0.01, 0] as [number, number, number];
-          store.setPlayerPosition(spawn);
-          eventBus.emit('scene:transition', {
-            targetScene: targetSceneId,
-            spawnAt: spawn,
-          });
-        }
+        requestSceneTransition(storyNode.sceneId as SceneId);
         return;
       }
-      // First visit — show the VN overlay
-      store.setShowStoryOverlay(true);
-      store.setCurrentNodeId(zone.linkedStoryNodeId);
+      requestSceneTransitionForStoryNode(zone.linkedStoryNodeId, storyNode.sceneId);
+      openNarrativeOverlay(zone.linkedStoryNodeId);
     } else if (zone.linkedDialogueNodeId && DIALOGUE_NODES[zone.linkedDialogueNodeId]) {
-      store.setShowStoryOverlay(true);
-      store.setCurrentNodeId(zone.linkedDialogueNodeId);
+      openNarrativeOverlay(zone.linkedDialogueNodeId);
     }
   }, []);
 

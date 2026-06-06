@@ -56,6 +56,8 @@ function RewardBadge({ reward, index }: { reward: { type: string; skill?: string
   const getLabel = () => {
     if (reward.type === 'addSkill' && reward.skill) return `${reward.skill} +${reward.value ?? 0}`;
     if (reward.type === 'addKarma') return `карма +${reward.value ?? 0}`;
+    if (reward.type === 'addCredits') return `кредиты +${reward.value ?? 0}`;
+    if (reward.type === 'addXp') return `опыт +${reward.value ?? 0}`;
     if (reward.type === 'addItem' && reward.itemId) return reward.itemId;
     if (reward.type === 'setFlag') return reward.flag ?? 'флаг';
     return reward.type;
@@ -64,6 +66,7 @@ function RewardBadge({ reward, index }: { reward: { type: string; skill?: string
   const getIcon = () => {
     if (reward.type === 'addSkill') return <Star className="size-2.5 text-amber-400/60" />;
     if (reward.type === 'addKarma') return <Zap className="size-2.5 text-cyan-400/60" />;
+    if (reward.type === 'addCredits') return <Sparkles className="size-2.5 text-yellow-400/60" />;
     if (reward.type === 'addItem') return <Trophy className="size-2.5 text-emerald-400/60" />;
     return <Sparkles className="size-2.5 text-purple-400/60" />;
   };

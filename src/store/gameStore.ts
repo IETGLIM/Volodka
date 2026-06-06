@@ -6,6 +6,7 @@
  * consumer files continue to work without any changes. */
 
 import { create } from 'zustand';
+import { subscribeWithSelector } from 'zustand/middleware';
 import type {
   GameMode,
   PlayerState,
@@ -53,14 +54,16 @@ export type { GameStoreState, CrossSliceReads } from './types';
 
 /* ─── Composed store ─── */
 
-export const useGameStore = create<GameStoreState>()((...a) => ({
+export const useGameStore = create<GameStoreState>()(
+  subscribeWithSelector((...a) => ({
   ...createPlayerSlice(...a),
   ...createExplorationSlice(...a),
   ...createWorldSlice(...a),
   ...createUISlice(...a),
   ...createCutsceneSlice(...a),
   ...createSaveSlice(...a),
-}));
+  })),
+);
 
 /** Convenience: get current store state outside React */
 export function getGameStore() {
@@ -135,6 +138,9 @@ registerGameActionBridge({
       case 'player/addXp':
         store.addXp(action.amount);
         break;
+      case 'player/addCredits':
+        store.addCredits(action.amount);
+        break;
       case 'player/setFlag':
         store.setFlag(action.key, action.value);
         break;
@@ -161,6 +167,12 @@ registerGameActionBridge({
         break;
       case 'story/setShowStoryOverlay':
         store.setShowStoryOverlay(action.show);
+        break;
+      case 'story/openNarrativeOverlay':
+        store.openNarrativeOverlay(action.nodeId);
+        break;
+      case 'story/closeNarrativeOverlay':
+        store.closeNarrativeOverlay();
         break;
       case 'story/advanceAct':
         store.advanceAct();

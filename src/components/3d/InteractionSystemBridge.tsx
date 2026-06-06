@@ -18,6 +18,7 @@ import { eventBus } from '@/engine/EventBus';
 import { getNPCGroup } from '@/engine/interaction/npcRegistry';
 import { getPlayerRigidBody, isPlayerRigidBodyValid, setPlayerExternalVelocity, clearPlayerExternalVelocity } from '@/engine/PlayerRigidBodyState';
 import { useGameStore } from '@/store/gameStore';
+import { closeNarrativeOverlay } from '@/engine/scene/narrativeOverlay';
 
 /* ─── Module-level interaction state (accessible outside R3F canvas) ─── */
 
@@ -261,9 +262,8 @@ export function InteractionSystemBridge({
       });
 
       const storeState = useGameStore.getState();
-      // ── World Director: just hide overlay, already in exploration ──
       if (storeState.showStoryOverlay) {
-        storeState.setShowStoryOverlay(false);
+        closeNarrativeOverlay();
       }
       return;
     }

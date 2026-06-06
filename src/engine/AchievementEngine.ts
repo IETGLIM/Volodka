@@ -165,7 +165,7 @@ export function checkAchievements(state: AchievementCheckState): void {
     'volodka_room', 'volodka_corridor', 'home_evening', 'street_night',
     'street_winter', 'cafe_evening', 'office_day', 'park_day',
     'library_day', 'sleep_dream', 'rooftop_edge', 'abandoned_factory',
-    'zarema_albert_room',
+    'zarema_albert_room', 'chk_forest_zorge',
   ];
   if (allScenes.every((s) => progress.visitedScenes.includes(s))) {
     tryUnlock('explorer_wanderer');

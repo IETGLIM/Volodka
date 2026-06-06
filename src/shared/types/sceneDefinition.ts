@@ -30,14 +30,15 @@ export type VisualComponentName =
   | 'StreetVisual'
   | 'StreetWinterVisual'
   | 'CafeVisual'
-  | 'OfficeVisual'
+  | 'OfficeDayVisual'
   | 'ParkVisual'
   | 'LibraryVisual'
   | 'BattleVisual'
   | 'DreamVisual'
   | 'RooftopVisual'
   | 'FactoryVisual'
-  | 'ZaremaAlbertVisual';
+  | 'ZaremaAlbertVisual'
+  | 'ChkForestVisual';
 
 // ─── Doorway ───
 
@@ -177,6 +178,8 @@ export interface SceneDefinition {
   defaultSpawn: [number, number, number];
   /** Default player spawn rotation */
   defaultSpawnRotation: number;
+  /** RigidBody Y when standing on the walkable floor (feet level). Defaults from defaultSpawn[1]. */
+  floorY?: number;
   /** Character model scale in this scene */
   characterModelScale: number;
   /** Locomotion scale in this scene */

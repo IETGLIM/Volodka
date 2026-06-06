@@ -51,6 +51,9 @@ export const LORE_SCENE_MAP: Partial<Record<SceneId, string[]>> = {
     'lore_park_memorial',      // Memorial discovered in the park
     'lore_great_crash_2029',   // Great Crash lore from the memorial
   ],
+  chk_forest_zorge: [
+    'lore_tolpa_chk',          // TOLPA / Black Room discovered at campfire
+  ],
   library_day: [
     'lore_forbidden_books',    // Forbidden books discovered in library
     'lore_18_poems',           // 18 Poems legend discovered in library
@@ -88,6 +91,8 @@ export const LORE_STORY_NODE_MAP: Record<string, string[]> = {
   act2_network_initiation: ['lore_network'], // Network details on joining
   act2_safehouse_agreed: ['lore_cafe_history'],
   act2_dmitry_office_meeting: ['lore_dmitry_project'],
+  chk_tolpa_poem: ['lore_tolpa_chk'],
+  chk_act3_sanctuary: ['lore_tolpa_chk'],
 
   // Act 3 — War
   act3_transition: ['lore_alexander_schemes'],

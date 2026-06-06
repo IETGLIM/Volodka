@@ -10,6 +10,7 @@ import { sanitizeExplorationSceneId } from '@/config/scenes';
 import {
   SavePayloadSchema,
   type SavePayload,
+  parseNpcStatesFromSave,
 } from '@/shared/validation/saveSchema';
 import {
   createDefaultExploration,
@@ -122,7 +123,7 @@ export function storePatchFromSave(payload: SavePayload): Partial<GameStoreState
       ...defaults.exploration,
       ...payload.exploration,
       currentSceneId: sanitizeExplorationSceneId(payload.exploration.currentSceneId),
-      npcStates: payload.exploration.npcStates as GameStoreState['exploration']['npcStates'],
+      npcStates: parseNpcStatesFromSave(payload.exploration.npcStates),
     },
     achievementProgress: {
       ...defaults.achievementProgress,

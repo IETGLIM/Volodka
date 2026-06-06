@@ -8,10 +8,11 @@ import { useState, useEffect, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useGameStore } from '@/store/gameStore'
 import { QUEST_DEFINITIONS } from '@/data/quests'
-import { NPC_DEFINITIONS } from '@/data/npcDefinitions'
+import { findNpcById } from '@/data/allNpcDefinitions'
 import { resolveCanonicalNpcId } from '@/data/goldenPath'
 import { UI_LAYERS } from '@/shared/constants/uiLayers'
-import type { QuestDefinition } from '@/shared/types/game'
+import type { NPCDefinition, QuestDefinition } from '@/shared/types/game'
+import { computeQuestCreditReward, getDefaultQuestXp } from '@/shared/utils/questRewards'
 
 interface QuestCompleteDialogProps {
   questId: string | null
@@ -38,7 +39,7 @@ export function QuestCompleteDialog({ questId, npcId, onClose }: QuestCompleteDi
   )
 
   const npcDef = useMemo(
-    () => resolvedNpcId ? NPC_DEFINITIONS.find((n) => n.id === resolvedNpcId) ?? null : null,
+    () => resolvedNpcId ? findNpcById(resolvedNpcId) ?? null : null,
     [resolvedNpcId],
   )
 
@@ -47,13 +48,13 @@ export function QuestCompleteDialog({ questId, npcId, onClose }: QuestCompleteDi
       setVisible(true)
       setRevealedRewards(0)
 
-      // Animate rewards appearing one by one with staggered delay
-      if (questDef?.rewards) {
-        questDef.rewards.forEach((_, i) => {
-          setTimeout(() => {
-            setRevealedRewards((prev) => prev + 1)
-          }, 800 + i * 350)
-        })
+      const explicitCount = questDef?.rewards?.length ?? 0
+      const bonusCount = questDef ? 2 : 0
+      const totalRewards = explicitCount + bonusCount
+      for (let i = 0; i < totalRewards; i++) {
+        setTimeout(() => {
+          setRevealedRewards((prev) => prev + 1)
+        }, 800 + i * 350)
       }
     }
   }, [questId, questDef])
@@ -247,44 +248,77 @@ export function QuestCompleteDialog({ questId, npcId, onClose }: QuestCompleteDi
               </div>
 
               {/* Rewards with animated reveal */}
-              {questDef.rewards && questDef.rewards.length > 0 && (
-                <div className="mb-4">
-                  <h3 className="text-[11px] font-mono tracking-wider mb-2" style={{ color: '#ffcc4488' }}>
-                    НАГРАДЫ:
-                  </h3>
-                  <div className="space-y-2">
-                    {questDef.rewards.map((reward, i) => (
+              <div className="mb-4">
+                <h3 className="text-[11px] font-mono tracking-wider mb-2" style={{ color: '#ffcc4488' }}>
+                  НАГРАДЫ:
+                </h3>
+                <div className="space-y-2">
+                  {questDef.rewards?.map((reward, i) => (
+                    <motion.div
+                      key={`reward-${i}`}
+                      initial={{ opacity: 0, x: 20, scale: 0.8 }}
+                      animate={
+                        i < revealedRewards
+                          ? { opacity: 1, x: 0, scale: 1 }
+                          : { opacity: 0, x: 20, scale: 0.8 }
+                      }
+                      transition={{ duration: 0.4, type: 'spring' }}
+                      className="flex items-center gap-2 px-3 py-1.5 rounded"
+                      style={{
+                        background: i < revealedRewards
+                          ? 'rgba(255,204,0,0.08)'
+                          : 'rgba(255,204,0,0.03)',
+                        border: i < revealedRewards
+                          ? '1px solid rgba(255,204,0,0.2)'
+                          : '1px solid rgba(255,204,0,0.08)',
+                        boxShadow: i < revealedRewards
+                          ? '0 0 8px rgba(255,204,0,0.08)'
+                          : 'none',
+                      }}
+                    >
+                      <span className="text-sm">{getRewardIcon(reward.type)}</span>
+                      <span className="text-[12px] font-mono" style={{ color: '#ffcc66' }}>
+                        {getRewardLabel(reward)}
+                      </span>
+                    </motion.div>
+                  ))}
+                  {[
+                    { type: 'addXp', value: getDefaultQuestXp(questDef.questType), label: `Опыт за задание +${getDefaultQuestXp(questDef.questType)}` },
+                    { type: 'addCredits', value: computeQuestCreditReward(questDef), label: `Кредиты за задание +${computeQuestCreditReward(questDef)}` },
+                  ].map((bonus, i) => {
+                    const index = (questDef.rewards?.length ?? 0) + i;
+                    return (
                       <motion.div
-                        key={i}
+                        key={`bonus-${bonus.type}`}
                         initial={{ opacity: 0, x: 20, scale: 0.8 }}
                         animate={
-                          i < revealedRewards
+                          index < revealedRewards
                             ? { opacity: 1, x: 0, scale: 1 }
                             : { opacity: 0, x: 20, scale: 0.8 }
                         }
                         transition={{ duration: 0.4, type: 'spring' }}
                         className="flex items-center gap-2 px-3 py-1.5 rounded"
                         style={{
-                          background: i < revealedRewards
+                          background: index < revealedRewards
                             ? 'rgba(255,204,0,0.08)'
                             : 'rgba(255,204,0,0.03)',
-                          border: i < revealedRewards
+                          border: index < revealedRewards
                             ? '1px solid rgba(255,204,0,0.2)'
                             : '1px solid rgba(255,204,0,0.08)',
-                          boxShadow: i < revealedRewards
+                          boxShadow: index < revealedRewards
                             ? '0 0 8px rgba(255,204,0,0.08)'
                             : 'none',
                         }}
                       >
-                        <span className="text-sm">{getRewardIcon(reward.type)}</span>
+                        <span className="text-sm">{getRewardIcon(bonus.type)}</span>
                         <span className="text-[12px] font-mono" style={{ color: '#ffcc66' }}>
-                          {getRewardLabel(reward)}
+                          {bonus.label}
                         </span>
                       </motion.div>
-                    ))}
-                  </div>
+                    );
+                  })}
                 </div>
-              )}
+              </div>
             </div>
 
             {/* Bottom button */}
@@ -327,7 +361,7 @@ export function QuestCompleteDialog({ questId, npcId, onClose }: QuestCompleteDi
 }
 
 /* ─── Completion NPC Portrait (green-tinted for completion) ─── */
-function CompletionNpcPortrait({ npcDef }: { npcDef: typeof NPC_DEFINITIONS[number] | null }) {
+function CompletionNpcPortrait({ npcDef }: { npcDef: NPCDefinition | null }) {
   const bodyColor = npcDef?.appearance?.bodyColor ?? '#6a6a7a'
   const accentColor = npcDef?.appearance?.accentColor ?? '#9a9aaa'
   const glowColor = npcDef?.appearance?.glowColor ?? '#ffffff'
@@ -485,6 +519,7 @@ function getRewardIcon(type: string): string {
     case 'addSkill': return '🧠'
     case 'addKarma': return '⚖️'
     case 'addXp': return '✨'
+    case 'addCredits': return '💰'
     case 'addItem': return '🎁'
     case 'setFlag': return '⚡'
     default: return '◆'
@@ -496,6 +531,7 @@ function getRewardLabel(reward: QuestDefinition['rewards'] extends (infer R)[] |
     case 'addSkill': return `${reward.skill} +${reward.value}`
     case 'addKarma': return `Карма +${reward.value}`
     case 'addXp': return `Опыт +${reward.value}`
+    case 'addCredits': return `Кредиты +${reward.value}`
     case 'addItem': return `Предмет: ${reward.itemId}`
     case 'setFlag': return `Флаг: ${reward.flag}`
     default: return reward.type

@@ -21,6 +21,7 @@ export const LEGACY_SCENE_CHUNK_MAP: Record<SceneId, WorldChunkCoord> = {
   zarema_albert_room: { x: -2, z: -1 },
   battle: { x: 2, z: 0 },
   sleep_dream: { x: 0, z: 2 },
+  chk_forest_zorge: { x: 2, z: 1 },
 };
 
 const CHUNK_BY_SCENE = LEGACY_SCENE_CHUNK_MAP;

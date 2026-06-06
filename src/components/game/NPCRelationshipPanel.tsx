@@ -8,7 +8,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Users, Shield, Skull, Circle, MapPin, CalendarClock, Gift } from 'lucide-react';
 import { useGameStore } from '@/store/gameStore';
-import { NPC_DEFINITIONS } from '@/data/npcDefinitions';
+import { findNpcById } from '@/data/allNpcDefinitions';
 import { SCENE_CONFIG } from '@/config/scenes';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -124,7 +124,7 @@ function NPCCard({
   affinity: number;
   onOpenGift: () => void;
 }) {
-  const npcDef = NPC_DEFINITIONS.find((n) => n.id === relation.npcId);
+  const npcDef = findNpcById(relation.npcId);
 
   // If we don't have a definition for this NPC, skip
   if (!npcDef) return null;

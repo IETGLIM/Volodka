@@ -14,6 +14,7 @@ import { QUEST_DEFINITIONS } from '@/data/quests'
 import { useGameStore } from '@/store/gameStore'
 import { useQuests } from '@/store/selectors'
 import type { QuestState, QuestDefinition } from '@/shared/types/game'
+import { formatQuestCompletionRewards } from '@/shared/utils/questRewards'
 
 /* ─── Notification types ─── */
 
@@ -469,21 +470,11 @@ export function QuestNotificationSystem() {
 
       // Quest completed
       if (prev && prev.status === 'active' && quest.status === 'completed') {
-        const rewardsText = def.rewards
-          ?.map((r) => {
-            if (r.type === 'addKarma') return `+${r.value} кармы`
-            if (r.type === 'addSkill' && r.skill) return `+${r.value} ${r.skill}`
-            if (r.type === 'addXp') return `+${r.value} опыта`
-            return ''
-          })
-          .filter(Boolean)
-          .join(', ')
-
         addNotification({
           type: 'complete',
           questId: quest.questId,
           questTitle: def.title,
-          rewards: rewardsText || undefined,
+          rewards: formatQuestCompletionRewards(def),
         })
       }
 
@@ -552,21 +543,11 @@ export function QuestNotificationSystem() {
         const def = QUEST_DEFINITIONS.find((d) => d.id === questId)
         if (!def) return
 
-        const rewardsText = def.rewards
-          ?.map((r) => {
-            if (r.type === 'addKarma') return `+${r.value} кармы`
-            if (r.type === 'addSkill' && r.skill) return `+${r.value} ${r.skill}`
-            if (r.type === 'addXp') return `+${r.value} опыта`
-            return ''
-          })
-          .filter(Boolean)
-          .join(', ')
-
         addNotification({
           type: 'complete',
           questId,
           questTitle: def.title,
-          rewards: rewardsText || undefined,
+          rewards: formatQuestCompletionRewards(def),
         })
       }),
     )

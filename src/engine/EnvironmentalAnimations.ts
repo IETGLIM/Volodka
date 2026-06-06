@@ -389,6 +389,21 @@ const SCENE_ENV_ANIMATIONS: Record<SceneId, EnvAnimation[]> = {
       config: { minIntensity: 0.1, maxIntensity: 0.25, flickerRate: 0.06 },
     },
   ],
+
+  chk_forest_zorge: [
+    {
+      id: 'campfire_flicker',
+      type: 'light_flicker',
+      position: [0, 1.2, 0],
+      config: { minIntensity: 0.5, maxIntensity: 1.2, flickerRate: 0.12 },
+    },
+    {
+      id: 'forest_sway',
+      type: 'curtain_sway',
+      position: [-8, 4, -6],
+      config: { amplitude: 0.07, frequency: 0.22, axis: 2 },
+    },
+  ],
 };
 
 // ─── Public API ───

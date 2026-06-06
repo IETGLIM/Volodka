@@ -9,7 +9,8 @@ import * as THREE from 'three';
 import { getGameStore, useGameStore } from '@/store/gameStore';
 import { useCurrentSceneId, useInteractionOverlay, useTimeOfDay } from '@/store/selectors';
 import { TRIGGER_ZONES, type TriggerZone, INTERACTION_LABELS } from '@/data/triggerZones';
-import { NPC_DEFINITIONS } from '@/data/npcDefinitions';
+import { findNpcById, findNpcByDialogueNodeId } from '@/data/allNpcDefinitions';
+import type { NPCDefinition } from '@/shared/types/game';
 import { getNPCsForScene, getCurrentScheduleEntry } from '@/engine/ScheduleEngine';
 import { selectScheduleContext } from '@/shared/scheduleContext';
 import { eventBus } from '@/engine/EventBus';
@@ -49,7 +50,7 @@ export function InteractiveTriggers({ livePlayerPositionRef }: InteractiveTrigge
     const npcIdsInScene = getNPCsForScene(sceneId, timeOfDay, scheduleCtx);
     return npcIdsInScene
       .map((npcId) => {
-        const npc = NPC_DEFINITIONS.find((n) => n.id === npcId);
+        const npc = findNpcById(npcId);
         if (!npc) return null;
         const entry = getCurrentScheduleEntry(npcId, timeOfDay, scheduleCtx);
         return {
@@ -284,7 +285,7 @@ function NPCProximityTriggers({
     const npcIds = getNPCsForScene(sceneId, timeOfDay, scheduleCtx);
     return npcIds
       .map((id) => {
-        const def = NPC_DEFINITIONS.find((n) => n.id === id);
+        const def = findNpcById(id);
         if (!def) return null;
         const entry = getCurrentScheduleEntry(id, timeOfDay, scheduleCtx);
         return {
@@ -293,7 +294,7 @@ function NPCProximityTriggers({
         };
       })
       .filter(Boolean) as Array<{
-        definition: typeof NPC_DEFINITIONS[number];
+        definition: NPCDefinition;
         position: [number, number, number];
       }>;
   }, [sceneId, timeOfDay, scheduleCtx]);
@@ -688,9 +689,7 @@ function TriggerZoneComponent({
       // Check if this trigger zone is linked to an NPC dialogue
       // If so, route through the staged interaction system
       if (zone.linkedDialogueNodeId) {
-        const npcDef = NPC_DEFINITIONS.find(
-          (n) => n.dialogueNodeId === zone.linkedDialogueNodeId,
-        );
+        const npcDef = findNpcByDialogueNodeId(zone.linkedDialogueNodeId);
         if (npcDef) {
           // Start staged interaction for this NPC
           eventBus.emit('interaction:start', { npcId: npcDef.id });
@@ -743,9 +742,7 @@ function TriggerZoneComponent({
       const sceneId = getGameStore().exploration.currentSceneId;
 
       if (zone.linkedDialogueNodeId) {
-        const npcDef = NPC_DEFINITIONS.find(
-          (n) => n.dialogueNodeId === zone.linkedDialogueNodeId,
-        );
+        const npcDef = findNpcByDialogueNodeId(zone.linkedDialogueNodeId);
         if (npcDef) {
           eventBus.emit('interaction:start', { npcId: npcDef.id });
           spawnParticles();

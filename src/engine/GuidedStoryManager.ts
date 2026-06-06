@@ -16,7 +16,7 @@ import {
 } from '@/data/goldenPath'
 import { QUEST_DEFINITIONS } from '@/data/quests'
 import { STORY_NODES } from '@/data/storyNodes'
-import { NPC_DEFINITIONS } from '@/data/npcDefinitions'
+import { findNpcById } from '@/data/allNpcDefinitions'
 import { eventBus } from '@/engine/EventBus'
 import {
   dispatchGameAction,
@@ -183,7 +183,7 @@ function buildGuidanceFromObjective(
   switch (obj.type) {
     case 'npc_talked': {
       objectiveType = 'talk_to_npc'
-      const npc = NPC_DEFINITIONS.find((n) => n.id === obj.target)
+      const npc = obj.target ? findNpcById(obj.target) : undefined
       if (npc) {
         objectiveText = `Поговори с ${npc.name}`
       }
@@ -222,7 +222,7 @@ function nodeToReadableText(nodeId: string): string {
 
   const mappedNpcId = getNpcIdForStoryNode(nodeId)
   if (mappedNpcId) {
-    const npc = NPC_DEFINITIONS.find((n) => n.id === mappedNpcId)
+    const npc = findNpcById(mappedNpcId)
     if (npc) return `Найди ${npc.name}`
   }
 

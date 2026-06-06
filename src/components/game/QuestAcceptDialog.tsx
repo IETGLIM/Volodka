@@ -8,11 +8,11 @@ import { useState, useEffect, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useGameStore } from '@/store/gameStore'
 import { QUEST_DEFINITIONS } from '@/data/quests'
-import { NPC_DEFINITIONS } from '@/data/npcDefinitions'
+import { findNpcById } from '@/data/allNpcDefinitions'
 import { resolveCanonicalNpcId } from '@/data/goldenPath'
 import { eventBus } from '@/engine/EventBus'
 import { UI_LAYERS } from '@/shared/constants/uiLayers'
-import type { QuestDefinition, QuestObjective } from '@/shared/types/game'
+import type { NPCDefinition, QuestDefinition, QuestObjective } from '@/shared/types/game'
 
 interface QuestAcceptDialogProps {
   questId: string | null
@@ -45,7 +45,7 @@ export function QuestAcceptDialog({ questId, npcId, onClose, onAccept }: QuestAc
   )
 
   const npcDef = useMemo(
-    () => resolvedNpcId ? NPC_DEFINITIONS.find((n) => n.id === resolvedNpcId) ?? null : null,
+    () => resolvedNpcId ? findNpcById(resolvedNpcId) ?? null : null,
     [resolvedNpcId],
   )
 
@@ -385,7 +385,7 @@ export function QuestAcceptDialog({ questId, npcId, onClose, onAccept }: QuestAc
 }
 
 /* ─── NPC Portrait SVG (Enhanced with silhouette variants, earring, holo-shimmer) ─── */
-function NpcPortrait({ npcDef }: { npcDef: typeof NPC_DEFINITIONS[number] | null }) {
+function NpcPortrait({ npcDef }: { npcDef: NPCDefinition | null }) {
   const bodyColor = npcDef?.appearance?.bodyColor ?? '#6a6a7a'
   const accentColor = npcDef?.appearance?.accentColor ?? '#9a9aaa'
   const glowColor = npcDef?.appearance?.glowColor ?? '#ffffff'
@@ -571,7 +571,9 @@ function RewardRow({ reward }: { reward: QuestDefinition['rewards'] extends (inf
       ? '⚖️'
       : reward.type === 'addXp'
         ? '✨'
-        : reward.type === 'addItem'
+        : reward.type === 'addCredits'
+          ? '💰'
+          : reward.type === 'addItem'
           ? '🎁'
           : reward.type === 'setFlag'
             ? '⚡'
@@ -583,7 +585,9 @@ function RewardRow({ reward }: { reward: QuestDefinition['rewards'] extends (inf
       ? `Карма +${reward.value}`
       : reward.type === 'addXp'
         ? `Опыт +${reward.value}`
-        : reward.type === 'addItem'
+        : reward.type === 'addCredits'
+          ? `Кредиты +${reward.value}`
+          : reward.type === 'addItem'
           ? `Предмет: ${reward.itemId}`
           : reward.type === 'setFlag'
             ? `Флаг: ${reward.flag}`

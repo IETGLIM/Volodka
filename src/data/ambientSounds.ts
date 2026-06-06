@@ -497,6 +497,14 @@ export const SCENE_AMBIENCE_MAP: SceneAmbience[] = [
     transitionDuration: 2000,
   },
 
+  // TOLPA forest clearing (CHK · Zorge)
+  {
+    scenePattern: '^chk_forest_zorge$',
+    daySound: 'park',
+    nightSound: 'corridor',
+    transitionDuration: 2500,
+  },
+
   // Library
   {
     scenePattern: '^library_day$',

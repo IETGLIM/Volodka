@@ -9,7 +9,7 @@ import { useMemo, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Gift, Heart, ThumbsUp, Package, Frown, Angry } from 'lucide-react';
 import { useGameStore } from '@/store/gameStore';
-import { NPC_DEFINITIONS } from '@/data/npcDefinitions';
+import { findNpcById } from '@/data/allNpcDefinitions';
 import { getItemDefinition } from '@/data/items';
 import {
   getNPCGiftPreference,
@@ -65,7 +65,7 @@ export function GiftDialog({ open, onClose, npcId }: GiftDialogProps) {
   } | null>(null);
   const [giftingItemId, setGiftingItemId] = useState<string | null>(null);
 
-  const npcDef = useMemo(() => NPC_DEFINITIONS.find((n) => n.id === npcId), [npcId]);
+  const npcDef = useMemo(() => findNpcById(npcId), [npcId]);
   const giftPrefs = useMemo(() => getNPCGiftPreference(npcId), [npcId]);
   const currentAffinity = npcAffinity[npcId] ?? 0;
   const affinityLevel = useMemo(() => getAffinityLevel(currentAffinity), [currentAffinity]);

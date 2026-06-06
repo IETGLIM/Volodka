@@ -7,6 +7,7 @@
  * story flags or quest completions change NPC behavior. */
 
 import type { ScheduleEntry, SceneId } from '@/shared/types/game';
+import { CHK_NPC_SCHEDULES } from './chkTolpa/schedules';
 
 /* ─── NPC Schedule Type ─── */
 
@@ -29,6 +30,8 @@ export interface ActScheduleOverride {
   requiredCompletedQuests?: string[];
   /** Story flags that must be set for this override to activate */
   requiredFlags?: string[];
+  /** Story flags that must NOT be set (e.g. override until rescue completes) */
+  excludedFlags?: string[];
   /** The replacement schedule entries */
   entries: ScheduleEntry[];
 }
@@ -351,6 +354,7 @@ export const NPC_SCHEDULES: NPCSchedule[] = [
   BORIS_SCHEDULE,
   TAMARA_SCHEDULE,
   GRISHA_SCHEDULE,
+  ...CHK_NPC_SCHEDULES,
 ];
 
 /**
@@ -366,15 +370,15 @@ export const NPC_SCHEDULES_MAP: Record<string, NPCSchedule> = Object.fromEntries
  * The ScheduleEngine checks these overrides before falling back to base. */
 
 export const ACT_SCHEDULE_OVERRIDES: ActScheduleOverride[] = [
-  /* ── Act 3: Zarema is captured → removed from normal locations ── */
+  /* ── Act 3: Zarema arrested → held in guild detention (until rescued) ── */
   {
     id: 'override_zarema_act3_captured',
     npcId: 'zarema',
     minAct: 3,
-    requiredCompletedQuests: ['zarema_rescue'],
-    requiredFlags: ['zarema_captured'],
+    requiredFlags: ['zarema_arrested'],
+    excludedFlags: ['zarema_rescued'],
     entries: [
-      { startHour: 0, endHour: 24, sceneId: 'abandoned_factory', position: [0, 0, 2.0], activity: 'rest' },
+      { startHour: 0, endHour: 24, sceneId: 'office_day', position: [4.5, 0, -4.0], activity: 'rest' },
     ],
   },
 
@@ -460,6 +464,53 @@ export const ACT_SCHEDULE_OVERRIDES: ActScheduleOverride[] = [
     minAct: 5,
     entries: [
       { startHour: 0, endHour: 24, sceneId: 'office_day', position: [2.5, 0, -1.0], activity: 'work' },
+    ],
+  },
+
+  /* ── Act 3+: CHK on crisis duty — forest sanctuary 24/7 ── */
+  {
+    id: 'override_chk_ru_sanctuary',
+    npcId: 'chk_ru',
+    minAct: 3,
+    requiredFlags: ['tolpa_sanctuary_active'],
+    entries: [
+      { startHour: 0, endHour: 24, sceneId: 'chk_forest_zorge', position: [-1.8, 0, 0.5], activity: 'talk' },
+    ],
+  },
+  {
+    id: 'override_chk_based_sanctuary',
+    npcId: 'chk_based',
+    minAct: 3,
+    requiredFlags: ['tolpa_sanctuary_active'],
+    entries: [
+      { startHour: 0, endHour: 24, sceneId: 'chk_forest_zorge', position: [1.5, 0, 1.2], activity: 'talk' },
+    ],
+  },
+  {
+    id: 'override_chk_smert_sanctuary',
+    npcId: 'chk_smert',
+    minAct: 3,
+    requiredFlags: ['tolpa_sanctuary_active'],
+    entries: [
+      { startHour: 0, endHour: 24, sceneId: 'chk_forest_zorge', position: [0.3, 0, -1.8], activity: 'read' },
+    ],
+  },
+  {
+    id: 'override_chk_stalker_sanctuary',
+    npcId: 'chk_stalker',
+    minAct: 3,
+    requiredFlags: ['tolpa_sanctuary_active'],
+    entries: [
+      { startHour: 0, endHour: 24, sceneId: 'chk_forest_zorge', position: [-2.5, 0, -2.0], activity: 'walk' },
+    ],
+  },
+  {
+    id: 'override_chk_elis_sanctuary',
+    npcId: 'chk_elis',
+    minAct: 3,
+    requiredFlags: ['tolpa_sanctuary_active'],
+    entries: [
+      { startHour: 0, endHour: 24, sceneId: 'chk_forest_zorge', position: [-1.4, 0, -1.0], activity: 'talk' },
     ],
   },
 ];

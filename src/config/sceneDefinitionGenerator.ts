@@ -10,6 +10,23 @@ import type { SceneDefinition, ColliderDef, ExitDef, LightDef, FloorMaterial, Fo
 import { FOG_DEFAULTS } from '@/shared/types/sceneDefinition';
 import type { SceneConfig, SceneExit } from '@/shared/types/game';
 
+/** Top surface of the auto-generated structural floor cuboid (SceneColliderSelector). */
+export const DEFAULT_FLOOR_Y = 0.01;
+/** Half-height of the structural floor cuboid — keeps top at floorY, bottom below for anti-tunneling. */
+export const STRUCTURAL_FLOOR_HALF_HEIGHT = 0.5;
+
+/** Resolve walkable floor Y from spawn, explicit override, and floor collider tops. */
+export function resolveSceneFloorY(def: SceneDefinition): number {
+  if (def.floorY !== undefined) return def.floorY;
+
+  const floorColliderTops = def.floors.map((f) => f.position[1] + f.size[1]);
+  const colliderTop = floorColliderTops.length > 0
+    ? Math.max(...floorColliderTops)
+    : Number.NEGATIVE_INFINITY;
+
+  return Math.max(def.defaultSpawn[1], colliderTop, DEFAULT_FLOOR_Y);
+}
+
 /** Generate a SCENE_CONFIG entry from a SceneDefinition.
  *  Resolves fog defaults, derives floorMaterial from first floor collider. */
 export function generateSceneConfig(def: SceneDefinition): SceneConfig {
@@ -29,6 +46,7 @@ export function generateSceneConfig(def: SceneDefinition): SceneConfig {
     size: [def.dimensions[0], def.dimensions[2]], // [width, depth]
     spawnPoint: def.defaultSpawn,
     initialRotation: def.defaultSpawnRotation,
+    floorY: resolveSceneFloorY(def),
     explorationCharacterModelScale: def.characterModelScale,
     explorationLocomotionScale: def.locomotionScale,
     hasCeiling: def.hasCeiling,

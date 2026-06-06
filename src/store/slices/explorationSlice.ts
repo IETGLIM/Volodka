@@ -9,6 +9,7 @@ import { clamp, createDefaultExploration } from '../shared';
 import type { GameStoreState } from '../types';
 import { readExplorationFromPlayer } from '../crossSliceReads';
 import { eventBus } from '@/engine/EventBus';
+import { requestSceneTransition } from '@/engine/scene/sceneTransition';
 import { buildNPCStatesForTime } from '@/engine/ScheduleEngine';
 import { buildScheduleContext } from '@/shared/scheduleContext';
 
@@ -35,6 +36,7 @@ if (import.meta.hot) {
 const SCENE_GATES: Partial<Record<SceneId, string>> = {
   rooftop_edge: 'rooftop_unlocked',
   abandoned_factory: 'factory_unlocked',
+  chk_forest_zorge: 'chk_path_known',
 };
 
 /* ─── Travel time cost per scene (hours) — based on distance from city center ─── */
@@ -48,6 +50,7 @@ const TRAVEL_TIME: Partial<Record<SceneId, number>> = {
   cafe_evening: 0.5,
   office_day: 0.5,
   park_day: 0.75,
+  chk_forest_zorge: 1.0,
   library_day: 0.75,
   rooftop_edge: 1.0,
   abandoned_factory: 1.0,
@@ -217,28 +220,14 @@ export const createExplorationSlice: StateCreator<
     // Calculate travel time
     const travelHours = TRAVEL_TIME[sceneId] ?? 0.5;
 
-    // Apply: change scene, position, rotation, advance time
     set((state) => ({
       exploration: {
         ...state.exploration,
-        currentSceneId: sceneId,
-        playerPosition: [...targetConfig.spawnPoint] as [number, number, number],
-        playerRotation: targetConfig.initialRotation,
         timeOfDay: ((state.exploration.timeOfDay + travelHours) % 24 + 24) % 24,
       },
     }));
 
-    // Emit scene:enter event
-    eventBus.emit('scene:enter', {
-      sceneId,
-      fromSceneId: currentSceneId,
-    });
-
-    // Emit scene:transition for the 3D system
-    eventBus.emit('scene:transition', {
-      targetScene: sceneId,
-      spawnAt: [...targetConfig.spawnPoint] as [number, number, number],
-    });
+    requestSceneTransition(sceneId, [...targetConfig.spawnPoint] as [number, number, number]);
   },
 
   setExplorationTimeOfDay: (hour) =>

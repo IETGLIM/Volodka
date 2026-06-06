@@ -393,6 +393,16 @@ const ADDITIONAL_ENTRIES: LoreEntry[] = [
     discovered: false,
   },
   {
+    id: 'lore_tolpa_chk',
+    title: 'ТОЛПА · Чёрная Комната',
+    category: 'culture',
+    body: 'Тайное Общество Любителей Портвейна Алкоголя — между своими «ТОЛПА» или «ЧК» (Чёрная Комната). Днём они архитекторы, админы, бухгалтеры и QA. Ночью — чекисты у костра в лесу на Зорге: портвейн, тяжёлый металл, разговоры о квантовой физике и legacy-коде, песни под гитару. Не революция и не гильдия — просто люди, которым нужен лес, чтобы оставаться людьми.',
+    sceneId: 'chk_forest_zorge',
+    rarity: 'rare',
+    relatedEntries: ['lore_network', 'lore_park_memorial'],
+    discovered: false,
+  },
+  {
     id: 'lore_park_memorial',
     title: 'Мемориальный Парк',
     category: 'history',

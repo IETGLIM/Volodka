@@ -28,6 +28,8 @@ export function clamp(value: number, min: number, max: number): number {
 
 /* ─── XP / leveling ─── */
 
+export const MAX_LEVEL = 50;
+
 export function calculateXpToNextLevel(level: number): number {
   return Math.floor(100 * Math.pow(1.25, level - 1));
 }
@@ -51,7 +53,7 @@ export function applyXpGain(prog: PlayerProgression, amount: number): XpGainResu
   let newPerkPoints = prog.perkPoints;
   let perkPointsGained = 0;
 
-  while (newXp >= newXpToNext) {
+  while (newXp >= newXpToNext && newLevel < MAX_LEVEL) {
     newXp -= newXpToNext;
     newLevel += 1;
     newSkillPoints += 1;

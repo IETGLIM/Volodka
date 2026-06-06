@@ -1,6 +1,7 @@
 /* ─── Volodka RPG – quest definitions ─── */
 
 import type { QuestDefinition } from '@/shared/types/game';
+import { CHK_QUESTS } from './chkTolpa/quests';
 
 export const QUEST_DEFINITIONS: QuestDefinition[] = [
   /* ═══════════════════════════════════════════════════════════════════
@@ -441,13 +442,6 @@ export const QUEST_DEFINITIONS: QuestDefinition[] = [
     timeLimitHours: 12,
     objectives: [
       {
-        id: 'gain_dmitry_trust',
-        description: 'Завоевать доверие Дмитрия',
-        type: 'flag_set',
-        target: 'heard_dmitry_story',
-        completed: false,
-      },
-      {
         id: 'hear_dmitry_story',
         description: 'Выслушать историю Дмитрия о гильдии',
         type: 'flag_set',
@@ -473,7 +467,6 @@ export const QUEST_DEFINITIONS: QuestDefinition[] = [
       { type: 'addSkill', skill: 'persuasion', value: 3 },
       { type: 'addSkill', skill: 'empathy', value: 2 },
       { type: 'addKarma', value: 10 },
-      { type: 'setFlag', flag: 'dmitry_defected', flagValue: true },
       { type: 'addXp', value: 150 },
     ],
     linkedStoryNodeId: 'office_colleague',
@@ -660,13 +653,6 @@ export const QUEST_DEFINITIONS: QuestDefinition[] = [
         type: 'flag_set',
         target: 'detention_breached',
         completed: false,
-      },
-      {
-        id: 'bribe_or_hack_guard',
-        description: 'Обойти охрану — подкупом или взломом',
-        type: 'flag_set',
-        target: 'detention_breached',
-        completed: false,
         poemPowerBypass: 'poem_8',
         poemPowerHint: 'Стихотворение «Прорыв» поможет взломать замок камеры',
       },
@@ -689,7 +675,6 @@ export const QUEST_DEFINITIONS: QuestDefinition[] = [
       { type: 'addSkill', skill: 'coding', value: 3 },
       { type: 'addSkill', skill: 'empathy', value: 3 },
       { type: 'addKarma', value: 15 },
-      { type: 'setFlag', flag: 'zarema_rescued', flagValue: true },
       { type: 'addXp', value: 200 },
     ],
     linkedStoryNodeId: 'act3_zarema_arrest',
@@ -2411,4 +2396,5 @@ export const QUEST_DEFINITIONS: QuestDefinition[] = [
     linkedStoryNodeId: 'act7_legacy_walk',
     questGiverNpcId: 'nina',
   },
+  ...CHK_QUESTS,
 ];

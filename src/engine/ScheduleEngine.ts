@@ -81,6 +81,13 @@ export function resolveEffectiveSchedule(
       if (!allFlagsSet) continue;
     }
 
+    if (override.excludedFlags) {
+      const anyExcludedSet = override.excludedFlags.some(
+        (flag) => activeFlags.has(flag) || playerFlags[flag],
+      );
+      if (anyExcludedSet) continue;
+    }
+
     effectiveScheduleCache.set(cacheKey, override.entries);
     return override.entries;
   }

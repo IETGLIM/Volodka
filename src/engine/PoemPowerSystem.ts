@@ -433,6 +433,20 @@ const POEM_POWERS: Record<string, PoemPower> = {
     flagsToSet: [{ key: 'white_river_purification', durationMs: 45000 }],
     reverseOnExpiry: [{ type: 'skill', key: 'persuasion', value: -5 }],
   },
+  poem_tolpa: {
+    poemId: 'poem_tolpa',
+    name: 'Портвейн у костра',
+    description: 'Сила ЧК: −30 стресса, +6 кармы, +3 эмпатии. Укрытие для души, когда система давит.',
+    cooldownMs: 150000,
+    effect: () => {
+      addKarma(6);
+      addStress(-30);
+      addSkill('empathy', 3);
+      eventBus.emit('ui:exploration_message', { text: '🏕️ Портвейн у костра... Чекисты держат тыл.' });
+    },
+    flagsToSet: [{ key: 'tolpa_campfire_blessing', durationMs: 40000 }],
+    reverseOnExpiry: [{ type: 'skill', key: 'empathy', value: -3 }],
+  },
 };
 
 /* ─── Public API ─── */

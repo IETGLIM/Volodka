@@ -2,12 +2,11 @@
 /* NPC gifting and quest reward auto-application. */
 
 import type { StateCreator } from 'zustand';
-import type { QuestType } from '@/shared/types/game';
 import type { GiftPreference } from '@/data/npcGifts';
 import { QUEST_DEFINITIONS } from '@/data/quests';
 import { getItemDefinition, createInventoryItem } from '@/data/items';
 import { getItemPreference, getAffinityChange, getGiftXpReward, getGiftReactionText } from '@/data/npcGifts';
-import { NPC_DEFINITIONS } from '@/data/npcDefinitions';
+import { findNpcById } from '@/data/allNpcDefinitions';
 import { eventBus } from '@/engine/EventBus';
 import { applyXpGain, clamp, pushNotification } from '../shared';
 import { applyFairmathRelation } from '@/shared/fairmath';
@@ -18,6 +17,7 @@ import {
 import type { GameStoreState } from '../types';
 import { pickPlayerQuestRewardsCrossActions, readPlayerFromWorld } from '../crossSliceReads';
 import {
+  batchAddCredits,
   batchAddEnergy,
   batchAddItem,
   batchAddKarma,
@@ -29,6 +29,10 @@ import {
   createRewardBatchSideEffects,
   flushRewardBatchSideEffects,
 } from '../rewardBatchHelpers';
+import {
+  computeQuestCreditReward,
+  getDefaultQuestXp,
+} from '@/shared/utils/questRewards';
 
 const GIFT_QUANTITY = 1;
 
@@ -52,7 +56,7 @@ export const createPlayerQuestRewardsSlice: StateCreator<
   PlayerQuestRewardsSlice
 > = (set, get) => ({
   giftItemToNPC: (itemId, npcId) => {
-    const npcDef = NPC_DEFINITIONS.find((n) => n.id === npcId);
+    const npcDef = findNpcById(npcId);
     if (!npcDef) {
       pickPlayerQuestRewardsCrossActions(get).pushNotification('stress', 'Персонаж не найден');
       return null;
@@ -181,13 +185,8 @@ export const createPlayerQuestRewardsSlice: StateCreator<
     const questDef = QUEST_DEFINITIONS.find((d) => d.id === questId);
     if (!questDef) return;
 
-    const questTypeXp: Record<QuestType, number> = {
-      main: 50,
-      side: 25,
-      hidden: 75,
-      daily: 15,
-    };
-    const xpGained = questTypeXp[questDef.questType] ?? 25;
+    const xpGained = getDefaultQuestXp(questDef.questType);
+    const creditsGained = computeQuestCreditReward(questDef);
 
     const appliedRewards: string[] = [];
     const sideEffects = createRewardBatchSideEffects();
@@ -234,6 +233,12 @@ export const createPlayerQuestRewardsSlice: StateCreator<
               appliedRewards.push(`Опыт +${reward.value}`);
             }
             break;
+          case 'addCredits':
+            if (reward.value) {
+              batchAddCredits(draft, reward.value);
+              appliedRewards.push(`Кредиты +${reward.value}`);
+            }
+            break;
           case 'addStat':
             if (reward.stat === 'energy' && reward.value) {
               batchAddEnergy(draft, reward.value);
@@ -266,6 +271,9 @@ export const createPlayerQuestRewardsSlice: StateCreator<
 
       batchAddXp(draft, sideEffects, xpGained);
       appliedRewards.push(`Опыт за задание +${xpGained}`);
+
+      batchAddCredits(draft, creditsGained);
+      appliedRewards.push(`Кредиты за задание +${creditsGained}`);
 
       return {
         quests,

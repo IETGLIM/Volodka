@@ -86,6 +86,7 @@ export function SimplePlayer({
   useFrame((state, delta) => {
     const dt = Math.min(delta, 0.05);
     const vel = velocityRef.current;
+    const floorY = config.floorY;
 
     const currentMode = useGameStore.getState().mode;
     const showStoryOverlay = useGameStore.getState().showStoryOverlay;
@@ -101,9 +102,8 @@ export function SimplePlayer({
       // Without this, the player can drift below the floor during
       // cutscenes/dialogues (no physics in SimplePlayer mode).
       if (groupRef.current) {
-        const FLOOR_Y = 0.01;
-        if (groupRef.current.position.y < FLOOR_Y) {
-          groupRef.current.position.y = FLOOR_Y;
+        if (groupRef.current.position.y < floorY) {
+          groupRef.current.position.y = floorY;
           livePlayerPositionRef.current.copy(groupRef.current.position);
         }
       }
@@ -185,11 +185,8 @@ export function SimplePlayer({
       groupRef.current.rotation.y = livePlayerRotationRef.current;
 
       // ─── Ground enforcement: keep player at floor level ───
-      // SimplePlayer has no physics — enforce floor Y so player doesn't
-      // sink below the CuboidCollider floor (top at y=0.01).
-      const FLOOR_Y = 0.01;
-      if (groupRef.current.position.y < FLOOR_Y) {
-        groupRef.current.position.y = FLOOR_Y;
+      if (groupRef.current.position.y < floorY) {
+        groupRef.current.position.y = floorY;
       }
 
       // ─── Boundary clamping: keep player within scene bounds ───

@@ -7,12 +7,8 @@ import type { SceneId, NPCDefinition } from '@/shared/types/game';
 import { useGameStore } from '@/store/gameStore';
 import { getNPCsForScene, getCurrentScheduleEntry } from '@/engine/ScheduleEngine';
 import { selectScheduleContext } from '@/shared/scheduleContext';
-import { NPC_DEFINITIONS } from '@/data/npcDefinitions';
-import { EXPANDED_NPCS } from '@/data/expandedNPCs';
+import { findNpcById } from '@/data/allNpcDefinitions';
 import { NPC } from './NPC';
-
-/** Merged NPC definitions: core 7 + expanded 5 */
-const ALL_NPC_DEFINITIONS = [...NPC_DEFINITIONS, ...EXPANDED_NPCS];
 import { InteractionState } from '@/engine/interaction/interactionMachine';
 
 interface NPCSystemProps {
@@ -38,7 +34,7 @@ export function NPCSystem({
     const npcIds = getNPCsForScene(sceneId, timeOfDay, scheduleCtx);
     return npcIds
       .map((id) => {
-        const def = ALL_NPC_DEFINITIONS.find((n) => n.id === id);
+        const def = findNpcById(id);
         if (!def) return null;
         const entry = getCurrentScheduleEntry(id, timeOfDay, scheduleCtx);
         return {

@@ -20,6 +20,30 @@ import { clearAutoCloseTimers } from './explorationSlice';
 
 /* ─── localStorage key ─── */
 const SAVE_KEY = 'volodka_save';
+const SAVE_BACKUP_KEY = `${SAVE_KEY}_backup`;
+
+/** Two-phase save: backup current → write → validate → rollback on failure. */
+function writeSaveToLocalStorage(json: string): boolean {
+  const current = localStorage.getItem(SAVE_KEY);
+  if (current) {
+    localStorage.setItem(SAVE_BACKUP_KEY, current);
+  }
+
+  localStorage.setItem(SAVE_KEY, json);
+
+  const verification = validateSaveData(localStorage.getItem(SAVE_KEY) ?? '');
+  if (!verification.success) {
+    console.error('[saveGame] Post-write validation failed:', verification.error);
+    if (current) {
+      localStorage.setItem(SAVE_KEY, current);
+    } else {
+      localStorage.removeItem(SAVE_KEY);
+    }
+    return false;
+  }
+
+  return true;
+}
 
 /* ─── Slice types ─── */
 
@@ -61,10 +85,35 @@ export const createSaveSlice: StateCreator<
     const source = options?.source ?? 'manual';
 
     const payload = pickSavePayload(state);
+    const payloadWithVersion = { ...payload, saveVersion: SAVE_VERSION };
+
+    let json: string;
+    try {
+      json = JSON.stringify(payloadWithVersion);
+    } catch (err) {
+      console.error('[saveGame] Failed to serialize save payload:', err);
+      set({
+        notifications: pushNotification(
+          readWorldFromPlayer(get()).notifications,
+          'quest',
+          'Ошибка сохранения',
+        ),
+      });
+      return;
+    }
 
     try {
-      const payloadWithVersion = { ...payload, saveVersion: SAVE_VERSION };
-      localStorage.setItem(SAVE_KEY, JSON.stringify(payloadWithVersion));
+      if (!writeSaveToLocalStorage(json)) {
+        set({
+          notifications: pushNotification(
+            readWorldFromPlayer(get()).notifications,
+            'quest',
+            'Ошибка сохранения',
+          ),
+        });
+        return;
+      }
+
       const timestamp = Date.now();
 
       set({
@@ -76,7 +125,6 @@ export const createSaveSlice: StateCreator<
     } catch {
       // localStorage might be full or unavailable
       console.error('[saveGame] Failed to write save to localStorage');
-      // Notify the user instead of silently failing
       set({
         notifications: pushNotification(
           readWorldFromPlayer(get()).notifications,

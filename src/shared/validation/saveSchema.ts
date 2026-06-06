@@ -5,6 +5,8 @@
 
 import { z } from 'zod';
 import { SCENE_IDS } from '@/config/sceneDefinitions';
+import { sanitizeExplorationSceneId } from '@/config/scenes';
+import type { SceneId } from '@/shared/types/game';
 
 /* ─── Constants ─── */
 
@@ -83,6 +85,33 @@ const NpcPositionSchema = z.object({
   position: z.tuple([z.number(), z.number(), z.number()]),
   sceneId: SceneIdSchema,
 });
+
+export type SaveNpcPosition = {
+  position: [number, number, number];
+  sceneId: SceneId;
+};
+
+/** Validate one NPC save entry; strips unknown fields and rejects invalid shapes. */
+export function validateNpcState(value: unknown): SaveNpcPosition | null {
+  const result = NpcPositionSchema.safeParse(value);
+  if (!result.success) return null;
+  return {
+    position: result.data.position,
+    sceneId: sanitizeExplorationSceneId(result.data.sceneId),
+  };
+}
+
+/** Build store-safe npcStates; drops entries that fail per-field validation. */
+export function parseNpcStatesFromSave(
+  raw: Record<string, unknown>,
+): Record<string, SaveNpcPosition> {
+  return Object.fromEntries(
+    Object.entries(raw).flatMap(([npcId, value]) => {
+      const state = validateNpcState(value);
+      return state ? [[npcId, state]] : [];
+    }),
+  );
+}
 
 const ExplorationStateSchema = z.object({
   currentSceneId: SceneIdSchema,

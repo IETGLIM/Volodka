@@ -37,6 +37,9 @@ export function applyEffects(
       case 'addXp':
         if (fx.value) store.addXp(fx.value);
         break;
+      case 'addCredits':
+        if (fx.value) store.addCredits(fx.value);
+        break;
       case 'addStat':
         if (fx.stat === 'stress' && fx.value) store.addStress(fx.value);
         if (fx.stat === 'energy' && fx.value) store.addEnergy(fx.value);

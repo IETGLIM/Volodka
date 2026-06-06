@@ -2,6 +2,7 @@
 
 import type { DialogueNode } from '@/shared/types/game';
 import { EXPANDED_DIALOGUE_NODES } from './expandedDialogueNodes';
+import { CHK_DIALOGUE_NODES } from './chkTolpa/dialogues';
 
 export const DIALOGUE_NODES: Record<string, DialogueNode> = {
   /* ═══════════════════════════════════════════════════════════
@@ -37,6 +38,24 @@ export const DIALOGUE_NODES: Record<string, DialogueNode> = {
         effects: [
           { type: 'npcChange', npcId: 'albert', npcChange: { relation: 3 } },
         ],
+      },
+      {
+        text: 'Ты говорил об эксперименте — код, который стал стихом?',
+        next: 'albert_poetry_of_code',
+        condition: { requiredAct: 2, minNpcRelation: 50 },
+        effects: [
+          { type: 'npcChange', npcId: 'albert', npcChange: { relation: 2 } },
+        ],
+      },
+      {
+        text: 'Гильдия давит сильнее. Как сопротивляться словом?',
+        next: 'albert_resistance',
+        condition: { requiredAct: 3, minNpcRelation: 55 },
+      },
+      {
+        text: 'Что такое Хранилище на самом деле?',
+        next: 'albert_vault_truth',
+        condition: { requiredAct: 3, flag: 'vault_under_attack', minNpcRelation: 60 },
       },
     ],
   },
@@ -312,6 +331,11 @@ export const DIALOGUE_NODES: Record<string, DialogueNode> = {
           { type: 'npcChange', npcId: 'zarema', npcChange: { relation: 3 } },
         ],
       },
+      {
+        text: 'Зарема, расскажи о своём прошлом в гильдии.',
+        next: 'zarema_guild_past',
+        condition: { requiredAct: 2, minNpcRelation: 60 },
+      },
     ],
   },
 
@@ -555,6 +579,11 @@ export const DIALOGUE_NODES: Record<string, DialogueNode> = {
         effects: [
           { type: 'npcChange', npcId: 'maria', npcChange: { relation: 3 } },
         ],
+      },
+      {
+        text: 'Творчество — это приём. Ты говорила об «антеннах»?',
+        next: 'maria_about_creativity',
+        condition: { requiredAct: 2, minNpcRelation: 55 },
       },
     ],
   },
@@ -870,6 +899,11 @@ export const DIALOGUE_NODES: Record<string, DialogueNode> = {
           { type: 'addStat', stat: 'stress', value: 2 },
         ],
       },
+      {
+        text: 'Расскажи про завод «Хром-М» и машину «Заря-М».',
+        next: 'dmitry_about_factory',
+        condition: { requiredAct: 2, minNpcRelation: 45 },
+      },
     ],
   },
 
@@ -1062,6 +1096,11 @@ export const DIALOGUE_NODES: Record<string, DialogueNode> = {
           { type: 'npcChange', npcId: 'cafe_barista', npcChange: { relation: 3 } },
         ],
       },
+      {
+        text: 'Расскажи о своей «секретной жизни».',
+        next: 'barista_secret_life',
+        condition: { requiredAct: 3, flag: 'barista_special_hint', minKarma: 50 },
+      },
     ],
   },
 
@@ -1216,6 +1255,11 @@ export const DIALOGUE_NODES: Record<string, DialogueNode> = {
         effects: [
           { type: 'addSkill', skill: 'empathy', value: 1 },
         ],
+      },
+      {
+        text: 'Зачем ты строишь систему контроля?',
+        next: 'alexander_about_system',
+        condition: { requiredAct: 2, minNpcRelation: 50, minTimeOfDay: 8, maxTimeOfDay: 20 },
       },
     ],
   },
@@ -1766,6 +1810,11 @@ export const DIALOGUE_NODES: Record<string, DialogueNode> = {
         effects: [
           { type: 'addSkill', skill: 'empathy', value: 1 },
         ],
+      },
+      {
+        text: 'Ты знаешь что-то про арест Заремы?',
+        next: 'colleague_moral_conflict',
+        condition: { requiredAct: 3, flag: 'zarema_arrested' },
       },
     ],
   },
@@ -4457,4 +4506,5 @@ export const DIALOGUE_NODES: Record<string, DialogueNode> = {
   },
 
   ...EXPANDED_DIALOGUE_NODES,
+  ...CHK_DIALOGUE_NODES,
 };

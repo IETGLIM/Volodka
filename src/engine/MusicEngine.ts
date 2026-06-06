@@ -453,6 +453,28 @@ const SCENE_MUSIC_CONFIGS: Record<SceneId, SceneMusicConfig> = {
     tempo: 65,
     masterGain: 0.025,
   },
+  chk_forest_zorge: {
+    scale: SCALES.g_minor_exotic,
+    rootMidi: 50,
+    padType: 'triangle',
+    padFilterFreq: 450,
+    padFilterQ: 0.7,
+    padLfoFreq: 0.04,
+    padLfoDepth: 35,
+    padReverbMix: 0.55,
+    padReverbDecay: 5,
+    chordChangeInterval: 10,
+    chordVoices: 3,
+    useSeventhChords: false,
+    useOpenFifths: true,
+    bassType: 'sine',
+    bassGain: 0.008,
+    melodyType: 'sine',
+    melodyGain: 0.004,
+    melodyChance: 0.03,
+    tempo: 48,
+    masterGain: 0.028,
+  },
 };
 
 /* ──────────────────── Chord Generation ──────────────────── */

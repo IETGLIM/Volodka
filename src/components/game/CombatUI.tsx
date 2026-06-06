@@ -288,6 +288,8 @@ function VictoryScreen({ rewards, maxCombo }: { rewards: import('@/shared/types/
         <span className="text-cyan-400">+{rewards.xp}</span>
         <span className="text-slate-400">Карма:</span>
         <span className="text-amber-400">+{rewards.karma}</span>
+        <span className="text-slate-400">Кредиты:</span>
+        <span className="text-yellow-300">+{rewards.credits}</span>
         {rewards.lootItems.length > 0 && (
           <>
             <span className="text-slate-400">Добыча:</span>

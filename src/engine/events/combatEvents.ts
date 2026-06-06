@@ -5,7 +5,7 @@ export interface CombatEvents {
   'combat:start': { enemyType: EnemyType };
   'combat:turn': { turn: number; isPlayerTurn: boolean };
   'combat:action': { action: CombatAction; damage?: number };
-  'combat:victory': { enemyType: EnemyType; xpGained: number; karmaGained: number; lootItemId?: string };
+  'combat:victory': { enemyType: EnemyType; xpGained: number; karmaGained: number; creditsGained: number; lootItemId?: string };
   'combat:defeat': { enemyType: EnemyType; energyLost: number; karmaLost: number };
   'combat:fled': { enemyType: EnemyType };
   'combat:end': Record<string, never>;

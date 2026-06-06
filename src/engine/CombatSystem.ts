@@ -39,7 +39,7 @@ import {
   getEnemyDamageMultiplier, getEnemyAttackBoost,
   getPlayerAttackBoost, getPlayerDefenseBoost,
 } from './combat/buffSystem';
-import { getPlayerAttack, getPlayerDefense, getPlayerMaxHp, tickPowerCooldowns, isPowerAvailable, addXp } from './combat/formulas';
+import { getPlayerAttack, getPlayerDefense, getPlayerMaxHp, tickPowerCooldowns, isPowerAvailable, addXp, computeCombatCredits } from './combat/formulas';
 import { ENEMY_TEMPLATES, resolveEnemyType } from './combat/enemies';
 import {
   POEM_COMBAT_ABILITIES,
@@ -82,22 +82,31 @@ const MAX_RETURN_STACK_DEPTH = 8;
  * a newer combat session has started or the current one was torn down.
  */
 class CombatManager {
-  state: CombatState | null = null;
+  private _state: CombatState | null = null;
   private listeners = new Set<(state: CombatState) => void>();
   /** G12: Stack of storyNode IDs to return to after combat ends */
   private returnStack: string[] = [];
   private generation = 0;
   private timers = new Set<ReturnType<typeof setTimeout>>();
 
+  getState(): CombatState | null {
+    return this._state;
+  }
+
+  setState(next: CombatState | null): void {
+    this._state = next;
+  }
+
   notifyListeners(): void {
-    if (this.state) {
-      this.listeners.forEach((fn) => fn(this.state!));
+    const state = this._state;
+    if (state) {
+      this.listeners.forEach((fn) => fn(state));
     }
   }
 
   subscribe(listener: (state: CombatState) => void): () => void {
     this.listeners.add(listener);
-    if (this.state) listener(this.state);
+    if (this._state) listener(this._state);
     return () => this.listeners.delete(listener);
   }
 
@@ -111,7 +120,7 @@ class CombatManager {
   endSession(): void {
     this.clearTimers();
     this.generation += 1;
-    this.state = null;
+    this._state = null;
   }
 
   pushReturnNode(nodeId: string): void {
@@ -162,7 +171,7 @@ export function subscribeToCombat(listener: (state: CombatState) => void): () =>
 
 /** Get current combat state (read-only snapshot) */
 export function getCombatState(): CombatState | null {
-  return combat.state;
+  return combat.getState();
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -171,7 +180,7 @@ export function getCombatState(): CombatState | null {
 
 export function startCombat(enemyType: EnemyType): CombatState {
   // Abandoned active combat pushed a return node that will never be popped on victory/defeat/flee
-  if (combat.state?.status === 'active') {
+  if (combat.getState()?.status === 'active') {
     combat.discardOrphanedReturnNode();
   }
 
@@ -209,7 +218,7 @@ export function startCombat(enemyType: EnemyType): CombatState {
 
   const playerMaxHp = getPlayerMaxHp();
 
-  combat.state = {
+  combat.setState({
     enemy,
     playerHp: playerMaxHp,
     playerMaxHp,
@@ -232,13 +241,13 @@ export function startCombat(enemyType: EnemyType): CombatState {
     maxCombo: 0,
     lastCritical: false,
     lastPoemPowersUsed: [null, null],
-  };
+  });
 
   dispatchGameAction({ type: 'story/setMode', mode: 'combat' });
   eventBus.emit('combat:start', { enemyType });
 
   combat.notifyListeners();
-  return combat.state;
+  return combat.getState()!;
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -246,21 +255,22 @@ export function startCombat(enemyType: EnemyType): CombatState {
    ═══════════════════════════════════════════════════════════════ */
 
 export function playerAttack(): CombatState | null {
-  if (!combat.state || !combat.state.isPlayerTurn || combat.state.status !== 'active') return null;
+  const cs = combat.getState();
+  if (!cs || !cs.isPlayerTurn || cs.status !== 'active') return null;
 
   // Apply attack_boost buff to player
-  const pAtk = getPlayerAttack() + getPlayerAttackBoost(combat.state);
-  const enemyDef = Math.max(0, combat.state.enemy.defense * (1 - getEnemyDefenseReduction(combat.state)));
+  const pAtk = getPlayerAttack() + getPlayerAttackBoost(cs);
+  const enemyDef = Math.max(0, cs.enemy.defense * (1 - getEnemyDefenseReduction(cs)));
 
   // Apply buff-based defense boost to enemy
-  const enemyDefBoost = sumBuffEffect(combat.state, 'enemy', 'defense_boost');
+  const enemyDefBoost = sumBuffEffect(cs, 'enemy', 'defense_boost');
   const effectiveEnemyDef = enemyDef + enemyDefBoost;
 
-  const multiplier = getPlayerDamageMultiplier(combat.state);
+  const multiplier = getPlayerDamageMultiplier(cs);
   let damage = Math.max(1, Math.floor((pAtk * multiplier - effectiveEnemyDef) * (0.85 + Math.random() * 0.3)));
 
   /* ── Combo System: consecutive attacks increase damage ── */
-  const newComboCount = combat.state.comboCount + 1;
+  const newComboCount = cs.comboCount + 1;
   let comboMultiplier = 1.0;
   if (newComboCount >= 3) comboMultiplier = 2.0;
   else if (newComboCount >= 2) comboMultiplier = 1.5;
@@ -274,10 +284,10 @@ export function playerAttack(): CombatState | null {
     damage = Math.floor(damage * 1.8);
   }
 
-  const newEnemyHp = Math.max(0, combat.state.enemy.hp - damage);
+  const newEnemyHp = Math.max(0, cs.enemy.hp - damage);
 
   const logEntry: CombatLogEntry = {
-    turn: combat.state.turn,
+    turn: cs.turn,
     text: isCritical
       ? `⚔️💥 КРИТИЧЕСКИЙ УДАР! ${damage} урона!`
       : comboMultiplier > 1.0
@@ -289,18 +299,18 @@ export function playerAttack(): CombatState | null {
     comboCount: newComboCount,
   };
 
-  const newMaxCombo = Math.max(combat.state.maxCombo, newComboCount);
+  const newMaxCombo = Math.max(cs.maxCombo, newComboCount);
 
-  combat.state = {
-    ...combat.state,
-    enemy: { ...combat.state.enemy, hp: newEnemyHp },
+  combat.setState({
+    ...cs,
+    enemy: { ...cs.enemy, hp: newEnemyHp },
     doubleAttack: false,
-    enemyDefenseReduction: getEnemyDefenseReduction(combat.state),
-    log: appendLog(combat.state.log, logEntry),
+    enemyDefenseReduction: getEnemyDefenseReduction(cs),
+    log: appendLog(cs.log, logEntry),
     comboCount: newComboCount,
     maxCombo: newMaxCombo,
     lastCritical: isCritical,
-  };
+  });
 
   eventBus.emit('combat:action', { action: 'attack', damage });
   eventBus.emit('camera:combat_impact', { intensity: isCritical ? 0.6 : 0.3 });
@@ -315,46 +325,48 @@ export function playerAttack(): CombatState | null {
 }
 
 export function playerDefend(): CombatState | null {
-  if (!combat.state || !combat.state.isPlayerTurn || combat.state.status !== 'active') return null;
+  const cs = combat.getState();
+  if (!cs || !cs.isPlayerTurn || cs.status !== 'active') return null;
 
   // Add a short-duration damage reduction buff
-  const buff = createBuff(combat.state, 'Защита', 'player_defend', 'buff', 'player', 1, { type: 'damage_reduction', value: 0.3 });
-  const s = addBuff(combat.state, buff);
+  const buff = createBuff(cs, 'Защита', 'player_defend', 'buff', 'player', 1, { type: 'damage_reduction', value: 0.3 });
+  const s = addBuff(cs, buff);
 
-  combat.state = {
+  combat.setState({
     ...s,
     playerDefending: true,
     comboCount: 0, // Defending resets combo
-    log: appendLog(s.log, { turn: combat.state.turn, text: '🛡️ Защита! Входящий урон снижен на 1 ход.', type: 'player_defend' }),
-  };
+    log: appendLog(s.log, { turn: cs.turn, text: '🛡️ Защита! Входящий урон снижен на 1 ход.', type: 'player_defend' }),
+  });
 
   eventBus.emit('combat:action', { action: 'defend' });
   return endPlayerTurn();
 }
 
 export function playerUsePoemPower(poemId: string): CombatState | null {
-  if (!combat.state || !combat.state.isPlayerTurn || combat.state.status !== 'active') return null;
+  const cs = combat.getState();
+  if (!cs || !cs.isPlayerTurn || cs.status !== 'active') return null;
 
   // Check if silenced (censor_drone's silence_specials)
-  if (hasBuffEffect(combat.state, 'player', 'silence_specials')) return null;
+  if (hasBuffEffect(cs, 'player', 'silence_specials')) return null;
 
   // Check if poem is collected and not on cooldown
-  if (!isPowerAvailable(poemId, combat.state)) return null;
+  if (!isPowerAvailable(poemId, cs)) return null;
 
   const ability = POEM_COMBAT_ABILITIES[poemId];
   if (!ability) return null;
 
   // Set cooldown
-  const newCooldowns = { ...combat.state.powerCooldowns, [poemId]: ability.cooldown };
+  const newCooldowns = { ...cs.powerCooldowns, [poemId]: ability.cooldown };
 
   // Activate global cooldown in game store (for between-combat tracking)
   tryActivatePoemPower(poemId);
 
   // Track poem power usage for combo detection
-  const lastPowers: [string | null, string | null] = [combat.state.lastPoemPowersUsed[1], poemId];
+  const lastPowers: [string | null, string | null] = [cs.lastPoemPowersUsed[1], poemId];
 
   // Apply ability
-  const abilityResult = ability.execute(combat.state);
+  const abilityResult = ability.execute(cs);
 
   // Check for poem power combos
   let comboLog: CombatLogEntry[] = [];
@@ -362,35 +374,39 @@ export function playerUsePoemPower(poemId: string): CombatState | null {
     const comboResult = checkPoemPowerCombo(lastPowers[0], lastPowers[1], abilityResult);
     if (comboResult) {
       comboLog = [comboResult.logEntry];
-      combat.state = {
+      const nextState = {
         ...consumeSideEffects(comboResult.state),
         powerCooldowns: newCooldowns,
         lastPoemPowersUsed: lastPowers,
-        comboCount: combat.state.comboCount + 1, // Poem powers maintain combo
+        comboCount: cs.comboCount + 1,
       };
-      combat.state = { ...combat.state, log: appendLog(combat.state.log, ...comboLog) };
+      combat.setState({
+        ...nextState,
+        log: appendLog(nextState.log, ...comboLog),
+      });
     } else {
-      combat.state = {
+      combat.setState({
         ...consumeSideEffects(abilityResult),
         powerCooldowns: newCooldowns,
         lastPoemPowersUsed: lastPowers,
-        comboCount: combat.state.comboCount + 1,
-      };
+        comboCount: cs.comboCount + 1,
+      });
     }
   } else {
-    combat.state = {
+    combat.setState({
       ...consumeSideEffects(abilityResult),
       powerCooldowns: newCooldowns,
       lastPoemPowersUsed: lastPowers,
-      comboCount: combat.state.comboCount + 1,
-    };
+      comboCount: cs.comboCount + 1,
+    });
   }
 
   eventBus.emit('combat:action', { action: 'poem_power' });
   eventBus.emit('poem:power_used', { poemId, powerName: ability.name });
 
   // Check if enemy died from the ability
-  if (combat.state.enemy.hp <= 0) {
+  const afterUse = combat.getState();
+  if (afterUse && afterUse.enemy.hp <= 0) {
     return handleVictory();
   }
 
@@ -402,15 +418,16 @@ export function playerUsePoemPower(poemId: string): CombatState | null {
    ═══════════════════════════════════════════════════════════════ */
 
 export function playerFlee(): CombatState | null {
-  if (!combat.state || !combat.state.isPlayerTurn || combat.state.status !== 'active') return null;
+  const cs = combat.getState();
+  if (!cs || !cs.isPlayerTurn || cs.status !== 'active') return null;
 
   const playerState = snap().playerState;
   const playerSpeed = playerState.skills.intuition + playerState.skills.logic;
-  const enemySpeed = combat.state.enemy.speed;
+  const enemySpeed = cs.enemy.speed;
 
   let fleeChance = 0.35 + (playerSpeed - enemySpeed) * 0.04;
 
-  fleeChance += combat.state.fleeAttempts * 0.15;
+  fleeChance += cs.fleeAttempts * 0.15;
 
   const unlockedSkills = playerState.progression.unlockedSkills;
   if (unlockedSkills.includes('tech_4a')) fleeChance += 0.2;
@@ -428,17 +445,18 @@ export function playerFlee(): CombatState | null {
     combat.popReturnNode();
     combat.beginSession();
 
-    combat.state = {
-      ...combat.state,
+    combat.setState({
+      ...cs,
       status: 'fled',
       powerCooldowns: {},
       log: [
-        ...combat.state.log,
-        { turn: combat.state.turn, text: '🏃 Побег успешен! Вы вырвались из боя.', type: 'player_flee' },
+        ...cs.log,
+        { turn: cs.turn, text: '🏃 Побег успешен! Вы вырвались из боя.', type: 'player_flee' },
       ],
-    };
+    });
 
-    eventBus.emit('combat:fled', { enemyType: combat.state.enemy.type });
+    const fledState = combat.getState()!;
+    eventBus.emit('combat:fled', { enemyType: fledState.enemy.type });
     eventBus.emit('combat:action', { action: 'flee' });
 
     // Return to exploration after a brief delay
@@ -450,18 +468,18 @@ export function playerFlee(): CombatState | null {
     });
 
     combat.notifyListeners();
-    return combat.state;
+    return fledState;
   }
 
   // Failed flee — increment attempt counter
-  combat.state = {
-    ...combat.state,
-    fleeAttempts: combat.state.fleeAttempts + 1,
+  combat.setState({
+    ...cs,
+    fleeAttempts: cs.fleeAttempts + 1,
     log: [
-      ...combat.state.log,
-      { turn: combat.state.turn, text: `🏃 Побег не удался! (Шанс: ${Math.round(clampedChance * 100)}%, след. попытка: +15%)`, type: 'info' },
+      ...cs.log,
+      { turn: cs.turn, text: `🏃 Побег не удался! (Шанс: ${Math.round(clampedChance * 100)}%, след. попытка: +15%)`, type: 'info' },
     ],
-  };
+  });
 
   return endPlayerTurn();
 }
@@ -471,35 +489,38 @@ export function playerFlee(): CombatState | null {
    ═══════════════════════════════════════════════════════════════ */
 
 function endPlayerTurn(): CombatState {
-  if (!combat.state || combat.state.status !== 'active') return combat.state!;
+  const cs = combat.getState();
+  if (!cs || cs.status !== 'active') return cs!;
 
   // Tick player power cooldowns
-  combat.state = {
-    ...combat.state,
+  combat.setState({
+    ...cs,
     isPlayerTurn: false,
-    powerCooldowns: tickPowerCooldowns(combat.state.powerCooldowns),
-  };
+    powerCooldowns: tickPowerCooldowns(cs.powerCooldowns),
+  });
 
-  eventBus.emit('combat:turn', { turn: combat.state.turn, isPlayerTurn: false });
+  const next = combat.getState()!;
+  eventBus.emit('combat:turn', { turn: next.turn, isPlayerTurn: false });
   combat.notifyListeners();
 
   // Enemy acts after a brief delay for visual feedback
   combat.schedule(800, () => executeEnemyTurn());
 
-  return combat.state;
+  return next;
 }
 
 /** Transition to the player's turn.
  *  Processes player buffs at turn start (tick durations, stat drain, skip_turn check).
  *  If the player has a skip_turn debuff, auto-skips and transitions to enemy turn. */
 function transitionToPlayerTurn(state: CombatState): void {
-  if (!combat.state) return;
+  if (!combat.getState()) return;
 
   // ── Tick player buffs ──
   const { state: afterBuffTick, expiredLog } = tickBuffs(state, 'player');
 
   // ── Process stat drain debuffs on player ──
   const drainLog: CombatLogEntry[] = [];
+  let playerHpAfterDrain = afterBuffTick.playerHp;
   for (const buff of afterBuffTick.buffs) {
     if (buff.target === 'player' && buff.effect.type === 'stat_drain') {
       const eff = buff.effect as { type: 'stat_drain'; stat: 'logic' | 'energy' | 'karma'; value: number };
@@ -518,13 +539,14 @@ function transitionToPlayerTurn(state: CombatState): void {
     if (buff.target === 'player' && buff.effect.type === 'hp_drain_percent') {
       const eff = buff.effect as { type: 'hp_drain_percent'; value: number };
       const drainDmg = Math.max(1, Math.floor(state.playerMaxHp * eff.value));
-      afterBuffTick.playerHp = Math.max(1, afterBuffTick.playerHp - drainDmg);
+      playerHpAfterDrain = Math.max(1, playerHpAfterDrain - drainDmg);
       drainLog.push({ turn: afterBuffTick.turn, text: `🦠 ${buff.name}: -${drainDmg} HP`, type: 'status_effect', damage: drainDmg });
     }
   }
 
   let workingState: CombatState = {
     ...afterBuffTick,
+    playerHp: playerHpAfterDrain,
     turn: afterBuffTick.turn + 1,
     // Reset backward-compat flags at the start of each player turn.
     // These are consumed during the enemy's turn and must not persist;
@@ -555,17 +577,18 @@ function transitionToPlayerTurn(state: CombatState): void {
     };
 
     // Set state and auto-skip after a brief delay for visual feedback
-    combat.state = {
+    combat.setState({
       ...workingState,
       isPlayerTurn: true, // Briefly show it's "your turn" before skipping
-    };
+    });
 
-    eventBus.emit('combat:turn', { turn: combat.state.turn, isPlayerTurn: true });
+    const stunnedTurn = combat.getState()!;
+    eventBus.emit('combat:turn', { turn: stunnedTurn.turn, isPlayerTurn: true });
     combat.notifyListeners();
 
     // Auto-skip after a brief delay
     combat.schedule(800, () => {
-      if (combat.state?.status === 'active') {
+      if (combat.getState()?.status === 'active') {
         endPlayerTurn();
       }
     });
@@ -574,20 +597,22 @@ function transitionToPlayerTurn(state: CombatState): void {
   }
 
   // Normal: enable player turn
-  combat.state = {
+  combat.setState({
     ...workingState,
     isPlayerTurn: true,
-  };
+  });
 
-  eventBus.emit('combat:turn', { turn: combat.state.turn, isPlayerTurn: true });
+  const playerTurn = combat.getState()!;
+  eventBus.emit('combat:turn', { turn: playerTurn.turn, isPlayerTurn: true });
   combat.notifyListeners();
 }
 
 function executeEnemyTurn() {
-  if (!combat.state || combat.state.status !== 'active') return;
+  const cs = combat.getState();
+  if (!cs || cs.status !== 'active') return;
 
   // ── Tick enemy buffs ──
-  const { state: afterBuffTick, expiredLog } = tickBuffs(combat.state, 'enemy');
+  const { state: afterBuffTick, expiredLog } = tickBuffs(cs, 'enemy');
 
   // ── Check if enemy is stunned (skip_turn debuff on enemy) ──
   if (hasBuffEffect(afterBuffTick, 'enemy', 'skip_turn') || afterBuffTick.enemyDefending) {
@@ -595,7 +620,7 @@ function executeEnemyTurn() {
     const remaining = afterBuffTick.buffs.filter(
       (b) => !(b.target === 'enemy' && b.effect.type === 'skip_turn'),
     );
-    combat.state = {
+    combat.setState({
       ...afterBuffTick,
       enemyDefending: false,
       buffs: remaining,
@@ -604,10 +629,10 @@ function executeEnemyTurn() {
         ...expiredLog,
         { turn: afterBuffTick.turn, text: `${afterBuffTick.enemy.emoji} ${afterBuffTick.enemy.name} дезориентирован и пропускает ход!`, type: 'info' },
       ],
-    };
+    });
 
     // Transition to player turn (handles buff processing and skip_turn check)
-    transitionToPlayerTurn(combat.state);
+    transitionToPlayerTurn(combat.getState()!);
     return;
   }
 
@@ -691,7 +716,7 @@ function executeEnemyTurn() {
     }
   }
 
-  combat.state = {
+  combat.setState({
     ...workingState,
     playerHp: newPlayerHp,
     playerDefending: false,
@@ -709,7 +734,7 @@ function executeEnemyTurn() {
         damage: enemyDamage,
       },
     ],
-  };
+  });
 
   eventBus.emit('camera:combat_shake', { intensity: 0.2 });
 
@@ -720,30 +745,31 @@ function executeEnemyTurn() {
   }
 
   // Transition to player turn (handles buff processing and skip_turn check)
-  transitionToPlayerTurn(combat.state);
+  transitionToPlayerTurn(combat.getState()!);
 }
 
 /** Helper to finalize enemy turn after a special attack */
 function gotoEnemyTurnEnd(state: CombatState) {
   // Stat drain is now processed at the start of the player's turn (see transitionToPlayerTurn)
 
-  combat.state = {
+  combat.setState({
     ...state,
     playerDefending: false,
     enemy: {
       ...state.enemy,
       specialCooldown: Math.max(0, state.enemy.specialCooldown - 1),
     },
-  };
+  });
 
   // Check defeat (some specials deal damage directly)
-  if (combat.state.playerHp <= 0) {
+  const afterSpecial = combat.getState()!;
+  if (afterSpecial.playerHp <= 0) {
     handleDefeat();
     return;
   }
 
   // Transition to player turn (handles buff processing and skip_turn check)
-  transitionToPlayerTurn(combat.state);
+  transitionToPlayerTurn(afterSpecial);
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -751,15 +777,16 @@ function gotoEnemyTurnEnd(state: CombatState) {
    ═══════════════════════════════════════════════════════════════ */
 
 function handleVictory(): CombatState {
-  if (!combat.state) return combat.state!;
+  const cs = combat.getState();
+  if (!cs) return cs!;
 
   // Pop synchronously — delayed exit callbacks may be cancelled by a new session
   const returnNodeId = combat.popReturnNode();
   combat.beginSession();
 
-  const enemy = combat.state.enemy;
+  const enemy = cs.enemy;
 
-  const comboBonus = Math.min(combat.state.maxCombo * 2, 10);
+  const comboBonus = Math.min(cs.maxCombo * 2, 10);
   const karmaGained = 3 + Math.floor(Math.random() * 5) + comboBonus;
   dispatchGameAction({ type: 'player/addKarma', amount: karmaGained });
 
@@ -767,8 +794,11 @@ function handleVictory(): CombatState {
   const xpGained = enemy.xpReward + comboBonus;
   addXp(xpGained);
 
+  const creditsGained = computeCombatCredits(xpGained, comboBonus);
+  dispatchGameAction({ type: 'player/addCredits', amount: creditsGained });
+
   // Loot roll (higher combo = better loot chance)
-  const lootChance = 0.6 + combat.state.maxCombo * 0.05;
+  const lootChance = 0.6 + cs.maxCombo * 0.05;
   const lootItems: string[] = [];
   if (enemy.lootTable.length > 0 && Math.random() < Math.min(0.9, lootChance)) {
     const lootItemId = enemy.lootTable[Math.floor(Math.random() * enemy.lootTable.length)];
@@ -787,29 +817,31 @@ function handleVictory(): CombatState {
   const rewards: import('@/shared/types/game').CombatReward = {
     xp: xpGained,
     karma: karmaGained,
+    credits: creditsGained,
     lootItems,
     skillXp,
   };
 
-  combat.state = {
-    ...combat.state,
+  combat.setState({
+    ...cs,
     status: 'victory',
     powerCooldowns: {},
     rewards,
     log: [
-      ...combat.state.log,
+      ...cs.log,
       {
-        turn: combat.state.turn,
-        text: `🏆 Победа! +${karmaGained} кармы, +${xpGained} опыта${lootItems.length > 0 ? `, найден предмет!` : ''}${combat.state.maxCombo >= 3 ? ` Макс. комбо: x${combat.state.maxCombo}!` : ''}`,
+        turn: cs.turn,
+        text: `🏆 Победа! +${karmaGained} кармы, +${xpGained} опыта, +${creditsGained} кредитов${lootItems.length > 0 ? `, найден предмет!` : ''}${cs.maxCombo >= 3 ? ` Макс. комбо: x${cs.maxCombo}!` : ''}`,
         type: 'victory',
       },
     ],
-  };
+  });
 
   eventBus.emit('combat:victory', {
     enemyType: enemy.type,
     xpGained,
     karmaGained,
+    creditsGained,
     lootItemId: lootItems[0],
   });
 
@@ -819,8 +851,7 @@ function handleVictory(): CombatState {
   combat.schedule(3000, () => {
     if (returnNodeId) {
       dispatchGameAction({ type: 'story/setMode', mode: 'exploration' });
-      dispatchGameAction({ type: 'story/setCurrentNodeId', nodeId: returnNodeId });
-      dispatchGameAction({ type: 'story/setShowStoryOverlay', show: true });
+      dispatchGameAction({ type: 'story/openNarrativeOverlay', nodeId: returnNodeId });
       eventBus.emit('combat:story_continue', { nodeId: returnNodeId });
     } else {
       dispatchGameAction({ type: 'story/setMode', mode: 'exploration' });
@@ -830,35 +861,36 @@ function handleVictory(): CombatState {
     eventBus.emit('combat:end', {});
   });
 
-  return combat.state;
+  return combat.getState()!;
 }
 
 function handleDefeat(): void {
-  if (!combat.state) return;
+  const cs = combat.getState();
+  if (!cs) return;
 
   const returnNodeId = combat.popReturnNode();
   combat.beginSession();
 
-  const enemy = combat.state.enemy;
+  const enemy = cs.enemy;
 
   const energyLost = 15 + Math.floor(Math.random() * 10);
   const karmaLost = 5 + Math.floor(Math.random() * 5);
   dispatchGameAction({ type: 'player/addEnergy', amount: -energyLost });
   dispatchGameAction({ type: 'player/addKarma', amount: -karmaLost });
 
-  combat.state = {
-    ...combat.state,
+  combat.setState({
+    ...cs,
     status: 'defeat',
     powerCooldowns: {},
     log: [
-      ...combat.state.log,
+      ...cs.log,
       {
-        turn: combat.state.turn,
+        turn: cs.turn,
         text: `💀 Поражение... -${energyLost} энергии, -${karmaLost} кармы. Вы отступаете.`,
         type: 'defeat',
       },
     ],
-  };
+  });
 
   eventBus.emit('combat:defeat', {
     enemyType: enemy.type,
@@ -872,8 +904,7 @@ function handleDefeat(): void {
   combat.schedule(3000, () => {
     if (returnNodeId) {
       dispatchGameAction({ type: 'story/setMode', mode: 'exploration' });
-      dispatchGameAction({ type: 'story/setCurrentNodeId', nodeId: returnNodeId });
-      dispatchGameAction({ type: 'story/setShowStoryOverlay', show: true });
+      dispatchGameAction({ type: 'story/openNarrativeOverlay', nodeId: returnNodeId });
       eventBus.emit('combat:story_continue', { nodeId: returnNodeId });
     } else {
       dispatchGameAction({ type: 'story/setMode', mode: 'exploration' });
@@ -889,7 +920,7 @@ function handleDefeat(): void {
    ═══════════════════════════════════════════════════════════════ */
 
 export function getAvailableCombatPowers(): Array<{ poemId: string; name: string; description: string; cooldownRemaining: number }> {
-  const combatState = combat.state;
+  const combatState = combat.getState();
   if (!combatState) return [];
 
   return snap().collectedPoems
@@ -907,9 +938,10 @@ export function getAvailableCombatPowers(): Array<{ poemId: string; name: string
    ═══════════════════════════════════════════════════════════════ */
 
 export function getActiveBuffs(target?: 'player' | 'enemy'): CombatBuff[] {
-  if (!combat.state) return [];
-  if (target) return combat.state.buffs.filter((b) => b.target === target);
-  return combat.state.buffs;
+  const cs = combat.getState();
+  if (!cs) return [];
+  if (target) return cs.buffs.filter((b) => b.target === target);
+  return cs.buffs;
 }
 
 /* ═══════════════════════════════════════════════════════════════

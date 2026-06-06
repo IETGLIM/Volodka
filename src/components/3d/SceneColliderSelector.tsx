@@ -22,7 +22,7 @@ import { CuboidCollider } from '@react-three/rapier';
 import { useGameStore } from '@/store/gameStore';
 import { getSceneConfig } from '@/config/scenes';
 import { SCENE_DEFINITIONS } from '@/config/sceneDefinitions';
-import { generateColliders } from '@/config/sceneDefinitionGenerator';
+import { generateColliders, STRUCTURAL_FLOOR_HALF_HEIGHT } from '@/config/sceneDefinitionGenerator';
 import type { ColliderDef } from '@/shared/types/sceneDefinition';
 import { SceneLayer, LayeredForeground } from './VisualizationLayers';
 import type { SceneId } from '@/shared/types/game';
@@ -62,6 +62,7 @@ const RooftopEdgeVisual = retryLazy(() => import('./RooftopEdgeVisual'), 'Roofto
 const AbandonedFactoryVisual = retryLazy(() => import('./AbandonedFactoryVisual'), 'AbandonedFactoryVisual');
 const ZaremaAlbertRoomVisual = retryLazy(() => import('./ZaremaAlbertRoomVisual'), 'ZaremaAlbertRoomVisual');
 const StreetWinterVisual = retryLazy(() => import('./StreetWinterVisual'), 'StreetWinterVisual');
+const ChkForestZorgeVisual = retryLazy(() => import('./ChkForestZorgeVisual'), 'ChkForestZorgeVisual');
 
 interface SceneColliderSelectorProps {
   livePlayerPositionRef: MutableRefObject<THREE.Vector3>;
@@ -160,24 +161,22 @@ function SceneStructuralColliders({ sceneId }: { sceneId: SceneId }) {
   const [w, d] = config.size;
   const floorMaterial = config.floorMaterial;
   const hasCeiling = config.hasCeiling;
+  const floorY = config.floorY;
+  const floorCenterY = floorY - STRUCTURAL_FLOOR_HALF_HEIGHT;
   const wallHeight = 4;
   const WALL_THICKNESS = 0.5; // Thick enough to prevent tunneling with KinematicCharacterController
 
   return (
     <group>
       {/* ── Floor: thick cuboid with footstep material name ──
-       *  CRITICAL: The top surface is at y=0.01 to match the player spawn point.
-       *  This MUST be ABOVE the visual floor trimesh (at y=0.001) so the
+       *  CRITICAL: The top surface is at config.floorY to match the player spawn point.
+       *  This MUST be ABOVE the visual floor trimesh (typically at y≈0.001) so the
        *  KinematicCharacterController hits the CuboidCollider FIRST.
-       *  The visual floor's trimesh is infinitely thin (planeGeometry) and
-       *  unreliable — the controller can tunnel through it. The thick
-       *  CuboidCollider is the TRUE floor for physics.
-       *  Total thickness = 1.0m (half = 0.5), center at y=-0.49,
-       *  top at y = -0.49 + 0.5 = 0.01, bottom at y = -0.49 - 0.5 = -0.99.
+       *  Center at floorY - halfHeight; top at floorY.
        */}
       <CuboidCollider
-        args={[w / 2, 0.5, d / 2]}
-        position={[0, -0.49, 0]}
+        args={[w / 2, STRUCTURAL_FLOOR_HALF_HEIGHT, d / 2]}
+        position={[0, floorCenterY, 0]}
         name={`fs:${floorMaterial}`}
         restitution={0}
         friction={0.8}
@@ -277,6 +276,8 @@ function VisualScene({ sceneId, livePlayerPositionRef }: VisualSceneProps) {
       return <AbandonedFactoryVisual />;
     case 'zarema_albert_room':
       return <ZaremaAlbertRoomVisual />;
+    case 'chk_forest_zorge':
+      return <ChkForestZorgeVisual livePlayerPositionRef={livePlayerPositionRef} />;
     default:
       return <FallbackVisual sceneId={sceneId} />;
   }
