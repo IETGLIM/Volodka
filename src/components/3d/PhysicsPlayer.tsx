@@ -79,7 +79,7 @@ const MAX_SLOPE_CLIMB = Math.PI / 4; // 45° — walkable slopes
 const MIN_SLOPE_SLIDE = Math.PI / 6;  // 30° — auto-slide steeper
 const AUTOSTEP_HEIGHT = 0.3;         // 30cm max step height
 const AUTOSTEP_WIDTH = 0.2;          // 20cm min step width
-const SNAP_DISTANCE = 0.5;           // 50cm snap-to-ground distance
+const SNAP_DISTANCE = 0.15;          // 15cm snap — large values cause Y bounce while walking
 const COYOTE_TIME = 0.15;            // 150ms jump grace after leaving edge
 const JUMP_COOLDOWN = 0.3;           // 300ms between jumps
 const TERMINAL_VELOCITY = GRAVITY * 2; // max fall speed
@@ -488,19 +488,33 @@ export function PhysicsPlayer({
     }
 
     // ─── Vertical velocity — gravity + jump ───
-    // Always apply gravity; the character controller resolves ground collision
-    vel.y += GRAVITY * dt;
-    if (vel.y < TERMINAL_VELOCITY) vel.y = TERMINAL_VELOCITY;
+    // Do NOT accumulate gravity while grounded: vel.y += GRAVITY each frame then
+    // snap-to-ground / floor enforcement causes visible Y oscillation when walking.
+    const wantsJump =
+      jumping &&
+      jumpCooldownRef.current <= 0 &&
+      (isGroundedRef.current || coyoteTimerRef.current > 0);
 
-    // Jump — check grounded OR coyote time
-    if (jumping && (isGroundedRef.current || coyoteTimerRef.current > 0) && jumpCooldownRef.current <= 0) {
+    const posForGroundCheck = rb.translation();
+    const nearFloor = posForGroundCheck.y <= floorY + 0.05;
+
+    if (wantsJump) {
       vel.y = JUMP_FORCE;
       isGroundedRef.current = false;
       jumpCooldownRef.current = JUMP_COOLDOWN;
       coyoteTimerRef.current = 0;
+    } else if (isGroundedRef.current || (nearFloor && !jumping)) {
+      vel.y = 0;
+      if (nearFloor) {
+        isGroundedRef.current = true;
+        coyoteTimerRef.current = 0;
+      }
+    } else {
+      vel.y += GRAVITY * dt;
+      if (vel.y < TERMINAL_VELOCITY) vel.y = TERMINAL_VELOCITY;
     }
 
-    // ─── Ground enforcement: if player is at floor level and falling (not jumping), snap to floor ───
+    // ─── Ground enforcement: snap RigidBody to floor before displacement ───
     // This prevents the character from slowly sinking through the floor due to
     // floating-point drift or the controller not detecting ground on a particular frame.
     // The CuboidCollider floor top is at config.floorY. If the player's RigidBody
@@ -517,9 +531,10 @@ export function PhysicsPlayer({
     }
 
     // ─── Compute desired displacement (input → desired movement) ───
+    const onFlatGround = isGroundedRef.current || nearFloor;
     const desiredDisplacement = {
       x: vel.x * dt,
-      y: vel.y * dt,
+      y: onFlatGround && !wantsJump ? 0 : vel.y * dt,
       z: vel.z * dt,
     };
 
@@ -668,7 +683,13 @@ export function PhysicsPlayer({
       if (Math.abs(vel.y) < 0.25) vel.y = 0;
     }
     if (!isGroundedRef.current) {
-      currentAnimRef.current = vel.y > 0.5 ? 'jump' : 'fall';
+      const clearlyAirborne = animPos.y > floorY + 0.08 || vel.y > 0.35;
+      if (clearlyAirborne) {
+        currentAnimRef.current = vel.y > 0.5 ? 'jump' : 'fall';
+      } else {
+        isGroundedRef.current = true;
+        vel.y = 0;
+      }
     } else if (horizontalSpeed > 0.5) {
       currentAnimRef.current = horizontalSpeed > WALK_SPEED * 0.8 ? 'run' : 'walk';
     } else {
@@ -692,7 +713,16 @@ export function PhysicsPlayer({
     }
 
     // ─── Update position ref for camera + other systems ───
-    const finalPos = rb.translation();
+    let finalPos = rb.translation();
+
+    // Lock Y on flat ground — prevents snap-to-ground / autostep micro-bounce while walking
+    if (onFlatGround && !wantsJump && Math.abs(finalPos.y - floorY) > 0.0005) {
+      rb.setTranslation({ x: finalPos.x, y: floorY, z: finalPos.z }, true);
+      vel.y = 0;
+      isGroundedRef.current = true;
+      finalPos = rb.translation();
+    }
+
     livePlayerPositionRef.current.set(finalPos.x, finalPos.y, finalPos.z);
 
     // ─── EMERGENCY MOBILE FALLBACK ───

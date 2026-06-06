@@ -72,6 +72,15 @@ export function useProceduralPlayerAnimation(
     const animState = currentAnimRef.current;
     animTimeRef.current += dt;
 
+    // Skip stand-up lerp when player already walks — avoids visual "hop" on first keypress
+    if (
+      standUpActiveRef.current &&
+      (animState === 'walk' || animState === 'run')
+    ) {
+      standUpPhaseRef.current = 1;
+      standUpActiveRef.current = false;
+    }
+
     if (standUpActiveRef.current && standUpPhaseRef.current < 1) {
       standUpPhaseRef.current = Math.min(1, standUpPhaseRef.current + dt / STAND_UP_DURATION);
       if (standUpPhaseRef.current >= 1) {

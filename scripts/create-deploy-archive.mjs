@@ -93,12 +93,9 @@ function writeDeployDocs(staging, meta) {
 
 ### В этой сборке
 
-- Act 3 story spine (единый граф, без дубликатов узлов)
-- ТОЛПА / ЧК — лес на Зорге, NPC, квесты, диалоги act 2–4
-- Диалоги для всех 24 NPC (\`allNpcDefinitions\`, act 2/3 ветки)
-- Исправления quest objective flags (без двойного зачёта)
-- Accessibility: FocusTrap, AriaLiveRegion, choice aria labels
-- CR fixes: scene banner unmount, orchestrator split
+- Исправление подпрыгивания персонажа при первом нажатии WASD (ground lock, без gravity на полу)
+- Open-world layer, perf budgets, content validation, lazy bundles
+- Act 3 story spine, ТОЛПА / ЧК, 24+ NPC, accessibility
 
 ## Быстрый деплой
 
