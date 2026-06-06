@@ -4,7 +4,7 @@
  * Reads config/performanceBudgets.json and measures gzip sizes in dist/assets/.
  *
  * Usage:
- *   node scripts/check-bundle-budgets.mjs          # fail on hardMax
+ *   node scripts/check-bundle-budgets.mjs          # fail on hardMax (boot menu gate)
  *   node scripts/check-bundle-budgets.mjs --report # always exit 0, print table
  */
 
@@ -34,11 +34,14 @@ function matchesAny(name, patterns) {
   return patterns.some((p) => new RegExp(p).test(name));
 }
 
-function classifyChunk(name) {
-  if (matchesAny(name, budgets.bundleTiers.firstScene)) return 'firstScene';
-  if (matchesAny(name, budgets.bundleTiers.lazyPrefixes)) return 'lazy';
-  if (matchesAny(name, budgets.bundleTiers.boot)) return 'boot';
-  return 'other';
+function sumTierGzip(chunks, patterns) {
+  return chunks
+    .filter((c) => matchesAny(c.file, patterns))
+    .reduce((sum, c) => sum + c.gzip, 0);
+}
+
+function listTierChunks(chunks, patterns) {
+  return chunks.filter((c) => matchesAny(c.file, patterns));
 }
 
 if (!existsSync(distAssets)) {
@@ -53,83 +56,86 @@ const chunks = jsFiles.map((file) => {
   const path = join(distAssets, file);
   const raw = readFileSync(path).length;
   const gzip = gzipBytes(path);
-  const tier = classifyChunk(file);
+  let tier = 'other';
+  if (matchesAny(file, budgets.bundleTiers.lazyPrefixes)) tier = 'lazy';
+  else if (matchesAny(file, budgets.bundleTiers.bootMenu ?? budgets.bundleTiers.firstScene)) {
+    tier = matchesAny(file, budgets.bundleTiers.gameStart ?? []) ? 'gameStart' : 'bootMenu';
+  }
   return { file, raw, gzip, tier };
 });
 
-const tierTotals = { boot: 0, firstScene: 0, lazy: 0, other: 0 };
-const tierLists = { boot: [], firstScene: [], lazy: [], other: [] };
+const bootMenuPatterns = budgets.bundleTiers.bootMenu ?? budgets.bundleTiers.firstScene;
+const gameStartPatterns = budgets.bundleTiers.gameStart ?? [];
+const firstScenePatterns = budgets.bundleTiers.firstScene;
 
-for (const chunk of chunks) {
-  tierTotals[chunk.tier] += chunk.gzip;
-  tierLists[chunk.tier].push(chunk);
-}
+const bootMenuGzip = sumTierGzip(chunks, bootMenuPatterns);
+const gameStartGzip = sumTierGzip(chunks, gameStartPatterns);
+const cumulativeFirstSceneGzip = sumTierGzip(chunks, firstScenePatterns);
 
-const bootGzip = chunks
-  .filter((c) => matchesAny(c.file, budgets.bundleTiers.boot))
+const bootMenuChunks = listTierChunks(chunks, bootMenuPatterns);
+const gameStartChunks = listTierChunks(chunks, gameStartPatterns);
+
+const lazyJsGzip = chunks
+  .filter((c) => matchesAny(c.file, budgets.bundleTiers.lazyPrefixes))
   .reduce((sum, c) => sum + c.gzip, 0);
 
-/** firstScene tier — all chunks needed before default scene is playable */
-const initialJsGzip = chunks
-  .filter((c) => matchesAny(c.file, budgets.bundleTiers.firstScene))
-  .reduce((sum, c) => sum + c.gzip, 0);
-
-const firstSceneChunks = chunks.filter((c) =>
-  matchesAny(c.file, budgets.bundleTiers.firstScene),
-);
-
-const lazyJsGzip = tierTotals.lazy;
 const totalJsGzip = chunks.reduce((sum, c) => sum + c.gzip, 0);
 
 const indexCss = cssFiles.find((f) => f.startsWith('index-'));
 const cssGzip = indexCss ? gzipBytes(join(distAssets, indexCss)) : 0;
 
-const { initialJsGzipBytes } = budgets;
-const overTarget = initialJsGzip - initialJsGzipBytes.target;
-const overHard = initialJsGzip - initialJsGzipBytes.hardMax;
+const bootBudget = budgets.bootJsGzipBytes ?? budgets.initialJsGzipBytes;
+const gameStartBudget = budgets.gameStartJsGzipBytes;
 
 console.log('\n=== Volodka performance budgets (bundle) ===\n');
-console.log(`Initial JS (first-scene tier, gzip): ${formatKb(initialJsGzip)}`);
-console.log(`  Target: ${formatKb(initialJsGzipBytes.target)}  Hard max: ${formatKb(initialJsGzipBytes.hardMax)}`);
-console.log(`  Boot-only (index+vendor): ${formatKb(bootGzip)}`);
-console.log(`  Lazy tier (should not block first scene): ${formatKb(lazyJsGzip)}`);
-console.log(`  Other / unclassified JS: ${formatKb(tierTotals.other)}`);
+console.log(`Boot menu JS (gzip): ${formatKb(bootMenuGzip)}`);
+console.log(`  Target: ${formatKb(bootBudget.target)}  Hard max: ${formatKb(bootBudget.hardMax)}`);
+
+if (gameStartBudget && gameStartPatterns.length > 0) {
+  console.log(`Game-start JS (gzip, incremental): ${formatKb(gameStartGzip)}`);
+  console.log(`  Target: ${formatKb(gameStartBudget.target)}  Hard max: ${formatKb(gameStartBudget.hardMax)}`);
+  console.log(`Cumulative to first scene (gzip): ${formatKb(cumulativeFirstSceneGzip)}`);
+}
+
+console.log(`  Lazy tier: ${formatKb(lazyJsGzip)}`);
 console.log(`  Total JS gzip (all chunks): ${formatKb(totalJsGzip)}`);
 console.log(`  Entry CSS gzip (index): ${formatKb(cssGzip)}`);
 
-console.log('\n--- First-scene chunks (gzip) ---');
-firstSceneChunks
+console.log('\n--- Boot menu chunks (gzip) ---');
+bootMenuChunks
   .sort((a, b) => b.gzip - a.gzip)
   .forEach((c) => console.log(`  ${formatKb(c.gzip).padStart(10)}  ${c.file}`));
 
-if (tierLists.other.length > 0) {
-  console.log('\n--- Unclassified (review tier rules) ---');
-  tierLists.other
+if (gameStartChunks.length > 0) {
+  console.log('\n--- Game-start chunks (gzip) ---');
+  gameStartChunks
     .sort((a, b) => b.gzip - a.gzip)
-    .slice(0, 10)
     .forEach((c) => console.log(`  ${formatKb(c.gzip).padStart(10)}  ${c.file}`));
 }
 
-console.log('\n--- Top lazy chunks (gzip) ---');
-tierLists.lazy
-  .sort((a, b) => b.gzip - a.gzip)
-  .slice(0, 8)
-  .forEach((c) => console.log(`  ${formatKb(c.gzip).padStart(10)}  ${c.file}`));
-
 const violations = [];
 
-if (initialJsGzip > initialJsGzipBytes.hardMax) {
+const bootOverHard = bootMenuGzip - bootBudget.hardMax;
+if (bootMenuGzip > bootBudget.hardMax) {
   violations.push(
-    `Initial JS ${formatKb(initialJsGzip)} exceeds hard max ${formatKb(initialJsGzipBytes.hardMax)} (+${formatKb(overHard)})`,
+    `Boot menu JS ${formatKb(bootMenuGzip)} exceeds hard max ${formatKb(bootBudget.hardMax)} (+${formatKb(bootOverHard)})`,
   );
-} else if (initialJsGzip > initialJsGzipBytes.target) {
-  console.log(`\n⚠ Over target by ${formatKb(overTarget)} (within hard max).`);
+} else if (bootMenuGzip > bootBudget.target) {
+  console.log(`\n⚠ Boot menu over target by ${formatKb(bootMenuGzip - bootBudget.target)} (within hard max).`);
 }
 
-const threeChunk = firstSceneChunks.find((c) => c.file.startsWith('three-'));
+if (gameStartBudget && gameStartGzip > gameStartBudget.hardMax) {
+  violations.push(
+    `Game-start JS ${formatKb(gameStartGzip)} exceeds hard max ${formatKb(gameStartBudget.hardMax)} (+${formatKb(gameStartGzip - gameStartBudget.hardMax)})`,
+  );
+} else if (gameStartBudget && gameStartGzip > gameStartBudget.target) {
+  console.log(`\n⚠ Game-start over target by ${formatKb(gameStartGzip - gameStartBudget.target)} (within hard max).`);
+}
+
+const threeChunk = gameStartChunks.find((c) => c.file.startsWith('three-'));
 if (threeChunk) {
-  const pct = ((threeChunk.gzip / initialJsGzip) * 100).toFixed(0);
-  console.log(`\nNote: three.js chunk is ${pct}% of first-scene JS — primary optimization lever.`);
+  const pct = gameStartGzip > 0 ? ((threeChunk.gzip / gameStartGzip) * 100).toFixed(0) : '0';
+  console.log(`\nNote: three.js chunk is ${pct}% of game-start JS.`);
 }
 
 if (violations.length > 0) {

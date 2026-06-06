@@ -6,7 +6,7 @@ import { musicEngine } from '@/engine/MusicEngine';
 import { SCENE_CONFIG } from '@/config/scenes';
 import { AUTO_SAVE_INTERVAL_MS } from '@/data/constants';
 import { processExpiredTTLFlags } from '@/engine/PoemPowerSystem';
-import { preloadGameData } from '@/data/gameDataLoader';
+import { preloadBootGameData, preloadNarrativeGameData } from '@/data/gameDataLoader';
 import { initWorldEventDirector } from '@/engine/world';
 
 /** Autosave, TTL cleanup, daily resets, scene banners, guided story lifecycle. */
@@ -23,7 +23,10 @@ export function useGameLifecycleManager(mode: string) {
     let disposeFn: (() => void) | undefined;
     let cancelled = false;
 
-    void preloadGameData().then(() => import('@/engine/GuidedStoryManager')).then((mod) => {
+    void preloadBootGameData()
+      .then(() => preloadNarrativeGameData())
+      .then(() => import('@/engine/GuidedStoryManager'))
+      .then((mod) => {
       if (cancelled) return;
       mod.initGuidedStoryManager();
       disposeFn = mod.disposeGuidedStoryManager;

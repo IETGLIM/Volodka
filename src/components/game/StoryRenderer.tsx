@@ -12,7 +12,7 @@ import {
   useStoryContext,
   useVisitNode,
 } from '@/store/selectors';
-import { STORY_NODES } from '@/data/storyNodes';
+import { getStoryNodes, isNarrativeGameDataLoaded } from '@/data/gameDataLoader';
 import { audioEngine } from '@/engine/AudioEngine';
 import { requestSceneTransitionForStoryNode } from '@/engine/scene/sceneTransition';
 import { closeNarrativeOverlay } from '@/engine/scene/narrativeOverlay';
@@ -124,7 +124,11 @@ export function StoryRenderer() {
     [playerState],
   );
 
-  const node = useMemo(() => STORY_NODES[currentNodeId], [currentNodeId]);
+  const storyNodes = isNarrativeGameDataLoaded() ? getStoryNodes() : null;
+  const node = useMemo(
+    () => (storyNodes ? storyNodes[currentNodeId] : undefined),
+    [storyNodes, currentNodeId],
+  );
 
   const { displayed, done, skip } = useTypewriter(node?.text ?? '', 28);
 
@@ -215,7 +219,7 @@ export function StoryRenderer() {
   }, [done, node, conditionCtx, handleChoice]);
 
   // World Director: story overlay renders during exploration (and cutscene handoff)
-  const isOpen = showStoryOverlay && !!node && !!STORY_NODES[currentNodeId];
+  const isOpen = showStoryOverlay && !!node;
   if (!isOpen) return null;
 
   const karmaLevel =

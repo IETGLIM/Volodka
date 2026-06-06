@@ -3,7 +3,7 @@
 /* Renders per-scene environmental animations defined in EnvironmentalAnimations.ts */
 
 import { useRef, useMemo, useCallback, useEffect } from 'react';
-import { useFrame } from '@react-three/fiber';
+import { useFrameTick } from '@/engine/frame/useFrameTick';
 import * as THREE from 'three';
 import { useGameStore } from '@/store/gameStore';
 import { getSceneEnvAnimations } from '@/engine/EnvironmentalAnimations';
@@ -38,7 +38,7 @@ function LightFlickerAnim({ anim }: { anim: EnvAnimation }) {
   const maxI = anim.config.maxIntensity ?? 0.8;
   const flickerRate = anim.config.flickerRate ?? 0.03;
 
-  useFrame((_, delta) => {
+  useFrameTick('misc', ({ delta }) => {
     if (!lightRef.current) return;
     timeRef.current += delta;
 
@@ -103,7 +103,7 @@ function MonitorScanAnim({ anim }: { anim: EnvAnimation }) {
     return () => { tex.dispose(); };
   }, [scanlineTexture]);
 
-  useFrame((_, delta) => {
+  useFrameTick('misc', ({ delta }) => {
     timeRef.current += delta;
     // Scroll the texture to create a scanline moving down
     const offsetY = (timeRef.current * speed * 0.2) % 1;
@@ -140,7 +140,7 @@ function CurtainSwayAnim({ anim }: { anim: EnvAnimation }) {
   const frequency = anim.config.frequency ?? 0.3;
   const axis = anim.config.axis ?? 2; // 0=X, 1=Y, 2=Z rotation
 
-  useFrame((_, delta) => {
+  useFrameTick('misc', ({ delta }) => {
     if (!groupRef.current) return;
     timeRef.current += delta;
     const sway = Math.sin(timeRef.current * frequency * Math.PI * 2) * amplitude;
@@ -245,7 +245,7 @@ function SteamRiseAnim({ anim }: { anim: EnvAnimation }) {
   }, [geometry, material]);
 
   /* eslint-disable react-hooks/immutability -- Three.js buffer attribute mutations are intentional WebGL patterns inside useFrame */
-  useFrame((_, delta) => {
+  useFrameTick('misc', ({ delta }) => {
     if (!groupRef.current) return;
     timeRef.current += delta;
 
@@ -332,7 +332,7 @@ function NeonPulseAnim({ anim }: { anim: EnvAnimation }) {
     [colorR, colorG, colorB]
   );
 
-  useFrame((_, delta) => {
+  useFrameTick('misc', ({ delta }) => {
     if (!materialRef.current) return;
     timeRef.current += delta;
     const pulse = minE + (maxE - minE) * (0.5 + 0.5 * Math.sin(timeRef.current * speed * Math.PI * 2));
@@ -438,7 +438,7 @@ function DripAnim({ anim }: { anim: EnvAnimation }) {
   }, [dropMesh, dropMat, splashRings, splashMats, splashGroup]);
 
   /* eslint-disable react-hooks/immutability -- Three.js mesh/material mutations are intentional WebGL patterns inside useFrame */
-  useFrame((_, delta) => {
+  useFrameTick('misc', ({ delta }) => {
     if (!groupRef.current) return;
     timeRef.current += delta;
     dripTimerRef.current += delta;
@@ -518,7 +518,7 @@ function FanSpinAnim({ anim }: { anim: EnvAnimation }) {
   const timeRef = useRef(0);
   const speed = anim.config.speed ?? 3.0;
 
-  useFrame((_, delta) => {
+  useFrameTick('misc', ({ delta }) => {
     if (!groupRef.current) return;
     timeRef.current += delta;
     groupRef.current.rotation.y += delta * speed;
@@ -568,7 +568,7 @@ function NeonFlickerAnim({ anim }: { anim: EnvAnimation }) {
   // Pre-allocate temp values
   const toggleInterval = 1 / flickerSpeed;
 
-  useFrame((_, delta) => {
+  useFrameTick('misc', ({ delta }) => {
     if (!materialRef.current) return;
     timeRef.current += delta;
 
@@ -628,7 +628,7 @@ function CRTMonitorAnim({ anim }: { anim: EnvAnimation }) {
   // Pre-allocated
   const currentEmissiveRef = useRef(baseIntensity);
 
-  useFrame((_, delta) => {
+  useFrameTick('misc', ({ delta }) => {
     if (!materialRef.current) return;
     timeRef.current += delta;
     const t = timeRef.current;
@@ -671,7 +671,7 @@ function LampSwayAnim({ anim }: { anim: EnvAnimation }) {
   // Pre-allocate position vector
   const posVec = useMemo(() => new THREE.Vector3(...anim.position), [anim.position]);
 
-  useFrame((_, delta) => {
+  useFrameTick('misc', ({ delta }) => {
     if (!groupRef.current) return;
     timeRef.current += delta;
 
@@ -806,7 +806,7 @@ function RadiatorSteamAnim({ anim }: { anim: EnvAnimation }) {
   }, [geometry, material]);
 
   /* eslint-disable react-hooks/immutability -- Three.js buffer attribute mutations are intentional WebGL patterns inside useFrame */
-  useFrame((_, delta) => {
+  useFrameTick('misc', ({ delta }) => {
     if (!groupRef.current) return;
     timeRef.current += delta;
 

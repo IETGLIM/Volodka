@@ -157,3 +157,64 @@ export function useJournalShell() {
 
 /** Alias for FollowCamera — prefer useFollowCameraState in new code. */
 export const useCameraFollowState = useFollowCameraState;
+
+/** MenuScreen — primary actions + music toggle. */
+export function useMenuScreenActions() {
+  return useGameSelector((s) => ({
+    setMode: s.setMode,
+    loadGame: s.loadGame,
+    resetGame: s.resetGame,
+    musicEnabled: s.musicEnabled,
+    toggleMusic: s.toggleMusic,
+  }));
+}
+
+/** MenuScreen — matrix rain / noir visual toggles. */
+export function useMenuVisualToggles() {
+  return useGameSelector((s) => ({
+    matrixRainEnabled: s.matrixRainEnabled,
+    toggleMatrixRain: s.toggleMatrixRain,
+    noirMode: s.noirMode,
+    toggleNoirMode: s.toggleNoirMode,
+  }));
+}
+
+/** DevPanel scene tab — exploration snapshot. */
+export function useDevPanelSceneTab() {
+  return useGameSelector((s) => ({
+    sceneId: s.exploration.currentSceneId,
+    playerPos: s.exploration.playerPosition,
+    playerRot: s.exploration.playerRotation,
+    mode: s.mode,
+    timeOfDay: s.exploration.timeOfDay,
+    npcStates: s.exploration.npcStates,
+  }));
+}
+
+/** DevPanel state tab — player + quest snapshot. */
+export function useDevPanelStateTab() {
+  return useGameSelector((s) => ({
+    karma: s.playerState.karma,
+    stress: s.playerState.stress,
+    energy: s.playerState.energy,
+    mode: s.mode,
+    quests: s.quests,
+    collectedPoems: s.collectedPoems,
+    flags: s.playerState.flags,
+    inventory: s.playerState.inventory,
+    progression: s.playerState.progression,
+    skills: s.playerState.skills,
+  }));
+}
+
+/** TradingPanel — economy + trade actions. */
+export function useTradingPanelState() {
+  return useGameSelector((s) => ({
+    playerState: s.playerState,
+    npcRelations: s.npcRelations,
+    buyItem: s.buyItem,
+    sellItem: s.sellItem,
+    canBuyItem: s.canBuyItem,
+    canSellItem: s.canSellItem,
+  }));
+}

@@ -14,9 +14,13 @@ import {
   useSetMode,
   useVisitNode,
 } from '@/store/selectors';
-import { DIALOGUE_NODES } from '@/data/dialogueNodes';
-import { findNpcByName } from '@/data/allNpcDefinitions';
-import { createInventoryItem } from '@/data/items';
+import {
+  getDialogueNodes,
+  findNpcById,
+  findNpcByName,
+  createInventoryItem,
+  isNarrativeGameDataLoaded,
+} from '@/data/gameDataLoader';
 import { audioEngine } from '@/engine/AudioEngine';
 import { eventBus } from '@/engine/EventBus';
 import { closeNarrativeOverlay } from '@/engine/scene/narrativeOverlay';
@@ -155,8 +159,12 @@ export function DialogueRenderer() {
   // ── World Director: dialogue is now an overlay, not a separate mode ──
   // Before: isOpen = mode === 'visual-novel' (requires switching away from exploration)
   // Now: isOpen = showStoryOverlay + has dialogue node (narrative overlay on 3D world)
-  const isOpen = showStoryOverlay && !!DIALOGUE_NODES[currentNodeId];
-  const node = useMemo(() => DIALOGUE_NODES[currentNodeId], [currentNodeId]);
+  const dialogueNodes = isNarrativeGameDataLoaded() ? getDialogueNodes() : null;
+  const isOpen = showStoryOverlay && !!dialogueNodes?.[currentNodeId];
+  const node = useMemo(
+    () => (dialogueNodes ? dialogueNodes[currentNodeId] : undefined),
+    [dialogueNodes, currentNodeId],
+  );
   const conditionCtx = useMemo(() => {
     const npcDef = node ? findNpcByName(node.speaker) : undefined;
     return buildStoryConditionContext(playerState, {

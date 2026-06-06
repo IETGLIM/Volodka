@@ -132,6 +132,11 @@ export function GameOrchestrator() {
   const gameDataReady = useGameDataPreload();
   useEffect(() => { markOrchestratorMount(); }, []);
   const { mode, showStoryOverlay, currentNodeId, introSeen } = useOrchestratorOverlay();
+  const [canvasMounted, setCanvasMounted] = useState(mode !== 'menu');
+
+  useEffect(() => {
+    if (mode !== 'menu') setCanvasMounted(true);
+  }, [mode]);
   const journalOpen = useJournalOpen();
   const pauseDialog = usePanelDialog();
   const narrativeKind = useGameStore((s) => s.narrativeKind);
@@ -411,7 +416,7 @@ export function GameOrchestrator() {
     <PanelStackProvider stack={panelStack}>
     <div className="fixed inset-0 bg-black overflow-hidden" style={{ touchAction: 'none' }}>
       <>
-          {!gameDataReady && (
+          {mode !== 'menu' && !gameDataReady && (
             <div style={{ pointerEvents: 'none', zIndex: UI_LAYERS.LOADING }} className="fixed inset-0">
               <LoadingScreen showTitle message="Загрузка данных..." />
             </div>
@@ -444,7 +449,7 @@ export function GameOrchestrator() {
               The ref doesn't trigger re-renders, so the LoadingScreen was
               blocking the menu forever. Also add pointer-events: none as a
               safety net — even if briefly visible, it won't block clicks. */}
-          {mode === 'menu' && !canvasReady && (
+          {mode === 'menu' && canvasMounted && !canvasReady && (
             <div style={{ pointerEvents: 'none' }}>
               <LoadingScreen showTitle={true} message="Инициализация..." />
             </div>
@@ -476,6 +481,7 @@ export function GameOrchestrator() {
               overlay WITHOUT switching mode to 'cutscene'. Previously, switching
               to cutscene unmounted IntroScreen, which cleared PhaseWaking's
               stage-5 timer — the game got stuck forever in cutscene mode. ── */}
+          {canvasMounted && (
           <div
             style={{
               position: 'fixed',
@@ -489,6 +495,7 @@ export function GameOrchestrator() {
               <RPGGameCanvas />
             </Suspense>
           </div>
+          )}
 
 
           {/* ── Matrix Rain Quote overlay (act transitions) ── */}

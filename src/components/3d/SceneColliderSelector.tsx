@@ -256,7 +256,7 @@ interface VisualSceneProps {
 function VisualScene({ sceneId, livePlayerPositionRef }: VisualSceneProps) {
   switch (sceneId) {
     case 'volodka_room':
-      return <VolodkaRoomVisual />;
+      return <VolodkaRoomVisual livePlayerPositionRef={livePlayerPositionRef} />;
     case 'volodka_corridor':
       return <VolodkaCorridorVisual />;
     case 'home_evening':
@@ -266,9 +266,9 @@ function VisualScene({ sceneId, livePlayerPositionRef }: VisualSceneProps) {
     case 'street_winter':
       return <StreetWinterVisual livePlayerPositionRef={livePlayerPositionRef} />;
     case 'cafe_evening':
-      return <CafeVisual />;
+      return <CafeVisual livePlayerPositionRef={livePlayerPositionRef} />;
     case 'office_day':
-      return <OfficeDayVisual />;
+      return <OfficeDayVisual livePlayerPositionRef={livePlayerPositionRef} />;
     case 'park_day':
       return <ParkDayVisual livePlayerPositionRef={livePlayerPositionRef} />;
     case 'library_day':

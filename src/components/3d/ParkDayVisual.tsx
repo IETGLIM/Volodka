@@ -1,16 +1,30 @@
 
 /* ─── Volodka RPG – Memorial Park procedural 3D visual ─── */
 
-import { useMemo } from 'react';
+import { useMemo, type MutableRefObject } from 'react';
 import * as THREE from 'three';
+import { getEnvironmentLodProfile } from '@/engine/lod/distanceLod';
+import { useEnvironmentLod } from './lod/EnvironmentLodProvider';
+import { EnvironmentDetail, SceneClutterGate } from './lod/PropDistanceGate';
 
 interface ParkDayVisualProps {
-  livePlayerPositionRef?: React.MutableRefObject<THREE.Vector3>;
+  livePlayerPositionRef?: MutableRefObject<THREE.Vector3>;
 }
+
+const DISTANT_TREES: Array<[number, number, number]> = [
+  [-8, 0, -8],
+  [9, 0, -6],
+  [-10, 0, 5],
+  [7, 0, 9],
+  [-5, 0, -12],
+  [11, 0, 3],
+];
 
 /** Gothic/Dark Fantasy memorial park (30×30m) */
 export function ParkDayVisual({ livePlayerPositionRef }: ParkDayVisualProps) {
   const groundTexture = useMemo(() => createParkGroundTexture(), []);
+  const { lod } = useEnvironmentLod();
+  const envProfile = useMemo(() => getEnvironmentLodProfile('park_day'), []);
 
   const W = 30;
   const D = 30;
@@ -42,21 +56,35 @@ export function ParkDayVisual({ livePlayerPositionRef }: ParkDayVisualProps) {
       </mesh>
 
       {/* ═══════════════════════════════════════════════ */}
-      {/* ── ANCIENT TREES (distant — MIDGROUND layer) ── */}
+      {/* ── ANCIENT TREES (distant — distance gated) ── */}
       {/* ═══════════════════════════════════════════════ */}
-      <AncientTree position={[-8, 0, -8]} />
-      <AncientTree position={[9, 0, -6]} />
-      <AncientTree position={[-10, 0, 5]} />
-      <AncientTree position={[7, 0, 9]} />
-      <AncientTree position={[-5, 0, -12]} />
-      <AncientTree position={[11, 0, 3]} />
+      <EnvironmentDetail currentLod={lod} minLod="standard">
+        {DISTANT_TREES.map(([x, y, z]) => (
+          <SceneClutterGate
+            key={`tree-${x}-${z}`}
+            livePlayerPositionRef={livePlayerPositionRef}
+            position={[x, y, z]}
+            maxDistance={envProfile.decorativeDistance}
+          >
+            <AncientTree position={[0, 0, 0]} />
+          </SceneClutterGate>
+        ))}
+      </EnvironmentDetail>
       {/* Near trees moved to FOREGROUND layer */}
 
       {/* ═══════════════════════════════════════════════ */}
       {/* ── STONE BENCHES (distant — MIDGROUND layer) ── */}
       {/* ═══════════════════════════════════════════════ */}
       {/* Near benches moved to FOREGROUND layer */}
-      <StoneBench position={[3, 0, -3]} rotation={0.3} />
+      <EnvironmentDetail currentLod={lod} minLod="standard">
+        <SceneClutterGate
+          livePlayerPositionRef={livePlayerPositionRef}
+          position={[3, 0, -3]}
+          maxDistance={envProfile.clutterDistance}
+        >
+          <StoneBench position={[0, 0, 0]} rotation={0.3} />
+        </SceneClutterGate>
+      </EnvironmentDetail>
 
       {/* ═══════════════════════════════════════════════ */}
       {/* ── MEMORIAL OBELISK (center) ── */}

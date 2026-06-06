@@ -6,6 +6,7 @@ import { FilmGrain, CinematicBars } from '@/components/game/cinematic';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { Volume2, VolumeX } from 'lucide-react';
 import { useGameStore } from '@/store/gameStore';
+import { useMenuScreenActions, useMenuVisualToggles } from '@/store/selectors';
 import { useSyncExternalStore } from 'react';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { POEMS } from '@/data/poems';
@@ -673,10 +674,7 @@ const SystemStatusReadout = memo(function SystemStatusReadout() {
 // ============================================
 
 export function MenuScreen() {
-  const setMode = useGameStore((s) => s.setMode);
-  const loadGame = useGameStore((s) => s.loadGame);
-  const musicEnabled = useGameStore((s) => s.musicEnabled);
-  const toggleMusic = useGameStore((s) => s.toggleMusic);
+  const { setMode, loadGame, resetGame, musicEnabled, toggleMusic } = useMenuScreenActions();
   const reduceMotion = useReducedMotion();
 
   const hasSave = useSyncExternalStore(
@@ -702,8 +700,6 @@ export function MenuScreen() {
   ], [hasSave]);
 
   // ── Handlers ──
-  const resetGame = useGameStore((s) => s.resetGame);
-
   const handleNewGame = useCallback(() => {
     if (isFadingOut) return;
     setIsFadingOut(true);
@@ -993,6 +989,7 @@ export function MenuScreen() {
                 return (
                   <motion.button
                     key={item.id}
+                    data-testid={item.id === 'new' ? 'menu-new-game' : undefined}
                     onClick={() => {
                       if (!isDisabled) handleMenuAction(item.id);
                     }}
@@ -1472,8 +1469,7 @@ export function MenuScreen() {
 // ============================================
 
 function MatrixRainToggle() {
-  const matrixRainEnabled = useGameStore((s) => s.matrixRainEnabled);
-  const toggleMatrixRain = useGameStore((s) => s.toggleMatrixRain);
+  const { matrixRainEnabled, toggleMatrixRain } = useMenuVisualToggles();
 
   return (
     <div className="flex items-center justify-between">
@@ -1496,8 +1492,7 @@ function MatrixRainToggle() {
 }
 
 function NoirModeToggle() {
-  const noirMode = useGameStore((s) => s.noirMode);
-  const toggleNoirMode = useGameStore((s) => s.toggleNoirMode);
+  const { noirMode, toggleNoirMode } = useMenuVisualToggles();
 
   return (
     <div className="flex items-center justify-between">

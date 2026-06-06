@@ -3,7 +3,7 @@
      NPC staged interaction routing, and centralized prompt stacking ─── */
 
 import { useRef, useState, useEffect, useCallback, useMemo } from 'react';
-import { useFrame } from '@react-three/fiber';
+import { useFrameTick } from '@/engine/frame/useFrameTick';
 import { Html } from '@react-three/drei';
 import * as THREE from 'three';
 import { getGameStore, useGameStore } from '@/store/gameStore';
@@ -97,7 +97,7 @@ export function InteractiveTriggers({ livePlayerPositionRef }: InteractiveTrigge
   const tempVecRef = useRef(new THREE.Vector3());
 
   // Compute allowed IDs and reconcile visible prompts every few frames
-  useFrame(() => {
+  useFrameTick('interaction', () => {
     // Don't show any prompts when overlays (dialogue/story/panels) are active
     if (isOverlayBlocking) {
       if (promptsMapRef.current.size > 0) {
@@ -398,7 +398,7 @@ function NPCProximityTrigger({
   // Pre-allocated temp Vector3 — avoids per-frame allocation (P0-2.2)
   const tempVecRef = useRef(new THREE.Vector3());
 
-  useFrame((_, delta) => {
+  useFrameTick('interaction', ({ delta }) => {
     const playerPos = livePlayerPositionRef.current;
     tempVecRef.current.set(...position);
     const dist = playerPos.distanceTo(tempVecRef.current);
@@ -584,7 +584,7 @@ function TriggerZoneComponent({
     };
   }, [particleGeo, particleMat]);
 
-  useFrame((_, delta) => {
+  useFrameTick('interaction', ({ delta }) => {
     const playerPos = livePlayerPositionRef.current;
     tempVecRef.current.set(...zone.position);
     const dist = playerPos.distanceTo(tempVecRef.current);
@@ -915,7 +915,7 @@ export function WorldItem({
   const time = useRef(0);
   const [picked, setPicked] = useState(false);
 
-  useFrame((_, delta) => {
+  useFrameTick('interaction', ({ delta }) => {
     if (!meshRef.current || picked) return;
     time.current += delta;
     // Bob animation

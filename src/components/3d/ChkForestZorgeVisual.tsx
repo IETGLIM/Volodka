@@ -1,25 +1,30 @@
 
 /* ─── ЧК · Лес · Зорге — secret society clearing (procedural forest) ─── */
 
-import { useMemo, useRef } from 'react';
-import { useFrame } from '@react-three/fiber';
+import { useMemo, useRef, type MutableRefObject } from 'react';
+import { useFrameTick } from '@/engine/frame/useFrameTick';
 import * as THREE from 'three';
+import { getEnvironmentLodProfile } from '@/engine/lod/distanceLod';
+import { useEnvironmentLod } from './lod/EnvironmentLodProvider';
+import { EnvironmentDetail, SceneClutterGate } from './lod/PropDistanceGate';
 
 interface ChkForestZorgeVisualProps {
-  livePlayerPositionRef?: React.MutableRefObject<THREE.Vector3>;
+  livePlayerPositionRef?: MutableRefObject<THREE.Vector3>;
 }
 
 const W = 36;
 const D = 36;
 
 /** Night forest clearing: campfire, port wine crates, guitar spot */
-export function ChkForestZorgeVisual(_props: ChkForestZorgeVisualProps) {
+export function ChkForestZorgeVisual({ livePlayerPositionRef }: ChkForestZorgeVisualProps) {
   const groundTexture = useMemo(() => createForestGroundTexture(), []);
+  const { lod } = useEnvironmentLod();
+  const envProfile = useMemo(() => getEnvironmentLodProfile('chk_forest_zorge'), []);
   const fireLightRef = useRef<THREE.PointLight>(null);
   const fireMeshRef = useRef<THREE.Mesh>(null);
   const tRef = useRef(0);
 
-  useFrame((_, delta) => {
+  useFrameTick('misc', ({ delta }) => {
     tRef.current += delta;
     const flicker = 0.85 + Math.sin(tRef.current * 11) * 0.08 + Math.sin(tRef.current * 23) * 0.05;
     if (fireLightRef.current) {
@@ -71,15 +76,23 @@ export function ChkForestZorgeVisual(_props: ChkForestZorgeVisualProps) {
       </mesh>
 
       {/* Forest perimeter — lightweight procedural trees (no ez-tree bundle) */}
-      {treePlacements.map((t) => (
-        <ForestTree
-          key={t.seed}
-          position={t.pos}
-          preset={t.preset}
-          scale={t.scale}
-          rotation={t.rot}
-        />
-      ))}
+      <EnvironmentDetail currentLod={lod} minLod="standard">
+        {treePlacements.map((t) => (
+          <SceneClutterGate
+            key={t.seed}
+            livePlayerPositionRef={livePlayerPositionRef}
+            position={t.pos}
+            maxDistance={envProfile.decorativeDistance}
+          >
+            <ForestTree
+              position={[0, 0, 0]}
+              preset={t.preset}
+              scale={t.scale}
+              rotation={t.rot}
+            />
+          </SceneClutterGate>
+        ))}
+      </EnvironmentDetail>
 
       {/* Campfire ring */}
       <group position={[0, 0, 0]}>

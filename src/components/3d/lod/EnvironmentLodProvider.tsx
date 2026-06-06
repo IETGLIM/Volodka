@@ -9,9 +9,9 @@ import {
   type MutableRefObject,
   type ReactNode,
 } from 'react';
-import { useFrame } from '@react-three/fiber';
+import { useFrameTick } from '@/engine/frame/useFrameTick';
 import * as THREE from 'three';
-import { useGameStore } from '@/store/gameStore';
+import { useCurrentSceneId } from '@/store/selectors';
 import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
 import {
   environmentLodFromDistance,
@@ -42,7 +42,7 @@ export function EnvironmentLodProvider({
   livePlayerPositionRef,
   children,
 }: EnvironmentLodProviderProps) {
-  const sceneId = useGameStore((s) => s.exploration.currentSceneId);
+  const sceneId = useCurrentSceneId();
   const { preset } = useGraphicsQuality();
   const profile = useMemo(() => getEnvironmentLodProfile(sceneId), [sceneId]);
 
@@ -50,7 +50,7 @@ export function EnvironmentLodProvider({
   const [lod, setLod] = useState<EnvironmentLodLevel>('full');
   const timerRef = useRef(0);
 
-  useFrame((_, delta) => {
+  useFrameTick('misc', ({ delta }) => {
     timerRef.current += delta;
     if (timerRef.current < 0.15) return;
     timerRef.current = 0;

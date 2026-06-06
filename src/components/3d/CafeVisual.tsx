@@ -1,15 +1,24 @@
 
 /* ─── Volodka RPG – Cafe "Blue Pit" procedural 3D visual ─── */
 
-import { useMemo, useRef, useEffect } from 'react';
-import { useFrame } from '@react-three/fiber';
+import { useMemo, useRef, useEffect, type MutableRefObject } from 'react';
+import { useFrameTick } from '@/engine/frame/useFrameTick';
 import * as THREE from 'three';
+import { getEnvironmentLodProfile } from '@/engine/lod/distanceLod';
+import { useEnvironmentLod } from './lod/EnvironmentLodProvider';
+import { EnvironmentDetail, SceneClutterGate } from './lod/PropDistanceGate';
 import { FloorLamp, PastryCase, Window, Plant } from './InteriorModels';
 
+interface CafeVisualProps {
+  livePlayerPositionRef?: MutableRefObject<THREE.Vector3>;
+}
+
 /** Blue Pit cafe – cozy interior with bar counter, tables, warm lighting */
-export function CafeVisual() {
+export function CafeVisual({ livePlayerPositionRef }: CafeVisualProps) {
   const floorTexture = useMemo(() => createCafeFloorTexture(), []);
   const wallTexture = useMemo(() => createCafeWallTexture(), []);
+  const { lod } = useEnvironmentLod();
+  const envProfile = useMemo(() => getEnvironmentLodProfile('cafe_evening'), []);
 
   // ── Animated element refs ──
   const coffeeSteamRef = useRef<THREE.Points>(null);
@@ -57,7 +66,7 @@ export function CafeVisual() {
   }, [floorTexture, wallTexture, steamGeometry]);
 
   // ── Animations via useFrame ──
-  useFrame((_, delta) => {
+  useFrameTick('misc', ({ delta }) => {
     coffeeSteamTimeRef.current += delta;
     const t = coffeeSteamTimeRef.current;
 
@@ -300,7 +309,13 @@ export function CafeVisual() {
       </group>
 
       {/* ── Neon sign on left wall (in addition to the one behind bar) ── */}
-      <group position={[-4.85, 2.3, -1.0]} rotation={[0, Math.PI / 2, 0]}>
+      <EnvironmentDetail currentLod={lod} minLod="standard">
+        <SceneClutterGate
+          livePlayerPositionRef={livePlayerPositionRef}
+          position={[-4.85, 2.3, -1.0]}
+          maxDistance={envProfile.decorativeDistance}
+        >
+          <group position={[0, 0, 0]} rotation={[0, Math.PI / 2, 0]}>
         {/* Neon tube shape — horizontal bar */}
         <mesh>
           <boxGeometry args={[1.5, 0.08, 0.05]} />
@@ -313,7 +328,9 @@ export function CafeVisual() {
         </mesh>
         {/* Neon glow */}
         <pointLight position={[0, -0.3, 0.5]} color="#ff4400" intensity={1.2} distance={4} />
-      </group>
+          </group>
+        </SceneClutterGate>
+      </EnvironmentDetail>
 
       {/* ── Window on right wall showing blue/night light ── */}
       <group position={[W / 2 - 0.01, 1.8, -2.0]}>

@@ -1,7 +1,7 @@
 /* ─── Distance gate for environment props / clutter ─── */
 
 import { useRef, useState, type ReactNode, type MutableRefObject } from 'react';
-import { useFrame } from '@react-three/fiber';
+import { useFrameTick } from '@/engine/frame/useFrameTick';
 import * as THREE from 'three';
 import type { EnvironmentLodLevel } from '@/engine/lod/distanceLod';
 import { environmentDetailVisible } from '@/engine/lod/distanceLod';
@@ -13,6 +13,34 @@ interface PropDistanceGateProps {
   /** Max distance from player to anchor before hiding */
   maxDistance: number;
   children: ReactNode;
+}
+
+interface SceneClutterGateProps {
+  livePlayerPositionRef?: MutableRefObject<THREE.Vector3>;
+  position: [number, number, number];
+  maxDistance: number;
+  children: ReactNode;
+}
+
+/** Prop gate with fallback when player ref is unavailable (SSR / tests). */
+export function SceneClutterGate({
+  livePlayerPositionRef,
+  position,
+  maxDistance,
+  children,
+}: SceneClutterGateProps) {
+  if (!livePlayerPositionRef) {
+    return <group position={position}>{children}</group>;
+  }
+  return (
+    <PropDistanceGate
+      livePlayerPositionRef={livePlayerPositionRef}
+      position={position}
+      maxDistance={maxDistance}
+    >
+      {children}
+    </PropDistanceGate>
+  );
 }
 
 /**
@@ -32,7 +60,7 @@ export function PropDistanceGate({
   const [visible, setVisible] = useState(true);
   const timerRef = useRef(0);
 
-  useFrame((_, delta) => {
+  useFrameTick('misc', ({ delta }) => {
     timerRef.current += delta;
     if (timerRef.current < 0.12) return;
     timerRef.current = 0;

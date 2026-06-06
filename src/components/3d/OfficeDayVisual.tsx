@@ -1,14 +1,23 @@
 
 /* ─── Volodka RPG – IT Guild Office procedural 3D visual ─── */
 
-import { useMemo } from 'react';
+import { useMemo, type MutableRefObject } from 'react';
 import * as THREE from 'three';
 import { Plant, Radiator, Clock } from './InteriorModels';
+import { getEnvironmentLodProfile } from '@/engine/lod/distanceLod';
+import { useEnvironmentLod } from './lod/EnvironmentLodProvider';
+import { EnvironmentDetail, SceneClutterGate } from './lod/PropDistanceGate';
+
+interface OfficeDayVisualProps {
+  livePlayerPositionRef?: MutableRefObject<THREE.Vector3>;
+}
 
 /** Sterile corporate IT office (14×12m) — CyberPunk2077/Bank aesthetic */
-export function OfficeDayVisual() {
+export function OfficeDayVisual({ livePlayerPositionRef }: OfficeDayVisualProps) {
   const floorTexture = useMemo(() => createOfficeFloorTexture(), []);
   const wallTexture = useMemo(() => createOfficeWallTexture(), []);
+  const { lod } = useEnvironmentLod();
+  const envProfile = useMemo(() => getEnvironmentLodProfile('office_day'), []);
 
   const W = 14;
   const D = 12;
@@ -130,24 +139,44 @@ export function OfficeDayVisual() {
       {/* ═══════════════════════════════════════════════ */}
       {/* ── WATER COOLER (front-left) ── */}
       {/* ═══════════════════════════════════════════════ */}
-      <group position={[-5.5, 0, 4.0]}>
-        <mesh position={[0, 0.6, 0]} castShadow>
-          <boxGeometry args={[0.4, 1.2, 0.4]} />
-          <meshStandardMaterial color="#d0d0d0" metalness={0.3} roughness={0.4} />
-        </mesh>
-        {/* Water jug */}
-        <mesh position={[0, 1.4, 0]}>
-          <cylinderGeometry args={[0.15, 0.18, 0.4, 8]} />
-          <meshStandardMaterial color="#a0d0e0" transparent opacity={0.5} roughness={0.1} />
-        </mesh>
-      </group>
+      <EnvironmentDetail currentLod={lod} minLod="standard">
+        <SceneClutterGate
+          livePlayerPositionRef={livePlayerPositionRef}
+          position={[-5.5, 0, 4.0]}
+          maxDistance={envProfile.clutterDistance}
+        >
+          <group position={[0, 0, 0]}>
+            <mesh position={[0, 0.6, 0]} castShadow>
+              <boxGeometry args={[0.4, 1.2, 0.4]} />
+              <meshStandardMaterial color="#d0d0d0" metalness={0.3} roughness={0.4} />
+            </mesh>
+            <mesh position={[0, 1.4, 0]}>
+              <cylinderGeometry args={[0.15, 0.18, 0.4, 8]} />
+              <meshStandardMaterial color="#a0d0e0" transparent opacity={0.5} roughness={0.1} />
+            </mesh>
+          </group>
+        </SceneClutterGate>
+      </EnvironmentDetail>
 
       {/* ═══════════════════════════════════════════════ */}
       {/* ── POTTED PLANTS (dying) ── */}
       {/* ═══════════════════════════════════════════════ */}
-      <DyingPlant position={[-6.5, 0, -2.0]} />
-      <DyingPlant position={[6.5, 0, -2.0]} />
-      <DyingPlant position={[-6.5, 0, 3.0]} />
+      <EnvironmentDetail currentLod={lod} minLod="standard">
+        {([
+          [-6.5, 0, -2.0],
+          [6.5, 0, -2.0],
+          [-6.5, 0, 3.0],
+        ] as const).map(([x, y, z]) => (
+          <SceneClutterGate
+            key={`plant-${x}-${z}`}
+            livePlayerPositionRef={livePlayerPositionRef}
+            position={[x, y, z]}
+            maxDistance={envProfile.decorativeDistance}
+          >
+            <DyingPlant position={[0, 0, 0]} />
+          </SceneClutterGate>
+        ))}
+      </EnvironmentDetail>
 
       {/* ═══════════════════════════════════════════════ */}
       {/* ── FLUORESCENT LIGHTS ── */}

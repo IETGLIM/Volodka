@@ -19,6 +19,8 @@ export interface FpsBudget {
 
 export interface PerformanceBudgetsConfig {
   version: number;
+  bootJsGzipBytes?: NumericBudget;
+  gameStartJsGzipBytes?: NumericBudget;
   initialJsGzipBytes: NumericBudget;
   firstScenePlayableMs: NumericBudget;
   fps: {
@@ -38,6 +40,8 @@ export interface PerformanceBudgetsConfig {
   cpuFrameMs: NumericBudget;
   bundleTiers: {
     boot: string[];
+    bootMenu?: string[];
+    gameStart?: string[];
     firstScene: string[];
     lazyPrefixes: string[];
   };

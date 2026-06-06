@@ -1,21 +1,24 @@
 import { useEffect, useState } from 'react';
-import { preloadGameData, isGameDataLoaded } from '@/data/gameDataLoader';
+import {
+  preloadNarrativeGameData,
+  isGameDataLoaded,
+} from '@/data/gameDataLoader';
 import { markGameDataReady } from '@/engine/performance/LoadingTimeline';
 
-/** Preloads heavy game-data chunks before gameplay systems touch them. */
+/** Boot data loads in main.tsx; this hook finishes narrative preload for gameplay. */
 export function useGameDataPreload(): boolean {
   const [ready, setReady] = useState(isGameDataLoaded());
 
   useEffect(() => {
     if (ready) return;
     let cancelled = false;
-    void preloadGameData()
+    void preloadNarrativeGameData()
       .then(() => {
         markGameDataReady();
         if (!cancelled) setReady(true);
       })
       .catch((error) => {
-        console.error('[useGameDataPreload] Failed to load game data:', error);
+        console.error('[useGameDataPreload] Failed to load narrative data:', error);
       });
     return () => {
       cancelled = true;

@@ -1,18 +1,25 @@
 
 /* ─── Volodka RPG – Volodka's room procedural 3D visual ─── */
 
-import { useMemo, useRef, useEffect } from 'react';
-import { useFrame } from '@react-three/fiber';
+import { useMemo, useRef, useEffect, type MutableRefObject } from 'react';
+import { useFrameTick } from '@/engine/frame/useFrameTick';
 import * as THREE from 'three';
 import { useGameStore } from '@/store/gameStore';
 import { eventBus } from '@/engine/EventBus';
+import { useEnvironmentLod } from './lod/EnvironmentLodProvider';
+import { EnvironmentDetail } from './lod/PropDistanceGate';
 import { Lamp, Rug, Radiator } from './InteriorModels';
 
+interface VolodkaRoomVisualProps {
+  livePlayerPositionRef?: MutableRefObject<THREE.Vector3>;
+}
+
 /** Procedural 3D room for Volodka's apartment (5×7m) */
-export function VolodkaRoomVisual() {
+export function VolodkaRoomVisual({ livePlayerPositionRef: _livePlayerPositionRef }: VolodkaRoomVisualProps) {
   // Canvas textures created synchronously via useMemo
   const floorTexture = useMemo(() => createFloorTexture(), []);
   const wallTexture = useMemo(() => createWallTexture(), []);
+  const { lod } = useEnvironmentLod();
 
   // ── Animated elements refs ──
   const fanGroupRef = useRef<THREE.Group>(null);
@@ -108,7 +115,7 @@ export function VolodkaRoomVisual() {
   }, []);
 
   // ── Animations via useFrame ──
-  useFrame((_, delta) => {
+  useFrameTick('misc', ({ delta }) => {
     // Fan rotation
     if (fanGroupRef.current) {
       fanGroupRef.current.rotation.y += delta * 4.0;
@@ -537,6 +544,7 @@ export function VolodkaRoomVisual() {
       {/* ═══════════════════════════════════════════════ */}
       {/* ── ENVIRONMENTAL CLUTTER / STORYTELLING ── */}
       {/* ═══════════════════════════════════════════════ */}
+      <EnvironmentDetail currentLod={lod} minLod="standard">
 
       {/* ── Small trash can near desk ── */}
       <group position={[1.2, 0, -2.8]}>
@@ -681,6 +689,8 @@ export function VolodkaRoomVisual() {
         <boxGeometry args={[0.22, 0.008, 0.16]} />
         <meshStandardMaterial color="#e8dcc8" roughness={0.95} />
       </mesh>
+
+      </EnvironmentDetail>
 
       {/* ═══════════════════════════════════════════════ */}
       {/* ── ANIMATED DESK ELEMENTS ── */}

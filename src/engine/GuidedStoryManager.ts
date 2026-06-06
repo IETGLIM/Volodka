@@ -14,9 +14,7 @@ import {
   STORY_FLAG_TO_NODE_ID,
   getNpcIdForStoryNode,
 } from '@/data/goldenPath'
-import { QUEST_DEFINITIONS } from '@/data/quests'
-import { STORY_NODES } from '@/data/storyNodes'
-import { findNpcById } from '@/data/allNpcDefinitions'
+import { getStoryNodes, getQuestDefinitions, findNpcById } from '@/data/gameDataLoader'
 import { eventBus } from '@/engine/EventBus'
 import {
   dispatchGameAction,
@@ -29,9 +27,12 @@ import type { QuestDefinition, QuestObjective } from '@/shared/types/game'
 import { getQuotesByAct } from '@/data/matrixQuotes'
 
 /* ─── Story node parent map (for quest-node fallback matching) ─── */
-const STORY_NODE_PARENTS: Map<string, string[]> = (() => {
+let storyNodeParentsCache: Map<string, string[]> | null = null
+
+function getStoryNodeParents(): Map<string, string[]> {
+  if (storyNodeParentsCache) return storyNodeParentsCache
   const parents = new Map<string, string[]>()
-  for (const [nodeId, node] of Object.entries(STORY_NODES)) {
+  for (const [nodeId, node] of Object.entries(getStoryNodes())) {
     for (const choice of node.choices ?? []) {
       if (!choice.next) continue
       const list = parents.get(choice.next) ?? []
@@ -39,8 +40,9 @@ const STORY_NODE_PARENTS: Map<string, string[]> = (() => {
       parents.set(choice.next, list)
     }
   }
+  storyNodeParentsCache = parents
   return parents
-})()
+}
 
 /** Slice of store state that GuidedStoryManager reacts to for node visits. */
 function selectLastVisitedNode(snapshot: GameStoreSnapshot): string | null {
@@ -101,7 +103,7 @@ function getAncestorNodeIds(nodeId: string, maxDepth = 8): string[] {
 
   while (queue.length > 0 && depth < maxDepth) {
     const current = queue.shift()!
-    const parents = STORY_NODE_PARENTS.get(current) ?? []
+    const parents = getStoryNodeParents().get(current) ?? []
     for (const parent of parents) {
       if (seen.has(parent)) continue
       seen.add(parent)
@@ -121,7 +123,7 @@ function questMatchesNode(def: QuestDefinition, nodeId: string): boolean {
 
 /* ─── Get act for a quest ─── */
 function getActForQuest(questId: string): number {
-  const def = QUEST_DEFINITIONS.find((d) => d.id === questId)
+  const def = getQuestDefinitions().find((d) => d.id === questId)
   return def?.act ?? 1
 }
 
@@ -141,7 +143,7 @@ function getStoryDescendants(nodeId: string): Set<string> {
     if (visited.has(current)) continue
     visited.add(current)
 
-    const node = STORY_NODES[current]
+    const node = getStoryNodes()[current]
     if (!node?.choices) continue
 
     for (const choice of node.choices) {
@@ -322,13 +324,13 @@ export class GuidedStoryManager {
   private findQuestForNode(nodeId: string): QuestDefinition | null {
     const spineIdx = GOLDEN_PATH_STORY_SPINE.indexOf(nodeId)
 
-    const exactMatches = QUEST_DEFINITIONS.filter((d) => questMatchesNode(d, nodeId))
+    const exactMatches = getQuestDefinitions().filter((d) => questMatchesNode(d, nodeId))
     if (exactMatches.length > 0) {
       return this.pickQuestFromSpine(exactMatches) ?? exactMatches[0]
     }
 
     const ancestors = getAncestorNodeIds(nodeId)
-    const ancestorMatches = QUEST_DEFINITIONS.filter(
+    const ancestorMatches = getQuestDefinitions().filter(
       (d) => GOLDEN_PATH_QUEST_SPINE.includes(d.id) && ancestors.some((a) => questMatchesNode(d, a)),
     )
     if (ancestorMatches.length > 0) {
@@ -342,7 +344,7 @@ export class GuidedStoryManager {
     const graphMatches: QuestDefinition[] = []
     for (let i = this.currentQuestSpineIndex; i < GOLDEN_PATH_QUEST_SPINE.length; i++) {
       const questId = GOLDEN_PATH_QUEST_SPINE[i]
-      const def = QUEST_DEFINITIONS.find((d) => d.id === questId)
+      const def = getQuestDefinitions().find((d) => d.id === questId)
       if (!def || questLinkedNodes(def).length === 0) continue
 
       const questState = getGameSnapshot().quests.find((q) => q.questId === def.id)
@@ -359,7 +361,7 @@ export class GuidedStoryManager {
 
     for (let i = this.currentQuestSpineIndex; i < GOLDEN_PATH_QUEST_SPINE.length; i++) {
       const questId = GOLDEN_PATH_QUEST_SPINE[i]
-      const def = QUEST_DEFINITIONS.find((d) => d.id === questId)
+      const def = getQuestDefinitions().find((d) => d.id === questId)
       if (!def || questLinkedNodes(def).length === 0) continue
 
       const questState = getGameSnapshot().quests.find((q) => q.questId === def.id)
@@ -384,7 +386,7 @@ export class GuidedStoryManager {
       const questState = store.quests.find((q) => q.questId === questId)
 
       if (questState?.status === 'active') {
-        const questDef = QUEST_DEFINITIONS.find((d) => d.id === questId)
+        const questDef = getQuestDefinitions().find((d) => d.id === questId)
         if (!questDef) continue
 
         const nextObj = questDef.objectives.find((o) => !questState.objectives[o.id])
@@ -410,7 +412,7 @@ export class GuidedStoryManager {
         continue
       }
 
-      const def = QUEST_DEFINITIONS.find((d) => d.id === questId)
+      const def = getQuestDefinitions().find((d) => d.id === questId)
       if (!def) continue
 
       const deps = areDependenciesMet(questId)
@@ -499,7 +501,7 @@ export class GuidedStoryManager {
 
       const isDirectChainSuccessor = spineIdx >= 0 && spineIdx < GOLDEN_PATH_QUEST_SPINE.length - 1
       if (isDirectChainSuccessor) {
-        const prevQuestDef = QUEST_DEFINITIONS.find((d) => d.id === completedQuestId)
+        const prevQuestDef = getQuestDefinitions().find((d) => d.id === completedQuestId)
         const npcId = nextQuest.def.questGiverNpcId ?? findNpcForQuest(nextQuest.def)
         eventBus.emit('story:quest_chain_unlock', {
           completedQuestId,
@@ -531,7 +533,7 @@ export class GuidedStoryManager {
     const existing = store.quests.find((q) => q.questId === firstQuestId)
     if (existing && existing.status !== 'inactive' && existing.status !== 'failed') return
 
-    const def = QUEST_DEFINITIONS.find((d) => d.id === firstQuestId)
+    const def = getQuestDefinitions().find((d) => d.id === firstQuestId)
     if (!def) return
 
     dispatchGameAction({ type: 'quest/activate', questId: firstQuestId })
@@ -551,7 +553,7 @@ export class GuidedStoryManager {
     const existing = store.quests.find((q) => q.questId === questId)
     if (existing && existing.status !== 'inactive') return false
 
-    const def = QUEST_DEFINITIONS.find((d) => d.id === questId)
+    const def = getQuestDefinitions().find((d) => d.id === questId)
     if (!def) return false
 
     if (def.requiresQuests) {
@@ -651,7 +653,7 @@ export class GuidedStoryManager {
     this.unsubSceneEnter = eventBus.on('scene:enter', ({ sceneId }) => {
       const stepNodeId = GOLDEN_PATH_STORY_SPINE[this.currentStepIndex]
       if (!stepNodeId) return
-      const nodeSceneId = STORY_NODES[stepNodeId]?.sceneId
+      const nodeSceneId = getStoryNodes()[stepNodeId]?.sceneId
       if (nodeSceneId === sceneId) {
         this.advanceStorySpine(stepNodeId)
       }
@@ -720,6 +722,7 @@ export function disposeGuidedStoryManager() {
 }
 
 export function resetGuidedStoryManager() {
+  storyNodeParentsCache = null
   guidedStoryManager.resetState()
 }
 

@@ -84,6 +84,7 @@ export const SCENE_ENV_LOD: Partial<Record<string, EnvironmentLodProfile>> = {
   volodka_room: { clutterDistance: 8, decorativeDistance: 10 },
   volodka_corridor: { clutterDistance: 10, decorativeDistance: 14 },
   home_evening: { clutterDistance: 10, decorativeDistance: 14 },
+  chk_forest_zorge: { clutterDistance: 16, decorativeDistance: 26 },
 };
 
 export function getEnvironmentLodProfile(sceneId: string): EnvironmentLodProfile {

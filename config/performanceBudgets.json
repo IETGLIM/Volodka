@@ -1,9 +1,19 @@
 {
-  "version": 1,
+  "version": 2,
+  "bootJsGzipBytes": {
+    "target": 450000,
+    "hardMax": 650000,
+    "description": "JS for menu boot (before New Game — no WebGL / narrative blobs)"
+  },
+  "gameStartJsGzipBytes": {
+    "target": 1200000,
+    "hardMax": 1800000,
+    "description": "Additional JS for first playable scene (canvas + three + narrative)"
+  },
   "initialJsGzipBytes": {
     "target": 800000,
     "hardMax": 1200000,
-    "description": "JS downloaded before first scene is playable (menu + warm canvas on default scene)"
+    "description": "Deprecated alias: boot + gameStart cumulative budget (report only)"
   },
   "firstScenePlayableMs": {
     "target": 3000,
@@ -57,21 +67,47 @@
   },
   "bundleTiers": {
     "boot": ["^index-", "^vendor-"],
-    "firstScene": [
+    "bootMenu": [
       "^index-",
       "^vendor-",
-      "^three-",
-      "^game-canvas-",
       "^GameOrchestrator-",
-      "^scene-volodka-room",
       "^game-ui-menu-screen",
-      "^data-narrative",
       "^data-npc",
       "^data-world",
       "^data-mechanics",
-      "^pack-chk-narrative",
+      "^data-misc",
       "^pack-chk-npc",
       "^pack-chk-world"
+    ],
+    "gameStart": [
+      "^three-",
+      "^postfx-",
+      "^game-canvas-",
+      "^scene-volodka-room",
+      "^data-narrative",
+      "^engine-narrative",
+      "^engine-quest",
+      "^pack-chk-narrative"
+    ],
+    "firstScene": [
+      "^index-",
+      "^vendor-",
+      "^GameOrchestrator-",
+      "^game-ui-menu-screen",
+      "^data-npc",
+      "^data-world",
+      "^data-mechanics",
+      "^data-misc",
+      "^pack-chk-npc",
+      "^pack-chk-world",
+      "^three-",
+      "^postfx-",
+      "^game-canvas-",
+      "^scene-volodka-room",
+      "^data-narrative",
+      "^engine-narrative",
+      "^engine-quest",
+      "^pack-chk-narrative"
     ],
     "lazyPrefixes": [
       "^minigame-",

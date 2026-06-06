@@ -17,7 +17,7 @@ import {
   Package,
 } from 'lucide-react';
 import { ItemIcon } from './shared/ItemIcon';
-import { useGameStore } from '@/store/gameStore';
+import { useTradingPanelState } from '@/store/selectors';
 import { findNpcById } from '@/data/allNpcDefinitions';
 import {
   getItemDefinition,
@@ -64,12 +64,14 @@ interface TradingPanelProps {
    ══════════════════════════════════════════════════════════════ */
 
 export function TradingPanel({ open, onClose, initialNpcId }: TradingPanelProps) {
-  const playerState = useGameStore((s) => s.playerState);
-  const npcRelations = useGameStore((s) => s.npcRelations);
-  const buyItem = useGameStore((s) => s.buyItem);
-  const sellItem = useGameStore((s) => s.sellItem);
-  const canBuyItem = useGameStore((s) => s.canBuyItem);
-  const canSellItem = useGameStore((s) => s.canSellItem);
+  const {
+    playerState,
+    npcRelations,
+    buyItem,
+    sellItem,
+    canBuyItem,
+    canSellItem,
+  } = useTradingPanelState();
 
   const [activeTab, setActiveTab] = useState<TradeTab>('buy');
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null);

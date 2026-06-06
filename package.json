@@ -5,13 +5,17 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "npm run validate && tsc -b && vite build",
+    "build": "npm run validate && tsc -b && vite build && npm run budgets",
     "validate": "npx tsx --tsconfig tsconfig.json scripts/validate-content.ts",
     "validate:content": "npx tsx --tsconfig tsconfig.json scripts/validate-content.ts",
     "assets:process": "node scripts/process-gltf-assets.mjs",
     "preview": "vite preview",
     "lint": "eslint src --max-warnings 9999",
     "typecheck": "tsc --noEmit",
+    "test:unit": "vitest run",
+    "test:unit:watch": "vitest",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
     "check": "npm run lint && npm run typecheck && npm run validate:content && npm run build && npm run budgets",
     "budgets": "node scripts/check-bundle-budgets.mjs --report",
     "budgets:check": "node scripts/check-bundle-budgets.mjs"
@@ -92,6 +96,8 @@
     "tw-animate-css": "^1.3.5",
     "typescript": "^5",
     "typescript-eslint": "^8.60.1",
-    "vite": "^6.3.5"
+    "vite": "^6.3.5",
+    "vitest": "^3.2.4",
+    "@playwright/test": "^1.53.2"
   }
 }

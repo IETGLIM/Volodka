@@ -1,6 +1,9 @@
 /**
  * Lazy game-data bootstrap — heavy content modules are dynamic-imported
- * so they stay out of the initial bundle until preloadGameData() runs.
+ * so they stay out of the initial bundle until preload runs.
+ *
+ * Boot path (menu): preloadBootGameData — world/mechanics only.
+ * Game start: preloadNarrativeGameData — story/dialogue/quests/poems.
  */
 
 import type {
@@ -31,8 +34,10 @@ type SkillTreeModule = typeof import('@/data/skillTree');
 type PerksModule = typeof import('@/data/perks');
 type NpcGiftsModule = typeof import('@/data/npcGifts');
 
-let loadPromise: Promise<void> | null = null;
-let loaded = false;
+let bootPromise: Promise<void> | null = null;
+let narrativePromise: Promise<void> | null = null;
+let bootLoaded = false;
+let narrativeLoaded = false;
 
 let questsMod: QuestsModule | null = null;
 let poemsMod: PoemsModule | null = null;
@@ -48,21 +53,26 @@ let skillTreeMod: SkillTreeModule | null = null;
 let perksMod: PerksModule | null = null;
 let npcGiftsMod: NpcGiftsModule | null = null;
 
-export function isGameDataLoaded(): boolean {
-  return loaded;
+export function isBootGameDataLoaded(): boolean {
+  return bootLoaded;
 }
 
-export async function preloadGameData(): Promise<void> {
-  if (loaded) return;
-  if (!loadPromise) {
-    loadPromise = Promise.all([
-      import('@/data/quests'),
-      import('@/data/poems'),
+export function isNarrativeGameDataLoaded(): boolean {
+  return narrativeLoaded;
+}
+
+export function isGameDataLoaded(): boolean {
+  return bootLoaded && narrativeLoaded;
+}
+
+/** World + mechanics data for menu boot (no story/dialogue/quest blobs). */
+export async function preloadBootGameData(): Promise<void> {
+  if (bootLoaded) return;
+  if (!bootPromise) {
+    bootPromise = Promise.all([
       import('@/data/achievements'),
       import('@/data/dailyMissions'),
       import('@/data/loreEntries'),
-      import('@/data/storyNodes'),
-      import('@/data/dialogueNodes'),
       import('@/data/triggerZones'),
       import('@/data/items'),
       import('@/data/allNpcDefinitions'),
@@ -70,13 +80,9 @@ export async function preloadGameData(): Promise<void> {
       import('@/data/perks'),
       import('@/data/npcGifts'),
     ]).then(([
-      quests,
-      poems,
       achievements,
       dailyMissions,
       lore,
-      story,
-      dialogue,
       triggers,
       items,
       npcs,
@@ -84,132 +90,171 @@ export async function preloadGameData(): Promise<void> {
       perks,
       npcGifts,
     ]) => {
-      questsMod = quests;
-      poemsMod = poems;
       achievementsMod = achievements;
       dailyMissionsMod = dailyMissions;
       loreMod = lore;
-      storyMod = story;
-      dialogueMod = dialogue;
       triggerMod = triggers;
       itemsMod = items;
       npcMod = npcs;
       skillTreeMod = skillTree;
       perksMod = perks;
       npcGiftsMod = npcGifts;
-      loaded = true;
+      bootLoaded = true;
     });
   }
-  await loadPromise;
+  await bootPromise;
+}
+
+/** Narrative blobs — load after menu or in parallel with canvas warm-up. */
+export async function preloadNarrativeGameData(): Promise<void> {
+  if (narrativeLoaded) return;
+  if (!narrativePromise) {
+    narrativePromise = Promise.all([
+      import('@/data/quests'),
+      import('@/data/poems'),
+      import('@/data/storyNodes'),
+      import('@/data/dialogueNodes'),
+    ]).then(([quests, poems, story, dialogue]) => {
+      questsMod = quests;
+      poemsMod = poems;
+      storyMod = story;
+      dialogueMod = dialogue;
+      narrativeLoaded = true;
+    });
+  }
+  await narrativePromise;
+}
+
+/** Full preload — boot + narrative (save/load, dev tools). */
+export async function preloadGameData(): Promise<void> {
+  await preloadBootGameData();
+  await preloadNarrativeGameData();
+}
+
+function assertBootLoaded(): void {
+  if (!bootLoaded) {
+    throw new Error('[gameDataLoader] Boot data not loaded — call preloadBootGameData() first');
+  }
+}
+
+function assertNarrativeLoaded(): void {
+  if (!narrativeLoaded) {
+    throw new Error('[gameDataLoader] Narrative data not loaded — call preloadNarrativeGameData() first');
+  }
 }
 
 function assertLoaded(): void {
-  if (!loaded) {
+  if (!isGameDataLoaded()) {
     throw new Error('[gameDataLoader] Game data not loaded — call preloadGameData() first');
   }
 }
 
 export function getQuestDefinitions(): QuestDefinition[] {
-  assertLoaded();
+  assertNarrativeLoaded();
   return questsMod!.QUEST_DEFINITIONS;
 }
 
 export function getPoemById(poemId: string): Poem | undefined {
-  assertLoaded();
+  assertNarrativeLoaded();
   return poemsMod!.getPoemById(poemId);
 }
 
 export function getPoems(): Poem[] {
-  assertLoaded();
+  assertNarrativeLoaded();
   return poemsMod!.POEMS;
 }
 
 export function getAchievementMap(): Record<string, AchievementDefinition> {
-  assertLoaded();
+  assertBootLoaded();
   return achievementsMod!.ACHIEVEMENT_MAP;
 }
 
 export function getTotalAchievements(): number {
-  assertLoaded();
+  assertBootLoaded();
   return achievementsMod!.TOTAL_ACHIEVEMENTS;
 }
 
 export function getDailyMissionById(id: string): DailyMission | undefined {
-  assertLoaded();
+  assertBootLoaded();
   return dailyMissionsMod!.getDailyMissionById(id);
 }
 
 export function getInitialLoreEntries(): LoreEntry[] {
-  assertLoaded();
+  assertBootLoaded();
   return loreMod!.INITIAL_LORE_ENTRIES;
 }
 
 export function getStoryNodes(): Record<string, StoryNode> {
-  assertLoaded();
+  assertNarrativeLoaded();
   return storyMod!.STORY_NODES;
 }
 
 export function getDialogueNodes(): Record<string, DialogueNode> {
-  assertLoaded();
+  assertNarrativeLoaded();
   return dialogueMod!.DIALOGUE_NODES;
 }
 
 export function getTriggerZones(): TriggerZone[] {
-  assertLoaded();
+  assertBootLoaded();
   return triggerMod!.TRIGGER_ZONES;
 }
 
 export function getItemDefinition(itemId: string): ItemDefinition | undefined {
-  assertLoaded();
+  assertBootLoaded();
   return itemsMod!.getItemDefinition(itemId);
 }
 
 export function createInventoryItem(itemId: string, quantity?: number) {
-  assertLoaded();
+  assertBootLoaded();
   return itemsMod!.createInventoryItem(itemId, quantity);
 }
 
 export function getEquipmentSlot(itemId: string) {
-  assertLoaded();
+  assertBootLoaded();
   return itemsMod!.getEquipmentSlot(itemId);
 }
 
 export function findNpcById(npcId: string): NPCDefinition | undefined {
-  assertLoaded();
+  assertBootLoaded();
   return npcMod!.findNpcById(npcId);
 }
 
+export function findNpcByName(name: string): NPCDefinition | undefined {
+  assertBootLoaded();
+  return npcMod!.findNpcByName(name);
+}
+
 export function getSkillTreeMap() {
-  assertLoaded();
+  assertBootLoaded();
   return skillTreeMod!.SKILL_TREE_MAP;
 }
 
 export function getSkillEffectMap() {
-  assertLoaded();
+  assertBootLoaded();
   return skillTreeMod!.SKILL_EFFECT_MAP;
 }
 
 export function getPerksMap() {
-  assertLoaded();
+  assertBootLoaded();
   return perksMod!.PERKS_MAP;
 }
 
 export function getItemPreference(npcId: string, itemId: string): GiftPreference {
-  assertLoaded();
+  assertBootLoaded();
   return npcGiftsMod!.getItemPreference(npcId, itemId);
 }
 
 export function getAffinityChange(preference: GiftPreference): number {
-  assertLoaded();
+  assertBootLoaded();
   return npcGiftsMod!.getAffinityChange(preference);
 }
 
 export function getGiftXpReward(preference: GiftPreference): number {
-  assertLoaded();
+  assertBootLoaded();
   return npcGiftsMod!.getGiftXpReward(preference);
 }
 
 export function getGiftReactionText(npcName: string, preference: GiftPreference): string {
-  assertLoaded();
+  assertBootLoaded();
   return npcGiftsMod!.getGiftReactionText(npcName, preference);
 }

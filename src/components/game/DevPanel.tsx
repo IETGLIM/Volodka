@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { FocusTrap } from '@/components/a11y/FocusTrap';
 import { usePanelDialog } from '@/components/a11y/usePanelDialog';
 import { useGameStore } from '@/store/gameStore';
+import { useDevPanelSceneTab, useDevPanelStateTab } from '@/store/selectors';
 import { eventBus } from '@/engine/EventBus';
 import { getFrameProfilerSnapshot, type FrameProfilerSnapshot } from '@/engine/frame';
 import {
@@ -421,12 +422,7 @@ function PerfTab({
 /* ── Scene Tab ── */
 
 function SceneTab() {
-  const sceneId = useGameStore((s) => s.exploration.currentSceneId);
-  const playerPos = useGameStore((s) => s.exploration.playerPosition);
-  const playerRot = useGameStore((s) => s.exploration.playerRotation);
-  const mode = useGameStore((s) => s.mode);
-  const timeOfDay = useGameStore((s) => s.exploration.timeOfDay);
-  const npcStates = useGameStore((s) => s.exploration.npcStates);
+  const { sceneId, playerPos, playerRot, mode, timeOfDay, npcStates } = useDevPanelSceneTab();
   const rendererInfo = getFrameProfilerSnapshot();
 
   const handleSceneSwitch = useCallback((id: SceneId) => {
@@ -506,16 +502,18 @@ function SceneTab() {
 /* ── State Tab ── */
 
 function StateTab() {
-  const karma = useGameStore((s) => s.playerState.karma);
-  const stress = useGameStore((s) => s.playerState.stress);
-  const energy = useGameStore((s) => s.playerState.energy);
-  const mode = useGameStore((s) => s.mode);
-  const quests = useGameStore((s) => s.quests);
-  const collectedPoems = useGameStore((s) => s.collectedPoems);
-  const flags = useGameStore((s) => s.playerState.flags);
-  const inventory = useGameStore((s) => s.playerState.inventory);
-  const progression = useGameStore((s) => s.playerState.progression);
-  const skills = useGameStore((s) => s.playerState.skills);
+  const {
+    karma,
+    stress,
+    energy,
+    mode,
+    quests,
+    collectedPoems,
+    flags,
+    inventory,
+    progression,
+    skills,
+  } = useDevPanelStateTab();
 
   const activeQuests = quests.filter((q) => q.status === 'active');
   const completedQuests = quests.filter((q) => q.status === 'completed');

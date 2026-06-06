@@ -104,6 +104,9 @@ const DATA_MECHANICS = new Set([
 
 const NARRATIVE_ENGINE_MODULES = new Set([
   'GuidedStoryManager',
+]);
+
+const QUEST_ENGINE_MODULES = new Set([
   'QuestTracker',
 ]);
 
@@ -134,11 +137,19 @@ function resolveVendorChunk(posix: string): string | undefined {
 
   if (
     posix.includes('/three/') ||
-    posix.includes('/@react-three/') ||
-    posix.includes('/postprocessing/') ||
+    posix.includes('/@react-three/fiber/') ||
+    posix.includes('/@react-three/drei/') ||
+    posix.includes('/@react-three/rapier') ||
     posix.includes('/@dimforge/rapier')
   ) {
     return 'three';
+  }
+
+  if (
+    posix.includes('/postprocessing/') ||
+    posix.includes('/@react-three/postprocessing')
+  ) {
+    return 'postfx';
   }
 
   if (
@@ -159,11 +170,14 @@ function resolveVendorChunk(posix: string): string | undefined {
   return undefined;
 }
 
-/** Narrative engine modules share the narrative data chunk to prevent cross-chunk cycles. */
+/** Narrative engine modules — separate from narrative data for lazy loading. */
 function resolveNarrativeChunk(posix: string): string | undefined {
   const base = fileBase(posix);
+  if (QUEST_ENGINE_MODULES.has(base) && posix.includes('/src/engine/')) {
+    return 'engine-quest';
+  }
   if (NARRATIVE_ENGINE_MODULES.has(base) && posix.includes('/src/engine/')) {
-    return 'data-narrative';
+    return 'engine-narrative';
   }
   if (posix.includes('/src/shared/validation/contentPipelineValidator')) {
     return 'data-misc';

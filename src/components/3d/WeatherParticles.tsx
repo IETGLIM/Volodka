@@ -8,7 +8,7 @@
  */
 
 import { useRef, useMemo, useEffect } from 'react';
-import { useFrame } from '@react-three/fiber';
+import { useFrameTick } from '@/engine/frame/useFrameTick';
 import * as THREE from 'three';
 import { useIsMobileVisual, useMobileVisualPerf } from '@/hooks/use-mobile';
 import { getParticleCount } from '@/shared/utils/mobileParticleScale';
@@ -102,7 +102,7 @@ function DustSystem({ config }: { config: DustConfig }) {
     };
   }, [geometry]);
 
-  useFrame((_, delta) => {
+  useFrameTick('weather', ({ delta }) => {
     if (!pointsRef.current) return;
     timeRef.current += delta;
     const t = timeRef.current;
@@ -238,7 +238,7 @@ function RainSystem({ config }: { config: RainConfig }) {
     };
   }, [geometry]);
 
-  useFrame((_, delta) => {
+  useFrameTick('weather', ({ delta }) => {
     if (!pointsRef.current) return;
     timeRef.current += delta;
 
@@ -365,7 +365,7 @@ function EmberSystem({ config }: { config: EmberConfig }) {
     };
   }, [geometry]);
 
-  useFrame((_, delta) => {
+  useFrameTick('weather', ({ delta }) => {
     if (!pointsRef.current) return;
     timeRef.current += delta;
     const t = timeRef.current;
@@ -502,7 +502,7 @@ function SnowSystem({ config }: { config: SnowConfig }) {
     };
   }, [geometry]);
 
-  useFrame((_, delta) => {
+  useFrameTick('weather', ({ delta }) => {
     if (!pointsRef.current) return;
     timeRef.current += delta;
     const t = timeRef.current;
