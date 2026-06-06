@@ -145,7 +145,7 @@ export function SceneTransitionProgress() {
         <motion.div
           key="scene-transition-progress"
           className="fixed inset-x-0 top-0 pointer-events-none"
-          style={{ zIndex: UI_LAYERS.SCENE_BANNER }}
+          style={{ zIndex: UI_LAYERS.HUD + 3 }}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}

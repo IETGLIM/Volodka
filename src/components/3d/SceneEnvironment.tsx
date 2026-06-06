@@ -7,6 +7,7 @@ import { useGameStore } from '@/store/gameStore';
 import { getSceneConfig } from '@/config/scenes';
 import { Environment } from '@react-three/drei';
 import * as THREE from 'three';
+import { liftHexColor, SCENE_VISIBILITY } from '@/shared/constants/sceneVisibility';
 
 /** Per-scene fog color overrides matching style pillars:
  *  Noir, CyberPunk2077, Gothic, Dark Fantasy, Glitch, MatrixRain
@@ -23,7 +24,7 @@ const SCENE_FOG_COLORS: Record<string, string> = {
   cafe_evening:       '#0c1020', // deep blue-black — hazy café with blue neon
 
   // ─── CyberPunk2077 ───
-  street_night:       '#080418', // deep purple-black — neon streets
+  street_night:       '#2a2848', // readable night sky haze
 
   // ─── Gothic ───
   park_day:           '#2a3828', // misty green-gray (Gothic forest)
@@ -55,7 +56,7 @@ const SCENE_BG_COLORS: Record<string, string> = {
   volodka_corridor:   '#060a14',  // near-black
   home_evening:       '#120c04',  // dark amber
   cafe_evening:       '#080c18',  // dark blue-black
-  street_night:       '#040210',  // near-black purple
+  street_night:       '#1e1c38',  // night sky — not pitch black
   park_day:           '#101810',
   abandoned_factory:  '#100804',
   office_day:         '#b0bcc8',
@@ -65,6 +66,7 @@ const SCENE_BG_COLORS: Record<string, string> = {
   street_winter:      '#7080a0',
   library_day:        '#1a1408',
   zarema_albert_room: '#100a04',
+  chk_forest_zorge:   '#0c1810',
 };
 
 /** Per-scene fog animation parameters */
@@ -84,7 +86,7 @@ const SCENE_FOG_ANIM: Record<string, FogAnimConfig> = {
   volodka_room:       { pulseFreq: 0.08, nearAmplitude: 0.05, farAmplitude: 0.03, altFogColor: '#0a1015', colorShiftAmp: 0.15 },
   volodka_corridor:   { pulseFreq: 0.05, nearAmplitude: 0.08, farAmplitude: 0.05, altFogColor: '#080d18', colorShiftAmp: 0.2 },
   home_evening:       { pulseFreq: 0.06, nearAmplitude: 0.04, farAmplitude: 0.02, colorShiftAmp: 0 },
-  street_night:       { pulseFreq: 0.1,  nearAmplitude: 0.1,  farAmplitude: 0.08, altFogColor: '#0a001a', colorShiftAmp: 0.25 },
+  street_night:       { pulseFreq: 0.06, nearAmplitude: 0.04, farAmplitude: 0.03, altFogColor: '#3a3860', colorShiftAmp: 0.12 },
   cafe_evening:       { pulseFreq: 0.07, nearAmplitude: 0.05, farAmplitude: 0.03, altFogColor: '#0d0818', colorShiftAmp: 0.15 },
   office_day:         { pulseFreq: 0.03, nearAmplitude: 0.02, farAmplitude: 0.01, colorShiftAmp: 0 },
   park_day:           { pulseFreq: 0.04, nearAmplitude: 0.12, farAmplitude: 0.1,  altFogColor: '#1a2a18', colorShiftAmp: 0.3 },
@@ -113,8 +115,14 @@ export function SceneEnvironment() {
   const isIndoor = config.hasCeiling;
 
   // Use style-pillar-matched fog colors, fall back to scene config ambient
-  const fogColor = SCENE_FOG_COLORS[sceneId] ?? config.ambientColor ?? '#1a1a2e';
-  const bgColor = SCENE_BG_COLORS[sceneId] ?? fogColor;
+  const fogColor = liftHexColor(
+    SCENE_FOG_COLORS[sceneId] ?? config.ambientColor ?? '#1a1a2e',
+    SCENE_VISIBILITY.fogColorLift,
+  );
+  const bgColor = liftHexColor(
+    SCENE_BG_COLORS[sceneId] ?? fogColor,
+    SCENE_VISIBILITY.fogColorLift * 0.85,
+  );
 
   // Indoor fog: tight near/far for claustrophobic depth, but far enough
   // to not swallow the room. Small rooms (5x7) need fogFar ~1.5x max dimension.
@@ -122,13 +130,11 @@ export function SceneEnvironment() {
   let effectiveFogNear: number;
   let effectiveFogFar: number;
   if (isIndoor) {
-    // Indoor: use scene config values directly (they're already tuned per-room)
-    // but clamp so fog doesn't start inside the camera's near plane
-    effectiveFogNear = Math.max(fogNear, 3);
-    effectiveFogFar = Math.max(fogFar, 8);
+    effectiveFogNear = Math.max(fogNear * SCENE_VISIBILITY.fogNearScale, 4);
+    effectiveFogFar = Math.max(fogFar * SCENE_VISIBILITY.fogFarScale, 12);
   } else {
-    effectiveFogNear = fogNear;
-    effectiveFogFar = fogFar;
+    effectiveFogNear = fogNear * SCENE_VISIBILITY.fogNearScale;
+    effectiveFogFar = fogFar * SCENE_VISIBILITY.fogFarScale;
   }
 
   // Choose environment preset based on scene

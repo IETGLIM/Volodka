@@ -278,7 +278,7 @@ export const GODRAY_PRESETS: Record<string, GodRayConfig[]> = {
       pulseAmp: 0.35,
       rotationSpeed: 0.01,
       dustMotes: true,
-      dustCount: 40,
+      dustCount: 18,
       dustColor: '#ffbb55',
       initialRotation: 0,
     },
@@ -294,7 +294,7 @@ export const GODRAY_PRESETS: Record<string, GodRayConfig[]> = {
       pulseAmp: 0.4,
       rotationSpeed: 0.015,
       dustMotes: true,
-      dustCount: 30,
+      dustCount: 12,
       dustColor: '#ffcc66',
       initialRotation: 1.5,
     },
@@ -387,6 +387,24 @@ export const GODRAY_PRESETS: Record<string, GodRayConfig[]> = {
       initialRotation: 0,
     },
   ],
+  chk_forest_zorge: [
+    {
+      ...DEFAULT_RAY,
+      position: [0, 2.8, 0],
+      topRadius: 0.05,
+      bottomRadius: 0.55,
+      height: 3.2,
+      color: '#ff8833',
+      opacity: 0.07,
+      pulseSpeed: 0.35,
+      pulseAmp: 0.45,
+      rotationSpeed: 0.008,
+      dustMotes: true,
+      dustCount: 20,
+      dustColor: '#ffaa55',
+      initialRotation: 0,
+    },
+  ],
 };
 
 /* ── Component ── */
@@ -394,14 +412,20 @@ export const GODRAY_PRESETS: Record<string, GodRayConfig[]> = {
 interface GodRaysProps {
   rays?: GodRayConfig[];
   sceneId?: string;
+  /** Reduce dust motes on weak GPUs */
+  liteMode?: boolean;
 }
 
-export function GodRays({ rays, sceneId }: GodRaysProps) {
+export function GodRays({ rays, sceneId, liteMode = false }: GodRaysProps) {
   const configs = useMemo(() => {
-    if (rays) return rays;
-    if (sceneId) return GODRAY_PRESETS[sceneId] ?? [];
-    return [];
-  }, [rays, sceneId]);
+    const base = rays ?? (sceneId ? GODRAY_PRESETS[sceneId] ?? [] : []);
+    if (!liteMode) return base;
+    return base.map((ray) => ({
+      ...ray,
+      dustMotes: ray.dustMotes && (ray.dustCount ?? 0) > 8,
+      dustCount: Math.max(6, Math.floor((ray.dustCount ?? 0) * 0.4)),
+    }));
+  }, [rays, sceneId, liteMode]);
 
   if (configs.length === 0) return null;
 

@@ -15,13 +15,7 @@ import { useFastTravelState } from '@/store/selectors';
 import { SCENE_CONFIG } from '@/config/scenes';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import type { SceneId } from '@/shared/types/game';
-
-/* ─── Scene gate definitions (same as explorationSlice) ─── */
-const SCENE_GATES: Partial<Record<SceneId, string>> = {
-  rooftop_edge: 'rooftop_unlocked',
-  abandoned_factory: 'factory_unlocked',
-  chk_forest_zorge: 'chk_path_known',
-};
+import { isSceneGateOpen } from '@/shared/sceneGates';
 
 /* ─── Travel time cost (same as explorationSlice) ─── */
 const TRAVEL_TIME: Partial<Record<SceneId, number>> = {
@@ -152,8 +146,7 @@ export function FastTravelPanel({ open, onClose }: FastTravelPanelProps) {
   const isAccessible = useCallback(
     (sceneId: SceneId) => {
       if (!discoveredScenes.includes(sceneId)) return false;
-      const gate = SCENE_GATES[sceneId];
-      if (gate && !playerFlags[gate]) return false;
+      if (!isSceneGateOpen(sceneId, playerFlags)) return false;
       return true;
     },
     [discoveredScenes, playerFlags],
@@ -325,8 +318,8 @@ export function FastTravelPanel({ open, onClose }: FastTravelPanelProps) {
                       const isCurrent = node.id === currentSceneId;
                       const accessible = isAccessible(node.id);
                       const isHovered = hoveredScene === node.id;
-                      const gate = SCENE_GATES[node.id];
-                      const gateMet = gate ? !!playerFlags[gate] : true;
+                      const gateOpen = isSceneGateOpen(node.id, playerFlags);
+                      const isRumored = !isDiscovered && gateOpen;
                       const travelHours = TRAVEL_TIME[node.id] ?? 0.5;
                       const config = SCENE_CONFIG[node.id];
 
@@ -388,8 +381,8 @@ export function FastTravelPanel({ open, onClose }: FastTravelPanelProps) {
                             )}
 
                             {/* Icon or locked indicator */}
-                            {isDiscovered ? (
-                              <span className={`text-lg ${isCurrent ? 'text-2xl' : ''}`}>
+                            {isDiscovered || isRumored ? (
+                              <span className={`text-lg ${isCurrent ? 'text-2xl' : ''} ${isRumored ? 'opacity-50' : ''}`}>
                                 {node.icon}
                               </span>
                             ) : (
@@ -404,7 +397,9 @@ export function FastTravelPanel({ open, onClose }: FastTravelPanelProps) {
                                   ? 'text-emerald-400'
                                   : isDiscovered
                                     ? 'text-cyan-400/70'
-                                    : 'text-slate-600'
+                                    : isRumored
+                                      ? 'text-amber-500/60'
+                                      : 'text-slate-600'
                                 }
                               `}
                             >
@@ -412,7 +407,11 @@ export function FastTravelPanel({ open, onClose }: FastTravelPanelProps) {
                                 ? (config.name.length > 12
                                     ? config.name.substring(0, 12) + '…'
                                     : config.name)
-                                : '???'
+                                : isRumored && config
+                                  ? (config.name.length > 12
+                                      ? config.name.substring(0, 12) + '…'
+                                      : config.name)
+                                  : '???'
                               }
                             </span>
                           </motion.button>
@@ -431,8 +430,8 @@ export function FastTravelPanel({ open, onClose }: FastTravelPanelProps) {
                       const isCurrent = hoveredScene === currentSceneId;
                       const config = SCENE_CONFIG[hoveredScene];
                       const travelHours = TRAVEL_TIME[hoveredScene] ?? 0.5;
-                      const gate = SCENE_GATES[hoveredScene];
-                      const gateMet = gate ? !!playerFlags[gate] : true;
+                      const gateOpen = isSceneGateOpen(hoveredScene, playerFlags);
+                      const isRumored = !isDiscovered && gateOpen;
 
                       // Position tooltip, clamped to not overflow
                       const tooltipX = Math.min(Math.max(node.x, 15), 75);
@@ -466,8 +465,8 @@ export function FastTravelPanel({ open, onClose }: FastTravelPanelProps) {
                           >
                             <div className="flex items-center gap-2 mb-1">
                               <span className="text-sm">{node.icon}</span>
-                              <span className={`text-xs font-semibold ${isCurrent ? 'text-emerald-400' : isDiscovered ? 'text-cyan-300' : 'text-slate-500'}`}>
-                                {isDiscovered && config ? config.name : '???'}
+                              <span className={`text-xs font-semibold ${isCurrent ? 'text-emerald-400' : isDiscovered ? 'text-cyan-300' : isRumored ? 'text-amber-400/70' : 'text-slate-500'}`}>
+                                {isDiscovered && config ? config.name : isRumored && config ? config.name : '???'}
                               </span>
                             </div>
 
@@ -487,7 +486,7 @@ export function FastTravelPanel({ open, onClose }: FastTravelPanelProps) {
                                       {travelHours > 0 ? `${travelHours} ч.` : 'Мгновенно'}
                                     </span>
                                   )}
-                                  {gate && !gateMet && (
+                                  {!gateOpen && (
                                     <span className="text-[9px] text-amber-400/60 font-mono flex items-center gap-1">
                                       <Lock className="size-2.5" /> Закрыто
                                     </span>
@@ -498,7 +497,7 @@ export function FastTravelPanel({ open, onClose }: FastTravelPanelProps) {
 
                             {!isDiscovered && (
                               <p className="text-[10px] text-slate-600 italic">
-                                Не исследовано
+                                {isRumored ? 'Слухи — иди через парк' : 'Не исследовано'}
                               </p>
                             )}
                           </div>

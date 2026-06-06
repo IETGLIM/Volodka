@@ -95,9 +95,9 @@ function createSlot(): SlotResources {
 }
 
 function configureRingGeometry(slot: SlotResources, size: [number, number, number]) {
-  const maxDim = Math.max(size[0], size[2]);
-  const innerR = Math.max(maxDim / 2 - 0.1, 0.01);
-  const outerR = maxDim / 2 + 0.25;
+  const maxDim = Math.min(Math.max(size[0], size[2]), 1.2);
+  const innerR = Math.max(maxDim / 2 - 0.08, 0.28);
+  const outerR = Math.min(maxDim / 2 + 0.12, 0.48);
   slot.ringGeo.dispose();
   slot.ringGeo = new THREE.RingGeometry(innerR, outerR, 32);
   slot.ringMesh.geometry = slot.ringGeo;
@@ -111,7 +111,7 @@ function applyHighlightLayout(slot: SlotResources, size: [number, number, number
   slot.innerMesh.scale.set(w + 0.06, h + 0.06, d + 0.06);
 
   slot.outerMesh.position.set(0, centerY, 0);
-  slot.outerMesh.scale.set(w + 0.3, h + 0.3, d + 0.3);
+  slot.outerMesh.scale.set(w + 0.12, h + 0.12, d + 0.12);
 
   slot.light.position.set(0, centerY, 0);
   slot.light.distance = Math.max(w, d) + 4;

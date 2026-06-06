@@ -12,6 +12,7 @@ import { useGameStore } from '@/store/gameStore';
 import { eventBus } from '@/engine/EventBus';
 import { audioEngine } from '@/engine/AudioEngine';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
+import { explorationAchievementTopPx, EXPLORATION_HUD_LAYOUT } from '@/shared/constants/hudLayout';
 import { CATEGORY_META, type AchievementCategory } from '@/data/achievements';
 
 /* ─── Notification State ─── */
@@ -307,14 +308,15 @@ export function AchievementNotification() {
   const mode = useGameStore((s) => s.mode);
 
   /* ── Don't render in menu ── */
-  if (mode === 'menu') return null;
+  if (mode !== 'exploration' && mode !== 'combat' && mode !== 'cutscene') return null;
 
   return (
     <div
-      className="fixed right-3 sm:right-4 flex flex-col items-end gap-2 pointer-events-none"
+      className="fixed flex flex-col items-end gap-2 pointer-events-none"
       style={{
         zIndex: UI_LAYERS.TOASTS + 1,
-        top: 70,
+        top: explorationAchievementTopPx(),
+        right: EXPLORATION_HUD_LAYOUT.RIGHT_INSET,
         pointerEvents: 'none',
       }}
     >

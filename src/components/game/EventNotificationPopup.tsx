@@ -10,9 +10,9 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Shield, Map, Trophy, Scroll, Info } from 'lucide-react';
 import { eventBus } from '@/engine/EventBus';
-import { SCENE_CONFIG } from '@/config/scenes';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
-import type { SceneId } from '@/shared/types/game';
+import { explorationEventToastTopPx } from '@/shared/constants/hudLayout';
+import { useGameStore } from '@/store/gameStore';
 
 /* ─── Types ─── */
 
@@ -268,18 +268,7 @@ export function EventNotificationPopup() {
     return unsub;
   }, [addNotification]);
 
-  /* ── Listen for scene:enter → "Новая локация: {sceneName}" ── */
-  useEffect(() => {
-    const unsub = eventBus.on('scene:enter', (payload) => {
-      const sceneName = SCENE_CONFIG[payload.sceneId as SceneId]?.name ?? payload.sceneId;
-      addNotification({
-        title: `Новая локация: ${sceneName}`,
-        subtitle: undefined,
-        type: 'scene',
-      });
-    });
-    return unsub;
-  }, [addNotification]);
+  /* scene:enter — handled by center scene banner in GameOrchestrator (no duplicate toast) */
 
   /* ── Listen for combat:start → "Бой начинается!" ── */
   useEffect(() => {
@@ -305,29 +294,7 @@ export function EventNotificationPopup() {
     return unsub;
   }, [addNotification]);
 
-  /* ── Listen for quest:completed → "Задание выполнено!" ── */
-  useEffect(() => {
-    const unsub = eventBus.on('quest:completed', () => {
-      addNotification({
-        title: 'Задание выполнено!',
-        subtitle: undefined,
-        type: 'quest',
-      });
-    });
-    return unsub;
-  }, [addNotification]);
-
-  /* ── Listen for achievement:unlocked → "Достижение разблокировано!" ── */
-  useEffect(() => {
-    const unsub = eventBus.on('achievement:unlocked', (payload) => {
-      addNotification({
-        title: 'Достижение разблокировано!',
-        subtitle: payload.title,
-        type: 'achievement',
-      });
-    });
-    return unsub;
-  }, [addNotification]);
+  /* quest:completed / achievement:unlocked — QuestNotificationSystem & AchievementNotification */
 
   /* ── Cleanup all timers on unmount ── */
   useEffect(() => {
@@ -339,11 +306,14 @@ export function EventNotificationPopup() {
     };
   }, []);
 
+  const mode = useGameStore((s) => s.mode);
+  if (mode === 'menu' || mode === 'intro') return null;
+
   /* ── Render ── */
   return (
     <div
-      className="fixed top-4 right-4 pointer-events-none flex flex-col gap-2"
-      style={{ zIndex: UI_LAYERS.TOASTS }}
+      className="fixed right-3 sm:right-4 pointer-events-none flex flex-col gap-2"
+      style={{ top: explorationEventToastTopPx(), zIndex: UI_LAYERS.TOASTS }}
     >
       <AnimatePresence mode="popLayout">
         {notifications.map((entry, index) => (

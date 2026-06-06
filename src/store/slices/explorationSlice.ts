@@ -12,6 +12,7 @@ import { eventBus } from '@/engine/EventBus';
 import { requestSceneTransition } from '@/engine/scene/sceneTransition';
 import { buildNPCStatesForTime } from '@/engine/ScheduleEngine';
 import { buildScheduleContext } from '@/shared/scheduleContext';
+import { isSceneGateOpen } from '@/shared/sceneGates';
 
 /* ─── Auto-close timer tracking for interactive objects ─── */
 const autoCloseTimers = new Map<string, ReturnType<typeof setTimeout>>();
@@ -31,13 +32,6 @@ if (import.meta.hot) {
     clearAutoCloseTimers();
   });
 }
-
-/* ─── Scene gate definitions: scenes that require a story flag ─── */
-const SCENE_GATES: Partial<Record<SceneId, string>> = {
-  rooftop_edge: 'rooftop_unlocked',
-  abandoned_factory: 'factory_unlocked',
-  chk_forest_zorge: 'chk_path_known',
-};
 
 /* ─── Travel time cost per scene (hours) — based on distance from city center ─── */
 const TRAVEL_TIME: Partial<Record<SceneId, number>> = {
@@ -207,11 +201,8 @@ export const createExplorationSlice: StateCreator<
     if (!state.discoveredScenes.includes(sceneId)) return;
 
     // Check story flag gate
-    const requiredFlag = SCENE_GATES[sceneId];
-    if (requiredFlag) {
-      const { flags } = readExplorationFromPlayer(get());
-      if (!flags[requiredFlag]) return;
-    }
+    const { flags } = readExplorationFromPlayer(get());
+    if (!isSceneGateOpen(sceneId, flags)) return;
 
     // Get target scene config for spawn point
     const targetConfig = SCENE_CONFIG[sceneId];

@@ -10,6 +10,7 @@
 
 import { useMemo, useEffect, useState, useRef, useSyncExternalStore } from 'react';
 import { useGameStore } from '@/store/gameStore';
+import { useMobileVisualPerf } from '@/hooks/use-mobile';
 import { eventBus } from '@/engine/EventBus';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 
@@ -69,8 +70,8 @@ const DEFAULT_PRESET: MatrixRainPreset = {
 const SCENE_PRESETS: Record<string, MatrixRainPreset> = {
   /* ── Full Matrix rain: outdoor cyberpunk streets ── */
   street_night: {
-    maxColumns: 120,
-    opacity: 0.3,
+    maxColumns: 48,
+    opacity: 0.1,
     speed: 1.0,
     color: MATRIX_GREEN,
     headColor: HEAD_GREEN,
@@ -106,18 +107,7 @@ const SCENE_PRESETS: Record<string, MatrixRainPreset> = {
     blendMode: 'screen',
     fontSize: 14,
   },
-  abandoned_factory: {
-    maxColumns: 40,
-    opacity: 0.12,
-    speed: 0.7,
-    color: '#00cc44',
-    headColor: '#88ddaa',
-    charRange: [12, 22],
-    durationRange: [6, 15],
-    maxDelay: 8,
-    blendMode: 'screen',
-    fontSize: 15,
-  },
+  // abandoned_factory: MatrixRain disabled — CSS overlay + heavy 3D stack caused freezes
 
   /* ── Very subtle background rain: quiet indoor spaces ── */
   cafe_evening: {
@@ -220,6 +210,7 @@ export function MatrixRain({ sceneId: sceneIdProp }: MatrixRainProps) {
   const showStoryOverlay = useGameStore((s) => s.showStoryOverlay);
   const storeSceneId = useGameStore((s) => s.exploration.currentSceneId);
   const sceneId = sceneIdProp ?? storeSceneId;
+  const { visualLite, effectsScale } = useMobileVisualPerf();
 
   // ── Determine if rain should show and which preset to use ──
   // FIX: Only show MatrixRain during story overlay if the scene
@@ -236,7 +227,15 @@ export function MatrixRain({ sceneId: sceneIdProp }: MatrixRainProps) {
       : explorationPreset !== null;  // Exploration: scene preset required
 
   // Active preset: always use scene preset when available
-  const activePreset = explorationPreset ?? DEFAULT_PRESET;
+  const activePreset = useMemo(() => {
+    const base = explorationPreset ?? DEFAULT_PRESET;
+    if (!explorationPreset) return base;
+    const scale = visualLite ? 0.35 : effectsScale < 0.85 ? 0.6 : 1;
+    return {
+      ...base,
+      maxColumns: Math.max(6, Math.floor(base.maxColumns * scale)),
+    };
+  }, [explorationPreset, visualLite, effectsScale]);
 
   // SSR-safe: only compute columns on client
   const mounted = useSyncExternalStore(

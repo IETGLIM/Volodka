@@ -1,46 +1,58 @@
 
-/* ─── Volodka RPG – StoryGuidanceHUD (Enhanced) ─── */
-/* Persistent HUD element that shows the player what to do next.
- * Top-center of screen, cyberpunk-styled with neon cyan text,
- * scanlines backdrop, matrix-green accents, and pulse animation.
- *
- * Enhanced with:
- * - "Текущая цель" (Current Objective) label
- * - Integration with questStore's getNextTrackedObjective for active quests
- * - Fallback to golden path quest when no active quests exist
- * - Small arrow icon with pulse animation
- */
+/* ─── Volodka RPG – StoryGuidanceHUD ─── */
+/* Single compact objective strip below the compass — no duplicate quest HUD. */
 
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { X } from 'lucide-react'
 import { eventBus } from '@/engine/EventBus'
 import { getCurrentGuidance, type GuidanceInfo } from '@/engine/GuidedStoryManager'
-import { getNextTrackedObjective, getActiveQuests, areDependenciesMet, getQuestMarker } from '@/store/questStore'
+import { getNextTrackedObjective, areDependenciesMet, getQuestMarker } from '@/store/questStore'
 import { useQuests, useGameMode, useCurrentSceneId } from '@/store/selectors'
+import { useInteractionOverlay } from '@/store/selectors'
 import { QUEST_DEFINITIONS } from '@/data/quests'
 import { GOLDEN_PATH_QUEST_SPINE } from '@/data/goldenPath'
 import { getSceneConfig } from '@/config/scenes'
+import { UI_LAYERS } from '@/shared/constants/uiLayers'
+import {
+  EXPLORATION_HUD_LAYOUT,
+  explorationObjectiveTopPx,
+} from '@/shared/constants/hudLayout'
+import { isInteractionLocked } from '@/components/3d/InteractionSystemBridge'
 import type { SceneId } from '@/shared/types/game'
+
+const GUIDANCE_DISMISS_KEY = 'volodka_guidance_dismissed_sig'
 
 export function StoryGuidanceHUD() {
   const [guidance, setGuidance] = useState<GuidanceInfo | null>(null)
   const [expanded, setExpanded] = useState(false)
-  const [visible, setVisible] = useState(false)
+  const [dismissedSig, setDismissedSig] = useState<string | null>(() => {
+    try {
+      return sessionStorage.getItem(GUIDANCE_DISMISS_KEY)
+    } catch {
+      return null
+    }
+  })
 
-  // Get active quests from store (reactive)
   const quests = useQuests()
   const mode = useGameMode()
   const currentSceneId = useCurrentSceneId()
+  const { showStoryOverlay } = useInteractionOverlay()
+  const [interactionLocked, setInteractionLocked] = useState(() => isInteractionLocked())
 
-  // Derive the current objective text from active quests or golden path
+  useEffect(() => {
+    const sync = () => setInteractionLocked(isInteractionLocked())
+    sync()
+    const unsub = eventBus.on('interaction:state_change', sync)
+    return unsub
+  }, [])
+
   const currentObjective = useMemo(() => {
-    // 1. Check active quests for the next uncompleted objective
     const activeQuests = quests.filter((q) => q.status === 'active')
     for (const aq of activeQuests) {
       const obj = getNextTrackedObjective(aq.questId)
       if (obj) {
         const questDef = QUEST_DEFINITIONS.find((d) => d.id === aq.questId)
-        // Get quest marker for directional guidance
         const marker = getQuestMarker(aq.questId)
         let directionHint: string | null = null
         let targetSceneId: SceneId | null = null
@@ -64,17 +76,14 @@ export function StoryGuidanceHUD() {
       }
     }
 
-    // 2. No active quest objectives — find next available quest in golden path
     for (const questId of GOLDEN_PATH_QUEST_SPINE) {
       const questState = quests.find((q) => q.questId === questId)
-      // Skip if already completed or active
       if (questState?.status === 'completed') continue
       if (questState?.status === 'active') continue
 
       const questDef = QUEST_DEFINITIONS.find((d) => d.id === questId)
       if (!questDef) continue
 
-      // Check if dependencies are met
       const deps = areDependenciesMet(questId)
       if (!deps.met) continue
 
@@ -91,49 +100,35 @@ export function StoryGuidanceHUD() {
     return null
   }, [quests, currentSceneId])
 
-  // Listen for guidance updates from GuidedStoryManager
   useEffect(() => {
-    // Get initial guidance
     const initial = getCurrentGuidance()
-    if (initial) {
-      setGuidance(initial)
-      setVisible(true)
-    }
+    if (initial) setGuidance(initial)
 
     const unsub = eventBus.on('story:guidance_update', (payload) => {
       setGuidance(payload)
-      setVisible(true)
     })
-
     return unsub
   }, [])
 
-  // Show/hide based on game mode — only in exploration/cutscene
-  useEffect(() => {
-    if (mode === 'exploration' || mode === 'cutscene') {
-      if (currentObjective || guidance) {
-        setVisible(true)
-      }
-    } else {
-      setVisible(false)
-    }
-  }, [mode, currentObjective, guidance])
-
-  const toggleExpand = useCallback(() => {
-    setExpanded((prev) => !prev)
-  }, [])
-
-  if (!visible) return null
-
-  // Determine what to display
-  // Priority: active quest objective > golden path guidance > guidance event
   const displayText = currentObjective?.text ?? guidance?.objectiveText ?? ''
+  const objectiveSig = displayText
+    ? `${currentObjective?.questTitle ?? ''}|${displayText}`
+    : ''
+
+  useEffect(() => {
+    if (!objectiveSig) return
+    if (dismissedSig && dismissedSig !== objectiveSig) {
+      setDismissedSig(null)
+      try {
+        sessionStorage.removeItem(GUIDANCE_DISMISS_KEY)
+      } catch { /* ignore */ }
+    }
+  }, [objectiveSig, dismissedSig])
+
   const actNumber = guidance?.actNumber ?? 1
   const urgency = currentObjective
     ? (currentObjective.questType === 'main' ? 'required' : 'recommended')
     : (guidance?.urgency ?? 'recommended')
-
-  if (!displayText) return null
 
   const urgencyColor = urgency === 'required'
     ? '#00ffee'
@@ -141,271 +136,162 @@ export function StoryGuidanceHUD() {
       ? '#66ffaa'
       : '#888888'
 
-  const urgencyLabel = urgency === 'required'
-    ? 'ОБЯЗАТЕЛЬНО'
-    : urgency === 'recommended'
-      ? 'РЕКОМЕНДОВАНО'
-      : 'ОПЦИОНАЛЬНО'
+  const handleDismiss = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation()
+    if (!objectiveSig) return
+    setDismissedSig(objectiveSig)
+    setExpanded(false)
+    try {
+      sessionStorage.setItem(GUIDANCE_DISMISS_KEY, objectiveSig)
+    } catch { /* ignore */ }
+  }, [objectiveSig])
+
+  const handleRestore = useCallback(() => {
+    setDismissedSig(null)
+    try {
+      sessionStorage.removeItem(GUIDANCE_DISMISS_KEY)
+    } catch { /* ignore */ }
+  }, [])
+
+  const toggleExpand = useCallback(() => {
+    setExpanded((prev) => !prev)
+  }, [])
+
+  const shouldShow =
+    mode === 'exploration'
+    && !showStoryOverlay
+    && !interactionLocked
+    && Boolean(displayText)
+
+  if (!shouldShow) return null
+
+  const isDismissed = Boolean(dismissedSig && dismissedSig === objectiveSig)
+  const topPx = explorationObjectiveTopPx()
+
+  if (isDismissed) {
+    return (
+      <motion.button
+        type="button"
+        initial={{ opacity: 0, y: -8 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="fixed left-1/2 -translate-x-1/2 pointer-events-auto font-mono text-[10px] tracking-wider px-2.5 py-1 rounded-full border"
+        style={{
+          top: topPx,
+          zIndex: UI_LAYERS.HUD + 2,
+          color: urgencyColor,
+          borderColor: `${urgencyColor}44`,
+          background: 'rgba(0, 8, 16, 0.75)',
+          backdropFilter: 'blur(8px)',
+        }}
+        onClick={handleRestore}
+        aria-label="Показать текущую цель"
+      >
+        ► Цель
+      </motion.button>
+    )
+  }
 
   return (
     <AnimatePresence>
       <motion.div
-        initial={{ opacity: 0, y: -20 }}
+        initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: -20 }}
-        transition={{ duration: 0.4, ease: 'easeOut' }}
-        className="fixed top-4 left-1/2 -translate-x-1/2 z-[100] pointer-events-auto"
-        style={{ maxWidth: '420px', width: '90vw' }}
+        exit={{ opacity: 0, y: -10 }}
+        transition={{ duration: 0.3, ease: 'easeOut' }}
+        className="fixed left-1/2 -translate-x-1/2 pointer-events-auto"
+        style={{
+          top: topPx,
+          zIndex: UI_LAYERS.HUD + 2,
+          maxWidth: EXPLORATION_HUD_LAYOUT.OBJECTIVE_MAX_WIDTH,
+          width: 'min(92vw, 360px)',
+        }}
       >
-        {/* Scanlines backdrop */}
         <div
-          className="absolute inset-0 rounded-lg overflow-hidden pointer-events-none"
-          style={{
-            background: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,255,238,0.03) 2px, rgba(0,255,238,0.03) 4px)',
-            zIndex: 0,
-          }}
-        />
-
-        {/* Main container */}
-        <motion.div
+          role="button"
+          tabIndex={0}
           onClick={toggleExpand}
-          className="relative cursor-pointer"
-          style={{
-            background: 'linear-gradient(135deg, rgba(0,8,16,0.92), rgba(0,20,30,0.88))',
-            border: `1px solid ${urgencyColor}44`,
-            borderRadius: '8px',
-            padding: '8px 14px',
-            boxShadow: `0 0 15px ${urgencyColor}22, 0 0 4px ${urgencyColor}11, inset 0 0 8px rgba(0,255,238,0.05)`,
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault()
+              toggleExpand()
+            }
           }}
-          whileHover={{
-            boxShadow: `0 0 20px ${urgencyColor}33, 0 0 8px ${urgencyColor}22, inset 0 0 12px rgba(0,255,238,0.08)`,
+          className="relative rounded-md cursor-pointer"
+          style={{
+            background: 'rgba(0, 10, 18, 0.82)',
+            border: `1px solid ${urgencyColor}33`,
+            boxShadow: `0 0 10px ${urgencyColor}12`,
+            backdropFilter: 'blur(10px)',
           }}
         >
-          {/* Corner brackets */}
-          <div
-            className="absolute top-0 left-0 w-3 h-3 pointer-events-none"
-            style={{
-              borderTop: `2px solid ${urgencyColor}88`,
-              borderLeft: `2px solid ${urgencyColor}88`,
-              borderRadius: '2px 0 0 0',
-            }}
-          />
-          <div
-            className="absolute top-0 right-0 w-3 h-3 pointer-events-none"
-            style={{
-              borderTop: `2px solid ${urgencyColor}88`,
-              borderRight: `2px solid ${urgencyColor}88`,
-              borderRadius: '0 2px 0 0',
-            }}
-          />
-          <div
-            className="absolute bottom-0 left-0 w-3 h-3 pointer-events-none"
-            style={{
-              borderBottom: `2px solid ${urgencyColor}88`,
-              borderLeft: `2px solid ${urgencyColor}88`,
-              borderRadius: '0 0 0 2px',
-            }}
-          />
-          <div
-            className="absolute bottom-0 right-0 w-3 h-3 pointer-events-none"
-            style={{
-              borderBottom: `2px solid ${urgencyColor}88`,
-              borderRight: `2px solid ${urgencyColor}88`,
-              borderRadius: '0 0 2px 0',
-            }}
-          />
-
-          {/* Header line with "Текущая цель" label */}
-          <div className="flex items-center justify-between gap-2 mb-1">
-            {/* "Текущая цель" label */}
-            <div className="flex items-center gap-1.5">
-              <span
-                className="text-[10px] font-mono tracking-wider font-bold"
-                style={{
-                  color: '#00ffee',
-                  textShadow: '0 0 6px rgba(0,255,238,0.4)',
-                }}
-              >
-                ТЕКУЩАЯ ЦЕЛЬ
-              </span>
-              {/* Act indicator */}
-              <span
-                className="text-[9px] font-mono tracking-wider"
-                style={{
-                  color: '#00ff6688',
-                  textShadow: '0 0 4px rgba(0,255,102,0.3)',
-                }}
-              >
-                · АКТ {actNumber}
-              </span>
-            </div>
-
-            {/* Urgency badge */}
+          <div className="flex items-start gap-2 px-3 py-2 pr-9">
             <span
-              className="text-[9px] font-mono tracking-wider px-1.5 py-0.5 rounded"
-              style={{
-                color: urgencyColor,
-                background: `${urgencyColor}11`,
-                border: `1px solid ${urgencyColor}33`,
-                textShadow: `0 0 4px ${urgencyColor}44`,
-              }}
-            >
-              {urgencyLabel}
-            </span>
-          </div>
-
-          {/* Objective text with pulse arrow */}
-          <motion.div
-            key={displayText}
-            initial={{ opacity: 0.5, x: -4 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5, ease: 'easeOut' }}
-            className="flex items-center gap-2"
-          >
-            {/* Arrow indicator with pulse */}
-            <motion.span
-              className="text-sm font-bold flex-shrink-0"
-              style={{
-                color: urgencyColor,
-                textShadow: `0 0 8px ${urgencyColor}66`,
-              }}
-              animate={{
-                opacity: [1, 0.5, 1],
-              }}
-              transition={{
-                duration: 2,
-                repeat: Infinity,
-                ease: 'easeInOut',
-              }}
+              className="text-xs font-bold flex-shrink-0 mt-0.5"
+              style={{ color: urgencyColor, textShadow: `0 0 6px ${urgencyColor}44` }}
+              aria-hidden
             >
               ►
-            </motion.span>
-
-            <span
-              className="text-sm font-mono leading-snug"
-              style={{
-                color: '#c0f0f0',
-                textShadow: '0 0 6px rgba(0,255,238,0.2)',
-              }}
-            >
-              {displayText}
             </span>
-          </motion.div>
-
-          {/* Directional guidance — where to go */}
-          <AnimatePresence>
-            {currentObjective?.directionHint && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
-                transition={{ duration: 0.3 }}
-                className="overflow-hidden"
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2 mb-0.5">
+                <span
+                  className="text-[9px] font-mono tracking-wider font-semibold"
+                  style={{ color: '#00ffeeaa' }}
+                >
+                  ЦЕЛЬ · АКТ {actNumber}
+                </span>
+              </div>
+              <p
+                className={`text-xs font-mono leading-snug ${expanded ? '' : 'line-clamp-1'}`}
+                style={{ color: '#c8e8e8' }}
               >
-                <div className="mt-1.5 flex items-center gap-1.5">
-                  <motion.span
-                    className="text-xs font-mono font-bold flex-shrink-0"
-                    style={{
-                      color: '#00ffee',
-                      textShadow: '0 0 6px rgba(0,255,238,0.5)',
-                    }}
-                    animate={{
-                      x: [0, 4, 0],
-                      opacity: [1, 0.6, 1],
-                    }}
-                    transition={{
-                      duration: 1.5,
-                      repeat: Infinity,
-                      ease: 'easeInOut',
-                    }}
-                  >
-                    →
-                  </motion.span>
-                  <span
-                    className="text-xs font-mono font-semibold tracking-wide"
-                    style={{
-                      color: currentObjective.targetSceneId === currentSceneId
-                        ? '#00ffcc'
-                        : '#66ccff',
-                      textShadow: currentObjective.targetSceneId === currentSceneId
-                        ? '0 0 6px rgba(0,255,204,0.4)'
-                        : '0 0 6px rgba(102,204,255,0.4)',
-                    }}
-                  >
-                    {currentObjective.directionHint}
-                  </span>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          {/* Quest title (if available) */}
-          {currentObjective?.questTitle && (
-            <div className="mt-1 flex items-center gap-1.5">
-              <span className="text-[9px] font-mono" style={{ color: '#668888' }}>
-                Задание:
-              </span>
-              <span
-                className="text-[10px] font-mono font-semibold"
-                style={{
-                  color: currentObjective.questType === 'main' ? '#ff8866' : '#66ccff',
-                  textShadow: `0 0 4px ${currentObjective.questType === 'main' ? 'rgba(255,136,102,0.3)' : 'rgba(102,204,255,0.3)'}`,
-                }}
-              >
-                {currentObjective.questTitle}
-              </span>
+                {displayText}
+              </p>
             </div>
-          )}
+          </div>
 
-          {/* Expanded details */}
+          <button
+            type="button"
+            onClick={handleDismiss}
+            className="absolute top-1.5 right-1.5 w-6 h-6 flex items-center justify-center rounded text-slate-400 hover:text-white hover:bg-white/10 transition-colors"
+            aria-label="Скрыть подсказку цели"
+          >
+            <X className="size-3.5" />
+          </button>
+
           <AnimatePresence>
-            {expanded && guidance && (
+            {expanded && (
               <motion.div
                 initial={{ height: 0, opacity: 0 }}
                 animate={{ height: 'auto', opacity: 1 }}
                 exit={{ height: 0, opacity: 0 }}
-                transition={{ duration: 0.3 }}
-                className="overflow-hidden"
+                transition={{ duration: 0.2 }}
+                className="overflow-hidden border-t px-3 py-2"
+                style={{ borderColor: `${urgencyColor}22` }}
               >
-                <div className="mt-2 pt-2" style={{ borderTop: `1px solid ${urgencyColor}22` }}>
-                  <div className="flex items-center gap-2 text-[11px] font-mono" style={{ color: '#88aaaa' }}>
-                    <span>Тип:</span>
-                    <span style={{ color: urgencyColor }}>
-                      {objectiveTypeLabel(guidance.objectiveType)}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2 text-[11px] font-mono mt-1" style={{ color: '#88aaaa' }}>
-                    <span>Глава:</span>
-                    <span style={{ color: '#00ff66' }}>{guidance.chapterTitle}</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-[11px] font-mono mt-1" style={{ color: '#88aaaa' }}>
-                    <span>Цель:</span>
-                    <span style={{ color: '#66ccff' }}>{guidance.targetId}</span>
-                  </div>
-                </div>
+                {currentObjective?.directionHint && (
+                  <p className="text-[10px] font-mono mb-1" style={{ color: '#66ccff' }}>
+                    → {currentObjective.directionHint}
+                  </p>
+                )}
+                {currentObjective?.questTitle && (
+                  <p className="text-[10px] font-mono" style={{ color: '#889999' }}>
+                    Задание: <span style={{ color: '#ffaa88' }}>{currentObjective.questTitle}</span>
+                  </p>
+                )}
+                {guidance && (
+                  <p className="text-[10px] font-mono mt-1" style={{ color: '#668888' }}>
+                    {guidance.chapterTitle}
+                  </p>
+                )}
+                <p className="text-[9px] font-mono mt-1.5" style={{ color: `${urgencyColor}66` }}>
+                  Q — журнал заданий
+                </p>
               </motion.div>
             )}
           </AnimatePresence>
-
-          {/* Expand hint */}
-          <div className="text-center mt-1">
-            <span className="text-[9px] font-mono" style={{ color: `${urgencyColor}44` }}>
-              {expanded ? '▼ свернуть' : '▼ подробнее'}
-            </span>
-          </div>
-        </motion.div>
+        </div>
       </motion.div>
     </AnimatePresence>
   )
-}
-
-function objectiveTypeLabel(type: GuidanceInfo['objectiveType']): string {
-  switch (type) {
-    case 'talk_to_npc': return 'Разговор с NPC'
-    case 'visit_location': return 'Посещение локации'
-    case 'complete_quest': return 'Выполнение задания'
-    case 'collect_item': return 'Сбор предметов'
-    case 'make_choice': return 'Выбор решения'
-    default: return type
-  }
 }

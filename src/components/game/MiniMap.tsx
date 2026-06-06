@@ -9,6 +9,7 @@ import { useRef, useEffect, useMemo } from 'react';
 import { selectNpcRelations, useMiniMapState } from '@/store/selectors';
 import { SCENE_CONFIG } from '@/config/scenes';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
+import { explorationMinimapTopPx, EXPLORATION_HUD_LAYOUT } from '@/shared/constants/hudLayout';
 import { ALL_NPC_DEFINITIONS } from '@/data/allNpcDefinitions';
 import { useActiveQuests, getQuestMarker } from '@/store/questStore';
 
@@ -291,9 +292,11 @@ export function MiniMap() {
 
   return (
     <div
-      className="fixed top-14 right-3 sm:top-16 sm:right-4 pointer-events-none hidden lg:block"
+      className="fixed pointer-events-none hidden lg:block"
       data-exploration-ui
       style={{
+        top: explorationMinimapTopPx(),
+        right: EXPLORATION_HUD_LAYOUT.RIGHT_INSET,
         zIndex: UI_LAYERS.HUD,
         backdropFilter: 'blur(8px)',
         borderRadius: '8px',

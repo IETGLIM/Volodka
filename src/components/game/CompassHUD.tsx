@@ -10,6 +10,7 @@ import { Navigation } from 'lucide-react';
 import { useGameStore } from '@/store/gameStore';
 import { sharedPlayerRotationRef } from '@/engine/PlayerRotationState';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
+import { explorationCompassTopPx } from '@/shared/constants/hudLayout';
 
 /* ── Cyrillic cardinal directions ── */
 interface CompassDir {
@@ -218,8 +219,8 @@ export function CompassHUD() {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -20 }}
           transition={{ duration: 0.3, ease: 'easeOut' }}
-          className="compass-hud fixed top-2 left-1/2 -translate-x-1/2 pointer-events-none"
-          style={{ zIndex: UI_LAYERS.HUD }}
+          className="compass-hud fixed left-1/2 -translate-x-1/2 pointer-events-none"
+          style={{ top: explorationCompassTopPx(), zIndex: UI_LAYERS.HUD + 1 }}
         >
           {/* Glass-morphism container */}
           <div

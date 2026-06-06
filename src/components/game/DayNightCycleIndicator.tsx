@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { useGameStore } from '@/store/gameStore';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
+import { explorationDayNightTopPx, EXPLORATION_HUD_LAYOUT } from '@/shared/constants/hudLayout';
 
 /* ── Time phases ── */
 type TimePhase = 'morning' | 'day' | 'evening' | 'night';
@@ -248,7 +249,7 @@ export function DayNightCycleIndicator() {
   return (
     <div
       className="fixed pointer-events-none hidden lg:block"
-      style={{ top: 80, right: 12, zIndex: UI_LAYERS.HUD + 1 }}
+      style={{ top: explorationDayNightTopPx(), right: EXPLORATION_HUD_LAYOUT.RIGHT_INSET, zIndex: UI_LAYERS.HUD + 1 }}
     >
       <motion.div
         className="pointer-events-auto rounded-lg border backdrop-blur-md overflow-hidden"

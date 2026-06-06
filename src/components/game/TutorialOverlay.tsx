@@ -212,7 +212,7 @@ export function TutorialOverlay() {
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: 10, scale: 0.98 }}
           transition={{ duration: 0.5, ease: 'easeOut' }}
-          className="fixed top-16 right-2 pointer-events-auto sm:top-20 sm:right-6"
+          className="fixed bottom-24 left-3 sm:bottom-28 sm:left-4 pointer-events-auto"
           style={{ zIndex: UI_LAYERS.HUD }}
         >
           <div className="relative bg-slate-950/95 border border-cyan-900/40 rounded-lg p-3 max-w-[260px] sm:max-w-xs backdrop-blur-md shadow-xl shadow-black/40">

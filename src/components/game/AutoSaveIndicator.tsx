@@ -11,6 +11,7 @@ import { Save, Check, Clock } from 'lucide-react';
 import { eventBus } from '@/engine/EventBus';
 import { useGameStore } from '@/store/gameStore';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
+import { bottomAutoSavePx } from '@/shared/constants/hudLayout';
 
 /* ─── Types ─── */
 
@@ -154,8 +155,8 @@ export function AutoSaveIndicator() {
   /* ── Render ── */
   return (
     <div
-      className="fixed bottom-4 right-4 pointer-events-none"
-      style={{ zIndex: UI_LAYERS.TOASTS }}
+      className="fixed right-3 sm:right-4 pointer-events-none"
+      style={{ bottom: bottomAutoSavePx(), zIndex: UI_LAYERS.TOASTS }}
     >
       <AnimatePresence mode="wait">
         {/* ── Full notification (saving / saved) ── */}

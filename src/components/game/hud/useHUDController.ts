@@ -6,7 +6,7 @@ import {
   useSaveGame,
 } from '@/store/selectors';
 import { SCENE_CONFIG } from '@/config/scenes';
-import { useNextTrackedObjective, useActiveQuests } from '@/store/questStore';
+import { useActiveQuests } from '@/store/questStore';
 import { eventBus } from '@/engine/EventBus';
 import { PHOTO_EVENTS } from '@/engine/events';
 import { floatKarma, floatEnergy, floatStress, floatXP } from '@/components/game/FloatingText';
@@ -75,9 +75,6 @@ export function useHUDController(props: HUDProps) {
   );
 
   const sceneName = SCENE_CONFIG[currentSceneId]?.name ?? 'Неизвестно';
-  const activeQuests = useActiveQuests();
-  const firstQuestId = activeQuests.length > 0 ? activeQuests[0].questId : '';
-  const nextObjective = useNextTrackedObjective(firstQuestId);
   const questNotificationCount = useQuestNotificationCount();
 
   const [showSaveIndicator, setShowSaveIndicator] = useState(false);
@@ -213,8 +210,6 @@ export function useHUDController(props: HUDProps) {
     currentWeather,
     collectedPoems,
     questNotificationCount,
-    firstQuestId,
-    nextObjective,
     showSaveIndicator,
     handleSave,
     karma,

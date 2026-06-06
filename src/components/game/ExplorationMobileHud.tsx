@@ -18,6 +18,7 @@ import { Package, Hand, ArrowUp, Zap } from 'lucide-react';
 import { useVirtualControlsRef } from '@/engine/VirtualControlsState';
 import type { VirtualControls } from '@/hooks/useGamePhysics';
 import { useGameStore } from '@/store/gameStore';
+import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { eventBus } from '@/engine/EventBus';
 import { requestSceneTransition } from '@/engine/scene/sceneTransition';
 import { getSceneExits } from '@/config/scenes';
@@ -30,6 +31,7 @@ interface ExplorationMobileHudProps {
 
 export function ExplorationMobileHud({ onInteractPress, onOpenInventory }: ExplorationMobileHudProps) {
   const virtualControlsRef = useVirtualControlsRef();
+  const mode = useGameStore((s) => s.mode);
   const [runToggled, setRunToggled] = useState(false);
   const [isLandscape, setIsLandscape] = useState(false);
   const [vw, setVw] = useState(375); // viewport width for sizing calc
@@ -212,6 +214,8 @@ export function ExplorationMobileHud({ onInteractPress, onOpenInventory }: Explo
     transition: 'all 0.1s ease',
   };
 
+  if (mode !== 'exploration') return null;
+
   // ── LANDSCAPE LAYOUT ──
   // Compact horizontal strip: D-pad left, actions right, everything in one row
   if (isLandscape) {
@@ -220,7 +224,7 @@ export function ExplorationMobileHud({ onInteractPress, onOpenInventory }: Explo
         className="fixed inset-0"
         data-exploration-ui
         style={{
-          zIndex: 90, // Above all game UI, below only loading/cinematic
+          zIndex: UI_LAYERS.MOBILE_CONTROLS,
           pointerEvents: 'none',
           // Safe area for notched phones in landscape
           paddingLeft: 'env(safe-area-inset-left, 0px)',
@@ -391,7 +395,7 @@ export function ExplorationMobileHud({ onInteractPress, onOpenInventory }: Explo
       className="fixed inset-0"
       data-exploration-ui
       style={{
-        zIndex: 90, // Above all game UI, below only loading/cinematic
+        zIndex: UI_LAYERS.MOBILE_CONTROLS,
         pointerEvents: 'none',
         // Safe area for notched phones
         paddingBottom: 'env(safe-area-inset-bottom, 0px)',

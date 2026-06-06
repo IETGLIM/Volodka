@@ -23,6 +23,7 @@
 
 import { useMemo } from 'react';
 import { useGameStore } from '@/store/gameStore';
+import { useMobileVisualPerf } from '@/hooks/use-mobile';
 import { VolumetricFog, FOG_PRESETS } from './VolumetricFog';
 import { GodRays, GODRAY_PRESETS } from './GodRays';
 import { SteamParticles } from './SteamParticles';
@@ -69,6 +70,8 @@ const SNOW_SCENES = new Set(['street_winter']);
 /** Main controller: renders appropriate atmospheric effects per scene */
 export function AtmosphericEffects() {
   const sceneId = useGameStore((s) => s.exploration.currentSceneId);
+  const { visualLite, effectsScale } = useMobileVisualPerf();
+  const heavyEffects = visualLite || effectsScale < 0.85;
 
   const showFog = sceneHasFog(sceneId);
   const showGodRays = sceneHasGodRays(sceneId);
@@ -84,15 +87,20 @@ export function AtmosphericEffects() {
     // Boost fog density for specific atmospheric scenes
     switch (sceneId) {
       case 'street_night':
-        return { ...preset, opacity: 0.07, planeCount: 8 };
+        return { ...preset, opacity: heavyEffects ? 0.025 : 0.03, planeCount: heavyEffects ? 2 : 3 };
       case 'abandoned_factory':
-        return { ...preset, opacity: 0.08, planeCount: 8 };
+        // Always keep factory effects lighter — full stack caused hard freezes on entry
+        return {
+          ...preset,
+          opacity: heavyEffects ? 0.035 : 0.04,
+          planeCount: heavyEffects ? 2 : 3,
+        };
       case 'sleep_dream':
-        return { ...preset, opacity: 0.07, planeCount: 7 };
+        return { ...preset, opacity: 0.07, planeCount: heavyEffects ? 4 : 7 };
       default:
         return preset;
     }
-  }, [sceneId]);
+  }, [sceneId, heavyEffects]);
 
   return (
     <>
@@ -100,7 +108,7 @@ export function AtmosphericEffects() {
       {showFog && <VolumetricFog sceneId={sceneId} config={fogConfig} />}
 
       {/* God ray light shafts */}
-      {showGodRays && <GodRays sceneId={sceneId} />}
+      {showGodRays && <GodRays sceneId={sceneId} liteMode={heavyEffects} />}
 
       {/* Special steam particles (café, kitchen) */}
       {showSteam && <SteamParticles sceneId={sceneId} />}

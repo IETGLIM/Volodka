@@ -259,7 +259,7 @@ export function DirectionalDamageIndicator() {
   return (
     <div
       className="fixed inset-0 pointer-events-none"
-      style={{ zIndex: UI_LAYERS.LOADING - 1 }}
+      style={{ zIndex: UI_LAYERS.GLITCH }}
     >
       {/* Damage flashes — stack on top of each other */}
       <AnimatePresence>

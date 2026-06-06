@@ -14,6 +14,8 @@ export const UI_LAYERS = {
   GLITCH: 7,
   /** HUD elements (health, minimap, compass, stress) */
   HUD: 10,
+  /** Touch D-pad / interact — below menus & panels */
+  MOBILE_CONTROLS: 42,
   /** Scene name banner */
   SCENE_BANNER: 20,
   /** Dialogue / story overlay */

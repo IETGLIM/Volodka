@@ -7,7 +7,7 @@ import { useFrame } from '@react-three/fiber';
 import { Html } from '@react-three/drei';
 import * as THREE from 'three';
 import { getGameStore, useGameStore } from '@/store/gameStore';
-import { useCurrentSceneId, useInteractionOverlay, useTimeOfDay } from '@/store/selectors';
+import { useCurrentSceneId, useInteractionOverlay, useTimeOfDay, useSceneExitState } from '@/store/selectors';
 import { TRIGGER_ZONES, type TriggerZone, INTERACTION_LABELS } from '@/data/triggerZones';
 import { findNpcById, findNpcByDialogueNodeId } from '@/data/allNpcDefinitions';
 import type { NPCDefinition } from '@/shared/types/game';
@@ -16,9 +16,18 @@ import { selectScheduleContext } from '@/shared/scheduleContext';
 import { eventBus } from '@/engine/EventBus';
 import { isInteractionLocked } from './InteractionSystemBridge';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
+import { bottomInteractPromptPx } from '@/shared/constants/hudLayout';
+import { getSceneExits } from '@/config/scenes';
 
 /** Maximum number of visible [E] prompts at once */
 const MAX_VISIBLE_PROMPTS = 2;
+
+/** Fixed foot-ring for proximity highlight — not scaled to zone size */
+const FOOT_RING_INNER = 0.3;
+const FOOT_RING_OUTER = 0.42;
+
+/** Scene exit proximity — matches SceneExitIndicator */
+const EXIT_PROXIMITY_RANGE = 2.5;
 
 /** Maximum number of sparkle particles per trigger zone (InstancedMesh pool size) */
 const MAX_PARTICLES = 8;
@@ -42,9 +51,15 @@ interface InteractiveTriggersProps {
 /** Trigger zones and "Press E" indicators with centralized prompt management */
 export function InteractiveTriggers({ livePlayerPositionRef }: InteractiveTriggersProps) {
   const { sceneId, gameMode, showStoryOverlay } = useInteractionOverlay();
+  const { playerFlags, playerKarma } = useSceneExitState();
   const timeOfDay = useTimeOfDay();
   const scheduleCtx = useGameStore(selectScheduleContext);
   const zones = TRIGGER_ZONES.filter((z) => z.sceneId === sceneId);
+
+  const sceneExits = useMemo(
+    () => getSceneExits(sceneId, playerFlags, playerKarma),
+    [sceneId, playerFlags, playerKarma],
+  );
 
   const npcProximityTargets = useMemo(() => {
     const npcIdsInScene = getNPCsForScene(sceneId, timeOfDay, scheduleCtx);
@@ -63,6 +78,9 @@ export function InteractiveTriggers({ livePlayerPositionRef }: InteractiveTrigge
 
   const npcProximityTargetsRef = useRef(npcProximityTargets);
   npcProximityTargetsRef.current = npcProximityTargets;
+
+  const sceneExitsRef = useRef(sceneExits);
+  sceneExitsRef.current = sceneExits;
 
   // Hide all prompts when not in exploration mode or when story overlay is active
   const isOverlayBlocking = gameMode !== 'exploration' || showStoryOverlay;
@@ -108,6 +126,38 @@ export function InteractiveTriggers({ livePlayerPositionRef }: InteractiveTrigge
       const dist = playerPos.distanceTo(tempVecRef.current);
       if (dist < 3.0 && !isInteractionLocked()) {
         entries.push({ id: target.id, distance: dist });
+      }
+    }
+
+    // Scene exits without overlapping trigger zones — centralized [E] prompt
+    const activeExitIds = new Set<string>();
+    for (let idx = 0; idx < sceneExitsRef.current.length; idx++) {
+      const exit = sceneExitsRef.current[idx];
+      const hasOverlap = TRIGGER_ZONES.some(
+        (z) =>
+          z.sceneId === sceneId &&
+          Math.abs(z.position[0] - exit.position[0]) < 1.5 &&
+          Math.abs(z.position[2] - exit.position[2]) < 1.5,
+      );
+      if (hasOverlap) continue;
+
+      tempVecRef.current.set(...exit.position);
+      const dist = playerPos.distanceTo(tempVecRef.current);
+      const exitId = `exit_${exit.targetScene}_${idx}`;
+      if (dist < EXIT_PROXIMITY_RANGE && !isInteractionLocked()) {
+        activeExitIds.add(exitId);
+        promptsMapRef.current.set(exitId, {
+          id: exitId,
+          label: exit.label,
+          distance: dist,
+          type: 'zone',
+        });
+        entries.push({ id: exitId, distance: dist });
+      }
+    }
+    for (const key of promptsMapRef.current.keys()) {
+      if (key.startsWith('exit_') && !activeExitIds.has(key)) {
+        promptsMapRef.current.delete(key);
       }
     }
 
@@ -177,7 +227,7 @@ export function InteractiveTriggers({ livePlayerPositionRef }: InteractiveTrigge
           <div
             style={{
               position: 'fixed',
-              bottom: '140px',
+              bottom: `${bottomInteractPromptPx()}px`,
               left: '50%',
               transform: 'translateX(-50%)',
               zIndex: UI_LAYERS.WORLD_LABELS,
@@ -342,11 +392,13 @@ function NPCProximityTrigger({
   const [showIndicator, setShowIndicator] = useState(false);
   const showIndicatorRef = useRef(false);
   const eKeyConsumedRef = useRef(false);
+  const footRingMatRef = useRef<THREE.MeshBasicMaterial>(null);
+  const pulsePhaseRef = useRef(0);
 
   // Pre-allocated temp Vector3 — avoids per-frame allocation (P0-2.2)
   const tempVecRef = useRef(new THREE.Vector3());
 
-  useFrame(() => {
+  useFrame((_, delta) => {
     const playerPos = livePlayerPositionRef.current;
     tempVecRef.current.set(...position);
     const dist = playerPos.distanceTo(tempVecRef.current);
@@ -368,13 +420,19 @@ function NPCProximityTrigger({
         unregisterPrompt(promptId);
       }
     } else if (isNear) {
-      // Update distance for sorting
       registerPrompt({
         id: promptId,
         label: `Поговорить с ${npcName}`,
         distance: dist,
         type: 'npc' as const,
       });
+    }
+
+    if (isNear) {
+      pulsePhaseRef.current += delta * 2.5;
+      if (footRingMatRef.current) {
+        footRingMatRef.current.opacity = 0.2 + Math.sin(pulsePhaseRef.current) * 0.08;
+      }
     }
   });
 
@@ -437,8 +495,27 @@ function NPCProximityTrigger({
     };
   }, [promptId, unregisterPrompt]);
 
-  // No individual Html prompt — rendered centrally in parent
-  return <group position={position} />;
+  // Subtle foot glow when in range — no floating markers
+  return (
+    <group position={position}>
+      {showIndicator && (
+        <>
+          <mesh rotation-x={-Math.PI / 2} position={[0, 0.02, 0]}>
+            <ringGeometry args={[FOOT_RING_INNER, FOOT_RING_OUTER, 24]} />
+            <meshBasicMaterial
+              ref={footRingMatRef}
+              color="#ffb828"
+              transparent
+              opacity={0.22}
+              side={THREE.DoubleSide}
+              depthWrite={false}
+            />
+          </mesh>
+          <pointLight color="#ffb828" intensity={0.35} distance={2.5} position={[0, 0.5, 0]} />
+        </>
+      )}
+    </group>
+  );
 }
 
 /** Internal particle data stored in ref — not React state to avoid per-frame re-renders (P0-2.3) */
@@ -475,12 +552,12 @@ function TriggerZoneComponent({
   // Particle burst state — stored in ref, not useState, to avoid per-frame re-renders (P0-2.3)
   const particlesRef = useRef<ParticleData[]>([]);
 
-  // Pulse animation — stored in ref, updated imperatively via material refs (P0-2.3)
+  // Pulse animation — updated imperatively via material ref
   const pulsePhaseRef = useRef(0);
-  const outlineBoxMatRef = useRef<THREE.MeshBasicMaterial>(null);
   const glowRingMatRef = useRef<THREE.MeshBasicMaterial>(null);
+  const proximityLightRef = useRef<THREE.PointLight>(null);
 
-  // Outline flash state — turns white briefly when E is pressed
+  // Brief flash on E press
   const outlineFlashRef = useRef(false);
   const outlineFlashTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
@@ -545,20 +622,19 @@ function TriggerZoneComponent({
     if (isNear) {
       pulsePhaseRef.current += delta * 3;
     }
-    const pulseOpacity = 0.35 + Math.sin(pulsePhaseRef.current) * 0.15;
+    const pulseOpacity = 0.22 + Math.sin(pulsePhaseRef.current) * 0.08;
     const isFlashing = outlineFlashRef.current;
-    const outlineOpacity = isFlashing ? 0.9 : pulseOpacity;
+    const ringOpacity = isFlashing ? 0.45 : pulseOpacity;
 
-    // Update outline box material imperatively
-    if (outlineBoxMatRef.current) {
-      outlineBoxMatRef.current.color.set(isFlashing ? '#ffffff' : '#00ffee');
-      outlineBoxMatRef.current.opacity = isFlashing ? 0.35 : pulseOpacity * 0.3;
-    }
-
-    // Update glow ring material imperatively
     if (glowRingMatRef.current) {
       glowRingMatRef.current.color.set(isFlashing ? '#ffffff' : '#00ffee');
-      glowRingMatRef.current.opacity = outlineOpacity;
+      glowRingMatRef.current.opacity = ringOpacity;
+    }
+
+    if (proximityLightRef.current) {
+      proximityLightRef.current.intensity = isNear
+        ? (isFlashing ? 0.9 : 0.35 + Math.sin(pulsePhaseRef.current) * 0.12)
+        : 0;
     }
 
     // Cooldown
@@ -789,47 +865,28 @@ function TriggerZoneComponent({
 
   return (
     <group position={zone.position}>
-      {/* Emissive outline box — slightly larger than zone, transparent with glow */}
       {showIndicator && (
-        <mesh position={[0, zone.size[1] / 2, 0]}>
-          <boxGeometry
-            args={[
-              zone.size[0] + 0.12,
-              zone.size[1] + 0.12,
-              zone.size[2] + 0.12,
-            ]}
-          />
-          <meshBasicMaterial
-            ref={outlineBoxMatRef}
+        <>
+          <mesh rotation-x={-Math.PI / 2} position={[0, 0.02, 0]}>
+            <ringGeometry args={[FOOT_RING_INNER, FOOT_RING_OUTER, 24]} />
+            <meshBasicMaterial
+              ref={glowRingMatRef}
+              color="#00ffee"
+              transparent
+              opacity={0.22}
+              side={THREE.DoubleSide}
+              depthWrite={false}
+            />
+          </mesh>
+          <pointLight
+            ref={proximityLightRef}
             color="#00ffee"
-            transparent
-            opacity={0.3}
-            side={THREE.BackSide}
+            intensity={0.35}
+            distance={3}
+            position={[0, zone.size[1] * 0.5, 0]}
           />
-        </mesh>
+        </>
       )}
-
-      {/* Glow ring around interactive object when near */}
-      {showIndicator && (
-        <mesh rotation-x={-Math.PI / 2} position={[0, 0.02, 0]}>
-          <ringGeometry
-            args={[
-              Math.max(zone.size[0], zone.size[2]) / 2,
-              Math.max(zone.size[0], zone.size[2]) / 2 + 0.15,
-              32,
-            ]}
-          />
-          <meshBasicMaterial
-            ref={glowRingMatRef}
-            color="#00ffee"
-            transparent
-            opacity={0.35}
-            side={THREE.DoubleSide}
-          />
-        </mesh>
-      )}
-
-      {/* No individual Html prompt — rendered centrally in parent */}
 
       {/* Sparkle particles — single InstancedMesh instead of 8 separate meshes (P0-2.3) */}
       <instancedMesh
@@ -886,24 +943,9 @@ export function WorldItem({
         <meshStandardMaterial
           color="#ffaa44"
           emissive="#ff8800"
-          emissiveIntensity={0.3}
+          emissiveIntensity={0.55}
         />
       </mesh>
-      <Html position={[0, 0.4, 0]} center style={{ pointerEvents: 'none' }}>
-        <div
-          style={{
-            background: 'rgba(0,0,0,0.7)',
-            color: '#ffcc44',
-            padding: '2px 6px',
-            borderRadius: '3px',
-            fontSize: '10px',
-            userSelect: 'none',
-            zIndex: 20,
-          }}
-        >
-          {label}
-        </div>
-      </Html>
     </group>
   );
 }

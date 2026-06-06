@@ -51,7 +51,6 @@ import { SceneTransitionOverlay } from './SceneTransitionOverlay';
 import { WeatherIndicator } from './WeatherIndicator';
 import { DayNightCycleIndicator } from './DayNightCycleIndicator';
 import { FloatingTextLayer } from './FloatingText';
-import { InteractionHintPopup } from './InteractionHintPopup';
 import { ScreenEffects } from './ScreenEffects';
 import { CutsceneOverlay } from '@/components/game/CutsceneOverlay';
 import { PoetryPowerBar } from '@/components/game/PoetryPowerBar';
@@ -486,7 +485,7 @@ export function GameOrchestrator() {
               pointerEvents: (mode === 'exploration' || mode === 'cutscene' || mode === 'combat') ? 'auto' : 'none',
             }}
           >
-            <Suspense fallback={<div className="fixed inset-0 bg-black" style={{ zIndex: 100 }} />}>
+            <Suspense fallback={<div className="fixed inset-0 bg-black" style={{ zIndex: UI_LAYERS.LOADING }} />}>
               <RPGGameCanvas />
             </Suspense>
           </div>
@@ -508,36 +507,41 @@ export function GameOrchestrator() {
           {/* ── Exploration / visual-novel / cutscene / combat UI layers ── */}
           {(mode === 'exploration' || mode === 'cutscene' || mode === 'combat') && (
             <>
-              {/* ── Global notification toasts ── */}
-              <NotificationToasts />
+              {/* ── Global notification toasts (exploration stats only) ── */}
+              {mode === 'exploration' && <NotificationToasts />}
 
-              {/* ── Quest notification system (auto-triggers on quest events) ── */}
+              {/* ── Quest notification system ── */}
+              {mode === 'exploration' && (
               <Suspense fallback={null}>
                 <LazyQuestNotificationSystem />
               </Suspense>
+              )}
 
-              {/* ── Story guidance HUD (top-center, shows current objective) ── */}
-              <Suspense fallback={null}>
-                <LazyStoryGuidanceHUD />
-              </Suspense>
+              {/* Story guidance — exploration only, below compass */}
+              {mode === 'exploration' && (
+                <Suspense fallback={null}>
+                  <LazyStoryGuidanceHUD />
+                </Suspense>
+              )}
 
               {/* ── Level-up summary overlay (auto-triggers on level-up) ── */}
               <LevelUpSummary />
 
-              {/* ── Event notification popups (combat, scene, quest, achievement) ── */}
+              {/* ── Event notification popups (combat events) ── */}
               <EventNotificationPopup />
 
+              {mode === 'exploration' && (
+                <>
               {/* ── Weather alert notifications ── */}
               <WeatherAlertNotification />
 
               {/* ── Crafting discovery toast ── */}
               <CraftingDiscoveryToast />
+                </>
+              )}
 
               {/* ── Floating text numbers (XP, karma, damage, etc.) ── */}
               <FloatingTextLayer />
-
-              {/* ── Interaction hint popup (contextual action hints near interactive objects) ── */}
-              <InteractionHintPopup />
 
               {/* ── Screen effects (flash, shake, vignette, chromatic aberration) ── */}
               <ScreenEffects />
@@ -684,7 +688,9 @@ export function GameOrchestrator() {
 
               {/* Mobile controls — visible during ALL gameplay modes on touch devices
                   (player needs D-pad to move + interact button to advance/interact) */}
-              {isMobile && <ExplorationMobileHud onInteractPress={handleMobileInteract} onOpenInventory={handleOpenInventory} />}
+              {isMobile && mode === 'exploration' && (
+                <ExplorationMobileHud onInteractPress={handleMobileInteract} onOpenInventory={handleOpenInventory} />
+              )}
 
               {/* Story / dialogue overlays — load chunks only while narrative is active */}
               {isStoryActive && (
@@ -702,8 +708,7 @@ export function GameOrchestrator() {
                 </ErrorBoundary>
               )}
 
-              {/* Loot notifications */}
-              <LootNotification />
+              {mode === 'exploration' && <LootNotification />}
 
               {/* Mini-games */}
               <AnimatePresence>

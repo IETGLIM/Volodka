@@ -408,7 +408,7 @@ export function RPGGameCanvas() {
               stepping, which saves ~1-2ms/frame on mobile when the 3D scene is
               not interactive (menu, loading, intro). The canvas is still rendered
               (for intro wake-up cutscene), but physics bodies are frozen. */}
-          <Physics gravity={[0, -15, 0]} timeStep={1/60} interpolate={true} debug={false} paused={physicsPaused}>
+          <Physics gravity={[0, -15, 0]} timeStep={1/60} interpolate={false} debug={false} paused={physicsPaused}>
             {/* Scene visual + colliders (now with layer separation) */}
             <SceneColliderSelector livePlayerPositionRef={livePlayerPositionRef} />
 

@@ -11,6 +11,7 @@ import { getItemDefinition } from '@/data/items';
 import type { ItemDefinition } from '@/data/items';
 import { eventBus } from '@/engine/EventBus';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
+import { bottomQuickUsePx } from '@/shared/constants/hudLayout';
 
 /* ─── Constants ─── */
 
@@ -189,7 +190,7 @@ export function QuickUseBar() {
       <motion.div
         key="quick-use-bar"
         className="fixed left-1/2 -translate-x-1/2 pointer-events-auto"
-        style={{ zIndex: UI_LAYERS.HUD, bottom: 60 }}
+        style={{ zIndex: UI_LAYERS.HUD, bottom: bottomQuickUsePx() }}
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: 16 }}

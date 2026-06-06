@@ -148,9 +148,9 @@ function QuestTargetBeam({
   const baseGlowRef = useRef<THREE.Mesh>(null);
   const timeRef = useRef(0);
 
-  const BEAM_HEIGHT = 4;
-  const BEAM_RADIUS = 0.03; // thin cylinder
-  const GLOW_RADIUS = 0.12;
+  const BEAM_HEIGHT = 2;
+  const BEAM_RADIUS = 0.02;
+  const GLOW_RADIUS = 0.06;
 
   useFrame((_, delta) => {
     timeRef.current += delta;
@@ -214,25 +214,16 @@ function QuestTargetBeam({
         rotation-x={-Math.PI / 2}
         position={[0, 0.02, 0]}
       >
-        <circleGeometry args={[0.5, 16]} />
+        <circleGeometry args={[0.22, 16]} />
         <meshStandardMaterial
           color="#00ffee"
           emissive="#00ffee"
-          emissiveIntensity={0.6}
+          emissiveIntensity={0.35}
           transparent
-          opacity={0.25}
+          opacity={0.18}
           depthWrite={false}
         />
       </mesh>
-
-      {/* Top point light for ambient glow */}
-      <pointLight
-        position={[0, BEAM_HEIGHT + 0.5, 0]}
-        color="#00ffee"
-        intensity={0.8}
-        distance={5}
-        decay={2}
-      />
     </group>
   );
 }

@@ -19,6 +19,12 @@ interface NPCSystemProps {
   interactionTargetNPCId?: string | null;
 }
 
+/** Max interactable NPCs in heavy scenes — prevents frame stalls */
+const MAX_NPCS_PER_SCENE: Partial<Record<SceneId, number>> = {
+  abandoned_factory: 5,
+  park_day: 8,
+};
+
 /** Manages all NPCs for the current scene */
 export function NPCSystem({
   livePlayerPositionRef,
@@ -32,7 +38,7 @@ export function NPCSystem({
   // Compute visible NPCs from schedule
   const visibleNPCs = useMemo(() => {
     const npcIds = getNPCsForScene(sceneId, timeOfDay, scheduleCtx);
-    return npcIds
+    const npcs = npcIds
       .map((id) => {
         const def = findNpcById(id);
         if (!def) return null;
@@ -52,6 +58,12 @@ export function NPCSystem({
       activity: string;
       patrolWaypoints?: [number, number, number][];
     }>;
+
+    const cap = MAX_NPCS_PER_SCENE[sceneId];
+    if (cap !== undefined && npcs.length > cap) {
+      return npcs.slice(0, cap);
+    }
+    return npcs;
   }, [sceneId, timeOfDay, scheduleCtx]);
 
   return (

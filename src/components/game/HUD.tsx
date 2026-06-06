@@ -43,7 +43,7 @@ import {
   Camera,
 } from 'lucide-react';
 import { useGameStore } from '@/store/gameStore';
-import { getPoems, getQuestDefinitions } from '@/data/gameDataLoader';
+import { getPoems } from '@/data/gameDataLoader';
 import { KARMA_LOW_THRESHOLD, KARMA_HIGH_THRESHOLD } from '@/data/constants';
 import { type WeatherType, WEATHER_EFFECTS } from '@/data/weatherEffects';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
@@ -361,12 +361,7 @@ function AchievementPopup() {
   const [achievement, setAchievement] = useState<{ title: string; description: string; icon?: string } | null>(null);
 
   useEffect(() => {
-    const unsub = eventBus.on('fx:achievement', (payload) => {
-      setAchievement(payload);
-      setTimeout(() => setAchievement(null), 3000);
-    });
-
-    // Also listen for skill level-ups and show achievement
+    // Skill level-ups only — achievements use AchievementNotification (top-right)
     const unsubSkill = eventBus.on('skill:level_up', (payload) => {
       setAchievement({
         title: `${payload.skill} ур.${payload.level}`,
@@ -376,7 +371,7 @@ function AchievementPopup() {
       setTimeout(() => setAchievement(null), 3000);
     });
 
-    return () => { unsub(); unsubSkill(); };
+    return () => { unsubSkill(); };
   }, []);
 
   return (
@@ -461,8 +456,6 @@ export function HUD(props: HUDProps) {
     currentWeather,
     collectedPoems,
     questNotificationCount,
-    firstQuestId,
-    nextObjective,
     showSaveIndicator,
     handleSave,
     karma,
@@ -751,52 +744,7 @@ export function HUD(props: HUDProps) {
         />
       </div>
 
-      {/* ── Quest objective indicator (top-center) ── */}
-      <AnimatePresence>
-        {nextObjective && (() => {
-          const questDef = getQuestDefinitions().find((d) => d.id === firstQuestId);
-          const questTitle = questDef?.title ?? '';
-          return (
-            <motion.div
-              key={`quest-indicator-${firstQuestId}`}
-              initial={{ opacity: 0, y: -12 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -12 }}
-              transition={{ duration: 0.35, ease: 'easeOut' }}
-              className="absolute top-14 sm:top-16 left-1/2 -translate-x-1/2 pointer-events-auto"
-              style={{ zIndex: UI_LAYERS.HUD + 1 }}
-            >
-              <button
-                onClick={onOpenQuests}
-                className="flex flex-col items-center gap-0.5 px-5 py-2.5 rounded-lg border border-amber-500/30 backdrop-blur-md transition-colors hover:border-amber-400/50"
-                aria-label={`Текущее задание: ${questTitle}. ${nextObjective.description}. Открыть журнал заданий`}
-                style={{
-                  background: 'linear-gradient(180deg, rgba(15,12,5,0.88) 0%, rgba(10,8,3,0.92) 100%)',
-                  boxShadow: '0 0 20px rgba(251,191,36,0.08), 0 2px 8px rgba(0,0,0,0.4)',
-                }}
-              >
-                <div className="flex items-center gap-2">
-                  <ScrollText className="size-3.5 text-amber-400" />
-                  <span className="text-xs font-semibold text-amber-300 tracking-wide">{questTitle}</span>
-                  {/* Quest notification dot */}
-                  {questNotificationCount > 0 && (
-                    <motion.span
-                      animate={{ scale: [1, 1.2, 1] }}
-                      transition={{ duration: 1.5, repeat: Infinity }}
-                      className="w-2 h-2 rounded-full bg-amber-400"
-                      style={{ boxShadow: '0 0 6px rgba(251,191,36,0.6)' }}
-                    />
-                  )}
-                </div>
-                <span className="text-[11px] text-slate-300/90 leading-tight text-center">{nextObjective.description}</span>
-                <div className="flex items-center gap-1.5 mt-1">
-                  <span className="text-[10px] text-amber-400/50 font-mono">Q — Задания</span>
-                </div>
-              </button>
-            </motion.div>
-          );
-        })()}
-      </AnimatePresence>
+      {/* Quest objective: single strip in StoryGuidanceHUD (below compass) — not duplicated here */}
 
       {/* ── Quick-save indicator ── */}
       <AnimatePresence>
@@ -806,7 +754,8 @@ export function HUD(props: HUDProps) {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -10, scale: 0.9 }}
             transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-            className="absolute top-16 right-3 sm:top-20 sm:right-4 z-20 flex items-center gap-2 px-3 py-2 rounded-lg bg-slate-900/80 border border-cyan-900/30 backdrop-blur-md shadow-[0_0_15px_rgba(34,211,238,0.1)]"
+            className="absolute top-16 right-3 sm:top-20 sm:right-4 flex items-center gap-2 px-3 py-2 rounded-lg bg-slate-900/80 border border-cyan-900/30 backdrop-blur-md shadow-[0_0_15px_rgba(34,211,238,0.1)]"
+            style={{ zIndex: 1 }}
           >
             <Save className="size-3.5 text-cyan-400" />
             <span className="text-xs text-cyan-300 font-medium">💾 Сохранено</span>

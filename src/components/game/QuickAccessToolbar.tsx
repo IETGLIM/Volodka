@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Zap, Activity, Volume2, VolumeX } from 'lucide-react';
 import { useGameStore } from '@/store/gameStore';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
+import { bottomToolbarPx } from '@/shared/constants/hudLayout';
 
 /* ─── Sub-components ─── */
 
@@ -211,8 +212,8 @@ export function QuickAccessToolbar() {
       {mode === 'exploration' && (
         <motion.div
           key="quick-access-toolbar"
-          className="fixed bottom-3 left-1/2 -translate-x-1/2 pointer-events-auto"
-          style={{ zIndex: UI_LAYERS.HUD }}
+          className="fixed left-1/2 -translate-x-1/2 pointer-events-auto"
+          style={{ zIndex: UI_LAYERS.HUD, bottom: bottomToolbarPx() }}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 20 }}

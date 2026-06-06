@@ -160,12 +160,17 @@ export const street_night_def: SceneDefinition = {
   ],
   ceilings: [],
   visualComponent: 'StreetVisual',
-  lights: [],
-  ambientColor: '#1a1a2a',
-  ambientIntensity: 0.45,
-  groundColor: '#0e0e1e',
+  lights: [
+    { position: [0, 8, 2], intensity: 2.0, color: '#8899cc', distance: 40 },
+    { position: [-5, 5, -6], intensity: 1.4, color: '#6688aa', distance: 28 },
+    { position: [6, 5, 8], intensity: 1.4, color: '#6688aa', distance: 28 },
+    { position: [0, 3, -10], intensity: 1.0, color: '#556688', distance: 22 },
+  ],
+  ambientColor: '#4a4a68',
+  ambientIntensity: 0.78,
+  groundColor: '#32324a',
   fogEnabled: true,
-  fog: { near: 6, far: 25 },
+  fog: { near: 14, far: 50 },
   transitionStyle: 'flash',
 };
 
@@ -404,7 +409,7 @@ export const street_winter_def: SceneDefinition = {
   ambientIntensity: 0.6,
   groundColor: '#d0d8e8',
   fogEnabled: true,
-  fog: { near: 3, far: 18 },
+  fog: { near: 12, far: 42 },
   transitionStyle: 'flash',
 };
 
@@ -902,13 +907,14 @@ export const chk_forest_zorge_def: SceneDefinition = {
   ceilings: [],
   visualComponent: 'ChkForestVisual',
   lights: [
-    { position: [0, 2.5, 0], intensity: 0.4, color: '#334422', distance: 20 },
+    { position: [0, 3.5, 0], intensity: 1.2, color: '#556644', distance: 24 },
+    { position: [0, 4, -6], intensity: 0.6, color: '#8899aa', distance: 30 },
   ],
-  ambientColor: '#1a2218',
-  ambientIntensity: 0.35,
+  ambientColor: '#3a5040',
+  ambientIntensity: 0.55,
   groundColor: '#2a4a22',
   fogEnabled: true,
-  fog: { near: 8, far: 28 },
+  fog: { near: 10, far: 36 },
   transitionStyle: 'dissolve',
 };
 

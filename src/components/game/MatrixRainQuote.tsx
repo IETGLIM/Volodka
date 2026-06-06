@@ -7,6 +7,7 @@
 import { useState, useEffect, useMemo, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useTypewriter } from '@/hooks/useTypewriter'
+import { UI_LAYERS } from '@/shared/constants/uiLayers'
 
 interface MatrixRainQuoteProps {
   /** The quote text to display */
@@ -60,8 +61,8 @@ export function MatrixRainQuote({
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.5 }}
-          className="fixed inset-0 z-[300] flex items-center justify-center cursor-pointer"
-          style={{ background: 'rgba(0,0,0,0.92)' }}
+          className="fixed inset-0 flex items-center justify-center cursor-pointer"
+          style={{ zIndex: UI_LAYERS.CINEMATIC_TRANSITION, background: 'rgba(0,0,0,0.92)' }}
           onClick={handleDismiss}
         >
           {/* Matrix rain columns */}

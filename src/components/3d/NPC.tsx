@@ -676,7 +676,7 @@ function QuestMarker({ npcId }: { npcId: string }) {
 
   return (
     <Html
-      position={[0, 2.2, 0]}
+      position={[0, 1.75, 0]}
       center
       style={{ pointerEvents: 'none' }}
     >
@@ -689,50 +689,39 @@ function QuestMarker({ npcId }: { npcId: string }) {
           justifyContent: 'center',
         }}
       >
-        {/* Outer glow ring */}
         <div
           style={{
             position: 'absolute',
-            width: '44px',
-            height: '44px',
+            width: '22px',
+            height: '22px',
             borderRadius: '50%',
-            background: `${markerInfo.glowPrefix} ${0.25 * glowIntensity})`,
-            boxShadow: isComplete
-              ? `0 0 ${18 * glowIntensity}px ${markerInfo.glowPrefix} ${0.6 * glowIntensity}), 0 0 ${6 * glowIntensity}px ${markerInfo.glowPrefix} ${0.3 * glowIntensity}), 0 0 ${30 * glowIntensity}px rgba(255,204,0,${0.2 * glowIntensity})`
-              : `0 0 ${18 * glowIntensity}px ${markerInfo.glowPrefix} ${0.6 * glowIntensity}), 0 0 ${6 * glowIntensity}px ${markerInfo.glowPrefix} ${0.3 * glowIntensity})`,
-            animation: `questPulse${markerInfo.type} ${markerInfo.pulseSpeed}s ease-in-out infinite`,
+            background: `${markerInfo.glowPrefix} ${0.18 * glowIntensity})`,
+            boxShadow: `0 0 ${8 * glowIntensity}px ${markerInfo.glowPrefix} ${0.35 * glowIntensity})`,
           }}
         />
-        {/* Marker text */}
         <div
           style={{
             color: markerInfo.color,
-            fontSize: isComplete ? '20px' : '26px',
+            fontSize: isComplete ? '12px' : '14px',
             fontWeight: 'bold',
-            textShadow: isComplete
-              ? `0 0 ${10 * glowIntensity}px ${markerInfo.glowPrefix} 0.9), 0 0 ${20 * glowIntensity}px ${markerInfo.glowPrefix} 0.5), 0 0 ${30 * glowIntensity}px rgba(255,204,0,${0.25 * glowIntensity})`
-              : `0 0 ${10 * glowIntensity}px ${markerInfo.glowPrefix} 0.9), 0 0 ${20 * glowIntensity}px ${markerInfo.glowPrefix} 0.5), 0 0 ${30 * glowIntensity}px ${markerInfo.glowPrefix} 0.25)`,
+            textShadow: `0 0 ${4 * glowIntensity}px ${markerInfo.glowPrefix} 0.6)`,
             userSelect: 'none',
             position: 'relative',
             zIndex: UI_LAYERS.WORLD_LABELS,
-            transform: `scale(${0.9 + glowIntensity * 0.15})`,
-            transition: 'transform 0.1s ease',
           }}
         >
           {markerInfo.icon}
         </div>
-        {/* Quest name below */}
         <div
           style={{
             color: markerInfo.color,
-            fontSize: '8px',
+            fontSize: '7px',
             fontFamily: 'monospace',
-            letterSpacing: '0.03em',
-            marginTop: '2px',
-            maxWidth: '80px',
+            letterSpacing: '0.02em',
+            marginTop: '1px',
+            maxWidth: '64px',
             textAlign: 'center',
-            opacity: 0.7,
-            textShadow: `0 0 4px ${markerInfo.glowPrefix} 0.5)`,
+            opacity: 0.65,
             whiteSpace: 'nowrap',
             overflow: 'hidden',
             textOverflow: 'ellipsis',
@@ -740,21 +729,6 @@ function QuestMarker({ npcId }: { npcId: string }) {
         >
           {markerInfo.questName}
         </div>
-        {/* Inject keyframes for pulse variants */}
-        <style>{`
-          @keyframes questPulseavailable {
-            0%, 100% { transform: scale(1); opacity: 0.6; }
-            50% { transform: scale(1.2); opacity: 1; }
-          }
-          @keyframes questPulseactive {
-            0%, 100% { transform: scale(1); opacity: 0.6; }
-            50% { transform: scale(1.3); opacity: 1; }
-          }
-          @keyframes questPulsecomplete {
-            0%, 100% { transform: scale(1); opacity: 0.7; }
-            50% { transform: scale(1.4); opacity: 1; }
-          }
-        `}</style>
       </div>
     </Html>
   );

@@ -514,22 +514,6 @@ export function PhysicsPlayer({
       if (vel.y < TERMINAL_VELOCITY) vel.y = TERMINAL_VELOCITY;
     }
 
-    // ─── Ground enforcement: snap RigidBody to floor before displacement ───
-    // This prevents the character from slowly sinking through the floor due to
-    // floating-point drift or the controller not detecting ground on a particular frame.
-    // The CuboidCollider floor top is at config.floorY. If the player's RigidBody
-    // is at or below this level AND falling AND not jumping, force them to floor level.
-    {
-      const pos = rb.translation();
-      if (pos.y <= floorY + 0.02 && vel.y < 0 && !jumping) {
-        rb.setTranslation({ x: pos.x, y: floorY, z: pos.z }, true);
-        vel.y = 0;
-        isGroundedRef.current = true;
-        coyoteTimerRef.current = 0;
-        livePlayerPositionRef.current.set(pos.x, floorY, pos.z);
-      }
-    }
-
     // ─── Compute desired displacement (input → desired movement) ───
     const onFlatGround = isGroundedRef.current || nearFloor;
     const desiredDisplacement = {
@@ -715,8 +699,8 @@ export function PhysicsPlayer({
     // ─── Update position ref for camera + other systems ───
     let finalPos = rb.translation();
 
-    // Lock Y on flat ground — prevents snap-to-ground / autostep micro-bounce while walking
-    if (onFlatGround && !wantsJump && Math.abs(finalPos.y - floorY) > 0.0005) {
+    // Lock Y on flat ground — single snap per frame avoids jitter from repeated setTranslation
+    if (onFlatGround && !wantsJump && Math.abs(finalPos.y - floorY) > 0.008) {
       rb.setTranslation({ x: finalPos.x, y: floorY, z: finalPos.z }, true);
       vel.y = 0;
       isGroundedRef.current = true;
@@ -784,8 +768,8 @@ export function PhysicsPlayer({
       <pointLight
         position={[0, 1.0, 0]}
         color={karmaGlow}
-        intensity={1.2}
-        distance={4}
+        intensity={1.65}
+        distance={5}
       />
       {/* Rim light behind player — warm, very dim, for silhouette separation */}
       <pointLight

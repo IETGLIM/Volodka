@@ -7,7 +7,8 @@
 
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { UI_LAYERS } from '@/shared/constants/uiLayers'
+import { UI_LAYERS } from '@/shared/constants/uiLayers';
+import { bottomQuestToastPx } from '@/shared/constants/hudLayout';
 import { eventBus } from '@/engine/EventBus'
 import { AriaLiveRegion } from '@/components/a11y/AriaLiveRegion'
 import { QUEST_DEFINITIONS } from '@/data/quests'
@@ -594,8 +595,8 @@ export function QuestNotificationSystem() {
 
   return (
     <div
-      className="fixed bottom-4 right-3 sm:bottom-6 sm:right-4 flex flex-col-reverse items-end gap-2 pointer-events-none"
-      style={{ zIndex: UI_LAYERS.TOASTS, pointerEvents: 'none' }}
+      className="fixed right-3 sm:right-4 flex flex-col-reverse items-end gap-2 pointer-events-none"
+      style={{ bottom: bottomQuestToastPx(), zIndex: UI_LAYERS.TOASTS, pointerEvents: 'none' }}
     >
       <AriaLiveRegion message={latestNotifMessage} priority="polite" />
       <AnimatePresence mode="popLayout">

@@ -8,6 +8,7 @@
 import { useGameStore } from '@/store/gameStore';
 import { getSceneConfig } from '@/config/scenes';
 import { useIsMobileVisual } from '@/hooks/use-mobile';
+import { SCENE_VISIBILITY } from '@/shared/constants/sceneVisibility';
 
 /** Shadow config constants — tuned to prevent z-fighting/shadow acne */
 const SHADOW_BIAS = -0.002;
@@ -17,32 +18,32 @@ const SHADOW_NORMAL_BIAS = 0.04;
  *  to let scene-specific lights (monitor, lamp, window) drive the atmosphere.
  *  Format: { color, intensity } */
 const INDOOR_AMBIENT: Record<string, { color: string; intensity: number }> = {
-  volodka_room:       { color: '#1a1525', intensity: 0.25 },  // very low — monitor is primary
-  volodka_corridor:   { color: '#1a1520', intensity: 0.3 },
-  home_evening:       { color: '#2a1a10', intensity: 0.35 },
-  cafe_evening:       { color: '#101828', intensity: 0.3 },
-  office_day:         { color: '#c0c8d0', intensity: 0.5 },
-  library_day:        { color: '#3a3020', intensity: 0.35 },
-  abandoned_factory:  { color: '#1a1510', intensity: 0.3 },
-  zarema_albert_room: { color: '#1a1510', intensity: 0.35 },
+  volodka_room:       { color: '#2a2540', intensity: 0.48 },
+  volodka_corridor:   { color: '#252035', intensity: 0.52 },
+  home_evening:       { color: '#3a2818', intensity: 0.55 },
+  cafe_evening:       { color: '#1a2038', intensity: 0.5 },
+  office_day:         { color: '#c0c8d0', intensity: 0.65 },
+  library_day:        { color: '#4a4030', intensity: 0.52 },
+  abandoned_factory:  { color: '#2a2218', intensity: 0.48 },
+  zarema_albert_room: { color: '#2a2218', intensity: 0.52 },
 };
-const DEFAULT_INDOOR_AMBIENT = { color: '#1a1a2a', intensity: 0.35 };
+const DEFAULT_INDOOR_AMBIENT = { color: '#2a2a3a', intensity: 0.52 };
 
 /** Per-scene indoor fill light overrides — subtle fill to prevent
  *  completely black corners while preserving noir shadows.
  *  Format: { position, intensity, color, distance } or null to disable */
 const INDOOR_FILL: Record<string, { position: [number, number, number]; intensity: number; color: string; distance: number } | null> = {
-  volodka_room:       null,  // no fill — monitor + lamp + window provide all lighting
-  volodka_corridor:   { position: [0, 2.2, 0], intensity: 1.2, color: '#887766', distance: 12 },
-  home_evening:       { position: [0, 2.2, 0], intensity: 1.5, color: '#aa8855', distance: 10 },
-  cafe_evening:       { position: [0, 2.5, -1], intensity: 1.0, color: '#887799', distance: 10 },
-  office_day:         { position: [0, 2.5, 0], intensity: 2.0, color: '#c0c8d8', distance: 14 },
-  library_day:        { position: [0, 2.5, 0], intensity: 1.2, color: '#aa9966', distance: 12 },
-  abandoned_factory:  { position: [0, 2.5, 0], intensity: 0.8, color: '#886644', distance: 14 },
-  zarema_albert_room: { position: [0, 2.2, 0], intensity: 1.0, color: '#887755', distance: 10 },
+  volodka_room:       { position: [0, 2.0, 0], intensity: 0.9, color: '#665577', distance: 9 },
+  volodka_corridor:   { position: [0, 2.2, 0], intensity: 1.6, color: '#998877', distance: 12 },
+  home_evening:       { position: [0, 2.2, 0], intensity: 2.0, color: '#cc9966', distance: 11 },
+  cafe_evening:       { position: [0, 2.5, -1], intensity: 1.4, color: '#9988aa', distance: 11 },
+  office_day:         { position: [0, 2.5, 0], intensity: 2.6, color: '#d0d8e8', distance: 15 },
+  library_day:        { position: [0, 2.5, 0], intensity: 1.6, color: '#bb9966', distance: 13 },
+  abandoned_factory:  { position: [0, 2.5, 0], intensity: 1.2, color: '#aa8866', distance: 15 },
+  zarema_albert_room: { position: [0, 2.2, 0], intensity: 1.4, color: '#998866', distance: 11 },
 };
 const DEFAULT_INDOOR_FILL: NonNullable<typeof INDOOR_FILL[string]> = {
-  position: [0, 2.2, 0], intensity: 1.2, color: '#887766', distance: 12,
+  position: [0, 2.2, 0], intensity: 1.6, color: '#998877', distance: 12,
 };
 
 /** Scene-specific point lights rendered from scene config */
@@ -59,7 +60,7 @@ function ScenePointLights() {
         <pointLight
           key={`scene-light-${sceneId}-${i}`}
           position={light.position}
-          intensity={light.intensity}
+          intensity={light.intensity * SCENE_VISIBILITY.pointLightScale}
           color={light.color}
           distance={light.distance}
         />
@@ -76,18 +77,21 @@ export function ExplorationLighting() {
   const shadowSize = isMobile ? 512 : 2048;
 
   const ambientColor = config.ambientColor ?? '#1a1a2e';
-  const ambientIntensity = config.ambientIntensity ?? 1.2;
+  const ambientIntensity =
+    (config.ambientIntensity ?? 1.2) * SCENE_VISIBILITY.ambientScale;
   const groundColor = config.groundColor ?? '#1a1a1a';
 
   // Different light settings per scene type
   const isIndoor = config.hasCeiling;
   const isNight = sceneId === 'street_night' || sceneId === 'cafe_evening';
+  const isStreet = sceneId === 'street_night' || sceneId === 'street_winter';
+  const isChkForest = sceneId === 'chk_forest_zorge';
   const isDream = sceneId === 'sleep_dream';
 
   // Directional light — very dim indoors (barely-there ceiling bounce)
   // to let scene-specific point lights dominate the atmosphere
-  const dirIntensity = isIndoor ? 0.8 : isDream ? 1.0 : isNight ? 1.2 : 2.0;
-  const dirColor = isIndoor ? '#2a2540' : isNight ? '#1a1a4a' : isDream ? '#2a1040' : '#ffffff';
+  const dirIntensity = isIndoor ? 1.15 : isDream ? 1.2 : isStreet ? 1.85 : isNight ? 1.45 : 2.2;
+  const dirColor = isIndoor ? '#2a2540' : isStreet && sceneId === 'street_winter' ? '#d0d8e8' : isNight ? '#3a3a6a' : isDream ? '#2a1040' : '#ffffff';
   const dirPosition: [number, number, number] = isIndoor
     ? [2, 4, 2]
     : [5, 10, 5];
@@ -120,7 +124,19 @@ export function ExplorationLighting() {
 
       {/* Hemisphere light for ambient fill — reduced for indoor noir */}
       <hemisphereLight
-        args={[ambientColor, groundColor, isIndoor ? ambientIntensity * 0.6 : ambientIntensity * 1.5]}
+        args={[
+          ambientColor,
+          groundColor,
+          isIndoor
+            ? ambientIntensity * SCENE_VISIBILITY.indoorHemisphereMul
+            : ambientIntensity * SCENE_VISIBILITY.outdoorHemisphereMul,
+        ]}
+      />
+
+      {/* Base readability fill — prevents crushed blacks in noir rooms */}
+      <ambientLight
+        intensity={SCENE_VISIBILITY.baseAmbientIntensity}
+        color={isIndoor ? '#3a3548' : '#4a5060'}
       />
 
       {/* Indoor ambient — per-scene tuned (very low for noir rooms like volodka_room) */}
@@ -130,11 +146,23 @@ export function ExplorationLighting() {
 
       {/* Extra ambient for very dark outdoor scenes */}
       {isNight && !isIndoor && (
-        <ambientLight intensity={0.35} color="#3a3a6a" />
+        <ambientLight intensity={0.55} color="#5a5a88" />
+      )}
+
+      {sceneId === 'street_night' && (
+        <ambientLight intensity={0.38} color="#606088" />
+      )}
+
+      {sceneId === 'street_winter' && (
+        <ambientLight intensity={0.42} color="#c0ccd8" />
+      )}
+
+      {isChkForest && !isIndoor && (
+        <ambientLight intensity={0.4} color="#5a7058" />
       )}
 
       {isDream && (
-        <ambientLight intensity={0.5} color="#4a2870" />
+        <ambientLight intensity={0.62} color="#5a3888" />
       )}
 
       {/* Indoor fill light — per-scene tuned or disabled (null = no fill) */}

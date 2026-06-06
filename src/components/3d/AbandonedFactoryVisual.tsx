@@ -236,7 +236,7 @@ export function AbandonedFactoryVisual() {
       {/* ═══════════════════════════════════════════════ */}
 
       {/* Flickering industrial lamp (back) */}
-      <pointLight position={[0, 5.5, -6]} color="#ffcc88" intensity={3.5} distance={14} castShadow shadow-mapSize-width={256} shadow-bias={-0.003} />
+      <pointLight position={[0, 5.5, -6]} color="#ffcc88" intensity={3.5} distance={14} />
 
       {/* Chemical vat glow */}
       <pointLight position={[-4, 1.5, 5]} color="#22aa44" intensity={2.5} distance={10} />

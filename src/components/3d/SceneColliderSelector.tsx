@@ -449,7 +449,7 @@ function StreetForegroundObjects() {
             <sphereGeometry args={[0.08, 8, 8]} />
             <meshStandardMaterial color="#ffe8a0" emissive="#ffdd80" emissiveIntensity={3} />
           </mesh>
-          <pointLight position={[0, 4.9, 0]} color="#ffdd80" intensity={2.8} distance={15} castShadow={false} shadow-mapSize-width={256} shadow-bias={-0.002} />
+          <pointLight position={[0, 4.9, 0]} color="#ffdd80" intensity={4.2} distance={18} castShadow={false} shadow-mapSize-width={256} shadow-bias={-0.002} />
         </group>
       ))}
       <group position={[2.5, 0, -2]}>

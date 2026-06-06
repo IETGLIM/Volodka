@@ -21,14 +21,15 @@ import {
 import { BlendFunction, KernelSize, ToneMappingMode } from 'postprocessing';
 import { usePostFxSceneState, usePlayerStress } from '@/store/selectors';
 import { useMobileVisualPerf } from '@/hooks/use-mobile';
+import { SCENE_VISIBILITY } from '@/shared/constants/sceneVisibility';
 
 /** Per-scene color grading overrides for CyberPunk2077 / Noir / Gothic feel */
 const SCENE_COLOR_GRADE: Record<string, { hue: number; saturation: number; brightness: number; contrast: number }> = {
   volodka_room:       { hue: -0.05, saturation: 0.2,  brightness: -0.02, contrast: 0.25 }, // cold green monitor glow
   volodka_corridor:   { hue: -0.03, saturation: -0.1, brightness: -0.05, contrast: 0.15 }, // dim noir
   home_evening:       { hue: 0.04,  saturation: 0.1,  brightness: 0.0,  contrast: 0.1  }, // warm amber
-  street_night:       { hue: 0.06,  saturation: 0.25, brightness: -0.02, contrast: 0.25 }, // cyberpunk neon
-  street_winter:      { hue: -0.02, saturation: -0.2, brightness: 0.05, contrast: 0.1  }, // desaturated cold
+  street_night:       { hue: 0.06,  saturation: 0.25, brightness: 0.1,  contrast: 0.18 }, // cyberpunk neon
+  street_winter:      { hue: -0.02, saturation: -0.12, brightness: 0.12, contrast: 0.08  },
   cafe_evening:       { hue: 0.03,  saturation: 0.1,  brightness: 0.0,  contrast: 0.15 }, // amber smoke
   office_day:         { hue: -0.01, saturation: -0.15, brightness: 0.03, contrast: 0.05 }, // sterile
   park_day:           { hue: -0.04, saturation: -0.1, brightness: 0.0,  contrast: 0.1  }, // gothic mist
@@ -38,6 +39,7 @@ const SCENE_COLOR_GRADE: Record<string, { hue: number; saturation: number; brigh
   rooftop_edge:       { hue: 0.05,  saturation: 0.15, brightness: 0.0,  contrast: 0.2  }, // noir sunset
   abandoned_factory:  { hue: 0.06,  saturation: -0.05, brightness: -0.03, contrast: 0.2  }, // rust gothic
   zarema_albert_room: { hue: 0.02,  saturation: 0.05, brightness: 0.0,  contrast: 0.1  }, // warm domestic
+  chk_forest_zorge:   { hue: 0.03,  saturation: 0.08, brightness: 0.02, contrast: 0.12 }, // campfire warmth
 };
 
 const DEFAULT_COLOR_GRADE = { hue: 0, saturation: 0, brightness: 0, contrast: 0.15 };
@@ -47,7 +49,7 @@ const SCENE_VIGNETTE: Record<string, { offset: number; darkness: number }> = {
   volodka_room:       { offset: 0.3,  darkness: 0.5 },  // heavy noir vignette
   volodka_corridor:   { offset: 0.3,  darkness: 0.45 },
   home_evening:       { offset: 0.4,  darkness: 0.35 },
-  street_night:       { offset: 0.3,  darkness: 0.4 },
+  street_night:       { offset: 0.42, darkness: 0.22 },
   cafe_evening:       { offset: 0.35, darkness: 0.35 },
   sleep_dream:        { offset: 0.25, darkness: 0.5 },
   abandoned_factory:  { offset: 0.3,  darkness: 0.45 },
@@ -56,10 +58,11 @@ const SCENE_VIGNETTE: Record<string, { offset: number; darkness: number }> = {
   office_day:         { offset: 0.4,  darkness: 0.3 },
   park_day:           { offset: 0.35, darkness: 0.35 },
   library_day:        { offset: 0.4,  darkness: 0.3 },
-  street_winter:      { offset: 0.3,  darkness: 0.4 },
+  street_winter:      { offset: 0.42, darkness: 0.2 },
   zarema_albert_room: { offset: 0.4,  darkness: 0.3 },
+  chk_forest_zorge:   { offset: 0.4,  darkness: 0.28 },
 };
-const DEFAULT_VIGNETTE = { offset: 0.35, darkness: 0.4 };
+const DEFAULT_VIGNETTE = { offset: 0.4, darkness: 0.32 };
 
 /** Dynamic bloom intensity per scene — neon scenes bloom brighter */
 const SCENE_BLOOM: Record<string, { intensity: number; threshold: number; smoothing: number }> = {
@@ -74,9 +77,10 @@ const SCENE_BLOOM: Record<string, { intensity: number; threshold: number; smooth
   battle:             { intensity: 0.8,  threshold: 0.5,  smoothing: 0.4 },  // intense combat flash
   sleep_dream:        { intensity: 0.5,  threshold: 0.6,  smoothing: 0.5 },  // ethereal glow
   rooftop_edge:       { intensity: 0.5,  threshold: 0.6,  smoothing: 0.5 },  // sunset bloom
-  abandoned_factory:  { intensity: 0.5,  threshold: 0.65, smoothing: 0.5 },  // ember glow
+  abandoned_factory:  { intensity: 0.35, threshold: 0.7, smoothing: 0.55 },  // ember glow (lighter GPU load)
   street_winter:      { intensity: 0.3,  threshold: 0.8,  smoothing: 0.6 },  // cold
   zarema_albert_room: { intensity: 0.3,  threshold: 0.75, smoothing: 0.5 },  // warm domestic
+  chk_forest_zorge:   { intensity: 0.45, threshold: 0.55, smoothing: 0.45 }, // campfire bloom
 };
 const DEFAULT_BLOOM = { intensity: 0.5, threshold: 0.7, smoothing: 0.5 };
 
@@ -224,12 +228,18 @@ function PostFXPipeline() {
   const effectiveSaturation = noirMode
     ? Math.min(colorGrade.saturation - 0.35, 0)
     : colorGrade.saturation;
-  const effectiveContrast = noirMode
-    ? colorGrade.contrast + 0.15
-    : colorGrade.contrast;
-  const effectiveVignetteDarkness = noirMode
-    ? Math.min(vignetteParams.darkness + 0.15, 0.95)
-    : vignetteParams.darkness;
+  const effectiveContrast = Math.max(
+    0,
+    (noirMode ? colorGrade.contrast + 0.15 : colorGrade.contrast)
+      - SCENE_VISIBILITY.postFxContrastReduction,
+  );
+  const effectiveVignetteDarkness = Math.min(
+    (noirMode ? Math.min(vignetteParams.darkness + 0.15, 0.95) : vignetteParams.darkness)
+      * SCENE_VISIBILITY.vignetteDarknessScale,
+    0.75,
+  );
+  const effectiveBrightness =
+    colorGrade.brightness + SCENE_VISIBILITY.postFxBrightnessLift;
 
   // Stress-driven effects: higher stress = heavier vignette
   const stress = usePlayerStress();
@@ -240,8 +250,8 @@ function PostFXPipeline() {
 
   // Stress-reactive vignette: darkness increases with stress
   const stressVignetteDarkness = Math.min(
-    effectiveVignetteDarkness + stressFactor * 0.2,
-    0.95,
+    effectiveVignetteDarkness + stressFactor * 0.12,
+    0.75,
   );
   // Vignette offset shrinks with stress (tighter focus / tunnel vision)
   const stressVignetteOffset = Math.max(
@@ -249,21 +259,31 @@ function PostFXPipeline() {
     0.1,
   );
 
-  // ── Mobile lite mode ──
-  if (visualLite) {
+  // ── Lite post-FX: mobile/low quality, or heavy scenes on any preset ──
+  const useLitePostFx = visualLite || sceneId === 'abandoned_factory';
+  if (useLitePostFx) {
     return (
       <EffectComposer multisampling={0}>
         <Bloom
-          intensity={0.4}
-          luminanceThreshold={0.8}
+          intensity={0.45}
+          luminanceThreshold={0.75}
           luminanceSmoothing={0.9}
           mipmapBlur
           kernelSize={KernelSize.LARGE}
         />
         <Vignette
-          offset={0.3}
-          darkness={0.5}
+          offset={0.38}
+          darkness={0.28 * SCENE_VISIBILITY.vignetteDarknessScale}
           blendFunction={BlendFunction.NORMAL}
+        />
+        <BrightnessContrast
+          brightness={SCENE_VISIBILITY.postFxBrightnessLift}
+          contrast={-0.02}
+          blendFunction={BlendFunction.NORMAL}
+        />
+        <ToneMapping
+          mode={ToneMappingMode.ACES_FILMIC}
+          exposure={SCENE_VISIBILITY.toneExposure}
         />
       </EffectComposer>
     );
@@ -294,15 +314,15 @@ function PostFXPipeline() {
         blendFunction={BlendFunction.NORMAL}
       />
       <BrightnessContrast
-        brightness={colorGrade.brightness}
+        brightness={effectiveBrightness}
         contrast={effectiveContrast}
         blendFunction={BlendFunction.NORMAL}
       />
 
-      {/* ── Tone Mapping — cinematic ACES, exposure 1.0 ── */}
+      {/* ── Tone Mapping — cinematic ACES with readability exposure ── */}
       <ToneMapping
         mode={ToneMappingMode.ACES_FILMIC}
-        exposure={1.0}
+        exposure={SCENE_VISIBILITY.toneExposure}
       />
     </EffectComposer>
   );

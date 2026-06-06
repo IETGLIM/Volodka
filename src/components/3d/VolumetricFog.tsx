@@ -78,9 +78,9 @@ export const FOG_PRESETS: Record<string, Partial<VolumetricFogConfig>> = {
     planeWidth: 4,
   },
   street_night: {
-    planeCount: 8,
-    color: '#0a1a1a',  // cyan/green cyberpunk tint
-    opacity: 0.07,
+    planeCount: 3,
+    color: '#3a4858',
+    opacity: 0.03,
     spreadX: 10,
     spreadZ: 10,
     height: 2.0,
@@ -144,9 +144,9 @@ export const FOG_PRESETS: Record<string, Partial<VolumetricFogConfig>> = {
     planeWidth: 10,
   },
   abandoned_factory: {
-    planeCount: 8,
+    planeCount: 4,
     color: '#0a2018',  // green/cyan cyberpunk industrial tint
-    opacity: 0.08,
+    opacity: 0.05,
     spreadX: 10,
     spreadZ: 9,
     height: 2.5,
@@ -208,6 +208,17 @@ export const FOG_PRESETS: Record<string, Partial<VolumetricFogConfig>> = {
     baseY: 0.4,
     driftSpeed: 0.06,
     planeWidth: 5,
+  },
+  chk_forest_zorge: {
+    planeCount: 3,
+    color: '#142018',
+    opacity: 0.035,
+    spreadX: 8,
+    spreadZ: 8,
+    height: 1.2,
+    baseY: 0.5,
+    driftSpeed: 0.05,
+    planeWidth: 12,
   },
 };
 

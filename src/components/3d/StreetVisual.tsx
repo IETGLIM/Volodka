@@ -21,7 +21,7 @@ export function StreetVisual({ sceneId = 'street_night', livePlayerPositionRef }
       <mesh rotation-x={-Math.PI / 2} receiveShadow position-y={0.001}>
         <planeGeometry args={[60, 60]} />
         <meshStandardMaterial
-          color={isWinter ? '#a0a8b8' : '#1a1a2a'}
+          color={isWinter ? '#a0a8b8' : '#3a3a52'}
           roughness={isWinter ? 0.7 : 0.85}
           polygonOffset
           polygonOffsetFactor={1}
@@ -33,7 +33,7 @@ export function StreetVisual({ sceneId = 'street_night', livePlayerPositionRef }
       <mesh rotation-x={-Math.PI / 2} position={[0, 0.015, 0]} receiveShadow>
         <planeGeometry args={[6, 40]} />
         <meshStandardMaterial
-          color={isWinter ? '#b0b8c8' : '#2a2a3a'}
+          color={isWinter ? '#b0b8c8' : '#4a4a62'}
           roughness={0.8}
           polygonOffset
           polygonOffsetFactor={1}
@@ -148,7 +148,7 @@ function PanelBuildings() {
   return (
     <instancedMesh ref={meshRef} args={[undefined, undefined, 5]} castShadow>
       <boxGeometry args={[1, 1, 1]} />
-      <meshStandardMaterial color="#1a1a22" roughness={0.95} />
+      <meshStandardMaterial color="#323248" roughness={0.95} />
     </instancedMesh>
   );
 }

@@ -8,6 +8,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
+import { explorationStatToastTopPx } from '@/shared/constants/hudLayout';
 import { toastManager, type ToastType, type ToastMessage } from '@/engine/ToastManager';
 import { useGameStore, type NotificationType } from '@/store/gameStore';
 import { eventBus } from '@/engine/EventBus';
@@ -288,12 +289,7 @@ export function NotificationToasts() {
       }),
     );
 
-    // Combat victory — show a quest toast
-    unsubs.push(
-      eventBus.on('combat:victory', ({ karmaGained, xpGained, creditsGained }) => {
-        toastManager.addToast('quest', `Победа! +${karmaGained} кармы, +${xpGained} опыта, +${creditsGained} кредитов`);
-      }),
-    );
+    // Combat victory — EventNotificationPopup handles this
 
     // Combat defeat
     unsubs.push(
@@ -302,21 +298,9 @@ export function NotificationToasts() {
       }),
     );
 
-    // Auto-save notification
-    unsubs.push(
-      eventBus.on('game:saved', ({ source }) => {
-        if (source === 'auto') {
-          toastManager.addToast('quest', 'Автосохранение');
-        }
-      }),
-    );
+    // Auto-save — AutoSaveIndicator handles this
 
-    // Quest accepted notification
-    unsubs.push(
-      eventBus.on('quest:accepted', ({ questTitle }) => {
-        toastManager.addToast('quest', `Задание принято: ${questTitle}`);
-      }),
-    );
+    // Quest accepted — QuestNotificationSystem handles this
 
     // Quest reward applied notification
     unsubs.push(
@@ -353,8 +337,8 @@ export function NotificationToasts() {
 
   return (
     <div
-      className="fixed top-28 right-3 sm:top-28 sm:right-4 flex flex-col items-end gap-2 pointer-events-none"
-      style={{ zIndex: UI_LAYERS.TOASTS, pointerEvents: 'none' }}
+      className="fixed right-3 sm:right-4 flex flex-col items-end gap-2 pointer-events-none"
+      style={{ top: explorationStatToastTopPx(), zIndex: UI_LAYERS.TOASTS, pointerEvents: 'none' }}
     >
       <AnimatePresence mode="popLayout">
         {visibleToasts.map((toast) => (

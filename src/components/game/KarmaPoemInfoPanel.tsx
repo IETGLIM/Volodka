@@ -11,6 +11,7 @@ import { usePanelDialog } from '@/components/a11y/usePanelDialog'
 import { useGameStore } from '@/store/gameStore'
 import { ALL_ENDINGS } from '@/data/goldenPath'
 import { QUEST_DEFINITIONS } from '@/data/quests'
+import { UI_LAYERS } from '@/shared/constants/uiLayers'
 
 interface KarmaPoemInfoPanelProps {
   open: boolean
@@ -88,8 +89,8 @@ export function KarmaPoemInfoPanel({ open, onClose }: KarmaPoemInfoPanelProps) {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.3 }}
-          className="fixed inset-0 z-[200] flex items-center justify-center"
-          style={{ background: 'rgba(0,0,0,0.85)' }}
+          className="fixed inset-0 flex items-center justify-center"
+          style={{ zIndex: UI_LAYERS.PANEL, background: 'rgba(0,0,0,0.85)' }}
           onClick={(e) => {
             if (e.target === e.currentTarget) onClose()
           }}
