@@ -7,6 +7,8 @@
 
 import { useEffect, useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { FocusTrap } from '@/components/a11y/FocusTrap';
+import { usePanelDialog } from '@/components/a11y/usePanelDialog';
 import {
   X, MessageCircle, Search, ChevronRight,
   User, Clock,
@@ -202,6 +204,7 @@ interface DialogueHistoryPanelProps {
 }
 
 export function DialogueHistoryPanel({ open, onClose }: DialogueHistoryPanelProps) {
+  const { closeButtonRef, dialogProps, titleProps } = usePanelDialog();
   const conversationLog = useGameStore((s) => s.conversationLog);
   const [selectedNpcId, setSelectedNpcId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -283,12 +286,14 @@ export function DialogueHistoryPanel({ open, onClose }: DialogueHistoryPanelProp
   return (
     <AnimatePresence>
       {open && (
+        <FocusTrap initialFocusRef={closeButtonRef}>
         <motion.div
           initial={{ x: '100%' }}
           animate={{ x: 0 }}
           exit={{ x: '100%' }}
           transition={{ type: 'spring', damping: 25, stiffness: 200 }}
           className="fixed top-0 right-0 bottom-0 w-full sm:w-[38rem]"
+          {...dialogProps}
           style={{
             zIndex: UI_LAYERS.PANEL,
             background: 'linear-gradient(180deg, rgba(8,12,28,0.97) 0%, rgba(4,8,18,0.98) 100%)',
@@ -302,20 +307,21 @@ export function DialogueHistoryPanel({ open, onClose }: DialogueHistoryPanelProp
             <div className="flex items-center justify-between px-4 py-3 border-b border-emerald-900/20">
               <div className="flex items-center gap-2">
                 <MessageCircle className="size-5 text-emerald-400" />
-                <h2 className="text-lg font-semibold text-slate-100">
+                <h2 {...titleProps} className="text-lg font-semibold text-slate-100">
                   История диалогов
                 </h2>
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-[10px] text-slate-600 hidden sm:inline">[L] закрыть</span>
-                <Button
-                  variant="ghost"
-                  size="icon"
+                <button
+                  ref={closeButtonRef}
+                  type="button"
                   onClick={onClose}
-                  className="text-slate-400 hover:text-white"
+                  className="inline-flex size-9 items-center justify-center rounded-md text-slate-400 hover:text-white hover:bg-accent/50 transition-colors"
+                  aria-label="Закрыть"
                 >
                   <X className="size-5" />
-                </Button>
+                </button>
               </div>
             </div>
 
@@ -439,6 +445,7 @@ export function DialogueHistoryPanel({ open, onClose }: DialogueHistoryPanelProp
             </div>
           </div>
         </motion.div>
+        </FocusTrap>
       )}
     </AnimatePresence>
   );

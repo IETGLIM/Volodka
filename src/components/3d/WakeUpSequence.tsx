@@ -11,7 +11,7 @@ import { useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 import { useGameStore } from '@/store/gameStore';
 import { eventBus } from '@/engine/EventBus';
-import { ProceduralPlayerModel } from './ProceduralPlayerModel';
+import { ProceduralPlayerModelAdaptive } from './ProceduralPlayerModel';
 
 /* ── Sequence timing (seconds) ── */
 const PHASE_DURATIONS = {
@@ -219,7 +219,7 @@ export function WakeUpSequence() {
       <mesh ref={markerRef} visible={false}>
         <boxGeometry args={[0.1, 0.1, 0.1]} />
       </mesh>
-      <ProceduralPlayerModel
+      <ProceduralPlayerModelAdaptive
         modelScale={0.9}
         karmaGlow="#00ff88"
         currentAnimRef={currentAnimRef}

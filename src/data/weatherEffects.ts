@@ -139,6 +139,7 @@ const OUTDOOR_SCENES = new Set([
   'street_winter',
   'park_day',
   'rooftop_edge',
+  'chk_forest_zorge',
 ]);
 
 /** Indoor scenes with large windows — reduced weather impact */

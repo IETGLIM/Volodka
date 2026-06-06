@@ -81,6 +81,7 @@ export const GOLDEN_PATH_STORY_SPINE: string[] = [
   'act4_broadcast_prep',
   'act4_broadcast_execute',
   'act4_broadcast_aftermath',
+  'act5_dawn',
   'act4_final_choice',
   // Act 5 — Финал
   'act5_peaceful_path',
@@ -126,6 +127,7 @@ export const STORY_NODE_TO_NPC_ID: Record<string, string> = {
   chk_act3_sanctuary: 'chk_ru',
   chk_act4_stalker_briefing: 'chk_stalker',
   chk_act4_broadcast_watch: 'chk_based',
+  chk_act5_campfire_dawn: 'chk_ru',
 };
 
 /** Human-readable location labels for guidance (exact node → label). */
@@ -144,6 +146,7 @@ export const STORY_NODE_TO_SCENE_LABEL: Record<string, string> = {
   chk_act3_sanctuary: 'лес на Зорге (ЧК)',
   chk_act4_stalker_briefing: 'лес на Зорге (ЧК)',
   chk_act4_broadcast_watch: 'костёр ЧК',
+  chk_act5_campfire_dawn: 'костёр ЧК',
   office_alexander: 'офис IT-гильдии',
   office_colleague: 'офис IT-гильдии',
   act2_dmitry_office_meeting: 'офис IT-гильдии',
@@ -172,6 +175,7 @@ export const STORY_NODE_OBJECTIVE_TYPE: Record<
   act3_transition: 'visit_location',
   act3_detention_infiltration: 'visit_location',
   act4_transition: 'visit_location',
+  act5_dawn: 'visit_location',
   act4_infiltration_inside: 'visit_location',
   act4_core_server: 'visit_location',
   act4_infiltration_prep: 'visit_location',
@@ -211,6 +215,8 @@ export const STORY_FLAG_TO_NODE_ID: Record<string, string> = {
   tolpa_stalker_route: 'chk_act4_stalker_briefing',
   tolpa_poem_collected: 'chk_tolpa_poem',
   tolpa_heard_broadcast: 'chk_act4_broadcast_watch',
+  act5_started: 'act5_dawn',
+  tolpa_act5_blessing: 'chk_act5_campfire_dawn',
 };
 
 /** Canonical NPC id for a golden-path story node, or undefined if not an NPC step. */
@@ -360,8 +366,10 @@ export const GOLDEN_PATH_BRANCH_HINTS: Record<string, string> = {
   act4_core_server: 'Отключи Протокол Забвения — спаси память.',
   act4_broadcast_prep: 'Начни вещание — пусть город услышит стихи.',
   act4_broadcast_execute: 'Добавь своё стихотворение — твой голос тоже важен.',
+  act5_dawn: 'Ночь перед рассветом — поговори с союзниками и реши, кто ты.',
   act4_final_choice: 'Кто ты после всего? Создатель, Повстанец, Изгой, Машина или Поэт — выбирай осознанно.',
   // Act 5
+  chk_act5_campfire_dawn: 'После рассвета — зайди к Ру у костра за финальное слово ЧК.',
   act5_peaceful_path: 'Построй новый мир — где код и поэзия едины.',
   ending_reconciliation: 'Прости — клевета вернётся к тем, кто лжёт.',
 };

@@ -172,4 +172,17 @@ export const CHK_TRIGGER_ZONES: TriggerZone[] = [
       detailText: 'Город слышит стихи — и лес на Зорге тоже.',
     },
   },
+  /* ── Act 5: post-broadcast dawn at campfire ── */
+  {
+    id: 'chk_act5_campfire_dawn',
+    sceneId: 'chk_forest_zorge',
+    position: [0.5, 0.5, 0.8],
+    size: [2.5, 2, 2.5],
+    interactionType: 'talk',
+    interactionLabel: 'Рассвет после эфира',
+    requiredAct: 5,
+    requiredFlag: 'act5_started',
+    linkedStoryNodeId: 'chk_act5_campfire_dawn',
+    npcId: 'chk_ru',
+  },
 ];

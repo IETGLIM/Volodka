@@ -1,7 +1,6 @@
 
 /* ─── Volodka RPG – AAA Post-Processing Pipeline ───
- *  Dynamic bloom per scene, scene-specific chromatic aberration,
- *  stress-reactive vignette, color grading, tone mapping
+ *  Dynamic bloom per scene, stress-reactive vignette, color grading, tone mapping
  *
  *  FIX: EffectComposer.addPass() accesses renderer.getContext().getContextAttributes().alpha
  *  which returns null if WebGL context isn't ready. We guard with useThree readiness check.
@@ -9,8 +8,8 @@
  *  PERF: SSAO + DoF removed (~40% GPU savings). Bloom + Vignette are sufficient.
  */
 
-import { useState, useMemo, useEffect, useRef } from 'react';
-import { useThree, useFrame } from '@react-three/fiber';
+import { useState, useEffect, useRef } from 'react';
+import { useThree } from '@react-three/fiber';
 import {
   EffectComposer,
   Bloom,
@@ -20,12 +19,8 @@ import {
   ToneMapping,
 } from '@react-three/postprocessing';
 import { BlendFunction, KernelSize, ToneMappingMode } from 'postprocessing';
-import { useGameStore } from '@/store/gameStore';
 import { usePostFxSceneState, usePlayerStress } from '@/store/selectors';
-import { getSceneConfig } from '@/config/scenes';
 import { useMobileVisualPerf } from '@/hooks/use-mobile';
-import { eventBus } from '@/engine/EventBus';
-import * as THREE from 'three';
 
 /** Per-scene color grading overrides for CyberPunk2077 / Noir / Gothic feel */
 const SCENE_COLOR_GRADE: Record<string, { hue: number; saturation: number; brightness: number; contrast: number }> = {
@@ -84,25 +79,6 @@ const SCENE_BLOOM: Record<string, { intensity: number; threshold: number; smooth
   zarema_albert_room: { intensity: 0.3,  threshold: 0.75, smoothing: 0.5 },  // warm domestic
 };
 const DEFAULT_BLOOM = { intensity: 0.5, threshold: 0.7, smoothing: 0.5 };
-
-/** Scene-specific chromatic aberration strength */
-const SCENE_CHROMA: Record<string, number> = {
-  volodka_room:       0.002,  // subtle CRT monitor feel
-  volodka_corridor:   0.0015,
-  home_evening:       0.001,
-  street_night:       0.004,  // strong CyberPunk2077 RGB shift
-  cafe_evening:       0.002,
-  office_day:         0.001,  // clean
-  park_day:           0.001,  // natural
-  library_day:        0.001,  // quiet
-  battle:             0.006,  // intense combat distortion
-  sleep_dream:        0.005,  // dreamlike unreality
-  rooftop_edge:       0.003,  // noir edge
-  abandoned_factory:  0.003,  // glitch industrial
-  street_winter:      0.0015,
-  zarema_albert_room: 0.001,
-};
-const DEFAULT_CHROMA = 0.002;
 
 /** Check if the WebGL renderer context is fully initialized.
  *  postprocessing v6.39 EffectComposer.addPass() calls
@@ -202,8 +178,8 @@ function useRendererReady(): boolean {
   return ready;
 }
 
-/** AAA Post-Processing: dynamic bloom, chromatic aberration, stress-reactive vignette,
- *  film grain, scanlines, color grading (teal/orange CyberPunk2077), tone mapping
+/** AAA Post-Processing: dynamic bloom, stress-reactive vignette,
+ *  color grading (teal/orange CyberPunk2077), tone mapping
  *
  *  Wrapped in a double-readiness gate:
  *  1. useRendererReady() — async polling that confirms context is initialized
@@ -239,40 +215,6 @@ function PostFXPipeline() {
   // NOTE: Renderer toneMapping is set to NoToneMapping in RPGGameCanvas.tsx
   // to prevent double tone mapping with this EffectComposer's ToneMapping pass.
 
-  // Chromatic aberration removed for performance (was causing 800ms+ frame drops).
-  // fx:glitch events still subscribed for future re-enablement.
-  const [chromaOffsetVal, setChromaOffsetVal] = useState(0.002);
-
-  useEffect(() => {
-    let glitchTimer: ReturnType<typeof setTimeout> | null = null;
-    let initTimer: ReturnType<typeof setTimeout> | null = null;
-
-    const unsub = eventBus.on('fx:glitch', ({ intensity, duration }) => {
-      // Spike chromatic aberration based on glitch intensity
-      const baseChroma = SCENE_CHROMA[sceneId] ?? DEFAULT_CHROMA;
-      setChromaOffsetVal(baseChroma + intensity * 0.02);
-
-      // Clear previous timer
-      if (glitchTimer) clearTimeout(glitchTimer);
-
-      // Decay back to scene default after duration
-      glitchTimer = setTimeout(() => {
-        setChromaOffsetVal(SCENE_CHROMA[sceneId] ?? DEFAULT_CHROMA);
-      }, duration);
-    });
-
-    // Set initial scene chromatic aberration (async to avoid cascading renders)
-    initTimer = setTimeout(() => {
-      setChromaOffsetVal(SCENE_CHROMA[sceneId] ?? DEFAULT_CHROMA);
-    }, 0);
-
-    return () => {
-      unsub();
-      if (glitchTimer) clearTimeout(glitchTimer);
-      if (initTimer) clearTimeout(initTimer);
-    };
-  }, [sceneId]);
-
   // Scene-driven color grading
   const colorGrade = SCENE_COLOR_GRADE[sceneId] ?? DEFAULT_COLOR_GRADE;
   const vignetteParams = SCENE_VIGNETTE[sceneId] ?? DEFAULT_VIGNETTE;
@@ -289,27 +231,12 @@ function PostFXPipeline() {
     ? Math.min(vignetteParams.darkness + 0.15, 0.95)
     : vignetteParams.darkness;
 
-  // Chromatic aberration offset vector
-  const chromaOffset = useMemo(
-    () => new THREE.Vector2(chromaOffsetVal, chromaOffsetVal),
-    [chromaOffsetVal],
-  );
-
-  // Stress-driven effects: higher stress = heavier vignette, more noise, more chromatic aberration
+  // Stress-driven effects: higher stress = heavier vignette
   const stress = usePlayerStress();
   const stressFactor = stress / 100; // 0-1
 
   // Dynamic bloom: boost slightly with stress for a "pressure" feel
   const effectiveBloomIntensity = bloomParams.intensity + stressFactor * 0.1;
-
-  // Dynamic chromatic aberration: stress increases distortion
-  const effectiveChromaOffset = useMemo(
-    () => new THREE.Vector2(
-      chromaOffsetVal + stressFactor * 0.003,
-      chromaOffsetVal + stressFactor * 0.003,
-    ),
-    [chromaOffsetVal, stressFactor],
-  );
 
   // Stress-reactive vignette: darkness increases with stress
   const stressVignetteDarkness = Math.min(

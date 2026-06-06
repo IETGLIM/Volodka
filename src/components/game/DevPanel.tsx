@@ -3,6 +3,8 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { FocusTrap } from '@/components/a11y/FocusTrap';
+import { usePanelDialog } from '@/components/a11y/usePanelDialog';
 import { useGameStore } from '@/store/gameStore';
 import { eventBus } from '@/engine/EventBus';
 import { getRendererInfo, type RendererInfoSnapshot } from '@/engine/RendererInfoState';
@@ -34,8 +36,9 @@ const SCENE_GROUPS: Record<string, SceneId[]> = {
 
 /* ── Main component ── */
 
-export function DevPanel() {
-  const [visible, setVisible] = useState(false);
+export function DevPanel({ startOpen = false }: { startOpen?: boolean }) {
+  const { closeButtonRef, dialogProps, titleProps } = usePanelDialog();
+  const [visible, setVisible] = useState(startOpen);
   const [activeTab, setActiveTab] = useState<TabKey>('perf');
 
   // FPS tracking
@@ -138,11 +141,13 @@ export function DevPanel() {
   if (!visible) return null;
 
   return (
+    <FocusTrap initialFocusRef={closeButtonRef}>
     <motion.div
       initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: 20 }}
       transition={{ duration: 0.2 }}
+      {...dialogProps}
       style={{
         position: 'fixed',
         top: 8,
@@ -163,6 +168,7 @@ export function DevPanel() {
         boxShadow: '0 0 30px rgba(0, 255, 255, 0.06), 0 8px 32px rgba(0, 0, 0, 0.5)',
       }}
     >
+      <h2 {...titleProps} className="sr-only">Панель разработчика</h2>
       {/* Header with tabs + close */}
       <div
         style={{
@@ -194,6 +200,8 @@ export function DevPanel() {
           </button>
         ))}
         <button
+          ref={closeButtonRef}
+          type="button"
           onClick={handleClose}
           style={{
             background: 'transparent',
@@ -205,6 +213,7 @@ export function DevPanel() {
             lineHeight: 1,
           }}
           title="Close (F3)"
+          aria-label="Закрыть панель разработчика"
         >
           ✕
         </button>
@@ -226,6 +235,7 @@ export function DevPanel() {
         {activeTab === 'cheats' && <CheatsTab />}
       </div>
     </motion.div>
+    </FocusTrap>
   );
 }
 

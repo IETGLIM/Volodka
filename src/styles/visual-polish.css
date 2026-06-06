@@ -1,0 +1,217 @@
+/* ══════════════════════════════════════════════════════════════
+   PHASE 5: Additional AAA Cyberpunk Visual Polish
+   ══════════════════════════════════════════════════════════════ */
+
+/* Hex grid pattern overlay for HUD panels */
+@keyframes hex-drift {
+  0% { background-position: 0 0; }
+  100% { background-position: 0 -48px; }
+}
+
+.hex-grid-bg {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='49' viewBox='0 0 28 49'%3E%3Cg fill-rule='evenodd'%3E%3Cg fill='%2300e5ff' fill-opacity='0.02'%3E%3Cpath d='M13.99 9.25l13 7.5v15l-13 7.5L1 31.75v-15l12.99-7.5zM3 17.9v12.7l10.99 6.34 11-6.35V17.9l-11-6.34L3 17.9zM0 15l12.98-7.5V0h-2v6.35L0 12.69v2.3zm0 18.5L12.98 41v8h-2v-6.85L0 35.81v-2.3zM15 0v7.5L27.99 15H28v-2.31h-.01L17 6.35V0h-2zm0 49v-8l12.99-7.5H28v2.31h-.01L17 42.15V49h-2z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  animation: hex-drift 20s linear infinite;
+}
+
+/* Circuit trace line animation for panel edges */
+@keyframes circuit-trace {
+  0% { background-position: 0% 0%; }
+  100% { background-position: 200% 0%; }
+}
+
+.circuit-trace-line {
+  background: linear-gradient(90deg, transparent 0%, rgba(0, 229, 255, 0.4) 10%, transparent 20%);
+  background-size: 200% 100%;
+  animation: circuit-trace 3s linear infinite;
+}
+
+/* Breathing glow for important indicators */
+@keyframes breathe-glow {
+  0%, 100% {
+    box-shadow: 0 0 4px rgba(0, 229, 255, 0.1), 0 0 8px rgba(0, 229, 255, 0.05);
+  }
+  50% {
+    box-shadow: 0 0 8px rgba(0, 229, 255, 0.2), 0 0 16px rgba(0, 229, 255, 0.1), 0 0 24px rgba(0, 229, 255, 0.05);
+  }
+}
+
+.breathe-glow {
+  animation: breathe-glow 4s ease-in-out infinite;
+}
+
+/* Warning pulse for critical states (low energy, high stress) */
+@keyframes warning-pulse {
+  0%, 100% {
+    border-color: rgba(251, 113, 133, 0.2);
+    box-shadow: 0 0 4px rgba(251, 113, 133, 0.1);
+  }
+  50% {
+    border-color: rgba(251, 113, 133, 0.5);
+    box-shadow: 0 0 12px rgba(251, 113, 133, 0.2), 0 0 24px rgba(251, 113, 133, 0.1);
+  }
+}
+
+.warning-pulse {
+  animation: warning-pulse 1.5s ease-in-out infinite;
+}
+
+/* Matrix code rain background for panels */
+@keyframes matrix-rain-bg {
+  0% { background-position: 0 0; }
+  100% { background-position: 0 -200px; }
+}
+
+.matrix-rain-bg {
+  background-image:
+    repeating-linear-gradient(
+      0deg,
+      transparent 0px,
+      transparent 2px,
+      rgba(0, 229, 255, 0.01) 2px,
+      rgba(0, 229, 255, 0.01) 3px
+    );
+  background-size: 100% 200px;
+  animation: matrix-rain-bg 10s linear infinite;
+}
+
+/* Holographic flicker for UI elements */
+@keyframes holo-flicker-soft {
+  0%, 100% { opacity: 1; }
+  92% { opacity: 1; }
+  93% { opacity: 0.85; }
+  94% { opacity: 1; }
+  97% { opacity: 0.92; }
+  98% { opacity: 1; }
+}
+
+.holo-flicker-soft {
+  animation: holo-flicker-soft 5s ease-in-out infinite;
+}
+
+/* Tooltip hover glow effect */
+.tooltip-glow {
+  position: relative;
+}
+
+.tooltip-glow::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  background: radial-gradient(ellipse at center, rgba(0, 229, 255, 0.06), transparent 70%);
+  pointer-events: none;
+  z-index: -1;
+}
+
+.tooltip-glow:hover::after {
+  opacity: 1;
+}
+
+/* Cyberpunk data bar with gradient fill */
+.cyber-bar {
+  position: relative;
+  overflow: hidden;
+}
+
+.cyber-bar::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.05) 50%, transparent 100%);
+  animation: shimmer 2.5s ease-in-out infinite;
+}
+
+/* Neon text glow utility classes */
+.neon-text-cyan {
+  text-shadow: 0 0 7px rgba(0, 229, 255, 0.6), 0 0 15px rgba(0, 229, 255, 0.3), 0 0 30px rgba(0, 229, 255, 0.15);
+}
+
+.neon-text-amber {
+  text-shadow: 0 0 7px rgba(251, 191, 36, 0.6), 0 0 15px rgba(251, 191, 36, 0.3), 0 0 30px rgba(251, 191, 36, 0.15);
+}
+
+.neon-text-emerald {
+  text-shadow: 0 0 7px rgba(52, 211, 153, 0.6), 0 0 15px rgba(52, 211, 153, 0.3), 0 0 30px rgba(52, 211, 153, 0.15);
+}
+
+.neon-text-rose {
+  text-shadow: 0 0 7px rgba(251, 113, 133, 0.6), 0 0 15px rgba(251, 113, 133, 0.3), 0 0 30px rgba(251, 113, 133, 0.15);
+}
+
+/* Panel edge glow animation */
+@keyframes edge-glow {
+  0%, 100% {
+    border-color: rgba(0, 229, 255, 0.15);
+  }
+  50% {
+    border-color: rgba(0, 229, 255, 0.35);
+  }
+}
+
+.edge-glow {
+  animation: edge-glow 4s ease-in-out infinite;
+}
+
+/* Digital noise texture overlay */
+.digital-noise {
+  position: relative;
+}
+
+.digital-noise::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0.02;
+  pointer-events: none;
+  z-index: 1;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  background-size: 128px 128px;
+  mix-blend-mode: overlay;
+}
+
+/* Intersection observer fade-in for panels */
+@keyframes fade-slide-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.fade-slide-up {
+  animation: fade-slide-up 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Tab indicator animation */
+@keyframes tab-indicator {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
+.tab-indicator {
+  animation: tab-indicator 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Reward popup animation */
+@keyframes reward-pop {
+  0% { transform: scale(0.8); opacity: 0; }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.reward-pop {
+  animation: reward-pop 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Notification bell ring */
+@keyframes bell-ring {
+  0%, 100% { transform: rotate(0deg); }
+  15% { transform: rotate(12deg); }
+  30% { transform: rotate(-10deg); }
+  45% { transform: rotate(6deg); }
+  60% { transform: rotate(-4deg); }
+  75% { transform: rotate(2deg); }
+}
+
+.bell-ring {
+  animation: bell-ring 0.8s ease-in-out;
+}

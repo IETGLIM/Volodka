@@ -8,6 +8,7 @@ import { getSceneConfig } from '@/config/scenes';
 import { getSceneDefaultDistance, MIN_DISTANCE, MAX_DISTANCE } from '@/engine/camera/cameraConstants';
 import { getInteractionState } from '@/components/3d/InteractionSystemBridge';
 import { InteractionState } from '@/engine/interaction/interactionMachine';
+import { isNarrativeMovementLocked } from '@/shared/exploreHubNodes';
 
 const PITCH_MIN = -0.5;
 const PITCH_MAX = 1.3;
@@ -27,14 +28,14 @@ export interface CameraOrbitInputRefs {
 }
 
 function shouldBlockOrbit(): boolean {
-  const { mode, showStoryOverlay } = useGameStore.getState();
-  if (showStoryOverlay || mode === 'cutscene') return true;
+  const { mode, showStoryOverlay, currentNodeId } = useGameStore.getState();
+  if (isNarrativeMovementLocked(showStoryOverlay, currentNodeId) || mode === 'cutscene') return true;
   return getInteractionState() === InteractionState.Dialogue;
 }
 
 function shouldBlockZoom(): boolean {
-  const { mode, showStoryOverlay } = useGameStore.getState();
-  if (mode !== 'exploration' || showStoryOverlay) return true;
+  const { mode, showStoryOverlay, currentNodeId } = useGameStore.getState();
+  if (mode !== 'exploration' || isNarrativeMovementLocked(showStoryOverlay, currentNodeId)) return true;
   return getInteractionState() === InteractionState.Dialogue;
 }
 

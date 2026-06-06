@@ -19,34 +19,23 @@
  */
 
 import { useRef, useEffect, useMemo, memo } from 'react';
-import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
-import { useGameStore } from '@/store/gameStore';
-import { eventBus } from '@/engine/EventBus';
+import { useIsMobileVisual } from '@/hooks/use-mobile';
+import { ProceduralPlayerModelLite } from './ProceduralPlayerModelLite';
+import {
+  useProceduralPlayerAnimation,
+  type ProceduralPlayerModelProps,
+} from './useProceduralPlayerAnimation';
 
 export const ProceduralPlayerModel = memo(function ProceduralPlayerModel({
   modelScale,
   karmaGlow,
   currentAnimRef,
   rotationRef,
-}: {
-  modelScale: number;
-  karmaGlow: string;
-  currentAnimRef: React.MutableRefObject<string>;
-  rotationRef: React.MutableRefObject<number>;
-}) {
+}: ProceduralPlayerModelProps) {
   const groupRef = useRef<THREE.Group>(null);
-  const animTimeRef = useRef(0);
 
-  /* ─── Cached body-part lookups (optimization 1) ─── */
-  const bodyPartsRef = useRef<{
-    head: THREE.Group | null;
-    torso: THREE.Group | null;
-    leftArm: THREE.Group | null;
-    rightArm: THREE.Group | null;
-    leftLeg: THREE.Group | null;
-    rightLeg: THREE.Group | null;
-  } | null>(null);
+  useProceduralPlayerAnimation(groupRef, rotationRef, currentAnimRef);
 
   /* ─── Shared geometry instances (optimization 2) ─── */
   const sharedGeo = useMemo(() => ({
@@ -165,238 +154,6 @@ export const ProceduralPlayerModel = memo(function ProceduralPlayerModel({
       karmaMat.torusGlowGeo.dispose();
     };
   }, [karmaMat]);
-
-  // ── Stand-up animation state ──
-  const standUpPhaseRef = useRef(0); // 0 = seated, 1 = fully standing
-  const standUpActiveRef = useRef(false);
-  const isSeatedInitiallyRef = useRef(true); // Start in seated pose until stand_up event
-  const STAND_UP_DURATION = 1.5; // seconds
-
-  // Listen for player:stand_up event to trigger the wake-up animation.
-  // This event is emitted by StoryRenderer when player chooses
-  // "Подняться и осмотреться", or by the safety auto-stand below.
-  useEffect(() => {
-    const unsub = eventBus.on('player:stand_up', () => {
-      standUpActiveRef.current = true;
-      standUpPhaseRef.current = 0;
-      isSeatedInitiallyRef.current = false;
-    });
-    return unsub;
-  }, []);
-
-  // Safety: auto-stand when game enters exploration mode without a stand_up event.
-  // This handles cases where:
-  //   1. The story flow is skipped (e.g., loading a save directly into exploration)
-  //   2. The player:stand_up event was emitted BEFORE this component mounted
-  //      (race condition: StoryRenderer emits before 3D canvas is ready)
-  //
-  // We also check on MOUNT: if the game is already in exploration mode
-  // with the 'woke_up' flag set, the stand_up event was missed — trigger it.
-  useEffect(() => {
-    // Check on mount — was the event already emitted before we mounted?
-    const store = useGameStore.getState();
-    if (
-      (store.mode === 'exploration') &&
-      isSeatedInitiallyRef.current &&
-      !standUpActiveRef.current
-    ) {
-      // The game is already past the intro — trigger stand-up
-      standUpActiveRef.current = true;
-      standUpPhaseRef.current = 0;
-      isSeatedInitiallyRef.current = false;
-    }
-
-    // Also subscribe to mode changes for runtime transitions
-    const unsub = useGameStore.subscribe((state) => {
-      if (state.mode === 'exploration' && isSeatedInitiallyRef.current && !standUpActiveRef.current) {
-        standUpActiveRef.current = true;
-        standUpPhaseRef.current = 0;
-        isSeatedInitiallyRef.current = false;
-      }
-    });
-    return unsub;
-  }, []);
-
-  useFrame((_, delta) => {
-    if (!groupRef.current) return;
-    const dt = Math.min(delta, 0.05);
-
-    groupRef.current.rotation.y = rotationRef.current;
-
-    const animState = currentAnimRef.current;
-    animTimeRef.current += dt;
-
-    // ── Update stand-up phase ──
-    if (standUpActiveRef.current && standUpPhaseRef.current < 1) {
-      standUpPhaseRef.current = Math.min(1, standUpPhaseRef.current + dt / STAND_UP_DURATION);
-      if (standUpPhaseRef.current >= 1) {
-        standUpActiveRef.current = false;
-      }
-    }
-
-    // ── Cache body-part lookups on first frame (optimization 1) ──
-    if (!bodyPartsRef.current) {
-      const body = groupRef.current;
-      bodyPartsRef.current = {
-        head: body.getObjectByName('head') as THREE.Group | null,
-        torso: body.getObjectByName('torso') as THREE.Group | null,
-        leftArm: body.getObjectByName('leftArm') as THREE.Group | null,
-        rightArm: body.getObjectByName('rightArm') as THREE.Group | null,
-        leftLeg: body.getObjectByName('leftLeg') as THREE.Group | null,
-        rightLeg: body.getObjectByName('rightLeg') as THREE.Group | null,
-      };
-    }
-
-    const { head, torso, leftArm, rightArm, leftLeg, rightLeg } = bodyPartsRef.current;
-
-    const t = animTimeRef.current;
-
-    // ── Seated initially (waiting for stand_up event) ──
-    if (isSeatedInitiallyRef.current && !standUpActiveRef.current) {
-      // Render seated pose — same as stand-up animation at phase 0
-      if (torso) {
-        torso.position.y = 0.65;
-        torso.rotation.x = 0.35;
-      }
-      if (head) {
-        head.rotation.x = 0.25;
-        head.rotation.z = 0;
-      }
-      if (leftArm) {
-        leftArm.rotation.x = 0.5;
-        leftArm.rotation.z = 0.3;
-      }
-      if (rightArm) {
-        rightArm.rotation.x = 0.5;
-        rightArm.rotation.z = -0.3;
-      }
-      if (leftLeg) leftLeg.rotation.x = -0.3;
-      if (rightLeg) rightLeg.rotation.x = -0.3;
-      return;
-    }
-
-    // ── Stand-up animation (seated → standing) ──
-    if (standUpActiveRef.current) {
-      const p = standUpPhaseRef.current;
-      // Ease-out curve for natural motion
-      const ease = 1 - Math.pow(1 - p, 3);
-
-      // Torso rises from crouched (0.65) to standing (1.05)
-      if (torso) {
-        torso.position.y = 0.65 + ease * 0.40;
-        // Leans forward when seated, straightens as standing
-        torso.rotation.x = 0.35 - ease * 0.29;
-      }
-      // Head starts down (looking at desk), lifts up
-      if (head) {
-        head.rotation.x = 0.25 - ease * 0.21;
-        head.rotation.z = 0;
-      }
-      // Arms start on desk (forward), pull back to sides
-      if (leftArm) {
-        leftArm.rotation.x = 0.5 - ease * 0.5;
-        leftArm.rotation.z = 0.3 - ease * 0.18;
-      }
-      if (rightArm) {
-        rightArm.rotation.x = 0.5 - ease * 0.5;
-        rightArm.rotation.z = -0.3 + ease * 0.18;
-      }
-      // Legs start bent (seated), straighten
-      if (leftLeg) leftLeg.rotation.x = -0.3 + ease * 0.3;
-      if (rightLeg) rightLeg.rotation.x = -0.3 + ease * 0.3;
-      return;
-    }
-
-    if (animState === 'jump' || animState === 'fall') {
-      const airborne = animState === 'jump';
-      const legTuck = airborne ? -0.45 : -0.15;
-      const armRaise = airborne ? -0.35 : 0.15;
-
-      if (torso) {
-        torso.position.y = 1.05 + (airborne ? 0.04 : 0);
-        torso.rotation.x = airborne ? -0.08 : 0.1;
-      }
-      if (leftArm) {
-        leftArm.rotation.x = armRaise;
-        leftArm.rotation.z = 0.15;
-      }
-      if (rightArm) {
-        rightArm.rotation.x = armRaise;
-        rightArm.rotation.z = -0.15;
-      }
-      if (leftLeg) leftLeg.rotation.x = legTuck;
-      if (rightLeg) rightLeg.rotation.x = legTuck * 0.85;
-      if (head) head.rotation.x = airborne ? -0.05 : 0.08;
-    } else if (animState === 'walk') {
-      const speed = 8;
-      const armSwing = 0.4;
-      const legSwing = 0.4;
-      const bobAmount = 0.018;
-
-      if (torso) {
-        torso.position.y = 1.05 + Math.abs(Math.sin(t * speed)) * bobAmount;
-        torso.rotation.x = 0.06 + Math.sin(t * speed * 0.5) * 0.015;
-      }
-      if (leftArm) {
-        leftArm.rotation.x = Math.sin(t * speed) * armSwing;
-        leftArm.rotation.z = 0.12 + Math.sin(t * speed) * 0.03;
-      }
-      if (rightArm) {
-        rightArm.rotation.x = -Math.sin(t * speed) * armSwing;
-        rightArm.rotation.z = -0.12 - Math.sin(t * speed) * 0.03;
-      }
-      if (leftLeg) leftLeg.rotation.x = -Math.sin(t * speed) * legSwing;
-      if (rightLeg) rightLeg.rotation.x = Math.sin(t * speed) * legSwing;
-      if (head) {
-        head.rotation.x = Math.sin(t * speed) * 0.02;
-        head.rotation.z = Math.sin(t * speed * 0.5) * 0.015;
-      }
-    } else if (animState === 'run') {
-      const speed = 12;
-      const armSwing = 0.65;
-      const legSwing = 0.6;
-      const bobAmount = 0.022;
-
-      if (torso) {
-        torso.position.y = 1.05 + Math.abs(Math.sin(t * speed)) * bobAmount;
-        torso.rotation.x = 0.12 + Math.sin(t * speed * 0.5) * 0.02;
-      }
-      if (leftArm) {
-        leftArm.rotation.x = Math.sin(t * speed) * armSwing;
-        leftArm.rotation.z = 0.18 + Math.sin(t * speed) * 0.05;
-      }
-      if (rightArm) {
-        rightArm.rotation.x = -Math.sin(t * speed) * armSwing;
-        rightArm.rotation.z = -0.18 - Math.sin(t * speed) * 0.05;
-      }
-      if (leftLeg) leftLeg.rotation.x = -Math.sin(t * speed) * legSwing;
-      if (rightLeg) rightLeg.rotation.x = Math.sin(t * speed) * legSwing;
-      if (head) {
-        head.rotation.x = 0.05 + Math.sin(t * speed) * 0.03;
-        head.rotation.z = Math.sin(t * speed * 0.5) * 0.01;
-      }
-    } else {
-      // Idle: breathing + subtle sway — more pronounced for visible liveliness
-      if (torso) {
-        torso.position.y = 1.05 + Math.sin(t * 2.0) * 0.012;
-        torso.rotation.x = 0.06 + Math.sin(t * 1.5) * 0.018;
-      }
-      if (head) {
-        head.rotation.x = 0.04 + Math.sin(t * 1.2) * 0.025;
-        head.rotation.z = Math.sin(t * 0.8) * 0.03;
-      }
-      if (leftArm) {
-        leftArm.rotation.x = Math.sin(t * 1.0) * 0.06;
-        leftArm.rotation.z = 0.12 + Math.sin(t * 0.7) * 0.04;
-      }
-      if (rightArm) {
-        rightArm.rotation.x = Math.sin(t * 1.0 + 0.5) * 0.06;
-        rightArm.rotation.z = -0.12 - Math.sin(t * 0.7 + 0.3) * 0.04;
-      }
-      if (leftLeg) leftLeg.rotation.x = Math.sin(t * 0.6) * 0.02;
-      if (rightLeg) rightLeg.rotation.x = Math.sin(t * 0.6 + Math.PI) * 0.02;
-    }
-  });
 
   return (
     <group ref={groupRef} scale={[modelScale, modelScale, modelScale]}>
@@ -616,4 +373,12 @@ export const ProceduralPlayerModel = memo(function ProceduralPlayerModel({
 
     </group>
   );
+});
+
+/** Picks lite mesh on mobile viewports (≤1024px), full detail on desktop. */
+export const ProceduralPlayerModelAdaptive = memo(function ProceduralPlayerModelAdaptive(
+  props: ProceduralPlayerModelProps,
+) {
+  const isMobile = useIsMobileVisual();
+  return isMobile ? <ProceduralPlayerModelLite {...props} /> : <ProceduralPlayerModel {...props} />;
 });

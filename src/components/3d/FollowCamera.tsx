@@ -55,6 +55,8 @@ import {
 } from '@/engine/camera/cameraConstants';
 import { resolveCameraMode } from '@/engine/camera/strategies';
 import { useCameraOrbitInput } from '@/engine/camera/useCameraOrbitInput';
+import { applyPendingGamepadOrbit } from '@/engine/input/gamepadCamera';
+import { configureCameraCollisionRaycaster } from '@/engine/camera/cameraCollisionLayers';
 import { applyCameraFrame, isInDialogueInteraction } from '@/engine/camera/applyCameraFrame';
 import type { CameraModeContext } from '@/engine/camera/types';
 import { isInteractionLocked } from './InteractionSystemBridge';
@@ -160,8 +162,11 @@ export function FollowCamera({
   const _tempVec2 = useRef(new THREE.Vector3());
   const _playerVelocity = useRef(new THREE.Vector3());
 
-  // ── Raycaster for wall collision ──
+  // ── Raycaster for wall collision (layer 5 — see cameraCollisionLayers.ts) ──
   const raycaster = useRef(new THREE.Raycaster());
+  useEffect(() => {
+    configureCameraCollisionRaycaster(raycaster.current);
+  }, []);
 
   // ── Initialize all camera subsystems ──
   useEffect(() => {
@@ -538,6 +543,8 @@ export function FollowCamera({
 
     const delta = applyTimeScale(Math.min(rawDelta, 0.05));
     timeRef.current += delta;
+
+    applyPendingGamepadOrbit(yawRef, pitchRef, distanceRef, interactionDistanceRef, delta);
 
     if (cinematicFreezeRef.current) {
       const frozenDuration = timeRef.current - cinematicFreezeStartRef.current;

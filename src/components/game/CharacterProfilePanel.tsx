@@ -3,6 +3,8 @@
 
 import { useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { FocusTrap } from '@/components/a11y/FocusTrap';
+import { usePanelDialog } from '@/components/a11y/usePanelDialog';
 import {
   X,
   Zap,
@@ -308,6 +310,7 @@ const SKILL_DISPLAY: Record<string, { label: string; color: string }> = {
    ══════════════════════════════════════════════════════════════ */
 
 export function CharacterProfilePanel({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const { closeButtonRef, dialogProps, titleProps } = usePanelDialog();
   const playerState = usePlayerState();
   const npcRelations = useNpcRelations();
   const collectedPoems = useCollectedPoems();
@@ -352,14 +355,16 @@ export function CharacterProfilePanel({ open, onClose }: { open: boolean; onClos
           style={{ zIndex: UI_LAYERS.PANEL }}
         >
           {/* Backdrop */}
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={handleClose} />
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={handleClose} aria-hidden="true" />
 
+          <FocusTrap initialFocusRef={closeButtonRef}>
           <motion.div
             initial={{ scale: 0.95, opacity: 0, y: 10 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.95, opacity: 0, y: 10 }}
             transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
             className="relative z-10 w-full max-w-3xl mx-3 sm:mx-4"
+            {...dialogProps}
           >
             <Card
               className="border backdrop-blur-md overflow-hidden"
@@ -373,13 +378,15 @@ export function CharacterProfilePanel({ open, onClose }: { open: boolean; onClos
               <div className="flex items-center justify-between px-5 py-3 border-b border-slate-800/60">
                 <div className="flex items-center gap-2">
                   <Shield className="size-4 text-cyan-400/60" />
-                  <h2 className="text-base font-semibold text-slate-100 tracking-wide font-mono">
+                  <h2 {...titleProps} className="text-base font-semibold text-slate-100 tracking-wide font-mono">
                     ПРОФИЛЬ ПЕРСОНАЖА
                   </h2>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="text-[10px] text-slate-600 font-mono hidden sm:block">[C] закрыть</span>
                   <button
+                    ref={closeButtonRef}
+                    type="button"
                     onClick={handleClose}
                     className="w-7 h-7 rounded-md flex items-center justify-center text-slate-400 hover:text-white hover:bg-slate-800/60 transition-colors"
                     aria-label="Закрыть"
@@ -806,6 +813,7 @@ export function CharacterProfilePanel({ open, onClose }: { open: boolean; onClos
               </CardContent>
             </Card>
           </motion.div>
+          </FocusTrap>
         </motion.div>
       )}
     </AnimatePresence>

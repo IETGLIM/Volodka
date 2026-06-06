@@ -10,7 +10,7 @@ export function openNarrativeOverlay(nodeId: string): void {
   getGameStore().openNarrativeOverlay(nodeId);
 }
 
-/** Close narrative overlay and clear node in a single store write. */
+/** Close narrative overlay (node id retained for save/resume). */
 export function closeNarrativeOverlay(): void {
   getGameStore().closeNarrativeOverlay();
 }

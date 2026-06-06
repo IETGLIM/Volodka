@@ -5,6 +5,8 @@
 
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Keyboard } from 'lucide-react';
+import { FocusTrap } from '@/components/a11y/FocusTrap';
+import { usePanelDialog } from '@/components/a11y/usePanelDialog';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 
 const SHORTCUT_GROUPS = [
@@ -54,6 +56,21 @@ const SHORTCUT_GROUPS = [
       { keys: ['F3'], desc: 'Панель разработчика' },
     ],
   },
+  {
+    title: 'Геймпад (Xbox / стандарт)',
+    shortcuts: [
+      { keys: ['Левый стик'], desc: 'Движение' },
+      { keys: ['Правый стик'], desc: 'Камера' },
+      { keys: ['LT / RT'], desc: 'Приближение / отдаление камеры' },
+      { keys: ['A'], desc: 'Взаимодействие' },
+      { keys: ['B'], desc: 'Прыжок' },
+      { keys: ['LB'], desc: 'Бег' },
+      { keys: ['Y'], desc: 'Инвентарь' },
+      { keys: ['X'], desc: 'Задания' },
+      { keys: ['View'], desc: 'Журнал' },
+      { keys: ['Menu'], desc: 'Меню паузы / закрыть панель' },
+    ],
+  },
 ];
 
 interface ShortcutsOverlayProps {
@@ -62,6 +79,8 @@ interface ShortcutsOverlayProps {
 }
 
 export function ShortcutsOverlay({ open, onClose }: ShortcutsOverlayProps) {
+  const { closeButtonRef, dialogProps, titleProps } = usePanelDialog();
+
   return (
     <AnimatePresence>
       {open && (
@@ -77,18 +96,21 @@ export function ShortcutsOverlay({ open, onClose }: ShortcutsOverlayProps) {
           <motion.div
             className="absolute inset-0 bg-black/70 backdrop-blur-sm"
             onClick={onClose}
+            aria-hidden="true"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
           />
 
           {/* Content */}
+          <FocusTrap initialFocusRef={closeButtonRef}>
           <motion.div
             className="relative z-10 w-full max-w-lg mx-4"
             initial={{ scale: 0.92, opacity: 0, y: 20 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.92, opacity: 0, y: 20 }}
             transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
+            {...dialogProps}
           >
             <div
               className="relative rounded-lg border border-cyan-500/20 overflow-hidden hex-grid-bg edge-glow"
@@ -119,11 +141,13 @@ export function ShortcutsOverlay({ open, onClose }: ShortcutsOverlayProps) {
               <div className="relative z-20 flex items-center justify-between px-5 py-4 border-b border-cyan-500/15">
                 <div className="flex items-center gap-3">
                   <Keyboard className="size-5 text-cyan-400/70" />
-                  <h2 className="text-lg font-semibold text-slate-100 tracking-wide">
+                  <h2 {...titleProps} className="text-lg font-semibold text-slate-100 tracking-wide">
                     Управление
                   </h2>
                 </div>
                 <button
+                  ref={closeButtonRef}
+                  type="button"
                   onClick={onClose}
                   className="w-8 h-8 flex items-center justify-center rounded-md text-slate-400 hover:text-slate-200 hover:bg-white/5 transition-colors close-btn-glow"
                   aria-label="Закрыть"
@@ -181,6 +205,7 @@ export function ShortcutsOverlay({ open, onClose }: ShortcutsOverlayProps) {
               </div>
             </div>
           </motion.div>
+          </FocusTrap>
         </motion.div>
       )}
     </AnimatePresence>

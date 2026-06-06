@@ -45,9 +45,11 @@ import {
 import { eventBus } from '@/engine/EventBus';
 import { audioEngine } from '@/engine/AudioEngine';
 
-import { isInteractionLocked } from './InteractionSystemBridge';
+import { getInteractionState, isInteractionLocked } from './InteractionSystemBridge';
+import { InteractionState } from '@/engine/interaction/interactionMachine';
 import { setPlayerRigidBody, getPlayerExternalVelocity, clearPlayerRigidBody } from '@/engine/PlayerRigidBodyState';
-import { ProceduralPlayerModel } from './ProceduralPlayerModel';
+import { ProceduralPlayerModelAdaptive } from './ProceduralPlayerModel';
+import { isNarrativeMovementLocked } from '@/shared/exploreHubNodes';
 
 /** Lerp angle with wraparound — smooth rotation without 360 jumps */
 function lerpAngle(a: number, b: number, t: number): number {
@@ -257,12 +259,14 @@ export function PhysicsPlayer({
     warmupFramesRef.current++;
     if (warmupFramesRef.current < 10) {
       vel.set(0, 0, 0);
-      const spawn = config.spawnPoint;
-      if (rb) {
-        rb.setTranslation({ x: spawn[0], y: spawn[1], z: spawn[2] }, true);
-      }
-      livePlayerPositionRef.current.set(spawn[0], spawn[1], spawn[2]);
+      const storePos = getGameStore().exploration.playerPosition;
+      const holdX = storePos[0];
+      const holdY = storePos[1];
+      const holdZ = storePos[2];
+      rb.setTranslation({ x: holdX, y: holdY, z: holdZ }, true);
+      livePlayerPositionRef.current.set(holdX, holdY, holdZ);
       isGroundedRef.current = true;
+      currentAnimRef.current = 'idle';
       return;
     }
 
@@ -291,15 +295,30 @@ export function PhysicsPlayer({
     // has already changed to 'exploration'.
     const currentMode = getGameStore().mode;
     const showStoryOverlay = getGameStore().showStoryOverlay;
+    const currentNodeId = getGameStore().currentNodeId;
     // ── World Director: lock movement during narrative overlay or cutscene ──
-    // Before: locked when mode === 'visual-novel' (separate mode)
-    // Now: locked when showStoryOverlay is true (narrative overlay on exploration)
-    const isLocked = showStoryOverlay || currentMode === 'cutscene' || currentMode === 'intro' || isInteractionLocked();
+    // Explore hub nodes (explore_mode, corridor_explore_mode) keep the overlay
+    // as an in-world menu but allow walking — fixes freeze after door transition.
+    const isLocked =
+      isNarrativeMovementLocked(showStoryOverlay, currentNodeId) ||
+      currentMode === 'cutscene' ||
+      currentMode === 'intro' ||
+      isInteractionLocked();
 
-    // Stuck lock safety — if interaction lock is stuck in exploration mode
-    if (isLocked && isInteractionLocked() && currentMode === 'exploration') {
+    // Stuck lock safety — only when interaction state is wedged without narrative UI.
+    // Do NOT fire during Approach/Cutscene (normal flow exceeds 2s) or while overlay is open.
+    const interactionState = getInteractionState();
+    const inExpectedLongInteractionPhase =
+      interactionState === InteractionState.Approach ||
+      interactionState === InteractionState.Cutscene;
+    const shouldWatchStuckLock =
+      isInteractionLocked() &&
+      currentMode === 'exploration' &&
+      !showStoryOverlay &&
+      !inExpectedLongInteractionPhase;
+
+    if (shouldWatchStuckLock) {
       stuckLockTimerRef.current += dt;
-      // Reduced from 3s to 2s for better responsiveness
       if (stuckLockTimerRef.current > 2.0) {
         console.warn('[PhysicsPlayer] Interaction lock stuck for 2s — force-unlocking');
         eventBus.emit('interaction:end', {});
@@ -432,6 +451,7 @@ export function PhysicsPlayer({
     const lft = (keys.left ? 1 : 0) + (virtual?.left ?? 0);
     const rgt = (keys.right ? 1 : 0) + (virtual?.right ?? 0);
     const running = keys.run || (virtual?.run ?? 0) > 0;
+    const jumping = keys.jump || (virtual?.jump ?? 0) > 0;
 
     // ─── Mobile debug: disabled in production to reduce console noise ───
     // Previously logged every 2s — caused rAF violations and console spam.
@@ -471,7 +491,7 @@ export function PhysicsPlayer({
     if (vel.y < TERMINAL_VELOCITY) vel.y = TERMINAL_VELOCITY;
 
     // Jump — check grounded OR coyote time
-    if (keys.jump && (isGroundedRef.current || coyoteTimerRef.current > 0) && jumpCooldownRef.current <= 0) {
+    if (jumping && (isGroundedRef.current || coyoteTimerRef.current > 0) && jumpCooldownRef.current <= 0) {
       vel.y = JUMP_FORCE;
       isGroundedRef.current = false;
       jumpCooldownRef.current = JUMP_COOLDOWN;
@@ -485,7 +505,7 @@ export function PhysicsPlayer({
     // is at or below this level AND falling AND not jumping, force them to floor level.
     {
       const pos = rb.translation();
-      if (pos.y <= floorY + 0.02 && vel.y < 0 && !keys.jump) {
+      if (pos.y <= floorY + 0.02 && vel.y < 0 && !jumping) {
         rb.setTranslation({ x: pos.x, y: floorY, z: pos.z }, true);
         vel.y = 0;
         isGroundedRef.current = true;
@@ -621,6 +641,11 @@ export function PhysicsPlayer({
     const desiredHLen = Math.sqrt(desiredDisplacement.x ** 2 + desiredDisplacement.z ** 2);
     const actualHLen = Math.sqrt(actualDisplacement.x ** 2 + actualDisplacement.z ** 2);
     const blockedByCollider = desiredHLen > 0.001 && actualHLen < desiredHLen * 0.3;
+    const collisionCount =
+      typeof controller.numComputedCollisions === 'function'
+        ? controller.numComputedCollisions()
+        : 0;
+    const blockedByWall = blockedByCollider && collisionCount > 0;
 
     // ─── Floor material from scene config (single source of truth) ───
     // Previously, we read the collider name (fs:<material>) via raycast.
@@ -636,6 +661,7 @@ export function PhysicsPlayer({
     // even when the character controller briefly loses ground contact while walking.
     if (animPos.y <= floorY + 0.04 && Math.abs(vel.y) < 0.75) {
       isGroundedRef.current = true;
+      if (Math.abs(vel.y) < 0.25) vel.y = 0;
     }
     if (!isGroundedRef.current) {
       currentAnimRef.current = vel.y > 0.5 ? 'jump' : 'fall';
@@ -669,7 +695,7 @@ export function PhysicsPlayer({
     // If the player has input but position hasn't changed, the controller may
     // be broken (common on some mobile WASM builds). Do NOT treat legitimate
     // wall blocking as a failure — that would re-enable collision bypass.
-    if (isMoving && !blockedByCollider) {
+    if (isMoving && !blockedByWall) {
       const dx = finalPos.x - prevRbPosRef.current.x;
       const dz = finalPos.z - prevRbPosRef.current.z;
       const posDelta = Math.sqrt(dx * dx + dz * dz);
@@ -717,7 +743,7 @@ export function PhysicsPlayer({
       <ContactShadow />
 
       {/* Procedural model — default for cyberpunk aesthetic, no external GLB dependency */}
-      <ProceduralPlayerModel modelScale={modelScale} karmaGlow={karmaGlow} currentAnimRef={currentAnimRef} rotationRef={livePlayerRotationRef} />
+      <ProceduralPlayerModelAdaptive modelScale={modelScale} karmaGlow={karmaGlow} currentAnimRef={currentAnimRef} rotationRef={livePlayerRotationRef} />
 
       {/* Karma glow point light — strong aura for visibility in dark scenes */}
       <pointLight

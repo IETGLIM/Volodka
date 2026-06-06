@@ -1,0 +1,240 @@
+/* ══════════════════════════════════════════════════════════════
+   STYLE-1: Panel Animations, Micro-interactions, Visual Refinements
+   ══════════════════════════════════════════════════════════════ */
+
+/* ─── Enhanced custom scrollbar (thin, cyan thumb, dark track) ─── */
+.game-scrollbar,
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 229, 255, 0.25) rgba(0, 0, 0, 0.4);
+  scrollbar-gutter: stable;
+}
+.game-scrollbar::-webkit-scrollbar,
+.custom-scrollbar::-webkit-scrollbar {
+  width: 5px;
+}
+.game-scrollbar::-webkit-scrollbar-track,
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.4);
+  border-radius: 3px;
+}
+.game-scrollbar::-webkit-scrollbar-thumb,
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, rgba(0, 229, 255, 0.35), rgba(0, 229, 255, 0.15));
+  border-radius: 3px;
+  border: 1px solid rgba(0, 229, 255, 0.1);
+}
+.game-scrollbar::-webkit-scrollbar-thumb:hover,
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, rgba(0, 229, 255, 0.55), rgba(0, 229, 255, 0.25));
+  border-color: rgba(0, 229, 255, 0.2);
+}
+.game-scrollbar::-webkit-scrollbar-corner,
+.custom-scrollbar::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* ─── Panel entrance/exit keyframe animations ─── */
+@keyframes panel-slide-in-right {
+  0% {
+    transform: translateX(100%);
+    opacity: 0.5;
+  }
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes panel-slide-out-right {
+  0% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(100%);
+    opacity: 0.5;
+  }
+}
+
+@keyframes panel-scale-in {
+  0% {
+    transform: scale(0.92);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* (panel-scale-out keyframe removed — unused) */
+
+.panel-slide-in-right {
+  animation: panel-slide-in-right 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.panel-slide-out-right {
+  animation: panel-slide-out-right 0.2s ease-in forwards;
+}
+
+.panel-scale-in {
+  animation: panel-scale-in 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* ─── Glow pulse animation for selected items ─── */
+@keyframes glow-pulse {
+  0%, 100% {
+    box-shadow: 0 0 4px rgba(0, 229, 255, 0.1), inset 0 0 2px rgba(0, 229, 255, 0.05);
+  }
+  50% {
+    box-shadow: 0 0 12px rgba(0, 229, 255, 0.25), 0 0 24px rgba(0, 229, 255, 0.08), inset 0 0 6px rgba(0, 229, 255, 0.1);
+  }
+}
+
+.glow-pulse {
+  animation: glow-pulse 2.5s ease-in-out infinite;
+}
+
+/* Accent-colored glow variants */
+@keyframes glow-pulse-emerald {
+  0%, 100% { box-shadow: 0 0 4px rgba(52, 211, 153, 0.1), inset 0 0 2px rgba(52, 211, 153, 0.05); }
+  50% { box-shadow: 0 0 12px rgba(52, 211, 153, 0.25), 0 0 24px rgba(52, 211, 153, 0.08), inset 0 0 6px rgba(52, 211, 153, 0.1); }
+}
+@keyframes glow-pulse-amber {
+  0%, 100% { box-shadow: 0 0 4px rgba(251, 191, 36, 0.1), inset 0 0 2px rgba(251, 191, 36, 0.05); }
+  50% { box-shadow: 0 0 12px rgba(251, 191, 36, 0.25), 0 0 24px rgba(251, 191, 36, 0.08), inset 0 0 6px rgba(251, 191, 36, 0.1); }
+}
+@keyframes glow-pulse-fuchsia {
+  0%, 100% { box-shadow: 0 0 4px rgba(217, 70, 239, 0.1), inset 0 0 2px rgba(217, 70, 239, 0.05); }
+  50% { box-shadow: 0 0 12px rgba(217, 70, 239, 0.25), 0 0 24px rgba(217, 70, 239, 0.08), inset 0 0 6px rgba(217, 70, 239, 0.1); }
+}
+
+.glow-pulse-emerald { animation: glow-pulse-emerald 2.5s ease-in-out infinite; }
+.glow-pulse-amber { animation: glow-pulse-amber 2.5s ease-in-out infinite; }
+.glow-pulse-fuchsia { animation: glow-pulse-fuchsia 2.5s ease-in-out infinite; }
+
+/* ─── Scan-line overlay animation ─── */
+@keyframes scanline-overlay {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100%); }
+}
+
+.scanline-overlay::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent 0px,
+    transparent 2px,
+    rgba(0, 229, 255, 0.015) 2px,
+    rgba(0, 229, 255, 0.015) 4px
+  );
+  pointer-events: none;
+  animation: scanline-overlay 8s linear infinite;
+}
+
+/* ─── Hover lift effect for cards ─── */
+.hover-lift {
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease;
+}
+.hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3), 0 0 8px rgba(0, 229, 255, 0.06);
+}
+
+/* ─── Smooth font rendering ─── */
+.smooth-fonts {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  font-feature-settings: 'kern' 1, 'liga' 1;
+}
+
+/* ─── Better focus states for accessibility ─── */
+.focus-cyber:focus-visible {
+  outline: 2px solid rgba(0, 229, 255, 0.5);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px rgba(0, 229, 255, 0.15);
+}
+
+/* ─── Loading shimmer animation for skeletons ─── */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(0, 0, 0, 0) 0%,
+    rgba(0, 229, 255, 0.06) 50%,
+    rgba(0, 0, 0, 0) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 2s ease-in-out infinite;
+}
+
+.skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(15, 23, 42, 0.5) 0%,
+    rgba(30, 41, 59, 0.6) 50%,
+    rgba(15, 23, 42, 0.5) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.8s ease-in-out infinite;
+}
+
+/* ─── Terminal cursor blink animation ─── */
+@keyframes terminal-cursor {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+.terminal-cursor {
+  display: inline-block;
+  width: 2px;
+  height: 1em;
+  background: rgba(0, 229, 255, 0.8);
+  vertical-align: middle;
+  margin-left: 2px;
+  animation: terminal-cursor 1s step-end infinite;
+  box-shadow: 0 0 4px rgba(0, 229, 255, 0.4);
+}
+
+/* (transition-flash, transition-darken, transition-ripple keyframes removed — unused) */
+
+/* ─── Micro-interaction: item grid cell hover ─── */
+@keyframes item-cell-pop {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+  100% { transform: scale(1.04); }
+}
+
+.item-cell-hover:hover {
+  animation: item-cell-pop 0.2s ease-out forwards;
+}
+
+/* ─── Micro-interaction: button press ─── */
+.btn-press:active {
+  transform: scale(0.97);
+  transition: transform 0.08s ease;
+}
+
+/* ─── Micro-interaction: tab switch underline sweep ─── */
+@keyframes tab-sweep {
+  0% { transform: scaleX(0); transform-origin: left; }
+  100% { transform: scaleX(1); transform-origin: left; }
+}
+
+.tab-sweep {
+  animation: tab-sweep 0.25s ease-out forwards;
+}
+
+/* (dissolve-noise keyframe removed — unused) */

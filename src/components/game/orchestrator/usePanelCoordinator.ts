@@ -18,37 +18,13 @@ import type {
   PanelType,
   QuestChainUnlockState,
 } from './types';
-
-function panelReducer(prev: PanelType, next: PanelType): PanelType {
-  return prev === next ? null : next;
-}
-
-function derivePanelFlags(activePanel: PanelType): PanelFlags {
-  return {
-    questsOpen: activePanel === 'quests',
-    inventoryOpen: activePanel === 'inventory',
-    poetryOpen: activePanel === 'poetry',
-    menuOpen: activePanel === 'menu',
-    restOpen: activePanel === 'rest',
-    shortcutsOpen: activePanel === 'shortcuts',
-    settingsOpen: activePanel === 'settings',
-    saveSlotOpen: activePanel === 'saveSlot',
-    miniGameHubOpen: activePanel === 'miniGameHub',
-    npcRelationOpen: activePanel === 'npcRelation',
-    characterProfileOpen: activePanel === 'characterProfile',
-    codexOpen: activePanel === 'codex',
-    dialogueHistoryOpen: activePanel === 'dialogueHistory',
-    achievementsOpen: activePanel === 'achievements',
-    skillTreeOpen: activePanel === 'skillTree',
-    craftingOpen: activePanel === 'crafting',
-    tradingOpen: activePanel === 'trading',
-    fastTravelOpen: activePanel === 'fastTravel',
-    perksOpen: activePanel === 'perks',
-    questBoardOpen: activePanel === 'questBoard',
-    statsOpen: activePanel === 'stats',
-    karmaPoemOpen: activePanel === 'karmaPoem',
-  };
-}
+import {
+  derivePanelFlags,
+  getTopPanel,
+  panelStackReducer,
+  type NonNullPanelType,
+  type PanelStackAction,
+} from './panelStackReducer';
 
 export interface PanelCoordinatorOverlayHandlers {
   setExamineOpen: (open: boolean) => void;
@@ -62,9 +38,16 @@ export interface UsePanelCoordinatorOptions extends PanelCoordinatorOverlayHandl
 }
 
 export interface PanelCoordinatorResult extends PanelFlags {
+  /** Top of the panel stack (focused panel). */
   activePanel: PanelType;
+  /** Full open-panel stack (bottom → top). */
+  panelStack: NonNullPanelType[];
+  /** Toggle a panel on/off, or push if not open. Pass null to clear the stack. */
   dispatchPanel: Dispatch<PanelType>;
+  /** Close the topmost panel (Escape / back). */
   closePanel: () => void;
+  /** Remove a specific panel from the stack. */
+  closePanelByType: (panel: NonNullPanelType) => void;
   closeAllPanels: () => void;
   questAcceptId: string | null;
   questAcceptNpcId: string | undefined;
@@ -86,7 +69,7 @@ export interface PanelCoordinatorResult extends PanelFlags {
   handleOpenMenu: () => void;
 }
 
-/** Single panel at a time + quest dialog state + overlay exclusivity. */
+/** Stacked panels + quest dialog state + overlay exclusivity. */
 export function usePanelCoordinator({
   isOverlayActive,
   minigameSetters,
@@ -94,8 +77,9 @@ export function usePanelCoordinator({
   setExamineData,
   setExamineHasLinkedContent,
 }: UsePanelCoordinatorOptions): PanelCoordinatorResult {
-  const [activePanel, dispatchPanel] = useReducer(panelReducer, null as PanelType);
-  const panelFlags = derivePanelFlags(activePanel);
+  const [panelStack, dispatchStack] = useReducer(panelStackReducer, [] as NonNullPanelType[]);
+  const activePanel = getTopPanel(panelStack);
+  const panelFlags = derivePanelFlags(panelStack);
 
   const [questAcceptId, setQuestAcceptId] = useState<string | null>(null);
   const [questAcceptNpcId, setQuestAcceptNpcId] = useState<string | undefined>(undefined);
@@ -140,12 +124,33 @@ export function usePanelCoordinator({
     return unsub;
   }, []);
 
-  const closeAllPanels = useCallback(() => {
-    dispatchPanel(null);
-    useGameStore.getState().setJournalOpen(false);
+  const dispatchStackAction = useCallback((action: PanelStackAction) => {
+    dispatchStack(action);
   }, []);
 
-  const closePanel = useCallback(() => dispatchPanel(null), []);
+  const dispatchPanel = useCallback((panel: PanelType) => {
+    if (panel === null) {
+      dispatchStackAction({ type: 'clear' });
+      return;
+    }
+    dispatchStackAction({ type: 'toggle', panel });
+  }, [dispatchStackAction]);
+
+  const closeAllPanels = useCallback(() => {
+    dispatchStackAction({ type: 'clear' });
+    useGameStore.getState().setJournalOpen(false);
+  }, [dispatchStackAction]);
+
+  const closePanel = useCallback(() => {
+    dispatchStackAction({ type: 'pop' });
+  }, [dispatchStackAction]);
+
+  const closePanelByType = useCallback(
+    (panel: NonNullPanelType) => {
+      dispatchStackAction({ type: 'remove', panel });
+    },
+    [dispatchStackAction],
+  );
 
   useEffect(() => {
     if (isOverlayActive) {
@@ -158,44 +163,48 @@ export function usePanelCoordinator({
   }, [isOverlayActive, closeAllPanels, minigameSetters, setExamineOpen, setExamineData, setExamineHasLinkedContent]);
 
   useEffect(() => {
-    if (activePanel !== null || useGameStore.getState().journalOpen) {
+    if (panelStack.length > 0 || useGameStore.getState().journalOpen) {
       setExamineOpen(false);
       setExamineData(null);
       setExamineHasLinkedContent(false);
     }
-  }, [activePanel, setExamineOpen, setExamineData, setExamineHasLinkedContent]);
+  }, [panelStack.length, setExamineOpen, setExamineData, setExamineHasLinkedContent]);
 
   const handleOpenQuests = useCallback(() => {
-    dispatchPanel('quests');
+    dispatchStackAction({ type: 'toggle', panel: 'quests' });
     useGameStore.getState().setJournalOpen(false);
-  }, []);
+  }, [dispatchStackAction]);
 
   const handleOpenInventory = useCallback(() => {
-    dispatchPanel('inventory');
+    dispatchStackAction({ type: 'toggle', panel: 'inventory' });
     useGameStore.getState().setJournalOpen(false);
-  }, []);
+  }, [dispatchStackAction]);
 
   const handleOpenPoetry = useCallback(() => {
-    dispatchPanel('poetry');
+    dispatchStackAction({ type: 'toggle', panel: 'poetry' });
     useGameStore.getState().setJournalOpen(false);
-  }, []);
+  }, [dispatchStackAction]);
 
   const handleOpenPoetryBook = useCallback(() => {
-    dispatchPanel('poetry');
+    dispatchStackAction({ type: 'toggle', panel: 'poetry' });
     useGameStore.getState().setJournalOpen(false);
-  }, []);
+  }, [dispatchStackAction]);
 
   const handleToggleTutorials = useCallback(() => {
     const store = useGameStore.getState();
     store.setFlag('tutorialsDisabled', !store.tutorialFlags.tutorialsDisabled);
   }, []);
 
-  const handleOpenMenu = useCallback(() => dispatchPanel('menu'), []);
+  const handleOpenMenu = useCallback(() => {
+    dispatchStackAction({ type: 'toggle', panel: 'menu' });
+  }, [dispatchStackAction]);
 
   return {
     activePanel,
+    panelStack,
     dispatchPanel,
     closePanel,
+    closePanelByType,
     closeAllPanels,
     ...panelFlags,
     questAcceptId,

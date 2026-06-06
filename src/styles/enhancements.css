@@ -1,0 +1,227 @@
+/* ══════════════════════════════════════════════════════════════
+   SESSION 14: Additional CSS Enhancements
+   ══════════════════════════════════════════════════════════════ */
+
+/* ─── 1. Item rarity glow effects ─── */
+
+/* Common rarity — subtle slate glow */
+.rarity-common-glow {
+  box-shadow: 0 0 4px rgba(148, 163, 184, 0.15), 0 0 8px rgba(148, 163, 184, 0.08);
+}
+
+/* Rare rarity — cyan glow pulse */
+@keyframes rarity-rare-pulse {
+  0%, 100% {
+    box-shadow: 0 0 6px rgba(34, 211, 238, 0.20), 0 0 12px rgba(34, 211, 238, 0.10);
+  }
+  50% {
+    box-shadow: 0 0 12px rgba(34, 211, 238, 0.35), 0 0 24px rgba(34, 211, 238, 0.18);
+  }
+}
+
+.rarity-rare-glow {
+  animation: rarity-rare-pulse 2.5s ease-in-out infinite;
+}
+
+/* Epic rarity — amber glow pulse with sparkle */
+@keyframes rarity-epic-pulse {
+  0%, 100% {
+    box-shadow: 0 0 8px rgba(251, 191, 36, 0.25), 0 0 16px rgba(251, 191, 36, 0.12);
+    filter: brightness(1);
+  }
+  50% {
+    box-shadow: 0 0 16px rgba(251, 191, 36, 0.45), 0 0 32px rgba(251, 191, 36, 0.22), 0 0 4px rgba(255, 255, 255, 0.3);
+    filter: brightness(1.05);
+  }
+}
+
+.rarity-epic-glow {
+  animation: rarity-epic-pulse 2s ease-in-out infinite;
+}
+
+/* Legendary rarity — rose/fuchsia glow with intense sparkle */
+@keyframes rarity-legendary-pulse {
+  0%, 100% {
+    box-shadow: 0 0 10px rgba(244, 114, 182, 0.30), 0 0 20px rgba(244, 114, 182, 0.15), 0 0 4px rgba(168, 85, 247, 0.10);
+    filter: brightness(1);
+  }
+  30% {
+    box-shadow: 0 0 18px rgba(244, 114, 182, 0.50), 0 0 36px rgba(244, 114, 182, 0.25), 0 0 8px rgba(168, 85, 247, 0.20), 0 0 2px rgba(255, 255, 255, 0.4);
+    filter: brightness(1.08);
+  }
+  60% {
+    box-shadow: 0 0 14px rgba(168, 85, 247, 0.40), 0 0 28px rgba(168, 85, 247, 0.20), 0 0 6px rgba(244, 114, 182, 0.15), 0 0 2px rgba(255, 255, 255, 0.3);
+    filter: brightness(1.04);
+  }
+}
+
+.rarity-legendary-glow {
+  animation: rarity-legendary-pulse 1.8s ease-in-out infinite;
+}
+
+/* ─── 2. Menu button hover trail effect ─── */
+
+.menu-hover-trail {
+  position: relative;
+  overflow: hidden;
+}
+
+.menu-hover-trail::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 120px;
+  height: 100%;
+  background: radial-gradient(ellipse at center, rgba(34, 211, 238, 0.12) 0%, transparent 70%);
+  opacity: 0;
+  transform: translateX(-120px);
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+  z-index: 1;
+}
+
+.menu-hover-trail:hover::before {
+  opacity: 1;
+  animation: menu-trail-sweep 0.6s ease-out forwards;
+}
+
+@keyframes menu-trail-sweep {
+  0% {
+    transform: translateX(-120px);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(calc(100% + 120px));
+    opacity: 0;
+  }
+}
+
+/* ─── 3. Panel entrance animation classes ─── */
+
+/* Slide in from left with blur */
+@keyframes panel-slide-left {
+  0% {
+    opacity: 0;
+    transform: translateX(-40px);
+    filter: blur(4px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+    filter: blur(0px);
+  }
+}
+
+.panel-enter-left {
+  animation: panel-slide-left 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+/* Slide in from right with blur */
+@keyframes panel-slide-right {
+  0% {
+    opacity: 0;
+    transform: translateX(40px);
+    filter: blur(4px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+    filter: blur(0px);
+  }
+}
+
+.panel-enter-right {
+  animation: panel-slide-right 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+/* Slide in from bottom with blur */
+@keyframes panel-slide-bottom {
+  0% {
+    opacity: 0;
+    transform: translateY(40px);
+    filter: blur(4px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0px);
+  }
+}
+
+.panel-enter-bottom {
+  animation: panel-slide-bottom 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+/* Fade in with scale */
+@keyframes panel-fade-scale {
+  0% {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.panel-enter-fade {
+  animation: panel-fade-scale 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+/* ─── 4. Typewriter cursor blink enhancement ─── */
+
+@keyframes typewriter-blink {
+  0%, 100% {
+    opacity: 1;
+    text-shadow: 0 0 4px rgba(34, 211, 238, 0.6), 0 0 8px rgba(34, 211, 238, 0.3);
+  }
+  50% {
+    opacity: 0;
+    text-shadow: none;
+  }
+}
+
+.typewriter-cursor {
+  display: inline-block;
+  width: 2px;
+  height: 1.1em;
+  margin-left: 1px;
+  background-color: #22d3ee;
+  vertical-align: text-bottom;
+  animation: typewriter-blink 1s step-end infinite;
+  box-shadow: 0 0 4px rgba(34, 211, 238, 0.4);
+}
+
+/* ─── 5. Scroll indicator pulse ─── */
+
+@keyframes scroll-pulse {
+  0% {
+    opacity: 0.4;
+    transform: translateY(0);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(4px);
+  }
+  100% {
+    opacity: 0.4;
+    transform: translateY(0);
+  }
+}
+
+.scroll-indicator-pulse {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 8px 0;
+  color: rgba(148, 163, 184, 0.5);
+  animation: scroll-pulse 1.8s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.scroll-indicator-pulse::after {
+  content: '▼';
+  font-size: 10px;
+  letter-spacing: 2px;
+}

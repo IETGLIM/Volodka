@@ -2,12 +2,14 @@
 
 import {
   useCallback,
+  useEffect,
   useMemo,
+  useState,
   Suspense,
 } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useGameStore } from '@/store/gameStore';
-import { useOrchestratorOverlay } from '@/store/selectors';
+import { useJournalOpen, useOrchestratorOverlay } from '@/store/selectors';
 import { STORY_NODES } from '@/data/storyNodes';
 import { DIALOGUE_NODES } from '@/data/dialogueNodes';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
@@ -65,10 +67,14 @@ import { LevelUpSummary } from './LevelUpSummary';
 import { CyberpunkThemeProvider } from './CyberpunkTheme';
 
 import { IntroAutoSkip } from './orchestrator/IntroAutoSkip';
+import { FocusTrap } from '@/components/a11y/FocusTrap';
+import { usePanelDialog } from '@/components/a11y/usePanelDialog';
 import { useCanvasTransitionManager } from './orchestrator/useCanvasTransitionManager';
 import { useCutsceneController } from './orchestrator/useCutsceneController';
 import { usePanelCoordinator } from './orchestrator/usePanelCoordinator';
+import { PanelStackProvider, PanelStackSlot } from './orchestrator/PanelStackContext';
 import { useKeyboardShortcutManager } from './orchestrator/useKeyboardShortcutManager';
+import { useGamepadInput } from '@/hooks/useGamepadInput';
 import { useGameLifecycleManager } from './orchestrator/useGameLifecycleManager';
 import { useMobileDetection } from './orchestrator/useMobileDetection';
 import {
@@ -120,6 +126,22 @@ import {
 /* ── Component ── */
 export function GameOrchestrator() {
   const { mode, showStoryOverlay, currentNodeId, introSeen } = useOrchestratorOverlay();
+  const journalOpen = useJournalOpen();
+  const pauseDialog = usePanelDialog();
+  const [devPanelArmed, setDevPanelArmed] = useState(false);
+  const [devPanelStartOpen, setDevPanelStartOpen] = useState(false);
+
+  useEffect(() => {
+    if (devPanelArmed) return;
+    const handleF3 = (event: KeyboardEvent) => {
+      if (event.code === 'F3') {
+        setDevPanelStartOpen(true);
+        setDevPanelArmed(true);
+      }
+    };
+    window.addEventListener('keydown', handleF3);
+    return () => window.removeEventListener('keydown', handleF3);
+  }, [devPanelArmed]);
 
   // Compute which overlay is active to enforce mutual exclusivity
   // ── World Director pattern: visual-novel is DEPRECATED ──
@@ -194,8 +216,11 @@ export function GameOrchestrator() {
 
   const {
     activePanel,
+    panelStack,
     dispatchPanel,
     closePanel,
+    closePanelByType,
+    closeAllPanels,
     questsOpen,
     inventoryOpen,
     poetryOpen,
@@ -240,6 +265,7 @@ export function GameOrchestrator() {
 
   useKeyboardShortcutManager({
     activePanel,
+    panelStackLength: panelStack.length,
     codebreakerOpen,
     openstackTerminalOpen,
     bashTerminalOpen,
@@ -251,12 +277,22 @@ export function GameOrchestrator() {
     examineOpen,
     mode,
     dispatchPanel,
+    closePanel,
+    closeAllPanels,
     minigameSetters,
     skipActiveCutscene,
     setExamineOpen,
     setExamineData,
     setExamineHasLinkedContent,
     clearPendingTriggerZone,
+  });
+
+  useGamepadInput({
+    virtualControlsRef: sharedVirtualControlsRef,
+    panelStackLength: panelStack.length,
+    dispatchPanel,
+    closePanel,
+    skipActiveCutscene,
   });
 
     // Panel states (local to orchestrator — coordinate between sub-orchestrators)
@@ -266,65 +302,83 @@ export function GameOrchestrator() {
   );
 
   const statsPanelSlot = useMemo(
-    () => <LazyPanelSlot Panel={LazyPlayerStatsPanel} open={statsOpen} onClose={closePanel} />,
-    [statsOpen, closePanel],
+    () => (
+      <LazyPanelSlot
+        panelId="stats"
+        Panel={LazyPlayerStatsPanel}
+        open={statsOpen}
+        onClose={() => closePanelByType('stats')}
+      />
+    ),
+    [statsOpen, closePanelByType],
   );
 
   const lazyPanelsBeforeMenu = useMemo(
     () => (
       <>
         {questsOpen && (
-          <LazyPanelSlot Panel={LazyQuestsPanel} open={questsOpen} onClose={closePanel} />
+          <LazyPanelSlot panelId="quests" Panel={LazyQuestsPanel} open={questsOpen} onClose={() => closePanelByType('quests')} />
         )}
         {inventoryOpen && (
           <ErrorBoundary name="inventory">
             <LazyPanelSlot
+              panelId="inventory"
               Panel={LazyInventory}
               open={inventoryOpen}
-              onClose={closePanel}
+              onClose={() => closePanelByType('inventory')}
               panelProps={inventoryPanelProps}
             />
           </ErrorBoundary>
         )}
         {poetryOpen && (
-          <LazyPanelSlot Panel={LazyPoetryBook} open={poetryOpen} onClose={closePanel} />
+          <LazyPanelSlot panelId="poetry" Panel={LazyPoetryBook} open={poetryOpen} onClose={() => closePanelByType('poetry')} />
         )}
-        <LazyPanelSlot Panel={LazyCraftingPanel} open={craftingOpen} onClose={closePanel} />
-        <LazyPanelSlot Panel={LazyTradingPanel} open={tradingOpen} onClose={closePanel} />
-        <LazyPanelSlot Panel={LazyFastTravelPanel} open={fastTravelOpen} onClose={closePanel} />
-        <LazyPanelSlot Panel={LazyRestPanel} open={restOpen} onClose={closePanel} />
-        <LazyPanelSlot Panel={LazyJournalPanel} />
+        <LazyPanelSlot panelId="crafting" Panel={LazyCraftingPanel} open={craftingOpen} onClose={() => closePanelByType('crafting')} />
+        <LazyPanelSlot panelId="trading" Panel={LazyTradingPanel} open={tradingOpen} onClose={() => closePanelByType('trading')} />
+        <LazyPanelSlot panelId="fastTravel" Panel={LazyFastTravelPanel} open={fastTravelOpen} onClose={() => closePanelByType('fastTravel')} />
+        <LazyPanelSlot panelId="rest" Panel={LazyRestPanel} open={restOpen} onClose={() => closePanelByType('rest')} />
+        {journalOpen && <LazyPanelSlot Panel={LazyJournalPanel} />}
       </>
     ),
-    [activePanel, closePanel, inventoryPanelProps],
+    [closePanelByType, inventoryPanelProps, journalOpen, questsOpen, inventoryOpen, poetryOpen, craftingOpen, tradingOpen, fastTravelOpen, restOpen],
   );
 
   const lazyPanelsAfterSettings = useMemo(
     () => (
       <>
-        <LazyPanelSlot Panel={LazySaveSlotManager} open={saveSlotOpen} onClose={closePanel} />
-        <LazyPanelSlot Panel={LazyMiniGameHub} open={miniGameHubOpen} onClose={closePanel} />
-        <LazyPanelSlot Panel={LazyNPCRelationshipPanel} open={npcRelationOpen} onClose={closePanel} />
-        <LazyPanelSlot Panel={LazyCharacterProfilePanel} open={characterProfileOpen} onClose={closePanel} />
-        <LazyPanelSlot Panel={LazyCodexPanel} open={codexOpen} onClose={closePanel} />
-        <LazyPanelSlot Panel={LazyAchievementDetailsPanel} open={achievementsOpen} onClose={closePanel} />
-        <LazyPanelSlot Panel={LazySkillTreePanel} open={skillTreeOpen} onClose={closePanel} />
-        <LazyPanelSlot Panel={LazyPerksPanel} open={perksOpen} onClose={closePanel} />
-        <LazyPanelSlot Panel={LazyQuestBoardPanel} open={questBoardOpen} onClose={closePanel} />
-        <LazyPanelSlot Panel={LazyDialogueHistoryPanel} open={dialogueHistoryOpen} onClose={closePanel} />
+        <LazyPanelSlot panelId="saveSlot" Panel={LazySaveSlotManager} open={saveSlotOpen} onClose={() => closePanelByType('saveSlot')} />
+        <LazyPanelSlot panelId="miniGameHub" Panel={LazyMiniGameHub} open={miniGameHubOpen} onClose={() => closePanelByType('miniGameHub')} />
+        <LazyPanelSlot panelId="npcRelation" Panel={LazyNPCRelationshipPanel} open={npcRelationOpen} onClose={() => closePanelByType('npcRelation')} />
+        <LazyPanelSlot panelId="characterProfile" Panel={LazyCharacterProfilePanel} open={characterProfileOpen} onClose={() => closePanelByType('characterProfile')} />
+        <LazyPanelSlot panelId="codex" Panel={LazyCodexPanel} open={codexOpen} onClose={() => closePanelByType('codex')} />
+        <LazyPanelSlot panelId="achievements" Panel={LazyAchievementDetailsPanel} open={achievementsOpen} onClose={() => closePanelByType('achievements')} />
+        <LazyPanelSlot panelId="skillTree" Panel={LazySkillTreePanel} open={skillTreeOpen} onClose={() => closePanelByType('skillTree')} />
+        <LazyPanelSlot panelId="perks" Panel={LazyPerksPanel} open={perksOpen} onClose={() => closePanelByType('perks')} />
+        <LazyPanelSlot panelId="questBoard" Panel={LazyQuestBoardPanel} open={questBoardOpen} onClose={() => closePanelByType('questBoard')} />
+        <LazyPanelSlot panelId="dialogueHistory" Panel={LazyDialogueHistoryPanel} open={dialogueHistoryOpen} onClose={() => closePanelByType('dialogueHistory')} />
       </>
     ),
-    [activePanel, closePanel],
+    [closePanelByType, saveSlotOpen, miniGameHubOpen, npcRelationOpen, characterProfileOpen, codexOpen, achievementsOpen, skillTreeOpen, perksOpen, questBoardOpen, dialogueHistoryOpen],
   );
 
   const devPanelSlot = useMemo(
-    () => <LazyPanelSlot Panel={LazyDevPanel} />,
-    [],
+    () =>
+      devPanelArmed ? (
+        <LazyPanelSlot Panel={LazyDevPanel} panelProps={{ startOpen: devPanelStartOpen }} />
+      ) : null,
+    [devPanelArmed, devPanelStartOpen],
   );
 
   const shortcutsPanelSlot = useMemo(
-    () => <LazyPanelSlot Panel={LazyShortcutsOverlay} open={shortcutsOpen} onClose={closePanel} />,
-    [shortcutsOpen, closePanel],
+    () => (
+      <LazyPanelSlot
+        panelId="shortcuts"
+        Panel={LazyShortcutsOverlay}
+        open={shortcutsOpen}
+        onClose={() => closePanelByType('shortcuts')}
+      />
+    ),
+    [shortcutsOpen, closePanelByType],
   );
 
   // ── Mobile interact callback ──
@@ -343,6 +397,7 @@ export function GameOrchestrator() {
   return (
     <VirtualControlsContext.Provider value={sharedVirtualControlsRef}>
     <CyberpunkThemeProvider>
+    <PanelStackProvider stack={panelStack}>
     <div className="fixed inset-0 bg-black overflow-hidden" style={{ touchAction: 'none' }}>
       <>
           {/* ── Mode transition overlay — persistent black backdrop that ONLY fades
@@ -606,17 +661,15 @@ export function GameOrchestrator() {
                   (player needs D-pad to move + interact button to advance/interact) */}
               {isMobile && <ExplorationMobileHud onInteractPress={handleMobileInteract} onOpenInventory={handleOpenInventory} />}
 
-              {/* Story overlay — mutually exclusive with dialogue */}
-              {!isDialogueActive && (
+              {/* Story / dialogue overlays — load chunks only while narrative is active */}
+              {isStoryActive && (
                 <ErrorBoundary name="story">
                   <Suspense fallback={null}>
                     <LazyStoryRenderer />
                   </Suspense>
                 </ErrorBoundary>
               )}
-
-              {/* Dialogue overlay — mutually exclusive with story */}
-              {!isStoryActive && (
+              {isDialogueActive && (
                 <ErrorBoundary name="dialogue">
                   <Suspense fallback={null}>
                     <LazyDialogueRenderer />
@@ -685,12 +738,14 @@ export function GameOrchestrator() {
                 )}
               </AnimatePresence>
 
-              {/* Combat UI overlay */}
-              <ErrorBoundary name="combat">
-                <Suspense fallback={null}>
-                  <LazyCombatUI />
-                </Suspense>
-              </ErrorBoundary>
+              {/* Combat UI overlay — Tier 2 chunk, combat mode only */}
+              {mode === 'combat' && (
+                <ErrorBoundary name="combat">
+                  <Suspense fallback={null}>
+                    <LazyCombatUI />
+                  </Suspense>
+                </ErrorBoundary>
+              )}
 
               {/* Examine Panel */}
               <ExaminePanel
@@ -713,21 +768,24 @@ export function GameOrchestrator() {
           {/* ── Pause menu ── */}
           <AnimatePresence>
             {menuOpen && (
+              <PanelStackSlot panelId="menu">
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.2 }}
                 className="fixed inset-0 flex items-center justify-center"
-                style={{ zIndex: UI_LAYERS.MENU }}
+                style={{ zIndex: 1 }}
               >
-                <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={() => dispatchPanel(null)} />
+                <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={() => closePanelByType('menu')} aria-hidden="true" />
+                <FocusTrap initialFocusRef={pauseDialog.closeButtonRef}>
                 <motion.div
                   initial={{ scale: 0.95, y: 10 }}
                   animate={{ scale: 1, y: 0 }}
                   exit={{ scale: 0.95, y: 10 }}
                   transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
                   className="relative z-10 w-80 bg-slate-950/95 border border-cyan-500/20 p-0 backdrop-blur-md overflow-hidden"
+                  {...pauseDialog.dialogProps}
                   style={{
                     clipPath: 'polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px))',
                     boxShadow: '0 0 40px rgba(0, 255, 255, 0.06), 0 8px 32px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255,255,255,0.03)',
@@ -742,11 +800,11 @@ export function GameOrchestrator() {
                   </div>
 
                   <div className="p-5 flex flex-col gap-2.5">
-                    <h2 className="text-lg font-semibold text-slate-100 mb-1 font-mono tracking-wide">ПАУЗА</h2>
+                    <h2 {...pauseDialog.titleProps} className="text-lg font-semibold text-slate-100 mb-1 font-mono tracking-wide">ПАУЗА</h2>
                     <button
                       onClick={() => {
                         useGameStore.getState().saveGame({ source: 'manual' });
-                        dispatchPanel(null);
+                        closeAllPanels();
                       }}
                       className="w-full px-4 py-2.5 rounded-lg border border-cyan-800/40 bg-cyan-950/30 text-cyan-300 hover:bg-cyan-900/30 hover:border-cyan-700/50 text-sm transition-all flex items-center gap-2 font-mono"
                     >
@@ -763,7 +821,7 @@ export function GameOrchestrator() {
                     <button
                       onClick={() => {
                         useGameStore.getState().loadGame();
-                        dispatchPanel(null);
+                        closeAllPanels();
                       }}
                       className="w-full px-4 py-2.5 rounded-lg border border-slate-700/40 bg-slate-900/30 text-slate-300 hover:bg-slate-800/30 hover:border-slate-600/50 text-sm transition-all flex items-center gap-2 font-mono"
                     >
@@ -797,14 +855,16 @@ export function GameOrchestrator() {
                     <button
                       onClick={() => {
                         useGameStore.getState().resetGame();
-                        dispatchPanel(null);
+                        closeAllPanels();
                       }}
                       className="w-full px-4 py-2.5 rounded-lg border border-rose-800/40 bg-rose-950/30 text-rose-300 hover:bg-rose-900/30 hover:border-rose-700/50 text-sm transition-all flex items-center gap-2 font-mono"
                     >
                       <span className="text-rose-500">⏻</span> В главное меню
                     </button>
                     <button
-                      onClick={() => dispatchPanel(null)}
+                      ref={pauseDialog.closeButtonRef}
+                      type="button"
+                      onClick={() => closePanelByType('menu')}
                       className="w-full px-4 py-2.5 rounded-lg border border-slate-700/30 bg-slate-900/20 text-slate-500 hover:bg-slate-800/30 hover:text-slate-300 text-sm transition-all flex items-center gap-2 font-mono"
                     >
                       <span className="text-slate-600">✕</span> Закрыть
@@ -812,12 +872,14 @@ export function GameOrchestrator() {
                     <span className="text-[10px] text-slate-600 font-mono mt-1 text-center">ESC — закрыть</span>
                   </div>
                 </motion.div>
+                </FocusTrap>
               </motion.div>
+              </PanelStackSlot>
             )}
           </AnimatePresence>
 
           {/* ── Settings Panel ── */}
-          <LazyPanelSlot Panel={LazySettingsPanel} open={settingsOpen} onClose={closePanel} />
+          <LazyPanelSlot panelId="settings" Panel={LazySettingsPanel} open={settingsOpen} onClose={() => closePanelByType('settings')} />
 
           {/* ── Save Slot / Hub / Profile panels (memoized) ── */}
           {lazyPanelsAfterSettings}
@@ -945,9 +1007,10 @@ export function GameOrchestrator() {
           </AnimatePresence>
 
           {/* ── Karma & Poem Info Panel ── */}
-          <LazyPanelSlot Panel={LazyKarmaPoemInfoPanel} open={karmaPoemOpen} onClose={() => dispatchPanel(null)} />
+          <LazyPanelSlot panelId="karmaPoem" Panel={LazyKarmaPoemInfoPanel} open={karmaPoemOpen} onClose={() => closePanelByType('karmaPoem')} />
       </>
     </div>
+    </PanelStackProvider>
     </CyberpunkThemeProvider>
     </VirtualControlsContext.Provider>
   );

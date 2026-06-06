@@ -1,21 +1,31 @@
 import { lazy, memo, Suspense, type ComponentType } from 'react';
+import { PanelStackSlot } from './PanelStackContext';
+import type { NonNullPanelType } from './panelStackReducer';
 
 export const LazyPanelSlot = memo(function LazyPanelSlot({
+  panelId,
   Panel,
   open,
   onClose,
   panelProps,
 }: {
+  panelId?: NonNullPanelType;
   Panel: ComponentType<any>;
   open?: boolean;
   onClose?: () => void;
   panelProps?: Readonly<Record<string, unknown>>;
 }) {
-  return (
+  if (open === false) return null;
+
+  const panel = (
     <Suspense fallback={null}>
       <Panel open={open} onClose={onClose} {...panelProps} />
     </Suspense>
   );
+
+  if (panelId == null) return panel;
+
+  return <PanelStackSlot panelId={panelId}>{panel}</PanelStackSlot>;
 });
 
 export const RPGGameCanvas = lazy(

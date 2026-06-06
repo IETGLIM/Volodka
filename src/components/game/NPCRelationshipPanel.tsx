@@ -6,6 +6,8 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { FocusTrap } from '@/components/a11y/FocusTrap';
+import { usePanelDialog } from '@/components/a11y/usePanelDialog';
 import { X, Users, Shield, Skull, Circle, MapPin, CalendarClock, Gift } from 'lucide-react';
 import { useGameStore } from '@/store/gameStore';
 import { findNpcById } from '@/data/allNpcDefinitions';
@@ -285,6 +287,7 @@ function NPCCard({
    ══════════════════════════════════════════════════════════════ */
 
 export function NPCRelationshipPanel({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const { closeButtonRef, dialogProps, titleProps } = usePanelDialog();
   const npcRelations = useGameStore((s) => s.npcRelations);
   const npcStates = useGameStore((s) => s.exploration.npcStates);
   const currentHour = useGameStore((s) => s.exploration.timeOfDay);
@@ -314,12 +317,14 @@ export function NPCRelationshipPanel({ open, onClose }: { open: boolean; onClose
   return (
     <AnimatePresence>
       {open && (
+        <FocusTrap initialFocusRef={closeButtonRef}>
         <motion.div
           initial={{ x: '100%' }}
           animate={{ x: 0 }}
           exit={{ x: '100%' }}
           transition={{ type: 'spring', damping: 25, stiffness: 200 }}
           className="fixed top-0 right-0 bottom-0 w-full sm:w-[30rem]"
+          {...dialogProps}
           style={{
             zIndex: UI_LAYERS.PANEL,
             background: 'linear-gradient(180deg, rgba(8,12,28,0.97) 0%, rgba(4,8,18,0.98) 100%)',
@@ -331,7 +336,7 @@ export function NPCRelationshipPanel({ open, onClose }: { open: boolean; onClose
           <div className="flex flex-col h-full">
             {/* Header */}
             <div className="flex items-center justify-between px-4 py-3 border-b border-cyan-900/20">
-              <h2 className="text-lg font-semibold text-slate-100 flex items-center gap-2">
+              <h2 {...titleProps} className="text-lg font-semibold text-slate-100 flex items-center gap-2">
                 <Users className="size-5 text-cyan-400" />
                 Отношения
               </h2>
@@ -346,6 +351,8 @@ export function NPCRelationshipPanel({ open, onClose }: { open: boolean; onClose
                 </button>
                 <span className="text-[10px] text-slate-500 font-mono">[N] закрыть</span>
                 <button
+                  ref={closeButtonRef}
+                  type="button"
                   onClick={onClose}
                   className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-white hover:bg-slate-800/60 transition-colors"
                   aria-label="Закрыть"
@@ -415,6 +422,7 @@ export function NPCRelationshipPanel({ open, onClose }: { open: boolean; onClose
             )}
           </div>
         </motion.div>
+        </FocusTrap>
       )}
 
       {/* Gift Dialog */}

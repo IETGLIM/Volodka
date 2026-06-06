@@ -3,6 +3,8 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { FocusTrap } from '@/components/a11y/FocusTrap';
+import { usePanelDialog } from '@/components/a11y/usePanelDialog';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 
 // ─── Types ───
@@ -208,6 +210,7 @@ const TABS: { id: SettingsTab; icon: string; label: string }[] = [
 // ─── Inner content component (remounts on each open, uses lazy init) ───
 
 function SettingsPanelContent({ onClose }: { onClose: () => void }) {
+  const { closeButtonRef, dialogProps, titleProps } = usePanelDialog();
   const [activeTab, setActiveTab] = useState<SettingsTab>('audio');
 
   // ── Audio state (lazy init from localStorage) ──
@@ -407,6 +410,7 @@ function SettingsPanelContent({ onClose }: { onClose: () => void }) {
   };
 
   return (
+    <FocusTrap initialFocusRef={closeButtonRef}>
     <motion.div
       className="relative z-10 w-full max-w-lg mx-4"
       initial={{ scale: 0.9, opacity: 0, y: 30 }}
@@ -416,7 +420,9 @@ function SettingsPanelContent({ onClose }: { onClose: () => void }) {
         duration: 0.35,
         ease: [0.25, 0.46, 0.45, 0.94],
       }}
+      {...dialogProps}
     >
+      <h2 {...titleProps} className="sr-only">Настройки</h2>
       <div
         className="rounded-lg border overflow-hidden"
         style={{
@@ -447,6 +453,8 @@ function SettingsPanelContent({ onClose }: { onClose: () => void }) {
             </span>
           </div>
           <button
+            ref={closeButtonRef}
+            type="button"
             onClick={onClose}
             className="w-7 h-7 flex items-center justify-center rounded-md text-slate-500 hover:text-slate-200 hover:bg-white/5 transition-colors font-mono text-sm"
             aria-label="Закрыть настройки"
@@ -588,6 +596,7 @@ function SettingsPanelContent({ onClose }: { onClose: () => void }) {
         }}
       />
     </motion.div>
+    </FocusTrap>
   );
 }
 
@@ -622,6 +631,7 @@ export function SettingsPanel({ open, onClose }: SettingsPanelProps) {
           <motion.div
             className="absolute inset-0 bg-black/75 backdrop-blur-md"
             onClick={onClose}
+            aria-hidden="true"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}

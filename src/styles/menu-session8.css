@@ -1,0 +1,169 @@
+/* ══════════════════════════════════════════════════════════════
+   SESSION 8: MenuScreen Enhancements
+   ══════════════════════════════════════════════════════════════ */
+
+/* ─── Menu button signal line animation (hover) ─── */
+@keyframes menu-signal-extend {
+  0% { width: 0; opacity: 0; }
+  60% { width: 100%; opacity: 0.3; }
+  100% { width: 100%; opacity: 0; }
+}
+
+.menu-signal-line {
+  position: relative;
+}
+
+.menu-signal-line::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  height: 1px;
+  width: 0;
+  background: linear-gradient(90deg, rgba(0, 229, 255, 0.5), rgba(0, 229, 255, 0.15), transparent);
+  pointer-events: none;
+  z-index: 5;
+  opacity: 0;
+}
+
+.menu-signal-line:hover::before {
+  animation: menu-signal-extend 0.6s ease-out forwards;
+}
+
+/* ─── Disabled menu button pulsing dot ─── */
+@keyframes menu-disabled-dot-pulse {
+  0%, 100% { opacity: 0.3; transform: scale(0.8); }
+  50% { opacity: 0.7; transform: scale(1.2); }
+}
+
+.menu-disabled-dots::before {
+  content: '';
+  display: inline-block;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: rgba(100, 116, 139, 0.4);
+  margin-right: 6px;
+  vertical-align: middle;
+  animation: menu-disabled-dot-pulse 1.5s ease-in-out infinite;
+}
+
+/* ─── Menu button signal line (hover extension from left) ─── */
+@keyframes menu-btn-signal-extend {
+  0% { width: 0; opacity: 0; }
+  60% { width: 100%; opacity: 0.3; }
+  100% { width: 100%; opacity: 0; }
+}
+
+.menu-btn-signal-line {
+  position: relative;
+}
+
+.menu-btn-signal-line::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  height: 1px;
+  width: 0;
+  background: linear-gradient(90deg, rgba(0, 229, 255, 0.5), rgba(0, 229, 255, 0.15), transparent);
+  pointer-events: none;
+  z-index: 5;
+  opacity: 0;
+}
+
+.menu-btn-signal-line:hover::before {
+  animation: menu-btn-signal-extend 0.6s ease-out forwards;
+}
+
+/* ─── Continue button pulsing dots before "нет сохранения" ─── */
+@keyframes menu-continue-dot-pulse {
+  0%, 100% { opacity: 0.3; transform: scale(0.8); }
+  50% { opacity: 0.7; transform: scale(1.2); }
+}
+
+.menu-continue-dots::before {
+  content: '';
+  display: inline-block;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: rgba(100, 116, 139, 0.4);
+  margin-right: 6px;
+  vertical-align: middle;
+  animation: menu-continue-dot-pulse 1.5s ease-in-out infinite;
+}
+
+/* ─── SESSION 14: DirectionalDamageIndicator ─── */
+
+/* Directional gradient flash — subtle vertical pan for scan-line texture */
+@keyframes damage-edge-flash {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 0 4px;
+  }
+}
+
+/* Emerald pulse effect for heal overlay */
+@keyframes heal-pulse {
+  0% {
+    transform: scale(0.95);
+    opacity: 0.8;
+  }
+  50% {
+    transform: scale(1.02);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 0;
+  }
+}
+
+/* Horizontal displacement glitch for heavy damage (>30) */
+@keyframes damage-glitch {
+  0% {
+    clip-path: inset(0 0 80% 0);
+    transform: translateX(calc(var(--glitch-offset, 3px) * -1));
+  }
+  20% {
+    clip-path: inset(20% 0 60% 0);
+    transform: translateX(var(--glitch-offset, 3px));
+  }
+  40% {
+    clip-path: inset(40% 0 30% 0);
+    transform: translateX(calc(var(--glitch-offset, 3px) * -0.5));
+  }
+  60% {
+    clip-path: inset(60% 0 10% 0);
+    transform: translateX(calc(var(--glitch-offset, 3px) * 0.7));
+  }
+  80% {
+    clip-path: inset(80% 0 0 0);
+    transform: translateX(calc(var(--glitch-offset, 3px) * -0.3));
+  }
+  100% {
+    clip-path: inset(0 0 80% 0);
+    transform: translateX(calc(var(--glitch-offset, 3px) * -1));
+  }
+}
+
+/* Damage indicator overlay base styles */
+.damage-indicator-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  isolation: isolate;
+  font-family: 'Geist Mono', monospace;
+}
+
+/* Heal indicator overlay base styles */
+.heal-indicator-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  isolation: isolate;
+  font-family: 'Geist Mono', monospace;
+}

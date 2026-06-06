@@ -162,4 +162,23 @@ export const CHK_STORY_NODES: Record<string, StoryNode> = {
       },
     ],
   },
+
+  chk_act5_campfire_dawn: {
+    id: 'chk_act5_campfire_dawn',
+    speaker: 'Ру',
+    text: 'Рассвет после эфира. Мы не штурмовали башню — мы держали тыл. Сеть победила не штыком, а строкой. ЧК останется здесь: портвейн, металл, честные разговоры без идеологии. Если новый мир снова забудет слово — вернись у огня. Мы не революция. Мы — костёр.',
+    sceneId: 'chk_forest_zorge',
+    choices: [
+      {
+        text: 'Спасибо, чекисты. Без вас — не вышло бы.',
+        next: 'explore_mode',
+        effects: [
+          { type: 'setFlag', flag: 'tolpa_act5_blessing', flagValue: true },
+          { type: 'addKarma', value: 10 },
+          { type: 'addStat', stat: 'stress', value: -15 },
+          { type: 'npcChange', npcId: 'chk_ru', npcChange: { relation: 10 } },
+        ],
+      },
+    ],
+  },
 };

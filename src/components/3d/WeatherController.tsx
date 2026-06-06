@@ -2,7 +2,7 @@
 /* ─── Volodka RPG – Weather Controller ───
  *  Automatically activates rain/snow based on current scene
  *  street_night → Rain (heavy), street_winter → Snow,
- *  rooftop_edge → Rain (light), others → No weather
+ *  rooftop_edge → Rain (light), chk_forest_zorge → Snow (light), others → No weather
  *  Can also be triggered by weather: events
  */
 
@@ -13,7 +13,7 @@ import { SnowSystem } from './SnowSystem';
 import type { SceneId } from '@/shared/types/game';
 
 /** Scene → weather type mapping */
-type WeatherType = 'rain_heavy' | 'rain_light' | 'snow' | 'none';
+type WeatherType = 'rain_heavy' | 'rain_light' | 'snow' | 'snow_light' | 'none';
 
 const SCENE_WEATHER: Record<SceneId, WeatherType> = {
   street_night: 'rain_heavy',
@@ -30,7 +30,7 @@ const SCENE_WEATHER: Record<SceneId, WeatherType> = {
   sleep_dream: 'none',
   abandoned_factory: 'none',
   zarema_albert_room: 'none',
-  chk_forest_zorge: 'none',
+  chk_forest_zorge: 'snow_light',
 };
 
 /** Weather controller — activates appropriate weather system per scene */
@@ -50,6 +50,8 @@ export function WeatherController() {
       return <RainSystem intensity={0.4} />;
     case 'snow':
       return <SnowSystem intensity={1.0} />;
+    case 'snow_light':
+      return <SnowSystem intensity={0.35} />;
     case 'none':
     default:
       return null;

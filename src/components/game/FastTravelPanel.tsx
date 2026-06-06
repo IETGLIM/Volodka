@@ -7,6 +7,8 @@
 
 import { useMemo, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { FocusTrap } from '@/components/a11y/FocusTrap';
+import { usePanelDialog } from '@/components/a11y/usePanelDialog';
 import { X, Compass, Lock, Clock, MapPin } from 'lucide-react';
 import { useGameStore } from '@/store/gameStore';
 import { useFastTravelState } from '@/store/selectors';
@@ -130,6 +132,7 @@ interface FastTravelPanelProps {
 
 /* ─── Component ─── */
 export function FastTravelPanel({ open, onClose }: FastTravelPanelProps) {
+  const { closeButtonRef, dialogProps, titleProps } = usePanelDialog();
   const { currentSceneId, timeOfDay, discoveredScenes, playerFlags } = useFastTravelState();
   const fastTravelTo = useGameStore((s) => s.fastTravelTo);
 
@@ -217,18 +220,21 @@ export function FastTravelPanel({ open, onClose }: FastTravelPanelProps) {
             <motion.div
               className="absolute inset-0 bg-black/70 backdrop-blur-sm"
               onClick={onClose}
+              aria-hidden="true"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
             />
 
             {/* Content */}
+            <FocusTrap initialFocusRef={closeButtonRef}>
             <motion.div
               className="relative z-10 w-full max-w-3xl mx-4"
               initial={{ scale: 0.92, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.92, opacity: 0, y: 20 }}
               transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
+              {...dialogProps}
             >
               <div
                 className="rounded-lg border border-cyan-500/20 overflow-hidden"
@@ -241,7 +247,7 @@ export function FastTravelPanel({ open, onClose }: FastTravelPanelProps) {
                 <div className="flex items-center justify-between px-5 py-4 border-b border-cyan-500/15">
                   <div className="flex items-center gap-3">
                     <Compass className="size-5 text-cyan-400/70" />
-                    <h2 className="text-lg font-semibold text-slate-100 tracking-wide">
+                    <h2 {...titleProps} className="text-lg font-semibold text-slate-100 tracking-wide">
                       БЫСТРЫЙ ПЕРЕХОД
                     </h2>
                     <span className="text-xs text-cyan-400/50 font-mono ml-2">
@@ -257,6 +263,8 @@ export function FastTravelPanel({ open, onClose }: FastTravelPanelProps) {
                       </span>
                     </div>
                     <button
+                      ref={closeButtonRef}
+                      type="button"
                       onClick={onClose}
                       className="w-8 h-8 flex items-center justify-center rounded-md text-slate-400 hover:text-slate-200 hover:bg-white/5 transition-colors"
                       aria-label="Закрыть"
@@ -530,6 +538,7 @@ export function FastTravelPanel({ open, onClose }: FastTravelPanelProps) {
                 </div>
               </div>
             </motion.div>
+            </FocusTrap>
           </motion.div>
         )}
       </AnimatePresence>

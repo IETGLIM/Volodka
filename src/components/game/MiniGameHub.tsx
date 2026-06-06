@@ -6,6 +6,8 @@
 
 import { useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { FocusTrap } from '@/components/a11y/FocusTrap';
+import { usePanelDialog } from '@/components/a11y/usePanelDialog';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { eventBus } from '@/engine/EventBus';
 
@@ -301,6 +303,7 @@ function MiniGameCard({ game, onLaunch }: { game: MiniGameDef; onLaunch: (gt: Ga
 // ─── Inner content (remounts on open) ───
 
 function MiniGameHubContent({ onClose }: { onClose: () => void }) {
+  const { closeButtonRef, dialogProps, titleProps } = usePanelDialog();
   const handleLaunch = useCallback(
     (gameType: GameType) => {
       eventBus.emit('minigame:open', { gameType });
@@ -310,6 +313,7 @@ function MiniGameHubContent({ onClose }: { onClose: () => void }) {
   );
 
   return (
+    <FocusTrap initialFocusRef={closeButtonRef}>
     <motion.div
       className="relative z-10 w-full max-w-4xl mx-4"
       initial={{ scale: 0.92, opacity: 0, y: 30 }}
@@ -319,6 +323,7 @@ function MiniGameHubContent({ onClose }: { onClose: () => void }) {
         duration: 0.35,
         ease: [0.25, 0.46, 0.45, 0.94],
       }}
+      {...dialogProps}
     >
       <div
         className="rounded-lg border overflow-hidden"
@@ -350,6 +355,8 @@ function MiniGameHubContent({ onClose }: { onClose: () => void }) {
             </span>
           </div>
           <button
+            ref={closeButtonRef}
+            type="button"
             onClick={onClose}
             className="w-7 h-7 flex items-center justify-center rounded-md text-slate-500 hover:text-slate-200 hover:bg-white/5 transition-colors font-mono text-sm"
             aria-label="Закрыть аркаду"
@@ -361,6 +368,7 @@ function MiniGameHubContent({ onClose }: { onClose: () => void }) {
         {/* ── Title Section ── */}
         <div className="px-6 pt-6 pb-4 text-center">
           <motion.h2
+            {...titleProps}
             className="font-mono text-2xl font-bold tracking-[0.3em] uppercase"
             style={{
               color: 'rgba(0, 229, 255, 0.85)',
@@ -469,6 +477,7 @@ function MiniGameHubContent({ onClose }: { onClose: () => void }) {
         }}
       />
     </motion.div>
+    </FocusTrap>
   );
 }
 
@@ -536,6 +545,7 @@ export function MiniGameHub({ open, onClose }: MiniGameHubProps) {
                 'linear-gradient(180deg, rgba(0, 0, 0, 0.88) 0%, rgba(5, 8, 18, 0.92) 100%)',
             }}
             onClick={onClose}
+            aria-hidden="true"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}

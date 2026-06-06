@@ -1,0 +1,46 @@
+/* ══════════════════════════════════════════════════════════════
+   ACCESSIBILITY: Reduced motion preferences
+   ══════════════════════════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .loading-screen-fade-in {
+    animation: none;
+    opacity: 1;
+  }
+
+  .loading-spinner-pulse {
+    animation: none;
+  }
+
+  .menu-btn-enhanced:hover {
+    transform: none;
+    box-shadow: none;
+  }
+
+  .breathe-glow,
+  .glow-pulse,
+  .glow-pulse-emerald,
+  .glow-pulse-amber,
+  .glow-pulse-fuchsia,
+  .edge-glow,
+  .menu-title-breathe,
+  .neon-reflection,
+  .holo-flicker,
+  .holo-flicker-soft,
+  .weather-icon-bob {
+    animation: none;
+  }
+
+  .menu-cinematic-bar {
+    transition: none;
+  }
+}

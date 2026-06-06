@@ -25,6 +25,7 @@ import { SCENE_DEFINITIONS } from '@/config/sceneDefinitions';
 import { generateColliders, STRUCTURAL_FLOOR_HALF_HEIGHT } from '@/config/sceneDefinitionGenerator';
 import type { ColliderDef } from '@/shared/types/sceneDefinition';
 import { SceneLayer, LayeredForeground } from './VisualizationLayers';
+import { CameraCollisionProxies } from './CameraCollisionProxies';
 import type { SceneId } from '@/shared/types/game';
 import type { MutableRefObject } from 'react';
 import * as THREE from 'three';
@@ -99,6 +100,9 @@ export function SceneColliderSelector({ livePlayerPositionRef }: SceneColliderSe
 
       {/* Structural colliders: thick floor + boundary walls (+ ceiling when indoor). */}
       <SceneStructuralColliders sceneId={sceneId} />
+
+      {/* Invisible meshes on layer 5 for camera wall-avoidance raycasts. */}
+      <CameraCollisionProxies sceneId={sceneId} />
     </group>
   );
 }
@@ -289,7 +293,7 @@ function VisualScene({ sceneId, livePlayerPositionRef }: VisualSceneProps) {
 
 function SceneSkybox({ sceneId }: { sceneId: SceneId }) {
   const isOutdoor = !getSceneConfig(sceneId).hasCeiling;
-  if (!isOutdoor) return null;
+  if (!isOutdoor || sceneId === 'chk_forest_zorge') return null;
   return <DistantBuildingSilhouettes sceneId={sceneId} />;
 }
 

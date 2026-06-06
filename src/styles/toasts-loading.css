@@ -1,0 +1,35 @@
+/* ══════════════════════════════════════════════════════════════
+   SESSION 14: CraftingDiscoveryToast
+   ══════════════════════════════════════════════════════════════ */
+
+/* ─── Crafting discovery toast base styles ─── */
+.crafting-discovery-toast {
+  position: relative;
+  overflow: hidden;
+  font-family: 'Geist Mono', monospace;
+  isolation: isolate;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   VISUAL POLISH: Loading screen, menu, HUD, dialogue transitions
+   ══════════════════════════════════════════════════════════════ */
+
+/* Loading screen fade-in on mount */
+@keyframes loading-screen-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.loading-screen-fade-in {
+  animation: loading-screen-fade-in 0.5s ease-out forwards;
+}
+
+/* Loading spinner subtle pulse glow */
+@keyframes loading-spinner-pulse {
+  0%, 100% { filter: drop-shadow(0 0 8px rgba(34,211,238,0.3)); }
+  50% { filter: drop-shadow(0 0 18px rgba(34,211,238,0.55)); }
+}
+
+.loading-spinner-pulse {
+  animation: loading-spinner-pulse 2s ease-in-out infinite;
+}

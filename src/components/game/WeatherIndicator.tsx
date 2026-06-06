@@ -131,6 +131,15 @@ function deriveWeather(sceneId: SceneId, timeOfDay: number): WeatherState {
     case 'sleep_dream':
       return { type: 'fog', temperature: 15, wind: 'calm', airQuality: 'clean' };
 
+    /* ── CHK forest — winter night gathering, light snow and fog ── */
+    case 'chk_forest_zorge': {
+      if (isNight || isEvening) {
+        return { type: 'snow', temperature: -8, wind: 'light', airQuality: 'clean' };
+      }
+      if (isMorning) return { type: 'fog', temperature: -4, wind: 'calm', airQuality: 'clean' };
+      return { type: 'fog', temperature: -2, wind: 'light', airQuality: 'clean' };
+    }
+
     /* ── Rooftop — strong winds, clear or storm at night ── */
     case 'rooftop_edge': {
       if (isNight) return { type: 'storm', temperature: -3, wind: 'strong', airQuality: 'smoggy' };

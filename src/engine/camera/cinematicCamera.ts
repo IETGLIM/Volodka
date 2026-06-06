@@ -10,6 +10,10 @@
  */
 
 import * as THREE from 'three';
+import {
+  configureCameraCollisionRaycaster,
+  isCameraCollisionHit,
+} from '@/engine/camera/cameraCollisionLayers';
 
 /* ════════════════════════════════════════════════════
  * CONSTANTS
@@ -149,6 +153,8 @@ export function resolveCameraCollision(
 
   _camDir.divideScalar(fullDistance); // normalize
 
+  configureCameraCollisionRaycaster(raycaster);
+
   // Forward raycast: from lookTarget toward desiredPos
   raycaster.set(lookTarget, _camDir);
   raycaster.far = fullDistance + 0.01;
@@ -156,6 +162,7 @@ export function resolveCameraCollision(
 
   const hits = raycaster.intersectObjects(sceneChildren, true);
   for (const hit of hits) {
+    if (!isCameraCollisionHit(hit.object)) continue;
     if (hit.distance < fullDistance - margin) {
       const safeDistance = Math.max(minDistance, hit.distance - margin);
       _tempPos.copy(lookTarget).addScaledVector(_camDir, safeDistance);
@@ -172,6 +179,7 @@ export function resolveCameraCollision(
 
   const reverseHits = raycaster.intersectObjects(sceneChildren, true);
   for (const hit of reverseHits) {
+    if (!isCameraCollisionHit(hit.object)) continue;
     if (hit.distance < fullDistance) {
       // Camera is inside or very close to a wall — pull it toward the lookTarget
       // Place the camera just in front of the wall (toward the player)

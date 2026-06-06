@@ -7,6 +7,8 @@
 
 import { useEffect, useMemo, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { FocusTrap } from '@/components/a11y/FocusTrap';
+import { usePanelDialog } from '@/components/a11y/usePanelDialog';
 import {
   X, Lock, Trophy, CheckCircle2, Clock,
   ChevronRight, Filter,
@@ -311,6 +313,7 @@ function AchievementDetailPopup({
 /* ─── Main Component ─── */
 
 export function AchievementDetailsPanel({ open, onClose }: AchievementDetailsPanelProps) {
+  const { closeButtonRef, dialogProps, titleProps } = usePanelDialog();
   /* ── Game store subscriptions ── */
   const unlockedAchievements = useGameStore((s) => s.unlockedAchievements);
 
@@ -395,12 +398,14 @@ export function AchievementDetailsPanel({ open, onClose }: AchievementDetailsPan
   return (
     <AnimatePresence>
       {open && (
+        <FocusTrap initialFocusRef={closeButtonRef}>
         <motion.div
           initial={{ x: '100%' }}
           animate={{ x: 0 }}
           exit={{ x: '100%' }}
           transition={{ type: 'spring', damping: 25, stiffness: 200 }}
           className="fixed top-0 right-0 bottom-0 w-full sm:w-[36rem]"
+          {...dialogProps}
           style={{
             zIndex: UI_LAYERS.PANEL,
             background: 'linear-gradient(180deg, rgba(8,12,28,0.97) 0%, rgba(4,8,18,0.98) 100%)',
@@ -414,7 +419,7 @@ export function AchievementDetailsPanel({ open, onClose }: AchievementDetailsPan
             <div className="flex items-center justify-between px-4 py-3 border-b border-amber-900/20">
               <div className="flex items-center gap-2">
                 <Trophy className="size-5 text-amber-400" />
-                <h2 className="text-lg font-semibold text-slate-100">
+                <h2 {...titleProps} className="text-lg font-semibold text-slate-100">
                   Достижения
                 </h2>
                 <span className="text-[10px] text-amber-400/50 ml-1">
@@ -423,14 +428,15 @@ export function AchievementDetailsPanel({ open, onClose }: AchievementDetailsPan
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-[10px] text-slate-600 hidden sm:inline">[H] закрыть</span>
-                <Button
-                  variant="ghost"
-                  size="icon"
+                <button
+                  ref={closeButtonRef}
+                  type="button"
                   onClick={onClose}
-                  className="text-slate-400 hover:text-white"
+                  className="inline-flex size-9 items-center justify-center rounded-md text-slate-400 hover:text-white hover:bg-accent/50 transition-colors"
+                  aria-label="Закрыть"
                 >
                   <X className="size-5" />
-                </Button>
+                </button>
               </div>
             </div>
 
@@ -564,6 +570,7 @@ export function AchievementDetailsPanel({ open, onClose }: AchievementDetailsPan
             )}
           </AnimatePresence>
         </motion.div>
+        </FocusTrap>
       )}
     </AnimatePresence>
   );

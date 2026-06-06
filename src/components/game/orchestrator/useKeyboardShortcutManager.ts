@@ -21,9 +21,12 @@ interface MinigameOpenFlags {
 
 export interface KeyboardShortcutManagerOptions extends MinigameOpenFlags {
   activePanel: PanelType;
+  panelStackLength: number;
   examineOpen: boolean;
   mode: string;
   dispatchPanel: Dispatch<PanelType>;
+  closePanel: () => void;
+  closeAllPanels: () => void;
   minigameSetters: MinigamePanelSetters;
   skipActiveCutscene: () => boolean;
   setExamineOpen: (open: boolean) => void;
@@ -35,6 +38,7 @@ export interface KeyboardShortcutManagerOptions extends MinigameOpenFlags {
 /** Global keydown handler — stable listener via refs, no dependency churn. */
 export function useKeyboardShortcutManager({
   activePanel,
+  panelStackLength,
   codebreakerOpen,
   openstackTerminalOpen,
   bashTerminalOpen,
@@ -46,6 +50,8 @@ export function useKeyboardShortcutManager({
   examineOpen,
   mode,
   dispatchPanel,
+  closePanel,
+  closeAllPanels,
   minigameSetters,
   skipActiveCutscene,
   setExamineOpen,
@@ -55,6 +61,7 @@ export function useKeyboardShortcutManager({
 }: KeyboardShortcutManagerOptions) {
   const panelStateRef = useRef({
     activePanel,
+    panelStackLength,
     codebreakerOpen,
     openstackTerminalOpen,
     bashTerminalOpen,
@@ -68,10 +75,13 @@ export function useKeyboardShortcutManager({
   });
   const minigameSettersRef = useRef(minigameSetters);
   const skipCutsceneRef = useRef(skipActiveCutscene);
+  const closePanelRef = useRef(closePanel);
+  const closeAllPanelsRef = useRef(closeAllPanels);
 
   useEffect(() => {
     panelStateRef.current = {
       activePanel,
+      panelStackLength,
       codebreakerOpen,
       openstackTerminalOpen,
       bashTerminalOpen,
@@ -85,6 +95,8 @@ export function useKeyboardShortcutManager({
     };
     minigameSettersRef.current = minigameSetters;
     skipCutsceneRef.current = skipActiveCutscene;
+    closePanelRef.current = closePanel;
+    closeAllPanelsRef.current = closeAllPanels;
   });
 
   useEffect(() => {
@@ -96,7 +108,7 @@ export function useKeyboardShortcutManager({
 
       if (e.code === 'KeyJ') {
         const store = useGameStore.getState();
-        if (!store.journalOpen) dispatchPanel(null);
+        if (!store.journalOpen) closeAllPanelsRef.current();
         store.toggleJournal();
       }
       if (e.code === 'KeyQ') dispatchPanel('quests');
@@ -156,8 +168,8 @@ export function useKeyboardShortcutManager({
           return;
         }
         if (closeOpenMinigame(ps, minigameSettersRef.current)) return;
-        if (ps.activePanel !== null) {
-          dispatchPanel(null);
+        if (ps.panelStackLength > 0) {
+          closePanelRef.current();
           return;
         }
         if (store.journalOpen) {
@@ -172,6 +184,8 @@ export function useKeyboardShortcutManager({
     return () => window.removeEventListener('keydown', handleKey);
   }, [
     dispatchPanel,
+    closePanel,
+    closeAllPanels,
     setExamineOpen,
     setExamineData,
     setExamineHasLinkedContent,

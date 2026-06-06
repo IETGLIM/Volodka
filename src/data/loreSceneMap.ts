@@ -100,6 +100,11 @@ export const LORE_STORY_NODE_MAP: Record<string, string[]> = {
 
   // Act 4 — Revolution
   act4_transition: ['lore_digital_resistance'],
+  act4_core_server: ['lore_poem_virus'],
+
+  // Act 5 — Finale
+  act5_dawn: ['lore_digital_resistance'],
+  chk_act5_campfire_dawn: ['lore_tolpa_chk'],
 
   // Lore that requires specific conditions
   poem_virus_truth: ['lore_poem_virus'],

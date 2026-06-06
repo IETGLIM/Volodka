@@ -1,0 +1,73 @@
+/* ══════════════════════════════════════════════════════════════
+   TASK 4-ID4: MenuScreen Visual Enhancement
+   ══════════════════════════════════════════════════════════════ */
+
+/* ─── Menu particle drift — gentle floating for ambient particles ─── */
+@keyframes menu-particle-drift {
+  0% { transform: translateY(0) translateX(0); opacity: var(--mp-opacity, 0.4); }
+  25% { transform: translateY(-15px) translateX(5px); opacity: calc(var(--mp-opacity, 0.4) * 1.2); }
+  50% { transform: translateY(-8px) translateX(-4px); opacity: var(--mp-opacity, 0.4); }
+  75% { transform: translateY(-20px) translateX(8px); opacity: calc(var(--mp-opacity, 0.4) * 0.8); }
+  100% { transform: translateY(0) translateX(0); opacity: var(--mp-opacity, 0.4); }
+}
+
+/* ─── Menu particle stream — vertical data stream dots ─── */
+@keyframes menu-particle-stream {
+  0% { transform: translateY(-10vh); opacity: 0; }
+  10% { opacity: var(--mp-opacity, 0.3); }
+  90% { opacity: var(--mp-opacity, 0.3); }
+  100% { transform: translateY(110vh); opacity: 0; }
+}
+
+/* ─── Menu circuit grid — animated cyan grid lines ─── */
+@keyframes menu-circuit-grid {
+  0% { opacity: 0.05; }
+  50% { opacity: 0.1; }
+  100% { opacity: 0.05; }
+}
+
+/* ─── Menu hover shimmer — diagonal gradient sweep on hover ─── */
+@keyframes menu-hover-shimmer {
+  0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+  100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+}
+
+/* ─── Menu hover indicator — left border slide-in ─── */
+@keyframes menu-hover-indicator-in {
+  0% { width: 0; opacity: 0; }
+  100% { width: 3px; opacity: 1; }
+}
+
+/* ─── Menu corner dot blink — blinking corner terminal dots ─── */
+@keyframes menu-corner-dot-blink {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 0.15; }
+}
+
+/* ─── Menu full-screen scan sweep ─── */
+@keyframes menu-fullscan {
+  0% { top: -2%; }
+  100% { top: 102%; }
+}
+
+/* ─── Menu glitch color shift — brief cyan→rose text shadow shift ─── */
+@keyframes menu-glitch-color-shift {
+  0% { text-shadow: -2px 0 #ff0000, 2px 0 #00ffff, 0 0 80px rgba(0, 255, 255, 0.6); }
+  33% { text-shadow: 2px 0 #ff0040, -2px 0 #ff1744, 0 0 80px rgba(255, 23, 68, 0.5); }
+  66% { text-shadow: -2px 0 #00ffff, 2px 0 #ff0040, 0 0 80px rgba(0, 255, 255, 0.4); }
+  100% { text-shadow: -2px 0 #ff0000, 2px 0 #00ffff, 0 0 80px rgba(0, 255, 255, 0.6); }
+}
+
+.menu-glitch-color-shift {
+  animation: menu-glitch-color-shift 0.3s ease-in-out;
+}
+
+/* ─── Menu footer dot blink — blinking dot for volodka:// URL ─── */
+@keyframes menu-footer-dot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+.menu-footer-dot {
+  animation: menu-footer-dot 1.2s step-end infinite;
+}

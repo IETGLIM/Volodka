@@ -7,6 +7,8 @@
 
 import { useMemo, useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { FocusTrap } from '@/components/a11y/FocusTrap';
+import { usePanelDialog } from '@/components/a11y/usePanelDialog';
 import {
   Zap,
   Brain,
@@ -294,6 +296,7 @@ function StatusEffectRow({
    ══════════════════════════════════════════════════════════════ */
 
 export function PlayerStatsPanel({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const { closeButtonRef, dialogProps, titleProps } = usePanelDialog();
   const { playerState, weatherEnabled, rainIntensity, currentSceneId, timeOfDay } = useStatusEffectsContext();
 
   // Track snow state via eventBus
@@ -354,8 +357,10 @@ export function PlayerStatsPanel({ open, onClose }: { open: boolean; onClose: ()
   return (
     <AnimatePresence>
       {open && (
+        <FocusTrap initialFocusRef={closeButtonRef}>
         <motion.div
           key="player-stats-panel"
+          {...dialogProps}
           className="fixed inset-y-0 left-0 pointer-events-auto stats-panel-container"
           style={{ zIndex: UI_LAYERS.PANEL, width: 'min(320px, 85vw)' }}
           initial={{ x: '-100%', opacity: 0 }}
@@ -399,6 +404,7 @@ export function PlayerStatsPanel({ open, onClose }: { open: boolean; onClose: ()
               <div className="flex items-center gap-2">
                 <ChevronUp className="size-4 rotate-90" style={{ color: CYAN, filter: `drop-shadow(0 0 4px ${CYAN}50)` }} />
                 <h2
+                  {...titleProps}
                   className="text-sm font-mono font-bold tracking-wider uppercase"
                   style={{ color: CYAN, textShadow: `0 0 8px ${CYAN}40` }}
                 >
@@ -406,6 +412,8 @@ export function PlayerStatsPanel({ open, onClose }: { open: boolean; onClose: ()
                 </h2>
               </div>
               <button
+                ref={closeButtonRef}
+                type="button"
                 onClick={onClose}
                 className="w-7 h-7 flex items-center justify-center rounded-md close-btn-glow transition-all duration-200"
                 style={{ border: `1px solid ${CYAN}25`, color: '#94a3b8' }}
@@ -580,6 +588,7 @@ export function PlayerStatsPanel({ open, onClose }: { open: boolean; onClose: ()
             </div>
           </div>
         </motion.div>
+        </FocusTrap>
       )}
     </AnimatePresence>
   );

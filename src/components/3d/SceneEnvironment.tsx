@@ -43,6 +43,9 @@ const SCENE_FOG_COLORS: Record<string, string> = {
   street_winter:      '#8090a8', // cold blue-gray
   library_day:        '#2a2018', // dark aged paper
   zarema_albert_room: '#181008', // dark warm domestic
+
+  // ─── CHK forest ───
+  chk_forest_zorge:   '#142018', // dark pine night mist
 };
 
 /** Background colors (deeper than fog for atmospheric depth).
@@ -92,6 +95,7 @@ const SCENE_FOG_ANIM: Record<string, FogAnimConfig> = {
   abandoned_factory:  { pulseFreq: 0.08, nearAmplitude: 0.1,  farAmplitude: 0.08, altFogColor: '#1a1205', colorShiftAmp: 0.2 },
   street_winter:      { pulseFreq: 0.04, nearAmplitude: 0.1,  farAmplitude: 0.08, altFogColor: '#90a0b8', colorShiftAmp: 0.15 },
   zarema_albert_room: { pulseFreq: 0.05, nearAmplitude: 0.03, farAmplitude: 0.02, colorShiftAmp: 0 },
+  chk_forest_zorge:   { pulseFreq: 0.03, nearAmplitude: 0.1, farAmplitude: 0.08, altFogColor: '#1a3020', colorShiftAmp: 0.2 },
 };
 
 const DEFAULT_FOG_ANIM: FogAnimConfig = { pulseFreq: 0.05, nearAmplitude: 0.05, farAmplitude: 0.03, colorShiftAmp: 0 };
@@ -201,6 +205,8 @@ function getEnvPreset(sceneId: string): 'night' | 'dawn' | 'sunset' | 'city' | '
       return 'sunset';
     case 'sleep_dream':
       return 'night';
+    case 'chk_forest_zorge':
+      return 'forest';
     default:
       return 'city';
   }

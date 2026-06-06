@@ -14,6 +14,9 @@
 import { useEffect, useCallback, type ReactNode } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
+import { FocusTrap } from '@/components/a11y/FocusTrap';
+import { usePanelDialog } from '@/components/a11y/usePanelDialog';
+import { usePanelId, usePanelStack } from '@/components/game/orchestrator/PanelStackContext';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 
 /* ─── Accent color mapping ─── */
@@ -101,7 +104,11 @@ export function PanelWrapper({
   headerExtra,
   footer,
 }: PanelWrapperProps) {
+  const { closeButtonRef, dialogProps, titleProps } = usePanelDialog();
   const accent = ACCENT_MAP[accentColor];
+  const panelId = usePanelId();
+  const { isTopPanel } = usePanelStack();
+  const isTop = panelId == null || isTopPanel(panelId);
 
   /* Accent color for corner brackets (matches panel accent) */
   const cornerBorderColor = accentColor === 'emerald'
@@ -118,7 +125,7 @@ export function PanelWrapper({
   }, [onClose]);
 
   useEffect(() => {
-    if (!open) return;
+    if (!open || !isTop) return;
     const handler = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         e.preventDefault();
@@ -128,7 +135,7 @@ export function PanelWrapper({
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, [open, handleClose]);
+  }, [open, isTop, handleClose]);
 
   /* ── Animation variants based on layout ── */
   const backdropInitial = { opacity: 0 };
@@ -160,20 +167,25 @@ export function PanelWrapper({
           exit={backdropExit}
           transition={{ duration: 0.2 }}
           className={`fixed inset-0 ${layout === 'sidebar' ? '' : 'flex items-center justify-center'}`}
-          style={{ zIndex: UI_LAYERS.PANEL }}
+          style={{ zIndex: panelId != null ? 1 : UI_LAYERS.PANEL, pointerEvents: isTop ? 'auto' : 'none' }}
         >
-          {/* Backdrop */}
+          {/* Backdrop — only the topmost panel dims the scene */}
+          {isTop && (
           <div
             className="absolute inset-0 bg-black/60 backdrop-blur-sm"
             onClick={handleClose}
+            aria-hidden="true"
           />
+          )}
 
           {/* Panel container */}
+          <FocusTrap initialFocusRef={closeButtonRef}>
           <motion.div
             initial={panelVariants.initial}
             animate={panelVariants.animate}
             exit={panelVariants.exit}
             transition={panelVariants.transition}
+            {...dialogProps}
             className={`
               relative z-10 overflow-hidden panel-slide-in digital-noise edge-glow
               ${layout === 'sidebar'
@@ -239,7 +251,7 @@ export function PanelWrapper({
                 background: 'rgba(0,0,0,0.3)',
               }}
             >
-              <h2 className="text-lg font-semibold text-slate-100 flex items-center gap-2 font-mono">
+              <h2 {...titleProps} className="text-lg font-semibold text-slate-100 flex items-center gap-2 font-mono">
                 {icon}
                 <span style={{ textShadow: accent.textGlow }}>{title}</span>
               </h2>
@@ -249,6 +261,8 @@ export function PanelWrapper({
                   <span className="text-xs text-slate-600 font-mono hidden sm:block">[{shortcutLabel}]</span>
                 )}
                 <button
+                  ref={closeButtonRef}
+                  type="button"
                   onClick={handleClose}
                   className="close-btn-glow w-7 h-7 rounded-md flex items-center justify-center text-slate-400 hover:text-white transition-all duration-150 hover:rotate-90"
                   aria-label="Закрыть"
@@ -273,6 +287,7 @@ export function PanelWrapper({
               </div>
             )}
           </motion.div>
+          </FocusTrap>
         </motion.div>
       )}
     </AnimatePresence>

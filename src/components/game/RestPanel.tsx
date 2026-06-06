@@ -4,6 +4,8 @@
 
 import { motion, AnimatePresence } from 'framer-motion';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
+import { FocusTrap } from '@/components/a11y/FocusTrap';
+import { usePanelDialog } from '@/components/a11y/usePanelDialog';
 import { useGameStore } from '@/store/gameStore';
 import { BedDouble, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -14,6 +16,7 @@ interface RestPanelProps {
 }
 
 export function RestPanel({ open, onClose }: RestPanelProps) {
+  const { closeButtonRef, dialogProps, titleProps } = usePanelDialog();
   const restAtHome = useGameStore((s) => s.restAtHome);
   const energy = useGameStore((s) => s.playerState.energy);
   const stress = useGameStore((s) => s.playerState.stress);
@@ -39,20 +42,25 @@ export function RestPanel({ open, onClose }: RestPanelProps) {
           style={{ zIndex: UI_LAYERS.PANEL }}
         >
           {/* Backdrop */}
-          <div className="absolute inset-0 bg-black/50" onClick={onClose} />
+          <div className="absolute inset-0 bg-black/50" onClick={onClose} aria-hidden="true" />
 
+          <FocusTrap initialFocusRef={closeButtonRef}>
           <motion.div
             initial={{ scale: 0.95, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.95, opacity: 0 }}
             transition={{ duration: 0.2 }}
             className="relative z-10 w-80"
+            {...dialogProps}
           >
             <div className="bg-slate-950/95 border border-cyan-900/30 backdrop-blur-md rounded-lg p-6">
               {/* Close button */}
               <button
+                ref={closeButtonRef}
+                type="button"
                 onClick={onClose}
                 className="absolute top-3 right-3 text-slate-400 hover:text-white transition-colors"
+                aria-label="Закрыть"
               >
                 <X className="size-4" />
               </button>
@@ -65,7 +73,7 @@ export function RestPanel({ open, onClose }: RestPanelProps) {
               </div>
 
               {/* Title */}
-              <h3 className="text-lg font-semibold text-slate-100 text-center mb-2">
+              <h3 {...titleProps} className="text-lg font-semibold text-slate-100 text-center mb-2">
                 Отдохнуть?
               </h3>
 
@@ -110,6 +118,7 @@ export function RestPanel({ open, onClose }: RestPanelProps) {
               </div>
             </div>
           </motion.div>
+          </FocusTrap>
         </motion.div>
       )}
     </AnimatePresence>

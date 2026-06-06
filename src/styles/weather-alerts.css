@@ -1,0 +1,52 @@
+/* ══════════════════════════════════════════════════════════════
+   SESSION 14: WeatherAlertNotification
+   ══════════════════════════════════════════════════════════════ */
+
+/* ─── Weather alert notification base styles ─── */
+.weather-alert-notification {
+  position: relative;
+  overflow: hidden;
+  font-family: 'Geist Mono', monospace;
+  isolation: isolate;
+}
+
+/* ─── Weather alert debuff tag animation ─── */
+@keyframes weather-debuff-fade {
+  0% {
+    opacity: 0;
+    transform: translateY(4px) scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.weather-alert-debuff {
+  animation: weather-debuff-fade 0.3s ease-out forwards;
+}
+
+/* ─── Weather alert temperature shimmer ─── */
+@keyframes weather-temp-shimmer {
+  0% {
+    text-shadow: 0 0 4px currentColor;
+  }
+  50% {
+    text-shadow: 0 0 10px currentColor, 0 0 16px currentColor;
+  }
+  100% {
+    text-shadow: 0 0 4px currentColor;
+  }
+}
+
+/* ─── Weather alert icon pulse ─── */
+@keyframes weather-icon-pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.9;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 1;
+  }
+}

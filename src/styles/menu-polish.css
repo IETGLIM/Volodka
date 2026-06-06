@@ -1,0 +1,310 @@
+/* ══════════════════════════════════════════════════════════════
+   TASK 4: Menu Screen Visual Polish
+   ══════════════════════════════════════════════════════════════ */
+
+/* Animated scan-line sweep for selected menu item */
+@keyframes menu-item-scan-sweep {
+  0% { top: -30%; opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { top: 130%; opacity: 0; }
+}
+
+/* Left accent bar breathing glow for selected menu item */
+@keyframes menu-accent-bar-breathe {
+  0%, 100% {
+    box-shadow: 0 0 4px var(--accent-glow, rgba(0, 255, 255, 0.4)),
+                0 0 8px var(--accent-glow, rgba(0, 255, 255, 0.2));
+    width: 3px;
+  }
+  50% {
+    box-shadow: 0 0 8px var(--accent-glow, rgba(0, 255, 255, 0.6)),
+                0 0 16px var(--accent-glow, rgba(0, 255, 255, 0.3)),
+                0 0 24px var(--accent-glow, rgba(0, 255, 255, 0.15));
+    width: 4px;
+  }
+}
+
+/* Version tag cyberpunk styling */
+@keyframes version-tag-glow {
+  0%, 100% {
+    text-shadow: 0 0 4px rgba(0, 229, 255, 0.3), 0 0 8px rgba(0, 229, 255, 0.15);
+  }
+  50% {
+    text-shadow: 0 0 6px rgba(0, 229, 255, 0.5), 0 0 12px rgba(0, 229, 255, 0.25), 0 0 20px rgba(0, 229, 255, 0.1);
+  }
+}
+
+.menu-version-tag {
+  animation: version-tag-glow 4s ease-in-out infinite;
+}
+
+/* Continue button emerald indicator pulse */
+@keyframes continue-emerald-pulse {
+  0%, 100% {
+    box-shadow: 0 0 4px rgba(52, 211, 153, 0.3), 0 0 8px rgba(52, 211, 153, 0.15);
+  }
+  50% {
+    box-shadow: 0 0 8px rgba(52, 211, 153, 0.5), 0 0 16px rgba(52, 211, 153, 0.25), 0 0 24px rgba(52, 211, 153, 0.1);
+  }
+}
+
+.continue-emerald-indicator {
+  animation: continue-emerald-pulse 2s ease-in-out infinite;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   TASK 7-8: Crafting & Perks Panel Visual Polish
+   ══════════════════════════════════════════════════════════════ */
+
+/* Perk card available state pulsing border animation */
+@keyframes perk-available-pulse {
+  0%, 100% {
+    border-color: rgba(251, 191, 36, 0.3);
+    box-shadow: 0 0 16px rgba(251, 191, 36, 0.2), 0 0 40px rgba(251, 191, 36, 0.08), inset 0 0 12px rgba(251, 191, 36, 0.05);
+  }
+  50% {
+    border-color: rgba(251, 191, 36, 0.6);
+    box-shadow: 0 0 24px rgba(251, 191, 36, 0.35), 0 0 48px rgba(251, 191, 36, 0.15), inset 0 0 18px rgba(251, 191, 36, 0.08);
+  }
+}
+
+/* Crafting item shimmer overlay for result preview */
+@keyframes craft-item-shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   TASK 4: Enhanced Cyberpunk CSS Styling Polish
+   ══════════════════════════════════════════════════════════════ */
+
+/* ─── 1. Typing cursor — Blinking cursor for terminal text ─── */
+@keyframes typing-cursor {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+.typing-cursor::after {
+  content: '_';
+  animation: typing-cursor 1s step-end infinite;
+  color: rgba(0, 229, 255, 0.8);
+}
+
+/* ─── 2. Data pulse — Data stream pulse for network indicators ─── */
+@keyframes data-pulse {
+  0%, 100% { background-color: rgba(0, 229, 255, 0.03); }
+  50% { background-color: rgba(0, 229, 255, 0.08); }
+}
+
+.data-pulse {
+  animation: data-pulse 3s ease-in-out infinite;
+}
+
+/* ─── 3. Signal wave — Radio/signal wave animation ─── */
+@keyframes signal-wave {
+  0%, 100% { transform: scaleY(0.3); opacity: 0.5; }
+  50% { transform: scaleY(1); opacity: 1; }
+}
+
+.signal-wave {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  height: 14px;
+}
+
+.signal-wave > span {
+  display: inline-block;
+  width: 3px;
+  height: 100%;
+  background: rgba(0, 229, 255, 0.6);
+  border-radius: 1px;
+  animation: signal-wave 2s ease-in-out infinite;
+}
+
+.signal-wave > span:nth-child(1) { animation-delay: 0s; height: 30%; }
+.signal-wave > span:nth-child(2) { animation-delay: 0.15s; height: 50%; }
+.signal-wave > span:nth-child(3) { animation-delay: 0.3s; height: 70%; }
+.signal-wave > span:nth-child(4) { animation-delay: 0.45s; height: 90%; }
+.signal-wave > span:nth-child(5) { animation-delay: 0.6s; height: 100%; }
+
+/* ─── 4. Circuit flow — Flowing circuit pattern animation ─── */
+@keyframes circuit-flow {
+  0% { background-position: 0 0; }
+  100% { background-position: 200px 0; }
+}
+
+.circuit-flow {
+  background-image:
+    linear-gradient(90deg,
+      transparent 0%,
+      rgba(0, 229, 255, 0.05) 10%,
+      transparent 20%,
+      transparent 80%,
+      rgba(0, 229, 255, 0.05) 90%,
+      transparent 100%
+    );
+  background-size: 200px 100%;
+  animation: circuit-flow 8s linear infinite;
+}
+
+/* ─── 5. Node ping — Node pulse for map/network markers ─── */
+@keyframes node-ping {
+  0% { transform: scale(1); opacity: 1; box-shadow: 0 0 0 0 rgba(52, 211, 153, 0.4); }
+  70% { transform: scale(1.3); opacity: 0.3; box-shadow: 0 0 0 10px rgba(52, 211, 153, 0); }
+  100% { transform: scale(1); opacity: 1; box-shadow: 0 0 0 0 rgba(52, 211, 153, 0); }
+}
+
+.node-ping {
+  animation: node-ping 2s ease-out infinite;
+}
+
+/* ─── 6. Text reveal — Text reveal from left to right ─── */
+@keyframes text-reveal {
+  0% { clip-path: inset(0 100% 0 0); }
+  100% { clip-path: inset(0 0 0 0); }
+}
+
+.text-reveal {
+  animation: text-reveal 0.6s ease-out forwards;
+}
+
+/* ─── 7. Bar fill animated — Progress bar fill with shimmer ─── */
+@keyframes bar-fill-animated {
+  0% { width: 0%; }
+  100% { width: var(--bar-fill-width, 100%); }
+}
+
+@keyframes bar-fill-shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(200%); }
+}
+
+.bar-fill-animated {
+  position: relative;
+  overflow: hidden;
+  animation: bar-fill-animated 1s ease-out forwards;
+}
+
+.bar-fill-animated::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.1) 50%, transparent 100%);
+  animation: bar-fill-shimmer 2s ease-in-out infinite;
+}
+
+/* ─── 8. Hologram distort — Hologram distortion effect ─── */
+@keyframes hologram-distort {
+  0%, 100% { transform: skewX(0deg); filter: hue-rotate(0deg); }
+  15% { transform: skewX(-1deg); filter: hue-rotate(5deg); }
+  30% { transform: skewX(0.5deg); filter: hue-rotate(-3deg); }
+  50% { transform: skewX(-0.5deg); filter: hue-rotate(0deg); }
+  70% { transform: skewX(1deg); filter: hue-rotate(3deg); }
+  85% { transform: skewX(-0.3deg); filter: hue-rotate(-2deg); }
+}
+
+.hologram-distort {
+  animation: hologram-distort 4s ease-in-out infinite;
+}
+
+/* ─── 9. Terminal blink — Terminal prompt blink ─── */
+@keyframes terminal-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+.terminal-blink {
+  animation: terminal-blink 1s step-end infinite;
+}
+
+/* ─── 10. Scan line — Moving scan line for panels ─── */
+@keyframes scan-line-move {
+  0% { top: -10%; }
+  100% { top: 110%; }
+}
+
+.scan-line {
+  position: relative;
+  overflow: hidden;
+}
+
+.scan-line::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent 0%, rgba(0, 229, 255, 0.15) 20%, rgba(0, 229, 255, 0.3) 50%, rgba(0, 229, 255, 0.15) 80%, transparent 100%);
+  box-shadow: 0 0 8px rgba(0, 229, 255, 0.2);
+  animation: scan-line-move 4s linear infinite;
+  pointer-events: none;
+  z-index: 10;
+}
+
+/* ─── 11. Power up — Power up glow effect ─── */
+@keyframes power-up {
+  0% { box-shadow: 0 0 0 rgba(0, 229, 255, 0); transform: scale(1); }
+  50% { box-shadow: 0 0 20px rgba(0, 229, 255, 0.4), 0 0 40px rgba(0, 229, 255, 0.15); transform: scale(1.03); }
+  100% { box-shadow: 0 0 8px rgba(0, 229, 255, 0.15); transform: scale(1); }
+}
+
+.power-up {
+  animation: power-up 0.6s ease-out forwards;
+}
+
+/* ─── 12. Glitch skew — Glitch skew effect ─── */
+@keyframes glitch-skew {
+  0% { transform: skewX(0deg); }
+  25% { transform: skewX(-8deg); }
+  50% { transform: skewX(5deg); }
+  75% { transform: skewX(-3deg); }
+  100% { transform: skewX(0deg); }
+}
+
+.glitch-skew {
+  animation: glitch-skew 0.3s steps(2) forwards;
+}
+
+/* ─── 13. Float gentle — Gentle float for decorative elements ─── */
+@keyframes float-gentle {
+  0%, 100% { transform: translateY(-3px); }
+  50% { transform: translateY(3px); }
+}
+
+.float-gentle {
+  animation: float-gentle 4s ease-in-out infinite;
+}
+
+/* ─── 14. Glass panel — Glass morphism panel with blur and border ─── */
+.glass-panel {
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(0, 229, 255, 0.12);
+  border-radius: 0.75rem;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+
+/* ─── 15. Terminal text — Terminal-style text with monospace and tracking ─── */
+.terminal-text {
+  font-family: 'Geist Mono', 'JetBrains Mono', 'Fira Code', monospace;
+  letter-spacing: 0.05em;
+  text-shadow: 0 0 6px rgba(0, 229, 255, 0.2), 0 0 12px rgba(0, 229, 255, 0.08);
+}
+
+/* ─── 16. Data chip — Small data tag/chip styling ─── */
+.data-chip {
+  display: inline-flex;
+  align-items: center;
+  font-family: 'Geist Mono', monospace;
+  font-size: 0.625rem;
+  line-height: 1;
+  padding: 2px 6px;
+  background: rgba(0, 229, 255, 0.06);
+  border: 1px solid rgba(0, 229, 255, 0.15);
+  border-radius: 3px;
+  color: rgba(0, 229, 255, 0.7);
+  white-space: nowrap;
+}

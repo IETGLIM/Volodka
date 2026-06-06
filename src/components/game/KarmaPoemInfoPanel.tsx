@@ -6,6 +6,8 @@
 
 import { useState, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { FocusTrap } from '@/components/a11y/FocusTrap'
+import { usePanelDialog } from '@/components/a11y/usePanelDialog'
 import { useGameStore } from '@/store/gameStore'
 import { ALL_ENDINGS } from '@/data/goldenPath'
 import { QUEST_DEFINITIONS } from '@/data/quests'
@@ -16,6 +18,7 @@ interface KarmaPoemInfoPanelProps {
 }
 
 export function KarmaPoemInfoPanel({ open, onClose }: KarmaPoemInfoPanelProps) {
+  const { closeButtonRef, dialogProps, titleProps } = usePanelDialog()
   const [activeTab, setActiveTab] = useState<'karma' | 'poems'>('karma')
 
   const karma = useGameStore((s) => s.playerState.karma)
@@ -80,23 +83,25 @@ export function KarmaPoemInfoPanel({ open, onClose }: KarmaPoemInfoPanelProps) {
 
   return (
     <AnimatePresence>
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        transition={{ duration: 0.3 }}
-        className="fixed inset-0 z-[200] flex items-center justify-center"
-        style={{ background: 'rgba(0,0,0,0.85)' }}
-        onClick={(e) => {
-          if (e.target === e.currentTarget) onClose()
-        }}
-      >
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.3 }}
+          className="fixed inset-0 z-[200] flex items-center justify-center"
+          style={{ background: 'rgba(0,0,0,0.85)' }}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) onClose()
+          }}
+        >
+        <FocusTrap initialFocusRef={closeButtonRef}>
         <motion.div
           initial={{ scale: 0.95, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0.95, opacity: 0 }}
           transition={{ duration: 0.3 }}
           className="relative w-[95vw] max-w-[700px] max-h-[85vh] flex flex-col overflow-hidden"
+          {...dialogProps}
           style={{
             background: 'linear-gradient(135deg, rgba(0,8,16,0.97), rgba(0,16,24,0.95))',
             border: '1px solid rgba(0,255,238,0.25)',
@@ -104,6 +109,7 @@ export function KarmaPoemInfoPanel({ open, onClose }: KarmaPoemInfoPanelProps) {
             boxShadow: '0 0 20px rgba(0,255,238,0.08), inset 0 0 10px rgba(0,255,238,0.03)',
           }}
         >
+          <h2 {...titleProps} className="sr-only">Карма и стихи</h2>
           {/* Header with tabs */}
           <div
             className="flex border-b"
@@ -121,9 +127,12 @@ export function KarmaPoemInfoPanel({ open, onClose }: KarmaPoemInfoPanelProps) {
             />
             {/* Close button */}
             <button
+              ref={closeButtonRef}
+              type="button"
               onClick={onClose}
               className="ml-auto px-3 text-xs font-mono"
               style={{ color: '#666' }}
+              aria-label="Закрыть"
             >
               ✕
             </button>
@@ -149,6 +158,7 @@ export function KarmaPoemInfoPanel({ open, onClose }: KarmaPoemInfoPanelProps) {
             )}
           </div>
         </motion.div>
+        </FocusTrap>
       </motion.div>
     </AnimatePresence>
   )

@@ -17,6 +17,7 @@ import { STORY_NODES } from '@/data/storyNodes';
 import { audioEngine } from '@/engine/AudioEngine';
 import { requestSceneTransitionForStoryNode } from '@/engine/scene/sceneTransition';
 import { closeNarrativeOverlay } from '@/engine/scene/narrativeOverlay';
+import { EXPLORE_HUB_NODE_IDS } from '@/shared/exploreHubNodes';
 import { KARMA_LOW_THRESHOLD, KARMA_HIGH_THRESHOLD } from '@/data/constants';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import type { StoryChoice, StoryEffect } from '@/shared/types/game';
@@ -88,8 +89,6 @@ function StatChangeChip({ effect }: { effect: StoryEffect }) {
   return null;
 }
 
-/** Scene hub nodes — story overlay menus while in 3D exploration */
-const EXPLORE_HUB_NODE_IDS = new Set(['explore_mode', 'corridor_explore_mode']);
 
 /** Nodes that open a scene hub; all other hub targets dismiss the overlay */
 const EXPLORE_HUB_ENTRY: Record<string, string> = {

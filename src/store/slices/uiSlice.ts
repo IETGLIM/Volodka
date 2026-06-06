@@ -46,7 +46,7 @@ export interface UISliceActions {
   setShowStoryOverlay: (show: boolean) => void;
   /** Atomically open story/dialogue overlay (avoids node/overlay race). */
   openNarrativeOverlay: (nodeId: string) => void;
-  /** Atomically close overlay and clear current node. */
+  /** Atomically close overlay; keep currentNodeId for save/combat resume. */
   closeNarrativeOverlay: () => void;
   toggleMatrixRain: () => void;
   setGlitchIntensity: (intensity: number) => void;
@@ -94,7 +94,7 @@ export const createUISlice: StateCreator<
 
   setMode: (mode) => set({ mode }),
 
-  setCurrentNodeId: (id) => set({ currentNodeId: id ?? '' }),
+  setCurrentNodeId: (id) => set({ currentNodeId: id?.trim() || 'start' }),
 
   setShowStoryOverlay: (show) => set({ showStoryOverlay: show }),
 
@@ -102,7 +102,7 @@ export const createUISlice: StateCreator<
     set({ showStoryOverlay: true, currentNodeId: nodeId }),
 
   closeNarrativeOverlay: () =>
-    set({ showStoryOverlay: false, currentNodeId: '' }),
+    set({ showStoryOverlay: false }),
 
   toggleMatrixRain: () => set((state) => ({ matrixRainEnabled: !state.matrixRainEnabled })),
 

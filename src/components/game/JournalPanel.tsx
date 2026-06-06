@@ -6,6 +6,8 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { FocusTrap } from '@/components/a11y/FocusTrap';
+import { usePanelDialog } from '@/components/a11y/usePanelDialog';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import {
   X,
@@ -712,6 +714,7 @@ function LoreTab({ searchQuery }: { searchQuery: string }) {
    MAIN JOURNAL PANEL
    ══════════════════════════════════════════════════════════════ */
 export function JournalPanel() {
+  const { closeButtonRef, dialogProps, titleProps } = usePanelDialog();
   const { journalOpen, journalTab, loreEntries } = useJournalShell();
   const setJournalTab = useSetJournalTab();
   const setJournalOpen = useSetJournalOpen();
@@ -760,7 +763,7 @@ export function JournalPanel() {
           style={{ zIndex: UI_LAYERS.PANEL }}
         >
           {/* Backdrop with scanline effect */}
-          <div className="absolute inset-0 bg-slate-950/90 backdrop-blur-xl" onClick={handleClose} />
+          <div className="absolute inset-0 bg-slate-950/90 backdrop-blur-xl" onClick={handleClose} aria-hidden="true" />
 
           {/* Scanlines overlay */}
           <div
@@ -780,12 +783,14 @@ export function JournalPanel() {
           />
 
           {/* Main panel — dark glass morphism with cyberpunk borders */}
+          <FocusTrap initialFocusRef={closeButtonRef}>
           <motion.div
             initial={{ scale: 0.92, opacity: 0, y: 20 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.92, opacity: 0, y: 20 }}
             transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
             className="relative z-10 w-[95vw] max-w-4xl h-[85vh] max-h-[700px] flex overflow-hidden rounded-xl shadow-2xl shadow-black/50"
+            {...dialogProps}
             style={{
               background: 'linear-gradient(135deg, rgba(8,12,28,0.95) 0%, rgba(4,8,18,0.97) 100%)',
               border: '1px solid rgba(34,211,238,0.15)',
@@ -793,6 +798,7 @@ export function JournalPanel() {
               backdropFilter: 'blur(20px)',
             }}
           >
+            <h2 {...titleProps} className="sr-only">Журнал</h2>
             {/* Decorative corner accents — cyberpunk style */}
             <div className="absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 border-cyan-500/40 rounded-tl-xl pointer-events-none" />
             <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-cyan-500/40 rounded-tr-xl pointer-events-none" />
@@ -837,9 +843,12 @@ export function JournalPanel() {
               {/* Close button */}
               <div className="p-1.5 sm:p-2 border-t border-cyan-900/20">
                 <button
+                  ref={closeButtonRef}
+                  type="button"
                   onClick={handleClose}
                   className="w-full flex items-center justify-center py-2 rounded-lg text-slate-600 hover:text-rose-400 hover:bg-rose-950/20 transition-colors"
                   title="Закрыть (Esc)"
+                  aria-label="Закрыть журнал"
                 >
                   <X className="size-4" />
                 </button>
@@ -913,6 +922,7 @@ export function JournalPanel() {
               </div>
             </div>
           </motion.div>
+          </FocusTrap>
         </motion.div>
       )}
     </AnimatePresence>

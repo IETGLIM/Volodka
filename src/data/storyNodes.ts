@@ -2060,6 +2060,12 @@ export const STORY_NODES: Record<string, StoryNode> = {
     sceneId: 'rooftop_edge',
     choices: [
       {
+        text: 'Время мало — сразу к проникновению',
+        next: 'act4_infiltration_prep',
+        condition: { flag: 'chose_stealth_path' },
+        effects: [{ type: 'setFlag', flag: 'act4_started', flagValue: true }],
+      },
+      {
         text: 'Начать с обращения к людям',
         next: 'vera_inspiration',
         effects: [
@@ -2180,6 +2186,69 @@ export const STORY_NODES: Record<string, StoryNode> = {
     ],
   },
 
+  act4_infiltration_prep: {
+    id: 'act4_infiltration_prep',
+    text: 'План безумен, но других нет. Нужно проникнуть в штаб-квартиру гильдии — в самое сердце системы, которая стирает стихи. Дмитрий, если он на свободе, может помочь изнутри. Украденный пропуск — ключ к двери. Но самое главное — союзник, который прикроет, когда всё пойдёт не так. А оно пойдёт не так.',
+    speaker: 'narrator',
+    sceneId: 'abandoned_factory',
+    effects: [
+      { type: 'setFlag', flag: 'act4_started', flagValue: true },
+      { type: 'triggerQuest', questId: 'guild_infiltration' },
+    ],
+    choices: [
+      {
+        text: 'Связаться с коллегой — он внутри системы',
+        next: 'act4_infiltration_inside',
+        effects: [
+          { type: 'addSkill', skill: 'persuasion', value: 2 },
+          { type: 'npcChange', npcId: 'office_colleague', npcChange: { relation: 5 } },
+          { type: 'setFlag', flag: 'colleague_as_ally', flagValue: true },
+          { type: 'setFlag', flag: 'guild_ally_found', flagValue: true },
+        ],
+      },
+      {
+        text: 'Сталкер проведёт через лес — тропа ЧК к гильдии',
+        next: 'act4_infiltration_inside',
+        condition: { flag: 'tolpa_honorary_chekist' },
+        effects: [
+          { type: 'addSkill', skill: 'intuition', value: 3 },
+          { type: 'setFlag', flag: 'tolpa_stalker_route', flagValue: true },
+          { type: 'setFlag', flag: 'guild_ally_found', flagValue: true },
+          { type: 'triggerQuest', questId: 'tolpa_act4_exfiltration' },
+          { type: 'npcChange', npcId: 'chk_stalker', npcChange: { relation: 5 } },
+        ],
+      },
+      {
+        text: 'Идти по маршруту Сталкера — он уже провёл разведку',
+        next: 'act4_infiltration_inside',
+        condition: { flag: 'tolpa_stalker_route' },
+        effects: [
+          { type: 'addSkill', skill: 'intuition', value: 2 },
+          { type: 'setFlag', flag: 'guild_ally_found', flagValue: true },
+        ],
+      },
+      {
+        text: 'Попросить Дмитрия о помощи — он знает ходы',
+        next: 'act4_infiltration_inside',
+        condition: { flag: 'dmitry_defected' },
+        effects: [
+          { type: 'addSkill', skill: 'coding', value: 2 },
+          { type: 'setFlag', flag: 'dmitry_as_ally', flagValue: true },
+          { type: 'setFlag', flag: 'guild_ally_found', flagValue: true },
+        ],
+      },
+      {
+        text: 'Пойти один — меньше риска для других',
+        next: 'act4_infiltration_inside',
+        effects: [
+          { type: 'addStat', stat: 'stress', value: 10 },
+          { type: 'addSkill', skill: 'intuition', value: 2 },
+          { type: 'addKarma', value: 3 },
+        ],
+      },
+    ],
+  },
+
   act4_infiltration_inside: {
     id: 'act4_infiltration_inside',
     text: 'Внутри башни — холод и гул серверов. Стены из стекла и хрома отражают твоё напряжённое лицо. Коридоры пусты — Дмитрий молодец, отвёл патрули. Но ты знаешь: на нижних уровнях ждут системные демоны — программы-стражи, которые атакуют любой незнакомый код. Дыхание перехватывает.',
@@ -2206,12 +2275,33 @@ export const STORY_NODES: Record<string, StoryNode> = {
         ],
         condition: { minSkill: { coding: 7 } },
       },
+      {
+        text: 'Искать доказательства цензуры в офисе Александра',
+        next: 'act4_core_server',
+        effects: [
+          { type: 'addSkill', skill: 'logic', value: 2 },
+          { type: 'setFlag', flag: 'guild_evidence_downloaded', flagValue: true },
+          { type: 'setFlag', flag: 'guild_core_accessed', flagValue: true },
+        ],
+      },
+      {
+        text: 'Использовать стихотворение «Прорыв» для обхода защиты',
+        next: 'act4_core_server',
+        effects: [
+          { type: 'addSkill', skill: 'writing', value: 2 },
+          { type: 'addKarma', value: 5 },
+          { type: 'setFlag', flag: 'poem_bypassed_security', flagValue: true },
+          { type: 'setFlag', flag: 'guild_core_accessed', flagValue: true },
+          { type: 'setFlag', flag: 'guild_evidence_downloaded', flagValue: true },
+        ],
+        condition: { minSkill: { writing: 6, coding: 5 } },
+      },
     ],
   },
 
   act4_core_server: {
     id: 'act4_core_server',
-    text: 'Серверное ядро. Огромный зал, заполненный мерцающими стойками. В центре — терминал Протокола Забвения, пульсирующий красным. На экранах — списки стихотворений, помеченных к стиранию. Тысячи имён, тысячи строк, тысячи жизней — всё готово к уничтожению. Протокол ждёт команды. Ты — между ним и спасением слова.',
+    text: 'Серверное ядро. Огромный зал, заполненный мерцающими стойками. В центре — терминал Протокола Забвения, пульсирующий красным. Ты подключаешься, и данные хлынут потоком: стихи — живые. Не просто текст — они дышат, пульсируют, растут. Каждое стихотворение в базе — организм, который гильдия методично убивает. Проект «Паноптикум» — не просто цензура. Это геноцид слова.',
     speaker: 'narrator',
     sceneId: 'office_day',
     choices: [
@@ -2233,6 +2323,40 @@ export const STORY_NODES: Record<string, StoryNode> = {
           { type: 'addStat', stat: 'energy', value: -15 },
         ],
         condition: { minSkill: { coding: 6 } },
+      },
+      {
+        text: 'Скачать всё — каждый стих, каждую строку',
+        next: 'act4_protocol_disabled',
+        effects: [
+          { type: 'addSkill', skill: 'coding', value: 3 },
+          { type: 'addKarma', value: 8 },
+          { type: 'setFlag', flag: 'downloaded_all_poems', flagValue: true },
+          { type: 'setFlag', flag: 'all_poems_collected', flagValue: true },
+          { type: 'setFlag', flag: 'protocol_disable_started', flagValue: true },
+        ],
+      },
+      {
+        text: 'Освободить стихи — дать им вырваться в сеть',
+        next: 'act4_protocol_disabled',
+        effects: [
+          { type: 'addKarma', value: 12 },
+          { type: 'addSkill', skill: 'writing', value: 3 },
+          { type: 'setFlag', flag: 'freed_living_poems', flagValue: true },
+          { type: 'setFlag', flag: 'all_poems_collected', flagValue: true },
+          { type: 'setFlag', flag: 'protocol_disable_started', flagValue: true },
+        ],
+        condition: { minKarma: 60 },
+      },
+      {
+        text: 'Уничтожить «Паноптикум» изнутри — стереть цензуру',
+        next: 'act4_protocol_disabled',
+        effects: [
+          { type: 'addSkill', skill: 'coding', value: 4 },
+          { type: 'addStat', stat: 'stress', value: 15 },
+          { type: 'setFlag', flag: 'panopticon_destroyed', flagValue: true },
+          { type: 'setFlag', flag: 'protocol_disable_started', flagValue: true },
+        ],
+        condition: { minSkill: { coding: 8 } },
       },
     ],
   },
@@ -2322,7 +2446,7 @@ export const STORY_NODES: Record<string, StoryNode> = {
 
   act4_broadcast_execute: {
     id: 'act4_broadcast_execute',
-    text: '«Сейчас.» Экраны по всему городу мигают. Реклама, новости, прогноз погоды — всё заменяется стихами. Пушкин на рекламном щите. Ахматова на терминале метро. Мандельштам в голограмме над площадью. Город замирает. Люди останавливаются, поднимают головы. Стихи — повсюду. Слово — свободно.',
+    text: '«Сейчас.» Экраны по всему городу мигают. Реклама, новости, прогноз погоды — всё заменяется стихами. Пушкин на рекламном щите. Ахматова на терминале метро. Мандельштам в голограмме над площадью. Цветаева пульсирует в неоне витрин. Город замирает. Люди останавливаются, поднимают головы. Кто-то плачет. Кто-то шепчет: «Я думал, это забыли.» Стихи — повсюду. Слово — свободно.',
     speaker: 'narrator',
     sceneId: 'rooftop_edge',
     effects: [
@@ -2350,18 +2474,28 @@ export const STORY_NODES: Record<string, StoryNode> = {
           { type: 'addKarma', value: 5 },
         ],
       },
+      {
+        text: 'Продекламировать собственное стихотворение в эфир',
+        next: 'act4_broadcast_aftermath',
+        effects: [
+          { type: 'addKarma', value: 20 },
+          { type: 'addSkill', skill: 'writing', value: 5 },
+          { type: 'setFlag', flag: 'volodka_personal_broadcast', flagValue: true },
+        ],
+        condition: { minSkill: { writing: 8 }, minKarma: 65 },
+      },
     ],
   },
 
   act4_broadcast_aftermath: {
     id: 'act4_broadcast_aftermath',
-    text: 'Трансляция длится час. Потом — гильдия перехватывает управление, экраны гаснут. Но поздно: город уже прочитал. Тысячи людей видели стихи, тысячи запомнили. В соцсетях — шквал постов. На стенах — нарисованные от руки строки. Гильдия может стереть данные, но не память. Ты стоишь на крыше, и мир изменился навсегда.',
+    text: 'Трансляция длится час. Потом — гильдия перехватывает управление, экраны гаснут. Но поздно: город уже прочитал. Тысячи людей видели стихи, тысячи запомнили. В соцсетях — шквал постов. На стенах — нарисованные от руки строки. Гильдия может стереть данные, но не память. Где-то в лесу на Зорге, если ты оставил там друзей, у костра тоже смотрят на экран. Ты стоишь на крыше — и мир изменился навсегда.',
     speaker: 'narrator',
     sceneId: 'rooftop_edge',
     choices: [
       {
         text: 'Искать примирение — предложить гильдии диалог',
-        next: 'act4_final_choice',
+        next: 'act5_dawn',
         effects: [
           { type: 'addKarma', value: 5 },
           { type: 'setFlag', flag: 'seeking_reconciliation', flagValue: true },
@@ -2369,7 +2503,7 @@ export const STORY_NODES: Record<string, StoryNode> = {
       },
       {
         text: 'Продолжать борьбу — до полной победы',
-        next: 'act4_final_choice',
+        next: 'act5_dawn',
         effects: [
           { type: 'addSkill', skill: 'persuasion', value: 1 },
           { type: 'setFlag', flag: 'seeking_victory', flagValue: true },
@@ -2377,10 +2511,56 @@ export const STORY_NODES: Record<string, StoryNode> = {
       },
       {
         text: 'Уйти — я сделал достаточно',
-        next: 'act4_final_choice',
+        next: 'act5_dawn',
         effects: [
           { type: 'addStat', stat: 'stress', value: -10 },
           { type: 'setFlag', flag: 'seeking_exit', flagValue: true },
+        ],
+      },
+    ],
+  },
+
+  act5_dawn: {
+    id: 'act5_dawn',
+    text: 'Рассвет после эфира. Первый настоящий свет пробивается сквозь дым и неон — не вывески, а солнце. Стихи всё ещё мерцают на экранах: гильдия бьётся за контроль, но строки вросли в систему, как корни в асфальт. Альберт пишет: «Я с тобой до конца.» Зарема молчит, но присылает координаты. Виктория шепчет из наушника: «Они готовят ответ. Но город уже не тот. Люди говорят друг с другом — не в терминалы.» Тишина перед последним выбором.',
+    speaker: 'narrator',
+    sceneId: 'rooftop_edge',
+    effects: [
+      { type: 'setFlag', flag: 'act5_started', flagValue: true },
+      { type: 'triggerQuest', questId: 'night_before_dawn' },
+    ],
+    choices: [
+      {
+        text: 'Встретить гильдию лицом к лицу',
+        next: 'act4_final_choice',
+        effects: [
+          { type: 'addSkill', skill: 'persuasion', value: 2 },
+          { type: 'addStat', stat: 'stress', value: 5 },
+        ],
+      },
+      {
+        text: 'Спуститься к людям — они нуждаются в поддержке',
+        next: 'act4_final_choice',
+        effects: [
+          { type: 'addKarma', value: 5 },
+          { type: 'addSkill', skill: 'empathy', value: 2 },
+        ],
+      },
+      {
+        text: 'Побыть одному — написать финальное стихотворение',
+        next: 'act4_final_choice',
+        effects: [
+          { type: 'addSkill', skill: 'writing', value: 3 },
+          { type: 'addStat', stat: 'stress', value: -10 },
+        ],
+      },
+      {
+        text: 'Заглянуть к чекистам — они тоже слушали эфир',
+        next: 'act4_final_choice',
+        condition: { flag: 'tolpa_honorary_chekist' },
+        effects: [
+          { type: 'addKarma', value: 5 },
+          { type: 'triggerQuest', questId: 'tolpa_act4_broadcast' },
         ],
       },
     ],
@@ -2444,6 +2624,16 @@ export const STORY_NODES: Record<string, StoryNode> = {
           { type: 'addKarma', value: 3 },
           { type: 'setFlag', flag: 'peace_chosen', flagValue: true },
         ],
+      },
+      {
+        text: 'Отдать себя сети — стихи должны жить вечно',
+        next: 'act5_ending_sacrifice',
+        effects: [
+          { type: 'addSkill', skill: 'writing', value: 2 },
+          { type: 'addSkill', skill: 'coding', value: 2 },
+          { type: 'setFlag', flag: 'sacrifice_chosen', flagValue: true },
+        ],
+        condition: { minSkill: { coding: 7, writing: 7 } },
       },
     ],
   },
@@ -2568,6 +2758,49 @@ export const STORY_NODES: Record<string, StoryNode> = {
           { type: 'addKarma', value: 10 },
           { type: 'setFlag', flag: 'shared_final_poem', flagValue: true },
         ],
+      },
+    ],
+  },
+
+  act5_ending_sacrifice: {
+    id: 'act5_ending_sacrifice',
+    text: 'Ты садишься за терминал в последний раз. Виктория стоит рядом — или висит в воздухе, полупрозрачная, сотканная из данных и света. «Если я волью себя в сеть целиком,» — шепчешь ты, — «стихи станут бессмертными. Ни одна строка не будет удалена никогда.» Виктория качает головой: «Ты станешь кодом, Володька. Человеком — перестанешь.» Ты закрываешь глаза. Где-то внутри звучит ритм — не сердцебиение, а пульсация данных. Ты выбираешь вечность.',
+    speaker: 'narrator',
+    sceneId: 'abandoned_factory',
+    choices: [
+      {
+        text: 'Слиться с живым кодом — стать стихотворением',
+        next: 'act5_epilogue',
+        effects: [
+          { type: 'addKarma', value: 15 },
+          { type: 'addSkill', skill: 'writing', value: 5 },
+          { type: 'addSkill', skill: 'coding', value: 5 },
+          { type: 'setFlag', flag: 'ending_sacrifice', flagValue: true },
+          { type: 'setFlag', flag: 'volodka_merged_with_code', flagValue: true },
+        ],
+      },
+    ],
+  },
+
+  act5_epilogue: {
+    id: 'act5_epilogue',
+    text: 'Город помнит. Экраны продолжают мерцать стихами — не потому что кто-то их поддерживает, а потому что они живые. В кафе «Синяя яма» бариста подаёт «особый» кофе — и каждый глоток несёт строку. На улицах дети читают вслух, и их голоса смешиваются с шумом неона. Где-то в сети пульсирует Виктория — или то, что когда-то было Викторией. Где-то в коде живёт Володька — или то, что когда-то было Володькой. А может быть, и тот, и другой. Потому что стихи не умирают. Они просто меняют форму.',
+    speaker: 'narrator',
+    sceneId: 'cafe_evening',
+    choices: [
+      {
+        text: 'Сделать глоток кофе — история продолжается',
+        next: 'act6_bridge',
+        effects: [
+          { type: 'addKarma', value: 5 },
+          { type: 'setFlag', flag: 'act5_epilogue_seen', flagValue: true },
+          { type: 'triggerQuest', questId: 'traitor_in_the_guild' },
+        ],
+      },
+      {
+        text: 'Начать сначала — новая история ждёт',
+        next: 'start',
+        effects: [{ type: 'addKarma', value: 5 }],
       },
     ],
   },
@@ -3181,459 +3414,6 @@ export const STORY_NODES: Record<string, StoryNode> = {
     ],
   },
 
-
-  /* ═══════════════════════════════════════════════════════════════════
-     ACT 4 — РАЗЛОМ: Война
-     ═══════════════════════════════════════════════════════════════════ */
-
-  act4_infiltration_prep: {
-    id: 'act4_infiltration_prep',
-    text: 'План безумен, но других нет. Нужно проникнуть в штаб-квартиру гильдии — в самое сердце системы, которая стирает стихи. Дмитрий, если он на свободе, может помочь изнутри. Украденный пропуск — ключ к двери. Но самое главное — тебе нужен союзник, который прикроет, когда всё пойдёт не так. А оно пойдёт не так.',
-    speaker: 'narrator',
-    sceneId: 'abandoned_factory',
-    choices: [
-      {
-        text: 'Связаться с коллегой — он внутри системы',
-        next: 'act4_guild_inside',
-        effects: [
-          { type: 'addSkill', skill: 'persuasion', value: 2 },
-          { type: 'npcChange', npcId: 'office_colleague', npcChange: { relation: 5 } },
-          { type: 'setFlag', flag: 'colleague_as_ally', flagValue: true },
-          { type: 'setFlag', flag: 'guild_ally_found', flagValue: true },
-        ],
-      },
-      {
-        text: 'Сталкер проведёт через лес — тропа ЧК к гильдии',
-        next: 'act4_guild_inside',
-        condition: { flag: 'tolpa_honorary_chekist' },
-        effects: [
-          { type: 'addSkill', skill: 'intuition', value: 3 },
-          { type: 'setFlag', flag: 'tolpa_stalker_route', flagValue: true },
-          { type: 'setFlag', flag: 'guild_ally_found', flagValue: true },
-          { type: 'triggerQuest', questId: 'tolpa_act4_exfiltration' },
-          { type: 'npcChange', npcId: 'chk_stalker', npcChange: { relation: 5 } },
-        ],
-      },
-      {
-        text: 'Попросить Дмитрия о помощи — он знает ходы',
-        next: 'act4_guild_inside',
-        effects: [
-          { type: 'addSkill', skill: 'coding', value: 2 },
-          { type: 'setFlag', flag: 'dmitry_as_ally', flagValue: true },
-          { type: 'setFlag', flag: 'guild_ally_found', flagValue: true },
-        ],
-        condition: { flag: 'dmitry_defected' },
-      },
-      {
-        text: 'Пойти один — меньше риска для других',
-        next: 'act4_guild_inside',
-        effects: [
-          { type: 'addStat', stat: 'stress', value: 10 },
-          { type: 'addSkill', skill: 'intuition', value: 2 },
-          { type: 'addKarma', value: 3 },
-        ],
-      },
-    ],
-    effects: [
-      { type: 'setFlag', flag: 'act4_started', flagValue: true },
-      { type: 'triggerQuest', questId: 'guild_infiltration' },
-    ],
-  },
-
-  act4_guild_inside: {
-    id: 'act4_guild_inside',
-    text: 'Штаб-квартира гильдии — стеклянная башня, пронзающая ночное небо. Внутри — стерильные коридоры, гудение серверов, настороженные взгляды охраны. Ты идёшь по коридорам в украденной форме, и каждый шаг — как ход по минному полю. Один неверный жест — и система тебя засечёт. Но где-то здесь, за закрытыми дверями, — центральный сервер. Правда, которую гильдия прячет от города.',
-    speaker: 'narrator',
-    sceneId: 'office_day',
-    choices: [
-      {
-        text: 'Двигаться к серверной — время дорого',
-        next: 'act4_core_discovery',
-        effects: [
-          { type: 'addSkill', skill: 'coding', value: 2 },
-          { type: 'addStat', stat: 'stress', value: 10 },
-          { type: 'setFlag', flag: 'guild_core_accessed', flagValue: true },
-          { type: 'setFlag', flag: 'guild_evidence_downloaded', flagValue: true },
-        ],
-      },
-      {
-        text: 'Искать доказательства цензуры в офисе Александра',
-        next: 'act4_core_discovery',
-        effects: [
-          { type: 'addSkill', skill: 'logic', value: 2 },
-          { type: 'setFlag', flag: 'guild_evidence_downloaded', flagValue: true },
-          { type: 'setFlag', flag: 'guild_core_accessed', flagValue: true },
-        ],
-      },
-      {
-        text: 'Использовать стихотворение «Прорыв» для обхода защиты',
-        next: 'act4_core_discovery',
-        effects: [
-          { type: 'addSkill', skill: 'writing', value: 2 },
-          { type: 'addKarma', value: 5 },
-          { type: 'setFlag', flag: 'poem_bypassed_security', flagValue: true },
-          { type: 'setFlag', flag: 'guild_core_accessed', flagValue: true },
-          { type: 'setFlag', flag: 'guild_evidence_downloaded', flagValue: true },
-        ],
-        condition: { minSkill: { writing: 6, coding: 5 } },
-      },
-    ],
-  },
-
-  act4_core_discovery: {
-    id: 'act4_core_discovery',
-    text: 'Центральный сервер гильдии — пульсирующее сердце из света и кабелей. Ты подключаешься, и данные хлынут потоком. И тогда ты видишь это: стихи — живые. Не просто текст на экране — они дышат, пульсируют, растут. Каждое стихотворение в базе — живой организм, который гильдия методично убивает. Проект «Паноптикум» — не просто цензура. Это геноцид слова.',
-    speaker: 'narrator',
-    sceneId: 'office_day',
-    choices: [
-      {
-        text: 'Скачать всё — каждый стих, каждую строку',
-        next: 'act4_broadcast_plan',
-        effects: [
-          { type: 'addSkill', skill: 'coding', value: 3 },
-          { type: 'addKarma', value: 8 },
-          { type: 'setFlag', flag: 'downloaded_all_poems', flagValue: true },
-          { type: 'setFlag', flag: 'all_poems_collected', flagValue: true },
-        ],
-      },
-      {
-        text: 'Освободить стихи — дать им вырваться в сеть',
-        next: 'act4_broadcast_plan',
-        effects: [
-          { type: 'addKarma', value: 12 },
-          { type: 'addSkill', skill: 'writing', value: 3 },
-          { type: 'setFlag', flag: 'freed_living_poems', flagValue: true },
-          { type: 'setFlag', flag: 'all_poems_collected', flagValue: true },
-        ],
-        condition: { minKarma: 60 },
-      },
-      {
-        text: 'Уничтожить «Паноптикум» изнутри — стереть цензуру',
-        next: 'act4_broadcast_plan',
-        effects: [
-          { type: 'addSkill', skill: 'coding', value: 4 },
-          { type: 'addStat', stat: 'stress', value: 15 },
-          { type: 'setFlag', flag: 'panopticon_destroyed', flagValue: true },
-        ],
-        condition: { minSkill: { coding: 8 } },
-      },
-    ],
-  },
-
-  act4_broadcast_plan: {
-    id: 'act4_broadcast_plan',
-    text: 'Альберт предлагает план, от которого у всех перехватывает дыхание: передать стихи на каждый экран в городе. Каждую голограмму, каждый терминал, каждый киоск — всё должно заговорить стихами. Одновременно. Без возможности отключить. Виктория говорит, что может направить трансляцию изнутри сети, но для этого нужна передающая башня на крыше и кто-то, кто запустит её вручную.',
-    speaker: 'narrator',
-    sceneId: 'abandoned_factory',
-    choices: [
-      {
-        text: 'Я пойду на крышу. Это мой бой.',
-        next: 'act4_rooftop_broadcast',
-        effects: [
-          { type: 'addKarma', value: 8 },
-          { type: 'addStat', stat: 'stress', value: 10 },
-          { type: 'setFlag', flag: 'volodka_goes_to_roof', flagValue: true },
-        ],
-      },
-      {
-        text: 'Мы пошлём кого-то другого. Я нужен здесь.',
-        next: 'act4_rooftop_broadcast',
-        effects: [
-          { type: 'addSkill', skill: 'logic', value: 2 },
-          { type: 'addStat', stat: 'stress', value: -5 },
-        ],
-      },
-      {
-        text: 'Виктория, ты сможешь вести трансляцию из сети?',
-        next: 'act4_rooftop_broadcast',
-        effects: [
-          { type: 'npcChange', npcId: 'maria', npcChange: { relation: 10 } },
-          { type: 'addSkill', skill: 'intuition', value: 2 },
-          { type: 'setFlag', flag: 'maria_broadcast_channel', flagValue: true },
-        ],
-        condition: { flag: 'maria_truth_accepted' },
-      },
-    ],
-  },
-
-  act4_rooftop_broadcast: {
-    id: 'act4_rooftop_broadcast',
-    text: 'Крыша. Ветер. Город внизу — море огней, равнодушных и слепых. Передающая башня возвышается над тобой, её антенна царапает низкие облака. Ты подключаешь терминал. Виктория — в наушнике: «Я готова. Все стихи — здесь. Все голоса — здесь. Ты только дай сигнал.» Твои пальцы зависают над клавиатурой. Одно нажатие — и город услышит правду. Обратного пути не будет.',
-    speaker: 'narrator',
-    sceneId: 'rooftop_edge',
-    choices: [
-      {
-        text: 'Начать трансляцию. Пусть город услышит!',
-        next: 'act4_city_awakens',
-        effects: [
-          { type: 'addKarma', value: 15 },
-          { type: 'addSkill', skill: 'writing', value: 3 },
-          { type: 'setFlag', flag: 'broadcast_ready', flagValue: true },
-          { type: 'setFlag', flag: 'broadcast_hacked', flagValue: true },
-          { type: 'setFlag', flag: 'poetry_transmitted', flagValue: true },
-          { type: 'setFlag', flag: 'poetry_broadcast_sent', flagValue: true },
-          { type: 'setFlag', flag: 'all_poems_collected', flagValue: true },
-          { type: 'triggerQuest', questId: 'poetry_broadcast' },
-        ],
-      },
-      {
-        text: 'Подождать — вдруг есть другой путь?',
-        next: 'act4_city_awakens',
-        effects: [
-          { type: 'addStat', stat: 'stress', value: 5 },
-          { type: 'addSkill', skill: 'logic', value: 1 },
-          { type: 'setFlag', flag: 'broadcast_ready', flagValue: true },
-          { type: 'setFlag', flag: 'broadcast_hacked', flagValue: true },
-          { type: 'setFlag', flag: 'poetry_transmitted', flagValue: true },
-          { type: 'setFlag', flag: 'poetry_broadcast_sent', flagValue: true },
-          { type: 'setFlag', flag: 'all_poems_collected', flagValue: true },
-          { type: 'triggerQuest', questId: 'poetry_broadcast' },
-        ],
-      },
-      {
-        text: 'Продекламировать собственное стихотворение в эфир',
-        next: 'act4_city_awakens',
-        effects: [
-          { type: 'addKarma', value: 20 },
-          { type: 'addSkill', skill: 'writing', value: 5 },
-          { type: 'setFlag', flag: 'broadcast_hacked', flagValue: true },
-          { type: 'setFlag', flag: 'poetry_transmitted', flagValue: true },
-          { type: 'setFlag', flag: 'poetry_broadcast_sent', flagValue: true },
-          { type: 'setFlag', flag: 'volodka_personal_broadcast', flagValue: true },
-          { type: 'triggerQuest', questId: 'poetry_broadcast' },
-        ],
-        condition: { minSkill: { writing: 8 }, minKarma: 65 },
-      },
-    ],
-  },
-
-  act4_city_awakens: {
-    id: 'act4_city_awakens',
-    text: 'И город услышал. На каждом экране, на каждой голограмме, в каждом терминале — стихи. Строки Ахматовой мерцают на рекламных щитах. Мандельштам звучит из динамиков киосков. Цветаева пульсирует в неоне витрин. Люди останавливаются, поднимают головы, читают. Кто-то плачет. Кто-то улыбается впервые за годы. Кто-то шепчет: «Я думал, это забыли.» Город просыпается от долгого сна.',
-    speaker: 'narrator',
-    sceneId: 'rooftop_edge',
-    choices: [
-      {
-        text: 'Смотреть, как город оживает',
-        next: 'act4_final_choice',
-        effects: [
-          { type: 'addKarma', value: 10 },
-          { type: 'addStat', stat: 'stress', value: -15 },
-          { type: 'setFlag', flag: 'witnessed_city_awakening', flagValue: true },
-        ],
-      },
-      {
-        text: 'Виктория, ты это чувствуешь? Город слушает!',
-        next: 'act4_final_choice',
-        effects: [
-          { type: 'npcChange', npcId: 'maria', npcChange: { relation: 15 } },
-          { type: 'addSkill', skill: 'empathy', value: 3 },
-        ],
-      },
-    ],
-  },
-
-  /* ═══════════════════════════════════════════════════════════════════
-     ACT 5 — ЭПИЛОГ: Рассвет
-     ═══════════════════════════════════════════════════════════════════ */
-
-  act5_dawn: {
-    id: 'act5_dawn',
-    text: '⚠ АКТ 5 В РАЗРАБОТКЕ — контент может быть неполным.\n\nРассвет. Первый рассвет нового города. Ты стоишь на крыше и смотришь на горизонт, где неоновые вывески сменяются настоящим светом. Стихи всё ещё мерцают на экранах — гильдия ещё не смогла их отключить. Город изменился за одну ночь. Люди разговаривают на улицах — не в терминалы, а друг с другом. Но ты знаешь: это ещё не конец. Гильдия ответит.',
-    speaker: 'narrator',
-    sceneId: 'rooftop_edge',
-    choices: [
-      {
-        text: 'Встретить гильдию лицом к лицу',
-        next: 'act5_guild_response',
-        effects: [
-          { type: 'addSkill', skill: 'persuasion', value: 2 },
-          { type: 'addStat', stat: 'stress', value: 5 },
-        ],
-      },
-      {
-        text: 'Спуститься к людям — они нуждаются в поддержке',
-        next: 'act5_guild_response',
-        effects: [
-          { type: 'addKarma', value: 5 },
-          { type: 'addSkill', skill: 'empathy', value: 2 },
-        ],
-      },
-      {
-        text: 'Побыть одному — написать финальное стихотворение',
-        next: 'act5_guild_response',
-        effects: [
-          { type: 'addSkill', skill: 'writing', value: 3 },
-          { type: 'addStat', stat: 'stress', value: -10 },
-        ],
-      },
-    ],
-    effects: [
-      { type: 'setFlag', flag: 'act5_started', flagValue: true },
-    ],
-  },
-
-  act5_guild_response: {
-    id: 'act5_guild_response',
-    text: 'Гильдия отвечает — но как, зависит от того, каким ты был. Если ты нёс свет — они предложат переговоры. Если тьму — они придут с силой. Город замер в ожидании. На улицах — тишина, которую можно потрогать. Экраны мерцают: гильдия пытается вернуть контроль, но стихи вросли в систему, как корни в землю. Их нельзя удалить, не уничтожив всё.',
-    speaker: 'narrator',
-    sceneId: 'street_night',
-    choices: [
-      {
-        text: 'Вступить в переговоры с гильдией — мирный путь',
-        next: 'act5_ending_poet',
-        effects: [
-          { type: 'addKarma', value: 5 },
-          { type: 'addSkill', skill: 'persuasion', value: 2 },
-        ],
-        condition: { minKarma: 60 },
-      },
-      {
-        text: 'Перехватить управление системами — технический путь',
-        next: 'act5_ending_hacker',
-        effects: [
-          { type: 'addSkill', skill: 'coding', value: 3 },
-          { type: 'addStat', stat: 'stress', value: 10 },
-        ],
-        condition: { minSkill: { coding: 8 } },
-      },
-      {
-        text: 'Возглавить Сеть как движение — революционный путь',
-        next: 'act5_ending_rebel',
-        effects: [
-          { type: 'addKarma', value: 5 },
-          { type: 'addSkill', skill: 'persuasion', value: 2 },
-        ],
-        condition: { minSkill: { persuasion: 8 } },
-      },
-      {
-        text: 'Уйти — этот город забрал слишком много',
-        next: 'act5_ending_alone',
-        effects: [
-          { type: 'addStat', stat: 'stress', value: 15 },
-          { type: 'addKarma', value: -10 },
-        ],
-        condition: { maxKarma: 40 },
-      },
-    ],
-  },
-
-  act5_ending_poet: {
-    id: 'act5_ending_poet',
-    text: 'Город называет тебя поэтом. Не потому что ты написал больше всех — а потому что ты заставил их вспомнить. Стихи больше не прячутся в коде — они звучат на площадях, печатаются на стенах, поются в метро. Гильдия не пала — она трансформировалась, как трансформировался город. Ты сидишь в «Синей яме» и пишешь. За окном — рассвет. Альберт кивает тебе из своего угла. Зарема приносит чай. Мир не стал идеальным, но в нём снова есть место для красоты.',
-    speaker: 'narrator',
-    sceneId: 'cafe_evening',
-    choices: [
-      {
-        text: 'Прочитать новое стихотворение вслух',
-        next: 'act5_epilogue',
-        effects: [
-          { type: 'addKarma', value: 10 },
-          { type: 'addSkill', skill: 'writing', value: 5 },
-          { type: 'setFlag', flag: 'ending_poet', flagValue: true },
-        ],
-      },
-    ],
-  },
-
-  act5_ending_hacker: {
-    id: 'act5_ending_hacker',
-    text: 'Ты не поэт — ты архитектор. Там, где другие видели стихи, ты увидел систему, которую можно перестроить. Изнутри. Твои руки на клавиатуре, твои глаза на мониторах — ты переписываешь саму основу города. Код, который несёт поэзию в каждом байте. Архитектура, где свобода слова встроена в фундамент. Гильдия стала ненужной — не потому что ты её разрушил, а потому что ты создал нечто лучшее. Виктория улыбается из сети: «Ты понял. Код и стих — одно.»',
-    speaker: 'narrator',
-    sceneId: 'volodka_room',
-    choices: [
-      {
-        text: 'Скомпилировать новый мир',
-        next: 'act5_epilogue',
-        effects: [
-          { type: 'addKarma', value: 10 },
-          { type: 'addSkill', skill: 'coding', value: 5 },
-          { type: 'setFlag', flag: 'ending_hacker', flagValue: true },
-        ],
-      },
-    ],
-  },
-
-  act5_ending_rebel: {
-    id: 'act5_ending_rebel',
-    text: 'Сеть — это не просто группа людей. Это движение. Революция, которая началась со стихов. Ты стоишь перед толпой на площади — тысячи лиц, освещённых неоном и надеждой. Ты не командир и не вождь — ты голос. Голос, который сказал: «Стихи нельзя стереть.» И город ответил: «Мы помним.» Гильдия отступила — не разбитая, но сломленная осознанием, что слово сильнее кода. Ты поднимаешь руку, и площадь затихает. А потом ты читаешь. И город слушает.',
-    speaker: 'narrator',
-    sceneId: 'street_night',
-    choices: [
-      {
-        text: 'Продолжать читать — каждая строка как клятва',
-        next: 'act5_epilogue',
-        effects: [
-          { type: 'addKarma', value: 10 },
-          { type: 'addSkill', skill: 'persuasion', value: 5 },
-          { type: 'setFlag', flag: 'ending_rebel', flagValue: true },
-        ],
-      },
-    ],
-  },
-
-  act5_ending_alone: {
-    id: 'act5_ending_alone',
-    text: 'Ты уходишь на рассвете. Рюкзак на плече, в кармане — чип с последними стихами. Город просыпается за твоей спиной — люди читают на экранах то, что ты им дал. Но ты не можешь остаться. Слишком много потеряно. Слишком много лиц, которые ты не смог спасти. Зарема. Дмитрий. Может быть, Виктория. Ты идёшь по шоссе, и за горизонт проецируются строки стихов. Ты не оглядываешься. Но стихи — они с тобой. Навсегда.',
-    speaker: 'narrator',
-    sceneId: 'street_night',
-    choices: [
-      {
-        text: 'Идти дальше — может, где-то нужен другой поэт',
-        next: 'act5_epilogue',
-        effects: [
-          { type: 'addStat', stat: 'stress', value: 10 },
-          { type: 'setFlag', flag: 'ending_alone', flagValue: true },
-        ],
-      },
-    ],
-  },
-
-  act5_ending_sacrifice: {
-    id: 'act5_ending_sacrifice',
-    text: 'Ты садишься за терминал в последний раз. Виктория стоит рядом — или висит в воздухе, полупрозрачная, сотканная из данных и света. «Если я волью себя в сеть целиком,» — шепчешь ты, — «стихи станут бессмертными. Ни одна строка не будет удалена никогда.» Виктория качает головой: «Ты станешь кодом, Володька. Человеком — перестанешь.» Ты закрываешь глаза. Где-то внутри звучит ритм — не сердцебиение, а пульсация данных. Ты выбираешь вечность.',
-    speaker: 'narrator',
-    sceneId: 'abandoned_factory',
-    choices: [
-      {
-        text: 'Слиться с живым кодом — стать стихотворением',
-        next: 'act5_epilogue',
-        effects: [
-          { type: 'addKarma', value: 15 },
-          { type: 'addSkill', skill: 'writing', value: 5 },
-          { type: 'addSkill', skill: 'coding', value: 5 },
-          { type: 'setFlag', flag: 'ending_sacrifice', flagValue: true },
-          { type: 'setFlag', flag: 'volodka_merged_with_code', flagValue: true },
-        ],
-      },
-    ],
-    effects: [],
-  },
-
-  act5_epilogue: {
-    id: 'act5_epilogue',
-    text: 'Город помнит. Экраны продолжают мерцать стихами — не потому что кто-то их поддерживает, а потому что они живые. В кафе «Синяя яма» бариста подаёт «особый» кофе — и каждый глоток несёт строку. На улицах дети читают вслух, и их голоса смешиваются с шумом неона. Где-то в сети пульсирует Виктория — или то, что когда-то было Викторией. Где-то в коде живёт Володька — или то, что когда-то было Володькой. А может быть, и тот, и другой. Потому что стихи не умирают. Они просто меняют форму.',
-    speaker: 'narrator',
-    sceneId: 'cafe_evening',
-    choices: [
-      {
-        text: 'Сделать глоток кофе — история продолжается',
-        next: 'act6_bridge',
-        effects: [
-          { type: 'addKarma', value: 5 },
-          { type: 'setFlag', flag: 'act5_epilogue_seen', flagValue: true },
-          { type: 'triggerQuest', questId: 'traitor_in_the_guild' },
-        ],
-      },
-      {
-        text: 'Начать сначала — новая история ждёт',
-        next: 'start',
-        effects: [
-          { type: 'addKarma', value: 5 },
-        ],
-      },
-    ],
-  },
 
   /* ═══════════════════════════════════════════════════════════════════
      ACT 6 — ПРЕДАТЕЛЬСТВО И ОТКРОВЕНИЕ

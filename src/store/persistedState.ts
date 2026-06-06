@@ -106,6 +106,9 @@ export function pickSavePayload(
   for (const key of getPersistedStateKeys()) {
     payload[key] = state[key];
   }
+  // Overlay close used to clear currentNodeId; schema requires non-empty string.
+  const nodeId = state.currentNodeId?.trim();
+  payload.currentNodeId = nodeId || 'start';
   payload.savedAt = Date.now();
   return payload as Omit<SavePayload, 'saveVersion'>;
 }
