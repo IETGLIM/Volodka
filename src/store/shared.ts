@@ -11,7 +11,7 @@ import type {
   EquipmentSlot,
   InventoryItem,
 } from '@/shared/types/game';
-import { createInventoryItem } from '@/data/gameDataLoader';
+import { createInventoryItem } from '@/data/items';
 import {
   INITIAL_PLAYER_NAME,
   INITIAL_KARMA,
