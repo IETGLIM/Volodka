@@ -48,6 +48,7 @@ import { audioEngine } from '@/engine/AudioEngine';
 import { getInteractionState, isInteractionLocked } from './InteractionSystemBridge';
 import { InteractionState } from '@/engine/interaction/interactionMachine';
 import { setPlayerRigidBody, getPlayerExternalVelocity, clearPlayerRigidBody } from '@/engine/PlayerRigidBodyState';
+import { setLivePlayerTransform } from '@/engine/PlayerLivePosition';
 import { ProceduralPlayerModelAdaptive } from './ProceduralPlayerModel';
 import { isNarrativeMovementLocked } from '@/shared/exploreHubNodes';
 
@@ -220,6 +221,43 @@ export function PhysicsPlayer({
       controllerFailCountRef.current = 0;
     });
     return unsub;
+  }, [livePlayerPositionRef, livePlayerRotationRef]);
+
+  // Teleport to restored store position on load (same scene — no sceneId change).
+  useEffect(() => {
+    const applyStoreSpawn = () => {
+      const store = getGameStore();
+      const spawn = store.exploration.playerPosition;
+      const enteredScene = store.exploration.currentSceneId;
+      const sceneConfig = getSceneConfig(enteredScene);
+
+      warmupFramesRef.current = 0;
+      jumpCooldownRef.current = 0;
+      noMovementFramesRef.current = 0;
+      velocityRef.current.set(0, 0, 0);
+      isGroundedRef.current = true;
+      coyoteTimerRef.current = 0;
+      livePlayerRotationRef.current = sceneConfig.initialRotation ?? 0;
+
+      if (rigidBodyRef.current?.isValid()) {
+        rigidBodyRef.current.setTranslation(
+          { x: spawn[0], y: spawn[1], z: spawn[2] },
+          true,
+        );
+      }
+      livePlayerPositionRef.current.set(spawn[0], spawn[1], spawn[2]);
+      setLivePlayerTransform(
+        spawn[0],
+        spawn[1],
+        spawn[2],
+        livePlayerRotationRef.current,
+      );
+
+      useDirectMovementRef.current = false;
+      controllerFailCountRef.current = 0;
+    };
+
+    return eventBus.on('game:loaded', applyStoreSpawn);
   }, [livePlayerPositionRef, livePlayerRotationRef]);
 
   // Pre-allocated temp vectors (avoid GC in useFrame)
@@ -690,6 +728,12 @@ export function PhysicsPlayer({
     // ─── Update position ref for camera + other systems ───
     const finalPos = rb.translation();
     livePlayerPositionRef.current.set(finalPos.x, finalPos.y, finalPos.z);
+    setLivePlayerTransform(
+      finalPos.x,
+      finalPos.y,
+      finalPos.z,
+      livePlayerRotationRef.current,
+    );
 
     // ─── EMERGENCY MOBILE FALLBACK ───
     // If the player has input but position hasn't changed, the controller may

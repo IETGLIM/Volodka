@@ -9,7 +9,7 @@ import { useRef, useEffect, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 
-import { useGameStore } from '@/store/gameStore';
+import { getGameStore, useGameStore } from '@/store/gameStore';
 import { usePlayerControls, type VirtualControls } from '@/hooks/useGamePhysics';
 import {
   getSceneConfig,
@@ -20,6 +20,8 @@ import { eventBus } from '@/engine/EventBus';
 import { audioEngine } from '@/engine/AudioEngine';
 import { isInteractionLocked } from './InteractionSystemBridge';
 import { ProceduralPlayerModelAdaptive } from './ProceduralPlayerModel';
+import { setLivePlayerTransform } from '@/engine/PlayerLivePosition';
+import type { SceneId } from '@/shared/types/game';
 
 function lerpAngle(a: number, b: number, t: number): number {
   let diff = b - a;
@@ -63,20 +65,48 @@ export function SimplePlayer({
   const modelScale = getExplorationCharacterModelScale(sceneId);
   const config = getSceneConfig(sceneId);
 
-  // Reset position on scene change
+  const applyStoreSpawn = (enteredScene: SceneId) => {
+    const spawn = getGameStore().exploration.playerPosition;
+    const newConfig = getSceneConfig(enteredScene);
+    livePlayerPositionRef.current.set(spawn[0], spawn[1], spawn[2]);
+    livePlayerRotationRef.current = newConfig.initialRotation ?? 0;
+    velocityRef.current.set(0, 0, 0);
+    if (groupRef.current) {
+      groupRef.current.position.set(spawn[0], spawn[1], spawn[2]);
+      groupRef.current.rotation.y = livePlayerRotationRef.current;
+    }
+    setLivePlayerTransform(
+      spawn[0],
+      spawn[1],
+      spawn[2],
+      livePlayerRotationRef.current,
+    );
+  };
+
+  // Reset position on scene change — use store spawn (set by SceneTransitionHandler)
   useEffect(() => {
     if (sceneId !== prevSceneIdRef.current) {
       prevSceneIdRef.current = sceneId;
-      const newConfig = getSceneConfig(sceneId);
-      const spawn = newConfig.spawnPoint;
-      livePlayerPositionRef.current.set(spawn[0], spawn[1], spawn[2]);
-      livePlayerRotationRef.current = newConfig.initialRotation ?? 0;
-      velocityRef.current.set(0, 0, 0);
-      if (groupRef.current) {
-        groupRef.current.position.set(spawn[0], spawn[1], spawn[2]);
-      }
+      applyStoreSpawn(sceneId);
     }
   }, [sceneId, livePlayerRotationRef, livePlayerPositionRef]);
+
+  // Immediate teleport on scene:enter — matches PhysicsPlayer
+  useEffect(() => {
+    const unsub = eventBus.on('scene:enter', ({ sceneId: enteredScene }) => {
+      prevSceneIdRef.current = enteredScene;
+      applyStoreSpawn(enteredScene);
+    });
+    return unsub;
+  }, [livePlayerRotationRef, livePlayerPositionRef]);
+
+  // Teleport to restored store position on load (same scene — no sceneId change)
+  useEffect(() => {
+    return eventBus.on('game:loaded', () => {
+      const enteredScene = getGameStore().exploration.currentSceneId;
+      applyStoreSpawn(enteredScene);
+    });
+  }, [livePlayerRotationRef, livePlayerPositionRef]);
 
   const tempCameraForward = useRef(new THREE.Vector3());
   const tempCameraRight = useRef(new THREE.Vector3());
@@ -199,8 +229,14 @@ export function SimplePlayer({
       groupRef.current.position.x = Math.max(-halfW, Math.min(halfW, groupRef.current.position.x));
       groupRef.current.position.z = Math.max(-halfD, Math.min(halfD, groupRef.current.position.z));
 
-      // Update ref for camera
+      // Update ref for camera + save bridge
       livePlayerPositionRef.current.copy(groupRef.current.position);
+      setLivePlayerTransform(
+        groupRef.current.position.x,
+        groupRef.current.position.y,
+        groupRef.current.position.z,
+        livePlayerRotationRef.current,
+      );
     }
   });
 

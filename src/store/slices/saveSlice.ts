@@ -16,6 +16,10 @@ import {
   storePatchFromSave,
 } from '../persistedState';
 import { resetGuidedStoryManager } from '@/engine/GuidedStoryManager';
+import {
+  getLivePlayerPosition,
+  getLivePlayerRotation,
+} from '@/engine/PlayerLivePosition';
 import { clearAutoCloseTimers } from './explorationSlice';
 
 /* ─── localStorage key ─── */
@@ -81,9 +85,23 @@ export const createSaveSlice: StateCreator<
   },
 
   saveGame: (options) => {
-    const state = get();
     const source = options?.source ?? 'manual';
 
+    // Sync runtime physics position into the store before serializing.
+    // Live position lives in refs during exploration; only transitions wrote store.
+    const livePos = getLivePlayerPosition();
+    const liveRot = getLivePlayerRotation();
+    if (livePos) {
+      set((state) => ({
+        exploration: {
+          ...state.exploration,
+          playerPosition: livePos,
+          ...(liveRot !== null ? { playerRotation: liveRot } : {}),
+        },
+      }));
+    }
+
+    const state = get();
     const payload = pickSavePayload(state);
     const payloadWithVersion = { ...payload, saveVersion: SAVE_VERSION };
 
