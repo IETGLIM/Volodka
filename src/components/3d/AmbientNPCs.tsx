@@ -10,6 +10,8 @@ import { useFrameTick } from '@/engine/frame/useFrameTick';
 import * as THREE from 'three';
 import type { SceneId } from '@/shared/types/game';
 import { useGameStore } from '@/store/gameStore';
+import { DEFAULT_NPC_LOD, scaleNpcLodThresholds } from '@/engine/lod/distanceLod';
+import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
 
 /* ─── Types ─── */
 
@@ -135,8 +137,17 @@ function angleXZ(fromX: number, fromZ: number, toX: number, toZ: number): number
 
 /* ─── Component ─── */
 
-export function AmbientNPCs() {
+interface AmbientNPCsProps {
+  livePlayerPositionRef: React.MutableRefObject<THREE.Vector3>;
+}
+
+export function AmbientNPCs({ livePlayerPositionRef }: AmbientNPCsProps) {
   const sceneId = useGameStore((s) => s.exploration.currentSceneId);
+  const { preset } = useGraphicsQuality();
+  const cullDistance = useMemo(
+    () => scaleNpcLodThresholds(DEFAULT_NPC_LOD, preset.lodBias).cullOut,
+    [preset.lodBias],
+  );
 
   const config = SCENE_CONFIGS[sceneId] ?? null;
   const count = config?.count ?? 0;
@@ -246,9 +257,21 @@ export function AmbientNPCs() {
     if (states.length === 0) return;
 
     const dt = Math.min(delta, 0.05); // Clamp delta
+    const playerX = livePlayerPositionRef.current.x;
+    const playerZ = livePlayerPositionRef.current.z;
 
     for (let i = 0; i < count && i < states.length; i++) {
       const s = states[i];
+
+      const npcDist = Math.hypot(s.px - playerX, s.pz - playerZ);
+      if (npcDist > cullDistance) {
+        dummy.position.set(0, -100, 0);
+        dummy.scale.set(0, 0, 0);
+        dummy.updateMatrix();
+        bodyMesh.setMatrixAt(i, dummy.matrix);
+        headMesh.setMatrixAt(i, dummy.matrix);
+        continue;
+      }
 
       if (s.isIdle) {
         // Decrement idle timer

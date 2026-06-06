@@ -4,11 +4,20 @@
 import { useMemo, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
+import { getEnvironmentLodProfile } from '@/engine/lod/distanceLod';
+import { useEnvironmentLod } from './lod/EnvironmentLodProvider';
+import { EnvironmentDetail, PropDistanceGate } from './lod/PropDistanceGate';
+
+interface AbandonedFactoryVisualProps {
+  livePlayerPositionRef?: React.MutableRefObject<THREE.Vector3>;
+}
 
 /** Gothic/Industrial abandoned factory (20×18m) */
-export function AbandonedFactoryVisual() {
+export function AbandonedFactoryVisual({ livePlayerPositionRef }: AbandonedFactoryVisualProps) {
   const floorTexture = useMemo(() => createFactoryFloorTexture(), []);
   const wallTexture = useMemo(() => createFactoryWallTexture(), []);
+  const { lod } = useEnvironmentLod();
+  const envProfile = useMemo(() => getEnvironmentLodProfile('abandoned_factory'), []);
 
   const W = 20;
   const D = 18;
@@ -68,39 +77,36 @@ export function AbandonedFactoryVisual() {
       </mesh>
 
       {/* ═══════════════════════════════════════════════ */}
-      {/* ── RUSTED MACHINERY ── */}
+      {/* ── RUSTED MACHINERY (distance + LOD gated) ── */}
       {/* ═══════════════════════════════════════════════ */}
+      <EnvironmentDetail currentLod={lod} minLod="standard">
+        <FactoryPropGate livePlayerPositionRef={livePlayerPositionRef} position={[-7, 0, -5]} maxDistance={envProfile.decorativeDistance}>
+          {/* Large press machine (left) */}
+          <mesh position={[0, 1.5, 0]} castShadow>
+            <boxGeometry args={[2.0, 3.0, 1.5]} />
+            <meshStandardMaterial color="#8a4020" roughness={0.9} metalness={0.3} />
+          </mesh>
+          <mesh position={[0, 3.5, 0]} castShadow>
+            <boxGeometry args={[1.2, 0.4, 0.8]} />
+            <meshStandardMaterial color="#4a4a4a" metalness={0.5} roughness={0.6} />
+          </mesh>
+          <mesh position={[0, 4.2, 0]} castShadow>
+            <cylinderGeometry args={[0.1, 0.1, 1.5, 8]} />
+            <meshStandardMaterial color="#5a5a5a" metalness={0.6} roughness={0.4} />
+          </mesh>
+        </FactoryPropGate>
 
-      {/* Large press machine (left) */}
-      <group position={[-7, 0, -5]}>
-        <mesh position={[0, 1.5, 0]} castShadow>
-          <boxGeometry args={[2.0, 3.0, 1.5]} />
-          <meshStandardMaterial color="#8a4020" roughness={0.9} metalness={0.3} />
-        </mesh>
-        {/* Press arm */}
-        <mesh position={[0, 3.5, 0]} castShadow>
-          <boxGeometry args={[1.2, 0.4, 0.8]} />
-          <meshStandardMaterial color="#4a4a4a" metalness={0.5} roughness={0.6} />
-        </mesh>
-        {/* Piston */}
-        <mesh position={[0, 4.2, 0]} castShadow>
-          <cylinderGeometry args={[0.1, 0.1, 1.5, 8]} />
-          <meshStandardMaterial color="#5a5a5a" metalness={0.6} roughness={0.4} />
-        </mesh>
-      </group>
-
-      {/* Small machine (right) */}
-      <group position={[6, 0, -3]}>
-        <mesh position={[0, 0.8, 0]} castShadow>
-          <boxGeometry args={[1.2, 1.6, 1.0]} />
-          <meshStandardMaterial color="#8a4020" roughness={0.85} metalness={0.3} />
-        </mesh>
-        {/* Control panel */}
-        <mesh position={[0, 1.3, 0.51]}>
-          <planeGeometry args={[0.5, 0.4]} />
-          <meshStandardMaterial color="#1a1a1a" emissive="#22aa44" emissiveIntensity={0.3} />
-        </mesh>
-      </group>
+        <FactoryPropGate livePlayerPositionRef={livePlayerPositionRef} position={[6, 0, -3]} maxDistance={envProfile.decorativeDistance}>
+          <mesh position={[0, 0.8, 0]} castShadow>
+            <boxGeometry args={[1.2, 1.6, 1.0]} />
+            <meshStandardMaterial color="#8a4020" roughness={0.85} metalness={0.3} />
+          </mesh>
+          <mesh position={[0, 1.3, 0.51]}>
+            <planeGeometry args={[0.5, 0.4]} />
+            <meshStandardMaterial color="#1a1a1a" emissive="#22aa44" emissiveIntensity={0.3} />
+          </mesh>
+        </FactoryPropGate>
+      </EnvironmentDetail>
 
       {/* ═══════════════════════════════════════════════ */}
       {/* ── BROKEN WINDOWS WITH LIGHT BEAMS ── */}
@@ -139,6 +145,7 @@ export function AbandonedFactoryVisual() {
       {/* ═══════════════════════════════════════════════ */}
       {/* ── CONVEYOR BELTS ── */}
       {/* ═══════════════════════════════════════════════ */}
+      <EnvironmentDetail currentLod={lod} minLod="standard">
       <group position={[0, 0, 2]}>
         {/* Belt surface */}
         <mesh position={[0, 0.6, 0]} castShadow>
@@ -160,17 +167,23 @@ export function AbandonedFactoryVisual() {
           </mesh>
         ))}
       </group>
+      </EnvironmentDetail>
 
       {/* ═══════════════════════════════════════════════ */}
       {/* ── CHEMICAL VATS ── */}
       {/* ═══════════════════════════════════════════════ */}
-      <ChemicalVat position={[-5, 0, 5]} color="#22aa44" />
-      <ChemicalVat position={[-3, 0, 5]} color="#22aa44" />
-      <ChemicalVat position={[-4, 0, 3]} color="#44aa22" />
+      <EnvironmentDetail currentLod={lod} minLod="full">
+      <FactoryPropGate livePlayerPositionRef={livePlayerPositionRef} position={[-4, 0, 4]} maxDistance={envProfile.clutterDistance}>
+        <ChemicalVat position={[-1, 0, 1]} color="#22aa44" />
+        <ChemicalVat position={[1, 0, 1]} color="#22aa44" />
+        <ChemicalVat position={[0, 0, -1]} color="#44aa22" />
+      </FactoryPropGate>
+      </EnvironmentDetail>
 
       {/* ═══════════════════════════════════════════════ */}
       {/* ── CATWALK (elevated) ── */}
       {/* ═══════════════════════════════════════════════ */}
+      <EnvironmentDetail currentLod={lod} minLod="standard">
       <group position={[0, 3.5, -7]}>
         {/* Walkway */}
         <mesh castShadow>
@@ -190,10 +203,12 @@ export function AbandonedFactoryVisual() {
           <meshStandardMaterial color="#5a5a5a" metalness={0.6} roughness={0.4} />
         </mesh>
       </group>
+      </EnvironmentDetail>
 
       {/* ═══════════════════════════════════════════════ */}
       {/* ── GRAFFITI WALLS ── */}
       {/* ═══════════════════════════════════════════════ */}
+      <EnvironmentDetail currentLod={lod} minLod="full">
       <group position={[-W / 2 + 0.02, 2, 0]}>
         {/* Graffiti patch 1 */}
         <mesh rotation-y={Math.PI / 2}>
@@ -207,11 +222,14 @@ export function AbandonedFactoryVisual() {
           <meshStandardMaterial color="#1a1a1a" emissive="#4488ff" emissiveIntensity={0.12} />
         </mesh>
       </group>
+      </EnvironmentDetail>
 
       {/* ═══════════════════════════════════════════════ */}
       {/* ── COLLAPSED CEILING SECTION ── */}
       {/* ═══════════════════════════════════════════════ */}
-      <group position={[5, 0, -5]}>
+      <EnvironmentDetail currentLod={lod} minLod="full">
+      <FactoryPropGate livePlayerPositionRef={livePlayerPositionRef} position={[5, 0, -5]} maxDistance={envProfile.decorativeDistance}>
+      <group position={[0, 0, 0]}>
         {/* Debris on floor */}
         {Array.from({ length: 6 }).map((_, i) => (
           <mesh key={i} position={[(i - 3) * 0.5, 0.1 + Math.random() * 0.2, (i % 3) * 0.4]} rotation={[Math.random() * 0.3, Math.random() * Math.PI, 0]} castShadow>
@@ -230,6 +248,8 @@ export function AbandonedFactoryVisual() {
           <meshStandardMaterial color="#0a0a10" emissive="#8a9ab0" emissiveIntensity={0.5} />
         </mesh>
       </group>
+      </FactoryPropGate>
+      </EnvironmentDetail>
 
       {/* ═══════════════════════════════════════════════ */}
       {/* ── LIGHTS ── */}
@@ -309,6 +329,31 @@ export function AbandonedFactoryVisual() {
 }
 
 /** Chemical vat with glowing contents */
+function FactoryPropGate({
+  livePlayerPositionRef,
+  position,
+  maxDistance,
+  children,
+}: {
+  livePlayerPositionRef?: React.MutableRefObject<THREE.Vector3>;
+  position: [number, number, number];
+  maxDistance: number;
+  children: React.ReactNode;
+}) {
+  if (!livePlayerPositionRef) {
+    return <group position={position}>{children}</group>;
+  }
+  return (
+    <PropDistanceGate
+      livePlayerPositionRef={livePlayerPositionRef}
+      position={position}
+      maxDistance={maxDistance}
+    >
+      {children}
+    </PropDistanceGate>
+  );
+}
+
 function ChemicalVat({ position, color }: { position: [number, number, number]; color: string }) {
   return (
     <group position={position}>

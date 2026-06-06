@@ -5,6 +5,9 @@ import { useRef, useMemo, useEffect } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import type { SceneId } from '@/shared/types/game';
+import { getEnvironmentLodProfile } from '@/engine/lod/distanceLod';
+import { useEnvironmentLod } from './lod/EnvironmentLodProvider';
+import { EnvironmentDetail, PropDistanceGate } from './lod/PropDistanceGate';
 
 interface StreetVisualProps {
   sceneId?: SceneId;
@@ -14,6 +17,8 @@ interface StreetVisualProps {
 /** Street scene with buildings, neon, fog, lamps, and weather */
 export function StreetVisual({ sceneId = 'street_night', livePlayerPositionRef }: StreetVisualProps) {
   const isWinter = sceneId === 'street_winter';
+  const { lod } = useEnvironmentLod();
+  const envProfile = useMemo(() => getEnvironmentLodProfile(sceneId), [sceneId]);
 
   return (
     <group>
@@ -41,11 +46,11 @@ export function StreetVisual({ sceneId = 'street_night', livePlayerPositionRef }
         />
       </mesh>
 
-      {/* ── Panel Building Silhouettes (5 buildings) ── */}
-      <PanelBuildings />
-
-      {/* ── Neon Signs ── */}
-      <NeonSigns isWinter={isWinter} />
+      {/* ── Panel Building Silhouettes + neon (hidden at minimal environment LOD) ── */}
+      <EnvironmentDetail currentLod={lod} minLod="standard">
+        <PanelBuildings />
+        <NeonSigns isWinter={isWinter} />
+      </EnvironmentDetail>
 
       {/* ── Street Lamps are now rendered in FOREGROUND layer via SceneColliderSelector ── */}
 
@@ -56,7 +61,11 @@ export function StreetVisual({ sceneId = 'street_night', livePlayerPositionRef }
       {/* ═══════════════════════════════════════════════ */}
 
       {/* ── Overflowing trash cans ── */}
-      <group position={[2, 0, 3]}>
+      <StreetClutterGate
+        livePlayerPositionRef={livePlayerPositionRef}
+        position={[2, 0, 3]}
+        maxDistance={envProfile.clutterDistance}
+      >
         {/* Trash can */}
         <mesh position={[0, 0.5, 0]} castShadow>
           <cylinderGeometry args={[0.25, 0.2, 1.0, 8]} />
@@ -71,52 +80,96 @@ export function StreetVisual({ sceneId = 'street_night', livePlayerPositionRef }
           <sphereGeometry args={[0.05, 5, 5]} />
           <meshStandardMaterial color="#8a8a80" roughness={0.95} />
         </mesh>
-      </group>
+      </StreetClutterGate>
 
       {/* Second trash can */}
-      <group position={[-2.5, 0, -8]}>
+      <StreetClutterGate
+        livePlayerPositionRef={livePlayerPositionRef}
+        position={[-2.5, 0, -8]}
+        maxDistance={envProfile.clutterDistance}
+      >
         <mesh position={[0, 0.45, 0]} castShadow>
           <cylinderGeometry args={[0.22, 0.18, 0.9, 8]} />
           <meshStandardMaterial color="#4a3a2a" metalness={0.3} roughness={0.7} />
         </mesh>
-      </group>
+      </StreetClutterGate>
 
       {/* ── Puddle reflections - polygonOffset prevents Z-fighting */}
-      <mesh rotation-x={-Math.PI / 2} position={[1.5, 0.02, 2]}>
-        <circleGeometry args={[0.6, 12]} />
-        <meshStandardMaterial color="#0e0e1e" metalness={0.8} roughness={0.1} transparent opacity={0.5} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
-      </mesh>
-      <mesh rotation-x={-Math.PI / 2} position={[-1, 0.02, -4]}>
-        <circleGeometry args={[0.4, 12]} />
-        <meshStandardMaterial color="#0e0e1e" metalness={0.7} roughness={0.1} transparent opacity={0.4} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
-      </mesh>
+      <EnvironmentDetail currentLod={lod} minLod="full">
+        <mesh rotation-x={-Math.PI / 2} position={[1.5, 0.02, 2]}>
+          <circleGeometry args={[0.6, 12]} />
+          <meshStandardMaterial color="#0e0e1e" metalness={0.8} roughness={0.1} transparent opacity={0.5} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
+        </mesh>
+        <mesh rotation-x={-Math.PI / 2} position={[-1, 0.02, -4]}>
+          <circleGeometry args={[0.4, 12]} />
+          <meshStandardMaterial color="#0e0e1e" metalness={0.7} roughness={0.1} transparent opacity={0.4} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
+        </mesh>
+      </EnvironmentDetail>
 
-      {/* ── Dripping pipe (thin cylinder from building) ── */}
-      <mesh position={[-12, 3.5, -12]} rotation={[0, 0, Math.PI / 2]}>
-        <cylinderGeometry args={[0.02, 0.02, 0.8, 6]} />
-        <meshStandardMaterial color="#5a5a5a" metalness={0.6} roughness={0.4} />
-      </mesh>
-      {/* Drip at end of pipe */}
-      <mesh position={[-12, 3.1, -12]}>
-        <sphereGeometry args={[0.02, 6, 6]} />
-        <meshStandardMaterial color="#4a6a8a" transparent opacity={0.7} />
-      </mesh>
+      <StreetClutterGate
+        livePlayerPositionRef={livePlayerPositionRef}
+        position={[-12, 0, -12]}
+        maxDistance={envProfile.decorativeDistance}
+      >
+        {/* Dripping pipe (thin cylinder from building) */}
+        <mesh position={[0, 3.5, 0]} rotation={[0, 0, Math.PI / 2]}>
+          <cylinderGeometry args={[0.02, 0.02, 0.8, 6]} />
+          <meshStandardMaterial color="#5a5a5a" metalness={0.6} roughness={0.4} />
+        </mesh>
+        {/* Drip at end of pipe */}
+        <mesh position={[0, 3.1, 0]}>
+          <sphereGeometry args={[0.02, 6, 6]} />
+          <meshStandardMaterial color="#4a6a8a" transparent opacity={0.7} />
+        </mesh>
+      </StreetClutterGate>
 
-      {/* ── Broken window in building ── */}
-      <mesh position={[12, 8, -18]}>
-        <planeGeometry args={[0.8, 1.0]} />
-        <meshStandardMaterial color="#0a0a12" roughness={0.95} />
-      </mesh>
-      {/* Broken glass shards */}
-      <mesh position={[12, 8.3, -17.99]}>
-        <planeGeometry args={[0.25, 0.3]} />
-        <meshStandardMaterial color="#607080" transparent opacity={0.3} metalness={0.2} roughness={0.1} side={THREE.DoubleSide} />
-      </mesh>
-      <mesh position={[12.15, 7.7, -17.99]}>
-        <planeGeometry args={[0.2, 0.35]} />
-        <meshStandardMaterial color="#607080" transparent opacity={0.2} metalness={0.2} roughness={0.1} side={THREE.DoubleSide} />
-      </mesh>
+      <StreetClutterGate
+        livePlayerPositionRef={livePlayerPositionRef}
+        position={[12, 0, -18]}
+        maxDistance={envProfile.decorativeDistance}
+      >
+        {/* Broken window in building */}
+        <mesh position={[0, 8, 0]}>
+          <planeGeometry args={[0.8, 1.0]} />
+          <meshStandardMaterial color="#0a0a12" roughness={0.95} />
+        </mesh>
+        {/* Broken glass shards */}
+        <mesh position={[0, 8.3, 0.01]}>
+          <planeGeometry args={[0.25, 0.3]} />
+          <meshStandardMaterial color="#607080" transparent opacity={0.3} metalness={0.2} roughness={0.1} side={THREE.DoubleSide} />
+        </mesh>
+        <mesh position={[0.15, 7.7, 0.01]}>
+          <planeGeometry args={[0.2, 0.35]} />
+          <meshStandardMaterial color="#607080" transparent opacity={0.2} metalness={0.2} roughness={0.1} side={THREE.DoubleSide} />
+        </mesh>
+      </StreetClutterGate>
     </group>
+  );
+}
+
+/** Distance gate for street clutter — falls back to always-visible when no player ref. */
+function StreetClutterGate({
+  livePlayerPositionRef,
+  position,
+  maxDistance,
+  children,
+}: {
+  livePlayerPositionRef?: React.MutableRefObject<THREE.Vector3>;
+  position: [number, number, number];
+  maxDistance: number;
+  children: React.ReactNode;
+}) {
+  if (!livePlayerPositionRef) {
+    return <group position={position}>{children}</group>;
+  }
+  return (
+    <PropDistanceGate
+      livePlayerPositionRef={livePlayerPositionRef}
+      position={position}
+      maxDistance={maxDistance}
+    >
+      {children}
+    </PropDistanceGate>
   );
 }
 

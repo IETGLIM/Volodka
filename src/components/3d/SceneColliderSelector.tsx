@@ -26,6 +26,7 @@ import { generateColliders, STRUCTURAL_FLOOR_HALF_HEIGHT } from '@/config/sceneD
 import type { ColliderDef } from '@/shared/types/sceneDefinition';
 import { SceneLayer, LayeredForeground } from './VisualizationLayers';
 import { CameraCollisionProxies } from './CameraCollisionProxies';
+import { EnvironmentLodProvider } from './lod/EnvironmentLodProvider';
 import type { SceneId } from '@/shared/types/game';
 import type { MutableRefObject } from 'react';
 import * as THREE from 'three';
@@ -86,7 +87,9 @@ export function SceneColliderSelector({ livePlayerPositionRef }: SceneColliderSe
       {/* Midground layer — architecture, walls, floors, furniture (visual only). */}
       <SceneLayer layer="MIDGROUND">
         <Suspense fallback={<SceneLoadingFallback />}>
-          <VisualScene key={sceneId} sceneId={sceneId} livePlayerPositionRef={livePlayerPositionRef} />
+          <EnvironmentLodProvider livePlayerPositionRef={livePlayerPositionRef}>
+            <VisualScene key={sceneId} sceneId={sceneId} livePlayerPositionRef={livePlayerPositionRef} />
+          </EnvironmentLodProvider>
         </Suspense>
       </SceneLayer>
 
@@ -261,7 +264,7 @@ function VisualScene({ sceneId, livePlayerPositionRef }: VisualSceneProps) {
     case 'street_night':
       return <StreetVisual sceneId={sceneId} livePlayerPositionRef={livePlayerPositionRef} />;
     case 'street_winter':
-      return <StreetWinterVisual />;
+      return <StreetWinterVisual livePlayerPositionRef={livePlayerPositionRef} />;
     case 'cafe_evening':
       return <CafeVisual />;
     case 'office_day':
@@ -277,7 +280,7 @@ function VisualScene({ sceneId, livePlayerPositionRef }: VisualSceneProps) {
     case 'rooftop_edge':
       return <RooftopEdgeVisual livePlayerPositionRef={livePlayerPositionRef} />;
     case 'abandoned_factory':
-      return <AbandonedFactoryVisual />;
+      return <AbandonedFactoryVisual livePlayerPositionRef={livePlayerPositionRef} />;
     case 'zarema_albert_room':
       return <ZaremaAlbertRoomVisual />;
     case 'chk_forest_zorge':

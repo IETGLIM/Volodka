@@ -22,14 +22,17 @@ import { createPatrolState, updatePatrol, shouldPatrol, type PatrolState } from 
 import { getQuestDefinitions } from '@/data/gameDataLoader';
 import { GOLDEN_PATH_QUEST_SPINE } from '@/data/goldenPath';
 import { canStartQuest } from '@/engine/GuidedStoryManager';
+import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
+import {
+  DEFAULT_NPC_LOD,
+  resolveNpcLod,
+  scaleNpcLodThresholds,
+  type NpcLodLevel,
+} from '@/engine/lod/distanceLod';
 
 /* ─── NPC models ───
  *  All NPCs use ProceduralNPCModel (Three.js primitives) — no GLB files.
  *  The Suspense fallback shows a capsule impostor while the procedural model renders. */
-
-/* ─── LOD thresholds ─── */
-const FAR_DISTANCE = 17;
-const NEAR_DISTANCE = 11;
 
 /* ─── Speech bubble timing ─── */
 const THINKING_DURATION = 1.2; // seconds before bark text appears
@@ -83,8 +86,13 @@ export function NPC({
   patrolWaypoints,
 }: NPCProps) {
   const groupRef = useRef<THREE.Group>(null);
-  const [lodState, setLodState] = useState<'far' | 'near'>('far');
-  const prevLodRef = useRef<'far' | 'near'>('far');
+  const [lodLevel, setLodLevel] = useState<NpcLodLevel>('impostor');
+  const prevLodRef = useRef<NpcLodLevel>('impostor');
+  const { preset } = useGraphicsQuality();
+  const npcLodThresholds = useMemo(
+    () => scaleNpcLodThresholds(DEFAULT_NPC_LOD, preset.lodBias),
+    [preset.lodBias],
+  );
 
   // ── Patrol state ──
   const patrolRef = useRef<PatrolState | null>(null);
@@ -162,25 +170,30 @@ export function NPC({
       }
     }
 
-    // LOD check
+    // LOD check (culled → impostor → full, with hysteresis)
     const playerPos = livePlayerPositionRef.current;
     const dist = groupRef.current.position.distanceTo(playerPos);
 
-    let newLod: 'far' | 'near' = prevLodRef.current;
-    if (dist > FAR_DISTANCE) {
-      newLod = 'far';
-    } else if (dist < NEAR_DISTANCE) {
-      newLod = 'near';
-    }
+    const newLod = resolveNpcLod(
+      dist,
+      prevLodRef.current,
+      npcLodThresholds,
+      isInteractionTarget,
+    );
 
     if (newLod !== prevLodRef.current) {
       prevLodRef.current = newLod;
-      setLodState(newLod);
+      setLodLevel(newLod);
     }
 
+    if (newLod === 'culled') {
+      groupRef.current.visible = false;
+      return;
+    }
+    groupRef.current.visible = true;
+
     // ── Head tracking: make NPC look at player when nearby ──
-    // During dialogue, head tracking is especially important (NPC faces player)
-    if (lodState === 'near' && dist < HEAD_TRACKING_DISTANCE) {
+    if (newLod === 'full' && dist < HEAD_TRACKING_DISTANCE) {
       updateHeadTracking(definition.id, groupRef.current, playerPos, delta);
     }
 
@@ -249,11 +262,14 @@ export function NPC({
     }
   });
 
+  const showFullDetail = lodLevel === 'full';
+  const showImpostor = lodLevel === 'impostor';
+
   return (
     <group ref={groupRef}>
-      {lodState === 'far' ? (
+      {showImpostor ? (
         <CapsuleImpostorNPC appearance={appearance} />
-      ) : (
+      ) : showFullDetail ? (
         <Suspense fallback={<CapsuleImpostorNPC appearance={appearance} />}>
           <NPCModelWithErrorBoundary
             definition={definition}
@@ -262,16 +278,15 @@ export function NPC({
             activity={shouldPatrol(activity, isInteractionTarget, !!patrolWaypoints?.length) ? patrolActivity : activity}
           />
         </Suspense>
+      ) : null}
+
+      {showFullDetail && <NPCContactShadow />}
+
+      {(showFullDetail || isInteractionTarget) && (
+        <QuestMarker npcId={definition.id} />
       )}
 
-      {/* Contact shadow under NPC feet */}
-      <NPCContactShadow />
-
-      {/* Quest marker above head */}
-      <QuestMarker npcId={definition.id} />
-
-      {/* Speech bubble — hidden during active interaction */}
-      {barkPhase !== 'hidden' && interactionState === InteractionState.Idle && (
+      {showFullDetail && barkPhase !== 'hidden' && interactionState === InteractionState.Idle && (
         <SpeechBubble
           phase={barkPhase}
           text={barkText}
@@ -279,8 +294,7 @@ export function NPC({
         />
       )}
 
-      {/* Floating name label with body color tint */}
-      {nameLabelOpacity > 0 && (
+      {showFullDetail && nameLabelOpacity > 0 && (
         <NPCNameLabel
           name={definition.name}
           accentColor={appearance.accentColor}

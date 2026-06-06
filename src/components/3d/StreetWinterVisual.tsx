@@ -3,10 +3,19 @@
 
 import { useMemo } from 'react';
 import * as THREE from 'three';
+import { getEnvironmentLodProfile } from '@/engine/lod/distanceLod';
+import { useEnvironmentLod } from './lod/EnvironmentLodProvider';
+import { EnvironmentDetail, PropDistanceGate } from './lod/PropDistanceGate';
+
+interface StreetWinterVisualProps {
+  livePlayerPositionRef?: React.MutableRefObject<THREE.Vector3>;
+}
 
 /** Gothic/Noir winter street (25×25m) */
-export function StreetWinterVisual() {
+export function StreetWinterVisual({ livePlayerPositionRef }: StreetWinterVisualProps) {
   const groundTexture = useMemo(() => createWinterGroundTexture(), []);
+  const { lod } = useEnvironmentLod();
+  const envProfile = useMemo(() => getEnvironmentLodProfile('street_winter'), []);
 
   const W = 25;
   const D = 25;
@@ -50,16 +59,19 @@ export function StreetWinterVisual() {
       {/* ═══════════════════════════════════════════════ */}
       {/* ── BARE TREES ── */}
       {/* ═══════════════════════════════════════════════ */}
+      <EnvironmentDetail currentLod={lod} minLod="standard">
       <BareTree position={[-4, 0, -5]} />
       <BareTree position={[4, 0, -3]} />
       <BareTree position={[-3, 0, 5]} />
       <BareTree position={[5, 0, 7]} />
       <BareTree position={[-6, 0, 0]} />
       <BareTree position={[2, 0, -8]} />
+      </EnvironmentDetail>
 
       {/* ═══════════════════════════════════════════════ */}
       {/* ── ICICLES (on building edges) ── */}
       {/* ═══════════════════════════════════════════════ */}
+      <EnvironmentDetail currentLod={lod} minLod="full">
       {[
         [-6, 12, -8], [-5, 12, -8], [-4, 12, -8],
         [5.5, 14, -5], [6.5, 14, -5], [7.5, 14, -5],
@@ -128,6 +140,8 @@ export function StreetWinterVisual() {
         </mesh>
       ))}
 
+      </EnvironmentDetail>
+
       {/* ═══════════════════════════════════════════════ */}
       {/* ── WINTER STREET LAMPS ── */}
       {/* ═══════════════════════════════════════════════ */}
@@ -157,12 +171,12 @@ export function StreetWinterVisual() {
       {/* ═══════════════════════════════════════════════ */}
 
       {/* ── Snow-covered bench ── */}
-      <group position={[3, 0, 0]} rotation={[0, 0.3, 0]}>
+      <WinterClutterGate livePlayerPositionRef={livePlayerPositionRef} position={[3, 0, 0]} maxDistance={envProfile.clutterDistance}>
+      <group rotation={[0, 0.3, 0]}>
         <mesh position={[0, 0.4, 0]} castShadow>
           <boxGeometry args={[1.2, 0.08, 0.4]} />
           <meshStandardMaterial color="#5a5a5a" roughness={0.85} />
         </mesh>
-        {/* Snow on bench */}
         <mesh position={[0, 0.46, 0]}>
           <boxGeometry args={[1.1, 0.05, 0.35]} />
           <meshStandardMaterial color="#e0e8f0" roughness={0.95} />
@@ -176,15 +190,15 @@ export function StreetWinterVisual() {
           <meshStandardMaterial color="#4a4a4a" roughness={0.85} />
         </mesh>
       </group>
+      </WinterClutterGate>
 
       {/* ── Abandoned sled ── */}
-      <group position={[-3, 0, -2]} rotation={[0, 0.6, 0.1]}>
-        {/* Sled body */}
+      <WinterClutterGate livePlayerPositionRef={livePlayerPositionRef} position={[-3, 0, -2]} maxDistance={envProfile.clutterDistance}>
+      <group rotation={[0, 0.6, 0.1]}>
         <mesh position={[0, 0.08, 0]} castShadow>
           <boxGeometry args={[0.4, 0.03, 0.6]} />
           <meshStandardMaterial color="#6a4a30" roughness={0.8} />
         </mesh>
-        {/* Runners */}
         <mesh position={[-0.18, 0.03, 0]} rotation={[Math.PI / 2, 0, 0]}>
           <cylinderGeometry args={[0.015, 0.015, 0.55, 4]} />
           <meshStandardMaterial color="#4a4a4a" metalness={0.6} roughness={0.4} />
@@ -193,14 +207,15 @@ export function StreetWinterVisual() {
           <cylinderGeometry args={[0.015, 0.015, 0.55, 4]} />
           <meshStandardMaterial color="#4a4a4a" metalness={0.6} roughness={0.4} />
         </mesh>
-        {/* Snow on sled */}
         <mesh position={[0, 0.11, 0]}>
           <boxGeometry args={[0.35, 0.03, 0.5]} />
           <meshStandardMaterial color="#e0e8f0" roughness={0.95} />
         </mesh>
       </group>
+      </WinterClutterGate>
 
       {/* ── Footprints in snow (3D depressions) ── */}
+      <EnvironmentDetail currentLod={lod} minLod="full">
       {[
         [0, 0.005, -3], [0.2, 0.005, -2.5], [-0.1, 0.005, -2.0], [0.15, 0.005, -1.5],
       ].map((pos, i) => (
@@ -209,7 +224,33 @@ export function StreetWinterVisual() {
           <meshStandardMaterial color="#b8c0d0" roughness={0.8} transparent opacity={0.5} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
         </mesh>
       ))}
+      </EnvironmentDetail>
     </group>
+  );
+}
+
+function WinterClutterGate({
+  livePlayerPositionRef,
+  position,
+  maxDistance,
+  children,
+}: {
+  livePlayerPositionRef?: React.MutableRefObject<THREE.Vector3>;
+  position: [number, number, number];
+  maxDistance: number;
+  children: React.ReactNode;
+}) {
+  if (!livePlayerPositionRef) {
+    return <group position={position}>{children}</group>;
+  }
+  return (
+    <PropDistanceGate
+      livePlayerPositionRef={livePlayerPositionRef}
+      position={position}
+      maxDistance={maxDistance}
+    >
+      {children}
+    </PropDistanceGate>
   );
 }
 

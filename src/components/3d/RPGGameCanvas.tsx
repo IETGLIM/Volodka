@@ -433,7 +433,7 @@ export function RPGGameCanvas() {
             <NPCSystemWrapper livePlayerPositionRef={livePlayerPositionRef} />
 
             {/* Background ambient NPCs — lightweight, non-interactable, scene-populating */}
-            <AmbientNPCs />
+            <AmbientNPCs livePlayerPositionRef={livePlayerPositionRef} />
 
             {/* Wake-up cinematic sequence (intro only) */}
             <FrameBudgetRunner />
