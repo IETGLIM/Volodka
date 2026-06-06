@@ -7,8 +7,7 @@ import type { PerkEffect } from '@/data/perks';
 import { applyXpGain, pushNotification } from '../shared';
 import type { GameStoreState } from '../types';
 import { eventBus } from '@/engine/EventBus';
-import { SKILL_TREE_MAP, SKILL_EFFECT_MAP } from '@/data/skillTree';
-import { PERKS_MAP } from '@/data/perks';
+import { getSkillTreeMap, getSkillEffectMap, getPerksMap } from '@/data/gameDataLoader';
 
 /* ─── Slice types ─── */
 
@@ -87,7 +86,7 @@ export const createPlayerProgressionSlice: StateCreator<
       if (prog.skillPoints <= 0) return state;
       if (prog.unlockedSkills.includes(skillId)) return state;
 
-      const nodeDef = SKILL_TREE_MAP[skillId];
+      const nodeDef = getSkillTreeMap()[skillId];
       if (nodeDef) {
         const prereqsMet = nodeDef.requires.every((req) =>
           prog.unlockedSkills.includes(req),
@@ -95,7 +94,7 @@ export const createPlayerProgressionSlice: StateCreator<
         if (!prereqsMet) return state;
       }
 
-      const effect = SKILL_EFFECT_MAP[skillId];
+      const effect = getSkillEffectMap()[skillId];
       const newSkills = { ...state.playerState.skills };
       if (effect) {
         newSkills[effect.skill] = Math.max(0, newSkills[effect.skill] + effect.value);
@@ -122,7 +121,7 @@ export const createPlayerProgressionSlice: StateCreator<
     const prog = state.playerState.progression;
     if (prog.skillPoints <= 0) return false;
     if (prog.unlockedSkills.includes(nodeId)) return false;
-    const nodeDef = SKILL_TREE_MAP[nodeId];
+    const nodeDef = getSkillTreeMap()[nodeId];
     if (!nodeDef) return false;
     return nodeDef.requires.every((req) => prog.unlockedSkills.includes(req));
   },
@@ -133,7 +132,7 @@ export const createPlayerProgressionSlice: StateCreator<
       if (prog.perkPoints <= 0) return state;
       if (prog.unlockedPerks.includes(perkId)) return state;
 
-      const perkDef = PERKS_MAP[perkId];
+      const perkDef = getPerksMap()[perkId];
       if (!perkDef) return state;
 
       if (prog.level < perkDef.minLevel) return state;
@@ -184,7 +183,7 @@ export const createPlayerProgressionSlice: StateCreator<
     if (prog.perkPoints <= 0) return false;
     if (prog.unlockedPerks.includes(perkId)) return false;
 
-    const perkDef = PERKS_MAP[perkId];
+    const perkDef = getPerksMap()[perkId];
     if (!perkDef) return false;
     if (prog.level < perkDef.minLevel) return false;
 
@@ -208,7 +207,7 @@ export const createPlayerProgressionSlice: StateCreator<
     const prog = state.playerState.progression;
     const allEffects: PerkEffect[] = [];
     for (const perkId of prog.unlockedPerks) {
-      const perkDef = PERKS_MAP[perkId];
+      const perkDef = getPerksMap()[perkId];
       if (perkDef) {
         allEffects.push(...perkDef.effects);
       }

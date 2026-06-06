@@ -1,7 +1,7 @@
 /* ─── Volodka RPG – Quest Tracking Engine (AAA+ Overhaul) ─── */
 
 import type { SceneId, QuestDefinition } from '@/shared/types/game';
-import { QUEST_DEFINITIONS } from '@/data/quests';
+import { getQuestDefinitions } from '@/data/gameDataLoader';
 import {
   dispatchGameAction,
   getGameSnapshot,
@@ -195,8 +195,9 @@ export class QuestTracker {
     );
 
     if (import.meta.env.DEV) {
-      this.validateQuestMinigameTargets();
-      this.validateQuestFlagTargets();
+      void import('@/shared/validation/contentPipelineValidator').then(({ logValidationReport, validateContentPipeline }) => {
+        logValidationReport(validateContentPipeline(), '[QuestTracker]');
+      });
     }
   }
 
@@ -209,7 +210,7 @@ export class QuestTracker {
     const activeQuests = state.quests.filter((q) => q.status === 'active');
 
     for (const quest of activeQuests) {
-      const definition = QUEST_DEFINITIONS.find((d) => d.id === quest.questId);
+      const definition = getQuestDefinitions().find((d) => d.id === quest.questId);
       if (!definition) continue;
 
       for (const objective of definition.objectives) {
@@ -243,58 +244,6 @@ export class QuestTracker {
 
         if (alreadyMet) {
           this.completeObjective(quest.questId, objective.id);
-        }
-      }
-    }
-  }
-
-  /** Dev-only: warn when multiple flag_set objectives share the same target flag. */
-  private validateQuestFlagTargets(): void {
-    for (const quest of QUEST_DEFINITIONS) {
-      const flagObjectives = quest.objectives.filter((o) => o.type === 'flag_set' && o.target);
-      const byTarget = new Map<string, string[]>();
-      for (const objective of flagObjectives) {
-        const target = objective.target!;
-        const ids = byTarget.get(target) ?? [];
-        ids.push(objective.id);
-        byTarget.set(target, ids);
-      }
-      for (const [target, objectiveIds] of byTarget) {
-        if (objectiveIds.length > 1) {
-          console.warn(
-            `[QuestTracker] Quest "${quest.id}" has duplicate flag_set target "${target}" ` +
-              `on objectives: ${objectiveIds.join(', ')}.`,
-          );
-        }
-      }
-      for (const reward of quest.rewards ?? []) {
-        if (reward.type !== 'setFlag' || !reward.flag) continue;
-        const match = flagObjectives.find((o) => o.target === reward.flag);
-        if (match) {
-          console.warn(
-            `[QuestTracker] Quest "${quest.id}" reward setFlag "${reward.flag}" duplicates ` +
-              `objective "${match.id}" — remove the reward flag.`,
-          );
-        }
-      }
-    }
-  }
-
-  /** Dev-only: warn when quest objectives reference unimplemented minigame ids. */
-  private validateQuestMinigameTargets(): void {
-    for (const quest of QUEST_DEFINITIONS) {
-      for (const objective of quest.objectives) {
-        if (objective.type !== 'minigame_completed') continue;
-        if (!objective.target) {
-          console.warn(
-            `[QuestTracker] Quest "${quest.id}" objective "${objective.id}" has minigame_completed without target.`,
-          );
-          continue;
-        }
-        if (!isKnownMinigameId(objective.target)) {
-          console.warn(
-            `[QuestTracker] Quest "${quest.id}" objective "${objective.id}" references unknown minigame "${objective.target}".`,
-          );
         }
       }
     }
@@ -345,7 +294,7 @@ export class QuestTracker {
   private onSceneChanged(sceneId: SceneId): void {
     const activeQuests = this.getActiveQuests();
     for (const quest of activeQuests) {
-      const definition = QUEST_DEFINITIONS.find((d) => d.id === quest.questId);
+      const definition = getQuestDefinitions().find((d) => d.id === quest.questId);
       if (!definition) continue;
 
       for (const objective of definition.objectives) {
@@ -362,7 +311,7 @@ export class QuestTracker {
   private onNpcTalked(npcId: string): void {
     const activeQuests = this.getActiveQuests();
     for (const quest of activeQuests) {
-      const definition = QUEST_DEFINITIONS.find((d) => d.id === quest.questId);
+      const definition = getQuestDefinitions().find((d) => d.id === quest.questId);
       if (!definition) continue;
 
       for (const objective of definition.objectives) {
@@ -388,7 +337,7 @@ export class QuestTracker {
 
     const activeQuests = this.getActiveQuests();
     for (const quest of activeQuests) {
-      const definition = QUEST_DEFINITIONS.find((d) => d.id === quest.questId);
+      const definition = getQuestDefinitions().find((d) => d.id === quest.questId);
       if (!definition) continue;
 
       for (const objective of definition.objectives) {
@@ -414,7 +363,7 @@ export class QuestTracker {
 
     const activeQuests = this.getActiveQuests();
     for (const quest of activeQuests) {
-      const definition = QUEST_DEFINITIONS.find((d) => d.id === quest.questId);
+      const definition = getQuestDefinitions().find((d) => d.id === quest.questId);
       if (!definition) continue;
 
       for (const objective of definition.objectives) {
@@ -440,7 +389,7 @@ export class QuestTracker {
 
     const activeQuests = this.getActiveQuests();
     for (const quest of activeQuests) {
-      const definition = QUEST_DEFINITIONS.find((d) => d.id === quest.questId);
+      const definition = getQuestDefinitions().find((d) => d.id === quest.questId);
       if (!definition) continue;
 
       for (const objective of definition.objectives) {
@@ -474,7 +423,7 @@ export class QuestTracker {
 
     const activeQuests = this.getActiveQuests();
     for (const quest of activeQuests) {
-      const definition = QUEST_DEFINITIONS.find((d) => d.id === quest.questId);
+      const definition = getQuestDefinitions().find((d) => d.id === quest.questId);
       if (!definition) continue;
 
       for (const objective of definition.objectives) {
@@ -496,7 +445,7 @@ export class QuestTracker {
       if (quest.status !== 'active') continue;
       if (quest.startedAtTime === undefined) continue;
 
-      const definition = QUEST_DEFINITIONS.find((d) => d.id === quest.questId);
+      const definition = getQuestDefinitions().find((d) => d.id === quest.questId);
       if (!definition?.timeLimitHours) continue;
 
       // Calculate elapsed hours (handles midnight wraparound)
@@ -522,7 +471,7 @@ export class QuestTracker {
     const activeQuests = snapshot.quests.filter((q) => q.status === 'active');
 
     for (const quest of activeQuests) {
-      const definition = QUEST_DEFINITIONS.find((d) => d.id === quest.questId);
+      const definition = getQuestDefinitions().find((d) => d.id === quest.questId);
       if (!definition) continue;
 
       for (const objective of definition.objectives) {
@@ -547,7 +496,7 @@ export class QuestTracker {
     if (!quest || quest.status !== 'active') return;
     if (quest.objectives[objectiveId]) return;
 
-    const definition = QUEST_DEFINITIONS.find((d) => d.id === questId);
+    const definition = getQuestDefinitions().find((d) => d.id === questId);
     if (!definition) return;
 
     const objective = definition.objectives.find((o) => o.id === objectiveId);
@@ -589,7 +538,7 @@ export class QuestTracker {
     const quest = state.quests.find((q) => q.questId === questId);
     if (!quest || quest.status !== 'active') return;
 
-    const definition = QUEST_DEFINITIONS.find((d) => d.id === questId);
+    const definition = getQuestDefinitions().find((d) => d.id === questId);
     if (!definition) return;
 
     const allComplete = definition.objectives.every(
@@ -607,7 +556,7 @@ export class QuestTracker {
     const quest = snapshot.quests.find((q) => q.questId === questId);
     if (!quest || quest.status !== 'active') return;
 
-    const definition = QUEST_DEFINITIONS.find((d) => d.id === questId);
+    const definition = getQuestDefinitions().find((d) => d.id === questId);
     if (!definition) return;
 
     dispatchGameAction({ type: 'quest/fail', questId });
@@ -617,7 +566,7 @@ export class QuestTracker {
 
   /** Check if a quest can be activated (dependencies, required flags, etc.) */
   canActivateQuest(questId: string): boolean {
-    const definition = QUEST_DEFINITIONS.find((d) => d.id === questId);
+    const definition = getQuestDefinitions().find((d) => d.id === questId);
     if (!definition) return false;
 
     const state = getGameSnapshot();
@@ -649,7 +598,7 @@ export class QuestTracker {
 
   /** Get the definition for a quest */
   getQuestDefinition(questId: string): QuestDefinition | undefined {
-    return QUEST_DEFINITIONS.find((d) => d.id === questId);
+    return getQuestDefinitions().find((d) => d.id === questId);
   }
 
   /** Get all currently active quests */
@@ -663,7 +612,7 @@ export class QuestTracker {
     const quest = state.quests.find((q) => q.questId === questId);
     if (!quest) return 0;
 
-    const definition = QUEST_DEFINITIONS.find((d) => d.id === questId);
+    const definition = getQuestDefinitions().find((d) => d.id === questId);
     if (!definition) return 0;
 
     const total = definition.objectives.length;

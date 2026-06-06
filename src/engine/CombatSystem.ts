@@ -851,7 +851,7 @@ function handleVictory(): CombatState {
   combat.schedule(3000, () => {
     if (returnNodeId) {
       dispatchGameAction({ type: 'story/setMode', mode: 'exploration' });
-      dispatchGameAction({ type: 'story/openNarrativeOverlay', nodeId: returnNodeId });
+      dispatchGameAction({ type: 'story/openNarrativeOverlay', nodeId: returnNodeId, kind: 'story' });
       eventBus.emit('combat:story_continue', { nodeId: returnNodeId });
     } else {
       dispatchGameAction({ type: 'story/setMode', mode: 'exploration' });
@@ -904,7 +904,7 @@ function handleDefeat(): void {
   combat.schedule(3000, () => {
     if (returnNodeId) {
       dispatchGameAction({ type: 'story/setMode', mode: 'exploration' });
-      dispatchGameAction({ type: 'story/openNarrativeOverlay', nodeId: returnNodeId });
+      dispatchGameAction({ type: 'story/openNarrativeOverlay', nodeId: returnNodeId, kind: 'story' });
       eventBus.emit('combat:story_continue', { nodeId: returnNodeId });
     } else {
       dispatchGameAction({ type: 'story/setMode', mode: 'exploration' });

@@ -6,7 +6,7 @@
  */
 
 import { useRef, useMemo, useEffect } from 'react';
-import { useFrame } from '@react-three/fiber';
+import { useFrameTick } from '@/engine/frame/useFrameTick';
 import * as THREE from 'three';
 import { useGameStore } from '@/store/gameStore';
 import { eventBus } from '@/engine/EventBus';
@@ -172,7 +172,7 @@ export function RainSystem({ intensity = 1 }: { intensity?: number }) {
   const rainEnabled = useGameStore((s) => s.weatherEnabled);
   const rainIntensity = useGameStore((s) => s.rainIntensity);
   const isMobile = useIsMobileVisual();
-  const { visualLite } = useMobileVisualPerf();
+  const { visualLite, effectsScale } = useMobileVisualPerf();
 
   const configLevel = useMemo(() => {
     const effectiveIntensity = intensity * rainIntensity;
@@ -187,8 +187,8 @@ export function RainSystem({ intensity = 1 }: { intensity?: number }) {
   );
 
   const maxSplashes = useMemo(
-    () => getParticleCount(MAX_SPLASHES_BASE, isMobile, visualLite),
-    [isMobile, visualLite],
+    () => getParticleCount(MAX_SPLASHES_BASE, isMobile, visualLite, effectsScale),
+    [isMobile, visualLite, effectsScale],
   );
 
   if (!rainEnabled) return null;
@@ -336,7 +336,7 @@ function RainParticles({
     rainUniforms.uColor.value.set(config.color);
   }, [rainUniforms, bx, by, bz, config.dropLength, config.color]);
 
-  useFrame((_, delta) => {
+  useFrameTick('weather', ({ delta }) => {
     timeRef.current += delta;
     const t = timeRef.current;
     const clampedDelta = Math.min(delta, 0.05);
@@ -375,7 +375,7 @@ function RainParticles({
       splashAttrs.sizeAttr.needsUpdate = true;
       splashDirty.current = false;
     }
-  });
+  }, { label: 'RainSystem' });
 
   return (
     <group>

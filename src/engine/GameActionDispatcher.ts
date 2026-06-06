@@ -85,7 +85,7 @@ export type GameAction =
   | { type: 'story/setMode'; mode: GameMode }
   | { type: 'story/setCurrentNodeId'; nodeId: string }
   | { type: 'story/setShowStoryOverlay'; show: boolean }
-  | { type: 'story/openNarrativeOverlay'; nodeId: string }
+  | { type: 'story/openNarrativeOverlay'; nodeId: string; kind?: 'story' | 'dialogue' }
   | { type: 'story/closeNarrativeOverlay' }
   | { type: 'story/advanceAct' }
   /* ── Inventory ── */

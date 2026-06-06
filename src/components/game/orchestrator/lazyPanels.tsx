@@ -54,15 +54,6 @@ export const LazyTradingPanel = lazy(() => import('../TradingPanel').then((m) =>
 export const LazyDevPanel = lazy(() => import('../DevPanel').then((m) => ({ default: m.DevPanel })));
 export const LazyShortcutsOverlay = lazy(() => import('../ShortcutsOverlay').then((m) => ({ default: m.ShortcutsOverlay })));
 
-export const LazyCodeBreakerGame = lazy(() => import('../CodeBreakerGame').then((m) => ({ default: m.CodeBreakerGame })));
-export const LazyOpenStackTerminalGame = lazy(() => import('../OpenStackTerminalGame').then((m) => ({ default: m.OpenStackTerminalGame })));
-export const LazyBashTerminalGame = lazy(() => import('../BashTerminalGame').then((m) => ({ default: m.BashTerminalGame })));
-export const LazyPoetryCompositionGame = lazy(() => import('../PoetryCompositionGame').then((m) => ({ default: m.PoetryCompositionGame })));
-export const LazyHackingGame = lazy(() => import('../HackingGame').then((m) => ({ default: m.HackingGame })));
-export const LazyMemoryPuzzleGame = lazy(() => import('../MemoryPuzzleGame').then((m) => ({ default: m.MemoryPuzzleGame })));
-export const LazyQuizGame = lazy(() => import('../QuizGame').then((m) => ({ default: m.QuizGame })));
-export const LazyRhythmGame = lazy(() => import('../RhythmGame').then((m) => ({ default: m.RhythmGame })));
-
 export const LazyMenuScreen = lazy(() => import('../MenuScreen').then((m) => ({ default: m.MenuScreen })));
 export const LazyIntroScreen = lazy(() => import('../IntroScreen').then((m) => ({ default: m.IntroScreen })));
 export const LazyStoryRenderer = lazy(() => import('../StoryRenderer').then((m) => ({ default: m.StoryRenderer })));
@@ -75,3 +66,12 @@ export const LazyKarmaPoemInfoPanel = lazy(() => import('../KarmaPoemInfoPanel')
 export const LazyMatrixRainQuote = lazy(() => import('../MatrixRainQuote').then((m) => ({ default: m.MatrixRainQuote })));
 export const LazyLevelUpEffect = lazy(() => import('../LevelUpEffect').then((m) => ({ default: m.LevelUpEffect })));
 export const LazyPhotoMode = lazy(() => import('../PhotoMode').then((m) => ({ default: m.PhotoMode })));
+
+export const LazyHUD = lazy(() => import('../HUD').then((m) => ({ default: m.HUD })));
+export const LazyMiniMap = lazy(() => import('../MiniMap').then((m) => ({ default: m.MiniMap })));
+export const LazyQuestNotificationSystem = lazy(() =>
+  import('../QuestNotificationSystem').then((m) => ({ default: m.QuestNotificationSystem })),
+);
+export const LazyStoryGuidanceHUD = lazy(() =>
+  import('../StoryGuidanceHUD').then((m) => ({ default: m.StoryGuidanceHUD })),
+);

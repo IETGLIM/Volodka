@@ -48,15 +48,15 @@ const DUST_CONFIGS: Record<string, DustConfig> = {
 export function DustMotes({ sceneId }: { sceneId: string }) {
   const baseConfig = DUST_CONFIGS[sceneId];
   const isMobile = useIsMobileVisual();
-  const { visualLite } = useMobileVisualPerf();
+  const { visualLite, effectsScale } = useMobileVisualPerf();
 
   const config = useMemo(() => {
     if (!baseConfig) return null;
     return {
       ...baseConfig,
-      count: getParticleCount(baseConfig.count, isMobile, visualLite),
+      count: getParticleCount(baseConfig.count, isMobile, visualLite, effectsScale),
     };
-  }, [baseConfig, isMobile, visualLite]);
+  }, [baseConfig, isMobile, visualLite, effectsScale]);
 
   if (!config) return null;
   return <DustSystem config={config} />;
@@ -183,15 +183,15 @@ const RAIN_CONFIGS: Record<string, RainConfig> = {
 export function RainStreaks({ sceneId }: { sceneId: string }) {
   const baseConfig = RAIN_CONFIGS[sceneId];
   const isMobile = useIsMobileVisual();
-  const { visualLite } = useMobileVisualPerf();
+  const { visualLite, effectsScale } = useMobileVisualPerf();
 
   const config = useMemo(() => {
     if (!baseConfig) return null;
     return {
       ...baseConfig,
-      count: getParticleCount(baseConfig.count, isMobile, visualLite),
+      count: getParticleCount(baseConfig.count, isMobile, visualLite, effectsScale),
     };
-  }, [baseConfig, isMobile, visualLite]);
+  }, [baseConfig, isMobile, visualLite, effectsScale]);
 
   if (!config) return null;
   return <RainSystem config={config} />;
@@ -315,15 +315,15 @@ const EMBER_CONFIGS: Record<string, EmberConfig> = {
 export function EmberParticles({ sceneId }: { sceneId: string }) {
   const baseConfig = EMBER_CONFIGS[sceneId];
   const isMobile = useIsMobileVisual();
-  const { visualLite } = useMobileVisualPerf();
+  const { visualLite, effectsScale } = useMobileVisualPerf();
 
   const config = useMemo(() => {
     if (!baseConfig) return null;
     return {
       ...baseConfig,
-      count: getParticleCount(baseConfig.count, isMobile, visualLite),
+      count: getParticleCount(baseConfig.count, isMobile, visualLite, effectsScale),
     };
-  }, [baseConfig, isMobile, visualLite]);
+  }, [baseConfig, isMobile, visualLite, effectsScale]);
 
   if (!config) return null;
   return <EmberSystem config={config} />;
@@ -442,15 +442,15 @@ const SNOW_CONFIGS: Record<string, SnowConfig> = {
 export function SnowDrift({ sceneId }: { sceneId: string }) {
   const baseConfig = SNOW_CONFIGS[sceneId];
   const isMobile = useIsMobileVisual();
-  const { visualLite } = useMobileVisualPerf();
+  const { visualLite, effectsScale } = useMobileVisualPerf();
 
   const config = useMemo(() => {
     if (!baseConfig) return null;
     return {
       ...baseConfig,
-      count: getParticleCount(baseConfig.count, isMobile, visualLite),
+      count: getParticleCount(baseConfig.count, isMobile, visualLite, effectsScale),
     };
-  }, [baseConfig, isMobile, visualLite]);
+  }, [baseConfig, isMobile, visualLite, effectsScale]);
 
   if (!config) return null;
   return <SnowSystem config={config} />;

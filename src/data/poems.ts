@@ -8,6 +8,7 @@
    ═══════════════════════════════════════════════════════════════ */
 
 import type { Poem } from '@/shared/types/game';
+import { STORY_NODES } from './storyNodes';
 
 // ─── ИНТРО-ПРОЗА К ИГРЕ ───
 // Each paragraph is a separate cinematic beat.
@@ -858,7 +859,7 @@ export const POEMS: Poem[] = [
     title: 'Коридор',
     author: 'Владимир Лебедев',
     order: 22,
-    unlocksAt: 'corridor_entrance',
+    unlocksAt: 'corridor_explore_mode',
     themes: ['коридор', 'лиминальность', 'переход', 'страх', 'тишина'],
     intro: 'О пространстве между комнатами, где время идёт иначе...',
     bonus: true,
@@ -894,7 +895,7 @@ export const POEMS: Poem[] = [
     title: 'Высотники',
     author: 'Владимир Лебедев',
     order: 23,
-    unlocksAt: 'rooftop_edge_enter',
+    unlocksAt: 'rooftop_realization',
     themes: ['крыша', 'свобода', 'сообщество', 'ветер', 'киберпанк'],
     intro: 'О людях, которые выбрали небо вместо подвала, и ветер вместо серверов...',
     bonus: true,
@@ -935,7 +936,7 @@ export const POEMS: Poem[] = [
     title: 'Ночная смена',
     author: 'Владимир Лебедев',
     order: 24,
-    unlocksAt: 'night_shift_start',
+    unlocksAt: 'old_code_read',
     themes: ['ночь', 'смена', 'усталость', 'код', 'киберпанк'],
     intro: 'Три часа ночи. Монитор — единственное окно. Кофе остыл. Курсор мигает, как пульс...',
     bonus: true,
@@ -971,7 +972,7 @@ export const POEMS: Poem[] = [
     title: 'Между сменами',
     author: 'Владимир Лебедев',
     order: 25,
-    unlocksAt: 'break_room',
+    unlocksAt: 'cafe_evening_end',
     themes: ['перерыв', 'пауза', 'тишина', 'окно', 'киберпанк'],
     intro: 'Пятнадцать минут между сменами. Когда мир замирает и можно выдохнуть...',
     bonus: true,
@@ -1000,7 +1001,7 @@ export const POEMS: Poem[] = [
     title: 'Переработка',
     author: 'Владимир Лебедев',
     order: 26,
-    unlocksAt: 'overtime_deadline',
+    unlocksAt: 'start_diagnosis',
     themes: ['переработка', 'выгорание', 'система', 'сопротивление', 'киберпанк'],
     intro: 'Когда дедлайн — это не дата, а образ жизни. Когда выходной — миф...',
     bonus: true,
@@ -1031,7 +1032,7 @@ export const POEMS: Poem[] = [
     title: 'Сообщения',
     author: 'Владимир Лебедев',
     order: 27,
-    unlocksAt: 'maria_message_received',
+    unlocksAt: 'act2_safehouse_message',
     themes: ['любовь', 'сообщения', 'связь', 'дистанция', 'киберпанк'],
     intro: 'Сообщения, которые мы пишем и не отправляем. Связь, которая держится на пинге...',
     bonus: true,
@@ -1062,7 +1063,7 @@ export const POEMS: Poem[] = [
     title: 'Потерянный пакет',
     author: 'Владимир Лебедев',
     order: 28,
-    unlocksAt: 'connection_lost_scene',
+    unlocksAt: 'act2_network_hesitation',
     themes: ['потеря', 'связь', 'разлука', 'данные', 'киберпанк'],
     intro: 'Как потерянный пакет данных, который никогда не дойдёт до адресата...',
     bonus: true,
@@ -1093,7 +1094,7 @@ export const POEMS: Poem[] = [
     title: 'Непосланное',
     author: 'Владимир Лебедев',
     order: 29,
-    unlocksAt: 'draft_messages',
+    unlocksAt: 'act2_safehouse_message',
     themes: ['нерешительность', 'любовь', 'черновики', 'слова', 'киберпанк'],
     intro: 'В папке «Черновики» — сто непосланных сообщений. Каждое — маленькая смерть...',
     bonus: true,
@@ -1124,7 +1125,7 @@ export const POEMS: Poem[] = [
     title: 'Метро',
     author: 'Владимир Лебедев',
     order: 30,
-    unlocksAt: 'metro_station',
+    unlocksAt: 'street_bench',
     themes: ['метро', 'толпа', 'одиночество', 'город', 'киберпанк'],
     intro: 'Метро — чистилище киберпанк-города. Все едут, никто не смотрит друг на друга...',
     bonus: true,
@@ -1160,7 +1161,7 @@ export const POEMS: Poem[] = [
     title: 'Дождь на вышках',
     author: 'Владимир Лебедев',
     order: 31,
-    unlocksAt: 'tower_rain_view',
+    unlocksAt: 'balcony_thought',
     themes: ['дождь', 'башни', 'город', 'красота', 'киберпанк'],
     intro: 'Дождь на стеклянных башнях — как код на экране. Город умывается, и на мгновение — красив...',
     bonus: true,
@@ -1191,7 +1192,7 @@ export const POEMS: Poem[] = [
     title: 'return void',
     author: 'Владимир Лебедев',
     order: 32,
-    unlocksAt: 'code_review_scene',
+    unlocksAt: 'fix_success',
     themes: ['код', 'жизнь', 'философия', 'пустота', 'киберпанк'],
     intro: 'Когда код становится метафорой. Когда return void — это не ошибка, а признание...',
     bonus: true,
@@ -1229,7 +1230,7 @@ export const POEMS: Poem[] = [
     title: 'Комментарий',
     author: 'Владимир Лебедев',
     order: 33,
-    unlocksAt: 'legacy_code_discovery',
+    unlocksAt: 'old_code_read',
     themes: ['комментарий', 'код', 'память', 'след', 'киберпанк'],
     intro: 'В чужом коде — комментарий от того, кого уже нет. Три слеша и пара слов — всё, что осталось...',
     bonus: true,
@@ -1264,7 +1265,7 @@ export const POEMS: Poem[] = [
     title: 'Мёртвый телефон',
     author: 'Владимир Лебедев',
     order: 34,
-    unlocksAt: 'dead_phone_memory',
+    unlocksAt: 'room_table',
     themes: ['память', 'ностальгия', 'фото', 'потеря', 'киберпанк'],
     intro: 'Телефон разрядился, и вместе с ним — тысяча фотографий. Воспоминания зависят от батареи...',
     bonus: true,
@@ -1300,7 +1301,7 @@ export const POEMS: Poem[] = [
     title: 'До башен',
     author: 'Владимир Лебедев',
     order: 35,
-    unlocksAt: 'childhood_memory_scene',
+    unlocksAt: 'kitchen_table',
     themes: ['детство', 'ностальгия', 'город', 'перемены', 'киберпанк'],
     intro: 'Было время — до башен. До неона. Когда город был просто городом, а небо — просто небом...',
     bonus: true,
@@ -1356,11 +1357,11 @@ export const POEMS: Poem[] = [
      АКТ 6-7: ДОПОЛНИТЕЛЬНЫЕ СТИХИ (В СТИЛЕ ВЛАДИМИРА ЛЕБЕДЕВА)
      ═══════════════════════════════════════════════════════════════ */
   {
-    id: 'poem_19',
+    id: 'poem_act6_01',
     title: 'Город шепчет',
     author: 'Владимир Лебедев',
-    order: 19,
-    unlocksAt: 'act6_start',
+    order: 37,
+    unlocksAt: 'act6_bridge',
     themes: ['город', 'одиночество', 'неон', 'связь'],
     intro: 'Город не спит. Город шепчет. Каждый неоновый луч — строка. Каждый сервер — сердце. Слышишь?',
     lines: [
@@ -1376,11 +1377,11 @@ export const POEMS: Poem[] = [
     ],
   },
   {
-    id: 'poem_20',
+    id: 'poem_act6_02',
     title: 'Старый паяльник',
     author: 'Владимир Лебедев',
-    order: 20,
-    unlocksAt: 'viktor_story',
+    order: 38,
+    unlocksAt: 'act6_zeka_encounter',
     themes: ['память', 'отец', 'техника', 'тепло'],
     intro: 'Отец чинил калькуляторы. Говорил с ними. И они отвечали. Я слышал.',
     lines: [
@@ -1396,11 +1397,11 @@ export const POEMS: Poem[] = [
     ],
   },
   {
-    id: 'poem_21',
+    id: 'poem_act6_03',
     title: 'Тридцать четыре',
     author: 'Владимир Лебедев',
-    order: 21,
-    unlocksAt: 'act6_traitor_reveal',
+    order: 39,
+    unlocksAt: 'act6_traitor_revealed',
     themes: ['возраст', 'усталость', 'надежда', 'борьба'],
     intro: 'Ещё один год. Ещё одна строка. Поясница болит, но руки ещё держат паяльник.',
     lines: [
@@ -1421,11 +1422,11 @@ export const POEMS: Poem[] = [
     ],
   },
   {
-    id: 'poem_22',
+    id: 'poem_act6_04',
     title: 'Сопротивление',
     author: 'Владимир Лебедев',
-    order: 22,
-    unlocksAt: 'act6_resistance_joined',
+    order: 40,
+    unlocksAt: 'act6_resistance_formed',
     themes: ['борьба', 'свобода', 'код', 'сопротивление'],
     intro: 'Когда код становится оружием — стих становится щитом. Не бойся писать.',
     lines: [
@@ -1441,11 +1442,11 @@ export const POEMS: Poem[] = [
     ],
   },
   {
-    id: 'poem_23',
+    id: 'poem_act6_05',
     title: 'Предатель',
     author: 'Владимир Лебедев',
-    order: 23,
-    unlocksAt: 'act6_traitor_found',
+    order: 41,
+    unlocksAt: 'act6_traitor_discovery',
     themes: ['предательство', 'боль', 'доверие', 'истина'],
     intro: 'Самый страшный враг — тот, кто знал твой код. Самый больной удар — оттуда, где было плечо.',
     lines: [
@@ -1461,11 +1462,11 @@ export const POEMS: Poem[] = [
     ],
   },
   {
-    id: 'poem_24',
+    id: 'poem_act6_06',
     title: 'Крыша мира',
     author: 'Владимир Лебедев',
-    order: 24,
-    unlocksAt: 'act6_rooftop_scene',
+    order: 42,
+    unlocksAt: 'act6_rooftop_showdown',
     themes: ['свобода', 'высота', 'город', 'мечта'],
     intro: 'С крыши город — как схема. Видно все соединения. Все разрывы. Всю ложь.',
     lines: [
@@ -1481,11 +1482,11 @@ export const POEMS: Poem[] = [
     ],
   },
   {
-    id: 'poem_25',
+    id: 'poem_act6_07',
     title: 'Финал — не конец',
     author: 'Владимир Лебедев',
-    order: 25,
-    unlocksAt: 'act7_system_takedown',
+    order: 43,
+    unlocksAt: 'act7_system_shutdown',
     themes: ['победа', 'конец', 'начало', 'наследие'],
     intro: 'Когда система падает — она не умирает. Она становится почвой. Для нового. Для тебя.',
     lines: [
@@ -1501,11 +1502,11 @@ export const POEMS: Poem[] = [
     ],
   },
   {
-    id: 'poem_26',
+    id: 'poem_act6_08',
     title: 'Наследие Володьки',
     author: 'Владимир Лебедев',
-    order: 26,
-    unlocksAt: 'act7_volodka_legacy',
+    order: 44,
+    unlocksAt: 'act7_legacy_walk',
     themes: ['память', 'наследие', 'любовь', 'вечность'],
     intro: 'Меня не станет. Но стихи останутся. И в каждой строке — я. В каждом бите — любовь.',
     lines: [
@@ -1521,11 +1522,11 @@ export const POEMS: Poem[] = [
     ],
   },
   {
-    id: 'poem_27',
+    id: 'poem_act7_01',
     title: 'Серверная колыбельная',
     author: 'Владимир Лебедев',
-    order: 27,
-    unlocksAt: 'act7_ending',
+    order: 45,
+    unlocksAt: 'act7_final_poem_creation',
     themes: ['сон', 'покой', 'сервер', 'любовь'],
     intro: 'Спи, сервер. Спи, город. Спи, Володька. Ты сделал достаточно.',
     lines: [
@@ -1541,11 +1542,11 @@ export const POEMS: Poem[] = [
     ],
   },
   {
-    id: 'poem_28',
+    id: 'poem_act7_ending',
     title: 'Эпилог: строка 00',
     author: 'Владимир Лебедев',
-    order: 28,
-    unlocksAt: 'act7_credits',
+    order: 46,
+    unlocksAt: 'act7_true_end',
     themes: ['эпилог', 'код', 'любовь', 'вечность'],
     intro: 'Нулевая строка всегда пуста. Потому что она ждёт тебя. Напиши.',
     bonus: true,
@@ -1585,4 +1586,20 @@ export function getMainPoems(): Poem[] {
 
 export function getHiddenPoems(): Poem[] {
   return POEMS.filter((p) => p.order > 13);
+}
+
+/** Dev-only: validate poem unlock nodes and unique IDs. Returns list of problems. */
+export function validatePoemUnlockNodes(): string[] {
+  const problems: string[] = [];
+  const seenIds = new Set<string>();
+  for (const poem of POEMS) {
+    if (seenIds.has(poem.id)) {
+      problems.push(`duplicate poem id "${poem.id}"`);
+    }
+    seenIds.add(poem.id);
+    if (!STORY_NODES[poem.unlocksAt]) {
+      problems.push(`${poem.id} unlocksAt "${poem.unlocksAt}" not in STORY_NODES`);
+    }
+  }
+  return problems;
 }

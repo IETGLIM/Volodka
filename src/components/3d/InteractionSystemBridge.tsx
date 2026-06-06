@@ -10,7 +10,7 @@
  */
 
 import { useRef, useEffect } from 'react';
-import { useFrame } from '@react-three/fiber';
+import { useFrameTick } from '@/engine/frame/useFrameTick';
 import * as THREE from 'three';
 import { InteractionState, DEFAULT_CUTSCENE_DURATION } from '@/engine/interaction/interactionMachine';
 import { getNPCCutscene } from '@/data/npcCutscenes';
@@ -207,7 +207,7 @@ export function InteractionSystemBridge({
   // ── Per-frame state machine update ──
   // Priority -1: runs BEFORE PhysicsPlayer's useFrame (default priority 0)
   // so that external velocity is set before PhysicsPlayer reads it.
-  useFrame((_, delta) => {
+  useFrameTick('interaction', ({ delta }) => {
     const dt = Math.min(delta, 0.05);
 
     if (stateRef.current === InteractionState.Idle) return;
@@ -521,7 +521,7 @@ export function InteractionSystemBridge({
         npcId: prevNpcId ?? undefined,
       });
     }
-  });
+  }, { priority: -1, label: 'InteractionSystemBridge' });
 
   return null; // No visual output
 }

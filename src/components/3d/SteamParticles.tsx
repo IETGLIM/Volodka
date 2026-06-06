@@ -46,15 +46,15 @@ const STEAM_CONFIGS: Record<string, SteamConfig> = {
 export function SteamParticles({ sceneId }: { sceneId: string }) {
   const baseConfig = STEAM_CONFIGS[sceneId];
   const isMobile = useIsMobileVisual();
-  const { visualLite } = useMobileVisualPerf();
+  const { visualLite, effectsScale } = useMobileVisualPerf();
 
   const config = useMemo(() => {
     if (!baseConfig) return null;
     return {
       ...baseConfig,
-      count: getParticleCount(baseConfig.count, isMobile, visualLite),
+      count: getParticleCount(baseConfig.count, isMobile, visualLite, effectsScale),
     };
-  }, [baseConfig, isMobile, visualLite]);
+  }, [baseConfig, isMobile, visualLite, effectsScale]);
 
   if (!config) return null;
 

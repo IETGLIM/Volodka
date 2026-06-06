@@ -3,7 +3,7 @@
 
 import type { StateCreator } from 'zustand';
 import { MAX_INVENTORY_SLOTS } from '@/data/constants';
-import { getItemDefinition, getEquipmentSlot } from '@/data/items';
+import { getItemDefinition, getEquipmentSlot } from '@/data/gameDataLoader';
 import { clamp, pushNotification } from '../shared';
 import {
   addInventoryItem,

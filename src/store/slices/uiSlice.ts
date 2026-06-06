@@ -15,11 +15,13 @@ import {
 } from '../shared';
 import type { GameStoreState } from '../types';
 import { readUIFromExploration } from '../crossSliceReads';
-import { INITIAL_LORE_ENTRIES } from '@/data/loreEntries';
+import { getInitialLoreEntries } from '@/data/gameDataLoader';
 import { eventBus } from '@/engine/EventBus';
 import { musicEngine } from '@/engine/MusicEngine';
 
 /* ─── Slice types ─── */
+
+export type NarrativeKind = 'story' | 'dialogue';
 
 export interface UISliceState {
   mode: GameMode;
@@ -27,6 +29,10 @@ export interface UISliceState {
   lastSaveTimestamp: number | null;
   lastAutoSaveTimestamp: number | null;
   showStoryOverlay: boolean;
+  /** Which narrative renderer to mount while overlay is open. */
+  narrativeKind: NarrativeKind | null;
+  /** F3 dev tools armed — gates DevPanel + RendererInfoBridge chunks. */
+  devToolsArmed: boolean;
   matrixRainEnabled: boolean;
   glitchIntensity: number;
   noirMode: boolean;
@@ -45,9 +51,11 @@ export interface UISliceActions {
   setCurrentNodeId: (id: string) => void;
   setShowStoryOverlay: (show: boolean) => void;
   /** Atomically open story/dialogue overlay (avoids node/overlay race). */
-  openNarrativeOverlay: (nodeId: string) => void;
+  openNarrativeOverlay: (nodeId: string, kind: NarrativeKind) => void;
   /** Atomically close overlay; keep currentNodeId for save/combat resume. */
   closeNarrativeOverlay: () => void;
+  setNarrativeKind: (kind: NarrativeKind | null) => void;
+  armDevTools: () => void;
   toggleMatrixRain: () => void;
   setGlitchIntensity: (intensity: number) => void;
   toggleNoirMode: () => void;
@@ -78,6 +86,8 @@ export const createUISlice: StateCreator<
   lastSaveTimestamp: null,
   lastAutoSaveTimestamp: null,
   showStoryOverlay: false,
+  narrativeKind: null,
+  devToolsArmed: false,
   matrixRainEnabled: true,
   glitchIntensity: 0,
   noirMode: false,
@@ -98,11 +108,15 @@ export const createUISlice: StateCreator<
 
   setShowStoryOverlay: (show) => set({ showStoryOverlay: show }),
 
-  openNarrativeOverlay: (nodeId) =>
-    set({ showStoryOverlay: true, currentNodeId: nodeId }),
+  openNarrativeOverlay: (nodeId, kind) =>
+    set({ showStoryOverlay: true, currentNodeId: nodeId, narrativeKind: kind }),
 
   closeNarrativeOverlay: () =>
     set({ showStoryOverlay: false }),
+
+  setNarrativeKind: (kind) => set({ narrativeKind: kind }),
+
+  armDevTools: () => set({ devToolsArmed: true }),
 
   toggleMatrixRain: () => set((state) => ({ matrixRainEnabled: !state.matrixRainEnabled })),
 
@@ -114,6 +128,11 @@ export const createUISlice: StateCreator<
     const clampedVolume = clamp(volume, 0, 1);
     set({ musicVolume: clampedVolume });
     musicEngine.setVolume(clampedVolume);
+    try {
+      localStorage.setItem('volodka_music_volume', String(Math.round(clampedVolume * 100)));
+    } catch {
+      /* ignore */
+    }
   },
 
   toggleMusic: () =>
@@ -153,7 +172,7 @@ export const createUISlice: StateCreator<
 
       // If entry not in store yet, add it discovered
       if (!existing) {
-        const initialEntry = INITIAL_LORE_ENTRIES.find((e) => e.id === entryId);
+        const initialEntry = getInitialLoreEntries().find((e) => e.id === entryId);
         if (initialEntry) {
           newLoreEntries.push({ ...initialEntry, discovered: true });
         }
@@ -162,7 +181,7 @@ export const createUISlice: StateCreator<
       // Only grant rewards on first discovery
       if (!wasAlreadyDiscovered) {
         // Look up entry data (from store or initial entries) for rarity
-        const entryData = existing ?? INITIAL_LORE_ENTRIES.find((e) => e.id === entryId);
+        const entryData = existing ?? getInitialLoreEntries().find((e) => e.id === entryId);
         const title = entryData?.title ?? entryId;
         const rarity: LoreRarity = entryData?.rarity ?? 'common';
 

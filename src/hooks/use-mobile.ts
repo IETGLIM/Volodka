@@ -9,6 +9,7 @@
  * consolidated to prevent bugs from divergent implementations. */
 
 import { useEffect, useState, useCallback } from 'react';
+import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
 
 /* ─── Constants ─── */
 
@@ -67,27 +68,21 @@ export interface MobileVisualPerf {
   visualLite: boolean;
   /** Narrow viewport — use compact UI */
   narrow: boolean;
+  /** Quality preset effects multiplier */
+  effectsScale: number;
 }
 
-/** Returns visual performance profile based on screen size and DPR */
+/** Returns visual performance profile based on quality presets */
 export function useMobileVisualPerf(): MobileVisualPerf {
-  // FIX: Always initialize with defaults (SSR-safe).
-  // Never read window.innerWidth or devicePixelRatio in useState initializer.
-  const [perf, setPerf] = useState<MobileVisualPerf>({ visualLite: false, narrow: false });
+  const { visualLite, preset } = useGraphicsQuality();
+  const [narrow, setNarrow] = useState(false);
 
   useEffect(() => {
-    const check = () => {
-      const w = window.innerWidth;
-      const dpr = window.devicePixelRatio ?? 1;
-      setPerf({
-        visualLite: w < MOBILE_BREAKPOINT || dpr < 1.5,
-        narrow: w < 640,
-      });
-    };
+    const check = () => setNarrow(window.innerWidth < 640);
     check();
     window.addEventListener('resize', check);
     return () => window.removeEventListener('resize', check);
   }, []);
 
-  return perf;
+  return { visualLite, narrow, effectsScale: preset.effectsScale };
 }

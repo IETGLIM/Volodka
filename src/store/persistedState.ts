@@ -56,6 +56,7 @@ export function createDefaultPersistedState(): Pick<GameStoreState, PersistedSto
     musicVolume: 0.5,
     introSeen: false,
     showStoryOverlay: false,
+    narrativeKind: null,
     unlockedAchievements: [],
     discoveredScenes: ['volodka_room'],
     triggeredCutscenes: [],

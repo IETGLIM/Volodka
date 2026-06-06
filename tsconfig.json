@@ -28,6 +28,7 @@
   },
   "include": [
     "src",
+    "config",
     "vite-env.d.ts"
   ],
   "exclude": [

@@ -2,7 +2,7 @@
 /* Crafting and merchant trading. */
 
 import type { StateCreator } from 'zustand';
-import { getItemDefinition, createInventoryItem } from '@/data/items';
+import { getItemDefinition, createInventoryItem } from '@/data/gameDataLoader';
 import { getRecipeById } from '@/data/craftingRecipes';
 import {
   getMerchantInventory,

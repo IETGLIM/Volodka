@@ -237,6 +237,7 @@ export const SavePayloadSchema = z.object({
   introSeen: z.boolean().optional().default(false),
   /** Whether the story overlay is currently shown (P5-FIX: was missing, caused mid-chain save loss) */
   showStoryOverlay: z.boolean().optional().default(false),
+  narrativeKind: z.enum(['story', 'dialogue']).nullable().optional().default(null),
   /** Achievement IDs that have been unlocked, with timestamps */
   unlockedAchievements: z.array(UnlockedAchievementSchema).optional().default([]),
   /** Scene IDs that have been visited/discovered */

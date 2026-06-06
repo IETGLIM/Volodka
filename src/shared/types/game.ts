@@ -330,7 +330,7 @@ export interface ScheduleEntry {
 }
 
 // ─── Combat ───
-export type EnemyType = 'system_daemon' | 'corporate_golem' | 'shadow_agent' | 'data_phantom' | 'code_inquisitor' | 'guild_enforcer' | 'data_wraith' | 'censor_drone' | 'poetry_hunter';
+export type EnemyType = 'system_daemon' | 'corporate_golem' | 'shadow_agent' | 'data_phantom' | 'code_inquisitor' | 'guild_enforcer' | 'data_wraith' | 'censor_drone' | 'poetry_hunter' | 'nexus_guardian' | 'void_echo';
 
 export type CombatAction = 'attack' | 'defend' | 'poem_power' | 'flee';
 

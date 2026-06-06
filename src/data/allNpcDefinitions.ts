@@ -1,6 +1,7 @@
 /* ─── Volodka RPG – merged NPC registry ─── */
 
 import type { NPCDefinition } from '@/shared/types/game';
+import { resolveCanonicalNpcId } from './goldenPath';
 import { NPC_DEFINITIONS } from './npcDefinitions';
 import { EXPANDED_NPCS } from './expandedNPCs';
 import { CHK_NPCS } from './chkTolpa/npcs';
@@ -13,7 +14,8 @@ export const ALL_NPC_DEFINITIONS: NPCDefinition[] = [
 ];
 
 export function findNpcById(id: string): NPCDefinition | undefined {
-  return ALL_NPC_DEFINITIONS.find((n) => n.id === id);
+  const canonical = resolveCanonicalNpcId(id);
+  return ALL_NPC_DEFINITIONS.find((n) => n.id === canonical);
 }
 
 export function findNpcByName(name: string): NPCDefinition | undefined {

@@ -12,7 +12,12 @@ import {
   Lightbulb, Shield, Swords, Zap, Star,
 } from 'lucide-react';
 import { QUEST_DEFINITIONS } from '@/data/quests';
-import { useActiveQuests, useFailedQuests, getQuestProgress, areDependenciesMet } from '@/store/questStore';
+import {
+  useActiveQuests,
+  useFailedQuests,
+  getQuestProgress,
+  areDependenciesMet,
+} from '@/store/selectors/questSelectors';
 import { getGameStore } from '@/store/gameStore';
 import { useQuests } from '@/store/selectors';
 import { Badge } from '@/components/ui/badge';

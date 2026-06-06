@@ -897,8 +897,8 @@ export const QUEST_DEFINITIONS: QuestDefinition[] = [
       { type: 'setFlag', flag: 'poetry_broadcast_sent', flagValue: true },
       { type: 'addXp', value: 300 },
     ],
-    linkedStoryNodeId: 'act4_rooftop_broadcast',
-    linkedStoryNodeIds: ['act4_broadcast_prep', 'act4_broadcast_execute'],
+    linkedStoryNodeId: 'act4_broadcast_execute',
+    linkedStoryNodeIds: ['act4_broadcast_prep', 'act4_rooftop_broadcast'],
     questGiverNpcId: undefined,
   },
 
@@ -1301,7 +1301,7 @@ export const QUEST_DEFINITIONS: QuestDefinition[] = [
       { type: 'addXp', value: 500 },
     ],
     linkedStoryNodeId: 'volodka_inner',
-    questGiverNpcId: 'last_poem',
+    questGiverNpcId: undefined,
   },
 
   /* ═══════════════════════════════════════════════════════════════════
@@ -2007,8 +2007,8 @@ export const QUEST_DEFINITIONS: QuestDefinition[] = [
         type: 'flag_set',
         target: 'mainframe_hacked',
         completed: false,
-        poemPowerBypass: 'poem_22',
-        poemPowerHint: 'Стихотворение «Цифровой Нож» отключит защиту сервера',
+        poemPowerBypass: 'poem_act6_04',
+        poemPowerHint: 'Стихотворение «Сопротивление» отключит защиту сервера',
       },
       {
         id: 'download_blackmail_data',
@@ -2077,8 +2077,8 @@ export const QUEST_DEFINITIONS: QuestDefinition[] = [
         type: 'flag_set',
         target: 'nadzor_core_accessed',
         completed: false,
-        poemPowerBypass: 'poem_23',
-        poemPowerHint: 'Стихотворение «Ключ к Нулю» откроет ядро системы',
+        poemPowerBypass: 'poem_act6_05',
+        poemPowerHint: 'Стихотворение «Предатель» откроет ядро системы',
       },
       {
         id: 'discover_nadzor_truth',
@@ -2149,7 +2149,7 @@ export const QUEST_DEFINITIONS: QuestDefinition[] = [
       { type: 'addXp', value: 500 },
     ],
     linkedStoryNodeId: 'act6_rooftop_showdown',
-    questGiverNpcId: 'nina',
+    questGiverNpcId: 'maxim',
   },
 
   /* ═══════════════════════════════════════════════════════════════════
@@ -2248,8 +2248,8 @@ export const QUEST_DEFINITIONS: QuestDefinition[] = [
         type: 'flag_set',
         target: 'core_defenses_disabled',
         completed: false,
-        poemPowerBypass: 'poem_24',
-        poemPowerHint: 'Стихотворение «Смерть Машине» отключит защиту',
+        poemPowerBypass: 'poem_act6_07',
+        poemPowerHint: 'Стихотворение «Финал — не конец» отключит защиту',
       },
       {
         id: 'execute_shutdown',
@@ -2334,7 +2334,7 @@ export const QUEST_DEFINITIONS: QuestDefinition[] = [
       { type: 'addXp', value: 500 },
     ],
     linkedStoryNodeId: 'act7_final_poem_creation',
-    questGiverNpcId: 'nina',
+    questGiverNpcId: undefined,
   },
 
   /* ─────────────── QUEST: Наследие Володьки ─────────────── */
@@ -2394,7 +2394,7 @@ export const QUEST_DEFINITIONS: QuestDefinition[] = [
       { type: 'addXp', value: 600 },
     ],
     linkedStoryNodeId: 'act7_legacy_walk',
-    questGiverNpcId: 'nina',
+    questGiverNpcId: 'maria',
   },
   ...CHK_QUESTS,
 ];

@@ -1,8 +1,9 @@
 
 /* ─── Volodka RPG – Main 3D Canvas ─── */
 
-import { useRef, useEffect, useState, useMemo, Component, Fragment, type ReactNode, type ErrorInfo, Suspense, memo } from 'react';
+import { Suspense, lazy, useRef, useMemo, useEffect, useState, Component, Fragment, type ReactNode, type ErrorInfo, memo } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
+import { useFrameTick } from '@/engine/frame/useFrameTick';
 import { Physics } from '@react-three/rapier';
 import * as THREE from 'three';
 
@@ -57,9 +58,17 @@ import { ProximityReactivityRenderer } from './ProximityReactivityRenderer';
 import { VisualizationLayers } from './VisualizationLayers';
 import { EnvironmentalAnimator } from './EnvironmentalAnimator';
 import { InteractionSystemBridge, getInteractionState, getInteractionTargetNPCId } from './InteractionSystemBridge';
-import { RendererInfoBridge } from './RendererInfoBridge';
-import { useIsMobileVisual, useMobileVisualPerf } from '@/hooks/use-mobile';
+import { useGameStore } from '@/store/gameStore';
+
+import { FrameBudgetRunner } from './FrameBudgetRunner';
+
+const LazyFrameProfilerBridge = lazy(() =>
+  import('./FrameProfilerBridge').then((m) => ({ default: m.FrameProfilerBridge })),
+);
+
+import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
 import { useDynamicDPR } from '@/hooks/useDynamicDPR';
+import { GltfPipelineInit } from './assets/GltfPipelineInit';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { useVirtualControlsRef } from '@/engine/VirtualControlsState';
 import { sharedPlayerRotationRef } from '@/engine/PlayerRotationState';
@@ -67,6 +76,7 @@ import { eventBus } from '@/engine/EventBus';
 import { InteractionState } from '@/engine/interaction/interactionMachine';
 import { type VirtualControls } from '@/hooks/useGamePhysics';
 import { useGameMode } from '@/store/selectors';
+import { markCanvasMounted, markFirstFrame } from '@/engine/performance/LoadingTimeline';
 
 /** Error boundary for the Rapier Physics component.
  *  If Rapier WASM fails to load (common on Vercel edge, slow connections),
@@ -285,28 +295,28 @@ export function RPGGameCanvas() {
   const livePlayerRotationRef = useRef(Math.PI);
   const virtualControlsRef = useVirtualControlsRef();
 
-  const isMobile = useIsMobileVisual();
-  const { visualLite } = useMobileVisualPerf();
+  const { preset } = useGraphicsQuality();
 
   // P3-FIX: Pause physics when game is in menu/intro mode to save CPU.
   // Uses useShallow to select just the mode string (primitive) so this
   // only re-renders when mode actually changes, not on every store update.
   const gameMode = useGameMode();
+  const devToolsArmed = useGameStore((s) => s.devToolsArmed);
   const physicsPaused = gameMode === 'menu' || gameMode === 'intro';
 
-  // Dynamic DPR scaling based on measured FPS
-  const targetDpr: [number, number] = isMobile ? [1, 1.5] : [1, 2];
+  // Dynamic DPR scaling based on measured FPS + quality preset
   const dpr = useDynamicDPR({
-    targetDpr,
+    targetDpr: preset.dpr,
     lowFpsThreshold: 25,
     highFpsThreshold: 45,
-    minDpr: isMobile ? 0.75 : 1,
+    minDpr: preset.dpr[0],
     step: 0.1,
     windowMs: 2000,
   });
 
   // Auto-focus canvas on mount for keyboard events
   useEffect(() => {
+    markCanvasMounted();
     if (containerRef.current) {
       containerRef.current.focus();
     }
@@ -341,7 +351,7 @@ export function RPGGameCanvas() {
           frameloop="always"
           dpr={dpr}
           camera={{ fov: 55, near: 0.1, far: 200, position: [0, 2.35, 2.5] }}
-          shadows={!visualLite ? true : false}
+          shadows={preset.shadows}
           // Use factory function to create the WebGLRenderer with explicit settings.
           // R3F v9: the `gl` prop callback receives a defaultProps object
           // { canvas: HTMLCanvasElement, powerPreference, antialias, alpha },
@@ -355,7 +365,7 @@ export function RPGGameCanvas() {
           gl={({ canvas }) => {
             const renderer = new THREE.WebGLRenderer({
               canvas,
-              antialias: !visualLite,
+              antialias: preset.antialias,
               stencil: true,
               alpha: false,
               powerPreference: 'high-performance',
@@ -369,6 +379,7 @@ export function RPGGameCanvas() {
           }}
           style={{ background: '#000' }}
         >
+        <GltfPipelineInit />
         <VisualizationLayers livePlayerPositionRef={livePlayerPositionRef}>
           {/* FIX (Code Review #2): Both Suspense fallback and PhysicsErrorBoundary
               now use the shared SimpleSceneFallback component instead of duplicating
@@ -425,7 +436,9 @@ export function RPGGameCanvas() {
             <AmbientNPCs />
 
             {/* Wake-up cinematic sequence (intro only) */}
-            <WakeUpSequence />
+            <FrameBudgetRunner />
+
+        <WakeUpSequence />
 
             {/* Interactive triggers */}
             <InteractiveTriggers livePlayerPositionRef={livePlayerPositionRef} />
@@ -479,8 +492,11 @@ export function RPGGameCanvas() {
           <ExplorationPostFX />
         </PostFXErrorBoundary>
 
-        {/* Renderer info bridge — writes renderer.info to shared state for DevPanel */}
-        <RendererInfoBridge />
+        {devToolsArmed && (
+          <Suspense fallback={null}>
+            <LazyFrameProfilerBridge />
+          </Suspense>
+        )}
 
         {/* FIX (Code Review #6): Consolidated ToneMappingGuard, WebGLContextGuard,
             and CanvasFirstFrameSignal into a single useFrame callback to reduce
@@ -503,9 +519,9 @@ export function RPGGameCanvas() {
 
 /** Syncs livePlayerRotationRef to shared module-level state for CompassHUD */
 function RotationSyncBridge({ livePlayerRotationRef }: { livePlayerRotationRef: React.MutableRefObject<number> }) {
-  useFrame(() => {
+  useFrameTick('player', () => {
     sharedPlayerRotationRef.current = livePlayerRotationRef.current;
-  });
+  }, { label: 'RotationSync' });
   return null;
 }
 
@@ -569,6 +585,7 @@ function CanvasGuardSystem() {
   }, [gl]);
 
   // Single useFrame that handles all guard duties (priority 1 = after render)
+  // Post-render guard — must stay on raw useFrame (priority 1, after draw)
   useFrame((state) => {
     const canvas = state.gl.domElement;
     if (!canvas) return;
@@ -590,6 +607,7 @@ function CanvasGuardSystem() {
     if (state.gl.info.render.frame < 1) return;
 
     session.emitted = true;
+    markFirstFrame();
     if (session.contextLost) {
       console.log('[CanvasGuard] Re-signalling after context restore');
       session.contextLost = false;

@@ -3,10 +3,16 @@
 
 import type { StateCreator } from 'zustand';
 import type { GiftPreference } from '@/data/npcGifts';
-import { QUEST_DEFINITIONS } from '@/data/quests';
-import { getItemDefinition, createInventoryItem } from '@/data/items';
-import { getItemPreference, getAffinityChange, getGiftXpReward, getGiftReactionText } from '@/data/npcGifts';
-import { findNpcById } from '@/data/allNpcDefinitions';
+import {
+  getQuestDefinitions,
+  getItemDefinition,
+  createInventoryItem,
+  findNpcById,
+  getItemPreference,
+  getAffinityChange,
+  getGiftXpReward,
+  getGiftReactionText,
+} from '@/data/gameDataLoader';
 import { eventBus } from '@/engine/EventBus';
 import { applyXpGain, clamp, pushNotification } from '../shared';
 import { applyFairmathRelation } from '@/shared/fairmath';
@@ -182,7 +188,7 @@ export const createPlayerQuestRewardsSlice: StateCreator<
   },
 
   completeQuestAndApplyRewards: (questId) => {
-    const questDef = QUEST_DEFINITIONS.find((d) => d.id === questId);
+    const questDef = getQuestDefinitions().find((d) => d.id === questId);
     if (!questDef) return;
 
     const xpGained = getDefaultQuestXp(questDef.questType);

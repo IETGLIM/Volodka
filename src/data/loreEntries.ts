@@ -511,7 +511,7 @@ const ADDITIONAL_ENTRIES: LoreEntry[] = [
     body: 'До переезда в коммуналку Зарема работала в архиве городской библиотеки. Она была одной из последних, кто видел бумажные каталоги до их оцифровки. Говорят, она знает, где спрятаны книги, которых нет в Сети. Альберт несколько раз пытался расспросить её — она молчит. Но иногда, ночью, из её комнаты доносится шёпот — она читает вслух.',
     sceneId: 'zarema_albert_room',
     rarity: 'uncommon',
-    relatedEntries: ['lore_albert_philosophy', 'lore_city_ufa'],
+    relatedEntries: ['lore_albert', 'lore_city_ufa'],
     discovered: false,
   },
   {
@@ -531,7 +531,7 @@ const ADDITIONAL_ENTRIES: LoreEntry[] = [
     body: 'В кафе «Синяя Яма» есть неписаное правило: каждый, кто заказывает четвёртую чашку кофе за вечер, получает клочок бумаги с обрывком стихотворения. Альберт говорит, что это традиция с тех времён, когда поэты и программисты сидели за одними столами. «Кофе — это топливо. Стихи — это карта. А код — это дорога.»',
     sceneId: 'cafe_evening',
     rarity: 'common',
-    relatedEntries: ['lore_albert_philosophy', 'lore_vladimir'],
+    relatedEntries: ['lore_albert', 'lore_vladimir'],
     discovered: true,
   },
   {
@@ -561,7 +561,7 @@ const ADDITIONAL_ENTRIES: LoreEntry[] = [
     body: 'На крышах заброшенных зданий собираются те, кто пишет стихи от руки — на бумаге, карандашом. Они называют себя «Поэтами Крыш». Говорят, что стихи, написанные на высоте, имеют особую силу — они ближе к небу и дальше от серверов. Раз в месяц, в полнолуние, они читают свои стихи в пустоту — и ветер разносит слова по городу.',
     sceneId: 'rooftop_edge',
     rarity: 'uncommon',
-    relatedEntries: ['lore_poetry_as_code', 'lore_dreamworld'],
+    relatedEntries: ['lore_18_poems', 'lore_dreamworld'],
     discovered: false,
   },
   {
@@ -581,7 +581,7 @@ const ADDITIONAL_ENTRIES: LoreEntry[] = [
     body: 'Говорят, что Володька не первый. До него были другие — инженеры, поэты, мечтатели — кто пытался соединить код и стихи. Их имена стёрты из архивов, их работы удалены. Но в тенях Сети остались их следы: паттерны, рифмы, алгоритмы. Володька не начинает с нуля. Он продолжает. Как и все мы.',
     sceneId: 'volodka_room',
     rarity: 'legendary',
-    relatedEntries: ['lore_vladimir', 'lore_great_crash_2029', 'lore_poetry_as_code'],
+    relatedEntries: ['lore_vladimir', 'lore_great_crash_2029', 'lore_18_poems'],
     discovered: false,
   },
 ];

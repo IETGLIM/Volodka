@@ -13,7 +13,8 @@
  */
 
 import { useRef, useEffect, useLayoutEffect } from 'react';
-import { useFrame, useThree } from '@react-three/fiber';
+import { useThree } from '@react-three/fiber';
+import { useFrameTick } from '@/engine/frame/useFrameTick';
 import * as THREE from 'three';
 import { useCameraFollowState } from '@/store/selectors';
 import { getSceneConfig } from '@/config/scenes';
@@ -533,7 +534,7 @@ export function FollowCamera({
   });
 
   // ── Main camera update loop (thin orchestrator) ──
-  useFrame((_, rawDelta) => {
+  useFrameTick('camera', ({ delta: rawDelta }) => {
     const cam = cameraRef.current as THREE.PerspectiveCamera;
     const spring = springRef.current;
     if (!spring || !cam) return;
@@ -660,7 +661,7 @@ export function FollowCamera({
     if (!initializedRef.current) {
       initializedRef.current = true;
     }
-  });
+  }, { label: 'FollowCamera' });
 
   return null;
 }

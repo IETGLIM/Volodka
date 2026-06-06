@@ -6,6 +6,17 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { FocusTrap } from '@/components/a11y/FocusTrap';
 import { usePanelDialog } from '@/components/a11y/usePanelDialog';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
+import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
+import {
+  QUALITY_PRESET_ORDER,
+  type QualityPresetId,
+} from '@/engine/graphics/qualityPresets';
+import {
+  CyberSlider,
+  CyberToggle,
+  SectionDivider,
+} from '@/components/game/design-system';
+import { applyAudioSettings } from '@/engine/audio/AudioSettings';
 
 // ─── Types ───
 
@@ -53,149 +64,111 @@ const DEFAULTS: Record<string, number | boolean> = {
   volodka_invert_y: false,
 };
 
-// ─── Custom Slider Component ───
+const QUALITY_OPTIONS: { id: QualityPresetId; label: string }[] = [
+  { id: 'auto', label: 'Авто' },
+  ...QUALITY_PRESET_ORDER.map((id) => ({
+    id,
+    label: id === 'low' ? 'Низкое' : id === 'medium' ? 'Среднее' : id === 'high' ? 'Высокое' : 'Ультра',
+  })),
+];
 
-function CyberSlider({
-  label,
-  value,
-  min,
-  max,
-  step = 1,
-  onChange,
-  unit = '',
+function VisualSettingsTab({
+  postfx,
+  setPostfx,
+  scanlines,
+  setScanlines,
+  particles,
+  setParticles,
+  camShake,
+  setCamShake,
+  brightness,
+  setBrightness,
+  persist,
 }: {
-  label: string;
-  value: number;
-  min: number;
-  max: number;
-  step?: number;
-  onChange: (v: number) => void;
-  unit?: string;
+  postfx: boolean;
+  setPostfx: (v: boolean) => void;
+  scanlines: boolean;
+  setScanlines: (v: boolean) => void;
+  particles: boolean;
+  setParticles: (v: boolean) => void;
+  camShake: boolean;
+  setCamShake: (v: boolean) => void;
+  brightness: number;
+  setBrightness: (v: number) => void;
+  persist: (key: string, value: number | boolean) => void;
 }) {
-  const pct = ((value - min) / (max - min)) * 100;
+  const { selectedPreset, preset, setPreset } = useGraphicsQuality();
 
   return (
-    <div className="flex flex-col gap-1.5">
-      <div className="flex items-center justify-between">
-        <span className="font-mono text-xs text-slate-300/80 tracking-wide">{label}</span>
-        <span className="font-mono text-xs text-cyan-400/70 tabular-nums">
-          {value}
-          {unit}
-        </span>
-      </div>
-      <div className="relative h-5 flex items-center group">
-        {/* Track background */}
-        <div
-          className="absolute left-0 right-0 h-1.5 rounded-full"
-          style={{ background: 'rgba(30, 41, 59, 0.8)' }}
-        />
-        {/* Filled portion */}
-        <motion.div
-          className="absolute left-0 h-1.5 rounded-full"
-          style={{
-            width: `${pct}%`,
-            background: 'linear-gradient(90deg, rgba(0, 229, 255, 0.4), rgba(0, 229, 255, 0.8))',
-            boxShadow: '0 0 8px rgba(0, 229, 255, 0.3)',
-          }}
-          layout
-          transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-        />
-        {/* Thumb */}
-        <motion.div
-          className="absolute w-3.5 h-3.5 rounded-full border-2 border-cyan-400/80 cursor-grab active:cursor-grabbing"
-          style={{
-            left: `calc(${pct}% - 7px)`,
-            background: 'rgba(0, 229, 255, 0.9)',
-            boxShadow: '0 0 10px rgba(0, 229, 255, 0.5), 0 0 20px rgba(0, 229, 255, 0.2)',
-          }}
-          whileHover={{
-            scale: 1.3,
-            boxShadow: '0 0 14px rgba(0, 229, 255, 0.7), 0 0 28px rgba(0, 229, 255, 0.3)',
-          }}
-          whileTap={{ scale: 0.95 }}
-          transition={{ type: 'spring', stiffness: 400, damping: 25 }}
-        />
-        {/* Native range input (invisible, for interaction) */}
-        <input
-          type="range"
-          min={min}
-          max={max}
-          step={step}
-          value={value}
-          onChange={(e) => onChange(Number(e.target.value))}
-          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-          aria-label={label}
-        />
-      </div>
-    </div>
-  );
-}
-
-// ─── Custom Toggle Switch Component ───
-
-function CyberToggle({
-  label,
-  checked,
-  onChange,
-}: {
-  label: string;
-  checked: boolean;
-  onChange: (v: boolean) => void;
-}) {
-  return (
-    <button
-      type="button"
-      role="switch"
-      aria-checked={checked}
-      aria-label={label}
-      onClick={() => onChange(!checked)}
-      className="flex items-center justify-between gap-3 py-1 group"
+    <motion.div
+      key="visual"
+      initial={{ opacity: 0, x: -10 }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0, x: 10 }}
+      transition={{ duration: 0.2 }}
+      className="flex flex-col gap-4"
     >
-      <span className="font-mono text-xs text-slate-300/80 tracking-wide group-hover:text-slate-200 transition-colors">
-        {label}
-      </span>
-      <div
-        className="relative w-10 h-5 rounded-full transition-all duration-300"
-        style={{
-          background: checked
-            ? 'rgba(0, 229, 255, 0.25)'
-            : 'rgba(30, 41, 59, 0.8)',
-          border: checked
-            ? '1px solid rgba(0, 229, 255, 0.5)'
-            : '1px solid rgba(71, 85, 105, 0.4)',
-          boxShadow: checked
-            ? '0 0 12px rgba(0, 229, 255, 0.3), inset 0 0 6px rgba(0, 229, 255, 0.15)'
-            : 'none',
-        }}
-      >
-        <motion.div
-          className="absolute top-0.5 w-3.5 h-3.5 rounded-full"
-          animate={{
-            left: checked ? '22px' : '2px',
-            background: checked
-              ? 'rgba(0, 229, 255, 0.95)'
-              : 'rgba(100, 116, 139, 0.6)',
-            boxShadow: checked
-              ? '0 0 8px rgba(0, 229, 255, 0.6)'
-              : 'none',
-          }}
-          transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-        />
+      <div className="flex flex-col gap-2">
+        <span className="font-mono text-xs text-cyan-400/50 uppercase tracking-[0.15em]">
+          Качество графики
+        </span>
+        <div className="flex flex-wrap gap-1.5">
+          {QUALITY_OPTIONS.map((opt) => {
+            const active = selectedPreset === opt.id;
+            return (
+              <button
+                key={opt.id}
+                type="button"
+                onClick={() => setPreset(opt.id)}
+                className="px-2.5 py-1 rounded-md font-mono text-[11px] tracking-wide transition-colors border"
+                style={{
+                  color: active ? 'rgba(0, 229, 255, 0.95)' : 'rgba(148, 163, 184, 0.65)',
+                  background: active ? 'rgba(0, 229, 255, 0.12)' : 'rgba(15, 23, 42, 0.5)',
+                  borderColor: active ? 'rgba(0, 229, 255, 0.45)' : 'rgba(71, 85, 105, 0.35)',
+                }}
+              >
+                {opt.label}
+              </button>
+            );
+          })}
+        </div>
+        <p className="font-mono text-[10px] text-slate-500/80 leading-relaxed">
+          {selectedPreset === 'auto'
+            ? `Авто → ${preset.labelRu}: Draco/Meshopt, LOD, KTX2 при high/ultra`
+            : `${preset.labelRu}: ${preset.npcRenderMode} NPC · ${preset.environmentRenderMode} окружение · DPR ${preset.dpr[0]}–${preset.dpr[1]}`}
+        </p>
       </div>
-    </button>
-  );
-}
-
-// ─── Section divider ───
-
-function SectionDivider() {
-  return (
-    <div
-      className="w-full h-px my-3"
-      style={{
-        background: 'linear-gradient(90deg, transparent, rgba(0, 229, 255, 0.15), transparent)',
-      }}
-    />
+      <SectionDivider />
+      <CyberToggle
+        label="Пост-обработка"
+        checked={postfx}
+        onChange={(v) => { setPostfx(v); persist('volodka_postfx', v); }}
+      />
+      <CyberToggle
+        label="Сканлайны"
+        checked={scanlines}
+        onChange={(v) => { setScanlines(v); persist('volodka_scanlines', v); }}
+      />
+      <CyberToggle
+        label="Частицы"
+        checked={particles}
+        onChange={(v) => { setParticles(v); persist('volodka_particles', v); }}
+      />
+      <CyberToggle
+        label="Тряска камеры"
+        checked={camShake}
+        onChange={(v) => { setCamShake(v); persist('volodka_cam_shake', v); }}
+      />
+      <SectionDivider />
+      <CyberSlider
+        label="Яркость"
+        value={brightness}
+        min={50}
+        max={150}
+        onChange={(v) => { setBrightness(v); persist('volodka_brightness', v); }}
+        unit="%"
+      />
+    </motion.div>
   );
 }
 
@@ -271,7 +244,7 @@ function SettingsPanelContent({ onClose }: { onClose: () => void }) {
               value={musicVol}
               min={0}
               max={100}
-              onChange={(v) => { setMusicVol(v); persist('volodka_music_volume', v); }}
+              onChange={(v) => { setMusicVol(v); persist('volodka_music_volume', v); applyAudioSettings(); }}
               unit="%"
             />
             <CyberSlider
@@ -279,7 +252,7 @@ function SettingsPanelContent({ onClose }: { onClose: () => void }) {
               value={sfxVol}
               min={0}
               max={100}
-              onChange={(v) => { setSfxVol(v); persist('volodka_sfx_volume', v); }}
+              onChange={(v) => { setSfxVol(v); persist('volodka_sfx_volume', v); applyAudioSettings(); }}
               unit="%"
             />
             <CyberSlider
@@ -287,7 +260,7 @@ function SettingsPanelContent({ onClose }: { onClose: () => void }) {
               value={ambientVol}
               min={0}
               max={100}
-              onChange={(v) => { setAmbientVol(v); persist('volodka_ambient_volume', v); }}
+              onChange={(v) => { setAmbientVol(v); persist('volodka_ambient_volume', v); applyAudioSettings(); }}
               unit="%"
             />
             <SectionDivider />
@@ -301,44 +274,19 @@ function SettingsPanelContent({ onClose }: { onClose: () => void }) {
 
       case 'visual':
         return (
-          <motion.div
-            key="visual"
-            initial={{ opacity: 0, x: -10 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: 10 }}
-            transition={{ duration: 0.2 }}
-            className="flex flex-col gap-4"
-          >
-            <CyberToggle
-              label="Пост-обработка"
-              checked={postfx}
-              onChange={(v) => { setPostfx(v); persist('volodka_postfx', v); }}
-            />
-            <CyberToggle
-              label="Сканлайны"
-              checked={scanlines}
-              onChange={(v) => { setScanlines(v); persist('volodka_scanlines', v); }}
-            />
-            <CyberToggle
-              label="Частицы"
-              checked={particles}
-              onChange={(v) => { setParticles(v); persist('volodka_particles', v); }}
-            />
-            <CyberToggle
-              label="Тряска камеры"
-              checked={camShake}
-              onChange={(v) => { setCamShake(v); persist('volodka_cam_shake', v); }}
-            />
-            <SectionDivider />
-            <CyberSlider
-              label="Яркость"
-              value={brightness}
-              min={50}
-              max={150}
-              onChange={(v) => { setBrightness(v); persist('volodka_brightness', v); }}
-              unit="%"
-            />
-          </motion.div>
+          <VisualSettingsTab
+            postfx={postfx}
+            setPostfx={setPostfx}
+            scanlines={scanlines}
+            setScanlines={setScanlines}
+            particles={particles}
+            setParticles={setParticles}
+            camShake={camShake}
+            setCamShake={setCamShake}
+            brightness={brightness}
+            setBrightness={setBrightness}
+            persist={persist}
+          />
         );
 
       case 'controls':

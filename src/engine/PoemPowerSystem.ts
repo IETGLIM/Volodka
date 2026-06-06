@@ -447,6 +447,46 @@ const POEM_POWERS: Record<string, PoemPower> = {
     flagsToSet: [{ key: 'tolpa_campfire_blessing', durationMs: 40000 }],
     reverseOnExpiry: [{ type: 'skill', key: 'empathy', value: -3 }],
   },
+  poem_act6_04: {
+    poemId: 'poem_act6_04',
+    name: 'Сопротивление',
+    description: 'Стих как щит: +10 к кодингу, обход защиты сервера в квестах акта 6.',
+    cooldownMs: 180000,
+    effect: () => {
+      addSkill('coding', 10);
+      addKarma(8);
+      eventBus.emit('ui:exploration_message', { text: '⚔️ Сопротивление... Код становится оружием.' });
+    },
+    flagsToSet: [{ key: 'resistance_poem_active', durationMs: 45000 }],
+    reverseOnExpiry: [{ type: 'skill', key: 'coding', value: -10 }],
+  },
+  poem_act6_05: {
+    poemId: 'poem_act6_05',
+    name: 'Предатель',
+    description: 'Правда режет глубже кода: +8 к логике, открывает ядро «Надзора» в квестах.',
+    cooldownMs: 180000,
+    effect: () => {
+      addSkill('logic', 8);
+      addStress(-15);
+      eventBus.emit('ui:exploration_message', { text: '🗡️ Предатель... Истина открывает двери.' });
+    },
+    flagsToSet: [{ key: 'traitor_truth_active', durationMs: 45000 }],
+    reverseOnExpiry: [{ type: 'skill', key: 'logic', value: -8 }],
+  },
+  poem_act6_07: {
+    poemId: 'poem_act6_07',
+    name: 'Финал — не конец',
+    description: 'Конец системы — начало свободы: +12 кармы, отключает защиту ядра в финале.',
+    cooldownMs: 200000,
+    effect: () => {
+      addKarma(12);
+      addSkill('writing', 6);
+      addStress(-25);
+      eventBus.emit('ui:exploration_message', { text: '🌅 Финал — не конец... Система падает. Люди остаются.' });
+    },
+    flagsToSet: [{ key: 'system_shutdown_poem_active', durationMs: 60000 }],
+    reverseOnExpiry: [{ type: 'skill', key: 'writing', value: -6 }],
+  },
 };
 
 /* ─── Public API ─── */

@@ -2444,6 +2444,21 @@ export const STORY_NODES: Record<string, StoryNode> = {
     ],
   },
 
+  /** @deprecated use act4_broadcast_execute — kept for quest/save back-compat */
+  act4_rooftop_broadcast: {
+    id: 'act4_rooftop_broadcast',
+    text: 'Крыша. Передающая антенна готова — город ждёт эфира.',
+    speaker: 'narrator',
+    sceneId: 'rooftop_edge',
+    choices: [
+      {
+        text: 'Начать вещание',
+        next: 'act4_broadcast_execute',
+        effects: [{ type: 'setFlag', flag: 'broadcast_ready', flagValue: true }],
+      },
+    ],
+  },
+
   act4_broadcast_execute: {
     id: 'act4_broadcast_execute',
     text: '«Сейчас.» Экраны по всему городу мигают. Реклама, новости, прогноз погоды — всё заменяется стихами. Пушкин на рекламном щите. Ахматова на терминале метро. Мандельштам в голограмме над площадью. Цветаева пульсирует в неоне витрин. Город замирает. Люди останавливаются, поднимают головы. Кто-то плачет. Кто-то шепчет: «Я думал, это забыли.» Стихи — повсюду. Слово — свободно.',

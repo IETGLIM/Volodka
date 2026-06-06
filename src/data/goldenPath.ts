@@ -128,6 +128,11 @@ export const STORY_NODE_TO_NPC_ID: Record<string, string> = {
   chk_act4_stalker_briefing: 'chk_stalker',
   chk_act4_broadcast_watch: 'chk_based',
   chk_act5_campfire_dawn: 'chk_ru',
+  act6_resistance_briefing: 'maxim',
+  act6_data_heist_planning: 'maxim',
+  act6_zeka_encounter: 'zeka',
+  act7_guild_rebuilding: 'anya',
+  act7_system_shutdown: 'maxim',
 };
 
 /** Human-readable location labels for guidance (exact node → label). */
@@ -225,8 +230,23 @@ export function getNpcIdForStoryNode(nodeId: string): string | undefined {
 }
 
 /** Resolve a story-node or alias id to the canonical NPC entity id. */
+
+/** Legacy story-node ids kept for save/back-compat — must resolve in STORY_NODES. */
+export const STORY_NODE_ALIASES: Record<string, string> = {
+  act4_rooftop_broadcast: 'act4_broadcast_execute',
+};
+
+/** Legacy NPC ids → canonical registry ids. */
+export const NPC_ID_ALIASES: Record<string, string> = {
+  nina: 'kate',
+};
+
+export function resolveStoryNodeAlias(nodeId: string): string {
+  return STORY_NODE_ALIASES[nodeId] ?? nodeId;
+}
+
 export function resolveCanonicalNpcId(id: string): string {
-  return STORY_NODE_TO_NPC_ID[id] ?? id;
+  return NPC_ID_ALIASES[id] ?? STORY_NODE_TO_NPC_ID[id] ?? id;
 }
 
 /** How an act advances to the next one. */

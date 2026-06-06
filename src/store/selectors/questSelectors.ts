@@ -1,7 +1,7 @@
 /* ─── Volodka RPG – quest derived selectors ─── */
 
 import type { QuestState, QuestType, SceneId } from '@/shared/types/game';
-import { QUEST_DEFINITIONS } from '@/data/quests';
+import { getQuestDefinitions } from '@/data/gameDataLoader';
 import { resolveCanonicalNpcId } from '@/data/goldenPath';
 import { getSceneConfig } from '@/config/scenes';
 import { getGameStore } from '../gameStore';
@@ -43,7 +43,7 @@ export function getQuestsByType(): Record<QuestType, QuestState[]> {
 
     for (const qs of q) {
       if (qs.status !== 'active') continue;
-      const def = QUEST_DEFINITIONS.find((d) => d.id === qs.questId);
+      const def = getQuestDefinitions().find((d) => d.id === qs.questId);
       if (def) {
         groups[def.questType].push(qs);
       }
@@ -58,7 +58,7 @@ export function getQuestProgress(questId: string): number {
   const quest = quests.find((q) => q.questId === questId);
   if (!quest) return 0;
 
-  const definition = QUEST_DEFINITIONS.find((d) => d.id === questId);
+  const definition = getQuestDefinitions().find((d) => d.id === questId);
   if (!definition) return 0;
 
   const total = definition.objectives.length;
@@ -72,7 +72,7 @@ export function getQuestProgress(questId: string): number {
 }
 
 export function areDependenciesMet(questId: string): { met: boolean; missing: string[] } {
-  const definition = QUEST_DEFINITIONS.find((d) => d.id === questId);
+  const definition = getQuestDefinitions().find((d) => d.id === questId);
   if (!definition?.requiresQuests || definition.requiresQuests.length === 0) {
     return { met: true, missing: [] };
   }
@@ -83,7 +83,7 @@ export function areDependenciesMet(questId: string): { met: boolean; missing: st
   for (const reqId of definition.requiresQuests) {
     const reqQuest = quests.find((q) => q.questId === reqId);
     if (!reqQuest || reqQuest.status !== 'completed') {
-      const reqDef = QUEST_DEFINITIONS.find((d) => d.id === reqId);
+      const reqDef = getQuestDefinitions().find((d) => d.id === reqId);
       missing.push(reqDef?.title ?? reqId);
     }
   }
@@ -94,7 +94,7 @@ export function areDependenciesMet(questId: string): { met: boolean; missing: st
 export function getQuestMarker(
   questId: string,
 ): { sceneId: SceneId; position: [number, number, number] } | null {
-  const definition = QUEST_DEFINITIONS.find((d) => d.id === questId);
+  const definition = getQuestDefinitions().find((d) => d.id === questId);
   if (!definition?.linkedStoryNodeId) return null;
 
   const quests = selectQuests();
@@ -136,7 +136,7 @@ export function getNextTrackedObjective(
   const questState = quests.find((q) => q.questId === questId);
   if (!questState || questState.status !== 'active') return null;
 
-  const definition = QUEST_DEFINITIONS.find((d) => d.id === questId);
+  const definition = getQuestDefinitions().find((d) => d.id === questId);
   if (!definition) return null;
 
   for (const objDef of definition.objectives) {
@@ -164,7 +164,7 @@ export function getQuestIndicatorForNpc(npcId: string): QuestIndicatorType | nul
   let hasActive = false;
   let hasCompleted = false;
 
-  for (const def of QUEST_DEFINITIONS) {
+  for (const def of getQuestDefinitions()) {
     if (def.questGiverNpcId !== canonicalNpcId) continue;
 
     const questState = quests.find((q) => q.questId === def.id);
@@ -212,7 +212,7 @@ export function useNextTrackedObjective(
     const questState = state.quests.find((q) => q.questId === questId);
     if (!questState || questState.status !== 'active') return null;
 
-    const definition = QUEST_DEFINITIONS.find((d) => d.id === questId);
+    const definition = getQuestDefinitions().find((d) => d.id === questId);
     if (!definition) return null;
 
     for (const objDef of definition.objectives) {
@@ -237,7 +237,7 @@ export function useQuestIndicatorForNpc(npcId: string): QuestIndicatorType | nul
   let hasActive = false;
   let hasCompleted = false;
 
-  for (const def of QUEST_DEFINITIONS) {
+  for (const def of getQuestDefinitions()) {
     if (def.questGiverNpcId !== canonicalNpcId) continue;
 
     const questState = quests.find((q) => q.questId === def.id);

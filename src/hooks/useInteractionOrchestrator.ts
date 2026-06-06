@@ -10,11 +10,14 @@ import {
   type MinigamePanelSetters,
 } from '@/shared/constants/minigames';
 import { audioEngine } from '@/engine/AudioEngine';
-import { TRIGGER_ZONES } from '@/data/triggerZones';
-import { STORY_NODES } from '@/data/storyNodes';
-import { DIALOGUE_NODES } from '@/data/dialogueNodes';
-import { findNpcById } from '@/data/allNpcDefinitions';
-import { getItemDefinition } from '@/data/items';
+import type { TriggerZone } from '@/data/triggerZones';
+import {
+  getStoryNodes,
+  getDialogueNodes,
+  getTriggerZones,
+  findNpcById,
+  getItemDefinition,
+} from '@/data/gameDataLoader';
 import { notifyItemReceived } from '@/components/game/LootNotification';
 import { applyEffects } from '@/shared/utils/applyEffects';
 import { requestSceneTransition, requestSceneTransitionForStoryNode } from '@/engine/scene/sceneTransition';
@@ -64,7 +67,7 @@ export function useInteractionOrchestrator(
   // ── Pending trigger zone: stored when ExaminePanel is shown with linked content ──
   // When the user presses E or clicks "Continue" in ExaminePanel, this zone's
   // linked content (dialogue/story/minigame) will be triggered.
-  const pendingTriggerZoneRef = useRef<typeof TRIGGER_ZONES[number] | null>(null);
+  const pendingTriggerZoneRef = useRef<TriggerZone | null>(null);
   // Guard: emit interaction:end at most once per overlay-close / interaction session
   const interactionEndEmittedRef = useRef(false);
 
@@ -117,7 +120,7 @@ export function useInteractionOrchestrator(
       eventBus.on('object:interact', ({ triggerZoneId }) => {
         if (!triggerZoneId) return;
 
-        const zone = TRIGGER_ZONES.find((z) => z.id === triggerZoneId);
+        const zone = getTriggerZones().find((z) => z.id === triggerZoneId);
         if (!zone) return;
 
         const store = useGameStore.getState();
@@ -159,17 +162,17 @@ export function useInteractionOrchestrator(
 
           const currentStore = useGameStore.getState();
 
-          if (z.linkedStoryNodeId && STORY_NODES[z.linkedStoryNodeId]) {
-            const storyNode = STORY_NODES[z.linkedStoryNodeId];
+          if (z.linkedStoryNodeId && getStoryNodes()[z.linkedStoryNodeId]) {
+            const storyNode = getStoryNodes()[z.linkedStoryNodeId];
             const alreadyVisited = currentStore.playerState.visitedNodes.includes(z.linkedStoryNodeId);
             if (alreadyVisited && storyNode.sceneId) {
               requestSceneTransition(storyNode.sceneId as SceneId);
               return;
             }
             requestSceneTransitionForStoryNode(z.linkedStoryNodeId, storyNode.sceneId);
-            openNarrativeOverlay(z.linkedStoryNodeId);
-          } else if (z.linkedDialogueNodeId && DIALOGUE_NODES[z.linkedDialogueNodeId]) {
-            openNarrativeOverlay(z.linkedDialogueNodeId);
+            openNarrativeOverlay(z.linkedStoryNodeId, 'story');
+          } else if (z.linkedDialogueNodeId && getDialogueNodes()[z.linkedDialogueNodeId]) {
+            openNarrativeOverlay(z.linkedDialogueNodeId, 'dialogue');
           }
         };
 
@@ -209,7 +212,7 @@ export function useInteractionOrchestrator(
         if (!npcDef) return;
 
         // Find trigger zone linked to this NPC
-        const npcZone = TRIGGER_ZONES.find((z) => {
+        const npcZone = getTriggerZones().find((z) => {
           // Check if the zone's dialogue/story links match this NPC
           if (z.linkedDialogueNodeId && npcDef.dialogueNodeId && z.linkedDialogueNodeId === npcDef.dialogueNodeId) {
             return true;
@@ -231,14 +234,14 @@ export function useInteractionOrchestrator(
 
         // Open dialogue or story for this NPC
         // ── World Director: stay in exploration, show narrative as overlay ──
-        if (npcDef.dialogueNodeId && DIALOGUE_NODES[npcDef.dialogueNodeId]) {
-          openNarrativeOverlay(npcDef.dialogueNodeId);
-        } else if (npcZone?.linkedDialogueNodeId && DIALOGUE_NODES[npcZone.linkedDialogueNodeId]) {
-          openNarrativeOverlay(npcZone.linkedDialogueNodeId);
-        } else if (npcZone?.linkedStoryNodeId && STORY_NODES[npcZone.linkedStoryNodeId]) {
-          const storyNode = STORY_NODES[npcZone.linkedStoryNodeId];
+        if (npcDef.dialogueNodeId && getDialogueNodes()[npcDef.dialogueNodeId]) {
+          openNarrativeOverlay(npcDef.dialogueNodeId, 'dialogue');
+        } else if (npcZone?.linkedDialogueNodeId && getDialogueNodes()[npcZone.linkedDialogueNodeId]) {
+          openNarrativeOverlay(npcZone.linkedDialogueNodeId, 'dialogue');
+        } else if (npcZone?.linkedStoryNodeId && getStoryNodes()[npcZone.linkedStoryNodeId]) {
+          const storyNode = getStoryNodes()[npcZone.linkedStoryNodeId];
           requestSceneTransitionForStoryNode(npcZone.linkedStoryNodeId, storyNode.sceneId);
-          openNarrativeOverlay(npcZone.linkedStoryNodeId);
+          openNarrativeOverlay(npcZone.linkedStoryNodeId, 'story');
         }
 
         // Emit npc:talked event
@@ -348,17 +351,17 @@ export function useInteractionOrchestrator(
     // sceneId, skip the VN overlay and just transition to the scene directly.
     // This prevents re-triggering the VN every time the player uses a door
     // they've already been through.
-    if (zone.linkedStoryNodeId && STORY_NODES[zone.linkedStoryNodeId]) {
-      const storyNode = STORY_NODES[zone.linkedStoryNodeId];
+    if (zone.linkedStoryNodeId && getStoryNodes()[zone.linkedStoryNodeId]) {
+      const storyNode = getStoryNodes()[zone.linkedStoryNodeId];
       const alreadyVisited = store.playerState.visitedNodes.includes(zone.linkedStoryNodeId);
       if (alreadyVisited && storyNode.sceneId) {
         requestSceneTransition(storyNode.sceneId as SceneId);
         return;
       }
       requestSceneTransitionForStoryNode(zone.linkedStoryNodeId, storyNode.sceneId);
-      openNarrativeOverlay(zone.linkedStoryNodeId);
-    } else if (zone.linkedDialogueNodeId && DIALOGUE_NODES[zone.linkedDialogueNodeId]) {
-      openNarrativeOverlay(zone.linkedDialogueNodeId);
+      openNarrativeOverlay(zone.linkedStoryNodeId, 'story');
+    } else if (zone.linkedDialogueNodeId && getDialogueNodes()[zone.linkedDialogueNodeId]) {
+      openNarrativeOverlay(zone.linkedDialogueNodeId, 'dialogue');
     }
   }, []);
 

@@ -2,8 +2,6 @@ import { useCallback, useEffect, useRef } from 'react';
 import { useGameStore } from '@/store/gameStore';
 import { eventBus } from '@/engine/EventBus';
 import { audioEngine } from '@/engine/AudioEngine';
-import { STORY_NODES } from '@/data/storyNodes';
-import { DIALOGUE_NODES } from '@/data/dialogueNodes';
 import { getCutsceneForNode } from '@/data/cutscenes';
 import { openNarrativeOverlay } from '@/engine/scene/narrativeOverlay';
 
@@ -33,8 +31,8 @@ export function useCutsceneController(currentNodeId: string | null) {
     eventBus.emit('cutscene:overlay_end', {});
     eventBus.emit('camera:cutscene_end', {});
 
-    if (store.currentNodeId && STORY_NODES[store.currentNodeId]) {
-      openNarrativeOverlay(store.currentNodeId);
+    if (store.currentNodeId && store.narrativeKind) {
+      openNarrativeOverlay(store.currentNodeId, store.narrativeKind);
     }
     return true;
   }, [clearCutsceneTimers]);
@@ -88,11 +86,8 @@ export function useCutsceneController(currentNodeId: string | null) {
       if (currentStore.mode === 'cutscene') {
         currentStore.setCutscene(null, []);
         currentStore.setMode('exploration');
-        if (
-          currentStore.currentNodeId &&
-          (STORY_NODES[currentStore.currentNodeId] || DIALOGUE_NODES[currentStore.currentNodeId])
-        ) {
-          openNarrativeOverlay(currentStore.currentNodeId);
+        if (currentStore.currentNodeId && currentStore.narrativeKind) {
+          openNarrativeOverlay(currentStore.currentNodeId, currentStore.narrativeKind);
         }
       }
     }, totalDuration);

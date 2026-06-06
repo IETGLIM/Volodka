@@ -8,10 +8,7 @@ import type {
   AcceptedDailyMission,
   TrainablePlayerSkill,
 } from '@/shared/types/game';
-import { getPoemById } from '@/data/poems';
-import { QUEST_DEFINITIONS } from '@/data/quests';
-import { ACHIEVEMENT_MAP, TOTAL_ACHIEVEMENTS } from '@/data/achievements';
-import { getDailyMissionById } from '@/data/dailyMissions';
+import { getPoemById, getQuestDefinitions, getAchievementMap, getDailyMissionById, getTotalAchievements } from '@/data/gameDataLoader';
 import { eventBus } from '@/engine/EventBus';
 import { clamp, pushNotification, type GameNotification, type PoemPowerState } from '../shared';
 import { applyFairmathRelation } from '@/shared/fairmath';
@@ -142,7 +139,7 @@ export const createWorldSlice: StateCreator<
       const existing = state.quests.find((q) => q.questId === questId);
       if (existing && existing.status !== 'inactive') return state;
 
-      const definition = QUEST_DEFINITIONS.find((d) => d.id === questId);
+      const definition = getQuestDefinitions().find((d) => d.id === questId);
       if (!definition) return state;
 
       const objectives: Record<string, boolean> = {};
@@ -195,7 +192,7 @@ export const createWorldSlice: StateCreator<
         };
       });
 
-      const questDef = QUEST_DEFINITIONS.find((d) => d.id === questId);
+      const questDef = getQuestDefinitions().find((d) => d.id === questId);
 
       eventBus.emit('quest:completed', { questId, npcId: questDef?.questGiverNpcId });
       const questTitle = questDef?.title ?? questId;
@@ -291,7 +288,7 @@ export const createWorldSlice: StateCreator<
     // Already unlocked?
     if (state.unlockedAchievements.some((a) => a.id === achievementId)) return false;
 
-    const def = ACHIEVEMENT_MAP[achievementId];
+    const def = getAchievementMap()[achievementId];
     if (!def) return false;
 
     const timestamp = Date.now();
@@ -348,7 +345,7 @@ export const createWorldSlice: StateCreator<
 
     // Check for "all achievements" meta-achievement
     const newUnlockedCount = state.unlockedAchievements.length + 1;
-    if (achievementId !== 'hidden_all_achievements' && newUnlockedCount >= TOTAL_ACHIEVEMENTS - 1) {
+    if (achievementId !== 'hidden_all_achievements' && newUnlockedCount >= getTotalAchievements() - 1) {
       // -1 because meta-achievement itself hasn't been counted yet
       const store = get();
       if (!store.unlockedAchievements.some((a) => a.id === 'hidden_all_achievements')) {

@@ -249,6 +249,46 @@ const KATE_SCHEDULE: NPCSchedule = {
   ],
 };
 
+/** Максим — лидер сопротивления. Ночные улицы и операции на заводе. */
+const MAXIM_SCHEDULE: NPCSchedule = {
+  id: 'schedule_maxim',
+  npcId: 'maxim',
+  entries: [
+    { startHour: 0, endHour: 6, sceneId: 'abandoned_factory', position: [-2.0, 0, -1.5], activity: 'work' },
+    { startHour: 6, endHour: 12, sceneId: 'home_evening', position: [0.5, 0, 0.5], activity: 'sleep' },
+    { startHour: 12, endHour: 18, sceneId: 'abandoned_factory', position: [-1.5, 0, -1.0], activity: 'work' },
+    { startHour: 18, endHour: 20, sceneId: 'cafe_evening', position: [-1.0, 0, 1.0], activity: 'talk' },
+    { startHour: 20, endHour: 24, sceneId: 'street_night', position: [-2.0, 0, -1.5], activity: 'walk' },
+  ],
+};
+
+/** Жека — старый хакер завода. Почти живёт на заброшенной фабрике. */
+const ZEKA_SCHEDULE: NPCSchedule = {
+  id: 'schedule_zeka',
+  npcId: 'zeka',
+  entries: [
+    { startHour: 0, endHour: 8, sceneId: 'abandoned_factory', position: [1.0, 0, -1.0], activity: 'work' },
+    { startHour: 8, endHour: 12, sceneId: 'street_night', position: [0.5, 0, -1.0], activity: 'walk' },
+    { startHour: 12, endHour: 14, sceneId: 'cafe_evening', position: [1.5, 0, 0.5], activity: 'rest' },
+    { startHour: 14, endHour: 20, sceneId: 'abandoned_factory', position: [1.0, 0, -1.0], activity: 'work' },
+    { startHour: 20, endHour: 24, sceneId: 'abandoned_factory', position: [0.5, 0, 0.0], activity: 'work' },
+  ],
+};
+
+/** Аня — хакер сопротивления. Координирует операции из кафе и с улицы. */
+const ANYA_SCHEDULE: NPCSchedule = {
+  id: 'schedule_anya',
+  npcId: 'anya',
+  entries: [
+    { startHour: 0, endHour: 6, sceneId: 'street_night', position: [0.5, 0, 2.0], activity: 'work' },
+    { startHour: 6, endHour: 10, sceneId: 'home_evening', position: [0.0, 0, 0.5], activity: 'sleep' },
+    { startHour: 10, endHour: 14, sceneId: 'cafe_evening', position: [0.5, 0, 2.0], activity: 'work' },
+    { startHour: 14, endHour: 18, sceneId: 'office_day', position: [2.0, 0, 1.0], activity: 'work' },
+    { startHour: 18, endHour: 22, sceneId: 'cafe_evening', position: [0.0, 0, 1.5], activity: 'talk' },
+    { startHour: 22, endHour: 24, sceneId: 'street_night', position: [0.5, 0, 2.0], activity: 'walk' },
+  ],
+};
+
 /**
  * Viktor's daily schedule — old hacker, nocturnal.
  * Sleeps during day, active at night in abandoned factory.
@@ -349,6 +389,9 @@ export const NPC_SCHEDULES: NPCSchedule[] = [
   LENA_SCHEDULE,
   OLEG_SCHEDULE,
   KATE_SCHEDULE,
+  MAXIM_SCHEDULE,
+  ZEKA_SCHEDULE,
+  ANYA_SCHEDULE,
   VIKTOR_SCHEDULE,
   KIRA_SCHEDULE,
   BORIS_SCHEDULE,

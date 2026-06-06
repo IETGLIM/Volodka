@@ -7,7 +7,14 @@ import { FocusTrap } from '@/components/a11y/FocusTrap';
 import { usePanelDialog } from '@/components/a11y/usePanelDialog';
 import { useGameStore } from '@/store/gameStore';
 import { eventBus } from '@/engine/EventBus';
-import { getRendererInfo, type RendererInfoSnapshot } from '@/engine/RendererInfoState';
+import { getFrameProfilerSnapshot, type FrameProfilerSnapshot } from '@/engine/frame';
+import {
+  getRuntimeBudgetSnapshot,
+  getLoadingTimelineSnapshot,
+  getDrawCallBudget,
+  getActiveFpsBudget,
+  PERFORMANCE_BUDGETS,
+} from '@/engine/performance';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { SCENE_CONFIG } from '@/config/scenes';
 import type { SceneId } from '@/shared/types/game';
@@ -48,7 +55,7 @@ export function DevPanel({ startOpen = false }: { startOpen?: boolean }) {
   const [frameTime, setFrameTime] = useState(0);
 
   // Renderer info (read from bridge)
-  const [rendererInfo, setRendererInfo] = useState<RendererInfoSnapshot | null>(null);
+  const [frameProfiler, setFrameProfiler] = useState<FrameProfilerSnapshot | null>(null);
 
   // Event log
   const [events, setEvents] = useState<EventLogEntry[]>([]);
@@ -98,7 +105,7 @@ export function DevPanel({ startOpen = false }: { startOpen?: boolean }) {
   useEffect(() => {
     if (!visible) return;
     const interval = setInterval(() => {
-      setRendererInfo(getRendererInfo());
+      setFrameProfiler(getFrameProfilerSnapshot());
       // Chrome-only memory API
       const perf = performance as unknown as {
         memory?: { usedJSHeapSize: number; totalJSHeapSize: number; jsHeapSizeLimit: number };
@@ -225,7 +232,7 @@ export function DevPanel({ startOpen = false }: { startOpen?: boolean }) {
           <PerfTab
             fps={fps}
             frameTime={frameTime}
-            rendererInfo={rendererInfo}
+            frameProfiler={frameProfiler}
             memoryInfo={memoryInfo}
           />
         )}
@@ -244,18 +251,59 @@ export function DevPanel({ startOpen = false }: { startOpen?: boolean }) {
 function PerfTab({
   fps,
   frameTime,
-  rendererInfo,
+  frameProfiler,
   memoryInfo,
 }: {
   fps: number;
   frameTime: number;
-  rendererInfo: RendererInfoSnapshot | null;
+  frameProfiler: FrameProfilerSnapshot | null;
   memoryInfo: { usedJSHeapSize: number; totalJSHeapSize: number; jsHeapSizeLimit: number } | null;
 }) {
   const fpsColor = fps > 50 ? '#4f4' : fps > 30 ? '#ff4' : '#f44';
+  const budgetMs = 1000 / 60;
+  const runtimeBudget = getRuntimeBudgetSnapshot();
+  const loadTimeline = getLoadingTimelineSnapshot();
+  const fpsTarget = getActiveFpsBudget();
+  const sceneId = frameProfiler ? useGameStore.getState().exploration.currentSceneId : null;
+  const drawBudget = sceneId ? getDrawCallBudget(sceneId) : PERFORMANCE_BUDGETS.drawCalls.defaultMax;
 
   return (
     <div>
+      {/* Budget targets */}
+      <div style={{ marginBottom: 12, padding: 8, borderRadius: 4, background: '#111', border: '1px solid #222' }}>
+        <div style={{ color: '#555', fontSize: 9, textTransform: 'uppercase', letterSpacing: 1.5, marginBottom: 6 }}>
+          Performance budgets
+        </div>
+        <Row label="FPS target" value={`${fpsTarget.target} (min ${fpsTarget.min})`} />
+        <Row label="Profile" value={runtimeBudget?.fpsProfile ?? '—'} />
+        {loadTimeline.firstScenePlayableMs != null && (
+          <Row
+            label="First scene"
+            value={`${loadTimeline.firstScenePlayableMs.toFixed(0)} ms`}
+            valueColor={
+              loadTimeline.firstScenePlayableMs > PERFORMANCE_BUDGETS.firstScenePlayableMs.hardMax
+                ? '#f44'
+                : loadTimeline.firstScenePlayableMs > PERFORMANCE_BUDGETS.firstScenePlayableMs.target
+                  ? '#ff4'
+                  : '#4f4'
+            }
+          />
+        )}
+        {sceneId && frameProfiler && (
+          <Row
+            label={`Draw calls (${sceneId})`}
+            value={`${frameProfiler.drawCalls} / ${drawBudget}`}
+            valueColor={frameProfiler.drawCalls > drawBudget ? '#f44' : frameProfiler.drawCalls > drawBudget * 0.85 ? '#ff4' : '#888'}
+          />
+        )}
+        {runtimeBudget && runtimeBudget.violations.length > 0 && (
+          <div style={{ marginTop: 6, fontSize: 10, color: '#f88' }}>
+            {runtimeBudget.violations.slice(0, 4).map((v) => (
+              <div key={v.id}>{v.message}</div>
+            ))}
+          </div>
+        )}
+      </div>
       {/* FPS */}
       <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
         <span style={{ color: fpsColor, fontSize: 22, fontWeight: 'bold' }}>{fps}</span>
@@ -274,19 +322,70 @@ function PerfTab({
         }} />
       </div>
 
-      {/* Renderer info */}
-      {rendererInfo && (
-        <div style={{ marginTop: 12 }}>
-          <div style={{ color: '#555', fontSize: 9, textTransform: 'uppercase', letterSpacing: 1.5, marginBottom: 6 }}>
-            Renderer
+      {frameProfiler && (
+        <>
+          <div style={{ marginTop: 12 }}>
+            <div style={{ color: '#555', fontSize: 9, textTransform: 'uppercase', letterSpacing: 1.5, marginBottom: 6 }}>
+              Frame Budget (CPU)
+            </div>
+            <Row label="Canvas frame" value={`${frameProfiler.cpuFrameMs.toFixed(2)} ms`} />
+            <Row label="Budget runner" value={`${frameProfiler.cpuBudgetMs.toFixed(2)} ms`} />
+            <Row label="Physics step" value={`${frameProfiler.physicsStepMs.toFixed(2)} ms`} />
+            <Row label="Legacy useFrame est." value={`${frameProfiler.legacyUseFrameEstimate.toFixed(2)} ms`} />
+            <Row label="Registered ticks" value={frameProfiler.registeredTicks} />
+            <Row label="Zustand notifies" value={frameProfiler.zustandNotificationsThisFrame} />
           </div>
-          <Row label="DPR" value={rendererInfo.dpr.toFixed(2)} />
-          <Row label="Draw Calls" value={rendererInfo.drawCalls} />
-          <Row label="Triangles" value={formatNumber(rendererInfo.triangles)} />
-          <Row label="Textures" value={rendererInfo.textures} />
-          <Row label="Geometries" value={rendererInfo.geometries} />
-          <Row label="Programs" value={rendererInfo.programs} />
-        </div>
+
+          <div style={{ marginTop: 12 }}>
+            <div style={{ color: '#555', fontSize: 9, textTransform: 'uppercase', letterSpacing: 1.5, marginBottom: 6 }}>
+              Systems @ 60fps ({budgetMs.toFixed(1)} ms)
+            </div>
+            {(['interaction', 'player', 'npc', 'camera', 'weather', 'postfx', 'misc'] as const).map((id) => {
+              const sys = frameProfiler.systems[id];
+              const pct = sys.budgetPct;
+              const barColor = pct > 40 ? '#f44' : pct > 20 ? '#ff4' : '#22d3ee';
+              return (
+                <div key={id} style={{ marginBottom: 4 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10 }}>
+                    <span style={{ color: '#888' }}>{id}</span>
+                    <span style={{ color: '#666' }}>{sys.cpuMs.toFixed(2)} ms ({pct.toFixed(0)}%)</span>
+                  </div>
+                  <div style={{ height: 3, borderRadius: 2, background: '#222', overflow: 'hidden' }}>
+                    <div style={{ height: '100%', width: `${Math.min(100, pct)}%`, background: barColor }} />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {frameProfiler.topTicks.length > 0 && (
+            <div style={{ marginTop: 12 }}>
+              <div style={{ color: '#555', fontSize: 9, textTransform: 'uppercase', letterSpacing: 1.5, marginBottom: 6 }}>
+                Top Ticks
+              </div>
+              {frameProfiler.topTicks.map((tick) => (
+                <Row
+                  key={`${tick.system}:${tick.label}`}
+                  label={`${tick.system}/${tick.label}`}
+                  value={`${tick.cpuMs.toFixed(2)} ms`}
+                />
+              ))}
+            </div>
+          )}
+
+          <div style={{ marginTop: 12 }}>
+            <div style={{ color: '#555', fontSize: 9, textTransform: 'uppercase', letterSpacing: 1.5, marginBottom: 6 }}>
+              GPU / Renderer
+            </div>
+            <Row label="DPR" value={frameProfiler.dpr.toFixed(2)} />
+            <Row label="Draw Calls" value={frameProfiler.drawCalls} />
+            <Row label="Triangles" value={formatNumber(frameProfiler.triangles)} />
+            <Row label="Textures" value={frameProfiler.textures} />
+            <Row label="Geometries" value={frameProfiler.geometries} />
+            <Row label="Programs" value={frameProfiler.programs} />
+            <Row label="GPU frame" value={frameProfiler.gpuFrameMs != null ? `${frameProfiler.gpuFrameMs.toFixed(2)} ms` : 'N/A'} />
+          </div>
+        </>
       )}
 
       {/* Memory (Chrome only) */}
@@ -328,7 +427,7 @@ function SceneTab() {
   const mode = useGameStore((s) => s.mode);
   const timeOfDay = useGameStore((s) => s.exploration.timeOfDay);
   const npcStates = useGameStore((s) => s.exploration.npcStates);
-  const rendererInfo = getRendererInfo();
+  const rendererInfo = getFrameProfilerSnapshot();
 
   const handleSceneSwitch = useCallback((id: SceneId) => {
     const store = useGameStore.getState();

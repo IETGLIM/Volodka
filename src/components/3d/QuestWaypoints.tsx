@@ -10,7 +10,7 @@ import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { useQuestWaypointState } from '@/store/selectors';
 import { SCENE_CONFIG } from '@/config/scenes';
-import { getQuestMarker } from '@/store/questStore';
+import { getQuestMarker } from '@/store/selectors/questSelectors';
 import type { SceneId, SceneExit } from '@/shared/types/game';
 
 interface QuestWaypointsProps {

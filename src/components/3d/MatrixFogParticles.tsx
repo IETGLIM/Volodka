@@ -15,10 +15,10 @@ const BOX_SIZE: [number, number, number] = [12, 8, 12];
 
 export function MatrixFogParticles() {
   const isMobile = useIsMobileVisual();
-  const { visualLite } = useMobileVisualPerf();
+  const { visualLite, effectsScale } = useMobileVisualPerf();
   const particleCount = useMemo(
-    () => getParticleCount(BASE_PARTICLE_COUNT, isMobile, visualLite),
-    [isMobile, visualLite],
+    () => getParticleCount(BASE_PARTICLE_COUNT, isMobile, visualLite, effectsScale),
+    [isMobile, visualLite, effectsScale],
   );
 
   const pointsRef = useRef<THREE.Points>(null);

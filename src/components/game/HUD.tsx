@@ -5,7 +5,7 @@
    better mobile responsive layout.
 */
 
-import { useCallback, useRef, useEffect, useState, useMemo } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { motion, AnimatePresence, useSpring, useTransform } from 'framer-motion';
 import {
   Save,
@@ -43,28 +43,22 @@ import {
   Camera,
 } from 'lucide-react';
 import { useGameStore } from '@/store/gameStore';
-import {
-  useCollectedPoems,
-  useHUDExploration,
-  useHUDPlayerVitals,
-  useSaveGame,
-} from '@/store/selectors';
-import { UI_LAYERS } from '@/shared/constants/uiLayers';
-import { SCENE_CONFIG } from '@/config/scenes';
+import { getPoems, getQuestDefinitions } from '@/data/gameDataLoader';
 import { KARMA_LOW_THRESHOLD, KARMA_HIGH_THRESHOLD } from '@/data/constants';
-import { useNextTrackedObjective, useActiveQuests } from '@/store/questStore';
-import { QUEST_DEFINITIONS } from '@/data/quests';
-import { POEMS } from '@/data/poems';
+import { type WeatherType, WEATHER_EFFECTS } from '@/data/weatherEffects';
+import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { eventBus } from '@/engine/EventBus';
-import { PHOTO_EVENTS, PHOTO_EMPTY_PAYLOAD } from '@/engine/events';
-import { floatXP, floatKarma, floatEnergy, floatStress, floatLevelUp, floatSkill } from '@/components/game/FloatingText';
-import { type WeatherType, determineWeatherType, WEATHER_EFFECTS } from '@/data/weatherEffects';
+import { PHOTO_EMPTY_PAYLOAD, PHOTO_EVENTS } from '@/engine/events';
+import { floatLevelUp } from '@/components/game/FloatingText';
+import type { SecondaryAction } from '@/components/game/hud/hudTypes';
 import { StatusEffectsBar } from '@/components/game/StatusEffectsBar';
 import { MoralCompassHUD } from '@/components/game/MoralCompassHUD';
 import { AriaLiveRegion } from '@/components/a11y/AriaLiveRegion';
 import { getKarmaTierLabel } from '@/shared/utils/karmaTier';
+import { useHUDController } from '@/components/game/hud/useHUDController';
+import type { HUDProps } from '@/components/game/hud/hudTypes';
 
-const TOTAL_POEMS = POEMS.length;
+export type { HUDProps } from '@/components/game/hud/hudTypes';
 
 /* ── Weather icon from WeatherType ── */
 function WeatherIcon({ type, className = 'size-4' }: { type: WeatherType; className?: string }) {
@@ -431,14 +425,6 @@ function AchievementPopup() {
 }
 
 /* ── Secondary menu item for "More" dropdown ── */
-interface SecondaryAction {
-  icon: React.ReactNode;
-  label: string;
-  shortcut?: string;
-  onClick?: () => void;
-  badge?: number; // notification badge count
-}
-
 function HUDMenuItem({ icon, label, shortcut, onClick, badge }: SecondaryAction) {
   return (
     <button
@@ -464,223 +450,61 @@ function HUDMenuItem({ icon, label, shortcut, onClick, badge }: SecondaryAction)
   );
 }
 
-/* ══════════════════════════════════════════════════════════════
-   QUEST NOTIFICATION BADGE — tracks new/unread quests
-   ══════════════════════════════════════════════════════════════ */
-function useQuestNotificationCount() {
-  const activeQuests = useActiveQuests();
-  // Count recently activated quests (activated in last 30 seconds)
-  const [newCount, setNewCount] = useState(0);
-  const seenQuests = useRef<Set<string>>(new Set());
-  const recentQueue = useRef<{ questId: string; time: number }[]>([]);
+export function HUD(props: HUDProps) {
+  const state = useHUDController(props);
+  const totalPoems = getPoems().length;
+  const {
+    photoModeOn,
+    hudMounted,
+    timeOfDay,
+    sceneName,
+    currentWeather,
+    collectedPoems,
+    questNotificationCount,
+    firstQuestId,
+    nextObjective,
+    showSaveIndicator,
+    handleSave,
+    karma,
+    energy,
+    stress,
+    level,
+    xp,
+    xpToNext,
+    perkCount,
+    activeStatusEffectCount,
+    karmaDirection,
+    karmaPulse,
+    energyPulse,
+    stressPulse,
+    isLowEnergy,
+    isHighStress,
+    moreMenuOpen,
+    setMoreMenuOpen,
+    moreMenuRef,
+    onOpenQuests,
+    onOpenInventory,
+    onOpenPoetry,
+    onOpenCrafting,
+    onOpenTrading,
+    onOpenStats,
+  } = state;
 
-  useEffect(() => {
-    for (const q of activeQuests) {
-      if (!seenQuests.current.has(q.questId)) {
-        seenQuests.current.add(q.questId);
-        recentQueue.current.push({ questId: q.questId, time: Date.now() });
-      }
-    }
+  const {
+    onToggleTutorials,
+    onOpenMenu,
+    onOpenMiniGames,
+    onOpenCharacterProfile,
+    onOpenNPCRelations,
+    onOpenCodex,
+    onOpenDialogueHistory,
+    onOpenAchievements,
+    onOpenSkillTree,
+    onOpenFastTravel,
+    onOpenPerks,
+    onOpenQuestBoard,
+  } = props;
 
-    const now = Date.now();
-    const recent = recentQueue.current.filter((r) => now - r.time < 30000);
-    recentQueue.current = recent;
-    setNewCount(recent.length);
-
-    // Cleanup old entries every 5s
-    const timer = setInterval(() => {
-      const n = Date.now();
-      const r = recentQueue.current.filter((e) => n - e.time < 30000);
-      recentQueue.current = r;
-      setNewCount(r.length);
-    }, 5000);
-
-    return () => clearInterval(timer);
-  }, [activeQuests]);
-
-  return newCount;
-}
-
-/* ── Component ── */
-interface HUDProps {
-  onOpenQuests?: () => void;
-  onOpenInventory?: () => void;
-  onOpenPoetry?: () => void;
-  onToggleTutorials?: () => void;
-  onOpenMenu?: () => void;
-  onOpenMiniGames?: () => void;
-  onOpenCharacterProfile?: () => void;
-  onOpenNPCRelations?: () => void;
-  onOpenCodex?: () => void;
-  onOpenDialogueHistory?: () => void;
-  onOpenAchievements?: () => void;
-  onOpenSkillTree?: () => void;
-  onOpenCrafting?: () => void;
-  onOpenTrading?: () => void;
-  onOpenFastTravel?: () => void;
-  onOpenPerks?: () => void;
-  onOpenQuestBoard?: () => void;
-  onOpenStats?: () => void;
-}
-
-export function HUD({ onOpenQuests, onOpenInventory, onOpenPoetry, onToggleTutorials, onOpenMenu, onOpenMiniGames, onOpenCharacterProfile, onOpenNPCRelations, onOpenCodex, onOpenDialogueHistory, onOpenAchievements, onOpenSkillTree, onOpenCrafting, onOpenTrading, onOpenFastTravel, onOpenPerks, onOpenQuestBoard, onOpenStats }: HUDProps) {
-  const { currentSceneId, timeOfDay, weatherEnabled, rainIntensity } = useHUDExploration();
-  const playerVitals = useHUDPlayerVitals();
-  const saveGame = useSaveGame();
-  const collectedPoems = useCollectedPoems();
-
-  // ── Weather type computation ──
-  const [snowActive, setSnowActive] = useState(false);
-  useEffect(() => {
-    const unsub = eventBus.on('weather:snow', (payload: { active: boolean }) => {
-      setSnowActive(payload.active);
-    });
-    return () => { unsub(); };
-  }, []);
-
-  const currentWeather: WeatherType = useMemo(() =>
-    determineWeatherType(weatherEnabled, rainIntensity, snowActive, currentSceneId, timeOfDay),
-    [weatherEnabled, rainIntensity, snowActive, currentSceneId, timeOfDay],
-  );
-
-  const sceneConfig = SCENE_CONFIG[currentSceneId];
-  const sceneName = sceneConfig?.name ?? 'Неизвестно';
-
-  const activeQuests = useActiveQuests();
-  const firstQuestId = activeQuests.length > 0 ? activeQuests[0].questId : '';
-  const nextObjective = useNextTrackedObjective(firstQuestId);
-  const questNotificationCount = useQuestNotificationCount();
-
-  // ── Quick-save indicator ──
-  const [showSaveIndicator, setShowSaveIndicator] = useState(false);
-
-  const handleSave = useCallback(() => {
-    saveGame({ source: 'manual' });
-    setShowSaveIndicator(true);
-    setTimeout(() => setShowSaveIndicator(false), 2000);
-  }, [saveGame]);
-
-  const { karma, energy, stress, level, xp, xpToNextLevel: xpToNext, unlockedPerks } = playerVitals;
-  const perkCount = unlockedPerks?.length ?? 0;
-
-  // ── Active status effects count (mirrors StatusEffectsBar logic) ──
-  const activeStatusEffectCount = useMemo(() => {
-    let count = 0;
-    if (currentWeather !== 'clear') count += 1;
-    const PERK_EFFECT_MAP: Record<string, boolean> = {
-      night_watch: true, iron_stomach: true, counterattack: true, poetic_trance: true,
-    };
-    for (const perkId of unlockedPerks) {
-      if (PERK_EFFECT_MAP[perkId]) count += 1;
-    }
-    if (energy < 25) count += 1;
-    if (stress > 70) count += 1;
-    return count;
-  }, [currentWeather, unlockedPerks, energy, stress]);
-
-  // ── Karma direction indicator ──
-  const [karmaDirection, setKarmaDirection] = useState<'up' | 'down' | null>(null);
-  const karmaDirectionTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  // Pulse animation on stat changes
-  const [karmaPulse, setKarmaPulse] = useState(false);
-  const [energyPulse, setEnergyPulse] = useState(false);
-  const [stressPulse, setStressPulse] = useState(false);
-  const prevKarma = useRef(karma);
-  const prevEnergy = useRef(energy);
-  const prevStress = useRef(stress);
-  const prevLevel = useRef(level);
-  const prevXp = useRef(xp);
-
-  // Stat change tracking — also spawns floating text
-  useEffect(() => {
-    if (karma !== prevKarma.current) {
-      const delta = karma - prevKarma.current;
-      prevKarma.current = karma;
-      if (delta !== 0) floatKarma(delta);
-      // Karma direction indicator — deferred to avoid synchronous setState in effect
-      const dirTimeout = setTimeout(() => {
-        if (delta > 0) setKarmaDirection('up');
-        else if (delta < 0) setKarmaDirection('down');
-        if (karmaDirectionTimeout.current) clearTimeout(karmaDirectionTimeout.current);
-        karmaDirectionTimeout.current = setTimeout(() => setKarmaDirection(null), 2000);
-      }, 0);
-      const t = setTimeout(() => setKarmaPulse(true), 0);
-      const t2 = setTimeout(() => setKarmaPulse(false), 600);
-      return () => { clearTimeout(t); clearTimeout(t2); clearTimeout(dirTimeout); };
-    }
-  }, [karma]);
-
-  useEffect(() => {
-    if (energy !== prevEnergy.current) {
-      const delta = energy - prevEnergy.current;
-      prevEnergy.current = energy;
-      if (delta !== 0) floatEnergy(delta);
-      const t = setTimeout(() => setEnergyPulse(true), 0);
-      const t2 = setTimeout(() => setEnergyPulse(false), 600);
-      return () => { clearTimeout(t); clearTimeout(t2); };
-    }
-  }, [energy]);
-
-  useEffect(() => {
-    if (stress !== prevStress.current) {
-      const delta = stress - prevStress.current;
-      prevStress.current = stress;
-      if (delta !== 0) floatStress(delta);
-      const t = setTimeout(() => setStressPulse(true), 0);
-      const t2 = setTimeout(() => setStressPulse(false), 600);
-      return () => { clearTimeout(t); clearTimeout(t2); };
-    }
-  }, [stress]);
-
-  // Track XP changes and spawn floating text
-  useEffect(() => {
-    if (xp !== prevXp.current) {
-      const delta = xp - prevXp.current;
-      prevXp.current = xp;
-      if (delta > 0) floatXP(delta);
-    }
-  }, [xp]);
-
-  // Track level changes
-  useEffect(() => {
-    if (level > prevLevel.current) {
-      prevLevel.current = level;
-      // floatLevelUp is handled in LevelBadge
-    }
-  }, [level]);
-
-  // ── "More" dropdown state ──
-  const [moreMenuOpen, setMoreMenuOpen] = useState(false);
-  const moreMenuRef = useRef<HTMLDivElement>(null);
-
-  // Close on click outside
-  useEffect(() => {
-    if (!moreMenuOpen) return;
-    const handler = (e: MouseEvent | TouchEvent) => {
-      if (moreMenuRef.current && !moreMenuRef.current.contains(e.target as Node)) {
-        setMoreMenuOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handler);
-    document.addEventListener('touchstart', handler);
-    return () => {
-      document.removeEventListener('mousedown', handler);
-      document.removeEventListener('touchstart', handler);
-    };
-  }, [moreMenuOpen]);
-
-  // Close on Escape
-  useEffect(() => {
-    if (!moreMenuOpen) return;
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setMoreMenuOpen(false);
-    };
-    document.addEventListener('keydown', handler);
-    return () => document.removeEventListener('keydown', handler);
-  }, [moreMenuOpen]);
-
-  // Secondary actions for the "More" dropdown
   const secondaryActions: SecondaryAction[] = useMemo(() => [
     { icon: <span className="size-4 flex items-center justify-center text-sm">🧭</span>, label: 'Быстрый переход', shortcut: 'F', onClick: onOpenFastTravel },
     { icon: <Sparkles className="size-4" />, label: 'Навыки', shortcut: 'T', onClick: onOpenSkillTree },
@@ -696,25 +520,6 @@ export function HUD({ onOpenQuests, onOpenInventory, onOpenPoetry, onToggleTutor
     { icon: <Lightbulb className="size-4" />, label: 'Подсказки', onClick: onToggleTutorials },
     { icon: <Menu className="size-4" />, label: 'Меню', onClick: onOpenMenu },
   ], [onOpenFastTravel, onOpenSkillTree, onOpenPerks, onOpenQuestBoard, onOpenTrading, onOpenMiniGames, onOpenCharacterProfile, onOpenNPCRelations, onOpenCodex, onOpenDialogueHistory, onOpenAchievements, onToggleTutorials, onOpenMenu]);
-
-  // ── Photo mode: hide HUD when active ──
-  const [photoModeOn, setPhotoModeOn] = useState(false);
-  useEffect(() => {
-    const activeSub = eventBus.on(PHOTO_EVENTS.active, () => setPhotoModeOn(true));
-    const inactiveSub = eventBus.on(PHOTO_EVENTS.inactive, () => setPhotoModeOn(false));
-    return () => { activeSub(); inactiveSub(); };
-  }, []);
-
-  // Warning states
-  const isLowEnergy = energy < 25;
-  const isHighStress = stress > 70;
-
-  // ── Fade-in on mount ──
-  const [hudMounted, setHudMounted] = useState(false);
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- mount guard for fade-in
-    setHudMounted(true);
-  }, []);
 
   if (photoModeOn) return null;
 
@@ -797,7 +602,7 @@ export function HUD({ onOpenQuests, onOpenInventory, onOpenPoetry, onToggleTutor
               onClick={onOpenPoetry}
               className="flex items-center gap-1 sm:gap-1.5 px-1.5 sm:px-2.5 py-1 rounded-md text-xs border transition-all hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/60"
               title="Стихи [⇧P]"
-              aria-label={`Стихи: ${collectedPoems.length} из ${TOTAL_POEMS}`}
+              aria-label={`Стихи: ${collectedPoems.length} из ${totalPoems}`}
               style={{
                 background: 'rgba(120,60,10,0.25)',
                 borderColor: 'rgba(251,191,36,0.35)',
@@ -808,7 +613,7 @@ export function HUD({ onOpenQuests, onOpenInventory, onOpenPoetry, onToggleTutor
               <span className="text-amber-200 font-semibold hidden sm:inline" style={{ textShadow: '0 0 8px rgba(251,191,36,0.4)' }}>Стихи:</span>
               <AnimatedCounter value={collectedPoems.length} className="text-amber-300 font-bold" style={{ textShadow: '0 0 6px rgba(251,191,36,0.5)' }} />
               <span className="text-amber-500/60 hidden sm:inline">/</span>
-              <span className="text-amber-400/70 hidden sm:inline">{TOTAL_POEMS}</span>
+              <span className="text-amber-400/70 hidden sm:inline">{totalPoems}</span>
             </button>
 
             <div className="w-px h-4 bg-slate-700/25 mx-0.5" />
@@ -949,7 +754,7 @@ export function HUD({ onOpenQuests, onOpenInventory, onOpenPoetry, onToggleTutor
       {/* ── Quest objective indicator (top-center) ── */}
       <AnimatePresence>
         {nextObjective && (() => {
-          const questDef = QUEST_DEFINITIONS.find((d) => d.id === firstQuestId);
+          const questDef = getQuestDefinitions().find((d) => d.id === firstQuestId);
           const questTitle = questDef?.title ?? '';
           return (
             <motion.div

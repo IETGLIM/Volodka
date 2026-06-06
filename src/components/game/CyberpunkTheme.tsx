@@ -5,7 +5,7 @@
  * a React context for theme color values.
  */
 
-import { createContext, useContext, type ReactNode } from 'react'
+import { createContext, type ReactNode } from 'react'
 import '@/styles/cyberpunk-theme.css';
 
 /* ─── Theme Color Constants ─── */
@@ -36,35 +36,6 @@ interface CyberpunkThemeContextValue {
 }
 
 const CyberpunkThemeContext = createContext<CyberpunkThemeContextValue | null>(null)
-
-/** @deprecated — not used anywhere; remove context consumers via inline styles instead */
-function _useCyberpunkTheme(): CyberpunkThemeContextValue {
-  const ctx = useContext(CyberpunkThemeContext)
-  if (!ctx) {
-    // Return a default value if used outside provider
-    return {
-      colors: CYBERPUNK_COLORS,
-      rgba: (key, alpha) => {
-        const hex = CYBERPUNK_COLORS[key]
-        const r = parseInt(hex.slice(1, 3), 16)
-        const g = parseInt(hex.slice(3, 5), 16)
-        const b = parseInt(hex.slice(5, 7), 16)
-        return `rgba(${r}, ${g}, ${b}, ${alpha})`
-      },
-      cssVar: (key) => {
-        const map: Record<CyberpunkColorKey, string> = {
-          matrixGreen: 'var(--cyber-matrix-green)',
-          neonCyan: 'var(--cyber-neon-cyan)',
-          amberGold: 'var(--cyber-amber-gold)',
-          deepCrimson: 'var(--cyber-deep-crimson)',
-          mutedOlive: 'var(--cyber-muted-olive)',
-        }
-        return map[key]
-      },
-    }
-  }
-  return ctx
-}
 
 /* ─── Helper: hex to rgba ─── */
 

@@ -63,10 +63,15 @@ const DESKTOP_COUNTS: Record<SnowLevel, number> = {
   heavy: 10000,
 };
 
-function buildSnowConfig(level: SnowLevel, isMobile: boolean, visualLite: boolean): SnowConfig {
+function buildSnowConfig(
+  level: SnowLevel,
+  isMobile: boolean,
+  visualLite: boolean,
+  effectsScale: number,
+): SnowConfig {
   return {
     ...SNOW_BASE[level],
-    count: getParticleCount(DESKTOP_COUNTS[level], isMobile, visualLite),
+    count: getParticleCount(DESKTOP_COUNTS[level], isMobile, visualLite, effectsScale),
   };
 }
 
@@ -125,7 +130,7 @@ export function SnowSystem({ intensity = 1 }: { intensity?: number }) {
   const weatherEnabled = useGameStore((s) => s.weatherEnabled);
   const rainIntensity = useGameStore((s) => s.rainIntensity);
   const isMobile = useIsMobileVisual();
-  const { visualLite } = useMobileVisualPerf();
+  const { visualLite, effectsScale } = useMobileVisualPerf();
 
   const configLevel = useMemo(() => {
     const effective = intensity * rainIntensity;
@@ -135,8 +140,8 @@ export function SnowSystem({ intensity = 1 }: { intensity?: number }) {
   }, [intensity, rainIntensity]);
 
   const config = useMemo(
-    () => buildSnowConfig(configLevel, isMobile, visualLite),
-    [configLevel, isMobile, visualLite],
+    () => buildSnowConfig(configLevel, isMobile, visualLite, effectsScale),
+    [configLevel, isMobile, visualLite, effectsScale],
   );
 
   if (!weatherEnabled) return null;

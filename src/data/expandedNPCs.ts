@@ -12,6 +12,9 @@ export const EXPANDED_NPC_QUEST_LINKS: Record<string, string[]> = {
   lena: ['digital_ghost', 'secrets_of_old_code'],
   oleg: ['guild_infiltration'],
   kate: ['poetry_smuggling', 'poetry_collection'],
+  maxim: ['underground_resistance', 'data_heist', 'system_infiltration', 'system_takedown', 'rooftop_confrontation'],
+  zeka: ['data_heist', 'system_infiltration', 'system_takedown'],
+  anya: ['data_heist', 'rebuild_the_guild'],
 }
 
 /* ── All bark text variants (hostile/neutral/friendly arrays) ── */
@@ -44,6 +47,21 @@ export const EXPANDED_NPC_BARK_TEXTS: Record<string, {
     hostile: ['Эта секция закрыта.'],
     neutral: ['Тише... Стены слушают.', 'Книги — последний убежище.'],
     friendly: ['Володька, я припрятала кое-что для тебя.', 'Между строк — больше правды, чем в новостях.'],
+  },
+  maxim: {
+    hostile: ['Не время для разговоров.'],
+    neutral: ['Сопротивление не спит.', 'Каждый день — новый риск.'],
+    friendly: ['Володька, мы готовы идти за тобой.', 'Гильдия ещё пожалеет, что нас недооценила.'],
+  },
+  zeka: {
+    hostile: ['Не подходи. Я не доверяю.'],
+    neutral: ['Завод помнит всё.', 'Старый код не врёт.'],
+    friendly: ['Володька, у меня есть данные по «Надзору».', 'Я знал Александра. До того, как он стал тенью.'],
+  },
+  anya: {
+    hostile: ['Сеть под наблюдением. Молчи.'],
+    neutral: ['Пинг стабилен. Пока.', 'Камеры — мои глаза.'],
+    friendly: ['Володька, я прикрою тыл в сети.', 'Офис гильдии — открытая книга, если знать пароль.'],
   },
 }
 
@@ -206,6 +224,102 @@ export const EXPANDED_NPCS: NPCDefinition[] = [
       headAccessory: 'glasses',
       height: 0.9,
       glowColor: '#60c060',
+      silhouette: 'slim',
+    },
+  },
+
+  /* ─────────────── МАКСИМ – лидер сопротивления ─────────────── */
+  {
+    id: 'maxim',
+    name: 'Максим',
+    modelPath: '',
+    scale: 1.1,
+    animations: { idle: 'idle', walk: 'walk', talk: 'talk' },
+    defaultPosition: [-2.0, 0, -1.5],
+    patrolRadius: 2.0,
+    patrolWaypoints: [
+      [-2.0, 0, -1.5],
+      [-1.0, 0, -2.0],
+      [-2.5, 0, -0.5],
+      [-2.0, 0, -1.5],
+    ],
+    dialogueNodeId: 'maxim_greeting',
+    description: 'Лидер подпольного сопротивления. Бывший рабочий завода с боевыми имплантами.',
+    barkTexts: {
+      hostile: 'Не время для разговоров.',
+      neutral: 'Сопротивление не спит.',
+      friendly: 'Володька, мы готовы идти за тобой.',
+    },
+    appearance: {
+      bodyColor: '#c06040',
+      accentColor: '#c06040',
+      headAccessory: 'none',
+      height: 1.1,
+      glowColor: '#c06040',
+      silhouette: 'heavy',
+    },
+  },
+
+  /* ─────────────── ЖЕКА – старый хакер завода ─────────────── */
+  {
+    id: 'zeka',
+    name: 'Жека',
+    modelPath: '',
+    scale: 1.0,
+    animations: { idle: 'idle', walk: 'walk', talk: 'talk' },
+    defaultPosition: [1.0, 0, -1.0],
+    patrolRadius: 1.5,
+    patrolWaypoints: [
+      [1.0, 0, -1.0],
+      [1.5, 0, -0.5],
+      [0.5, 0, -1.5],
+      [1.0, 0, -1.0],
+    ],
+    dialogueNodeId: 'zeka_greeting',
+    description: 'Старый рабочий и хакер. Знал Александра до Краха. Хранит секреты «Надзора».',
+    barkTexts: {
+      hostile: 'Не подходи. Я не доверяю.',
+      neutral: 'Завод помнит всё.',
+      friendly: 'Володька, у меня есть данные по «Надзору».',
+    },
+    appearance: {
+      bodyColor: '#808070',
+      accentColor: '#808070',
+      headAccessory: 'hat',
+      height: 1.0,
+      glowColor: '#808070',
+      silhouette: 'average',
+    },
+  },
+
+  /* ─────────────── АНЯ – хакер сопротивления ─────────────── */
+  {
+    id: 'anya',
+    name: 'Аня',
+    modelPath: '',
+    scale: 0.9,
+    animations: { idle: 'idle', walk: 'walk', talk: 'talk' },
+    defaultPosition: [0.5, 0, 2.0],
+    patrolRadius: 1.5,
+    patrolWaypoints: [
+      [0.5, 0, 2.0],
+      [1.0, 0, 1.5],
+      [0.0, 0, 2.5],
+      [0.5, 0, 2.0],
+    ],
+    dialogueNodeId: 'anya_greeting',
+    description: 'Хакер сопротивления. Взламывает камеры и координирует связь во время операций.',
+    barkTexts: {
+      hostile: 'Сеть под наблюдением. Молчи.',
+      neutral: 'Пинг стабилен. Пока.',
+      friendly: 'Володька, я прикрою тыл в сети.',
+    },
+    appearance: {
+      bodyColor: '#5090d0',
+      accentColor: '#5090d0',
+      headAccessory: 'glasses',
+      height: 0.9,
+      glowColor: '#5090d0',
       silhouette: 'slim',
     },
   },

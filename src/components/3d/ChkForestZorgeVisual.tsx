@@ -1,10 +1,9 @@
 
-/* ─── ЧК · Лес · Зорге — secret society clearing (ez-tree forest) ─── */
+/* ─── ЧК · Лес · Зорге — secret society clearing (procedural forest) ─── */
 
 import { useMemo, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
-import { EzTreeInstance } from './EzTreeInstance';
 
 interface ChkForestZorgeVisualProps {
   livePlayerPositionRef?: React.MutableRefObject<THREE.Vector3>;
@@ -71,12 +70,11 @@ export function ChkForestZorgeVisual(_props: ChkForestZorgeVisualProps) {
         <meshStandardMaterial color="#4a3a28" roughness={1} />
       </mesh>
 
-      {/* ez-tree perimeter */}
+      {/* Forest perimeter — lightweight procedural trees (no ez-tree bundle) */}
       {treePlacements.map((t) => (
-        <EzTreeInstance
+        <ForestTree
           key={t.seed}
           position={t.pos}
-          seed={t.seed}
           preset={t.preset}
           scale={t.scale}
           rotation={t.rot}
@@ -156,6 +154,61 @@ export function ChkForestZorgeVisual(_props: ChkForestZorgeVisualProps) {
           <meshStandardMaterial color="#444440" roughness={0.9} />
         </mesh>
       </group>
+    </group>
+  );
+}
+
+type ForestTreePreset = 'Oak Large' | 'Oak Medium' | 'Oak Small' | 'Pine Large' | 'Pine Medium' | 'Pine Small' | 'Birch Large' | 'Birch Medium' | 'Birch Small' | string;
+
+function ForestTree({
+  position,
+  preset,
+  scale = 1,
+  rotation = 0,
+}: {
+  position: [number, number, number];
+  preset: ForestTreePreset;
+  scale?: number;
+  rotation?: number;
+}) {
+  const kind = preset.startsWith('Pine') ? 'pine' : preset.startsWith('Birch') ? 'birch' : 'oak';
+  const size = preset.includes('Large') ? 'large' : preset.includes('Small') ? 'small' : 'medium';
+
+  const trunkH = (kind === 'pine' ? 3.2 : 2.6) * scale * (size === 'large' ? 1.15 : size === 'small' ? 0.85 : 1);
+  const trunkR = (kind === 'birch' ? 0.14 : 0.22) * scale;
+  const trunkColor = kind === 'birch' ? '#c8c0b0' : '#3a2a1a';
+  const leafColor = kind === 'pine' ? '#1a3a18' : kind === 'birch' ? '#4a6a38' : '#2a4a1a';
+  const leafColor2 = kind === 'pine' ? '#234822' : '#3a5a2a';
+
+  return (
+    <group position={position} rotation={[0, rotation, 0]} scale={scale}>
+      <mesh position={[0, trunkH * 0.5, 0]} castShadow>
+        <cylinderGeometry args={[trunkR * 0.7, trunkR, trunkH, 8]} />
+        <meshStandardMaterial color={trunkColor} roughness={0.9} />
+      </mesh>
+      {kind === 'pine' ? (
+        <>
+          <mesh position={[0, trunkH + 0.9 * scale, 0]} castShadow>
+            <coneGeometry args={[1.3 * scale * (size === 'large' ? 1.2 : 1), 2.2 * scale, 8]} />
+            <meshStandardMaterial color={leafColor} roughness={0.95} />
+          </mesh>
+          <mesh position={[0, trunkH + 1.9 * scale, 0]} castShadow>
+            <coneGeometry args={[1.0 * scale, 1.8 * scale, 8]} />
+            <meshStandardMaterial color={leafColor2} roughness={0.95} />
+          </mesh>
+        </>
+      ) : (
+        <>
+          <mesh position={[0, trunkH + 0.8 * scale, 0]} castShadow>
+            <sphereGeometry args={[1.4 * scale * (size === 'large' ? 1.2 : size === 'small' ? 0.85 : 1), 8, 8]} />
+            <meshStandardMaterial color={leafColor} roughness={0.95} />
+          </mesh>
+          <mesh position={[0.5 * scale, trunkH + 1.2 * scale, 0.3 * scale]} castShadow>
+            <sphereGeometry args={[0.9 * scale, 8, 6]} />
+            <meshStandardMaterial color={leafColor2} roughness={0.95} />
+          </mesh>
+        </>
+      )}
     </group>
   );
 }

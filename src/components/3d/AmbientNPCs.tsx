@@ -6,7 +6,7 @@
      a single useFrame loop. ─── */
 
 import { useRef, useMemo, useEffect } from 'react';
-import { useFrame } from '@react-three/fiber';
+import { useFrameTick } from '@/engine/frame/useFrameTick';
 import * as THREE from 'three';
 import type { SceneId } from '@/shared/types/game';
 import { useGameStore } from '@/store/gameStore';
@@ -236,7 +236,7 @@ export function AmbientNPCs() {
   }, [colors]);
 
   // Single useFrame drives all instance positions
-  useFrame((_, delta) => {
+  useFrameTick('npc', ({ delta }) => {
     const bodyMesh = bodyMeshRef.current;
     const headMesh = headMeshRef.current;
     if (!bodyMesh || !headMesh) return;
@@ -333,7 +333,7 @@ export function AmbientNPCs() {
 
     bodyMesh.instanceMatrix.needsUpdate = true;
     headMesh.instanceMatrix.needsUpdate = true;
-  });
+  }, { label: 'AmbientNPCs' });
 
   // Don't render anything if no config for this scene
   if (!config || count === 0) return null;

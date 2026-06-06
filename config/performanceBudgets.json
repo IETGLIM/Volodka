@@ -1,0 +1,85 @@
+{
+  "version": 1,
+  "initialJsGzipBytes": {
+    "target": 800000,
+    "hardMax": 1200000,
+    "description": "JS downloaded before first scene is playable (menu + warm canvas on default scene)"
+  },
+  "firstScenePlayableMs": {
+    "target": 3000,
+    "hardMax": 5000,
+    "description": "Time from navigation start to canvas:first-frame + game data ready"
+  },
+  "fps": {
+    "desktop": { "target": 60, "min": 55 },
+    "weakLaptop": { "target": 45, "min": 30 },
+    "sampleFrames": 120,
+    "description": "Rolling average FPS; weak-laptop profile uses DPR <= 1.25 or hardwareConcurrency <= 4"
+  },
+  "drawCalls": {
+    "defaultMax": 300,
+    "warnRatio": 0.85,
+    "perScene": {
+      "volodka_room": 220,
+      "volodka_corridor": 200,
+      "home_evening": 280,
+      "zarema_albert_room": 240,
+      "street_night": 320,
+      "street_winter": 340,
+      "cafe_evening": 260,
+      "office_day": 280,
+      "park_day": 350,
+      "library_day": 270,
+      "rooftop_edge": 300,
+      "abandoned_factory": 360,
+      "chk_forest_zorge": 400,
+      "battle": 420,
+      "sleep_dream": 380
+    }
+  },
+  "physicsStepMs": {
+    "target": 2.5,
+    "hardMax": 5,
+    "description": "Rapier step wall time per frame"
+  },
+  "reactRendersPerFrame": {
+    "warn": 3,
+    "hardMax": 8
+  },
+  "zustandNotificationsPerFrame": {
+    "warn": 5,
+    "hardMax": 15
+  },
+  "cpuFrameMs": {
+    "target": 16.67,
+    "hardMax": 33.33,
+    "description": "Wall frame time — 16.67 ms @ 60 FPS, 33.33 ms @ 30 FPS"
+  },
+  "bundleTiers": {
+    "boot": ["^index-", "^vendor-"],
+    "firstScene": [
+      "^index-",
+      "^vendor-",
+      "^three-",
+      "^game-canvas-",
+      "^GameOrchestrator-",
+      "^scene-volodka-room",
+      "^game-ui-menu-screen",
+      "^data-narrative",
+      "^data-npc",
+      "^data-world",
+      "^data-mechanics",
+      "^pack-chk-narrative",
+      "^pack-chk-npc",
+      "^pack-chk-world"
+    ],
+    "lazyPrefixes": [
+      "^minigame-",
+      "^panel-",
+      "^game-ui-(?!menu-screen|hud)",
+      "^scene-(?!volodka-room)",
+      "^game-dev",
+      "^engine-combat"
+    ]
+  }
+}

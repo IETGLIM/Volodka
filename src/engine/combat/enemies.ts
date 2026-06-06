@@ -499,6 +499,32 @@ export const ENEMY_TEMPLATES: Record<EnemyType, EnemyTemplate> = {
       },
     ],
   },
+  nexus_guardian: {
+    type: 'nexus_guardian',
+    name: 'Хранитель «Надзора»',
+    emoji: '🛡️',
+    baseHp: 80,
+    baseAttack: 18,
+    baseDefense: 10,
+    baseSpeed: 8,
+    targetsStat: 'logic',
+    lootTable: ['data_chip', 'nadzor_key_fragment', 'energy_drink'],
+    xpReward: 60,
+    specialAttacks: [],
+  },
+  void_echo: {
+    type: 'void_echo',
+    name: 'Эхо Пустоты',
+    emoji: '🌑',
+    baseHp: 65,
+    baseAttack: 20,
+    baseDefense: 6,
+    baseSpeed: 14,
+    targetsStat: 'empathy',
+    lootTable: ['shadow_cloak', 'code_fragment', 'nano_patch'],
+    xpReward: 55,
+    specialAttacks: [],
+  },
 };
 
 /* ═══════════════════════════════════════════════════════════════
@@ -526,6 +552,8 @@ export function resolveEnemyType(requestedType: EnemyType): EnemyType {
     data_wraith: { minLevel: 1, minAct: 2 },
     censor_drone: { minLevel: 2, minAct: 1 },
     poetry_hunter: { minLevel: 5, minAct: 2 },
+    nexus_guardian: { minLevel: 8, minAct: 6 },
+    void_echo: { minLevel: 7, minAct: 6 },
   };
 
   const unlock = PHASE_UNLOCKS[requestedType];

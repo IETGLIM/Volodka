@@ -629,4 +629,41 @@ export const EXPANDED_DIALOGUE_NODES: Record<string, DialogueNode> = {
       },
     ],
   },
+
+  /* ═══════════════════════════════════════════════════════════
+     ACT 6 — Сопротивление: Максим, Жека, Аня
+     ═══════════════════════════════════════════════════════════ */
+
+  maxim_greeting: {
+    id: 'maxim_greeting',
+    speaker: 'Максим',
+    text: 'Володька. Мы встречались на ночной улице — помнишь? Я Максим. Лидер тех, кто не согласен жить под «Надзором». У нас мало людей, но у нас есть ярость и стихи. Что тебе нужно?',
+    choices: [
+      { text: 'Расскажи о планах сопротивления.', next: null, effects: [{ type: 'addSkill', skill: 'persuasion', value: 1 }] },
+      { text: 'Готов действовать.', next: null, effects: [{ type: 'setFlag', flag: 'resistance_joined', flagValue: true }, { type: 'addKarma', value: 3 }] },
+      { text: 'Позже.', next: null },
+    ],
+  },
+
+  zeka_greeting: {
+    id: 'zeka_greeting',
+    speaker: 'Жека',
+    text: 'Не бойся, Володька. Я Жека — старый рабочий, старый хакер. Знаю «Надзор» изнутри: точки входа, ключи, слабые места. Александр когда-то был человеком. А потом стал идеей. Я помню оба.',
+    choices: [
+      { text: 'Что ты знаешь о «Надзоре»?', next: null, effects: [{ type: 'addSkill', skill: 'coding', value: 2 }, { type: 'setFlag', flag: 'zeka_trusted', flagValue: true }] },
+      { text: 'Поможешь с проникновением?', next: null, effects: [{ type: 'addSkill', skill: 'logic', value: 1 }] },
+      { text: 'Спасибо. Пока.', next: null },
+    ],
+  },
+
+  anya_greeting: {
+    id: 'anya_greeting',
+    speaker: 'Аня',
+    text: 'Привет, Володька. Я Аня — глаза и уши сопротивления в сети. Камеры, логи, протоколы — всё это моя территория. Если нужно пройти незамеченным или вытащить данные — я в деле.',
+    choices: [
+      { text: 'Нужна помощь с офисом гильдии.', next: null, effects: [{ type: 'addSkill', skill: 'coding', value: 1 }] },
+      { text: 'Координируй связь во время операции.', next: null, effects: [{ type: 'setFlag', flag: 'resistance_network_established', flagValue: true }] },
+      { text: 'Понял. Увидимся.', next: null },
+    ],
+  },
 }

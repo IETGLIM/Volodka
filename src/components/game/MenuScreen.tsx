@@ -2,6 +2,7 @@
 /* ─── Volodka RPG – Epic RPG Main Menu (Enhanced) ─── */
 
 import { memo, useEffect, useState, useMemo, useCallback, useRef } from 'react';
+import { FilmGrain, CinematicBars } from '@/components/game/cinematic';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { Volume2, VolumeX } from 'lucide-react';
 import { useGameStore } from '@/store/gameStore';
@@ -300,18 +301,7 @@ const ParticleSystem = memo(function ParticleSystem() {
   );
 });
 
-// ============================================
-// CINEMATIC BARS
-// ============================================
-
-const CinematicBars = memo(function CinematicBars() {
-  return (
-    <>
-      <div className="absolute top-0 left-0 right-0 z-40 h-[6vh] min-h-[24px] menu-cinematic-bar menu-cinematic-bar-top pointer-events-none" />
-      <div className="absolute bottom-0 left-0 right-0 z-40 h-[6vh] min-h-[24px] menu-cinematic-bar menu-cinematic-bar-bottom pointer-events-none" />
-    </>
-  );
-});
+// CINEMATIC BARS — see @/components/game/cinematic/CinematicBars
 
 // ============================================
 // GLITCH TITLE
@@ -484,24 +474,7 @@ const AtmosphericPan = memo(function AtmosphericPan() {
   );
 });
 
-// ============================================
-// FILM GRAIN
-// ============================================
-
-const FilmGrain = memo(function FilmGrain() {
-  return (
-    <div
-      className="absolute inset-0 pointer-events-none z-[49]"
-      style={{
-        opacity: 0.035,
-        backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`,
-        backgroundSize: '128px 128px',
-        mixBlendMode: 'overlay',
-        animation: 'cinematic-grain 0.4s steps(8) infinite',
-      }}
-    />
-  );
-});
+// FILM GRAIN — see @/components/game/cinematic/FilmGrain
 
 // ============================================
 // ASCII ART DECORATION
@@ -900,7 +873,7 @@ export function MenuScreen() {
       <MenuParticles />
 
       {/* Film grain overlay */}
-      <FilmGrain />
+      <FilmGrain opacity={0.035} zIndex={49} />
 
       {/* Scanlines */}
       <div className="absolute inset-0 pointer-events-none z-50" style={{ background: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0, 0, 0, 0.07) 2px, rgba(0, 0, 0, 0.07) 4px)' }} />

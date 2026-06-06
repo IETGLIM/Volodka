@@ -28,7 +28,8 @@
  */
 
 import { useRef, useEffect, useMemo } from 'react';
-import { useFrame } from '@react-three/fiber';
+import { useFrameTick } from '@/engine/frame/useFrameTick';
+import { setPhysicsStepMs } from '@/engine/frame/FrameBudgetRegistry';
 import { RigidBody, CapsuleCollider, useRapier, type RapierRigidBody, type RapierCollider } from '@react-three/rapier';
 import * as THREE from 'three';
 
@@ -229,7 +230,8 @@ export function PhysicsPlayer({
   const tempMoveDir = useRef(new THREE.Vector3());
 
   // ─── Main physics loop ───
-  useFrame((state, delta) => {
+  useFrameTick('player', ({ state, delta }) => {
+    let physicsStepMs = 0;
     const rb = rigidBodyRef.current;
     const controller = controllerRef.current;
     if (!rb || !controller) return;
@@ -590,7 +592,9 @@ export function PhysicsPlayer({
     // Reset fail counter — collider was found
     controllerFailCountRef.current = 0;
 
+    const physicsT0 = performance.now();
     controller.computeColliderMovement(collider, desiredDisplacement);
+    physicsStepMs = performance.now() - physicsT0;
 
     const actualDisplacement = controller.computedMovement();
     const isGroundedNow = controller.computedGrounded();
@@ -712,7 +716,8 @@ export function PhysicsPlayer({
       noMovementFramesRef.current = 0;
     }
     prevRbPosRef.current.set(finalPos.x, finalPos.y, finalPos.z);
-  });
+    setPhysicsStepMs(physicsStepMs);
+  }, { label: 'PhysicsPlayer' });
 
   // Determine karma glow color
   const karmaGlow = useMemo(() => {

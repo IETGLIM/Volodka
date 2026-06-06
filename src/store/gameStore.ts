@@ -41,6 +41,7 @@ import { createUISlice } from './slices/uiSlice';
 import { createCutsceneSlice } from './slices/cutsceneSlice';
 import { createSaveSlice } from './slices/saveSlice';
 import { eventBus } from '@/engine/EventBus';
+import { wrapStoreSubscribe } from '@/engine/frame/frameProfilerCounters';
 import {
   registerGameActionBridge,
   type GameAction,
@@ -64,6 +65,11 @@ export const useGameStore = create<GameStoreState>()(
   ...createSaveSlice(...a),
   })),
 );
+
+if (import.meta.env.DEV) {
+  const baseSubscribe = useGameStore.subscribe.bind(useGameStore);
+  useGameStore.subscribe = wrapStoreSubscribe(baseSubscribe) as typeof useGameStore.subscribe;
+}
 
 /** Convenience: get current store state outside React */
 export function getGameStore() {
@@ -169,7 +175,7 @@ registerGameActionBridge({
         store.setShowStoryOverlay(action.show);
         break;
       case 'story/openNarrativeOverlay':
-        store.openNarrativeOverlay(action.nodeId);
+        store.openNarrativeOverlay(action.nodeId, action.kind ?? store.narrativeKind ?? 'story');
         break;
       case 'story/closeNarrativeOverlay':
         store.closeNarrativeOverlay();

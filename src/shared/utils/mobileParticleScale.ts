@@ -29,8 +29,9 @@ export function getParticleCount(
   base: number,
   isMobile: boolean,
   visualLite?: boolean,
+  effectsScale = 1,
 ): number {
-  const scaled = base * particleMultiplier(isMobile, visualLite);
+  const scaled = base * particleMultiplier(isMobile, visualLite) * effectsScale;
   return Math.max(1, Math.round(scaled));
 }
 

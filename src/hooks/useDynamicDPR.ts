@@ -162,5 +162,10 @@ export function useDynamicDPR(options: DynamicDPROptions): [number, number] {
     return () => clearInterval(interval);
   }, [lowFpsThreshold, highFpsThreshold, minDpr, step, targetDpr, windowMs, stabilizationWindows]);
 
+  // Re-sync when quality preset changes
+  useEffect(() => {
+    setDpr(targetDpr);
+  }, [targetDpr[0], targetDpr[1]]);
+
   return dpr;
 }

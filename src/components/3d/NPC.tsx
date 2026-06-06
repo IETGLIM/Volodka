@@ -19,7 +19,7 @@ import { updateHeadTracking, cleanupHeadTracking } from '@/engine/npc/headTracki
 import { InteractionState } from '@/engine/interaction/interactionMachine';
 import { ProceduralNPCModel } from '@/components/3d/ProceduralNPCModels';
 import { createPatrolState, updatePatrol, shouldPatrol, type PatrolState } from '@/engine/npc/npcPatrol';
-import { QUEST_DEFINITIONS } from '@/data/quests';
+import { getQuestDefinitions } from '@/data/gameDataLoader';
 import { GOLDEN_PATH_QUEST_SPINE } from '@/data/goldenPath';
 import { canStartQuest } from '@/engine/GuidedStoryManager';
 
@@ -583,7 +583,7 @@ function QuestMarker({ npcId }: { npcId: string }) {
       // Check if ALL objectives are complete
       if (Object.values(q.objectives).some((v) => !v)) continue;
       // Check if this NPC is involved in this quest
-      const questDef = QUEST_DEFINITIONS.find((d) => d.id === q.questId);
+      const questDef = getQuestDefinitions().find((d) => d.id === q.questId);
       if (!questDef) continue;
       const npcInvolved = questDef.objectives.some(
         (o) => o.type === 'npc_talked' && o.target === npcId,
@@ -605,7 +605,7 @@ function QuestMarker({ npcId }: { npcId: string }) {
       if (q.status !== 'active') continue;
       // Still has incomplete objectives
       if (!Object.values(q.objectives).some((v) => !v)) continue;
-      const questDef = QUEST_DEFINITIONS.find((d) => d.id === q.questId);
+      const questDef = getQuestDefinitions().find((d) => d.id === q.questId);
       if (!questDef) continue;
       // Check if any incomplete npc_talked objective targets this NPC
       const hasNpcObjective = questDef.objectives.some(
@@ -624,7 +624,7 @@ function QuestMarker({ npcId }: { npcId: string }) {
     }
 
     // 3. Check for available quests from this NPC (yellow !)
-    for (const qDef of QUEST_DEFINITIONS) {
+    for (const qDef of getQuestDefinitions()) {
       // Check if this quest has an npc_talked objective targeting this NPC
       const hasNpcObj = qDef.objectives.some(
         (o) => o.type === 'npc_talked' && o.target === npcId,

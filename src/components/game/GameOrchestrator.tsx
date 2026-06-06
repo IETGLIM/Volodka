@@ -10,8 +10,6 @@ import {
 import { AnimatePresence, motion } from 'framer-motion';
 import { useGameStore } from '@/store/gameStore';
 import { useJournalOpen, useOrchestratorOverlay } from '@/store/selectors';
-import { STORY_NODES } from '@/data/storyNodes';
-import { DIALOGUE_NODES } from '@/data/dialogueNodes';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import {
   closeMinigame,
@@ -27,14 +25,13 @@ import { useQuestTracker } from '@/hooks/useQuestTracker';
 import { useMinigameForQuest } from './MinigameQuestBridge';
 import { useAchievementChecker } from '@/hooks/useAchievementChecker';
 import { useWorldClock } from '@/hooks/useWorldClock';
+import { useWorldStream } from '@/hooks/useWorldStream';
 
 import { LootNotification } from './LootNotification';
 import { LoadingScreen } from './LoadingScreen';
 import { NotificationToasts } from './NotificationToasts';
 import { ExaminePanel } from './ExaminePanel';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
-import { HUD } from './HUD';
-import { MiniMap } from './MiniMap';
 import { MoralCompassHUD } from './MoralCompassHUD';
 import { TutorialOverlay } from './TutorialOverlay';
 import { FirstPlayTutorial } from './FirstPlayTutorial';
@@ -61,10 +58,11 @@ import { PoetryPowerBar } from '@/components/game/PoetryPowerBar';
 import { PoemPowerEffect } from '@/components/game/PoemPowerEffect';
 import { DirectionalDamageIndicator } from '@/components/game/DirectionalDamageIndicator';
 import { DamageNumberFloat } from '@/components/game/DamageNumberFloat';
-import { QuestNotificationSystem } from './QuestNotificationSystem';
-import { StoryGuidanceHUD } from './StoryGuidanceHUD';
 import { LevelUpSummary } from './LevelUpSummary';
 import { CyberpunkThemeProvider } from './CyberpunkTheme';
+
+import { useGameDataPreload } from '@/hooks/useGameDataPreload';
+import { markOrchestratorMount } from '@/engine/performance/LoadingTimeline';
 
 import { IntroAutoSkip } from './orchestrator/IntroAutoSkip';
 import { FocusTrap } from '@/components/a11y/FocusTrap';
@@ -76,6 +74,7 @@ import { PanelStackProvider, PanelStackSlot } from './orchestrator/PanelStackCon
 import { useKeyboardShortcutManager } from './orchestrator/useKeyboardShortcutManager';
 import { useGamepadInput } from '@/hooks/useGamepadInput';
 import { useGameLifecycleManager } from './orchestrator/useGameLifecycleManager';
+import { useNarrativeKindRecovery } from './orchestrator/useNarrativeKindRecovery';
 import { useMobileDetection } from './orchestrator/useMobileDetection';
 import {
   LazyPanelSlot,
@@ -101,14 +100,6 @@ import {
   LazyTradingPanel,
   LazyDevPanel,
   LazyShortcutsOverlay,
-  LazyCodeBreakerGame,
-  LazyOpenStackTerminalGame,
-  LazyBashTerminalGame,
-  LazyPoetryCompositionGame,
-  LazyHackingGame,
-  LazyMemoryPuzzleGame,
-  LazyQuizGame,
-  LazyRhythmGame,
   LazyMenuScreen,
   LazyIntroScreen,
   LazyStoryRenderer,
@@ -121,34 +112,53 @@ import {
   LazyMatrixRainQuote,
   LazyLevelUpEffect,
   LazyPhotoMode,
+  LazyHUD,
+  LazyMiniMap,
+  LazyQuestNotificationSystem,
+  LazyStoryGuidanceHUD,
 } from './orchestrator/lazyPanels';
+import {
+  LazyCodeBreakerGame,
+  LazyOpenStackTerminalGame,
+  LazyBashTerminalGame,
+  LazyPoetryCompositionGame,
+  LazyHackingGame,
+  LazyMemoryPuzzleGame,
+  LazyQuizGame,
+  LazyRhythmGame,
+} from './orchestrator/lazyMinigames';
 
 /* ── Component ── */
 export function GameOrchestrator() {
+  const gameDataReady = useGameDataPreload();
+  useEffect(() => { markOrchestratorMount(); }, []);
   const { mode, showStoryOverlay, currentNodeId, introSeen } = useOrchestratorOverlay();
   const journalOpen = useJournalOpen();
   const pauseDialog = usePanelDialog();
-  const [devPanelArmed, setDevPanelArmed] = useState(false);
+  const narrativeKind = useGameStore((s) => s.narrativeKind);
+  const devToolsArmed = useGameStore((s) => s.devToolsArmed);
+  const armDevTools = useGameStore((s) => s.armDevTools);
   const [devPanelStartOpen, setDevPanelStartOpen] = useState(false);
 
+  useNarrativeKindRecovery(showStoryOverlay, narrativeKind, currentNodeId);
+
   useEffect(() => {
-    if (devPanelArmed) return;
+    if (devToolsArmed) return;
     const handleF3 = (event: KeyboardEvent) => {
       if (event.code === 'F3') {
         setDevPanelStartOpen(true);
-        setDevPanelArmed(true);
+        armDevTools();
       }
     };
     window.addEventListener('keydown', handleF3);
     return () => window.removeEventListener('keydown', handleF3);
-  }, [devPanelArmed]);
+  }, [devToolsArmed, armDevTools]);
 
   // Compute which overlay is active to enforce mutual exclusivity
   // ── World Director pattern: visual-novel is DEPRECATED ──
   // Narrative is now an overlay ON TOP of exploration mode, not a separate mode.
-  // isDialogueActive checks for dialogue regardless of mode (was: mode === 'visual-novel')
-  const isDialogueActive = !!DIALOGUE_NODES[currentNodeId] && showStoryOverlay;
-  const isStoryActive = showStoryOverlay && !!STORY_NODES[currentNodeId];
+  const isStoryActive = showStoryOverlay && narrativeKind === 'story';
+  const isDialogueActive = showStoryOverlay && narrativeKind === 'dialogue';
   const isOverlayActive = isDialogueActive || isStoryActive;
 
   // ── Sub-orchestrators ──
@@ -161,6 +171,8 @@ export function GameOrchestrator() {
   useAchievementChecker();
   // ── World Clock: single pulse for NPC schedules, weather, quests ──
   useWorldClock();
+  // ── Open-world chunk streaming (districts only; interiors stay discrete) ──
+  useWorldStream(mode === 'exploration' || mode === 'menu');
 
   const {
     codebreakerOpen, setCodebreakerOpen,
@@ -363,10 +375,10 @@ export function GameOrchestrator() {
 
   const devPanelSlot = useMemo(
     () =>
-      devPanelArmed ? (
+      devToolsArmed ? (
         <LazyPanelSlot Panel={LazyDevPanel} panelProps={{ startOpen: devPanelStartOpen }} />
       ) : null,
-    [devPanelArmed, devPanelStartOpen],
+    [devToolsArmed, devPanelStartOpen],
   );
 
   const shortcutsPanelSlot = useMemo(
@@ -400,6 +412,11 @@ export function GameOrchestrator() {
     <PanelStackProvider stack={panelStack}>
     <div className="fixed inset-0 bg-black overflow-hidden" style={{ touchAction: 'none' }}>
       <>
+          {!gameDataReady && (
+            <div style={{ pointerEvents: 'none', zIndex: UI_LAYERS.LOADING }} className="fixed inset-0">
+              <LoadingScreen showTitle message="Загрузка данных..." />
+            </div>
+          )}
           {/* ── Mode transition overlay — persistent black backdrop that ONLY fades
               when the 3D canvas has rendered its first valid frame ── */}
           <AnimatePresence>
@@ -495,10 +512,14 @@ export function GameOrchestrator() {
               <NotificationToasts />
 
               {/* ── Quest notification system (auto-triggers on quest events) ── */}
-              <QuestNotificationSystem />
+              <Suspense fallback={null}>
+                <LazyQuestNotificationSystem />
+              </Suspense>
 
               {/* ── Story guidance HUD (top-center, shows current objective) ── */}
-              <StoryGuidanceHUD />
+              <Suspense fallback={null}>
+                <LazyStoryGuidanceHUD />
+              </Suspense>
 
               {/* ── Level-up summary overlay (auto-triggers on level-up) ── */}
               <LevelUpSummary />
@@ -601,29 +622,33 @@ export function GameOrchestrator() {
               <CompassHUD />
 
               {/* HUD — always visible during exploration, even when story/dialogue overlays are active */}
-              {mode === 'exploration' && (
+              {mode === 'exploration' && gameDataReady && (
                 <>
-                  <HUD
-                    onOpenQuests={handleOpenQuests}
-                    onOpenInventory={handleOpenInventory}
-                    onOpenPoetry={handleOpenPoetry}
-                    onToggleTutorials={handleToggleTutorials}
-                    onOpenMenu={handleOpenMenu}
-                    onOpenMiniGames={() => dispatchPanel('miniGameHub')}
-                    onOpenCharacterProfile={() => dispatchPanel('characterProfile')}
-                    onOpenNPCRelations={() => dispatchPanel('npcRelation')}
-                    onOpenCodex={() => dispatchPanel('codex')}
-                    onOpenDialogueHistory={() => dispatchPanel('dialogueHistory')}
-                    onOpenAchievements={() => dispatchPanel('achievements')}
-                    onOpenSkillTree={() => dispatchPanel('skillTree')}
-                    onOpenCrafting={() => dispatchPanel('crafting')}
-                    onOpenTrading={() => dispatchPanel('trading')}
-                    onOpenFastTravel={() => dispatchPanel('fastTravel')}
-                    onOpenPerks={() => dispatchPanel('perks')}
-                    onOpenQuestBoard={() => dispatchPanel('questBoard')}
-                    onOpenStats={() => dispatchPanel('stats')}
-                  />
-                  <MiniMap />
+                  <Suspense fallback={null}>
+                    <LazyHUD
+                      onOpenQuests={handleOpenQuests}
+                      onOpenInventory={handleOpenInventory}
+                      onOpenPoetry={handleOpenPoetry}
+                      onToggleTutorials={handleToggleTutorials}
+                      onOpenMenu={handleOpenMenu}
+                      onOpenMiniGames={() => dispatchPanel('miniGameHub')}
+                      onOpenCharacterProfile={() => dispatchPanel('characterProfile')}
+                      onOpenNPCRelations={() => dispatchPanel('npcRelation')}
+                      onOpenCodex={() => dispatchPanel('codex')}
+                      onOpenDialogueHistory={() => dispatchPanel('dialogueHistory')}
+                      onOpenAchievements={() => dispatchPanel('achievements')}
+                      onOpenSkillTree={() => dispatchPanel('skillTree')}
+                      onOpenCrafting={() => dispatchPanel('crafting')}
+                      onOpenTrading={() => dispatchPanel('trading')}
+                      onOpenFastTravel={() => dispatchPanel('fastTravel')}
+                      onOpenPerks={() => dispatchPanel('perks')}
+                      onOpenQuestBoard={() => dispatchPanel('questBoard')}
+                      onOpenStats={() => dispatchPanel('stats')}
+                    />
+                  </Suspense>
+                  <Suspense fallback={null}>
+                    <LazyMiniMap />
+                  </Suspense>
                   <MoralCompassHUD />
                   <WeatherIndicator />
                   <DayNightCycleIndicator />
