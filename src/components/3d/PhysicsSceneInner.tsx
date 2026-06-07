@@ -20,6 +20,7 @@ import { ExplorationLighting } from './Lighting';
 import { SceneEnvironment } from './SceneEnvironment';
 import { EnvironmentalAnimator } from './EnvironmentalAnimator';
 import { ProximityReactivityRenderer } from './ProximityReactivityRenderer';
+import { InteractionQueryBridge } from './InteractionQueryBridge';
 import {
   InteractionSystemBridge,
   getInteractionState,
@@ -68,7 +69,11 @@ function PhysicsSceneInner({
       <NPCSystemWrapper livePlayerPositionRef={livePlayerPositionRef} />
       <AmbientNPCs livePlayerPositionRef={livePlayerPositionRef} />
       <WakeUpSequence />
-      <InteractiveTriggers livePlayerPositionRef={livePlayerPositionRef} />
+      <InteractiveTriggers
+        livePlayerPositionRef={livePlayerPositionRef}
+        livePlayerRotationRef={livePlayerRotationRef}
+      />
+      <InteractionQueryBridge />
       <InteractionHighlight />
       <ProximityReactivityRenderer livePlayerPositionRef={livePlayerPositionRef} />
       <SceneExitIndicator livePlayerPositionRef={livePlayerPositionRef} />

@@ -17,7 +17,7 @@ import {
   Wind,
   Thermometer,
 } from 'lucide-react';
-import { useGameStore } from '@/store/gameStore';
+import { useWeatherIndicatorState } from '@/store/selectors';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import type { SceneId } from '@/shared/types/game';
 
@@ -174,8 +174,7 @@ function tempColor(temp: number): string {
 
 /* ── Component ── */
 export function WeatherIndicator() {
-  const currentSceneId = useGameStore((s) => s.exploration.currentSceneId);
-  const timeOfDay = useGameStore((s) => s.exploration.timeOfDay);
+  const { currentSceneId, timeOfDay } = useWeatherIndicatorState();
 
   const weather = useMemo(
     () => deriveWeather(currentSceneId, timeOfDay),

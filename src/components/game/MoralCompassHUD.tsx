@@ -2,14 +2,14 @@
 /* ─── Volodka RPG – Karma/moral compass HUD */
 
 import { motion, useMotionValue, animate } from 'framer-motion';
-import { useGameStore } from '@/store/gameStore';
+import { usePlayerKarma } from '@/store/selectors';
 import { KARMA_LOW_THRESHOLD, KARMA_HIGH_THRESHOLD } from '@/data/constants';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { getKarmaTierLabel } from '@/shared/utils/karmaTier';
 import { useEffect, useRef } from 'react';
 
 export function MoralCompassHUD() {
-  const karma = useGameStore((s) => s.playerState.karma);
+  const karma = usePlayerKarma();
 
   // Pulse animation via motion value
   const pulseScale = useMotionValue(1);

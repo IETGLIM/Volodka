@@ -14,6 +14,7 @@ import type {
 } from './types';
 import { chunkWorldCenter, getWorldCell, getChunkForScene } from './worldRegistry';
 import { DEFAULT_WORLD_CHUNK_OPTIONS } from './WorldChunkManager';
+import { registerHmrDispose } from '@/shared/dev/hmrDispose';
 
 export class NavMeshLayer {
   private readonly nodes = new Map<string, NavMeshNode>();
@@ -103,3 +104,11 @@ export function getNavMeshLayer(): NavMeshLayer {
   }
   return sharedNavMesh;
 }
+
+/** Clear loaded nav data and release singleton (unmount / HMR). */
+export function disposeNavMeshLayer(): void {
+  sharedNavMesh?.clear();
+  sharedNavMesh = null;
+}
+
+registerHmrDispose(disposeNavMeshLayer);

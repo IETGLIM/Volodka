@@ -1,7 +1,8 @@
 import { useEffect, useRef } from 'react';
 import { shallow } from 'zustand/shallow';
 import { useGameStore } from '@/store/gameStore';
-import { eventBus } from '@/engine/EventBus';
+import { eventBus, EventBusPriority } from '@/engine/EventBus';
+import { withHmrCleanup } from '@/shared/dev/hmrDispose';
 import { triggerCameraShake } from '@/engine/camera/cameraShake';
 import { getSceneAudioController } from '@/engine/audio/SceneAudioController';
 import { getGamePhase } from '@/shared/gamePhase';
@@ -44,61 +45,47 @@ export function useAudioOrchestrator() {
 
   useEffect(() => {
     const ctrl = controllerRef.current;
-    const unsubs: (() => void)[] = [];
+    const scope = eventBus.createScope();
 
-    unsubs.push(
-      eventBus.on('poem:collected', ({ poemId }) => {
-        if (disposedRef.current) return;
-        ctrl.onPoemCollected(poemId);
-      }),
-    );
+    scope.on('poem:collected', ({ poemId }) => {
+      if (disposedRef.current) return;
+      ctrl.onPoemCollected(poemId);
+    });
 
-    unsubs.push(
-      eventBus.on('combat:start', () => {
-        if (disposedRef.current) return;
-        ctrl.onCombatStart();
-      }),
-    );
+    scope.on('combat:start', () => {
+      if (disposedRef.current) return;
+      ctrl.onCombatStart();
+    }, EventBusPriority.FX);
 
-    unsubs.push(
-      eventBus.on('combat:end', () => {
-        if (disposedRef.current) return;
-        const state = useGameStore.getState();
-        ctrl.onCombatEnd(
-          state.exploration.currentSceneId as SceneId,
-          state.exploration.timeOfDay,
-        );
-      }),
-    );
+    scope.on('combat:end', () => {
+      if (disposedRef.current) return;
+      const state = useGameStore.getState();
+      ctrl.onCombatEnd(
+        state.exploration.currentSceneId as SceneId,
+        state.exploration.timeOfDay,
+      );
+    }, EventBusPriority.FX);
 
-    unsubs.push(
-      eventBus.on('quest:accepted', () => {
-        if (disposedRef.current) return;
-        ctrl.onQuestAccepted();
-      }),
-    );
+    scope.on('quest:accepted', () => {
+      if (disposedRef.current) return;
+      ctrl.onQuestAccepted();
+    });
 
-    unsubs.push(
-      eventBus.on('scene:enter', ({ sceneId }) => {
-        if (disposedRef.current) return;
-        const timeOfDay = useGameStore.getState().exploration.timeOfDay;
-        ctrl.onSceneEnter(sceneId as SceneId, timeOfDay);
-      }),
-    );
+    scope.on('scene:enter', ({ sceneId }) => {
+      if (disposedRef.current) return;
+      const timeOfDay = useGameStore.getState().exploration.timeOfDay;
+      ctrl.onSceneEnter(sceneId as SceneId, timeOfDay);
+    });
 
-    unsubs.push(
-      eventBus.on('fx:glitch', () => {
-        triggerCameraShake(0.05, 8);
-      }),
-    );
+    scope.on('fx:glitch', () => {
+      triggerCameraShake(0.05, 8);
+    });
 
-    unsubs.push(
-      eventBus.on('scene:enter', () => {
-        triggerCameraShake(0.03, 3);
-      }),
-    );
+    scope.on('scene:enter', () => {
+      triggerCameraShake(0.03, 3);
+    });
 
-    return () => unsubs.forEach((u) => u());
+    return withHmrCleanup(() => scope.dispose());
   }, []);
 
   useEffect(() => {
@@ -163,6 +150,6 @@ export function useAudioOrchestrator() {
       },
       { equalityFn: shallow },
     );
-    return unsub;
+    return withHmrCleanup(unsub);
   }, []);
 }

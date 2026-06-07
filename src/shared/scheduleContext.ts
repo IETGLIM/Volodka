@@ -1,6 +1,8 @@
 /* ─── Schedule context — pure data for NPC schedule resolution ─── */
 /* Keeps ScheduleEngine free of store imports (breaks engine↔store cycle). */
 
+import type { ActiveTTLFlagMap } from '@/store/activeTTLFlags';
+
 export interface ScheduleContext {
   currentAct: number;
   completedQuestIds: ReadonlySet<string>;
@@ -15,7 +17,7 @@ export type ScheduleContextSource = {
     flags?: Record<string, boolean>;
   };
   quests: Array<{ questId: string; status: string }>;
-  activeTTLFlags: Array<{ key: string }>;
+  activeTTLFlags: ActiveTTLFlagMap;
 };
 
 /** Stable hash for cache keys — same inputs as ScheduleContext invalidation. */
@@ -37,8 +39,7 @@ function computeScheduleContextKey(state: ScheduleContextSource): string {
     .map((q) => q.questId)
     .sort()
     .join(',');
-  const ttlFlags = state.activeTTLFlags
-    .map((f) => f.key)
+  const ttlFlags = Object.keys(state.activeTTLFlags)
     .sort()
     .join(',');
   const playerFlags = Object.entries(state.playerState.flags ?? {})
@@ -64,7 +65,7 @@ export function buildScheduleContext(state: ScheduleContextSource): ScheduleCont
     completedQuestIds: new Set(
       state.quests.filter((q) => q.status === 'completed').map((q) => q.questId),
     ),
-    activeFlagKeys: new Set(state.activeTTLFlags.map((f) => f.key)),
+    activeFlagKeys: new Set(Object.keys(state.activeTTLFlags)),
     playerFlags: state.playerState.flags ?? {},
   };
   cachedContextKey = key;

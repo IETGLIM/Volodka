@@ -45,6 +45,7 @@ import {
 } from '@/config/scenes';
 
 import { eventBus } from '@/engine/EventBus';
+import { forceEmitInteractionEnd } from '@/engine/interaction/interactionEndDedup';
 import { audioEngine } from '@/engine/AudioEngine';
 
 import { getInteractionState, isInteractionLocked } from './InteractionSystemBridge';
@@ -327,7 +328,7 @@ export function PhysicsPlayer({
       stuckLockTimerRef.current += dt;
       if (stuckLockTimerRef.current > 2.0) {
         devWarn('[PhysicsPlayer] Interaction lock stuck for 2s — force-unlocking');
-        eventBus.emit('interaction:end', {});
+        forceEmitInteractionEnd();
         eventBus.emit('player:stand_up', {});
         stuckLockTimerRef.current = 0;
       }

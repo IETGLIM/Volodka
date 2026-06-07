@@ -14,7 +14,13 @@ import {
   getGiftReactionText,
 } from '@/data/gameDataLoader';
 import { eventBus } from '@/engine/EventBus';
-import { applyXpGain, clamp, pushNotification } from '../shared';
+import { clamp, pushNotification } from '../shared';
+import {
+  applyXpToProgression,
+  formatLevelUpMessage,
+  scheduleLevelUpEmit,
+  type LevelUpEvent,
+} from '../levelUpHelpers';
 import { applyFairmathRelation } from '@/shared/fairmath';
 import {
   findInventoryItemIndex,
@@ -33,6 +39,7 @@ import {
   batchSetFlag,
   createRewardBatchDraft,
   createRewardBatchSideEffects,
+  finalizeRewardBatch,
   flushRewardBatchSideEffects,
 } from '../rewardBatchHelpers';
 import {
@@ -76,7 +83,7 @@ export const createPlayerQuestRewardsSlice: StateCreator<
     const reactionText = getGiftReactionText(npcName, preference);
 
     let giftResult: GiftPreference | null = null;
-    let levelUpInfo: { newLevel: number; prevLevel: number; perkPointGained: boolean } | null = null;
+    let levelUpInfo: LevelUpEvent | null = null;
 
     set((state) => {
       const invIdx = findInventoryItemIndex(state.playerState.inventory, itemId);
@@ -137,20 +144,18 @@ export const createPlayerQuestRewardsSlice: StateCreator<
       let progression = state.playerState.progression;
 
       if (xpReward > 0) {
-        const xpResult = applyXpGain(progression, xpReward);
+        const xpResult = applyXpToProgression(progression, xpReward);
         progression = xpResult.progression;
-        if (xpResult.leveledUp) {
-          levelUpInfo = {
-            newLevel: xpResult.progression.level,
-            prevLevel: xpResult.prevLevel,
-            perkPointGained: xpResult.perkPointGained,
-          };
+        if (xpResult.levelUp) {
+          levelUpInfo = xpResult.levelUp;
           notifications = pushNotification(
             notifications,
             'skill',
-            xpResult.perkPointGained
-              ? `Уровень ${xpResult.progression.level}! +1 очко навыка +1 очко черты!`
-              : `Уровень ${xpResult.progression.level}! +1 очко навыка`,
+            formatLevelUpMessage(
+              xpResult.levelUp.newLevel,
+              xpResult.levelUp.levelsGained,
+              xpResult.levelUp.perkPointsGained,
+            ),
           );
         }
       }
@@ -179,9 +184,7 @@ export const createPlayerQuestRewardsSlice: StateCreator<
     });
 
     if (levelUpInfo) {
-      queueMicrotask(() => {
-        eventBus.emit('player:levelup', levelUpInfo!);
-      });
+      scheduleLevelUpEmit(levelUpInfo);
     }
 
     return giftResult;
@@ -280,6 +283,8 @@ export const createPlayerQuestRewardsSlice: StateCreator<
 
       batchAddCredits(draft, creditsGained);
       appliedRewards.push(`Кредиты за задание +${creditsGained}`);
+
+      finalizeRewardBatch(draft, sideEffects);
 
       return {
         quests,

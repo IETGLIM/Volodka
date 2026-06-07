@@ -12,6 +12,7 @@
 
 import type { SceneId } from '@/shared/types/game';
 import { getSharedAudioContext } from './SharedAudioContext';
+import { registerHmrDispose } from '@/shared/dev/hmrDispose';
 
 /* ──────────────────── Helpers ──────────────────── */
 
@@ -552,10 +553,10 @@ class MusicEngine {
   private padDryGain: GainNode | null = null;
   /** Current chord degree (index into scale) */
   private currentChordDegree = 0;
-  /** Previous chord oscillators (for crossfade) */
-  private prevPadOscillators: Array<{
-    osc: OscillatorNode;
-    gain: GainNode;
+  /** Pad voices scheduled for crossfade retirement (each batch keeps its own timer) */
+  private pendingPadRetirements: Array<{
+    voices: Array<{ osc: OscillatorNode; gain: GainNode }>;
+    timer: ReturnType<typeof setTimeout>;
   }> = [];
 
   // Bass layer state
@@ -698,6 +699,7 @@ class MusicEngine {
 
   /** Dispose of all resources — P1-3.5: does NOT close shared AudioContext */
   dispose(): void {
+    if (this.disposed) return;
     this.disposed = true;
     this.stopMusic(0);
 
@@ -710,6 +712,11 @@ class MusicEngine {
       this.masterGainNode = null;
     }
     this.ctx = null; // Release reference to shared context (don't close it)
+  }
+
+  /** Re-arm after orchestrator remount (React StrictMode). */
+  revive(): void {
+    this.disposed = false;
   }
 
   /* ═══════════════════ PRIVATE: MUSIC START ═══════════════════ */
@@ -792,12 +799,13 @@ class MusicEngine {
     const ctx = this.ctx;
     if (!ctx || !this.padFilter) return;
 
-    const myGeneration = this.sceneGeneration;
     const now = startTime;
 
-    // Move old oscillators to prev for crossfade
-    this.prevPadOscillators = [...this.padOscillators];
+    const outgoing = this.padOscillators;
     this.padOscillators = [];
+    if (outgoing.length > 0) {
+      this.retirePadVoices(outgoing, now, 2);
+    }
 
     // Build chord from scale
     const chordMidi = buildChord(
@@ -853,25 +861,47 @@ class MusicEngine {
       chorusOsc.start(now);
       this.padOscillators.push({ osc: chorusOsc, gain: chorusGain });
     }
+  }
 
-    // Crossfade: fade out previous chord over 2 seconds
-    if (this.prevPadOscillators.length > 0) {
-      for (const prev of this.prevPadOscillators) {
-        try {
-          prev.gain.gain.setValueAtTime(prev.gain.gain.value, now);
-          prev.gain.gain.linearRampToValueAtTime(0.001, now + 2);
-        } catch { /* node may already be stopping */ }
+  /** Fade out and stop a batch of pad voices — each call owns its voice list (no shared prev slot). */
+  private retirePadVoices(
+    voices: Array<{ osc: OscillatorNode; gain: GainNode }>,
+    startTime: number,
+    durationSec: number,
+  ): void {
+    if (voices.length === 0) return;
+
+    for (const voice of voices) {
+      try {
+        voice.gain.gain.setValueAtTime(voice.gain.gain.value, startTime);
+        voice.gain.gain.linearRampToValueAtTime(0.001, startTime + durationSec);
+      } catch {
+        // node may already be stopping
       }
-
-      // Stop prev oscillators after crossfade
-      setTimeout(() => {
-        if (this.sceneGeneration !== myGeneration) return; // Stale, don't stop old oscillators
-        for (const prev of this.prevPadOscillators) {
-          try { prev.osc.stop(); } catch { /* already stopped */ }
-        }
-        this.prevPadOscillators = [];
-      }, 2500);
     }
+
+    const timer = setTimeout(() => {
+      const idx = this.pendingPadRetirements.findIndex((entry) => entry.timer === timer);
+      if (idx !== -1) this.pendingPadRetirements.splice(idx, 1);
+
+      for (const voice of voices) {
+        try { voice.osc.stop(); } catch { /* already stopped */ }
+        try { voice.gain.disconnect(); } catch { /* ignore */ }
+      }
+    }, (durationSec + 0.5) * 1000);
+
+    this.pendingPadRetirements.push({ voices, timer });
+  }
+
+  private cancelPendingPadRetirements(): void {
+    for (const entry of this.pendingPadRetirements) {
+      clearTimeout(entry.timer);
+      for (const voice of entry.voices) {
+        try { voice.osc.stop(); } catch { /* already stopped */ }
+        try { voice.gain.disconnect(); } catch { /* ignore */ }
+      }
+    }
+    this.pendingPadRetirements = [];
   }
 
   /** Schedule the next chord change */
@@ -1083,18 +1113,14 @@ class MusicEngine {
 
   /** Clean up all audio nodes */
   private cleanupAllNodes(): void {
+    this.cancelPendingPadRetirements();
+
     // Pad oscillators
     for (const node of this.padOscillators) {
       try { node.osc.stop(); } catch { /* already stopped */ }
       try { node.gain.disconnect(); } catch { /* ignore */ }
     }
     this.padOscillators = [];
-
-    for (const node of this.prevPadOscillators) {
-      try { node.osc.stop(); } catch { /* already stopped */ }
-      try { node.gain.disconnect(); } catch { /* ignore */ }
-    }
-    this.prevPadOscillators = [];
 
     // Pad infrastructure
     try { this.padLfo?.stop(); } catch { /* already stopped */ }
@@ -1129,3 +1155,13 @@ class MusicEngine {
 /** Singleton music engine instance */
 export const musicEngine = new MusicEngine();
 export default musicEngine;
+
+export function disposeMusicEngine(): void {
+  musicEngine.dispose();
+}
+
+export function reviveMusicEngine(): void {
+  musicEngine.revive();
+}
+
+registerHmrDispose(disposeMusicEngine);

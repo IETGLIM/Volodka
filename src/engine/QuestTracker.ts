@@ -9,6 +9,7 @@ import {
   type GameStoreSnapshot,
 } from '@/engine/GameActionDispatcher';
 import { eventBus } from '@/engine/EventBus';
+import { registerHmrDispose } from '@/shared/dev/hmrDispose';
 import { isKnownMinigameId, MINIGAME_COMPLETION_FLAGS } from '@/shared/constants/minigames';
 
 /** Slice of store state that QuestTracker reacts to (scene, flags, inventory, poems, quests, time). */
@@ -628,3 +629,10 @@ export class QuestTracker {
 
 /** Singleton instance */
 export const questTracker = new QuestTracker();
+
+/** Stop store/event subscriptions (unmount / HMR). Idempotent. */
+export function disposeQuestTracker(): void {
+  questTracker.stop();
+}
+
+registerHmrDispose(disposeQuestTracker);

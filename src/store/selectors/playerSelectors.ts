@@ -5,6 +5,12 @@ import type { GameNotification } from '../shared';
 import { getGameStore } from '../gameStore';
 import { useGameSelector, useGamePrimitive } from './hooks';
 
+/** Fields used by buildStoryConditionContext — avoids full playerState subscriptions. */
+export type StoryConditionPlayerSlice = Pick<
+  PlayerState,
+  'karma' | 'skills' | 'flags' | 'progression'
+>;
+
 /* ─── Plain getters (non-React) ─── */
 
 export const selectPlayerState = (s = getGameStore()): PlayerState => s.playerState;
@@ -83,6 +89,33 @@ export function useVitalStats() {
 
 export function usePlayerSkill(skill: TrainablePlayerSkill) {
   return useGamePrimitive((s) => s.playerState.skills[skill]);
+}
+
+/** Story/dialogue condition inputs only — not inventory, equipment, etc. */
+export function useStoryConditionPlayerSlice(): StoryConditionPlayerSlice {
+  return useGameSelector((s) => ({
+    karma: s.playerState.karma,
+    skills: s.playerState.skills,
+    flags: s.playerState.flags,
+    progression: s.playerState.progression,
+  }));
+}
+
+export function usePlayerCurrentAct() {
+  return useGamePrimitive((s) => s.playerState.progression.currentAct);
+}
+
+export function usePlayerCredits() {
+  return useGamePrimitive((s) => s.playerState.credits);
+}
+
+export function useProgressionSummary() {
+  return useGameSelector((s) => ({
+    level: s.playerState.progression.level,
+    xp: s.playerState.progression.xp,
+    xpToNextLevel: s.playerState.progression.xpToNextLevel,
+    unlockedPerks: s.playerState.progression.unlockedPerks,
+  }));
 }
 
 /** Alias — prefer usePlayerInventory in new code. */

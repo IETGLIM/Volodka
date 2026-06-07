@@ -10,6 +10,7 @@ import { useFrameTick } from '@/engine/frame/useFrameTick';
 import * as THREE from 'three';
 
 import { useGameStore } from '@/store/gameStore';
+import { useCurrentSceneId, usePlayerKarma } from '@/store/selectors';
 import { readGamePhase } from '@/shared/gamePhase';
 import { usePlayerControls, type VirtualControls } from '@/hooks/useGamePhysics';
 import {
@@ -51,8 +52,8 @@ export function SimplePlayer({
   onInteractPress,
 }: SimplePlayerProps) {
   const controls = usePlayerControls(onInteractPress);
-  const sceneId = useGameStore((s) => s.exploration.currentSceneId);
-  const karma = useGameStore((s) => s.playerState.karma);
+  const sceneId = useCurrentSceneId();
+  const karma = usePlayerKarma();
 
   const groupRef = useRef<THREE.Group>(null);
   const velocityRef = useRef(new THREE.Vector3(0, 0, 0));

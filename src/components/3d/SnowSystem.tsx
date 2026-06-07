@@ -10,7 +10,7 @@ import { useFrameTick } from '@/engine/frame/useFrameTick';
 import * as THREE from 'three';
 import { useIsMobileVisual, useMobileVisualPerf } from '@/hooks/use-mobile';
 import { getParticleCount } from '@/shared/utils/mobileParticleScale';
-import { useGameStore } from '@/store/gameStore';
+import { useGlobalWeatherControls } from '@/store/selectors';
 import { eventBus } from '@/engine/EventBus';
 
 /** Snow configuration */
@@ -127,8 +127,7 @@ const SNOW_FRAG = /* glsl */ `
 
 /** High-performance snow particle system */
 export function SnowSystem({ intensity = 1 }: { intensity?: number }) {
-  const weatherEnabled = useGameStore((s) => s.weatherEnabled);
-  const rainIntensity = useGameStore((s) => s.rainIntensity);
+  const { weatherEnabled, rainIntensity } = useGlobalWeatherControls();
   const isMobile = useIsMobileVisual();
   const { visualLite, effectsScale } = useMobileVisualPerf();
 

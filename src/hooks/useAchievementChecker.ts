@@ -11,7 +11,8 @@ import { useEffect, useRef } from 'react';
 import { shallow } from 'zustand/shallow';
 import { useGameStore } from '@/store/gameStore';
 import { readGamePhase } from '@/shared/gamePhase';
-import { eventBus } from '@/engine/EventBus';
+import { eventBus, EventBusPriority } from '@/engine/EventBus';
+import { withHmrCleanup } from '@/shared/dev/hmrDispose';
 import {
   checkAchievements,
   initAchievementEngine,
@@ -38,23 +39,21 @@ export function useAchievementChecker() {
 
   // Subscribe to combat events for tracking
   useEffect(() => {
-    const unsubs: Array<() => void> = [];
+    const scope = eventBus.createScope();
 
-    unsubs.push(eventBus.on('combat:victory', (payload) => {
+    scope.on('combat:victory', (payload) => {
       notifyCombatVictory(payload.enemyType);
-    }));
+    }, EventBusPriority.Orchestrator);
 
-    unsubs.push(eventBus.on('combat:defeat', () => {
+    scope.on('combat:defeat', () => {
       notifyCombatDefeat();
-    }));
+    }, EventBusPriority.Orchestrator);
 
-    unsubs.push(eventBus.on('poem:power_used', () => {
+    scope.on('poem:power_used', () => {
       notifyPoemPowerUsed();
-    }));
+    });
 
-    return () => {
-      for (const unsub of unsubs) unsub();
-    };
+    return withHmrCleanup(() => scope.dispose());
   }, []);
 
   // Check achievements only when achievement-relevant state changes

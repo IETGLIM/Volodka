@@ -8,28 +8,30 @@ import type {
   TrainablePlayerSkill,
 } from '@/shared/types/game';
 import { eventBus } from '@/engine/EventBus';
-import { applyXpGain, clamp, pushNotification, type GameNotification } from './shared';
+import { clamp, pushNotification, type GameNotification } from './shared';
 import {
   addInventoryItem,
   getInventoryFullMessage,
 } from './inventoryHelpers';
+import {
+  applyXpToProgression,
+  formatLevelUpMessage,
+  scheduleLevelUpEmit,
+  type LevelUpEvent,
+} from './levelUpHelpers';
+
+export type { LevelUpEvent };
 
 export interface RewardBatchDraft {
   playerState: PlayerState;
   notifications: GameNotification[];
 }
 
-export interface LevelUpEvent {
-  newLevel: number;
-  prevLevel: number;
-  levelsGained: number;
-  perkPointsGained: number;
-  perkPointGained: boolean;
-}
-
 export interface RewardBatchSideEffects {
   karmaChanges: number[];
-  levelUps: LevelUpEvent[];
+  /** XP accumulated across multiple batchAddXp calls — applied in finalizeRewardBatch. */
+  pendingXp: number;
+  levelUp: LevelUpEvent | null;
 }
 
 export function createRewardBatchDraft(
@@ -40,7 +42,7 @@ export function createRewardBatchDraft(
 }
 
 export function createRewardBatchSideEffects(): RewardBatchSideEffects {
-  return { karmaChanges: [], levelUps: [] };
+  return { karmaChanges: [], pendingXp: 0, levelUp: null };
 }
 
 export function batchAddSkill(draft: RewardBatchDraft, skill: TrainablePlayerSkill, amount: number): void {
@@ -145,39 +147,49 @@ export function batchAddCredits(draft: RewardBatchDraft, amount: number): void {
   }
 }
 
+/** Accumulates XP; call finalizeRewardBatch before returning from set(). */
 export function batchAddXp(
-  draft: RewardBatchDraft,
+  _draft: RewardBatchDraft,
   sideEffects: RewardBatchSideEffects,
   amount: number,
 ): void {
-  const result = applyXpGain(draft.playerState.progression, amount);
-  const { progression, prevLevel, levelsGained, perkPointsGained } = result;
-  const newLevel = progression.level;
-
-  if (levelsGained > 0) {
-    const skillPart =
-      levelsGained === 1 ? '+1 очко навыка' : `+${levelsGained} очков навыка`;
-    const levelUpMessage =
-      perkPointsGained === 0
-        ? `Уровень ${newLevel}! ${skillPart}`
-        : perkPointsGained === 1
-          ? `Уровень ${newLevel}! ${skillPart} +1 очко черты!`
-          : `Уровень ${newLevel}! ${skillPart} +${perkPointsGained} очков черты!`;
-
-    draft.notifications = pushNotification(draft.notifications, 'skill', levelUpMessage);
-    sideEffects.levelUps.push({
-      newLevel,
-      prevLevel,
-      levelsGained,
-      perkPointsGained,
-      perkPointGained: perkPointsGained > 0,
-    });
+  if (amount > 0) {
+    sideEffects.pendingXp += amount;
   }
+}
+
+/** Apply accumulated XP once and attach a single level-up side effect. */
+export function finalizeRewardBatch(
+  draft: RewardBatchDraft,
+  sideEffects: RewardBatchSideEffects,
+): void {
+  if (sideEffects.pendingXp <= 0) return;
+
+  const amount = sideEffects.pendingXp;
+  sideEffects.pendingXp = 0;
+
+  const { progression, levelUp } = applyXpToProgression(
+    draft.playerState.progression,
+    amount,
+  );
 
   draft.playerState = {
     ...draft.playerState,
     progression,
   };
+
+  if (levelUp) {
+    draft.notifications = pushNotification(
+      draft.notifications,
+      'skill',
+      formatLevelUpMessage(
+        levelUp.newLevel,
+        levelUp.levelsGained,
+        levelUp.perkPointsGained,
+      ),
+    );
+    sideEffects.levelUp = levelUp;
+  }
 }
 
 export function flushRewardBatchSideEffects(sideEffects: RewardBatchSideEffects): void {
@@ -186,9 +198,7 @@ export function flushRewardBatchSideEffects(sideEffects: RewardBatchSideEffects)
       eventBus.emit('choice:made', { karmaChange });
     });
   }
-  for (const levelUp of sideEffects.levelUps) {
-    queueMicrotask(() => {
-      eventBus.emit('player:levelup', levelUp);
-    });
+  if (sideEffects.levelUp) {
+    scheduleLevelUpEmit(sideEffects.levelUp);
   }
 }

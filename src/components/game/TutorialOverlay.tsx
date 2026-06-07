@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { X, Gamepad2, Eye, Hand, Backpack, Scroll, BookOpen, Notebook, Moon, LayoutGrid, LogOut } from 'lucide-react';
 import { useGameStore } from '@/store/gameStore';
-import { useGamePhase } from '@/store/selectors';
+import { useGamePhase, useTutorialFlags } from '@/store/selectors';
 import { Checkbox } from '@/components/ui/checkbox';
 
 type TutorialType = 'movement' | 'interact' | 'controls';
@@ -152,7 +152,7 @@ const TUTORIALS: Record<TutorialType, { icon: React.ReactNode; title: string; co
 
 export function TutorialOverlay() {
   const mode = useGamePhase();
-  const tutorialFlags = useGameStore((s) => s.tutorialFlags);
+  const tutorialFlags = useTutorialFlags();
 
   const [dismissed, setDismissed] = useState<Set<TutorialType>>(new Set());
   const [dontShowAgain, setDontShowAgain] = useState(isTutorialDisabled);

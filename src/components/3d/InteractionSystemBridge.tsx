@@ -20,32 +20,26 @@ import { setPlayerExternalVelocity, clearPlayerExternalVelocity } from '@/engine
 import { useGameStore } from '@/store/gameStore';
 import { readGamePhase } from '@/shared/gamePhase';
 import { closeNarrativeOverlay } from '@/engine/scene/narrativeOverlay';
+import {
+  getInteractionState,
+  getInteractionTargetNPCId,
+  isInteractionLocked,
+  writeInteractionSession,
+} from '@/engine/interaction/interactionSession';
 
-/* ─── Module-level interaction state (accessible outside R3F canvas) ─── */
+export { getInteractionState, getInteractionTargetNPCId, isInteractionLocked };
 
-let currentInteractionState: InteractionState = InteractionState.Idle;
-let currentTargetNPCId: string | null = null;
-
-/** Get current interaction state (can be called from any component) */
-export function getInteractionState(): InteractionState {
-  return currentInteractionState;
-}
-
-/** Get current target NPC ID (can be called from any component) */
-export function getInteractionTargetNPCId(): string | null {
-  return currentTargetNPCId;
-}
-
-/** Check if the interaction system currently locks player controls */
-export function isInteractionLocked(): boolean {
-  const s = currentInteractionState;
-  return (
-    s === InteractionState.Approach ||
-    s === InteractionState.Cutscene ||
-    s === InteractionState.Align ||
-    s === InteractionState.Lock ||
-    s === InteractionState.Dialogue
-  );
+function publishInteraction(
+  stateRef: React.MutableRefObject<InteractionState>,
+  targetRef: React.MutableRefObject<string | null>,
+  state: InteractionState,
+  targetNpcId?: string | null,
+): void {
+  stateRef.current = state;
+  if (targetNpcId !== undefined) {
+    targetRef.current = targetNpcId;
+  }
+  writeInteractionSession(stateRef.current, targetRef.current);
 }
 
 /* ─── Interaction system constants ─── */
@@ -70,8 +64,7 @@ interface InteractionSystemBridgeProps {
  * Bridge component that runs the interaction state machine inside the R3F canvas.
  * Uses useFrame for the per-frame update loop.
  *
- * All state is stored in module-level variables so it's accessible from
- * components outside the R3F tree (like GameOrchestrator and NPCSystem).
+ * All state is published through interactionSession (single writer).
  *
  * Movement: Uses setPlayerExternalVelocity() instead of rb.setLinvel().
  * PhysicsPlayer reads this and feeds it through KinematicCharacterController
@@ -108,12 +101,9 @@ export function InteractionSystemBridge({
             state: 'idle',
           });
         }
-        stateRef.current = InteractionState.Idle;
-        targetNPCIdRef.current = null;
         phaseTimerRef.current = 0;
         globalTimerRef.current = 0;
-        currentInteractionState = InteractionState.Idle;
-        currentTargetNPCId = null;
+        publishInteraction(stateRef, targetNPCIdRef, InteractionState.Idle, null);
         clearPlayerExternalVelocity();
         eventBus.emit('interaction:state_change', {
           state: InteractionState.Idle,
@@ -123,14 +113,10 @@ export function InteractionSystemBridge({
 
       if (stateRef.current !== InteractionState.Idle) return;
 
-      stateRef.current = InteractionState.Approach;
-      targetNPCIdRef.current = npcId;
       phaseTimerRef.current = 0;
       globalTimerRef.current = 0; // Reset global safety timer
 
-      // Update module-level state
-      currentInteractionState = InteractionState.Approach;
-      currentTargetNPCId = npcId;
+      publishInteraction(stateRef, targetNPCIdRef, InteractionState.Approach, npcId);
 
       eventBus.emit('interaction:state_change', {
         state: InteractionState.Approach,
@@ -158,11 +144,10 @@ export function InteractionSystemBridge({
         });
       }
 
-      stateRef.current = InteractionState.Exit;
       phaseTimerRef.current = 0;
       globalTimerRef.current = 0;
 
-      currentInteractionState = InteractionState.Exit;
+      publishInteraction(stateRef, targetNPCIdRef, InteractionState.Exit);
 
       eventBus.emit('interaction:state_change', {
         state: InteractionState.Exit,
@@ -187,12 +172,9 @@ export function InteractionSystemBridge({
       }
 
       const prevNpcId = targetNPCIdRef.current;
-      stateRef.current = InteractionState.Idle;
-      targetNPCIdRef.current = null;
       phaseTimerRef.current = 0;
 
-      currentInteractionState = InteractionState.Idle;
-      currentTargetNPCId = null;
+      publishInteraction(stateRef, targetNPCIdRef, InteractionState.Idle, null);
 
       // Clear external velocity when cancelling
       clearPlayerExternalVelocity();
@@ -253,12 +235,9 @@ export function InteractionSystemBridge({
       }
 
       const prevNpcId = targetNPCIdRef.current;
-      stateRef.current = InteractionState.Idle;
-      targetNPCIdRef.current = null;
       phaseTimerRef.current = 0;
       globalTimerRef.current = 0;
-      currentInteractionState = InteractionState.Idle;
-      currentTargetNPCId = null;
+      publishInteraction(stateRef, targetNPCIdRef, InteractionState.Idle, null);
 
       clearPlayerExternalVelocity();
 
@@ -287,11 +266,8 @@ export function InteractionSystemBridge({
         if (!npcGroup) {
           if (phaseTimerRef.current > 2.0) {
             const prevNpcId = targetNPCIdRef.current;
-            stateRef.current = InteractionState.Idle;
-            targetNPCIdRef.current = null;
             phaseTimerRef.current = 0;
-            currentInteractionState = InteractionState.Idle;
-            currentTargetNPCId = null;
+            publishInteraction(stateRef, targetNPCIdRef, InteractionState.Idle, null);
             clearPlayerExternalVelocity();
             eventBus.emit('interaction:state_change', {
               state: InteractionState.Idle,
@@ -326,10 +302,8 @@ export function InteractionSystemBridge({
           // Stop approach movement
           clearPlayerExternalVelocity();
 
-          stateRef.current = InteractionState.Cutscene;
           phaseTimerRef.current = 0;
-
-          currentInteractionState = InteractionState.Cutscene;
+          publishInteraction(stateRef, targetNPCIdRef, InteractionState.Cutscene);
 
           eventBus.emit('interaction:state_change', {
             state: InteractionState.Cutscene,
@@ -378,10 +352,8 @@ export function InteractionSystemBridge({
 
         // Wait for cutscene duration
         if (phaseTimerRef.current >= cutsceneDurationRef.current) {
-          stateRef.current = InteractionState.Align;
           phaseTimerRef.current = 0;
-
-          currentInteractionState = InteractionState.Align;
+          publishInteraction(stateRef, targetNPCIdRef, InteractionState.Align);
 
           // End camera cutscene
           eventBus.emit('camera:npc_cutscene_end', { npcId: targetNPCIdRef.current ?? '' });
@@ -414,10 +386,8 @@ export function InteractionSystemBridge({
         clearPlayerExternalVelocity();
 
         if (phaseTimerRef.current >= ALIGN_DURATION) {
-          stateRef.current = InteractionState.Lock;
           phaseTimerRef.current = 0;
-
-          currentInteractionState = InteractionState.Lock;
+          publishInteraction(stateRef, targetNPCIdRef, InteractionState.Lock);
 
           eventBus.emit('interaction:state_change', {
             state: InteractionState.Lock,
@@ -432,14 +402,13 @@ export function InteractionSystemBridge({
         clearPlayerExternalVelocity();
 
         if (phaseTimerRef.current >= LOCK_DURATION) {
-          stateRef.current = InteractionState.Dialogue;
           phaseTimerRef.current = 0;
           // BUG FIX: Reset global timer when entering Dialogue state.
           // Dialogues can last arbitrarily long, so we don't want the
           // timeout to fire right after the dialogue ends.
           globalTimerRef.current = 0;
 
-          currentInteractionState = InteractionState.Dialogue;
+          publishInteraction(stateRef, targetNPCIdRef, InteractionState.Dialogue);
 
           eventBus.emit('interaction:state_change', {
             state: InteractionState.Dialogue,
@@ -466,10 +435,9 @@ export function InteractionSystemBridge({
           const currentMode = readGamePhase(useGameStore.getState());
           const showStoryOverlay = useGameStore.getState().showStoryOverlay;
           if (currentMode !== 'cutscene' && !showStoryOverlay) {
-            stateRef.current = InteractionState.Exit;
             phaseTimerRef.current = 0;
             globalTimerRef.current = 0;
-            currentInteractionState = InteractionState.Exit;
+            publishInteraction(stateRef, targetNPCIdRef, InteractionState.Exit);
             eventBus.emit('interaction:state_change', {
               state: InteractionState.Exit,
               npcId: targetNPCIdRef.current ?? undefined,
@@ -493,13 +461,9 @@ export function InteractionSystemBridge({
             });
           }
 
-          stateRef.current = InteractionState.Idle;
-          targetNPCIdRef.current = null;
           phaseTimerRef.current = 0;
           globalTimerRef.current = 0; // Reset global timer on clean exit
-
-          currentInteractionState = InteractionState.Idle;
-          currentTargetNPCId = null;
+          publishInteraction(stateRef, targetNPCIdRef, InteractionState.Idle, null);
 
           eventBus.emit('interaction:state_change', {
             state: InteractionState.Idle,
@@ -513,11 +477,8 @@ export function InteractionSystemBridge({
       // Unexpected error during interaction update — reset to Idle.
       devWarn('[InteractionSystemBridge] Update failed, resetting to Idle:', err);
       const prevNpcId = targetNPCIdRef.current;
-      stateRef.current = InteractionState.Idle;
-      targetNPCIdRef.current = null;
       phaseTimerRef.current = 0;
-      currentInteractionState = InteractionState.Idle;
-      currentTargetNPCId = null;
+      publishInteraction(stateRef, targetNPCIdRef, InteractionState.Idle, null);
       clearPlayerExternalVelocity();
       eventBus.emit('interaction:state_change', {
         state: InteractionState.Idle,

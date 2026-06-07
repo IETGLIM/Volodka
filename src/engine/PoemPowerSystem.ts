@@ -20,6 +20,8 @@ import {
   getGameSnapshot,
   tryActivatePoemPower,
 } from '@/engine/GameActionDispatcher';
+import { partitionExpiredActiveTTLFlags } from '@/store/activeTTLFlags';
+export type { ActiveTTLFlag } from '@/store/activeTTLFlags';
 import type { TrainablePlayerSkill } from '@/shared/types/game';
 import { isTrainablePlayerSkill, warnInvalidValue } from '@/shared/validation/typeGuards';
 
@@ -51,8 +53,22 @@ function setNpcRelation(npcId: string, delta: number) {
   dispatchGameAction({ type: 'player/setNpcRelation', npcId, delta });
 }
 
-function setTTLFlags(flags: ActiveTTLFlag[]) {
-  dispatchGameAction({ type: 'poem/setTTLFlags', flags });
+function upsertTTLFlags(entries: Array<{ key: string; durationMs: number; poemId: string }>): void {
+  if (entries.length === 0) return;
+  const now = Date.now();
+  dispatchGameAction({
+    type: 'poem/upsertTTLFlags',
+    flags: entries.map(({ key, durationMs, poemId }) => ({
+      key,
+      poemId,
+      expiryTimestamp: now + durationMs,
+    })),
+  });
+}
+
+function removeTTLFlags(keys: string[]): void {
+  if (keys.length === 0) return;
+  dispatchGameAction({ type: 'poem/removeTTLFlags', keys });
 }
 
 /* ─── Power definition ─── */
@@ -74,14 +90,6 @@ export interface PoemPower {
   flagsToSet?: Array<{ key: string; durationMs: number }>;
   /** Effects to reverse when TTL flags expire (for temporary skill/stat boosts) */
   reverseOnExpiry?: ReverseOnExpiryEntry[];
-}
-
-/* ─── Active TTL Effect (stored in game store for serialization) ─── */
-export interface ActiveTTLFlag {
-  key: string;
-  /** ID of the poem that created this flag (for event emission on expiry) */
-  poemId: string;
-  expiryTimestamp: number;
 }
 
 /* ─── Active effect tracking (non-serializable, for UI display only) ─── */
@@ -115,20 +123,13 @@ export function getTTLCheckInterval(): number {
   return 1000;
 }
 
-/* ─── Helper: set a flag with TTL in the game store ─── */
-function setTTLFlag(key: string, durationMs: number, poemId: string): void {
-  setFlag(key, true);
-  const existing = snap().activeTTLFlags ?? [];
-  const filtered = existing.filter((f: ActiveTTLFlag) => f.key !== key);
-  setTTLFlags([...filtered, { key, poemId, expiryTimestamp: Date.now() + durationMs }]);
-}
-
 /* ─── Helper: process expired TTL flags (call from game loop or on load) ─── */
 export function processExpiredTTLFlags(): void {
-  const flags = snap().activeTTLFlags ?? [];
+  const flags = snap().activeTTLFlags ?? {};
   const now = Date.now();
-  const expired = flags.filter((f: ActiveTTLFlag) => now >= f.expiryTimestamp);
-  const remaining = flags.filter((f: ActiveTTLFlag) => now < f.expiryTimestamp);
+  const { expired } = partitionExpiredActiveTTLFlags(flags, now);
+
+  if (expired.length === 0) return;
 
   for (const f of expired) {
     setFlag(f.key, false);
@@ -172,9 +173,7 @@ export function processExpiredTTLFlags(): void {
     });
   }
 
-  if (expired.length > 0) {
-    setTTLFlags(remaining);
-  }
+  removeTTLFlags(expired.map((f) => f.key));
 }
 
 /* ─── Power definitions ─── */
@@ -533,11 +532,18 @@ export function activatePoemPowerById(poemId: string): boolean {
   // Execute the power effect only after store confirms activation
   power.effect();
 
-  // Set TTL-based flags instead of setTimeout
+  // Set TTL-based flags in one store update when a poem sets multiple flags
   if (power.flagsToSet) {
     for (const flag of power.flagsToSet) {
-      setTTLFlag(flag.key, flag.durationMs, poemId);
+      setFlag(flag.key, true);
     }
+    upsertTTLFlags(
+      power.flagsToSet.map((flag) => ({
+        key: flag.key,
+        durationMs: flag.durationMs,
+        poemId,
+      })),
+    );
   }
 
   // Track active effect (UI-only, non-serializable)

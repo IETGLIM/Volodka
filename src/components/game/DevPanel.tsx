@@ -7,7 +7,7 @@ import { FocusTrap } from '@/components/a11y/FocusTrap';
 import { usePanelDialog } from '@/components/a11y/usePanelDialog';
 import { useGameStore } from '@/store/gameStore';
 import { useDevPanelSceneTab, useDevPanelStateTab } from '@/store/selectors';
-import { eventBus } from '@/engine/EventBus';
+import { eventBus, EventBusPriority } from '@/engine/EventBus';
 import { getFrameProfilerSnapshot, type FrameProfilerSnapshot } from '@/engine/frame';
 import {
   getRuntimeBudgetSnapshot,
@@ -132,7 +132,7 @@ export function DevPanel({ startOpen = false }: { startOpen?: boolean }) {
         if (next.length > 30) next.shift();
         return next;
       });
-    });
+    }, EventBusPriority.Debug);
     return unsub;
   }, [visible]);
 

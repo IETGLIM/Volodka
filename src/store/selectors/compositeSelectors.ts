@@ -102,6 +102,30 @@ export function useOrchestratorOverlay() {
     currentNodeId: s.currentNodeId,
     introSeen: s.introSeen,
     mainMenuOpen: s.mainMenuOpen,
+    narrativeKind: s.narrativeKind,
+    devToolsArmed: s.devToolsArmed,
+  }));
+}
+
+/** QuickAccessToolbar — vitals + progression + music toggle. */
+export function useQuickAccessToolbarState() {
+  return useGameSelector((s) => ({
+    energy: s.playerState.energy,
+    stress: s.playerState.stress,
+    karma: s.playerState.karma,
+    level: s.playerState.progression.level,
+    xp: s.playerState.progression.xp,
+    xpToNextLevel: s.playerState.progression.xpToNextLevel,
+    musicEnabled: s.musicEnabled,
+    toggleMusic: s.toggleMusic,
+  }));
+}
+
+/** ScreenEffects — low energy / high stress thresholds. */
+export function useScreenEffectsVitals() {
+  return useGameSelector((s) => ({
+    energy: s.playerState.energy,
+    stress: s.playerState.stress,
   }));
 }
 
@@ -120,7 +144,13 @@ export function useDialogueContext() {
     mode: phaseFromStore(s),
     showStoryOverlay: s.showStoryOverlay,
     currentNodeId: s.currentNodeId,
-    playerState: s.playerState,
+    storyConditionPlayer: {
+      karma: s.playerState.karma,
+      skills: s.playerState.skills,
+      flags: s.playerState.flags,
+      progression: s.playerState.progression,
+    },
+    karma: s.playerState.karma,
     npcRelations: s.npcRelations,
     timeOfDay: s.exploration.timeOfDay,
   }));
@@ -132,15 +162,23 @@ export function useStoryContext() {
     showStoryOverlay: s.showStoryOverlay,
     mode: phaseFromStore(s),
     currentNodeId: s.currentNodeId,
-    playerState: s.playerState,
-    currentAct: s.playerState.progression.currentAct,
+    storyConditionPlayer: {
+      karma: s.playerState.karma,
+      skills: s.playerState.skills,
+      flags: s.playerState.flags,
+      progression: s.playerState.progression,
+    },
+    karma: s.playerState.karma,
   }));
 }
 
 /** StatusEffectsBar + PlayerStatsPanel weather context. */
 export function useStatusEffectsContext() {
   return useGameSelector((s) => ({
-    playerState: s.playerState,
+    karma: s.playerState.karma,
+    energy: s.playerState.energy,
+    stress: s.playerState.stress,
+    unlockedPerks: s.playerState.progression.unlockedPerks,
     weatherEnabled: s.exploration.weatherEnabled,
     rainIntensity: s.exploration.rainIntensity,
     currentSceneId: s.exploration.currentSceneId,
@@ -222,10 +260,31 @@ export function useDevPanelStateTab() {
   }));
 }
 
+/** PlayerStatsPanel — vitals, progression, skills, weather. */
+export function usePlayerStatsPanelState() {
+  return useGameSelector((s) => ({
+    karma: s.playerState.karma,
+    energy: s.playerState.energy,
+    stress: s.playerState.stress,
+    level: s.playerState.progression.level,
+    xp: s.playerState.progression.xp,
+    xpToNextLevel: s.playerState.progression.xpToNextLevel,
+    skillPoints: s.playerState.progression.skillPoints,
+    perkPoints: s.playerState.progression.perkPoints,
+    unlockedPerks: s.playerState.progression.unlockedPerks,
+    skills: s.playerState.skills,
+    weatherEnabled: s.exploration.weatherEnabled,
+    rainIntensity: s.exploration.rainIntensity,
+    currentSceneId: s.exploration.currentSceneId,
+    timeOfDay: s.exploration.timeOfDay,
+  }));
+}
+
 /** TradingPanel — economy + trade actions. */
 export function useTradingPanelState() {
   return useGameSelector((s) => ({
-    playerState: s.playerState,
+    credits: s.playerState.credits,
+    inventory: s.playerState.inventory,
     npcRelations: s.npcRelations,
     buyItem: s.buyItem,
     sellItem: s.sellItem,

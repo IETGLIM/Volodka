@@ -9,7 +9,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { eventBus } from '@/engine/EventBus';
+import { eventBus, EventBusPriority } from '@/engine/EventBus';
 import { useGamePhase } from '@/store/selectors';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 
@@ -247,7 +247,7 @@ export function DamageNumberFloat() {
     const unsub = eventBus.on('combat:damage', (payload) => {
       const type: DamageNumberType = payload.critical ? 'critical' : 'damage';
       addNumber(type, payload.amount);
-    });
+    }, EventBusPriority.FX);
     return unsub;
   }, [addNumber]);
 
@@ -255,7 +255,7 @@ export function DamageNumberFloat() {
   useEffect(() => {
     const unsub = eventBus.on('combat:heal', (payload) => {
       addNumber('heal', payload.amount);
-    });
+    }, EventBusPriority.FX);
     return unsub;
   }, [addNumber]);
 
@@ -263,7 +263,7 @@ export function DamageNumberFloat() {
   useEffect(() => {
     const unsub = eventBus.on('combat:hit', (payload) => {
       addNumber(payload.isPlayerHit ? 'damage' : 'damage', payload.damage);
-    });
+    }, EventBusPriority.FX);
     return unsub;
   }, [addNumber]);
 
@@ -273,7 +273,7 @@ export function DamageNumberFloat() {
       if (payload.xpGained > 0) {
         addNumber('xp', payload.xpGained);
       }
-    });
+    }, EventBusPriority.FX);
     return unsub;
   }, [addNumber]);
 

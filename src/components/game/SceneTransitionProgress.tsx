@@ -53,6 +53,8 @@ export function SceneTransitionProgress() {
   const completeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const initialJumpTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const progressRef = useRef(0);
+  const phaseRef = useRef<TransitionPhase>('idle');
+  const loadingTransitionRef = useRef(false);
 
   /** Clear all pending timers */
   const clearTimers = useCallback(() => {
@@ -61,25 +63,46 @@ export function SceneTransitionProgress() {
     if (initialJumpTimerRef.current) { clearTimeout(initialJumpTimerRef.current); initialJumpTimerRef.current = null; }
   }, []);
 
+  const completeTransition = useCallback((sceneId: SceneId) => {
+    if (!loadingTransitionRef.current) return;
+    loadingTransitionRef.current = false;
+
+    if (slowTickRef.current) { clearInterval(slowTickRef.current); slowTickRef.current = null; }
+    if (initialJumpTimerRef.current) { clearTimeout(initialJumpTimerRef.current); initialJumpTimerRef.current = null; }
+
+    setSceneId(sceneId);
+    progressRef.current = 100;
+    setProgress(100);
+    phaseRef.current = 'complete';
+    setPhase('complete');
+
+    completeTimerRef.current = setTimeout(() => {
+      phaseRef.current = 'idle';
+      setPhase('idle');
+      setProgress(0);
+      progressRef.current = 0;
+    }, COMPLETE_HOLD_MS);
+  }, []);
+
   /* ── Listen for scene:transition (start) ── */
   useEffect(() => {
     const unsub = eventBus.on('scene:transition', (payload) => {
-      // Clear previous transition timers if any
       clearTimers();
+      loadingTransitionRef.current = true;
 
-      // Set scene ID and start loading
       setSceneId(payload.targetScene);
+      phaseRef.current = 'loading';
       setPhase('loading');
       progressRef.current = 0;
       setProgress(0);
 
-      // Phase 1: Quick jump to 30%
       initialJumpTimerRef.current = setTimeout(() => {
+        if (!loadingTransitionRef.current) return;
         progressRef.current = INITIAL_JUMP_PCT;
         setProgress(INITIAL_JUMP_PCT);
 
-        // Phase 2: Slow increments toward 90%
         slowTickRef.current = setInterval(() => {
+          if (!loadingTransitionRef.current) return;
           if (progressRef.current < SLOW_CAP_PCT) {
             const next = Math.min(progressRef.current + SLOW_INCREMENT, SLOW_CAP_PCT);
             progressRef.current = next;
@@ -95,37 +118,17 @@ export function SceneTransitionProgress() {
     };
   }, [clearTimers]);
 
-  /* ── Listen for scene:enter (end / alternative trigger) ── */
+  /* ── Listen for scene:enter (fires synchronously after scene:transition) ── */
   useEffect(() => {
     const unsub = eventBus.on('scene:enter', (payload) => {
-      // Only respond if we're currently in a loading phase
-      if (phase !== 'loading') return;
-
-      // Clear slow tick interval
-      if (slowTickRef.current) { clearInterval(slowTickRef.current); slowTickRef.current = null; }
-      if (initialJumpTimerRef.current) { clearTimeout(initialJumpTimerRef.current); initialJumpTimerRef.current = null; }
-
-      // Update scene ID with the confirmed scene
-      setSceneId(payload.sceneId);
-
-      // Complete the progress bar
-      progressRef.current = 100;
-      setProgress(100);
-      setPhase('complete');
-
-      // Hold the complete state, then fade out
-      completeTimerRef.current = setTimeout(() => {
-        setPhase('idle');
-        setProgress(0);
-        progressRef.current = 0;
-      }, COMPLETE_HOLD_MS);
+      completeTransition(payload.sceneId);
     });
 
     return () => {
       unsub();
       if (completeTimerRef.current) { clearTimeout(completeTimerRef.current); completeTimerRef.current = null; }
     };
-  }, [phase]);
+  }, [completeTransition]);
 
   /* ── Cleanup on unmount ── */
   useEffect(() => {

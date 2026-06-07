@@ -1,8 +1,17 @@
-/* ─── Volodka RPG – shared selector hooks ─── */
+/* ─── Volodka RPG – shared selector hooks (default store subscriptions) ─── */
+/*
+ * Prefer these over raw useGameStore(selector) in React components:
+ * - useGameSelector — shallow compare for objects/arrays
+ * - useGamePrimitive — Object.is for numbers/strings/booleans
+ *
+ * Action-only subscriptions may still use useGameStore((s) => s.action).
+ */
 
 import { useShallow } from 'zustand/react/shallow';
 import { useGameStore } from '../gameStore';
 import type { GameStoreState } from '../types';
+
+export { createShallowSelectorHook, createPrimitiveSelectorHook } from './createSelectorHooks';
 
 /**
  * Subscribe with shallow equality — use for selectors returning objects or arrays.

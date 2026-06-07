@@ -8,7 +8,7 @@
 import { useMemo, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Gift, Heart, ThumbsUp, Package, Frown, Angry } from 'lucide-react';
-import { useGameStore } from '@/store/gameStore';
+import { useGiftDialogState } from '@/store/selectors';
 import { findNpcById } from '@/data/allNpcDefinitions';
 import { getItemDefinition } from '@/data/items';
 import {
@@ -55,9 +55,7 @@ interface GiftDialogProps {
 /* ─── Main Component ─── */
 
 export function GiftDialog({ open, onClose, npcId }: GiftDialogProps) {
-  const inventory = useGameStore((s) => s.playerState.inventory);
-  const npcAffinity = useGameStore((s) => s.npcAffinity);
-  const giftItemToNPC = useGameStore((s) => s.giftItemToNPC);
+  const { inventory, npcAffinity, giftItemToNPC } = useGiftDialogState();
   const [lastReaction, setLastReaction] = useState<{
     text: string;
     preference: GiftPreference;

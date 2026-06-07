@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef } from 'react';
+import { ControllerSession } from '@/engine/controller/ControllerSession';
 import { useGameStore } from '@/store/gameStore';
 import { eventBus } from '@/engine/EventBus';
 import { audioEngine } from '@/engine/AudioEngine';
@@ -8,18 +9,10 @@ import { clearGameplayPhaseFlags, readGamePhase } from '@/shared/gamePhase';
 
 /** Watches story node changes and drives cutscene overlays + camera events. */
 export function useCutsceneController(currentNodeId: string | null) {
-  const cutsceneOverlayTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const cutsceneEndTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const cutsceneSessionRef = useRef(new ControllerSession());
 
   const clearCutsceneTimers = useCallback(() => {
-    if (cutsceneOverlayTimerRef.current) {
-      clearTimeout(cutsceneOverlayTimerRef.current);
-      cutsceneOverlayTimerRef.current = null;
-    }
-    if (cutsceneEndTimerRef.current) {
-      clearTimeout(cutsceneEndTimerRef.current);
-      cutsceneEndTimerRef.current = null;
-    }
+    cutsceneSessionRef.current.clearTimers();
   }, []);
 
   const skipActiveCutscene = useCallback((): boolean => {
@@ -27,6 +20,7 @@ export function useCutsceneController(currentNodeId: string | null) {
     if (!store.activeCutsceneId) return false;
 
     clearCutsceneTimers();
+    cutsceneSessionRef.current.dispose();
     store.setCutscene(null, []);
     clearGameplayPhaseFlags(store);
     eventBus.emit('cutscene:overlay_end', {});
@@ -49,6 +43,9 @@ export function useCutsceneController(currentNodeId: string | null) {
 
     const store = useGameStore.getState();
     if (store.triggeredCutscenes.includes(cutscene.id)) return;
+
+    const generation = cutsceneSessionRef.current.begin();
+
     store.markCutsceneTriggered(cutscene.id);
 
     clearGameplayPhaseFlags(store);
@@ -59,7 +56,7 @@ export function useCutsceneController(currentNodeId: string | null) {
       waypoints: cutscene.waypoints,
     });
 
-    cutsceneOverlayTimerRef.current = setTimeout(() => {
+    cutsceneSessionRef.current.schedule(() => {
       eventBus.emit('cutscene:overlay', {
         text: cutscene.textOverlay,
         subtitle: cutscene.subtitle,
@@ -82,8 +79,9 @@ export function useCutsceneController(currentNodeId: string | null) {
 
     const totalDuration = cutscene.textDurationMs + 2000;
 
-    cutsceneEndTimerRef.current = setTimeout(() => {
+    cutsceneSessionRef.current.schedule(() => {
       const currentStore = useGameStore.getState();
+      if (!cutsceneSessionRef.current.isCurrent(generation)) return;
       if (currentStore.activeCutsceneId) {
         currentStore.setCutscene(null, []);
         clearGameplayPhaseFlags(currentStore);
@@ -93,7 +91,9 @@ export function useCutsceneController(currentNodeId: string | null) {
       }
     }, totalDuration);
 
-    return clearCutsceneTimers;
+    return () => {
+      cutsceneSessionRef.current.dispose();
+    };
   }, [currentNodeId, clearCutsceneTimers]);
 
   return { skipActiveCutscene };

@@ -2,6 +2,7 @@
 /* Region-scale ambient events, cell enter hooks, and district atmosphere. */
 
 import { eventBus } from '@/engine/EventBus';
+import { registerHmrDispose } from '@/shared/dev/hmrDispose';
 import type { SceneId } from '@/shared/types/game';
 import type { WorldCellId, WorldRegionId } from './types';
 import {
@@ -98,3 +99,11 @@ export function initWorldEventDirector(): () => void {
   director.start();
   return () => director.stop();
 }
+
+/** Stop director listeners and release singleton (unmount / HMR). */
+export function disposeWorldEventDirector(): void {
+  sharedDirector?.stop();
+  sharedDirector = null;
+}
+
+registerHmrDispose(disposeWorldEventDirector);

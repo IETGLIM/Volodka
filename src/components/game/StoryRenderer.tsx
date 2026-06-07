@@ -98,7 +98,7 @@ const EXPLORE_HUB_ENTRY: Record<string, string> = {
 
 /* ── Component ── */
 export function StoryRenderer() {
-  const { showStoryOverlay, currentNodeId, playerState } = useStoryContext();
+  const { showStoryOverlay, currentNodeId, storyConditionPlayer, karma } = useStoryContext();
   const setCurrentNodeId = useSetCurrentNodeId();
   const visitNode = useVisitNode();
   const nodeEffectGenRef = useRef(0);
@@ -120,8 +120,8 @@ export function StoryRenderer() {
   }, []);
 
   const conditionCtx = useMemo(
-    () => buildStoryConditionContext(playerState),
-    [playerState],
+    () => buildStoryConditionContext(storyConditionPlayer),
+    [storyConditionPlayer],
   );
 
   const storyNodes = isNarrativeGameDataLoaded() ? getStoryNodes() : null;
@@ -223,9 +223,9 @@ export function StoryRenderer() {
   if (!isOpen) return null;
 
   const karmaLevel =
-    playerState.karma >= KARMA_HIGH_THRESHOLD
+    karma >= KARMA_HIGH_THRESHOLD
       ? 'high'
-      : playerState.karma <= KARMA_LOW_THRESHOLD
+      : karma <= KARMA_LOW_THRESHOLD
         ? 'low'
         : 'mid';
 

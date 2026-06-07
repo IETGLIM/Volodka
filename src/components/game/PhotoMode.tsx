@@ -10,9 +10,9 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { eventBus } from '@/engine/EventBus';
 import { PHOTO_EVENTS, PHOTO_EMPTY_PAYLOAD } from '@/engine/events';
-import { useGameStore } from '@/store/gameStore';
+import { useGamePhase, useWeatherIndicatorState } from '@/store/selectors';
+import { getGameStore } from '@/store/gameStore';
 import { readGamePhase } from '@/shared/gamePhase';
-import { useGamePhase } from '@/store/selectors';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { SCENE_CONFIG } from '@/config/scenes';
 
@@ -43,8 +43,7 @@ export function PhotoMode() {
   const activeRef = useRef(false);
 
   // ── Current scene info ──
-  const currentSceneId = useGameStore((s) => s.exploration.currentSceneId);
-  const timeOfDay = useGameStore((s) => s.exploration.timeOfDay);
+  const { currentSceneId, timeOfDay } = useWeatherIndicatorState();
   const sceneName = SCENE_CONFIG[currentSceneId]?.name ?? 'Неизвестно';
 
   // ── Timestamp in HH:MM format from game time ──
@@ -58,7 +57,7 @@ export function PhotoMode() {
 
   // ── Enter photo mode ──
   const enterPhotoMode = useCallback(() => {
-    if (readGamePhase(useGameStore.getState()) !== 'exploration') return;
+    if (readGamePhase(getGameStore()) !== 'exploration') return;
     setActive(true);
     activeRef.current = true;
     photoModeActive.current = true;

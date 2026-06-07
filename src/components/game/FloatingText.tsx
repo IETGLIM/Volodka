@@ -8,7 +8,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
-import { eventBus } from '@/engine/EventBus';
+import { eventBus, EventBusPriority } from '@/engine/EventBus';
 import { AriaLiveRegion } from '@/components/a11y/AriaLiveRegion';
 
 /* ── Types ── */
@@ -157,7 +157,7 @@ export function FloatingTextLayer() {
       } else {
         floatDamage(payload.damage);
       }
-    }));
+    }, EventBusPriority.FX));
 
     unsubs.push(eventBus.on('combat:victory', (payload) => {
       floatXP(payload.xpGained);
@@ -171,7 +171,7 @@ export function FloatingTextLayer() {
         const lootId = payload.lootItemId;
         setTimeout(() => floatItem(lootId), 600);
       }
-    }));
+    }, EventBusPriority.FX));
 
     unsubs.push(eventBus.on('skill:level_up', (payload) => {
       floatSkill(payload.skill, payload.level);

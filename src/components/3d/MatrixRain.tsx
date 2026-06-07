@@ -9,8 +9,7 @@
    CSS keyframe animation for massive GPU savings. */
 
 import { useMemo, useEffect, useState, useRef, useSyncExternalStore } from 'react';
-import { useGameStore } from '@/store/gameStore';
-import { useGamePhase } from '@/store/selectors';
+import { useGamePhase, useMatrixRainOverlayState } from '@/store/selectors';
 import { useMobileVisualPerf } from '@/hooks/use-mobile';
 import { eventBus } from '@/engine/EventBus';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
@@ -208,8 +207,7 @@ interface MatrixRainProps {
 
 export function MatrixRain({ sceneId: sceneIdProp }: MatrixRainProps) {
   const mode = useGamePhase();
-  const showStoryOverlay = useGameStore((s) => s.showStoryOverlay);
-  const storeSceneId = useGameStore((s) => s.exploration.currentSceneId);
+  const { showStoryOverlay, sceneId: storeSceneId } = useMatrixRainOverlayState();
   const sceneId = sceneIdProp ?? storeSceneId;
   const { visualLite, effectsScale } = useMobileVisualPerf();
 

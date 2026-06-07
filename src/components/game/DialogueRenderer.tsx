@@ -137,7 +137,7 @@ interface HistoryLine {
 
 /* ── Component ── */
 export function DialogueRenderer() {
-  const { mode, showStoryOverlay, currentNodeId, playerState, npcRelations, timeOfDay } = useDialogueContext();
+  const { mode, showStoryOverlay, currentNodeId, storyConditionPlayer, karma, npcRelations, timeOfDay } = useDialogueContext();
   const setCurrentNodeId = useSetCurrentNodeId();
   const visitNode = useVisitNode();
 
@@ -165,12 +165,12 @@ export function DialogueRenderer() {
   );
   const conditionCtx = useMemo(() => {
     const npcDef = node ? findNpcByName(node.speaker) : undefined;
-    return buildStoryConditionContext(playerState, {
+    return buildStoryConditionContext(storyConditionPlayer, {
       npcRelations,
       npcId: npcDef?.id ?? '',
       timeOfDay,
     });
-  }, [playerState, npcRelations, timeOfDay, node]);
+  }, [storyConditionPlayer, npcRelations, timeOfDay, node]);
   const { displayed, done, skip } = useTypewriter(node?.text ?? '', 30);
 
   // Apply node-level effects on mount
@@ -567,10 +567,10 @@ export function DialogueRenderer() {
                             {choice.text}
                             {/* Karma-gated indicator: subtle when met */}
                             {cond.pass && choice.condition?.minKarma !== undefined && (
-                              <span className="ml-1 text-[9px] font-mono text-emerald-400/70" title={`☯ Карма ≥ ${choice.condition.minKarma} (У вас: ${playerState.karma})`}>☯</span>
+                              <span className="ml-1 text-[9px] font-mono text-emerald-400/70" title={`☯ Карма ≥ ${choice.condition.minKarma} (У вас: ${karma})`}>☯</span>
                             )}
                             {cond.pass && choice.condition?.maxKarma !== undefined && (
-                              <span className="ml-1 text-[9px] font-mono text-cyan-400/70" title={`☯ Карма ≤ ${choice.condition.maxKarma} (У вас: ${playerState.karma})`}>☯</span>
+                              <span className="ml-1 text-[9px] font-mono text-cyan-400/70" title={`☯ Карма ≤ ${choice.condition.maxKarma} (У вас: ${karma})`}>☯</span>
                             )}
                             {/* Skill-gated indicator: subtle when met */}
                             {cond.pass && choice.condition?.minSkill && Object.keys(choice.condition.minSkill).length > 0 && (

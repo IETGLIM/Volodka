@@ -48,6 +48,7 @@ export {
   WorldStreamManager,
   getWorldStreamManager,
   resetWorldStreamManager,
+  disposeWorldStreamManager,
 } from './WorldStreamManager';
 
 export {
@@ -70,7 +71,7 @@ export {
   type SpawnContext,
 } from './SpawnDirector';
 
-export { NavMeshLayer, getNavMeshLayer } from './NavMeshLayer';
+export { NavMeshLayer, getNavMeshLayer, disposeNavMeshLayer } from './NavMeshLayer';
 
 /** @deprecated use worldRegistry exports */
 export { LEGACY_SCENE_CHUNK_MAP } from './legacySceneBridge';

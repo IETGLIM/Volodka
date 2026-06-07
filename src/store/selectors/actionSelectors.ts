@@ -76,6 +76,18 @@ export function useLoadGame() {
   return useGameStore((s) => s.loadGame);
 }
 
-export function useResetGame() {
-  return useGameStore((s) => s.resetGame);
+export function useSetNarrativeKind() {
+  return useGameStore((s) => s.setNarrativeKind);
+}
+
+export function useArmDevTools() {
+  return useGameStore((s) => s.armDevTools);
+}
+
+export function useToggleMusic() {
+  return useGameStore((s) => s.toggleMusic);
+}
+
+export function useRestAtHome() {
+  return useGameStore((s) => s.restAtHome);
 }

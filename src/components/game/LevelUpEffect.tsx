@@ -1,14 +1,12 @@
 
 /* ─── Volodka RPG – Level Up Effect ───
    Dramatic full-screen effect when the player levels up.
-   Listens on EventBus for 'player:levelup' event AND watches
-   the player store for level changes via useGameStore.
-*/
+   Listens on EventBus for 'player:levelup' (batched XP emits one event per turn).
+ */
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { eventBus } from '@/engine/EventBus';
-import { useGameStore } from '@/store/gameStore';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 
 interface LevelUpState {
@@ -59,23 +57,6 @@ export function LevelUpEffect() {
       if (timerRef.current) clearTimeout(timerRef.current);
     };
   }, [triggerLevelUp]);
-
-  // ── Also watch the store for level changes ──
-  const storeLevel = useGameStore((s) => s.playerState.progression?.level ?? 1);
-  const prevStoreLevel = useRef(storeLevel);
-
-  useEffect(() => {
-    if (storeLevel > prevStoreLevel.current) {
-      const prev = prevStoreLevel.current;
-      prevStoreLevel.current = storeLevel;
-      // Defer state update to avoid synchronous setState in effect
-      const t = setTimeout(() => triggerLevelUp(storeLevel, prev), 0);
-      return () => clearTimeout(t);
-    } else if (storeLevel < prevStoreLevel.current) {
-      // Level can decrease on load — just sync ref
-      prevStoreLevel.current = storeLevel;
-    }
-  }, [storeLevel, triggerLevelUp]);
 
   return (
     <AnimatePresence>

@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { useGameStore } from '@/store/gameStore';
 import { readGamePhase } from '@/shared/gamePhase';
-import { eventBus } from '@/engine/EventBus';
-import { musicEngine } from '@/engine/MusicEngine';
+import { eventBus, EventBusPriority } from '@/engine/EventBus';
+import { withHmrCleanup } from '@/shared/dev/hmrDispose';
 import { SCENE_CONFIG } from '@/config/scenes';
 import { AUTO_SAVE_INTERVAL_MS } from '@/data/constants';
 import { processExpiredTTLFlags } from '@/engine/PoemPowerSystem';
@@ -15,31 +15,20 @@ export function useGameLifecycleManager(mode: string) {
   const sceneBannerTimeout = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const isMountedRef = useRef(true);
 
-  useEffect(() => {
-    return initWorldEventDirector();
-  }, []);
+  useEffect(() => withHmrCleanup(initWorldEventDirector()), []);
 
   useEffect(() => {
-    let disposeFn: (() => void) | undefined;
     let cancelled = false;
 
     void preloadNarrativeGameData()
       .then(() => import('@/engine/GuidedStoryManager'))
       .then((mod) => {
-      if (cancelled) return;
-      mod.initGuidedStoryManager();
-      disposeFn = mod.disposeGuidedStoryManager;
-    });
+        if (cancelled) return;
+        mod.initGuidedStoryManager();
+      });
 
     return () => {
       cancelled = true;
-      disposeFn?.();
-    };
-  }, []);
-
-  useEffect(() => {
-    return () => {
-      musicEngine.dispose();
     };
   }, []);
 
@@ -91,36 +80,27 @@ export function useGameLifecycleManager(mode: string) {
   }, [mode]);
 
   useEffect(() => {
-    const unsub = eventBus.on('scene:enter', () => {
+    const scope = eventBus.createScope();
+
+    scope.on('scene:enter', () => {
       const store = useGameStore.getState();
       if (readGamePhase(store) === 'exploration') {
         store.saveGame({ source: 'auto' });
       }
     });
-    return unsub;
-  }, []);
 
-  // Save after combat session ends (post-rewards, mode back to exploration).
-  // Do NOT save on combat:victory — rewards apply synchronously but mode changes
-  // after CombatSystem's delay; an immediate save can race stale state.
-  useEffect(() => {
-    const unsub = eventBus.on('combat:end', () => {
+    scope.on('combat:end', () => {
       const store = useGameStore.getState();
       if (readGamePhase(store) === 'exploration') {
         store.saveGame({ source: 'auto' });
       }
-    });
-    return unsub;
-  }, []);
+    }, EventBusPriority.Orchestrator);
 
-  useEffect(() => {
     const checkResets = () => useGameStore.getState().checkDailyMissionResets();
     checkResets();
-    return eventBus.on('game:loaded', checkResets);
-  }, []);
+    scope.on('game:loaded', checkResets);
 
-  useEffect(() => {
-    const unsub = eventBus.on('item:crafted', ({ category }) => {
+    scope.on('item:crafted', ({ category }) => {
       const store = useGameStore.getState();
       const categoryToObjective: Record<string, string> = {
         equipment: 'craft_equipment',
@@ -138,7 +118,8 @@ export function useGameLifecycleManager(mode: string) {
         }
       }
     });
-    return unsub;
+
+    return withHmrCleanup(() => scope.dispose());
   }, []);
 
   useEffect(() => {

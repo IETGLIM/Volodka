@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { FocusTrap } from '@/components/a11y/FocusTrap';
 import { usePanelDialog } from '@/components/a11y/usePanelDialog';
-import { useGameStore } from '@/store/gameStore';
+import { useVitalStats, useCurrentSceneId, useRestAtHome } from '@/store/selectors';
 import { BedDouble, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -17,10 +17,9 @@ interface RestPanelProps {
 
 export function RestPanel({ open, onClose }: RestPanelProps) {
   const { closeButtonRef, dialogProps, titleProps } = usePanelDialog();
-  const restAtHome = useGameStore((s) => s.restAtHome);
-  const energy = useGameStore((s) => s.playerState.energy);
-  const stress = useGameStore((s) => s.playerState.stress);
-  const currentScene = useGameStore((s) => s.exploration.currentSceneId);
+  const restAtHome = useRestAtHome();
+  const { energy, stress } = useVitalStats();
+  const currentScene = useCurrentSceneId();
 
   const canRest = currentScene === 'volodka_room' || currentScene === 'home_evening';
 

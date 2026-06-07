@@ -8,7 +8,7 @@ import {
 } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useGameStore } from '@/store/gameStore';
-import { useOrchestratorOverlay } from '@/store/selectors';
+import { useOrchestratorOverlay, useArmDevTools } from '@/store/selectors';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { CUTSCENE_TIMINGS, MOTION_EASE } from '@/shared/constants/transitionTimings';
 import {
@@ -62,6 +62,7 @@ import { CyberpunkThemeProvider } from './CyberpunkTheme';
 
 import { useGameDataPreload } from '@/hooks/useGameDataPreload';
 import { markOrchestratorMount } from '@/engine/performance/LoadingTimeline';
+import { disposeGameEngine, reviveGameEngine } from '@/engine/disposeGameEngine';
 
 import { IntroAutoSkip } from './orchestrator/IntroAutoSkip';
 import { FocusTrap } from '@/components/a11y/FocusTrap';
@@ -130,17 +131,19 @@ import {
 /* ── Component ── */
 export function GameOrchestrator() {
   const gameDataReady = useGameDataPreload();
-  useEffect(() => { markOrchestratorMount(); }, []);
-  const { mode, showStoryOverlay, currentNodeId, introSeen, mainMenuOpen } = useOrchestratorOverlay();
+  useEffect(() => {
+    reviveGameEngine();
+    markOrchestratorMount();
+    return () => disposeGameEngine();
+  }, []);
+  const { mode, showStoryOverlay, currentNodeId, introSeen, mainMenuOpen, narrativeKind, devToolsArmed } = useOrchestratorOverlay();
   const [canvasMounted, setCanvasMounted] = useState(!mainMenuOpen);
 
   useEffect(() => {
     if (!mainMenuOpen) setCanvasMounted(true);
   }, [mainMenuOpen]);
   const pauseDialog = usePanelDialog();
-  const narrativeKind = useGameStore((s) => s.narrativeKind);
-  const devToolsArmed = useGameStore((s) => s.devToolsArmed);
-  const armDevTools = useGameStore((s) => s.armDevTools);
+  const armDevTools = useArmDevTools();
   const [devPanelStartOpen, setDevPanelStartOpen] = useState(false);
 
   useNarrativeKindRecovery(showStoryOverlay, narrativeKind, currentNodeId);

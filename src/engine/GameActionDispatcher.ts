@@ -11,6 +11,8 @@ import type {
 import type { GamePhase } from '@/shared/gamePhase';
 import type { NotificationType } from '@/store/shared';
 
+import type { ActiveTTLFlagMap } from '@/store/activeTTLFlags';
+
 export interface ActiveTTLFlagSnapshot {
   key: string;
   poemId: string;
@@ -55,7 +57,7 @@ export interface GameStoreSnapshot {
   };
   collectedPoems: string[];
   quests: QuestState[];
-  activeTTLFlags: ActiveTTLFlagSnapshot[];
+  activeTTLFlags: ActiveTTLFlagMap;
   poemPowers: Record<string, { lastUsed: number; cooldownMs: number }>;
   npcRelations: Array<{ npcId: string; value: number }>;
   unlockedAchievements: Array<{ id: string; unlockedAt: number }>;
@@ -80,7 +82,9 @@ export type GameAction =
   | { type: 'player/setFlag'; key: string; value: boolean }
   | { type: 'player/setNpcRelation'; npcId: string; delta: number }
   /* ── Poem powers ── */
-  | { type: 'poem/setTTLFlags'; flags: ActiveTTLFlagSnapshot[] }
+  | { type: 'poem/upsertTTLFlag'; flag: ActiveTTLFlagSnapshot }
+  | { type: 'poem/upsertTTLFlags'; flags: ActiveTTLFlagSnapshot[] }
+  | { type: 'poem/removeTTLFlags'; keys: string[] }
   | { type: 'poem/clearAllEffects' }
   /* ── Story / UI mode ── */
   | { type: 'story/setCombatActive'; active: boolean }

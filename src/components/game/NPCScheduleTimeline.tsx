@@ -10,8 +10,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Clock } from 'lucide-react';
 import { NPC_SCHEDULES_MAP } from '@/data/npcSchedules';
 import { getNPCLocationForTime } from '@/engine/ScheduleEngine';
-import { useGameStore } from '@/store/gameStore';
-import { selectScheduleContext } from '@/shared/scheduleContext';
+import { useScheduleContext } from '@/store/selectors';
 import { SCENE_CONFIG } from '@/config/scenes';
 import type { SceneId, ScheduleEntry } from '@/shared/types/game';
 
@@ -172,7 +171,7 @@ export function NPCScheduleTimeline({
   npcId: string;
   currentHour: number;
 }) {
-  const scheduleCtx = useGameStore(selectScheduleContext);
+  const scheduleCtx = useScheduleContext();
   const [hoveredSegment, setHoveredSegment] = useState<number | null>(null);
   const [tooltipPos, setTooltipPos] = useState<{ left: number; top: number }>({ left: 0, top: 0 });
 

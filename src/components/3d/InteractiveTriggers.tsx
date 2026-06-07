@@ -7,17 +7,17 @@ import { useFrameTick } from '@/engine/frame/useFrameTick';
 import { Html } from '@react-three/drei';
 import * as THREE from 'three';
 import { getGameStore, useGameStore } from '@/store/gameStore';
-import { useCurrentSceneId, useInteractionOverlay, useTimeOfDay, useSceneExitState } from '@/store/selectors';
+import { useCurrentSceneId, useInteractionOverlay, useTimeOfDay, useSceneExitState, useScheduleContext } from '@/store/selectors';
 import { TRIGGER_ZONES, type TriggerZone, INTERACTION_LABELS } from '@/data/triggerZones';
 import { findNpcById, findNpcByDialogueNodeId } from '@/data/allNpcDefinitions';
 import type { NPCDefinition } from '@/shared/types/game';
 import { getNPCsForScene, getCurrentScheduleEntry } from '@/engine/ScheduleEngine';
-import { selectScheduleContext } from '@/shared/scheduleContext';
 import { eventBus } from '@/engine/EventBus';
 import { isInteractionLocked } from './InteractionSystemBridge';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { bottomInteractPromptPx } from '@/shared/constants/hudLayout';
 import { getSceneExits } from '@/config/scenes';
+import { queryInteractionTargets, type NpcQueryTarget, type ExitQueryTarget } from '@/engine/interaction/interactionTargetQuery';
 
 /** Maximum number of visible [E] prompts at once */
 const MAX_VISIBLE_PROMPTS = 2;
@@ -46,14 +46,18 @@ interface PromptData {
 
 interface InteractiveTriggersProps {
   livePlayerPositionRef: React.MutableRefObject<THREE.Vector3>;
+  livePlayerRotationRef: React.MutableRefObject<number>;
 }
 
 /** Trigger zones and "Press E" indicators with centralized prompt management */
-export function InteractiveTriggers({ livePlayerPositionRef }: InteractiveTriggersProps) {
+export function InteractiveTriggers({
+  livePlayerPositionRef,
+  livePlayerRotationRef,
+}: InteractiveTriggersProps) {
   const { sceneId, gameMode, showStoryOverlay } = useInteractionOverlay();
   const { playerFlags, playerKarma } = useSceneExitState();
   const timeOfDay = useTimeOfDay();
-  const scheduleCtx = useGameStore(selectScheduleContext);
+  const scheduleCtx = useScheduleContext();
   const zones = TRIGGER_ZONES.filter((z) => z.sceneId === sceneId);
 
   const sceneExits = useMemo(
@@ -61,7 +65,7 @@ export function InteractiveTriggers({ livePlayerPositionRef }: InteractiveTrigge
     [sceneId, playerFlags, playerKarma],
   );
 
-  const npcProximityTargets = useMemo(() => {
+  const npcQueryTargets = useMemo((): NpcQueryTarget[] => {
     const npcIdsInScene = getNPCsForScene(sceneId, timeOfDay, scheduleCtx);
     return npcIdsInScene
       .map((npcId) => {
@@ -70,14 +74,16 @@ export function InteractiveTriggers({ livePlayerPositionRef }: InteractiveTrigge
         const entry = getCurrentScheduleEntry(npcId, timeOfDay, scheduleCtx);
         return {
           id: `npc_${npcId}`,
+          npcId,
           position: (entry?.position ?? npc.defaultPosition) as [number, number, number],
+          label: `Поговорить с ${npc.name}`,
         };
       })
-      .filter(Boolean) as Array<{ id: string; position: [number, number, number] }>;
+      .filter(Boolean) as NpcQueryTarget[];
   }, [sceneId, timeOfDay, scheduleCtx]);
 
-  const npcProximityTargetsRef = useRef(npcProximityTargets);
-  npcProximityTargetsRef.current = npcProximityTargets;
+  const npcQueryTargetsRef = useRef(npcQueryTargets);
+  npcQueryTargetsRef.current = npcQueryTargets;
 
   const sceneExitsRef = useRef(sceneExits);
   sceneExitsRef.current = sceneExits;
@@ -93,9 +99,6 @@ export function InteractiveTriggers({ livePlayerPositionRef }: InteractiveTrigge
   const [visiblePrompts, setVisiblePrompts] = useState<PromptData[]>([]);
   const frameCountRef = useRef(0);
 
-  // Pre-allocated temp Vector3 — avoids per-frame allocation in useFrame (P0-2.2)
-  const tempVecRef = useRef(new THREE.Vector3());
-
   // Compute allowed IDs and reconcile visible prompts every few frames
   useFrameTick('interaction', () => {
     // Don't show any prompts when overlays (dialogue/story/panels) are active
@@ -108,29 +111,21 @@ export function InteractiveTriggers({ livePlayerPositionRef }: InteractiveTrigge
     }
 
     const playerPos = livePlayerPositionRef.current;
-    const entries: PromptEntry[] = [];
+    const playerYaw = livePlayerRotationRef.current;
 
-    // Check trigger zones — reuse tempVecRef instead of new Vector3 per zone
-    for (const zone of zones) {
-      tempVecRef.current.set(...zone.position);
-      const dist = playerPos.distanceTo(tempVecRef.current);
-      const range = Math.max(zone.size[0], zone.size[2]) / 2 + 1.0;
-      if (dist < range && !isInteractionLocked()) {
-        entries.push({ id: zone.id, distance: dist });
+    if (isInteractionLocked()) {
+      allowedIdsRef.current = new Set();
+      if (promptsMapRef.current.size > 0) {
+        promptsMapRef.current.clear();
       }
+      frameCountRef.current++;
+      if (frameCountRef.current % 3 === 0) {
+        setVisiblePrompts((prev) => (prev.length === 0 ? prev : []));
+      }
+      return;
     }
 
-    // Check NPCs — positions refreshed when time/scene/schedule context changes (not every frame)
-    for (const target of npcProximityTargetsRef.current) {
-      tempVecRef.current.set(...target.position);
-      const dist = playerPos.distanceTo(tempVecRef.current);
-      if (dist < 3.0 && !isInteractionLocked()) {
-        entries.push({ id: target.id, distance: dist });
-      }
-    }
-
-    // Scene exits without overlapping trigger zones — centralized [E] prompt
-    const activeExitIds = new Set<string>();
+    const exitTargets: ExitQueryTarget[] = [];
     for (let idx = 0; idx < sceneExitsRef.current.length; idx++) {
       const exit = sceneExitsRef.current[idx];
       const hasOverlap = TRIGGER_ZONES.some(
@@ -141,18 +136,36 @@ export function InteractiveTriggers({ livePlayerPositionRef }: InteractiveTrigge
       );
       if (hasOverlap) continue;
 
-      tempVecRef.current.set(...exit.position);
-      const dist = playerPos.distanceTo(tempVecRef.current);
-      const exitId = `exit_${exit.targetScene}_${idx}`;
-      if (dist < EXIT_PROXIMITY_RANGE && !isInteractionLocked()) {
-        activeExitIds.add(exitId);
-        promptsMapRef.current.set(exitId, {
-          id: exitId,
-          label: exit.label,
-          distance: dist,
+      exitTargets.push({
+        id: `exit_${exit.targetScene}_${idx}`,
+        position: exit.position,
+        label: exit.label,
+        maxRange: EXIT_PROXIMITY_RANGE,
+      });
+    }
+
+    const hits = queryInteractionTargets({
+      playerPos,
+      playerYaw,
+      zones,
+      npcs: npcQueryTargetsRef.current,
+      exits: exitTargets,
+      checkLineOfSight: true,
+    });
+
+    const topHits = hits.slice(0, MAX_VISIBLE_PROMPTS);
+    allowedIdsRef.current = new Set(topHits.map((h) => h.id));
+
+    const activeExitIds = new Set<string>();
+    for (const hit of hits) {
+      if (hit.kind === 'exit') {
+        activeExitIds.add(hit.id);
+        promptsMapRef.current.set(hit.id, {
+          id: hit.id,
+          label: hit.label,
+          distance: hit.distance,
           type: 'zone',
         });
-        entries.push({ id: exitId, distance: dist });
       }
     }
     for (const key of promptsMapRef.current.keys()) {
@@ -161,21 +174,20 @@ export function InteractiveTriggers({ livePlayerPositionRef }: InteractiveTrigge
       }
     }
 
-    entries.sort((a, b) => a.distance - b.distance);
-    allowedIdsRef.current = new Set(entries.slice(0, MAX_VISIBLE_PROMPTS).map((e) => e.id));
-
-    // Reconcile visible prompts for overlay rendering (every 3 frames for perf)
     frameCountRef.current++;
     if (frameCountRef.current % 3 !== 0) return;
 
-    const promptEntries = Array.from(promptsMapRef.current.values());
-    promptEntries.sort((a, b) => a.distance - b.distance);
-    const top3 = promptEntries.slice(0, MAX_VISIBLE_PROMPTS);
+    const top3: PromptData[] = topHits.map((hit) => ({
+      id: hit.id,
+      label: hit.label,
+      distance: hit.distance,
+      type: hit.kind === 'npc' ? 'npc' : 'zone',
+    }));
 
     setVisiblePrompts((prev) => {
       if (prev.length !== top3.length) return top3;
       if (prev.some((p, i) => p.id !== top3[i]?.id)) return top3;
-      return prev; // no change, skip re-render
+      return prev;
     });
   });
 
@@ -305,12 +317,6 @@ export function InteractiveTriggers({ livePlayerPositionRef }: InteractiveTrigge
   );
 }
 
-/** Internal type for distance sorting */
-interface PromptEntry {
-  id: string;
-  distance: number;
-}
-
 /**
  * NPC proximity triggers that show [E] tooltip near NPCs
  * and start the staged interaction flow instead of instant dialogue.
@@ -330,7 +336,7 @@ function NPCProximityTriggers({
   // Get NPCs in current scene using schedule engine
   const sceneId = useCurrentSceneId();
   const timeOfDay = useTimeOfDay();
-  const scheduleCtx = useGameStore(selectScheduleContext);
+  const scheduleCtx = useScheduleContext();
   const npcsInScene = useMemo(() => {
     const npcIds = getNPCsForScene(sceneId, timeOfDay, scheduleCtx);
     return npcIds

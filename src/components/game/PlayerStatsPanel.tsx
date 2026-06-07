@@ -25,7 +25,7 @@ import {
   Lightbulb,
   PenTool,
 } from 'lucide-react';
-import { useStatusEffectsContext } from '@/store/selectors';
+import { usePlayerStatsPanelState } from '@/store/selectors';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import {
   type StatusEffectType,
@@ -297,7 +297,22 @@ function StatusEffectRow({
 
 export function PlayerStatsPanel({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { closeButtonRef, dialogProps, titleProps } = usePanelDialog();
-  const { playerState, weatherEnabled, rainIntensity, currentSceneId, timeOfDay } = useStatusEffectsContext();
+  const {
+    karma,
+    energy,
+    stress,
+    level,
+    xp,
+    xpToNextLevel,
+    skillPoints,
+    perkPoints,
+    unlockedPerks,
+    skills,
+    weatherEnabled,
+    rainIntensity,
+    currentSceneId,
+    timeOfDay,
+  } = usePlayerStatsPanelState();
 
   // Track snow state via eventBus
   const [snowActive, setSnowActive] = useState(false);
@@ -307,10 +322,6 @@ export function PlayerStatsPanel({ open, onClose }: { open: boolean; onClose: ()
     });
     return () => { unsub(); };
   }, []);
-
-  const { karma, energy, stress } = playerState;
-  const { level, xp, xpToNextLevel, skillPoints, perkPoints, unlockedPerks } = playerState.progression;
-  const skills = playerState.skills;
 
   // Current weather
   const currentWeather: WeatherType = useMemo(() =>

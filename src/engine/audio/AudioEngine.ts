@@ -25,6 +25,7 @@ import {
   safeResume,
   whenAudioReady,
 } from './AudioEngineCore';
+import { registerHmrDispose } from '@/shared/dev/hmrDispose';
 
 /**
  * AAA procedural audio engine using the Web Audio API.
@@ -48,8 +49,14 @@ class AudioEngine {
   }> = [];
   private ambientGain: GainNode | null = null;
   private currentAmbientScene: SceneId | null = null;
-  /** Multiple random sound timers (one per random sound def) */
-  private randomSoundTimers: Array<ReturnType<typeof setTimeout>> = [];
+  /** Multiple random sound timer loops (each reschedules itself) */
+  private randomSoundLoops: Array<{
+    timer: ReturnType<typeof setTimeout> | null;
+    cancelled: boolean;
+    generation: number;
+  }> = [];
+  /** Bumped when ambient stops — stale loop callbacks no-op */
+  private randomSoundGeneration = 0;
 
   // Noise layer state
   private noiseSourceNodes: Array<AudioBufferSourceNode> = [];
@@ -293,8 +300,7 @@ class AudioEngine {
 
       // Legacy: support layer-level randomSound for backward compat
       if (layer.randomInterval > 0 && layer.randomSound) {
-        const timer = this.createLegacyRandomTimer(layer.randomInterval, layer.randomSound);
-        this.randomSoundTimers.push(timer);
+        this.startLegacyRandomSoundLoop(layer.randomInterval, layer.randomSound);
       }
     }
 
@@ -308,8 +314,7 @@ class AudioEngine {
     // ── Scene-level random sound events ── (route through muffle filter)
     if (config.randomSounds) {
       for (const soundDef of config.randomSounds) {
-        const timer = this.createRandomSoundTimer(soundDef);
-        this.randomSoundTimers.push(timer);
+        this.startRandomSoundLoop(soundDef);
       }
     }
 
@@ -436,22 +441,25 @@ class AudioEngine {
     this.noiseFilterNodes.push(filter);
   }
 
-  /** Legacy random sound timer for layer-level randomSound (backward compat) */
-  private createLegacyRandomTimer(
+  /** Legacy random sound loop for layer-level randomSound (backward compat) */
+  private startLegacyRandomSoundLoop(
     interval: number,
     sound: NonNullable<AmbientLayer['randomSound']>,
-  ): ReturnType<typeof setTimeout> {
-    let timerId!: ReturnType<typeof setTimeout>;
+  ): void {
+    const loopGeneration = this.randomSoundGeneration;
+    const loop = { timer: null as ReturnType<typeof setTimeout> | null, cancelled: false, generation: loopGeneration };
+    this.randomSoundLoops.push(loop);
 
     const playRandom = () => {
       if (this.disposed || !this.ctx || !this.ambientMuffleFilter) return;
+      if (loop.cancelled || loop.generation !== this.randomSoundGeneration) return;
       this.resume();
 
       const now = this.ctx.currentTime;
       const osc = this.ctx.createOscillator();
       osc.type = sound.type;
       osc.frequency.setValueAtTime(
-        sound.frequency * (0.85 + Math.random() * 0.3), // ±15% pitch variation
+        sound.frequency * (0.85 + Math.random() * 0.3),
         now,
       );
 
@@ -467,30 +475,34 @@ class AudioEngine {
     };
 
     const scheduleNext = () => {
-      const delay = interval * (0.8 + Math.random() * 0.4) * 1000; // ±20% timing variation
-      timerId = setTimeout(() => {
+      if (loop.cancelled || this.disposed || loop.generation !== this.randomSoundGeneration) return;
+      const delay = interval * (0.8 + Math.random() * 0.4) * 1000;
+      loop.timer = setTimeout(() => {
+        loop.timer = null;
+        if (loop.cancelled || this.disposed || loop.generation !== this.randomSoundGeneration) return;
         playRandom();
         scheduleNext();
       }, delay);
     };
 
     scheduleNext();
-    return timerId as unknown as ReturnType<typeof setTimeout>;
   }
 
-  /** Create a timer for a scene-level random sound event */
-  private createRandomSoundTimer(soundDef: RandomSoundDef): ReturnType<typeof setTimeout> {
-    let timerId!: ReturnType<typeof setTimeout>;
+  /** Scene-level random sound loop — tracks every rescheduled timeout for stopAmbient/dispose */
+  private startRandomSoundLoop(soundDef: RandomSoundDef): void {
+    const loopGeneration = this.randomSoundGeneration;
+    const loop = { timer: null as ReturnType<typeof setTimeout> | null, cancelled: false, generation: loopGeneration };
+    this.randomSoundLoops.push(loop);
 
     const playSound = () => {
       if (this.disposed || !this.ctx || !this.ambientMuffleFilter) return;
+      if (loop.cancelled || loop.generation !== this.randomSoundGeneration) return;
       this.resume();
 
       const ctx = this.ctx;
       const now = ctx.currentTime;
 
       if (soundDef.useNoise) {
-        // Noise-based random sound (e.g., cooking sizzle, page turn, rustling)
         const duration = soundDef.duration;
         const bufferSize = Math.ceil(ctx.sampleRate * duration);
         const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
@@ -513,7 +525,6 @@ class AudioEngine {
         envGain.gain.setValueAtTime(soundDef.gain, now);
         envGain.gain.exponentialRampToValueAtTime(0.001, now + duration);
 
-        // Optional panning
         if (soundDef.panStart !== undefined && soundDef.panEnd !== undefined) {
           const panner = ctx.createStereoPanner();
           panner.pan.setValueAtTime(soundDef.panStart, now);
@@ -530,13 +541,11 @@ class AudioEngine {
 
         source.start(now);
       } else {
-        // Oscillator-based random sound
         const osc = ctx.createOscillator();
         osc.type = soundDef.type;
-        const pitchVar = 0.8 + Math.random() * 0.4; // ±20% pitch variation
+        const pitchVar = 0.8 + Math.random() * 0.4;
         osc.frequency.setValueAtTime(soundDef.frequency * pitchVar, now);
 
-        // Optional frequency ramp (for sirens, sweeps)
         if (soundDef.frequencyRamp) {
           osc.frequency.exponentialRampToValueAtTime(
             soundDef.frequencyRamp * pitchVar,
@@ -548,7 +557,6 @@ class AudioEngine {
         envGain.gain.setValueAtTime(soundDef.gain, now);
         envGain.gain.exponentialRampToValueAtTime(0.001, now + soundDef.duration);
 
-        // Optional panning (for car pass-by, etc.)
         if (soundDef.panStart !== undefined && soundDef.panEnd !== undefined) {
           const panner = ctx.createStereoPanner();
           panner.pan.setValueAtTime(soundDef.panStart, now);
@@ -568,28 +576,34 @@ class AudioEngine {
     };
 
     const scheduleNext = () => {
+      if (loop.cancelled || this.disposed || loop.generation !== this.randomSoundGeneration) return;
       const { minInterval, maxInterval } = soundDef;
-      // ±20% timing variation
       const baseInterval = minInterval + Math.random() * (maxInterval - minInterval);
       const variation = baseInterval * (0.8 + Math.random() * 0.4);
       const delay = variation * 1000;
-      timerId = setTimeout(() => {
+      loop.timer = setTimeout(() => {
+        loop.timer = null;
+        if (loop.cancelled || this.disposed || loop.generation !== this.randomSoundGeneration) return;
         playSound();
         scheduleNext();
       }, delay);
     };
 
     scheduleNext();
-    return timerId as unknown as ReturnType<typeof setTimeout>;
+  }
+
+  private clearRandomSoundLoops(): void {
+    this.randomSoundGeneration++;
+    for (const loop of this.randomSoundLoops) {
+      loop.cancelled = true;
+      if (loop.timer) clearTimeout(loop.timer);
+    }
+    this.randomSoundLoops = [];
   }
 
   /** Stop all ambient sounds */
   stopAmbient(): void {
-    // Clear all random sound timers
-    for (const timer of this.randomSoundTimers) {
-      clearTimeout(timer as unknown as number);
-    }
-    this.randomSoundTimers = [];
+    this.clearRandomSoundLoops();
 
     // Stop noise layers
     for (const lfo of this.noiseLfoNodes) {
@@ -1764,6 +1778,7 @@ class AudioEngine {
   }
 
   dispose(): void {
+    if (this.disposed) return;
     this.disposed = true;
     this.stopAmbient();
     this.stopAmbientMusic();
@@ -1776,14 +1791,30 @@ class AudioEngine {
       this._onFocus = null;
     }
 
-    if (this.ctx) {
-      try { this.ctx.close(); } catch { /* ignore */ }
-      this.ctx = null;
+    if (this.masterGain) {
+      try { this.masterGain.disconnect(); } catch { /* ignore */ }
+      this.masterGain = null;
     }
-    this.masterGain = null;
+    // Shared AudioContext is closed by disposeSharedAudioContext()
+    this.ctx = null;
+  }
+
+  /** Re-arm after orchestrator remount (React StrictMode). */
+  revive(): void {
+    this.disposed = false;
   }
 }
 
 /** Singleton audio engine instance */
 export const audioEngine = new AudioEngine();
 export default audioEngine;
+
+export function disposeAudioEngine(): void {
+  audioEngine.dispose();
+}
+
+export function reviveAudioEngine(): void {
+  audioEngine.revive();
+}
+
+registerHmrDispose(disposeAudioEngine);

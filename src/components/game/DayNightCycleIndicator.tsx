@@ -13,7 +13,7 @@ import {
   Sunset,
   Stars,
 } from 'lucide-react';
-import { useGameStore } from '@/store/gameStore';
+import { useTimeOfDay } from '@/store/selectors';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { explorationDayNightTopPx, EXPLORATION_HUD_LAYOUT } from '@/shared/constants/hudLayout';
 
@@ -201,7 +201,7 @@ function StarParticle({ x, y, delay, size }: { x: number; y: number; delay: numb
 
 /* ── Main Component ── */
 export function DayNightCycleIndicator() {
-  const timeOfDay = useGameStore((s) => s.exploration.timeOfDay);
+  const timeOfDay = useTimeOfDay();
 
   const phase = useMemo(() => getPhase(timeOfDay), [timeOfDay]);
   const config = PHASE_CONFIG[phase];

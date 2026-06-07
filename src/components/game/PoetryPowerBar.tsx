@@ -10,7 +10,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { bottomPoetryPx } from '@/shared/constants/hudLayout';
 import { Zap, Clock, Lock, Sparkles } from 'lucide-react';
-import { useGameStore } from '@/store/gameStore';
+import { useCollectedPoems } from '@/store/selectors';
 import {
   getPoemPower,
   canUsePower,
@@ -178,7 +178,7 @@ function PowerSlot({ poemId, slotIndex }: { poemId: string; slotIndex: number })
 
 /* ── Main quick-bar component ── */
 export function PoetryPowerBar() {
-  const collectedPoems = useGameStore((s) => s.collectedPoems);
+  const collectedPoems = useCollectedPoems();
 
   // Get collected poems that have powers
   const collectedWithPowers = collectedPoems

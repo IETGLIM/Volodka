@@ -1,10 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import {
-  useCollectedPoems,
-  useHUDExploration,
-  useHUDPlayerVitals,
-  useSaveGame,
-} from '@/store/selectors';
+import { useSaveGame, useHUDControllerState } from '@/store/selectors';
 import { SCENE_CONFIG } from '@/config/scenes';
 import { useActiveQuests } from '@/store/questStore';
 import { eventBus } from '@/engine/EventBus';
@@ -57,10 +52,21 @@ export function useHUDController(props: HUDProps) {
     onOpenStats,
   } = props;
 
-  const { currentSceneId, timeOfDay, weatherEnabled, rainIntensity } = useHUDExploration();
-  const playerVitals = useHUDPlayerVitals();
+  const {
+    currentSceneId,
+    timeOfDay,
+    weatherEnabled,
+    rainIntensity,
+    karma,
+    energy,
+    stress,
+    level,
+    xp,
+    xpToNextLevel: xpToNext,
+    unlockedPerks,
+    collectedPoems,
+  } = useHUDControllerState();
   const saveGame = useSaveGame();
-  const collectedPoems = useCollectedPoems();
 
   const [snowActive, setSnowActive] = useState(false);
   useEffect(() => {
@@ -85,7 +91,6 @@ export function useHUDController(props: HUDProps) {
     setTimeout(() => setShowSaveIndicator(false), 2000);
   }, [saveGame]);
 
-  const { karma, energy, stress, level, xp, xpToNextLevel: xpToNext, unlockedPerks } = playerVitals;
   const perkCount = unlockedPerks?.length ?? 0;
 
   const activeStatusEffectCount = useMemo(() => {

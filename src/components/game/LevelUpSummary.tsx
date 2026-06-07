@@ -8,7 +8,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { eventBus } from '@/engine/EventBus'
-import { useGameStore } from '@/store/gameStore'
+import { useLevelUpSummaryState } from '@/store/selectors'
 import { UI_LAYERS } from '@/shared/constants/uiLayers'
 import { CYBERPUNK_COLORS } from './CyberpunkTheme'
 import type { PlayerSkills, TrainablePlayerSkill } from '@/shared/types/game'
@@ -80,9 +80,7 @@ export function LevelUpSummary() {
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   // Current player state
-  const skills = useGameStore((s) => s.playerState.skills)
-  const karma = useGameStore((s) => s.playerState.karma)
-  const progression = useGameStore((s) => s.playerState.progression)
+  const { skills, karma, progression } = useLevelUpSummaryState()
 
   const triggerLevelUp = useCallback((newLevel: number, prevLevel: number) => {
     if (timerRef.current) clearTimeout(timerRef.current)

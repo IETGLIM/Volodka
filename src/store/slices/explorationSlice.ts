@@ -13,6 +13,7 @@ import { requestSceneTransition } from '@/engine/scene/sceneTransition';
 import { buildNPCStatesForTime } from '@/engine/ScheduleEngine';
 import { buildScheduleContext } from '@/shared/scheduleContext';
 import { isSceneGateOpen } from '@/shared/sceneGates';
+import { registerHmrDispose } from '@/shared/dev/hmrDispose';
 
 /* ─── Auto-close timer tracking for interactive objects ─── */
 const autoCloseTimers = new Map<string, ReturnType<typeof setTimeout>>();
@@ -27,11 +28,7 @@ export function clearAutoCloseTimers(): void {
   autoCloseTimers.clear();
 }
 
-if (import.meta.hot) {
-  import.meta.hot.dispose(() => {
-    clearAutoCloseTimers();
-  });
-}
+registerHmrDispose(clearAutoCloseTimers);
 
 /* ─── Travel time cost per scene (hours) — based on distance from city center ─── */
 const TRAVEL_TIME: Partial<Record<SceneId, number>> = {

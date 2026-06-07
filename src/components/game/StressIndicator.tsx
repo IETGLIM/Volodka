@@ -3,11 +3,11 @@
 
 import { useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { useGameStore } from '@/store/gameStore';
+import { usePlayerStress } from '@/store/selectors';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 
 export function StressIndicator() {
-  const stress = useGameStore((s) => s.playerState.stress);
+  const stress = usePlayerStress();
 
   // Only show effects when stress > 80
   if (stress <= 80) return null;

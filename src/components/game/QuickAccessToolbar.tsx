@@ -5,8 +5,7 @@
 
 import { motion, AnimatePresence } from 'framer-motion';
 import { Zap, Activity, Volume2, VolumeX } from 'lucide-react';
-import { useGameStore } from '@/store/gameStore';
-import { useGamePhase } from '@/store/selectors';
+import { useGamePhase, useQuickAccessToolbarState } from '@/store/selectors';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { bottomToolbarPx } from '@/shared/constants/hudLayout';
 
@@ -199,12 +198,16 @@ function LevelBadge({ level, xp, xpToNext }: { level: number; xp: number; xpToNe
 
 export function QuickAccessToolbar() {
   const mode = useGamePhase();
-  const playerState = useGameStore((s) => s.playerState);
-  const musicEnabled = useGameStore((s) => s.musicEnabled);
-  const toggleMusic = useGameStore((s) => s.toggleMusic);
-
-  const { energy, stress, karma } = playerState;
-  const { level, xp, xpToNextLevel } = playerState.progression;
+  const {
+    energy,
+    stress,
+    karma,
+    level,
+    xp,
+    xpToNextLevel,
+    musicEnabled,
+    toggleMusic,
+  } = useQuickAccessToolbarState();
   const isStressHigh = stress >= 70;
   const isEnergyLow = energy <= 20;
 

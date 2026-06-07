@@ -18,6 +18,7 @@ import {
   createDefaultPlayerState,
   createDefaultTutorialFlags,
 } from './shared';
+import { createEmptyActiveTTLFlagMap } from './activeTTLFlags';
 import type { GameStoreState } from './types';
 
 /** Store keys written to / restored from localStorage (derived from Zod schema). */
@@ -52,7 +53,7 @@ export function createDefaultPersistedState(): Pick<GameStoreState, PersistedSto
     loreEntries: [],
     conversationLog: {},
     poemPowers: {},
-    activeTTLFlags: [],
+    activeTTLFlags: createEmptyActiveTTLFlagMap(),
     journalTab: 'notes',
     weatherEnabled: true,
     rainIntensity: 0.7,

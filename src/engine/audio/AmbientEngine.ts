@@ -9,6 +9,7 @@ import {
   type AmbientSoundDef,
 } from '../../data/ambientSounds';
 import { getSharedAudioContext } from '../SharedAudioContext';
+import { registerHmrDispose } from '@/shared/dev/hmrDispose';
 
 /* ─── AmbientSoundPlayer: Procedural Ambient Sound Engine ───
  *  Generates ambient background sounds using Web Audio API oscillators and noise.
@@ -81,6 +82,9 @@ export class AmbientSoundPlayer {
   /** Monotonic counter — stale crossfade transitions are ignored */
   private transitionGeneration = 0;
 
+  /** All pending scheduleRandomSound timeouts (cleared on dispose / instance retire) */
+  private pendingRandomTimers = new Set<ReturnType<typeof setTimeout>>();
+
   /** Ambients currently fading out (may still be audible) */
   private fadingAmbients = new Set<PlayingAmbient>();
 
@@ -135,9 +139,13 @@ export class AmbientSoundPlayer {
     const now = ctx.currentTime;
     const crossfadeSec = crossfadeMs / 1000;
 
-    // ── Fade out current ambient (per-instance timer, not cancelled by later transitions) ──
-    if (this.currentAmbient) {
-      this.fadeOutAmbient(this.currentAmbient, crossfadeSec);
+    // Detach current before fade — rapid play() must not leave `current` on a retiring instance
+    const outgoing = this.currentAmbient;
+    this.currentAmbient = null;
+    this.currentType = null;
+
+    if (outgoing) {
+      this.fadeOutAmbient(outgoing, crossfadeSec);
     }
 
     // ── Create new ambient ──
@@ -302,8 +310,17 @@ export class AmbientSoundPlayer {
     ambient.randomSoundGeneration++;
     for (const timer of ambient.randomTimers) {
       clearTimeout(timer);
+      this.pendingRandomTimers.delete(timer);
     }
     ambient.randomTimers = [];
+  }
+
+  /** Cancel every scheduleRandomSound timer (dispose / stopAll safety net) */
+  private clearAllPendingRandomTimers(): void {
+    for (const timer of this.pendingRandomTimers) {
+      clearTimeout(timer);
+    }
+    this.pendingRandomTimers.clear();
   }
 
   /** Schedule a random sound event at a random interval */
@@ -321,6 +338,7 @@ export class AmbientSoundPlayer {
     const timer = setTimeout(() => {
       const idx = instance.randomTimers.indexOf(timer);
       if (idx !== -1) instance.randomTimers.splice(idx, 1);
+      this.pendingRandomTimers.delete(timer);
 
       if (this.disposed || instance.fadingOut) return;
       if (this.currentAmbient !== instance) return;
@@ -331,6 +349,7 @@ export class AmbientSoundPlayer {
     }, interval * 1000);
 
     instance.randomTimers.push(timer);
+    this.pendingRandomTimers.add(timer);
   }
 
   /** Play a single random sound event */
@@ -364,6 +383,8 @@ export class AmbientSoundPlayer {
 
   /** Fade out an ambient instance and clean it up */
   private fadeOutAmbient(ambient: PlayingAmbient, durationSec: number): void {
+    if (ambient.fadingOut) return;
+
     const ctx = this.ctx;
     if (!ctx) {
       this.cleanupAmbient(ambient);
@@ -460,6 +481,7 @@ export class AmbientSoundPlayer {
 
   private doStopAll(): void {
     ++this.transitionGeneration;
+    this.clearAllPendingRandomTimers();
     if (this.currentAmbient) {
       this.cleanupAmbient(this.currentAmbient);
       this.currentAmbient = null;
@@ -527,6 +549,11 @@ export class AmbientSoundPlayer {
     }
     this.ctx = null; // Release reference to shared context (don't close it)
   }
+
+  /** Re-arm after orchestrator remount (React StrictMode). */
+  revive(): void {
+    this.disposed = false;
+  }
 }
 
 /* ─── Singleton ambient player ─── */
@@ -539,13 +566,15 @@ export function getAmbientPlayer(): AmbientSoundPlayer {
   return ambientPlayerInstance;
 }
 
-/** Dispose orphaned singleton on Vite HMR reload */
-if (import.meta.hot) {
-  import.meta.hot.dispose(() => {
-    ambientPlayerInstance?.dispose();
-    ambientPlayerInstance = null;
-  });
+export function disposeAmbientEngine(): void {
+  ambientPlayerInstance?.dispose();
 }
+
+export function reviveAmbientEngine(): void {
+  ambientPlayerInstance?.revive();
+}
+
+registerHmrDispose(disposeAmbientEngine);
 export type { AmbientSoundType };
 /** Singleton ambient bed player */
 export const ambientEngine = getAmbientPlayer();

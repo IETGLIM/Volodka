@@ -10,7 +10,7 @@ import {
   Package,
 } from 'lucide-react';
 import { ItemIcon } from './shared/ItemIcon';
-import { useGameStore } from '@/store/gameStore';
+import { useCraftingPanelState } from '@/store/selectors';
 import {
   getItemDefinition,
   getRarityColor,
@@ -85,10 +85,7 @@ interface CraftingPanelProps {
 
 /* ─── Component ─── */
 export function CraftingPanel({ open, onClose }: CraftingPanelProps) {
-  const inventory = useGameStore((s) => s.playerState.inventory);
-  const skills = useGameStore((s) => s.playerState.skills);
-  const craftItem = useGameStore((s) => s.craftItem);
-  const canCraft = useGameStore((s) => s.canCraft);
+  const { inventory, skills, craftItem, canCraft } = useCraftingPanelState();
 
   const [categoryFilter, setCategoryFilter] = useState<CraftingCategory | 'all'>('all');
   const [selectedRecipeId, setSelectedRecipeId] = useState<string | null>(null);

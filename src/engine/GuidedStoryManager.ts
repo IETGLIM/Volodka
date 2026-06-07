@@ -25,6 +25,7 @@ import {
 import { areDependenciesMet } from '@/store/questStore'
 import type { QuestDefinition, QuestObjective } from '@/shared/types/game'
 import { getQuotesByAct } from '@/data/matrixQuotes'
+import { registerHmrDispose } from '@/shared/dev/hmrDispose'
 
 /* ─── Story node parent map (for quest-node fallback matching) ─── */
 let storyNodeParentsCache: Map<string, string[]> | null = null
@@ -52,8 +53,7 @@ function selectLastVisitedNode(snapshot: GameStoreSnapshot): string | null {
 
 /** Active TTL flag keys that can advance the golden-path story spine. */
 function selectStoryRelevantTTLFlagKeys(snapshot: GameStoreSnapshot): string[] {
-  return snapshot.activeTTLFlags
-    .map((flag) => flag.key)
+  return Object.keys(snapshot.activeTTLFlags)
     .filter((key) => key in STORY_FLAG_TO_NODE_ID)
     .sort()
 }
@@ -713,12 +713,15 @@ export class GuidedStoryManager {
 /** Singleton instance */
 export const guidedStoryManager = new GuidedStoryManager()
 
-export function initGuidedStoryManager() {
-  guidedStoryManager.init()
-}
-
 export function disposeGuidedStoryManager() {
   guidedStoryManager.dispose()
+  storyNodeParentsCache = null
+}
+
+registerHmrDispose(disposeGuidedStoryManager)
+
+export function initGuidedStoryManager() {
+  guidedStoryManager.init()
 }
 
 export function resetGuidedStoryManager() {

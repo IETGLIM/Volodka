@@ -17,6 +17,7 @@
 */
 
 import { eventBus } from '@/engine/EventBus';
+import { registerHmrDispose } from '@/shared/dev/hmrDispose';
 import {
   dispatchGameAction,
   getGameSnapshot,
@@ -123,6 +124,13 @@ class CombatManager {
     this._state = null;
   }
 
+  /** Cancel timers and drop listener refs (unmount / HMR). */
+  dispose(): void {
+    this.endSession();
+    this.listeners.clear();
+    this.returnStack.length = 0;
+  }
+
   pushReturnNode(nodeId: string): void {
     if (this.returnStack.length >= MAX_RETURN_STACK_DEPTH) {
       const dropped = this.returnStack.shift();
@@ -163,6 +171,13 @@ class CombatManager {
 }
 
 const combat = new CombatManager();
+
+/** Tear down combat session timers and listener refs. Idempotent. */
+export function disposeCombatSystem(): void {
+  combat.dispose();
+}
+
+registerHmrDispose(disposeCombatSystem);
 
 /** Subscribe to combat state changes. Returns unsubscribe function. */
 export function subscribeToCombat(listener: (state: CombatState) => void): () => void {

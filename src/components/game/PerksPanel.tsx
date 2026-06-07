@@ -38,7 +38,7 @@ import {
   Star,
   AlertTriangle,
 } from 'lucide-react';
-import { useGameStore } from '@/store/gameStore';
+import { usePerksPanelState } from '@/store/selectors';
 import { PERKS, PERKS_MAP, PERK_CATEGORY_META, type PerkCategory, type PerkDefinition } from '@/data/perks';
 import { PanelWrapper } from '@/components/game/PanelWrapper';
 
@@ -396,9 +396,7 @@ function PerkCard({
    MAIN COMPONENT
    ══════════════════════════════════════════════════════════════ */
 export function PerksPanel({ open, onClose }: { open: boolean; onClose: () => void }) {
-  const progression = useGameStore((s) => s.playerState.progression);
-  const acquirePerk = useGameStore((s) => s.acquirePerk);
-  const canAcquirePerk = useGameStore((s) => s.canAcquirePerk);
+  const { progression, acquirePerk, canAcquirePerk } = usePerksPanelState();
 
   const { perkPoints, unlockedPerks } = progression;
   const level = progression.level;

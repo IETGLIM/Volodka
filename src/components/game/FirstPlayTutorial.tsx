@@ -10,7 +10,7 @@ import { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { useGameStore } from '@/store/gameStore';
-import { useGamePhase } from '@/store/selectors';
+import { useGamePhase, useTutorialFlags } from '@/store/selectors';
 import {
   Gamepad2,
   ScrollText,
@@ -298,7 +298,7 @@ const stepVariants = {
 /* ── Main component ── */
 export function FirstPlayTutorial() {
   const mode = useGamePhase();
-  const tutorialFlags = useGameStore((s) => s.tutorialFlags);
+  const tutorialFlags = useTutorialFlags();
 
   const [currentStep, setCurrentStep] = useState(0);
   const [direction, setDirection] = useState(1);

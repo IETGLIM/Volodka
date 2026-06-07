@@ -11,7 +11,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
-import { eventBus } from '@/engine/EventBus';
+import { eventBus, EventBusPriority } from '@/engine/EventBus';
 
 /* ─── Types ─── */
 
@@ -225,7 +225,7 @@ export function DirectionalDamageIndicator() {
       if (payload.isPlayerHit) {
         addDamageFlash(payload.damage, payload.direction);
       }
-    });
+    }, EventBusPriority.FX);
     return unsub;
   }, [addDamageFlash]);
 
@@ -241,7 +241,7 @@ export function DirectionalDamageIndicator() {
   useEffect(() => {
     const unsub = eventBus.on('combat:heal', (payload) => {
       addHealFlash(payload.amount);
-    });
+    }, EventBusPriority.FX);
     return unsub;
   }, [addHealFlash]);
 

@@ -2,8 +2,9 @@
 /* ─── Volodka RPG – useQuestTracker hook ─── */
 
 import { useEffect } from 'react';
-import { questTracker } from '@/engine/QuestTracker';
+import { questTracker, disposeQuestTracker } from '@/engine/QuestTracker';
 import { preloadGameData } from '@/data/gameDataLoader';
+import { withHmrCleanup } from '@/shared/dev/hmrDispose';
 
 /**
  * Hook that initializes the QuestTracker engine on mount
@@ -18,9 +19,9 @@ export function useQuestTracker() {
     void preloadGameData().then(() => {
       if (!cancelled) questTracker.start();
     });
-    return () => {
+    return withHmrCleanup(() => {
       cancelled = true;
-      questTracker.stop();
-    };
+      disposeQuestTracker();
+    });
   }, []);
 }

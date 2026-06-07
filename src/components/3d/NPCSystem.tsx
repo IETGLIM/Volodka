@@ -4,9 +4,8 @@
 import { useMemo } from 'react';
 import * as THREE from 'three';
 import type { SceneId, NPCDefinition } from '@/shared/types/game';
-import { useGameStore } from '@/store/gameStore';
+import { useCurrentSceneId, useTimeOfDay, useScheduleContext } from '@/store/selectors';
 import { getNPCsForScene, getCurrentScheduleEntry } from '@/engine/ScheduleEngine';
-import { selectScheduleContext } from '@/shared/scheduleContext';
 import { findNpcById } from '@/data/allNpcDefinitions';
 import { NPC } from './NPC';
 import { InteractionState } from '@/engine/interaction/interactionMachine';
@@ -31,9 +30,9 @@ export function NPCSystem({
   interactionState = InteractionState.Idle,
   interactionTargetNPCId = null,
 }: NPCSystemProps) {
-  const sceneId = useGameStore((s) => s.exploration.currentSceneId);
-  const timeOfDay = useGameStore((s) => s.exploration.timeOfDay);
-  const scheduleCtx = useGameStore(selectScheduleContext);
+  const sceneId = useCurrentSceneId();
+  const timeOfDay = useTimeOfDay();
+  const scheduleCtx = useScheduleContext();
 
   // Compute visible NPCs from schedule
   const visibleNPCs = useMemo(() => {

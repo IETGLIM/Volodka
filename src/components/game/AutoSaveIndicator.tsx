@@ -9,7 +9,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Save, Check, Clock } from 'lucide-react';
 import { eventBus } from '@/engine/EventBus';
-import { useGameStore } from '@/store/gameStore';
+import { useAutoSaveTimestamps } from '@/store/selectors';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { bottomAutoSavePx } from '@/shared/constants/hudLayout';
 
@@ -91,8 +91,8 @@ export function AutoSaveIndicator() {
   const tickRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   /* ── Seed from store on mount ── */
-  const storeLastSave = useGameStore((s) => s.lastSaveTimestamp);
-  const storeLastAutoSave = useGameStore((s) => s.lastAutoSaveTimestamp);
+  const { lastSaveTimestamp: storeLastSave, lastAutoSaveTimestamp: storeLastAutoSave } =
+    useAutoSaveTimestamps();
 
   useEffect(() => {
     if (storeLastSave) {

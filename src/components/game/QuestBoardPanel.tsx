@@ -40,7 +40,7 @@ import {
   Star,
   AlertCircle,
 } from 'lucide-react';
-import { useGameStore } from '@/store/gameStore';
+import { useQuestBoardPanelState } from '@/store/selectors';
 import {
   DAILY_MISSION_POOL,
   DAILY_MISSION_CATEGORY_META,
@@ -387,11 +387,13 @@ function MissionCard({
    MAIN COMPONENT
    ══════════════════════════════════════════════════════════════ */
 export function QuestBoardPanel({ open, onClose }: { open: boolean; onClose: () => void }) {
-  const acceptedDailyMissions = useGameStore((s) => s.acceptedDailyMissions);
-  const acceptDailyMission = useGameStore((s) => s.acceptDailyMission);
-  const abandonDailyMission = useGameStore((s) => s.abandonDailyMission);
-  const claimDailyMissionReward = useGameStore((s) => s.claimDailyMissionReward);
-  const playerLevel = useGameStore((s) => s.playerState.progression?.level ?? 1);
+  const {
+    acceptedDailyMissions,
+    acceptDailyMission,
+    abandonDailyMission,
+    claimDailyMissionReward,
+    playerLevel,
+  } = useQuestBoardPanelState();
 
   const [activeTab, setActiveTab] = useState<'daily' | 'weekly'>('daily');
 

@@ -33,6 +33,9 @@ export type {
 // Re-export achievement types from worldSlice
 export type { UnlockedAchievement } from './slices/worldSlice';
 
+/** Memoized React subscriptions — prefer over raw `useGameStore(selector)` in components. */
+export { useGameSelector, useGamePrimitive } from './selectors/hooks';
+
 // Slice creators
 import { createPlayerSlice } from './slices/playerSlice';
 import { createExplorationSlice } from './slices/explorationSlice';
@@ -107,7 +110,7 @@ function toGameSnapshot(state: GameStoreState): GameStoreSnapshot {
     },
     collectedPoems: state.collectedPoems,
     quests: state.quests,
-    activeTTLFlags: state.activeTTLFlags ?? [],
+    activeTTLFlags: state.activeTTLFlags ?? {},
     poemPowers: state.poemPowers,
     npcRelations: state.npcRelations,
     unlockedAchievements: state.unlockedAchievements,
@@ -158,15 +161,21 @@ registerGameActionBridge({
       case 'player/setNpcRelation':
         store.setNpcRelation(action.npcId, action.delta);
         break;
-      case 'poem/setTTLFlags':
-        store.setActiveTTLFlags(action.flags);
+      case 'poem/upsertTTLFlag':
+        store.upsertActiveTTLFlag(action.flag);
+        break;
+      case 'poem/upsertTTLFlags':
+        store.upsertActiveTTLFlags(action.flags);
+        break;
+      case 'poem/removeTTLFlags':
+        store.removeActiveTTLFlags(action.keys);
         break;
       case 'poem/clearAllEffects': {
-        const flags = store.activeTTLFlags ?? [];
-        for (const f of flags) {
+        const flags = store.activeTTLFlags ?? {};
+        for (const f of Object.values(flags)) {
           store.setFlag(f.key, false);
         }
-        store.setActiveTTLFlags([]);
+        store.clearActiveTTLFlags();
         eventBus.emit('poem:reset_all_effects', {});
         break;
       }

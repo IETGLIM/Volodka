@@ -79,3 +79,30 @@ export function useJournalTab() {
 export function useLoreEntries() {
   return useGameSelector((s) => s.loreEntries);
 }
+
+export function useNarrativeKind() {
+  return useGamePrimitive((s) => s.narrativeKind);
+}
+
+export function useDevToolsArmed() {
+  return useGamePrimitive((s) => s.devToolsArmed);
+}
+
+export function useMusicEnabled() {
+  return useGamePrimitive((s) => s.musicEnabled);
+}
+
+export function useGlobalWeatherControls() {
+  return useGameSelector((s) => ({
+    weatherEnabled: s.weatherEnabled,
+    rainIntensity: s.rainIntensity,
+  }));
+}
+
+export function usePoemPowers() {
+  return useGameSelector((s) => s.poemPowers);
+}
+
+export function useConversationLog() {
+  return useGameSelector((s) => s.conversationLog);
+}

@@ -8,14 +8,19 @@ import { clamp, createDefaultPlayerState, pushNotification, type GameNotificatio
 import type { GameStoreState } from '../types';
 import { pickPlayerCoreCrossActions, readPlayerFromExploration } from '../crossSliceReads';
 import { eventBus } from '@/engine/EventBus';
+import {
+  createEmptyActiveTTLFlagMap,
+  type ActiveTTLFlag,
+  type ActiveTTLFlagMap,
+} from '../activeTTLFlags';
 
 /* ─── Slice types ─── */
 
 export interface PlayerCoreSliceState {
   playerState: PlayerState;
   notifications: GameNotification[];
-  /** TTL-based active flags with expiry timestamps (survives save/load) */
-  activeTTLFlags: Array<{ key: string; poemId: string; expiryTimestamp: number }>;
+  /** TTL-based active flags keyed by flag key (survives save/load) */
+  activeTTLFlags: ActiveTTLFlagMap;
 }
 
 export interface PlayerCoreSliceActions {
@@ -29,8 +34,10 @@ export interface PlayerCoreSliceActions {
   dismissNotification: (id: string) => void;
   restAtHome: () => void;
   autoRegenBetweenScenes: () => void;
-  /** Set the TTL flags array (used by PoemPowerSystem for save-safe expiry) */
-  setActiveTTLFlags: (flags: Array<{ key: string; poemId: string; expiryTimestamp: number }>) => void;
+  upsertActiveTTLFlag: (flag: ActiveTTLFlag) => void;
+  upsertActiveTTLFlags: (flags: ActiveTTLFlag[]) => void;
+  removeActiveTTLFlags: (keys: string[]) => void;
+  clearActiveTTLFlags: () => void;
   /** Advance to the next act (1 → 2). No-op if already at max act. */
   advanceAct: () => void;
 }
@@ -47,7 +54,7 @@ export const createPlayerCoreSlice: StateCreator<
 > = (set, get) => ({
   playerState: createDefaultPlayerState(),
   notifications: [],
-  activeTTLFlags: [],
+  activeTTLFlags: createEmptyActiveTTLFlagMap(),
 
   visitNode: (id) =>
     set((state) => {
@@ -158,7 +165,32 @@ export const createPlayerCoreSlice: StateCreator<
       },
     })),
 
-  setActiveTTLFlags: (flags) => set({ activeTTLFlags: flags }),
+  upsertActiveTTLFlag: (flag) =>
+    set((state) => ({
+      activeTTLFlags: { ...state.activeTTLFlags, [flag.key]: flag },
+    })),
+
+  upsertActiveTTLFlags: (flags) =>
+    set((state) => {
+      if (flags.length === 0) return state;
+      const activeTTLFlags = { ...state.activeTTLFlags };
+      for (const flag of flags) {
+        activeTTLFlags[flag.key] = flag;
+      }
+      return { activeTTLFlags };
+    }),
+
+  removeActiveTTLFlags: (keys) =>
+    set((state) => {
+      if (keys.length === 0) return state;
+      const activeTTLFlags = { ...state.activeTTLFlags };
+      for (const key of keys) {
+        delete activeTTLFlags[key];
+      }
+      return { activeTTLFlags };
+    }),
+
+  clearActiveTTLFlags: () => set({ activeTTLFlags: createEmptyActiveTTLFlagMap() }),
 
   advanceAct: () =>
     set((state) => {

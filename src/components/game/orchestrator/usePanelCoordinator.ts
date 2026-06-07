@@ -8,6 +8,7 @@ import {
 } from 'react';
 import { useGameStore } from '@/store/gameStore';
 import { eventBus } from '@/engine/EventBus';
+import { withHmrCleanup } from '@/shared/dev/hmrDispose';
 import { getActQuote } from '@/engine/GuidedStoryManager';
 import {
   closeAllMinigames,
@@ -92,15 +93,17 @@ export function usePanelCoordinator({
   const questChainUnlockTimeout = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   useEffect(() => {
-    const unsubAvailable = eventBus.on('story:quest_available', (data) => {
+    const scope = eventBus.createScope();
+
+    scope.on('story:quest_available', (data) => {
       setQuestAcceptId(data.questId);
       setQuestAcceptNpcId(data.npcId);
     });
-    const unsubComplete = eventBus.on('quest:completed', (data) => {
+    scope.on('quest:completed', (data) => {
       setQuestCompleteId(data.questId);
       setQuestCompleteNpcId(data.npcId);
     });
-    const unsubChainUnlock = eventBus.on('story:quest_chain_unlock', (data) => {
+    scope.on('story:quest_chain_unlock', (data) => {
       setQuestChainUnlock({
         nextQuestTitle: data.nextQuestTitle,
         nextQuestType: data.nextQuestType,
@@ -114,25 +117,20 @@ export function usePanelCoordinator({
         questChainUnlockTimeout.current = undefined;
       }, 8000);
     });
-    return () => {
-      unsubAvailable();
-      unsubComplete();
-      unsubChainUnlock();
-      if (questChainUnlockTimeout.current) {
-        clearTimeout(questChainUnlockTimeout.current);
-        questChainUnlockTimeout.current = undefined;
-      }
-    };
-  }, []);
-
-  useEffect(() => {
-    const unsub = eventBus.on('story:act_transition', (data) => {
+    scope.on('story:act_transition', (data) => {
       const quote = getActQuote(data.toAct);
       if (quote) {
         setMatrixQuote({ text: quote, actNumber: data.toAct });
       }
     });
-    return unsub;
+
+    return withHmrCleanup(() => {
+      scope.dispose();
+      if (questChainUnlockTimeout.current) {
+        clearTimeout(questChainUnlockTimeout.current);
+        questChainUnlockTimeout.current = undefined;
+      }
+    });
   }, []);
 
   const dispatchStackAction = useCallback((action: PanelStackAction) => {

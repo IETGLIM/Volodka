@@ -23,22 +23,29 @@ import {
 } from '../../data/ambientSounds';
 import type { SceneId } from '@/config/sceneDefinitions';
 import type { GamePhase } from '@/shared/gamePhase';
+import { ControllerSession } from '@/engine/controller/ControllerSession';
+import { registerHmrDispose } from '@/shared/dev/hmrDispose';
 
 export class SceneAudioController {
-  private disposed = false;
+  private readonly session = new ControllerSession();
   private lastMusicMood: MusicMood | null = null;
   private enteredScenes = new Set<string>();
 
   init(): void {
+    this.session.begin();
     applyAudioSettings();
   }
 
   dispose(): void {
-    this.disposed = true;
+    this.session.dispose();
   }
 
   isDisposed(): boolean {
-    return this.disposed;
+    return this.session.isDisposed();
+  }
+
+  private guard(): boolean {
+    return !this.session.isDisposed();
   }
 
   /* ─── Mode / scene ─── */
@@ -49,7 +56,7 @@ export class SceneAudioController {
     timeOfDay: number,
     showStoryOverlay: boolean,
   ): void {
-    if (this.disposed) return;
+    if (!this.guard()) return;
 
     if (phase === 'menu' || phase === 'intro') {
       musicEngine.stopMusic(1);
@@ -67,7 +74,7 @@ export class SceneAudioController {
   }
 
   onSceneEnter(sceneId: SceneId, timeOfDay: number): void {
-    if (this.disposed) return;
+    if (!this.guard()) return;
 
     const preset = getSceneReverbPreset(sceneId);
     if (preset) sfxEngine.setReverbPreset(preset);
@@ -89,42 +96,42 @@ export class SceneAudioController {
   }
 
   onCombatStart(): void {
-    if (this.disposed) return;
+    if (!this.guard()) return;
     sfxEngine.playStinger('danger');
     ambientEngine.setCombatMuted(false);
     ambientEngine.play('combat', 1500);
   }
 
   onCombatEnd(sceneId: SceneId, timeOfDay: number): void {
-    if (this.disposed) return;
+    if (!this.guard()) return;
     ambientEngine.setCombatMuted(false);
     this.playSceneAmbient(sceneId, timeOfDay);
   }
 
   onPoemCollected(poemId?: string): void {
-    if (this.disposed) return;
+    if (!this.guard()) return;
     const motif = getPoemMotif(poemId ?? 'default');
     sfxEngine.playStinger(motif.stinger);
   }
 
   onQuestAccepted(): void {
-    if (this.disposed) return;
+    if (!this.guard()) return;
     sfxEngine.playStinger('mystery');
   }
 
   onCharacterFocus(npcId: string): void {
-    if (this.disposed) return;
+    if (!this.guard()) return;
     const motif = getCharacterMotif(npcId);
     if (motif) sfxEngine.playStinger(motif.stinger);
   }
 
   onTimeOfDayBoundary(sceneId: SceneId, timeOfDay: number): void {
-    if (this.disposed) return;
+    if (!this.guard()) return;
     this.playSceneAmbient(sceneId, timeOfDay);
   }
 
   setDialogueState(showStoryOverlay: boolean, phase: GamePhase): void {
-    if (this.disposed) return;
+    if (!this.guard()) return;
     if (showStoryOverlay) {
       sfxEngine.enableDialogueMuffle(true);
       ambientEngine.setDialogueDucked(true);
@@ -154,9 +161,9 @@ export function getSceneAudioController(): SceneAudioController {
   return controllerInstance;
 }
 
-if (import.meta.hot) {
-  import.meta.hot.dispose(() => {
-    controllerInstance?.dispose();
-    controllerInstance = null;
-  });
+/** Invalidate controller session timers (unmount / HMR). */
+export function disposeSceneAudioController(): void {
+  controllerInstance?.dispose();
 }
+
+registerHmrDispose(disposeSceneAudioController);

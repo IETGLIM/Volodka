@@ -4,10 +4,10 @@
 import type { StateCreator } from 'zustand';
 import type { TrainablePlayerSkill } from '@/shared/types/game';
 import type { PerkEffect } from '@/data/perks';
-import { applyXpGain, pushNotification } from '../shared';
+import { pushNotification } from '../shared';
 import type { GameStoreState } from '../types';
-import { eventBus } from '@/engine/EventBus';
 import { getSkillTreeMap, getSkillEffectMap, getPerksMap } from '@/data/gameDataLoader';
+import { queuePlayerXp } from '../playerXpBatch';
 
 /* ─── Slice types ─── */
 
@@ -33,52 +33,9 @@ export const createPlayerProgressionSlice: StateCreator<
   [],
   PlayerProgressionSlice
 > = (set, get) => ({
-  addXp: (amount) =>
-    set((state) => {
-      const result = applyXpGain(state.playerState.progression, amount);
-      const { progression, prevLevel, levelsGained, perkPointsGained } = result;
-      const newLevel = progression.level;
-
-      const levelUpMessage = (() => {
-        if (levelsGained <= 0) return '';
-        const skillPart =
-          levelsGained === 1
-            ? '+1 очко навыка'
-            : `+${levelsGained} очков навыка`;
-        if (perkPointsGained === 0) {
-          return `Уровень ${newLevel}! ${skillPart}`;
-        }
-        const perkPart =
-          perkPointsGained === 1
-            ? '+1 очко черты'
-            : `+${perkPointsGained} очков черты`;
-        return `Уровень ${newLevel}! ${skillPart} ${perkPart}!`;
-      })();
-
-      const notifications = levelsGained > 0
-        ? pushNotification(state.notifications, 'skill', levelUpMessage)
-        : state.notifications;
-
-      if (levelsGained > 0) {
-        queueMicrotask(() => {
-          eventBus.emit('player:levelup', {
-            newLevel,
-            prevLevel,
-            levelsGained,
-            perkPointsGained,
-            perkPointGained: perkPointsGained > 0,
-          });
-        });
-      }
-
-      return {
-        playerState: {
-          ...state.playerState,
-          progression,
-        },
-        notifications,
-      };
-    }),
+  addXp: (amount) => {
+    queuePlayerXp(amount, set);
+  },
 
   unlockSkillTreeNode: (skillId) =>
     set((state) => {

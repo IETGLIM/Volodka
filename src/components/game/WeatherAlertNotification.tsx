@@ -19,7 +19,7 @@ import {
   AlertTriangle,
 } from 'lucide-react';
 import { eventBus } from '@/engine/EventBus';
-import { useGameStore } from '@/store/gameStore';
+import { useWeatherAlertState } from '@/store/selectors';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { WEATHER_EFFECTS, determineWeatherType } from '@/data/weatherEffects';
 import type { EventWeatherType } from '@/shared/types/game';
@@ -331,10 +331,7 @@ export function WeatherAlertNotification() {
   const timers = timersMap.current;
 
   /* ── Track previous weather to detect changes from store ── */
-  const currentSceneId = useGameStore((s) => s.exploration.currentSceneId);
-  const timeOfDay = useGameStore((s) => s.exploration.timeOfDay);
-  const weatherEnabled = useGameStore((s) => s.exploration.weatherEnabled);
-  const rainIntensity = useGameStore((s) => s.exploration.rainIntensity);
+  const { currentSceneId, timeOfDay, weatherEnabled, rainIntensity } = useWeatherAlertState();
 
   const prevWeatherRef = useRef<EventWeatherType | null>(null);
 

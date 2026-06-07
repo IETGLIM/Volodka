@@ -63,6 +63,7 @@ export function SceneTransitionOverlay() {
   const [glitchOffset, setGlitchOffset] = useState(0);
   const timersRef = useRef<Array<ReturnType<typeof setTimeout>>>([]);
   const rafRef = useRef<number | null>(null);
+  const overlayGenRef = useRef(0);
 
   const clearTimers = useCallback(() => {
     for (const t of timersRef.current) clearTimeout(t);
@@ -85,20 +86,29 @@ export function SceneTransitionOverlay() {
   }, []);
 
   /* ── Schedule full transition sequence ── */
-  const scheduleTransition = useCallback((style: SceneConfig['transitionStyle'], sceneId: SceneId) => {
+  const scheduleTransition = useCallback((style: SceneConfig['transitionStyle'], sceneId: SceneId, gen: number) => {
+    const go = (fn: () => void) => {
+      if (gen !== overlayGenRef.current) return;
+      fn();
+    };
+
     switch (style) {
       case 'flash': {
         // Flash → Hold → Reveal
         const t1 = setTimeout(() => {
-          setPhase('hold');
-          eventBus.emit('camera:cinematic_transition', { phase: 'hold', sceneId });
-          const t2 = setTimeout(() => {
-            setPhase('reveal');
-            eventBus.emit('camera:cinematic_transition', { phase: 'fadeIn', sceneId });
-            const t3 = setTimeout(() => setPhase('idle'), REVEAL_DURATION);
-            timersRef.current.push(t3);
-          }, HOLD_DURATION);
-          timersRef.current.push(t2);
+          go(() => {
+            setPhase('hold');
+            eventBus.emit('camera:cinematic_transition', { phase: 'hold', sceneId });
+            const t2 = setTimeout(() => {
+              go(() => {
+                setPhase('reveal');
+                eventBus.emit('camera:cinematic_transition', { phase: 'fadeIn', sceneId });
+                const t3 = setTimeout(() => go(() => setPhase('idle')), REVEAL_DURATION);
+                timersRef.current.push(t3);
+              });
+            }, HOLD_DURATION);
+            timersRef.current.push(t2);
+          });
         }, FLASH_DURATION);
         timersRef.current.push(t1);
         break;
@@ -106,15 +116,19 @@ export function SceneTransitionOverlay() {
       case 'darken': {
         // Darken → Hold → Reveal
         const t1 = setTimeout(() => {
-          setPhase('hold');
-          eventBus.emit('camera:cinematic_transition', { phase: 'hold', sceneId });
-          const t2 = setTimeout(() => {
-            setPhase('reveal');
-            eventBus.emit('camera:cinematic_transition', { phase: 'fadeIn', sceneId });
-            const t3 = setTimeout(() => setPhase('idle'), REVEAL_DURATION);
-            timersRef.current.push(t3);
-          }, HOLD_DURATION);
-          timersRef.current.push(t2);
+          go(() => {
+            setPhase('hold');
+            eventBus.emit('camera:cinematic_transition', { phase: 'hold', sceneId });
+            const t2 = setTimeout(() => {
+              go(() => {
+                setPhase('reveal');
+                eventBus.emit('camera:cinematic_transition', { phase: 'fadeIn', sceneId });
+                const t3 = setTimeout(() => go(() => setPhase('idle')), REVEAL_DURATION);
+                timersRef.current.push(t3);
+              });
+            }, HOLD_DURATION);
+            timersRef.current.push(t2);
+          });
         }, DARKEN_DURATION);
         timersRef.current.push(t1);
         break;
@@ -122,15 +136,19 @@ export function SceneTransitionOverlay() {
       case 'ripple': {
         // Ripple expand → Hold → Reveal
         const t1 = setTimeout(() => {
-          setPhase('hold');
-          eventBus.emit('camera:cinematic_transition', { phase: 'hold', sceneId });
-          const t2 = setTimeout(() => {
-            setPhase('reveal');
-            eventBus.emit('camera:cinematic_transition', { phase: 'fadeIn', sceneId });
-            const t3 = setTimeout(() => setPhase('idle'), REVEAL_DURATION);
-            timersRef.current.push(t3);
-          }, HOLD_DURATION);
-          timersRef.current.push(t2);
+          go(() => {
+            setPhase('hold');
+            eventBus.emit('camera:cinematic_transition', { phase: 'hold', sceneId });
+            const t2 = setTimeout(() => {
+              go(() => {
+                setPhase('reveal');
+                eventBus.emit('camera:cinematic_transition', { phase: 'fadeIn', sceneId });
+                const t3 = setTimeout(() => go(() => setPhase('idle')), REVEAL_DURATION);
+                timersRef.current.push(t3);
+              });
+            }, HOLD_DURATION);
+            timersRef.current.push(t2);
+          });
         }, RIPPLE_DURATION);
         timersRef.current.push(t1);
         break;
@@ -138,15 +156,19 @@ export function SceneTransitionOverlay() {
       case 'dissolve': {
         // Dissolve in → Hold → Reveal
         const t1 = setTimeout(() => {
-          setPhase('hold');
-          eventBus.emit('camera:cinematic_transition', { phase: 'hold', sceneId });
-          const t2 = setTimeout(() => {
-            setPhase('reveal');
-            eventBus.emit('camera:cinematic_transition', { phase: 'fadeIn', sceneId });
-            const t3 = setTimeout(() => setPhase('idle'), REVEAL_DURATION);
-            timersRef.current.push(t3);
-          }, HOLD_DURATION);
-          timersRef.current.push(t2);
+          go(() => {
+            setPhase('hold');
+            eventBus.emit('camera:cinematic_transition', { phase: 'hold', sceneId });
+            const t2 = setTimeout(() => {
+              go(() => {
+                setPhase('reveal');
+                eventBus.emit('camera:cinematic_transition', { phase: 'fadeIn', sceneId });
+                const t3 = setTimeout(() => go(() => setPhase('idle')), REVEAL_DURATION);
+                timersRef.current.push(t3);
+              });
+            }, HOLD_DURATION);
+            timersRef.current.push(t2);
+          });
         }, DISSOLVE_DURATION);
         timersRef.current.push(t1);
         break;
@@ -154,25 +176,31 @@ export function SceneTransitionOverlay() {
       default: {
         // Original wipe: Glitch → Wipe-in → Hold → Wipe-out
         const t1 = setTimeout(() => {
-          setPhase('wipe-in');
-          eventBus.emit('camera:cinematic_transition', { phase: 'hold', sceneId });
-          const t2 = setTimeout(() => {
-            setPhase('hold');
-            const t3 = setTimeout(() => {
-              setPhase('wipe-out');
-              eventBus.emit('camera:cinematic_transition', { phase: 'fadeIn', sceneId });
-              const t4 = setTimeout(() => setPhase('idle'), WIPE_OUT_DURATION);
-              timersRef.current.push(t4);
-            }, HOLD_DURATION);
-            timersRef.current.push(t3);
-          }, WIPE_IN_DURATION);
-          timersRef.current.push(t2);
+          go(() => {
+            setPhase('wipe-in');
+            eventBus.emit('camera:cinematic_transition', { phase: 'hold', sceneId });
+            const t2 = setTimeout(() => {
+              go(() => {
+                setPhase('hold');
+                const t3 = setTimeout(() => {
+                  go(() => {
+                    setPhase('wipe-out');
+                    eventBus.emit('camera:cinematic_transition', { phase: 'fadeIn', sceneId });
+                    const t4 = setTimeout(() => go(() => setPhase('idle')), WIPE_OUT_DURATION);
+                    timersRef.current.push(t4);
+                  });
+                }, HOLD_DURATION);
+                timersRef.current.push(t3);
+              });
+            }, WIPE_IN_DURATION);
+            timersRef.current.push(t2);
+          });
         }, GLITCH_DURATION);
         timersRef.current.push(t1);
         break;
       }
     }
-  }, [clearTimers]);
+  }, []);
 
   /* ── Glitch jitter animation via requestAnimationFrame ── */
   useEffect(() => {
@@ -205,6 +233,8 @@ export function SceneTransitionOverlay() {
       const oldSceneId = prevState.exploration.currentSceneId;
 
       if (newSceneId !== oldSceneId && oldSceneId !== undefined) {
+        overlayGenRef.current += 1;
+        const gen = overlayGenRef.current;
         clearTimers();
         setTargetSceneId(newSceneId);
 
@@ -219,7 +249,7 @@ export function SceneTransitionOverlay() {
         setPhase(initialPhase);
 
         // Schedule the transition sequence based on style
-        scheduleTransition(style, newSceneId);
+        scheduleTransition(style, newSceneId, gen);
       }
     });
 

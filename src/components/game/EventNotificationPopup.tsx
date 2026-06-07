@@ -9,7 +9,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Shield, Map, Trophy, Scroll, Info } from 'lucide-react';
-import { eventBus } from '@/engine/EventBus';
+import { eventBus, EventBusPriority } from '@/engine/EventBus';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { explorationEventToastTopPx } from '@/shared/constants/hudLayout';
 import { useGamePhase } from '@/store/selectors';
@@ -278,7 +278,7 @@ export function EventNotificationPopup() {
         subtitle: 'Приготовьтесь к бою',
         type: 'combat',
       });
-    });
+    }, EventBusPriority.UI);
     return unsub;
   }, [addNotification]);
 
@@ -290,7 +290,7 @@ export function EventNotificationPopup() {
         subtitle: `+${payload.xpGained} ОД`,
         type: 'combat',
       });
-    });
+    }, EventBusPriority.UI);
     return unsub;
   }, [addNotification]);
 

@@ -42,7 +42,6 @@ import {
   BarChart3,
   Camera,
 } from 'lucide-react';
-import { useGameStore } from '@/store/gameStore';
 import { getPoems } from '@/data/gameDataLoader';
 import { KARMA_LOW_THRESHOLD, KARMA_HIGH_THRESHOLD } from '@/data/constants';
 import { type WeatherType, WEATHER_EFFECTS } from '@/data/weatherEffects';

@@ -8,8 +8,8 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
-import { eventBus } from '@/engine/EventBus';
-import { useGameStore } from '@/store/gameStore';
+import { eventBus, EventBusPriority } from '@/engine/EventBus';
+import { useScreenEffectsVitals } from '@/store/selectors';
 
 /* ── Effect state types ── */
 interface FlashEffect {
@@ -135,16 +135,16 @@ export function ScreenEffects() {
       } else {
         triggerFlash('rgba(255,200,50,0.1)', 0.1, 150);
       }
-    }));
+    }, EventBusPriority.FX));
 
     unsubs.push(eventBus.on('combat:victory', () => {
       triggerFlash('rgba(251,191,36,0.2)', 0.2, 600);
-    }));
+    }, EventBusPriority.FX));
 
     unsubs.push(eventBus.on('combat:defeat', () => {
       triggerFlash('rgba(255,0,0,0.35)', 0.35, 800);
       triggerVignette(0.8, 3000);
-    }));
+    }, EventBusPriority.FX));
 
     unsubs.push(eventBus.on('fx:glitch', (payload) => {
       triggerChromaticAberration(payload.intensity * 2, payload.duration);
@@ -272,8 +272,7 @@ export function ScreenEffects() {
 
 /* ── Persistent low-health vignette ── */
 function LowHealthVignette() {
-  const energy = useGameStore((s) => s.playerState.energy);
-  const stress = useGameStore((s) => s.playerState.stress);
+  const { energy, stress } = useScreenEffectsVitals();
 
   const isDanger = energy < 25 || stress > 70;
   const intensity = isDanger

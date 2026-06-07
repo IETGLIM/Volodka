@@ -16,6 +16,24 @@ describe('SavePayloadSchema', () => {
     expect(result.success).toBe(true);
   });
 
+  it('migrates legacy activeTTLFlags array to keyed map', () => {
+    const legacy = {
+      ...buildValidSavePayload(),
+      activeTTLFlags: [
+        { key: 'truth_voice_active', poemId: 'poem_1', expiryTimestamp: 123 },
+        { key: 'storm_wind_active', poemId: 'poem_5', expiryTimestamp: 456 },
+      ],
+    };
+    const result = SavePayloadSchema.safeParse(legacy);
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.activeTTLFlags).toEqual({
+        truth_voice_active: { key: 'truth_voice_active', poemId: 'poem_1', expiryTimestamp: 123 },
+        storm_wind_active: { key: 'storm_wind_active', poemId: 'poem_5', expiryTimestamp: 456 },
+      });
+    }
+  });
+
   it('rejects empty currentNodeId', () => {
     const bad = { ...buildValidSavePayload(), currentNodeId: '' };
     const result = SavePayloadSchema.safeParse(bad);

@@ -1,14 +1,39 @@
 /* ─── Volodka RPG – typed event bus ─── */
 
 import type { EventMap } from '@/engine/events';
+import {
+  clearDedupSlots,
+  createDedupSlots,
+  dedupShouldSuppress,
+  DEDUP_WINDOW_MS,
+  hashDedupPayload,
+  type DedupSlot,
+} from '@/engine/eventBusDedup';
+import {
+  EventBusPriority,
+  snapshotListeners,
+  type PrioritizedListener,
+} from '@/engine/eventBusPriority';
+import { EventBusScope, type EventBusScopeHost } from '@/engine/eventBusScope';
+import { registerHmrDispose } from '@/shared/dev/hmrDispose';
+
+export { EventBusPriority } from '@/engine/eventBusPriority';
+export { EventBusScope, bindEventBusScope } from '@/engine/eventBusScope';
+export type { EventBusScopeHost } from '@/engine/eventBusScope';
 
 type EventHandler<T> = (payload: T) => void;
+type AnyEventHandler = (event: string, payload: unknown) => void;
+
+/** Unsubscribe handle returned by eventBus.on() / onAny(). */
+export type EventBusUnsubscribe = () => void;
 
 /** Events that should never be deduped — each emission must fire */
 const DEDUP_EXEMPT = new Set([
   'combat:hit',
   'combat:damage',
   'combat:heal',
+  'combat:turn',
+  'combat:action',
   'combat:victory',
   'combat:defeat',
   'scene:enter',
@@ -17,12 +42,6 @@ const DEDUP_EXEMPT = new Set([
   'interaction:end',
 ]);
 
-/** Dedup window in milliseconds — suppress identical (event+payload) repeats within this window */
-const DEDUP_WINDOW_MS = 500;
-
-/** Max dedup cache entries — prevents unbounded growth from large payload keys */
-const MAX_DEDUP_CACHE_SIZE = 64;
-
 /**
  * A lightweight, typed pub/sub event bus with payload-aware deduplication.
  *
@@ -30,39 +49,47 @@ const MAX_DEDUP_CACHE_SIZE = 64;
  * Never use for intra-layer communication.
  *
  * Dedup logic:
- *  - Key uses event name + primitive payload fields (no JSON.stringify) so
- *    different payloads for the same event are NOT suppressed.
- *  - Entries older than DEDUP_WINDOW_MS are pruned on every emit and via a
- *    periodic cleanup timer (lazily started on first activity).
+ *  - Payload fingerprint is a 32-bit FNV hash of event + primitive fields only
+ *    (no JSON.stringify, no retained key strings in the cache).
+ *  - Fixed 64-slot array stores `{ hash, ts }` — O(64) lookup per emit, no Map churn.
+ *  - Stale entries expire lazily inside dedupShouldSuppress on each emit (no background timer).
  *  - Events listed in DEDUP_EXEMPT always fire, bypassing dedup entirely.
  *
+ * Dispatch order:
+ *  - Typed handlers run first by ascending priority (Engine → Orchestrator → UI → FX).
+ *  - onAny handlers run after typed handlers, also sorted by priority (Debug last).
+ *  - Same priority tier preserves registration order (FIFO).
+ *  - Pass `EventBusPriority.*` as the optional third argument to `on()` / `onAny()`.
+ *
+ * Dispatch safety:
+ *  - Handlers are snapshotted per emit so subscribe/unsubscribe during dispatch is predictable.
+ *  - dispose() bumps lifecycleGeneration; in-flight emit aborts before further onAny/typed handlers.
+ *
  * Lifecycle:
- *  - The periodic cleanup timer is **not** started in the constructor — it is
- *    lazily initialised on the first `emit()` or `on()` call to avoid running
- *    a 1-second interval when the game is not active.
- *  - Call `dispose()` to stop the timer and clear all state (e.g. on app
- *    unmount). After disposal, the bus can be reused — subscriptions and
- *    emissions will auto-restart the timer.
+ *  - Call `dispose()` to clear all state (e.g. on app unmount). The bus can be reused after
+ *    handlers are re-subscribed.
+ *  - Use `createScope()` in orchestrators — one `scope.dispose()` drops all listeners without
+ *    storing handler references (see bindEventBusScope / useEventBusScope).
  *  - For testing, use `createEventBus()` to obtain an isolated instance.
+ *  - In dev, `registerHmrDispose` clears the singleton when the module hot-reloads.
  */
-export class EventBusClass {
-  private handlers = new Map<keyof EventMap, Set<EventHandler<any>>>();
+export class EventBusClass implements EventBusScopeHost {
+  private handlers = new Map<keyof EventMap, PrioritizedListener[]>();
   private debug = false;
 
-  /** Dedup cache: compact key → timestamp when added */
-  private dedupCache = new Map<string, number>();
-
-  /** Handle for the periodic TTL cleanup timer */
-  private cleanupTimer: ReturnType<typeof setInterval> | null = null;
+  /** Fixed-size dedup slots — numeric hashes only */
+  private dedupSlots: DedupSlot[] = createDedupSlots();
 
   /**
-   * Bumped on dispose/stop so in-flight interval callbacks from a prior
-   * generation become no-ops instead of touching cleared state.
+   * Bumped at the start of dispose() so an in-flight emit stops before onAny/typed dispatch.
    */
-  private cleanupGeneration = 0;
+  private lifecycleGeneration = 0;
 
-  /** Catch-all handlers — called for every emitted event (used by DevPanel) */
-  private anyHandlers = new Set<(event: string, payload: unknown) => void>();
+  /** Catch-all handlers — called after typed handlers (DevPanel logging) */
+  private anyHandlers: PrioritizedListener<AnyEventHandler>[] = [];
+
+  /** Monotonic registration order for stable tie-breaking */
+  private nextListenerOrder = 0;
 
   /** Whether this bus has been disposed and needs re-initialisation on next use */
   private disposed = false;
@@ -71,72 +98,20 @@ export class EventBusClass {
    *  Catches subscription leaks early (e.g., component subscribing in render instead of useEffect). */
   private static MAX_HANDLERS_PER_EVENT = 20;
 
-  constructor() {
-    // Timer is NOT started here — see ensureCleanupTimer() for lazy start
-  }
-
-  /** Stop the periodic cleanup timer and invalidate any in-flight callbacks. */
-  private stopCleanupTimer(): void {
-    this.cleanupGeneration++;
-    const timer = this.cleanupTimer;
-    this.cleanupTimer = null;
-    if (timer !== null) {
-      clearInterval(timer);
-    }
-  }
-
-  /**
-   * Lazily start the periodic cleanup timer.
-   * Called on first `emit()` or `on()` so the timer only runs when needed.
-   */
-  private ensureCleanupTimer(): void {
-    if (this.cleanupTimer !== null) return;
-    this.disposed = false;
-
-    const generation = this.cleanupGeneration;
-    this.cleanupTimer = setInterval(() => {
-      if (generation !== this.cleanupGeneration) return;
-
-      const now = Date.now();
-      for (const [key, ts] of this.dedupCache) {
-        if (now - ts > DEDUP_WINDOW_MS) {
-          this.dedupCache.delete(key);
-        }
-      }
-    }, 1000);
-  }
-
   /** Enable or disable debug logging of emitted events. */
   setDebug(enabled: boolean) {
     this.debug = enabled;
   }
 
-  /**
-   * Build a compact dedup key from event name + primitive payload fields.
-   * Skips nested objects/arrays to avoid retaining large serialized blobs.
-   */
-  private dedupKey(event: string, payload: unknown): string {
-    if (payload === null || payload === undefined) return event;
-    if (typeof payload !== 'object') return `${event}:${String(payload)}`;
+  /** Create a scope that tracks subscriptions for batch dispose (orchestrator pattern). */
+  createScope(): EventBusScope {
+    return new EventBusScope(this);
+  }
 
-    const obj = payload as Record<string, unknown>;
-    const keys = Object.keys(obj);
-    if (keys.length === 0) return event;
-
-    const parts: string[] = [event];
-    for (const key of keys.sort()) {
-      const value = obj[key];
-      if (value === undefined) continue;
-      if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
-        parts.push(`${key}=${value}`);
-      } else if (
-        Array.isArray(value) &&
-        value.every((entry) => typeof entry === 'number' || typeof entry === 'string')
-      ) {
-        parts.push(`${key}=${value.join(',')}`);
-      }
-    }
-    return parts.join('|');
+  /** Record a dedup fingerprint — handled inside dedupShouldSuppress */
+  private shouldSuppressDedup(event: string, payload: unknown, now: number): boolean {
+    const hash = hashDedupPayload(event, payload);
+    return dedupShouldSuppress(this.dedupSlots, hash, now);
   }
 
   /** Log handler errors without letting logging failures abort dispatch */
@@ -152,124 +127,140 @@ export class EventBusClass {
     }
   }
 
-  /** Record a dedup key with bounded cache size */
-  private recordDedup(key: string, now: number): void {
-    if (this.dedupCache.size >= MAX_DEDUP_CACHE_SIZE) {
-      const oldest = this.dedupCache.keys().next().value;
-      if (oldest !== undefined) {
-        this.dedupCache.delete(oldest);
+  private isDispatchCancelled(dispatchGeneration: number): boolean {
+    return dispatchGeneration !== this.lifecycleGeneration;
+  }
+
+  private registerListener<T>(
+    list: PrioritizedListener<T>[],
+    handler: T,
+    priority: number,
+  ): () => void {
+    const entry: PrioritizedListener<T> = {
+      handler,
+      priority,
+      order: this.nextListenerOrder++,
+    };
+    list.push(entry);
+    return () => {
+      const idx = list.findIndex((item) => item.handler === handler);
+      if (idx !== -1) {
+        list.splice(idx, 1);
       }
-    }
-    this.dedupCache.set(key, now);
+    };
   }
 
   /**
    * Subscribe to ALL events (catch-all). Used by DevPanel for event logging.
    * Returns an unsubscribe function.
    */
-  onAny(handler: (event: string, payload: unknown) => void): () => void {
-    this.ensureCleanupTimer();
-    this.anyHandlers.add(handler);
-    return () => {
-      this.anyHandlers.delete(handler);
-    };
+  onAny(
+    handler: AnyEventHandler,
+    priority: number = EventBusPriority.Normal,
+  ): EventBusUnsubscribe {
+    this.disposed = false;
+    return this.registerListener(this.anyHandlers, handler, priority);
   }
 
   /**
    * Subscribe to an event.
    * Returns an unsubscribe function — call it to remove the handler.
+   *
+   * @param priority Lower runs first — use `EventBusPriority` tiers (default: Normal/UI).
    */
   on<K extends keyof EventMap>(
     event: K,
     handler: EventHandler<EventMap[K]>,
-  ): () => void {
-    this.ensureCleanupTimer();
+    priority: number = EventBusPriority.Normal,
+  ): EventBusUnsubscribe {
+    this.disposed = false;
 
-    let set = this.handlers.get(event);
-    if (!set) {
-      set = new Set();
-      this.handlers.set(event, set);
+    let list = this.handlers.get(event);
+    if (!list) {
+      list = [];
+      this.handlers.set(event, list);
     }
-    set.add(handler);
 
-    // Safety: warn about potential subscription leaks
-    if (set.size > EventBusClass.MAX_HANDLERS_PER_EVENT) {
+    const unsubscribe = this.registerListener(list, handler, priority);
+
+    if (list.length > EventBusClass.MAX_HANDLERS_PER_EVENT) {
       console.warn(
-        `[EventBus] ${String(event)} has ${set.size} handlers (limit: ${EventBusClass.MAX_HANDLERS_PER_EVENT}). ` +
+        `[EventBus] ${String(event)} has ${list.length} handlers (limit: ${EventBusClass.MAX_HANDLERS_PER_EVENT}). ` +
         `Possible subscription leak — ensure each eventBus.on() is cleaned up in useEffect return.`
       );
     }
 
-    // Return unsubscribe closure
     return () => {
-      const s = this.handlers.get(event);
-      if (s) {
-        s.delete(handler);
-        if (s.size === 0) {
-          this.handlers.delete(event);
-        }
+      unsubscribe();
+      const remaining = this.handlers.get(event);
+      if (remaining && remaining.length === 0) {
+        this.handlers.delete(event);
       }
     };
   }
 
   /**
    * Emit an event with its typed payload.
-   * Calls every registered handler for the event key.
+   * Calls every registered handler for the event key in priority order.
    *
    * Dedup: if the same (event, payload) pair was emitted within the last
    * DEDUP_WINDOW_MS, subsequent emissions are suppressed unless the event
    * is in DEDUP_EXEMPT.
    */
   emit<K extends keyof EventMap>(event: K, payload: EventMap[K]): void {
-    this.ensureCleanupTimer();
+    const dispatchGeneration = this.lifecycleGeneration;
 
     if (this.debug) {
       console.log(`[EventBus] ${String(event)}`, payload);
     }
 
-    // Exempt events always fire
     const eventStr = String(event);
     if (!DEDUP_EXEMPT.has(eventStr)) {
-      const key = this.dedupKey(eventStr, payload);
       const now = Date.now();
-
-      // Prune stale entries on every emit
-      for (const [k, ts] of this.dedupCache) {
-        if (now - ts > DEDUP_WINDOW_MS) {
-          this.dedupCache.delete(k);
-        }
-      }
-
-      // Check if we've seen this exact (event, payload) recently
-      const lastSeen = this.dedupCache.get(key);
-      if (lastSeen !== undefined && now - lastSeen < DEDUP_WINDOW_MS) {
+      if (this.shouldSuppressDedup(eventStr, payload, now)) {
         if (this.debug) {
           console.log(`[EventBus] Deduped ${eventStr} (within ${DEDUP_WINDOW_MS}ms window)`);
         }
-        return; // suppressed
-      }
-
-      // Record this emission
-      this.recordDedup(key, now);
-    }
-
-    // Notify catch-all handlers
-    for (const anyHandler of this.anyHandlers) {
-      try {
-        anyHandler(eventStr, payload);
-      } catch (err) {
-        this.logHandlerError('[EventBus] Error in onAny handler:', err);
+        return;
       }
     }
 
-    const set = this.handlers.get(event);
-    if (!set) return;
+    if (this.isDispatchCancelled(dispatchGeneration)) {
+      return;
+    }
 
-    for (const handler of set) {
-      try {
-        handler(payload);
-      } catch (err) {
-        this.logHandlerError(`[EventBus] Error in handler for "${String(event)}":`, err);
+    const anySnapshot =
+      this.anyHandlers.length > 0 ? snapshotListeners(this.anyHandlers) : [];
+
+    const list = this.handlers.get(event);
+    if (list && list.length > 0) {
+      const handlerSnapshot = snapshotListeners(list);
+      for (const { handler } of handlerSnapshot) {
+        if (this.isDispatchCancelled(dispatchGeneration)) {
+          return;
+        }
+        try {
+          (handler as EventHandler<EventMap[K]>)(payload);
+        } catch (err) {
+          this.logHandlerError(`[EventBus] Error in handler for "${String(event)}":`, err);
+        }
+      }
+    }
+
+    if (this.isDispatchCancelled(dispatchGeneration)) {
+      return;
+    }
+
+    if (this.anyHandlers.length > 0) {
+      for (const { handler: anyHandler } of anySnapshot) {
+        if (this.isDispatchCancelled(dispatchGeneration)) {
+          return;
+        }
+        try {
+          anyHandler(eventStr, payload);
+        } catch (err) {
+          this.logHandlerError('[EventBus] Error in onAny handler:', err);
+        }
       }
     }
   }
@@ -281,27 +272,29 @@ export class EventBusClass {
     event: K,
     handler: EventHandler<EventMap[K]>,
   ): void {
-    const set = this.handlers.get(event);
-    if (!set) return;
+    const list = this.handlers.get(event);
+    if (!list) return;
 
-    set.delete(handler);
-    if (set.size === 0) {
+    const idx = list.findIndex((entry) => entry.handler === handler);
+    if (idx !== -1) {
+      list.splice(idx, 1);
+    }
+    if (list.length === 0) {
       this.handlers.delete(event);
     }
   }
 
   /**
-   * Dispose of the event bus — stops timers and clears all caches/handlers.
+   * Dispose of the event bus — clears all caches/handlers and cancels in-flight dispatch.
    * Call this when the bus is no longer needed (e.g. app unmount).
    *
-   * After disposal, the bus can still be used — the next `emit()` or `on()`
-   * call will automatically re-initialise the timer (lazy start pattern).
+   * After disposal, the bus can still be used — re-subscribe handlers before emitting.
    */
   dispose(): void {
-    this.stopCleanupTimer();
-    this.dedupCache.clear();
+    this.lifecycleGeneration++;
+    clearDedupSlots(this.dedupSlots);
     this.handlers.clear();
-    this.anyHandlers.clear();
+    this.anyHandlers.length = 0;
     this.disposed = true;
   }
 
@@ -322,3 +315,9 @@ export function createEventBus(): EventBusClass {
 
 /** Singleton event bus instance */
 export const eventBus = new EventBusClass();
+
+export function disposeEventBus(): void {
+  eventBus.dispose();
+}
+
+registerHmrDispose(disposeEventBus);

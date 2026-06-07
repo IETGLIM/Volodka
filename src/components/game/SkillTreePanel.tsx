@@ -17,7 +17,7 @@
 import { useState, useCallback, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Zap, Lock, ChevronRight, Sparkles, Info, Star } from 'lucide-react';
-import { useGameStore } from '@/store/gameStore';
+import { useSkillTreePanelState } from '@/store/selectors';
 import {
   SKILL_TREE_BY_BRANCH,
   BRANCH_META,
@@ -646,9 +646,7 @@ export function SkillTreePanel({
   open: boolean;
   onClose: () => void;
 }) {
-  const progression = useGameStore((s) => s.playerState.progression);
-  const unlockSkillTreeNode = useGameStore((s) => s.unlockSkillTreeNode);
-  const canUnlockSkill = useGameStore((s) => s.canUnlockSkill);
+  const { progression, unlockSkillTreeNode, canUnlockSkill } = useSkillTreePanelState();
 
   const { skillPoints, unlockedSkills } = progression;
   const [activeBranch, setActiveBranch] = useState<SkillBranch | 'all'>('all');

@@ -22,6 +22,7 @@ import {
   batchSetFlag,
   createRewardBatchDraft,
   createRewardBatchSideEffects,
+  finalizeRewardBatch,
   flushRewardBatchSideEffects,
 } from '../rewardBatchHelpers';
 
@@ -470,6 +471,8 @@ export const createWorldSlice: StateCreator<
       const missions = state.acceptedDailyMissions.map((m) =>
         m.missionId === missionId ? { ...m, claimed: true } : m,
       );
+
+      finalizeRewardBatch(draft, sideEffects);
 
       return {
         acceptedDailyMissions: missions,

@@ -8,7 +8,7 @@ import { useState, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { FocusTrap } from '@/components/a11y/FocusTrap'
 import { usePanelDialog } from '@/components/a11y/usePanelDialog'
-import { useGameStore } from '@/store/gameStore'
+import { useKarmaPoemInfoPanelState } from '@/store/selectors'
 import { ALL_ENDINGS } from '@/data/goldenPath'
 import { QUEST_DEFINITIONS } from '@/data/quests'
 import { UI_LAYERS } from '@/shared/constants/uiLayers'
@@ -22,10 +22,12 @@ export function KarmaPoemInfoPanel({ open, onClose }: KarmaPoemInfoPanelProps) {
   const { closeButtonRef, dialogProps, titleProps } = usePanelDialog()
   const [activeTab, setActiveTab] = useState<'karma' | 'poems'>('karma')
 
-  const karma = useGameStore((s) => s.playerState.karma)
-  const collectedPoems = useGameStore((s) => s.collectedPoems)
-  const currentAct = useGameStore((s) => s.playerState.progression.currentAct)
-  const notifications = useGameStore((s) => s.notifications)
+  const {
+    karma,
+    collectedPoems,
+    notifications,
+    poemPowers,
+  } = useKarmaPoemInfoPanelState()
 
   // Determine which endings are available at current karma
   const availableEndings = useMemo(() => {
@@ -63,7 +65,6 @@ export function KarmaPoemInfoPanel({ open, onClose }: KarmaPoemInfoPanelProps) {
   }, [collectedPoems])
 
   // Poem power and cooldown info
-  const poemPowers = useGameStore((s) => s.poemPowers)
   const availablePowers = useMemo(() => {
     const now = Date.now()
     return collectedPoems.filter((poemId) => {

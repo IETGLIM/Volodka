@@ -19,7 +19,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { eventBus } from '@/engine/EventBus';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { getPoemPower } from '@/engine/PoemPowerSystem';
-import { useGameStore } from '@/store/gameStore';
+import { usePoemPowers } from '@/store/selectors';
 import { cyberGlowText } from './CyberpunkTheme';
 
 /* ─── Color theme mapping ─── */
@@ -104,7 +104,7 @@ export function PoemPowerEffect() {
   const [notifications, setNotifications] = useState<ActivePowerNotification[]>([]);
 
   // Track poemPowers from store for state-change detection
-  const poemPowers = useGameStore((s) => s.poemPowers);
+  const poemPowers = usePoemPowers();
   const prevPoemPowersRef = useRef(poemPowers);
   const poemPowersJSON = JSON.stringify(poemPowers);
 

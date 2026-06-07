@@ -245,9 +245,17 @@ function OverflowBadge({ count }: { count: number }) {
 const MAX_VISIBLE_EFFECTS = 8;
 
 export function StatusEffectsBar() {
-  const { playerState, weatherEnabled, rainIntensity, currentSceneId, timeOfDay } = useStatusEffectsContext();
+  const {
+    karma,
+    energy,
+    stress,
+    unlockedPerks,
+    weatherEnabled,
+    rainIntensity,
+    currentSceneId,
+    timeOfDay,
+  } = useStatusEffectsContext();
 
-  // Track snow state via eventBus — similar to HUD.tsx
   const [snowActive, setSnowActive] = useState(false);
   useEffect(() => {
     const unsub = eventBus.on('weather:snow', (payload: { active: boolean }) => {
@@ -255,9 +263,6 @@ export function StatusEffectsBar() {
     });
     return () => { unsub(); };
   }, []);
-
-  const { karma, energy, stress } = playerState;
-  const unlockedPerks = playerState.progression?.unlockedPerks ?? [];
 
   // Compute current weather
   const currentWeather: WeatherType = useMemo(() =>

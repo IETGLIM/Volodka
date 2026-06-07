@@ -25,6 +25,7 @@ import {
   isDistrictScene,
 } from './worldRegistry';
 import { getSpawnDirector } from './SpawnDirector';
+import { registerHmrDispose } from '@/shared/dev/hmrDispose';
 
 export class WorldStreamManager {
   private readonly chunks: WorldChunkManager;
@@ -168,3 +169,13 @@ export function getWorldStreamManager(): WorldStreamManager {
 export function resetWorldStreamManager(): void {
   sharedStream = null;
 }
+
+/** Disable streaming and release singleton (unmount / HMR). */
+export function disposeWorldStreamManager(): void {
+  if (sharedStream) {
+    sharedStream.setStreamingEnabled(false);
+  }
+  sharedStream = null;
+}
+
+registerHmrDispose(disposeWorldStreamManager);

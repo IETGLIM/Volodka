@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useGameStore } from '@/store/gameStore';
+import { useSetNarrativeKind } from '@/store/selectors';
 import {
   getDialogueNodes,
   getStoryNodes,
@@ -12,7 +12,7 @@ export function useNarrativeKindRecovery(
   narrativeKind: 'story' | 'dialogue' | null,
   currentNodeId: string,
 ) {
-  const setNarrativeKind = useGameStore((s) => s.setNarrativeKind);
+  const setNarrativeKind = useSetNarrativeKind();
 
   useEffect(() => {
     if (!showStoryOverlay || narrativeKind || !currentNodeId) return;

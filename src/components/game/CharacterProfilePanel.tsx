@@ -28,12 +28,7 @@ import {
   Wind,
 } from 'lucide-react';
 import {
-  usePlayerState,
-  useNpcRelations,
-  useCollectedPoems,
-  useQuests,
-  usePlayerInventory,
-  useTimeOfDay,
+  useCharacterProfilePanelState,
 } from '@/store/selectors';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { findNpcById } from '@/data/allNpcDefinitions';
@@ -311,14 +306,21 @@ const SKILL_DISPLAY: Record<string, { label: string; color: string }> = {
 
 export function CharacterProfilePanel({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { closeButtonRef, dialogProps, titleProps } = usePanelDialog();
-  const playerState = usePlayerState();
-  const npcRelations = useNpcRelations();
-  const collectedPoems = useCollectedPoems();
-  const quests = useQuests();
-  const inventory = usePlayerInventory();
-  const timeOfDay = useTimeOfDay();
-
-  const { karma, energy, stress, skills, equippedItems, progression } = playerState;
+  const {
+    karma,
+    energy,
+    stress,
+    skills,
+    equippedItems,
+    progression,
+    credits,
+    visitedNodes,
+    inventory,
+    npcRelations,
+    collectedPoems,
+    quests,
+    timeOfDay,
+  } = useCharacterProfilePanelState();
   const { level, xp, xpToNextLevel, currentAct } = progression;
   const isLowEnergy = energy < 25;
   const isHighStress = stress > 70;
@@ -734,7 +736,7 @@ export function CharacterProfilePanel({ open, onClose }: { open: boolean; onClos
                         <LifetimeStat
                           icon={<Coins className="size-3 text-amber-400/60" />}
                           label="Кредиты"
-                          value={`${playerState.credits ?? 0}₽`}
+                          value={`${credits ?? 0}₽`}
                         />
                         <LifetimeStat
                           icon={<Sparkles className="size-3 text-amber-400/60" />}
@@ -782,7 +784,7 @@ export function CharacterProfilePanel({ open, onClose }: { open: boolean; onClos
                         <LifetimeStat
                           icon={<Footprints className="size-3 text-violet-400/60" />}
                           label="Сцены"
-                          value={String(playerState.visitedNodes.length)}
+                          value={String(visitedNodes.length)}
                         />
                         <LifetimeStat
                           icon={<Wind className="size-3 text-sky-400/60" />}

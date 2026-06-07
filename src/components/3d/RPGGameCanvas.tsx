@@ -28,6 +28,13 @@ import { eventBus } from '@/engine/EventBus';
 import { type VirtualControls } from '@/hooks/useGamePhysics';
 import { useGameMode } from '@/store/selectors';
 import { useGameStore } from '@/store/gameStore';
+import {
+  getCanvasFirstFrameSession,
+  markCanvasFirstFrameEmitted,
+  markCanvasFirstFrameSessionLost,
+  registerCanvasForFirstFrame,
+  unregisterCanvasForFirstFrame,
+} from '@/engine/canvas/canvasFirstFrameSession';
 import { markCanvasMounted, markFirstFrame } from '@/engine/performance/LoadingTimeline';
 
 const LazyPhysicsSceneInner = lazy(() => import('./PhysicsSceneInner'));
@@ -429,52 +436,34 @@ export function RPGGameCanvas() {
   );
 }
 
-/** Per-canvas first-frame session — keyed by WebGL canvas element so the guard
- *  survives React Strict Mode child remounts (same canvas) but resets naturally
- *  when the Canvas is destroyed and a new element is created (error-boundary retry). */
-type CanvasFirstFrameSession = { emitted: boolean; contextLost: boolean };
-const canvasFirstFrameSessions = new WeakMap<HTMLCanvasElement, CanvasFirstFrameSession>();
-
-function getCanvasFirstFrameSession(canvas: HTMLCanvasElement): CanvasFirstFrameSession {
-  let session = canvasFirstFrameSessions.get(canvas);
-  if (!session) {
-    session = { emitted: false, contextLost: false };
-    canvasFirstFrameSessions.set(canvas, session);
-  }
-  return session;
-}
-
 /** Post-render guards: NoToneMapping enforcement + canvas:first-frame emit. */
 function CanvasGuardSystem() {
   const gl = useThree((state) => state.gl);
   const toneMappingEnforced = useRef(false);
 
-  // WebGL context loss handlers (attached to canvas element)
   useEffect(() => {
     const canvas = gl.domElement;
     if (!canvas) return;
 
+    registerCanvasForFirstFrame(canvas);
+
     const handleContextLost = (e: Event) => {
       e.preventDefault();
       devWarn('[CanvasGuard] WebGL context LOST — attempting recovery...');
-      const session = canvasFirstFrameSessions.get(canvas);
-      if (session) {
-        session.emitted = false;
-        session.contextLost = true;
-      }
+      markCanvasFirstFrameSessionLost(canvas);
       toneMappingEnforced.current = false;
       eventBus.emit('canvas:context-lost', {});
     };
 
     const handleContextRestored = () => {
       devLog('[CanvasGuard] WebGL context RESTORED');
-      // first-frame will be re-emitted on next useFrame call
     };
 
     canvas.addEventListener('webglcontextlost', handleContextLost);
     canvas.addEventListener('webglcontextrestored', handleContextRestored);
 
     return () => {
+      unregisterCanvasForFirstFrame(canvas);
       canvas.removeEventListener('webglcontextlost', handleContextLost);
       canvas.removeEventListener('webglcontextrestored', handleContextRestored);
     };
@@ -499,11 +488,11 @@ function CanvasGuardSystem() {
       if (session.emitted) return;
       if (ctx.state.gl.info.render.frame < 1) return;
 
-      session.emitted = true;
+      const restored = session.contextLost;
+      markCanvasFirstFrameEmitted(canvas);
       markFirstFrame();
-      if (session.contextLost) {
+      if (restored) {
         devLog('[CanvasGuard] Re-signalling after context restore');
-        session.contextLost = false;
       }
       eventBus.emit('canvas:first-frame', {});
     },

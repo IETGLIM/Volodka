@@ -10,9 +10,9 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { explorationStatToastTopPx } from '@/shared/constants/hudLayout';
 import { toastManager, type ToastType, type ToastMessage } from '@/engine/ToastManager';
-import { useGameStore, type NotificationType } from '@/store/gameStore';
-import { useGamePhase } from '@/store/selectors';
-import { eventBus } from '@/engine/EventBus';
+import type { NotificationType } from '@/store/gameStore';
+import { useGamePhase, useNotifications } from '@/store/selectors';
+import { eventBus, EventBusPriority } from '@/engine/EventBus';
 import type { TrainablePlayerSkill } from '@/shared/types/game';
 
 /* ─── Constants ─── */
@@ -247,7 +247,7 @@ export function NotificationToasts() {
 
   /* ── Watch gameStore notifications ── */
   // Track which notification IDs we've already shown as toasts
-  const notifications = useGameStore((s) => s.notifications);
+  const notifications = useNotifications();
   const prevNotifIds = useRef(new Set<string>());
 
   useEffect(() => {
@@ -296,7 +296,7 @@ export function NotificationToasts() {
     unsubs.push(
       eventBus.on('combat:defeat', ({ energyLost }) => {
         toastManager.addToast('stress', `Поражение: -${energyLost} энергии`);
-      }),
+      }, EventBusPriority.UI),
     );
 
     // Auto-save — AutoSaveIndicator handles this
@@ -313,21 +313,6 @@ export function NotificationToasts() {
 
     return () => unsubs.forEach((u) => u());
   }, []);
-
-  /* ── Watch gameStore stat changes for delta info ── */
-  const playerState = useGameStore((s) => s.playerState);
-  const prevKarma = useRef(playerState.karma);
-  const prevEnergy = useRef(playerState.energy);
-  const prevStress = useRef(playerState.stress);
-  const prevSkills = useRef(playerState.skills);
-
-  // Update refs when values change
-  useEffect(() => {
-    prevKarma.current = playerState.karma;
-    prevEnergy.current = playerState.energy;
-    prevStress.current = playerState.stress;
-    prevSkills.current = playerState.skills;
-  }, [playerState.karma, playerState.energy, playerState.stress, playerState.skills]);
 
   /* ── Render ── */
   // Only show toasts when game is active (not in menu/intro)

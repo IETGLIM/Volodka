@@ -178,6 +178,22 @@ const ActiveTTLFlagSchema = z.object({
   expiryTimestamp: z.number(),
 });
 
+const ActiveTTLFlagMapSchema = z.record(z.string(), ActiveTTLFlagSchema);
+
+/** Accept legacy array saves; normalize to keyed map on load. */
+const ActiveTTLFlagsSchema = z
+  .union([z.array(ActiveTTLFlagSchema), ActiveTTLFlagMapSchema])
+  .transform((value) => {
+    if (Array.isArray(value)) {
+      const map: Record<string, z.infer<typeof ActiveTTLFlagSchema>> = {};
+      for (const flag of value) {
+        map[flag.key] = flag;
+      }
+      return map;
+    }
+    return value;
+  });
+
 /** Unlocked achievement entry with timestamp */
 const UnlockedAchievementSchema = z.object({
   id: z.string().min(1),
@@ -233,7 +249,7 @@ export const SavePayloadSchema = z.object({
   loreEntries: z.array(LoreEntrySchema),
   conversationLog: z.record(z.string(), z.array(ConversationLogEntrySchema)),
   poemPowers: z.record(z.string(), PoemPowerSchema),
-  activeTTLFlags: z.array(ActiveTTLFlagSchema),
+  activeTTLFlags: ActiveTTLFlagsSchema,
   journalTab: JournalTabSchema,
   weatherEnabled: z.boolean(),
   rainIntensity: boundedNumber(0, 1),

@@ -65,7 +65,8 @@ interface TradingPanelProps {
 
 export function TradingPanel({ open, onClose, initialNpcId }: TradingPanelProps) {
   const {
-    playerState,
+    credits,
+    inventory,
     npcRelations,
     buyItem,
     sellItem,
@@ -128,7 +129,7 @@ export function TradingPanel({ open, onClose, initialNpcId }: TradingPanelProps)
         const def = getItemDefinition(entry.itemId);
         if (!def) return null;
         const price = getBuyPrice(merchant, entry.itemId, relationValue);
-        const canAfford = playerState.credits >= price;
+        const canAfford = credits >= price;
         const hasSpace = canBuyItem(selectedNpcId!, entry.itemId);
         return {
           ...entry,
@@ -144,12 +145,12 @@ export function TradingPanel({ open, onClose, initialNpcId }: TradingPanelProps)
         };
       })
       .filter(Boolean);
-  }, [merchant, relationValue, playerState.credits, canBuyItem, selectedNpcId]);
+  }, [merchant, relationValue, credits, canBuyItem, selectedNpcId]);
 
   // Sell items — player inventory filtered by what the NPC buys
   const sellItems = useMemo(() => {
     if (!merchant) return [];
-    return playerState.inventory
+    return inventory
       .filter((item) => {
         // Can't sell quest items
         const def = getItemDefinition(item.id);
@@ -174,7 +175,7 @@ export function TradingPanel({ open, onClose, initialNpcId }: TradingPanelProps)
           canSell: canSellItem(selectedNpcId!, invItem.id),
         };
       });
-  }, [merchant, playerState.inventory, relationValue, canSellItem, selectedNpcId]);
+  }, [merchant, inventory, relationValue, canSellItem, selectedNpcId]);
 
   // Handle buy
   const handleBuy = useCallback((itemId: string) => {
@@ -213,14 +214,14 @@ export function TradingPanel({ open, onClose, initialNpcId }: TradingPanelProps)
           <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-amber-500/20 bg-amber-950/20">
             <Coins className="size-3.5 text-amber-400" />
             <span className="text-sm font-mono font-semibold text-amber-300">
-              {playerState.credits}{CURRENCY_SYMBOL}
+              {credits}{CURRENCY_SYMBOL}
             </span>
           </div>
         </div>
       )}
       footer={(
         <div className="flex items-center justify-between text-[10px] text-slate-500">
-          <span>Баланс: {playerState.credits}{CURRENCY_SYMBOL}</span>
+          <span>Баланс: {credits}{CURRENCY_SYMBOL}</span>
           <div className="flex items-center gap-3">
             {merchant && (
               <span className="flex items-center gap-1">

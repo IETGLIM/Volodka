@@ -12,6 +12,8 @@
  * Tab blur/focus handlers for suspend/resume are managed centrally.
  */
 
+import { registerHmrDispose } from '@/shared/dev/hmrDispose';
+
 let sharedCtx: AudioContext | null = null;
 let _userInteracted = false;
 /** Queue of callbacks to run once AudioContext is resumed */
@@ -69,14 +71,15 @@ export function safeResume(): Promise<void> {
   return Promise.resolve();
 }
 
+const resumeOnce = () => {
+  _userInteracted = true;
+  if (sharedCtx && sharedCtx.state === 'suspended') {
+    sharedCtx.resume().catch(() => {});
+  }
+};
+
 // ── Browser autoplay policy: resume AudioContext on first user gesture ──
 if (typeof window !== 'undefined') {
-  const resumeOnce = () => {
-    _userInteracted = true;
-    if (sharedCtx && sharedCtx.state === 'suspended') {
-      sharedCtx.resume().catch(() => {});
-    }
-  };
   window.addEventListener('click', resumeOnce, { once: true });
   window.addEventListener('keydown', resumeOnce, { once: true });
   window.addEventListener('touchstart', resumeOnce, { once: true });
@@ -112,3 +115,19 @@ if (typeof window !== 'undefined') {
   window.addEventListener('blur', suspendSharedAudioContext);
   window.addEventListener('focus', resumeSharedAudioContext);
 }
+
+/** Close shared AudioContext and drop tab blur/focus hooks (unmount / HMR). */
+export function disposeSharedAudioContext(): void {
+  if (typeof window !== 'undefined') {
+    window.removeEventListener('blur', suspendSharedAudioContext);
+    window.removeEventListener('focus', resumeSharedAudioContext);
+  }
+  if (sharedCtx) {
+    sharedCtx.close().catch(() => {});
+    sharedCtx = null;
+  }
+  _pendingQueue = [];
+  _userInteracted = false;
+}
+
+registerHmrDispose(disposeSharedAudioContext);

@@ -2,7 +2,8 @@
 import { useEffect, useCallback } from 'react';
 import { useGameStore } from '@/store/gameStore';
 import { readGamePhase } from '@/shared/gamePhase';
-import { eventBus } from '@/engine/EventBus';
+import { eventBus, EventBusPriority } from '@/engine/EventBus';
+import { withHmrCleanup } from '@/shared/dev/hmrDispose';
 import { triggerCameraShake } from '@/engine/camera/cameraShake';
 import { startCombat } from '@/engine/CombatSystem';
 import { getItemDefinition } from '@/data/items';
@@ -27,51 +28,38 @@ export function useCombatOrchestrator() {
   }, []);
 
   useEffect(() => {
-    const unsubs: (() => void)[] = [];
+    const scope = eventBus.createScope();
 
-    // Handle combat trigger from entering battle scene
-    unsubs.push(
-      eventBus.on('scene:enter', ({ sceneId }) => {
-        if (sceneId === 'battle') {
-          const store = useGameStore.getState();
-          if (readGamePhase(store) === 'exploration') {
-            // Random enemy based on karma level
-            const karma = store.playerState.karma;
-            let enemyType: EnemyType = 'system_daemon';
-            if (karma > 65) enemyType = 'shadow_agent';
-            else if (karma > 35) enemyType = 'corporate_golem';
+    scope.on('scene:enter', ({ sceneId }) => {
+      if (sceneId === 'battle') {
+        const store = useGameStore.getState();
+        if (readGamePhase(store) === 'exploration') {
+          const karma = store.playerState.karma;
+          let enemyType: EnemyType = 'system_daemon';
+          if (karma > 65) enemyType = 'shadow_agent';
+          else if (karma > 35) enemyType = 'corporate_golem';
 
-            startCombat(enemyType);
-          }
+          startCombat(enemyType);
         }
-      }),
-    );
+      }
+    });
 
-    // Handle combat:victory for loot notifications (XP/karma already applied in CombatSystem)
-    unsubs.push(
-      eventBus.on('combat:victory', ({ lootItemId }) => {
-        if (lootItemId) {
-          const def = getItemDefinition(lootItemId);
-          useGameStore.getState().pushNotification('quest', `Найден предмет: ${def?.name ?? lootItemId}`);
-        }
-      }),
-    );
+    scope.on('combat:victory', ({ lootItemId }) => {
+      if (lootItemId) {
+        const def = getItemDefinition(lootItemId);
+        useGameStore.getState().pushNotification('quest', `Найден предмет: ${def?.name ?? lootItemId}`);
+      }
+    }, EventBusPriority.Orchestrator);
 
-    // Handle combat:defeat
-    unsubs.push(
-      eventBus.on('combat:defeat', ({ energyLost, karmaLost }) => {
-        useGameStore.getState().pushNotification('energy', `Поражение: -${energyLost} энергии, -${karmaLost} кармы`);
-      }),
-    );
+    scope.on('combat:defeat', ({ energyLost, karmaLost }) => {
+      useGameStore.getState().pushNotification('energy', `Поражение: -${energyLost} энергии, -${karmaLost} кармы`);
+    }, EventBusPriority.Orchestrator);
 
-    // Camera shake on combat hit
-    unsubs.push(
-      eventBus.on('combat:hit', () => {
-        triggerCameraShake(0.1, 5);
-      }),
-    );
+    scope.on('combat:hit', () => {
+      triggerCameraShake(0.1, 5);
+    }, EventBusPriority.FX);
 
-    return () => unsubs.forEach((u) => u());
+    return withHmrCleanup(() => scope.dispose());
   }, []);
 
   return { startCombatFromStory };

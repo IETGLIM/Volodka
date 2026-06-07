@@ -8,7 +8,7 @@
 import { useRef, useMemo, useEffect } from 'react';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import * as THREE from 'three';
-import { useGameStore } from '@/store/gameStore';
+import { useGlobalWeatherControls } from '@/store/selectors';
 import { eventBus } from '@/engine/EventBus';
 import { useIsMobileVisual, useMobileVisualPerf } from '@/hooks/use-mobile';
 import { getParticleCount } from '@/shared/utils/mobileParticleScale';
@@ -169,8 +169,7 @@ const SPLASH_FRAG = /* glsl */ `
 
 /** High-performance rain particle system */
 export function RainSystem({ intensity = 1 }: { intensity?: number }) {
-  const rainEnabled = useGameStore((s) => s.weatherEnabled);
-  const rainIntensity = useGameStore((s) => s.rainIntensity);
+  const { weatherEnabled: rainEnabled, rainIntensity } = useGlobalWeatherControls();
   const isMobile = useIsMobileVisual();
   const { visualLite, effectsScale } = useMobileVisualPerf();
 
