@@ -2,7 +2,7 @@
 /* ─── Volodka RPG – Scene environment (fog, background, env map, animated fog) ─── */
 
 import { useRef, useMemo } from 'react';
-import { useFrame } from '@react-three/fiber';
+import { useFrameTick } from '@/engine/frame/useFrameTick';
 import { useGameStore } from '@/store/gameStore';
 import { getSceneConfig } from '@/config/scenes';
 import { Environment } from '@react-three/drei';
@@ -156,7 +156,7 @@ export function SceneEnvironment() {
   const tempColor = useMemo(() => new THREE.Color(), []);
 
   // Animated fog: pulsing density and optional color shift
-  useFrame((_, delta) => {
+  useFrameTick('weather', ({ delta }) => {
     if (!fogRef.current || fogAnim.pulseFreq <= 0) return;
 
     timeRef.current += delta;

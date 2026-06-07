@@ -6,7 +6,7 @@
  */
 
 import { useRef, useEffect, useMemo } from 'react';
-import { useFrame } from '@react-three/fiber';
+import { useFrameTick } from '@/engine/frame/useFrameTick';
 import * as THREE from 'three';
 
 import { useGameStore } from '@/store/gameStore';
@@ -83,7 +83,7 @@ export function SimplePlayer({
   const tempUp = useRef(new THREE.Vector3(0, 1, 0));
   const tempMoveDir = useRef(new THREE.Vector3());
 
-  useFrame((state, delta) => {
+  useFrameTick('player', ({ state, delta }) => {
     const dt = Math.min(delta, 0.05);
     const vel = velocityRef.current;
     const floorY = config.floorY;

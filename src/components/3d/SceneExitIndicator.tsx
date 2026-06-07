@@ -2,7 +2,7 @@
 /* ─── Volodka RPG – Scene exit indicators with proximity detection ─── */
 
 import { useRef, useState, useEffect, useMemo } from 'react';
-import { useFrame } from '@react-three/fiber';
+import { useFrameTick } from '@/engine/frame/useFrameTick';
 import * as THREE from 'three';
 import type { SceneExit, SceneId } from '@/shared/types/game';
 import { useSceneExitState } from '@/store/selectors';
@@ -133,7 +133,7 @@ function ExitMarker({
 
   // E-key handler is registered via useEffect above
   // The proximity-based state tracking is handled in useFrame below
-  useFrame((_, delta) => {
+  useFrameTick('interaction', ({ delta }) => {
     cooldownRef.current = Math.max(0, cooldownRef.current - delta);
 
     const playerPos = livePlayerPositionRef.current;

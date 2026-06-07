@@ -2,7 +2,7 @@
 /* ─── Volodka RPG – Street scene procedural 3D visual ─── */
 
 import { useRef, useMemo, useEffect } from 'react';
-import { useFrame } from '@react-three/fiber';
+import { useFrameTick } from '@/engine/frame/useFrameTick';
 import * as THREE from 'three';
 import type { SceneId } from '@/shared/types/game';
 import { getEnvironmentLodProfile } from '@/engine/lod/distanceLod';
@@ -218,7 +218,7 @@ function NeonSigns({ isWinter }: { isWinter: boolean }) {
   const kafeOnRef = useRef(true);
   const kafeNextToggleRef = useRef(0);
 
-  useFrame((state, delta) => {
+  useFrameTick('misc', ({ state, delta }) => {
     const t = state.clock.elapsedTime;
 
     // Red neon flicker — occasional quick flashes

@@ -6,7 +6,7 @@
  * Also emits a glitch effect for dramatic impact. */
 
 import { useRef, useState, useEffect } from 'react';
-import { useFrame } from '@react-three/fiber';
+import { useFrameTick } from '@/engine/frame/useFrameTick';
 import * as THREE from 'three';
 import { eventBus } from '@/engine/EventBus';
 
@@ -49,7 +49,7 @@ export function ChoiceReactivity() {
     return unsub;
   }, []);
 
-  useFrame((_, delta) => {
+  useFrameTick('misc', ({ delta }) => {
     if (pulseActive) {
       timerRef.current += delta;
       if (timerRef.current > PULSE_DURATION) {

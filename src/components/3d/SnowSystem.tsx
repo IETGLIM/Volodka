@@ -6,7 +6,7 @@
  */
 
 import { useRef, useMemo, useEffect } from 'react';
-import { useFrame } from '@react-three/fiber';
+import { useFrameTick } from '@/engine/frame/useFrameTick';
 import * as THREE from 'three';
 import { useIsMobileVisual, useMobileVisualPerf } from '@/hooks/use-mobile';
 import { getParticleCount } from '@/shared/utils/mobileParticleScale';
@@ -236,7 +236,7 @@ function SnowParticles({ config, intensity }: { config: SnowConfig; intensity: n
     snowUniforms.uColor.value.set(config.color);
   }, [snowUniforms, bx, by, bz, config.driftStrength, config.driftFrequency, config.color]);
 
-  useFrame((_, delta) => {
+  useFrameTick('weather', ({ delta }) => {
     timeRef.current += delta;
     const t = timeRef.current;
 

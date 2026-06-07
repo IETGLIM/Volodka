@@ -1,5 +1,5 @@
 import { useRef, useEffect, type MutableRefObject, type RefObject } from 'react';
-import { useFrame } from '@react-three/fiber';
+import { useFrameTick } from '@/engine/frame/useFrameTick';
 import * as THREE from 'three';
 import { useGameStore } from '@/store/gameStore';
 import { eventBus } from '@/engine/EventBus';
@@ -63,7 +63,7 @@ export function useProceduralPlayerAnimation(
     return unsub;
   }, []);
 
-  useFrame((_, delta) => {
+  useFrameTick('player', ({ delta }) => {
     if (!groupRef.current) return;
     const dt = Math.min(delta, 0.05);
 

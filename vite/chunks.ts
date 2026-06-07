@@ -59,19 +59,40 @@ const LAZY_HUD_MODULES = new Set([
   'StoryGuidanceHUD',
 ]);
 
-const DATA_NARRATIVE = new Set([
+const DATA_STORY = new Set([
   'storyNodes',
+  'goldenPath',
+]);
+
+const DATA_DIALOGUE = new Set([
   'dialogueNodes',
   'expandedDialogueNodes',
-  'poems',
-  'goldenPath',
+]);
+
+const DATA_QUESTS = new Set([
   'quests',
   'cutscenes',
+  'npcCutscenes',
+  'questItems',
+]);
+
+const DATA_POEMS = new Set([
+  'poems',
+  'matrixQuotes',
+  'unifiedPoemRegistry',
+]);
+
+const DATA_LORE_NARRATIVE = new Set([
   'loreEntries',
   'loreSceneMap',
-  'questItems',
-  'npcCutscenes',
-  'matrixQuotes',
+]);
+
+const DATA_NARRATIVE = new Set([
+  ...DATA_STORY,
+  ...DATA_DIALOGUE,
+  ...DATA_QUESTS,
+  ...DATA_POEMS,
+  ...DATA_LORE_NARRATIVE,
 ]);
 
 const DATA_NPC = new Set([
@@ -125,6 +146,11 @@ function resolveDataChunk(posix: string): string | undefined {
   if (pack) return pack;
 
   const base = fileBase(posix);
+  if (DATA_STORY.has(base)) return 'data-story';
+  if (DATA_DIALOGUE.has(base)) return 'data-dialogue';
+  if (DATA_QUESTS.has(base)) return 'data-quests';
+  if (DATA_POEMS.has(base)) return 'data-poems';
+  if (DATA_LORE_NARRATIVE.has(base)) return 'data-lore';
   if (DATA_NARRATIVE.has(base)) return 'data-narrative';
   if (DATA_NPC.has(base)) return 'data-npc';
   if (DATA_WORLD.has(base)) return 'data-world';

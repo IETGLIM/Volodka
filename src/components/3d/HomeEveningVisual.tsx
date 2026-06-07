@@ -2,7 +2,7 @@
 /* ─── Volodka RPG – Home Evening room procedural 3D visual ─── */
 
 import { useMemo, useRef, useEffect } from 'react';
-import { useFrame } from '@react-three/fiber';
+import { useFrameTick } from '@/engine/frame/useFrameTick';
 import * as THREE from 'three';
 import { useGameStore } from '@/store/gameStore';
 import { eventBus } from '@/engine/EventBus';
@@ -50,7 +50,7 @@ export function HomeEveningVisual() {
   }, []);
 
   // ── Interactive object animations ──
-  useFrame((_, delta) => {
+  useFrameTick('misc', ({ delta }) => {
     const states = interactiveStatesRef.current;
 
     // Wardrobe doors: swing open

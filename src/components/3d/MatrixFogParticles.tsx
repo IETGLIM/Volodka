@@ -5,7 +5,7 @@
  */
 
 import { useRef, useMemo, useEffect } from 'react';
-import { useFrame } from '@react-three/fiber';
+import { useFrameTick } from '@/engine/frame/useFrameTick';
 import * as THREE from 'three';
 import { useIsMobileVisual, useMobileVisualPerf } from '@/hooks/use-mobile';
 import { getParticleCount } from '@/shared/utils/mobileParticleScale';
@@ -62,7 +62,7 @@ export function MatrixFogParticles() {
     };
   }, [geometry]);
 
-  useFrame((_, delta) => {
+  useFrameTick('weather', ({ delta }) => {
     if (!pointsRef.current) return;
     timeRef.current += delta;
     const t = timeRef.current;

@@ -6,7 +6,7 @@
  */
 
 import { useRef, useMemo, useEffect } from 'react';
-import { useFrame } from '@react-three/fiber';
+import { useFrameTick } from '@/engine/frame/useFrameTick';
 import * as THREE from 'three';
 
 /* ── Config ── */
@@ -459,7 +459,7 @@ function GodRayShaft({ config }: { config: GodRayConfig }) {
     };
   }, [geometry]);
 
-  useFrame((_, delta) => {
+  useFrameTick('postfx', ({ delta }) => {
     if (!meshRef.current) return;
     timeRef.current += delta;
     const t = timeRef.current;
@@ -537,7 +537,7 @@ function RayDustMotes({ config }: { config: GodRayConfig }) {
     };
   }, [geometry]);
 
-  useFrame((_, delta) => {
+  useFrameTick('postfx', ({ delta }) => {
     if (!pointsRef.current) return;
     timeRef.current += delta;
     const t = timeRef.current;

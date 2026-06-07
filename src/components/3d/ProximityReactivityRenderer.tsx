@@ -8,7 +8,7 @@
  */
 
 import { useRef, useEffect } from 'react';
-import { useFrame } from '@react-three/fiber';
+import { useFrameTick } from '@/engine/frame/useFrameTick';
 import * as THREE from 'three';
 import { useGameStore } from '@/store/gameStore';
 import {
@@ -58,7 +58,7 @@ function ProximityEffectRenderer({
   const wasInsideRef = useRef(false);
   const currentFactorRef = useRef(0);
 
-  useFrame(() => {
+  useFrameTick('interaction', () => {
     const playerPos = livePlayerPositionRef.current;
     const factor = computeProximityFactor(
       [playerPos.x, playerPos.y, playerPos.z],

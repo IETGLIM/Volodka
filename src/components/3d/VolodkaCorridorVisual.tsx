@@ -2,7 +2,7 @@
 /* ─── Volodka RPG – Corridor procedural 3D visual ─── */
 
 import { useMemo, useRef, useEffect } from 'react';
-import { useFrame } from '@react-three/fiber';
+import { useFrameTick } from '@/engine/frame/useFrameTick';
 import * as THREE from 'three';
 import { useGameStore } from '@/store/gameStore';
 import { eventBus } from '@/engine/EventBus';
@@ -37,7 +37,7 @@ export function VolodkaCorridorVisual() {
     return unsub;
   }, []);
 
-  useFrame((state, delta) => {
+  useFrameTick('misc', ({ state, delta }) => {
     if (flickerLightRef.current) {
       // Broken light flicker — occasional drops
       const t = state.clock.elapsedTime;

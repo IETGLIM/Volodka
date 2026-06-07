@@ -6,7 +6,7 @@
  */
 
 import { useRef, useMemo, useEffect } from 'react';
-import { useFrame } from '@react-three/fiber';
+import { useFrameTick } from '@/engine/frame/useFrameTick';
 import * as THREE from 'three';
 import { useIsMobileVisual, useMobileVisualPerf } from '@/hooks/use-mobile';
 import { getFogPlaneCount } from '@/shared/utils/mobileParticleScale';
@@ -315,7 +315,7 @@ function FogPlane({ data, config }: { data: FogPlaneData; config: VolumetricFogC
     };
   }, [geometry]);
 
-  useFrame((_, delta) => {
+  useFrameTick('weather', ({ delta }) => {
     if (!meshRef.current) return;
     timeRef.current += delta;
     const t = timeRef.current;

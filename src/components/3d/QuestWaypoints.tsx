@@ -6,7 +6,7 @@
    when the target is in the current scene. */
 
 import { useRef, useMemo } from 'react';
-import { useFrame } from '@react-three/fiber';
+import { useFrameTick } from '@/engine/frame/useFrameTick';
 import * as THREE from 'three';
 import { useQuestWaypointState } from '@/store/selectors';
 import { SCENE_CONFIG } from '@/config/scenes';
@@ -98,7 +98,7 @@ function QuestArrow({
     return SCENE_CONFIG[targetScene]?.name ?? label;
   }, [targetScene, label]);
 
-  useFrame((_, delta) => {
+  useFrameTick('interaction', ({ delta }) => {
     timeRef.current += delta;
     if (meshRef.current) {
       // Bob up and down
@@ -152,7 +152,7 @@ function QuestTargetBeam({
   const BEAM_RADIUS = 0.02;
   const GLOW_RADIUS = 0.06;
 
-  useFrame((_, delta) => {
+  useFrameTick('interaction', ({ delta }) => {
     timeRef.current += delta;
     const t = timeRef.current;
 

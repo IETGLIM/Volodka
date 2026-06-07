@@ -4,7 +4,7 @@
 /* Each component accepts position, rotation, scale, and color props   */
 
 import { useRef } from 'react';
-import { useFrame } from '@react-three/fiber';
+import { useFrameTick } from '@/engine/frame/useFrameTick';
 import * as THREE from 'three';
 
 /* ─── Shared prop types ─── */
@@ -440,7 +440,7 @@ export function Picture({ position = [0, 0, 0], rotation = [0, 0, 0], scale = [1
 /** Wall clock */
 export function Clock({ position = [0, 0, 0], rotation = [0, 0, 0], scale = [1, 1, 1], color = '#f0f0f0' }: BaseProps) {
   const timeRef = useRef(0);
-  useFrame((_, delta) => {
+  useFrameTick('misc', ({ delta }) => {
     timeRef.current += delta;
   });
   return (

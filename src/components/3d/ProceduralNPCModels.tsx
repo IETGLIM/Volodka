@@ -5,7 +5,7 @@
      Quality matches the ProceduralPlayerModel in PhysicsPlayer.tsx. ─── */
 
 import { useRef, useEffect, useMemo } from 'react';
-import { useFrame } from '@react-three/fiber';
+import { useFrameTick } from '@/engine/frame/useFrameTick';
 import * as THREE from 'three';
 import type { NPCAppearance } from '@/shared/types/game';
 import { InteractionState } from '@/engine/interaction/interactionMachine';
@@ -328,7 +328,7 @@ function useNPCAnimation(
     animStateRef.current = animState;
   }, [animState]);
 
-  useFrame((_, delta) => {
+  useFrameTick('npc', ({ delta }) => {
     if (!groupRef.current) return;
     const dt = Math.min(delta, 0.05);
     animTimeRef.current += dt;

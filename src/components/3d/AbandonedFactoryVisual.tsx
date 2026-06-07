@@ -2,7 +2,7 @@
 /* ─── Volodka RPG – Abandoned Factory procedural 3D visual ─── */
 
 import { useMemo, useRef } from 'react';
-import { useFrame } from '@react-three/fiber';
+import { useFrameTick } from '@/engine/frame/useFrameTick';
 import * as THREE from 'three';
 import { getEnvironmentLodProfile } from '@/engine/lod/distanceLod';
 import { useEnvironmentLod } from './lod/EnvironmentLodProvider';
@@ -25,7 +25,7 @@ export function AbandonedFactoryVisual({ livePlayerPositionRef }: AbandonedFacto
 
   const dripRef = useRef<THREE.Mesh>(null);
 
-  useFrame((state) => {
+  useFrameTick('misc', ({ state }) => {
     if (dripRef.current) {
       const t = state.clock.elapsedTime;
       // Dripping water — periodic drop falls

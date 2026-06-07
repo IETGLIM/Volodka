@@ -2,7 +2,7 @@
 /* ─── Volodka RPG – Rooftop Edge procedural 3D visual ─── */
 
 import { useMemo, useRef } from 'react';
-import { useFrame } from '@react-three/fiber';
+import { useFrameTick } from '@/engine/frame/useFrameTick';
 import * as THREE from 'three';
 
 interface RooftopEdgeVisualProps {
@@ -18,7 +18,7 @@ export function RooftopEdgeVisual({ livePlayerPositionRef }: RooftopEdgeVisualPr
 
   const shirtRef = useRef<THREE.Mesh>(null);
 
-  useFrame((state) => {
+  useFrameTick('misc', ({ state }) => {
     if (shirtRef.current) {
       // Swaying shirt on clothesline
       const t = state.clock.elapsedTime;

@@ -7,7 +7,8 @@
  *  Emits 'intro:wakeup_complete' when the animation finishes. */
 
 import { useRef, useEffect, useState, useCallback } from 'react';
-import { useFrame, useThree } from '@react-three/fiber';
+import { useThree } from '@react-three/fiber';
+import { useFrameTick } from '@/engine/frame/useFrameTick';
 import * as THREE from 'three';
 import { useGameStore } from '@/store/gameStore';
 import { eventBus } from '@/engine/EventBus';
@@ -115,7 +116,7 @@ export function WakeUpSequence() {
   }, [active, mode]);
 
   // ── Cinematic camera animation ──
-  useFrame((_, delta) => {
+  useFrameTick('misc', ({ delta }) => {
     if (!active) return;
     elapsedRef.current += delta;
 

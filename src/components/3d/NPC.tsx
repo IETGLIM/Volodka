@@ -5,7 +5,7 @@
      and procedural 3D models ─── */
 
 import { useRef, useState, useEffect, Suspense, useMemo } from 'react';
-import { useFrame } from '@react-three/fiber';
+import { useFrameTick } from '@/engine/frame/useFrameTick';
 import { Html } from '@react-three/drei';
 import * as THREE from 'three';
 import type { NPCDefinition, NPCAppearance } from '@/shared/types/game';
@@ -140,7 +140,7 @@ export function NPC({
     };
   }, [definition.id]);
 
-  useFrame((_, delta) => {
+  useFrameTick('npc', ({ delta }) => {
     if (!groupRef.current) return;
 
     // ── Update patrol state ──

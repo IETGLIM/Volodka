@@ -6,7 +6,7 @@
  */
 
 import { useRef, useEffect, useMemo } from 'react';
-import { useFrame } from '@react-three/fiber';
+import { useFrameTick } from '@/engine/frame/useFrameTick';
 import * as THREE from 'three';
 import { eventBus } from '@/engine/EventBus';
 
@@ -184,7 +184,7 @@ export function InteractionHighlight() {
     return unsub;
   }, [slots]);
 
-  useFrame((_, delta) => {
+  useFrameTick('interaction', ({ delta }) => {
     const dt = Math.min(delta, 0.05);
     const highlights = highlightsRef.current;
 
