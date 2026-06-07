@@ -48,4 +48,7 @@ jobs:
 
       - run: npx playwright install chromium --with-deps
 
+      # preview serves dist/ — check job builds on another runner, so build here too
+      - run: npm run build
+
       - run: npm run test:e2e
