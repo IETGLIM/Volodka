@@ -81,6 +81,8 @@
     ],
     "gameStart": [
       "^three-",
+      "^r3f-",
+      "^drei-",
       "^postfx-",
       "^game-canvas-",
       "^scene-volodka-room",
@@ -106,6 +108,8 @@
       "^pack-chk-npc",
       "^pack-chk-world",
       "^three-",
+      "^r3f-",
+      "^drei-",
       "^postfx-",
       "^game-canvas-",
       "^scene-volodka-room",
@@ -120,6 +124,8 @@
       "^pack-chk-narrative"
     ],
     "lazyPrefixes": [
+      "^physics-",
+      "^physics-scene-",
       "^minigame-",
       "^panel-",
       "^game-ui-(?!menu-screen|hud)",

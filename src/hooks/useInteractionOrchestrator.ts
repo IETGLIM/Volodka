@@ -2,6 +2,7 @@
 import { useEffect, useCallback, useState, useRef, useMemo } from 'react';
 import { shallow } from 'zustand/shallow';
 import { useGameStore } from '@/store/gameStore';
+import { readGamePhase } from '@/shared/gamePhase';
 import { eventBus } from '@/engine/EventBus';
 import {
   closeMinigame,
@@ -144,7 +145,7 @@ export function useInteractionOrchestrator(
         const store = useGameStore.getState();
 
         // Only interact in exploration mode
-        if (store.mode !== 'exploration') return;
+        if (readGamePhase(store) !== 'exploration') return;
 
         // Act gating: skip interaction if player hasn't reached the required act
         if (zone.requiredAct && store.playerState.progression.currentAct < zone.requiredAct) {
@@ -223,7 +224,7 @@ export function useInteractionOrchestrator(
     unsubs.push(
       eventBus.on('npc:interact_staged', ({ npcId }) => {
         const store = useGameStore.getState();
-        if (store.mode !== 'exploration') return;
+        if (readGamePhase(store) !== 'exploration') return;
 
         // Find NPC definition
         const npcDef = findNpcById(npcId);
@@ -252,14 +253,24 @@ export function useInteractionOrchestrator(
 
         // Open dialogue or story for this NPC
         // ── World Director: stay in exploration, show narrative as overlay ──
+        let openedNarrative = false;
         if (npcDef.dialogueNodeId && getDialogueNodes()[npcDef.dialogueNodeId]) {
           openNarrativeOverlay(npcDef.dialogueNodeId, 'dialogue');
+          openedNarrative = true;
         } else if (npcZone?.linkedDialogueNodeId && getDialogueNodes()[npcZone.linkedDialogueNodeId]) {
           openNarrativeOverlay(npcZone.linkedDialogueNodeId, 'dialogue');
+          openedNarrative = true;
         } else if (npcZone?.linkedStoryNodeId && getStoryNodes()[npcZone.linkedStoryNodeId]) {
           const storyNode = getStoryNodes()[npcZone.linkedStoryNodeId];
           requestSceneTransitionForStoryNode(npcZone.linkedStoryNodeId, storyNode.sceneId);
           openNarrativeOverlay(npcZone.linkedStoryNodeId, 'story');
+          openedNarrative = true;
+        }
+
+        if (!openedNarrative) {
+          // No dialogue/story for this NPC — end staged interaction immediately
+          // so InteractionSystemBridge doesn't sit in Dialogue/Exit until timeout.
+          queueMicrotask(() => eventBus.emit('interaction:end', {}));
         }
 
         // Emit npc:talked event
@@ -307,7 +318,7 @@ export function useInteractionOrchestrator(
       useGameStore.subscribe(
         (state) => ({
           showStoryOverlay: state.showStoryOverlay,
-          mode: state.mode,
+          mode: readGamePhase(state),
         }),
         (selected, prev) => {
           if (!prev.showStoryOverlay && selected.showStoryOverlay) {

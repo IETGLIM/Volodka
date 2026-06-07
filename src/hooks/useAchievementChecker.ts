@@ -10,6 +10,7 @@
 import { useEffect, useRef } from 'react';
 import { shallow } from 'zustand/shallow';
 import { useGameStore } from '@/store/gameStore';
+import { readGamePhase } from '@/shared/gamePhase';
 import { eventBus } from '@/engine/EventBus';
 import {
   checkAchievements,
@@ -60,7 +61,7 @@ export function useAchievementChecker() {
   useEffect(() => {
     const unsub = useGameStore.subscribe(
       (state): AchievementCheckState => ({
-        mode: state.mode,
+        mode: readGamePhase(state),
         currentSceneId: state.exploration.currentSceneId,
         collectedPoems: state.collectedPoems,
         karma: state.playerState.karma,

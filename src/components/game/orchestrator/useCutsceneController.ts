@@ -4,8 +4,9 @@ import { eventBus } from '@/engine/EventBus';
 import { audioEngine } from '@/engine/AudioEngine';
 import { getCutsceneForNode } from '@/data/cutscenes';
 import { openNarrativeOverlay } from '@/engine/scene/narrativeOverlay';
+import { clearGameplayPhaseFlags, readGamePhase } from '@/shared/gamePhase';
 
-/** Watches story node changes and drives cutscene mode + camera events. */
+/** Watches story node changes and drives cutscene overlays + camera events. */
 export function useCutsceneController(currentNodeId: string | null) {
   const cutsceneOverlayTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const cutsceneEndTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -23,11 +24,11 @@ export function useCutsceneController(currentNodeId: string | null) {
 
   const skipActiveCutscene = useCallback((): boolean => {
     const store = useGameStore.getState();
-    if (store.mode !== 'cutscene') return false;
+    if (!store.activeCutsceneId) return false;
 
     clearCutsceneTimers();
     store.setCutscene(null, []);
-    store.setMode('exploration');
+    clearGameplayPhaseFlags(store);
     eventBus.emit('cutscene:overlay_end', {});
     eventBus.emit('camera:cutscene_end', {});
 
@@ -40,8 +41,8 @@ export function useCutsceneController(currentNodeId: string | null) {
   useEffect(() => {
     if (!currentNodeId) return;
 
-    const currentMode = useGameStore.getState().mode;
-    if (currentMode === 'intro' || currentMode === 'menu') return;
+    const phase = readGamePhase(useGameStore.getState());
+    if (phase === 'intro' || phase === 'menu') return;
 
     const cutscene = getCutsceneForNode(currentNodeId);
     if (!cutscene) return;
@@ -50,7 +51,7 @@ export function useCutsceneController(currentNodeId: string | null) {
     if (store.triggeredCutscenes.includes(cutscene.id)) return;
     store.markCutsceneTriggered(cutscene.id);
 
-    store.setMode('cutscene');
+    clearGameplayPhaseFlags(store);
     store.setCutscene(cutscene.id, cutscene.waypoints);
 
     eventBus.emit('camera:cutscene_start', {
@@ -83,9 +84,9 @@ export function useCutsceneController(currentNodeId: string | null) {
 
     cutsceneEndTimerRef.current = setTimeout(() => {
       const currentStore = useGameStore.getState();
-      if (currentStore.mode === 'cutscene') {
+      if (currentStore.activeCutsceneId) {
         currentStore.setCutscene(null, []);
-        currentStore.setMode('exploration');
+        clearGameplayPhaseFlags(currentStore);
         if (currentStore.currentNodeId && currentStore.narrativeKind) {
           openNarrativeOverlay(currentStore.currentNodeId, currentStore.narrativeKind);
         }

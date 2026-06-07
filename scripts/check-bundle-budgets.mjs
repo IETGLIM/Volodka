@@ -133,9 +133,23 @@ if (gameStartBudget && gameStartGzip > gameStartBudget.hardMax) {
 }
 
 const threeChunk = gameStartChunks.find((c) => c.file.startsWith('three-'));
-if (threeChunk) {
-  const pct = gameStartGzip > 0 ? ((threeChunk.gzip / gameStartGzip) * 100).toFixed(0) : '0';
-  console.log(`\nNote: three.js chunk is ${pct}% of game-start JS.`);
+const r3fChunk = gameStartChunks.find((c) => c.file.startsWith('r3f-'));
+const dreiChunk = gameStartChunks.find((c) => c.file.startsWith('drei-'));
+const webglStackGzip =
+  (threeChunk?.gzip ?? 0) + (r3fChunk?.gzip ?? 0) + (dreiChunk?.gzip ?? 0);
+
+if (webglStackGzip > 0 && gameStartGzip > 0) {
+  const pct = ((webglStackGzip / gameStartGzip) * 100).toFixed(0);
+  console.log(
+    `\nNote: WebGL stack (three+r3f+drei) is ${formatKb(webglStackGzip)} — ${pct}% of game-start JS.`,
+  );
+}
+
+const physicsLazyGzip = chunks
+  .filter((c) => /^physics-/.test(c.file))
+  .reduce((sum, c) => sum + c.gzip, 0);
+if (physicsLazyGzip > 0) {
+  console.log(`Note: Rapier physics lazy tier: ${formatKb(physicsLazyGzip)} gzip.`);
 }
 
 if (violations.length > 0) {

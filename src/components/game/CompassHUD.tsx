@@ -7,7 +7,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Navigation } from 'lucide-react';
-import { useGameStore } from '@/store/gameStore';
+import { useGamePhase } from '@/store/selectors';
 import { sharedPlayerRotationRef } from '@/engine/PlayerRotationState';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { explorationCompassTopPx } from '@/shared/constants/hudLayout';
@@ -123,7 +123,7 @@ function TickMark({ offset, isMajor }: { offset: number; isMajor: boolean }) {
 
 /* ── Main component ── */
 export function CompassHUD() {
-  const mode = useGameStore((s) => s.mode);
+  const mode = useGamePhase();
   const [rotation, setRotation] = useState(sharedPlayerRotationRef.current);
   const rafRef = useRef<number | null>(null);
 

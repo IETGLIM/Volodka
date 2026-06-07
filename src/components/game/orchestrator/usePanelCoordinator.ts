@@ -2,6 +2,7 @@ import {
   useCallback,
   useEffect,
   useReducer,
+  useRef,
   useState,
   type Dispatch,
 } from 'react';
@@ -65,6 +66,7 @@ export interface PanelCoordinatorResult extends PanelFlags {
   handleOpenInventory: () => void;
   handleOpenPoetry: () => void;
   handleOpenPoetryBook: () => void;
+  handleOpenJournal: () => void;
   handleToggleTutorials: () => void;
   handleOpenMenu: () => void;
 }
@@ -87,6 +89,7 @@ export function usePanelCoordinator({
   const [questCompleteNpcId, setQuestCompleteNpcId] = useState<string | undefined>(undefined);
   const [questChainUnlock, setQuestChainUnlock] = useState<QuestChainUnlockState | null>(null);
   const [matrixQuote, setMatrixQuote] = useState<MatrixQuoteState>(null);
+  const questChainUnlockTimeout = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   useEffect(() => {
     const unsubAvailable = eventBus.on('story:quest_available', (data) => {
@@ -105,12 +108,20 @@ export function usePanelCoordinator({
         npcId: data.npcId,
         actNumber: data.actNumber,
       });
-      setTimeout(() => setQuestChainUnlock(null), 8000);
+      if (questChainUnlockTimeout.current) clearTimeout(questChainUnlockTimeout.current);
+      questChainUnlockTimeout.current = setTimeout(() => {
+        setQuestChainUnlock(null);
+        questChainUnlockTimeout.current = undefined;
+      }, 8000);
     });
     return () => {
       unsubAvailable();
       unsubComplete();
       unsubChainUnlock();
+      if (questChainUnlockTimeout.current) {
+        clearTimeout(questChainUnlockTimeout.current);
+        questChainUnlockTimeout.current = undefined;
+      }
     };
   }, []);
 
@@ -138,7 +149,6 @@ export function usePanelCoordinator({
 
   const closeAllPanels = useCallback(() => {
     dispatchStackAction({ type: 'clear' });
-    useGameStore.getState().setJournalOpen(false);
   }, [dispatchStackAction]);
 
   const closePanel = useCallback(() => {
@@ -153,6 +163,14 @@ export function usePanelCoordinator({
   );
 
   useEffect(() => {
+    const journalInStack = panelStack.includes('journal');
+    const storeOpen = useGameStore.getState().journalOpen;
+    if (journalInStack !== storeOpen) {
+      useGameStore.getState().setJournalOpen(journalInStack);
+    }
+  }, [panelStack]);
+
+  useEffect(() => {
     if (isOverlayActive) {
       setExamineOpen(false);
       setExamineData(null);
@@ -163,31 +181,41 @@ export function usePanelCoordinator({
   }, [isOverlayActive, closeAllPanels, minigameSetters, setExamineOpen, setExamineData, setExamineHasLinkedContent]);
 
   useEffect(() => {
-    if (panelStack.length > 0 || useGameStore.getState().journalOpen) {
+    if (panelStack.length > 0) {
       setExamineOpen(false);
       setExamineData(null);
       setExamineHasLinkedContent(false);
     }
   }, [panelStack.length, setExamineOpen, setExamineData, setExamineHasLinkedContent]);
 
+  const closeJournalIfOpen = useCallback(() => {
+    if (panelStack.includes('journal')) {
+      dispatchStackAction({ type: 'remove', panel: 'journal' });
+    }
+  }, [panelStack, dispatchStackAction]);
+
   const handleOpenQuests = useCallback(() => {
+    closeJournalIfOpen();
     dispatchStackAction({ type: 'toggle', panel: 'quests' });
-    useGameStore.getState().setJournalOpen(false);
-  }, [dispatchStackAction]);
+  }, [closeJournalIfOpen, dispatchStackAction]);
 
   const handleOpenInventory = useCallback(() => {
+    closeJournalIfOpen();
     dispatchStackAction({ type: 'toggle', panel: 'inventory' });
-    useGameStore.getState().setJournalOpen(false);
-  }, [dispatchStackAction]);
+  }, [closeJournalIfOpen, dispatchStackAction]);
 
   const handleOpenPoetry = useCallback(() => {
+    closeJournalIfOpen();
     dispatchStackAction({ type: 'toggle', panel: 'poetry' });
-    useGameStore.getState().setJournalOpen(false);
-  }, [dispatchStackAction]);
+  }, [closeJournalIfOpen, dispatchStackAction]);
 
   const handleOpenPoetryBook = useCallback(() => {
+    closeJournalIfOpen();
     dispatchStackAction({ type: 'toggle', panel: 'poetry' });
-    useGameStore.getState().setJournalOpen(false);
+  }, [closeJournalIfOpen, dispatchStackAction]);
+
+  const handleOpenJournal = useCallback(() => {
+    dispatchStackAction({ type: 'toggle', panel: 'journal' });
   }, [dispatchStackAction]);
 
   const handleToggleTutorials = useCallback(() => {
@@ -223,6 +251,7 @@ export function usePanelCoordinator({
     handleOpenInventory,
     handleOpenPoetry,
     handleOpenPoetryBook,
+    handleOpenJournal,
     handleToggleTutorials,
     handleOpenMenu,
   };

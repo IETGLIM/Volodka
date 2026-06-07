@@ -11,6 +11,7 @@ import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { explorationStatToastTopPx } from '@/shared/constants/hudLayout';
 import { toastManager, type ToastType, type ToastMessage } from '@/engine/ToastManager';
 import { useGameStore, type NotificationType } from '@/store/gameStore';
+import { useGamePhase } from '@/store/selectors';
 import { eventBus } from '@/engine/EventBus';
 import type { TrainablePlayerSkill } from '@/shared/types/game';
 
@@ -330,7 +331,7 @@ export function NotificationToasts() {
 
   /* ── Render ── */
   // Only show toasts when game is active (not in menu/intro)
-  const mode = useGameStore((s) => s.mode);
+  const mode = useGamePhase();
   if (mode === 'menu' || mode === 'intro') return null;
 
   const visibleToasts = toasts.slice(-MAX_VISIBLE);

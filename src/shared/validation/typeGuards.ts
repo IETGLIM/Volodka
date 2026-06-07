@@ -1,14 +1,17 @@
 /* ─── Volodka RPG – runtime type guards ─── */
 
-import type { GameMode, TrainablePlayerSkill } from '@/shared/types/game';
+import type { LegacyGamePhase, TrainablePlayerSkill } from '@/shared/types/game';
+import type { GamePhase } from '@/shared/gamePhase';
 
-const GAME_MODES: readonly GameMode[] = [
+const LEGACY_GAME_PHASES: readonly LegacyGamePhase[] = [
   'menu',
   'intro',
   'exploration',
   'cutscene',
   'combat',
 ];
+
+const GAME_PHASES: readonly GamePhase[] = LEGACY_GAME_PHASES;
 
 const TRAINABLE_PLAYER_SKILLS: readonly TrainablePlayerSkill[] = [
   'logic',
@@ -20,8 +23,13 @@ const TRAINABLE_PLAYER_SKILLS: readonly TrainablePlayerSkill[] = [
   'rhythm',
 ];
 
-export function isGameMode(v: unknown): v is GameMode {
-  return typeof v === 'string' && (GAME_MODES as readonly string[]).includes(v);
+export function isGamePhase(v: unknown): v is GamePhase {
+  return typeof v === 'string' && (GAME_PHASES as readonly string[]).includes(v);
+}
+
+/** @deprecated Use isGamePhase — kept for story effect payloads. */
+export function isGameMode(v: unknown): v is LegacyGamePhase {
+  return typeof v === 'string' && (LEGACY_GAME_PHASES as readonly string[]).includes(v);
 }
 
 export function isTrainablePlayerSkill(v: unknown): v is TrainablePlayerSkill {

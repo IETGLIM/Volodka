@@ -1,13 +1,15 @@
 
 /* ─── Volodka RPG – Scene environment (fog, background, env map, animated fog) ─── */
 
-import { useRef, useMemo } from 'react';
+import { useRef, useMemo, useEffect, useState } from 'react';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import { useGameStore } from '@/store/gameStore';
 import { getSceneConfig } from '@/config/scenes';
 import { Environment } from '@react-three/drei';
 import * as THREE from 'three';
 import { liftHexColor, SCENE_VISIBILITY } from '@/shared/constants/sceneVisibility';
+import { ENV_MAP_WARMUP_FRAMES } from '@/shared/constants/transitionTimings';
+import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
 
 /** Per-scene fog color overrides matching style pillars:
  *  Noir, CyberPunk2077, Gothic, Dark Fantasy, Glitch, MatrixRain
@@ -106,13 +108,31 @@ const DEFAULT_FOG_ANIM: FogAnimConfig = { pulseFreq: 0.05, nearAmplitude: 0.05, 
 export function SceneEnvironment() {
   const sceneId = useGameStore((s) => s.exploration.currentSceneId);
   const config = getSceneConfig(sceneId);
+  const { preset } = useGraphicsQuality();
+  const [envMapReady, setEnvMapReady] = useState(false);
+  const envWarmupFrames = useRef(0);
+
+  useEffect(() => {
+    envWarmupFrames.current = 0;
+    setEnvMapReady(false);
+  }, [sceneId]);
+
+  const isIndoor = config.hasCeiling;
+  const enableEnvMap = !isIndoor && !preset.visualLite;
+
+  useFrameTick('misc', () => {
+    if (!enableEnvMap || envMapReady) return;
+    envWarmupFrames.current += 1;
+    if (envWarmupFrames.current >= ENV_MAP_WARMUP_FRAMES) {
+      setEnvMapReady(true);
+    }
+  });
 
   const fogRef = useRef<THREE.Fog>(null);
   const timeRef = useRef(0);
 
   const fogNear = config.fogNear ?? 5;
   const fogFar = config.fogFar ?? 20;
-  const isIndoor = config.hasCeiling;
 
   // Use style-pillar-matched fog colors, fall back to scene config ambient
   const fogColor = liftHexColor(
@@ -183,12 +203,12 @@ export function SceneEnvironment() {
       {/* Background color — deeper than fog for atmospheric depth */}
       <color attach="background" args={[bgColor]} />
 
-      {/* Environment map for reflections */}
-      {!isIndoor && (
+      {/* Environment map — deferred after scene settle; skipped on low/medium tiers */}
+      {enableEnvMap && envMapReady && (
         <Environment
           preset={envPreset}
           background={false}
-          environmentIntensity={0.3}
+          environmentIntensity={preset.id === 'ultra' ? 0.35 : 0.28}
         />
       )}
     </>

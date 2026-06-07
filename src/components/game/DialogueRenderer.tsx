@@ -11,7 +11,6 @@ import { X, ChevronRight, Zap, Shield, Skull, Circle, Clock, FastForward, Histor
 import {
   useDialogueContext,
   useSetCurrentNodeId,
-  useSetMode,
   useVisitNode,
 } from '@/store/selectors';
 import {
@@ -139,7 +138,6 @@ interface HistoryLine {
 /* ── Component ── */
 export function DialogueRenderer() {
   const { mode, showStoryOverlay, currentNodeId, playerState, npcRelations, timeOfDay } = useDialogueContext();
-  const setMode = useSetMode();
   const setCurrentNodeId = useSetCurrentNodeId();
   const visitNode = useVisitNode();
 

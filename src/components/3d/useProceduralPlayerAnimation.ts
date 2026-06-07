@@ -2,6 +2,7 @@ import { useRef, useEffect, type MutableRefObject, type RefObject } from 'react'
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import * as THREE from 'three';
 import { useGameStore } from '@/store/gameStore';
+import { readGamePhase } from '@/shared/gamePhase';
 import { eventBus } from '@/engine/EventBus';
 
 const STAND_UP_DURATION = 1.5;
@@ -44,7 +45,7 @@ export function useProceduralPlayerAnimation(
   useEffect(() => {
     const store = useGameStore.getState();
     if (
-      store.mode === 'exploration' &&
+      readGamePhase(store) === 'exploration' &&
       isSeatedInitiallyRef.current &&
       !standUpActiveRef.current
     ) {
@@ -54,7 +55,7 @@ export function useProceduralPlayerAnimation(
     }
 
     const unsub = useGameStore.subscribe((state) => {
-      if (state.mode === 'exploration' && isSeatedInitiallyRef.current && !standUpActiveRef.current) {
+      if (readGamePhase(state) === 'exploration' && isSeatedInitiallyRef.current && !standUpActiveRef.current) {
         standUpActiveRef.current = true;
         standUpPhaseRef.current = 0;
         isSeatedInitiallyRef.current = false;

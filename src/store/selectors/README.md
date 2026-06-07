@@ -58,7 +58,7 @@ React/components continue to use hooks and `selectX()` from this folder.
 2. **Store array/object** → `useGameSelector` hook
 3. **Derived array/object** → `useGameSelector` with transform, or `memoizeBySourceRef` for `getX()` helpers
 4. **Multi-slice bundle** → `compositeSelectors.ts`
-5. **Stable store actions** → `actionSelectors.ts` (`useSetMode`, `useSaveGame`, …)
+5. **Stable store actions** → `actionSelectors.ts` (`useSetIntroActive`, `useSaveGame`, …)
 6. Re-export from `index.ts`
 
 ## Composite hooks (hot paths)

@@ -8,7 +8,7 @@ export function IntroAutoSkip() {
 
   useEffect(() => {
     if (mode === 'intro' && introSeen) {
-      useGameStore.getState().setMode('exploration');
+      useGameStore.getState().setIntroActive(false);
     }
   }, [mode, introSeen]);
 

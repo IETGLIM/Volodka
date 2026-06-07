@@ -1,6 +1,7 @@
 import { useEffect, useReducer, useRef } from 'react';
 import { eventBus } from '@/engine/EventBus';
 import { CUTSCENE_TIMINGS } from '@/shared/constants/transitionTimings';
+import { devWarn } from '@/shared/utils/devLog';
 import type { CanvasTransitionState } from './types';
 
 function canvasTransitionReducer(
@@ -61,7 +62,7 @@ export function useCanvasTransitionManager(mode: string) {
         clearTimeout(fallbackTimerRef.current);
         fallbackTimerRef.current = null;
       }
-      scheduleTransitionFadeOut(waitGen, 300);
+      scheduleTransitionFadeOut(waitGen, CUTSCENE_TIMINGS.CANVAS_FADE_OUT_MS);
     });
     return unsub;
   }, []);
@@ -77,7 +78,7 @@ export function useCanvasTransitionManager(mode: string) {
       clearTransitionTimers();
 
       if (mode !== 'exploration' && mode !== 'cutscene' && mode !== 'combat') {
-        scheduleTransitionFadeOut(gen, 300);
+        scheduleTransitionFadeOut(gen, CUTSCENE_TIMINGS.CANVAS_FADE_OUT_WARM_MS);
         return clearTransitionTimers;
       }
 
@@ -89,7 +90,7 @@ export function useCanvasTransitionManager(mode: string) {
 
       if (canvasReadyRef.current) {
         dispatchCanvasTransition({ isTransitioning: true });
-        scheduleTransitionFadeOut(gen, 300);
+        scheduleTransitionFadeOut(gen, CUTSCENE_TIMINGS.CANVAS_FADE_OUT_WARM_MS);
         return clearTransitionTimers;
       }
 
@@ -99,11 +100,11 @@ export function useCanvasTransitionManager(mode: string) {
 
       fallbackTimerRef.current = setTimeout(() => {
         if (gen !== transitionGenRef.current) return;
-        console.warn('[CanvasTransitionManager] Canvas first-frame timeout — forcing transition overlay off');
+        devWarn('[CanvasTransitionManager] Canvas first-frame timeout — forcing transition overlay off');
         canvasWaitGenRef.current = null;
         canvasReadyRef.current = true;
         dispatchCanvasTransition({ canvasReady: true });
-        scheduleTransitionFadeOut(gen, 200);
+        scheduleTransitionFadeOut(gen, CUTSCENE_TIMINGS.CANVAS_FADE_OUT_MS);
       }, CUTSCENE_TIMINGS.CANVAS_TIMEOUT_MS);
 
       return clearTransitionTimers;

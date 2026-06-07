@@ -10,6 +10,7 @@ import { useFrameTick } from '@/engine/frame/useFrameTick';
 import * as THREE from 'three';
 
 import { useGameStore } from '@/store/gameStore';
+import { readGamePhase } from '@/shared/gamePhase';
 import { usePlayerControls, type VirtualControls } from '@/hooks/useGamePhysics';
 import {
   getSceneConfig,
@@ -88,7 +89,7 @@ export function SimplePlayer({
     const vel = velocityRef.current;
     const floorY = config.floorY;
 
-    const currentMode = useGameStore.getState().mode;
+    const currentMode = readGamePhase(useGameStore.getState());
     const showStoryOverlay = useGameStore.getState().showStoryOverlay;
     // ── World Director: lock movement during narrative overlay ──
     const isLocked = showStoryOverlay || currentMode === 'cutscene' || isInteractionLocked();

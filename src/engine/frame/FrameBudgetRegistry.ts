@@ -7,6 +7,8 @@ import {
   type RegisteredFrameTick,
 } from './types';
 
+export type { RegisteredFrameTick };
+
 let nextTickId = 1;
 const ticks = new Map<number, RegisteredFrameTick>();
 
@@ -40,6 +42,7 @@ export function registerFrameTick(
     priority: options.priority ?? 0,
     label: options.label ?? `tick-${id}`,
     enabled: options.enabled ?? true,
+    phase: options.phase ?? 'pre',
     callback,
   });
   registeredTickCount = ticks.size;
@@ -79,41 +82,58 @@ export function getTotalBudgetCpuMs(): number {
 export function getTopTickTimings(limit = 8): Array<{ label: string; system: FrameSystemId; cpuMs: number }> {
   return [...tickCpuMs.entries()]
     .map(([key, cpuMs]) => {
-      const sep = key.indexOf(':');
-      const system = (sep >= 0 ? key.slice(0, sep) : 'misc') as FrameSystemId;
-      const label = sep >= 0 ? key.slice(sep + 1) : key;
-      return { label, system, cpuMs };
+      const normalized = key.startsWith('post:') ? key.slice(5) : key;
+      const sep = normalized.indexOf(':');
+      const system = (sep >= 0 ? normalized.slice(0, sep) : 'misc') as FrameSystemId;
+      const label = sep >= 0 ? normalized.slice(sep + 1) : normalized;
+      return { label: key.startsWith('post:') ? `[post] ${label}` : label, system, cpuMs };
     })
     .sort((a, b) => b.cpuMs - a.cpuMs)
     .slice(0, limit);
 }
 
-/** Run all registered ticks in deterministic system + priority order. */
+function sortTicks(list: RegisteredFrameTick[]): RegisteredFrameTick[] {
+  return list.sort((a, b) => {
+    const systemDiff =
+      FRAME_SYSTEM_ORDER.indexOf(a.system) - FRAME_SYSTEM_ORDER.indexOf(b.system);
+    if (systemDiff !== 0) return systemDiff;
+    if (a.priority !== b.priority) return a.priority - b.priority;
+    return a.id - b.id;
+  });
+}
+
+function runTicks(
+  ctx: FrameTickContext,
+  phase: RegisteredFrameTick['phase'],
+  trackSystemCpu: boolean,
+): void {
+  const sorted = sortTicks([...ticks.values()].filter((t) => t.enabled && t.phase === phase));
+
+  for (const tick of sorted) {
+    const t0 = performance.now();
+    tick.callback(ctx);
+    const elapsed = performance.now() - t0;
+    if (trackSystemCpu) {
+      systemCpuMs[tick.system] += elapsed;
+    }
+    const keyPrefix = phase === 'post' ? 'post:' : '';
+    tickCpuMs.set(`${keyPrefix}${tick.system}:${tick.label}`, elapsed);
+  }
+}
+
+/** Run pre-render ticks in deterministic system + priority order. */
 export function runFrameBudget(ctx: FrameTickContext): void {
   for (const key of FRAME_SYSTEM_ORDER) {
     systemCpuMs[key] = 0;
   }
   tickCpuMs.clear();
 
-  const sorted = [...ticks.values()]
-    .filter((t) => t.enabled)
-    .sort((a, b) => {
-      const systemDiff =
-        FRAME_SYSTEM_ORDER.indexOf(a.system) - FRAME_SYSTEM_ORDER.indexOf(b.system);
-      if (systemDiff !== 0) return systemDiff;
-      if (a.priority !== b.priority) return a.priority - b.priority;
-      return a.id - b.id;
-    });
-
   const frameStart = performance.now();
-
-  for (const tick of sorted) {
-    const t0 = performance.now();
-    tick.callback(ctx);
-    const elapsed = performance.now() - t0;
-    systemCpuMs[tick.system] += elapsed;
-    tickCpuMs.set(`${tick.system}:${tick.label}`, elapsed);
-  }
-
+  runTicks(ctx, 'pre', true);
   lastTotalCpuMs = performance.now() - frameStart;
+}
+
+/** Run post-render ticks (profiler, canvas guards) after WebGL draw. */
+export function runPostFrameBudget(ctx: FrameTickContext): void {
+  runTicks(ctx, 'post', false);
 }

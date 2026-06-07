@@ -6,10 +6,7 @@ import {
 } from './FrameBudgetRegistry';
 import type { FrameSystemId, FrameTickCallback, FrameTickOptions } from './types';
 
-/**
- * Register a per-frame callback into the central frame budget runner.
- * Drop-in replacement for raw `useFrame` — enables system-level CPU profiling.
- */
+/** Register a per-frame callback in the central budget runner (pre- or post-render). */
 export function useFrameTick(
   system: FrameSystemId,
   callback: FrameTickCallback,
@@ -18,25 +15,34 @@ export function useFrameTick(
   const callbackRef = useRef(callback);
   callbackRef.current = callback;
 
-  const { priority = 0, label, enabled = true } = options;
+  const { priority = 0, label, enabled = true, phase = 'pre' } = options;
   const tickIdRef = useRef<number | null>(null);
 
   useEffect(() => {
     const id = registerFrameTick(
       system,
       (ctx) => callbackRef.current(ctx),
-      { priority, label, enabled },
+      { priority, label, enabled, phase },
     );
     tickIdRef.current = id;
     return () => {
       unregisterFrameTick(id);
       tickIdRef.current = null;
     };
-  }, [system, priority, label]);
+  }, [system, priority, label, phase]);
 
   useEffect(() => {
     if (tickIdRef.current != null) {
       setFrameTickEnabled(tickIdRef.current, enabled);
     }
   }, [enabled]);
+}
+
+/** Shorthand for post-render frame ticks (profiler, canvas guards). */
+export function usePostFrameTick(
+  system: FrameSystemId,
+  callback: FrameTickCallback,
+  options: Omit<FrameTickOptions, 'phase'> = {},
+): void {
+  useFrameTick(system, callback, { ...options, phase: 'post' });
 }

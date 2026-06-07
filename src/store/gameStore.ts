@@ -7,8 +7,8 @@
 
 import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
+import { getGamePhase } from '@/shared/gamePhase';
 import type {
-  GameMode,
   PlayerState,
   ExplorationState,
   QuestState,
@@ -78,7 +78,12 @@ export function getGameStore() {
 
 function toGameSnapshot(state: GameStoreState): GameStoreSnapshot {
   return {
-    mode: state.mode,
+    mode: getGamePhase({
+      mainMenuOpen: state.mainMenuOpen,
+      introActive: state.introActive,
+      combatActive: state.combatActive,
+      activeCutsceneId: state.activeCutsceneId,
+    }),
     currentNodeId: state.currentNodeId,
     showStoryOverlay: state.showStoryOverlay,
     exploration: {
@@ -165,8 +170,14 @@ registerGameActionBridge({
         eventBus.emit('poem:reset_all_effects', {});
         break;
       }
-      case 'story/setMode':
-        store.setMode(action.mode);
+      case 'story/setCombatActive':
+        store.setCombatActive(action.active);
+        break;
+      case 'story/setIntroActive':
+        store.setIntroActive(action.active);
+        break;
+      case 'story/setMainMenuOpen':
+        store.setMainMenuOpen(action.open);
         break;
       case 'story/setCurrentNodeId':
         if (action.nodeId != null) store.setCurrentNodeId(action.nodeId);

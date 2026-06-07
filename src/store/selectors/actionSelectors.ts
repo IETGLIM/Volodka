@@ -6,8 +6,16 @@ import { useGameSelector } from './hooks';
 
 /* ── UI actions ── */
 
-export function useSetMode() {
-  return useGameStore((s) => s.setMode);
+export function useSetIntroActive() {
+  return useGameStore((s) => s.setIntroActive);
+}
+
+export function useSetMainMenuOpen() {
+  return useGameStore((s) => s.setMainMenuOpen);
+}
+
+export function useSetCombatActive() {
+  return useGameStore((s) => s.setCombatActive);
 }
 
 export function useSetShowStoryOverlay() {

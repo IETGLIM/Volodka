@@ -7,7 +7,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { User, Package, DoorOpen, Sparkles, Hand } from 'lucide-react';
-import { useGameStore } from '@/store/gameStore';
+import { useGamePhase } from '@/store/selectors';
 import { eventBus } from '@/engine/EventBus';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 
@@ -87,7 +87,7 @@ function CornerBrackets({ accentColor }: { accentColor: string }) {
 
 /* ── Main component ── */
 export function InteractionHintPopup() {
-  const mode = useGameStore((s) => s.mode);
+  const mode = useGamePhase();
   const [hint, setHint] = useState<InteractionHint | null>(null);
   const [isVisible, setIsVisible] = useState(false);
 

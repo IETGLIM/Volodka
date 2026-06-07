@@ -145,6 +145,10 @@ function resolveDataChunk(posix: string): string | undefined {
   const pack = resolveStoryPackChunk(posix);
   if (pack) return pack;
 
+  if (posix.includes('/src/data/story/')) return 'data-story';
+  if (posix.includes('/src/data/quests/')) return 'data-quests';
+  if (posix.includes('/src/data/dialogue/')) return 'data-dialogue';
+
   const base = fileBase(posix);
   if (DATA_STORY.has(base)) return 'data-story';
   if (DATA_DIALOGUE.has(base)) return 'data-dialogue';
@@ -162,13 +166,10 @@ function resolveVendorChunk(posix: string): string | undefined {
   if (!posix.includes('node_modules')) return undefined;
 
   if (
-    posix.includes('/three/') ||
-    posix.includes('/@react-three/fiber/') ||
-    posix.includes('/@react-three/drei/') ||
-    posix.includes('/@react-three/rapier') ||
-    posix.includes('/@dimforge/rapier')
+    posix.includes('/@dimforge/rapier') ||
+    posix.includes('/@react-three/rapier')
   ) {
-    return 'three';
+    return 'physics';
   }
 
   if (
@@ -176,6 +177,18 @@ function resolveVendorChunk(posix: string): string | undefined {
     posix.includes('/@react-three/postprocessing')
   ) {
     return 'postfx';
+  }
+
+  if (posix.includes('/@react-three/drei/')) {
+    return 'drei';
+  }
+
+  if (posix.includes('/@react-three/fiber/')) {
+    return 'r3f';
+  }
+
+  if (posix.includes('/node_modules/three/')) {
+    return 'three';
   }
 
   if (
@@ -253,6 +266,8 @@ export function resolveManualChunk(id: string): string | undefined {
   }
 
   if (base === 'RPGGameCanvas') return 'game-canvas';
+
+  if (base === 'PhysicsSceneInner') return 'physics-scene';
 
   if (base.endsWith('Visual') && posix.includes('/src/components/3d/')) {
     return `scene-${toKebab(base.replace(/Visual$/, ''))}`;

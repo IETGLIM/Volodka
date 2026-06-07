@@ -34,6 +34,7 @@ import { RigidBody, CapsuleCollider, useRapier, type RapierRigidBody, type Rapie
 import * as THREE from 'three';
 
 import { getGameStore } from '@/store/gameStore';
+import { readGamePhase } from '@/shared/gamePhase';
 import { useCurrentSceneId, usePlayerKarma } from '@/store/selectors';
 import { usePlayerControls, type VirtualControls } from '@/hooks/useGamePhysics';
 
@@ -49,6 +50,7 @@ import { audioEngine } from '@/engine/AudioEngine';
 import { getInteractionState, isInteractionLocked } from './InteractionSystemBridge';
 import { InteractionState } from '@/engine/interaction/interactionMachine';
 import { setPlayerRigidBody, getPlayerExternalVelocity, clearPlayerRigidBody } from '@/engine/PlayerRigidBodyState';
+import { devLog, devWarn } from '@/shared/utils/devLog';
 import { ProceduralPlayerModelAdaptive } from './ProceduralPlayerModel';
 import { isNarrativeMovementLocked } from '@/shared/exploreHubNodes';
 
@@ -252,8 +254,9 @@ export function PhysicsPlayer({
     // Hold warmup only during intro/cutscene modes where Rapier may still be settling.
     // Narrative overlay (showStoryOverlay) and tutorials use the isLocked branch below —
     // resetting warmup for those caused infinite warmup (player frozen, camera stuck).
+    const storeSnapshot = getGameStore();
     const shouldHoldWarmup =
-      getGameStore().mode === 'cutscene' || getGameStore().mode === 'intro';
+      readGamePhase(storeSnapshot) === 'cutscene' || readGamePhase(storeSnapshot) === 'intro';
 
     if (shouldHoldWarmup) {
       warmupFramesRef.current = 0;
@@ -295,9 +298,10 @@ export function PhysicsPlayer({
     // stale closures — React state may lag behind the actual store state by
     // one render cycle, causing the player to remain frozen even after mode
     // has already changed to 'exploration'.
-    const currentMode = getGameStore().mode;
-    const showStoryOverlay = getGameStore().showStoryOverlay;
-    const currentNodeId = getGameStore().currentNodeId;
+    const lockState = getGameStore();
+    const currentMode = readGamePhase(lockState);
+    const showStoryOverlay = lockState.showStoryOverlay;
+    const currentNodeId = lockState.currentNodeId;
     // ── World Director: lock movement during narrative overlay or cutscene ──
     // Explore hub nodes (explore_mode, corridor_explore_mode) keep the overlay
     // as an in-world menu but allow walking — fixes freeze after door transition.
@@ -322,7 +326,7 @@ export function PhysicsPlayer({
     if (shouldWatchStuckLock) {
       stuckLockTimerRef.current += dt;
       if (stuckLockTimerRef.current > 2.0) {
-        console.warn('[PhysicsPlayer] Interaction lock stuck for 2s — force-unlocking');
+        devWarn('[PhysicsPlayer] Interaction lock stuck for 2s — force-unlocking');
         eventBus.emit('interaction:end', {});
         eventBus.emit('player:stand_up', {});
         stuckLockTimerRef.current = 0;
@@ -551,14 +555,14 @@ export function PhysicsPlayer({
           // Retry for 60 frames (~1s) before giving up.
           // Rapier sometimes needs more time to initialize colliders
           // in production builds where WASM loads asynchronously.
-          console.warn('[PhysicsPlayer] Collider not found for 60 frames — switching to direct movement mode');
+          devWarn('[PhysicsPlayer] Collider not found for 60 frames — switching to direct movement mode');
           useDirectMovementRef.current = true;
         }
       } else if (collider && controllerFailCountRef.current > 0) {
         // Collider appeared! Reset failure count and restore physics.
         controllerFailCountRef.current = 0;
         if (useDirectMovementRef.current) {
-          console.log('[PhysicsPlayer] Collider found — restoring full physics mode');
+          devLog('[PhysicsPlayer] Collider found — restoring full physics mode');
           useDirectMovementRef.current = false;
         }
       }
@@ -720,7 +724,7 @@ export function PhysicsPlayer({
       if (posDelta < 0.001) {
         noMovementFramesRef.current++;
         if (noMovementFramesRef.current >= 15 && !useDirectMovementRef.current) {
-          console.warn('[PhysicsPlayer] Position unchanged for 15 frames despite input — forcing direct movement mode (mobile fallback)');
+          devWarn('[PhysicsPlayer] Position unchanged for 15 frames despite input — forcing direct movement mode (mobile fallback)');
           useDirectMovementRef.current = true;
         }
       } else {

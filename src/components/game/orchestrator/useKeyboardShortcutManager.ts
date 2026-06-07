@@ -7,6 +7,7 @@ import {
   type MinigamePanelSetters,
 } from '@/shared/constants/minigames';
 import type { PanelType } from './types';
+import { blocksPanelShortcuts, type GamePhase } from '@/shared/gamePhase';
 
 interface MinigameOpenFlags {
   codebreakerOpen: boolean;
@@ -22,8 +23,9 @@ interface MinigameOpenFlags {
 export interface KeyboardShortcutManagerOptions extends MinigameOpenFlags {
   activePanel: PanelType;
   panelStackLength: number;
+  journalOpen: boolean;
   examineOpen: boolean;
-  mode: string;
+  mode: GamePhase;
   dispatchPanel: Dispatch<PanelType>;
   closePanel: () => void;
   closeAllPanels: () => void;
@@ -39,6 +41,7 @@ export interface KeyboardShortcutManagerOptions extends MinigameOpenFlags {
 export function useKeyboardShortcutManager({
   activePanel,
   panelStackLength,
+  journalOpen,
   codebreakerOpen,
   openstackTerminalOpen,
   bashTerminalOpen,
@@ -62,6 +65,7 @@ export function useKeyboardShortcutManager({
   const panelStateRef = useRef({
     activePanel,
     panelStackLength,
+    journalOpen,
     codebreakerOpen,
     openstackTerminalOpen,
     bashTerminalOpen,
@@ -82,6 +86,7 @@ export function useKeyboardShortcutManager({
     panelStateRef.current = {
       activePanel,
       panelStackLength,
+      journalOpen,
       codebreakerOpen,
       openstackTerminalOpen,
       bashTerminalOpen,
@@ -106,10 +111,32 @@ export function useKeyboardShortcutManager({
 
       const ps = panelStateRef.current;
 
+      if (e.code === 'Escape') {
+        if (skipCutsceneRef.current()) return;
+
+        if (ps.examineOpen) {
+          setExamineOpen(false);
+          setExamineData(null);
+          setExamineHasLinkedContent(false);
+          clearPendingTriggerZone();
+          return;
+        }
+        if (closeOpenMinigame(ps, minigameSettersRef.current)) return;
+        if (ps.panelStackLength > 0) {
+          closePanelRef.current();
+          return;
+        }
+        if (ps.mode === 'exploration') dispatchPanel('menu');
+        return;
+      }
+
+      const panelShortcutsBlocked = blocksPanelShortcuts(ps.mode);
+
+      if (panelShortcutsBlocked) return;
+
       if (e.code === 'KeyJ') {
-        const store = useGameStore.getState();
-        if (!store.journalOpen) closeAllPanelsRef.current();
-        store.toggleJournal();
+        if (!ps.journalOpen) closeAllPanelsRef.current();
+        dispatchPanel('journal');
       }
       if (e.code === 'KeyQ') dispatchPanel('quests');
       if (e.code === 'KeyI' || e.code === 'Tab') {
@@ -155,28 +182,6 @@ export function useKeyboardShortcutManager({
       if (e.code === 'F1' || (e.code === 'Slash' && e.shiftKey)) {
         e.preventDefault();
         dispatchPanel('shortcuts');
-      }
-      if (e.code === 'Escape') {
-        if (skipCutsceneRef.current()) return;
-
-        const store = useGameStore.getState();
-        if (ps.examineOpen) {
-          setExamineOpen(false);
-          setExamineData(null);
-          setExamineHasLinkedContent(false);
-          clearPendingTriggerZone();
-          return;
-        }
-        if (closeOpenMinigame(ps, minigameSettersRef.current)) return;
-        if (ps.panelStackLength > 0) {
-          closePanelRef.current();
-          return;
-        }
-        if (store.journalOpen) {
-          store.setJournalOpen(false);
-          return;
-        }
-        if (ps.mode === 'exploration') dispatchPanel('menu');
       }
     };
 

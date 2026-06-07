@@ -8,7 +8,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useGameStore } from '@/store/gameStore';
+import { useGamePhase } from '@/store/selectors';
 import { eventBus } from '@/engine/EventBus';
 import { audioEngine } from '@/engine/AudioEngine';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
@@ -305,7 +305,7 @@ export function AchievementNotification() {
     return unsub;
   }, []);
 
-  const mode = useGameStore((s) => s.mode);
+  const mode = useGamePhase();
 
   /* ── Don't render in menu ── */
   if (mode !== 'exploration' && mode !== 'combat' && mode !== 'cutscene') return null;

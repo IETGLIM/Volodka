@@ -4,6 +4,7 @@
 import { useEffect, type MutableRefObject } from 'react';
 import type { WebGLRenderer } from 'three';
 import { useGameStore } from '@/store/gameStore';
+import { readGamePhase } from '@/shared/gamePhase';
 import { getSceneConfig } from '@/config/scenes';
 import { getSceneDefaultDistance, MIN_DISTANCE, MAX_DISTANCE } from '@/engine/camera/cameraConstants';
 import { getInteractionState } from '@/components/3d/InteractionSystemBridge';
@@ -28,13 +29,17 @@ export interface CameraOrbitInputRefs {
 }
 
 function shouldBlockOrbit(): boolean {
-  const { mode, showStoryOverlay, currentNodeId } = useGameStore.getState();
+  const state = useGameStore.getState();
+  const { showStoryOverlay, currentNodeId } = state;
+  const mode = readGamePhase(state);
   if (isNarrativeMovementLocked(showStoryOverlay, currentNodeId) || mode === 'cutscene') return true;
   return getInteractionState() === InteractionState.Dialogue;
 }
 
 function shouldBlockZoom(): boolean {
-  const { mode, showStoryOverlay, currentNodeId } = useGameStore.getState();
+  const state = useGameStore.getState();
+  const { showStoryOverlay, currentNodeId } = state;
+  const mode = readGamePhase(state);
   if (mode !== 'exploration' || isNarrativeMovementLocked(showStoryOverlay, currentNodeId)) return true;
   return getInteractionState() === InteractionState.Dialogue;
 }

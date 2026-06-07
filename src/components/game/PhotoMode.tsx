@@ -11,6 +11,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { eventBus } from '@/engine/EventBus';
 import { PHOTO_EVENTS, PHOTO_EMPTY_PAYLOAD } from '@/engine/events';
 import { useGameStore } from '@/store/gameStore';
+import { readGamePhase } from '@/shared/gamePhase';
+import { useGamePhase } from '@/store/selectors';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { SCENE_CONFIG } from '@/config/scenes';
 
@@ -56,7 +58,7 @@ export function PhotoMode() {
 
   // ── Enter photo mode ──
   const enterPhotoMode = useCallback(() => {
-    if (useGameStore.getState().mode !== 'exploration') return;
+    if (readGamePhase(useGameStore.getState()) !== 'exploration') return;
     setActive(true);
     activeRef.current = true;
     photoModeActive.current = true;
@@ -149,7 +151,7 @@ export function PhotoMode() {
   }, []);
 
   // ── Ensure photo mode state resets if mode changes away from exploration ──
-  const mode = useGameStore((s) => s.mode);
+  const mode = useGamePhase();
   useEffect(() => {
     if (mode !== 'exploration' && activeRef.current) {
       // Defer state update to avoid synchronous setState in effect

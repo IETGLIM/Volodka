@@ -12,7 +12,7 @@ import { Shield, Map, Trophy, Scroll, Info } from 'lucide-react';
 import { eventBus } from '@/engine/EventBus';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { explorationEventToastTopPx } from '@/shared/constants/hudLayout';
-import { useGameStore } from '@/store/gameStore';
+import { useGamePhase } from '@/store/selectors';
 
 /* ─── Types ─── */
 
@@ -306,7 +306,7 @@ export function EventNotificationPopup() {
     };
   }, []);
 
-  const mode = useGameStore((s) => s.mode);
+  const mode = useGamePhase();
   if (mode === 'menu' || mode === 'intro') return null;
 
   /* ── Render ── */

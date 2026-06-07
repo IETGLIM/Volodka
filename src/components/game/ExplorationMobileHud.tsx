@@ -18,6 +18,8 @@ import { Package, Hand, ArrowUp, Zap } from 'lucide-react';
 import { useVirtualControlsRef } from '@/engine/VirtualControlsState';
 import type { VirtualControls } from '@/hooks/useGamePhysics';
 import { useGameStore } from '@/store/gameStore';
+import { readGamePhase } from '@/shared/gamePhase';
+import { useGamePhase } from '@/store/selectors';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { eventBus } from '@/engine/EventBus';
 import { requestSceneTransition } from '@/engine/scene/sceneTransition';
@@ -31,7 +33,7 @@ interface ExplorationMobileHudProps {
 
 export function ExplorationMobileHud({ onInteractPress, onOpenInventory }: ExplorationMobileHudProps) {
   const virtualControlsRef = useVirtualControlsRef();
-  const mode = useGameStore((s) => s.mode);
+  const mode = useGamePhase();
   const [runToggled, setRunToggled] = useState(false);
   const [isLandscape, setIsLandscape] = useState(false);
   const [vw, setVw] = useState(375); // viewport width for sizing calc
@@ -118,7 +120,7 @@ export function ExplorationMobileHud({ onInteractPress, onOpenInventory }: Explo
     // directly emit scene:transition for the nearest available exit.
     try {
       const store = useGameStore.getState();
-      if (store.mode === 'exploration') {
+      if (readGamePhase(store) === 'exploration') {
         const playerPos = store.exploration.playerPosition;
         const sceneId = store.exploration.currentSceneId;
         const flags = store.playerState.flags;

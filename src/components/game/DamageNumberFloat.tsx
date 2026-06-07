@@ -10,7 +10,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { eventBus } from '@/engine/EventBus';
-import { useGameStore } from '@/store/gameStore';
+import { useGamePhase } from '@/store/selectors';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 
 /* ─── Types ─── */
@@ -195,7 +195,7 @@ export function DamageNumberFloat() {
   const [numbers, setNumbers] = useState<DamageNumberEntry[]>([]);
   const timersRef = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
 
-  const mode = useGameStore((s) => s.mode);
+  const mode = useGamePhase();
 
   /** Add a damage number to the queue */
   const addNumber = useCallback((type: DamageNumberType, value: number) => {

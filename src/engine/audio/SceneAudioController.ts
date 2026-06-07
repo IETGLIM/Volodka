@@ -22,7 +22,7 @@ import {
   type AmbientSoundType,
 } from '../../data/ambientSounds';
 import type { SceneId } from '@/config/sceneDefinitions';
-import type { GameMode } from '@/shared/types/game';
+import type { GamePhase } from '@/shared/gamePhase';
 
 export class SceneAudioController {
   private disposed = false;
@@ -44,26 +44,26 @@ export class SceneAudioController {
   /* ─── Mode / scene ─── */
 
   onModeChange(
-    mode: GameMode,
+    phase: GamePhase,
     sceneId: SceneId,
     timeOfDay: number,
     showStoryOverlay: boolean,
   ): void {
     if (this.disposed) return;
 
-    if (mode === 'menu' || mode === 'intro') {
+    if (phase === 'menu' || phase === 'intro') {
       musicEngine.stopMusic(1);
       ambientEngine.stopAll();
       return;
     }
 
-    if (mode === 'exploration') {
+    if (phase === 'exploration') {
       musicEngine.playSceneMusic(sceneId);
       this.playSceneAmbient(sceneId, timeOfDay);
     }
 
-    this.setDialogueState(showStoryOverlay, mode);
-    ambientEngine.setCombatMuted(mode === 'combat');
+    this.setDialogueState(showStoryOverlay, phase);
+    ambientEngine.setCombatMuted(phase === 'combat');
   }
 
   onSceneEnter(sceneId: SceneId, timeOfDay: number): void {
@@ -123,12 +123,12 @@ export class SceneAudioController {
     this.playSceneAmbient(sceneId, timeOfDay);
   }
 
-  setDialogueState(showStoryOverlay: boolean, mode: GameMode): void {
+  setDialogueState(showStoryOverlay: boolean, phase: GamePhase): void {
     if (this.disposed) return;
     if (showStoryOverlay) {
       sfxEngine.enableDialogueMuffle(true);
       ambientEngine.setDialogueDucked(true);
-    } else if (mode === 'exploration') {
+    } else if (phase === 'exploration') {
       sfxEngine.enableDialogueMuffle(false);
       ambientEngine.setDialogueDucked(false);
     }

@@ -2,7 +2,7 @@
 /* ─── Volodka RPG – Procedural terrain generation with FastNoiseLite ─── */
 
 import { useMemo, useRef, useEffect } from 'react';
-import { useFrame } from '@react-three/fiber';
+import { useFrameTick } from '@/engine/frame/useFrameTick';
 import * as THREE from 'three';
 import FastNoiseLite from 'fastnoise-lite';
 
@@ -254,27 +254,27 @@ export function useAnimatedTerrain(config: TerrainConfig, timeScale = 0.15) {
     }
   }, [geometry]);
 
-  useFrame((state) => {
-    if (!meshRef.current || !positionsRef.current) return;
+  useFrameTick(
+    'misc',
+    (ctx) => {
+      if (!meshRef.current || !positionsRef.current) return;
 
-    const posAttr = meshRef.current.geometry.attributes.position as THREE.BufferAttribute;
-    const origPositions = positionsRef.current;
-    const t = state.clock.elapsedTime * timeScale;
+      const posAttr = meshRef.current.geometry.attributes.position as THREE.BufferAttribute;
+      const origPositions = positionsRef.current;
+      const t = ctx.state.clock.elapsedTime * timeScale;
 
-    // Gentle undulation — only move Y, using sin waves derived from original position
-    for (let i = 0; i < posAttr.count; i++) {
-      const ox = origPositions[i * 3];
-      const oz = origPositions[i * 3 + 2];
-      const oy = origPositions[i * 3 + 1];
-
-      // Slow wave displacement
-      const wave = Math.sin(ox * 0.1 + t) * 0.3 + Math.cos(oz * 0.08 + t * 0.7) * 0.2;
-
-      posAttr.setY(i, oy + wave);
-    }
-    posAttr.needsUpdate = true;
-    meshRef.current.geometry.computeVertexNormals();
-  });
+      for (let i = 0; i < posAttr.count; i++) {
+        const ox = origPositions[i * 3];
+        const oz = origPositions[i * 3 + 2];
+        const oy = origPositions[i * 3 + 1];
+        const wave = Math.sin(ox * 0.1 + t) * 0.3 + Math.cos(oz * 0.08 + t * 0.7) * 0.2;
+        posAttr.setY(i, oy + wave);
+      }
+      posAttr.needsUpdate = true;
+      meshRef.current.geometry.computeVertexNormals();
+    },
+    { label: 'AnimatedTerrain' },
+  );
 
   return { geometry, getHeightAt, meshRef };
 }

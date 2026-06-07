@@ -1385,7 +1385,7 @@ type CinematicPhase = 'black' | 'prose' | 'title' | 'poem' | 'transition' | 'wak
 
 /** No-props IntroScreen — reads data from store/imports, compatible with GameOrchestrator's <IntroScreen /> */
 export function IntroScreen() {
-  const setMode = useGameStore((s) => s.setMode);
+  const setIntroActive = useGameStore((s) => s.setIntroActive);
   const setCurrentNodeId = useGameStore((s) => s.setCurrentNodeId);
   const setShowStoryOverlay = useGameStore((s) => s.setShowStoryOverlay);
   const collectPoem = useGameStore((s) => s.collectPoem);
@@ -1417,14 +1417,14 @@ export function IntroScreen() {
 
     // Set mode to exploration so the 3D canvas renders the wakeup scene.
     // The WakeUpSequence will animate inside the volodka_room scene.
-    setMode('exploration');
+    setIntroActive(false);
 
     // Auto-start the first quest from the golden path if no quests are active.
     const store = useGameStore.getState();
     if (store.quests.length === 0 || !store.quests.some((q) => q.status === 'active')) {
       store.activateQuest('first_reading');
     }
-  }, [collectPoem, setCurrentNodeId, setShowStoryOverlay, setIntroSeen, setMode]);
+  }, [collectPoem, setCurrentNodeId, setShowStoryOverlay, setIntroSeen, setIntroActive]);
 
   const handleSkip = useCallback(() => {
     // Do NOT set introSeen here — that triggers IntroAutoSkip which

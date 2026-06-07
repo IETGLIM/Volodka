@@ -5,10 +5,10 @@
 import type {
   SceneId,
   QuestState,
-  GameMode,
   TrainablePlayerSkill,
   InventoryItem,
 } from '@/shared/types/game';
+import type { GamePhase } from '@/shared/gamePhase';
 import type { NotificationType } from '@/store/shared';
 
 export interface ActiveTTLFlagSnapshot {
@@ -30,7 +30,8 @@ export interface AchievementProgressSnapshot {
 
 /** Read-only snapshot for engine systems that observe game state. */
 export interface GameStoreSnapshot {
-  mode: GameMode;
+  /** Computed UI phase (derived from flags at snapshot time). */
+  mode: GamePhase;
   currentNodeId: string | null;
   showStoryOverlay: boolean;
   exploration: {
@@ -82,7 +83,9 @@ export type GameAction =
   | { type: 'poem/setTTLFlags'; flags: ActiveTTLFlagSnapshot[] }
   | { type: 'poem/clearAllEffects' }
   /* ── Story / UI mode ── */
-  | { type: 'story/setMode'; mode: GameMode }
+  | { type: 'story/setCombatActive'; active: boolean }
+  | { type: 'story/setIntroActive'; active: boolean }
+  | { type: 'story/setMainMenuOpen'; open: boolean }
   | { type: 'story/setCurrentNodeId'; nodeId: string }
   | { type: 'story/setShowStoryOverlay'; show: boolean }
   | { type: 'story/openNarrativeOverlay'; nodeId: string; kind?: 'story' | 'dialogue' }

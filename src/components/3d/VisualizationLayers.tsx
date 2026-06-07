@@ -3,7 +3,8 @@
 /* Three.js layer separation for depth, parallax, and performance control */
 
 import { createContext, memo, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
-import { useFrame, useThree } from '@react-three/fiber';
+import { useThree } from '@react-three/fiber';
+import { useFrameTick } from '@/engine/frame/useFrameTick';
 import * as THREE from 'three';
 
 // ─── Layer Definitions ───
@@ -134,25 +135,25 @@ function BackgroundParallax({ livePlayerPositionRef, children }: BackgroundParal
   const targetOffsetRef = useRef(new THREE.Vector3(0, 0, 0));
   const prevPlayerPos = useRef(new THREE.Vector3(0, 0, 0));
 
-  useFrame(() => {
-    if (!groupRef.current) return;
+  useFrameTick(
+    'misc',
+    () => {
+      if (!groupRef.current) return;
 
-    const playerPos = livePlayerPositionRef.current;
-    const parallaxFactor = LAYER_PARALLAX.BACKGROUND; // 0.12
+      const playerPos = livePlayerPositionRef.current;
+      const parallaxFactor = LAYER_PARALLAX.BACKGROUND;
 
-    // Compute target offset opposite to player movement
-    targetOffsetRef.current.set(
-      -playerPos.x * parallaxFactor,
-      0, // Don't parallax vertically
-      -playerPos.z * parallaxFactor
-    );
+      targetOffsetRef.current.set(
+        -playerPos.x * parallaxFactor,
+        0,
+        -playerPos.z * parallaxFactor,
+      );
 
-    // Smooth interpolation toward target
-    offsetRef.current.lerp(targetOffsetRef.current, 0.05);
-
-    // Apply offset
-    groupRef.current.position.copy(offsetRef.current);
-  });
+      offsetRef.current.lerp(targetOffsetRef.current, 0.05);
+      groupRef.current.position.copy(offsetRef.current);
+    },
+    { label: 'BackgroundParallax' },
+  );
 
   return <group ref={groupRef}>{children}</group>;
 }
@@ -172,25 +173,25 @@ function ForegroundParallax({ livePlayerPositionRef, children }: ForegroundParal
   const offsetRef = useRef(new THREE.Vector3(0, 0, 0));
   const targetOffsetRef = useRef(new THREE.Vector3(0, 0, 0));
 
-  useFrame(() => {
-    if (!groupRef.current) return;
+  useFrameTick(
+    'misc',
+    () => {
+      if (!groupRef.current) return;
 
-    const playerPos = livePlayerPositionRef.current;
-    const parallaxFactor = LAYER_PARALLAX.FOREGROUND; // -0.06
+      const playerPos = livePlayerPositionRef.current;
+      const parallaxFactor = LAYER_PARALLAX.FOREGROUND;
 
-    // Compute target offset — negative factor means same direction as player
-    targetOffsetRef.current.set(
-      -playerPos.x * parallaxFactor,
-      0, // Don't parallax vertically
-      -playerPos.z * parallaxFactor
-    );
+      targetOffsetRef.current.set(
+        -playerPos.x * parallaxFactor,
+        0,
+        -playerPos.z * parallaxFactor,
+      );
 
-    // Smooth interpolation toward target
-    offsetRef.current.lerp(targetOffsetRef.current, 0.05);
-
-    // Apply offset
-    groupRef.current.position.copy(offsetRef.current);
-  });
+      offsetRef.current.lerp(targetOffsetRef.current, 0.05);
+      groupRef.current.position.copy(offsetRef.current);
+    },
+    { label: 'ForegroundParallax' },
+  );
 
   return <group ref={groupRef}>{children}</group>;
 }

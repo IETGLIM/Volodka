@@ -243,7 +243,7 @@ export function startCombat(enemyType: EnemyType): CombatState {
     lastPoemPowersUsed: [null, null],
   });
 
-  dispatchGameAction({ type: 'story/setMode', mode: 'combat' });
+  dispatchGameAction({ type: 'story/setCombatActive', active: true });
   eventBus.emit('combat:start', { enemyType });
 
   combat.notifyListeners();
@@ -461,7 +461,7 @@ export function playerFlee(): CombatState | null {
 
     // Return to exploration after a brief delay
     combat.schedule(1500, () => {
-      dispatchGameAction({ type: 'story/setMode', mode: 'exploration' });
+      dispatchGameAction({ type: 'story/setCombatActive', active: false });
       combat.endSession();
       combat.notifyListeners();
       eventBus.emit('combat:end', {});
@@ -850,11 +850,11 @@ function handleVictory(): CombatState {
   // Return to story node or exploration after delay (G12)
   combat.schedule(3000, () => {
     if (returnNodeId) {
-      dispatchGameAction({ type: 'story/setMode', mode: 'exploration' });
+      dispatchGameAction({ type: 'story/setCombatActive', active: false });
       dispatchGameAction({ type: 'story/openNarrativeOverlay', nodeId: returnNodeId, kind: 'story' });
       eventBus.emit('combat:story_continue', { nodeId: returnNodeId });
     } else {
-      dispatchGameAction({ type: 'story/setMode', mode: 'exploration' });
+      dispatchGameAction({ type: 'story/setCombatActive', active: false });
     }
     combat.endSession();
     combat.notifyListeners();
@@ -903,11 +903,11 @@ function handleDefeat(): void {
   // Return to story node or exploration after defeat (G12)
   combat.schedule(3000, () => {
     if (returnNodeId) {
-      dispatchGameAction({ type: 'story/setMode', mode: 'exploration' });
+      dispatchGameAction({ type: 'story/setCombatActive', active: false });
       dispatchGameAction({ type: 'story/openNarrativeOverlay', nodeId: returnNodeId, kind: 'story' });
       eventBus.emit('combat:story_continue', { nodeId: returnNodeId });
     } else {
-      dispatchGameAction({ type: 'story/setMode', mode: 'exploration' });
+      dispatchGameAction({ type: 'story/setCombatActive', active: false });
     }
     combat.endSession();
     combat.notifyListeners();

@@ -1,11 +1,40 @@
 
 /* ─── Volodka RPG – Main 3D Canvas ─── */
 
-import { Suspense, lazy, useRef, useMemo, useEffect, useState, Component, Fragment, type ReactNode, type ErrorInfo, memo } from 'react';
-import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { useFrameTick } from '@/engine/frame/useFrameTick';
-import { Physics } from '@react-three/rapier';
+import { Suspense, lazy, useRef, useEffect, Component, Fragment, type ReactNode, type ErrorInfo } from 'react';
+import { Canvas, useThree } from '@react-three/fiber';
+import { usePostFrameTick } from '@/engine/frame/useFrameTick';
 import * as THREE from 'three';
+import { devLog, devWarn } from '@/shared/utils/devLog';
+import { SimplePlayer } from './SimplePlayer';
+import { FollowCamera } from './FollowCamera';
+import { ExplorationPostFX } from './ExplorationPostFX';
+import { ExplorationLighting } from './Lighting';
+import { SceneEnvironment } from './SceneEnvironment';
+import { MatrixRain } from './MatrixRain';
+import { GlitchEffect } from './GlitchEffect';
+import { NoirOverlay } from './NoirOverlay';
+import { WeatherController } from './WeatherController';
+import { AtmosphericEffects } from './AtmosphericEffects';
+import { VisualizationLayers } from './VisualizationLayers';
+import { FrameBudgetRunner } from './FrameBudgetRunner';
+import { PostFrameBudgetRunner } from './PostFrameBudgetRunner';
+import { RotationSyncBridge } from './RotationSyncBridge';
+import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
+import { useDynamicDPR } from '@/hooks/useDynamicDPR';
+import { GltfPipelineInit } from './assets/GltfPipelineInit';
+import { useVirtualControlsRef } from '@/engine/VirtualControlsState';
+import { eventBus } from '@/engine/EventBus';
+import { type VirtualControls } from '@/hooks/useGamePhysics';
+import { useGameMode } from '@/store/selectors';
+import { useGameStore } from '@/store/gameStore';
+import { markCanvasMounted, markFirstFrame } from '@/engine/performance/LoadingTimeline';
+
+const LazyPhysicsSceneInner = lazy(() => import('./PhysicsSceneInner'));
+
+const LazyFrameProfilerBridge = lazy(() =>
+  import('./FrameProfilerBridge').then((m) => ({ default: m.FrameProfilerBridge })),
+);
 
 /** Error boundary specifically for the post-processing pipeline.
  *  If EffectComposer crashes (e.g., WebGL context not ready), the 3D scene
@@ -21,7 +50,7 @@ class PostFXErrorBoundary extends Component<
   }
 
   componentDidCatch(error: Error, info: ErrorInfo) {
-    console.warn('[PostFX] EffectComposer failed, disabling post-processing:', error.message);
+    devWarn('[PostFX] EffectComposer failed, disabling post-processing:', error.message);
   }
 
   render() {
@@ -32,51 +61,6 @@ class PostFXErrorBoundary extends Component<
     return this.props.children;
   }
 }
-import { WakeUpSequence } from './WakeUpSequence';
-import { SceneColliderSelector } from './SceneColliderSelector';
-import { PhysicsPlayer } from './PhysicsPlayer';
-import { SimplePlayer } from './SimplePlayer';
-import { FollowCamera } from './FollowCamera';
-import { NPCSystem } from './NPCSystem';
-import { AmbientNPCs } from './AmbientNPCs';
-import { InteractiveTriggers } from './InteractiveTriggers';
-import { InteractionHighlight } from './InteractionHighlight';
-import { SceneExitIndicator } from './SceneExitIndicator';
-import { QuestWaypoints } from './QuestWaypoints';
-import { ChoiceReactivity } from './ChoiceReactivity';
-import { SceneTransitionHandler } from './SceneTransitionHandler';
-import { ExplorationPostFX } from './ExplorationPostFX';
-// ExplorationParticles removed (P1-3.2) — duplicated WeatherParticles + WeatherController
-import { ExplorationLighting } from './Lighting';
-import { SceneEnvironment } from './SceneEnvironment';
-import { MatrixRain } from './MatrixRain';
-import { GlitchEffect } from './GlitchEffect';
-import { NoirOverlay } from './NoirOverlay';
-import { WeatherController } from './WeatherController';
-import { AtmosphericEffects } from './AtmosphericEffects';
-import { ProximityReactivityRenderer } from './ProximityReactivityRenderer';
-import { VisualizationLayers } from './VisualizationLayers';
-import { EnvironmentalAnimator } from './EnvironmentalAnimator';
-import { InteractionSystemBridge, getInteractionState, getInteractionTargetNPCId } from './InteractionSystemBridge';
-import { useGameStore } from '@/store/gameStore';
-
-import { FrameBudgetRunner } from './FrameBudgetRunner';
-
-const LazyFrameProfilerBridge = lazy(() =>
-  import('./FrameProfilerBridge').then((m) => ({ default: m.FrameProfilerBridge })),
-);
-
-import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
-import { useDynamicDPR } from '@/hooks/useDynamicDPR';
-import { GltfPipelineInit } from './assets/GltfPipelineInit';
-import { UI_LAYERS } from '@/shared/constants/uiLayers';
-import { useVirtualControlsRef } from '@/engine/VirtualControlsState';
-import { sharedPlayerRotationRef } from '@/engine/PlayerRotationState';
-import { eventBus } from '@/engine/EventBus';
-import { InteractionState } from '@/engine/interaction/interactionMachine';
-import { type VirtualControls } from '@/hooks/useGamePhysics';
-import { useGameMode } from '@/store/selectors';
-import { markCanvasMounted, markFirstFrame } from '@/engine/performance/LoadingTimeline';
 
 /** Error boundary for the Rapier Physics component.
  *  If Rapier WASM fails to load (common on Vercel edge, slow connections),
@@ -93,7 +77,7 @@ class PhysicsErrorBoundary extends Component<
   }
 
   componentDidCatch(error: Error, info: ErrorInfo) {
-    console.warn('[PhysicsErrorBoundary] Rapier physics failed, using SimplePlayer fallback:', error.message);
+    devWarn('[PhysicsErrorBoundary] Rapier physics failed, using SimplePlayer fallback:', error.message);
   }
 
   render() {
@@ -171,7 +155,7 @@ class Canvas3DErrorBoundary extends Component<
     const { retryCount } = this.state;
     if (retryCount < Canvas3DErrorBoundary.MAX_RETRIES) {
       const nextCount = retryCount + 1;
-      console.log(`[RPGGameCanvas] Auto-retry ${nextCount}/${Canvas3DErrorBoundary.MAX_RETRIES}...`);
+      devLog(`[RPGGameCanvas] Auto-retry ${nextCount}/${Canvas3DErrorBoundary.MAX_RETRIES}...`);
       this.scheduleAutoRetry(nextCount);
     }
   }
@@ -253,9 +237,7 @@ class Canvas3DErrorBoundary extends Component<
   }
 }
 
-/** FIX (Code Review #2): Extracted shared fallback scene used by both
- *  Suspense (WASM loading) and PhysicsErrorBoundary (Rapier failure).
- *  Previously duplicated — now a single component for maintainability. */
+/** Fallback while Rapier WASM loads or after physics init failure. */
 function SimpleSceneFallback({
   livePlayerPositionRef,
   livePlayerRotationRef,
@@ -282,6 +264,7 @@ function SimpleSceneFallback({
         livePlayerPositionRef={livePlayerPositionRef}
         livePlayerRotationRef={livePlayerRotationRef}
       />
+      <RotationSyncBridge livePlayerRotationRef={livePlayerRotationRef} />
       <ExplorationLighting />
       <SceneEnvironment />
     </group>
@@ -381,21 +364,8 @@ export function RPGGameCanvas() {
         >
         <GltfPipelineInit />
         <VisualizationLayers livePlayerPositionRef={livePlayerPositionRef}>
-          {/* FIX (Code Review #2): Both Suspense fallback and PhysicsErrorBoundary
-              now use the shared SimpleSceneFallback component instead of duplicating
-              the same floor + SimplePlayer + FollowCamera + lighting + environment. */}
-          <Suspense fallback={
-            <SimpleSceneFallback
-              livePlayerPositionRef={livePlayerPositionRef}
-              livePlayerRotationRef={livePlayerRotationRef}
-              virtualControlsRef={virtualControlsRef}
-            />
-          }>
-          <PhysicsErrorBoundary
+          <Suspense
             fallback={
-              /* ── Rapier fallback: SimplePlayer without physics ──
-               *  Renders a basic scene floor + SimplePlayer that moves
-               *  without collision detection. Game is still playable. */
               <SimpleSceneFallback
                 livePlayerPositionRef={livePlayerPositionRef}
                 livePlayerRotationRef={livePlayerRotationRef}
@@ -403,82 +373,27 @@ export function RPGGameCanvas() {
               />
             }
           >
-          {/* P3-FIX: Pause physics when game is in menu/intro mode to save CPU.
-              The Physics component's `paused` prop stops the Rapier world from
-              stepping, which saves ~1-2ms/frame on mobile when the 3D scene is
-              not interactive (menu, loading, intro). The canvas is still rendered
-              (for intro wake-up cutscene), but physics bodies are frozen. */}
-          <Physics gravity={[0, -15, 0]} timeStep={1/60} interpolate={false} debug={false} paused={physicsPaused}>
-            {/* Scene visual + colliders (now with layer separation) */}
-            <SceneColliderSelector livePlayerPositionRef={livePlayerPositionRef} />
-
-            {/* Environmental animations — flickering lights, steam, neon, etc. */}
-            <EnvironmentalAnimator livePlayerPositionRef={livePlayerPositionRef} />
-
-            {/* Player */}
-            <PhysicsPlayer
-              livePlayerPositionRef={livePlayerPositionRef}
-              livePlayerRotationRef={livePlayerRotationRef}
-              virtualControlsRef={virtualControlsRef}
-              onInteractPress={() => {}}
-            />
-
-            {/* Camera */}
-            <FollowCamera
-              livePlayerPositionRef={livePlayerPositionRef}
-              livePlayerRotationRef={livePlayerRotationRef}
-            />
-
-            {/* NPCs — passes interaction state from module-level store */}
-            <NPCSystemWrapper livePlayerPositionRef={livePlayerPositionRef} />
-
-            {/* Background ambient NPCs — lightweight, non-interactable, scene-populating */}
-            <AmbientNPCs livePlayerPositionRef={livePlayerPositionRef} />
-
-            {/* Wake-up cinematic sequence (intro only) */}
-            <FrameBudgetRunner />
-
-        <WakeUpSequence />
-
-            {/* Interactive triggers */}
-            <InteractiveTriggers livePlayerPositionRef={livePlayerPositionRef} />
-
-            {/* Interaction highlight glow effect on E-press */}
-            <InteractionHighlight />
-
-            {/* Proximity reactivity — lights, sounds, effects near player */}
-            <ProximityReactivityRenderer livePlayerPositionRef={livePlayerPositionRef} />
-
-            {/* Scene exit indicators */}
-            <SceneExitIndicator livePlayerPositionRef={livePlayerPositionRef} />
-
-            {/* Quest waypoint arrows toward active objectives */}
-            <QuestWaypoints livePlayerPositionRef={livePlayerPositionRef} />
-
-            {/* Visual feedback for moral choices — karma/NPC reaction pulses */}
-            <ChoiceReactivity />
-
-            {/* Scene transition handler (no visual output) */}
-            <SceneTransitionHandler />
-
-            {/* Interaction system bridge — runs state machine every frame */}
-            <InteractionSystemBridge
-              livePlayerPositionRef={livePlayerPositionRef}
-              livePlayerRotationRef={livePlayerRotationRef}
-            />
-
-            {/* Sync player rotation to shared state for CompassHUD */}
-            <RotationSyncBridge livePlayerRotationRef={livePlayerRotationRef} />
-
-            {/* Lighting */}
-            <ExplorationLighting />
-
-            {/* Environment */}
-            <SceneEnvironment />
-          </Physics>
+          <PhysicsErrorBoundary
+            fallback={
+              <SimpleSceneFallback
+                livePlayerPositionRef={livePlayerPositionRef}
+                livePlayerRotationRef={livePlayerRotationRef}
+                virtualControlsRef={virtualControlsRef}
+              />
+            }
+          >
+          <LazyPhysicsSceneInner
+            livePlayerPositionRef={livePlayerPositionRef}
+            livePlayerRotationRef={livePlayerRotationRef}
+            virtualControlsRef={virtualControlsRef}
+            physicsPaused={physicsPaused}
+          />
           </PhysicsErrorBoundary>
           </Suspense>
         </VisualizationLayers>
+
+        <FrameBudgetRunner />
+        <PostFrameBudgetRunner />
 
         {/* Rain / Snow weather system */}
         <WeatherController />
@@ -498,10 +413,7 @@ export function RPGGameCanvas() {
           </Suspense>
         )}
 
-        {/* FIX (Code Review #6): Consolidated ToneMappingGuard, WebGLContextGuard,
-            and CanvasFirstFrameSignal into a single useFrame callback to reduce
-            the number of per-frame hooks. Each "guard" is now a function called
-            from the consolidated CanvasGuardSystem component. */}
+        {/* Post-render canvas guards (tone mapping, first-frame signal). */}
         <CanvasGuardSystem />
 
         </Canvas>
@@ -515,14 +427,6 @@ export function RPGGameCanvas() {
       {/* Mobile virtual controls are handled by ExplorationMobileHud in GameOrchestrator */}
     </div>
   );
-}
-
-/** Syncs livePlayerRotationRef to shared module-level state for CompassHUD */
-function RotationSyncBridge({ livePlayerRotationRef }: { livePlayerRotationRef: React.MutableRefObject<number> }) {
-  useFrameTick('player', () => {
-    sharedPlayerRotationRef.current = livePlayerRotationRef.current;
-  }, { label: 'RotationSync' });
-  return null;
 }
 
 /** Per-canvas first-frame session — keyed by WebGL canvas element so the guard
@@ -540,15 +444,7 @@ function getCanvasFirstFrameSession(canvas: HTMLCanvasElement): CanvasFirstFrame
   return session;
 }
 
-/** FIX (Code Review #6): Consolidated canvas guard system.
- *  Combines ToneMappingGuard, WebGLContextGuard, and CanvasFirstFrameSignal
- *  into a single component with one useFrame callback instead of three.
- *  This reduces the overhead of multiple per-frame hooks while preserving
- *  all the same functionality.
- *
- *  FIX (Code Review #11): first-frame emit is guarded by a per-canvas session
- *  flag so Strict Mode remounts and duplicate useFrame invocations cannot
- *  double-emit; the flag resets only on context loss or a new canvas element. */
+/** Post-render guards: NoToneMapping enforcement + canvas:first-frame emit. */
 function CanvasGuardSystem() {
   const gl = useThree((state) => state.gl);
   const toneMappingEnforced = useRef(false);
@@ -560,7 +456,7 @@ function CanvasGuardSystem() {
 
     const handleContextLost = (e: Event) => {
       e.preventDefault();
-      console.warn('[CanvasGuard] WebGL context LOST — attempting recovery...');
+      devWarn('[CanvasGuard] WebGL context LOST — attempting recovery...');
       const session = canvasFirstFrameSessions.get(canvas);
       if (session) {
         session.emitted = false;
@@ -571,7 +467,7 @@ function CanvasGuardSystem() {
     };
 
     const handleContextRestored = () => {
-      console.log('[CanvasGuard] WebGL context RESTORED');
+      devLog('[CanvasGuard] WebGL context RESTORED');
       // first-frame will be re-emitted on next useFrame call
     };
 
@@ -584,102 +480,35 @@ function CanvasGuardSystem() {
     };
   }, [gl]);
 
-  // Single useFrame that handles all guard duties (priority 1 = after render)
-  // Post-render guard — must stay on raw useFrame (priority 1, after draw)
-  useFrame((state) => {
-    const canvas = state.gl.domElement;
-    if (!canvas) return;
+  usePostFrameTick(
+    'postfx',
+    (ctx) => {
+      const canvas = ctx.state.gl.domElement;
+      if (!canvas) return;
 
-    // ── Guard 1: Enforce NoToneMapping ──
-    try {
-      if (state.gl.toneMapping !== THREE.NoToneMapping) {
-        state.gl.toneMapping = THREE.NoToneMapping;
+      try {
+        if (ctx.state.gl.toneMapping !== THREE.NoToneMapping) {
+          ctx.state.gl.toneMapping = THREE.NoToneMapping;
+        }
+        toneMappingEnforced.current = true;
+      } catch {
+        // WebGL context lost or renderer disposed — ignore silently
       }
-      toneMappingEnforced.current = true;
-    } catch {
-      // WebGL context lost or renderer disposed — ignore silently
-    }
 
-    // ── Guard 2: Emit first-frame signal (at most once per canvas session) ──
-    const session = getCanvasFirstFrameSession(canvas);
-    if (session.emitted) return;
-    // Wait until the renderer has completed at least one draw call
-    if (state.gl.info.render.frame < 1) return;
+      const session = getCanvasFirstFrameSession(canvas);
+      if (session.emitted) return;
+      if (ctx.state.gl.info.render.frame < 1) return;
 
-    session.emitted = true;
-    markFirstFrame();
-    if (session.contextLost) {
-      console.log('[CanvasGuard] Re-signalling after context restore');
-      session.contextLost = false;
-    }
-    eventBus.emit('canvas:first-frame', {});
-  }, 1);
+      session.emitted = true;
+      markFirstFrame();
+      if (session.contextLost) {
+        devLog('[CanvasGuard] Re-signalling after context restore');
+        session.contextLost = false;
+      }
+      eventBus.emit('canvas:first-frame', {});
+    },
+    { label: 'CanvasGuard', priority: 1 },
+  );
 
   return null;
 }
-
-/** FIX (Code Review #3): NPCSystemWrapper wrapped with React.memo and
- *  uses a single state object to reduce re-renders. Previously, every
- *  interaction:state_change event caused TWO setState calls (state + target),
- *  triggering two re-renders. Now batched into a single state update.
- *  Also wrapped with React.memo to prevent re-renders when parent re-renders
- *  but interaction state hasn't changed.
- *
- *  FIX (Code Review #10): Module-level interaction snapshot and NPCSystem props
- *  are derived via useMemo. livePlayerPositionRef stays a ref (mutable runtime
- *  position, not derived config). Scene/NPC roster updates remain in NPCSystem's
- *  own useMemo([sceneId, timeOfDay]). */
-
-type InteractionSnapshot = {
-  state: InteractionState;
-  targetNPCId: string | null;
-};
-
-const NPCSystemWrapper = memo(function NPCSystemWrapper({
-  livePlayerPositionRef,
-}: {
-  livePlayerPositionRef: React.MutableRefObject<THREE.Vector3>;
-}) {
-  // One-time read of module-level interaction store on mount (remount after
-  // error-boundary retry also re-syncs). Empty deps — not re-derived on re-render.
-  const initialInteraction = useMemo<InteractionSnapshot>(
-    () => ({
-      state: getInteractionState(),
-      targetNPCId: getInteractionTargetNPCId(),
-    }),
-    [],
-  );
-
-  const [interaction, setInteraction] = useState<InteractionSnapshot>(initialInteraction);
-
-  useEffect(() => {
-    const unsub = eventBus.on('interaction:state_change', ({ state, npcId }) => {
-      const targetNPCId =
-        state === InteractionState.Idle ? null : (npcId ?? null);
-
-      setInteraction((prev) => {
-        if (prev.state === state && prev.targetNPCId === targetNPCId) {
-          return prev;
-        }
-        return { state, targetNPCId };
-      });
-    });
-    return unsub;
-  }, []);
-
-  const npcInteractionProps = useMemo(
-    () => ({
-      interactionState: interaction.state,
-      interactionTargetNPCId: interaction.targetNPCId,
-    }),
-    [interaction.state, interaction.targetNPCId],
-  );
-
-  return (
-    <NPCSystem
-      livePlayerPositionRef={livePlayerPositionRef}
-      interactionState={npcInteractionProps.interactionState}
-      interactionTargetNPCId={npcInteractionProps.interactionTargetNPCId}
-    />
-  );
-});

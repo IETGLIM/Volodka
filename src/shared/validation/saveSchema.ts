@@ -196,14 +196,15 @@ const AchievementProgressSchema = z.object({
   poemPowerUsedInCombat: z.boolean().optional().default(false),
 });
 
-const GameModeSchema = z.enum([
+const LegacyGameModeSchema = z.enum([
   'menu',
   'intro',
-  
   'exploration',
   'cutscene',
   'combat',
 ]);
+
+const GameModeSchema = z.literal('exploration');
 
 const JournalTabSchema = z.enum(['notes', 'skills', 'poems', 'lore']);
 
@@ -216,7 +217,11 @@ export const SavePayloadSchema = z.object({
   /** Save format version for future migration support */
   saveVersion: z.number().int().optional().default(SAVE_VERSION),
 
-  mode: GameModeSchema,
+  /** Stored as `'exploration'` in new saves; legacy phase values migrated on load. */
+  mode: z.union([GameModeSchema, LegacyGameModeSchema]).optional().default('exploration'),
+  mainMenuOpen: z.boolean().optional(),
+  introActive: z.boolean().optional(),
+  combatActive: z.boolean().optional(),
   currentNodeId: z.string().min(1),
   playerState: PlayerStateSchema,
   exploration: ExplorationStateSchema,

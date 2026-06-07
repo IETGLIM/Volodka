@@ -65,6 +65,7 @@ export function derivePanelFlags(stack: NonNullPanelType[]) {
     questBoardOpen: set.has('questBoard'),
     statsOpen: set.has('stats'),
     karmaPoemOpen: set.has('karmaPoem'),
+    journalOpen: set.has('journal'),
   };
 }
 

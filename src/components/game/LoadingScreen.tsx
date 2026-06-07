@@ -2,7 +2,7 @@
 /* ─── Volodka RPG – Loading Screen (AAA+ CYBERPUNK / MATRIX / GOTHIC / HACKING) ─── */
 
 import { useState, useEffect, useMemo, useRef, memo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { CanvasMatrixRain } from './shared/CanvasMatrixRain';
 
@@ -322,6 +322,7 @@ interface LoadingScreenProps {
 }
 
 export function LoadingScreen({ progress, message = 'Загрузка...', showTitle = false }: LoadingScreenProps) {
+  const reduceMotion = useReducedMotion();
   const [showTip, setShowTip] = useState(true);
   const [showBootText, setShowBootText] = useState(true);
 
@@ -356,9 +357,11 @@ export function LoadingScreen({ progress, message = 'Загрузка...', showT
   return (
     <div className="fixed inset-0 flex flex-col items-center justify-center bg-black overflow-hidden loading-screen-fade-in" style={{ zIndex: UI_LAYERS.LOADING }}>
       {/* ── Layer 0: Matrix Rain Canvas ── */}
+      {!reduceMotion && (
       <div className="absolute inset-0 z-[1]">
         <CanvasMatrixRain />
       </div>
+      )}
 
       {/* ── Layer 1: Film grain ── */}
       <div

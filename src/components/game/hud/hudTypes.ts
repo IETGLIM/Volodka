@@ -12,6 +12,7 @@ export type HUDProps = {
   onOpenQuests?: () => void;
   onOpenInventory?: () => void;
   onOpenPoetry?: () => void;
+  onOpenJournal?: () => void;
   onToggleTutorials?: () => void;
   onOpenMenu?: () => void;
   onOpenMiniGames?: () => void;

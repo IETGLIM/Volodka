@@ -16,6 +16,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { eventBus } from '@/engine/EventBus';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { useGameStore } from '@/store/gameStore';
+import { readGamePhase, clearGameplayPhaseFlags } from '@/shared/gamePhase';
 import type { CutsceneDef } from '@/data/cutscenes';
 
 // ════════════════════════════════════════════════════════════════
@@ -248,9 +249,9 @@ export function CutsceneOverlay() {
 
     // 3. End cutscene in the store
     const store = useGameStore.getState();
-    if (store.mode === 'cutscene') {
+    if (readGamePhase(store) === 'cutscene') {
       store.setCutscene(null, []);
-      store.setMode('exploration');
+      clearGameplayPhaseFlags(store);
     }
 
     // 4. Emit events so camera system & other listeners clean up
@@ -289,9 +290,9 @@ export function CutsceneOverlay() {
 
         // End cutscene in the store if we're still in cutscene mode
         const store = useGameStore.getState();
-        if (store.mode === 'cutscene') {
+        if (readGamePhase(store) === 'cutscene') {
           store.setCutscene(null, []);
-          store.setMode('exploration');
+          clearGameplayPhaseFlags(store);
         }
         eventBus.emit('camera:cutscene_end', {});
 

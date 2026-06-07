@@ -10,7 +10,7 @@ import { useRef, useEffect, useState, useCallback } from 'react';
 import { useThree } from '@react-three/fiber';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import * as THREE from 'three';
-import { useGameStore } from '@/store/gameStore';
+import { useGamePhase } from '@/store/selectors';
 import { eventBus } from '@/engine/EventBus';
 import { ProceduralPlayerModelAdaptive } from './ProceduralPlayerModel';
 
@@ -108,7 +108,7 @@ export function WakeUpSequence() {
   }, []);
 
   // ── Stop when exploration mode starts ──
-  const mode = useGameStore((s) => s.mode);
+  const mode = useGamePhase();
   useEffect(() => {
     if (active && mode === 'exploration') {
       setActive(false);

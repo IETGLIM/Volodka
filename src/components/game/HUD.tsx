@@ -478,6 +478,7 @@ export function HUD(props: HUDProps) {
     onOpenQuests,
     onOpenInventory,
     onOpenPoetry,
+    onOpenJournal,
     onOpenCrafting,
     onOpenTrading,
     onOpenStats,
@@ -646,7 +647,7 @@ export function HUD(props: HUDProps) {
               </AnimatePresence>
             </div>
 
-            <HUDButton icon={<BookOpen className="size-3.5 sm:size-4" />} label="Журнал [J]" onClick={() => useGameStore.getState().toggleJournal()} tooltip="Журнал [J]" />
+            <HUDButton icon={<BookOpen className="size-3.5 sm:size-4" />} label="Журнал [J]" onClick={onOpenJournal} tooltip="Журнал [J]" />
             <HUDButton icon={<Package className="size-3.5 sm:size-4" />} label="Инвентарь [I]" onClick={onOpenInventory} tooltip="Инвентарь [I]" />
 
             {/* Hide some buttons on small screens */}

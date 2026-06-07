@@ -12,6 +12,7 @@ import {
   type SavePayload,
   parseNpcStatesFromSave,
 } from '@/shared/validation/saveSchema';
+import { phaseFlagsFromLegacyMode } from '@/shared/gamePhase';
 import {
   createDefaultExploration,
   createDefaultPlayerState,
@@ -36,7 +37,10 @@ export function getPersistedStateKeys(): PersistedStoreKey[] {
 /** Defaults for fields that survive save/load. */
 export function createDefaultPersistedState(): Pick<GameStoreState, PersistedStoreKey> {
   return {
-    mode: 'menu',
+    mode: 'exploration',
+    mainMenuOpen: true,
+    introActive: false,
+    combatActive: false,
     currentNodeId: 'start',
     playerState: createDefaultPlayerState(),
     exploration: createDefaultExploration(),
@@ -136,11 +140,37 @@ export function storePatchFromSave(payload: SavePayload): Partial<GameStoreState
   };
 
   for (const key of getPersistedStateKeys()) {
-    if (key === 'playerState' || key === 'exploration' || key === 'achievementProgress') {
+    if (
+      key === 'playerState' ||
+      key === 'exploration' ||
+      key === 'achievementProgress' ||
+      key === 'mode' ||
+      key === 'mainMenuOpen' ||
+      key === 'introActive' ||
+      key === 'combatActive'
+    ) {
       continue;
     }
     (patch as Record<string, unknown>)[key] = payload[key];
   }
+
+  const hasPhaseFlags =
+    payload.mainMenuOpen !== undefined ||
+    payload.introActive !== undefined ||
+    payload.combatActive !== undefined;
+
+  const legacyPhase = hasPhaseFlags
+    ? {
+        mainMenuOpen: payload.mainMenuOpen ?? false,
+        introActive: payload.introActive ?? false,
+        combatActive: payload.combatActive ?? false,
+      }
+    : phaseFlagsFromLegacyMode(payload.mode);
+
+  patch.mode = 'exploration';
+  patch.mainMenuOpen = legacyPhase.mainMenuOpen;
+  patch.introActive = legacyPhase.introActive;
+  patch.combatActive = legacyPhase.combatActive;
 
   return patch;
 }

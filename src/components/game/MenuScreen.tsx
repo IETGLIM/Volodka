@@ -674,7 +674,7 @@ const SystemStatusReadout = memo(function SystemStatusReadout() {
 // ============================================
 
 export function MenuScreen() {
-  const { setMode, loadGame, resetGame, musicEnabled, toggleMusic } = useMenuScreenActions();
+  const { setIntroActive, loadGame, resetGame, musicEnabled, toggleMusic } = useMenuScreenActions();
   const reduceMotion = useReducedMotion();
 
   const hasSave = useSyncExternalStore(
@@ -717,7 +717,8 @@ export function MenuScreen() {
       const store = useGameStore.getState();
       store.setCurrentNodeId('start');
       store.setIntroSeen(false);
-      store.setMode('intro');
+      store.setMainMenuOpen(false);
+      store.setIntroActive(true);
     }, 800);
   }, [resetGame, isFadingOut]);
 

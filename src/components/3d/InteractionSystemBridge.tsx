@@ -8,16 +8,17 @@
  *  This ensures collision resolution works even during
  *  approach/align phases — no wall clipping!
  */
-
 import { useRef, useEffect } from 'react';
+import { devWarn } from '@/shared/utils/devLog';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import * as THREE from 'three';
 import { InteractionState, DEFAULT_CUTSCENE_DURATION } from '@/engine/interaction/interactionMachine';
 import { getNPCCutscene } from '@/data/npcCutscenes';
 import { eventBus } from '@/engine/EventBus';
 import { getNPCGroup } from '@/engine/interaction/npcRegistry';
-import { getPlayerRigidBody, isPlayerRigidBodyValid, setPlayerExternalVelocity, clearPlayerExternalVelocity } from '@/engine/PlayerRigidBodyState';
+import { setPlayerExternalVelocity, clearPlayerExternalVelocity } from '@/engine/PlayerRigidBodyState';
 import { useGameStore } from '@/store/gameStore';
+import { readGamePhase } from '@/shared/gamePhase';
 import { closeNarrativeOverlay } from '@/engine/scene/narrativeOverlay';
 
 /* ─── Module-level interaction state (accessible outside R3F canvas) ─── */
@@ -159,6 +160,7 @@ export function InteractionSystemBridge({
 
       stateRef.current = InteractionState.Exit;
       phaseTimerRef.current = 0;
+      globalTimerRef.current = 0;
 
       currentInteractionState = InteractionState.Exit;
 
@@ -224,17 +226,21 @@ export function InteractionSystemBridge({
     let timeoutDuration: number;
     if (stateRef.current === InteractionState.Dialogue) {
       // Only timeout Dialogue in exploration mode without story overlay
-      const currentMode = useGameStore.getState().mode;
+      const currentMode = readGamePhase(useGameStore.getState());
       const showStoryOverlay = useGameStore.getState().showStoryOverlay;
       shouldCheckTimeout = currentMode === 'exploration' && !showStoryOverlay;
       timeoutDuration = 4.0;
+    } else if (stateRef.current === InteractionState.Exit) {
+      // Exit is a short cleanup phase (0.3s) — phaseTimer handles it; don't race globalTimer
+      shouldCheckTimeout = false;
+      timeoutDuration = GLOBAL_INTERACTION_TIMEOUT;
     } else {
       shouldCheckTimeout = true;
       timeoutDuration = GLOBAL_INTERACTION_TIMEOUT;
     }
 
     if (shouldCheckTimeout && globalTimerRef.current >= timeoutDuration) {
-      console.warn(
+      devWarn(
         `[InteractionSystemBridge] Global timeout (${timeoutDuration}s) reached ` +
         `in state ${stateRef.current}. Force-resetting to Idle.`,
       );
@@ -268,10 +274,7 @@ export function InteractionSystemBridge({
       return;
     }
 
-    const rb = getPlayerRigidBody();
-    if (!rb || !isPlayerRigidBodyValid(rb)) return;
-
-    // Wrap all rb method calls in try-catch to handle disposed RigidBody
+    // State machine uses livePlayerPositionRef + external velocity — no RigidBody calls here.
     try {
     const npcGroup = targetNPCIdRef.current
       ? getNPCGroup(targetNPCIdRef.current)
@@ -460,11 +463,12 @@ export function InteractionSystemBridge({
         // is NOT showing (dialogue closed without emitting interaction:end),
         // force the interaction to end.
         if (phaseTimerRef.current >= 0.3) {
-          const currentMode = useGameStore.getState().mode;
+          const currentMode = readGamePhase(useGameStore.getState());
           const showStoryOverlay = useGameStore.getState().showStoryOverlay;
           if (currentMode !== 'cutscene' && !showStoryOverlay) {
             stateRef.current = InteractionState.Exit;
             phaseTimerRef.current = 0;
+            globalTimerRef.current = 0;
             currentInteractionState = InteractionState.Exit;
             eventBus.emit('interaction:state_change', {
               state: InteractionState.Exit,
@@ -506,9 +510,8 @@ export function InteractionSystemBridge({
       }
     }
     } catch (err) {
-      // RigidBody was disposed during this frame (e.g. scene transition).
-      // Reset interaction state to Idle to prevent cascading crashes.
-      console.warn('[InteractionSystemBridge] RigidBody call failed, resetting to Idle:', err);
+      // Unexpected error during interaction update — reset to Idle.
+      devWarn('[InteractionSystemBridge] Update failed, resetting to Idle:', err);
       const prevNpcId = targetNPCIdRef.current;
       stateRef.current = InteractionState.Idle;
       targetNPCIdRef.current = null;

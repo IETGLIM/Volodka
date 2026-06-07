@@ -22,6 +22,8 @@
 
 import { useEffect, useRef } from 'react';
 import { useGameStore } from '@/store/gameStore';
+import { readGamePhase } from '@/shared/gamePhase';
+import { useGamePhase } from '@/store/selectors';
 import { eventBus } from '@/engine/EventBus';
 import { buildNPCStatesForTime } from '@/engine/ScheduleEngine';
 import { buildScheduleContext } from '@/shared/scheduleContext';
@@ -37,7 +39,7 @@ const HOURS_PER_TICK = 0.25; // 15 game minutes per tick
  * Ticks the world forward periodically and keeps NPC states synchronized.
  */
 export function useWorldClock() {
-  const mode = useGameStore((s) => s.mode);
+  const mode = useGamePhase();
 
   useEffect(() => {
     // Only tick when the player is in exploration mode (the "living world" mode)
@@ -47,7 +49,7 @@ export function useWorldClock() {
     const interval = setInterval(() => {
       const store = useGameStore.getState();
       // Double-check we're still in exploration
-      if (store.mode !== 'exploration') return;
+      if (readGamePhase(store) !== 'exploration') return;
 
       const previousHour = store.exploration.timeOfDay;
       // Advance time by a small increment

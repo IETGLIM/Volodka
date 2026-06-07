@@ -1,6 +1,7 @@
 
 import { useEffect, useCallback } from 'react';
 import { useGameStore } from '@/store/gameStore';
+import { readGamePhase } from '@/shared/gamePhase';
 import { eventBus } from '@/engine/EventBus';
 import { triggerCameraShake } from '@/engine/camera/cameraShake';
 import { startCombat } from '@/engine/CombatSystem';
@@ -33,7 +34,7 @@ export function useCombatOrchestrator() {
       eventBus.on('scene:enter', ({ sceneId }) => {
         if (sceneId === 'battle') {
           const store = useGameStore.getState();
-          if (store.mode === 'exploration') {
+          if (readGamePhase(store) === 'exploration') {
             // Random enemy based on karma level
             const karma = store.playerState.karma;
             let enemyType: EnemyType = 'system_daemon';

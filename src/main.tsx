@@ -2,7 +2,7 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { Toaster } from '@/components/ui/sonner';
 import '@/app/globals.css';
-import { markAppStart, markGameDataReady } from '@/engine/performance/LoadingTimeline';
+import { markAppStart } from '@/engine/performance/LoadingTimeline';
 import { preloadBootGameData } from '@/data/gameDataLoader';
 
 markAppStart();
@@ -23,7 +23,6 @@ function showBootError(message: string) {
 
 async function boot() {
   await preloadBootGameData();
-  markGameDataReady();
 
   const { GamePage } = await import('@/components/game/GamePage');
 

@@ -38,6 +38,21 @@ export const CUTSCENE_TIMINGS = {
   SKIP_DELAY_MS: 1000,
   /** Delay before showing text overlay (let fade-to-black start first) */
   OVERLAY_DELAY_MS: 800,
-  /** Fallback canvas first-frame timeout */
-  CANVAS_TIMEOUT_MS: 1000,
+  /** Fallback canvas first-frame timeout (slow mobile / cold WASM) */
+  CANVAS_TIMEOUT_MS: 2800,
+  /** Black overlay fade after canvas is ready */
+  CANVAS_FADE_OUT_MS: 680,
+  /** Quick fade when canvas was already warm */
+  CANVAS_FADE_OUT_WARM_MS: 420,
 } as const;
+
+/** Shared motion curves (Framer Motion cubic-bezier) */
+export const MOTION_EASE = {
+  /** Premium ease-out — mode/scene reveals */
+  cinematicOut: [0.16, 1, 0.3, 1] as [number, number, number, number],
+  /** Standard material ease */
+  standard: [0.25, 0.1, 0.25, 1] as [number, number, number, number],
+} as const;
+
+/** Defer heavy IBL HDR fetch until the scene has settled (frames @ 60fps) */
+export const ENV_MAP_WARMUP_FRAMES = 48;

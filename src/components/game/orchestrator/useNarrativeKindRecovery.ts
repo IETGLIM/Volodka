@@ -1,5 +1,10 @@
 import { useEffect } from 'react';
 import { useGameStore } from '@/store/gameStore';
+import {
+  getDialogueNodes,
+  getStoryNodes,
+  preloadNarrativeGameData,
+} from '@/data/gameDataLoader';
 
 /** Recover narrativeKind for saves created before overlay kind was persisted. */
 export function useNarrativeKindRecovery(
@@ -13,15 +18,13 @@ export function useNarrativeKindRecovery(
     if (!showStoryOverlay || narrativeKind || !currentNodeId) return;
 
     let cancelled = false;
-    void (async () => {
-      const [{ STORY_NODES }, { DIALOGUE_NODES }] = await Promise.all([
-        import('@/data/storyNodes'),
-        import('@/data/dialogueNodes'),
-      ]);
+    void preloadNarrativeGameData().then(() => {
       if (cancelled) return;
-      if (STORY_NODES[currentNodeId]) setNarrativeKind('story');
-      else if (DIALOGUE_NODES[currentNodeId]) setNarrativeKind('dialogue');
-    })();
+      const storyNodes = getStoryNodes();
+      const dialogueNodes = getDialogueNodes();
+      if (storyNodes[currentNodeId]) setNarrativeKind('story');
+      else if (dialogueNodes[currentNodeId]) setNarrativeKind('dialogue');
+    });
 
     return () => {
       cancelled = true;

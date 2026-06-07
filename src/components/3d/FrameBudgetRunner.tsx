@@ -1,6 +1,7 @@
 /**
- * Single R3F useFrame entry point for all budgeted systems.
- * Individual components register via useFrameTick() instead of raw useFrame().
+ * Pre-render frame budget orchestrator (priority −1000).
+ * Post-render ticks run via PostFrameBudgetRunner (+1000).
+ * Components register via useFrameTick() / usePostFrameTick().
  */
 
 import { useRef } from 'react';

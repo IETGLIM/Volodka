@@ -98,7 +98,10 @@ export interface SceneConfig {
 }
 
 // ─── Story / Narrative ───
-export type GameMode = 'menu' | 'intro' | 'exploration' | 'cutscene' | 'combat';
+export type GameMode = 'exploration';
+
+/** Legacy save/migration phase names — not stored on live game mode. */
+export type LegacyGamePhase = 'menu' | 'intro' | 'exploration' | 'cutscene' | 'combat';
 
 export type StoryEffectType =
   | 'addStat'
@@ -402,7 +405,7 @@ export type SideEffect =
   | { type: 'addStress'; value: number }
   | { type: 'addSkill'; skill: string; value: number }
   | { type: 'addXp'; value: number }
-  | { type: 'setMode'; mode: string }
+  | { type: 'setCombatActive'; active: boolean }
   | { type: 'addPoemPower'; poemId: string };
 
 /* ─── Enemy Special Attacks ─── */

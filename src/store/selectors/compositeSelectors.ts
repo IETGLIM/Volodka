@@ -2,12 +2,23 @@
 /* Bundles fields from multiple slices into one shallow-stable subscription. */
 
 import { useGameSelector } from './hooks';
+import { getGamePhase } from '@/shared/gamePhase';
+import type { GameStoreState } from '../types';
 
-/** FollowCamera: scene + mode + cutscene state. */
+function phaseFromStore(s: GameStoreState) {
+  return getGamePhase({
+    mainMenuOpen: s.mainMenuOpen,
+    introActive: s.introActive,
+    combatActive: s.combatActive,
+    activeCutsceneId: s.activeCutsceneId,
+  });
+}
+
+/** FollowCamera: scene + phase + cutscene state. */
 export function useFollowCameraState() {
   return useGameSelector((s) => ({
     sceneId: s.exploration.currentSceneId,
-    gameMode: s.mode,
+    gameMode: phaseFromStore(s),
     activeCutsceneId: s.activeCutsceneId,
     cutsceneWaypoints: s.cutsceneWaypoints,
     currentNodeId: s.currentNodeId,
@@ -86,10 +97,11 @@ export function useHUDPlayerVitals() {
 /** GameOrchestrator + IntroAutoSkip overlay state. */
 export function useOrchestratorOverlay() {
   return useGameSelector((s) => ({
-    mode: s.mode,
+    mode: phaseFromStore(s),
     showStoryOverlay: s.showStoryOverlay,
     currentNodeId: s.currentNodeId,
     introSeen: s.introSeen,
+    mainMenuOpen: s.mainMenuOpen,
   }));
 }
 
@@ -97,7 +109,7 @@ export function useOrchestratorOverlay() {
 export function useInteractionOverlay() {
   return useGameSelector((s) => ({
     sceneId: s.exploration.currentSceneId,
-    gameMode: s.mode,
+    gameMode: phaseFromStore(s),
     showStoryOverlay: s.showStoryOverlay,
   }));
 }
@@ -105,7 +117,7 @@ export function useInteractionOverlay() {
 /** DialogueRenderer narrative context. */
 export function useDialogueContext() {
   return useGameSelector((s) => ({
-    mode: s.mode,
+    mode: phaseFromStore(s),
     showStoryOverlay: s.showStoryOverlay,
     currentNodeId: s.currentNodeId,
     playerState: s.playerState,
@@ -118,7 +130,7 @@ export function useDialogueContext() {
 export function useStoryContext() {
   return useGameSelector((s) => ({
     showStoryOverlay: s.showStoryOverlay,
-    mode: s.mode,
+    mode: phaseFromStore(s),
     currentNodeId: s.currentNodeId,
     playerState: s.playerState,
     currentAct: s.playerState.progression.currentAct,
@@ -161,7 +173,8 @@ export const useCameraFollowState = useFollowCameraState;
 /** MenuScreen — primary actions + music toggle. */
 export function useMenuScreenActions() {
   return useGameSelector((s) => ({
-    setMode: s.setMode,
+    setMainMenuOpen: s.setMainMenuOpen,
+    setIntroActive: s.setIntroActive,
     loadGame: s.loadGame,
     resetGame: s.resetGame,
     musicEnabled: s.musicEnabled,
@@ -185,7 +198,8 @@ export function useDevPanelSceneTab() {
     sceneId: s.exploration.currentSceneId,
     playerPos: s.exploration.playerPosition,
     playerRot: s.exploration.playerRotation,
-    mode: s.mode,
+    mode: phaseFromStore(s),
+    storedMode: s.mode,
     timeOfDay: s.exploration.timeOfDay,
     npcStates: s.exploration.npcStates,
   }));
@@ -197,7 +211,8 @@ export function useDevPanelStateTab() {
     karma: s.playerState.karma,
     stress: s.playerState.stress,
     energy: s.playerState.energy,
-    mode: s.mode,
+    mode: phaseFromStore(s),
+    storedMode: s.mode,
     quests: s.quests,
     collectedPoems: s.collectedPoems,
     flags: s.playerState.flags,

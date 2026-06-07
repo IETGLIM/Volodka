@@ -23,6 +23,7 @@ export type PanelType =
   | 'questBoard'
   | 'stats'
   | 'karmaPoem'
+  | 'journal'
   | null;
 
 export type CanvasTransitionState = {
@@ -66,4 +67,5 @@ export type PanelFlags = {
   questBoardOpen: boolean;
   statsOpen: boolean;
   karmaPoemOpen: boolean;
+  journalOpen: boolean;
 };

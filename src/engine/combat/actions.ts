@@ -7,7 +7,7 @@ import {
   getGameSnapshot,
   tryActivatePoemPower,
 } from '@/engine/GameActionDispatcher';
-import { isGameMode, isTrainablePlayerSkill, warnInvalidValue } from '@/shared/validation/typeGuards';
+import { isTrainablePlayerSkill, warnInvalidValue } from '@/shared/validation/typeGuards';
 import { createBuff, addBuff } from './buffSystem';
 import { getEnemyDefenseReduction } from './buffSystem';
 
@@ -528,12 +528,8 @@ export function applyCombatSideEffects(effects: SideEffect[] | undefined): void 
       case 'addXp':
         dispatchGameAction({ type: 'player/addXp', amount: eff.value });
         break;
-      case 'setMode':
-        if (isGameMode(eff.mode)) {
-          dispatchGameAction({ type: 'story/setMode', mode: eff.mode });
-        } else {
-          warnInvalidValue('combat side effect mode', eff.mode);
-        }
+      case 'setCombatActive':
+        dispatchGameAction({ type: 'story/setCombatActive', active: eff.active });
         break;
       case 'addPoemPower':
         tryActivatePoemPower(eff.poemId);

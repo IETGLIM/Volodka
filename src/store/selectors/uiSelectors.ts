@@ -2,19 +2,42 @@
 
 import type { GameMode } from '@/shared/types/game';
 import type { TutorialFlags } from '../shared';
+import { getGamePhase, type GamePhase } from '@/shared/gamePhase';
 import { getGameStore } from '../gameStore';
 import { useGameSelector, useGamePrimitive } from './hooks';
 
+function selectPhaseSlice(s = getGameStore()) {
+  return {
+    mainMenuOpen: s.mainMenuOpen,
+    introActive: s.introActive,
+    combatActive: s.combatActive,
+    activeCutsceneId: s.activeCutsceneId,
+  };
+}
+
 /* ─── Plain getters ─── */
 
-export const selectGameMode = (s = getGameStore()): GameMode => s.mode;
+/** Stored mode — always `'exploration'`. */
+export const selectStoredGameMode = (s = getGameStore()): GameMode => s.mode;
+
+/** @deprecated Alias — use selectGamePhase. */
+export const selectGameMode = (s = getGameStore()): GamePhase => selectGamePhase(s);
+
+export const selectGamePhase = (s = getGameStore()): GamePhase =>
+  getGamePhase(selectPhaseSlice(s));
 
 export const selectTutorialFlags = (s = getGameStore()): TutorialFlags => s.tutorialFlags;
 
 /* ─── React hooks ─── */
 
+/** Computed UI phase for branching (menu / intro / combat / cutscene / exploration). */
+export function useGamePhase() {
+  return useGamePrimitive(selectGamePhase);
+}
+
+/** @deprecated Alias — use useGamePhase(). */
 export function useGameMode() {
-  return useGamePrimitive((s) => s.mode);
+  return useGamePhase();
 }
 
 export function useTutorialFlags() {

@@ -12,7 +12,7 @@ import { bottomQuestToastPx } from '@/shared/constants/hudLayout';
 import { eventBus } from '@/engine/EventBus'
 import { AriaLiveRegion } from '@/components/a11y/AriaLiveRegion'
 import { QUEST_DEFINITIONS } from '@/data/quests'
-import { useGameStore } from '@/store/gameStore'
+import { useGamePhase } from '@/store/selectors'
 import { useQuests } from '@/store/selectors'
 import type { QuestState, QuestDefinition } from '@/shared/types/game'
 import { formatQuestCompletionRewards } from '@/shared/utils/questRewards'
@@ -584,7 +584,7 @@ export function QuestNotificationSystem() {
   }, [])
 
   /* ── Only show in gameplay modes ── */
-  const mode = useGameStore((s) => s.mode)
+  const mode = useGamePhase()
   if (mode === 'menu' || mode === 'intro') return null
 
   const visibleNotifs = notifications.slice(-MAX_VISIBLE)

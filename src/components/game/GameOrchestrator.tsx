@@ -1,7 +1,6 @@
 /* ─── Volodka RPG – Main game orchestrator (thin coordinator) ─── */
 
 import {
-  useCallback,
   useEffect,
   useMemo,
   useState,
@@ -9,8 +8,9 @@ import {
 } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useGameStore } from '@/store/gameStore';
-import { useJournalOpen, useOrchestratorOverlay } from '@/store/selectors';
+import { useOrchestratorOverlay } from '@/store/selectors';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
+import { CUTSCENE_TIMINGS, MOTION_EASE } from '@/shared/constants/transitionTimings';
 import {
   closeMinigame,
   type MinigamePanelSetters,
@@ -131,13 +131,12 @@ import {
 export function GameOrchestrator() {
   const gameDataReady = useGameDataPreload();
   useEffect(() => { markOrchestratorMount(); }, []);
-  const { mode, showStoryOverlay, currentNodeId, introSeen } = useOrchestratorOverlay();
-  const [canvasMounted, setCanvasMounted] = useState(mode !== 'menu');
+  const { mode, showStoryOverlay, currentNodeId, introSeen, mainMenuOpen } = useOrchestratorOverlay();
+  const [canvasMounted, setCanvasMounted] = useState(!mainMenuOpen);
 
   useEffect(() => {
-    if (mode !== 'menu') setCanvasMounted(true);
-  }, [mode]);
-  const journalOpen = useJournalOpen();
+    if (!mainMenuOpen) setCanvasMounted(true);
+  }, [mainMenuOpen]);
   const pauseDialog = usePanelDialog();
   const narrativeKind = useGameStore((s) => s.narrativeKind);
   const devToolsArmed = useGameStore((s) => s.devToolsArmed);
@@ -176,7 +175,7 @@ export function GameOrchestrator() {
   // ── World Clock: single pulse for NPC schedules, weather, quests ──
   useWorldClock();
   // ── Open-world chunk streaming (districts only; interiors stay discrete) ──
-  useWorldStream(mode === 'exploration' || mode === 'menu');
+  useWorldStream(!mainMenuOpen && mode !== 'intro');
 
   const {
     codebreakerOpen, setCodebreakerOpen,
@@ -259,6 +258,7 @@ export function GameOrchestrator() {
     questBoardOpen,
     statsOpen,
     karmaPoemOpen,
+    journalOpen,
     questAcceptId,
     questAcceptNpcId,
     setQuestAcceptId,
@@ -275,6 +275,7 @@ export function GameOrchestrator() {
     handleOpenInventory,
     handleOpenPoetry,
     handleOpenPoetryBook,
+    handleOpenJournal,
     handleToggleTutorials,
     handleOpenMenu,
   } = panels;
@@ -282,6 +283,7 @@ export function GameOrchestrator() {
   useKeyboardShortcutManager({
     activePanel,
     panelStackLength: panelStack.length,
+    journalOpen,
     codebreakerOpen,
     openstackTerminalOpen,
     bashTerminalOpen,
@@ -353,11 +355,18 @@ export function GameOrchestrator() {
         <LazyPanelSlot panelId="trading" Panel={LazyTradingPanel} open={tradingOpen} onClose={() => closePanelByType('trading')} />
         <LazyPanelSlot panelId="fastTravel" Panel={LazyFastTravelPanel} open={fastTravelOpen} onClose={() => closePanelByType('fastTravel')} />
         <LazyPanelSlot panelId="rest" Panel={LazyRestPanel} open={restOpen} onClose={() => closePanelByType('rest')} />
-        {journalOpen && <LazyPanelSlot Panel={LazyJournalPanel} />}
+        <LazyPanelSlot
+          panelId="journal"
+          Panel={LazyJournalPanel}
+          open={journalOpen}
+          onClose={() => closePanelByType('journal')}
+        />
       </>
     ),
     [closePanelByType, inventoryPanelProps, journalOpen, questsOpen, inventoryOpen, poetryOpen, craftingOpen, tradingOpen, fastTravelOpen, restOpen],
   );
+
+  const showGameplayPanels = !mainMenuOpen && mode !== 'intro';
 
   const lazyPanelsAfterSettings = useMemo(
     () => (
@@ -397,18 +406,6 @@ export function GameOrchestrator() {
     [shortcutsOpen, closePanelByType],
   );
 
-  // ── Mobile interact callback ──
-  // When the mobile interact button is pressed, advance dialogue/story if active,
-  // otherwise let the synthetic KeyE and EventBus handle the interaction.
-  const handleMobileInteract = useCallback(() => {
-    const store = useGameStore.getState();
-    // If story overlay is showing, advance dialogue/story
-    // (StoryRenderer/DialogueRenderer listen for KeyE keydown to advance)
-    // The synthetic KeyE from ExplorationMobileHud will handle this.
-    // No additional action needed here — the narrative overlay works on top of exploration.
-    void store; // suppress unused warning
-  }, []);
-
   // ── Render ──
   return (
     <VirtualControlsContext.Provider value={sharedVirtualControlsRef}>
@@ -427,13 +424,31 @@ export function GameOrchestrator() {
             {isTransitioning && (
               <motion.div
                 key="mode-transition"
-                className="fixed inset-0 bg-black"
+                className="fixed inset-0 bg-black pointer-events-none"
                 style={{ zIndex: UI_LAYERS.LOADING }}
                 initial={{ opacity: 1 }}
                 animate={{ opacity: 0 }}
                 exit={{ opacity: 0 }}
-                transition={{ duration: 0.5 }}
-              />
+                transition={{
+                  duration: CUTSCENE_TIMINGS.CANVAS_FADE_OUT_MS / 1000,
+                  ease: MOTION_EASE.cinematicOut,
+                }}
+              >
+                <div
+                  className="absolute inset-0 opacity-30"
+                  style={{
+                    background:
+                      'radial-gradient(ellipse at center, transparent 35%, rgba(0,0,0,0.85) 100%)',
+                  }}
+                />
+                <div
+                  className="absolute inset-0 opacity-[0.07]"
+                  style={{
+                    background:
+                      'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,255,238,0.15) 2px, rgba(0,255,238,0.15) 4px)',
+                  }}
+                />
+              </motion.div>
             )}
           </AnimatePresence>
 
@@ -640,6 +655,7 @@ export function GameOrchestrator() {
                       onOpenQuests={handleOpenQuests}
                       onOpenInventory={handleOpenInventory}
                       onOpenPoetry={handleOpenPoetry}
+                      onOpenJournal={handleOpenJournal}
                       onToggleTutorials={handleToggleTutorials}
                       onOpenMenu={handleOpenMenu}
                       onOpenMiniGames={() => dispatchPanel('miniGameHub')}
@@ -696,7 +712,7 @@ export function GameOrchestrator() {
               {/* Mobile controls — visible during ALL gameplay modes on touch devices
                   (player needs D-pad to move + interact button to advance/interact) */}
               {isMobile && mode === 'exploration' && (
-                <ExplorationMobileHud onInteractPress={handleMobileInteract} onOpenInventory={handleOpenInventory} />
+                <ExplorationMobileHud onOpenInventory={handleOpenInventory} />
               )}
 
               {/* Story / dialogue overlays — load chunks only while narrative is active */}
@@ -800,7 +816,7 @@ export function GameOrchestrator() {
           )}
 
           {/* ── Panels (memoized — see lazyPanelsBeforeMenu) ── */}
-          {lazyPanelsBeforeMenu}
+          {showGameplayPanels && lazyPanelsBeforeMenu}
 
           {/* ── Pause menu ── */}
           <AnimatePresence>
@@ -812,7 +828,7 @@ export function GameOrchestrator() {
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.2 }}
                 className="fixed inset-0 flex items-center justify-center"
-                style={{ zIndex: 1 }}
+                style={{ position: 'relative' }}
               >
                 <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={() => closePanelByType('menu')} aria-hidden="true" />
                 <FocusTrap initialFocusRef={pauseDialog.closeButtonRef}>

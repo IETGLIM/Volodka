@@ -4,7 +4,17 @@ import { useGameStore } from '@/store/gameStore';
 import { eventBus } from '@/engine/EventBus';
 import { triggerCameraShake } from '@/engine/camera/cameraShake';
 import { getSceneAudioController } from '@/engine/audio/SceneAudioController';
+import { getGamePhase } from '@/shared/gamePhase';
 import type { SceneId } from '@/config/sceneDefinitions';
+
+function selectAudioPhase(state: ReturnType<typeof useGameStore.getState>) {
+  return getGamePhase({
+    mainMenuOpen: state.mainMenuOpen,
+    introActive: state.introActive,
+    combatActive: state.combatActive,
+    activeCutsceneId: state.activeCutsceneId,
+  });
+}
 
 /**
  * Thin React hook — subscribes to game state / EventBus and delegates
@@ -21,7 +31,7 @@ export function useAudioOrchestrator() {
 
     const state = useGameStore.getState();
     ctrl.onModeChange(
-      state.mode,
+      selectAudioPhase(state),
       state.exploration.currentSceneId as SceneId,
       state.exploration.timeOfDay,
       state.showStoryOverlay,
@@ -95,7 +105,7 @@ export function useAudioOrchestrator() {
     const ctrl = controllerRef.current;
     const unsub = useGameStore.subscribe(
       (state) => ({
-        mode: state.mode,
+        phase: selectAudioPhase(state),
         showStoryOverlay: state.showStoryOverlay,
         sceneId: state.exploration.currentSceneId,
         timeOfDay: state.exploration.timeOfDay,
@@ -103,20 +113,20 @@ export function useAudioOrchestrator() {
       (selected, prev) => {
         if (disposedRef.current) return;
 
-        if (selected.mode !== prev.mode) {
+        if (selected.phase !== prev.phase) {
           ctrl.onModeChange(
-            selected.mode,
+            selected.phase,
             selected.sceneId as SceneId,
             selected.timeOfDay,
             selected.showStoryOverlay,
           );
         } else {
           if (selected.showStoryOverlay !== prev.showStoryOverlay) {
-            ctrl.setDialogueState(selected.showStoryOverlay, selected.mode);
+            ctrl.setDialogueState(selected.showStoryOverlay, selected.phase);
           }
-          if (selected.mode === 'combat' || prev.mode === 'combat') {
+          if (selected.phase === 'combat' || prev.phase === 'combat') {
             ctrl.onModeChange(
-              selected.mode,
+              selected.phase,
               selected.sceneId as SceneId,
               selected.timeOfDay,
               selected.showStoryOverlay,
@@ -125,14 +135,14 @@ export function useAudioOrchestrator() {
         }
 
         if (
-          selected.mode === 'exploration' &&
+          selected.phase === 'exploration' &&
           selected.sceneId !== prev.sceneId
         ) {
           ctrl.onSceneEnter(selected.sceneId as SceneId, selected.timeOfDay);
         }
 
         if (
-          selected.mode === 'exploration' &&
+          selected.phase === 'exploration' &&
           selected.timeOfDay !== prev.timeOfDay
         ) {
           const prevTime = prev.timeOfDay;

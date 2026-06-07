@@ -1,0 +1,20 @@
+import type { QuestDefinition } from '@/shared/types/game';
+import { CHK_QUESTS } from '../chkTolpa/quests';
+import { QUESTS_ACT1 } from './act1';
+import { QUESTS_ACT2 } from './act2';
+import { QUESTS_ACT3 } from './act3';
+import { QUESTS_ACT4 } from './act4';
+import { QUESTS_ACT5 } from './act5';
+import { QUESTS_ACT6 } from './act6';
+import { QUESTS_ACT7 } from './act7';
+
+export const QUEST_DEFINITIONS: QuestDefinition[] = [
+  ...QUESTS_ACT1,
+  ...QUESTS_ACT2,
+  ...QUESTS_ACT3,
+  ...QUESTS_ACT4,
+  ...QUESTS_ACT5,
+  ...QUESTS_ACT6,
+  ...QUESTS_ACT7,
+  ...CHK_QUESTS,
+];

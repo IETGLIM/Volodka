@@ -30,6 +30,8 @@ export interface FrameTickContext {
 
 export type FrameTickCallback = (ctx: FrameTickContext) => void;
 
+export type FrameTickPhase = 'pre' | 'post';
+
 export interface FrameTickOptions {
   /** Lower runs earlier within the same system. Default 0. */
   priority?: number;
@@ -37,6 +39,8 @@ export interface FrameTickOptions {
   label?: string;
   /** Skip when false without unregistering. Default true. */
   enabled?: boolean;
+  /** Pre-render (default) or post-render (after WebGL draw). */
+  phase?: FrameTickPhase;
 }
 
 export interface RegisteredFrameTick {
@@ -45,5 +49,6 @@ export interface RegisteredFrameTick {
   priority: number;
   label: string;
   enabled: boolean;
+  phase: FrameTickPhase;
   callback: FrameTickCallback;
 }

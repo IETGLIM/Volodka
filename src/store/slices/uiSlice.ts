@@ -3,7 +3,7 @@
  * music state, and journal state. */
 
 import type { StateCreator } from 'zustand';
-import type { GameMode, SceneId } from '@/shared/types/game';
+import type { GameMode } from '@/shared/types/game';
 import {
   clamp,
   createDefaultTutorialFlags,
@@ -24,7 +24,11 @@ import { musicEngine } from '@/engine/MusicEngine';
 export type NarrativeKind = 'story' | 'dialogue';
 
 export interface UISliceState {
+  /** Always `'exploration'` — use phase flags + getGamePhase() for UI branching. */
   mode: GameMode;
+  mainMenuOpen: boolean;
+  introActive: boolean;
+  combatActive: boolean;
   currentNodeId: string;
   lastSaveTimestamp: number | null;
   lastAutoSaveTimestamp: number | null;
@@ -47,7 +51,9 @@ export interface UISliceState {
 }
 
 export interface UISliceActions {
-  setMode: (mode: GameMode) => void;
+  setMainMenuOpen: (open: boolean) => void;
+  setIntroActive: (active: boolean) => void;
+  setCombatActive: (active: boolean) => void;
   setCurrentNodeId: (id: string) => void;
   setShowStoryOverlay: (show: boolean) => void;
   /** Atomically open story/dialogue overlay (avoids node/overlay race). */
@@ -81,7 +87,10 @@ export const createUISlice: StateCreator<
   UISlice
 > = (set, get) => ({
   /* ── Initial state ── */
-  mode: 'menu',
+  mode: 'exploration',
+  mainMenuOpen: true,
+  introActive: false,
+  combatActive: false,
   currentNodeId: 'start',
   lastSaveTimestamp: null,
   lastAutoSaveTimestamp: null,
@@ -102,7 +111,26 @@ export const createUISlice: StateCreator<
 
   /* ── Actions ── */
 
-  setMode: (mode) => set({ mode }),
+  setMainMenuOpen: (open) =>
+    set({
+      mode: 'exploration',
+      mainMenuOpen: open,
+      ...(open ? { introActive: false, combatActive: false } : {}),
+    }),
+
+  setIntroActive: (active) =>
+    set({
+      mode: 'exploration',
+      introActive: active,
+      ...(active ? { mainMenuOpen: false, combatActive: false } : {}),
+    }),
+
+  setCombatActive: (active) =>
+    set({
+      mode: 'exploration',
+      combatActive: active,
+      ...(active ? { mainMenuOpen: false, introActive: false } : {}),
+    }),
 
   setCurrentNodeId: (id) => set({ currentNodeId: id?.trim() || 'start' }),
 

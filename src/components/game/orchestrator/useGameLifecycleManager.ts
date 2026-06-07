@@ -1,12 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
-import { shallow } from 'zustand/shallow';
 import { useGameStore } from '@/store/gameStore';
+import { readGamePhase } from '@/shared/gamePhase';
 import { eventBus } from '@/engine/EventBus';
 import { musicEngine } from '@/engine/MusicEngine';
 import { SCENE_CONFIG } from '@/config/scenes';
 import { AUTO_SAVE_INTERVAL_MS } from '@/data/constants';
 import { processExpiredTTLFlags } from '@/engine/PoemPowerSystem';
-import { preloadBootGameData, preloadNarrativeGameData } from '@/data/gameDataLoader';
+import { preloadNarrativeGameData } from '@/data/gameDataLoader';
 import { initWorldEventDirector } from '@/engine/world';
 
 /** Autosave, TTL cleanup, daily resets, scene banners, guided story lifecycle. */
@@ -23,8 +23,7 @@ export function useGameLifecycleManager(mode: string) {
     let disposeFn: (() => void) | undefined;
     let cancelled = false;
 
-    void preloadBootGameData()
-      .then(() => preloadNarrativeGameData())
+    void preloadNarrativeGameData()
       .then(() => import('@/engine/GuidedStoryManager'))
       .then((mod) => {
       if (cancelled) return;
@@ -84,7 +83,7 @@ export function useGameLifecycleManager(mode: string) {
 
     const interval = setInterval(() => {
       const store = useGameStore.getState();
-      if (store.mode !== 'exploration') return;
+      if (readGamePhase(store) !== 'exploration') return;
       store.saveGame({ source: 'auto' });
     }, AUTO_SAVE_INTERVAL_MS);
 
@@ -94,7 +93,7 @@ export function useGameLifecycleManager(mode: string) {
   useEffect(() => {
     const unsub = eventBus.on('scene:enter', () => {
       const store = useGameStore.getState();
-      if (store.mode === 'exploration') {
+      if (readGamePhase(store) === 'exploration') {
         store.saveGame({ source: 'auto' });
       }
     });
@@ -107,7 +106,7 @@ export function useGameLifecycleManager(mode: string) {
   useEffect(() => {
     const unsub = eventBus.on('combat:end', () => {
       const store = useGameStore.getState();
-      if (store.mode === 'exploration') {
+      if (readGamePhase(store) === 'exploration') {
         store.saveGame({ source: 'auto' });
       }
     });
