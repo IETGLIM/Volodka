@@ -26,8 +26,8 @@
 
 /* Loading spinner subtle pulse glow */
 @keyframes loading-spinner-pulse {
-  0%, 100% { filter: drop-shadow(0 0 8px rgba(34,211,238,0.3)); }
-  50% { filter: drop-shadow(0 0 18px rgba(34,211,238,0.55)); }
+  0%, 100% { filter: drop-shadow(0 0 8px rgb(var(--cyber-cyan-rgb) / 0.3)); }
+  50% { filter: drop-shadow(0 0 18px rgb(var(--cyber-cyan-rgb) / 0.55)); }
 }
 
 .loading-spinner-pulse {

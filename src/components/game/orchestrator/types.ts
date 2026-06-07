@@ -1,30 +1,34 @@
 /* ─── GameOrchestrator sub-module types ─── */
 
-export type PanelType =
-  | 'quests'
-  | 'inventory'
-  | 'poetry'
-  | 'menu'
-  | 'rest'
-  | 'shortcuts'
-  | 'settings'
-  | 'saveSlot'
-  | 'miniGameHub'
-  | 'npcRelation'
-  | 'characterProfile'
-  | 'codex'
-  | 'dialogueHistory'
-  | 'achievements'
-  | 'skillTree'
-  | 'crafting'
-  | 'trading'
-  | 'fastTravel'
-  | 'perks'
-  | 'questBoard'
-  | 'stats'
-  | 'karmaPoem'
-  | 'journal'
-  | null;
+/** Single source of truth for stackable panel ids — add new panels here only. */
+export const PANEL_IDS = [
+  'quests',
+  'inventory',
+  'poetry',
+  'menu',
+  'rest',
+  'shortcuts',
+  'settings',
+  'saveSlot',
+  'miniGameHub',
+  'npcRelation',
+  'characterProfile',
+  'codex',
+  'dialogueHistory',
+  'achievements',
+  'skillTree',
+  'crafting',
+  'trading',
+  'fastTravel',
+  'perks',
+  'questBoard',
+  'stats',
+  'karmaPoem',
+  'journal',
+] as const;
+
+export type NonNullPanelType = (typeof PANEL_IDS)[number];
+export type PanelType = NonNullPanelType | null;
 
 export type CanvasTransitionState = {
   canvasReady: boolean;
@@ -39,6 +43,11 @@ export type QuestChainUnlockState = {
   npcId?: string;
   actNumber: number;
 };
+
+export type QuestDialogState = {
+  questId: string;
+  npcId?: string;
+} | null;
 
 export type MatrixQuoteState = {
   text: string;

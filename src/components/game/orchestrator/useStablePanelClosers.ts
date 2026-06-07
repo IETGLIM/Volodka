@@ -1,31 +1,5 @@
 import { useMemo, useRef } from 'react';
-import type { NonNullPanelType } from './panelStackReducer';
-
-const ALL_PANEL_IDS: NonNullPanelType[] = [
-  'quests',
-  'inventory',
-  'poetry',
-  'menu',
-  'rest',
-  'shortcuts',
-  'settings',
-  'saveSlot',
-  'miniGameHub',
-  'npcRelation',
-  'characterProfile',
-  'codex',
-  'dialogueHistory',
-  'achievements',
-  'skillTree',
-  'crafting',
-  'trading',
-  'fastTravel',
-  'perks',
-  'questBoard',
-  'stats',
-  'karmaPoem',
-  'journal',
-];
+import { PANEL_IDS, type NonNullPanelType } from './types';
 
 export type PanelCloseHandlers = Record<NonNullPanelType, () => void>;
 
@@ -38,7 +12,7 @@ export function useStablePanelClosers(
 
   return useMemo(() => {
     const handlers = {} as PanelCloseHandlers;
-    for (const id of ALL_PANEL_IDS) {
+    for (const id of PANEL_IDS) {
       handlers[id] = () => closeRef.current(id);
     }
     return handlers;

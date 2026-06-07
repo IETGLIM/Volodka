@@ -877,7 +877,7 @@ export function RhythmGame({ onClose }: RhythmGameProps) {
                       style={{
                         top: `${hitZoneY}px`,
                         height: '1px',
-                        background: `linear-gradient(90deg, rgba(0, 229, 255, 0.3), rgba(236, 72, 153, 0.3), rgba(251, 191, 36, 0.3), rgba(52, 211, 153, 0.3))`,
+                        background: `linear-gradient(90deg, rgb(var(--cyber-cyan-rgb) / 0.3), rgba(236, 72, 153, 0.3), rgba(251, 191, 36, 0.3), rgba(52, 211, 153, 0.3))`,
                         boxShadow: `0 0 10px rgba(${ACCENT_RGB}, 0.15)`,
                       }}
                     />

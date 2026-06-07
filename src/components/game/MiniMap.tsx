@@ -12,6 +12,7 @@ import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { explorationMinimapTopPx, EXPLORATION_HUD_LAYOUT } from '@/shared/constants/hudLayout';
 import { ALL_NPC_DEFINITIONS } from '@/data/allNpcDefinitions';
 import { useActiveQuests, getQuestMarker } from '@/store/questStore';
+import { cyberCyan } from '@/shared/constants/cyberPalette';
 
 const MAP_SIZE = 160;
 const MAP_PADDING = 16; // Extra padding for cardinal labels
@@ -114,7 +115,7 @@ export function MiniMap() {
       );
 
       // Border — subtle cyberpunk
-      ctx.strokeStyle = 'rgba(34, 211, 238, 0.2)';
+      ctx.strokeStyle = cyberCyan(0.2);
       ctx.lineWidth = 1;
       ctx.strokeRect(
         MAP_PADDING + INNER_PADDING - 1,
@@ -124,7 +125,7 @@ export function MiniMap() {
       );
 
       // Grid lines (subtle)
-      ctx.strokeStyle = 'rgba(34, 211, 238, 0.04)';
+      ctx.strokeStyle = cyberCyan(0.04);
       ctx.lineWidth = 0.5;
       for (let i = 1; i < 4; i++) {
         const gx = MAP_PADDING + INNER_PADDING + (drawSize * i) / 4;
@@ -208,13 +209,13 @@ export function MiniMap() {
       // Pulsing outer glow
       const glowSize = 5 + pulse * 3;
       const glowAlpha = 0.15 + pulse * 0.1;
-      ctx.fillStyle = `rgba(34, 211, 238, ${glowAlpha})`;
+      ctx.fillStyle = cyberCyan(glowAlpha);
       ctx.beginPath();
       ctx.arc(px, py, glowSize, 0, Math.PI * 2);
       ctx.fill();
 
       // Secondary glow ring
-      ctx.strokeStyle = `rgba(34, 211, 238, ${0.2 + pulse * 0.15})`;
+      ctx.strokeStyle = cyberCyan(0.2 + pulse * 0.15);
       ctx.lineWidth = 1;
       ctx.beginPath();
       ctx.arc(px, py, 6 + pulse * 2, 0, Math.PI * 2);
@@ -225,7 +226,7 @@ export function MiniMap() {
       ctx.save();
       ctx.translate(px, py);
       ctx.rotate(-dirAngle + Math.PI / 2); // Adjust for coordinate system
-      ctx.fillStyle = 'rgba(34, 211, 238, 0.9)';
+      ctx.fillStyle = cyberCyan(0.9);
       ctx.beginPath();
       ctx.moveTo(0, -6);     // tip (forward)
       ctx.lineTo(-3, 2);     // back-left
@@ -242,20 +243,20 @@ export function MiniMap() {
       ctx.textBaseline = 'middle';
 
       // N
-      ctx.fillStyle = 'rgba(34, 211, 238, 0.5)';
+      ctx.fillStyle = cyberCyan(0.5);
       ctx.fillText('N', centerX, MAP_PADDING - 2);
       // S
-      ctx.fillStyle = 'rgba(34, 211, 238, 0.3)';
+      ctx.fillStyle = cyberCyan(0.3);
       ctx.fillText('S', centerX, MAP_SIZE - MAP_PADDING + 4);
       // W
-      ctx.fillStyle = 'rgba(34, 211, 238, 0.3)';
+      ctx.fillStyle = cyberCyan(0.3);
       ctx.fillText('W', MAP_PADDING - 4, centerY);
       // E
-      ctx.fillStyle = 'rgba(34, 211, 238, 0.3)';
+      ctx.fillStyle = cyberCyan(0.3);
       ctx.fillText('E', MAP_SIZE - MAP_PADDING + 4, centerY);
 
       // Small tick marks for cardinal directions
-      ctx.strokeStyle = 'rgba(34, 211, 238, 0.2)';
+      ctx.strokeStyle = cyberCyan(0.2);
       ctx.lineWidth = 1;
       // N tick
       ctx.beginPath();
@@ -300,7 +301,7 @@ export function MiniMap() {
         zIndex: UI_LAYERS.HUD,
         backdropFilter: 'blur(8px)',
         borderRadius: '8px',
-        boxShadow: '0 0 20px rgba(0,0,0,0.4), inset 0 0 0 1px rgba(34,211,238,0.1)',
+        boxShadow: '0 0 20px rgba(0,0,0,0.4), inset 0 0 0 1px rgb(var(--cyber-cyan-rgb) / 0.1)',
       }}
     >
       <canvas
@@ -318,8 +319,8 @@ export function MiniMap() {
       <div
         className="flex items-center justify-center gap-1 mt-1 py-0.5 px-2 rounded"
         style={{
-          background: 'rgba(34, 211, 238, 0.06)',
-          border: '1px solid rgba(34, 211, 238, 0.12)',
+          background: 'rgb(var(--cyber-cyan-rgb) / 0.06)',
+          border: '1px solid rgb(var(--cyber-cyan-rgb) / 0.12)',
         }}
       >
         <span className="text-[8px] text-cyan-400/50 font-mono">🧭</span>

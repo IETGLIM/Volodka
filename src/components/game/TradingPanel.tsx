@@ -341,7 +341,7 @@ export function TradingPanel({ open, onClose, initialNpcId }: TradingPanelProps)
                             className={`
                               rounded-xl border p-3 cursor-pointer transition-all
                               ${isItemSelected
-                                ? 'border-cyan-500/40 bg-cyan-950/20 shadow-[0_0_12px_rgba(34,211,238,0.1)]'
+                                ? 'border-cyan-500/40 bg-cyan-950/20 shadow-[0_0_12px_rgb(var(--cyber-cyan-rgb) / 0.1)]'
                                 : 'border-slate-700/25 bg-slate-900/30 hover:border-slate-600/35 hover:bg-slate-800/30'
                               }
                             `}

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useOrchestratorShell, useOrchestratorNarrativeOverlay, useArmDevTools } from '@/store/selectors';
 import { sharedVirtualControlsRef } from '@/engine/VirtualControlsState';
 import { useCombatOrchestrator } from '@/hooks/useCombatOrchestrator';
@@ -82,12 +82,14 @@ export function useOrchestratorRuntime() {
   const isMobile = useMobileDetection();
 
   const panels = usePanelCoordinator({
-    isOverlayActive,
-    minigameSetters: interaction.minigameSetters,
-    setExamineOpen: interaction.setExamineOpen,
-    setExamineData: interaction.setExamineData,
-    setExamineHasLinkedContent: interaction.setExamineHasLinkedContent,
+    onPanelOpened: interaction.resetExamine,
   });
+
+  useEffect(() => {
+    if (!isOverlayActive) return;
+    interaction.dismissForNarrativeOverlay();
+    panels.closeAllPanels();
+  }, [isOverlayActive, interaction.dismissForNarrativeOverlay, panels.closeAllPanels]);
 
   const panelClosers = useStablePanelClosers(panels.closePanelByType);
 
@@ -109,9 +111,7 @@ export function useOrchestratorRuntime() {
     closeAllPanels: panels.closeAllPanels,
     minigameSetters: interaction.minigameSetters,
     skipActiveCutscene,
-    setExamineOpen: interaction.setExamineOpen,
-    setExamineData: interaction.setExamineData,
-    setExamineHasLinkedContent: interaction.setExamineHasLinkedContent,
+    resetExamine: interaction.resetExamine,
     clearPendingTriggerZone: interaction.clearPendingTriggerZone,
   });
 

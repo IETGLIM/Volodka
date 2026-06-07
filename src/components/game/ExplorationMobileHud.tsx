@@ -25,6 +25,7 @@ import { eventBus } from '@/engine/EventBus';
 import { requestSceneTransition } from '@/engine/scene/sceneTransition';
 import { getSceneExits } from '@/config/scenes';
 import { TRIGGER_ZONES } from '@/data/triggerZones';
+import { CYBER_CYAN } from '@/shared/constants/cyberPalette';
 
 interface ExplorationMobileHudProps {
   onInteractPress?: () => void;
@@ -332,7 +333,7 @@ export function ExplorationMobileHud({ onInteractPress, onOpenInventory }: Explo
             onTouchStart={(e) => { e.preventDefault(); e.stopPropagation(); handleInteract(); }}
             onPointerDown={(e) => { e.preventDefault(); e.stopPropagation(); handleInteract(); }}
           >
-            <Hand size={iconMain} color="#00e5ff" />
+            <Hand size={iconMain} color={CYBER_CYAN} />
           </button>
 
           {/* Secondary buttons column */}
@@ -502,7 +503,7 @@ export function ExplorationMobileHud({ onInteractPress, onOpenInventory }: Explo
           onTouchStart={(e) => { e.preventDefault(); e.stopPropagation(); handleInteract(); }}
           onPointerDown={(e) => { e.preventDefault(); e.stopPropagation(); handleInteract(); }}
         >
-          <Hand size={iconMain} color="#00e5ff" />
+          <Hand size={iconMain} color={CYBER_CYAN} />
         </button>
 
         {/* Secondary actions row */}

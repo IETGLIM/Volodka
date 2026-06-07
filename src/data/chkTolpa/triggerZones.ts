@@ -63,7 +63,7 @@ export const CHK_TRIGGER_ZONES: TriggerZone[] = [
     interactionLabel: 'Поговорить с Ру',
     requiredFlag: 'tolpa_oath_taken',
     linkedStoryNodeId: 'chk_network_parallel',
-    npcId: 'chk_ru',
+    linkedNpcId: 'chk_ru',
     linkedDialogueNodeId: 'chk_ru_greeting',
   },
   /* ── NPC talk zones ── */
@@ -73,7 +73,7 @@ export const CHK_TRIGGER_ZONES: TriggerZone[] = [
     position: [-1.8, 0.5, 0.5],
     size: [1.5, 2, 1.5],
     interactionType: 'talk',
-    npcId: 'chk_ru',
+    linkedNpcId: 'chk_ru',
     linkedDialogueNodeId: 'chk_ru_greeting',
   },
   {
@@ -82,7 +82,7 @@ export const CHK_TRIGGER_ZONES: TriggerZone[] = [
     position: [1.5, 0.5, 1.2],
     size: [1.5, 2, 1.5],
     interactionType: 'talk',
-    npcId: 'chk_based',
+    linkedNpcId: 'chk_based',
     linkedDialogueNodeId: 'chk_based_greeting',
   },
   {
@@ -91,7 +91,7 @@ export const CHK_TRIGGER_ZONES: TriggerZone[] = [
     position: [0.3, 0.5, -1.8],
     size: [1.5, 2, 1.5],
     interactionType: 'talk',
-    npcId: 'chk_smert',
+    linkedNpcId: 'chk_smert',
     linkedDialogueNodeId: 'chk_smert_greeting',
   },
   {
@@ -100,7 +100,7 @@ export const CHK_TRIGGER_ZONES: TriggerZone[] = [
     position: [-2.5, 0.5, -2.0],
     size: [1.8, 2, 1.8],
     interactionType: 'talk',
-    npcId: 'chk_stalker',
+    linkedNpcId: 'chk_stalker',
     linkedDialogueNodeId: 'chk_stalker_greeting',
   },
   {
@@ -109,7 +109,7 @@ export const CHK_TRIGGER_ZONES: TriggerZone[] = [
     position: [-1.4, 0.5, -1.0],
     size: [1.5, 2, 1.5],
     interactionType: 'talk',
-    npcId: 'chk_elis',
+    linkedNpcId: 'chk_elis',
     linkedDialogueNodeId: 'chk_elis_greeting',
   },
   /* ── Poem: after Elis song ── */
@@ -122,7 +122,7 @@ export const CHK_TRIGGER_ZONES: TriggerZone[] = [
     interactionLabel: 'Записать стих у костра',
     requiredFlag: 'tolpa_guitar_heard',
     linkedStoryNodeId: 'chk_tolpa_poem',
-    npcId: 'chk_elis',
+    linkedNpcId: 'chk_elis',
     examineData: {
       title: 'Припев у огня',
       description: 'Элис кивает на блокнот — «Портвейн у костра» ещё не записан.',
@@ -140,7 +140,7 @@ export const CHK_TRIGGER_ZONES: TriggerZone[] = [
     requiredAct: 3,
     requiredFlag: 'tolpa_sanctuary_offered',
     linkedStoryNodeId: 'chk_act3_sanctuary',
-    npcId: 'chk_ru',
+    linkedNpcId: 'chk_ru',
   },
   /* ── Act 4: Stalker infiltration route ── */
   {
@@ -153,7 +153,7 @@ export const CHK_TRIGGER_ZONES: TriggerZone[] = [
     requiredAct: 4,
     requiredFlag: 'ready_for_infiltration',
     linkedStoryNodeId: 'chk_act4_stalker_briefing',
-    npcId: 'chk_stalker',
+    linkedNpcId: 'chk_stalker',
   },
   /* ── Act 4: watch broadcast at campfire ── */
   {
@@ -183,6 +183,6 @@ export const CHK_TRIGGER_ZONES: TriggerZone[] = [
     requiredAct: 5,
     requiredFlag: 'act5_started',
     linkedStoryNodeId: 'chk_act5_campfire_dawn',
-    npcId: 'chk_ru',
+    linkedNpcId: 'chk_ru',
   },
 ];

@@ -28,7 +28,7 @@ export interface FloatingTextEntry {
 /* ── Color map ── */
 const TYPE_COLORS: Record<FloatingTextType, string> = {
   xp: '#fbbf24',          // amber-400
-  karma: '#22d3ee',        // cyan-400
+  karma: 'var(--cyber-cyan)',        // cyan-400
   skill: '#a78bfa',        // violet-400
   damage: '#f43f5e',       // rose-400
   heal: '#34d399',         // emerald-400
@@ -42,7 +42,7 @@ const TYPE_COLORS: Record<FloatingTextType, string> = {
 
 const TYPE_GLOW: Record<FloatingTextType, string> = {
   xp: '0 0 12px rgba(251,191,36,0.6)',
-  karma: '0 0 12px rgba(34,211,238,0.6)',
+  karma: '0 0 12px rgb(var(--cyber-cyan-rgb) / 0.6)',
   skill: '0 0 12px rgba(167,139,250,0.6)',
   damage: '0 0 12px rgba(244,63,94,0.6)',
   heal: '0 0 12px rgba(52,211,153,0.6)',

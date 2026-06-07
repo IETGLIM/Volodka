@@ -8,6 +8,7 @@ import type {
   QuestDefinition,
   QuestObjective,
 } from '@/engine/guidedStory/guidedStoryTypes';
+import { getVisitedNodeSet } from '@/store/visitedNodesIndex';
 
 export function getActForNode(nodeId: string, path: GuidedStoryPathConfig): number {
   const direct = path.actTransitions.find((t) => t.entryNodeId === nodeId);
@@ -37,8 +38,10 @@ export function syncSpineStateFromSnapshot(
     lastAdvancedToAct: snapshot.currentAct,
   };
 
+  const visitedSet = getVisitedNodeSet(snapshot.visitedNodes);
+
   for (let i = path.storySpine.length - 1; i >= 0; i--) {
-    if (snapshot.visitedNodes.includes(path.storySpine[i])) {
+    if (visitedSet.has(path.storySpine[i])) {
       state.currentStepIndex = i + 1;
       break;
     }

@@ -15,6 +15,15 @@ export class ControllerSession {
     return this.generation;
   }
 
+  /**
+   * Cancel pending timers and invalidate the current generation without tearing
+   * down the session — use when abandoning one operation but keeping the hook alive.
+   */
+  cancel(): void {
+    this.clearTimers();
+    this.generation += 1;
+  }
+
   /** Tear down — bumps generation so in-flight callbacks become no-ops. */
   dispose(): void {
     if (this.disposed) return;

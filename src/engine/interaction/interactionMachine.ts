@@ -34,6 +34,44 @@ export const INTERACTION_STATE_LABELS: Record<InteractionState, string> = {
   [InteractionState.Exit]: 'Exit',
 };
 
+/** Allowed FSM edges — enforced by interactionSession.writeInteractionSession. */
+export const VALID_INTERACTION_TRANSITIONS: Record<InteractionState, readonly InteractionState[]> = {
+  [InteractionState.Idle]: [InteractionState.Approach],
+  [InteractionState.Approach]: [
+    InteractionState.Cutscene,
+    InteractionState.Exit,
+    InteractionState.Idle,
+  ],
+  [InteractionState.Cutscene]: [
+    InteractionState.Align,
+    InteractionState.Exit,
+    InteractionState.Idle,
+  ],
+  [InteractionState.Align]: [
+    InteractionState.Lock,
+    InteractionState.Exit,
+    InteractionState.Idle,
+  ],
+  [InteractionState.Lock]: [
+    InteractionState.Dialogue,
+    InteractionState.Exit,
+    InteractionState.Idle,
+  ],
+  [InteractionState.Dialogue]: [InteractionState.Exit, InteractionState.Idle],
+  [InteractionState.Exit]: [InteractionState.Idle],
+};
+
+export function isValidInteractionTransition(
+  from: InteractionState,
+  to: InteractionState,
+): boolean {
+  if (from === to) return true;
+  return VALID_INTERACTION_TRANSITIONS[from].includes(to);
+}
+
+/** Alias for readability at call sites expecting validateTransition(from, to). */
+export const validateInteractionTransition = isValidInteractionTransition;
+
 /** NPC animation states driven by interaction */
 export type NPCAnimationState = 'idle' | 'talk' | 'listen' | 'gesture';
 

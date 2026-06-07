@@ -5,10 +5,26 @@ import { useGameStore } from '@/store/gameStore';
 import { readGamePhase } from '@/shared/gamePhase';
 import { eventBus, bindEventBusScope } from '@/engine/EventBus';
 import { withHmrCleanup } from '@/shared/dev/hmrDispose';
-import type { MinigamePanelSetters } from '@/shared/constants/minigames';
+import {
+  CLOSED_MINIGAME_PANEL_STATE,
+  type MinigamePanelSetters,
+  type MinigamePanelState,
+} from '@/shared/constants/minigames';
 import type { TriggerZone } from '@/data/triggerZones';
-import type { EnemyType } from '@/shared/types/game';
+import type { EnemyType, ExamineData } from '@/shared/types/game';
 import { InteractionController } from '@/engine/interaction/InteractionController';
+
+export type ExamineUiState = {
+  open: boolean;
+  data: ExamineData | null;
+  hasLinkedContent: boolean;
+};
+
+const CLOSED_EXAMINE_STATE: ExamineUiState = {
+  open: false,
+  data: null,
+  hasLinkedContent: false,
+};
 
 /**
  * Sub-orchestrator — UI state + EventBus wiring.
@@ -17,30 +33,52 @@ import { InteractionController } from '@/engine/interaction/InteractionControlle
 export function useInteractionOrchestrator(
   startCombatFromStory: (enemyType: EnemyType) => void,
 ) {
-  const [codebreakerOpen, setCodebreakerOpen] = useState(false);
-  const [openstackTerminalOpen, setOpenstackTerminalOpen] = useState(false);
-  const [bashTerminalOpen, setBashTerminalOpen] = useState(false);
-  const [poetryGameOpen, setPoetryGameOpen] = useState(false);
-  const [hackingGameOpen, setHackingGameOpen] = useState(false);
-  const [memoryGameOpen, setMemoryGameOpen] = useState(false);
-  const [quizGameOpen, setQuizGameOpen] = useState(false);
-  const [rhythmGameOpen, setRhythmGameOpen] = useState(false);
+  const [minigameOpen, setMinigameOpen] = useState<MinigamePanelState>(CLOSED_MINIGAME_PANEL_STATE);
   const minigameSetters = useMemo<MinigamePanelSetters>(
     () => ({
-      setCodebreakerOpen,
-      setOpenstackTerminalOpen,
-      setBashTerminalOpen,
-      setPoetryGameOpen,
-      setHackingGameOpen,
-      setMemoryGameOpen,
-      setQuizGameOpen,
-      setRhythmGameOpen,
+      setCodebreakerOpen: (open) =>
+        setMinigameOpen((state) => ({ ...state, codebreakerOpen: open })),
+      setOpenstackTerminalOpen: (open) =>
+        setMinigameOpen((state) => ({ ...state, openstackTerminalOpen: open })),
+      setBashTerminalOpen: (open) =>
+        setMinigameOpen((state) => ({ ...state, bashTerminalOpen: open })),
+      setPoetryGameOpen: (open) =>
+        setMinigameOpen((state) => ({ ...state, poetryGameOpen: open })),
+      setHackingGameOpen: (open) =>
+        setMinigameOpen((state) => ({ ...state, hackingGameOpen: open })),
+      setMemoryGameOpen: (open) =>
+        setMinigameOpen((state) => ({ ...state, memoryGameOpen: open })),
+      setQuizGameOpen: (open) =>
+        setMinigameOpen((state) => ({ ...state, quizGameOpen: open })),
+      setRhythmGameOpen: (open) =>
+        setMinigameOpen((state) => ({ ...state, rhythmGameOpen: open })),
     }),
     [],
   );
-  const [examineOpen, setExamineOpen] = useState(false);
-  const [examineData, setExamineData] = useState<import('@/shared/types/game').ExamineData | null>(null);
-  const [examineHasLinkedContent, setExamineHasLinkedContent] = useState(false);
+
+  const [examine, setExamine] = useState<ExamineUiState>(CLOSED_EXAMINE_STATE);
+
+  const setExamineOpen = useCallback((open: boolean) => {
+    setExamine((state) => ({ ...state, open }));
+  }, []);
+
+  const setExamineData = useCallback((data: ExamineData | null) => {
+    setExamine((state) => ({ ...state, data }));
+  }, []);
+
+  const setExamineHasLinkedContent = useCallback((hasLinkedContent: boolean) => {
+    setExamine((state) => ({ ...state, hasLinkedContent }));
+  }, []);
+
+  const resetExamine = useCallback(() => {
+    setExamine(CLOSED_EXAMINE_STATE);
+  }, []);
+
+  const dismissForNarrativeOverlay = useCallback(() => {
+    setExamine(CLOSED_EXAMINE_STATE);
+    setMinigameOpen(CLOSED_MINIGAME_PANEL_STATE);
+  }, []);
+
   const pendingTriggerZoneRef = useRef<TriggerZone | null>(null);
   const controllerRef = useRef<InteractionController | null>(null);
 
@@ -66,7 +104,7 @@ export function useInteractionOrchestrator(
         controllerRef.current = null;
       }
     };
-  }, [startCombatFromStory, minigameSetters]);
+  }, [startCombatFromStory, minigameSetters, setExamineOpen, setExamineData, setExamineHasLinkedContent]);
 
   useEffect(() => {
     return withHmrCleanup(
@@ -95,13 +133,18 @@ export function useInteractionOrchestrator(
           useGameStore.subscribe(
             (state) => ({
               showStoryOverlay: state.showStoryOverlay,
+              currentNodeId: state.currentNodeId,
               mode: readGamePhase(state),
             }),
             (selected, prev) => {
               const controller = controllerRef.current;
               if (!controller || controller.isDisposed()) return;
 
-              if (!prev.showStoryOverlay && selected.showStoryOverlay) {
+              const overlaySessionStarted =
+                selected.showStoryOverlay &&
+                (!prev.showStoryOverlay || prev.currentNodeId !== selected.currentNodeId);
+
+              if (overlaySessionStarted) {
                 controller.onNarrativeOverlayOpened();
                 return;
               }
@@ -131,28 +174,30 @@ export function useInteractionOrchestrator(
 
   return {
     minigameSetters,
-    codebreakerOpen,
-    setCodebreakerOpen,
-    openstackTerminalOpen,
-    setOpenstackTerminalOpen,
-    bashTerminalOpen,
-    setBashTerminalOpen,
-    poetryGameOpen,
-    setPoetryGameOpen,
-    hackingGameOpen,
-    setHackingGameOpen,
-    memoryGameOpen,
-    setMemoryGameOpen,
-    quizGameOpen,
-    setQuizGameOpen,
-    rhythmGameOpen,
-    setRhythmGameOpen,
-    examineOpen,
+    codebreakerOpen: minigameOpen.codebreakerOpen,
+    setCodebreakerOpen: minigameSetters.setCodebreakerOpen,
+    openstackTerminalOpen: minigameOpen.openstackTerminalOpen,
+    setOpenstackTerminalOpen: minigameSetters.setOpenstackTerminalOpen,
+    bashTerminalOpen: minigameOpen.bashTerminalOpen,
+    setBashTerminalOpen: minigameSetters.setBashTerminalOpen,
+    poetryGameOpen: minigameOpen.poetryGameOpen,
+    setPoetryGameOpen: minigameSetters.setPoetryGameOpen,
+    hackingGameOpen: minigameOpen.hackingGameOpen,
+    setHackingGameOpen: minigameSetters.setHackingGameOpen,
+    memoryGameOpen: minigameOpen.memoryGameOpen,
+    setMemoryGameOpen: minigameSetters.setMemoryGameOpen,
+    quizGameOpen: minigameOpen.quizGameOpen,
+    setQuizGameOpen: minigameSetters.setQuizGameOpen,
+    rhythmGameOpen: minigameOpen.rhythmGameOpen,
+    setRhythmGameOpen: minigameSetters.setRhythmGameOpen,
+    examineOpen: examine.open,
     setExamineOpen,
-    examineData,
+    examineData: examine.data,
     setExamineData,
-    examineHasLinkedContent,
+    examineHasLinkedContent: examine.hasLinkedContent,
     setExamineHasLinkedContent,
+    resetExamine,
+    dismissForNarrativeOverlay,
     handleExamineContinue,
     clearPendingTriggerZone,
   };

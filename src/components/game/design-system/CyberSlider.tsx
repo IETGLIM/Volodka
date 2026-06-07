@@ -37,8 +37,8 @@ export function CyberSlider({
           className="absolute left-0 h-1.5 rounded-full"
           style={{
             width: `${pct}%`,
-            background: 'linear-gradient(90deg, rgba(0, 229, 255, 0.4), rgba(0, 229, 255, 0.8))',
-            boxShadow: '0 0 8px rgba(0, 229, 255, 0.3)',
+            background: 'linear-gradient(90deg, rgb(var(--cyber-cyan-rgb) / 0.4), rgb(var(--cyber-cyan-rgb) / 0.8))',
+            boxShadow: '0 0 8px rgb(var(--cyber-cyan-rgb) / 0.3)',
           }}
           layout
           transition={{ type: 'spring', stiffness: 300, damping: 30 }}
@@ -47,8 +47,8 @@ export function CyberSlider({
           className="absolute w-3.5 h-3.5 rounded-full border-2 border-cyan-400/80 cursor-grab active:cursor-grabbing"
           style={{
             left: `calc(${pct}% - 7px)`,
-            background: 'rgba(0, 229, 255, 0.9)',
-            boxShadow: '0 0 10px rgba(0, 229, 255, 0.5), 0 0 20px rgba(0, 229, 255, 0.2)',
+            background: 'rgb(var(--cyber-cyan-rgb) / 0.9)',
+            boxShadow: '0 0 10px rgb(var(--cyber-cyan-rgb) / 0.5), 0 0 20px rgb(var(--cyber-cyan-rgb) / 0.2)',
           }}
           whileHover={{ scale: 1.3 }}
           whileTap={{ scale: 0.95 }}

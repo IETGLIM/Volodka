@@ -47,9 +47,9 @@
   background: linear-gradient(
     180deg,
     transparent 0%,
-    rgba(34, 211, 238, 0.02) 40%,
-    rgba(34, 211, 238, 0.04) 50%,
-    rgba(34, 211, 238, 0.02) 60%,
+    rgb(var(--cyber-cyan-rgb) / 0.02) 40%,
+    rgb(var(--cyber-cyan-rgb) / 0.04) 50%,
+    rgb(var(--cyber-cyan-rgb) / 0.02) 60%,
     transparent 100%
   );
   pointer-events: none;
@@ -59,18 +59,18 @@
 /* ─── Neon border glow breathing for stats panel ─── */
 @keyframes stats-border-breathe {
   0%, 100% {
-    border-color: rgba(34, 211, 238, 0.2);
+    border-color: rgb(var(--cyber-cyan-rgb) / 0.2);
   }
   50% {
-    border-color: rgba(34, 211, 238, 0.4);
+    border-color: rgb(var(--cyber-cyan-rgb) / 0.4);
   }
 }
 
 /* ─── Stats panel close button enhanced glow ─── */
 .stats-panel-container .close-btn-glow:hover {
-  box-shadow: 0 0 16px rgba(34, 211, 238, 0.4), 0 0 6px rgba(34, 211, 238, 0.25);
-  background: rgba(34, 211, 238, 0.12);
-  color: #22d3ee;
+  box-shadow: 0 0 16px rgb(var(--cyber-cyan-rgb) / 0.4), 0 0 6px rgb(var(--cyber-cyan-rgb) / 0.25);
+  background: rgb(var(--cyber-cyan-rgb) / 0.12);
+  color: var(--cyber-cyan);
 }
 
 /* ─── Corner bracket enhanced for stats panel ─── */

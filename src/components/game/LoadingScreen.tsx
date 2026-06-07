@@ -86,12 +86,12 @@ function TerminalBootText() {
               color: line.includes('OK')
                 ? 'rgba(52,211,153,0.5)'
                 : line.includes('██')
-                ? 'rgba(34,211,238,0.7)'
+                ? 'rgb(var(--cyber-cyan-rgb) / 0.7)'
                 : line.includes('error') || line.includes('FAIL')
                 ? 'rgba(251,113,133,0.5)'
                 : 'rgba(0,255,65,0.3)',
               textShadow: line.includes('██')
-                ? '0 0 10px rgba(34,211,238,0.4)'
+                ? '0 0 10px rgb(var(--cyber-cyan-rgb) / 0.4)'
                 : 'none',
             }}
           >
@@ -215,15 +215,15 @@ function CyberSpinner() {
   return (
     <div className="relative w-24 h-24">
       <svg viewBox="0 0 100 100" className="absolute inset-0 w-full h-full" style={{ animation: 'cyber-spinner 10s linear infinite' }}>
-        <polygon points="50,5 95,35 95,65 50,95 5,65 5,35" fill="none" stroke="rgba(34,211,238,0.3)" strokeWidth="0.8" />
-        <line x1="50" y1="5" x2="50" y2="95" stroke="rgba(34,211,238,0.08)" strokeWidth="0.4" />
-        <line x1="5" y1="50" x2="95" y2="50" stroke="rgba(34,211,238,0.08)" strokeWidth="0.4" />
-        <circle cx="50" cy="5" r="1.8" fill="rgba(34,211,238,0.6)" />
-        <circle cx="95" cy="35" r="1.2" fill="rgba(34,211,238,0.4)" />
-        <circle cx="95" cy="65" r="1.2" fill="rgba(34,211,238,0.4)" />
-        <circle cx="50" cy="95" r="1.8" fill="rgba(34,211,238,0.6)" />
-        <circle cx="5" cy="65" r="1.2" fill="rgba(34,211,238,0.4)" />
-        <circle cx="5" cy="35" r="1.2" fill="rgba(34,211,238,0.4)" />
+        <polygon points="50,5 95,35 95,65 50,95 5,65 5,35" fill="none" stroke="rgb(var(--cyber-cyan-rgb) / 0.3)" strokeWidth="0.8" />
+        <line x1="50" y1="5" x2="50" y2="95" stroke="rgb(var(--cyber-cyan-rgb) / 0.08)" strokeWidth="0.4" />
+        <line x1="5" y1="50" x2="95" y2="50" stroke="rgb(var(--cyber-cyan-rgb) / 0.08)" strokeWidth="0.4" />
+        <circle cx="50" cy="5" r="1.8" fill="rgb(var(--cyber-cyan-rgb) / 0.6)" />
+        <circle cx="95" cy="35" r="1.2" fill="rgb(var(--cyber-cyan-rgb) / 0.4)" />
+        <circle cx="95" cy="65" r="1.2" fill="rgb(var(--cyber-cyan-rgb) / 0.4)" />
+        <circle cx="50" cy="95" r="1.8" fill="rgb(var(--cyber-cyan-rgb) / 0.6)" />
+        <circle cx="5" cy="65" r="1.2" fill="rgb(var(--cyber-cyan-rgb) / 0.4)" />
+        <circle cx="5" cy="35" r="1.2" fill="rgb(var(--cyber-cyan-rgb) / 0.4)" />
       </svg>
       <svg viewBox="0 0 100 100" className="absolute inset-0 w-full h-full" style={{ animation: 'cyber-spinner-reverse 7s linear infinite' }}>
         <polygon points="50,15 85,50 50,85 15,50" fill="none" stroke="rgba(251,191,36,0.2)" strokeWidth="0.6" />
@@ -233,8 +233,8 @@ function CyberSpinner() {
         <circle cx="15" cy="50" r="1" fill="rgba(251,191,36,0.4)" />
       </svg>
       <svg viewBox="0 0 100 100" className="absolute inset-0 w-full h-full" style={{ animation: 'cyber-pulse-ring 3s ease-in-out infinite' }}>
-        <circle cx="50" cy="50" r="18" fill="none" stroke="rgba(34,211,238,0.15)" strokeWidth="0.5" />
-        <circle cx="50" cy="50" r="2" fill="rgba(34,211,238,0.4)" />
+        <circle cx="50" cy="50" r="18" fill="none" stroke="rgb(var(--cyber-cyan-rgb) / 0.15)" strokeWidth="0.5" />
+        <circle cx="50" cy="50" r="2" fill="rgb(var(--cyber-cyan-rgb) / 0.4)" />
       </svg>
     </div>
   );
@@ -406,9 +406,9 @@ export function LoadingScreen({ progress, message = 'Загрузка...', showT
         className="absolute inset-0 pointer-events-none z-[6]"
         animate={{
           background: [
-            'radial-gradient(ellipse at 40% 50%, rgba(34,211,238,0.03) 0%, transparent 70%)',
-            'radial-gradient(ellipse at 60% 50%, rgba(34,211,238,0.06) 0%, transparent 70%)',
-            'radial-gradient(ellipse at 40% 50%, rgba(34,211,238,0.03) 0%, transparent 70%)',
+            'radial-gradient(ellipse at 40% 50%, rgb(var(--cyber-cyan-rgb) / 0.03) 0%, transparent 70%)',
+            'radial-gradient(ellipse at 60% 50%, rgb(var(--cyber-cyan-rgb) / 0.06) 0%, transparent 70%)',
+            'radial-gradient(ellipse at 40% 50%, rgb(var(--cyber-cyan-rgb) / 0.03) 0%, transparent 70%)',
           ],
         }}
         transition={{ duration: 6, repeat: Infinity, repeatType: 'reverse' }}
@@ -491,7 +491,7 @@ export function LoadingScreen({ progress, message = 'Загрузка...', showT
           {/* Progress bar — cyberpunk styled */}
           <div className="w-full h-2 bg-slate-900/80 rounded-sm overflow-hidden relative border border-cyan-900/30">
             {/* Track glow */}
-            <div className="absolute inset-0 pointer-events-none" style={{ boxShadow: 'inset 0 0 6px rgba(34,211,238,0.1)' }} />
+            <div className="absolute inset-0 pointer-events-none" style={{ boxShadow: 'inset 0 0 6px rgb(var(--cyber-cyan-rgb) / 0.1)' }} />
             {/* Segment marks */}
             <div className="absolute inset-0 flex items-center pointer-events-none">
               {[25, 50, 75].map((mark) => (
@@ -505,7 +505,7 @@ export function LoadingScreen({ progress, message = 'Загрузка...', showT
                 animate={{ width: `${progress}%` }}
                 transition={{ duration: 0.3 }}
                 style={{
-                  boxShadow: '0 0 12px rgba(34,211,238,0.4), 0 0 4px rgba(52,211,153,0.2)',
+                  boxShadow: '0 0 12px rgb(var(--cyber-cyan-rgb) / 0.4), 0 0 4px rgba(52,211,153,0.2)',
                 }}
               />
             ) : (
@@ -515,7 +515,7 @@ export function LoadingScreen({ progress, message = 'Загрузка...', showT
                 transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
                 style={{
                   width: '40%',
-                  boxShadow: '0 0 12px rgba(34,211,238,0.4), 0 0 4px rgba(52,211,153,0.2)',
+                  boxShadow: '0 0 12px rgb(var(--cyber-cyan-rgb) / 0.4), 0 0 4px rgba(52,211,153,0.2)',
                 }}
               />
             )}
@@ -553,15 +553,15 @@ export function LoadingScreen({ progress, message = 'Загрузка...', showT
           className="max-w-sm text-center mt-3"
         >
           <div className="flex items-center justify-center gap-3 mb-2">
-            <div className="h-px w-8" style={{ background: 'linear-gradient(90deg, transparent, rgba(34,211,238,0.4))' }} />
+            <div className="h-px w-8" style={{ background: 'linear-gradient(90deg, transparent, rgb(var(--cyber-cyan-rgb) / 0.4))' }} />
             <span className="text-[10px] text-cyan-500/50 uppercase tracking-[0.2em] font-mono">Цитата</span>
-            <div className="h-px w-8" style={{ background: 'linear-gradient(90deg, rgba(34,211,238,0.4), transparent)' }} />
+            <div className="h-px w-8" style={{ background: 'linear-gradient(90deg, rgb(var(--cyber-cyan-rgb) / 0.4), transparent)' }} />
           </div>
           <p
             className="text-sm text-slate-400/60 italic leading-relaxed"
             style={{
               fontFamily: '"Georgia", "Times New Roman", serif',
-              textShadow: '0 0 15px rgba(34,211,238,0.08)',
+              textShadow: '0 0 15px rgb(var(--cyber-cyan-rgb) / 0.08)',
             }}
           >
             &laquo;{POEM_QUOTES[quoteIndex]}&raquo;

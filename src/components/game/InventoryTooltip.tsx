@@ -59,14 +59,14 @@ const SKILL_LABELS: Record<TrainablePlayerSkill, string> = {
 const RARITY_BORDER: Record<ItemRarity, string> = {
   common: 'rgba(148, 163, 184, 0.2)',
   uncommon: 'rgba(52, 211, 153, 0.4)',
-  rare: 'rgba(34, 211, 238, 0.4)',
+  rare: 'rgb(var(--cyber-cyan-rgb) / 0.4)',
   legendary: 'rgba(251, 191, 36, 0.5)',
 }
 
 const RARITY_GLOW: Record<ItemRarity, string> = {
   common: '',
   uncommon: '0 0 8px rgba(52, 211, 153, 0.15)',
-  rare: '0 0 12px rgba(34, 211, 238, 0.2)',
+  rare: '0 0 12px rgb(var(--cyber-cyan-rgb) / 0.2)',
   legendary: '0 0 16px rgba(251, 191, 36, 0.3)',
 }
 
@@ -135,7 +135,7 @@ export function InventoryTooltip({
             <div
               className="absolute inset-0 pointer-events-none"
               style={{
-                background: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0, 229, 255, 0.01) 2px, rgba(0, 229, 255, 0.01) 4px)',
+                background: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgb(var(--cyber-cyan-rgb) / 0.01) 2px, rgb(var(--cyber-cyan-rgb) / 0.01) 4px)',
               }}
             />
 
@@ -212,7 +212,7 @@ export function InventoryTooltip({
                 <div
                   className="h-[1px] mx-3"
                   style={{
-                    background: 'linear-gradient(90deg, transparent, rgba(0, 229, 255, 0.15), transparent)',
+                    background: 'linear-gradient(90deg, transparent, rgb(var(--cyber-cyan-rgb) / 0.15), transparent)',
                   }}
                 />
                 <div className="px-3 py-2">

@@ -38,7 +38,7 @@ import { type TrainablePlayerSkill } from '@/shared/types/game';
 import { eventBus } from '@/engine/EventBus';
 
 /* ─── Color constants ─── */
-const CYAN = '#22d3ee';
+const CYAN = 'var(--cyber-cyan)';
 const ROSE = '#fb7185';
 const EMERALD = '#34d399';
 const AMBER = '#fbbf24';

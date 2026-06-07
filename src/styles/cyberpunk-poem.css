@@ -9,7 +9,7 @@
   position: fixed;
   inset: 0;
   pointer-events: none;
-  z-index: 1000;
+  z-index: var(--z-poem-crt);
   background: repeating-linear-gradient(
     0deg,
     rgba(0, 0, 0, 0.06) 0px,
@@ -36,7 +36,7 @@
   position: fixed;
   inset: 0;
   pointer-events: none;
-  z-index: 999;
+  z-index: var(--z-poem-vignette);
   background: radial-gradient(
     ellipse at center,
     transparent 50%,
@@ -100,17 +100,12 @@
 }
 
 /* ─── Terminal Cursor Blink ─── */
-@keyframes cp-cursor-blink {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0; }
-}
-
 .cp-cursor {
   display: inline-block;
   width: 8px;
   height: 1em;
   background: #00ff41;
-  animation: cp-cursor-blink 1s step-end infinite;
+  animation: cursor-blink 1s step-end infinite;
   vertical-align: text-bottom;
   margin-left: 2px;
 }
@@ -167,9 +162,9 @@
   width: 200%;
   height: 200%;
   pointer-events: none;
-  z-index: 998;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.05'/%3E%3C/svg%3E");
-  opacity: 0.4;
+  z-index: var(--z-poem-noise);
+  background-image: var(--pattern-noise);
+  opacity: 0.02;
   animation: cp-noise 0.2s steps(3) infinite;
   mix-blend-mode: overlay;
 }
@@ -178,7 +173,7 @@
 .cp-poem-container {
   position: fixed;
   inset: 0;
-  z-index: 1001;
+  z-index: var(--z-poem-container);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -200,8 +195,6 @@
     0 0 30px rgba(0, 255, 65, 0.08),
     inset 0 0 30px rgba(0, 255, 65, 0.03);
   background: rgba(0, 8, 4, 0.92);
-  scrollbar-width: thin;
-  scrollbar-color: rgba(0, 255, 65, 0.3) transparent;
 }
 
 /* ─── Terminal header bar ─── */

@@ -139,7 +139,7 @@ function karmaColor(karma: number): string {
 }
 
 function karmaStroke(karma: number): string {
-  if (karma >= KARMA_HIGH_THRESHOLD) return '#22d3ee';
+  if (karma >= KARMA_HIGH_THRESHOLD) return 'var(--cyber-cyan)';
   if (karma <= KARMA_LOW_THRESHOLD) return '#fb7185';
   return '#fbbf24';
 }
@@ -204,7 +204,7 @@ function KarmaRing({ karma }: { karma: number }) {
 /* ── Pulse indicator for stat changes ── */
 function StatPulse({ active, color = 'cyan' }: { active: boolean; color?: 'cyan' | 'emerald' | 'rose' | 'amber' }) {
   const colorMap = { cyan: 'bg-cyan-400/30', emerald: 'bg-emerald-400/30', rose: 'bg-rose-400/30', amber: 'bg-amber-400/30' };
-  const glowMap = { cyan: 'shadow-[0_0_8px_rgba(34,211,238,0.5)]', emerald: 'shadow-[0_0_8px_rgba(52,211,153,0.5)]', rose: 'shadow-[0_0_8px_rgba(251,113,133,0.5)]', amber: 'shadow-[0_0_8px_rgba(251,191,36,0.5)]' };
+  const glowMap = { cyan: 'shadow-[0_0_8px_rgb(var(--cyber-cyan-rgb) / 0.5)]', emerald: 'shadow-[0_0_8px_rgba(52,211,153,0.5)]', rose: 'shadow-[0_0_8px_rgba(251,113,133,0.5)]', amber: 'shadow-[0_0_8px_rgba(251,191,36,0.5)]' };
   return (
     <AnimatePresence>
       {active && (
@@ -294,14 +294,14 @@ function LevelBadge({ level, perkCount = 0, xp = 0, xpToNext = 100 }: { level: n
       <div className="flex items-center gap-1.5">
         <motion.div
           className={`flex items-center justify-center w-7 h-7 rounded border text-[11px] font-bold font-mono ${justLeveled ? 'level-pulse-anim' : ''}`}
-          animate={justLeveled ? { scale: [1, 1.3, 1], borderColor: ['rgba(251,191,36,0.6)', 'rgba(251,191,36,0.8)', 'rgba(34,211,238,0.3)'] } : {}}
+          animate={justLeveled ? { scale: [1, 1.3, 1], borderColor: ['rgba(251,191,36,0.6)', 'rgba(251,191,36,0.8)', 'rgb(var(--cyber-cyan-rgb) / 0.3)'] } : {}}
           transition={{ duration: 0.6 }}
           style={{
-            borderColor: justLeveled ? 'rgba(251,191,36,0.6)' : 'rgba(34,211,238,0.35)',
-            background: justLeveled ? 'rgba(251,191,36,0.15)' : 'rgba(34,211,238,0.1)',
-            color: justLeveled ? '#fbbf24' : '#22d3ee',
-            textShadow: justLeveled ? '0 0 8px rgba(251,191,36,0.6)' : '0 0 6px rgba(34,211,238,0.5)',
-            boxShadow: justLeveled ? '0 0 12px rgba(251,191,36,0.3)' : '0 0 8px rgba(34,211,238,0.15)',
+            borderColor: justLeveled ? 'rgba(251,191,36,0.6)' : 'rgb(var(--cyber-cyan-rgb) / 0.35)',
+            background: justLeveled ? 'rgba(251,191,36,0.15)' : 'rgb(var(--cyber-cyan-rgb) / 0.1)',
+            color: justLeveled ? '#fbbf24' : 'var(--cyber-cyan)',
+            textShadow: justLeveled ? '0 0 8px rgba(251,191,36,0.6)' : '0 0 6px rgb(var(--cyber-cyan-rgb) / 0.5)',
+            boxShadow: justLeveled ? '0 0 12px rgba(251,191,36,0.3)' : '0 0 8px rgb(var(--cyber-cyan-rgb) / 0.15)',
           }}
         >
           {level}
@@ -339,10 +339,10 @@ function LevelBadge({ level, perkCount = 0, xp = 0, xpToNext = 100 }: { level: n
           style={{
             background: justLeveled
               ? 'linear-gradient(90deg, #fbbf24, #f59e0b)'
-              : 'linear-gradient(90deg, #0891b2, #22d3ee)',
+              : 'linear-gradient(90deg, #0891b2, var(--cyber-cyan))',
             boxShadow: justLeveled
               ? '0 0 4px rgba(251,191,36,0.4)'
-              : '0 0 3px rgba(34,211,238,0.2)',
+              : '0 0 3px rgb(var(--cyber-cyan-rgb) / 0.2)',
           }}
           initial={false}
           animate={{ width: `${xpPct}%` }}
@@ -560,7 +560,7 @@ export function HUD(props: HUDProps) {
               </div>
             </div>
             <div className="hidden sm:flex items-center gap-1 px-1.5 py-0.5 rounded border ml-0.5"
-              style={{ borderColor: 'rgba(34,211,238,0.15)', background: 'rgba(34,211,238,0.05)' }}
+              style={{ borderColor: 'rgb(var(--cyber-cyan-rgb) / 0.15)', background: 'rgb(var(--cyber-cyan-rgb) / 0.05)' }}
             >
               <Clock className="size-2.5 text-cyan-500/60" />
               <span className="text-cyan-400/80 text-[11px] font-mono tabular-nums">{Math.floor(timeOfDay).toString().padStart(2, '0')}:{((timeOfDay % 1) * 60 | 0).toString().padStart(2, '0')}</span>
@@ -579,7 +579,7 @@ export function HUD(props: HUDProps) {
               <div className="h-1 w-full bg-slate-800/60 rounded-full overflow-hidden">
                 <motion.div
                   className="h-full rounded-full"
-                  style={{ background: 'linear-gradient(90deg, rgba(8,145,178,0.6), rgba(34,211,238,0.6))' }}
+                  style={{ background: 'linear-gradient(90deg, rgba(8,145,178,0.6), rgb(var(--cyber-cyan-rgb) / 0.6))' }}
                   initial={false}
                   animate={{ width: `${(xp / xpToNext) * 100}%` }}
                   transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
@@ -694,8 +694,8 @@ export function HUD(props: HUDProps) {
                     className="absolute right-0 top-full mt-1.5 w-52 rounded-lg border backdrop-blur-xl overflow-hidden"
                     style={{
                       background: 'linear-gradient(145deg, rgba(0,0,0,0.92) 0%, rgba(15,23,42,0.88) 50%, rgba(0,0,0,0.85) 100%)',
-                      borderColor: 'rgba(34,211,238,0.2)',
-                      boxShadow: '0 0 20px rgba(34,211,238,0.08), 0 8px 32px rgba(0,0,0,0.5)',
+                      borderColor: 'rgb(var(--cyber-cyan-rgb) / 0.2)',
+                      boxShadow: '0 0 20px rgb(var(--cyber-cyan-rgb) / 0.08), 0 8px 32px rgba(0,0,0,0.5)',
                       zIndex: UI_LAYERS.HUD + 5,
                     }}
                   >
@@ -740,7 +740,7 @@ export function HUD(props: HUDProps) {
           className="h-px mx-4"
           animate={{ opacity: [0.6, 1, 0.6] }}
           transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
-          style={{ background: 'linear-gradient(90deg, transparent, rgba(34,211,238,0.2) 30%, rgba(34,211,238,0.35) 50%, rgba(34,211,238,0.2) 70%, transparent)' }}
+          style={{ background: 'linear-gradient(90deg, transparent, rgb(var(--cyber-cyan-rgb) / 0.2) 30%, rgb(var(--cyber-cyan-rgb) / 0.35) 50%, rgb(var(--cyber-cyan-rgb) / 0.2) 70%, transparent)' }}
         />
       </div>
 
@@ -754,7 +754,7 @@ export function HUD(props: HUDProps) {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -10, scale: 0.9 }}
             transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-            className="absolute top-16 right-3 sm:top-20 sm:right-4 flex items-center gap-2 px-3 py-2 rounded-lg bg-slate-900/80 border border-cyan-900/30 backdrop-blur-md shadow-[0_0_15px_rgba(34,211,238,0.1)]"
+            className="absolute top-16 right-3 sm:top-20 sm:right-4 flex items-center gap-2 px-3 py-2 rounded-lg bg-slate-900/80 border border-cyan-900/30 backdrop-blur-md shadow-[0_0_15px_rgb(var(--cyber-cyan-rgb) / 0.1)]"
             style={{ zIndex: 1 }}
           >
             <Save className="size-3.5 text-cyan-400" />
@@ -769,18 +769,18 @@ export function HUD(props: HUDProps) {
           className={`relative rounded-2xl p-4 sm:p-5 border backdrop-blur-xl min-w-[260px] overflow-hidden panel-scanlines hex-grid-bg ${isLowEnergy || isHighStress ? 'warning-pulse' : ''}`}
           style={{
             background: 'linear-gradient(145deg, rgba(2,6,23,0.95) 0%, rgba(8,12,28,0.92) 40%, rgba(4,8,18,0.88) 100%)',
-            borderColor: isLowEnergy || isHighStress ? 'rgba(251, 113, 133, 0.5)' : 'rgba(34,211,238,0.2)',
+            borderColor: isLowEnergy || isHighStress ? 'rgba(251, 113, 133, 0.5)' : 'rgb(var(--cyber-cyan-rgb) / 0.2)',
             boxShadow: isLowEnergy || isHighStress
               ? '0 0 30px rgba(251,113,133,0.15), 0 8px 32px rgba(0,0,0,0.5), inset 0 1px 0 rgba(251,113,133,0.1)'
-              : '0 0 20px rgba(34,211,238,0.06), 0 8px 32px rgba(0,0,0,0.5), inset 0 1px 0 rgba(34,211,238,0.08)',
+              : '0 0 20px rgb(var(--cyber-cyan-rgb) / 0.06), 0 8px 32px rgba(0,0,0,0.5), inset 0 1px 0 rgb(var(--cyber-cyan-rgb) / 0.08)',
           }}
         >
           {/* Animated circuit-trace border at top */}
           <div className="absolute top-0 left-0 right-0 h-[2px] rounded-t-2xl overflow-hidden circuit-trace-line pointer-events-none" />
 
           {/* Accent glow spots */}
-          <div className="absolute inset-0 rounded-2xl pointer-events-none" style={{ background: 'radial-gradient(ellipse at 20% 20%, rgba(34,211,238,0.04) 0%, transparent 50%), radial-gradient(ellipse at 80% 80%, rgba(251,191,36,0.03) 0%, transparent 50%)' }} />
-          <div className="absolute top-0 right-0 w-20 h-20 pointer-events-none" style={{ background: 'radial-gradient(circle at 100% 0%, rgba(34,211,238,0.08) 0%, transparent 70%)' }} />
+          <div className="absolute inset-0 rounded-2xl pointer-events-none" style={{ background: 'radial-gradient(ellipse at 20% 20%, rgb(var(--cyber-cyan-rgb) / 0.04) 0%, transparent 50%), radial-gradient(ellipse at 80% 80%, rgba(251,191,36,0.03) 0%, transparent 50%)' }} />
+          <div className="absolute top-0 right-0 w-20 h-20 pointer-events-none" style={{ background: 'radial-gradient(circle at 100% 0%, rgb(var(--cyber-cyan-rgb) / 0.08) 0%, transparent 70%)' }} />
 
           {/* Ambient floating particles */}
           <AmbientParticles />
@@ -788,15 +788,15 @@ export function HUD(props: HUDProps) {
           {/* Header */}
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2.5">
-              <div className="w-5 h-5 rounded-md flex items-center justify-center" style={{ background: 'rgba(34,211,238,0.1)', boxShadow: '0 0 8px rgba(34,211,238,0.15)' }}>
+              <div className="w-5 h-5 rounded-md flex items-center justify-center" style={{ background: 'rgb(var(--cyber-cyan-rgb) / 0.1)', boxShadow: '0 0 8px rgb(var(--cyber-cyan-rgb) / 0.15)' }}>
                 <Shield className="size-3 text-cyan-400" />
               </div>
-              <span className="text-[11px] text-cyan-400/70 font-mono uppercase tracking-[0.2em]" style={{ textShadow: '0 0 8px rgba(34,211,238,0.3)' }}>СТАТУС</span>
+              <span className="text-[11px] text-cyan-400/70 font-mono uppercase tracking-[0.2em]" style={{ textShadow: '0 0 8px rgb(var(--cyber-cyan-rgb) / 0.3)' }}>СТАТУС</span>
             </div>
             <LevelBadge level={level} perkCount={perkCount} xp={xp} xpToNext={xpToNext} />
           </div>
 
-          <div className="h-px mb-4" style={{ background: 'linear-gradient(90deg, rgba(34,211,238,0.3), rgba(34,211,238,0.08) 40%, transparent)' }} />
+          <div className="h-px mb-4" style={{ background: 'linear-gradient(90deg, rgb(var(--cyber-cyan-rgb) / 0.3), rgb(var(--cyber-cyan-rgb) / 0.08) 40%, transparent)' }} />
 
           {/* Karma with breathing ring — ENHANCED */}
           <div className="flex items-center gap-3 mb-4 relative">
@@ -844,19 +844,19 @@ export function HUD(props: HUDProps) {
           {/* XP Progress bar — prominent cyan bar */}
           <div className="mb-3">
             <div className="flex items-center gap-2 mb-1.5 relative">
-              <div className="w-5 h-5 rounded-md flex items-center justify-center bg-cyan-500/10" style={{ boxShadow: '0 0 8px rgba(34,211,238,0.2)' }}>
+              <div className="w-5 h-5 rounded-md flex items-center justify-center bg-cyan-500/10" style={{ boxShadow: '0 0 8px rgb(var(--cyber-cyan-rgb) / 0.2)' }}>
                 <TrendingUp className="size-3 text-cyan-400" />
               </div>
               <span className="text-sm font-semibold text-cyan-300">Опыт</span>
-              <span className="text-[11px] text-cyan-400/70 font-mono ml-auto tabular-nums" style={{ textShadow: '0 0 4px rgba(34,211,238,0.3)' }}>
+              <span className="text-[11px] text-cyan-400/70 font-mono ml-auto tabular-nums" style={{ textShadow: '0 0 4px rgb(var(--cyber-cyan-rgb) / 0.3)' }}>
                 {xp}<span className="text-cyan-500/40">/</span>{xpToNext}
               </span>
             </div>
             <CyberStatBar
               value={xp}
               max={xpToNext}
-              color="linear-gradient(90deg, #0891b2, #22d3ee)"
-              glowColor="rgba(34,211,238,0.4)"
+              color="linear-gradient(90deg, #0891b2, var(--cyber-cyan))"
+              glowColor="rgb(var(--cyber-cyan-rgb) / 0.4)"
               showSegments={false}
             />
           </div>
@@ -920,7 +920,7 @@ export function HUD(props: HUDProps) {
             )}
           </div>
 
-          <div className="h-px mt-4" style={{ background: 'linear-gradient(90deg, transparent, rgba(34,211,238,0.15), transparent)' }} />
+          <div className="h-px mt-4" style={{ background: 'linear-gradient(90deg, transparent, rgb(var(--cyber-cyan-rgb) / 0.15), transparent)' }} />
           <div className="flex items-center justify-between mt-2.5">
             <span className="text-[10px] text-slate-500/60 font-mono">volodka://status</span>
             <div className="flex items-center gap-2">
@@ -929,7 +929,7 @@ export function HUD(props: HUDProps) {
                   <WeatherIcon type={currentWeather} className="size-3 weather-icon-bob" />
                 </div>
               )}
-              <span className="text-[10px] text-cyan-400/50 font-mono tabular-nums" style={{ textShadow: '0 0 4px rgba(34,211,238,0.2)' }}>{Math.floor(timeOfDay).toString().padStart(2, '0')}:{((timeOfDay % 1) * 60 | 0).toString().padStart(2, '0')}</span>
+              <span className="text-[10px] text-cyan-400/50 font-mono tabular-nums" style={{ textShadow: '0 0 4px rgb(var(--cyber-cyan-rgb) / 0.2)' }}>{Math.floor(timeOfDay).toString().padStart(2, '0')}:{((timeOfDay % 1) * 60 | 0).toString().padStart(2, '0')}</span>
             </div>
           </div>
           {/* Version indicator */}
@@ -945,7 +945,7 @@ export function HUD(props: HUDProps) {
           className={`flex items-center gap-2.5 px-3 py-2 rounded-xl border backdrop-blur-xl ${isLowEnergy || isHighStress ? 'warning-pulse' : ''}`}
           style={{
             background: 'linear-gradient(180deg, rgba(2,6,23,0.92) 0%, rgba(8,12,28,0.88) 100%)',
-            borderColor: isLowEnergy || isHighStress ? 'rgba(251,113,133,0.3)' : 'rgba(34,211,238,0.15)',
+            borderColor: isLowEnergy || isHighStress ? 'rgba(251,113,133,0.3)' : 'rgb(var(--cyber-cyan-rgb) / 0.15)',
             boxShadow: '0 4px 16px rgba(0,0,0,0.4)',
           }}
         >
@@ -1035,12 +1035,12 @@ function HUDButton({
       data-tooltip={tooltip}
     >
       <div className="absolute inset-0 rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
-        style={{ boxShadow: 'inset 0 0 12px rgba(34,211,238,0.15), 0 0 8px rgba(34,211,238,0.1)' }}
+        style={{ boxShadow: 'inset 0 0 12px rgb(var(--cyber-cyan-rgb) / 0.15), 0 0 8px rgb(var(--cyber-cyan-rgb) / 0.1)' }}
       />
       <div className="absolute inset-0 rounded-md opacity-0 group-active:opacity-100 transition-opacity duration-100 pointer-events-none bg-cyan-500/10" />
       {/* Shimmer sweep on hover */}
       <div className="absolute inset-0 rounded-md overflow-hidden pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-        <div className="absolute inset-0" style={{ background: 'linear-gradient(105deg, transparent 40%, rgba(34,211,238,0.12) 50%, transparent 60%)', backgroundSize: '200% 100%', animation: 'shimmer 2s ease-in-out infinite' }} />
+        <div className="absolute inset-0" style={{ background: 'linear-gradient(105deg, transparent 40%, rgb(var(--cyber-cyan-rgb) / 0.12) 50%, transparent 60%)', backgroundSize: '200% 100%', animation: 'shimmer 2s ease-in-out infinite' }} />
       </div>
       <span className="relative z-10">{icon}</span>
     </button>

@@ -5,10 +5,10 @@
 /* ─── Key badge pulse animation — subtle glow breathing ─── */
 @keyframes hint-key-pulse {
   0%, 100% {
-    box-shadow: 0 0 4px rgba(34,211,238,0.2), inset 0 0 2px rgba(34,211,238,0.05);
+    box-shadow: 0 0 4px rgb(var(--cyber-cyan-rgb) / 0.2), inset 0 0 2px rgb(var(--cyber-cyan-rgb) / 0.05);
   }
   50% {
-    box-shadow: 0 0 10px rgba(34,211,238,0.4), 0 0 20px rgba(34,211,238,0.15), inset 0 0 4px rgba(34,211,238,0.1);
+    box-shadow: 0 0 10px rgb(var(--cyber-cyan-rgb) / 0.4), 0 0 20px rgb(var(--cyber-cyan-rgb) / 0.15), inset 0 0 4px rgb(var(--cyber-cyan-rgb) / 0.1);
   }
 }
 

@@ -2,6 +2,8 @@
 @import "tw-animate-css";
 
 @import "../styles/tokens.css";
+@import "../styles/svg-patterns.css";
+@import "../styles/cyberpunk-theme.css";
 @import "../styles/base.css";
 @import "../styles/game-keyframes.css";
 @import "../styles/panel-animations.css";
@@ -26,3 +28,4 @@
 @import "../styles/enhancements.css";
 @import "../styles/toasts-loading.css";
 @import "../styles/reduced-motion.css";
+@import "../styles/backdrop-mobile.css";

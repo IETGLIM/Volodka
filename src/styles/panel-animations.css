@@ -2,35 +2,59 @@
    STYLE-1: Panel Animations, Micro-interactions, Visual Refinements
    ══════════════════════════════════════════════════════════════ */
 
-/* ─── Enhanced custom scrollbar (thin, cyan thumb, dark track) ─── */
+/* ─── Enhanced custom scrollbar (SSOT — cyan thumb, dark track) ─── */
 .game-scrollbar,
-.custom-scrollbar {
+.custom-scrollbar,
+.inv-scrollable,
+.inv-grid-scroll,
+.skill-tree-scroll,
+.cp-poem-inner {
   scrollbar-width: thin;
-  scrollbar-color: rgba(0, 229, 255, 0.25) rgba(0, 0, 0, 0.4);
+  scrollbar-color: rgb(var(--cyber-cyan-rgb) / 0.25) rgba(0, 0, 0, 0.4);
   scrollbar-gutter: stable;
 }
 .game-scrollbar::-webkit-scrollbar,
-.custom-scrollbar::-webkit-scrollbar {
+.custom-scrollbar::-webkit-scrollbar,
+.inv-scrollable::-webkit-scrollbar,
+.inv-grid-scroll::-webkit-scrollbar,
+.skill-tree-scroll::-webkit-scrollbar,
+.cp-poem-inner::-webkit-scrollbar {
   width: 5px;
 }
 .game-scrollbar::-webkit-scrollbar-track,
-.custom-scrollbar::-webkit-scrollbar-track {
+.custom-scrollbar::-webkit-scrollbar-track,
+.inv-scrollable::-webkit-scrollbar-track,
+.inv-grid-scroll::-webkit-scrollbar-track,
+.skill-tree-scroll::-webkit-scrollbar-track,
+.cp-poem-inner::-webkit-scrollbar-track {
   background: rgba(0, 0, 0, 0.4);
   border-radius: 3px;
 }
 .game-scrollbar::-webkit-scrollbar-thumb,
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, rgba(0, 229, 255, 0.35), rgba(0, 229, 255, 0.15));
+.custom-scrollbar::-webkit-scrollbar-thumb,
+.inv-scrollable::-webkit-scrollbar-thumb,
+.inv-grid-scroll::-webkit-scrollbar-thumb,
+.skill-tree-scroll::-webkit-scrollbar-thumb,
+.cp-poem-inner::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, rgb(var(--cyber-cyan-rgb) / 0.35), rgb(var(--cyber-cyan-rgb) / 0.15));
   border-radius: 3px;
-  border: 1px solid rgba(0, 229, 255, 0.1);
+  border: 1px solid rgb(var(--cyber-cyan-rgb) / 0.1);
 }
 .game-scrollbar::-webkit-scrollbar-thumb:hover,
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(180deg, rgba(0, 229, 255, 0.55), rgba(0, 229, 255, 0.25));
-  border-color: rgba(0, 229, 255, 0.2);
+.custom-scrollbar::-webkit-scrollbar-thumb:hover,
+.inv-scrollable::-webkit-scrollbar-thumb:hover,
+.inv-grid-scroll::-webkit-scrollbar-thumb:hover,
+.skill-tree-scroll::-webkit-scrollbar-thumb:hover,
+.cp-poem-inner::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, rgb(var(--cyber-cyan-rgb) / 0.55), rgb(var(--cyber-cyan-rgb) / 0.25));
+  border-color: rgb(var(--cyber-cyan-rgb) / 0.2);
 }
 .game-scrollbar::-webkit-scrollbar-corner,
-.custom-scrollbar::-webkit-scrollbar-corner {
+.custom-scrollbar::-webkit-scrollbar-corner,
+.inv-scrollable::-webkit-scrollbar-corner,
+.inv-grid-scroll::-webkit-scrollbar-corner,
+.skill-tree-scroll::-webkit-scrollbar-corner,
+.cp-poem-inner::-webkit-scrollbar-corner {
   background: transparent;
 }
 
@@ -85,10 +109,10 @@
 /* ─── Glow pulse animation for selected items ─── */
 @keyframes glow-pulse {
   0%, 100% {
-    box-shadow: 0 0 4px rgba(0, 229, 255, 0.1), inset 0 0 2px rgba(0, 229, 255, 0.05);
+    box-shadow: 0 0 4px rgb(var(--cyber-cyan-rgb) / 0.1), inset 0 0 2px rgb(var(--cyber-cyan-rgb) / 0.05);
   }
   50% {
-    box-shadow: 0 0 12px rgba(0, 229, 255, 0.25), 0 0 24px rgba(0, 229, 255, 0.08), inset 0 0 6px rgba(0, 229, 255, 0.1);
+    box-shadow: 0 0 12px rgb(var(--cyber-cyan-rgb) / 0.25), 0 0 24px rgb(var(--cyber-cyan-rgb) / 0.08), inset 0 0 6px rgb(var(--cyber-cyan-rgb) / 0.1);
   }
 }
 
@@ -128,8 +152,8 @@
     0deg,
     transparent 0px,
     transparent 2px,
-    rgba(0, 229, 255, 0.015) 2px,
-    rgba(0, 229, 255, 0.015) 4px
+    rgb(var(--cyber-cyan-rgb) / 0.015) 2px,
+    rgb(var(--cyber-cyan-rgb) / 0.015) 4px
   );
   pointer-events: none;
   animation: scanline-overlay 8s linear infinite;
@@ -141,7 +165,7 @@
 }
 .hover-lift:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3), 0 0 8px rgba(0, 229, 255, 0.06);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3), 0 0 8px rgb(var(--cyber-cyan-rgb) / 0.06);
 }
 
 /* ─── Smooth font rendering ─── */
@@ -154,9 +178,9 @@
 
 /* ─── Better focus states for accessibility ─── */
 .focus-cyber:focus-visible {
-  outline: 2px solid rgba(0, 229, 255, 0.5);
+  outline: 2px solid rgb(var(--cyber-cyan-rgb) / 0.5);
   outline-offset: 2px;
-  box-shadow: 0 0 0 4px rgba(0, 229, 255, 0.15);
+  box-shadow: 0 0 0 4px rgb(var(--cyber-cyan-rgb) / 0.15);
 }
 
 /* ─── Loading shimmer animation for skeletons ─── */
@@ -173,7 +197,7 @@
   background: linear-gradient(
     90deg,
     rgba(0, 0, 0, 0) 0%,
-    rgba(0, 229, 255, 0.06) 50%,
+    rgb(var(--cyber-cyan-rgb) / 0.06) 50%,
     rgba(0, 0, 0, 0) 100%
   );
   background-size: 200% 100%;
@@ -192,20 +216,15 @@
 }
 
 /* ─── Terminal cursor blink animation ─── */
-@keyframes terminal-cursor {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0; }
-}
-
 .terminal-cursor {
   display: inline-block;
   width: 2px;
   height: 1em;
-  background: rgba(0, 229, 255, 0.8);
+  background: rgb(var(--cyber-cyan-rgb) / 0.8);
   vertical-align: middle;
   margin-left: 2px;
-  animation: terminal-cursor 1s step-end infinite;
-  box-shadow: 0 0 4px rgba(0, 229, 255, 0.4);
+  animation: cursor-blink 1s step-end infinite;
+  box-shadow: 0 0 4px rgb(var(--cyber-cyan-rgb) / 0.4);
 }
 
 /* (transition-flash, transition-darken, transition-ripple keyframes removed — unused) */

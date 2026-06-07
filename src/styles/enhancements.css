@@ -12,10 +12,10 @@
 /* Rare rarity — cyan glow pulse */
 @keyframes rarity-rare-pulse {
   0%, 100% {
-    box-shadow: 0 0 6px rgba(34, 211, 238, 0.20), 0 0 12px rgba(34, 211, 238, 0.10);
+    box-shadow: 0 0 6px rgb(var(--cyber-cyan-rgb) / 0.20), 0 0 12px rgb(var(--cyber-cyan-rgb) / 0.10);
   }
   50% {
-    box-shadow: 0 0 12px rgba(34, 211, 238, 0.35), 0 0 24px rgba(34, 211, 238, 0.18);
+    box-shadow: 0 0 12px rgb(var(--cyber-cyan-rgb) / 0.35), 0 0 24px rgb(var(--cyber-cyan-rgb) / 0.18);
   }
 }
 
@@ -73,7 +73,7 @@
   left: 0;
   width: 120px;
   height: 100%;
-  background: radial-gradient(ellipse at center, rgba(34, 211, 238, 0.12) 0%, transparent 70%);
+  background: radial-gradient(ellipse at center, rgb(var(--cyber-cyan-rgb) / 0.12) 0%, transparent 70%);
   opacity: 0;
   transform: translateX(-120px);
   pointer-events: none;
@@ -174,7 +174,7 @@
 @keyframes typewriter-blink {
   0%, 100% {
     opacity: 1;
-    text-shadow: 0 0 4px rgba(34, 211, 238, 0.6), 0 0 8px rgba(34, 211, 238, 0.3);
+    text-shadow: 0 0 4px rgb(var(--cyber-cyan-rgb) / 0.6), 0 0 8px rgb(var(--cyber-cyan-rgb) / 0.3);
   }
   50% {
     opacity: 0;
@@ -187,10 +187,10 @@
   width: 2px;
   height: 1.1em;
   margin-left: 1px;
-  background-color: #22d3ee;
+  background-color: var(--cyber-cyan);
   vertical-align: text-bottom;
   animation: typewriter-blink 1s step-end infinite;
-  box-shadow: 0 0 4px rgba(34, 211, 238, 0.4);
+  box-shadow: 0 0 4px rgb(var(--cyber-cyan-rgb) / 0.4);
 }
 
 /* ─── 5. Scroll indicator pulse ─── */

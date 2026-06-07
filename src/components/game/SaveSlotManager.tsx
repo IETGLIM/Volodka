@@ -149,9 +149,9 @@ function SaveSlotCard({
         style={
           !isEmpty
             ? {
-                borderColor: 'rgba(0, 229, 255, 0.15)',
+                borderColor: 'rgb(var(--cyber-cyan-rgb) / 0.15)',
                 boxShadow:
-                  '0 0 15px rgba(0, 229, 255, 0.04), inset 0 0 15px rgba(0, 229, 255, 0.02)',
+                  '0 0 15px rgb(var(--cyber-cyan-rgb) / 0.04), inset 0 0 15px rgb(var(--cyber-cyan-rgb) / 0.02)',
               }
             : undefined
         }
@@ -164,7 +164,7 @@ function SaveSlotCard({
               style={{
                 color: isEmpty
                   ? 'rgba(148, 163, 184, 0.4)'
-                  : 'rgba(0, 229, 255, 0.7)',
+                  : 'rgb(var(--cyber-cyan-rgb) / 0.7)',
               }}
             >
               Слот {slotNumber}
@@ -222,7 +222,7 @@ function SaveSlotCard({
           <div className="flex flex-col gap-2 mb-4">
             {/* Scene & Time */}
             <div className="flex items-center gap-2">
-              <span className="text-xs" style={{ color: 'rgba(0, 229, 255, 0.6)' }}>
+              <span className="text-xs" style={{ color: 'rgb(var(--cyber-cyan-rgb) / 0.6)' }}>
                 ▸
               </span>
               <span
@@ -251,7 +251,7 @@ function SaveSlotCard({
                 <span className="font-mono text-[10px]" style={{ color: 'rgba(148, 163, 184, 0.5)' }}>
                   УР
                 </span>
-                <span className="font-mono text-xs" style={{ color: 'rgba(0, 229, 255, 0.8)' }}>
+                <span className="font-mono text-xs" style={{ color: 'rgb(var(--cyber-cyan-rgb) / 0.8)' }}>
                   {data.playerState.progression.level}
                 </span>
               </div>
@@ -302,18 +302,18 @@ function SaveSlotCard({
             aria-label={`Сохранить игру в слот ${slotNumber}`}
             className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-md font-mono text-xs tracking-wide transition-colors"
             style={{
-              color: 'rgba(0, 229, 255, 0.85)',
-              background: 'rgba(0, 229, 255, 0.08)',
-              border: '1px solid rgba(0, 229, 255, 0.2)',
+              color: 'rgb(var(--cyber-cyan-rgb) / 0.85)',
+              background: 'rgb(var(--cyber-cyan-rgb) / 0.08)',
+              border: '1px solid rgb(var(--cyber-cyan-rgb) / 0.2)',
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.background = 'rgba(0, 229, 255, 0.15)';
-              e.currentTarget.style.borderColor = 'rgba(0, 229, 255, 0.4)';
-              e.currentTarget.style.boxShadow = '0 0 12px rgba(0, 229, 255, 0.15)';
+              e.currentTarget.style.background = 'rgb(var(--cyber-cyan-rgb) / 0.15)';
+              e.currentTarget.style.borderColor = 'rgb(var(--cyber-cyan-rgb) / 0.4)';
+              e.currentTarget.style.boxShadow = '0 0 12px rgb(var(--cyber-cyan-rgb) / 0.15)';
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'rgba(0, 229, 255, 0.08)';
-              e.currentTarget.style.borderColor = 'rgba(0, 229, 255, 0.2)';
+              e.currentTarget.style.background = 'rgb(var(--cyber-cyan-rgb) / 0.08)';
+              e.currentTarget.style.borderColor = 'rgb(var(--cyber-cyan-rgb) / 0.2)';
               e.currentTarget.style.boxShadow = 'none';
             }}
           >
@@ -449,8 +449,8 @@ function SaveSlotCard({
             className="absolute inset-0 rounded-lg pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-500"
             style={{
               boxShadow:
-                '0 0 20px rgba(0, 229, 255, 0.06), inset 0 0 20px rgba(0, 229, 255, 0.02)',
-              border: '1px solid rgba(0, 229, 255, 0.12)',
+                '0 0 20px rgb(var(--cyber-cyan-rgb) / 0.06), inset 0 0 20px rgb(var(--cyber-cyan-rgb) / 0.02)',
+              border: '1px solid rgb(var(--cyber-cyan-rgb) / 0.12)',
               borderRadius: '0.5rem',
             }}
           />
@@ -591,9 +591,9 @@ function SaveSlotManagerContent({ onClose }: { onClose: () => void }) {
         style={{
           background:
             'linear-gradient(180deg, rgba(8, 12, 18, 0.98) 0%, rgba(5, 8, 14, 0.99) 100%)',
-          borderColor: 'rgba(0, 229, 255, 0.2)',
+          borderColor: 'rgb(var(--cyber-cyan-rgb) / 0.2)',
           boxShadow:
-            '0 0 60px rgba(0, 229, 255, 0.06), 0 8px 40px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(0, 229, 255, 0.05)',
+            '0 0 60px rgb(var(--cyber-cyan-rgb) / 0.06), 0 8px 40px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgb(var(--cyber-cyan-rgb) / 0.05)',
           clipPath:
             'polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px))',
         }}
@@ -602,7 +602,7 @@ function SaveSlotManagerContent({ onClose }: { onClose: () => void }) {
         <div
           className="flex items-center justify-between px-4 py-2.5 border-b"
           style={{
-            borderColor: 'rgba(0, 229, 255, 0.15)',
+            borderColor: 'rgb(var(--cyber-cyan-rgb) / 0.15)',
             background: 'rgba(0, 0, 0, 0.4)',
           }}
         >
@@ -638,9 +638,9 @@ function SaveSlotManagerContent({ onClose }: { onClose: () => void }) {
               <div
                 className="px-4 py-2 text-center font-mono text-xs"
                 style={{
-                  color: 'rgba(0, 229, 255, 0.8)',
-                  background: 'rgba(0, 229, 255, 0.05)',
-                  borderBottom: '1px solid rgba(0, 229, 255, 0.1)',
+                  color: 'rgb(var(--cyber-cyan-rgb) / 0.8)',
+                  background: 'rgb(var(--cyber-cyan-rgb) / 0.05)',
+                  borderBottom: '1px solid rgb(var(--cyber-cyan-rgb) / 0.1)',
                 }}
               >
                 {notification}
@@ -667,7 +667,7 @@ function SaveSlotManagerContent({ onClose }: { onClose: () => void }) {
         {/* ── Footer ── */}
         <div
           className="px-5 py-3 border-t flex items-center justify-between"
-          style={{ borderColor: 'rgba(0, 229, 255, 0.1)' }}
+          style={{ borderColor: 'rgb(var(--cyber-cyan-rgb) / 0.1)' }}
         >
           {/* Slot count info */}
           <div className="flex items-center gap-2">
@@ -702,17 +702,17 @@ function SaveSlotManagerContent({ onClose }: { onClose: () => void }) {
       <div
         className="absolute -top-px -left-px w-8 h-8 pointer-events-none"
         style={{
-          borderTop: '2px solid rgba(0, 229, 255, 0.3)',
-          borderLeft: '2px solid rgba(0, 229, 255, 0.3)',
-          boxShadow: '-2px -2px 10px rgba(0, 229, 255, 0.1)',
+          borderTop: '2px solid rgb(var(--cyber-cyan-rgb) / 0.3)',
+          borderLeft: '2px solid rgb(var(--cyber-cyan-rgb) / 0.3)',
+          boxShadow: '-2px -2px 10px rgb(var(--cyber-cyan-rgb) / 0.1)',
         }}
       />
       <div
         className="absolute -top-px -right-px w-8 h-8 pointer-events-none"
         style={{
-          borderTop: '2px solid rgba(0, 229, 255, 0.3)',
-          borderRight: '2px solid rgba(0, 229, 255, 0.3)',
-          boxShadow: '2px -2px 10px rgba(0, 229, 255, 0.1)',
+          borderTop: '2px solid rgb(var(--cyber-cyan-rgb) / 0.3)',
+          borderRight: '2px solid rgb(var(--cyber-cyan-rgb) / 0.3)',
+          boxShadow: '2px -2px 10px rgb(var(--cyber-cyan-rgb) / 0.1)',
         }}
       />
       <div

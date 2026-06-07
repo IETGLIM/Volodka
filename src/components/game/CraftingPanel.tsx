@@ -33,9 +33,9 @@ import { PanelWrapper } from '@/components/game/PanelWrapper';
 const CATEGORY_VISUAL: Record<CraftingCategory, { emoji: string; color: string; glowColor: string; bgGradient: string }> = {
   equipment: {
     emoji: '⚙️',
-    color: '#22d3ee',
-    glowColor: 'rgba(34,211,238,0.25)',
-    bgGradient: 'linear-gradient(135deg, rgba(34,211,238,0.06) 0%, rgba(15,23,42,0.4) 60%)',
+    color: 'var(--cyber-cyan)',
+    glowColor: 'rgb(var(--cyber-cyan-rgb) / 0.25)',
+    bgGradient: 'linear-gradient(135deg, rgb(var(--cyber-cyan-rgb) / 0.06) 0%, rgba(15,23,42,0.4) 60%)',
   },
   consumable: {
     emoji: '🧪',
@@ -182,7 +182,7 @@ export function CraftingPanel({ open, onClose }: CraftingPanelProps) {
           {CATEGORY_TABS.map((tab) => {
             const count = categoryCounts[tab.value] ?? 0;
             const isActive = categoryFilter === tab.value;
-            const catColor = tab.value !== 'all' ? CATEGORY_VISUAL[tab.value].color : '#22d3ee';
+            const catColor = tab.value !== 'all' ? CATEGORY_VISUAL[tab.value].color : 'var(--cyber-cyan)';
             return (
               <button
                 key={tab.value}

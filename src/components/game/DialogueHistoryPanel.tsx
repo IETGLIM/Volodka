@@ -143,15 +143,15 @@ function ConversationEntry({
 
   // Player choices: cyan accent; NPC responses: NPC-specific accent
   const accentColor = isPlayer
-    ? '#22d3ee' // cyan-400
+    ? 'var(--cyber-cyan)' // cyan-400
     : (npcColors?.primary ?? '#34d399'); // NPC color or emerald fallback
 
   const accentBg = isPlayer
-    ? 'rgba(34,211,238,0.08)'
+    ? 'rgb(var(--cyber-cyan-rgb) / 0.08)'
     : (npcColors ? `${npcColors.primary}12` : 'rgba(52,211,153,0.08)');
 
   const accentBorder = isPlayer
-    ? 'rgba(34,211,238,0.25)'
+    ? 'rgb(var(--cyber-cyan-rgb) / 0.25)'
     : (npcColors ? `${npcColors.primary}30` : 'rgba(52,211,153,0.25)');
 
   return (

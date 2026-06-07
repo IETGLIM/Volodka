@@ -45,7 +45,7 @@ const WEATHER_ICONS: Record<WeatherType, React.ComponentType<{ className?: strin
 /* ── Weather accent colors for border glow ── */
 const WEATHER_ACCENT: Record<WeatherType, { border: string; glow: string; icon: string }> = {
   clear: { border: 'rgba(251,191,36,0.35)', glow: 'rgba(251,191,36,0.12)', icon: 'text-amber-400' },
-  rain: { border: 'rgba(34,211,238,0.35)', glow: 'rgba(34,211,238,0.12)', icon: 'text-cyan-400' },
+  rain: { border: 'rgb(var(--cyber-cyan-rgb) / 0.35)', glow: 'rgb(var(--cyber-cyan-rgb) / 0.12)', icon: 'text-cyan-400' },
   snow: { border: 'rgba(203,213,225,0.35)', glow: 'rgba(203,213,225,0.12)', icon: 'text-slate-300' },
   fog: { border: 'rgba(148,163,184,0.35)', glow: 'rgba(148,163,184,0.12)', icon: 'text-slate-400' },
   storm: { border: 'rgba(168,85,247,0.35)', glow: 'rgba(168,85,247,0.12)', icon: 'text-purple-400' },

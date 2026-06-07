@@ -10,14 +10,11 @@ import { useGameStore } from '@/store/gameStore';
 import { eventBus } from '@/engine/EventBus';
 import { withHmrCleanup } from '@/shared/dev/hmrDispose';
 import { getActQuote } from '@/engine/GuidedStoryManager';
-import {
-  closeAllMinigames,
-  type MinigamePanelSetters,
-} from '@/shared/constants/minigames';
 import type {
   MatrixQuoteState,
   PanelType,
   QuestChainUnlockState,
+  QuestDialogState,
 } from './types';
 import {
   getTopPanel,
@@ -26,15 +23,9 @@ import {
   type PanelStackAction,
 } from './panelStackReducer';
 
-export interface PanelCoordinatorOverlayHandlers {
-  setExamineOpen: (open: boolean) => void;
-  setExamineData: (data: null) => void;
-  setExamineHasLinkedContent: (has: boolean) => void;
-}
-
-export interface UsePanelCoordinatorOptions extends PanelCoordinatorOverlayHandlers {
-  isOverlayActive: boolean;
-  minigameSetters: MinigamePanelSetters;
+export interface UsePanelCoordinatorOptions {
+  /** Called when a panel opens — closes examine UI in one setState. */
+  onPanelOpened?: () => void;
 }
 
 export interface PanelCoordinatorResult {
@@ -49,14 +40,10 @@ export interface PanelCoordinatorResult {
   /** Remove a specific panel from the stack. */
   closePanelByType: (panel: NonNullPanelType) => void;
   closeAllPanels: () => void;
-  questAcceptId: string | null;
-  questAcceptNpcId: string | undefined;
-  setQuestAcceptId: (id: string | null) => void;
-  setQuestAcceptNpcId: (id: string | undefined) => void;
-  questCompleteId: string | null;
-  questCompleteNpcId: string | undefined;
-  setQuestCompleteId: (id: string | null) => void;
-  setQuestCompleteNpcId: (id: string | undefined) => void;
+  questAccept: QuestDialogState;
+  setQuestAccept: (value: QuestDialogState) => void;
+  questComplete: QuestDialogState;
+  setQuestComplete: (value: QuestDialogState) => void;
   questChainUnlock: QuestChainUnlockState | null;
   setQuestChainUnlock: (value: QuestChainUnlockState | null) => void;
   matrixQuote: MatrixQuoteState;
@@ -72,19 +59,13 @@ export interface PanelCoordinatorResult {
 
 /** Stacked panels + quest dialog state + overlay exclusivity. */
 export function usePanelCoordinator({
-  isOverlayActive,
-  minigameSetters,
-  setExamineOpen,
-  setExamineData,
-  setExamineHasLinkedContent,
-}: UsePanelCoordinatorOptions): PanelCoordinatorResult {
+  onPanelOpened,
+}: UsePanelCoordinatorOptions = {}): PanelCoordinatorResult {
   const [panelStack, dispatchStack] = useReducer(panelStackReducer, [] as NonNullPanelType[]);
   const activePanel = getTopPanel(panelStack);
 
-  const [questAcceptId, setQuestAcceptId] = useState<string | null>(null);
-  const [questAcceptNpcId, setQuestAcceptNpcId] = useState<string | undefined>(undefined);
-  const [questCompleteId, setQuestCompleteId] = useState<string | null>(null);
-  const [questCompleteNpcId, setQuestCompleteNpcId] = useState<string | undefined>(undefined);
+  const [questAccept, setQuestAccept] = useState<QuestDialogState>(null);
+  const [questComplete, setQuestComplete] = useState<QuestDialogState>(null);
   const [questChainUnlock, setQuestChainUnlock] = useState<QuestChainUnlockState | null>(null);
   const [matrixQuote, setMatrixQuote] = useState<MatrixQuoteState>(null);
   const questChainUnlockTimeout = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
@@ -93,12 +74,10 @@ export function usePanelCoordinator({
     const scope = eventBus.createScope();
 
     scope.on('story:quest_available', (data) => {
-      setQuestAcceptId(data.questId);
-      setQuestAcceptNpcId(data.npcId);
+      setQuestAccept({ questId: data.questId, npcId: data.npcId });
     });
     scope.on('quest:completed', (data) => {
-      setQuestCompleteId(data.questId);
-      setQuestCompleteNpcId(data.npcId);
+      setQuestComplete({ questId: data.questId, npcId: data.npcId });
     });
     scope.on('story:quest_chain_unlock', (data) => {
       setQuestChainUnlock({
@@ -158,30 +137,17 @@ export function usePanelCoordinator({
   );
 
   useEffect(() => {
+    if (panelStack.length === 0) return;
+    onPanelOpened?.();
+  }, [panelStack.length, onPanelOpened]);
+
+  useEffect(() => {
     const journalInStack = panelStack.includes('journal');
-    const storeOpen = useGameStore.getState().journalOpen;
-    if (journalInStack !== storeOpen) {
-      useGameStore.getState().setJournalOpen(journalInStack);
+    const store = useGameStore.getState();
+    if (journalInStack !== store.journalOpen) {
+      store.setJournalOpen(journalInStack);
     }
   }, [panelStack]);
-
-  useEffect(() => {
-    if (isOverlayActive) {
-      setExamineOpen(false);
-      setExamineData(null);
-      setExamineHasLinkedContent(false);
-      closeAllMinigames(minigameSetters);
-      closeAllPanels();
-    }
-  }, [isOverlayActive, closeAllPanels, minigameSetters, setExamineOpen, setExamineData, setExamineHasLinkedContent]);
-
-  useEffect(() => {
-    if (panelStack.length > 0) {
-      setExamineOpen(false);
-      setExamineData(null);
-      setExamineHasLinkedContent(false);
-    }
-  }, [panelStack.length, setExamineOpen, setExamineData, setExamineHasLinkedContent]);
 
   const closeJournalIfOpen = useCallback(() => {
     if (panelStack.includes('journal')) {
@@ -229,14 +195,10 @@ export function usePanelCoordinator({
     closePanel,
     closePanelByType,
     closeAllPanels,
-    questAcceptId,
-    questAcceptNpcId,
-    setQuestAcceptId,
-    setQuestAcceptNpcId,
-    questCompleteId,
-    questCompleteNpcId,
-    setQuestCompleteId,
-    setQuestCompleteNpcId,
+    questAccept,
+    setQuestAccept,
+    questComplete,
+    setQuestComplete,
     questChainUnlock,
     setQuestChainUnlock,
     matrixQuote,

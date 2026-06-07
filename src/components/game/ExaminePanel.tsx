@@ -124,8 +124,8 @@ export function ExaminePanel({ open, data, onClose, hasLinkedContent, onContinue
                 transform: `rotateY(${Math.sin(rotation * 0.02) * 15}deg) rotateX(${Math.cos(rotation * 0.015) * 8}deg)`,
                 width: '140px',
                 height: '140px',
-                background: 'linear-gradient(135deg, rgba(34,211,238,0.1), rgba(34,211,238,0.02))',
-                boxShadow: '0 8px 32px rgba(0,0,0,0.4), 0 0 20px rgba(34,211,238,0.06)',
+                background: 'linear-gradient(135deg, rgb(var(--cyber-cyan-rgb) / 0.1), rgb(var(--cyber-cyan-rgb) / 0.02))',
+                boxShadow: '0 8px 32px rgba(0,0,0,0.4), 0 0 20px rgb(var(--cyber-cyan-rgb) / 0.06)',
               }}
             >
               {icon}

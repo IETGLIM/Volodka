@@ -4,6 +4,7 @@
  */
 
 import type { DialogueNode, StoryNode } from '@/shared/types/game';
+import { devWarn } from '@/shared/utils/devLog';
 
 export type StoryPackId = 'act1' | 'act2' | 'act3' | 'act4' | 'act5' | 'act6' | 'act7' | 'chk';
 export type DialoguePackId =
@@ -261,7 +262,9 @@ export function prefetchStoryNodes(nodeIds: readonly (string | null | undefined)
           /* choice may point to dialogue-only id — ignore */
         }
       }
-    })();
+    })().catch((err) => {
+      devWarn('[narrativePackRegistry] prefetchStoryNodes failed:', err);
+    });
   }, 50);
 }
 
@@ -273,7 +276,9 @@ export function prefetchRemainingStoryPacksInIdle(): void {
         if (loadedStoryPacks.has(pack)) continue;
         await loadStoryPackInternal(pack);
       }
-    })();
+    })().catch((err) => {
+      devWarn('[narrativePackRegistry] prefetchRemainingStoryPacksInIdle failed:', err);
+    });
   }, 200);
 }
 

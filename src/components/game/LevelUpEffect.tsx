@@ -108,10 +108,10 @@ export function LevelUpEffect() {
                     height: size,
                     background: i % 2 === 0
                       ? 'rgba(251,191,36,0.9)'
-                      : 'rgba(34,211,238,0.8)',
+                      : 'rgb(var(--cyber-cyan-rgb) / 0.8)',
                     boxShadow: i % 2 === 0
                       ? '0 0 6px rgba(251,191,36,0.6)'
-                      : '0 0 6px rgba(34,211,238,0.5)',
+                      : '0 0 6px rgb(var(--cyber-cyan-rgb) / 0.5)',
                   }}
                   initial={{
                     x: 0,
@@ -219,7 +219,7 @@ export function LevelUpEffect() {
                 {levelUp.perkPointsGained > 0 && (
                   <motion.p
                     className="text-sm font-mono tracking-wider text-cyan-300/70"
-                    style={{ textShadow: '0 0 8px rgba(34,211,238,0.4)' }}
+                    style={{ textShadow: '0 0 8px rgb(var(--cyber-cyan-rgb) / 0.4)' }}
                     initial={{ opacity: 0, scale: 0.8 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ duration: 0.3, delay: 0.6 }}

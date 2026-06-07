@@ -53,14 +53,14 @@ const RARITY_CONFIG: Record<ItemRarity, {
     countdownBg: '#94a3b8',
   },
   uncommon: {
-    primary: '#22d3ee',     // cyan-400
-    glow: 'rgba(34, 211, 238, 0.18)',
-    border: 'rgba(34, 211, 238, 0.35)',
+    primary: 'var(--cyber-cyan)',     // cyan-400
+    glow: 'rgb(var(--cyber-cyan-rgb) / 0.18)',
+    border: 'rgb(var(--cyber-cyan-rgb) / 0.35)',
     bg: 'rgba(8, 20, 30, 0.82)',
-    shadow: '0 0 12px rgba(34, 211, 238, 0.12)',
-    iconBg: 'rgba(34, 211, 238, 0.12)',
-    textColor: '#22d3ee',
-    countdownBg: '#22d3ee',
+    shadow: '0 0 12px rgb(var(--cyber-cyan-rgb) / 0.12)',
+    iconBg: 'rgb(var(--cyber-cyan-rgb) / 0.12)',
+    textColor: 'var(--cyber-cyan)',
+    countdownBg: 'var(--cyber-cyan)',
   },
   rare: {
     primary: '#a78bfa',     // violet-400

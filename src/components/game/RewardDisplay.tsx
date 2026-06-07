@@ -71,7 +71,7 @@ const RARITY_COLORS: Record<RewardRarity, { text: string; border: string; bg: st
     text: 'text-cyan-300',
     border: 'border-cyan-500/40',
     bg: 'bg-cyan-950/30',
-    glow: 'shadow-[0_0_12px_rgba(34,211,238,0.15)]',
+    glow: 'shadow-[0_0_12px_rgb(var(--cyber-cyan-rgb) / 0.15)]',
   },
   legendary: {
     text: 'text-amber-300',
@@ -128,7 +128,7 @@ function RewardCard({ reward, index }: { reward: RewardItem; index: number }) {
             background: rarity === 'legendary'
               ? 'rgba(251, 191, 36, 0.1)'
               : rarity === 'rare'
-                ? 'rgba(34, 211, 238, 0.1)'
+                ? 'rgb(var(--cyber-cyan-rgb) / 0.1)'
                 : rarity === 'uncommon'
                   ? 'rgba(52, 211, 153, 0.1)'
                   : 'rgba(148, 163, 184, 0.06)',

@@ -88,7 +88,7 @@ function CompassMarker({
         style={
           isActive
             ? {
-                textShadow: '0 0 8px rgba(34,211,238,0.6), 0 0 16px rgba(34,211,238,0.3)',
+                textShadow: '0 0 8px rgb(var(--cyber-cyan-rgb) / 0.6), 0 0 16px rgb(var(--cyber-cyan-rgb) / 0.3)',
               }
             : undefined
         }
@@ -113,8 +113,8 @@ function TickMark({ offset, isMajor }: { offset: number; isMajor: boolean }) {
         className={`${isMajor ? 'w-px h-3' : 'w-px h-1.5'}`}
         style={{
           background: isMajor
-            ? 'rgba(34,211,238,0.2)'
-            : 'rgba(34,211,238,0.08)',
+            ? 'rgb(var(--cyber-cyan-rgb) / 0.2)'
+            : 'rgb(var(--cyber-cyan-rgb) / 0.08)',
         }}
       />
     </div>
@@ -232,9 +232,9 @@ export function CompassHUD() {
               background: 'rgba(0, 8, 16, 0.6)',
               backdropFilter: 'blur(12px)',
               WebkitBackdropFilter: 'blur(12px)',
-              border: '1px solid rgba(34, 211, 238, 0.15)',
+              border: '1px solid rgb(var(--cyber-cyan-rgb) / 0.15)',
               borderRadius: '4px',
-              boxShadow: '0 0 12px rgba(34, 211, 238, 0.06), inset 0 0 12px rgba(0, 0, 0, 0.3)',
+              boxShadow: '0 0 12px rgb(var(--cyber-cyan-rgb) / 0.06), inset 0 0 12px rgba(0, 0, 0, 0.3)',
             }}
           >
             {/* Scanline overlay */}
@@ -298,8 +298,8 @@ export function CompassHUD() {
             <span
               className="text-cyan-400 text-[10px] leading-none"
               style={{
-                textShadow: '0 0 6px rgba(34,211,238,0.6), 0 0 12px rgba(34,211,238,0.3)',
-                filter: 'drop-shadow(0 0 2px rgba(34,211,238,0.8))',
+                textShadow: '0 0 6px rgb(var(--cyber-cyan-rgb) / 0.6), 0 0 12px rgb(var(--cyber-cyan-rgb) / 0.3)',
+                filter: 'drop-shadow(0 0 2px rgb(var(--cyber-cyan-rgb) / 0.8))',
               }}
             >
               ▼

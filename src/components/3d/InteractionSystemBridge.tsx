@@ -34,12 +34,16 @@ function publishInteraction(
   targetRef: React.MutableRefObject<string | null>,
   state: InteractionState,
   targetNpcId?: string | null,
-): void {
+): boolean {
+  const nextTarget = targetNpcId !== undefined ? targetNpcId : targetRef.current;
+  if (!writeInteractionSession(state, nextTarget)) {
+    return false;
+  }
   stateRef.current = state;
   if (targetNpcId !== undefined) {
     targetRef.current = targetNpcId;
   }
-  writeInteractionSession(stateRef.current, targetRef.current);
+  return true;
 }
 
 /* ─── Interaction system constants ─── */

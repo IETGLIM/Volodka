@@ -1,6 +1,11 @@
 /* Safety: prevent any white flash before JS hydrates */
 html { background: #000 !important; }
 
+/*
+ * Dark-only theme: OKLCH tokens live on :root / .dark (no light palette).
+ * index.html sets <html class="dark"> — activates shadcn `dark:*` utilities below.
+ * Cyber hex/RGB tokens stay on :root for CSS vars + canvas helpers.
+ */
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
@@ -37,11 +42,14 @@ html { background: #000 !important; }
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
-  --color-cyber-cyan: #00e5ff;
-  --color-cyber-green: #39ff14;
-  --color-cyber-amber: #ffab00;
-  --color-cyber-rose: #ff1744;
-  --color-cyber-violet: #d500f9;
+  --color-cyber-cyan: var(--cyber-cyan);
+  --color-cyber-green: var(--cyber-green);
+  --color-cyber-amber: var(--cyber-amber);
+  --color-cyber-rose: var(--cyber-rose);
+  --color-cyber-violet: var(--cyber-violet);
+  /* Unify Tailwind cyan scale with canonical neon cyan (was #22d3ee drift) */
+  --color-cyan-400: var(--cyber-cyan);
+  --color-cyan-500: var(--cyber-cyan-dim);
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -49,6 +57,66 @@ html { background: #000 !important; }
 }
 
 :root {
+  /* ── Cyber palette (single source of truth — sync with shared/constants/cyberPalette.ts) ── */
+  --cyber-cyan: #00e5ff;
+  --cyber-cyan-rgb: 0 229 255;
+  --cyber-cyan-dim: #00ccdd;
+  --cyber-matrix: #00ff64;
+  --cyber-matrix-rgb: 0 255 100;
+  --cyber-green: #39ff14;
+  --cyber-green-rgb: 57 255 20;
+  --cyber-amber: #ffab00;
+  --cyber-amber-rgb: 255 171 0;
+  --cyber-rose: #ff1744;
+  --cyber-violet: #d500f9;
+  /* CyberpunkTheme context aliases */
+  --cyber-matrix-green: var(--cyber-matrix);
+  --cyber-neon-cyan: var(--cyber-cyan);
+  --cyber-amber-gold: #d4920a;
+  --cyber-deep-crimson: #cc2020;
+  --cyber-muted-olive: #6a8a30;
+
+  /*
+   * Z-index stack — sync with shared/constants/uiLayers.ts
+   * Use var(--z-*) in CSS overlays; UI_LAYERS in JSX.
+   */
+  --z-canvas: 0;
+  --z-noir-overlay: 3;
+  --z-world-labels: 5;
+  --z-glitch: 7;
+  --z-hud: 10;
+  --z-scene-banner: 20;
+  --z-dialogue: 30;
+  --z-toasts: 35;
+  --z-examine: 38;
+  --z-minigame: 40;
+  --z-mobile-controls: 42;
+  --z-menu: 45;
+  --z-combat: 50;
+  --z-damage-flash: 51;
+  --z-panel: 55;
+  --z-tooltip: 58;
+  --z-cinematic-transition: 95;
+  --z-loading: 100;
+  --z-dev-panel: 200;
+  --z-poem-noise: 998;
+  --z-poem-vignette: 999;
+  --z-poem-crt: 1000;
+  --z-poem-container: 1001;
+  /* Local decorative layers inside a component */
+  --z-decor-scanline: 1;
+  --z-decor-bracket: 2;
+  --z-decor-shimmer-after: 4;
+  --z-decor-shimmer-before: 5;
+  --z-inv-cell-scanline: 15;
+
+  /* Mobile: set to 0 in backdrop-mobile.css to skip blur on coarse pointers */
+  --backdrop-blur-strength: 1;
+}
+
+/* shadcn / Tailwind semantic tokens — dark palette only (see html.dark in index.html) */
+:root,
+.dark {
   --radius: 0.625rem;
   --background: oklch(0.06 0.01 260);
   --foreground: oklch(0.93 0.01 260);

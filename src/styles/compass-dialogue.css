@@ -16,8 +16,8 @@
   pointer-events: none;
   z-index: -1;
   box-shadow:
-    0 0 20px rgba(34, 211, 238, 0.04),
-    0 0 40px rgba(34, 211, 238, 0.02);
+    0 0 20px rgb(var(--cyber-cyan-rgb) / 0.04),
+    0 0 40px rgb(var(--cyber-cyan-rgb) / 0.02);
 }
 
 /* ─── Compass direction markers ─── */
@@ -34,11 +34,11 @@
 @keyframes compass-indicator-pulse {
   0%, 100% {
     opacity: 0.8;
-    filter: drop-shadow(0 0 2px rgba(34, 211, 238, 0.6));
+    filter: drop-shadow(0 0 2px rgb(var(--cyber-cyan-rgb) / 0.6));
   }
   50% {
     opacity: 1;
-    filter: drop-shadow(0 0 4px rgba(34, 211, 238, 0.9));
+    filter: drop-shadow(0 0 4px rgb(var(--cyber-cyan-rgb) / 0.9));
   }
 }
 
@@ -55,7 +55,7 @@
   left: 0;
   right: 0;
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(34, 211, 238, 0.15), transparent);
+  background: linear-gradient(90deg, transparent, rgb(var(--cyber-cyan-rgb) / 0.15), transparent);
   pointer-events: none;
 }
 
@@ -63,11 +63,6 @@
 .dialogue-cursor {
   display: inline-block;
   vertical-align: middle;
-}
-
-@keyframes dialogue-cursor-blink {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0; }
 }
 
 /* ─── Dialogue choice buttons enhanced ─── */
@@ -83,14 +78,14 @@
   top: 0;
   bottom: 0;
   width: 2px;
-  background: linear-gradient(180deg, rgba(34, 211, 238, 0.5), rgba(34, 211, 238, 0.15));
+  background: linear-gradient(180deg, rgb(var(--cyber-cyan-rgb) / 0.5), rgb(var(--cyber-cyan-rgb) / 0.15));
   z-index: 1;
   transition: width 0.2s ease, box-shadow 0.2s ease;
 }
 
 .dialogue-choice-btn:hover::before {
   width: 3px;
-  box-shadow: 0 0 6px rgba(34, 211, 238, 0.3);
+  box-shadow: 0 0 6px rgb(var(--cyber-cyan-rgb) / 0.3);
 }
 
 /* ─── Portrait frame with decorative border ─── */
@@ -101,12 +96,12 @@
 
 @keyframes portrait-frame-pulse {
   0%, 100% {
-    box-shadow: 0 0 8px rgba(34, 211, 238, 0.05);
-    border-color: rgba(34, 211, 238, 0.15);
+    box-shadow: 0 0 8px rgb(var(--cyber-cyan-rgb) / 0.05);
+    border-color: rgb(var(--cyber-cyan-rgb) / 0.15);
   }
   50% {
-    box-shadow: 0 0 16px rgba(34, 211, 238, 0.12);
-    border-color: rgba(34, 211, 238, 0.25);
+    box-shadow: 0 0 16px rgb(var(--cyber-cyan-rgb) / 0.12);
+    border-color: rgb(var(--cyber-cyan-rgb) / 0.25);
   }
 }
 
@@ -115,7 +110,7 @@
   position: absolute;
   inset: -2px;
   border-radius: 14px;
-  border: 1px solid rgba(34, 211, 238, 0.08);
+  border: 1px solid rgb(var(--cyber-cyan-rgb) / 0.08);
   pointer-events: none;
   animation: portrait-frame-pulse 3s ease-in-out infinite;
 }

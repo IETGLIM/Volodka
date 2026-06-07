@@ -78,7 +78,7 @@ function getRarityHoverShadow(rarity: ItemRarity): string {
     case 'uncommon':
       return '0 0 12px rgba(52, 211, 153, 0.3), 0 0 24px rgba(52, 211, 153, 0.1), 0 4px 12px rgba(0,0,0,0.3)';
     case 'rare':
-      return '0 0 12px rgba(34, 211, 238, 0.35), 0 0 24px rgba(34, 211, 238, 0.12), 0 4px 12px rgba(0,0,0,0.3)';
+      return '0 0 12px rgb(var(--cyber-cyan-rgb) / 0.35), 0 0 24px rgb(var(--cyber-cyan-rgb) / 0.12), 0 4px 12px rgba(0,0,0,0.3)';
     case 'legendary':
       return '0 0 16px rgba(251, 191, 36, 0.4), 0 0 32px rgba(251, 191, 36, 0.15), 0 4px 12px rgba(0,0,0,0.3)';
     default:
@@ -90,7 +90,7 @@ function getRarityHoverShadow(rarity: ItemRarity): string {
 const RARITY_ICON_SHADOW: Record<ItemRarity, string> = {
   common: '0 0 8px rgba(148, 163, 184, 0.15)',
   uncommon: '0 0 12px rgba(52, 211, 153, 0.3), 0 0 24px rgba(52, 211, 153, 0.1)',
-  rare: '0 0 12px rgba(34, 211, 238, 0.3), 0 0 24px rgba(34, 211, 238, 0.1)',
+  rare: '0 0 12px rgb(var(--cyber-cyan-rgb) / 0.3), 0 0 24px rgb(var(--cyber-cyan-rgb) / 0.1)',
   legendary: '0 0 16px rgba(251, 191, 36, 0.4), 0 0 32px rgba(251, 191, 36, 0.15)',
 };
 
@@ -493,7 +493,7 @@ export function Inventory({ open, onClose, onOpenPoetryBook }: InventoryProps) {
                   className={`
                     inv-cat-tab px-3 py-1.5 rounded-md text-[11px] font-mono border transition-all duration-200 relative
                     ${isActive
-                      ? 'inv-cat-tab-active border-cyan-500/50 bg-cyan-950/50 text-cyan-300 shadow-[0_0_10px_rgba(34,211,238,0.15)]'
+                      ? 'inv-cat-tab-active border-cyan-500/50 bg-cyan-950/50 text-cyan-300 shadow-[0_0_10px_rgb(var(--cyber-cyan-rgb) / 0.15)]'
                       : 'border-slate-700/30 bg-slate-900/30 text-slate-500 hover:text-slate-300 hover:border-slate-600/40 hover:bg-slate-800/30'
                     }
                   `}
@@ -505,7 +505,7 @@ export function Inventory({ open, onClose, onOpenPoetryBook }: InventoryProps) {
                     <motion.div
                       layoutId="inv-tab-indicator"
                       className="absolute bottom-0 left-1 right-1 h-[2px] bg-cyan-400/60 rounded-full"
-                      style={{ boxShadow: '0 0 6px rgba(34,211,238,0.4)' }}
+                      style={{ boxShadow: '0 0 6px rgb(var(--cyber-cyan-rgb) / 0.4)' }}
                       transition={{ type: 'spring', stiffness: 400, damping: 30 }}
                     />
                   )}
@@ -685,7 +685,7 @@ export function Inventory({ open, onClose, onOpenPoetryBook }: InventoryProps) {
                             <span className="text-[13px] leading-none">{categoryIcon}</span>
                             <div className="flex items-center gap-1">
                               {itemDef?.questRelated && (
-                                <Lock className="size-2.5 text-cyan-400 drop-shadow-[0_0_3px_rgba(34,211,238,0.5)]" />
+                                <Lock className="size-2.5 text-cyan-400 drop-shadow-[0_0_3px_rgb(var(--cyber-cyan-rgb) / 0.5)]" />
                               )}
                               {itemDef?.category === 'equipment' && (
                                 <Shield className="size-2.5 text-amber-400 drop-shadow-[0_0_3px_rgba(251,191,36,0.5)]" />
@@ -993,7 +993,7 @@ function ItemDetail({
           <Button
             size="sm"
             variant="outline"
-            className="border-cyan-500/40 text-cyan-400 hover:bg-cyan-900/30 hover:shadow-[0_0_12px_rgba(34,211,238,0.2)] transition-all duration-200"
+            className="border-cyan-500/40 text-cyan-400 hover:bg-cyan-900/30 hover:shadow-[0_0_12px_rgb(var(--cyber-cyan-rgb) / 0.2)] transition-all duration-200"
             onClick={onUse}
             disabled={!canUse}
           >

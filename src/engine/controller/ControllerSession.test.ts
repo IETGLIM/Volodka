@@ -30,6 +30,23 @@ describe('ControllerSession', () => {
     vi.useRealTimers();
   });
 
+  it('cancel drops pending work without marking session disposed', () => {
+    vi.useFakeTimers();
+    const session = new ControllerSession();
+    session.begin();
+    const gen = session.getGeneration();
+    const fn = vi.fn();
+
+    session.schedule(fn, 100);
+    session.cancel();
+    expect(session.isDisposed()).toBe(false);
+    expect(session.isCurrent(gen)).toBe(false);
+
+    vi.advanceTimersByTime(100);
+    expect(fn).not.toHaveBeenCalled();
+    vi.useRealTimers();
+  });
+
   it('clearTimers cancels pending work without bumping generation', () => {
     vi.useFakeTimers();
     const session = new ControllerSession();

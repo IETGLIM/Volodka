@@ -1,6 +1,10 @@
-import { InteractionState } from '@/engine/interaction/interactionMachine';
+import {
+  InteractionState,
+  INTERACTION_STATE_LABELS,
+  isValidInteractionTransition,
+} from '@/engine/interaction/interactionMachine';
+import { devWarn } from '@/shared/utils/devLog';
 import { registerHmrDispose } from '@/shared/dev/hmrDispose';
-
 export interface InteractionSessionSnapshot {
   state: InteractionState;
   targetNpcId: string | null;
@@ -37,12 +41,26 @@ export function isInteractionLocked(): boolean {
   );
 }
 
-/** Single writer for module-level interaction snapshot. */
+export interface WriteInteractionSessionOptions {
+  /** Bypass transition validation (HMR/dispose hard reset only). */
+  force?: boolean;
+}
+
+/** Single writer for module-level interaction snapshot. Returns false if transition rejected. */
 export function writeInteractionSession(
   state: InteractionState,
   targetNpcId: string | null,
-): void {
+  options?: WriteInteractionSessionOptions,
+): boolean {
+  const from = session.state;
+  if (!options?.force && !isValidInteractionTransition(from, state)) {
+    devWarn(
+      `[interactionSession] Invalid transition ${INTERACTION_STATE_LABELS[from]} → ${INTERACTION_STATE_LABELS[state]}`,
+    );
+    return false;
+  }
   session = { state, targetNpcId };
+  return true;
 }
 
 export function resetInteractionSession(): void {

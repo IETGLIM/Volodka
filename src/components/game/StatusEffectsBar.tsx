@@ -342,12 +342,12 @@ export function StatusEffectsBar() {
             ? 'rgba(251,113,133,0.35)'
             : hasBuffs
               ? 'rgba(52,211,153,0.3)'
-              : 'rgba(34,211,238,0.2)',
+              : 'rgb(var(--cyber-cyan-rgb) / 0.2)',
           boxShadow: hasDebuffs
             ? '0 0 16px rgba(251,113,133,0.1), 0 4px 16px rgba(0,0,0,0.4)'
             : hasBuffs
               ? '0 0 16px rgba(52,211,153,0.08), 0 4px 16px rgba(0,0,0,0.4)'
-              : '0 0 12px rgba(34,211,238,0.06), 0 4px 16px rgba(0,0,0,0.4)',
+              : '0 0 12px rgb(var(--cyber-cyan-rgb) / 0.06), 0 4px 16px rgba(0,0,0,0.4)',
         }}
       >
         {/* Category separator indicator */}

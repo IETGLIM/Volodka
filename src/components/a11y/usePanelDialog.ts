@@ -7,6 +7,7 @@ export interface PanelDialogA11y {
     role: 'dialog';
     'aria-modal': true;
     'aria-labelledby': string;
+    'data-panel': '';
   };
   titleProps: {
     id: string;
@@ -24,6 +25,7 @@ export function usePanelDialog(): PanelDialogA11y {
       role: 'dialog',
       'aria-modal': true,
       'aria-labelledby': titleId,
+      'data-panel': '',
     },
     titleProps: { id: titleId },
   };

@@ -205,9 +205,9 @@ class Canvas3DErrorBoundary extends Component<
             disabled={this.state.isRemounting}
             style={{
               padding: '8px 16px',
-              border: '1px solid rgba(0, 229, 255, 0.4)',
-              background: 'rgba(0, 229, 255, 0.1)',
-              color: 'rgba(0, 229, 255, 0.8)',
+              border: '1px solid rgb(var(--cyber-cyan-rgb) / 0.4)',
+              background: 'rgb(var(--cyber-cyan-rgb) / 0.1)',
+              color: 'rgb(var(--cyber-cyan-rgb) / 0.8)',
               cursor: this.state.isRemounting ? 'wait' : 'pointer',
               opacity: this.state.isRemounting ? 0.5 : 1,
               fontFamily: 'monospace',

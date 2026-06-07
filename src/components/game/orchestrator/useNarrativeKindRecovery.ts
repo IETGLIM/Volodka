@@ -1,10 +1,12 @@
 import { useEffect } from 'react';
-import { useGamePrimitive, useSetNarrativeKind, useOrchestratorNarrativeOverlay } from '@/store/selectors';import {
+import { useGamePrimitive, useSetNarrativeKind, useOrchestratorNarrativeOverlay } from '@/store/selectors';
+import {
   getDialogueNodes,
   getStoryNodes,
   preloadNarrativeGameData,
   ensureNarrativeNodeIds,
 } from '@/data/gameDataLoader';
+import { devWarn } from '@/shared/utils/devLog';
 
 /** Recover narrativeKind for saves created before overlay kind was persisted. */
 export function useNarrativeKindRecovery() {
@@ -24,6 +26,9 @@ export function useNarrativeKindRecovery() {
         const dialogueNodes = getDialogueNodes();
         if (storyNodes[currentNodeId]) setNarrativeKind('story');
         else if (dialogueNodes[currentNodeId]) setNarrativeKind('dialogue');
+      })
+      .catch((err) => {
+        devWarn('[useNarrativeKindRecovery] Failed to resolve narrativeKind:', err);
       });
 
     return () => {

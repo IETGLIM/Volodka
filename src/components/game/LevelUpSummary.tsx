@@ -204,10 +204,10 @@ export function LevelUpSummary() {
                     width: size,
                     height: size,
                     background: isCyan
-                      ? 'rgba(34, 211, 238, 0.9)'
+                      ? 'rgb(var(--cyber-cyan-rgb) / 0.9)'
                       : 'rgba(251, 191, 36, 0.9)',
                     boxShadow: isCyan
-                      ? '0 0 8px rgba(34, 211, 238, 0.6)'
+                      ? '0 0 8px rgb(var(--cyber-cyan-rgb) / 0.6)'
                       : '0 0 8px rgba(251, 191, 36, 0.6)',
                   }}
                   initial={{ x: 0, y: 0, opacity: 1, scale: 1 }}

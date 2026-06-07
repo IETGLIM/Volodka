@@ -9,6 +9,7 @@ import { SCENE_CONFIG } from '@/config/scenes';
 import { AUTO_SAVE_INTERVAL_MS } from '@/data/constants';
 import { processExpiredTTLFlags } from '@/engine/PoemPowerSystem';
 import { preloadNarrativeGameData, ensureNarrativeNodeIds } from '@/data/gameDataLoader';
+import { devWarn } from '@/shared/utils/devLog';
 import { initWorldEventDirector } from '@/engine/world';
 import { reconcileGuidedStory } from '@/engine/GuidedStoryManager';
 import { runGlobalCombatEnd } from '@/engine/core/GlobalCleanupService';
@@ -37,6 +38,9 @@ export function useGameLifecycleManager(mode: string) {
       .then((mod) => {
         if (cancelled) return;
         mod.initGuidedStoryManager();
+      })
+      .catch((err) => {
+        devWarn('[useGameLifecycleManager] Narrative preload / GuidedStory init failed:', err);
       });
 
     return () => {

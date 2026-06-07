@@ -81,12 +81,12 @@ const ACCENT_MAP: Record<Severity, {
   iconBg: string;
 }> = {
   normal: {
-    primary: '#22d3ee',     // cyan-400
-    glow: 'rgba(34, 211, 238, 0.15)',
-    border: 'rgba(34, 211, 238, 0.35)',
+    primary: 'var(--cyber-cyan)',     // cyan-400
+    glow: 'rgb(var(--cyber-cyan-rgb) / 0.15)',
+    border: 'rgb(var(--cyber-cyan-rgb) / 0.35)',
     bg: 'rgba(8, 20, 30, 0.82)',
-    shadow: '0 0 12px rgba(34, 211, 238, 0.12)',
-    iconBg: 'rgba(34, 211, 238, 0.12)',
+    shadow: '0 0 12px rgb(var(--cyber-cyan-rgb) / 0.12)',
+    iconBg: 'rgb(var(--cyber-cyan-rgb) / 0.12)',
   },
   warning: {
     primary: '#fbbf24',     // amber-400
@@ -116,7 +116,7 @@ function formatTemp(temp: number): string {
 
 function getTempColor(temp: number): string {
   if (temp <= -10) return '#60a5fa';   // blue-400
-  if (temp <= 0) return '#22d3ee';     // cyan-400
+  if (temp <= 0) return 'var(--cyber-cyan)';     // cyan-400
   if (temp <= 15) return '#34d399';    // emerald-400
   if (temp <= 25) return '#34d399';    // emerald-400 (comfortable)
   return '#f87171';                    // red-400

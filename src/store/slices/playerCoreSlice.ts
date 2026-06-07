@@ -14,6 +14,7 @@ import {
   type ActiveTTLFlagMap,
 } from '../activeTTLFlags';
 import { MAX_STORY_ACT } from '@/data/storyActs';
+import { hasVisitedNode } from '../visitedNodesIndex';
 
 /* ─── Slice types ─── */
 
@@ -59,7 +60,7 @@ export const createPlayerCoreSlice: StateCreator<
 
   visitNode: (id) =>
     set((state) => {
-      if (state.playerState.visitedNodes.includes(id)) return state;
+      if (hasVisitedNode(state.playerState.visitedNodes, id)) return state;
       return {
         playerState: {
           ...state.playerState,

@@ -65,7 +65,7 @@ export const STATUS_EFFECTS: Record<StatusEffectType, StatusEffectDef> = {
     description: 'Карма растёт быстрее. Мир отвечает добром на добро.',
     icon: '✨',
     category: 'buff',
-    color: '#22d3ee', // cyan
+    color: 'var(--cyber-cyan)', // cyan
     duration: 4,
   },
   skill_boost: {
@@ -101,7 +101,7 @@ export const STATUS_EFFECTS: Record<StatusEffectType, StatusEffectDef> = {
     description: 'Восприятие мира усилено. Ты замечаешь то, что другие не видят.',
     icon: '👁️',
     category: 'buff',
-    color: '#22d3ee', // cyan
+    color: 'var(--cyber-cyan)', // cyan
     duration: 2,
   },
 

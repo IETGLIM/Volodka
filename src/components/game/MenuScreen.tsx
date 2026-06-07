@@ -58,7 +58,7 @@ const MenuParticles = memo(function MenuParticles() {
 
     // 20 drifting particles (cyan, amber, white)
     for (let i = 0; i < 20; i++) {
-      const color = i % 3 === 0 ? 'rgba(0, 229, 255, 0.7)'
+      const color = i % 3 === 0 ? 'rgb(var(--cyber-cyan-rgb) / 0.7)'
         : i % 3 === 1 ? 'rgba(255, 171, 0, 0.6)'
         : 'rgba(255, 255, 255, 0.5)';
       const size = 1 + seededRand(i * 3 + 500) * 2;
@@ -79,7 +79,7 @@ const MenuParticles = memo(function MenuParticles() {
     // 10 data stream particles (vertical moving cyan dots)
     for (let i = 0; i < 10; i++) {
       const size = 1 + seededRand(i * 19 + 1000) * 1.5;
-      const color = 'rgba(0, 229, 255, 0.5)';
+      const color = 'rgb(var(--cyber-cyan-rgb) / 0.5)';
       items.push({
         id: `ms${i}`,
         x: (seededRand(i * 17 + 900) * 100).toFixed(2),
@@ -157,7 +157,7 @@ const CircuitGridLines = memo(function CircuitGridLines() {
           <line
             key={`h${i}`}
             x1="0" y1={`${(i + 1) * 8}%`} x2="100%" y2={`${(i + 1) * 8}%`}
-            stroke="rgba(0, 229, 255, 0.6)"
+            stroke="rgb(var(--cyber-cyan-rgb) / 0.6)"
             strokeWidth="0.5"
             style={{ animation: `menu-circuit-grid ${3 + i * 0.5}s ease-in-out infinite`, animationDelay: `${i * 0.4}s` }}
           />
@@ -166,7 +166,7 @@ const CircuitGridLines = memo(function CircuitGridLines() {
           <line
             key={`v${i}`}
             x1={`${(i + 1) * 6}%`} y1="0" x2={`${(i + 1) * 6}%`} y2="100%"
-            stroke="rgba(0, 229, 255, 0.4)"
+            stroke="rgb(var(--cyber-cyan-rgb) / 0.4)"
             strokeWidth="0.5"
             style={{ animation: `menu-circuit-grid ${4 + i * 0.3}s ease-in-out infinite`, animationDelay: `${i * 0.3}s` }}
           />
@@ -195,8 +195,8 @@ const FullScreenScanLine = memo(function FullScreenScanLine() {
       <div
         className="absolute left-0 right-0 h-px"
         style={{
-          background: 'linear-gradient(90deg, transparent 0%, rgba(0, 229, 255, 0.08) 20%, rgba(0, 229, 255, 0.12) 50%, rgba(0, 229, 255, 0.08) 80%, transparent 100%)',
-          boxShadow: '0 0 6px rgba(0, 229, 255, 0.05)',
+          background: 'linear-gradient(90deg, transparent 0%, rgb(var(--cyber-cyan-rgb) / 0.08) 20%, rgb(var(--cyber-cyan-rgb) / 0.12) 50%, rgb(var(--cyber-cyan-rgb) / 0.08) 80%, transparent 100%)',
+          boxShadow: '0 0 6px rgb(var(--cyber-cyan-rgb) / 0.05)',
           animation: 'menu-fullscan 8s linear infinite',
         }}
       />
@@ -223,7 +223,7 @@ const TerminalCorners = memo(function TerminalCorners() {
           <div
             className={`absolute ${c.dotPos} w-1 h-1 rounded-full bg-cyan-400/60`}
             style={{
-              boxShadow: '0 0 4px rgba(0, 229, 255, 0.4)',
+              boxShadow: '0 0 4px rgb(var(--cyber-cyan-rgb) / 0.4)',
               animation: `menu-corner-dot-blink ${2 + i * 0.3}s ease-in-out infinite`,
               animationDelay: `${i * 0.5}s`,
             }}
@@ -419,7 +419,7 @@ function TypewriterSubtitle({ text, delay = 0 }: { text: string; delay?: number 
         className="inline-block w-[2px] h-[1em] ml-0.5 align-middle"
         style={{
           backgroundColor: done || !started ? 'transparent' : 'rgba(0, 255, 255, 0.8)',
-          animation: done || !started ? 'none' : 'boot-cursor 0.8s step-end infinite',
+          animation: done || !started ? 'none' : 'cursor-blink 0.8s step-end infinite',
         }}
       />
     </motion.div>
@@ -1082,7 +1082,7 @@ export function MenuScreen() {
                         <div
                           className="absolute inset-0"
                           style={{
-                            background: 'linear-gradient(45deg, transparent 30%, rgba(0, 229, 255, 0.06) 50%, transparent 70%)',
+                            background: 'linear-gradient(45deg, transparent 30%, rgb(var(--cyber-cyan-rgb) / 0.06) 50%, transparent 70%)',
                             backgroundSize: '300% 300%',
                             animation: 'menu-hover-shimmer 0.8s ease-out forwards',
                           }}
@@ -1192,23 +1192,23 @@ export function MenuScreen() {
           className="mt-5 flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5"
         >
           <span className="text-[10px] text-slate-400/70 font-mono tracking-wide">
-            <span className="text-cyan-400/60" style={{ textShadow: '0 0 6px rgba(0, 229, 255, 0.25)' }}>↑↓</span> Навигация
+            <span className="text-cyan-400/60" style={{ textShadow: '0 0 6px rgb(var(--cyber-cyan-rgb) / 0.25)' }}>↑↓</span> Навигация
           </span>
           <span className="text-slate-600/40 text-[8px]">|</span>
           <span className="text-[10px] text-slate-400/70 font-mono tracking-wide">
-            <span className="text-cyan-400/60" style={{ textShadow: '0 0 6px rgba(0, 229, 255, 0.25)' }}>Enter</span> Выбрать
+            <span className="text-cyan-400/60" style={{ textShadow: '0 0 6px rgb(var(--cyber-cyan-rgb) / 0.25)' }}>Enter</span> Выбрать
           </span>
           <span className="text-slate-600/40 text-[8px]">|</span>
           <span className="text-[10px] text-slate-400/70 font-mono tracking-wide">
-            <span className="text-cyan-400/60" style={{ textShadow: '0 0 6px rgba(0, 229, 255, 0.25)' }}>F1</span> Справка
+            <span className="text-cyan-400/60" style={{ textShadow: '0 0 6px rgb(var(--cyber-cyan-rgb) / 0.25)' }}>F1</span> Справка
           </span>
           <span className="text-slate-600/40 text-[8px]">|</span>
           <span className="text-[10px] text-slate-400/70 font-mono tracking-wide">
-            <span className="text-cyan-400/60" style={{ textShadow: '0 0 6px rgba(0, 229, 255, 0.25)' }}>WASD</span> Движение
+            <span className="text-cyan-400/60" style={{ textShadow: '0 0 6px rgb(var(--cyber-cyan-rgb) / 0.25)' }}>WASD</span> Движение
           </span>
           <span className="text-slate-600/40 text-[8px]">|</span>
           <span className="text-[10px] text-slate-400/70 font-mono tracking-wide">
-            <span className="text-cyan-400/60" style={{ textShadow: '0 0 6px rgba(0, 229, 255, 0.25)' }}>E</span> Взаимодействие
+            <span className="text-cyan-400/60" style={{ textShadow: '0 0 6px rgb(var(--cyber-cyan-rgb) / 0.25)' }}>E</span> Взаимодействие
           </span>
         </motion.div>
 
@@ -1325,9 +1325,9 @@ export function MenuScreen() {
         transition={{ delay: 3 }}
         className="absolute bottom-6 left-6 z-30 flex flex-col items-start gap-1.5"
       >
-        <div className="w-24 h-px" style={{ background: 'linear-gradient(90deg, rgba(0, 229, 255, 0.25), rgba(255, 171, 0, 0.15), transparent)' }} />
+        <div className="w-24 h-px" style={{ background: 'linear-gradient(90deg, rgb(var(--cyber-cyan-rgb) / 0.25), rgba(255, 171, 0, 0.15), transparent)' }} />
         <div className="flex items-center gap-1.5">
-          <span className="w-1 h-1 rounded-full bg-cyan-400/60 menu-footer-dot" style={{ boxShadow: '0 0 3px rgba(0, 229, 255, 0.4)' }} />
+          <span className="w-1 h-1 rounded-full bg-cyan-400/60 menu-footer-dot" style={{ boxShadow: '0 0 3px rgb(var(--cyber-cyan-rgb) / 0.4)' }} />
           <span
             className="font-mono text-[8px] tracking-[0.1em] text-cyan-500/35"
             style={{

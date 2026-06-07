@@ -122,9 +122,9 @@ function VisualSettingsTab({
                 onClick={() => setPreset(opt.id)}
                 className="px-2.5 py-1 rounded-md font-mono text-[11px] tracking-wide transition-colors border"
                 style={{
-                  color: active ? 'rgba(0, 229, 255, 0.95)' : 'rgba(148, 163, 184, 0.65)',
-                  background: active ? 'rgba(0, 229, 255, 0.12)' : 'rgba(15, 23, 42, 0.5)',
-                  borderColor: active ? 'rgba(0, 229, 255, 0.45)' : 'rgba(71, 85, 105, 0.35)',
+                  color: active ? 'rgb(var(--cyber-cyan-rgb) / 0.95)' : 'rgba(148, 163, 184, 0.65)',
+                  background: active ? 'rgb(var(--cyber-cyan-rgb) / 0.12)' : 'rgba(15, 23, 42, 0.5)',
+                  borderColor: active ? 'rgb(var(--cyber-cyan-rgb) / 0.45)' : 'rgba(71, 85, 105, 0.35)',
                 }}
               >
                 {opt.label}
@@ -376,9 +376,9 @@ function SettingsPanelContent({ onClose }: { onClose: () => void }) {
         style={{
           background:
             'linear-gradient(180deg, rgba(8, 12, 18, 0.98) 0%, rgba(5, 8, 14, 0.99) 100%)',
-          borderColor: 'rgba(0, 229, 255, 0.2)',
+          borderColor: 'rgb(var(--cyber-cyan-rgb) / 0.2)',
           boxShadow:
-            '0 0 60px rgba(0, 229, 255, 0.06), 0 8px 40px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(0, 229, 255, 0.05)',
+            '0 0 60px rgb(var(--cyber-cyan-rgb) / 0.06), 0 8px 40px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgb(var(--cyber-cyan-rgb) / 0.05)',
           clipPath:
             'polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px))',
         }}
@@ -387,7 +387,7 @@ function SettingsPanelContent({ onClose }: { onClose: () => void }) {
         <div
           className="flex items-center justify-between px-4 py-2.5 border-b"
           style={{
-            borderColor: 'rgba(0, 229, 255, 0.15)',
+            borderColor: 'rgb(var(--cyber-cyan-rgb) / 0.15)',
             background: 'rgba(0, 0, 0, 0.4)',
           }}
         >
@@ -414,7 +414,7 @@ function SettingsPanelContent({ onClose }: { onClose: () => void }) {
         {/* ── Tab Buttons ── */}
         <div
           className="flex border-b px-4 pt-3 gap-1"
-          style={{ borderColor: 'rgba(0, 229, 255, 0.1)' }}
+          style={{ borderColor: 'rgb(var(--cyber-cyan-rgb) / 0.1)' }}
         >
           {TABS.map((tab) => {
             const isActive = activeTab === tab.id;
@@ -425,10 +425,10 @@ function SettingsPanelContent({ onClose }: { onClose: () => void }) {
                 className="relative flex items-center gap-1.5 px-3 py-2 font-mono text-xs tracking-wide transition-colors rounded-t-md"
                 style={{
                   color: isActive
-                    ? 'rgba(0, 229, 255, 0.9)'
+                    ? 'rgb(var(--cyber-cyan-rgb) / 0.9)'
                     : 'rgba(148, 163, 184, 0.5)',
                   background: isActive
-                    ? 'rgba(0, 229, 255, 0.08)'
+                    ? 'rgb(var(--cyber-cyan-rgb) / 0.08)'
                     : 'transparent',
                 }}
               >
@@ -440,8 +440,8 @@ function SettingsPanelContent({ onClose }: { onClose: () => void }) {
                     className="absolute bottom-0 left-0 right-0 h-0.5"
                     style={{
                       background:
-                        'linear-gradient(90deg, transparent, rgba(0, 229, 255, 0.6), transparent)',
-                      boxShadow: '0 0 8px rgba(0, 229, 255, 0.3)',
+                        'linear-gradient(90deg, transparent, rgb(var(--cyber-cyan-rgb) / 0.6), transparent)',
+                      boxShadow: '0 0 8px rgb(var(--cyber-cyan-rgb) / 0.3)',
                     }}
                     layoutId="settings-tab-indicator"
                     transition={{
@@ -464,7 +464,7 @@ function SettingsPanelContent({ onClose }: { onClose: () => void }) {
         {/* ── Footer ── */}
         <div
           className="px-5 py-3 border-t flex items-center justify-between"
-          style={{ borderColor: 'rgba(0, 229, 255, 0.1)' }}
+          style={{ borderColor: 'rgb(var(--cyber-cyan-rgb) / 0.1)' }}
         >
           {/* Reset button */}
           <motion.button
@@ -514,17 +514,17 @@ function SettingsPanelContent({ onClose }: { onClose: () => void }) {
       <div
         className="absolute -top-px -left-px w-8 h-8 pointer-events-none"
         style={{
-          borderTop: '2px solid rgba(0, 229, 255, 0.3)',
-          borderLeft: '2px solid rgba(0, 229, 255, 0.3)',
-          boxShadow: '-2px -2px 10px rgba(0, 229, 255, 0.1)',
+          borderTop: '2px solid rgb(var(--cyber-cyan-rgb) / 0.3)',
+          borderLeft: '2px solid rgb(var(--cyber-cyan-rgb) / 0.3)',
+          boxShadow: '-2px -2px 10px rgb(var(--cyber-cyan-rgb) / 0.1)',
         }}
       />
       <div
         className="absolute -top-px -right-px w-8 h-8 pointer-events-none"
         style={{
-          borderTop: '2px solid rgba(0, 229, 255, 0.3)',
-          borderRight: '2px solid rgba(0, 229, 255, 0.3)',
-          boxShadow: '2px -2px 10px rgba(0, 229, 255, 0.1)',
+          borderTop: '2px solid rgb(var(--cyber-cyan-rgb) / 0.3)',
+          borderRight: '2px solid rgb(var(--cyber-cyan-rgb) / 0.3)',
+          boxShadow: '2px -2px 10px rgb(var(--cyber-cyan-rgb) / 0.1)',
         }}
       />
       <div

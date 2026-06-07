@@ -6,9 +6,16 @@ import {
   MENU_LAYER_PANELS,
   type NonNullPanelType,
 } from './panelStackReducer';
-import { isPanelOpen as checkPanelOpen } from './panelStackUtils';
 
 export type { NonNullPanelType } from './panelStackReducer';
+
+function buildStackIndexMap(stack: readonly NonNullPanelType[]): Map<NonNullPanelType, number> {
+  const indexByPanel = new Map<NonNullPanelType, number>();
+  for (let i = 0; i < stack.length; i++) {
+    indexByPanel.set(stack[i], i);
+  }
+  return indexByPanel;
+}
 
 export interface PanelStackContextValue {
   stack: NonNullPanelType[];
@@ -32,21 +39,22 @@ export function PanelStackProvider({
 }) {
   const top = stack.length > 0 ? stack[stack.length - 1] : null;
 
-  const value = useMemo<PanelStackContextValue>(() => ({
-    stack,
-    isPanelOpen: (panel) => checkPanelOpen(stack, panel),
-    isTopPanel: (panel) => top === panel,
-    getStackIndex: (panel) => {
-      const idx = stack.indexOf(panel);
-      return idx === -1 ? 0 : idx;
-    },
-    getStackZIndex: (panel) => {
-      const idx = stack.indexOf(panel);
-      if (idx === -1) return UI_LAYERS.PANEL;
-      const base = MENU_LAYER_PANELS.has(panel) ? UI_LAYERS.MENU : UI_LAYERS.PANEL;
-      return base + idx * 2;
-    },
-  }), [stack, top]);
+  const value = useMemo<PanelStackContextValue>(() => {
+    const stackIndexByPanel = buildStackIndexMap(stack);
+
+    return {
+      stack,
+      isPanelOpen: (panel) => stackIndexByPanel.has(panel),
+      isTopPanel: (panel) => top === panel,
+      getStackIndex: (panel) => stackIndexByPanel.get(panel) ?? 0,
+      getStackZIndex: (panel) => {
+        const idx = stackIndexByPanel.get(panel);
+        if (idx === undefined) return UI_LAYERS.PANEL;
+        const base = MENU_LAYER_PANELS.has(panel) ? UI_LAYERS.MENU : UI_LAYERS.PANEL;
+        return base + idx * 2;
+      },
+    };
+  }, [stack, top]);
 
   return (
     <PanelStackContext.Provider value={value}>

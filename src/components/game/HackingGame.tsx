@@ -8,12 +8,13 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { useGameStore } from '@/store/gameStore';
 import { eventBus } from '@/engine/EventBus';
+import { CYBER_CYAN_RGB } from '@/shared/constants/cyberPalette';
 
 /* ─── Accent colors (red theme for hacking) ─── */
 const ACCENT_RGB = '239, 68, 68';
 const ACCENT_COLOR = `rgba(${ACCENT_RGB}, 0.9)`;
 const ACCENT_GLOW = `rgba(${ACCENT_RGB}, 0.3)`;
-const CYAN_RGB = '0, 229, 255';
+const CYAN_RGB = CYBER_CYAN_RGB;
 const CYAN_COLOR = `rgba(${CYAN_RGB}, 0.9)`;
 const GREEN_RGB = '34, 197, 94';
 const AMBER_RGB = '251, 191, 36';

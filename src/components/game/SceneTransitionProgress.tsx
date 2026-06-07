@@ -36,9 +36,9 @@ const BAR_HEIGHT_PX = 3;
 
 /* ─── Accent colours ─── */
 
-const CYAN = '#22d3ee';
+const CYAN = 'var(--cyber-cyan)';
 const EMERALD = '#34d399';
-const CYAN_GLOW = 'rgba(34, 211, 238, 0.35)';
+const CYAN_GLOW = 'rgb(var(--cyber-cyan-rgb) / 0.35)';
 const EMERALD_GLOW = 'rgba(52, 211, 153, 0.35)';
 
 /* ─── Component ─── */

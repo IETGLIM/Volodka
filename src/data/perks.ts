@@ -70,7 +70,7 @@ export const PERK_CATEGORY_META: Record<PerkCategory, PerkCategoryMeta> = {
     id: 'technical',
     name: 'Технические',
     icon: 'Cpu',
-    color: '#22d3ee', // cyan
+    color: 'var(--cyber-cyan)', // cyan
   },
 };
 

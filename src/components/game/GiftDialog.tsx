@@ -159,9 +159,9 @@ export function GiftDialog({ open, onClose, npcId }: GiftDialogProps) {
             className="relative z-10 w-full max-w-lg mx-4 overflow-hidden panel-slide-in digital-noise edge-glow"
             style={{
               background: 'linear-gradient(180deg, rgba(2,6,23,0.97) 0%, rgba(15,23,42,0.95) 50%, rgba(2,6,23,0.97) 100%)',
-              border: '1px solid rgba(34,211,238,0.25)',
+              border: '1px solid rgb(var(--cyber-cyan-rgb) / 0.25)',
               borderRadius: '8px',
-              boxShadow: '0 0 30px rgba(34,211,238,0.06), 0 8px 32px rgba(0,0,0,0.5), inset 0 1px 0 rgba(34,211,238,0.06)',
+              boxShadow: '0 0 30px rgb(var(--cyber-cyan-rgb) / 0.06), 0 8px 32px rgba(0,0,0,0.5), inset 0 1px 0 rgb(var(--cyber-cyan-rgb) / 0.06)',
             }}
           >
             {/* Scanline overlay */}

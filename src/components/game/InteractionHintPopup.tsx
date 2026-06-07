@@ -22,10 +22,10 @@ interface InteractionHint {
 /* ── Type-based accent colors ── */
 const TYPE_ACCENT: Record<InteractionHint['type'], { color: string; glow: string; border: string; bg: string }> = {
   npc: {
-    color: '#22d3ee', // cyan
-    glow: '0 0 8px rgba(34,211,238,0.4), 0 0 16px rgba(34,211,238,0.2)',
-    border: 'rgba(34,211,238,0.35)',
-    bg: 'rgba(34,211,238,0.08)',
+    color: 'var(--cyber-cyan)', // cyan
+    glow: '0 0 8px rgb(var(--cyber-cyan-rgb) / 0.4), 0 0 16px rgb(var(--cyber-cyan-rgb) / 0.2)',
+    border: 'rgb(var(--cyber-cyan-rgb) / 0.35)',
+    bg: 'rgb(var(--cyber-cyan-rgb) / 0.08)',
   },
   object: {
     color: '#fbbf24', // amber

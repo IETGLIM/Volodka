@@ -91,10 +91,10 @@ function KarmaRing({ value, max }: { value: number; max: number }) {
 
   // Karma color: red (low) → amber (mid) → cyan (high)
   const karmaColor =
-    value >= 70 ? '#22d3ee' : value >= 40 ? '#fbbf24' : '#fb7185';
+    value >= 70 ? 'var(--cyber-cyan)' : value >= 40 ? '#fbbf24' : '#fb7185';
   const karmaGlow =
     value >= 70
-      ? 'rgba(34, 211, 238, 0.3)'
+      ? 'rgb(var(--cyber-cyan-rgb) / 0.3)'
       : value >= 40
         ? 'rgba(251, 191, 36, 0.3)'
         : 'rgba(251, 113, 133, 0.3)';
@@ -230,11 +230,11 @@ export function QuickAccessToolbar() {
               WebkitBackdropFilter: 'blur(12px)',
               background:
                 'linear-gradient(180deg, rgba(8, 12, 18, 0.85) 0%, rgba(5, 8, 14, 0.9) 100%)',
-              border: `1px solid ${isStressHigh ? 'rgba(251, 113, 133, 0.35)' : 'rgba(34, 211, 238, 0.2)'}`,
+              border: `1px solid ${isStressHigh ? 'rgba(251, 113, 133, 0.35)' : 'rgb(var(--cyber-cyan-rgb) / 0.2)'}`,
               borderRadius: '8px',
               boxShadow: isStressHigh
                 ? '0 0 16px rgba(251, 113, 133, 0.15), 0 4px 16px rgba(0, 0, 0, 0.5)'
-                : '0 0 16px rgba(0, 229, 255, 0.08), 0 4px 16px rgba(0, 0, 0, 0.5)',
+                : '0 0 16px rgb(var(--cyber-cyan-rgb) / 0.08), 0 4px 16px rgba(0, 0, 0, 0.5)',
               maxHeight: '48px',
               overflow: 'hidden',
             }}
@@ -251,7 +251,7 @@ export function QuickAccessToolbar() {
                 className="absolute inset-x-0 h-8 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
                 style={{
                   background:
-                    'linear-gradient(180deg, transparent 0%, rgba(0, 229, 255, 0.06) 40%, rgba(0, 229, 255, 0.1) 50%, rgba(0, 229, 255, 0.06) 60%, transparent 100%)',
+                    'linear-gradient(180deg, transparent 0%, rgb(var(--cyber-cyan-rgb) / 0.06) 40%, rgb(var(--cyber-cyan-rgb) / 0.1) 50%, rgb(var(--cyber-cyan-rgb) / 0.06) 60%, transparent 100%)',
                   animation: 'scanline-overlay 2s linear infinite',
                 }}
               />
@@ -268,9 +268,9 @@ export function QuickAccessToolbar() {
                       '0 0 8px rgba(251, 113, 133, 0.1), inset 0 0 4px rgba(251, 113, 133, 0.03)',
                     ]
                   : [
-                      '0 0 8px rgba(0, 229, 255, 0.08), inset 0 0 4px rgba(0, 229, 255, 0.02)',
-                      '0 0 16px rgba(0, 229, 255, 0.15), inset 0 0 8px rgba(0, 229, 255, 0.04)',
-                      '0 0 8px rgba(0, 229, 255, 0.08), inset 0 0 4px rgba(0, 229, 255, 0.02)',
+                      '0 0 8px rgb(var(--cyber-cyan-rgb) / 0.08), inset 0 0 4px rgb(var(--cyber-cyan-rgb) / 0.02)',
+                      '0 0 16px rgb(var(--cyber-cyan-rgb) / 0.15), inset 0 0 8px rgb(var(--cyber-cyan-rgb) / 0.04)',
+                      '0 0 8px rgb(var(--cyber-cyan-rgb) / 0.08), inset 0 0 4px rgb(var(--cyber-cyan-rgb) / 0.02)',
                     ],
               }}
               transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
@@ -282,8 +282,8 @@ export function QuickAccessToolbar() {
               <StatBar
                 value={energy}
                 max={100}
-                color={isEnergyLow ? '#fb7185' : '#22d3ee'}
-                glowColor={isEnergyLow ? '#fb7185' : '#22d3ee'}
+                color={isEnergyLow ? '#fb7185' : 'var(--cyber-cyan)'}
+                glowColor={isEnergyLow ? '#fb7185' : 'var(--cyber-cyan)'}
                 icon={Zap}
                 label="Энергия"
                 warningPulse={isEnergyLow}
@@ -336,10 +336,10 @@ export function QuickAccessToolbar() {
                 className="flex items-center justify-center w-7 h-7 rounded transition-colors duration-200 focus-cyber"
                 style={{
                   background: musicEnabled
-                    ? 'rgba(0, 229, 255, 0.08)'
+                    ? 'rgb(var(--cyber-cyan-rgb) / 0.08)'
                     : 'rgba(251, 113, 133, 0.08)',
-                  border: `1px solid ${musicEnabled ? 'rgba(0, 229, 255, 0.2)' : 'rgba(251, 113, 133, 0.2)'}`,
-                  color: musicEnabled ? '#22d3ee' : '#fb7185',
+                  border: `1px solid ${musicEnabled ? 'rgb(var(--cyber-cyan-rgb) / 0.2)' : 'rgba(251, 113, 133, 0.2)'}`,
+                  color: musicEnabled ? 'var(--cyber-cyan)' : '#fb7185',
                 }}
                 title={musicEnabled ? 'Выключить музыку' : 'Включить музыку'}
                 aria-label={musicEnabled ? 'Выключить музыку' : 'Включить музыку'}

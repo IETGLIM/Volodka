@@ -40,7 +40,7 @@ const TYPE_COLORS: Record<DamageNumberType, string> = {
   damage: '#fb7185',     // rose-400
   heal: '#34d399',       // emerald-400
   stress: '#fbbf24',     // amber-400
-  xp: '#22d3ee',         // cyan-400
+  xp: 'var(--cyber-cyan)',         // cyan-400
   critical: '#fb7185',   // rose-400 (brighter effect)
 };
 
@@ -48,7 +48,7 @@ const TYPE_GLOW: Record<DamageNumberType, string> = {
   damage: '0 0 12px rgba(251,113,133,0.6), 0 0 24px rgba(251,113,133,0.3)',
   heal: '0 0 12px rgba(52,211,153,0.5), 0 0 20px rgba(52,211,153,0.2)',
   stress: '0 0 12px rgba(251,191,36,0.5), 0 0 20px rgba(251,191,36,0.2)',
-  xp: '0 0 12px rgba(34,211,238,0.5), 0 0 20px rgba(34,211,238,0.2)',
+  xp: '0 0 12px rgb(var(--cyber-cyan-rgb) / 0.5), 0 0 20px rgb(var(--cyber-cyan-rgb) / 0.2)',
   critical: '0 0 18px rgba(251,113,133,0.8), 0 0 36px rgba(251,113,133,0.4), 0 0 54px rgba(251,113,133,0.2)',
 };
 

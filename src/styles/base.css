@@ -14,7 +14,9 @@
     overscroll-behavior: none;
     /* Critical: prevent iOS Safari bounce & zoom on mobile */
     touch-action: none;
+    height: 100vh; /* fallback for browsers without dvh */
     height: 100dvh;
+    min-height: 100vh;
     min-height: 100dvh;
     /* Prevent iOS text size adjustment on rotation */
     -webkit-text-size-adjust: 100%;
@@ -24,17 +26,17 @@
   input,
   textarea,
   select,
-  [contenteditable='true'] {
+  [contenteditable] {
     touch-action: auto;
   }
 
   /* Cyberpunk selection colors */
   ::selection {
-    background: rgba(0, 229, 255, 0.25);
+    background: rgb(var(--cyber-cyan-rgb) / 0.25);
     color: #e0f7fa;
   }
   ::-moz-selection {
-    background: rgba(0, 229, 255, 0.25);
+    background: rgb(var(--cyber-cyan-rgb) / 0.25);
     color: #e0f7fa;
   }
 }

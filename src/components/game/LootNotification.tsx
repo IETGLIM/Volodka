@@ -126,7 +126,7 @@ export function LootNotification() {
   const RARITY_GLOW: Record<string, string> = {
     common: '',
     uncommon: 'shadow-[0_0_12px_rgba(52,211,153,0.15)]',
-    rare: 'shadow-[0_0_12px_rgba(34,211,238,0.2)]',
+    rare: 'shadow-[0_0_12px_rgb(var(--cyber-cyan-rgb) / 0.2)]',
     legendary: 'shadow-[0_0_16px_rgba(245,158,11,0.3)]',
   };
 

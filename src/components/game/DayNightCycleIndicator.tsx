@@ -51,12 +51,12 @@ const PHASE_CONFIG: Record<TimePhase, PhaseConfig> = {
     label: 'День',
     icon: Sun,
     gradientStart: '#06b6d4', // cyan-500
-    gradientEnd: '#22d3ee',   // cyan-400
+    gradientEnd: 'var(--cyber-cyan)',   // cyan-400
     border: 'rgba(6,182,212,0.35)',
     glow: 'rgba(6,182,212,0.12)',
     iconColor: 'text-cyan-400',
-    celestialFill: '#22d3ee',
-    celestialGlow: 'rgba(34,211,238,0.5)',
+    celestialFill: 'var(--cyber-cyan)',
+    celestialGlow: 'rgb(var(--cyber-cyan-rgb) / 0.5)',
   },
   evening: {
     label: 'Вечер',

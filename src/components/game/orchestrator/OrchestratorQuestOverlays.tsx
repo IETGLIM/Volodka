@@ -7,59 +7,44 @@ import type { PanelCoordinatorResult } from './usePanelCoordinator';
 
 type Props = Pick<
   PanelCoordinatorResult,
-  | 'questAcceptId'
-  | 'questAcceptNpcId'
-  | 'setQuestAcceptId'
-  | 'setQuestAcceptNpcId'
-  | 'questCompleteId'
-  | 'questCompleteNpcId'
-  | 'setQuestCompleteId'
-  | 'setQuestCompleteNpcId'
+  | 'questAccept'
+  | 'setQuestAccept'
+  | 'questComplete'
+  | 'setQuestComplete'
   | 'questChainUnlock'
   | 'setQuestChainUnlock'
 >;
 
 export function OrchestratorQuestOverlays({
-  questAcceptId,
-  questAcceptNpcId,
-  setQuestAcceptId,
-  setQuestAcceptNpcId,
-  questCompleteId,
-  questCompleteNpcId,
-  setQuestCompleteId,
-  setQuestCompleteNpcId,
+  questAccept,
+  setQuestAccept,
+  questComplete,
+  setQuestComplete,
   questChainUnlock,
   setQuestChainUnlock,
 }: Props) {
   return (
     <>
-      {questAcceptId && (
+      {questAccept && (
         <Suspense fallback={null}>
           <LazyQuestAcceptDialog
-            questId={questAcceptId}
-            npcId={questAcceptNpcId}
-            onClose={() => {
-              setQuestAcceptId(null);
-              setQuestAcceptNpcId(undefined);
-            }}
+            questId={questAccept.questId}
+            npcId={questAccept.npcId}
+            onClose={() => setQuestAccept(null)}
             onAccept={(qid) => {
               useGameStore.getState().activateQuest(qid);
-              setQuestAcceptId(null);
-              setQuestAcceptNpcId(undefined);
+              setQuestAccept(null);
             }}
           />
         </Suspense>
       )}
 
-      {questCompleteId && (
+      {questComplete && (
         <Suspense fallback={null}>
           <LazyQuestCompleteDialog
-            questId={questCompleteId}
-            npcId={questCompleteNpcId}
-            onClose={() => {
-              setQuestCompleteId(null);
-              setQuestCompleteNpcId(undefined);
-            }}
+            questId={questComplete.questId}
+            npcId={questComplete.npcId}
+            onClose={() => setQuestComplete(null)}
           />
         </Suspense>
       )}

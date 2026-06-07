@@ -2,18 +2,22 @@ import { audioEngine } from '@/engine/AudioEngine';
 import { eventBus } from '@/engine/EventBus';
 import type { TriggerZone } from '@/data/triggerZones';
 import {
-  getStoryNodes,
-  getDialogueNodes,
   getTriggerZones,
   findNpcById,
   getItemDefinition,
-  ensureStoryNode,
-  ensureDialogueNode,
 } from '@/data/gameDataLoader';
+import {
+  findTriggerZoneByDialogueNodeId,
+  findTriggerZoneByNpcId,
+} from '@/data/triggerZones';
+import {
+  openLinkedDialogue,
+  openLinkedStory,
+  tryOpenDialogue,
+  tryOpenStory,
+} from '@/engine/interaction/narrativeOpenHelpers';
 import { notifyItemReceived } from '@/components/game/LootNotification';
 import { applyEffects } from '@/shared/utils/applyEffects';
-import { requestSceneTransition, requestSceneTransitionForStoryNode } from '@/engine/scene/sceneTransition';
-import { openNarrativeOverlay } from '@/engine/scene/narrativeOverlay';
 import { useGameStore } from '@/store/gameStore';
 import { readGamePhase } from '@/shared/gamePhase';
 import {
@@ -22,13 +26,20 @@ import {
   openMinigame,
   type MinigamePanelSetters,
 } from '@/shared/constants/minigames';
-import type { EnemyType, ExamineData, SceneId, StoryEffect } from '@/shared/types/game';
+import type { EnemyType, ExamineData, StoryEffect } from '@/shared/types/game';
 import { ControllerSession } from '@/engine/controller/ControllerSession';
 import {
   emitInteractionEndIfNeeded,
-  resetInteractionEndDedup,
+  beginInteractionEndCycle,
 } from '@/engine/interaction/interactionEndDedup';
 import { isInteractionLocked } from '@/engine/interaction/interactionSession';
+import { devWarn } from '@/shared/utils/devLog';
+
+function runInteractionTask(label: string, task: () => Promise<void>): void {
+  void task().catch((err) => {
+    devWarn(`[InteractionController] ${label} failed:`, err);
+  });
+}
 
 export interface InteractionControllerUi {
   setExamineOpen: (open: boolean) => void;
@@ -44,57 +55,25 @@ export interface InteractionControllerDeps {
   setPendingTriggerZone: (zone: TriggerZone | null) => void;
 }
 
-async function openLinkedDialogue(nodeId: string): Promise<void> {
-  await ensureDialogueNode(nodeId);
-  const dlgNode = getDialogueNodes()[nodeId];
-  if (!dlgNode) return;
-
-  const store = useGameStore.getState();
-  const alreadyVisited = store.playerState.visitedNodes.includes(nodeId);
-  if (alreadyVisited && dlgNode.sceneId) {
-    requestSceneTransition(dlgNode.sceneId as SceneId);
-    return;
-  }
-
-  if (dlgNode.sceneId) {
-    requestSceneTransitionForStoryNode(nodeId, dlgNode.sceneId);
-  }
-  openNarrativeOverlay(nodeId, 'dialogue');
-}
-
 async function triggerLinkedContent(zone: TriggerZone): Promise<void> {
   if (zone.linkedMinigame) {
     eventBus.emit('minigame:open', { gameType: zone.linkedMinigame });
     return;
   }
 
-  const store = useGameStore.getState();
-
   if (zone.linkedStoryNodeId) {
-    await ensureStoryNode(zone.linkedStoryNodeId);
-    const storyNode = getStoryNodes()[zone.linkedStoryNodeId];
-    if (!storyNode) return;
-
-    const alreadyVisited = store.playerState.visitedNodes.includes(zone.linkedStoryNodeId);
-    if (alreadyVisited && storyNode.sceneId) {
-      requestSceneTransition(storyNode.sceneId as SceneId);
-      return;
-    }
-    requestSceneTransitionForStoryNode(zone.linkedStoryNodeId, storyNode.sceneId);
-    openNarrativeOverlay(zone.linkedStoryNodeId, 'story');
+    await openLinkedStory(zone.linkedStoryNodeId);
   } else if (zone.linkedDialogueNodeId) {
     await openLinkedDialogue(zone.linkedDialogueNodeId);
   }
 }
 
 function findNpcTriggerZone(npcId: string, dialogueNodeId?: string): TriggerZone | undefined {
-  return getTriggerZones().find((z) => {
-    if (z.linkedDialogueNodeId && dialogueNodeId && z.linkedDialogueNodeId === dialogueNodeId) {
-      return true;
-    }
-    const zoneBaseName = z.id.replace(/^(cafe|office|street|home|corridor|room|park|library|factory|rooftop)_/, '');
-    return zoneBaseName.includes(npcId.replace('office_', ''));
-  });
+  const zones = getTriggerZones();
+  return (
+    findTriggerZoneByNpcId(zones, npcId)
+    ?? (dialogueNodeId ? findTriggerZoneByDialogueNodeId(zones, dialogueNodeId) : undefined)
+  );
 }
 
 /**
@@ -127,11 +106,11 @@ export class InteractionController {
   }
 
   onInteractionStart(): void {
-    resetInteractionEndDedup();
+    beginInteractionEndCycle();
   }
 
   onNarrativeOverlayOpened(): void {
-    resetInteractionEndDedup();
+    beginInteractionEndCycle();
   }
 
   onNarrativeOverlayClosedInExploration(): void {
@@ -152,16 +131,25 @@ export class InteractionController {
     if (!triggerZoneId) return;
 
     const zone = getTriggerZones().find((z) => z.id === triggerZoneId);
-    if (!zone) return;
+    if (!zone) {
+      devWarn(`[InteractionController] Trigger zone not found: "${triggerZoneId}"`);
+      return;
+    }
 
     const store = useGameStore.getState();
     if (readGamePhase(store) !== 'exploration') return;
 
     if (zone.requiredAct && store.playerState.progression.currentAct < zone.requiredAct) {
+      devWarn(
+        `[InteractionController] Zone "${triggerZoneId}" requires act ${zone.requiredAct}, ` +
+        `current act ${store.playerState.progression.currentAct}`,
+      );
+      store.pushNotification('quest', `Станет доступно в акте ${zone.requiredAct}`);
       return;
     }
 
     if (zone.isOneTime && store.interactiveObjectStates[triggerZoneId]) {
+      devWarn(`[InteractionController] One-time zone already used: "${triggerZoneId}"`);
       return;
     }
 
@@ -187,7 +175,7 @@ export class InteractionController {
       audioEngine.playStinger('discovery');
       this.deps.setPendingTriggerZone(hasLinkedContent ? zone : null);
     } else {
-      void triggerLinkedContent(zone);
+      runInteractionTask('triggerLinkedContent', () => triggerLinkedContent(zone));
     }
   }
 
@@ -197,7 +185,10 @@ export class InteractionController {
     if (readGamePhase(store) !== 'exploration') return;
 
     const npcDef = findNpcById(npcId);
-    if (!npcDef) return;
+    if (!npcDef) {
+      devWarn(`[InteractionController] NPC not in registry: "${npcId}"`);
+      return;
+    }
 
     const npcZone = findNpcTriggerZone(npcId, npcDef.dialogueNodeId);
 
@@ -210,49 +201,30 @@ export class InteractionController {
       }
     }
 
-    let openedNarrative = false;
-    void (async () => {
+    runInteractionTask('handleNpcInteractStaged', async () => {
+      let openedNarrative = false;
       if (npcDef.dialogueNodeId) {
-        try {
-          await ensureDialogueNode(npcDef.dialogueNodeId);
-          if (getDialogueNodes()[npcDef.dialogueNodeId]) {
-            openNarrativeOverlay(npcDef.dialogueNodeId, 'dialogue');
-            openedNarrative = true;
-          }
-        } catch {
-          /* pack missing — fall through */
-        }
+        openedNarrative = await tryOpenDialogue(npcDef.dialogueNodeId);
       } else if (npcZone?.linkedDialogueNodeId) {
-        try {
-          await ensureDialogueNode(npcZone.linkedDialogueNodeId);
-          if (getDialogueNodes()[npcZone.linkedDialogueNodeId]) {
-            openNarrativeOverlay(npcZone.linkedDialogueNodeId, 'dialogue');
-            openedNarrative = true;
-          }
-        } catch {
-          /* pack missing */
-        }
+        openedNarrative = await tryOpenDialogue(npcZone.linkedDialogueNodeId);
       } else if (npcZone?.linkedStoryNodeId) {
-        try {
-          await ensureStoryNode(npcZone.linkedStoryNodeId);
-          const storyNode = getStoryNodes()[npcZone.linkedStoryNodeId];
-          if (storyNode) {
-            requestSceneTransitionForStoryNode(npcZone.linkedStoryNodeId, storyNode.sceneId);
-            openNarrativeOverlay(npcZone.linkedStoryNodeId, 'story');
-            openedNarrative = true;
-          }
-        } catch {
-          /* pack missing */
-        }
+        openedNarrative = await tryOpenStory(npcZone.linkedStoryNodeId);
       }
 
       if (!openedNarrative) {
+        if (
+          !npcDef.dialogueNodeId &&
+          !npcZone?.linkedDialogueNodeId &&
+          !npcZone?.linkedStoryNodeId
+        ) {
+          devWarn(`[InteractionController] No narrative linked for NPC "${npcId}"`);
+        }
         queueMicrotask(() => {
           if (this.session.isDisposed()) return;
           emitInteractionEndIfNeeded();
         });
       }
-    })();
+    });
 
     eventBus.emit('npc:talked', { npcId, dialogueNodeId: npcDef.dialogueNodeId });
   }
@@ -282,7 +254,7 @@ export class InteractionController {
     ui.setExamineHasLinkedContent(false);
     this.deps.setPendingTriggerZone(null);
 
-    void triggerLinkedContent(zone);
+    runInteractionTask('triggerLinkedContent', () => triggerLinkedContent(zone));
   }
 
   clearPendingTriggerZone(): void {

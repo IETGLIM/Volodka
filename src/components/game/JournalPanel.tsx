@@ -42,6 +42,7 @@ import { POEMS, getMainPoems, getHiddenPoems } from '@/data/poems';
 import { getPoemPower, canUsePower, activatePoemPowerById, getCooldownRemaining } from '@/engine/PoemPowerSystem';
 import { SCENE_CONFIG } from '@/config/scenes';
 import { getStoryNodes, isNarrativeGameDataLoaded, ensureNarrativeNodeIds } from '@/data/gameDataLoader';
+import { devWarn } from '@/shared/utils/devLog';
 import { audioEngine } from '@/engine/AudioEngine';
 import { INITIAL_LORE_ENTRIES } from '@/data/loreEntries';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -117,9 +118,13 @@ function NotesTab({ searchQuery }: { searchQuery: string }) {
   useEffect(() => {
     if (!isNarrativeGameDataLoaded() || visitedNodes.length === 0) return;
     let cancelled = false;
-    void ensureNarrativeNodeIds(visitedNodes).then(() => {
-      if (!cancelled) setNotesVersion((v) => v + 1);
-    });
+    void ensureNarrativeNodeIds(visitedNodes)
+      .then(() => {
+        if (!cancelled) setNotesVersion((v) => v + 1);
+      })
+      .catch((err) => {
+        devWarn('[JournalPanel] Failed to preload visited narrative nodes:', err);
+      });
     return () => {
       cancelled = true;
     };
@@ -183,7 +188,7 @@ function NotesTab({ searchQuery }: { searchQuery: string }) {
                   onClick={() => setSelectedNodeId(note.id)}
                   className={`w-full text-left px-3 py-2.5 rounded-lg transition-all duration-150 ${
                     isSelected
-                      ? 'bg-cyan-950/40 border border-cyan-800/40 shadow-[0_0_8px_rgba(34,211,238,0.08)]'
+                      ? 'bg-cyan-950/40 border border-cyan-800/40 shadow-[0_0_8px_rgb(var(--cyber-cyan-rgb) / 0.08)]'
                       : 'hover:bg-slate-800/30 border border-transparent'
                   }`}
                 >
@@ -271,7 +276,7 @@ function SkillsTab({ searchQuery }: { searchQuery: string }) {
     <ScrollArea className="h-full">
       <div className="p-4 space-y-4">
         {/* Progression header */}
-        <div className="flex items-center justify-between px-4 py-3 rounded-xl bg-slate-900/40 border border-cyan-900/25 shadow-[inset_0_1px_0_rgba(34,211,238,0.05)]">
+        <div className="flex items-center justify-between px-4 py-3 rounded-xl bg-slate-900/40 border border-cyan-900/25 shadow-[inset_0_1px_0_rgb(var(--cyber-cyan-rgb) / 0.05)]">
           <div>
             <p className="text-sm text-slate-200 font-medium">Уровень {progression.level}</p>
             <p className="text-xs text-slate-500">
@@ -289,7 +294,7 @@ function SkillsTab({ searchQuery }: { searchQuery: string }) {
         <div className="px-4">
           <div className="h-2 bg-slate-800/80 rounded-full overflow-hidden shadow-[inset_0_1px_2px_rgba(0,0,0,0.3)]">
             <div
-              className="h-full bg-gradient-to-r from-cyan-600 to-cyan-400 rounded-full transition-all duration-500 shadow-[0_0_8px_rgba(34,211,238,0.3)]"
+              className="h-full bg-gradient-to-r from-cyan-600 to-cyan-400 rounded-full transition-all duration-500 shadow-[0_0_8px_rgb(var(--cyber-cyan-rgb) / 0.3)]"
               style={{ width: `${(progression.xp / progression.xpToNextLevel) * 100}%` }}
             />
           </div>
@@ -300,7 +305,7 @@ function SkillsTab({ searchQuery }: { searchQuery: string }) {
           {filteredSkills.map(([skill, value]) => {
             const info = SKILL_LABELS[skill];
             return (
-              <div key={skill} className="px-4 py-3.5 rounded-xl bg-slate-900/30 border border-cyan-900/15 hover:border-cyan-800/30 transition-colors shadow-[inset_0_1px_0_rgba(34,211,238,0.03)]">
+              <div key={skill} className="px-4 py-3.5 rounded-xl bg-slate-900/30 border border-cyan-900/15 hover:border-cyan-800/30 transition-colors shadow-[inset_0_1px_0_rgb(var(--cyber-cyan-rgb) / 0.03)]">
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-2.5">
                     <div className={`size-2.5 rounded-full bg-gradient-to-r ${info.color} shadow-[0_0_6px_currentColor]`} />
@@ -310,7 +315,7 @@ function SkillsTab({ searchQuery }: { searchQuery: string }) {
                 </div>
                 <div className="h-2 bg-slate-800/80 rounded-full overflow-hidden mb-2 shadow-[inset_0_1px_2px_rgba(0,0,0,0.3)]">
                   <div
-                    className={`h-full bg-gradient-to-r ${info.color} rounded-full transition-all duration-500 shadow-[0_0_6px_rgba(34,211,238,0.2)]`}
+                    className={`h-full bg-gradient-to-r ${info.color} rounded-full transition-all duration-500 shadow-[0_0_6px_rgb(var(--cyber-cyan-rgb) / 0.2)]`}
                     style={{ width: `${Math.min((value / 50) * 100, 100)}%` }}
                   />
                 </div>
@@ -649,7 +654,7 @@ function LoreTab({ searchQuery }: { searchQuery: string }) {
                   onClick={() => setSelectedLore(entry.id)}
                   className={`w-full text-left px-3 py-2.5 rounded-lg transition-all duration-150 ${
                     isSelected
-                      ? 'bg-cyan-950/40 border border-cyan-800/40 shadow-[0_0_8px_rgba(34,211,238,0.08)]'
+                      ? 'bg-cyan-950/40 border border-cyan-800/40 shadow-[0_0_8px_rgb(var(--cyber-cyan-rgb) / 0.08)]'
                       : 'hover:bg-slate-800/30 border border-transparent'
                   }`}
                 >
@@ -793,7 +798,7 @@ export function JournalPanel({
             className="absolute inset-0 pointer-events-none opacity-[0.03]"
             style={{
               backgroundImage:
-                'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(34,211,238,0.15) 2px, rgba(34,211,238,0.15) 4px)',
+                'repeating-linear-gradient(0deg, transparent, transparent 2px, rgb(var(--cyber-cyan-rgb) / 0.15) 2px, rgb(var(--cyber-cyan-rgb) / 0.15) 4px)',
             }}
           />
 
@@ -816,8 +821,8 @@ export function JournalPanel({
             {...dialogProps}
             style={{
               background: 'linear-gradient(135deg, rgba(8,12,28,0.95) 0%, rgba(4,8,18,0.97) 100%)',
-              border: '1px solid rgba(34,211,238,0.15)',
-              boxShadow: '0 0 40px rgba(34,211,238,0.05), inset 0 1px 0 rgba(34,211,238,0.08), 0 25px 50px -12px rgba(0,0,0,0.5)',
+              border: '1px solid rgb(var(--cyber-cyan-rgb) / 0.15)',
+              boxShadow: '0 0 40px rgb(var(--cyber-cyan-rgb) / 0.05), inset 0 1px 0 rgb(var(--cyber-cyan-rgb) / 0.08), 0 25px 50px -12px rgba(0,0,0,0.5)',
               backdropFilter: 'blur(20px)',
             }}
           >
@@ -849,7 +854,7 @@ export function JournalPanel({
                       onClick={() => setJournalTab(tab.id)}
                       className={`flex flex-col items-center justify-center gap-1 py-2.5 sm:py-3 rounded-lg transition-all duration-200 ${
                         isActive
-                          ? 'bg-cyan-950/50 border border-cyan-800/40 shadow-[0_0_12px_rgba(34,211,238,0.08)]'
+                          ? 'bg-cyan-950/50 border border-cyan-800/40 shadow-[0_0_12px_rgb(var(--cyber-cyan-rgb) / 0.08)]'
                           : 'hover:bg-slate-800/30 border border-transparent'
                       }`}
                       title={tab.label}
@@ -912,7 +917,7 @@ export function JournalPanel({
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="Поиск..."
-                    className="w-full bg-slate-900/40 border border-cyan-900/20 rounded-lg pl-9 pr-3 py-1.5 text-xs text-slate-300 placeholder-slate-600 focus:outline-none focus:border-cyan-700/40 focus:shadow-[0_0_8px_rgba(34,211,238,0.1)] transition-all"
+                    className="w-full bg-slate-900/40 border border-cyan-900/20 rounded-lg pl-9 pr-3 py-1.5 text-xs text-slate-300 placeholder-slate-600 focus:outline-none focus:border-cyan-700/40 focus:shadow-[0_0_8px_rgb(var(--cyber-cyan-rgb) / 0.1)] transition-all"
                   />
                   {searchQuery && (
                     <button

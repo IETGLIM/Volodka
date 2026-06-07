@@ -1,0 +1,25 @@
+/*
+ * Budget mobile: disable backdrop-filter stacks (each blur = compositor layer).
+ * Falls back to opaque backgrounds; --backdrop-blur-strength gates theme blur utilities.
+ */
+@media (max-width: 768px) and (pointer: coarse) {
+  :root {
+    --backdrop-blur-strength: 0;
+  }
+
+  [data-cyberpunk] [class*='backdrop-blur'],
+  [data-cyberpunk] .inv-item-card,
+  [data-cyberpunk] .inv-count-badge-cyber,
+  [data-cyberpunk] .cp-poem-container {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  [data-cyberpunk] .backdrop-blur-md {
+    background: rgba(0, 4, 8, 0.88) !important;
+  }
+
+  [data-cyberpunk] .inv-item-card {
+    background: rgba(15, 23, 42, 0.92);
+  }
+}

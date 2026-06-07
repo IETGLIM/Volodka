@@ -153,7 +153,7 @@ function NPCCard({
       style={{
         borderColor: portraitColors
           ? `${portraitColors.primary}30`
-          : 'rgba(34,211,238,0.15)',
+          : 'rgb(var(--cyber-cyan-rgb) / 0.15)',
         background: `linear-gradient(135deg, rgba(15,23,42,0.6) 0%, rgba(8,12,28,0.7) 100%)`,
         boxShadow: `inset 0 1px 0 ${colors.glow}, 0 0 20px ${colors.glow}`,
       }}
@@ -328,9 +328,9 @@ export function NPCRelationshipPanel({ open, onClose }: { open: boolean; onClose
           style={{
             zIndex: UI_LAYERS.PANEL,
             background: 'linear-gradient(180deg, rgba(8,12,28,0.97) 0%, rgba(4,8,18,0.98) 100%)',
-            borderLeft: '1px solid rgba(34,211,238,0.15)',
+            borderLeft: '1px solid rgb(var(--cyber-cyan-rgb) / 0.15)',
             backdropFilter: 'blur(20px)',
-            boxShadow: '-20px 0 40px rgba(0,0,0,0.5), inset 1px 0 0 rgba(34,211,238,0.08)',
+            boxShadow: '-20px 0 40px rgba(0,0,0,0.5), inset 1px 0 0 rgb(var(--cyber-cyan-rgb) / 0.08)',
           }}
         >
           <div className="flex flex-col h-full">

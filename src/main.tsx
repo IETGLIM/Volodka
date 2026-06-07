@@ -35,7 +35,7 @@ async function boot() {
 }
 
 root.innerHTML = `
-  <div style="position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#000;color:rgba(34,211,238,0.7);font-family:monospace;letter-spacing:0.2em;font-size:14px">
+  <div style="position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#000;color:rgb(var(--cyber-cyan-rgb) / 0.7);font-family:monospace;letter-spacing:0.2em;font-size:14px">
     ЗАГРУЗКА...
   </div>`;
 

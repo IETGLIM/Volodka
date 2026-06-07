@@ -246,8 +246,8 @@ export function XPGainBar({ currentXP, xpToNext, previousXP }: XPGainBarProps) {
         <motion.div
           className="h-full rounded-full"
           style={{
-            background: 'linear-gradient(90deg, #0891b2, #22d3ee)',
-            boxShadow: '0 0 8px rgba(34,211,238,0.3), inset 0 1px 0 rgba(255,255,255,0.15)',
+            background: 'linear-gradient(90deg, #0891b2, var(--cyber-cyan))',
+            boxShadow: '0 0 8px rgb(var(--cyber-cyan-rgb) / 0.3), inset 0 1px 0 rgba(255,255,255,0.15)',
           }}
           initial={false}
           animate={{ width: `${pct}%` }}
@@ -276,7 +276,7 @@ export function XPGainBar({ currentXP, xpToNext, previousXP }: XPGainBarProps) {
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 1.8, ease: 'easeOut' }}
             className="absolute -top-1 left-1/2 -translate-x-1/2 text-xs font-bold font-mono text-cyan-400 whitespace-nowrap"
-            style={{ textShadow: '0 0 8px rgba(34,211,238,0.6)' }}
+            style={{ textShadow: '0 0 8px rgb(var(--cyber-cyan-rgb) / 0.6)' }}
           >
             +{gainAmount} XP
           </motion.div>
@@ -300,7 +300,7 @@ interface KarmaShiftProps {
 
 export function KarmaShiftIndicator({ delta, currentKarma }: KarmaShiftProps) {
   const isPositive = delta > 0;
-  const color = isPositive ? '#22d3ee' : '#fb7185';
+  const color = isPositive ? 'var(--cyber-cyan)' : '#fb7185';
   const label = isPositive
     ? (currentKarma >= 70 ? 'Свет' : 'Добро')
     : (currentKarma <= 30 ? 'Тьма' : 'Тень');
@@ -417,7 +417,7 @@ export function LevelUpBanner({ level, visible, onHide }: LevelUpBannerProps) {
                 <LevelUpParticle
                   key={i}
                   delay={0.1 + i * 0.05}
-                  color={i % 2 === 0 ? '#fbbf24' : '#22d3ee'}
+                  color={i % 2 === 0 ? '#fbbf24' : 'var(--cyber-cyan)'}
                 />
               ))}
             </div>

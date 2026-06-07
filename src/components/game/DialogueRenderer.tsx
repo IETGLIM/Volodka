@@ -37,6 +37,7 @@ import { NPCPortrait, NPC_PORTRAIT_COLORS } from './shared/NPCPortrait';
 import { AriaLiveRegion } from '@/components/a11y/AriaLiveRegion';
 import { FocusTrap } from '@/components/a11y/FocusTrap';
 import { buildChoiceAriaLabel } from '@/shared/utils/choiceAriaLabel';
+import { devWarn } from '@/shared/utils/devLog';
 
 /* ── Emotion detection from text ── */
 function detectEmotion(text: string): 'calm' | 'angry' | 'sad' | 'happy' {
@@ -65,7 +66,7 @@ function getRelationLevel(npcId: string, relations: NPCRelation[]): 'ally' | 'ne
 /* ── Relationship glow color mapping ── */
 const RELATION_GLOW: Record<string, { color: string; shadow: string; border: string }> = {
   ally: { color: '#34d399', shadow: '0 0 8px rgba(52,211,153,0.4), 0 0 16px rgba(52,211,153,0.2)', border: 'rgba(52,211,153,0.3)' },
-  neutral: { color: '#22d3ee', shadow: '0 0 8px rgba(34,211,238,0.4), 0 0 16px rgba(34,211,238,0.2)', border: 'rgba(34,211,238,0.3)' },
+  neutral: { color: 'var(--cyber-cyan)', shadow: '0 0 8px rgb(var(--cyber-cyan-rgb) / 0.4), 0 0 16px rgb(var(--cyber-cyan-rgb) / 0.2)', border: 'rgb(var(--cyber-cyan-rgb) / 0.3)' },
   enemy: { color: '#fb7185', shadow: '0 0 8px rgba(251,113,133,0.4), 0 0 16px rgba(251,113,133,0.2)', border: 'rgba(251,113,133,0.3)' },
 };
 
@@ -169,7 +170,7 @@ export function DialogueRenderer() {
         if (!cancelled) setDialoguePackVersion((v) => v + 1);
       })
       .catch((error) => {
-        console.error('[DialogueRenderer] Failed to load dialogue node:', currentNodeId, error);
+        devWarn('[DialogueRenderer] Failed to load dialogue node:', currentNodeId, error);
       });
 
     return () => {
@@ -320,7 +321,7 @@ export function DialogueRenderer() {
             style={{
               clipPath: 'polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px))',
               background: 'linear-gradient(145deg, rgba(0,0,0,0.92) 0%, rgba(15,23,42,0.88) 50%, rgba(0,0,0,0.85) 100%)',
-              boxShadow: `0 0 20px rgba(34,211,238,0.06), 0 4px 16px rgba(0,0,0,0.4), inset 0 0 12px rgba(0,0,0,0.3)`,
+              boxShadow: `0 0 20px rgb(var(--cyber-cyan-rgb) / 0.06), 0 4px 16px rgba(0,0,0,0.4), inset 0 0 12px rgba(0,0,0,0.3)`,
             }}
           >
             {/* Terminal header — compact */}
@@ -399,13 +400,13 @@ export function DialogueRenderer() {
                     <div
                       className="absolute left-0 top-1/2 -translate-y-1/2 w-3 h-px"
                       style={{
-                        background: `linear-gradient(90deg, transparent, ${RELATION_GLOW[relationLevel]?.color ?? '#22d3ee'})`,
+                        background: `linear-gradient(90deg, transparent, ${RELATION_GLOW[relationLevel]?.color ?? 'var(--cyber-cyan)'})`,
                         opacity: 0.5,
                       }}
                     />
                     <div className="flex items-center gap-1.5" style={{ paddingLeft: '12px', ...speakerBgStyle }}>
                       {/* Corner bracket left */}
-                      <span className="text-[7px] leading-none" style={{ color: `${RELATION_GLOW[relationLevel]?.color ?? '#22d3ee'}66` }}>⟨</span>
+                      <span className="text-[7px] leading-none" style={{ color: `${RELATION_GLOW[relationLevel]?.color ?? 'var(--cyber-cyan)'}66` }}>⟨</span>
                       <span
                         id={speakerTitleId}
                         className="font-medium text-xs tracking-wide uppercase"
@@ -417,7 +418,7 @@ export function DialogueRenderer() {
                         {node.speaker}
                       </span>
                       {/* Corner bracket right */}
-                      <span className="text-[7px] leading-none" style={{ color: `${RELATION_GLOW[relationLevel]?.color ?? '#22d3ee'}66` }}>⟩</span>
+                      <span className="text-[7px] leading-none" style={{ color: `${RELATION_GLOW[relationLevel]?.color ?? 'var(--cyber-cyan)'}66` }}>⟩</span>
                       {npcId && (
                         <span className="flex items-center gap-0.5" title={relationLevel === 'ally' ? 'Союзник' : relationLevel === 'enemy' ? 'Враг' : 'Нейтрал'}>
                           <RelationIcon className={`size-2.5 ${
@@ -440,7 +441,7 @@ export function DialogueRenderer() {
                     <div
                       className="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-px"
                       style={{
-                        background: `linear-gradient(-90deg, transparent, ${RELATION_GLOW[relationLevel]?.color ?? '#22d3ee'})`,
+                        background: `linear-gradient(-90deg, transparent, ${RELATION_GLOW[relationLevel]?.color ?? 'var(--cyber-cyan)'})`,
                         opacity: 0.5,
                       }}
                     />
@@ -482,9 +483,9 @@ export function DialogueRenderer() {
                     <span
                       className="dialogue-cursor inline-block w-0.5 h-3.5 ml-0.5 align-middle"
                       style={{
-                        background: 'rgba(34,211,238,0.8)',
-                        boxShadow: '0 0 4px rgba(34,211,238,0.6), 0 0 8px rgba(34,211,238,0.3)',
-                        animation: 'dialogue-cursor-blink 0.8s step-end infinite',
+                        background: 'rgb(var(--cyber-cyan-rgb) / 0.8)',
+                        boxShadow: '0 0 4px rgb(var(--cyber-cyan-rgb) / 0.6), 0 0 8px rgb(var(--cyber-cyan-rgb) / 0.3)',
+                        animation: 'cursor-blink 0.8s step-end infinite',
                       }}
                     />
                   )}
@@ -553,7 +554,7 @@ export function DialogueRenderer() {
                           className="absolute left-0 top-0 bottom-0 w-0.5"
                           style={{
                             background: cond.pass
-                              ? 'linear-gradient(180deg, rgba(34,211,238,0.6), rgba(34,211,238,0.2))'
+                              ? 'linear-gradient(180deg, rgb(var(--cyber-cyan-rgb) / 0.6), rgb(var(--cyber-cyan-rgb) / 0.2))'
                               : 'rgba(100,116,139,0.2)',
                           }}
                         />
@@ -571,14 +572,14 @@ export function DialogueRenderer() {
                         <div className="absolute inset-0 pointer-events-none overflow-hidden opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                           <div
                             className="absolute left-0 right-0 h-2 -top-2 group-hover:top-full"
-                            style={{ background: 'linear-gradient(180deg, transparent, rgba(34,211,238,0.08), transparent)', transition: 'top 0.8s ease-in-out' }}
+                            style={{ background: 'linear-gradient(180deg, transparent, rgb(var(--cyber-cyan-rgb) / 0.08), transparent)', transition: 'top 0.8s ease-in-out' }}
                           />
                         </div>
                         {/* Hover border glow */}
                         <div
                           className="absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300"
                           style={{
-                            boxShadow: cond.pass ? 'inset 0 0 8px rgba(34,211,238,0.06), 0 0 6px rgba(34,211,238,0.08)' : 'none',
+                            boxShadow: cond.pass ? 'inset 0 0 8px rgb(var(--cyber-cyan-rgb) / 0.06), 0 0 6px rgb(var(--cyber-cyan-rgb) / 0.08)' : 'none',
                           }}
                         />
                         <div className="flex items-center gap-1.5">

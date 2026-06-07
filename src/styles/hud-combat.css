@@ -24,15 +24,15 @@
   background: linear-gradient(
     90deg,
     transparent 0%,
-    rgba(0, 229, 255, 0.15) 20%,
-    rgba(0, 229, 255, 0.35) 50%,
-    rgba(0, 229, 255, 0.15) 80%,
+    rgb(var(--cyber-cyan-rgb) / 0.15) 20%,
+    rgb(var(--cyber-cyan-rgb) / 0.35) 50%,
+    rgb(var(--cyber-cyan-rgb) / 0.15) 80%,
     transparent 100%
   );
   pointer-events: none;
   z-index: 10;
   animation: hud-scanline-sweep 6s linear infinite;
-  box-shadow: 0 0 8px rgba(0, 229, 255, 0.2);
+  box-shadow: 0 0 8px rgb(var(--cyber-cyan-rgb) / 0.2);
 }
 
 /* ─── Low bar pulse glow for health/energy bars ─── */
@@ -64,18 +64,18 @@
 
 /* ─── HUD button border shimmer ─── */
 @keyframes hud-btn-shimmer {
-  0% { border-color: rgba(34, 211, 238, 0.15); }
-  50% { border-color: rgba(34, 211, 238, 0.5); }
-  100% { border-color: rgba(34, 211, 238, 0.15); }
+  0% { border-color: rgb(var(--cyber-cyan-rgb) / 0.15); }
+  50% { border-color: rgb(var(--cyber-cyan-rgb) / 0.5); }
+  100% { border-color: rgb(var(--cyber-cyan-rgb) / 0.15); }
 }
 
 .hud-btn-shimmer {
-  border: 1px solid rgba(34, 211, 238, 0.15);
+  border: 1px solid rgb(var(--cyber-cyan-rgb) / 0.15);
   animation: hud-btn-shimmer 3s ease-in-out infinite;
 }
 
 /* ─── Combat damage flash (red edge vignette) ─── */
-@keyframes damage-edge-flash {
+@keyframes overlay-flash-fade {
   0% { opacity: 0.6; }
   100% { opacity: 0; }
 }
@@ -84,9 +84,18 @@
   position: fixed;
   inset: 0;
   pointer-events: none;
-  z-index: 100;
+  z-index: var(--z-damage-flash);
   background: radial-gradient(ellipse at center, transparent 40%, rgba(239, 68, 68, 0.35) 100%);
-  animation: damage-edge-flash 0.4s ease-out forwards;
+  animation: overlay-flash-fade 0.4s ease-out forwards;
+}
+
+.heal-flash-overlay {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: var(--z-damage-flash);
+  background: radial-gradient(ellipse at center, rgba(52, 211, 153, 0.15) 0%, rgba(52, 211, 153, 0.05) 50%, transparent 70%);
+  animation: overlay-flash-fade 0.4s ease-out forwards;
 }
 
 /* ─── Victory particle float ─── */
@@ -189,7 +198,7 @@
   position: relative;
   width: 28px;
   height: 28px;
-  border: 1px solid rgba(34, 211, 238, 0.3);
+  border: 1px solid rgb(var(--cyber-cyan-rgb) / 0.3);
   border-radius: 50%;
   display: flex;
   align-items: center;

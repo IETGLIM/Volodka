@@ -37,9 +37,9 @@ function UseToast({ text, onDone }: { text: string; onDone: () => void }) {
       className="px-3 py-1.5 rounded-md text-[11px] font-mono whitespace-nowrap pointer-events-none"
       style={{
         background: 'rgba(8, 12, 18, 0.9)',
-        border: '1px solid rgba(34, 211, 238, 0.3)',
-        color: '#22d3ee',
-        boxShadow: '0 0 12px rgba(34, 211, 238, 0.15)',
+        border: '1px solid rgb(var(--cyber-cyan-rgb) / 0.3)',
+        color: 'var(--cyber-cyan)',
+        boxShadow: '0 0 12px rgb(var(--cyber-cyan-rgb) / 0.15)',
         backdropFilter: 'blur(8px)',
       }}
     >
@@ -203,9 +203,9 @@ export function QuickUseBar() {
             className="absolute inset-0 rounded-[8px] pointer-events-none"
             animate={{
               boxShadow: [
-                '0 0 6px rgba(34, 211, 238, 0.06), inset 0 0 3px rgba(34, 211, 238, 0.02)',
-                '0 0 12px rgba(34, 211, 238, 0.12), inset 0 0 6px rgba(34, 211, 238, 0.04)',
-                '0 0 6px rgba(34, 211, 238, 0.06), inset 0 0 3px rgba(34, 211, 238, 0.02)',
+                '0 0 6px rgb(var(--cyber-cyan-rgb) / 0.06), inset 0 0 3px rgb(var(--cyber-cyan-rgb) / 0.02)',
+                '0 0 12px rgb(var(--cyber-cyan-rgb) / 0.12), inset 0 0 6px rgb(var(--cyber-cyan-rgb) / 0.04)',
+                '0 0 6px rgb(var(--cyber-cyan-rgb) / 0.06), inset 0 0 3px rgb(var(--cyber-cyan-rgb) / 0.02)',
               ],
             }}
             transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
@@ -236,9 +236,9 @@ export function QuickUseBar() {
                 style={
                   isFlashing
                     ? {
-                        borderColor: 'rgba(34, 211, 238, 0.8)',
-                        background: 'rgba(34, 211, 238, 0.2)',
-                        boxShadow: '0 0 12px rgba(34, 211, 238, 0.3)',
+                        borderColor: 'rgb(var(--cyber-cyan-rgb) / 0.8)',
+                        background: 'rgb(var(--cyber-cyan-rgb) / 0.2)',
+                        boxShadow: '0 0 12px rgb(var(--cyber-cyan-rgb) / 0.3)',
                         transform: 'scale(1.08)',
                       }
                     : !hasItem

@@ -249,7 +249,7 @@ export const CUTSCENES: Record<string, CutsceneDef> = {
     subtitle: 'Под поверхностью города пульсирует что-то иное',
     triggerStoryNode: 'act2_transition',
     textDurationMs: 4000,
-    textAccentColor: '#22d3ee', // cyan
+    textAccentColor: 'var(--cyber-cyan)', // cyan
     type: 'act_transition',
     oneShot: true,
     letterboxStyle: 'full',

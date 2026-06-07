@@ -233,7 +233,7 @@ export function FastTravelPanel({ open, onClose }: FastTravelPanelProps) {
                 className="rounded-lg border border-cyan-500/20 overflow-hidden"
                 style={{
                   background: 'linear-gradient(180deg, rgba(8,12,18,0.97) 0%, rgba(5,8,14,0.98) 100%)',
-                  boxShadow: '0 0 40px rgba(0, 229, 255, 0.08), 0 8px 32px rgba(0, 0, 0, 0.6)',
+                  boxShadow: '0 0 40px rgb(var(--cyber-cyan-rgb) / 0.08), 0 8px 32px rgba(0, 0, 0, 0.6)',
                 }}
               >
                 {/* Header */}
@@ -278,7 +278,7 @@ export function FastTravelPanel({ open, onClose }: FastTravelPanelProps) {
                     <svg className="absolute inset-0 w-full h-full" style={{ opacity: 0.15 }}>
                       <defs>
                         <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
-                          <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#22d3ee" strokeWidth="0.5" />
+                          <path d="M 40 0 L 0 0 0 40" fill="none" stroke="var(--cyber-cyan)" strokeWidth="0.5" />
                         </pattern>
                       </defs>
                       <rect width="100%" height="100%" fill="url(#grid)" />
@@ -303,7 +303,7 @@ export function FastTravelPanel({ open, onClose }: FastTravelPanelProps) {
                           y1={`${fromNode.y}%`}
                           x2={`${toNode.x}%`}
                           y2={`${toNode.y}%`}
-                          stroke={bothDiscovered ? 'rgba(34,211,238,0.3)' : 'rgba(71,85,105,0.15)'}
+                          stroke={bothDiscovered ? 'rgb(var(--cyber-cyan-rgb) / 0.3)' : 'rgba(71,85,105,0.15)'}
                           strokeWidth={bothDiscovered ? 1.5 : 1}
                           strokeDasharray={bothDiscovered ? '6 4' : '3 6'}
                         />
@@ -350,17 +350,17 @@ export function FastTravelPanel({ open, onClose }: FastTravelPanelProps) {
                               background: isCurrent
                                 ? 'rgba(52, 211, 153, 0.15)'
                                 : isDiscovered
-                                  ? 'rgba(34, 211, 238, 0.08)'
+                                  ? 'rgb(var(--cyber-cyan-rgb) / 0.08)'
                                   : 'rgba(51, 65, 85, 0.2)',
                               border: isCurrent
                                 ? '2px solid rgba(52, 211, 153, 0.6)'
                                 : isDiscovered
-                                  ? '1.5px solid rgba(34, 211, 238, 0.35)'
+                                  ? '1.5px solid rgb(var(--cyber-cyan-rgb) / 0.35)'
                                   : '1px solid rgba(71, 85, 105, 0.3)',
                               boxShadow: isCurrent
                                 ? '0 0 20px rgba(52, 211, 153, 0.3), inset 0 0 10px rgba(52, 211, 153, 0.1)'
                                 : isDiscovered
-                                  ? '0 0 8px rgba(34, 211, 238, 0.15)'
+                                  ? '0 0 8px rgb(var(--cyber-cyan-rgb) / 0.15)'
                                   : 'none',
                             }}
                             whileTap={accessible && !isCurrent ? { scale: 0.9 } : {}}
@@ -458,9 +458,9 @@ export function FastTravelPanel({ open, onClose }: FastTravelPanelProps) {
                               borderColor: isCurrent
                                 ? 'rgba(52, 211, 153, 0.4)'
                                 : isDiscovered
-                                  ? 'rgba(34, 211, 238, 0.3)'
+                                  ? 'rgb(var(--cyber-cyan-rgb) / 0.3)'
                                   : 'rgba(71, 85, 105, 0.3)',
-                              boxShadow: `0 0 15px ${isCurrent ? 'rgba(52,211,153,0.15)' : isDiscovered ? 'rgba(34,211,238,0.1)' : 'rgba(0,0,0,0.3)'}`,
+                              boxShadow: `0 0 15px ${isCurrent ? 'rgba(52,211,153,0.15)' : isDiscovered ? 'rgb(var(--cyber-cyan-rgb) / 0.1)' : 'rgba(0,0,0,0.3)'}`,
                             }}
                           >
                             <div className="flex items-center gap-2 mb-1">

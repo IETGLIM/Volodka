@@ -41,9 +41,9 @@ const GAMES: MiniGameDef[] = [
     name: 'Взломщик кода',
     description: 'Расшифруйте код доступа к системе безопасности',
     difficulty: 3,
-    accentColor: 'rgba(0, 229, 255, 0.9)',   // cyan
+    accentColor: 'rgb(var(--cyber-cyan-rgb) / 0.9)',   // cyan
     accentRgb: '0, 229, 255',
-    borderGlow: 'rgba(0, 229, 255, 0.3)',
+    borderGlow: 'rgb(var(--cyber-cyan-rgb) / 0.3)',
     maxDifficulty: 5,
   },
   {
@@ -330,9 +330,9 @@ function MiniGameHubContent({ onClose }: { onClose: () => void }) {
         style={{
           background:
             'linear-gradient(180deg, rgba(8, 12, 18, 0.98) 0%, rgba(5, 8, 14, 0.99) 100%)',
-          borderColor: 'rgba(0, 229, 255, 0.2)',
+          borderColor: 'rgb(var(--cyber-cyan-rgb) / 0.2)',
           boxShadow:
-            '0 0 60px rgba(0, 229, 255, 0.06), 0 8px 40px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(0, 229, 255, 0.05)',
+            '0 0 60px rgb(var(--cyber-cyan-rgb) / 0.06), 0 8px 40px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgb(var(--cyber-cyan-rgb) / 0.05)',
           clipPath:
             'polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px))',
         }}
@@ -341,7 +341,7 @@ function MiniGameHubContent({ onClose }: { onClose: () => void }) {
         <div
           className="flex items-center justify-between px-4 py-2.5 border-b"
           style={{
-            borderColor: 'rgba(0, 229, 255, 0.15)',
+            borderColor: 'rgb(var(--cyber-cyan-rgb) / 0.15)',
             background: 'rgba(0, 0, 0, 0.4)',
           }}
         >
@@ -371,8 +371,8 @@ function MiniGameHubContent({ onClose }: { onClose: () => void }) {
             {...titleProps}
             className="font-mono text-2xl font-bold tracking-[0.3em] uppercase"
             style={{
-              color: 'rgba(0, 229, 255, 0.85)',
-              textShadow: '0 0 20px rgba(0, 229, 255, 0.3)',
+              color: 'rgb(var(--cyber-cyan-rgb) / 0.85)',
+              textShadow: '0 0 20px rgb(var(--cyber-cyan-rgb) / 0.3)',
             }}
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -396,7 +396,7 @@ function MiniGameHubContent({ onClose }: { onClose: () => void }) {
           className="absolute inset-0 pointer-events-none z-20"
           style={{
             background:
-              'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0, 229, 255, 0.012) 2px, rgba(0, 229, 255, 0.012) 4px)',
+              'repeating-linear-gradient(0deg, transparent, transparent 2px, rgb(var(--cyber-cyan-rgb) / 0.012) 2px, rgb(var(--cyber-cyan-rgb) / 0.012) 4px)',
           }}
         />
 
@@ -423,7 +423,7 @@ function MiniGameHubContent({ onClose }: { onClose: () => void }) {
         {/* ── Footer ── */}
         <div
           className="px-6 py-3 border-t flex items-center justify-center"
-          style={{ borderColor: 'rgba(0, 229, 255, 0.1)' }}
+          style={{ borderColor: 'rgb(var(--cyber-cyan-rgb) / 0.1)' }}
         >
           <div className="flex items-center gap-1.5">
             <kbd
@@ -447,17 +447,17 @@ function MiniGameHubContent({ onClose }: { onClose: () => void }) {
       <div
         className="absolute -top-px -left-px w-8 h-8 pointer-events-none"
         style={{
-          borderTop: '2px solid rgba(0, 229, 255, 0.3)',
-          borderLeft: '2px solid rgba(0, 229, 255, 0.3)',
-          boxShadow: '-2px -2px 10px rgba(0, 229, 255, 0.1)',
+          borderTop: '2px solid rgb(var(--cyber-cyan-rgb) / 0.3)',
+          borderLeft: '2px solid rgb(var(--cyber-cyan-rgb) / 0.3)',
+          boxShadow: '-2px -2px 10px rgb(var(--cyber-cyan-rgb) / 0.1)',
         }}
       />
       <div
         className="absolute -top-px -right-px w-8 h-8 pointer-events-none"
         style={{
-          borderTop: '2px solid rgba(0, 229, 255, 0.3)',
-          borderRight: '2px solid rgba(0, 229, 255, 0.3)',
-          boxShadow: '2px -2px 10px rgba(0, 229, 255, 0.1)',
+          borderTop: '2px solid rgb(var(--cyber-cyan-rgb) / 0.3)',
+          borderRight: '2px solid rgb(var(--cyber-cyan-rgb) / 0.3)',
+          boxShadow: '2px -2px 10px rgb(var(--cyber-cyan-rgb) / 0.1)',
         }}
       />
       <div

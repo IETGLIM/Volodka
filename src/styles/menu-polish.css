@@ -28,10 +28,10 @@
 /* Version tag cyberpunk styling */
 @keyframes version-tag-glow {
   0%, 100% {
-    text-shadow: 0 0 4px rgba(0, 229, 255, 0.3), 0 0 8px rgba(0, 229, 255, 0.15);
+    text-shadow: 0 0 4px rgb(var(--cyber-cyan-rgb) / 0.3), 0 0 8px rgb(var(--cyber-cyan-rgb) / 0.15);
   }
   50% {
-    text-shadow: 0 0 6px rgba(0, 229, 255, 0.5), 0 0 12px rgba(0, 229, 255, 0.25), 0 0 20px rgba(0, 229, 255, 0.1);
+    text-shadow: 0 0 6px rgb(var(--cyber-cyan-rgb) / 0.5), 0 0 12px rgb(var(--cyber-cyan-rgb) / 0.25), 0 0 20px rgb(var(--cyber-cyan-rgb) / 0.1);
   }
 }
 
@@ -80,21 +80,16 @@
    ══════════════════════════════════════════════════════════════ */
 
 /* ─── 1. Typing cursor — Blinking cursor for terminal text ─── */
-@keyframes typing-cursor {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0; }
-}
-
 .typing-cursor::after {
   content: '_';
-  animation: typing-cursor 1s step-end infinite;
-  color: rgba(0, 229, 255, 0.8);
+  animation: cursor-blink 1s step-end infinite;
+  color: rgb(var(--cyber-cyan-rgb) / 0.8);
 }
 
 /* ─── 2. Data pulse — Data stream pulse for network indicators ─── */
 @keyframes data-pulse {
-  0%, 100% { background-color: rgba(0, 229, 255, 0.03); }
-  50% { background-color: rgba(0, 229, 255, 0.08); }
+  0%, 100% { background-color: rgb(var(--cyber-cyan-rgb) / 0.03); }
+  50% { background-color: rgb(var(--cyber-cyan-rgb) / 0.08); }
 }
 
 .data-pulse {
@@ -118,7 +113,7 @@
   display: inline-block;
   width: 3px;
   height: 100%;
-  background: rgba(0, 229, 255, 0.6);
+  background: rgb(var(--cyber-cyan-rgb) / 0.6);
   border-radius: 1px;
   animation: signal-wave 2s ease-in-out infinite;
 }
@@ -139,10 +134,10 @@
   background-image:
     linear-gradient(90deg,
       transparent 0%,
-      rgba(0, 229, 255, 0.05) 10%,
+      rgb(var(--cyber-cyan-rgb) / 0.05) 10%,
       transparent 20%,
       transparent 80%,
-      rgba(0, 229, 255, 0.05) 90%,
+      rgb(var(--cyber-cyan-rgb) / 0.05) 90%,
       transparent 100%
     );
   background-size: 200px 100%;
@@ -210,13 +205,8 @@
 }
 
 /* ─── 9. Terminal blink — Terminal prompt blink ─── */
-@keyframes terminal-blink {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0; }
-}
-
 .terminal-blink {
-  animation: terminal-blink 1s step-end infinite;
+  animation: cursor-blink 1s step-end infinite;
 }
 
 /* ─── 10. Scan line — Moving scan line for panels ─── */
@@ -236,8 +226,8 @@
   left: 0;
   right: 0;
   height: 2px;
-  background: linear-gradient(90deg, transparent 0%, rgba(0, 229, 255, 0.15) 20%, rgba(0, 229, 255, 0.3) 50%, rgba(0, 229, 255, 0.15) 80%, transparent 100%);
-  box-shadow: 0 0 8px rgba(0, 229, 255, 0.2);
+  background: linear-gradient(90deg, transparent 0%, rgb(var(--cyber-cyan-rgb) / 0.15) 20%, rgb(var(--cyber-cyan-rgb) / 0.3) 50%, rgb(var(--cyber-cyan-rgb) / 0.15) 80%, transparent 100%);
+  box-shadow: 0 0 8px rgb(var(--cyber-cyan-rgb) / 0.2);
   animation: scan-line-move 4s linear infinite;
   pointer-events: none;
   z-index: 10;
@@ -245,9 +235,9 @@
 
 /* ─── 11. Power up — Power up glow effect ─── */
 @keyframes power-up {
-  0% { box-shadow: 0 0 0 rgba(0, 229, 255, 0); transform: scale(1); }
-  50% { box-shadow: 0 0 20px rgba(0, 229, 255, 0.4), 0 0 40px rgba(0, 229, 255, 0.15); transform: scale(1.03); }
-  100% { box-shadow: 0 0 8px rgba(0, 229, 255, 0.15); transform: scale(1); }
+  0% { box-shadow: 0 0 0 rgb(var(--cyber-cyan-rgb) / 0); transform: scale(1); }
+  50% { box-shadow: 0 0 20px rgb(var(--cyber-cyan-rgb) / 0.4), 0 0 40px rgb(var(--cyber-cyan-rgb) / 0.15); transform: scale(1.03); }
+  100% { box-shadow: 0 0 8px rgb(var(--cyber-cyan-rgb) / 0.15); transform: scale(1); }
 }
 
 .power-up {
@@ -282,7 +272,7 @@
   background: rgba(15, 23, 42, 0.6);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(0, 229, 255, 0.12);
+  border: 1px solid rgb(var(--cyber-cyan-rgb) / 0.12);
   border-radius: 0.75rem;
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.03);
 }
@@ -291,7 +281,7 @@
 .terminal-text {
   font-family: 'Geist Mono', 'JetBrains Mono', 'Fira Code', monospace;
   letter-spacing: 0.05em;
-  text-shadow: 0 0 6px rgba(0, 229, 255, 0.2), 0 0 12px rgba(0, 229, 255, 0.08);
+  text-shadow: 0 0 6px rgb(var(--cyber-cyan-rgb) / 0.2), 0 0 12px rgb(var(--cyber-cyan-rgb) / 0.08);
 }
 
 /* ─── 16. Data chip — Small data tag/chip styling ─── */
@@ -302,9 +292,9 @@
   font-size: 0.625rem;
   line-height: 1;
   padding: 2px 6px;
-  background: rgba(0, 229, 255, 0.06);
-  border: 1px solid rgba(0, 229, 255, 0.15);
+  background: rgb(var(--cyber-cyan-rgb) / 0.06);
+  border: 1px solid rgb(var(--cyber-cyan-rgb) / 0.15);
   border-radius: 3px;
-  color: rgba(0, 229, 255, 0.7);
+  color: rgb(var(--cyber-cyan-rgb) / 0.7);
   white-space: nowrap;
 }

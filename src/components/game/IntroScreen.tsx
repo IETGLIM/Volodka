@@ -691,7 +691,7 @@ const PhaseProse = memo(function PhaseProse({ onComplete, reduceMotion }: PhaseP
                   <span
                     className="inline-block ml-0.5 align-baseline"
                     style={{
-                      animation: 'cinematic-cursor 1s step-end infinite',
+                      animation: 'cursor-blink 1s step-end infinite',
                       color: currentStyle === 'emphasis' ? 'rgba(255, 200, 120, 0.8)'
                         : currentStyle === 'love' ? 'rgba(255, 160, 180, 0.8)'
                         : currentStyle === 'greeting' ? 'rgba(200, 220, 255, 0.9)'
@@ -1053,7 +1053,7 @@ const PhasePoem = memo(function PhasePoem({ poem, onComplete, reduceMotion }: Ph
                     <span
                       className="inline-block ml-0.5"
                       style={{
-                        animation: 'cinematic-cursor 1s step-end infinite',
+                        animation: 'cursor-blink 1s step-end infinite',
                         color: 'rgba(200, 220, 255, 0.8)',
                       }}
                     >
@@ -1329,7 +1329,7 @@ const PhaseWaking = memo(function PhaseWaking({ onContinue, onRevealCanvas }: Ph
             {charIndex < currentText.length && (
               <span
                 style={{
-                  animation: 'cinematic-cursor 1s step-end infinite',
+                  animation: 'cursor-blink 1s step-end infinite',
                   color: `rgba(0, 255, 100, ${textOpacity * 0.7})`,
                 }}
               >
@@ -1630,27 +1630,10 @@ export function IntroScreen() {
           }
         }
 
-        @keyframes cinematic-cursor {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0; }
-        }
-
         @keyframes waking-breathe {
           0%, 100% { opacity: 0.4; transform: scale(1); }
           35% { opacity: 0.7; transform: scale(1.02); }
           65% { opacity: 0.5; transform: scale(1.01); }
-        }
-
-        /* Custom scrollbar for prose scroll */
-        .custom-scrollbar::-webkit-scrollbar {
-          width: 3px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-track {
-          background: transparent;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-          background: rgba(150, 180, 255, 0.15);
-          border-radius: 2px;
         }
       `}</style>
     </div>

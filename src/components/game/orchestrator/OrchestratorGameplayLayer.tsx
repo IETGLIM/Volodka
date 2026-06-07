@@ -89,9 +89,7 @@ export function OrchestratorGameplayLayer({
     examineData,
     examineHasLinkedContent,
     handleExamineContinue,
-    setExamineOpen,
-    setExamineData,
-    setExamineHasLinkedContent,
+    resetExamine,
     clearPendingTriggerZone,
   } = interaction;
 
@@ -290,9 +288,7 @@ export function OrchestratorGameplayLayer({
         hasLinkedContent={examineHasLinkedContent}
         onContinue={handleExamineContinue}
         onClose={() => {
-          setExamineOpen(false);
-          setExamineData(null);
-          setExamineHasLinkedContent(false);
+          resetExamine();
           clearPendingTriggerZone();
         }}
       />

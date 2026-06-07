@@ -116,7 +116,7 @@ export function ShortcutsOverlay({ open, onClose }: ShortcutsOverlayProps) {
               className="relative rounded-lg border border-cyan-500/20 overflow-hidden hex-grid-bg edge-glow"
               style={{
                 background: 'linear-gradient(180deg, rgba(8,12,18,0.97) 0%, rgba(5,8,14,0.98) 100%)',
-                boxShadow: '0 0 40px rgba(0, 229, 255, 0.08), 0 8px 32px rgba(0, 0, 0, 0.6)',
+                boxShadow: '0 0 40px rgb(var(--cyber-cyan-rgb) / 0.08), 0 8px 32px rgba(0, 0, 0, 0.6)',
               }}
             >
               {/* Corner bracket decorations */}
@@ -131,7 +131,7 @@ export function ShortcutsOverlay({ open, onClose }: ShortcutsOverlayProps) {
                   className="absolute inset-x-0 h-16"
                   style={{
                     background:
-                      'linear-gradient(180deg, transparent 0%, rgba(0, 229, 255, 0.04) 40%, rgba(0, 229, 255, 0.08) 50%, rgba(0, 229, 255, 0.04) 60%, transparent 100%)',
+                      'linear-gradient(180deg, transparent 0%, rgb(var(--cyber-cyan-rgb) / 0.04) 40%, rgb(var(--cyber-cyan-rgb) / 0.08) 50%, rgb(var(--cyber-cyan-rgb) / 0.04) 60%, transparent 100%)',
                     animation: 'scanline-overlay 6s linear infinite',
                   }}
                 />

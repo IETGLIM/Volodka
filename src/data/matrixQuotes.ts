@@ -4,6 +4,8 @@
  * has a mood, act, and primary glow color.
  */
 
+import { CYBER_CYAN } from '@/shared/constants/cyberPalette';
+
 export interface MatrixQuote {
   id: string
   text: string
@@ -35,7 +37,7 @@ export const MATRIX_QUOTES: MatrixQuote[] = [
     trigger: 'first_reading',
     act: 1,
     mood: 'revelation',
-    color: '#00e5ff',
+    color: CYBER_CYAN,
   },
   {
     id: 'mq_incident',
@@ -51,7 +53,7 @@ export const MATRIX_QUOTES: MatrixQuote[] = [
     trigger: 'vault_backup_trial',
     act: 1,
     mood: 'revelation',
-    color: '#00e5ff',
+    color: CYBER_CYAN,
   },
 
   /* ═══════════════════════════════════════════════════════════
@@ -107,7 +109,7 @@ export const MATRIX_QUOTES: MatrixQuote[] = [
     trigger: 'maria_truth',
     act: 3,
     mood: 'revelation',
-    color: '#00e5ff',
+    color: CYBER_CYAN,
   },
 
   /* ═══════════════════════════════════════════════════════════

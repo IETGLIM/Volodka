@@ -21,9 +21,9 @@ interface SoundChannel {
 
 /* ─── Constants ─── */
 
-const CYAN = '#22d3ee';
-const CYAN_BORDER = 'rgba(34, 211, 238, 0.3)';
-const CYAN_GLOW = 'rgba(34, 211, 238, 0.12)';
+const CYAN = 'var(--cyber-cyan)';
+const CYAN_BORDER = 'rgb(var(--cyber-cyan-rgb) / 0.3)';
+const CYAN_GLOW = 'rgb(var(--cyber-cyan-rgb) / 0.12)';
 const BG_GLASS = 'rgba(8, 14, 24, 0.82)';
 
 const DEFAULT_CHANNELS: SoundChannel[] = [
@@ -97,7 +97,7 @@ export function AmbientSoundMixer() {
               background: BG_GLASS,
               border: `1px solid ${CYAN_BORDER}`,
               borderRadius: '8px',
-              boxShadow: `0 0 10px ${CYAN_GLOW}, inset 0 0 6px rgba(34, 211, 238, 0.04)`,
+              boxShadow: `0 0 10px ${CYAN_GLOW}, inset 0 0 6px rgb(var(--cyber-cyan-rgb) / 0.04)`,
               minWidth: '220px',
             }}
             variants={panelVariants}
@@ -200,15 +200,15 @@ export function AmbientSoundMixer() {
           height: '36px',
           backdropFilter: 'blur(8px)',
           WebkitBackdropFilter: 'blur(8px)',
-          background: isOpen ? 'rgba(34, 211, 238, 0.12)' : 'rgba(8, 14, 24, 0.7)',
-          border: `1px solid ${isOpen ? 'rgba(34, 211, 238, 0.5)' : CYAN_BORDER}`,
+          background: isOpen ? 'rgb(var(--cyber-cyan-rgb) / 0.12)' : 'rgba(8, 14, 24, 0.7)',
+          border: `1px solid ${isOpen ? 'rgb(var(--cyber-cyan-rgb) / 0.5)' : CYAN_BORDER}`,
           boxShadow: isOpen
-            ? `0 0 12px ${CYAN_GLOW}, 0 0 4px rgba(34, 211, 238, 0.2)`
+            ? `0 0 12px ${CYAN_GLOW}, 0 0 4px rgb(var(--cyber-cyan-rgb) / 0.2)`
             : `0 0 6px ${CYAN_GLOW}`,
         }}
         onClick={toggleOpen}
         whileHover={{
-          boxShadow: `0 0 16px ${CYAN_GLOW}, 0 0 6px rgba(34, 211, 238, 0.25)`,
+          boxShadow: `0 0 16px ${CYAN_GLOW}, 0 0 6px rgb(var(--cyber-cyan-rgb) / 0.25)`,
           scale: 1.08,
         }}
         whileTap={{ scale: 0.92 }}

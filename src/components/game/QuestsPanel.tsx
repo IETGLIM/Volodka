@@ -195,7 +195,7 @@ export function QuestsPanel({ open, onClose }: QuestsPanelProps) {
                               className="rounded-xl border border-cyan-900/15 overflow-hidden"
                               style={{
                                 background: 'linear-gradient(135deg, rgba(15,23,42,0.6) 0%, rgba(8,12,28,0.7) 100%)',
-                                boxShadow: 'inset 0 1px 0 rgba(34,211,238,0.04)',
+                                boxShadow: 'inset 0 1px 0 rgb(var(--cyber-cyan-rgb) / 0.04)',
                               }}
                             >
                               {/* Quest header */}

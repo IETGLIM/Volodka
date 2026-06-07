@@ -30,14 +30,23 @@ export const UI_LAYERS = {
   MENU: 45,
   /** Combat UI */
   COMBAT: 50,
+  /** Full-screen damage/heal flash (above combat UI) */
+  DAMAGE_FLASH: 51,
   /** Panels (inventory, quests, poetry, journal) */
   PANEL: 55,
+  /** HUD tooltips — above panels, below poem overlay */
+  TOOLTIP: 58,
   /** Cinematic transition (fade-to-black) */
   CINEMATIC_TRANSITION: 95,
   /** Loading screen — always on top */
   LOADING: 100,
   /** Developer debug panel (F3) — above everything */
   DEV_PANEL: 200,
+  /** Cyberpunk poem cutscene stack */
+  POEM_NOISE: 998,
+  POEM_VIGNETTE: 999,
+  POEM_CRT: 1000,
+  POEM: 1001,
 } as const;
 
 export type UILayerKey = keyof typeof UI_LAYERS;

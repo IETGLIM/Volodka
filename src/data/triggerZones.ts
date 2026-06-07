@@ -25,8 +25,8 @@ export interface TriggerZone {
   linkedMinigame?: 'codebreaker' | 'openstack_terminal' | 'bash_terminal';
   /** Whether this trigger can only be used once per playthrough */
   isOneTime?: boolean;
-  /** NPC ID explicitly linked to this zone (replaces substring matching) */
-  npcId?: string;
+  /** NPC explicitly linked to this zone (staged talk routing — no substring heuristics). */
+  linkedNpcId?: string;
   /** Minimum act required for this trigger zone to be active (1 or 2) */
   requiredAct?: number;
 }
@@ -43,6 +43,20 @@ export const INTERACTION_LABELS: Record<InteractionType, string> = {
   push: 'Толкнуть',
   default: 'Взаимодействовать',
 };
+
+export function findTriggerZoneByNpcId(
+  zones: readonly TriggerZone[],
+  npcId: string,
+): TriggerZone | undefined {
+  return zones.find((z) => z.linkedNpcId === npcId);
+}
+
+export function findTriggerZoneByDialogueNodeId(
+  zones: readonly TriggerZone[],
+  dialogueNodeId: string,
+): TriggerZone | undefined {
+  return zones.find((z) => z.linkedDialogueNodeId === dialogueNodeId);
+}
 
 export const TRIGGER_ZONES: TriggerZone[] = [
   /* ─────────────── VOLODKA ROOM ─────────────── */
@@ -204,6 +218,7 @@ export const TRIGGER_ZONES: TriggerZone[] = [
     size: [2.0, 1.0, 1.5],
     enterToast: 'На столе — хлеб, варенье и горячий чай.',
     linkedDialogueNodeId: 'zarema_greeting',
+    linkedNpcId: 'zarema',
     linkedQuestId: 'first_reading',
     interactionType: 'talk',
     examineData: {
@@ -296,6 +311,7 @@ export const TRIGGER_ZONES: TriggerZone[] = [
     size: [4.0, 1.5, 1.0],
     enterToast: 'Стойка бара — бариста протирает чашку.',
     linkedDialogueNodeId: 'cafe_barista_dialogue',
+    linkedNpcId: 'cafe_barista',
     interactionType: 'talk',
   },
   {
@@ -305,6 +321,7 @@ export const TRIGGER_ZONES: TriggerZone[] = [
     size: [2.0, 2.0, 2.0],
     enterToast: 'В углу сидит Альберт — философ с кружкой.',
     linkedDialogueNodeId: 'albert_greeting',
+    linkedNpcId: 'albert',
     interactionType: 'talk',
     effects: [
       { type: 'setFlag', flag: 'met_albert', flagValue: true },
@@ -380,6 +397,7 @@ export const TRIGGER_ZONES: TriggerZone[] = [
     size: [2.0, 2.0, 2.0],
     enterToast: 'В переулке кто-то сидит в тени.',
     linkedDialogueNodeId: 'maria_dialogue',
+    linkedNpcId: 'maria',
     linkedQuestId: 'maria_connection',
     interactionType: 'talk',
     effects: [
@@ -412,6 +430,7 @@ export const TRIGGER_ZONES: TriggerZone[] = [
     size: [2.0, 1.5, 1.5],
     enterToast: 'Александр ждёт у своего стола.',
     linkedDialogueNodeId: 'office_alexander_dialogue',
+    linkedNpcId: 'office_alexander',
     linkedQuestId: 'incident_scroll_4729',
     interactionType: 'talk',
   },
@@ -422,6 +441,7 @@ export const TRIGGER_ZONES: TriggerZone[] = [
     size: [1.5, 1.5, 1.5],
     enterToast: 'Коллега нервно перебирает провода.',
     linkedDialogueNodeId: 'office_colleague_dialogue',
+    linkedNpcId: 'office_colleague',
     interactionType: 'talk',
   },
   {
@@ -457,6 +477,7 @@ export const TRIGGER_ZONES: TriggerZone[] = [
     size: [2.0, 1.5, 1.5],
     enterToast: 'Дмитрий — старший разработчик — что-то ищет в архивах.',
     linkedDialogueNodeId: 'dmitry_greeting',
+    linkedNpcId: 'office_dmitry',
     interactionType: 'talk',
     effects: [
       { type: 'npcChange', npcId: 'office_dmitry', npcChange: { relation: 2 } },
@@ -576,6 +597,7 @@ export const TRIGGER_ZONES: TriggerZone[] = [
     size: [2.0, 2.0, 1.0],
     enterToast: 'Александр стоит на самом краю крыши. Ветер треплет его пальто.',
     linkedQuestId: 'roof_of_the_world',
+    linkedNpcId: 'office_alexander',
     requiredFlag: 'rooftop_unlocked',
     requiredAct: 2,
     interactionType: 'talk',

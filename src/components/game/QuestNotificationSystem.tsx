@@ -60,7 +60,7 @@ const QUEST_NOTIF_STYLES: Record<QuestNotifType, QuestNotifStyle> = {
     icon: '▶',
     borderColor: '#0891b2',
     glowColor: 'rgba(8, 145, 178, 0.4)',
-    textColor: '#22d3ee',
+    textColor: 'var(--cyber-cyan)',
     iconBg: 'rgba(8, 145, 178, 0.15)',
     label: 'Квест начат',
   },
@@ -110,7 +110,7 @@ function ProgressBar({ completed, total }: { completed: number; total: number })
     <div className="w-full h-1.5 rounded-full bg-white/10 overflow-hidden mt-1.5">
       <motion.div
         className="h-full rounded-full"
-        style={{ background: 'linear-gradient(90deg, #4ade80, #22d3ee)' }}
+        style={{ background: 'linear-gradient(90deg, #4ade80, var(--cyber-cyan))' }}
         initial={{ width: 0 }}
         animate={{ width: `${pct}%` }}
         transition={{ duration: 0.6, ease: 'easeOut' }}

@@ -54,12 +54,12 @@ const ACCENT_MAP: Record<NotificationType, {
     iconBg: 'rgba(251, 113, 133, 0.12)',
   },
   scene: {
-    primary: '#22d3ee',     // cyan-400
-    glow: 'rgba(34, 211, 238, 0.15)',
-    border: 'rgba(34, 211, 238, 0.35)',
+    primary: 'var(--cyber-cyan)',     // cyan-400
+    glow: 'rgb(var(--cyber-cyan-rgb) / 0.15)',
+    border: 'rgb(var(--cyber-cyan-rgb) / 0.35)',
     bg: 'rgba(8, 20, 30, 0.82)',
-    shadow: '0 0 12px rgba(34, 211, 238, 0.12)',
-    iconBg: 'rgba(34, 211, 238, 0.12)',
+    shadow: '0 0 12px rgb(var(--cyber-cyan-rgb) / 0.12)',
+    iconBg: 'rgb(var(--cyber-cyan-rgb) / 0.12)',
   },
   achievement: {
     primary: '#fbbf24',     // amber-400

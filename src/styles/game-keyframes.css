@@ -7,8 +7,6 @@
   80% { transform: translate(1px, -1px); }
 }
 
-/* (scanline & neon-pulse keyframes removed — unused) */
-
 /* Cinematic Intro keyframes */
 @keyframes ember-float {
   0% { transform: translateY(0) scale(1); opacity: 1; }
@@ -25,9 +23,7 @@
   50% { opacity: 0.25; transform: scaleY(-1); }
 }
 
-/* (scan-line keyframe removed — unused; scan-line-move is the one in use) */
-
-@keyframes boot-cursor {
+@keyframes cursor-blink {
   0%, 100% { opacity: 1; }
   50% { opacity: 0; }
 }
@@ -57,7 +53,7 @@
 
 /* Intro utility classes */
 .boot-cursor {
-  animation: boot-cursor 0.8s step-end infinite;
+  animation: cursor-blink 0.8s step-end infinite;
 }
 
 .title-glitch {
@@ -120,9 +116,8 @@
   }
 }
 
-@keyframes cinematic-cursor {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0; }
+.cinematic-cursor {
+  animation: cursor-blink 1s step-end infinite;
 }
 
 @keyframes cinematic-grain {
@@ -138,13 +133,10 @@
   90% { transform: translate(-10%, 10%); }
 }
 
+/* Fullscreen cinematic shell (IntroScreen / MenuScreen only — never on lists). */
 .game-critical-motion {
-  -webkit-transform: translateZ(0);
   transform: translateZ(0);
-  will-change: transform, opacity;
 }
-
-/* (custom-scrollbar rules merged with .game-scrollbar below) */
 
 /* ─── Combat screen shake animation (translate-based, NOT opacity pulse) ─── */
 @keyframes combat-shake {
@@ -173,10 +165,8 @@
 }
 
 .neon-border {
-  box-shadow: 0 0 5px var(--color-cyber-cyan), inset 0 0 5px rgba(0, 229, 255, 0.1);
+  box-shadow: 0 0 5px var(--color-cyber-cyan), inset 0 0 5px rgb(var(--cyber-cyan-rgb) / 0.1);
 }
-
-/* (custom-scrollbar rules merged with .game-scrollbar above) */
 
 /* Game font */
 .game-fm-layer {
@@ -265,8 +255,6 @@
   }
 }
 
-/* (loading-tip-fade keyframe removed — unused) */
-
 /* Animated loading dots — replaces JS setInterval with pure CSS */
 .loading-dots::after {
   content: '';
@@ -280,8 +268,6 @@
   75%  { content: '...'; }
 }
 
-/* (skill-bar-shimmer, profile-glow-pulse, karma-ring-spin keyframes removed — unused) */
-
 /* ─── Weather indicator transitions ─── */
 @keyframes weather-icon-bob {
   0%, 100% { transform: translateY(0); }
@@ -292,16 +278,12 @@
   animation: weather-icon-bob 3s ease-in-out infinite;
 }
 
-/* (relation-bar-fill, panel-slide-up, panel-fade-in keyframes removed — unused) */
-
 /* ─── HUD stat change flash ─── */
 @keyframes stat-flash {
-  0% { background-color: rgba(0, 229, 255, 0.2); }
+  0% { background-color: rgb(var(--cyber-cyan-rgb) / 0.2); }
   100% { background-color: transparent; }
 }
 
 .stat-flash {
   animation: stat-flash 0.6s ease-out;
 }
-
-/* (Day/Night, Codex, HUD-btn-scan, choice-shimmer, impact-pulse keyframes removed — unused) */

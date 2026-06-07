@@ -1,8 +1,8 @@
 /* ─── Volodka RPG – panel stack reducer ─── */
 
-import type { PanelType } from './types';
+import type { NonNullPanelType, PanelType } from './types';
 
-export type NonNullPanelType = Exclude<PanelType, null>;
+export type { NonNullPanelType } from './types';
 
 export type PanelStackAction =
   | { type: 'toggle'; panel: NonNullPanelType }
@@ -47,4 +47,4 @@ export const MENU_LAYER_PANELS = new Set<NonNullPanelType>([
   'saveSlot',
   'miniGameHub',
   'shortcuts',
-]);
+] satisfies readonly NonNullPanelType[]);

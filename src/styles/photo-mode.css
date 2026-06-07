@@ -6,11 +6,11 @@
 @keyframes viewfinder-pulse {
   0%, 100% {
     opacity: 0.3;
-    box-shadow: 0 0 4px rgba(34, 211, 238, 0.2);
+    box-shadow: 0 0 4px rgb(var(--cyber-cyan-rgb) / 0.2);
   }
   50% {
     opacity: 0.7;
-    box-shadow: 0 0 8px rgba(34, 211, 238, 0.4);
+    box-shadow: 0 0 8px rgb(var(--cyber-cyan-rgb) / 0.4);
   }
 }
 
@@ -36,13 +36,8 @@
 }
 
 @keyframes inv-rare-border-pulse {
-  0%, 100% { box-shadow: 0 0 3px rgba(34, 211, 238, 0.15), inset 0 0 2px rgba(34, 211, 238, 0.05); }
-  50% { box-shadow: 0 0 8px rgba(34, 211, 238, 0.3), 0 0 16px rgba(34, 211, 238, 0.1), inset 0 0 4px rgba(34, 211, 238, 0.08); }
-}
-
-@keyframes inv-legendary-border-pulse {
-  0%, 100% { box-shadow: 0 0 4px rgba(251, 191, 36, 0.2), inset 0 0 3px rgba(251, 191, 36, 0.05); }
-  50% { box-shadow: 0 0 12px rgba(251, 191, 36, 0.35), 0 0 24px rgba(251, 191, 36, 0.12), inset 0 0 6px rgba(251, 191, 36, 0.1); }
+  0%, 100% { box-shadow: 0 0 3px rgb(var(--cyber-cyan-rgb) / 0.15), inset 0 0 2px rgb(var(--cyber-cyan-rgb) / 0.05); }
+  50% { box-shadow: 0 0 8px rgb(var(--cyber-cyan-rgb) / 0.3), 0 0 16px rgb(var(--cyber-cyan-rgb) / 0.1), inset 0 0 4px rgb(var(--cyber-cyan-rgb) / 0.08); }
 }
 
 /* Item card base style */
@@ -65,9 +60,9 @@
   background: linear-gradient(
     180deg,
     transparent 0%,
-    rgba(0, 229, 255, 0.04) 40%,
-    rgba(0, 229, 255, 0.08) 50%,
-    rgba(0, 229, 255, 0.04) 60%,
+    rgb(var(--cyber-cyan-rgb) / 0.04) 40%,
+    rgb(var(--cyber-cyan-rgb) / 0.08) 50%,
+    rgb(var(--cyber-cyan-rgb) / 0.04) 60%,
     transparent 100%
   );
   top: -30%;
@@ -93,29 +88,6 @@
 .inv-grid-scroll {
   max-height: calc(90vh - 300px);
   overflow-y: auto;
-}
-
-/* Custom scrollbar for inventory */
-.inv-scrollable::-webkit-scrollbar,
-.inv-grid-scroll::-webkit-scrollbar {
-  width: 4px;
-}
-
-.inv-scrollable::-webkit-scrollbar-track,
-.inv-grid-scroll::-webkit-scrollbar-track {
-  background: rgba(15, 23, 42, 0.3);
-  border-radius: 2px;
-}
-
-.inv-scrollable::-webkit-scrollbar-thumb,
-.inv-grid-scroll::-webkit-scrollbar-thumb {
-  background: rgba(34, 211, 238, 0.2);
-  border-radius: 2px;
-}
-
-.inv-scrollable::-webkit-scrollbar-thumb:hover,
-.inv-grid-scroll::-webkit-scrollbar-thumb:hover {
-  background: rgba(34, 211, 238, 0.4);
 }
 
 /* Empty state orbit animation */

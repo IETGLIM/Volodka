@@ -175,8 +175,8 @@ export function PhotoMode() {
           <div
             className="absolute inset-4 sm:inset-8 md:inset-12 lg:inset-16"
             style={{
-              border: '2px solid rgba(34, 211, 238, 0.5)',
-              boxShadow: '0 0 12px rgba(34, 211, 238, 0.15), inset 0 0 12px rgba(34, 211, 238, 0.05)',
+              border: '2px solid rgb(var(--cyber-cyan-rgb) / 0.5)',
+              boxShadow: '0 0 12px rgb(var(--cyber-cyan-rgb) / 0.15), inset 0 0 12px rgb(var(--cyber-cyan-rgb) / 0.05)',
             }}
           >
             {/* ── Corner brackets ── */}
@@ -186,9 +186,9 @@ export function PhotoMode() {
               style={{
                 top: -2, left: -2,
                 width: CORNER_BRACKET_SIZE, height: CORNER_BRACKET_SIZE,
-                borderTop: '2px solid #22d3ee',
-                borderLeft: '2px solid #22d3ee',
-                boxShadow: '-2px -2px 6px rgba(34, 211, 238, 0.4)',
+                borderTop: '2px solid var(--cyber-cyan)',
+                borderLeft: '2px solid var(--cyber-cyan)',
+                boxShadow: '-2px -2px 6px rgb(var(--cyber-cyan-rgb) / 0.4)',
               }}
             />
             {/* Top-right */}
@@ -197,9 +197,9 @@ export function PhotoMode() {
               style={{
                 top: -2, right: -2,
                 width: CORNER_BRACKET_SIZE, height: CORNER_BRACKET_SIZE,
-                borderTop: '2px solid #22d3ee',
-                borderRight: '2px solid #22d3ee',
-                boxShadow: '2px -2px 6px rgba(34, 211, 238, 0.4)',
+                borderTop: '2px solid var(--cyber-cyan)',
+                borderRight: '2px solid var(--cyber-cyan)',
+                boxShadow: '2px -2px 6px rgb(var(--cyber-cyan-rgb) / 0.4)',
               }}
             />
             {/* Bottom-left */}
@@ -208,9 +208,9 @@ export function PhotoMode() {
               style={{
                 bottom: -2, left: -2,
                 width: CORNER_BRACKET_SIZE, height: CORNER_BRACKET_SIZE,
-                borderBottom: '2px solid #22d3ee',
-                borderLeft: '2px solid #22d3ee',
-                boxShadow: '-2px 2px 6px rgba(34, 211, 238, 0.4)',
+                borderBottom: '2px solid var(--cyber-cyan)',
+                borderLeft: '2px solid var(--cyber-cyan)',
+                boxShadow: '-2px 2px 6px rgb(var(--cyber-cyan-rgb) / 0.4)',
               }}
             />
             {/* Bottom-right */}
@@ -219,9 +219,9 @@ export function PhotoMode() {
               style={{
                 bottom: -2, right: -2,
                 width: CORNER_BRACKET_SIZE, height: CORNER_BRACKET_SIZE,
-                borderBottom: '2px solid #22d3ee',
-                borderRight: '2px solid #22d3ee',
-                boxShadow: '2px 2px 6px rgba(34, 211, 238, 0.4)',
+                borderBottom: '2px solid var(--cyber-cyan)',
+                borderRight: '2px solid var(--cyber-cyan)',
+                boxShadow: '2px 2px 6px rgb(var(--cyber-cyan-rgb) / 0.4)',
               }}
             />
           </div>
@@ -236,8 +236,8 @@ export function PhotoMode() {
             <div
               className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full viewfinder-pulse"
               style={{
-                background: 'rgba(34, 211, 238, 0.6)',
-                boxShadow: '0 0 6px rgba(34, 211, 238, 0.5)',
+                background: 'rgb(var(--cyber-cyan-rgb) / 0.6)',
+                boxShadow: '0 0 6px rgb(var(--cyber-cyan-rgb) / 0.5)',
               }}
             />
           </div>
@@ -258,11 +258,11 @@ export function PhotoMode() {
               className="w-2 h-2 rounded-full bg-cyan-400"
               animate={{ opacity: [1, 0.2, 1] }}
               transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
-              style={{ boxShadow: '0 0 8px rgba(34, 211, 238, 0.6)' }}
+              style={{ boxShadow: '0 0 8px rgb(var(--cyber-cyan-rgb) / 0.6)' }}
             />
             <span
               className="text-xs sm:text-sm font-mono font-bold tracking-[0.2em] text-cyan-400 uppercase"
-              style={{ textShadow: '0 0 12px rgba(34, 211, 238, 0.5), 0 0 24px rgba(34, 211, 238, 0.2)' }}
+              style={{ textShadow: '0 0 12px rgb(var(--cyber-cyan-rgb) / 0.5), 0 0 24px rgb(var(--cyber-cyan-rgb) / 0.2)' }}
             >
               PHOTO MODE
             </span>
@@ -272,7 +272,7 @@ export function PhotoMode() {
           <div className="absolute bottom-6 sm:bottom-10 md:bottom-14 lg:bottom-18 left-6 sm:left-10 md:left-14 lg:left-18">
             <span
               className="text-[10px] sm:text-xs font-mono text-cyan-400/70 tracking-wider"
-              style={{ textShadow: '0 0 6px rgba(34, 211, 238, 0.3)' }}
+              style={{ textShadow: '0 0 6px rgb(var(--cyber-cyan-rgb) / 0.3)' }}
             >
               {sceneName}
             </span>
@@ -282,7 +282,7 @@ export function PhotoMode() {
           <div className="absolute bottom-6 sm:bottom-10 md:bottom-14 lg:bottom-18 right-6 sm:right-10 md:right-14 lg:right-18">
             <span
               className="text-[10px] sm:text-xs font-mono text-cyan-400/70 tabular-nums"
-              style={{ textShadow: '0 0 6px rgba(34, 211, 238, 0.3)' }}
+              style={{ textShadow: '0 0 6px rgb(var(--cyber-cyan-rgb) / 0.3)' }}
             >
               {timeStr}
             </span>
@@ -336,8 +336,8 @@ export function PhotoMode() {
                 <div
                   className="relative rounded-lg overflow-hidden border-2"
                   style={{
-                    borderColor: 'rgba(34, 211, 238, 0.5)',
-                    boxShadow: '0 0 16px rgba(34, 211, 238, 0.3), 0 4px 16px rgba(0, 0, 0, 0.5)',
+                    borderColor: 'rgb(var(--cyber-cyan-rgb) / 0.5)',
+                    boxShadow: '0 0 16px rgb(var(--cyber-cyan-rgb) / 0.3), 0 4px 16px rgba(0, 0, 0, 0.5)',
                     width: '160px',
                     height: '90px',
                   }}

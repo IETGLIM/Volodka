@@ -19,7 +19,7 @@ import { disposeAmbientEngine, reviveAmbientEngine } from '@/engine/audio/Ambien
 import { disposeAudioEngine, reviveAudioEngine } from '@/engine/audio/AudioEngine';
 import { disposeSharedAudioContext } from '@/engine/SharedAudioContext';
 import { resetInteractionSession } from '@/engine/interaction/interactionSession';
-import { resetInteractionEndDedup } from '@/engine/interaction/interactionEndDedup';
+import { resetInteractionEndDedupState } from '@/engine/interaction/interactionEndDedup';
 import { clearAutoCloseTimers } from '@/store/slices/explorationSlice';
 import {
   clearPlayerExternalVelocity,
@@ -49,7 +49,7 @@ export function disposeGameEngine(): void {
   try {
     clearPlayerExternalVelocity();
     clearPlayerRigidBody();
-    resetInteractionEndDedup();
+    resetInteractionEndDedupState();
     resetInteractionSession();
     clearAutoCloseTimers();
 

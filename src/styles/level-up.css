@@ -95,8 +95,8 @@
 @keyframes level-pulse-glow {
   0% {
     transform: scale(1);
-    box-shadow: 0 0 8px rgba(34, 211, 238, 0.15);
-    text-shadow: 0 0 6px rgba(34, 211, 238, 0.5);
+    box-shadow: 0 0 8px rgb(var(--cyber-cyan-rgb) / 0.15);
+    text-shadow: 0 0 6px rgb(var(--cyber-cyan-rgb) / 0.5);
   }
   25% {
     transform: scale(1.25);
@@ -110,8 +110,8 @@
   }
   100% {
     transform: scale(1);
-    box-shadow: 0 0 8px rgba(34, 211, 238, 0.15);
-    text-shadow: 0 0 6px rgba(34, 211, 238, 0.5);
+    box-shadow: 0 0 8px rgb(var(--cyber-cyan-rgb) / 0.15);
+    text-shadow: 0 0 6px rgb(var(--cyber-cyan-rgb) / 0.5);
   }
 }
 

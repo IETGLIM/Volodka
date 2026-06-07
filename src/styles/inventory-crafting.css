@@ -24,9 +24,9 @@
   background: linear-gradient(
     90deg,
     transparent 0%,
-    rgba(0, 229, 255, 0.04) 30%,
-    rgba(0, 229, 255, 0.1) 50%,
-    rgba(0, 229, 255, 0.04) 70%,
+    rgb(var(--cyber-cyan-rgb) / 0.04) 30%,
+    rgb(var(--cyber-cyan-rgb) / 0.1) 50%,
+    rgb(var(--cyber-cyan-rgb) / 0.04) 70%,
     transparent 100%
   );
   pointer-events: none;
@@ -46,8 +46,8 @@
 }
 
 [data-rarity="rare"] {
-  border-color: rgba(34, 211, 238, 0.4) !important;
-  box-shadow: 0 0 8px rgba(34, 211, 238, 0.15), 0 0 16px rgba(34, 211, 238, 0.05), inset 0 0 6px rgba(34, 211, 238, 0.05);
+  border-color: rgb(var(--cyber-cyan-rgb) / 0.4) !important;
+  box-shadow: 0 0 8px rgb(var(--cyber-cyan-rgb) / 0.15), 0 0 16px rgb(var(--cyber-cyan-rgb) / 0.05), inset 0 0 6px rgb(var(--cyber-cyan-rgb) / 0.05);
 }
 
 [data-rarity="legendary"] {
@@ -56,21 +56,12 @@
   animation: inv-legendary-border-pulse 2.5s ease-in-out infinite;
 }
 
-@keyframes inv-legendary-border-pulse {
-  0%, 100% {
-    box-shadow: 0 0 10px rgba(251, 191, 36, 0.2), 0 0 24px rgba(251, 191, 36, 0.08), inset 0 0 8px rgba(251, 191, 36, 0.06);
-  }
-  50% {
-    box-shadow: 0 0 16px rgba(251, 191, 36, 0.35), 0 0 36px rgba(251, 191, 36, 0.12), inset 0 0 12px rgba(251, 191, 36, 0.1);
-  }
-}
-
 /* ─── 3. Item count badge cyberpunk styling ─── */
 .inv-count-badge-cyber {
   background: rgba(15, 23, 42, 0.7);
   backdrop-filter: blur(4px);
-  border: 1px solid rgba(34, 211, 238, 0.2);
-  box-shadow: 0 0 6px rgba(34, 211, 238, 0.1), inset 0 0 3px rgba(34, 211, 238, 0.05);
+  border: 1px solid rgb(var(--cyber-cyan-rgb) / 0.2);
+  box-shadow: 0 0 6px rgb(var(--cyber-cyan-rgb) / 0.1), inset 0 0 3px rgb(var(--cyber-cyan-rgb) / 0.05);
   color: #e2e8f0;
   font-family: 'Geist Mono', monospace;
   font-size: 9px;
@@ -79,13 +70,13 @@
   border-radius: 4px;
   line-height: 1;
   letter-spacing: 0.03em;
-  text-shadow: 0 0 4px rgba(34, 211, 238, 0.15);
+  text-shadow: 0 0 4px rgb(var(--cyber-cyan-rgb) / 0.15);
 }
 
 /* ─── 4. Empty inventory slot styling ─── */
 .inv-empty-slot {
   position: relative;
-  border: 1px dashed rgba(34, 211, 238, 0.15) !important;
+  border: 1px dashed rgb(var(--cyber-cyan-rgb) / 0.15) !important;
   background:
     url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Cpath d='M10 0L20 10L10 20L0 10Z' fill='none' stroke='%2322d3ee' stroke-opacity='0.04' stroke-width='0.5'/%3E%3C/svg%3E"),
     rgba(15, 23, 42, 0.15);
@@ -94,17 +85,17 @@
 }
 
 .inv-empty-slot:hover {
-  border-color: rgba(34, 211, 238, 0.3) !important;
+  border-color: rgb(var(--cyber-cyan-rgb) / 0.3) !important;
   background:
     url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Cpath d='M10 0L20 10L10 20L0 10Z' fill='none' stroke='%2322d3ee' stroke-opacity='0.08' stroke-width='0.5'/%3E%3C/svg%3E"),
     rgba(15, 23, 42, 0.25);
-  box-shadow: 0 0 8px rgba(34, 211, 238, 0.06);
+  box-shadow: 0 0 8px rgb(var(--cyber-cyan-rgb) / 0.06);
 }
 
 .inv-empty-slot-plus {
   opacity: 0;
   transition: opacity 0.2s ease;
-  color: rgba(34, 211, 238, 0.3);
+  color: rgb(var(--cyber-cyan-rgb) / 0.3);
   font-size: 16px;
   font-weight: 300;
   line-height: 1;
@@ -133,14 +124,14 @@
 }
 
 .inv-cat-tab-active::after {
-  background: linear-gradient(90deg, transparent, rgba(34, 211, 238, 0.6), transparent);
-  box-shadow: 0 0 6px rgba(34, 211, 238, 0.3), 0 0 12px rgba(34, 211, 238, 0.1);
+  background: linear-gradient(90deg, transparent, rgb(var(--cyber-cyan-rgb) / 0.6), transparent);
+  box-shadow: 0 0 6px rgb(var(--cyber-cyan-rgb) / 0.3), 0 0 12px rgb(var(--cyber-cyan-rgb) / 0.1);
   animation: inv-tab-underline-glow 2s ease-in-out infinite;
 }
 
 @keyframes inv-tab-underline-glow {
-  0%, 100% { box-shadow: 0 0 6px rgba(34, 211, 238, 0.3), 0 0 12px rgba(34, 211, 238, 0.1); }
-  50% { box-shadow: 0 0 10px rgba(34, 211, 238, 0.5), 0 0 20px rgba(34, 211, 238, 0.15); }
+  0%, 100% { box-shadow: 0 0 6px rgb(var(--cyber-cyan-rgb) / 0.3), 0 0 12px rgb(var(--cyber-cyan-rgb) / 0.1); }
+  50% { box-shadow: 0 0 10px rgb(var(--cyber-cyan-rgb) / 0.5), 0 0 20px rgb(var(--cyber-cyan-rgb) / 0.15); }
 }
 
 .inv-cat-tab:not(.inv-cat-tab-active):hover {
@@ -169,26 +160,26 @@
 
 .craft-card-corner-tl {
   top: 0; left: 0;
-  border-top: 1.5px solid rgba(34, 211, 238, 0.4);
-  border-left: 1.5px solid rgba(34, 211, 238, 0.4);
+  border-top: 1.5px solid rgb(var(--cyber-cyan-rgb) / 0.4);
+  border-left: 1.5px solid rgb(var(--cyber-cyan-rgb) / 0.4);
 }
 
 .craft-card-corner-tr {
   top: 0; right: 0;
-  border-top: 1.5px solid rgba(34, 211, 238, 0.4);
-  border-right: 1.5px solid rgba(34, 211, 238, 0.4);
+  border-top: 1.5px solid rgb(var(--cyber-cyan-rgb) / 0.4);
+  border-right: 1.5px solid rgb(var(--cyber-cyan-rgb) / 0.4);
 }
 
 .craft-card-corner-bl {
   bottom: 0; left: 0;
-  border-bottom: 1.5px solid rgba(34, 211, 238, 0.4);
-  border-left: 1.5px solid rgba(34, 211, 238, 0.4);
+  border-bottom: 1.5px solid rgb(var(--cyber-cyan-rgb) / 0.4);
+  border-left: 1.5px solid rgb(var(--cyber-cyan-rgb) / 0.4);
 }
 
 .craft-card-corner-br {
   bottom: 0; right: 0;
-  border-bottom: 1.5px solid rgba(34, 211, 238, 0.4);
-  border-right: 1.5px solid rgba(34, 211, 238, 0.4);
+  border-bottom: 1.5px solid rgb(var(--cyber-cyan-rgb) / 0.4);
+  border-right: 1.5px solid rgb(var(--cyber-cyan-rgb) / 0.4);
 }
 
 /* ─── Crafting: Recipe card top accent line ─── */
@@ -198,7 +189,7 @@
   left: 0;
   right: 0;
   height: 1.5px;
-  background: linear-gradient(90deg, transparent 0%, rgba(34, 211, 238, 0.5) 20%, rgba(34, 211, 238, 0.7) 50%, rgba(34, 211, 238, 0.5) 80%, transparent 100%);
+  background: linear-gradient(90deg, transparent 0%, rgb(var(--cyber-cyan-rgb) / 0.5) 20%, rgb(var(--cyber-cyan-rgb) / 0.7) 50%, rgb(var(--cyber-cyan-rgb) / 0.5) 80%, transparent 100%);
   pointer-events: none;
   z-index: 5;
 }
@@ -217,7 +208,7 @@
 
 .craft-card-hover:hover {
   transform: scale(1.01);
-  box-shadow: 0 0 16px rgba(34, 211, 238, 0.12), 0 0 4px rgba(34, 211, 238, 0.08);
+  box-shadow: 0 0 16px rgb(var(--cyber-cyan-rgb) / 0.12), 0 0 4px rgb(var(--cyber-cyan-rgb) / 0.08);
 }
 
 /* ─── Crafting: Animated gradient border on craft button ─── */
@@ -247,7 +238,7 @@
   inset: 0;
   border-radius: inherit;
   padding: 1.5px;
-  background: linear-gradient(90deg, rgba(34, 211, 238, 0.6), rgba(52, 211, 153, 0.6), rgba(34, 211, 238, 0.6));
+  background: linear-gradient(90deg, rgb(var(--cyber-cyan-rgb) / 0.6), rgba(52, 211, 153, 0.6), rgb(var(--cyber-cyan-rgb) / 0.6));
   background-size: 200% 100%;
   animation: craft-btn-gradient 3s linear infinite;
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
@@ -273,9 +264,9 @@
   background: linear-gradient(
     180deg,
     transparent 0%,
-    rgba(34, 211, 238, 0.06) 40%,
-    rgba(34, 211, 238, 0.12) 50%,
-    rgba(34, 211, 238, 0.06) 60%,
+    rgb(var(--cyber-cyan-rgb) / 0.06) 40%,
+    rgb(var(--cyber-cyan-rgb) / 0.12) 50%,
+    rgb(var(--cyber-cyan-rgb) / 0.06) 60%,
     transparent 100%
   );
   pointer-events: none;
@@ -291,10 +282,10 @@
 /* Glow pulse when craftable */
 @keyframes craft-btn-pulse {
   0%, 100% {
-    box-shadow: 0 0 8px rgba(34, 211, 238, 0.15), 0 0 3px rgba(34, 211, 238, 0.1);
+    box-shadow: 0 0 8px rgb(var(--cyber-cyan-rgb) / 0.15), 0 0 3px rgb(var(--cyber-cyan-rgb) / 0.1);
   }
   50% {
-    box-shadow: 0 0 16px rgba(34, 211, 238, 0.3), 0 0 8px rgba(52, 211, 153, 0.15), 0 0 4px rgba(34, 211, 238, 0.2);
+    box-shadow: 0 0 16px rgb(var(--cyber-cyan-rgb) / 0.3), 0 0 8px rgba(52, 211, 153, 0.15), 0 0 4px rgb(var(--cyber-cyan-rgb) / 0.2);
   }
 }
 

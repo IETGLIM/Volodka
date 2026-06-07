@@ -30,11 +30,11 @@ function KeyCap({ children, wide }: { children: React.ReactNode; wide?: boolean 
       `}
       style={{
         background: 'rgba(15, 23, 42, 0.7)',
-        borderColor: 'rgba(0, 229, 255, 0.25)',
-        color: 'rgba(0, 229, 255, 0.9)',
+        borderColor: 'rgb(var(--cyber-cyan-rgb) / 0.25)',
+        color: 'rgb(var(--cyber-cyan-rgb) / 0.9)',
         boxShadow:
-          '0 0 6px rgba(0, 229, 255, 0.15), inset 0 1px 0 rgba(255,255,255,0.04), inset 0 -2px 0 rgba(0,0,0,0.3)',
-        textShadow: '0 0 8px rgba(0, 229, 255, 0.5)',
+          '0 0 6px rgb(var(--cyber-cyan-rgb) / 0.15), inset 0 1px 0 rgba(255,255,255,0.04), inset 0 -2px 0 rgba(0,0,0,0.3)',
+        textShadow: '0 0 8px rgb(var(--cyber-cyan-rgb) / 0.5)',
       }}
     >
       {children}
@@ -142,7 +142,7 @@ const STEPS: TutorialStep[] = [
         Город, где код — закон, а поэзия — преступление.
         <br />
         <span className="text-slate-300/70">Вы — </span>
-        <span style={{ color: 'rgba(0, 229, 255, 0.9)', textShadow: '0 0 8px rgba(0, 229, 255, 0.3)' }}>
+        <span style={{ color: 'rgb(var(--cyber-cyan-rgb) / 0.9)', textShadow: '0 0 8px rgb(var(--cyber-cyan-rgb) / 0.3)' }}>
           Володька
         </span>
         <span className="text-slate-300/70">, техник IT-гильдии.</span>
@@ -176,9 +176,9 @@ const STEPS: TutorialStep[] = [
             className="inline-flex items-center justify-center w-8 h-8 rounded text-xs font-mono"
             style={{
               background: 'rgba(15, 23, 42, 0.7)',
-              border: '1px solid rgba(0, 229, 255, 0.25)',
-              color: 'rgba(0, 229, 255, 0.9)',
-              textShadow: '0 0 8px rgba(0, 229, 255, 0.5)',
+              border: '1px solid rgb(var(--cyber-cyan-rgb) / 0.25)',
+              color: 'rgb(var(--cyber-cyan-rgb) / 0.9)',
+              textShadow: '0 0 8px rgb(var(--cyber-cyan-rgb) / 0.5)',
             }}
           >
             🖱
@@ -212,7 +212,7 @@ const STEPS: TutorialStep[] = [
     content: (
       <div className="space-y-3">
         <p className="text-sm text-slate-300/80 leading-relaxed">
-          <span style={{ color: 'rgba(0, 229, 255, 0.9)', textShadow: '0 0 6px rgba(0, 229, 255, 0.3)' }}>
+          <span style={{ color: 'rgb(var(--cyber-cyan-rgb) / 0.9)', textShadow: '0 0 6px rgb(var(--cyber-cyan-rgb) / 0.3)' }}>
             Карма
           </span>{' '}
           отражает ваш моральный путь — она определяет доступные концовки.
@@ -362,7 +362,7 @@ export function FirstPlayTutorial() {
               className="absolute inset-0 pointer-events-none"
               style={{
                 backgroundImage:
-                  'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0, 229, 255, 0.015) 2px, rgba(0, 229, 255, 0.015) 4px)',
+                  'repeating-linear-gradient(0deg, transparent, transparent 2px, rgb(var(--cyber-cyan-rgb) / 0.015) 2px, rgb(var(--cyber-cyan-rgb) / 0.015) 4px)',
                 animation: 'fps-scanline-lines 0.3s linear infinite',
               }}
             />
@@ -371,7 +371,7 @@ export function FirstPlayTutorial() {
               className="absolute inset-x-0 h-20 pointer-events-none"
               style={{
                 background:
-                  'linear-gradient(180deg, transparent 0%, rgba(0, 229, 255, 0.03) 30%, rgba(0, 229, 255, 0.06) 50%, rgba(0, 229, 255, 0.03) 70%, transparent 100%)',
+                  'linear-gradient(180deg, transparent 0%, rgb(var(--cyber-cyan-rgb) / 0.03) 30%, rgb(var(--cyber-cyan-rgb) / 0.06) 50%, rgb(var(--cyber-cyan-rgb) / 0.03) 70%, transparent 100%)',
                 animation: 'fps-scanline-sweep 5s linear infinite',
               }}
             />
@@ -389,29 +389,29 @@ export function FirstPlayTutorial() {
               className="relative rounded-lg border overflow-hidden"
               style={{
                 background: 'linear-gradient(180deg, rgba(8, 12, 20, 0.98) 0%, rgba(4, 8, 16, 0.99) 100%)',
-                borderColor: 'rgba(0, 229, 255, 0.2)',
+                borderColor: 'rgb(var(--cyber-cyan-rgb) / 0.2)',
                 boxShadow:
-                  '0 0 40px rgba(0, 229, 255, 0.08), 0 0 80px rgba(0, 229, 255, 0.04), 0 8px 32px rgba(0, 0, 0, 0.6)',
+                  '0 0 40px rgb(var(--cyber-cyan-rgb) / 0.08), 0 0 80px rgb(var(--cyber-cyan-rgb) / 0.04), 0 8px 32px rgba(0, 0, 0, 0.6)',
               }}
             >
               {/* Corner brackets */}
-              <div className="absolute top-0 left-0 w-5 h-5 border-t-2 border-l-2 pointer-events-none" style={{ borderColor: 'rgba(0, 229, 255, 0.4)' }} />
-              <div className="absolute top-0 right-0 w-5 h-5 border-t-2 border-r-2 pointer-events-none" style={{ borderColor: 'rgba(0, 229, 255, 0.4)' }} />
-              <div className="absolute bottom-0 left-0 w-5 h-5 border-b-2 border-l-2 pointer-events-none" style={{ borderColor: 'rgba(0, 229, 255, 0.4)' }} />
-              <div className="absolute bottom-0 right-0 w-5 h-5 border-b-2 border-r-2 pointer-events-none" style={{ borderColor: 'rgba(0, 229, 255, 0.4)' }} />
+              <div className="absolute top-0 left-0 w-5 h-5 border-t-2 border-l-2 pointer-events-none" style={{ borderColor: 'rgb(var(--cyber-cyan-rgb) / 0.4)' }} />
+              <div className="absolute top-0 right-0 w-5 h-5 border-t-2 border-r-2 pointer-events-none" style={{ borderColor: 'rgb(var(--cyber-cyan-rgb) / 0.4)' }} />
+              <div className="absolute bottom-0 left-0 w-5 h-5 border-b-2 border-l-2 pointer-events-none" style={{ borderColor: 'rgb(var(--cyber-cyan-rgb) / 0.4)' }} />
+              <div className="absolute bottom-0 right-0 w-5 h-5 border-b-2 border-r-2 pointer-events-none" style={{ borderColor: 'rgb(var(--cyber-cyan-rgb) / 0.4)' }} />
 
               {/* Header with step indicator */}
               <div
                 className="flex items-center justify-between px-5 py-3 border-b"
-                style={{ borderColor: 'rgba(0, 229, 255, 0.1)' }}
+                style={{ borderColor: 'rgb(var(--cyber-cyan-rgb) / 0.1)' }}
               >
                 <div className="flex items-center gap-3">
                   {step.icon}
                   <h2
                     className="text-base font-semibold tracking-wide font-mono"
                     style={{
-                      color: 'rgba(0, 229, 255, 0.95)',
-                      textShadow: '0 0 12px rgba(0, 229, 255, 0.3)',
+                      color: 'rgb(var(--cyber-cyan-rgb) / 0.95)',
+                      textShadow: '0 0 12px rgb(var(--cyber-cyan-rgb) / 0.3)',
                     }}
                   >
                     {step.title}
@@ -421,9 +421,9 @@ export function FirstPlayTutorial() {
                 <span
                   className="text-xs font-mono px-2 py-0.5 rounded border"
                   style={{
-                    color: 'rgba(0, 229, 255, 0.6)',
-                    borderColor: 'rgba(0, 229, 255, 0.15)',
-                    background: 'rgba(0, 229, 255, 0.05)',
+                    color: 'rgb(var(--cyber-cyan-rgb) / 0.6)',
+                    borderColor: 'rgb(var(--cyber-cyan-rgb) / 0.15)',
+                    background: 'rgb(var(--cyber-cyan-rgb) / 0.05)',
                   }}
                 >
                   {currentStep + 1}/{STEPS.length}
@@ -431,12 +431,12 @@ export function FirstPlayTutorial() {
               </div>
 
               {/* Progress bar */}
-              <div className="h-0.5 w-full" style={{ background: 'rgba(0, 229, 255, 0.08)' }}>
+              <div className="h-0.5 w-full" style={{ background: 'rgb(var(--cyber-cyan-rgb) / 0.08)' }}>
                 <motion.div
                   className="h-full"
                   style={{
-                    background: 'linear-gradient(90deg, rgba(0, 229, 255, 0.6), rgba(0, 229, 255, 0.3))',
-                    boxShadow: '0 0 8px rgba(0, 229, 255, 0.4)',
+                    background: 'linear-gradient(90deg, rgb(var(--cyber-cyan-rgb) / 0.6), rgb(var(--cyber-cyan-rgb) / 0.3))',
+                    boxShadow: '0 0 8px rgb(var(--cyber-cyan-rgb) / 0.4)',
                   }}
                   initial={false}
                   animate={{ width: `${((currentStep + 1) / STEPS.length) * 100}%` }}
@@ -468,7 +468,7 @@ export function FirstPlayTutorial() {
               {/* Footer with action button */}
               <div
                 className="flex items-center justify-between px-5 py-3 border-t"
-                style={{ borderColor: 'rgba(0, 229, 255, 0.1)' }}
+                style={{ borderColor: 'rgb(var(--cyber-cyan-rgb) / 0.1)' }}
               >
                 {/* Step dots */}
                 <div className="flex items-center gap-1.5">
@@ -479,13 +479,13 @@ export function FirstPlayTutorial() {
                       style={{
                         background:
                           i === currentStep
-                            ? 'rgba(0, 229, 255, 0.8)'
+                            ? 'rgb(var(--cyber-cyan-rgb) / 0.8)'
                             : i < currentStep
-                              ? 'rgba(0, 229, 255, 0.3)'
+                              ? 'rgb(var(--cyber-cyan-rgb) / 0.3)'
                               : 'rgba(100, 116, 139, 0.3)',
                         boxShadow:
                           i === currentStep
-                            ? '0 0 6px rgba(0, 229, 255, 0.5)'
+                            ? '0 0 6px rgb(var(--cyber-cyan-rgb) / 0.5)'
                             : 'none',
                       }}
                     />
@@ -497,26 +497,26 @@ export function FirstPlayTutorial() {
                   onClick={handleNext}
                   className="group flex items-center gap-1.5 px-5 py-2 rounded text-sm font-semibold font-mono tracking-wider transition-all duration-200"
                   style={{
-                    background: 'rgba(0, 229, 255, 0.1)',
-                    border: '1px solid rgba(0, 229, 255, 0.3)',
-                    color: 'rgba(0, 229, 255, 0.95)',
-                    textShadow: '0 0 8px rgba(0, 229, 255, 0.3)',
+                    background: 'rgb(var(--cyber-cyan-rgb) / 0.1)',
+                    border: '1px solid rgb(var(--cyber-cyan-rgb) / 0.3)',
+                    color: 'rgb(var(--cyber-cyan-rgb) / 0.95)',
+                    textShadow: '0 0 8px rgb(var(--cyber-cyan-rgb) / 0.3)',
                   }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.background = 'rgba(0, 229, 255, 0.2)';
-                    e.currentTarget.style.borderColor = 'rgba(0, 229, 255, 0.5)';
-                    e.currentTarget.style.boxShadow = '0 0 16px rgba(0, 229, 255, 0.2)';
+                    e.currentTarget.style.background = 'rgb(var(--cyber-cyan-rgb) / 0.2)';
+                    e.currentTarget.style.borderColor = 'rgb(var(--cyber-cyan-rgb) / 0.5)';
+                    e.currentTarget.style.boxShadow = '0 0 16px rgb(var(--cyber-cyan-rgb) / 0.2)';
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.background = 'rgba(0, 229, 255, 0.1)';
-                    e.currentTarget.style.borderColor = 'rgba(0, 229, 255, 0.3)';
+                    e.currentTarget.style.background = 'rgb(var(--cyber-cyan-rgb) / 0.1)';
+                    e.currentTarget.style.borderColor = 'rgb(var(--cyber-cyan-rgb) / 0.3)';
                     e.currentTarget.style.boxShadow = 'none';
                   }}
                 >
                   {step.buttonLabel}
                   <ChevronRight
                     className="size-4 transition-transform duration-200 group-hover:translate-x-0.5"
-                    style={{ filter: 'drop-shadow(0 0 4px rgba(0, 229, 255, 0.4))' }}
+                    style={{ filter: 'drop-shadow(0 0 4px rgb(var(--cyber-cyan-rgb) / 0.4))' }}
                   />
                 </button>
               </div>
@@ -524,11 +524,11 @@ export function FirstPlayTutorial() {
               {/* Bottom decoration: terminal label */}
               <div
                 className="px-5 py-1.5 border-t"
-                style={{ borderColor: 'rgba(0, 229, 255, 0.05)' }}
+                style={{ borderColor: 'rgb(var(--cyber-cyan-rgb) / 0.05)' }}
               >
                 <span
                   className="text-[10px] font-mono tracking-wider"
-                  style={{ color: 'rgba(0, 229, 255, 0.25)' }}
+                  style={{ color: 'rgb(var(--cyber-cyan-rgb) / 0.25)' }}
                 >
                   volodka://tutorial/step_{currentStep + 1}
                 </span>

@@ -1,11 +1,12 @@
-/** Shared visual tokens — RPG panels + cinematic screens use the same source. */
+/** Shared visual tokens — re-export cyber palette; use CSS vars for alpha in styles. */
+import { CYBERPUNK_COLORS, CYBER_CYAN, CYBER_MATRIX } from '@/shared/constants/cyberPalette';
 
 export const GAME_COLORS = {
-  matrixGreen: '#00ff41',
-  neonCyan: '#00e5ff',
-  amberGold: '#ffab00',
-  deepCrimson: '#cc2020',
-  mutedOlive: '#6a8a30',
+  matrixGreen: CYBER_MATRIX,
+  neonCyan: CYBER_CYAN,
+  amberGold: CYBERPUNK_COLORS.amberGold,
+  deepCrimson: CYBERPUNK_COLORS.deepCrimson,
+  mutedOlive: CYBERPUNK_COLORS.mutedOlive,
   slateMuted: 'rgba(148, 163, 184, 0.65)',
 } as const;
 
@@ -16,11 +17,11 @@ export const ACCENT_STYLES: Record<
   { border: string; glow: string; headerBg: string; dotColor: string; textGlow: string }
 > = {
   cyan: {
-    border: 'rgba(34,211,238,0.25)',
-    glow: 'rgba(34,211,238,0.06)',
-    headerBg: 'rgba(34,211,238,0.04)',
-    dotColor: 'rgba(34,211,238,0.30)',
-    textGlow: '0 0 8px rgba(34,211,238,0.3)',
+    border: 'rgb(var(--cyber-cyan-rgb) / 0.25)',
+    glow: 'rgb(var(--cyber-cyan-rgb) / 0.06)',
+    headerBg: 'rgb(var(--cyber-cyan-rgb) / 0.04)',
+    dotColor: 'rgb(var(--cyber-cyan-rgb) / 0.30)',
+    textGlow: '0 0 8px rgb(var(--cyber-cyan-rgb) / 0.3)',
   },
   emerald: {
     border: 'rgba(52,211,153,0.25)',

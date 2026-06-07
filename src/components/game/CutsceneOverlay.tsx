@@ -28,7 +28,7 @@ const seededRand = (seed: number) => {
   return x - Math.floor(x);
 };
 
-const CutsceneEmbers = memo(function CutsceneEmbers({ count = 20, accentColor = '#22d3ee' }: { count?: number; accentColor?: string }) {
+const CutsceneEmbers = memo(function CutsceneEmbers({ count = 20, accentColor = 'var(--cyber-cyan)' }: { count?: number; accentColor?: string }) {
   const particles = useMemo(() => Array.from({ length: count }, (_, i) => {
     const x = (seededRand(i) * 100).toFixed(2);
     const delay = (seededRand(i + 100) * 8).toFixed(2);
@@ -210,7 +210,7 @@ export function CutsceneOverlay() {
   const [active, setActive] = useState(false);
   const [text, setText] = useState('');
   const [subtitle, setSubtitle] = useState('');
-  const [accentColor, setAccentColor] = useState('#22d3ee');
+  const [accentColor, setAccentColor] = useState('var(--cyber-cyan)');
   const [cutsceneType, setCutsceneType] = useState<CutsceneDef['type']>('act_transition');
   const [letterboxStyle, setLetterboxStyle] = useState<'full' | 'thin' | 'none'>('full');
   const [showEmbers, setShowEmbers] = useState(false);

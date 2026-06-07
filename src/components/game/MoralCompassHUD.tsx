@@ -31,7 +31,7 @@ export function MoralCompassHUD() {
   // Color based on karma level
   const color =
     karma >= KARMA_HIGH_THRESHOLD
-      ? { main: '#22d3ee', glow: 'rgba(34,211,238,0.3)' } // cyan
+      ? { main: 'var(--cyber-cyan)', glow: 'rgb(var(--cyber-cyan-rgb) / 0.3)' } // cyan
       : karma <= KARMA_LOW_THRESHOLD
         ? { main: '#f43f5e', glow: 'rgba(244,63,94,0.3)' } // rose
         : { main: '#fbbf24', glow: 'rgba(251,191,36,0.3)' }; // amber

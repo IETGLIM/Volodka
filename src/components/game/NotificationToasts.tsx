@@ -56,7 +56,7 @@ const TOAST_STYLES: Record<ToastType, ToastStyleConfig> = {
     icon: '✦',
     borderColor: '#0891b2',    // cyan-600
     glowColor: 'rgba(8,145,178,0.4)',
-    textColor: '#22d3ee',      // cyan-400
+    textColor: 'var(--cyber-cyan)',      // cyan-400
     iconBg: 'rgba(8,145,178,0.15)',
   },
   poem: {

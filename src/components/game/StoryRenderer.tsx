@@ -30,6 +30,7 @@ import { applyEffects } from '@/shared/utils/applyEffects';
 import { AriaLiveRegion } from '@/components/a11y/AriaLiveRegion';
 import { FocusTrap } from '@/components/a11y/FocusTrap';
 import { buildChoiceAriaLabel } from '@/shared/utils/choiceAriaLabel';
+import { devWarn } from '@/shared/utils/devLog';
 
 /* ── Stat change highlight chip ── */
 function StatChangeChip({ effect }: { effect: StoryEffect }) {
@@ -140,7 +141,7 @@ export function StoryRenderer() {
         }
       })
       .catch((error) => {
-        console.error('[StoryRenderer] Failed to load story node:', currentNodeId, error);
+        devWarn('[StoryRenderer] Failed to load story node:', currentNodeId, error);
       });
 
     return () => {
@@ -299,7 +300,7 @@ export function StoryRenderer() {
               style={{
                 clipPath: 'polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px))',
                 background: 'linear-gradient(145deg, rgba(0,0,0,0.92) 0%, rgba(15,23,42,0.88) 50%, rgba(0,0,0,0.85) 100%)',
-                boxShadow: '0 0 20px rgba(34,211,238,0.06), 0 4px 16px rgba(0,0,0,0.4), inset 0 0 12px rgba(0,0,0,0.3)',
+                boxShadow: '0 0 20px rgb(var(--cyber-cyan-rgb) / 0.06), 0 4px 16px rgba(0,0,0,0.4), inset 0 0 12px rgba(0,0,0,0.3)',
               }}
             >
               <div className="flex items-center gap-2 border-b border-cyan-500/15 bg-black/40 px-3 py-1">
@@ -349,9 +350,9 @@ export function StoryRenderer() {
                       <span
                         className="inline-block w-0.5 h-3.5 ml-0.5 align-middle"
                         style={{
-                          background: 'rgba(34,211,238,0.8)',
-                          boxShadow: '0 0 4px rgba(34,211,238,0.6)',
-                          animation: 'dialogue-cursor-blink 0.8s step-end infinite',
+                          background: 'rgb(var(--cyber-cyan-rgb) / 0.8)',
+                          boxShadow: '0 0 4px rgb(var(--cyber-cyan-rgb) / 0.6)',
+                          animation: 'cursor-blink 0.8s step-end infinite',
                         }}
                       />
                     )}

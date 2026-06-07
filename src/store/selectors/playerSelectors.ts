@@ -3,6 +3,7 @@
 import type { PlayerState, TrainablePlayerSkill } from '@/shared/types/game';
 import type { GameNotification } from '../shared';
 import { getGameStore } from '../gameStore';
+import { getVisitedNodeSet } from '../visitedNodesIndex';
 import { useGameSelector, useGamePrimitive } from './hooks';
 
 /** Fields used by buildStoryConditionContext — avoids full playerState subscriptions. */
@@ -76,6 +77,10 @@ export function usePlayerLevel() {
 
 export function useVisitedNodes() {
   return useGameSelector((s) => s.playerState.visitedNodes);
+}
+
+export function useVisitedNodeSet(): ReadonlySet<string> {
+  return useGameSelector((s) => getVisitedNodeSet(s.playerState.visitedNodes));
 }
 
 /** Composite vitals — shallow compare { energy, stress, karma }. */

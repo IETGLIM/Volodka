@@ -23,12 +23,12 @@ import { UI_LAYERS } from '@/shared/constants/uiLayers';
 /* ─── Accent color mapping ─── */
 const ACCENT_MAP = {
   cyan: {
-    border: 'rgba(34,211,238,0.25)',
-    glow: 'rgba(34,211,238,0.06)',
-    headerBg: 'rgba(34,211,238,0.04)',
-    dotColor: 'rgba(34,211,238,0.30)',
-    textGlow: '0 0 8px rgba(34,211,238,0.3)',
-    pulseBorder: '0 0 15px rgba(34,211,238,0.08)',
+    border: 'rgb(var(--cyber-cyan-rgb) / 0.25)',
+    glow: 'rgb(var(--cyber-cyan-rgb) / 0.06)',
+    headerBg: 'rgb(var(--cyber-cyan-rgb) / 0.04)',
+    dotColor: 'rgb(var(--cyber-cyan-rgb) / 0.30)',
+    textGlow: '0 0 8px rgb(var(--cyber-cyan-rgb) / 0.3)',
+    pulseBorder: '0 0 15px rgb(var(--cyber-cyan-rgb) / 0.08)',
   },
   emerald: {
     border: 'rgba(52,211,153,0.25)',
@@ -119,7 +119,7 @@ export function PanelWrapper({
       ? 'rgba(251,191,36,0.25)'
       : accentColor === 'fuchsia'
         ? 'rgba(217,70,239,0.25)'
-        : 'rgba(34,211,238,0.25)';
+        : 'rgb(var(--cyber-cyan-rgb) / 0.25)';
 
   /* ── Escape key handler ── */
   const handleClose = useCallback(() => {

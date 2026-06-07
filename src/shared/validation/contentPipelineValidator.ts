@@ -461,8 +461,8 @@ function validateTriggers(reg: ReturnType<typeof buildSets>, out: ValidationIssu
     if (zone.linkedQuestId && !reg.questIds.has(zone.linkedQuestId)) {
       out.push(issue('error', 'trigger', base, `linkedQuestId "${zone.linkedQuestId}" not in QUEST_DEFINITIONS`));
     }
-    if (zone.npcId && !isKnownNpcId(zone.npcId, reg)) {
-      out.push(issue('error', 'trigger', base, `npcId "${zone.npcId}" not in NPC registry`));
+    if (zone.linkedNpcId && !isKnownNpcId(zone.linkedNpcId, reg)) {
+      out.push(issue('error', 'trigger', base, `linkedNpcId "${zone.linkedNpcId}" not in NPC registry`));
     }
     if (zone.linkedMinigame && !reg.triggerMinigames.has(zone.linkedMinigame)) {
       out.push(issue('error', 'trigger', base, `linkedMinigame "${zone.linkedMinigame}" invalid`));

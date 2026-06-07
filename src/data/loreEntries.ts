@@ -612,6 +612,6 @@ export const LORE_CATEGORY_META: Record<string, { label: string; icon: string; c
 export const LORE_RARITY_META: Record<string, { label: string; color: string; glow: string }> = {
   common: { label: 'Обычная', color: 'text-slate-400', glow: '' },
   uncommon: { label: 'Необычная', color: 'text-emerald-400', glow: '0 0 6px rgba(52,211,153,0.3)' },
-  rare: { label: 'Редкая', color: 'text-cyan-400', glow: '0 0 8px rgba(34,211,238,0.4)' },
+  rare: { label: 'Редкая', color: 'text-cyan-400', glow: '0 0 8px rgb(var(--cyber-cyan-rgb) / 0.4)' },
   legendary: { label: 'Легендарная', color: 'text-amber-400', glow: '0 0 12px rgba(251,191,36,0.5)' },
 };

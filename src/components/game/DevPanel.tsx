@@ -165,7 +165,7 @@ export function DevPanel({ startOpen = false }: { startOpen?: boolean }) {
         maxHeight: '85vh',
         zIndex: UI_LAYERS.DEV_PANEL,
         background: 'rgba(2, 6, 12, 0.94)',
-        border: '1px solid rgba(34, 211, 238, 0.2)',
+        border: '1px solid rgb(var(--cyber-cyan-rgb) / 0.2)',
         borderRadius: 10,
         color: '#e0e0e0',
         fontFamily: '"JetBrains Mono", "Fira Code", monospace',
@@ -182,7 +182,7 @@ export function DevPanel({ startOpen = false }: { startOpen?: boolean }) {
       <div
         style={{
           display: 'flex',
-          borderBottom: '1px solid rgba(34, 211, 238, 0.1)',
+          borderBottom: '1px solid rgb(var(--cyber-cyan-rgb) / 0.1)',
           alignItems: 'center',
           background: 'rgba(0, 0, 0, 0.3)',
         }}
@@ -194,10 +194,10 @@ export function DevPanel({ startOpen = false }: { startOpen?: boolean }) {
             style={{
               flex: 1,
               padding: '7px 0',
-              background: activeTab === tab ? 'rgba(34, 211, 238, 0.1)' : 'transparent',
-              color: activeTab === tab ? '#22d3ee' : '#555',
+              background: activeTab === tab ? 'rgb(var(--cyber-cyan-rgb) / 0.1)' : 'transparent',
+              color: activeTab === tab ? 'var(--cyber-cyan)' : '#555',
               border: 'none',
-              borderBottom: activeTab === tab ? '2px solid #22d3ee' : '2px solid transparent',
+              borderBottom: activeTab === tab ? '2px solid var(--cyber-cyan)' : '2px solid transparent',
               cursor: 'pointer',
               fontSize: 10,
               textTransform: 'uppercase' as const,
@@ -345,7 +345,7 @@ function PerfTab({
             {(['interaction', 'player', 'npc', 'camera', 'weather', 'postfx', 'misc'] as const).map((id) => {
               const sys = frameProfiler.systems[id];
               const pct = sys.budgetPct;
-              const barColor = pct > 40 ? '#f44' : pct > 20 ? '#ff4' : '#22d3ee';
+              const barColor = pct > 40 ? '#f44' : pct > 20 ? '#ff4' : 'var(--cyber-cyan)';
               return (
                 <div key={id} style={{ marginBottom: 4 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10 }}>
@@ -405,7 +405,7 @@ function PerfTab({
                 style={{
                   height: '100%',
                   width: `${(memoryInfo.usedJSHeapSize / memoryInfo.jsHeapSizeLimit) * 100}%`,
-                  background: memoryInfo.usedJSHeapSize / memoryInfo.jsHeapSizeLimit > 0.8 ? '#f44' : '#22d3ee',
+                  background: memoryInfo.usedJSHeapSize / memoryInfo.jsHeapSizeLimit > 0.8 ? '#f44' : 'var(--cyber-cyan)',
                   borderRadius: 2,
                   transition: 'width 0.3s',
                 }}
@@ -437,8 +437,8 @@ function SceneTab() {
       <div style={{ color: '#555', fontSize: 9, textTransform: 'uppercase', letterSpacing: 1.5, marginBottom: 6 }}>
         Текущая сцена
       </div>
-      <Row label="Scene ID" value={sceneId} valueColor="#22d3ee" />
-      <Row label="Mode" value={mode} valueColor="#22d3ee" />
+      <Row label="Scene ID" value={sceneId} valueColor="var(--cyber-cyan)" />
+      <Row label="Mode" value={mode} valueColor="var(--cyber-cyan)" />
       <Row label="Time of Day" value={`${timeOfDay.toFixed(1)}h`} />
 
       <div style={{ color: '#555', fontSize: 9, textTransform: 'uppercase', letterSpacing: 1.5, marginBottom: 6, marginTop: 10 }}>
@@ -485,9 +485,9 @@ function SceneTab() {
                       padding: '3px 6px',
                       fontSize: 10,
                       borderRadius: 4,
-                      border: `1px solid ${isActive ? '#22d3ee' : 'rgba(100,116,139,0.2)'}`,
-                      background: isActive ? 'rgba(34,211,238,0.15)' : 'rgba(255,255,255,0.03)',
-                      color: isActive ? '#22d3ee' : '#aaa',
+                      border: `1px solid ${isActive ? 'var(--cyber-cyan)' : 'rgba(100,116,139,0.2)'}`,
+                      background: isActive ? 'rgb(var(--cyber-cyan-rgb) / 0.15)' : 'rgba(255,255,255,0.03)',
+                      color: isActive ? 'var(--cyber-cyan)' : '#aaa',
                       cursor: 'pointer',
                       transition: 'all 0.15s',
                       whiteSpace: 'nowrap',
@@ -530,20 +530,20 @@ function StateTab() {
       <div style={{ color: '#555', fontSize: 9, textTransform: 'uppercase', letterSpacing: 1.5, marginBottom: 6 }}>
         Game
       </div>
-      <Row label="Mode" value={mode} valueColor="#22d3ee" />
+      <Row label="Mode" value={mode} valueColor="var(--cyber-cyan)" />
       <Row label="Level" value={progression.level} />
       <Row label="XP" value={`${progression.xp}/${progression.xpToNextLevel}`} />
 
       <div style={{ color: '#555', fontSize: 9, textTransform: 'uppercase', letterSpacing: 1.5, marginBottom: 6, marginTop: 10 }}>
         Stats
       </div>
-      <Row label="Karma" value={karma} valueColor="#22d3ee" />
+      <Row label="Karma" value={karma} valueColor="var(--cyber-cyan)" />
       <Row label="Stress" value={stress} valueColor={stress > 70 ? '#f88' : '#ddd'} />
       <Row label="Energy" value={energy} valueColor={energy < 30 ? '#f88' : '#8f8'} />
 
       {/* Stat bars */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginTop: 4 }}>
-        <StatBar label="Karma" value={karma} max={100} color="#22d3ee" />
+        <StatBar label="Karma" value={karma} max={100} color="var(--cyber-cyan)" />
         <StatBar label="Stress" value={stress} max={100} color="#f88" />
         <StatBar label="Energy" value={energy} max={100} color="#8f8" />
       </div>
@@ -576,7 +576,7 @@ function StateTab() {
           </div>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
             {Object.entries(flags).filter(([, v]) => v).map(([key]) => (
-              <span key={key} style={{ padding: '1px 4px', fontSize: 9, background: 'rgba(34,211,238,0.1)', border: '1px solid rgba(34,211,238,0.15)', borderRadius: 3, color: '#88ddff' }}>
+              <span key={key} style={{ padding: '1px 4px', fontSize: 9, background: 'rgb(var(--cyber-cyan-rgb) / 0.1)', border: '1px solid rgb(var(--cyber-cyan-rgb) / 0.15)', borderRadius: 3, color: '#88ddff' }}>
                 {key}
               </span>
             ))}
@@ -639,7 +639,7 @@ function EventsTab({
               <span style={{ color: '#444', marginRight: 6 }}>
                 {new Date(e.time).toLocaleTimeString('en', { hour12: false })}
               </span>
-              <span style={{ color: '#22d3ee' }}>{e.event}</span>
+              <span style={{ color: 'var(--cyber-cyan)' }}>{e.event}</span>
               {e.payload !== undefined && e.payload !== null && typeof e.payload === 'object' && Object.keys(e.payload as object).length > 0 && (
                 <span style={{ color: '#555', marginLeft: 4 }}>
                   {truncatePayload(e.payload)}
@@ -715,9 +715,9 @@ function CheatsTab() {
               padding: '2px 6px',
               fontSize: 10,
               borderRadius: 3,
-              border: '1px solid rgba(34,211,238,0.2)',
-              background: 'rgba(34,211,238,0.05)',
-              color: '#22d3ee',
+              border: '1px solid rgb(var(--cyber-cyan-rgb) / 0.2)',
+              background: 'rgb(var(--cyber-cyan-rgb) / 0.05)',
+              color: 'var(--cyber-cyan)',
               cursor: 'pointer',
               marginRight: 3,
             }}
@@ -809,9 +809,9 @@ function CheatsTab() {
                 padding: '2px 6px',
                 fontSize: 9,
                 borderRadius: 3,
-                border: `1px solid ${active ? 'rgba(34,211,238,0.3)' : 'rgba(100,116,139,0.2)'}`,
-                background: active ? 'rgba(34,211,238,0.15)' : 'rgba(255,255,255,0.03)',
-                color: active ? '#22d3ee' : '#666',
+                border: `1px solid ${active ? 'rgb(var(--cyber-cyan-rgb) / 0.3)' : 'rgba(100,116,139,0.2)'}`,
+                background: active ? 'rgb(var(--cyber-cyan-rgb) / 0.15)' : 'rgba(255,255,255,0.03)',
+                color: active ? 'var(--cyber-cyan)' : '#666',
                 cursor: 'pointer',
                 marginRight: 3,
               }}

@@ -47,6 +47,17 @@ export type MinigamePanelState = {
   rhythmGameOpen: boolean;
 };
 
+export const CLOSED_MINIGAME_PANEL_STATE: MinigamePanelState = {
+  codebreakerOpen: false,
+  openstackTerminalOpen: false,
+  bashTerminalOpen: false,
+  poetryGameOpen: false,
+  hackingGameOpen: false,
+  memoryGameOpen: false,
+  quizGameOpen: false,
+  rhythmGameOpen: false,
+};
+
 /** Setter functions paired with MinigamePanelState. */
 export type MinigamePanelSetters = {
   setCodebreakerOpen: (open: boolean) => void;

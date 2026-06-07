@@ -65,10 +65,10 @@ const LOCATION_COLORS: Record<LocationCategory, { bg: string; border: string; te
     glow: 'rgba(139,92,246,0.25)',
   },
   street: {
-    bg: 'rgba(34,211,238,0.45)',
-    border: 'rgba(34,211,238,0.65)',
-    text: '#22d3ee',
-    glow: 'rgba(34,211,238,0.25)',
+    bg: 'rgb(var(--cyber-cyan-rgb) / 0.45)',
+    border: 'rgb(var(--cyber-cyan-rgb) / 0.65)',
+    text: 'var(--cyber-cyan)',
+    glow: 'rgb(var(--cyber-cyan-rgb) / 0.25)',
   },
   factory: {
     bg: 'rgba(244,63,94,0.55)',

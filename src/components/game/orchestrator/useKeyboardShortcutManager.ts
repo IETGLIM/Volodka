@@ -30,9 +30,7 @@ export interface KeyboardShortcutManagerOptions extends MinigameOpenFlags {
   closeAllPanels: () => void;
   minigameSetters: MinigamePanelSetters;
   skipActiveCutscene: () => boolean;
-  setExamineOpen: (open: boolean) => void;
-  setExamineData: (data: null) => void;
-  setExamineHasLinkedContent: (has: boolean) => void;
+  resetExamine: () => void;
   clearPendingTriggerZone: () => void;
 }
 
@@ -55,9 +53,7 @@ export function useKeyboardShortcutManager({
   closeAllPanels,
   minigameSetters,
   skipActiveCutscene,
-  setExamineOpen,
-  setExamineData,
-  setExamineHasLinkedContent,
+  resetExamine,
   clearPendingTriggerZone,
 }: KeyboardShortcutManagerOptions) {
   const panelStateRef = useRef({
@@ -111,9 +107,7 @@ export function useKeyboardShortcutManager({
         if (skipCutsceneRef.current()) return;
 
         if (ps.examineOpen) {
-          setExamineOpen(false);
-          setExamineData(null);
-          setExamineHasLinkedContent(false);
+          resetExamine();
           clearPendingTriggerZone();
           return;
         }
@@ -187,9 +181,7 @@ export function useKeyboardShortcutManager({
     dispatchPanel,
     closePanel,
     closeAllPanels,
-    setExamineOpen,
-    setExamineData,
-    setExamineHasLinkedContent,
+    resetExamine,
     clearPendingTriggerZone,
   ]);
 }

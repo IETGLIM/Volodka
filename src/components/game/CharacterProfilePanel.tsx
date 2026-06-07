@@ -47,7 +47,7 @@ const TOTAL_POEMS = POEMS.length;
    stubble, slightly disheveled
    ══════════════════════════════════════════════════════════════ */
 function PlayerPortrait() {
-  const color = '#22d3ee'; // cyan-400
+  const color = 'var(--cyber-cyan)'; // cyan-400
   const accent = '#06b6d4'; // cyan-500
   return (
     <svg viewBox="0 0 80 80" className="w-full h-full">
@@ -180,13 +180,13 @@ function karmaColor(karma: number): string {
 }
 
 function karmaStroke(karma: number): string {
-  if (karma >= KARMA_HIGH_THRESHOLD) return '#22d3ee';
+  if (karma >= KARMA_HIGH_THRESHOLD) return 'var(--cyber-cyan)';
   if (karma <= KARMA_LOW_THRESHOLD) return '#fb7185';
   return '#fbbf24';
 }
 
 function karmaBg(karma: number): string {
-  if (karma >= KARMA_HIGH_THRESHOLD) return 'rgba(34,211,238,0.08)';
+  if (karma >= KARMA_HIGH_THRESHOLD) return 'rgb(var(--cyber-cyan-rgb) / 0.08)';
   if (karma <= KARMA_LOW_THRESHOLD) return 'rgba(251,113,133,0.08)';
   return 'rgba(251,191,36,0.08)';
 }
@@ -293,7 +293,7 @@ const SLOT_CONFIG: Record<EquipmentSlot, { label: string; Icon: typeof HardHat }
 /* ── Skill display name mapping ── */
 const SKILL_DISPLAY: Record<string, { label: string; color: string }> = {
   writing: { label: 'Поэзия', color: '#f59e0b' },      // amber-500
-  coding: { label: 'Взлом', color: '#22d3ee' },         // cyan-400
+  coding: { label: 'Взлом', color: 'var(--cyber-cyan)' },         // cyan-400
   empathy: { label: 'Эмпатия', color: '#f472b6' },      // pink-400
   persuasion: { label: 'Улица', color: '#a78bfa' },     // violet-400
   intuition: { label: 'Храбрость', color: '#fb923c' },  // orange-400
@@ -372,8 +372,8 @@ export function CharacterProfilePanel({ open, onClose }: { open: boolean; onClos
               className="border backdrop-blur-md overflow-hidden"
               style={{
                 background: 'linear-gradient(180deg, rgba(2,6,23,0.96) 0%, rgba(15,23,42,0.94) 50%, rgba(2,6,23,0.96) 100%)',
-                borderColor: 'rgba(34,211,238,0.15)',
-                boxShadow: '0 0 30px rgba(34,211,238,0.06), 0 8px 32px rgba(0,0,0,0.5), inset 0 1px 0 rgba(34,211,238,0.05)',
+                borderColor: 'rgb(var(--cyber-cyan-rgb) / 0.15)',
+                boxShadow: '0 0 30px rgb(var(--cyber-cyan-rgb) / 0.06), 0 8px 32px rgba(0,0,0,0.5), inset 0 1px 0 rgb(var(--cyber-cyan-rgb) / 0.05)',
               }}
             >
               {/* ── Header ── */}
@@ -414,9 +414,9 @@ export function CharacterProfilePanel({ open, onClose }: { open: boolean; onClos
                         transition={{ duration: 0.4, delay: 0.1 }}
                         className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl border-2 shrink-0 overflow-hidden"
                         style={{
-                          borderColor: 'rgba(34,211,238,0.35)',
-                          boxShadow: '0 0 16px rgba(34,211,238,0.15), 0 0 32px rgba(34,211,238,0.05), inset 0 0 12px rgba(34,211,238,0.05)',
-                          background: 'radial-gradient(ellipse at center, rgba(34,211,238,0.08) 0%, transparent 70%)',
+                          borderColor: 'rgb(var(--cyber-cyan-rgb) / 0.35)',
+                          boxShadow: '0 0 16px rgb(var(--cyber-cyan-rgb) / 0.15), 0 0 32px rgb(var(--cyber-cyan-rgb) / 0.05), inset 0 0 12px rgb(var(--cyber-cyan-rgb) / 0.05)',
+                          background: 'radial-gradient(ellipse at center, rgb(var(--cyber-cyan-rgb) / 0.08) 0%, transparent 70%)',
                         }}
                       >
                         <PlayerPortrait />
@@ -426,7 +426,7 @@ export function CharacterProfilePanel({ open, onClose }: { open: boolean; onClos
                       <div className="flex flex-col min-w-0 pt-1">
                         <h3
                           className="text-lg font-bold text-slate-100 tracking-wide leading-tight"
-                          style={{ textShadow: '0 0 10px rgba(34,211,238,0.2)' }}
+                          style={{ textShadow: '0 0 10px rgb(var(--cyber-cyan-rgb) / 0.2)' }}
                         >
                           Владимир Лебедев
                         </h3>
@@ -438,10 +438,10 @@ export function CharacterProfilePanel({ open, onClose }: { open: boolean; onClos
                           <div
                             className="flex items-center gap-1 px-2 py-0.5 rounded border text-[10px] font-bold font-mono"
                             style={{
-                              borderColor: 'rgba(34,211,238,0.3)',
-                              background: 'rgba(34,211,238,0.08)',
-                              color: '#22d3ee',
-                              textShadow: '0 0 6px rgba(34,211,238,0.4)',
+                              borderColor: 'rgb(var(--cyber-cyan-rgb) / 0.3)',
+                              background: 'rgb(var(--cyber-cyan-rgb) / 0.08)',
+                              color: 'var(--cyber-cyan)',
+                              textShadow: '0 0 6px rgb(var(--cyber-cyan-rgb) / 0.4)',
                             }}
                           >
                             <ChevronUp className="size-2.5" />
@@ -463,8 +463,8 @@ export function CharacterProfilePanel({ open, onClose }: { open: boolean; onClos
                       <CyberStatBar
                         value={xp}
                         max={xpToNextLevel}
-                        color="linear-gradient(90deg, #0e7490, #22d3ee)"
-                        glowColor="rgba(34,211,238,0.3)"
+                        color="linear-gradient(90deg, #0e7490, var(--cyber-cyan))"
+                        glowColor="rgb(var(--cyber-cyan-rgb) / 0.3)"
                         showSegments={false}
                       />
                     </div>
@@ -585,8 +585,8 @@ export function CharacterProfilePanel({ open, onClose }: { open: boolean; onClos
                           }}
                           className="ml-auto flex items-center gap-1 px-2 py-0.5 rounded border text-[9px] font-mono transition-all hover:bg-cyan-950/40"
                           style={{
-                            borderColor: 'rgba(34,211,238,0.2)',
-                            color: 'rgba(34,211,238,0.6)',
+                            borderColor: 'rgb(var(--cyber-cyan-rgb) / 0.2)',
+                            color: 'rgb(var(--cyber-cyan-rgb) / 0.6)',
                           }}
                         >
                           <Sparkles className="size-2.5" />
@@ -705,10 +705,10 @@ export function CharacterProfilePanel({ open, onClose }: { open: boolean; onClos
                                 key={perkId}
                                 className="flex items-center gap-1.5 px-2 py-1 rounded-md border text-[10px] font-mono"
                                 style={{
-                                  borderColor: `${catMeta?.color ?? '#22d3ee'}30`,
-                                  background: `${catMeta?.color ?? '#22d3ee'}08`,
-                                  color: catMeta?.color ?? '#22d3ee',
-                                  boxShadow: `0 0 8px ${catMeta?.color ?? '#22d3ee'}10`,
+                                  borderColor: `${catMeta?.color ?? 'var(--cyber-cyan)'}30`,
+                                  background: `${catMeta?.color ?? 'var(--cyber-cyan)'}08`,
+                                  color: catMeta?.color ?? 'var(--cyber-cyan)',
+                                  boxShadow: `0 0 8px ${catMeta?.color ?? 'var(--cyber-cyan)'}10`,
                                 }}
                                 title={perkDef.description}
                               >
@@ -804,7 +804,7 @@ export function CharacterProfilePanel({ open, onClose }: { open: boolean; onClos
                 {/* ── Footer ── */}
                 <div
                   className="h-px"
-                  style={{ background: 'linear-gradient(90deg, transparent, rgba(34,211,238,0.1), transparent)' }}
+                  style={{ background: 'linear-gradient(90deg, transparent, rgb(var(--cyber-cyan-rgb) / 0.1), transparent)' }}
                 />
                 <div className="flex items-center justify-between px-5 py-2">
                   <span className="text-[9px] text-slate-600 font-mono">volodka://profile</span>
