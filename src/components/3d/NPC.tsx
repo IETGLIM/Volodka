@@ -20,6 +20,7 @@ import { InteractionState } from '@/engine/interaction/interactionMachine';
 import { ProceduralNPCModel } from '@/components/3d/ProceduralNPCModels';
 import { createPatrolState, updatePatrol, shouldPatrol, type PatrolState } from '@/engine/npc/npcPatrol';
 import { getQuestDefinitions } from '@/data/gameDataLoader';
+import { useQuestsGameDataReady } from '@/hooks/useGameDataPreload';
 import { GOLDEN_PATH_QUEST_SPINE } from '@/data/goldenPath';
 import { canStartQuest } from '@/engine/GuidedStoryManager';
 import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
@@ -587,10 +588,13 @@ function ThinkingDots() {
  *  - Green ✓ — Quest ready to turn in (all objectives complete) */
 function QuestMarker({ npcId }: { npcId: string }) {
   const quests = useQuests();
+  const questsDataReady = useQuestsGameDataReady();
   const [glowIntensity, setGlowIntensity] = useState(1);
 
   // Compute marker info: type, color, pulse speed, quest name
   const markerInfo = useMemo(() => {
+    if (!questsDataReady) return null;
+
     // 1. Check for quests ready to turn in (green ✓) — highest priority
     for (const q of quests) {
       if (q.status !== 'active') continue;
@@ -667,7 +671,7 @@ function QuestMarker({ npcId }: { npcId: string }) {
     }
 
     return null;
-  }, [quests, npcId]);
+  }, [quests, npcId, questsDataReady]);
 
   // Pulse animation — speed depends on marker type
   useEffect(() => {

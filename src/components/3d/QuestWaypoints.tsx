@@ -8,6 +8,7 @@
 import { useRef, useMemo } from 'react';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import * as THREE from 'three';
+import { useQuestsGameDataReady } from '@/hooks/useGameDataPreload';
 import { useQuestWaypointState } from '@/store/selectors';
 import { SCENE_CONFIG } from '@/config/scenes';
 import { getQuestMarker } from '@/store/selectors/questSelectors';
@@ -20,6 +21,7 @@ interface QuestWaypointsProps {
 /** 3D quest waypoint arrows pointing toward active quest target scenes */
 export function QuestWaypoints({ livePlayerPositionRef }: QuestWaypointsProps) {
   const { quests, currentSceneId, playerFlags, playerKarma } = useQuestWaypointState();
+  const questsDataReady = useQuestsGameDataReady();
 
   // Determine if there are any active quests
   const hasActiveQuests = useMemo(() => {
@@ -40,6 +42,7 @@ export function QuestWaypoints({ livePlayerPositionRef }: QuestWaypointsProps) {
 
   // Get the quest target marker if it's in the current scene
   const sameSceneMarker = useMemo<{ position: [number, number, number]; questId: string } | null>(() => {
+    if (!questsDataReady) return null;
     const activeQuests = quests.filter((q) => q.status === 'active');
     for (const aq of activeQuests) {
       const marker = getQuestMarker(aq.questId);
@@ -48,10 +51,10 @@ export function QuestWaypoints({ livePlayerPositionRef }: QuestWaypointsProps) {
       }
     }
     return null;
-  }, [quests, currentSceneId]);
+  }, [quests, currentSceneId, questsDataReady]);
 
-  // Don't render anything if no active quests or no exits and no same-scene marker
-  if (!hasActiveQuests) return null;
+  // Don't render anything if quest data isn't ready, no active quests, or no exits
+  if (!questsDataReady || !hasActiveQuests) return null;
 
   return (
     <group>
