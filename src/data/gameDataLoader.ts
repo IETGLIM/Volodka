@@ -38,6 +38,7 @@ let bootPromise: Promise<void> | null = null;
 let narrativePromise: Promise<void> | null = null;
 let bootLoaded = false;
 let narrativeLoaded = false;
+let questsLoaded = false;
 
 let questsMod: QuestsModule | null = null;
 let poemsMod: PoemsModule | null = null;
@@ -105,22 +106,29 @@ export async function preloadBootGameData(): Promise<void> {
   await bootPromise;
 }
 
-/** Narrative blobs — load after menu or in parallel with canvas warm-up. */
+export function isQuestsGameDataLoaded(): boolean {
+  return questsLoaded;
+}
+
+/** Narrative blobs — quests first, then story/dialogue/poems in parallel. */
 export async function preloadNarrativeGameData(): Promise<void> {
   if (narrativeLoaded) return;
   if (!narrativePromise) {
-    narrativePromise = Promise.all([
-      import('@/data/quests'),
-      import('@/data/poems'),
-      import('@/data/storyNodes'),
-      import('@/data/dialogueNodes'),
-    ]).then(([quests, poems, story, dialogue]) => {
+    narrativePromise = (async () => {
+      const quests = await import('@/data/quests');
       questsMod = quests;
+      questsLoaded = true;
+
+      const [poems, story, dialogue] = await Promise.all([
+        import('@/data/poems'),
+        import('@/data/storyNodes'),
+        import('@/data/dialogueNodes'),
+      ]);
       poemsMod = poems;
       storyMod = story;
       dialogueMod = dialogue;
       narrativeLoaded = true;
-    });
+    })();
   }
   await narrativePromise;
 }
@@ -137,6 +145,12 @@ function assertBootLoaded(): void {
   }
 }
 
+function assertQuestsLoaded(): void {
+  if (!questsLoaded) {
+    throw new Error('[gameDataLoader] Quest data not loaded — call preloadNarrativeGameData() first');
+  }
+}
+
 function assertNarrativeLoaded(): void {
   if (!narrativeLoaded) {
     throw new Error('[gameDataLoader] Narrative data not loaded — call preloadNarrativeGameData() first');
@@ -150,7 +164,7 @@ function assertLoaded(): void {
 }
 
 export function getQuestDefinitions(): QuestDefinition[] {
-  assertNarrativeLoaded();
+  assertQuestsLoaded();
   return questsMod!.QUEST_DEFINITIONS;
 }
 

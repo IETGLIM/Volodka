@@ -2,7 +2,7 @@
 /* ─── Volodka RPG – Dreamscape procedural 3D visual (v2.1 — FastNoiseLite) ─── */
 
 import { useMemo, useRef, useEffect } from 'react';
-import { useFrame } from '@react-three/fiber';
+import { useFrameTick } from '@/engine/frame/useFrameTick';
 import * as THREE from 'three';
 import FastNoiseLite from 'fastnoise-lite';
 import { useProceduralTerrain, DREAM_TERRAIN } from '@/hooks/useProceduralTerrain';
@@ -34,7 +34,7 @@ export function SleepDreamVisual() {
   }, [groundTexture]);
 
   // ── Slow terrain animation ──
-  useFrame((state) => {
+  useFrameTick('misc', ({ state }) => {
     if (!terrainRef.current) return;
     const posAttr = terrainRef.current.geometry.attributes.position as THREE.BufferAttribute;
     const t = state.clock.elapsedTime;
@@ -313,7 +313,7 @@ function DreamDustField({ width, depth }: { width: number; depth: number }) {
 
   const pointsRef = useRef<THREE.Points>(null);
 
-  useFrame((state) => {
+  useFrameTick('misc', ({ state }) => {
     if (!pointsRef.current) return;
     const t = state.clock.elapsedTime;
     pointsRef.current.rotation.y = t * 0.01;
@@ -354,7 +354,7 @@ function DreamDustField({ width, depth }: { width: number; depth: number }) {
 function FloatingIsland({ position, scale = 1 }: { position: [number, number, number]; scale?: number }) {
   const groupRef = useRef<THREE.Group>(null);
 
-  useFrame((state) => {
+  useFrameTick('misc', ({ state }) => {
     if (groupRef.current) {
       groupRef.current.position.y = position[1] + Math.sin(state.clock.elapsedTime * 0.3 + position[0]) * 0.3;
     }
@@ -418,7 +418,7 @@ function FloatingPoemFragment({ position, text }: { position: [number, number, n
     return tex;
   }, [text]);
 
-  useFrame((state) => {
+  useFrameTick('misc', ({ state }) => {
     if (groupRef.current) {
       groupRef.current.position.y = position[1] + Math.sin(state.clock.elapsedTime * 0.5 + position[0]) * 0.5;
       groupRef.current.rotation.y = Math.sin(state.clock.elapsedTime * 0.2 + position[2]) * 0.2;
@@ -439,7 +439,7 @@ function FloatingPoemFragment({ position, text }: { position: [number, number, n
 function MemoryFragment({ position, color }: { position: [number, number, number]; color: string }) {
   const meshRef = useRef<THREE.Mesh>(null);
 
-  useFrame((state) => {
+  useFrameTick('misc', ({ state }) => {
     if (meshRef.current) {
       meshRef.current.rotation.y = state.clock.elapsedTime * 0.5 + position[0];
       meshRef.current.rotation.x = state.clock.elapsedTime * 0.3 + position[2];
@@ -481,7 +481,7 @@ function SpiralPillar({ position }: { position: [number, number, number] }) {
 function AnimatedFogLayer({ y, speed }: { y: number; speed: number }) {
   const meshRef = useRef<THREE.Mesh>(null);
 
-  useFrame((state) => {
+  useFrameTick('misc', ({ state }) => {
     if (meshRef.current) {
       meshRef.current.rotation.z = state.clock.elapsedTime * speed;
     }
@@ -502,7 +502,7 @@ function AnimatedFogLayer({ y, speed }: { y: number; speed: number }) {
 function FloatingClock({ position }: { position: [number, number, number] }) {
   const groupRef = useRef<THREE.Group>(null);
 
-  useFrame((state) => {
+  useFrameTick('misc', ({ state }) => {
     if (groupRef.current) {
       groupRef.current.rotation.z = Math.sin(state.clock.elapsedTime * 0.2) * 0.15;
     }
