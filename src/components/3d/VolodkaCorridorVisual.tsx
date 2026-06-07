@@ -1,16 +1,24 @@
 
 /* ─── Volodka RPG – Corridor procedural 3D visual ─── */
 
-import { useMemo, useRef, useEffect } from 'react';
+import { useMemo, useRef, useEffect, type MutableRefObject } from 'react';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import * as THREE from 'three';
 import { useGameStore } from '@/store/gameStore';
 import { eventBus } from '@/engine/EventBus';
+import { useEnvironmentLod } from './lod/EnvironmentLodProvider';
+import { EnvironmentDetail } from './lod/PropDistanceGate';
+import { useCachedCanvasTexture } from '@/hooks/useCachedCanvasTexture';
+
+interface VolodkaCorridorVisualProps {
+  livePlayerPositionRef?: MutableRefObject<THREE.Vector3>;
+}
 
 /** Narrow corridor (3.5×12m) connecting rooms */
-export function VolodkaCorridorVisual() {
-  const floorTexture = useMemo(() => createCorridorFloorTexture(), []);
-  const wallTexture = useMemo(() => createCorridorWallTexture(), []);
+export function VolodkaCorridorVisual({ livePlayerPositionRef: _livePlayerPositionRef }: VolodkaCorridorVisualProps) {
+  const floorTexture = useCachedCanvasTexture('volodka_corridor:floor', createCorridorFloorTexture);
+  const wallTexture = useCachedCanvasTexture('volodka_corridor:wall', createCorridorWallTexture);
+  const { lod } = useEnvironmentLod();
 
   const W = 3.5;
   const D = 12;
@@ -120,6 +128,8 @@ export function VolodkaCorridorVisual() {
         <meshStandardMaterial map={wallTexture} color="#3a3540" roughness={0.9} />
       </mesh>
 
+      {/* ── Decorative props (LOD: standard+) ── */}
+      <EnvironmentDetail currentLod={lod} minLod="standard">
       {/* ── Shoe Rack (left wall, near entrance) ── */}
       <group position={[-W / 2 + 0.3, 0, 3.5]}>
         <mesh position={[0, 0.35, 0]} castShadow>
@@ -149,6 +159,7 @@ export function VolodkaCorridorVisual() {
           </mesh>
         ))}
       </group>
+      </EnvironmentDetail>
 
       {/* ── Ceiling Lamp ── */}
       <group position={[0, H, -2.0]}>

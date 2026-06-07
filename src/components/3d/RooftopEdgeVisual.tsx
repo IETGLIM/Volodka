@@ -1,17 +1,21 @@
 
 /* ─── Volodka RPG – Rooftop Edge procedural 3D visual ─── */
 
-import { useMemo, useRef } from 'react';
+import { useRef } from 'react';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import * as THREE from 'three';
+import { useEnvironmentLod } from './lod/EnvironmentLodProvider';
+import { EnvironmentDetail } from './lod/PropDistanceGate';
+import { useCachedCanvasTexture } from '@/hooks/useCachedCanvasTexture';
 
 interface RooftopEdgeVisualProps {
   livePlayerPositionRef?: React.MutableRefObject<THREE.Vector3>;
 }
 
 /** Noir/CyberPunk2077 rooftop (10×8m) */
-export function RooftopEdgeVisual({ livePlayerPositionRef }: RooftopEdgeVisualProps) {
-  const floorTexture = useMemo(() => createRooftopFloorTexture(), []);
+export function RooftopEdgeVisual({ livePlayerPositionRef: _livePlayerPositionRef }: RooftopEdgeVisualProps) {
+  const floorTexture = useCachedCanvasTexture('rooftop_edge:floor', createRooftopFloorTexture);
+  const { lod } = useEnvironmentLod();
 
   const W = 10;
   const D = 8;
@@ -223,6 +227,7 @@ export function RooftopEdgeVisual({ livePlayerPositionRef }: RooftopEdgeVisualPr
       {/* ═══════════════════════════════════════════════ */}
       {/* ── ENVIRONMENTAL CLUTTER / STORYTELLING ── */}
       {/* ═══════════════════════════════════════════════ */}
+      <EnvironmentDetail currentLod={lod} minLod="standard">
 
       {/* ── Pigeons on parapet ledge — moved to FOREGROUND layer ── */}
 
@@ -267,6 +272,7 @@ export function RooftopEdgeVisual({ livePlayerPositionRef }: RooftopEdgeVisualPr
           <meshStandardMaterial color="#5a5a5a" metalness={0.7} roughness={0.4} />
         </mesh>
       </group>
+      </EnvironmentDetail>
     </group>
   );
 }

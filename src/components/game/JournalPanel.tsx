@@ -6,6 +6,7 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { usePanelExitComplete } from '@/components/game/orchestrator/PanelExitContext';
 import { FocusTrap } from '@/components/a11y/FocusTrap';
 import { usePanelDialog } from '@/components/a11y/usePanelDialog';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
@@ -40,7 +41,7 @@ import {
 import { POEMS, getMainPoems, getHiddenPoems } from '@/data/poems';
 import { getPoemPower, canUsePower, activatePoemPowerById, getCooldownRemaining } from '@/engine/PoemPowerSystem';
 import { SCENE_CONFIG } from '@/config/scenes';
-import { STORY_NODES } from '@/data/storyNodes';
+import { getStoryNodes, isNarrativeGameDataLoaded, ensureNarrativeNodeIds } from '@/data/gameDataLoader';
 import { audioEngine } from '@/engine/AudioEngine';
 import { INITIAL_LORE_ENTRIES } from '@/data/loreEntries';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -111,12 +112,25 @@ const THEME_COLORS: Record<string, string> = {
 function NotesTab({ searchQuery }: { searchQuery: string }) {
   const visitedNodes = useVisitedNodes();
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
+  const [notesVersion, setNotesVersion] = useState(0);
+
+  useEffect(() => {
+    if (!isNarrativeGameDataLoaded() || visitedNodes.length === 0) return;
+    let cancelled = false;
+    void ensureNarrativeNodeIds(visitedNodes).then(() => {
+      if (!cancelled) setNotesVersion((v) => v + 1);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [visitedNodes]);
 
   // Build notes from visited story nodes
   const discoveredNotes = useMemo(() => {
+    const storyNodes = isNarrativeGameDataLoaded() ? getStoryNodes() : {};
     const notes: { id: string; text: string; speaker?: string; sceneId: string; timestamp: number }[] = [];
     for (const nodeId of visitedNodes) {
-      const node = STORY_NODES[nodeId];
+      const node = storyNodes[nodeId];
       if (node) {
         notes.push({
           id: nodeId,
@@ -128,7 +142,7 @@ function NotesTab({ searchQuery }: { searchQuery: string }) {
       }
     }
     return notes.sort((a, b) => b.timestamp - a.timestamp);
-  }, [visitedNodes]);
+  }, [visitedNodes, notesVersion]);
 
   // Filter by search
   const filteredNotes = useMemo(() => {
@@ -713,9 +727,17 @@ function LoreTab({ searchQuery }: { searchQuery: string }) {
 /* ══════════════════════════════════════════════════════════════
    MAIN JOURNAL PANEL
    ══════════════════════════════════════════════════════════════ */
-export function JournalPanel() {
+export function JournalPanel({
+  open: openProp,
+  onClose: onCloseProp,
+}: {
+  open?: boolean;
+  onClose?: () => void;
+} = {}) {
   const { closeButtonRef, dialogProps, titleProps } = usePanelDialog();
-  const { journalOpen, journalTab, loreEntries } = useJournalShell();
+  const { journalOpen: storeJournalOpen, journalTab, loreEntries } = useJournalShell();
+  const journalOpen = openProp ?? storeJournalOpen;
+  const notifyPanelExit = usePanelExitComplete();
   const setJournalTab = useSetJournalTab();
   const setJournalOpen = useSetJournalOpen();
   const addLoreEntry = useAddLoreEntry();
@@ -730,8 +752,9 @@ export function JournalPanel() {
   }, [addLoreEntry]);
 
   const handleClose = useCallback(() => {
+    onCloseProp?.();
     setJournalOpen(false);
-  }, [setJournalOpen]);
+  }, [onCloseProp, setJournalOpen]);
 
   // Escape key handler
   useEffect(() => {
@@ -752,7 +775,7 @@ export function JournalPanel() {
   }, [journalTab]);
 
   return (
-    <AnimatePresence>
+    <AnimatePresence initial={false} onExitComplete={() => notifyPanelExit?.()}>
       {journalOpen && (
         <motion.div
           initial={{ opacity: 0 }}

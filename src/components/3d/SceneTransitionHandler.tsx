@@ -3,8 +3,7 @@
  *  Handles scene transitions with:
  *  - Door open/close sounds
  *  - Camera shake effect
- *  - Scene:enter event emission
- *  - Cinematic transition overlay trigger (fade to black / fade in)
+ *  - SceneTransitionManager protocol (unload → store → enter → loaded)
  *  - Brief camera position freeze during transition
  *
  *  SINGLE WRITER for exploration.currentSceneId + playerPosition on transition.
@@ -14,7 +13,7 @@ import { useEffect, useRef } from 'react';
 import { useGameStore } from '@/store/gameStore';
 import { eventBus } from '@/engine/EventBus';
 import { audioEngine } from '@/engine/AudioEngine';
-import { musicEngine } from '@/engine/MusicEngine';
+import { performSceneTransition } from '@/engine/core/SceneTransitionManager';
 import { triggerCameraShake } from '@/engine/camera/cameraShake';
 import type { SceneId } from '@/shared/types/game';
 import { SCENE_TRANSITION, CAMERA_SHAKE } from '@/shared/constants/transitionTimings';
@@ -45,7 +44,6 @@ export function SceneTransitionHandler() {
       const { targetScene, spawnAt } = payload;
       const spawnKey = spawnAt.map((v) => v.toFixed(3)).join(',');
 
-      // Coalesce exact duplicate while the same transition is in flight
       if (
         transitioningRef.current &&
         activeTransitionRef.current?.target === targetScene &&
@@ -54,35 +52,21 @@ export function SceneTransitionHandler() {
         return;
       }
 
-      // Chained transition to a different scene — cancel prior timers, proceed
       clearTimers();
 
       transitioningRef.current = true;
       activeTransitionRef.current = { target: targetScene, spawnKey };
-
-      const store = useGameStore.getState();
-      const fromScene = store.exploration.currentSceneId;
 
       audioEngine.playDoorOpen();
 
       const shakeDecay = -Math.log(0.001) / (CAMERA_SHAKE.DURATION_MS / 1000);
       triggerCameraShake(CAMERA_SHAKE.TRANSITION_INTENSITY, shakeDecay);
 
-      store.setExplorationScene(targetScene);
-      store.setPlayerPosition(spawnAt);
-      store.discoverScene(targetScene);
+      performSceneTransition({ targetScene, spawnAt });
 
       const config = getSceneConfigName(targetScene);
       eventBus.emit('ui:exploration_message', {
         text: `Переход: ${config}`,
-      });
-
-      audioEngine.playAmbient(targetScene);
-      musicEngine.playSceneMusic(targetScene);
-
-      eventBus.emit('scene:enter', {
-        sceneId: targetScene,
-        fromSceneId: fromScene,
       });
 
       eventBus.emit('camera:recenter', {});

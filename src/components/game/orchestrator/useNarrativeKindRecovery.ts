@@ -1,30 +1,30 @@
 import { useEffect } from 'react';
-import { useSetNarrativeKind } from '@/store/selectors';
-import {
+import { useGamePrimitive, useSetNarrativeKind, useOrchestratorNarrativeOverlay } from '@/store/selectors';import {
   getDialogueNodes,
   getStoryNodes,
   preloadNarrativeGameData,
+  ensureNarrativeNodeIds,
 } from '@/data/gameDataLoader';
 
 /** Recover narrativeKind for saves created before overlay kind was persisted. */
-export function useNarrativeKindRecovery(
-  showStoryOverlay: boolean,
-  narrativeKind: 'story' | 'dialogue' | null,
-  currentNodeId: string,
-) {
+export function useNarrativeKindRecovery() {
+  const { showStoryOverlay, narrativeKind } = useOrchestratorNarrativeOverlay();
+  const currentNodeId = useGamePrimitive((s) => s.currentNodeId);
   const setNarrativeKind = useSetNarrativeKind();
 
   useEffect(() => {
     if (!showStoryOverlay || narrativeKind || !currentNodeId) return;
 
     let cancelled = false;
-    void preloadNarrativeGameData().then(() => {
-      if (cancelled) return;
-      const storyNodes = getStoryNodes();
-      const dialogueNodes = getDialogueNodes();
-      if (storyNodes[currentNodeId]) setNarrativeKind('story');
-      else if (dialogueNodes[currentNodeId]) setNarrativeKind('dialogue');
-    });
+    void preloadNarrativeGameData()
+      .then(() => ensureNarrativeNodeIds([currentNodeId]))
+      .then(() => {
+        if (cancelled) return;
+        const storyNodes = getStoryNodes();
+        const dialogueNodes = getDialogueNodes();
+        if (storyNodes[currentNodeId]) setNarrativeKind('story');
+        else if (dialogueNodes[currentNodeId]) setNarrativeKind('dialogue');
+      });
 
     return () => {
       cancelled = true;

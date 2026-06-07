@@ -6,6 +6,7 @@ import * as THREE from 'three';
 import { getEnvironmentLodProfile } from '@/engine/lod/distanceLod';
 import { useEnvironmentLod } from './lod/EnvironmentLodProvider';
 import { EnvironmentDetail, SceneClutterGate } from './lod/PropDistanceGate';
+import { useCachedCanvasTexture } from '@/hooks/useCachedCanvasTexture';
 
 interface ParkDayVisualProps {
   livePlayerPositionRef?: MutableRefObject<THREE.Vector3>;
@@ -22,7 +23,7 @@ const DISTANT_TREES: Array<[number, number, number]> = [
 
 /** Gothic/Dark Fantasy memorial park (30×30m) */
 export function ParkDayVisual({ livePlayerPositionRef }: ParkDayVisualProps) {
-  const groundTexture = useMemo(() => createParkGroundTexture(), []);
+  const groundTexture = useCachedCanvasTexture('park_day:ground', createParkGroundTexture);
   const { lod } = useEnvironmentLod();
   const envProfile = useMemo(() => getEnvironmentLodProfile('park_day'), []);
 

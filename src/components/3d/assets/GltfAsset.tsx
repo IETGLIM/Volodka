@@ -1,9 +1,10 @@
 import { Suspense, useMemo } from 'react';
 import { useGLTF } from '@react-three/drei';
-import * as THREE from 'three';
 import { getAssetDefinition, resolveVariantUrl } from '@/config/assetManifest';
 import { extendGltfLoader } from '@/engine/assets/gltfPipeline';
 import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
+import { useSkinnedGltfClone } from '@/hooks/useSkinnedGltfClone';
+import { LodSwitcher } from './LodSwitcher';
 
 /** drei GLTFLoader types (three-stdlib) vs three/jm decoders — cast at boundary */
 const extendLoader = extendGltfLoader as unknown as NonNullable<Parameters<typeof useGLTF>[3]>;
@@ -16,6 +17,25 @@ export interface GltfAssetProps {
   fallback?: React.ReactNode;
 }
 
+interface GltfAssetSceneProps {
+  url: string;
+  castShadow: boolean;
+  receiveShadow: boolean;
+}
+
+function GltfAssetScene({ url, castShadow, receiveShadow }: GltfAssetSceneProps) {
+  const gltf = useGLTF(url, true, true, extendLoader);
+
+  const cloneOptions = useMemo(
+    () => ({ castShadow, receiveShadow }),
+    [castShadow, receiveShadow],
+  );
+
+  const { scene } = useSkinnedGltfClone(gltf.scene, gltf.animations, cloneOptions);
+
+  return <primitive object={scene} />;
+}
+
 function GltfAssetInner({
   assetId,
   position = [0, 0, 0],
@@ -24,34 +44,45 @@ function GltfAssetInner({
 }: Omit<GltfAssetProps, 'fallback'>) {
   const { preset } = useGraphicsQuality();
   const asset = getAssetDefinition(assetId);
-  const url = asset
-    ? resolveVariantUrl(asset, preset.compression, 0, preset.lodBias)
-    : '';
+  if (!asset) return null;
 
-  const gltf = useGLTF(url, true, true, extendLoader);
-
-  const scene = useMemo(() => {
-    const clone = gltf.scene.clone(true);
-    clone.traverse((node) => {
-      if (node instanceof THREE.Mesh) {
-        node.castShadow = asset?.castShadow ?? false;
-        node.receiveShadow = asset?.receiveShadow ?? true;
-      }
-    });
-    return clone;
-  }, [gltf.scene, asset]);
-
+  const castShadow = asset.castShadow ?? false;
+  const receiveShadow = asset.receiveShadow ?? true;
   const scaleProp =
     typeof scale === 'number' ? ([scale, scale, scale] as [number, number, number]) : scale;
 
+  const defaultUrl = resolveVariantUrl(asset, preset.compression, 0, preset.lodBias);
+  const useDistanceLod = asset.lods.length > 1;
+
   return (
     <group position={position} rotation={rotation} scale={scaleProp}>
-      <primitive object={scene} />
+      {useDistanceLod ? (
+        <LodSwitcher asset={asset}>
+          {(lodUrl) => (
+            <Suspense fallback={null}>
+              <GltfAssetScene
+                key={lodUrl}
+                url={lodUrl}
+                castShadow={castShadow}
+                receiveShadow={receiveShadow}
+              />
+            </Suspense>
+          )}
+        </LodSwitcher>
+      ) : (
+        <Suspense fallback={null}>
+          <GltfAssetScene
+            url={defaultUrl}
+            castShadow={castShadow}
+            receiveShadow={receiveShadow}
+          />
+        </Suspense>
+      )}
     </group>
   );
 }
 
-/** GLB/GLTF asset with compression variant + quality preset integration. */
+/** GLB/GLTF asset — Draco/Meshopt via quality preset, distance LOD when manifest has LOD chain. */
 export function GltfAsset({ fallback = null, assetId, ...props }: GltfAssetProps) {
   if (!getAssetDefinition(assetId)) return fallback;
 

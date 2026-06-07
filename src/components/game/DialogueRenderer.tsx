@@ -19,6 +19,7 @@ import {
   findNpcByName,
   createInventoryItem,
   isNarrativeGameDataLoaded,
+  ensureDialogueNode,
 } from '@/data/gameDataLoader';
 import { audioEngine } from '@/engine/AudioEngine';
 import { eventBus } from '@/engine/EventBus';
@@ -157,11 +158,30 @@ export function DialogueRenderer() {
   // ── World Director: dialogue is now an overlay, not a separate mode ──
   // Before: isOpen = mode === 'visual-novel' (requires switching away from exploration)
   // Now: isOpen = showStoryOverlay + has dialogue node (narrative overlay on 3D world)
+  const [dialoguePackVersion, setDialoguePackVersion] = useState(0);
+
+  useEffect(() => {
+    if (!currentNodeId || !isNarrativeGameDataLoaded()) return;
+    let cancelled = false;
+
+    void ensureDialogueNode(currentNodeId)
+      .then(() => {
+        if (!cancelled) setDialoguePackVersion((v) => v + 1);
+      })
+      .catch((error) => {
+        console.error('[DialogueRenderer] Failed to load dialogue node:', currentNodeId, error);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [currentNodeId]);
+
   const dialogueNodes = isNarrativeGameDataLoaded() ? getDialogueNodes() : null;
   const isOpen = showStoryOverlay && !!dialogueNodes?.[currentNodeId];
   const node = useMemo(
     () => (dialogueNodes ? dialogueNodes[currentNodeId] : undefined),
-    [dialogueNodes, currentNodeId],
+    [dialogueNodes, currentNodeId, dialoguePackVersion],
   );
   const conditionCtx = useMemo(() => {
     const npcDef = node ? findNpcByName(node.speaker) : undefined;

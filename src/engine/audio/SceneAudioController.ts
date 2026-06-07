@@ -92,7 +92,15 @@ export class SceneAudioController {
       if (enterStinger) sfxEngine.playStinger(enterStinger);
     }
 
+    musicEngine.playSceneMusic(sceneId);
     this.playSceneAmbient(sceneId, timeOfDay);
+  }
+
+  /** Duck scene layers before crossfade on scene:unload (EventBus-driven transitions). */
+  onSceneUnload(): void {
+    if (!this.guard()) return;
+    ambientEngine.setDialogueDucked(false);
+    ambientEngine.setCombatMuted(false);
   }
 
   onCombatStart(): void {

@@ -1,10 +1,10 @@
 import { useEffect } from 'react';
 import { useGameStore } from '@/store/gameStore';
-import { useOrchestratorOverlay } from '@/store/selectors';
+import { useOrchestratorShell } from '@/store/selectors';
 
 /** Auto-skip intro via useEffect (avoids render-phase mutation). */
 export function IntroAutoSkip() {
-  const { introSeen, mode } = useOrchestratorOverlay();
+  const { introSeen, mode } = useOrchestratorShell();
 
   useEffect(() => {
     if (mode === 'intro' && introSeen) {

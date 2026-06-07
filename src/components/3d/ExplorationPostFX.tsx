@@ -8,7 +8,7 @@
  *  PERF: SSAO + DoF removed (~40% GPU savings). Bloom + Vignette are sufficient.
  */
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useLayoutEffect, useRef, type ComponentProps } from 'react';
 import { useThree } from '@react-three/fiber';
 import {
   EffectComposer,
@@ -19,9 +19,11 @@ import {
   ToneMapping,
 } from '@react-three/postprocessing';
 import { BlendFunction, KernelSize, ToneMappingMode } from 'postprocessing';
+import type { EffectComposer as EffectComposerImpl } from 'postprocessing';
 import { usePostFxSceneState, usePlayerStress } from '@/store/selectors';
 import { useMobileVisualPerf } from '@/hooks/use-mobile';
 import { SCENE_VISIBILITY } from '@/shared/constants/sceneVisibility';
+import { disposeEffectComposer, type PostprocessingComposerLike } from '@/engine/three/disposeThreeResources';
 
 /** Per-scene color grading overrides for CyberPunk2077 / Noir / Gothic feel */
 const SCENE_COLOR_GRADE: Record<string, { hue: number; saturation: number; brightness: number; contrast: number }> = {
@@ -211,6 +213,82 @@ export function ExplorationPostFX() {
   return <PostFXPipeline />;
 }
 
+type ManagedComposerProps = ComponentProps<typeof EffectComposer> & {
+  /** Scene / pipeline identity — remounts composer so RTs and passes are disposed. */
+  remountKey: string;
+  sceneId: string;
+};
+
+function useGlInstanceKey(): number {
+  const gl = useThree((state) => state.gl);
+  const prevGlRef = useRef(gl);
+  const [instanceKey, setInstanceKey] = useState(0);
+
+  useEffect(() => {
+    if (prevGlRef.current !== gl) {
+      prevGlRef.current = gl;
+      setInstanceKey((key) => key + 1);
+    }
+  }, [gl]);
+
+  return instanceKey;
+}
+
+/**
+ * @react-three/postprocessing keeps EffectComposer in useMemo and does not call
+ * dispose() when gl/camera/scene deps change. Keyed inner instance + layout
+ * cleanup guarantees composer.dispose() (and pass RTs) are released.
+ */
+function ManagedEffectComposer({ remountKey, sceneId, children, ...props }: ManagedComposerProps) {
+  const glInstanceKey = useGlInstanceKey();
+
+  return (
+    <EffectComposerInstance
+      key={`${glInstanceKey}-${remountKey}`}
+      sceneId={sceneId}
+      {...props}
+    >
+      {children}
+    </EffectComposerInstance>
+  );
+}
+
+function EffectComposerInstance({
+  sceneId,
+  children,
+  ...props
+}: ComponentProps<typeof EffectComposer> & { sceneId: string }) {
+  const gl = useThree((state) => state.gl);
+  const composerRef = useRef<EffectComposerImpl | null>(null);
+
+  // Dispose passes + composer before the next scene paints (sceneId / pipeline change).
+  useLayoutEffect(() => {
+    return () => {
+      disposeEffectComposer(composerRef.current as PostprocessingComposerLike | null);
+      composerRef.current = null;
+    };
+  }, [sceneId]);
+
+  useEffect(() => {
+    const canvas = gl.domElement;
+
+    function handleContextLost(event: Event) {
+      event.preventDefault();
+      disposeEffectComposer(composerRef.current as PostprocessingComposerLike | null);
+      composerRef.current = null;
+    }
+
+    canvas.addEventListener('webglcontextlost', handleContextLost);
+    return () => canvas.removeEventListener('webglcontextlost', handleContextLost);
+  }, [gl]);
+
+  return (
+    <EffectComposer ref={composerRef} {...props}>
+      {children}
+    </EffectComposer>
+  );
+}
+
 /** Inner component — all hooks called unconditionally (Rules of Hooks compliant) */
 function PostFXPipeline() {
   const { sceneId, noirMode } = usePostFxSceneState();
@@ -261,9 +339,11 @@ function PostFXPipeline() {
 
   // ── Lite post-FX: mobile/low quality, or heavy scenes on any preset ──
   const useLitePostFx = visualLite || sceneId === 'abandoned_factory';
+  const pipelineKey = `${sceneId}-${useLitePostFx ? 'lite' : 'full'}`;
+
   if (useLitePostFx) {
     return (
-      <EffectComposer multisampling={0}>
+      <ManagedEffectComposer remountKey={pipelineKey} sceneId={sceneId} multisampling={0}>
         <Bloom
           intensity={0.45}
           luminanceThreshold={0.75}
@@ -285,12 +365,12 @@ function PostFXPipeline() {
           mode={ToneMappingMode.ACES_FILMIC}
           exposure={SCENE_VISIBILITY.toneExposure}
         />
-      </EffectComposer>
+      </ManagedEffectComposer>
     );
   }
 
   return (
-    <EffectComposer multisampling={0}>
+    <ManagedEffectComposer remountKey={pipelineKey} sceneId={sceneId} multisampling={0}>
       {/* ── Bloom — dynamic intensity per scene, stress-boosted ── */}
       <Bloom
         intensity={effectiveBloomIntensity}
@@ -324,6 +404,6 @@ function PostFXPipeline() {
         mode={ToneMappingMode.ACES_FILMIC}
         exposure={SCENE_VISIBILITY.toneExposure}
       />
-    </EffectComposer>
+    </ManagedEffectComposer>
   );
 }

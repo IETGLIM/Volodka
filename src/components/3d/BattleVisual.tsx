@@ -1,12 +1,19 @@
 
 /* ─── Volodka RPG – Combat Arena procedural 3D visual ─── */
 
-import { useMemo } from 'react';
 import * as THREE from 'three';
+import { useEnvironmentLod } from './lod/EnvironmentLodProvider';
+import { EnvironmentDetail } from './lod/PropDistanceGate';
+import { useCachedCanvasTexture } from '@/hooks/useCachedCanvasTexture';
+
+interface BattleVisualProps {
+  livePlayerPositionRef?: React.MutableRefObject<THREE.Vector3>;
+}
 
 /** CyberPunk2077/MatrixRain combat arena (12×12m) */
-export function BattleVisual() {
-  const floorTexture = useMemo(() => createArenaFloorTexture(), []);
+export function BattleVisual({ livePlayerPositionRef: _livePlayerPositionRef }: BattleVisualProps) {
+  const floorTexture = useCachedCanvasTexture('battle:floor', createArenaFloorTexture);
+  const { lod } = useEnvironmentLod();
 
   const W = 12;
   const D = 12;
@@ -69,6 +76,7 @@ export function BattleVisual() {
       {/* ═══════════════════════════════════════════════ */}
       {/* ── DEBRIS ── */}
       {/* ═══════════════════════════════════════════════ */}
+      <EnvironmentDetail currentLod={lod} minLod="standard">
       {Array.from({ length: 8 }).map((_, i) => {
         const x = Math.sin(i * 2.7) * 4;
         const z = Math.cos(i * 3.1) * 4;
@@ -188,6 +196,7 @@ export function BattleVisual() {
           <meshStandardMaterial color="#2a2a3a" roughness={0.7} />
         </mesh>
       </group>
+      </EnvironmentDetail>
     </group>
   );
 }

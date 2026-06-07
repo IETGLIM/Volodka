@@ -114,7 +114,7 @@ export const QUALITY_PRESETS: Record<Exclude<QualityPresetId, 'auto'>, QualityPr
     useImpostors: false,
     impostorDistance: 60,
     bakedLighting: true,
-    compression: 'none',
+    compression: 'meshopt',
     npcRenderMode: 'glb',
     environmentRenderMode: 'glb',
     visualLite: false,

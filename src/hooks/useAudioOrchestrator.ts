@@ -17,6 +17,16 @@ function selectAudioPhase(state: ReturnType<typeof useGameStore.getState>) {
   });
 }
 
+function syncAudioFromStore(ctrl: ReturnType<typeof getSceneAudioController>): void {
+  const state = useGameStore.getState();
+  ctrl.onModeChange(
+    selectAudioPhase(state),
+    state.exploration.currentSceneId as SceneId,
+    state.exploration.timeOfDay,
+    state.showStoryOverlay,
+  );
+}
+
 /**
  * Thin React hook — subscribes to game state / EventBus and delegates
  * all audio decisions to SceneAudioController.
@@ -30,13 +40,7 @@ export function useAudioOrchestrator() {
     const ctrl = controllerRef.current;
     ctrl.init();
 
-    const state = useGameStore.getState();
-    ctrl.onModeChange(
-      selectAudioPhase(state),
-      state.exploration.currentSceneId as SceneId,
-      state.exploration.timeOfDay,
-      state.showStoryOverlay,
-    );
+    syncAudioFromStore(ctrl);
 
     return () => {
       disposedRef.current = true;
@@ -71,18 +75,25 @@ export function useAudioOrchestrator() {
       ctrl.onQuestAccepted();
     });
 
+    scope.on('scene:unload', () => {
+      if (disposedRef.current) return;
+      ctrl.onSceneUnload();
+    });
+
     scope.on('scene:enter', ({ sceneId }) => {
       if (disposedRef.current) return;
       const timeOfDay = useGameStore.getState().exploration.timeOfDay;
       ctrl.onSceneEnter(sceneId as SceneId, timeOfDay);
+      triggerCameraShake(0.03, 3);
+    });
+
+    scope.on('game:loaded', () => {
+      if (disposedRef.current) return;
+      syncAudioFromStore(ctrl);
     });
 
     scope.on('fx:glitch', () => {
       triggerCameraShake(0.05, 8);
-    });
-
-    scope.on('scene:enter', () => {
-      triggerCameraShake(0.03, 3);
     });
 
     return withHmrCleanup(() => scope.dispose());
@@ -119,13 +130,6 @@ export function useAudioOrchestrator() {
               selected.showStoryOverlay,
             );
           }
-        }
-
-        if (
-          selected.phase === 'exploration' &&
-          selected.sceneId !== prev.sceneId
-        ) {
-          ctrl.onSceneEnter(selected.sceneId as SceneId, selected.timeOfDay);
         }
 
         if (

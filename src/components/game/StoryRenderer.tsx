@@ -12,7 +12,7 @@ import {
   useStoryContext,
   useVisitNode,
 } from '@/store/selectors';
-import { getStoryNodes, isNarrativeGameDataLoaded } from '@/data/gameDataLoader';
+import { getStoryNodes, isNarrativeGameDataLoaded, ensureStoryNode, prefetchStoryNodes } from '@/data/gameDataLoader';
 import { audioEngine } from '@/engine/AudioEngine';
 import { requestSceneTransitionForStoryNode } from '@/engine/scene/sceneTransition';
 import { closeNarrativeOverlay } from '@/engine/scene/narrativeOverlay';
@@ -124,10 +124,34 @@ export function StoryRenderer() {
     [storyConditionPlayer],
   );
 
+  const [storyPackVersion, setStoryPackVersion] = useState(0);
+
+  useEffect(() => {
+    if (!currentNodeId || !isNarrativeGameDataLoaded()) return;
+    let cancelled = false;
+
+    void ensureStoryNode(currentNodeId)
+      .then(() => {
+        if (cancelled) return;
+        setStoryPackVersion((v) => v + 1);
+        const loaded = getStoryNodes()[currentNodeId];
+        if (loaded?.choices) {
+          prefetchStoryNodes(loaded.choices.map((c) => c.next));
+        }
+      })
+      .catch((error) => {
+        console.error('[StoryRenderer] Failed to load story node:', currentNodeId, error);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [currentNodeId]);
+
   const storyNodes = isNarrativeGameDataLoaded() ? getStoryNodes() : null;
   const node = useMemo(
     () => (storyNodes ? storyNodes[currentNodeId] : undefined),
-    [storyNodes, currentNodeId],
+    [storyNodes, currentNodeId, storyPackVersion],
   );
 
   const { displayed, done, skip } = useTypewriter(node?.text ?? '', 28);

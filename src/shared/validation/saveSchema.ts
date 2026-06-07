@@ -6,6 +6,7 @@
 import { z } from 'zod';
 import { SCENE_IDS } from '@/config/sceneDefinitions';
 import { sanitizeExplorationSceneId } from '@/config/scenes';
+import { MAX_STORY_ACT } from '@/data/storyActs';
 import type { SceneId } from '@/shared/types/game';
 
 /* ─── Constants ─── */
@@ -36,8 +37,8 @@ const PlayerProgressionSchema = z.object({
   xpToNextLevel: z.number().min(1),
   skillPoints: z.number().int().min(0),
   unlockedSkills: z.array(z.string()),
-  /** Current act (1–5) — gates late-game content */
-  currentAct: z.number().int().min(1).max(5).optional().default(1),
+  /** Current act (1–MAX_STORY_ACT) — gates late-game content */
+  currentAct: z.number().int().min(1).max(MAX_STORY_ACT).optional().default(1),
   /** Perk points — gained every 3 levels */
   perkPoints: z.number().int().min(0).optional().default(0),
   /** IDs of acquired perks */

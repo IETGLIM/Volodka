@@ -9,6 +9,7 @@ import { useFrameTick } from '@/engine/frame/useFrameTick';
 import * as THREE from 'three';
 import type { NPCAppearance } from '@/shared/types/game';
 import { InteractionState } from '@/engine/interaction/interactionMachine';
+import { useThreeCleanup } from '@/hooks/useThreeCleanup';
 import {
   sharedGeo,
   sharedMat,
@@ -33,6 +34,7 @@ import {
   DEFAULT_FOREARM_WIDTH,
   DEFAULT_LEG_WIDTH,
   DEFAULT_LOWER_LEG_WIDTH,
+  getProceduralNpcSharedResourceSets,
 } from './proceduralNpcShared';
 
 /* ─── Shared color constants ─── */
@@ -1374,7 +1376,19 @@ export interface ProceduralNPCModelProps {
 }
 
 /** Selects and renders the unique procedural model for a given NPC definition id */
-export function ProceduralNPCModel({
+export function ProceduralNPCModel(props: ProceduralNPCModelProps) {
+  const rootRef = useRef<THREE.Group>(null);
+  const sharedResources = useMemo(() => getProceduralNpcSharedResourceSets(), []);
+  useThreeCleanup(rootRef, { skip: sharedResources });
+
+  return (
+    <group ref={rootRef}>
+      <ProceduralNPCModelInner {...props} />
+    </group>
+  );
+}
+
+function ProceduralNPCModelInner({
   definitionId,
   appearance,
   interactionState = InteractionState.Idle,

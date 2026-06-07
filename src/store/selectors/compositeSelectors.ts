@@ -94,6 +94,24 @@ export function useHUDPlayerVitals() {
   }));
 }
 
+/** Mode / menu shell — stable during narrative node churn. */
+export function useOrchestratorShell() {
+  return useGameSelector((s) => ({
+    mode: phaseFromStore(s),
+    introSeen: s.introSeen,
+    mainMenuOpen: s.mainMenuOpen,
+    devToolsArmed: s.devToolsArmed,
+  }));
+}
+
+/** Story overlay flags — without currentNodeId (cutscene/recovery subscribe separately). */
+export function useOrchestratorNarrativeOverlay() {
+  return useGameSelector((s) => ({
+    showStoryOverlay: s.showStoryOverlay,
+    narrativeKind: s.narrativeKind,
+  }));
+}
+
 /** GameOrchestrator + IntroAutoSkip overlay state. */
 export function useOrchestratorOverlay() {
   return useGameSelector((s) => ({

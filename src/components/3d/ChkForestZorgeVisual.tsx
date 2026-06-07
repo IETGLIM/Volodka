@@ -7,6 +7,7 @@ import * as THREE from 'three';
 import { getEnvironmentLodProfile } from '@/engine/lod/distanceLod';
 import { useEnvironmentLod } from './lod/EnvironmentLodProvider';
 import { EnvironmentDetail, SceneClutterGate } from './lod/PropDistanceGate';
+import { useCachedCanvasTexture } from '@/hooks/useCachedCanvasTexture';
 
 interface ChkForestZorgeVisualProps {
   livePlayerPositionRef?: MutableRefObject<THREE.Vector3>;
@@ -17,7 +18,7 @@ const D = 36;
 
 /** Night forest clearing: campfire, port wine crates, guitar spot */
 export function ChkForestZorgeVisual({ livePlayerPositionRef }: ChkForestZorgeVisualProps) {
-  const groundTexture = useMemo(() => createForestGroundTexture(), []);
+  const groundTexture = useCachedCanvasTexture('chk_forest_zorge:ground', createForestGroundTexture);
   const { lod } = useEnvironmentLod();
   const envProfile = useMemo(() => getEnvironmentLodProfile('chk_forest_zorge'), []);
   const fireLightRef = useRef<THREE.PointLight>(null);

@@ -29,6 +29,7 @@ export type PanelType =
 export type CanvasTransitionState = {
   canvasReady: boolean;
   isTransitioning: boolean;
+  fadeOutMs: number;
 };
 
 export type QuestChainUnlockState = {
@@ -43,29 +44,3 @@ export type MatrixQuoteState = {
   text: string;
   actNumber: number;
 } | null;
-
-export type PanelFlags = {
-  questsOpen: boolean;
-  inventoryOpen: boolean;
-  poetryOpen: boolean;
-  menuOpen: boolean;
-  restOpen: boolean;
-  shortcutsOpen: boolean;
-  settingsOpen: boolean;
-  saveSlotOpen: boolean;
-  miniGameHubOpen: boolean;
-  npcRelationOpen: boolean;
-  characterProfileOpen: boolean;
-  codexOpen: boolean;
-  dialogueHistoryOpen: boolean;
-  achievementsOpen: boolean;
-  skillTreeOpen: boolean;
-  craftingOpen: boolean;
-  tradingOpen: boolean;
-  fastTravelOpen: boolean;
-  perksOpen: boolean;
-  questBoardOpen: boolean;
-  statsOpen: boolean;
-  karmaPoemOpen: boolean;
-  journalOpen: boolean;
-};

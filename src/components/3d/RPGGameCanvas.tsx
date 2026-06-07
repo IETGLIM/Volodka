@@ -30,7 +30,7 @@ import { useGameMode } from '@/store/selectors';
 import { useGameStore } from '@/store/gameStore';
 import {
   getCanvasFirstFrameSession,
-  markCanvasFirstFrameEmitted,
+  claimCanvasFirstFrameEmit,
   markCanvasFirstFrameSessionLost,
   registerCanvasForFirstFrame,
   unregisterCanvasForFirstFrame,
@@ -485,16 +485,17 @@ function CanvasGuardSystem() {
       }
 
       const session = getCanvasFirstFrameSession(canvas);
-      if (session.emitted) return;
       if (ctx.state.gl.info.render.frame < 1) return;
 
       const restored = session.contextLost;
-      markCanvasFirstFrameEmitted(canvas);
+      const generation = claimCanvasFirstFrameEmit(canvas);
+      if (generation === null) return;
+
       markFirstFrame();
       if (restored) {
         devLog('[CanvasGuard] Re-signalling after context restore');
       }
-      eventBus.emit('canvas:first-frame', {});
+      eventBus.emit('canvas:first-frame', { generation });
     },
     { label: 'CanvasGuard', priority: 1 },
   );

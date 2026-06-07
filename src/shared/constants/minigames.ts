@@ -25,6 +25,7 @@ export const MINIGAME_COMPLETION_FLAGS: Partial<Record<MinigameType, string>> = 
   hacking: 'hacking_complete',
   memory: 'memory_puzzle_complete',
   rhythm: 'rhythm_game_complete',
+  quiz: 'quiz_game_complete',
 };
 
 /** Returns true when `id` matches a registered, implemented minigame. */

@@ -927,9 +927,9 @@ export function EnvironmentalAnimator({ livePlayerPositionRef }: EnvironmentalAn
   if (animations.length === 0) return null;
 
   return (
-    <group>
+    <group key={`env-anim:${sceneId}`}>
       {animations.map((anim) => (
-        <AnimationRenderer key={anim.id} anim={anim} />
+        <AnimationRenderer key={`${sceneId}:${anim.id}`} anim={anim} />
       ))}
     </group>
   );

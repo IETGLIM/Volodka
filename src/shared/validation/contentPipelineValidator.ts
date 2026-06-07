@@ -23,9 +23,12 @@ import {
   GOLDEN_PATH_QUEST_SPINE,
   STORY_NODE_ALIASES,
   NPC_ID_ALIASES,
+  getNpcIdForStoryNode,
 } from '@/data/goldenPath';
+import { getGoldenPathDerivationReport } from '@/engine/guidedStory/buildGuidedStoryPath';
 import { QUEST_ITEM_DEFINITIONS } from '@/data/questItems';
-import { isKnownMinigameId } from '@/shared/constants/minigames';
+import { isKnownMinigameId, MINIGAME_COMPLETION_FLAGS } from '@/shared/constants/minigames';
+import { QUEST_MINIGAME_MAP } from '@/data/questMinigameMap';
 import { ENEMY_TEMPLATES } from '@/engine/combat/enemies';
 import {
   QUEST_START_ITEMS,
@@ -250,6 +253,15 @@ function validateQuests(reg: ReturnType<typeof buildSets>, out: ValidationIssue[
         case 'minigame_completed':
           if (!isKnownMinigameId(objective.target)) {
             out.push(issue('error', 'quest', op, `minigame_completed target "${objective.target}" unknown`));
+          } else if (!MINIGAME_COMPLETION_FLAGS[objective.target]) {
+            out.push(
+              issue(
+                'error',
+                'quest',
+                op,
+                `minigame_completed target "${objective.target}" missing MINIGAME_COMPLETION_FLAGS entry`,
+              ),
+            );
           }
           break;
         default:
@@ -305,6 +317,86 @@ function validateQuests(reg: ReturnType<typeof buildSets>, out: ValidationIssue[
     visited.add(id);
   }
   for (const q of QUEST_DEFINITIONS) dfs(q.id, []);
+}
+
+function validateMinigameQuestBridge(out: ValidationIssue[]): void {
+  const minigameObjectives: Array<{ questId: string; objectiveId: string; target: string }> = [];
+
+  for (const quest of QUEST_DEFINITIONS) {
+    for (const objective of quest.objectives) {
+      if (objective.type !== 'minigame_completed' || !objective.target) continue;
+      minigameObjectives.push({
+        questId: quest.id,
+        objectiveId: objective.id,
+        target: objective.target,
+      });
+    }
+  }
+
+  for (const { questId, objectiveId, target } of minigameObjectives) {
+    const mapping = QUEST_MINIGAME_MAP[questId];
+    const base = `quest:${questId}.objective:${objectiveId}`;
+    if (!mapping) {
+      out.push(
+        issue(
+          'error',
+          'quest-minigame',
+          base,
+          `minigame_completed objective missing QUEST_MINIGAME_MAP entry (target "${target}")`,
+        ),
+      );
+      continue;
+    }
+    if (mapping.objectiveId !== objectiveId || mapping.minigameType !== target) {
+      out.push(
+        issue(
+          'error',
+          'quest-minigame',
+          base,
+          `QUEST_MINIGAME_MAP mismatch: map has objective "${mapping.objectiveId}" / "${mapping.minigameType}", quest has "${objectiveId}" / "${target}"`,
+        ),
+      );
+    }
+  }
+
+  for (const [questId, mapping] of Object.entries(QUEST_MINIGAME_MAP)) {
+    const quest = QUEST_DEFINITIONS.find((q) => q.id === questId);
+    if (!quest) {
+      out.push(issue('error', 'quest-minigame', `QUEST_MINIGAME_MAP.${questId}`, 'unknown quest id'));
+      continue;
+    }
+    const objective = quest.objectives.find((o) => o.id === mapping.objectiveId);
+    if (!objective || objective.type !== 'minigame_completed') {
+      out.push(
+        issue(
+          'error',
+          'quest-minigame',
+          `QUEST_MINIGAME_MAP.${questId}`,
+          `objective "${mapping.objectiveId}" is not minigame_completed in quest definition`,
+        ),
+      );
+    }
+  }
+}
+
+function validateQuestStoryGiverAlignment(out: ValidationIssue[]): void {
+  for (const quest of QUEST_DEFINITIONS) {
+    if (!quest.linkedStoryNodeId || !quest.questGiverNpcId) continue;
+    const storyNpc = getNpcIdForStoryNode(quest.linkedStoryNodeId);
+    if (!storyNpc) continue;
+    const canonicalGiver = NPC_ID_ALIASES[quest.questGiverNpcId] ?? quest.questGiverNpcId;
+    const canonicalStoryNpc = NPC_ID_ALIASES[storyNpc] ?? storyNpc;
+    if (canonicalGiver !== canonicalStoryNpc) {
+      out.push(
+        issue(
+          'warning',
+          'quest',
+          `quest:${quest.id}`,
+          `questGiverNpcId "${quest.questGiverNpcId}" differs from story node NPC "${storyNpc}" for linkedStoryNodeId "${quest.linkedStoryNodeId}"`,
+        ),
+      );
+    }
+  }
 }
 
 function validateNpcs(reg: ReturnType<typeof buildSets>, out: ValidationIssue[]): void {
@@ -524,6 +616,71 @@ function validateGoldenPath(reg: ReturnType<typeof buildSets>, out: ValidationIs
       out.push(issue('error', 'golden-path', 'GOLDEN_PATH_QUEST_SPINE', `unknown quest id "${questId}"`));
     }
   }
+
+  const report = getGoldenPathDerivationReport(STORY_NODES);
+
+  if (report.storySpine.length !== GOLDEN_PATH_STORY_SPINE.length) {
+    out.push(
+      issue(
+        'warning',
+        'golden-path',
+        'deriveStorySpine',
+        `derived spine length ${report.storySpine.length} !== manual ${GOLDEN_PATH_STORY_SPINE.length} — add choice.goldenPath markers or update fallback`,
+      ),
+    );
+  } else {
+    for (let i = 0; i < GOLDEN_PATH_STORY_SPINE.length; i++) {
+      if (report.storySpine[i] !== GOLDEN_PATH_STORY_SPINE[i]) {
+        out.push(
+          issue(
+            'warning',
+            'golden-path',
+            `deriveStorySpine[${i}]`,
+            `derived "${report.storySpine[i]}" !== manual "${GOLDEN_PATH_STORY_SPINE[i]}"`,
+          ),
+        );
+        break;
+      }
+    }
+  }
+
+  for (const nodeId of report.missingGoldenPathMarkers) {
+    out.push(
+      issue(
+        'warning',
+        'golden-path',
+        `story.${nodeId}`,
+        'spine step lacks choice.goldenPath — still using GOLDEN_PATH_STORY_SPINE fallback',
+      ),
+    );
+  }
+
+  for (const { nodeId, targets } of report.ambiguousGoldenPathNodes) {
+    out.push(
+      issue(
+        'error',
+        'golden-path',
+        `story.${nodeId}`,
+        `multiple choices marked goldenPath (${targets.length}) → ${targets.join(', ')}`,
+      ),
+    );
+  }
+
+  for (const [nodeId, node] of Object.entries(STORY_NODES)) {
+    const goldenChoices = node.choices.filter((c) => c.goldenPath === true);
+    for (const choice of goldenChoices) {
+      if (!choice.next || !reg.storyNodeIds.has(choice.next)) {
+        out.push(
+          issue(
+            'error',
+            'golden-path',
+            `story.${nodeId}`,
+            `goldenPath choice points to missing node "${choice.next ?? 'null'}"`,
+          ),
+        );
+      }
+    }
+  }
 }
 
 /** Run all content pipeline cross-reference checks. */
@@ -534,6 +691,8 @@ export function validateContentPipeline(): ValidationReport {
   validateStoryGraph(reg, issues);
   validateDialogueGraph(reg, issues);
   validateQuests(reg, issues);
+  validateMinigameQuestBridge(issues);
+  validateQuestStoryGiverAlignment(issues);
   validateNpcs(reg, issues);
   validateTriggers(reg, issues);
   validateScenes(reg, issues);

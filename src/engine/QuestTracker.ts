@@ -422,6 +422,14 @@ export class QuestTracker {
       return;
     }
 
+    const completionFlag = MINIGAME_COMPLETION_FLAGS[gameType];
+    if (completionFlag) {
+      const state = getGameSnapshot();
+      if (!state.playerState.flags[completionFlag]) {
+        dispatchGameAction({ type: 'player/setFlag', key: completionFlag, value: true });
+      }
+    }
+
     const activeQuests = this.getActiveQuests();
     for (const quest of activeQuests) {
       const definition = getQuestDefinitions().find((d) => d.id === quest.questId);

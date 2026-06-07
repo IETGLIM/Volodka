@@ -145,6 +145,14 @@ function resolveDataChunk(posix: string): string | undefined {
   const pack = resolveStoryPackChunk(posix);
   if (pack) return pack;
 
+  if (posix.includes('/src/data/story/act')) {
+    const actMatch = posix.match(/\/src\/data\/story\/act(\d+)\./);
+    if (actMatch) return `data-story-act${actMatch[1]}`;
+  }
+  if (posix.includes('/src/data/dialogue/part')) {
+    const partMatch = posix.match(/\/src\/data\/dialogue\/part(\d+)/);
+    if (partMatch) return `data-dialogue-part${partMatch[1]}`;
+  }
   if (posix.includes('/src/data/story/')) return 'data-story';
   if (posix.includes('/src/data/quests/')) return 'data-quests';
   if (posix.includes('/src/data/dialogue/')) return 'data-dialogue';
@@ -275,6 +283,11 @@ export function resolveManualChunk(id: string): string | undefined {
 
   if (base === 'InteriorModels' && posix.includes('/src/components/3d/')) {
     return 'scene-shared-interior';
+  }
+
+  if (posix.includes('/src/components/3d/sceneChunks/') && base.endsWith('Chunk')) {
+    const folder = posix.split('/sceneChunks/')[1]?.split('/')[0];
+    if (folder) return `scene-chunk-${toKebab(folder)}`;
   }
 
   return resolveDataChunk(posix);

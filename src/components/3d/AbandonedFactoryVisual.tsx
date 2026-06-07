@@ -7,6 +7,7 @@ import * as THREE from 'three';
 import { getEnvironmentLodProfile } from '@/engine/lod/distanceLod';
 import { useEnvironmentLod } from './lod/EnvironmentLodProvider';
 import { EnvironmentDetail, PropDistanceGate } from './lod/PropDistanceGate';
+import { useCachedCanvasTexture } from '@/hooks/useCachedCanvasTexture';
 
 interface AbandonedFactoryVisualProps {
   livePlayerPositionRef?: React.MutableRefObject<THREE.Vector3>;
@@ -14,8 +15,8 @@ interface AbandonedFactoryVisualProps {
 
 /** Gothic/Industrial abandoned factory (20×18m) */
 export function AbandonedFactoryVisual({ livePlayerPositionRef }: AbandonedFactoryVisualProps) {
-  const floorTexture = useMemo(() => createFactoryFloorTexture(), []);
-  const wallTexture = useMemo(() => createFactoryWallTexture(), []);
+  const floorTexture = useCachedCanvasTexture('abandoned_factory:floor', createFactoryFloorTexture);
+  const wallTexture = useCachedCanvasTexture('abandoned_factory:wall', createFactoryWallTexture);
   const { lod } = useEnvironmentLod();
   const envProfile = useMemo(() => getEnvironmentLodProfile('abandoned_factory'), []);
 

@@ -26,6 +26,11 @@ import {
 } from './worldRegistry';
 import { getSpawnDirector } from './SpawnDirector';
 import { registerHmrDispose } from '@/shared/dev/hmrDispose';
+import {
+  isWorldComputeWorkerAvailable,
+  requestWorldChunkDiff,
+  resetWorldComputeWorkerState,
+} from '@/engine/workers/computeWorkerClient';
 
 export class WorldStreamManager {
   private readonly chunks: WorldChunkManager;
@@ -42,6 +47,7 @@ export class WorldStreamManager {
     this.streamingEnabled = enabled;
     if (!enabled) {
       this.chunks.reset();
+      resetWorldComputeWorkerState();
       this.lastDiff = null;
     }
   }
@@ -93,10 +99,65 @@ export class WorldStreamManager {
 
     const world = this.resolvePlayerWorldPosition(sceneId, localPosition);
     const diff = this.chunks.updateActiveChunks(world.x, world.z);
+    return this.commitChunkDiff(diff, world.x, world.z);
+  }
+
+  /** Apply worker-computed diff to the main-thread chunk manager. */
+  applyWorkerChunkDiff(response: {
+    toLoad: string[];
+    toUnload: string[];
+    active: string[];
+  }): WorldChunkDiff {
+    const parseKey = (key: string): WorldChunkCoord => {
+      const [x, z] = key.split(',').map(Number);
+      return { x, z };
+    };
+
+    const diff: WorldChunkDiff = {
+      toLoad: response.toLoad.map(parseKey),
+      toUnload: response.toUnload.map(parseKey),
+      active: response.active.map(parseKey),
+    };
+
+    this.chunks.applyExternalDiff(diff);
+    return diff;
+  }
+
+  /** Worker offload — falls back to sync updateStream on failure. */
+  async updateStreamAsync(
+    sceneId: SceneId,
+    localPosition: [number, number, number],
+  ): Promise<WorldChunkDiff> {
+    this.syncContextFromScene(sceneId);
+
+    if (!this.streamingEnabled) {
+      return { toLoad: [], toUnload: [], active: [] };
+    }
+
+    const world = this.resolvePlayerWorldPosition(sceneId, localPosition);
+
+    if (isWorldComputeWorkerAvailable()) {
+      try {
+        const response = await requestWorldChunkDiff(world.x, world.z);
+        const diff = this.applyWorkerChunkDiff(response);
+        return this.commitChunkDiff(diff, world.x, world.z);
+      } catch (err) {
+        console.warn('[WorldStreamManager] worker chunk diff failed, falling back to main thread', err);
+      }
+    }
+
+    return this.updateStream(sceneId, localPosition);
+  }
+
+  private commitChunkDiff(
+    diff: WorldChunkDiff,
+    worldX: number,
+    worldZ: number,
+  ): WorldChunkDiff {
     this.lastDiff = diff;
 
     if (diff.toLoad.length > 0 || diff.toUnload.length > 0) {
-      const playerChunk = this.chunks.worldToChunk(world.x, world.z);
+      const playerChunk = this.chunks.worldToChunk(worldX, worldZ);
       eventBus.emit('world:chunks_changed', {
         toLoad: diff.toLoad.map(chunkKey),
         toUnload: diff.toUnload.map(chunkKey),

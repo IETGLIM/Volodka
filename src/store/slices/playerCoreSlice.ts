@@ -13,6 +13,7 @@ import {
   type ActiveTTLFlag,
   type ActiveTTLFlagMap,
 } from '../activeTTLFlags';
+import { MAX_STORY_ACT } from '@/data/storyActs';
 
 /* ─── Slice types ─── */
 
@@ -38,7 +39,7 @@ export interface PlayerCoreSliceActions {
   upsertActiveTTLFlags: (flags: ActiveTTLFlag[]) => void;
   removeActiveTTLFlags: (keys: string[]) => void;
   clearActiveTTLFlags: () => void;
-  /** Advance to the next act (1 → 2). No-op if already at max act. */
+  /** Advance to the next act. No-op if already at {@link MAX_STORY_ACT}. */
   advanceAct: () => void;
 }
 
@@ -195,7 +196,7 @@ export const createPlayerCoreSlice: StateCreator<
   advanceAct: () =>
     set((state) => {
       const currentAct = state.playerState.progression.currentAct;
-      if (currentAct >= 5) return state;
+      if (currentAct >= MAX_STORY_ACT) return state;
       return {
         playerState: {
           ...state.playerState,

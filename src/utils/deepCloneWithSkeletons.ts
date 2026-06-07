@@ -15,7 +15,15 @@
 
 import * as THREE from 'three';
 
-export function deepCloneWithSkeletons(source: THREE.Object3D): THREE.Group {
+export interface DeepCloneOptions {
+  /** When true, dispose GPU resources on the source after cloning (default false). */
+  disposeSource?: boolean;
+}
+
+export function deepCloneWithSkeletons(
+  source: THREE.Object3D,
+  options: DeepCloneOptions = {},
+): THREE.Group {
   // Step 1: Tag every source object with a unique persistent ID
   // (We use userData so it doesn't interfere with Three.js internals)
   const tag = `__deepClone_${Date.now()}_${Math.random().toString(36).slice(2)}`;
@@ -125,6 +133,18 @@ export function deepCloneWithSkeletons(source: THREE.Object3D): THREE.Group {
     delete obj.userData[tag];
     delete obj.userData[`${tag}_uuid`];
   });
+
+  if (options.disposeSource) {
+    source.traverse((obj) => {
+      if (obj instanceof THREE.Mesh || obj instanceof THREE.SkinnedMesh) {
+        obj.geometry?.dispose();
+        const materials = Array.isArray(obj.material) ? obj.material : [obj.material];
+        for (const mat of materials) {
+          mat?.dispose();
+        }
+      }
+    });
+  }
 
   return cloned;
 }

@@ -165,7 +165,16 @@ export interface StoryChoice {
   next: string | null;
   effects?: StoryEffect[];
   condition?: ChoiceCondition;
+  /** Marks the canonical golden-path edge from this node (used to derive story spine). */
+  goldenPath?: boolean;
 }
+
+export type StoryGuidanceObjectiveType =
+  | 'talk_to_npc'
+  | 'visit_location'
+  | 'complete_quest'
+  | 'collect_item'
+  | 'make_choice';
 
 export interface StoryNode {
   id: string;
@@ -176,6 +185,15 @@ export interface StoryNode {
   effects?: StoryEffect[];
   poemId?: string;
   cutsceneId?: string;
+  /** Player-facing guidance hint for this step (replaces manual GOLDEN_PATH_BRANCH_HINTS entry). */
+  guidanceHint?: string;
+  /** NPC id for guidance HUD when this step is an NPC beat. */
+  guidanceNpcId?: string;
+  /** Human-readable location label for guidance HUD. */
+  guidanceSceneLabel?: string;
+  guidanceObjectiveType?: StoryGuidanceObjectiveType;
+  /** Marks the entry node for an act (optional — ACT_TRANSITIONS remains fallback). */
+  actEntry?: number;
 }
 
 // ─── Dialogue ───
@@ -280,6 +298,8 @@ export interface QuestDefinition {
   requiredFlag?: string;
   /** NPC ID that gives this quest (used for quest indicators above NPCs) */
   questGiverNpcId?: string;
+  /** Explicit order on the main quest golden spine (lower = earlier). */
+  spineOrder?: number;
   /** Items given as rewards when quest is completed */
   rewardItems?: { itemId: string; quantity: number }[];
 }

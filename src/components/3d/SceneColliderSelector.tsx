@@ -17,7 +17,8 @@
  *  4. Foreground decorative meshes → never collided (parallax layer only)
  */
 
-import { Suspense, lazy, useRef, useMemo, useEffect } from 'react';
+import { Suspense, useRef, useMemo, useEffect } from 'react';
+import { retryLazy } from '@/shared/utils/retryLazy';
 import { CuboidCollider } from '@react-three/rapier';
 import { useGameStore } from '@/store/gameStore';
 import { getSceneConfig } from '@/config/scenes';
@@ -30,25 +31,11 @@ import { EnvironmentLodProvider } from './lod/EnvironmentLodProvider';
 import type { SceneId } from '@/shared/types/game';
 import type { MutableRefObject } from 'react';
 import * as THREE from 'three';
+import { useThreeCleanup } from '@/hooks/useThreeCleanup';
 
 /* ── Lazy-loaded scene visuals ──
  * Each scene visual is loaded on demand when the player enters that scene.
  * Using React.lazy because these components render inside the R3F Canvas tree. */
-
-function retryLazy<T extends React.ComponentType<any>>(
-  importFn: () => Promise<{ [key: string]: T }>,
-  exportName: string,
-  maxRetries = 3,
-): React.LazyExoticComponent<T> {
-  return lazy(() =>
-    importFn().then((m) => ({ default: m[exportName] as T })).catch(async (err) => {
-      if (maxRetries <= 0) throw err;
-      console.warn(`[retryLazy] ChunkLoadError for ${exportName}, retrying... (${maxRetries} left)`, err.message);
-      await new Promise((r) => setTimeout(r, 500 * (4 - maxRetries)));
-      return importFn().then((m) => ({ default: m[exportName] as T }));
-    })
-  );
-}
 
 const VolodkaRoomVisual = retryLazy(() => import('./VolodkaRoomVisual'), 'VolodkaRoomVisual');
 const VolodkaCorridorVisual = retryLazy(() => import('./VolodkaCorridorVisual'), 'VolodkaCorridorVisual');
@@ -86,26 +73,27 @@ export function SceneColliderSelector({ livePlayerPositionRef }: SceneColliderSe
 
       {/* Midground layer — architecture, walls, floors, furniture (visual only). */}
       <SceneLayer layer="MIDGROUND">
-        <Suspense fallback={<SceneLoadingFallback />}>
+        <Suspense key={sceneId} fallback={null}>
           <EnvironmentLodProvider livePlayerPositionRef={livePlayerPositionRef}>
-            <VisualScene key={sceneId} sceneId={sceneId} livePlayerPositionRef={livePlayerPositionRef} />
+            <SceneVisualRoot
+              key={sceneId}
+              sceneId={sceneId}
+              livePlayerPositionRef={livePlayerPositionRef}
+            />
           </EnvironmentLodProvider>
         </Suspense>
       </SceneLayer>
 
       {/* Foreground layer — nearby objects with parallax (outdoor scenes only) */}
-      <Suspense fallback={null}>
+      <Suspense key={`fg:${sceneId}`} fallback={null}>
         <ForegroundElements sceneId={sceneId} livePlayerPositionRef={livePlayerPositionRef} />
       </Suspense>
 
-      {/* SceneDefinition cuboid colliders — walls, furniture, buildings (cached per sceneId). */}
-      <SceneDefinitionColliders sceneId={sceneId} />
-
-      {/* Structural colliders: thick floor + boundary walls (+ ceiling when indoor). */}
-      <SceneStructuralColliders sceneId={sceneId} />
+      {/* SceneDefinition + structural Rapier colliders — remount per sceneId. */}
+      <ScenePhysicsColliders key={sceneId} sceneId={sceneId} />
 
       {/* Invisible meshes on layer 5 for camera wall-avoidance raycasts. */}
-      <CameraCollisionProxies sceneId={sceneId} />
+      <CameraCollisionProxies key={sceneId} sceneId={sceneId} />
     </group>
   );
 }
@@ -118,21 +106,30 @@ export function SceneColliderSelector({ livePlayerPositionRef }: SceneColliderSe
    Floors are skipped here — SceneStructuralColliders provides the thick safety floor.
    ══════════════════════════════════════════════════════════════════════════════ */
 
+function ScenePhysicsColliders({ sceneId }: { sceneId: SceneId }) {
+  return (
+    <group key={`physics-colliders:${sceneId}`}>
+      <SceneDefinitionColliders sceneId={sceneId} />
+      <SceneStructuralColliders sceneId={sceneId} />
+    </group>
+  );
+}
+
 function SceneDefinitionColliders({ sceneId }: { sceneId: SceneId }) {
   const colliders = useMemo(() => generateColliders(SCENE_DEFINITIONS[sceneId]), [sceneId]);
 
   return (
-    <group key={`def-colliders:${sceneId}`}>
+    <>
       {colliders.walls.map((def, i) => (
-        <DefinitionCuboidCollider key={`wall-${i}`} def={def} />
+        <DefinitionCuboidCollider key={`${sceneId}-wall-${def.name ?? i}`} def={def} />
       ))}
       {colliders.obstacles.map((def, i) => (
-        <DefinitionCuboidCollider key={`obs-${i}`} def={def} />
+        <DefinitionCuboidCollider key={`${sceneId}-obs-${def.name ?? i}`} def={def} />
       ))}
       {colliders.ceilings.map((def, i) => (
-        <DefinitionCuboidCollider key={`ceil-${i}`} def={def} />
+        <DefinitionCuboidCollider key={`${sceneId}-ceil-${def.name ?? i}`} def={def} />
       ))}
-    </group>
+    </>
   );
 }
 
@@ -174,14 +171,10 @@ function SceneStructuralColliders({ sceneId }: { sceneId: SceneId }) {
   const WALL_THICKNESS = 0.5; // Thick enough to prevent tunneling with KinematicCharacterController
 
   return (
-    <group>
-      {/* ── Floor: thick cuboid with footstep material name ──
-       *  CRITICAL: The top surface is at config.floorY to match the player spawn point.
-       *  This MUST be ABOVE the visual floor trimesh (typically at y≈0.001) so the
-       *  KinematicCharacterController hits the CuboidCollider FIRST.
-       *  Center at floorY - halfHeight; top at floorY.
-       */}
+    <>
+      {/* ── Floor: thick cuboid with footstep material name ── */}
       <CuboidCollider
+        key={`${sceneId}-floor`}
         args={[w / 2, STRUCTURAL_FLOOR_HALF_HEIGHT, d / 2]}
         position={[0, floorCenterY, 0]}
         name={`fs:${floorMaterial}`}
@@ -192,6 +185,7 @@ function SceneStructuralColliders({ sceneId }: { sceneId: SceneId }) {
       {/* ── Ceiling: for indoor scenes ── */}
       {hasCeiling && (
         <CuboidCollider
+          key={`${sceneId}-ceiling`}
           args={[w / 2, 0.1, d / 2]}
           position={[0, wallHeight + 0.1, 0]}
           name={`fs:${floorMaterial}`}
@@ -210,6 +204,7 @@ function SceneStructuralColliders({ sceneId }: { sceneId: SceneId }) {
        */}
       {/* Left wall (x = -w/2) */}
       <CuboidCollider
+        key={`${sceneId}-wall-left`}
         args={[WALL_THICKNESS / 2, wallHeight / 2, d / 2]}
         position={[-w / 2, wallHeight / 2, 0]}
         name="fs:concrete"
@@ -218,6 +213,7 @@ function SceneStructuralColliders({ sceneId }: { sceneId: SceneId }) {
       />
       {/* Right wall (x = +w/2) */}
       <CuboidCollider
+        key={`${sceneId}-wall-right`}
         args={[WALL_THICKNESS / 2, wallHeight / 2, d / 2]}
         position={[w / 2, wallHeight / 2, 0]}
         name="fs:concrete"
@@ -226,6 +222,7 @@ function SceneStructuralColliders({ sceneId }: { sceneId: SceneId }) {
       />
       {/* Back wall (z = -d/2) */}
       <CuboidCollider
+        key={`${sceneId}-wall-back`}
         args={[w / 2, wallHeight / 2, WALL_THICKNESS / 2]}
         position={[0, wallHeight / 2, -d / 2]}
         name="fs:concrete"
@@ -234,13 +231,14 @@ function SceneStructuralColliders({ sceneId }: { sceneId: SceneId }) {
       />
       {/* Front wall (z = +d/2) */}
       <CuboidCollider
+        key={`${sceneId}-wall-front`}
         args={[w / 2, wallHeight / 2, WALL_THICKNESS / 2]}
         position={[0, wallHeight / 2, d / 2]}
         name="fs:concrete"
         restitution={0}
         friction={0.5}
       />
-    </group>
+    </>
   );
 }
 
@@ -253,12 +251,24 @@ interface VisualSceneProps {
   livePlayerPositionRef: MutableRefObject<THREE.Vector3>;
 }
 
+/** Wraps scene visuals and disposes GPU resources when sceneId changes. */
+function SceneVisualRoot({ sceneId, livePlayerPositionRef }: VisualSceneProps) {
+  const rootRef = useRef<THREE.Group>(null);
+  useThreeCleanup(rootRef, { sceneId });
+
+  return (
+    <group ref={rootRef}>
+      <VisualScene sceneId={sceneId} livePlayerPositionRef={livePlayerPositionRef} />
+    </group>
+  );
+}
+
 function VisualScene({ sceneId, livePlayerPositionRef }: VisualSceneProps) {
   switch (sceneId) {
     case 'volodka_room':
       return <VolodkaRoomVisual livePlayerPositionRef={livePlayerPositionRef} />;
     case 'volodka_corridor':
-      return <VolodkaCorridorVisual />;
+      return <VolodkaCorridorVisual livePlayerPositionRef={livePlayerPositionRef} />;
     case 'home_evening':
       return <HomeEveningVisual />;
     case 'street_night':
@@ -274,7 +284,7 @@ function VisualScene({ sceneId, livePlayerPositionRef }: VisualSceneProps) {
     case 'library_day':
       return <LibraryDayVisual />;
     case 'battle':
-      return <BattleVisual />;
+      return <BattleVisual livePlayerPositionRef={livePlayerPositionRef} />;
     case 'sleep_dream':
       return <SleepDreamVisual />;
     case 'rooftop_edge':
@@ -282,7 +292,7 @@ function VisualScene({ sceneId, livePlayerPositionRef }: VisualSceneProps) {
     case 'abandoned_factory':
       return <AbandonedFactoryVisual livePlayerPositionRef={livePlayerPositionRef} />;
     case 'zarema_albert_room':
-      return <ZaremaAlbertRoomVisual />;
+      return <ZaremaAlbertRoomVisual livePlayerPositionRef={livePlayerPositionRef} />;
     case 'chk_forest_zorge':
       return <ChkForestZorgeVisual livePlayerPositionRef={livePlayerPositionRef} />;
     default:
@@ -346,6 +356,8 @@ function DistantBuildingSilhouettes({ sceneId }: { sceneId: SceneId }) {
     meshRef.current.instanceMatrix.needsUpdate = true;
   }, [buildings]);
 
+  useThreeCleanup(meshRef);
+
   return (
     <instancedMesh ref={meshRef} args={[undefined, undefined, BUILDING_COUNT]}>
       <boxGeometry args={[1, 1, 1]} />
@@ -408,19 +420,19 @@ function ForegroundElements({ sceneId, livePlayerPositionRef }: ForegroundElemen
   switch (sceneId) {
     case 'street_night':
       return (
-        <LayeredForeground livePlayerPositionRef={livePlayerPositionRef}>
+        <LayeredForeground key={sceneId} livePlayerPositionRef={livePlayerPositionRef}>
           <StreetForegroundObjects />
         </LayeredForeground>
       );
     case 'park_day':
       return (
-        <LayeredForeground livePlayerPositionRef={livePlayerPositionRef}>
+        <LayeredForeground key={sceneId} livePlayerPositionRef={livePlayerPositionRef}>
           <ParkForegroundObjects />
         </LayeredForeground>
       );
     case 'rooftop_edge':
       return (
-        <LayeredForeground livePlayerPositionRef={livePlayerPositionRef}>
+        <LayeredForeground key={sceneId} livePlayerPositionRef={livePlayerPositionRef}>
           <RooftopForegroundObjects />
         </LayeredForeground>
       );
@@ -611,15 +623,6 @@ function RooftopForegroundObjects() {
         </mesh>
       </group>
     </group>
-  );
-}
-
-function SceneLoadingFallback() {
-  return (
-    <mesh position={[0, 1, 0]}>
-      <boxGeometry args={[0.5, 0.5, 0.5]} />
-      <meshStandardMaterial color="#444" wireframe />
-    </mesh>
   );
 }
 

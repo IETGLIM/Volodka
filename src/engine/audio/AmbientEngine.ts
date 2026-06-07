@@ -10,6 +10,7 @@ import {
 } from '../../data/ambientSounds';
 import { getSharedAudioContext } from '../SharedAudioContext';
 import { registerHmrDispose } from '@/shared/dev/hmrDispose';
+import { releaseBufferSource } from './AudioEngineCore';
 
 /* ─── AmbientSoundPlayer: Procedural Ambient Sound Engine ───
  *  Generates ambient background sounds using Web Audio API oscillators and noise.
@@ -49,8 +50,10 @@ interface PlayingAmbient {
   /** Harmonic oscillator if any */
   harmonicOsc?: OscillatorNode;
   harmonicGain?: GainNode;
-  /** Noise layer nodes */
+  /** Optional looping noise layer (rain, wind, etc.) */
   noiseSource?: AudioBufferSourceNode;
+  /** Retained until cleanup so scene change can drop the loop buffer from memory */
+  noiseBuffer?: AudioBuffer;
   noiseGain?: GainNode;
   noiseFilter?: BiquadFilterNode;
   noiseLfo?: OscillatorNode;
@@ -82,8 +85,14 @@ export class AmbientSoundPlayer {
   /** Monotonic counter — stale crossfade transitions are ignored */
   private transitionGeneration = 0;
 
-  /** All pending scheduleRandomSound timeouts (cleared on dispose / instance retire) */
-  private pendingRandomTimers = new Set<ReturnType<typeof setTimeout>>();
+  /** Invalidates in-flight scheduleRandomSound callbacks (dispose / stopAll). */
+  private randomScheduleEpoch = 0;
+
+  /** Every setTimeout owned by this player (random events + fade-out cleanup). */
+  private pendingScheduledTimers = new Set<ReturnType<typeof setTimeout>>();
+
+  /** All live instances — dispose sweeps even if not current / fading. */
+  private activeAmbients = new Set<PlayingAmbient>();
 
   /** Ambients currently fading out (may still be audible) */
   private fadingAmbients = new Set<PlayingAmbient>();
@@ -123,10 +132,12 @@ export class AmbientSoundPlayer {
     this.initContext();
     this.resume();
 
-    // Same type already playing — no change needed
+    // Same type already playing — no change needed (do not bump transitionGeneration)
     if (this.currentType === type && this.currentAmbient && !this.currentAmbient.fadingOut) {
       return;
     }
+
+    const generation = ++this.transitionGeneration;
 
     const ctx = this.ctx;
     const dest = this.destination;
@@ -135,9 +146,10 @@ export class AmbientSoundPlayer {
     const def = AMBIENT_SOUNDS[type];
     if (!def) return;
 
-    const generation = ++this.transitionGeneration;
-    const now = ctx.currentTime;
     const crossfadeSec = crossfadeMs / 1000;
+
+    // Rapid play() chains leave older crossfades audible — retire them immediately
+    this.purgeStaleFadingAmbients();
 
     // Detach current before fade — rapid play() must not leave `current` on a retiring instance
     const outgoing = this.currentAmbient;
@@ -149,7 +161,7 @@ export class AmbientSoundPlayer {
     }
 
     // ── Create new ambient ──
-    const newAmbient = this.createAmbientInstance(def, now, crossfadeSec);
+    const newAmbient = this.createAmbientInstance(def, ctx.currentTime, crossfadeSec);
 
     if (this.disposed) {
       this.cleanupAmbient(newAmbient);
@@ -164,6 +176,13 @@ export class AmbientSoundPlayer {
 
     this.currentAmbient = newAmbient;
     this.currentType = type;
+  }
+
+  /** Drop orphaned crossfade layers (rapid play() only keeps one outgoing fade). */
+  private purgeStaleFadingAmbients(): void {
+    for (const stale of [...this.fadingAmbients]) {
+      this.cleanupAmbient(stale);
+    }
   }
 
   /** Create and start all nodes for an ambient sound definition */
@@ -289,6 +308,7 @@ export class AmbientSoundPlayer {
       noiseSource.start(now);
 
       instance.noiseSource = noiseSource;
+      instance.noiseBuffer = buffer;
       instance.noiseGain = noiseGainNode;
       instance.noiseFilter = noiseFilter;
       instance.noiseLfo = noiseLfo;
@@ -302,7 +322,25 @@ export class AmbientSoundPlayer {
       }
     }
 
+    this.activeAmbients.add(instance);
     return instance;
+  }
+
+  private trackScheduledTimer(timer: ReturnType<typeof setTimeout>): void {
+    this.pendingScheduledTimers.add(timer);
+  }
+
+  private untrackScheduledTimer(timer: ReturnType<typeof setTimeout>): void {
+    this.pendingScheduledTimers.delete(timer);
+  }
+
+  /** Cancel every owned timer and invalidate pending random-sound callbacks. */
+  private clearAllScheduledTimers(): void {
+    this.randomScheduleEpoch++;
+    for (const timer of this.pendingScheduledTimers) {
+      clearTimeout(timer);
+    }
+    this.pendingScheduledTimers.clear();
   }
 
   /** Cancel all pending random-sound timers for an instance */
@@ -310,17 +348,9 @@ export class AmbientSoundPlayer {
     ambient.randomSoundGeneration++;
     for (const timer of ambient.randomTimers) {
       clearTimeout(timer);
-      this.pendingRandomTimers.delete(timer);
+      this.untrackScheduledTimer(timer);
     }
     ambient.randomTimers = [];
-  }
-
-  /** Cancel every scheduleRandomSound timer (dispose / stopAll safety net) */
-  private clearAllPendingRandomTimers(): void {
-    for (const timer of this.pendingRandomTimers) {
-      clearTimeout(timer);
-    }
-    this.pendingRandomTimers.clear();
   }
 
   /** Schedule a random sound event at a random interval */
@@ -331,16 +361,18 @@ export class AmbientSoundPlayer {
   ): void {
     if (this.disposed || instance.fadingOut) return;
 
+    const capturedEpoch = this.randomScheduleEpoch;
     const capturedGen = instance.randomSoundGeneration;
     const interval =
       rs.minInterval + Math.random() * (rs.maxInterval - rs.minInterval);
 
     const timer = setTimeout(() => {
+      this.untrackScheduledTimer(timer);
       const idx = instance.randomTimers.indexOf(timer);
       if (idx !== -1) instance.randomTimers.splice(idx, 1);
-      this.pendingRandomTimers.delete(timer);
 
       if (this.disposed || instance.fadingOut) return;
+      if (capturedEpoch !== this.randomScheduleEpoch) return;
       if (this.currentAmbient !== instance) return;
       if (capturedGen !== instance.randomSoundGeneration) return;
 
@@ -349,7 +381,7 @@ export class AmbientSoundPlayer {
     }, interval * 1000);
 
     instance.randomTimers.push(timer);
-    this.pendingRandomTimers.add(timer);
+    this.trackScheduledTimer(timer);
   }
 
   /** Play a single random sound event */
@@ -383,7 +415,10 @@ export class AmbientSoundPlayer {
 
   /** Fade out an ambient instance and clean it up */
   private fadeOutAmbient(ambient: PlayingAmbient, durationSec: number): void {
-    if (ambient.fadingOut) return;
+    if (ambient.fadingOut) {
+      this.cleanupAmbient(ambient);
+      return;
+    }
 
     const ctx = this.ctx;
     if (!ctx) {
@@ -395,8 +430,18 @@ export class AmbientSoundPlayer {
     this.fadingAmbients.add(ambient);
     this.clearRandomTimers(ambient);
 
-    // Fade out master gain
     const now = ctx.currentTime;
+
+    if (durationSec <= 0) {
+      try {
+        ambient.masterGain.gain.setValueAtTime(0, now);
+      } catch {
+        // Gain may already be at 0
+      }
+      this.cleanupAmbient(ambient);
+      return;
+    }
+
     try {
       ambient.masterGain.gain.setValueAtTime(ambient.masterGain.gain.value, now);
       ambient.masterGain.gain.linearRampToValueAtTime(0, now + durationSec);
@@ -406,18 +451,22 @@ export class AmbientSoundPlayer {
 
     if (ambient.fadeOutTimer) {
       clearTimeout(ambient.fadeOutTimer);
+      this.untrackScheduledTimer(ambient.fadeOutTimer);
     }
 
-    // Per-instance timer — never cancel another ambient's scheduled cleanup
-    ambient.fadeOutTimer = setTimeout(() => {
+    const fadeTimer = setTimeout(() => {
       ambient.fadeOutTimer = undefined;
+      this.untrackScheduledTimer(fadeTimer);
       if (this.disposed) return;
       this.cleanupAmbient(ambient);
     }, (durationSec + 0.5) * 1000);
+    ambient.fadeOutTimer = fadeTimer;
+    this.trackScheduledTimer(fadeTimer);
   }
 
   /** Stop and disconnect all nodes for an ambient instance */
   private cleanupAmbient(ambient: PlayingAmbient): void {
+    this.activeAmbients.delete(ambient);
     this.fadingAmbients.delete(ambient);
     this.clearRandomTimers(ambient);
 
@@ -441,10 +490,12 @@ export class AmbientSoundPlayer {
       try { ambient.harmonicGain.disconnect(); } catch { /* ignore */ }
     }
 
-    // Stop noise layer
+    // Stop noise layer and release its loop buffer
     if (ambient.noiseSource) {
-      try { ambient.noiseSource.stop(); } catch { /* already stopped */ }
+      releaseBufferSource(ambient.noiseSource);
+      ambient.noiseSource = undefined;
     }
+    ambient.noiseBuffer = undefined;
     if (ambient.noiseGain) {
       try { ambient.noiseGain.disconnect(); } catch { /* ignore */ }
     }
@@ -464,6 +515,7 @@ export class AmbientSoundPlayer {
 
     if (ambient.fadeOutTimer) {
       clearTimeout(ambient.fadeOutTimer);
+      this.untrackScheduledTimer(ambient.fadeOutTimer);
       ambient.fadeOutTimer = undefined;
     }
 
@@ -481,15 +533,15 @@ export class AmbientSoundPlayer {
 
   private doStopAll(): void {
     ++this.transitionGeneration;
-    this.clearAllPendingRandomTimers();
-    if (this.currentAmbient) {
-      this.cleanupAmbient(this.currentAmbient);
-      this.currentAmbient = null;
-      this.currentType = null;
-    }
-    for (const ambient of [...this.fadingAmbients]) {
+    this.clearAllScheduledTimers();
+
+    for (const ambient of [...this.activeAmbients]) {
       this.cleanupAmbient(ambient);
     }
+    this.activeAmbients.clear();
+    this.fadingAmbients.clear();
+    this.currentAmbient = null;
+    this.currentType = null;
   }
 
   /** Set combat mute state */
@@ -567,14 +619,32 @@ export function getAmbientPlayer(): AmbientSoundPlayer {
 }
 
 export function disposeAmbientEngine(): void {
-  ambientPlayerInstance?.dispose();
+  if (!ambientPlayerInstance) return;
+  ambientPlayerInstance.dispose();
+  ambientPlayerInstance = null;
 }
 
 export function reviveAmbientEngine(): void {
-  ambientPlayerInstance?.revive();
+  if (ambientPlayerInstance) {
+    ambientPlayerInstance.revive();
+  }
 }
 
 registerHmrDispose(disposeAmbientEngine);
+
 export type { AmbientSoundType };
-/** Singleton ambient bed player */
-export const ambientEngine = getAmbientPlayer();
+
+/**
+ * HMR-safe facade — always forwards to the current singleton instance.
+ * (A bare `const x = getAmbientPlayer()` would pin a disposed instance after hot reload.)
+ */
+export const ambientEngine: AmbientSoundPlayer = new Proxy({} as AmbientSoundPlayer, {
+  get(_target, prop) {
+    const instance = getAmbientPlayer();
+    const value = (instance as unknown as Record<string | symbol, unknown>)[prop];
+    if (typeof value === 'function') {
+      return (value as (...args: unknown[]) => unknown).bind(instance);
+    }
+    return value;
+  },
+});

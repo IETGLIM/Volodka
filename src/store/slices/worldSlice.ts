@@ -224,7 +224,7 @@ export const createWorldSlice: StateCreator<
       const poem = getPoemById(poemId);
       if (!poem) return state;
       const poemTitle = poem.title;
-      try { eventBus.emit('poem:collected', { poemId }); } catch { /* ignore */ }
+      eventBus.emit('poem:collected', { poemId });
       const { notifications: currentNotifications } = readWorldFromPlayer(get());
       return {
         collectedPoems: [...state.collectedPoems, poemId],

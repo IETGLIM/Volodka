@@ -96,6 +96,11 @@ export class WorldChunkManager {
   reset(): void {
     this.loaded.clear();
   }
+
+  /** Sync loaded set from worker-computed diff (keeps main thread authoritative). */
+  applyExternalDiff(diff: WorldChunkDiff): void {
+    this.loaded = new Set(diff.active.map(chunkKey));
+  }
 }
 
 /** Default tuning for web: 64m chunks, 1-chunk halo (3×3 grid max). */

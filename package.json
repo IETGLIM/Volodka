@@ -5,10 +5,13 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:inspect": "vite --mode inspect",
     "build": "npm run validate && tsc -b && vite build && npm run budgets",
+    "build:analyze": "npm run validate && tsc -b && vite build --mode analyze && npm run budgets",
     "validate": "npx tsx --tsconfig tsconfig.json scripts/validate-content.ts",
     "validate:content": "npx tsx --tsconfig tsconfig.json scripts/validate-content.ts",
     "assets:process": "node scripts/process-gltf-assets.mjs",
+    "assets:validate": "npx tsx --tsconfig tsconfig.json scripts/validate-gltf-assets.ts",
     "preview": "vite preview",
     "lint": "eslint src --max-warnings 9999",
     "typecheck": "tsc --noEmit",
@@ -92,11 +95,13 @@
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.2",
     "globals": "^17.6.0",
+    "rollup-plugin-visualizer": "^6.0.3",
     "tailwindcss": "^4",
     "tw-animate-css": "^1.3.5",
     "typescript": "^5",
     "typescript-eslint": "^8.60.1",
     "vite": "^6.3.5",
+    "vite-plugin-inspect": "^11.3.3",
     "vitest": "^3.2.4",
     "@playwright/test": "^1.53.2"
   }

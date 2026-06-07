@@ -6,20 +6,17 @@ import { useFrameTick } from '@/engine/frame/useFrameTick';
 import * as THREE from 'three';
 import { useGameStore } from '@/store/gameStore';
 import { eventBus } from '@/engine/EventBus';
-import { Radiator, Plant, Picture } from './InteriorModels';
+import { Radiator, Plant, Picture } from './lazyInteriorModels';
+import { useEnvironmentLod } from './lod/EnvironmentLodProvider';
+import { EnvironmentDetail } from './lod/PropDistanceGate';
+import { useCachedCanvasTexture } from '@/hooks/useCachedCanvasTexture';
+import { HomeEveningProps } from './sceneChunks/homeEvening';
 
 /** Home evening room (14×14m) – kitchen, living area, bedroom area */
 export function HomeEveningVisual() {
-  const floorTexture = useMemo(() => createHomeFloorTexture(), []);
-  const wallTexture = useMemo(() => createHomeWallTexture(), []);
-
-  // ── Dispose CanvasTextures on unmount ──
-  useEffect(() => {
-    return () => {
-      floorTexture?.dispose();
-      wallTexture?.dispose();
-    };
-  }, [floorTexture, wallTexture]);
+  const floorTexture = useCachedCanvasTexture('home_evening:floor', createHomeFloorTexture);
+  const wallTexture = useCachedCanvasTexture('home_evening:wall', createHomeWallTexture);
+  const { lod } = useEnvironmentLod();
 
   const W = 14;
   const D = 14;
@@ -376,51 +373,8 @@ export function HomeEveningVisual() {
       {/* Window glow spill */}
       <pointLight position={[6.5, 1.5, -2.5]} color="#1a2a5a" intensity={1.5} distance={7} />
 
-      {/* ═══════════════════════════════════════════════ */}
-      {/* ── ENVIRONMENTAL CLUTTER / STORYTELLING ── */}
-      {/* ═══════════════════════════════════════════════ */}
-
-      {/* ── Pots on stove ── */}
-      <mesh position={[3.5, 0.98, -5.2]}>
-        <cylinderGeometry args={[0.12, 0.1, 0.12, 8]} />
-        <meshStandardMaterial color="#3a3a3a" metalness={0.6} roughness={0.4} />
-      </mesh>
-      {/* Pot handle */}
-      <mesh position={[3.38, 1.02, -5.2]} rotation={[0, 0, Math.PI / 2]}>
-        <cylinderGeometry args={[0.01, 0.01, 0.12, 4]} />
-        <meshStandardMaterial color="#222" metalness={0.5} roughness={0.5} />
-      </mesh>
-
-      {/* ── Cutting board with vegetables ── */}
-      <mesh position={[4.8, 0.93, -5.3]} rotation={[0, 0.2, 0]}>
-        <boxGeometry args={[0.3, 0.02, 0.2]} />
-        <meshStandardMaterial color="#b89868" roughness={0.8} />
-      </mesh>
-      {/* Chopped vegetable pieces */}
-      <mesh position={[4.85, 0.95, -5.25]}>
-        <boxGeometry args={[0.04, 0.03, 0.04]} />
-        <meshStandardMaterial color="#dd4422" roughness={0.9} />
-      </mesh>
-      <mesh position={[4.75, 0.95, -5.35]}>
-        <boxGeometry args={[0.05, 0.03, 0.04]} />
-        <meshStandardMaterial color="#22aa44" roughness={0.9} />
-      </mesh>
-
-      {/* ── Spilled water on counter ── */}
-      <mesh rotation-x={-Math.PI / 2} position={[4.2, 0.93, -5.6]}>
-        <circleGeometry args={[0.15, 12]} />
-        <meshStandardMaterial color="#7090a0" transparent opacity={0.2} roughness={0.1} metalness={0.2} polygonOffset polygonOffsetFactor={-1} polygonOffsetUnits={-1} />
-      </mesh>
-
-      {/* ── Dirty dishes in sink ── */}
-      <mesh position={[4.0, 1.0, -5.4]} rotation={[0.1, 0.3, 0]}>
-        <cylinderGeometry args={[0.1, 0.08, 0.03, 8]} />
-        <meshStandardMaterial color="#e8e0d8" roughness={0.6} />
-      </mesh>
-      <mesh position={[4.1, 1.02, -5.5]} rotation={[0.15, -0.2, 0.05]}>
-        <cylinderGeometry args={[0.08, 0.06, 0.03, 8]} />
-        <meshStandardMaterial color="#d0c8c0" roughness={0.6} />
-      </mesh>
+      {/* ── ENVIRONMENTAL CLUTTER / STORYTELLING (lazy chunk) ── */}
+      <HomeEveningProps lod={lod} />
 
       {/* ═══════════════════════════════════════════════ */}
       {/* ── ADDITIONAL KITCHEN DETAILS ── */}
@@ -726,6 +680,8 @@ export function HomeEveningVisual() {
       {/* ── INTERIOR MODELS (from InteriorModels.tsx) ── */}
       {/* ═══════════════════════════════════════════════ */}
 
+      {/* ── Decorative props (LOD: standard+) ── */}
+      <EnvironmentDetail currentLod={lod} minLod="standard">
       {/* ── Radiator on left wall near bedroom ── */}
       <Radiator position={[-W / 2 + 0.06, 0.3, 1.0]} rotation={[0, Math.PI / 2, 0]} color="#b0b0b0" />
 
@@ -738,6 +694,7 @@ export function HomeEveningVisual() {
       {/* ── Pictures on bedroom wall ── */}
       <Picture position={[-6.0, 2.0, -1.5]} rotation={[0, Math.PI / 2, 0]} color="#5a3a20" />
       <Picture position={[-6.0, 1.8, 0.5]} rotation={[0, Math.PI / 2, 0]} color="#6a4a30" />
+      </EnvironmentDetail>
     </group>
   );
 }

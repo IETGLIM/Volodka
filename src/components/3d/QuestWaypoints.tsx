@@ -54,7 +54,7 @@ export function QuestWaypoints({ livePlayerPositionRef }: QuestWaypointsProps) {
   if (!hasActiveQuests) return null;
 
   return (
-    <group>
+    <group key={`quest-waypoints:${currentSceneId}`}>
       {/* Exit arrows — pointing toward quest target exits */}
       {exits.map((exit, i) => (
         <QuestArrow

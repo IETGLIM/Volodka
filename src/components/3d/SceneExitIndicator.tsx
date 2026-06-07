@@ -35,7 +35,7 @@ export function SceneExitIndicator({ livePlayerPositionRef }: SceneExitIndicator
   const exits = useMemo(() => getSceneExits(sceneId, playerFlags, playerKarma), [sceneId, playerFlags, playerKarma]);
 
   return (
-    <group>
+    <group key={`exits:${sceneId}`}>
       {exits.map((exit, idx) => (
         <ExitMarker
           key={`${exit.targetScene}-${idx}`}

@@ -54,6 +54,7 @@
   background: rgba(0, 8, 4, 0.8);
   border-color: rgba(0, 255, 100, 0.15);
   color: #ccffdd;
+  touch-action: auto;
 }
 
 [data-cyberpunk] input:focus:not([data-preserve-style]),

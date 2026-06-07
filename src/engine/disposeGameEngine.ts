@@ -26,7 +26,14 @@ import {
   clearPlayerRigidBody,
 } from '@/engine/PlayerRigidBodyState';
 import { invalidateCanvasFirstFrame } from '@/engine/canvas/canvasFirstFrameSession';
+import { disposeCombatTransientPools } from '@/engine/combat/combatTransientPool';
+import { disposeWorldComputeWorker } from '@/engine/workers/computeWorkerClient';
 import { registerHmrDispose } from '@/shared/dev/hmrDispose';
+import {
+  resetGlobalCleanupRegistry,
+  runGlobalUnmountCleanup,
+} from '@/engine/core/GlobalCleanupService';
+import { getGameStore } from '@/store/gameStore';
 
 let engineDisposed = false;
 
@@ -52,13 +59,18 @@ export function disposeGameEngine(): void {
     disposeWorldEventDirector();
     disposeNavMeshLayer();
     disposeWorldStreamManager();
+    disposeWorldComputeWorker();
     invalidateCanvasFirstFrame();
+    disposeCombatTransientPools();
 
     disposeSceneAudioController();
     disposeMusicEngine();
     disposeAmbientEngine();
     disposeAudioEngine();
     disposeSharedAudioContext();
+
+    runGlobalUnmountCleanup(getGameStore().exploration.currentSceneId);
+    resetGlobalCleanupRegistry();
 
     disposeEventBus();
   } catch (err) {

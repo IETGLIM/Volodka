@@ -1,14 +1,17 @@
 
 /* ─── Volodka RPG – Library procedural 3D visual ─── */
 
-import { useMemo } from 'react';
 import * as THREE from 'three';
-import { Window, Radiator, Plant, Clock } from './InteriorModels';
+import { useEnvironmentLod } from './lod/EnvironmentLodProvider';
+import { EnvironmentDetail } from './lod/PropDistanceGate';
+import { useCachedCanvasTexture } from '@/hooks/useCachedCanvasTexture';
+import { LibraryDayInterior } from './sceneChunks/libraryDay';
 
 /** Gothic/AuthorMaterial library (16×14m) */
 export function LibraryDayVisual() {
-  const floorTexture = useMemo(() => createLibraryFloorTexture(), []);
-  const wallTexture = useMemo(() => createLibraryWallTexture(), []);
+  const floorTexture = useCachedCanvasTexture('library_day:floor', createLibraryFloorTexture);
+  const wallTexture = useCachedCanvasTexture('library_day:wall', createLibraryWallTexture);
+  const { lod } = useEnvironmentLod();
 
   const W = 16;
   const D = 14;
@@ -600,25 +603,8 @@ export function LibraryDayVisual() {
       {/* Candle warm glow at writing desk */}
       <pointLight position={[-5.0, 1.2, 3.0]} color="#ffaa44" intensity={0.6} distance={4} />
 
-      {/* ═══════════════════════════════════════════════ */}
-      {/* ── INTERIOR MODELS (from InteriorModels.tsx) ── */}
-      {/* ═══════════════════════════════════════════════ */}
-
-      {/* ── Additional windows on left wall ── */}
-      <Window position={[-W / 2 + 0.01, 2.5, 3.0]} rotation={[0, Math.PI / 2, 0]} color="#2255aa" />
-
-      {/* ── Radiator on back wall ── */}
-      <Radiator position={[-3.0, 0.3, -D / 2 + 0.06]} color="#a0a0a0" scale={[1.2, 1, 1]} />
-
-      {/* ── Radiator on front wall ── */}
-      <Radiator position={[4.0, 0.3, D / 2 - 0.06]} rotation={[0, Math.PI, 0]} color="#a0a0a0" scale={[1.2, 1, 1]} />
-
-      {/* ── Potted plants at entrance ── */}
-      <Plant position={[-5.5, 0, 5.5]} color="#2a6a20" scale={[1.5, 1.5, 1.5]} />
-      <Plant position={[5.5, 0, 5.5]} color="#308028" scale={[1.3, 1.3, 1.3]} />
-
-      {/* ── Wall clock on front wall ── */}
-      <Clock position={[-2.0, 3.5, D / 2 - 0.05]} rotation={[0, Math.PI, 0]} color="#f0e8d0" />
+      {/* ── INTERIOR MODELS (lazy chunk) ── */}
+      <LibraryDayInterior lod={lod} width={W} depth={D} />
     </group>
   );
 }

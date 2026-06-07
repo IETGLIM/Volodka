@@ -6,11 +6,15 @@ import { useFrameTick } from '@/engine/frame/useFrameTick';
 import * as THREE from 'three';
 import FastNoiseLite from 'fastnoise-lite';
 import { useProceduralTerrain, DREAM_TERRAIN } from '@/hooks/useProceduralTerrain';
+import { useEnvironmentLod } from './lod/EnvironmentLodProvider';
+import { EnvironmentDetail } from './lod/PropDistanceGate';
+import { useCachedCanvasTexture } from '@/hooks/useCachedCanvasTexture';
 
 /** Dark Fantasy/Psychonauts2 dreamscape (50×50m) with procedural terrain */
 export function SleepDreamVisual() {
   const W = 50;
   const D = 50;
+  const { lod } = useEnvironmentLod();
 
   // ── Procedural terrain with FastNoiseLite ──
   const { geometry, getHeightAt } = useProceduralTerrain({
@@ -27,11 +31,7 @@ export function SleepDreamVisual() {
   }, [geometry]);
 
   // ── Dream ground texture (now more detailed) ──
-  const groundTexture = useMemo(() => createDreamGroundTexture(), []);
-
-  useEffect(() => () => {
-    groundTexture.dispose();
-  }, [groundTexture]);
+  const groundTexture = useCachedCanvasTexture('sleep_dream:ground', createDreamGroundTexture);
 
   // ── Slow terrain animation ──
   useFrameTick('misc', ({ state }) => {
@@ -134,11 +134,13 @@ export function SleepDreamVisual() {
       {/* ═══════════════════════════════════════════════ */}
       {/* ── ENVIRONMENTAL CLUTTER ──                     */}
       {/* ═══════════════════════════════════════════════ */}
+      <EnvironmentDetail currentLod={lod} minLod="standard">
       <FloatingClock position={[5, 6, -3]} />
       <GlowingOrbs />
       <TornPhoto position={[-6, 4, 8]} />
       <MeltingChair position={[2, 0, -8]} />
       <InvertedDoorFrame position={[-10, 4, -5]} />
+      </EnvironmentDetail>
 
       {/* ═══════════════════════════════════════════════ */}
       {/* ── PARTICLE DUST (noise-driven density) ──      */}

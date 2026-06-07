@@ -25,3 +25,8 @@ export {
   SceneAudioController,
   getSceneAudioController,
 } from './SceneAudioController';
+export {
+  probeAudioCapabilities,
+  resetAudioCapabilitiesCache,
+  type AudioCapabilities,
+} from './audioCapabilities';

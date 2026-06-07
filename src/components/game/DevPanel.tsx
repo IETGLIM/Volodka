@@ -18,6 +18,7 @@ import {
 } from '@/engine/performance';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { SCENE_CONFIG } from '@/config/scenes';
+import { requestSceneTransition } from '@/engine/scene/sceneTransition';
 import type { SceneId } from '@/shared/types/game';
 import { POEMS } from '@/data/poems';
 
@@ -426,12 +427,9 @@ function SceneTab() {
   const rendererInfo = getFrameProfilerSnapshot();
 
   const handleSceneSwitch = useCallback((id: SceneId) => {
-    const store = useGameStore.getState();
     const config = SCENE_CONFIG[id];
     if (!config) return;
-    store.setExplorationScene(id);
-    store.setPlayerPosition(config.spawnPoint as [number, number, number]);
-    store.setPlayerRotation(config.initialRotation);
+    requestSceneTransition(id, config.spawnPoint as [number, number, number]);
   }, []);
 
   return (
@@ -453,10 +451,19 @@ function SceneTab() {
       <Row label="Rotation" value={`${(playerRot * (180 / Math.PI)).toFixed(1)}°`} />
 
       <div style={{ color: '#555', fontSize: 9, textTransform: 'uppercase', letterSpacing: 1.5, marginBottom: 6, marginTop: 10 }}>
+        GPU / Memory Snapshot
+      </div>
+      <Row label="Draw Calls" value={rendererInfo.drawCalls} />
+      <Row label="Triangles" value={rendererInfo.triangles.toLocaleString()} />
+      <Row label="Geometries" value={rendererInfo.geometries} />
+      <Row label="Textures" value={rendererInfo.textures} />
+      <Row label="Programs" value={rendererInfo.programs} />
+      <Row label="DPR" value={rendererInfo.dpr.toFixed(2)} />
+
+      <div style={{ color: '#555', fontSize: 9, textTransform: 'uppercase', letterSpacing: 1.5, marginBottom: 6, marginTop: 10 }}>
         Objects
       </div>
       <Row label="NPC States" value={Object.keys(npcStates).length} />
-      <Row label="DPR" value={rendererInfo.dpr.toFixed(2)} />
 
       {/* Scene switcher */}
       <div style={{ color: '#555', fontSize: 9, textTransform: 'uppercase', letterSpacing: 1.5, marginBottom: 6, marginTop: 12 }}>

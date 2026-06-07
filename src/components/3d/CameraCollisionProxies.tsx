@@ -108,9 +108,9 @@ export function CameraCollisionProxies({ sceneId }: CameraCollisionProxiesProps)
   }, [sceneId]);
 
   return (
-    <group name={`camera-collision:${sceneId}`}>
+    <group key={`camera-collision:${sceneId}`}>
       {defs.map((def, i) => (
-        <CameraCollisionBox key={`${def.name ?? 'cam-col'}-${i}`} def={def} />
+        <CameraCollisionBox key={`${sceneId}-${def.name ?? 'cam-col'}-${i}`} def={def} />
       ))}
     </group>
   );

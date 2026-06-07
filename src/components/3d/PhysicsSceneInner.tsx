@@ -16,6 +16,8 @@ import { SceneExitIndicator } from './SceneExitIndicator';
 import { QuestWaypoints } from './QuestWaypoints';
 import { ChoiceReactivity } from './ChoiceReactivity';
 import { SceneTransitionHandler } from './SceneTransitionHandler';
+import { SceneGpuLifecycleBridge } from './SceneGpuLifecycleBridge';
+import { RapierWorldLifecycleBridge } from './RapierWorldLifecycleBridge';
 import { ExplorationLighting } from './Lighting';
 import { SceneEnvironment } from './SceneEnvironment';
 import { EnvironmentalAnimator } from './EnvironmentalAnimator';
@@ -80,6 +82,8 @@ function PhysicsSceneInner({
       <QuestWaypoints livePlayerPositionRef={livePlayerPositionRef} />
       <ChoiceReactivity />
       <SceneTransitionHandler />
+      <SceneGpuLifecycleBridge />
+      <RapierWorldLifecycleBridge />
       <InteractionSystemBridge
         livePlayerPositionRef={livePlayerPositionRef}
         livePlayerRotationRef={livePlayerRotationRef}

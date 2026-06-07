@@ -1,7 +1,7 @@
 /* ─── Volodka RPG – World streaming hook ─── */
 /* Bridges exploration state to WorldStreamManager + region/cell context. */
 
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useGameStore } from '@/store/gameStore';
 import {
   getWorldStreamManager,
@@ -20,6 +20,7 @@ export interface UseWorldStreamResult {
 /**
  * Tracks open-world chunk streaming around the player.
  * Streaming activates only in district scenes; interiors/combat/dream stay discrete.
+ * Chunk diff runs in a Web Worker when available (Rapier physics stays on main thread).
  */
 export function useWorldStream(enabled = true): UseWorldStreamResult {
   const sceneId = useGameStore((s) => s.exploration.currentSceneId);
@@ -27,6 +28,7 @@ export function useWorldStream(enabled = true): UseWorldStreamResult {
 
   const manager = useMemo(() => getWorldStreamManager(), []);
 
+  const [activeChunks, setActiveChunks] = useState<WorldChunkCoord[]>([]);
   const lastDiffRef = useRef<WorldChunkDiff | null>(null);
 
   const playerChunk = useMemo(
@@ -34,24 +36,31 @@ export function useWorldStream(enabled = true): UseWorldStreamResult {
     [manager, sceneId, localPosition],
   );
 
-  const activeChunks = useMemo(() => {
+  useEffect(() => {
     if (!enabled) {
       manager.setStreamingEnabled(false);
-      return [];
+      setActiveChunks([]);
+      lastDiffRef.current = null;
+      return;
     }
-    const diff = manager.updateStream(sceneId, localPosition);
-    lastDiffRef.current = diff;
-    return diff.active;
+
+    let cancelled = false;
+
+    void manager.updateStreamAsync(sceneId, localPosition).then((diff) => {
+      if (cancelled) return;
+      lastDiffRef.current = diff;
+      setActiveChunks(diff.active);
+    });
+
+    return () => {
+      cancelled = true;
+    };
   }, [enabled, manager, sceneId, localPosition]);
 
   const streamState = useMemo(
     () => manager.getStreamState(sceneId, localPosition),
     [manager, sceneId, localPosition, activeChunks],
   );
-
-  useEffect(() => {
-    manager.syncContextFromScene(sceneId);
-  }, [manager, sceneId]);
 
   return {
     streamState,

@@ -7,7 +7,8 @@ import * as THREE from 'three';
 import { getEnvironmentLodProfile } from '@/engine/lod/distanceLod';
 import { useEnvironmentLod } from './lod/EnvironmentLodProvider';
 import { EnvironmentDetail, SceneClutterGate } from './lod/PropDistanceGate';
-import { FloorLamp, PastryCase, Window, Plant } from './InteriorModels';
+import { FloorLamp, PastryCase, Window, Plant } from './lazyInteriorModels';
+import { useCachedCanvasTexture } from '@/hooks/useCachedCanvasTexture';
 
 interface CafeVisualProps {
   livePlayerPositionRef?: MutableRefObject<THREE.Vector3>;
@@ -15,8 +16,8 @@ interface CafeVisualProps {
 
 /** Blue Pit cafe – cozy interior with bar counter, tables, warm lighting */
 export function CafeVisual({ livePlayerPositionRef }: CafeVisualProps) {
-  const floorTexture = useMemo(() => createCafeFloorTexture(), []);
-  const wallTexture = useMemo(() => createCafeWallTexture(), []);
+  const floorTexture = useCachedCanvasTexture('cafe_evening:floor', createCafeFloorTexture);
+  const wallTexture = useCachedCanvasTexture('cafe_evening:wall', createCafeWallTexture);
   const { lod } = useEnvironmentLod();
   const envProfile = useMemo(() => getEnvironmentLodProfile('cafe_evening'), []);
 
@@ -56,14 +57,12 @@ export function CafeVisual({ livePlayerPositionRef }: CafeVisualProps) {
     return geo;
   }, [steamData.positions]);
 
-  // ── Dispose CanvasTextures and BufferGeometry on unmount ──
+  // ── Dispose steam geometry on unmount (textures are module-cached) ──
   useEffect(() => {
     return () => {
-      floorTexture?.dispose();
-      wallTexture?.dispose();
       steamGeometry?.dispose();
     };
-  }, [floorTexture, wallTexture, steamGeometry]);
+  }, [steamGeometry]);
 
   // ── Animations via useFrame ──
   useFrameTick('misc', ({ delta }) => {

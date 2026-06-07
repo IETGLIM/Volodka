@@ -112,6 +112,16 @@ export function useNPCAnimation(
     crossfadeTo('idle');
   }, [crossfadeTo]);
 
+  // Release animation actions when the skinned clone unmounts (combat ↔ exploration, LOD swaps).
+  useEffect(() => {
+    return () => {
+      if (!actions) return;
+      for (const action of Object.values(actions)) {
+        action?.stop();
+      }
+    };
+  }, [actions]);
+
   return {
     currentAnim: currentAnimRef,
     crossfadeTo,

@@ -20,6 +20,7 @@ import {
 } from './shared';
 import { createEmptyActiveTTLFlagMap } from './activeTTLFlags';
 import type { GameStoreState } from './types';
+import { getGameStore } from './gameStore';
 
 /** Store keys written to / restored from localStorage (derived from Zod schema). */
 export type PersistedStoreKey = Exclude<
@@ -117,6 +118,11 @@ export function pickSavePayload(
   payload.currentNodeId = nodeId || 'start';
   payload.savedAt = Date.now();
   return payload as Omit<SavePayload, 'saveVersion'>;
+}
+
+/** Capture a validated save payload from live store state (no localStorage write). */
+export function saveGameSnapshot(): Omit<SavePayload, 'saveVersion'> {
+  return pickSavePayload(getGameStore());
 }
 
 /** Merge validated save data over defaults for loadGame. */

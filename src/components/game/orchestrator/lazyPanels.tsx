@@ -1,5 +1,8 @@
 import { lazy, memo, Suspense, type ComponentType } from 'react';
-import { PanelStackSlot } from './PanelStackContext';
+import { PanelStackSlot, usePanelStack } from './PanelStackContext';
+import { PanelExitProvider } from './PanelExitContext';
+import { usePanelKeepAlive } from './usePanelKeepAlive';
+import { usePanelMountCleanup } from './usePanelMountCleanup';
 import type { NonNullPanelType } from './panelStackReducer';
 
 export const LazyPanelSlot = memo(function LazyPanelSlot({
@@ -11,16 +14,24 @@ export const LazyPanelSlot = memo(function LazyPanelSlot({
 }: {
   panelId?: NonNullPanelType;
   Panel: ComponentType<any>;
+  /** Explicit open override; when panelId is set, stack membership is used instead. */
   open?: boolean;
   onClose?: () => void;
   panelProps?: Readonly<Record<string, unknown>>;
 }) {
-  if (open === false) return null;
+  const { isPanelOpen } = usePanelStack();
+  const resolvedOpen = panelId != null ? isPanelOpen(panelId) : open !== false;
+  const { mounted, finishExit } = usePanelKeepAlive(resolvedOpen);
+  usePanelMountCleanup(panelId, mounted);
+
+  if (!mounted) return null;
 
   const panel = (
-    <Suspense fallback={null}>
-      <Panel open={open} onClose={onClose} {...panelProps} />
-    </Suspense>
+    <PanelExitProvider onExitComplete={finishExit}>
+      <Suspense fallback={null}>
+        <Panel open={resolvedOpen} onClose={onClose} {...panelProps} />
+      </Suspense>
+    </PanelExitProvider>
   );
 
   if (panelId == null) return panel;

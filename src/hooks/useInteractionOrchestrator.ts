@@ -130,6 +130,7 @@ export function useInteractionOrchestrator(
   }, []);
 
   return {
+    minigameSetters,
     codebreakerOpen,
     setCodebreakerOpen,
     openstackTerminalOpen,

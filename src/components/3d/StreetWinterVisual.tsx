@@ -6,6 +6,7 @@ import * as THREE from 'three';
 import { getEnvironmentLodProfile } from '@/engine/lod/distanceLod';
 import { useEnvironmentLod } from './lod/EnvironmentLodProvider';
 import { EnvironmentDetail, PropDistanceGate } from './lod/PropDistanceGate';
+import { useCachedCanvasTexture } from '@/hooks/useCachedCanvasTexture';
 
 interface StreetWinterVisualProps {
   livePlayerPositionRef?: React.MutableRefObject<THREE.Vector3>;
@@ -13,7 +14,7 @@ interface StreetWinterVisualProps {
 
 /** Gothic/Noir winter street (25×25m) */
 export function StreetWinterVisual({ livePlayerPositionRef }: StreetWinterVisualProps) {
-  const groundTexture = useMemo(() => createWinterGroundTexture(), []);
+  const groundTexture = useCachedCanvasTexture('street_winter:ground', createWinterGroundTexture);
   const { lod } = useEnvironmentLod();
   const envProfile = useMemo(() => getEnvironmentLodProfile('street_winter'), []);
 

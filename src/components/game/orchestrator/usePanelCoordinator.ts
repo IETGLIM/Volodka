@@ -16,12 +16,10 @@ import {
 } from '@/shared/constants/minigames';
 import type {
   MatrixQuoteState,
-  PanelFlags,
   PanelType,
   QuestChainUnlockState,
 } from './types';
 import {
-  derivePanelFlags,
   getTopPanel,
   panelStackReducer,
   type NonNullPanelType,
@@ -39,10 +37,10 @@ export interface UsePanelCoordinatorOptions extends PanelCoordinatorOverlayHandl
   minigameSetters: MinigamePanelSetters;
 }
 
-export interface PanelCoordinatorResult extends PanelFlags {
+export interface PanelCoordinatorResult {
   /** Top of the panel stack (focused panel). */
   activePanel: PanelType;
-  /** Full open-panel stack (bottom → top). */
+  /** Full open-panel stack (bottom → top) — single source of truth for open state. */
   panelStack: NonNullPanelType[];
   /** Toggle a panel on/off, or push if not open. Pass null to clear the stack. */
   dispatchPanel: Dispatch<PanelType>;
@@ -82,7 +80,6 @@ export function usePanelCoordinator({
 }: UsePanelCoordinatorOptions): PanelCoordinatorResult {
   const [panelStack, dispatchStack] = useReducer(panelStackReducer, [] as NonNullPanelType[]);
   const activePanel = getTopPanel(panelStack);
-  const panelFlags = derivePanelFlags(panelStack);
 
   const [questAcceptId, setQuestAcceptId] = useState<string | null>(null);
   const [questAcceptNpcId, setQuestAcceptNpcId] = useState<string | undefined>(undefined);
@@ -232,7 +229,6 @@ export function usePanelCoordinator({
     closePanel,
     closePanelByType,
     closeAllPanels,
-    ...panelFlags,
     questAcceptId,
     questAcceptNpcId,
     setQuestAcceptId,

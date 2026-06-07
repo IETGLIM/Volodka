@@ -7,6 +7,8 @@ import {
   getTriggerZones,
   findNpcById,
   getItemDefinition,
+  ensureStoryNode,
+  ensureDialogueNode,
 } from '@/data/gameDataLoader';
 import { notifyItemReceived } from '@/components/game/LootNotification';
 import { applyEffects } from '@/shared/utils/applyEffects';
@@ -42,7 +44,8 @@ export interface InteractionControllerDeps {
   setPendingTriggerZone: (zone: TriggerZone | null) => void;
 }
 
-function openLinkedDialogue(nodeId: string): void {
+async function openLinkedDialogue(nodeId: string): Promise<void> {
+  await ensureDialogueNode(nodeId);
   const dlgNode = getDialogueNodes()[nodeId];
   if (!dlgNode) return;
 
@@ -59,7 +62,7 @@ function openLinkedDialogue(nodeId: string): void {
   openNarrativeOverlay(nodeId, 'dialogue');
 }
 
-function triggerLinkedContent(zone: TriggerZone): void {
+async function triggerLinkedContent(zone: TriggerZone): Promise<void> {
   if (zone.linkedMinigame) {
     eventBus.emit('minigame:open', { gameType: zone.linkedMinigame });
     return;
@@ -67,8 +70,11 @@ function triggerLinkedContent(zone: TriggerZone): void {
 
   const store = useGameStore.getState();
 
-  if (zone.linkedStoryNodeId && getStoryNodes()[zone.linkedStoryNodeId]) {
+  if (zone.linkedStoryNodeId) {
+    await ensureStoryNode(zone.linkedStoryNodeId);
     const storyNode = getStoryNodes()[zone.linkedStoryNodeId];
+    if (!storyNode) return;
+
     const alreadyVisited = store.playerState.visitedNodes.includes(zone.linkedStoryNodeId);
     if (alreadyVisited && storyNode.sceneId) {
       requestSceneTransition(storyNode.sceneId as SceneId);
@@ -76,8 +82,8 @@ function triggerLinkedContent(zone: TriggerZone): void {
     }
     requestSceneTransitionForStoryNode(zone.linkedStoryNodeId, storyNode.sceneId);
     openNarrativeOverlay(zone.linkedStoryNodeId, 'story');
-  } else if (zone.linkedDialogueNodeId && getDialogueNodes()[zone.linkedDialogueNodeId]) {
-    openLinkedDialogue(zone.linkedDialogueNodeId);
+  } else if (zone.linkedDialogueNodeId) {
+    await openLinkedDialogue(zone.linkedDialogueNodeId);
   }
 }
 
@@ -181,7 +187,7 @@ export class InteractionController {
       audioEngine.playStinger('discovery');
       this.deps.setPendingTriggerZone(hasLinkedContent ? zone : null);
     } else {
-      triggerLinkedContent(zone);
+      void triggerLinkedContent(zone);
     }
   }
 
@@ -205,25 +211,48 @@ export class InteractionController {
     }
 
     let openedNarrative = false;
-    if (npcDef.dialogueNodeId && getDialogueNodes()[npcDef.dialogueNodeId]) {
-      openNarrativeOverlay(npcDef.dialogueNodeId, 'dialogue');
-      openedNarrative = true;
-    } else if (npcZone?.linkedDialogueNodeId && getDialogueNodes()[npcZone.linkedDialogueNodeId]) {
-      openNarrativeOverlay(npcZone.linkedDialogueNodeId, 'dialogue');
-      openedNarrative = true;
-    } else if (npcZone?.linkedStoryNodeId && getStoryNodes()[npcZone.linkedStoryNodeId]) {
-      const storyNode = getStoryNodes()[npcZone.linkedStoryNodeId];
-      requestSceneTransitionForStoryNode(npcZone.linkedStoryNodeId, storyNode.sceneId);
-      openNarrativeOverlay(npcZone.linkedStoryNodeId, 'story');
-      openedNarrative = true;
-    }
+    void (async () => {
+      if (npcDef.dialogueNodeId) {
+        try {
+          await ensureDialogueNode(npcDef.dialogueNodeId);
+          if (getDialogueNodes()[npcDef.dialogueNodeId]) {
+            openNarrativeOverlay(npcDef.dialogueNodeId, 'dialogue');
+            openedNarrative = true;
+          }
+        } catch {
+          /* pack missing — fall through */
+        }
+      } else if (npcZone?.linkedDialogueNodeId) {
+        try {
+          await ensureDialogueNode(npcZone.linkedDialogueNodeId);
+          if (getDialogueNodes()[npcZone.linkedDialogueNodeId]) {
+            openNarrativeOverlay(npcZone.linkedDialogueNodeId, 'dialogue');
+            openedNarrative = true;
+          }
+        } catch {
+          /* pack missing */
+        }
+      } else if (npcZone?.linkedStoryNodeId) {
+        try {
+          await ensureStoryNode(npcZone.linkedStoryNodeId);
+          const storyNode = getStoryNodes()[npcZone.linkedStoryNodeId];
+          if (storyNode) {
+            requestSceneTransitionForStoryNode(npcZone.linkedStoryNodeId, storyNode.sceneId);
+            openNarrativeOverlay(npcZone.linkedStoryNodeId, 'story');
+            openedNarrative = true;
+          }
+        } catch {
+          /* pack missing */
+        }
+      }
 
-    if (!openedNarrative) {
-      queueMicrotask(() => {
-        if (this.session.isDisposed()) return;
-        emitInteractionEndIfNeeded();
-      });
-    }
+      if (!openedNarrative) {
+        queueMicrotask(() => {
+          if (this.session.isDisposed()) return;
+          emitInteractionEndIfNeeded();
+        });
+      }
+    })();
 
     eventBus.emit('npc:talked', { npcId, dialogueNodeId: npcDef.dialogueNodeId });
   }
@@ -253,7 +282,7 @@ export class InteractionController {
     ui.setExamineHasLinkedContent(false);
     this.deps.setPendingTriggerZone(null);
 
-    triggerLinkedContent(zone);
+    void triggerLinkedContent(zone);
   }
 
   clearPendingTriggerZone(): void {

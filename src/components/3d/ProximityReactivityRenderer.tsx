@@ -32,10 +32,10 @@ export function ProximityReactivityRenderer({
   const activeSoundEffectsRef = useRef<Set<string>>(new Set());
 
   return (
-    <group>
+    <group key={`proximity:${sceneId}`}>
       {effects.map((effect) => (
         <ProximityEffectRenderer
-          key={effect.id}
+          key={`${sceneId}:${effect.id}`}
           effect={effect}
           livePlayerPositionRef={livePlayerPositionRef}
           activeSoundEffectsRef={activeSoundEffectsRef}

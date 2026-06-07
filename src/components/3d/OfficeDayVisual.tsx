@@ -3,10 +3,11 @@
 
 import { useMemo, type MutableRefObject } from 'react';
 import * as THREE from 'three';
-import { Plant, Radiator, Clock } from './InteriorModels';
+import { Plant, Radiator, Clock } from './lazyInteriorModels';
 import { getEnvironmentLodProfile } from '@/engine/lod/distanceLod';
 import { useEnvironmentLod } from './lod/EnvironmentLodProvider';
 import { EnvironmentDetail, SceneClutterGate } from './lod/PropDistanceGate';
+import { useCachedCanvasTexture } from '@/hooks/useCachedCanvasTexture';
 
 interface OfficeDayVisualProps {
   livePlayerPositionRef?: MutableRefObject<THREE.Vector3>;
@@ -14,8 +15,8 @@ interface OfficeDayVisualProps {
 
 /** Sterile corporate IT office (14×12m) — CyberPunk2077/Bank aesthetic */
 export function OfficeDayVisual({ livePlayerPositionRef }: OfficeDayVisualProps) {
-  const floorTexture = useMemo(() => createOfficeFloorTexture(), []);
-  const wallTexture = useMemo(() => createOfficeWallTexture(), []);
+  const floorTexture = useCachedCanvasTexture('office_day:floor', createOfficeFloorTexture);
+  const wallTexture = useCachedCanvasTexture('office_day:wall', createOfficeWallTexture);
   const { lod } = useEnvironmentLod();
   const envProfile = useMemo(() => getEnvironmentLodProfile('office_day'), []);
 

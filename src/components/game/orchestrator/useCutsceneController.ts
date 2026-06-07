@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef } from 'react';
 import { ControllerSession } from '@/engine/controller/ControllerSession';
 import { useGameStore } from '@/store/gameStore';
+import { useGamePrimitive } from '@/store/selectors';
 import { eventBus } from '@/engine/EventBus';
 import { audioEngine } from '@/engine/AudioEngine';
 import { getCutsceneForNode } from '@/data/cutscenes';
@@ -8,7 +9,8 @@ import { openNarrativeOverlay } from '@/engine/scene/narrativeOverlay';
 import { clearGameplayPhaseFlags, readGamePhase } from '@/shared/gamePhase';
 
 /** Watches story node changes and drives cutscene overlays + camera events. */
-export function useCutsceneController(currentNodeId: string | null) {
+export function useCutsceneController() {
+  const currentNodeId = useGamePrimitive((s) => s.currentNodeId);
   const cutsceneSessionRef = useRef(new ControllerSession());
 
   const clearCutsceneTimers = useCallback(() => {

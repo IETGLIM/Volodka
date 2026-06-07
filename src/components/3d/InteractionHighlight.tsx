@@ -9,6 +9,7 @@ import { useRef, useEffect, useMemo } from 'react';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import * as THREE from 'three';
 import { eventBus } from '@/engine/EventBus';
+import { useSceneEnterEffect } from '@/hooks/useSceneEnterEffect';
 
 interface ActiveHighlight {
   timeRemaining: number;
@@ -139,6 +140,19 @@ export function InteractionHighlight() {
     () => Array.from({ length: MAX_HIGHLIGHTS }, () => createSlot()),
     [],
   );
+  const slotsRef = useRef(slots);
+  slotsRef.current = slots;
+
+  useSceneEnterEffect(() => {
+    highlightsRef.current.fill(null);
+    for (const slot of slotsRef.current) {
+      slot.group.visible = false;
+      slot.innerMat.opacity = 0;
+      slot.outerMat.opacity = 0;
+      slot.ringMat.opacity = 0;
+      slot.light.intensity = 0;
+    }
+  });
 
   useEffect(() => {
     const slotList = slots;

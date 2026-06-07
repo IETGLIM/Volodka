@@ -14,12 +14,20 @@
     overscroll-behavior: none;
     /* Critical: prevent iOS Safari bounce & zoom on mobile */
     touch-action: none;
-    /* Use dvh for proper mobile viewport (accounts for address bar) */
     height: 100dvh;
     min-height: 100dvh;
     /* Prevent iOS text size adjustment on rotation */
     -webkit-text-size-adjust: 100%;
   }
+
+  /* Body uses touch-action:none for game canvas — re-enable native typing/scrolling in form fields */
+  input,
+  textarea,
+  select,
+  [contenteditable='true'] {
+    touch-action: auto;
+  }
+
   /* Cyberpunk selection colors */
   ::selection {
     background: rgba(0, 229, 255, 0.25);

@@ -13,6 +13,7 @@
  */
 
 import { registerHmrDispose } from '@/shared/dev/hmrDispose';
+import { probeAudioCapabilities, resetAudioCapabilitiesCache } from '@/engine/audio/audioCapabilities';
 
 let sharedCtx: AudioContext | null = null;
 let _userInteracted = false;
@@ -30,6 +31,7 @@ export function getSharedAudioContext(): AudioContext | null {
   if (!sharedCtx) {
     try {
       sharedCtx = new AudioContext({ latencyHint: 'interactive' });
+      probeAudioCapabilities(sharedCtx);
       // Immediately suspend to satisfy browser policy, then attempt resume
       if (sharedCtx.state === 'running') {
         sharedCtx.suspend().catch(() => {});
@@ -126,6 +128,7 @@ export function disposeSharedAudioContext(): void {
     sharedCtx.close().catch(() => {});
     sharedCtx = null;
   }
+  resetAudioCapabilitiesCache();
   _pendingQueue = [];
   _userInteracted = false;
 }

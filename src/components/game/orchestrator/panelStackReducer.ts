@@ -40,35 +40,6 @@ export function getTopPanel(stack: NonNullPanelType[]): PanelType {
   return stack.length > 0 ? stack[stack.length - 1] : null;
 }
 
-export function derivePanelFlags(stack: NonNullPanelType[]) {
-  const set = new Set(stack);
-  return {
-    questsOpen: set.has('quests'),
-    inventoryOpen: set.has('inventory'),
-    poetryOpen: set.has('poetry'),
-    menuOpen: set.has('menu'),
-    restOpen: set.has('rest'),
-    shortcutsOpen: set.has('shortcuts'),
-    settingsOpen: set.has('settings'),
-    saveSlotOpen: set.has('saveSlot'),
-    miniGameHubOpen: set.has('miniGameHub'),
-    npcRelationOpen: set.has('npcRelation'),
-    characterProfileOpen: set.has('characterProfile'),
-    codexOpen: set.has('codex'),
-    dialogueHistoryOpen: set.has('dialogueHistory'),
-    achievementsOpen: set.has('achievements'),
-    skillTreeOpen: set.has('skillTree'),
-    craftingOpen: set.has('crafting'),
-    tradingOpen: set.has('trading'),
-    fastTravelOpen: set.has('fastTravel'),
-    perksOpen: set.has('perks'),
-    questBoardOpen: set.has('questBoard'),
-    statsOpen: set.has('stats'),
-    karmaPoemOpen: set.has('karmaPoem'),
-    journalOpen: set.has('journal'),
-  };
-}
-
 /** Panels that use MENU z-index base instead of PANEL. */
 export const MENU_LAYER_PANELS = new Set<NonNullPanelType>([
   'menu',

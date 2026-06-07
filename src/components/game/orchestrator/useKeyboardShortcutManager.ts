@@ -23,7 +23,6 @@ interface MinigameOpenFlags {
 export interface KeyboardShortcutManagerOptions extends MinigameOpenFlags {
   activePanel: PanelType;
   panelStackLength: number;
-  journalOpen: boolean;
   examineOpen: boolean;
   mode: GamePhase;
   dispatchPanel: Dispatch<PanelType>;
@@ -41,7 +40,6 @@ export interface KeyboardShortcutManagerOptions extends MinigameOpenFlags {
 export function useKeyboardShortcutManager({
   activePanel,
   panelStackLength,
-  journalOpen,
   codebreakerOpen,
   openstackTerminalOpen,
   bashTerminalOpen,
@@ -65,7 +63,6 @@ export function useKeyboardShortcutManager({
   const panelStateRef = useRef({
     activePanel,
     panelStackLength,
-    journalOpen,
     codebreakerOpen,
     openstackTerminalOpen,
     bashTerminalOpen,
@@ -86,7 +83,6 @@ export function useKeyboardShortcutManager({
     panelStateRef.current = {
       activePanel,
       panelStackLength,
-      journalOpen,
       codebreakerOpen,
       openstackTerminalOpen,
       bashTerminalOpen,
@@ -135,7 +131,7 @@ export function useKeyboardShortcutManager({
       if (panelShortcutsBlocked) return;
 
       if (e.code === 'KeyJ') {
-        if (!ps.journalOpen) closeAllPanelsRef.current();
+        if (ps.activePanel !== 'journal') closeAllPanelsRef.current();
         dispatchPanel('journal');
       }
       if (e.code === 'KeyQ') dispatchPanel('quests');

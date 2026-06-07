@@ -44,3 +44,28 @@ export function createAmbientReverbImpulse(ctx: AudioContext, decaySeconds: numb
 
   return buffer;
 }
+
+/** Stop a buffer source and drop its AudioBuffer so GC can reclaim scene audio memory. */
+export function releaseBufferSource(source: AudioBufferSourceNode): void {
+  try {
+    source.stop();
+  } catch {
+    // already stopped
+  }
+  try {
+    source.disconnect();
+  } catch {
+    // ignore
+  }
+  source.buffer = null;
+}
+
+/** Disconnect a convolver and release its impulse response buffer. */
+export function releaseConvolver(convolver: ConvolverNode): void {
+  try {
+    convolver.disconnect();
+  } catch {
+    // ignore
+  }
+  convolver.buffer = null;
+}

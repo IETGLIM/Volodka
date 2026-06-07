@@ -13,6 +13,8 @@
 import type { SceneId } from '@/shared/types/game';
 import { getSharedAudioContext } from './SharedAudioContext';
 import { registerHmrDispose } from '@/shared/dev/hmrDispose';
+import { releaseConvolver } from './audio/AudioEngineCore';
+import { tryCreateConvolver } from './audio/audioCapabilities';
 
 /* ──────────────────── Helpers ──────────────────── */
 
@@ -731,16 +733,20 @@ class MusicEngine {
 
     const now = ctx.currentTime;
 
-    // ── Reverb convolver ──
-    this.padConvolver = ctx.createConvolver();
-    this.padConvolver.buffer = this.createReverbImpulse(ctx, config.padReverbDecay);
+    // ── Reverb convolver (dry-only fallback when unsupported) ──
+    this.padConvolver = tryCreateConvolver(ctx, this.createReverbImpulse(ctx, config.padReverbDecay));
 
     this.padConvolverGain = ctx.createGain();
-    this.padConvolverGain.gain.value = config.padReverbMix;
-    this.padConvolver.connect(this.padConvolverGain);
-
     this.padDryGain = ctx.createGain();
-    this.padDryGain.gain.value = 1 - config.padReverbMix;
+
+    if (this.padConvolver) {
+      this.padConvolverGain.gain.value = config.padReverbMix;
+      this.padDryGain.gain.value = 1 - config.padReverbMix;
+      this.padConvolver.connect(this.padConvolverGain);
+    } else {
+      this.padConvolverGain.gain.value = 0;
+      this.padDryGain.gain.value = 1;
+    }
 
     // ── Pad filter ──
     this.padFilter = ctx.createBiquadFilter();
@@ -763,12 +769,16 @@ class MusicEngine {
     this.padGain = ctx.createGain();
     this.padGain.gain.setValueAtTime(0, now);
 
-    // ── Routing: pad oscs → pad filter → pad gain → (dry + wet) → master ──
+    // ── Routing: pad oscs → pad filter → pad gain → (dry [+ wet]) → master ──
     this.padFilter.connect(this.padGain);
     this.padGain.connect(this.padDryGain);
-    this.padGain.connect(this.padConvolver);
+    if (this.padConvolver) {
+      this.padGain.connect(this.padConvolver);
+    }
     this.padDryGain.connect(dest);
-    this.padConvolverGain.connect(dest);
+    if (this.padConvolver) {
+      this.padConvolverGain.connect(dest);
+    }
 
     this.padLfo.start(now);
 
@@ -1133,7 +1143,7 @@ class MusicEngine {
     try { this.padFilter?.disconnect(); } catch { /* ignore */ }
     this.padFilter = null;
 
-    try { this.padConvolver?.disconnect(); } catch { /* ignore */ }
+    if (this.padConvolver) releaseConvolver(this.padConvolver);
     this.padConvolver = null;
 
     try { this.padConvolverGain?.disconnect(); } catch { /* ignore */ }

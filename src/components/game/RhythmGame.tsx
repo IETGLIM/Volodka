@@ -11,6 +11,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { useGameStore } from '@/store/gameStore';
+import { registerOverlayCleanup } from '@/components/game/orchestrator/panelLifecycle';
 import { eventBus } from '@/engine/EventBus';
 
 /* ─── Accent colors (pink/magenta theme) ─── */
@@ -262,6 +263,14 @@ export function RhythmGame({ onClose }: RhythmGameProps) {
   const spawnTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const rafRef = useRef<number>(0);
   const trackRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    return registerOverlayCleanup('minigame:rhythm', () => {
+      cancelAnimationFrame(rafRef.current);
+      if (spawnTimerRef.current) clearTimeout(spawnTimerRef.current);
+    });
+  }, []);
+
   const [trackHeight, setTrackHeight] = useState(400);
   const hitZoneY = trackHeight - 50;
   const notesRef = useRef<Note[]>([]);

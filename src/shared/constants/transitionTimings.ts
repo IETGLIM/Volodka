@@ -56,3 +56,9 @@ export const MOTION_EASE = {
 
 /** Defer heavy IBL HDR fetch until the scene has settled (frames @ 60fps) */
 export const ENV_MAP_WARMUP_FRAMES = 48;
+
+/** Panel close: keep subtree mounted through PanelWrapper exit (backdrop 200ms + panel ~320ms). */
+export const PANEL_EXIT_MS = 320;
+
+/** LazyPanelSlot fallback if panel does not signal exit via onExitComplete. */
+export const PANEL_UNMOUNT_GRACE_MS = PANEL_EXIT_MS + 80;

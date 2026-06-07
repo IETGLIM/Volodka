@@ -1,14 +1,22 @@
 
 /* ─── Volodka RPG – Zarema & Albert Room procedural 3D visual ─── */
 
-import { useMemo } from 'react';
+import type { MutableRefObject } from 'react';
 import * as THREE from 'three';
-import { Desk, Chair, Laptop, Lamp, Radiator, Plant } from './InteriorModels';
+import { Desk, Chair, Laptop, Lamp, Radiator, Plant } from './lazyInteriorModels';
+import { useEnvironmentLod } from './lod/EnvironmentLodProvider';
+import { EnvironmentDetail } from './lod/PropDistanceGate';
+import { useCachedCanvasTexture } from '@/hooks/useCachedCanvasTexture';
+
+interface ZaremaAlbertRoomVisualProps {
+  livePlayerPositionRef?: MutableRefObject<THREE.Vector3>;
+}
 
 /** Cozy apartment with DutySupport aesthetic (8×8m) */
-export function ZaremaAlbertRoomVisual() {
-  const floorTexture = useMemo(() => createRoomFloorTexture(), []);
-  const wallTexture = useMemo(() => createRoomWallTexture(), []);
+export function ZaremaAlbertRoomVisual({ livePlayerPositionRef: _livePlayerPositionRef }: ZaremaAlbertRoomVisualProps) {
+  const floorTexture = useCachedCanvasTexture('zarema_albert_room:floor', createRoomFloorTexture);
+  const wallTexture = useCachedCanvasTexture('zarema_albert_room:wall', createRoomWallTexture);
+  const { lod } = useEnvironmentLod();
 
   const W = 8;
   const D = 8;
@@ -369,8 +377,9 @@ export function ZaremaAlbertRoomVisual() {
       </group>
 
       {/* ═══════════════════════════════════════════════ */}
-      {/* ── INTERIOR MODELS (from InteriorModels.tsx) ── */}
+      {/* ── INTERIOR MODELS (lazy chunk) ── */}
       {/* ═══════════════════════════════════════════════ */}
+      <EnvironmentDetail currentLod={lod} minLod="standard">
 
       {/* ── Second desk (Zarema's desk) with laptop ── */}
       <Desk position={[2.5, 0, 1.5]} color="#7a5a38" />
@@ -387,6 +396,7 @@ export function ZaremaAlbertRoomVisual() {
 
       {/* ── Plant near window ── */}
       <Plant position={[3.5, 0, -3.0]} color="#2a6a20" scale={[1.1, 1.1, 1.1]} />
+      </EnvironmentDetail>
     </group>
   );
 }

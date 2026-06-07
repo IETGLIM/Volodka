@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
+import { shallow } from 'zustand/shallow';
+
 import { useGameStore } from '@/store/gameStore';
 import { readGamePhase } from '@/shared/gamePhase';
 import { eventBus, EventBusPriority } from '@/engine/EventBus';
@@ -6,8 +8,10 @@ import { withHmrCleanup } from '@/shared/dev/hmrDispose';
 import { SCENE_CONFIG } from '@/config/scenes';
 import { AUTO_SAVE_INTERVAL_MS } from '@/data/constants';
 import { processExpiredTTLFlags } from '@/engine/PoemPowerSystem';
-import { preloadNarrativeGameData } from '@/data/gameDataLoader';
+import { preloadNarrativeGameData, ensureNarrativeNodeIds } from '@/data/gameDataLoader';
 import { initWorldEventDirector } from '@/engine/world';
+import { reconcileGuidedStory } from '@/engine/GuidedStoryManager';
+import { runGlobalCombatEnd } from '@/engine/core/GlobalCleanupService';
 
 /** Autosave, TTL cleanup, daily resets, scene banners, guided story lifecycle. */
 export function useGameLifecycleManager(mode: string) {
@@ -17,10 +21,18 @@ export function useGameLifecycleManager(mode: string) {
 
   useEffect(() => withHmrCleanup(initWorldEventDirector()), []);
 
+  // gameDataReady path — narrative preload + GuidedStory init (LoadingTimeline marks ready separately)
   useEffect(() => {
     let cancelled = false;
 
     void preloadNarrativeGameData()
+      .then(async () => {
+        const { playerState, currentNodeId } = useGameStore.getState();
+        const nodeIds = currentNodeId
+          ? [currentNodeId, ...playerState.visitedNodes]
+          : playerState.visitedNodes;
+        await ensureNarrativeNodeIds(nodeIds);
+      })
       .then(() => import('@/engine/GuidedStoryManager'))
       .then((mod) => {
         if (cancelled) return;
@@ -32,6 +44,7 @@ export function useGameLifecycleManager(mode: string) {
     };
   }, []);
 
+  // Scene banner on store sceneId change (UI only — transition protocol is EventBus-driven)
   useEffect(() => {
     isMountedRef.current = true;
 
@@ -41,8 +54,6 @@ export function useGameLifecycleManager(mode: string) {
         if (newScene === oldScene) return;
 
         eventBus.emit('fx:glitch', { duration: 300, intensity: 0.5 });
-        useGameStore.getState().autoRegenBetweenScenes();
-        useGameStore.getState().discoverScene(newScene);
 
         const sceneName = SCENE_CONFIG[newScene]?.name ?? '';
         if (!sceneName || !isMountedRef.current) return;
@@ -65,6 +76,21 @@ export function useGameLifecycleManager(mode: string) {
         sceneBannerTimeout.current = undefined;
       }
     };
+  }, []);
+
+  // Quest/story sync — reconcile guidance when player/quest/TTL state changes
+  useEffect(() => {
+    const unsub = useGameStore.subscribe(
+      (state) => ({
+        visitedNodes: state.playerState.visitedNodes,
+        quests: state.quests,
+        ttlKeys: Object.keys(state.activeTTLFlags),
+        currentNodeId: state.currentNodeId,
+      }),
+      () => reconcileGuidedStory(),
+      { equalityFn: shallow },
+    );
+    return unsub;
   }, []);
 
   useEffect(() => {
@@ -91,9 +117,11 @@ export function useGameLifecycleManager(mode: string) {
 
     scope.on('combat:end', () => {
       const store = useGameStore.getState();
+      runGlobalCombatEnd(store.exploration.currentSceneId);
       if (readGamePhase(store) === 'exploration') {
         store.saveGame({ source: 'auto' });
       }
+      reconcileGuidedStory();
     }, EventBusPriority.Orchestrator);
 
     const checkResets = () => useGameStore.getState().checkDailyMissionResets();

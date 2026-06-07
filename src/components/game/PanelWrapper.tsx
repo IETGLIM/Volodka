@@ -17,6 +17,7 @@ import { X } from 'lucide-react';
 import { FocusTrap } from '@/components/a11y/FocusTrap';
 import { usePanelDialog } from '@/components/a11y/usePanelDialog';
 import { usePanelId, usePanelStack } from '@/components/game/orchestrator/PanelStackContext';
+import { usePanelExitComplete } from '@/components/game/orchestrator/PanelExitContext';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 
 /* ─── Accent color mapping ─── */
@@ -109,6 +110,7 @@ export function PanelWrapper({
   const panelId = usePanelId();
   const { isTopPanel } = usePanelStack();
   const isTop = panelId == null || isTopPanel(panelId);
+  const notifyPanelExit = usePanelExitComplete();
 
   /* Accent color for corner brackets (matches panel accent) */
   const cornerBorderColor = accentColor === 'emerald'
@@ -159,7 +161,7 @@ export function PanelWrapper({
   const resolvedUrl = urlPath ?? `volodka://${title.toLowerCase().replace(/\s+/g, '')}`;
 
   return (
-    <AnimatePresence>
+    <AnimatePresence initial={false} onExitComplete={() => notifyPanelExit?.()}>
       {open && (
         <motion.div
           initial={backdropInitial}
@@ -167,7 +169,11 @@ export function PanelWrapper({
           exit={backdropExit}
           transition={{ duration: 0.2 }}
           className={`fixed inset-0 ${layout === 'sidebar' ? '' : 'flex items-center justify-center'}`}
-          style={{ zIndex: panelId != null ? 1 : UI_LAYERS.PANEL, pointerEvents: isTop ? 'auto' : 'none' }}
+          style={{
+            zIndex: panelId != null ? 1 : UI_LAYERS.PANEL,
+            pointerEvents: isTop ? 'auto' : 'none',
+            willChange: 'opacity',
+          }}
         >
           {/* Backdrop — only the topmost panel dims the scene */}
           {isTop && (
@@ -194,6 +200,7 @@ export function PanelWrapper({
               }
             `}
             style={{
+              willChange: 'transform, opacity',
               background: layout === 'sidebar'
                 ? 'linear-gradient(180deg, rgba(8,12,28,0.97) 0%, rgba(4,8,18,0.98) 100%)'
                 : 'linear-gradient(180deg, rgba(2,6,23,0.97) 0%, rgba(15,23,42,0.95) 50%, rgba(2,6,23,0.97) 100%)',
@@ -205,17 +212,12 @@ export function PanelWrapper({
                 : `0 0 30px ${accent.glow}, 0 8px 32px rgba(0,0,0,0.5), inset 0 1px 0 ${accent.glow}`,
             }}
           >
-            {/* Animated glow border pulse */}
+            {/* Glow pulse — opacity only (cheaper than animating boxShadow every frame) */}
             <motion.div
               className="absolute inset-0 pointer-events-none rounded-[inherit]"
-              animate={{
-                boxShadow: [
-                  `inset 0 0 0px ${accent.border}`,
-                  `inset 0 0 8px ${accent.glow}`,
-                  `inset 0 0 0px ${accent.border}`,
-                ],
-              }}
+              animate={{ opacity: [0.35, 0.7, 0.35] }}
               transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+              style={{ boxShadow: `inset 0 0 8px ${accent.glow}` }}
             />
 
             {/* Data stream background pattern */}

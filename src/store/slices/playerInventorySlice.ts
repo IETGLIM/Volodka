@@ -4,14 +4,15 @@
 import type { StateCreator } from 'zustand';
 import { MAX_INVENTORY_SLOTS } from '@/data/constants';
 import { getItemDefinition, getEquipmentSlot } from '@/data/gameDataLoader';
-import { clamp, pushNotification } from '../shared';
+import { pushNotification } from '../shared';
 import {
   addInventoryItem,
   findInventoryItemIndex,
   getInventoryFullMessage,
   removeInventoryItem,
 } from '../inventoryHelpers';
-import type { InventoryItem, TrainablePlayerSkill, EquipmentSlot } from '@/shared/types/game';
+import { applyEquipmentEffects } from '../equipmentHelpers';
+import type { InventoryItem, EquipmentSlot } from '@/shared/types/game';
 import type { GameStoreState } from '../types';
 
 /* ─── Slice types ─── */
@@ -33,27 +34,26 @@ export const createPlayerInventorySlice: StateCreator<
   [],
   [],
   PlayerInventorySlice
-> = (set) => ({
+> = (set, get) => ({
   addItem: (item) => {
-    let added = false;
-    set((state) => {
-      const result = addInventoryItem(state.playerState.inventory, item);
-      if (result.ok) {
-        added = true;
-        return {
-          playerState: { ...state.playerState, inventory: result.inventory },
-        };
-      }
+    const state = get();
+    const result = addInventoryItem(state.playerState.inventory, item);
 
-      return {
-        notifications: pushNotification(
-          state.notifications,
-          'stress',
-          getInventoryFullMessage(result.itemName),
-        ),
-      };
+    if (result.ok) {
+      set({
+        playerState: { ...state.playerState, inventory: result.inventory },
+      });
+      return true;
+    }
+
+    set({
+      notifications: pushNotification(
+        state.notifications,
+        'stress',
+        getInventoryFullMessage(result.itemName),
+      ),
     });
-    return added;
+    return false;
   },
 
   removeItem: (itemId, quantity) =>
@@ -87,36 +87,16 @@ export const createPlayerInventorySlice: StateCreator<
         newInventory.push(currentEquipped);
       }
 
-      const skillChanges: Partial<Record<TrainablePlayerSkill, number>> = {};
-      let energyChange = 0;
-      let stressChange = 0;
-      let karmaChange = 0;
-
-      if (currentEquipped) {
-        const prevDef = getItemDefinition(currentEquipped.id);
-        if (prevDef) {
-          for (const effect of prevDef.effects) {
-            if (effect.skill) {
-              skillChanges[effect.skill] = (skillChanges[effect.skill] ?? 0) - effect.value;
-            } else if (effect.stat === 'energy') energyChange -= effect.value;
-            else if (effect.stat === 'stress') stressChange -= effect.value;
-            else if (effect.stat === 'karma') karmaChange -= effect.value;
-          }
-        }
-      }
-
-      for (const effect of def.effects) {
-        if (effect.skill) {
-          skillChanges[effect.skill] = (skillChanges[effect.skill] ?? 0) + effect.value;
-        } else if (effect.stat === 'energy') energyChange += effect.value;
-        else if (effect.stat === 'stress') stressChange += effect.value;
-        else if (effect.stat === 'karma') karmaChange += effect.value;
-      }
-
-      const newSkills = { ...state.playerState.skills };
-      for (const [skill, delta] of Object.entries(skillChanges)) {
-        newSkills[skill as TrainablePlayerSkill] = Math.max(0, newSkills[skill as TrainablePlayerSkill] + (delta ?? 0));
-      }
+      const prevDef = currentEquipped ? getItemDefinition(currentEquipped.id) : null;
+      const effectStats = applyEquipmentEffects(
+        {
+          skills: state.playerState.skills,
+          energy: state.playerState.energy,
+          stress: state.playerState.stress,
+          karma: state.playerState.karma,
+        },
+        { unequip: prevDef, equip: def },
+      );
 
       return {
         playerState: {
@@ -126,10 +106,7 @@ export const createPlayerInventorySlice: StateCreator<
             ...state.playerState.equippedItems,
             [slot]: item,
           },
-          skills: newSkills,
-          energy: clamp(state.playerState.energy + energyChange, 0, 100),
-          stress: clamp(state.playerState.stress + stressChange, 0, 100),
-          karma: clamp(state.playerState.karma + karmaChange, 0, 100),
+          ...effectStats,
         },
         notifications: pushNotification(state.notifications, 'skill', `Экипировано: ${item.name}`),
       };
@@ -147,20 +124,15 @@ export const createPlayerInventorySlice: StateCreator<
       }
 
       const def = getItemDefinition(equipped.id);
-      const newSkills = { ...state.playerState.skills };
-      let energyChange = 0;
-      let stressChange = 0;
-      let karmaChange = 0;
-
-      if (def) {
-        for (const effect of def.effects) {
-          if (effect.skill) {
-            newSkills[effect.skill] = Math.max(0, newSkills[effect.skill] - effect.value);
-          } else if (effect.stat === 'energy') energyChange -= effect.value;
-          else if (effect.stat === 'stress') stressChange -= effect.value;
-          else if (effect.stat === 'karma') karmaChange -= effect.value;
-        }
-      }
+      const effectStats = applyEquipmentEffects(
+        {
+          skills: state.playerState.skills,
+          energy: state.playerState.energy,
+          stress: state.playerState.stress,
+          karma: state.playerState.karma,
+        },
+        { unequip: def ?? null },
+      );
 
       return {
         playerState: {
@@ -170,10 +142,7 @@ export const createPlayerInventorySlice: StateCreator<
             ...state.playerState.equippedItems,
             [slot]: null,
           },
-          skills: newSkills,
-          energy: clamp(state.playerState.energy + energyChange, 0, 100),
-          stress: clamp(state.playerState.stress + stressChange, 0, 100),
-          karma: clamp(state.playerState.karma + karmaChange, 0, 100),
+          ...effectStats,
         },
         notifications: pushNotification(state.notifications, 'skill', `Снято: ${equipped.name}`),
       };

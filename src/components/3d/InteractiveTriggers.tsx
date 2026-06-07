@@ -8,6 +8,7 @@ import { Html } from '@react-three/drei';
 import * as THREE from 'three';
 import { getGameStore, useGameStore } from '@/store/gameStore';
 import { useCurrentSceneId, useInteractionOverlay, useTimeOfDay, useSceneExitState, useScheduleContext } from '@/store/selectors';
+import { useSceneEnterEffect } from '@/hooks/useSceneEnterEffect';
 import { TRIGGER_ZONES, type TriggerZone, INTERACTION_LABELS } from '@/data/triggerZones';
 import { findNpcById, findNpcByDialogueNodeId } from '@/data/allNpcDefinitions';
 import type { NPCDefinition } from '@/shared/types/game';
@@ -98,6 +99,14 @@ export function InteractiveTriggers({
   // React state for rendering the overlay (updated less frequently than frame)
   const [visiblePrompts, setVisiblePrompts] = useState<PromptData[]>([]);
   const frameCountRef = useRef(0);
+
+  useSceneEnterEffect(() => {
+    promptsMapRef.current.clear();
+    allowedIdsRef.current.clear();
+    setVisiblePrompts([]);
+    globalEKeyConsumed = false;
+    (window as unknown as { __volodka_ekey_consumed?: boolean }).__volodka_ekey_consumed = false;
+  });
 
   // Compute allowed IDs and reconcile visible prompts every few frames
   useFrameTick('interaction', () => {
@@ -201,7 +210,7 @@ export function InteractiveTriggers({
   }, []);
 
   return (
-    <group>
+    <group key={`triggers:${sceneId}`}>
       {zones.map((zone) => (
         <TriggerZoneComponent
           key={zone.id}
@@ -580,11 +589,20 @@ function TriggerZoneComponent({
     depthWrite: false,
   }), []);
 
-  // Dispose particle geometry/material on unmount
+  // Dispose particle geometry/material on unmount; hide stray instances
   useEffect(() => {
     const geo = particleGeo;
     const mat = particleMat;
+    const mesh = particleInstanceRef;
     return () => {
+      particlesRef.current = [];
+      if (mesh.current) {
+        for (let i = 0; i < MAX_PARTICLES; i++) {
+          tempMatrix.makeScale(0, 0, 0);
+          mesh.current!.setMatrixAt(i, tempMatrix);
+        }
+        mesh.current.instanceMatrix.needsUpdate = true;
+      }
       geo.dispose();
       mat.dispose();
     };

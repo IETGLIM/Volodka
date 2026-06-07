@@ -1,16 +1,18 @@
 /* ─── Volodka RPG – panel stack context ─── */
 
-import { createContext, useContext, type ReactNode } from 'react';
+import { createContext, useContext, useMemo, type ReactNode } from 'react';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import {
   MENU_LAYER_PANELS,
   type NonNullPanelType,
 } from './panelStackReducer';
+import { isPanelOpen as checkPanelOpen } from './panelStackUtils';
 
 export type { NonNullPanelType } from './panelStackReducer';
 
 export interface PanelStackContextValue {
   stack: NonNullPanelType[];
+  isPanelOpen: (panel: NonNullPanelType) => boolean;
   isTopPanel: (panel: NonNullPanelType) => boolean;
   getStackIndex: (panel: NonNullPanelType) => number;
   getStackZIndex: (panel: NonNullPanelType) => number;
@@ -30,8 +32,9 @@ export function PanelStackProvider({
 }) {
   const top = stack.length > 0 ? stack[stack.length - 1] : null;
 
-  const value: PanelStackContextValue = {
+  const value = useMemo<PanelStackContextValue>(() => ({
     stack,
+    isPanelOpen: (panel) => checkPanelOpen(stack, panel),
     isTopPanel: (panel) => top === panel,
     getStackIndex: (panel) => {
       const idx = stack.indexOf(panel);
@@ -43,7 +46,7 @@ export function PanelStackProvider({
       const base = MENU_LAYER_PANELS.has(panel) ? UI_LAYERS.MENU : UI_LAYERS.PANEL;
       return base + idx * 2;
     },
-  };
+  }), [stack, top]);
 
   return (
     <PanelStackContext.Provider value={value}>
@@ -57,6 +60,7 @@ export function usePanelStack(): PanelStackContextValue {
   if (!ctx) {
     return {
       stack: [],
+      isPanelOpen: () => false,
       isTopPanel: () => true,
       getStackIndex: () => 0,
       getStackZIndex: () => UI_LAYERS.PANEL,

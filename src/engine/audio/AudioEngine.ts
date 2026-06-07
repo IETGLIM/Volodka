@@ -24,7 +24,14 @@ import {
   createAmbientReverbImpulse,
   safeResume,
   whenAudioReady,
+  releaseBufferSource,
+  releaseConvolver,
 } from './AudioEngineCore';
+import {
+  connectSpatialSource,
+  connectWithStereoPan,
+  tryCreateConvolver,
+} from './audioCapabilities';
 import { registerHmrDispose } from '@/shared/dev/hmrDispose';
 
 /**
@@ -92,6 +99,11 @@ class AudioEngine {
   private ambientReverbGain: GainNode | null = null;
   private ambientDryReverbGain: GainNode | null = null;
   private currentReverbPreset: string | null = null;
+  /** Deferred scene-teardown — flushed on the next scene change so buffers unload promptly */
+  private pendingAmbientCleanupTimer: ReturnType<typeof setTimeout> | null = null;
+  private pendingAmbientCleanup: (() => void) | null = null;
+  private pendingMusicCleanupTimer: ReturnType<typeof setTimeout> | null = null;
+  private pendingMusicCleanup: (() => void) | null = null;
 
   // Blur/focus handlers for audio context suspend/resume
   private _onBlur: (() => void) | null = null;
@@ -270,26 +282,35 @@ class AudioEngine {
     const reverbPreset = this.currentReverbPreset ?? this.getDefaultReverbPreset(sceneId);
     const reverbConfig = REVERB_PRESETS[reverbPreset] ?? REVERB_PRESETS['small_room'];
 
-    this.ambientConvolver = ctx.createConvolver();
-    this.ambientConvolver.buffer = createAmbientReverbImpulse(ctx, reverbConfig.decay);
+    this.ambientConvolver = tryCreateConvolver(
+      ctx,
+      createAmbientReverbImpulse(ctx, reverbConfig.decay),
+    );
 
     this.ambientReverbGain = ctx.createGain();
-    this.ambientReverbGain.gain.value = reverbConfig.wetMix;
-
     this.ambientDryReverbGain = ctx.createGain();
-    this.ambientDryReverbGain.gain.value = 1 - reverbConfig.wetMix;
+
+    if (this.ambientConvolver) {
+      this.ambientReverbGain.gain.value = reverbConfig.wetMix;
+      this.ambientDryReverbGain.gain.value = 1 - reverbConfig.wetMix;
+      this.ambientMuffleFilter.connect(this.ambientDryReverbGain);
+      this.ambientMuffleFilter.connect(this.ambientConvolver);
+      this.ambientConvolver.connect(this.ambientReverbGain);
+    } else {
+      this.ambientReverbGain.gain.value = 0;
+      this.ambientDryReverbGain.gain.value = 1;
+      this.ambientMuffleFilter.connect(this.ambientDryReverbGain);
+    }
 
     // Create a dedicated gain node for ambient volume control
     this.ambientGain = ctx.createGain();
     this.ambientGain.gain.value = 0.6;
 
-    // Routing: muffleFilter → (dry + reverb) → ambientGain → masterGain
-    this.ambientMuffleFilter.connect(this.ambientDryReverbGain);
-    this.ambientMuffleFilter.connect(this.ambientConvolver);
-    this.ambientConvolver.connect(this.ambientReverbGain);
-
+    // Routing: muffleFilter → (dry [+ reverb]) → ambientGain → masterGain
     this.ambientDryReverbGain.connect(this.ambientGain);
-    this.ambientReverbGain.connect(this.ambientGain);
+    if (this.ambientConvolver) {
+      this.ambientReverbGain.connect(this.ambientGain);
+    }
 
     this.ambientGain.connect(dest);
 
@@ -526,13 +547,17 @@ class AudioEngine {
         envGain.gain.exponentialRampToValueAtTime(0.001, now + duration);
 
         if (soundDef.panStart !== undefined && soundDef.panEnd !== undefined) {
-          const panner = ctx.createStereoPanner();
-          panner.pan.setValueAtTime(soundDef.panStart, now);
-          panner.pan.linearRampToValueAtTime(soundDef.panEnd, now + duration);
           source.connect(filter);
           filter.connect(envGain);
-          envGain.connect(panner);
-          panner.connect(this.ambientMuffleFilter);
+          connectWithStereoPan(
+            ctx,
+            envGain,
+            this.ambientMuffleFilter,
+            soundDef.panStart,
+            soundDef.panEnd,
+            now,
+            duration,
+          );
         } else {
           source.connect(filter);
           filter.connect(envGain);
@@ -558,13 +583,16 @@ class AudioEngine {
         envGain.gain.exponentialRampToValueAtTime(0.001, now + soundDef.duration);
 
         if (soundDef.panStart !== undefined && soundDef.panEnd !== undefined) {
-          const panner = ctx.createStereoPanner();
-          panner.pan.setValueAtTime(soundDef.panStart, now);
-          panner.pan.linearRampToValueAtTime(soundDef.panEnd, now + soundDef.duration);
-
           osc.connect(envGain);
-          envGain.connect(panner);
-          panner.connect(this.ambientMuffleFilter);
+          connectWithStereoPan(
+            ctx,
+            envGain,
+            this.ambientMuffleFilter,
+            soundDef.panStart,
+            soundDef.panEnd,
+            now,
+            soundDef.duration,
+          );
         } else {
           osc.connect(envGain);
           envGain.connect(this.ambientMuffleFilter);
@@ -601,17 +629,36 @@ class AudioEngine {
     this.randomSoundLoops = [];
   }
 
+  private flushPendingAmbientCleanup(): void {
+    if (this.pendingAmbientCleanupTimer) {
+      clearTimeout(this.pendingAmbientCleanupTimer);
+      this.pendingAmbientCleanupTimer = null;
+    }
+    this.pendingAmbientCleanup?.();
+    this.pendingAmbientCleanup = null;
+  }
+
+  private flushPendingMusicCleanup(): void {
+    if (this.pendingMusicCleanupTimer) {
+      clearTimeout(this.pendingMusicCleanupTimer);
+      this.pendingMusicCleanupTimer = null;
+    }
+    this.pendingMusicCleanup?.();
+    this.pendingMusicCleanup = null;
+  }
+
   /** Stop all ambient sounds */
   stopAmbient(): void {
     this.clearRandomSoundLoops();
+    this.flushPendingAmbientCleanup();
 
-    // Stop noise layers
+    // Stop noise layers and release loop buffers immediately
     for (const lfo of this.noiseLfoNodes) {
       try { lfo.stop(); } catch { /* already stopped */ }
     }
     this.noiseLfoNodes = [];
     for (const source of this.noiseSourceNodes) {
-      try { source.stop(); } catch { /* already stopped */ }
+      releaseBufferSource(source);
     }
     this.noiseSourceNodes = [];
     for (const gain of this.noiseGainNodes) {
@@ -641,11 +688,7 @@ class AudioEngine {
       this.ambientReverbGain = null;
       this.ambientDryReverbGain = null;
 
-      gainToDisconnect.gain.setValueAtTime(gainToDisconnect.gain.value, now);
-      gainToDisconnect.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
-
-      // Stop nodes after fade
-      setTimeout(() => {
+      const releaseCapturedAmbient = () => {
         for (const node of nodesToStop) {
           try { node.osc.stop(); } catch { /* already stopped */ }
           try { node.lfo?.stop(); } catch { /* already stopped */ }
@@ -656,10 +699,24 @@ class AudioEngine {
         }
         try { gainToDisconnect.disconnect(); } catch { /* ignore */ }
         try { muffleFilterToDisconnect?.disconnect(); } catch { /* ignore */ }
-        try { convolverToDisconnect?.disconnect(); } catch { /* ignore */ }
+        if (convolverToDisconnect) releaseConvolver(convolverToDisconnect);
         try { reverbGainToDisconnect?.disconnect(); } catch { /* ignore */ }
         try { dryReverbGainToDisconnect?.disconnect(); } catch { /* ignore */ }
-      }, 600);
+      };
+
+      if (this.disposed) {
+        releaseCapturedAmbient();
+      } else {
+        gainToDisconnect.gain.setValueAtTime(gainToDisconnect.gain.value, now);
+        gainToDisconnect.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
+
+        this.pendingAmbientCleanup = releaseCapturedAmbient;
+        this.pendingAmbientCleanupTimer = setTimeout(() => {
+          this.pendingAmbientCleanupTimer = null;
+          this.pendingAmbientCleanup = null;
+          releaseCapturedAmbient();
+        }, 600);
+      }
     } else {
       this.ambientNodes = [];
       this.ambientGain = null;
@@ -703,18 +760,20 @@ class AudioEngine {
 
     const now = ctx.currentTime;
 
-    // ── Create convolver (reverb) ──
-    this.musicConvolver = ctx.createConvolver();
-    this.musicConvolver.buffer = createReverbImpulse(ctx, config.reverbDecay);
+    // ── Create convolver (reverb) — skipped when unsupported (dry path only) ──
+    this.musicConvolver = tryCreateConvolver(ctx, createReverbImpulse(ctx, config.reverbDecay));
 
-    // Wet (reverb) path
     this.musicConvolverGain = ctx.createGain();
-    this.musicConvolverGain.gain.value = config.reverbMix;
-    this.musicConvolver.connect(this.musicConvolverGain);
-
-    // Dry path
     this.musicDryGain = ctx.createGain();
-    this.musicDryGain.gain.value = 1 - config.reverbMix;
+
+    if (this.musicConvolver) {
+      this.musicConvolverGain.gain.value = config.reverbMix;
+      this.musicDryGain.gain.value = 1 - config.reverbMix;
+      this.musicConvolver.connect(this.musicConvolverGain);
+    } else {
+      this.musicConvolverGain.gain.value = 0;
+      this.musicDryGain.gain.value = 1;
+    }
 
     // ── Music master gain ──
     this.musicGain = ctx.createGain();
@@ -738,12 +797,16 @@ class AudioEngine {
     this.musicLfo.connect(this.musicLfoGain);
     this.musicLfoGain.connect(this.musicFilter.frequency);
 
-    // ── Routing: pad oscs → filter → gain → (dry + wet) → master ──
+    // ── Routing: pad oscs → filter → gain → (dry [+ wet]) → master ──
     this.musicFilter.connect(this.musicGain);
     this.musicGain.connect(this.musicDryGain);
-    this.musicGain.connect(this.musicConvolver);
+    if (this.musicConvolver) {
+      this.musicGain.connect(this.musicConvolver);
+    }
     this.musicDryGain.connect(dest);
-    this.musicConvolverGain.connect(dest);
+    if (this.musicConvolver) {
+      this.musicConvolverGain.connect(dest);
+    }
 
     this.musicLfo.start(now);
 
@@ -850,6 +913,7 @@ class AudioEngine {
       clearTimeout(this.musicChordTimer as unknown as number);
       this.musicChordTimer = null;
     }
+    this.flushPendingMusicCleanup();
 
     const ctx = this.ctx;
 
@@ -881,11 +945,7 @@ class AudioEngine {
       this.textureLfo = null;
       this.textureLfoGain = null;
 
-      gainToDisconnect.gain.setValueAtTime(gainToDisconnect.gain.value, now);
-      gainToDisconnect.gain.linearRampToValueAtTime(0, now + 1);
-
-      setTimeout(() => {
-        // Stop all music oscillators
+      const releaseCapturedMusic = () => {
         for (const node of nodesToStop) {
           try { node.osc.stop(); } catch { /* already stopped */ }
           try { node.gain.disconnect(); } catch { /* ignore */ }
@@ -898,10 +958,24 @@ class AudioEngine {
 
         try { gainToDisconnect.disconnect(); } catch { /* ignore */ }
         try { filterToDisconnect?.disconnect(); } catch { /* ignore */ }
-        try { convolverToDisconnect?.disconnect(); } catch { /* ignore */ }
+        if (convolverToDisconnect) releaseConvolver(convolverToDisconnect);
         try { convolverGainToDisconnect?.disconnect(); } catch { /* ignore */ }
         try { dryGainToDisconnect?.disconnect(); } catch { /* ignore */ }
-      }, 1200);
+      };
+
+      if (this.disposed) {
+        releaseCapturedMusic();
+      } else {
+        gainToDisconnect.gain.setValueAtTime(gainToDisconnect.gain.value, now);
+        gainToDisconnect.gain.linearRampToValueAtTime(0, now + 1);
+
+        this.pendingMusicCleanup = releaseCapturedMusic;
+        this.pendingMusicCleanupTimer = setTimeout(() => {
+          this.pendingMusicCleanupTimer = null;
+          this.pendingMusicCleanup = null;
+          releaseCapturedMusic();
+        }, 1200);
+      }
     } else {
       this.musicNodes = [];
       this.musicGain = null;
@@ -1318,21 +1392,14 @@ class AudioEngine {
 
     const now = ctx.currentTime;
 
-    // Create PannerNode for 3D positioning
-    const panner = ctx.createPanner();
-    panner.panningModel = 'HRTF';
-    panner.distanceModel = 'inverse';
-    panner.positionX.setValueAtTime(position[0], now);
-    panner.positionY.setValueAtTime(position[1], now);
-    panner.positionZ.setValueAtTime(position[2], now);
-    panner.refDistance = options?.refDistance ?? 1;
-    panner.maxDistance = options?.maxDistance ?? 30;
-    panner.rolloffFactor = options?.rolloffFactor ?? 1;
-    panner.coneInnerAngle = options?.coneInnerAngle ?? 360;
-    panner.coneOuterAngle = options?.coneOuterAngle ?? 360;
-    panner.coneOuterGain = options?.coneOuterGain ?? 0;
-
-    panner.connect(dest);
+    const spatial = connectSpatialSource(ctx, dest, position, {
+      refDistance: options?.refDistance,
+      maxDistance: options?.maxDistance,
+      rolloffFactor: options?.rolloffFactor,
+      coneInnerAngle: options?.coneInnerAngle,
+      coneOuterAngle: options?.coneOuterAngle,
+      coneOuterGain: options?.coneOuterGain,
+    });
 
     // Oscillator
     const osc = ctx.createOscillator();
@@ -1345,10 +1412,11 @@ class AudioEngine {
     envGain.gain.exponentialRampToValueAtTime(0.001, now + preset.duration);
 
     osc.connect(envGain);
-    envGain.connect(panner);
+    envGain.connect(spatial.input);
 
     osc.start(now);
     safeStop(osc, now + preset.duration + 0.01);
+    setTimeout(() => spatial.disconnect(), (preset.duration + 0.05) * 1000);
   }
 
   /**
@@ -1368,18 +1436,11 @@ class AudioEngine {
 
     const now = ctx.currentTime;
 
-    // Create PannerNode for 3D positioning
-    const panner = ctx.createPanner();
-    panner.panningModel = 'HRTF';
-    panner.distanceModel = 'inverse';
-    panner.positionX.setValueAtTime(position[0], now);
-    panner.positionY.setValueAtTime(position[1], now);
-    panner.positionZ.setValueAtTime(position[2], now);
-    panner.refDistance = 2;
-    panner.maxDistance = 20;
-    panner.rolloffFactor = 1.5;
-
-    panner.connect(dest);
+    const spatial = connectSpatialSource(ctx, dest, position, {
+      refDistance: 2,
+      maxDistance: 20,
+      rolloffFactor: 1.5,
+    });
 
     // Generate a brief voice-like tone — frequency varies with text hash
     const textHash = text.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
@@ -1409,7 +1470,7 @@ class AudioEngine {
 
     osc.connect(formant1);
     formant1.connect(envGain);
-    envGain.connect(panner);
+    envGain.connect(spatial.input);
 
     osc.connect(formant2);
     formant2.connect(formant2Gain);
@@ -1417,6 +1478,7 @@ class AudioEngine {
 
     osc.start(now);
     safeStop(osc, now + 0.25);
+    setTimeout(() => spatial.disconnect(), 300);
   }
 
   /**
@@ -1434,9 +1496,9 @@ class AudioEngine {
       lfoFreq?: number;
       lfoDepth?: number;
     },
-  ): { stop: () => void } {
+  ): { stop: () => void; setPosition: (position: [number, number, number]) => void } {
     if (this.disposed || !this.ctx || !this.masterGain) {
-      return { stop: () => {} };
+      return { stop: () => {}, setPosition: () => {} };
     }
 
     this.initContext();
@@ -1444,21 +1506,15 @@ class AudioEngine {
 
     const ctx = this.ctx;
     const dest = this.masterGain;
-    if (!ctx || !dest) return { stop: () => {} };
+    if (!ctx || !dest) return { stop: () => {}, setPosition: () => {} };
 
     const now = ctx.currentTime;
 
-    // Panner for 3D position
-    const panner = ctx.createPanner();
-    panner.panningModel = 'HRTF';
-    panner.distanceModel = 'inverse';
-    panner.positionX.setValueAtTime(position[0], now);
-    panner.positionY.setValueAtTime(position[1], now);
-    panner.positionZ.setValueAtTime(position[2], now);
-    panner.refDistance = 1;
-    panner.maxDistance = 25;
-    panner.rolloffFactor = 1;
-    panner.connect(dest);
+    const spatial = connectSpatialSource(ctx, dest, position, {
+      refDistance: 1,
+      maxDistance: 25,
+      rolloffFactor: 1,
+    });
 
     // Oscillator
     const osc = ctx.createOscillator();
@@ -1485,10 +1541,11 @@ class AudioEngine {
     }
 
     osc.connect(gainNode);
-    gainNode.connect(panner);
+    gainNode.connect(spatial.input);
     osc.start(now);
 
     return {
+      setPosition: spatial.setPosition,
       stop: () => {
         const stopNow = ctx.currentTime;
         gainNode.gain.setValueAtTime(gainNode.gain.value, stopNow);
@@ -1496,7 +1553,7 @@ class AudioEngine {
         setTimeout(() => {
           try { osc.stop(); } catch { /* already stopped */ }
           try { lfo?.stop(); } catch { /* already stopped */ }
-          try { panner.disconnect(); } catch { /* ignore */ }
+          spatial.disconnect();
           try { gainNode.disconnect(); } catch { /* ignore */ }
           try { lfoGain?.disconnect(); } catch { /* ignore */ }
         }, 600);
@@ -1780,6 +1837,8 @@ class AudioEngine {
   dispose(): void {
     if (this.disposed) return;
     this.disposed = true;
+    this.flushPendingAmbientCleanup();
+    this.flushPendingMusicCleanup();
     this.stopAmbient();
     this.stopAmbientMusic();
 

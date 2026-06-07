@@ -460,3 +460,28 @@ export const DEFAULT_ARM_WIDTH = 0.048;
 export const DEFAULT_FOREARM_WIDTH = 0.042;
 export const DEFAULT_LEG_WIDTH = 0.058;
 export const DEFAULT_LOWER_LEG_WIDTH = 0.05;
+
+let sharedResourceSets: {
+  geometries: Set<THREE.BufferGeometry>;
+  materials: Set<THREE.Material>;
+} | null = null;
+
+/** Module-level procedural NPC assets — exclude from per-instance GPU dispose. */
+export function getProceduralNpcSharedResourceSets(): {
+  geometries: ReadonlySet<THREE.BufferGeometry>;
+  materials: ReadonlySet<THREE.Material>;
+} {
+  if (!sharedResourceSets) {
+    const geometries = new Set<THREE.BufferGeometry>();
+    for (const geo of geoCache.values()) geometries.add(geo);
+    for (const geo of Object.values(sharedGeo)) geometries.add(geo);
+    for (const geo of Object.values(mergedGeo)) geometries.add(geo);
+
+    const materials = new Set<THREE.Material>();
+    for (const mat of matCache.values()) materials.add(mat);
+    for (const mat of Object.values(sharedMat)) materials.add(mat);
+
+    sharedResourceSets = { geometries, materials };
+  }
+  return sharedResourceSets;
+}
