@@ -10,9 +10,13 @@ import { resolveManualChunk } from './vite/chunks';
 
 
 
+import { cloudflare } from "@cloudflare/vite-plugin";
+
+
+
 export default defineConfig({
 
-  plugins: [react(), tailwindcss()],
+  plugins: [react(), tailwindcss(), cloudflare()],
 
   resolve: {
 
@@ -51,5 +55,3 @@ export default defineConfig({
   assetsInclude: ['**/*.glb', '**/*.gltf', '**/*.ktx2'],
 
 });
-
-
