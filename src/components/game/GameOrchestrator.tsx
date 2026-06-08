@@ -38,6 +38,7 @@ export function GameOrchestrator() {
               isMobile={runtime.isMobile}
               isStoryActive={runtime.isStoryActive}
               isDialogueActive={runtime.isDialogueActive}
+              skipActiveCutscene={runtime.skipActiveCutscene}
               interaction={runtime.interaction}
               panels={runtime.panels}
               panelClosers={panelClosers}

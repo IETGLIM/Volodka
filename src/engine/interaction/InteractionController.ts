@@ -148,34 +148,44 @@ export class InteractionController {
       return;
     }
 
-    if (zone.isOneTime && store.interactiveObjectStates[triggerZoneId]) {
+    const hasLinkedContent = !!(zone.linkedDialogueNodeId || zone.linkedStoryNodeId || zone.linkedMinigame);
+    const deferCommitUntilContinue = !!(zone.isOneTime && zone.examineData);
+
+    if (zone.isOneTime && !deferCommitUntilContinue && store.interactiveObjectStates[triggerZoneId]) {
       devWarn(`[InteractionController] One-time zone already used: "${triggerZoneId}"`);
       return;
     }
+
+    if (!deferCommitUntilContinue) {
+      this.commitZoneInteraction(zone, triggerZoneId);
+    }
+
+    const { ui } = this.deps;
+
+    if (zone.examineData) {
+      ui.setExamineData(zone.examineData);
+      ui.setExamineOpen(true);
+      ui.setExamineHasLinkedContent(hasLinkedContent || deferCommitUntilContinue);
+      audioEngine.playStinger('discovery');
+      this.deps.setPendingTriggerZone(hasLinkedContent || deferCommitUntilContinue ? zone : null);
+    } else {
+      runInteractionTask('triggerLinkedContent', () => triggerLinkedContent(zone));
+    }
+  }
+
+  private commitZoneInteraction(zone: TriggerZone, triggerZoneId: string): void {
+    const store = useGameStore.getState();
 
     if (zone.effects && zone.effects.length > 0) {
       this.applyInteractionEffects(zone.effects);
     }
 
     if (zone.isOneTime) {
-      store.toggleInteractiveObject(triggerZoneId);
+      store.toggleInteractiveObject(triggerZoneId, { skipAutoClose: true });
     }
 
     if (zone.linkedQuestId) {
       store.activateQuest(zone.linkedQuestId);
-    }
-
-    const hasLinkedContent = !!(zone.linkedDialogueNodeId || zone.linkedStoryNodeId || zone.linkedMinigame);
-    const { ui } = this.deps;
-
-    if (zone.examineData) {
-      ui.setExamineData(zone.examineData);
-      ui.setExamineOpen(true);
-      ui.setExamineHasLinkedContent(hasLinkedContent);
-      audioEngine.playStinger('discovery');
-      this.deps.setPendingTriggerZone(hasLinkedContent ? zone : null);
-    } else {
-      runInteractionTask('triggerLinkedContent', () => triggerLinkedContent(zone));
     }
   }
 
@@ -248,13 +258,22 @@ export class InteractionController {
     const zone = this.deps.getPendingTriggerZone();
     if (!zone) return;
 
+    const hasLinkedContent = !!(zone.linkedDialogueNodeId || zone.linkedStoryNodeId || zone.linkedMinigame);
+    const deferredOneTime = !!(zone.isOneTime && zone.examineData);
+
+    if (deferredOneTime) {
+      this.commitZoneInteraction(zone, zone.id);
+    }
+
     const { ui } = this.deps;
     ui.setExamineOpen(false);
     ui.setExamineData(null);
     ui.setExamineHasLinkedContent(false);
     this.deps.setPendingTriggerZone(null);
 
-    runInteractionTask('triggerLinkedContent', () => triggerLinkedContent(zone));
+    if (hasLinkedContent) {
+      runInteractionTask('triggerLinkedContent', () => triggerLinkedContent(zone));
+    }
   }
 
   clearPendingTriggerZone(): void {

@@ -138,6 +138,7 @@ export function useOrchestratorRuntime() {
     fadeOutMs,
     sceneBanner,
     isMobile,
+    skipActiveCutscene,
     interaction,
     panels,
     panelClosers,

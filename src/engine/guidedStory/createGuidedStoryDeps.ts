@@ -13,6 +13,7 @@ import type {
   GuidedStorySnapshot,
 } from '@/engine/guidedStory/guidedStoryTypes';
 import { STORY_FLAG_TO_NODE_ID } from '@/data/goldenPath';
+import type { SavePayload } from '@/shared/validation/saveSchema';
 
 export function toGuidedStorySnapshot(store: GameStoreSnapshot): GuidedStorySnapshot {
   return {
@@ -25,6 +26,23 @@ export function toGuidedStorySnapshot(store: GameStoreSnapshot): GuidedStorySnap
       objectives: q.objectives,
     })),
     activeTTLFlagKeys: Object.keys(store.activeTTLFlags)
+      .filter((key) => key in STORY_FLAG_TO_NODE_ID)
+      .sort(),
+  };
+}
+
+/** Build a guided-story snapshot from validated save data (before store patch). */
+export function guidedStorySnapshotFromSavePayload(payload: SavePayload): GuidedStorySnapshot {
+  return {
+    visitedNodes: payload.playerState.visitedNodes,
+    currentAct: payload.playerState.progression.currentAct ?? 1,
+    flags: payload.playerState.flags,
+    quests: payload.quests.map((q) => ({
+      questId: q.questId,
+      status: q.status,
+      objectives: q.objectives,
+    })),
+    activeTTLFlagKeys: Object.keys(payload.activeTTLFlags)
       .filter((key) => key in STORY_FLAG_TO_NODE_ID)
       .sort(),
   };

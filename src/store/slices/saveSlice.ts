@@ -15,7 +15,8 @@ import {
   pickSavePayload,
   storePatchFromSave,
 } from '../persistedState';
-import { resetGuidedStoryManager } from '@/engine/GuidedStoryManager';
+import { prepareGuidedStoryForLoad, resetGuidedStoryManager } from '@/engine/GuidedStoryManager';
+import { guidedStorySnapshotFromSavePayload } from '@/engine/guidedStory/createGuidedStoryDeps';
 import { clearAutoCloseTimers } from './explorationSlice';
 
 /* ─── localStorage key ─── */
@@ -159,6 +160,8 @@ export const createSaveSlice: StateCreator<
       }
 
       clearAutoCloseTimers();
+      // Sync spine from incoming save before store subscribers fire (prevents spurious advanceAct).
+      prepareGuidedStoryForLoad(guidedStorySnapshotFromSavePayload(validation.data));
       set(storePatchFromSave(validation.data));
       resetGuidedStoryManager();
 

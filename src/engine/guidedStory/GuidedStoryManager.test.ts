@@ -113,4 +113,21 @@ describe('GuidedStoryManager', () => {
     manager.advanceStorySpineForTest('explore_mode');
     expect(deps.events.emitGuidanceUpdate).toHaveBeenCalledTimes(1);
   });
+
+  it('prepareForLoad prevents spurious advanceAct when visitNode catches up on load', () => {
+    const deps = createTestDeps({ visitedNodes: ['start'], currentAct: 1 });
+    const manager = new GuidedStoryManager(deps);
+
+    manager.prepareForLoad({
+      visitedNodes: ['start', 'explore_mode', 'room_table', 'maria_curious'],
+      currentAct: 1,
+      flags: {},
+      quests: [],
+      activeTTLFlagKeys: [],
+    });
+
+    vi.mocked(deps.actions.advanceAct).mockClear();
+    manager.advanceStorySpineForTest('maria_curious');
+    expect(deps.actions.advanceAct).not.toHaveBeenCalled();
+  });
 });

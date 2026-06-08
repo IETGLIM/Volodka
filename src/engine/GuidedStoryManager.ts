@@ -21,7 +21,11 @@ import {
   resolveStorySpineAdvance,
   syncSpineStateFromSnapshot,
 } from '@/engine/guidedStory/guidedStoryLogic';
-import type { GuidedStoryDeps, GuidanceInfo } from '@/engine/guidedStory/guidedStoryTypes';
+import type {
+  GuidedStoryDeps,
+  GuidedStorySnapshot,
+  GuidanceInfo,
+} from '@/engine/guidedStory/guidedStoryTypes';
 
 export type { GuidanceInfo } from '@/engine/guidedStory/guidedStoryTypes';
 
@@ -71,6 +75,17 @@ export class GuidedStoryManager {
   /** Test hook: advance story spine without EventBus/store subscriptions. */
   advanceStorySpineForTest(visitedNodeId: string): void {
     this.advanceStorySpine(visitedNodeId);
+  }
+
+  /**
+   * Sync internal spine state from incoming save data before loadGame patches the store.
+   * Prevents the visitNode subscription from spuriously calling advanceAct().
+   */
+  prepareForLoad(snapshot: GuidedStorySnapshot) {
+    const synced = syncSpineStateFromSnapshot(snapshot, this.deps.path);
+    this.currentStepIndex = synced.currentStepIndex;
+    this.currentQuestSpineIndex = synced.currentQuestSpineIndex;
+    this.lastAdvancedToAct = synced.lastAdvancedToAct;
   }
 
   private getNextQuestInSpine() {
@@ -358,6 +373,10 @@ export function initGuidedStoryManager() {
 export function resetGuidedStoryManager() {
   invalidateStoryGraphIndex();
   guidedStoryManager.resetState();
+}
+
+export function prepareGuidedStoryForLoad(snapshot: GuidedStorySnapshot) {
+  guidedStoryManager.prepareForLoad(snapshot);
 }
 
 export function reconcileGuidedStory() {

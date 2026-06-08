@@ -67,7 +67,7 @@ export interface ExplorationSliceActions {
   advanceTime: (hours: number) => void;
   toggleWeather: () => void;
   setRainIntensity: (intensity: number) => void;
-  toggleInteractiveObject: (id: string) => void;
+  toggleInteractiveObject: (id: string, options?: { skipAutoClose?: boolean }) => void;
   /** Mark a scene as discovered (called when player enters a scene) */
   discoverScene: (sceneId: SceneId) => void;
   /** Fast travel to a discovered scene. Checks discovery + flag gates. Advances time. */
@@ -141,7 +141,7 @@ export const createExplorationSlice: StateCreator<
   setRainIntensity: (intensity) =>
     set({ rainIntensity: clamp(intensity, 0, 1) }),
 
-  toggleInteractiveObject: (id) => {
+  toggleInteractiveObject: (id, options) => {
     const currentState = get().interactiveObjectStates[id] ?? false;
     const newState = !currentState;
 
@@ -159,8 +159,8 @@ export const createExplorationSlice: StateCreator<
       },
     }));
 
-    // Auto-close after 5 seconds if opening
-    if (newState) {
+    // Auto-close after 5 seconds if opening (visual doors/wardrobes — not one-time zones)
+    if (newState && !options?.skipAutoClose) {
       const capturedGeneration = autoCloseGeneration;
       const timer = setTimeout(() => {
         autoCloseTimers.delete(id);

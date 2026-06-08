@@ -206,7 +206,12 @@ function getTypeStyles(type: CutsceneDef['type'] = 'act_transition') {
 //  MAIN COMPONENT
 // ════════════════════════════════════════════════════════════════
 
-export function CutsceneOverlay() {
+type CutsceneOverlayProps = {
+  /** Opens narrative overlay after skip — wired from useCutsceneController.skipActiveCutscene */
+  onSkipCutscene?: () => boolean;
+};
+
+export function CutsceneOverlay({ onSkipCutscene }: CutsceneOverlayProps) {
   const [active, setActive] = useState(false);
   const [text, setText] = useState('');
   const [subtitle, setSubtitle] = useState('');
@@ -247,17 +252,18 @@ export function CutsceneOverlay() {
     setActive(false);
     setShowSkip(false);
 
-    // 3. End cutscene in the store
+    // 3. End cutscene + resume narrative (skip button / touch — keyboard uses shortcut manager)
+    if (onSkipCutscene?.()) return;
+
     const store = useGameStore.getState();
     if (readGamePhase(store) === 'cutscene') {
       store.setCutscene(null, []);
       clearGameplayPhaseFlags(store);
     }
 
-    // 4. Emit events so camera system & other listeners clean up
     eventBus.emit('cutscene:overlay_end', {});
     eventBus.emit('camera:cutscene_end', {});
-  }, [clearTimer, clearSkipDelayTimer]);
+  }, [clearTimer, clearSkipDelayTimer, onSkipCutscene]);
 
   useEffect(() => {
     const unsub = eventBus.on('cutscene:overlay', (payload) => {

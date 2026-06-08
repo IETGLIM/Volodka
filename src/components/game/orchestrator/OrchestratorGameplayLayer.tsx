@@ -55,6 +55,7 @@ type Props = {
   isMobile: boolean;
   isStoryActive: boolean;
   isDialogueActive: boolean;
+  skipActiveCutscene: () => boolean;
   interaction: OrchestratorRuntime['interaction'];
   panels: OrchestratorRuntime['panels'];
   panelClosers: PanelCloseHandlers;
@@ -68,6 +69,7 @@ export function OrchestratorGameplayLayer({
   isMobile,
   isStoryActive,
   isDialogueActive,
+  skipActiveCutscene,
   interaction,
   panels,
   panelClosers,
@@ -131,7 +133,7 @@ export function OrchestratorGameplayLayer({
 
       <FloatingTextLayer />
       <ScreenEffects />
-      <CutsceneOverlay />
+      <CutsceneOverlay onSkipCutscene={skipActiveCutscene} />
 
       <AnimatePresence>
         {sceneBanner && (
