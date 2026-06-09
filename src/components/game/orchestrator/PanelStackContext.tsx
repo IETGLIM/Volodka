@@ -25,6 +25,14 @@ export interface PanelStackContextValue {
   getStackZIndex: (panel: NonNullPanelType) => number;
 }
 
+const EMPTY_PANEL_STACK_CONTEXT: PanelStackContextValue = {
+  stack: [],
+  isPanelOpen: () => false,
+  isTopPanel: () => false,
+  getStackIndex: () => -1,
+  getStackZIndex: () => UI_LAYERS.PANEL,
+};
+
 const PanelStackContext = createContext<PanelStackContextValue | null>(null);
 
 /** Per-panel id for z-index / backdrop inside LazyPanelSlot. */
@@ -65,16 +73,7 @@ export function PanelStackProvider({
 
 export function usePanelStack(): PanelStackContextValue {
   const ctx = useContext(PanelStackContext);
-  if (!ctx) {
-    return {
-      stack: [],
-      isPanelOpen: () => false,
-      isTopPanel: () => true,
-      getStackIndex: () => 0,
-      getStackZIndex: () => UI_LAYERS.PANEL,
-    };
-  }
-  return ctx;
+  return ctx ?? EMPTY_PANEL_STACK_CONTEXT;
 }
 
 export function usePanelId(): NonNullPanelType | null {
@@ -94,6 +93,7 @@ export function PanelStackSlot({
   return (
     <PanelIdContext.Provider value={panelId}>
       <div
+        aria-hidden={!isTop}
         style={{
           position: 'fixed',
           inset: 0,
