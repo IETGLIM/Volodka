@@ -158,7 +158,7 @@ export class InteractionController {
     }
 
     if (zone.isOneTime) {
-      store.toggleInteractiveObject(triggerZoneId);
+      store.toggleInteractiveObject(triggerZoneId, { persist: true });
     }
 
     if (zone.linkedQuestId) {
