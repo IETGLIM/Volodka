@@ -17,11 +17,10 @@ export function useCutsceneController() {
     cutsceneSessionRef.current.cancel();
   }, []);
 
-  const skipActiveCutscene = useCallback((): boolean => {
+  const finishCutscene = useCallback(() => {
     const store = useGameStore.getState();
     if (!store.activeCutsceneId) return false;
 
-    cancelCutsceneSession();
     store.setCutscene(null, []);
     clearGameplayPhaseFlags(store);
     eventBus.emit('cutscene:overlay_end', {});
@@ -31,7 +30,15 @@ export function useCutsceneController() {
       openNarrativeOverlay(store.currentNodeId, store.narrativeKind);
     }
     return true;
-  }, [cancelCutsceneSession]);
+  }, []);
+
+  const skipActiveCutscene = useCallback((): boolean => {
+    const store = useGameStore.getState();
+    if (!store.activeCutsceneId) return false;
+
+    cancelCutsceneSession();
+    return finishCutscene();
+  }, [cancelCutsceneSession, finishCutscene]);
 
   useEffect(() => {
     const session = cutsceneSessionRef.current;
@@ -88,21 +95,14 @@ export function useCutsceneController() {
     const totalDuration = cutscene.textDurationMs + 2000;
 
     cutsceneSessionRef.current.schedule(() => {
-      const currentStore = useGameStore.getState();
       if (!cutsceneSessionRef.current.isCurrent(generation)) return;
-      if (currentStore.activeCutsceneId) {
-        currentStore.setCutscene(null, []);
-        clearGameplayPhaseFlags(currentStore);
-        if (currentStore.currentNodeId && currentStore.narrativeKind) {
-          openNarrativeOverlay(currentStore.currentNodeId, currentStore.narrativeKind);
-        }
-      }
+      finishCutscene();
     }, totalDuration);
 
     return () => {
       cutsceneSessionRef.current.cancel();
     };
-  }, [currentNodeId]);
+  }, [currentNodeId, finishCutscene]);
 
   return { skipActiveCutscene };
 }
