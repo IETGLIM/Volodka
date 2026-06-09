@@ -35,7 +35,12 @@ export function OrchestratorCanvasLayer({
   return (
     <>
       {mode !== 'menu' && !gameDataReady && (
-        <div style={{ pointerEvents: 'none', zIndex: UI_LAYERS.LOADING }} className="fixed inset-0">
+        <div
+          role="status"
+          aria-busy="true"
+          style={{ pointerEvents: 'auto', zIndex: UI_LAYERS.LOADING }}
+          className="fixed inset-0"
+        >
           <LoadingScreen showTitle message="Загрузка данных..." />
         </div>
       )}
@@ -75,7 +80,7 @@ export function OrchestratorCanvasLayer({
       )}
 
       {mode === 'menu' && canvasMounted && !canvasReady && (
-        <div style={{ pointerEvents: 'none' }}>
+        <div role="status" aria-busy="true" style={{ pointerEvents: 'auto' }}>
           <LoadingScreen showTitle message="Инициализация..." />
         </div>
       )}
