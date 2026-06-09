@@ -48,6 +48,16 @@ function resolveActiveMinigame(props: Props): MinigameId | null {
   return null;
 }
 
+function MinigameLoadingFallback() {
+  return (
+    <div className="fixed inset-0 z-[900] grid place-items-center bg-black/70 pointer-events-auto">
+      <div className="rounded-lg border border-cyan-500/30 bg-slate-950/90 px-6 py-4 font-mono text-sm text-cyan-200 shadow-2xl">
+        Загрузка мини-игры...
+      </div>
+    </div>
+  );
+}
+
 /** Single AnimatePresence for all minigames — one layout exit path instead of eight. */
 export function OrchestratorMinigameOverlays(props: Props) {
   const active = resolveActiveMinigame(props);
@@ -61,7 +71,7 @@ export function OrchestratorMinigameOverlays(props: Props) {
   return (
     <AnimatePresence initial={false} mode="wait">
       {active && (
-        <Suspense key={active} fallback={null}>
+        <Suspense key={active} fallback={<MinigameLoadingFallback />}>
           {active === 'codebreaker' && (
             <LazyCodeBreakerGame onClose={() => closeMinigame('codebreaker', minigameSetters)} />
           )}
