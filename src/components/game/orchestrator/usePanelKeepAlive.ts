@@ -8,13 +8,20 @@ import { PANEL_UNMOUNT_GRACE_MS } from '@/shared/constants/transitionTimings';
 export function usePanelKeepAlive(open: boolean, graceMs = PANEL_UNMOUNT_GRACE_MS) {
   const [mounted, setMounted] = useState(open);
   const timerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const openRef = useRef(open);
+
+  useEffect(() => {
+    openRef.current = open;
+  }, [open]);
 
   const finishExit = useCallback(() => {
     if (timerRef.current) {
       clearTimeout(timerRef.current);
       timerRef.current = undefined;
     }
-    setMounted(false);
+    if (!openRef.current) {
+      setMounted(false);
+    }
   }, []);
 
   useEffect(() => {
