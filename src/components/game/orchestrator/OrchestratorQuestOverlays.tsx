@@ -1,4 +1,4 @@
-import { Suspense } from 'react';
+import { Suspense, useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useGameStore } from '@/store/gameStore';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
@@ -23,6 +23,16 @@ export function OrchestratorQuestOverlays({
   questChainUnlock,
   setQuestChainUnlock,
 }: Props) {
+  useEffect(() => {
+    if (!questChainUnlock) return;
+
+    const timer = window.setTimeout(() => {
+      setQuestChainUnlock(null);
+    }, 7000);
+
+    return () => window.clearTimeout(timer);
+  }, [questChainUnlock, setQuestChainUnlock]);
+
   return (
     <>
       {questAccept && (
