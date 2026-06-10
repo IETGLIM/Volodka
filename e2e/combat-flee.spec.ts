@@ -1,14 +1,13 @@
 import { test, expect } from '@playwright/test';
-import { enableE2EBridge, startNewGame, dismissBlockingOverlays } from './helpers';
+import { enableE2EBridge, startNewGame } from './helpers';
 
 test.describe('Combat flee', () => {
   test.beforeEach(async ({ page }) => {
     await enableE2EBridge(page);
   });
 
-  test('enter combat, flee, and return to exploration UI', async ({ page }) => {
+  test('enter combat, flee, and return to exploration', async ({ page }) => {
     await startNewGame(page);
-    await dismissBlockingOverlays(page);
 
     await page.evaluate(() => {
       window.__volodkaE2E?.startCombat('system_daemon');
@@ -19,20 +18,25 @@ test.describe('Combat flee', () => {
       .toBe('active');
 
     await page.evaluate(() => {
+      Math.random = () => 0;
       window.__volodkaE2E?.fleeCombat();
     });
 
     await expect
+      .poll(async () => page.evaluate(() => window.__volodkaE2E?.getCombatState()?.status ?? null))
+      .toBe('fled');
+
+    await expect
       .poll(async () => page.evaluate(() => window.__volodkaE2E?.getState().combatActive ?? true), {
-        timeout: 20_000,
+        timeout: 5_000,
       })
       .toBe(false);
 
     await expect
-      .poll(async () => page.evaluate(() => window.__volodkaE2E?.getCombatState() ?? 'pending'), {
-        timeout: 20_000,
+      .poll(async () => page.evaluate(() => window.__volodkaE2E?.getCombatState() === null), {
+        timeout: 5_000,
       })
-      .toBeNull();
+      .toBe(true);
 
     await expect
       .poll(async () => page.evaluate(() => window.__volodkaE2E?.getGamePhase() ?? null))
