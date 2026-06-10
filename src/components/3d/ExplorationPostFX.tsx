@@ -342,23 +342,33 @@ function PostFXPipeline() {
   const pipelineKey = `${sceneId}-${useLitePostFx ? 'lite' : 'full'}`;
 
   if (useLitePostFx) {
+    const liteBloom = bloomParams.intensity * 0.75;
+    const liteVignetteDarkness = Math.min(
+      (vignetteParams.darkness + stressFactor * 0.08) * SCENE_VISIBILITY.vignetteDarknessScale,
+      0.65,
+    );
     return (
       <ManagedEffectComposer remountKey={pipelineKey} sceneId={sceneId} multisampling={0}>
         <Bloom
-          intensity={0.45}
-          luminanceThreshold={0.75}
-          luminanceSmoothing={0.9}
+          intensity={liteBloom}
+          luminanceThreshold={bloomParams.threshold}
+          luminanceSmoothing={bloomParams.smoothing}
           mipmapBlur
           kernelSize={KernelSize.LARGE}
         />
         <Vignette
-          offset={0.38}
-          darkness={0.28 * SCENE_VISIBILITY.vignetteDarknessScale}
+          offset={vignetteParams.offset}
+          darkness={liteVignetteDarkness}
+          blendFunction={BlendFunction.NORMAL}
+        />
+        <HueSaturation
+          hue={colorGrade.hue}
+          saturation={noirMode ? Math.min(colorGrade.saturation - 0.25, 0) : colorGrade.saturation * 0.7}
           blendFunction={BlendFunction.NORMAL}
         />
         <BrightnessContrast
-          brightness={SCENE_VISIBILITY.postFxBrightnessLift}
-          contrast={-0.02}
+          brightness={effectiveBrightness}
+          contrast={effectiveContrast * 0.6}
           blendFunction={BlendFunction.NORMAL}
         />
         <ToneMapping

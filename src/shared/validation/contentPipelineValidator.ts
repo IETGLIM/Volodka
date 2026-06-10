@@ -19,12 +19,15 @@ import { CUTSCENES } from '@/data/cutscenes';
 import { NPC_SCHEDULES, ACT_SCHEDULE_OVERRIDES } from '@/data/npcSchedules';
 import { EXPANDED_NPC_QUEST_LINKS } from '@/data/expandedNPCs';
 import {
+  ACT_TRANSITIONS,
   GOLDEN_PATH_STORY_SPINE,
   GOLDEN_PATH_QUEST_SPINE,
   STORY_NODE_ALIASES,
   NPC_ID_ALIASES,
   getNpcIdForStoryNode,
 } from '@/data/goldenPath';
+import { MinSkillCheckSchema, SKILL_CHECK_DIFFICULTY_MAX, SKILL_CHECK_DIFFICULTY_MIN } from '@/shared/validation/skillCheck';
+import type { ChoiceCondition, TrainablePlayerSkill } from '@/shared/types/game';
 import { getGoldenPathDerivationReport } from '@/engine/guidedStory/buildGuidedStoryPath';
 import { QUEST_ITEM_DEFINITIONS } from '@/data/questItems';
 import { isKnownMinigameId, MINIGAME_COMPLETION_FLAGS } from '@/shared/constants/minigames';
@@ -107,6 +110,95 @@ function isKnownNpcId(npcId: string, reg: ReturnType<typeof buildSets>): boolean
   return reg.npcIds.has(npcId) || npcId in NPC_ID_ALIASES;
 }
 
+function resolveStoryNodeId(nodeId: string): string {
+  return STORY_NODE_ALIASES[nodeId] ?? nodeId;
+}
+
+function isKnownStoryNodeId(nodeId: string, reg: ReturnType<typeof buildSets>): boolean {
+  return reg.storyNodeIds.has(nodeId) || reg.storyNodeIds.has(resolveStoryNodeId(nodeId));
+}
+
+const TRAINABLE_SKILLS = new Set<TrainablePlayerSkill>([
+  'logic',
+  'coding',
+  'empathy',
+  'persuasion',
+  'intuition',
+  'writing',
+  'rhythm',
+]);
+
+function validateChoiceCondition(
+  condition: ChoiceCondition | undefined,
+  path: string,
+  out: ValidationIssue[],
+  options?: { requireNpcContextForRelation?: boolean },
+): void {
+  if (!condition) return;
+
+  if (condition.minSkillCheck) {
+    const result = MinSkillCheckSchema.safeParse(condition.minSkillCheck);
+    if (!result.success) {
+      out.push(
+        issue(
+          'error',
+          'condition',
+          path,
+          `invalid minSkillCheck (expected skill + difficulty ${SKILL_CHECK_DIFFICULTY_MIN}–${SKILL_CHECK_DIFFICULTY_MAX}): ${result.error.issues.map((i) => i.message).join('; ')}`,
+        ),
+      );
+    }
+  }
+
+  if (condition.minNpcRelation !== undefined) {
+    const rel = condition.minNpcRelation;
+    if (!Number.isInteger(rel) || rel < 0 || rel > 100) {
+      out.push(
+        issue(
+          'error',
+          'condition',
+          path,
+          `minNpcRelation must be integer 0–100, got ${JSON.stringify(rel)}`,
+        ),
+      );
+    } else if (options?.requireNpcContextForRelation) {
+      out.push(
+        issue(
+          'warning',
+          'condition',
+          path,
+          'minNpcRelation on story choice may not resolve without guidanceNpcId / NPC dialogue context',
+        ),
+      );
+    }
+  }
+
+  if (condition.minSkill) {
+    for (const [skill, needed] of Object.entries(condition.minSkill)) {
+      if (!TRAINABLE_SKILLS.has(skill as TrainablePlayerSkill)) {
+        out.push(issue('error', 'condition', path, `unknown skill "${skill}" in minSkill`));
+      }
+      if (typeof needed !== 'number' || needed < 0) {
+        out.push(issue('error', 'condition', path, `minSkill.${skill} must be a non-negative number`));
+      }
+    }
+  }
+
+  if (condition.requiredAct !== undefined) {
+    const act = condition.requiredAct;
+    if (!Number.isInteger(act) || act < 1 || act > ACT_TRANSITIONS.length) {
+      out.push(
+        issue(
+          'error',
+          'condition',
+          path,
+          `requiredAct must be integer 1–${ACT_TRANSITIONS.length}, got ${JSON.stringify(act)}`,
+        ),
+      );
+    }
+  }
+}
+
 function walkEffects(
   effects: StoryEffect[] | undefined,
   path: string,
@@ -168,12 +260,16 @@ function validateStoryGraph(reg: ReturnType<typeof buildSets>, out: ValidationIs
     if (node.sceneId && !reg.sceneIds.has(node.sceneId)) {
       out.push(issue('error', 'story', base, `unknown sceneId "${node.sceneId}"`));
     }
+    if (node.poemId && !reg.poemIds.has(node.poemId)) {
+      out.push(issue('error', 'story', base, `poemId "${node.poemId}" not in POEMS`));
+    }
     for (let i = 0; i < (node.choices?.length ?? 0); i++) {
       const choice = node.choices![i];
       const cp = `${base}.choices[${i}]`;
       if (!resolveNodeRef(choice.next, reg.storyNodeIds, reg.dialogueNodeIds)) {
         out.push(issue('error', 'story', cp, `next "${choice.next}" not in STORY_NODES or DIALOGUE_NODES`));
       }
+      validateChoiceCondition(choice.condition, cp, out, { requireNpcContextForRelation: true });
       walkEffects(choice.effects, cp, reg, out);
     }
     walkEffects(node.effects, base, reg, out);
@@ -192,6 +288,7 @@ function validateDialogueGraph(reg: ReturnType<typeof buildSets>, out: Validatio
       if (!resolveNodeRef(choice.next, reg.storyNodeIds, reg.dialogueNodeIds)) {
         out.push(issue('error', 'dialogue', cp, `next "${choice.next}" not in STORY_NODES or DIALOGUE_NODES`));
       }
+      validateChoiceCondition(choice.condition, cp, out);
       walkEffects(choice.effects, cp, reg, out);
     }
   }
@@ -207,11 +304,11 @@ function validateQuests(reg: ReturnType<typeof buildSets>, out: ValidationIssue[
   for (const quest of QUEST_DEFINITIONS) {
     const base = `quest:${quest.id}`;
 
-    if (quest.linkedStoryNodeId && !reg.storyNodeIds.has(quest.linkedStoryNodeId)) {
+    if (quest.linkedStoryNodeId && !isKnownStoryNodeId(quest.linkedStoryNodeId, reg)) {
       out.push(issue('error', 'quest', base, `linkedStoryNodeId "${quest.linkedStoryNodeId}" not in STORY_NODES`));
     }
     for (const nodeId of quest.linkedStoryNodeIds ?? []) {
-      if (!reg.storyNodeIds.has(nodeId)) {
+      if (!isKnownStoryNodeId(nodeId, reg)) {
         out.push(issue('error', 'quest', base, `linkedStoryNodeIds contains unknown "${nodeId}"`));
       }
     }
@@ -452,7 +549,7 @@ function validateTriggers(reg: ReturnType<typeof buildSets>, out: ValidationIssu
     if (!reg.sceneIds.has(zone.sceneId)) {
       out.push(issue('error', 'trigger', base, `unknown sceneId "${zone.sceneId}"`));
     }
-    if (zone.linkedStoryNodeId && !reg.storyNodeIds.has(zone.linkedStoryNodeId)) {
+    if (zone.linkedStoryNodeId && !isKnownStoryNodeId(zone.linkedStoryNodeId, reg)) {
       out.push(issue('error', 'trigger', base, `linkedStoryNodeId "${zone.linkedStoryNodeId}" not in STORY_NODES`));
     }
     if (zone.linkedDialogueNodeId && !reg.dialogueNodeIds.has(zone.linkedDialogueNodeId)) {
@@ -683,6 +780,64 @@ function validateGoldenPath(reg: ReturnType<typeof buildSets>, out: ValidationIs
   }
 }
 
+function validateActTransitions(reg: ReturnType<typeof buildSets>, out: ValidationIssue[]): void {
+  const seenActs = new Set<number>();
+
+  for (const trans of ACT_TRANSITIONS) {
+    const base = `act-transition:${trans.act}`;
+
+    if (seenActs.has(trans.act)) {
+      out.push(issue('error', 'act-transition', base, `duplicate act number ${trans.act}`));
+    }
+    seenActs.add(trans.act);
+
+    if (!isKnownStoryNodeId(trans.entryNodeId, reg)) {
+      out.push(
+        issue('error', 'act-transition', base, `entryNodeId "${trans.entryNodeId}" not in STORY_NODES`),
+      );
+    }
+
+    if (trans.nextActEntryNodeId && !isKnownStoryNodeId(trans.nextActEntryNodeId, reg)) {
+      out.push(
+        issue(
+          'error',
+          'act-transition',
+          base,
+          `nextActEntryNodeId "${trans.nextActEntryNodeId}" not in STORY_NODES`,
+        ),
+      );
+    }
+
+    for (const questId of trans.questSpineIds) {
+      if (!reg.questIds.has(questId)) {
+        out.push(
+          issue('error', 'act-transition', base, `questSpineIds contains unknown quest "${questId}"`),
+        );
+      }
+    }
+
+    if (trans.act > 1) {
+      const prev = ACT_TRANSITIONS.find((t) => t.act === trans.act - 1);
+      if (prev?.nextActEntryNodeId && prev.nextActEntryNodeId !== trans.entryNodeId) {
+        out.push(
+          issue(
+            'warning',
+            'act-transition',
+            base,
+            `entryNodeId "${trans.entryNodeId}" differs from previous nextActEntryNodeId "${prev.nextActEntryNodeId}"`,
+          ),
+        );
+      }
+    }
+  }
+
+  for (let act = 1; act <= ACT_TRANSITIONS.length; act++) {
+    if (!seenActs.has(act)) {
+      out.push(issue('error', 'act-transition', `act:${act}`, 'missing ACT_TRANSITIONS entry'));
+    }
+  }
+}
+
 /** Run all content pipeline cross-reference checks. */
 export function validateContentPipeline(): ValidationReport {
   const reg = buildSets();
@@ -702,6 +857,7 @@ export function validateContentPipeline(): ValidationReport {
   validateLore(reg, issues);
   validateCutscenes(reg, issues);
   validateQuestItems(reg, issues);
+  validateActTransitions(reg, issues);
   validateGoldenPath(reg, issues);
 
   const errorCount = issues.filter((i) => i.severity === 'error').length;

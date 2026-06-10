@@ -3,7 +3,7 @@
 /* Full-screen modal for managing 3 save slots with preview metadata,
  * save/load/delete actions, and auto-save indicator. */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { AriaLiveRegion } from '@/components/a11y/AriaLiveRegion';
@@ -297,6 +297,7 @@ function SaveSlotCard({
           {/* Save */}
           <motion.button
             onClick={() => onSave(slotNumber)}
+            data-testid={`save-slot-${slotNumber}-save`}
             whileHover={{ scale: 1.04 }}
             whileTap={{ scale: 0.96 }}
             aria-label={`Сохранить игру в слот ${slotNumber}`}
@@ -328,6 +329,7 @@ function SaveSlotCard({
           {/* Load */}
           <motion.button
             onClick={() => onLoad(slotNumber)}
+            data-testid={`save-slot-${slotNumber}-load`}
             whileHover={{ scale: isEmpty ? 1 : 1.04 }}
             whileTap={{ scale: isEmpty ? 1 : 0.96 }}
             disabled={isEmpty}
@@ -470,6 +472,7 @@ function SaveSlotManagerContent({ onClose }: { onClose: () => void }) {
     [1, 2, 3].map((n) => readSaveSlot(n)),
   );
   const [notification, setNotification] = useState<string | null>(null);
+  const importInputRef = useRef<HTMLInputElement>(null);
 
   const refreshSlots = useCallback(() => {
     const data = [1, 2, 3].map((n) => readSaveSlot(n));
@@ -570,6 +573,94 @@ function SaveSlotManagerContent({ onClose }: { onClose: () => void }) {
     [refreshSlots],
   );
 
+  const handleExport = useCallback(() => {
+    try {
+      const payload = {
+        exportedAt: Date.now(),
+        version: 1,
+        slots: Object.fromEntries(
+          [1, 2, 3].map((n) => [String(n), readSaveSlot(n)]),
+        ),
+      };
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement('a');
+      anchor.href = url;
+      anchor.download = `volodka-saves-${new Date().toISOString().slice(0, 10)}.json`;
+      anchor.click();
+      URL.revokeObjectURL(url);
+      setNotification('Сохранения экспортированы');
+    } catch {
+      setNotification('Ошибка экспорта');
+    }
+  }, []);
+
+  const handleImportFile = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      const file = event.target.files?.[0];
+      event.target.value = '';
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const raw = reader.result;
+          if (typeof raw !== 'string') {
+            setNotification('Неверный файл');
+            return;
+          }
+
+          const parsed = JSON.parse(raw) as {
+            slots?: Record<string, unknown>;
+            slot?: number;
+            data?: unknown;
+          };
+
+          // Single-slot export fallback
+          if (parsed.data && typeof parsed.slot === 'number') {
+            const validation = validateSaveData(JSON.stringify(parsed.data));
+            if (!validation.success) {
+              setNotification(validation.error);
+              return;
+            }
+            localStorage.setItem(getSaveSlotKey(parsed.slot), JSON.stringify(validation.data));
+            refreshSlots();
+            setNotification(`Импортирован Слот ${parsed.slot}`);
+            return;
+          }
+
+          const slotEntries = parsed.slots;
+          if (!slotEntries || typeof slotEntries !== 'object') {
+            setNotification('Формат файла не распознан');
+            return;
+          }
+
+          let imported = 0;
+          for (const [key, value] of Object.entries(slotEntries)) {
+            const slotNum = Number(key);
+            if (!Number.isInteger(slotNum) || slotNum < 1 || slotNum > 3 || value == null) continue;
+            const validation = validateSaveData(JSON.stringify(value));
+            if (!validation.success) continue;
+            localStorage.setItem(getSaveSlotKey(slotNum), JSON.stringify(validation.data));
+            imported++;
+          }
+
+          if (imported === 0) {
+            setNotification('Нет валидных слотов в файле');
+            return;
+          }
+
+          refreshSlots();
+          setNotification(`Импортировано слотов: ${imported}`);
+        } catch {
+          setNotification('Ошибка импорта');
+        }
+      };
+      reader.readAsText(file);
+    },
+    [refreshSlots],
+  );
+
   return (
     <motion.div
       className="relative z-10 w-full max-w-2xl mx-4"
@@ -666,7 +757,7 @@ function SaveSlotManagerContent({ onClose }: { onClose: () => void }) {
 
         {/* ── Footer ── */}
         <div
-          className="px-5 py-3 border-t flex items-center justify-between"
+          className="px-5 py-3 border-t flex items-center justify-between gap-3 flex-wrap"
           style={{ borderColor: 'rgb(var(--cyber-cyan-rgb) / 0.1)' }}
         >
           {/* Slot count info */}
@@ -677,6 +768,43 @@ function SaveSlotManagerContent({ onClose }: { onClose: () => void }) {
             >
               {slots.filter((s) => s !== null).length}/3 занято
             </span>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <input
+              ref={importInputRef}
+              type="file"
+              accept="application/json,.json"
+              className="hidden"
+              aria-hidden
+              onChange={handleImportFile}
+            />
+            <button
+              type="button"
+              onClick={() => importInputRef.current?.click()}
+              className="px-2.5 py-1 rounded font-mono text-[10px] tracking-wide border transition-colors"
+              style={{
+                color: 'rgb(var(--cyber-cyan-rgb) / 0.75)',
+                borderColor: 'rgb(var(--cyber-cyan-rgb) / 0.25)',
+                background: 'rgb(var(--cyber-cyan-rgb) / 0.06)',
+              }}
+              aria-label="Импорт сохранений из JSON файла"
+            >
+              Импорт
+            </button>
+            <button
+              type="button"
+              onClick={handleExport}
+              className="px-2.5 py-1 rounded font-mono text-[10px] tracking-wide border transition-colors"
+              style={{
+                color: 'rgb(var(--cyber-cyan-rgb) / 0.75)',
+                borderColor: 'rgb(var(--cyber-cyan-rgb) / 0.25)',
+                background: 'rgb(var(--cyber-cyan-rgb) / 0.06)',
+              }}
+              aria-label="Экспорт всех слотов в JSON файл"
+            >
+              Экспорт
+            </button>
           </div>
 
           {/* ESC hint */}

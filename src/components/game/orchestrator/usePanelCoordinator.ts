@@ -99,6 +99,12 @@ export function usePanelCoordinator({
         setMatrixQuote({ text: quote, actNumber: data.toAct });
       }
     });
+    scope.on('e2e:dismiss_overlays', () => {
+      setQuestAccept(null);
+      setQuestComplete(null);
+      setQuestChainUnlock(null);
+      setMatrixQuote(null);
+    });
 
     return withHmrCleanup(() => {
       scope.dispose();

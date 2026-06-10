@@ -1,6 +1,6 @@
 {
   "name": "volodka-rpg",
-  "version": "3.0.1",
+  "version": "3.1.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -11,6 +11,7 @@
     "validate": "npx tsx --tsconfig tsconfig.json scripts/validate-content.ts",
     "validate:content": "npx tsx --tsconfig tsconfig.json scripts/validate-content.ts",
     "assets:process": "node scripts/process-gltf-assets.mjs",
+    "assets:fetch": "node scripts/fetch-cc0-models.mjs",
     "assets:validate": "npx tsx --tsconfig tsconfig.json scripts/validate-gltf-assets.ts",
     "preview": "vite preview",
     "lint": "eslint src --max-warnings 9999",

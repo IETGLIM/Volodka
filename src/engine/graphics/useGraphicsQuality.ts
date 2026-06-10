@@ -22,13 +22,18 @@ export interface GraphicsQualityState {
 /** Unified graphics quality — replaces ad-hoc visualLite heuristics. */
 export function useGraphicsQuality(): GraphicsQualityState {
   const [selectedPreset, setSelectedPreset] = useState<QualityPresetId>(readQualityPresetId);
-  const [viewport, setViewport] = useState({ width: 1920, dpr: 1 });
+  const [viewport, setViewport] = useState({
+    width: 1920,
+    dpr: 1,
+    cores: typeof navigator !== 'undefined' ? navigator.hardwareConcurrency : 8,
+  });
 
   useEffect(() => {
     const sync = () => {
       setViewport({
         width: window.innerWidth,
         dpr: window.devicePixelRatio ?? 1,
+        cores: navigator.hardwareConcurrency ?? 8,
       });
     };
     sync();
@@ -45,7 +50,12 @@ export function useGraphicsQuality(): GraphicsQualityState {
     return () => window.removeEventListener(QUALITY_PRESET_CHANGED, onChanged);
   }, []);
 
-  const preset = resolveQualityPreset(selectedPreset, viewport.width, viewport.dpr);
+  const preset = resolveQualityPreset(
+    selectedPreset,
+    viewport.width,
+    viewport.dpr,
+    viewport.cores,
+  );
 
   const setPreset = (id: QualityPresetId) => {
     writeQualityPresetId(id);

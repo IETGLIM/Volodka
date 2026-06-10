@@ -75,6 +75,7 @@ export function OrchestratorPauseMenu({ pauseDialog, panels, onClose }: Props) {
                   </button>
                   <button
                     type="button"
+                    data-testid="pause-save-slots"
                     onClick={() => dispatchPanel('saveSlot')}
                     className="w-full px-4 py-2.5 rounded-lg border border-cyan-800/40 bg-cyan-950/30 text-cyan-300 hover:bg-cyan-900/30 hover:border-cyan-700/50 text-sm transition-all flex items-center gap-2 font-mono"
                   >

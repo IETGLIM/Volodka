@@ -2,6 +2,8 @@
 
 > Интерактивная 3D RPG в память о Володьке — уставшем инженере, который искал стихи, спрятанные в коде.
 
+**Version:** 3.1.0 (see `package.json`)
+
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new)
 
 ---
@@ -50,7 +52,7 @@ npm run build    # Production-сборка в dist/
 
 ## 📦 Vercel Deploy
 
-Проект готов к деплою на Vercel. `vercel.json` уже настроен:
+Проект готов к деплою на Vercel. `vercel.json` уже настроен. Полный чеклист: [DEPLOY.md](./DEPLOY.md), [LAUNCH_CHECKLIST.md](./LAUNCH_CHECKLIST.md).
 
 1. Залей репозиторий на GitHub
 2. Подключи Vercel к репозиторию

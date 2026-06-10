@@ -218,6 +218,17 @@ describe('AmbientSoundPlayer crossfade', () => {
     expect(internal.currentAmbient).toBeNull();
   });
 
+  it('tracks playback FSM through play → playing → dispose', () => {
+    const player = new AmbientSoundPlayer();
+
+    expect(player.getPlaybackState()).toBe('idle');
+    player.play('rain', 0);
+    expect(player.getPlaybackState()).toBe('playing');
+
+    player.dispose();
+    expect(player.getPlaybackState()).toBe('disposed');
+  });
+
   it('ambientEngine proxy forwards to the live singleton after dispose', () => {
     disposeAmbientEngine();
     ambientEngine.play('cafe', 0);

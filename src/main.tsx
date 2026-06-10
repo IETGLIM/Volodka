@@ -4,8 +4,12 @@ import { Toaster } from '@/components/ui/sonner';
 import '@/app/globals.css';
 import { markAppStart } from '@/engine/performance/LoadingTimeline';
 import { preloadBootGameData } from '@/data/gameDataLoader';
+import { installClientErrorHandlers, clientLogError } from '@/shared/observability/clientLogger';
+import { applyReducedMotionDom } from '@/shared/accessibility/reducedMotion';
 
 markAppStart();
+installClientErrorHandlers();
+applyReducedMotionDom();
 
 const root = document.getElementById('root');
 if (!root) throw new Error('Root element not found');
@@ -40,7 +44,7 @@ root.innerHTML = `
   </div>`;
 
 void boot().catch((error: unknown) => {
-  console.error('[boot] preloadGameData failed:', error);
+  clientLogError(error, { context: 'boot' });
   const message = error instanceof Error ? error.message : String(error);
   showBootError(message);
 });

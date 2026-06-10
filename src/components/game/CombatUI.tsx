@@ -189,9 +189,10 @@ function EnemyPortrait({ emoji, hp, maxHp }: { emoji: string; hp: number; maxHp:
 
 /* ── Terminal-style Action Button ── */
 function TerminalButton({
-  onClick, disabled, accentColor, children,
+  onClick, disabled, accentColor, children, 'data-testid': testId,
 }: {
   onClick: () => void; disabled: boolean; accentColor: string; children: React.ReactNode;
+  'data-testid'?: string;
 }) {
   const colorMap: Record<string, { border: string; bg: string; text: string; hoverBg: string; glow: string }> = {
     cyan: { border: 'border-cyan-700/60', bg: 'bg-cyan-950/50', text: 'text-cyan-400', hoverBg: 'hover:bg-cyan-900/40', glow: '#06b6d4' },
@@ -206,6 +207,7 @@ function TerminalButton({
     <button
       onClick={onClick}
       disabled={disabled}
+      data-testid={testId}
       className={`relative flex-1 py-2.5 rounded border ${c.border} ${c.bg} ${c.text} ${c.hoverBg} disabled:opacity-30 disabled:cursor-not-allowed transition-all text-xs font-mono font-semibold flex items-center justify-center gap-1.5 overflow-hidden group`}
       style={!disabled ? { boxShadow: `0 0 8px ${c.glow}20, inset 0 0 8px ${c.glow}10` } : {}}
     >
@@ -472,6 +474,7 @@ export function CombatUI() {
 
   return (
     <div
+      data-testid="combat-ui"
       className={`fixed inset-0 flex flex-col pointer-events-none ${screenShake ? 'combat-shake' : ''}`}
       style={{ zIndex: UI_LAYERS.COMBAT }}
     >
@@ -660,7 +663,7 @@ export function CombatUI() {
                   )}
                 </AnimatePresence>
               </div>
-              <TerminalButton onClick={handleFlee} disabled={!isPlayerTurn || pendingAction} accentColor="rose">
+              <TerminalButton onClick={handleFlee} disabled={!isPlayerTurn || pendingAction} accentColor="rose" data-testid="combat-flee">
                 <LogOut className="size-3.5" />
                 БЕЖАТЬ
               </TerminalButton>

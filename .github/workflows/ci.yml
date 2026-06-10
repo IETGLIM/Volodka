@@ -51,4 +51,5 @@ jobs:
       # preview serves dist/ — check job builds on another runner, so build here too
       - run: npm run build
 
-      - run: npm run test:e2e
+      # Golden path + critical flows (not smoke-only)
+      - run: npx playwright test e2e/golden-path-act1.spec.ts e2e/save-load.spec.ts e2e/combat-flee.spec.ts e2e/scene-transition.spec.ts e2e/inventory-quest.spec.ts

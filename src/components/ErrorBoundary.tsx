@@ -4,6 +4,7 @@
  * a Russian-language fallback UI instead of crashing the whole app. */
 
 import { Component, type ReactNode } from 'react';
+import { clientLogError } from '@/shared/observability/clientLogger';
 
 interface ErrorBoundaryProps {
   name: string;
@@ -27,7 +28,10 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo): void {
-    console.error(`[ErrorBoundary:${this.props.name}]`, error, errorInfo);
+    clientLogError(error, {
+      context: `ErrorBoundary:${this.props.name}`,
+      details: { componentStack: errorInfo.componentStack },
+    });
   }
 
   handleRetry = () => {

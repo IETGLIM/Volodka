@@ -42,9 +42,10 @@ export function useAudioOrchestrator() {
 
     syncAudioFromStore(ctrl);
 
-    return () => {
+    return withHmrCleanup(() => {
       disposedRef.current = true;
-    };
+      ctrl.dispose();
+    });
   }, []);
 
   useEffect(() => {

@@ -84,7 +84,7 @@ const MAX_RETURN_STACK_DEPTH = 8;
  */
 class CombatManager {
   private _state: CombatState | null = null;
-  private listeners = new Set<(state: CombatState) => void>();
+  private listeners = new Set<(state: CombatState | null) => void>();
   /** G12: Stack of storyNode IDs to return to after combat ends */
   private returnStack: string[] = [];
   private generation = 0;
@@ -100,14 +100,14 @@ class CombatManager {
 
   notifyListeners(): void {
     const state = this._state;
-    if (state) {
-      this.listeners.forEach((fn) => fn(state));
+    for (const fn of this.listeners) {
+      fn(state);
     }
   }
 
-  subscribe(listener: (state: CombatState) => void): () => void {
+  subscribe(listener: (state: CombatState | null) => void): () => void {
     this.listeners.add(listener);
-    if (this._state) listener(this._state);
+    listener(this._state);
     return () => this.listeners.delete(listener);
   }
 
@@ -127,6 +127,7 @@ class CombatManager {
   /** Cancel timers and drop listener refs (unmount / HMR). */
   dispose(): void {
     this.endSession();
+    this.notifyListeners();
     this.listeners.clear();
     this.returnStack.length = 0;
   }
@@ -180,7 +181,7 @@ export function disposeCombatSystem(): void {
 registerHmrDispose(disposeCombatSystem);
 
 /** Subscribe to combat state changes. Returns unsubscribe function. */
-export function subscribeToCombat(listener: (state: CombatState) => void): () => void {
+export function subscribeToCombat(listener: (state: CombatState | null) => void): () => void {
   return combat.subscribe(listener);
 }
 
@@ -469,7 +470,6 @@ export function playerFlee(): CombatState | null {
         { turn: cs.turn, text: '🏃 Побег успешен! Вы вырвались из боя.', type: 'player_flee' },
       ],
     });
-
     const fledState = combat.getState()!;
     eventBus.emit('combat:fled', { enemyType: fledState.enemy.type });
     eventBus.emit('combat:action', { action: 'flee' });
@@ -851,7 +851,6 @@ function handleVictory(): CombatState {
       },
     ],
   });
-
   eventBus.emit('combat:victory', {
     enemyType: enemy.type,
     xpGained,
@@ -906,7 +905,6 @@ function handleDefeat(): void {
       },
     ],
   });
-
   eventBus.emit('combat:defeat', {
     enemyType: enemy.type,
     energyLost,

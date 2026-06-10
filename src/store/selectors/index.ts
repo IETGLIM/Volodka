@@ -14,3 +14,4 @@ export * from './hudSelectors';
 export * from './statsSelectors';
 export * from './actionSelectors';
 export * from './saveSelectors';
+export * from './combatSelectors';

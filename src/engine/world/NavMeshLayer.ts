@@ -2,6 +2,11 @@
 /*
  * Handcrafted interiors use Rapier colliders; NavMeshLayer covers open districts
  * for future pathfinding, ambient patrol routes, and spawn validation.
+ *
+ * **Patrol fallback (production):** Until baked nav JSON per scene exists, NPCs in
+ * open districts use waypoint patrol from `npcPatrol.ts` + schedule spawn positions.
+ * `getNearestWalkable()` snaps to chunk-center grid nodes — sufficient for ambient
+ * wander validation, not for combat chase AI. See `NPCSystem` + `npcPatrol.ts`.
  */
 
 import type { SceneId } from '@/shared/types/game';

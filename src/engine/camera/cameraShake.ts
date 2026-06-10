@@ -8,6 +8,15 @@
 let shakeIntensity = 0;
 let shakeDecay = 5; // How fast shake decays (per second)
 
+import { isReducedMotionActive } from '@/shared/accessibility/reducedMotion';
+
+function isCameraShakeEnabled(): boolean {
+  if (typeof window === 'undefined') return true;
+  if (isReducedMotionActive()) return false;
+  const raw = localStorage.getItem('volodka_cam_shake');
+  return raw === null ? true : raw === 'true';
+}
+
 /**
  * Trigger a camera shake with the given intensity and optional decay rate.
  * Intensity is in world-space units (0.1 = 10cm of shake offset).
@@ -15,6 +24,7 @@ let shakeDecay = 5; // How fast shake decays (per second)
  * Multiple triggers stack by taking the max intensity.
  */
 export function triggerCameraShake(intensity: number, decay?: number): void {
+  if (!isCameraShakeEnabled()) return;
   shakeIntensity = Math.max(shakeIntensity, intensity);
   if (decay !== undefined) shakeDecay = decay;
 }

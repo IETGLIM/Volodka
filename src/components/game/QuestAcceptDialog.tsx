@@ -323,6 +323,7 @@ export function QuestAcceptDialog({ questId, npcId, onClose, onAccept }: QuestAc
               style={{ borderTop: '1px solid rgba(0,255,238,0.15)' }}
             >
               <motion.button
+                data-testid="quest-accept"
                 onClick={handleAccept}
                 className="flex-1 py-2.5 rounded font-mono text-sm tracking-wider font-bold"
                 style={{

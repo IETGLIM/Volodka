@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useOrchestratorShell, useOrchestratorNarrativeOverlay, useArmDevTools } from '@/store/selectors';
+import { useGameStore } from '@/store/gameStore';
 import { sharedVirtualControlsRef } from '@/engine/VirtualControlsState';
 import { useCombatOrchestrator } from '@/hooks/useCombatOrchestrator';
 import { useAudioOrchestrator } from '@/hooks/useAudioOrchestrator';
@@ -24,6 +25,9 @@ import { useNarrativeKindRecovery } from './useNarrativeKindRecovery';
 import { useMobileDetection } from './useMobileDetection';
 import { useStablePanelClosers } from './useStablePanelClosers';
 import { useGameIntegrityGuard } from '@/hooks/useGameIntegrityGuard';
+import { installCombatStoreBridge } from '@/store/slices/combatSlice';
+import { installStressHarnessDevGlobal } from '@/engine/dev/longSessionStressHarness';
+import { installE2eTestBridge } from '@/shared/e2e/testBridge';
 
 /** Bundles orchestrator hooks — GameOrchestrator stays a thin render coordinator. */
 export function useOrchestratorRuntime() {
@@ -32,7 +36,15 @@ export function useOrchestratorRuntime() {
   useEffect(() => {
     reviveGameEngine();
     markOrchestratorMount();
-    return () => disposeGameEngine();
+    installE2eTestBridge();
+    installStressHarnessDevGlobal();
+    const unsubCombat = installCombatStoreBridge((combatSession) => {
+      useGameStore.setState({ combatSession });
+    });
+    return () => {
+      unsubCombat();
+      disposeGameEngine();
+    };
   }, []);
 
   const { mode, introSeen, mainMenuOpen, devToolsArmed } = useOrchestratorShell();

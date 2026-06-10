@@ -59,6 +59,7 @@ server.log
 /skills/
 # deploy archives
 deploy-archive/
+assets-source/_downloads/
 examples/
 upload/
 

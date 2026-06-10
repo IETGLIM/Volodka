@@ -17,6 +17,10 @@ import {
   SectionDivider,
 } from '@/components/game/design-system';
 import { applyAudioSettings } from '@/engine/audio/AudioSettings';
+import {
+  readReducedMotionPreference,
+  writeReducedMotionPreference,
+} from '@/shared/accessibility/reducedMotion';
 
 // ─── Types ───
 
@@ -59,6 +63,7 @@ const DEFAULTS: Record<string, number | boolean> = {
   volodka_scanlines: true,
   volodka_particles: true,
   volodka_cam_shake: true,
+  volodka_reduced_motion: false,
   volodka_brightness: 100,
   volodka_mouse_sens: 5,
   volodka_invert_y: false,
@@ -81,6 +86,8 @@ function VisualSettingsTab({
   setParticles,
   camShake,
   setCamShake,
+  reducedMotion,
+  setReducedMotion,
   brightness,
   setBrightness,
   persist,
@@ -93,6 +100,8 @@ function VisualSettingsTab({
   setParticles: (v: boolean) => void;
   camShake: boolean;
   setCamShake: (v: boolean) => void;
+  reducedMotion: boolean;
+  setReducedMotion: (v: boolean) => void;
   brightness: number;
   setBrightness: (v: number) => void;
   persist: (key: string, value: number | boolean) => void;
@@ -159,6 +168,15 @@ function VisualSettingsTab({
         checked={camShake}
         onChange={(v) => { setCamShake(v); persist('volodka_cam_shake', v); }}
       />
+      <CyberToggle
+        label="Уменьшить движение"
+        checked={reducedMotion}
+        onChange={(v) => {
+          setReducedMotion(v);
+          persist('volodka_reduced_motion', v);
+          writeReducedMotionPreference(v);
+        }}
+      />
       <SectionDivider />
       <CyberSlider
         label="Яркость"
@@ -197,6 +215,7 @@ function SettingsPanelContent({ onClose }: { onClose: () => void }) {
   const [scanlines, setScanlines] = useState(() => lsGetBool('volodka_scanlines', true));
   const [particles, setParticles] = useState(() => lsGetBool('volodka_particles', true));
   const [camShake, setCamShake] = useState(() => lsGetBool('volodka_cam_shake', true));
+  const [reducedMotion, setReducedMotion] = useState(() => readReducedMotionPreference());
   const [brightness, setBrightness] = useState(() => lsGetNumber('volodka_brightness', 100));
 
   // ── Controls state ──
@@ -221,6 +240,8 @@ function SettingsPanelContent({ onClose }: { onClose: () => void }) {
     setScanlines(DEFAULTS.volodka_scanlines as boolean);
     setParticles(DEFAULTS.volodka_particles as boolean);
     setCamShake(DEFAULTS.volodka_cam_shake as boolean);
+    setReducedMotion(DEFAULTS.volodka_reduced_motion as boolean);
+    writeReducedMotionPreference(DEFAULTS.volodka_reduced_motion as boolean);
     setBrightness(DEFAULTS.volodka_brightness as number);
     setMouseSens(DEFAULTS.volodka_mouse_sens as number);
     setInvertY(DEFAULTS.volodka_invert_y as boolean);
@@ -283,6 +304,8 @@ function SettingsPanelContent({ onClose }: { onClose: () => void }) {
             setParticles={setParticles}
             camShake={camShake}
             setCamShake={setCamShake}
+            reducedMotion={reducedMotion}
+            setReducedMotion={setReducedMotion}
             brightness={brightness}
             setBrightness={setBrightness}
             persist={persist}
