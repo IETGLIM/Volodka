@@ -7,8 +7,8 @@
  *  |--------------------|----------------------------------------------------|
  *  | volodka_room       | Light monitor glow ray, minimal dust               |
  *  | volodka_corridor   | Light fog in distance, flickering overhead ray      |
- *  | street_night       | Heavy fog, rain mist at ground level, rain streaks  |
- *  | street_winter      | Ground fog, sun rays through clouds, snow drift     |
+ *  | street_night       | Heavy fog, rain mist (rain itself via WeatherController) |
+ *  | street_winter      | Ground fog, sun rays (snow itself via WeatherController) |
  *  | cafe_evening       | Steam from coffee (small upward particles), warm glow |
  *  | park_day           | God rays through trees, light morning fog          |
  *  | library_day        | Window light shafts, dust motes                    |
@@ -24,11 +24,12 @@
 import { useMemo } from 'react';
 import { useGameStore } from '@/store/gameStore';
 import { useMobileVisualPerf } from '@/hooks/use-mobile';
+import { useVisualSettings } from '@/hooks/useVisualSettings';
 import { VolumetricFog, FOG_PRESETS } from './VolumetricFog';
 import { GodRays, GODRAY_PRESETS } from './GodRays';
 import { SteamParticles } from './SteamParticles';
 import { MatrixFogParticles } from './MatrixFogParticles';
-import { DustMotes, RainStreaks, EmberParticles, SnowDrift } from './WeatherParticles';
+import { DustMotes, EmberParticles } from './WeatherParticles';
 
 /** Whether a scene should have volumetric fog
  *  Indoor scenes get subtle fog for depth, outdoor get heavier fog */
@@ -43,12 +44,6 @@ function sceneHasGodRays(sceneId: string): boolean {
   return sceneId in GODRAY_PRESETS;
 }
 
-/** Indoor scenes — should NOT have outdoor effects like rain, snow, etc. */
-function isIndoorScene(sceneId: string): boolean {
-  return ['volodka_room', 'volodka_corridor', 'home_evening', 'cafe_evening',
-    'office_day', 'library_day', 'abandoned_factory', 'zarema_albert_room'].includes(sceneId);
-}
-
 /** Scenes that get special coffee steam particles */
 const STEAM_SCENES = new Set(['cafe_evening', 'home_evening']);
 
@@ -58,29 +53,27 @@ const MATRIX_FOG_SCENES = new Set(['battle']);
 /** Scenes that get floating dust motes */
 const DUST_SCENES = new Set(['volodka_room', 'library_day']);
 
-/** Scenes that get rain streaks */
-const RAIN_SCENES = new Set(['street_night']);
-
 /** Scenes that get floating embers */
 const EMBER_SCENES = new Set(['abandoned_factory']);
 
-/** Scenes that get snow drift */
-const SNOW_SCENES = new Set(['street_winter']);
+// NOTE: rain (street_night) and snow (street_winter, chk_forest_zorge) are
+// handled by WeatherController → RainSystem/SnowSystem (GPU). The old
+// RainStreaks/SnowDrift point systems were removed to avoid double weather.
 
 /** Main controller: renders appropriate atmospheric effects per scene */
 export function AtmosphericEffects() {
   const sceneId = useGameStore((s) => s.exploration.currentSceneId);
   const { visualLite, effectsScale } = useMobileVisualPerf();
+  // User setting "Частицы" — gates decorative particles (fog/god rays stay)
+  const { particlesEnabled } = useVisualSettings();
   const heavyEffects = visualLite || effectsScale < 0.85;
 
   const showFog = sceneHasFog(sceneId);
   const showGodRays = sceneHasGodRays(sceneId);
-  const showSteam = STEAM_SCENES.has(sceneId);
-  const showMatrixFog = MATRIX_FOG_SCENES.has(sceneId);
-  const showDust = DUST_SCENES.has(sceneId);
-  const showRain = RAIN_SCENES.has(sceneId);
-  const showEmbers = EMBER_SCENES.has(sceneId);
-  const showSnow = SNOW_SCENES.has(sceneId);
+  const showSteam = particlesEnabled && STEAM_SCENES.has(sceneId);
+  const showMatrixFog = particlesEnabled && MATRIX_FOG_SCENES.has(sceneId);
+  const showDust = particlesEnabled && DUST_SCENES.has(sceneId);
+  const showEmbers = particlesEnabled && EMBER_SCENES.has(sceneId);
 
   const fogConfig = useMemo(() => {
     const preset = FOG_PRESETS[sceneId] ?? {};
@@ -119,14 +112,8 @@ export function AtmosphericEffects() {
       {/* Floating dust motes caught in monitor light */}
       {showDust && <DustMotes sceneId={sceneId} />}
 
-      {/* Rain streaks for rainy streets */}
-      {showRain && <RainStreaks sceneId={sceneId} />}
-
       {/* Floating embers from fire/industrial sources */}
       {showEmbers && <EmberParticles sceneId={sceneId} />}
-
-      {/* Snow drift for winter scenes */}
-      {showSnow && <SnowDrift sceneId={sceneId} />}
     </>
   );
 }

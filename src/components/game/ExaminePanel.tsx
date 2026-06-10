@@ -8,7 +8,7 @@
  *  - Close via Escape, backdrop click, or header X (PanelWrapper)
  */
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { ChevronRight } from 'lucide-react';
 import type { ExamineData } from '@/shared/types/game';
@@ -25,20 +25,25 @@ interface ExaminePanelProps {
 }
 
 export function ExaminePanel({ open, data, onClose, hasLinkedContent, onContinue }: ExaminePanelProps) {
-  const [rotation, setRotation] = useState(0);
+  const cardRef = useRef<HTMLDivElement>(null);
   const rotationRef = useRef(0);
 
-  // Animate the card rotation with requestAnimationFrame for smooth 60fps
+  // Animate card tilt via DOM transform — avoid setState every frame (React #185 under overlay handoff).
   useEffect(() => {
     if (!open) return;
     let rafId: number;
     let lastTime = 0;
+    rotationRef.current = 0;
 
     const animate = (timestamp: number) => {
       if (lastTime > 0) {
         const delta = timestamp - lastTime;
         rotationRef.current += (delta / 30) * 0.5;
-        setRotation(rotationRef.current);
+        const el = cardRef.current;
+        if (el) {
+          const r = rotationRef.current;
+          el.style.transform = `rotateY(${Math.sin(r * 0.02) * 15}deg) rotateX(${Math.cos(r * 0.015) * 8}deg)`;
+        }
       }
       lastTime = timestamp;
       rafId = requestAnimationFrame(animate);
@@ -119,9 +124,9 @@ export function ExaminePanel({ open, data, onClose, hasLinkedContent, onContinue
         <div className="flex justify-center mb-5">
           <div style={{ perspective: '600px' }}>
             <div
+              ref={cardRef}
               className="flex items-center justify-center text-5xl rounded-xl border border-cyan-500/20"
               style={{
-                transform: `rotateY(${Math.sin(rotation * 0.02) * 15}deg) rotateX(${Math.cos(rotation * 0.015) * 8}deg)`,
                 width: '140px',
                 height: '140px',
                 background: 'linear-gradient(135deg, rgb(var(--cyber-cyan-rgb) / 0.1), rgb(var(--cyber-cyan-rgb) / 0.02))',

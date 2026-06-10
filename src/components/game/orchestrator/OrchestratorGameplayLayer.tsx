@@ -5,6 +5,7 @@ import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { LootNotification } from '../LootNotification';
 import { NotificationToasts } from '../NotificationToasts';
 import { ExaminePanel } from '../ExaminePanel';
+import { InteractionHintPopup } from '../InteractionHintPopup';
 import { MoralCompassHUD } from '../MoralCompassHUD';
 import { TutorialOverlay } from '../TutorialOverlay';
 import { FirstPlayTutorial } from '../FirstPlayTutorial';
@@ -222,6 +223,7 @@ export function OrchestratorGameplayLayer({
             <LazyMiniMap />
           </Suspense>
           <MoralCompassHUD />
+          <InteractionHintPopup />
           <WeatherIndicator />
           <DayNightCycleIndicator />
           <TutorialOverlay />

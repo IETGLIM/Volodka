@@ -119,13 +119,12 @@ function ParticleSystem({ type }: { type: ParticleType }) {
   const config = PARTICLE_CONFIGS[type];
 
   // Pre-computed particle data (no Math.random in useFrame)
-  const { positions, opacities, phases, sizes, initialVelocities } = useMemo(() => {
+  const { positions, phases, sizes, initialVelocities } = useMemo(() => {
     const count = config.count;
     const [bx, by, bz] = config.boxSize;
 
     const pos = new Float32Array(count * 3);
     const vel = new Float32Array(count * 3);
-    const opa = new Float32Array(count);
     const pha = new Float32Array(count); // phase offsets for varied animation
     const siz = new Float32Array(count);
 
@@ -143,10 +142,6 @@ function ParticleSystem({ type }: { type: ParticleType }) {
       // Random size within range
       const [sMin, sMax] = config.sizeRange;
       siz[i] = sMin + Math.random() * (sMax - sMin);
-
-      // Random opacity within range
-      const [oMin, oMax] = config.opacityRange;
-      opa[i] = oMin + Math.random() * (oMax - oMin);
 
       // Per-type velocity
       switch (type) {
@@ -189,7 +184,7 @@ function ParticleSystem({ type }: { type: ParticleType }) {
       }
     }
 
-    return { positions: pos, initialVelocities: vel, opacities: opa, phases: pha, sizes: siz };
+    return { positions: pos, initialVelocities: vel, phases: pha, sizes: siz };
   }, [type, config]);
 
   // Mutable velocity storage (ref allows modification in useFrame without lint issues)

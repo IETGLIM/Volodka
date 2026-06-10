@@ -1,7 +1,8 @@
 /* ─── Volodka RPG – golden path ─── */
 
 /**
- * GOLDEN_PATH_STORY_SPINE — the canonical story path from start to ending_creator.
+ * GOLDEN_PATH_STORY_SPINE — the canonical story path from start through the
+ * act-5 reconciliation ending and onward into acts 6–7, finishing at act7_true_end.
  * Players can deviate, but this is the "intended" narrative backbone.
  * Poem unlock nodes are woven into the path at key emotional moments.
  */
@@ -86,7 +87,47 @@ export const GOLDEN_PATH_STORY_SPINE: string[] = [
   // Act 5 — Финал
   'act5_peaceful_path',
   'ending_reconciliation', // → poem_18 «Вся клевета - вернется в сто крат»
-  'ending_creator', // → poem_13 «Эпитафия»
+  'act5_ending_epilogue', // эпилог-мост: история продолжается
+  // Act 6 — Предательство и откровение
+  'act6_bridge',
+  'act6_factory_investigation',
+  'act6_traitor_discovery',
+  'act6_traitor_revealed',
+  'act6_office_confrontation',
+  'act6_dmitry_confession',
+  'act6_alliance_formed',
+  'act6_resistance_formed',
+  'act6_resistance_briefing',
+  'act6_data_heist_planning',
+  'act6_heist_execution',
+  'act6_heist_success',
+  'act6_escape_success',
+  'act6_nadzor_revealed',
+  'act6_infiltration_prep',
+  'act6_nadzor_battle',
+  'act6_battle_victory',
+  'act6_core_choice',
+  'act6_rooftop_showdown',
+  'act6_final_confrontation',
+  // Act 7 — Разрешение
+  'act7_bridge',
+  'act7_guild_rebuilding',
+  'act7_charter_drafting',
+  'act7_library_archive',
+  'act7_guild_restored',
+  'act7_system_shutdown',
+  'act7_core_battle',
+  'act7_nadzor_dies',
+  'act7_final_poem_creation',
+  'act7_poem_written',
+  'act7_rooftop_recital',
+  'act7_poem_published',
+  'act7_legacy_walk',
+  'act7_goodbye_zarema',
+  'act7_final_walk',
+  'act7_maria_future',
+  'act7_ending_poet_legacy',
+  'act7_true_end',
 ];
 
 /**
@@ -129,7 +170,7 @@ export const STORY_NODE_TO_NPC_ID: Record<string, string> = {
   chk_act4_broadcast_watch: 'chk_based',
   chk_act5_campfire_dawn: 'chk_ru',
   act6_resistance_briefing: 'maxim',
-  act6_data_heist_planning: 'maxim',
+  act6_data_heist_planning: 'zeka',
   act6_zeka_encounter: 'zeka',
   act7_guild_rebuilding: 'anya',
   act7_system_shutdown: 'maxim',
@@ -413,7 +454,14 @@ export const GOLDEN_PATH_BRANCH_HINTS: Record<string, string> = {
   // Act 5
   chk_act5_campfire_dawn: 'После рассвета — зайди к Ру у костра за финальное слово ЧК.',
   act5_peaceful_path: 'Построй новый мир — где код и поэзия едины.',
-  ending_reconciliation: 'Прости — клевета вернётся к тем, кто лжёт.',
+  ending_reconciliation: 'Прости — клевета вернётся к тем, кто лжёт. Но финал — не конец.',
+  act5_ending_epilogue: 'Проверь терминал — «Заря-М» и Катя ждут ответа.',
+  // Act 6
+  act6_bridge: 'Отправляйся на фабрику — источник зашифрованного пакета там.',
+  act6_final_confrontation: 'Перепиши систему — хранитель памяти сильнее разрушителя.',
+  // Act 7
+  act7_bridge: 'Спустись в город — восстановление начинается с первого шага.',
+  act7_maria_future: 'Кто ты теперь? Поэт продолжает писать.',
 };
 
 /**
@@ -437,6 +485,21 @@ export const GOLDEN_PATH_QUEST_SPINE: string[] = [
   // Act 4
   'guild_infiltration',
   'poetry_broadcast',
+  // Act 5
+  'final_code',
+  'night_before_dawn',
+  'echo_of_vladimir',
+  // Act 6
+  'traitor_in_the_guild',
+  'underground_resistance',
+  'data_heist',
+  'system_infiltration',
+  'rooftop_confrontation',
+  // Act 7
+  'rebuild_the_guild',
+  'system_takedown',
+  'final_poem',
+  'volodka_legacy',
 ];
 
 /**

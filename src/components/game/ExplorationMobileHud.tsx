@@ -175,25 +175,25 @@ export function ExplorationMobileHud({ onInteractPress, onOpenInventory }: Explo
   );
 
   // ── Adaptive sizing based on viewport width ──
-  // Apple HIG: minimum 44×44 px touch targets on all controls.
-  const MIN_TOUCH = 44;
+  // On very small screens (<360px), use extra-small buttons.
+  // On normal phones (360-430px), use standard sizes.
+  // On tablets (>430px), use larger sizes.
   const isSmallScreen = vw < 360;
   const isTablet = vw > 430;
 
-  const dpadSize = Math.max(
-    MIN_TOUCH,
-    isLandscape ? (isSmallScreen ? 36 : 40) : (isSmallScreen ? 40 : 44),
-  );
+  // D-pad button sizes (touch target >= 44px but visual can be smaller with padding)
+  const dpadSize = isLandscape
+    ? (isSmallScreen ? 36 : 40)
+    : (isSmallScreen ? 40 : 44);
   const dpadGap = isLandscape ? 2 : 3;
 
-  const interactSize = Math.max(
-    MIN_TOUCH,
-    isLandscape ? (isSmallScreen ? 44 : 48) : (isSmallScreen ? 48 : 56),
-  );
-  const smallBtnSize = Math.max(
-    MIN_TOUCH,
-    isLandscape ? (isSmallScreen ? 32 : 36) : (isSmallScreen ? 36 : 40),
-  );
+  // Action button sizes
+  const interactSize = isLandscape
+    ? (isSmallScreen ? 44 : 48)
+    : (isSmallScreen ? 48 : 56);
+  const smallBtnSize = isLandscape
+    ? (isSmallScreen ? 32 : 36)
+    : (isSmallScreen ? 36 : 40);
 
   // Icon sizes scale with button
   const iconMain = isLandscape ? 18 : 22;

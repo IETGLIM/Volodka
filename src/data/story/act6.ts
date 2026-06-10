@@ -13,7 +13,7 @@ export const STORY_NODES_ACT6: Record<string, StoryNode> = {
     choices: [
       {
         text: 'Отправиться на фабрику — найти источник сообщения',
-        next: 'act6_factory_investigation',
+        next: 'act6_factory_investigation', goldenPath: true,
         effects: [
           { type: 'setFlag', flag: 'act5_complete_time', flagValue: true },
           { type: 'triggerQuest', questId: 'traitor_in_the_guild' },
@@ -54,7 +54,7 @@ export const STORY_NODES_ACT6: Record<string, StoryNode> = {
     choices: [
       {
         text: 'Взломать терминал и прочитать логи',
-        next: 'act6_traitor_discovery',
+        next: 'act6_traitor_discovery', goldenPath: true,
         effects: [
           { type: 'addSkill', skill: 'coding', value: 2 },
           { type: 'setFlag', flag: 'alexander_logs_decrypted', flagValue: true },
@@ -136,7 +136,7 @@ export const STORY_NODES_ACT6: Record<string, StoryNode> = {
     choices: [
       {
         text: 'Нужно найти Дмитрия и спросить лично.',
-        next: 'act6_traitor_revealed',
+        next: 'act6_traitor_revealed', goldenPath: true,
         effects: [
           { type: 'setFlag', flag: 'traitor_identity_known', flagValue: true },
         ],
@@ -152,7 +152,7 @@ export const STORY_NODES_ACT6: Record<string, StoryNode> = {
     choices: [
       {
         text: 'Нужно найти Дмитрия. Понять его мотивы.',
-        next: 'act6_office_confrontation',
+        next: 'act6_office_confrontation', goldenPath: true,
         effects: [
           { type: 'addSkill', skill: 'empathy', value: 2 },
         ],
@@ -175,7 +175,7 @@ export const STORY_NODES_ACT6: Record<string, StoryNode> = {
     choices: [
       {
         text: 'Почему ты не рассказал мне? Мы могли бы помочь.',
-        next: 'act6_dmitry_confession',
+        next: 'act6_dmitry_confession', goldenPath: true,
         effects: [{ type: 'addSkill', skill: 'empathy', value: 2 }, { type: 'addKarma', value: 3 }],
       },
       {
@@ -194,7 +194,7 @@ export const STORY_NODES_ACT6: Record<string, StoryNode> = {
     choices: [
       {
         text: 'Ты хочешь уничтожить систему? Тогда мы заодно.',
-        next: 'act6_alliance_formed',
+        next: 'act6_alliance_formed', goldenPath: true,
         effects: [
           { type: 'setFlag', flag: 'dmitry_forgiven', flagValue: true },
           { type: 'addKarma', value: 5 },
@@ -219,7 +219,7 @@ export const STORY_NODES_ACT6: Record<string, StoryNode> = {
     choices: [
       {
         text: 'Идём. Время не ждёт.',
-        next: 'act6_resistance_formed',
+        next: 'act6_resistance_formed', goldenPath: true,
         effects: [
           { type: 'setFlag', flag: 'traitor_fate_decided', flagValue: true },
           { type: 'triggerQuest', questId: 'underground_resistance' },
@@ -258,7 +258,7 @@ export const STORY_NODES_ACT6: Record<string, StoryNode> = {
       },
       {
         text: 'Я готов. Что нужно делать?',
-        next: 'act6_resistance_briefing',
+        next: 'act6_resistance_briefing', goldenPath: true,
         effects: [{ type: 'addKarma', value: 3 }],
       },
     ],
@@ -272,7 +272,7 @@ export const STORY_NODES_ACT6: Record<string, StoryNode> = {
     choices: [
       {
         text: 'Дмитрий с нами. Начинаем операцию.',
-        next: 'act6_data_heist_planning',
+        next: 'act6_data_heist_planning', goldenPath: true,
         effects: [
           { type: 'setFlag', flag: 'resistance_joined', flagValue: true },
           { type: 'triggerQuest', questId: 'data_heist' },
@@ -283,12 +283,13 @@ export const STORY_NODES_ACT6: Record<string, StoryNode> = {
 
   act6_data_heist_planning: {
     id: 'act6_data_heist_planning',
-    text: 'В кафе «Синяя яма» шумно — но не от посетителей. За столиком в углу развернулась оперативная карта офиса гильдии. Максим отмечает позиции охраны. Жека показывает маршруты вентиляции. Аня взламывает систему видеонаблюдения удалённо. Альберт молча подаёт кофе — он с вами, хоть и не говорит об этом.',
+    text: 'В кафе «Синяя яма» шумно — но не от посетителей. За столиком в углу развернулась оперативная карта офиса гильдии. Максим отмечает позиции охраны. Жека показывает маршруты вентиляции. Аня взламывает систему видеонаблюдения удалённо. Альберт молча подаёт кофе — он с вами, хоть и не говорит об этом. А за дальним столом — трое перебежчиков из гильдии, которых привёл Дмитрий: они знают офис изнутри и больше не хотят молчать.',
     speaker: 'narrator',
     sceneId: 'cafe_evening',
+    effects: [{ type: 'setFlag', flag: 'three_defectors_recruited', flagValue: true }],
     choices: [
       { text: 'Я пойду через главный вход — отвлеку охрану.', next: 'act6_heist_execution' },
-      { text: 'Проникнем через вентиляцию — тихо и незаметно.', next: 'act6_heist_execution' },
+      { text: 'Проникнем через вентиляцию — тихо и незаметно.', next: 'act6_heist_execution', goldenPath: true },
     ],
   },
 
@@ -300,7 +301,7 @@ export const STORY_NODES_ACT6: Record<string, StoryNode> = {
     choices: [
       {
         text: 'Взломать сервер и скачать данные.',
-        next: 'act6_heist_success',
+        next: 'act6_heist_success', goldenPath: true,
         effects: [
           { type: 'setFlag', flag: 'mainframe_hacked', flagValue: true },
           { type: 'setFlag', flag: 'blackmail_data_downloaded', flagValue: true },
@@ -317,7 +318,7 @@ export const STORY_NODES_ACT6: Record<string, StoryNode> = {
     choices: [
       {
         text: 'Бежать через коридор — не оглядываясь.',
-        next: 'act6_escape_success',
+        next: 'act6_escape_success', goldenPath: true,
         effects: [
           { type: 'setFlag', flag: 'data_heist_completed', flagValue: true },
           { type: 'triggerQuest', questId: 'system_infiltration' },
@@ -334,7 +335,7 @@ export const STORY_NODES_ACT6: Record<string, StoryNode> = {
     choices: [
       {
         text: 'Проанализировать данные — что скрывает «Надзор»?',
-        next: 'act6_nadzor_revealed',
+        next: 'act6_nadzor_revealed', goldenPath: true,
       },
     ],
   },
@@ -347,7 +348,7 @@ export const STORY_NODES_ACT6: Record<string, StoryNode> = {
     choices: [
       {
         text: 'Нужно проникнуть в ядро и всё остановить.',
-        next: 'act6_infiltration_prep',
+        next: 'act6_infiltration_prep', goldenPath: true,
         effects: [
           { type: 'setFlag', flag: 'nadzor_truth_revealed', flagValue: true },
           { type: 'addKarma', value: 3 },
@@ -364,7 +365,7 @@ export const STORY_NODES_ACT6: Record<string, StoryNode> = {
     choices: [
       {
         text: 'Я готов. Открывайте.',
-        next: 'act6_nadzor_battle',
+        next: 'act6_nadzor_battle', goldenPath: true,
         effects: [
           { type: 'setFlag', flag: 'nadzor_entry_found', flagValue: true },
         ],
@@ -380,7 +381,7 @@ export const STORY_NODES_ACT6: Record<string, StoryNode> = {
     choices: [
       {
         text: 'Сражаться! Ваше бессмертие заканчивается здесь.',
-        next: 'act6_battle_victory',
+        next: 'act6_battle_victory', goldenPath: true,
         effects: [
           { type: 'combat', enemyType: 'nexus_guardian' },
         ],
@@ -396,7 +397,7 @@ export const STORY_NODES_ACT6: Record<string, StoryNode> = {
     choices: [
       {
         text: 'Освободить всех — даже ценой их исчезновения.',
-        next: 'act6_core_choice',
+        next: 'act6_core_choice', goldenPath: true,
         effects: [
           { type: 'setFlag', flag: 'nadzor_core_accessed', flagValue: true },
           { type: 'setFlag', flag: 'nadzor_infiltrated', flagValue: true },
@@ -408,6 +409,7 @@ export const STORY_NODES_ACT6: Record<string, StoryNode> = {
         next: 'act6_core_choice',
         effects: [
           { type: 'setFlag', flag: 'nadzor_core_accessed', flagValue: true },
+          { type: 'setFlag', flag: 'nadzor_guardian_defeated', flagValue: true },
           { type: 'addKarma', value: 5 },
         ],
       },
@@ -422,7 +424,7 @@ export const STORY_NODES_ACT6: Record<string, StoryNode> = {
     choices: [
       {
         text: 'Выйти на поверхность. Нужно рассказать остальным.',
-        next: 'act6_rooftop_showdown',
+        next: 'act6_rooftop_showdown', goldenPath: true,
         effects: [
           { type: 'triggerQuest', questId: 'rooftop_confrontation' },
         ],
@@ -438,7 +440,7 @@ export const STORY_NODES_ACT6: Record<string, StoryNode> = {
     choices: [
       {
         text: 'Идеи не умирают. Но они меняются. Как и ты.',
-        next: 'act6_final_confrontation',
+        next: 'act6_final_confrontation', goldenPath: true,
         effects: [
           { type: 'setFlag', flag: 'rooftop_entity_met', flagValue: true },
           { type: 'combat', enemyType: 'void_echo' },
@@ -464,7 +466,7 @@ export const STORY_NODES_ACT6: Record<string, StoryNode> = {
     choices: [
       {
         text: 'Стать хранителем памяти — соединить стихи и код навсегда.',
-        next: 'act7_bridge',
+        next: 'act7_bridge', goldenPath: true,
         effects: [
           { type: 'setFlag', flag: 'act6_final_choice_made', flagValue: true },
           { type: 'setFlag', flag: 'rooftop_confrontation_done', flagValue: true },

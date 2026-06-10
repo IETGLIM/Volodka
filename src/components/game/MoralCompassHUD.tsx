@@ -6,6 +6,7 @@ import { usePlayerKarma } from '@/store/selectors';
 import { KARMA_LOW_THRESHOLD, KARMA_HIGH_THRESHOLD } from '@/data/constants';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { getKarmaTierLabel } from '@/shared/utils/karmaTier';
+import { bottomMoralCompassPx, bottomRightInsetPx } from '@/shared/constants/hudLayout';
 import { useEffect, useRef } from 'react';
 
 export function MoralCompassHUD() {
@@ -42,9 +43,13 @@ export function MoralCompassHUD() {
 
   return (
     <div
-      className="fixed bottom-16 right-12 pointer-events-none hidden lg:block"
+      className="fixed pointer-events-none hidden lg:block"
       data-exploration-ui
-      style={{ zIndex: UI_LAYERS.HUD }}
+      style={{
+        zIndex: UI_LAYERS.HUD,
+        bottom: bottomMoralCompassPx(),
+        right: bottomRightInsetPx(),
+      }}
       role="img"
       aria-label={`Карма ${karma}, ${tierLabel}`}
     >

@@ -1,49 +1,43 @@
-import { useEffect, useState, useSyncExternalStore } from 'react';
-import { withHmrCleanup } from '@/shared/dev/hmrDispose';
-import {
-  CanvasTransitionController,
-  INITIAL_CANVAS_TRANSITION,
-  type CanvasTransitionSnapshot,
-} from '@/engine/canvas/CanvasTransitionController';
+import { useState, useEffect, useRef } from 'react';
+import { eventBus } from '@/engine/EventBus';
+import { markFirstFrame } from '@/engine/performance/LoadingTimeline';
 
-/** Manages black overlay until WebGL canvas emits first valid frame. */
+/** Manages canvas ready state and scene transitions. */
 export function useCanvasTransitionManager(mode: string) {
-  const [store] = useState(() => {
-    let snapshot = INITIAL_CANVAS_TRANSITION;
-    const listeners = new Set<() => void>();
+  const [canvasReady, setCanvasReady] = useState(false);
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [fadeOutMs, setFadeOutMs] = useState(0);
+  const transitionGenerationRef = useRef(0);
 
-    const controller = new CanvasTransitionController((next) => {
-      snapshot = next;
-      for (const listener of listeners) listener();
+  useEffect(() => {
+    const unsub = eventBus.on('canvas:first-frame', () => {
+      setCanvasReady(true);
+      markFirstFrame();
     });
 
-    return {
-      controller,
-      subscribe(listener: () => void) {
-        listeners.add(listener);
-        return () => listeners.delete(listener);
-      },
-      getSnapshot: () => snapshot,
+    const unsub2 = eventBus.on('scene:transition', () => {
+      transitionGenerationRef.current += 1;
+      const generation = transitionGenerationRef.current;
+      setIsTransitioning(true);
+      setFadeOutMs(500);
+
+      setTimeout(() => {
+        if (transitionGenerationRef.current === generation) {
+          setIsTransitioning(false);
+        }
+      }, 500);
+    });
+
+    const unsub3 = eventBus.on('scene:loaded', () => {
+      setIsTransitioning(false);
+    });
+
+    return () => {
+      unsub();
+      unsub2();
+      unsub3();
     };
-  });
+  }, []);
 
-  const snapshot = useSyncExternalStore(
-    store.subscribe,
-    store.getSnapshot,
-    store.getSnapshot,
-  );
-
-  useEffect(() => {
-    const disposeEvents = store.controller.bindEvents();
-    return withHmrCleanup(() => {
-      disposeEvents();
-      store.controller.dispose();
-    });
-  }, [store]);
-
-  useEffect(() => {
-    store.controller.setMode(mode);
-  }, [mode, store]);
-
-  return snapshot satisfies CanvasTransitionSnapshot;
+  return { canvasReady, isTransitioning, fadeOutMs };
 }

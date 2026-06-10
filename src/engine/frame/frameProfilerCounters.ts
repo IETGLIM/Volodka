@@ -33,7 +33,7 @@ export function installFrameProfilerInstrumentation(
   instrumentationInstalled = true;
 
   const originalSubscribe = subscribe;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   (globalThis as any).__volodka_frame_profiler_subscribe = (
     listener: (state: unknown, prevState: unknown) => void,
   ) =>

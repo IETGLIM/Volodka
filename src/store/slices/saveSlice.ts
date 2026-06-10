@@ -6,7 +6,7 @@
 import type { StateCreator } from 'zustand';
 import { eventBus } from '@/engine/EventBus';
 import { dispatchGameAction } from '@/engine/GameActionDispatcher';
-import { validateSaveData, SAVE_VERSION } from '@/shared/validation/saveSchema';
+import { SAVE_VERSION } from '@/shared/validation/saveSchema';
 import { pushNotification } from '../shared';
 import type { GameStoreState } from '../types';
 import { readWorldFromPlayer } from '../crossSliceReads';
@@ -17,37 +17,11 @@ import {
 } from '../persistedState';
 import { resetGuidedStoryManager } from '@/engine/GuidedStoryManager';
 import { clearAutoCloseTimers } from './explorationSlice';
-
-/* ─── localStorage key ─── */
-const SAVE_KEY = 'volodka_save';
-const SAVE_BACKUP_KEY = `${SAVE_KEY}_backup`;
-
-/** Two-phase save: backup current → write → validate → rollback on failure. */
-function writeSaveToLocalStorage(json: string): boolean {
-  const current = localStorage.getItem(SAVE_KEY);
-  if (current) {
-    localStorage.setItem(SAVE_BACKUP_KEY, current);
-  }
-
-  localStorage.setItem(SAVE_KEY, json);
-
-  const verification = validateSaveData(localStorage.getItem(SAVE_KEY) ?? '');
-  if (!verification.success) {
-    console.error('[saveGame] Post-write validation failed:', verification.error);
-    if (current) {
-      localStorage.setItem(SAVE_KEY, current);
-    } else {
-      localStorage.removeItem(SAVE_KEY);
-    }
-    return false;
-  }
-
-  return true;
-}
+import { resolveSaveFromStorage, writeSaveToLocalStorage } from './saveStorage';
 
 /* ─── Slice types ─── */
 
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+ 
 export interface SaveSliceState {
   // lastSaveTimestamp lives in UISlice, not here — but save actions need it
 }
@@ -137,30 +111,59 @@ export const createSaveSlice: StateCreator<
 
   loadGame: () => {
     try {
-      const raw = localStorage.getItem(SAVE_KEY);
-      if (!raw) return;
+      const resolved = resolveSaveFromStorage();
 
-      // Validate save data with Zod schema
-      const validation = validateSaveData(raw);
+      switch (resolved.status) {
+        case 'empty':
+          return;
 
-      if (!validation.success) {
-        // Save is corrupted — notify the user explicitly
-        console.error('[loadGame] Save validation failed:', validation.error);
+        case 'corrupt':
+          // Both primary and backup are unreadable — keep the keys intact
+          // (for manual recovery) and start fresh.
+          console.error(
+            '[loadGame] Save validation failed:',
+            resolved.primaryError,
+            '| Backup also unusable:',
+            resolved.backupError,
+          );
+          set({
+            notifications: pushNotification(
+              readWorldFromPlayer(get()).notifications,
+              'quest',
+              resolved.primaryError,
+            ),
+          });
+          return;
 
+        case 'recovered-from-backup':
+          console.warn(
+            '[loadGame] Primary save corrupt, restored from backup:',
+            resolved.primaryError,
+          );
+          break;
+
+        case 'ok':
+          break;
+
+        default: {
+          const _exhaustive: never = resolved;
+          return _exhaustive;
+        }
+      }
+
+      clearAutoCloseTimers();
+      set(storePatchFromSave(resolved.data));
+      resetGuidedStoryManager();
+
+      if (resolved.status === 'recovered-from-backup') {
         set({
           notifications: pushNotification(
             readWorldFromPlayer(get()).notifications,
             'quest',
-            validation.error,
+            'Основное сохранение повреждено — загружена резервная копия.',
           ),
         });
-
-        return;
       }
-
-      clearAutoCloseTimers();
-      set(storePatchFromSave(validation.data));
-      resetGuidedStoryManager();
 
       eventBus.emit('game:loaded', {} as Record<string, never>);
     } catch (err) {

@@ -1,8 +1,8 @@
 import * as THREE from 'three';
 import { INTERACTION_LABELS, type TriggerZone } from '@/data/triggerZones';
 import type { SceneId } from '@/shared/types/game';
+import { FIRST_PERSON_ENABLED, FIRST_PERSON_EYE_HEIGHT } from '@/engine/camera/cameraConstants';
 import { getInteractionQueryContext } from '@/engine/interaction/interactionQueryContext';
-
 export type InteractionTargetKind = 'zone' | 'npc' | 'exit';
 
 export interface InteractionTargetHit {
@@ -46,7 +46,7 @@ const _eye = new THREE.Vector3();
 const _target = new THREE.Vector3();
 
 const NPC_MAX_RANGE = 3.0;
-const ZONE_RANGE_PADDING = 1.0;
+const ZONE_RANGE_PADDING = 1.35;
 
 /** Score a target by distance and whether the player faces it (horizontal only). */
 export function scoreInteractionTarget(
@@ -68,8 +68,12 @@ export function scoreInteractionTarget(
 
   _toTarget.normalize();
   const facingDot = _playerForward.dot(_toTarget);
-  const facingPenalty =
+  let facingPenalty =
     facingDot < 0 ? 1.5 + -facingDot : Math.max(0.35, 0.85 - facingDot * 0.5);
+
+  if (distance < maxRange * 0.55) {
+    facingPenalty = Math.min(facingPenalty, 0.45);
+  }
 
   return { distance, score: distance * facingPenalty };
 }
@@ -83,7 +87,7 @@ export function hasInteractionLineOfSight(
   if (!ctx) return true;
 
   _eye.copy(playerPos);
-  _eye.y += 1.4;
+  _eye.y += FIRST_PERSON_ENABLED ? FIRST_PERSON_EYE_HEIGHT : 1.4;
   _target.copy(targetPos);
   _target.y += 1.0;
 
@@ -113,7 +117,7 @@ function pushZoneTarget(
   const range = Math.max(zone.size[0], zone.size[2]) / 2 + ZONE_RANGE_PADDING;
   const scored = scoreInteractionTarget(playerPos, playerYaw, _target, range);
   if (!scored) return;
-  if (checkLos && !hasInteractionLineOfSight(playerPos, _target)) return;
+  if (checkLos && scored.distance > 1.2 && !hasInteractionLineOfSight(playerPos, _target)) return;
 
   hits.push({
     id: zone.id,
@@ -135,7 +139,7 @@ function pushNpcTarget(
   _target.set(npc.position[0], npc.position[1], npc.position[2]);
   const scored = scoreInteractionTarget(playerPos, playerYaw, _target, NPC_MAX_RANGE);
   if (!scored) return;
-  if (checkLos && !hasInteractionLineOfSight(playerPos, _target)) return;
+  if (checkLos && scored.distance > 1.2 && !hasInteractionLineOfSight(playerPos, _target)) return;
 
   hits.push({
     id: npc.id,
@@ -172,7 +176,7 @@ export function queryInteractionTargets(
     _target.set(exit.position[0], exit.position[1], exit.position[2]);
     const scored = scoreInteractionTarget(playerPos, playerYaw, _target, exit.maxRange);
     if (!scored) continue;
-    if (checkLineOfSight && !hasInteractionLineOfSight(playerPos, _target)) continue;
+    if (checkLineOfSight && scored.distance > 1.2 && !hasInteractionLineOfSight(playerPos, _target)) continue;
 
     hits.push({
       id: exit.id,

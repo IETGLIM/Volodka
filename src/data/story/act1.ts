@@ -10,7 +10,7 @@ export const STORY_NODES_ACT1: Record<string, StoryNode> = {
     choices: [
       {
         text: 'Подняться и осмотреться',
-        next: 'explore_mode',
+        next: 'explore_mode', goldenPath: true,
         effects: [{ type: 'setFlag', flag: 'woke_up', flagValue: true }],
       },
       {
@@ -30,7 +30,7 @@ export const STORY_NODES_ACT1: Record<string, StoryNode> = {
     speaker: 'narrator',
     sceneId: 'volodka_room',
     choices: [
-      { text: 'Подойти к столу', next: 'room_table' },
+      { text: 'Подойти к столу', next: 'room_table', goldenPath: true },
       { text: 'Осмотреть книжную полку', next: 'room_bookshelf' },
       { text: 'Выйти в коридор', next: 'corridor_door' },
       { text: 'Свободно исследовать комнату', next: 'explore_mode' },
@@ -97,7 +97,7 @@ export const STORY_NODES_ACT1: Record<string, StoryNode> = {
     speaker: 'narrator',
     sceneId: 'volodka_corridor',
     choices: [
-      { text: 'Осмотреться', next: 'corridor_explore_mode' },
+      { text: 'Осмотреться', next: 'corridor_explore_mode', goldenPath: true },
       { text: 'Пойти на кухню', next: 'kitchen_table' },
       { text: 'Выйти на улицу', next: 'street_bench' },
       { text: 'Вернуться в комнату', next: 'go_home' },
@@ -110,7 +110,7 @@ export const STORY_NODES_ACT1: Record<string, StoryNode> = {
     speaker: 'narrator',
     sceneId: 'volodka_corridor',
     choices: [
-      { text: 'Пойти на кухню', next: 'kitchen_table' },
+      { text: 'Пойти на кухню', next: 'kitchen_table', goldenPath: true },
       { text: 'Выйти на улицу', next: 'street_bench' },
       { text: 'Вернуться в комнату', next: 'go_home' },
       { text: 'Свободно исследовать коридор', next: 'corridor_explore_mode' },
@@ -143,7 +143,7 @@ export const STORY_NODES_ACT1: Record<string, StoryNode> = {
     choices: [
       {
         text: 'Поблагодарить Зарему',
-        next: 'kitchen_window',
+        next: 'kitchen_window', goldenPath: true,
         effects: [
           { type: 'addKarma', value: 3 },
           { type: 'npcChange', npcId: 'zarema', npcChange: { relation: 5 } },
@@ -163,7 +163,7 @@ export const STORY_NODES_ACT1: Record<string, StoryNode> = {
     speaker: 'narrator',
     sceneId: 'home_evening',
     choices: [
-      { text: 'Да, мне нужно в кафе «Синяя яма»', next: 'go_to_cafe' },
+      { text: 'Да, мне нужно в кафе «Синяя яма»', next: 'go_to_cafe', goldenPath: true },
       {
         text: 'Ещё немного побуду дома',
         next: 'go_home',
@@ -183,7 +183,7 @@ export const STORY_NODES_ACT1: Record<string, StoryNode> = {
     speaker: 'narrator',
     sceneId: 'cafe_evening',
     choices: [
-      { text: 'Подойти к баристе', next: 'cafe_barista' },
+      { text: 'Подойти к баристе', next: 'cafe_barista', goldenPath: true },
       {
         text: 'Сесть рядом с Альбертом',
         next: 'cafe_barista',
@@ -233,7 +233,7 @@ export const STORY_NODES_ACT1: Record<string, StoryNode> = {
     sceneId: 'street_night',
     choices: [
       { text: 'Пойти в кафе', next: 'cafe_enter' },
-      { text: 'Оглядеть улицу', next: 'street_bench_view' },
+      { text: 'Оглядеть улицу', next: 'street_bench_view', goldenPath: true },
       {
         text: 'Вернуться домой',
         next: 'go_home',
@@ -250,7 +250,7 @@ export const STORY_NODES_ACT1: Record<string, StoryNode> = {
     choices: [
       {
         text: 'Подойти к незнакомке',
-        next: 'maria_curious',
+        next: 'maria_curious', goldenPath: true,
         effects: [
           { type: 'setFlag', flag: 'spotted_maria', flagValue: true },
           { type: 'addKarma', value: 2 },
@@ -273,7 +273,7 @@ export const STORY_NODES_ACT1: Record<string, StoryNode> = {
     choices: [
       {
         text: 'Я помогу. Что нужно сделать?',
-        next: 'start_diagnosis',
+        next: 'start_diagnosis', goldenPath: true,
         effects: [
           { type: 'addKarma', value: 5 },
           { type: 'setFlag', flag: 'agreed_help_alexander', flagValue: true },
@@ -305,7 +305,7 @@ export const STORY_NODES_ACT1: Record<string, StoryNode> = {
     choices: [
       {
         text: 'Убедить его рассказать больше',
-        next: 'colleague_persuasion_line',
+        next: 'colleague_persuasion_line', goldenPath: true,
         condition: { minSkill: { persuasion: 3 } },
       },
       {
@@ -387,7 +387,7 @@ export const STORY_NODES_ACT1: Record<string, StoryNode> = {
     choices: [
       {
         text: 'Начать расшифровку',
-        next: 'fix_success',
+        next: 'fix_success', goldenPath: true,
         effects: [
           { type: 'addSkill', skill: 'coding', value: 3 },
           { type: 'addStat', stat: 'energy', value: -15 },
@@ -443,7 +443,7 @@ export const STORY_NODES_ACT1: Record<string, StoryNode> = {
     choices: [
       {
         text: 'Внимательно прочитать стихотворение',
-        next: 'office_colleague',
+        next: 'office_colleague', goldenPath: true,
         effects: [
           { type: 'collectPoem', poemId: 'poem_1' },
           { type: 'addSkill', skill: 'writing', value: 2 },

@@ -30,8 +30,6 @@ import {
   createCombatCameraState,
   triggerCombatImpact,
   triggerCombatShake,
-  triggerCombatBattleStart,
-  triggerCombatEndZoom,
   createSceneTransitionState,
   startSceneTransition,
   type SpringCameraState,
@@ -55,7 +53,12 @@ import {
   FOV_TRANSITION_SPEED,
   getSceneDefaultDistance,
   getSceneSpecificFov,
+  ZOOM_SPRING_SNAP,
+  FIRST_PERSON_ENABLED,
+  FIRST_PERSON_FOV,
+  FIRST_PERSON_EYE_HEIGHT,
 } from '@/engine/camera/cameraConstants';
+import { sharedCameraYawRef } from '@/engine/PlayerRotationState';
 import { resolveCameraMode } from '@/engine/camera/strategies';
 import { useCameraOrbitInput } from '@/engine/camera/useCameraOrbitInput';
 import { applyPendingGamepadOrbit } from '@/engine/input/gamepadCamera';
@@ -66,10 +69,65 @@ import { isInteractionLocked } from './InteractionSystemBridge';
 import { getNPCGroup } from '@/engine/interaction/npcRegistry';
 import { eventBus } from '@/engine/EventBus';
 import type { CameraWaypointData } from '@/engine/events';
+import type { SceneId } from '@/shared/types/game';
 
 interface FollowCameraProps {
   livePlayerPositionRef: React.MutableRefObject<THREE.Vector3>;
   livePlayerRotationRef: React.MutableRefObject<number>;
+}
+
+/** Snap pose when entering exploration or after scene transition (FP vs third-person). */
+function computeExplorationCameraSnap(
+  playerPos: THREE.Vector3,
+  playerYaw: number,
+  sceneId: SceneId,
+  pitchOverride?: number,
+): {
+  cameraYaw: number;
+  pitch: number;
+  distance: number;
+  position: THREE.Vector3;
+  lookAt: THREE.Vector3;
+  fov: number;
+} {
+  if (FIRST_PERSON_ENABLED) {
+    const pitch = pitchOverride ?? 0;
+    const eyeY = playerPos.y + FIRST_PERSON_EYE_HEIGHT;
+    const position = new THREE.Vector3(playerPos.x, eyeY, playerPos.z);
+    const lookAt = position.clone().add(
+      new THREE.Vector3(
+        Math.sin(playerYaw) * Math.cos(pitch),
+        Math.sin(pitch),
+        Math.cos(playerYaw) * Math.cos(pitch),
+      ).multiplyScalar(3),
+    );
+    return {
+      cameraYaw: playerYaw,
+      pitch,
+      distance: 0,
+      position,
+      lookAt,
+      fov: FIRST_PERSON_FOV,
+    };
+  }
+
+  const pitch = pitchOverride ?? 0.3;
+  const cameraYaw = playerYaw + Math.PI;
+  const distance = getSceneDefaultDistance(sceneId);
+  const position = new THREE.Vector3(
+    playerPos.x + Math.sin(cameraYaw) * Math.cos(pitch) * distance,
+    playerPos.y + LOOK_HEIGHT + Math.sin(pitch) * distance,
+    playerPos.z + Math.cos(cameraYaw) * Math.cos(pitch) * distance,
+  );
+  const lookAt = new THREE.Vector3(playerPos.x, playerPos.y + LOOK_HEIGHT, playerPos.z);
+  return {
+    cameraYaw,
+    pitch,
+    distance,
+    position,
+    lookAt,
+    fov: getSceneSpecificFov(sceneId),
+  };
 }
 
 /** AAA cinematic follow camera with five camera modes */
@@ -103,6 +161,9 @@ export function FollowCamera({
   const pitchRef = useRef(0.3);
   const distanceRef = useRef(DEFAULT_DISTANCE);
   const isDraggingRef = useRef(false);
+  const zoomSnapRef = useRef(0);
+  const firstPersonRef = useRef(FIRST_PERSON_ENABLED);
+  firstPersonRef.current = FIRST_PERSON_ENABLED;
   const lastMouseRef = useRef({ x: 0, y: 0 });
   const initializedRef = useRef(false);
 
@@ -175,19 +236,27 @@ export function FollowCamera({
   useEffect(() => {
     const config = getSceneConfig(sceneId);
     const spawn = config.spawnPoint;
-    // Camera yaw must be BEHIND the player (opposite of player facing direction)
-    const cameraYaw = (config.initialRotation ?? 0) + Math.PI;
-    const initPitch = 0.3;
-    const initPos = new THREE.Vector3(
-      spawn[0] + Math.sin(cameraYaw) * Math.cos(initPitch) * DEFAULT_DISTANCE,
-      spawn[1] + LOOK_HEIGHT + Math.sin(initPitch) * DEFAULT_DISTANCE,
-      spawn[2] + Math.cos(cameraYaw) * Math.cos(initPitch) * DEFAULT_DISTANCE,
-    );
-    const initLook = new THREE.Vector3(spawn[0], spawn[1] + LOOK_HEIGHT, spawn[2]);
+    const playerYaw = config.initialRotation ?? 0;
+    const initPitch = FIRST_PERSON_ENABLED ? 0 : 0.3;
+    const initYaw = FIRST_PERSON_ENABLED ? playerYaw : (config.initialRotation ?? 0) + Math.PI;
+    const initDist = FIRST_PERSON_ENABLED ? 0 : DEFAULT_DISTANCE;
+    const initPos = FIRST_PERSON_ENABLED
+      ? new THREE.Vector3(spawn[0], spawn[1] + FIRST_PERSON_EYE_HEIGHT, spawn[2])
+      : new THREE.Vector3(
+          spawn[0] + Math.sin(initYaw) * Math.cos(initPitch) * initDist,
+          spawn[1] + LOOK_HEIGHT + Math.sin(initPitch) * initDist,
+          spawn[2] + Math.cos(initYaw) * Math.cos(initPitch) * initDist,
+        );
+    const initLook = FIRST_PERSON_ENABLED
+      ? initPos.clone().add(new THREE.Vector3(Math.sin(initYaw), Math.sin(initPitch), Math.cos(initYaw)))
+      : new THREE.Vector3(spawn[0], spawn[1] + LOOK_HEIGHT, spawn[2]);
 
-    // Set yaw ref so auto-follow works correctly from the start
-    yawRef.current = cameraYaw;
+    yawRef.current = initYaw;
     pitchRef.current = initPitch;
+    distanceRef.current = initDist;
+    interactionDistanceRef.current = initDist;
+    livePlayerRotationRef.current = playerYaw;
+    sharedCameraYawRef.current = initYaw;
 
     springRef.current = createSpringCameraState(initPos, initLook);
     dialogueControllerRef.current = createDialogueShotController();
@@ -196,19 +265,18 @@ export function FollowCamera({
     transitionRef.current = createSceneTransitionState();
     _prevPlayerPos.current.set(spawn[0], spawn[1], spawn[2]);
 
-    // Initialize scene FOV
-    currentSceneFovRef.current = getSceneSpecificFov(sceneId);
+    currentSceneFovRef.current = FIRST_PERSON_ENABLED ? FIRST_PERSON_FOV : getSceneSpecificFov(sceneId);
 
     // CRITICAL: Immediately apply the spring camera to the actual Three.js camera
-    // so the first rendered frame already shows the correct view (not the default
-    // camera position from Canvas props which looks at origin/chair area).
     const cam = cameraRef.current as THREE.PerspectiveCamera;
     if (cam) {
       cam.position.copy(initPos);
       cam.lookAt(initLook);
-      cam.fov = getSceneSpecificFov(sceneId);
+      cam.fov = currentSceneFovRef.current;
       cam.updateProjectionMatrix();
     }
+    // Mount-only init; scene transitions handled by useLayoutEffect below.
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- sceneId intentionally omitted
   }, []);
 
   // ── Reset camera on scene change ──
@@ -219,29 +287,34 @@ export function FollowCamera({
   useLayoutEffect(() => {
     const config = getSceneConfig(sceneId);
     const spawn = config.spawnPoint;
-    // Camera yaw must be BEHIND the player (opposite of player facing direction)
-    const cameraYaw = (config.initialRotation ?? 0) + Math.PI;
+    const playerYaw = config.initialRotation ?? 0;
+    const cameraYaw = FIRST_PERSON_ENABLED ? playerYaw : playerYaw + Math.PI;
+    const initPitch = FIRST_PERSON_ENABLED ? 0 : 0.3;
     yawRef.current = cameraYaw;
-    pitchRef.current = 0.3;
-    const sceneDist = getSceneDefaultDistance(sceneId);
+    pitchRef.current = initPitch;
+    const sceneDist = FIRST_PERSON_ENABLED ? 0 : getSceneDefaultDistance(sceneId);
     distanceRef.current = sceneDist;
     interactionDistanceRef.current = sceneDist;
+    livePlayerRotationRef.current = playerYaw;
+    sharedCameraYawRef.current = cameraYaw;
     initializedRef.current = false;
 
-    // Immediately teleport spring camera to the new spawn point
     if (springRef.current) {
-      const sceneDist = getSceneDefaultDistance(sceneId);
-      const newCamPos = new THREE.Vector3(
-        spawn[0] + Math.sin(cameraYaw) * Math.cos(0.3) * sceneDist,
-        spawn[1] + LOOK_HEIGHT + Math.sin(0.3) * sceneDist,
-        spawn[2] + Math.cos(cameraYaw) * Math.cos(0.3) * sceneDist,
-      );
-      const newLookAt = new THREE.Vector3(spawn[0], spawn[1] + LOOK_HEIGHT, spawn[2]);
+      const newCamPos = FIRST_PERSON_ENABLED
+        ? new THREE.Vector3(spawn[0], spawn[1] + FIRST_PERSON_EYE_HEIGHT, spawn[2])
+        : new THREE.Vector3(
+            spawn[0] + Math.sin(cameraYaw) * Math.cos(initPitch) * sceneDist,
+            spawn[1] + LOOK_HEIGHT + Math.sin(initPitch) * sceneDist,
+            spawn[2] + Math.cos(cameraYaw) * Math.cos(initPitch) * sceneDist,
+          );
+      const newLookAt = FIRST_PERSON_ENABLED
+        ? newCamPos.clone().add(new THREE.Vector3(Math.sin(cameraYaw), Math.sin(initPitch), Math.cos(cameraYaw)))
+        : new THREE.Vector3(spawn[0], spawn[1] + LOOK_HEIGHT, spawn[2]);
 
       springRef.current.position.copy(newCamPos);
       springRef.current.velocity.set(0, 0, 0);
       springRef.current.lookAt.copy(newLookAt);
-      springRef.current.fov = getSceneSpecificFov(sceneId);
+      springRef.current.fov = FIRST_PERSON_ENABLED ? FIRST_PERSON_FOV : getSceneSpecificFov(sceneId);
       springRef.current.roll = 0;
     }
 
@@ -263,7 +336,7 @@ export function FollowCamera({
     prevVelocitySmoothRef.current.set(0, 0, 0);
 
     // Update scene FOV immediately
-    currentSceneFovRef.current = getSceneSpecificFov(sceneId);
+    currentSceneFovRef.current = FIRST_PERSON_ENABLED ? FIRST_PERSON_FOV : getSceneSpecificFov(sceneId);
   }, [sceneId]);
 
   // ── Listen for cinematic transition phases to freeze camera during fade ──
@@ -282,37 +355,33 @@ export function FollowCamera({
   // ── Listen for camera:recenter to snap camera behind player ──
   useEffect(() => {
     const unsub = eventBus.on('camera:recenter', () => {
-      // Reset camera to be behind the player based on current rotation
+      const playerPos = livePlayerPositionRef.current;
       const playerRotation = livePlayerRotationRef.current;
-      yawRef.current = playerRotation + Math.PI; // Camera looks at player from behind
-      pitchRef.current = 0.3;
-      const sceneDist = getSceneDefaultDistance(sceneId);
-      distanceRef.current = sceneDist;
-      interactionDistanceRef.current = sceneDist;
-      initializedRef.current = false; // Force re-initialization
+      const snap = computeExplorationCameraSnap(playerPos, playerRotation, sceneId);
 
-      // Immediately teleport spring camera to player position
+      yawRef.current = snap.cameraYaw;
+      pitchRef.current = snap.pitch;
+      distanceRef.current = snap.distance;
+      interactionDistanceRef.current = snap.distance;
+      sharedCameraYawRef.current = snap.cameraYaw;
+      currentSceneFovRef.current = snap.fov;
+      initializedRef.current = false;
+
       if (springRef.current) {
-        const playerPos = livePlayerPositionRef.current;
-        const cameraYaw = playerRotation + Math.PI;
-        const sceneDist = getSceneDefaultDistance(sceneId);
-        const newCamPos = new THREE.Vector3(
-          playerPos.x + Math.sin(cameraYaw) * Math.cos(0.3) * sceneDist,
-          playerPos.y + LOOK_HEIGHT + Math.sin(0.3) * sceneDist,
-          playerPos.z + Math.cos(cameraYaw) * Math.cos(0.3) * sceneDist,
-        );
-        const newLookAt = new THREE.Vector3(playerPos.x, playerPos.y + LOOK_HEIGHT, playerPos.z);
-        springRef.current.position.copy(newCamPos);
+        springRef.current.position.copy(snap.position);
         springRef.current.velocity.set(0, 0, 0);
-        springRef.current.lookAt.copy(newLookAt);
+        springRef.current.lookAt.copy(snap.lookAt);
+        springRef.current.fov = snap.fov;
       }
     });
     return unsub;
-  }, [livePlayerRotationRef, livePlayerPositionRef]);
+  }, [livePlayerRotationRef, livePlayerPositionRef, sceneId]);
 
   // ── Intro wake-up camera ──
   useEffect(() => {
     const unsub = eventBus.on('camera:intro_wake', () => {
+      if (FIRST_PERSON_ENABLED) return;
+
       introWakeRef.current = true;
       introWakeStartTimeRef.current = timeRef.current;
 
@@ -353,38 +422,31 @@ export function FollowCamera({
   const prevGameModeRef = useRef(gameMode);
   useEffect(() => {
     if (gameMode === 'exploration' && prevGameModeRef.current !== 'exploration') {
-      // Mode just changed TO exploration — recenter camera on player IMMEDIATELY
       const playerPos = livePlayerPositionRef.current;
       const playerRotation = livePlayerRotationRef.current;
-      const cameraYaw = playerRotation + Math.PI;
-      const sceneDist = getSceneDefaultDistance(sceneId);
-      const newCamPos = new THREE.Vector3(
-        playerPos.x + Math.sin(cameraYaw) * Math.cos(0.3) * sceneDist,
-        playerPos.y + LOOK_HEIGHT + Math.sin(0.3) * sceneDist,
-        playerPos.z + Math.cos(cameraYaw) * Math.cos(0.3) * sceneDist,
-      );
-      const newLookAt = new THREE.Vector3(playerPos.x, playerPos.y + LOOK_HEIGHT, playerPos.z);
+      const snap = computeExplorationCameraSnap(playerPos, playerRotation, sceneId);
 
-      // Snap spring camera immediately
       if (springRef.current) {
-        springRef.current.position.copy(newCamPos);
+        springRef.current.position.copy(snap.position);
         springRef.current.velocity.set(0, 0, 0);
-        springRef.current.lookAt.copy(newLookAt);
+        springRef.current.lookAt.copy(snap.lookAt);
+        springRef.current.fov = snap.fov;
       }
 
-      // Snap Three.js camera immediately to prevent stale frame
       const cam = cameraRef.current as THREE.PerspectiveCamera;
       if (cam) {
-        cam.position.copy(newCamPos);
-        cam.lookAt(newLookAt);
+        cam.position.copy(snap.position);
+        cam.lookAt(snap.lookAt);
+        cam.fov = snap.fov;
         cam.updateProjectionMatrix();
       }
 
-      // Reset orbit parameters
-      yawRef.current = cameraYaw;
-      pitchRef.current = 0.3;
-      distanceRef.current = sceneDist;
-      interactionDistanceRef.current = sceneDist;
+      yawRef.current = snap.cameraYaw;
+      pitchRef.current = snap.pitch;
+      distanceRef.current = snap.distance;
+      interactionDistanceRef.current = snap.distance;
+      sharedCameraYawRef.current = snap.cameraYaw;
+      currentSceneFovRef.current = snap.fov;
       initializedRef.current = false;
     }
     prevGameModeRef.current = gameMode;
@@ -394,7 +456,7 @@ export function FollowCamera({
   useEffect(() => {
     const unsubs: (() => void)[] = [];
 
-    unsubs.push(eventBus.on('camera:cutscene_start', ({ cutsceneId: id, waypoints }) => {
+    unsubs.push(eventBus.on('camera:cutscene_start', ({ waypoints }) => {
       const controller = buildCutsceneController(waypoints);
       if (controller) {
         cutsceneRef.current = controller;
@@ -433,15 +495,6 @@ export function FollowCamera({
 
     unsubs.push(eventBus.on('camera:combat_shake', ({ intensity }) => {
       if (combatRef.current) triggerCombatShake(combatRef.current, intensity);
-    }));
-
-    unsubs.push(eventBus.on('camera:combat_start', () => {
-      if (combatRef.current) triggerCombatBattleStart(combatRef.current);
-    }));
-
-    unsubs.push(eventBus.on('camera:combat_end', ({ outcome }) => {
-      if (!combatRef.current || outcome === 'fled') return;
-      triggerCombatEndZoom(combatRef.current, outcome);
     }));
 
     return () => unsubs.forEach((u) => u());
@@ -532,6 +585,9 @@ export function FollowCamera({
     interactionDistanceRef,
     isDraggingRef,
     lastMouseRef,
+    zoomSnapRef,
+    firstPersonRef,
+    fovRef: currentSceneFovRef,
   });
 
   // ── Post-mode frame state (auto-follow timer, drag tracking) ──
@@ -553,10 +609,19 @@ export function FollowCamera({
     const playerPos = livePlayerPositionRef.current;
     if (!playerPos) return;
 
+    // During the opening wake-up cutscene, WakeUpSequence fully owns the camera.
+    // Yield so the two systems don't fight over camera.position each frame.
+    if (gameMode === 'cutscene' && activeCutsceneId === 'intro_wakeup') return;
+
     const delta = applyTimeScale(Math.min(rawDelta, 0.05));
     timeRef.current += delta;
 
     applyPendingGamepadOrbit(yawRef, pitchRef, distanceRef, interactionDistanceRef, delta);
+
+    sharedCameraYawRef.current = yawRef.current;
+    if (FIRST_PERSON_ENABLED && gameMode === 'exploration' && !isInteractionLocked()) {
+      livePlayerRotationRef.current = yawRef.current;
+    }
 
     if (cinematicFreezeRef.current) {
       const frozenDuration = timeRef.current - cinematicFreezeStartRef.current;
@@ -570,7 +635,7 @@ export function FollowCamera({
     _playerVelocity.current.copy(playerPos).sub(_prevPlayerPos.current);
     _prevPlayerPos.current.copy(playerPos);
 
-    if (introWakeRef.current) {
+    if (introWakeRef.current && !FIRST_PERSON_ENABLED) {
       const elapsed = timeRef.current - introWakeStartTimeRef.current;
       const progress = Math.min(1, elapsed / INTRO_WAKE_DURATION);
       const ease = 1 - Math.pow(1 - progress, 3);
@@ -599,9 +664,10 @@ export function FollowCamera({
       1 - Math.exp(-distLerpSpeed * delta),
     );
 
+    const targetSceneFov = FIRST_PERSON_ENABLED ? FIRST_PERSON_FOV : getSceneSpecificFov(sceneId);
     currentSceneFovRef.current = THREE.MathUtils.lerp(
       currentSceneFovRef.current,
-      getSceneSpecificFov(sceneId),
+      targetSceneFov,
       1 - Math.exp(-FOV_TRANSITION_SPEED * delta),
     );
 
@@ -655,6 +721,18 @@ export function FollowCamera({
       wasInDialogueRef.current = isInDialogue;
       if (!initializedRef.current) initializedRef.current = true;
       return;
+    }
+
+    // Wheel zoom: pull the spring camera toward the new orbit distance immediately
+    // so zoom feels responsive instead of lagging behind the spring.
+    if (zoomSnapRef.current > 0.01 && modeResult.kind === 'targets') {
+      const { targetPos, targetLook } = modeResult.targets;
+      const snap = zoomSnapRef.current * ZOOM_SPRING_SNAP;
+      spring.position.lerp(targetPos, snap);
+      spring.lookAt.lerp(targetLook, snap * 0.6);
+      spring.velocity.multiplyScalar(1 - snap * 0.85);
+      zoomSnapRef.current *= 0.45;
+      if (zoomSnapRef.current < 0.04) zoomSnapRef.current = 0;
     }
 
     const postFrame = postFrameStateRef.current;

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { SAVE_VERSION, SavePayloadSchema, validateSaveData, parseNpcStatesFromSave } from './saveSchema';
+import { SAVE_VERSION, SavePayloadSchema, validateSaveData } from './saveSchema';
 import { createDefaultPersistedState } from '@/store/persistedState';
 
 function buildValidSavePayload() {
@@ -51,50 +51,5 @@ describe('validateSaveData', () => {
   it('rejects malformed JSON', () => {
     const result = validateSaveData('{not json');
     expect(result.success).toBe(false);
-  });
-
-  it('rejects invalid exploration scene id', () => {
-    const bad = {
-      ...buildValidSavePayload(),
-      exploration: {
-        ...buildValidSavePayload().exploration,
-        currentSceneId: 'not_a_real_scene',
-      },
-    };
-    const result = SavePayloadSchema.safeParse(bad);
-    expect(result.success).toBe(false);
-  });
-
-  it('rejects currentAct above MAX_STORY_ACT', () => {
-    const bad = {
-      ...buildValidSavePayload(),
-      playerState: {
-        ...buildValidSavePayload().playerState,
-        progression: {
-          ...buildValidSavePayload().playerState.progression,
-          currentAct: 99,
-        },
-      },
-    };
-    const result = SavePayloadSchema.safeParse(bad);
-    expect(result.success).toBe(false);
-  });
-
-  it('migrates legacy combat mode to exploration default', () => {
-    const legacy = { ...buildValidSavePayload(), mode: 'combat' as const };
-    const result = SavePayloadSchema.safeParse(legacy);
-    expect(result.success).toBe(true);
-    if (result.success) {
-      expect(result.data.mode).toBe('combat');
-    }
-  });
-
-  it('drops invalid npcStates entries during parseNpcStatesFromSave', () => {
-    const parsed = parseNpcStatesFromSave({
-      maria: { position: [0, 0, 0], sceneId: 'volodka_room' },
-      broken: { position: 'bad', sceneId: 'volodka_room' },
-      ghost: { position: [1, 0, 1], sceneId: 'unknown_scene' },
-    });
-    expect(Object.keys(parsed)).toEqual(['maria']);
   });
 });

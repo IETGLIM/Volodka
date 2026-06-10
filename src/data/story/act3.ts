@@ -13,7 +13,7 @@ export const STORY_NODES_ACT3: Record<string, StoryNode> = {
     choices: [
       {
         text: 'Встретиться с Заремой в парке',
-        next: 'park_entrance',
+        next: 'park_entrance', goldenPath: true,
         effects: [
           { type: 'setFlag', flag: 'act3_started', flagValue: true },
           { type: 'setFlag', flag: 'advanced_to_act3', flagValue: true },
@@ -40,7 +40,7 @@ export const STORY_NODES_ACT3: Record<string, StoryNode> = {
     choices: [
       {
         text: 'Осторожно очистить надпись на камне',
-        next: 'act3_zarema_warning',
+        next: 'act3_zarema_warning', goldenPath: true,
         effects: [
           { type: 'collectPoem', poemId: 'poem_10' },
           { type: 'addKarma', value: 3 },
@@ -66,7 +66,7 @@ export const STORY_NODES_ACT3: Record<string, StoryNode> = {
     choices: [
       {
         text: 'Я не дам тебя в обиду. Пойдём со мной.',
-        next: 'act3_zarema_arrest',
+        next: 'act3_zarema_arrest', goldenPath: true,
         effects: [
           { type: 'addKarma', value: 5 },
           { type: 'npcChange', npcId: 'zarema', npcChange: { relation: 8 } },
@@ -278,7 +278,7 @@ export const STORY_NODES_ACT3: Record<string, StoryNode> = {
       },
       {
         text: 'Использовать поддельный пропуск и идти прямо',
-        next: 'act3_zarema_cell',
+        next: 'act3_zarema_cell', goldenPath: true,
         effects: [
           { type: 'addSkill', skill: 'persuasion', value: 1 },
           { type: 'addStat', stat: 'stress', value: 5 },
@@ -306,7 +306,7 @@ export const STORY_NODES_ACT3: Record<string, StoryNode> = {
     choices: [
       {
         text: 'Вытащить Зарему — Сеть подождёт',
-        next: 'act3_zarema_rescue_choice',
+        next: 'act3_zarema_rescue_choice', goldenPath: true,
         effects: [
           { type: 'addKarma', value: 5 },
           { type: 'npcChange', npcId: 'zarema', npcChange: { relation: 10 } },
@@ -331,7 +331,7 @@ export const STORY_NODES_ACT3: Record<string, StoryNode> = {
     choices: [
       {
         text: 'Спасаю тебя. Пошли!',
-        next: 'act3_save_zarema',
+        next: 'act3_save_zarema', goldenPath: true,
         effects: [
           { type: 'addKarma', value: 8 },
           { type: 'npcChange', npcId: 'zarema', npcChange: { relation: 15 } },
@@ -371,7 +371,7 @@ export const STORY_NODES_ACT3: Record<string, StoryNode> = {
       },
       {
         text: 'Бежать к Виктории — она знает безопасное место',
-        next: 'maria_warm',
+        next: 'maria_warm', goldenPath: true,
         effects: [
           { type: 'addSkill', skill: 'intuition', value: 1 },
           { type: 'setFlag', flag: 'zarema_rescued', flagValue: true },
@@ -415,7 +415,7 @@ export const STORY_NODES_ACT3: Record<string, StoryNode> = {
     choices: [
       {
         text: 'Сравнить с инцидентом #4729 — тот же автор?',
-        next: 'act3_maria_revelation',
+        next: 'act3_maria_revelation', goldenPath: true,
         effects: [
           { type: 'addSkill', skill: 'coding', value: 2 },
           { type: 'addSkill', skill: 'logic', value: 1 },
@@ -452,7 +452,7 @@ export const STORY_NODES_ACT3: Record<string, StoryNode> = {
     choices: [
       {
         text: 'Ты... ты и есть Хранилище? Ты — живая поэзия?',
-        next: 'act3_maria_truth_accepted',
+        next: 'act3_maria_truth_accepted', goldenPath: true,
         effects: [
           { type: 'addStat', stat: 'stress', value: 15 },
           { type: 'addSkill', skill: 'intuition', value: 3 },
@@ -497,7 +497,7 @@ export const STORY_NODES_ACT3: Record<string, StoryNode> = {
     choices: [
       {
         text: 'Используем это для защиты Хранилища',
-        next: 'act3_albert_loyalty',
+        next: 'act3_albert_loyalty', goldenPath: true,
         effects: [
           { type: 'addSkill', skill: 'coding', value: 2 },
           { type: 'setFlag', flag: 'maria_digital_alliance', flagValue: true },
@@ -522,7 +522,7 @@ export const STORY_NODES_ACT3: Record<string, StoryNode> = {
     choices: [
       {
         text: 'Мы не бросаем своих, Альберт.',
-        next: 'act3_albert_choice',
+        next: 'act3_albert_choice', goldenPath: true,
         effects: [
           { type: 'addKarma', value: 5 },
           { type: 'npcChange', npcId: 'albert', npcChange: { relation: 10 } },
@@ -556,7 +556,7 @@ export const STORY_NODES_ACT3: Record<string, StoryNode> = {
       },
       {
         text: 'Если ты уверен... Спасибо, Альберт.',
-        next: 'act3_guild_counterattack',
+        next: 'act3_guild_counterattack', goldenPath: true,
         effects: [
           { type: 'addStat', stat: 'stress', value: 5 },
           { type: 'setFlag', flag: 'albert_diversion', flagValue: true },
@@ -584,7 +584,7 @@ export const STORY_NODES_ACT3: Record<string, StoryNode> = {
       },
       {
         text: 'Отвести беглецов в лес — ЧК прикроет на Зорге',
-        next: 'act3_hide_network',
+        next: 'act3_hide_network', goldenPath: true,
         condition: { flag: 'tolpa_honorary_chekist' },
         effects: [
           { type: 'addKarma', value: 8 },
@@ -714,7 +714,7 @@ export const STORY_NODES_ACT3: Record<string, StoryNode> = {
       },
       {
         text: 'Нужно спасти Хранилище — остальное подождёт',
-        next: 'act3_prepare_counter',
+        next: 'act3_prepare_counter', goldenPath: true,
         effects: [
           { type: 'addSkill', skill: 'logic', value: 2 },
           { type: 'addKarma', value: 3 },
@@ -731,7 +731,7 @@ export const STORY_NODES_ACT3: Record<string, StoryNode> = {
     choices: [
       {
         text: 'Я готов. Когда начинаем?',
-        next: 'act3_decision_point',
+        next: 'act3_decision_point', goldenPath: true,
         effects: [
           { type: 'addKarma', value: 5 },
           { type: 'setFlag', flag: 'counter_plan_ready', flagValue: true },
@@ -756,7 +756,7 @@ export const STORY_NODES_ACT3: Record<string, StoryNode> = {
     choices: [
       {
         text: 'Я напишу новый мир — код и поэзия станут одним',
-        next: 'act4_transition',
+        next: 'act4_transition', goldenPath: true,
         effects: [
           { type: 'addKarma', value: 8 },
           { type: 'setFlag', flag: 'chose_creator_path', flagValue: true },

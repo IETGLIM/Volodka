@@ -3,7 +3,6 @@
 import type { EnemyType, CombatState, EnemySpecialAttack, SideEffect } from './types';
 import type { EnemyTemplate } from './types';
 import { getGameSnapshot } from '@/engine/GameActionDispatcher';
-import { MODEL_URLS } from '@/config/modelUrls';
 import { createBuff, addBuff } from './buffSystem';
 import {
   getEnemyAttackBoost,
@@ -201,9 +200,6 @@ export const ENEMY_TEMPLATES: Record<EnemyType, EnemyTemplate> = {
     type: 'system_daemon',
     name: 'Системный Демон',
     emoji: '👾',
-    modelUrl: MODEL_URLS.cc0KhronosBrainStem,
-    portraitAccent: '#06b6d4',
-    spatialPan: -0.65,
     baseHp: 40,
     baseAttack: 12,
     baseDefense: 4,
@@ -217,9 +213,6 @@ export const ENEMY_TEMPLATES: Record<EnemyType, EnemyTemplate> = {
     type: 'corporate_golem',
     name: 'Корпоративный Голем',
     emoji: '🤖',
-    modelUrl: MODEL_URLS.cc0Xbot,
-    portraitAccent: '#f97316',
-    spatialPan: 0,
     baseHp: 80,
     baseAttack: 8,
     baseDefense: 10,
@@ -233,9 +226,6 @@ export const ENEMY_TEMPLATES: Record<EnemyType, EnemyTemplate> = {
     type: 'shadow_agent',
     name: 'Теневой Агент',
     emoji: '🥷',
-    modelUrl: MODEL_URLS.cc0KhronosFox,
-    portraitAccent: '#a855f7',
-    spatialPan: 0.7,
     baseHp: 55,
     baseAttack: 10,
     baseDefense: 6,
@@ -251,9 +241,9 @@ export const ENEMY_TEMPLATES: Record<EnemyType, EnemyTemplate> = {
     name: 'Фантом Данных',
     emoji: '👻',
     baseHp: 35,
-    baseAttack: 12,
+    baseAttack: 14,
     baseDefense: 2,
-    baseSpeed: 9,
+    baseSpeed: 10,
     targetsStat: 'logic',
     lootTable: ['code_fragment', 'energy_drink', 'poem_fragment'],
     xpReward: 30,
@@ -389,9 +379,9 @@ export const ENEMY_TEMPLATES: Record<EnemyType, EnemyTemplate> = {
     name: 'Призрак Данных',
     emoji: '👁️',
     baseHp: 45,
-    baseAttack: 13,
+    baseAttack: 15,
     baseDefense: 3,
-    baseSpeed: 11,
+    baseSpeed: 12,
     targetsStat: 'logic',
     lootTable: ['code_fragment', 'digital_ghost_trace', 'energy_drink'],
     xpReward: 40,

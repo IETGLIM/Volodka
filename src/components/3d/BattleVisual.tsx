@@ -1,7 +1,10 @@
 
 /* ─── Volodka RPG – Combat Arena procedural 3D visual ─── */
 
+import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
+import { useFrameTick } from '@/engine/frame/useFrameTick';
+import { eventBus } from '@/engine/EventBus';
 import { useEnvironmentLod } from './lod/EnvironmentLodProvider';
 import { EnvironmentDetail } from './lod/PropDistanceGate';
 import { useCachedCanvasTexture } from '@/hooks/useCachedCanvasTexture';
@@ -33,6 +36,9 @@ export function BattleVisual({ livePlayerPositionRef: _livePlayerPositionRef }: 
         />
       </mesh>
 
+      {/* Combat-reactive emissive grid — pulses with the fight, flashes on hits */}
+      <ArenaReactiveGrid size={W} />
+
       {/* ═══════════════════════════════════════════════ */}
       {/* ── CONCRETE BARRIERS ── */}
       {/* ═══════════════════════════════════════════════ */}
@@ -41,6 +47,9 @@ export function BattleVisual({ livePlayerPositionRef: _livePlayerPositionRef }: 
       <ConcreteBarrier position={[-2, 0, 3]} rotation={0.5} />
       <ConcreteBarrier position={[4, 0, 2]} rotation={-0.4} />
       <ConcreteBarrier position={[0, 0, -4]} rotation={0.1} />
+
+      {/* Wrecked car — central cover piece */}
+      <WreckedCar position={[2.8, 0, 3.6]} rotation={-0.7} />
 
       {/* ═══════════════════════════════════════════════ */}
       {/* ── NEON-LIT ARENA EDGES ── */}
@@ -199,6 +208,126 @@ export function BattleVisual({ livePlayerPositionRef: _livePlayerPositionRef }: 
       </EnvironmentDetail>
     </group>
   );
+}
+
+/** Combat-reactive emissive floor grid.
+ *  Slow breathing pulse during the fight; bright flash decay on combat hits. */
+function ArenaReactiveGrid({ size }: { size: number }) {
+  const gridTexture = useCachedCanvasTexture('battle:grid', createArenaGridTexture);
+  const materialRef = useRef<THREE.MeshBasicMaterial>(null);
+  const timeRef = useRef(0);
+  const flashRef = useRef(0);
+
+  useEffect(() => {
+    const offHit = eventBus.on('combat:hit', () => {
+      flashRef.current = 1;
+    });
+    const offDamage = eventBus.on('combat:damage', () => {
+      flashRef.current = Math.max(flashRef.current, 0.7);
+    });
+    return () => {
+      offHit();
+      offDamage();
+    };
+  }, []);
+
+  useFrameTick('misc', ({ delta }) => {
+    timeRef.current += delta;
+    flashRef.current = Math.max(0, flashRef.current - delta * 2.2);
+    const mat = materialRef.current;
+    if (!mat) return;
+    const breathe = 0.3 + Math.sin(timeRef.current * 1.6) * 0.1;
+    mat.opacity = Math.min(1, breathe + flashRef.current * 0.65);
+  });
+
+  return (
+    <mesh rotation-x={-Math.PI / 2} position-y={0.012}>
+      <planeGeometry args={[size, size]} />
+      <meshBasicMaterial
+        ref={materialRef}
+        map={gridTexture}
+        color="#22ddff"
+        transparent
+        opacity={0.3}
+        blending={THREE.AdditiveBlending}
+        depthWrite={false}
+        polygonOffset
+        polygonOffsetFactor={-1}
+        polygonOffsetUnits={-1}
+      />
+    </mesh>
+  );
+}
+
+/** Wrecked car — low-poly cover prop with a flickering hazard light */
+function WreckedCar({ position, rotation }: { position: [number, number, number]; rotation: number }) {
+  return (
+    <group position={position} rotation={[0, rotation, 0]}>
+      {/* Body */}
+      <mesh position={[0, 0.45, 0]} castShadow receiveShadow>
+        <boxGeometry args={[2.6, 0.6, 1.2]} />
+        <meshStandardMaterial color="#37404a" metalness={0.5} roughness={0.6} />
+      </mesh>
+      {/* Crushed cabin */}
+      <mesh position={[-0.25, 0.92, 0]} rotation={[0, 0, 0.06]} castShadow>
+        <boxGeometry args={[1.3, 0.42, 1.05]} />
+        <meshStandardMaterial color="#2c343c" metalness={0.4} roughness={0.7} />
+      </mesh>
+      {/* Shattered windshield */}
+      <mesh position={[0.42, 0.92, 0]} rotation={[0, 0, -0.5]}>
+        <planeGeometry args={[0.5, 1.0]} />
+        <meshStandardMaterial color="#6080a0" transparent opacity={0.35} metalness={0.2} roughness={0.15} side={THREE.DoubleSide} />
+      </mesh>
+      {/* Wheels (one missing — on blocks) */}
+      {[
+        [-0.9, 0.22, 0.62],
+        [0.9, 0.22, 0.62],
+        [-0.9, 0.22, -0.62],
+      ].map(([x, y, z], i) => (
+        <mesh key={`wheel-${i}`} position={[x, y, z]} rotation={[Math.PI / 2, 0, 0]} castShadow>
+          <cylinderGeometry args={[0.22, 0.22, 0.16, 10]} />
+          <meshStandardMaterial color="#181818" roughness={0.9} />
+        </mesh>
+      ))}
+      {/* Brick under the missing wheel */}
+      <mesh position={[0.9, 0.12, -0.62]} castShadow>
+        <boxGeometry args={[0.3, 0.24, 0.2]} />
+        <meshStandardMaterial color="#5a4438" roughness={0.95} />
+      </mesh>
+      {/* Hazard light still blinking */}
+      <mesh position={[1.32, 0.55, 0.45]}>
+        <sphereGeometry args={[0.05, 6, 6]} />
+        <meshStandardMaterial color="#ff6622" emissive="#ff6622" emissiveIntensity={2.5} />
+      </mesh>
+    </group>
+  );
+}
+
+function createArenaGridTexture(): THREE.CanvasTexture {
+  const size = 256;
+  const canvas = document.createElement('canvas');
+  canvas.width = size;
+  canvas.height = size;
+  const ctx = canvas.getContext('2d')!;
+  ctx.clearRect(0, 0, size, size);
+  ctx.strokeStyle = 'rgba(255,255,255,0.9)';
+  ctx.lineWidth = 2;
+  const step = size / 4;
+  for (let i = 0; i <= size; i += step) {
+    ctx.beginPath();
+    ctx.moveTo(0, i);
+    ctx.lineTo(size, i);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(i, 0);
+    ctx.lineTo(i, size);
+    ctx.stroke();
+  }
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.wrapS = THREE.RepeatWrapping;
+  tex.wrapT = THREE.RepeatWrapping;
+  tex.repeat.set(3, 3);
+  return tex;
 }
 
 /** Concrete barrier */

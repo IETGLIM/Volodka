@@ -1,7 +1,7 @@
 
 /* ─── Volodka RPG – Memorial Park procedural 3D visual ─── */
 
-import { useMemo, type MutableRefObject } from 'react';
+import { useLayoutEffect, useMemo, useRef, type MutableRefObject } from 'react';
 import * as THREE from 'three';
 import { getEnvironmentLodProfile } from '@/engine/lod/distanceLod';
 import { useEnvironmentLod } from './lod/EnvironmentLodProvider';
@@ -72,6 +72,15 @@ export function ParkDayVisual({ livePlayerPositionRef }: ParkDayVisualProps) {
         ))}
       </EnvironmentDetail>
       {/* Near trees moved to FOREGROUND layer */}
+
+      {/* Misty tree belt beyond the fence — closes the horizon (3 draw calls) */}
+      <MistyTreeBelt />
+
+      {/* Ravens on the fence — gothic staffage (2 instanced draws) */}
+      <Ravens />
+
+      {/* Wrought iron entrance gate (south path) */}
+      <ParkGate />
 
       {/* ═══════════════════════════════════════════════ */}
       {/* ── STONE BENCHES (distant — MIDGROUND layer) ── */}
@@ -233,6 +242,164 @@ export function ParkDayVisual({ livePlayerPositionRef }: ParkDayVisualProps) {
         <circleGeometry args={[0.5, 12]} />
         <meshStandardMaterial color="#1a3a3a" metalness={0.5} roughness={0.1} transparent opacity={0.6} />
       </mesh>
+    </group>
+  );
+}
+
+// Deterministic placement PRNG (same pattern as EnvironmentalAnimator)
+function parkSeededRandom(seed: number): () => number {
+  let s = seed;
+  return () => {
+    s = (s * 16807 + 0) % 2147483647;
+    return (s - 1) / 2147483646;
+  };
+}
+
+/** Instanced desaturated tree ring outside the iron fence — fills the misty horizon. */
+function MistyTreeBelt() {
+  const trunkRef = useRef<THREE.InstancedMesh>(null);
+  const canopyRef = useRef<THREE.InstancedMesh>(null);
+
+  const placements = useMemo(() => {
+    const rng = parkSeededRandom(331177);
+    const out: Array<{ x: number; z: number; s: number; tint: number }> = [];
+    const COUNT = 34;
+    for (let i = 0; i < COUNT; i++) {
+      const angle = (i / COUNT) * Math.PI * 2 + rng() * 0.15;
+      const radius = 16.5 + rng() * 4;
+      const x = Math.cos(angle) * radius;
+      const z = Math.sin(angle) * radius;
+      // Keep the south path entrance open
+      if (Math.abs(x) < 3 && z > 13) continue;
+      out.push({ x, z, s: 0.8 + rng() * 0.6, tint: rng() });
+    }
+    return out;
+  }, []);
+
+  useLayoutEffect(() => {
+    const trunk = trunkRef.current;
+    const canopy = canopyRef.current;
+    if (!trunk || !canopy) return;
+    const dummy = new THREE.Object3D();
+    const color = new THREE.Color();
+    placements.forEach((p, i) => {
+      const trunkH = 3.0 * p.s;
+      dummy.position.set(p.x, trunkH * 0.5, p.z);
+      dummy.scale.set(p.s, p.s, p.s);
+      dummy.rotation.set(0, p.tint * Math.PI * 2, 0);
+      dummy.updateMatrix();
+      trunk.setMatrixAt(i, dummy.matrix);
+
+      dummy.position.set(p.x, trunkH + 1.3 * p.s, p.z);
+      dummy.updateMatrix();
+      canopy.setMatrixAt(i, dummy.matrix);
+      // Desaturated gothic greens fading toward fog gray
+      color.setHSL(0.28 + p.tint * 0.03, 0.18 + p.tint * 0.1, 0.16 + p.tint * 0.06);
+      canopy.setColorAt(i, color);
+    });
+    trunk.instanceMatrix.needsUpdate = true;
+    canopy.instanceMatrix.needsUpdate = true;
+    if (canopy.instanceColor) canopy.instanceColor.needsUpdate = true;
+  }, [placements]);
+
+  return (
+    <group>
+      <instancedMesh ref={trunkRef} args={[undefined, undefined, placements.length]} frustumCulled={false}>
+        <cylinderGeometry args={[0.18, 0.32, 3.0, 6]} />
+        <meshStandardMaterial color="#2e241c" roughness={0.95} />
+      </instancedMesh>
+      <instancedMesh ref={canopyRef} args={[undefined, undefined, placements.length]} frustumCulled={false}>
+        <sphereGeometry args={[1.9, 7, 6]} />
+        <meshStandardMaterial color="#2a3a24" roughness={0.95} />
+      </instancedMesh>
+    </group>
+  );
+}
+
+/** Instanced ravens perched on fence posts (bodies + heads, 2 draws). */
+const RAVEN_PERCHES: Array<{ x: number; y: number; z: number; yaw: number }> = [
+  { x: -13.5 + 2 * 2.5, y: 1.32, z: -14.5, yaw: 0.4 },
+  { x: -13.5 + 7 * 2.5, y: 1.32, z: -14.5, yaw: -0.6 },
+  { x: -14.5, y: 1.32, z: -13.5 + 4 * 2.5, yaw: 1.7 },
+  { x: 14.5, y: 1.32, z: -13.5 + 8 * 2.5, yaw: -1.4 },
+  { x: 14.5, y: 1.32, z: -13.5 + 2 * 2.5, yaw: -2.0 },
+  { x: 0.15, y: 4.95, z: -2, yaw: 0.9 }, // on the obelisk tip
+];
+
+function Ravens() {
+  const bodyRef = useRef<THREE.InstancedMesh>(null);
+  const headRef = useRef<THREE.InstancedMesh>(null);
+
+  useLayoutEffect(() => {
+    const body = bodyRef.current;
+    const head = headRef.current;
+    if (!body || !head) return;
+    const dummy = new THREE.Object3D();
+    RAVEN_PERCHES.forEach((p, i) => {
+      dummy.position.set(p.x, p.y, p.z);
+      dummy.rotation.set(0, p.yaw, 0);
+      dummy.scale.set(1, 1, 1.5); // stretched body
+      dummy.updateMatrix();
+      body.setMatrixAt(i, dummy.matrix);
+
+      dummy.position.set(
+        p.x + Math.sin(p.yaw) * 0.09,
+        p.y + 0.06,
+        p.z + Math.cos(p.yaw) * 0.09,
+      );
+      dummy.scale.set(1, 1, 1);
+      dummy.updateMatrix();
+      head.setMatrixAt(i, dummy.matrix);
+    });
+    body.instanceMatrix.needsUpdate = true;
+    head.instanceMatrix.needsUpdate = true;
+  }, []);
+
+  return (
+    <group>
+      <instancedMesh ref={bodyRef} args={[undefined, undefined, RAVEN_PERCHES.length]} frustumCulled={false}>
+        <sphereGeometry args={[0.07, 6, 5]} />
+        <meshStandardMaterial color="#16161c" roughness={0.85} />
+      </instancedMesh>
+      <instancedMesh ref={headRef} args={[undefined, undefined, RAVEN_PERCHES.length]} frustumCulled={false}>
+        <sphereGeometry args={[0.04, 5, 4]} />
+        <meshStandardMaterial color="#101016" roughness={0.85} />
+      </instancedMesh>
+    </group>
+  );
+}
+
+/** Wrought iron entrance gate at the south end of the path. */
+function ParkGate() {
+  return (
+    <group position={[0, 0, 14.5]}>
+      {/* Stone pillars */}
+      {[-1.6, 1.6].map((x) => (
+        <group key={`pillar-${x}`} position={[x, 0, 0]}>
+          <mesh position={[0, 1.1, 0]} castShadow>
+            <boxGeometry args={[0.5, 2.2, 0.5]} />
+            <meshStandardMaterial color="#6a6a60" roughness={0.85} />
+          </mesh>
+          <mesh position={[0, 2.32, 0]} castShadow>
+            <coneGeometry args={[0.38, 0.35, 4]} />
+            <meshStandardMaterial color="#5a5a50" roughness={0.8} />
+          </mesh>
+        </group>
+      ))}
+      {/* Arch */}
+      <mesh position={[0, 2.5, 0]}>
+        <boxGeometry args={[3.6, 0.12, 0.08]} />
+        <meshStandardMaterial color="#2a2a30" metalness={0.7} roughness={0.4} />
+      </mesh>
+      {/* Open gate leaves (swung inward) */}
+      {[-1, 1].map((side) => (
+        <group key={`leaf-${side}`} position={[side * 1.3, 0, 0]} rotation={[0, side * 0.9, 0]}>
+          <mesh position={[side * -0.55, 0.9, 0]}>
+            <boxGeometry args={[1.1, 1.6, 0.04]} />
+            <meshStandardMaterial color="#26262e" metalness={0.65} roughness={0.45} transparent opacity={0.92} />
+          </mesh>
+        </group>
+      ))}
     </group>
   );
 }

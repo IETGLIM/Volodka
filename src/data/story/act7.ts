@@ -13,7 +13,7 @@ export const STORY_NODES_ACT7: Record<string, StoryNode> = {
     choices: [
       {
         text: 'Спуститься в город. Начать восстановление.',
-        next: 'act7_guild_rebuilding',
+        next: 'act7_guild_rebuilding', goldenPath: true,
         effects: [
           { type: 'triggerQuest', questId: 'rebuild_the_guild' },
         ],
@@ -29,7 +29,7 @@ export const STORY_NODES_ACT7: Record<string, StoryNode> = {
     choices: [
       {
         text: 'Предложить новый устав гильдии — открытость и свобода.',
-        next: 'act7_charter_drafting',
+        next: 'act7_charter_drafting', goldenPath: true,
         effects: [{ type: 'addKarma', value: 5 }],
       },
       {
@@ -48,7 +48,7 @@ export const STORY_NODES_ACT7: Record<string, StoryNode> = {
     choices: [
       {
         text: 'Принять устав единогласно.',
-        next: 'act7_library_archive',
+        next: 'act7_library_archive', goldenPath: true,
         effects: [
           { type: 'setFlag', flag: 'new_council_elected', flagValue: true },
           { type: 'addKarma', value: 8 },
@@ -81,7 +81,7 @@ export const STORY_NODES_ACT7: Record<string, StoryNode> = {
     choices: [
       {
         text: 'Открыть архив для всего города.',
-        next: 'act7_guild_restored',
+        next: 'act7_guild_restored', goldenPath: true,
         effects: [
           { type: 'setFlag', flag: 'guild_restored', flagValue: true },
           { type: 'addKarma', value: 10 },
@@ -99,7 +99,7 @@ export const STORY_NODES_ACT7: Record<string, StoryNode> = {
     choices: [
       {
         text: 'Собираем отряд. Выступаем немедленно.',
-        next: 'act7_system_shutdown',
+        next: 'act7_system_shutdown', goldenPath: true,
         effects: [
           { type: 'triggerQuest', questId: 'system_takedown' },
         ],
@@ -115,7 +115,7 @@ export const STORY_NODES_ACT7: Record<string, StoryNode> = {
     choices: [
       {
         text: 'Пробиться к ядру с боем.',
-        next: 'act7_core_battle',
+        next: 'act7_core_battle', goldenPath: true,
         effects: [
           { type: 'setFlag', flag: 'path_to_core_cleared', flagValue: true },
           { type: 'combat', enemyType: 'nexus_guardian' },
@@ -132,7 +132,7 @@ export const STORY_NODES_ACT7: Record<string, StoryNode> = {
     choices: [
       {
         text: 'Ввести стихотворение — последнее, что услышит «Надзор».',
-        next: 'act7_nadzor_dies',
+        next: 'act7_nadzor_dies', goldenPath: true,
         effects: [
           { type: 'setFlag', flag: 'nadzor_shutdown_complete', flagValue: true },
           { type: 'setFlag', flag: 'core_defenses_disabled', flagValue: true },
@@ -151,7 +151,7 @@ export const STORY_NODES_ACT7: Record<string, StoryNode> = {
     choices: [
       {
         text: 'Выйти на поверхность. Вдохнуть свободный воздух.',
-        next: 'act7_final_poem_creation',
+        next: 'act7_final_poem_creation', goldenPath: true,
         effects: [
           { type: 'setFlag', flag: 'nadzor_destroyed', flagValue: true },
           { type: 'triggerQuest', questId: 'final_poem' },
@@ -168,7 +168,7 @@ export const STORY_NODES_ACT7: Record<string, StoryNode> = {
     choices: [
       {
         text: 'Взять ручку. Написать финальное стихотворение.',
-        next: 'act7_poem_written',
+        next: 'act7_poem_written', goldenPath: true,
         effects: [
           { type: 'setFlag', flag: 'journey_reflected', flagValue: true },
         ],
@@ -184,7 +184,7 @@ export const STORY_NODES_ACT7: Record<string, StoryNode> = {
     choices: [
       {
         text: 'Подняться на крышу. Прочитать стихотворение городу.',
-        next: 'act7_rooftop_recital',
+        next: 'act7_rooftop_recital', goldenPath: true,
         effects: [
           { type: 'setFlag', flag: 'final_poem_written', flagValue: true },
         ],
@@ -200,7 +200,7 @@ export const STORY_NODES_ACT7: Record<string, StoryNode> = {
     choices: [
       {
         text: 'Прочитать стихотворение — и отпустить прошлое.',
-        next: 'act7_poem_published',
+        next: 'act7_poem_published', goldenPath: true,
         effects: [
           { type: 'setFlag', flag: 'final_poem_published', flagValue: true },
           { type: 'addKarma', value: 10 },
@@ -218,7 +218,7 @@ export const STORY_NODES_ACT7: Record<string, StoryNode> = {
     choices: [
       {
         text: 'Спуститься в город — попрощаться с теми, кто был рядом.',
-        next: 'act7_legacy_walk',
+        next: 'act7_legacy_walk', goldenPath: true,
         effects: [
           { type: 'triggerQuest', questId: 'volodka_legacy' },
         ],
@@ -234,7 +234,7 @@ export const STORY_NODES_ACT7: Record<string, StoryNode> = {
     choices: [
       {
         text: 'Прочитать сообщения.',
-        next: 'act7_goodbye_zarema',
+        next: 'act7_goodbye_zarema', goldenPath: true,
         effects: [{ type: 'addKarma', value: 3 }],
       },
     ],
@@ -248,7 +248,7 @@ export const STORY_NODES_ACT7: Record<string, StoryNode> = {
     choices: [
       {
         text: 'Спасибо тебе. За всё.',
-        next: 'act7_final_walk',
+        next: 'act7_final_walk', goldenPath: true,
         effects: [{ type: 'addKarma', value: 5 }],
       },
     ],
@@ -267,7 +267,7 @@ export const STORY_NODES_ACT7: Record<string, StoryNode> = {
       },
       {
         text: 'Ты была со мной с самого начала. Спасибо.',
-        next: 'act7_maria_future',
+        next: 'act7_maria_future', goldenPath: true,
         effects: [{ type: 'addKarma', value: 3 }],
       },
     ],
@@ -281,7 +281,7 @@ export const STORY_NODES_ACT7: Record<string, StoryNode> = {
     choices: [
       {
         text: 'Я — поэт. Я продолжу писать.',
-        next: 'act7_ending_poet_legacy',
+        next: 'act7_ending_poet_legacy', goldenPath: true,
         effects: [
           { type: 'setFlag', flag: 'volodka_future_chosen', flagValue: true },
           { type: 'addKarma', value: 10 },
@@ -313,7 +313,7 @@ export const STORY_NODES_ACT7: Record<string, StoryNode> = {
     choices: [
       {
         text: 'ФИНАЛ: Начать новое стихотворение.',
-        next: 'act7_true_end',
+        next: 'act7_true_end', goldenPath: true,
         effects: [
           { type: 'setFlag', flag: 'volodka_legacy_complete', flagValue: true },
           { type: 'setFlag', flag: 'ending_true_poet', flagValue: true },

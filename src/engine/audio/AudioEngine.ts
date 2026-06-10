@@ -153,19 +153,6 @@ class AudioEngine {
     });
   }
 
-  /**
-   * Play a procedural SFX with stereo/HRTF pan (-1 left … +1 right).
-   * Delegates to {@link playSpatialSfxAtPosition} with a fixed listener-relative position.
-   */
-  playSpatialSfx(type: string, pan = 0): void {
-    const clamped = Math.max(-1, Math.min(1, pan));
-    this.playSpatialSfxAtPosition(type, [clamped * 3, 0, -1], {
-      refDistance: 1,
-      maxDistance: 100,
-      rolloffFactor: 0,
-    });
-  }
-
   private _playSfxInternal(type: string): void {
     this.initContext();
     this.resume();
@@ -1382,7 +1369,7 @@ class AudioEngine {
    * @param position — [x, y, z] world position of the sound source
    * @param options — optional panner configuration
    */
-  playSpatialSfxAtPosition(
+  playSpatialSfx(
     type: string,
     position: [number, number, number],
     options?: {

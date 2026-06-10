@@ -254,8 +254,8 @@ export function QuizGame({ onClose }: QuizGameProps) {
     const store = useGameStore.getState();
 
     // Calculate total XP and karma from correct answers
-    let totalXp = 0;
-    let totalKarma = 0;
+    const totalXp = 0;
+    const totalKarma = 0;
     questions.forEach((q, i) => {
       // We only reward for correctly answered questions
       // We track this via correctCount — but need a better approach

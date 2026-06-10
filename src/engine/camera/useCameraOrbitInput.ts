@@ -6,18 +6,26 @@ import type { WebGLRenderer } from 'three';
 import { useGameStore } from '@/store/gameStore';
 import { readGamePhase } from '@/shared/gamePhase';
 import { getSceneConfig } from '@/config/scenes';
-import { getSceneDefaultDistance, MIN_DISTANCE, MAX_DISTANCE } from '@/engine/camera/cameraConstants';
+import {
+  getSceneDefaultDistance,
+  MIN_DISTANCE,
+  MAX_DISTANCE,
+  ZOOM_WHEEL_EXP,
+  ZOOM_WHEEL_MIN_STEP,
+  FIRST_PERSON_ENABLED,
+  FIRST_PERSON_FOV_MIN,
+  FIRST_PERSON_FOV_MAX,
+} from '@/engine/camera/cameraConstants';
 import { getInteractionState } from '@/components/3d/InteractionSystemBridge';
 import { InteractionState } from '@/engine/interaction/interactionMachine';
 import { isNarrativeMovementLocked } from '@/shared/exploreHubNodes';
+import { getVisualSettings } from '@/engine/visualSettings';
 
 const PITCH_MIN = -0.5;
 const PITCH_MAX = 1.3;
 const ORBIT_SENSITIVITY = 0.004;
-const ZOOM_SENSITIVITY = 0.002;
 const ZOOM_LINE_MULTIPLIER = 40;
 const ZOOM_PAGE_MULTIPLIER = 800;
-const ZOOM_PIXEL_STEP = 0.15;
 
 export interface CameraOrbitInputRefs {
   yawRef: MutableRefObject<number>;
@@ -26,6 +34,11 @@ export interface CameraOrbitInputRefs {
   interactionDistanceRef: MutableRefObject<number>;
   isDraggingRef: MutableRefObject<boolean>;
   lastMouseRef: MutableRefObject<{ x: number; y: number }>;
+  /** Set to 1 on wheel — FollowCamera snaps the spring toward the new distance. */
+  zoomSnapRef: MutableRefObject<number>;
+  /** When true, wheel adjusts FOV instead of orbit distance. */
+  firstPersonRef?: MutableRefObject<boolean>;
+  fovRef?: MutableRefObject<number>;
 }
 
 function shouldBlockOrbit(): boolean {
@@ -67,6 +80,9 @@ export function useCameraOrbitInput(
     interactionDistanceRef,
     isDraggingRef,
     lastMouseRef,
+    zoomSnapRef,
+    firstPersonRef,
+    fovRef,
   } = refs;
 
   useEffect(() => {
@@ -93,10 +109,12 @@ export function useCameraOrbitInput(
       const dy = e.clientY - lastMouseRef.current.y;
       lastMouseRef.current = { x: e.clientX, y: e.clientY };
 
-      yawRef.current -= dx * ORBIT_SENSITIVITY;
+      const { mouseSensitivity, invertY } = getVisualSettings();
+      const sens = ORBIT_SENSITIVITY * mouseSensitivity;
+      yawRef.current -= dx * sens;
       pitchRef.current = Math.max(
         PITCH_MIN,
-        Math.min(PITCH_MAX, pitchRef.current + dy * ORBIT_SENSITIVITY),
+        Math.min(PITCH_MAX, pitchRef.current + dy * sens * (invertY ? -1 : 1)),
       );
     };
 
@@ -113,17 +131,28 @@ export function useCameraOrbitInput(
         normalizedDelta *= ZOOM_PAGE_MULTIPLIER;
       }
 
-      let rawChange = normalizedDelta * ZOOM_SENSITIVITY;
-      if (Math.abs(rawChange) < ZOOM_PIXEL_STEP && Math.abs(rawChange) > 0.001) {
-        rawChange = rawChange > 0 ? ZOOM_PIXEL_STEP : -ZOOM_PIXEL_STEP;
+      // Multiplicative zoom: scroll up pulls the camera toward the character's back faster
+      // than linear deltas, especially when already close.
+      if (firstPersonRef?.current && fovRef) {
+        const fovDelta = -normalizedDelta * 0.035;
+        fovRef.current = Math.max(
+          FIRST_PERSON_FOV_MIN,
+          Math.min(FIRST_PERSON_FOV_MAX, fovRef.current + fovDelta),
+        );
+        zoomSnapRef.current = 1;
+        return;
       }
 
-      const newDist = Math.max(
-        MIN_DISTANCE,
-        Math.min(MAX_DISTANCE, distanceRef.current + rawChange),
-      );
+      const factor = Math.exp(normalizedDelta * ZOOM_WHEEL_EXP);
+      let newDist = distanceRef.current * factor;
+      const linearFallback = normalizedDelta * ZOOM_WHEEL_MIN_STEP;
+      if (Math.abs(newDist - distanceRef.current) < ZOOM_WHEEL_MIN_STEP * 0.5) {
+        newDist = distanceRef.current + linearFallback;
+      }
+      newDist = Math.max(MIN_DISTANCE, Math.min(MAX_DISTANCE, newDist));
       distanceRef.current = newDist;
       interactionDistanceRef.current = newDist;
+      zoomSnapRef.current = 1;
     };
 
     const onContextMenu = (e: Event) => {
@@ -145,10 +174,12 @@ export function useCameraOrbitInput(
       const dy = e.touches[0].clientY - lastMouseRef.current.y;
       lastMouseRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
 
-      yawRef.current -= dx * ORBIT_SENSITIVITY * 1.5;
+      const { mouseSensitivity, invertY } = getVisualSettings();
+      const sens = ORBIT_SENSITIVITY * 1.5 * mouseSensitivity;
+      yawRef.current -= dx * sens;
       pitchRef.current = Math.max(
         PITCH_MIN,
-        Math.min(PITCH_MAX, pitchRef.current + dy * ORBIT_SENSITIVITY * 1.5),
+        Math.min(PITCH_MAX, pitchRef.current + dy * sens * (invertY ? -1 : 1)),
       );
     };
 
@@ -206,5 +237,8 @@ export function useCameraOrbitInput(
     interactionDistanceRef,
     isDraggingRef,
     lastMouseRef,
+    zoomSnapRef,
+    firstPersonRef,
+    fovRef,
   ]);
 }

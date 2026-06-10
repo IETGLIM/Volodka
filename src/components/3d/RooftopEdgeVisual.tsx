@@ -1,16 +1,29 @@
 
 /* ─── Volodka RPG – Rooftop Edge procedural 3D visual ─── */
 
-import { useRef } from 'react';
+import { useMemo, useRef } from 'react';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import * as THREE from 'three';
 import { useEnvironmentLod } from './lod/EnvironmentLodProvider';
 import { EnvironmentDetail } from './lod/PropDistanceGate';
 import { useCachedCanvasTexture } from '@/hooks/useCachedCanvasTexture';
+import { seededRand } from '@/shared/utils/seededRand';
 
 interface RooftopEdgeVisualProps {
   livePlayerPositionRef?: React.MutableRefObject<THREE.Vector3>;
 }
+
+/** Distant skyline buildings (static layout) */
+const SKYLINE_BUILDINGS = [
+  { pos: [-20, 0, -30] as [number, number, number], w: 5, h: 20, d: 5 },
+  { pos: [-12, 0, -35] as [number, number, number], w: 8, h: 30, d: 6 },
+  { pos: [-3, 0, -32] as [number, number, number], w: 6, h: 15, d: 5 },
+  { pos: [5, 0, -28] as [number, number, number], w: 7, h: 25, d: 6 },
+  { pos: [15, 0, -33] as [number, number, number], w: 10, h: 35, d: 8 },
+  { pos: [22, 0, -30] as [number, number, number], w: 5, h: 18, d: 5 },
+  { pos: [-25, 0, -25] as [number, number, number], w: 6, h: 22, d: 6 },
+  { pos: [28, 0, -26] as [number, number, number], w: 8, h: 28, d: 7 },
+];
 
 /** Noir/CyberPunk2077 rooftop (10×8m) */
 export function RooftopEdgeVisual({ livePlayerPositionRef: _livePlayerPositionRef }: RooftopEdgeVisualProps) {
@@ -21,6 +34,19 @@ export function RooftopEdgeVisual({ livePlayerPositionRef: _livePlayerPositionRe
   const D = 8;
 
   const shirtRef = useRef<THREE.Mesh>(null);
+
+  // Deterministic lit-window layout — Math.random() in render made windows
+  // jump to new positions on every re-render
+  const skylineWindows = useMemo(
+    () =>
+      SKYLINE_BUILDINGS.map((b, i) =>
+        Array.from({ length: 3 + (i % 4) }, (_, j) => ({
+          x: (seededRand(i * 97 + j * 13 + 1) - 0.5) * (b.w - 0.5),
+          y: seededRand(i * 53 + j * 29 + 2) * (b.h - 2) + 1,
+        }))
+      ),
+    []
+  );
 
   useFrameTick('misc', ({ state }) => {
     if (shirtRef.current) {
@@ -33,6 +59,9 @@ export function RooftopEdgeVisual({ livePlayerPositionRef: _livePlayerPositionRe
 
   return (
     <group>
+      {/* ── Sunset gradient sky dome (scene skybox is disabled, fog-exempt) ── */}
+      <SunsetSkyDome />
+
       {/* ── Rooftop surface ── */}
       <mesh rotation-x={-Math.PI / 2} receiveShadow position-y={0.001}>
         <planeGeometry args={[W, D]} />
@@ -45,6 +74,18 @@ export function RooftopEdgeVisual({ livePlayerPositionRef: _livePlayerPositionRe
           polygonOffsetUnits={1}
         />
       </mesh>
+
+      {/* ── Rain puddles on the tar surface ── */}
+      <EnvironmentDetail currentLod={lod} minLod="full">
+        <mesh rotation-x={-Math.PI / 2} position={[-2.2, 0.02, 0.8]}>
+          <circleGeometry args={[0.55, 12]} />
+          <meshStandardMaterial color="#101622" metalness={0.85} roughness={0.08} transparent opacity={0.55} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
+        </mesh>
+        <mesh rotation-x={-Math.PI / 2} position={[1.4, 0.02, 1.9]}>
+          <circleGeometry args={[0.35, 12]} />
+          <meshStandardMaterial color="#101622" metalness={0.8} roughness={0.1} transparent opacity={0.45} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
+        </mesh>
+      </EnvironmentDetail>
 
       {/* ═══════════════════════════════════════════════ */}
       {/* ── LOW PARAPET WALLS ── */}
@@ -108,36 +149,23 @@ export function RooftopEdgeVisual({ livePlayerPositionRef: _livePlayerPositionRe
       {/* ═══════════════════════════════════════════════ */}
       {/* ── CITY SKYLINE (distant box geometry) ── */}
       {/* ═══════════════════════════════════════════════ */}
-      {[
-        { pos: [-20, 0, -30] as [number, number, number], w: 5, h: 20, d: 5 },
-        { pos: [-12, 0, -35] as [number, number, number], w: 8, h: 30, d: 6 },
-        { pos: [-3, 0, -32] as [number, number, number], w: 6, h: 15, d: 5 },
-        { pos: [5, 0, -28] as [number, number, number], w: 7, h: 25, d: 6 },
-        { pos: [15, 0, -33] as [number, number, number], w: 10, h: 35, d: 8 },
-        { pos: [22, 0, -30] as [number, number, number], w: 5, h: 18, d: 5 },
-        { pos: [-25, 0, -25] as [number, number, number], w: 6, h: 22, d: 6 },
-        { pos: [28, 0, -26] as [number, number, number], w: 8, h: 28, d: 7 },
-      ].map((b, i) => (
+      {SKYLINE_BUILDINGS.map((b, i) => (
         <group key={i} position={b.pos}>
           <mesh position={[0, b.h / 2, 0]}>
             <boxGeometry args={[b.w, b.h, b.d]} />
             <meshStandardMaterial color="#0a0a15" roughness={0.95} />
           </mesh>
-          {/* Random lit windows */}
-          {Array.from({ length: 3 + (i % 4) }).map((_, j) => {
-            const wx = (Math.random() - 0.5) * (b.w - 0.5);
-            const wy = Math.random() * (b.h - 2) + 1;
-            return (
-              <mesh key={j} position={[wx + b.pos[0] * 0, wy, b.d / 2 + 0.01 + b.pos[2] * 0]}>
-                <planeGeometry args={[0.4, 0.3]} />
-                <meshStandardMaterial
-                  color="#000000"
-                  emissive="#ffaa44"
-                  emissiveIntensity={0.8}
-                />
-              </mesh>
-            );
-          })}
+          {/* Lit windows (deterministic, seeded) */}
+          {skylineWindows[i].map((win, j) => (
+            <mesh key={j} position={[win.x, win.y, b.d / 2 + 0.01]}>
+              <planeGeometry args={[0.4, 0.3]} />
+              <meshStandardMaterial
+                color="#000000"
+                emissive="#ffaa44"
+                emissiveIntensity={0.8}
+              />
+            </mesh>
+          ))}
         </group>
       ))}
 
@@ -275,6 +303,43 @@ export function RooftopEdgeVisual({ livePlayerPositionRef: _livePlayerPositionRe
       </EnvironmentDetail>
     </group>
   );
+}
+
+/** Large inward-facing dome with a noir-sunset vertical gradient.
+ *  Bridges the scene's teal fog and the warm god rays: deep indigo zenith →
+ *  dusty teal mid → smoggy orange horizon. */
+function SunsetSkyDome() {
+  const skyTexture = useCachedCanvasTexture('rooftop_edge:sky', createSunsetSkyTexture);
+
+  return (
+    <mesh position={[0, 0, 0]} renderOrder={-10}>
+      <sphereGeometry args={[60, 24, 12, 0, Math.PI * 2, 0, Math.PI * 0.55]} />
+      <meshBasicMaterial map={skyTexture} side={THREE.BackSide} fog={false} depthWrite={false} />
+    </mesh>
+  );
+}
+
+function createSunsetSkyTexture(): THREE.CanvasTexture {
+  const w = 64;
+  const h = 256;
+  const canvas = document.createElement('canvas');
+  canvas.width = w;
+  canvas.height = h;
+  const ctx = canvas.getContext('2d')!;
+
+  const grad = ctx.createLinearGradient(0, 0, 0, h);
+  grad.addColorStop(0.0, '#0b1026'); // indigo zenith
+  grad.addColorStop(0.45, '#1a2a3a'); // dusty teal
+  grad.addColorStop(0.72, '#5a3a2a'); // smog band
+  grad.addColorStop(0.88, '#b56a30'); // sunset orange
+  grad.addColorStop(1.0, '#d98a40'); // horizon glow
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, w, h);
+
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.wrapS = THREE.ClampToEdgeWrapping;
+  tex.wrapT = THREE.ClampToEdgeWrapping;
+  return tex;
 }
 
 function createRooftopFloorTexture(): THREE.CanvasTexture {

@@ -12,6 +12,7 @@ import {
   AUTO_FOLLOW_IDLE_THRESHOLD,
   AUTO_FOLLOW_MIN_YAW_DELTA,
   AUTO_FOLLOW_RETURN_SPEED,
+  FIRST_PERSON_ENABLED,
 } from './cameraConstants';
 import type { CameraModeContext, CameraModeTarget } from './types';
 import { getInteractionState } from '@/components/3d/InteractionSystemBridge';
@@ -69,7 +70,7 @@ export function applyCameraFrame(
     spring.position.z,
   );
 
-  if (!isInDialogue && !isCutscene && !isDragging(frameState)) {
+  if (!isInDialogue && !isCutscene && !isDragging(frameState) && !FIRST_PERSON_ENABLED) {
     const playerSpeed = playerVelocity.length();
     const targetYaw = ctx.playerRotation + Math.PI;
 

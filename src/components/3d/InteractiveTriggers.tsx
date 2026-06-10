@@ -18,7 +18,14 @@ import { isInteractionLocked } from './InteractionSystemBridge';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { bottomInteractPromptPx } from '@/shared/constants/hudLayout';
 import { getSceneExits } from '@/config/scenes';
-import { queryInteractionTargets, type NpcQueryTarget, type ExitQueryTarget } from '@/engine/interaction/interactionTargetQuery';
+import {
+  queryInteractionTargets,
+  type InteractionTargetHit,
+  type NpcQueryTarget,
+  type ExitQueryTarget,
+} from '@/engine/interaction/interactionTargetQuery';
+import { requestSceneTransition } from '@/engine/scene/sceneTransition';
+import { sharedCameraYawRef } from '@/engine/PlayerRotationState';
 
 /** Maximum number of visible [E] prompts at once */
 const MAX_VISIBLE_PROMPTS = 2;
@@ -99,6 +106,7 @@ export function InteractiveTriggers({
   // React state for rendering the overlay (updated less frequently than frame)
   const [visiblePrompts, setVisiblePrompts] = useState<PromptData[]>([]);
   const frameCountRef = useRef(0);
+  const lastHintIdRef = useRef<string | null>(null);
 
   useSceneEnterEffect(() => {
     promptsMapRef.current.clear();
@@ -106,7 +114,132 @@ export function InteractiveTriggers({
     setVisiblePrompts([]);
     globalEKeyConsumed = false;
     (window as unknown as { __volodka_ekey_consumed?: boolean }).__volodka_ekey_consumed = false;
+    lastHintIdRef.current = null;
+    eventBus.emit('interaction:end', {});
   });
+
+  const executeInteractionHit = useCallback((hit: InteractionTargetHit): boolean => {
+    if (hit.kind === 'npc' && hit.npcId) {
+      eventBus.emit('interaction:start', { npcId: hit.npcId });
+      return true;
+    }
+
+    if (hit.kind === 'exit') {
+      const lastSep = hit.id.lastIndexOf('_');
+      if (lastSep > 5 && hit.id.startsWith('exit_')) {
+        const idx = Number.parseInt(hit.id.slice(lastSep + 1), 10);
+        const exit = sceneExits[idx];
+        if (exit) {
+          requestSceneTransition(exit.targetScene, exit.spawnAt);
+          return true;
+        }
+      }
+      return false;
+    }
+
+    const zone = zones.find((z) => z.id === hit.triggerZoneId);
+    if (!zone) return false;
+
+    if (zone.linkedDialogueNodeId) {
+      const npcDef = findNpcByDialogueNodeId(zone.linkedDialogueNodeId);
+      if (npcDef) {
+        eventBus.emit('interaction:start', { npcId: npcDef.id });
+        return true;
+      }
+    }
+
+    eventBus.emit('object:interact', {
+      objectId: zone.id,
+      sceneId,
+      triggerZoneId: zone.id,
+    });
+    eventBus.emit('object:highlight', {
+      triggerZoneId: zone.id,
+      position: zone.position,
+      size: zone.size,
+    });
+    return true;
+  }, [sceneExits, sceneId, zones]);
+
+  const firePrimaryInteraction = useCallback((): boolean => {
+    if (isOverlayBlocking) return false;
+    if (isInteractionLocked()) return false;
+    if (globalEKeyConsumed) return false;
+
+    const playerPos = livePlayerPositionRef.current;
+    const lookYaw = sharedCameraYawRef.current;
+
+    const exitTargets: ExitQueryTarget[] = [];
+    for (let idx = 0; idx < sceneExits.length; idx++) {
+      const exit = sceneExits[idx];
+      const hasOverlap = zones.some(
+        (z) =>
+          z.sceneId === sceneId &&
+          Math.abs(z.position[0] - exit.position[0]) < 1.5 &&
+          Math.abs(z.position[2] - exit.position[2]) < 1.5,
+      );
+      if (hasOverlap) continue;
+      exitTargets.push({
+        id: `exit_${exit.targetScene}_${idx}`,
+        position: exit.position,
+        label: exit.label,
+        maxRange: EXIT_PROXIMITY_RANGE,
+      });
+    }
+
+    const hits = queryInteractionTargets({
+      playerPos,
+      playerYaw: lookYaw,
+      zones,
+      npcs: npcQueryTargets,
+      exits: exitTargets,
+      checkLineOfSight: true,
+    });
+
+    const primary = hits[0];
+    if (!primary) return false;
+
+    const handled = executeInteractionHit(primary);
+    if (!handled) return false;
+
+    globalEKeyConsumed = true;
+    (window as unknown as { __volodka_ekey_consumed?: boolean }).__volodka_ekey_consumed = true;
+    setTimeout(() => {
+      globalEKeyConsumed = false;
+      (window as unknown as { __volodka_ekey_consumed?: boolean }).__volodka_ekey_consumed = false;
+    }, 200);
+
+    return true;
+  }, [
+    executeInteractionHit,
+    isOverlayBlocking,
+    livePlayerPositionRef,
+    npcQueryTargets,
+    sceneExits,
+    sceneId,
+    zones,
+  ]);
+
+  // Central E-key router — one code path instead of per-trigger duplicates.
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.code !== 'KeyE' || e.repeat) return;
+      if (!firePrimaryInteraction()) return;
+      e.preventDefault();
+      e.stopImmediatePropagation();
+    };
+
+    const onInteractPress = () => {
+      firePrimaryInteraction();
+    };
+
+    window.addEventListener('keydown', onKeyDown, true);
+    const unsub = eventBus.on('interact:press', onInteractPress);
+    return () => {
+      window.removeEventListener('keydown', onKeyDown, true);
+      unsub();
+    };
+  }, [firePrimaryInteraction]);
 
   // Compute allowed IDs and reconcile visible prompts every few frames
   useFrameTick('interaction', () => {
@@ -116,11 +249,15 @@ export function InteractiveTriggers({
         promptsMapRef.current.clear();
         setVisiblePrompts([]);
       }
+      if (lastHintIdRef.current !== null) {
+        lastHintIdRef.current = null;
+        eventBus.emit('interaction:end', {});
+      }
       return;
     }
 
     const playerPos = livePlayerPositionRef.current;
-    const playerYaw = livePlayerRotationRef.current;
+    const playerYaw = sharedCameraYawRef.current;
 
     if (isInteractionLocked()) {
       allowedIdsRef.current = new Set();
@@ -164,6 +301,26 @@ export function InteractiveTriggers({
 
     const topHits = hits.slice(0, MAX_VISIBLE_PROMPTS);
     allowedIdsRef.current = new Set(topHits.map((h) => h.id));
+
+    const primaryHit = topHits[0];
+    if (primaryHit) {
+      if (lastHintIdRef.current !== primaryHit.id) {
+        lastHintIdRef.current = primaryHit.id;
+        eventBus.emit('interaction:hint', {
+          label: primaryHit.label,
+          key: 'E',
+          type:
+            primaryHit.kind === 'npc'
+              ? 'npc'
+              : primaryHit.kind === 'exit'
+                ? 'exit'
+                : 'object',
+        });
+      }
+    } else if (lastHintIdRef.current !== null) {
+      lastHintIdRef.current = null;
+      eventBus.emit('interaction:end', {});
+    }
 
     const activeExitIds = new Set<string>();
     for (const hit of hits) {
@@ -406,7 +563,6 @@ function NPCProximityTrigger({
   const promptId = `npc_${npcId}`;
   const [showIndicator, setShowIndicator] = useState(false);
   const showIndicatorRef = useRef(false);
-  const eKeyConsumedRef = useRef(false);
   const footRingMatRef = useRef<THREE.MeshBasicMaterial>(null);
   const pulsePhaseRef = useRef(0);
 
@@ -451,57 +607,7 @@ function NPCProximityTrigger({
     }
   });
 
-  // E-key listener for NPC interaction — only if allowed
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.code !== 'KeyE') return;
-      if (e.repeat) return;
-      if (!showIndicatorRef.current) return;
-      if (isInteractionLocked()) return;
-      // Global debounce: prevent multiple triggers from firing on same key press
-      if (globalEKeyConsumed) return;
-      if (eKeyConsumedRef.current) return;
-      // Only respond if this prompt is in the allowed set (closest prompts)
-      if (!allowedIdsRef.current.has(promptId)) return;
-      globalEKeyConsumed = true;
-      eKeyConsumedRef.current = true;
-      // Also set on window for cross-component debounce (SceneExitIndicator)
-      (window as any).__volodka_ekey_consumed = true;
-      setTimeout(() => {
-        globalEKeyConsumed = false;
-        eKeyConsumedRef.current = false;
-        (window as any).__volodka_ekey_consumed = false;
-      }, 200);
-
-      // Start the staged interaction flow instead of instant dialogue
-      eventBus.emit('interaction:start', { npcId });
-    };
-
-    // EventBus listener for mobile interact button
-    const handleInteractPress = () => {
-      if (!showIndicatorRef.current) return;
-      if (isInteractionLocked()) return;
-      if (globalEKeyConsumed) return;
-      if (eKeyConsumedRef.current) return;
-      if (!allowedIdsRef.current.has(promptId)) return;
-      globalEKeyConsumed = true;
-      eKeyConsumedRef.current = true;
-      (window as any).__volodka_ekey_consumed = true;
-      setTimeout(() => {
-        globalEKeyConsumed = false;
-        eKeyConsumedRef.current = false;
-        (window as any).__volodka_ekey_consumed = false;
-      }, 200);
-      eventBus.emit('interaction:start', { npcId });
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    const unsubInteract = eventBus.on('interact:press', handleInteractPress);
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-      unsubInteract();
-    };
-  }, [npcId, promptId, allowedIdsRef]);
+  // E-key routing is centralized in InteractiveTriggers (capture-phase listener).
 
   // Cleanup on unmount
   useEffect(() => {
@@ -562,7 +668,6 @@ function TriggerZoneComponent({
   const [showIndicator, setShowIndicator] = useState(false);
   const triggeredRef = useRef(false);
   const triggerCooldown = useRef(0);
-  const eKeyConsumedRef = useRef(false);
 
   // Particle burst state — stored in ref, not useState, to avoid per-frame re-renders (P0-2.3)
   const particlesRef = useRef<ParticleData[]>([]);
@@ -671,6 +776,10 @@ function TriggerZoneComponent({
       if (zone.enterToast) {
         eventBus.emit('ui:exploration_message', { text: zone.enterToast });
       }
+      // Auto-trigger effects for combat zones
+      if (zone.autoTrigger && zone.effects && zone.effects.length > 0) {
+        eventBus.emit('trigger:auto_execute', { triggerZoneId: zone.id });
+      }
     }
 
     if (dist > range + 0.5) {
@@ -759,63 +868,11 @@ function TriggerZoneComponent({
     }
   }, [zone.size]);
 
-  // ── E-key listener — only if allowed (in closest prompts) ──
+  // Visual feedback when the centralized router fires this zone.
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.code !== 'KeyE') return;
-      if (e.repeat) return;
-      // Only interact if player is currently near this trigger zone
-      if (!showIndicatorRef.current) return;
-      // Don't interact if in an active interaction
-      if (isInteractionLocked()) return;
-      // Only respond if this prompt is in the allowed set
-      if (!allowedIdsRef.current.has(zone.id)) return;
-      // Global debounce: prevent multiple triggers from firing on same key press
-      if (globalEKeyConsumed) return;
-      // Prevent double-fire in same frame
-      if (eKeyConsumedRef.current) return;
-      globalEKeyConsumed = true;
-      eKeyConsumedRef.current = true;
-      // Also set on window for cross-component debounce (SceneExitIndicator)
-      (window as any).__volodka_ekey_consumed = true;
-      setTimeout(() => {
-        globalEKeyConsumed = false;
-        eKeyConsumedRef.current = false;
-        (window as any).__volodka_ekey_consumed = false;
-      }, 200);
-
-      const sceneId = getGameStore().exploration.currentSceneId;
-
-      // Check if this trigger zone is linked to an NPC dialogue
-      // If so, route through the staged interaction system
-      if (zone.linkedDialogueNodeId) {
-        const npcDef = findNpcByDialogueNodeId(zone.linkedDialogueNodeId);
-        if (npcDef) {
-          // Start staged interaction for this NPC
-          eventBus.emit('interaction:start', { npcId: npcDef.id });
-          spawnParticles();
-          return;
-        }
-      }
-
-      // Default: emit the standard object:interact event
-      eventBus.emit('object:interact', {
-        objectId: zone.id,
-        sceneId,
-        triggerZoneId: zone.id,
-      });
-
-      // Also emit highlight event for 3D glow effect on the object
-      eventBus.emit('object:highlight', {
-        triggerZoneId: zone.id,
-        position: zone.position,
-        size: zone.size,
-      });
-
-      // Spawn sparkle particles on interaction
+    const onObjectInteract = (payload: { triggerZoneId?: string }) => {
+      if (payload.triggerZoneId !== zone.id) return;
       spawnParticles();
-
-      // Flash outline white on E press — using ref instead of setState (P0-2.3)
       outlineFlashRef.current = true;
       if (outlineFlashTimer.current) clearTimeout(outlineFlashTimer.current);
       outlineFlashTimer.current = setTimeout(() => {
@@ -823,62 +880,19 @@ function TriggerZoneComponent({
       }, 200);
     };
 
-    // EventBus listener for mobile interact button — same logic as KeyE
-    const handleInteractPress = () => {
-      if (!showIndicatorRef.current) return;
-      if (isInteractionLocked()) return;
-      if (!allowedIdsRef.current.has(zone.id)) return;
-      if (globalEKeyConsumed) return;
-      if (eKeyConsumedRef.current) return;
-      globalEKeyConsumed = true;
-      eKeyConsumedRef.current = true;
-      (window as any).__volodka_ekey_consumed = true;
-      setTimeout(() => {
-        globalEKeyConsumed = false;
-        eKeyConsumedRef.current = false;
-        (window as any).__volodka_ekey_consumed = false;
-      }, 200);
-
-      const sceneId = getGameStore().exploration.currentSceneId;
-
-      if (zone.linkedDialogueNodeId) {
-        const npcDef = findNpcByDialogueNodeId(zone.linkedDialogueNodeId);
-        if (npcDef) {
-          eventBus.emit('interaction:start', { npcId: npcDef.id });
-          spawnParticles();
-          return;
-        }
-      }
-
-      eventBus.emit('object:interact', {
-        objectId: zone.id,
-        sceneId,
-        triggerZoneId: zone.id,
-      });
-
-      eventBus.emit('object:highlight', {
-        triggerZoneId: zone.id,
-        position: zone.position,
-        size: zone.size,
-      });
-
+    const onHighlight = (payload: { triggerZoneId?: string }) => {
+      if (payload.triggerZoneId !== zone.id) return;
       spawnParticles();
-
-      outlineFlashRef.current = true;
-      if (outlineFlashTimer.current) clearTimeout(outlineFlashTimer.current);
-      outlineFlashTimer.current = setTimeout(() => {
-        outlineFlashRef.current = false;
-      }, 200);
     };
 
-    window.addEventListener('keydown', handleKeyDown);
-    const unsubInteract = eventBus.on('interact:press', handleInteractPress);
+    const unsubInteract = eventBus.on('object:interact', onObjectInteract);
+    const unsubHighlight = eventBus.on('object:highlight', onHighlight);
     return () => {
-      window.removeEventListener('keydown', handleKeyDown);
       unsubInteract();
+      unsubHighlight();
       if (outlineFlashTimer.current) clearTimeout(outlineFlashTimer.current);
     };
-  }, [zone.id, zone.linkedDialogueNodeId, spawnParticles, allowedIdsRef]);
+  }, [zone.id, spawnParticles]);
 
   // Cleanup on unmount
   useEffect(() => {

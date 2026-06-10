@@ -6,6 +6,7 @@ export class ControllerSession {
   private generation = 0;
   private disposed = false;
   private timers = new Set<ReturnType<typeof setTimeout>>();
+  private disposeCallbacks: Array<() => void> = [];
 
   /** Invalidate pending async work and start a fresh generation. */
   begin(): number {
@@ -29,7 +30,23 @@ export class ControllerSession {
     if (this.disposed) return;
     this.disposed = true;
     this.clearTimers();
+
+    // Call all registered dispose callbacks
+    for (const cb of this.disposeCallbacks) {
+      try {
+        cb();
+      } catch (err) {
+        console.warn('[ControllerSession] Dispose callback failed:', err);
+      }
+    }
+    this.disposeCallbacks = [];
+
     this.generation += 1;
+  }
+
+  /** Register a callback to be called on dispose */
+  onDispose(cb: () => void): void {
+    this.disposeCallbacks.push(cb);
   }
 
   isDisposed(): boolean {

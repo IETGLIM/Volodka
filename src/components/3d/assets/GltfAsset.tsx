@@ -44,7 +44,7 @@ function GltfAssetInner({
 }: Omit<GltfAssetProps, 'fallback'>) {
   const { preset } = useGraphicsQuality();
   const asset = getAssetDefinition(assetId);
-  if (!asset) return null;
+  if (!asset || asset.shipped !== true) return null;
 
   const castShadow = asset.castShadow ?? false;
   const receiveShadow = asset.receiveShadow ?? true;
@@ -84,7 +84,8 @@ function GltfAssetInner({
 
 /** GLB/GLTF asset — Draco/Meshopt via quality preset, distance LOD when manifest has LOD chain. */
 export function GltfAsset({ fallback = null, assetId, ...props }: GltfAssetProps) {
-  if (!getAssetDefinition(assetId)) return fallback;
+  const asset = getAssetDefinition(assetId);
+  if (!asset || asset.shipped !== true) return fallback;
 
   return (
     <Suspense fallback={fallback}>
@@ -95,7 +96,7 @@ export function GltfAsset({ fallback = null, assetId, ...props }: GltfAssetProps
 
 export function preloadGltfAsset(assetId: string): void {
   const asset = getAssetDefinition(assetId);
-  if (!asset) return;
+  if (!asset || asset.shipped !== true) return;
   for (const lod of asset.lods) useGLTF.preload(lod.url, true, true, extendLoader);
   if (asset.variants) {
     for (const url of Object.values(asset.variants)) {

@@ -1,7 +1,7 @@
 
 /* ─── Volodka RPG – player controls hook ─── */
 
-import { useEffect, useRef, useCallback, useState } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
 
 export interface VirtualControls {
   forward: number;
@@ -150,16 +150,45 @@ export function usePlayerControls(
     window.addEventListener('keydown', onKeyDown);
     window.addEventListener('keyup', onKeyUp);
 
+    // ── WoW-style movement: holding BOTH mouse buttons walks forward ──
+    // The camera-relative movement + right-button drag steering (handled by the
+    // camera orbit input) makes the character walk wherever the camera faces.
+    // `mouseOwnsForward` ensures we never clobber mobile-HUD touch input.
+    let mouseOwnsForward = false;
+    const updateMouseMove = (buttons: number) => {
+      const bothHeld = (buttons & 1) !== 0 && (buttons & 2) !== 0;
+      if (bothHeld) {
+        virtualControlsRef.current.forward = 1;
+        mouseOwnsForward = true;
+      } else if (mouseOwnsForward) {
+        virtualControlsRef.current.forward = 0;
+        mouseOwnsForward = false;
+      }
+    };
+    const onMouseDown = (e: MouseEvent) => updateMouseMove(e.buttons);
+    const onMouseUp = (e: MouseEvent) => updateMouseMove(e.buttons);
+    const onMouseMove = (e: MouseEvent) => updateMouseMove(e.buttons);
+    window.addEventListener('mousedown', onMouseDown);
+    window.addEventListener('mouseup', onMouseUp);
+    window.addEventListener('mousemove', onMouseMove);
+
     // Reset all key states when window loses focus (Alt+Tab, notification, etc.)
     // Without this, keys remain "pressed" because keyup never fires during blur.
     const onBlur = () => {
       keys.current = { forward: false, backward: false, left: false, right: false, run: false, jump: false, interact: false };
+      if (mouseOwnsForward) {
+        virtualControlsRef.current.forward = 0;
+        mouseOwnsForward = false;
+      }
     };
     window.addEventListener('blur', onBlur);
 
     return () => {
       window.removeEventListener('keydown', onKeyDown);
       window.removeEventListener('keyup', onKeyUp);
+      window.removeEventListener('mousedown', onMouseDown);
+      window.removeEventListener('mouseup', onMouseUp);
+      window.removeEventListener('mousemove', onMouseMove);
       window.removeEventListener('blur', onBlur);
     };
   }, [isEditable]);

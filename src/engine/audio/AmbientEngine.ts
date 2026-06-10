@@ -11,10 +11,6 @@ import {
 import { getSharedAudioContext } from '../SharedAudioContext';
 import { registerHmrDispose } from '@/shared/dev/hmrDispose';
 import { releaseBufferSource } from './AudioEngineCore';
-import {
-  transitionAudioState,
-  type AudioPlaybackState,
-} from './audioPlaybackState';
 
 /* ─── AmbientSoundPlayer: Procedural Ambient Sound Engine ───
  *  Generates ambient background sounds using Web Audio API oscillators and noise.
@@ -79,7 +75,6 @@ export class AmbientSoundPlayer {
   private destination: GainNode | null = null;
   private currentAmbient: PlayingAmbient | null = null;
   private currentType: AmbientSoundType | null = null;
-  private playbackState: AudioPlaybackState = 'idle';
   private disposed = false;
 
   // Volume state
@@ -101,14 +96,6 @@ export class AmbientSoundPlayer {
 
   /** Ambients currently fading out (may still be audible) */
   private fadingAmbients = new Set<PlayingAmbient>();
-
-  private setPlaybackState(next: AudioPlaybackState): void {
-    this.playbackState = transitionAudioState(this.playbackState, next);
-  }
-
-  getPlaybackState(): AudioPlaybackState {
-    return this.playbackState;
-  }
 
   /** Initialize the audio context (lazy, called on first play) */
   private initContext(): void {
@@ -170,11 +157,8 @@ export class AmbientSoundPlayer {
     this.currentType = null;
 
     if (outgoing) {
-      this.setPlaybackState('fadingOut');
       this.fadeOutAmbient(outgoing, crossfadeSec);
     }
-
-    this.setPlaybackState('fadingIn');
 
     // ── Create new ambient ──
     const newAmbient = this.createAmbientInstance(def, ctx.currentTime, crossfadeSec);
@@ -192,7 +176,6 @@ export class AmbientSoundPlayer {
 
     this.currentAmbient = newAmbient;
     this.currentType = type;
-    this.setPlaybackState('playing');
   }
 
   /** Drop orphaned crossfade layers (rapid play() only keeps one outgoing fade). */
@@ -559,7 +542,6 @@ export class AmbientSoundPlayer {
     this.fadingAmbients.clear();
     this.currentAmbient = null;
     this.currentType = null;
-    this.setPlaybackState('idle');
   }
 
   /** Set combat mute state */
@@ -611,7 +593,6 @@ export class AmbientSoundPlayer {
   dispose(): void {
     if (this.disposed) return;
     this.disposed = true;
-    this.setPlaybackState('disposed');
     this.doStopAll();
 
     if (this.destination) {
@@ -624,7 +605,6 @@ export class AmbientSoundPlayer {
   /** Re-arm after orchestrator remount (React StrictMode). */
   revive(): void {
     this.disposed = false;
-    this.playbackState = 'idle';
   }
 }
 

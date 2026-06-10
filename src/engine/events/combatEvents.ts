@@ -10,7 +10,6 @@ export interface CombatEvents {
   'combat:fled': { enemyType: EnemyType };
   'combat:end': Record<string, never>;
   'combat:hit': { damage: number; isPlayerHit: boolean; direction?: 'left' | 'right' | 'front' | 'back'; source?: string };
-  'combat:miss': { source?: string };
   'combat:damage': { amount: number; source?: string; critical?: boolean };
   'combat:heal': { amount: number; source?: string };
   'combat:story_continue': { nodeId: string };

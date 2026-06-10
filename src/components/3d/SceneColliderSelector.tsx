@@ -23,7 +23,11 @@ import { CuboidCollider } from '@react-three/rapier';
 import { useGameStore } from '@/store/gameStore';
 import { getSceneConfig } from '@/config/scenes';
 import { SCENE_DEFINITIONS } from '@/config/sceneDefinitions';
-import { generateColliders, STRUCTURAL_FLOOR_HALF_HEIGHT } from '@/config/sceneDefinitionGenerator';
+import {
+  generateColliders,
+  generateBoundaryWallSegments,
+  STRUCTURAL_FLOOR_HALF_HEIGHT,
+} from '@/config/sceneDefinitionGenerator';
 import type { ColliderDef } from '@/shared/types/sceneDefinition';
 import { SceneLayer, LayeredForeground } from './VisualizationLayers';
 import { CameraCollisionProxies } from './CameraCollisionProxies';
@@ -168,7 +172,13 @@ function SceneStructuralColliders({ sceneId }: { sceneId: SceneId }) {
   const floorY = config.floorY;
   const floorCenterY = floorY - STRUCTURAL_FLOOR_HALF_HEIGHT;
   const wallHeight = 4;
-  const WALL_THICKNESS = 0.5; // Thick enough to prevent tunneling with KinematicCharacterController
+
+  // Doorway-aware boundary walls: solid segments + recessed alcove backstops.
+  // Replaces the four full-span walls so perimeter doorways become walkable recesses.
+  const boundarySegments = useMemo(
+    () => generateBoundaryWallSegments(SCENE_DEFINITIONS[sceneId]),
+    [sceneId],
+  );
 
   return (
     <>
@@ -194,50 +204,24 @@ function SceneStructuralColliders({ sceneId }: { sceneId: SceneId }) {
         />
       )}
 
-      {/* ── Wall colliders for ALL scenes ──
+      {/* ── Boundary walls for ALL scenes ──
        *  Indoor scenes (hasCeiling=true): Visual walls are thin planeGeometry
        *  wrapped in trimesh — unreliable for KinematicCharacterController.
-       *  The player can walk through thin trimesh walls, especially at speed.
-       *  Adding explicit CuboidColliders for walls prevents this.
+       *  Explicit CuboidColliders prevent walking through them.
        *
-       *  Outdoor scenes (hasCeiling=false): Same boundary walls as before.
+       *  Doorways on the boundary get an opening + recessed backstop so the
+       *  player can step into the door alcove without leaving the map.
        */}
-      {/* Left wall (x = -w/2) */}
-      <CuboidCollider
-        key={`${sceneId}-wall-left`}
-        args={[WALL_THICKNESS / 2, wallHeight / 2, d / 2]}
-        position={[-w / 2, wallHeight / 2, 0]}
-        name="fs:concrete"
-        restitution={0}
-        friction={0.5}
-      />
-      {/* Right wall (x = +w/2) */}
-      <CuboidCollider
-        key={`${sceneId}-wall-right`}
-        args={[WALL_THICKNESS / 2, wallHeight / 2, d / 2]}
-        position={[w / 2, wallHeight / 2, 0]}
-        name="fs:concrete"
-        restitution={0}
-        friction={0.5}
-      />
-      {/* Back wall (z = -d/2) */}
-      <CuboidCollider
-        key={`${sceneId}-wall-back`}
-        args={[w / 2, wallHeight / 2, WALL_THICKNESS / 2]}
-        position={[0, wallHeight / 2, -d / 2]}
-        name="fs:concrete"
-        restitution={0}
-        friction={0.5}
-      />
-      {/* Front wall (z = +d/2) */}
-      <CuboidCollider
-        key={`${sceneId}-wall-front`}
-        args={[w / 2, wallHeight / 2, WALL_THICKNESS / 2]}
-        position={[0, wallHeight / 2, d / 2]}
-        name="fs:concrete"
-        restitution={0}
-        friction={0.5}
-      />
+      {boundarySegments.map((def) => (
+        <CuboidCollider
+          key={`${sceneId}-${def.name}`}
+          args={def.size}
+          position={def.position}
+          name="fs:concrete"
+          restitution={0}
+          friction={0.5}
+        />
+      ))}
     </>
   );
 }

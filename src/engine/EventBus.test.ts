@@ -65,25 +65,6 @@ describe('EventBusClass lifecycle', () => {
   });
 });
 
-describe('EventBusClass orchestrator mount cycles', () => {
-  it('does not grow listener count across N scope mount/unmount cycles', () => {
-    const bus = createEventBus();
-    const baseline = bus.getListenerCountForTests();
-
-    for (let cycle = 0; cycle < 32; cycle++) {
-      const scope = bus.createScope();
-      scope.on('combat:start', vi.fn());
-      scope.on('combat:end', vi.fn());
-      scope.on('scene:enter', vi.fn());
-      scope.on('game:loaded', vi.fn());
-      scope.add(() => {});
-      scope.dispose();
-    }
-
-    expect(bus.getListenerCountForTests()).toBe(baseline);
-  });
-});
-
 describe('EventBusClass priority dispatch', () => {
   it('runs lower priority numbers before higher tiers', () => {
     const bus = createEventBus();

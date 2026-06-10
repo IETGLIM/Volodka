@@ -23,12 +23,16 @@ export interface TriggerZone {
   examineData?: ExamineData;
   /** Linked mini-game type (replaces hardcoded ID checks in useInteractionOrchestrator) */
   linkedMinigame?: 'codebreaker' | 'openstack_terminal' | 'bash_terminal';
+  /** Optional GLB prop id from propModelRegistry — rendered at zone position */
+  propModelId?: string;
   /** Whether this trigger can only be used once per playthrough */
   isOneTime?: boolean;
   /** NPC explicitly linked to this zone (staged talk routing — no substring heuristics). */
   linkedNpcId?: string;
   /** Minimum act required for this trigger zone to be active (1 or 2) */
   requiredAct?: number;
+  /** Automatically trigger effects on zone enter (for combat encounters, traps, etc.) */
+  autoTrigger?: boolean;
 }
 
 /** Russian labels for each interaction type — used in [E] prompts */
@@ -65,6 +69,7 @@ export const TRIGGER_ZONES: TriggerZone[] = [
     sceneId: 'volodka_room',
     position: [0, 0.5, -2.5],
     size: [2.0, 1.5, 1.0],
+    propModelId: 'kenney_desk',
     enterToast: 'Рабочий стол — три монитора и остывший кофе.',
     linkedDialogueNodeId: 'explore_room_table',
     interactionType: 'examine',
@@ -81,6 +86,7 @@ export const TRIGGER_ZONES: TriggerZone[] = [
     sceneId: 'volodka_room',
     position: [-3.5, 1.0, 0],
     size: [0.8, 2.0, 2.5],
+    propModelId: 'kenney_bookshelf',
     enterToast: 'Книжная полка — стихи рядом с руководствами.',
     linkedDialogueNodeId: 'explore_room_bookshelf',
     interactionType: 'read',
@@ -97,6 +103,7 @@ export const TRIGGER_ZONES: TriggerZone[] = [
     sceneId: 'volodka_room',
     position: [3.0, 1.0, -3.0],
     size: [1.5, 2.0, 0.5],
+    propModelId: 'kenney_window',
     enterToast: 'За окном — серый город и дождь.',
     linkedDialogueNodeId: 'explore_room_window',
     isOneTime: true,
@@ -117,8 +124,9 @@ export const TRIGGER_ZONES: TriggerZone[] = [
     sceneId: 'volodka_room',
     position: [0, 0, 3.5],
     size: [1.2, 2.2, 0.5],
+    propModelId: 'kenney_door',
     enterToast: 'Дверь в коридор приоткрыта.',
-    linkedDialogueNodeId: 'explore_corridor_door',
+    linkedStoryNodeId: 'corridor_door',
     interactionType: 'open',
     examineData: {
       title: 'Дверь в коридор',
@@ -132,6 +140,7 @@ export const TRIGGER_ZONES: TriggerZone[] = [
     sceneId: 'volodka_room',
     position: [-2.2, 1.0, 2.5],
     size: [0.8, 2.0, 0.6],
+    propModelId: 'kenney_wardrobe',
     enterToast: 'Старый платяной шкаф — двери скрипят.',
     interactionType: 'open',
     examineData: {
@@ -149,6 +158,7 @@ export const TRIGGER_ZONES: TriggerZone[] = [
     sceneId: 'volodka_room',
     position: [-1.0, 0.5, -2.8],
     size: [0.8, 1.2, 0.6],
+    propModelId: 'kenney_terminal',
     enterToast: 'Терминал — мерцает приглашение командной строки.',
     linkedMinigame: 'codebreaker',
     interactionType: 'hack',
@@ -169,6 +179,7 @@ export const TRIGGER_ZONES: TriggerZone[] = [
     sceneId: 'volodka_corridor',
     position: [1.4, 0, -1.0],
     size: [1.2, 2.2, 0.5],
+    propModelId: 'kenney_door_open',
     enterToast: 'Из кухни пахнет чаем.',
     linkedDialogueNodeId: 'explore_kitchen_table',
     interactionType: 'open',
@@ -184,6 +195,7 @@ export const TRIGGER_ZONES: TriggerZone[] = [
     sceneId: 'volodka_corridor',
     position: [-1.4, 0, -1.0],
     size: [1.2, 2.2, 0.5],
+    propModelId: 'kenney_door',
     enterToast: 'Дверь на лестничную клетку — оттуда тянет холодом.',
     linkedDialogueNodeId: 'explore_street_entry',
     interactionType: 'open',
@@ -199,6 +211,7 @@ export const TRIGGER_ZONES: TriggerZone[] = [
     sceneId: 'volodka_corridor',
     position: [0, 0, 3.5],
     size: [1.2, 2.2, 0.5],
+    propModelId: 'kenney_door_open',
     enterToast: 'Твоя комната.',
     linkedDialogueNodeId: 'explore_go_home',
     interactionType: 'open',
@@ -830,5 +843,12 @@ export const TRIGGER_ZONES: TriggerZone[] = [
       { type: 'setFlag', flag: 'home_banking_investigated', flagValue: true },
     ],
   },
+  /* ═══════════════════════════════════════════════════════════════════
+     COMBAT ENCOUNTERS — replaced by visible patrolling creeps
+     (src/data/creepPatrols.ts + PatrollingCreeps.tsx). The old invisible
+     autoTrigger zones fired combat with no warning; creeps give the player
+     a vision cone to sneak around instead.
+     ═══════════════════════════════════════════════════════════════════ */
+
   ...CHK_TRIGGER_ZONES,
 ];

@@ -302,15 +302,6 @@ export class EventBusClass implements EventBusScopeHost {
   isDisposed(): boolean {
     return this.disposed;
   }
-
-  /** Test helper — total typed + onAny listener count. */
-  getListenerCountForTests(): number {
-    let count = this.anyHandlers.length;
-    for (const list of this.handlers.values()) {
-      count += list.length;
-    }
-    return count;
-  }
 }
 
 /**

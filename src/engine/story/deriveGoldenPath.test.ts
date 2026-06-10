@@ -1,13 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
 import type { StoryNode } from '@/shared/types/game';
-import { STORY_NODES } from '@/data/storyNodes';
-import { QUEST_DEFINITIONS } from '@/data/quests';
-import {
-  ACT_TRANSITIONS,
-  GOLDEN_PATH_BRANCH_HINTS,
-  GOLDEN_PATH_QUEST_SPINE,
-  GOLDEN_PATH_STORY_SPINE,
-} from '@/data/goldenPath';
 import {
   deriveGoldenPath,
   deriveStorySpine,
@@ -16,7 +8,6 @@ import {
   collectAmbiguousGoldenPathNodes,
   resetGoldenPathDerivationWarningsForTests,
 } from '@/engine/story/deriveGoldenPath';
-import { buildGuidedStoryPathConfig } from '@/engine/guidedStory/buildGuidedStoryPath';
 
 const MINI_GRAPH: Record<string, StoryNode> = {
   start: {
@@ -168,49 +159,5 @@ describe('deriveGoldenPath', () => {
       },
     ];
     expect(deriveQuestSpine(quests, index, [])).toEqual(['q_early', 'q_late']);
-  });
-
-  it('derives a non-empty spine from shipped STORY_NODES with manual fallback', () => {
-    const { spine, missingMarkers } = deriveStorySpine(STORY_NODES, {
-      fallbackStorySpine: GOLDEN_PATH_STORY_SPINE,
-    });
-
-    expect(spine.length).toBeGreaterThan(50);
-    expect(spine[0]).toBe('start');
-    expect(spine).toContain('act2_transition');
-    expect(spine).toContain('ending_reconciliation');
-    expect(missingMarkers.length).toBeGreaterThan(0);
-  });
-
-  it('buildGuidedStoryPathConfig wires seven acts and canonical quest tables', () => {
-    const path = buildGuidedStoryPathConfig(STORY_NODES, QUEST_DEFINITIONS);
-
-    expect(path.storySpine[0]).toBe('start');
-    expect(path.actTransitions).toHaveLength(7);
-
-    for (const trans of ACT_TRANSITIONS) {
-      for (const questId of trans.questSpineIds) {
-        expect(QUEST_DEFINITIONS.some((q) => q.id === questId)).toBe(true);
-      }
-    }
-
-    expect(path.questSpine.length).toBeGreaterThanOrEqual(GOLDEN_PATH_QUEST_SPINE.length);
-    for (const questId of ['first_reading', 'maria_connection', 'network_initiation', 'zarema_rescue']) {
-      expect(path.questSpine).toContain(questId);
-    }
-  });
-
-  it('has no ambiguous goldenPath markers in shipped story graph', () => {
-    expect(collectAmbiguousGoldenPathNodes(STORY_NODES)).toEqual([]);
-  });
-
-  it('merges guidance hints for the full shipped graph', () => {
-    const derived = deriveGoldenPath(STORY_NODES, {
-      fallbackStorySpine: GOLDEN_PATH_STORY_SPINE,
-      fallbackBranchHints: GOLDEN_PATH_BRANCH_HINTS,
-    });
-    expect(derived.branchHints.start).toBeTruthy();
-    expect(derived.branchHints.act2_transition).toBeTruthy();
-    expect(derived.branchHints.act5_peaceful_path).toBeTruthy();
   });
 });

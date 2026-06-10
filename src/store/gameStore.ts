@@ -41,7 +41,6 @@ import { createPlayerSlice } from './slices/playerSlice';
 import { createExplorationSlice } from './slices/explorationSlice';
 import { createWorldSlice } from './slices/worldSlice';
 import { createUISlice } from './slices/uiSlice';
-import { createCombatSlice } from './slices/combatSlice';
 import { createCutsceneSlice } from './slices/cutsceneSlice';
 import { createSaveSlice } from './slices/saveSlice';
 import { eventBus } from '@/engine/EventBus';
@@ -65,7 +64,6 @@ export const useGameStore = create<GameStoreState>()(
   ...createExplorationSlice(...a),
   ...createWorldSlice(...a),
   ...createUISlice(...a),
-  ...createCombatSlice(...a),
   ...createCutsceneSlice(...a),
   ...createSaveSlice(...a),
   })),

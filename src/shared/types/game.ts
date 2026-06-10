@@ -3,7 +3,7 @@
 import type { FloorMaterial } from './sceneDefinition';
 import type { SceneId } from '@/config/sceneDefinitions';
 
-export type { FloorMaterial, SceneId };
+export type { SceneId };
 
 // ─── Skills ───
 export interface PlayerSkills {

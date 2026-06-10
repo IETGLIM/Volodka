@@ -19,7 +19,7 @@ export const STORY_NODES_ACT4: Record<string, StoryNode> = {
       },
       {
         text: 'Начать с обращения к людям',
-        next: 'vera_inspiration',
+        next: 'vera_inspiration', goldenPath: true,
         effects: [
           { type: 'setFlag', flag: 'act4_started', flagValue: true },
           { type: 'addStat', stat: 'energy', value: 10 },
@@ -44,7 +44,7 @@ export const STORY_NODES_ACT4: Record<string, StoryNode> = {
     choices: [
       {
         text: 'Это и будет нашим знаком — стихи на каждом экране',
-        next: 'act4_public_leader',
+        next: 'act4_public_leader', goldenPath: true,
         effects: [
           { type: 'collectPoem', poemId: 'poem_12' },
           { type: 'addKarma', value: 5 },
@@ -71,7 +71,7 @@ export const STORY_NODES_ACT4: Record<string, StoryNode> = {
     choices: [
       {
         text: 'Предложить мирный марш к башне гильдии',
-        next: 'act4_peaceful_march',
+        next: 'act4_peaceful_march', goldenPath: true,
         effects: [
           { type: 'addKarma', value: 8 },
           { type: 'setFlag', flag: 'public_speech_done', flagValue: true },
@@ -96,7 +96,7 @@ export const STORY_NODES_ACT4: Record<string, StoryNode> = {
     choices: [
       {
         text: 'Продолжать марш — мирно и уверенно',
-        next: 'act4_march_continues',
+        next: 'act4_march_continues', goldenPath: true,
         effects: [
           { type: 'addKarma', value: 5 },
           { type: 'addStat', stat: 'energy', value: -10 },
@@ -121,7 +121,7 @@ export const STORY_NODES_ACT4: Record<string, StoryNode> = {
     choices: [
       {
         text: 'Войти в башню — пока дроны в замешательстве',
-        next: 'act4_infiltration_prep',
+        next: 'act4_infiltration_prep', goldenPath: true,
         effects: [
           { type: 'addSkill', skill: 'persuasion', value: 1 },
           { type: 'addKarma', value: 3 },
@@ -150,7 +150,7 @@ export const STORY_NODES_ACT4: Record<string, StoryNode> = {
     choices: [
       {
         text: 'Связаться с коллегой — он внутри системы',
-        next: 'act4_infiltration_inside',
+        next: 'act4_infiltration_inside', goldenPath: true,
         effects: [
           { type: 'addSkill', skill: 'persuasion', value: 2 },
           { type: 'npcChange', npcId: 'office_colleague', npcChange: { relation: 5 } },
@@ -210,7 +210,7 @@ export const STORY_NODES_ACT4: Record<string, StoryNode> = {
     choices: [
       {
         text: 'Двигаться к серверному ядру',
-        next: 'act4_core_server',
+        next: 'act4_core_server', goldenPath: true,
         effects: [
           { type: 'addStat', stat: 'stress', value: 5 },
           { type: 'combat', enemyType: 'system_daemon' },
@@ -259,7 +259,7 @@ export const STORY_NODES_ACT4: Record<string, StoryNode> = {
     choices: [
       {
         text: 'Начать отключение Протокола',
-        next: 'act4_protocol_disabled',
+        next: 'act4_protocol_disabled', goldenPath: true,
         effects: [
           { type: 'addSkill', skill: 'coding', value: 3 },
           { type: 'addStat', stat: 'energy', value: -20 },
@@ -321,7 +321,7 @@ export const STORY_NODES_ACT4: Record<string, StoryNode> = {
     choices: [
       {
         text: 'Бежать — миссия выполнена',
-        next: 'act4_escape',
+        next: 'act4_escape', goldenPath: true,
         effects: [
           { type: 'addKarma', value: 10 },
           { type: 'setFlag', flag: 'protocol_disabled', flagValue: true },
@@ -359,7 +359,7 @@ export const STORY_NODES_ACT4: Record<string, StoryNode> = {
       },
       {
         text: 'Уйти через окно на крышу',
-        next: 'act4_broadcast_prep',
+        next: 'act4_broadcast_prep', goldenPath: true,
         effects: [
           { type: 'addSkill', skill: 'intuition', value: 1 },
           { type: 'addStat', stat: 'energy', value: -10 },
@@ -378,7 +378,7 @@ export const STORY_NODES_ACT4: Record<string, StoryNode> = {
     choices: [
       {
         text: 'Начать трансляцию. Пусть весь город услышит.',
-        next: 'act4_broadcast_execute',
+        next: 'act4_broadcast_execute', goldenPath: true,
         effects: [
           { type: 'addKarma', value: 10 },
           { type: 'setFlag', flag: 'broadcast_ready', flagValue: true },
@@ -443,7 +443,7 @@ export const STORY_NODES_ACT4: Record<string, StoryNode> = {
       },
       {
         text: 'Продекламировать собственное стихотворение в эфир',
-        next: 'act4_broadcast_aftermath',
+        next: 'act4_broadcast_aftermath', goldenPath: true,
         effects: [
           { type: 'addKarma', value: 20 },
           { type: 'addSkill', skill: 'writing', value: 5 },
@@ -462,7 +462,7 @@ export const STORY_NODES_ACT4: Record<string, StoryNode> = {
     choices: [
       {
         text: 'Искать примирение — предложить гильдии диалог',
-        next: 'act5_dawn',
+        next: 'act5_dawn', goldenPath: true,
         effects: [
           { type: 'addKarma', value: 5 },
           { type: 'setFlag', flag: 'seeking_reconciliation', flagValue: true },
@@ -494,6 +494,7 @@ export const STORY_NODES_ACT4: Record<string, StoryNode> = {
     sceneId: 'rooftop_edge',
     effects: [
       { type: 'setFlag', flag: 'act5_started', flagValue: true },
+      { type: 'triggerQuest', questId: 'final_code' },
       { type: 'triggerQuest', questId: 'night_before_dawn' },
     ],
     choices: [
@@ -507,7 +508,7 @@ export const STORY_NODES_ACT4: Record<string, StoryNode> = {
       },
       {
         text: 'Спуститься к людям — они нуждаются в поддержке',
-        next: 'act4_final_choice',
+        next: 'act4_final_choice', goldenPath: true,
         effects: [
           { type: 'addKarma', value: 5 },
           { type: 'addSkill', skill: 'empathy', value: 2 },
@@ -541,7 +542,7 @@ export const STORY_NODES_ACT4: Record<string, StoryNode> = {
     choices: [
       {
         text: 'Я Создатель — солью код и поэзию воедино',
-        next: 'act5_peaceful_path',
+        next: 'act5_peaceful_path', goldenPath: true,
         effects: [
           { type: 'addKarma', value: 5 },
           { type: 'setFlag', flag: 'creator_chosen', flagValue: true },

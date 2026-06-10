@@ -114,7 +114,7 @@ export function QuestAcceptDialog({ questId, npcId, onClose, onAccept }: QuestAc
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: 100, opacity: 0 }}
             transition={{ duration: 0.5, ease: 'easeOut' }}
-            className="relative flex flex-col md:flex-row w-[95vw] max-w-[900px] max-h-[85vh] overflow-hidden"
+            className="relative flex flex-col w-[95vw] max-w-[760px] max-h-[88vh] overflow-hidden"
             style={{
               background: 'linear-gradient(135deg, rgba(0,8,16,0.97), rgba(0,16,24,0.95))',
               border: '1px solid rgba(0,255,238,0.3)',
@@ -124,6 +124,9 @@ export function QuestAcceptDialog({ questId, npcId, onClose, onAccept }: QuestAc
           >
             {/* Corner brackets */}
             <BracketCorners color="rgba(0,255,238,0.5)" size={6} />
+
+            {/* Portrait + details row */}
+            <div className="flex flex-col md:flex-row flex-1 min-h-0 overflow-hidden">
 
             {/* Left side: NPC portrait */}
             <div
@@ -317,53 +320,50 @@ export function QuestAcceptDialog({ questId, npcId, onClose, onAccept }: QuestAc
               )}
             </div>
 
-            {/* Bottom buttons */}
+            </div>{/* end portrait + details row */}
+
+            {/* Bottom buttons — full-width bar */}
             <div
-              className="flex gap-3 p-4 md:p-6"
+              className="flex gap-3 px-4 py-3 md:px-6"
               style={{ borderTop: '1px solid rgba(0,255,238,0.15)' }}
             >
               <motion.button
-                data-testid="quest-accept"
                 onClick={handleAccept}
-                className="flex-1 py-2.5 rounded font-mono text-sm tracking-wider font-bold"
+                className="flex-1 py-3 rounded font-mono text-sm tracking-wider font-bold"
                 style={{
-                  background: 'linear-gradient(135deg, rgba(0,255,238,0.15), rgba(0,255,238,0.08))',
+                  background: 'linear-gradient(135deg, rgba(0,255,238,0.18), rgba(0,255,238,0.08))',
                   color: '#00ffee',
                   border: '1px solid rgba(0,255,238,0.4)',
                   textShadow: '0 0 8px rgba(0,255,238,0.3)',
                 }}
                 whileHover={{
-                  background: 'linear-gradient(135deg, rgba(0,255,238,0.25), rgba(0,255,238,0.15))',
+                  background: 'linear-gradient(135deg, rgba(0,255,238,0.28), rgba(0,255,238,0.15))',
                   boxShadow: '0 0 15px rgba(0,255,238,0.2)',
                 }}
-                whileTap={{ scale: 0.97 }}
+                whileTap={{ scale: 0.98 }}
               >
                 ПРИНЯТЬ
               </motion.button>
 
-              <motion.button
-                onClick={handleDecline}
-                className="flex-1 py-2.5 rounded font-mono text-sm tracking-wider"
-                style={{
-                  background: isMainQuest
-                    ? 'rgba(40,40,40,0.5)'
-                    : 'linear-gradient(135deg, rgba(255,100,68,0.1), rgba(255,100,68,0.05))',
-                  color: isMainQuest ? '#555' : '#ff6644',
-                  border: isMainQuest
-                    ? '1px solid rgba(80,80,80,0.3)'
-                    : '1px solid rgba(255,100,68,0.3)',
-                  textShadow: isMainQuest ? 'none' : '0 0 8px rgba(255,100,68,0.3)',
-                  cursor: isMainQuest ? 'not-allowed' : 'pointer',
-                }}
-                disabled={isMainQuest}
-                whileHover={isMainQuest ? {} : {
-                  background: 'linear-gradient(135deg, rgba(255,100,68,0.2), rgba(255,100,68,0.1))',
-                  boxShadow: '0 0 15px rgba(255,100,68,0.15)',
-                }}
-                whileTap={isMainQuest ? {} : { scale: 0.97 }}
-              >
-                {isMainQuest ? 'ОБЯЗАТЕЛЬНО' : 'ОТКЛОНИТЬ'}
-              </motion.button>
+              {!isMainQuest && (
+                <motion.button
+                  onClick={handleDecline}
+                  className="flex-1 py-3 rounded font-mono text-sm tracking-wider"
+                  style={{
+                    background: 'linear-gradient(135deg, rgba(255,100,68,0.1), rgba(255,100,68,0.05))',
+                    color: '#ff6644',
+                    border: '1px solid rgba(255,100,68,0.3)',
+                    textShadow: '0 0 8px rgba(255,100,68,0.3)',
+                  }}
+                  whileHover={{
+                    background: 'linear-gradient(135deg, rgba(255,100,68,0.2), rgba(255,100,68,0.1))',
+                    boxShadow: '0 0 15px rgba(255,100,68,0.15)',
+                  }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  ОТКЛОНИТЬ
+                </motion.button>
+              )}
             </div>
           </motion.div>
 

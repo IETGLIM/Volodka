@@ -13,7 +13,7 @@ export const STORY_NODES_ACT2: Record<string, StoryNode> = {
     choices: [
       {
         text: 'Вернуться в кафе — там могут быть ответы',
-        next: 'act2_albert_hint',
+        next: 'act2_albert_hint', goldenPath: true,
         effects: [{ type: 'setFlag', flag: 'act2_started', flagValue: true }, { type: 'setFlag', flag: 'advanced_to_act2', flagValue: true }],
       },
       {
@@ -36,7 +36,7 @@ export const STORY_NODES_ACT2: Record<string, StoryNode> = {
     choices: [
       {
         text: 'Ты знаешь, кто мог их туда поместить?',
-        next: 'act2_albert_network_hint',
+        next: 'act2_albert_network_hint', goldenPath: true,
         effects: [{ type: 'addSkill', skill: 'logic', value: 1 }],
       },
       {
@@ -55,7 +55,7 @@ export const STORY_NODES_ACT2: Record<string, StoryNode> = {
     choices: [
       {
         text: 'Как мне найти эту сеть?',
-        next: 'act2_maria_search',
+        next: 'act2_maria_search', goldenPath: true,
         effects: [
           { type: 'addSkill', skill: 'persuasion', value: 1 },
           { type: 'setFlag', flag: 'albert_network_hint', flagValue: true },
@@ -143,7 +143,7 @@ export const STORY_NODES_ACT2: Record<string, StoryNode> = {
     choices: [
       {
         text: 'Продекламировать стихотворение из найденных',
-        next: 'act2_network_initiation',
+        next: 'act2_network_initiation', goldenPath: true,
         effects: [
           { type: 'setFlag', flag: 'recited_poem_initiation', flagValue: true },
           { type: 'addKarma', value: 5 },
@@ -269,7 +269,7 @@ export const STORY_NODES_ACT2: Record<string, StoryNode> = {
     choices: [
       {
         text: 'Осмотреть подсобку',
-        next: 'act2_safehouse_terminal',
+        next: 'act2_safehouse_terminal', goldenPath: true,
         effects: [
           { type: 'addItem', itemId: 'vault_key_fragment', value: 1 },
           { type: 'setFlag', flag: 'safehouse_terminal_installed', flagValue: true },
@@ -294,7 +294,7 @@ export const STORY_NODES_ACT2: Record<string, StoryNode> = {
     choices: [
       {
         text: 'Прочитать сообщение',
-        next: 'act2_safehouse_message',
+        next: 'act2_safehouse_message', goldenPath: true,
         effects: [
           { type: 'addSkill', skill: 'coding', value: 2 },
           { type: 'setFlag', flag: 'secure_channel_tested', flagValue: true },
@@ -320,7 +320,7 @@ export const STORY_NODES_ACT2: Record<string, StoryNode> = {
     choices: [
       {
         text: 'Ответить на сообщение',
-        next: 'act2_dmitry_contact',
+        next: 'act2_dmitry_contact', goldenPath: true,
         effects: [
           { type: 'addSkill', skill: 'persuasion', value: 1 },
           { type: 'setFlag', flag: 'contacted_dmitry_network', flagValue: true },
@@ -342,7 +342,7 @@ export const STORY_NODES_ACT2: Record<string, StoryNode> = {
     choices: [
       {
         text: 'Согласиться на встречу',
-        next: 'act2_dmitry_office_meeting',
+        next: 'act2_dmitry_office_meeting', goldenPath: true,
         effects: [
           { type: 'triggerQuest', questId: 'dmitry_defection' },
           { type: 'setFlag', flag: 'dmitry_meeting_agreed', flagValue: true },
@@ -368,7 +368,7 @@ export const STORY_NODES_ACT2: Record<string, StoryNode> = {
     choices: [
       {
         text: 'Принести клятву Сети',
-        next: 'act2_network_oath',
+        next: 'act2_network_oath', goldenPath: true,
         effects: [
           { type: 'addKarma', value: 8 },
           { type: 'setFlag', flag: 'network_oath_taken', flagValue: true },
@@ -457,7 +457,7 @@ export const STORY_NODES_ACT2: Record<string, StoryNode> = {
     choices: [
       {
         text: 'Поблагодарить её за стихи',
-        next: 'volunteer_read',
+        next: 'volunteer_read', goldenPath: true,
         effects: [
           { type: 'collectPoem', poemId: 'poem_7' },
           { type: 'addKarma', value: 3 },
@@ -483,7 +483,7 @@ export const STORY_NODES_ACT2: Record<string, StoryNode> = {
     choices: [
       {
         text: 'Предложить читать стихи на мосту — для всех',
-        next: 'act2_bridge',
+        next: 'act2_bridge', goldenPath: true,
         effects: [
           { type: 'collectPoem', poemId: 'poem_8' },
           { type: 'addSkill', skill: 'writing', value: 2 },
@@ -509,7 +509,7 @@ export const STORY_NODES_ACT2: Record<string, StoryNode> = {
     choices: [
       {
         text: 'Продолжать читать — громче',
-        next: 'act2_vault_revealed',
+        next: 'act2_vault_revealed', goldenPath: true,
         effects: [
           { type: 'collectPoem', poemId: 'poem_9' },
           { type: 'addSkill', skill: 'persuasion', value: 2 },
@@ -580,7 +580,7 @@ export const STORY_NODES_ACT2: Record<string, StoryNode> = {
     choices: [
       {
         text: 'Как отключить Протокол?',
-        next: 'cafe_evening_end',
+        next: 'cafe_evening_end', goldenPath: true,
         effects: [
           { type: 'addSkill', skill: 'coding', value: 2 },
           { type: 'setFlag', flag: 'knows_protocol', flagValue: true },
@@ -609,7 +609,7 @@ export const STORY_NODES_ACT2: Record<string, StoryNode> = {
     choices: [
       {
         text: 'Записать стихи, которые пришли сами',
-        next: 'act2_closing',
+        next: 'act2_closing', goldenPath: true,
         effects: [
           { type: 'collectPoem', poemId: 'poem_5' },
           { type: 'collectPoem', poemId: 'poem_15' },
@@ -638,7 +638,7 @@ export const STORY_NODES_ACT2: Record<string, StoryNode> = {
     choices: [
       {
         text: 'Идти домой — завтра будет новый день',
-        next: 'act3_transition',
+        next: 'act3_transition', goldenPath: true,
         effects: [
           { type: 'addStat', stat: 'energy', value: 15 },
           { type: 'setFlag', flag: 'act2_complete', flagValue: true },

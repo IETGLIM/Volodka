@@ -2,8 +2,6 @@
  * Navigation → first-scene-playable timeline (Performance API marks/measures).
  */
 
-import { clientLog } from '@/shared/observability/clientLogger';
-
 export const LOADING_MARKS = {
   appStart: 'volodka:app-start',
   orchestratorMount: 'volodka:orchestrator-mount',
@@ -82,12 +80,6 @@ function tryCompleteFirstScenePlayable(): void {
       `[perf] First scene playable: ${snap.firstScenePlayableMs?.toFixed(0) ?? '?'} ms`,
     );
   }
-
-  const snap = getLoadingTimelineSnapshot();
-  clientLog('info', `First scene playable: ${snap.firstScenePlayableMs?.toFixed(0) ?? '?'} ms`, {
-    context: 'perf',
-    details: { mark: LOADING_MARKS.firstScenePlayable },
-  });
 }
 
 function msSinceNav(markName: string): number | null {

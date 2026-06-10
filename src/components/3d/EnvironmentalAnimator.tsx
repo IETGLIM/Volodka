@@ -2,13 +2,12 @@
 /* ─── Volodka RPG – Environmental Animator ─── */
 /* Renders per-scene environmental animations defined in EnvironmentalAnimations.ts */
 
-import { useRef, useMemo, useCallback, useEffect } from 'react';
+import { useRef, useMemo, useEffect } from 'react';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import * as THREE from 'three';
 import { useGameStore } from '@/store/gameStore';
 import { getSceneEnvAnimations } from '@/engine/EnvironmentalAnimations';
-import type { EnvAnimation, EnvAnimationType } from '@/engine/EnvironmentalAnimations';
-import type { SceneId } from '@/shared/types/game';
+import type { EnvAnimation } from '@/engine/EnvironmentalAnimations';
 
 // ─── Seeded random for deterministic animation ───
 
@@ -244,7 +243,7 @@ function SteamRiseAnim({ anim }: { anim: EnvAnimation }) {
     };
   }, [geometry, material]);
 
-  /* eslint-disable react-hooks/immutability -- Three.js buffer attribute mutations are intentional WebGL patterns inside useFrame */
+   
   useFrameTick('misc', ({ delta }) => {
     if (!groupRef.current) return;
     timeRef.current += delta;
@@ -305,7 +304,7 @@ function SteamRiseAnim({ anim }: { anim: EnvAnimation }) {
     opacityAttr.needsUpdate = true;
     sizeAttr.needsUpdate = true;
   });
-  /* eslint-enable react-hooks/immutability */
+   
 
   return (
     <group ref={groupRef}>
@@ -437,7 +436,7 @@ function DripAnim({ anim }: { anim: EnvAnimation }) {
     };
   }, [dropMesh, dropMat, splashRings, splashMats, splashGroup]);
 
-  /* eslint-disable react-hooks/immutability -- Three.js mesh/material mutations are intentional WebGL patterns inside useFrame */
+   
   useFrameTick('misc', ({ delta }) => {
     if (!groupRef.current) return;
     timeRef.current += delta;
@@ -499,7 +498,7 @@ function DripAnim({ anim }: { anim: EnvAnimation }) {
       }
     }
   });
-  /* eslint-enable react-hooks/immutability */
+   
 
   // Cleanup
   useEffect(() => {
@@ -805,7 +804,7 @@ function RadiatorSteamAnim({ anim }: { anim: EnvAnimation }) {
     };
   }, [geometry, material]);
 
-  /* eslint-disable react-hooks/immutability -- Three.js buffer attribute mutations are intentional WebGL patterns inside useFrame */
+   
   useFrameTick('misc', ({ delta }) => {
     if (!groupRef.current) return;
     timeRef.current += delta;
@@ -866,7 +865,7 @@ function RadiatorSteamAnim({ anim }: { anim: EnvAnimation }) {
     opacityAttr.needsUpdate = true;
     sizeAttr.needsUpdate = true;
   });
-  /* eslint-enable react-hooks/immutability */
+   
 
   return (
     <group ref={groupRef}>
@@ -920,7 +919,7 @@ interface EnvironmentalAnimatorProps {
  * Reads the animation definitions for the current scene and renders them.
  * Place inside the Canvas/Physics tree.
  */
-export function EnvironmentalAnimator({ livePlayerPositionRef }: EnvironmentalAnimatorProps) {
+export function EnvironmentalAnimator({ livePlayerPositionRef: _livePlayerPositionRef }: EnvironmentalAnimatorProps) {
   const sceneId = useGameStore((s) => s.exploration.currentSceneId);
   const animations = getSceneEnvAnimations(sceneId);
 

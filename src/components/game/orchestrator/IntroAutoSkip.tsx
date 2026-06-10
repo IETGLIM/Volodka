@@ -7,8 +7,10 @@ export function IntroAutoSkip() {
   const { introSeen, mode } = useOrchestratorShell();
 
   useEffect(() => {
+    // Returning visitors (poem already seen) skip the intro straight to the
+    // main menu rather than dead-ending into exploration.
     if (mode === 'intro' && introSeen) {
-      useGameStore.getState().setIntroActive(false);
+      useGameStore.getState().setMainMenuOpen(true);
     }
   }, [mode, introSeen]);
 

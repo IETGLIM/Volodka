@@ -9,6 +9,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Volume2, Music, CloudRain, Footprints, Mic } from 'lucide-react';
 import { Slider } from '@/components/ui/slider';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
+import { bottomAmbientMixerPx, bottomRightInsetPx } from '@/shared/constants/hudLayout';
 
 /* ─── Types ─── */
 
@@ -82,8 +83,12 @@ export function AmbientSoundMixer() {
 
   return (
     <div
-      className="fixed bottom-16 right-4 flex flex-col items-end gap-2 pointer-events-none"
-      style={{ zIndex: UI_LAYERS.HUD }}
+      className="fixed flex flex-col items-end gap-2 pointer-events-none"
+      style={{
+        zIndex: UI_LAYERS.HUD,
+        bottom: bottomAmbientMixerPx(),
+        right: bottomRightInsetPx(),
+      }}
     >
       {/* ── Mixer Panel ── */}
       <AnimatePresence>

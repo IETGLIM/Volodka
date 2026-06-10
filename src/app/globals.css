@@ -29,3 +29,12 @@
 @import "../styles/toasts-loading.css";
 @import "../styles/reduced-motion.css";
 @import "../styles/backdrop-mobile.css";
+@import "../styles/accessibility.css";
+@import "../components/interactions/MicroInteractions.css";
+
+/* ── User setting: scanlines off (SettingsPanel → engine/visualSettings) ── */
+html[data-scanlines="off"] .panel-scanlines::after,
+html[data-scanlines="off"] .scanline-overlay::after,
+html[data-scanlines="off"] .cp-scanline-bar {
+  display: none !important;
+}

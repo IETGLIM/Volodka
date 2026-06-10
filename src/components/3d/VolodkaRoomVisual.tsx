@@ -11,14 +11,186 @@ import { EnvironmentDetail } from './lod/PropDistanceGate';
 import { Lamp, Rug, Radiator } from './lazyInteriorModels';
 import { useCachedCanvasTexture } from '@/hooks/useCachedCanvasTexture';
 import { VolodkaRoomClutter } from './sceneChunks/volodkaRoom';
-import { VolodkaRoomProps } from './VolodkaRoomProps';
+
+/* ─── Desk monitor screen textures (Grafana · terminal · Zabbix) ─── */
+
+function seededSeries(count: number, seed: number, min: number, max: number): number[] {
+  const out: number[] = [];
+  let s = seed % 233280;
+  for (let i = 0; i < count; i++) {
+    s = (s * 9301 + 49297) % 233280;
+    out.push(min + (s / 233280) * (max - min));
+  }
+  return out;
+}
+
+function drawChart(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  stroke: string,
+  fill: string,
+  seed: number,
+): void {
+  ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+  ctx.lineWidth = 1;
+  for (let gx = 0; gx <= 4; gx++) {
+    ctx.beginPath();
+    ctx.moveTo(x + (w / 4) * gx, y);
+    ctx.lineTo(x + (w / 4) * gx, y + h);
+    ctx.stroke();
+  }
+  for (let gy = 0; gy <= 3; gy++) {
+    ctx.beginPath();
+    ctx.moveTo(x, y + (h / 3) * gy);
+    ctx.lineTo(x + w, y + (h / 3) * gy);
+    ctx.stroke();
+  }
+  const pts = seededSeries(16, seed, 0.15, 0.92);
+  const px = (i: number) => x + (w / (pts.length - 1)) * i;
+  const py = (v: number) => y + h - v * h;
+  ctx.beginPath();
+  pts.forEach((v, i) => (i === 0 ? ctx.moveTo(px(i), py(v)) : ctx.lineTo(px(i), py(v))));
+  ctx.lineTo(x + w, y + h);
+  ctx.lineTo(x, y + h);
+  ctx.closePath();
+  ctx.fillStyle = fill;
+  ctx.fill();
+  ctx.beginPath();
+  pts.forEach((v, i) => (i === 0 ? ctx.moveTo(px(i), py(v)) : ctx.lineTo(px(i), py(v))));
+  ctx.strokeStyle = stroke;
+  ctx.lineWidth = 1.6;
+  ctx.stroke();
+}
+
+function makeScreenCanvas(): { canvas: HTMLCanvasElement; ctx: CanvasRenderingContext2D } {
+  const canvas = document.createElement('canvas');
+  canvas.width = 256;
+  canvas.height = 176;
+  const ctx = canvas.getContext('2d')!;
+  return { canvas, ctx };
+}
+
+function createGrafanaTexture(): THREE.CanvasTexture {
+  const { canvas, ctx } = makeScreenCanvas();
+  ctx.fillStyle = '#0b0e14';
+  ctx.fillRect(0, 0, 256, 176);
+  ctx.fillStyle = '#11161f';
+  ctx.fillRect(0, 0, 256, 20);
+  ctx.fillStyle = '#f59e0b';
+  ctx.beginPath();
+  ctx.arc(11, 10, 4, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = '#cdd6e4';
+  ctx.font = 'bold 10px monospace';
+  ctx.fillText('GRAFANA · node-01', 22, 14);
+  ctx.fillStyle = '#7d8aa0';
+  ctx.font = '8px monospace';
+  ctx.fillText('CPU usage %', 8, 32);
+  drawChart(ctx, 8, 36, 240, 48, '#22d3ee', 'rgba(34,211,238,0.18)', 73);
+  ctx.fillStyle = '#22d3ee';
+  ctx.font = 'bold 11px monospace';
+  ctx.fillText('63%', 214, 33);
+  ctx.fillStyle = '#7d8aa0';
+  ctx.font = '8px monospace';
+  ctx.fillText('Network I/O', 8, 100);
+  drawChart(ctx, 8, 104, 240, 48, '#34d399', 'rgba(52,211,153,0.18)', 191);
+  ctx.fillStyle = '#34d399';
+  ctx.font = 'bold 11px monospace';
+  ctx.fillText('12MB/s', 196, 101);
+  ctx.fillStyle = '#11161f';
+  ctx.fillRect(0, 162, 256, 14);
+  ctx.fillStyle = '#34d399';
+  ctx.font = '8px monospace';
+  ctx.fillText('● live · refresh 5s', 8, 172);
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  return tex;
+}
+
+function createZabbixTexture(): THREE.CanvasTexture {
+  const { canvas, ctx } = makeScreenCanvas();
+  ctx.fillStyle = '#0a0f0a';
+  ctx.fillRect(0, 0, 256, 176);
+  ctx.fillStyle = '#3a0d0d';
+  ctx.fillRect(0, 0, 256, 20);
+  ctx.fillStyle = '#e8413a';
+  ctx.beginPath();
+  ctx.arc(11, 10, 4, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = '#e6ede6';
+  ctx.font = 'bold 10px monospace';
+  ctx.fillText('ZABBIX · triggers', 22, 14);
+  ctx.fillStyle = '#8aa08a';
+  ctx.font = '8px monospace';
+  ctx.fillText('Response time (ms)', 8, 32);
+  drawChart(ctx, 8, 36, 240, 44, '#f59e0b', 'rgba(245,158,11,0.16)', 53);
+  const rows: Array<[string, string, string]> = [
+    ['web-01', 'OK', '#34d399'],
+    ['db-02', 'PROBLEM', '#e8413a'],
+    ['node-7', 'OK', '#34d399'],
+    ['disk /', '87%', '#f59e0b'],
+  ];
+  rows.forEach(([host, status, color], i) => {
+    const y = 96 + i * 17;
+    ctx.fillStyle = '#0f150f';
+    ctx.fillRect(8, y, 240, 14);
+    ctx.fillStyle = '#c7d2c7';
+    ctx.font = '8px monospace';
+    ctx.fillText(host, 14, y + 10);
+    ctx.fillStyle = color;
+    ctx.font = 'bold 8px monospace';
+    ctx.fillText(status, 200, y + 10);
+  });
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  return tex;
+}
+
+function createTerminalScreenTexture(): THREE.CanvasTexture {
+  const canvas = document.createElement('canvas');
+  canvas.width = 256;
+  canvas.height = 320;
+  const ctx = canvas.getContext('2d')!;
+  ctx.fillStyle = '#03110a';
+  ctx.fillRect(0, 0, 256, 320);
+  ctx.fillStyle = '#00ff66';
+  ctx.font = '11px monospace';
+  const lines = [
+    'volodka@neurosys:~$ tail -f /var/log/sys',
+    '[14:02:11] INFO  scheduler tick ok',
+    '[14:02:12] WARN  latency p99=812ms',
+    '[14:02:13] INFO  node-7 heartbeat ok',
+    '[14:02:14] ERROR db-02 connection reset',
+    '[14:02:14] INFO  retry 1/3 ...',
+    '[14:02:15] INFO  retry ok, restored',
+    '[14:02:16] INFO  deploy build #4729',
+    '[14:02:17] INFO  poem fragment found',
+    '[14:02:18] INFO  "Смерть есть лишь",',
+    '[14:02:18] INFO  "      начало..."',
+    '[14:02:19] WARN  unknown signature',
+    '[14:02:20] INFO  rotating logs',
+    '[14:02:21] INFO  uptime 412d 06:11',
+    'volodka@neurosys:~$ ./watch.sh',
+    'monitoring 3 hosts ... press ^C',
+  ];
+  lines.forEach((line, i) => ctx.fillText(line, 6, 16 + i * 19));
+  ctx.fillRect(6, 16 + lines.length * 19, 8, 11);
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.wrapT = THREE.RepeatWrapping;
+  tex.repeat.set(1, 1.6);
+  return tex;
+}
 
 interface VolodkaRoomVisualProps {
   livePlayerPositionRef?: MutableRefObject<THREE.Vector3>;
 }
 
 /** Procedural 3D room for Volodka's apartment (5×7m) */
-export function VolodkaRoomVisual({ livePlayerPositionRef }: VolodkaRoomVisualProps) {
+export function VolodkaRoomVisual({ livePlayerPositionRef: _livePlayerPositionRef }: VolodkaRoomVisualProps) {
   // Canvas textures created synchronously via useMemo
   const floorTexture = useCachedCanvasTexture('volodka_room:floor', createFloorTexture);
   const wallTexture = useCachedCanvasTexture('volodka_room:wall', createWallTexture);
@@ -28,7 +200,8 @@ export function VolodkaRoomVisual({ livePlayerPositionRef }: VolodkaRoomVisualPr
   const fanGroupRef = useRef<THREE.Group>(null);
   const ledRef = useRef<THREE.MeshStandardMaterial>(null);
   const ledTimeRef = useRef(0);
-  const monitorTextureRef = useRef<THREE.CanvasTexture | null>(null);
+  const terminalTexRef = useRef<THREE.CanvasTexture | null>(null);
+  const zabbixAlertRef = useRef<THREE.MeshStandardMaterial>(null);
 
   // ── Interactive object animation refs ──
   const roomDoorRef = useRef<THREE.Group>(null);
@@ -38,64 +211,23 @@ export function VolodkaRoomVisual({ livePlayerPositionRef }: VolodkaRoomVisualPr
   const D = 7; // depth (z)
   const H = 3; // height (y)
 
-  // ── Monitor scroll texture ──
-  const monitorScrollTexture = useMemo(() => {
-    const canvas = document.createElement('canvas');
-    canvas.width = 128;
-    canvas.height = 256;
-    const ctx = canvas.getContext('2d')!;
-    // Dark background
-    ctx.fillStyle = '#001a00';
-    ctx.fillRect(0, 0, 128, 256);
-    // Green code lines
-    ctx.fillStyle = '#00ff44';
-    ctx.font = '8px monospace';
-    const lines = [
-      'root@volodka:~$ ls',
-      'Desktop  Documents  Downloads',
-      'root@volodka:~$ cd /opt/neural',
-      'root@volodka:/opt/neural$ ./train',
-      '[INFO] Loading model weights...',
-      '[INFO] Epoch 1/100 loss=0.8472',
-      '[INFO] Epoch 2/100 loss=0.6231',
-      '[INFO] Epoch 3/100 loss=0.5182',
-      '[INFO] Saving checkpoint...',
-      'root@volodka:/opt/neural$ python',
-      '>>> import torch',
-      '>>> model = Net()',
-      '>>> model.load("ckpt.pt")',
-      '>>> output = model(input)',
-      '>>> print(output.shape)',
-      'torch.Size([1, 512])',
-      '>>> # hmm, unexpected',
-      '>>> model.eval()',
-      '>>> ^C',
-      'root@volodka:/opt/neural$ exit',
-      'root@volodka:~$ _',
-    ];
-    lines.forEach((line, i) => {
-      ctx.fillText(line, 4, 14 + i * 11);
-    });
-    // Blinking cursor line
-    ctx.fillStyle = '#00ff44';
-    ctx.fillRect(4, 14 + lines.length * 11, 7, 8);
+  // ── Desk monitor screen textures (Grafana · terminal · Zabbix) ──
+  const terminalTexture = useMemo(() => createTerminalScreenTexture(), []);
+  const grafanaTexture = useMemo(() => createGrafanaTexture(), []);
+  const zabbixTexture = useMemo(() => createZabbixTexture(), []);
 
-    const tex = new THREE.CanvasTexture(canvas);
-    tex.wrapS = THREE.RepeatWrapping;
-    tex.wrapT = THREE.RepeatWrapping;
-    tex.repeat.set(1, 1.5);
-    return tex;
-  }, []);
-
-  // Sync ref outside of render (satisfies react-hooks/refs)
+  // Sync animated (terminal) texture ref outside of render
   useEffect(() => {
-    monitorTextureRef.current = monitorScrollTexture;
-  }, [monitorScrollTexture]);
+    terminalTexRef.current = terminalTexture;
+  }, [terminalTexture]);
 
   useEffect(() => {
-    const tex = monitorScrollTexture;
-    return () => { tex.dispose(); };
-  }, [monitorScrollTexture]);
+    return () => {
+      terminalTexture.dispose();
+      grafanaTexture.dispose();
+      zabbixTexture.dispose();
+    };
+  }, [terminalTexture, grafanaTexture, zabbixTexture]);
 
   // Dispose floor and wall textures on unmount to prevent GPU memory leak
   useEffect(() => {
@@ -131,12 +263,16 @@ export function VolodkaRoomVisual({ livePlayerPositionRef }: VolodkaRoomVisualPr
       ledRef.current.emissiveIntensity = phase < 0.15 ? 3.0 : 0.3; // short bright flash
     }
 
-    // Monitor scroll
-    if (monitorTextureRef.current) {
-      monitorTextureRef.current.offset.y += delta * 0.03;
-      if (monitorTextureRef.current.offset.y > 1.0) {
-        monitorTextureRef.current.offset.y -= 1.0;
+    // Terminal monitor scroll + Zabbix alert blink
+    if (terminalTexRef.current) {
+      terminalTexRef.current.offset.y += delta * 0.04;
+      if (terminalTexRef.current.offset.y > 1.0) {
+        terminalTexRef.current.offset.y -= 1.0;
       }
+    }
+    if (zabbixAlertRef.current) {
+      const blink = (ledTimeRef.current * 1.5) % 1;
+      zabbixAlertRef.current.emissiveIntensity = blink < 0.5 ? 3.2 : 0.4;
     }
 
     // Interactive object animations — smooth lerp toward target rotation
@@ -318,40 +454,52 @@ export function VolodkaRoomVisual({ livePlayerPositionRef }: VolodkaRoomVisualPr
             <meshStandardMaterial color="#3a2a18" />
           </mesh>
         ))}
-        {/* Monitor — scroll texture for animated code display */}
-        <mesh position={[0, 1.15, -0.2]} castShadow>
-          <boxGeometry args={[0.6, 0.4, 0.05]} />
-          <meshStandardMaterial
-            map={monitorScrollTexture}
-            color="#004400"
-            emissive="#00ff66"
-            emissiveIntensity={8.0}
-            toneMapped={false}
-          />
-        </mesh>
-        {/* Monitor glow — point + spot for desk emissive punch */}
-        <pointLight
-          position={[0, 1.2, 0.05]}
-          color="#00ff66"
-          intensity={5.5}
-          distance={8}
-        />
-        <spotLight
-          position={[0, 1.25, 0.15]}
-          angle={0.55}
-          penumbra={0.6}
-          color="#66ffaa"
-          intensity={3.2}
-          distance={6}
-        >
-          <object3D position={[0, -0.47, -0.05]} />
-        </spotLight>
+        {/* ── Triple monitor rig: Grafana · terminal · Zabbix ── */}
+        {([
+          { id: 'grafana', tex: grafanaTexture, x: -0.62, rotY: 0.24 },
+          { id: 'terminal', tex: terminalTexture, x: 0, rotY: 0 },
+          { id: 'zabbix', tex: zabbixTexture, x: 0.62, rotY: -0.24 },
+        ] as const).map(({ id, tex, x, rotY }) => (
+          <group key={id} position={[x, 1.12, -0.18]} rotation={[0, rotY, 0]}>
+            {/* Bezel */}
+            <mesh castShadow>
+              <boxGeometry args={[0.54, 0.38, 0.04]} />
+              <meshStandardMaterial color="#08080b" roughness={0.4} metalness={0.4} />
+            </mesh>
+            {/* Screen — unlit map so the dashboards stay crisp and readable */}
+            <mesh position={[0, 0, 0.0225]}>
+              <planeGeometry args={[0.5, 0.34]} />
+              <meshBasicMaterial map={tex} toneMapped={false} />
+            </mesh>
+            {/* Zabbix blinking alert LED */}
+            {id === 'zabbix' && (
+              <mesh position={[0.205, 0.145, 0.03]}>
+                <circleGeometry args={[0.012, 14]} />
+                <meshStandardMaterial
+                  ref={zabbixAlertRef}
+                  color="#e8413a"
+                  emissive="#e8413a"
+                  emissiveIntensity={2.5}
+                  toneMapped={false}
+                />
+              </mesh>
+            )}
+            {/* Stand */}
+            <mesh position={[0, -0.27, -0.02]}>
+              <boxGeometry args={[0.05, 0.16, 0.05]} />
+              <meshStandardMaterial color="#15151a" />
+            </mesh>
+            <mesh position={[0, -0.35, 0]}>
+              <boxGeometry args={[0.2, 0.02, 0.12]} />
+              <meshStandardMaterial color="#15151a" />
+            </mesh>
+          </group>
+        ))}
 
-        {/* Monitor stand */}
-        <mesh position={[0, 0.9, -0.2]}>
-          <boxGeometry args={[0.08, 0.15, 0.08]} />
-          <meshStandardMaterial color="#222" emissive="#00ff44" emissiveIntensity={0.15} />
-        </mesh>
+        {/* Monitor glow — keeps the room lit (the screens are the primary source) */}
+        <pointLight position={[0, 1.25, 0.15]} color="#00ff88" intensity={3.2} distance={9} />
+        <pointLight position={[-0.62, 1.1, 0.1]} color="#22d3ee" intensity={1.3} distance={5} />
+        <pointLight position={[0.62, 1.1, 0.1]} color="#f59e0b" intensity={1.0} distance={5} />
         {/* Keyboard */}
         <mesh position={[0, 0.78, 0.1]}>
           <boxGeometry args={[0.4, 0.02, 0.15]} />
@@ -555,10 +703,7 @@ export function VolodkaRoomVisual({ livePlayerPositionRef }: VolodkaRoomVisualPr
       </group>
 
       {/* ── ENVIRONMENTAL CLUTTER / STORYTELLING (lazy chunk) ── */}
-      <EnvironmentDetail currentLod={lod} minLod="standard">
-        <VolodkaRoomClutter lod={lod} />
-        <VolodkaRoomProps />
-      </EnvironmentDetail>
+      <VolodkaRoomClutter lod={lod} />
 
       {/* ═══════════════════════════════════════════════ */}
       {/* ── ANIMATED DESK ELEMENTS ── */}

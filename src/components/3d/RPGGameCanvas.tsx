@@ -36,7 +36,6 @@ import {
   unregisterCanvasForFirstFrame,
 } from '@/engine/canvas/canvasFirstFrameSession';
 import { markCanvasMounted, markFirstFrame } from '@/engine/performance/LoadingTimeline';
-import { createCanvasRenderer } from '@/engine/graphics/createCanvasRenderer';
 
 const LazyPhysicsSceneInner = lazy(() => import('./PhysicsSceneInner'));
 
@@ -351,8 +350,23 @@ export function RPGGameCanvas() {
           // the `canvas` parameter, causing "U.addEventListener is not a function"
           // because a plain object doesn't have DOM event methods.
           //
-          // WebGPU canary when feature flag set; WebGL is always the fallback default.
-          gl={(props) => createCanvasRenderer(props, preset)}
+          // FIX (Code Review #4): Removed unnecessary `async` — WebGLRenderer
+          // construction is synchronous; async adds nothing and may confuse readers.
+          gl={({ canvas }) => {
+            const renderer = new THREE.WebGLRenderer({
+              canvas,
+              antialias: preset.antialias,
+              stencil: true,
+              alpha: false,
+              powerPreference: 'high-performance',
+            });
+            // SAFETY: Ensure NoToneMapping — prevents double tone mapping with
+            // EffectComposer's ToneMapping pass (white screen).
+            renderer.toneMapping = THREE.NoToneMapping;
+            renderer.toneMappingExposure = 1.0;
+            renderer.setClearColor(0x000000, 1);
+            return renderer;
+          }}
           style={{ background: '#000' }}
         >
         <GltfPipelineInit />

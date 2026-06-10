@@ -138,7 +138,8 @@ export const QUESTS_ACT1: QuestDefinition[] = [
     id: 'vault_backup_trial',
     title: 'Испытание Хранилища',
     description: 'Коллега рассказал о Хранилище — месте, где хранятся стёртые архивы. Но доступ туда есть только у старших членов гильдии. Нужно найти способ проникнуть внутрь.',
-    act: 2,
+    // Запускается в акте 1 (story: colleague_persuasion_line) и входит в quest spine акта 1.
+    act: 1,
     faction: 'it_guild',
     questType: 'main',
     difficulty: 'hard',
@@ -191,7 +192,8 @@ export const QUESTS_ACT1: QuestDefinition[] = [
     id: 'poetry_collection',
     title: 'Собрание стихов',
     description: 'Разбросанные по городу стихотворения — не просто текст. Каждое — фрагмент целого послания, скрытого в коде города. Собери их все, чтобы узнать правду.',
-    act: 5,
+    // Сквозной квест: стартует в акте 1 (диалоги внутреннего голоса), завершается ближе к финалу.
+    act: 1,
     faction: undefined,
     questType: 'main',
     difficulty: 'hard',

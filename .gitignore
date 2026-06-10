@@ -59,8 +59,19 @@ server.log
 /skills/
 # deploy archives
 deploy-archive/
-assets-source/_downloads/
 examples/
 upload/
+/release/
+
+# local working junk — not part of the game
+/.tmp-archive/
+/temp_assets/
+/.zscripts/
+*.zip
+/vite-inspect/
+/.vite-inspect/
+models-tree.txt
+models-external-tree.txt
+src-tree.txt
 
 .vercel

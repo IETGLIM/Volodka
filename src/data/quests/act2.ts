@@ -104,7 +104,7 @@ export const QUESTS_ACT2: QuestDefinition[] = [
       { type: 'addKarma', value: 10 },
       { type: 'addXp', value: 150 },
     ],
-    linkedStoryNodeId: 'office_colleague',
+    linkedStoryNodeId: 'act2_dmitry_office_meeting',
     questGiverNpcId: 'office_dmitry',
   },
 

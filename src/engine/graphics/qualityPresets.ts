@@ -130,28 +130,13 @@ export const QUALITY_PRESET_ORDER: Exclude<QualityPresetId, 'auto'>[] = [
 
 export const GRAPHICS_SETTINGS_KEY = 'volodka_quality_preset';
 
-/** Resolve `auto` from viewport, DPR, and hardware concurrency heuristics. */
+/** Resolve `auto` from viewport + DPR heuristics. */
 export function detectAutoQualityPreset(
   viewportWidth: number,
   devicePixelRatio: number,
-  hardwareConcurrency = typeof navigator !== 'undefined'
-    ? navigator.hardwareConcurrency
-    : 8,
 ): Exclude<QualityPresetId, 'auto'> {
-  const weakCpu = hardwareConcurrency <= 4;
-  const moderateCpu = hardwareConcurrency <= 8;
-
-  if (viewportWidth < 768 || devicePixelRatio < 1.25 || weakCpu) return 'low';
+  if (viewportWidth < 768 || devicePixelRatio < 1.25) return 'low';
   if (viewportWidth < 1024 || devicePixelRatio < 1.5) return 'medium';
-
-  // Capable desktop: ≥8 cores + DPR ≥1.5 bumps auto to high (shadows, contact shadows, GLB)
-  const capableDesktop =
-    hardwareConcurrency >= 8 && devicePixelRatio >= 1.5 && viewportWidth >= 1024;
-  if (capableDesktop) {
-    return viewportWidth < 1600 ? 'high' : 'ultra';
-  }
-
-  if (moderateCpu && viewportWidth < 1280) return 'medium';
   if (viewportWidth < 1440) return 'high';
   return 'ultra';
 }
@@ -160,11 +145,10 @@ export function resolveQualityPreset(
   selected: QualityPresetId,
   viewportWidth: number,
   devicePixelRatio: number,
-  hardwareConcurrency?: number,
 ): QualityPreset {
   const id =
     selected === 'auto'
-      ? detectAutoQualityPreset(viewportWidth, devicePixelRatio, hardwareConcurrency)
+      ? detectAutoQualityPreset(viewportWidth, devicePixelRatio)
       : selected;
   return QUALITY_PRESETS[id];
 }

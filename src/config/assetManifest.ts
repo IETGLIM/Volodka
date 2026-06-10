@@ -30,6 +30,14 @@ export interface GltfAssetDefinition {
   instancing?: boolean;
   castShadow?: boolean;
   receiveShadow?: boolean;
+  /**
+   * Whether the processed asset files actually exist under public/models/.
+   * Defaults to false: the game renders procedural meshes until the art
+   * pipeline (npm run assets:process) ships real GLBs. While false, GPU
+   * preload and GltfAsset rendering are skipped so missing files never trigger
+   * 404s / HTML-as-GLB parse errors. Flip to true once the files are present.
+   */
+  shipped?: boolean;
 }
 
 const MODELS = '/models';
@@ -40,28 +48,33 @@ export const ASSET_MANIFEST: Record<string, GltfAssetDefinition> = {
     id: 'player_volodka',
     category: 'character',
     lods: [
-      { url: `${MODELS}/characters/volodka/volodka_lod0.draco.glb`, maxDistance: 0, triangles: 12000 },
-      { url: `${MODELS}/characters/volodka/volodka_lod1.draco.glb`, maxDistance: 15, triangles: 6000 },
-      { url: `${MODELS}/characters/volodka/volodka_lod2.draco.glb`, maxDistance: 35, triangles: 2000 },
+      { url: `${MODELS}/characters/volodka/volodka_lod0.glb`, maxDistance: 0, triangles: 12000 },
+      { url: `${MODELS}/characters/volodka/volodka_lod1.glb`, maxDistance: 15, triangles: 6000 },
+      { url: `${MODELS}/characters/volodka/volodka_lod2.glb`, maxDistance: 35, triangles: 2000 },
     ],
     variants: {
-      none: `${MODELS}/characters/volodka/volodka_lod0.draco.glb`,
+      none: `${MODELS}/characters/volodka/volodka_lod0.glb`,
       draco: `${MODELS}/characters/volodka/volodka_lod0.draco.glb`,
-      meshopt: `${MODELS}/characters/volodka/volodka_lod0.draco.glb`,
+      meshopt: `${MODELS}/characters/volodka/volodka_lod0.meshopt.glb`,
     },
+    textureAtlas: `${MODELS}/characters/volodka/volodka_atlas`,
+    bakedLightmap: `${MODELS}/characters/volodka/volodka_lightmap.ktx2`,
+    impostor: { url: `${MODELS}/characters/volodka/volodka_impostor.ktx2`, distance: 45 },
     castShadow: true,
   },
   env_cafe_props: {
     id: 'env_cafe_props',
     category: 'environment',
     lods: [
-      { url: `${MODELS}/environments/cafe/props_lod0.draco.glb`, maxDistance: 0 },
-      { url: `${MODELS}/environments/cafe/props_lod1.draco.glb`, maxDistance: 20 },
+      { url: `${MODELS}/environments/cafe/props_lod0.glb`, maxDistance: 0 },
+      { url: `${MODELS}/environments/cafe/props_lod1.glb`, maxDistance: 20 },
     ],
     variants: {
       draco: `${MODELS}/environments/cafe/props.draco.glb`,
-      meshopt: `${MODELS}/environments/cafe/props.draco.glb`,
+      meshopt: `${MODELS}/environments/cafe/props.meshopt.glb`,
     },
+    textureAtlas: `${MODELS}/environments/cafe/cafe_atlas`,
+    bakedLightmap: `${MODELS}/environments/cafe/cafe_lightmap.ktx2`,
     instancing: true,
     receiveShadow: true,
   },
@@ -69,16 +82,22 @@ export const ASSET_MANIFEST: Record<string, GltfAssetDefinition> = {
     id: 'veg_tree_pine',
     category: 'vegetation',
     lods: [
-      { url: `${MODELS}/vegetation/pine/pine_lod0.draco.glb`, maxDistance: 0 },
-      { url: `${MODELS}/vegetation/pine/pine_lod1.draco.glb`, maxDistance: 25 },
-      { url: `${MODELS}/vegetation/pine/pine_lod2.draco.glb`, maxDistance: 50 },
+      { url: `${MODELS}/vegetation/pine/pine_lod0.glb`, maxDistance: 0 },
+      { url: `${MODELS}/vegetation/pine/pine_lod1.glb`, maxDistance: 25 },
+      { url: `${MODELS}/vegetation/pine/pine_lod2.glb`, maxDistance: 50 },
     ],
+    impostor: { url: `${MODELS}/vegetation/pine/pine_impostor.ktx2`, distance: 55 },
     instancing: true,
   },
 };
 
 export function getAssetDefinition(assetId: string): GltfAssetDefinition | undefined {
   return ASSET_MANIFEST[assetId];
+}
+
+/** Whether an asset's processed files are shipped under public/models/. */
+export function isAssetShipped(assetId: string): boolean {
+  return ASSET_MANIFEST[assetId]?.shipped === true;
 }
 
 /** Pick LOD url for camera distance with quality bias. */

@@ -72,6 +72,9 @@
       "^vendor-",
       "^GameOrchestrator-",
       "^game-ui-menu-screen",
+      "^boot-shared",
+      "^data-loader",
+      "^data-golden-path",
       "^data-npc",
       "^data-world",
       "^data-mechanics",
@@ -92,6 +95,7 @@
       "^data-poems",
       "^data-lore",
       "^data-narrative",
+      "^content-validator",
       "^engine-narrative",
       "^engine-quest",
       "^pack-chk-narrative"
@@ -101,6 +105,9 @@
       "^vendor-",
       "^GameOrchestrator-",
       "^game-ui-menu-screen",
+      "^boot-shared",
+      "^data-loader",
+      "^data-golden-path",
       "^data-npc",
       "^data-world",
       "^data-mechanics",
@@ -119,6 +126,7 @@
       "^data-poems",
       "^data-lore",
       "^data-narrative",
+      "^content-validator",
       "^engine-narrative",
       "^engine-quest",
       "^pack-chk-narrative"
@@ -131,8 +139,7 @@
       "^game-ui-(?!menu-screen|hud)",
       "^scene-(?!volodka-room)",
       "^game-dev",
-      "^engine-combat",
-      "^engine-ml"
+      "^engine-combat"
     ]
   }
 }

@@ -11,6 +11,7 @@ import { useSyncExternalStore } from 'react';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { POEMS } from '@/data/poems';
 import { audioEngine } from '@/engine/AudioEngine';
+import { eventBus } from '@/engine/EventBus';
 import { useTypewriter } from '@/hooks/useTypewriter';
 import { CanvasMatrixRain } from './shared/CanvasMatrixRain';
 import { validateSaveData } from '@/shared/validation/saveSchema';
@@ -38,7 +39,7 @@ const MenuParticles = memo(function MenuParticles() {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- client-only mount guard to prevent hydration mismatch
+     
     setMounted(true);
   }, []);
 
@@ -674,7 +675,7 @@ const SystemStatusReadout = memo(function SystemStatusReadout() {
 // ============================================
 
 export function MenuScreen() {
-  const { setIntroActive, loadGame, resetGame, musicEnabled, toggleMusic } = useMenuScreenActions();
+  const { loadGame, resetGame, musicEnabled, toggleMusic } = useMenuScreenActions();
   const reduceMotion = useReducedMotion();
 
   const hasSave = useSyncExternalStore(
@@ -716,9 +717,15 @@ export function MenuScreen() {
       // the intro entirely which removed the narrative experience.
       const store = useGameStore.getState();
       store.setCurrentNodeId('start');
-      store.setIntroSeen(false);
+      store.setIntroSeen(true);
+      store.collectPoem('poem_2');
+      // Leave the menu → play the 3D wake-up cutscene in volodka_room.
+      // The cutscene now has a wall-clock safety timer (WakeUpSequence) so it
+      // can never get stuck; on completion it offers the first quest.
       store.setMainMenuOpen(false);
-      store.setIntroActive(true);
+      store.setIntroActive(false);
+      store.setCutscene('intro_wakeup', []);
+      eventBus.emit('intro:wakeup_sequence', {});
     }, 800);
   }, [resetGame, isFadingOut]);
 
@@ -913,6 +920,16 @@ export function MenuScreen() {
 
         {/* Subtitle with typewriter effect */}
         <TypewriterSubtitle text="сказка между сменами" delay={1.0} />
+
+        {/* Tagline */}
+        <motion.p
+          initial={{ opacity: 0, y: 5 }}
+          animate={{ opacity: 0.7, y: 0 }}
+          transition={{ delay: 1.8, duration: 1.2 }}
+          className="mt-1 font-serif text-sm md:text-base tracking-[0.15em] text-slate-300/70"
+        >
+          История уставшего инженера
+        </motion.p>
 
         {/* "Стихи Владимира Лебедева" subtitle */}
         <motion.p

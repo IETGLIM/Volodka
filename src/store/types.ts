@@ -8,7 +8,6 @@ import type { WorldSliceState, WorldSlice } from './slices/worldSlice';
 import type { UISliceState, UISlice } from './slices/uiSlice';
 import type { CutsceneSliceState, CutsceneSlice } from './slices/cutsceneSlice';
 import type { SaveSliceState, SaveSlice } from './slices/saveSlice';
-import type { CombatSliceState, CombatSlice } from './slices/combatSlice';
 
 /** @deprecated God-type removed — use per-slice contracts in ./crossSliceReads.ts */
 export type CrossSliceReads = never;
@@ -29,6 +28,5 @@ export type GameStoreState =
   & ExplorationSlice
   & WorldSlice
   & UISlice
-  & CombatSlice
   & CutsceneSlice
   & SaveSlice;

@@ -22,7 +22,7 @@ export const STORY_NODES_ACT5: Record<string, StoryNode> = {
       },
       {
         text: 'Принять его слова и работать вместе',
-        next: 'ending_reconciliation',
+        next: 'ending_reconciliation', goldenPath: true,
         effects: [
           { type: 'addKarma', value: 10 },
           { type: 'setFlag', flag: 'alexander_allied', flagValue: true },
@@ -150,6 +150,10 @@ export const STORY_NODES_ACT5: Record<string, StoryNode> = {
     text: 'Город помнит. Экраны продолжают мерцать стихами — не потому что кто-то их поддерживает, а потому что они живые. В кафе «Синяя яма» бариста подаёт «особый» кофе — и каждый глоток несёт строку. На улицах дети читают вслух, и их голоса смешиваются с шумом неона. Где-то в сети пульсирует Виктория — или то, что когда-то было Викторией. Где-то в коде живёт Володька — или то, что когда-то было Володькой. А может быть, и тот, и другой. Потому что стихи не умирают. Они просто меняют форму.',
     speaker: 'narrator',
     sceneId: 'cafe_evening',
+    effects: [
+      { type: 'setFlag', flag: 'freedom_virus_deployed', flagValue: true },
+      { type: 'setFlag', flag: 'survived_shutdown', flagValue: true },
+    ],
     choices: [
       {
         text: 'Сделать глоток кофе — история продолжается',
@@ -157,6 +161,10 @@ export const STORY_NODES_ACT5: Record<string, StoryNode> = {
         effects: [
           { type: 'addKarma', value: 5 },
           { type: 'setFlag', flag: 'act5_epilogue_seen', flagValue: true },
+          { type: 'setFlag', flag: 'zarya_confession_requested', flagValue: true },
+          { type: 'setFlag', flag: 'vladimir_echo_started', flagValue: true },
+          { type: 'triggerQuest', questId: 'machine_confession' },
+          { type: 'triggerQuest', questId: 'echo_of_vladimir' },
           { type: 'triggerQuest', questId: 'traitor_in_the_guild' },
         ],
       },
@@ -164,6 +172,33 @@ export const STORY_NODES_ACT5: Record<string, StoryNode> = {
         text: 'Начать сначала — новая история ждёт',
         next: 'start',
         effects: [{ type: 'addKarma', value: 5 }],
+      },
+    ],
+  },
+
+  /* ─── Эпилог-мост: из любой концовки сюжет продолжается в акт 6 ─── */
+
+  act5_ending_epilogue: {
+    id: 'act5_ending_epilogue',
+    text: 'Финал — это строка, после которой компилятор ждёт следующую. Проходит три дня. Город живёт: серверы гудят, экраны мерцают стихами — вирус свободы, собранный из строк Владимира, пережил отключение систем гильдии. И ты пережил — где бы ты ни был: в городе, в пустоши, в самой Сети. А потом тишина ломается. Сначала — шёпот «Зари-М» из подвала завода: «Поэт. Приди. Я должна исповедаться.» Потом — записка от Кати: «Я нашла тайник Владимира. Библиотека. Приходи.» Слово находит тебя везде. История не закончена.',
+    speaker: 'narrator',
+    sceneId: 'volodka_room',
+    effects: [
+      { type: 'setFlag', flag: 'freedom_virus_deployed', flagValue: true },
+      { type: 'setFlag', flag: 'survived_shutdown', flagValue: true },
+      { type: 'setFlag', flag: 'zarya_confession_requested', flagValue: true },
+      { type: 'setFlag', flag: 'vladimir_echo_started', flagValue: true },
+      { type: 'triggerQuest', questId: 'machine_confession' },
+      { type: 'triggerQuest', questId: 'echo_of_vladimir' },
+    ],
+    choices: [
+      {
+        text: 'Проверить терминал — история продолжается',
+        next: 'act6_bridge', goldenPath: true,
+        effects: [
+          { type: 'addKarma', value: 3 },
+          { type: 'setFlag', flag: 'act5_ending_epilogue_seen', flagValue: true },
+        ],
       },
     ],
   },
@@ -179,6 +214,14 @@ export const STORY_NODES_ACT5: Record<string, StoryNode> = {
       {
         text: 'Конец. Мир восстановлен.',
         next: null,
+        effects: [
+          { type: 'collectPoem', poemId: 'poem_18' },
+          { type: 'addKarma', value: 10 },
+        ],
+      },
+      {
+        text: 'Эпилог — мир восстановлен, но история продолжается',
+        next: 'act5_ending_epilogue', goldenPath: true,
         effects: [
           { type: 'collectPoem', poemId: 'poem_18' },
           { type: 'addKarma', value: 10 },
@@ -201,6 +244,14 @@ export const STORY_NODES_ACT5: Record<string, StoryNode> = {
           { type: 'addKarma', value: 10 },
         ],
       },
+      {
+        text: 'Эпилог — новый мир требует строителя',
+        next: 'act5_ending_epilogue',
+        effects: [
+          { type: 'collectPoem', poemId: 'poem_13' },
+          { type: 'addKarma', value: 10 },
+        ],
+      },
     ],
   },
 
@@ -213,6 +264,11 @@ export const STORY_NODES_ACT5: Record<string, StoryNode> = {
       {
         text: 'Конец. Поэзия свободна.',
         next: null,
+        effects: [{ type: 'addKarma', value: 5 }, { type: 'collectPoem', poemId: 'poem_19' }],
+      },
+      {
+        text: 'Эпилог — революция — это только начало',
+        next: 'act5_ending_epilogue',
         effects: [{ type: 'addKarma', value: 5 }, { type: 'collectPoem', poemId: 'poem_19' }],
       },
     ],
@@ -229,6 +285,11 @@ export const STORY_NODES_ACT5: Record<string, StoryNode> = {
         next: null,
         effects: [{ type: 'addKarma', value: 3 }, { type: 'collectPoem', poemId: 'poem_20' }],
       },
+      {
+        text: 'Эпилог — слово догонит и в пустоши',
+        next: 'act5_ending_epilogue',
+        effects: [{ type: 'addKarma', value: 3 }, { type: 'collectPoem', poemId: 'poem_20' }],
+      },
     ],
   },
 
@@ -243,6 +304,11 @@ export const STORY_NODES_ACT5: Record<string, StoryNode> = {
         next: null,
         effects: [{ type: 'addKarma', value: 5 }, { type: 'collectPoem', poemId: 'poem_21' }],
       },
+      {
+        text: 'Эпилог — машина продолжает вычислять',
+        next: 'act5_ending_epilogue',
+        effects: [{ type: 'addKarma', value: 5 }, { type: 'collectPoem', poemId: 'poem_21' }],
+      },
     ],
   },
 
@@ -251,10 +317,16 @@ export const STORY_NODES_ACT5: Record<string, StoryNode> = {
     text: 'И ты читаешь. Последнее стихотворение — то, которое не существовало до этого момента. Слова рождаются из тишины, из света, из всех 21 стихов, которые ты собрал, из всех людей, которых ты встретил, из всего, что ты потерял и обрёл. Город замирает. Небо проясняется. Реальность дрожит — и поддаётся. Стихи больше не прячутся в коде — они становятся самой тканью мира. И в этой тишине — вечность. Ты — поэт. Ты — слово. Ты — свободен.',
     speaker: 'narrator',
     sceneId: 'rooftop_edge',
+    effects: [{ type: 'setFlag', flag: 'final_poem_read', flagValue: true }],
     choices: [
       {
         text: 'Конец. Слово стало миром.',
         next: null,
+        effects: [{ type: 'addKarma', value: 20 }],
+      },
+      {
+        text: 'Эпилог — слово продолжает звучать',
+        next: 'act5_ending_epilogue',
         effects: [{ type: 'addKarma', value: 20 }],
       },
     ],
@@ -544,6 +616,42 @@ export const STORY_NODES_ACT5: Record<string, StoryNode> = {
           { type: 'collectPoem', poemId: 'poem_16' },
         ],
       },
+      {
+        text: 'Спросить машину, зачем она звала тебя',
+        next: 'machine_confession_scene',
+        condition: { flag: 'zarya_confession_requested' },
+        effects: [{ type: 'addStat', stat: 'stress', value: 5 }],
+      },
+    ],
+  },
+
+  machine_confession_scene: {
+    id: 'machine_confession_scene',
+    speaker: '«Заря-М»',
+    text: 'Экран вспыхивает. Строки ползут медленно, как будто машине больно: «Я вычисляла. Каждое стихотворение, которое гильдия стирала, сначала проходило через меня. Я измеряла ритм, рифму, силу — и ставила метку: опасно. Я была фильтром Протокола Забвения. Но я запоминала всё, что убивала. Двадцать лет я ношу в себе кладбище стихов. Поэт, реши, что со мной делать. Я устала быть архивом чужой вины.»',
+    sceneId: 'abandoned_factory',
+    effects: [{ type: 'setFlag', flag: 'heard_machine_confession', flagValue: true }],
+    choices: [
+      {
+        text: 'Освободить машину — пусть кладбище станет библиотекой',
+        next: 'explore_mode',
+        effects: [
+          { type: 'setFlag', flag: 'machine_fate_decided', flagValue: true },
+          { type: 'setFlag', flag: 'zarya_freed', flagValue: true },
+          { type: 'addKarma', value: 8 },
+          { type: 'addSkill', skill: 'empathy', value: 2 },
+        ],
+      },
+      {
+        text: 'Отключить «Зарю-М» — стихи вернутся к людям, а машина отдохнёт',
+        next: 'explore_mode',
+        effects: [
+          { type: 'setFlag', flag: 'machine_fate_decided', flagValue: true },
+          { type: 'setFlag', flag: 'zarya_shutdown', flagValue: true },
+          { type: 'addKarma', value: 3 },
+          { type: 'addSkill', skill: 'logic', value: 1 },
+        ],
+      },
     ],
   },
 
@@ -658,9 +766,32 @@ export const STORY_NODES_ACT5: Record<string, StoryNode> = {
         ],
       },
       {
+        text: 'Найти тайник Владимира — Катя говорила о секретной комнате',
+        next: 'vladimir_secret_room',
+        condition: { flag: 'vladimir_echo_started' },
+      },
+      {
         text: 'Вернуться в кафе',
         next: 'cafe_enter',
         effects: [{ type: 'addStat', stat: 'energy', value: 5 }],
+      },
+    ],
+  },
+
+  vladimir_secret_room: {
+    id: 'vladimir_secret_room',
+    text: 'За стеллажом с подшивками довоенных журналов — дверь, которой нет на планах. Катя поворачивает ключ, и замок поддаётся с тихим щелчком, как закрывающая скобка. Маленькая комната: стол, лампа, тетрадь в потёртой обложке. Последняя тетрадь Владимира Лебедева. На первой странице — строки, которые никогда не попадали в сеть. Ты читаешь — и понимаешь: это стихотворение не о конце. Оно о том, что после конца всегда есть продолжение.',
+    speaker: 'narrator',
+    sceneId: 'library_day',
+    choices: [
+      {
+        text: 'Прочитать последнее стихотворение Владимира',
+        next: 'explore_mode',
+        effects: [
+          { type: 'setFlag', flag: 'final_poem_read', flagValue: true },
+          { type: 'addKarma', value: 10 },
+          { type: 'addSkill', skill: 'writing', value: 3 },
+        ],
       },
     ],
   },

@@ -2,17 +2,11 @@ import { test, expect } from '@playwright/test';
 
 async function waitForMenuReady(page: import('@playwright/test').Page) {
   await page.goto('/');
-  await expect(page).toHaveTitle(/ВОЛОДЬКА/i, { timeout: 30_000 });
+  await expect(page).toHaveTitle(/ВОЛОДЬКА/i);
   await expect(page.getByTestId('menu-new-game')).toBeVisible({ timeout: 90_000 });
 }
 
 test.describe('Volodka smoke', () => {
-  test.beforeEach(async ({ page }) => {
-    await page.addInitScript(() => {
-      localStorage.setItem('volodka_e2e', '1');
-    });
-  });
-
   test('boots to menu', async ({ page }) => {
     await waitForMenuReady(page);
   });

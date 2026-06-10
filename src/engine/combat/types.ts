@@ -29,12 +29,6 @@ export interface EnemyTemplate {
   type: EnemyType;
   name: string;
   emoji: string;
-  /** CC0 GLB model URL for visual variety (2D portrait / future 3D backdrop) */
-  modelUrl?: string;
-  /** Accent color for combat UI portrait frame */
-  portraitAccent?: string;
-  /** Stereo pan for spatial combat SFX (-1 left … +1 right) */
-  spatialPan?: number;
   baseHp: number;
   baseAttack: number;
   baseDefense: number;

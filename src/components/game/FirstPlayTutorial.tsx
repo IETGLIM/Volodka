@@ -335,6 +335,19 @@ export function FirstPlayTutorial() {
     }
   }, [currentStep]);
 
+  const handleSkip = useCallback(() => {
+    useGameStore.setState({
+      tutorialFlags: {
+        ...useGameStore.getState().tutorialFlags,
+        tutorialsCompleted: true,
+        tutorial_seen_movement: true,
+        tutorial_seen_interact: true,
+        tutorial_seen_controls: true,
+      },
+    });
+    setDismissed(true);
+  }, []);
+
   const step = STEPS[currentStep];
 
   return (
@@ -417,17 +430,30 @@ export function FirstPlayTutorial() {
                     {step.title}
                   </h2>
                 </div>
-                {/* Step indicator */}
-                <span
-                  className="text-xs font-mono px-2 py-0.5 rounded border"
-                  style={{
-                    color: 'rgb(var(--cyber-cyan-rgb) / 0.6)',
-                    borderColor: 'rgb(var(--cyber-cyan-rgb) / 0.15)',
-                    background: 'rgb(var(--cyber-cyan-rgb) / 0.05)',
-                  }}
-                >
-                  {currentStep + 1}/{STEPS.length}
-                </span>
+                {/* Step indicator + skip */}
+                <div className="flex items-center gap-2">
+                  <span
+                    className="text-xs font-mono px-2 py-0.5 rounded border"
+                    style={{
+                      color: 'rgb(var(--cyber-cyan-rgb) / 0.6)',
+                      borderColor: 'rgb(var(--cyber-cyan-rgb) / 0.15)',
+                      background: 'rgb(var(--cyber-cyan-rgb) / 0.05)',
+                    }}
+                  >
+                    {currentStep + 1}/{STEPS.length}
+                  </span>
+                  <button
+                    onClick={handleSkip}
+                    aria-label="Пропустить обучение"
+                    className="flex items-center justify-center w-6 h-6 rounded border text-slate-400 hover:text-white transition-colors"
+                    style={{
+                      borderColor: 'rgb(var(--cyber-cyan-rgb) / 0.15)',
+                      background: 'rgba(0,0,0,0.3)',
+                    }}
+                  >
+                    ✕
+                  </button>
+                </div>
               </div>
 
               {/* Progress bar */}

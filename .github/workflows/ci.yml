@@ -1,5 +1,8 @@
 name: CI
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 on:
   push:
     branches: [main]
@@ -11,9 +14,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: '22'
           cache: npm
@@ -37,9 +40,9 @@ jobs:
     timeout-minutes: 25
     needs: check
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: '22'
           cache: npm
@@ -51,5 +54,4 @@ jobs:
       # preview serves dist/ — check job builds on another runner, so build here too
       - run: npm run build
 
-      # Golden path + critical flows (not smoke-only)
-      - run: npx playwright test e2e/golden-path-act1.spec.ts e2e/save-load.spec.ts e2e/combat-flee.spec.ts e2e/scene-transition.spec.ts e2e/inventory-quest.spec.ts
+      - run: npm run test:e2e

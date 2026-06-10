@@ -3,7 +3,7 @@
  * out of the game-canvas entry chunk (avoids circular init with three/r3f).
  */
 
-import { memo, useEffect, useMemo, useState } from 'react';
+import { memo, useEffect, useMemo, useRef, useState } from 'react';
 import { Physics } from '@react-three/rapier';
 import type * as THREE from 'three';
 import { SceneColliderSelector } from './SceneColliderSelector';
@@ -30,7 +30,11 @@ import {
 } from './InteractionSystemBridge';
 import { WakeUpSequence } from './WakeUpSequence';
 import { NPCSystem } from './NPCSystem';
+import { DynamicProps } from './DynamicProps';
+import { PatrollingCreeps } from './PatrollingCreeps';
 import { RotationSyncBridge } from './RotationSyncBridge';
+import { FirstPersonHands } from './FirstPersonHands';
+import { TriggerZoneProps } from './TriggerZoneProp';
 import { eventBus } from '@/engine/EventBus';
 import { InteractionState } from '@/engine/interaction/interactionMachine';
 import type { VirtualControls } from '@/hooks/useGamePhysics';
@@ -48,6 +52,8 @@ function PhysicsSceneInner({
   virtualControlsRef,
   physicsPaused,
 }: PhysicsSceneInnerProps) {
+  const moveBlendRef = useRef(0);
+
   return (
     <Physics
       gravity={[0, -15, 0]}
@@ -62,14 +68,21 @@ function PhysicsSceneInner({
         livePlayerPositionRef={livePlayerPositionRef}
         livePlayerRotationRef={livePlayerRotationRef}
         virtualControlsRef={virtualControlsRef}
-        onInteractPress={() => {}}
+        moveBlendRef={moveBlendRef}
+        onInteractPress={() => {
+          eventBus.emit('interact:press', { source: 'player' });
+        }}
       />
       <FollowCamera
         livePlayerPositionRef={livePlayerPositionRef}
         livePlayerRotationRef={livePlayerRotationRef}
       />
+      <FirstPersonHands moveBlendRef={moveBlendRef} />
+      <TriggerZoneProps />
       <NPCSystemWrapper livePlayerPositionRef={livePlayerPositionRef} />
       <AmbientNPCs livePlayerPositionRef={livePlayerPositionRef} />
+      <DynamicProps />
+      <PatrollingCreeps livePlayerPositionRef={livePlayerPositionRef} />
       <WakeUpSequence />
       <InteractiveTriggers
         livePlayerPositionRef={livePlayerPositionRef}

@@ -33,14 +33,13 @@ import { setPhysicsStepMs } from '@/engine/frame/FrameBudgetRegistry';
 import { RigidBody, CapsuleCollider, useRapier, type RapierRigidBody, type RapierCollider } from '@react-three/rapier';
 import * as THREE from 'three';
 
-import { getGameStore } from '@/store/gameStore';
+import { getGameStore, useGameStore } from '@/store/gameStore';
 import { readGamePhase } from '@/shared/gamePhase';
-import { useCurrentSceneId, usePlayerKarma } from '@/store/selectors';
+import { useCurrentSceneId } from '@/store/selectors';
 import { usePlayerControls, type VirtualControls } from '@/hooks/useGamePhysics';
 
 import {
   getSceneConfig,
-  getExplorationCharacterModelScale,
   getExplorationLocomotionScale,
 } from '@/config/scenes';
 
@@ -52,12 +51,8 @@ import { getInteractionState, isInteractionLocked } from './InteractionSystemBri
 import { InteractionState } from '@/engine/interaction/interactionMachine';
 import { setPlayerRigidBody, getPlayerExternalVelocity, clearPlayerRigidBody } from '@/engine/PlayerRigidBodyState';
 import { devLog, devWarn } from '@/shared/utils/devLog';
-import { ContactShadows } from '@react-three/drei';
-import { ProceduralPlayerModelAdaptive } from './ProceduralPlayerModel';
-import { PlayerGltfModel } from './PlayerGltfModel';
-import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
-import { shouldUseGlbPlayer } from '@/engine/graphics/glbRenderMode';
 import { isNarrativeMovementLocked } from '@/shared/exploreHubNodes';
+import { FIRST_PERSON_ENABLED } from '@/engine/camera/cameraConstants';
 
 /** Lerp angle with wraparound — smooth rotation without 360 jumps */
 function lerpAngle(a: number, b: number, t: number): number {
@@ -98,6 +93,7 @@ interface PhysicsPlayerProps {
   livePlayerRotationRef: React.MutableRefObject<number>;
   virtualControlsRef?: React.MutableRefObject<VirtualControls>;
   onInteractPress?: () => void;
+  moveBlendRef?: React.MutableRefObject<number>;
 }
 
 
@@ -106,12 +102,12 @@ export function PhysicsPlayer({
   livePlayerRotationRef,
   virtualControlsRef,
   onInteractPress,
+  moveBlendRef,
 }: PhysicsPlayerProps) {
   const controls = usePlayerControls(onInteractPress);
   const sceneId = useCurrentSceneId();
-  const karma = usePlayerKarma();
-  const { preset } = useGraphicsQuality();
-  const useHeroGlb = shouldUseGlbPlayer(preset);
+  // Hide body during wake-up cutscene (camera-only).
+  const hideForWakeup = useGameStore((s) => s.activeCutsceneId === 'intro_wakeup');
 
   const rigidBodyRef = useRef<RapierRigidBody>(null!);
   const capsuleColliderRef = useRef<RapierCollider | null>(null); // Direct Rapier Collider ref from CapsuleCollider JSX
@@ -170,7 +166,6 @@ export function PhysicsPlayer({
   }, []);
 
   const locomotionScale = getExplorationLocomotionScale(sceneId);
-  const modelScale = getExplorationCharacterModelScale(sceneId);
   const config = getSceneConfig(sceneId);
 
   // Teleport player on scene change — use store spawn (set by SceneTransitionHandler)
@@ -231,26 +226,6 @@ export function PhysicsPlayer({
     });
     return unsub;
   }, [livePlayerPositionRef, livePlayerRotationRef]);
-
-  // Combat attack clip trigger (falls back to idle via locomotion mixer)
-  const attackResetTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  useEffect(() => {
-    const unsub = eventBus.on('combat:action', ({ action }) => {
-      if (action !== 'attack') return;
-      currentAnimRef.current = 'attack';
-      if (attackResetTimerRef.current) clearTimeout(attackResetTimerRef.current);
-      attackResetTimerRef.current = setTimeout(() => {
-        if (currentAnimRef.current === 'attack') {
-          currentAnimRef.current = 'idle';
-        }
-        attackResetTimerRef.current = null;
-      }, 650);
-    });
-    return () => {
-      unsub();
-      if (attackResetTimerRef.current) clearTimeout(attackResetTimerRef.current);
-    };
-  }, []);
 
   // Pre-allocated temp vectors (avoid GC in useFrame)
   const tempCameraForward = useRef(new THREE.Vector3());
@@ -497,6 +472,14 @@ export function PhysicsPlayer({
 
     const moveLen = moveDir.length();
     const isMoving = moveLen > 0.01;
+    if (moveBlendRef) {
+      moveBlendRef.current = THREE.MathUtils.damp(
+        moveBlendRef.current,
+        isMoving ? 1 : 0,
+        8,
+        dt,
+      );
+    }
     const speed = (running ? RUN_SPEED : WALK_SPEED) * locomotionScale;
 
     // ─── Horizontal velocity with acceleration / damping ───
@@ -764,14 +747,8 @@ export function PhysicsPlayer({
     setPhysicsStepMs(physicsStepMs);
   }, { label: 'PhysicsPlayer' });
 
-  // Determine karma glow color
-  const karmaGlow = useMemo(() => {
-    if (karma >= 65) return '#00cccc';
-    if (karma <= 35) return '#cc3333';
-    return '#888888';
-  }, [karma]);
-
   const spawnPoint = config.spawnPoint;
+  const showThirdPersonBody = !FIRST_PERSON_ENABLED && !hideForWakeup;
 
   return (
     <RigidBody
@@ -789,51 +766,11 @@ export function PhysicsPlayer({
         restitution={0}
       />
 
-      {/* Contact shadow — drei soft shadow on high/ultra, canvas decal otherwise */}
-      {preset.shadows && useHeroGlb ? (
-        <ContactShadows
-          position={[0, 0.005, 0]}
-          opacity={0.55}
-          scale={6}
-          blur={2.5}
-          far={1.4}
-          resolution={512}
-          color="#000000"
-        />
-      ) : (
-        <ContactShadow />
+      {showThirdPersonBody && (
+        <>
+          <ContactShadow />
+        </>
       )}
-
-      {useHeroGlb ? (
-        <PlayerGltfModel
-          modelScale={modelScale}
-          karmaGlow={karmaGlow}
-          currentAnimRef={currentAnimRef}
-          rotationRef={livePlayerRotationRef}
-        />
-      ) : (
-        <ProceduralPlayerModelAdaptive
-          modelScale={modelScale}
-          karmaGlow={karmaGlow}
-          currentAnimRef={currentAnimRef}
-          rotationRef={livePlayerRotationRef}
-        />
-      )}
-
-      {/* Karma glow point light — strong aura for visibility in dark scenes */}
-      <pointLight
-        position={[0, 1.0, 0]}
-        color={karmaGlow}
-        intensity={1.65}
-        distance={5}
-      />
-      {/* Rim light behind player — warm, very dim, for silhouette separation */}
-      <pointLight
-        position={[0, 1.2, -0.5]}
-        color="#ffaa66"
-        intensity={0.15}
-        distance={2}
-      />
     </RigidBody>
   );
 }

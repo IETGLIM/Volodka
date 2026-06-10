@@ -77,7 +77,7 @@ const DEFAULT_ENV_PROFILE: EnvironmentLodProfile = {
 export const SCENE_ENV_LOD: Partial<Record<string, EnvironmentLodProfile>> = {
   street_night: { clutterDistance: 16, decorativeDistance: 24 },
   street_winter: { clutterDistance: 16, decorativeDistance: 24 },
-  abandoned_factory: { clutterDistance: 12, decorativeDistance: 18 },
+  abandoned_factory: { clutterDistance: 14, decorativeDistance: 20 },
   park_day: { clutterDistance: 18, decorativeDistance: 28 },
   office_day: { clutterDistance: 12, decorativeDistance: 18 },
   cafe_evening: { clutterDistance: 10, decorativeDistance: 14 },
@@ -89,19 +89,7 @@ export const SCENE_ENV_LOD: Partial<Record<string, EnvironmentLodProfile>> = {
   sleep_dream: { clutterDistance: 20, decorativeDistance: 30 },
   battle: { clutterDistance: 10, decorativeDistance: 14 },
   zarema_albert_room: { clutterDistance: 8, decorativeDistance: 12 },
-  /** Dense forest — aggressive cull for draw-call budget (400 max) */
-  chk_forest_zorge: { clutterDistance: 12, decorativeDistance: 18 },
 };
-
-/** Per-scene NPC LOD — tighter thresholds for worst draw-call offenders. */
-export const SCENE_NPC_LOD: Partial<Record<string, LodThresholds>> = {
-  abandoned_factory: { cullOut: 28, cullIn: 24, impostorOut: 14, impostorIn: 9 },
-  chk_forest_zorge: { cullOut: 26, cullIn: 22, impostorOut: 13, impostorIn: 8 },
-};
-
-export function getNpcLodThresholds(sceneId: string, base: LodThresholds = DEFAULT_NPC_LOD): LodThresholds {
-  return SCENE_NPC_LOD[sceneId] ?? base;
-}
 
 export function getEnvironmentLodProfile(sceneId: string): EnvironmentLodProfile {
   return SCENE_ENV_LOD[sceneId] ?? DEFAULT_ENV_PROFILE;

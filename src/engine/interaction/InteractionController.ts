@@ -85,6 +85,37 @@ export class InteractionController {
 
   constructor(private readonly deps: InteractionControllerDeps) {
     this.session.begin();
+
+    // Subscribe to auto-trigger events for combat zones
+    const unsubAutoTrigger = eventBus.on('trigger:auto_execute', ({ triggerZoneId }) => {
+      if (this.session.isDisposed()) return;
+      const zone = getTriggerZones().find((z) => z.id === triggerZoneId);
+      if (!zone) return;
+
+      const store = useGameStore.getState();
+      if (readGamePhase(store) !== 'exploration') return;
+
+      if (zone.requiredAct && store.playerState.progression.currentAct < zone.requiredAct) {
+        return;
+      }
+
+      if (zone.effects && zone.effects.length > 0) {
+        this.applyInteractionEffects(zone.effects);
+      }
+
+      if (zone.isOneTime) {
+        store.toggleInteractiveObject(triggerZoneId);
+      }
+
+      if (zone.linkedQuestId) {
+        store.activateQuest(zone.linkedQuestId);
+      }
+    });
+
+    // Store unsubscribe for cleanup
+    this.session.onDispose(() => {
+      unsubAutoTrigger();
+    });
   }
 
   dispose(): void {
@@ -248,13 +279,18 @@ export class InteractionController {
     const zone = this.deps.getPendingTriggerZone();
     if (!zone) return;
 
+    const zoneSnapshot = zone;
     const { ui } = this.deps;
     ui.setExamineOpen(false);
     ui.setExamineData(null);
     ui.setExamineHasLinkedContent(false);
     this.deps.setPendingTriggerZone(null);
 
-    runInteractionTask('triggerLinkedContent', () => triggerLinkedContent(zone));
+    // Let ExaminePanel exit animation finish before opening narrative overlay (avoids dual FocusTrap / React #185).
+    this.session.schedule(() => {
+      if (this.session.isDisposed()) return;
+      runInteractionTask('triggerLinkedContent', () => triggerLinkedContent(zoneSnapshot));
+    }, 300);
   }
 
   clearPendingTriggerZone(): void {

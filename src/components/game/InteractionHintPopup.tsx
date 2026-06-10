@@ -10,6 +10,7 @@ import { User, Package, DoorOpen, Sparkles, Hand } from 'lucide-react';
 import { useGamePhase } from '@/store/selectors';
 import { eventBus } from '@/engine/EventBus';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
+import { bottomInteractPromptPx } from '@/shared/constants/hudLayout';
 
 /* ── Interaction hint data shape ── */
 interface InteractionHint {
@@ -139,7 +140,7 @@ export function InteractionHintPopup() {
           exit={{ y: 10, opacity: 0 }}
           transition={{ duration: 0.25, ease: 'easeOut' }}
           className="interaction-hint-popup fixed left-1/2 -translate-x-1/2 pointer-events-none select-none"
-          style={{ zIndex: UI_LAYERS.HUD, bottom: 140 }}
+          style={{ zIndex: UI_LAYERS.HUD, bottom: bottomInteractPromptPx() }}
         >
           <div
             className="relative overflow-hidden"

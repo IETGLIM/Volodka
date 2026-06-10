@@ -84,7 +84,7 @@ const MAX_RETURN_STACK_DEPTH = 8;
  */
 class CombatManager {
   private _state: CombatState | null = null;
-  private listeners = new Set<(state: CombatState | null) => void>();
+  private listeners = new Set<(state: CombatState) => void>();
   /** G12: Stack of storyNode IDs to return to after combat ends */
   private returnStack: string[] = [];
   private generation = 0;
@@ -100,14 +100,14 @@ class CombatManager {
 
   notifyListeners(): void {
     const state = this._state;
-    for (const fn of this.listeners) {
-      fn(state);
+    if (state) {
+      this.listeners.forEach((fn) => fn(state));
     }
   }
 
-  subscribe(listener: (state: CombatState | null) => void): () => void {
+  subscribe(listener: (state: CombatState) => void): () => void {
     this.listeners.add(listener);
-    listener(this._state);
+    if (this._state) listener(this._state);
     return () => this.listeners.delete(listener);
   }
 
@@ -127,7 +127,6 @@ class CombatManager {
   /** Cancel timers and drop listener refs (unmount / HMR). */
   dispose(): void {
     this.endSession();
-    this.notifyListeners();
     this.listeners.clear();
     this.returnStack.length = 0;
   }
@@ -181,7 +180,7 @@ export function disposeCombatSystem(): void {
 registerHmrDispose(disposeCombatSystem);
 
 /** Subscribe to combat state changes. Returns unsubscribe function. */
-export function subscribeToCombat(listener: (state: CombatState | null) => void): () => void {
+export function subscribeToCombat(listener: (state: CombatState) => void): () => void {
   return combat.subscribe(listener);
 }
 
@@ -261,7 +260,6 @@ export function startCombat(enemyType: EnemyType): CombatState {
 
   dispatchGameAction({ type: 'story/setCombatActive', active: true });
   eventBus.emit('combat:start', { enemyType });
-  eventBus.emit('camera:combat_start', {});
 
   combat.notifyListeners();
   return combat.getState()!;
@@ -330,8 +328,7 @@ export function playerAttack(): CombatState | null {
   });
 
   eventBus.emit('combat:action', { action: 'attack', damage });
-  eventBus.emit('combat:hit', { damage, isPlayerHit: false, source: 'player_attack' });
-  eventBus.emit('camera:combat_impact', { intensity: isCritical ? 0.85 : 0.5 });
+  eventBus.emit('camera:combat_impact', { intensity: isCritical ? 0.6 : 0.3 });
 
   // Check victory
   if (newEnemyHp <= 0) {
@@ -421,7 +418,6 @@ export function playerUsePoemPower(poemId: string): CombatState | null {
 
   eventBus.emit('combat:action', { action: 'poem_power' });
   eventBus.emit('poem:power_used', { poemId, powerName: ability.name });
-  eventBus.emit('camera:combat_impact', { intensity: 0.55 });
 
   // Check if enemy died from the ability
   const afterUse = combat.getState();
@@ -449,8 +445,10 @@ export function playerFlee(): CombatState | null {
   fleeChance += cs.fleeAttempts * 0.15;
 
   const unlockedSkills = playerState.progression.unlockedSkills;
-  if (unlockedSkills.includes('tech_4a')) fleeChance += 0.2;
-  if (unlockedSkills.includes('social_2a')) fleeChance += 0.15;
+  // Tier-4+ technical mastery sharpens the escape route; tier-2+ social grants composure under pressure.
+  if (unlockedSkills.some((id) => id.startsWith('tech_t4') || id === 'tech_t5_ultimate'))
+    fleeChance += 0.2;
+  if (unlockedSkills.some((id) => id.startsWith('social_t2'))) fleeChance += 0.15;
 
   const karma = playerState.karma;
   if (karma >= 70) fleeChance += 0.05;
@@ -473,10 +471,10 @@ export function playerFlee(): CombatState | null {
         { turn: cs.turn, text: '🏃 Побег успешен! Вы вырвались из боя.', type: 'player_flee' },
       ],
     });
+
     const fledState = combat.getState()!;
     eventBus.emit('combat:fled', { enemyType: fledState.enemy.type });
     eventBus.emit('combat:action', { action: 'flee' });
-    eventBus.emit('camera:combat_end', { outcome: 'fled' });
 
     // Return to exploration after a brief delay
     combat.schedule(1500, () => {
@@ -491,7 +489,6 @@ export function playerFlee(): CombatState | null {
   }
 
   // Failed flee — increment attempt counter
-  eventBus.emit('combat:miss', { source: 'flee_failed' });
   combat.setState({
     ...cs,
     fleeAttempts: cs.fleeAttempts + 1,
@@ -708,7 +705,7 @@ function executeEnemyTurn() {
   }
 
   const spiritualLevel = snap().playerState.progression.unlockedSkills.filter(
-    (id) => id.startsWith('spiritual_'),
+    (id) => id.startsWith('spirit_'),
   ).length;
   if (spiritualLevel > 0) {
     enemyDamage = Math.max(1, Math.floor(enemyDamage * (1 - spiritualLevel * 0.05)));
@@ -756,8 +753,7 @@ function executeEnemyTurn() {
     ],
   });
 
-  eventBus.emit('combat:hit', { damage: enemyDamage, isPlayerHit: true, source: 'enemy_attack' });
-  eventBus.emit('camera:combat_shake', { intensity: 0.42 });
+  eventBus.emit('camera:combat_shake', { intensity: 0.2 });
 
   // Check defeat
   if (newPlayerHp <= 0) {
@@ -857,6 +853,7 @@ function handleVictory(): CombatState {
       },
     ],
   });
+
   eventBus.emit('combat:victory', {
     enemyType: enemy.type,
     xpGained,
@@ -864,7 +861,6 @@ function handleVictory(): CombatState {
     creditsGained,
     lootItemId: lootItems[0],
   });
-  eventBus.emit('camera:combat_end', { outcome: 'victory' });
 
   combat.notifyListeners();
 
@@ -912,12 +908,12 @@ function handleDefeat(): void {
       },
     ],
   });
+
   eventBus.emit('combat:defeat', {
     enemyType: enemy.type,
     energyLost,
     karmaLost,
   });
-  eventBus.emit('camera:combat_end', { outcome: 'defeat' });
 
   combat.notifyListeners();
 

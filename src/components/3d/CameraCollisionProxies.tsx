@@ -5,7 +5,11 @@ import { useLayoutEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
 import { getSceneConfig } from '@/config/scenes';
 import { SCENE_DEFINITIONS } from '@/config/sceneDefinitions';
-import { generateColliders, STRUCTURAL_FLOOR_HALF_HEIGHT } from '@/config/sceneDefinitionGenerator';
+import {
+  generateColliders,
+  generateBoundaryWallSegments,
+  STRUCTURAL_FLOOR_HALF_HEIGHT,
+} from '@/config/sceneDefinitionGenerator';
 import type { ColliderDef } from '@/shared/types/sceneDefinition';
 import type { SceneId } from '@/shared/types/game';
 import { enableCameraCollisionLayer } from '@/engine/camera/cameraCollisionLayers';
@@ -19,34 +23,9 @@ function buildStructuralCollisionDefs(sceneId: SceneId): ColliderDef[] {
   const [w, d] = config.size;
   const hasCeiling = config.hasCeiling;
   const wallHeight = 4;
-  const WALL_THICKNESS = 0.5;
 
-  const defs: ColliderDef[] = [
-    {
-      type: 'cuboidObstacle',
-      size: [WALL_THICKNESS / 2, wallHeight / 2, d / 2],
-      position: [-w / 2, wallHeight / 2, 0],
-      name: 'structural_wall_left',
-    },
-    {
-      type: 'cuboidObstacle',
-      size: [WALL_THICKNESS / 2, wallHeight / 2, d / 2],
-      position: [w / 2, wallHeight / 2, 0],
-      name: 'structural_wall_right',
-    },
-    {
-      type: 'cuboidObstacle',
-      size: [w / 2, wallHeight / 2, WALL_THICKNESS / 2],
-      position: [0, wallHeight / 2, -d / 2],
-      name: 'structural_wall_back',
-    },
-    {
-      type: 'cuboidObstacle',
-      size: [w / 2, wallHeight / 2, WALL_THICKNESS / 2],
-      position: [0, wallHeight / 2, d / 2],
-      name: 'structural_wall_front',
-    },
-  ];
+  // Mirror the doorway-aware Rapier boundary (SceneStructuralColliders).
+  const defs: ColliderDef[] = [...generateBoundaryWallSegments(SCENE_DEFINITIONS[sceneId])];
 
   if (hasCeiling) {
     defs.push({

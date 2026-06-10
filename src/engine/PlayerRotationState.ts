@@ -9,3 +9,6 @@
  */
 
 export const sharedPlayerRotationRef: { current: number } = { current: Math.PI };
+
+/** Camera yaw (horizontal look) — used for FPS interaction targeting. */
+export const sharedCameraYawRef: { current: number } = { current: Math.PI };

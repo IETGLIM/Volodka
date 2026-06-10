@@ -22,15 +22,16 @@ import { BlendFunction, KernelSize, ToneMappingMode } from 'postprocessing';
 import type { EffectComposer as EffectComposerImpl } from 'postprocessing';
 import { usePostFxSceneState, usePlayerStress } from '@/store/selectors';
 import { useMobileVisualPerf } from '@/hooks/use-mobile';
+import { useVisualSettings } from '@/hooks/useVisualSettings';
 import { SCENE_VISIBILITY } from '@/shared/constants/sceneVisibility';
 import { disposeEffectComposer, type PostprocessingComposerLike } from '@/engine/three/disposeThreeResources';
 
 /** Per-scene color grading overrides for CyberPunk2077 / Noir / Gothic feel */
 const SCENE_COLOR_GRADE: Record<string, { hue: number; saturation: number; brightness: number; contrast: number }> = {
-  volodka_room:       { hue: 0.04,  saturation: 0.18, brightness: 0.03,  contrast: 0.24 }, // warm indoor + green monitor accent
+  volodka_room:       { hue: -0.05, saturation: 0.2,  brightness: -0.02, contrast: 0.25 }, // cold green monitor glow
   volodka_corridor:   { hue: -0.03, saturation: -0.1, brightness: -0.05, contrast: 0.15 }, // dim noir
   home_evening:       { hue: 0.04,  saturation: 0.1,  brightness: 0.0,  contrast: 0.1  }, // warm amber
-  street_night:       { hue: -0.02, saturation: 0.38, brightness: 0.05,  contrast: 0.24 }, // cooler cyberpunk neon
+  street_night:       { hue: 0.06,  saturation: 0.25, brightness: 0.1,  contrast: 0.18 }, // cyberpunk neon
   street_winter:      { hue: -0.02, saturation: -0.12, brightness: 0.12, contrast: 0.08  },
   cafe_evening:       { hue: 0.03,  saturation: 0.1,  brightness: 0.0,  contrast: 0.15 }, // amber smoke
   office_day:         { hue: -0.01, saturation: -0.15, brightness: 0.03, contrast: 0.05 }, // sterile
@@ -68,10 +69,10 @@ const DEFAULT_VIGNETTE = { offset: 0.4, darkness: 0.32 };
 
 /** Dynamic bloom intensity per scene — neon scenes bloom brighter */
 const SCENE_BLOOM: Record<string, { intensity: number; threshold: number; smoothing: number }> = {
-  volodka_room:       { intensity: 0.72, threshold: 0.52, smoothing: 0.42 }, // monitor emissive bloom
+  volodka_room:       { intensity: 0.6,  threshold: 0.6,  smoothing: 0.5 },  // monitor glow bloom (tamed)
   volodka_corridor:   { intensity: 0.3,  threshold: 0.8,  smoothing: 0.6 },  // dim
   home_evening:       { intensity: 0.4,  threshold: 0.7,  smoothing: 0.5 },  // warm
-  street_night:       { intensity: 1.0,  threshold: 0.38, smoothing: 0.32 }, // strong neon bloom
+  street_night:       { intensity: 0.7,  threshold: 0.5,  smoothing: 0.4 },  // neon bloom
   cafe_evening:       { intensity: 0.5,  threshold: 0.6,  smoothing: 0.5 },  // neon bar + warm
   office_day:         { intensity: 0.2,  threshold: 0.85, smoothing: 0.6 },  // sterile
   park_day:           { intensity: 0.3,  threshold: 0.85, smoothing: 0.6 },  // natural
@@ -195,12 +196,14 @@ function useRendererReady(): boolean {
  *  This prevents the `null.alpha` crash in postprocessing's EffectComposer.addPass(). */
 export function ExplorationPostFX() {
   const rendererReady = useRendererReady();
+  const { postfxEnabled } = useVisualSettings();
 
   // Synchronous double-check: even if useRendererReady says true,
   // verify the context is actually valid RIGHT NOW before mounting
   // EffectComposer. This catches the race condition where gl changes
   // but ready hasn't been reset yet.
   const gl = useThree((state) => state.gl);
+  if (!postfxEnabled) return null;
   if (!rendererReady) return null;
   try {
     const ctx = gl.getContext();
@@ -293,6 +296,9 @@ function EffectComposerInstance({
 function PostFXPipeline() {
   const { sceneId, noirMode } = usePostFxSceneState();
   const { visualLite } = useMobileVisualPerf();
+  // User brightness slider (50–150%) → BrightnessContrast offset (−0.15…+0.15)
+  const { brightness: userBrightness } = useVisualSettings();
+  const userBrightnessOffset = (userBrightness - 1) * 0.3;
 
   // NOTE: Renderer toneMapping is set to NoToneMapping in RPGGameCanvas.tsx
   // to prevent double tone mapping with this EffectComposer's ToneMapping pass.
@@ -317,7 +323,7 @@ function PostFXPipeline() {
     0.75,
   );
   const effectiveBrightness =
-    colorGrade.brightness + SCENE_VISIBILITY.postFxBrightnessLift;
+    colorGrade.brightness + SCENE_VISIBILITY.postFxBrightnessLift + userBrightnessOffset;
 
   // Stress-driven effects: higher stress = heavier vignette
   const stress = usePlayerStress();
@@ -342,33 +348,23 @@ function PostFXPipeline() {
   const pipelineKey = `${sceneId}-${useLitePostFx ? 'lite' : 'full'}`;
 
   if (useLitePostFx) {
-    const liteBloom = bloomParams.intensity * 0.75;
-    const liteVignetteDarkness = Math.min(
-      (vignetteParams.darkness + stressFactor * 0.08) * SCENE_VISIBILITY.vignetteDarknessScale,
-      0.65,
-    );
     return (
       <ManagedEffectComposer remountKey={pipelineKey} sceneId={sceneId} multisampling={0}>
         <Bloom
-          intensity={liteBloom}
-          luminanceThreshold={bloomParams.threshold}
-          luminanceSmoothing={bloomParams.smoothing}
+          intensity={0.45}
+          luminanceThreshold={0.75}
+          luminanceSmoothing={0.9}
           mipmapBlur
           kernelSize={KernelSize.LARGE}
         />
         <Vignette
-          offset={vignetteParams.offset}
-          darkness={liteVignetteDarkness}
-          blendFunction={BlendFunction.NORMAL}
-        />
-        <HueSaturation
-          hue={colorGrade.hue}
-          saturation={noirMode ? Math.min(colorGrade.saturation - 0.25, 0) : colorGrade.saturation * 0.7}
+          offset={0.38}
+          darkness={0.28 * SCENE_VISIBILITY.vignetteDarknessScale}
           blendFunction={BlendFunction.NORMAL}
         />
         <BrightnessContrast
-          brightness={effectiveBrightness}
-          contrast={effectiveContrast * 0.6}
+          brightness={SCENE_VISIBILITY.postFxBrightnessLift + userBrightnessOffset}
+          contrast={-0.02}
           blendFunction={BlendFunction.NORMAL}
         />
         <ToneMapping

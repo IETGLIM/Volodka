@@ -46,12 +46,12 @@ import { getPoems } from '@/data/gameDataLoader';
 import { KARMA_LOW_THRESHOLD, KARMA_HIGH_THRESHOLD } from '@/data/constants';
 import { type WeatherType, WEATHER_EFFECTS } from '@/data/weatherEffects';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
+import { bottomStatusEffectsPx } from '@/shared/constants/hudLayout';
 import { eventBus } from '@/engine/EventBus';
 import { PHOTO_EMPTY_PAYLOAD, PHOTO_EVENTS } from '@/engine/events';
 import { floatLevelUp } from '@/components/game/FloatingText';
 import type { SecondaryAction } from '@/components/game/hud/hudTypes';
 import { StatusEffectsBar } from '@/components/game/StatusEffectsBar';
-import { MoralCompassHUD } from '@/components/game/MoralCompassHUD';
 import { AriaLiveRegion } from '@/components/a11y/AriaLiveRegion';
 import { getKarmaTierLabel } from '@/shared/utils/karmaTier';
 import { useHUDController } from '@/components/game/hud/useHUDController';
@@ -75,7 +75,7 @@ function WeatherIcon({ type, className = 'size-4' }: { type: WeatherType; classN
 /* ── Ambient particles for status panel background ── */
 function AmbientParticles() {
   const [mounted, setMounted] = useState(false);
-  // eslint-disable-next-line react-hooks/set-state-in-effect -- client-only mount guard to prevent hydration mismatch
+   
   useEffect(() => { setMounted(true); }, []);
 
   const particles = useMemo(() =>
@@ -986,27 +986,11 @@ export function HUD(props: HUDProps) {
       </div>
 
       {/* ── Status Effects Bar (desktop: bottom-right, mobile: bottom-center) ── */}
-      <div className="absolute right-3 sm:right-4 pointer-events-auto hidden lg:block" style={{ bottom: 52 }}>
+      <div className="absolute pointer-events-auto hidden lg:block" style={{ bottom: bottomStatusEffectsPx(), right: 16 }}>
         <StatusEffectsBar />
       </div>
-      <div className="absolute left-1/2 -translate-x-1/2 pointer-events-auto lg:hidden" style={{ bottom: 52 }}>
+      <div className="absolute left-1/2 -translate-x-1/2 pointer-events-auto lg:hidden" style={{ bottom: bottomStatusEffectsPx() }}>
         <StatusEffectsBar />
-      </div>
-
-      {/* ── Moral Compass / Karma HUD ── */}
-      <MoralCompassHUD />
-
-      {/* ── Interaction hint ── */}
-      <div className="absolute bottom-16 right-3 pointer-events-none hidden lg:block">
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 2, duration: 0.5 }}
-          className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-slate-700/20 bg-black/40 backdrop-blur-sm"
-        >
-          <kbd className="text-[10px] text-slate-400 font-mono px-1 py-0.5 rounded border border-slate-700/30 bg-slate-800/50">E</kbd>
-          <span className="text-[10px] text-slate-400 font-mono">Взаимодействие</span>
-        </motion.div>
       </div>
     </div>
   );

@@ -25,6 +25,7 @@ import { audioEngine } from '@/engine/AudioEngine';
 import { eventBus } from '@/engine/EventBus';
 import { closeNarrativeOverlay } from '@/engine/scene/narrativeOverlay';
 import { requestSceneTransitionForStoryNode } from '@/engine/scene/sceneTransition';
+import { getGameStore } from '@/store/gameStore';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import type {
   DialogueChoice,
@@ -202,7 +203,10 @@ export function DialogueRenderer() {
 
       visitNode(node.id);
       if (node.sceneId) {
-        requestSceneTransitionForStoryNode(node.id, node.sceneId);
+        const currentSceneId = getGameStore().exploration.currentSceneId;
+        if (currentSceneId !== node.sceneId) {
+          requestSceneTransitionForStoryNode(node.id, node.sceneId);
+        }
       }
 
       // Add to history (deferred to avoid sync setState in effect)

@@ -21,7 +21,6 @@ import { SCENE_CONFIG } from '@/config/scenes';
 import { requestSceneTransition } from '@/engine/scene/sceneTransition';
 import type { SceneId } from '@/shared/types/game';
 import { POEMS } from '@/data/poems';
-import { getLongSessionStressHarness } from '@/engine/dev/longSessionStressHarness';
 
 /* ── Types ── */
 
@@ -658,9 +657,6 @@ function EventsTab({
 /* ── Cheats Tab ── */
 
 function CheatsTab() {
-  const [stressRunning, setStressRunning] = useState(false);
-  const [stressReport, setStressReport] = useState<string | null>(null);
-
   const handleSetKarma = useCallback((val: number) => {
     const state = useGameStore.getState();
     const diff = val - state.playerState.karma;
@@ -824,65 +820,6 @@ function CheatsTab() {
             </button>
           );
         })}
-      </div>
-
-      {/* Long-session stress harness (5 min default) */}
-      <div style={{ marginBottom: 8, marginTop: 12, paddingTop: 8, borderTop: '1px solid rgba(100,116,139,0.15)' }}>
-        <div style={{ color: '#555', fontSize: 9, textTransform: 'uppercase', letterSpacing: 1.5, marginBottom: 6 }}>
-          Stress harness (scene hop + combat)
-        </div>
-        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-          <button
-            type="button"
-            disabled={stressRunning}
-            onClick={() => {
-              setStressReport(null);
-              setStressRunning(true);
-              getLongSessionStressHarness().start({ durationMs: 5 * 60_000 });
-            }}
-            style={{
-              padding: '4px 8px',
-              fontSize: 10,
-              borderRadius: 4,
-              border: '1px solid rgb(var(--cyber-cyan-rgb) / 0.25)',
-              background: 'rgb(var(--cyber-cyan-rgb) / 0.08)',
-              color: 'var(--cyber-cyan)',
-              cursor: stressRunning ? 'not-allowed' : 'pointer',
-              opacity: stressRunning ? 0.5 : 1,
-            }}
-          >
-            Start 5 min
-          </button>
-          <button
-            type="button"
-            disabled={!stressRunning}
-            onClick={() => {
-              const report = getLongSessionStressHarness().stop();
-              setStressRunning(false);
-              setStressReport(
-                `heap ${report.heapGrowthPercent?.toFixed(1) ?? '?'}% · min FPS ${report.minFps.toFixed(0)} · avg ${report.avgFps.toFixed(0)}`,
-              );
-            }}
-            style={{
-              padding: '4px 8px',
-              fontSize: 10,
-              borderRadius: 4,
-              border: '1px solid rgba(251,113,133,0.25)',
-              background: 'rgba(251,113,133,0.08)',
-              color: '#fb7185',
-              cursor: !stressRunning ? 'not-allowed' : 'pointer',
-              opacity: !stressRunning ? 0.5 : 1,
-            }}
-          >
-            Stop
-          </button>
-        </div>
-        {stressRunning && (
-          <div style={{ color: '#888', fontSize: 9, marginTop: 4 }}>Running — watch Perf tab heap/FPS</div>
-        )}
-        {stressReport && (
-          <div style={{ color: '#94a3b8', fontSize: 9, marginTop: 4, fontFamily: 'monospace' }}>{stressReport}</div>
-        )}
       </div>
 
       {/* Add poem */}

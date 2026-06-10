@@ -16,10 +16,15 @@ export const EXPLORATION_HUD_LAYOUT = {
   BOTTOM_TOOLBAR: 12,
   BOTTOM_QUICK_USE: 56,
   BOTTOM_POETRY: 100,
-  BOTTOM_INTERACT_PROMPT: 172,
-  /** Bottom-right stack */
+  /** Contextual [E] prompt — above poetry bar, centered */
+  BOTTOM_INTERACT_PROMPT: 196,
+  /** Bottom-right stack (px from viewport bottom) */
+  BOTTOM_AMBIENT_MIXER: 16,
+  BOTTOM_STATUS_EFFECTS: 72,
+  BOTTOM_MORAL_COMPASS: 128,
   BOTTOM_AUTOSAVE: 16,
   BOTTOM_QUEST_TOAST: 76,
+  RIGHT_INSET_COMPACT: 16,
 } as const;
 
 export function explorationCompassTopPx(): number {
@@ -80,6 +85,22 @@ export function bottomAutoSavePx(): number {
 
 export function bottomQuestToastPx(): number {
   return EXPLORATION_HUD_LAYOUT.BOTTOM_QUEST_TOAST;
+}
+
+export function bottomAmbientMixerPx(): number {
+  return EXPLORATION_HUD_LAYOUT.BOTTOM_AMBIENT_MIXER;
+}
+
+export function bottomStatusEffectsPx(): number {
+  return EXPLORATION_HUD_LAYOUT.BOTTOM_STATUS_EFFECTS;
+}
+
+export function bottomMoralCompassPx(): number {
+  return EXPLORATION_HUD_LAYOUT.BOTTOM_MORAL_COMPASS;
+}
+
+export function bottomRightInsetPx(): number {
+  return EXPLORATION_HUD_LAYOUT.RIGHT_INSET_COMPACT;
 }
 
 /** Day/night widget — under minimap on narrow layouts */

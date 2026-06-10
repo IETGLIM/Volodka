@@ -8,15 +8,21 @@ import { useGLTF } from '@react-three/drei';
 import type { SceneId } from '@/shared/types/game';
 import { getAssetDefinition } from '@/config/assetManifest';
 import { preloadGltfAsset } from '@/components/3d/assets/GltfAsset';
+import { preloadTriggerZoneProps } from '@/components/3d/TriggerZoneProp';
 import { preloadSceneJsChunks } from '@/components/3d/sceneChunks/sceneChunkRegistry';
+import { getNpcModelUrls } from '@/config/npcModelRegistry';
+import { getPropModelUrls } from '@/config/propModelRegistry';
+import { extendGltfLoader } from '@/engine/assets/gltfPipeline';
+
+const FPS_ARMS_URL = '/models/fps/fps_arms.glb';
+const extendLoader = extendGltfLoader as unknown as NonNullable<Parameters<typeof useGLTF>[3]>;
 
 /** GLB assets warmed per scene — extend as interior props migrate off procedural meshes. */
 const SCENE_GLTF_ASSETS: Partial<Record<SceneId, readonly string[]>> = {
   cafe_evening: ['env_cafe_props'],
   park_day: ['veg_tree_pine'],
   volodka_room: ['player_volodka'],
-  street_night: ['player_volodka'],
-  volodka_corridor: ['player_volodka'],
+  volodka_corridor: [],
 };
 
 export function getSceneGltfAssetIds(sceneId: SceneId): readonly string[] {
@@ -39,6 +45,14 @@ function collectAssetUrls(assetId: string): string[] {
 export function preloadSceneGpuAssets(sceneId: SceneId): void {
   for (const assetId of getSceneGltfAssetIds(sceneId)) {
     preloadGltfAsset(assetId);
+  }
+  preloadTriggerZoneProps(sceneId);
+  useGLTF.preload(FPS_ARMS_URL, true, true, extendLoader);
+  for (const url of getPropModelUrls()) {
+    useGLTF.preload(url, true, true, extendLoader);
+  }
+  for (const url of getNpcModelUrls()) {
+    useGLTF.preload(url, true, true, extendLoader);
   }
 }
 

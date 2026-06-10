@@ -61,7 +61,6 @@ const LAZY_HUD_MODULES = new Set([
 
 const DATA_STORY = new Set([
   'storyNodes',
-  'goldenPath',
 ]);
 
 const DATA_DIALOGUE = new Set([
@@ -141,6 +140,22 @@ function resolveStoryPackChunk(posix: string): string | undefined {
 
 function resolveDataChunk(posix: string): string | undefined {
   if (!posix.includes('/src/data/')) return undefined;
+
+  // Boot-critical loader infrastructure — must NOT share a chunk with
+  // contentPipelineValidator (which statically imports the full story barrel).
+  // Otherwise the menu entry eagerly pulls every act chunk.
+  if (
+    posix.includes('/src/data/gameDataLoader') ||
+    posix.includes('/src/data/narrative/')
+  ) {
+    return 'data-loader';
+  }
+
+  // Zero-dependency golden path tables — keep out of 'data-story' so engine
+  // modules importing them don't drag the all-acts barrel into the boot graph.
+  if (posix.includes('/src/data/goldenPath')) {
+    return 'data-golden-path';
+  }
 
   const pack = resolveStoryPackChunk(posix);
   if (pack) return pack;
@@ -227,7 +242,9 @@ function resolveNarrativeChunk(posix: string): string | undefined {
     return 'engine-narrative';
   }
   if (posix.includes('/src/shared/validation/contentPipelineValidator')) {
-    return 'data-misc';
+    // Own chunk: statically imports the all-acts story barrel — must never be
+    // colocated with boot-critical modules (gameDataLoader lives in data-loader).
+    return 'content-validator';
   }
   return undefined;
 }
@@ -240,6 +257,16 @@ export function resolveManualChunk(id: string): string | undefined {
 
   if (!posix.includes('/src/')) return undefined;
 
+  // Tiny boot-shared modules imported by main.tsx. Without an explicit chunk
+  // Rollup colocates them into heavy chunks (LoadingTimeline ended up inside
+  // game-canvas → the menu eagerly loaded the whole three.js stack).
+  if (
+    posix.includes('/src/engine/performance/') ||
+    posix.includes('/src/engine/visualSettings')
+  ) {
+    return 'boot-shared';
+  }
+
   if (
     posix.includes('/src/components/game/DevPanel') ||
     posix.includes('/src/engine/RendererInfoState') ||
@@ -250,14 +277,6 @@ export function resolveManualChunk(id: string): string | undefined {
 
   if (posix.includes('/src/engine/combat/') || posix.includes('/src/engine/CombatSystem')) {
     return 'engine-combat';
-  }
-
-  if (posix.includes('/src/engine/ml/')) {
-    return 'engine-ml';
-  }
-
-  if (posix.includes('node_modules/@huggingface/transformers')) {
-    return 'engine-ml';
   }
 
   const narrative = resolveNarrativeChunk(posix);

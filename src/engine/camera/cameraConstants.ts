@@ -3,9 +3,23 @@
 import type { SceneId } from '@/shared/types/game';
 import { getSceneConfig } from '@/config/scenes';
 
-export const DEFAULT_DISTANCE = 3.5;
-export const MIN_DISTANCE = 0.8;
+export const DEFAULT_DISTANCE = 3.0;
+export const MIN_DISTANCE = 0.65;
 export const MAX_DISTANCE = 12.0;
+
+/** First-person exploration — no third-person body; camera at eye height. */
+export const FIRST_PERSON_ENABLED = true;
+export const FIRST_PERSON_EYE_HEIGHT = 1.62;
+export const FIRST_PERSON_FOV = 72;
+export const FIRST_PERSON_FOV_MIN = 55;
+export const FIRST_PERSON_FOV_MAX = 88;
+
+/** Multiplicative wheel zoom — higher = faster pinch toward the character's back. */
+export const ZOOM_WHEEL_EXP = 0.011;
+/** Minimum per-tick distance change (m) so trackpads still feel responsive. */
+export const ZOOM_WHEEL_MIN_STEP = 0.12;
+/** Spring snap strength after wheel input (0–1, applied once per frame until decay). */
+export const ZOOM_SPRING_SNAP = 0.72;
 export const LOOK_HEIGHT = 1.3;
 export const WALL_MARGIN = 0.25;
 
@@ -46,10 +60,10 @@ export function getSceneDefaultDistance(sceneId: SceneId): number {
   const config = getSceneConfig(sceneId);
   const [width, depth] = config.size;
   const area = width * depth;
-  if (area <= 16) return 2.5;
-  if (area <= 36) return 3.5;
-  if (area <= 64) return 5.0;
-  return 6.5;
+  if (area <= 16) return 2.2;
+  if (area <= 36) return 2.8;
+  if (area <= 64) return 4.2;
+  return 5.5;
 }
 
 export function getSceneSpecificFov(sceneId: SceneId): number {

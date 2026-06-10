@@ -51,14 +51,6 @@ export function useAutoSaveTimestamps() {
   }));
 }
 
-/** Combat HUD — shallow combat session + phase flag for panels. */
-export function useCombatHudState() {
-  return useGameSelector((s) => ({
-    combatActive: s.combatActive,
-    combatSession: s.combatSession,
-  }));
-}
-
 /** NPC schedule context — shallow-stable via module cache in selectScheduleContext. */
 export function useScheduleContext() {
   return useGameSelector(selectScheduleContext);

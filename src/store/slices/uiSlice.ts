@@ -88,8 +88,9 @@ export const createUISlice: StateCreator<
 > = (set, get) => ({
   /* ── Initial state ── */
   mode: 'exploration',
-  mainMenuOpen: true,
-  introActive: false,
+  // Boot order: poem intro (Matrix rain) first → then main menu → cutscene.
+  mainMenuOpen: false,
+  introActive: true,
   combatActive: false,
   currentNodeId: 'start',
   lastSaveTimestamp: null,

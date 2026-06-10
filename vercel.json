@@ -32,18 +32,6 @@
       ]
     },
     {
-      "source": "/basis/(.*)",
-      "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
-      ]
-    },
-    {
-      "source": "/draco/(.*)",
-      "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
-      ]
-    },
-    {
       "source": "/(.*).(svg|png|jpg|jpeg|webp|gif|ico)",
       "headers": [
         { "key": "Cache-Control", "value": "public, max-age=86400" }

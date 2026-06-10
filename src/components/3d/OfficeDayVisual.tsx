@@ -1,7 +1,7 @@
 
 /* ─── Volodka RPG – IT Guild Office procedural 3D visual ─── */
 
-import { useMemo, type MutableRefObject } from 'react';
+import { useEffect, useMemo, type MutableRefObject } from 'react';
 import * as THREE from 'three';
 import { Plant, Radiator, Clock } from './lazyInteriorModels';
 import { getEnvironmentLodProfile } from '@/engine/lod/distanceLod';
@@ -23,6 +23,28 @@ export function OfficeDayVisual({ livePlayerPositionRef }: OfficeDayVisualProps)
   const W = 14;
   const D = 12;
   const H = 3.2;
+
+  // Shared geometry/materials for the ceiling light panel grid (12 panels)
+  const lightPanel = useMemo(() => {
+    const housingGeo = new THREE.BoxGeometry(2.4, 0.06, 0.34);
+    const tubeGeo = new THREE.BoxGeometry(2.3, 0.03, 0.1);
+    const housingMat = new THREE.MeshStandardMaterial({ color: '#aab2bc', metalness: 0.3, roughness: 0.6 });
+    const tubeMat = new THREE.MeshStandardMaterial({ color: '#e8f0f8', emissive: '#f4faff', emissiveIntensity: 1.6 });
+    const positions: [number, number][] = [];
+    for (const x of [-4.5, -1.5, 1.5, 4.5]) {
+      for (const z of [-3.5, 0, 3.5]) positions.push([x, z]);
+    }
+    return { housingGeo, tubeGeo, housingMat, tubeMat, positions };
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      lightPanel.housingGeo.dispose();
+      lightPanel.tubeGeo.dispose();
+      lightPanel.housingMat.dispose();
+      lightPanel.tubeMat.dispose();
+    };
+  }, [lightPanel]);
 
   return (
     <group>
@@ -180,14 +202,16 @@ export function OfficeDayVisual({ livePlayerPositionRef }: OfficeDayVisualProps)
       </EnvironmentDetail>
 
       {/* ═══════════════════════════════════════════════ */}
-      {/* ── FLUORESCENT LIGHTS ── */}
+      {/* ── CEILING FLUORESCENT PANEL GRID ── */}
       {/* ═══════════════════════════════════════════════ */}
-      {[-3, 0, 3].map((x, i) => (
-        <group key={i} position={[x, H - 0.05, 0]}>
-          <mesh>
-            <boxGeometry args={[1.2, 0.05, 0.3]} />
-            <meshStandardMaterial color="#e0e8f0" emissive="#ffffff" emissiveIntensity={0.7} />
-          </mesh>
+      {/* Emissive-only meshes — scene lighting already comes from point lights */}
+      {lightPanel.positions.map(([x, z], i) => (
+        <group key={`flpanel-${i}`} position={[x, H - 0.04, z]}>
+          {/* Recessed housing frame */}
+          <mesh geometry={lightPanel.housingGeo} material={lightPanel.housingMat} />
+          {/* Twin glowing tube strips */}
+          <mesh geometry={lightPanel.tubeGeo} material={lightPanel.tubeMat} position={[0, -0.025, -0.08]} />
+          <mesh geometry={lightPanel.tubeGeo} material={lightPanel.tubeMat} position={[0, -0.025, 0.08]} />
         </group>
       ))}
 

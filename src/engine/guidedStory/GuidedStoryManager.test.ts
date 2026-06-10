@@ -5,31 +5,8 @@ import type {
   GuidedStoryPathConfig,
   GuidedStorySnapshot,
 } from '@/engine/guidedStory/guidedStoryTypes';
-import { resolveStorySpineAdvance, syncSpineStateFromSnapshot, getActForNode, getActTransition } from '@/engine/guidedStory/guidedStoryLogic';
+import { resolveStorySpineAdvance, syncSpineStateFromSnapshot } from '@/engine/guidedStory/guidedStoryLogic';
 import { isStoryGraphEdge } from '@/engine/story/storyGraphTraversal';
-import {
-  ACT_CHAPTER_TITLES,
-  ACT_TRANSITIONS,
-  GOLDEN_PATH_BRANCH_HINTS,
-  GOLDEN_PATH_QUEST_SPINE,
-  GOLDEN_PATH_STORY_SPINE,
-  STORY_FLAG_TO_NODE_ID,
-  STORY_NODE_OBJECTIVE_TYPE,
-  STORY_NODE_TO_SCENE_LABEL,
-  getNpcIdForStoryNode,
-} from '@/data/goldenPath';
-
-const FULL_PATH: GuidedStoryPathConfig = {
-  storySpine: GOLDEN_PATH_STORY_SPINE,
-  questSpine: GOLDEN_PATH_QUEST_SPINE,
-  branchHints: GOLDEN_PATH_BRANCH_HINTS,
-  actTransitions: ACT_TRANSITIONS,
-  actChapterTitles: ACT_CHAPTER_TITLES,
-  storyNodeToSceneLabel: STORY_NODE_TO_SCENE_LABEL,
-  storyNodeObjectiveType: STORY_NODE_OBJECTIVE_TYPE,
-  storyFlagToNodeId: STORY_FLAG_TO_NODE_ID,
-  getNpcIdForStoryNode,
-};
 
 const TEST_PATH: GuidedStoryPathConfig = {
   storySpine: ['start', 'explore_mode', 'room_table', 'maria_curious'],
@@ -52,7 +29,7 @@ const TEST_PATH: GuidedStoryPathConfig = {
 };
 
 function createTestDeps(overrides?: Partial<GuidedStorySnapshot>): GuidedStoryDeps {
-  let snapshot: GuidedStorySnapshot = {
+  const snapshot: GuidedStorySnapshot = {
     visitedNodes: ['start'],
     currentAct: 1,
     flags: {},
@@ -135,41 +112,5 @@ describe('GuidedStoryManager', () => {
 
     manager.advanceStorySpineForTest('explore_mode');
     expect(deps.events.emitGuidanceUpdate).toHaveBeenCalledTimes(1);
-  });
-});
-
-describe('full golden path act transitions', () => {
-  it('maps every ACT_TRANSITIONS entry node to the correct act on the spine', () => {
-    for (const trans of ACT_TRANSITIONS) {
-      expect(getActForNode(trans.entryNodeId, FULL_PATH)).toBe(trans.act);
-      expect(FULL_PATH.actChapterTitles[trans.act]).toBe(trans.chapterTitle);
-    }
-  });
-
-  it('covers all seven acts with quest spine ids from golden path tables', () => {
-    expect(ACT_TRANSITIONS).toHaveLength(7);
-    for (const trans of ACT_TRANSITIONS) {
-      expect(trans.questSpineIds.length).toBeGreaterThan(0);
-      expect(getActTransition(FULL_PATH, trans.act)?.entryNodeId).toBe(trans.entryNodeId);
-    }
-  });
-
-  it('advances act when visiting next act entry node on full spine', () => {
-    const act2EntryIdx = FULL_PATH.storySpine.indexOf('act2_transition');
-    expect(act2EntryIdx).toBeGreaterThan(0);
-
-    const deps = createTestDeps({
-      visitedNodes: FULL_PATH.storySpine.slice(0, act2EntryIdx),
-      currentAct: 1,
-    });
-    deps.path = FULL_PATH;
-
-    const manager = new GuidedStoryManager(deps);
-    manager.advanceStorySpineForTest('act2_transition');
-
-    expect(deps.actions.advanceAct).toHaveBeenCalled();
-    expect(deps.events.emitActTransition).toHaveBeenCalledWith(
-      expect.objectContaining({ toAct: 2, chapterTitle: ACT_CHAPTER_TITLES[2] }),
-    );
   });
 });

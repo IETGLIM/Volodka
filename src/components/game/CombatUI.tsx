@@ -18,15 +18,11 @@ import {
   getActiveBuffs,
   subscribeToCombat,
 } from '@/engine/CombatSystem';
-import { ENEMY_TEMPLATES } from '@/engine/combat/enemies';
-import { eventBus } from '@/engine/EventBus';
-import { useMobileVisualPerf } from '@/hooks/use-mobile';
-import { isReducedMotionActive } from '@/shared/accessibility/reducedMotion';
 import type { CombatState, CombatLogEntry, CombatBuff } from '@/shared/types/game';
 
 /* ── Animated Health Bar with gradient & glow ── */
-function AnimatedHPBar({ current, max, label, isPlayer, hitFlash }: {
-  current: number; max: number; label: string; isPlayer: boolean; hitFlash?: boolean;
+function AnimatedHPBar({ current, max, label, isPlayer }: {
+  current: number; max: number; label: string; isPlayer: boolean;
 }) {
   const pct = max > 0 ? Math.max(0, (current / max) * 100) : 0;
   const color = isPlayer
@@ -43,7 +39,7 @@ function AnimatedHPBar({ current, max, label, isPlayer, hitFlash }: {
   return (
     <div className={`flex flex-col ${isPlayer ? 'items-start' : 'items-end'} w-full`}>
       <div className="text-[10px] text-slate-400 mb-0.5 font-mono uppercase tracking-wider">{label}</div>
-      <div className={`w-full h-3.5 bg-black/80 border border-slate-700/40 rounded-sm overflow-hidden relative ${hitFlash ? 'combat-hp-hit-flash' : ''}`}>
+      <div className="w-full h-3.5 bg-black/80 border border-slate-700/40 rounded-sm overflow-hidden relative">
         <motion.div
           className={`h-full bg-gradient-to-r ${color} ${glowColor} shadow-sm rounded-sm`}
           style={{ boxShadow: `0 0 8px ${isPlayer ? (pct > 60 ? '#10b981' : pct > 30 ? '#f59e0b' : '#ef4444') : (pct > 60 ? '#ef4444' : pct > 30 ? '#f97316' : '#eab308')}40` }}
@@ -166,39 +162,23 @@ function StatusBadge({ buff }: { buff: CombatBuff }) {
   );
 }
 
-/* ── Enemy Portrait with type-specific accent ── */
-function EnemyPortrait({
-  emoji, hp, maxHp, accentColor, modelLabel,
-}: {
-  emoji: string; hp: number; maxHp: number; accentColor: string; modelLabel?: string;
-}) {
+/* ── Enemy Silhouette (CSS animated) ── */
+function EnemyPortrait({ emoji, hp, maxHp }: { emoji: string; hp: number; maxHp: number }) {
   const hurt = hp / maxHp < 0.3;
   return (
     <div className="relative flex items-center justify-center">
       <motion.div
-        className="relative flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 rounded-lg border-2 overflow-hidden"
-        style={{
-          borderColor: `${accentColor}80`,
-          boxShadow: `0 0 12px ${accentColor}40, inset 0 0 20px ${accentColor}15`,
-          background: `linear-gradient(135deg, ${accentColor}22 0%, rgba(0,0,0,0.85) 60%)`,
-        }}
+        className="text-5xl sm:text-6xl select-none"
         animate={hurt ? { x: [0, -2, 2, -1, 1, 0] } : { y: [0, -4, 0] }}
         transition={hurt ? { duration: 0.3, repeat: hurt ? 3 : 0 } : { duration: 2, repeat: Infinity, ease: 'easeInOut' }}
       >
-        <span className="text-3xl sm:text-4xl select-none">{emoji}</span>
-        {modelLabel && (
-          <span
-            className="absolute bottom-0 inset-x-0 text-[6px] font-mono text-center truncate px-0.5 py-0.5 bg-black/70"
-            style={{ color: `${accentColor}cc` }}
-          >
-            {modelLabel}
-          </span>
-        )}
+        {emoji}
       </motion.div>
+      {/* Glow ring */}
       <div
-        className="absolute inset-0 rounded-full opacity-20 pointer-events-none"
+        className="absolute inset-0 rounded-full opacity-20"
         style={{
-          background: `radial-gradient(circle, ${hurt ? '#ef4444' : accentColor} 0%, transparent 70%)`,
+          background: `radial-gradient(circle, ${hurt ? '#ef4444' : '#f97316'} 0%, transparent 70%)`,
           filter: 'blur(12px)',
           transform: 'scale(1.5)',
         }}
@@ -207,50 +187,11 @@ function EnemyPortrait({
   );
 }
 
-/* ── Poem power glyph burst (combat overlay, budget via effectsScale) ── */
-function PoemPowerCombatBurst({ color, scale }: { color: string; scale: number }) {
-  const count = Math.max(4, Math.round(16 * scale));
-  const glyphs = ['✦', '◈', '❖', '✧', '◆', '※'];
-  const particles = useMemo(
-    () => Array.from({ length: count }, (_, i) => ({
-      id: i,
-      glyph: glyphs[i % glyphs.length],
-      angle: (360 / count) * i + (Math.random() - 0.5) * 20,
-      distance: 40 + (i % 3) * 30,
-      delay: i * 0.02,
-    })),
-    [count],
-  );
-
-  return (
-    <div className="absolute inset-0 flex items-center justify-center pointer-events-none overflow-hidden">
-      {particles.map((p) => (
-        <motion.span
-          key={p.id}
-          className="absolute text-lg font-mono select-none"
-          style={{ color, textShadow: `0 0 8px ${color}` }}
-          initial={{ x: 0, y: 0, opacity: 1, scale: 1.2 }}
-          animate={{
-            x: Math.cos((p.angle * Math.PI) / 180) * p.distance,
-            y: Math.sin((p.angle * Math.PI) / 180) * p.distance,
-            opacity: 0,
-            scale: 0.3,
-          }}
-          transition={{ duration: 0.55, delay: p.delay, ease: 'easeOut' }}
-        >
-          {p.glyph}
-        </motion.span>
-      ))}
-    </div>
-  );
-}
-
 /* ── Terminal-style Action Button ── */
 function TerminalButton({
-  onClick, disabled, accentColor, children, 'data-testid': testId,
+  onClick, disabled, accentColor, children,
 }: {
   onClick: () => void; disabled: boolean; accentColor: string; children: React.ReactNode;
-  'data-testid'?: string;
 }) {
   const colorMap: Record<string, { border: string; bg: string; text: string; hoverBg: string; glow: string }> = {
     cyan: { border: 'border-cyan-700/60', bg: 'bg-cyan-950/50', text: 'text-cyan-400', hoverBg: 'hover:bg-cyan-900/40', glow: '#06b6d4' },
@@ -265,7 +206,6 @@ function TerminalButton({
     <button
       onClick={onClick}
       disabled={disabled}
-      data-testid={testId}
       className={`relative flex-1 py-2.5 rounded border ${c.border} ${c.bg} ${c.text} ${c.hoverBg} disabled:opacity-30 disabled:cursor-not-allowed transition-all text-xs font-mono font-semibold flex items-center justify-center gap-1.5 overflow-hidden group`}
       style={!disabled ? { boxShadow: `0 0 8px ${c.glow}20, inset 0 0 8px ${c.glow}10` } : {}}
     >
@@ -409,10 +349,6 @@ export function CombatUI() {
   const [pendingAction, setPendingAction] = useState(false);
   const [screenShake, setScreenShake] = useState(false);
   const [flashColor, setFlashColor] = useState<string | null>(null);
-  const [enemyHitFlash, setEnemyHitFlash] = useState(false);
-  const [playerVignette, setPlayerVignette] = useState(false);
-  const [poemBurst, setPoemBurst] = useState<{ color: string } | null>(null);
-  const { effectsScale } = useMobileVisualPerf();
   const logEndRef = useRef<HTMLDivElement>(null);
   const damageIdRef = useRef(0);
 
@@ -446,37 +382,20 @@ export function CombatUI() {
           }, isCrit ? 1800 : 1200);
 
           // Screen effects
-          if (entry.type === 'player_attack' || entry.type === 'critical_hit' || entry.type === 'combo_hit' || entry.type === 'player_power') {
-            setEnemyHitFlash(true);
-            setTimeout(() => setEnemyHitFlash(false), 280);
-          } else if (isCrit) {
+          if (isCrit) {
             setScreenShake(true);
             setFlashColor('rgba(255,255,100,0.15)');
             setTimeout(() => { setScreenShake(false); setFlashColor(null); }, 300);
           } else if (entry.type === 'enemy_attack' || entry.type === 'enemy_special') {
             setScreenShake(true);
             setFlashColor('rgba(239,68,68,0.1)');
-            setPlayerVignette(true);
             setTimeout(() => { setScreenShake(false); setFlashColor(null); }, 300);
-            setTimeout(() => setPlayerVignette(false), 500);
           }
         }
       }
     }
     prevLogLen.current = currentLen;
   }, [combatState]);
-
-  // Poem power burst in combat (respect reduced motion + effectsScale)
-  useEffect(() => {
-    if (mode !== 'combat') return;
-    const unsub = eventBus.on('poem:power_used', ({ poemId }) => {
-      if (isReducedMotionActive() || effectsScale < 0.2) return;
-      const accent = poemId.includes('poem') ? '#fbbf24' : '#f472b6';
-      setPoemBurst({ color: accent });
-      setTimeout(() => setPoemBurst(null), 600);
-    });
-    return unsub;
-  }, [mode, effectsScale]);
 
   // Close powers menu when turn changes
   useEffect(() => {
@@ -542,11 +461,6 @@ export function CombatUI() {
   if (mode !== 'combat' || !combatState) return null;
 
   const enemy = combatState.enemy;
-  const enemyTemplate = ENEMY_TEMPLATES[enemy.type];
-  const enemyAccent = enemyTemplate.portraitAccent ?? '#ef4444';
-  const enemyModelLabel = enemyTemplate.modelUrl
-    ? enemyTemplate.modelUrl.split('/').pop()?.replace('.glb', '') ?? undefined
-    : undefined;
   const isActive = combatState.status === 'active';
   const isPlayerTurn = combatState.isPlayerTurn && isActive;
 
@@ -558,39 +472,9 @@ export function CombatUI() {
 
   return (
     <div
-      data-testid="combat-ui"
       className={`fixed inset-0 flex flex-col pointer-events-none ${screenShake ? 'combat-shake' : ''}`}
       style={{ zIndex: UI_LAYERS.COMBAT }}
     >
-      {/* Player damage vignette pulse */}
-      <AnimatePresence>
-        {playerVignette && (
-          <motion.div
-            initial={{ opacity: 0.7 }}
-            animate={{ opacity: 0 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.5 }}
-            className="fixed inset-0 pointer-events-none combat-vignette-pulse"
-            style={{ zIndex: UI_LAYERS.COMBAT }}
-          />
-        )}
-      </AnimatePresence>
-
-      {/* Poem power glyph burst */}
-      <AnimatePresence>
-        {poemBurst && effectsScale >= 0.2 && (
-          <motion.div
-            key="poem-burst"
-            initial={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 pointer-events-none"
-            style={{ zIndex: UI_LAYERS.COMBAT + 2 }}
-          >
-            <PoemPowerCombatBurst color={poemBurst.color} scale={effectsScale} />
-          </motion.div>
-        )}
-      </AnimatePresence>
-
       {/* Screen flash overlay */}
       <AnimatePresence>
         {flashColor && (
@@ -615,13 +499,7 @@ export function CombatUI() {
         >
           {/* Enemy portrait + name */}
           <div className="flex items-center gap-3 mb-2">
-            <EnemyPortrait
-              emoji={enemy.emoji}
-              hp={enemy.hp}
-              maxHp={enemy.maxHp}
-              accentColor={enemyAccent}
-              modelLabel={enemyModelLabel}
-            />
+            <EnemyPortrait emoji={enemy.emoji} hp={enemy.hp} maxHp={enemy.maxHp} />
             <div className="flex-1">
               <div className="text-sm text-red-300 font-mono font-semibold">{enemy.name}</div>
               {combatState.enemyDefenseReduction > 0 && (
@@ -638,7 +516,7 @@ export function CombatUI() {
               <ComboCounter count={combatState.comboCount} />
             )}
           </div>
-          <AnimatedHPBar current={enemy.hp} max={enemy.maxHp} label="ENEMY" isPlayer={false} hitFlash={enemyHitFlash} />
+          <AnimatedHPBar current={enemy.hp} max={enemy.maxHp} label="ENEMY" isPlayer={false} />
         </motion.div>
       </div>
 
@@ -705,13 +583,9 @@ export function CombatUI() {
             <div className="text-[10px] text-center mb-1.5 text-slate-400 font-mono">
               <span className="text-slate-500">ХОД {combatState.turn}</span>
               <span className="mx-1.5 text-slate-600">│</span>
-              <motion.span
-                className={isPlayerTurn ? 'text-cyan-400 power-up' : 'text-red-400 combat-enemy-turn-pulse'}
-                animate={!isPlayerTurn ? { opacity: [1, 0.45, 1] } : { opacity: 1 }}
-                transition={!isPlayerTurn ? { duration: 0.9, repeat: Infinity, ease: 'easeInOut' } : {}}
-              >
+              <span className={isPlayerTurn ? 'text-cyan-400 power-up' : 'text-red-400'}>
                 {isPlayerTurn ? '▶ ВАШ ХОД' : '○ ХОД ВРАГА...'}
-              </motion.span>
+              </span>
               {isSilenced && (
                 <span className="ml-2 text-red-400">🔇 СПОСОБНОСТИ ЗАБЛОКИРОВАНЫ</span>
               )}
@@ -786,7 +660,7 @@ export function CombatUI() {
                   )}
                 </AnimatePresence>
               </div>
-              <TerminalButton onClick={handleFlee} disabled={!isPlayerTurn || pendingAction} accentColor="rose" data-testid="combat-flee">
+              <TerminalButton onClick={handleFlee} disabled={!isPlayerTurn || pendingAction} accentColor="rose">
                 <LogOut className="size-3.5" />
                 БЕЖАТЬ
               </TerminalButton>

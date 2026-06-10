@@ -15,6 +15,7 @@ import {
 import { getStoryNodes, isNarrativeGameDataLoaded, ensureStoryNode, prefetchStoryNodes } from '@/data/gameDataLoader';
 import { audioEngine } from '@/engine/AudioEngine';
 import { requestSceneTransitionForStoryNode } from '@/engine/scene/sceneTransition';
+import { getGameStore } from '@/store/gameStore';
 import { closeNarrativeOverlay } from '@/engine/scene/narrativeOverlay';
 import { EXPLORE_HUB_NODE_IDS } from '@/shared/exploreHubNodes';
 import { KARMA_LOW_THRESHOLD, KARMA_HIGH_THRESHOLD } from '@/data/constants';
@@ -166,7 +167,10 @@ export function StoryRenderer() {
     clearEffectTimers();
     const effectGen = ++nodeEffectGenRef.current;
     visitNode(node.id);
-    requestSceneTransitionForStoryNode(node.id, node.sceneId);
+    const currentSceneId = getGameStore().exploration.currentSceneId;
+    if (node.sceneId && currentSceneId !== node.sceneId) {
+      requestSceneTransitionForStoryNode(node.id, node.sceneId);
+    }
 
     if (node.effects && node.effects.length > 0) {
       applyEffects(node.effects);

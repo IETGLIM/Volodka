@@ -8,9 +8,6 @@ import type { ItemRarity } from '@/data/items';
 /* ─── Currency constants ─── */
 export const CURRENCY_SYMBOL = '₴';
 
-/** NPC buy-back cap — prevents sell→rebuy arbitrage at high relation. */
-export const MAX_BUYBACK_PERCENT = 0.65;
-
 /* ─── Merchant item entry ─── */
 export interface MerchantItem {
   itemId: string;
@@ -200,18 +197,9 @@ export function getSellPrice(
   const buyEntry = merchant.buys.find((b) => b.itemId === itemId);
   if (!buyEntry || buyEntry.buyPricePercent <= 0) return 0;
 
-  // Small relation bonus: up to +10% sell price at max relation (capped)
+  // Small relation bonus: up to +10% sell price at max relation
   const relationBonus = (relationValue / 100) * 0.10;
-  const effectivePercent = Math.min(MAX_BUYBACK_PERCENT, buyEntry.buyPricePercent + relationBonus);
-  let price = Math.round(itemBasePrice * effectivePercent);
-
-  // Anti-exploit: never pay more than half the merchant's sell price for the same item
-  const sellEntry = merchant.sells.find((s) => s.itemId === itemId);
-  if (sellEntry) {
-    const buyPrice = getBuyPrice(merchant, itemId, relationValue);
-    price = Math.min(price, Math.floor(buyPrice * 0.5));
-  }
-
+  const price = Math.round(itemBasePrice * (buyEntry.buyPricePercent + relationBonus));
   return Math.max(1, price);
 }
 

@@ -52,6 +52,9 @@ export function StreetVisual({ sceneId = 'street_night', livePlayerPositionRef }
         <NeonSigns isWinter={isWinter} />
       </EnvironmentDetail>
 
+      {/* ── Playable-area boundary: curb + railing so the invisible wall reads as a barrier ── */}
+      <StreetBoundary isWinter={isWinter} />
+
       {/* ── Street Lamps are now rendered in FOREGROUND layer via SceneColliderSelector ── */}
 
       {/* ── Fog ── (handled by SceneEnvironment — no duplicate) */}
@@ -143,6 +146,85 @@ export function StreetVisual({ sceneId = 'street_night', livePlayerPositionRef }
           <meshStandardMaterial color="#607080" transparent opacity={0.2} metalness={0.2} roughness={0.1} side={THREE.DoubleSide} />
         </mesh>
       </StreetClutterGate>
+    </group>
+  );
+}
+
+/** Visible boundary around the 20×20 playable area (physics walls sit at ±10).
+ *  Low curb + metal railing: 1 instanced post mesh + 8 rail boxes + 4 curbs. */
+function StreetBoundary({ isWinter }: { isWinter: boolean }) {
+  const postsRef = useRef<THREE.InstancedMesh>(null);
+
+  const HALF = 10;
+  const RAIL_INSET = 0.25; // just inside the physics wall
+
+  const postPositions = useMemo(() => {
+    const out: Array<[number, number]> = [];
+    const edge = HALF - RAIL_INSET;
+    for (let v = -HALF + 1; v <= HALF - 1; v += 2) {
+      out.push([v, -edge], [v, edge], [-edge, v], [edge, v]);
+    }
+    return out;
+  }, []);
+
+  useEffect(() => {
+    const mesh = postsRef.current;
+    if (!mesh) return;
+    const dummy = new THREE.Object3D();
+    postPositions.forEach(([x, z], i) => {
+      dummy.position.set(x, 0.55, z);
+      dummy.updateMatrix();
+      mesh.setMatrixAt(i, dummy.matrix);
+    });
+    mesh.instanceMatrix.needsUpdate = true;
+  }, [postPositions]);
+
+  const railColor = isWinter ? '#5a6470' : '#3c4456';
+  const curbColor = isWinter ? '#9aa2b2' : '#44445e';
+  const edge = HALF - RAIL_INSET;
+  const span = (HALF - RAIL_INSET) * 2;
+
+  return (
+    <group>
+      <instancedMesh ref={postsRef} args={[undefined, undefined, postPositions.length]} castShadow frustumCulled={false}>
+        <cylinderGeometry args={[0.035, 0.035, 1.1, 6]} />
+        <meshStandardMaterial color={railColor} metalness={0.6} roughness={0.5} />
+      </instancedMesh>
+
+      {/* Two horizontal rails per side */}
+      {[0.6, 1.0].map((y) => (
+        <group key={`rails-${y}`}>
+          <mesh position={[0, y, -edge]}>
+            <boxGeometry args={[span, 0.04, 0.04]} />
+            <meshStandardMaterial color={railColor} metalness={0.6} roughness={0.5} />
+          </mesh>
+          <mesh position={[0, y, edge]}>
+            <boxGeometry args={[span, 0.04, 0.04]} />
+            <meshStandardMaterial color={railColor} metalness={0.6} roughness={0.5} />
+          </mesh>
+          <mesh position={[-edge, y, 0]} rotation={[0, Math.PI / 2, 0]}>
+            <boxGeometry args={[span, 0.04, 0.04]} />
+            <meshStandardMaterial color={railColor} metalness={0.6} roughness={0.5} />
+          </mesh>
+          <mesh position={[edge, y, 0]} rotation={[0, Math.PI / 2, 0]}>
+            <boxGeometry args={[span, 0.04, 0.04]} />
+            <meshStandardMaterial color={railColor} metalness={0.6} roughness={0.5} />
+          </mesh>
+        </group>
+      ))}
+
+      {/* Low curb under the railing */}
+      {[
+        { pos: [0, 0.08, -HALF + 0.1] as const, rot: 0 },
+        { pos: [0, 0.08, HALF - 0.1] as const, rot: 0 },
+        { pos: [-HALF + 0.1, 0.08, 0] as const, rot: Math.PI / 2 },
+        { pos: [HALF - 0.1, 0.08, 0] as const, rot: Math.PI / 2 },
+      ].map((c, i) => (
+        <mesh key={`curb-${i}`} position={[c.pos[0], c.pos[1], c.pos[2]]} rotation={[0, c.rot, 0]} receiveShadow>
+          <boxGeometry args={[HALF * 2, 0.16, 0.35]} />
+          <meshStandardMaterial color={curbColor} roughness={0.9} />
+        </mesh>
+      ))}
     </group>
   );
 }

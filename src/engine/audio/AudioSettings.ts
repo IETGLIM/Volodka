@@ -14,12 +14,15 @@ export interface AudioSettingsSnapshot {
   sfxVolume: number;
   ambientVolume: number;
   musicEnabled: boolean;
+  /** Global mute toggle from SettingsPanel ("Без звука") */
+  muted: boolean;
 }
 
 const LS_MUSIC = 'volodka_music_volume';
 const LS_SFX = 'volodka_sfx_volume';
 const LS_AMBIENT = 'volodka_ambient_volume';
 const LS_MUSIC_ENABLED = 'volodka_music_enabled';
+const LS_MUTED = 'volodka_muted';
 
 function lsGetPercent(key: string, fallback: number): number {
   try {
@@ -49,15 +52,17 @@ export function readAudioSettings(): AudioSettingsSnapshot {
     sfxVolume: lsGetPercent(LS_SFX, 80),
     ambientVolume: lsGetPercent(LS_AMBIENT, 60),
     musicEnabled: lsGetBool(LS_MUSIC_ENABLED, true),
+    muted: lsGetBool(LS_MUTED, false),
   };
 }
 
 /** Apply snapshot to all engines without persisting. */
 export function applyAudioSettings(snapshot?: AudioSettingsSnapshot): AudioSettingsSnapshot {
   const s = snapshot ?? readAudioSettings();
-  musicEngine.setVolume(s.musicVolume);
-  audioEngine.setVolume(s.sfxVolume);
-  ambientEngine.setVolume(s.ambientVolume);
+  const muteMul = s.muted ? 0 : 1;
+  musicEngine.setVolume(s.musicVolume * muteMul);
+  audioEngine.setVolume(s.sfxVolume * muteMul);
+  ambientEngine.setVolume(s.ambientVolume * muteMul);
   if (typeof window !== 'undefined') {
     window.dispatchEvent(new CustomEvent(AUDIO_SETTINGS_CHANGED, { detail: s }));
   }

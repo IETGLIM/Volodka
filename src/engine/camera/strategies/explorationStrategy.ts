@@ -11,6 +11,8 @@ import {
   BREATHING_BOB_SPEED,
   LOOK_AHEAD_STRENGTH,
   LOOK_AHEAD_LERP_SPEED,
+  FIRST_PERSON_ENABLED,
+  FIRST_PERSON_EYE_HEIGHT,
 } from '../cameraConstants';
 import type { CameraModeContext, CameraModeStrategy } from '../types';
 
@@ -24,11 +26,37 @@ export const explorationStrategy: CameraModeStrategy = {
   },
 
   update(ctx) {
+    const { playerPos, yaw, pitch, offset, desiredPos, lookTarget, playerVelocity } = ctx;
+
+    // ── First-person: camera at the eyes, look along yaw/pitch ──
+    if (FIRST_PERSON_ENABLED && !ctx.interactionLocked) {
+      offset.set(
+        Math.sin(yaw) * Math.cos(pitch),
+        Math.sin(pitch),
+        Math.cos(yaw) * Math.cos(pitch),
+      );
+      const eyeY = playerPos.y + FIRST_PERSON_EYE_HEIGHT;
+      const targetPos = desiredPos.set(playerPos.x, eyeY, playerPos.z);
+      const targetLook = lookTarget.set(
+        targetPos.x + offset.x * 3,
+        targetPos.y + offset.y * 3,
+        targetPos.z + offset.z * 3,
+      );
+      return {
+        kind: 'targets',
+        mode: 'exploration',
+        targets: {
+          targetPos,
+          targetLook,
+          targetFov: ctx.currentSceneFov,
+          targetRoll: 0,
+        },
+      };
+    }
+
     const effectiveDistance = ctx.interactionLocked
       ? ctx.interactionDistance
       : ctx.distance;
-
-    const { playerPos, yaw, pitch, offset, desiredPos, lookTarget, playerVelocity } = ctx;
 
     offset.set(
       Math.sin(yaw) * Math.cos(pitch),

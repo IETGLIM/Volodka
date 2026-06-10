@@ -4,7 +4,7 @@ import {
   getDialogueNodes,
   getStoryNodes,
 } from '@/data/gameDataLoader';
-import { requestSceneTransition, requestSceneTransitionForStoryNode } from '@/engine/scene/sceneTransition';
+import { requestSceneTransition } from '@/engine/scene/sceneTransition';
 import { openNarrativeOverlay } from '@/engine/scene/narrativeOverlay';
 import { useGameStore } from '@/store/gameStore';
 import { hasVisitedNode } from '@/store/visitedNodesIndex';
@@ -53,7 +53,6 @@ export async function tryOpenStory(nodeId: string): Promise<boolean> {
       notifyNarrativeUnavailable('story', nodeId, 'missing');
       return false;
     }
-    requestSceneTransitionForStoryNode(nodeId, storyNode.sceneId);
     openNarrativeOverlay(nodeId, 'story');
     return true;
   } catch (error) {
@@ -84,9 +83,6 @@ export async function openLinkedDialogue(nodeId: string): Promise<boolean> {
     return true;
   }
 
-  if (dlgNode.sceneId) {
-    requestSceneTransitionForStoryNode(nodeId, dlgNode.sceneId);
-  }
   openNarrativeOverlay(nodeId, 'dialogue');
   return true;
 }
@@ -113,7 +109,6 @@ export async function openLinkedStory(nodeId: string): Promise<boolean> {
     return true;
   }
 
-  requestSceneTransitionForStoryNode(nodeId, storyNode.sceneId);
   openNarrativeOverlay(nodeId, 'story');
   return true;
 }

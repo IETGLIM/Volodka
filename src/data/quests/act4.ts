@@ -370,7 +370,7 @@ export const QUESTS_ACT4: QuestDefinition[] = [
       { type: 'addXp', value: 80 },
     ],
     linkedStoryNodeId: 'office_alexander',
-    questGiverNpcId: 'office_dmitry',
+    questGiverNpcId: 'office_alexander',
   },
 
   /* ─────────────── QUEST 23: Голос Прошлого ─────────────── */

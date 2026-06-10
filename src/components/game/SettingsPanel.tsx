@@ -17,19 +17,7 @@ import {
   SectionDivider,
 } from '@/components/game/design-system';
 import { applyAudioSettings } from '@/engine/audio/AudioSettings';
-import {
-  readReducedMotionPreference,
-  writeReducedMotionPreference,
-} from '@/shared/accessibility/reducedMotion';
-import {
-  isWebgpuRendererEnabled,
-  setWebgpuRendererEnabled,
-} from '@/config/featureFlags';
-import {
-  isAiFeaturesEnabled,
-  isMlEngineStub,
-  setAiFeaturesEnabled,
-} from '@/engine/ml/transformersBridge';
+import { applyVisualSettings } from '@/engine/visualSettings';
 
 // ─── Types ───
 
@@ -72,10 +60,7 @@ const DEFAULTS: Record<string, number | boolean> = {
   volodka_scanlines: true,
   volodka_particles: true,
   volodka_cam_shake: true,
-  volodka_reduced_motion: false,
   volodka_brightness: 100,
-  volodka_webgpu: false,
-  volodka_ai_features: false,
   volodka_mouse_sens: 5,
   volodka_invert_y: false,
 };
@@ -97,14 +82,8 @@ function VisualSettingsTab({
   setParticles,
   camShake,
   setCamShake,
-  reducedMotion,
-  setReducedMotion,
   brightness,
   setBrightness,
-  webgpu,
-  setWebgpu,
-  aiFeatures,
-  setAiFeatures,
   persist,
 }: {
   postfx: boolean;
@@ -115,14 +94,8 @@ function VisualSettingsTab({
   setParticles: (v: boolean) => void;
   camShake: boolean;
   setCamShake: (v: boolean) => void;
-  reducedMotion: boolean;
-  setReducedMotion: (v: boolean) => void;
   brightness: number;
   setBrightness: (v: number) => void;
-  webgpu: boolean;
-  setWebgpu: (v: boolean) => void;
-  aiFeatures: boolean;
-  setAiFeatures: (v: boolean) => void;
   persist: (key: string, value: number | boolean) => void;
 }) {
   const { selectedPreset, preset, setPreset } = useGraphicsQuality();
@@ -162,7 +135,7 @@ function VisualSettingsTab({
         </div>
         <p className="font-mono text-[10px] text-slate-500/80 leading-relaxed">
           {selectedPreset === 'auto'
-            ? `Авто → ${preset.labelRu}: на десктопе (≥8 ядер, DPR≥1.5) обычно high/ultra — тени, contact shadows, GLB`
+            ? `Авто → ${preset.labelRu}: Draco/Meshopt, LOD, KTX2 при high/ultra`
             : `${preset.labelRu}: ${preset.npcRenderMode} NPC · ${preset.environmentRenderMode} окружение · DPR ${preset.dpr[0]}–${preset.dpr[1]}`}
         </p>
       </div>
@@ -170,31 +143,22 @@ function VisualSettingsTab({
       <CyberToggle
         label="Пост-обработка"
         checked={postfx}
-        onChange={(v) => { setPostfx(v); persist('volodka_postfx', v); }}
+        onChange={(v) => { setPostfx(v); persist('volodka_postfx', v); applyVisualSettings(); }}
       />
       <CyberToggle
         label="Сканлайны"
         checked={scanlines}
-        onChange={(v) => { setScanlines(v); persist('volodka_scanlines', v); }}
+        onChange={(v) => { setScanlines(v); persist('volodka_scanlines', v); applyVisualSettings(); }}
       />
       <CyberToggle
         label="Частицы"
         checked={particles}
-        onChange={(v) => { setParticles(v); persist('volodka_particles', v); }}
+        onChange={(v) => { setParticles(v); persist('volodka_particles', v); applyVisualSettings(); }}
       />
       <CyberToggle
         label="Тряска камеры"
         checked={camShake}
-        onChange={(v) => { setCamShake(v); persist('volodka_cam_shake', v); }}
-      />
-      <CyberToggle
-        label="Уменьшить движение"
-        checked={reducedMotion}
-        onChange={(v) => {
-          setReducedMotion(v);
-          persist('volodka_reduced_motion', v);
-          writeReducedMotionPreference(v);
-        }}
+        onChange={(v) => { setCamShake(v); persist('volodka_cam_shake', v); applyVisualSettings(); }}
       />
       <SectionDivider />
       <CyberSlider
@@ -202,43 +166,9 @@ function VisualSettingsTab({
         value={brightness}
         min={50}
         max={150}
-        onChange={(v) => { setBrightness(v); persist('volodka_brightness', v); }}
+        onChange={(v) => { setBrightness(v); persist('volodka_brightness', v); applyVisualSettings(); }}
         unit="%"
       />
-      <SectionDivider />
-      <CyberToggle
-        label="Экспериментальный WebGPU"
-        checked={webgpu}
-        onChange={(v) => {
-          setWebgpu(v);
-          setWebgpuRendererEnabled(v);
-          persist('volodka_webgpu', v);
-        }}
-        title="Перезагрузите игру после смены рендерера. WebGL остаётся запасным вариантом."
-      />
-      <p className="font-mono text-[10px] text-slate-500/80 leading-relaxed -mt-2">
-        Canary-режим: при недоступности WebGPU используется WebGL.
-      </p>
-      <CyberToggle
-        label="AI-функции (эксперимент)"
-        checked={aiFeatures}
-        disabled={isMlEngineStub()}
-        title={
-          isMlEngineStub()
-            ? 'Недоступно в тестовой сборке (VITE_ML_SKIP). Сюжет и стихи не генерируются ИИ.'
-            : 'Семантический поиск в Кодексе. Сюжет и стихи не генерируются ИИ.'
-        }
-        onChange={(v) => {
-          setAiFeatures(v);
-          setAiFeaturesEnabled(v);
-          persist('volodka_ai_features', v);
-        }}
-      />
-      {!isMlEngineStub() && aiFeatures ? (
-        <p className="font-mono text-[10px] text-slate-500/80 leading-relaxed -mt-2">
-          Экспериментальные функции: поиск по архиву и голосовые команды. Сюжет и стихи не генерируются ИИ.
-        </p>
-      ) : null}
     </motion.div>
   );
 }
@@ -268,10 +198,7 @@ function SettingsPanelContent({ onClose }: { onClose: () => void }) {
   const [scanlines, setScanlines] = useState(() => lsGetBool('volodka_scanlines', true));
   const [particles, setParticles] = useState(() => lsGetBool('volodka_particles', true));
   const [camShake, setCamShake] = useState(() => lsGetBool('volodka_cam_shake', true));
-  const [reducedMotion, setReducedMotion] = useState(() => readReducedMotionPreference());
   const [brightness, setBrightness] = useState(() => lsGetNumber('volodka_brightness', 100));
-  const [webgpu, setWebgpu] = useState(() => isWebgpuRendererEnabled());
-  const [aiFeatures, setAiFeatures] = useState(() => isAiFeaturesEnabled());
 
   // ── Controls state ──
   const [mouseSens, setMouseSens] = useState(() => lsGetNumber('volodka_mouse_sens', 5));
@@ -295,15 +222,11 @@ function SettingsPanelContent({ onClose }: { onClose: () => void }) {
     setScanlines(DEFAULTS.volodka_scanlines as boolean);
     setParticles(DEFAULTS.volodka_particles as boolean);
     setCamShake(DEFAULTS.volodka_cam_shake as boolean);
-    setReducedMotion(DEFAULTS.volodka_reduced_motion as boolean);
-    writeReducedMotionPreference(DEFAULTS.volodka_reduced_motion as boolean);
     setBrightness(DEFAULTS.volodka_brightness as number);
-    setWebgpu(DEFAULTS.volodka_webgpu as boolean);
-    setWebgpuRendererEnabled(DEFAULTS.volodka_webgpu as boolean);
-    setAiFeatures(DEFAULTS.volodka_ai_features as boolean);
-    setAiFeaturesEnabled(DEFAULTS.volodka_ai_features as boolean);
     setMouseSens(DEFAULTS.volodka_mouse_sens as number);
     setInvertY(DEFAULTS.volodka_invert_y as boolean);
+    applyAudioSettings();
+    applyVisualSettings();
   }, []);
 
   // ── Render tab content ──
@@ -347,7 +270,7 @@ function SettingsPanelContent({ onClose }: { onClose: () => void }) {
             <CyberToggle
               label="Без звука"
               checked={muted}
-              onChange={(v) => { setMuted(v); persist('volodka_muted', v); }}
+              onChange={(v) => { setMuted(v); persist('volodka_muted', v); applyAudioSettings(); }}
             />
           </motion.div>
         );
@@ -363,14 +286,8 @@ function SettingsPanelContent({ onClose }: { onClose: () => void }) {
             setParticles={setParticles}
             camShake={camShake}
             setCamShake={setCamShake}
-            reducedMotion={reducedMotion}
-            setReducedMotion={setReducedMotion}
             brightness={brightness}
             setBrightness={setBrightness}
-            webgpu={webgpu}
-            setWebgpu={setWebgpu}
-            aiFeatures={aiFeatures}
-            setAiFeatures={setAiFeatures}
             persist={persist}
           />
         );
@@ -390,12 +307,12 @@ function SettingsPanelContent({ onClose }: { onClose: () => void }) {
               value={mouseSens}
               min={1}
               max={10}
-              onChange={(v) => { setMouseSens(v); persist('volodka_mouse_sens', v); }}
+              onChange={(v) => { setMouseSens(v); persist('volodka_mouse_sens', v); applyVisualSettings(); }}
             />
             <CyberToggle
               label="Инвертировать Y-ось"
               checked={invertY}
-              onChange={(v) => { setInvertY(v); persist('volodka_invert_y', v); }}
+              onChange={(v) => { setInvertY(v); persist('volodka_invert_y', v); applyVisualSettings(); }}
             />
             <SectionDivider />
             {/* Keyboard shortcuts hint */}
