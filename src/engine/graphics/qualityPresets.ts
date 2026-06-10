@@ -142,9 +142,16 @@ export function detectAutoQualityPreset(
   const moderateCpu = hardwareConcurrency <= 8;
 
   if (viewportWidth < 768 || devicePixelRatio < 1.25 || weakCpu) return 'low';
-  if (viewportWidth < 1024 || devicePixelRatio < 1.5 || (moderateCpu && viewportWidth < 1280)) {
-    return 'medium';
+  if (viewportWidth < 1024 || devicePixelRatio < 1.5) return 'medium';
+
+  // Capable desktop: ≥8 cores + DPR ≥1.5 bumps auto to high (shadows, contact shadows, GLB)
+  const capableDesktop =
+    hardwareConcurrency >= 8 && devicePixelRatio >= 1.5 && viewportWidth >= 1024;
+  if (capableDesktop) {
+    return viewportWidth < 1600 ? 'high' : 'ultra';
   }
+
+  if (moderateCpu && viewportWidth < 1280) return 'medium';
   if (viewportWidth < 1440) return 'high';
   return 'ultra';
 }

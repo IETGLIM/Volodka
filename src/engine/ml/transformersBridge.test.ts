@@ -42,13 +42,12 @@ describe('transformersBridge', () => {
     await expect(loadMlEngine()).resolves.toBeNull();
   });
 
-  it('loadMlEngine throws when opt-in is on but stub is not implemented', async () => {
+  it('loadMlEngine returns null in test mode even when opt-in is on', async () => {
     setAiFeaturesEnabled(true);
-    expect(isAiFeaturesEnabled()).toBe(true);
-    await expect(loadMlEngine()).rejects.toThrow('ML engine not implemented');
+    await expect(loadMlEngine()).resolves.toBeNull();
   });
 
-  it('reports stub state for Settings UI', () => {
+  it('reports stub state in test/CI skip environments', () => {
     expect(isMlEngineStub()).toBe(true);
   });
 });

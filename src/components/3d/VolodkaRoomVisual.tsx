@@ -11,13 +11,14 @@ import { EnvironmentDetail } from './lod/PropDistanceGate';
 import { Lamp, Rug, Radiator } from './lazyInteriorModels';
 import { useCachedCanvasTexture } from '@/hooks/useCachedCanvasTexture';
 import { VolodkaRoomClutter } from './sceneChunks/volodkaRoom';
+import { VolodkaRoomProps } from './VolodkaRoomProps';
 
 interface VolodkaRoomVisualProps {
   livePlayerPositionRef?: MutableRefObject<THREE.Vector3>;
 }
 
 /** Procedural 3D room for Volodka's apartment (5×7m) */
-export function VolodkaRoomVisual({ livePlayerPositionRef: _livePlayerPositionRef }: VolodkaRoomVisualProps) {
+export function VolodkaRoomVisual({ livePlayerPositionRef }: VolodkaRoomVisualProps) {
   // Canvas textures created synchronously via useMemo
   const floorTexture = useCachedCanvasTexture('volodka_room:floor', createFloorTexture);
   const wallTexture = useCachedCanvasTexture('volodka_room:wall', createWallTexture);
@@ -328,13 +329,23 @@ export function VolodkaRoomVisual({ livePlayerPositionRef: _livePlayerPositionRe
             toneMapped={false}
           />
         </mesh>
-        {/* Monitor glow point light — PRIMARY light source, strong green cast */}
+        {/* Monitor glow — point + spot for desk emissive punch */}
         <pointLight
-          position={[0, 1.2, 0.0]}
+          position={[0, 1.2, 0.05]}
           color="#00ff66"
-          intensity={6.0}
-          distance={10}
+          intensity={5.5}
+          distance={8}
         />
+        <spotLight
+          position={[0, 1.25, 0.15]}
+          angle={0.55}
+          penumbra={0.6}
+          color="#66ffaa"
+          intensity={3.2}
+          distance={6}
+        >
+          <object3D position={[0, -0.47, -0.05]} />
+        </spotLight>
 
         {/* Monitor stand */}
         <mesh position={[0, 0.9, -0.2]}>
@@ -544,7 +555,10 @@ export function VolodkaRoomVisual({ livePlayerPositionRef: _livePlayerPositionRe
       </group>
 
       {/* ── ENVIRONMENTAL CLUTTER / STORYTELLING (lazy chunk) ── */}
-      <VolodkaRoomClutter lod={lod} />
+      <EnvironmentDetail currentLod={lod} minLod="standard">
+        <VolodkaRoomClutter lod={lod} />
+        <VolodkaRoomProps />
+      </EnvironmentDetail>
 
       {/* ═══════════════════════════════════════════════ */}
       {/* ── ANIMATED DESK ELEMENTS ── */}

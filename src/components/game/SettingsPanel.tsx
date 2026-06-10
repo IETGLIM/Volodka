@@ -162,7 +162,7 @@ function VisualSettingsTab({
         </div>
         <p className="font-mono text-[10px] text-slate-500/80 leading-relaxed">
           {selectedPreset === 'auto'
-            ? `Авто → ${preset.labelRu}: Draco/Meshopt, LOD, KTX2 при high/ultra`
+            ? `Авто → ${preset.labelRu}: на десктопе (≥8 ядер, DPR≥1.5) обычно high/ultra — тени, contact shadows, GLB`
             : `${preset.labelRu}: ${preset.npcRenderMode} NPC · ${preset.environmentRenderMode} окружение · DPR ${preset.dpr[0]}–${preset.dpr[1]}`}
         </p>
       </div>
@@ -220,13 +220,13 @@ function VisualSettingsTab({
         Canary-режим: при недоступности WebGPU используется WebGL.
       </p>
       <CyberToggle
-        label="AI-функции (скоро)"
+        label="AI-функции (эксперимент)"
         checked={aiFeatures}
         disabled={isMlEngineStub()}
         title={
           isMlEngineStub()
-            ? 'Скоро: поиск по архиву и голосовые команды. Сюжет и стихи не генерируются ИИ.'
-            : undefined
+            ? 'Недоступно в тестовой сборке (VITE_ML_SKIP). Сюжет и стихи не генерируются ИИ.'
+            : 'Семантический поиск в Кодексе. Сюжет и стихи не генерируются ИИ.'
         }
         onChange={(v) => {
           setAiFeatures(v);
@@ -234,6 +234,11 @@ function VisualSettingsTab({
           persist('volodka_ai_features', v);
         }}
       />
+      {!isMlEngineStub() && aiFeatures ? (
+        <p className="font-mono text-[10px] text-slate-500/80 leading-relaxed -mt-2">
+          Экспериментальные функции: поиск по архиву и голосовые команды. Сюжет и стихи не генерируются ИИ.
+        </p>
+      ) : null}
     </motion.div>
   );
 }

@@ -10,6 +10,7 @@
  */
 
 import * as THREE from 'three';
+import { isReducedMotionActive } from '@/shared/accessibility/reducedMotion';
 import {
   configureCameraCollisionRaycaster,
   isCameraCollisionHit,
@@ -45,7 +46,7 @@ export const COMBAT_FOV = 85;
 const COMBAT_ZOOM_FOV = 70;           // zoomed-in FOV on impact
 const COMBAT_ZOOM_DURATION = 0.3;     // seconds the zoom holds
 const COMBAT_ZOOM_RECOVER_SPEED = 2;  // how fast FOV recovers
-const COMBAT_SHAKE_INTENSITY = 0.12;  // max shake offset
+const COMBAT_SHAKE_INTENSITY = 0.18;  // max shake offset
 const COMBAT_SHAKE_DURATION = 0.4;    // seconds shake lasts
 
 /* ── Scene transition ── */
@@ -929,4 +930,20 @@ export function getGlobalTimeScale(): number {
 
 export function applyTimeScale(delta: number): number {
   return delta * globalTimeScale;
+}
+
+let hitStopTimer: ReturnType<typeof setTimeout> | null = null;
+
+/** Brief combat hit-stop (~80ms). Skipped when reduced motion is active. */
+export function triggerHitStop(durationMs = 80, scale = 0.05): void {
+  if (typeof window === 'undefined' || isReducedMotionActive()) return;
+  if (hitStopTimer) {
+    clearTimeout(hitStopTimer);
+    hitStopTimer = null;
+  }
+  setGlobalTimeScale(scale);
+  hitStopTimer = setTimeout(() => {
+    setGlobalTimeScale(1.0);
+    hitStopTimer = null;
+  }, durationMs);
 }

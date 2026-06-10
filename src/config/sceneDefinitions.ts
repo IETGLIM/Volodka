@@ -56,9 +56,9 @@ export const volodka_room_def: SceneDefinition = {
   ],
   visualComponent: 'VolodkaRoomVisual',
   lights: [
-    { position: [1.5, 1.3, -3.0], intensity: 3.0, color: '#00ff66', distance: 8 },
-    { position: [0, 2.5, 0], intensity: 1.0, color: '#ffaa55', distance: 8 },
-    { position: [-1.5, 2.0, 2.0], intensity: 0.6, color: '#6655aa', distance: 6 },
+    { position: [0, 1.25, -2.4], intensity: 2.8, color: '#00ff66', distance: 7 },
+    { position: [0, 2.4, 0.5], intensity: 1.4, color: '#ffaa66', distance: 9 },
+    { position: [-1.2, 1.8, 2.2], intensity: 0.5, color: '#7766aa', distance: 6 },
   ],
   ambientColor: '#3a3050',
   ambientIntensity: 0.8,

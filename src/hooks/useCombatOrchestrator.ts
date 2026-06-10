@@ -5,6 +5,8 @@ import { readGamePhase } from '@/shared/gamePhase';
 import { eventBus, EventBusPriority } from '@/engine/EventBus';
 import { withHmrCleanup } from '@/shared/dev/hmrDispose';
 import { triggerCameraShake } from '@/engine/camera/cameraShake';
+import { triggerHitStop } from '@/engine/camera/cinematicCamera';
+import { isReducedMotionActive } from '@/shared/accessibility/reducedMotion';
 import { startCombat } from '@/engine/CombatSystem';
 import { getItemDefinition } from '@/data/items';
 import type { EnemyType } from '@/shared/types/game';
@@ -55,8 +57,18 @@ export function useCombatOrchestrator() {
       useGameStore.getState().pushNotification('energy', `Поражение: -${energyLost} энергии, -${karmaLost} кармы`);
     }, EventBusPriority.Orchestrator);
 
-    scope.on('combat:hit', () => {
-      triggerCameraShake(0.1, 5);
+    scope.on('combat:hit', ({ isPlayerHit }) => {
+      if (isPlayerHit) {
+        triggerHitStop(80);
+        triggerCameraShake(0.2, 6);
+      } else {
+        triggerCameraShake(0.14, 5);
+      }
+    }, EventBusPriority.FX);
+
+    scope.on('poem:power_used', () => {
+      if (isReducedMotionActive()) return;
+      triggerCameraShake(0.24, 6);
     }, EventBusPriority.FX);
 
     return withHmrCleanup(() => scope.dispose());

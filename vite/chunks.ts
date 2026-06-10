@@ -252,6 +252,14 @@ export function resolveManualChunk(id: string): string | undefined {
     return 'engine-combat';
   }
 
+  if (posix.includes('/src/engine/ml/')) {
+    return 'engine-ml';
+  }
+
+  if (posix.includes('node_modules/@huggingface/transformers')) {
+    return 'engine-ml';
+  }
+
   const narrative = resolveNarrativeChunk(posix);
   if (narrative) return narrative;
 

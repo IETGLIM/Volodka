@@ -20,6 +20,8 @@ import { PanelWrapper } from './PanelWrapper';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 import type { SceneId } from '@/shared/types/game';
+import { isAiFeaturesEnabled } from '@/engine/ml/transformersBridge';
+import { searchCodexSemantically } from '@/engine/ml/codexSemanticSearch';
 
 /* ─── Types ─── */
 
@@ -285,6 +287,9 @@ export function CodexPanel({ open, onClose }: CodexPanelProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterMode, setFilterMode] = useState<FilterMode>('all');
   const [activeCategory, setActiveCategory] = useState<LoreCategory | 'all'>('all');
+  const [semanticLoreIds, setSemanticLoreIds] = useState<string[] | null>(null);
+  const [semanticSearching, setSemanticSearching] = useState(false);
+  const aiSearchEnabled = isAiFeaturesEnabled();
 
   // Merge INITIAL_LORE_ENTRIES with store entries (store entries take precedence)
   const allEntries = useMemo(() => {
@@ -314,6 +319,32 @@ export function CodexPanel({ open, onClose }: CodexPanelProps) {
     return counts;
   }, [allEntries]);
 
+  // Semantic search (opt-in AI)
+  useEffect(() => {
+    if (!aiSearchEnabled || !searchQuery.trim()) {
+      const t = setTimeout(() => {
+        setSemanticLoreIds(null);
+        setSemanticSearching(false);
+      }, 0);
+      return () => clearTimeout(t);
+    }
+
+    let cancelled = false;
+    setSemanticSearching(true);
+    const timer = setTimeout(() => {
+      void searchCodexSemantically(searchQuery, allEntries).then((ids) => {
+        if (cancelled) return;
+        setSemanticLoreIds(ids);
+        setSemanticSearching(false);
+      });
+    }, 320);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [aiSearchEnabled, searchQuery, allEntries]);
+
   // Filter entries
   const filteredEntries = useMemo(() => {
     let result = allEntries;
@@ -330,25 +361,46 @@ export function CodexPanel({ open, onClose }: CodexPanelProps) {
       result = result.filter((e) => !e.discovered);
     }
 
-    // Search
+    // Search — semantic when AI enabled, substring fallback otherwise
     if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase();
-      result = result.filter(
-        (e) =>
-          (e.discovered && e.title.toLowerCase().includes(q)) ||
-          (e.discovered && e.body.toLowerCase().includes(q)),
-      );
+      if (aiSearchEnabled && semanticLoreIds && semanticLoreIds.length > 0) {
+        const rank = new Map(semanticLoreIds.map((id, index) => [id, index]));
+        result = result
+          .filter((e) => rank.has(e.id))
+          .sort((a, b) => (rank.get(a.id) ?? 999) - (rank.get(b.id) ?? 999));
+      } else if (!aiSearchEnabled || !semanticSearching) {
+        const q = searchQuery.toLowerCase();
+        result = result.filter(
+          (e) =>
+            (e.discovered && e.title.toLowerCase().includes(q)) ||
+            (e.discovered && e.body.toLowerCase().includes(q)),
+        );
+      } else {
+        result = [];
+      }
     }
 
-    // Sort: discovered first, then by rarity
+    // Sort: discovered first, then by rarity (skip when semantic rank applied)
     const rarityOrder: Record<string, number> = { legendary: 0, rare: 1, uncommon: 2, common: 3 };
-    result = [...result].sort((a, b) => {
-      if (a.discovered !== b.discovered) return a.discovered ? -1 : 1;
-      return (rarityOrder[a.rarity] ?? 3) - (rarityOrder[b.rarity] ?? 3);
-    });
+    const semanticRanked =
+      aiSearchEnabled && searchQuery.trim() && semanticLoreIds && semanticLoreIds.length > 0;
+    if (!semanticRanked) {
+      result = [...result].sort((a, b) => {
+        if (a.discovered !== b.discovered) return a.discovered ? -1 : 1;
+        return (rarityOrder[a.rarity] ?? 3) - (rarityOrder[b.rarity] ?? 3);
+      });
+    }
 
     return result;
-  }, [allEntries, activeCategory, filterMode, searchQuery]);
+  }, [
+    allEntries,
+    activeCategory,
+    filterMode,
+    searchQuery,
+    aiSearchEnabled,
+    semanticLoreIds,
+    semanticSearching,
+  ]);
 
   const discoveredCount = allEntries.filter((e) => e.discovered).length;
   const totalCount = allEntries.length;
@@ -412,9 +464,14 @@ export function CodexPanel({ open, onClose }: CodexPanelProps) {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Поиск..."
+              placeholder={aiSearchEnabled ? 'Семантический поиск…' : 'Поиск...'}
               className="flex-1 bg-transparent text-xs text-slate-300 placeholder-slate-600 outline-none"
             />
+            {aiSearchEnabled && searchQuery.trim() ? (
+              <span className="text-[8px] font-mono text-cyan-400/70 shrink-0">
+                {semanticSearching ? 'AI…' : 'AI'}
+              </span>
+            ) : null}
           </div>
           <div className="flex items-center gap-1">
             <Button

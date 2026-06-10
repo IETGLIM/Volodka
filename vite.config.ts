@@ -40,6 +40,10 @@ export default defineConfig(({ mode }) => {
       host: true,
     },
 
+    optimizeDeps: {
+      exclude: ['@huggingface/transformers'],
+    },
+
     build: {
       target: 'esnext',
       rollupOptions: {

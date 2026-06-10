@@ -27,7 +27,7 @@ import { disposeEffectComposer, type PostprocessingComposerLike } from '@/engine
 
 /** Per-scene color grading overrides for CyberPunk2077 / Noir / Gothic feel */
 const SCENE_COLOR_GRADE: Record<string, { hue: number; saturation: number; brightness: number; contrast: number }> = {
-  volodka_room:       { hue: -0.05, saturation: 0.2,  brightness: -0.02, contrast: 0.25 }, // cold green monitor glow
+  volodka_room:       { hue: 0.04,  saturation: 0.18, brightness: 0.03,  contrast: 0.24 }, // warm indoor + green monitor accent
   volodka_corridor:   { hue: -0.03, saturation: -0.1, brightness: -0.05, contrast: 0.15 }, // dim noir
   home_evening:       { hue: 0.04,  saturation: 0.1,  brightness: 0.0,  contrast: 0.1  }, // warm amber
   street_night:       { hue: -0.02, saturation: 0.38, brightness: 0.05,  contrast: 0.24 }, // cooler cyberpunk neon
@@ -68,7 +68,7 @@ const DEFAULT_VIGNETTE = { offset: 0.4, darkness: 0.32 };
 
 /** Dynamic bloom intensity per scene — neon scenes bloom brighter */
 const SCENE_BLOOM: Record<string, { intensity: number; threshold: number; smoothing: number }> = {
-  volodka_room:       { intensity: 0.6,  threshold: 0.6,  smoothing: 0.5 },  // monitor glow bloom (tamed)
+  volodka_room:       { intensity: 0.72, threshold: 0.52, smoothing: 0.42 }, // monitor emissive bloom
   volodka_corridor:   { intensity: 0.3,  threshold: 0.8,  smoothing: 0.6 },  // dim
   home_evening:       { intensity: 0.4,  threshold: 0.7,  smoothing: 0.5 },  // warm
   street_night:       { intensity: 1.0,  threshold: 0.38, smoothing: 0.32 }, // strong neon bloom

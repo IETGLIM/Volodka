@@ -131,7 +131,8 @@
       "^game-ui-(?!menu-screen|hud)",
       "^scene-(?!volodka-room)",
       "^game-dev",
-      "^engine-combat"
+      "^engine-combat",
+      "^engine-ml"
     ]
   }
 }

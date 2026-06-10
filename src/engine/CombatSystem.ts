@@ -329,7 +329,8 @@ export function playerAttack(): CombatState | null {
   });
 
   eventBus.emit('combat:action', { action: 'attack', damage });
-  eventBus.emit('camera:combat_impact', { intensity: isCritical ? 0.6 : 0.3 });
+  eventBus.emit('combat:hit', { damage, isPlayerHit: false, source: 'player_attack' });
+  eventBus.emit('camera:combat_impact', { intensity: isCritical ? 0.85 : 0.5 });
 
   // Check victory
   if (newEnemyHp <= 0) {
@@ -419,6 +420,7 @@ export function playerUsePoemPower(poemId: string): CombatState | null {
 
   eventBus.emit('combat:action', { action: 'poem_power' });
   eventBus.emit('poem:power_used', { poemId, powerName: ability.name });
+  eventBus.emit('camera:combat_impact', { intensity: 0.55 });
 
   // Check if enemy died from the ability
   const afterUse = combat.getState();
@@ -751,7 +753,8 @@ function executeEnemyTurn() {
     ],
   });
 
-  eventBus.emit('camera:combat_shake', { intensity: 0.2 });
+  eventBus.emit('combat:hit', { damage: enemyDamage, isPlayerHit: true, source: 'enemy_attack' });
+  eventBus.emit('camera:combat_shake', { intensity: 0.42 });
 
   // Check defeat
   if (newPlayerHp <= 0) {
