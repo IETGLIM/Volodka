@@ -4,6 +4,8 @@
 
 **Version:** 3.1.0 (see `package.json`)
 
+Roadmap: [docs/AAA_PIONEER_ROADMAP.md](./docs/AAA_PIONEER_ROADMAP.md)
+
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new)
 
 ---

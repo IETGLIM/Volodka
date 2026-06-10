@@ -21,6 +21,15 @@ import {
   readReducedMotionPreference,
   writeReducedMotionPreference,
 } from '@/shared/accessibility/reducedMotion';
+import {
+  isWebgpuRendererEnabled,
+  setWebgpuRendererEnabled,
+} from '@/config/featureFlags';
+import {
+  isAiFeaturesEnabled,
+  isMlEngineStub,
+  setAiFeaturesEnabled,
+} from '@/engine/ml/transformersBridge';
 
 // ─── Types ───
 
@@ -65,6 +74,8 @@ const DEFAULTS: Record<string, number | boolean> = {
   volodka_cam_shake: true,
   volodka_reduced_motion: false,
   volodka_brightness: 100,
+  volodka_webgpu: false,
+  volodka_ai_features: false,
   volodka_mouse_sens: 5,
   volodka_invert_y: false,
 };
@@ -90,6 +101,10 @@ function VisualSettingsTab({
   setReducedMotion,
   brightness,
   setBrightness,
+  webgpu,
+  setWebgpu,
+  aiFeatures,
+  setAiFeatures,
   persist,
 }: {
   postfx: boolean;
@@ -104,6 +119,10 @@ function VisualSettingsTab({
   setReducedMotion: (v: boolean) => void;
   brightness: number;
   setBrightness: (v: number) => void;
+  webgpu: boolean;
+  setWebgpu: (v: boolean) => void;
+  aiFeatures: boolean;
+  setAiFeatures: (v: boolean) => void;
   persist: (key: string, value: number | boolean) => void;
 }) {
   const { selectedPreset, preset, setPreset } = useGraphicsQuality();
@@ -186,6 +205,35 @@ function VisualSettingsTab({
         onChange={(v) => { setBrightness(v); persist('volodka_brightness', v); }}
         unit="%"
       />
+      <SectionDivider />
+      <CyberToggle
+        label="Экспериментальный WebGPU"
+        checked={webgpu}
+        onChange={(v) => {
+          setWebgpu(v);
+          setWebgpuRendererEnabled(v);
+          persist('volodka_webgpu', v);
+        }}
+        title="Перезагрузите игру после смены рендерера. WebGL остаётся запасным вариантом."
+      />
+      <p className="font-mono text-[10px] text-slate-500/80 leading-relaxed -mt-2">
+        Canary-режим: при недоступности WebGPU используется WebGL.
+      </p>
+      <CyberToggle
+        label="AI-функции (скоро)"
+        checked={aiFeatures}
+        disabled={isMlEngineStub()}
+        title={
+          isMlEngineStub()
+            ? 'Скоро: поиск по архиву и голосовые команды. Сюжет и стихи не генерируются ИИ.'
+            : undefined
+        }
+        onChange={(v) => {
+          setAiFeatures(v);
+          setAiFeaturesEnabled(v);
+          persist('volodka_ai_features', v);
+        }}
+      />
     </motion.div>
   );
 }
@@ -217,6 +265,8 @@ function SettingsPanelContent({ onClose }: { onClose: () => void }) {
   const [camShake, setCamShake] = useState(() => lsGetBool('volodka_cam_shake', true));
   const [reducedMotion, setReducedMotion] = useState(() => readReducedMotionPreference());
   const [brightness, setBrightness] = useState(() => lsGetNumber('volodka_brightness', 100));
+  const [webgpu, setWebgpu] = useState(() => isWebgpuRendererEnabled());
+  const [aiFeatures, setAiFeatures] = useState(() => isAiFeaturesEnabled());
 
   // ── Controls state ──
   const [mouseSens, setMouseSens] = useState(() => lsGetNumber('volodka_mouse_sens', 5));
@@ -243,6 +293,10 @@ function SettingsPanelContent({ onClose }: { onClose: () => void }) {
     setReducedMotion(DEFAULTS.volodka_reduced_motion as boolean);
     writeReducedMotionPreference(DEFAULTS.volodka_reduced_motion as boolean);
     setBrightness(DEFAULTS.volodka_brightness as number);
+    setWebgpu(DEFAULTS.volodka_webgpu as boolean);
+    setWebgpuRendererEnabled(DEFAULTS.volodka_webgpu as boolean);
+    setAiFeatures(DEFAULTS.volodka_ai_features as boolean);
+    setAiFeaturesEnabled(DEFAULTS.volodka_ai_features as boolean);
     setMouseSens(DEFAULTS.volodka_mouse_sens as number);
     setInvertY(DEFAULTS.volodka_invert_y as boolean);
   }, []);
@@ -308,6 +362,10 @@ function SettingsPanelContent({ onClose }: { onClose: () => void }) {
             setReducedMotion={setReducedMotion}
             brightness={brightness}
             setBrightness={setBrightness}
+            webgpu={webgpu}
+            setWebgpu={setWebgpu}
+            aiFeatures={aiFeatures}
+            setAiFeatures={setAiFeatures}
             persist={persist}
           />
         );

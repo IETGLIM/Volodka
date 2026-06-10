@@ -4,17 +4,24 @@ export interface CyberToggleProps {
   label: string;
   checked: boolean;
   onChange: (v: boolean) => void;
+  disabled?: boolean;
+  title?: string;
 }
 
-export function CyberToggle({ label, checked, onChange }: CyberToggleProps) {
+export function CyberToggle({ label, checked, onChange, disabled = false, title }: CyberToggleProps) {
   return (
     <button
       type="button"
       role="switch"
       aria-checked={checked}
       aria-label={label}
-      onClick={() => onChange(!checked)}
-      className="flex items-center justify-between gap-3 py-1 group"
+      aria-disabled={disabled}
+      disabled={disabled}
+      title={title}
+      onClick={() => {
+        if (!disabled) onChange(!checked);
+      }}
+      className="flex items-center justify-between gap-3 py-1 group disabled:opacity-50 disabled:cursor-not-allowed"
     >
       <span className="font-mono text-xs text-slate-300/80 tracking-wide group-hover:text-slate-200 transition-colors">
         {label}
