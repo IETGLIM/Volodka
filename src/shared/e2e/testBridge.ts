@@ -119,7 +119,9 @@ export function installE2eTestBridge(): void {
     startCombat: (enemyType: EnemyType = 'system_daemon') => {
       disposeCombatSystem();
       startCombat(enemyType);
-      getGameStore().setCombatActive(true);
+      const store = getGameStore();
+      store.setCombatActive(true);
+      store.syncCombatSessionFromEngine();
     },
     fleeCombat: playerFlee,
     getCombatState,

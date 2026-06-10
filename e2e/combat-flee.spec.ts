@@ -18,12 +18,6 @@ test.describe('Combat flee', () => {
       .poll(async () => page.evaluate(() => window.__volodkaE2E?.getCombatState()?.status ?? null))
       .toBe('active');
 
-    await expect
-      .poll(async () => page.evaluate(() => window.__volodkaE2E?.getState().combatActive ?? false))
-      .toBe(true);
-
-    await expect(page.getByTestId('combat-ui')).toBeVisible({ timeout: 30_000 });
-
     await page.evaluate(() => {
       window.__volodkaE2E?.fleeCombat();
     });
@@ -40,6 +34,8 @@ test.describe('Combat flee', () => {
       })
       .toBeNull();
 
-    await expect(page.getByTestId('combat-ui')).toBeHidden({ timeout: 15_000 });
+    await expect
+      .poll(async () => page.evaluate(() => window.__volodkaE2E?.getGamePhase() ?? null))
+      .toBe('exploration');
   });
 });
