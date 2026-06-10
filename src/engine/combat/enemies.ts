@@ -3,6 +3,7 @@
 import type { EnemyType, CombatState, EnemySpecialAttack, SideEffect } from './types';
 import type { EnemyTemplate } from './types';
 import { getGameSnapshot } from '@/engine/GameActionDispatcher';
+import { MODEL_URLS } from '@/config/modelUrls';
 import { createBuff, addBuff } from './buffSystem';
 import {
   getEnemyAttackBoost,
@@ -200,6 +201,9 @@ export const ENEMY_TEMPLATES: Record<EnemyType, EnemyTemplate> = {
     type: 'system_daemon',
     name: 'Системный Демон',
     emoji: '👾',
+    modelUrl: MODEL_URLS.cc0KhronosBrainStem,
+    portraitAccent: '#06b6d4',
+    spatialPan: -0.65,
     baseHp: 40,
     baseAttack: 12,
     baseDefense: 4,
@@ -213,6 +217,9 @@ export const ENEMY_TEMPLATES: Record<EnemyType, EnemyTemplate> = {
     type: 'corporate_golem',
     name: 'Корпоративный Голем',
     emoji: '🤖',
+    modelUrl: MODEL_URLS.cc0Xbot,
+    portraitAccent: '#f97316',
+    spatialPan: 0,
     baseHp: 80,
     baseAttack: 8,
     baseDefense: 10,
@@ -226,6 +233,9 @@ export const ENEMY_TEMPLATES: Record<EnemyType, EnemyTemplate> = {
     type: 'shadow_agent',
     name: 'Теневой Агент',
     emoji: '🥷',
+    modelUrl: MODEL_URLS.cc0KhronosFox,
+    portraitAccent: '#a855f7',
+    spatialPan: 0.7,
     baseHp: 55,
     baseAttack: 10,
     baseDefense: 6,

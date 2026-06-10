@@ -30,6 +30,8 @@ import {
   createCombatCameraState,
   triggerCombatImpact,
   triggerCombatShake,
+  triggerCombatBattleStart,
+  triggerCombatEndZoom,
   createSceneTransitionState,
   startSceneTransition,
   type SpringCameraState,
@@ -431,6 +433,15 @@ export function FollowCamera({
 
     unsubs.push(eventBus.on('camera:combat_shake', ({ intensity }) => {
       if (combatRef.current) triggerCombatShake(combatRef.current, intensity);
+    }));
+
+    unsubs.push(eventBus.on('camera:combat_start', () => {
+      if (combatRef.current) triggerCombatBattleStart(combatRef.current);
+    }));
+
+    unsubs.push(eventBus.on('camera:combat_end', ({ outcome }) => {
+      if (!combatRef.current || outcome === 'fled') return;
+      triggerCombatEndZoom(combatRef.current, outcome);
     }));
 
     return () => unsubs.forEach((u) => u());

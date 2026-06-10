@@ -261,6 +261,7 @@ export function startCombat(enemyType: EnemyType): CombatState {
 
   dispatchGameAction({ type: 'story/setCombatActive', active: true });
   eventBus.emit('combat:start', { enemyType });
+  eventBus.emit('camera:combat_start', {});
 
   combat.notifyListeners();
   return combat.getState()!;
@@ -475,6 +476,7 @@ export function playerFlee(): CombatState | null {
     const fledState = combat.getState()!;
     eventBus.emit('combat:fled', { enemyType: fledState.enemy.type });
     eventBus.emit('combat:action', { action: 'flee' });
+    eventBus.emit('camera:combat_end', { outcome: 'fled' });
 
     // Return to exploration after a brief delay
     combat.schedule(1500, () => {
@@ -489,6 +491,7 @@ export function playerFlee(): CombatState | null {
   }
 
   // Failed flee — increment attempt counter
+  eventBus.emit('combat:miss', { source: 'flee_failed' });
   combat.setState({
     ...cs,
     fleeAttempts: cs.fleeAttempts + 1,
@@ -861,6 +864,7 @@ function handleVictory(): CombatState {
     creditsGained,
     lootItemId: lootItems[0],
   });
+  eventBus.emit('camera:combat_end', { outcome: 'victory' });
 
   combat.notifyListeners();
 
@@ -913,6 +917,7 @@ function handleDefeat(): void {
     energyLost,
     karmaLost,
   });
+  eventBus.emit('camera:combat_end', { outcome: 'defeat' });
 
   combat.notifyListeners();
 

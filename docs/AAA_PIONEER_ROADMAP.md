@@ -59,6 +59,27 @@
 
 Combat clips + hit-stop · camera juice · TSL/VFX pass · spatial audio (HRTF) · 3 enemy meshes.
 
+**Phase B partial (no custom mocap art):**
+
+| Deliverable | Status | Notes |
+|-------------|--------|-------|
+| Hit-stop ~80ms on player hit | ✅ Done (Phase A) | `triggerHitStop` in cinematicCamera |
+| Combat camera shake on impacts | ✅ Done (Phase A) | `camera:combat_impact` / `combat_shake` |
+| Poem power camera shake | ✅ Done (Phase A) | `useCombatOrchestrator` |
+| Combat zoom-in on battle start | ✅ Done | FOV 62→85 over ~0.9s; `camera:combat_start` |
+| Poem power slow-mo ~100ms | ✅ Done | `triggerPoemPowerSlowMo`; respects reducedMotion |
+| Victory/defeat camera micro-zoom | ✅ Done | Pull-back / tighten + reset via `camera:combat_end` |
+| Poem power glyph/particle burst (CombatUI) | ✅ Done | Framer Motion burst; budget via `effectsScale` |
+| Hit flash on enemy HP bar | ✅ Done | CSS `combat-hp-hit-flash` |
+| Player damage vignette pulse | ✅ Done | Screen-edge vignette in CombatUI |
+| Spatial combat SFX (hit/miss/poem) | ✅ Done | PannerNode HRTF → StereoPanner fallback |
+| 3 enemy GLB portraits (BrainStem/Xbot/Fox) | ✅ Done | `enemies.ts` modelUrl + UI accent frames |
+| Enemy turn indicator pulse | ✅ Done | Framer Motion pulse on enemy turn |
+| Player attack clip trigger (GLB) | ✅ Partial | One-shot `attack` if clip exists; else idle fallback |
+| Custom Mixamo combat mocap clips | ⏳ Needs art | Replace CC0 attack aliases with hero rig clips |
+| TSL/WebGL combat backdrop VFX | ⏳ Needs art | 3D enemy meshes in battle scene (future) |
+| Full HRTF spatial mix in 3D battle | ⏳ Partial | Stereo pan wired; 3D positions when backdrop exists |
+
 **Exit:** Combat E2E green · 60 FPS desktop / 30 FPS weak laptop on `abandoned_factory`.
 
 ### Phase C — AI / Cyberpunk Features (weeks 17–24, opt-in)

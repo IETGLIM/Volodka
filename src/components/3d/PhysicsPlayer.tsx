@@ -232,6 +232,26 @@ export function PhysicsPlayer({
     return unsub;
   }, [livePlayerPositionRef, livePlayerRotationRef]);
 
+  // Combat attack clip trigger (falls back to idle via locomotion mixer)
+  const attackResetTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => {
+    const unsub = eventBus.on('combat:action', ({ action }) => {
+      if (action !== 'attack') return;
+      currentAnimRef.current = 'attack';
+      if (attackResetTimerRef.current) clearTimeout(attackResetTimerRef.current);
+      attackResetTimerRef.current = setTimeout(() => {
+        if (currentAnimRef.current === 'attack') {
+          currentAnimRef.current = 'idle';
+        }
+        attackResetTimerRef.current = null;
+      }, 650);
+    });
+    return () => {
+      unsub();
+      if (attackResetTimerRef.current) clearTimeout(attackResetTimerRef.current);
+    };
+  }, []);
+
   // Pre-allocated temp vectors (avoid GC in useFrame)
   const tempCameraForward = useRef(new THREE.Vector3());
   const tempCameraRight = useRef(new THREE.Vector3());

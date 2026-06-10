@@ -21,6 +21,11 @@ class SfxEngineImpl {
     audioEngine.playSfx(type);
   }
 
+  /** Play a one-shot SFX with stereo/HRTF spatial pan (-1 left … +1 right). */
+  playSpatialSfx(type: string, pan = 0): void {
+    audioEngine.playSpatialSfx(type, pan);
+  }
+
   playFootstep(material?: string): void {
     audioEngine.playFootstep(material);
   }

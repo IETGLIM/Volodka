@@ -6,6 +6,7 @@ const LOCOMOTION_ALIASES: Record<string, string[]> = {
   run: ['run', 'Run', 'running', 'Running', 'RunCycle'],
   jump: ['jump', 'Jump', 'jumping', 'Jumping'],
   fall: ['fall', 'Fall', 'Falling'],
+  attack: ['attack', 'Attack', 'punch', 'Punch', 'slash', 'Slash', 'hit', 'Hit'],
 };
 
 /** Pick the best locomotion clip for a runtime animation state. */

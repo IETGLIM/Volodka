@@ -43,11 +43,18 @@ const BREATHING_FADE_IN_SPEED = 0.5;  // how fast breathing ramps in
 
 /* ── Combat camera ── */
 export const COMBAT_FOV = 85;
+const COMBAT_BATTLE_START_FOV = 62;   // subtle zoom-in when battle begins
+const COMBAT_BATTLE_START_DURATION = 0.9;
+const COMBAT_VICTORY_FOV = 92;        // brief pull-back on victory
+const COMBAT_DEFEAT_FOV = 58;         // tighten on defeat
+const COMBAT_END_ZOOM_DURATION = 0.65;
 const COMBAT_ZOOM_FOV = 70;           // zoomed-in FOV on impact
 const COMBAT_ZOOM_DURATION = 0.3;     // seconds the zoom holds
 const COMBAT_ZOOM_RECOVER_SPEED = 2;  // how fast FOV recovers
 const COMBAT_SHAKE_INTENSITY = 0.18;  // max shake offset
 const COMBAT_SHAKE_DURATION = 0.4;    // seconds shake lasts
+const POEM_POWER_SLOWMO_MS = 100;
+const POEM_POWER_SLOWMO_SCALE = 0.35;
 
 /* ── Scene transition ── */
 const TRANSITION_FLY_DURATION = 1.2;  // seconds for fly-through
@@ -740,6 +747,11 @@ export interface CombatCameraState {
   targetFov: number;
   /** Zoom recovery timer */
   zoomTimer: number;
+  /** Battle-start zoom-in timer (lerps to COMBAT_FOV) */
+  battleStartTimer: number;
+  /** Victory/defeat end zoom timer */
+  endTimer: number;
+  endOutcome: 'victory' | 'defeat' | null;
   /** Screen shake state */
   shake: {
     active: boolean;
@@ -754,6 +766,9 @@ export function createCombatCameraState(): CombatCameraState {
   return {
     targetFov: COMBAT_FOV,
     zoomTimer: 0,
+    battleStartTimer: 0,
+    endTimer: 0,
+    endOutcome: null,
     shake: {
       active: false,
       elapsed: 0,
@@ -761,6 +776,32 @@ export function createCombatCameraState(): CombatCameraState {
       originalPos: new THREE.Vector3(),
     },
   };
+}
+
+/** Subtle zoom-in when combat begins (skipped when reduced motion is active). */
+export function triggerCombatBattleStart(state: CombatCameraState): void {
+  if (isReducedMotionActive()) return;
+  state.battleStartTimer = COMBAT_BATTLE_START_DURATION;
+  state.targetFov = COMBAT_BATTLE_START_FOV;
+  state.endTimer = 0;
+  state.endOutcome = null;
+}
+
+/** Victory/defeat micro-zoom before returning to exploration FOV. */
+export function triggerCombatEndZoom(
+  state: CombatCameraState,
+  outcome: 'victory' | 'defeat',
+): void {
+  if (isReducedMotionActive()) return;
+  state.endOutcome = outcome;
+  state.endTimer = COMBAT_END_ZOOM_DURATION;
+  state.battleStartTimer = 0;
+  state.targetFov = outcome === 'victory' ? COMBAT_VICTORY_FOV : COMBAT_DEFEAT_FOV;
+  if (outcome === 'defeat') {
+    state.shake.active = true;
+    state.shake.elapsed = 0;
+    state.shake.intensity = COMBAT_SHAKE_INTENSITY * 0.55;
+  }
 }
 
 /** Trigger an impact zoom (called on hit/heavy event) */
@@ -792,8 +833,23 @@ export function updateCombatCamera(
   const dt = Math.min(delta, 0.05);
   let effectiveFov = state.targetFov;
 
-  // ── Zoom recovery ──
-  if (state.zoomTimer > 0) {
+  // ── Battle-start zoom-in ──
+  if (state.battleStartTimer > 0) {
+    state.battleStartTimer -= dt;
+    const progress = 1 - Math.max(0, state.battleStartTimer) / COMBAT_BATTLE_START_DURATION;
+    effectiveFov = THREE.MathUtils.lerp(COMBAT_BATTLE_START_FOV, COMBAT_FOV, easeInOutCubic(progress));
+    state.targetFov = effectiveFov;
+  } else if (state.endTimer > 0) {
+    // ── Victory/defeat end zoom ──
+    state.endTimer -= dt;
+    const progress = 1 - Math.max(0, state.endTimer) / COMBAT_END_ZOOM_DURATION;
+    const startFov = state.endOutcome === 'victory' ? COMBAT_VICTORY_FOV : COMBAT_DEFEAT_FOV;
+    effectiveFov = THREE.MathUtils.lerp(startFov, COMBAT_FOV, easeInOutCubic(progress));
+    state.targetFov = effectiveFov;
+    if (state.endTimer <= 0) {
+      state.endOutcome = null;
+    }
+  } else if (state.zoomTimer > 0) {
     state.zoomTimer -= dt;
     if (state.zoomTimer <= 0) {
       state.zoomTimer = 0;
@@ -946,4 +1002,12 @@ export function triggerHitStop(durationMs = 80, scale = 0.05): void {
     setGlobalTimeScale(1.0);
     hitStopTimer = null;
   }, durationMs);
+}
+
+/** Poem power activation slow-mo frame stretch (~100ms). Respects reduced motion. */
+export function triggerPoemPowerSlowMo(
+  durationMs = POEM_POWER_SLOWMO_MS,
+  scale = POEM_POWER_SLOWMO_SCALE,
+): void {
+  triggerHitStop(durationMs, scale);
 }

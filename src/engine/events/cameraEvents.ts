@@ -17,6 +17,8 @@ export interface CameraEvents {
   'camera:npc_cutscene_end': { npcId: string };
   'camera:combat_impact': { intensity: number };
   'camera:combat_shake': { intensity: number };
+  'camera:combat_start': Record<string, never>;
+  'camera:combat_end': { outcome: 'victory' | 'defeat' | 'fled' };
   'camera:dialogue_speaker': { speaker: 'npc' | 'player' | 'narrator' | 'unknown' };
   'camera:scene_flythrough': { targetPos: [number, number, number]; targetLookAt: [number, number, number] };
   'camera:cinematic_transition': { phase: 'fadeOut' | 'hold' | 'fadeIn'; sceneId: SceneId };
