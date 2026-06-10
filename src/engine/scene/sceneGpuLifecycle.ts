@@ -15,6 +15,8 @@ const SCENE_GLTF_ASSETS: Partial<Record<SceneId, readonly string[]>> = {
   cafe_evening: ['env_cafe_props'],
   park_day: ['veg_tree_pine'],
   volodka_room: ['player_volodka'],
+  street_night: ['player_volodka'],
+  volodka_corridor: ['player_volodka'],
 };
 
 export function getSceneGltfAssetIds(sceneId: SceneId): readonly string[] {

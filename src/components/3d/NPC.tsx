@@ -18,6 +18,10 @@ import { registerNPCGroup, unregisterNPCGroup } from '@/engine/interaction/npcRe
 import { updateHeadTracking, cleanupHeadTracking } from '@/engine/npc/headTracking';
 import { InteractionState } from '@/engine/interaction/interactionMachine';
 import { ProceduralNPCModel } from '@/components/3d/ProceduralNPCModels';
+import { NpcGltfModel } from '@/components/3d/NpcGltfModel';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { getNpcModelUrl } from '@/config/npcModelMap';
+import { shouldUseGlbNpc } from '@/engine/graphics/glbRenderMode';
 import { createPatrolState, updatePatrol, shouldPatrol, type PatrolState } from '@/engine/npc/npcPatrol';
 import { getQuestDefinitions } from '@/data/gameDataLoader';
 import { GOLDEN_PATH_QUEST_SPINE } from '@/data/goldenPath';
@@ -31,8 +35,7 @@ import {
 } from '@/engine/lod/distanceLod';
 
 /* ─── NPC models ───
- *  All NPCs use ProceduralNPCModel (Three.js primitives) — no GLB files.
- *  The Suspense fallback shows a capsule impostor while the procedural model renders. */
+ *  ProceduralNPCModel on low/medium; CC0 GLB hybrid on hybrid/glb presets at full LOD. */
 
 /* ─── Speech bubble timing ─── */
 const THINKING_DURATION = 1.2; // seconds before bark text appears
@@ -276,6 +279,7 @@ export function NPC({
             interactionState={interactionState}
             isInteractionTarget={isInteractionTarget}
             activity={shouldPatrol(activity, isInteractionTarget, !!patrolWaypoints?.length) ? patrolActivity : activity}
+            lodLevel={lodLevel}
           />
         </Suspense>
       ) : null}
@@ -390,21 +394,36 @@ function getNPCPointLightColor(npcId: string, glowColor: string): string {
   return glowColor;                    // Use NPC's unique glow color for neutral
 }
 
-/* NPCModel removed — all NPCs now use ProceduralNPCModel exclusively */
+/* NPCModel removed — procedural default; GLB hybrid when quality preset allows */
 
-/** NPC model renderer — always uses procedural model (GLB support removed) */
+/** NPC model renderer — GLB hybrid (maria, albert, …) or procedural fallback */
 function NPCModelWithErrorBoundary({
   definition,
   interactionState,
   isInteractionTarget,
   activity,
+  lodLevel,
 }: {
   definition: NPCDefinition;
   interactionState: InteractionState;
   isInteractionTarget: boolean;
   activity: string;
+  lodLevel: NpcLodLevel;
 }) {
   const appearance = definition.appearance ?? DEFAULT_APPEARANCE;
+  const { preset } = useGraphicsQuality();
+  const glbUrl = getNpcModelUrl(definition.id);
+  const useGlb = shouldUseGlbNpc(preset, lodLevel) && !!glbUrl;
+
+  const proceduralFallback = (
+    <ProceduralNPCModel
+      definitionId={definition.id}
+      appearance={appearance}
+      interactionState={interactionState}
+      isInteractionTarget={isInteractionTarget}
+      activity={activity}
+    />
+  );
 
   // Dynamic point light color based on NPC relation
   const [pointLightColor] = useState(() =>
@@ -427,13 +446,18 @@ function NPCModelWithErrorBoundary({
         distance={2}
         decay={2}
       />
-      <ProceduralNPCModel
-        definitionId={definition.id}
-        appearance={appearance}
-        interactionState={interactionState}
-        isInteractionTarget={isInteractionTarget}
-        activity={activity}
-      />
+      {useGlb ? (
+        <ErrorBoundary name={`npc-glb-${definition.id}`} fallback={proceduralFallback}>
+          <NpcGltfModel
+            npcId={definition.id}
+            modelUrl={glbUrl}
+            activity={activity}
+            interactionState={interactionState}
+          />
+        </ErrorBoundary>
+      ) : (
+        proceduralFallback
+      )}
     </group>
   );
 }

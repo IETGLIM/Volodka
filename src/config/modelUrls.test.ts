@@ -23,8 +23,14 @@ describe('modelUrls', () => {
     expect(resolveModelUrl(url)).toBe(url);
   });
 
-  it('exposes local CC0 paths for asset validation', () => {
-    expect(LOCAL_MODEL_PATHS.volodka).toContain('/models-external/');
+  it('exposes processed hero path for asset validation', () => {
+    expect(LOCAL_MODEL_PATHS.volodka).toContain('/models/characters/volodka/');
+  });
+
+  it('preserves processed pipeline paths without rewrite', () => {
+    expect(rewriteLegacyModelPath('/models/characters/volodka/volodka_lod0.draco.glb')).toBe(
+      '/models/characters/volodka/volodka_lod0.draco.glb',
+    );
   });
 
   it('prefixes VITE_MODELS_BASE when set', () => {

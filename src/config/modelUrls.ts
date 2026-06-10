@@ -10,6 +10,10 @@
  *   VITE_DEFAULT_PLAYER_MODEL=/models-external/custom_player.glb
  */
 
+import type { QualityPreset } from '@/engine/graphics/qualityPresets';
+import { shouldUseGlbPlayer } from '@/engine/graphics/glbRenderMode';
+import { getAssetDefinition, resolveVariantUrl } from '@/config/assetManifest';
+
 const env =
   typeof import.meta !== 'undefined' && import.meta.env
     ? import.meta.env
@@ -18,7 +22,6 @@ const env =
 /** Trailing slash stripped; empty string = same-origin relative paths. */
 const MODELS_BASE = (env.VITE_MODELS_BASE ?? '').replace(/\/$/, '');
 
-/** CC0 Khronos placeholders — replace via art pipeline (see public/basis/README.md, DEPLOY.md). */
 export interface ModelUrls {
   volodka: string;
   cc0KhronosCesiumMan: string;
@@ -37,7 +40,7 @@ export interface ModelUrls {
 
 /** Raw same-origin paths — used by validate-gltf-assets and resolveModelUrl. */
 export const LOCAL_MODEL_PATHS: ModelUrls = {
-  volodka: '/models-external/khronos_cc0_RiggedFigure.glb',
+  volodka: '/models/characters/volodka/volodka_lod0.draco.glb',
   cc0KhronosCesiumMan: '/models-external/khronos_cc0_CesiumMan.glb',
   cc0KhronosRiggedFigure: '/models-external/khronos_cc0_RiggedFigure.glb',
   cc0KhronosBrainStem: '/models-external/khronos_cc0_BrainStem.glb',
@@ -81,13 +84,32 @@ export const MODEL_URLS: ModelUrls = Object.fromEntries(
   Object.entries(LOCAL_MODEL_PATHS).map(([key, url]) => [key, resolveModelUrl(url)]),
 ) as ModelUrls;
 
-export function getDefaultPlayerModelPath(): string {
+export function getDefaultPlayerModelPath(preset?: QualityPreset): string {
   const override = env.VITE_DEFAULT_PLAYER_MODEL?.trim() ?? '';
   if (override) return resolveModelUrl(override);
+  if (preset && shouldUseGlbPlayer(preset)) {
+    const asset = getAssetDefinition('player_volodka');
+    if (asset) {
+      return resolveVariantUrl(asset, preset.compression, 0, preset.lodBias);
+    }
+  }
   return resolveModelUrl(`/models-external/${DEFAULT_PLAYER_GLB_FILENAME}`);
 }
 
+/** Alias — hero GLB path when quality preset enables GLB/hybrid on high/ultra. */
+export function getPlayerModelUrl(preset?: QualityPreset): string {
+  return getDefaultPlayerModelPath(preset);
+}
+
 export function rewriteLegacyModelPath(path: string): string {
+  // Processed AAA pipeline assets live under public/models/ — do not rewrite.
+  if (
+    path.startsWith('/models/characters/') ||
+    path.startsWith('/models/environments/') ||
+    path.startsWith('/models/vegetation/')
+  ) {
+    return path;
+  }
   if (path.startsWith('/models/')) {
     const rewritten = path.replace('/models/', '/models-external/');
     if (rewritten.endsWith('/Volodka.glb') || rewritten.endsWith('Volodka.glb')) {

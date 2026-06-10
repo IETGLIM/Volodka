@@ -30,7 +30,7 @@ const SCENE_COLOR_GRADE: Record<string, { hue: number; saturation: number; brigh
   volodka_room:       { hue: -0.05, saturation: 0.2,  brightness: -0.02, contrast: 0.25 }, // cold green monitor glow
   volodka_corridor:   { hue: -0.03, saturation: -0.1, brightness: -0.05, contrast: 0.15 }, // dim noir
   home_evening:       { hue: 0.04,  saturation: 0.1,  brightness: 0.0,  contrast: 0.1  }, // warm amber
-  street_night:       { hue: 0.06,  saturation: 0.25, brightness: 0.1,  contrast: 0.18 }, // cyberpunk neon
+  street_night:       { hue: -0.02, saturation: 0.38, brightness: 0.05,  contrast: 0.24 }, // cooler cyberpunk neon
   street_winter:      { hue: -0.02, saturation: -0.12, brightness: 0.12, contrast: 0.08  },
   cafe_evening:       { hue: 0.03,  saturation: 0.1,  brightness: 0.0,  contrast: 0.15 }, // amber smoke
   office_day:         { hue: -0.01, saturation: -0.15, brightness: 0.03, contrast: 0.05 }, // sterile
@@ -71,7 +71,7 @@ const SCENE_BLOOM: Record<string, { intensity: number; threshold: number; smooth
   volodka_room:       { intensity: 0.6,  threshold: 0.6,  smoothing: 0.5 },  // monitor glow bloom (tamed)
   volodka_corridor:   { intensity: 0.3,  threshold: 0.8,  smoothing: 0.6 },  // dim
   home_evening:       { intensity: 0.4,  threshold: 0.7,  smoothing: 0.5 },  // warm
-  street_night:       { intensity: 0.7,  threshold: 0.5,  smoothing: 0.4 },  // neon bloom
+  street_night:       { intensity: 1.0,  threshold: 0.38, smoothing: 0.32 }, // strong neon bloom
   cafe_evening:       { intensity: 0.5,  threshold: 0.6,  smoothing: 0.5 },  // neon bar + warm
   office_day:         { intensity: 0.2,  threshold: 0.85, smoothing: 0.6 },  // sterile
   park_day:           { intensity: 0.3,  threshold: 0.85, smoothing: 0.6 },  // natural

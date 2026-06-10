@@ -52,7 +52,11 @@ import { getInteractionState, isInteractionLocked } from './InteractionSystemBri
 import { InteractionState } from '@/engine/interaction/interactionMachine';
 import { setPlayerRigidBody, getPlayerExternalVelocity, clearPlayerRigidBody } from '@/engine/PlayerRigidBodyState';
 import { devLog, devWarn } from '@/shared/utils/devLog';
+import { ContactShadows } from '@react-three/drei';
 import { ProceduralPlayerModelAdaptive } from './ProceduralPlayerModel';
+import { PlayerGltfModel } from './PlayerGltfModel';
+import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
+import { shouldUseGlbPlayer } from '@/engine/graphics/glbRenderMode';
 import { isNarrativeMovementLocked } from '@/shared/exploreHubNodes';
 
 /** Lerp angle with wraparound — smooth rotation without 360 jumps */
@@ -106,6 +110,8 @@ export function PhysicsPlayer({
   const controls = usePlayerControls(onInteractPress);
   const sceneId = useCurrentSceneId();
   const karma = usePlayerKarma();
+  const { preset } = useGraphicsQuality();
+  const useHeroGlb = shouldUseGlbPlayer(preset);
 
   const rigidBodyRef = useRef<RapierRigidBody>(null!);
   const capsuleColliderRef = useRef<RapierCollider | null>(null); // Direct Rapier Collider ref from CapsuleCollider JSX
@@ -763,11 +769,36 @@ export function PhysicsPlayer({
         restitution={0}
       />
 
-      {/* Contact shadow — flat circle at player feet */}
-      <ContactShadow />
+      {/* Contact shadow — drei soft shadow on high/ultra, canvas decal otherwise */}
+      {preset.shadows && useHeroGlb ? (
+        <ContactShadows
+          position={[0, 0.005, 0]}
+          opacity={0.55}
+          scale={6}
+          blur={2.5}
+          far={1.4}
+          resolution={512}
+          color="#000000"
+        />
+      ) : (
+        <ContactShadow />
+      )}
 
-      {/* Procedural model — default for cyberpunk aesthetic, no external GLB dependency */}
-      <ProceduralPlayerModelAdaptive modelScale={modelScale} karmaGlow={karmaGlow} currentAnimRef={currentAnimRef} rotationRef={livePlayerRotationRef} />
+      {useHeroGlb ? (
+        <PlayerGltfModel
+          modelScale={modelScale}
+          karmaGlow={karmaGlow}
+          currentAnimRef={currentAnimRef}
+          rotationRef={livePlayerRotationRef}
+        />
+      ) : (
+        <ProceduralPlayerModelAdaptive
+          modelScale={modelScale}
+          karmaGlow={karmaGlow}
+          currentAnimRef={currentAnimRef}
+          rotationRef={livePlayerRotationRef}
+        />
+      )}
 
       {/* Karma glow point light — strong aura for visibility in dark scenes */}
       <pointLight
