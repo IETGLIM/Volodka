@@ -34,6 +34,7 @@ import {
 } from '@/engine/interaction/interactionEndDedup';
 import { isInteractionLocked } from '@/engine/interaction/interactionSession';
 import { devWarn } from '@/shared/utils/devLog';
+import { shouldDeferOneTimeMark, zoneHasLinkedContent } from '@/engine/interaction/oneTimeTriggerPolicy';
 
 function runInteractionTask(label: string, task: () => Promise<void>): void {
   void task().catch((err) => {
@@ -157,15 +158,14 @@ export class InteractionController {
       this.applyInteractionEffects(zone.effects);
     }
 
-    if (zone.isOneTime) {
+    const hasLinkedContent = zoneHasLinkedContent(zone);
+    if (zone.isOneTime && !shouldDeferOneTimeMark(zone)) {
       store.toggleInteractiveObject(triggerZoneId);
     }
 
     if (zone.linkedQuestId) {
       store.activateQuest(zone.linkedQuestId);
     }
-
-    const hasLinkedContent = !!(zone.linkedDialogueNodeId || zone.linkedStoryNodeId || zone.linkedMinigame);
     const { ui } = this.deps;
 
     if (zone.examineData) {
@@ -247,6 +247,10 @@ export class InteractionController {
     if (this.session.isDisposed()) return;
     const zone = this.deps.getPendingTriggerZone();
     if (!zone) return;
+
+    if (zone.isOneTime) {
+      useGameStore.getState().toggleInteractiveObject(zone.id);
+    }
 
     const { ui } = this.deps;
     ui.setExamineOpen(false);
