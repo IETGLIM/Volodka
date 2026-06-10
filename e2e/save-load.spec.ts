@@ -25,9 +25,9 @@ test.describe('Save and load', () => {
 
     await page.reload();
     await waitForMenuReady(page);
-    await page.getByTestId('menu-new-game').click();
     await page.waitForFunction(() => window.__volodkaE2E != null, null, { timeout: 120_000 });
 
+    // Do not click New Game — MenuScreen's 800 ms handler would resetGame() after load.
     const loaded = await page.evaluate(() => window.__volodkaE2E?.loadFromSlot(2));
     expect(loaded).toBe(true);
 
