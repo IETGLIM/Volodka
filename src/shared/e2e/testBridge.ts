@@ -42,21 +42,27 @@ function dismissOverlays(): void {
 }
 
 function skipToExploration(): void {
-  const store = getGameStore();
-  store.setMainMenuOpen(false);
-  store.setIntroActive(false);
-  store.setIntroSeen(true);
-  store.setCombatActive(false);
-  store.setCutscene(null);
-  store.closeNarrativeOverlay();
-  store.setShowStoryOverlay(false);
-  store.setNarrativeKind(null);
-  store.setCurrentNodeId('start');
+  const apply = (): void => {
+    const store = getGameStore();
+    store.setMainMenuOpen(false);
+    store.setIntroActive(false);
+    store.setIntroSeen(true);
+    store.setCombatActive(false);
+    store.setCutscene(null);
+    store.closeNarrativeOverlay();
+    store.setShowStoryOverlay(false);
+    store.setNarrativeKind(null);
+    store.setCurrentNodeId('start');
 
-  dismissOverlays();
-  // GuidedStoryManager may async-open quest dialogs after init.
-  setTimeout(dismissOverlays, 100);
-  setTimeout(dismissOverlays, 500);
+    dismissOverlays();
+  };
+
+  apply();
+  // MenuScreen enables intro ~800ms after New Game; re-apply after that handler.
+  setTimeout(apply, 100);
+  setTimeout(apply, 500);
+  setTimeout(apply, 900);
+  setTimeout(apply, 1200);
 }
 
 function transitionScene(sceneId: SceneId): void {
@@ -106,6 +112,16 @@ function completeQuest(questId: string): void {
   getGameStore().completeQuest(questId);
 }
 
+function fleeCombatForced(): ReturnType<typeof playerFlee> {
+  const savedRandom = Math.random;
+  Math.random = () => 0;
+  try {
+    return playerFlee();
+  } finally {
+    Math.random = savedRandom;
+  }
+}
+
 /** Expose store/combat/scene helpers for Playwright when volodka_e2e=1. */
 export function installE2eTestBridge(): void {
   if (typeof window === 'undefined') return;
@@ -123,7 +139,7 @@ export function installE2eTestBridge(): void {
       store.setCombatActive(true);
       store.syncCombatSessionFromEngine();
     },
-    fleeCombat: playerFlee,
+    fleeCombat: fleeCombatForced,
     getCombatState,
     transitionScene,
     saveToSlot,

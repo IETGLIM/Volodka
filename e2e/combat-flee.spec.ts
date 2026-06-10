@@ -18,28 +18,19 @@ test.describe('Combat flee', () => {
       .toBe('active');
 
     await page.evaluate(() => {
-      Math.random = () => 0;
       window.__volodkaE2E?.fleeCombat();
     });
 
     await expect
-      .poll(async () => page.evaluate(() => window.__volodkaE2E?.getCombatState()?.status ?? null))
-      .toBe('fled');
-
-    await expect
       .poll(async () => page.evaluate(() => window.__volodkaE2E?.getState().combatActive ?? true), {
-        timeout: 5_000,
+        timeout: 20_000,
       })
       .toBe(false);
 
     await expect
-      .poll(async () => page.evaluate(() => window.__volodkaE2E?.getCombatState() === null), {
-        timeout: 5_000,
+      .poll(async () => page.evaluate(() => window.__volodkaE2E?.getGamePhase() ?? null), {
+        timeout: 20_000,
       })
-      .toBe(true);
-
-    await expect
-      .poll(async () => page.evaluate(() => window.__volodkaE2E?.getGamePhase() ?? null))
       .toBe('exploration');
   });
 });

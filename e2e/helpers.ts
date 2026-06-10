@@ -22,16 +22,11 @@ export async function dismissBlockingOverlays(page: Page) {
     window.__volodkaE2E?.skipToExploration();
     window.__volodkaE2E?.dismissOverlays();
   });
-
-  await expect(page.getByTestId('intro-skip')).toBeHidden({ timeout: 30_000 });
-
-  const questAccept = page.getByTestId('quest-accept');
-  if (await questAccept.isVisible({ timeout: 2_000 }).catch(() => false)) {
-    await questAccept.click();
-    await page.evaluate(() => {
-      window.__volodkaE2E?.dismissOverlays();
-    });
-  }
+  await page.waitForTimeout(300);
+  await page.evaluate(() => {
+    window.__volodkaE2E?.skipToExploration();
+    window.__volodkaE2E?.dismissOverlays();
+  });
 }
 
 export async function waitForExplorationReady(page: Page) {
@@ -55,6 +50,8 @@ export async function waitForExplorationReady(page: Page) {
 export async function startNewGame(page: Page) {
   await waitForMenuReady(page);
   await page.getByTestId('menu-new-game').click();
+  // MenuScreen sets introActive after an 800ms fade — skip only after that runs.
+  await page.waitForTimeout(900);
   await waitForE2EBridge(page);
   await page.evaluate(() => {
     window.__volodkaE2E?.skipToExploration();

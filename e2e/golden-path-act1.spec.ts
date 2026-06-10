@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { enableE2EBridge, startNewGame, dismissBlockingOverlays } from './helpers';
+import { enableE2EBridge, startNewGame } from './helpers';
 
 test.describe('Golden path act 1', () => {
   test.beforeEach(async ({ page }) => {
@@ -8,7 +8,6 @@ test.describe('Golden path act 1', () => {
 
   test('new game → exploration → first quest active → save slot', async ({ page }) => {
     await startNewGame(page);
-    await dismissBlockingOverlays(page);
 
     await page.evaluate(() => {
       window.__volodkaE2E?.getState().activateQuest('first_reading');

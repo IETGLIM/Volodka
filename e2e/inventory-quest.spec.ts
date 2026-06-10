@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { enableE2EBridge, startNewGame, skipIntroToExploration } from './helpers';
+import { enableE2EBridge, startNewGame } from './helpers';
 
 test.describe('Inventory and quest rewards', () => {
   test.beforeEach(async ({ page }) => {
@@ -8,7 +8,6 @@ test.describe('Inventory and quest rewards', () => {
 
   test('collect item and complete quest updates store state', async ({ page }) => {
     await startNewGame(page);
-    await skipIntroToExploration(page);
 
     const result = await page.evaluate(() => {
       const bridge = window.__volodkaE2E;

@@ -1,6 +1,6 @@
 # Production Baseline — ВОЛОДЬКА v3.1.0
 
-**Captured:** 2026-06-11  
+**Captured:** 2026-06-11 (final E2E stabilization pass)  
 **Command:** `npm run check` (lint → typecheck → validate → build → budgets)  
 **Phases covered:** 0–4 (AAA Production Roadmap); phases 5–7 completed separately.
 
@@ -55,6 +55,8 @@ Vitest gate: `contentPipelineValidator.test.ts` asserts `errorCount === 0`.
 | `npm run test:e2e` | **8 tests — all pass** |
 
 E2E coverage: `smoke`, `golden-path-act1`, `inventory-quest`, `scene-transition`, `save-load`, `combat-flee`.
+
+E2E bridge notes: `skipToExploration()` re-applies after MenuScreen's 800 ms intro handler; `fleeCombat()` forces successful flee RNG for deterministic tests.
 
 ---
 
