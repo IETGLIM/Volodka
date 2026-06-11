@@ -7,9 +7,11 @@ import { STORY_NODES_ACT4 } from './act4';
 import { STORY_NODES_ACT5 } from './act5';
 import { STORY_NODES_ACT6 } from './act6';
 import { STORY_NODES_ACT7 } from './act7';
+import { STORY_NODES_SCENE_EXPLORE_HUBS } from './sceneExploreHubs';
 
 export const STORY_NODES: Record<string, StoryNode> = {
   ...STORY_NODES_ACT1,
+  ...STORY_NODES_SCENE_EXPLORE_HUBS,
   ...STORY_NODES_ACT2,
   ...STORY_NODES_ACT3,
   ...STORY_NODES_ACT4,

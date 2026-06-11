@@ -1,5 +1,17 @@
 # Changelog — ВОЛОДЬКА RPG
 
+## v3.4.0 — 12 июня 2026
+
+- **Exploration-first сюжет**: explore-hub для всех игровых локаций
+  (кафе, офис, парк, библиотека, крыша, завод, подвал, ЧК, пирс и др.).
+  Overlay остаётся открытым, но движение и [E]-триггеры работают на hub-узлах.
+- **Remap legacy `explore_mode`**: выбор «осмотреться» из act5/ЧК больше не
+  закрывает overlay — переход на hub текущей сцены (`cafe_explore_mode` и т.д.).
+- **`syncNarrativeOnSceneEnter`**: beat-узлы в уже загруженной сцене
+  автоматически повышаются до scene hub (не только door-узлы).
+- Реестр `sceneExploreHubRegistry.ts`, story nodes `sceneExploreHubs.ts`,
+  тесты remap + beat promotion.
+
 ## v3.3.3 — 12 июня 2026 (hotfix)
 
 - **Прыжок и движение после перехода сцены**: физика больше не обнуляет `vel.y`

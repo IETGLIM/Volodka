@@ -153,6 +153,7 @@ export function useInteractionOverlay() {
     sceneId: s.exploration.currentSceneId,
     gameMode: phaseFromStore(s),
     showStoryOverlay: s.showStoryOverlay,
+    currentNodeId: s.currentNodeId,
   }));
 }
 

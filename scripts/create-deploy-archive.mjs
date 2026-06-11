@@ -93,9 +93,12 @@ function writeDeployDocs(staging, meta) {
 
 ### В этой сборке
 
-- Исправление подпрыгивания персонажа при первом нажатии WASD (ground lock, без gravity на полу)
+- Exploration-first сюжет: explore-hub для всех локаций, движение + [E] на hub-узлах
+- Remap legacy explore_mode → hub текущей сцены (act5, ЧК, все акты)
+- syncNarrativeOnSceneEnter: beat-узлы → scene hub при входе в сцену
+- v3.3.3: прыжок, combat UI overlap, corridor NPC pile
 - Open-world layer, perf budgets, content validation, lazy bundles
-- Act 3 story spine, ТОЛПА / ЧК, 24+ NPC, accessibility
+- Act 3–7 story spine, ТОЛПА / ЧК, 24+ NPC, accessibility
 
 ## Быстрый деплой
 

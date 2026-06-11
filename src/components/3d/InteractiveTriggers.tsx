@@ -15,6 +15,7 @@ import type { NPCDefinition } from '@/shared/types/game';
 import { getNPCsForScene, getCurrentScheduleEntry } from '@/engine/ScheduleEngine';
 import { eventBus } from '@/engine/EventBus';
 import { isInteractionLocked } from './InteractionSystemBridge';
+import { isNarrativeMovementLocked } from '@/shared/exploreHubNodes';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { bottomInteractPromptPx } from '@/shared/constants/hudLayout';
 import { getSceneExits } from '@/config/scenes';
@@ -62,7 +63,7 @@ export function InteractiveTriggers({
   livePlayerPositionRef,
   livePlayerRotationRef,
 }: InteractiveTriggersProps) {
-  const { sceneId, gameMode, showStoryOverlay } = useInteractionOverlay();
+  const { sceneId, gameMode, showStoryOverlay, currentNodeId } = useInteractionOverlay();
   const { playerFlags, playerKarma } = useSceneExitState();
   const timeOfDay = useTimeOfDay();
   const scheduleCtx = useScheduleContext();
@@ -96,8 +97,10 @@ export function InteractiveTriggers({
   const sceneExitsRef = useRef(sceneExits);
   sceneExitsRef.current = sceneExits;
 
-  // Hide all prompts when not in exploration mode or when story overlay is active
-  const isOverlayBlocking = gameMode !== 'exploration' || showStoryOverlay;
+  // Hide prompts when not exploring or when narrative overlay locks movement (non-hub nodes)
+  const isOverlayBlocking =
+    gameMode !== 'exploration' ||
+    isNarrativeMovementLocked(showStoryOverlay, currentNodeId);
 
   // Shared ref: which prompt IDs are allowed to show (closest MAX_VISIBLE_PROMPTS)
   const allowedIdsRef = useRef<Set<string>>(new Set());

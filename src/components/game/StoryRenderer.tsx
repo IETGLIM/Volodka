@@ -17,7 +17,7 @@ import { audioEngine } from '@/engine/AudioEngine';
 import { requestSceneTransitionForStoryNode } from '@/engine/scene/sceneTransition';
 import { getGameStore } from '@/store/gameStore';
 import { closeNarrativeOverlay } from '@/engine/scene/narrativeOverlay';
-import { EXPLORE_HUB_NODE_IDS } from '@/shared/exploreHubNodes';
+import { EXPLORE_HUB_NODE_IDS, resolveExploreHubNavigation } from '@/shared/exploreHubNodes';
 import { KARMA_LOW_THRESHOLD, KARMA_HIGH_THRESHOLD } from '@/data/constants';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import type { StoryChoice, StoryEffect } from '@/shared/types/game';
@@ -90,13 +90,6 @@ function StatChangeChip({ effect }: { effect: StoryEffect }) {
   return null;
 }
 
-
-/** Nodes that open a scene hub; all other hub targets dismiss the overlay */
-const EXPLORE_HUB_ENTRY: Record<string, string> = {
-  start: 'explore_mode',
-  corridor_door: 'corridor_explore_mode',
-  go_home: 'explore_mode',
-};
 
 /* ── Component ── */
 export function StoryRenderer() {
@@ -204,9 +197,13 @@ export function StoryRenderer() {
       if (choice.next === null) {
         closeNarrativeOverlay();
       } else if (choice.next && EXPLORE_HUB_NODE_IDS.has(choice.next)) {
-        const hubFromEntry = EXPLORE_HUB_ENTRY[currentNodeId];
-        if (hubFromEntry === choice.next) {
-          setCurrentNodeId(choice.next);
+        const resolved = resolveExploreHubNavigation(
+          currentNodeId,
+          node?.sceneId,
+          choice.next,
+        );
+        if (resolved.action === 'navigate') {
+          setCurrentNodeId(resolved.hubId);
         } else {
           closeNarrativeOverlay();
         }
@@ -214,7 +211,7 @@ export function StoryRenderer() {
         setCurrentNodeId(choice.next);
       }
     },
-    [currentNodeId, setCurrentNodeId, scheduleEffectTimer],
+    [currentNodeId, node?.sceneId, setCurrentNodeId, scheduleEffectTimer],
   );
 
   const handleContinue = useCallback(() => {
