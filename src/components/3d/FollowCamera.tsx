@@ -58,6 +58,11 @@ import {
   FIRST_PERSON_FOV,
   FIRST_PERSON_EYE_HEIGHT,
 } from '@/engine/camera/cameraConstants';
+import {
+  setCinematicHoldActive,
+  setCinematicPresentationMode,
+  shouldUseFirstPersonExploration,
+} from '@/engine/camera/cinematicPresentation';
 import { sharedCameraYawRef } from '@/engine/PlayerRotationState';
 import { resolveCameraMode } from '@/engine/camera/strategies';
 import { useCameraOrbitInput } from '@/engine/camera/useCameraOrbitInput';
@@ -82,6 +87,7 @@ function computeExplorationCameraSnap(
   playerYaw: number,
   sceneId: SceneId,
   pitchOverride?: number,
+  forceThirdPerson = false,
 ): {
   cameraYaw: number;
   pitch: number;
@@ -90,7 +96,7 @@ function computeExplorationCameraSnap(
   lookAt: THREE.Vector3;
   fov: number;
 } {
-  if (FIRST_PERSON_ENABLED) {
+  if (FIRST_PERSON_ENABLED && !forceThirdPerson) {
     const pitch = pitchOverride ?? 0;
     const eyeY = playerPos.y + FIRST_PERSON_EYE_HEIGHT;
     const position = new THREE.Vector3(playerPos.x, eyeY, playerPos.z);
@@ -344,13 +350,36 @@ export function FollowCamera({
     const unsub = eventBus.on('camera:cinematic_transition', ({ phase }) => {
       if (phase === 'fadeOut' || phase === 'hold') {
         cinematicFreezeRef.current = true;
-        cinematicFreezeStartRef.current = timeRef.current; // track when freeze started
+        cinematicFreezeStartRef.current = timeRef.current;
+        setCinematicHoldActive(true);
+        setCinematicPresentationMode('third_person');
+
+        const playerPos = livePlayerPositionRef.current;
+        const playerRotation = livePlayerRotationRef.current;
+        const snap = computeExplorationCameraSnap(playerPos, playerRotation, sceneId, 0.25, true);
+
+        yawRef.current = snap.cameraYaw;
+        pitchRef.current = snap.pitch;
+        distanceRef.current = snap.distance;
+        interactionDistanceRef.current = snap.distance;
+        sharedCameraYawRef.current = snap.cameraYaw;
+        currentSceneFovRef.current = snap.fov;
+
+        if (springRef.current) {
+          springRef.current.position.copy(snap.position);
+          springRef.current.velocity.set(0, 0, 0);
+          springRef.current.lookAt.copy(snap.lookAt);
+          springRef.current.fov = snap.fov;
+        }
       } else if (phase === 'fadeIn') {
         cinematicFreezeRef.current = false;
+        setCinematicHoldActive(false);
+        setCinematicPresentationMode('first_person');
+        eventBus.emit('camera:recenter', {});
       }
     });
     return unsub;
-  }, []);
+  }, [livePlayerPositionRef, livePlayerRotationRef, sceneId]);
 
   // ── Listen for camera:recenter to snap camera behind player ──
   useEffect(() => {
@@ -619,7 +648,9 @@ export function FollowCamera({
     applyPendingGamepadOrbit(yawRef, pitchRef, distanceRef, interactionDistanceRef, delta);
 
     sharedCameraYawRef.current = yawRef.current;
-    if (FIRST_PERSON_ENABLED && gameMode === 'exploration' && !isInteractionLocked()) {
+    const useFirstPerson =
+      shouldUseFirstPersonExploration(gameMode, activeCutsceneId) && !isInteractionLocked();
+    if (FIRST_PERSON_ENABLED && useFirstPerson) {
       livePlayerRotationRef.current = yawRef.current;
     }
 
@@ -664,7 +695,9 @@ export function FollowCamera({
       1 - Math.exp(-distLerpSpeed * delta),
     );
 
-    const targetSceneFov = FIRST_PERSON_ENABLED ? FIRST_PERSON_FOV : getSceneSpecificFov(sceneId);
+    const targetSceneFov = useFirstPerson
+      ? FIRST_PERSON_FOV
+      : getSceneSpecificFov(sceneId);
     currentSceneFovRef.current = THREE.MathUtils.lerp(
       currentSceneFovRef.current,
       targetSceneFov,

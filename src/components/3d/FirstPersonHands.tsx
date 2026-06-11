@@ -8,7 +8,9 @@ import { useFrame, useThree } from '@react-three/fiber';
 import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
 import { useGameStore } from '@/store/gameStore';
-import { FIRST_PERSON_ENABLED } from '@/engine/camera/cameraConstants';
+import { readGamePhase } from '@/shared/gamePhase';
+import { shouldUseFirstPersonExploration } from '@/engine/camera/cinematicPresentation';
+import { FpsFingerEnhancement, armMeshHasFingerDetail } from './fpsFingerEnhancement';
 import { extendGltfLoader } from '@/engine/assets/gltfPipeline';
 import { useSkinnedGltfClone } from '@/hooks/useSkinnedGltfClone';
 
@@ -47,6 +49,7 @@ function FirstPersonHandsInner({ moveBlendRef }: FirstPersonHandsProps) {
 
   const gltf = useGLTF(FPS_ARMS_URL, true, true, extendLoader);
   const { scene, mixer } = useSkinnedGltfClone(gltf.scene, gltf.animations, { castShadow: false });
+  const showFingerEnhancement = useMemo(() => !armMeshHasFingerDetail(scene), [scene]);
 
   const actions = useMemo(() => {
     if (!mixer) return null;
@@ -67,7 +70,7 @@ function FirstPersonHandsInner({ moveBlendRef }: FirstPersonHandsProps) {
   useFrame((_, delta) => {
     const rig = rigRef.current;
     const mount = armsMountRef.current;
-    if (!rig || !mount || !FIRST_PERSON_ENABLED) return;
+    if (!rig || !mount) return;
 
     rig.position.copy(camera.position);
     rig.quaternion.copy(camera.quaternion);
@@ -99,15 +102,19 @@ function FirstPersonHandsInner({ moveBlendRef }: FirstPersonHandsProps) {
     <group ref={rigRef}>
       <group ref={armsMountRef} scale={0.01}>
         <primitive object={scene} />
+        {showFingerEnhancement && <FpsFingerEnhancement />}
       </group>
     </group>
   );
 }
 
 export function FirstPersonHands({ moveBlendRef }: FirstPersonHandsProps) {
-  const hideForWakeup = useGameStore((s) => s.activeCutsceneId === 'intro_wakeup');
+  const activeCutsceneId = useGameStore((s) => s.activeCutsceneId);
+  const gameMode = useGameStore((s) => readGamePhase(s));
 
-  if (!FIRST_PERSON_ENABLED || hideForWakeup) return null;
+  if (!shouldUseFirstPersonExploration(gameMode, activeCutsceneId)) {
+    return null;
+  }
 
   return (
     <Suspense fallback={null}>

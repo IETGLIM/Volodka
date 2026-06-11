@@ -15,7 +15,9 @@ import { useThree } from '@react-three/fiber';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import * as THREE from 'three';
 import { eventBus } from '@/engine/EventBus';
-import { getGameStore } from '@/store/gameStore';
+import { getGameStore, useGameStore } from '@/store/gameStore';
+import { setCinematicPresentationMode } from '@/engine/camera/cinematicPresentation';
+import { CinematicPlayerAvatar } from './CinematicPlayerAvatar';
 
 const PHASE_DURATIONS = {
   rise: 1.8,     // Rise / turn at the bed (upright)
@@ -78,7 +80,9 @@ export function WakeUpSequence() {
     // gameplay resumes seamlessly (no jump back to the bed spawn).
     store.setPlayerPosition([0, 0.01, -1.0]);
     store.setCutscene(null, []);
+    setCinematicPresentationMode('first_person');
     eventBus.emit('intro:wakeup_complete', {});
+    eventBus.emit('camera:recenter', {});
     setTimeout(() => {
       eventBus.emit('story:quest_available', {
         questId: 'first_reading',
@@ -89,24 +93,42 @@ export function WakeUpSequence() {
   };
 
   useEffect(() => {
-    const unsub = eventBus.on('intro:wakeup_sequence', () => {
+    const startSequence = () => {
       setActive(true);
       elapsedRef.current = 0;
       phaseStartTimeRef.current = 0;
       currentWaypointRef.current = 0;
       completedRef.current = false;
       currentAnimRef.current = 'idle';
+      modelRotationRef.current = 0;
+      setCinematicPresentationMode('third_person');
       prevWaypointRef.current = {
         position: FAR_CORNER.clone(),
         lookAt: CAMERA_WAYPOINTS[0].lookAt.clone(),
         fov: CAMERA_WAYPOINTS[0].fov,
       };
-      // Wall-clock safety: guarantee we leave the cutscene even if frame ticks stall.
       if (fallbackTimerRef.current) clearTimeout(fallbackTimerRef.current);
       fallbackTimerRef.current = setTimeout(complete, FALLBACK_MS);
-    });
+    };
+
+    const unsubEvent = eventBus.on('intro:wakeup_sequence', startSequence);
+
+    if (getGameStore().activeCutsceneId === 'intro_wakeup') {
+      startSequence();
+    }
+
+    const unsubStore = useGameStore.subscribe(
+      (state) => state.activeCutsceneId,
+      (cutsceneId, prevId) => {
+        if (cutsceneId === 'intro_wakeup' && prevId !== 'intro_wakeup') {
+          startSequence();
+        }
+      },
+    );
+
     return () => {
-      unsub();
+      unsubEvent();
+      unsubStore();
       if (fallbackTimerRef.current) clearTimeout(fallbackTimerRef.current);
     };
   }, []);
@@ -189,6 +211,7 @@ export function WakeUpSequence() {
         group.rotation.set(0, Math.PI, 0);
         currentAnimRef.current = 'idle';
       }
+      modelRotationRef.current = group.rotation.y;
     }
 
     if (elapsedRef.current >= TOTAL_DURATION) complete();
@@ -196,5 +219,11 @@ export function WakeUpSequence() {
 
   if (!active) return null;
 
-  return <group ref={playerGroupRef} />;
+  return (
+    <CinematicPlayerAvatar
+      groupRef={playerGroupRef}
+      currentAnimRef={currentAnimRef}
+      rotationRef={modelRotationRef}
+    />
+  );
 }

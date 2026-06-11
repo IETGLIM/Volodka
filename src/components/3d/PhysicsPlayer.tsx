@@ -53,6 +53,11 @@ import { setPlayerRigidBody, getPlayerExternalVelocity, clearPlayerRigidBody } f
 import { devLog, devWarn } from '@/shared/utils/devLog';
 import { isNarrativeMovementLocked } from '@/shared/exploreHubNodes';
 import { FIRST_PERSON_ENABLED } from '@/engine/camera/cameraConstants';
+import {
+  isIntroWakeupCutscene,
+  shouldShowThirdPersonAvatar,
+} from '@/engine/camera/cinematicPresentation';
+import { CinematicPlayerAvatar } from './CinematicPlayerAvatar';
 
 /** Lerp angle with wraparound — smooth rotation without 360 jumps */
 function lerpAngle(a: number, b: number, t: number): number {
@@ -106,8 +111,12 @@ export function PhysicsPlayer({
 }: PhysicsPlayerProps) {
   const controls = usePlayerControls(onInteractPress);
   const sceneId = useCurrentSceneId();
-  // Hide body during wake-up cutscene (camera-only).
-  const hideForWakeup = useGameStore((s) => s.activeCutsceneId === 'intro_wakeup');
+  const activeCutsceneId = useGameStore((s) => s.activeCutsceneId);
+  const gameMode = useGameStore((s) => readGamePhase(s));
+  // Wake-up uses a dedicated avatar in WakeUpSequence — hide the physics-body duplicate.
+  const hideForWakeup = isIntroWakeupCutscene(activeCutsceneId);
+  const showThirdPersonBody =
+    shouldShowThirdPersonAvatar(gameMode, activeCutsceneId) && !hideForWakeup;
 
   const rigidBodyRef = useRef<RapierRigidBody>(null!);
   const capsuleColliderRef = useRef<RapierCollider | null>(null); // Direct Rapier Collider ref from CapsuleCollider JSX
@@ -753,7 +762,6 @@ export function PhysicsPlayer({
   }, { label: 'PhysicsPlayer' });
 
   const spawnPoint = config.spawnPoint;
-  const showThirdPersonBody = !FIRST_PERSON_ENABLED && !hideForWakeup;
 
   return (
     <RigidBody
@@ -773,6 +781,10 @@ export function PhysicsPlayer({
 
       {showThirdPersonBody && (
         <>
+          <CinematicPlayerAvatar
+            currentAnimRef={currentAnimRef}
+            rotationRef={livePlayerRotationRef}
+          />
           <ContactShadow />
         </>
       )}

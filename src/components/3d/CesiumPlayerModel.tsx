@@ -18,11 +18,7 @@ import { MODEL_URLS } from '@/config/modelUrls';
 import { useSkinnedGltfClone } from '@/hooks/useSkinnedGltfClone';
 import { ProceduralPlayerModelAdaptive } from './ProceduralPlayerModel';
 import type { ProceduralPlayerModelProps } from './useProceduralPlayerAnimation';
-import { FIRST_PERSON_ENABLED } from '@/engine/camera/cameraConstants';
-
-if (!FIRST_PERSON_ENABLED) {
-  useGLTF.preload(MODEL_URLS.cc0KhronosCesiumMan);
-}
+useGLTF.preload(MODEL_URLS.cc0KhronosCesiumMan);
 
 /** Target avatar height (metres) at modelScale = 1. */
 const TARGET_HEIGHT = 1.7;

@@ -7,6 +7,10 @@ import { audioEngine } from '@/engine/AudioEngine';
 import { getCutsceneForNode } from '@/data/cutscenes';
 import { openNarrativeOverlay } from '@/engine/scene/narrativeOverlay';
 import { clearGameplayPhaseFlags, readGamePhase } from '@/shared/gamePhase';
+import {
+  isIntroWakeupCutscene,
+  setCinematicPresentationMode,
+} from '@/engine/camera/cinematicPresentation';
 
 /** Watches story node changes and drives cutscene overlays + camera events. */
 export function useCutsceneController() {
@@ -52,11 +56,15 @@ export function useCutsceneController() {
     const store = useGameStore.getState();
     if (store.triggeredCutscenes.includes(cutscene.id)) return;
 
+    // Wake-up owns its own camera + avatar — do not replace with story title cards.
+    if (isIntroWakeupCutscene(store.activeCutsceneId)) return;
+
     const generation = cutsceneSessionRef.current.begin();
 
     store.markCutsceneTriggered(cutscene.id);
 
     clearGameplayPhaseFlags(store);
+    setCinematicPresentationMode('third_person');
     store.setCutscene(cutscene.id, cutscene.waypoints);
 
     eventBus.emit('camera:cutscene_start', {
@@ -93,6 +101,7 @@ export function useCutsceneController() {
       if (currentStore.activeCutsceneId) {
         currentStore.setCutscene(null, []);
         clearGameplayPhaseFlags(currentStore);
+        setCinematicPresentationMode('first_person');
         if (currentStore.currentNodeId && currentStore.narrativeKind) {
           openNarrativeOverlay(currentStore.currentNodeId, currentStore.narrativeKind);
         }
