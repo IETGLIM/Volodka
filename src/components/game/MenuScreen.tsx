@@ -688,6 +688,22 @@ export function MenuScreen() {
   const [showAbout, setShowAbout] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [isFadingOut, setIsFadingOut] = useState(false);
+  /** Pending «Новая игра» reset — must be cancelled if the player loads instead. */
+  const pendingNewGameRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (pendingNewGameRef.current) clearTimeout(pendingNewGameRef.current);
+    };
+  }, []);
+
+  const cancelPendingNewGame = useCallback(() => {
+    if (pendingNewGameRef.current) {
+      clearTimeout(pendingNewGameRef.current);
+      pendingNewGameRef.current = null;
+    }
+    setIsFadingOut(false);
+  }, []);
 
   // ── Keyboard navigation ──
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -703,10 +719,12 @@ export function MenuScreen() {
   // ── Handlers ──
   const handleNewGame = useCallback(() => {
     if (isFadingOut) return;
+    cancelPendingNewGame();
     setIsFadingOut(true);
     audioEngine.playSfx('confirm');
     // After fade animation, reset game state and show the cinematic intro
-    setTimeout(() => {
+    pendingNewGameRef.current = setTimeout(() => {
+      pendingNewGameRef.current = null;
       try {
         resetGame();
       } catch (e) {
@@ -727,13 +745,15 @@ export function MenuScreen() {
       store.setCutscene('intro_wakeup', []);
       eventBus.emit('intro:wakeup_sequence', {});
     }, 800);
-  }, [resetGame, isFadingOut]);
+  }, [resetGame, isFadingOut, cancelPendingNewGame]);
 
   const handleContinue = useCallback(() => {
     if (!hasSave) return;
+    cancelPendingNewGame();
     audioEngine.playSfx('confirm');
     loadGame();
-  }, [loadGame, hasSave]);
+    useGameStore.getState().setMainMenuOpen(false);
+  }, [loadGame, hasSave, cancelPendingNewGame]);
 
   const handleSettings = useCallback(() => {
     audioEngine.playSfx('ui_open');

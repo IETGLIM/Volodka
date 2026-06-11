@@ -20,6 +20,7 @@ import { notifyItemReceived } from '@/components/game/LootNotification';
 import { applyEffects } from '@/shared/utils/applyEffects';
 import { useGameStore } from '@/store/gameStore';
 import { readGamePhase } from '@/shared/gamePhase';
+import { shouldDeferOneTimeBurn } from './oneTimeBurnPolicy';
 import {
   closeMinigame,
   isKnownMinigameId,
@@ -188,15 +189,16 @@ export class InteractionController {
       this.applyInteractionEffects(zone.effects);
     }
 
-    if (zone.isOneTime) {
+    const hasLinkedContent = !!(zone.linkedDialogueNodeId || zone.linkedStoryNodeId || zone.linkedMinigame);
+    const deferOneTimeBurn = shouldDeferOneTimeBurn(zone);
+
+    if (zone.isOneTime && !deferOneTimeBurn) {
       store.toggleInteractiveObject(triggerZoneId);
     }
 
     if (zone.linkedQuestId) {
       store.activateQuest(zone.linkedQuestId);
     }
-
-    const hasLinkedContent = !!(zone.linkedDialogueNodeId || zone.linkedStoryNodeId || zone.linkedMinigame);
     const { ui } = this.deps;
 
     if (zone.examineData) {
@@ -281,6 +283,11 @@ export class InteractionController {
 
     const zoneSnapshot = zone;
     const { ui } = this.deps;
+
+    if (zoneSnapshot.isOneTime) {
+      useGameStore.getState().toggleInteractiveObject(zoneSnapshot.id);
+    }
+
     ui.setExamineOpen(false);
     ui.setExamineData(null);
     ui.setExamineHasLinkedContent(false);

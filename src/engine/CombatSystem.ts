@@ -446,9 +446,14 @@ export function playerFlee(): CombatState | null {
 
   const unlockedSkills = playerState.progression.unlockedSkills;
   // Tier-4+ technical mastery sharpens the escape route; tier-2+ social grants composure under pressure.
-  if (unlockedSkills.some((id) => id.startsWith('tech_t4') || id === 'tech_t5_ultimate'))
+  if (
+    unlockedSkills.some(
+      (id) => id.startsWith('tech_t4') || id === 'tech_t5_ultimate' || id === 'tech_4a',
+    )
+  )
     fleeChance += 0.2;
-  if (unlockedSkills.some((id) => id.startsWith('social_t2'))) fleeChance += 0.15;
+  if (unlockedSkills.some((id) => id.startsWith('social_t2') || id === 'social_2a'))
+    fleeChance += 0.15;
 
   const karma = playerState.karma;
   if (karma >= 70) fleeChance += 0.05;
@@ -705,7 +710,7 @@ function executeEnemyTurn() {
   }
 
   const spiritualLevel = snap().playerState.progression.unlockedSkills.filter(
-    (id) => id.startsWith('spirit_'),
+    (id) => id.startsWith('spirit_') || id.startsWith('spiritual_'),
   ).length;
   if (spiritualLevel > 0) {
     enemyDamage = Math.max(1, Math.floor(enemyDamage * (1 - spiritualLevel * 0.05)));
