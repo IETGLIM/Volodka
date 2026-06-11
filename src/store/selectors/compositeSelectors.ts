@@ -156,38 +156,48 @@ export function useInteractionOverlay() {
   }));
 }
 
-/** DialogueRenderer narrative context. */
-export function useDialogueContext() {
-  return useGameSelector((s) => ({
+/* NOTE: selectors below MUST stay flat (no nested object literals).
+   A nested literal is a fresh reference on every getSnapshot() call, which
+   defeats useShallow, makes the snapshot unstable, and sends React's
+   useSyncExternalStore into an infinite re-render loop (React #185).
+   Plain selector functions are exported for the snapshot-stability test. */
+
+/** DialogueRenderer narrative context (plain selector — keep shallow-stable). */
+export function selectDialogueContext(s: GameStoreState) {
+  return {
     mode: phaseFromStore(s),
     showStoryOverlay: s.showStoryOverlay,
     currentNodeId: s.currentNodeId,
-    storyConditionPlayer: {
-      karma: s.playerState.karma,
-      skills: s.playerState.skills,
-      flags: s.playerState.flags,
-      progression: s.playerState.progression,
-    },
     karma: s.playerState.karma,
+    skills: s.playerState.skills,
+    flags: s.playerState.flags,
+    progression: s.playerState.progression,
     npcRelations: s.npcRelations,
     timeOfDay: s.exploration.timeOfDay,
-  }));
+  };
+}
+
+/** DialogueRenderer narrative context. */
+export function useDialogueContext() {
+  return useGameSelector(selectDialogueContext);
+}
+
+/** StoryRenderer narrative context (plain selector — keep shallow-stable). */
+export function selectStoryContext(s: GameStoreState) {
+  return {
+    showStoryOverlay: s.showStoryOverlay,
+    mode: phaseFromStore(s),
+    currentNodeId: s.currentNodeId,
+    karma: s.playerState.karma,
+    skills: s.playerState.skills,
+    flags: s.playerState.flags,
+    progression: s.playerState.progression,
+  };
 }
 
 /** StoryRenderer narrative context. */
 export function useStoryContext() {
-  return useGameSelector((s) => ({
-    showStoryOverlay: s.showStoryOverlay,
-    mode: phaseFromStore(s),
-    currentNodeId: s.currentNodeId,
-    storyConditionPlayer: {
-      karma: s.playerState.karma,
-      skills: s.playerState.skills,
-      flags: s.playerState.flags,
-      progression: s.playerState.progression,
-    },
-    karma: s.playerState.karma,
-  }));
+  return useGameSelector(selectStoryContext);
 }
 
 /** StatusEffectsBar + PlayerStatsPanel weather context. */

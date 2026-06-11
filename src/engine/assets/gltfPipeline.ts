@@ -16,7 +16,15 @@ type GltfLoaderLike = {
   setDRACOLoader: (loader: DRACOLoader) => void;
   setKTX2Loader?: (loader: KTX2Loader) => void;
   setMeshoptDecoder?: (decoder: typeof MeshoptDecoder) => void;
+  register?: (callback: (parser: unknown) => { name: string }) => unknown;
 };
+
+/* fps_arms.glb ships the legacy KHR_materials_pbrSpecularGlossiness extension
+   (support was removed from three.js GLTFLoader). The material safely falls
+   back to the asset's metallic-roughness values; registering a named no-op
+   plugin only silences the "Unknown extension" console warning.
+   Module-level constant — GLTFLoader.register dedupes by callback identity. */
+const specGlossStubPlugin = () => ({ name: 'KHR_materials_pbrSpecularGlossiness' });
 
 let configured = false;
 let sharedDraco: DRACOLoader | null = null;
@@ -39,6 +47,7 @@ export function extendGltfLoader(loader: GltfLoaderLike): void {
   if (sharedDraco) loader.setDRACOLoader(sharedDraco);
   if (sharedKtx2 && loader.setKTX2Loader) loader.setKTX2Loader(sharedKtx2);
   if (loader.setMeshoptDecoder) loader.setMeshoptDecoder(MeshoptDecoder);
+  loader.register?.(specGlossStubPlugin);
 }
 
 export function getDracoDecoderPath(): string {

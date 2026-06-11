@@ -1,5 +1,16 @@
 # Changelog — ВОЛОДЬКА RPG
 
+## v3.3.1 — 11 июня 2026 (hotfix)
+
+- **Критический фикс React #185** (Maximum update depth exceeded) при открытии
+  сюжетного оверлея из панели осмотра: `useStoryContext`/`useDialogueContext`
+  возвращали вложенный объект-литерал на каждый снапшот, ломая `useShallow` и
+  зацикливая `useSyncExternalStore`. Селекторы сделаны плоскими, контекст условий
+  собирается в `useMemo`; регрессионный тест на стабильность снапшотов.
+- Заглушено предупреждение GLTFLoader `KHR_materials_pbrSpecularGlossiness`
+  (источник — fps_arms.glb): зарегистрирован no-op плагин в `gltfPipeline`,
+  материал штатно фоллбечится на metallic-roughness.
+
 ## v3.3.0 — 11 июня 2026
 
 ### Две новые локации

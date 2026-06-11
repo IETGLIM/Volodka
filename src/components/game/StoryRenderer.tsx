@@ -100,7 +100,7 @@ const EXPLORE_HUB_ENTRY: Record<string, string> = {
 
 /* ── Component ── */
 export function StoryRenderer() {
-  const { showStoryOverlay, currentNodeId, storyConditionPlayer, karma } = useStoryContext();
+  const { showStoryOverlay, currentNodeId, karma, skills, flags, progression } = useStoryContext();
   const setCurrentNodeId = useSetCurrentNodeId();
   const visitNode = useVisitNode();
   const nodeEffectGenRef = useRef(0);
@@ -122,8 +122,8 @@ export function StoryRenderer() {
   }, []);
 
   const conditionCtx = useMemo(
-    () => buildStoryConditionContext(storyConditionPlayer),
-    [storyConditionPlayer],
+    () => buildStoryConditionContext({ karma, skills, flags, progression }),
+    [karma, skills, flags, progression],
   );
 
   const [storyPackVersion, setStoryPackVersion] = useState(0);

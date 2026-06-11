@@ -141,7 +141,7 @@ interface HistoryLine {
 
 /* ── Component ── */
 export function DialogueRenderer() {
-  const { mode, showStoryOverlay, currentNodeId, storyConditionPlayer, karma, npcRelations, timeOfDay } = useDialogueContext();
+  const { mode, showStoryOverlay, currentNodeId, karma, skills, flags, progression, npcRelations, timeOfDay } = useDialogueContext();
   const setCurrentNodeId = useSetCurrentNodeId();
   const visitNode = useVisitNode();
 
@@ -188,12 +188,12 @@ export function DialogueRenderer() {
   );
   const conditionCtx = useMemo(() => {
     const npcDef = node ? findNpcByName(node.speaker) : undefined;
-    return buildStoryConditionContext(storyConditionPlayer, {
+    return buildStoryConditionContext({ karma, skills, flags, progression }, {
       npcRelations,
       npcId: npcDef?.id ?? '',
       timeOfDay,
     });
-  }, [storyConditionPlayer, npcRelations, timeOfDay, node]);
+  }, [karma, skills, flags, progression, npcRelations, timeOfDay, node]);
   const { displayed, done, skip } = useTypewriter(node?.text ?? '', 30);
 
   // Apply node-level effects on mount
