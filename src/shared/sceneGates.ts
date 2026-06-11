@@ -6,6 +6,8 @@ import type { SceneId } from '@/shared/types/game';
 export const SCENE_FLAG_GATES: Partial<Record<SceneId, string>> = {
   rooftop_edge: 'rooftop_unlocked',
   abandoned_factory: 'factory_unlocked',
+  river_pier: 'visited_river_pier',
+  factory_basement: 'entered_factory_basement',
 };
 
 /** Whether the player has unlocked travel/access to a gated scene. */

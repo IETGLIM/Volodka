@@ -79,6 +79,15 @@ patrol→chase→engaged→cooldown, конус зрения проецируе�
 ### Сюжет и golden path
 - Узлы: `src/data/story/act1–7.ts`, грузятся лениво narrative-паками
   (`narrativePackRegistry`, bootstrap = act1).
+- **Implicit fast travel (контент-правило):** если у story/dialogue-узла задан
+  `sceneId`, отличный от `exploration.currentSceneId`, при открытии overlay
+  (`StoryRenderer` / `DialogueRenderer`, effect на visit) вызывается
+  `requestSceneTransitionForStoryNode` — игрок телепортируется на default
+  spawn сцены **без** дверного exit и без `SceneTransitionOverlay`-анимации.
+  Для doorway spawn и звука двери используй physical exit (`sceneDefinitions`
+  doorways) или `applyEffects` с `{ type: 'transitionScene', sceneId }`.
+  Explore-hub узлы (`*_explore_mode`) держат overlay открытым, но не блокируют
+  ходьбу — см. `sceneExploreHubRegistry.ts`.
 - Канонический путь: `GOLDEN_PATH_STORY_SPINE` (до `act7_true_end`) + derivation
   из меток `choice.goldenPath` (`deriveGoldenPath.ts`); валидатор контента
   (`npm run validate:content`) сверяет оба источника.
@@ -127,7 +136,8 @@ npm run assets:validate  # GLB на диске и валидны
 
 1. Тексты стихов в `src/data/poems.ts` не редактируются.
 2. EventBus — только между слоями; внутри слоя — прямые вызовы/props.
-3. Engine не импортирует store — только GameActionDispatcher.
+3. Engine не импортирует store — только GameActionDispatcher
+   (`getGameSnapshot`, `dispatchGameAction`).
 4. Новый контент — данные, не код: квест = запись в `quests/actN.ts`,
    враг на сцене = запись в `creepPatrols.ts`, предмет = `dynamicProps.ts`.
 5. Любая правка проходит `npm run check` перед коммитом.

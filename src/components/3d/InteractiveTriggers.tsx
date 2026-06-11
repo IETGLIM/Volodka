@@ -14,7 +14,7 @@ import { findNpcById, findNpcByDialogueNodeId } from '@/data/allNpcDefinitions';
 import type { NPCDefinition } from '@/shared/types/game';
 import { getNPCsForScene, getCurrentScheduleEntry } from '@/engine/ScheduleEngine';
 import { eventBus } from '@/engine/EventBus';
-import { isInteractionLocked } from './InteractionSystemBridge';
+import { isInteractionLocked } from '@/engine/interaction/interactionSession';
 import { isNarrativeMovementLocked } from '@/shared/exploreHubNodes';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { bottomInteractPromptPx } from '@/shared/constants/hudLayout';

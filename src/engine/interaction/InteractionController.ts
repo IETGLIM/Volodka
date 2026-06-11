@@ -1,5 +1,6 @@
 import { audioEngine } from '@/engine/AudioEngine';
 import { eventBus } from '@/engine/EventBus';
+import { dispatchGameAction, getGameSnapshot } from '@/engine/GameActionDispatcher';
 import type { TriggerZone } from '@/data/triggerZones';
 import {
   getTriggerZones,
@@ -18,8 +19,6 @@ import {
 } from '@/engine/interaction/narrativeOpenHelpers';
 import { notifyItemReceived } from '@/components/game/LootNotification';
 import { applyEffects } from '@/shared/utils/applyEffects';
-import { useGameStore } from '@/store/gameStore';
-import { readGamePhase } from '@/shared/gamePhase';
 import {
   closeMinigame,
   isKnownMinigameId,
@@ -76,6 +75,10 @@ function findNpcTriggerZone(npcId: string, dialogueNodeId?: string): TriggerZone
   );
 }
 
+function isExplorationMode(): boolean {
+  return getGameSnapshot().mode === 'exploration';
+}
+
 /**
  * Domain logic for exploration interactions (trigger zones, NPC dialogue, minigames).
  * React hook useInteractionOrchestrator wires EventBus + UI state to this controller.
@@ -92,10 +95,10 @@ export class InteractionController {
       const zone = getTriggerZones().find((z) => z.id === triggerZoneId);
       if (!zone) return;
 
-      const store = useGameStore.getState();
-      if (readGamePhase(store) !== 'exploration') return;
+      if (!isExplorationMode()) return;
 
-      if (zone.requiredAct && store.playerState.progression.currentAct < zone.requiredAct) {
+      const snapshot = getGameSnapshot();
+      if (zone.requiredAct && snapshot.playerState.progression.currentAct < zone.requiredAct) {
         return;
       }
 
@@ -104,11 +107,11 @@ export class InteractionController {
       }
 
       if (zone.isOneTime) {
-        store.toggleInteractiveObject(triggerZoneId);
+        dispatchGameAction({ type: 'exploration/toggleInteractiveObject', objectId: triggerZoneId });
       }
 
       if (zone.linkedQuestId) {
-        store.activateQuest(zone.linkedQuestId);
+        dispatchGameAction({ type: 'quest/activate', questId: zone.linkedQuestId });
       }
     });
 
@@ -167,19 +170,24 @@ export class InteractionController {
       return;
     }
 
-    const store = useGameStore.getState();
-    if (readGamePhase(store) !== 'exploration') return;
+    if (!isExplorationMode()) return;
 
-    if (zone.requiredAct && store.playerState.progression.currentAct < zone.requiredAct) {
+    const snapshot = getGameSnapshot();
+
+    if (zone.requiredAct && snapshot.playerState.progression.currentAct < zone.requiredAct) {
       devWarn(
         `[InteractionController] Zone "${triggerZoneId}" requires act ${zone.requiredAct}, ` +
-        `current act ${store.playerState.progression.currentAct}`,
+        `current act ${snapshot.playerState.progression.currentAct}`,
       );
-      store.pushNotification('quest', `Станет доступно в акте ${zone.requiredAct}`);
+      dispatchGameAction({
+        type: 'notification/push',
+        notificationType: 'quest',
+        text: `Станет доступно в акте ${zone.requiredAct}`,
+      });
       return;
     }
 
-    if (zone.isOneTime && store.interactiveObjectStates[triggerZoneId]) {
+    if (zone.isOneTime && snapshot.exploration.interactiveObjectStates[triggerZoneId]) {
       devWarn(`[InteractionController] One-time zone already used: "${triggerZoneId}"`);
       return;
     }
@@ -189,11 +197,11 @@ export class InteractionController {
     }
 
     if (zone.isOneTime) {
-      store.toggleInteractiveObject(triggerZoneId);
+      dispatchGameAction({ type: 'exploration/toggleInteractiveObject', objectId: triggerZoneId });
     }
 
     if (zone.linkedQuestId) {
-      store.activateQuest(zone.linkedQuestId);
+      dispatchGameAction({ type: 'quest/activate', questId: zone.linkedQuestId });
     }
 
     const hasLinkedContent = !!(zone.linkedDialogueNodeId || zone.linkedStoryNodeId || zone.linkedMinigame);
@@ -212,8 +220,7 @@ export class InteractionController {
 
   handleNpcInteractStaged(npcId: string): void {
     if (this.session.isDisposed()) return;
-    const store = useGameStore.getState();
-    if (readGamePhase(store) !== 'exploration') return;
+    if (!isExplorationMode()) return;
 
     const npcDef = findNpcById(npcId);
     if (!npcDef) {
@@ -228,7 +235,7 @@ export class InteractionController {
         this.applyInteractionEffects(npcZone.effects);
       }
       if (npcZone.linkedQuestId) {
-        store.activateQuest(npcZone.linkedQuestId);
+        dispatchGameAction({ type: 'quest/activate', questId: npcZone.linkedQuestId });
       }
     }
 

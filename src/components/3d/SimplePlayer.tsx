@@ -9,9 +9,10 @@ import { useRef, useEffect, useMemo } from 'react';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import * as THREE from 'three';
 
-import { useGameStore } from '@/store/gameStore';
+import { getGameStore } from '@/store/gameStore';
 import { useCurrentSceneId, usePlayerKarma } from '@/store/selectors';
 import { readGamePhase } from '@/shared/gamePhase';
+import { isNarrativeMovementLocked } from '@/shared/exploreHubNodes';
 import { usePlayerControls, type VirtualControls } from '@/hooks/useGamePhysics';
 import {
   getSceneConfig,
@@ -20,7 +21,7 @@ import {
 } from '@/config/scenes';
 import { eventBus } from '@/engine/EventBus';
 import { audioEngine } from '@/engine/AudioEngine';
-import { isInteractionLocked } from './InteractionSystemBridge';
+import { isInteractionLocked } from '@/engine/interaction/interactionSession';
 import { ProceduralPlayerModelAdaptive } from './ProceduralPlayerModel';
 
 function lerpAngle(a: number, b: number, t: number): number {
@@ -65,12 +66,13 @@ export function SimplePlayer({
   const modelScale = getExplorationCharacterModelScale(sceneId);
   const config = getSceneConfig(sceneId);
 
-  // Reset position on scene change
+  // Teleport on scene change — store spawn (SceneTransitionHandler), same as PhysicsPlayer
   useEffect(() => {
     if (sceneId !== prevSceneIdRef.current) {
       prevSceneIdRef.current = sceneId;
       const newConfig = getSceneConfig(sceneId);
-      const spawn = newConfig.spawnPoint;
+      const storeSpawn = getGameStore().exploration.playerPosition;
+      const spawn = storeSpawn ?? newConfig.spawnPoint;
       livePlayerPositionRef.current.set(spawn[0], spawn[1], spawn[2]);
       livePlayerRotationRef.current = newConfig.initialRotation ?? 0;
       velocityRef.current.set(0, 0, 0);
@@ -79,6 +81,24 @@ export function SimplePlayer({
       }
     }
   }, [sceneId, livePlayerRotationRef, livePlayerPositionRef]);
+
+  // Immediate teleport on scene:enter — before React re-renders sceneId
+  useEffect(() => {
+    const unsub = eventBus.on('scene:enter', ({ sceneId: enteredScene }) => {
+      const spawn = getGameStore().exploration.playerPosition;
+      prevSceneIdRef.current = enteredScene;
+      velocityRef.current.set(0, 0, 0);
+
+      const enteredConfig = getSceneConfig(enteredScene);
+      livePlayerRotationRef.current = enteredConfig.initialRotation ?? 0;
+      livePlayerPositionRef.current.set(spawn[0], spawn[1], spawn[2]);
+
+      if (groupRef.current) {
+        groupRef.current.position.set(spawn[0], spawn[1], spawn[2]);
+      }
+    });
+    return unsub;
+  }, [livePlayerPositionRef, livePlayerRotationRef]);
 
   const tempCameraForward = useRef(new THREE.Vector3());
   const tempCameraRight = useRef(new THREE.Vector3());
@@ -90,10 +110,15 @@ export function SimplePlayer({
     const vel = velocityRef.current;
     const floorY = config.floorY;
 
-    const currentMode = readGamePhase(useGameStore.getState());
-    const showStoryOverlay = useGameStore.getState().showStoryOverlay;
-    // ── World Director: lock movement during narrative overlay ──
-    const isLocked = showStoryOverlay || currentMode === 'cutscene' || isInteractionLocked();
+    const lockState = getGameStore();
+    const currentMode = readGamePhase(lockState);
+    const showStoryOverlay = lockState.showStoryOverlay;
+    const currentNodeId = lockState.currentNodeId;
+    const isLocked =
+      isNarrativeMovementLocked(showStoryOverlay, currentNodeId) ||
+      currentMode === 'cutscene' ||
+      currentMode === 'intro' ||
+      isInteractionLocked();
 
     if (isLocked) {
       vel.x = 0;
@@ -212,12 +237,12 @@ export function SimplePlayer({
     return '#888888';
   }, [karma]);
 
-  const spawnPoint = config.spawnPoint;
+  const initialSpawn = getGameStore().exploration.playerPosition ?? config.spawnPoint;
 
   return (
     <group
       ref={groupRef}
-      position={[spawnPoint[0], spawnPoint[1], spawnPoint[2]]}
+      position={[initialSpawn[0], initialSpawn[1], initialSpawn[2]]}
       rotation={[0, 0, 0]}
     >
       {/* Procedural model — default for cyberpunk aesthetic, no external GLB dependency */}

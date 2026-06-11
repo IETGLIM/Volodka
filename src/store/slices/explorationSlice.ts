@@ -44,6 +44,8 @@ const TRAVEL_TIME: Partial<Record<SceneId, number>> = {
   chk_forest_zorge: 1.0,
   library_day: 0.75,
   rooftop_edge: 1.0,
+  river_pier: 1.0,
+  factory_basement: 1.0,
   abandoned_factory: 1.0,
   battle: 0,
   sleep_dream: 0,

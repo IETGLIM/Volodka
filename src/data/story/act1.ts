@@ -183,7 +183,7 @@ export const STORY_NODES_ACT1: Record<string, StoryNode> = {
     speaker: 'narrator',
     sceneId: 'cafe_evening',
     choices: [
-      { text: 'Подойти к баристе', next: 'cafe_barista', goldenPath: true },
+      { text: 'Осмотреться в кафе', next: 'cafe_explore_mode', goldenPath: true },
       {
         text: 'Сесть рядом с Альбертом',
         next: 'cafe_barista',
@@ -273,7 +273,7 @@ export const STORY_NODES_ACT1: Record<string, StoryNode> = {
     choices: [
       {
         text: 'Я помогу. Что нужно сделать?',
-        next: 'start_diagnosis', goldenPath: true,
+        next: 'office_explore_mode', goldenPath: true,
         effects: [
           { type: 'addKarma', value: 5 },
           { type: 'setFlag', flag: 'agreed_help_alexander', flagValue: true },

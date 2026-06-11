@@ -342,36 +342,46 @@ export class GuidedStoryManager {
   }
 }
 
-export const guidedStoryManager = new GuidedStoryManager();
+let guidedStoryManagerInstance: GuidedStoryManager | null = null;
+
+function getGuidedStoryManager(): GuidedStoryManager {
+  if (!guidedStoryManagerInstance) {
+    guidedStoryManagerInstance = new GuidedStoryManager();
+  }
+  return guidedStoryManagerInstance;
+}
 
 export function disposeGuidedStoryManager() {
-  guidedStoryManager.dispose();
+  if (guidedStoryManagerInstance) {
+    guidedStoryManagerInstance.dispose();
+    guidedStoryManagerInstance = null;
+  }
   invalidateStoryGraphIndex();
 }
 
 registerHmrDispose(disposeGuidedStoryManager);
 
 export function initGuidedStoryManager() {
-  guidedStoryManager.init();
+  getGuidedStoryManager().init();
 }
 
 export function resetGuidedStoryManager() {
   invalidateStoryGraphIndex();
-  guidedStoryManager.resetState();
+  guidedStoryManagerInstance?.resetState();
 }
 
 export function reconcileGuidedStory() {
-  guidedStoryManager.reconcile();
+  getGuidedStoryManager().reconcile();
 }
 
 export function getCurrentGuidance(): GuidanceInfo | null {
-  return guidedStoryManager.getCurrentGuidance();
+  return getGuidedStoryManager().getCurrentGuidance();
 }
 
 export function canStartQuest(questId: string): boolean {
-  return guidedStoryManager.canStartQuest(questId);
+  return getGuidedStoryManager().canStartQuest(questId);
 }
 
 export function getActQuote(actNumber: number): string | undefined {
-  return guidedStoryManager.getActQuote(actNumber);
+  return getGuidedStoryManager().getActQuote(actNumber);
 }

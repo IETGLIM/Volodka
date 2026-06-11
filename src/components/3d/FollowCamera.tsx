@@ -71,7 +71,7 @@ import { applyPendingGamepadOrbit } from '@/engine/input/gamepadCamera';
 import { configureCameraCollisionRaycaster } from '@/engine/camera/cameraCollisionLayers';
 import { applyCameraFrame, isInDialogueInteraction } from '@/engine/camera/applyCameraFrame';
 import type { CameraModeContext } from '@/engine/camera/types';
-import { isInteractionLocked } from './InteractionSystemBridge';
+import { isInteractionLocked } from '@/engine/interaction/interactionSession';
 import { getNPCGroup } from '@/engine/interaction/npcRegistry';
 import { eventBus } from '@/engine/EventBus';
 import type { CameraWaypointData } from '@/engine/events';

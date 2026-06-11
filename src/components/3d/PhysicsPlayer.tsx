@@ -47,7 +47,7 @@ import { eventBus } from '@/engine/EventBus';
 import { forceEmitInteractionEnd } from '@/engine/interaction/interactionEndDedup';
 import { audioEngine } from '@/engine/AudioEngine';
 
-import { getInteractionState, isInteractionLocked } from './InteractionSystemBridge';
+import { getInteractionState, isInteractionLocked } from '@/engine/interaction/interactionSession';
 import { InteractionState } from '@/engine/interaction/interactionMachine';
 import { setPlayerRigidBody, getPlayerExternalVelocity, clearPlayerRigidBody } from '@/engine/PlayerRigidBodyState';
 import { devLog, devWarn } from '@/shared/utils/devLog';
@@ -58,6 +58,8 @@ import {
   shouldShowThirdPersonAvatar,
 } from '@/engine/camera/cinematicPresentation';
 import { CinematicPlayerAvatar } from './CinematicPlayerAvatar';
+import type { RapierCharacterController } from '@/engine/physics/rapierTypes';
+import type { SceneId } from '@/shared/types/game';
 
 /** Lerp angle with wraparound — smooth rotation without 360 jumps */
 function lerpAngle(a: number, b: number, t: number): number {
@@ -91,6 +93,40 @@ const COYOTE_TIME = 0.15;            // 150ms jump grace after leaving edge
 const JUMP_COOLDOWN = 0.3;           // 300ms between jumps
 const TERMINAL_VELOCITY = GRAVITY * 2; // max fall speed
 
+type DirectMovementTelemetryRefs = {
+  useDirectRef: React.MutableRefObject<boolean>;
+  loggedRef: React.MutableRefObject<boolean>;
+  reasonRef: React.MutableRefObject<string | null>;
+};
+
+/** Dev-only telemetry when KCC is bypassed (collider missing / mobile stuck). */
+function activateDirectMovementMode(
+  refs: DirectMovementTelemetryRefs,
+  reason: string,
+  meta: { sceneId: SceneId; failFrames?: number; stuckFrames?: number },
+): void {
+  refs.useDirectRef.current = true;
+  if (refs.loggedRef.current && refs.reasonRef.current === reason) return;
+  refs.loggedRef.current = true;
+  refs.reasonRef.current = reason;
+  devWarn('[PhysicsPlayer][direct-movement]', reason, meta);
+}
+
+function restoreKccMovementMode(
+  refs: DirectMovementTelemetryRefs,
+  meta: { sceneId: SceneId },
+): void {
+  if (refs.loggedRef.current) {
+    devLog('[PhysicsPlayer][direct-movement] restored KCC', {
+      ...meta,
+      previousReason: refs.reasonRef.current,
+    });
+  }
+  refs.useDirectRef.current = false;
+  refs.loggedRef.current = false;
+  refs.reasonRef.current = null;
+}
+
 /* ─── Character Controller Constants ─── */
 
 interface PhysicsPlayerProps {
@@ -120,7 +156,7 @@ export function PhysicsPlayer({
 
   const rigidBodyRef = useRef<RapierRigidBody>(null!);
   const capsuleColliderRef = useRef<RapierCollider | null>(null); // Direct Rapier Collider ref from CapsuleCollider JSX
-  const controllerRef = useRef<any>(null); // Rapier KinematicCharacterController
+  const controllerRef = useRef<RapierCharacterController | null>(null);
   const velocityRef = useRef(new THREE.Vector3(0, 0, 0));
   const isGroundedRef = useRef(true);
   const coyoteTimerRef = useRef(0);
@@ -141,6 +177,13 @@ export function PhysicsPlayer({
   // switch to direct movement mode (no collision resolution, but the player MOVES).
   const controllerFailCountRef = useRef(0);
   const useDirectMovementRef = useRef(false);
+  const directMovementLoggedRef = useRef(false);
+  const directMovementReasonRef = useRef<string | null>(null);
+  const directMovementTelemetry: DirectMovementTelemetryRefs = {
+    useDirectRef: useDirectMovementRef,
+    loggedRef: directMovementLoggedRef,
+    reasonRef: directMovementReasonRef,
+  };
 
   // ─── Create & configure KinematicCharacterController ───
   useEffect(() => {
@@ -201,7 +244,7 @@ export function PhysicsPlayer({
       isGroundedRef.current = true;
       coyoteTimerRef.current = 0;
 
-      useDirectMovementRef.current = false;
+      restoreKccMovementMode(directMovementTelemetry, { sceneId });
       controllerFailCountRef.current = 0;
     }
   }, [sceneId, livePlayerRotationRef, livePlayerPositionRef]);
@@ -230,7 +273,7 @@ export function PhysicsPlayer({
       }
       livePlayerPositionRef.current.set(spawn[0], spawn[1], spawn[2]);
 
-      useDirectMovementRef.current = false;
+      restoreKccMovementMode(directMovementTelemetry, { sceneId: enteredScene });
       controllerFailCountRef.current = 0;
     });
     return unsub;
@@ -579,15 +622,16 @@ export function PhysicsPlayer({
           // Retry for 60 frames (~1s) before giving up.
           // Rapier sometimes needs more time to initialize colliders
           // in production builds where WASM loads asynchronously.
-          devWarn('[PhysicsPlayer] Collider not found for 60 frames — switching to direct movement mode');
-          useDirectMovementRef.current = true;
+          activateDirectMovementMode(directMovementTelemetry, 'collider_missing_60f', {
+            sceneId,
+            failFrames: controllerFailCountRef.current,
+          });
         }
       } else if (collider && controllerFailCountRef.current > 0) {
         // Collider appeared! Reset failure count and restore physics.
         controllerFailCountRef.current = 0;
         if (useDirectMovementRef.current) {
-          devLog('[PhysicsPlayer] Collider found — restoring full physics mode');
-          useDirectMovementRef.current = false;
+          restoreKccMovementMode(directMovementTelemetry, { sceneId });
         }
       }
 
@@ -748,8 +792,10 @@ export function PhysicsPlayer({
       if (posDelta < 0.001) {
         noMovementFramesRef.current++;
         if (noMovementFramesRef.current >= 15 && !useDirectMovementRef.current) {
-          devWarn('[PhysicsPlayer] Position unchanged for 15 frames despite input — forcing direct movement mode (mobile fallback)');
-          useDirectMovementRef.current = true;
+          activateDirectMovementMode(directMovementTelemetry, 'input_no_displacement_15f', {
+            sceneId,
+            stuckFrames: noMovementFramesRef.current,
+          });
         }
       } else {
         noMovementFramesRef.current = 0;

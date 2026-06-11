@@ -39,6 +39,7 @@ export interface GameStoreSnapshot {
   exploration: {
     currentSceneId: SceneId;
     timeOfDay: number;
+    interactiveObjectStates: Record<string, boolean>;
   };
   playerState: {
     flags: Record<string, boolean>;
@@ -110,7 +111,9 @@ export type GameAction =
   | { type: 'skill/unlockTreeNode'; skillId: string }
   /* ── Notifications ── */
   | { type: 'notification/push'; notificationType: NotificationType; text: string }
-  | { type: 'notification/dismiss'; id: string };
+  | { type: 'notification/dismiss'; id: string }
+  /* ── Exploration ── */
+  | { type: 'exploration/toggleInteractiveObject'; objectId: string };
 
 /** Optional selector + equality for narrow store subscriptions (avoids firing on unrelated mutations). */
 export interface GameSnapshotSubscribeOptions<T> {

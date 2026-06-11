@@ -77,6 +77,16 @@ const loadingDialoguePacks = new Map<DialoguePackId, Promise<void>>();
 
 const packChangeListeners = new Set<PackChangeListener>();
 
+let sceneExploreHubsLoaded = false;
+
+async function loadSceneExploreHubsInternal(): Promise<void> {
+  if (sceneExploreHubsLoaded) return;
+  const { STORY_NODES_SCENE_EXPLORE_HUBS } = await import('../story/sceneExploreHubs');
+  mergeNodesIntoCache(storyNodes, STORY_NODES_SCENE_EXPLORE_HUBS, 'sceneExploreHubs', 'story');
+  sceneExploreHubsLoaded = true;
+  notifyPackChange();
+}
+
 /** Merge pack nodes into the session cache; later packs win (same as Object.assign). */
 function mergeNodesIntoCache<T>(
   cache: Record<string, T>,
@@ -188,6 +198,7 @@ export async function loadBootstrapNarrativePacks(): Promise<void> {
   await Promise.all([
     ...BOOTSTRAP_STORY_PACKS.map(loadStoryPackInternal),
     ...BOOTSTRAP_DIALOGUE_PACKS.map(loadDialoguePackInternal),
+    loadSceneExploreHubsInternal(),
   ]);
 }
 
@@ -195,6 +206,7 @@ export async function loadAllNarrativePacks(): Promise<void> {
   await Promise.all([
     ...STORY_PACK_ORDER.map(loadStoryPackInternal),
     ...DIALOGUE_PACK_ORDER.map(loadDialoguePackInternal),
+    loadSceneExploreHubsInternal(),
   ]);
 }
 
@@ -205,6 +217,9 @@ export async function ensureStoryNode(nodeId: string): Promise<void> {
     await loadStoryPackInternal(pack);
     if (hasStoryNode(nodeId)) return;
   }
+
+  await loadSceneExploreHubsInternal();
+  if (hasStoryNode(nodeId)) return;
 
   throw new Error(`[narrativePackRegistry] Story node "${nodeId}" not found`);
 }
@@ -290,4 +305,5 @@ export function resetNarrativePackRegistryForTests(): void {
   loadedDialoguePacks.clear();
   loadingStoryPacks.clear();
   loadingDialoguePacks.clear();
+  sceneExploreHubsLoaded = false;
 }

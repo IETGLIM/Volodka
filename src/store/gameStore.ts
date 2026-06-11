@@ -92,6 +92,7 @@ function toGameSnapshot(state: GameStoreState): GameStoreSnapshot {
     exploration: {
       currentSceneId: state.exploration.currentSceneId,
       timeOfDay: state.exploration.timeOfDay,
+      interactiveObjectStates: state.interactiveObjectStates,
     },
     playerState: {
       flags: state.playerState.flags,
@@ -238,6 +239,9 @@ registerGameActionBridge({
         break;
       case 'notification/dismiss':
         store.dismissNotification(action.id);
+        break;
+      case 'exploration/toggleInteractiveObject':
+        store.toggleInteractiveObject(action.objectId);
         break;
     }
   },

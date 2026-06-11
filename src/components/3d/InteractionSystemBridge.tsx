@@ -27,7 +27,7 @@ import {
   writeInteractionSession,
 } from '@/engine/interaction/interactionSession';
 
-export { getInteractionState, getInteractionTargetNPCId, isInteractionLocked };
+export { getInteractionState, getInteractionTargetNPCId };
 
 function publishInteraction(
   stateRef: React.MutableRefObject<InteractionState>,

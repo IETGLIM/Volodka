@@ -1,4 +1,4 @@
-import { isExploreHubNode } from '@/shared/exploreHubNodes';
+import { isExploreHubNode } from '@/shared/sceneExploreHubRegistry';
 
 /** Skip self-loops on exploration hub nodes (explore_mode, corridor_explore_mode). */
 export function isStoryGraphEdge(fromNodeId: string, toNodeId: string | null | undefined): boolean {

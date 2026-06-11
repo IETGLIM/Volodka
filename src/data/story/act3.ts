@@ -39,8 +39,8 @@ export const STORY_NODES_ACT3: Record<string, StoryNode> = {
     sceneId: 'park_day',
     choices: [
       {
-        text: 'Осторожно очистить надпись на камне',
-        next: 'act3_zarema_warning', goldenPath: true,
+        text: 'Осмотреться в парке',
+        next: 'park_explore_mode', goldenPath: true,
         effects: [
           { type: 'collectPoem', poemId: 'poem_10' },
           { type: 'addKarma', value: 3 },
