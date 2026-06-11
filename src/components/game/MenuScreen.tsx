@@ -719,6 +719,9 @@ export function MenuScreen() {
       store.setCurrentNodeId('start');
       store.setIntroSeen(true);
       store.collectPoem('poem_2');
+      store.setPlayerPosition([0.5, 0.01, 2.4]);
+      store.setPlayerRotation(Math.PI);
+      store.markCutsceneTriggered('act1_prologue');
       // Leave the menu → play the 3D wake-up cutscene in volodka_room.
       // The cutscene now has a wall-clock safety timer (WakeUpSequence) so it
       // can never get stuck; on completion it offers the first quest.

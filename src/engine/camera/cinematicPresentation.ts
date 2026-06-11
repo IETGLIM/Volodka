@@ -40,6 +40,13 @@ export function setCinematicHoldActive(active: boolean): void {
   notify();
 }
 
+/** Call on resetGame / load — module state survives Zustand resets. */
+export function resetCinematicPresentation(): void {
+  presentationMode = 'first_person';
+  cinematicHoldActive = false;
+  notify();
+}
+
 export function isCinematicHoldActive(): boolean {
   return cinematicHoldActive;
 }

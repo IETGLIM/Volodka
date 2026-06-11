@@ -6,7 +6,7 @@
 import { z } from 'zod';
 import { SCENE_IDS } from '@/config/sceneDefinitions';
 import { sanitizeExplorationSceneId } from '@/config/scenes';
-import { MAX_STORY_ACT } from '@/data/storyActs';
+import { MAX_STORY_ACT } from '@/data/constants';
 import type { SceneId } from '@/shared/types/game';
 
 /* ─── Constants ─── */

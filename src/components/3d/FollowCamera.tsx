@@ -59,6 +59,7 @@ import {
   FIRST_PERSON_EYE_HEIGHT,
 } from '@/engine/camera/cameraConstants';
 import {
+  resetCinematicPresentation,
   setCinematicHoldActive,
   setCinematicPresentationMode,
   shouldUseFirstPersonExploration,
@@ -658,6 +659,8 @@ export function FollowCamera({
       const frozenDuration = timeRef.current - cinematicFreezeStartRef.current;
       if (frozenDuration > CINEMATIC_FREEZE_TIMEOUT) {
         cinematicFreezeRef.current = false;
+        resetCinematicPresentation();
+        eventBus.emit('camera:recenter', {});
       } else {
         return;
       }

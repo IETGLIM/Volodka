@@ -1,63 +1,38 @@
-/* ─── Volodka RPG – Wake-Up 3D Cutscene ───
- *  The Cesium character rises by the bed, walks to the desk and sits at the
- *  monitors while the camera sweeps in from a far corner. Exactly 7.5 seconds,
- *  camera stays inside the room.
- *
- *  Triggered by 'intro:wakeup_sequence' (the main menu's «Новая игра»). On
- *  completion it leaves the cutscene phase and offers the first quest.
- *
- *  ROBUSTNESS: completion is guarded by BOTH the frame timer AND a wall-clock
- *  fallback, so the game can never get stuck in the cutscene phase even if the
- *  frame budget throttles this system under load. */
+/* ─── Volodka RPG – Wake-Up AAA Cinematic ───
+ *  Third-person intro: terminal → rise → walk to desk → FP handoff.
+ *  Trigger: intro_wakeup cutscene / intro:wakeup_sequence (New Game).
+ */
 
 import { useRef, useEffect, useState } from 'react';
 import { useThree } from '@react-three/fiber';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import * as THREE from 'three';
 import { eventBus } from '@/engine/EventBus';
+import { audioEngine } from '@/engine/AudioEngine';
 import { getGameStore, useGameStore } from '@/store/gameStore';
 import { setCinematicPresentationMode } from '@/engine/camera/cinematicPresentation';
 import { CinematicPlayerAvatar } from './CinematicPlayerAvatar';
-
-const PHASE_DURATIONS = {
-  rise: 1.8,     // Rise / turn at the bed (upright)
-  standing: 0.9, // Stand up beside the bed
-  walking: 2.6,  // Walk to the desk
-  sitting: 1.7,  // Pull up to the chair and sit at the monitors
-  settle: 0.5,   // Brief settle before gameplay
-};
-const TOTAL_DURATION = Object.values(PHASE_DURATIONS).reduce((a, b) => a + b, 0); // 7.5
-const FALLBACK_MS = (TOTAL_DURATION + 1.5) * 1000;
-
-/* ── Scene bounds for volodka_room ([5,3,7]) — keep camera inside ── */
-function clampToRoom(v: THREE.Vector3): THREE.Vector3 {
-  v.x = Math.max(-2.3, Math.min(2.3, v.x));
-  v.z = Math.max(-3.3, Math.min(3.3, v.z));
-  v.y = Math.max(0.5, Math.min(2.8, v.y));
-  return v;
-}
-
-/* ── Character positions ── */
-const BED_POSITION = new THREE.Vector3(0.5, 0.01, 2.4);
-const STAND_POSITION = new THREE.Vector3(0.3, 0.01, 1.5);
-const DESK_POSITION = new THREE.Vector3(0.0, 0.01, -1.0);
-const CHAIR_POSITION = new THREE.Vector3(0.0, 0.0, -1.3);
-
-/* ── Camera waypoints (in-bounds) ── */
-const FAR_CORNER = new THREE.Vector3(-2.2, 2.6, -3.0);
-const CAMERA_WAYPOINTS = [
-  { position: new THREE.Vector3(1.6, 1.2, 2.9), lookAt: new THREE.Vector3(0.5, 0.7, 2.3), fov: 50, duration: PHASE_DURATIONS.rise },
-  { position: new THREE.Vector3(-1.7, 1.3, 1.7), lookAt: new THREE.Vector3(0.3, 0.9, 1.5), fov: 55, duration: PHASE_DURATIONS.standing },
-  { position: new THREE.Vector3(1.5, 1.6, 1.0), lookAt: new THREE.Vector3(0.0, 0.8, -0.8), fov: 58, duration: PHASE_DURATIONS.walking },
-  { position: new THREE.Vector3(1.9, 1.3, -0.5), lookAt: new THREE.Vector3(0.0, 0.7, -1.4), fov: 52, duration: PHASE_DURATIONS.sitting },
-  { position: new THREE.Vector3(0.0, 1.7, 2.0), lookAt: new THREE.Vector3(0.0, 0.8, -1.0), fov: 55, duration: PHASE_DURATIONS.settle },
-];
+import {
+  applyHandoffCamera,
+  BED_POSITION,
+  CHAIR_POSITION,
+  choreographyPhase,
+  DESK_POSITION,
+  easeInOutCubic,
+  handoffStartTime,
+  lerpWakeCamera,
+  STAND_POSITION,
+  WAKEUP_CAMERA_START,
+  WAKEUP_CAMERA_WAYPOINTS,
+  WAKEUP_FALLBACK_MS,
+  WAKEUP_PHASE,
+} from '@/engine/wakeup/wakeUpCinematic';
 
 export function WakeUpSequence() {
   const [active, setActive] = useState(false);
   const elapsedRef = useRef(0);
   const playerGroupRef = useRef<THREE.Group>(null);
-  const camera = useThree((s) => s.camera);
+  const camera = useThree((s) => s.camera) as THREE.PerspectiveCamera;
   const currentAnimRef = useRef('idle');
   const modelRotationRef = useRef(0);
   const phaseStartTimeRef = useRef(0);
@@ -65,9 +40,15 @@ export function WakeUpSequence() {
   const prevWaypointRef = useRef<{ position: THREE.Vector3; lookAt: THREE.Vector3; fov: number } | null>(null);
   const completedRef = useRef(false);
   const fallbackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const handoffStartedRef = useRef(false);
+  const handoffFromRef = useRef({ position: new THREE.Vector3(), lookAt: new THREE.Vector3(), fov: 54 });
+  const lastFootstepRef = useRef(-1);
+  const audioCueRef = useRef({ terminal: false, sit: false });
 
-  // Idempotent completion → leave cutscene phase, offer the opening quest.
-  const complete = (): void => {
+  const activeRef = useRef(false);
+  const sequenceStartedRef = useRef(false);
+
+  const finishGameplay = (): void => {
     if (completedRef.current) return;
     completedRef.current = true;
     if (fallbackTimerRef.current) {
@@ -75,46 +56,86 @@ export function WakeUpSequence() {
       fallbackTimerRef.current = null;
     }
     setActive(false);
+    activeRef.current = false;
+    handoffStartedRef.current = false;
+    sequenceStartedRef.current = false;
+
     const store = getGameStore();
-    // Continuity: leave the player at the desk where the cutscene ended, so
-    // gameplay resumes seamlessly (no jump back to the bed spawn).
     store.setPlayerPosition([0, 0.01, -1.0]);
+    store.setPlayerRotation(Math.PI);
     store.setCutscene(null, []);
     store.setCurrentNodeId('explore_mode');
     store.setFlag('woke_up', true);
     setCinematicPresentationMode('first_person');
-    store.openNarrativeOverlay('explore_mode', 'story');
     eventBus.emit('intro:wakeup_complete', {});
     eventBus.emit('camera:recenter', {});
+
     setTimeout(() => {
       eventBus.emit('story:quest_available', {
         questId: 'first_reading',
         questTitle: 'Первое чтение',
         questType: 'main',
       });
-    }, 500);
+    }, 600);
+  };
+
+  const beginHandoff = (): void => {
+    if (handoffStartedRef.current) return;
+    handoffStartedRef.current = true;
+    handoffFromRef.current.position.copy(camera.position);
+    const lookDir = new THREE.Vector3();
+    camera.getWorldDirection(lookDir);
+    handoffFromRef.current.lookAt.copy(camera.position).add(lookDir);
+    handoffFromRef.current.fov = camera.fov;
+    eventBus.emit('intro:wakeup_handoff', {});
   };
 
   useEffect(() => {
     const startSequence = () => {
+      if (sequenceStartedRef.current && activeRef.current) return;
+      sequenceStartedRef.current = true;
       setActive(true);
+      activeRef.current = true;
       elapsedRef.current = 0;
       phaseStartTimeRef.current = 0;
       currentWaypointRef.current = 0;
       completedRef.current = false;
+      handoffStartedRef.current = false;
+      lastFootstepRef.current = -1;
+      audioCueRef.current = { terminal: false, sit: false };
       currentAnimRef.current = 'idle';
-      modelRotationRef.current = 0;
+      modelRotationRef.current = Math.PI;
+
+      const store = getGameStore();
+      store.setPlayerPosition([BED_POSITION.x, BED_POSITION.y, BED_POSITION.z]);
+      store.setPlayerRotation(Math.PI);
       setCinematicPresentationMode('third_person');
+
       prevWaypointRef.current = {
-        position: FAR_CORNER.clone(),
-        lookAt: CAMERA_WAYPOINTS[0].lookAt.clone(),
-        fov: CAMERA_WAYPOINTS[0].fov,
+        position: WAKEUP_CAMERA_START.position.clone(),
+        lookAt: WAKEUP_CAMERA_START.lookAt.clone(),
+        fov: WAKEUP_CAMERA_START.fov,
       };
+
+      camera.position.copy(WAKEUP_CAMERA_START.position);
+      camera.lookAt(WAKEUP_CAMERA_START.lookAt);
+      camera.fov = WAKEUP_CAMERA_START.fov;
+      camera.updateProjectionMatrix();
+
+      audioEngine.playStinger('mystery');
+
       if (fallbackTimerRef.current) clearTimeout(fallbackTimerRef.current);
-      fallbackTimerRef.current = setTimeout(complete, FALLBACK_MS);
+      fallbackTimerRef.current = setTimeout(finishGameplay, WAKEUP_FALLBACK_MS);
+    };
+
+    const skipToEnd = () => {
+      if (!activeRef.current || completedRef.current) return;
+      elapsedRef.current = handoffStartTime();
+      beginHandoff();
     };
 
     const unsubEvent = eventBus.on('intro:wakeup_sequence', startSequence);
+    const unsubSkip = eventBus.on('intro:wakeup_skip', skipToEnd);
 
     if (getGameStore().activeCutsceneId === 'intro_wakeup') {
       startSequence();
@@ -131,93 +152,121 @@ export function WakeUpSequence() {
 
     return () => {
       unsubEvent();
+      unsubSkip();
       unsubStore();
       if (fallbackTimerRef.current) clearTimeout(fallbackTimerRef.current);
     };
-  }, []);
+  }, [camera]);
 
   useFrameTick('misc', ({ delta }) => {
     if (!active) return;
     elapsedRef.current += delta;
+    const elapsed = elapsedRef.current;
 
-    // ── Camera ──
+    if (!audioCueRef.current.terminal && elapsed > 0.35) {
+      audioCueRef.current.terminal = true;
+      audioEngine.playSfx('notify');
+    }
+
+    const handoffAt = handoffStartTime();
+    if (elapsed >= handoffAt) {
+      if (!handoffStartedRef.current) beginHandoff();
+      const ht = (elapsed - handoffAt) / WAKEUP_PHASE.handoff;
+      applyHandoffCamera(
+        ht,
+        handoffFromRef.current.position,
+        handoffFromRef.current.lookAt,
+        handoffFromRef.current.fov,
+        camera,
+      );
+      currentAnimRef.current = 'idle';
+      if (ht >= 1) finishGameplay();
+      return;
+    }
+
+    // ── Camera waypoints (pre-handoff) ──
     let acc = 0;
     let wpIndex = 0;
-    for (let i = 0; i < CAMERA_WAYPOINTS.length; i++) {
-      acc += CAMERA_WAYPOINTS[i].duration;
-      if (elapsedRef.current < acc) {
+    for (let i = 0; i < WAKEUP_CAMERA_WAYPOINTS.length; i++) {
+      acc += WAKEUP_CAMERA_WAYPOINTS[i].duration;
+      if (elapsed < acc) {
         wpIndex = i;
         break;
       }
-      wpIndex = Math.min(i, CAMERA_WAYPOINTS.length - 1);
+      wpIndex = Math.min(i, WAKEUP_CAMERA_WAYPOINTS.length - 1);
     }
+
     if (wpIndex !== currentWaypointRef.current) {
-      const prevIdx = Math.min(currentWaypointRef.current, CAMERA_WAYPOINTS.length - 1);
+      const prevIdx = Math.min(currentWaypointRef.current, WAKEUP_CAMERA_WAYPOINTS.length - 1);
       prevWaypointRef.current = {
-        position: CAMERA_WAYPOINTS[prevIdx].position.clone(),
-        lookAt: CAMERA_WAYPOINTS[prevIdx].lookAt.clone(),
-        fov: CAMERA_WAYPOINTS[prevIdx].fov,
+        position: WAKEUP_CAMERA_WAYPOINTS[prevIdx].position.clone(),
+        lookAt: WAKEUP_CAMERA_WAYPOINTS[prevIdx].lookAt.clone(),
+        fov: WAKEUP_CAMERA_WAYPOINTS[prevIdx].fov,
       };
       currentWaypointRef.current = wpIndex;
       let phaseStart = 0;
-      for (let i = 0; i < wpIndex; i++) phaseStart += CAMERA_WAYPOINTS[i].duration;
+      for (let i = 0; i < wpIndex; i++) phaseStart += WAKEUP_CAMERA_WAYPOINTS[i].duration;
       phaseStartTimeRef.current = phaseStart;
     }
-    const wp = CAMERA_WAYPOINTS[wpIndex];
+
+    const wp = WAKEUP_CAMERA_WAYPOINTS[wpIndex];
     const prev = prevWaypointRef.current;
-    const t = Math.min(1, (elapsedRef.current - phaseStartTimeRef.current) / wp.duration);
-    const ease = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+    const segT = Math.min(1, (elapsed - phaseStartTimeRef.current) / wp.duration);
+    const lookTarget = new THREE.Vector3();
+
     if (prev) {
-      camera.position.lerpVectors(prev.position, wp.position, ease);
-      const lookTarget = new THREE.Vector3().lerpVectors(prev.lookAt, wp.lookAt, ease);
-      clampToRoom(camera.position);
+      camera.fov = lerpWakeCamera(prev.position, prev.lookAt, prev.fov, wp, segT, camera.position, lookTarget);
       camera.lookAt(lookTarget);
     } else {
-      camera.position.copy(clampToRoom(wp.position.clone()));
+      camera.position.copy(wp.position);
       camera.lookAt(wp.lookAt);
+      camera.fov = wp.fov;
     }
-    (camera as THREE.PerspectiveCamera).fov = wp.fov;
     camera.updateProjectionMatrix();
 
-    // ── Character choreography (upright throughout — no horizontal pose) ──
+    // ── Character choreography ──
     const group = playerGroupRef.current;
     if (group) {
-      const total = elapsedRef.current;
-      const d = PHASE_DURATIONS;
-      if (total < d.rise) {
-        // Sit up on the bed edge and turn toward the room (slight forward lean).
-        const pt = total / d.rise;
-        const e = pt < 0.5 ? 2 * pt * pt : 1 - Math.pow(-2 * pt + 2, 2) / 2;
+      const { phase, localT } = choreographyPhase(elapsed);
+      const e = easeInOutCubic(localT);
+
+      if (phase === 'terminal') {
         group.position.copy(BED_POSITION);
-        group.position.y = 0.45 - 0.44 * e;
-        group.rotation.set(0.35 * (1 - e), 0.5 * (1 - e) - 0.0 * e, 0);
+        group.position.y = 0.42;
+        group.rotation.set(0.55, 0.35, 0);
         currentAnimRef.current = 'idle';
-      } else if (total < d.rise + d.standing) {
-        const pt = (total - d.rise) / d.standing;
-        const e = pt < 0.5 ? 2 * pt * pt : 1 - Math.pow(-2 * pt + 2, 2) / 2;
+      } else if (phase === 'bed') {
+        group.position.copy(BED_POSITION);
+        group.position.y = 0.42 - 0.4 * e;
+        group.rotation.set(0.4 * (1 - e), 0.45 * (1 - e), 0);
+        currentAnimRef.current = 'idle';
+      } else if (phase === 'stand') {
         group.position.lerpVectors(BED_POSITION, STAND_POSITION, e);
         group.position.y = 0.01;
-        group.rotation.set(0, 0, 0);
+        group.rotation.set(0, Math.PI * 0.85 * (1 - e) + Math.PI * e, 0);
         currentAnimRef.current = 'idle';
-      } else if (total < d.rise + d.standing + d.walking) {
-        const pt = (total - d.rise - d.standing) / d.walking;
-        const e = pt < 0.5 ? 2 * pt * pt : 1 - Math.pow(-2 * pt + 2, 2) / 2;
+      } else if (phase === 'walk') {
         group.position.lerpVectors(STAND_POSITION, DESK_POSITION, e);
         group.position.y = 0.01;
         group.rotation.set(0, Math.PI, 0);
         currentAnimRef.current = 'walk';
+        const step = Math.floor(localT * 5);
+        if (step !== lastFootstepRef.current) {
+          lastFootstepRef.current = step;
+          audioEngine.playFootstep('wood');
+        }
       } else {
-        const pt = Math.min(1, (total - d.rise - d.standing - d.walking) / (d.sitting + d.settle));
-        const e = pt < 0.5 ? 2 * pt * pt : 1 - Math.pow(-2 * pt + 2, 2) / 2;
         group.position.lerpVectors(DESK_POSITION, CHAIR_POSITION, e);
         group.position.y = 0.01;
         group.rotation.set(0, Math.PI, 0);
         currentAnimRef.current = 'idle';
+        if (!audioCueRef.current.sit && localT > 0.55) {
+          audioCueRef.current.sit = true;
+          audioEngine.playSfx('ui_open');
+        }
       }
       modelRotationRef.current = group.rotation.y;
     }
-
-    if (elapsedRef.current >= TOTAL_DURATION) complete();
   });
 
   if (!active) return null;

@@ -13,7 +13,7 @@ import {
   type ActiveTTLFlag,
   type ActiveTTLFlagMap,
 } from '../activeTTLFlags';
-import { MAX_STORY_ACT } from '@/data/storyActs';
+import { MAX_STORY_ACT } from '@/data/constants';
 import { hasVisitedNode } from '../visitedNodesIndex';
 
 /* ─── Slice types ─── */

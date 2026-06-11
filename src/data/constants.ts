@@ -20,6 +20,9 @@ export const KARMA_HIGH_THRESHOLD = 65;
 /** Karma at or below this value is considered "low" */
 export const KARMA_LOW_THRESHOLD = 35;
 
+/** Main story acts (act1–act7). Must stay in sync with STORY_PACK_ORDER minus epilogue packs. */
+export const MAX_STORY_ACT = 7;
+
 /** Target visual height of the player GLB model in meters */
 export const PLAYER_GLB_TARGET_VISUAL_METERS = 1.75;
 

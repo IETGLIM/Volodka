@@ -16,6 +16,7 @@ import {
   storePatchFromSave,
 } from '../persistedState';
 import { resetGuidedStoryManager } from '@/engine/GuidedStoryManager';
+import { resetCinematicPresentation } from '@/engine/camera/cinematicPresentation';
 import { clearAutoCloseTimers } from './explorationSlice';
 import { resolveSaveFromStorage, writeSaveToLocalStorage } from './saveStorage';
 
@@ -52,6 +53,7 @@ export const createSaveSlice: StateCreator<
 
     set(createDefaultResetState());
     resetGuidedStoryManager();
+    resetCinematicPresentation();
   },
 
   saveGame: (options) => {

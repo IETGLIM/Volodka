@@ -26,6 +26,7 @@ import { DayNightCycleIndicator } from '../DayNightCycleIndicator';
 import { FloatingTextLayer } from '../FloatingText';
 import { ScreenEffects } from '../ScreenEffects';
 import { CutsceneOverlay } from '@/components/game/CutsceneOverlay';
+import { IntroWakeOverlay } from '@/components/game/IntroWakeOverlay';
 import { PoetryPowerBar } from '@/components/game/PoetryPowerBar';
 import { PoemPowerEffect } from '@/components/game/PoemPowerEffect';
 import { DirectionalDamageIndicator } from '@/components/game/DirectionalDamageIndicator';
@@ -135,6 +136,7 @@ export function OrchestratorGameplayLayer({
 
       <FloatingTextLayer />
       <ScreenEffects />
+      <IntroWakeOverlay />
       <CutsceneOverlay />
 
       <AnimatePresence>

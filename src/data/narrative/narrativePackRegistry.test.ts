@@ -10,7 +10,9 @@ import {
   resetNarrativePackRegistryForTests,
   hasStoryNode,
   mergeStoryNodesIntoCacheForTests,
+  STORY_PACK_ORDER,
 } from './narrativePackRegistry';
+import { MAX_STORY_ACT } from '@/data/constants';
 describe('narrativePackRegistry', () => {
   beforeEach(() => {
     resetNarrativePackRegistryForTests();
@@ -66,5 +68,10 @@ describe('narrativePackRegistry', () => {
     );
     expect(getStoryNodesCache().dup_node?.text).toBe('second');
     warn.mockRestore();
+  });
+
+  it('MAX_STORY_ACT matches main story packs (excluding chk epilogue)', () => {
+    const mainActs = STORY_PACK_ORDER.filter((id) => id !== 'chk').length;
+    expect(MAX_STORY_ACT).toBe(mainActs);
   });
 });
