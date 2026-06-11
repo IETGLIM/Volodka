@@ -226,6 +226,7 @@ export function CompassHUD() {
           exit={{ opacity: 0, y: -20 }}
           transition={{ duration: 0.3, ease: 'easeOut' }}
           className="compass-hud fixed left-1/2 -translate-x-1/2 pointer-events-none"
+          data-exploration-ui
           style={{ top: explorationCompassTopPx(), zIndex: UI_LAYERS.HUD + 1, ...quietStyle }}
         >
           {/* Glass-morphism container */}

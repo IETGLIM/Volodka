@@ -140,6 +140,7 @@ export function InteractionHintPopup() {
           exit={{ y: 10, opacity: 0 }}
           transition={{ duration: 0.25, ease: 'easeOut' }}
           className="interaction-hint-popup fixed left-1/2 -translate-x-1/2 pointer-events-none select-none"
+          data-exploration-ui
           style={{ zIndex: UI_LAYERS.HUD, bottom: bottomInteractPromptPx() }}
         >
           <div

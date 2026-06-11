@@ -199,6 +199,7 @@ export function StoryGuidanceHUD() {
         exit={{ opacity: 0, y: -10 }}
         transition={{ duration: 0.3, ease: 'easeOut' }}
         className="fixed left-1/2 -translate-x-1/2 pointer-events-auto"
+        data-exploration-ui
         style={{
           top: topPx,
           zIndex: UI_LAYERS.HUD + 2,

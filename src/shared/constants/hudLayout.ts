@@ -25,7 +25,13 @@ export const EXPLORATION_HUD_LAYOUT = {
   BOTTOM_AUTOSAVE: 16,
   BOTTOM_QUEST_TOAST: 76,
   RIGHT_INSET_COMPACT: 16,
+  /** Reserve above ExplorationMobileHud column (portrait controls). */
+  MOBILE_BOTTOM_CONTROLS_RESERVE: 108,
 } as const;
+
+function mobileBottomReserve(isMobile: boolean): number {
+  return isMobile ? EXPLORATION_HUD_LAYOUT.MOBILE_BOTTOM_CONTROLS_RESERVE : 0;
+}
 
 export function explorationCompassTopPx(): number {
   return EXPLORATION_HUD_LAYOUT.TOP_BAR_HEIGHT + EXPLORATION_HUD_LAYOUT.SLOT_GAP;
@@ -79,12 +85,12 @@ export function bottomInteractPromptPx(): number {
   return EXPLORATION_HUD_LAYOUT.BOTTOM_INTERACT_PROMPT;
 }
 
-export function bottomAutoSavePx(): number {
-  return EXPLORATION_HUD_LAYOUT.BOTTOM_AUTOSAVE;
+export function bottomAutoSavePx(isMobile = false): number {
+  return EXPLORATION_HUD_LAYOUT.BOTTOM_AUTOSAVE + mobileBottomReserve(isMobile);
 }
 
-export function bottomQuestToastPx(): number {
-  return EXPLORATION_HUD_LAYOUT.BOTTOM_QUEST_TOAST;
+export function bottomQuestToastPx(isMobile = false): number {
+  return EXPLORATION_HUD_LAYOUT.BOTTOM_QUEST_TOAST + mobileBottomReserve(isMobile);
 }
 
 export function bottomAmbientMixerPx(): number {

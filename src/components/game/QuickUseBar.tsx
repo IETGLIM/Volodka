@@ -191,6 +191,7 @@ export function QuickUseBar() {
     <AnimatePresence>
       <motion.div
         key="quick-use-bar"
+        data-exploration-ui
         className="fixed left-1/2 -translate-x-1/2 pointer-events-auto"
         style={{ zIndex: UI_LAYERS.HUD, bottom: bottomQuickUsePx(), ...quietStyle }}
         initial={{ opacity: 0, y: 16 }}

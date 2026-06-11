@@ -12,6 +12,7 @@ import { eventBus } from '@/engine/EventBus';
 import { useAutoSaveTimestamps } from '@/store/selectors';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { bottomAutoSavePx } from '@/shared/constants/hudLayout';
+import { useMobileDetection } from './orchestrator/useMobileDetection';
 
 /* ─── Types ─── */
 
@@ -49,7 +50,7 @@ function formatRelativeTime(ms: number): string {
 /** Very short label for the collapsed mini-icon */
 function formatShortTime(ms: number): string {
   const seconds = Math.floor(ms / 1000);
-  if (seconds < 5) return 'now';
+  if (seconds < 5) return 'сейчас';
   if (seconds < 60) return `${seconds}с`;
   const minutes = Math.floor(seconds / 60);
   if (minutes < 60) return `${minutes}м`;
@@ -81,6 +82,7 @@ const ACCENT = {
 /* ─── Component ─── */
 
 export function AutoSaveIndicator() {
+  const isMobile = useMobileDetection();
   const [phase, setPhase] = useState<Phase>('idle');
   const [source, setSource] = useState<SaveSource>('auto');
   const [lastSaveAt, setLastSaveAt] = useState<number | null>(null);
@@ -156,7 +158,8 @@ export function AutoSaveIndicator() {
   return (
     <div
       className="fixed right-3 sm:right-4 pointer-events-none"
-      style={{ bottom: bottomAutoSavePx(), zIndex: UI_LAYERS.TOASTS }}
+      data-exploration-ui
+      style={{ bottom: bottomAutoSavePx(isMobile), zIndex: UI_LAYERS.TOASTS }}
     >
       <AnimatePresence mode="wait">
         {/* ── Full notification (saving / saved) ── */}

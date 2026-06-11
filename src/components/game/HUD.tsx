@@ -711,7 +711,7 @@ export function HUD(props: HUDProps) {
                           icon={action.icon}
                           label={action.label}
                           shortcut={action.shortcut}
-                          badge={action.label === 'Задания' ? questNotificationCount : undefined}
+                          badge={action.label === 'Доска заданий' ? questNotificationCount : undefined}
                           onClick={() => { setMoreMenuOpen(false); action.onClick?.(); }}
                         />
                       ))}

@@ -218,6 +218,7 @@ export function QuickAccessToolbar() {
       {mode === 'exploration' && (
         <motion.div
           key="quick-access-toolbar"
+          data-exploration-ui
           className="fixed left-1/2 -translate-x-1/2 pointer-events-auto"
           style={{ zIndex: UI_LAYERS.HUD, bottom: bottomToolbarPx(), ...quietStyle }}
           initial={{ opacity: 0, y: 20 }}

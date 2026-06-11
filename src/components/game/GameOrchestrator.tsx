@@ -19,7 +19,7 @@ export function GameOrchestrator() {
       <CyberpunkThemeProvider>
         <PanelStackProvider stack={panels.panelStack}>
           <div
-            className={`fixed inset-0 bg-black overflow-hidden ${runtime.isDialogueActive ? 'dialogue-focus-active' : ''}`}
+            className={`fixed inset-0 bg-black overflow-hidden ${runtime.isDialogueActive || runtime.isStoryActive ? 'dialogue-focus-active' : ''}`}
             style={{ touchAction: 'none' }}
           >
             <OrchestratorCanvasLayer

@@ -231,7 +231,7 @@ function NotificationCard({ entry, index }: { entry: NotificationEntry; index: n
 export function EventNotificationPopup() {
   const [notifications, setNotifications] = useState<NotificationEntry[]>([]);
   // High-priority slot claim — event popups preempt loot/crafting/etc.
-  useNotificationSlot('event', NOTIFY_PRIORITY.event, notifications.length > 0);
+  const slotGranted = useNotificationSlot('event', NOTIFY_PRIORITY.event, notifications.length > 0);
   const timersMap = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
   const timers = timersMap.current;
 
@@ -311,11 +311,13 @@ export function EventNotificationPopup() {
 
   const mode = useGamePhase();
   if (mode === 'menu' || mode === 'intro') return null;
+  if (!slotGranted) return null;
 
   /* ── Render ── */
   return (
     <div
       className="fixed right-3 sm:right-4 pointer-events-none flex flex-col gap-2"
+      data-exploration-ui
       style={{ top: explorationEventToastTopPx(), zIndex: UI_LAYERS.TOASTS }}
     >
       <AnimatePresence mode="popLayout">

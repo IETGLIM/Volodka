@@ -10,12 +10,13 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { useNotificationSlot, NOTIFY_PRIORITY } from '@/hooks/useNotificationSlot';
 import { bottomQuestToastPx } from '@/shared/constants/hudLayout';
+import { useMobileDetection } from './orchestrator/useMobileDetection';
 import { eventBus } from '@/engine/EventBus'
 import { AriaLiveRegion } from '@/components/a11y/AriaLiveRegion'
 import { QUEST_DEFINITIONS } from '@/data/quests'
 import { useGamePhase } from '@/store/selectors'
 import { useQuests } from '@/store/selectors'
-import type { QuestState, QuestDefinition } from '@/shared/types/game'
+import type { QuestState } from '@/shared/types/game'
 import { formatQuestCompletionRewards } from '@/shared/utils/questRewards'
 
 /* ─── Notification types ─── */
@@ -392,8 +393,9 @@ export function QuestNotificationSystem() {
   const [notifications, setNotifications] = useState<QuestNotification[]>([])
   const shownIds = useRef(new Set<string>())
   const notifCounter = useRef(0)
+  const isMobile = useMobileDetection();
   // High-priority slot claim — story/quest cards preempt loot/crafting/etc.
-  useNotificationSlot('quest', NOTIFY_PRIORITY.quest, notifications.length > 0)
+  const slotGranted = useNotificationSlot('quest', NOTIFY_PRIORITY.quest, notifications.length > 0);
 
   /* ── Dismiss handler ── */
   const dismissNotification = useCallback((id: string) => {
@@ -419,11 +421,11 @@ export function QuestNotificationSystem() {
     })
   }, [])
 
-  /* ── Quest complete click handler (placeholder) ── */
-  const handleQuestCompleteClick = useCallback((_questId: string) => {
-    // This would open a QuestCompleteDialog in the full implementation
-    // For now, just dismiss
-  }, [])
+  /* ── Quest complete click → reward dialog ── */
+  const handleQuestCompleteClick = useCallback((questId: string) => {
+    const def = QUEST_DEFINITIONS.find((d) => d.id === questId);
+    eventBus.emit('quest:completed', { questId, npcId: def?.questGiverNpcId });
+  }, []);
 
   /* ── Watch gameStore quest state changes ── */
   const quests = useQuests()
@@ -501,23 +503,7 @@ export function QuestNotificationSystem() {
   useEffect(() => {
     const unsubs: (() => void)[] = []
 
-    // Quest accepted event
-    unsubs.push(
-      eventBus.on('quest:accepted', ({ questId }) => {
-        const def = QUEST_DEFINITIONS.find((d) => d.id === questId)
-        if (!def) return
-
-        // Find NPC name from linked story or dialogue
-        const npcName = getNPCNameForQuest(def)
-
-        addNotification({
-          type: 'available',
-          questId,
-          questTitle: def.title,
-          npcName,
-        })
-      }),
-    )
+    // quest:accepted — covered by store watcher (inactive → active, type 'started')
 
     // Quest objective updated
     unsubs.push(
@@ -541,20 +527,7 @@ export function QuestNotificationSystem() {
       }),
     )
 
-    // Quest completed event
-    unsubs.push(
-      eventBus.on('quest:completed', ({ questId }) => {
-        const def = QUEST_DEFINITIONS.find((d) => d.id === questId)
-        if (!def) return
-
-        addNotification({
-          type: 'complete',
-          questId,
-          questTitle: def.title,
-          rewards: formatQuestCompletionRewards(def),
-        })
-      }),
-    )
+    // quest:completed toast — covered by store watcher (active → completed)
 
     // Quest failed event
     unsubs.push(
@@ -589,6 +562,7 @@ export function QuestNotificationSystem() {
   /* ── Only show in gameplay modes ── */
   const mode = useGamePhase()
   if (mode === 'menu' || mode === 'intro') return null
+  if (!slotGranted) return null
 
   const visibleNotifs = notifications.slice(-MAX_VISIBLE)
   const latestNotif = visibleNotifs[visibleNotifs.length - 1]
@@ -599,7 +573,8 @@ export function QuestNotificationSystem() {
   return (
     <div
       className="fixed right-3 sm:right-4 flex flex-col-reverse items-end gap-2 pointer-events-none"
-      style={{ bottom: bottomQuestToastPx(), zIndex: UI_LAYERS.TOASTS, pointerEvents: 'none' }}
+      data-exploration-ui
+      style={{ bottom: bottomQuestToastPx(isMobile), zIndex: UI_LAYERS.TOASTS, pointerEvents: 'none' }}
     >
       <AriaLiveRegion message={latestNotifMessage} priority="polite" />
       <AnimatePresence mode="popLayout">
@@ -614,31 +589,4 @@ export function QuestNotificationSystem() {
       </AnimatePresence>
     </div>
   )
-}
-
-/* ─── Helper: get NPC name from quest definition ─── */
-
-function getNPCNameForQuest(def: QuestDefinition): string | undefined {
-  // Try to derive NPC name from objectives that involve talking to an NPC
-  for (const obj of def.objectives) {
-    if (obj.type === 'npc_talked' && obj.target) {
-      // Map common NPC IDs to names
-      const npcNames: Record<string, string> = {
-        albert: 'Альберту',
-        zarema: 'Зареме',
-        maria: 'Виктории',
-        office_alexander: 'Александру',
-        office_colleague: 'Коллеге',
-        office_dmitry: 'Дмитрию',
-        cafe_barista: 'Баристе',
-        vera: 'Вере',
-        sergey: 'Сергею',
-        lena: 'Лене',
-        oleg: 'Олегу',
-        kate: 'Кате',
-      }
-      return npcNames[obj.target] || obj.target
-    }
-  }
-  return undefined
 }
