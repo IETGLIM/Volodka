@@ -1,6 +1,6 @@
 # Архитектура — ВОЛОДЬКА RPG
 
-> Карта систем проекта для инженеров. Актуально для v3.2.0.
+> Карта систем проекта для инженеров. Актуально для v3.4.0.
 
 ## Слои
 
@@ -59,6 +59,9 @@ Kinematic Character Controller (Rapier): capsule r=0.3, autostep 30 см,
 snap-to-ground 15 см, `applyImpulsesToDynamicBodies` (масса 75) — поэтому
 `DynamicProps` (банки/ящики) толкаются без доп. кода. Fallback-цепочка:
 Rapier WASM упал → SimplePlayer (clamp по границам, без коллизий).
+Cinematic beats (wake-up, story cutscenes, scene-transition hold) показывают
+`CesiumPlayerModel` от 3-го лица; exploration — FP-камера + GLB-руки
+(`cinematicPresentation.ts`, `FollowCamera.tsx`).
 
 ### Бой и крипы
 Бой пошаговый (`CombatSystem.startCombat(enemyType)`), 11 типов врагов.

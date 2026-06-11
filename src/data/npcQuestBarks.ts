@@ -10,6 +10,17 @@ export interface NpcQuestBarkEntry {
 }
 
 export const NPC_QUEST_BARKS: Record<string, NpcQuestBarkEntry[]> = {
+  zarema: [
+    {
+      questId: 'first_reading',
+      text: 'Ты проснулся — мир снова серый. Стихи не на полке: они прячутся там, где гильдия не ищет. Начни со стола.',
+    },
+    {
+      questId: 'incident_scroll_4729',
+      objectiveId: 'talk_alexander',
+      text: 'Гильдия зовёт — но сначала выпей чаю. Голодный поэт код не взламывает.',
+    },
+  ],
   fisherman_trofim: [
     {
       questId: 'pier_watchman_key',
@@ -30,6 +41,10 @@ export const NPC_QUEST_BARKS: Record<string, NpcQuestBarkEntry[]> = {
       questId: 'thread_of_18_lines',
       objectiveId: 'trace_progress7',
       text: 'Третья нить — под полом. Гул «Прогресс-7» ты ещё не дослушал. Без него финал будет другим.',
+    },
+    {
+      questId: 'machine_confession',
+      text: 'Ключ от подвала — не пропуск. Это обещание слушать, а не ломать. «Заря-М» помнит, кто держал слово.',
     },
   ],
   maria: [

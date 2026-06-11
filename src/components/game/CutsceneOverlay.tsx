@@ -17,7 +17,13 @@ import { eventBus } from '@/engine/EventBus';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { useGameStore } from '@/store/gameStore';
 import { readGamePhase, clearGameplayPhaseFlags } from '@/shared/gamePhase';
+import { setCinematicPresentationMode } from '@/engine/camera/cinematicPresentation';
 import type { CutsceneDef } from '@/data/cutscenes';
+
+function finishCutscenePresentation(): void {
+  setCinematicPresentationMode('first_person');
+  eventBus.emit('camera:recenter', {});
+}
 
 // ════════════════════════════════════════════════════════════════
 //  EMBER PARTICLES — drifting upward (reused from IntroScreen)
@@ -257,6 +263,7 @@ export function CutsceneOverlay() {
     // 4. Emit events so camera system & other listeners clean up
     eventBus.emit('cutscene:overlay_end', {});
     eventBus.emit('camera:cutscene_end', {});
+    finishCutscenePresentation();
   }, [clearTimer, clearSkipDelayTimer]);
 
   useEffect(() => {
@@ -295,6 +302,7 @@ export function CutsceneOverlay() {
           clearGameplayPhaseFlags(store);
         }
         eventBus.emit('camera:cutscene_end', {});
+        finishCutscenePresentation();
 
         timerRef.current = null;
       }, payload.durationMs);

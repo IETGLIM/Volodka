@@ -80,7 +80,10 @@ export function WakeUpSequence() {
     // gameplay resumes seamlessly (no jump back to the bed spawn).
     store.setPlayerPosition([0, 0.01, -1.0]);
     store.setCutscene(null, []);
+    store.setCurrentNodeId('explore_mode');
+    store.setFlag('woke_up', true);
     setCinematicPresentationMode('first_person');
+    store.openNarrativeOverlay('explore_mode', 'story');
     eventBus.emit('intro:wakeup_complete', {});
     eventBus.emit('camera:recenter', {});
     setTimeout(() => {

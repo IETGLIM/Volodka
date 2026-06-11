@@ -647,6 +647,41 @@ export const STORY_NODES_ACT2: Record<string, StoryNode> = {
     ],
   },
 
+  pier_explore_mode: {
+    id: 'pier_explore_mode',
+    text: 'Пирс у речи — костёр в бочке, лунная дорожка на воде, камыши и старая лодка килем вверх. Трофим сторожит перила, будто поплавок. Здесь ЧК говорит тише, чем в лесу: река слышит всё и хранит молчание.',
+    speaker: 'narrator',
+    sceneId: 'river_pier',
+    choices: [
+      {
+        text: 'Подойти к Трофиму у перил — [E] у NPC',
+        next: 'pier_explore_mode',
+        effects: [{ type: 'addSkill', skill: 'intuition', value: 1 }],
+      },
+      {
+        text: 'Осмотреть лодку на берегу',
+        next: 'pier_explore_mode',
+        effects: [
+          { type: 'setFlag', flag: 'pier_boat_hint', flagValue: true },
+          { type: 'addSkill', skill: 'intuition', value: 1 },
+        ],
+      },
+      {
+        text: 'Погреться у костра — подумать о ключе от «Хрома-М»',
+        next: 'pier_explore_mode',
+        condition: { flag: 'visited_river_pier' },
+        effects: [{ type: 'addStat', stat: 'stress', value: -2 }],
+      },
+      {
+        text: 'Идти к заброшенному заводу — если ключ уже есть',
+        next: 'abandoned_workshop',
+        condition: { flag: 'factory_unlocked' },
+        effects: [{ type: 'addStat', stat: 'stress', value: 3 }],
+      },
+      { text: 'Свободно исследовать пирс', next: 'pier_explore_mode' },
+    ],
+  },
+
   act2_closing: {
     id: 'act2_closing',
     text: 'Ты выходишь из кафе. Снег ложится на плечи, на лицо, на ладони. Город затихает — редкий момент тишины. Ты знаешь теперь: Сеть реальна, Хранилище существует, Протокол Забвения — угроза. Впереди — борьба. Но сегодня — сегодня ты просто идёшь домой сквозь снег, и строчки складываются сами, как будто город дышит тобой.',

@@ -1334,5 +1334,77 @@ export const STORY_NODES_ACT5: Record<string, StoryNode> = {
     ],
   },
 
+  factory_explore_mode: {
+    id: 'factory_explore_mode',
+    text: 'Заброшенный цех «Хром-М» — ржавые станки, капающие трубы, эхо шагов под высоким потолком. Лестница в подвал тянет холодом и гулом на 50 герц. Где-то внизу «Заря-М» не спит.',
+    speaker: 'narrator',
+    sceneId: 'abandoned_factory',
+    choices: [
+      {
+        text: 'Спуститься в подвал — гул знаком',
+        next: 'factory_basement_familiar',
+        condition: { flag: 'entered_factory_basement' },
+        effects: [{ type: 'addStat', stat: 'stress', value: 5 }],
+      },
+      {
+        text: 'Спуститься в подвал к «Заре-М»',
+        next: 'factory_basement',
+        effects: [
+          { type: 'addStat', stat: 'stress', value: 8 },
+          { type: 'setFlag', flag: 'entered_factory_basement', flagValue: true },
+        ],
+      },
+      {
+        text: 'Осмотреть цех — старые документы',
+        next: 'factory_documents',
+        effects: [{ type: 'setFlag', flag: 'searched_factory_floor', flagValue: true }],
+      },
+      {
+        text: 'Позвать — есть ли тут кто-нибудь?',
+        next: 'factory_residents',
+        effects: [{ type: 'addStat', stat: 'stress', value: 4 }],
+      },
+      { text: 'Свободно исследовать цех', next: 'factory_explore_mode' },
+    ],
+  },
+
+  basement_explore_mode: {
+    id: 'basement_explore_mode',
+    text: 'Подвал завода — красный аварийный свет, ряды стоек и монолит «Заря-М», пульсирующий зелёным. Баба Зина молчит у кириллической клавиатуры. Терминал «Прогресс-7» у входа ждёт кода. Трофим предупреждал: сначала слушай — потом трогай.',
+    speaker: 'narrator',
+    sceneId: 'factory_basement',
+    choices: [
+      {
+        text: 'Поговорить с Бабой Зиной',
+        next: 'factory_basement_familiar',
+        condition: { flag: 'met_baba_zina' },
+        effects: [{ type: 'addKarma', value: 2 }],
+      },
+      {
+        text: 'Слушать «Зарю-М» — нить из 18 строк',
+        next: 'machine_confession_scene_thread',
+        condition: { flag: 'thread_18_complete' },
+        effects: [{ type: 'setFlag', flag: 'zarya_confession_requested', flagValue: true }],
+      },
+      {
+        text: 'Слушать «Зарю-М» — ты уже слышал гул',
+        next: 'machine_confession_scene_familiar',
+        condition: { flag: 'zarya_monolith_examined' },
+        effects: [{ type: 'setFlag', flag: 'zarya_confession_requested', flagValue: true }],
+      },
+      {
+        text: 'Слушать «Зарю-М» — исповедь машины',
+        next: 'machine_confession_scene',
+        condition: { flag: 'zarya_confession_requested' },
+      },
+      {
+        text: 'Подняться в цех',
+        next: 'factory_explore_mode',
+        effects: [{ type: 'addStat', stat: 'energy', value: 3 }],
+      },
+      { text: 'Свободно исследовать подвал', next: 'basement_explore_mode' },
+    ],
+  },
+
 
 };
