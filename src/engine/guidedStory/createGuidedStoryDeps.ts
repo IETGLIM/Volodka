@@ -11,8 +11,10 @@ import { createSnapshotStoryGraphAccess } from '@/engine/guidedStory/guidedStory
 import type {
   GuidedStoryDeps,
   GuidedStorySnapshot,
+  GuidanceInfo,
 } from '@/engine/guidedStory/guidedStoryTypes';
 import { STORY_FLAG_TO_NODE_ID } from '@/data/goldenPath';
+import type { QuestDefinition } from '@/shared/types/game';
 
 export function toGuidedStorySnapshot(store: GameStoreSnapshot): GuidedStorySnapshot {
   return {
@@ -30,24 +32,68 @@ export function toGuidedStorySnapshot(store: GameStoreSnapshot): GuidedStorySnap
   };
 }
 
-export function createDefaultGuidedStoryDeps(): GuidedStoryDeps {
-  const getSnapshot = () => toGuidedStorySnapshot(getGameSnapshot());
+/** Live snapshot for GuidedStoryManager (top-level to avoid tsx __name injection). */
+export function readGuidedStorySnapshot(): GuidedStorySnapshot {
+  return toGuidedStorySnapshot(getGameSnapshot());
+}
 
+function advanceStoryAct(): void {
+  dispatchGameAction({ type: 'story/advanceAct' });
+}
+
+function activateStoryQuest(questId: string): void {
+  dispatchGameAction({ type: 'quest/activate', questId });
+}
+
+function emitStoryActTransition(payload: {
+  fromAct: number;
+  toAct: number;
+  chapterTitle: string;
+}): void {
+  eventBus.emit('story:act_transition', payload);
+}
+
+function emitStoryGuidanceUpdate(guidance: GuidanceInfo): void {
+  eventBus.emit('story:guidance_update', guidance);
+}
+
+function emitStoryQuestAvailable(payload: {
+  questId: string;
+  questTitle: string;
+  questType: QuestDefinition['questType'];
+  npcId?: string;
+}): void {
+  eventBus.emit('story:quest_available', payload);
+}
+
+function emitStoryQuestChainUnlock(payload: {
+  completedQuestId: string;
+  completedQuestTitle: string;
+  nextQuestId: string;
+  nextQuestTitle: string;
+  nextQuestType: QuestDefinition['questType'];
+  npcId?: string;
+  actNumber: number;
+}): void {
+  eventBus.emit('story:quest_chain_unlock', payload);
+}
+
+export function createDefaultGuidedStoryDeps(): GuidedStoryDeps {
   return {
-    getSnapshot,
+    getSnapshot: readGuidedStorySnapshot,
     path: getGuidedStoryPathConfig(),
     npc: { findNpcById },
     quests: { areDependenciesMet },
-    graph: createSnapshotStoryGraphAccess(getSnapshot),
+    graph: createSnapshotStoryGraphAccess(readGuidedStorySnapshot),
     actions: {
-      advanceAct: () => dispatchGameAction({ type: 'story/advanceAct' }),
-      activateQuest: (questId) => dispatchGameAction({ type: 'quest/activate', questId }),
+      advanceAct: advanceStoryAct,
+      activateQuest: activateStoryQuest,
     },
     events: {
-      emitActTransition: (payload) => eventBus.emit('story:act_transition', payload),
-      emitGuidanceUpdate: (guidance) => eventBus.emit('story:guidance_update', guidance),
-      emitQuestAvailable: (payload) => eventBus.emit('story:quest_available', payload),
-      emitQuestChainUnlock: (payload) => eventBus.emit('story:quest_chain_unlock', payload),
+      emitActTransition: emitStoryActTransition,
+      emitGuidanceUpdate: emitStoryGuidanceUpdate,
+      emitQuestAvailable: emitStoryQuestAvailable,
+      emitQuestChainUnlock: emitStoryQuestChainUnlock,
     },
   };
 }

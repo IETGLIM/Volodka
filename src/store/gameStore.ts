@@ -69,7 +69,7 @@ export const useGameStore = create<GameStoreState>()(
   })),
 );
 
-if (import.meta.env.DEV) {
+if (import.meta.env?.DEV) {
   const baseSubscribe = useGameStore.subscribe.bind(useGameStore);
   useGameStore.subscribe = wrapStoreSubscribe(baseSubscribe) as typeof useGameStore.subscribe;
 }

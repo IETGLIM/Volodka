@@ -8,6 +8,7 @@ import { Package, TrendingUp, Sparkles } from 'lucide-react';
 import { audioEngine } from '@/engine/AudioEngine';
 import type { TrainablePlayerSkill } from '@/shared/types/game';
 import { useNotificationSlot, NOTIFY_PRIORITY } from '@/hooks/useNotificationSlot';
+import { explorationLootTopPx } from '@/shared/constants/hudLayout';
 
 interface Notification {
   id: number;
@@ -133,7 +134,11 @@ export function LootNotification() {
   };
 
   return (
-    <div className="fixed top-20 left-3 sm:top-24 sm:left-4 flex flex-col gap-2 pointer-events-none" style={{ zIndex: UI_LAYERS.TOASTS }} data-exploration-ui>
+    <div
+      className="fixed left-3 sm:left-4 flex flex-col gap-2 pointer-events-none"
+      style={{ top: explorationLootTopPx(), zIndex: UI_LAYERS.TOASTS }}
+      data-exploration-ui
+    >
       <AnimatePresence>
         {slotGranted && notifications.map((n) => {
           const rarityBorder = n.rarity ? RARITY_BORDER[n.rarity] : '';

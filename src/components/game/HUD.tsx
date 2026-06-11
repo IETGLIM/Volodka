@@ -757,7 +757,7 @@ export function HUD(props: HUDProps) {
             exit={{ opacity: 0, y: -10, scale: 0.9 }}
             transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
             className="absolute top-16 right-3 sm:top-20 sm:right-4 flex items-center gap-2 px-3 py-2 rounded-lg bg-slate-900/80 border border-cyan-900/30 backdrop-blur-md shadow-[0_0_15px_rgb(var(--cyber-cyan-rgb) / 0.1)]"
-            style={{ zIndex: 1 }}
+            style={{ zIndex: UI_LAYERS.HUD + 1 }}
           >
             <Save className="size-3.5 text-cyan-400" />
             <span className="text-xs text-cyan-300 font-medium">💾 Сохранено</span>
@@ -936,13 +936,13 @@ export function HUD(props: HUDProps) {
           </div>
           {/* Version indicator */}
           <div className="absolute bottom-1.5 right-3 pointer-events-none">
-            <span className="text-[8px] text-slate-600/50 font-mono">v2.1.0</span>
+            <span className="text-[8px] text-slate-600/50 font-mono">v3.4.0</span>
           </div>
         </div>
       </div>
 
       {/* ── Mobile compact stats bar — ENHANCED ── */}
-      <div className="absolute top-12 left-2 right-2 pointer-events-auto lg:hidden">
+      <div className="absolute top-12 left-2 right-2 pointer-events-auto lg:hidden" style={quietStyle}>
         <div
           className={`flex items-center gap-2.5 px-3 py-2 rounded-xl border backdrop-blur-xl ${isLowEnergy || isHighStress ? 'warning-pulse' : ''}`}
           style={{

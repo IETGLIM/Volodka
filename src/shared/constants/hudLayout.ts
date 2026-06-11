@@ -33,6 +33,11 @@ function mobileBottomReserve(isMobile: boolean): number {
   return isMobile ? EXPLORATION_HUD_LAYOUT.MOBILE_BOTTOM_CONTROLS_RESERVE : 0;
 }
 
+/** Left column: loot/item toasts below top bar */
+export function explorationLootTopPx(): number {
+  return EXPLORATION_HUD_LAYOUT.TOP_BAR_HEIGHT + EXPLORATION_HUD_LAYOUT.SLOT_GAP + 8;
+}
+
 export function explorationCompassTopPx(): number {
   return EXPLORATION_HUD_LAYOUT.TOP_BAR_HEIGHT + EXPLORATION_HUD_LAYOUT.SLOT_GAP;
 }

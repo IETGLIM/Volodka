@@ -119,6 +119,9 @@ export const LORE_STORY_NODE_MAP: Record<string, string[]> = {
   factory_basement_familiar: ['lore_zarya_project_early'],
   machine_confession_scene_thread: ['lore_great_crash_2029', 'lore_incident_4729'],
 
+  // Act 6 — post-finale factory line
+  act6_bridge: ['lore_factory_ghosts'],
+
   // Act 7 — legacy
   act7_legacy_walk: ['lore_volodka_legacy'],
   act7_poet_legacy_mirror: ['lore_volodka_legacy'],

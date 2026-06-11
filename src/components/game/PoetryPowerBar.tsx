@@ -9,6 +9,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { bottomPoetryPx } from '@/shared/constants/hudLayout';
+import { useHudQuietStyle } from '@/hooks/useHudQuiet';
 import { Zap, Clock, Lock, Sparkles } from 'lucide-react';
 import { useCollectedPoems } from '@/store/selectors';
 import {
@@ -178,6 +179,7 @@ function PowerSlot({ poemId, slotIndex }: { poemId: string; slotIndex: number })
 
 /* ── Main quick-bar component ── */
 export function PoetryPowerBar() {
+  const quietStyle = useHudQuietStyle();
   const collectedPoems = useCollectedPoems();
 
   // Get collected poems that have powers
@@ -226,7 +228,8 @@ export function PoetryPowerBar() {
         exit={{ opacity: 0, y: 20 }}
         transition={{ duration: 0.3, ease: 'easeOut' }}
         className="fixed left-1/2 -translate-x-1/2 pointer-events-auto"
-        style={{ zIndex: UI_LAYERS.HUD, bottom: bottomPoetryPx() }}
+        data-exploration-ui
+        style={{ zIndex: UI_LAYERS.HUD, bottom: bottomPoetryPx(), ...quietStyle }}
       >
         <div className="flex items-center gap-1.5 sm:gap-2 px-3 py-2 rounded-xl bg-black/60 border border-amber-900/30 backdrop-blur-md shadow-[0_0_20px_rgba(0,0,0,0.3),0_0_10px_rgba(251,191,36,0.05)]">
           {/* Label — always visible to differentiate from health bars */}

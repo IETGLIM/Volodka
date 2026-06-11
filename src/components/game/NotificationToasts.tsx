@@ -327,6 +327,7 @@ export function NotificationToasts() {
   return (
     <div
       className="fixed right-3 sm:right-4 flex flex-col items-end gap-2 pointer-events-none"
+      data-exploration-ui
       style={{ top: explorationStatToastTopPx(), zIndex: UI_LAYERS.TOASTS, pointerEvents: 'none' }}
     >
       <AnimatePresence mode="popLayout">

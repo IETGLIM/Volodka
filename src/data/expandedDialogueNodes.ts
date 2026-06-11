@@ -693,6 +693,11 @@ export const EXPANDED_DIALOGUE_NODES: Record<string, DialogueNode> = {
         next: 'trofim_after_basement',
         condition: { flag: 'basement_terminal_accessed' },
       },
+      {
+        text: 'Сбой, #4729, подвал — это одна нить?',
+        next: 'trofim_thread_lore',
+        condition: { flag: 'thread_lore_4729' },
+      },
       { text: 'Пойду я.', next: null },
     ],
   },
@@ -747,6 +752,28 @@ export const EXPANDED_DIALOGUE_NODES: Record<string, DialogueNode> = {
         ],
       },
       { text: 'Не моё это дело.', next: null },
+    ],
+  },
+
+  trofim_thread_lore: {
+    id: 'trofim_thread_lore',
+    speaker: 'Трофим',
+    text: 'Одна. *кивает на воду* Парк помнит Сбой — обелиск не врёт. Офис помнит #4729 — ты сам расшифровал. А под цехом — гул, который я слушал тридцать лет. Соберёшь все три — машина заговорит иначе. Не сразу. Но заговорит. Старики на заводе верили: «Прогресс-7» — не бункер. Это ухо. И оно слышит, кто пришёл слушать, а кто — ломать.',
+    choices: [
+      {
+        text: 'Спасибо. Дослушаю нить до конца.',
+        next: null,
+        effects: [
+          { type: 'triggerQuest', questId: 'thread_of_18_lines' },
+          { type: 'addSkill', skill: 'intuition', value: 2 },
+          { type: 'npcChange', npcId: 'fisherman_trofim', npcChange: { relation: 2 } },
+        ],
+      },
+      {
+        text: 'Бабкины сказки про уши в бетоне.',
+        next: null,
+        effects: [{ type: 'npcChange', npcId: 'fisherman_trofim', npcChange: { relation: -1 } }],
+      },
     ],
   },
 
