@@ -32,6 +32,11 @@ export default defineConfig(({ mode }) => {
     resolve: {
       alias: {
         '@': path.resolve(__dirname, './src'),
+        '@dimforge/rapier3d-compat': path.resolve(__dirname, './src/engine/physics/rapierCompat.ts'),
+        '@dimforge/rapier3d-compat-original': path.resolve(
+          __dirname,
+          './node_modules/@dimforge/rapier3d-compat/rapier.mjs',
+        ),
       },
     },
 

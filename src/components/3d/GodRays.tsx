@@ -7,6 +7,11 @@
 
 import { useRef, useMemo, useEffect } from 'react';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
+import {
+  finitePositive,
+  sanitizeBufferGeometryPositions,
+  sanitizePositionArray,
+} from '@/engine/three/bufferGeometrySanitize';
 import * as THREE from 'three';
 
 /* ── Config ── */
@@ -61,6 +66,17 @@ const DEFAULT_RAY: GodRayConfig = {
   dustColor: '#ffeeaa',
   dustSizeRange: [0.02, 0.05],
 };
+
+/** Ensure ray dimensions are finite — invalid params yield NaN CylinderGeometry positions. */
+function normalizeGodRayConfig(config: GodRayConfig): GodRayConfig {
+  return {
+    ...config,
+    topRadius: finitePositive(config.topRadius, DEFAULT_RAY.topRadius),
+    bottomRadius: finitePositive(config.bottomRadius, DEFAULT_RAY.bottomRadius),
+    height: finitePositive(config.height, DEFAULT_RAY.height),
+    dustCount: Math.max(0, Math.floor(Number.isFinite(config.dustCount) ? config.dustCount : 0)),
+  };
+}
 
 /* ── Per-scene god ray presets ── */
 
@@ -483,13 +499,17 @@ function GodRayShaft({ config }: { config: GodRayConfig }) {
   const materialRef = useRef<THREE.MeshBasicMaterial>(null);
   const timeRef = useRef(0);
 
-  const c = { ...DEFAULT_RAY, ...config };
+  const c = useMemo(
+    () => normalizeGodRayConfig({ ...DEFAULT_RAY, ...config }),
+    [config],
+  );
 
   // Cylinder geometry (open-ended cone for light shaft shape)
-  const geometry = useMemo(
-    () => new THREE.CylinderGeometry(c.topRadius, c.bottomRadius, c.height, 8, 1, true),
-    [c.topRadius, c.bottomRadius, c.height],
-  );
+  const geometry = useMemo(() => {
+    const geo = new THREE.CylinderGeometry(c.topRadius, c.bottomRadius, c.height, 8, 1, true);
+    sanitizeBufferGeometryPositions(geo);
+    return geo;
+  }, [c.topRadius, c.bottomRadius, c.height]);
 
   useEffect(() => {
     return () => {
@@ -537,12 +557,20 @@ function RayDustMotes({ config }: { config: GodRayConfig }) {
   const materialRef = useRef<THREE.PointsMaterial>(null);
   const timeRef = useRef(0);
 
-  const c = { ...DEFAULT_RAY, ...config };
+  const c = useMemo(
+    () => normalizeGodRayConfig({ ...DEFAULT_RAY, ...config }),
+    [config],
+  );
 
   const { positions, phases } = useMemo(() => {
     const count = c.dustCount;
+    if (count <= 0) {
+      return { positions: new Float32Array(0), phases: new Float32Array(0) };
+    }
+
     const pos = new Float32Array(count * 3);
     const pha = new Float32Array(count);
+    const safeHeight = c.height;
 
     for (let i = 0; i < count; i++) {
       const i3 = i * 3;
@@ -554,18 +582,20 @@ function RayDustMotes({ config }: { config: GodRayConfig }) {
       const r = Math.random() * radius;
 
       pos[i3] = Math.cos(angle) * r;               // X
-      pos[i3 + 1] = (0.5 - t) * c.height;          // Y (centered)
+      pos[i3 + 1] = (0.5 - t) * safeHeight;        // Y (centered)
       pos[i3 + 2] = Math.sin(angle) * r;            // Z
 
       pha[i] = Math.random() * Math.PI * 2;
     }
 
+    sanitizePositionArray(pos);
     return { positions: pos, phases: pha };
   }, [c.dustCount, c.topRadius, c.bottomRadius, c.height]);
 
   const geometry = useMemo(() => {
     const geo = new THREE.BufferGeometry();
     geo.setAttribute('position', new THREE.BufferAttribute(positions.slice(), 3));
+    sanitizeBufferGeometryPositions(geo);
     return geo;
   }, [positions]);
 
@@ -576,13 +606,14 @@ function RayDustMotes({ config }: { config: GodRayConfig }) {
   }, [geometry]);
 
   useFrameTick('postfx', ({ delta }) => {
-    if (!pointsRef.current) return;
+    if (!pointsRef.current || c.dustCount <= 0) return;
     timeRef.current += delta;
     const t = timeRef.current;
 
     const posAttr = pointsRef.current.geometry.getAttribute('position') as THREE.BufferAttribute;
     const posArray = posAttr.array as Float32Array;
     const count = c.dustCount;
+    const halfHeight = c.height / 2;
 
     for (let i = 0; i < count; i++) {
       const i3 = i * 3;
@@ -593,21 +624,28 @@ function RayDustMotes({ config }: { config: GodRayConfig }) {
       posArray[i3 + 1] += Math.sin(t * 0.2 + phase * 2) * 0.002 * delta;
       posArray[i3 + 2] += Math.cos(t * 0.25 + phase * 1.5) * 0.003 * delta;
 
-      // Keep within cone bounds — soft clamp
+      // Keep within cone bounds — soft clamp (guard div-by-zero / NaN blow-up)
       const y = posArray[i3 + 1];
-      const normalY = (c.height / 2 - y) / c.height; // 0 at bottom, 1 at top
-      const maxR = c.topRadius + (c.bottomRadius - c.topRadius) * (1 - normalY);
-      const dist = Math.sqrt(posArray[i3] ** 2 + posArray[i3 + 2] ** 2);
+      const normalY = (halfHeight - y) / c.height; // 0 at bottom, 1 at top
+      const maxR = Math.max(
+        0,
+        c.topRadius + (c.bottomRadius - c.topRadius) * (1 - normalY),
+      );
+      const dist = Math.hypot(posArray[i3], posArray[i3 + 2]);
 
-      if (dist > maxR * 0.9) {
+      if (dist > maxR * 0.9 && dist > 1e-6) {
         const scale = (maxR * 0.85) / dist;
         posArray[i3] *= scale;
         posArray[i3 + 2] *= scale;
       }
 
       // Wrap Y
-      if (posArray[i3 + 1] > c.height / 2) posArray[i3 + 1] = -c.height / 2;
-      if (posArray[i3 + 1] < -c.height / 2) posArray[i3 + 1] = c.height / 2;
+      if (posArray[i3 + 1] > halfHeight) posArray[i3 + 1] = -halfHeight;
+      if (posArray[i3 + 1] < -halfHeight) posArray[i3 + 1] = halfHeight;
+    }
+
+    if (sanitizePositionArray(posArray)) {
+      sanitizeBufferGeometryPositions(pointsRef.current.geometry);
     }
 
     posAttr.needsUpdate = true;
