@@ -69,9 +69,11 @@ export const LORE_SCENE_MAP: Partial<Record<SceneId, string[]>> = {
   ],
   factory_basement: [
     'lore_factory_progress7',  // Secret sublevel discovered by descending
+    'lore_zarya_project_early', // Early Zarya project context in the basement
   ],
   river_pier: [
     'lore_pier_three',         // Pier history discovered by visiting
+    'lore_watchman_trofim',    // Trofim's watchman history at the pier
   ],
   sleep_dream: [
     'lore_dreamworld',         // Dream world rules discovered in dream
@@ -111,6 +113,15 @@ export const LORE_STORY_NODE_MAP: Record<string, string[]> = {
   // Act 5 — Finale
   act5_dawn: ['lore_digital_resistance'],
   chk_act5_campfire_dawn: ['lore_tolpa_chk'],
+
+  // Pier / basement payoff nodes
+  pier_arrival: ['lore_pier_three'],
+  factory_basement_familiar: ['lore_zarya_project_early'],
+  machine_confession_scene_thread: ['lore_great_crash_2029', 'lore_incident_4729'],
+
+  // Act 7 — legacy
+  act7_legacy_walk: ['lore_volodka_legacy'],
+  act7_poet_legacy_mirror: ['lore_volodka_legacy'],
 
   // Lore that requires specific conditions
   poem_virus_truth: ['lore_poem_virus'],

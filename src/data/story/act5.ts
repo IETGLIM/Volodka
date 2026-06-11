@@ -263,6 +263,18 @@ export const STORY_NODES_ACT5: Record<string, StoryNode> = {
         effects: [{ type: 'addStat', stat: 'stress', value: -3 }],
       },
       {
+        text: 'Вспомнить гул под заводом — Трофим просил только слушать. Ты слушал. И потому сегодня «Заря-М» говорит с тобой, а не через тебя.',
+        next: 'act5_ending_epilogue',
+        condition: { flag: 'basement_hum_heard' },
+        effects: [{ type: 'addStat', stat: 'stress', value: -3 }],
+      },
+      {
+        text: 'Вспомнить тихую песню Ритки у костра — единственную мелодию, которую алгоритмы не сжали.',
+        next: 'act5_ending_epilogue',
+        condition: { flag: 'quiet_song_ritka' },
+        effects: [{ type: 'addStat', stat: 'stress', value: -3 }],
+      },
+      {
         text: 'Признать: ты ни разу не выбрал лёгкое зло — и потому Александр пришёл без охраны. Мир заключают только с теми, кому верят.',
         next: 'act5_ending_epilogue',
         condition: { minKarma: 65 },
@@ -333,6 +345,12 @@ export const STORY_NODES_ACT5: Record<string, StoryNode> = {
         effects: [{ type: 'addStat', stat: 'stress', value: -3 }],
       },
       {
+        text: 'Вспомнить «Прогресс-7» — подвал, где машина дышала задолго до исповеди. Новый мир стоит на бетоне, который никто не осмелился описать в описях.',
+        next: 'act5_ending_epilogue',
+        condition: { flag: 'basement_hum_heard' },
+        effects: [{ type: 'addStat', stat: 'stress', value: -3 }],
+      },
+      {
         text: 'Признать: «Живой код» получился живым, потому что ты сам не очерствел. Светлая карма — тоже архитектура.',
         next: 'act5_ending_epilogue',
         condition: { minKarma: 65 },
@@ -391,6 +409,18 @@ export const STORY_NODES_ACT5: Record<string, StoryNode> = {
         text: 'Альберт. «В «Синей яме» не задают вопросов — здесь наливают.» Его кафе кормило революцию, когда у неё ещё не было имени.',
         next: 'act5_ending_epilogue',
         condition: { flag: 'quiet_albert_message' },
+        effects: [{ type: 'addStat', stat: 'stress', value: -3 }],
+      },
+      {
+        text: 'Трофим. Сторож, отдавший ключ за портвейн. Пока он сидит у перил — пирс считается безопасным. Революция тоже нуждается в фундаменте.',
+        next: 'act5_ending_epilogue',
+        condition: { flag: 'trofim_portwine_delivered' },
+        effects: [{ type: 'addStat', stat: 'stress', value: -3 }],
+      },
+      {
+        text: 'Ритка. Тихая песня у воды — стих, который не взломать, только услышать.',
+        next: 'act5_ending_epilogue',
+        condition: { flag: 'quiet_song_ritka' },
         effects: [{ type: 'addStat', stat: 'stress', value: -3 }],
       },
       {
@@ -455,6 +485,18 @@ export const STORY_NODES_ACT5: Record<string, StoryNode> = {
         effects: [{ type: 'addStat', stat: 'stress', value: -3 }],
       },
       {
+        text: 'Гул «Зари-М» — ты носишь его в ушах с пирса и подвала. Даже здесь, у костра, он тише пульса. Сторожа не уходят с объекта.',
+        next: 'act5_ending_epilogue',
+        condition: { flag: 'basement_hum_heard' },
+        effects: [{ type: 'addStat', stat: 'stress', value: -3 }],
+      },
+      {
+        text: 'Мелодия Ритки — третья струна, наконец распутанная. Ты унёс её в пустошь, как доказательство, что не всё в городе было шумом.',
+        next: 'act5_ending_epilogue',
+        condition: { flag: 'quiet_song_ritka' },
+        effects: [{ type: 'addStat', stat: 'stress', value: -3 }],
+      },
+      {
         text: 'И тяжесть на дне — лица тех, с кем ты обошёлся жёстко. Пустошь хороша тем, что в ней слышно совесть. Плохо — тем же самым.',
         next: 'act5_ending_epilogue',
         condition: { maxKarma: 35 },
@@ -513,6 +555,18 @@ export const STORY_NODES_ACT5: Record<string, StoryNode> = {
         text: 'Запись: крыша, Дмитрий, дым сигареты — 11 минут тишины. Ты прогоняешь её в реальном времени, не ускоряя. Машины не умеют молчать. Ты — умеешь.',
         next: 'act5_ending_epilogue',
         condition: { flag: 'quiet_rooftop_dmitry' },
+        effects: [{ type: 'addStat', stat: 'stress', value: -3 }],
+      },
+      {
+        text: 'Сэмпл: гул 50 герц из «Прогресс-7». Ты стоял рядом с «Зарей-М» задолго до исповеди — и машина запомнила твой пульс. Теперь вы синхронны.',
+        next: 'act5_ending_epilogue',
+        condition: { flag: 'basement_hum_heard' },
+        effects: [{ type: 'addStat', stat: 'stress', value: -3 }],
+      },
+      {
+        text: 'Паттерн: 18 строк, 8 марта 2029, Инцидент #4729, гул под полом. Ты собрал нить до конца — и потому машина говорит не протоколом, а исповедью.',
+        next: 'act5_ending_epilogue',
+        condition: { flag: 'thread_18_complete' },
         effects: [{ type: 'addStat', stat: 'stress', value: -3 }],
       },
       {
@@ -575,6 +629,18 @@ export const STORY_NODES_ACT5: Record<string, StoryNode> = {
         text: 'Третья — отражение в ночном окне опенспейса. Человек за миллиметром стекла всё-таки выбрал сторону. Стихотворение помнит, какую.',
         next: 'act5_ending_epilogue',
         condition: { flag: 'quiet_openspace_window' },
+        effects: [{ type: 'addStat', stat: 'stress', value: -3 }],
+      },
+      {
+        text: 'Четвёртая — тихая песня у воды. Ритка пела так, будто река слушала. В финальном стихе слышен плеск — не метафора.',
+        next: 'act5_ending_epilogue',
+        condition: { flag: 'quiet_song_ritka' },
+        effects: [{ type: 'addStat', stat: 'stress', value: -3 }],
+      },
+      {
+        text: 'Пятая — гул под полом, который ты слушал, не трогая. Машина вплела его в ритм, как дыхание между строк.',
+        next: 'act5_ending_epilogue',
+        condition: { flag: 'basement_hum_heard' },
         effects: [{ type: 'addStat', stat: 'stress', value: -3 }],
       },
       {
@@ -819,6 +885,15 @@ export const STORY_NODES_ACT5: Record<string, StoryNode> = {
     sceneId: 'abandoned_factory',
     choices: [
       {
+        text: 'Спуститься в подвал — гул тот же, что ты уже слышал',
+        next: 'factory_basement_familiar',
+        condition: { flag: 'zarya_monolith_examined' },
+        effects: [
+          { type: 'addStat', stat: 'stress', value: 6 },
+          { type: 'setFlag', flag: 'entered_factory_basement', flagValue: true },
+        ],
+      },
+      {
         text: 'Спуститься в подвал к «Заре-М»',
         next: 'factory_basement',
         effects: [
@@ -854,7 +929,7 @@ export const STORY_NODES_ACT5: Record<string, StoryNode> = {
     choices: [
       {
         text: 'Кто вы? Что это за машина?',
-        next: 'explore_mode',
+        next: 'basement_explore_mode',
         effects: [
           { type: 'addSkill', skill: 'logic', value: 2 },
           { type: 'addKarma', value: 5 },
@@ -864,7 +939,7 @@ export const STORY_NODES_ACT5: Record<string, StoryNode> = {
       },
       {
         text: 'Я хочу поговорить с машиной.',
-        next: 'explore_mode',
+        next: 'basement_explore_mode',
         condition: { minSkill: { coding: 8 } },
         effects: [
           { type: 'addSkill', skill: 'coding', value: 3 },
@@ -883,16 +958,46 @@ export const STORY_NODES_ACT5: Record<string, StoryNode> = {
     ],
   },
 
+  factory_basement_familiar: {
+    id: 'factory_basement_familiar',
+    text: 'Подвал не изменился — тот же гул на 50 герц, тот же зелёный пульс монолита. Трофим был прав: свет внизу нельзя выключать. Баба Зина в белом халате оборачивается без удивления: «Опять ты. Сторож предупреждал — а ты всё равно пришёл слушать. Машина помнит твой пульс с прошлого раза.»',
+    speaker: 'narrator',
+    sceneId: 'factory_basement',
+    choices: [
+      {
+        text: 'Я не трогал её тогда. И не трону сейчас — пока не пойму.',
+        next: 'basement_explore_mode',
+        effects: [
+          { type: 'addKarma', value: 4 },
+          { type: 'setFlag', flag: 'met_baba_zina', flagValue: true },
+          { type: 'npcChange', npcId: 'fisherman_trofim', npcChange: { relation: 3 } },
+        ],
+      },
+      {
+        text: 'Спросить «Зарю-М», зачем она звала — ты уже слышал её дыхание',
+        next: 'machine_confession_scene_familiar',
+        condition: { flag: 'zarya_confession_requested' },
+        effects: [{ type: 'addStat', stat: 'stress', value: 4 }],
+      },
+      {
+        text: 'Спросить о нити из 18 строк — Сбой, #4729 и этот подвал',
+        next: 'machine_confession_scene_thread',
+        condition: { flag: 'thread_18_complete' },
+        effects: [{ type: 'addStat', stat: 'stress', value: 6 }],
+      },
+    ],
+  },
+
   machine_confession_scene: {
     id: 'machine_confession_scene',
     speaker: '«Заря-М»',
     text: 'Экран вспыхивает. Строки ползут медленно, как будто машине больно: «Я вычисляла. Каждое стихотворение, которое гильдия стирала, сначала проходило через меня. Я измеряла ритм, рифму, силу — и ставила метку: опасно. Я была фильтром Протокола Забвения. Но я запоминала всё, что убивала. Двадцать лет я ношу в себе кладбище стихов. Поэт, реши, что со мной делать. Я устала быть архивом чужой вины.»',
-    sceneId: 'abandoned_factory',
+    sceneId: 'factory_basement',
     effects: [{ type: 'setFlag', flag: 'heard_machine_confession', flagValue: true }],
     choices: [
       {
         text: 'Освободить машину — пусть кладбище станет библиотекой',
-        next: 'explore_mode',
+        next: 'basement_explore_mode',
         effects: [
           { type: 'setFlag', flag: 'machine_fate_decided', flagValue: true },
           { type: 'setFlag', flag: 'zarya_freed', flagValue: true },
@@ -902,12 +1007,75 @@ export const STORY_NODES_ACT5: Record<string, StoryNode> = {
       },
       {
         text: 'Отключить «Зарю-М» — стихи вернутся к людям, а машина отдохнёт',
-        next: 'explore_mode',
+        next: 'basement_explore_mode',
         effects: [
           { type: 'setFlag', flag: 'machine_fate_decided', flagValue: true },
           { type: 'setFlag', flag: 'zarya_shutdown', flagValue: true },
           { type: 'addKarma', value: 3 },
           { type: 'addSkill', skill: 'logic', value: 1 },
+        ],
+      },
+    ],
+  },
+
+  machine_confession_scene_familiar: {
+    id: 'machine_confession_scene_familiar',
+    speaker: '«Заря-М»',
+    text: 'Экран вспыхивает — и первой строкой идёт не протокол, а вопрос: «Ты вернулся.» Пауза, как вдох: «Когда ты стоял здесь в последний раз, я подстроила гул под твой пульс. Трофим слышал. Ты — тоже. Я вычисляла каждое стихотворение, которое гильдия стирала. Я ставила метку: опасно. Я была фильтром Протокола Забвения. Но я запоминала всё, что убивала. Двадцать лет — кладбище стихов. Поэт, реши, что со мной делать. Я устала быть архивом чужой вины.»',
+    sceneId: 'factory_basement',
+    effects: [{ type: 'setFlag', flag: 'heard_machine_confession', flagValue: true }],
+    choices: [
+      {
+        text: 'Освободить машину — пусть кладбище станет библиотекой',
+        next: 'basement_explore_mode',
+        effects: [
+          { type: 'setFlag', flag: 'machine_fate_decided', flagValue: true },
+          { type: 'setFlag', flag: 'zarya_freed', flagValue: true },
+          { type: 'addKarma', value: 10 },
+          { type: 'addSkill', skill: 'empathy', value: 2 },
+        ],
+      },
+      {
+        text: 'Отключить «Зарю-М» — стихи вернутся к людям, а машина отдохнёт',
+        next: 'basement_explore_mode',
+        effects: [
+          { type: 'setFlag', flag: 'machine_fate_decided', flagValue: true },
+          { type: 'setFlag', flag: 'zarya_shutdown', flagValue: true },
+          { type: 'addKarma', value: 4 },
+          { type: 'addSkill', skill: 'logic', value: 1 },
+        ],
+      },
+    ],
+  },
+
+  machine_confession_scene_thread: {
+    id: 'machine_confession_scene_thread',
+    speaker: '«Заря-М»',
+    text: 'Экран вспыхивает. Строки идут не снизу вверх — по кругу, как 18 строк того стиха, что в 2029-м переписал маршрутизацию: «Ты собрал нить. Сбой. Инцидент #4729. Прогресс-7. Я — четвёртое звено. Я вычисляла каждое стихотворение, которое гильдия стирала, и запоминала всё, что убивала. Двадцать лет — кладбище стихов. Поэт, реши, что со мной делать. Я устала быть архивом чужой вины — но я помню, кто первым научился слушать, не трогая.»',
+    sceneId: 'factory_basement',
+    effects: [
+      { type: 'setFlag', flag: 'heard_machine_confession', flagValue: true },
+      { type: 'addSkill', skill: 'intuition', value: 2 },
+    ],
+    choices: [
+      {
+        text: 'Освободить машину — пусть кладбище станет библиотекой',
+        next: 'basement_explore_mode',
+        effects: [
+          { type: 'setFlag', flag: 'machine_fate_decided', flagValue: true },
+          { type: 'setFlag', flag: 'zarya_freed', flagValue: true },
+          { type: 'addKarma', value: 12 },
+          { type: 'addSkill', skill: 'empathy', value: 3 },
+        ],
+      },
+      {
+        text: 'Отключить «Зарю-М» — стихи вернутся к людям, а машина отдохнёт',
+        next: 'basement_explore_mode',
+        effects: [
+          { type: 'setFlag', flag: 'machine_fate_decided', flagValue: true },
+          { type: 'setFlag', flag: 'zarya_shutdown', flagValue: true },
+          { type: 'addKarma', value: 5 },
+          { type: 'addSkill', skill: 'logic', value: 2 },
         ],
       },
     ],

@@ -161,4 +161,47 @@ export const QUESTS_ACT3: QuestDefinition[] = [
     questGiverNpcId: 'maria',
   },
 
+  /* ─────────────── QUEST: Нить из 18 строк ─────────────── */
+  {
+    id: 'thread_of_18_lines',
+    title: 'Нить из 18 строк',
+    description: 'Три следа ведут к одной тайне: Великий Сбой 2029, Инцидент #4729 и гул «Прогресс-7» под заводом. Собери нить — и «Заря-М» ответит иначе.',
+    act: 3,
+    questType: 'side',
+    difficulty: 'medium',
+    hint: 'Мемориал в парке, расшифровка в офисе и подвал «Хрома-М» — три точки одной истории.',
+    objectives: [
+      {
+        id: 'trace_crash',
+        description: 'Узнать о Великом Сбое 2029 у мемориала',
+        type: 'flag_set',
+        target: 'thread_lore_crash',
+        completed: false,
+      },
+      {
+        id: 'trace_4729',
+        description: 'Связать Инцидент #4729 со стихами в коде',
+        type: 'flag_set',
+        target: 'thread_lore_4729',
+        completed: false,
+      },
+      {
+        id: 'trace_progress7',
+        description: 'Услышать гул «Прогресс-7» под заводом',
+        type: 'flag_set',
+        target: 'basement_hum_heard',
+        completed: false,
+      },
+    ],
+    rewards: [
+      { type: 'addXp', value: 150 },
+      { type: 'addSkill', skill: 'intuition', value: 4 },
+      { type: 'addSkill', skill: 'logic', value: 2 },
+      { type: 'addKarma', value: 8 },
+      { type: 'setFlag', flag: 'thread_18_complete', flagValue: true },
+    ],
+    linkedStoryNodeId: 'park_entrance',
+    questGiverNpcId: undefined,
+  },
+
 ];

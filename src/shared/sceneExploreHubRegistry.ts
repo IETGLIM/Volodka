@@ -100,7 +100,7 @@ export const SCENE_EXPLORE_HUB_DEFS: readonly SceneExploreHubDef[] = [
     sceneId: 'factory_basement',
     hubText:
       'Подвал завода — ряды серверных стоек, красный аварийный свет и гул «Зари-М». Воздух холодный, пахнет озоном и машинным маслом.',
-    entryNodeIds: ['factory_basement'],
+    entryNodeIds: ['factory_basement', 'factory_basement_familiar'],
   },
   {
     hubId: 'chk_explore_mode',
@@ -124,7 +124,7 @@ export const SCENE_EXPLORE_HUB_DEFS: readonly SceneExploreHubDef[] = [
     sceneId: 'river_pier',
     hubText:
       'Пирс у реки — костёр в бочке, лунная дорожка на воде, камыши и старая лодка. Вторая тусовка ЧК, теплее и ближе к воде.',
-    entryNodeIds: [],
+    entryNodeIds: ['pier_arrival'],
   },
   {
     hubId: 'zarema_room_explore_mode',

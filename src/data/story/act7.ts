@@ -363,6 +363,24 @@ export const STORY_NODES_ACT7: Record<string, StoryNode> = {
         effects: [{ type: 'addStat', stat: 'stress', value: -3 }],
       },
       {
+        text: 'Страница «Пирс №3»: тихая песня у воды. Ритка поёт так, будто река — единственный слушатель, которому можно доверять.',
+        next: 'act7_true_end',
+        condition: { flag: 'quiet_song_ritka' },
+        effects: [{ type: 'addStat', stat: 'stress', value: -3 }],
+      },
+      {
+        text: 'Страница «Прогресс-7»: гул под полом, который ты слушал, не трогая. Сторожа не уходят с объекта — они отходят на безопасное расстояние.',
+        next: 'act7_true_end',
+        condition: { flag: 'basement_hum_heard' },
+        effects: [{ type: 'addStat', stat: 'stress', value: -3 }],
+      },
+      {
+        text: 'Страница «18 строк»: Сбой, #4729, подвал. Ты собрал нить — и потому пишешь не с нуля, а в продолжение.',
+        next: 'act7_true_end',
+        condition: { flag: 'thread_18_complete' },
+        effects: [{ type: 'addStat', stat: 'stress', value: -3 }],
+      },
+      {
         text: 'Закрыть книгу. Взять ручку. Чистый лист ждал достаточно.',
         next: 'act7_true_end',
       },

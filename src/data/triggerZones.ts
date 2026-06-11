@@ -597,6 +597,29 @@ export const TRIGGER_ZONES: TriggerZone[] = [
     ],
   },
 
+  {
+    id: 'factory_ghost_lights',
+    sceneId: 'abandoned_factory',
+    position: [5.0, 1.0, -6.0],
+    size: [1.2, 2.0, 1.2],
+    enterToast: 'В глубине цеха мигают огни — в ритме, похожем на стихотворение.',
+    requiredAct: 2,
+    isOneTime: true,
+    interactionType: 'examine',
+    interactionLabel: 'Всмотреться в мигание',
+    examineData: {
+      title: 'Огни в ритме',
+      description: 'Короткие замыкания — так говорят охранники. Инженеры гильдии — остаточные сигналы.',
+      detailText: 'Но если стоять достаточно долго, огни складываются в слова. Те самые. Станки молчат, трубы капают — а свет на стене читает стих, которого не должно быть в архивах.',
+      icon: '✨',
+    },
+    effects: [
+      { type: 'discoverLore', loreId: 'lore_factory_ghosts' },
+      { type: 'setFlag', flag: 'factory_ghosts_seen', flagValue: true },
+      { type: 'addSkill', skill: 'intuition', value: 2 },
+    ],
+  },
+
   /* ─────────────── ROOFTOP ALEXANDER — Крыша Мира ─────────────── */
   {
     id: 'rooftop_alexander',
@@ -677,6 +700,8 @@ export const TRIGGER_ZONES: TriggerZone[] = [
     effects: [
       { type: 'addKarma', value: 5 },
       { type: 'setFlag', flag: 'visited_memorial', flagValue: true },
+      { type: 'setFlag', flag: 'thread_lore_crash', flagValue: true },
+      { type: 'triggerQuest', questId: 'thread_of_18_lines' },
     ],
   },
 

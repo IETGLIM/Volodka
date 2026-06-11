@@ -449,6 +449,7 @@ export const STORY_NODES_ACT1: Record<string, StoryNode> = {
           { type: 'addSkill', skill: 'writing', value: 2 },
           { type: 'setFlag', flag: 'found_first_poem', flagValue: true },
           { type: 'setFlag', flag: 'read_poem_1', flagValue: true },
+          { type: 'setFlag', flag: 'thread_lore_4729', flagValue: true },
         ],
       },
       {
@@ -460,6 +461,7 @@ export const STORY_NODES_ACT1: Record<string, StoryNode> = {
           { type: 'addKarma', value: 3 },
           { type: 'setFlag', flag: 'reported_poem_to_alexander', flagValue: true },
           { type: 'setFlag', flag: 'read_poem_1', flagValue: true },
+          { type: 'setFlag', flag: 'thread_lore_4729', flagValue: true },
         ],
       },
     ],

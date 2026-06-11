@@ -240,6 +240,7 @@ export const QUESTS_ACT7: QuestDefinition[] = [
       { type: 'addSkill', skill: 'empathy', value: 8 },
       { type: 'addKarma', value: 40 },
       { type: 'setFlag', flag: 'volodka_legacy_complete', flagValue: true },
+      { type: 'discoverLore', loreId: 'lore_volodka_legacy' },
       { type: 'addXp', value: 600 },
     ],
     linkedStoryNodeId: 'act7_legacy_walk',
