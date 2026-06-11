@@ -16,6 +16,8 @@ export const EXPLORATION_HUD_LAYOUT = {
   BOTTOM_TOOLBAR: 12,
   BOTTOM_QUICK_USE: 56,
   BOTTOM_POETRY: 100,
+  /** Crafting discovery toasts — above quick-use bar */
+  BOTTOM_CRAFTING_TOAST: 80,
   /** Contextual [E] prompt — above poetry bar, centered */
   BOTTOM_INTERACT_PROMPT: 196,
   /** Bottom-right stack (px from viewport bottom) */
@@ -84,6 +86,10 @@ export function bottomQuickUsePx(): number {
 
 export function bottomPoetryPx(): number {
   return EXPLORATION_HUD_LAYOUT.BOTTOM_POETRY;
+}
+
+export function bottomCraftingToastPx(isMobile = false): number {
+  return EXPLORATION_HUD_LAYOUT.BOTTOM_CRAFTING_TOAST + mobileBottomReserve(isMobile);
 }
 
 export function bottomInteractPromptPx(): number {

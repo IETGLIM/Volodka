@@ -320,6 +320,7 @@ export function AchievementNotification() {
   return (
     <div
       className="fixed flex flex-col items-end gap-2 pointer-events-none"
+      data-exploration-ui
       style={{
         zIndex: UI_LAYERS.TOASTS + 1,
         top: explorationAchievementTopPx(),

@@ -13,6 +13,8 @@ import { FlaskConical, Sparkles, Crown, Gem, Star } from 'lucide-react';
 import { eventBus } from '@/engine/EventBus';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { useNotificationSlot, NOTIFY_PRIORITY } from '@/hooks/useNotificationSlot';
+import { bottomCraftingToastPx } from '@/shared/constants/hudLayout';
+import { useMobileDetection } from './orchestrator/useMobileDetection';
 import { type ItemRarity } from '@/data/items';
 
 /* ─── Types ─── */
@@ -217,7 +219,7 @@ function CraftingToastCard({ toast, index }: { toast: CraftingToastData; index: 
 
               {/* Subtitle */}
               <span className="text-[10px] font-mono text-slate-400 tracking-wide">
-                Новое рецепт обнаружен!
+                Новый рецепт обнаружен!
               </span>
             </div>
           </div>
@@ -240,6 +242,7 @@ function CraftingToastCard({ toast, index }: { toast: CraftingToastData; index: 
 
 export function CraftingDiscoveryToast() {
   const [toasts, setToasts] = useState<CraftingToastData[]>([]);
+  const isMobile = useMobileDetection();
   const slotGranted = useNotificationSlot('crafting', NOTIFY_PRIORITY.crafting, toasts.length > 0);
   const timersMap = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
   const timers = timersMap.current;
@@ -284,8 +287,12 @@ export function CraftingDiscoveryToast() {
   /* ── Render ── */
   return (
     <div
-      className="fixed bottom-20 left-4 pointer-events-none flex flex-col-reverse gap-2"
-      style={{ zIndex: UI_LAYERS.TOASTS }}
+      className="fixed left-3 sm:left-4 pointer-events-none flex flex-col-reverse gap-2"
+      data-exploration-ui
+      style={{
+        bottom: bottomCraftingToastPx(isMobile),
+        zIndex: UI_LAYERS.TOASTS,
+      }}
     >
       <AnimatePresence mode="popLayout">
         {slotGranted && toasts.map((toast, index) => (

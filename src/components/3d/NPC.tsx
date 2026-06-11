@@ -22,6 +22,7 @@ import { ProceduralNPCModel } from '@/components/3d/ProceduralNPCModels';
 import { resolveNpcModelUrl } from '@/config/npcModelRegistry';
 import { createPatrolState, updatePatrol, shouldPatrol, type PatrolState } from '@/engine/npc/npcPatrol';
 import { getQuestDefinitions } from '@/data/gameDataLoader';
+import { resolveNpcQuestBark } from '@/engine/npc/npcQuestBark';
 import { GOLDEN_PATH_QUEST_SPINE } from '@/data/goldenPath';
 import { canStartQuest } from '@/engine/GuidedStoryManager';
 import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
@@ -349,8 +350,11 @@ function NPCContactShadow() {
   );
 }
 
-/** Compute bark text based on NPC relation level */
+/** Compute bark text based on active side quests, then NPC relation level */
 function computeBark(definition: NPCDefinition): string | null {
+  const questBark = resolveNpcQuestBark(definition.id);
+  if (questBark) return questBark;
+
   if (!definition.barkTexts) return null;
 
   const npcRelations = useGameStore.getState().npcRelations;

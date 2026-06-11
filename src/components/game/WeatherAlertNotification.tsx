@@ -22,9 +22,9 @@ import { eventBus } from '@/engine/EventBus';
 import { useWeatherAlertState } from '@/store/selectors';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { useNotificationSlot, NOTIFY_PRIORITY } from '@/hooks/useNotificationSlot';
+import { explorationLootTopPx } from '@/shared/constants/hudLayout';
 import { WEATHER_EFFECTS, determineWeatherType } from '@/data/weatherEffects';
 import type { EventWeatherType } from '@/shared/types/game';
-import type { SceneId } from '@/shared/types/game';
 
 /* ─── Types ─── */
 
@@ -416,8 +416,12 @@ export function WeatherAlertNotification() {
   /* ── Render ── */
   return (
     <div
-      className="fixed top-4 left-4 pointer-events-none flex flex-col gap-2"
-      style={{ zIndex: UI_LAYERS.TOASTS }}
+      className="fixed left-3 sm:left-4 pointer-events-none flex flex-col gap-2"
+      data-exploration-ui
+      style={{
+        top: explorationLootTopPx(),
+        zIndex: UI_LAYERS.TOASTS,
+      }}
     >
       <AnimatePresence mode="popLayout">
         {slotGranted && alerts.map((alert, index) => (
