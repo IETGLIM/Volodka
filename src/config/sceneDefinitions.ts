@@ -238,7 +238,7 @@ export const volodka_corridor_def: SceneDefinition = {
   dimensions: [4, 3, 12],
   type: 'indoor',
   hasCeiling: true,
-  defaultSpawn: [0, 0.01, 4],
+  defaultSpawn: [0, 0.01, 2],
   defaultSpawnRotation: 0,
   characterModelScale: 1.0,
   locomotionScale: 1.0,

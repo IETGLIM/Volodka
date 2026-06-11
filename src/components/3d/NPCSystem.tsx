@@ -20,9 +20,20 @@ interface NPCSystemProps {
 
 /** Max interactable NPCs in heavy scenes — prevents frame stalls */
 const MAX_NPCS_PER_SCENE: Partial<Record<SceneId, number>> = {
+  volodka_room: 1,
+  volodka_corridor: 2,
+  zarema_albert_room: 2,
+  home_evening: 3,
   abandoned_factory: 5,
   park_day: 8,
 };
+
+/** Shared patrol loop for schedule "walk" NPCs in the narrow communal corridor. */
+const CORRIDOR_PATROL_WAYPOINTS: [number, number, number][] = [
+  [0, 0, -2.5],
+  [0, 0, 0],
+  [0, 0, 2.5],
+];
 
 /** Manages all NPCs for the current scene */
 export function NPCSystem({
@@ -42,12 +53,20 @@ export function NPCSystem({
         const def = findNpcById(id);
         if (!def) return null;
         const entry = getCurrentScheduleEntry(id, timeOfDay, scheduleCtx);
+        const activity = entry?.activity ?? 'idle';
+        const patrolWaypoints =
+          def.patrolWaypoints ??
+          (sceneId === 'volodka_corridor' &&
+          (activity === 'walk' || activity === 'rest')
+            ? CORRIDOR_PATROL_WAYPOINTS
+            : undefined);
+
         return {
           definition: def,
           position: entry?.position ?? def.defaultPosition,
           rotation: def.defaultRotation,
-          activity: entry?.activity ?? 'idle',
-          patrolWaypoints: def.patrolWaypoints,
+          activity,
+          patrolWaypoints,
         };
       })
       .filter(Boolean) as Array<{

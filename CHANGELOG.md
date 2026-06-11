@@ -1,5 +1,24 @@
 # Changelog — ВОЛОДЬКА RPG
 
+## v3.3.3 — 12 июня 2026 (hotfix)
+
+- **Прыжок и движение после перехода сцены**: физика больше не обнуляет `vel.y`
+  в кадре после tap-jump; при входе в сцену narrative overlay синхронизируется
+  с explore-hub (`corridor_door` → `corridor_explore_mode`, `go_home` →
+  `explore_mode`, `street_bench` → `street_bench_view`).
+- **Наслоение UI в бою**: при старте боя закрывается story overlay; в режиме
+  `combat` скрыты narrative renderer и ambient HUD (компас, quick bar и т.д.).
+- **NPC в коридоре**: лимит 2 NPC на сцену, патрульные waypoints, разнесённые
+  spawn-координаты в расписании, убраны ambient NPC в узком коридоре; spawn
+  коридора смещён с z=4 на z=2.
+- Регрессионные тесты `exploreHubNodes.test.ts`.
+
+## v3.3.2 — 11 июня 2026 (hotfix)
+
+- **NaN god-rays / гигантские цилиндры**: guard в `GodRays.tsx` при `dist ≈ 0`,
+  `normalizeGodRayConfig()`, санитизация `BufferGeometry`.
+- **Rapier deprecation**: shim `rapierCompat.ts` через Vite alias.
+
 ## v3.3.1 — 11 июня 2026 (hotfix)
 
 - **Критический фикс React #185** (Maximum update depth exceeded) при открытии

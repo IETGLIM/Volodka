@@ -48,7 +48,7 @@ const ALBERT_SCHEDULE: NPCSchedule = {
   entries: [
     { startHour: 0, endHour: 7, sceneId: 'zarema_albert_room', position: [-1.5, 0, 1.0], activity: 'sleep' },
     { startHour: 7, endHour: 8, sceneId: 'home_evening', position: [0, 0, -2.0], activity: 'rest' },
-    { startHour: 8, endHour: 9, sceneId: 'volodka_corridor', position: [0, 0, 3.0], activity: 'walk' },
+    { startHour: 8, endHour: 9, sceneId: 'volodka_corridor', position: [0.6, 0, -2.5], activity: 'walk' },
     { startHour: 9, endHour: 14, sceneId: 'cafe_evening', position: [-2.5, 0, -3.0], activity: 'read' },
     { startHour: 14, endHour: 15, sceneId: 'park_day', position: [2.0, 0, -1.0], activity: 'walk' },
     { startHour: 15, endHour: 22, sceneId: 'cafe_evening', position: [-2.5, 0, -3.0], activity: 'talk' },
@@ -67,7 +67,7 @@ const ZAREMA_SCHEDULE: NPCSchedule = {
     { startHour: 0, endHour: 6, sceneId: 'zarema_albert_room', position: [1.5, 0, 1.0], activity: 'sleep' },
     { startHour: 6, endHour: 7, sceneId: 'zarema_albert_room', position: [1.5, 0, 1.0], activity: 'rest' },
     { startHour: 7, endHour: 10, sceneId: 'home_evening', position: [1.5, 0, 2.0], activity: 'work' },
-    { startHour: 10, endHour: 11, sceneId: 'volodka_corridor', position: [1.0, 0, 2.0], activity: 'walk' },
+    { startHour: 10, endHour: 11, sceneId: 'volodka_corridor', position: [-0.5, 0, 2.5], activity: 'walk' },
     { startHour: 11, endHour: 13, sceneId: 'cafe_evening', position: [1.0, 0, 1.5], activity: 'talk' },
     { startHour: 13, endHour: 16, sceneId: 'park_day', position: [-1.0, 0, 3.0], activity: 'walk' },
     { startHour: 16, endHour: 18, sceneId: 'library_day', position: [2.0, 0, -1.0], activity: 'read' },
@@ -118,15 +118,15 @@ const COLLEAGUE_SCHEDULE: NPCSchedule = {
   id: 'schedule_office_colleague',
   npcId: 'office_colleague',
   entries: [
-    { startHour: 0, endHour: 7, sceneId: 'volodka_corridor', position: [-1.0, 0, 1.0], activity: 'sleep' },
-    { startHour: 7, endHour: 8, sceneId: 'volodka_corridor', position: [0.5, 0, 2.0], activity: 'walk' },
+    { startHour: 0, endHour: 7, sceneId: 'volodka_corridor', position: [-0.8, 0, 0.5], activity: 'sleep' },
+    { startHour: 7, endHour: 8, sceneId: 'volodka_corridor', position: [-0.6, 0, -2.0], activity: 'walk' },
     { startHour: 8, endHour: 12, sceneId: 'office_day', position: [1.0, 0, 0.5], activity: 'work' },
     { startHour: 12, endHour: 13, sceneId: 'cafe_evening', position: [0.5, 0, 1.0], activity: 'rest' },
     { startHour: 13, endHour: 16, sceneId: 'office_day', position: [1.0, 0, 0.5], activity: 'work' },
     { startHour: 16, endHour: 18, sceneId: 'library_day', position: [-1.0, 0, 1.0], activity: 'read' },
     { startHour: 18, endHour: 19, sceneId: 'cafe_evening', position: [0.5, 0, 1.0], activity: 'talk' },
     { startHour: 19, endHour: 21, sceneId: 'street_night', position: [-1.5, 0, -1.0], activity: 'walk' },
-    { startHour: 21, endHour: 24, sceneId: 'volodka_corridor', position: [-1.0, 0, 1.0], activity: 'rest' },
+    { startHour: 21, endHour: 24, sceneId: 'volodka_corridor', position: [-0.8, 0, -1.0], activity: 'rest' },
   ],
 };
 
@@ -178,7 +178,7 @@ const VERA_SCHEDULE: NPCSchedule = {
   entries: [
     { startHour: 0, endHour: 7, sceneId: 'home_evening', position: [-1.0, 0, 3.0], activity: 'sleep' },
     { startHour: 7, endHour: 8, sceneId: 'home_evening', position: [0, 0, 2.0], activity: 'rest' },
-    { startHour: 8, endHour: 9, sceneId: 'volodka_corridor', position: [0, 0, 2.5], activity: 'walk' },
+    { startHour: 8, endHour: 9, sceneId: 'volodka_corridor', position: [0.5, 0, 2.0], activity: 'walk' },
     { startHour: 9, endHour: 13, sceneId: 'library_day', position: [-1.0, 0, 3.0], activity: 'read' },
     { startHour: 13, endHour: 14, sceneId: 'cafe_evening', position: [1.0, 0, 1.0], activity: 'rest' },
     { startHour: 14, endHour: 18, sceneId: 'library_day', position: [-1.0, 0, 3.0], activity: 'work' },
@@ -240,7 +240,7 @@ const KATE_SCHEDULE: NPCSchedule = {
   npcId: 'kate',
   entries: [
     { startHour: 0, endHour: 7, sceneId: 'home_evening', position: [-2.0, 0, -2.0], activity: 'sleep' },
-    { startHour: 7, endHour: 8, sceneId: 'volodka_corridor', position: [0, 0, 1.5], activity: 'walk' },
+    { startHour: 7, endHour: 8, sceneId: 'volodka_corridor', position: [0.3, 0, 1.8], activity: 'walk' },
     { startHour: 8, endHour: 13, sceneId: 'library_day', position: [-2.0, 0, -2.0], activity: 'work' },
     { startHour: 13, endHour: 14, sceneId: 'park_day', position: [0.5, 0, 1.5], activity: 'walk' },
     { startHour: 14, endHour: 18, sceneId: 'library_day', position: [-2.0, 0, -2.0], activity: 'read' },
@@ -332,7 +332,7 @@ const BORIS_SCHEDULE: NPCSchedule = {
   npcId: 'boris',
   entries: [
     { startHour: 0, endHour: 6, sceneId: 'home_evening', position: [0.0, 0, -5.0], activity: 'sleep' },
-    { startHour: 6, endHour: 8, sceneId: 'volodka_corridor', position: [2.0, 0, 1.0], activity: 'walk' },
+    { startHour: 6, endHour: 8, sceneId: 'volodka_corridor', position: [0.7, 0, -0.5], activity: 'walk' },
     { startHour: 8, endHour: 16, sceneId: 'abandoned_factory', position: [0.0, 0, -5.0], activity: 'work' },
     { startHour: 16, endHour: 19, sceneId: 'street_winter', position: [0.0, 0, -3.0], activity: 'walk' },
     { startHour: 19, endHour: 22, sceneId: 'cafe_evening', position: [0.0, 0, -1.0], activity: 'talk' },
@@ -349,7 +349,7 @@ const TAMARA_SCHEDULE: NPCSchedule = {
   npcId: 'tamara',
   entries: [
     { startHour: 0, endHour: 7, sceneId: 'home_evening', position: [2.0, 0, 3.0], activity: 'sleep' },
-    { startHour: 7, endHour: 8, sceneId: 'volodka_corridor', position: [0, 0, 1.5], activity: 'walk' },
+    { startHour: 7, endHour: 8, sceneId: 'volodka_corridor', position: [-0.3, 0, -1.8], activity: 'walk' },
     { startHour: 8, endHour: 14, sceneId: 'library_day', position: [2.0, 0, 3.0], activity: 'work' },
     { startHour: 14, endHour: 18, sceneId: 'library_day', position: [-2.0, 0, -2.0], activity: 'read' },
     { startHour: 18, endHour: 20, sceneId: 'cafe_evening', position: [0.5, 0, 0.5], activity: 'talk' },

@@ -11,6 +11,7 @@
 import { eventBus } from '@/engine/EventBus';
 import { getGameStore } from '@/store/gameStore';
 import type { SceneId } from '@/shared/types/game';
+import { syncNarrativeOnSceneEnter } from '@/shared/exploreHubNodes';
 import { runGlobalSceneUnload } from './GlobalCleanupService';
 
 export interface SceneTransitionPayload {
@@ -39,6 +40,7 @@ export function performSceneTransition(payload: SceneTransitionPayload): void {
   store.setPlayerPosition(spawnAt);
   store.discoverScene(targetScene);
   store.autoRegenBetweenScenes();
+  syncNarrativeOnSceneEnter(targetScene);
 
   eventBus.emit('scene:enter', {
     sceneId: targetScene,

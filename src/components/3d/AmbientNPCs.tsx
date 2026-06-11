@@ -31,12 +31,7 @@ interface AmbientNPCConfig {
 /* ─── Scene configs ─── */
 
 const SCENE_CONFIGS: Partial<Record<SceneId, AmbientNPCConfig>> = {
-  volodka_corridor: {
-    count: 2,
-    type: 'corridor_neighbor',
-    spawnPositions: [[0, 0, -3], [0, 0, 3]],
-    wanderRadius: 2.5,
-  },
+  // Corridor is narrow — scheduled NPCs + lore beats are enough; ambient duplicates caused piles.
   office_day: {
     count: 4,
     type: 'office_worker',

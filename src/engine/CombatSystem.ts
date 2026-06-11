@@ -211,6 +211,8 @@ export function startCombat(enemyType: EnemyType): CombatState {
   const currentNodeId = state.currentNodeId;
   if (currentNodeId && state.showStoryOverlay) {
     combat.pushReturnNode(currentNodeId);
+    // Hide story overlay during combat — prevents stacked story + combat UI (see screenshot).
+    dispatchGameAction({ type: 'story/closeNarrativeOverlay' });
   }
 
   const playerLevel = state.playerState.progression.level;

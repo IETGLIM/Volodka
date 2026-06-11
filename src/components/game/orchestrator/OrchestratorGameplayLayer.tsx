@@ -76,6 +76,9 @@ export function OrchestratorGameplayLayer({
   const isGameplayMode = mode === 'exploration' || mode === 'cutscene' || mode === 'combat';
   if (!isGameplayMode) return null;
 
+  const showAmbientExplorationHud = mode === 'exploration' || mode === 'cutscene';
+  const showNarrativeOverlay = mode !== 'combat';
+
   const {
     minigameSetters,
     codebreakerOpen,
@@ -186,13 +189,17 @@ export function OrchestratorGameplayLayer({
         )}
       </AnimatePresence>
 
-      <StressIndicator />
-      <QuickUseBar />
-      <QuickAccessToolbar />
-      <AutoSaveIndicator />
+      {showAmbientExplorationHud && (
+        <>
+          <StressIndicator />
+          <QuickUseBar />
+          <QuickAccessToolbar />
+          <AutoSaveIndicator />
+          <CompassHUD />
+        </>
+      )}
       {mode === 'exploration' && <AmbientSoundMixer />}
       <SceneTransitionProgress />
-      <CompassHUD />
 
       {mode === 'exploration' && gameDataReady && (
         <>
@@ -247,14 +254,14 @@ export function OrchestratorGameplayLayer({
         <ExplorationMobileHud onOpenInventory={handleOpenInventory} />
       )}
 
-      {isStoryActive && (
+      {showNarrativeOverlay && isStoryActive && (
         <ErrorBoundary name="story">
           <Suspense fallback={null}>
             <LazyStoryRenderer />
           </Suspense>
         </ErrorBoundary>
       )}
-      {isDialogueActive && (
+      {showNarrativeOverlay && isDialogueActive && (
         <ErrorBoundary name="dialogue">
           <Suspense fallback={null}>
             <LazyDialogueRenderer />

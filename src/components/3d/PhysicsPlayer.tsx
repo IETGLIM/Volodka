@@ -517,7 +517,12 @@ export function PhysicsPlayer({
       isGroundedRef.current = false;
       jumpCooldownRef.current = JUMP_COOLDOWN;
       coyoteTimerRef.current = 0;
-    } else if (isGroundedRef.current || (nearFloor && !jumping)) {
+    } else if (
+      isGroundedRef.current ||
+      (nearFloor && vel.y <= 0 && !jumping)
+    ) {
+      // Only snap to floor when falling or idle — not while moving upward after a jump.
+      // Previously `nearFloor && !jumping` cancelled tap-jumps on the very next frame.
       vel.y = 0;
       if (nearFloor) {
         isGroundedRef.current = true;
