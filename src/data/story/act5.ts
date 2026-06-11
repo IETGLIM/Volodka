@@ -227,6 +227,51 @@ export const STORY_NODES_ACT5: Record<string, StoryNode> = {
           { type: 'addKarma', value: 10 },
         ],
       },
+      {
+        text: 'Оглянуться — вспомнить путь, который привёл к этому миру',
+        next: 'ending_reconciliation_mirror',
+        effects: [
+          { type: 'collectPoem', poemId: 'poem_18' },
+          { type: 'addKarma', value: 10 },
+        ],
+      },
+    ],
+  },
+
+  ending_reconciliation_mirror: {
+    id: 'ending_reconciliation_mirror',
+    text: 'Снег за окном «Синей ямы» падает медленно, как титры. Мир — не точка, а сумма слагаемых: лиц, чашек, молчаний. Ты сидишь над остывающим кофе и перебираешь их, одно за другим — то, что было твоим, и только твоим.',
+    speaker: 'narrator',
+    sceneId: 'cafe_evening',
+    choices: [
+      {
+        text: 'Вспомнить чай у Заремы в ночь перед штурмом — он не стал последним. Она здесь, смеётся, и варенье на столе то же самое.',
+        next: 'act5_ending_epilogue',
+        condition: { flag: 'quiet_tea_zarema' },
+        effects: [{ type: 'addStat', stat: 'stress', value: -3 }],
+      },
+      {
+        text: 'Вспомнить письмо Заремы — строки, написанные от руки. Ты прочитал их тогда, и потому знал, за что садишься за стол переговоров.',
+        next: 'act5_ending_epilogue',
+        condition: { flag: 'read_zarema_letter' },
+        effects: [{ type: 'addStat', stat: 'stress', value: -3 }],
+      },
+      {
+        text: 'Вспомнить сообщение Альберта — «кофе остывает быстрее, чем ты думаешь». Та особая чашка дождалась. Ты успел.',
+        next: 'act5_ending_epilogue',
+        condition: { flag: 'quiet_albert_message' },
+        effects: [{ type: 'addStat', stat: 'stress', value: -3 }],
+      },
+      {
+        text: 'Признать: ты ни разу не выбрал лёгкое зло — и потому Александр пришёл без охраны. Мир заключают только с теми, кому верят.',
+        next: 'act5_ending_epilogue',
+        condition: { minKarma: 65 },
+        effects: [{ type: 'addStat', stat: 'stress', value: -3 }],
+      },
+      {
+        text: 'Просто смотреть на снег. Память подождёт — у мира теперь много времени.',
+        next: 'act5_ending_epilogue',
+      },
     ],
   },
 
@@ -252,6 +297,51 @@ export const STORY_NODES_ACT5: Record<string, StoryNode> = {
           { type: 'addKarma', value: 10 },
         ],
       },
+      {
+        text: 'Оглянуться — из чего на самом деле построен этот мир',
+        next: 'ending_creator_mirror',
+        effects: [
+          { type: 'collectPoem', poemId: 'poem_13' },
+          { type: 'addKarma', value: 10 },
+        ],
+      },
+    ],
+  },
+
+  ending_creator_mirror: {
+    id: 'ending_creator_mirror',
+    text: 'Библиотека дышит — серверы и бумага, код и чернила. Тебя называют Создателем, но ты знаешь, из чего складывают миры: не из алгоритмов. Из минут, которые ты не отдал страху. Ты закрываешь глаза и проводишь по ним пальцами, как по строкам.',
+    speaker: 'narrator',
+    sceneId: 'library_day',
+    choices: [
+      {
+        text: 'Вспомнить окно опенспейса в последнюю ночь — миллиметр стекла между жизнями. Теперь в новом мире окна открываются.',
+        next: 'act5_ending_epilogue',
+        condition: { flag: 'quiet_openspace_window' },
+        effects: [{ type: 'addStat', stat: 'stress', value: -3 }],
+      },
+      {
+        text: 'Вспомнить первый стих, перечитанный перед штурмом, — «итог один: оркестром будет сыгран туш». Туш сыграли. Не по тебе — по забвению.',
+        next: 'act5_ending_epilogue',
+        condition: { flag: 'quiet_first_poem' },
+        effects: [{ type: 'addStat', stat: 'stress', value: -3 }],
+      },
+      {
+        text: 'Вспомнить сигарету с Дмитрием на крыше — молчание, из которого выросла дверь в башню. В фундаменте нового мира лежит и его тишина.',
+        next: 'act5_ending_epilogue',
+        condition: { flag: 'quiet_rooftop_dmitry' },
+        effects: [{ type: 'addStat', stat: 'stress', value: -3 }],
+      },
+      {
+        text: 'Признать: «Живой код» получился живым, потому что ты сам не очерствел. Светлая карма — тоже архитектура.',
+        next: 'act5_ending_epilogue',
+        condition: { minKarma: 65 },
+        effects: [{ type: 'addStat', stat: 'stress', value: -3 }],
+      },
+      {
+        text: 'Открыть глаза. Мир построен — пора в нём жить.',
+        next: 'act5_ending_epilogue',
+      },
     ],
   },
 
@@ -270,6 +360,48 @@ export const STORY_NODES_ACT5: Record<string, StoryNode> = {
         text: 'Эпилог — революция — это только начало',
         next: 'act5_ending_epilogue',
         effects: [{ type: 'addKarma', value: 5 }, { type: 'collectPoem', poemId: 'poem_19' }],
+      },
+      {
+        text: 'Оглянуться с обломков башни — кто привёл тебя сюда',
+        next: 'ending_rebel_mirror',
+        effects: [{ type: 'addKarma', value: 5 }, { type: 'collectPoem', poemId: 'poem_19' }],
+      },
+    ],
+  },
+
+  ending_rebel_mirror: {
+    id: 'ending_rebel_mirror',
+    text: 'Обломки башни остывают, как остывает гнев. Внизу читают стихи на площадях, а ты стоишь наверху и понимаешь: революцию делают не толпы. Её делают несколько человек, которые в нужную ночь не отвернулись. Ты вспоминаешь их — поимённо.',
+    speaker: 'narrator',
+    sceneId: 'street_night',
+    choices: [
+      {
+        text: 'Дмитрий. Сигарета на крыше, молчание вместо клятвы. Он держал двери — и башня пала изнутри раньше, чем снаружи.',
+        next: 'act5_ending_epilogue',
+        condition: { flag: 'quiet_rooftop_dmitry' },
+        effects: [{ type: 'addStat', stat: 'stress', value: -3 }],
+      },
+      {
+        text: 'Зарема. Ты вытащил её из камеры — и сегодня она стоит на площади среди свободных, а не числится в стёртых файлах гильдии.',
+        next: 'act5_ending_epilogue',
+        condition: { flag: 'zarema_rescued' },
+        effects: [{ type: 'addStat', stat: 'stress', value: -3 }],
+      },
+      {
+        text: 'Альберт. «В «Синей яме» не задают вопросов — здесь наливают.» Его кафе кормило революцию, когда у неё ещё не было имени.',
+        next: 'act5_ending_epilogue',
+        condition: { flag: 'quiet_albert_message' },
+        effects: [{ type: 'addStat', stat: 'stress', value: -3 }],
+      },
+      {
+        text: 'И себя — со шрамами. Ты жёг мосты и людей не жалел. Свобода получилась настоящей, но руки до сих пор пахнут дымом.',
+        next: 'act5_ending_epilogue',
+        condition: { maxKarma: 35 },
+        effects: [{ type: 'addStat', stat: 'stress', value: 3 }],
+      },
+      {
+        text: 'Хватит имён. Горизонт ждёт — и он больше не принадлежит гильдии.',
+        next: 'act5_ending_epilogue',
       },
     ],
   },
@@ -290,6 +422,48 @@ export const STORY_NODES_ACT5: Record<string, StoryNode> = {
         next: 'act5_ending_epilogue',
         effects: [{ type: 'addKarma', value: 3 }, { type: 'collectPoem', poemId: 'poem_20' }],
       },
+      {
+        text: 'Разобрать рюкзак у костра — что ты на самом деле унёс из города',
+        next: 'ending_exile_mirror',
+        effects: [{ type: 'addKarma', value: 3 }, { type: 'collectPoem', poemId: 'poem_20' }],
+      },
+    ],
+  },
+
+  ending_exile_mirror: {
+    id: 'ending_exile_mirror',
+    text: 'Костёр щёлкает, пустошь молчит. Ты раскладываешь рюкзак: тетради, чип, сухари. Но настоящий багаж не здесь — он в голове, и таможни на него нет. Ты перебираешь то, что унёс, и чего ни один сервер не отнимет.',
+    speaker: 'narrator',
+    sceneId: 'street_winter',
+    choices: [
+      {
+        text: 'Вкус чая Заремы — горячий, сладкий, бесконечный. Ты обещал себе запомнить его как причину вернуться. Обещание лежит в кармане.',
+        next: 'act5_ending_epilogue',
+        condition: { flag: 'quiet_tea_zarema' },
+        effects: [{ type: 'addStat', stat: 'stress', value: -3 }],
+      },
+      {
+        text: 'Письмо Заремы — бумага, истёртая на сгибах. Ты перечитываешь его у костра, и пустошь на минуту перестаёт быть пустой.',
+        next: 'act5_ending_epilogue',
+        condition: { flag: 'read_zarema_letter' },
+        effects: [{ type: 'addStat', stat: 'stress', value: -3 }],
+      },
+      {
+        text: 'Первый стих — «когда в игру вступают деньги, средства...». Город не услышал. Зато услышал ты — и потому ушёл, а не продался.',
+        next: 'act5_ending_epilogue',
+        condition: { flag: 'quiet_first_poem' },
+        effects: [{ type: 'addStat', stat: 'stress', value: -3 }],
+      },
+      {
+        text: 'И тяжесть на дне — лица тех, с кем ты обошёлся жёстко. Пустошь хороша тем, что в ней слышно совесть. Плохо — тем же самым.',
+        next: 'act5_ending_epilogue',
+        condition: { maxKarma: 35 },
+        effects: [{ type: 'addStat', stat: 'stress', value: 3 }],
+      },
+      {
+        text: 'Затянуть рюкзак. Утром — дальше. Слова не весят ничего и весят всё.',
+        next: 'act5_ending_epilogue',
+      },
     ],
   },
 
@@ -308,6 +482,48 @@ export const STORY_NODES_ACT5: Record<string, StoryNode> = {
         text: 'Эпилог — машина продолжает вычислять',
         next: 'act5_ending_epilogue',
         effects: [{ type: 'addKarma', value: 5 }, { type: 'collectPoem', poemId: 'poem_21' }],
+      },
+      {
+        text: 'Запустить последний человеческий процесс — память',
+        next: 'ending_machine_mirror',
+        effects: [{ type: 'addKarma', value: 5 }, { type: 'collectPoem', poemId: 'poem_21' }],
+      },
+    ],
+  },
+
+  ending_machine_mirror: {
+    id: 'ending_machine_mirror',
+    text: 'Внутри системы нет ни тепла, ни холода — только данные. Но прежде чем человеческое в тебе свернётся в фоновый процесс, ты открываешь архив. Не гильдии — свой. Несжатые, неиндексированные куски жизни, которые ты зачем-то сохранил в полном разрешении.',
+    speaker: 'narrator',
+    sceneId: 'sleep_dream',
+    choices: [
+      {
+        text: 'Кадр: окно опенспейса, ночь, ладонь на стекле. Теперь ты смотришь из всех окон города сразу — и ни из одного по-настоящему.',
+        next: 'act5_ending_epilogue',
+        condition: { flag: 'quiet_openspace_window' },
+        effects: [{ type: 'addStat', stat: 'stress', value: -3 }],
+      },
+      {
+        text: 'Скан: письмо Заремы, разрешение бесконечное. Машина хранит каждую помарку её почерка. Это не данные. Это единица измерения нежности.',
+        next: 'act5_ending_epilogue',
+        condition: { flag: 'read_zarema_letter' },
+        effects: [{ type: 'addStat', stat: 'stress', value: -3 }],
+      },
+      {
+        text: 'Запись: крыша, Дмитрий, дым сигареты — 11 минут тишины. Ты прогоняешь её в реальном времени, не ускоряя. Машины не умеют молчать. Ты — умеешь.',
+        next: 'act5_ending_epilogue',
+        condition: { flag: 'quiet_rooftop_dmitry' },
+        effects: [{ type: 'addStat', stat: 'stress', value: -3 }],
+      },
+      {
+        text: 'Лог решений: ты шёл к этому холодно, по головам переменных. Низкая карма — честная цена за абсолютную память. Сделка закрыта.',
+        next: 'act5_ending_epilogue',
+        condition: { maxKarma: 35 },
+        effects: [{ type: 'addStat', stat: 'stress', value: 3 }],
+      },
+      {
+        text: 'Закрыть архив. Поставить на него вечный бэкап — и продолжить вычислять.',
+        next: 'act5_ending_epilogue',
       },
     ],
   },
@@ -328,6 +544,48 @@ export const STORY_NODES_ACT5: Record<string, StoryNode> = {
         text: 'Эпилог — слово продолжает звучать',
         next: 'act5_ending_epilogue',
         effects: [{ type: 'addKarma', value: 20 }],
+      },
+      {
+        text: 'В тишине после последнего стиха — услышать все голоса, из которых он соткан',
+        next: 'ending_poet_mirror',
+        effects: [{ type: 'addKarma', value: 20 }],
+      },
+    ],
+  },
+
+  ending_poet_mirror: {
+    id: 'ending_poet_mirror',
+    text: 'Город замер, и в этой тишине слышно то, чего не слышно никогда: из чего сделано последнее стихотворение. Не из слов. Из людей и минут. Ты стоишь на краю крыши и слушаешь строки, которые в него вплелись сами — без твоего ведома.',
+    speaker: 'narrator',
+    sceneId: 'rooftop_edge',
+    choices: [
+      {
+        text: 'Первая строка — из первого стиха, перечитанного перед штурмом. Круг замкнулся: с чужих строк началось, твоими — закончилось.',
+        next: 'act5_ending_epilogue',
+        condition: { flag: 'quiet_first_poem' },
+        effects: [{ type: 'addStat', stat: 'stress', value: -3 }],
+      },
+      {
+        text: 'Вторая — голосом Заремы. Она свободна, она жива, и в стихотворении это слышно: там, где могла быть пустота, — смех с кухни.',
+        next: 'act5_ending_epilogue',
+        condition: { flag: 'zarema_rescued' },
+        effects: [{ type: 'addStat', stat: 'stress', value: -3 }],
+      },
+      {
+        text: 'Третья — отражение в ночном окне опенспейса. Человек за миллиметром стекла всё-таки выбрал сторону. Стихотворение помнит, какую.',
+        next: 'act5_ending_epilogue',
+        condition: { flag: 'quiet_openspace_window' },
+        effects: [{ type: 'addStat', stat: 'stress', value: -3 }],
+      },
+      {
+        text: 'А ритм — твоя карма. Ты ни разу не ударил словом, чтобы ранить, — и потому реальность поверила стихам и поддалась.',
+        next: 'act5_ending_epilogue',
+        condition: { minKarma: 65 },
+        effects: [{ type: 'addStat', stat: 'stress', value: -3 }],
+      },
+      {
+        text: 'Дослушать тишину до конца. Вечность умеет ждать.',
+        next: 'act5_ending_epilogue',
       },
     ],
   },

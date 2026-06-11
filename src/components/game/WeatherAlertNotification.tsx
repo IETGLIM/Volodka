@@ -21,6 +21,7 @@ import {
 import { eventBus } from '@/engine/EventBus';
 import { useWeatherAlertState } from '@/store/selectors';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
+import { useNotificationSlot, NOTIFY_PRIORITY } from '@/hooks/useNotificationSlot';
 import { WEATHER_EFFECTS, determineWeatherType } from '@/data/weatherEffects';
 import type { EventWeatherType } from '@/shared/types/game';
 import type { SceneId } from '@/shared/types/game';
@@ -327,6 +328,7 @@ function WeatherAlertCard({ alert, index }: { alert: WeatherAlertData; index: nu
 
 export function WeatherAlertNotification() {
   const [alerts, setAlerts] = useState<WeatherAlertData[]>([]);
+  const slotGranted = useNotificationSlot('weather', NOTIFY_PRIORITY.weather, alerts.length > 0);
   const timersMap = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
   const timers = timersMap.current;
 
@@ -418,7 +420,7 @@ export function WeatherAlertNotification() {
       style={{ zIndex: UI_LAYERS.TOASTS }}
     >
       <AnimatePresence mode="popLayout">
-        {alerts.map((alert, index) => (
+        {slotGranted && alerts.map((alert, index) => (
           <WeatherAlertCard
             key={alert.id}
             alert={alert}

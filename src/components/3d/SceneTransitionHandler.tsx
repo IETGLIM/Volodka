@@ -112,6 +112,8 @@ function getSceneConfigName(sceneId: SceneId): string {
     abandoned_factory: 'Заброшенный завод',
     zarema_albert_room: 'Комната Заремы и Альберта',
     chk_forest_zorge: 'ЧК · Лес · Зорге',
+    factory_basement: 'Подвал завода',
+    river_pier: 'Пирс у реки',
   };
   return names[sceneId] ?? sceneId;
 }

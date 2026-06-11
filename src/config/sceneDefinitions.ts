@@ -486,6 +486,7 @@ export const park_day_def: SceneDefinition = {
     { id: 'park_to_street', position: [-12.0, 1, 0], width: 2.0, height: 2.5 },
     { id: 'park_to_library', position: [0, 1, -12.0], width: 1.0, height: 2.2 },
     { id: 'park_to_chk', position: [0, 1, -14.0], width: 2.0, height: 2.5 },
+    { id: 'park_to_pier', position: [12.0, 1, 7.0], width: 2.0, height: 2.5 },
   ],
   exits: [
     {
@@ -515,6 +516,15 @@ export const park_day_def: SceneDefinition = {
       label: '→ Лес · Зорге (ЧК)',
       requiredFlag: 'chk_forest_unlocked',
       doorwayId: 'park_to_chk',
+    },
+    {
+      id: 'park_to_pier',
+      targetScene: 'river_pier',
+      position: [12.0, 1, 7.0],
+      spawnPosition: [0, 0.01, 7],
+      spawnRotation: Math.PI,
+      label: '→ Пирс у реки',
+      doorwayId: 'park_to_pier',
     },
   ],
   floors: [
@@ -766,6 +776,7 @@ export const abandoned_factory_def: SceneDefinition = {
   locomotionScale: 1.1,
   doorways: [
     { id: 'factory_to_street', position: [0, 1, 8.0], width: 1.5, height: 2.5 },
+    { id: 'factory_to_basement', position: [-9, 1, -6], width: 1.4, height: 2.2 },
   ],
   exits: [
     {
@@ -777,6 +788,16 @@ export const abandoned_factory_def: SceneDefinition = {
       label: '→ Улица',
       requiredFlag: 'factory_unlocked',
       doorwayId: 'factory_to_street',
+    },
+    {
+      id: 'factory_to_basement',
+      targetScene: 'factory_basement',
+      position: [-9, 1, -6],
+      spawnPosition: [0, 0.01, 5],
+      spawnRotation: Math.PI,
+      label: '→ Подвал',
+      requiredFlag: 'basement_key_found',
+      doorwayId: 'factory_to_basement',
     },
   ],
   floors: [
@@ -918,6 +939,122 @@ export const chk_forest_zorge_def: SceneDefinition = {
   transitionStyle: 'dissolve',
 };
 
+/** Factory basement — the reliquary of «Заря-М», dense industrial catacombs */
+export const factory_basement_def: SceneDefinition = {
+  id: 'factory_basement',
+  name: 'Подвал завода',
+  dimensions: [16, 4, 14],
+  type: 'indoor',
+  hasCeiling: true,
+  defaultSpawn: [0, 0.01, 5],
+  defaultSpawnRotation: Math.PI,
+  characterModelScale: 1.0,
+  locomotionScale: 1.0,
+  doorways: [
+    { id: 'basement_to_factory', position: [0, 1, 7], width: 1.4, height: 2.4 },
+  ],
+  exits: [
+    {
+      id: 'basement_to_factory',
+      targetScene: 'abandoned_factory',
+      position: [0, 1, 7],
+      spawnPosition: [0, 0.01, 6],
+      spawnRotation: Math.PI,
+      label: '→ Цех завода',
+      doorwayId: 'basement_to_factory',
+    },
+  ],
+  floors: [
+    { type: 'cuboid', size: [8, 0.05, 7], position: [0, -0.05, 0], footstepMaterial: 'concrete' },
+  ],
+  walls: [],
+  obstacles: [
+    // Server rack rows flanking the central aisle
+    { type: 'cuboidObstacle', size: [0.5, 1.1, 2.6], position: [-4.5, 1.1, -1], footstepMaterial: 'metal' },
+    { type: 'cuboidObstacle', size: [0.5, 1.1, 2.6], position: [4.5, 1.1, -1], footstepMaterial: 'metal' },
+    { type: 'cuboidObstacle', size: [0.5, 1.1, 1.8], position: [-4.5, 1.1, 3.5], footstepMaterial: 'metal' },
+    { type: 'cuboidObstacle', size: [0.5, 1.1, 1.8], position: [4.5, 1.1, 3.5], footstepMaterial: 'metal' },
+    // «Заря-М» monolith at the far wall
+    { type: 'cuboidObstacle', size: [1.2, 1.6, 0.8], position: [0, 1.6, -5.2], footstepMaterial: 'metal' },
+    // Support columns
+    { type: 'cuboidObstacle', size: [0.3, 2, 0.3], position: [-2.5, 2, 0], footstepMaterial: 'concrete' },
+    { type: 'cuboidObstacle', size: [0.3, 2, 0.3], position: [2.5, 2, 0], footstepMaterial: 'concrete' },
+  ],
+  ceilings: [
+    { type: 'cuboid', size: [8, 0.1, 7], position: [0, 3.4, 0] },
+  ],
+  visualComponent: 'FactoryBasementVisual',
+  lights: [
+    { position: [0, 2.2, -5], intensity: 2.6, color: '#22ff88', distance: 12 },
+    { position: [-4, 2.8, 2], intensity: 0.9, color: '#ff3322', distance: 8 },
+    { position: [4, 2.8, 2], intensity: 0.9, color: '#ff3322', distance: 8 },
+    { position: [0, 2.5, 5], intensity: 0.7, color: '#8899aa', distance: 9 },
+  ],
+  ambientColor: '#1a2a24',
+  ambientIntensity: 0.45,
+  groundColor: '#1c2220',
+  fogEnabled: true,
+  fog: { near: 4, far: 14 },
+  transitionStyle: 'dissolve',
+};
+
+/** River pier at night — second ЧК hangout: barrel fire, port wine, guitar, water */
+export const river_pier_def: SceneDefinition = {
+  id: 'river_pier',
+  name: 'Пирс у реки',
+  dimensions: [26, 4, 20],
+  type: 'outdoor',
+  hasCeiling: false,
+  defaultSpawn: [0, 0.01, 7],
+  defaultSpawnRotation: Math.PI,
+  characterModelScale: 1.0,
+  locomotionScale: 1.2,
+  doorways: [
+    { id: 'pier_to_park', position: [0, 1, 9], width: 2.0, height: 2.5 },
+  ],
+  exits: [
+    {
+      id: 'pier_to_park',
+      targetScene: 'park_day',
+      position: [0, 1, 9],
+      spawnPosition: [11, 0.01, 7],
+      spawnRotation: Math.PI,
+      label: '→ Парк',
+      doorwayId: 'pier_to_park',
+    },
+  ],
+  floors: [
+    { type: 'cuboid', size: [13, 0.05, 10], position: [0, -0.05, 0], footstepMaterial: 'wood' },
+  ],
+  walls: [],
+  obstacles: [
+    // Barrel fire
+    { type: 'cuboidObstacle', size: [0.35, 0.5, 0.35], position: [0, 0.5, -2], footstepMaterial: 'metal' },
+    // Crates / seats around the fire
+    { type: 'cuboidObstacle', size: [0.35, 0.25, 0.35], position: [-1.6, 0.25, -1.2], footstepMaterial: 'wood' },
+    { type: 'cuboidObstacle', size: [0.35, 0.25, 0.35], position: [1.7, 0.25, -1.4], footstepMaterial: 'wood' },
+    { type: 'cuboidObstacle', size: [0.35, 0.25, 0.35], position: [0.4, 0.25, -3.6], footstepMaterial: 'wood' },
+    // Old boat hull on the bank
+    { type: 'cuboidObstacle', size: [1.4, 0.4, 0.5], position: [-6, 0.4, 3], footstepMaterial: 'wood' },
+    // Pier railing posts (south edge over water)
+    { type: 'cuboidObstacle', size: [6.5, 0.5, 0.1], position: [0, 0.5, -8.5], footstepMaterial: 'metal' },
+  ],
+  ceilings: [],
+  visualComponent: 'RiverPierVisual',
+  lights: [
+    { position: [0, 1.4, -2], intensity: 2.8, color: '#ff8833', distance: 12 },
+    { position: [-4, 2.6, -4], intensity: 0.8, color: '#ffd966', distance: 8 },
+    { position: [4, 2.6, -4], intensity: 0.8, color: '#ffd966', distance: 8 },
+    { position: [0, 6, -14], intensity: 0.9, color: '#8a9ab0', distance: 30 },
+  ],
+  ambientColor: '#2a3448',
+  ambientIntensity: 0.6,
+  groundColor: '#2c2c38',
+  fogEnabled: true,
+  fog: { near: 12, far: 42 },
+  transitionStyle: 'dissolve',
+};
+
 /** Map of all scene definitions — single source of truth */
 export const SCENE_DEFINITIONS = {
   volodka_room: volodka_room_def,
@@ -935,6 +1072,8 @@ export const SCENE_DEFINITIONS = {
   abandoned_factory: abandoned_factory_def,
   zarema_albert_room: zarema_albert_room_def,
   chk_forest_zorge: chk_forest_zorge_def,
+  factory_basement: factory_basement_def,
+  river_pier: river_pier_def,
 } as const satisfies Record<string, SceneDefinition>;
 
 /** Scene identifier — derived from SCENE_DEFINITIONS keys (no manual union). */

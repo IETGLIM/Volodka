@@ -8,6 +8,7 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
+import { useNotificationSlot, NOTIFY_PRIORITY } from '@/hooks/useNotificationSlot';
 import { bottomQuestToastPx } from '@/shared/constants/hudLayout';
 import { eventBus } from '@/engine/EventBus'
 import { AriaLiveRegion } from '@/components/a11y/AriaLiveRegion'
@@ -391,6 +392,8 @@ export function QuestNotificationSystem() {
   const [notifications, setNotifications] = useState<QuestNotification[]>([])
   const shownIds = useRef(new Set<string>())
   const notifCounter = useRef(0)
+  // High-priority slot claim — story/quest cards preempt loot/crafting/etc.
+  useNotificationSlot('quest', NOTIFY_PRIORITY.quest, notifications.length > 0)
 
   /* ── Dismiss handler ── */
   const dismissNotification = useCallback((id: string) => {

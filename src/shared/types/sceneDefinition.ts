@@ -38,7 +38,9 @@ export type VisualComponentName =
   | 'RooftopVisual'
   | 'FactoryVisual'
   | 'ZaremaAlbertVisual'
-  | 'ChkForestVisual';
+  | 'ChkForestVisual'
+  | 'FactoryBasementVisual'
+  | 'RiverPierVisual';
 
 // ─── Doorway ───
 

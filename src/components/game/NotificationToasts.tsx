@@ -9,6 +9,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { explorationStatToastTopPx } from '@/shared/constants/hudLayout';
+import { useNotificationSlot, NOTIFY_PRIORITY } from '@/hooks/useNotificationSlot';
 import { toastManager, type ToastType, type ToastMessage } from '@/engine/ToastManager';
 import type { NotificationType } from '@/store/gameStore';
 import { useGamePhase, useNotifications } from '@/store/selectors';
@@ -317,7 +318,9 @@ export function NotificationToasts() {
   /* ── Render ── */
   // Only show toasts when game is active (not in menu/intro)
   const mode = useGamePhase();
+  const slotGranted = useNotificationSlot('toast', NOTIFY_PRIORITY.toast, toasts.length > 0);
   if (mode === 'menu' || mode === 'intro') return null;
+  if (!slotGranted) return null;
 
   const visibleToasts = toasts.slice(-MAX_VISIBLE);
 

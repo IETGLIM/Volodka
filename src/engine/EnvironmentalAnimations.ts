@@ -404,6 +404,36 @@ const SCENE_ENV_ANIMATIONS: Record<SceneId, EnvAnimation[]> = {
       config: { amplitude: 0.07, frequency: 0.22, axis: 2 },
     },
   ],
+
+  factory_basement: [
+    {
+      id: 'zarya_core_pulse',
+      type: 'light_flicker',
+      position: [0, 2.2, -5],
+      config: { minIntensity: 1.8, maxIntensity: 3.0, flickerRate: 0.05 },
+    },
+    {
+      id: 'basement_warning_left',
+      type: 'light_flicker',
+      position: [-4, 2.8, 2],
+      config: { minIntensity: 0.2, maxIntensity: 1.0, flickerRate: 0.3 },
+    },
+  ],
+
+  river_pier: [
+    {
+      id: 'barrel_fire_flicker',
+      type: 'light_flicker',
+      position: [0, 1.4, -2],
+      config: { minIntensity: 1.8, maxIntensity: 3.2, flickerRate: 0.14 },
+    },
+    {
+      id: 'string_lights_sway',
+      type: 'curtain_sway',
+      position: [0, 2.6, -4],
+      config: { amplitude: 0.05, frequency: 0.3, axis: 0 },
+    },
+  ],
 };
 
 // ─── Public API ───

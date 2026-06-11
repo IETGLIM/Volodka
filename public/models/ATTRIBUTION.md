@@ -31,13 +31,13 @@ All props in `public/models/props/` converted from Kenney Furniture Kit OBJ via 
 
 ## NPC animated models (Khronos sample models)
 
-| NPC | File | Khronos model | License |
-|-----|------|---------------|---------|
-| Альберт | npcs/albert.glb | CesiumMan | CC0 |
-| Зарема | npcs/zarema.glb | RiggedFigure | CC0 |
-| Бариста | npcs/cafe_barista.glb | RiggedSimple | CC0 |
-| Александр | npcs/office_alexander.glb | BrainStem | CC0 |
-| Коллега | npcs/office_colleague.glb | RiggedSimple | CC0 |
+| NPC | File | Source model | License |
+|-----|------|--------------|---------|
+| Альберт | npcs/albert.glb | Khronos CesiumMan | CC0 |
+| Зарема | npcs/zarema.glb | Khronos RiggedFigure | CC0 |
+| Бариста | npcs/cafe_barista.glb | three.js Soldier | CC0 |
+| Александр | npcs/office_alexander.glb | Khronos BrainStem | CC0 |
+| Коллега | npcs/office_colleague.glb | three.js Soldier | CC0 |
 
 - **Source:** https://github.com/KhronosGroup/glTF-Sample-Models
 - **License:** CC0 / permissive Khronos sample assets

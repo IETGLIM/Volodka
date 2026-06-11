@@ -7,6 +7,7 @@ import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { Package, TrendingUp, Sparkles } from 'lucide-react';
 import { audioEngine } from '@/engine/AudioEngine';
 import type { TrainablePlayerSkill } from '@/shared/types/game';
+import { useNotificationSlot, NOTIFY_PRIORITY } from '@/hooks/useNotificationSlot';
 
 interface Notification {
   id: number;
@@ -86,6 +87,7 @@ export function notifyPoemCollected(title: string) {
 /* ── Component ── */
 export function LootNotification() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
+  const slotGranted = useNotificationSlot('loot', NOTIFY_PRIORITY.loot, notifications.length > 0);
 
   const addNotification = useCallback((n: Omit<Notification, 'id'>) => {
     const id = nextId++;
@@ -133,7 +135,7 @@ export function LootNotification() {
   return (
     <div className="fixed top-20 left-3 sm:top-24 sm:left-4 flex flex-col gap-2 pointer-events-none" style={{ zIndex: UI_LAYERS.TOASTS }} data-exploration-ui>
       <AnimatePresence>
-        {notifications.map((n) => {
+        {slotGranted && notifications.map((n) => {
           const rarityBorder = n.rarity ? RARITY_BORDER[n.rarity] : '';
           const rarityGlow = n.rarity ? RARITY_GLOW[n.rarity] : '';
           return (

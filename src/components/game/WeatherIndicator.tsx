@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { useWeatherIndicatorState } from '@/store/selectors';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
+import { useHudQuietStyle } from '@/hooks/useHudQuiet';
 import type { SceneId } from '@/shared/types/game';
 
 /* ── Weather types ── */
@@ -175,6 +176,7 @@ function tempColor(temp: number): string {
 /* ── Component ── */
 export function WeatherIndicator() {
   const { currentSceneId, timeOfDay } = useWeatherIndicatorState();
+  const quietStyle = useHudQuietStyle();
 
   const weather = useMemo(
     () => deriveWeather(currentSceneId, timeOfDay),
@@ -190,7 +192,7 @@ export function WeatherIndicator() {
   return (
     <div
       className="fixed pointer-events-none hidden lg:block"
-      style={{ top: 390, right: 12, zIndex: UI_LAYERS.HUD + 1 }}
+      style={{ top: 390, right: 12, zIndex: UI_LAYERS.HUD + 1, ...quietStyle }}
     >
       <motion.div
         className="pointer-events-auto rounded-lg border backdrop-blur-md overflow-hidden"

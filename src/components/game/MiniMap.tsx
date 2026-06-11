@@ -13,6 +13,7 @@ import { explorationMinimapTopPx, EXPLORATION_HUD_LAYOUT } from '@/shared/consta
 import { ALL_NPC_DEFINITIONS } from '@/data/allNpcDefinitions';
 import { useActiveQuests, getQuestMarker } from '@/store/questStore';
 import { cyberCyan } from '@/shared/constants/cyberPalette';
+import { useHudQuietStyle } from '@/hooks/useHudQuiet';
 
 const MAP_SIZE = 160;
 const MAP_PADDING = 16; // Extra padding for cardinal labels
@@ -33,6 +34,7 @@ export function MiniMap() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animFrameRef = useRef<number>(0);
   const pulsePhaseRef = useRef(0);
+  const quietStyle = useHudQuietStyle();
 
   const { currentSceneId, playerPos, playerRotation, npcStates } = useMiniMapState();
 
@@ -302,6 +304,7 @@ export function MiniMap() {
         backdropFilter: 'blur(8px)',
         borderRadius: '8px',
         boxShadow: '0 0 20px rgba(0,0,0,0.4), inset 0 0 0 1px rgb(var(--cyber-cyan-rgb) / 0.1)',
+        ...quietStyle,
       }}
     >
       <canvas

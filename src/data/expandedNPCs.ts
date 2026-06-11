@@ -15,6 +15,7 @@ export const EXPANDED_NPC_QUEST_LINKS: Record<string, string[]> = {
   maxim: ['underground_resistance', 'data_heist', 'system_infiltration', 'system_takedown', 'rooftop_confrontation'],
   zeka: ['data_heist', 'system_infiltration', 'system_takedown'],
   anya: ['data_heist', 'rebuild_the_guild'],
+  fisherman_trofim: ['pier_watchman_key', 'basement_hum'],
 }
 
 /* ── All bark text variants (hostile/neutral/friendly arrays) ── */
@@ -62,6 +63,11 @@ export const EXPANDED_NPC_BARK_TEXTS: Record<string, {
     hostile: ['Сеть под наблюдением. Молчи.'],
     neutral: ['Пинг стабилен. Пока.', 'Камеры — мои глаза.'],
     friendly: ['Володька, я прикрою тыл в сети.', 'Офис гильдии — открытая книга, если знать пароль.'],
+  },
+  fisherman_trofim: {
+    hostile: ['Уйди с пирса. Рыбу пугаешь.'],
+    neutral: ['Клюёт плохо. Река гудит.', 'Тридцать лет завод сторожил. Теперь воду сторожу.'],
+    friendly: ['А, это ты. Садись, поплавок посторожим вместе.', 'Слышишь? Под полом гудело так же. Один в один.'],
   },
 }
 
@@ -321,6 +327,33 @@ export const EXPANDED_NPCS: NPCDefinition[] = [
       height: 0.9,
       glowColor: '#5090d0',
       silhouette: 'slim',
+    },
+  },
+
+  /* ─────────────── ТРОФИМ – старик-рыбак, бывший сторож завода ─────────────── */
+  {
+    id: 'fisherman_trofim',
+    name: 'Трофим',
+    modelPath: '',
+    scale: 1.0,
+    animations: { idle: 'idle', walk: 'walk', talk: 'talk' },
+    defaultPosition: [4.0, 0, -7.2],
+    defaultRotation: Math.PI,
+    patrolRadius: 0.6,
+    dialogueNodeId: 'trofim_greeting',
+    description: 'Старик-рыбак на пирсе №3. Тридцать лет был сторожем завода «Хром-М» и до сих пор слышит гул под полом — даже сквозь воду.',
+    barkTexts: {
+      hostile: 'Уйди с пирса. Рыбу пугаешь.',
+      neutral: 'Клюёт плохо. Река гудит.',
+      friendly: 'А, это ты. Садись, поплавок посторожим вместе.',
+    },
+    appearance: {
+      bodyColor: '#3a4438',
+      accentColor: '#7a8a6a',
+      headAccessory: 'hat',
+      height: 0.97,
+      glowColor: '#88aa77',
+      silhouette: 'average',
     },
   },
 ]

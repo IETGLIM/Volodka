@@ -405,6 +405,44 @@ export const GODRAY_PRESETS: Record<string, GodRayConfig[]> = {
       initialRotation: 0,
     },
   ],
+  factory_basement: [
+    {
+      // Green shaft of «Заря-М» rising over the monolith
+      ...DEFAULT_RAY,
+      position: [0, 2.6, -5.2],
+      topRadius: 0.08,
+      bottomRadius: 0.7,
+      height: 2.6,
+      color: '#22ff88',
+      opacity: 0.06,
+      pulseSpeed: 0.5,
+      pulseAmp: 0.5,
+      rotationSpeed: 0.004,
+      dustMotes: true,
+      dustCount: 16,
+      dustColor: '#55ffaa',
+      initialRotation: 0.4,
+    },
+  ],
+  river_pier: [
+    {
+      // Warm column over the barrel fire
+      ...DEFAULT_RAY,
+      position: [0, 2.2, -2],
+      topRadius: 0.05,
+      bottomRadius: 0.5,
+      height: 2.8,
+      color: '#ff8833',
+      opacity: 0.06,
+      pulseSpeed: 0.4,
+      pulseAmp: 0.5,
+      rotationSpeed: 0.01,
+      dustMotes: true,
+      dustCount: 14,
+      dustColor: '#ffbb66',
+      initialRotation: 0,
+    },
+  ],
 };
 
 /* ── Component ── */

@@ -74,6 +74,18 @@ const CHK_GUEST_ANALYST: NPCSchedule = {
   ],
 };
 
+/** Ритка — джуниор-тестировщица; вечера и ночи — на пирсе с гитарой */
+const CHK_RITKA_DAY: NPCSchedule = {
+  id: 'schedule_chk_ritka',
+  npcId: 'chk_ritka',
+  entries: [
+    { startHour: 0, endHour: 2, sceneId: 'river_pier', position: [-1.8, 0, -2.9], activity: 'talk' },
+    { startHour: 2, endHour: 10, sceneId: 'street_night', position: [-1.0, 0, 2.0], activity: 'sleep' },
+    { startHour: 10, endHour: 16, sceneId: 'park_day', position: [-3.0, 0, 2.0], activity: 'walk' },
+    { startHour: 16, endHour: 24, sceneId: 'river_pier', position: [-1.8, 0, -2.9], activity: 'talk' },
+  ],
+};
+
 export const CHK_NPC_SCHEDULES: NPCSchedule[] = [
   CHK_RU_DAY,
   CHK_BASED_DAY,
@@ -82,4 +94,5 @@ export const CHK_NPC_SCHEDULES: NPCSchedule[] = [
   CHK_ELIS_DAY,
   CHK_GUEST_DEVOPS,
   CHK_GUEST_ANALYST,
+  CHK_RITKA_DAY,
 ];

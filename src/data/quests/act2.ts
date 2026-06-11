@@ -259,4 +259,91 @@ export const QUESTS_ACT2: QuestDefinition[] = [
     questGiverNpcId: 'cafe_barista',
   },
 
+  /* ═══════════════════════════════════════════════════════════════════
+     ПИРС И ПОДВАЛ — линия Трофима (форшадоуинг «Зари-М» из акта 5)
+     ═══════════════════════════════════════════════════════════════════ */
+
+  /* ─────────────── QUEST: Ключ сторожа ─────────────── */
+  {
+    id: 'pier_watchman_key',
+    title: 'Ключ сторожа',
+    description: 'Трофим — старик-рыбак с пирса №3 — тридцать лет сторожил завод «Хром-М» и до сих пор хранит ключ от нижней двери. Отдаст за бутылку портвейна «777» из ящика ЧК. Говорит, под полом завода до сих пор гудит.',
+    act: 2,
+    questType: 'side',
+    difficulty: 'easy',
+    hint: 'Ящик с портвейном — у костра на пирсе. Трофим — у перил, где удочки.',
+    objectives: [
+      {
+        id: 'meet_trofim',
+        description: 'Поговорить с Трофимом на пирсе',
+        type: 'npc_talked',
+        target: 'fisherman_trofim',
+        completed: false,
+      },
+      {
+        id: 'bring_portwine',
+        description: 'Принести Трофиму бутылку портвейна «777»',
+        type: 'flag_set',
+        target: 'trofim_portwine_delivered',
+        completed: false,
+      },
+      {
+        id: 'receive_key',
+        description: 'Получить ключ сторожа',
+        type: 'item_collected',
+        target: 'watchman_key',
+        completed: false,
+      },
+    ],
+    rewards: [
+      { type: 'addXp', value: 80 },
+      { type: 'addKarma', value: 4 },
+      { type: 'addSkill', skill: 'empathy', value: 1 },
+    ],
+    questGiverNpcId: 'fisherman_trofim',
+  },
+
+  /* ─────────────── QUEST: Гул под полом ─────────────── */
+  {
+    id: 'basement_hum',
+    title: 'Гул под полом',
+    description: 'Ключ Трофима открывает дверь в дальнем углу цеха «Хрома-М». Внизу — катакомбы «Прогресс-7»: серверные стойки, иней на трубах и чёрный монолит, который пульсирует зелёным. Трофим просил: не трогай — послушай.',
+    act: 2,
+    questType: 'side',
+    difficulty: 'medium',
+    requiresQuests: ['pier_watchman_key'],
+    requiredFlag: 'basement_key_found',
+    hint: 'Дверь в подвал — в дальнем углу цеха завода. Внизу осмотри машину и взломай пульт у входа.',
+    objectives: [
+      {
+        id: 'descend_basement',
+        description: 'Спуститься в подвал завода',
+        type: 'location_visited',
+        target: 'factory_basement',
+        completed: false,
+      },
+      {
+        id: 'examine_zarya',
+        description: 'Осмотреть монолит «Зари-М»',
+        type: 'flag_set',
+        target: 'zarya_monolith_examined',
+        completed: false,
+      },
+      {
+        id: 'hack_entry_terminal',
+        description: 'Взломать терминал «Прогресс-7» у входа',
+        type: 'flag_set',
+        target: 'basement_terminal_accessed',
+        completed: false,
+      },
+    ],
+    rewards: [
+      { type: 'addXp', value: 120 },
+      { type: 'addSkill', skill: 'intuition', value: 3 },
+      { type: 'discoverLore', loreId: 'lore_factory_progress7' },
+      { type: 'setFlag', flag: 'basement_hum_heard', flagValue: true },
+    ],
+    questGiverNpcId: 'fisherman_trofim',
+  },
+
 ];

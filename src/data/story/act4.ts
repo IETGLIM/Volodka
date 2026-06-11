@@ -198,6 +198,143 @@ export const STORY_NODES_ACT4: Record<string, StoryNode> = {
           { type: 'addKarma', value: 3 },
         ],
       },
+      {
+        text: 'До штурма ещё час. Потратить его на тех, кто дорог.',
+        next: 'act4_quiet_hour',
+        effects: [{ type: 'addStat', stat: 'stress', value: -3 }],
+      },
+    ],
+  },
+
+  /* ═══════════════════════════════════════════════════════════════════
+     ТИХИЙ ЧАС — необязательные контемплятивные сцены перед штурмом.
+     Вход: act4_infiltration_prep → act4_quiet_hour. Каждая сцена ставит
+     флаг quiet_* — концовки-зеркала акта 5/7 читают их в отражениях.
+     ═══════════════════════════════════════════════════════════════════ */
+
+  act4_quiet_hour: {
+    id: 'act4_quiet_hour',
+    text: 'Час. Шестьдесят минут, которые гильдия ещё не отняла. План лежит на ящике из-под микрочипов, исчерченный стрелками, и больше в него смотреть незачем. Снаружи гудит город — неон, серверы, чужие окна. Ты вдруг понимаешь простую вещь: завтра может не быть. А сегодня ещё есть люди, голоса, строки. Один тихий час — на то, что нельзя взять с собой в башню.',
+    speaker: 'narrator',
+    sceneId: 'abandoned_factory',
+    choices: [
+      {
+        text: 'Подняться на крышу — Дмитрий курит там один',
+        next: 'act4_quiet_rooftop_dmitry',
+        condition: { flag: 'dmitry_defected' },
+      },
+      {
+        text: 'Зайти к Зареме — последний чай перед бурей',
+        next: 'act4_quiet_tea_zarema',
+        condition: { flag: 'zarema_rescued' },
+      },
+      {
+        text: 'Прочитать сообщение от Альберта',
+        next: 'act4_quiet_albert_message',
+      },
+      {
+        text: 'Постоять у окна в опенспейсе — в последний раз',
+        next: 'act4_quiet_openspace_window',
+      },
+      {
+        text: 'Перечитать первый стих — с которого всё началось',
+        next: 'act4_quiet_first_poem',
+      },
+      {
+        text: 'Час истёк. Вернуться к плану.',
+        next: 'act4_infiltration_prep',
+      },
+    ],
+  },
+
+  act4_quiet_rooftop_dmitry: {
+    id: 'act4_quiet_rooftop_dmitry',
+    text: 'Дмитрий стоит у края крыши и курит. Увидев тебя, молча протягивает пачку. Ты не куришь — но берёшь. Сегодня можно. Внизу мигает город: красный, синий, снова красный. Вы не говорите ни слова — всё уже сказано в коде, который он тебе передал, и в дверях, которые он завтра будет держать открытыми. Сигарета догорает. Дмитрий кивает — не тебе, городу. Этого достаточно.',
+    speaker: 'narrator',
+    sceneId: 'rooftop_edge',
+    effects: [{ type: 'setFlag', flag: 'quiet_rooftop_dmitry', flagValue: true }],
+    choices: [
+      {
+        text: 'Докурить молча и спуститься вниз',
+        next: 'act4_quiet_hour',
+        effects: [
+          { type: 'addStat', stat: 'stress', value: -5 },
+          { type: 'npcChange', npcId: 'office_colleague', npcChange: { relation: 3 } },
+        ],
+      },
+    ],
+  },
+
+  act4_quiet_tea_zarema: {
+    id: 'act4_quiet_tea_zarema',
+    text: 'Кухня пахнет домом — единственное место в городе, где этот запах ещё не оцифровали. Зарема ставит чайник, не спрашивая, зачем ты пришёл. Она знает. «Пей,» — говорит она и придвигает варенье. «Герои тоже должны пить чай. Иначе какие из них герои — так, функции.» Чай горячий, сладкий, бесконечный. Ты запоминаешь этот вкус — на случай, если завтра понадобится причина вернуться.',
+    speaker: 'narrator',
+    sceneId: 'home_evening',
+    effects: [{ type: 'setFlag', flag: 'quiet_tea_zarema', flagValue: true }],
+    choices: [
+      {
+        text: 'Допить чай и обнять её на прощание',
+        next: 'act4_quiet_hour',
+        effects: [
+          { type: 'addStat', stat: 'stress', value: -8 },
+          { type: 'addStat', stat: 'energy', value: 5 },
+          { type: 'npcChange', npcId: 'zarema', npcChange: { relation: 5 } },
+        ],
+      },
+    ],
+  },
+
+  act4_quiet_albert_message: {
+    id: 'act4_quiet_albert_message',
+    text: 'Коммуникатор вздрагивает. Альберт: «Я сварил сегодня сто двадцать чашек. Сто девятнадцать — обычные. Одна ждёт тебя — особая, за счёт заведения. Заберёшь, когда закончишь то, что собираешься сделать. Я не спрашиваю что. В «Синей яме» не задают вопросов — здесь наливают.» Внизу приписка, мелко: «Вернись живым, поэт. Кофе остывает быстрее, чем ты думаешь.»',
+    speaker: 'narrator',
+    sceneId: 'abandoned_factory',
+    effects: [{ type: 'setFlag', flag: 'quiet_albert_message', flagValue: true }],
+    choices: [
+      {
+        text: 'Ответить: «Не остынет. Я успею.»',
+        next: 'act4_quiet_hour',
+        effects: [
+          { type: 'addStat', stat: 'stress', value: -5 },
+          { type: 'npcChange', npcId: 'cafe_barista', npcChange: { relation: 3 } },
+        ],
+      },
+    ],
+  },
+
+  act4_quiet_openspace_window: {
+    id: 'act4_quiet_openspace_window',
+    text: 'Опенспейс ночью — аквариум без рыб. Мониторы спят, кресла развёрнуты так, как их бросили в шесть вечера. Ты подходишь к окну, у которого простоял тысячу обеденных перерывов, глядя на город и не видя его. Теперь видишь: огни, провода, дождь по стеклу — снаружи. Твоё отражение — внутри. Между ними миллиметр стекла и целая жизнь. Завтра ты выберешь, по какую сторону остаться.',
+    speaker: 'narrator',
+    sceneId: 'office_day',
+    effects: [{ type: 'setFlag', flag: 'quiet_openspace_window', flagValue: true }],
+    choices: [
+      {
+        text: 'Приложить ладонь к стеклу и уйти, не оборачиваясь',
+        next: 'act4_quiet_hour',
+        effects: [
+          { type: 'addStat', stat: 'stress', value: -5 },
+          { type: 'addSkill', skill: 'intuition', value: 1 },
+        ],
+      },
+    ],
+  },
+
+  act4_quiet_first_poem: {
+    id: 'act4_quiet_first_poem',
+    text: 'Тетрадь раскрывается сама — на первой странице, по сгибу, который ты сложил давным-давно. Первый стих. Ты помнишь ночь, когда нашёл его: «Когда в игру вступают деньги, средства, / А при раздаче - жадность, прибыль, куш, / То знаешь ведь, что, как бы ни старался, / Итог один: оркестром будет сыгран туш.» Тогда это были чужие строки. Теперь — диагноз городу, который ты завтра попробуешь вылечить. Ты закрываешь тетрадь. Туш сыграют. Но не по тебе.',
+    speaker: 'narrator',
+    sceneId: 'abandoned_factory',
+    effects: [{ type: 'setFlag', flag: 'quiet_first_poem', flagValue: true }],
+    choices: [
+      {
+        text: 'Убрать тетрадь во внутренний карман — ближе к сердцу',
+        next: 'act4_quiet_hour',
+        effects: [
+          { type: 'addStat', stat: 'stress', value: -5 },
+          { type: 'addSkill', skill: 'writing', value: 1 },
+        ],
+      },
     ],
   },
 

@@ -41,4 +41,15 @@ export const DYNAMIC_PROPS: Partial<Record<SceneId, DynamicPropDef[]>> = {
     { id: 're_can_1', kind: 'can', position: [-1.8, 0, 1.4], rotation: 0.6 },
     { id: 're_can_2', kind: 'can', position: [2.6, 0, 0.8], rotation: 1.9 },
   ],
+  river_pier: [
+    { id: 'rp_bottle_1', kind: 'bottle', position: [1.1, 0, -3.2], rotation: 0.4 },
+    { id: 'rp_bottle_2', kind: 'bottle', position: [-2.3, 0, -1.8], rotation: 1.8 },
+    { id: 'rp_can_1', kind: 'can', position: [3.2, 0, -4.4], rotation: 2.5 },
+    { id: 'rp_box_1', kind: 'box', position: [-4.2, 0, -0.6], rotation: 0.9 },
+  ],
+  factory_basement: [
+    { id: 'fb_box_1', kind: 'box', position: [2.2, 0, 4.4], rotation: 0.7 },
+    { id: 'fb_can_1', kind: 'can', position: [-1.8, 0, 2.6], rotation: 1.3 },
+    { id: 'fb_bottle_1', kind: 'bottle', position: [-3.4, 0, 5.2], rotation: 2.2 },
+  ],
 };

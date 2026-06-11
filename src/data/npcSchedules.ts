@@ -374,6 +374,22 @@ const GRISHA_SCHEDULE: NPCSchedule = {
   ],
 };
 
+/**
+ * Trofim's daily schedule — old fisherman, former factory watchman.
+ * Practically lives on the pier: fishing by day, by the barrel fire at night.
+ */
+const TROFIM_SCHEDULE: NPCSchedule = {
+  id: 'schedule_fisherman_trofim',
+  npcId: 'fisherman_trofim',
+  entries: [
+    { startHour: 0, endHour: 5, sceneId: 'river_pier', position: [-5.6, 0, 4.2], activity: 'sleep' },
+    { startHour: 5, endHour: 12, sceneId: 'river_pier', position: [4.0, 0, -7.2], activity: 'work' },
+    { startHour: 12, endHour: 14, sceneId: 'park_day', position: [4.0, 0, 3.0], activity: 'walk' },
+    { startHour: 14, endHour: 19, sceneId: 'river_pier', position: [4.0, 0, -7.2], activity: 'work' },
+    { startHour: 19, endHour: 24, sceneId: 'river_pier', position: [1.0, 0, -3.0], activity: 'rest' },
+  ],
+};
+
 /* ─── All schedules (core 7 + expanded 5 + new 5) ─── */
 
 export const NPC_SCHEDULES: NPCSchedule[] = [
@@ -397,6 +413,7 @@ export const NPC_SCHEDULES: NPCSchedule[] = [
   BORIS_SCHEDULE,
   TAMARA_SCHEDULE,
   GRISHA_SCHEDULE,
+  TROFIM_SCHEDULE,
   ...CHK_NPC_SCHEDULES,
 ];
 

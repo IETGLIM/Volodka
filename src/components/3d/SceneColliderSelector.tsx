@@ -56,6 +56,8 @@ const AbandonedFactoryVisual = retryLazy(() => import('./AbandonedFactoryVisual'
 const ZaremaAlbertRoomVisual = retryLazy(() => import('./ZaremaAlbertRoomVisual'), 'ZaremaAlbertRoomVisual');
 const StreetWinterVisual = retryLazy(() => import('./StreetWinterVisual'), 'StreetWinterVisual');
 const ChkForestZorgeVisual = retryLazy(() => import('./ChkForestZorgeVisual'), 'ChkForestZorgeVisual');
+const FactoryBasementVisual = retryLazy(() => import('./FactoryBasementVisual'), 'FactoryBasementVisual');
+const RiverPierVisual = retryLazy(() => import('./RiverPierVisual'), 'RiverPierVisual');
 
 interface SceneColliderSelectorProps {
   livePlayerPositionRef: MutableRefObject<THREE.Vector3>;
@@ -279,6 +281,10 @@ function VisualScene({ sceneId, livePlayerPositionRef }: VisualSceneProps) {
       return <ZaremaAlbertRoomVisual livePlayerPositionRef={livePlayerPositionRef} />;
     case 'chk_forest_zorge':
       return <ChkForestZorgeVisual livePlayerPositionRef={livePlayerPositionRef} />;
+    case 'factory_basement':
+      return <FactoryBasementVisual livePlayerPositionRef={livePlayerPositionRef} />;
+    case 'river_pier':
+      return <RiverPierVisual livePlayerPositionRef={livePlayerPositionRef} />;
     default:
       return <FallbackVisual sceneId={sceneId} />;
   }

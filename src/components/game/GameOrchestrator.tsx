@@ -18,7 +18,10 @@ export function GameOrchestrator() {
     <VirtualControlsContext.Provider value={sharedVirtualControlsRef}>
       <CyberpunkThemeProvider>
         <PanelStackProvider stack={panels.panelStack}>
-          <div className="fixed inset-0 bg-black overflow-hidden" style={{ touchAction: 'none' }}>
+          <div
+            className={`fixed inset-0 bg-black overflow-hidden ${runtime.isDialogueActive ? 'dialogue-focus-active' : ''}`}
+            style={{ touchAction: 'none' }}
+          >
             <OrchestratorCanvasLayer
               mode={runtime.mode}
               introSeen={runtime.introSeen}

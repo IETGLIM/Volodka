@@ -16,6 +16,7 @@ import {
 import { useTimeOfDay } from '@/store/selectors';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { explorationDayNightTopPx, EXPLORATION_HUD_LAYOUT } from '@/shared/constants/hudLayout';
+import { useHudQuietStyle } from '@/hooks/useHudQuiet';
 
 /* ── Time phases ── */
 type TimePhase = 'morning' | 'day' | 'evening' | 'night';
@@ -202,6 +203,7 @@ function StarParticle({ x, y, delay, size }: { x: number; y: number; delay: numb
 /* ── Main Component ── */
 export function DayNightCycleIndicator() {
   const timeOfDay = useTimeOfDay();
+  const quietStyle = useHudQuietStyle();
 
   const phase = useMemo(() => getPhase(timeOfDay), [timeOfDay]);
   const config = PHASE_CONFIG[phase];
@@ -249,7 +251,7 @@ export function DayNightCycleIndicator() {
   return (
     <div
       className="fixed pointer-events-none hidden lg:block"
-      style={{ top: explorationDayNightTopPx(), right: EXPLORATION_HUD_LAYOUT.RIGHT_INSET, zIndex: UI_LAYERS.HUD + 1 }}
+      style={{ top: explorationDayNightTopPx(), right: EXPLORATION_HUD_LAYOUT.RIGHT_INSET, zIndex: UI_LAYERS.HUD + 1, ...quietStyle }}
     >
       <motion.div
         className="pointer-events-auto rounded-lg border backdrop-blur-md overflow-hidden"

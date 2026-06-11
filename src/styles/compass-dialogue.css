@@ -88,6 +88,17 @@
   box-shadow: 0 0 6px rgb(var(--cyber-cyan-rgb) / 0.3);
 }
 
+/* ─── Dialogue focus: dim exploration HUD while a dialogue is open ───
+   The class is toggled on the orchestrator root (GameOrchestrator) when
+   isDialogueActive; every HUD block already carries data-exploration-ui. */
+[data-exploration-ui] {
+  transition: opacity 0.35s ease;
+}
+
+.dialogue-focus-active [data-exploration-ui] {
+  opacity: 0.25;
+}
+
 /* ─── Portrait frame with decorative border ─── */
 .portrait-frame {
   position: relative;

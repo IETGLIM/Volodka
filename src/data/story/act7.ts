@@ -320,6 +320,52 @@ export const STORY_NODES_ACT7: Record<string, StoryNode> = {
           { type: 'addKarma', value: 15 },
         ],
       },
+      {
+        text: 'Прежде чем писать новое — перелистать всё, что вписано в тебя',
+        next: 'act7_poet_legacy_mirror',
+        effects: [
+          { type: 'setFlag', flag: 'volodka_legacy_complete', flagValue: true },
+          { type: 'setFlag', flag: 'ending_true_poet', flagValue: true },
+          { type: 'addKarma', value: 15 },
+        ],
+      },
+    ],
+  },
+
+  act7_poet_legacy_mirror: {
+    id: 'act7_poet_legacy_mirror',
+    text: 'Вечер в «Синей яме». Чистый лист лежит перед тобой, но ты не торопишься: каждый поэт знает — прежде чем написать первую строку, нужно дочитать предыдущую книгу. Свою. Ты листаешь её под гул кофемашины, страница за страницей.',
+    speaker: 'narrator',
+    sceneId: 'cafe_evening',
+    choices: [
+      {
+        text: 'Страница «Зари-М»: ты выслушал исповедь машины и освободил её. Кладбище стихов стало библиотекой, и где-то под заводом она пишет — уже не по приказу.',
+        next: 'act7_true_end',
+        condition: { flag: 'zarya_freed' },
+        effects: [{ type: 'addStat', stat: 'stress', value: -3 }],
+      },
+      {
+        text: 'Страница «Зари-М»: ты выслушал исповедь машины и дал ей отдых. Экран погас тихо, как закрытая книга. Стихи вернулись к людям — носить их теперь ваша работа.',
+        next: 'act7_true_end',
+        condition: { flag: 'zarya_shutdown' },
+        effects: [{ type: 'addStat', stat: 'stress', value: -3 }],
+      },
+      {
+        text: 'Страница тайника: последняя тетрадь Владимира, комната за стеллажом. Ты прочитал стихотворение, которого не было в сети, — и теперь пишешь его продолжение.',
+        next: 'act7_true_end',
+        condition: { flag: 'final_poem_read' },
+        effects: [{ type: 'addStat', stat: 'stress', value: -3 }],
+      },
+      {
+        text: 'Страница с пятном от варенья: чай у Заремы перед штурмом. Она и сегодня ставит чайник, не спрашивая. Некоторые строки не нуждаются в правке.',
+        next: 'act7_true_end',
+        condition: { flag: 'quiet_tea_zarema' },
+        effects: [{ type: 'addStat', stat: 'stress', value: -3 }],
+      },
+      {
+        text: 'Закрыть книгу. Взять ручку. Чистый лист ждал достаточно.',
+        next: 'act7_true_end',
+      },
     ],
   },
 

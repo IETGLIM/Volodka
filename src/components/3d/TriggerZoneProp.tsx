@@ -40,17 +40,19 @@ function TriggerZonePropMeshInner({ zone, def }: TriggerZonePropMeshInnerProps) 
   }, [gltf.scene]);
 
   const scale = def.scale ?? 1;
-  const rotation = def.rotation ?? [0, 0, 0];
+  const baseRotation = def.rotation ?? [0, 0, 0];
   const offset = def.offset ?? [0, 0, 0];
+  const zoneOffset = zone.propOffset ?? [0, 0, 0];
+  const rotationY = baseRotation[1] + (zone.propRotationY ?? 0);
 
   return (
     <group
       position={[
-        zone.position[0] + offset[0],
-        zone.position[1] + offset[1],
-        zone.position[2] + offset[2],
+        zone.position[0] + offset[0] + zoneOffset[0],
+        zone.position[1] + offset[1] + zoneOffset[1],
+        zone.position[2] + offset[2] + zoneOffset[2],
       ]}
-      rotation={rotation}
+      rotation={[baseRotation[0], rotationY, baseRotation[2]]}
       scale={[scale, scale, scale]}
     >
       <primitive object={clone} />

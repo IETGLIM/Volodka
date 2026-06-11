@@ -12,6 +12,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { FlaskConical, Sparkles, Crown, Gem, Star } from 'lucide-react';
 import { eventBus } from '@/engine/EventBus';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
+import { useNotificationSlot, NOTIFY_PRIORITY } from '@/hooks/useNotificationSlot';
 import { type ItemRarity } from '@/data/items';
 
 /* ─── Types ─── */
@@ -239,6 +240,7 @@ function CraftingToastCard({ toast, index }: { toast: CraftingToastData; index: 
 
 export function CraftingDiscoveryToast() {
   const [toasts, setToasts] = useState<CraftingToastData[]>([]);
+  const slotGranted = useNotificationSlot('crafting', NOTIFY_PRIORITY.crafting, toasts.length > 0);
   const timersMap = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
   const timers = timersMap.current;
 
@@ -286,7 +288,7 @@ export function CraftingDiscoveryToast() {
       style={{ zIndex: UI_LAYERS.TOASTS }}
     >
       <AnimatePresence mode="popLayout">
-        {toasts.map((toast, index) => (
+        {slotGranted && toasts.map((toast, index) => (
           <CraftingToastCard
             key={toast.id}
             toast={toast}

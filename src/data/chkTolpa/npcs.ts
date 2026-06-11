@@ -9,6 +9,7 @@ export const CHK_NPC_QUEST_LINKS: Record<string, string[]> = {
   chk_smert: ['tolpa_quantum_fire'],
   chk_stalker: ['tolpa_forest_guide'],
   chk_elis: ['tolpa_guitar_night'],
+  chk_ritka: ['pier_quiet_song'],
 };
 
 export const CHK_NPC_BARK_TEXTS: Record<string, {
@@ -50,6 +51,11 @@ export const CHK_NPC_BARK_TEXTS: Record<string, {
     hostile: ['Мне завтра на стендап. Я ухожу.'],
     neutral: ['Графики не горят, если их смотреть у костра.'],
     friendly: ['Присаживайся — у меня есть теория про карму и burndown chart.'],
+  },
+  chk_ritka: {
+    hostile: ['Песня не для тебя. И пирс тоже.'],
+    neutral: ['*перебирает струны* Третья струна узлом связана. Как и я.', 'Огни на воде лучше, чем огни на мониторе.'],
+    friendly: ['Володька! Садись к огню. Сегодня вода тихая — значит, можно петь.'],
   },
 };
 
@@ -233,6 +239,32 @@ export const CHK_NPCS: NPCDefinition[] = [
       headAccessory: 'glasses',
       height: 0.98,
       glowColor: '#8866bb',
+      silhouette: 'slim',
+    },
+  },
+  /* ── Ритка — девчонка с гитарой, вторая точка ЧК на пирсе ── */
+  {
+    id: 'chk_ritka',
+    name: 'Ритка',
+    modelPath: '',
+    scale: 0.9,
+    animations: { idle: 'idle', walk: 'walk', talk: 'talk' },
+    defaultPosition: [-1.8, 0, -2.9],
+    defaultRotation: Math.PI / 6,
+    patrolRadius: 0.5,
+    dialogueNodeId: 'chk_ritka_greeting',
+    description: 'Джуниор-тестировщица днём, бард пирса №3 ночью. Младший состав ЧК: когда лес на Зорге шумный, ТОЛПА слушает её у воды.',
+    barkTexts: {
+      hostile: CHK_NPC_BARK_TEXTS.chk_ritka.hostile[0],
+      neutral: CHK_NPC_BARK_TEXTS.chk_ritka.neutral[0],
+      friendly: CHK_NPC_BARK_TEXTS.chk_ritka.friendly[0],
+    },
+    appearance: {
+      bodyColor: '#33222e',
+      accentColor: '#dd6688',
+      headAccessory: 'earring',
+      height: 0.9,
+      glowColor: '#ee7799',
       silhouette: 'slim',
     },
   },

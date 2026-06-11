@@ -220,6 +220,28 @@ export const FOG_PRESETS: Record<string, Partial<VolumetricFogConfig>> = {
     driftSpeed: 0.05,
     planeWidth: 12,
   },
+  factory_basement: {
+    planeCount: 3,
+    color: '#0e1a16',
+    opacity: 0.045,
+    spreadX: 5,
+    spreadZ: 4,
+    height: 0.9,
+    baseY: 0.3,
+    driftSpeed: 0.03,
+    planeWidth: 7,
+  },
+  river_pier: {
+    planeCount: 3,
+    color: '#16202c',
+    opacity: 0.03,
+    spreadX: 9,
+    spreadZ: 6,
+    height: 1.0,
+    baseY: 0.35,
+    driftSpeed: 0.06,
+    planeWidth: 12,
+  },
 };
 
 /* ── Pre-computed plane layout ── */

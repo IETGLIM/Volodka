@@ -11,6 +11,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Shield, Map, Trophy, Scroll, Info } from 'lucide-react';
 import { eventBus, EventBusPriority } from '@/engine/EventBus';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
+import { useNotificationSlot, NOTIFY_PRIORITY } from '@/hooks/useNotificationSlot';
 import { explorationEventToastTopPx } from '@/shared/constants/hudLayout';
 import { useGamePhase } from '@/store/selectors';
 
@@ -229,6 +230,8 @@ function NotificationCard({ entry, index }: { entry: NotificationEntry; index: n
 
 export function EventNotificationPopup() {
   const [notifications, setNotifications] = useState<NotificationEntry[]>([]);
+  // High-priority slot claim — event popups preempt loot/crafting/etc.
+  useNotificationSlot('event', NOTIFY_PRIORITY.event, notifications.length > 0);
   const timersMap = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
   const timers = timersMap.current;
 

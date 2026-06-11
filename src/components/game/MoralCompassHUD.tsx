@@ -7,10 +7,12 @@ import { KARMA_LOW_THRESHOLD, KARMA_HIGH_THRESHOLD } from '@/data/constants';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { getKarmaTierLabel } from '@/shared/utils/karmaTier';
 import { bottomMoralCompassPx, bottomRightInsetPx } from '@/shared/constants/hudLayout';
+import { useHudQuietStyle } from '@/hooks/useHudQuiet';
 import { useEffect, useRef } from 'react';
 
 export function MoralCompassHUD() {
   const karma = usePlayerKarma();
+  const quietStyle = useHudQuietStyle();
 
   // Pulse animation via motion value
   const pulseScale = useMotionValue(1);
@@ -49,6 +51,7 @@ export function MoralCompassHUD() {
         zIndex: UI_LAYERS.HUD,
         bottom: bottomMoralCompassPx(),
         right: bottomRightInsetPx(),
+        ...quietStyle,
       }}
       role="img"
       aria-label={`Карма ${karma}, ${tierLabel}`}

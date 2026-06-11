@@ -11,6 +11,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { BookOpen, Sparkles, Feather, Lock, ChevronLeft, Zap, Clock, ChevronRight } from 'lucide-react';
 import { useGameStore } from '@/store/gameStore';
 import { POEMS, getMainPoems, getHiddenPoems } from '@/data/poems';
+import { getPoemMargin } from '@/data/poemMargins';
 import { getPoemPower, canUsePower, activatePoemPowerById, getCooldownRemaining, getAllPoemPowers } from '@/engine/PoemPowerSystem';
 import { audioEngine } from '@/engine/AudioEngine';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -474,6 +475,9 @@ const pageTurnVariants = {
 /* ── Main component ── */
 export function PoetryBook({ open, onClose }: PoetryBookProps) {
   const collectedPoems = useGameStore((s) => s.collectedPoems);
+  const playerKarma = useGameStore((s) => s.playerState.karma);
+  const playerFlags = useGameStore((s) => s.playerState.flags);
+  const currentAct = useGameStore((s) => s.playerState.progression.currentAct);
   const [selectedPoemId, setSelectedPoemId] = useState<string | null>(null);
   const [pageDirection, setPageDirection] = useState(0);
   const [activeTab, setActiveTab] = useState<PoetryBookTab>('poems');
@@ -488,6 +492,9 @@ export function PoetryBook({ open, onClose }: PoetryBookProps) {
   const collectedCount = collected.length;
 
   const selectedPoem = POEMS.find((p) => p.id === selectedPoemId) ?? null;
+  const marginNote = selectedPoem
+    ? getPoemMargin(selectedPoem.id, { karma: playerKarma, flags: playerFlags, currentAct })
+    : undefined;
   const { displayedLines, done, skipAll } = usePoemTypewriter(
     selectedPoem?.lines ?? [],
     selectedPoemId !== null,
@@ -724,6 +731,24 @@ export function PoetryBook({ open, onClose }: PoetryBookProps) {
                                 <div className="h-px w-8 bg-amber-700/20" />
                                 <span className="text-amber-600/25 text-xs">✦</span>
                                 <div className="h-px w-8 bg-amber-700/20" />
+                              </motion.div>
+                            )}
+
+                            {/* Margin note — Volodka's pencil on the page margin.
+                                The poem text above is sacred; this block is styled apart from it. */}
+                            {done && marginNote && (
+                              <motion.div
+                                initial={{ opacity: 0, y: 4 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 0.9, duration: 0.6 }}
+                                className="max-w-md mx-auto mt-4 pl-4 border-l border-dashed border-stone-500/30"
+                              >
+                                <p className="text-[10px] uppercase tracking-widest text-stone-500/60 mb-1.5 font-serif">
+                                  — на полях, почерком Володьки —
+                                </p>
+                                <p className="text-sm text-stone-400/80 italic leading-relaxed font-serif">
+                                  {marginNote.text}
+                                </p>
                               </motion.div>
                             )}
 

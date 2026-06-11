@@ -52,6 +52,7 @@ import { PHOTO_EMPTY_PAYLOAD, PHOTO_EVENTS } from '@/engine/events';
 import { floatLevelUp } from '@/components/game/FloatingText';
 import type { SecondaryAction } from '@/components/game/hud/hudTypes';
 import { StatusEffectsBar } from '@/components/game/StatusEffectsBar';
+import { useHudQuietStyle } from '@/hooks/useHudQuiet';
 import { AriaLiveRegion } from '@/components/a11y/AriaLiveRegion';
 import { getKarmaTierLabel } from '@/shared/utils/karmaTier';
 import { useHUDController } from '@/components/game/hud/useHUDController';
@@ -446,6 +447,7 @@ function HUDMenuItem({ icon, label, shortcut, onClick, badge }: SecondaryAction)
 
 export function HUD(props: HUDProps) {
   const state = useHUDController(props);
+  const quietStyle = useHudQuietStyle();
   const totalPoems = getPoems().length;
   const {
     photoModeOn,
@@ -536,8 +538,8 @@ export function HUD(props: HUDProps) {
         </div>
       </div>
 
-      {/* ── Top bar ── */}
-      <div className="absolute top-0 left-0 right-0 pointer-events-auto">
+      {/* ── Top bar (fades when HUD is quiet — crosshair stays) ── */}
+      <div className="absolute top-0 left-0 right-0 pointer-events-auto" style={quietStyle}>
         <div
           className="flex items-center justify-between px-2 py-1.5 sm:px-4 sm:py-2.5 hud-scanline-bar"
           style={{

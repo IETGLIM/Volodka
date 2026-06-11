@@ -32,12 +32,14 @@ export const NPC_MODEL_ASSETS: Partial<Record<string, NpcModelAssetMeta>> = {
     url: `${NPCS}/cafe_barista.glb`,
     scale: 1,
     license: 'CC0',
-    source: 'Khronos glTF Sample Models — RiggedSimple',
-    sourceUrl: 'https://github.com/KhronosGroup/glTF-Sample-Models/tree/main/2.0/RiggedSimple',
+    source: 'three.js examples — Soldier (CC0)',
+    sourceUrl: 'https://github.com/mrdoob/three.js/tree/dev/examples/models/gltf',
   },
   office_alexander: {
+    // NOTE: GltfNPCModel auto-normalizes to 1.7 m — scale is a multiplier on top.
+    // The old 0.35 double-corrected and produced a 0.6 m dwarf.
     url: `${NPCS}/office_alexander.glb`,
-    scale: 0.35,
+    scale: 1,
     license: 'CC0',
     source: 'Khronos glTF Sample Models — BrainStem',
     sourceUrl: 'https://github.com/KhronosGroup/glTF-Sample-Models/tree/main/2.0/BrainStem',
@@ -46,8 +48,8 @@ export const NPC_MODEL_ASSETS: Partial<Record<string, NpcModelAssetMeta>> = {
     url: `${NPCS}/office_colleague.glb`,
     scale: 1,
     license: 'CC0',
-    source: 'Khronos glTF Sample Models — RiggedSimple',
-    sourceUrl: 'https://github.com/KhronosGroup/glTF-Sample-Models/tree/main/2.0/RiggedSimple',
+    source: 'three.js examples — Soldier (CC0)',
+    sourceUrl: 'https://github.com/mrdoob/three.js/tree/dev/examples/models/gltf',
   },
 };
 

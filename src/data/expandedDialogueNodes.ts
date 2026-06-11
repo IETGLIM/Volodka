@@ -666,4 +666,142 @@ export const EXPANDED_DIALOGUE_NODES: Record<string, DialogueNode> = {
       { text: 'Понял. Увидимся.', next: null },
     ],
   },
+
+  /* ═══════════════════════════════════════════════════════════
+     ТРОФИМ — старик-рыбак на пирсе, бывший сторож «Хрома-М» (7 nodes)
+     ═══════════════════════════════════════════════════════════ */
+
+  trofim_greeting: {
+    id: 'trofim_greeting',
+    speaker: 'Трофим',
+    text: 'Клюёт плохо. Река шумная стала — гудит, как трансформатор. *щурится из-под капюшона* Ты с парка пришёл? Постой рядом, поплавок посторожим. Я Трофим. Тридцать лет завод сторожил, теперь вот — воду сторожу.',
+    choices: [
+      { text: 'Расскажи про завод.', next: 'trofim_factory_tales' },
+      { text: 'Чем помочь, отец?', next: 'trofim_request' },
+      {
+        text: 'У меня есть бутылка «777». Угощаю.',
+        next: 'trofim_key',
+        condition: { flag: 'pier_portwine_taken' },
+      },
+      {
+        text: 'Ритке нужны струны для гитары.',
+        next: 'trofim_strings',
+        condition: { flag: 'ritka_needs_strings' },
+      },
+      {
+        text: 'Я был внизу. Там не пусто.',
+        next: 'trofim_after_basement',
+        condition: { flag: 'basement_terminal_accessed' },
+      },
+      { text: 'Пойду я.', next: null },
+    ],
+  },
+
+  trofim_request: {
+    id: 'trofim_request',
+    speaker: 'Трофим',
+    text: 'Помочь? Хех. Видишь ящик у костра? Чекисты портвейн привозят, хорошие ребята. А мне, старому, клянчить неудобно — гордость осталась, хоть завод и закрыли. Принеси бутылку «777» — расскажу то, чего в архивах нет. И не только расскажу.',
+    choices: [
+      {
+        text: 'Принесу.',
+        next: null,
+        effects: [
+          { type: 'setFlag', flag: 'trofim_asked_portwine', flagValue: true },
+          { type: 'triggerQuest', questId: 'pier_watchman_key' },
+        ],
+      },
+      {
+        text: 'Сам возьми, ноги-то есть.',
+        next: null,
+        effects: [{ type: 'npcChange', npcId: 'fisherman_trofim', npcChange: { relation: -2 } }],
+      },
+    ],
+  },
+
+  trofim_factory_tales: {
+    id: 'trofim_factory_tales',
+    speaker: 'Трофим',
+    text: '«Хром-М»... Я туда пацаном пришёл, в восемьдесят шестом. Цеха гудели, как ульи, женщины микросхемы паяли, в ДК «Землянку» пели. А под цехами — ещё один этаж. «Прогресс-7» по бумагам. Туда пускали только белые халаты. Мы, сторожа, по ночам слышали гул из-под пола. Ровный такой. Как дыхание. Завод умер — а гул остался.',
+    choices: [
+      { text: 'Что там, внизу?', next: 'trofim_hum' },
+      {
+        text: 'Бабкины сказки.',
+        next: null,
+        effects: [{ type: 'npcChange', npcId: 'fisherman_trofim', npcChange: { relation: -1 } }],
+      },
+    ],
+  },
+
+  trofim_hum: {
+    id: 'trofim_hum',
+    speaker: 'Трофим',
+    text: 'Машина там, парень. «Заря» её звали. Инженеры говорили — звёзды считает, орбиты. А я ночами слушал и скажу тебе: она не считает. Она ждёт. У меня и ключ остался от нижней двери — да я туда больше ни ногой. Принеси старику портвейна — отдам. Мне он без надобности, а тебе, вижу, надобно.',
+    choices: [
+      {
+        text: 'Принесу портвейн.',
+        next: null,
+        effects: [
+          { type: 'setFlag', flag: 'trofim_asked_portwine', flagValue: true },
+          { type: 'triggerQuest', questId: 'pier_watchman_key' },
+          { type: 'addSkill', skill: 'intuition', value: 1 },
+        ],
+      },
+      { text: 'Не моё это дело.', next: null },
+    ],
+  },
+
+  trofim_key: {
+    id: 'trofim_key',
+    speaker: 'Трофим',
+    text: 'Ха! «777». Уважил старика. *долго смотрит на бутылку, потом лезет за пазуху и достаёт ключ на ржавой проволоке* Держи. От двери в дальнем углу цеха. Спустишься — её не трогай. Просто послушай. Она сама тебя узнает, если захочет. И записку мою на столе найдёшь — не смейся. Я тогда молодой был и думал, что бумага кого-то спасёт.',
+    choices: [
+      {
+        text: 'Спасибо, Трофим.',
+        next: null,
+        effects: [
+          { type: 'removeItem', itemId: 'port_wine_777' },
+          { type: 'setFlag', flag: 'trofim_portwine_delivered', flagValue: true },
+          { type: 'addItem', itemId: 'watchman_key' },
+          { type: 'setFlag', flag: 'basement_key_found', flagValue: true },
+          { type: 'triggerQuest', questId: 'basement_hum' },
+          { type: 'npcChange', npcId: 'fisherman_trofim', npcChange: { relation: 6 } },
+          { type: 'addKarma', value: 2 },
+        ],
+      },
+    ],
+  },
+
+  trofim_strings: {
+    id: 'trofim_strings',
+    speaker: 'Трофим',
+    text: 'Струны? *роется в ящике с блёснами, достаёт промасленный свёрток* Вот. От моей гитары остались — я на ней в заводском ДК играл, пока пальцы слушались. Скажи рыжей: пусть не рвёт, они последние. И пусть поёт тише — река не любит, когда орут.',
+    choices: [
+      {
+        text: 'Передам.',
+        next: null,
+        effects: [
+          { type: 'addItem', itemId: 'guitar_strings' },
+          { type: 'setFlag', flag: 'trofim_strings_given', flagValue: true },
+          { type: 'npcChange', npcId: 'fisherman_trofim', npcChange: { relation: 3 } },
+        ],
+      },
+    ],
+  },
+
+  trofim_after_basement: {
+    id: 'trofim_after_basement',
+    speaker: 'Трофим',
+    text: 'Был, значит. *долго смотрит на воду, поплавок дёргается — он не замечает* И как она? Молчит? Молчит — это хорошо. Значит, ещё думает. Когда запоёт — вот тогда держись, парень. Я один раз слышал, как она поёт. Не ушами — вот тут. *стучит кулаком по груди* На следующий день уволился.',
+    choices: [
+      {
+        text: 'Что она поёт?',
+        next: null,
+        effects: [
+          { type: 'addSkill', skill: 'intuition', value: 1 },
+          { type: 'setFlag', flag: 'trofim_heard_song_story', flagValue: true },
+          { type: 'npcChange', npcId: 'fisherman_trofim', npcChange: { relation: 3 } },
+        ],
+      },
+    ],
+  },
 }

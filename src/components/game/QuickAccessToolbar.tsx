@@ -8,6 +8,7 @@ import { Zap, Activity, Volume2, VolumeX } from 'lucide-react';
 import { useGamePhase, useQuickAccessToolbarState } from '@/store/selectors';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { bottomToolbarPx } from '@/shared/constants/hudLayout';
+import { useHudQuietStyle } from '@/hooks/useHudQuiet';
 
 /* ─── Sub-components ─── */
 
@@ -198,6 +199,7 @@ function LevelBadge({ level, xp, xpToNext }: { level: number; xp: number; xpToNe
 
 export function QuickAccessToolbar() {
   const mode = useGamePhase();
+  const quietStyle = useHudQuietStyle();
   const {
     energy,
     stress,
@@ -217,7 +219,7 @@ export function QuickAccessToolbar() {
         <motion.div
           key="quick-access-toolbar"
           className="fixed left-1/2 -translate-x-1/2 pointer-events-auto"
-          style={{ zIndex: UI_LAYERS.HUD, bottom: bottomToolbarPx() }}
+          style={{ zIndex: UI_LAYERS.HUD, bottom: bottomToolbarPx(), ...quietStyle }}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 20 }}

@@ -277,6 +277,124 @@ export const CHK_DIALOGUE_NODES: Record<string, DialogueNode> = {
       },
     ],
   },
+  /* ── Ритка — бард пирса №3, младший состав ЧК (6 nodes) ── */
+  chk_ritka_greeting: {
+    id: 'chk_ritka_greeting',
+    speaker: 'Ритка',
+    text: '*перебирает струны, не поднимая головы* Если ты от Ру — передай, что я не потерялась. Я тут. Огни на воде лучше, чем огни на мониторе. *поднимает глаза* Ритка. ЧК, младший состав. Гитара, как видишь, при мне. Почти живая.',
+    choices: [
+      { text: 'Что это за место?', next: 'chk_ritka_about' },
+      { text: 'Сыграешь что-нибудь?', next: 'chk_ritka_song_request' },
+      {
+        text: 'Свои. Клятва портвейна принята.',
+        next: 'chk_ritka_tolpa',
+        condition: { flag: 'tolpa_member' },
+      },
+      {
+        text: 'Та песня у костра... спой ещё.',
+        next: 'chk_ritka_after_song',
+        condition: { flag: 'quiet_song_ritka' },
+      },
+      { text: 'Не буду мешать.', next: null },
+    ],
+  },
+  chk_ritka_about: {
+    id: 'chk_ritka_about',
+    speaker: 'Ритка',
+    text: 'Пирс №3. Вторая точка ЧК. На Зорге — костёр и металл, тут — вода и струнные огни. Басед говорит: «у каждой системы должен быть failover». Вот пирс и есть наш failover: когда лес шумный или гильдия принюхивается — ТОЛПА собирается у воды. Трофим не против. Мы ему портвейн возим, он нам — тишину.',
+    choices: [
+      {
+        text: 'Хорошая архитектура.',
+        next: null,
+        effects: [{ type: 'npcChange', npcId: 'chk_ritka', npcChange: { relation: 3 } }],
+      },
+      { text: 'Понял.', next: null },
+    ],
+  },
+  chk_ritka_song_request: {
+    id: 'chk_ritka_song_request',
+    speaker: 'Ритка',
+    text: '*показывает гриф* Видишь? Третья струна узлом связана. На узле далеко не уедешь — дребезжит, как прод после хотфикса. Достань новые струны — у Трофима, говорят, от заводской самодеятельности остались. Или хотя бы портвейн для вдохновения, из ящика. Тогда спою. По-настоящему, не для галочки.',
+    choices: [
+      {
+        text: 'Держи «777». За вдохновение.',
+        next: 'chk_ritka_song',
+        condition: { flag: 'pier_portwine_taken' },
+        effects: [
+          { type: 'removeItem', itemId: 'port_wine_777' },
+          { type: 'setFlag', flag: 'ritka_gift_given', flagValue: true },
+          { type: 'triggerQuest', questId: 'pier_quiet_song' },
+          { type: 'npcChange', npcId: 'chk_ritka', npcChange: { relation: 4 } },
+        ],
+      },
+      {
+        text: 'Струны от Трофима. Просил не рвать.',
+        next: 'chk_ritka_song',
+        condition: { flag: 'trofim_strings_given' },
+        effects: [
+          { type: 'removeItem', itemId: 'guitar_strings' },
+          { type: 'setFlag', flag: 'ritka_gift_given', flagValue: true },
+          { type: 'triggerQuest', questId: 'pier_quiet_song' },
+          { type: 'npcChange', npcId: 'chk_ritka', npcChange: { relation: 5 } },
+          { type: 'npcChange', npcId: 'fisherman_trofim', npcChange: { relation: 2 } },
+        ],
+      },
+      {
+        text: 'Достану.',
+        next: null,
+        effects: [
+          { type: 'setFlag', flag: 'ritka_needs_strings', flagValue: true },
+          { type: 'triggerQuest', questId: 'pier_quiet_song' },
+        ],
+      },
+    ],
+  },
+  chk_ritka_song: {
+    id: 'chk_ritka_song',
+    speaker: 'Ритка',
+    text: '*натягивает струну, пробует, кивает. Играет тихо — не как Элис у костра на Зорге, а как будто для самой воды* «По реке плывут огни — это чьи-то сны. Город спит, и мы одни — у его спины...» *голос у неё ломкий, но честный. Костёр в бочке трещит в такт, и даже река, кажется, гудит на полтона ниже.*',
+    choices: [
+      {
+        text: 'Молча дослушать.',
+        next: null,
+        effects: [
+          { type: 'setFlag', flag: 'quiet_song_ritka', flagValue: true },
+          { type: 'addStat', stat: 'stress', value: -10 },
+          { type: 'addSkill', skill: 'writing', value: 1 },
+          { type: 'addKarma', value: 3 },
+          { type: 'npcChange', npcId: 'chk_ritka', npcChange: { relation: 6 } },
+        ],
+      },
+    ],
+  },
+  chk_ritka_after_song: {
+    id: 'chk_ritka_after_song',
+    speaker: 'Ритка',
+    text: '*качает головой* Нет. Та песня — одноразовая, как ночь. В следующий раз будет другая. Приходи, когда город опять прижмёт: у воды все песни тише, зато честнее.',
+    choices: [
+      {
+        text: 'Договорились.',
+        next: null,
+        effects: [{ type: 'addStat', stat: 'stress', value: -3 }],
+      },
+    ],
+  },
+  chk_ritka_tolpa: {
+    id: 'chk_ritka_tolpa',
+    speaker: 'Ритка',
+    text: '*улыбается впервые за разговор* Чекист, значит. Тогда без церемоний: если Ру спросит — я на пирсе до рассвета. И это... спасибо, что возишь старику портвейн. Он нам как дед. Только ему не говори — он расплачется и скажет, что блесна в глаз попала.',
+    choices: [
+      {
+        text: 'ЧК своих не бросает.',
+        next: null,
+        effects: [
+          { type: 'npcChange', npcId: 'chk_ritka', npcChange: { relation: 5 } },
+          { type: 'addKarma', value: 2 },
+          { type: 'setFlag', flag: 'ritka_chk_recognized', flagValue: true },
+        ],
+      },
+    ],
+  },
   chk_ru_stalker: {
     id: 'chk_ru_stalker',
     speaker: 'Ру',

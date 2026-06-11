@@ -472,6 +472,55 @@ const AMBIENT_CONFIGS: Record<SceneId, AmbientConfig> = {
       { type: 'sine', frequency: 80, duration: 0.6, gain: 0.015, minInterval: 8, maxInterval: 20, frequencyRamp: 65 },
     ],
   },
+
+  /* ─── 16. factory_basement — Server hum, drips, «Заря-М» pulse ─── */
+  factory_basement: {
+    layers: [
+      {
+        type: 'sawtooth',
+        frequency: 55,
+        gain: 0.03,
+        lfoFreq: 0.05,
+        lfoDepth: 3,
+        harmonic: { type: 'sine', frequency: 110, gain: 0.015 },
+        randomInterval: 0,
+      },
+    ],
+    noiseLayers: [
+      { filterType: 'lowpass', filterFreq: 300, filterQ: 0.8, gain: 0.02, lfoFreq: 0.07, lfoDepth: 120 },
+    ],
+    randomSounds: [
+      // Water drips off the pipes
+      { type: 'sine', frequency: 1200, duration: 0.06, gain: 0.018, minInterval: 2.5, maxInterval: 8, frequencyRamp: 700 },
+      // Deep machine pulse of «Заря-М»
+      { type: 'sine', frequency: 48, duration: 1.2, gain: 0.02, minInterval: 6, maxInterval: 14, frequencyRamp: 42 },
+    ],
+  },
+
+  /* ─── 17. river_pier — Water lapping, fire crackle, night birds ─── */
+  river_pier: {
+    layers: [
+      {
+        type: 'sine',
+        frequency: 65,
+        gain: 0.02,
+        lfoFreq: 0.1,
+        lfoDepth: 6,
+        harmonic: { type: 'sine', frequency: 130, gain: 0.01 },
+        randomInterval: 0,
+      },
+    ],
+    noiseLayers: [
+      // Slow water wash against the pilings
+      { filterType: 'lowpass', filterFreq: 420, filterQ: 0.6, gain: 0.03, lfoFreq: 0.18, lfoDepth: 200 },
+    ],
+    randomSounds: [
+      // Fire crackle in the barrel
+      { type: 'sawtooth', frequency: 130, duration: 0.12, gain: 0.018, minInterval: 0.5, maxInterval: 1.4, useNoise: true, noiseFilterFreq: 1000 },
+      // Distant night bird over the water
+      { type: 'sine', frequency: 880, duration: 0.4, gain: 0.008, minInterval: 12, maxInterval: 30, frequencyRamp: 660 },
+    ],
+  },
 };
 
 /* ─── Ambient Music Configurations ─── */

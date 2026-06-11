@@ -13,6 +13,7 @@ import { eventBus } from '@/engine/EventBus';
 import { audioEngine } from '@/engine/AudioEngine';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { explorationAchievementTopPx, EXPLORATION_HUD_LAYOUT } from '@/shared/constants/hudLayout';
+import { useNotificationSlot, NOTIFY_PRIORITY } from '@/hooks/useNotificationSlot';
 import { CATEGORY_META, type AchievementCategory } from '@/data/achievements';
 
 /* ─── Notification State ─── */
@@ -306,9 +307,15 @@ export function AchievementNotification() {
   }, []);
 
   const mode = useGamePhase();
+  const slotGranted = useNotificationSlot(
+    'achievement',
+    NOTIFY_PRIORITY.achievement,
+    notifications.length > 0,
+  );
 
   /* ── Don't render in menu ── */
   if (mode !== 'exploration' && mode !== 'combat' && mode !== 'cutscene') return null;
+  if (!slotGranted) return null;
 
   return (
     <div

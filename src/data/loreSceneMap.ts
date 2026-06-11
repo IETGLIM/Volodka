@@ -67,6 +67,12 @@ export const LORE_SCENE_MAP: Partial<Record<SceneId, string[]>> = {
     'lore_factory_workers',    // Workers' story discovered at factory
     'lore_quantum_computer',   // Quantum computer discovered at factory
   ],
+  factory_basement: [
+    'lore_factory_progress7',  // Secret sublevel discovered by descending
+  ],
+  river_pier: [
+    'lore_pier_three',         // Pier history discovered by visiting
+  ],
   sleep_dream: [
     'lore_dreamworld',         // Dream world rules discovered in dream
     'lore_dream_rules',        // Dream rules discovered in dream

@@ -8,6 +8,9 @@ import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Navigation } from 'lucide-react';
 import { useGamePhase } from '@/store/selectors';
+import { useGameStore } from '@/store/gameStore';
+import { SCENE_DEFINITIONS } from '@/config/sceneDefinitions';
+import { useHudQuietStyle } from '@/hooks/useHudQuiet';
 import { sharedPlayerRotationRef } from '@/engine/PlayerRotationState';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { explorationCompassTopPx } from '@/shared/constants/hudLayout';
@@ -124,6 +127,8 @@ function TickMark({ offset, isMajor }: { offset: number; isMajor: boolean }) {
 /* ── Main component ── */
 export function CompassHUD() {
   const mode = useGamePhase();
+  const sceneId = useGameStore((s) => s.exploration.currentSceneId);
+  const quietStyle = useHudQuietStyle();
   const [rotation, setRotation] = useState(sharedPlayerRotationRef.current);
   const rafRef = useRef<number | null>(null);
 
@@ -208,8 +213,9 @@ export function CompassHUD() {
     return result;
   }, [centerOffset, PX_PER_RAD]);
 
-  /* ── Visibility ── */
-  const isVisible = mode === 'exploration';
+  /* ── Visibility: exploration + outdoor only (a compass indoors is noise) ── */
+  const isOutdoor = SCENE_DEFINITIONS[sceneId]?.type === 'outdoor';
+  const isVisible = mode === 'exploration' && isOutdoor;
 
   return (
     <AnimatePresence>
@@ -220,7 +226,7 @@ export function CompassHUD() {
           exit={{ opacity: 0, y: -20 }}
           transition={{ duration: 0.3, ease: 'easeOut' }}
           className="compass-hud fixed left-1/2 -translate-x-1/2 pointer-events-none"
-          style={{ top: explorationCompassTopPx(), zIndex: UI_LAYERS.HUD + 1 }}
+          style={{ top: explorationCompassTopPx(), zIndex: UI_LAYERS.HUD + 1, ...quietStyle }}
         >
           {/* Glass-morphism container */}
           <div

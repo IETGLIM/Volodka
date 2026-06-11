@@ -200,6 +200,14 @@ export const WORLD_LOCATIONS: Record<SceneId, WorldLocation> = {
     regionId: 'industrial_quarter',
     cellId: 'industrial_quarter:factory',
   },
+  factory_basement: {
+    sceneId: 'factory_basement',
+    kind: 'interior',
+    regionId: 'industrial_quarter',
+    cellId: 'industrial_quarter:factory',
+    anchorSceneId: 'abandoned_factory',
+    districtSpawn: [-8, 0.01, -6],
+  },
   rooftop_edge: {
     sceneId: 'rooftop_edge',
     kind: 'story',
@@ -215,6 +223,12 @@ export const WORLD_LOCATIONS: Record<SceneId, WorldLocation> = {
     kind: 'district',
     regionId: 'chk_tolpa',
     cellId: 'chk_tolpa:forest',
+  },
+  river_pier: {
+    sceneId: 'river_pier',
+    kind: 'district',
+    regionId: 'volodka_city',
+    cellId: 'volodka_city:civic',
   },
 
   /* Combat & dream */
@@ -292,6 +306,8 @@ export const SCENE_CHUNK_COORD: Record<SceneId, WorldChunkCoord> = {
   battle: { x: 2, z: 0 },
   sleep_dream: { x: 0, z: 2 },
   chk_forest_zorge: { x: 2, z: 1 },
+  factory_basement: { x: -2, z: 0 },
+  river_pier: { x: 2, z: 2 },
 };
 
 const SCENE_BY_CHUNK = new Map<string, SceneId>();

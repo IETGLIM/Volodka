@@ -43,6 +43,8 @@ const SCENE_COLOR_GRADE: Record<string, { hue: number; saturation: number; brigh
   abandoned_factory:  { hue: 0.06,  saturation: -0.05, brightness: -0.03, contrast: 0.2  }, // rust gothic
   zarema_albert_room: { hue: 0.02,  saturation: 0.05, brightness: 0.0,  contrast: 0.1  }, // warm domestic
   chk_forest_zorge:   { hue: 0.03,  saturation: 0.08, brightness: 0.02, contrast: 0.12 }, // campfire warmth
+  factory_basement:   { hue: -0.06, saturation: -0.08, brightness: -0.04, contrast: 0.24 }, // cold green crypt
+  river_pier:         { hue: 0.04,  saturation: 0.1,  brightness: 0.0,  contrast: 0.14 }, // warm fire vs cold water
 };
 
 const DEFAULT_COLOR_GRADE = { hue: 0, saturation: 0, brightness: 0, contrast: 0.15 };
@@ -64,6 +66,8 @@ const SCENE_VIGNETTE: Record<string, { offset: number; darkness: number }> = {
   street_winter:      { offset: 0.42, darkness: 0.2 },
   zarema_albert_room: { offset: 0.4,  darkness: 0.3 },
   chk_forest_zorge:   { offset: 0.4,  darkness: 0.28 },
+  factory_basement:   { offset: 0.28, darkness: 0.5 },
+  river_pier:         { offset: 0.4,  darkness: 0.26 },
 };
 const DEFAULT_VIGNETTE = { offset: 0.4, darkness: 0.32 };
 
@@ -84,6 +88,8 @@ const SCENE_BLOOM: Record<string, { intensity: number; threshold: number; smooth
   street_winter:      { intensity: 0.3,  threshold: 0.8,  smoothing: 0.6 },  // cold
   zarema_albert_room: { intensity: 0.3,  threshold: 0.75, smoothing: 0.5 },  // warm domestic
   chk_forest_zorge:   { intensity: 0.45, threshold: 0.55, smoothing: 0.45 }, // campfire bloom
+  factory_basement:   { intensity: 0.55, threshold: 0.5,  smoothing: 0.45 }, // Заря-М core glow
+  river_pier:         { intensity: 0.5,  threshold: 0.55, smoothing: 0.45 }, // fire + string lights
 };
 const DEFAULT_BLOOM = { intensity: 0.5, threshold: 0.7, smoothing: 0.5 };
 

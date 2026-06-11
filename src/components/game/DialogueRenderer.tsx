@@ -34,7 +34,8 @@ import type {
   NPCRelation,
 } from '@/shared/types/game';
 import { checkStoryCondition, buildStoryConditionContext } from '@/shared/storyConditions';
-import { NPCPortrait, NPC_PORTRAIT_COLORS } from './shared/NPCPortrait';
+import { NPC_PORTRAIT_COLORS } from './shared/NPCPortrait';
+import { NpcPortrait } from './NpcPortrait';
 import { AriaLiveRegion } from '@/components/a11y/AriaLiveRegion';
 import { FocusTrap } from '@/components/a11y/FocusTrap';
 import { buildChoiceAriaLabel } from '@/shared/utils/choiceAriaLabel';
@@ -392,11 +393,20 @@ export function DialogueRenderer() {
 
               {/* Speaker portrait + name + relationship — compact layout */}
               <div className="flex items-center gap-2.5 mb-2">
-                {npcId ? (
-                  <NPCPortrait npcId={npcId} size="default" />
-                ) : (
-                  <div className="w-9 h-9 rounded-lg border border-slate-600/50 flex items-center justify-center text-sm font-bold text-slate-400 bg-slate-800/50 shrink-0">?</div>
-                )}
+                <motion.div
+                  key={npcId || 'volodka'}
+                  initial={{ opacity: 0, scale: 0.85, x: -8 }}
+                  animate={{ opacity: 1, scale: 1, x: 0 }}
+                  transition={{ duration: 0.3, ease: 'easeOut' }}
+                  className="shrink-0"
+                >
+                  {npcId && npcDef ? (
+                    <NpcPortrait npcId={npcId} name={npcDef.name} appearance={npcDef.appearance} size="md" />
+                  ) : (
+                    /* Narrator / inner voice — Volodka portrait with a fixed seed */
+                    <NpcPortrait npcId="volodka" name="Володька" size="md" />
+                  )}
+                </motion.div>
                 <div className="flex-1 min-w-0">
                   {/* ── Compact Speaker Nameplate ── */}
                   <div className="dialogue-nameplate relative">

@@ -478,6 +478,52 @@ const SCENE_MUSIC_CONFIGS: Record<SceneId, SceneMusicConfig> = {
     tempo: 48,
     masterGain: 0.028,
   },
+  // Подвал завода — низкий фригийский дрон, редкие холодные ноты «Зари-М»
+  factory_basement: {
+    scale: SCALES.phrygian,
+    rootMidi: 40, // E2 — sub-bass dread
+    padType: 'sawtooth',
+    padFilterFreq: 220,
+    padFilterQ: 1.4,
+    padLfoFreq: 0.03,
+    padLfoDepth: 25,
+    padReverbMix: 0.65,
+    padReverbDecay: 7,
+    chordChangeInterval: 14,
+    chordVoices: 2,
+    useSeventhChords: false,
+    useOpenFifths: true,
+    bassType: 'sine',
+    bassGain: 0.014,
+    melodyType: 'square',
+    melodyGain: 0.003,
+    melodyChance: 0.02,
+    tempo: 40,
+    masterGain: 0.03,
+  },
+  // Пирс у реки — тёплая пентатоника, неторопливые «гитарные» ноты у воды
+  river_pier: {
+    scale: SCALES.minor_pentatonic,
+    rootMidi: 48, // C3
+    padType: 'triangle',
+    padFilterFreq: 520,
+    padFilterQ: 0.8,
+    padLfoFreq: 0.05,
+    padLfoDepth: 40,
+    padReverbMix: 0.5,
+    padReverbDecay: 4.5,
+    chordChangeInterval: 9,
+    chordVoices: 3,
+    useSeventhChords: true,
+    useOpenFifths: false,
+    bassType: 'triangle',
+    bassGain: 0.01,
+    melodyType: 'triangle',
+    melodyGain: 0.006,
+    melodyChance: 0.06,
+    tempo: 56,
+    masterGain: 0.03,
+  },
 };
 
 /* ──────────────────── Chord Generation ──────────────────── */

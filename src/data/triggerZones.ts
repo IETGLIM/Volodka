@@ -25,6 +25,10 @@ export interface TriggerZone {
   linkedMinigame?: 'codebreaker' | 'openstack_terminal' | 'bash_terminal';
   /** Optional GLB prop id from propModelRegistry — rendered at zone position */
   propModelId?: string;
+  /** Per-zone prop placement: offset from zone position (metres) */
+  propOffset?: [number, number, number];
+  /** Per-zone prop Y rotation (radians) — e.g. doors standing in X-walls */
+  propRotationY?: number;
   /** Whether this trigger can only be used once per playthrough */
   isOneTime?: boolean;
   /** NPC explicitly linked to this zone (staged talk routing — no substring heuristics). */
@@ -69,7 +73,6 @@ export const TRIGGER_ZONES: TriggerZone[] = [
     sceneId: 'volodka_room',
     position: [0, 0.5, -2.5],
     size: [2.0, 1.5, 1.0],
-    propModelId: 'kenney_desk',
     enterToast: 'Рабочий стол — три монитора и остывший кофе.',
     linkedDialogueNodeId: 'explore_room_table',
     interactionType: 'examine',
@@ -86,7 +89,6 @@ export const TRIGGER_ZONES: TriggerZone[] = [
     sceneId: 'volodka_room',
     position: [-3.5, 1.0, 0],
     size: [0.8, 2.0, 2.5],
-    propModelId: 'kenney_bookshelf',
     enterToast: 'Книжная полка — стихи рядом с руководствами.',
     linkedDialogueNodeId: 'explore_room_bookshelf',
     interactionType: 'read',
@@ -103,7 +105,6 @@ export const TRIGGER_ZONES: TriggerZone[] = [
     sceneId: 'volodka_room',
     position: [3.0, 1.0, -3.0],
     size: [1.5, 2.0, 0.5],
-    propModelId: 'kenney_window',
     enterToast: 'За окном — серый город и дождь.',
     linkedDialogueNodeId: 'explore_room_window',
     isOneTime: true,
@@ -124,7 +125,6 @@ export const TRIGGER_ZONES: TriggerZone[] = [
     sceneId: 'volodka_room',
     position: [0, 0, 3.5],
     size: [1.2, 2.2, 0.5],
-    propModelId: 'kenney_door',
     enterToast: 'Дверь в коридор приоткрыта.',
     linkedStoryNodeId: 'corridor_door',
     interactionType: 'open',
@@ -140,7 +140,6 @@ export const TRIGGER_ZONES: TriggerZone[] = [
     sceneId: 'volodka_room',
     position: [-2.2, 1.0, 2.5],
     size: [0.8, 2.0, 0.6],
-    propModelId: 'kenney_wardrobe',
     enterToast: 'Старый платяной шкаф — двери скрипят.',
     interactionType: 'open',
     examineData: {
@@ -158,7 +157,6 @@ export const TRIGGER_ZONES: TriggerZone[] = [
     sceneId: 'volodka_room',
     position: [-1.0, 0.5, -2.8],
     size: [0.8, 1.2, 0.6],
-    propModelId: 'kenney_terminal',
     enterToast: 'Терминал — мерцает приглашение командной строки.',
     linkedMinigame: 'codebreaker',
     interactionType: 'hack',
@@ -179,7 +177,6 @@ export const TRIGGER_ZONES: TriggerZone[] = [
     sceneId: 'volodka_corridor',
     position: [1.4, 0, -1.0],
     size: [1.2, 2.2, 0.5],
-    propModelId: 'kenney_door_open',
     enterToast: 'Из кухни пахнет чаем.',
     linkedDialogueNodeId: 'explore_kitchen_table',
     interactionType: 'open',
@@ -195,7 +192,6 @@ export const TRIGGER_ZONES: TriggerZone[] = [
     sceneId: 'volodka_corridor',
     position: [-1.4, 0, -1.0],
     size: [1.2, 2.2, 0.5],
-    propModelId: 'kenney_door',
     enterToast: 'Дверь на лестничную клетку — оттуда тянет холодом.',
     linkedDialogueNodeId: 'explore_street_entry',
     interactionType: 'open',
@@ -211,7 +207,6 @@ export const TRIGGER_ZONES: TriggerZone[] = [
     sceneId: 'volodka_corridor',
     position: [0, 0, 3.5],
     size: [1.2, 2.2, 0.5],
-    propModelId: 'kenney_door_open',
     enterToast: 'Твоя комната.',
     linkedDialogueNodeId: 'explore_go_home',
     interactionType: 'open',
@@ -723,7 +718,8 @@ export const TRIGGER_ZONES: TriggerZone[] = [
       icon: '✉️',
     },
     effects: [
-      { type: 'setFlag', flag: 'read_maria_letter', flagValue: true },
+      // Fix: the letter is from Zarema — flag was misnamed read_maria_letter
+      { type: 'setFlag', flag: 'read_zarema_letter', flagValue: true },
       { type: 'addKarma', value: 3 },
     ],
   },
@@ -843,6 +839,199 @@ export const TRIGGER_ZONES: TriggerZone[] = [
       { type: 'setFlag', flag: 'home_banking_investigated', flagValue: true },
     ],
   },
+  /* ═══════════════════════════════════════════════════════════════════
+     RIVER PIER — ночная набережная, вторая точка ЧК
+     ═══════════════════════════════════════════════════════════════════ */
+  {
+    id: 'pier_trofim_spot',
+    sceneId: 'river_pier',
+    position: [4.0, 0.5, -7.2],
+    size: [1.8, 2.0, 1.8],
+    enterToast: 'Старик с удочкой у перил. Дым от самокрутки висит над чёрной водой.',
+    linkedDialogueNodeId: 'trofim_greeting',
+    linkedNpcId: 'fisherman_trofim',
+    linkedQuestId: 'pier_watchman_key',
+    interactionType: 'talk',
+  },
+  {
+    id: 'pier_barrel_fire',
+    sceneId: 'river_pier',
+    position: [0, 0.5, -2.0],
+    size: [1.6, 2.0, 1.6],
+    enterToast: 'Костёр в ржавой бочке. Искры улетают к струнным огням и гаснут над рекой.',
+    interactionType: 'use',
+    interactionLabel: 'Погреться у костра',
+    examineData: {
+      title: 'Костёр в бочке',
+      description: 'Ржавая бочка, в которой горят обломки ящиков. Вокруг — ящики-сиденья.',
+      detailText: 'Огонь здесь не для тепла — для разговора. У такого костра молчать так же легко, как говорить. Дым пахнет смолой и чуть-чуть — портвейном.',
+      icon: '🔥',
+    },
+    effects: [
+      { type: 'addStat', stat: 'stress', value: -6 },
+      { type: 'addStat', stat: 'energy', value: 5 },
+      { type: 'setFlag', flag: 'pier_fire_warmed', flagValue: true },
+    ],
+  },
+  {
+    id: 'pier_portwine_crate',
+    sceneId: 'river_pier',
+    position: [2.6, 0.4, -0.6],
+    size: [0.9, 1.0, 0.9],
+    enterToast: 'Ящик с бутылками. На боку маркером: «ЧК. Брать по совести.»',
+    interactionType: 'take',
+    interactionLabel: 'Взять бутылку «777»',
+    examineData: {
+      title: 'Ящик с портвейном',
+      description: 'Деревянный ящик, в нём — тёмные бутылки с тремя семёрками на этикетке.',
+      detailText: 'Чекисты привозят его по пятницам и оставляют без замка. «Брать по совести» — это и есть замок. Работает лучше любого шифрования.',
+      icon: '🍷',
+    },
+    effects: [
+      { type: 'addItem', itemId: 'port_wine_777' },
+      { type: 'setFlag', flag: 'pier_portwine_taken', flagValue: true },
+    ],
+  },
+  {
+    id: 'pier_guitar',
+    sceneId: 'river_pier',
+    position: [-1.8, 0.5, -2.9],
+    size: [1.5, 2.0, 1.5],
+    enterToast: 'Девчонка с гитарой перебирает струны у огня. Третья струна связана узлом.',
+    linkedDialogueNodeId: 'chk_ritka_greeting',
+    linkedNpcId: 'chk_ritka',
+    linkedQuestId: 'pier_quiet_song',
+    interactionType: 'talk',
+  },
+  {
+    id: 'pier_fishing_rod',
+    sceneId: 'river_pier',
+    position: [-4.0, 0.5, -7.4],
+    size: [1.4, 1.5, 1.2],
+    enterToast: 'Запасная удочка прислонена к перилам. Поплавок ждёт в банке из-под кофе.',
+    interactionType: 'use',
+    interactionLabel: 'Тихая рыбалка',
+    examineData: {
+      title: 'Удочка у перил',
+      description: 'Бамбуковая удочка, леска, поплавок из винной пробки. Всё, что нужно.',
+      detailText: 'Рыбалка ночью — это не про рыбу. Это про то, чтобы смотреть на чёрную воду и слушать, как город за спиной перестаёт иметь значение. Иногда клюёт. Чаще — отпускает.',
+      icon: '🎣',
+    },
+    effects: [
+      { type: 'addStat', stat: 'stress', value: -8 },
+      { type: 'addSkill', skill: 'intuition', value: 1 },
+      { type: 'setFlag', flag: 'pier_fished_once', flagValue: true },
+    ],
+  },
+  {
+    id: 'pier_old_boat',
+    sceneId: 'river_pier',
+    position: [-6.0, 0.5, 4.3],
+    size: [1.6, 1.2, 1.2],
+    enterToast: 'Старая лодка на берегу. Краска облезла до имени: «...ря».',
+    isOneTime: true,
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть лодку',
+    examineData: {
+      title: 'Старая лодка',
+      description: 'Деревянная плоскодонка, вытащенная на берег килем вверх. Под ней кто-то спит — судя по запаху, Трофим.',
+      detailText: 'На корме под слоями облезшей краски читаются последние буквы имени: «...ря». «Заря»? Река стёрла остальное. Река вообще много чего стёрла — но, говорят, ничего не забыла.',
+      icon: '🛶',
+    },
+    effects: [
+      { type: 'discoverLore', loreId: 'lore_river_remembers' },
+      { type: 'addSkill', skill: 'intuition', value: 1 },
+      { type: 'setFlag', flag: 'pier_boat_examined', flagValue: true },
+    ],
+  },
+
+  /* ═══════════════════════════════════════════════════════════════════
+     FACTORY BASEMENT — «Прогресс-7», реликварий «Зари-М»
+     ═══════════════════════════════════════════════════════════════════ */
+  {
+    id: 'basement_entry_terminal',
+    sceneId: 'factory_basement',
+    position: [3.0, 0.5, 5.6],
+    size: [0.9, 1.2, 0.7],
+    enterToast: 'Пультовая у входа. Экран жив — кто-то платит за это электричество тридцать лет.',
+    linkedQuestId: 'basement_hum',
+    linkedMinigame: 'codebreaker',
+    interactionType: 'hack',
+    interactionLabel: 'Взломать пульт',
+    examineData: {
+      title: 'Терминал «Прогресс-7»',
+      description: 'Пульт допуска с кириллической клавиатурой и янтарным экраном: «ВВЕДИТЕ КОД СМЕНЫ».',
+      detailText: 'Журнал доступа не очищался с 1991 года. Последняя запись: «Смена сдана. Объект работает. Объект всегда работает.» Ниже — тысячи пустых строк. И одна свежая попытка входа. Не твоя.',
+      icon: '🖥️',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'basement_terminal_accessed', flagValue: true },
+    ],
+  },
+  {
+    id: 'basement_zarya_monolith',
+    sceneId: 'factory_basement',
+    position: [0, 0.8, -3.8],
+    size: [2.6, 2.0, 1.4],
+    enterToast: 'Монолит «Зари-М» пульсирует зелёным. Гул проходит сквозь подошвы — и выше, до затылка.',
+    interactionType: 'examine',
+    interactionLabel: 'Подойти к машине',
+    examineData: {
+      title: 'Монолит «Заря-М»',
+      description: 'Чёрный шкаф высотой в два человеческих роста. Зелёная пульсация — ровная, как дыхание спящего.',
+      detailText: 'Она молчит. Но это молчание комнаты, в которой кто-то есть. Иней на трубах гелиевого охлаждения, гул на 50 герц — и странное чувство, что пульсация чуть-чуть подстраивается под твой пульс. Не наоборот. Трофим говорил: «не трогай — послушай». Ты слушаешь. По коже — мурашки, как от строчки, которую ещё не написал.',
+      icon: '🟩',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'zarya_monolith_examined', flagValue: true },
+      { type: 'discoverLore', loreId: 'lore_zarya_project_early' },
+      { type: 'addSkill', skill: 'intuition', value: 1 },
+      { type: 'addStat', stat: 'stress', value: 4 },
+    ],
+  },
+  {
+    id: 'basement_server_rack',
+    sceneId: 'factory_basement',
+    position: [-3.6, 0.6, -1.0],
+    size: [1.0, 1.5, 2.2],
+    enterToast: 'Серверная стойка с распахнутой дверцей. Внутри — платы, пыль и что-то бумажное.',
+    isOneTime: true,
+    interactionType: 'open',
+    interactionLabel: 'Обыскать стойку',
+    examineData: {
+      title: 'Серверная стойка',
+      description: 'Советская стойка серии «Эльбрус-К». Половина плат вынута, остальные тёплые на ощупь.',
+      detailText: 'Между блоками кто-то аккуратно сложил перфокарты — как закладки в книге, которую читают десятилетиями. Одна торчит чуть выше остальных. Как будто её оставили на виду. Для кого-то.',
+      icon: '🗄️',
+    },
+    effects: [
+      { type: 'addItem', itemId: 'zarya_punch_card' },
+      { type: 'setFlag', flag: 'basement_server_searched', flagValue: true },
+      { type: 'addXp', value: 25 },
+    ],
+  },
+  {
+    id: 'basement_watchman_desk',
+    sceneId: 'factory_basement',
+    position: [-6.3, 0.5, 5.4],
+    size: [1.2, 1.0, 1.0],
+    enterToast: 'Стол сторожа: кружка, журнал смен и записка, прижатая гайкой.',
+    isOneTime: true,
+    interactionType: 'read',
+    interactionLabel: 'Прочитать записку',
+    examineData: {
+      title: 'Стол сторожа',
+      description: 'Конторский стол у входа. Пыль легла ровно, как снег, — кроме угла, где лежит записка.',
+      detailText: 'Почерк крупный, старательный: «Сменщику. Ночью из-под пола гудит — это НЕ авария, не звони. Свет внизу не выключать. Если услышишь, что гул стал ПЕСНЕЙ, — уходи и не оборачивайся. Трофим.» Дата — двадцать лет назад. Гайка на записке отполирована пальцами до блеска.',
+      icon: '📜',
+    },
+    effects: [
+      { type: 'discoverLore', loreId: 'lore_watchman_trofim' },
+      { type: 'setFlag', flag: 'trofim_note_found', flagValue: true },
+      { type: 'addKarma', value: 2 },
+    ],
+  },
+
   /* ═══════════════════════════════════════════════════════════════════
      COMBAT ENCOUNTERS — replaced by visible patrolling creeps
      (src/data/creepPatrols.ts + PatrollingCreeps.tsx). The old invisible
