@@ -26,6 +26,8 @@ export interface VolodkaE2EBridge {
   bootstrapMidActOffice: () => Promise<void>;
   bootstrapStartDiagnosis: () => Promise<void>;
   bootstrapAct2AlbertHint: () => Promise<void>;
+  bootstrapFixSuccess: () => Promise<void>;
+  bootstrapAct2MariaMeeting: () => Promise<void>;
 }
 
 declare global {
@@ -137,6 +139,23 @@ export function registerVolodkaE2EBridge(): void {
       store.setFlag('act2_started', true);
       store.setFlag('advanced_to_act2', true);
       await jumpToStoryBeat('act2_albert_hint', 'cafe_evening');
+    },
+    async bootstrapFixSuccess() {
+      const store = getGameStore();
+      store.setFlag('agreed_help_alexander', true);
+      store.setFlag('started_decryption', true);
+      await jumpToStoryBeat('fix_success', 'office_day');
+    },
+    async bootstrapAct2MariaMeeting() {
+      const store = getGameStore();
+      if (store.playerState.progression.currentAct < 2) {
+        store.advanceAct();
+      }
+      store.setFlag('act2_started', true);
+      store.setFlag('advanced_to_act2', true);
+      store.setFlag('maria_introduced', true);
+      store.markCutsceneTriggered('act1_to_act2');
+      await jumpToStoryBeat('act2_maria_meeting_place', 'street_night');
     },
   };
 }

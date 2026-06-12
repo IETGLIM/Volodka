@@ -266,3 +266,56 @@ export function findNpcForQuest(questDef: QuestDefinition): string | undefined {
   const npcObj = questDef.objectives.find((o) => o.type === 'npc_talked');
   return npcObj?.target;
 }
+
+/** Story nodes where network_initiation should be active even if triggerQuest was skipped. */
+const NETWORK_INITIATION_ACTIVATION_NODES = new Set([
+  'act2_maria_meeting_place',
+  'act2_network_initiation',
+  'act2_network_oath',
+  'act2_network_hesitation',
+]);
+
+/** Progress flags that imply network_initiation should be tracked. */
+const NETWORK_INITIATION_PROGRESS_FLAGS = [
+  'recited_poem_initiation',
+  'network_oath_taken',
+  'network_joined',
+] as const;
+
+/**
+ * Activate spine quests when story progress outpaced explicit triggerQuest effects
+ * (e.g. cafe/barista shortcuts into act2_network_initiation).
+ */
+export function reconcileSpineQuestActivation(deps: GuidedStoryDeps): boolean {
+  const snapshot = deps.getSnapshot();
+  const questId = 'network_initiation';
+
+  const existing = snapshot.quests.find((q) => q.questId === questId);
+  if (existing && existing.status !== 'inactive' && existing.status !== 'failed') {
+    return false;
+  }
+
+  if (!canStartQuest(questId, deps)) return false;
+
+  const visitedSet = getVisitedNodeSet(snapshot.visitedNodes);
+  const reachedActivationNode = [...NETWORK_INITIATION_ACTIVATION_NODES].some((nodeId) =>
+    visitedSet.has(nodeId),
+  );
+  const hasProgressFlag = NETWORK_INITIATION_PROGRESS_FLAGS.some((flag) => snapshot.flags[flag]);
+
+  if (!reachedActivationNode && !hasProgressFlag) return false;
+
+  deps.actions.activateQuest(questId);
+
+  const def = deps.graph.getQuestDefinitionById(questId);
+  if (def) {
+    deps.events.emitQuestAvailable({
+      questId,
+      questTitle: def.title,
+      questType: def.questType,
+      npcId: findNpcForQuest(def),
+    });
+  }
+
+  return true;
+}

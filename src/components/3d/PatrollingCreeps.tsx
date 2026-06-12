@@ -197,7 +197,9 @@ function Creep({
 
     const storeState = useGameStore.getState();
     const phase = readGamePhase(storeState);
-    const exploring = phase === 'exploration';
+    // Story overlay / cutscene — suppress patrol aggro so office daemon cannot block VN beats.
+    const exploring =
+      phase === 'exploration' && !storeState.showStoryOverlay && !storeState.activeCutsceneId;
     const inCombat = phase === 'combat' && engagedCreepIdRef.current === def.id;
     const inArena = inCombat || engaging;
 

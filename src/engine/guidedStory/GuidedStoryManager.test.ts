@@ -5,7 +5,7 @@ import type {
   GuidedStoryPathConfig,
   GuidedStorySnapshot,
 } from '@/engine/guidedStory/guidedStoryTypes';
-import { resolveStorySpineAdvance, syncSpineStateFromSnapshot } from '@/engine/guidedStory/guidedStoryLogic';
+import { resolveStorySpineAdvance, syncSpineStateFromSnapshot, reconcileSpineQuestActivation } from '@/engine/guidedStory/guidedStoryLogic';
 import { isStoryGraphEdge } from '@/engine/story/storyGraphTraversal';
 
 const TEST_PATH: GuidedStoryPathConfig = {
@@ -87,6 +87,43 @@ describe('guidedStoryLogic', () => {
       TEST_PATH,
     );
     expect(synced.currentStepIndex).toBe(2);
+  });
+
+  it('reconcileSpineQuestActivation activates network_initiation when progress flags exist', () => {
+    const deps = createTestDeps({
+      currentAct: 2,
+      flags: { recited_poem_initiation: true },
+      visitedNodes: ['act2_maria_meeting_place'],
+    });
+    deps.graph.getQuestDefinitionById = vi.fn((id: string) =>
+      id === 'network_initiation'
+        ? {
+            id: 'network_initiation',
+            title: 'Посвящение в Сеть',
+            description: 'test',
+            questType: 'main' as const,
+            objectives: [],
+          }
+        : undefined,
+    );
+
+    const activated = reconcileSpineQuestActivation(deps);
+    expect(activated).toBe(true);
+    expect(deps.actions.activateQuest).toHaveBeenCalledWith('network_initiation');
+    expect(deps.events.emitQuestAvailable).toHaveBeenCalledWith(
+      expect.objectContaining({ questId: 'network_initiation' }),
+    );
+  });
+
+  it('reconcileSpineQuestActivation skips when quest already active', () => {
+    const deps = createTestDeps({
+      currentAct: 2,
+      flags: { recited_poem_initiation: true },
+      quests: [{ questId: 'network_initiation', status: 'active', objectives: {} }],
+    });
+
+    expect(reconcileSpineQuestActivation(deps)).toBe(false);
+    expect(deps.actions.activateQuest).not.toHaveBeenCalled();
   });
 });
 

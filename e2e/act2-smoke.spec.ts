@@ -140,4 +140,44 @@ test.describe('Act II smoke', () => {
       timeout: 20_000,
     });
   });
+
+  test('bootstrap fix_success → poem revelation beat', async ({ page }) => {
+    await waitForMenuReady(page);
+    await page.getByTestId('menu-new-game').click();
+    await expect(page.locator('canvas[data-engine]')).toBeVisible({ timeout: 90_000 });
+
+    await skipWakeCinematic(page);
+    await expect(page.getByTestId('game-hud')).toBeVisible({ timeout: 30_000 });
+    await settleAfterWake(page);
+
+    await page.evaluate(async () => {
+      await window.__volodka_e2e?.bootstrapFixSuccess();
+    });
+
+    await expect(page.getByText(/Стихи в коде|живые стихи|зашифрован/i).first()).toBeVisible({
+      timeout: 45_000,
+    });
+  });
+
+  test('bootstrap act2 maria meeting place with karma gate hint', async ({ page }) => {
+    await waitForMenuReady(page);
+    await page.getByTestId('menu-new-game').click();
+    await expect(page.locator('canvas[data-engine]')).toBeVisible({ timeout: 90_000 });
+
+    await skipWakeCinematic(page);
+    await expect(page.getByTestId('game-hud')).toBeVisible({ timeout: 30_000 });
+    await settleAfterWake(page);
+
+    await page.evaluate(async () => {
+      await window.__volodka_e2e?.bootstrapAct2MariaMeeting();
+    });
+
+    const hubDialog = page.getByRole('dialog', { name: /Голос/i });
+    await expect(hubDialog).toBeVisible({ timeout: 45_000 });
+    await skipStoryTypewriter(page);
+
+    await expect(page.getByText(/Сеть|дверью|Виктория|клятв/i).first()).toBeVisible({
+      timeout: 20_000,
+    });
+  });
 });

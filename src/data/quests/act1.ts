@@ -122,6 +122,13 @@ export const QUESTS_ACT1: QuestDefinition[] = [
         target: 'started_decryption',
         completed: false,
       },
+      {
+        id: 'discover_poem_in_code',
+        description: 'Обнаружить стихи, спрятанные в коде инцидента',
+        type: 'flag_set',
+        target: 'found_first_poem',
+        completed: false,
+      },
     ],
     rewards: [
       { type: 'addSkill', skill: 'coding', value: 3 },

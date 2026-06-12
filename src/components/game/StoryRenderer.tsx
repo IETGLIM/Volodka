@@ -395,6 +395,16 @@ export function StoryRenderer() {
                     transition={{ duration: 0.3 }}
                     className="flex flex-col gap-1.5"
                   >
+                    {currentNodeId === 'act2_maria_meeting_place' &&
+                      karma < 30 &&
+                      node.choices.some(
+                        (c) => c.condition?.minKarma !== undefined && karma < c.condition.minKarma,
+                      ) && (
+                        <p className="text-xs text-rose-300/90 px-1 mb-0.5">
+                          ☯ Карма слишком низкая для клятвы (нужно ≥30). Совершай добрые поступки или
+                          используй чип Виктории, если он у тебя есть.
+                        </p>
+                      )}
                     {node.choices.length > 0 ? (
                       node.choices.map((choice, i) => {
                         const cond = checkStoryCondition(choice.condition, conditionCtx);
@@ -423,6 +433,15 @@ export function StoryRenderer() {
                                 <span className="flex items-center gap-1 text-xs text-rose-400 shrink-0">
                                   <Zap className="size-3" />
                                   {cond.skillCheck.skill} {cond.skillCheck.needed}
+                                </span>
+                              )}
+                              {!cond.pass && cond.karmaNeeded && (
+                                <span
+                                  className="text-[9px] font-mono px-1 py-px rounded bg-rose-950/40 border border-rose-500/30 text-rose-300 shrink-0"
+                                  title={`Текущая карма: ${cond.karmaNeeded.current}`}
+                                >
+                                  ☯ {cond.karmaNeeded.type === 'min' ? `≥${cond.karmaNeeded.needed}` : `≤${cond.karmaNeeded.needed}`}{' '}
+                                  <span className="text-rose-400/60">({cond.karmaNeeded.current})</span>
                                 </span>
                               )}
                             </div>

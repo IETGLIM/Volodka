@@ -19,6 +19,7 @@ import {
   getActTransition,
   getCurrentGuidance as getCurrentGuidanceLogic,
   resolveStorySpineAdvance,
+  reconcileSpineQuestActivation,
   syncSpineStateFromSnapshot,
 } from '@/engine/guidedStory/guidedStoryLogic';
 import type { GuidedStoryDeps, GuidanceInfo } from '@/engine/guidedStory/guidedStoryTypes';
@@ -302,6 +303,8 @@ export class GuidedStoryManager {
   /** Reconcile spine/guidance after store mutations (quests, flags, visited nodes). */
   reconcile() {
     if (!this.initialized) return;
+    this.syncFromStore();
+    reconcileSpineQuestActivation(this.deps);
     this.syncFromStore();
     this.emitGuidanceUpdate();
   }
