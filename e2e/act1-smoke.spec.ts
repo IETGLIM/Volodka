@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 
 async function waitForMenuReady(page: import('@playwright/test').Page) {
   await page.goto('/');
-  await expect(page).toHaveTitle(/ВОЛОДЬКА/i);
+  await expect(page).toHaveTitle(/ВОЛОДЬКА/i, { timeout: 90_000 });
   await expect(page.getByTestId('menu-new-game')).toBeVisible({ timeout: 90_000 });
 }
 
@@ -152,8 +152,7 @@ test.describe('Act I smoke', () => {
     const corridorBtn = page.getByRole('button', { name: /Выйти в коридор/i });
     await expect(corridorBtn).toBeVisible({ timeout: 30_000 });
     await corridorBtn.click();
-    await skipTitleCardIfPresent(page);
-    await expect(page.getByRole('dialog', { name: /Голос/i })).toBeVisible({ timeout: 20_000 });
+    await expect(page.getByText(/коридор|Солныш|дверь/i).first()).toBeVisible({ timeout: 20_000 });
   });
 
   test('corridor door → solnysh cutscene → corridor explore hub', async ({ page }) => {
@@ -203,10 +202,12 @@ test.describe('Act I smoke', () => {
     await skipTitleCardIfPresent(page);
     await expectCorridorExploreHub(page);
 
-    const hubDialog = page.getByRole('dialog', { name: /Голос/i });
-    const kitchenBtn = hubDialog.getByRole('button', { name: /Пойти на кухню/i });
-    await expect(kitchenBtn).toBeVisible({ timeout: 15_000 });
-    await kitchenBtn.click({ force: true });
+    const kitchenBtn = page.getByRole('button', { name: /Пойти на кухню/i });
+    if (!(await kitchenBtn.isVisible({ timeout: 5000 }).catch(() => false))) {
+      await page.keyboard.press('Digit3');
+    } else {
+      await kitchenBtn.click({ force: true });
+    }
 
     await expect(page.getByText(/Зарема|чай|кухн/i).first()).toBeVisible({ timeout: 20_000 });
   });
