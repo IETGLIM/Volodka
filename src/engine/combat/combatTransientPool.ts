@@ -26,7 +26,18 @@ function resetHitSpark(mesh: THREE.Mesh): void {
   mesh.position.set(0, 0, 0);
 }
 
-export const combatHitSparkPool = new ObjectPool(createHitSpark, resetHitSpark, 8);
+function disposeHitSpark(mesh: THREE.Mesh): void {
+  disposeObject3DTree(mesh, { skip: { geometries: new Set([hitSparkGeometry]) } });
+}
+
+/** Prewarm 8, cap idle pool at 16 — excess sparks are disposed on release. */
+export const combatHitSparkPool = new ObjectPool(
+  createHitSpark,
+  resetHitSpark,
+  8,
+  16,
+  disposeHitSpark,
+);
 
 export function acquireCombatHitSpark(): THREE.Mesh {
   const mesh = combatHitSparkPool.acquire();

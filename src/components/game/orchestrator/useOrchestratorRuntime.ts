@@ -23,6 +23,7 @@ import { useGameLifecycleManager } from './useGameLifecycleManager';
 import { useNarrativeKindRecovery } from './useNarrativeKindRecovery';
 import { useMobileDetection } from './useMobileDetection';
 import { useStablePanelClosers } from './useStablePanelClosers';
+import { useStableHudPanelOpeners } from './useStableHudPanelOpeners';
 import { useGameIntegrityGuard } from '@/hooks/useGameIntegrityGuard';
 
 /** Bundles orchestrator hooks — GameOrchestrator stays a thin render coordinator. */
@@ -98,6 +99,7 @@ export function useOrchestratorRuntime() {
   }, [isOverlayActive, interaction.dismissForNarrativeOverlay, panels.closeAllPanels]);
 
   const panelClosers = useStablePanelClosers(panels.closePanelByType);
+  const hudSecondaryOpeners = useStableHudPanelOpeners(panels.dispatchPanel);
 
   useKeyboardShortcutManager({
     activePanel: panels.activePanel,
@@ -147,6 +149,7 @@ export function useOrchestratorRuntime() {
     interaction,
     panels,
     panelClosers,
+    hudSecondaryOpeners,
     pauseDialog,
     matrixQuote: panels.matrixQuote,
     setMatrixQuote: panels.setMatrixQuote,

@@ -6,24 +6,24 @@ import type {
   QuestState,
   NPCRelation,
   AcceptedDailyMission,
-  TrainablePlayerSkill,
 } from '@/shared/types/game';
 import { getPoemById, getQuestDefinitions, getAchievementMap, getDailyMissionById, getTotalAchievements } from '@/data/gameDataLoader';
 import { eventBus } from '@/engine/EventBus';
-import { clamp, pushNotification, type GameNotification, type PoemPowerState } from '../shared';
+import { clamp, type PoemPowerState } from '../shared';
 import { applyFairmathRelation } from '@/shared/fairmath';
 import type { GameStoreState } from '../types';
-import { readWorldFromExploration, readWorldFromPlayer } from '../crossSliceReads';
+import {
+  pickPlayerRewardBatchActions,
+  pickWorldCrossActions,
+  readWorldFromExploration,
+} from '../crossSliceReads';
+import { parseTrainablePlayerSkill } from '../skillHelpers';
 import {
   batchAddCredits,
   batchAddKarma,
   batchAddSkill,
   batchAddXp,
   batchSetFlag,
-  createRewardBatchDraft,
-  createRewardBatchSideEffects,
-  finalizeRewardBatch,
-  flushRewardBatchSideEffects,
 } from '../rewardBatchHelpers';
 
 /* ─── Slice types ─── */
@@ -135,32 +135,28 @@ export const createWorldSlice: StateCreator<
 
   /* ── Actions ── */
 
-  activateQuest: (questId) =>
-    set((state) => {
-      const existing = state.quests.find((q) => q.questId === questId);
-      if (existing && existing.status !== 'inactive') return state;
+  activateQuest: (questId) => {
+    const state = get();
+    const existing = state.quests.find((q) => q.questId === questId);
+    if (existing && existing.status !== 'inactive') return;
 
-      const definition = getQuestDefinitions().find((d) => d.id === questId);
-      if (!definition) return state;
+    const definition = getQuestDefinitions().find((d) => d.id === questId);
+    if (!definition) return;
 
-      const objectives: Record<string, boolean> = {};
-      for (const obj of definition.objectives) {
-        objectives[obj.id] = false;
-      }
+    const objectives: Record<string, boolean> = {};
+    for (const obj of definition.objectives) {
+      objectives[obj.id] = false;
+    }
 
-      const quests = state.quests.filter((q) => q.questId !== questId);
-      const { timeOfDay } = readWorldFromExploration(get());
-      quests.push({ questId, status: 'active', objectives, startedAtTime: timeOfDay });
+    const quests = state.quests.filter((q) => q.questId !== questId);
+    const { timeOfDay } = readWorldFromExploration(get());
+    quests.push({ questId, status: 'active', objectives, startedAtTime: timeOfDay });
 
-      eventBus.emit('quest:accepted', { questId, questTitle: definition.title });
+    eventBus.emit('quest:accepted', { questId, questTitle: definition.title });
 
-      const questTitle = definition.title;
-      const { notifications: currentNotifications } = readWorldFromPlayer(get());
-      return {
-        quests,
-        notifications: pushNotification(currentNotifications, 'quest', `Новое задание: ${questTitle}`),
-      };
-    }),
+    set({ quests });
+    pickWorldCrossActions(get).pushNotification('quest', `Новое задание: ${definition.title}`);
+  },
 
   completeQuestObjective: (questId, objectiveId) =>
     set((state) => {
@@ -180,9 +176,12 @@ export const createWorldSlice: StateCreator<
       return { quests };
     }),
 
-  completeQuest: (questId) =>
-    set((state) => {
-      const quests = state.quests.map((q) => {
+  completeQuest: (questId) => {
+    const questDef = getQuestDefinitions().find((d) => d.id === questId);
+    const questTitle = questDef?.title ?? questId;
+
+    set((state) => ({
+      quests: state.quests.map((q) => {
         if (q.questId !== questId) return q;
         return {
           ...q,
@@ -191,18 +190,12 @@ export const createWorldSlice: StateCreator<
             Object.keys(q.objectives).map((k) => [k, true]),
           ),
         };
-      });
+      }),
+    }));
 
-      const questDef = getQuestDefinitions().find((d) => d.id === questId);
-
-      eventBus.emit('quest:completed', { questId, npcId: questDef?.questGiverNpcId });
-      const questTitle = questDef?.title ?? questId;
-      const { notifications: currentNotifications } = readWorldFromPlayer(get());
-      return {
-        quests,
-        notifications: pushNotification(currentNotifications, 'quest', `Задание выполнено: ${questTitle}`),
-      };
-    }),
+    eventBus.emit('quest:completed', { questId, npcId: questDef?.questGiverNpcId });
+    pickWorldCrossActions(get).pushNotification('quest', `Задание выполнено: ${questTitle}`);
+  },
 
   failQuest: (questId) =>
     set((state) => {
@@ -218,19 +211,16 @@ export const createWorldSlice: StateCreator<
       return { quests };
     }),
 
-  collectPoem: (poemId) =>
-    set((state) => {
-      if (state.collectedPoems.includes(poemId)) return state;
-      const poem = getPoemById(poemId);
-      if (!poem) return state;
-      const poemTitle = poem.title;
-      eventBus.emit('poem:collected', { poemId });
-      const { notifications: currentNotifications } = readWorldFromPlayer(get());
-      return {
-        collectedPoems: [...state.collectedPoems, poemId],
-        notifications: pushNotification(currentNotifications, 'poem', `Стих собран: ${poemTitle}`),
-      };
-    }),
+  collectPoem: (poemId) => {
+    const state = get();
+    if (state.collectedPoems.includes(poemId)) return;
+    const poem = getPoemById(poemId);
+    if (!poem) return;
+
+    eventBus.emit('poem:collected', { poemId });
+    set({ collectedPoems: [...state.collectedPoems, poemId] });
+    pickWorldCrossActions(get).pushNotification('poem', `Стих собран: ${poem.title}`);
+  },
 
   setNpcRelation: (npcId, delta) =>
     set((state) => {
@@ -293,11 +283,12 @@ export const createWorldSlice: StateCreator<
     if (!def) return false;
 
     const timestamp = Date.now();
-    const sideEffects = createRewardBatchSideEffects();
 
-    set((state) => {
-      const draft = createRewardBatchDraft(state.playerState, state.notifications);
+    set({
+      unlockedAchievements: [...state.unlockedAchievements, { id: achievementId, unlockedAt: timestamp }],
+    });
 
+    pickPlayerRewardBatchActions(get).applyPlayerRewardBatch((draft, sideEffects) => {
       for (const reward of def.rewards) {
         switch (reward.type) {
           case 'xp':
@@ -306,11 +297,16 @@ export const createWorldSlice: StateCreator<
           case 'karma':
             if (reward.value) batchAddKarma(draft, sideEffects, reward.value);
             break;
-          case 'skill':
-            if (reward.skill && reward.value) {
-              batchAddSkill(draft, reward.skill as TrainablePlayerSkill, reward.value);
+          case 'skill': {
+            const skill = parseTrainablePlayerSkill(
+              reward.skill,
+              `achievement "${achievementId}" reward skill`,
+            );
+            if (skill && reward.value) {
+              batchAddSkill(draft, skill, reward.value);
             }
             break;
+          }
           case 'credits':
             if (reward.value) batchAddCredits(draft, reward.value);
             break;
@@ -319,12 +315,6 @@ export const createWorldSlice: StateCreator<
             break;
         }
       }
-
-      return {
-        unlockedAchievements: [...state.unlockedAchievements, { id: achievementId, unlockedAt: timestamp }],
-        playerState: draft.playerState,
-        notifications: draft.notifications,
-      };
     });
 
     // Emit achievement events for UI
@@ -341,8 +331,6 @@ export const createWorldSlice: StateCreator<
       description: def.description,
       icon: def.icon,
     });
-
-    flushRewardBatchSideEffects(sideEffects);
 
     // Check for "all achievements" meta-achievement
     const newUnlockedCount = state.unlockedAchievements.length + 1;
@@ -370,28 +358,23 @@ export const createWorldSlice: StateCreator<
 
   /* ── Daily Mission Actions ── */
 
-  acceptDailyMission: (missionId) =>
-    set((state) => {
-      // Already accepted?
-      if (state.acceptedDailyMissions.some((m) => m.missionId === missionId)) return state;
-      // Max 3 active daily missions
-      const activeCount = state.acceptedDailyMissions.filter((m) => !m.completed && !m.claimed).length;
-      if (activeCount >= 3) return state;
+  acceptDailyMission: (missionId) => {
+    const state = get();
+    if (state.acceptedDailyMissions.some((m) => m.missionId === missionId)) return;
+    const activeCount = state.acceptedDailyMissions.filter((m) => !m.completed && !m.claimed).length;
+    if (activeCount >= 3) return;
 
-      const newMission: AcceptedDailyMission = {
-        missionId,
-        acceptedAt: Date.now(),
-        progress: {},
-        completed: false,
-        claimed: false,
-      };
+    const newMission: AcceptedDailyMission = {
+      missionId,
+      acceptedAt: Date.now(),
+      progress: {},
+      completed: false,
+      claimed: false,
+    };
 
-      const { notifications: currentNotifications } = readWorldFromPlayer(get());
-      return {
-        acceptedDailyMissions: [...state.acceptedDailyMissions, newMission],
-        notifications: pushNotification(currentNotifications, 'quest', `Ежедневное задание принято`),
-      };
-    }),
+    set({ acceptedDailyMissions: [...state.acceptedDailyMissions, newMission] });
+    pickWorldCrossActions(get).pushNotification('quest', 'Ежедневное задание принято');
+  },
 
   abandonDailyMission: (missionId) =>
     set((state) => {
@@ -403,11 +386,13 @@ export const createWorldSlice: StateCreator<
       };
     }),
 
-  updateDailyMissionProgress: (missionId, objectiveId, delta) =>
-    set((state) => {
-      const missionDef = getDailyMissionById(missionId);
-      if (!missionDef) return state;
+  updateDailyMissionProgress: (missionId, objectiveId, delta) => {
+    const missionDef = getDailyMissionById(missionId);
+    if (!missionDef) return;
 
+    let newlyCompletedTitle: string | null = null;
+
+    set((state) => {
       const missions = state.acceptedDailyMissions.map((m) => {
         if (m.missionId !== missionId || m.completed || m.claimed) return m;
 
@@ -418,7 +403,6 @@ export const createWorldSlice: StateCreator<
 
         const updatedProgress = { ...m.progress, [objectiveId]: newProgress };
 
-        // Check if all objectives are complete
         const allComplete = missionDef.objectives.every(
           (o) => (updatedProgress[o.id] ?? 0) >= o.target,
         );
@@ -430,58 +414,54 @@ export const createWorldSlice: StateCreator<
         };
       });
 
-      // Check for newly completed missions
       const newlyCompleted = missions.find(
         (m) => m.missionId === missionId && m.completed && !state.acceptedDailyMissions.find((om) => om.missionId === missionId)?.completed,
       );
 
       if (newlyCompleted) {
-        const { notifications: currentNotifications } = readWorldFromPlayer(get());
-        return {
-          acceptedDailyMissions: missions,
-          notifications: pushNotification(currentNotifications, 'quest', `Ежедневное задание выполнено: ${missionDef.title}`),
-        };
+        newlyCompletedTitle = missionDef.title;
       }
 
       return { acceptedDailyMissions: missions };
-    }),
+    });
+
+    if (newlyCompletedTitle) {
+      pickWorldCrossActions(get).pushNotification(
+        'quest',
+        `Ежедневное задание выполнено: ${newlyCompletedTitle}`,
+      );
+    }
+  },
 
   claimDailyMissionReward: (missionId) => {
-    const sideEffects = createRewardBatchSideEffects();
+    const state = get();
+    const mission = state.acceptedDailyMissions.find((m) => m.missionId === missionId);
+    if (!mission || !mission.completed || mission.claimed) return;
 
-    set((state) => {
-      const mission = state.acceptedDailyMissions.find((m) => m.missionId === missionId);
-      if (!mission || !mission.completed || mission.claimed) return state;
+    const missionDef = getDailyMissionById(missionId);
+    if (!missionDef) return;
 
-      const missionDef = getDailyMissionById(missionId);
-      if (!missionDef) return state;
+    set({
+      acceptedDailyMissions: state.acceptedDailyMissions.map((m) =>
+        m.missionId === missionId ? { ...m, claimed: true } : m,
+      ),
+    });
 
-      const draft = createRewardBatchDraft(state.playerState, state.notifications);
-      const rewards = missionDef.rewards;
-
+    const rewards = missionDef.rewards;
+    pickPlayerRewardBatchActions(get).applyPlayerRewardBatch((draft, sideEffects) => {
       if (rewards.xp) batchAddXp(draft, sideEffects, rewards.xp);
       if (rewards.karma) batchAddKarma(draft, sideEffects, rewards.karma);
       if (rewards.credits) batchAddCredits(draft, rewards.credits);
       if (rewards.skillXp) {
-        for (const [skill, xp] of Object.entries(rewards.skillXp)) {
-          if (xp) batchAddSkill(draft, skill as TrainablePlayerSkill, xp);
+        for (const [skillKey, xp] of Object.entries(rewards.skillXp)) {
+          const skill = parseTrainablePlayerSkill(
+            skillKey,
+            `daily mission "${missionId}" skillXp`,
+          );
+          if (skill && xp) batchAddSkill(draft, skill, xp);
         }
       }
-
-      const missions = state.acceptedDailyMissions.map((m) =>
-        m.missionId === missionId ? { ...m, claimed: true } : m,
-      );
-
-      finalizeRewardBatch(draft, sideEffects);
-
-      return {
-        acceptedDailyMissions: missions,
-        playerState: draft.playerState,
-        notifications: draft.notifications,
-      };
     });
-
-    flushRewardBatchSideEffects(sideEffects);
   },
 
   checkDailyMissionResets: () => {

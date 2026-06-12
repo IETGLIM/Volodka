@@ -66,6 +66,7 @@ export const dialogStrategy: CameraModeStrategy = {
       shot.position,
       WALL_MARGIN,
       MIN_DISTANCE,
+      ctx.desiredPos,
     );
 
     return {

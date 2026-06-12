@@ -15,6 +15,14 @@ import {
 } from '../activeTTLFlags';
 import { MAX_STORY_ACT } from '@/data/constants';
 import { hasVisitedNode } from '../visitedNodesIndex';
+import {
+  createRewardBatchDraft,
+  createRewardBatchSideEffects,
+  finalizeRewardBatch,
+  flushRewardBatchSideEffects,
+  type RewardBatchDraft,
+  type RewardBatchSideEffects,
+} from '../rewardBatchHelpers';
 
 /* ─── Slice types ─── */
 
@@ -42,6 +50,10 @@ export interface PlayerCoreSliceActions {
   clearActiveTTLFlags: () => void;
   /** Advance to the next act. No-op if already at {@link MAX_STORY_ACT}. */
   advanceAct: () => void;
+  /** Batched player + notification updates (single set pass) for cross-slice reward flows. */
+  applyPlayerRewardBatch: (
+    apply: (draft: RewardBatchDraft, sideEffects: RewardBatchSideEffects) => void,
+  ) => RewardBatchSideEffects;
 }
 
 export type PlayerCoreSlice = PlayerCoreSliceState & PlayerCoreSliceActions;
@@ -209,4 +221,19 @@ export const createPlayerCoreSlice: StateCreator<
         notifications: pushNotification(state.notifications, 'quest', `Акт ${currentAct + 1} начинается!`),
       };
     }),
+
+  applyPlayerRewardBatch: (apply) => {
+    const sideEffects = createRewardBatchSideEffects();
+    set((state) => {
+      const draft = createRewardBatchDraft(state.playerState, state.notifications);
+      apply(draft, sideEffects);
+      finalizeRewardBatch(draft, sideEffects);
+      return {
+        playerState: draft.playerState,
+        notifications: draft.notifications,
+      };
+    });
+    flushRewardBatchSideEffects(sideEffects);
+    return sideEffects;
+  },
 });

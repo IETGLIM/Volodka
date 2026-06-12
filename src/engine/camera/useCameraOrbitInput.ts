@@ -3,8 +3,7 @@
 
 import { useEffect, type MutableRefObject } from 'react';
 import type { WebGLRenderer } from 'three';
-import { useGameStore } from '@/store/gameStore';
-import { readGamePhase } from '@/shared/gamePhase';
+import { getGameSnapshot } from '@/engine/GameActionDispatcher';
 import { getSceneConfig } from '@/config/scenes';
 import {
   getSceneDefaultDistance,
@@ -42,18 +41,16 @@ export interface CameraOrbitInputRefs {
 }
 
 function shouldBlockOrbit(): boolean {
-  const state = useGameStore.getState();
-  const { showStoryOverlay, currentNodeId } = state;
-  const mode = readGamePhase(state);
-  if (isNarrativeMovementLocked(showStoryOverlay, currentNodeId) || mode === 'cutscene' || mode === 'combat') return true;
+  const { showStoryOverlay, currentNodeId, mode } = getGameSnapshot();
+  if (isNarrativeMovementLocked(showStoryOverlay, currentNodeId ?? '') || mode === 'cutscene' || mode === 'combat') {
+    return true;
+  }
   return getInteractionState() === InteractionState.Dialogue;
 }
 
 function shouldBlockZoom(): boolean {
-  const state = useGameStore.getState();
-  const { showStoryOverlay, currentNodeId } = state;
-  const mode = readGamePhase(state);
-  if (mode !== 'exploration' || isNarrativeMovementLocked(showStoryOverlay, currentNodeId)) return true;
+  const { showStoryOverlay, currentNodeId, mode } = getGameSnapshot();
+  if (mode !== 'exploration' || isNarrativeMovementLocked(showStoryOverlay, currentNodeId ?? '')) return true;
   return getInteractionState() === InteractionState.Dialogue;
 }
 
@@ -190,7 +187,7 @@ export function useCameraOrbitInput(
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.code === 'KeyR' && e.shiftKey) {
         e.preventDefault();
-        const currentSceneId = useGameStore.getState().exploration.currentSceneId;
+        const currentSceneId = getGameSnapshot().exploration.currentSceneId;
         const config = getSceneConfig(currentSceneId);
         const sceneDist = getSceneDefaultDistance(currentSceneId);
         yawRef.current = (config.initialRotation ?? 0) + Math.PI;

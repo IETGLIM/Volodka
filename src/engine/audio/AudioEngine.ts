@@ -33,6 +33,7 @@ import {
   tryCreateConvolver,
 } from './audioCapabilities';
 import { registerHmrDispose } from '@/shared/dev/hmrDispose';
+import { RandomSoundLoopRegistry } from './randomSoundLoopRegistry';
 
 /**
  * AAA procedural audio engine using the Web Audio API.
@@ -56,14 +57,13 @@ class AudioEngine {
   }> = [];
   private ambientGain: GainNode | null = null;
   private currentAmbientScene: SceneId | null = null;
-  /** Multiple random sound timer loops (each reschedules itself) */
-  private randomSoundLoops: Array<{
-    timer: ReturnType<typeof setTimeout> | null;
-    cancelled: boolean;
-    generation: number;
-  }> = [];
-  /** Bumped when ambient stops — stale loop callbacks no-op */
-  private randomSoundGeneration = 0;
+  private readonly randomSoundLoopRegistry = new RandomSoundLoopRegistry();
+
+  private guardRandomSoundLoop(
+    loop: Parameters<RandomSoundLoopRegistry['guard']>[0],
+  ): boolean {
+    return this.randomSoundLoopRegistry.guard(loop, this.disposed);
+  }
 
   // Noise layer state
   private noiseSourceNodes: Array<AudioBufferSourceNode> = [];
@@ -467,13 +467,11 @@ class AudioEngine {
     interval: number,
     sound: NonNullable<AmbientLayer['randomSound']>,
   ): void {
-    const loopGeneration = this.randomSoundGeneration;
-    const loop = { timer: null as ReturnType<typeof setTimeout> | null, cancelled: false, generation: loopGeneration };
-    this.randomSoundLoops.push(loop);
+    const loop = this.randomSoundLoopRegistry.register();
 
     const playRandom = () => {
-      if (this.disposed || !this.ctx || !this.ambientMuffleFilter) return;
-      if (loop.cancelled || loop.generation !== this.randomSoundGeneration) return;
+      if (!this.guardRandomSoundLoop(loop)) return;
+      if (!this.ctx || !this.ambientMuffleFilter) return;
       this.resume();
 
       const now = this.ctx.currentTime;
@@ -496,11 +494,11 @@ class AudioEngine {
     };
 
     const scheduleNext = () => {
-      if (loop.cancelled || this.disposed || loop.generation !== this.randomSoundGeneration) return;
+      if (!this.guardRandomSoundLoop(loop)) return;
       const delay = interval * (0.8 + Math.random() * 0.4) * 1000;
       loop.timer = setTimeout(() => {
         loop.timer = null;
-        if (loop.cancelled || this.disposed || loop.generation !== this.randomSoundGeneration) return;
+        if (!this.guardRandomSoundLoop(loop)) return;
         playRandom();
         scheduleNext();
       }, delay);
@@ -511,13 +509,11 @@ class AudioEngine {
 
   /** Scene-level random sound loop — tracks every rescheduled timeout for stopAmbient/dispose */
   private startRandomSoundLoop(soundDef: RandomSoundDef): void {
-    const loopGeneration = this.randomSoundGeneration;
-    const loop = { timer: null as ReturnType<typeof setTimeout> | null, cancelled: false, generation: loopGeneration };
-    this.randomSoundLoops.push(loop);
+    const loop = this.randomSoundLoopRegistry.register();
 
     const playSound = () => {
-      if (this.disposed || !this.ctx || !this.ambientMuffleFilter) return;
-      if (loop.cancelled || loop.generation !== this.randomSoundGeneration) return;
+      if (!this.guardRandomSoundLoop(loop)) return;
+      if (!this.ctx || !this.ambientMuffleFilter) return;
       this.resume();
 
       const ctx = this.ctx;
@@ -604,14 +600,14 @@ class AudioEngine {
     };
 
     const scheduleNext = () => {
-      if (loop.cancelled || this.disposed || loop.generation !== this.randomSoundGeneration) return;
+      if (!this.guardRandomSoundLoop(loop)) return;
       const { minInterval, maxInterval } = soundDef;
       const baseInterval = minInterval + Math.random() * (maxInterval - minInterval);
       const variation = baseInterval * (0.8 + Math.random() * 0.4);
       const delay = variation * 1000;
       loop.timer = setTimeout(() => {
         loop.timer = null;
-        if (loop.cancelled || this.disposed || loop.generation !== this.randomSoundGeneration) return;
+        if (!this.guardRandomSoundLoop(loop)) return;
         playSound();
         scheduleNext();
       }, delay);
@@ -621,12 +617,7 @@ class AudioEngine {
   }
 
   private clearRandomSoundLoops(): void {
-    this.randomSoundGeneration++;
-    for (const loop of this.randomSoundLoops) {
-      loop.cancelled = true;
-      if (loop.timer) clearTimeout(loop.timer);
-    }
-    this.randomSoundLoops = [];
+    this.randomSoundLoopRegistry.clearAll();
   }
 
   private flushPendingAmbientCleanup(): void {

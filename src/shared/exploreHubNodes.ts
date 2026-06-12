@@ -1,5 +1,5 @@
 import type { SceneId } from '@/shared/types/game';
-import { getGameStore } from '@/store/gameStore';
+import { dispatchGameAction, getGameSnapshot } from '@/engine/GameActionDispatcher';
 import {
   EXPLORE_HUB_NODE_IDS,
   SCENE_ENTRY_NODE_TO_HUB,
@@ -32,8 +32,7 @@ export function isNarrativeMovementLocked(
  * can explore freely. Story/dialogue only opens from interactions and cutscenes.
  */
 export function syncNarrativeOnSceneEnter(_sceneId: SceneId): void {
-  const store = getGameStore();
-  if (store.showStoryOverlay) {
-    store.closeNarrativeOverlay();
+  if (getGameSnapshot().showStoryOverlay) {
+    dispatchGameAction({ type: 'story/closeNarrativeOverlay' });
   }
 }

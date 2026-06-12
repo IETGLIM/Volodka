@@ -15,6 +15,10 @@ import { eventBus } from '@/engine/EventBus';
 import { useTypewriter } from '@/hooks/useTypewriter';
 import { CanvasMatrixRain } from './shared/CanvasMatrixRain';
 import { validateSaveData } from '@/shared/validation/saveSchema';
+import {
+  getSavePresence,
+  subscribeSavePresence,
+} from '@/store/slices/saveStorage';
 
 const TOTAL_POEMS = POEMS.length;
 const VERSION = '3.0.0';
@@ -311,7 +315,7 @@ const ParticleSystem = memo(function ParticleSystem() {
 
 function GlitchTitle({ text }: { text: string }) {
   const [glitching, setGlitching] = useState(false);
-  const [parallaxOffset, setParallaxOffset] = useState({ x: 0, y: 0 });
+  const parallaxRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -342,11 +346,13 @@ function GlitchTitle({ text }: { text: string }) {
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
+      const el = parallaxRef.current;
+      if (!el) return;
       const cx = window.innerWidth / 2;
       const cy = window.innerHeight / 2;
       const x = ((e.clientX - cx) / cx) * 8;
       const y = ((e.clientY - cy) / cy) * 4;
-      setParallaxOffset({ x, y });
+      el.style.transform = `translate(${x}px, ${y}px)`;
     };
     window.addEventListener('mousemove', handleMouseMove);
     return () => window.removeEventListener('mousemove', handleMouseMove);
@@ -363,16 +369,19 @@ function GlitchTitle({ text }: { text: string }) {
           textShadow: glitching
             ? '-2px 0 #ff0000, 2px 0 #00ffff, 0 0 80px rgba(0, 255, 255, 0.6)'
             : '0 0 60px rgba(0, 255, 255, 0.5), 0 0 120px rgba(0, 255, 255, 0.3), 0 0 200px rgba(255, 140, 0, 0.1)',
-          transform: `translate(${parallaxOffset.x}px, ${parallaxOffset.y}px)`,
-          transition: 'transform 0.3s ease-out',
         }}
         initial={{ opacity: 0, y: -40, scale: 0.9, filter: 'blur(8px)' }}
         animate={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' }}
         transition={{ duration: 2, ease: [0.25, 0.46, 0.45, 0.94] }}
       >
-        <span className="text-transparent bg-clip-text bg-gradient-to-b from-cyan-200 via-cyan-400 to-emerald-500 menu-title-breathe neon-text-cyan">
-          {text}
-        </span>
+        <div
+          ref={parallaxRef}
+          style={{ transition: 'transform 0.3s ease-out' }}
+        >
+          <span className="text-transparent bg-clip-text bg-gradient-to-b from-cyan-200 via-cyan-400 to-emerald-500 menu-title-breathe neon-text-cyan">
+            {text}
+          </span>
+        </div>
       </motion.h1>
 
       <div
@@ -679,8 +688,8 @@ export function MenuScreen() {
   const reduceMotion = useReducedMotion();
 
   const hasSave = useSyncExternalStore(
-    () => () => {},
-    () => !!localStorage.getItem('volodka_save'),
+    subscribeSavePresence,
+    getSavePresence,
     () => false,
   );
 

@@ -13,6 +13,7 @@ import { SCENE_CONFIG } from '@/config/scenes';
 import type { SceneId } from '@/shared/types/game';
 import type { SavePayload } from '@/shared/validation/saveSchema';
 import { validateSaveData } from '@/shared/validation/saveSchema';
+import { notifySavePresenceChange } from '@/store/slices/saveStorage';
 import { POEMS } from '@/data/poems';
 
 const TOTAL_POEMS = POEMS.length;
@@ -545,6 +546,7 @@ function SaveSlotManagerContent({ onClose }: { onClose: () => void }) {
 
         // Copy validated slot data to the main save key, then call loadGame (re-validates)
         localStorage.setItem('volodka_save', raw);
+        notifySavePresenceChange();
         loadGame();
         setNotification(`Загружен Слот ${slot}`);
         // Close the manager after loading

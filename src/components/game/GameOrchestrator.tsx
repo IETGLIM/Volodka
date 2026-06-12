@@ -12,7 +12,7 @@ import { OrchestratorQuestOverlays } from './orchestrator/OrchestratorQuestOverl
 
 export function GameOrchestrator() {
   const runtime = useOrchestratorRuntime();
-  const { panels, panelClosers, pauseDialog } = runtime;
+  const { panels, panelClosers, hudSecondaryOpeners, pauseDialog } = runtime;
 
   return (
     <VirtualControlsContext.Provider value={sharedVirtualControlsRef}>
@@ -44,6 +44,7 @@ export function GameOrchestrator() {
               interaction={runtime.interaction}
               panels={runtime.panels}
               panelClosers={panelClosers}
+              hudSecondaryOpeners={hudSecondaryOpeners}
             />
 
             <OrchestratorPanelLayer

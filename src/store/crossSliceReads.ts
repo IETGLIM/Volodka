@@ -6,6 +6,7 @@
 import type { SceneId, NPCRelation, QuestState, TrainablePlayerSkill, InventoryItem } from '@/shared/types/game';
 import type { GameNotification } from './shared';
 import type { GameStoreState } from './types';
+import type { RewardBatchDraft, RewardBatchSideEffects } from './rewardBatchHelpers';
 
 /* ─── Per-slice read contracts (document allowed cross-slice surface) ─── */
 
@@ -50,9 +51,20 @@ export interface PlayerCoreCrossActions {
   advanceTime: (hours: number) => void;
 }
 
-export interface PlayerQuestRewardsCrossActions {
+export interface PlayerNotificationCrossActions {
   pushNotification: (type: GameNotification['type'], text: string) => void;
+}
+
+export interface PlayerRewardBatchCrossActions {
+  applyPlayerRewardBatch: (
+    apply: (draft: RewardBatchDraft, sideEffects: RewardBatchSideEffects) => void,
+  ) => RewardBatchSideEffects;
+}
+
+export interface PlayerQuestRewardsCrossActions extends PlayerNotificationCrossActions {
   completeQuest: (questId: string) => void;
+  setNpcRelation: (npcId: string, delta: number) => void;
+  adjustNpcAffinity: (npcId: string, delta: number) => void;
   addSkill: (skill: TrainablePlayerSkill, amount: number) => void;
   addKarma: (amount: number) => void;
   addXp: (amount: number) => void;
@@ -61,6 +73,9 @@ export interface PlayerQuestRewardsCrossActions {
   addItem: (item: InventoryItem) => boolean;
   setFlag: (key: string, value: boolean) => void;
 }
+
+export type WorldCrossActions = PlayerNotificationCrossActions;
+export type PlayerEconomyCrossActions = PlayerNotificationCrossActions;
 
 /* ─── Read accessors ─── */
 
@@ -103,11 +118,25 @@ export function pickPlayerCoreCrossActions(get: () => GameStoreState): PlayerCor
   return { advanceTime };
 }
 
+export function pickWorldCrossActions(get: () => GameStoreState): WorldCrossActions {
+  return { pushNotification: get().pushNotification };
+}
+
+export function pickPlayerEconomyCrossActions(get: () => GameStoreState): PlayerEconomyCrossActions {
+  return { pushNotification: get().pushNotification };
+}
+
+export function pickPlayerRewardBatchActions(get: () => GameStoreState): PlayerRewardBatchCrossActions {
+  return { applyPlayerRewardBatch: get().applyPlayerRewardBatch };
+}
+
 export function pickPlayerQuestRewardsCrossActions(get: () => GameStoreState): PlayerQuestRewardsCrossActions {
   const s = get();
   return {
     pushNotification: s.pushNotification,
     completeQuest: s.completeQuest,
+    setNpcRelation: s.setNpcRelation,
+    adjustNpcAffinity: s.adjustNpcAffinity,
     addSkill: s.addSkill,
     addKarma: s.addKarma,
     addXp: s.addXp,

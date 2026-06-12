@@ -33,9 +33,18 @@ import {
   resetGlobalCleanupRegistry,
   runGlobalUnmountCleanup,
 } from '@/engine/core/GlobalCleanupService';
-import { getGameStore } from '@/store/gameStore';
+import { getGameSnapshot } from '@/engine/GameActionDispatcher';
+import type { SceneId } from '@/shared/types/game';
 
 let engineDisposed = false;
+
+function getSceneIdForCleanup(): SceneId {
+  try {
+    return getGameSnapshot().exploration.currentSceneId;
+  } catch {
+    return 'volodka_room';
+  }
+}
 
 export function isGameEngineDisposed(): boolean {
   return engineDisposed;
@@ -69,7 +78,7 @@ export function disposeGameEngine(): void {
     disposeAudioEngine();
     disposeSharedAudioContext();
 
-    runGlobalUnmountCleanup(getGameStore().exploration.currentSceneId);
+    runGlobalUnmountCleanup(getSceneIdForCleanup());
     resetGlobalCleanupRegistry();
 
     disposeEventBus();

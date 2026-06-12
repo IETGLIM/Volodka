@@ -4,6 +4,8 @@
  * Avoids hydration mismatch between SSR and client rendering.
  */
 export function seededRand(seed: number): number {
-  const x = Math.sin(seed * 12.9898 + 78.233) * 43758.5453;
-  return x - Math.floor(x);
+  const s = Number.isFinite(seed) ? seed : 0;
+  const x = Math.sin(s * 12.9898 + 78.233) * 43758.5453;
+  const fract = x - Math.floor(x);
+  return Number.isFinite(fract) ? fract : 0;
 }

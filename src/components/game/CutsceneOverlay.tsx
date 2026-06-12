@@ -30,8 +30,10 @@ function finishCutscenePresentation(): void {
 // ════════════════════════════════════════════════════════════════
 
 const seededRand = (seed: number) => {
-  const x = Math.sin(seed * 9301 + 49297) * 49297;
-  return x - Math.floor(x);
+  const s = Number.isFinite(seed) ? seed : 0;
+  const x = Math.sin(s * 9301 + 49297) * 49297;
+  const fract = x - Math.floor(x);
+  return Number.isFinite(fract) ? fract : 0;
 };
 
 const CutsceneEmbers = memo(function CutsceneEmbers({ count = 20, accentColor = 'var(--cyber-cyan)' }: { count?: number; accentColor?: string }) {

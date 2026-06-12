@@ -1,7 +1,7 @@
 /* ─── Volodka RPG – World persistence ─── */
 /* Serializes region/cell discovery and per-cell flags into player flags + save flow. */
 
-import { getGameStore } from '@/store/gameStore';
+import { dispatchGameAction, getGameSnapshot } from '@/engine/GameActionDispatcher';
 import type { SceneId } from '@/shared/types/game';
 import type { WorldCellId, WorldPersistedSnapshot, WorldRegionId } from './types';
 import {
@@ -28,11 +28,11 @@ function cellStateKey(cellId: WorldCellId, flag: string): string {
 
 export class WorldPersistence {
   discoverRegion(regionId: WorldRegionId): void {
-    getGameStore().setFlag(regionFlagKey(regionId), true);
+    dispatchGameAction({ type: 'player/setFlag', key: regionFlagKey(regionId), value: true });
   }
 
   discoverCell(cellId: WorldCellId): void {
-    getGameStore().setFlag(cellFlagKey(cellId), true);
+    dispatchGameAction({ type: 'player/setFlag', key: cellFlagKey(cellId), value: true });
   }
 
   /** Mark region + cell when entering any scene. */
@@ -43,23 +43,23 @@ export class WorldPersistence {
   }
 
   isRegionDiscovered(regionId: WorldRegionId): boolean {
-    return getGameStore().playerState.flags[regionFlagKey(regionId)] === true;
+    return getGameSnapshot().playerState.flags[regionFlagKey(regionId)] === true;
   }
 
   isCellDiscovered(cellId: WorldCellId): boolean {
-    return getGameStore().playerState.flags[cellFlagKey(cellId)] === true;
+    return getGameSnapshot().playerState.flags[cellFlagKey(cellId)] === true;
   }
 
   setCellFlag(cellId: WorldCellId, flag: string, value: boolean): void {
-    getGameStore().setFlag(cellStateKey(cellId, flag), value);
+    dispatchGameAction({ type: 'player/setFlag', key: cellStateKey(cellId, flag), value });
   }
 
   getCellFlag(cellId: WorldCellId, flag: string): boolean {
-    return getGameStore().playerState.flags[cellStateKey(cellId, flag)] === true;
+    return getGameSnapshot().playerState.flags[cellStateKey(cellId, flag)] === true;
   }
 
   captureSnapshot(): WorldPersistedSnapshot {
-    const flags = getGameStore().playerState.flags;
+    const flags = getGameSnapshot().playerState.flags;
     const discoveredRegions = (Object.keys(flags)
       .filter((k) => k.startsWith(REGION_FLAG_PREFIX) && flags[k])
       .map((k) => k.slice(REGION_FLAG_PREFIX.length)) ) as WorldRegionId[];
@@ -80,7 +80,7 @@ export class WorldPersistence {
       cellFlags[cellId][flagName] = true;
     }
 
-    const sceneId = getGameStore().exploration.currentSceneId;
+    const sceneId = getGameSnapshot().exploration.currentSceneId;
     const loc = getWorldLocation(sceneId);
 
     return {

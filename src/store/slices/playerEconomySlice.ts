@@ -11,7 +11,6 @@ import {
   getBasePriceByRarity,
   merchantBuysItem,
 } from '@/data/tradingData';
-import { pushNotification } from '../shared';
 import {
   addInventoryItem,
   canAddInventoryItem,
@@ -20,7 +19,7 @@ import {
   removeInventoryItem,
 } from '../inventoryHelpers';
 import type { GameStoreState } from '../types';
-import { readNpcRelationValue } from '../crossSliceReads';
+import { pickPlayerEconomyCrossActions, readNpcRelationValue } from '../crossSliceReads';
 import { eventBus } from '@/engine/EventBus';
 
 /* ─── Slice types ─── */
@@ -78,171 +77,164 @@ export const createPlayerEconomySlice: StateCreator<
     return true;
   },
 
-  craftItem: (recipeId) =>
-    set((state) => {
-      const recipe = getRecipeById(recipeId);
-      if (!recipe) return state;
+  craftItem: (recipeId) => {
+    const state = get();
+    const recipe = getRecipeById(recipeId);
+    if (!recipe) return;
 
-      for (const req of recipe.skillRequirements) {
-        if ((state.playerState.skills[req.skill] ?? 0) < req.level) {
-          return {
-            notifications: pushNotification(state.notifications, 'stress', `Недостаточный уровень навыка: ${req.skill} (нужно ${req.level})`),
-          };
-        }
+    const { pushNotification } = pickPlayerEconomyCrossActions(get);
+
+    for (const req of recipe.skillRequirements) {
+      if ((state.playerState.skills[req.skill] ?? 0) < req.level) {
+        pushNotification('stress', `Недостаточный уровень навыка: ${req.skill} (нужно ${req.level})`);
+        return;
       }
+    }
 
-      let newInventory = [...state.playerState.inventory];
-      for (const input of recipe.inputs) {
-        const invItem = findInventoryItem(newInventory, input.itemId);
-        if (!invItem || invItem.quantity < input.quantity) {
-          return {
-            notifications: pushNotification(state.notifications, 'stress', `Не хватает ингредиентов для: ${recipe.name}`),
-          };
-        }
-        const removed = removeInventoryItem(newInventory, input.itemId, input.quantity);
-        newInventory = removed.inventory;
+    let newInventory = [...state.playerState.inventory];
+    for (const input of recipe.inputs) {
+      const invItem = findInventoryItem(newInventory, input.itemId);
+      if (!invItem || invItem.quantity < input.quantity) {
+        pushNotification('stress', `Не хватает ингредиентов для: ${recipe.name}`);
+        return;
       }
+      const removed = removeInventoryItem(newInventory, input.itemId, input.quantity);
+      newInventory = removed.inventory;
+    }
 
-      const outputItem = createInventoryItem(recipe.output.itemId, recipe.output.quantity);
-      const addResult = addInventoryItem(newInventory, outputItem);
-      if (!addResult.ok) {
-        return {
-          notifications: pushNotification(state.notifications, 'stress', 'Инвентарь полон — крафт невозможен'),
-        };
-      }
-      newInventory = addResult.inventory;
+    const outputItem = createInventoryItem(recipe.output.itemId, recipe.output.quantity);
+    const addResult = addInventoryItem(newInventory, outputItem);
+    if (!addResult.ok) {
+      pushNotification('stress', 'Инвентарь полон — крафт невозможен');
+      return;
+    }
+    newInventory = addResult.inventory;
 
-      queueMicrotask(() => {
-        eventBus.emit('crafting:discovered', {
-          recipeId,
-          recipeName: recipe.name,
-          rarity: recipe.outputRarity,
-        });
+    set({
+      playerState: {
+        ...state.playerState,
+        inventory: newInventory,
+      },
+    });
 
-        eventBus.emit('item:crafted', {
-          recipeId,
-          recipeName: recipe.name,
-          category: recipe.category,
-        });
+    queueMicrotask(() => {
+      eventBus.emit('crafting:discovered', {
+        recipeId,
+        recipeName: recipe.name,
+        rarity: recipe.outputRarity,
       });
 
-      return {
-        playerState: {
-          ...state.playerState,
-          inventory: newInventory,
-        },
-        notifications: pushNotification(state.notifications, 'skill', `Скрафчено: ${recipe.name}!`),
-      };
-    }),
+      eventBus.emit('item:crafted', {
+        recipeId,
+        recipeName: recipe.name,
+        category: recipe.category,
+      });
+    });
 
-  buyItem: (npcId, itemId) =>
-    set((state) => {
-      const merchant = getMerchantInventory(npcId);
-      if (!merchant) {
-        return {
-          notifications: pushNotification(state.notifications, 'stress', 'Этот персонаж не торгует'),
-        };
-      }
+    pushNotification('skill', `Скрафчено: ${recipe.name}!`);
+  },
 
-      const relationValue = readNpcRelationValue(get(), npcId);
+  buyItem: (npcId, itemId) => {
+    const state = get();
+    const { pushNotification } = pickPlayerEconomyCrossActions(get);
+    const merchant = getMerchantInventory(npcId);
+    if (!merchant) {
+      pushNotification('stress', 'Этот персонаж не торгует');
+      return;
+    }
 
-      const price = getBuyPrice(merchant, itemId, relationValue);
+    const relationValue = readNpcRelationValue(state, npcId);
+    const price = getBuyPrice(merchant, itemId, relationValue);
 
-      if (state.playerState.credits < price) {
-        return {
-          notifications: pushNotification(state.notifications, 'stress', `Недостаточно кредитов (нужно ${price}₴)`),
-        };
-      }
+    if (state.playerState.credits < price) {
+      pushNotification('stress', `Недостаточно кредитов (нужно ${price}₴)`);
+      return;
+    }
 
-      const sellEntry = merchant.sells.find((s) => s.itemId === itemId);
-      if (!sellEntry) {
-        return {
-          notifications: pushNotification(state.notifications, 'stress', 'У торговца нет этого товара'),
-        };
-      }
+    const sellEntry = merchant.sells.find((s) => s.itemId === itemId);
+    if (!sellEntry) {
+      pushNotification('stress', 'У торговца нет этого товара');
+      return;
+    }
 
-      if (sellEntry.minRelation && relationValue < sellEntry.minRelation) {
-        return {
-          notifications: pushNotification(state.notifications, 'stress', `Недостаточный уровень отношений (нужно ${sellEntry.minRelation})`),
-        };
-      }
+    if (sellEntry.minRelation && relationValue < sellEntry.minRelation) {
+      pushNotification('stress', `Недостаточный уровень отношений (нужно ${sellEntry.minRelation})`);
+      return;
+    }
 
-      const itemDef = getItemDefinition(itemId);
-      const addResult = addInventoryItem(state.playerState.inventory, createInventoryItem(itemId, 1));
-      if (!addResult.ok) {
-        return {
-          notifications: pushNotification(state.notifications, 'stress', 'Инвентарь полон — покупка невозможна'),
-        };
-      }
+    const itemDef = getItemDefinition(itemId);
+    const addResult = addInventoryItem(state.playerState.inventory, createInventoryItem(itemId, 1));
+    if (!addResult.ok) {
+      pushNotification('stress', 'Инвентарь полон — покупка невозможна');
+      return;
+    }
 
-      const itemName = itemDef?.name ?? itemId;
+    const itemName = itemDef?.name ?? itemId;
 
-      return {
-        playerState: {
-          ...state.playerState,
-          credits: state.playerState.credits - price,
-          inventory: addResult.inventory,
-        },
-        notifications: pushNotification(state.notifications, 'skill', `Куплено: ${itemName} (-${price}₴)`),
-      };
-    }),
+    set({
+      playerState: {
+        ...state.playerState,
+        credits: state.playerState.credits - price,
+        inventory: addResult.inventory,
+      },
+    });
 
-  sellItem: (npcId, itemId) =>
-    set((state) => {
-      const merchant = getMerchantInventory(npcId);
-      if (!merchant) {
-        return {
-          notifications: pushNotification(state.notifications, 'stress', 'Этот персонаж не торгует'),
-        };
-      }
+    pushNotification('skill', `Куплено: ${itemName} (-${price}₴)`);
+  },
 
-      const relationValue = readNpcRelationValue(get(), npcId);
+  sellItem: (npcId, itemId) => {
+    const state = get();
+    const { pushNotification } = pickPlayerEconomyCrossActions(get);
+    const merchant = getMerchantInventory(npcId);
+    if (!merchant) {
+      pushNotification('stress', 'Этот персонаж не торгует');
+      return;
+    }
 
-      if (!merchantBuysItem(npcId, itemId, relationValue)) {
-        return {
-          notifications: pushNotification(state.notifications, 'stress', 'Этот торговец не покупает данный предмет'),
-        };
-      }
+    const relationValue = readNpcRelationValue(state, npcId);
 
-      const invIdx = findInventoryItemIndex(state.playerState.inventory, itemId);
-      if (invIdx < 0) {
-        return {
-          notifications: pushNotification(state.notifications, 'stress', 'У вас нет этого предмета'),
-        };
-      }
+    if (!merchantBuysItem(npcId, itemId, relationValue)) {
+      pushNotification('stress', 'Этот торговец не покупает данный предмет');
+      return;
+    }
 
-      const itemDef = getItemDefinition(itemId);
-      if (itemDef?.questRelated) {
-        return {
-          notifications: pushNotification(state.notifications, 'stress', 'Нельзя продать сюжетный предмет'),
-        };
-      }
+    const invIdx = findInventoryItemIndex(state.playerState.inventory, itemId);
+    if (invIdx < 0) {
+      pushNotification('stress', 'У вас нет этого предмета');
+      return;
+    }
 
-      const basePrice = itemDef
-        ? getBasePriceByRarity(itemDef.rarity)
-        : 5;
-      const merchantSellEntry = merchant.sells.find((s) => s.itemId === itemId);
-      const effectiveBasePrice = merchantSellEntry?.basePrice ?? basePrice;
-      const price = getSellPrice(merchant, itemId, effectiveBasePrice, relationValue);
+    const itemDef = getItemDefinition(itemId);
+    if (itemDef?.questRelated) {
+      pushNotification('stress', 'Нельзя продать сюжетный предмет');
+      return;
+    }
 
-      const { inventory, removed } = removeInventoryItem(state.playerState.inventory, itemId, 1);
-      if (!removed) {
-        return {
-          notifications: pushNotification(state.notifications, 'stress', 'У вас нет этого предмета'),
-        };
-      }
+    const basePrice = itemDef
+      ? getBasePriceByRarity(itemDef.rarity)
+      : 5;
+    const merchantSellEntry = merchant.sells.find((s) => s.itemId === itemId);
+    const effectiveBasePrice = merchantSellEntry?.basePrice ?? basePrice;
+    const price = getSellPrice(merchant, itemId, effectiveBasePrice, relationValue);
 
-      const itemName = itemDef?.name ?? itemId;
+    const { inventory, removed } = removeInventoryItem(state.playerState.inventory, itemId, 1);
+    if (!removed) {
+      pushNotification('stress', 'У вас нет этого предмета');
+      return;
+    }
 
-      return {
-        playerState: {
-          ...state.playerState,
-          credits: state.playerState.credits + price,
-          inventory,
-        },
-        notifications: pushNotification(state.notifications, 'skill', `Продано: ${itemName} (+${price}₴)`),
-      };
-    }),
+    const itemName = itemDef?.name ?? itemId;
+
+    set({
+      playerState: {
+        ...state.playerState,
+        credits: state.playerState.credits + price,
+        inventory,
+      },
+    });
+
+    pushNotification('skill', `Продано: ${itemName} (+${price}₴)`);
+  },
 
   canBuyItem: (npcId, itemId) => {
     const state = get();
@@ -288,14 +280,19 @@ export const createPlayerEconomySlice: StateCreator<
     return true;
   },
 
-  addCredits: (amount) =>
-    set((state) => ({
+  addCredits: (amount) => {
+    const state = get();
+    set({
       playerState: {
         ...state.playerState,
         credits: Math.max(0, state.playerState.credits + amount),
       },
-      notifications: amount !== 0
-        ? pushNotification(state.notifications, 'skill', `${amount > 0 ? '+' : ''}${amount} кредитов`)
-        : state.notifications,
-    })),
+    });
+    if (amount !== 0) {
+      pickPlayerEconomyCrossActions(get).pushNotification(
+        'skill',
+        `${amount > 0 ? '+' : ''}${amount} кредитов`,
+      );
+    }
+  },
 });

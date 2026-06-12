@@ -9,9 +9,10 @@
  */
 
 import { eventBus } from '@/engine/EventBus';
-import { getGameStore } from '@/store/gameStore';
+import { dispatchGameAction, getGameSnapshot } from '@/engine/GameActionDispatcher';
 import type { SceneId } from '@/shared/types/game';
 import { syncNarrativeOnSceneEnter } from '@/shared/exploreHubNodes';
+import { flushDeferredCombatStart } from './combatStartGate';
 import { runGlobalSceneUnload } from './GlobalCleanupService';
 
 export interface SceneTransitionPayload {
@@ -19,36 +20,64 @@ export interface SceneTransitionPayload {
   spawnAt: [number, number, number];
 }
 
+let transitionInProgress = false;
+
+/** True while unload → store → enter → loaded is running synchronously. */
+export function isSceneTransitionInProgress(): boolean {
+  return transitionInProgress;
+}
+
+/** Test harness — reset re-entrance guard between cases. */
+export function resetSceneTransitionGuard(): void {
+  transitionInProgress = false;
+}
+
 /**
  * Apply a scene transition. Call only from SceneTransitionHandler (EventBus listener)
  * or test harness — never mutate exploration.currentSceneId elsewhere.
  */
 export function performSceneTransition(payload: SceneTransitionPayload): void {
-  const store = getGameStore();
-  const fromSceneId = store.exploration.currentSceneId;
-  const { targetScene, spawnAt } = payload;
-
-  if (fromSceneId !== targetScene) {
-    eventBus.emit('scene:unload', {
-      sceneId: fromSceneId,
-      nextSceneId: targetScene,
-    });
-    runGlobalSceneUnload(fromSceneId, targetScene);
+  if (transitionInProgress) {
+    if (import.meta.env.DEV) {
+      console.warn(
+        '[SceneTransitionManager] Dropped re-entrant transition to',
+        payload.targetScene,
+      );
+    }
+    return;
   }
 
-  store.setExplorationScene(targetScene);
-  store.setPlayerPosition(spawnAt);
-  store.discoverScene(targetScene);
-  store.autoRegenBetweenScenes();
-  syncNarrativeOnSceneEnter(targetScene);
+  transitionInProgress = true;
+  try {
+    const fromSceneId = getGameSnapshot().exploration.currentSceneId;
+    const { targetScene, spawnAt } = payload;
 
-  eventBus.emit('scene:enter', {
-    sceneId: targetScene,
-    fromSceneId,
-  });
+    if (fromSceneId !== targetScene) {
+      eventBus.emit('scene:unload', {
+        sceneId: fromSceneId,
+        nextSceneId: targetScene,
+      });
+      runGlobalSceneUnload(fromSceneId, targetScene);
+    }
 
-  eventBus.emit('scene:loaded', {
-    sceneId: targetScene,
-    fromSceneId,
-  });
+    dispatchGameAction({
+      type: 'exploration/applySceneTransition',
+      targetScene,
+      spawnAt,
+    });
+    syncNarrativeOnSceneEnter(targetScene);
+
+    eventBus.emit('scene:enter', {
+      sceneId: targetScene,
+      fromSceneId,
+    });
+
+    eventBus.emit('scene:loaded', {
+      sceneId: targetScene,
+      fromSceneId,
+    });
+  } finally {
+    transitionInProgress = false;
+    flushDeferredCombatStart();
+  }
 }

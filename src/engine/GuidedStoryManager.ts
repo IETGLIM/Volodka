@@ -25,6 +25,9 @@ import type { GuidedStoryDeps, GuidanceInfo } from '@/engine/guidedStory/guidedS
 
 export type { GuidanceInfo } from '@/engine/guidedStory/guidedStoryTypes';
 
+/** Coalesce visitNode / scene:enter / npc:talked / flag signals in one burst. */
+const STORY_SPINE_ADVANCE_DEBOUNCE_MS = 32;
+
 function selectLastVisitedNode(snapshot: GameStoreSnapshot): string | null {
   const nodes = snapshot.playerState.visitedNodes;
   return nodes.length > 0 ? nodes[nodes.length - 1] : null;
@@ -49,6 +52,8 @@ export class GuidedStoryManager {
   private unsubSceneEnter: (() => void) | null = null;
   private unsubFlagSet: (() => void) | null = null;
   private unsubGameLoaded: (() => void) | null = null;
+  private spineAdvanceTimer: ReturnType<typeof setTimeout> | null = null;
+  private pendingSpineNodeId: string | null = null;
 
   constructor(private readonly deps: GuidedStoryDeps = createDefaultGuidedStoryDeps()) {}
 
@@ -68,9 +73,26 @@ export class GuidedStoryManager {
     return canStartQuestLogic(questId, this.deps);
   }
 
+  /** Test hook: align spine indexes from the injected snapshot. */
+  syncSpineForTest(): void {
+    this.syncFromStore();
+  }
+
   /** Test hook: advance story spine without EventBus/store subscriptions. */
-  advanceStorySpineForTest(visitedNodeId: string): void {
-    this.advanceStorySpine(visitedNodeId);
+  advanceStorySpineForTest(
+    visitedNodeId: string,
+    options?: { immediate?: boolean },
+  ): void {
+    if (options?.immediate) {
+      this.applyStorySpineAdvance(visitedNodeId);
+      return;
+    }
+    this.scheduleStorySpineAdvance(visitedNodeId);
+  }
+
+  /** Test hook — flush pending debounced spine advance. */
+  flushStorySpineAdvanceForTest(): void {
+    this.flushScheduledStorySpineAdvance();
   }
 
   private getNextQuestInSpine() {
@@ -103,7 +125,41 @@ export class GuidedStoryManager {
     return null;
   }
 
-  private advanceStorySpine(visitedNodeId: string) {
+  private clearSpineAdvanceDebounce(): void {
+    if (this.spineAdvanceTimer !== null) {
+      clearTimeout(this.spineAdvanceTimer);
+      this.spineAdvanceTimer = null;
+    }
+    this.pendingSpineNodeId = null;
+  }
+
+  private scheduleStorySpineAdvance(visitedNodeId: string): void {
+    const { path } = this.deps;
+    if (resolveStorySpineAdvance(visitedNodeId, this.currentStepIndex, path) === null) {
+      return;
+    }
+
+    this.pendingSpineNodeId = visitedNodeId;
+    if (this.spineAdvanceTimer !== null) return;
+
+    this.spineAdvanceTimer = setTimeout(() => {
+      this.flushScheduledStorySpineAdvance();
+    }, STORY_SPINE_ADVANCE_DEBOUNCE_MS);
+  }
+
+  private flushScheduledStorySpineAdvance(): void {
+    const nodeId = this.pendingSpineNodeId;
+    this.spineAdvanceTimer = null;
+    this.pendingSpineNodeId = null;
+    if (!nodeId) return;
+    this.applyStorySpineAdvance(nodeId);
+  }
+
+  private advanceStorySpine(visitedNodeId: string): void {
+    this.scheduleStorySpineAdvance(visitedNodeId);
+  }
+
+  private applyStorySpineAdvance(visitedNodeId: string): void {
     const { path, actions, events } = this.deps;
     const nextIndex = resolveStorySpineAdvance(visitedNodeId, this.currentStepIndex, path);
     if (nextIndex === null) return;
@@ -234,6 +290,7 @@ export class GuidedStoryManager {
     this.currentStepIndex = 0;
     this.currentQuestSpineIndex = 0;
     this.lastAdvancedToAct = 0;
+    this.clearSpineAdvanceDebounce();
 
     if (!this.initialized) return;
 
@@ -297,10 +354,13 @@ export class GuidedStoryManager {
     this.unsubFlagSet = subscribeGameSnapshot(
       (snapshot) => {
         const flagKeys = toGuidedStorySnapshot(snapshot).activeTTLFlagKeys;
+        const currentStepNodeId = path.storySpine[this.currentStepIndex];
+        if (!currentStepNodeId) return;
         for (const key of flagKeys) {
           const nodeMatch = path.storyFlagToNodeId[key];
-          if (nodeMatch && path.storySpine.indexOf(nodeMatch) >= this.currentStepIndex) {
+          if (nodeMatch === currentStepNodeId) {
             this.advanceStorySpine(nodeMatch);
+            break;
           }
         }
       },
@@ -338,6 +398,7 @@ export class GuidedStoryManager {
     this.currentStepIndex = 0;
     this.currentQuestSpineIndex = 0;
     this.lastAdvancedToAct = 0;
+    this.clearSpineAdvanceDebounce();
   }
 
   getActQuote(actNumber: number): string | undefined {

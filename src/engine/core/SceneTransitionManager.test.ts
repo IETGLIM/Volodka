@@ -1,19 +1,27 @@
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { eventBus } from '@/engine/EventBus';
-import { performSceneTransition } from './SceneTransitionManager';
+import {
+  performSceneTransition,
+  resetSceneTransitionGuard,
+} from './SceneTransitionManager';
 import { registerGlobalCleanup, resetGlobalCleanupRegistry } from './GlobalCleanupService';
 
-vi.mock('@/store/gameStore', () => ({
-  getGameStore: () => ({
+const dispatchGameAction = vi.fn();
+
+vi.mock('@/engine/GameActionDispatcher', () => ({
+  getGameSnapshot: () => ({
     exploration: { currentSceneId: 'volodka_room' },
-    setExplorationScene: vi.fn(),
-    setPlayerPosition: vi.fn(),
-    discoverScene: vi.fn(),
-    autoRegenBetweenScenes: vi.fn(),
+    showStoryOverlay: false,
   }),
+  dispatchGameAction: (...args: unknown[]) => dispatchGameAction(...args),
 }));
 
 describe('SceneTransitionManager', () => {
+  beforeEach(() => {
+    dispatchGameAction.mockClear();
+    resetSceneTransitionGuard();
+  });
+
   it('emits unload → enter → loaded in order', () => {
     resetGlobalCleanupRegistry();
     const order: string[] = [];
@@ -30,6 +38,11 @@ describe('SceneTransitionManager', () => {
     });
 
     expect(order).toEqual(['unload', 'cleanup', 'enter', 'loaded']);
+    expect(dispatchGameAction).toHaveBeenCalledWith({
+      type: 'exploration/applySceneTransition',
+      targetScene: 'cafe_evening',
+      spawnAt: [1, 0, 2],
+    });
     unsub();
     resetGlobalCleanupRegistry();
   });
@@ -48,6 +61,34 @@ describe('SceneTransitionManager', () => {
     });
 
     expect(order).toEqual(['enter', 'loaded']);
+    resetGlobalCleanupRegistry();
+  });
+
+  it('drops re-entrant performSceneTransition from unload listeners', () => {
+    resetGlobalCleanupRegistry();
+    let unloadCount = 0;
+
+    const unsubUnload = eventBus.on('scene:unload', () => {
+      unloadCount += 1;
+      performSceneTransition({
+        targetScene: 'office_day',
+        spawnAt: [0, 0, 0],
+      });
+    });
+
+    performSceneTransition({
+      targetScene: 'street_night',
+      spawnAt: [2, 0, 1],
+    });
+
+    expect(unloadCount).toBe(1);
+    expect(dispatchGameAction).toHaveBeenCalledTimes(1);
+    expect(dispatchGameAction).toHaveBeenCalledWith({
+      type: 'exploration/applySceneTransition',
+      targetScene: 'street_night',
+      spawnAt: [2, 0, 1],
+    });
+    unsubUnload();
     resetGlobalCleanupRegistry();
   });
 });

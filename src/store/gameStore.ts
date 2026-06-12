@@ -91,6 +91,7 @@ function toGameSnapshot(state: GameStoreState): GameStoreSnapshot {
     showStoryOverlay: state.showStoryOverlay,
     exploration: {
       currentSceneId: state.exploration.currentSceneId,
+      playerPosition: state.exploration.playerPosition,
       timeOfDay: state.exploration.timeOfDay,
       interactiveObjectStates: state.interactiveObjectStates,
     },
@@ -201,6 +202,9 @@ registerGameActionBridge({
       case 'story/closeNarrativeOverlay':
         store.closeNarrativeOverlay();
         break;
+      case 'story/visitNode':
+        store.visitNode(action.nodeId);
+        break;
       case 'story/advanceAct':
         store.advanceAct();
         break;
@@ -243,6 +247,16 @@ registerGameActionBridge({
       case 'exploration/toggleInteractiveObject':
         store.toggleInteractiveObject(action.objectId);
         break;
+      case 'exploration/applySceneTransition':
+        store.setExplorationScene(action.targetScene);
+        store.setPlayerPosition(action.spawnAt);
+        store.discoverScene(action.targetScene);
+        store.autoRegenBetweenScenes();
+        break;
+      default: {
+        const _exhaustive: never = action;
+        return _exhaustive;
+      }
     }
   },
   getSnapshot() {

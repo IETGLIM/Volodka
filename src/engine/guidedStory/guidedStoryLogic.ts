@@ -71,9 +71,10 @@ export function resolveStorySpineAdvance(
 ): number | null {
   const nodeIndex = path.storySpine.indexOf(visitedNodeId);
   if (nodeIndex < 0) return null;
-  if (nodeIndex < currentStepIndex) return null;
+  // Only the current spine step may complete — future nodes catch up via syncFromStore.
+  if (nodeIndex !== currentStepIndex) return null;
   if (isExploreHubNode(visitedNodeId) && nodeIndex + 1 <= currentStepIndex) return null;
-  return nodeIndex + 1;
+  return currentStepIndex + 1;
 }
 
 export function pickQuestFromSpine(

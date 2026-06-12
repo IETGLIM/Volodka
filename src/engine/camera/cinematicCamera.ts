@@ -58,11 +58,32 @@ const _tempLook = new THREE.Vector3();
 const _tempVel = new THREE.Vector3();
 const _springForce = new THREE.Vector3();
 const _camDir = new THREE.Vector3();
+const _camDirReverse = new THREE.Vector3();
 const _bezierA = new THREE.Vector3();
 const _bezierB = new THREE.Vector3();
 const _bezierC = new THREE.Vector3();
 const _bezierD = new THREE.Vector3();
 const _bezierTemp = new THREE.Vector3();
+const _shotRight = new THREE.Vector3();
+const _shotPos = new THREE.Vector3();
+const _shotLook = new THREE.Vector3();
+const _shotMidpoint = new THREE.Vector3();
+const _autoControlOut = new THREE.Vector3();
+const _autoControlIn = new THREE.Vector3();
+const _transitionPos = new THREE.Vector3();
+const _transitionLookAt = new THREE.Vector3();
+const _dialogueShotOut: CameraShot = {
+  position: _shotPos,
+  lookAt: _shotLook,
+  fov: DIALOGUE_FOV,
+};
+const _cutsceneUpdateOut: { position: THREE.Vector3; lookAt: THREE.Vector3; fov: number } = {
+  position: _tempPos,
+  lookAt: _tempLook,
+  fov: DEFAULT_FOV,
+};
+const _transitionUpdateOut = { position: _transitionPos, lookAt: _transitionLookAt };
+const _explorationUpdateOut = { targetRoll: 0, targetHeight: 0 };
 
 /* ════════════════════════════════════════════════════
  * SPRING CAMERA
@@ -145,11 +166,15 @@ export function resolveCameraCollision(
   desiredPos: THREE.Vector3,
   margin: number = 0.25,
   minDistance: number = 0.8,
+  out: THREE.Vector3 = desiredPos,
 ): THREE.Vector3 {
   _camDir.copy(desiredPos).sub(lookTarget);
   const fullDistance = _camDir.length();
 
-  if (fullDistance < 0.01) return desiredPos;
+  if (fullDistance < 0.01) {
+    out.copy(desiredPos);
+    return out;
+  }
 
   _camDir.divideScalar(fullDistance); // normalize
 
@@ -165,15 +190,15 @@ export function resolveCameraCollision(
     if (!isCameraCollisionHit(hit.object)) continue;
     if (hit.distance < fullDistance - margin) {
       const safeDistance = Math.max(minDistance, hit.distance - margin);
-      _tempPos.copy(lookTarget).addScaledVector(_camDir, safeDistance);
-      return _tempPos.clone();
+      out.copy(lookTarget).addScaledVector(_camDir, safeDistance);
+      return out;
     }
   }
 
   // Reverse raycast: if the camera is inside geometry (e.g., dialogue in a small room),
   // cast a ray FROM the desired position BACK toward the lookTarget to detect if
   // the camera is inside a wall. If so, pull it toward the lookTarget.
-  raycaster.set(desiredPos, _camDir.clone().negate());
+  raycaster.set(desiredPos, _camDirReverse.copy(_camDir).negate());
   raycaster.far = fullDistance;
   raycaster.near = 0.01;
 
@@ -184,12 +209,13 @@ export function resolveCameraCollision(
       // Camera is inside or very close to a wall — pull it toward the lookTarget
       // Place the camera just in front of the wall (toward the player)
       const safeDistance = Math.max(minDistance, fullDistance - hit.distance - margin);
-      _tempPos.copy(lookTarget).addScaledVector(_camDir, safeDistance);
-      return _tempPos.clone();
+      out.copy(lookTarget).addScaledVector(_camDir, safeDistance);
+      return out;
     }
   }
 
-  return desiredPos;
+  out.copy(desiredPos);
+  return out;
 }
 
 /* ════════════════════════════════════════════════════
@@ -238,72 +264,73 @@ export function getDialogueShot(
   type: DialogueShotType,
   playerPos: THREE.Vector3,
   npcPos: THREE.Vector3,
-  npcRotation: number = 0,
+  _npcRotation: number = 0,
 ): CameraShot {
-  // Direction from player to NPC
   const dir = _tempLook.copy(npcPos).sub(playerPos);
   dir.y = 0;
   const dist = dir.length();
   if (dist > 0.01) dir.divideScalar(dist);
 
-  // Right vector (perpendicular to direction)
-  const right = new THREE.Vector3(-dir.z, 0, dir.x);
+  _shotRight.set(-dir.z, 0, dir.x);
 
   switch (type) {
-    case 'overShoulder': {
-      const pos = playerPos.clone()
-        .add(dir.clone().multiplyScalar(-1.2))
-        .add(right.clone().multiplyScalar(0.6))
-        .add(new THREE.Vector3(0, 1.7, 0));
-      const look = npcPos.clone().add(new THREE.Vector3(0, 1.5, 0));
-      return { position: pos, lookAt: look, fov: 55 };
-    }
+    case 'overShoulder':
+      _shotPos.copy(playerPos)
+        .addScaledVector(dir, -1.2)
+        .addScaledVector(_shotRight, 0.6);
+      _shotPos.y += 1.7;
+      _shotLook.copy(npcPos);
+      _shotLook.y += 1.5;
+      _dialogueShotOut.fov = 55;
+      break;
 
-    case 'closeUpNPC': {
-      const pos = npcPos.clone()
-        .add(dir.clone().multiplyScalar(1.2))
-        .add(right.clone().multiplyScalar(0.3))
-        .add(new THREE.Vector3(0, 1.7, 0));
-      const look = npcPos.clone().add(new THREE.Vector3(0, 1.6, 0));
-      return { position: pos, lookAt: look, fov: 45 };
-    }
+    case 'closeUpNPC':
+      _shotPos.copy(npcPos)
+        .addScaledVector(dir, 1.2)
+        .addScaledVector(_shotRight, 0.3);
+      _shotPos.y += 1.7;
+      _shotLook.copy(npcPos);
+      _shotLook.y += 1.6;
+      _dialogueShotOut.fov = 45;
+      break;
 
-    case 'closeUpPlayer': {
-      const pos = playerPos.clone()
-        .add(dir.clone().multiplyScalar(-1.0))
-        .add(right.clone().multiplyScalar(-0.3))
-        .add(new THREE.Vector3(0, 1.7, 0));
-      const look = playerPos.clone().add(new THREE.Vector3(0, 1.6, 0));
-      return { position: pos, lookAt: look, fov: 45 };
-    }
+    case 'closeUpPlayer':
+      _shotPos.copy(playerPos)
+        .addScaledVector(dir, -1.0)
+        .addScaledVector(_shotRight, -0.3);
+      _shotPos.y += 1.7;
+      _shotLook.copy(playerPos);
+      _shotLook.y += 1.6;
+      _dialogueShotOut.fov = 45;
+      break;
 
-    case 'twoShot': {
-      const midpoint = playerPos.clone().add(npcPos).multiplyScalar(0.5);
-      const pos = midpoint.clone()
-        .add(dir.clone().multiplyScalar(-3.0))
-        .add(right.clone().multiplyScalar(1.5))
-        .add(new THREE.Vector3(0, 2.0, 0));
-      const look = midpoint.clone().add(new THREE.Vector3(0, 1.3, 0));
-      return { position: pos, lookAt: look, fov: 60 };
-    }
+    case 'twoShot':
+      _shotMidpoint.copy(playerPos).add(npcPos).multiplyScalar(0.5);
+      _shotPos.copy(_shotMidpoint)
+        .addScaledVector(dir, -3.0)
+        .addScaledVector(_shotRight, 1.5);
+      _shotPos.y += 2.0;
+      _shotLook.copy(_shotMidpoint);
+      _shotLook.y += 1.3;
+      _dialogueShotOut.fov = 60;
+      break;
 
-    case 'wideShot': {
-      const midpoint = playerPos.clone().add(npcPos).multiplyScalar(0.5);
-      const pos = midpoint.clone()
-        .add(dir.clone().multiplyScalar(-5.0))
-        .add(new THREE.Vector3(0, 2.5, 0));
-      const look = midpoint.clone().add(new THREE.Vector3(0, 1.0, 0));
-      return { position: pos, lookAt: look, fov: DIALOGUE_FOV };
-    }
+    case 'wideShot':
+      _shotMidpoint.copy(playerPos).add(npcPos).multiplyScalar(0.5);
+      _shotPos.copy(_shotMidpoint).addScaledVector(dir, -5.0);
+      _shotPos.y += 2.5;
+      _shotLook.copy(_shotMidpoint);
+      _shotLook.y += 1.0;
+      _dialogueShotOut.fov = DIALOGUE_FOV;
+      break;
 
     default: {
-      const pos = playerPos.clone()
-        .add(dir.clone().multiplyScalar(-1.5))
-        .add(new THREE.Vector3(0, 1.8, 0));
-      const look = npcPos.clone().add(new THREE.Vector3(0, 1.5, 0));
-      return { position: pos, lookAt: look, fov: DIALOGUE_FOV };
+      const _exhaustive: never = type;
+      return _exhaustive;
     }
   }
+
+  return _dialogueShotOut;
 }
 
 /* ════════════════════════════════════════════════════
@@ -504,22 +531,22 @@ export function updateExplorationState(
     state.breathingIntensity = Math.max(0, state.breathingIntensity - dt * 2);
   }
 
-  return {
-    targetRoll,
-    targetHeight: state.smoothedHeight,
-  };
+  _explorationUpdateOut.targetRoll = targetRoll;
+  _explorationUpdateOut.targetHeight = state.smoothedHeight;
+  return _explorationUpdateOut;
 }
 
 /**
  * Apply enhanced breathing idle animation.
  * More pronounced than the basic version — kicks in after standing still.
  */
+/** Mutates `position` in place — caller must pass a fresh target each frame. */
 export function applyEnhancedBreathingIdle(
   position: THREE.Vector3,
   time: number,
   intensity: number,
-): THREE.Vector3 {
-  if (intensity < 0.001) return position;
+): void {
+  if (intensity < 0.001) return;
 
   // Breathing: subtle Y oscillation (1-2mm at full intensity)
   const breathY = Math.sin(time * 1.8) * 0.002 * intensity;
@@ -527,11 +554,9 @@ export function applyEnhancedBreathingIdle(
   const swayX = Math.sin(time * 0.6) * 0.0005 * intensity;
   const swayZ = Math.cos(time * 0.8) * 0.0005 * intensity;
 
-  return new THREE.Vector3(
-    position.x + swayX,
-    position.y + breathY,
-    position.z + swayZ,
-  );
+  position.x += swayX;
+  position.y += breathY;
+  position.z += swayZ;
 }
 
 /* ════════════════════════════════════════════════════
@@ -651,11 +676,10 @@ export function updateCutsceneController(
       controller.isComplete = true;
       controller.isPlaying = false;
       const last = waypoints[waypoints.length - 1];
-      return {
-        position: last.position,
-        lookAt: last.lookAt,
-        fov: last.fov,
-      };
+      _cutsceneUpdateOut.position = last.position;
+      _cutsceneUpdateOut.lookAt = last.lookAt;
+      _cutsceneUpdateOut.fov = last.fov;
+      return _cutsceneUpdateOut;
     }
   }
 
@@ -664,26 +688,26 @@ export function updateCutsceneController(
   const to = waypoints[controller.currentSegment + 1];
   const t = easeInOutCubic(controller.segmentProgress);
 
-  // Compute bezier position
   const pos = bezierInterpolate(
     from.position,
-    from.controlPoint ?? computeAutoControlPoint(from.position, to.position, 'out'),
-    to.controlPoint ?? computeAutoControlPoint(from.position, to.position, 'in'),
+    from.controlPoint ?? computeAutoControlPoint(from.position, to.position, 'out', _autoControlOut),
+    to.controlPoint ?? computeAutoControlPoint(from.position, to.position, 'in', _autoControlIn),
     to.position,
     t,
   );
 
-  // Interpolate look-at (smooth lerp)
-  const lookAt = new THREE.Vector3().lerpVectors(from.lookAt, to.lookAt, t);
+  _tempLook.lerpVectors(from.lookAt, to.lookAt, t);
 
-  // Interpolate FOV
   const fov = THREE.MathUtils.lerp(from.fov, to.fov, t);
 
   controller.currentPosition.copy(pos);
-  controller.currentLookAt.copy(lookAt);
+  controller.currentLookAt.copy(_tempLook);
   controller.currentFov = fov;
 
-  return { position: pos, lookAt, fov };
+  _cutsceneUpdateOut.position = controller.currentPosition;
+  _cutsceneUpdateOut.lookAt = controller.currentLookAt;
+  _cutsceneUpdateOut.fov = fov;
+  return _cutsceneUpdateOut;
 }
 
 /** Compute an auto control point for bezier when none is specified */
@@ -691,15 +715,16 @@ function computeAutoControlPoint(
   from: THREE.Vector3,
   to: THREE.Vector3,
   type: 'in' | 'out',
+  out: THREE.Vector3,
 ): THREE.Vector3 {
-  const mid = new THREE.Vector3().lerpVectors(from, to, 0.33);
+  out.lerpVectors(from, to, 0.33);
   if (type === 'out') {
     // Arc upward for a cinematic fly feel
-    mid.y += 1.5;
+    out.y += 1.5;
   } else {
-    mid.y += 0.8;
+    out.y += 0.8;
   }
-  return mid;
+  return out;
 }
 
 /** Cubic bezier interpolation between 4 control points */
@@ -721,7 +746,7 @@ function bezierInterpolate(
   _bezierC.copy(p2).multiplyScalar(3 * mt * t2);
   _bezierD.copy(p3).multiplyScalar(t3);
 
-  return _bezierTemp.copy(_bezierA).add(_bezierB).add(_bezierC).add(_bezierD).clone();
+  return _bezierTemp.copy(_bezierA).add(_bezierB).add(_bezierC).add(_bezierD);
 }
 
 /** Smooth ease-in-out cubic curve */
@@ -744,8 +769,8 @@ export interface CombatCameraState {
     active: boolean;
     elapsed: number;
     intensity: number;
-    /** Original camera position before shake */
-    originalPos: THREE.Vector3;
+    /** Reused each frame; returned as shakeOffset when active */
+    offset: THREE.Vector3;
   };
 }
 
@@ -757,7 +782,7 @@ export function createCombatCameraState(): CombatCameraState {
       active: false,
       elapsed: 0,
       intensity: 0,
-      originalPos: new THREE.Vector3(),
+      offset: new THREE.Vector3(),
     },
   };
 }
@@ -805,7 +830,7 @@ export function updateCombatCamera(
   }
 
   // ── Screen shake ──
-  const shakeOffset = new THREE.Vector3();
+  state.shake.offset.set(0, 0, 0);
   if (state.shake.active) {
     state.shake.elapsed += dt;
     const progress = state.shake.elapsed / COMBAT_SHAKE_DURATION;
@@ -814,16 +839,16 @@ export function updateCombatCamera(
       state.shake.active = false;
     } else {
       const decay = 1 - progress;
-      const offset = state.shake.intensity * decay;
-      shakeOffset.set(
-        (Math.random() - 0.5) * 2 * offset,
-        (Math.random() - 0.5) * offset,
-        (Math.random() - 0.5) * offset * 0.5,
+      const magnitude = state.shake.intensity * decay;
+      state.shake.offset.set(
+        (Math.random() - 0.5) * 2 * magnitude,
+        (Math.random() - 0.5) * magnitude,
+        (Math.random() - 0.5) * magnitude * 0.5,
       );
     }
   }
 
-  return { shakeOffset, effectiveFov };
+  return { shakeOffset: state.shake.offset, effectiveFov };
 }
 
 /* ════════════════════════════════════════════════════
@@ -893,24 +918,19 @@ export function updateSceneTransition(
   if (state.progress >= 1) {
     state.active = false;
     state.progress = 1;
-    return {
-      position: state.endPos.clone(),
-      lookAt: state.endLookAt.clone(),
-    };
+    _transitionUpdateOut.position = state.endPos;
+    _transitionUpdateOut.lookAt = state.endLookAt;
+    return _transitionUpdateOut;
   }
 
   const t = easeInOutCubic(state.progress);
 
-  // Position: arc through a high midpoint
-  const pos = new THREE.Vector3().lerpVectors(state.startPos, state.endPos, t);
-  // Add parabolic arc height (peaks at t=0.5)
-  const arcHeight = state.flyHeight * 4 * t * (1 - t);
-  pos.y += arcHeight;
+  _transitionPos.lerpVectors(state.startPos, state.endPos, t);
+  _transitionPos.y += state.flyHeight * 4 * t * (1 - t);
 
-  // Look-at: smooth interpolation
-  const lookAt = new THREE.Vector3().lerpVectors(state.startLookAt, state.endLookAt, t);
+  _transitionLookAt.lerpVectors(state.startLookAt, state.endLookAt, t);
 
-  return { position: pos, lookAt };
+  return _transitionUpdateOut;
 }
 
 /* ════════════════════════════════════════════════════

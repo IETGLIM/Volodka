@@ -30,6 +30,9 @@ let lastTotalCpuMs = 0;
 let lastPhysicsStepMs = 0;
 let registeredTickCount = 0;
 
+/** Reused each frame in runTicks — avoids [...ticks.values()] allocation. */
+const tickRunBuffer: RegisteredFrameTick[] = [];
+
 export function registerFrameTick(
   system: FrameSystemId,
   callback: FrameTickCallback,
@@ -92,8 +95,8 @@ export function getTopTickTimings(limit = 8): Array<{ label: string; system: Fra
     .slice(0, limit);
 }
 
-function sortTicks(list: RegisteredFrameTick[]): RegisteredFrameTick[] {
-  return list.sort((a, b) => {
+function sortTicks(list: RegisteredFrameTick[]): void {
+  list.sort((a, b) => {
     const systemDiff =
       FRAME_SYSTEM_ORDER.indexOf(a.system) - FRAME_SYSTEM_ORDER.indexOf(b.system);
     if (systemDiff !== 0) return systemDiff;
@@ -107,9 +110,15 @@ function runTicks(
   phase: RegisteredFrameTick['phase'],
   trackSystemCpu: boolean,
 ): void {
-  const sorted = sortTicks([...ticks.values()].filter((t) => t.enabled && t.phase === phase));
+  tickRunBuffer.length = 0;
+  for (const tick of ticks.values()) {
+    if (tick.enabled && tick.phase === phase) {
+      tickRunBuffer.push(tick);
+    }
+  }
+  sortTicks(tickRunBuffer);
 
-  for (const tick of sorted) {
+  for (const tick of tickRunBuffer) {
     const t0 = performance.now();
     tick.callback(ctx);
     const elapsed = performance.now() - t0;

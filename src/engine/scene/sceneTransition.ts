@@ -9,7 +9,7 @@
 
 import { SCENE_CONFIG } from '@/config/scenes';
 import { eventBus } from '@/engine/EventBus';
-import { getGameStore } from '@/store/gameStore';
+import { getGameSnapshot } from '@/engine/GameActionDispatcher';
 import type { SceneId } from '@/shared/types/game';
 
 type SpawnTuple = [number, number, number];
@@ -57,8 +57,7 @@ export function requestSceneTransition(
     return false;
   }
 
-  const store = getGameStore();
-  const { currentSceneId, playerPosition } = store.exploration;
+  const { currentSceneId, playerPosition } = getGameSnapshot().exploration;
   if (currentSceneId === targetScene && sameSpawn(playerPosition, spawn)) {
     lastDedupeKey = dedupeKey;
     lastDedupeAt = now;

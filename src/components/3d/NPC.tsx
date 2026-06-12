@@ -15,7 +15,11 @@ import { useQuests } from '@/store/selectors';
 import { eventBus } from '@/engine/EventBus';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { registerNPCGroup, unregisterNPCGroup } from '@/engine/interaction/npcRegistry';
-import { updateHeadTracking, cleanupHeadTracking } from '@/engine/npc/headTracking';
+import {
+  updateHeadTracking,
+  cleanupHeadTracking,
+  invalidateHeadTracking,
+} from '@/engine/npc/headTracking';
 import { InteractionState } from '@/engine/interaction/interactionMachine';
 import { GltfNPCModel } from '@/components/3d/GltfNPCModel';
 import { ProceduralNPCModel } from '@/components/3d/ProceduralNPCModels';
@@ -89,8 +93,10 @@ export function NPC({
   patrolWaypoints,
 }: NPCProps) {
   const groupRef = useRef<THREE.Group>(null);
-  const [lodLevel, setLodLevel] = useState<NpcLodLevel>('impostor');
-  const prevLodRef = useRef<NpcLodLevel>('impostor');
+  const impostorRef = useRef<THREE.Group>(null);
+  const fullDetailRef = useRef<THREE.Group>(null);
+  const questMarkerRef = useRef<THREE.Group>(null);
+  const lodLevelRef = useRef<NpcLodLevel>('impostor');
   const { preset } = useGraphicsQuality();
   const npcLodThresholds = useMemo(
     () => scaleNpcLodThresholds(DEFAULT_NPC_LOD, preset.lodBias),
@@ -99,6 +105,7 @@ export function NPC({
 
   // ── Patrol state ──
   const patrolRef = useRef<PatrolState | null>(null);
+  const patrolActivityRef = useRef<'idle' | 'walk'>('idle');
   const [patrolActivity, setPatrolActivity] = useState<'idle' | 'walk'>('idle');
 
   // Initialize patrol state when waypoints are available
@@ -143,6 +150,28 @@ export function NPC({
     };
   }, [definition.id]);
 
+  const applyNpcLodVisibility = (
+    lod: NpcLodLevel,
+    interactionTarget: boolean,
+  ) => {
+    const root = groupRef.current;
+    if (!root) return;
+    if (lod === 'culled') {
+      root.visible = false;
+      return;
+    }
+    root.visible = true;
+    if (impostorRef.current) {
+      impostorRef.current.visible = lod === 'impostor';
+    }
+    if (fullDetailRef.current) {
+      fullDetailRef.current.visible = lod === 'full';
+    }
+    if (questMarkerRef.current) {
+      questMarkerRef.current.visible = lod === 'full' || interactionTarget;
+    }
+  };
+
   useFrameTick('npc', ({ delta }) => {
     if (!groupRef.current) return;
 
@@ -150,14 +179,15 @@ export function NPC({
     const isPatrolling = shouldPatrol(activity, isInteractionTarget, !!patrolWaypoints?.length);
     if (isPatrolling && patrolRef.current && patrolWaypoints) {
       const result = updatePatrol(patrolRef.current, patrolWaypoints, delta);
-      setPatrolActivity(result.activity);
-      // Use patrol position
+      if (result.activity !== patrolActivityRef.current) {
+        patrolActivityRef.current = result.activity;
+        setPatrolActivity(result.activity);
+      }
       groupRef.current.position.copy(patrolRef.current.position);
     } else {
-      // Use schedule-driven position (static or schedule-based)
       groupRef.current.position.set(position[0], position[1], position[2]);
-      // When not patrolling, the activity is driven by schedule
-      if (patrolActivity !== 'idle') {
+      if (patrolActivityRef.current !== 'idle') {
+        patrolActivityRef.current = 'idle';
         setPatrolActivity('idle');
       }
     }
@@ -179,21 +209,20 @@ export function NPC({
 
     const newLod = resolveNpcLod(
       dist,
-      prevLodRef.current,
+      lodLevelRef.current,
       npcLodThresholds,
       isInteractionTarget,
     );
 
-    if (newLod !== prevLodRef.current) {
-      prevLodRef.current = newLod;
-      setLodLevel(newLod);
+    if (newLod !== lodLevelRef.current) {
+      lodLevelRef.current = newLod;
+      invalidateHeadTracking(definition.id);
     }
+    applyNpcLodVisibility(newLod, isInteractionTarget);
 
     if (newLod === 'culled') {
-      groupRef.current.visible = false;
       return;
     }
-    groupRef.current.visible = true;
 
     // ── Head tracking: make NPC look at player when nearby ──
     if (newLod === 'full' && dist < HEAD_TRACKING_DISTANCE) {
@@ -265,46 +294,47 @@ export function NPC({
     }
   });
 
-  const showFullDetail = lodLevel === 'full';
-  const showImpostor = lodLevel === 'impostor';
+  const isPatrolDriven = shouldPatrol(activity, isInteractionTarget, !!patrolWaypoints?.length);
+  const modelActivity = isPatrolDriven ? patrolActivity : activity;
 
   return (
     <group ref={groupRef}>
-      {showImpostor ? (
+      <group ref={impostorRef} visible={false}>
         <CapsuleImpostorNPC appearance={appearance} />
-      ) : showFullDetail ? (
+      </group>
+
+      <group ref={fullDetailRef} visible={false}>
         <Suspense fallback={<CapsuleImpostorNPC appearance={appearance} />}>
           <NPCModelWithErrorBoundary
             definition={definition}
             interactionState={interactionState}
             isInteractionTarget={isInteractionTarget}
-            activity={shouldPatrol(activity, isInteractionTarget, !!patrolWaypoints?.length) ? patrolActivity : activity}
+            activity={modelActivity}
           />
         </Suspense>
-      ) : null}
+        <NPCContactShadow />
 
-      {showFullDetail && <NPCContactShadow />}
+        {barkPhase !== 'hidden' && interactionState === InteractionState.Idle && (
+          <SpeechBubble
+            phase={barkPhase}
+            text={barkText}
+            opacity={barkOpacity}
+          />
+        )}
 
-      {(showFullDetail || isInteractionTarget) && (
+        {nameLabelOpacity > 0 && (
+          <NPCNameLabel
+            name={definition.name}
+            accentColor={appearance.accentColor}
+            bodyColor={appearance.bodyColor}
+            opacity={nameLabelOpacity}
+          />
+        )}
+      </group>
+
+      <group ref={questMarkerRef} visible={false}>
         <QuestMarker npcId={definition.id} />
-      )}
-
-      {showFullDetail && barkPhase !== 'hidden' && interactionState === InteractionState.Idle && (
-        <SpeechBubble
-          phase={barkPhase}
-          text={barkText}
-          opacity={barkOpacity}
-        />
-      )}
-
-      {showFullDetail && nameLabelOpacity > 0 && (
-        <NPCNameLabel
-          name={definition.name}
-          accentColor={appearance.accentColor}
-          bodyColor={appearance.bodyColor}
-          opacity={nameLabelOpacity}
-        />
-      )}
+      </group>
     </group>
   );
 }

@@ -22,6 +22,9 @@ import { createEmptyActiveTTLFlagMap } from './activeTTLFlags';
 import type { GameStoreState } from './types';
 import { getGameStore } from './gameStore';
 
+/** Persisted fields only — validated before localStorage write. */
+const PickSavePayloadSchema = SavePayloadSchema.omit({ saveVersion: true });
+
 /** Store keys written to / restored from localStorage (derived from Zod schema). */
 export type PersistedStoreKey = Exclude<
   keyof SavePayload,
@@ -109,7 +112,7 @@ export function createDefaultResetState(): Partial<GameStoreState> {
 export function pickSavePayload(
   state: GameStoreState,
 ): Omit<SavePayload, 'saveVersion'> {
-  const payload = {} as Record<string, unknown>;
+  const payload: Record<string, unknown> = {};
   for (const key of getPersistedStateKeys()) {
     payload[key] = state[key];
   }
@@ -117,7 +120,20 @@ export function pickSavePayload(
   const nodeId = state.currentNodeId?.trim();
   payload.currentNodeId = nodeId || 'start';
   payload.savedAt = Date.now();
-  return payload as Omit<SavePayload, 'saveVersion'>;
+
+  const result = PickSavePayloadSchema.safeParse(payload);
+  if (!result.success) {
+    const summary = result.error.issues
+      .slice(0, 5)
+      .map((issue) => {
+        const path = issue.path.length > 0 ? issue.path.join('.') : '(root)';
+        return `${path}: ${issue.message}`;
+      })
+      .join('; ');
+    throw new Error(`[pickSavePayload] Invalid save snapshot: ${summary}`);
+  }
+
+  return result.data;
 }
 
 /** Capture a validated save payload from live store state (no localStorage write). */

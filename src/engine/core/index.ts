@@ -11,6 +11,14 @@ export {
 } from './GlobalCleanupService';
 
 export {
+  isSceneTransitionInProgress,
   performSceneTransition,
+  resetSceneTransitionGuard,
   type SceneTransitionPayload,
 } from './SceneTransitionManager';
+
+export {
+  clearDeferredCombatStart,
+  flushDeferredCombatStart,
+  resetCombatStartGate,
+} from './combatStartGate';

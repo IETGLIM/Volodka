@@ -58,6 +58,15 @@ let externalVelX = 0;
 let externalVelZ = 0;
 let externalActive = false;
 
+/** Stable snapshot reused by getPlayerExternalVelocity (no per-frame alloc). */
+const externalVelocitySample = {
+  vx: 0,
+  vz: 0,
+  active: false,
+};
+
+export type PlayerExternalVelocity = typeof externalVelocitySample;
+
 /** Set external horizontal velocity (called by InteractionSystemBridge) */
 export function setPlayerExternalVelocity(vx: number, vz: number): void {
   externalVelX = vx;
@@ -73,8 +82,11 @@ export function clearPlayerExternalVelocity(): void {
 }
 
 /** Read external velocity (called by PhysicsPlayer each frame) */
-export function getPlayerExternalVelocity(): { vx: number; vz: number; active: boolean } {
-  return { vx: externalVelX, vz: externalVelZ, active: externalActive };
+export function getPlayerExternalVelocity(): PlayerExternalVelocity {
+  externalVelocitySample.vx = externalVelX;
+  externalVelocitySample.vz = externalVelZ;
+  externalVelocitySample.active = externalActive;
+  return externalVelocitySample;
 }
 
 /** Clear the player rigid body reference — called on PhysicsPlayer unmount */

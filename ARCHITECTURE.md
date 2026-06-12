@@ -42,8 +42,17 @@
 
 ### GameActionDispatcher (`src/engine/GameActionDispatcher.ts`)
 Engine-модули не импортируют store. Мутации — типизированные `GameAction`
-(quest/*, player/*, poem/*, story/*, …), чтение — `GameStoreSnapshot`,
-мост регистрируется store-ом на старте (`registerGameActionBridge`).
+(quest/*, player/*, poem/*, story/*, exploration/*, …), чтение —
+`GameStoreSnapshot`, мост регистрируется store-ом на старте
+(`registerGameActionBridge`). Engine → store только через dispatcher.
+
+### Переходы сцен (`SceneTransitionManager.ts`)
+Единый синхронный пайплайн: `scene:unload` → store
+(`exploration/applySceneTransition`) → `scene:enter` → `scene:loaded`.
+Re-entrance guard блокирует вложенные вызовы из обработчиков unload/enter.
+`combatStartGate` откладывает `startCombat` до конца transition (без гонки
+аудио/GPU с unload). Запросы с UI/3D — только `requestSceneTransition`
+(`sceneTransition.ts`).
 
 ### Сцены (`src/config/sceneDefinitions.ts` → генератор)
 `SceneDefinition` — единственный источник правды: размеры, спавн, doorways/exits,
@@ -91,8 +100,10 @@ patrol→chase→engaged→cooldown, конус зрения проецируе�
 - Канонический путь: `GOLDEN_PATH_STORY_SPINE` (до `act7_true_end`) + derivation
   из меток `choice.goldenPath` (`deriveGoldenPath.ts`); валидатор контента
   (`npm run validate:content`) сверяет оба источника.
-- Прогресс: `GuidedStoryManager` (visitedNodes, флаги, npc:talked) +
-  `QuestTracker` (objectives: location/npc/flag/item/poem/minigame).
+- Прогресс: `GuidedStoryManager` (visitedNodes, флаги, npc:talked,
+  `scene:enter`) + `QuestTracker` (objectives: location/npc/flag/item/poem/minigame).
+  Spine advance: только текущий шаг (`resolveStorySpineAdvance`), debounce 32 ms
+  на пачку сигналов; догон после load — `syncSpineStateFromSnapshot`.
 
 ### Настройки
 - `engine/visualSettings.ts` — postFX, яркость, тряска, сенса, invertY,
@@ -107,6 +118,19 @@ patrol→chase→engaged→cooldown, конус зрения проецируе�
 Zod-схема (SAVE_VERSION=1), two-phase write + rollback, backup-ключ.
 `resolveSaveFromStorage` → `empty | ok | recovered-from-backup | corrupt`;
 битый основной сейв → автозагрузка backup + уведомление; ключи не затираются.
+`pickSavePayload` валидирует snapshot через `SavePayloadSchema` перед записью.
+
+### Store: cross-slice и валидация
+- Запись в чужие слайсы — через owner actions / `crossSliceReads.ts`
+  (`applyPlayerRewardBatch`, `pushNotification`, world cross-actions).
+- Trainable skills: `store/skillHelpers.ts` (`applySkillDelta`,
+  `parseTrainablePlayerSkill`) — без silent cast на невалидные ключи.
+- UI: `OrchestratorGameplayLayer` — `memo` + field-wise compare (canvas-only
+  rerender не трогает gameplay HUD).
+
+### Числовая устойчивость
+- `cameraShake.ts` — `Number.isFinite` на intensity/decay/dt (NaN не залипает).
+- `seededRand.ts` — non-finite seed → 0 (SSR/partículas без NaN в CSS).
 
 ## Сборка и бюджеты
 
@@ -126,7 +150,7 @@ Zod-схема (SAVE_VERSION=1), two-phase write + rollback, backup-ключ.
 ```bash
 npm run dev              # дев-сервер :3000
 npm run check            # lint + typecheck + validate + build + budgets
-npm run test:unit        # vitest (node env, 144 теста)
+npm run test:unit        # vitest (node env)
 npm run test:e2e         # Playwright smoke
 npm run validate:content # квесты/история/стихи/golden path
 npm run assets:validate  # GLB на диске и валидны
@@ -141,3 +165,5 @@ npm run assets:validate  # GLB на диске и валидны
 4. Новый контент — данные, не код: квест = запись в `quests/actN.ts`,
    враг на сцене = запись в `creepPatrols.ts`, предмет = `dynamicProps.ts`.
 5. Любая правка проходит `npm run check` перед коммитом.
+6. Deploy-архив исходников: `node scripts/create-deploy-archive.mjs`
+   → `deploy-archive/volodka-vercel-*.zip`.

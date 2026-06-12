@@ -63,6 +63,8 @@ export function usePanelCoordinator({
   onPanelOpened,
 }: UsePanelCoordinatorOptions = {}): PanelCoordinatorResult {
   const [panelStack, dispatchStack] = useReducer(panelStackReducer, [] as NonNullPanelType[]);
+  const panelStackRef = useRef(panelStack);
+  panelStackRef.current = panelStack;
   const activePanel = getTopPanel(panelStack);
 
   const [questAccept, setQuestAccept] = useState<QuestDialogState>(null);
@@ -153,10 +155,10 @@ export function usePanelCoordinator({
   }, [panelStack]);
 
   const closeJournalIfOpen = useCallback(() => {
-    if (panelStack.includes('journal')) {
+    if (panelStackRef.current.includes('journal')) {
       dispatchStackAction({ type: 'remove', panel: 'journal' });
     }
-  }, [panelStack, dispatchStackAction]);
+  }, [dispatchStackAction]);
 
   const handleOpenQuests = useCallback(() => {
     closeJournalIfOpen();

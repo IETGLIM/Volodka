@@ -15,6 +15,7 @@ import { useFrameTick } from '@/engine/frame/useFrameTick';
 import { useGameStore } from '@/store/gameStore';
 import { readGamePhase } from '@/shared/gamePhase';
 import { eventBus } from '@/engine/EventBus';
+import { isSceneTransitionInProgress } from '@/engine/core/SceneTransitionManager';
 import { startCombat } from '@/engine/CombatSystem';
 import { ENEMY_TEMPLATES } from '@/engine/combat/enemies';
 import { audioEngine } from '@/engine/audio/AudioEngine';
@@ -272,7 +273,11 @@ function Creep({
         // CHASE
         if (playerDist > LOSE_AGGRO_DISTANCE) {
           stateRef.current = 'patrol';
-        } else if (playerDist < CONTACT_DISTANCE && !engageQueuedRef.current) {
+        } else if (
+          playerDist < CONTACT_DISTANCE &&
+          !engageQueuedRef.current &&
+          !isSceneTransitionInProgress()
+        ) {
           engageQueuedRef.current = true;
           stateRef.current = 'engaged';
           engagedCreepIdRef.current = def.id;

@@ -16,6 +16,11 @@
    4. Poem ability cooldowns — reuse after N turns instead of single-use
 */
 
+import {
+  clearDeferredCombatStart,
+  deferCombatStartIfTransitionBusy,
+  registerCombatStartExecutor,
+} from '@/engine/core/combatStartGate';
 import { eventBus } from '@/engine/EventBus';
 import { registerHmrDispose } from '@/shared/dev/hmrDispose';
 import {
@@ -226,8 +231,13 @@ function notifyNewCombatLogEntries(beforeLen: number): void {
 
 /** Tear down combat session timers and listener refs. Idempotent. */
 export function disposeCombatSystem(): void {
+  clearDeferredCombatStart();
   combat.dispose();
 }
+
+registerCombatStartExecutor((enemyType, options) => {
+  startCombatImmediate(enemyType, options);
+});
 
 registerHmrDispose(disposeCombatSystem);
 
@@ -250,7 +260,20 @@ export interface CombatStartOptions {
   encounterName?: string;
 }
 
-export function startCombat(enemyType: EnemyType, options?: CombatStartOptions): CombatState {
+export function startCombat(
+  enemyType: EnemyType,
+  options?: CombatStartOptions,
+): CombatState | null {
+  if (deferCombatStartIfTransitionBusy(enemyType, options)) {
+    return null;
+  }
+  return startCombatImmediate(enemyType, options);
+}
+
+function startCombatImmediate(
+  enemyType: EnemyType,
+  options?: CombatStartOptions,
+): CombatState {
   // Abandoned active combat pushed a return node that will never be popped on victory/defeat/flee
   if (combat.getState()?.status === 'active') {
     combat.discardOrphanedReturnNode();

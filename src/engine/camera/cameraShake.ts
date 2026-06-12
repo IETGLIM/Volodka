@@ -10,6 +10,24 @@ import { getVisualSettings } from '@/engine/visualSettings';
 let shakeIntensity = 0;
 let shakeDecay = 5; // How fast shake decays (per second)
 
+const DEFAULT_SHAKE_DECAY = 5;
+
+function finiteOr(value: number, fallback: number): number {
+  return Number.isFinite(value) ? value : fallback;
+}
+
+function normalizeShakeState(): void {
+  if (!Number.isFinite(shakeIntensity) || shakeIntensity < 0) {
+    shakeIntensity = 0;
+  }
+  if (!Number.isFinite(shakeDecay) || shakeDecay <= 0) {
+    shakeDecay = DEFAULT_SHAKE_DECAY;
+  }
+}
+
+/** Reused each frame — avoid allocating { x, y } per call. */
+const shakeOffsetOut = { x: 0, y: 0 };
+
 /**
  * Trigger a camera shake with the given intensity and optional decay rate.
  * Intensity is in world-space units (0.1 = 10cm of shake offset).
@@ -19,8 +37,16 @@ let shakeDecay = 5; // How fast shake decays (per second)
  */
 export function triggerCameraShake(intensity: number, decay?: number): void {
   if (!getVisualSettings().cameraShakeEnabled) return;
-  shakeIntensity = Math.max(shakeIntensity, intensity);
-  if (decay !== undefined) shakeDecay = decay;
+  normalizeShakeState();
+
+  const safeIntensity = finiteOr(intensity, 0);
+  if (safeIntensity <= 0) return;
+
+  shakeIntensity = Math.max(shakeIntensity, safeIntensity);
+  if (decay !== undefined) {
+    const safeDecay = finiteOr(decay, DEFAULT_SHAKE_DECAY);
+    if (safeDecay > 0) shakeDecay = safeDecay;
+  }
 }
 
 /**
@@ -29,12 +55,28 @@ export function triggerCameraShake(intensity: number, decay?: number): void {
  * Returns { x, y } offset to add to camera position.
  */
 export function getCameraShakeOffset(dt: number): { x: number; y: number } {
-  if (shakeIntensity < 0.001) return { x: 0, y: 0 };
-  const x = (Math.random() - 0.5) * 2 * shakeIntensity;
-  const y = (Math.random() - 0.5) * 2 * shakeIntensity;
-  shakeIntensity *= Math.exp(-shakeDecay * dt);
-  if (shakeIntensity < 0.001) shakeIntensity = 0;
-  return { x, y };
+  normalizeShakeState();
+
+  if (shakeIntensity < 0.001) {
+    shakeIntensity = 0;
+    shakeOffsetOut.x = 0;
+    shakeOffsetOut.y = 0;
+    return shakeOffsetOut;
+  }
+
+  shakeOffsetOut.x = (Math.random() - 0.5) * 2 * shakeIntensity;
+  shakeOffsetOut.y = (Math.random() - 0.5) * 2 * shakeIntensity;
+
+  const safeDt = Math.max(0, finiteOr(dt, 0));
+  const decayFactor = Math.exp(-shakeDecay * safeDt);
+  shakeIntensity = Number.isFinite(decayFactor)
+    ? shakeIntensity * decayFactor
+    : 0;
+
+  if (!Number.isFinite(shakeIntensity) || shakeIntensity < 0.001) {
+    shakeIntensity = 0;
+  }
+  return shakeOffsetOut;
 }
 
 /**
@@ -42,6 +84,7 @@ export function getCameraShakeOffset(dt: number): { x: number; y: number } {
  */
 export function resetCameraShake(): void {
   shakeIntensity = 0;
+  shakeDecay = DEFAULT_SHAKE_DECAY;
 }
 
 /**

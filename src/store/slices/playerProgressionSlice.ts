@@ -2,8 +2,8 @@
 /* XP, leveling, skill tree, and perks. */
 
 import type { StateCreator } from 'zustand';
-import type { TrainablePlayerSkill } from '@/shared/types/game';
 import type { PerkEffect } from '@/data/perks';
+import { applySkillDelta } from '../skillHelpers';
 import { pushNotification } from '../shared';
 import type { GameStoreState } from '../types';
 import { getSkillTreeMap, getSkillEffectMap, getPerksMap } from '@/data/gameDataLoader';
@@ -109,9 +109,11 @@ export const createPlayerProgressionSlice: StateCreator<
       const newSkills = { ...state.playerState.skills };
       for (const effect of perkDef.effects) {
         if (effect.type === 'skill_bonus' && effect.skill) {
-          newSkills[effect.skill as TrainablePlayerSkill] = Math.max(
-            0,
-            newSkills[effect.skill as TrainablePlayerSkill] + effect.value,
+          applySkillDelta(
+            newSkills,
+            effect.skill,
+            effect.value,
+            `perk "${perkId}" skill_bonus`,
           );
         }
       }

@@ -5,6 +5,7 @@
  * removed here — they stay readable for manual recovery until the next
  * successful save overwrites them. */
 
+import { eventBus } from '@/engine/EventBus';
 import {
   validateSaveData,
   type SavePayload,
@@ -13,6 +14,49 @@ import {
 /* ─── localStorage keys ─── */
 export const SAVE_KEY = 'volodka_save';
 export const SAVE_BACKUP_KEY = `${SAVE_KEY}_backup`;
+
+const savePresenceListeners = new Set<() => void>();
+let savePresenceHooksInstalled = false;
+let unsubGameSaved: (() => void) | undefined;
+
+/** Whether a primary save exists in localStorage (for menu continue button). */
+export function getSavePresence(): boolean {
+  return localStorage.getItem(SAVE_KEY) !== null;
+}
+
+/** Notify React subscribers that SAVE_KEY may have changed. */
+export function notifySavePresenceChange(): void {
+  for (const listener of savePresenceListeners) listener();
+}
+
+function onSaveStorageEvent(e: StorageEvent): void {
+  if (e.key === SAVE_KEY || e.key === null) notifySavePresenceChange();
+}
+
+function installSavePresenceHooks(): void {
+  if (savePresenceHooksInstalled) return;
+  savePresenceHooksInstalled = true;
+  window.addEventListener('storage', onSaveStorageEvent);
+  unsubGameSaved = eventBus.on('game:saved', notifySavePresenceChange);
+}
+
+function uninstallSavePresenceHooks(): void {
+  if (savePresenceListeners.size > 0) return;
+  savePresenceHooksInstalled = false;
+  window.removeEventListener('storage', onSaveStorageEvent);
+  unsubGameSaved?.();
+  unsubGameSaved = undefined;
+}
+
+/** useSyncExternalStore subscribe — storage events + game:saved in this tab. */
+export function subscribeSavePresence(onStoreChange: () => void): () => void {
+  savePresenceListeners.add(onStoreChange);
+  installSavePresenceHooks();
+  return () => {
+    savePresenceListeners.delete(onStoreChange);
+    uninstallSavePresenceHooks();
+  };
+}
 
 /** Two-phase save: backup current → write → validate → rollback on failure. */
 export function writeSaveToLocalStorage(json: string): boolean {
@@ -36,6 +80,7 @@ export function writeSaveToLocalStorage(json: string): boolean {
     return false;
   }
 
+  notifySavePresenceChange();
   return true;
 }
 

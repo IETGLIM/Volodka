@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { GuidedStoryManager } from '@/engine/GuidedStoryManager';
 import type {
   GuidedStoryDeps,
@@ -71,6 +71,10 @@ describe('guidedStoryLogic', () => {
     expect(resolveStorySpineAdvance('explore_mode', 1, TEST_PATH)).toBe(2);
   });
 
+  it('resolveStorySpineAdvance ignores future spine nodes', () => {
+    expect(resolveStorySpineAdvance('room_table', 1, TEST_PATH)).toBeNull();
+  });
+
   it('syncSpineStateFromSnapshot derives step index from visited nodes', () => {
     const synced = syncSpineStateFromSnapshot(
       {
@@ -94,23 +98,54 @@ describe('storyGraphTraversal', () => {
 });
 
 describe('GuidedStoryManager', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
   it('does not double-advance on explore hub re-entry', () => {
-    const deps = createTestDeps();
+    const deps = createTestDeps({ visitedNodes: ['start', 'explore_mode'] });
     const manager = new GuidedStoryManager(deps);
+    manager.syncSpineForTest();
 
-    manager.advanceStorySpineForTest('explore_mode');
-    expect(deps.events.emitGuidanceUpdate).toHaveBeenCalledTimes(1);
-
-    vi.mocked(deps.events.emitGuidanceUpdate).mockClear();
-    manager.advanceStorySpineForTest('explore_mode');
+    manager.advanceStorySpineForTest('explore_mode', { immediate: true });
     expect(deps.events.emitGuidanceUpdate).not.toHaveBeenCalled();
   });
 
   it('advances spine once on first explore hub visit', () => {
     const deps = createTestDeps({ visitedNodes: ['start'] });
     const manager = new GuidedStoryManager(deps);
+    manager.syncSpineForTest();
+
+    manager.advanceStorySpineForTest('explore_mode', { immediate: true });
+    expect(deps.events.emitGuidanceUpdate).toHaveBeenCalledTimes(1);
+  });
+
+  it('debounces concurrent spine advance signals into one flush', () => {
+    const deps = createTestDeps({ visitedNodes: ['start'] });
+    const manager = new GuidedStoryManager(deps);
+    manager.syncSpineForTest();
 
     manager.advanceStorySpineForTest('explore_mode');
+    manager.advanceStorySpineForTest('explore_mode');
+    expect(deps.events.emitGuidanceUpdate).not.toHaveBeenCalled();
+
+    vi.advanceTimersByTime(32);
     expect(deps.events.emitGuidanceUpdate).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not advance a future spine step after debounce flush', () => {
+    const deps = createTestDeps({ visitedNodes: ['start'] });
+    const manager = new GuidedStoryManager(deps);
+
+    manager.advanceStorySpineForTest('start');
+    manager.advanceStorySpineForTest('explore_mode');
+    vi.advanceTimersByTime(32);
+
+    expect(deps.events.emitGuidanceUpdate).toHaveBeenCalledTimes(1);
+    expect(deps.actions.advanceAct).not.toHaveBeenCalled();
   });
 });

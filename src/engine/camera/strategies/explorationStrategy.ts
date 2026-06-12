@@ -87,10 +87,11 @@ export const explorationStrategy: CameraModeStrategy = {
     );
     const speed = ctx.prevVelocitySmooth.length();
     const lookAheadAmount = Math.min(speed * LOOK_AHEAD_STRENGTH, 0.3);
-    const lookAheadDir = speed > 0.01
-      ? ctx.prevVelocitySmooth.clone().normalize()
-      : ctx.tempVec2.set(0, 0, 0);
-    ctx.lookAheadOffset.copy(lookAheadDir).multiplyScalar(lookAheadAmount);
+    if (speed > 0.01) {
+      ctx.lookAheadOffset.copy(ctx.prevVelocitySmooth).normalize().multiplyScalar(lookAheadAmount);
+    } else {
+      ctx.lookAheadOffset.set(0, 0, 0);
+    }
 
     let targetPos = desiredPos.set(
       playerPos.x + offset.x,

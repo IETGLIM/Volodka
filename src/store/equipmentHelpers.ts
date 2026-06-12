@@ -2,6 +2,7 @@
 
 import type { ItemDefinition } from '@/data/items';
 import type { TrainablePlayerSkill } from '@/shared/types/game';
+import { applySkillDelta } from './skillHelpers';
 import { clamp } from './shared';
 
 export interface PlayerEquipmentStats {
@@ -49,11 +50,9 @@ export function applyEquipmentEffects(
   }
 
   const skills = { ...stats.skills };
-  for (const [skill, delta] of Object.entries(skillChanges)) {
-    skills[skill as TrainablePlayerSkill] = Math.max(
-      0,
-      skills[skill as TrainablePlayerSkill] + (delta ?? 0),
-    );
+  for (const [skillKey, delta] of Object.entries(skillChanges)) {
+    if (delta === undefined) continue;
+    applySkillDelta(skills, skillKey, delta, 'equipment item effect skill');
   }
 
   return {

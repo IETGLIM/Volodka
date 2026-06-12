@@ -1,4 +1,4 @@
-import { Suspense } from 'react';
+import { memo, Suspense, useCallback } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
@@ -47,6 +47,7 @@ import {
 import { OrchestratorMinigameOverlays } from './OrchestratorMinigameOverlays';
 import { OrchestratorStatsPanel } from './OrchestratorPanelSlots';
 import type { PanelCloseHandlers } from './useStablePanelClosers';
+import type { HudSecondaryPanelOpeners } from './useStableHudPanelOpeners';
 import type { OrchestratorRuntime } from './useOrchestratorRuntime';
 import type { GamePhase } from '@/shared/gamePhase';
 
@@ -60,10 +61,59 @@ type Props = {
   interaction: OrchestratorRuntime['interaction'];
   panels: OrchestratorRuntime['panels'];
   panelClosers: PanelCloseHandlers;
+  hudSecondaryOpeners: HudSecondaryPanelOpeners;
 };
 
+function areGameplayLayerPropsEqual(prev: Props, next: Props): boolean {
+  if (
+    prev.mode !== next.mode ||
+    prev.gameDataReady !== next.gameDataReady ||
+    prev.sceneBanner !== next.sceneBanner ||
+    prev.isMobile !== next.isMobile ||
+    prev.isStoryActive !== next.isStoryActive ||
+    prev.isDialogueActive !== next.isDialogueActive ||
+    prev.panelClosers !== next.panelClosers ||
+    prev.hudSecondaryOpeners !== next.hudSecondaryOpeners
+  ) {
+    return false;
+  }
+
+  const pi = prev.interaction;
+  const ni = next.interaction;
+  if (
+    pi.codebreakerOpen !== ni.codebreakerOpen ||
+    pi.openstackTerminalOpen !== ni.openstackTerminalOpen ||
+    pi.bashTerminalOpen !== ni.bashTerminalOpen ||
+    pi.poetryGameOpen !== ni.poetryGameOpen ||
+    pi.hackingGameOpen !== ni.hackingGameOpen ||
+    pi.memoryGameOpen !== ni.memoryGameOpen ||
+    pi.quizGameOpen !== ni.quizGameOpen ||
+    pi.rhythmGameOpen !== ni.rhythmGameOpen ||
+    pi.examineOpen !== ni.examineOpen ||
+    pi.examineData !== ni.examineData ||
+    pi.examineHasLinkedContent !== ni.examineHasLinkedContent ||
+    pi.minigameSetters !== ni.minigameSetters ||
+    pi.handleExamineContinue !== ni.handleExamineContinue ||
+    pi.resetExamine !== ni.resetExamine ||
+    pi.clearPendingTriggerZone !== ni.clearPendingTriggerZone
+  ) {
+    return false;
+  }
+
+  const pp = prev.panels;
+  const np = next.panels;
+  return (
+    pp.handleOpenQuests === np.handleOpenQuests &&
+    pp.handleOpenInventory === np.handleOpenInventory &&
+    pp.handleOpenPoetry === np.handleOpenPoetry &&
+    pp.handleOpenJournal === np.handleOpenJournal &&
+    pp.handleToggleTutorials === np.handleToggleTutorials &&
+    pp.handleOpenMenu === np.handleOpenMenu
+  );
+}
+
 /** Exploration / cutscene / combat HUD, narrative overlays, minigames. */
-export function OrchestratorGameplayLayer({
+export const OrchestratorGameplayLayer = memo(function OrchestratorGameplayLayer({
   mode,
   gameDataReady,
   sceneBanner,
@@ -73,6 +123,7 @@ export function OrchestratorGameplayLayer({
   interaction,
   panels,
   panelClosers,
+  hudSecondaryOpeners,
 }: Props) {
   const isGameplayMode = mode === 'exploration' || mode === 'cutscene' || mode === 'combat';
   if (!isGameplayMode) return null;
@@ -98,8 +149,12 @@ export function OrchestratorGameplayLayer({
     clearPendingTriggerZone,
   } = interaction;
 
+  const handleExamineClose = useCallback(() => {
+    resetExamine();
+    clearPendingTriggerZone();
+  }, [resetExamine, clearPendingTriggerZone]);
+
   const {
-    dispatchPanel,
     handleOpenQuests,
     handleOpenInventory,
     handleOpenPoetry,
@@ -213,19 +268,7 @@ export function OrchestratorGameplayLayer({
               onOpenJournal={handleOpenJournal}
               onToggleTutorials={handleToggleTutorials}
               onOpenMenu={handleOpenMenu}
-              onOpenMiniGames={() => dispatchPanel('miniGameHub')}
-              onOpenCharacterProfile={() => dispatchPanel('characterProfile')}
-              onOpenNPCRelations={() => dispatchPanel('npcRelation')}
-              onOpenCodex={() => dispatchPanel('codex')}
-              onOpenDialogueHistory={() => dispatchPanel('dialogueHistory')}
-              onOpenAchievements={() => dispatchPanel('achievements')}
-              onOpenSkillTree={() => dispatchPanel('skillTree')}
-              onOpenCrafting={() => dispatchPanel('crafting')}
-              onOpenTrading={() => dispatchPanel('trading')}
-              onOpenFastTravel={() => dispatchPanel('fastTravel')}
-              onOpenPerks={() => dispatchPanel('perks')}
-              onOpenQuestBoard={() => dispatchPanel('questBoard')}
-              onOpenStats={() => dispatchPanel('stats')}
+              {...hudSecondaryOpeners}
             />
           </Suspense>
           <Suspense fallback={null}>
@@ -296,14 +339,11 @@ export function OrchestratorGameplayLayer({
         data={examineData}
         hasLinkedContent={examineHasLinkedContent}
         onContinue={handleExamineContinue}
-        onClose={() => {
-          resetExamine();
-          clearPendingTriggerZone();
-        }}
+        onClose={handleExamineClose}
       />
 
       <SceneTransitionOverlay />
       <AchievementNotification />
     </>
   );
-}
+}, areGameplayLayerPropsEqual);

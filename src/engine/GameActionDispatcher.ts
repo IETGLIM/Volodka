@@ -38,6 +38,7 @@ export interface GameStoreSnapshot {
   showStoryOverlay: boolean;
   exploration: {
     currentSceneId: SceneId;
+    playerPosition: [number, number, number];
     timeOfDay: number;
     interactiveObjectStates: Record<string, boolean>;
   };
@@ -95,6 +96,7 @@ export type GameAction =
   | { type: 'story/setShowStoryOverlay'; show: boolean }
   | { type: 'story/openNarrativeOverlay'; nodeId: string; kind?: 'story' | 'dialogue' }
   | { type: 'story/closeNarrativeOverlay' }
+  | { type: 'story/visitNode'; nodeId: string }
   | { type: 'story/advanceAct' }
   /* ── Inventory ── */
   | { type: 'inventory/addItem'; item: InventoryItem }
@@ -113,7 +115,12 @@ export type GameAction =
   | { type: 'notification/push'; notificationType: NotificationType; text: string }
   | { type: 'notification/dismiss'; id: string }
   /* ── Exploration ── */
-  | { type: 'exploration/toggleInteractiveObject'; objectId: string };
+  | { type: 'exploration/toggleInteractiveObject'; objectId: string }
+  | {
+      type: 'exploration/applySceneTransition';
+      targetScene: SceneId;
+      spawnAt: [number, number, number];
+    };
 
 /** Optional selector + equality for narrow store subscriptions (avoids firing on unrelated mutations). */
 export interface GameSnapshotSubscribeOptions<T> {

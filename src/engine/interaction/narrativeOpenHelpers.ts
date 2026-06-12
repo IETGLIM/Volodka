@@ -4,9 +4,9 @@ import {
   getDialogueNodes,
   getStoryNodes,
 } from '@/data/gameDataLoader';
+import { dispatchGameAction, getGameSnapshot } from '@/engine/GameActionDispatcher';
 import { requestSceneTransition } from '@/engine/scene/sceneTransition';
 import { openNarrativeOverlay } from '@/engine/scene/narrativeOverlay';
-import { useGameStore } from '@/store/gameStore';
 import { hasVisitedNode } from '@/store/visitedNodesIndex';
 import { SCENE_ENTRY_NODE_TO_HUB } from '@/shared/sceneExploreHubRegistry';
 import { devWarn } from '@/shared/utils/devLog';
@@ -29,7 +29,11 @@ function notifyNarrativeUnavailable(
   } else {
     devWarn(`[narrative] ${kind} node not found: "${nodeId}"`);
   }
-  useGameStore.getState().pushNotification('quest', userMessageForKind(kind));
+  dispatchGameAction({
+    type: 'notification/push',
+    notificationType: 'quest',
+    text: userMessageForKind(kind),
+  });
 }
 
 export async function tryOpenDialogue(nodeId: string): Promise<boolean> {
@@ -77,8 +81,8 @@ export async function openLinkedDialogue(nodeId: string): Promise<boolean> {
     return false;
   }
 
-  const store = useGameStore.getState();
-  const alreadyVisited = hasVisitedNode(store.playerState.visitedNodes, nodeId);
+  const snapshot = getGameSnapshot();
+  const alreadyVisited = hasVisitedNode(snapshot.playerState.visitedNodes, nodeId);
   if (alreadyVisited && dlgNode.sceneId) {
     requestSceneTransition(dlgNode.sceneId as SceneId);
     return true;
@@ -103,18 +107,18 @@ export async function openLinkedStory(nodeId: string): Promise<boolean> {
     return false;
   }
 
-  const store = useGameStore.getState();
+  const snapshot = getGameSnapshot();
 
   // Door/arrival beats — mark visited and walk through without a story panel.
   if (SCENE_ENTRY_NODE_TO_HUB[nodeId] && storyNode.sceneId) {
-    store.visitNode(nodeId);
-    if (store.exploration.currentSceneId !== storyNode.sceneId) {
+    dispatchGameAction({ type: 'story/visitNode', nodeId });
+    if (snapshot.exploration.currentSceneId !== storyNode.sceneId) {
       requestSceneTransition(storyNode.sceneId as SceneId);
     }
     return true;
   }
 
-  const alreadyVisited = hasVisitedNode(store.playerState.visitedNodes, nodeId);
+  const alreadyVisited = hasVisitedNode(snapshot.playerState.visitedNodes, nodeId);
   if (alreadyVisited && storyNode.sceneId) {
     requestSceneTransition(storyNode.sceneId as SceneId);
     return true;

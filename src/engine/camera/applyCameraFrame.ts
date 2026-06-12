@@ -18,6 +18,12 @@ import type { CameraModeContext, CameraModeTarget } from './types';
 import { getInteractionState } from '@/components/3d/InteractionSystemBridge';
 import { InteractionState } from '@/engine/interaction/interactionMachine';
 
+/** Pre-allocated temps for camera roll (avoid 4× Vector3 alloc per frame). */
+const _rollUp = new THREE.Vector3(0, 1, 0);
+const _rollForward = new THREE.Vector3();
+const _rollRight = new THREE.Vector3();
+const _rollRolledUp = new THREE.Vector3();
+
 export interface PostModeFrameState {
   isInDialogue: boolean;
   isCutscene: boolean;
@@ -53,7 +59,7 @@ export function applyCameraFrame(
   if (!isInDialogue && !isCutscene && !isCombat) {
     const exploration = ctx.exploration;
     if (exploration && exploration.breathingIntensity > 0.001) {
-      targetPos = applyEnhancedBreathingIdle(
+      applyEnhancedBreathingIdle(
         targetPos,
         ctx.time,
         exploration.breathingIntensity,
@@ -106,13 +112,10 @@ export function applyCameraFrame(
   cam.fov = spring.fov;
 
   if (Math.abs(spring.roll) > 0.0001) {
-    const up = new THREE.Vector3(0, 1, 0);
-    const forward = new THREE.Vector3().subVectors(spring.lookAt, cam.position).normalize();
-    const right = new THREE.Vector3().crossVectors(forward, up).normalize();
-    const rolledUp = new THREE.Vector3()
-      .copy(up)
-      .applyAxisAngle(right, spring.roll);
-    cam.up.copy(rolledUp);
+    _rollForward.subVectors(spring.lookAt, cam.position).normalize();
+    _rollRight.crossVectors(_rollForward, _rollUp).normalize();
+    _rollRolledUp.copy(_rollUp).applyAxisAngle(_rollRight, spring.roll);
+    cam.up.copy(_rollRolledUp);
   } else {
     cam.up.set(0, 1, 0);
   }

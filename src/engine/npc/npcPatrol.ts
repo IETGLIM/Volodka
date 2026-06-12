@@ -31,6 +31,9 @@ export interface PatrolState {
   initialized: boolean;
   /** Random idle duration for current idle phase */
   currentIdleDuration: number;
+  /** Pre-allocated temps for updatePatrol (no per-frame Vector3 alloc). */
+  targetPos: THREE.Vector3;
+  direction: THREE.Vector3;
 }
 
 /** Create a new patrol state starting at the first waypoint */
@@ -48,6 +51,8 @@ export function createPatrolState(
     targetRotationY: 0,
     initialized: true,
     currentIdleDuration: randomIdleDuration(),
+    targetPos: new THREE.Vector3(startPos[0], startPos[1], startPos[2]),
+    direction: new THREE.Vector3(),
   };
 }
 
@@ -97,31 +102,30 @@ export function updatePatrol(
 
       // Calculate facing direction toward next waypoint
       const target = waypoints[nextIndex];
-      const targetPos = new THREE.Vector3(target[0], target[1], target[2]);
-      state.targetRotationY = calculateFacingAngle(state.position, targetPos);
+      state.targetPos.set(target[0], target[1], target[2]);
+      state.targetRotationY = calculateFacingAngle(state.position, state.targetPos);
     }
   }
 
   if (state.phase === 'walking') {
     const targetWP = waypoints[state.currentWaypointIndex];
-    const targetPos = new THREE.Vector3(targetWP[0], targetWP[1], targetWP[2]);
-    const direction = new THREE.Vector3().subVectors(targetPos, state.position);
-    const distance = direction.length();
+    state.targetPos.set(targetWP[0], targetWP[1], targetWP[2]);
+    state.direction.subVectors(state.targetPos, state.position);
+    const distance = state.direction.length();
 
     if (distance < ARRIVAL_THRESHOLD) {
       // Arrived at waypoint
-      state.position.copy(targetPos);
+      state.position.copy(state.targetPos);
       state.phase = 'idle';
       state.idleTimer = randomIdleDuration();
       state.currentIdleDuration = state.idleTimer;
     } else {
       // Move toward waypoint
-      direction.normalize();
       const moveDistance = Math.min(walkSpeed * delta, distance);
-      state.position.add(direction.multiplyScalar(moveDistance));
+      state.position.addScaledVector(state.direction, moveDistance / distance);
 
       // Update facing direction while walking
-      state.targetRotationY = calculateFacingAngle(state.position, targetPos);
+      state.targetRotationY = calculateFacingAngle(state.position, state.targetPos);
     }
   }
 

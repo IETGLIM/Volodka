@@ -5,19 +5,15 @@ import {
 } from './exploreHubNodes';
 import { resolveExploreHubNavigation } from './sceneExploreHubRegistry';
 
-const openNarrativeOverlay = vi.fn();
-const closeNarrativeOverlay = vi.fn();
+const dispatchGameAction = vi.fn();
 
-let mockStore = {
+let mockSnapshot = {
   showStoryOverlay: true,
-  currentNodeId: 'corridor_door',
-  narrativeKind: 'story' as const,
-  openNarrativeOverlay,
-  closeNarrativeOverlay,
 };
 
-vi.mock('@/store/gameStore', () => ({
-  getGameStore: () => mockStore,
+vi.mock('@/engine/GameActionDispatcher', () => ({
+  getGameSnapshot: () => mockSnapshot,
+  dispatchGameAction: (...args: unknown[]) => dispatchGameAction(...args),
 }));
 
 vi.mock('@/engine/guidedStory/createGuidedStoryDeps', () => ({
@@ -33,14 +29,9 @@ vi.mock('@/engine/guidedStory/createGuidedStoryDeps', () => ({
 
 describe('exploreHubNodes', () => {
   beforeEach(() => {
-    openNarrativeOverlay.mockClear();
-    closeNarrativeOverlay.mockClear();
-    mockStore = {
+    dispatchGameAction.mockClear();
+    mockSnapshot = {
       showStoryOverlay: true,
-      currentNodeId: 'corridor_door',
-      narrativeKind: 'story',
-      openNarrativeOverlay,
-      closeNarrativeOverlay,
     };
   });
 
@@ -52,15 +43,13 @@ describe('exploreHubNodes', () => {
 
   it('closes narrative overlay on physical scene enter', () => {
     syncNarrativeOnSceneEnter('volodka_corridor');
-    expect(closeNarrativeOverlay).toHaveBeenCalled();
-    expect(openNarrativeOverlay).not.toHaveBeenCalled();
+    expect(dispatchGameAction).toHaveBeenCalledWith({ type: 'story/closeNarrativeOverlay' });
   });
 
   it('does nothing when overlay is already closed', () => {
-    mockStore.showStoryOverlay = false;
+    mockSnapshot.showStoryOverlay = false;
     syncNarrativeOnSceneEnter('home_evening');
-    expect(closeNarrativeOverlay).not.toHaveBeenCalled();
-    expect(openNarrativeOverlay).not.toHaveBeenCalled();
+    expect(dispatchGameAction).not.toHaveBeenCalled();
   });
 });
 

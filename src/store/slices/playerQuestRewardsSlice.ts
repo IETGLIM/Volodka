@@ -14,20 +14,18 @@ import {
   getGiftReactionText,
 } from '@/data/gameDataLoader';
 import { eventBus } from '@/engine/EventBus';
-import { clamp, pushNotification } from '../shared';
 import {
   applyXpToProgression,
   formatLevelUpMessage,
   scheduleLevelUpEmit,
   type LevelUpEvent,
 } from '../levelUpHelpers';
-import { applyFairmathRelation } from '@/shared/fairmath';
 import {
   findInventoryItemIndex,
   removeInventoryItem,
 } from '../inventoryHelpers';
 import type { GameStoreState } from '../types';
-import { pickPlayerQuestRewardsCrossActions, readPlayerFromWorld } from '../crossSliceReads';
+import { pickPlayerQuestRewardsCrossActions } from '../crossSliceReads';
 import {
   batchAddCredits,
   batchAddEnergy,
@@ -37,10 +35,6 @@ import {
   batchAddStress,
   batchAddXp,
   batchSetFlag,
-  createRewardBatchDraft,
-  createRewardBatchSideEffects,
-  finalizeRewardBatch,
-  flushRewardBatchSideEffects,
 } from '../rewardBatchHelpers';
 import {
   computeQuestCreditReward,
@@ -69,9 +63,10 @@ export const createPlayerQuestRewardsSlice: StateCreator<
   PlayerQuestRewardsSlice
 > = (set, get) => ({
   giftItemToNPC: (itemId, npcId) => {
+    const cross = pickPlayerQuestRewardsCrossActions(get);
     const npcDef = findNpcById(npcId);
     if (!npcDef) {
-      pickPlayerQuestRewardsCrossActions(get).pushNotification('stress', 'Персонаж не найден');
+      cross.pushNotification('stress', 'Персонаж не найден');
       return null;
     }
 
@@ -82,112 +77,79 @@ export const createPlayerQuestRewardsSlice: StateCreator<
     const npcName = npcDef.name;
     const reactionText = getGiftReactionText(npcName, preference);
 
-    let giftResult: GiftPreference | null = null;
+    const state = get();
+    const invIdx = findInventoryItemIndex(state.playerState.inventory, itemId);
+    if (invIdx < 0) {
+      cross.pushNotification('stress', 'У вас нет этого предмета');
+      return null;
+    }
+
+    const invItem = state.playerState.inventory[invIdx];
+    if (invItem.quantity < GIFT_QUANTITY) {
+      cross.pushNotification('stress', 'Недостаточно предметов');
+      return null;
+    }
+
+    const itemDef = getItemDefinition(itemId);
+    if (itemDef?.questRelated) {
+      cross.pushNotification('stress', 'Нельзя подарить сюжетный предмет');
+      return null;
+    }
+
+    const { inventory, removed } = removeInventoryItem(
+      state.playerState.inventory,
+      itemId,
+      GIFT_QUANTITY,
+    );
+    if (!removed) {
+      return null;
+    }
+
+    let progression = state.playerState.progression;
     let levelUpInfo: LevelUpEvent | null = null;
 
-    set((state) => {
-      const invIdx = findInventoryItemIndex(state.playerState.inventory, itemId);
-      if (invIdx < 0) {
-        return {
-          notifications: pushNotification(state.notifications, 'stress', 'У вас нет этого предмета'),
-        };
+    if (xpReward > 0) {
+      const xpResult = applyXpToProgression(progression, xpReward);
+      progression = xpResult.progression;
+      if (xpResult.levelUp) {
+        levelUpInfo = xpResult.levelUp;
       }
+    }
 
-      const invItem = state.playerState.inventory[invIdx];
-      if (invItem.quantity < GIFT_QUANTITY) {
-        return {
-          notifications: pushNotification(state.notifications, 'stress', 'Недостаточно предметов'),
-        };
-      }
-
-      const itemDef = getItemDefinition(itemId);
-      if (itemDef?.questRelated) {
-        return {
-          notifications: pushNotification(state.notifications, 'stress', 'Нельзя подарить сюжетный предмет'),
-        };
-      }
-
-      const { inventory, removed } = removeInventoryItem(
-        state.playerState.inventory,
-        itemId,
-        GIFT_QUANTITY,
-      );
-      if (!removed) {
-        return state;
-      }
-
-      const { npcAffinity: worldAffinity, npcRelations: worldRelations } = readPlayerFromWorld(state);
-      const currentAffinity = worldAffinity[npcId] ?? 0;
-      const npcAffinity = {
-        ...worldAffinity,
-        [npcId]: clamp(currentAffinity + affinityChange, -100, 100),
-      };
-
-      let npcRelations = worldRelations;
-      if (relationDelta !== 0) {
-        const relations = [...worldRelations];
-        const relIdx = relations.findIndex((r) => r.npcId === npcId);
-        if (relIdx >= 0) {
-          const updated = { ...relations[relIdx] };
-          updated.value = clamp(applyFairmathRelation(updated.value, relationDelta), 0, 100);
-          relations[relIdx] = updated;
-        } else {
-          relations.push({
-            npcId,
-            value: clamp(applyFairmathRelation(50, relationDelta), 0, 100),
-          });
-        }
-        npcRelations = relations;
-      }
-
-      let notifications = pushNotification(state.notifications, 'skill', reactionText);
-      let progression = state.playerState.progression;
-
-      if (xpReward > 0) {
-        const xpResult = applyXpToProgression(progression, xpReward);
-        progression = xpResult.progression;
-        if (xpResult.levelUp) {
-          levelUpInfo = xpResult.levelUp;
-          notifications = pushNotification(
-            notifications,
-            'skill',
-            formatLevelUpMessage(
-              xpResult.levelUp.newLevel,
-              xpResult.levelUp.levelsGained,
-              xpResult.levelUp.perkPointsGained,
-            ),
-          );
-        }
-      }
-
-      giftResult = preference;
-
-      return {
-        playerState: {
-          ...state.playerState,
-          inventory,
-          progression,
-        },
-        npcAffinity,
-        npcRelations,
-        notifications,
-      };
+    set({
+      playerState: {
+        ...state.playerState,
+        inventory,
+        progression,
+      },
     });
 
-    if (!giftResult) return null;
+    if (relationDelta !== 0) {
+      cross.setNpcRelation(npcId, relationDelta);
+    }
+    cross.adjustNpcAffinity(npcId, affinityChange);
+    cross.pushNotification('skill', reactionText);
+
+    if (levelUpInfo) {
+      cross.pushNotification(
+        'skill',
+        formatLevelUpMessage(
+          levelUpInfo.newLevel,
+          levelUpInfo.levelsGained,
+          levelUpInfo.perkPointsGained,
+        ),
+      );
+      scheduleLevelUpEmit(levelUpInfo);
+    }
 
     eventBus.emit('npc:gift', {
       npcId,
       itemId,
-      preference: giftResult,
+      preference,
       affinityChange,
     });
 
-    if (levelUpInfo) {
-      scheduleLevelUpEmit(levelUpInfo);
-    }
-
-    return giftResult;
+    return preference;
   },
 
   completeQuestAndApplyRewards: (questId) => {
@@ -196,31 +158,10 @@ export const createPlayerQuestRewardsSlice: StateCreator<
 
     const xpGained = getDefaultQuestXp(questDef.questType);
     const creditsGained = computeQuestCreditReward(questDef);
-
     const appliedRewards: string[] = [];
-    const sideEffects = createRewardBatchSideEffects();
+    const cross = pickPlayerQuestRewardsCrossActions(get);
 
-    set((state) => {
-      const draft = createRewardBatchDraft(state.playerState, state.notifications);
-
-      const { quests: worldQuests } = readPlayerFromWorld(state);
-      const quests = worldQuests.map((q) => {
-        if (q.questId !== questId) return q;
-        return {
-          ...q,
-          status: 'completed' as const,
-          objectives: Object.fromEntries(
-            Object.keys(q.objectives).map((k) => [k, true]),
-          ),
-        };
-      });
-
-      draft.notifications = pushNotification(
-        draft.notifications,
-        'quest',
-        `Задание выполнено: ${questDef.title}`,
-      );
-
+    get().applyPlayerRewardBatch((draft, sideEffects) => {
       const rewards = questDef.rewards ?? [];
       for (const reward of rewards) {
         switch (reward.type) {
@@ -283,18 +224,9 @@ export const createPlayerQuestRewardsSlice: StateCreator<
 
       batchAddCredits(draft, creditsGained);
       appliedRewards.push(`Кредиты за задание +${creditsGained}`);
-
-      finalizeRewardBatch(draft, sideEffects);
-
-      return {
-        quests,
-        playerState: draft.playerState,
-        notifications: draft.notifications,
-      };
     });
 
-    eventBus.emit('quest:completed', { questId, npcId: questDef.questGiverNpcId });
-    flushRewardBatchSideEffects(sideEffects);
+    cross.completeQuest(questId);
 
     eventBus.emit('quest:reward_applied', {
       questId,

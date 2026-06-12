@@ -43,6 +43,32 @@ describe('ObjectPool', () => {
     expect(factory).toHaveBeenCalledTimes(1);
     expect(b).toBe(a);
   });
+
+  it('caps available[] growth and disposes overflow on release', () => {
+    let nextId = 1;
+    const factory = vi.fn(() => ({ id: nextId++ }));
+    const disposed: number[] = [];
+    const pool = new ObjectPool(
+      factory,
+      undefined,
+      0,
+      2,
+      (item) => {
+        disposed.push(item.id);
+      },
+    );
+
+    const a = pool.acquire();
+    const b = pool.acquire();
+    const c = pool.acquire();
+    pool.release(a);
+    pool.release(b);
+    pool.release(c);
+
+    expect(pool.size).toBe(2);
+    expect(pool.capacity).toBe(2);
+    expect(disposed).toEqual([3]);
+  });
 });
 
 describe('threeLodGroup', () => {

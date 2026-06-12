@@ -1,6 +1,6 @@
 import { getQuestDefinitions } from '@/data/gameDataLoader';
 import { NPC_QUEST_BARKS } from '@/data/npcQuestBarks';
-import { useGameStore } from '@/store/gameStore';
+import { getGameSnapshot } from '@/engine/GameActionDispatcher';
 import type { QuestDefinition } from '@/shared/types/game';
 
 function firstIncompleteObjective(
@@ -12,7 +12,7 @@ function firstIncompleteObjective(
 
 /** Proximity bark hint when the player has an active side quest involving this NPC. */
 export function resolveNpcQuestBark(npcId: string): string | null {
-  const quests = useGameStore.getState().quests;
+  const quests = getGameSnapshot().quests;
   const definitions = getQuestDefinitions();
 
   for (const entry of NPC_QUEST_BARKS[npcId] ?? []) {
