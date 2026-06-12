@@ -12,6 +12,7 @@ import { eventBus } from '@/engine/EventBus';
 import { dispatchGameAction, getGameSnapshot } from '@/engine/GameActionDispatcher';
 import type { SceneId } from '@/shared/types/game';
 import { syncNarrativeOnSceneEnter } from '@/shared/exploreHubNodes';
+import { triggerSceneEntryStoryIfNeeded } from '@/engine/interaction/narrativeOpenHelpers';
 import { flushDeferredCombatStart } from './combatStartGate';
 import { runGlobalSceneUnload } from './GlobalCleanupService';
 
@@ -66,6 +67,7 @@ export function performSceneTransition(payload: SceneTransitionPayload): void {
       spawnAt,
     });
     syncNarrativeOnSceneEnter(targetScene);
+    triggerSceneEntryStoryIfNeeded(targetScene, fromSceneId);
 
     eventBus.emit('scene:enter', {
       sceneId: targetScene,

@@ -315,13 +315,15 @@ export function PhysicsPlayer({
     // Narrative overlay (showStoryOverlay) and tutorials use the isLocked branch below —
     // resetting warmup for those caused infinite warmup (player frozen, camera stuck).
     const storeSnapshot = getGameStore();
-    const shouldHoldWarmup =
-      readGamePhase(storeSnapshot) === 'cutscene' || readGamePhase(storeSnapshot) === 'intro';
+    const phase = readGamePhase(storeSnapshot);
+    const inCinematic = phase === 'cutscene' || phase === 'intro';
 
-    if (shouldHoldWarmup) {
+    if (inCinematic) {
       warmupFramesRef.current = 0;
+    } else if (warmupFramesRef.current < 10) {
+      warmupFramesRef.current++;
     }
-    warmupFramesRef.current++;
+
     if (warmupFramesRef.current < 10) {
       vel.set(0, 0, 0);
       const storePos = getGameStore().exploration.playerPosition;
@@ -334,8 +336,6 @@ export function PhysicsPlayer({
       currentAnimRef.current = 'idle';
       return;
     }
-
-    // ─── Safety: if player fell below the scene floor, snap back ───
     // If the RigidBody drops well below floorY, teleport back to floor level.
     const currentPos = rb.translation();
     if (currentPos.y < floorY - 0.1) {
@@ -795,7 +795,7 @@ export function PhysicsPlayer({
         vel.y = 0;
       }
     } else if (horizontalSpeed > 0.5) {
-      currentAnimRef.current = horizontalSpeed > WALK_SPEED * 0.8 ? 'run' : 'walk';
+      currentAnimRef.current = running ? 'run' : 'walk';
     } else {
       currentAnimRef.current = 'idle';
     }
@@ -803,7 +803,8 @@ export function PhysicsPlayer({
     // ─── Footsteps ───
     if (isMoving && isGroundedRef.current) {
       footstepTimerRef.current += dt;
-      if (footstepTimerRef.current >= FOOTSTEP_INTERVAL) {
+      const stepInterval = running ? FOOTSTEP_INTERVAL * 0.65 : FOOTSTEP_INTERVAL;
+      if (footstepTimerRef.current >= stepInterval) {
         footstepTimerRef.current = 0;
         const pos = rb.translation();
         eventBus.emit('exploration:footstep', {

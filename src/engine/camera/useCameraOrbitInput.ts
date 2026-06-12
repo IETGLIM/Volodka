@@ -90,9 +90,6 @@ export function useCameraOrbitInput(
         isDraggingRef.current = true;
         lastMouseRef.current = { x: e.clientX, y: e.clientY };
         e.preventDefault();
-      } else if (e.button === 0 && isCanvasAreaTarget(e.target)) {
-        isDraggingRef.current = true;
-        lastMouseRef.current = { x: e.clientX, y: e.clientY };
       }
     };
 

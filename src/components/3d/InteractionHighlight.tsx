@@ -21,14 +21,12 @@ interface SlotResources {
   group: THREE.Group;
   innerMesh: THREE.Mesh;
   outerMesh: THREE.Mesh;
-  ringMesh: THREE.Mesh;
   light: THREE.PointLight;
+  spotLight: THREE.SpotLight;
   innerMat: THREE.MeshBasicMaterial;
   outerMat: THREE.MeshBasicMaterial;
-  ringMat: THREE.MeshBasicMaterial;
   innerGeo: THREE.BoxGeometry;
   outerGeo: THREE.BoxGeometry;
-  ringGeo: THREE.RingGeometry;
 }
 
 const MAX_HIGHLIGHTS = 12;
@@ -40,7 +38,6 @@ const HIGHLIGHT_COLOR = '#00ffee';
 function createSlot(): SlotResources {
   const innerGeo = new THREE.BoxGeometry(1, 1, 1);
   const outerGeo = new THREE.BoxGeometry(1, 1, 1);
-  const ringGeo = new THREE.RingGeometry(0.4, 0.75, 32);
 
   const innerMat = new THREE.MeshBasicMaterial({
     color: HIGHLIGHT_COLOR,
@@ -56,52 +53,38 @@ function createSlot(): SlotResources {
     side: THREE.BackSide,
     depthWrite: false,
   });
-  const ringMat = new THREE.MeshBasicMaterial({
-    color: HIGHLIGHT_COLOR,
-    transparent: true,
-    opacity: 0,
-    side: THREE.DoubleSide,
-    depthWrite: false,
-  });
 
   const innerMesh = new THREE.Mesh(innerGeo, innerMat);
   const outerMesh = new THREE.Mesh(outerGeo, outerMat);
-  const ringMesh = new THREE.Mesh(ringGeo, ringMat);
-  ringMesh.rotation.x = -Math.PI / 2;
-  ringMesh.position.y = 0.02;
 
   const light = new THREE.PointLight(HIGHLIGHT_COLOR, 0, 4, 2);
   light.position.set(0, 0.5, 0);
 
+  const spotLight = new THREE.SpotLight(HIGHLIGHT_COLOR, 0, 5, 0.45, 0.85, 1);
+  spotLight.position.set(0, 2.2, 0.2);
+  const spotTarget = new THREE.Object3D();
+  spotTarget.position.set(0, 0, 0);
+  spotLight.target = spotTarget;
+
   const group = new THREE.Group();
   group.add(innerMesh);
   group.add(outerMesh);
-  group.add(ringMesh);
   group.add(light);
+  group.add(spotLight);
+  group.add(spotTarget);
   group.visible = false;
 
   return {
     group,
     innerMesh,
     outerMesh,
-    ringMesh,
     light,
+    spotLight,
     innerMat,
     outerMat,
-    ringMat,
     innerGeo,
     outerGeo,
-    ringGeo,
   };
-}
-
-function configureRingGeometry(slot: SlotResources, size: [number, number, number]) {
-  const maxDim = Math.min(Math.max(size[0], size[2]), 1.2);
-  const innerR = Math.max(maxDim / 2 - 0.08, 0.28);
-  const outerR = Math.min(maxDim / 2 + 0.12, 0.48);
-  slot.ringGeo.dispose();
-  slot.ringGeo = new THREE.RingGeometry(innerR, outerR, 32);
-  slot.ringMesh.geometry = slot.ringGeo;
 }
 
 function applyHighlightLayout(slot: SlotResources, size: [number, number, number]) {
@@ -116,15 +99,15 @@ function applyHighlightLayout(slot: SlotResources, size: [number, number, number
 
   slot.light.position.set(0, centerY, 0);
   slot.light.distance = Math.max(w, d) + 4;
+  slot.spotLight.position.set(0, centerY + Math.max(h, 1.2), 0.15);
+  slot.spotLight.target.position.set(0, centerY, 0);
 }
 
 function disposeSlot(slot: SlotResources) {
   slot.innerGeo.dispose();
   slot.outerGeo.dispose();
-  slot.ringGeo.dispose();
   slot.innerMat.dispose();
   slot.outerMat.dispose();
-  slot.ringMat.dispose();
 }
 
 /**
@@ -149,8 +132,8 @@ export function InteractionHighlight() {
       slot.group.visible = false;
       slot.innerMat.opacity = 0;
       slot.outerMat.opacity = 0;
-      slot.ringMat.opacity = 0;
       slot.light.intensity = 0;
+      slot.spotLight.intensity = 0;
     }
   });
 
@@ -186,7 +169,6 @@ export function InteractionHighlight() {
 
       const slot = slots[slotIndex];
       slot.group.position.set(...position);
-      configureRingGeometry(slot, size);
       applyHighlightLayout(slot, size);
       slot.group.visible = true;
     };
@@ -218,8 +200,8 @@ export function InteractionHighlight() {
         slot.group.visible = false;
         slot.innerMat.opacity = 0;
         slot.outerMat.opacity = 0;
-        slot.ringMat.opacity = 0;
         slot.light.intensity = 0;
+        slot.spotLight.intensity = 0;
         continue;
       }
 
@@ -243,8 +225,8 @@ export function InteractionHighlight() {
       );
       slot.innerMat.opacity = opacity * 0.7;
       slot.outerMat.opacity = opacity * 0.12;
-      slot.ringMat.opacity = opacity * 0.5;
       slot.light.intensity = glowIntensity;
+      slot.spotLight.intensity = glowIntensity * 0.85;
     }
   });
 

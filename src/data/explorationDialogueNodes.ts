@@ -85,7 +85,7 @@ export const EXPLORATION_DIALOGUE_NODES: Record<string, DialogueNode> = {
         text: 'Поздороваться и осмотреться',
         next: null,
         effects: [
-          { type: 'visitStoryNode', nodeId: 'corridor_explore_mode' },
+          { type: 'visitStoryNode', nodeId: 'corridor_door' },
           { type: 'npcChange', npcId: 'vera', npcChange: { relation: 3 } },
         ],
       },

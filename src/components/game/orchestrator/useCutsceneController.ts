@@ -5,7 +5,8 @@ import { useGamePrimitive } from '@/store/selectors';
 import { eventBus } from '@/engine/EventBus';
 import { audioEngine } from '@/engine/AudioEngine';
 import { getCutsceneForNode } from '@/data/cutscenes';
-import { openNarrativeOverlay } from '@/engine/scene/narrativeOverlay';
+import { closeNarrativeOverlay } from '@/engine/scene/narrativeOverlay';
+import { openNarrativeAfterCutscene } from '@/engine/scene/postCutsceneNarrative';
 import { clearGameplayPhaseFlags, readGamePhase } from '@/shared/gamePhase';
 import {
   isIntroWakeupCutscene,
@@ -34,7 +35,7 @@ export function useCutsceneController() {
     eventBus.emit('camera:recenter', {});
 
     if (store.currentNodeId && store.narrativeKind) {
-      openNarrativeOverlay(store.currentNodeId, store.narrativeKind);
+      openNarrativeAfterCutscene(store.currentNodeId, store.narrativeKind);
     }
     return true;
   }, [cancelCutsceneSession]);
@@ -62,6 +63,8 @@ export function useCutsceneController() {
     if (isIntroWakeupCutscene(store.activeCutsceneId)) return;
 
     const generation = cutsceneSessionRef.current.begin();
+
+    closeNarrativeOverlay();
 
     if (!store.narrativeKind) {
       store.setNarrativeKind('story');
@@ -100,21 +103,32 @@ export function useCutsceneController() {
     }
 
     const totalDuration = cutscene.textDurationMs + 2000;
+    let finished = false;
+    let unsubOverlayEnd: (() => void) | null = null;
 
-    cutsceneSessionRef.current.schedule(() => {
+    const finishCutsceneBeat = () => {
+      if (finished || !cutsceneSessionRef.current.isCurrent(generation)) return;
+      finished = true;
+      unsubOverlayEnd?.();
+
       const currentStore = useGameStore.getState();
-      if (!cutsceneSessionRef.current.isCurrent(generation)) return;
       if (currentStore.activeCutsceneId) {
         currentStore.setCutscene(null, []);
         clearGameplayPhaseFlags(currentStore);
         setCinematicPresentationMode('first_person');
-        eventBus.emit('cutscene:overlay_end', {});
         eventBus.emit('camera:cutscene_end', {});
-        if (currentStore.currentNodeId && currentStore.narrativeKind) {
-          openNarrativeOverlay(currentStore.currentNodeId, currentStore.narrativeKind);
-        }
       }
-    }, totalDuration);
+      if (currentStore.currentNodeId) {
+        openNarrativeAfterCutscene(
+          currentStore.currentNodeId,
+          currentStore.narrativeKind ?? 'story',
+        );
+      }
+    };
+
+    unsubOverlayEnd = eventBus.on('cutscene:overlay_end', finishCutsceneBeat);
+
+    cutsceneSessionRef.current.schedule(finishCutsceneBeat, totalDuration + 300);
   }, [currentNodeId]);
 
   return { skipActiveCutscene };

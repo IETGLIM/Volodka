@@ -182,6 +182,10 @@ export function getExploreHubForScene(sceneId: SceneId): string | undefined {
   return SCENE_TO_EXPLORE_HUB[sceneId];
 }
 
+export function getExploreHubDefForScene(sceneId: SceneId): SceneExploreHubDef | undefined {
+  return SCENE_EXPLORE_HUB_DEFS.find((def) => def.sceneId === sceneId);
+}
+
 export function getSceneForExploreHub(hubId: string): SceneId | undefined {
   return EXPLORE_HUB_TO_SCENE[hubId];
 }

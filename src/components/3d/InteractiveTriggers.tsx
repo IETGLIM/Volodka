@@ -1,5 +1,5 @@
 
-/* ─── Volodka RPG – Interactive triggers with glow ring, particle burst, pulse tooltip,
+/* ─── Volodka RPG – Interactive triggers with god-ray highlight, particle burst, pulse tooltip,
      NPC staged interaction routing, and centralized prompt stacking ─── */
 
 import { useRef, useState, useEffect, useCallback, useMemo } from 'react';
@@ -27,13 +27,23 @@ import {
 } from '@/engine/interaction/interactionTargetQuery';
 import { requestSceneTransition } from '@/engine/scene/sceneTransition';
 import { sharedCameraYawRef } from '@/engine/PlayerRotationState';
+import { ProximityGodRay } from './ProximityGodRay';
 
 /** Maximum number of visible [E] prompts at once */
 const MAX_VISIBLE_PROMPTS = 2;
 
-/** Fixed foot-ring for proximity highlight — not scaled to zone size */
+/** Fixed god-ray height for proximity highlight — not scaled to zone size */
 /** Scene exit proximity — matches SceneExitIndicator */
 const EXIT_PROXIMITY_RANGE = 2.5;
+const LMB_CLICK_DRAG_THRESHOLD_PX = 12;
+
+function isCanvasAreaTarget(target: EventTarget | null): boolean {
+  const el = target as HTMLElement;
+  if (el.tagName === 'CANVAS') return true;
+  return !el.closest(
+    '[data-exploration-ui], [data-panel], dialog, [role="dialog"], button, a, input, textarea',
+  );
+}
 
 /** Maximum number of sparkle particles per trigger zone (InstancedMesh pool size) */
 const MAX_PARTICLES = 8;
@@ -238,6 +248,39 @@ export function InteractiveTriggers({
     return () => {
       window.removeEventListener('keydown', onKeyDown, true);
       unsub();
+    };
+  }, [firePrimaryInteraction]);
+
+  // Left-click on canvas — same interaction router as E (short click, not drag).
+  useEffect(() => {
+    let downX = 0;
+    let downY = 0;
+    let pointerDown = false;
+
+    const onMouseDown = (e: MouseEvent) => {
+      if (e.button !== 0) return;
+      if (!isCanvasAreaTarget(e.target)) return;
+      pointerDown = true;
+      downX = e.clientX;
+      downY = e.clientY;
+    };
+
+    const onMouseUp = (e: MouseEvent) => {
+      if (e.button !== 0 || !pointerDown) return;
+      pointerDown = false;
+      const dx = e.clientX - downX;
+      const dy = e.clientY - downY;
+      if (dx * dx + dy * dy > LMB_CLICK_DRAG_THRESHOLD_PX * LMB_CLICK_DRAG_THRESHOLD_PX) return;
+      if (firePrimaryInteraction()) {
+        e.preventDefault();
+      }
+    };
+
+    window.addEventListener('mousedown', onMouseDown);
+    window.addEventListener('mouseup', onMouseUp);
+    return () => {
+      window.removeEventListener('mousedown', onMouseDown);
+      window.removeEventListener('mouseup', onMouseUp);
     };
   }, [firePrimaryInteraction]);
 
@@ -457,7 +500,7 @@ export function InteractiveTriggers({
                     fontWeight: 'bold',
                     fontSize: isPrimary ? '14px' : '12px',
                   }}>
-                    [E]
+                    [ЛКМ / E]
                   </span>
                   <span style={{
                     fontFamily: '"Georgia", "Times New Roman", serif',
@@ -563,8 +606,6 @@ function NPCProximityTrigger({
   const promptId = `npc_${npcId}`;
   const [showIndicator, setShowIndicator] = useState(false);
   const showIndicatorRef = useRef(false);
-  const npcLightRef = useRef<THREE.PointLight>(null);
-  const pulsePhaseRef = useRef(0);
 
   // Pre-allocated temp Vector3 — avoids per-frame allocation (P0-2.2)
   const tempVecRef = useRef(new THREE.Vector3());
@@ -599,12 +640,6 @@ function NPCProximityTrigger({
       });
     }
 
-    if (isNear) {
-      pulsePhaseRef.current += delta * 2.5;
-      if (npcLightRef.current) {
-        npcLightRef.current.intensity = 0.24 + Math.sin(pulsePhaseRef.current) * 0.1;
-      }
-    }
   });
 
   // E-key routing is centralized in InteractiveTriggers (capture-phase listener).
@@ -619,9 +654,7 @@ function NPCProximityTrigger({
   // Subtle proximity light when in range
   return (
     <group position={position}>
-      {showIndicator && (
-        <pointLight ref={npcLightRef} color="#ffb828" intensity={0.28} distance={2.0} position={[0, 0.55, 0]} />
-      )}
+      <ProximityGodRay active={showIndicator} color="#ffb828" beamHeight={2.6} baseY={0.2} />
     </group>
   );
 }
@@ -661,7 +694,6 @@ function TriggerZoneComponent({
 
   // Pulse animation — updated imperatively via material ref
   const pulsePhaseRef = useRef(0);
-  const proximityLightRef = useRef<THREE.PointLight>(null);
 
   // Brief flash on E press
   const outlineFlashRef = useRef(false);
@@ -733,16 +765,9 @@ function TriggerZoneComponent({
       });
     }
 
-    // Pulse animation for glow ring — imperative update via material refs (P0-2.3)
+    // Cooldown timer while near interactables
     if (isNear) {
       pulsePhaseRef.current += delta * 3;
-    }
-    const isFlashing = outlineFlashRef.current;
-
-    if (proximityLightRef.current) {
-      proximityLightRef.current.intensity = isNear
-        ? (isFlashing ? 0.55 : 0.24 + Math.sin(pulsePhaseRef.current) * 0.1)
-        : 0;
     }
 
     // Cooldown
@@ -882,15 +907,12 @@ function TriggerZoneComponent({
 
   return (
     <group position={zone.position}>
-      {showIndicator && (
-        <pointLight
-          ref={proximityLightRef}
-          color="#88eeff"
-          intensity={0.28}
-          distance={2.2}
-          position={[0, Math.max(zone.size[1] * 0.45, 0.5), 0]}
-        />
-      )}
+      <ProximityGodRay
+        active={showIndicator}
+        color="#88eeff"
+        beamHeight={Math.max(zone.size[1] + 1.6, 2.2)}
+        baseY={Math.max(zone.size[1] * 0.2, 0.35)}
+      />
 
       {/* Sparkle particles — single InstancedMesh instead of 8 separate meshes (P0-2.3) */}
       <instancedMesh

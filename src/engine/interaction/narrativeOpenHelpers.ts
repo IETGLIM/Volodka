@@ -5,15 +5,37 @@ import {
   getStoryNodes,
 } from '@/data/gameDataLoader';
 import { dispatchGameAction, getGameSnapshot } from '@/engine/GameActionDispatcher';
+import { getGameStore } from '@/store/gameStore';
 import { requestSceneTransition } from '@/engine/scene/sceneTransition';
 import { openNarrativeOverlay } from '@/engine/scene/narrativeOverlay';
 import { hasVisitedNode } from '@/store/visitedNodesIndex';
 import { getCutsceneForNode } from '@/data/cutscenes';
-import { SCENE_ENTRY_NODE_TO_HUB } from '@/shared/sceneExploreHubRegistry';
+import {
+  SCENE_ENTRY_NODE_TO_HUB,
+  getExploreHubDefForScene,
+} from '@/shared/sceneExploreHubRegistry';
 import { devWarn } from '@/shared/utils/devLog';
 import type { SceneId } from '@/shared/types/game';
+import { closeNarrativeOverlay } from '@/engine/scene/narrativeOverlay';
 
 type NarrativeKind = 'dialogue' | 'story';
+
+/** Entry beats that only fire from specific source scenes (avoid replay when backtracking). */
+const ENTRY_BEAT_SOURCE_SCENES: Partial<Record<string, readonly SceneId[]>> = {
+  corridor_door: ['volodka_room'],
+};
+
+function isNaturalEntryTransition(
+  entryNodeId: string,
+  fromSceneId: SceneId,
+  toSceneId: SceneId,
+): boolean {
+  const allowedFrom = ENTRY_BEAT_SOURCE_SCENES[entryNodeId];
+  if (allowedFrom) {
+    return allowedFrom.includes(fromSceneId);
+  }
+  return fromSceneId !== toSceneId;
+}
 
 function userMessageForKind(kind: NarrativeKind): string {
   return kind === 'dialogue' ? 'Диалог недоступен' : 'Сцена недоступна';
@@ -146,4 +168,53 @@ export async function openLinkedStory(nodeId: string): Promise<boolean> {
 
   openNarrativeOverlay(nodeId, 'story');
   return true;
+}
+
+/**
+ * After a physical scene transition, play door/arrival entry beats (e.g. corridor_door cutscene)
+ * when the player walked through a scene exit instead of using a linked trigger zone.
+ */
+export function triggerSceneEntryStoryIfNeeded(
+  toSceneId: SceneId,
+  fromSceneId: SceneId,
+): void {
+  const store = getGameStore();
+  if (store.activeCutsceneId) return;
+
+  const hubDef = getExploreHubDefForScene(toSceneId);
+  if (!hubDef || hubDef.entryNodeIds.length === 0) return;
+
+  for (const entryNodeId of hubDef.entryNodeIds) {
+    if (!isNaturalEntryTransition(entryNodeId, fromSceneId, toSceneId)) {
+      continue;
+    }
+
+    const cutscene = getCutsceneForNode(entryNodeId);
+    const cutscenePending =
+      cutscene != null && !store.triggeredCutscenes.includes(cutscene.id);
+
+    if (store.currentNodeId === entryNodeId) {
+      if (cutscenePending) {
+        closeNarrativeOverlay();
+      }
+      return;
+    }
+
+    const hubId = SCENE_ENTRY_NODE_TO_HUB[entryNodeId];
+    const onHub = hubId != null && store.currentNodeId === hubId;
+    const visited = hasVisitedNode(store.playerState.visitedNodes, entryNodeId);
+
+    if (!visited || cutscenePending) {
+      void openLinkedStory(entryNodeId).catch((error) => {
+        devWarn('[narrative] triggerSceneEntryStoryIfNeeded failed:', entryNodeId, error);
+      });
+      return;
+    }
+
+    if (hubId && !onHub) {
+      dispatchGameAction({ type: 'story/visitNode', nodeId: hubId });
+      dispatchGameAction({ type: 'story/setCurrentNodeId', nodeId: hubId });
+      return;
+    }
+  }
 }
