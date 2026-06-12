@@ -41,6 +41,7 @@ export {
   GOLDEN_PATH_STORY_SPINE,
   GOLDEN_PATH_BRANCH_HINTS,
   GOLDEN_PATH_QUEST_SPINE,
+  ACT1_SOLNYSH_QUEST_SPINE,
 } from './goldenPath';
 
 // Trigger zones

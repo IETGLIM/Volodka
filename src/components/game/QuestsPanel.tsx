@@ -18,6 +18,7 @@ import {
   getQuestProgress,
   areDependenciesMet,
 } from '@/store/selectors/questSelectors';
+import { GOLDEN_PATH_QUEST_SPINE, ACT1_SOLNYSH_QUEST_SPINE } from '@/data/goldenPath';
 import { getGameStore } from '@/store/gameStore';
 import { useQuests } from '@/store/selectors';
 import { Badge } from '@/components/ui/badge';
@@ -212,6 +213,17 @@ export function QuestsPanel({ open, onClose }: QuestsPanelProps) {
                                     <span className="text-sm text-slate-100 font-medium truncate">{def.title}</span>
                                   </button>
                                   <div className="flex items-center gap-2 shrink-0 ml-2">
+                                    {ACT1_SOLNYSH_QUEST_SPINE.includes(qs.questId) && (
+                                      <Badge variant="outline" className="text-[10px] border-amber-500/40 text-amber-300/90">
+                                        ☀️ Алина
+                                      </Badge>
+                                    )}
+                                    {GOLDEN_PATH_QUEST_SPINE.includes(qs.questId)
+                                      && !ACT1_SOLNYSH_QUEST_SPINE.includes(qs.questId) && (
+                                      <Badge variant="outline" className="text-[10px] border-cyan-600/40 text-cyan-300/80">
+                                        сюжет
+                                      </Badge>
+                                    )}
                                     <DifficultyBadge difficulty={def.difficulty} />
                                     {hasPoemBypass(qs.questId) && (
                                       <Sparkles className="size-3.5 text-purple-400" />

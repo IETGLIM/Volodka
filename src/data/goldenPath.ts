@@ -434,6 +434,12 @@ export const GOLDEN_PATH_BRANCH_HINTS: Record<string, string> = {
   start: 'Проверь терминал — сообщение гильдии важнее, чем кажется.',
   room_table: 'Прочитай стихотворение прежде чем отвечать гильдии.',
   corridor_door: 'Поздоровайся с Солныш — она ждёт у зеркала.',
+  corridor_explore_mode: 'Поговори с Солныш или зайди к ней с Лёней — линия друга с детства.',
+  solnysh_corridor_talk: 'Успокой Алину — ей нужна поддержка лучшего друга.',
+  solnysh_door: 'Зайди в комнату с коврами — там кофе, мольберт и Умка.',
+  solnysh_room_talk: 'Выслушай Солныш — или предложи вино на крыше, если нашёл бутылку.',
+  solnysh_roof_arrival: 'Побудь рядом — иногда молчание важнее слов.',
+  solnysh_relocation_talk: 'Поддержи их решение о переезде — ты для неё якорь.',
   kitchen_window: 'Иди в кафе — дорога начинается с первого шага.',
   street_bench_view: 'Подойди к незнакомке — Виктория знает правду.',
   maria_curious: 'Возьми чип данных — в нём скрыто стихотворение.',
@@ -500,6 +506,16 @@ export const GOLDEN_PATH_BRANCH_HINTS: Record<string, string> = {
 };
 
 /**
+ * Act 1 side arc — Алина «Солныш», Лёня, три дружеских квеста.
+ * Tracked in GOLDEN_PATH_QUEST_SPINE for HUD/markers; not required for act advance.
+ */
+export const ACT1_SOLNYSH_QUEST_SPINE: string[] = [
+  'solnysh_comfort',
+  'solnysh_roof_wine',
+  'solnysh_relocation',
+];
+
+/**
  * GOLDEN_PATH_QUEST_SPINE — the quest backbone in canonical order.
  */
 export const GOLDEN_PATH_QUEST_SPINE: string[] = [
@@ -509,6 +525,7 @@ export const GOLDEN_PATH_QUEST_SPINE: string[] = [
   'incident_scroll_4729',
   'vault_backup_trial',
   'poetry_collection',
+  ...ACT1_SOLNYSH_QUEST_SPINE,
   // Act 2
   'network_initiation',
   'dmitry_defection',

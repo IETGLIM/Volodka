@@ -10,10 +10,13 @@ export {
   areDependenciesMet,
   getQuestMarker,
   getNextTrackedObjective,
+  getNpcQuestMarkerDisplay,
   getQuestIndicatorForNpc,
   useActiveQuests,
   useFailedQuests,
   useNextTrackedObjective,
   useQuestIndicatorForNpc,
   type QuestIndicatorType,
+  type NpcQuestMarkerDisplay,
+  type NpcQuestMarkerType,
 } from './selectors/questSelectors';

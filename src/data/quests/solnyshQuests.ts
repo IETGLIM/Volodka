@@ -41,6 +41,7 @@ export const QUESTS_SOLNYSH: QuestDefinition[] = [
     act: 1,
     questType: 'side',
     difficulty: 'medium',
+    requiresQuests: ['solnysh_comfort'],
     hint: 'Лёня намекнул на шкаф. Вино — в комнате Солныш. После — предложи прогулку на крышу.',
     objectives: [
       {

@@ -79,9 +79,35 @@ export const NPC_QUEST_BARKS: Record<string, NpcQuestBarkEntry[]> = {
   ],
   vera: [
     {
+      questId: 'solnysh_comfort',
+      objectiveId: 'comfort_solnysh',
+      text: 'Мне сегодня тяжело… Если можешь — просто побудь рядом, Володька.',
+    },
+    {
+      questId: 'solnysh_roof_wine',
+      objectiveId: 'offer_wine',
+      text: 'Если нашёл вино — я не против крыши. Только не дай мне разлить.',
+    },
+    {
+      questId: 'solnysh_relocation',
+      objectiveId: 'discuss_move',
+      text: 'Лёня говорит о другой стране… Мне страшно. Но и хочется попробовать.',
+    },
+    {
       questId: 'archive_of_forgotten',
       objectiveId: 'meet_vera_library',
       text: 'Архив стихов ещё жив — но зачистка близко. Найди меня в библиотеке, пока дверь не заперли.',
+    },
+  ],
+  lyonya: [
+    {
+      questId: 'solnysh_roof_wine',
+      objectiveId: 'find_wine',
+      text: 'Бутылку прятал за шкафом — на особый случай. Береги для Солныш.',
+    },
+    {
+      questId: 'solnysh_relocation',
+      text: 'Предложение за границей… Решать нам вместе. Твоё слово для неё много значит.',
     },
   ],
   oleg: [

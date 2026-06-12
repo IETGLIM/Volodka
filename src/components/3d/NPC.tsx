@@ -25,10 +25,8 @@ import { GltfNPCModel } from '@/components/3d/GltfNPCModel';
 import { ProceduralNPCModel } from '@/components/3d/ProceduralNPCModels';
 import { resolveNpcModelUrl } from '@/config/npcModelRegistry';
 import { createPatrolState, updatePatrol, shouldPatrol, type PatrolState } from '@/engine/npc/npcPatrol';
-import { getQuestDefinitions } from '@/data/gameDataLoader';
+import { getNpcQuestMarkerDisplay } from '@/store/questStore';
 import { resolveNpcQuestBark } from '@/engine/npc/npcQuestBark';
-import { GOLDEN_PATH_QUEST_SPINE } from '@/data/goldenPath';
-import { canStartQuest } from '@/engine/GuidedStoryManager';
 import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
 import {
   DEFAULT_NPC_LOD,
@@ -637,85 +635,10 @@ function QuestMarker({ npcId }: { npcId: string }) {
   const quests = useQuests();
   const [glowIntensity, setGlowIntensity] = useState(1);
 
-  // Compute marker info: type, color, pulse speed, quest name
-  const markerInfo = useMemo(() => {
-    // 1. Check for quests ready to turn in (green ✓) — highest priority
-    for (const q of quests) {
-      if (q.status !== 'active') continue;
-      // Check if ALL objectives are complete
-      if (Object.values(q.objectives).some((v) => !v)) continue;
-      // Check if this NPC is involved in this quest
-      const questDef = getQuestDefinitions().find((d) => d.id === q.questId);
-      if (!questDef) continue;
-      const npcInvolved = questDef.objectives.some(
-        (o) => o.type === 'npc_talked' && o.target === npcId,
-      );
-      if (npcInvolved) {
-        return {
-          icon: '✓',
-          color: '#00ff66',
-          glowPrefix: 'rgba(0, 255, 102,',
-          pulseSpeed: 0.7,
-          questName: questDef.title,
-          type: 'complete' as const,
-        };
-      }
-    }
-
-    // 2. Check for active quests with this NPC (blue ?)
-    for (const q of quests) {
-      if (q.status !== 'active') continue;
-      // Still has incomplete objectives
-      if (!Object.values(q.objectives).some((v) => !v)) continue;
-      const questDef = getQuestDefinitions().find((d) => d.id === q.questId);
-      if (!questDef) continue;
-      // Check if any incomplete npc_talked objective targets this NPC
-      const hasNpcObjective = questDef.objectives.some(
-        (o) => o.type === 'npc_talked' && o.target === npcId && !q.objectives[o.id],
-      );
-      if (hasNpcObjective) {
-        return {
-          icon: '?',
-          color: '#66ccff',
-          glowPrefix: 'rgba(102, 204, 255,',
-          pulseSpeed: 1.0,
-          questName: questDef.title,
-          type: 'active' as const,
-        };
-      }
-    }
-
-    // 3. Check for available quests from this NPC (yellow !)
-    for (const qDef of getQuestDefinitions()) {
-      // Check if this quest has an npc_talked objective targeting this NPC
-      const hasNpcObj = qDef.objectives.some(
-        (o) => o.type === 'npc_talked' && o.target === npcId,
-      );
-      if (!hasNpcObj) continue;
-
-      // Check if quest is not already started or completed
-      const existing = quests.find((q) => q.questId === qDef.id);
-      if (existing && existing.status !== 'inactive') continue;
-
-      // Check if player can start this quest
-      if (!canStartQuest(qDef.id)) continue;
-
-      // Prefer golden path quests
-      const isGoldenPath = GOLDEN_PATH_QUEST_SPINE.includes(qDef.id);
-      if (!isGoldenPath && qDef.questType !== 'main' && qDef.questType !== 'side') continue;
-
-      return {
-        icon: '!',
-        color: '#ffdd00',
-        glowPrefix: 'rgba(255, 221, 0,',
-        pulseSpeed: 1.5,
-        questName: qDef.title,
-        type: 'available' as const,
-      };
-    }
-
-    return null;
-  }, [quests, npcId]);
+  const markerInfo = useMemo(
+    () => getNpcQuestMarkerDisplay(npcId),
+    [quests, npcId],
+  );
 
   // Pulse animation — speed depends on marker type
   useEffect(() => {
