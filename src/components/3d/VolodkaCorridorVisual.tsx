@@ -31,6 +31,7 @@ export function VolodkaCorridorVisual({ livePlayerPositionRef: _livePlayerPositi
   const kitchenDoorRef = useRef<THREE.Group>(null);
   const streetDoorRef = useRef<THREE.Group>(null);
   const roomDoorRef = useRef<THREE.Group>(null);
+  const solnyshDoorRef = useRef<THREE.Group>(null);
 
   // ── Listen for object:interact events to toggle interactive objects ──
   useEffect(() => {
@@ -38,7 +39,8 @@ export function VolodkaCorridorVisual({ livePlayerPositionRef: _livePlayerPositi
       if (
         payload.objectId === 'corridor_kitchen_door' ||
         payload.objectId === 'corridor_street_door' ||
-        payload.objectId === 'corridor_room_door'
+        payload.objectId === 'corridor_room_door' ||
+        payload.objectId === 'corridor_solnysh_door'
       ) {
         useGameStore.getState().toggleInteractiveObject(payload.objectId);
       }
@@ -85,6 +87,16 @@ export function VolodkaCorridorVisual({ livePlayerPositionRef: _livePlayerPositi
       const targetY = open ? -Math.PI / 2 : 0;
       roomDoorRef.current.rotation.y = THREE.MathUtils.lerp(
         roomDoorRef.current.rotation.y,
+        targetY,
+        1 - Math.exp(-delta * 5),
+      );
+    }
+
+    if (solnyshDoorRef.current) {
+      const open = objStates['corridor_solnysh_door'] ?? false;
+      const targetY = open ? -Math.PI / 2 : 0;
+      solnyshDoorRef.current.rotation.y = THREE.MathUtils.lerp(
+        solnyshDoorRef.current.rotation.y,
         targetY,
         1 - Math.exp(-delta * 5),
       );
@@ -561,6 +573,28 @@ export function VolodkaCorridorVisual({ livePlayerPositionRef: _livePlayerPositi
           <meshStandardMaterial color="#5a5040" roughness={0.95} />
         </mesh>
       ))}
+
+      {/* ── Door: Солныш & Лёня (right wall, z=4) — animated ── */}
+      <group position={[W / 2 - 0.02, 0, 4.0]}>
+        <mesh rotation-y={-Math.PI / 2}>
+          <planeGeometry args={[0.9, 2.2]} />
+          <meshStandardMaterial color="#4a3540" roughness={0.85} />
+        </mesh>
+        <mesh position={[0.01, 1.1, 0]} rotation-y={-Math.PI / 2}>
+          <boxGeometry args={[0.03, 2.2, 0.95]} />
+          <meshStandardMaterial color="#5a4838" />
+        </mesh>
+        <group position={[0.02, 0, 0.45]} ref={solnyshDoorRef}>
+          <mesh position={[0, 1.1, -0.45]}>
+            <boxGeometry args={[0.04, 2.15, 0.9]} />
+            <meshStandardMaterial color="#6a4550" roughness={0.75} />
+          </mesh>
+          <mesh position={[0, 1.05, -0.08]}>
+            <cylinderGeometry args={[0.012, 0.012, 0.1, 6]} />
+            <meshStandardMaterial color="#aaa" metalness={0.8} roughness={0.2} />
+          </mesh>
+        </group>
+      </group>
 
       {/* ── Additional door: Bathroom (right wall, z=2) ── */}
       <group position={[W / 2 - 0.02, 0, 2.0]}>

@@ -204,6 +204,28 @@ const SCENE_MUSIC_CONFIGS: Record<SceneId, SceneMusicConfig> = {
     tempo: 60,
     masterGain: 0.035,
   },
+  solnysh_room: {
+    scale: SCALES.minor_pentatonic,
+    rootMidi: 48,
+    padType: 'triangle',
+    padFilterFreq: 520,
+    padFilterQ: 0.6,
+    padLfoFreq: 0.09,
+    padLfoDepth: 35,
+    padReverbMix: 0.3,
+    padReverbDecay: 2,
+    chordChangeInterval: 8,
+    chordVoices: 3,
+    useSeventhChords: false,
+    useOpenFifths: false,
+    bassType: 'sine',
+    bassGain: 0.012,
+    melodyType: 'sine',
+    melodyGain: 0.007,
+    melodyChance: 0.04,
+    tempo: 60,
+    masterGain: 0.035,
+  },
 
   /* ─── 2. NOIR/STREET ─── */
   street_night: {

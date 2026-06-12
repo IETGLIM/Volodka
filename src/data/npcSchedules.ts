@@ -171,19 +171,29 @@ const DMITRY_SCHEDULE: NPCSchedule = {
    EXPANDED NPC SCHEDULES — Vera, Sergey, Lena, Oleg, Kate
    ────────────────────────────────────────────────────────────────────────── */
 
-/** Вера — archive keeper. Library most of the day, home evenings. */
+/** Солныш — best friend, designer. Corridor mornings, room evenings. */
 const VERA_SCHEDULE: NPCSchedule = {
   id: 'schedule_vera',
   npcId: 'vera',
   entries: [
-    { startHour: 0, endHour: 7, sceneId: 'home_evening', position: [-1.0, 0, 3.0], activity: 'sleep' },
-    { startHour: 7, endHour: 8, sceneId: 'home_evening', position: [0, 0, 2.0], activity: 'rest' },
-    { startHour: 8, endHour: 9, sceneId: 'volodka_corridor', position: [0, 0, 1.5], activity: 'walk' },
-    { startHour: 9, endHour: 13, sceneId: 'library_day', position: [-1.0, 0, 3.0], activity: 'read' },
-    { startHour: 13, endHour: 14, sceneId: 'cafe_evening', position: [1.0, 0, 1.0], activity: 'rest' },
-    { startHour: 14, endHour: 18, sceneId: 'library_day', position: [-1.0, 0, 3.0], activity: 'work' },
+    { startHour: 0, endHour: 7, sceneId: 'solnysh_room', position: [-1.0, 0, 0.5], activity: 'sleep' },
+    { startHour: 7, endHour: 10, sceneId: 'volodka_corridor', position: [0, 0, 1.5], activity: 'walk' },
+    { startHour: 10, endHour: 14, sceneId: 'solnysh_room', position: [1.2, 0, -1.0], activity: 'work' },
+    { startHour: 14, endHour: 18, sceneId: 'library_day', position: [-1.0, 0, 3.0], activity: 'read' },
     { startHour: 18, endHour: 20, sceneId: 'park_day', position: [1.0, 0, 2.0], activity: 'walk' },
-    { startHour: 20, endHour: 24, sceneId: 'home_evening', position: [-1.0, 0, 3.0], activity: 'rest' },
+    { startHour: 20, endHour: 24, sceneId: 'solnysh_room', position: [-0.5, 0, 0.5], activity: 'rest' },
+  ],
+};
+
+/** Лёня — barista, coffee roaster. Cafe days, room mornings/evenings. */
+const LYONYA_SCHEDULE: NPCSchedule = {
+  id: 'schedule_lyonya',
+  npcId: 'lyonya',
+  entries: [
+    { startHour: 0, endHour: 7, sceneId: 'solnysh_room', position: [1.0, 0, 0.5], activity: 'sleep' },
+    { startHour: 7, endHour: 11, sceneId: 'solnysh_room', position: [-2.0, 0, -1.5], activity: 'work' },
+    { startHour: 11, endHour: 19, sceneId: 'cafe_evening', position: [0, 0, 0.5], activity: 'work' },
+    { startHour: 19, endHour: 24, sceneId: 'solnysh_room', position: [-2.0, 0, -1.0], activity: 'rest' },
   ],
 };
 
@@ -401,6 +411,7 @@ export const NPC_SCHEDULES: NPCSchedule[] = [
   MARIA_SCHEDULE,
   DMITRY_SCHEDULE,
   VERA_SCHEDULE,
+  LYONYA_SCHEDULE,
   SERGEY_SCHEDULE,
   LENA_SCHEDULE,
   OLEG_SCHEDULE,

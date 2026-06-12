@@ -139,6 +139,9 @@ export const GOLDEN_PATH_STORY_SPINE: string[] = [
  */
 export const STORY_NODE_TO_NPC_ID: Record<string, string> = {
   corridor_door: 'vera',
+  solnysh_door: 'vera',
+  solnysh_room_talk: 'vera',
+  solnysh_roof_arrival: 'vera',
   maria_curious: 'maria',
   cafe_barista: 'cafe_barista',
   office_alexander: 'office_alexander',

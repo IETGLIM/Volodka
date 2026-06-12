@@ -22,7 +22,8 @@ interface NPCSystemProps {
 /** Max interactable NPCs in heavy scenes — prevents frame stalls */
 const MAX_NPCS_PER_SCENE: Partial<Record<SceneId, number>> = {
   volodka_room: 1,
-  volodka_corridor: 2,
+  volodka_corridor: 3,
+  solnysh_room: 2,
   zarema_albert_room: 2,
   home_evening: 3,
   street_night: 5,

@@ -7,7 +7,8 @@ import type { NPCDefinition } from '@/shared/types/game'
 
 /* ── NPC-to-quest links (for quest assignment logic) ── */
 export const EXPANDED_NPC_QUEST_LINKS: Record<string, string[]> = {
-  vera: ['voice_of_the_past'],
+  vera: ['voice_of_the_past', 'solnysh_comfort', 'solnysh_roof_wine', 'solnysh_relocation'],
+  lyonya: ['solnysh_roof_wine', 'solnysh_relocation'],
   sergey: ['night_shift_mystery', 'night_watch'],
   lena: ['digital_ghost', 'secrets_of_old_code'],
   oleg: ['guild_infiltration'],
@@ -25,9 +26,14 @@ export const EXPANDED_NPC_BARK_TEXTS: Record<string, {
   friendly: string[]
 }> = {
   vera: {
-    hostile: ['Уходи. Мне нечего тебе сказать.'],
-    neutral: ['Новые лица... Редкость в наши дни.', 'Архивы хранят больше, чем серверы.'],
-    friendly: ['Володька! Заходи, есть кое-что интересное.', 'Я нашла старую статью... Времён до цензуры.'],
+    hostile: ['Не сейчас, Володька… мне нужно побыть одной.'],
+    neutral: ['Привет. Ты снова задумчивый.', 'Умка скучала без тебя.'],
+    friendly: ['Володька! Я как раз думала о тебе.', 'Помнишь, как мы бегали из гимназии?..'],
+  },
+  lyonya: {
+    hostile: ['Не время для разговоров.'],
+    neutral: ['Кофе свежий — налей себе.', 'Солныш сегодня тихая.'],
+    friendly: ['Володька! Как раз сварил новую обжарку.', 'Если что — я рядом для вас обоих.'],
   },
   sergey: {
     hostile: ['Не мешай работе.'],
@@ -74,12 +80,12 @@ export const EXPANDED_NPC_BARK_TEXTS: Record<string, {
 /* ── Expanded NPC definitions (compatible with NPCDefinition type) ── */
 
 export const EXPANDED_NPCS: NPCDefinition[] = [
-  /* ─────────────── СОЛНЫШ (vera) – соседка, хранительница архивов ─────────────── */
+  /* ─────────────── СОЛНЫШ (vera) – лучшая подруга, дизайнер ─────────────── */
   {
     id: 'vera',
     name: 'Солныш',
     modelPath: '',
-    scale: 0.88,
+    scale: 0.92,
     animations: { idle: 'idle', walk: 'walk', talk: 'talk' },
     defaultPosition: [0, 0, 1.5],
     patrolRadius: 1.2,
@@ -90,19 +96,51 @@ export const EXPANDED_NPCS: NPCDefinition[] = [
       [0, 0, 1.5],
     ],
     dialogueNodeId: 'vera_greeting',
-    description: 'Тихая соседка с тёплой улыбкой. Помнит старые стихи и верит, что слова ещё могут менять город.',
+    description: 'Тридцать три года, блондинка с голубыми глазами. Лучшая подруга с детства, одноклассница из гимназии, дочь учительницы. Дизайнер и художник. Жена Лёни.',
     barkTexts: {
-      hostile: 'Не сейчас, Володька... мне нужно побыть одной.',
+      hostile: 'Не сейчас, Володька… мне нужно побыть одной.',
       neutral: 'Привет. Ты снова задумчивый.',
-      friendly: 'Володька! Я как раз думала о тебе. Зайди, покажу кое-что.',
+      friendly: 'Володька! Я как раз думала о тебе.',
     },
     appearance: {
-      bodyColor: '#f0b8c8',
-      accentColor: '#ffd4e0',
+      bodyColor: '#f0d8e8',
+      accentColor: '#ffd8ec',
       headAccessory: 'scarf',
-      height: 0.88,
+      height: 0.92,
       glowColor: '#ffb8d0',
       silhouette: 'slim',
+    },
+  },
+
+  /* ─────────────── ЛЁНЯ – бариста, муж Солныш ─────────────── */
+  {
+    id: 'lyonya',
+    name: 'Лёня',
+    modelPath: '',
+    scale: 1.0,
+    animations: { idle: 'idle', walk: 'walk', talk: 'talk' },
+    defaultPosition: [-2.0, 0, -1.5],
+    patrolRadius: 1.0,
+    patrolWaypoints: [
+      [-2.0, 0, -1.5],
+      [-2.4, 0, -2.0],
+      [-1.6, 0, -1.0],
+      [-2.0, 0, -1.5],
+    ],
+    dialogueNodeId: 'lyonya_greeting',
+    description: 'Обжарщик кофе и бариста. Спокойный, надёжный — рядом с Солныш уже много лет.',
+    barkTexts: {
+      hostile: 'Не время для разговоров.',
+      neutral: 'Кофе свежий — налей себе.',
+      friendly: 'Володька! Как раз сварил новую обжарку.',
+    },
+    appearance: {
+      bodyColor: '#6a5040',
+      accentColor: '#c8a878',
+      headAccessory: 'none',
+      height: 1.02,
+      glowColor: '#d4a060',
+      silhouette: 'average',
     },
   },
 

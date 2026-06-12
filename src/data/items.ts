@@ -1182,6 +1182,18 @@ const ITEMS: ItemDefinition[] = [
     maxStack: 5,
     effects: [],
   },
+  {
+    id: 'solnysh_wine_bottle',
+    name: 'Бутылка вина',
+    description: 'Тёмное вино, которое Лёня прятал «на особый случай». Этикетка потёртая, но пробка цела.',
+    category: 'misc',
+    rarity: 'uncommon',
+    icon: 'Wine',
+    stackable: false,
+    maxStack: 1,
+    effects: [],
+  },
+
 ];
 
 /* ─── Equipment slot mapping ─── */

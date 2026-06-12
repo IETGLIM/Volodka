@@ -75,7 +75,7 @@ export const WORLD_CELLS: Record<WorldCellId, WorldCell> = {
       { x: 1, z: -2 },
       { x: -2, z: -1 },
     ],
-    locationSceneIds: ['volodka_corridor', 'volodka_room', 'home_evening', 'zarema_albert_room'],
+    locationSceneIds: ['volodka_corridor', 'volodka_room', 'home_evening', 'solnysh_room', 'zarema_albert_room'],
   },
   'volodka_city:civic': {
     id: 'volodka_city:civic',
@@ -192,6 +192,14 @@ export const WORLD_LOCATIONS: Record<SceneId, WorldLocation> = {
     anchorSceneId: 'street_night',
     districtSpawn: [-2, 0.01, -1],
   },
+  solnysh_room: {
+    sceneId: 'solnysh_room',
+    kind: 'interior',
+    regionId: 'volodka_city',
+    cellId: 'volodka_city:residential',
+    anchorSceneId: 'volodka_corridor',
+    districtSpawn: [2, 0.01, 3.6],
+  },
 
   /* Industrial district */
   abandoned_factory: {
@@ -303,6 +311,7 @@ export const SCENE_CHUNK_COORD: Record<SceneId, WorldChunkCoord> = {
   volodka_room: { x: 0, z: -3 },
   home_evening: { x: 1, z: -2 },
   zarema_albert_room: { x: -2, z: -1 },
+  solnysh_room: { x: 1, z: -1 },
   battle: { x: 2, z: 0 },
   sleep_dream: { x: 0, z: 2 },
   chk_forest_zorge: { x: 2, z: 1 },

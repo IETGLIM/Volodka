@@ -390,6 +390,21 @@ const SCENE_ENV_ANIMATIONS: Record<SceneId, EnvAnimation[]> = {
     },
   ],
 
+  solnysh_room: [
+    {
+      id: 'solnysh_lamp',
+      type: 'light_flicker',
+      position: [0, 2.5, 0],
+      config: { minIntensity: 0.4, maxIntensity: 0.7, flickerRate: 0.008 },
+    },
+    {
+      id: 'solnysh_curtain',
+      type: 'curtain_sway',
+      position: [3, 2.0, 0],
+      config: { amplitude: 0.04, frequency: 0.3, axis: 0 },
+    },
+  ],
+
   chk_forest_zorge: [
     {
       id: 'campfire_flicker',

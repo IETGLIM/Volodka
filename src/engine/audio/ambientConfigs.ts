@@ -410,6 +410,37 @@ const AMBIENT_CONFIGS: Record<SceneId, AmbientConfig> = {
     ],
   },
 
+  solnysh_room: {
+    layers: [
+      {
+        type: 'sine',
+        frequency: 130,
+        gain: 0.02,
+        lfoFreq: 0.1,
+        lfoDepth: 3,
+        harmonic: { type: 'triangle', frequency: 260, gain: 0.008 },
+        randomInterval: 0,
+      },
+      {
+        type: 'triangle',
+        frequency: 196,
+        gain: 0.012,
+        lfoFreq: 0.07,
+        lfoDepth: 2,
+        harmonic: { type: 'sine', frequency: 329.63, gain: 0.006 },
+        randomInterval: 0,
+      },
+    ],
+    noiseLayers: [
+      { filterType: 'bandpass', filterFreq: 800, filterQ: 0.4, gain: 0.01, lfoFreq: 0.1, lfoDepth: 200 },
+    ],
+    randomSounds: [
+      { type: 'sawtooth', frequency: 200, duration: 0.5, gain: 0.012, minInterval: 3, maxInterval: 8, useNoise: true, noiseFilterFreq: 800 },
+      { type: 'sine', frequency: 2800, duration: 0.8, gain: 0.015, minInterval: 20, maxInterval: 40, frequencyRamp: 3200 },
+      { type: 'sawtooth', frequency: 500, duration: 0.3, gain: 0.012, minInterval: 8, maxInterval: 18, useNoise: true, noiseFilterFreq: 3500 },
+    ],
+  },
+
   /* ─── 14. street_winter — Wind howl, snow crunch, bells, cold drone ─── */
   street_winter: {
     layers: [
@@ -790,6 +821,20 @@ const AMBIENT_MUSIC_CONFIGS: Partial<Record<SceneId, AmbientMusicConfig>> = {
     reverbMix: 0.3,
     reverbDecay: 2,
   },
+  solnysh_room: {
+    chords: [
+      { frequencies: [130.81, 164.81, 196.0], duration: 9 },
+      { frequencies: [146.83, 174.61, 220.0], duration: 9 },
+    ],
+    padType: 'triangle',
+    gain: 0.02,
+    lfoFreq: 0.08,
+    lfoDepth: 2,
+    filterFreq: 500,
+    filterQ: 0.6,
+    reverbMix: 0.3,
+    reverbDecay: 2,
+  },
 };
 
 /* ─── Ambient Reverb Presets ─── */
@@ -805,6 +850,7 @@ const REVERB_PRESETS: Record<string, ReverbPresetConfig> = {
 const SCENE_REVERB_PRESETS: Partial<Record<SceneId, string>> = {
   volodka_room: 'small_room',
   zarema_albert_room: 'small_room',
+  solnysh_room: 'small_room',
   home_evening: 'small_room',
   volodka_corridor: 'corridor',
   office_day: 'corridor',

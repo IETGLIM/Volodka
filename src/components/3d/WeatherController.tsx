@@ -30,6 +30,7 @@ const SCENE_WEATHER: Record<SceneId, WeatherType> = {
   sleep_dream: 'none',
   abandoned_factory: 'none',
   zarema_albert_room: 'none',
+  solnysh_room: 'none',
   chk_forest_zorge: 'snow_light',
   factory_basement: 'none',
   river_pier: 'none',

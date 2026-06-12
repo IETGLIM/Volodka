@@ -38,6 +38,7 @@ export type VisualComponentName =
   | 'RooftopVisual'
   | 'FactoryVisual'
   | 'ZaremaAlbertVisual'
+  | 'SolnyshRoomVisual'
   | 'ChkForestVisual'
   | 'FactoryBasementVisual'
   | 'RiverPierVisual';

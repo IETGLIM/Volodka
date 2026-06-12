@@ -6,13 +6,82 @@ import type { DialogueNode } from '@/shared/types/game'
 
 export const EXPANDED_DIALOGUE_NODES: Record<string, DialogueNode> = {
   /* ═══════════════════════════════════════════════════════════
-     ВЕРА — бывшая журналистка (4 nodes)
+     СОЛНЫШ — коридор и комната
+     ═══════════════════════════════════════════════════════════ */
+
+  solnysh_corridor_greeting: {
+    id: 'solnysh_corridor_greeting',
+    speaker: 'Солныш',
+    text: '«Володька!» — Солныш оборачивается, поправляя светлые волосы. Голубые глаза усталые, но тёплые. Умка крутится у её ног. «Мы с детства рядом, а сегодня… сегодня мне кажется, что мир слишком серый. Ты меня понимаешь?»',
+    sceneId: 'volodka_corridor',
+    choices: [
+      {
+        text: 'Всё не так плохо — тебя любят, мы рядом',
+        next: null,
+        effects: [
+          { type: 'setFlag', flag: 'solnysh_comforted', flagValue: true },
+          { type: 'npcChange', npcId: 'vera', npcChange: { relation: 8 } },
+          { type: 'addKarma', value: 5 },
+          { type: 'triggerQuest', questId: 'solnysh_comfort' },
+        ],
+      },
+      {
+        text: 'Зайти к вам — поговорим у вас',
+        next: null,
+        effects: [{ type: 'transitionScene', sceneId: 'solnysh_room' }],
+      },
+      {
+        text: 'Умка сегодня симпатичная',
+        next: null,
+        effects: [
+          { type: 'npcChange', npcId: 'vera', npcChange: { relation: 3 } },
+          { type: 'addStat', stat: 'stress', value: -3 },
+        ],
+      },
+      { text: 'Побежал — увидимся', next: null },
+    ],
+  },
+
+  lyonya_greeting: {
+    id: 'lyonya_greeting',
+    speaker: 'Лёня',
+    text: '«Володька, налей себе кофе. Солныш волнуется — ты для неё как якорь с гимназии. Если могу чем-то помочь — скажи.»',
+    choices: [
+      {
+        text: 'Где вино, которое ты прятал?',
+        next: 'lyonya_wine_hint',
+      },
+      {
+        text: 'Поговорим о переезде',
+        next: 'lyonya_relocation_hint',
+        condition: { flag: 'solnysh_roof_toast_done' },
+      },
+      { text: 'Спасибо, Лёня', next: null },
+    ],
+  },
+
+  lyonya_wine_hint: {
+    id: 'lyonya_wine_hint',
+    speaker: 'Лёня',
+    text: '«За шкафом, на нижней полке. Бутылка тёмная — для особого вечера. Береги её для Солныш.»',
+    choices: [{ text: 'Понял', next: null }],
+  },
+
+  lyonya_relocation_hint: {
+    id: 'lyonya_relocation_hint',
+    speaker: 'Лёня',
+    text: '«Предложение из другой страны… Я хочу, чтобы Солныш рисовала без страха. Но решать нам вместе — и твоё слово для неё много значит.»',
+    choices: [{ text: 'Поддержу вас', next: null, effects: [{ type: 'setFlag', flag: 'lyonya_relocation_discussed', flagValue: true }] }],
+  },
+
+  /* ═══════════════════════════════════════════════════════════
+     СОЛНЫШ (vera) — общие диалоги
      ═══════════════════════════════════════════════════════════ */
 
   vera_greeting: {
     id: 'vera_greeting',
     speaker: 'Солныш',
-    text: 'Привет, Володька. Я Солныш — жила здесь всегда, ещё до того как город стал таким серым. Иногда мне кажется, что старые стихи помнят больше людей, чем люди — друг друга.',
+    text: '«Володька…» — она улыбается, как в детстве, когда вы прятались от уроков литературы. «Мы столько прошли. Я рада, что ты снова рядом.»',
     choices: [
       { text: 'Расскажи о мире до Краха.', next: 'vera_before_crash', effects: [{ type: 'addSkill', skill: 'intuition', value: 1 }] },
       { text: 'Какие архивы ты хранишь?', next: 'vera_archives' },

@@ -1,5 +1,6 @@
 import type { QuestDefinition } from '@/shared/types/game';
 import { CHK_QUESTS } from '../chkTolpa/quests';
+import { QUESTS_SOLNYSH } from './solnyshQuests';
 import { QUESTS_ACT1 } from './act1';
 import { QUESTS_ACT2 } from './act2';
 import { QUESTS_ACT3 } from './act3';
@@ -10,6 +11,7 @@ import { QUESTS_ACT7 } from './act7';
 
 export const QUEST_DEFINITIONS: QuestDefinition[] = [
   ...QUESTS_ACT1,
+  ...QUESTS_SOLNYSH,
   ...QUESTS_ACT2,
   ...QUESTS_ACT3,
   ...QUESTS_ACT4,

@@ -34,6 +34,7 @@ import { DynamicProps } from './DynamicProps';
 import { PatrollingCreeps } from './PatrollingCreeps';
 import { RotationSyncBridge } from './RotationSyncBridge';
 import { FirstPersonHands } from './FirstPersonHands';
+import { UmkaDog } from './UmkaDog';
 import { TriggerZoneProps } from './TriggerZoneProp';
 import { eventBus } from '@/engine/EventBus';
 import { InteractionState } from '@/engine/interaction/interactionMachine';
@@ -80,6 +81,7 @@ function PhysicsSceneInner({
       <FirstPersonHands moveBlendRef={moveBlendRef} />
       <TriggerZoneProps />
       <NPCSystemWrapper livePlayerPositionRef={livePlayerPositionRef} />
+      <UmkaDog livePlayerPositionRef={livePlayerPositionRef} />
       <AmbientNPCs livePlayerPositionRef={livePlayerPositionRef} />
       <DynamicProps />
       <PatrollingCreeps livePlayerPositionRef={livePlayerPositionRef} />

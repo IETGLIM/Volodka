@@ -55,7 +55,7 @@ describe('generateBoundaryWallSegments', () => {
     expect(segmentsOnSide(segments, 'left').length).toBeGreaterThanOrEqual(2);
     expect(segmentsOnSide(segments, 'right').length).toBeGreaterThanOrEqual(2);
     expect(backstopsOnSide(segments, 'left')).toHaveLength(1);
-    expect(backstopsOnSide(segments, 'right')).toHaveLength(1);
+    expect(backstopsOnSide(segments, 'right')).toHaveLength(2);
   });
 
   it('covers the full span with segments + opening per side', () => {

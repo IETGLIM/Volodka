@@ -54,6 +54,7 @@ const SleepDreamVisual = retryLazy(() => import('./SleepDreamVisual'), 'SleepDre
 const RooftopEdgeVisual = retryLazy(() => import('./RooftopEdgeVisual'), 'RooftopEdgeVisual');
 const AbandonedFactoryVisual = retryLazy(() => import('./AbandonedFactoryVisual'), 'AbandonedFactoryVisual');
 const ZaremaAlbertRoomVisual = retryLazy(() => import('./ZaremaAlbertRoomVisual'), 'ZaremaAlbertRoomVisual');
+const SolnyshRoomVisual = retryLazy(() => import('./SolnyshRoomVisual'), 'SolnyshRoomVisual');
 const StreetWinterVisual = retryLazy(() => import('./StreetWinterVisual'), 'StreetWinterVisual');
 const ChkForestZorgeVisual = retryLazy(() => import('./ChkForestZorgeVisual'), 'ChkForestZorgeVisual');
 const FactoryBasementVisual = retryLazy(() => import('./FactoryBasementVisual'), 'FactoryBasementVisual');
@@ -279,6 +280,8 @@ function VisualScene({ sceneId, livePlayerPositionRef }: VisualSceneProps) {
       return <AbandonedFactoryVisual livePlayerPositionRef={livePlayerPositionRef} />;
     case 'zarema_albert_room':
       return <ZaremaAlbertRoomVisual livePlayerPositionRef={livePlayerPositionRef} />;
+    case 'solnysh_room':
+      return <SolnyshRoomVisual livePlayerPositionRef={livePlayerPositionRef} />;
     case 'chk_forest_zorge':
       return <ChkForestZorgeVisual livePlayerPositionRef={livePlayerPositionRef} />;
     case 'factory_basement':

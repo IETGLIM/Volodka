@@ -111,6 +111,7 @@ function getSceneConfigName(sceneId: SceneId): string {
     rooftop_edge: 'Край крыши',
     abandoned_factory: 'Заброшенный завод',
     zarema_albert_room: 'Комната Заремы и Альберта',
+    solnysh_room: 'Комната Солныш и Лёни',
     chk_forest_zorge: 'ЧК · Лес · Зорге',
     factory_basement: 'Подвал завода',
     river_pier: 'Пирс у реки',

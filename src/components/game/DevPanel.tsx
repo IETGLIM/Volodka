@@ -37,7 +37,7 @@ const SCENE_IDS = Object.keys(SCENE_CONFIG) as SceneId[];
 
 /* ── Scene category groupings ── */
 const SCENE_GROUPS: Record<string, SceneId[]> = {
-  '🏠 Дом': ['volodka_room', 'volodka_corridor', 'home_evening', 'zarema_albert_room'],
+  '🏠 Дом': ['volodka_room', 'volodka_corridor', 'home_evening', 'solnysh_room', 'zarema_albert_room'],
   '🌆 Улица': ['street_night', 'street_winter'],
   '🏢 Локации': ['cafe_evening', 'office_day', 'park_day', 'library_day'],
   '⚔️ Особые': ['battle', 'sleep_dream', 'rooftop_edge', 'abandoned_factory'],

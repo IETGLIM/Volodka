@@ -9,6 +9,7 @@ export const EXPLORATION_DIALOGUE_STORY_STEP: Readonly<Record<string, string>> =
   explore_kitchen_table: 'kitchen_table',
   explore_street_entry: 'street_bench',
   explore_go_home: 'go_home',
+  explore_solnysh_door: 'solnysh_door',
 };
 
 export function recordExplorationStoryStep(dialogueNodeId: string): void {

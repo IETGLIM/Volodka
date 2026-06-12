@@ -1000,7 +1000,7 @@ function VeraModel({ appearance, animState = 'idle' }: { appearance: NPCAppearan
   const skinShadow = SKIN_SHADOW_LIGHT;
   const scarfColor = '#ffb8d0';
   const scarfAccent = glowColor;
-  const hairColor = '#8a4a38';
+  const hairColor = '#f0e4c8';
 
   return (
     <group ref={groupRef}>
@@ -1035,7 +1035,7 @@ function VeraModel({ appearance, animState = 'idle' }: { appearance: NPCAppearan
           <mesh castShadow geometry={sharedGeo.skullSphereMd} material={skinMat(skinColor)} />
           <mesh position={[0, -0.05, 0.025]} castShadow geometry={sharedGeo.jawBoxMd} material={skinMat(skinColor)} />
           <mesh position={[0, -0.065, 0.035]} geometry={sharedGeo.chinSphereMd} material={skinMat(skinColor)} />
-          <Eyes browAngle={0.08} irisColor="#6a5a30" />
+          <Eyes browAngle={0.05} irisColor="#5a9fd4" />
           <FaceFeatures skinColor={skinColor} shadowColor={skinShadow} mouthCornersDown={false} />
 
           {/* Hair — warm auburn, shoulder length */}
@@ -1472,6 +1472,12 @@ function ProceduralNPCModelInner({
       return (
         <group scale={[widthScale, heightScale, widthScale]}>
           <VeraModel appearance={app} animState={animState} />
+        </group>
+      );
+    case 'lyonya':
+      return (
+        <group scale={[widthScale, heightScale, widthScale]}>
+          <BaristaModel appearance={app} animState={animState} />
         </group>
       );
     case 'sergey':

@@ -257,6 +257,7 @@ export const volodka_corridor_def: SceneDefinition = {
     { id: 'corridor_to_room', position: [0, 1, 7.3], width: 1.0, height: 2.1 },
     { id: 'corridor_to_kitchen', position: [2.7, 0.5, -2.0], width: 0.9, height: 2.0 },
     { id: 'corridor_to_street', position: [-2.7, 0.5, -2.0], width: 1.0, height: 2.2 },
+    { id: 'corridor_to_solnysh_room', position: [2.7, 0.5, 4.0], width: 0.9, height: 2.0 },
   ],
   exits: [
     {
@@ -285,6 +286,15 @@ export const volodka_corridor_def: SceneDefinition = {
       spawnRotation: 0,
       label: '→ Улица',
       doorwayId: 'corridor_to_street',
+    },
+    {
+      id: 'corridor_to_solnysh_room',
+      targetScene: 'solnysh_room',
+      position: [2.7, 0.5, 4.0],
+      spawnPosition: [0, 0.01, 2],
+      spawnRotation: Math.PI,
+      label: '→ Солныш и Лёня',
+      doorwayId: 'corridor_to_solnysh_room',
     },
   ],
   floors: [
@@ -845,6 +855,61 @@ export const abandoned_factory_def: SceneDefinition = {
   transitionStyle: 'darken',
 };
 
+/** Солныш & Лёня — cozy room with carpets, art and coffee */
+export const solnysh_room_def: SceneDefinition = {
+  id: 'solnysh_room',
+  name: 'Комната Солныш и Лёни',
+  dimensions: [8, 3, 8],
+  type: 'indoor',
+  hasCeiling: true,
+  defaultSpawn: [0, 0.01, 2],
+  defaultSpawnRotation: Math.PI,
+  characterModelScale: 1.0,
+  locomotionScale: 1.0,
+  doorways: [
+    { id: 'solnysh_to_corridor', position: [0, 1, 3.5], width: 0.9, height: 2.1 },
+  ],
+  exits: [
+    {
+      id: 'solnysh_to_corridor',
+      targetScene: 'volodka_corridor',
+      position: [0, 1, 3.5],
+      spawnPosition: [2.0, 0.01, 3.6],
+      spawnRotation: 0,
+      label: '→ Коридор',
+      doorwayId: 'solnysh_to_corridor',
+    },
+  ],
+  floors: [
+    { type: 'cuboid', size: [4, 0.05, 4], position: [0, -0.05, 0], footstepMaterial: 'carpet' },
+  ],
+  walls: [
+    { type: 'cuboidObstacle', size: [4, 1.5, 0.1], position: [0, 1.5, -4], footstepMaterial: 'carpet' },
+    { type: 'cuboidObstacle', size: [4, 1.5, 0.1], position: [0, 1.5, 4], footstepMaterial: 'carpet' },
+    { type: 'cuboidObstacle', size: [4, 1.5, 0.1], position: [-4, 1.5, 0], rotation: Math.PI / 2, footstepMaterial: 'carpet' },
+    { type: 'cuboidObstacle', size: [4, 1.5, 0.1], position: [4, 1.5, 0], rotation: Math.PI / 2, footstepMaterial: 'carpet' },
+  ],
+  obstacles: [
+    { type: 'cuboidObstacle', size: [0.9, 0.375, 0.4], position: [-1.5, 0.375, 0.5], footstepMaterial: 'carpet' },
+    { type: 'cuboidObstacle', size: [0.5, 0.9, 0.5], position: [-2.4, 0.45, -2.2], footstepMaterial: 'carpet' },
+    { type: 'cuboidObstacle', size: [0.7, 0.6, 0.08], position: [2.2, 0.9, -2.0], footstepMaterial: 'carpet' },
+  ],
+  ceilings: [
+    { type: 'cuboid', size: [4, 0.1, 4], position: [0, 3.1, 0] },
+  ],
+  visualComponent: 'SolnyshRoomVisual',
+  lights: [
+    { position: [0, 2.5, 0], intensity: 1.0, color: '#ffccaa', distance: 8 },
+    { position: [-2, 1.5, -2], intensity: 0.6, color: '#ffaa88', distance: 5 },
+    { position: [2, 1.5, 0], intensity: 0.5, color: '#eeddcc', distance: 5 },
+  ],
+  ambientColor: '#3a3028',
+  ambientIntensity: 0.65,
+  groundColor: '#2e2820',
+  fogEnabled: true,
+  fog: { near: 5, far: 12 },
+};
+
 /** Zarema & Albert's room — cozy indoor shared room */
 export const zarema_albert_room_def: SceneDefinition = {
   id: 'zarema_albert_room',
@@ -1083,6 +1148,7 @@ export const SCENE_DEFINITIONS = {
   rooftop_edge: rooftop_edge_def,
   abandoned_factory: abandoned_factory_def,
   zarema_albert_room: zarema_albert_room_def,
+  solnysh_room: solnysh_room_def,
   chk_forest_zorge: chk_forest_zorge_def,
   factory_basement: factory_basement_def,
   river_pier: river_pier_def,

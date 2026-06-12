@@ -36,6 +36,7 @@ const TRAVEL_TIME: Partial<Record<SceneId, number>> = {
   volodka_corridor: 0,
   home_evening: 0,
   zarema_albert_room: 0,
+  solnysh_room: 0,
   street_night: 0.5,
   street_winter: 0.5,
   cafe_evening: 0.5,

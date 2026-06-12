@@ -127,6 +127,13 @@ export const SCENE_EXPLORE_HUB_DEFS: readonly SceneExploreHubDef[] = [
     entryNodeIds: ['pier_arrival'],
   },
   {
+    hubId: 'solnysh_explore_mode',
+    sceneId: 'solnysh_room',
+    hubText:
+      'Комната Солныш и Лёни — ковры, акварели, запах свежего кофе. Умка дремлет на своей подушке.',
+    entryNodeIds: ['solnysh_door'],
+  },
+  {
     hubId: 'zarema_room_explore_mode',
     sceneId: 'zarema_albert_room',
     hubText:
