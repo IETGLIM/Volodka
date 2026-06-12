@@ -32,6 +32,14 @@ import { CYBER_CYAN } from '@/shared/constants/cyberPalette';
 const MIN_TOUCH_TARGET = 44;
 const TAP_DEBOUNCE_MS = 280;
 
+const MOVEMENT_CONTROL_KEYS: (keyof VirtualControls)[] = [
+  'forward',
+  'backward',
+  'left',
+  'right',
+  'jump',
+];
+
 interface ExplorationMobileHudProps {
   onInteractPress?: () => void;
   onOpenInventory?: () => void;
@@ -66,19 +74,34 @@ export function ExplorationMobileHud({ onInteractPress, onOpenInventory }: Explo
     };
   }, []);
 
-  // ── Control writers ──
-  const startControl = useCallback(
-    (key: keyof VirtualControls) => {
-      virtualControlsRef.current[key] = 1;
+  const lastTapAtRef = useRef(0);
+  /** pointerId → direction currently held by that touch */
+  const pointerBindingsRef = useRef<Map<number, keyof VirtualControls>>(new Map());
+
+  const syncMovementControls = useCallback(() => {
+    const vc = virtualControlsRef.current;
+    const active = new Set(pointerBindingsRef.current.values());
+    for (const key of MOVEMENT_CONTROL_KEYS) {
+      vc[key] = active.has(key) ? 1 : 0;
+    }
+  }, [virtualControlsRef]);
+
+  const bindPointerControl = useCallback(
+    (key: keyof VirtualControls, pointerId: number) => {
+      pointerBindingsRef.current.set(pointerId, key);
+      syncMovementControls();
     },
-    [virtualControlsRef],
+    [syncMovementControls],
   );
 
-  const stopControl = useCallback(
-    (key: keyof VirtualControls) => {
-      virtualControlsRef.current[key] = 0;
+  const releasePointerControl = useCallback(
+    (key: keyof VirtualControls, pointerId: number) => {
+      if (pointerBindingsRef.current.get(pointerId) === key) {
+        pointerBindingsRef.current.delete(pointerId);
+      }
+      syncMovementControls();
     },
-    [virtualControlsRef],
+    [syncMovementControls],
   );
 
   const toggleRun = useCallback(() => {
@@ -90,6 +113,7 @@ export function ExplorationMobileHud({ onInteractPress, onOpenInventory }: Explo
   }, [virtualControlsRef]);
 
   const resetAllControls = useCallback(() => {
+    pointerBindingsRef.current.clear();
     const vc = virtualControlsRef.current;
     vc.forward = 0;
     vc.backward = 0;
@@ -113,8 +137,6 @@ export function ExplorationMobileHud({ onInteractPress, onOpenInventory }: Explo
       resetAllControls();
     };
   }, [resetAllControls]);
-
-  const lastTapAtRef = useRef(0);
 
   // ── Interact: synthetic KeyE + EventBus + exit fallback ──
   const handleInteract = useCallback(() => {
@@ -178,11 +200,12 @@ export function ExplorationMobileHud({ onInteractPress, onOpenInventory }: Explo
       e.preventDefault();
       e.stopPropagation();
       (e.currentTarget as HTMLButtonElement).setPointerCapture(e.pointerId);
-      startControl(key);
+      bindPointerControl(key, e.pointerId);
     },
-    [startControl],
+    [bindPointerControl],
   );
 
+  // Only pointerup / pointercancel — NOT pointerleave (fires while finger still down → jerky stops).
   const makeStopHandler = useCallback(
     (key: keyof VirtualControls) => (e: React.PointerEvent) => {
       e.preventDefault();
@@ -191,9 +214,16 @@ export function ExplorationMobileHud({ onInteractPress, onOpenInventory }: Explo
       if (el.hasPointerCapture(e.pointerId)) {
         el.releasePointerCapture(e.pointerId);
       }
-      stopControl(key);
+      releasePointerControl(key, e.pointerId);
     },
-    [stopControl],
+    [releasePointerControl],
+  );
+
+  const makeLostHandler = useCallback(
+    (key: keyof VirtualControls) => (e: React.PointerEvent) => {
+      releasePointerControl(key, e.pointerId);
+    },
+    [releasePointerControl],
   );
 
   // ── Adaptive sizing based on viewport width ──
@@ -233,7 +263,7 @@ export function ExplorationMobileHud({ onInteractPress, onOpenInventory }: Explo
     background: 'rgba(0,0,0,0.5)',
     color: 'white',
     userSelect: 'none',
-    touchAction: 'manipulation',
+    touchAction: 'none',
     WebkitTapHighlightColor: 'transparent',
     cursor: 'pointer',
     backdropFilter: 'blur(4px)',
@@ -277,7 +307,7 @@ export function ExplorationMobileHud({ onInteractPress, onOpenInventory }: Explo
               onPointerDown={makeStartHandler('forward')}
               onPointerUp={makeStopHandler('forward')}
               onPointerCancel={makeStopHandler('forward')}
-              onPointerLeave={makeStopHandler('forward')}
+              onLostPointerCapture={makeLostHandler('forward')}
             >
               ▲
             </button>
@@ -289,7 +319,7 @@ export function ExplorationMobileHud({ onInteractPress, onOpenInventory }: Explo
               onPointerDown={makeStartHandler('left')}
                 onPointerUp={makeStopHandler('left')}
                 onPointerCancel={makeStopHandler('left')}
-                onPointerLeave={makeStopHandler('left')}
+                onLostPointerCapture={makeLostHandler('left')}
               >
                 ◀
               </button>
@@ -300,7 +330,7 @@ export function ExplorationMobileHud({ onInteractPress, onOpenInventory }: Explo
               onPointerDown={makeStartHandler('backward')}
                 onPointerUp={makeStopHandler('backward')}
                 onPointerCancel={makeStopHandler('backward')}
-                onPointerLeave={makeStopHandler('backward')}
+                onLostPointerCapture={makeLostHandler('backward')}
               >
                 ▼
               </button>
@@ -311,7 +341,7 @@ export function ExplorationMobileHud({ onInteractPress, onOpenInventory }: Explo
               onPointerDown={makeStartHandler('right')}
                 onPointerUp={makeStopHandler('right')}
                 onPointerCancel={makeStopHandler('right')}
-                onPointerLeave={makeStopHandler('right')}
+                onLostPointerCapture={makeLostHandler('right')}
               >
                 ▶
               </button>
@@ -372,7 +402,7 @@ export function ExplorationMobileHud({ onInteractPress, onOpenInventory }: Explo
               onPointerDown={makeStartHandler('jump')}
               onPointerUp={makeStopHandler('jump')}
               onPointerCancel={makeStopHandler('jump')}
-              onPointerLeave={makeStopHandler('jump')}
+              onLostPointerCapture={makeLostHandler('jump')}
             >
               <ArrowUp size={iconSmall} />
             </button>
@@ -428,7 +458,7 @@ export function ExplorationMobileHud({ onInteractPress, onOpenInventory }: Explo
             onPointerDown={makeStartHandler('forward')}
             onPointerUp={makeStopHandler('forward')}
             onPointerCancel={makeStopHandler('forward')}
-            onPointerLeave={makeStopHandler('forward')}
+            onLostPointerCapture={makeLostHandler('forward')}
           >
             ▲
           </button>
@@ -440,7 +470,7 @@ export function ExplorationMobileHud({ onInteractPress, onOpenInventory }: Explo
               onPointerDown={makeStartHandler('left')}
               onPointerUp={makeStopHandler('left')}
               onPointerCancel={makeStopHandler('left')}
-              onPointerLeave={makeStopHandler('left')}
+              onLostPointerCapture={makeLostHandler('left')}
             >
               ◀
             </button>
@@ -451,7 +481,7 @@ export function ExplorationMobileHud({ onInteractPress, onOpenInventory }: Explo
               onPointerDown={makeStartHandler('backward')}
               onPointerUp={makeStopHandler('backward')}
               onPointerCancel={makeStopHandler('backward')}
-              onPointerLeave={makeStopHandler('backward')}
+              onLostPointerCapture={makeLostHandler('backward')}
             >
               ▼
             </button>
@@ -462,7 +492,7 @@ export function ExplorationMobileHud({ onInteractPress, onOpenInventory }: Explo
               onPointerDown={makeStartHandler('right')}
               onPointerUp={makeStopHandler('right')}
               onPointerCancel={makeStopHandler('right')}
-              onPointerLeave={makeStopHandler('right')}
+              onLostPointerCapture={makeLostHandler('right')}
             >
               ▶
             </button>
@@ -525,7 +555,7 @@ export function ExplorationMobileHud({ onInteractPress, onOpenInventory }: Explo
             onPointerDown={makeStartHandler('jump')}
             onPointerUp={makeStopHandler('jump')}
             onPointerCancel={makeStopHandler('jump')}
-            onPointerLeave={makeStopHandler('jump')}
+            onLostPointerCapture={makeLostHandler('jump')}
           >
             <ArrowUp size={iconSmall} />
           </button>

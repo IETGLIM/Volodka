@@ -68,8 +68,8 @@ export interface ExplorationMovementTuning {
 const DEFAULT_MOVEMENT_TUNING: ExplorationMovementTuning = { accel: 20, damping: 10 };
 
 const SCENE_MOVEMENT_TUNING: Partial<Record<SceneId, ExplorationMovementTuning>> = {
-  volodka_room: { accel: 26, damping: 14 },
-  volodka_corridor: { accel: 22, damping: 13 },
+  volodka_room: { accel: 26, damping: 11 },
+  volodka_corridor: { accel: 22, damping: 10 },
 };
 
 /** Tighter accel/damping in cramped interiors — less ice-skating between furniture. */

@@ -37,7 +37,7 @@ export const CREEP_PATROLS: CreepPatrolDef[] = [
     enemyType: 'system_daemon',
     name: 'Системный Демон',
     color: '#ff3344',
-    waypoints: [[-5, -3], [-7.5, 1], [-4, 4], [-2, -1]],
+    waypoints: [[-2.5, -5], [2, -2], [2.2, 4], [-2, 6]],
     patrolSpeed: 1.2,
     chaseSpeed: 4.2,
     visionRange: 6,

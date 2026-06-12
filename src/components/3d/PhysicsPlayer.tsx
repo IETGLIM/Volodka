@@ -49,6 +49,7 @@ import { eventBus } from '@/engine/EventBus';
 import { forceEmitInteractionEnd } from '@/engine/interaction/interactionEndDedup';
 import { audioEngine } from '@/engine/AudioEngine';
 
+import { sampleHeldVirtualControls, type VirtualHoldTimes } from '@/engine/VirtualInputHold';
 import { getInteractionState, isInteractionLocked } from '@/engine/interaction/interactionSession';
 import { InteractionState } from '@/engine/interaction/interactionMachine';
 import { setPlayerRigidBody, getPlayerExternalVelocity, clearPlayerRigidBody } from '@/engine/PlayerRigidBodyState';
@@ -74,6 +75,8 @@ function lerpAngle(a: number, b: number, t: number): number {
 /* ─── Physics Constants ─── */
 const WALK_SPEED = 4;
 const RUN_SPEED = 7;
+/** Keyboard gets snappier response than touch/gamepad damp tuning. */
+const KEYBOARD_ACCEL = 50;
 const JUMP_FORCE = 5.5;
 const GRAVITY = -15;
 const FOOTSTEP_INTERVAL = 0.4;
@@ -170,6 +173,7 @@ export function PhysicsPlayer({
   const warmupFramesRef = useRef(0);
   const prevRbPosRef = useRef(new THREE.Vector3());
   const noMovementFramesRef = useRef(0);
+  const virtualHoldTimesRef = useRef<VirtualHoldTimes>({});
 
   const { world, rapier } = useRapier();
 
@@ -510,11 +514,18 @@ export function PhysicsPlayer({
 
     // ─── Input reading ───
     const keys = controls.getKeys();
-    const virtual = virtualControlsRef?.current;
-    const fwd = (keys.forward ? 1 : 0) + (virtual?.forward ?? 0);
-    const bwd = (keys.backward ? 1 : 0) + (virtual?.backward ?? 0);
-    const lft = (keys.left ? 1 : 0) + (virtual?.left ?? 0);
-    const rgt = (keys.right ? 1 : 0) + (virtual?.right ?? 0);
+    const virtual = sampleHeldVirtualControls(
+      virtualControlsRef?.current,
+      state.clock.elapsedTime,
+      virtualHoldTimesRef.current,
+    );
+    const keyboardDrivesMove = keys.hasMovement;
+    const mergeVirtual = !keyboardDrivesMove;
+
+    const fwd = (keys.forward ? 1 : 0) + (mergeVirtual ? (virtual?.forward ?? 0) : 0);
+    const bwd = (keys.backward ? 1 : 0) + (mergeVirtual ? (virtual?.backward ?? 0) : 0);
+    const lft = (keys.left ? 1 : 0) + (mergeVirtual ? (virtual?.left ?? 0) : 0);
+    const rgt = (keys.right ? 1 : 0) + (mergeVirtual ? (virtual?.right ?? 0) : 0);
     const running = keys.run || (virtual?.run ?? 0) > 0;
     const jumping = keys.jump || (virtual?.jump ?? 0) > 0;
 
@@ -537,16 +548,24 @@ export function PhysicsPlayer({
         dt,
       );
     }
-    const speed =
-      (running ? RUN_SPEED : WALK_SPEED) * locomotionScale * getTouchLocomotionFactor();
+    const isOutdoor = !config.hasCeiling;
+    const touchScale = keyboardDrivesMove ? 1 : getTouchLocomotionFactor();
+    const speed = (running ? RUN_SPEED : WALK_SPEED) * locomotionScale * touchScale;
+    const moveAccel = keyboardDrivesMove ? KEYBOARD_ACCEL : movementTuning.accel;
+    const stopDamping = keyboardDrivesMove ? movementTuning.damping * 0.55 : movementTuning.damping;
 
     // ─── Horizontal velocity with acceleration / damping ───
     if (isMoving) {
       moveDir.normalize();
       const targetVx = moveDir.x * speed;
       const targetVz = moveDir.z * speed;
-      vel.x = THREE.MathUtils.damp(vel.x, targetVx, movementTuning.accel, dt);
-      vel.z = THREE.MathUtils.damp(vel.z, targetVz, movementTuning.accel, dt);
+      if (keyboardDrivesMove) {
+        vel.x = targetVx;
+        vel.z = targetVz;
+      } else {
+        vel.x = THREE.MathUtils.damp(vel.x, targetVx, moveAccel, dt);
+        vel.z = THREE.MathUtils.damp(vel.z, targetVz, moveAccel, dt);
+      }
 
       // Rotation — frame-rate-independent exponential decay
       const targetYaw = Math.atan2(moveDir.x, moveDir.z);
@@ -555,8 +574,8 @@ export function PhysicsPlayer({
         livePlayerRotationRef.current, targetYaw, rotT,
       );
     } else {
-      vel.x = THREE.MathUtils.damp(vel.x, 0, movementTuning.damping, dt);
-      vel.z = THREE.MathUtils.damp(vel.z, 0, movementTuning.damping, dt);
+      vel.x = THREE.MathUtils.damp(vel.x, 0, stopDamping, dt);
+      vel.z = THREE.MathUtils.damp(vel.z, 0, stopDamping, dt);
     }
 
     // ─── Vertical velocity — gravity + jump ───
@@ -568,7 +587,8 @@ export function PhysicsPlayer({
       (isGroundedRef.current || coyoteTimerRef.current > 0);
 
     const posForGroundCheck = rb.translation();
-    const nearFloor = posForGroundCheck.y <= floorY + 0.05;
+    const floorSlack = isOutdoor ? 0.08 : 0.05;
+    const nearFloor = posForGroundCheck.y <= floorY + floorSlack;
 
     if (wantsJump) {
       vel.y = JUMP_FORCE;
@@ -728,6 +748,13 @@ export function PhysicsPlayer({
         : 0;
     const blockedByWall = blockedByCollider && collisionCount > 0;
 
+    // Don't let velocity build against walls — reduces keyboard stutter in tight rooms.
+    if (blockedByCollider && desiredHLen > 0.001 && actualHLen < desiredHLen * 0.35) {
+      const slideRatio = Math.max(actualHLen / desiredHLen, 0.15);
+      vel.x *= slideRatio;
+      vel.z *= slideRatio;
+    }
+
     // ─── Floor material from scene config (single source of truth) ───
     // Previously, we read the collider name (fs:<material>) via raycast.
     // Now, with auto-colliders from visual geometry (trimesh), the collider
@@ -740,7 +767,7 @@ export function PhysicsPlayer({
     const animPos = rb.translation();
     // If feet are at floor level with low vertical velocity, treat as grounded
     // even when the character controller briefly loses ground contact while walking.
-    if (animPos.y <= floorY + 0.04 && Math.abs(vel.y) < 0.75) {
+    if (animPos.y <= floorY + floorSlack && Math.abs(vel.y) < 0.75) {
       isGroundedRef.current = true;
       if (Math.abs(vel.y) < 0.25) vel.y = 0;
     }
@@ -778,7 +805,8 @@ export function PhysicsPlayer({
     let finalPos = rb.translation();
 
     // Lock Y on flat ground — single snap per frame avoids jitter from repeated setTranslation
-    if (onFlatGround && !wantsJump && Math.abs(finalPos.y - floorY) > 0.008) {
+    const floorSnapEps = isOutdoor ? 0.02 : 0.008;
+    if (onFlatGround && !wantsJump && Math.abs(finalPos.y - floorY) > floorSnapEps) {
       rb.setTranslation({ x: finalPos.x, y: floorY, z: finalPos.z }, true);
       vel.y = 0;
       isGroundedRef.current = true;

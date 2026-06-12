@@ -9,6 +9,7 @@ import { getNPCsForScene, getCurrentScheduleEntry } from '@/engine/ScheduleEngin
 import { findNpcById } from '@/data/allNpcDefinitions';
 import { NPC } from './NPC';
 import { InteractionState } from '@/engine/interaction/interactionMachine';
+import { separateNpcPositions } from '@/engine/npc/separateNpcPositions';
 
 interface NPCSystemProps {
   livePlayerPositionRef: React.MutableRefObject<THREE.Vector3>;
@@ -24,6 +25,8 @@ const MAX_NPCS_PER_SCENE: Partial<Record<SceneId, number>> = {
   volodka_corridor: 2,
   zarema_albert_room: 2,
   home_evening: 3,
+  street_night: 5,
+  street_winter: 4,
   abandoned_factory: 5,
   park_day: 8,
 };
@@ -33,6 +36,15 @@ const CORRIDOR_PATROL_WAYPOINTS: [number, number, number][] = [
   [0, 0, -2.5],
   [0, 0, 0],
   [0, 0, 2.2],
+];
+
+/** Sidewalk loop on the 6 m strip — keeps walkers off lamp posts & curbs. */
+const STREET_PATROL_WAYPOINTS: [number, number, number][] = [
+  [-2.2, 0, -6],
+  [1.8, 0, -2],
+  [2.2, 0, 3],
+  [-1.5, 0, 7],
+  [-2.4, 0, 1],
 ];
 
 /** Manages all NPCs for the current scene */
@@ -59,7 +71,10 @@ export function NPCSystem({
           (sceneId === 'volodka_corridor' &&
           (activity === 'walk' || activity === 'rest')
             ? CORRIDOR_PATROL_WAYPOINTS
-            : undefined);
+            : (sceneId === 'street_night' || sceneId === 'street_winter') &&
+                (activity === 'walk' || activity === 'rest')
+              ? STREET_PATROL_WAYPOINTS
+              : undefined);
 
         return {
           definition: def,
@@ -77,11 +92,15 @@ export function NPCSystem({
       patrolWaypoints?: [number, number, number][];
     }>;
 
+    let placed = npcs;
     const cap = MAX_NPCS_PER_SCENE[sceneId];
-    if (cap !== undefined && npcs.length > cap) {
-      return npcs.slice(0, cap);
+    if (cap !== undefined && placed.length > cap) {
+      placed = placed.slice(0, cap);
     }
-    return npcs;
+    if (sceneId === 'street_night' || sceneId === 'street_winter') {
+      placed = separateNpcPositions(placed);
+    }
+    return placed;
   }, [sceneId, timeOfDay, scheduleCtx]);
 
   return (

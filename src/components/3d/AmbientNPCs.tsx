@@ -47,14 +47,14 @@ const SCENE_CONFIGS: Partial<Record<SceneId, AmbientNPCConfig>> = {
   street_night: {
     count: 3,
     type: 'street_pedestrian',
-    spawnPositions: [[0, 0, -5], [0, 0, 3], [0, 0, -12]],
-    wanderRadius: 4.0,
+    spawnPositions: [[-2.2, 0, -6], [1.6, 0, 2], [-1.8, 0, 7]],
+    wanderRadius: 2.5,
   },
   street_winter: {
     count: 2,
     type: 'winter_pedestrian',
-    spawnPositions: [[0, 0, -3], [0, 0, 5]],
-    wanderRadius: 3.5,
+    spawnPositions: [[-1.5, 0, -4], [2, 0, 5]],
+    wanderRadius: 2.5,
   },
   library_day: {
     count: 2,

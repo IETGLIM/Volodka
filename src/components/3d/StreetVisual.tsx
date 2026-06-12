@@ -63,6 +63,22 @@ export function StreetVisual({ sceneId = 'street_night', livePlayerPositionRef }
       {/* ── ENVIRONMENTAL CLUTTER / STORYTELLING ── */}
       {/* ═══════════════════════════════════════════════ */}
 
+      {/* ── Wet bench (matches street_bench_zone trigger at origin) ── */}
+      <group position={[0, 0, 0]}>
+        <mesh position={[0, 0.25, 0]} castShadow receiveShadow>
+          <boxGeometry args={[1.6, 0.08, 0.55]} />
+          <meshStandardMaterial color="#3a4a3a" roughness={0.85} />
+        </mesh>
+        <mesh position={[-0.65, 0.45, 0]} castShadow>
+          <boxGeometry args={[0.08, 0.32, 0.5]} />
+          <meshStandardMaterial color="#2a3a2a" roughness={0.9} />
+        </mesh>
+        <mesh position={[0.65, 0.45, 0]} castShadow>
+          <boxGeometry args={[0.08, 0.32, 0.5]} />
+          <meshStandardMaterial color="#2a3a2a" roughness={0.9} />
+        </mesh>
+      </group>
+
       {/* ── Overflowing trash cans ── */}
       <StreetClutterGate
         livePlayerPositionRef={livePlayerPositionRef}

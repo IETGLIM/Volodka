@@ -21,6 +21,7 @@ import {
   getExplorationMovementTuning,
   getTouchLocomotionFactor,
 } from '@/config/scenes';
+import { sampleHeldVirtualControls, type VirtualHoldTimes } from '@/engine/VirtualInputHold';
 import { eventBus } from '@/engine/EventBus';
 import { audioEngine } from '@/engine/AudioEngine';
 import { isInteractionLocked } from '@/engine/interaction/interactionSession';
@@ -35,6 +36,7 @@ function lerpAngle(a: number, b: number, t: number): number {
 
 const WALK_SPEED = 4;
 const RUN_SPEED = 7;
+const KEYBOARD_ACCEL = 50;
 const FOOTSTEP_INTERVAL = 0.4;
 const ROTATION_SPEED = 10; // frame-rate-independent rotation speed
 
@@ -60,6 +62,7 @@ export function SimplePlayer({
   const velocityRef = useRef(new THREE.Vector3(0, 0, 0));
   const currentAnimRef = useRef<string>('idle');
   const footstepTimerRef = useRef(0);
+  const virtualHoldTimesRef = useRef<VirtualHoldTimes>({});
   const prevSceneIdRef = useRef(sceneId);
 
   const locomotionScale = getExplorationLocomotionScale(sceneId);
@@ -155,11 +158,18 @@ export function SimplePlayer({
 
     // Input reading
     const keys = controls.getKeys();
-    const virtual = virtualControlsRef?.current;
-    const fwd = (keys.forward ? 1 : 0) + (virtual?.forward ?? 0);
-    const bwd = (keys.backward ? 1 : 0) + (virtual?.backward ?? 0);
-    const lft = (keys.left ? 1 : 0) + (virtual?.left ?? 0);
-    const rgt = (keys.right ? 1 : 0) + (virtual?.right ?? 0);
+    const virtual = sampleHeldVirtualControls(
+      virtualControlsRef?.current,
+      state.clock.elapsedTime,
+      virtualHoldTimesRef.current,
+    );
+    const keyboardDrivesMove = keys.hasMovement;
+    const mergeVirtual = !keyboardDrivesMove;
+
+    const fwd = (keys.forward ? 1 : 0) + (mergeVirtual ? (virtual?.forward ?? 0) : 0);
+    const bwd = (keys.backward ? 1 : 0) + (mergeVirtual ? (virtual?.backward ?? 0) : 0);
+    const lft = (keys.left ? 1 : 0) + (mergeVirtual ? (virtual?.left ?? 0) : 0);
+    const rgt = (keys.right ? 1 : 0) + (mergeVirtual ? (virtual?.right ?? 0) : 0);
     const running = keys.run || (virtual?.run ?? 0) > 0;
 
     moveDir.set(0, 0, 0);
@@ -168,16 +178,23 @@ export function SimplePlayer({
 
     const moveLen = moveDir.length();
     const isMoving = moveLen > 0.01;
-    const speed =
-      (running ? RUN_SPEED : WALK_SPEED) * locomotionScale * getTouchLocomotionFactor();
+    const touchScale = keyboardDrivesMove ? 1 : getTouchLocomotionFactor();
+    const speed = (running ? RUN_SPEED : WALK_SPEED) * locomotionScale * touchScale;
+    const moveAccel = keyboardDrivesMove ? KEYBOARD_ACCEL : movementTuning.accel;
+    const stopDamping = keyboardDrivesMove ? movementTuning.damping * 0.55 : movementTuning.damping;
 
     if (isMoving) {
       moveDir.normalize();
       const targetVx = moveDir.x * speed;
       const targetVz = moveDir.z * speed;
 
-      vel.x = THREE.MathUtils.damp(vel.x, targetVx, movementTuning.accel, dt);
-      vel.z = THREE.MathUtils.damp(vel.z, targetVz, movementTuning.accel, dt);
+      if (keyboardDrivesMove) {
+        vel.x = targetVx;
+        vel.z = targetVz;
+      } else {
+        vel.x = THREE.MathUtils.damp(vel.x, targetVx, moveAccel, dt);
+        vel.z = THREE.MathUtils.damp(vel.z, targetVz, moveAccel, dt);
+      }
 
       const targetYaw = Math.atan2(moveDir.x, moveDir.z);
       // Frame-rate-independent rotation using exponential decay
@@ -201,8 +218,8 @@ export function SimplePlayer({
         audioEngine.playFootstep('default');
       }
     } else {
-      vel.x = THREE.MathUtils.damp(vel.x, 0, movementTuning.damping, dt);
-      vel.z = THREE.MathUtils.damp(vel.z, 0, movementTuning.damping, dt);
+      vel.x = THREE.MathUtils.damp(vel.x, 0, stopDamping, dt);
+      vel.z = THREE.MathUtils.damp(vel.z, 0, stopDamping, dt);
       currentAnimRef.current = 'idle';
       footstepTimerRef.current = 0;
     }
