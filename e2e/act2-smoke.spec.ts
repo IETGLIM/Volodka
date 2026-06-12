@@ -13,11 +13,11 @@ async function skipWakeCinematic(page: import('@playwright/test').Page) {
 }
 
 async function skipTitleCardIfPresent(page: import('@playwright/test').Page) {
-  const titleSkip = page.locator('button.fixed.bottom-6').filter({ hasText: /^Пропустить$/ });
-  if (await titleSkip.isVisible({ timeout: 8000 }).catch(() => false)) {
-    await titleSkip.click({ force: true });
-    await page.waitForTimeout(600);
-  }
+  const cutsceneText = page.getByText(/Сеть|Сеть пробуждается|Под поверхностью/i).first();
+  if (!(await cutsceneText.isVisible({ timeout: 8000 }).catch(() => false))) return;
+  await page.waitForTimeout(1200);
+  await page.keyboard.press('Escape');
+  await page.waitForTimeout(800);
 }
 
 async function skipStoryTypewriter(page: import('@playwright/test').Page) {
@@ -52,6 +52,31 @@ test.describe('Act II smoke', () => {
     await cafeBtn.click();
 
     await expect(page.getByText(/Альберт|гильдии|стихи/i).first()).toBeVisible({
+      timeout: 20_000,
+    });
+  });
+
+  test('bootstrap mid-act → office hub → start_diagnosis', async ({ page }) => {
+    await waitForMenuReady(page);
+    await page.getByTestId('menu-new-game').click();
+    await expect(page.locator('canvas[data-engine]')).toBeVisible({ timeout: 90_000 });
+
+    await skipWakeCinematic(page);
+    await expect(page.getByTestId('game-hud')).toBeVisible({ timeout: 30_000 });
+
+    await page.evaluate(() => {
+      window.__volodka_e2e?.bootstrapMidActOffice();
+    });
+
+    const hubDialog = page.getByRole('dialog', { name: /Голос/i });
+    await expect(hubDialog).toBeVisible({ timeout: 30_000 });
+    await skipStoryTypewriter(page);
+
+    const terminalBtn = hubDialog.getByRole('button', { name: /терминал/i });
+    await expect(terminalBtn).toBeVisible({ timeout: 15_000 });
+    await terminalBtn.click({ force: true });
+
+    await expect(page.getByText(/4729|расшифров|стихи/i).first()).toBeVisible({
       timeout: 20_000,
     });
   });

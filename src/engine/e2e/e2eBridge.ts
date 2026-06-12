@@ -22,6 +22,8 @@ export interface VolodkaE2EBridge {
   visitStoryNode: (nodeId: string) => void;
   /** Skip Act I — open Act II entry beat with flags and act progression. */
   bootstrapAct2Entry: () => void;
+  /** Mid–Act I office hub — diagnosis golden path (localhost Playwright only). */
+  bootstrapMidActOffice: () => void;
 }
 
 declare global {
@@ -67,6 +69,8 @@ export function registerVolodkaE2EBridge(): void {
     },
     bootstrapAct2Entry() {
       const store = getGameStore();
+      store.setIntroActive(false);
+      store.setMainMenuOpen(false);
       if (store.playerState.progression.currentAct < 2) {
         store.advanceAct();
       }
@@ -75,6 +79,17 @@ export function registerVolodkaE2EBridge(): void {
       dispatchGameAction({ type: 'story/visitNode', nodeId: 'act2_transition' });
       dispatchGameAction({ type: 'story/setCurrentNodeId', nodeId: 'act2_transition' });
       void openLinkedStory('act2_transition');
+    },
+    bootstrapMidActOffice() {
+      const store = getGameStore();
+      store.setIntroActive(false);
+      store.setMainMenuOpen(false);
+      store.setFlag('agreed_help_alexander', true);
+      store.setFlag('going_to_cafe', true);
+      dispatchGameAction({ type: 'story/visitNode', nodeId: 'office_alexander' });
+      dispatchGameAction({ type: 'story/visitNode', nodeId: 'office_explore_mode' });
+      dispatchGameAction({ type: 'story/setCurrentNodeId', nodeId: 'office_explore_mode' });
+      void openLinkedStory('office_explore_mode');
     },
   };
 }

@@ -247,6 +247,7 @@ export const EXPLORATION_DIALOGUE_NODES: Record<string, DialogueNode> = {
         text: 'Подойти к незнакомке',
         next: null,
         effects: [
+          { type: 'visitStoryNode', nodeId: 'maria_curious' },
           { type: 'setFlag', flag: 'spotted_maria', flagValue: true },
           { type: 'addKarma', value: 2 },
           { type: 'collectPoem', poemId: 'poem_19' },
@@ -273,6 +274,7 @@ export const EXPLORATION_DIALOGUE_NODES: Record<string, DialogueNode> = {
         text: 'Начать расшифровку',
         next: null,
         effects: [
+          { type: 'visitStoryNode', nodeId: 'start_diagnosis' },
           { type: 'addSkill', skill: 'coding', value: 3 },
           { type: 'addStat', stat: 'energy', value: -15 },
           { type: 'setFlag', flag: 'started_decryption', flagValue: true },

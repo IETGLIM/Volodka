@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { STORY_NODES_SCENE_EXPLORE_HUBS } from '@/data/story/sceneExploreHubs';
 import { STORY_NODES_ACT2 } from '@/data/story/act2';
 
 describe('Act II golden path markers', () => {
@@ -14,5 +15,12 @@ describe('Act II golden path markers', () => {
     const golden = node.choices.filter((c) => c.goldenPath === true);
     expect(golden).toHaveLength(1);
     expect(golden[0]?.next).toBe('act2_albert_hint');
+  });
+
+  it('office_explore_mode hub golden branch leads to start_diagnosis', () => {
+    const node = STORY_NODES_SCENE_EXPLORE_HUBS.office_explore_mode;
+    const golden = node.choices.filter((c) => c.goldenPath === true);
+    expect(golden).toHaveLength(1);
+    expect(golden[0]?.next).toBe('start_diagnosis');
   });
 });

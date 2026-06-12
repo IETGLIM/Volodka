@@ -54,6 +54,11 @@ async function closeNarrativeOverlay(page: import('@playwright/test').Page) {
 
 /** WASD moves the player during walkable explore hub (overlay may stay open). */
 async function assertExplorationMovement(page: import('@playwright/test').Page) {
+  await page.waitForFunction(
+    () => typeof window.__volodka_e2e?.getPlayerPosition === 'function',
+    null,
+    { timeout: 30_000 },
+  );
   const before = await page.evaluate(() => window.__volodka_e2e?.getPlayerPosition());
   expect(before).toBeTruthy();
 
@@ -77,6 +82,14 @@ async function skipTitleCardIfPresent(page: import('@playwright/test').Page) {
   await page.waitForTimeout(1200);
   await page.keyboard.press('Escape');
   await page.waitForTimeout(800);
+}
+
+/** Corridor explore hub after Solnysh entry — tutorial/typewriter can mask hub copy. */
+async function expectCorridorExploreHub(page: import('@playwright/test').Page) {
+  await expect(page.getByRole('dialog', { name: /Голос/i })).toBeVisible({ timeout: 45_000 });
+  await dismissFirstPlayTutorial(page);
+  await skipStoryTypewriter(page);
+  await expect(page.getByText(/корид|Солныш|Умка|кухн/i).first()).toBeVisible({ timeout: 20_000 });
 }
 
 /** After wake + act I title card, dismiss explore hub or take corridor VN branch. */
@@ -156,10 +169,7 @@ test.describe('Act I smoke', () => {
     await expect(solnyshOverlay).toBeVisible({ timeout: 20_000 });
     await skipTitleCardIfPresent(page);
 
-    await expect(page.getByRole('dialog', { name: /Голос/i })).toBeVisible({ timeout: 25_000 });
-    await expect(page.getByText(/коридор|Солныш|Умка|кухн/i).first()).toBeVisible({
-      timeout: 15_000,
-    });
+    await expectCorridorExploreHub(page);
   });
 
   test('physical room_door → corridor cutscene → corridor explore hub', async ({ page }) => {
@@ -176,10 +186,7 @@ test.describe('Act I smoke', () => {
     await expect(solnyshOverlay).toBeVisible({ timeout: 25_000 });
     await skipTitleCardIfPresent(page);
 
-    await expect(page.getByRole('dialog', { name: /Голос/i })).toBeVisible({ timeout: 25_000 });
-    await expect(page.getByText(/коридор|Солныш|Умка|кухн/i).first()).toBeVisible({
-      timeout: 15_000,
-    });
+    await expectCorridorExploreHub(page);
   });
 
   test('corridor explore hub → kitchen_table golden branch', async ({ page }) => {
@@ -192,11 +199,9 @@ test.describe('Act I smoke', () => {
 
     await leaveExploreHub(page);
     await skipTitleCardIfPresent(page);
+    await expectCorridorExploreHub(page);
 
     const hubDialog = page.getByRole('dialog', { name: /Голос/i });
-    await expect(hubDialog).toBeVisible({ timeout: 25_000 });
-    await dismissFirstPlayTutorial(page);
-    await skipStoryTypewriter(page);
     const kitchenBtn = hubDialog.getByRole('button', { name: /Пойти на кухню/i });
     await expect(kitchenBtn).toBeVisible({ timeout: 15_000 });
     await kitchenBtn.click({ force: true });
