@@ -45,14 +45,18 @@ function ExitMarker({
 }) {
   const showIndicatorRef = useRef(false);
   const _exitPosRef = useRef(new THREE.Vector3());
+  const proximityRef = useRef(0);
+  const pulsePhaseRef = useRef(0);
   const [showIndicator, setShowIndicator] = useState(false);
 
-  useFrameTick('interaction', () => {
+  useFrameTick('interaction', ({ delta }) => {
     const playerPos = livePlayerPositionRef.current;
     _exitPosRef.current.set(exit.position[0], exit.position[1], exit.position[2]);
     const dist = playerPos.distanceTo(_exitPosRef.current);
 
     const isNear = dist < EXIT_PROXIMITY_RANGE;
+    proximityRef.current = isNear ? Math.max(0.4, 1 - dist / (EXIT_PROXIMITY_RANGE + 0.5)) : 0;
+    if (isNear) pulsePhaseRef.current += delta * 2.6;
     if (isNear !== showIndicatorRef.current) {
       showIndicatorRef.current = isNear;
       setShowIndicator(isNear);
@@ -63,7 +67,14 @@ function ExitMarker({
 
   return (
     <group position={exit.position}>
-      <ProximityGodRay active={showIndicator} color={markerColor} beamHeight={2.3} baseY={0.15} />
+      <ProximityGodRay
+        active={showIndicator}
+        color={markerColor}
+        beamHeight={2.3}
+        baseY={0.15}
+        proximityRef={proximityRef}
+        pulsePhaseRef={pulsePhaseRef}
+      />
     </group>
   );
 }

@@ -48,7 +48,7 @@ export function NoirOverlay() {
           pointerEvents: 'none',
           zIndex: UI_LAYERS.NOIR_OVERLAY,
           // Only a very subtle warm-to-cool edge tint, no darkening
-          boxShadow: `inset ${chromaticShift}px 0 0 rgba(255, 120, 50, 0.02), inset -${chromaticShift}px 0 0 rgba(50, 120, 255, 0.02)`,
+          boxShadow: `inset ${chromaticShift}px 0 0 rgba(255, 120, 50, 0.03), inset -${chromaticShift}px 0 0 rgba(50, 200, 255, 0.03)`,
           // Slight desaturation filter for noir mode only
           filter: noirMode
             ? 'saturate(0.9)'
@@ -75,7 +75,7 @@ export function NoirOverlay() {
           `,
           backgroundSize: '3px 3px, 4px 4px, 5px 5px',
           animation: 'noirGrain 0.3s steps(4) infinite',
-          opacity: 0.03 + stressFactor * 0.02,
+          opacity: 0.045 + stressFactor * 0.025,
           mixBlendMode: 'overlay',
         }}
         aria-hidden="true"

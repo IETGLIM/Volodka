@@ -21,12 +21,12 @@ import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
 const SCENE_FOG_COLORS: Record<string, string> = {
   // ─── Noir / Cyberpunk ───
   volodka_room:       '#0c1018', // deep blue-black — monitor glow pierces this
-  volodka_corridor:   '#0a0e18', // near-black blue — dim corridor at night
+  volodka_corridor:   '#0c101c', // rainy blue-black — dim corridor at night
   home_evening:       '#1a1208', // dark warm amber — kitchen at night
   cafe_evening:       '#0c1020', // deep blue-black — hazy café with blue neon
 
   // ─── CyberPunk2077 ───
-  street_night:       '#2a2848', // readable night sky haze
+  street_night:       '#323448', // gray rainy night haze
 
   // ─── Gothic ───
   park_day:           '#2a3828', // misty green-gray (Gothic forest)
@@ -58,7 +58,7 @@ const SCENE_BG_COLORS: Record<string, string> = {
   volodka_corridor:   '#060a14',  // near-black
   home_evening:       '#120c04',  // dark amber
   cafe_evening:       '#080c18',  // dark blue-black
-  street_night:       '#1e1c38',  // night sky — not pitch black
+  street_night:       '#1a1a2c',  // gray rainy night sky
   park_day:           '#101810',
   abandoned_factory:  '#100804',
   office_day:         '#b0bcc8',
@@ -86,9 +86,9 @@ interface FogAnimConfig {
 
 const SCENE_FOG_ANIM: Record<string, FogAnimConfig> = {
   volodka_room:       { pulseFreq: 0.08, nearAmplitude: 0.05, farAmplitude: 0.03, altFogColor: '#0a1015', colorShiftAmp: 0.15 },
-  volodka_corridor:   { pulseFreq: 0.05, nearAmplitude: 0.08, farAmplitude: 0.05, altFogColor: '#080d18', colorShiftAmp: 0.2 },
+  volodka_corridor:   { pulseFreq: 0.06, nearAmplitude: 0.1, farAmplitude: 0.06, altFogColor: '#101828', colorShiftAmp: 0.22 },
   home_evening:       { pulseFreq: 0.06, nearAmplitude: 0.04, farAmplitude: 0.02, colorShiftAmp: 0 },
-  street_night:       { pulseFreq: 0.06, nearAmplitude: 0.04, farAmplitude: 0.03, altFogColor: '#3a3860', colorShiftAmp: 0.12 },
+  street_night:       { pulseFreq: 0.05, nearAmplitude: 0.06, farAmplitude: 0.04, altFogColor: '#404458', colorShiftAmp: 0.18 },
   cafe_evening:       { pulseFreq: 0.07, nearAmplitude: 0.05, farAmplitude: 0.03, altFogColor: '#0d0818', colorShiftAmp: 0.15 },
   office_day:         { pulseFreq: 0.03, nearAmplitude: 0.02, farAmplitude: 0.01, colorShiftAmp: 0 },
   park_day:           { pulseFreq: 0.04, nearAmplitude: 0.12, farAmplitude: 0.1,  altFogColor: '#1a2a18', colorShiftAmp: 0.3 },

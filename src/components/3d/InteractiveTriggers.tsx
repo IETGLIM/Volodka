@@ -606,6 +606,8 @@ function NPCProximityTrigger({
   const promptId = `npc_${npcId}`;
   const [showIndicator, setShowIndicator] = useState(false);
   const showIndicatorRef = useRef(false);
+  const proximityRef = useRef(0);
+  const pulsePhaseRef = useRef(0);
 
   // Pre-allocated temp Vector3 — avoids per-frame allocation (P0-2.2)
   const tempVecRef = useRef(new THREE.Vector3());
@@ -616,6 +618,8 @@ function NPCProximityTrigger({
     const dist = playerPos.distanceTo(tempVecRef.current);
 
     const isNear = dist < 3.0 && !isInteractionLocked();
+    proximityRef.current = isNear ? Math.max(0.4, 1 - dist / 3.5) : 0;
+    if (isNear) pulsePhaseRef.current += delta * 3.2;
 
     if (isNear !== showIndicatorRef.current) {
       showIndicatorRef.current = isNear;
@@ -654,7 +658,14 @@ function NPCProximityTrigger({
   // Subtle proximity light when in range
   return (
     <group position={position}>
-      <ProximityGodRay active={showIndicator} color="#ffb828" beamHeight={2.6} baseY={0.2} />
+      <ProximityGodRay
+        active={showIndicator}
+        color="#ffb828"
+        beamHeight={2.6}
+        baseY={0.2}
+        proximityRef={proximityRef}
+        pulsePhaseRef={pulsePhaseRef}
+      />
     </group>
   );
 }
@@ -692,8 +703,9 @@ function TriggerZoneComponent({
   // Particle burst state — stored in ref, not useState, to avoid per-frame re-renders (P0-2.3)
   const particlesRef = useRef<ParticleData[]>([]);
 
-  // Pulse animation — updated imperatively via material ref
+  // Pulse + proximity — updated imperatively, read by ProximityGodRay
   const pulsePhaseRef = useRef(0);
+  const proximityRef = useRef(0);
 
   // Brief flash on E press
   const outlineFlashRef = useRef(false);
@@ -739,6 +751,7 @@ function TriggerZoneComponent({
     // Show "Press E" if player is within trigger range
     const range = Math.max(zone.size[0], zone.size[2]) / 2 + 1.0;
     const isNear = dist < range && !isInteractionLocked();
+    proximityRef.current = isNear ? Math.max(0.35, 1 - dist / (range + 1.2)) : 0;
 
     // Only update React state when value actually changes
     if (isNear !== showIndicatorRef.current) {
@@ -912,6 +925,9 @@ function TriggerZoneComponent({
         color="#88eeff"
         beamHeight={Math.max(zone.size[1] + 1.6, 2.2)}
         baseY={Math.max(zone.size[1] * 0.2, 0.35)}
+        proximityRef={proximityRef}
+        flashRef={outlineFlashRef}
+        pulsePhaseRef={pulsePhaseRef}
       />
 
       {/* Sparkle particles — single InstancedMesh instead of 8 separate meshes (P0-2.3) */}

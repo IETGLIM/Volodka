@@ -75,21 +75,33 @@ const CutsceneEmbers = memo(function CutsceneEmbers({ count = 20, accentColor = 
 //  LETTERBOX BARS
 // ════════════════════════════════════════════════════════════════
 
+const LETTERBOX_GRADIENT =
+  'linear-gradient(180deg, #000 0%, #050810 70%, #0a1420 100%)';
+
 const LetterboxBars = memo(function LetterboxBars({ style }: { style: 'full' | 'thin' | 'none' }) {
   if (style === 'none') return null;
   const h = style === 'full' ? 'h-[8dvh] min-h-[32px]' : 'h-[4dvh] min-h-[16px]';
+  const barStyle: React.CSSProperties = {
+    zIndex: 12,
+    background: LETTERBOX_GRADIENT,
+    boxShadow: 'inset 0 -1px 0 rgba(0, 255, 200, 0.06)',
+  };
   return (
     <>
       <motion.div
-        className={`absolute top-0 left-0 right-0 ${h} bg-black pointer-events-none`}
-        style={{ zIndex: 12 }}
+        className={`absolute top-0 left-0 right-0 ${h} pointer-events-none`}
+        style={barStyle}
         initial={{ scaleY: 0, transformOrigin: 'top' }}
         animate={{ scaleY: 1 }}
         transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94] }}
       />
       <motion.div
-        className={`absolute bottom-0 left-0 right-0 ${h} bg-black pointer-events-none`}
-        style={{ zIndex: 12 }}
+        className={`absolute bottom-0 left-0 right-0 ${h} pointer-events-none`}
+        style={{
+          ...barStyle,
+          background: 'linear-gradient(0deg, #000 0%, #050810 70%, #0a1420 100%)',
+          boxShadow: 'inset 0 1px 0 rgba(0, 255, 200, 0.06)',
+        }}
         initial={{ scaleY: 0, transformOrigin: 'bottom' }}
         animate={{ scaleY: 1 }}
         transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94] }}

@@ -53,11 +53,12 @@ async function closeNarrativeOverlay(page: import('@playwright/test').Page) {
 }
 
 async function skipTitleCardIfPresent(page: import('@playwright/test').Page) {
-  const titleSkip = page.locator('button.fixed.bottom-6').filter({ hasText: /^Пропустить$/ });
-  if (await titleSkip.isVisible({ timeout: 8000 }).catch(() => false)) {
-    await titleSkip.click({ force: true });
-    await page.waitForTimeout(600);
-  }
+  const cutsceneText = page.getByText(/Солныш|Алина/i).first();
+  if (!(await cutsceneText.isVisible({ timeout: 8000 }).catch(() => false))) return;
+  // Skip button appears after 1s; ESC is more stable than clicking a detaching motion button.
+  await page.waitForTimeout(1200);
+  await page.keyboard.press('Escape');
+  await page.waitForTimeout(800);
 }
 
 /** After wake + act I title card, dismiss explore hub or take corridor VN branch. */
@@ -78,18 +79,30 @@ async function enterCorridorViaPhysicalDoor(page: import('@playwright/test').Pag
   await skipStoryTypewriter(page);
   await closeNarrativeOverlay(page);
 
+  await page.waitForFunction(
+    () => typeof window.__volodka_e2e?.interactTriggerZone === 'function',
+    null,
+    { timeout: 30_000 },
+  );
+
   await page.keyboard.down('KeyW');
   await page.waitForTimeout(1200);
   await page.keyboard.up('KeyW');
 
-  await page.evaluate(() => {
+  await page.evaluate(async () => {
     window.__volodka_e2e?.setPlayerPosition(0, 0.01, 3.25);
+    await new Promise<void>((resolve) => {
+      requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
+    });
     window.__volodka_e2e?.interactTriggerZone('room_door');
   });
 
-  const continueDoor = page.getByRole('button', { name: /^Продолжить$/i });
-  await expect(continueDoor).toBeVisible({ timeout: 15_000 });
-  await continueDoor.click();
+  const doorDialog = page.getByRole('dialog', { name: /Дверь в коридор/i });
+  if (!(await doorDialog.isVisible({ timeout: 4000 }).catch(() => false))) {
+    await page.keyboard.press('KeyE');
+  }
+  await expect(doorDialog).toBeVisible({ timeout: 15_000 });
+  await doorDialog.getByRole('button', { name: /Продолжить/i }).click();
 }
 
 test.describe('Act I smoke', () => {
@@ -156,12 +169,13 @@ test.describe('Act I smoke', () => {
     await leaveExploreHub(page);
     await skipTitleCardIfPresent(page);
 
-    await expect(page.getByRole('dialog', { name: /Голос/i })).toBeVisible({ timeout: 25_000 });
+    const hubDialog = page.getByRole('dialog', { name: /Голос/i });
+    await expect(hubDialog).toBeVisible({ timeout: 25_000 });
     await dismissFirstPlayTutorial(page);
     await skipStoryTypewriter(page);
-    const kitchenBtn = page.getByRole('button', { name: /Пойти на кухню/i });
+    const kitchenBtn = hubDialog.getByRole('button', { name: /Пойти на кухню/i });
     await expect(kitchenBtn).toBeVisible({ timeout: 15_000 });
-    await kitchenBtn.click();
+    await kitchenBtn.click({ force: true });
 
     await expect(page.getByText(/Зарема|чай|кухн/i).first()).toBeVisible({ timeout: 20_000 });
   });

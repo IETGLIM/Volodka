@@ -28,12 +28,12 @@ import { disposeEffectComposer, type PostprocessingComposerLike } from '@/engine
 
 /** Per-scene color grading overrides for CyberPunk2077 / Noir / Gothic feel */
 const SCENE_COLOR_GRADE: Record<string, { hue: number; saturation: number; brightness: number; contrast: number }> = {
-  volodka_room:       { hue: -0.05, saturation: 0.2,  brightness: -0.02, contrast: 0.25 }, // cold green monitor glow
-  volodka_corridor:   { hue: -0.03, saturation: -0.1, brightness: -0.05, contrast: 0.15 }, // dim noir
+  volodka_room:       { hue: -0.08, saturation: 0.15, brightness: -0.03, contrast: 0.28 }, // matrix monitor glow
+  volodka_corridor:   { hue: -0.05, saturation: -0.18, brightness: -0.06, contrast: 0.2 }, // dim rainy noir
   home_evening:       { hue: 0.04,  saturation: 0.1,  brightness: 0.0,  contrast: 0.1  }, // warm amber
-  street_night:       { hue: 0.06,  saturation: 0.25, brightness: 0.1,  contrast: 0.18 }, // cyberpunk neon
+  street_night:       { hue: 0.02,  saturation: 0.08, brightness: 0.04, contrast: 0.2 }, // gray rainy cyberpunk
   street_winter:      { hue: -0.02, saturation: -0.12, brightness: 0.12, contrast: 0.08  },
-  cafe_evening:       { hue: 0.03,  saturation: 0.1,  brightness: 0.0,  contrast: 0.15 }, // amber smoke
+  cafe_evening:       { hue: 0.01,  saturation: 0.05, brightness: -0.02, contrast: 0.18 }, // hazy blue-neon café
   office_day:         { hue: -0.01, saturation: -0.15, brightness: 0.03, contrast: 0.05 }, // sterile
   park_day:           { hue: -0.04, saturation: -0.1, brightness: 0.0,  contrast: 0.1  }, // gothic mist
   library_day:        { hue: 0.02,  saturation: -0.05, brightness: 0.0,  contrast: 0.1  }, // aged paper
@@ -51,11 +51,11 @@ const DEFAULT_COLOR_GRADE = { hue: 0, saturation: 0, brightness: 0, contrast: 0.
 
 /** Scene-specific vignette darkness — noir scenes get heavier vignette */
 const SCENE_VIGNETTE: Record<string, { offset: number; darkness: number }> = {
-  volodka_room:       { offset: 0.3,  darkness: 0.5 },  // heavy noir vignette
-  volodka_corridor:   { offset: 0.3,  darkness: 0.45 },
+  volodka_room:       { offset: 0.28, darkness: 0.52 }, // heavy noir vignette
+  volodka_corridor:   { offset: 0.26, darkness: 0.5 },
   home_evening:       { offset: 0.4,  darkness: 0.35 },
-  street_night:       { offset: 0.42, darkness: 0.22 },
-  cafe_evening:       { offset: 0.35, darkness: 0.35 },
+  street_night:       { offset: 0.4,  darkness: 0.3 },
+  cafe_evening:       { offset: 0.32, darkness: 0.4 },
   sleep_dream:        { offset: 0.25, darkness: 0.5 },
   abandoned_factory:  { offset: 0.3,  darkness: 0.45 },
   rooftop_edge:       { offset: 0.3,  darkness: 0.4 },
@@ -73,11 +73,11 @@ const DEFAULT_VIGNETTE = { offset: 0.4, darkness: 0.32 };
 
 /** Dynamic bloom intensity per scene — neon scenes bloom brighter */
 const SCENE_BLOOM: Record<string, { intensity: number; threshold: number; smoothing: number }> = {
-  volodka_room:       { intensity: 0.6,  threshold: 0.6,  smoothing: 0.5 },  // monitor glow bloom (tamed)
-  volodka_corridor:   { intensity: 0.3,  threshold: 0.8,  smoothing: 0.6 },  // dim
+  volodka_room:       { intensity: 0.68, threshold: 0.52, smoothing: 0.45 }, // monitor glow bloom
+  volodka_corridor:   { intensity: 0.35, threshold: 0.72, smoothing: 0.55 }, // dim corridor haze
   home_evening:       { intensity: 0.4,  threshold: 0.7,  smoothing: 0.5 },  // warm
-  street_night:       { intensity: 0.7,  threshold: 0.5,  smoothing: 0.4 },  // neon bloom
-  cafe_evening:       { intensity: 0.5,  threshold: 0.6,  smoothing: 0.5 },  // neon bar + warm
+  street_night:       { intensity: 0.55, threshold: 0.58, smoothing: 0.48 }, // wet neon reflections
+  cafe_evening:       { intensity: 0.58, threshold: 0.52, smoothing: 0.45 }, // blue neon bar glow
   office_day:         { intensity: 0.2,  threshold: 0.85, smoothing: 0.6 },  // sterile
   park_day:           { intensity: 0.3,  threshold: 0.85, smoothing: 0.6 },  // natural
   library_day:        { intensity: 0.2,  threshold: 0.85, smoothing: 0.6 },  // quiet
