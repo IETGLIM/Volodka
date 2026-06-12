@@ -7,6 +7,7 @@ import {
   type Dispatch,
 } from 'react';
 import { useGameStore } from '@/store/gameStore';
+import { readGamePhase } from '@/shared/gamePhase';
 import { eventBus } from '@/engine/EventBus';
 import { withHmrCleanup } from '@/shared/dev/hmrDispose';
 import { getActQuote } from '@/engine/GuidedStoryManager';
@@ -74,6 +75,8 @@ export function usePanelCoordinator({
     const scope = eventBus.createScope();
 
     scope.on('story:quest_available', (data) => {
+      const phase = readGamePhase(useGameStore.getState());
+      if (phase === 'intro' || phase === 'menu') return;
       setQuestAccept({ questId: data.questId, npcId: data.npcId });
     });
     scope.on('quest:completed', (data) => {

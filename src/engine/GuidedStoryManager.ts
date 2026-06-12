@@ -3,7 +3,7 @@
  * Store + goldenPath are injected via GuidedStoryDeps for unit testing. */
 
 import { eventBus } from '@/engine/EventBus';
-import { subscribeGameSnapshot, type GameStoreSnapshot } from '@/engine/GameActionDispatcher';
+import { subscribeGameSnapshot, getGameSnapshot, type GameStoreSnapshot } from '@/engine/GameActionDispatcher';
 import { getQuotesByAct } from '@/data/matrixQuotes';
 import { registerHmrDispose } from '@/shared/dev/hmrDispose';
 import { getStoryGraphIndex, invalidateStoryGraphIndex } from '@/engine/story/storyGraphIndex';
@@ -198,6 +198,10 @@ export class GuidedStoryManager {
 
   private autoStartFirstQuest() {
     const { path, actions, events } = this.deps;
+    const phase = getGameSnapshot().mode;
+    // Title poem / main menu — wake-up cutscene offers first_reading, not the HUD.
+    if (phase === 'intro' || phase === 'menu') return;
+
     const snapshot = this.deps.getSnapshot();
     const firstQuestId = path.questSpine[0];
     if (!firstQuestId) return;

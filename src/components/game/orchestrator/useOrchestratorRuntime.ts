@@ -37,11 +37,17 @@ export function useOrchestratorRuntime() {
 
   const { mode, introSeen, mainMenuOpen, devToolsArmed } = useOrchestratorShell();
   const { showStoryOverlay, narrativeKind } = useOrchestratorNarrativeOverlay();
-  const [canvasMounted, setCanvasMounted] = useState(!mainMenuOpen);
+  const [canvasMounted, setCanvasMounted] = useState(mainMenuOpen);
 
   useEffect(() => {
-    if (!mainMenuOpen) setCanvasMounted(true);
+    if (mainMenuOpen) setCanvasMounted(true);
   }, [mainMenuOpen]);
+
+  useEffect(() => {
+    if (mode === 'cutscene' || mode === 'exploration' || mode === 'combat') {
+      setCanvasMounted(true);
+    }
+  }, [mode]);
 
   const pauseDialog = usePanelDialog();
   const armDevTools = useArmDevTools();
