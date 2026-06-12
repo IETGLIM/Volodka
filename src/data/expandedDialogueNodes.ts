@@ -1,5 +1,5 @@
 /* ─── Volodka RPG – expanded dialogue nodes ─── */
-/* Dialogue trees for the 5 new NPCs: Вера, Сергей, Лена, Олег, Катя.
+/* Dialogue trees for expanded NPCs including Алина «Солныш», Сергей, Лена, Олег, Катя.
    Import and merge with DIALOGUE_NODES from dialogueNodes.ts. */
 
 import type { DialogueNode } from '@/shared/types/game'
@@ -12,7 +12,7 @@ export const EXPANDED_DIALOGUE_NODES: Record<string, DialogueNode> = {
   solnysh_corridor_greeting: {
     id: 'solnysh_corridor_greeting',
     speaker: 'Солныш',
-    text: '«Володька!» — Солныш оборачивается, поправляя светлые волосы. Голубые глаза усталые, но тёплые. Умка крутится у её ног. «Мы с детства рядом, а сегодня… сегодня мне кажется, что мир слишком серый. Ты меня понимаешь?»',
+    text: '«Володька!» — Алина оборачивается — для тебя она всегда Солныш. Поправляет светлые волосы; голубые глаза усталые, но тёплые. Умка крутится у её ног. «Мы с детства рядом, а сегодня… сегодня мне кажется, что мир слишком серый. Ты меня понимаешь?»',
     sceneId: 'volodka_corridor',
     choices: [
       {

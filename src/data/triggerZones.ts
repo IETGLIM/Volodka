@@ -302,9 +302,9 @@ export const TRIGGER_ZONES: TriggerZone[] = [
     linkedDialogueNodeId: 'solnysh_corridor_greeting',
     interactionType: 'talk',
     examineData: {
-      title: 'Солныш',
+      title: 'Солныш (Алина)',
       description: 'Блондинка с голубыми глазами — лучшая подруга с детства.',
-      detailText: 'Одноклассница из гимназии, дочь учительницы. Дизайнер и художник. Рядом — Умка.',
+      detailText: 'Алина — её настоящее имя; Солныш — прозвище с гимназии. Одноклассница, дочь учительницы. Дизайнер и художник. Рядом — Умка.',
       icon: '☀️',
     },
   },

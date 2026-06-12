@@ -95,6 +95,58 @@ export function SolnyshRoomVisual({ livePlayerPositionRef: _livePlayerPositionRe
         <Lamp position={[1.8, 0, 1.5]} />
         <Plant position={[2.8, 0, 2.5]} />
 
+        {/* Wardrobe — wine hint location */}
+        <group position={[-2.6, 0, 1.6]}>
+          <mesh position={[0, 0.75, 0]} castShadow>
+            <boxGeometry args={[0.8, 1.5, 0.45]} />
+            <meshStandardMaterial color="#5a4030" roughness={0.82} />
+          </mesh>
+          <mesh position={[0, 0.75, 0.24]}>
+            <boxGeometry args={[0.72, 1.4, 0.02]} />
+            <meshStandardMaterial color="#4a3828" roughness={0.9} />
+          </mesh>
+        </group>
+
+        {/* Gymnasium photos on shelf */}
+        <group position={[0.2, 1.35, -3.92]}>
+          {(
+            [
+              { x: -0.55, tint: '#c8d8e8' },
+              { x: 0, tint: '#d8c8b0' },
+              { x: 0.55, tint: '#b8c8d8' },
+            ] as const
+          ).map(({ x, tint }, i) => (
+            <group key={i} position={[x, 0, 0]}>
+              <mesh>
+                <boxGeometry args={[0.22, 0.16, 0.02]} />
+                <meshStandardMaterial color="#3a3028" roughness={0.85} />
+              </mesh>
+              <mesh position={[0, 0, 0.012]}>
+                <planeGeometry args={[0.18, 0.12]} />
+                <meshStandardMaterial color={tint} roughness={0.7} />
+              </mesh>
+            </group>
+          ))}
+        </group>
+
+        {/* Watercolor frames — Алина's art on side wall */}
+        {[
+          { pos: [-3.92, 1.4, -1.2] as const, rot: Math.PI / 2, color: '#88aacc' },
+          { pos: [-3.92, 1.15, 0.4] as const, rot: Math.PI / 2, color: '#ccaa88' },
+          { pos: [3.92, 1.35, -0.6] as const, rot: -Math.PI / 2, color: '#aaccaa' },
+        ].map(({ pos, rot, color }, i) => (
+          <group key={i} position={pos} rotation-y={rot}>
+            <mesh>
+              <boxGeometry args={[0.32, 0.26, 0.02]} />
+              <meshStandardMaterial color="#4a3828" roughness={0.8} />
+            </mesh>
+            <mesh position={[0, 0, 0.012]}>
+              <planeGeometry args={[0.26, 0.2]} />
+              <meshStandardMaterial color={color} roughness={0.65} />
+            </mesh>
+          </group>
+        ))}
+
         {/* Dog bed */}
         <group position={[-0.8, 0, 0.2]}>
           <mesh position={[0, 0.06, 0]} castShadow>

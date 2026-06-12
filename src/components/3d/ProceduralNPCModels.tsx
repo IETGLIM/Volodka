@@ -981,7 +981,7 @@ const DEFAULT_APPEARANCE: NPCAppearance = {
 };
 
 /* ═══════════════════════════════════════════════════════════════════
-    8. СОЛНЫШ (vera) – warm neighbor, soft feminine look, scarf, book
+    8. АЛИНА «СОЛНЫШ» (vera) – best friend, blonde, blue eyes, scarf, book
     ═══════════════════════════════════════════════════════════════════ */
 function VeraModel({ appearance, animState = 'idle' }: { appearance: NPCAppearance; animState?: 'idle' | 'walk' | 'talk' }) {
   const groupRef = useRef<THREE.Group>(null);

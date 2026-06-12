@@ -80,10 +80,10 @@ export const EXPANDED_NPC_BARK_TEXTS: Record<string, {
 /* ── Expanded NPC definitions (compatible with NPCDefinition type) ── */
 
 export const EXPANDED_NPCS: NPCDefinition[] = [
-  /* ─────────────── СОЛНЫШ (vera) – лучшая подруга, дизайнер ─────────────── */
+  /* ─────────────── АЛИНА «СОЛНЫШ» (vera) – лучшая подруга, дизайнер ─────────────── */
   {
     id: 'vera',
-    name: 'Солныш',
+    name: 'Солныш (Алина)',
     modelPath: '',
     scale: 0.92,
     animations: { idle: 'idle', walk: 'walk', talk: 'talk' },
@@ -96,7 +96,7 @@ export const EXPANDED_NPCS: NPCDefinition[] = [
       [0, 0, 1.5],
     ],
     dialogueNodeId: 'vera_greeting',
-    description: 'Тридцать три года, блондинка с голубыми глазами. Лучшая подруга с детства, одноклассница из гимназии, дочь учительницы. Дизайнер и художник. Жена Лёни.',
+    description: 'Алина — настоящее имя; Солныш — прозвище с детства, которым её зовёт Володька. Тридцать три года, блондинка с голубыми глазами. Лучшая подруга с детства, одноклассница из гимназии, дочь учительницы. Дизайнер и художник. Жена Лёни.',
     barkTexts: {
       hostile: 'Не сейчас, Володька… мне нужно побыть одной.',
       neutral: 'Привет. Ты снова задумчивый.',
@@ -112,10 +112,10 @@ export const EXPANDED_NPCS: NPCDefinition[] = [
     },
   },
 
-  /* ─────────────── ЛЁНЯ – бариста, муж Солныш ─────────────── */
+  /* ─────────────── ЛЁНЯ (ЛЕОНИД) – бариста, муж Алины ─────────────── */
   {
     id: 'lyonya',
-    name: 'Лёня',
+    name: 'Лёня (Леонид)',
     modelPath: '',
     scale: 1.0,
     animations: { idle: 'idle', walk: 'walk', talk: 'talk' },
@@ -128,7 +128,7 @@ export const EXPANDED_NPCS: NPCDefinition[] = [
       [-2.0, 0, -1.5],
     ],
     dialogueNodeId: 'lyonya_greeting',
-    description: 'Обжарщик кофе и бариста. Спокойный, надёжный — рядом с Солныш уже много лет.',
+    description: 'Леонид — настоящее имя; Лёня — так его зовут дома. Обжарщик кофе и бариста, муж Алины. Спокойный, надёжный — рядом с ней уже много лет.',
     barkTexts: {
       hostile: 'Не время для разговоров.',
       neutral: 'Кофе свежий — налей себе.',

@@ -1,6 +1,6 @@
 import type { StoryNode } from '@/shared/types/game';
 
-/** Story beats for Солныш, Лёня, Умка and their room. */
+/** Story beats for Алина «Солныш», Лёня, Умка and their room. */
 export const STORY_NODES_SOLNYSH: Record<string, StoryNode> = {
   solnysh_door: {
     id: 'solnysh_door',
@@ -113,7 +113,7 @@ export const STORY_NODES_SOLNYSH: Record<string, StoryNode> = {
 
   solnysh_roof_arrival: {
     id: 'solnysh_roof_arrival',
-    text: 'Вы поднимаетесь на крышу. Город внизу — море огней. Солныш прижимается плечом и шепчет: «Спасибо, что ты есть, солнце… Точнее — спасибо, что ты есть, Володька.»',
+    text: 'Вы поднимаетесь на крышу. Город внизу — море огней. Алина — твоя Солныш — прижимается плечом и шепчет: «Спасибо, что ты есть, солнце!»',
     speaker: 'Солныш',
     sceneId: 'rooftop_edge',
     choices: [

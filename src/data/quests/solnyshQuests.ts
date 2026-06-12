@@ -37,7 +37,7 @@ export const QUESTS_SOLNYSH: QuestDefinition[] = [
   {
     id: 'solnysh_roof_wine',
     title: 'Вино на крыше',
-    description: 'Найди бутылку вина, которую спрятал Лёня, и предложи Солныш подняться на крышу — вместе выпить и посмотреть на город.',
+    description: 'Найди бутылку вина, которую спрятал Лёня, и предложи Алине — Солныш — подняться на крышу: вместе выпить и посмотреть на город.',
     act: 1,
     questType: 'side',
     difficulty: 'medium',
@@ -52,7 +52,7 @@ export const QUESTS_SOLNYSH: QuestDefinition[] = [
       },
       {
         id: 'offer_wine',
-        description: 'Предложить Солныш вино на крыше',
+        description: 'Предложить Алине вино на крыше',
         type: 'flag_set',
         target: 'solnysh_wine_offered',
         completed: false,

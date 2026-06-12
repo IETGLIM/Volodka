@@ -92,7 +92,7 @@ export const CUTSCENES: Record<string, CutsceneDef> = {
 
   act1_corridor_solnysh: {
     id: 'act1_corridor_solnysh',
-    textOverlay: 'Солныш',
+    textOverlay: 'Алина · Солныш',
     subtitle: '«Доброе утро, Володька. Ты опять не спал?»',
     triggerStoryNode: 'corridor_door',
     textDurationMs: 5000,
@@ -135,7 +135,7 @@ export const CUTSCENES: Record<string, CutsceneDef> = {
 
   solnysh_roof_toast: {
     id: 'solnysh_roof_toast',
-    textOverlay: 'Солныш',
+    textOverlay: 'Алина',
     subtitle: '«Спасибо, что ты есть, солнце!»',
     triggerStoryNode: 'solnysh_roof_arrival',
     textDurationMs: 5500,

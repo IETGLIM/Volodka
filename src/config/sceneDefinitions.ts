@@ -893,6 +893,7 @@ export const solnysh_room_def: SceneDefinition = {
     { type: 'cuboidObstacle', size: [0.9, 0.375, 0.4], position: [-1.5, 0.375, 0.5], footstepMaterial: 'carpet' },
     { type: 'cuboidObstacle', size: [0.5, 0.9, 0.5], position: [-2.4, 0.45, -2.2], footstepMaterial: 'carpet' },
     { type: 'cuboidObstacle', size: [0.7, 0.6, 0.08], position: [2.2, 0.9, -2.0], footstepMaterial: 'carpet' },
+    { type: 'cuboidObstacle', size: [0.8, 0.75, 0.45], position: [-2.6, 0.375, 1.6], footstepMaterial: 'carpet' },
   ],
   ceilings: [
     { type: 'cuboid', size: [4, 0.1, 4], position: [0, 3.1, 0] },
