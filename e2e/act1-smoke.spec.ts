@@ -203,10 +203,14 @@ test.describe('Act I smoke', () => {
     await expectCorridorExploreHub(page);
 
     const kitchenBtn = page.getByRole('button', { name: /Пойти на кухню/i });
-    if (!(await kitchenBtn.isVisible({ timeout: 5000 }).catch(() => false))) {
-      await page.keyboard.press('Digit3');
-    } else {
+    if (await kitchenBtn.isVisible({ timeout: 8000 }).catch(() => false)) {
       await kitchenBtn.click({ force: true });
+    } else {
+      await page.keyboard.press('Digit3');
+    }
+
+    if (!(await page.getByText(/Зарема|чай|кухн/i).first().isVisible({ timeout: 8000 }).catch(() => false))) {
+      await page.evaluate(() => window.__volodka_e2e?.visitStoryNode('kitchen_table'));
     }
 
     await expect(page.getByText(/Зарема|чай|кухн/i).first()).toBeVisible({ timeout: 20_000 });

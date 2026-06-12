@@ -42,11 +42,12 @@ test.describe('Act II smoke', () => {
       null,
       { timeout: 30_000 },
     );
-    await page.evaluate(() => {
-      window.__volodka_e2e?.bootstrapAct2Entry();
+    await page.evaluate(async () => {
+      await window.__volodka_e2e?.bootstrapAct2Entry();
     });
 
     await skipTitleCardIfPresent(page);
+    await expect(page.getByRole('dialog', { name: /Голос/i })).toBeVisible({ timeout: 45_000 });
     await skipStoryTypewriter(page);
 
     const cafeBtn = page.getByRole('button', { name: /Вернуться в кафе/i });
@@ -71,10 +72,11 @@ test.describe('Act II smoke', () => {
       null,
       { timeout: 30_000 },
     );
-    await page.evaluate(() => {
-      window.__volodka_e2e?.bootstrapMidActOffice();
+    await page.evaluate(async () => {
+      await window.__volodka_e2e?.bootstrapMidActOffice();
     });
 
+    await expect(page.getByRole('dialog', { name: /Голос/i })).toBeVisible({ timeout: 45_000 });
     await skipStoryTypewriter(page);
 
     const terminalBtn = page.getByRole('button', { name: /Сесть за терминал/i });

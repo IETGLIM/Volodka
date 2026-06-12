@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 
 async function waitForMenuReady(page: import('@playwright/test').Page) {
   await page.goto('/');
-  await expect(page).toHaveTitle(/ВОЛОДЬКА/i);
+  await expect(page).toHaveTitle(/ВОЛОДЬКА/i, { timeout: 90_000 });
   await expect(page.getByTestId('menu-new-game')).toBeVisible({ timeout: 90_000 });
 }
 

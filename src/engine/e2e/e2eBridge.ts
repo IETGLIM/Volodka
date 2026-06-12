@@ -1,4 +1,5 @@
 import { eventBus } from '@/engine/EventBus';
+import { performSceneTransition } from '@/engine/core/SceneTransitionManager';
 import { dispatchGameAction } from '@/engine/GameActionDispatcher';
 import { openLinkedStory } from '@/engine/interaction/narrativeOpenHelpers';
 import {
@@ -6,7 +7,7 @@ import {
   isPlayerRigidBodyValid,
 } from '@/engine/PlayerRigidBodyState';
 import { closeNarrativeOverlay } from '@/engine/scene/narrativeOverlay';
-import { requestSceneTransition } from '@/engine/scene/sceneTransition';
+import { resolveSceneSpawn } from '@/engine/scene/sceneTransition';
 import { getGameStore } from '@/store/gameStore';
 import type { SceneId } from '@/shared/types/game';
 
@@ -23,9 +24,9 @@ export interface VolodkaE2EBridge {
   /** Jump to a story node (localhost Playwright only). */
   visitStoryNode: (nodeId: string) => void;
   /** Skip Act I — open Act II entry beat with flags and act progression. */
-  bootstrapAct2Entry: () => void;
+  bootstrapAct2Entry: () => Promise<void>;
   /** Mid–Act I office hub — diagnosis golden path (localhost Playwright only). */
-  bootstrapMidActOffice: () => void;
+  bootstrapMidActOffice: () => Promise<void>;
 }
 
 declare global {
@@ -34,19 +35,11 @@ declare global {
   }
 }
 
-function whenSceneLoaded(sceneId: SceneId, onReady: () => void): void {
-  const store = getGameStore();
-  if (store.exploration.currentSceneId === sceneId) {
-    onReady();
-    return;
-  }
-
-  const unsub = eventBus.on('scene:loaded', (data) => {
-    if (data.sceneId !== sceneId) return;
-    unsub();
-    onReady();
+function forceScene(sceneId: SceneId): void {
+  performSceneTransition({
+    targetScene: sceneId,
+    spawnAt: resolveSceneSpawn(sceneId),
   });
-  requestSceneTransition(sceneId);
 }
 
 /** Localhost-only hook for Playwright — not registered on production hosts. */
@@ -84,7 +77,7 @@ export function registerVolodkaE2EBridge(): void {
     visitStoryNode(nodeId) {
       void openLinkedStory(nodeId);
     },
-    bootstrapAct2Entry() {
+    async bootstrapAct2Entry() {
       const store = getGameStore();
       store.setIntroActive(false);
       store.setMainMenuOpen(false);
@@ -97,11 +90,10 @@ export function registerVolodkaE2EBridge(): void {
       closeNarrativeOverlay();
       dispatchGameAction({ type: 'story/visitNode', nodeId: 'act2_transition' });
       dispatchGameAction({ type: 'story/setCurrentNodeId', nodeId: 'act2_transition' });
-      whenSceneLoaded('street_night', () => {
-        void openLinkedStory('act2_transition');
-      });
+      forceScene('street_night');
+      await openLinkedStory('act2_transition');
     },
-    bootstrapMidActOffice() {
+    async bootstrapMidActOffice() {
       const store = getGameStore();
       store.setIntroActive(false);
       store.setMainMenuOpen(false);
@@ -111,9 +103,8 @@ export function registerVolodkaE2EBridge(): void {
       dispatchGameAction({ type: 'story/visitNode', nodeId: 'office_alexander' });
       dispatchGameAction({ type: 'story/visitNode', nodeId: 'office_explore_mode' });
       dispatchGameAction({ type: 'story/setCurrentNodeId', nodeId: 'office_explore_mode' });
-      whenSceneLoaded('office_day', () => {
-        void openLinkedStory('office_explore_mode');
-      });
+      forceScene('office_day');
+      await openLinkedStory('office_explore_mode');
     },
   };
 }
