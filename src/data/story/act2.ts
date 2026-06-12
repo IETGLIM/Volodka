@@ -97,6 +97,7 @@ export const STORY_NODES_ACT2: Record<string, StoryNode> = {
       {
         text: 'Веди меня.',
         next: 'act2_maria_meeting_place',
+        goldenPath: true,
         effects: [
           { type: 'addKarma', value: 3 },
           { type: 'npcChange', npcId: 'maria', npcChange: { relation: 5 } },

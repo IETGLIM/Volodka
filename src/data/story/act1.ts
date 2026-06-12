@@ -263,7 +263,8 @@ export const STORY_NODES_ACT1: Record<string, StoryNode> = {
     choices: [
       {
         text: 'Обычный кофе, пожалуйста',
-        next: 'explore_mode',
+        next: 'office_alexander',
+        goldenPath: true,
         effects: [
           { type: 'addStat', stat: 'energy', value: 15 },
           { type: 'addKarma', value: 1 },
@@ -387,6 +388,11 @@ export const STORY_NODES_ACT1: Record<string, StoryNode> = {
     sceneId: 'street_night',
     choices: [
       {
+        text: 'Попрощаться и зайти в кафе',
+        next: 'cafe_enter',
+        goldenPath: true,
+      },
+      {
         text: 'Взять чип данных',
         next: 'maria_introduction',
         effects: [
@@ -423,6 +429,7 @@ export const STORY_NODES_ACT1: Record<string, StoryNode> = {
     speaker: 'narrator',
     sceneId: 'street_night',
     choices: [
+      { text: 'Присесть на скамейку у подъезда', next: 'street_bench', goldenPath: true },
       { text: 'Войти в кафе', next: 'cafe_enter' },
       { text: 'Подойти к силуэту', next: 'maria_curious' },
       {
@@ -470,6 +477,7 @@ export const STORY_NODES_ACT1: Record<string, StoryNode> = {
       {
         text: 'Попросить его помочь с доступом',
         next: 'office_alexander',
+        goldenPath: true,
         effects: [
           { type: 'addSkill', skill: 'persuasion', value: 2 },
           { type: 'setFlag', flag: 'colleague_help_access', flagValue: true },

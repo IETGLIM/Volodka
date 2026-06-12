@@ -31,7 +31,7 @@ export function GameOrchestrator() {
               isTransitioning={runtime.isTransitioning}
               fadeOutMs={runtime.fadeOutMs}
               matrixQuote={runtime.matrixQuote}
-              onDismissMatrixQuote={() => runtime.setMatrixQuote(null)}
+              onDismissMatrixQuote={runtime.dismissMatrixQuote}
             />
 
             <OrchestratorGameplayLayer

@@ -25,6 +25,7 @@ import { useMobileDetection } from './useMobileDetection';
 import { useStablePanelClosers } from './useStablePanelClosers';
 import { useStableHudPanelOpeners } from './useStableHudPanelOpeners';
 import { useGameIntegrityGuard } from '@/hooks/useGameIntegrityGuard';
+import { registerVolodkaE2EBridge } from '@/engine/e2e/e2eBridge';
 
 /** Bundles orchestrator hooks — GameOrchestrator stays a thin render coordinator. */
 export function useOrchestratorRuntime() {
@@ -33,6 +34,7 @@ export function useOrchestratorRuntime() {
   useEffect(() => {
     reviveGameEngine();
     markOrchestratorMount();
+    registerVolodkaE2EBridge();
     return () => disposeGameEngine();
   }, []);
 
@@ -153,6 +155,7 @@ export function useOrchestratorRuntime() {
     pauseDialog,
     matrixQuote: panels.matrixQuote,
     setMatrixQuote: panels.setMatrixQuote,
+    dismissMatrixQuote: panels.dismissMatrixQuote,
     showGameplayPanels: !mainMenuOpen && mode !== 'intro',
   };
 }

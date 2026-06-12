@@ -30,7 +30,7 @@ export const SCENE_EXPLORE_HUB_DEFS: readonly SceneExploreHubDef[] = [
     sceneId: 'street_night',
     hubText:
       'Улица залита неоновым светом. Рекламные голограммы мерцают на стенах домов. В переулке — кафе «Синяя яма», а вдалеке — башня IT-гильдии.',
-    entryNodeIds: ['street_bench'],
+    entryNodeIds: ['street_bench', 'act2_transition', 'act2_maria_search'],
   },
   {
     hubId: 'home_evening_explore_mode',
@@ -44,7 +44,14 @@ export const SCENE_EXPLORE_HUB_DEFS: readonly SceneExploreHubDef[] = [
     sceneId: 'cafe_evening',
     hubText:
       'Кафе «Синяя яма» — подвал с синими неоновыми трубками, запахом жжёного кофе и старым джazzом. За стойкой бариста, в углу — постоянные гости.',
-    entryNodeIds: ['go_to_cafe', 'cafe_enter'],
+    entryNodeIds: [
+      'go_to_cafe',
+      'cafe_enter',
+      'act2_albert_hint',
+      'act2_albert_network_hint',
+      'act2_cafe_reflection',
+      'cafe_evening_end',
+    ],
   },
   {
     hubId: 'office_explore_mode',
@@ -57,6 +64,7 @@ export const SCENE_EXPLORE_HUB_DEFS: readonly SceneExploreHubDef[] = [
       'fix_success',
       'office_colleague',
       'colleague_persuasion_line',
+      'act2_dmitry_office_meeting',
       'chk_office_whisper',
     ],
   },
@@ -93,7 +101,7 @@ export const SCENE_EXPLORE_HUB_DEFS: readonly SceneExploreHubDef[] = [
     sceneId: 'abandoned_factory',
     hubText:
       'Заброшенный цех — ржавые станки, капающие трубы, эхо шагов под высоким потолком. Где-то здесь спрятано сердце старой гильдии.',
-    entryNodeIds: ['abandoned_workshop'],
+    entryNodeIds: ['abandoned_workshop', 'act2_network_initiation'],
   },
   {
     hubId: 'basement_explore_mode',

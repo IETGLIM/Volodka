@@ -50,6 +50,8 @@ export interface PanelCoordinatorResult {
   setQuestChainUnlock: (value: QuestChainUnlockState | null) => void;
   matrixQuote: MatrixQuoteState;
   setMatrixQuote: (value: MatrixQuoteState) => void;
+  /** Dismiss matrix quote; flushes deferred quest-complete dialog if queued. */
+  dismissMatrixQuote: () => void;
   handleOpenQuests: () => void;
   handleOpenInventory: () => void;
   handleOpenPoetry: () => void;
@@ -72,7 +74,17 @@ export function usePanelCoordinator({
   const [questComplete, setQuestComplete] = useState<QuestDialogState>(null);
   const [questChainUnlock, setQuestChainUnlock] = useState<QuestChainUnlockState | null>(null);
   const [matrixQuote, setMatrixQuote] = useState<MatrixQuoteState>(null);
+  const pendingQuestCompleteRef = useRef<QuestDialogState>(null);
   const questChainUnlockTimeout = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+
+  const dismissMatrixQuote = useCallback(() => {
+    setMatrixQuote(null);
+    const pending = pendingQuestCompleteRef.current;
+    if (pending) {
+      pendingQuestCompleteRef.current = null;
+      setQuestComplete(pending);
+    }
+  }, []);
 
   useEffect(() => {
     const scope = eventBus.createScope();
@@ -85,7 +97,9 @@ export function usePanelCoordinator({
     scope.on('quest:completed', (data) => {
       const quote = getQuoteByTrigger(data.questId);
       if (quote) {
+        pendingQuestCompleteRef.current = { questId: data.questId, npcId: data.npcId };
         setMatrixQuote({ text: quote.text, actNumber: quote.act });
+        return;
       }
       setQuestComplete({ questId: data.questId, npcId: data.npcId });
     });
@@ -213,6 +227,7 @@ export function usePanelCoordinator({
     setQuestChainUnlock,
     matrixQuote,
     setMatrixQuote,
+    dismissMatrixQuote,
     handleOpenQuests,
     handleOpenInventory,
     handleOpenPoetry,
