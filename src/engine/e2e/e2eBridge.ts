@@ -34,6 +34,28 @@ declare global {
   }
 }
 
+async function waitForScene(sceneId: SceneId): Promise<void> {
+  const store = getGameStore();
+  if (store.exploration.currentSceneId === sceneId) return;
+
+  await new Promise<void>((resolve) => {
+    const unsub = eventBus.on('scene:loaded', (data) => {
+      if (data.sceneId !== sceneId) return;
+      unsub();
+      resolve();
+    });
+    dispatchGameAction({
+      type: 'exploration/applySceneTransition',
+      targetScene: sceneId,
+      spawnAt: resolveSceneSpawn(sceneId),
+    });
+    if (getGameStore().exploration.currentSceneId === sceneId) {
+      unsub();
+      resolve();
+    }
+  });
+}
+
 async function jumpToStoryBeat(nodeId: string, sceneId: SceneId): Promise<void> {
   await ensureStoryNode(nodeId);
   const store = getGameStore();
@@ -42,11 +64,7 @@ async function jumpToStoryBeat(nodeId: string, sceneId: SceneId): Promise<void> 
   closeNarrativeOverlay();
   dispatchGameAction({ type: 'story/visitNode', nodeId });
   dispatchGameAction({ type: 'story/setCurrentNodeId', nodeId });
-  dispatchGameAction({
-    type: 'exploration/applySceneTransition',
-    targetScene: sceneId,
-    spawnAt: resolveSceneSpawn(sceneId),
-  });
+  await waitForScene(sceneId);
   openNarrativeOverlay(nodeId, 'story');
 }
 
