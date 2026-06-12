@@ -1,9 +1,10 @@
 
-/* ─── Volodka RPG – Touch controls for mobile (v3 — ACTUALLY WORKING) ───
-   v3 fixes (real fixes, not pretend):
-   - D-pad uses BOTH onTouchStart AND onPointerDown for max browser compat
-   - Interact button fires: (1) synthetic KeyE, (2) EventBus 'interact:press',
-     (3) direct scene:transition when near exit — triple fallback
+/* ─── Volodka RPG – Touch controls for mobile (v4) ───
+   v4 fixes:
+   - Pointer-only handlers (touch+pointer double-fire broke run toggle / interact)
+   - Pointer capture on D-pad so release is reliable when finger drifts off button
+   - Debounced tap actions; reset all controls on blur / visibility hidden
+   - Interact: fireInteractPress + direct scene:transition near exits
    - z-index set to 90 (below only loading/cinematic) — above ALL game UI
    - Viewport-relative sizing with CSS custom properties — no overflow ever
    - Landscape layout: compact horizontal strip at bottom
@@ -21,11 +22,15 @@ import { useGameStore } from '@/store/gameStore';
 import { readGamePhase } from '@/shared/gamePhase';
 import { useGamePhase } from '@/store/selectors';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
-import { eventBus } from '@/engine/EventBus';
+import { fireInteractPress } from '@/engine/input/fireInteractPress';
 import { requestSceneTransition } from '@/engine/scene/sceneTransition';
 import { getSceneExits } from '@/config/scenes';
 import { TRIGGER_ZONES } from '@/data/triggerZones';
 import { CYBER_CYAN } from '@/shared/constants/cyberPalette';
+
+/** Apple HIG minimum touch target (px). */
+const MIN_TOUCH_TARGET = 44;
+const TAP_DEBOUNCE_MS = 280;
 
 interface ExplorationMobileHudProps {
   onInteractPress?: () => void;
@@ -84,38 +89,39 @@ export function ExplorationMobileHud({ onInteractPress, onOpenInventory }: Explo
     });
   }, [virtualControlsRef]);
 
-  // ── Interact: TRIPLE FALLBACK for maximum mobile compat ──
-  // 1) Synthetic KeyE keyboard event (for keydown listeners)
-  // 2) EventBus 'interact:press' event (for systems that listen to EventBus)
-  // 3) Direct scene transition check when near an exit (for door exits)
+  const resetAllControls = useCallback(() => {
+    const vc = virtualControlsRef.current;
+    vc.forward = 0;
+    vc.backward = 0;
+    vc.left = 0;
+    vc.right = 0;
+    vc.run = 0;
+    vc.jump = 0;
+    setRunToggled(false);
+  }, [virtualControlsRef]);
+
+  // Release stuck D-pad / run when app loses focus (Alt+Tab, notification shade).
+  useEffect(() => {
+    const onVisibility = () => {
+      if (document.hidden) resetAllControls();
+    };
+    window.addEventListener('blur', resetAllControls);
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => {
+      window.removeEventListener('blur', resetAllControls);
+      document.removeEventListener('visibilitychange', onVisibility);
+      resetAllControls();
+    };
+  }, [resetAllControls]);
+
+  const lastTapAtRef = useRef(0);
+
+  // ── Interact: synthetic KeyE + EventBus + exit fallback ──
   const handleInteract = useCallback(() => {
-    // Callback prop
     onInteractPress?.();
+    fireInteractPress('mobile_hud');
 
-    // Path 1: Synthetic KeyE — triggers window.addEventListener('keydown', ...)
-    try {
-      window.dispatchEvent(new KeyboardEvent('keydown', {
-        code: 'KeyE',
-        key: 'e',
-        bubbles: true,
-        cancelable: true,
-      }));
-      requestAnimationFrame(() => {
-        window.dispatchEvent(new KeyboardEvent('keyup', {
-          code: 'KeyE',
-          key: 'e',
-          bubbles: true,
-          cancelable: true,
-        }));
-      });
-    } catch { /* SSR guard */ }
-
-    // Path 2: EventBus — for systems that listen to EventBus directly
-    try {
-      eventBus.emit('interact:press', { source: 'mobile_hud' });
-    } catch { /* ignore */ }
-
-    // Path 3: Direct scene transition check
+    // Direct scene transition when near an exit (synthetic keydown can be flaky on mobile)
     // If the player is near an exit and the keydown didn't trigger it
     // (common on mobile where synthetic events sometimes don't reach listeners),
     // directly emit scene:transition for the nearest available exit.
@@ -152,23 +158,39 @@ export function ExplorationMobileHud({ onInteractPress, onOpenInventory }: Explo
     } catch { /* Don't crash if scene exit check fails */ }
   }, [onInteractPress]);
 
-  // ── Combined touch+pointer event handlers ──
-  // Some mobile browsers (especially Firefox, Samsung Internet) don't fire
-  // onTouchStart on React components reliably. Adding onPointerDown as a
-  // fallback ensures the control activates on ALL browsers.
-  const makeStartHandler = useCallback(
-    (key: keyof VirtualControls) => (e: React.TouchEvent | React.PointerEvent) => {
+  const makeTapHandler = useCallback(
+    (action: () => void) => (e: React.PointerEvent) => {
+      if (e.button !== 0) return;
       e.preventDefault();
       e.stopPropagation();
+      const now = performance.now();
+      if (now - lastTapAtRef.current < TAP_DEBOUNCE_MS) return;
+      lastTapAtRef.current = now;
+      action();
+    },
+    [],
+  );
+
+  // Pointer-only handlers — touch+pointer duplicate events caused double-taps on mobile.
+  const makeStartHandler = useCallback(
+    (key: keyof VirtualControls) => (e: React.PointerEvent) => {
+      if (e.button !== 0) return;
+      e.preventDefault();
+      e.stopPropagation();
+      (e.currentTarget as HTMLButtonElement).setPointerCapture(e.pointerId);
       startControl(key);
     },
     [startControl],
   );
 
   const makeStopHandler = useCallback(
-    (key: keyof VirtualControls) => (e: React.TouchEvent | React.PointerEvent) => {
+    (key: keyof VirtualControls) => (e: React.PointerEvent) => {
       e.preventDefault();
       e.stopPropagation();
+      const el = e.currentTarget as HTMLButtonElement;
+      if (el.hasPointerCapture(e.pointerId)) {
+        el.releasePointerCapture(e.pointerId);
+      }
       stopControl(key);
     },
     [stopControl],
@@ -182,18 +204,20 @@ export function ExplorationMobileHud({ onInteractPress, onOpenInventory }: Explo
   const isTablet = vw > 430;
 
   // D-pad button sizes (touch target >= 44px but visual can be smaller with padding)
-  const dpadSize = isLandscape
-    ? (isSmallScreen ? 36 : 40)
-    : (isSmallScreen ? 40 : 44);
+  const dpadSize = Math.max(
+    MIN_TOUCH_TARGET,
+    isLandscape ? (isSmallScreen ? 40 : 44) : (isSmallScreen ? 44 : 48),
+  );
   const dpadGap = isLandscape ? 2 : 3;
 
   // Action button sizes
   const interactSize = isLandscape
     ? (isSmallScreen ? 44 : 48)
     : (isSmallScreen ? 48 : 56);
-  const smallBtnSize = isLandscape
-    ? (isSmallScreen ? 32 : 36)
-    : (isSmallScreen ? 36 : 40);
+  const smallBtnSize = Math.max(
+    MIN_TOUCH_TARGET,
+    isLandscape ? (isSmallScreen ? 36 : 40) : (isSmallScreen ? 40 : 44),
+  );
 
   // Icon sizes scale with button
   const iconMain = isLandscape ? 18 : 22;
@@ -250,9 +274,6 @@ export function ExplorationMobileHud({ onInteractPress, onOpenInventory }: Explo
             <button
               style={{ ...btnStyle, width: dpadSize, height: dpadSize, fontSize: 14 }}
               aria-label="Двигаться вперёд"
-              onTouchStart={makeStartHandler('forward')}
-              onTouchEnd={makeStopHandler('forward')}
-              onTouchCancel={makeStopHandler('forward')}
               onPointerDown={makeStartHandler('forward')}
               onPointerUp={makeStopHandler('forward')}
               onPointerCancel={makeStopHandler('forward')}
@@ -265,10 +286,7 @@ export function ExplorationMobileHud({ onInteractPress, onOpenInventory }: Explo
               <button
                 style={{ ...btnStyle, width: dpadSize, height: dpadSize, fontSize: 14 }}
                 aria-label="Двигаться влево"
-                onTouchStart={makeStartHandler('left')}
-                onTouchEnd={makeStopHandler('left')}
-                onTouchCancel={makeStopHandler('left')}
-                onPointerDown={makeStartHandler('left')}
+              onPointerDown={makeStartHandler('left')}
                 onPointerUp={makeStopHandler('left')}
                 onPointerCancel={makeStopHandler('left')}
                 onPointerLeave={makeStopHandler('left')}
@@ -279,10 +297,7 @@ export function ExplorationMobileHud({ onInteractPress, onOpenInventory }: Explo
               <button
                 style={{ ...btnStyle, width: dpadSize, height: dpadSize, fontSize: 14 }}
                 aria-label="Двигаться назад"
-                onTouchStart={makeStartHandler('backward')}
-                onTouchEnd={makeStopHandler('backward')}
-                onTouchCancel={makeStopHandler('backward')}
-                onPointerDown={makeStartHandler('backward')}
+              onPointerDown={makeStartHandler('backward')}
                 onPointerUp={makeStopHandler('backward')}
                 onPointerCancel={makeStopHandler('backward')}
                 onPointerLeave={makeStopHandler('backward')}
@@ -293,10 +308,7 @@ export function ExplorationMobileHud({ onInteractPress, onOpenInventory }: Explo
               <button
                 style={{ ...btnStyle, width: dpadSize, height: dpadSize, fontSize: 14 }}
                 aria-label="Двигаться вправо"
-                onTouchStart={makeStartHandler('right')}
-                onTouchEnd={makeStopHandler('right')}
-                onTouchCancel={makeStopHandler('right')}
-                onPointerDown={makeStartHandler('right')}
+              onPointerDown={makeStartHandler('right')}
                 onPointerUp={makeStopHandler('right')}
                 onPointerCancel={makeStopHandler('right')}
                 onPointerLeave={makeStopHandler('right')}
@@ -330,8 +342,7 @@ export function ExplorationMobileHud({ onInteractPress, onOpenInventory }: Explo
               background: 'rgba(0,40,50,0.4)',
             }}
             aria-label="Взаимодействовать"
-            onTouchStart={(e) => { e.preventDefault(); e.stopPropagation(); handleInteract(); }}
-            onPointerDown={(e) => { e.preventDefault(); e.stopPropagation(); handleInteract(); }}
+            onPointerDown={makeTapHandler(handleInteract)}
           >
             <Hand size={iconMain} color={CYBER_CYAN} />
           </button>
@@ -349,8 +360,7 @@ export function ExplorationMobileHud({ onInteractPress, onOpenInventory }: Explo
                   background: 'rgba(50,30,0,0.4)',
                 }}
                 aria-label="Инвентарь"
-                onTouchStart={(e) => { e.preventDefault(); onOpenInventory(); }}
-                onPointerDown={(e) => { e.preventDefault(); onOpenInventory(); }}
+                onPointerDown={makeTapHandler(() => onOpenInventory?.())}
               >
                 <Package size={iconSmall} color="#ffab00" />
               </button>
@@ -359,9 +369,6 @@ export function ExplorationMobileHud({ onInteractPress, onOpenInventory }: Explo
             <button
               style={{ ...btnStyle, width: smallBtnSize, height: smallBtnSize }}
               aria-label="Прыжок"
-              onTouchStart={makeStartHandler('jump')}
-              onTouchEnd={makeStopHandler('jump')}
-              onTouchCancel={makeStopHandler('jump')}
               onPointerDown={makeStartHandler('jump')}
               onPointerUp={makeStopHandler('jump')}
               onPointerCancel={makeStopHandler('jump')}
@@ -380,8 +387,7 @@ export function ExplorationMobileHud({ onInteractPress, onOpenInventory }: Explo
                 color: runToggled ? '#ffab00' : undefined,
               }}
               aria-label={runToggled ? 'Бег выключен' : 'Бег включён'}
-              onTouchStart={(e) => { e.preventDefault(); toggleRun(); }}
-              onPointerDown={(e) => { e.preventDefault(); toggleRun(); }}
+              onPointerDown={makeTapHandler(toggleRun)}
             >
               <Zap size={iconSmall} />
             </button>
@@ -419,9 +425,6 @@ export function ExplorationMobileHud({ onInteractPress, onOpenInventory }: Explo
           <button
             style={{ ...btnStyle, width: dpadSize, height: dpadSize, fontSize: isSmallScreen ? 14 : 16 }}
             aria-label="Двигаться вперёд"
-            onTouchStart={makeStartHandler('forward')}
-            onTouchEnd={makeStopHandler('forward')}
-            onTouchCancel={makeStopHandler('forward')}
             onPointerDown={makeStartHandler('forward')}
             onPointerUp={makeStopHandler('forward')}
             onPointerCancel={makeStopHandler('forward')}
@@ -434,9 +437,6 @@ export function ExplorationMobileHud({ onInteractPress, onOpenInventory }: Explo
             <button
               style={{ ...btnStyle, width: dpadSize, height: dpadSize, fontSize: isSmallScreen ? 14 : 16 }}
               aria-label="Двигаться влево"
-              onTouchStart={makeStartHandler('left')}
-              onTouchEnd={makeStopHandler('left')}
-              onTouchCancel={makeStopHandler('left')}
               onPointerDown={makeStartHandler('left')}
               onPointerUp={makeStopHandler('left')}
               onPointerCancel={makeStopHandler('left')}
@@ -448,9 +448,6 @@ export function ExplorationMobileHud({ onInteractPress, onOpenInventory }: Explo
             <button
               style={{ ...btnStyle, width: dpadSize, height: dpadSize, fontSize: isSmallScreen ? 14 : 16 }}
               aria-label="Двигаться назад"
-              onTouchStart={makeStartHandler('backward')}
-              onTouchEnd={makeStopHandler('backward')}
-              onTouchCancel={makeStopHandler('backward')}
               onPointerDown={makeStartHandler('backward')}
               onPointerUp={makeStopHandler('backward')}
               onPointerCancel={makeStopHandler('backward')}
@@ -462,9 +459,6 @@ export function ExplorationMobileHud({ onInteractPress, onOpenInventory }: Explo
             <button
               style={{ ...btnStyle, width: dpadSize, height: dpadSize, fontSize: isSmallScreen ? 14 : 16 }}
               aria-label="Двигаться вправо"
-              onTouchStart={makeStartHandler('right')}
-              onTouchEnd={makeStopHandler('right')}
-              onTouchCancel={makeStopHandler('right')}
               onPointerDown={makeStartHandler('right')}
               onPointerUp={makeStopHandler('right')}
               onPointerCancel={makeStopHandler('right')}
@@ -500,8 +494,7 @@ export function ExplorationMobileHud({ onInteractPress, onOpenInventory }: Explo
             background: 'rgba(0,40,50,0.4)',
           }}
           aria-label="Взаимодействовать"
-          onTouchStart={(e) => { e.preventDefault(); e.stopPropagation(); handleInteract(); }}
-          onPointerDown={(e) => { e.preventDefault(); e.stopPropagation(); handleInteract(); }}
+          onPointerDown={makeTapHandler(handleInteract)}
         >
           <Hand size={iconMain} color={CYBER_CYAN} />
         </button>
@@ -519,8 +512,7 @@ export function ExplorationMobileHud({ onInteractPress, onOpenInventory }: Explo
                 background: 'rgba(50,30,0,0.4)',
               }}
               aria-label="Инвентарь"
-              onTouchStart={(e) => { e.preventDefault(); onOpenInventory(); }}
-              onPointerDown={(e) => { e.preventDefault(); onOpenInventory(); }}
+              onPointerDown={makeTapHandler(() => onOpenInventory?.())}
             >
               <Package size={iconSmall} color="#ffab00" />
             </button>
@@ -530,9 +522,6 @@ export function ExplorationMobileHud({ onInteractPress, onOpenInventory }: Explo
           <button
             style={{ ...btnStyle, width: smallBtnSize, height: smallBtnSize }}
             aria-label="Прыжок"
-            onTouchStart={makeStartHandler('jump')}
-            onTouchEnd={makeStopHandler('jump')}
-            onTouchCancel={makeStopHandler('jump')}
             onPointerDown={makeStartHandler('jump')}
             onPointerUp={makeStopHandler('jump')}
             onPointerCancel={makeStopHandler('jump')}
@@ -552,8 +541,7 @@ export function ExplorationMobileHud({ onInteractPress, onOpenInventory }: Explo
               color: runToggled ? '#ffab00' : undefined,
             }}
             aria-label={runToggled ? 'Бег выключен' : 'Бег включён'}
-            onTouchStart={(e) => { e.preventDefault(); toggleRun(); }}
-            onPointerDown={(e) => { e.preventDefault(); toggleRun(); }}
+            onPointerDown={makeTapHandler(toggleRun)}
           >
             <Zap size={iconSmall} />
           </button>

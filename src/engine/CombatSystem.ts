@@ -111,17 +111,43 @@ class CombatManager {
     return () => this.listeners.delete(listener);
   }
 
+  private exitTimer: ReturnType<typeof setTimeout> | null = null;
+
   /** Start a new combat session — invalidates pending async work from prior sessions. */
   beginSession(): void {
-    this.clearTimers();
+    this.clearPendingTimers();
+    this.clearExitTimer();
     this.generation += 1;
   }
 
   /** Tear down the active session — invalidates in-flight async callbacks. */
   endSession(): void {
-    this.clearTimers();
+    this.clearPendingTimers();
+    this.clearExitTimer();
     this.generation += 1;
     this._state = null;
+  }
+
+  /** Cancel turn timers only — keeps generation (victory/defeat exit must not be dropped). */
+  clearPendingTimers(): void {
+    for (const timer of this.timers) clearTimeout(timer);
+    this.timers.clear();
+  }
+
+  /** Schedule return to exploration/story — survives clearPendingTimers; cleared on endSession. */
+  scheduleExit(delayMs: number, fn: () => void): void {
+    if (this.exitTimer) clearTimeout(this.exitTimer);
+    this.exitTimer = setTimeout(() => {
+      this.exitTimer = null;
+      fn();
+    }, delayMs);
+  }
+
+  private clearExitTimer(): void {
+    if (this.exitTimer) {
+      clearTimeout(this.exitTimer);
+      this.exitTimer = null;
+    }
   }
 
   /** Cancel timers and drop listener refs (unmount / HMR). */
@@ -153,11 +179,6 @@ class CombatManager {
     }
   }
 
-  private clearTimers(): void {
-    for (const timer of this.timers) clearTimeout(timer);
-    this.timers.clear();
-  }
-
   /** Schedule combat work that is cancelled when the session generation changes. */
   schedule(delayMs: number, fn: () => void): void {
     const capturedGeneration = this.generation;
@@ -171,6 +192,37 @@ class CombatManager {
 }
 
 const combat = new CombatManager();
+
+function notifyCombatDamage(entry: CombatLogEntry): void {
+  if (!entry.damage || entry.damage <= 0) return;
+
+  const isPlayerHit =
+    entry.type === 'enemy_attack' ||
+    entry.type === 'enemy_special' ||
+    entry.type === 'status_effect';
+
+  const isCritical = entry.isCritical === true || entry.type === 'critical_hit';
+
+  eventBus.emit('combat:hit', {
+    damage: entry.damage,
+    isPlayerHit,
+    direction: isPlayerHit ? 'front' : undefined,
+    source: entry.type,
+  });
+  eventBus.emit('combat:damage', {
+    amount: entry.damage,
+    source: entry.type,
+    critical: isCritical,
+  });
+}
+
+function notifyNewCombatLogEntries(beforeLen: number): void {
+  const state = combat.getState();
+  if (!state) return;
+  for (const entry of state.log.slice(beforeLen)) {
+    notifyCombatDamage(entry);
+  }
+}
 
 /** Tear down combat session timers and listener refs. Idempotent. */
 export function disposeCombatSystem(): void {
@@ -193,7 +245,12 @@ export function getCombatState(): CombatState | null {
    §5 — START COMBAT
    ═══════════════════════════════════════════════════════════════ */
 
-export function startCombat(enemyType: EnemyType): CombatState {
+export interface CombatStartOptions {
+  /** Street creep / story label shown in toasts when templates differ from context. */
+  encounterName?: string;
+}
+
+export function startCombat(enemyType: EnemyType, options?: CombatStartOptions): CombatState {
   // Abandoned active combat pushed a return node that will never be popped on victory/defeat/flee
   if (combat.getState()?.status === 'active') {
     combat.discardOrphanedReturnNode();
@@ -261,7 +318,15 @@ export function startCombat(enemyType: EnemyType): CombatState {
   });
 
   dispatchGameAction({ type: 'story/setCombatActive', active: true });
-  eventBus.emit('combat:start', { enemyType });
+  const encounterLabel = options?.encounterName ?? enemy.name;
+  eventBus.emit('combat:start', {
+    enemyType,
+    encounterName: encounterLabel,
+    encounterEmoji: enemy.emoji,
+  });
+  eventBus.emit('fx:flash', { color: 'rgba(255,40,60,0.32)', opacity: 0.32, duration: 420 });
+  eventBus.emit('fx:glitch', { intensity: 0.48, duration: 520 });
+  eventBus.emit('camera:combat_impact', { intensity: 0.5 });
 
   combat.notifyListeners();
   return combat.getState()!;
@@ -331,6 +396,7 @@ export function playerAttack(): CombatState | null {
 
   eventBus.emit('combat:action', { action: 'attack', damage });
   eventBus.emit('camera:combat_impact', { intensity: isCritical ? 0.6 : 0.3 });
+  notifyCombatDamage(logEntry);
 
   // Check victory
   if (newEnemyHp <= 0) {
@@ -383,6 +449,7 @@ export function playerUsePoemPower(poemId: string): CombatState | null {
   const lastPowers: [string | null, string | null] = [cs.lastPoemPowersUsed[1], poemId];
 
   // Apply ability
+  const logLenBefore = cs.log.length;
   const abilityResult = ability.execute(cs);
 
   // Check for poem power combos
@@ -420,6 +487,7 @@ export function playerUsePoemPower(poemId: string): CombatState | null {
 
   eventBus.emit('combat:action', { action: 'poem_power' });
   eventBus.emit('poem:power_used', { poemId, powerName: ability.name });
+  notifyNewCombatLogEntries(logLenBefore);
 
   // Check if enemy died from the ability
   const afterUse = combat.getState();
@@ -462,7 +530,7 @@ export function playerFlee(): CombatState | null {
   if (fled) {
     // Pop synchronously — delayed exit callbacks may be cancelled by a new session
     combat.popReturnNode();
-    combat.beginSession();
+    combat.clearPendingTimers();
 
     combat.setState({
       ...cs,
@@ -479,7 +547,7 @@ export function playerFlee(): CombatState | null {
     eventBus.emit('combat:action', { action: 'flee' });
 
     // Return to exploration after a brief delay
-    combat.schedule(1500, () => {
+    combat.scheduleExit(1500, () => {
       dispatchGameAction({ type: 'story/setCombatActive', active: false });
       combat.endSession();
       combat.notifyListeners();
@@ -668,12 +736,14 @@ function executeEnemyTurn() {
   if (enemySpecialCooldown <= 0 && template.specialAttacks.length > 0) {
     for (const special of template.specialAttacks) {
       if (Math.random() < special.chance) {
+        const logLenBefore = workingState.log.length;
         const specialResult = special.execute(workingState, workingState.enemy);
         workingState = consumeSideEffects(specialResult);
         workingState = {
           ...workingState,
           enemy: { ...workingState.enemy, specialCooldown: special.cooldown },
         };
+        notifyNewCombatLogEntries(logLenBefore);
         gotoEnemyTurnEnd(workingState);
         return;
       }
@@ -735,6 +805,13 @@ function executeEnemyTurn() {
     }
   }
 
+  const enemyAttackLog: CombatLogEntry = {
+    turn: workingState.turn,
+    text: `${workingState.enemy.emoji} ${workingState.enemy.name} атакует! -${enemyDamage} HP${statEffectText}`,
+    type: 'enemy_attack',
+    damage: enemyDamage,
+  };
+
   combat.setState({
     ...workingState,
     playerHp: newPlayerHp,
@@ -744,18 +821,11 @@ function executeEnemyTurn() {
       ...workingState.enemy,
       specialCooldown: Math.max(0, workingState.enemy.specialCooldown - 1),
     },
-    log: [
-      ...workingState.log,
-      {
-        turn: workingState.turn,
-        text: `${workingState.enemy.emoji} ${workingState.enemy.name} атакует! -${enemyDamage} HP${statEffectText}`,
-        type: 'enemy_attack',
-        damage: enemyDamage,
-      },
-    ],
+    log: [...workingState.log, enemyAttackLog],
   });
 
   eventBus.emit('camera:combat_shake', { intensity: 0.2 });
+  notifyCombatDamage(enemyAttackLog);
 
   // Check defeat
   if (newPlayerHp <= 0) {
@@ -801,7 +871,7 @@ function handleVictory(): CombatState {
 
   // Pop synchronously — delayed exit callbacks may be cancelled by a new session
   const returnNodeId = combat.popReturnNode();
-  combat.beginSession();
+  combat.clearPendingTimers();
 
   const enemy = cs.enemy;
 
@@ -867,7 +937,7 @@ function handleVictory(): CombatState {
   combat.notifyListeners();
 
   // Return to story node or exploration after delay (G12)
-  combat.schedule(3000, () => {
+  combat.scheduleExit(3000, () => {
     if (returnNodeId) {
       dispatchGameAction({ type: 'story/setCombatActive', active: false });
       dispatchGameAction({ type: 'story/openNarrativeOverlay', nodeId: returnNodeId, kind: 'story' });
@@ -888,7 +958,7 @@ function handleDefeat(): void {
   if (!cs) return;
 
   const returnNodeId = combat.popReturnNode();
-  combat.beginSession();
+  combat.clearPendingTimers();
 
   const enemy = cs.enemy;
 
@@ -920,7 +990,7 @@ function handleDefeat(): void {
   combat.notifyListeners();
 
   // Return to story node or exploration after defeat (G12)
-  combat.schedule(3000, () => {
+  combat.scheduleExit(3000, () => {
     if (returnNodeId) {
       dispatchGameAction({ type: 'story/setCombatActive', active: false });
       dispatchGameAction({ type: 'story/openNarrativeOverlay', nodeId: returnNodeId, kind: 'story' });

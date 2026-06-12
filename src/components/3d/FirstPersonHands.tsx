@@ -9,7 +9,8 @@ import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
 import { useGameStore } from '@/store/gameStore';
 import { readGamePhase } from '@/shared/gamePhase';
-import { shouldUseFirstPersonExploration } from '@/engine/camera/cinematicPresentation';
+import { shouldUseFirstPersonHands } from '@/engine/camera/cinematicPresentation';
+import { eventBus } from '@/engine/EventBus';
 import { FpsFingerEnhancement, armMeshHasFingerDetail } from './fpsFingerEnhancement';
 import { extendGltfLoader } from '@/engine/assets/gltfPipeline';
 import { useSkinnedGltfClone } from '@/hooks/useSkinnedGltfClone';
@@ -43,9 +44,30 @@ function FirstPersonHandsInner({ moveBlendRef }: FirstPersonHandsProps) {
   const rigRef = useRef<THREE.Group>(null);
   const armsMountRef = useRef<THREE.Group>(null);
   const bobPhaseRef = useRef(0);
+  const combatLungeRef = useRef(0);
+  const combatGuardRef = useRef(0);
   const idleActionRef = useRef<THREE.AnimationAction | null>(null);
   const walkActionRef = useRef<THREE.AnimationAction | null>(null);
   const { camera } = useThree();
+
+  useEffect(() => {
+    const scope = eventBus.createScope();
+    scope.on('combat:start', () => {
+      combatGuardRef.current = 1;
+    });
+    scope.on('combat:end', () => {
+      combatGuardRef.current = 0;
+    });
+    scope.on('combat:action', ({ action }) => {
+      if (action === 'attack' || action === 'poem_power') {
+        combatLungeRef.current = 1;
+      }
+    });
+    scope.on('combat:hit', ({ isPlayerHit }) => {
+      if (isPlayerHit) combatLungeRef.current = -0.55;
+    });
+    return () => scope.dispose();
+  }, []);
 
   const gltf = useGLTF(FPS_ARMS_URL, true, true, extendLoader);
   const { scene, mixer } = useSkinnedGltfClone(gltf.scene, gltf.animations, { castShadow: false });
@@ -75,16 +97,35 @@ function FirstPersonHandsInner({ moveBlendRef }: FirstPersonHandsProps) {
     rig.position.copy(camera.position);
     rig.quaternion.copy(camera.quaternion);
 
-    const move = THREE.MathUtils.clamp(moveBlendRef?.current ?? 0, 0, 1);
+    const move = THREE.MathUtils.clamp(moveBlendRef?.current ?? 0, 0, 1) * (1 - combatGuardRef.current * 0.85);
     bobPhaseRef.current += delta * (2 + move * 8);
 
+    if (combatLungeRef.current > 0) {
+      combatLungeRef.current = Math.max(0, combatLungeRef.current - delta * 5.5);
+    } else if (combatLungeRef.current < 0) {
+      combatLungeRef.current = Math.min(0, combatLungeRef.current + delta * 4);
+    }
+
+    const phase = readGamePhase(useGameStore.getState());
+    if (phase === 'combat') {
+      combatGuardRef.current = Math.max(combatGuardRef.current, 0.85);
+    } else if (combatGuardRef.current > 0) {
+      combatGuardRef.current = Math.max(0, combatGuardRef.current - delta * 2.5);
+    }
+
+    const lunge = combatLungeRef.current;
+    const guard = combatGuardRef.current;
     const bob = bobPhaseRef.current;
     mount.position.set(
-      Math.sin(bob * 0.55) * 0.01 * move,
-      -0.18 + Math.sin(bob) * 0.012 * move,
-      -0.32,
+      Math.sin(bob * 0.55) * 0.01 * move * (1 - guard * 0.8),
+      -0.18 + Math.sin(bob) * 0.012 * move * (1 - guard * 0.8) + lunge * 0.04 - guard * 0.03,
+      -0.32 + lunge * 0.14 - guard * 0.06,
     );
-    mount.rotation.set(0.06 + Math.sin(bob * 0.4) * 0.02 * move, 0, 0);
+    mount.rotation.set(
+      0.06 + Math.sin(bob * 0.4) * 0.02 * move * (1 - guard) - lunge * 0.35 - guard * 0.22,
+      lunge * 0.08,
+      guard * 0.04,
+    );
 
     const idle = idleActionRef.current;
     const walk = walkActionRef.current;
@@ -112,7 +153,7 @@ export function FirstPersonHands({ moveBlendRef }: FirstPersonHandsProps) {
   const activeCutsceneId = useGameStore((s) => s.activeCutsceneId);
   const gameMode = useGameStore((s) => readGamePhase(s));
 
-  if (!shouldUseFirstPersonExploration(gameMode, activeCutsceneId)) {
+  if (!shouldUseFirstPersonHands(gameMode, activeCutsceneId)) {
     return null;
   }
 

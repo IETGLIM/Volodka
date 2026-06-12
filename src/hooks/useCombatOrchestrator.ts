@@ -7,6 +7,7 @@ import { withHmrCleanup } from '@/shared/dev/hmrDispose';
 import { triggerCameraShake } from '@/engine/camera/cameraShake';
 import { startCombat } from '@/engine/CombatSystem';
 import { getItemDefinition } from '@/data/items';
+import { audioEngine } from '@/engine/audio/AudioEngine';
 import type { EnemyType } from '@/shared/types/game';
 
 /**
@@ -55,8 +56,16 @@ export function useCombatOrchestrator() {
       useGameStore.getState().pushNotification('energy', `Поражение: -${energyLost} энергии, -${karmaLost} кармы`);
     }, EventBusPriority.Orchestrator);
 
-    scope.on('combat:hit', () => {
-      triggerCameraShake(0.1, 5);
+    scope.on('combat:start', () => {
+      audioEngine.playSfx('combat_start');
+    }, EventBusPriority.FX);
+
+    scope.on('combat:hit', ({ isPlayerHit, damage }) => {
+      audioEngine.playSfx('combat_hit');
+      triggerCameraShake(isPlayerHit ? 0.14 : 0.08, isPlayerHit ? 6 : 4);
+      if (damage >= 20) {
+        triggerCameraShake(0.12, 8);
+      }
     }, EventBusPriority.FX);
 
     return withHmrCleanup(() => scope.dispose());

@@ -6,6 +6,7 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
+import { eventBus } from '@/engine/EventBus';
 import { Sword, Shield, Sparkles, LogOut, ChevronDown, Heart, Clock, Zap, Flame, Skull, Trophy, RotateCcw, Eye, Bug, ShieldAlert, Music2 } from 'lucide-react';
 import { useGameMode } from '@/store/selectors';
 import {
@@ -162,11 +163,48 @@ function StatusBadge({ buff }: { buff: CombatBuff }) {
   );
 }
 
+/* ── Combat intro splash (first ~1.5s of each fight) ── */
+function CombatIntroSplash({
+  emoji,
+  name,
+  onDone,
+}: {
+  emoji: string;
+  name: string;
+  onDone: () => void;
+}) {
+  useEffect(() => {
+    const timer = setTimeout(onDone, 1550);
+    return () => clearTimeout(timer);
+  }, [onDone]);
+
+  return (
+    <motion.div
+      className="combat-intro-overlay"
+      style={{ zIndex: UI_LAYERS.COMBAT + 3 }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.15 }}
+    >
+      <div className="combat-intro-card">
+        <div className="combat-intro-slash" aria-hidden />
+        <div className="combat-intro-emoji mb-2 enemy-hologram">{emoji}</div>
+        <div className="combat-intro-title mb-2">БОЙ</div>
+        <div className="text-sm text-red-200/90 font-mono tracking-widest uppercase">{name}</div>
+        <div className="text-[10px] text-slate-500 font-mono mt-3 tracking-wide">
+          1 атака · 2 защита · 3 стих · 4 побег
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
 /* ── Enemy Silhouette (CSS animated) ── */
 function EnemyPortrait({ emoji, hp, maxHp }: { emoji: string; hp: number; maxHp: number }) {
   const hurt = hp / maxHp < 0.3;
   return (
-    <div className="relative flex items-center justify-center">
+    <div className="relative flex items-center justify-center enemy-hologram">
       <motion.div
         className="text-5xl sm:text-6xl select-none"
         animate={hurt ? { x: [0, -2, 2, -1, 1, 0] } : { y: [0, -4, 0] }}
@@ -349,8 +387,23 @@ export function CombatUI() {
   const [pendingAction, setPendingAction] = useState(false);
   const [screenShake, setScreenShake] = useState(false);
   const [flashColor, setFlashColor] = useState<string | null>(null);
+  const [introVisible, setIntroVisible] = useState(false);
+  const [introMeta, setIntroMeta] = useState<{ emoji: string; name: string } | null>(null);
   const logEndRef = useRef<HTMLDivElement>(null);
   const damageIdRef = useRef(0);
+
+  const dismissIntro = useCallback(() => setIntroVisible(false), []);
+
+  useEffect(() => {
+    const unsub = eventBus.on('combat:start', ({ encounterName, encounterEmoji }) => {
+      setIntroMeta({
+        emoji: encounterEmoji ?? '👾',
+        name: encounterName ?? 'Противник',
+      });
+      setIntroVisible(true);
+    });
+    return unsub;
+  }, []);
 
   // Subscribe to combat state changes
   useEffect(() => {
@@ -397,12 +450,12 @@ export function CombatUI() {
     prevLogLen.current = currentLen;
   }, [combatState]);
 
-  // Close powers menu when turn changes
+  // Close powers menu when turn changes; unlock UI after terminal states
   useEffect(() => {
-    if (combatState?.isPlayerTurn) {
+    if (combatState?.isPlayerTurn || combatState?.status !== 'active') {
       setTimeout(() => setPendingAction(false), 0);
     }
-  }, [combatState?.isPlayerTurn, combatState?.turn]);
+  }, [combatState?.isPlayerTurn, combatState?.turn, combatState?.status]);
 
   const availablePowers = useMemo(() => getAvailableCombatPowers(), [combatState]);
   const handleAttack = useCallback(() => {
@@ -462,7 +515,7 @@ export function CombatUI() {
 
   const enemy = combatState.enemy;
   const isActive = combatState.status === 'active';
-  const isPlayerTurn = combatState.isPlayerTurn && isActive;
+  const isPlayerTurn = combatState.isPlayerTurn && isActive && !introVisible;
 
   const playerBuffs = getActiveBuffs('player');
   const enemyBuffs = getActiveBuffs('enemy');
@@ -472,9 +525,20 @@ export function CombatUI() {
 
   return (
     <div
-      className={`fixed inset-0 flex flex-col pointer-events-none ${screenShake ? 'combat-shake' : ''}`}
+      className={`fixed inset-0 flex flex-col pointer-events-none ${screenShake ? 'combat-shake' : ''} ${isActive ? 'combat-vignette-active' : ''}`}
       style={{ zIndex: UI_LAYERS.COMBAT }}
     >
+      <AnimatePresence>
+        {introVisible && introMeta && (
+          <CombatIntroSplash
+            key={`${introMeta.name}-${introMeta.emoji}`}
+            emoji={introMeta.emoji}
+            name={introMeta.name}
+            onDone={dismissIntro}
+          />
+        )}
+      </AnimatePresence>
+
       {/* Screen flash overlay */}
       <AnimatePresence>
         {flashColor && (
@@ -490,10 +554,13 @@ export function CombatUI() {
       </AnimatePresence>
 
       {/* ── Top Section: Enemy Info ── */}
-      <div className="pointer-events-auto pt-3 px-3">
+      <motion.div
+        className="pointer-events-auto pt-3 px-3"
+        initial={{ y: -40, opacity: 0 }}
+        animate={{ y: introVisible ? -20 : 0, opacity: introVisible ? 0.35 : 1 }}
+        transition={{ delay: introVisible ? 0 : 0.35, duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+      >
         <motion.div
-          initial={{ y: -30, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
           className="bg-black/60 backdrop-blur-sm border border-red-900/30 rounded-lg p-3 scan-line"
           style={{ boxShadow: '0 0 20px rgba(239,68,68,0.1)' }}
         >
@@ -518,7 +585,7 @@ export function CombatUI() {
           </div>
           <AnimatedHPBar current={enemy.hp} max={enemy.maxHp} label="ENEMY" isPlayer={false} />
         </motion.div>
-      </div>
+      </motion.div>
 
       {/* ── Middle: Damage Numbers ── */}
       <div className="relative flex-1 flex items-center justify-center">
@@ -530,7 +597,12 @@ export function CombatUI() {
       </div>
 
       {/* ── Bottom Section ── */}
-      <div className="pointer-events-auto px-3 pb-3">
+      <motion.div
+        className="pointer-events-auto px-3 pb-3"
+        initial={{ y: 40, opacity: 0 }}
+        animate={{ y: introVisible ? 20 : 0, opacity: introVisible ? 0.35 : 1 }}
+        transition={{ delay: introVisible ? 0 : 0.4, duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+      >
         {/* Player status card */}
         <div className="bg-black/60 backdrop-blur-sm border border-cyan-900/30 rounded-lg p-3 mb-2 data-pulse"
           style={{ boxShadow: '0 0 20px rgba(6,182,212,0.08)' }}>
@@ -676,7 +748,7 @@ export function CombatUI() {
           ))}
           <div ref={logEndRef} />
         </div>
-      </div>
+      </motion.div>
 
       {/* Scanlines overlay for cyberpunk feel */}
       <div

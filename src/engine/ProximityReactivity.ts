@@ -27,7 +27,7 @@ export const PROXIMITY_EFFECTS: ProximityEffect[] = [
   {
     id: 'room_monitor_glow',
     sceneId: 'volodka_room',
-    position: [0, 1.2, -2.8],
+    position: [0, 1.12, -2.68],
     radius: 3,
     type: 'light_glow',
     config: { minIntensity: 0.3, maxIntensity: 1.0, speed: 2, color: '#00ff44', distance: 5 },
@@ -36,10 +36,37 @@ export const PROXIMITY_EFFECTS: ProximityEffect[] = [
   {
     id: 'room_desk_lamp',
     sceneId: 'volodka_room',
-    position: [0.5, 1.0, -2.5],
+    position: [0.3, 1.5, -2.3],
     radius: 2.5,
     type: 'light_glow',
     config: { minIntensity: 0.1, maxIntensity: 0.6, speed: 3, color: '#ffaa44', distance: 4 },
+  },
+  // Zabbix alert LED pulses when player approaches desk
+  {
+    id: 'room_zabbix_alert',
+    sceneId: 'volodka_room',
+    position: [0.62, 1.1, -2.68],
+    radius: 2,
+    type: 'visual_disturb',
+    config: { intensity: 0.4, speed: 3 },
+  },
+
+  /* ─────────────── VOLODKA CORRIDOR ─────────────── */
+  {
+    id: 'corridor_intercom_hum',
+    sceneId: 'volodka_corridor',
+    position: [-1.98, 1.5, 4.5],
+    radius: 2.5,
+    type: 'sound_trigger',
+    config: { soundType: 'electric_hum', volume: 0.06 },
+  },
+  {
+    id: 'corridor_flicker_lamp',
+    sceneId: 'volodka_corridor',
+    position: [0, 2.5, 3.0],
+    radius: 4,
+    type: 'light_glow',
+    config: { minIntensity: 0.1, maxIntensity: 0.5, speed: 4, color: '#ffdd90', distance: 8 },
   },
 
   /* ─────────────── STREET NIGHT ─────────────── */

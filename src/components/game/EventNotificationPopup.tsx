@@ -273,12 +273,16 @@ export function EventNotificationPopup() {
 
   /* scene:enter — handled by center scene banner in GameOrchestrator (no duplicate toast) */
 
-  /* ── Listen for combat:start → "Бой начинается!" ── */
+  /* ── Listen for combat:start → enemy name toast ── */
   useEffect(() => {
-    const unsub = eventBus.on('combat:start', () => {
+    const unsub = eventBus.on('combat:start', ({ encounterName, encounterEmoji }) => {
       addNotification({
-        title: 'Бой начинается!',
-        subtitle: 'Приготовьтесь к бою',
+        title: encounterEmoji && encounterName
+          ? `${encounterEmoji} ${encounterName}`
+          : encounterName
+            ? `Бой: ${encounterName}`
+            : 'Бой начинается!',
+        subtitle: '1 — атака · 2 — защита · 3 — стих · 4 — побег',
         type: 'combat',
       });
     }, EventBusPriority.UI);

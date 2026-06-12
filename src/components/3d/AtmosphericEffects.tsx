@@ -51,7 +51,7 @@ const STEAM_SCENES = new Set(['cafe_evening', 'home_evening']);
 const MATRIX_FOG_SCENES = new Set(['battle']);
 
 /** Scenes that get floating dust motes */
-const DUST_SCENES = new Set(['volodka_room', 'library_day']);
+const DUST_SCENES = new Set(['volodka_room', 'volodka_corridor', 'library_day']);
 
 /** Scenes that get floating embers */
 const EMBER_SCENES = new Set(['abandoned_factory']);

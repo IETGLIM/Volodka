@@ -22,7 +22,7 @@ export const volodka_room_def: SceneDefinition = {
   defaultSpawn: [0, 0.01, 2],
   defaultSpawnRotation: 0,
   characterModelScale: 1.0,
-  locomotionScale: 1.0,
+  locomotionScale: 0.88,
   doorways: [
     { id: 'room_to_corridor', position: [0, 1, 3.5], width: 1.0, height: 2.2 },
   ],
@@ -47,9 +47,11 @@ export const volodka_room_def: SceneDefinition = {
     { type: 'cuboidObstacle', size: [3.5, 1.5, 0.1], position: [2.5, 1.5, 0], rotation: Math.PI / 2, footstepMaterial: 'wood' },
   ],
   obstacles: [
-    { type: 'cuboidObstacle', size: [0.9, 0.375, 0.4], position: [0, 0.375, -2.5], footstepMaterial: 'wood' },
-    { type: 'cuboidObstacle', size: [0.4, 1.0, 0.175], position: [-2.2, 1.0, 0], footstepMaterial: 'wood' },
+    { type: 'cuboidObstacle', size: [1.8, 0.75, 0.8], position: [0, 0.375, -2.5], footstepMaterial: 'wood' },
+    { type: 'cuboidObstacle', size: [0.45, 2.0, 0.35], position: [-2.2, 1.0, 0], footstepMaterial: 'wood' },
+    { type: 'cuboidObstacle', size: [0.84, 2.0, 0.58], position: [-2.2, 1.0, 2.5], footstepMaterial: 'wood' },
     { type: 'cuboidObstacle', size: [0.5, 0.175, 1.0], position: [1.8, 0.175, 2.0], footstepMaterial: 'wood' },
+    { type: 'cuboidObstacle', size: [0.4, 0.5, 0.35], position: [2.2, 0.25, 2.0], footstepMaterial: 'wood' },
   ],
   ceilings: [
     { type: 'cuboid', size: [2.5, 0.1, 3.5], position: [0, 3.1, 0] },
@@ -241,7 +243,7 @@ export const volodka_corridor_def: SceneDefinition = {
   defaultSpawn: [0, 0.01, 2],
   defaultSpawnRotation: 0,
   characterModelScale: 1.0,
-  locomotionScale: 1.0,
+  locomotionScale: 0.92,
   doorways: [
     { id: 'corridor_to_room', position: [0, 1, 3.5], width: 0.9, height: 2.1 },
     { id: 'corridor_to_kitchen', position: [1.4, 0.5, -1.0], width: 0.8, height: 2.0 },
@@ -286,8 +288,8 @@ export const volodka_corridor_def: SceneDefinition = {
     { type: 'cuboidObstacle', size: [6, 1.5, 0.1], position: [2, 1.5, 0], rotation: Math.PI / 2, footstepMaterial: 'wood' },
   ],
   obstacles: [
-    { type: 'cuboidObstacle', size: [0.6, 0.4, 0.3], position: [1.5, 0.4, 3], footstepMaterial: 'wood' },
-    { type: 'cuboidObstacle', size: [0.3, 0.5, 0.3], position: [-1.5, 0.5, -3], footstepMaterial: 'wood' },
+    { type: 'cuboidObstacle', size: [0.5, 0.7, 0.4], position: [-1.7, 0.35, 3.5], footstepMaterial: 'wood' },
+    { type: 'cuboidObstacle', size: [0.08, 0.8, 0.6], position: [1.92, 0.4, -1.0], footstepMaterial: 'wood' },
   ],
   ceilings: [
     { type: 'cuboid', size: [2, 0.1, 6], position: [0, 3.1, 0] },

@@ -41,6 +41,8 @@ import { usePlayerControls, type VirtualControls } from '@/hooks/useGamePhysics'
 import {
   getSceneConfig,
   getExplorationLocomotionScale,
+  getExplorationMovementTuning,
+  getTouchLocomotionFactor,
 } from '@/config/scenes';
 
 import { eventBus } from '@/engine/EventBus';
@@ -72,8 +74,6 @@ function lerpAngle(a: number, b: number, t: number): number {
 /* ─── Physics Constants ─── */
 const WALK_SPEED = 4;
 const RUN_SPEED = 7;
-const ACCEL = 20;
-const DAMPING = 10;
 const JUMP_FORCE = 5.5;
 const GRAVITY = -15;
 const FOOTSTEP_INTERVAL = 0.4;
@@ -218,6 +218,7 @@ export function PhysicsPlayer({
   }, []);
 
   const locomotionScale = getExplorationLocomotionScale(sceneId);
+  const movementTuning = getExplorationMovementTuning(sceneId);
   const config = getSceneConfig(sceneId);
 
   // Teleport player on scene change — use store spawn (set by SceneTransitionHandler)
@@ -363,6 +364,7 @@ export function PhysicsPlayer({
       isNarrativeMovementLocked(showStoryOverlay, currentNodeId) ||
       currentMode === 'cutscene' ||
       currentMode === 'intro' ||
+      currentMode === 'combat' ||
       isInteractionLocked();
 
     // Stuck lock safety — only when interaction state is wedged without narrative UI.
@@ -394,6 +396,9 @@ export function PhysicsPlayer({
 
     if (isLocked) {
       // ──── LOCKED STATE: interaction system controls movement ────
+      if (currentMode === 'combat') {
+        currentAnimRef.current = 'combat';
+      }
       // External velocity (approach/align) goes through the character
       // controller for collision resolution — no wall clipping!
       if (external.active) {
@@ -532,15 +537,16 @@ export function PhysicsPlayer({
         dt,
       );
     }
-    const speed = (running ? RUN_SPEED : WALK_SPEED) * locomotionScale;
+    const speed =
+      (running ? RUN_SPEED : WALK_SPEED) * locomotionScale * getTouchLocomotionFactor();
 
     // ─── Horizontal velocity with acceleration / damping ───
     if (isMoving) {
       moveDir.normalize();
       const targetVx = moveDir.x * speed;
       const targetVz = moveDir.z * speed;
-      vel.x = THREE.MathUtils.damp(vel.x, targetVx, ACCEL, dt);
-      vel.z = THREE.MathUtils.damp(vel.z, targetVz, ACCEL, dt);
+      vel.x = THREE.MathUtils.damp(vel.x, targetVx, movementTuning.accel, dt);
+      vel.z = THREE.MathUtils.damp(vel.z, targetVz, movementTuning.accel, dt);
 
       // Rotation — frame-rate-independent exponential decay
       const targetYaw = Math.atan2(moveDir.x, moveDir.z);
@@ -549,8 +555,8 @@ export function PhysicsPlayer({
         livePlayerRotationRef.current, targetYaw, rotT,
       );
     } else {
-      vel.x = THREE.MathUtils.damp(vel.x, 0, DAMPING, dt);
-      vel.z = THREE.MathUtils.damp(vel.z, 0, DAMPING, dt);
+      vel.x = THREE.MathUtils.damp(vel.x, 0, movementTuning.damping, dt);
+      vel.z = THREE.MathUtils.damp(vel.z, 0, movementTuning.damping, dt);
     }
 
     // ─── Vertical velocity — gravity + jump ───

@@ -5,6 +5,7 @@ import path from 'path';
 import { visualizer } from 'rollup-plugin-visualizer';
 import Inspect from 'vite-plugin-inspect';
 import { resolveManualChunk } from './vite/chunks';
+import { rapierInitFix } from './vite/rapierInitFix';
 
 export default defineConfig(({ mode }) => {
   const analyze = mode === 'analyze';
@@ -12,6 +13,7 @@ export default defineConfig(({ mode }) => {
 
   return {
     plugins: [
+      rapierInitFix(),
       react(),
       tailwindcss(),
       analyze &&

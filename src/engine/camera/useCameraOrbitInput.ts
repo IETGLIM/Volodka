@@ -45,7 +45,7 @@ function shouldBlockOrbit(): boolean {
   const state = useGameStore.getState();
   const { showStoryOverlay, currentNodeId } = state;
   const mode = readGamePhase(state);
-  if (isNarrativeMovementLocked(showStoryOverlay, currentNodeId) || mode === 'cutscene') return true;
+  if (isNarrativeMovementLocked(showStoryOverlay, currentNodeId) || mode === 'cutscene' || mode === 'combat') return true;
   return getInteractionState() === InteractionState.Dialogue;
 }
 

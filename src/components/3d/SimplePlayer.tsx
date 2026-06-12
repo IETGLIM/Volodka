@@ -18,6 +18,8 @@ import {
   getSceneConfig,
   getExplorationCharacterModelScale,
   getExplorationLocomotionScale,
+  getExplorationMovementTuning,
+  getTouchLocomotionFactor,
 } from '@/config/scenes';
 import { eventBus } from '@/engine/EventBus';
 import { audioEngine } from '@/engine/AudioEngine';
@@ -33,8 +35,6 @@ function lerpAngle(a: number, b: number, t: number): number {
 
 const WALK_SPEED = 4;
 const RUN_SPEED = 7;
-const ACCEL = 20;
-const DAMPING = 10;
 const FOOTSTEP_INTERVAL = 0.4;
 const ROTATION_SPEED = 10; // frame-rate-independent rotation speed
 
@@ -63,6 +63,7 @@ export function SimplePlayer({
   const prevSceneIdRef = useRef(sceneId);
 
   const locomotionScale = getExplorationLocomotionScale(sceneId);
+  const movementTuning = getExplorationMovementTuning(sceneId);
   const modelScale = getExplorationCharacterModelScale(sceneId);
   const config = getSceneConfig(sceneId);
 
@@ -167,15 +168,16 @@ export function SimplePlayer({
 
     const moveLen = moveDir.length();
     const isMoving = moveLen > 0.01;
-    const speed = (running ? RUN_SPEED : WALK_SPEED) * locomotionScale;
+    const speed =
+      (running ? RUN_SPEED : WALK_SPEED) * locomotionScale * getTouchLocomotionFactor();
 
     if (isMoving) {
       moveDir.normalize();
       const targetVx = moveDir.x * speed;
       const targetVz = moveDir.z * speed;
 
-      vel.x = THREE.MathUtils.damp(vel.x, targetVx, ACCEL, dt);
-      vel.z = THREE.MathUtils.damp(vel.z, targetVz, ACCEL, dt);
+      vel.x = THREE.MathUtils.damp(vel.x, targetVx, movementTuning.accel, dt);
+      vel.z = THREE.MathUtils.damp(vel.z, targetVz, movementTuning.accel, dt);
 
       const targetYaw = Math.atan2(moveDir.x, moveDir.z);
       // Frame-rate-independent rotation using exponential decay
@@ -199,8 +201,8 @@ export function SimplePlayer({
         audioEngine.playFootstep('default');
       }
     } else {
-      vel.x = THREE.MathUtils.damp(vel.x, 0, DAMPING, dt);
-      vel.z = THREE.MathUtils.damp(vel.z, 0, DAMPING, dt);
+      vel.x = THREE.MathUtils.damp(vel.x, 0, movementTuning.damping, dt);
+      vel.z = THREE.MathUtils.damp(vel.z, 0, movementTuning.damping, dt);
       currentAnimRef.current = 'idle';
       footstepTimerRef.current = 0;
     }

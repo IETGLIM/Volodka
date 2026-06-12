@@ -2,7 +2,7 @@ import type { CombatAction, EnemyType } from '@/shared/types/game';
 
 /** Turn-based combat — CombatSystem, ScreenEffects, useCombatOrchestrator. */
 export interface CombatEvents {
-  'combat:start': { enemyType: EnemyType };
+  'combat:start': { enemyType: EnemyType; encounterName?: string; encounterEmoji?: string };
   'combat:turn': { turn: number; isPlayerTurn: boolean };
   'combat:action': { action: CombatAction; damage?: number };
   'combat:victory': { enemyType: EnemyType; xpGained: number; karmaGained: number; creditsGained: number; lootItemId?: string };

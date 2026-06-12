@@ -85,3 +85,12 @@ export function shouldUseFirstPersonExploration(
   if (presentationMode === 'third_person') return false;
   return true;
 }
+
+/** FP arms during exploration and street turn-based combat. */
+export function shouldUseFirstPersonHands(
+  gameMode: GamePhase,
+  activeCutsceneId: string | null,
+): boolean {
+  if (gameMode === 'combat') return true;
+  return shouldUseFirstPersonExploration(gameMode, activeCutsceneId);
+}

@@ -32,7 +32,7 @@ const MAX_NPCS_PER_SCENE: Partial<Record<SceneId, number>> = {
 const CORRIDOR_PATROL_WAYPOINTS: [number, number, number][] = [
   [0, 0, -2.5],
   [0, 0, 0],
-  [0, 0, 2.5],
+  [0, 0, 2.2],
 ];
 
 /** Manages all NPCs for the current scene */

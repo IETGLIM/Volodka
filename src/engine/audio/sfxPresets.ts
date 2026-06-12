@@ -9,6 +9,9 @@ export const SFX_PRESETS: Record<string, SfxConfig> = {
   notify: { type: 'sine', frequency: 1000, duration: 0.1, gain: 0.18 },
   quest_complete: { type: 'sine', frequency: 520, duration: 0.25, gain: 0.2 },
   error: { type: 'square', frequency: 200, duration: 0.15, gain: 0.15 },
+  combat_start: { type: 'sawtooth', frequency: 140, duration: 0.22, gain: 0.2 },
+  combat_engage: { type: 'square', frequency: 95, duration: 0.18, gain: 0.22 },
+  combat_hit: { type: 'square', frequency: 320, duration: 0.07, gain: 0.14 },
   ui_open: { type: 'sine', frequency: 440, duration: 0.05, gain: 0.1 },
   ui_close: { type: 'sine', frequency: 330, duration: 0.05, gain: 0.1 },
 };

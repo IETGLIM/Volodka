@@ -6,6 +6,10 @@ import {
 import { preloadPhysicsChunk } from '@/engine/physics/preloadPhysicsChunk';
 import { markGameDataReady } from '@/engine/performance/LoadingTimeline';
 
+function preloadCombatUiChunk(): Promise<unknown> {
+  return import('@/components/game/CombatUI');
+}
+
 /** Boot data loads in main.tsx; this hook finishes narrative + physics preload. */
 export function useGameDataPreload(): boolean {
   const [ready, setReady] = useState(isGameDataLoaded());
@@ -13,7 +17,7 @@ export function useGameDataPreload(): boolean {
   useEffect(() => {
     if (ready) return;
     let cancelled = false;
-    void Promise.all([preloadNarrativeGameData(), preloadPhysicsChunk()])
+    void Promise.all([preloadNarrativeGameData(), preloadPhysicsChunk(), preloadCombatUiChunk()])
       .then(() => {
         markGameDataReady();
         if (!cancelled) setReady(true);

@@ -33,25 +33,25 @@ const SCENE_ENV_ANIMATIONS: Record<SceneId, EnvAnimation[]> = {
     {
       id: 'monitor_flicker',
       type: 'monitor_scan',
-      position: [0, 1.2, -2.8],
+      position: [0, 1.12, -2.68],
       config: { speed: 2, intensity: 0.3 },
     },
     {
       id: 'desk_lamp_flicker',
       type: 'light_flicker',
-      position: [-0.8, 1.8, -2.0],
+      position: [0.3, 1.5, -2.3],
       config: { minIntensity: 0.3, maxIntensity: 0.6, flickerRate: 0.02 },
     },
     {
       id: 'monitor_glow_pulse',
       type: 'neon_pulse',
-      position: [0, 1.1, -2.7],
+      position: [0, 1.12, -2.68],
       config: { colorR: 0, colorG: 1, colorB: 0.27, speed: 1.2, minEmissive: 0.3, maxEmissive: 0.9 },
     },
     {
       id: 'crt_monitor_effect',
       type: 'crt_monitor',
-      position: [0, 1.15, -2.7],
+      position: [0, 1.12, -2.68],
       config: { baseIntensity: 4.0, pulseAmp: 0.1, pulseSpeed: 60, flickerChance: 0.005 },
     },
     {
@@ -73,7 +73,7 @@ const SCENE_ENV_ANIMATIONS: Record<SceneId, EnvAnimation[]> = {
     {
       id: 'pipe_drip',
       type: 'drip',
-      position: [1.5, 2.8, 2.0],
+      position: [-1.92, 2.72, 2.0],
       config: { interval: 4.0, splashDuration: 0.6 },
     },
     {

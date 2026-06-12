@@ -171,6 +171,26 @@ export function useProceduralPlayerAnimation(
       if (leftLeg) leftLeg.rotation.x = legTuck;
       if (rightLeg) rightLeg.rotation.x = legTuck * 0.85;
       if (head) head.rotation.x = airborne ? -0.05 : 0.08;
+    } else if (animState === 'combat') {
+      const speed = 10;
+      if (torso) {
+        torso.position.y = 1.05 + Math.sin(t * speed) * 0.008;
+        torso.rotation.x = 0.1 + Math.sin(t * speed * 0.5) * 0.04;
+      }
+      if (leftArm) {
+        leftArm.rotation.x = -0.85 + Math.sin(t * speed) * 0.25;
+        leftArm.rotation.z = 0.35;
+      }
+      if (rightArm) {
+        rightArm.rotation.x = -0.55 + Math.sin(t * speed + Math.PI) * 0.2;
+        rightArm.rotation.z = -0.25;
+      }
+      if (leftLeg) leftLeg.rotation.x = Math.sin(t * speed * 0.5) * 0.08;
+      if (rightLeg) rightLeg.rotation.x = -Math.sin(t * speed * 0.5) * 0.08;
+      if (head) {
+        head.rotation.x = 0.08 + Math.sin(t * 3) * 0.04;
+        head.rotation.z = Math.sin(t * 2) * 0.02;
+      }
     } else if (animState === 'walk') {
       const speed = 8;
       const armSwing = 0.4;

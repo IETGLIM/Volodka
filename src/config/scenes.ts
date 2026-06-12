@@ -59,6 +59,30 @@ export function getExplorationLocomotionScale(sceneId: SceneId): number {
   return config.explorationLocomotionScale;
 }
 
+/** Acceleration / damping multipliers for tight indoor spaces. */
+export interface ExplorationMovementTuning {
+  accel: number;
+  damping: number;
+}
+
+const DEFAULT_MOVEMENT_TUNING: ExplorationMovementTuning = { accel: 20, damping: 10 };
+
+const SCENE_MOVEMENT_TUNING: Partial<Record<SceneId, ExplorationMovementTuning>> = {
+  volodka_room: { accel: 26, damping: 14 },
+  volodka_corridor: { accel: 22, damping: 13 },
+};
+
+/** Tighter accel/damping in cramped interiors — less ice-skating between furniture. */
+export function getExplorationMovementTuning(sceneId: SceneId): ExplorationMovementTuning {
+  return SCENE_MOVEMENT_TUNING[sceneId] ?? DEFAULT_MOVEMENT_TUNING;
+}
+
+/** Slightly slower walk/run on coarse-pointer devices for tighter touch control. */
+export function getTouchLocomotionFactor(): number {
+  if (typeof window === 'undefined') return 1;
+  return window.matchMedia('(pointer: coarse)').matches ? 0.94 : 1;
+}
+
 /** Walkable floor height for a scene (RigidBody Y when grounded). */
 export function getSceneFloorY(sceneId: SceneId): number {
   return getSceneConfig(sceneId).floorY;

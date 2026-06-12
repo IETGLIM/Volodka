@@ -14,15 +14,15 @@ interface VolodkaCorridorVisualProps {
   livePlayerPositionRef?: MutableRefObject<THREE.Vector3>;
 }
 
-/** Narrow corridor (3.5×12m) connecting rooms */
+/** Narrow corridor (4×12×3m) — matches sceneDefinition physics bounds */
 export function VolodkaCorridorVisual({ livePlayerPositionRef: _livePlayerPositionRef }: VolodkaCorridorVisualProps) {
   const floorTexture = useCachedCanvasTexture('volodka_corridor:floor', createCorridorFloorTexture);
   const wallTexture = useCachedCanvasTexture('volodka_corridor:wall', createCorridorWallTexture);
   const { lod } = useEnvironmentLod();
 
-  const W = 3.5;
+  const W = 4;
   const D = 12;
-  const H = 2.8;
+  const H = 3;
 
   const flickerLightRef = useRef<THREE.PointLight>(null);
 
