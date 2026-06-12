@@ -39,7 +39,10 @@ export default defineConfig(({ mode }) => {
           './node_modules/@dimforge/rapier3d-compat/rapier_wasm3d.js',
         ),
         '@dimforge/rapier3d-compat': path.resolve(__dirname, './src/engine/physics/rapierCompat.ts'),
-        // Patched via rapierInitFix virtual module — do not alias directly to rapier.mjs.
+        '@dimforge/rapier3d-compat-original': path.resolve(
+          __dirname,
+          './node_modules/@dimforge/rapier3d-compat/rapier.mjs',
+        ),
       },
     },
 
