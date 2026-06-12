@@ -108,6 +108,7 @@ export function applyEffects(
       case 'visitStoryNode':
         if (fx.nodeId) {
           dispatchGameAction({ type: 'story/visitNode', nodeId: fx.nodeId });
+          dispatchGameAction({ type: 'story/setCurrentNodeId', nodeId: fx.nodeId });
         }
         break;
     }

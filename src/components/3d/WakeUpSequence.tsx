@@ -10,6 +10,7 @@ import * as THREE from 'three';
 import { eventBus } from '@/engine/EventBus';
 import { audioEngine } from '@/engine/AudioEngine';
 import { getGameStore, useGameStore } from '@/store/gameStore';
+import { openNarrativeOverlay } from '@/engine/scene/narrativeOverlay';
 import { setCinematicPresentationMode } from '@/engine/camera/cinematicPresentation';
 import { CinematicPlayerAvatar } from './CinematicPlayerAvatar';
 import {
@@ -64,13 +65,19 @@ export function WakeUpSequence() {
     store.setPlayerPosition([0, 0.01, -1.0]);
     store.setPlayerRotation(Math.PI);
     store.setCutscene(null, []);
-    store.setCurrentNodeId('explore_mode');
     store.visitNode('start');
     store.visitNode('explore_mode');
     store.setFlag('woke_up', true);
     setCinematicPresentationMode('first_person');
     eventBus.emit('intro:wakeup_complete', {});
     eventBus.emit('camera:recenter', {});
+
+    if (!store.isCutsceneTriggered('act1_prologue')) {
+      store.setCurrentNodeId('start');
+    } else {
+      store.setCurrentNodeId('explore_mode');
+      openNarrativeOverlay('explore_mode', 'story');
+    }
 
     setTimeout(() => {
       eventBus.emit('story:quest_available', {

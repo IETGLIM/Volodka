@@ -14,6 +14,10 @@ import { resetGlobalCleanupRegistry } from './GlobalCleanupService';
 
 const dispatchGameAction = vi.fn();
 
+vi.mock('@/engine/interaction/narrativeOpenHelpers', () => ({
+  triggerSceneEntryStoryIfNeeded: vi.fn(),
+}));
+
 vi.mock('@/engine/GameActionDispatcher', () => ({
   getGameSnapshot: () => ({
     exploration: { currentSceneId: 'volodka_room' },

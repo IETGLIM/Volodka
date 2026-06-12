@@ -5,7 +5,7 @@ export const EXPLORATION_DIALOGUE_STORY_STEP: Readonly<Record<string, string>> =
   explore_room_table: 'room_table',
   explore_room_bookshelf: 'room_bookshelf',
   explore_room_window: 'room_table',
-  explore_corridor_door: 'corridor_door',
+  explore_corridor_door: 'corridor_explore_mode',
   explore_kitchen_table: 'kitchen_table',
   explore_street_entry: 'street_bench',
   explore_go_home: 'go_home',

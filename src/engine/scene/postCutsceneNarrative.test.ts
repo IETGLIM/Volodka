@@ -6,6 +6,10 @@ describe('resolvePostCutsceneNarrativeNode', () => {
     expect(resolvePostCutsceneNarrativeNode('corridor_door')).toBe('corridor_explore_mode');
   });
 
+  it('promotes start to explore_mode after act prologue', () => {
+    expect(resolvePostCutsceneNarrativeNode('start')).toBe('explore_mode');
+  });
+
   it('keeps hub nodes unchanged', () => {
     expect(resolvePostCutsceneNarrativeNode('corridor_explore_mode')).toBe('corridor_explore_mode');
   });

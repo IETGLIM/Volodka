@@ -373,7 +373,6 @@ export const TRIGGER_ZONES: TriggerZone[] = [
     enterToast: 'На столе — хлеб, варенье и горячий чай.',
     linkedDialogueNodeId: 'zarema_greeting',
     linkedNpcId: 'zarema',
-    linkedQuestId: 'first_reading',
     interactionType: 'talk',
     examineData: {
       title: 'Кухонный стол',
