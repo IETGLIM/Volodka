@@ -1,63 +1,67 @@
 import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import { transform as esbuildTransform } from 'esbuild';
 import type { Plugin } from 'vite';
 
-const RAPIER_VIRTUAL_ID = '\0rapier-compat-fixed';
-const INIT_PREFIX = /yield (\w+)\((\w+)\.toByteArray\("/;
-const B64_CHAR = /[A-Za-z0-9+/=]/;
-const INIT_SUFFIX = '").buffer)}))}';
+const RAPIER_INIT_PREFIX = /yield (\w+)\((\w+)\.toByteArray\("/;
 
-const RAPIER_MJS = path.resolve(
-  path.dirname(fileURLToPath(import.meta.url)),
-  '../node_modules/@dimforge/rapier3d-compat/rapier.mjs',
-);
+function isRapierCompatModule(id: string): boolean {
+  const normalized = id.replace(/\\/g, '/');
+  return normalized.includes('@dimforge/rapier3d-compat/rapier.');
+}
 
-/**
- * wasm-bindgen init expects `{ module_or_path }`; upstream -compat passes
- * `toByteArray("…").buffer` directly. The inlined WASM literal is ~2 MB — do not
- * capture it in a regex.
- */
-export function fixRapierInit(code: string): string | null {
-  const match = INIT_PREFIX.exec(code);
-  if (!match || match.index === undefined) return null;
+/** wasm-bindgen init expects `{ module_or_path }` — works on esbuild-expanded rapier.mjs. */
+function applyRapierInitFix(code: string): string {
+  const match = RAPIER_INIT_PREFIX.exec(code);
+  if (!match || match.index === undefined) return code;
 
-  const b64Start = match.index + match[0].length;
-  let b64End = b64Start;
-  while (b64End < code.length && B64_CHAR.test(code[b64End])) b64End += 1;
+  const base64Start = match.index + match[0].length;
+  let base64End = base64Start;
+  while (base64End < code.length && /[A-Za-z0-9+/=]/.test(code[base64End])) {
+    base64End += 1;
+  }
 
-  if (code.slice(b64End, b64End + INIT_SUFFIX.length) !== INIT_SUFFIX) return null;
+  const minifiedClose = '").buffer)}))}';
+  const formattedClose = '").buffer);';
 
-  const suffixEnd = b64End + INIT_SUFFIX.length;
-  const fixed =
+  let closeLen = 0;
+  let closeReplacement = '").buffer});';
+
+  if (code.startsWith(minifiedClose, base64End)) {
+    closeLen = minifiedClose.length;
+    closeReplacement = minifiedClose;
+  } else if (code.startsWith(formattedClose, base64End)) {
+    closeLen = formattedClose.length;
+    closeReplacement = '").buffer});';
+  } else {
+    return code;
+  }
+
+  return (
     code.slice(0, match.index) +
     `yield ${match[1]}({module_or_path:${match[2]}.toByteArray("` +
-    code.slice(b64Start, b64End) +
-    '")})}))}' +
-    code.slice(suffixEnd);
-
-  return fixed === code ? null : fixed;
+    code.slice(base64Start, base64End) +
+    closeReplacement +
+    code.slice(base64End + closeLen)
+  );
 }
 
 /**
- * Rollup cannot parse the ~2 MB single-line rapier.mjs on disk.
- * Resolve the compat alias to a virtual module and serve the patched source from `load`.
+ * Rollup cannot parse the ~2 MB single-line rapier.mjs — expand via esbuild, then patch init.
  */
 export function rapierInitFix(): Plugin {
   return {
     name: 'rapier-init-object-fix',
     enforce: 'pre',
-    resolveId(source) {
-      if (source === '@dimforge/rapier3d-compat-original') {
-        return RAPIER_VIRTUAL_ID;
-      }
-      return null;
-    },
-    load(id) {
-      if (id !== RAPIER_VIRTUAL_ID) return null;
+    async load(id) {
+      if (!isRapierCompatModule(id)) return null;
 
-      const raw = fs.readFileSync(RAPIER_MJS, 'utf8');
-      return fixRapierInit(raw) ?? raw;
+      const raw = fs.readFileSync(id, 'utf8');
+      const expanded = await esbuildTransform(raw, {
+        loader: 'js',
+        format: 'esm',
+        target: 'esnext',
+      });
+      return applyRapierInitFix(expanded.code);
     },
   };
 }
