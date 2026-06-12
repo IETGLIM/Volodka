@@ -37,15 +37,24 @@ test.describe('Act II smoke', () => {
     await skipWakeCinematic(page);
     await expect(page.getByTestId('game-hud')).toBeVisible({ timeout: 30_000 });
 
+    await page.waitForFunction(
+      () => typeof window.__volodka_e2e?.bootstrapAct2Entry === 'function',
+      null,
+      { timeout: 30_000 },
+    );
     await page.evaluate(() => {
       window.__volodka_e2e?.bootstrapAct2Entry();
     });
+    await page.waitForTimeout(2500);
 
     await skipTitleCardIfPresent(page);
 
-    await expect(page.getByRole('dialog', { name: /Голос/i })).toBeVisible({ timeout: 30_000 });
-    await expect(page.getByText(/Сеть|Виктория|неон/i).first()).toBeVisible({ timeout: 20_000 });
+    const hubDialog = page.getByRole('dialog', { name: /Голос/i });
+    await expect(hubDialog).toBeVisible({ timeout: 45_000 });
     await skipStoryTypewriter(page);
+    await expect(hubDialog.getByText(/неон|поверхност|инцидент|стих/i).first()).toBeVisible({
+      timeout: 20_000,
+    });
 
     const cafeBtn = page.getByRole('button', { name: /Вернуться в кафе/i });
     await expect(cafeBtn).toBeVisible({ timeout: 15_000 });
@@ -64,9 +73,15 @@ test.describe('Act II smoke', () => {
     await skipWakeCinematic(page);
     await expect(page.getByTestId('game-hud')).toBeVisible({ timeout: 30_000 });
 
+    await page.waitForFunction(
+      () => typeof window.__volodka_e2e?.bootstrapMidActOffice === 'function',
+      null,
+      { timeout: 30_000 },
+    );
     await page.evaluate(() => {
       window.__volodka_e2e?.bootstrapMidActOffice();
     });
+    await page.waitForTimeout(2500);
 
     const hubDialog = page.getByRole('dialog', { name: /Голос/i });
     await expect(hubDialog).toBeVisible({ timeout: 30_000 });

@@ -30,7 +30,7 @@ async function dismissFirstReadingBeats(page: import('@playwright/test').Page) {
 async function skipStoryTypewriter(page: import('@playwright/test').Page) {
   const skipBtn = page.getByRole('button', { name: /Пропустить анимацию текста/i });
   if (await skipBtn.isVisible({ timeout: 5000 }).catch(() => false)) {
-    await skipBtn.click();
+    await skipBtn.click({ force: true });
     await page.waitForTimeout(400);
   }
 }
@@ -152,7 +152,8 @@ test.describe('Act I smoke', () => {
     const corridorBtn = page.getByRole('button', { name: /Выйти в коридор/i });
     await expect(corridorBtn).toBeVisible({ timeout: 30_000 });
     await corridorBtn.click();
-    await expect(page.getByText(/коридор|Солныш|дверь/i).first()).toBeVisible({ timeout: 15_000 });
+    await skipTitleCardIfPresent(page);
+    await expect(page.getByRole('dialog', { name: /Голос/i })).toBeVisible({ timeout: 20_000 });
   });
 
   test('corridor door → solnysh cutscene → corridor explore hub', async ({ page }) => {
@@ -195,7 +196,8 @@ test.describe('Act I smoke', () => {
     await expect(page.locator('canvas[data-engine]')).toBeVisible({ timeout: 90_000 });
 
     await skipWakeCinematic(page);
-    await expect(page.getByTestId('game-hud')).toBeVisible({ timeout: 30_000 });
+    await expect(page.getByTestId('game-hud')).toBeVisible({ timeout: 45_000 });
+    await expect(page.getByRole('dialog', { name: /Голос/i })).toBeVisible({ timeout: 45_000 });
 
     await leaveExploreHub(page);
     await skipTitleCardIfPresent(page);

@@ -5,6 +5,8 @@ import {
   getPlayerRigidBody,
   isPlayerRigidBodyValid,
 } from '@/engine/PlayerRigidBodyState';
+import { openNarrativeOverlay } from '@/engine/scene/narrativeOverlay';
+import { requestSceneTransition } from '@/engine/scene/sceneTransition';
 import { getGameStore } from '@/store/gameStore';
 import type { SceneId } from '@/shared/types/game';
 
@@ -76,9 +78,13 @@ export function registerVolodkaE2EBridge(): void {
       }
       store.setFlag('act2_started', true);
       store.setFlag('advanced_to_act2', true);
+      store.markCutsceneTriggered('act1_to_act2');
       dispatchGameAction({ type: 'story/visitNode', nodeId: 'act2_transition' });
       dispatchGameAction({ type: 'story/setCurrentNodeId', nodeId: 'act2_transition' });
-      void openLinkedStory('act2_transition');
+      if (store.exploration.currentSceneId !== 'street_night') {
+        requestSceneTransition('street_night');
+      }
+      openNarrativeOverlay('act2_transition', 'story');
     },
     bootstrapMidActOffice() {
       const store = getGameStore();
@@ -89,7 +95,10 @@ export function registerVolodkaE2EBridge(): void {
       dispatchGameAction({ type: 'story/visitNode', nodeId: 'office_alexander' });
       dispatchGameAction({ type: 'story/visitNode', nodeId: 'office_explore_mode' });
       dispatchGameAction({ type: 'story/setCurrentNodeId', nodeId: 'office_explore_mode' });
-      void openLinkedStory('office_explore_mode');
+      if (store.exploration.currentSceneId !== 'office_day') {
+        requestSceneTransition('office_day');
+      }
+      openNarrativeOverlay('office_explore_mode', 'story');
     },
   };
 }
