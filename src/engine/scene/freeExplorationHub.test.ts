@@ -1,5 +1,5 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
-import { enterAct1FreeExplorationHub } from './freeExplorationHub';
+import { enterSceneFreeExplorationHub } from './freeExplorationHub';
 
 const dispatchGameAction = vi.fn();
 const closeNarrativeOverlay = vi.fn();
@@ -33,7 +33,7 @@ vi.mock('@/store/visitedNodesIndex', () => ({
   hasVisitedNode: (visited: string[], nodeId: string) => visited.includes(nodeId),
 }));
 
-describe('enterAct1FreeExplorationHub', () => {
+describe('enterSceneFreeExplorationHub', () => {
   beforeEach(() => {
     dispatchGameAction.mockClear();
     closeNarrativeOverlay.mockClear();
@@ -45,7 +45,7 @@ describe('enterAct1FreeExplorationHub', () => {
   });
 
   it('closes overlay and shows location context on first visit', () => {
-    enterAct1FreeExplorationHub('explore_mode');
+    enterSceneFreeExplorationHub('explore_mode');
 
     expect(dispatchGameAction).toHaveBeenCalledWith({
       type: 'story/setCurrentNodeId',
@@ -67,7 +67,7 @@ describe('enterAct1FreeExplorationHub', () => {
 
   it('skips location toast on revisit', () => {
     mockSnapshot.playerState.visitedNodes = ['explore_mode'];
-    enterAct1FreeExplorationHub('explore_mode');
+    enterSceneFreeExplorationHub('explore_mode');
 
     expect(closeNarrativeOverlay).toHaveBeenCalled();
     expect(eventBusEmit).not.toHaveBeenCalledWith(
@@ -76,8 +76,25 @@ describe('enterAct1FreeExplorationHub', () => {
     );
   });
 
-  it('ignores non-Act-I hub ids', () => {
-    enterAct1FreeExplorationHub('cafe_explore_mode');
+  it('supports Act II closed-overlay hubs', () => {
+    enterSceneFreeExplorationHub('cafe_explore_mode');
+
+    expect(dispatchGameAction).toHaveBeenCalledWith({
+      type: 'story/setCurrentNodeId',
+      nodeId: 'cafe_explore_mode',
+    });
+    expect(closeNarrativeOverlay).toHaveBeenCalled();
+    expect(eventBusEmit).toHaveBeenCalledWith(
+      'game:notification',
+      expect.objectContaining({
+        type: 'scene',
+        subtitle: expect.stringContaining('Синяя яма'),
+      }),
+    );
+  });
+
+  it('ignores open-overlay hub ids', () => {
+    enterSceneFreeExplorationHub('park_explore_mode');
     expect(dispatchGameAction).not.toHaveBeenCalled();
     expect(closeNarrativeOverlay).not.toHaveBeenCalled();
   });

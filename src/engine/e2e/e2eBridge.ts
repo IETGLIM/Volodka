@@ -7,6 +7,7 @@ import {
   isPlayerRigidBodyValid,
 } from '@/engine/PlayerRigidBodyState';
 import { closeNarrativeOverlay, openNarrativeOverlay } from '@/engine/scene/narrativeOverlay';
+import { enterSceneFreeExplorationHub } from '@/engine/scene/freeExplorationHub';
 import { resolveSceneSpawn } from '@/engine/scene/sceneTransition';
 import { getGameStore } from '@/store/gameStore';
 import type { SceneId } from '@/shared/types/game';
@@ -28,6 +29,7 @@ export interface VolodkaE2EBridge {
   bootstrapAct2AlbertHint: () => Promise<void>;
   bootstrapFixSuccess: () => Promise<void>;
   bootstrapAct2MariaMeeting: () => Promise<void>;
+  promoteClosedOverlayHub: (hubId: string, sceneId: SceneId) => Promise<void>;
 }
 
 declare global {
@@ -71,6 +73,19 @@ async function jumpToStoryBeat(nodeId: string, sceneId: SceneId): Promise<void> 
   dispatchGameAction({ type: 'story/setCurrentNodeId', nodeId });
   await waitForScene(sceneId);
   openNarrativeOverlay(nodeId, 'story');
+}
+
+async function jumpToClosedOverlayHub(hubId: string, sceneId: SceneId): Promise<void> {
+  await ensureStoryNode(hubId);
+  const store = getGameStore();
+  store.setIntroActive(false);
+  store.setMainMenuOpen(false);
+  closeNarrativeOverlay();
+  if (store.activeCutsceneId) {
+    store.setCutscene(null, []);
+  }
+  await waitForScene(sceneId);
+  enterSceneFreeExplorationHub(hubId);
 }
 
 /** Localhost-only hook for Playwright — not registered on production hosts. */
@@ -123,7 +138,7 @@ export function registerVolodkaE2EBridge(): void {
       store.setFlag('agreed_help_alexander', true);
       store.setFlag('going_to_cafe', true);
       dispatchGameAction({ type: 'story/visitNode', nodeId: 'office_alexander' });
-      await jumpToStoryBeat('office_explore_mode', 'office_day');
+      await jumpToClosedOverlayHub('office_explore_mode', 'office_day');
     },
     async bootstrapStartDiagnosis() {
       const store = getGameStore();
@@ -156,6 +171,9 @@ export function registerVolodkaE2EBridge(): void {
       store.setFlag('maria_introduced', true);
       store.markCutsceneTriggered('act1_to_act2');
       await jumpToStoryBeat('act2_maria_meeting_place', 'street_night');
+    },
+    async promoteClosedOverlayHub(hubId, sceneId) {
+      await jumpToClosedOverlayHub(hubId, sceneId);
     },
   };
 }

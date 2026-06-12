@@ -1,10 +1,10 @@
 import { dispatchGameAction } from '@/engine/GameActionDispatcher';
 import { eventBus } from '@/engine/EventBus';
 import { forceEmitInteractionEnd } from '@/engine/interaction/interactionEndDedup';
-import { enterAct1FreeExplorationHub } from '@/engine/scene/freeExplorationHub';
+import { enterSceneFreeExplorationHub } from '@/engine/scene/freeExplorationHub';
 import { openNarrativeOverlay } from '@/engine/scene/narrativeOverlay';
 import {
-  isAct1FreeExplorationHub,
+  isClosedOverlayExploreHub,
   SCENE_ENTRY_NODE_TO_HUB,
 } from '@/shared/sceneExploreHubRegistry';
 import type { NarrativeKind } from '@/store/slices/uiSlice';
@@ -15,15 +15,15 @@ export function resolvePostCutsceneNarrativeNode(nodeId: string): string {
   return hubId && hubId !== nodeId ? hubId : nodeId;
 }
 
-/** After cinematic beats: Act I hubs close overlay; later acts keep walkable hub overlay. */
+/** After cinematic beats: closed-overlay hubs dismiss VN panel; others keep walkable hub overlay. */
 export function openNarrativeAfterCutscene(nodeId: string, kind: NarrativeKind): void {
   const resolved = resolvePostCutsceneNarrativeNode(nodeId);
 
-  if (isAct1FreeExplorationHub(resolved)) {
+  if (isClosedOverlayExploreHub(resolved)) {
     if (resolved !== nodeId) {
       dispatchGameAction({ type: 'story/visitNode', nodeId });
     }
-    enterAct1FreeExplorationHub(resolved);
+    enterSceneFreeExplorationHub(resolved);
     return;
   }
 

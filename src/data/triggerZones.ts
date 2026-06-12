@@ -519,7 +519,7 @@ export const TRIGGER_ZONES: TriggerZone[] = [
     position: [0, 0, 0],
     size: [2.0, 1.0, 1.5],
     enterToast: 'Скамейка — влажная от дождя, но сидеть можно.',
-    linkedDialogueNodeId: 'explore_street_bench_view',
+    linkedStoryNodeId: 'street_bench',
     interactionType: 'examine',
     examineData: {
       title: 'Скамейка',
@@ -564,7 +564,7 @@ export const TRIGGER_ZONES: TriggerZone[] = [
     position: [-2.0, 0, 4.0],
     size: [1.5, 2.5, 1.0],
     enterToast: 'Подъезд — можно вернуться домой.',
-    linkedDialogueNodeId: 'explore_go_home',
+    linkedStoryNodeId: 'go_home',
     interactionType: 'open',
     examineData: {
       title: 'Подъезд',

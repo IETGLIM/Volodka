@@ -271,6 +271,17 @@ export function EventNotificationPopup() {
     return unsub;
   }, [addNotification]);
 
+  /* ── Diegetic exploration toasts from 3D triggers / poem powers ── */
+  useEffect(() => {
+    const unsub = eventBus.on('ui:exploration_message', (payload) => {
+      addNotification({
+        title: payload.text,
+        type: 'info',
+      });
+    }, EventBusPriority.UI);
+    return unsub;
+  }, [addNotification]);
+
   /* scene:enter — handled by center scene banner in GameOrchestrator (no duplicate toast) */
 
   /* ── Listen for combat:start → enemy name toast ── */

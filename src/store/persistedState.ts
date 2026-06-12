@@ -7,6 +7,7 @@
  * saveGame / loadGame pick keys from the schema automatically. */
 
 import { sanitizeExplorationSceneId } from '@/config/scenes';
+import { isClosedOverlayExploreHub } from '@/shared/sceneExploreHubRegistry';
 import {
   SavePayloadSchema,
   type SavePayload,
@@ -199,6 +200,12 @@ export function storePatchFromSave(payload: SavePayload): Partial<GameStoreState
   patch.mainMenuOpen = legacyPhase.mainMenuOpen;
   patch.introActive = legacyPhase.introActive;
   patch.combatActive = legacyPhase.combatActive;
+
+  // Closed-overlay explore hubs never restore with VN panel open.
+  if (isClosedOverlayExploreHub(payload.currentNodeId)) {
+    patch.showStoryOverlay = false;
+    patch.narrativeKind = null;
+  }
 
   return patch;
 }

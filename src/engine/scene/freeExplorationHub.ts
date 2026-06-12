@@ -5,7 +5,7 @@ import { forceEmitInteractionEnd } from '@/engine/interaction/interactionEndDedu
 import { closeNarrativeOverlay } from '@/engine/scene/narrativeOverlay';
 import {
   getExploreHubDef,
-  isAct1FreeExplorationHub,
+  isClosedOverlayExploreHub,
 } from '@/shared/sceneExploreHubRegistry';
 import { hasVisitedNode } from '@/store/visitedNodesIndex';
 
@@ -23,11 +23,11 @@ function showHubLocationContext(hubId: string): void {
 }
 
 /**
- * Promote to an Act I free-exploration hub: spine tracking, closed overlay,
+ * Promote to a closed-overlay explore hub: spine tracking, closed overlay,
  * optional first-visit location toast. Player actions use 3D trigger zones.
  */
-export function enterAct1FreeExplorationHub(hubId: string): void {
-  if (!isAct1FreeExplorationHub(hubId)) return;
+export function enterSceneFreeExplorationHub(hubId: string): void {
+  if (!isClosedOverlayExploreHub(hubId)) return;
 
   const snapshot = getGameSnapshot();
   const firstVisit = !hasVisitedNode(snapshot.playerState.visitedNodes, hubId);
@@ -45,3 +45,6 @@ export function enterAct1FreeExplorationHub(hubId: string): void {
   eventBus.emit('interaction:end', {});
   forceEmitInteractionEnd();
 }
+
+/** @deprecated Use enterSceneFreeExplorationHub */
+export const enterAct1FreeExplorationHub = enterSceneFreeExplorationHub;

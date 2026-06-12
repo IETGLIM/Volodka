@@ -9,11 +9,17 @@ export interface SceneExploreHubDef {
   entryNodeIds: readonly string[];
 }
 
-/** Act I hubs using closed-overlay free exploration (volodka room + corridor). */
-export const ACT1_FREE_EXPLORATION_HUB_IDS: ReadonlySet<string> = new Set([
+/** Hubs that close the VN overlay — location via scene toast; actions via 3D triggers. */
+export const CLOSED_OVERLAY_EXPLORE_HUB_IDS: ReadonlySet<string> = new Set([
   'explore_mode',
   'corridor_explore_mode',
+  'street_bench_view',
+  'cafe_explore_mode',
+  'office_explore_mode',
 ]);
+
+/** @deprecated Use CLOSED_OVERLAY_EXPLORE_HUB_IDS */
+export const ACT1_FREE_EXPLORATION_HUB_IDS = CLOSED_OVERLAY_EXPLORE_HUB_IDS;
 
 /** Single source of truth for scene ↔ explore-hub mapping. */
 export const SCENE_EXPLORE_HUB_DEFS: readonly SceneExploreHubDef[] = [
@@ -193,8 +199,13 @@ export function isExploreHubNode(nodeId: string): boolean {
   return EXPLORE_HUB_NODE_IDS.has(nodeId);
 }
 
+export function isClosedOverlayExploreHub(hubId: string): boolean {
+  return CLOSED_OVERLAY_EXPLORE_HUB_IDS.has(hubId);
+}
+
+/** @deprecated Use isClosedOverlayExploreHub */
 export function isAct1FreeExplorationHub(hubId: string): boolean {
-  return ACT1_FREE_EXPLORATION_HUB_IDS.has(hubId);
+  return isClosedOverlayExploreHub(hubId);
 }
 
 export function getExploreHubDef(hubId: string): SceneExploreHubDef | undefined {

@@ -13,9 +13,9 @@ import { getCutsceneForNode } from '@/data/cutscenes';
 import {
   SCENE_ENTRY_NODE_TO_HUB,
   getExploreHubDefForScene,
-  isAct1FreeExplorationHub,
+  isClosedOverlayExploreHub,
 } from '@/shared/sceneExploreHubRegistry';
-import { enterAct1FreeExplorationHub } from '@/engine/scene/freeExplorationHub';
+import { enterSceneFreeExplorationHub } from '@/engine/scene/freeExplorationHub';
 import { devWarn } from '@/shared/utils/devLog';
 import type { SceneId } from '@/shared/types/game';
 import { closeNarrativeOverlay } from '@/engine/scene/narrativeOverlay';
@@ -142,8 +142,8 @@ export async function openLinkedStory(nodeId: string): Promise<boolean> {
     if (alreadyVisited) {
       dispatchGameAction({ type: 'story/visitNode', nodeId });
       if (entryHubId !== nodeId) {
-        if (isAct1FreeExplorationHub(entryHubId)) {
-          enterAct1FreeExplorationHub(entryHubId);
+        if (isClosedOverlayExploreHub(entryHubId)) {
+          enterSceneFreeExplorationHub(entryHubId);
         } else {
           dispatchGameAction({ type: 'story/visitNode', nodeId: entryHubId });
           dispatchGameAction({ type: 'story/setCurrentNodeId', nodeId: entryHubId });
@@ -218,8 +218,8 @@ export function triggerSceneEntryStoryIfNeeded(
     }
 
     if (hubId && !onHub) {
-      if (isAct1FreeExplorationHub(hubId)) {
-        enterAct1FreeExplorationHub(hubId);
+      if (isClosedOverlayExploreHub(hubId)) {
+        enterSceneFreeExplorationHub(hubId);
       } else {
         dispatchGameAction({ type: 'story/visitNode', nodeId: hubId });
         dispatchGameAction({ type: 'story/setCurrentNodeId', nodeId: hubId });

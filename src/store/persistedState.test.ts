@@ -1,23 +1,36 @@
 import { describe, expect, it } from 'vitest';
-import { BOOT_PHASE_FLAGS } from '@/shared/gamePhase';
-import {
-  createDefaultPersistedState,
-  createDefaultResetState,
-} from './persistedState';
+import { SAVE_VERSION } from '@/shared/validation/saveSchema';
+import { createDefaultPersistedState, storePatchFromSave } from './persistedState';
 
-describe('persistedState boot/reset parity', () => {
-  it('reset defaults match cold-boot phase flags', () => {
-    const persisted = createDefaultPersistedState();
-    expect(persisted.mainMenuOpen).toBe(BOOT_PHASE_FLAGS.mainMenuOpen);
-    expect(persisted.introActive).toBe(BOOT_PHASE_FLAGS.introActive);
-    expect(persisted.combatActive).toBe(BOOT_PHASE_FLAGS.combatActive);
+function buildValidSavePayload() {
+  return {
+    saveVersion: SAVE_VERSION,
+    savedAt: Date.now(),
+    ...createDefaultPersistedState(),
+  };
+}
+
+describe('storePatchFromSave closed-overlay hubs', () => {
+  it('forces overlay closed when resuming at closed-overlay hub', () => {
+    const patch = storePatchFromSave({
+      ...buildValidSavePayload(),
+      currentNodeId: 'cafe_explore_mode',
+      showStoryOverlay: true,
+      narrativeKind: 'story',
+    });
+    expect(patch.showStoryOverlay).toBe(false);
+    expect(patch.narrativeKind).toBeNull();
+    expect(patch.currentNodeId).toBe('cafe_explore_mode');
   });
 
-  it('createDefaultResetState includes boot phase flags', () => {
-    const reset = createDefaultResetState();
-    expect(reset.mainMenuOpen).toBe(BOOT_PHASE_FLAGS.mainMenuOpen);
-    expect(reset.introActive).toBe(BOOT_PHASE_FLAGS.introActive);
-    expect(reset.combatActive).toBe(BOOT_PHASE_FLAGS.combatActive);
-    expect(reset.collectedPoems).toEqual([]);
+  it('preserves overlay state for open-overlay hub nodes', () => {
+    const patch = storePatchFromSave({
+      ...buildValidSavePayload(),
+      currentNodeId: 'park_explore_mode',
+      showStoryOverlay: true,
+      narrativeKind: 'story',
+    });
+    expect(patch.showStoryOverlay).toBe(true);
+    expect(patch.narrativeKind).toBe('story');
   });
 });
