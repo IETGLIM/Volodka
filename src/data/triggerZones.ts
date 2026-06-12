@@ -614,10 +614,8 @@ export const TRIGGER_ZONES: TriggerZone[] = [
     },
     effects: [
       { type: 'setFlag', flag: 'accessed_terminal', flagValue: true },
-      // Ensure first_reading quest can complete even if the VN overlay
-      // was already visited (alreadyVisited skips re-showing the VN).
-      // These effects are applied every time the terminal is interacted with,
-      // and are idempotent — collectPoem/setFlag are no-ops if already done.
+      // Grants poem_1 for incident_scroll_4729 / fix_success spine (separate from
+      // wake title poem poem_2 on first_reading). Idempotent on repeat interact.
       { type: 'collectPoem', poemId: 'poem_1' },
       { type: 'setFlag', flag: 'read_poem_1', flagValue: true },
       { type: 'setFlag', flag: 'found_first_poem', flagValue: true },

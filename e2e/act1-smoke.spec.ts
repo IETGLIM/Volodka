@@ -12,6 +12,19 @@ async function skipWakeCinematic(page: import('@playwright/test').Page) {
   await page.waitForTimeout(3500);
 }
 
+/** After wake + act I title card, dismiss explore hub or take corridor VN branch. */
+async function leaveExploreHub(page: import('@playwright/test').Page): Promise<'walk' | 'corridor'> {
+  await expect(page.getByRole('dialog', { name: /Голос/i })).toBeVisible({ timeout: 45_000 });
+  const skipText = page.getByRole('button', { name: /Пропустить/i });
+  if (await skipText.isVisible().catch(() => false)) {
+    await skipText.click();
+  }
+  const corridorBtn = page.getByRole('button', { name: /Выйти в коридор/i });
+  await expect(corridorBtn).toBeVisible({ timeout: 15_000 });
+  await corridorBtn.click();
+  return 'corridor';
+}
+
 test.describe('Act I smoke', () => {
   test('new game → wake → first_reading → corridor door', async ({ page }) => {
     await waitForMenuReady(page);
@@ -23,20 +36,7 @@ test.describe('Act I smoke', () => {
     await expect(page.getByTestId('game-hud')).toBeVisible({ timeout: 30_000 });
     await expect(page.getByText(/Первое чтение/i).first()).toBeVisible({ timeout: 15_000 });
 
-    const skipTutorial = page.getByRole('button', { name: /Пропустить обучение/i });
-    if (await skipTutorial.isVisible().catch(() => false)) {
-      await skipTutorial.click();
-    }
-
-    await page.locator('canvas[data-engine]').click({ force: true, position: { x: 640, y: 360 } });
-    await page.keyboard.down('w');
-    await page.waitForTimeout(4000);
-    await page.keyboard.up('w');
-
-    const interactHint = page.locator('.interaction-hint-popup');
-    await expect(interactHint).toBeVisible({ timeout: 30_000 });
-    await page.keyboard.press('e');
-
+    await leaveExploreHub(page);
     await expect(page.getByText(/коридор|Солныш|дверь/i).first()).toBeVisible({ timeout: 15_000 });
   });
 });

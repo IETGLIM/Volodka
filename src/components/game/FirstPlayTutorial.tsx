@@ -10,6 +10,7 @@ import { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { useGameStore } from '@/store/gameStore';
+import { hasVisitedNode } from '@/store/visitedNodesIndex';
 import { useGamePhase, useTutorialFlags } from '@/store/selectors';
 import {
   Gamepad2,
@@ -295,21 +296,35 @@ const stepVariants = {
   }),
 };
 
+/** Defer first-play tutorial until the player makes a hub choice or visits the corridor. */
+const ACT1_TUTORIAL_READY_NODES = [
+  'room_table',
+  'room_bookshelf',
+  'corridor_door',
+  'corridor_explore_mode',
+] as const;
+
+function isAct1TutorialReady(visitedNodes: readonly string[]): boolean {
+  return ACT1_TUTORIAL_READY_NODES.some((nodeId) => hasVisitedNode(visitedNodes, nodeId));
+}
+
 /* ── Main component ── */
 export function FirstPlayTutorial() {
   const mode = useGamePhase();
   const tutorialFlags = useTutorialFlags();
+  const visitedNodes = useGameStore((s) => s.playerState.visitedNodes);
 
   const [currentStep, setCurrentStep] = useState(0);
   const [direction, setDirection] = useState(1);
   const [dismissed, setDismissed] = useState(false);
 
-  // Show only on first play: exploration mode + tutorials not completed
+  // First play only — wait until after explore hub choice or corridor visit (not during wake VN).
   const shouldShow =
     !dismissed &&
     mode === 'exploration' &&
     !tutorialFlags.tutorialsDisabled &&
-    !tutorialFlags.tutorialsCompleted;
+    !tutorialFlags.tutorialsCompleted &&
+    isAct1TutorialReady(visitedNodes);
 
   // Inject scanline animation styles
   if (typeof window !== 'undefined') {

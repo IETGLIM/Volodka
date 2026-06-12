@@ -9,25 +9,25 @@ export const QUESTS_ACT1: QuestDefinition[] = [
   {
     id: 'first_reading',
     title: 'Первое чтение',
-    description: 'Найти первое стихотворение, спрятанное в комнате. Каждый стих — ключ к пониманию того, что происходит в этом городе.',
+    description: 'Принять послание пробуждения — стих «Смерть есть лишь начало». Каждый стих — ключ к пониманию того, что происходит в этом городе.',
     act: 1,
     faction: undefined,
     questType: 'main',
     difficulty: 'easy',
-    hint: 'Расшифруй послание в коде гильдии — путь ведёт через офис. Начни с инцидента #4729.',
+    hint: 'Стих уже с тобой с момента пробуждения. Осмотри комнату — дальше путь ведёт через коридор и офис гильдии.',
     objectives: [
       {
-        id: 'find_first_poem',
-        description: 'Расшифровать послание в коде гильдии',
+        id: 'find_title_poem',
+        description: 'Принять стих пробуждения «Смерть есть лишь начало»',
         type: 'poem_collected',
-        target: 'poem_1',
+        target: 'poem_2',
         completed: false,
       },
       {
-        id: 'read_first_poem',
-        description: 'Прочитать найденное стихотворение',
+        id: 'read_title_poem',
+        description: 'Осознать прочитанные строки',
         type: 'flag_set',
-        target: 'read_poem_1',
+        target: 'read_poem_2',
         completed: false,
       },
     ],
@@ -36,7 +36,7 @@ export const QUESTS_ACT1: QuestDefinition[] = [
       { type: 'addKarma', value: 5 },
       { type: 'addXp', value: 50 },
     ],
-    linkedStoryNodeId: 'fix_success',
+    linkedStoryNodeId: 'explore_mode',
     questGiverNpcId: undefined, // Self-discovered quest (no NPC giver)
   },
 

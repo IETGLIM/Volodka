@@ -11,6 +11,7 @@ import { eventBus } from '@/engine/EventBus';
 import { audioEngine } from '@/engine/AudioEngine';
 import { getGameStore, useGameStore } from '@/store/gameStore';
 import { openNarrativeOverlay } from '@/engine/scene/narrativeOverlay';
+import { openNarrativeAfterCutscene } from '@/engine/scene/postCutsceneNarrative';
 import { setCinematicPresentationMode } from '@/engine/camera/cinematicPresentation';
 import { CinematicPlayerAvatar } from './CinematicPlayerAvatar';
 import {
@@ -65,23 +66,45 @@ export function WakeUpSequence() {
     store.setPlayerPosition([0, 0.01, -1.0]);
     store.setPlayerRotation(Math.PI);
     store.setCutscene(null, []);
+    // Spine tracking — wake cinematic replaces the redundant start VN beat.
     store.visitNode('start');
     store.visitNode('explore_mode');
     store.setFlag('woke_up', true);
+    store.setFlag('read_poem_2', true);
     // Title poem — single grant on wake-up (not IntroScreen / MenuScreen).
     store.collectPoem('poem_2');
     setCinematicPresentationMode('first_person');
     eventBus.emit('intro:wakeup_complete', {});
     eventBus.emit('camera:recenter', {});
 
+    const openExploreHub = (): void => {
+      const live = getGameStore();
+      if (live.activeCutsceneId) {
+        live.setCutscene(null, []);
+        eventBus.emit('cutscene:overlay_end', {});
+      }
+      live.setCurrentNodeId('explore_mode');
+      openNarrativeOverlay('explore_mode', 'story');
+    };
+
+    // Route to explore hub; act1_prologue title card plays once via start node,
+    // then postCutsceneNarrative promotes start → explore_mode (no repeat wake text).
     if (!store.isCutsceneTriggered('act1_prologue')) {
       store.setCurrentNodeId('start');
+      const unsubPrologueEnd = eventBus.on('cutscene:overlay_end', () => {
+        unsubPrologueEnd();
+        openNarrativeAfterCutscene('start', 'story');
+      });
+      // Orchestrator may mount after wake — guarantee hub even if title card was missed.
+      setTimeout(() => {
+        unsubPrologueEnd();
+        openExploreHub();
+      }, 9_000);
     } else {
-      store.setCurrentNodeId('explore_mode');
-      openNarrativeOverlay('explore_mode', 'story');
+      openExploreHub();
     }
 
-    // Auto-start Act I spine quest — no accept dialog (wake-up is the narrative grant).
+    // Auto-start Act I spine quest — retroactive check completes poem_2 objectives.
     store.activateQuest('first_reading');
   };
 

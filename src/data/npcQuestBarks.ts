@@ -13,7 +13,7 @@ export const NPC_QUEST_BARKS: Record<string, NpcQuestBarkEntry[]> = {
   zarema: [
     {
       questId: 'first_reading',
-      text: 'Ты проснулся — мир снова серый. Стихи не на полке: они прячутся там, где гильдия не ищет. Начни со стола.',
+      text: 'Стих пробуждения уже с тобой. Осмотри комнату — стол, полка или коридор подскажут, куда идти дальше.',
     },
     {
       questId: 'incident_scroll_4729',
