@@ -67,25 +67,18 @@ export function UmkaDog({ livePlayerPositionRef }: UmkaDogProps) {
   const phaseRef = useRef(Math.random() * Math.PI * 2);
   const labelRef = useRef<HTMLDivElement>(null);
 
-  const anchorPos = useRef(new THREE.Vector3(0, 0, 1.5));
-  const fallbackRoom = useRef(new THREE.Vector3(-1.2, 0, 0.5));
-
-  useFrameTick('misc', ({ state, delta }) => {
+  useFrameTick('misc', ({ delta }) => {
     const group = groupRef.current;
     if (!group || !UMKA_SCENES.has(sceneId)) return;
 
-    let ax = 0;
-    let az = 0;
-    if (veraState?.sceneId === sceneId) {
-      ax = veraState.position[0];
-      az = veraState.position[2];
-    } else if (sceneId === 'solnysh_room') {
-      ax = fallbackRoom.current.x;
-      az = fallbackRoom.current.z;
-    } else {
-      ax = 0;
-      az = 1.5;
+    if (veraState?.sceneId !== sceneId) {
+      group.visible = false;
+      return;
     }
+    group.visible = true;
+
+    const ax = veraState.position[0];
+    const az = veraState.position[2];
 
     phaseRef.current += delta * ORBIT_SPEED;
     const t = phaseRef.current;

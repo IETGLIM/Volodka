@@ -86,7 +86,7 @@ export const SCENE_EXPLORE_HUB_DEFS: readonly SceneExploreHubDef[] = [
     sceneId: 'rooftop_edge',
     hubText:
       'Край крыши — ветер, огни города внизу и ощущение, что один шаг отделяет тебя от неба. Здесь слова звучат громче, чем в любой переговорке.',
-    entryNodeIds: ['act4_transition', 'act4_rooftop_broadcast', 'rooftop_of_the_world', 'act6_rooftop_showdown'],
+    entryNodeIds: ['act4_transition', 'act4_rooftop_broadcast', 'rooftop_of_the_world', 'act6_rooftop_showdown', 'solnysh_roof_arrival', 'solnysh_roof_afterglow'],
   },
   {
     hubId: 'factory_explore_mode',

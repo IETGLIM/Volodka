@@ -177,7 +177,7 @@ const VERA_SCHEDULE: NPCSchedule = {
   npcId: 'vera',
   entries: [
     { startHour: 0, endHour: 7, sceneId: 'solnysh_room', position: [-1.0, 0, 0.5], activity: 'sleep' },
-    { startHour: 7, endHour: 10, sceneId: 'volodka_corridor', position: [0, 0, 1.5], activity: 'walk' },
+    { startHour: 7, endHour: 12, sceneId: 'volodka_corridor', position: [0, 0, 1.5], activity: 'walk' },
     { startHour: 10, endHour: 14, sceneId: 'solnysh_room', position: [1.2, 0, -1.0], activity: 'work' },
     { startHour: 14, endHour: 18, sceneId: 'library_day', position: [-1.0, 0, 3.0], activity: 'read' },
     { startHour: 18, endHour: 20, sceneId: 'park_day', position: [1.0, 0, 2.0], activity: 'walk' },
@@ -191,8 +191,8 @@ const LYONYA_SCHEDULE: NPCSchedule = {
   npcId: 'lyonya',
   entries: [
     { startHour: 0, endHour: 7, sceneId: 'solnysh_room', position: [1.0, 0, 0.5], activity: 'sleep' },
-    { startHour: 7, endHour: 11, sceneId: 'solnysh_room', position: [-2.0, 0, -1.5], activity: 'work' },
-    { startHour: 11, endHour: 19, sceneId: 'cafe_evening', position: [0, 0, 0.5], activity: 'work' },
+    { startHour: 7, endHour: 12, sceneId: 'solnysh_room', position: [-2.0, 0, -1.5], activity: 'work' },
+    { startHour: 12, endHour: 19, sceneId: 'cafe_evening', position: [0, 0, 0.5], activity: 'work' },
     { startHour: 19, endHour: 24, sceneId: 'solnysh_room', position: [-2.0, 0, -1.0], activity: 'rest' },
   ],
 };

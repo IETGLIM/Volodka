@@ -74,6 +74,7 @@ export const STORY_NODES_SOLNYSH: Record<string, StoryNode> = {
           { type: 'setFlag', flag: 'solnysh_comforted', flagValue: true },
           { type: 'npcChange', npcId: 'vera', npcChange: { relation: 10 } },
           { type: 'addSkill', skill: 'empathy', value: 2 },
+          { type: 'triggerQuest', questId: 'solnysh_comfort' },
         ],
       },
     ],
@@ -113,7 +114,7 @@ export const STORY_NODES_SOLNYSH: Record<string, StoryNode> = {
 
   solnysh_roof_arrival: {
     id: 'solnysh_roof_arrival',
-    text: 'Вы поднимаетесь на крышу. Город внизу — море огней. Алина — твоя Солныш — прижимается плечом и шепчет: «Спасибо, что ты есть, солнце!»',
+    text: 'Вы на крыше. Город внизу — море огней. Ветер, вино, и мгновение тишины между двумя людьми, которые знают друг друга с детства.',
     speaker: 'Солныш',
     sceneId: 'rooftop_edge',
     choices: [
@@ -149,6 +150,7 @@ export const STORY_NODES_SOLNYSH: Record<string, StoryNode> = {
     text: '«Лёня получил предложение — обжарщик в другой стране. Я боюсь. Но и хочу попробовать. Если ты скажешь, что мы не слабы — может, решимся.»',
     speaker: 'Солныш',
     sceneId: 'solnysh_room',
+    effects: [{ type: 'triggerQuest', questId: 'solnysh_relocation' }],
     choices: [
       {
         text: 'Я поддержу ваш переезд — вы справитесь',
@@ -158,7 +160,6 @@ export const STORY_NODES_SOLNYSH: Record<string, StoryNode> = {
           { type: 'npcChange', npcId: 'vera', npcChange: { relation: 15 } },
           { type: 'npcChange', npcId: 'lyonya', npcChange: { relation: 10 } },
           { type: 'addKarma', value: 10 },
-          { type: 'triggerQuest', questId: 'solnysh_relocation' },
         ],
       },
       {

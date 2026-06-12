@@ -55,7 +55,11 @@ export const INTERACTION_LABELS: Record<InteractionType, string> = {
 export function findTriggerZoneByNpcId(
   zones: readonly TriggerZone[],
   npcId: string,
+  sceneId?: string,
 ): TriggerZone | undefined {
+  if (sceneId) {
+    return zones.find((z) => z.linkedNpcId === npcId && z.sceneId === sceneId);
+  }
   return zones.find((z) => z.linkedNpcId === npcId);
 }
 

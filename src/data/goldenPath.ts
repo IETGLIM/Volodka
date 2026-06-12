@@ -139,9 +139,14 @@ export const GOLDEN_PATH_STORY_SPINE: string[] = [
  */
 export const STORY_NODE_TO_NPC_ID: Record<string, string> = {
   corridor_door: 'vera',
+  solnysh_corridor_talk: 'vera',
   solnysh_door: 'vera',
   solnysh_room_talk: 'vera',
+  solnysh_comfort_deep: 'vera',
+  solnysh_wine_offer: 'vera',
   solnysh_roof_arrival: 'vera',
+  solnysh_relocation_talk: 'vera',
+  lyonya_room_talk: 'lyonya',
   maria_curious: 'maria',
   cafe_barista: 'cafe_barista',
   office_alexander: 'office_alexander',
@@ -428,7 +433,7 @@ export const GOLDEN_PATH_BRANCH_HINTS: Record<string, string> = {
   // Act 1
   start: 'Проверь терминал — сообщение гильдии важнее, чем кажется.',
   room_table: 'Прочитай стихотворение прежде чем отвечать гильдии.',
-  corridor_door: 'Поблагодари Зарему — доброта открывает двери.',
+  corridor_door: 'Поздоровайся с Солныш — она ждёт у зеркала.',
   kitchen_window: 'Иди в кафе — дорога начинается с первого шага.',
   street_bench_view: 'Подойди к незнакомке — Виктория знает правду.',
   maria_curious: 'Возьми чип данных — в нём скрыто стихотворение.',

@@ -7,10 +7,11 @@ import {
   findNpcById,
   getItemDefinition,
 } from '@/data/gameDataLoader';
+import { findTriggerZoneByNpcId } from '@/data/triggerZones';
 import {
-  findTriggerZoneByDialogueNodeId,
-  findTriggerZoneByNpcId,
-} from '@/data/triggerZones';
+  findNpcTriggerZoneForScene,
+  resolveNpcNarrativeTarget,
+} from '@/engine/interaction/npcNarrativeRouting';
 import {
   openLinkedDialogue,
   openLinkedStory,
@@ -65,14 +66,6 @@ async function triggerLinkedContent(zone: TriggerZone): Promise<void> {
   } else if (zone.linkedDialogueNodeId) {
     await openLinkedDialogue(zone.linkedDialogueNodeId);
   }
-}
-
-function findNpcTriggerZone(npcId: string, dialogueNodeId?: string): TriggerZone | undefined {
-  const zones = getTriggerZones();
-  return (
-    findTriggerZoneByNpcId(zones, npcId)
-    ?? (dialogueNodeId ? findTriggerZoneByDialogueNodeId(zones, dialogueNodeId) : undefined)
-  );
 }
 
 function isExplorationMode(): boolean {
@@ -228,7 +221,9 @@ export class InteractionController {
       return;
     }
 
-    const npcZone = findNpcTriggerZone(npcId, npcDef.dialogueNodeId);
+    const sceneId = getGameSnapshot().exploration.currentSceneId;
+    const npcZone = findNpcTriggerZoneForScene(npcId, sceneId, npcDef.dialogueNodeId);
+    const narrativeTarget = resolveNpcNarrativeTarget(npcId, npcDef.dialogueNodeId, sceneId);
 
     if (npcZone) {
       if (npcZone.effects && npcZone.effects.length > 0) {
@@ -241,20 +236,17 @@ export class InteractionController {
 
     runInteractionTask('handleNpcInteractStaged', async () => {
       let openedNarrative = false;
-      if (npcDef.dialogueNodeId) {
-        openedNarrative = await tryOpenDialogue(npcDef.dialogueNodeId);
-      } else if (npcZone?.linkedDialogueNodeId) {
-        openedNarrative = await tryOpenDialogue(npcZone.linkedDialogueNodeId);
-      } else if (npcZone?.linkedStoryNodeId) {
-        openedNarrative = await tryOpenStory(npcZone.linkedStoryNodeId);
+      if (narrativeTarget?.kind === 'story') {
+        openedNarrative = await tryOpenStory(narrativeTarget.nodeId);
+      } else if (
+        narrativeTarget?.kind === 'dialogue' ||
+        narrativeTarget?.kind === 'default_dialogue'
+      ) {
+        openedNarrative = await tryOpenDialogue(narrativeTarget.nodeId);
       }
 
       if (!openedNarrative) {
-        if (
-          !npcDef.dialogueNodeId &&
-          !npcZone?.linkedDialogueNodeId &&
-          !npcZone?.linkedStoryNodeId
-        ) {
+        if (!narrativeTarget) {
           devWarn(`[InteractionController] No narrative linked for NPC "${npcId}"`);
         }
         queueMicrotask(() => {
@@ -264,7 +256,8 @@ export class InteractionController {
       }
     });
 
-    eventBus.emit('npc:talked', { npcId, dialogueNodeId: npcDef.dialogueNodeId });
+    const talkedNodeId = narrativeTarget?.nodeId ?? npcDef.dialogueNodeId;
+    eventBus.emit('npc:talked', { npcId, dialogueNodeId: talkedNodeId });
   }
 
   handleMinigameOpen(gameType: string): void {

@@ -812,7 +812,7 @@ export const QUESTS_ACT4: QuestDefinition[] = [
     objectives: [
       {
         id: 'meet_vera_library',
-        description: 'Встретить Веру в библиотеке',
+        description: 'Встретить Алину (Солныш) в библиотеке',
         type: 'npc_talked',
         target: 'vera',
         completed: false,

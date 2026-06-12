@@ -17,6 +17,7 @@ import {
   getDialogueNodes,
   findNpcById,
   findNpcByName,
+  resolveNpcIdFromSpeaker,
   createInventoryItem,
   isNarrativeGameDataLoaded,
   ensureDialogueNode,
@@ -222,8 +223,9 @@ export function DialogueRenderer() {
       }
 
       if (node.speaker) {
-        const npcDef = findNpcByName(node.speaker);
-        const npcId = npcDef?.id ?? node.speaker.toLowerCase().replace(/\s+/g, '_');
+        const npcId =
+          resolveNpcIdFromSpeaker(node.speaker)
+          ?? node.speaker.toLowerCase().replace(/\s+/g, '_');
         eventBus.emit('npc:talked', { npcId, dialogueNodeId: node.id });
       }
 

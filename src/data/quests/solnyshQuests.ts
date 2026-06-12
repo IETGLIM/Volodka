@@ -8,7 +8,7 @@ export const QUESTS_SOLNYSH: QuestDefinition[] = [
     act: 1,
     questType: 'side',
     difficulty: 'easy',
-    hint: 'Поговори с Солныш в коридоре или в их комнате — выслушай и поддержи.',
+    hint: 'Поговори с Солныш в коридоре (7–12) или в их комнате — выслушай и поддержи.',
     objectives: [
       {
         id: 'talk_solnysh',
@@ -81,11 +81,12 @@ export const QUESTS_SOLNYSH: QuestDefinition[] = [
     act: 1,
     questType: 'side',
     difficulty: 'medium',
+    requiredFlag: 'solnysh_roof_toast_done',
     hint: 'Поговори с Солныш после вечера на крыше — спроси о будущем.',
     objectives: [
       {
         id: 'discuss_move',
-        description: 'Обсудить переезд с Солныш',
+        description: 'Обсудить переезд с Алиной',
         type: 'npc_talked',
         target: 'vera',
         completed: false,

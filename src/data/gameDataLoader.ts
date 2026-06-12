@@ -268,6 +268,11 @@ export function findNpcByName(name: string): NPCDefinition | undefined {
   return npcMod!.findNpcByName(name);
 }
 
+export function resolveNpcIdFromSpeaker(speaker: string): string | undefined {
+  assertBootLoaded();
+  return npcMod!.resolveNpcIdFromSpeaker(speaker);
+}
+
 export function getSkillTreeMap() {
   assertBootLoaded();
   return skillTreeMod!.SKILL_TREE_MAP;

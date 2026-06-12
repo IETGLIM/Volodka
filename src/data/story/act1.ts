@@ -93,7 +93,7 @@ export const STORY_NODES_ACT1: Record<string, StoryNode> = {
 
   corridor_door: {
     id: 'corridor_door',
-    text: 'Ты выходишь в коридор коммуналки. Лампочка мигает, отбрасывая нервные тени. У зеркала стоит Солныш — соседка с тёплыми глазами и лёгким платком на плечах. Она улыбается: «Доброе утро, Володька. Опять всю ночь кодил? Не забывай есть.» Из кухни доносится звон посуды — Зарема уже проснулась. Дверь на лестничную клетку прикрыта, но сквозняк тянет холодом.',
+    text: 'Ты выходишь в коридор коммуналки. Лампочка мигает, отбрасывая нервные тени. У зеркала стоит Алина — для тебя она всегда Солныш: светлые волосы, голубые глаза, лёгкий платок на плечах. Лучшая подруга с гимназии улыбается: «Доброе утро, Володька. Опять всю ночь кодил? Не забывай есть.» У её ног крутится Умка. Из кухни доносится звон посуды — Зарема уже проснулась.',
     speaker: 'narrator',
     sceneId: 'volodka_corridor',
     choices: [
@@ -101,7 +101,10 @@ export const STORY_NODES_ACT1: Record<string, StoryNode> = {
         text: 'Поздороваться с Солныш и осмотреться',
         next: 'corridor_explore_mode',
         goldenPath: true,
-        effects: [{ type: 'npcChange', npcId: 'vera', npcChange: { relation: 3 } }],
+        effects: [
+          { type: 'npcChange', npcId: 'vera', npcChange: { relation: 3 } },
+          { type: 'triggerQuest', questId: 'solnysh_comfort' },
+        ],
       },
       { text: 'Пойти на кухню', next: 'kitchen_table' },
       { text: 'Выйти на улицу', next: 'street_bench' },
@@ -111,14 +114,48 @@ export const STORY_NODES_ACT1: Record<string, StoryNode> = {
 
   corridor_explore_mode: {
     id: 'corridor_explore_mode',
-    text: 'Коридор тянется в обе стороны — потёртый линолеум, облупившаяся краска, таблички с фамилиями на дверях соседей. Лампочка под потолком то гаснет, то вспыхивает, и на мгновение стены кажутся ещё уже. Из кухни доносится тихий разговор, а за входной дверью — эхо чьих-то шагов по лестнице.',
+    text: 'Коридор тянется в обе стороны — потёртый линолеум, облупившаяся краска, таблички с фамилиями на дверях соседей. У зеркала — Солныш и Умка; дальше по правой стене — знакомая дверь в комнату Алины и Лёни, откуда пахнет кофе. Лампочка под потолком то гаснет, то вспыхивает.',
     speaker: 'narrator',
     sceneId: 'volodka_corridor',
     choices: [
+      { text: 'Поговорить с Солныш', next: 'solnysh_corridor_talk' },
+      { text: 'Зайти к Алине и Лёне', next: 'solnysh_door' },
       { text: 'Пойти на кухню', next: 'kitchen_table', goldenPath: true },
       { text: 'Выйти на улицу', next: 'street_bench' },
       { text: 'Вернуться в комнату', next: 'go_home' },
       { text: 'Свободно исследовать коридор', next: 'corridor_explore_mode' },
+    ],
+  },
+
+  solnysh_corridor_talk: {
+    id: 'solnysh_corridor_talk',
+    text: '«Володька!» — Алина оборачивается — для тебя она всегда Солныш. Поправляет светлые волосы; голубые глаза усталые, но тёплые. Умка крутится у её ног. «Мы с детства рядом, а сегодня… сегодня мне кажется, что мир слишком серый. Ты меня понимаешь?»',
+    speaker: 'Солныш',
+    sceneId: 'volodka_corridor',
+    choices: [
+      {
+        text: 'Всё не так плохо — тебя любят, мы рядом',
+        next: 'corridor_explore_mode',
+        effects: [
+          { type: 'setFlag', flag: 'solnysh_comforted', flagValue: true },
+          { type: 'npcChange', npcId: 'vera', npcChange: { relation: 8 } },
+          { type: 'addKarma', value: 5 },
+          { type: 'triggerQuest', questId: 'solnysh_comfort' },
+        ],
+      },
+      {
+        text: 'Зайти к вам — поговорим у вас',
+        next: 'solnysh_door',
+      },
+      {
+        text: 'Умка сегодня симпатичная',
+        next: 'corridor_explore_mode',
+        effects: [
+          { type: 'npcChange', npcId: 'vera', npcChange: { relation: 3 } },
+          { type: 'addStat', stat: 'stress', value: -3 },
+        ],
+      },
+      { text: 'Побежал — увидимся', next: 'corridor_explore_mode' },
     ],
   },
 

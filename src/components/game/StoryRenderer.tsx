@@ -32,6 +32,9 @@ import { AriaLiveRegion } from '@/components/a11y/AriaLiveRegion';
 import { FocusTrap } from '@/components/a11y/FocusTrap';
 import { buildChoiceAriaLabel } from '@/shared/utils/choiceAriaLabel';
 import { devWarn } from '@/shared/utils/devLog';
+import { eventBus } from '@/engine/EventBus';
+import { STORY_NODE_TO_NPC_ID } from '@/data/goldenPath';
+import { resolveNpcIdFromSpeaker } from '@/data/allNpcDefinitions';
 
 /* ── Stat change highlight chip ── */
 function StatChangeChip({ effect }: { effect: StoryEffect }) {
@@ -181,6 +184,16 @@ export function StoryRenderer() {
         if (effectGen !== nodeEffectGenRef.current) return;
         setAppliedEffects([]);
       }, 0);
+    }
+
+    const mappedNpcId = STORY_NODE_TO_NPC_ID[node.id];
+    const speakerNpcId =
+      node.speaker && node.speaker !== 'narrator'
+        ? resolveNpcIdFromSpeaker(node.speaker)
+        : undefined;
+    const questNpcId = mappedNpcId ?? speakerNpcId;
+    if (questNpcId) {
+      eventBus.emit('npc:talked', { npcId: questNpcId, dialogueNodeId: node.id });
     }
   }, [node?.id, visitNode, clearEffectTimers, scheduleEffectTimer]);
 
