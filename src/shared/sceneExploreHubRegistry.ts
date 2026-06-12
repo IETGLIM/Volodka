@@ -14,6 +14,7 @@ export const CLOSED_OVERLAY_EXPLORE_HUB_IDS: ReadonlySet<string> = new Set([
   'explore_mode',
   'corridor_explore_mode',
   'street_bench_view',
+  'home_evening_explore_mode',
   'cafe_explore_mode',
   'office_explore_mode',
 ]);
@@ -57,29 +58,15 @@ export const SCENE_EXPLORE_HUB_DEFS: readonly SceneExploreHubDef[] = [
     sceneId: 'cafe_evening',
     hubText:
       'Кафе «Синяя яма» — подвал с синими неоновыми трубками, запахом жжёного кофе и старым джazzом. За стойкой бариста, в углу — постоянные гости.',
-    entryNodeIds: [
-      'go_to_cafe',
-      'cafe_enter',
-      'act2_albert_hint',
-      'act2_albert_network_hint',
-      'act2_cafe_reflection',
-      'cafe_evening_end',
-    ],
+    // Story beats (act2_albert_hint, etc.) reached via choices — not door arrivals.
+    entryNodeIds: ['go_to_cafe', 'cafe_enter'],
   },
   {
     hubId: 'office_explore_mode',
     sceneId: 'office_day',
     hubText:
       'Офис IT-гильдии — стекло, хром и тихий гул серверов. Терминалы мерцают, коллеги снуют между кабинками, а где-то в глубине — комната Александра.',
-    entryNodeIds: [
-      'office_alexander',
-      'start_diagnosis',
-      'fix_success',
-      'office_colleague',
-      'colleague_persuasion_line',
-      'act2_dmitry_office_meeting',
-      'chk_office_whisper',
-    ],
+    entryNodeIds: ['office_alexander'],
   },
   {
     hubId: 'street_winter_explore_mode',

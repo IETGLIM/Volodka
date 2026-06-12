@@ -96,7 +96,7 @@ patrol→chase→engaged→cooldown, конус зрения проецируе�
   Для doorway spawn и звука двери используй physical exit (`sceneDefinitions`
   doorways) или `applyEffects` с `{ type: 'transitionScene', sceneId }`.
   Explore-hub узлы (`*_explore_mode`) держат `currentNodeId` для квестов/сейвов.
-  **Closed-overlay hubs** (Act I room/corridor/street + Act II cafe/office):
+  **Closed-overlay hubs** (Act I room/corridor/street/kitchen + Act II cafe/office):
   после cutscene/entry overlay закрывается — игрок ходит свободно, локация через
   scene-toast (`enterSceneFreeExplorationHub`), действия через trigger zones;
   `ui:exploration_message` → `EventNotificationPopup`. **Acts 2–7 (остальные сцены):**

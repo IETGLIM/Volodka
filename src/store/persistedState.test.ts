@@ -11,17 +11,20 @@ function buildValidSavePayload() {
 }
 
 describe('storePatchFromSave closed-overlay hubs', () => {
-  it('forces overlay closed when resuming at closed-overlay hub', () => {
-    const patch = storePatchFromSave({
-      ...buildValidSavePayload(),
-      currentNodeId: 'cafe_explore_mode',
-      showStoryOverlay: true,
-      narrativeKind: 'story',
-    });
-    expect(patch.showStoryOverlay).toBe(false);
-    expect(patch.narrativeKind).toBeNull();
-    expect(patch.currentNodeId).toBe('cafe_explore_mode');
-  });
+  it.each(['cafe_explore_mode', 'home_evening_explore_mode'])(
+    'forces overlay closed when resuming at closed-overlay hub %s',
+    (hubId) => {
+      const patch = storePatchFromSave({
+        ...buildValidSavePayload(),
+        currentNodeId: hubId,
+        showStoryOverlay: true,
+        narrativeKind: 'story',
+      });
+      expect(patch.showStoryOverlay).toBe(false);
+      expect(patch.narrativeKind).toBeNull();
+      expect(patch.currentNodeId).toBe(hubId);
+    },
+  );
 
   it('preserves overlay state for open-overlay hub nodes', () => {
     const patch = storePatchFromSave({

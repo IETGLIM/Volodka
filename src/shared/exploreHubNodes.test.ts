@@ -38,6 +38,7 @@ describe('exploreHubNodes', () => {
   it('locks movement on non-hub overlay nodes', () => {
     expect(isNarrativeMovementLocked(true, 'corridor_door')).toBe(true);
     expect(isNarrativeMovementLocked(true, 'corridor_explore_mode')).toBe(false);
+    expect(isNarrativeMovementLocked(true, 'home_evening_explore_mode')).toBe(false);
     expect(isNarrativeMovementLocked(true, 'cafe_explore_mode')).toBe(false);
   });
 

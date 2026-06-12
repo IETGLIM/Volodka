@@ -76,6 +76,23 @@ describe('enterSceneFreeExplorationHub', () => {
     );
   });
 
+  it('supports home_evening closed-overlay hub', () => {
+    enterSceneFreeExplorationHub('home_evening_explore_mode');
+
+    expect(dispatchGameAction).toHaveBeenCalledWith({
+      type: 'story/setCurrentNodeId',
+      nodeId: 'home_evening_explore_mode',
+    });
+    expect(closeNarrativeOverlay).toHaveBeenCalled();
+    expect(eventBusEmit).toHaveBeenCalledWith(
+      'game:notification',
+      expect.objectContaining({
+        type: 'scene',
+        subtitle: expect.stringContaining('кухня'),
+      }),
+    );
+  });
+
   it('supports Act II closed-overlay hubs', () => {
     enterSceneFreeExplorationHub('cafe_explore_mode');
 

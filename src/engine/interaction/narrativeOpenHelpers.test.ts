@@ -47,6 +47,25 @@ vi.mock('@/engine/scene/sceneTransition', () => ({
   requestSceneTransition: (...args: unknown[]) => requestSceneTransition(...args),
 }));
 
+vi.mock('@/engine/guidedStory/createGuidedStoryDeps', () => ({
+  getStoryNodeSceneId: (nodeId: string) => {
+    const map: Record<string, string> = {
+      corridor_door: 'volodka_corridor',
+      act2_albert_hint: 'cafe_evening',
+      start_diagnosis: 'office_day',
+    };
+    return map[nodeId];
+  },
+}));
+
+vi.mock('@/shared/sceneExploreHubRegistry', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/shared/sceneExploreHubRegistry')>();
+  return {
+    ...actual,
+    isExploreHubNode: (nodeId: string) => nodeId.endsWith('_explore_mode') || nodeId === 'explore_mode',
+  };
+});
+
 describe('triggerSceneEntryStoryIfNeeded', () => {
   beforeEach(() => {
     dispatchGameAction.mockClear();
@@ -95,5 +114,38 @@ describe('triggerSceneEntryStoryIfNeeded', () => {
       type: 'story/setCurrentNodeId',
       nodeId: 'corridor_explore_mode',
     });
+  });
+
+  it('promotes to home_evening hub on kitchen revisit after cutscene played', () => {
+    mockSnapshot.playerState.visitedNodes = ['kitchen_table'];
+    mockSnapshot.triggeredCutscenes = ['zarema_first_meeting'];
+    mockSnapshot.currentNodeId = 'corridor_explore_mode';
+    mockSnapshot.exploration.currentSceneId = 'home_evening';
+
+    triggerSceneEntryStoryIfNeeded('home_evening', 'volodka_corridor');
+
+    expect(dispatchGameAction).toHaveBeenCalledWith({
+      type: 'story/setCurrentNodeId',
+      nodeId: 'home_evening_explore_mode',
+    });
+  });
+
+  it('skips door auto-entry when already on a deliberate story beat for the scene', async () => {
+    mockSnapshot.currentNodeId = 'act2_albert_hint';
+    mockSnapshot.exploration.currentSceneId = 'cafe_evening';
+
+    triggerSceneEntryStoryIfNeeded('cafe_evening', 'street_night');
+    await Promise.resolve();
+
+    expect(dispatchGameAction).not.toHaveBeenCalled();
+  });
+
+  it('skips door auto-entry for mid-scene office beats not in entry list', () => {
+    mockSnapshot.currentNodeId = 'start_diagnosis';
+    mockSnapshot.exploration.currentSceneId = 'office_day';
+
+    triggerSceneEntryStoryIfNeeded('office_day', 'cafe_evening');
+
+    expect(dispatchGameAction).not.toHaveBeenCalled();
   });
 });

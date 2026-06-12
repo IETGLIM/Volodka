@@ -14,7 +14,9 @@ import {
   SCENE_ENTRY_NODE_TO_HUB,
   getExploreHubDefForScene,
   isClosedOverlayExploreHub,
+  isExploreHubNode,
 } from '@/shared/sceneExploreHubRegistry';
+import { getStoryNodeSceneId } from '@/engine/guidedStory/createGuidedStoryDeps';
 import { enterSceneFreeExplorationHub } from '@/engine/scene/freeExplorationHub';
 import { devWarn } from '@/shared/utils/devLog';
 import type { SceneId } from '@/shared/types/game';
@@ -189,6 +191,15 @@ export function triggerSceneEntryStoryIfNeeded(
 
   const hubDef = getExploreHubDefForScene(toSceneId);
   if (!hubDef || hubDef.entryNodeIds.length === 0) return;
+
+  const currentStorySceneId = getStoryNodeSceneId(store.currentNodeId);
+  if (
+    !isExploreHubNode(store.currentNodeId) &&
+    currentStorySceneId === toSceneId &&
+    !hubDef.entryNodeIds.includes(store.currentNodeId)
+  ) {
+    return;
+  }
 
   for (const entryNodeId of hubDef.entryNodeIds) {
     if (!isNaturalEntryTransition(entryNodeId, fromSceneId, toSceneId)) {

@@ -72,6 +72,10 @@ async function jumpToStoryBeat(nodeId: string, sceneId: SceneId): Promise<void> 
   dispatchGameAction({ type: 'story/visitNode', nodeId });
   dispatchGameAction({ type: 'story/setCurrentNodeId', nodeId });
   await waitForScene(sceneId);
+  // Let scene-enter pipeline (syncNarrative / entry auto-triggers) settle before opening overlay.
+  await new Promise<void>((resolve) => {
+    requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
+  });
   openNarrativeOverlay(nodeId, 'story');
 }
 
