@@ -85,6 +85,11 @@ export function WakeUpSequence() {
       }
       live.setCurrentNodeId('explore_mode');
       openNarrativeOverlay('explore_mode', 'story');
+      // Defer quest activation until hub is visible — retroactive completion
+      // then fires matrix quote + quest-complete dialog intentionally.
+      setTimeout(() => {
+        getGameStore().activateQuest('first_reading');
+      }, 600);
     };
 
     // Route to explore hub; act1_prologue title card plays once via start node,
@@ -103,9 +108,6 @@ export function WakeUpSequence() {
     } else {
       openExploreHub();
     }
-
-    // Auto-start Act I spine quest — retroactive check completes poem_2 objectives.
-    store.activateQuest('first_reading');
   };
 
   const beginHandoff = (): void => {

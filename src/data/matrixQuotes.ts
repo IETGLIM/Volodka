@@ -183,3 +183,8 @@ export const MATRIX_QUOTES: MatrixQuote[] = [
 export function getQuotesByAct(act: number): MatrixQuote[] {
   return MATRIX_QUOTES.filter((q) => q.act === act)
 }
+
+/** Lookup a matrix quote by story node, quest, or event trigger id */
+export function getQuoteByTrigger(trigger: string): MatrixQuote | undefined {
+  return MATRIX_QUOTES.find((q) => q.trigger === trigger)
+}

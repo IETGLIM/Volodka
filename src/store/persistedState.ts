@@ -142,11 +142,18 @@ export function saveGameSnapshot(): Omit<SavePayload, 'saveVersion'> {
 /** Merge validated save data over defaults for loadGame. */
 export function storePatchFromSave(payload: SavePayload): Partial<GameStoreState> {
   const defaults = createDefaultPersistedState();
+  const migratedFlags = { ...defaults.playerState.flags, ...payload.playerState.flags };
+  // Pre-4262626 saves: poem_2 from wake/menu without read_poem_2 flag.
+  if (payload.collectedPoems.includes('poem_2') && !migratedFlags.read_poem_2) {
+    migratedFlags.read_poem_2 = true;
+  }
+
   const patch: Partial<GameStoreState> = {
     lastSaveTimestamp: payload.savedAt,
     playerState: {
       ...defaults.playerState,
       ...payload.playerState,
+      flags: migratedFlags,
     },
     exploration: {
       ...defaults.exploration,

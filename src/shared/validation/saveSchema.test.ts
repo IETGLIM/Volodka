@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { SAVE_VERSION, SavePayloadSchema, validateSaveData } from './saveSchema';
-import { createDefaultPersistedState } from '@/store/persistedState';
+import { createDefaultPersistedState, storePatchFromSave } from '@/store/persistedState';
 
 function buildValidSavePayload() {
   return {
@@ -51,5 +51,20 @@ describe('validateSaveData', () => {
   it('rejects malformed JSON', () => {
     const result = validateSaveData('{not json');
     expect(result.success).toBe(false);
+  });
+});
+
+describe('storePatchFromSave', () => {
+  it('migrates read_poem_2 when poem_2 collected without flag (pre-4262626)', () => {
+    const payload = {
+      ...buildValidSavePayload(),
+      collectedPoems: ['poem_2'],
+      playerState: {
+        ...buildValidSavePayload().playerState,
+        flags: {},
+      },
+    };
+    const patch = storePatchFromSave(payload);
+    expect(patch.playerState?.flags?.read_poem_2).toBe(true);
   });
 });

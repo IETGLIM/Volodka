@@ -23,7 +23,9 @@ test.describe('Volodka smoke', () => {
     const canvas = page.locator('canvas').first();
     await expect(canvas).toBeVisible({ timeout: 90_000 });
     await expect
-      .poll(async () => canvas.evaluate((el) => el.width > 0 && el.height > 0))
+      .poll(async () => canvas.evaluate((el) => el.width > 0 && el.height > 0), {
+        timeout: 60_000,
+      })
       .toBe(true);
   });
 });

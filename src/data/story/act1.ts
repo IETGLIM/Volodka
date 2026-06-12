@@ -66,6 +66,12 @@ export const STORY_NODES_ACT1: Record<string, StoryNode> = {
           { type: 'triggerQuest', questId: 'incident_scroll_4729' },
         ],
       },
+      {
+        text: 'Встать и выйти в коридор',
+        next: 'corridor_door',
+        goldenPath: true,
+        effects: [{ type: 'transitionScene', sceneId: 'volodka_corridor' }],
+      },
     ],
   },
 

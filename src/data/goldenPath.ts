@@ -11,7 +11,6 @@ export const GOLDEN_PATH_STORY_SPINE: string[] = [
   'start',
   'explore_mode',
   'room_table',
-  'room_bookshelf',
   'corridor_door',
   'corridor_explore_mode',
   'kitchen_table',
@@ -432,7 +431,7 @@ export const ACT_CHAPTER_TITLES: Record<number, string> = Object.fromEntries(
 export const GOLDEN_PATH_BRANCH_HINTS: Record<string, string> = {
   // Act 1
   start: 'Проверь терминал — сообщение гильдии важнее, чем кажется.',
-  room_table: 'Прочитай стихотворение прежде чем отвечать гильдии.',
+  room_table: 'Осмотри стол — затем выйди в коридор к Солныш.',
   corridor_door: 'Поздоровайся с Солныш — она ждёт у зеркала.',
   corridor_explore_mode: 'Поговори с Солныш или зайди к ней с Лёней — линия друга с детства.',
   solnysh_corridor_talk: 'Успокой Алину — ей нужна поддержка лучшего друга.',
