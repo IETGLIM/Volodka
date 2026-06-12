@@ -120,10 +120,13 @@ export function useCutsceneController() {
         eventBus.emit('camera:recenter', {});
       }
       if (currentStore.currentNodeId) {
-        openNarrativeAfterCutscene(
-          currentStore.currentNodeId,
-          currentStore.narrativeKind ?? 'story',
-        );
+        const nodeId = currentStore.currentNodeId;
+        const kind = currentStore.narrativeKind ?? 'story';
+        // Defer until cutscene store + overlay teardown completes (avoids race with VN).
+        queueMicrotask(() => {
+          if (!cutsceneSessionRef.current.isCurrent(generation)) return;
+          openNarrativeAfterCutscene(nodeId, kind);
+        });
       }
     };
 

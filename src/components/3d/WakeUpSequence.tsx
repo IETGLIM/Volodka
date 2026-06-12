@@ -103,6 +103,9 @@ export function WakeUpSequence() {
       // Orchestrator may mount after wake — guarantee hub even if title card was missed.
       setTimeout(() => {
         unsubPrologueEnd();
+        const live = getGameStore();
+        // Skip if prologue, save load, or e2e bootstrap already advanced story state.
+        if (live.currentNodeId !== 'start') return;
         openExploreHub();
       }, 9_000);
     } else {

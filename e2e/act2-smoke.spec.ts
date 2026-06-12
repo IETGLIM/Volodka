@@ -20,13 +20,55 @@ async function skipStoryTypewriter(page: import('@playwright/test').Page) {
   }
 }
 
+/** Dismiss first_reading matrix quote + quest-complete dialog after deferred activation. */
+async function dismissFirstReadingBeats(page: import('@playwright/test').Page) {
+  await page.waitForTimeout(1200);
+  const matrixQuote = page.getByText(/Слова — это протокол/i);
+  if (await matrixQuote.isVisible({ timeout: 10_000 }).catch(() => false)) {
+    await page.mouse.click(400, 300);
+    await page.waitForTimeout(800);
+  }
+  const continueQuest = page.getByRole('button', { name: /^Продолжить$/i });
+  if (await continueQuest.isVisible({ timeout: 5000 }).catch(() => false)) {
+    await continueQuest.click();
+    await page.waitForTimeout(500);
+  }
+}
+
 /** Let wake-up deferred beats finish before e2e bootstrap overwrites story state. */
 async function settleAfterWake(page: import('@playwright/test').Page) {
   await expect(page.getByRole('dialog', { name: /Голос/i })).toBeVisible({ timeout: 45_000 });
+  await dismissFirstReadingBeats(page);
   await page.waitForTimeout(1500);
 }
 
 test.describe('Act II smoke', () => {
+  test('bootstrap act2 → act2_transition → cafe golden branch', async ({ page }) => {
+    await waitForMenuReady(page);
+    await page.getByTestId('menu-new-game').click();
+    await expect(page.locator('canvas[data-engine]')).toBeVisible({ timeout: 90_000 });
+
+    await skipWakeCinematic(page);
+    await expect(page.getByTestId('game-hud')).toBeVisible({ timeout: 30_000 });
+    await settleAfterWake(page);
+
+    await page.evaluate(async () => {
+      await window.__volodka_e2e?.bootstrapAct2Entry();
+    });
+
+    const hubDialog = page.getByRole('dialog', { name: /Голос/i });
+    await expect(hubDialog).toBeVisible({ timeout: 45_000 });
+    await skipStoryTypewriter(page);
+
+    const cafeBtn = hubDialog.getByRole('button', { name: /Вернуться в кафе/i });
+    await expect(cafeBtn).toBeVisible({ timeout: 45_000 });
+    await cafeBtn.click({ force: true });
+
+    await expect(page.getByText(/Альберт|гильдии|стихи/i).first()).toBeVisible({
+      timeout: 20_000,
+    });
+  });
+
   test('bootstrap act2 albert hint beat on cafe scene', async ({ page }) => {
     await waitForMenuReady(page);
     await page.getByTestId('menu-new-game').click();
@@ -67,6 +109,32 @@ test.describe('Act II smoke', () => {
     const terminalBtn = hubDialog.getByRole('button', { name: /Сесть за терминал/i });
     await expect(terminalBtn).toBeVisible({ timeout: 45_000 });
     await terminalBtn.click({ force: true });
+
+    await expect(page.getByText(/4729|расшифров|стихи/i).first()).toBeVisible({
+      timeout: 20_000,
+    });
+  });
+
+  test('bootstrap start_diagnosis beat directly', async ({ page }) => {
+    await waitForMenuReady(page);
+    await page.getByTestId('menu-new-game').click();
+    await expect(page.locator('canvas[data-engine]')).toBeVisible({ timeout: 90_000 });
+
+    await skipWakeCinematic(page);
+    await expect(page.getByTestId('game-hud')).toBeVisible({ timeout: 30_000 });
+    await settleAfterWake(page);
+
+    await page.evaluate(async () => {
+      await window.__volodka_e2e?.bootstrapStartDiagnosis();
+    });
+
+    const hubDialog = page.getByRole('dialog', { name: /Голос/i });
+    await expect(hubDialog).toBeVisible({ timeout: 45_000 });
+    await skipStoryTypewriter(page);
+
+    const decryptBtn = hubDialog.getByRole('button', { name: /Начать расшифровку/i });
+    await expect(decryptBtn).toBeVisible({ timeout: 45_000 });
+    await decryptBtn.click({ force: true });
 
     await expect(page.getByText(/4729|расшифров|стихи/i).first()).toBeVisible({
       timeout: 20_000,

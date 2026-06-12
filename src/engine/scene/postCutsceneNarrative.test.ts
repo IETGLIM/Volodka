@@ -13,4 +13,8 @@ describe('resolvePostCutsceneNarrativeNode', () => {
   it('keeps hub nodes unchanged', () => {
     expect(resolvePostCutsceneNarrativeNode('corridor_explore_mode')).toBe('corridor_explore_mode');
   });
+
+  it('keeps act2_transition as a story beat (not street hub)', () => {
+    expect(resolvePostCutsceneNarrativeNode('act2_transition')).toBe('act2_transition');
+  });
 });

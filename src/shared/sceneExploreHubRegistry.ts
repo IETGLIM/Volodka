@@ -30,7 +30,8 @@ export const SCENE_EXPLORE_HUB_DEFS: readonly SceneExploreHubDef[] = [
     sceneId: 'street_night',
     hubText:
       'Улица залита неоновым светом. Рекламные голограммы мерцают на стенах домов. В переулке — кафе «Синяя яма», а вдалеке — башня IT-гильдии.',
-    entryNodeIds: ['street_bench', 'act2_transition', 'act2_maria_search'],
+    // act2_transition / act2_maria_search are full story beats — not door→hub promotions.
+    entryNodeIds: ['street_bench'],
   },
   {
     hubId: 'home_evening_explore_mode',

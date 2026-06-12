@@ -539,6 +539,7 @@ export const STORY_NODES_ACT1: Record<string, StoryNode> = {
       {
         text: 'Записать стихотворение, родившееся в голове',
         next: 'go_to_cafe',
+        goldenPath: true,
         effects: [
           { type: 'collectPoem', poemId: 'poem_3' },
           { type: 'addSkill', skill: 'writing', value: 2 },
@@ -573,6 +574,7 @@ export const STORY_NODES_ACT1: Record<string, StoryNode> = {
       {
         text: 'Написать стихотворение об одиночестве',
         next: 'go_to_cafe',
+        goldenPath: true,
         effects: [
           { type: 'collectPoem', poemId: 'poem_4' },
           { type: 'addSkill', skill: 'writing', value: 2 },

@@ -30,4 +30,18 @@ describe('Act I golden path markers', () => {
     expect(golden).toHaveLength(1);
     expect(golden[0]?.next).toBe('kitchen_table');
   });
+
+  it('marks balcony_thought golden branch to go_to_cafe', () => {
+    const node = STORY_NODES_ACT1.balcony_thought;
+    const golden = node.choices.filter((c) => c.goldenPath === true);
+    expect(golden).toHaveLength(1);
+    expect(golden[0]?.next).toBe('go_to_cafe');
+  });
+
+  it('marks friday_arrives golden branch to go_to_cafe', () => {
+    const node = STORY_NODES_ACT1.friday_arrives;
+    const golden = node.choices.filter((c) => c.goldenPath === true);
+    expect(golden).toHaveLength(1);
+    expect(golden[0]?.next).toBe('go_to_cafe');
+  });
 });

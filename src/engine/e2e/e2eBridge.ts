@@ -62,6 +62,9 @@ async function jumpToStoryBeat(nodeId: string, sceneId: SceneId): Promise<void> 
   store.setIntroActive(false);
   store.setMainMenuOpen(false);
   closeNarrativeOverlay();
+  if (store.activeCutsceneId) {
+    store.setCutscene(null, []);
+  }
   dispatchGameAction({ type: 'story/visitNode', nodeId });
   dispatchGameAction({ type: 'story/setCurrentNodeId', nodeId });
   await waitForScene(sceneId);
