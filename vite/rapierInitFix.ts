@@ -33,7 +33,7 @@ export function fixRapierInit(code: string): string | null {
     code.slice(0, match.index) +
     `yield ${match[1]}({module_or_path:${match[2]}.toByteArray("` +
     code.slice(b64Start, b64End) +
-    '")}).buffer)}))}' +
+    '")})}))}' +
     code.slice(suffixEnd);
 
   return fixed === code ? null : fixed;
