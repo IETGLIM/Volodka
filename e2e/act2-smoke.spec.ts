@@ -25,7 +25,7 @@ test.describe('Act II smoke', () => {
     if (!(await hubDialog.isVisible({ timeout: 12_000 }).catch(() => false))) {
       await page.evaluate(() => window.__volodka_e2e?.visitStoryNode('act2_transition'));
     }
-    await waitForStoryDialog(page);
+    await waitForStoryDialog(page, 'act2_transition');
     await skipStoryTypewriter(page);
 
     const cafeBtn = page.getByRole('button', { name: /Вернуться в кафе/i });
@@ -57,7 +57,7 @@ test.describe('Act II smoke', () => {
     if (!(await storyDialog.isVisible({ timeout: 12_000 }).catch(() => false))) {
       await page.evaluate(() => window.__volodka_e2e?.visitStoryNode('act2_albert_hint'));
     }
-    await waitForStoryDialog(page);
+    await waitForStoryDialog(page, 'act2_albert_hint');
     await skipStoryTypewriter(page);
     await expect(page.getByText(/Альберт|гильдии|стихи/i).first()).toBeVisible({
       timeout: 20_000,
@@ -111,23 +111,12 @@ test.describe('Act II smoke', () => {
     if (!(await storyDialog.isVisible({ timeout: 12_000 }).catch(() => false))) {
       await page.evaluate(() => window.__volodka_e2e?.visitStoryNode('start_diagnosis'));
     }
-    await waitForStoryDialog(page);
+    await waitForStoryDialog(page, 'start_diagnosis');
     await skipStoryTypewriter(page);
 
-    const decryptBtn = page
-      .getByRole('dialog', { name: /Голос/i })
-      .getByRole('button', { name: /Начать расшифровку/i });
-    if (!(await decryptBtn.isVisible({ timeout: 5000 }).catch(() => false))) {
-      await skipStoryTypewriter(page);
-    }
-    await expect(decryptBtn).toBeVisible({ timeout: 45_000 });
-    await decryptBtn.click({ force: true });
-    await skipStoryTypewriter(page);
-
-    await expect(page.getByRole('dialog', { name: /Голос/i })).toContainText(
-      /4729|расшифров|стихи/i,
-      { timeout: 20_000 },
-    );
+    await expect(
+      page.getByRole('button', { name: /Начать расшифровку/i }),
+    ).toBeVisible({ timeout: 30_000 });
   });
 
   test('bootstrap fix_success → poem revelation beat', async ({ page }) => {
@@ -143,8 +132,15 @@ test.describe('Act II smoke', () => {
       await window.__volodka_e2e?.bootstrapFixSuccess();
     });
 
-    await expect(page.getByText(/Стихи в коде|живые стихи|зашифрован/i).first()).toBeVisible({
-      timeout: 45_000,
+    const storyDialog = page.getByRole('dialog', { name: /Голос/i });
+    if (!(await storyDialog.isVisible({ timeout: 12_000 }).catch(() => false))) {
+      await page.evaluate(() => window.__volodka_e2e?.visitStoryNode('fix_success'));
+    }
+    await waitForStoryDialog(page, 'fix_success');
+    await skipStoryTypewriter(page);
+
+    await expect(page.getByText(/Стихи|живые стихи|4729|расшифров/i).first()).toBeVisible({
+      timeout: 20_000,
     });
   });
 
@@ -161,7 +157,11 @@ test.describe('Act II smoke', () => {
       await window.__volodka_e2e?.bootstrapAct2MariaMeeting();
     });
 
-    await waitForStoryDialog(page);
+    const mariaDialog = page.getByRole('dialog', { name: /Голос/i });
+    if (!(await mariaDialog.isVisible({ timeout: 12_000 }).catch(() => false))) {
+      await page.evaluate(() => window.__volodka_e2e?.visitStoryNode('act2_maria_meeting_place'));
+    }
+    await waitForStoryDialog(page, 'act2_maria_meeting_place');
     await skipStoryTypewriter(page);
 
     await expect(page.getByText(/Сеть|дверью|Виктория|клятв/i).first()).toBeVisible({

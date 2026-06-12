@@ -1,4 +1,5 @@
-import { ensureStoryNode } from '@/data/gameDataLoader';
+import { ensureStoryNode, getStoryNodes } from '@/data/gameDataLoader';
+import { getCutsceneForNode } from '@/data/cutscenes';
 import { eventBus } from '@/engine/EventBus';
 import { dispatchGameAction } from '@/engine/GameActionDispatcher';
 import { openLinkedStory } from '@/engine/interaction/narrativeOpenHelpers';
@@ -30,6 +31,7 @@ export interface VolodkaE2EBridge {
   bootstrapFixSuccess: () => Promise<void>;
   bootstrapAct2MariaMeeting: () => Promise<void>;
   promoteClosedOverlayHub: (hubId: string, sceneId: SceneId) => Promise<void>;
+  isStoryOverlayReady: (expectedNodeId?: string) => boolean;
 }
 
 declare global {
@@ -60,6 +62,30 @@ async function waitForScene(sceneId: SceneId): Promise<void> {
   });
 }
 
+function suppressCutsceneForStoryNode(nodeId: string): void {
+  const cutscene = getCutsceneForNode(nodeId);
+  if (cutscene) {
+    getGameStore().markCutsceneTriggered(cutscene.id);
+  }
+}
+
+async function waitForStoryOverlayReady(nodeId: string): Promise<void> {
+  const deadline = Date.now() + 15_000;
+  while (Date.now() < deadline) {
+    const store = getGameStore();
+    if (
+      store.showStoryOverlay &&
+      store.currentNodeId === nodeId &&
+      Boolean(getStoryNodes()[nodeId])
+    ) {
+      return;
+    }
+    await new Promise<void>((resolve) => {
+      requestAnimationFrame(() => resolve());
+    });
+  }
+}
+
 async function jumpToStoryBeat(nodeId: string, sceneId: SceneId): Promise<void> {
   await ensureStoryNode(nodeId);
   const store = getGameStore();
@@ -69,14 +95,15 @@ async function jumpToStoryBeat(nodeId: string, sceneId: SceneId): Promise<void> 
   if (store.activeCutsceneId) {
     store.setCutscene(null, []);
   }
+  suppressCutsceneForStoryNode(nodeId);
   dispatchGameAction({ type: 'story/visitNode', nodeId });
   dispatchGameAction({ type: 'story/setCurrentNodeId', nodeId });
   await waitForScene(sceneId);
-  // Let scene-enter pipeline (syncNarrative / entry auto-triggers) settle before opening overlay.
   await new Promise<void>((resolve) => {
     requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
   });
   openNarrativeOverlay(nodeId, 'story');
+  await waitForStoryOverlayReady(nodeId);
 }
 
 async function jumpToClosedOverlayHub(hubId: string, sceneId: SceneId): Promise<void> {
@@ -163,6 +190,7 @@ export function registerVolodkaE2EBridge(): void {
       const store = getGameStore();
       store.setFlag('agreed_help_alexander', true);
       store.setFlag('started_decryption', true);
+      store.markCutsceneTriggered('poem_revelation');
       await jumpToStoryBeat('fix_success', 'office_day');
     },
     async bootstrapAct2MariaMeeting() {
@@ -178,6 +206,12 @@ export function registerVolodkaE2EBridge(): void {
     },
     async promoteClosedOverlayHub(hubId, sceneId) {
       await jumpToClosedOverlayHub(hubId, sceneId);
+    },
+    isStoryOverlayReady(expectedNodeId) {
+      const store = getGameStore();
+      if (!store.showStoryOverlay) return false;
+      if (expectedNodeId && store.currentNodeId !== expectedNodeId) return false;
+      return Boolean(getStoryNodes()[store.currentNodeId]);
     },
   };
 }

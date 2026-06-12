@@ -103,7 +103,8 @@ export function WakeUpSequence() {
         unsubPrologueEnd();
         const live = getGameStore();
         // Skip if prologue, save load, or e2e bootstrap already advanced story state.
-        if (live.currentNodeId !== 'start') return;
+        if (live.currentNodeId !== 'start' && live.currentNodeId !== 'explore_mode') return;
+        if (live.showStoryOverlay && live.currentNodeId !== 'explore_mode') return;
         openExploreHub();
       }, 9_000);
     } else {
