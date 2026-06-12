@@ -8,6 +8,7 @@ import { requestSceneTransition } from '@/engine/scene/sceneTransition';
 import { openNarrativeOverlay } from '@/engine/scene/narrativeOverlay';
 import { useGameStore } from '@/store/gameStore';
 import { hasVisitedNode } from '@/store/visitedNodesIndex';
+import { SCENE_ENTRY_NODE_TO_HUB } from '@/shared/sceneExploreHubRegistry';
 import { devWarn } from '@/shared/utils/devLog';
 import type { SceneId } from '@/shared/types/game';
 
@@ -103,6 +104,16 @@ export async function openLinkedStory(nodeId: string): Promise<boolean> {
   }
 
   const store = useGameStore.getState();
+
+  // Door/arrival beats — mark visited and walk through without a story panel.
+  if (SCENE_ENTRY_NODE_TO_HUB[nodeId] && storyNode.sceneId) {
+    store.visitNode(nodeId);
+    if (store.exploration.currentSceneId !== storyNode.sceneId) {
+      requestSceneTransition(storyNode.sceneId as SceneId);
+    }
+    return true;
+  }
+
   const alreadyVisited = hasVisitedNode(store.playerState.visitedNodes, nodeId);
   if (alreadyVisited && storyNode.sceneId) {
     requestSceneTransition(storyNode.sceneId as SceneId);

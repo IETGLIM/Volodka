@@ -11,7 +11,7 @@ import { useGameStore } from '@/store/gameStore';
 import { readGamePhase } from '@/shared/gamePhase';
 import { shouldUseFirstPersonHands } from '@/engine/camera/cinematicPresentation';
 import { eventBus } from '@/engine/EventBus';
-import { FpsFingerEnhancement, armMeshHasFingerDetail } from './fpsFingerEnhancement';
+import { FpsFingerEnhancement } from './fpsFingerEnhancement';
 import { extendGltfLoader } from '@/engine/assets/gltfPipeline';
 import { useSkinnedGltfClone } from '@/hooks/useSkinnedGltfClone';
 
@@ -71,8 +71,6 @@ function FirstPersonHandsInner({ moveBlendRef }: FirstPersonHandsProps) {
 
   const gltf = useGLTF(FPS_ARMS_URL, true, true, extendLoader);
   const { scene, mixer } = useSkinnedGltfClone(gltf.scene, gltf.animations, { castShadow: false });
-  const showFingerEnhancement = useMemo(() => !armMeshHasFingerDetail(scene), [scene]);
-
   const actions = useMemo(() => {
     if (!mixer) return null;
     const record: Record<string, THREE.AnimationAction> = {};
@@ -143,7 +141,7 @@ function FirstPersonHandsInner({ moveBlendRef }: FirstPersonHandsProps) {
     <group ref={rigRef}>
       <group ref={armsMountRef} scale={0.01}>
         <primitive object={scene} />
-        {showFingerEnhancement && <FpsFingerEnhancement />}
+        <FpsFingerEnhancement />
       </group>
     </group>
   );

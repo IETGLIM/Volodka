@@ -173,6 +173,7 @@ export function PhysicsPlayer({
   const warmupFramesRef = useRef(0);
   const prevRbPosRef = useRef(new THREE.Vector3());
   const noMovementFramesRef = useRef(0);
+  const kccRecoveryFramesRef = useRef(0);
   const virtualHoldTimesRef = useRef<VirtualHoldTimes>({});
 
   const { world, rapier } = useRapier();
@@ -590,14 +591,16 @@ export function PhysicsPlayer({
     const floorSlack = isOutdoor ? 0.08 : 0.05;
     const nearFloor = posForGroundCheck.y <= floorY + floorSlack;
 
+    const airborneIntent = wantsJump || vel.y > 0.2;
+
     if (wantsJump) {
       vel.y = JUMP_FORCE;
       isGroundedRef.current = false;
       jumpCooldownRef.current = JUMP_COOLDOWN;
       coyoteTimerRef.current = 0;
     } else if (
-      isGroundedRef.current ||
-      (nearFloor && vel.y <= 0 && !jumping)
+      !airborneIntent &&
+      (isGroundedRef.current || (nearFloor && vel.y <= 0 && !jumping))
     ) {
       // Only snap to floor when falling or idle — not while moving upward after a jump.
       // Previously `nearFloor && !jumping` cancelled tap-jumps on the very next frame.
@@ -612,10 +615,10 @@ export function PhysicsPlayer({
     }
 
     // ─── Compute desired displacement (input → desired movement) ───
-    const onFlatGround = isGroundedRef.current || nearFloor;
+    const onFlatGround = (isGroundedRef.current || nearFloor) && !airborneIntent;
     const desiredDisplacement = {
       x: vel.x * dt,
-      y: onFlatGround && !wantsJump ? 0 : vel.y * dt,
+      y: onFlatGround ? 0 : vel.y * dt,
       z: vel.z * dt,
     };
 
@@ -689,6 +692,13 @@ export function PhysicsPlayer({
     // Reset fail counter — collider was found
     controllerFailCountRef.current = 0;
 
+    // Disable snap-to-ground while jumping — otherwise KCC cancels upward velocity.
+    if (airborneIntent) {
+      controller.enableSnapToGround(0);
+    } else {
+      controller.enableSnapToGround(SNAP_DISTANCE);
+    }
+
     const physicsT0 = performance.now();
     controller.computeColliderMovement(collider, desiredDisplacement);
     physicsStepMs = performance.now() - physicsT0;
@@ -708,7 +718,7 @@ export function PhysicsPlayer({
     // The controller may have changed the displacement (slope slide,
     // wall collision, ceiling hit). We correct velocity to match
     // the actual movement so the next frame's input is coherent.
-    if (isGroundedNow) {
+    if (isGroundedNow && !airborneIntent) {
       vel.y = 0;
       if (!wasGrounded) {
         // Just landed — reset jump state
@@ -716,7 +726,7 @@ export function PhysicsPlayer({
       }
       isGroundedRef.current = true;
       coyoteTimerRef.current = 0;
-    } else {
+    } else if (!isGroundedNow) {
       if (wasGrounded && !isGroundedNow && vel.y <= 0) {
         // Walked off an edge (not jumping) — start coyote time
         coyoteTimerRef.current = COYOTE_TIME;
@@ -767,7 +777,11 @@ export function PhysicsPlayer({
     const animPos = rb.translation();
     // If feet are at floor level with low vertical velocity, treat as grounded
     // even when the character controller briefly loses ground contact while walking.
-    if (animPos.y <= floorY + floorSlack && Math.abs(vel.y) < 0.75) {
+    if (
+      !airborneIntent &&
+      animPos.y <= floorY + floorSlack &&
+      Math.abs(vel.y) < 0.75
+    ) {
       isGroundedRef.current = true;
       if (Math.abs(vel.y) < 0.25) vel.y = 0;
     }
@@ -804,9 +818,13 @@ export function PhysicsPlayer({
     // ─── Update position ref for camera + other systems ───
     let finalPos = rb.translation();
 
-    // Lock Y on flat ground — single snap per frame avoids jitter from repeated setTranslation
+    // Lock Y on flat ground — skip when KCC already grounded to avoid fighting snap-to-ground.
     const floorSnapEps = isOutdoor ? 0.02 : 0.008;
-    if (onFlatGround && !wantsJump && Math.abs(finalPos.y - floorY) > floorSnapEps) {
+    if (
+      onFlatGround &&
+      !isGroundedNow &&
+      Math.abs(finalPos.y - floorY) > floorSnapEps
+    ) {
       rb.setTranslation({ x: finalPos.x, y: floorY, z: finalPos.z }, true);
       vel.y = 0;
       isGroundedRef.current = true;
@@ -819,7 +837,8 @@ export function PhysicsPlayer({
     // If the player has input but position hasn't changed, the controller may
     // be broken (common on some mobile WASM builds). Do NOT treat legitimate
     // wall blocking as a failure — that would re-enable collision bypass.
-    if (isMoving && !blockedByWall) {
+    // Emergency direct-movement fallback — touch/gamepad only (keyboard uses KCC wall slide).
+    if (isMoving && !blockedByWall && !keyboardDrivesMove) {
       const dx = finalPos.x - prevRbPosRef.current.x;
       const dz = finalPos.z - prevRbPosRef.current.z;
       const posDelta = Math.sqrt(dx * dx + dz * dz);
@@ -833,9 +852,19 @@ export function PhysicsPlayer({
         }
       } else {
         noMovementFramesRef.current = 0;
+        if (useDirectMovementRef.current) {
+          kccRecoveryFramesRef.current++;
+          if (kccRecoveryFramesRef.current >= 6) {
+            restoreKccMovementMode(directMovementTelemetry, { sceneId });
+            kccRecoveryFramesRef.current = 0;
+          }
+        }
       }
     } else {
       noMovementFramesRef.current = 0;
+      if (!useDirectMovementRef.current) {
+        kccRecoveryFramesRef.current = 0;
+      }
     }
     prevRbPosRef.current.set(finalPos.x, finalPos.y, finalPos.z);
     setPhysicsStepMs(physicsStepMs);

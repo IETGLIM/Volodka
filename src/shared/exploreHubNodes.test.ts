@@ -50,16 +50,17 @@ describe('exploreHubNodes', () => {
     expect(isNarrativeMovementLocked(true, 'cafe_explore_mode')).toBe(false);
   });
 
-  it('promotes corridor_door to corridor_explore_mode on corridor enter', () => {
+  it('closes narrative overlay on physical scene enter', () => {
     syncNarrativeOnSceneEnter('volodka_corridor');
-    expect(openNarrativeOverlay).toHaveBeenCalledWith('corridor_explore_mode', 'story');
-    expect(closeNarrativeOverlay).not.toHaveBeenCalled();
+    expect(closeNarrativeOverlay).toHaveBeenCalled();
+    expect(openNarrativeOverlay).not.toHaveBeenCalled();
   });
 
-  it('promotes beat nodes to scene hub when already in-scene', () => {
-    mockStore.currentNodeId = 'kitchen_table';
+  it('does nothing when overlay is already closed', () => {
+    mockStore.showStoryOverlay = false;
     syncNarrativeOnSceneEnter('home_evening');
-    expect(openNarrativeOverlay).toHaveBeenCalledWith('home_evening_explore_mode', 'story');
+    expect(closeNarrativeOverlay).not.toHaveBeenCalled();
+    expect(openNarrativeOverlay).not.toHaveBeenCalled();
   });
 });
 

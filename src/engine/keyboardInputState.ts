@@ -119,6 +119,11 @@ function onKeyDown(e: KeyboardEvent): void {
       }
       break;
     default:
+      if (e.key === 'Shift') keys.run = true;
+      else if (e.key === ' ' || e.key === 'Spacebar') {
+        keys.jump = true;
+        e.preventDefault();
+      }
       break;
   }
 }
@@ -144,6 +149,8 @@ function onKeyUp(e: KeyboardEvent): void {
       keys.interact = false;
       break;
     default:
+      if (e.key === 'Shift') keys.run = false;
+      else if (e.key === ' ' || e.key === 'Spacebar') keys.jump = false;
       break;
   }
 }

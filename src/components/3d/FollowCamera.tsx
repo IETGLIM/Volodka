@@ -698,14 +698,16 @@ export function FollowCamera({
       1 - Math.exp(-distLerpSpeed * delta),
     );
 
-    const targetSceneFov = useFirstPerson
-      ? FIRST_PERSON_FOV
-      : getSceneSpecificFov(sceneId);
-    currentSceneFovRef.current = THREE.MathUtils.lerp(
-      currentSceneFovRef.current,
-      targetSceneFov,
-      1 - Math.exp(-FOV_TRANSITION_SPEED * delta),
-    );
+    // In first-person mode the wheel adjusts currentSceneFovRef directly — do not
+    // pull it back to FIRST_PERSON_FOV every frame (that blocked mouse-wheel zoom).
+    if (!useFirstPerson) {
+      const targetSceneFov = getSceneSpecificFov(sceneId);
+      currentSceneFovRef.current = THREE.MathUtils.lerp(
+        currentSceneFovRef.current,
+        targetSceneFov,
+        1 - Math.exp(-FOV_TRANSITION_SPEED * delta),
+      );
+    }
 
     const ctx: CameraModeContext = {
       delta,

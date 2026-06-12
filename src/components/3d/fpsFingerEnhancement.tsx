@@ -29,6 +29,10 @@ function HandFingers({ side }: { side: 'left' | 'right' }) {
   const xSign = side === 'left' ? -1 : 1;
   return (
     <group position={[xSign * 6.5, -2.5, -14]} rotation={[0.1, xSign * 0.08, 0]}>
+      <mesh position={[0, -0.08, -0.18]} rotation={[0.12, 0, 0]}>
+        <boxGeometry args={[0.52, 0.14, 0.38]} />
+        <meshStandardMaterial color={SKIN} roughness={0.72} emissive={SKIN_EMISSIVE} emissiveIntensity={0.08} />
+      </mesh>
       {FINGER_LAYOUT.map((f, i) => (
         <Finger key={i} x={f.x * xSign} y={f.y} z={f.z} len={f.len} />
       ))}

@@ -1,5 +1,4 @@
 import type { SceneId } from '@/shared/types/game';
-import { getStoryNodeSceneId } from '@/engine/guidedStory/createGuidedStoryDeps';
 import { getGameStore } from '@/store/gameStore';
 import {
   EXPLORE_HUB_NODE_IDS,
@@ -29,37 +28,12 @@ export function isNarrativeMovementLocked(
 }
 
 /**
- * After a physical scene transition, keep narrative overlay in sync so movement is not
- * left frozen on door/entry/beat nodes while the player is already in-scene.
+ * After a physical scene transition, dismiss any open narrative overlay so the player
+ * can explore freely. Story/dialogue only opens from interactions and cutscenes.
  */
-export function syncNarrativeOnSceneEnter(sceneId: SceneId): void {
+export function syncNarrativeOnSceneEnter(_sceneId: SceneId): void {
   const store = getGameStore();
-  if (!store.showStoryOverlay) return;
-
-  const nodeId = store.currentNodeId;
-  const kind = store.narrativeKind ?? 'story';
-  const hubForScene = getExploreHubForScene(sceneId);
-
-  const entryHub = SCENE_ENTRY_NODE_TO_HUB[nodeId];
-  if (entryHub && getStoryNodeSceneId(nodeId) === sceneId) {
-    store.openNarrativeOverlay(entryHub, kind);
-    return;
+  if (store.showStoryOverlay) {
+    store.closeNarrativeOverlay();
   }
-
-  if (!isNarrativeMovementLocked(store.showStoryOverlay, nodeId)) return;
-
-  const nodeSceneId = getStoryNodeSceneId(nodeId);
-  if (nodeSceneId === sceneId) {
-    if (hubForScene && nodeId !== hubForScene) {
-      store.openNarrativeOverlay(hubForScene, kind);
-    }
-    return;
-  }
-
-  if (hubForScene) {
-    store.openNarrativeOverlay(hubForScene, kind);
-    return;
-  }
-
-  store.closeNarrativeOverlay();
 }

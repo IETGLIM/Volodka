@@ -63,6 +63,10 @@ export function useCutsceneController() {
 
     const generation = cutsceneSessionRef.current.begin();
 
+    if (!store.narrativeKind) {
+      store.setNarrativeKind('story');
+    }
+
     store.markCutsceneTriggered(cutscene.id);
 
     clearGameplayPhaseFlags(store);
@@ -104,15 +108,13 @@ export function useCutsceneController() {
         currentStore.setCutscene(null, []);
         clearGameplayPhaseFlags(currentStore);
         setCinematicPresentationMode('first_person');
+        eventBus.emit('cutscene:overlay_end', {});
+        eventBus.emit('camera:cutscene_end', {});
         if (currentStore.currentNodeId && currentStore.narrativeKind) {
           openNarrativeOverlay(currentStore.currentNodeId, currentStore.narrativeKind);
         }
       }
     }, totalDuration);
-
-    return () => {
-      cutsceneSessionRef.current.cancel();
-    };
   }, [currentNodeId]);
 
   return { skipActiveCutscene };
