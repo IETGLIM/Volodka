@@ -1,4 +1,5 @@
-import { lazy, memo, Suspense, type ComponentType } from 'react';
+import { memo, Suspense, type ComponentType } from 'react';
+import { retryLazyDefault } from '@/shared/utils/retryLazy';
 import { PanelStackSlot, usePanelStack } from './PanelStackContext';
 import { PanelExitProvider } from './PanelExitContext';
 import { usePanelKeepAlive } from './usePanelKeepAlive';
@@ -39,50 +40,53 @@ export const LazyPanelSlot = memo(function LazyPanelSlot({
   return <PanelStackSlot panelId={panelId}>{panel}</PanelStackSlot>;
 });
 
-export const RPGGameCanvas = lazy(
+export const RPGGameCanvas = retryLazyDefault(
   () => import('@/components/3d/RPGGameCanvas').then((m) => ({ default: m.RPGGameCanvas })),
+  'RPGGameCanvas',
 );
 
-export const LazyQuestsPanel = lazy(() => import('../QuestsPanel').then((m) => ({ default: m.QuestsPanel })));
-export const LazyInventory = lazy(() => import('../Inventory').then((m) => ({ default: m.Inventory })));
-export const LazyPoetryBook = lazy(() => import('../PoetryBook').then((m) => ({ default: m.PoetryBook })));
-export const LazyJournalPanel = lazy(() => import('../JournalPanel').then((m) => ({ default: m.JournalPanel })));
-export const LazyRestPanel = lazy(() => import('../RestPanel').then((m) => ({ default: m.RestPanel })));
-export const LazySaveSlotManager = lazy(() => import('../SaveSlotManager').then((m) => ({ default: m.SaveSlotManager })));
-export const LazyMiniGameHub = lazy(() => import('../MiniGameHub').then((m) => ({ default: m.MiniGameHub })));
-export const LazyNPCRelationshipPanel = lazy(() => import('../NPCRelationshipPanel').then((m) => ({ default: m.NPCRelationshipPanel })));
-export const LazyCharacterProfilePanel = lazy(() => import('../CharacterProfilePanel').then((m) => ({ default: m.CharacterProfilePanel })));
-export const LazyCodexPanel = lazy(() => import('../CodexPanel').then((m) => ({ default: m.CodexPanel })));
-export const LazyDialogueHistoryPanel = lazy(() => import('../DialogueHistoryPanel').then((m) => ({ default: m.DialogueHistoryPanel })));
-export const LazyAchievementDetailsPanel = lazy(() => import('../AchievementDetailsPanel').then((m) => ({ default: m.AchievementDetailsPanel })));
-export const LazySkillTreePanel = lazy(() => import('../SkillTreePanel').then((m) => ({ default: m.SkillTreePanel })));
-export const LazyFastTravelPanel = lazy(() => import('../FastTravelPanel').then((m) => ({ default: m.FastTravelPanel })));
-export const LazyPerksPanel = lazy(() => import('../PerksPanel').then((m) => ({ default: m.PerksPanel })));
-export const LazyQuestBoardPanel = lazy(() => import('../QuestBoardPanel').then((m) => ({ default: m.QuestBoardPanel })));
-export const LazyPlayerStatsPanel = lazy(() => import('../PlayerStatsPanel').then((m) => ({ default: m.PlayerStatsPanel })));
-export const LazyCraftingPanel = lazy(() => import('../CraftingPanel').then((m) => ({ default: m.CraftingPanel })));
-export const LazyTradingPanel = lazy(() => import('../TradingPanel').then((m) => ({ default: m.TradingPanel })));
-export const LazyDevPanel = lazy(() => import('../DevPanel').then((m) => ({ default: m.DevPanel })));
-export const LazyShortcutsOverlay = lazy(() => import('../ShortcutsOverlay').then((m) => ({ default: m.ShortcutsOverlay })));
+export const LazyQuestsPanel = retryLazyDefault(() => import('../QuestsPanel').then((m) => ({ default: m.QuestsPanel })), 'QuestsPanel');
+export const LazyInventory = retryLazyDefault(() => import('../Inventory').then((m) => ({ default: m.Inventory })), 'Inventory');
+export const LazyPoetryBook = retryLazyDefault(() => import('../PoetryBook').then((m) => ({ default: m.PoetryBook })), 'PoetryBook');
+export const LazyJournalPanel = retryLazyDefault(() => import('../JournalPanel').then((m) => ({ default: m.JournalPanel })), 'JournalPanel');
+export const LazyRestPanel = retryLazyDefault(() => import('../RestPanel').then((m) => ({ default: m.RestPanel })), 'RestPanel');
+export const LazySaveSlotManager = retryLazyDefault(() => import('../SaveSlotManager').then((m) => ({ default: m.SaveSlotManager })), 'SaveSlotManager');
+export const LazyMiniGameHub = retryLazyDefault(() => import('../MiniGameHub').then((m) => ({ default: m.MiniGameHub })), 'MiniGameHub');
+export const LazyNPCRelationshipPanel = retryLazyDefault(() => import('../NPCRelationshipPanel').then((m) => ({ default: m.NPCRelationshipPanel })), 'NPCRelationshipPanel');
+export const LazyCharacterProfilePanel = retryLazyDefault(() => import('../CharacterProfilePanel').then((m) => ({ default: m.CharacterProfilePanel })), 'CharacterProfilePanel');
+export const LazyCodexPanel = retryLazyDefault(() => import('../CodexPanel').then((m) => ({ default: m.CodexPanel })), 'CodexPanel');
+export const LazyDialogueHistoryPanel = retryLazyDefault(() => import('../DialogueHistoryPanel').then((m) => ({ default: m.DialogueHistoryPanel })), 'DialogueHistoryPanel');
+export const LazyAchievementDetailsPanel = retryLazyDefault(() => import('../AchievementDetailsPanel').then((m) => ({ default: m.AchievementDetailsPanel })), 'AchievementDetailsPanel');
+export const LazySkillTreePanel = retryLazyDefault(() => import('../SkillTreePanel').then((m) => ({ default: m.SkillTreePanel })), 'SkillTreePanel');
+export const LazyFastTravelPanel = retryLazyDefault(() => import('../FastTravelPanel').then((m) => ({ default: m.FastTravelPanel })), 'FastTravelPanel');
+export const LazyPerksPanel = retryLazyDefault(() => import('../PerksPanel').then((m) => ({ default: m.PerksPanel })), 'PerksPanel');
+export const LazyQuestBoardPanel = retryLazyDefault(() => import('../QuestBoardPanel').then((m) => ({ default: m.QuestBoardPanel })), 'QuestBoardPanel');
+export const LazyPlayerStatsPanel = retryLazyDefault(() => import('../PlayerStatsPanel').then((m) => ({ default: m.PlayerStatsPanel })), 'PlayerStatsPanel');
+export const LazyCraftingPanel = retryLazyDefault(() => import('../CraftingPanel').then((m) => ({ default: m.CraftingPanel })), 'CraftingPanel');
+export const LazyTradingPanel = retryLazyDefault(() => import('../TradingPanel').then((m) => ({ default: m.TradingPanel })), 'TradingPanel');
+export const LazyDevPanel = retryLazyDefault(() => import('../DevPanel').then((m) => ({ default: m.DevPanel })), 'DevPanel');
+export const LazyShortcutsOverlay = retryLazyDefault(() => import('../ShortcutsOverlay').then((m) => ({ default: m.ShortcutsOverlay })), 'ShortcutsOverlay');
 
-export const LazyMenuScreen = lazy(() => import('../MenuScreen').then((m) => ({ default: m.MenuScreen })));
-export const LazyIntroScreen = lazy(() => import('../IntroScreen').then((m) => ({ default: m.IntroScreen })));
-export const LazyStoryRenderer = lazy(() => import('../StoryRenderer').then((m) => ({ default: m.StoryRenderer })));
-export const LazyDialogueRenderer = lazy(() => import('../DialogueRenderer').then((m) => ({ default: m.DialogueRenderer })));
-export const LazyCombatUI = lazy(() => import('../CombatUI').then((m) => ({ default: m.CombatUI })));
-export const LazySettingsPanel = lazy(() => import('../SettingsPanel').then((m) => ({ default: m.SettingsPanel })));
-export const LazyQuestAcceptDialog = lazy(() => import('../QuestAcceptDialog').then((m) => ({ default: m.QuestAcceptDialog })));
-export const LazyQuestCompleteDialog = lazy(() => import('../QuestCompleteDialog').then((m) => ({ default: m.QuestCompleteDialog })));
-export const LazyKarmaPoemInfoPanel = lazy(() => import('../KarmaPoemInfoPanel').then((m) => ({ default: m.KarmaPoemInfoPanel })));
-export const LazyMatrixRainQuote = lazy(() => import('../MatrixRainQuote').then((m) => ({ default: m.MatrixRainQuote })));
-export const LazyLevelUpEffect = lazy(() => import('../LevelUpEffect').then((m) => ({ default: m.LevelUpEffect })));
-export const LazyPhotoMode = lazy(() => import('../PhotoMode').then((m) => ({ default: m.PhotoMode })));
+export const LazyMenuScreen = retryLazyDefault(() => import('../MenuScreen').then((m) => ({ default: m.MenuScreen })), 'MenuScreen');
+export const LazyIntroScreen = retryLazyDefault(() => import('../IntroScreen').then((m) => ({ default: m.IntroScreen })), 'IntroScreen');
+export const LazyStoryRenderer = retryLazyDefault(() => import('../StoryRenderer').then((m) => ({ default: m.StoryRenderer })), 'StoryRenderer');
+export const LazyDialogueRenderer = retryLazyDefault(() => import('../DialogueRenderer').then((m) => ({ default: m.DialogueRenderer })), 'DialogueRenderer');
+export const LazyCombatUI = retryLazyDefault(() => import('../CombatUI').then((m) => ({ default: m.CombatUI })), 'CombatUI');
+export const LazySettingsPanel = retryLazyDefault(() => import('../SettingsPanel').then((m) => ({ default: m.SettingsPanel })), 'SettingsPanel');
+export const LazyQuestAcceptDialog = retryLazyDefault(() => import('../QuestAcceptDialog').then((m) => ({ default: m.QuestAcceptDialog })), 'QuestAcceptDialog');
+export const LazyQuestCompleteDialog = retryLazyDefault(() => import('../QuestCompleteDialog').then((m) => ({ default: m.QuestCompleteDialog })), 'QuestCompleteDialog');
+export const LazyKarmaPoemInfoPanel = retryLazyDefault(() => import('../KarmaPoemInfoPanel').then((m) => ({ default: m.KarmaPoemInfoPanel })), 'KarmaPoemInfoPanel');
+export const LazyMatrixRainQuote = retryLazyDefault(() => import('../MatrixRainQuote').then((m) => ({ default: m.MatrixRainQuote })), 'MatrixRainQuote');
+export const LazyLevelUpEffect = retryLazyDefault(() => import('../LevelUpEffect').then((m) => ({ default: m.LevelUpEffect })), 'LevelUpEffect');
+export const LazyPhotoMode = retryLazyDefault(() => import('../PhotoMode').then((m) => ({ default: m.PhotoMode })), 'PhotoMode');
 
-export const LazyHUD = lazy(() => import('../HUD').then((m) => ({ default: m.HUD })));
-export const LazyMiniMap = lazy(() => import('../MiniMap').then((m) => ({ default: m.MiniMap })));
-export const LazyQuestNotificationSystem = lazy(() =>
-  import('../QuestNotificationSystem').then((m) => ({ default: m.QuestNotificationSystem })),
+export const LazyHUD = retryLazyDefault(() => import('../HUD').then((m) => ({ default: m.HUD })), 'HUD');
+export const LazyMiniMap = retryLazyDefault(() => import('../MiniMap').then((m) => ({ default: m.MiniMap })), 'MiniMap');
+export const LazyQuestNotificationSystem = retryLazyDefault(
+  () => import('../QuestNotificationSystem').then((m) => ({ default: m.QuestNotificationSystem })),
+  'QuestNotificationSystem',
 );
-export const LazyStoryGuidanceHUD = lazy(() =>
-  import('../StoryGuidanceHUD').then((m) => ({ default: m.StoryGuidanceHUD })),
+export const LazyStoryGuidanceHUD = retryLazyDefault(
+  () => import('../StoryGuidanceHUD').then((m) => ({ default: m.StoryGuidanceHUD })),
+  'StoryGuidanceHUD',
 );

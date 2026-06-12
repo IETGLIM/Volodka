@@ -5,7 +5,9 @@ import '@/app/globals.css';
 import { markAppStart } from '@/engine/performance/LoadingTimeline';
 import { preloadBootGameData } from '@/data/gameDataLoader';
 import { applyVisualSettings } from '@/engine/visualSettings';
+import { clearChunkReloadFlag, installChunkLoadRecovery } from '@/engine/chunkLoadRecovery';
 
+installChunkLoadRecovery();
 markAppStart();
 applyVisualSettings();
 
@@ -27,6 +29,7 @@ async function boot() {
   await preloadBootGameData();
 
   const { GamePage } = await import('@/components/game/GamePage');
+  clearChunkReloadFlag();
 
   createRoot(root!).render(
     <StrictMode>

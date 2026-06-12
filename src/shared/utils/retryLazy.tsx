@@ -1,4 +1,26 @@
 import { lazy, type ComponentType, type LazyExoticComponent } from 'react';
+import { isChunkLoadError, recoverFromStaleChunk } from '@/engine/chunkLoadRecovery';
+
+async function retryImport<T>(
+  importFn: () => Promise<T>,
+  chunkName: string,
+  maxRetries: number,
+): Promise<T> {
+  try {
+    return await importFn();
+  } catch (err) {
+    if (isChunkLoadError(err)) {
+      recoverFromStaleChunk(err);
+    }
+    if (maxRetries <= 0) throw err;
+    console.warn(
+      `[retryLazy] Import failed for ${chunkName}, retrying… (${maxRetries} left)`,
+      err instanceof Error ? err.message : err,
+    );
+    await new Promise((resolve) => setTimeout(resolve, 500 * (4 - maxRetries)));
+    return retryImport(importFn, chunkName, maxRetries - 1);
+  }
+}
 
 /**
  * React.lazy with ChunkLoadError retry — recovers from stale deploys / flaky networks.
@@ -9,17 +31,9 @@ export function retryLazy<T extends ComponentType<any>>(
   maxRetries = 3,
 ): LazyExoticComponent<T> {
   return lazy(() =>
-    importFn()
-      .then((mod) => ({ default: mod[exportName] as T }))
-      .catch(async (err: Error) => {
-        if (maxRetries <= 0) throw err;
-        console.warn(
-          `[retryLazy] ChunkLoadError for ${exportName}, retrying... (${maxRetries} left)`,
-          err.message,
-        );
-        await new Promise((resolve) => setTimeout(resolve, 500 * (4 - maxRetries)));
-        return importFn().then((mod) => ({ default: mod[exportName] as T }));
-      }),
+    retryImport(importFn, exportName, maxRetries).then((mod) => ({
+      default: mod[exportName] as T,
+    })),
   );
 }
 
@@ -29,15 +43,5 @@ export function retryLazyDefault<T extends ComponentType<any>>(
   chunkName: string,
   maxRetries = 3,
 ): LazyExoticComponent<T> {
-  return lazy(() =>
-    importFn().catch(async (err: Error) => {
-      if (maxRetries <= 0) throw err;
-      console.warn(
-        `[retryLazy] ChunkLoadError for ${chunkName}, retrying... (${maxRetries} left)`,
-        err.message,
-      );
-      await new Promise((resolve) => setTimeout(resolve, 500 * (4 - maxRetries)));
-      return importFn();
-    }),
-  );
+  return lazy(() => retryImport(importFn, chunkName, maxRetries));
 }
