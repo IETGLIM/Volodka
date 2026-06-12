@@ -42,7 +42,6 @@ const SkipButton = memo(function SkipButton({ onSkip }: { onSkip: () => void }) 
 
 /** Single-screen cinematic intro — poem assembled from the Matrix rain. */
 export function IntroScreen() {
-  const collectPoem = useGameStore((s) => s.collectPoem);
   const setIntroSeen = useGameStore((s) => s.setIntroSeen);
   const setMainMenuOpen = useGameStore((s) => s.setMainMenuOpen);
   const setShowStoryOverlay = useGameStore((s) => s.setShowStoryOverlay);
@@ -55,13 +54,12 @@ export function IntroScreen() {
   const finish = useCallback(() => {
     setDone((wasDone) => {
       if (wasDone) return true;
-      collectPoem('poem_2');
       setShowStoryOverlay(false);
       setIntroSeen(true);
       setMainMenuOpen(true);
       return true;
     });
-  }, [collectPoem, setShowStoryOverlay, setIntroSeen, setMainMenuOpen]);
+  }, [setShowStoryOverlay, setIntroSeen, setMainMenuOpen]);
 
   // Safety: if the poem can't load, still hand off to the menu.
   useEffect(() => {

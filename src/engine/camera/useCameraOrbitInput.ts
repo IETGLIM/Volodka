@@ -25,6 +25,8 @@ const PITCH_MAX = 1.3;
 const ORBIT_SENSITIVITY = 0.004;
 const ZOOM_LINE_MULTIPLIER = 40;
 const ZOOM_PAGE_MULTIPLIER = 800;
+/** Match InteractiveTriggers — short LMB click = interact, drag = look (FP). */
+const LMB_LOOK_DRAG_THRESHOLD_PX = 12;
 
 export interface CameraOrbitInputRefs {
   yawRef: MutableRefObject<number>;
@@ -83,8 +85,30 @@ export function useCameraOrbitInput(
   } = refs;
 
   useEffect(() => {
+    let lmbDown = false;
+    let lmbStart = { x: 0, y: 0 };
+    let lmbLookActive = false;
+
+    const applyOrbitDelta = (dx: number, dy: number, sensScale = 1) => {
+      const { mouseSensitivity, invertY } = getVisualSettings();
+      const sens = ORBIT_SENSITIVITY * sensScale * mouseSensitivity;
+      yawRef.current -= dx * sens;
+      pitchRef.current = Math.max(
+        PITCH_MIN,
+        Math.min(PITCH_MAX, pitchRef.current + dy * sens * (invertY ? -1 : 1)),
+      );
+    };
+
     const onMouseDown = (e: MouseEvent) => {
       if (shouldBlockOrbit()) return;
+
+      if (e.button === 0 && firstPersonRef?.current && isCanvasAreaTarget(e.target)) {
+        lmbDown = true;
+        lmbLookActive = false;
+        lmbStart = { x: e.clientX, y: e.clientY };
+        lastMouseRef.current = { x: e.clientX, y: e.clientY };
+        return;
+      }
 
       if (e.button === 2 || e.button === 1) {
         isDraggingRef.current = true;
@@ -93,23 +117,37 @@ export function useCameraOrbitInput(
       }
     };
 
-    const onMouseUp = () => {
+    const onMouseUp = (e: MouseEvent) => {
+      if (e.button === 0) {
+        lmbDown = false;
+        lmbLookActive = false;
+      }
       isDraggingRef.current = false;
     };
 
     const onMouseMove = (e: MouseEvent) => {
+      if (lmbDown && firstPersonRef?.current) {
+        if (!lmbLookActive) {
+          const dx0 = e.clientX - lmbStart.x;
+          const dy0 = e.clientY - lmbStart.y;
+          if (dx0 * dx0 + dy0 * dy0 < LMB_LOOK_DRAG_THRESHOLD_PX * LMB_LOOK_DRAG_THRESHOLD_PX) {
+            return;
+          }
+          lmbLookActive = true;
+          lastMouseRef.current = { x: e.clientX, y: e.clientY };
+        }
+        const dx = e.clientX - lastMouseRef.current.x;
+        const dy = e.clientY - lastMouseRef.current.y;
+        lastMouseRef.current = { x: e.clientX, y: e.clientY };
+        applyOrbitDelta(dx, dy);
+        return;
+      }
+
       if (!isDraggingRef.current) return;
       const dx = e.clientX - lastMouseRef.current.x;
       const dy = e.clientY - lastMouseRef.current.y;
       lastMouseRef.current = { x: e.clientX, y: e.clientY };
-
-      const { mouseSensitivity, invertY } = getVisualSettings();
-      const sens = ORBIT_SENSITIVITY * mouseSensitivity;
-      yawRef.current -= dx * sens;
-      pitchRef.current = Math.max(
-        PITCH_MIN,
-        Math.min(PITCH_MAX, pitchRef.current + dy * sens * (invertY ? -1 : 1)),
-      );
+      applyOrbitDelta(dx, dy);
     };
 
     const onWheel = (e: WheelEvent) => {

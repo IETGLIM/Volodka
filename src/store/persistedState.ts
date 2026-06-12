@@ -12,7 +12,7 @@ import {
   type SavePayload,
   parseNpcStatesFromSave,
 } from '@/shared/validation/saveSchema';
-import { phaseFlagsFromLegacyMode } from '@/shared/gamePhase';
+import { BOOT_PHASE_FLAGS, phaseFlagsFromLegacyMode } from '@/shared/gamePhase';
 import {
   createDefaultExploration,
   createDefaultPlayerState,
@@ -43,9 +43,7 @@ export function getPersistedStateKeys(): PersistedStoreKey[] {
 export function createDefaultPersistedState(): Pick<GameStoreState, PersistedStoreKey> {
   return {
     mode: 'exploration',
-    mainMenuOpen: true,
-    introActive: false,
-    combatActive: false,
+    ...BOOT_PHASE_FLAGS,
     currentNodeId: 'start',
     playerState: createDefaultPlayerState(),
     exploration: createDefaultExploration(),

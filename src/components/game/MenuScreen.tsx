@@ -727,7 +727,6 @@ export function MenuScreen() {
       const store = useGameStore.getState();
       store.setCurrentNodeId('start');
       store.setIntroSeen(true);
-      store.collectPoem('poem_2');
       store.setPlayerPosition([0.5, 0.01, 2.4]);
       store.setPlayerRotation(Math.PI);
       // Leave the menu → play the 3D wake-up cutscene in volodka_room.

@@ -68,6 +68,8 @@ export function WakeUpSequence() {
     store.visitNode('start');
     store.visitNode('explore_mode');
     store.setFlag('woke_up', true);
+    // Title poem — single grant on wake-up (not IntroScreen / MenuScreen).
+    store.collectPoem('poem_2');
     setCinematicPresentationMode('first_person');
     eventBus.emit('intro:wakeup_complete', {});
     eventBus.emit('camera:recenter', {});

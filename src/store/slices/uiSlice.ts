@@ -4,6 +4,7 @@
 
 import type { StateCreator } from 'zustand';
 import type { GameMode } from '@/shared/types/game';
+import { BOOT_PHASE_FLAGS } from '@/shared/gamePhase';
 import {
   clamp,
   createDefaultTutorialFlags,
@@ -89,9 +90,7 @@ export const createUISlice: StateCreator<
   /* ── Initial state ── */
   mode: 'exploration',
   // Boot order: poem intro (Matrix rain) first → then main menu → cutscene.
-  mainMenuOpen: false,
-  introActive: true,
-  combatActive: false,
+  ...BOOT_PHASE_FLAGS,
   currentNodeId: 'start',
   lastSaveTimestamp: null,
   lastAutoSaveTimestamp: null,

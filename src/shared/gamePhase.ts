@@ -12,6 +12,13 @@ export type GamePhaseState = {
   activeCutsceneId: string | null;
 };
 
+/** Cold-boot phase flags — matrix poem intro before main menu (uiSlice + resetGame). */
+export const BOOT_PHASE_FLAGS = {
+  mainMenuOpen: false,
+  introActive: true,
+  combatActive: false,
+} as const satisfies Pick<GamePhaseState, 'mainMenuOpen' | 'introActive' | 'combatActive'>;
+
 export function getGamePhase(state: GamePhaseState): GamePhase {
   if (state.mainMenuOpen) return 'menu';
   if (state.introActive) return 'intro';
