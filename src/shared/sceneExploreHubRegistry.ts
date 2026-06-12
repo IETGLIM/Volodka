@@ -1,6 +1,6 @@
 import type { SceneId } from '@/shared/types/game';
 
-/** Per-scene exploration hub — overlay stays open, player can walk. */
+/** Per-scene exploration hub — spine node for saves/quests; overlay model varies by act. */
 export interface SceneExploreHubDef {
   hubId: string;
   sceneId: SceneId;
@@ -8,6 +8,12 @@ export interface SceneExploreHubDef {
   /** Door / arrival nodes promoted to this hub on physical scene enter. */
   entryNodeIds: readonly string[];
 }
+
+/** Act I hubs using closed-overlay free exploration (volodka room + corridor). */
+export const ACT1_FREE_EXPLORATION_HUB_IDS: ReadonlySet<string> = new Set([
+  'explore_mode',
+  'corridor_explore_mode',
+]);
 
 /** Single source of truth for scene ↔ explore-hub mapping. */
 export const SCENE_EXPLORE_HUB_DEFS: readonly SceneExploreHubDef[] = [
@@ -185,6 +191,14 @@ export const SCENE_ENTRY_NODE_TO_HUB: Readonly<Record<string, string>> = maps.en
 
 export function isExploreHubNode(nodeId: string): boolean {
   return EXPLORE_HUB_NODE_IDS.has(nodeId);
+}
+
+export function isAct1FreeExplorationHub(hubId: string): boolean {
+  return ACT1_FREE_EXPLORATION_HUB_IDS.has(hubId);
+}
+
+export function getExploreHubDef(hubId: string): SceneExploreHubDef | undefined {
+  return SCENE_EXPLORE_HUB_DEFS.find((def) => def.hubId === hubId);
 }
 
 export function getExploreHubForScene(sceneId: SceneId): string | undefined {

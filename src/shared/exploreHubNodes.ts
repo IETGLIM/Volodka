@@ -14,6 +14,7 @@ export {
   SCENE_TO_EXPLORE_HUB,
   SCENE_ENTRY_NODE_TO_HUB,
   isExploreHubNode,
+  isAct1FreeExplorationHub,
   getExploreHubForScene,
   getSceneForExploreHub,
   resolveExploreHubNavigation,

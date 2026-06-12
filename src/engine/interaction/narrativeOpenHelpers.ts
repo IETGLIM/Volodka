@@ -13,7 +13,9 @@ import { getCutsceneForNode } from '@/data/cutscenes';
 import {
   SCENE_ENTRY_NODE_TO_HUB,
   getExploreHubDefForScene,
+  isAct1FreeExplorationHub,
 } from '@/shared/sceneExploreHubRegistry';
+import { enterAct1FreeExplorationHub } from '@/engine/scene/freeExplorationHub';
 import { devWarn } from '@/shared/utils/devLog';
 import type { SceneId } from '@/shared/types/game';
 import { closeNarrativeOverlay } from '@/engine/scene/narrativeOverlay';
@@ -140,8 +142,12 @@ export async function openLinkedStory(nodeId: string): Promise<boolean> {
     if (alreadyVisited) {
       dispatchGameAction({ type: 'story/visitNode', nodeId });
       if (entryHubId !== nodeId) {
-        dispatchGameAction({ type: 'story/visitNode', nodeId: entryHubId });
-        dispatchGameAction({ type: 'story/setCurrentNodeId', nodeId: entryHubId });
+        if (isAct1FreeExplorationHub(entryHubId)) {
+          enterAct1FreeExplorationHub(entryHubId);
+        } else {
+          dispatchGameAction({ type: 'story/visitNode', nodeId: entryHubId });
+          dispatchGameAction({ type: 'story/setCurrentNodeId', nodeId: entryHubId });
+        }
       }
       if (snapshot.exploration.currentSceneId !== storyNode.sceneId) {
         requestSceneTransition(storyNode.sceneId as SceneId);
@@ -212,8 +218,12 @@ export function triggerSceneEntryStoryIfNeeded(
     }
 
     if (hubId && !onHub) {
-      dispatchGameAction({ type: 'story/visitNode', nodeId: hubId });
-      dispatchGameAction({ type: 'story/setCurrentNodeId', nodeId: hubId });
+      if (isAct1FreeExplorationHub(hubId)) {
+        enterAct1FreeExplorationHub(hubId);
+      } else {
+        dispatchGameAction({ type: 'story/visitNode', nodeId: hubId });
+        dispatchGameAction({ type: 'story/setCurrentNodeId', nodeId: hubId });
+      }
       return;
     }
   }

@@ -43,16 +43,21 @@ async function dismissFirstPlayTutorial(page: import('@playwright/test').Page) {
   }
 }
 
-async function closeNarrativeOverlay(page: import('@playwright/test').Page) {
-  const dialog = page.getByRole('dialog', { name: /Голос/i });
-  const closeBtn = dialog.getByRole('button', { name: /^Закрыть$/i });
-  if (await closeBtn.isVisible({ timeout: 3000 }).catch(() => false)) {
-    await closeBtn.click();
-    await page.waitForTimeout(500);
-  }
+/** Act I free exploration — no persistent hub overlay; location context via scene toast. */
+async function expectAct1FreeExploration(page: import('@playwright/test').Page) {
+  await expect(page.getByTestId('game-hud')).toBeVisible({ timeout: 45_000 });
+  await dismissFirstReadingBeats(page);
+  await dismissFirstPlayTutorial(page);
+
+  const hubDialog = page.getByRole('dialog', { name: /Голос/i });
+  await expect(hubDialog).not.toBeVisible({ timeout: 3000 });
+
+  await expect(page.getByText(/Комната Володьки|коридор|Солныш/i).first()).toBeVisible({
+    timeout: 20_000,
+  });
 }
 
-/** WASD moves the player during walkable explore hub (overlay may stay open). */
+/** WASD moves the player during closed-overlay free exploration. */
 async function assertExplorationMovement(page: import('@playwright/test').Page) {
   await page.waitForFunction(
     () => typeof window.__volodka_e2e?.getPlayerPosition === 'function',
@@ -76,39 +81,25 @@ async function assertExplorationMovement(page: import('@playwright/test').Page) 
 }
 
 async function skipTitleCardIfPresent(page: import('@playwright/test').Page) {
-  const cutsceneText = page.getByText(/Солныш|Алина/i).first();
+  const cutsceneText = page.getByText(/Доброе утро, Володька|Алина · Солныш|АКТ I/i).first();
   if (!(await cutsceneText.isVisible({ timeout: 8000 }).catch(() => false))) return;
-  // Skip button appears after 1s; ESC is more stable than clicking a detaching motion button.
   await page.waitForTimeout(1200);
   await page.keyboard.press('Escape');
   await page.waitForTimeout(800);
 }
 
-/** Corridor explore hub after Solnysh entry — tutorial/typewriter can mask hub copy. */
-async function expectCorridorExploreHub(page: import('@playwright/test').Page) {
-  await expect(page.getByRole('dialog', { name: /Голос/i })).toBeVisible({ timeout: 45_000 });
-  await dismissFirstPlayTutorial(page);
-  await skipStoryTypewriter(page);
-  await expect(page.getByText(/корид|Солныш|Умка|кухн/i).first()).toBeVisible({ timeout: 20_000 });
-}
-
-/** After wake + act I title card, dismiss explore hub or take corridor VN branch. */
-async function leaveExploreHub(page: import('@playwright/test').Page): Promise<'walk' | 'corridor'> {
-  await expect(page.getByRole('dialog', { name: /Голос/i })).toBeVisible({ timeout: 45_000 });
-  await dismissFirstReadingBeats(page);
-  await skipStoryTypewriter(page);
-  const corridorBtn = page.getByRole('button', { name: /Выйти в коридор/i });
-  await expect(corridorBtn).toBeVisible({ timeout: 30_000 });
-  await corridorBtn.click();
-  return 'corridor';
+/** After room_door: cutscene may flash; stable signal is corridor hub toast + no VN overlay. */
+async function expectCorridorFreeExploration(page: import('@playwright/test').Page) {
+  await skipTitleCardIfPresent(page);
+  await expect(page.getByText(/Коридор коммуналки|коридор тянется/i).first()).toBeVisible({
+    timeout: 45_000,
+  });
+  await expect(page.getByRole('dialog', { name: /Голос/i })).not.toBeVisible({ timeout: 5000 });
 }
 
 /** Physical 3D path: walk toward room_door, trigger zone interact → corridor_door cutscene chain. */
 async function enterCorridorViaPhysicalDoor(page: import('@playwright/test').Page) {
-  await expect(page.getByRole('dialog', { name: /Голос/i })).toBeVisible({ timeout: 45_000 });
-  await dismissFirstReadingBeats(page);
-  await skipStoryTypewriter(page);
-  await closeNarrativeOverlay(page);
+  await expectAct1FreeExploration(page);
 
   await page.waitForFunction(
     () => typeof window.__volodka_e2e?.interactTriggerZone === 'function',
@@ -144,72 +135,62 @@ test.describe('Act I smoke', () => {
 
     await skipWakeCinematic(page);
 
-    await expect(page.getByTestId('game-hud')).toBeVisible({ timeout: 30_000 });
-    await expect(page.getByRole('dialog', { name: /Голос/i })).toBeVisible({ timeout: 45_000 });
-    await dismissFirstReadingBeats(page);
+    await expectAct1FreeExploration(page);
     await assertExplorationMovement(page);
-    await skipStoryTypewriter(page);
-    const corridorBtn = page.getByRole('button', { name: /Выйти в коридор/i });
-    await expect(corridorBtn).toBeVisible({ timeout: 30_000 });
-    await corridorBtn.click();
-    await expect(page.getByText(/коридор|Солныш|дверь/i).first()).toBeVisible({ timeout: 20_000 });
-  });
-
-  test('corridor door → solnysh cutscene → corridor explore hub', async ({ page }) => {
-    await waitForMenuReady(page);
-    await page.getByTestId('menu-new-game').click();
-    await expect(page.locator('canvas[data-engine]')).toBeVisible({ timeout: 90_000 });
-
-    await skipWakeCinematic(page);
-    await expect(page.getByTestId('game-hud')).toBeVisible({ timeout: 30_000 });
-
-    await leaveExploreHub(page);
-
-    const solnyshOverlay = page.getByText(/Солныш|Алина/i).first();
-    await expect(solnyshOverlay).toBeVisible({ timeout: 20_000 });
-    await skipTitleCardIfPresent(page);
-
-    await expectCorridorExploreHub(page);
-  });
-
-  test('physical room_door → corridor cutscene → corridor explore hub', async ({ page }) => {
-    await waitForMenuReady(page);
-    await page.getByTestId('menu-new-game').click();
-    await expect(page.locator('canvas[data-engine]')).toBeVisible({ timeout: 90_000 });
-
-    await skipWakeCinematic(page);
-    await expect(page.getByTestId('game-hud')).toBeVisible({ timeout: 30_000 });
 
     await enterCorridorViaPhysicalDoor(page);
-
-    const solnyshOverlay = page.getByText(/Солныш|Алина/i).first();
-    await expect(solnyshOverlay).toBeVisible({ timeout: 25_000 });
-    await skipTitleCardIfPresent(page);
-
-    await expectCorridorExploreHub(page);
+    await expectCorridorFreeExploration(page);
   });
 
-  test('corridor explore hub → kitchen_table golden branch', async ({ page }) => {
+  test('corridor door → solnysh cutscene → corridor free exploration', async ({ page }) => {
     await waitForMenuReady(page);
     await page.getByTestId('menu-new-game').click();
     await expect(page.locator('canvas[data-engine]')).toBeVisible({ timeout: 90_000 });
 
     await skipWakeCinematic(page);
-    await expect(page.getByTestId('game-hud')).toBeVisible({ timeout: 45_000 });
-    await expect(page.getByRole('dialog', { name: /Голос/i })).toBeVisible({ timeout: 45_000 });
+    await expectAct1FreeExploration(page);
 
-    await leaveExploreHub(page);
-    await skipTitleCardIfPresent(page);
-    await expectCorridorExploreHub(page);
+    await enterCorridorViaPhysicalDoor(page);
+    await expectCorridorFreeExploration(page);
+    await assertExplorationMovement(page);
+  });
 
-    const kitchenBtn = page.getByRole('button', { name: /Пойти на кухню/i });
-    if (await kitchenBtn.isVisible({ timeout: 8000 }).catch(() => false)) {
-      await kitchenBtn.click({ force: true });
-    } else {
-      await page.keyboard.press('Digit3');
-    }
+  test('physical room_door → corridor cutscene → corridor free exploration', async ({ page }) => {
+    await waitForMenuReady(page);
+    await page.getByTestId('menu-new-game').click();
+    await expect(page.locator('canvas[data-engine]')).toBeVisible({ timeout: 90_000 });
 
-    if (!(await page.getByText(/Зарема|чай|кухн/i).first().isVisible({ timeout: 8000 }).catch(() => false))) {
+    await skipWakeCinematic(page);
+    await expectAct1FreeExploration(page);
+
+    await enterCorridorViaPhysicalDoor(page);
+    await expectCorridorFreeExploration(page);
+  });
+
+  test('corridor free exploration → kitchen_table golden branch', async ({ page }) => {
+    await waitForMenuReady(page);
+    await page.getByTestId('menu-new-game').click();
+    await expect(page.locator('canvas[data-engine]')).toBeVisible({ timeout: 90_000 });
+
+    await skipWakeCinematic(page);
+    await expectAct1FreeExploration(page);
+
+    await enterCorridorViaPhysicalDoor(page);
+    await expectCorridorFreeExploration(page);
+    await dismissFirstPlayTutorial(page);
+
+    await page.waitForFunction(
+      () => typeof window.__volodka_e2e?.interactTriggerZone === 'function',
+      null,
+      { timeout: 30_000 },
+    );
+
+    await page.evaluate(() => {
+      window.__volodka_e2e?.interactTriggerZone('corridor_kitchen_door');
+    });
+
+    const kitchenDialog = page.getByRole('dialog', { name: /Голос/i });
+    if (!(await kitchenDialog.isVisible({ timeout: 8000 }).catch(() => false))) {
       await page.evaluate(() => window.__volodka_e2e?.visitStoryNode('kitchen_table'));
     }
 

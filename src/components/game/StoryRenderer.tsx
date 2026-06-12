@@ -17,7 +17,12 @@ import { audioEngine } from '@/engine/AudioEngine';
 import { requestSceneTransitionForStoryNode } from '@/engine/scene/sceneTransition';
 import { getGameStore } from '@/store/gameStore';
 import { closeNarrativeOverlay } from '@/engine/scene/narrativeOverlay';
-import { EXPLORE_HUB_NODE_IDS, resolveExploreHubNavigation } from '@/shared/exploreHubNodes';
+import { enterAct1FreeExplorationHub } from '@/engine/scene/freeExplorationHub';
+import {
+  EXPLORE_HUB_NODE_IDS,
+  isAct1FreeExplorationHub,
+  resolveExploreHubNavigation,
+} from '@/shared/exploreHubNodes';
 import { KARMA_LOW_THRESHOLD, KARMA_HIGH_THRESHOLD } from '@/data/constants';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import type { StoryChoice, StoryEffect } from '@/shared/types/game';
@@ -216,7 +221,11 @@ export function StoryRenderer() {
           choice.next,
         );
         if (resolved.action === 'navigate') {
-          setCurrentNodeId(resolved.hubId);
+          if (isAct1FreeExplorationHub(resolved.hubId)) {
+            enterAct1FreeExplorationHub(resolved.hubId);
+          } else {
+            setCurrentNodeId(resolved.hubId);
+          }
         } else {
           closeNarrativeOverlay();
         }

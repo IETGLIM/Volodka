@@ -296,8 +296,9 @@ const stepVariants = {
   }),
 };
 
-/** Defer first-play tutorial until the player makes a hub choice or visits the corridor. */
+/** Defer first-play tutorial until the player enters free exploration or visits a beat. */
 const ACT1_TUTORIAL_READY_NODES = [
+  'explore_mode',
   'room_table',
   'room_bookshelf',
   'corridor_door',

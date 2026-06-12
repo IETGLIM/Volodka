@@ -363,8 +363,7 @@ export function PhysicsPlayer({
     const showStoryOverlay = lockState.showStoryOverlay;
     const currentNodeId = lockState.currentNodeId;
     // ── World Director: lock movement during narrative overlay or cutscene ──
-    // Explore hub nodes (explore_mode, corridor_explore_mode) keep the overlay
-    // as an in-world menu but allow walking — fixes freeze after door transition.
+    // Later-act explore hubs keep overlay open but allow walking; Act I uses closed overlay.
     const isLocked =
       isNarrativeMovementLocked(showStoryOverlay, currentNodeId) ||
       currentMode === 'cutscene' ||

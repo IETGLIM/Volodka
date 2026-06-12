@@ -95,8 +95,11 @@ patrol→chase→engaged→cooldown, конус зрения проецируе�
   spawn сцены **без** дверного exit и без `SceneTransitionOverlay`-анимации.
   Для doorway spawn и звука двери используй physical exit (`sceneDefinitions`
   doorways) или `applyEffects` с `{ type: 'transitionScene', sceneId }`.
-  Explore-hub узлы (`*_explore_mode`) держат overlay открытым, но не блокируют
-  ходьбу — см. `sceneExploreHubRegistry.ts`.
+  Explore-hub узлы (`*_explore_mode`) держат `currentNodeId` для квестов/сейвов.
+  **Act I (volodka_room, volodka_corridor):** после cutscene/wake overlay
+  закрывается — игрок ходит свободно, локация через scene-toast
+  (`freeExplorationHub.ts`), действия через trigger zones. **Acts 2–7 (пока):**
+  walkable hub overlay остаётся открытым — см. `sceneExploreHubRegistry.ts`.
 - Канонический путь: `GOLDEN_PATH_STORY_SPINE` (до `act7_true_end`) + derivation
   из меток `choice.goldenPath` (`deriveGoldenPath.ts`); валидатор контента
   (`npm run validate:content`) сверяет оба источника.

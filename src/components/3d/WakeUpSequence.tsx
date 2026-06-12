@@ -10,7 +10,6 @@ import * as THREE from 'three';
 import { eventBus } from '@/engine/EventBus';
 import { audioEngine } from '@/engine/AudioEngine';
 import { getGameStore, useGameStore } from '@/store/gameStore';
-import { openNarrativeOverlay } from '@/engine/scene/narrativeOverlay';
 import { openNarrativeAfterCutscene } from '@/engine/scene/postCutsceneNarrative';
 import { setCinematicPresentationMode } from '@/engine/camera/cinematicPresentation';
 import { CinematicPlayerAvatar } from './CinematicPlayerAvatar';
@@ -83,9 +82,8 @@ export function WakeUpSequence() {
         live.setCutscene(null, []);
         eventBus.emit('cutscene:overlay_end', {});
       }
-      live.setCurrentNodeId('explore_mode');
-      openNarrativeOverlay('explore_mode', 'story');
-      // Defer quest activation until hub is visible — retroactive completion
+      openNarrativeAfterCutscene('start', 'story');
+      // Defer quest activation until hub is settled — retroactive completion
       // then fires matrix quote + quest-complete dialog intentionally.
       setTimeout(() => {
         getGameStore().activateQuest('first_reading');
