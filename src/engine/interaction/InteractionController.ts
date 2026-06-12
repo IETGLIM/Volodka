@@ -107,7 +107,7 @@ export class InteractionController {
       }
 
       if (zone.isOneTime) {
-        dispatchGameAction({ type: 'exploration/toggleInteractiveObject', objectId: triggerZoneId });
+        dispatchGameAction({ type: 'exploration/consumeInteractiveObject', objectId: triggerZoneId });
       }
 
       if (zone.linkedQuestId) {
@@ -197,7 +197,7 @@ export class InteractionController {
     }
 
     if (zone.isOneTime) {
-      dispatchGameAction({ type: 'exploration/toggleInteractiveObject', objectId: triggerZoneId });
+      dispatchGameAction({ type: 'exploration/consumeInteractiveObject', objectId: triggerZoneId });
     }
 
     if (zone.linkedQuestId) {

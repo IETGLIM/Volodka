@@ -71,6 +71,8 @@ export interface ExplorationSliceActions {
   toggleWeather: () => void;
   setRainIntensity: (intensity: number) => void;
   toggleInteractiveObject: (id: string) => void;
+  /** Permanently mark a one-time trigger zone as consumed (no auto-close). */
+  consumeInteractiveObject: (id: string) => void;
   /** Mark a scene as discovered (called when player enters a scene) */
   discoverScene: (sceneId: SceneId) => void;
   /** Fast travel to a discovered scene. Checks discovery + flag gates. Advances time. */
@@ -162,7 +164,7 @@ export const createExplorationSlice: StateCreator<
       },
     }));
 
-    // Auto-close after 5 seconds if opening
+    // Auto-close after 5 seconds if opening (visual doors/wardrobes only — not one-time loot).
     if (newState) {
       const capturedGeneration = autoCloseGeneration;
       const timer = setTimeout(() => {
@@ -180,6 +182,21 @@ export const createExplorationSlice: StateCreator<
       }, 5000);
       autoCloseTimers.set(id, timer);
     }
+  },
+
+  consumeInteractiveObject: (id) => {
+    const existingTimer = autoCloseTimers.get(id);
+    if (existingTimer !== undefined) {
+      clearTimeout(existingTimer);
+      autoCloseTimers.delete(id);
+    }
+
+    set((state) => ({
+      interactiveObjectStates: {
+        ...state.interactiveObjectStates,
+        [id]: true,
+      },
+    }));
   },
 
   discoverScene: (sceneId) =>

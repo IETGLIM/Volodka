@@ -247,6 +247,9 @@ registerGameActionBridge({
       case 'exploration/toggleInteractiveObject':
         store.toggleInteractiveObject(action.objectId);
         break;
+      case 'exploration/consumeInteractiveObject':
+        store.consumeInteractiveObject(action.objectId);
+        break;
       case 'exploration/applySceneTransition':
         store.setExplorationScene(action.targetScene);
         store.setPlayerPosition(action.spawnAt);

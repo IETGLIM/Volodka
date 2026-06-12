@@ -116,6 +116,7 @@ export type GameAction =
   | { type: 'notification/dismiss'; id: string }
   /* ── Exploration ── */
   | { type: 'exploration/toggleInteractiveObject'; objectId: string }
+  | { type: 'exploration/consumeInteractiveObject'; objectId: string }
   | {
       type: 'exploration/applySceneTransition';
       targetScene: SceneId;
