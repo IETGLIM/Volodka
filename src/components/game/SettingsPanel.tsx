@@ -63,6 +63,7 @@ const DEFAULTS: Record<string, number | boolean> = {
   volodka_brightness: 100,
   volodka_mouse_sens: 5,
   volodka_invert_y: false,
+  volodka_pointer_lock: false,
 };
 
 const QUALITY_OPTIONS: { id: QualityPresetId; label: string }[] = [
@@ -203,6 +204,7 @@ function SettingsPanelContent({ onClose }: { onClose: () => void }) {
   // ── Controls state ──
   const [mouseSens, setMouseSens] = useState(() => lsGetNumber('volodka_mouse_sens', 5));
   const [invertY, setInvertY] = useState(() => lsGetBool('volodka_invert_y', false));
+  const [pointerLock, setPointerLock] = useState(() => lsGetBool('volodka_pointer_lock', false));
 
   // ── Persist helper (write to localStorage immediately) ──
   const persist = useCallback((key: string, value: number | boolean) => {
@@ -225,6 +227,7 @@ function SettingsPanelContent({ onClose }: { onClose: () => void }) {
     setBrightness(DEFAULTS.volodka_brightness as number);
     setMouseSens(DEFAULTS.volodka_mouse_sens as number);
     setInvertY(DEFAULTS.volodka_invert_y as boolean);
+    setPointerLock(DEFAULTS.volodka_pointer_lock as boolean);
     applyAudioSettings();
     applyVisualSettings();
   }, []);
@@ -313,6 +316,11 @@ function SettingsPanelContent({ onClose }: { onClose: () => void }) {
               label="Инвертировать Y-ось"
               checked={invertY}
               onChange={(v) => { setInvertY(v); persist('volodka_invert_y', v); applyVisualSettings(); }}
+            />
+            <CyberToggle
+              label="Захват курсора (FPS)"
+              checked={pointerLock}
+              onChange={(v) => { setPointerLock(v); persist('volodka_pointer_lock', v); applyVisualSettings(); }}
             />
             <SectionDivider />
             {/* Keyboard shortcuts hint */}

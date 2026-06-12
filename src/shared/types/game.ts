@@ -161,6 +161,10 @@ export interface ChoiceCondition {
   minTimeOfDay?: number;
   /** G14: Time-of-day upper bound (hour: 0-24) */
   maxTimeOfDay?: number;
+  /** Show only when this poem is already collected */
+  collectedPoem?: string;
+  /** Show only when this poem is not yet collected */
+  missingPoem?: string;
 }
 
 export interface StoryChoice {

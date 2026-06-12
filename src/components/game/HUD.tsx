@@ -521,6 +521,7 @@ export function HUD(props: HUDProps) {
   return (
     <div
       data-exploration-ui
+      data-testid="game-hud"
       className={`fixed inset-0 pointer-events-none transition-opacity duration-500 ease-out ${hudMounted ? 'opacity-100' : 'opacity-0'}`}
       style={{ zIndex: UI_LAYERS.HUD }}
     >

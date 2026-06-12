@@ -16,6 +16,7 @@ export interface StoryConditionContext {
   karma: number;
   skills: PlayerSkills;
   flags: Record<string, boolean>;
+  collectedPoems: readonly string[];
   currentAct: number;
   npcRelations?: NPCRelation[];
   npcId?: string;
@@ -34,11 +35,13 @@ export interface StoryConditionExtras {
 export function buildStoryConditionContext(
   playerState: Pick<PlayerState, 'karma' | 'skills' | 'flags' | 'progression'>,
   extras: StoryConditionExtras = {},
+  collectedPoems: readonly string[] = [],
 ): StoryConditionContext {
   return {
     karma: playerState.karma,
     skills: playerState.skills,
     flags: playerState.flags,
+    collectedPoems,
     currentAct: extras.currentAct ?? playerState.progression.currentAct,
     npcRelations: extras.npcRelations,
     npcId: extras.npcId,
@@ -80,6 +83,13 @@ export function checkStoryCondition(
   }
 
   if (condition.flag && !ctx.flags[condition.flag]) return { pass: false };
+
+  if (condition.collectedPoem && !ctx.collectedPoems.includes(condition.collectedPoem)) {
+    return { pass: false };
+  }
+  if (condition.missingPoem && ctx.collectedPoems.includes(condition.missingPoem)) {
+    return { pass: false };
+  }
 
   if (condition.minNpcRelation !== undefined && ctx.npcId && ctx.npcRelations) {
     const rel = ctx.npcRelations.find((r) => r.npcId === ctx.npcId);

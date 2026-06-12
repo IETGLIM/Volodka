@@ -49,10 +49,17 @@ export const EXPLORATION_DIALOGUE_NODES: Record<string, DialogueNode> = {
       {
         text: 'Поднять листок — это стихи',
         next: null,
+        condition: { missingPoem: 'poem_2' },
         effects: [
           { type: 'collectPoem', poemId: 'poem_2' },
           { type: 'addKarma', value: 2 },
         ],
+      },
+      {
+        text: 'Перечитать знакомые строки',
+        next: null,
+        condition: { collectedPoem: 'poem_2' },
+        effects: [{ type: 'addSkill', skill: 'writing', value: 1 }],
       },
       {
         text: 'Отложить листок, читать дальше',

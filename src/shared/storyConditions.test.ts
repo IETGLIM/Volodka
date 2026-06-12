@@ -31,7 +31,8 @@ describe('buildStoryConditionContext', () => {
 });
 
 describe('checkStoryCondition', () => {
-  const ctx = buildStoryConditionContext({
+  const ctx = {
+    ...buildStoryConditionContext({
     karma: 60,
     skills: {
       logic: 8,
@@ -53,7 +54,9 @@ describe('checkStoryCondition', () => {
       perkPoints: 0,
       unlockedPerks: [],
     },
-  });
+  }),
+    collectedPoems: [] as string[],
+  };
 
   it('passes minKarma', () => {
     expect(checkStoryCondition({ minKarma: 50 }, ctx).pass).toBe(true);
@@ -63,5 +66,12 @@ describe('checkStoryCondition', () => {
   it('passes flag', () => {
     expect(checkStoryCondition({ flag: 'met_boss' }, ctx).pass).toBe(true);
     expect(checkStoryCondition({ flag: 'missing' }, ctx).pass).toBe(false);
+  });
+
+  it('gates poem collection choices', () => {
+    const poemCtx = { ...ctx, collectedPoems: ['poem_2'] as const };
+    expect(checkStoryCondition({ missingPoem: 'poem_2' }, poemCtx).pass).toBe(false);
+    expect(checkStoryCondition({ collectedPoem: 'poem_2' }, poemCtx).pass).toBe(true);
+    expect(checkStoryCondition({ missingPoem: 'poem_2' }, ctx).pass).toBe(true);
   });
 });

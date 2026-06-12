@@ -81,13 +81,8 @@ export function WakeUpSequence() {
       openNarrativeOverlay('explore_mode', 'story');
     }
 
-    setTimeout(() => {
-      eventBus.emit('story:quest_available', {
-        questId: 'first_reading',
-        questTitle: 'Первое чтение',
-        questType: 'main',
-      });
-    }, 600);
+    // Auto-start Act I spine quest — no accept dialog (wake-up is the narrative grant).
+    store.activateQuest('first_reading');
   };
 
   const beginHandoff = (): void => {

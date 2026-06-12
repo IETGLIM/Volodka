@@ -23,6 +23,8 @@ export interface VisualSettingsSnapshot {
   mouseSensitivity: number;
   /** Invert vertical camera look */
   invertY: boolean;
+  /** Desktop FP: lock pointer on canvas click instead of drag-to-look */
+  pointerLockEnabled: boolean;
 }
 
 const LS_POSTFX = 'volodka_postfx';
@@ -32,6 +34,7 @@ const LS_CAM_SHAKE = 'volodka_cam_shake';
 const LS_BRIGHTNESS = 'volodka_brightness';
 const LS_MOUSE_SENS = 'volodka_mouse_sens';
 const LS_INVERT_Y = 'volodka_invert_y';
+const LS_POINTER_LOCK = 'volodka_pointer_lock';
 
 function lsGetBool(key: string, fallback: boolean): boolean {
   try {
@@ -64,6 +67,7 @@ export function readVisualSettings(): VisualSettingsSnapshot {
     brightness: Math.max(50, Math.min(150, lsGetNumber(LS_BRIGHTNESS, 100))) / 100,
     mouseSensitivity: Math.max(1, Math.min(10, lsGetNumber(LS_MOUSE_SENS, 5))) / 5,
     invertY: lsGetBool(LS_INVERT_Y, false),
+    pointerLockEnabled: lsGetBool(LS_POINTER_LOCK, false),
   };
 }
 

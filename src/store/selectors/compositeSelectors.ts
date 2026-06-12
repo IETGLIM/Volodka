@@ -175,6 +175,7 @@ export function selectDialogueContext(s: GameStoreState) {
     progression: s.playerState.progression,
     npcRelations: s.npcRelations,
     timeOfDay: s.exploration.timeOfDay,
+    collectedPoems: s.collectedPoems,
   };
 }
 
@@ -193,6 +194,7 @@ export function selectStoryContext(s: GameStoreState) {
     skills: s.playerState.skills,
     flags: s.playerState.flags,
     progression: s.playerState.progression,
+    collectedPoems: s.collectedPoems,
   };
 }
 

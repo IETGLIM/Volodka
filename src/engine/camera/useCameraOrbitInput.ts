@@ -126,12 +126,26 @@ export function useCameraOrbitInput(
     };
 
     const onMouseMove = (e: MouseEvent) => {
+      if (
+        firstPersonRef?.current &&
+        canvasEl &&
+        document.pointerLockElement === canvasEl &&
+        (e.movementX !== 0 || e.movementY !== 0)
+      ) {
+        applyOrbitDelta(e.movementX, e.movementY);
+        return;
+      }
+
       if (lmbDown && firstPersonRef?.current) {
         if (!lmbLookActive) {
           const dx0 = e.clientX - lmbStart.x;
           const dy0 = e.clientY - lmbStart.y;
           if (dx0 * dx0 + dy0 * dy0 < LMB_LOOK_DRAG_THRESHOLD_PX * LMB_LOOK_DRAG_THRESHOLD_PX) {
             return;
+          }
+          const { pointerLockEnabled } = getVisualSettings();
+          if (pointerLockEnabled && canvasEl && document.pointerLockElement !== canvasEl) {
+            void canvasEl.requestPointerLock();
           }
           lmbLookActive = true;
           lastMouseRef.current = { x: e.clientX, y: e.clientY };
