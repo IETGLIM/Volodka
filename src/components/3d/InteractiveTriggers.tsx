@@ -32,9 +32,6 @@ import { sharedCameraYawRef } from '@/engine/PlayerRotationState';
 const MAX_VISIBLE_PROMPTS = 2;
 
 /** Fixed foot-ring for proximity highlight — not scaled to zone size */
-const FOOT_RING_INNER = 0.3;
-const FOOT_RING_OUTER = 0.42;
-
 /** Scene exit proximity — matches SceneExitIndicator */
 const EXIT_PROXIMITY_RANGE = 2.5;
 
@@ -566,7 +563,7 @@ function NPCProximityTrigger({
   const promptId = `npc_${npcId}`;
   const [showIndicator, setShowIndicator] = useState(false);
   const showIndicatorRef = useRef(false);
-  const footRingMatRef = useRef<THREE.MeshBasicMaterial>(null);
+  const npcLightRef = useRef<THREE.PointLight>(null);
   const pulsePhaseRef = useRef(0);
 
   // Pre-allocated temp Vector3 — avoids per-frame allocation (P0-2.2)
@@ -604,8 +601,8 @@ function NPCProximityTrigger({
 
     if (isNear) {
       pulsePhaseRef.current += delta * 2.5;
-      if (footRingMatRef.current) {
-        footRingMatRef.current.opacity = 0.2 + Math.sin(pulsePhaseRef.current) * 0.08;
+      if (npcLightRef.current) {
+        npcLightRef.current.intensity = 0.24 + Math.sin(pulsePhaseRef.current) * 0.1;
       }
     }
   });
@@ -619,24 +616,11 @@ function NPCProximityTrigger({
     };
   }, [promptId, unregisterPrompt]);
 
-  // Subtle foot glow when in range — no floating markers
+  // Subtle proximity light when in range
   return (
     <group position={position}>
       {showIndicator && (
-        <>
-          <mesh rotation-x={-Math.PI / 2} position={[0, 0.02, 0]}>
-            <ringGeometry args={[FOOT_RING_INNER, FOOT_RING_OUTER, 24]} />
-            <meshBasicMaterial
-              ref={footRingMatRef}
-              color="#ffb828"
-              transparent
-              opacity={0.22}
-              side={THREE.DoubleSide}
-              depthWrite={false}
-            />
-          </mesh>
-          <pointLight color="#ffb828" intensity={0.35} distance={2.5} position={[0, 0.5, 0]} />
-        </>
+        <pointLight ref={npcLightRef} color="#ffb828" intensity={0.28} distance={2.0} position={[0, 0.55, 0]} />
       )}
     </group>
   );
@@ -677,7 +661,6 @@ function TriggerZoneComponent({
 
   // Pulse animation — updated imperatively via material ref
   const pulsePhaseRef = useRef(0);
-  const glowRingMatRef = useRef<THREE.MeshBasicMaterial>(null);
   const proximityLightRef = useRef<THREE.PointLight>(null);
 
   // Brief flash on E press
@@ -754,18 +737,11 @@ function TriggerZoneComponent({
     if (isNear) {
       pulsePhaseRef.current += delta * 3;
     }
-    const pulseOpacity = 0.22 + Math.sin(pulsePhaseRef.current) * 0.08;
     const isFlashing = outlineFlashRef.current;
-    const ringOpacity = isFlashing ? 0.45 : pulseOpacity;
-
-    if (glowRingMatRef.current) {
-      glowRingMatRef.current.color.set(isFlashing ? '#ffffff' : '#00ffee');
-      glowRingMatRef.current.opacity = ringOpacity;
-    }
 
     if (proximityLightRef.current) {
       proximityLightRef.current.intensity = isNear
-        ? (isFlashing ? 0.9 : 0.35 + Math.sin(pulsePhaseRef.current) * 0.12)
+        ? (isFlashing ? 0.55 : 0.24 + Math.sin(pulsePhaseRef.current) * 0.1)
         : 0;
     }
 
@@ -907,26 +883,13 @@ function TriggerZoneComponent({
   return (
     <group position={zone.position}>
       {showIndicator && (
-        <>
-          <mesh rotation-x={-Math.PI / 2} position={[0, 0.02, 0]}>
-            <ringGeometry args={[FOOT_RING_INNER, FOOT_RING_OUTER, 24]} />
-            <meshBasicMaterial
-              ref={glowRingMatRef}
-              color="#00ffee"
-              transparent
-              opacity={0.22}
-              side={THREE.DoubleSide}
-              depthWrite={false}
-            />
-          </mesh>
-          <pointLight
-            ref={proximityLightRef}
-            color="#00ffee"
-            intensity={0.35}
-            distance={3}
-            position={[0, zone.size[1] * 0.5, 0]}
-          />
-        </>
+        <pointLight
+          ref={proximityLightRef}
+          color="#88eeff"
+          intensity={0.28}
+          distance={2.2}
+          position={[0, Math.max(zone.size[1] * 0.45, 0.5), 0]}
+        />
       )}
 
       {/* Sparkle particles — single InstancedMesh instead of 8 separate meshes (P0-2.3) */}

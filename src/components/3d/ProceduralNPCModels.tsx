@@ -981,25 +981,26 @@ const DEFAULT_APPEARANCE: NPCAppearance = {
 };
 
 /* ═══════════════════════════════════════════════════════════════════
-    8. VERA – Archive keeper, older woman, warm scholarly look, scarf, book
+    8. СОЛНЫШ (vera) – warm neighbor, soft feminine look, scarf, book
     ═══════════════════════════════════════════════════════════════════ */
 function VeraModel({ appearance, animState = 'idle' }: { appearance: NPCAppearance; animState?: 'idle' | 'walk' | 'talk' }) {
   const groupRef = useRef<THREE.Group>(null);
-  useNPCAnimation(groupRef, animState, 0.03); // Gentle forward lean (scholarly)
+  useNPCAnimation(groupRef, animState, 0.02);
 
-  const bodyColor = appearance.bodyColor; // '#e8e0a0'
-  const accentColor = appearance.accentColor; // '#e8e0a0'
-  const glowColor = appearance.glowColor; // '#e8e0a0'
+  const bodyColor = appearance.bodyColor;
+  const accentColor = appearance.accentColor;
+  const glowColor = appearance.glowColor;
 
   const coatColor = bodyColor;
-  const coatDark = '#c8c080';
-  const blouseColor = '#f0e8d0';
-  const pantsColor = '#5a5040';
-  const pantsDark = '#4a4030';
+  const coatDark = '#d888a0';
+  const blouseColor = '#fff0f4';
+  const pantsColor = '#6a4058';
+  const pantsDark = '#5a3048';
   const skinColor = SKIN_LIGHT;
   const skinShadow = SKIN_SHADOW_LIGHT;
-  const scarfColor = '#c8a030';
+  const scarfColor = '#ffb8d0';
   const scarfAccent = glowColor;
+  const hairColor = '#8a4a38';
 
   return (
     <group ref={groupRef}>
@@ -1037,12 +1038,11 @@ function VeraModel({ appearance, animState = 'idle' }: { appearance: NPCAppearan
           <Eyes browAngle={0.08} irisColor="#6a5a30" />
           <FaceFeatures skinColor={skinColor} shadowColor={skinShadow} mouthCornersDown={false} />
 
-          {/* Hair — gray, tied back */}
-          <mesh position={[0, 0.08, -0.01]} geometry={sphereGeo(0.085, 5, 4)} material={sharedMat.hairGray} />
-          <mesh position={[-0.075, 0.04, 0.0]} geometry={sphereGeo(0.03, 4, 3)} material={sharedMat.hairGray} />
-          <mesh position={[0.075, 0.04, 0.0]} geometry={sphereGeo(0.03, 4, 3)} material={sharedMat.hairGray} />
-          {/* Hair bun at back */}
-          <mesh position={[0, 0.06, -0.10]} geometry={sphereGeo(0.05, 5, 4)} material={sharedMat.hairGray} />
+          {/* Hair — warm auburn, shoulder length */}
+          <mesh position={[0, 0.06, -0.02]} geometry={sphereGeo(0.09, 5, 4)} material={npcMat({ color: hairColor, roughness: 0.85 })} />
+          <mesh position={[-0.08, -0.02, 0.02]} geometry={sphereGeo(0.04, 4, 3)} material={npcMat({ color: hairColor, roughness: 0.85 })} />
+          <mesh position={[0.08, -0.02, 0.02]} geometry={sphereGeo(0.04, 4, 3)} material={npcMat({ color: hairColor, roughness: 0.85 })} />
+          <mesh position={[0, 0.02, -0.11]} geometry={sphereGeo(0.055, 5, 4)} material={npcMat({ color: hairColor, roughness: 0.85 })} />
 
           {/* Scarf wrap on head */}
           <mesh position={[0, 0.05, 0.04]} geometry={sphereGeo(0.105, 6, 4, 0, Math.PI * 2, 0, Math.PI * 0.4)} material={npcMat({ color: scarfColor, emissive: scarfAccent, emissiveIntensity: 0.08, roughness: 0.8 })} />

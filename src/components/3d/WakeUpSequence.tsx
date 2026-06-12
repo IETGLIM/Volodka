@@ -65,6 +65,8 @@ export function WakeUpSequence() {
     store.setPlayerRotation(Math.PI);
     store.setCutscene(null, []);
     store.setCurrentNodeId('explore_mode');
+    store.visitNode('start');
+    store.visitNode('explore_mode');
     store.setFlag('woke_up', true);
     setCinematicPresentationMode('first_person');
     eventBus.emit('intro:wakeup_complete', {});

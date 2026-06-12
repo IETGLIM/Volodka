@@ -33,9 +33,9 @@ const MAX_NPCS_PER_SCENE: Partial<Record<SceneId, number>> = {
 
 /** Shared patrol loop for schedule "walk" NPCs in the narrow communal corridor. */
 const CORRIDOR_PATROL_WAYPOINTS: [number, number, number][] = [
-  [0, 0, -2.5],
+  [0, 0, -4.0],
   [0, 0, 0],
-  [0, 0, 2.2],
+  [0, 0, 4.0],
 ];
 
 /** Sidewalk loop on the 6 m strip — keeps walkers off lamp posts & curbs. */

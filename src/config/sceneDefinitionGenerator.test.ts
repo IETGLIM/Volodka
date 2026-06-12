@@ -51,7 +51,7 @@ describe('generateBoundaryWallSegments', () => {
 
   it('cuts side openings for corridor kitchen/street doors (volodka_corridor)', () => {
     const segments = generateBoundaryWallSegments(SCENE_DEFINITIONS.volodka_corridor);
-    // Doors at x=±1.4 with halfW=2 are on the left/right planes
+    // Doors at x=±2.7 with halfW=3 sit on the left/right planes
     expect(segmentsOnSide(segments, 'left').length).toBeGreaterThanOrEqual(2);
     expect(segmentsOnSide(segments, 'right').length).toBeGreaterThanOrEqual(2);
     expect(backstopsOnSide(segments, 'left')).toHaveLength(1);

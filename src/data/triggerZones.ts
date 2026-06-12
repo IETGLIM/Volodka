@@ -71,8 +71,8 @@ export const TRIGGER_ZONES: TriggerZone[] = [
   {
     id: 'room_desk',
     sceneId: 'volodka_room',
-    position: [0, 0.5, -2.5],
-    size: [2.0, 1.5, 1.0],
+    position: [0, 0.55, -2.35],
+    size: [1.85, 1.2, 0.85],
     enterToast: 'Рабочий стол — три монитора и остывший кофе.',
     linkedDialogueNodeId: 'explore_room_table',
     interactionType: 'examine',
@@ -155,8 +155,8 @@ export const TRIGGER_ZONES: TriggerZone[] = [
   {
     id: 'room_terminal',
     sceneId: 'volodka_room',
-    position: [0, 0.5, -2.68],
-    size: [0.55, 1.2, 0.45],
+    position: [0.72, 0.5, -2.62],
+    size: [0.38, 0.9, 0.32],
     enterToast: 'Терминал — мерцает приглашение командной строки.',
     linkedMinigame: 'codebreaker',
     interactionType: 'hack',
@@ -175,10 +175,10 @@ export const TRIGGER_ZONES: TriggerZone[] = [
   {
     id: 'corridor_kitchen_door',
     sceneId: 'volodka_corridor',
-    position: [1.4, 0, -1.0],
+    position: [2.7, 0, -2.0],
     size: [1.2, 2.2, 0.5],
     enterToast: 'Из кухни пахнет чаем.',
-    linkedDialogueNodeId: 'explore_kitchen_table',
+    linkedStoryNodeId: 'kitchen_table',
     interactionType: 'open',
     examineData: {
       title: 'Дверь на кухню',
@@ -190,10 +190,10 @@ export const TRIGGER_ZONES: TriggerZone[] = [
   {
     id: 'corridor_street_door',
     sceneId: 'volodka_corridor',
-    position: [-1.4, 0, -1.0],
+    position: [-2.7, 0, -2.0],
     size: [1.2, 2.2, 0.5],
     enterToast: 'Дверь на лестничную клетку — оттуда тянет холодом.',
-    linkedDialogueNodeId: 'explore_street_entry',
+    linkedStoryNodeId: 'street_bench',
     interactionType: 'open',
     examineData: {
       title: 'Входная дверь',
@@ -205,10 +205,10 @@ export const TRIGGER_ZONES: TriggerZone[] = [
   {
     id: 'corridor_room_door',
     sceneId: 'volodka_corridor',
-    position: [0, 0, 3.5],
+    position: [0, 0, 7.3],
     size: [1.2, 2.2, 0.5],
     enterToast: 'Твоя комната.',
-    linkedDialogueNodeId: 'explore_go_home',
+    linkedStoryNodeId: 'go_home',
     interactionType: 'open',
     examineData: {
       title: 'Дверь в комнату',
@@ -220,7 +220,7 @@ export const TRIGGER_ZONES: TriggerZone[] = [
   {
     id: 'corridor_mailboxes',
     sceneId: 'volodka_corridor',
-    position: [1.85, 1.0, 4.5],
+    position: [2.6, 1.0, 6.0],
     size: [0.9, 1.4, 0.4],
     enterToast: 'Почтовые ящики — четыре квартиры, четыре судьбы.',
     interactionType: 'examine',
@@ -235,7 +235,7 @@ export const TRIGGER_ZONES: TriggerZone[] = [
   {
     id: 'corridor_intercom',
     sceneId: 'volodka_corridor',
-    position: [-1.98, 1.5, 4.5],
+    position: [-2.85, 1.5, 6.0],
     size: [0.4, 0.5, 0.3],
     enterToast: 'Домофон — красная кнопка мигает.',
     interactionType: 'examine',
@@ -250,7 +250,7 @@ export const TRIGGER_ZONES: TriggerZone[] = [
   {
     id: 'corridor_mirror',
     sceneId: 'volodka_corridor',
-    position: [1.98, 1.4, -4.0],
+    position: [2.85, 1.4, -5.5],
     size: [0.5, 0.7, 0.3],
     enterToast: 'Зеркало в потёртой раме.',
     interactionType: 'examine',
@@ -265,7 +265,7 @@ export const TRIGGER_ZONES: TriggerZone[] = [
   {
     id: 'corridor_graffiti',
     sceneId: 'volodka_corridor',
-    position: [-1.98, 1.4, 0.5],
+    position: [-2.85, 1.4, 0.5],
     size: [1.3, 0.8, 0.3],
     enterToast: 'На стене — кто-то оставил след.',
     interactionType: 'read',
@@ -276,6 +276,22 @@ export const TRIGGER_ZONES: TriggerZone[] = [
       icon: '🎨',
     },
     effects: [{ type: 'setFlag', flag: 'read_corridor_graffiti', flagValue: true }],
+  },
+  {
+    id: 'corridor_solnysh',
+    sceneId: 'volodka_corridor',
+    position: [0, 0, 1.5],
+    size: [1.4, 2.0, 1.4],
+    enterToast: 'Солныш поправляет платок у зеркала.',
+    linkedNpcId: 'vera',
+    linkedDialogueNodeId: 'vera_greeting',
+    interactionType: 'talk',
+    examineData: {
+      title: 'Солныш',
+      description: 'Соседка с тёплыми глазами и лёгким платком на плечах.',
+      detailText: 'Она всегда здоровается первой — даже когда ты снова не спал всю ночь. В её голосе — мягкость, которой не хватает серому городу.',
+      icon: '☀️',
+    },
   },
 
   /* ─────────────── HOME EVENING / KITCHEN ─────────────── */

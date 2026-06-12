@@ -1,6 +1,7 @@
 import { useGameStore } from '@/store/gameStore';
 import { createInventoryItem } from '@/data/items';
 import { eventBus } from '@/engine/EventBus';
+import { dispatchGameAction } from '@/engine/GameActionDispatcher';
 import { requestSceneTransition } from '@/engine/scene/sceneTransition';
 import type { StoryEffect, TrainablePlayerSkill, EnemyType, SceneId } from '@/shared/types/game';
 
@@ -102,6 +103,11 @@ export function applyEffects(
       case 'transitionScene':
         if (fx.sceneId) {
           requestSceneTransition(fx.sceneId as SceneId);
+        }
+        break;
+      case 'visitStoryNode':
+        if (fx.nodeId) {
+          dispatchGameAction({ type: 'story/visitNode', nodeId: fx.nodeId });
         }
         break;
     }

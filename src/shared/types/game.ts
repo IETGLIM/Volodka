@@ -117,7 +117,8 @@ export type StoryEffectType =
   | 'collectPoem'
   | 'discoverLore'
   | 'combat'
-  | 'transitionScene';
+  | 'transitionScene'
+  | 'visitStoryNode';
 
 export interface StoryEffect {
   type: StoryEffectType;
@@ -137,6 +138,8 @@ export interface StoryEffect {
   enemyType?: string;
   /** Target scene for transitionScene effect */
   sceneId?: SceneId;
+  /** Story spine node id for visitStoryNode effect */
+  nodeId?: string;
 }
 
 // ─── Game Effect (reusable for triggers) ───

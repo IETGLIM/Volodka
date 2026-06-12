@@ -14,14 +14,15 @@ interface VolodkaCorridorVisualProps {
   livePlayerPositionRef?: MutableRefObject<THREE.Vector3>;
 }
 
-/** Narrow corridor (4×12×3m) — matches sceneDefinition physics bounds */
+/** Communal corridor (6×16×3m) — matches sceneDefinition physics bounds */
 export function VolodkaCorridorVisual({ livePlayerPositionRef: _livePlayerPositionRef }: VolodkaCorridorVisualProps) {
   const floorTexture = useCachedCanvasTexture('volodka_corridor:floor', createCorridorFloorTexture);
   const wallTexture = useCachedCanvasTexture('volodka_corridor:wall', createCorridorWallTexture);
+  const carpetTexture = useCachedCanvasTexture('volodka_corridor:carpet', createCorridorCarpetTexture);
   const { lod } = useEnvironmentLod();
 
-  const W = 4;
-  const D = 12;
+  const W = 6;
+  const D = 16;
   const H = 3;
 
   const flickerLightRef = useRef<THREE.PointLight>(null);
@@ -92,10 +93,16 @@ export function VolodkaCorridorVisual({ livePlayerPositionRef: _livePlayerPositi
 
   return (
     <group>
-      {/* ── Floor ── */}
-      <mesh rotation-x={-Math.PI / 2} receiveShadow position-y={0.001}>
+      {/* ── Floor (linoleum) ── */}
+      <mesh rotation-x={-Math.PI / 2} receiveShadow position-y={0.002} renderOrder={0}>
         <planeGeometry args={[W, D]} />
-        <meshStandardMaterial map={floorTexture} color="#5a4a40" roughness={0.85} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
+        <meshStandardMaterial map={floorTexture} color="#5a4a40" roughness={0.85} polygonOffset polygonOffsetFactor={2} polygonOffsetUnits={2} />
+      </mesh>
+
+      {/* ── Carpet runner ── */}
+      <mesh rotation-x={-Math.PI / 2} receiveShadow position={[0, 0.008, 0]} renderOrder={1}>
+        <planeGeometry args={[1.4, D - 2]} />
+        <meshStandardMaterial map={carpetTexture} color="#6a3a30" roughness={0.95} polygonOffset polygonOffsetFactor={-1} polygonOffsetUnits={-1} />
       </mesh>
 
       {/* ── Ceiling ── */}
@@ -105,33 +112,33 @@ export function VolodkaCorridorVisual({ livePlayerPositionRef: _livePlayerPositi
       </mesh>
 
       {/* ── Left Wall ── */}
-      <mesh position={[-W / 2, H / 2, 0]} rotation-y={Math.PI / 2}>
+      <mesh position={[-W / 2 + 0.01, H / 2, 0]} rotation-y={Math.PI / 2}>
         <planeGeometry args={[D, H]} />
-        <meshStandardMaterial map={wallTexture} color="#3a3540" roughness={0.9} />
+        <meshStandardMaterial map={wallTexture} color="#3a3540" roughness={0.9} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
       </mesh>
 
       {/* ── Right Wall ── */}
-      <mesh position={[W / 2, H / 2, 0]} rotation-y={-Math.PI / 2}>
+      <mesh position={[W / 2 - 0.01, H / 2, 0]} rotation-y={-Math.PI / 2}>
         <planeGeometry args={[D, H]} />
-        <meshStandardMaterial map={wallTexture} color="#3a3540" roughness={0.9} />
+        <meshStandardMaterial map={wallTexture} color="#3a3540" roughness={0.9} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
       </mesh>
 
       {/* ── Back Wall ── */}
-      <mesh position={[0, H / 2, -D / 2]}>
+      <mesh position={[0, H / 2, -D / 2 + 0.01]}>
         <planeGeometry args={[W, H]} />
-        <meshStandardMaterial map={wallTexture} color="#3a3540" roughness={0.9} />
+        <meshStandardMaterial map={wallTexture} color="#3a3540" roughness={0.9} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
       </mesh>
 
       {/* ── Front Wall ── */}
-      <mesh position={[0, H / 2, D / 2]} rotation-y={Math.PI}>
+      <mesh position={[0, H / 2, D / 2 - 0.01]} rotation-y={Math.PI}>
         <planeGeometry args={[W, H]} />
-        <meshStandardMaterial map={wallTexture} color="#3a3540" roughness={0.9} />
+        <meshStandardMaterial map={wallTexture} color="#3a3540" roughness={0.9} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
       </mesh>
 
       {/* ── Decorative props (LOD: standard+) ── */}
       <EnvironmentDetail currentLod={lod} minLod="standard">
       {/* ── Shoe Rack (left wall, near entrance) ── */}
-      <group position={[-W / 2 + 0.3, 0, 3.5]}>
+      <group position={[-W / 2 + 0.35, 0, 5.5]}>
         <mesh position={[0, 0.35, 0]} castShadow>
           <boxGeometry args={[0.5, 0.7, 0.4]} />
           <meshStandardMaterial color="#4a3828" roughness={0.8} />
@@ -146,7 +153,7 @@ export function VolodkaCorridorVisual({ livePlayerPositionRef: _livePlayerPositi
       </group>
 
       {/* ── Radiator (right wall, middle) ── */}
-      <group position={[W / 2 - 0.12, 0, -1.0]}>
+      <group position={[W / 2 - 0.12, 0, -2.0]}>
         <mesh position={[0, 0.4, 0]} castShadow>
           <boxGeometry args={[0.08, 0.8, 0.6]} />
           <meshStandardMaterial color="#888" metalness={0.6} roughness={0.3} />
@@ -162,7 +169,7 @@ export function VolodkaCorridorVisual({ livePlayerPositionRef: _livePlayerPositi
       </EnvironmentDetail>
 
       {/* ── Ceiling Lamp ── */}
-      <group position={[0, H, -2.0]}>
+      <group position={[0, H - 0.02, -4.0]}>
         {/* Lamp fixture */}
         <mesh>
           <boxGeometry args={[0.15, 0.05, 0.15]} />
@@ -185,7 +192,7 @@ export function VolodkaCorridorVisual({ livePlayerPositionRef: _livePlayerPositi
       </group>
 
       {/* ── Second ceiling lamp (flickering) ── */}
-      <group position={[0, H, 3.0]}>
+      <group position={[0, H - 0.02, 4.0]}>
         <mesh>
           <boxGeometry args={[0.15, 0.05, 0.15]} />
           <meshStandardMaterial color="#333" metalness={0.7} />
@@ -200,7 +207,7 @@ export function VolodkaCorridorVisual({ livePlayerPositionRef: _livePlayerPositi
       </group>
 
       {/* ── Door: Kitchen (right wall, z=-1) — animated ── */}
-      <group position={[W / 2 - 0.02, 0, -1.0]}>
+      <group position={[W / 2 - 0.02, 0, -2.0]} name="kitchen-door">
         {/* Door indent (wall cutout) */}
         <mesh rotation-y={-Math.PI / 2}>
           <planeGeometry args={[0.9, 2.2]} />
@@ -240,7 +247,7 @@ export function VolodkaCorridorVisual({ livePlayerPositionRef: _livePlayerPositi
       </group>
 
       {/* ── Door: Street (left wall, z=-1) — animated ── */}
-      <group position={[-W / 2 + 0.02, 0, -1.0]}>
+      <group position={[-W / 2 + 0.02, 0, -2.0]}>
         {/* Door indent */}
         <mesh rotation-y={Math.PI / 2}>
           <planeGeometry args={[0.9, 2.2]} />
@@ -620,7 +627,40 @@ function createCorridorFloorTexture(): THREE.CanvasTexture {
   const tex = new THREE.CanvasTexture(canvas);
   tex.wrapS = THREE.RepeatWrapping;
   tex.wrapT = THREE.RepeatWrapping;
-  tex.repeat.set(2, 7);
+  tex.repeat.set(3, 9);
+  return tex;
+}
+
+function createCorridorCarpetTexture(): THREE.CanvasTexture {
+  const size = 256;
+  const canvas = document.createElement('canvas');
+  canvas.width = size;
+  canvas.height = size;
+  const ctx = canvas.getContext('2d')!;
+
+  ctx.fillStyle = '#6a3a30';
+  ctx.fillRect(0, 0, size, size);
+
+  ctx.strokeStyle = '#5a2a22';
+  ctx.lineWidth = 2;
+  for (let i = 0; i < size; i += 24) {
+    ctx.beginPath();
+    ctx.moveTo(0, i);
+    ctx.lineTo(size, i);
+    ctx.stroke();
+  }
+
+  ctx.globalAlpha = 0.15;
+  for (let i = 0; i < 30; i++) {
+    ctx.fillStyle = i % 2 === 0 ? '#8a4a38' : '#4a2218';
+    ctx.fillRect(Math.random() * size, Math.random() * size, 8, 8);
+  }
+  ctx.globalAlpha = 1;
+
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.wrapS = THREE.RepeatWrapping;
+  tex.wrapT = THREE.RepeatWrapping;
+  tex.repeat.set(1, 8);
   return tex;
 }
 
@@ -647,6 +687,6 @@ function createCorridorWallTexture(): THREE.CanvasTexture {
   const tex = new THREE.CanvasTexture(canvas);
   tex.wrapS = THREE.RepeatWrapping;
   tex.wrapT = THREE.RepeatWrapping;
-  tex.repeat.set(2, 3);
+  tex.repeat.set(2, 5);
   return tex;
 }

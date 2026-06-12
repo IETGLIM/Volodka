@@ -178,7 +178,7 @@ const VERA_SCHEDULE: NPCSchedule = {
   entries: [
     { startHour: 0, endHour: 7, sceneId: 'home_evening', position: [-1.0, 0, 3.0], activity: 'sleep' },
     { startHour: 7, endHour: 8, sceneId: 'home_evening', position: [0, 0, 2.0], activity: 'rest' },
-    { startHour: 8, endHour: 9, sceneId: 'volodka_corridor', position: [0.5, 0, 2.0], activity: 'walk' },
+    { startHour: 8, endHour: 9, sceneId: 'volodka_corridor', position: [0, 0, 1.5], activity: 'walk' },
     { startHour: 9, endHour: 13, sceneId: 'library_day', position: [-1.0, 0, 3.0], activity: 'read' },
     { startHour: 13, endHour: 14, sceneId: 'cafe_evening', position: [1.0, 0, 1.0], activity: 'rest' },
     { startHour: 14, endHour: 18, sceneId: 'library_day', position: [-1.0, 0, 3.0], activity: 'work' },

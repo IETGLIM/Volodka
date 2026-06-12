@@ -93,6 +93,49 @@ export const CUTSCENES: Record<string, CutsceneDef> = {
   /* ── ZAREMA FIRST ENCOUNTER ──
      Triggered when reaching the kitchen_table node for the first time.
      Warm, intimate camera movement — Zarema caring for Volodka. */
+  act1_corridor_solnysh: {
+    id: 'act1_corridor_solnysh',
+    textOverlay: 'Солныш',
+    subtitle: '«Доброе утро, Володька. Ты опять не спал?»',
+    triggerStoryNode: 'corridor_door',
+    textDurationMs: 5000,
+    textAccentColor: '#ffb8d0',
+    type: 'character_intro',
+    oneShot: true,
+    letterboxStyle: 'thin',
+    showEmbers: false,
+    glitchIntensity: 0,
+    waypoints: [
+      {
+        position: [0, 1.7, 4.5],
+        lookAt: [0, 1.1, 2.0],
+        fov: 52,
+        duration: 0,
+      },
+      {
+        position: [0.8, 1.5, 2.8],
+        lookAt: [0.4, 1.15, 1.5],
+        fov: 44,
+        duration: 2.2,
+        controlPoint: [0.5, 1.6, 3.5],
+      },
+      {
+        position: [0.2, 1.35, 2.0],
+        lookAt: [0.5, 1.2, 1.2],
+        fov: 38,
+        duration: 1.8,
+        controlPoint: [0.35, 1.4, 2.4],
+      },
+      {
+        position: [0, 1.8, 3.2],
+        lookAt: [0, 1.0, 0.5],
+        fov: 50,
+        duration: 1.5,
+        controlPoint: [0.1, 1.5, 2.0],
+      },
+    ],
+  },
+
   zarema_first_meeting: {
     id: 'zarema_first_meeting',
     textOverlay: 'Зарема',

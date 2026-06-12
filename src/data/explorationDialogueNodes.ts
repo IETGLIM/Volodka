@@ -15,7 +15,10 @@ export const EXPLORATION_DIALOGUE_NODES: Record<string, DialogueNode> = {
       {
         text: 'Прочитать стихотворение',
         next: null,
-        effects: [{ type: 'addSkill', skill: 'writing', value: 1 }],
+        effects: [
+          { type: 'addSkill', skill: 'writing', value: 1 },
+          { type: 'visitStoryNode', nodeId: 'room_table' },
+        ],
       },
       {
         text: 'Изучить сообщение гильдии',
@@ -23,6 +26,7 @@ export const EXPLORATION_DIALOGUE_NODES: Record<string, DialogueNode> = {
         effects: [
           { type: 'addSkill', skill: 'logic', value: 1 },
           { type: 'setFlag', flag: 'read_guild_message', flagValue: true },
+          { type: 'visitStoryNode', nodeId: 'room_table' },
         ],
       },
       {
@@ -30,7 +34,7 @@ export const EXPLORATION_DIALOGUE_NODES: Record<string, DialogueNode> = {
         next: null,
         effects: [
           { type: 'setFlag', flag: 'accepted_guild_quest', flagValue: true },
-          { type: 'triggerQuest', questId: 'incident_scroll_4729' },
+          { type: 'visitStoryNode', nodeId: 'go_to_cafe' },
         ],
       },
     ],
@@ -74,12 +78,16 @@ export const EXPLORATION_DIALOGUE_NODES: Record<string, DialogueNode> = {
   explore_corridor_door: {
     id: 'explore_corridor_door',
     speaker: 'Голос',
-    text: 'Ты выходишь в узкий коридор коммуналки. Лампочка мигает, отбрасывая нервные тени. Из кухни доносится звон посуды — видимо, Зарема уже проснулась. Дверь на лестничную клетку прикрыта, но сквозняк тянет холодом. Запах кофе смешивается с запахом сырости.',
+    text: 'Ты выходишь в коридор коммуналки. У зеркала стоит Солныш — она поправляет платок и тихо улыбается: «Доброе утро, Володька.» Лампочка мигает. Из кухни доносится звон посуды — Зарема уже проснулась.',
     sceneId: 'volodka_corridor',
     choices: [
       {
-        text: 'Осмотреться',
+        text: 'Поздороваться и осмотреться',
         next: null,
+        effects: [
+          { type: 'visitStoryNode', nodeId: 'corridor_explore_mode' },
+          { type: 'npcChange', npcId: 'vera', npcChange: { relation: 3 } },
+        ],
       },
     ],
   },

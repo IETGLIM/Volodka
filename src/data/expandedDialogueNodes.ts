@@ -11,8 +11,8 @@ export const EXPANDED_DIALOGUE_NODES: Record<string, DialogueNode> = {
 
   vera_greeting: {
     id: 'vera_greeting',
-    speaker: 'Вера',
-    text: 'А, newcomer. Редко вижу новые лица в этих краях. Я Вера — храню архивы того, что было до Краха. Не всё стёрли. Кое-что уцелело. В памяти и на бумаге.',
+    speaker: 'Солныш',
+    text: 'Привет, Володька. Я Солныш — жила здесь всегда, ещё до того как город стал таким серым. Иногда мне кажется, что старые стихи помнят больше людей, чем люди — друг друга.',
     choices: [
       { text: 'Расскажи о мире до Краха.', next: 'vera_before_crash', effects: [{ type: 'addSkill', skill: 'intuition', value: 1 }] },
       { text: 'Какие архивы ты хранишь?', next: 'vera_archives' },
@@ -27,7 +27,7 @@ export const EXPANDED_DIALOGUE_NODES: Record<string, DialogueNode> = {
 
   vera_before_crash: {
     id: 'vera_before_crash',
-    speaker: 'Вера',
+    speaker: 'Солныш',
     text: 'До Краха... люди не боялись слов. Газеты писали правду, книги не нужно было прятать. А потом пришла "оптимизация" — сначала удалили комментарии, потом статьи, потом целые архивы. Как будто ничего и не было. Но я помню.',
     choices: [
       { text: 'Ты помнишь — это уже сопротивление.', next: 'vera_memory_resistance', effects: [{ type: 'addKarma', value: 3 }] },
@@ -37,7 +37,7 @@ export const EXPANDED_DIALOGUE_NODES: Record<string, DialogueNode> = {
 
   vera_archives: {
     id: 'vera_archives',
-    speaker: 'Вера',
+    speaker: 'Солныш',
     text: 'У меня есть статьи, которые гильдия считает "удалёнными". Стихи, которые официально не существуют. Имена людей, которых стёрли из баз данных. Всё это — в моей голове и в тайнике. Если хочешь знать правду — приходи.',
     choices: [
       { text: 'Я хочу знать правду.', next: null, effects: [{ type: 'setFlag', flag: 'vera_archives_access', flagValue: true }, { type: 'addSkill', skill: 'persuasion', value: 1 }] },
@@ -47,7 +47,7 @@ export const EXPANDED_DIALOGUE_NODES: Record<string, DialogueNode> = {
 
   vera_memory_resistance: {
     id: 'vera_memory_resistance',
-    speaker: 'Вера',
+    speaker: 'Солныш',
     text: 'Сопротивление... Да, пожалуй. Память — это форма неповиновения. Пока хоть один человек помнит — они не могут переписать всё. Запомни это, Володька. Твои стихи — это тоже память. Тоже сопротивление.',
     choices: [
       { text: 'Я запомню.', next: null, effects: [{ type: 'addKarma', value: 2 }, { type: 'setFlag', flag: 'vera_trust', flagValue: true }] },
@@ -462,7 +462,7 @@ export const EXPANDED_DIALOGUE_NODES: Record<string, DialogueNode> = {
 
   vera_act3_vault: {
     id: 'vera_act3_vault',
-    speaker: 'Вера',
+    speaker: 'Солныш',
     text: 'Хранилище... Я видела его описание в бумажном отчёте — до чистки. Не сервер, а «узел памяти». Гильдия боится не данных, а того, что они оживут. Если у тебя есть доступ — не стирай. Копируй. На бумагу. На чип. На кожу, если придётся.',
     choices: [
       {

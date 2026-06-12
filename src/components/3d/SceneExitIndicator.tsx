@@ -11,10 +11,6 @@ import { getSceneExits } from '@/config/scenes';
 /* ─── Constants ─── */
 const EXIT_PROXIMITY_RANGE = 2.5; // Distance to show subtle foot glow
 
-/** Small ground ring — fixed size, not scene-scale */
-const FOOT_RING_INNER = 0.28;
-const FOOT_RING_OUTER = 0.4;
-
 interface SceneExitIndicatorProps {
   livePlayerPositionRef: React.MutableRefObject<THREE.Vector3>;
 }
@@ -46,7 +42,6 @@ function ExitMarker({
   exit: SceneExit;
   livePlayerPositionRef: React.MutableRefObject<THREE.Vector3>;
 }) {
-  const footRingMatRef = useRef<THREE.MeshBasicMaterial>(null);
   const glowRef = useRef<THREE.PointLight>(null);
   const showIndicatorRef = useRef(false);
   const _exitPosRef = useRef(new THREE.Vector3()); // P3-FIX: pre-allocated for proximity calc
@@ -66,12 +61,8 @@ function ExitMarker({
 
     if (isNear) {
       pulsePhaseRef.current += delta * 2.5;
-      const pulse = 0.22 + Math.sin(pulsePhaseRef.current) * 0.1;
-      if (footRingMatRef.current) {
-        footRingMatRef.current.opacity = pulse;
-      }
       if (glowRef.current) {
-        glowRef.current.intensity = 0.35 + Math.sin(pulsePhaseRef.current) * 0.15;
+        glowRef.current.intensity = 0.28 + Math.sin(pulsePhaseRef.current) * 0.12;
       }
     }
   });
@@ -81,26 +72,13 @@ function ExitMarker({
   return (
     <group position={exit.position}>
       {showIndicator && (
-        <>
-          <mesh rotation-x={-Math.PI / 2} position={[0, 0.02, 0]}>
-            <ringGeometry args={[FOOT_RING_INNER, FOOT_RING_OUTER, 24]} />
-            <meshBasicMaterial
-              ref={footRingMatRef}
-              color={markerColor}
-              transparent
-              opacity={0.25}
-              side={THREE.DoubleSide}
-              depthWrite={false}
-            />
-          </mesh>
-          <pointLight
-            ref={glowRef}
-            color={markerColor}
-            intensity={0.4}
-            distance={3}
-            position={[0, 0.4, 0]}
-          />
-        </>
+        <pointLight
+          ref={glowRef}
+          color={markerColor}
+          intensity={0.3}
+          distance={2.2}
+          position={[0, 0.55, 0]}
+        />
       )}
     </group>
   );

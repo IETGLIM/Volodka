@@ -138,7 +138,7 @@ export const GOLDEN_PATH_STORY_SPINE: string[] = [
  * Exact lookup only — no substring / includes matching.
  */
 export const STORY_NODE_TO_NPC_ID: Record<string, string> = {
-  corridor_door: 'zarema',
+  corridor_door: 'vera',
   maria_curious: 'maria',
   cafe_barista: 'cafe_barista',
   office_alexander: 'office_alexander',

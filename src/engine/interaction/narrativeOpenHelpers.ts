@@ -8,6 +8,7 @@ import { dispatchGameAction, getGameSnapshot } from '@/engine/GameActionDispatch
 import { requestSceneTransition } from '@/engine/scene/sceneTransition';
 import { openNarrativeOverlay } from '@/engine/scene/narrativeOverlay';
 import { hasVisitedNode } from '@/store/visitedNodesIndex';
+import { getCutsceneForNode } from '@/data/cutscenes';
 import { SCENE_ENTRY_NODE_TO_HUB } from '@/shared/sceneExploreHubRegistry';
 import { devWarn } from '@/shared/utils/devLog';
 import type { SceneId } from '@/shared/types/game';
@@ -109,11 +110,30 @@ export async function openLinkedStory(nodeId: string): Promise<boolean> {
 
   const snapshot = getGameSnapshot();
 
-  // Door/arrival beats — mark visited and walk through without a story panel.
-  if (SCENE_ENTRY_NODE_TO_HUB[nodeId] && storyNode.sceneId) {
+  // Door/arrival beats — first visit plays cutscene + story; revisit walks through to hub.
+  const entryHubId = SCENE_ENTRY_NODE_TO_HUB[nodeId];
+  if (entryHubId && storyNode.sceneId) {
+    const alreadyVisited = hasVisitedNode(snapshot.playerState.visitedNodes, nodeId);
+
+    if (alreadyVisited) {
+      dispatchGameAction({ type: 'story/visitNode', nodeId });
+      if (entryHubId !== nodeId) {
+        dispatchGameAction({ type: 'story/visitNode', nodeId: entryHubId });
+        dispatchGameAction({ type: 'story/setCurrentNodeId', nodeId: entryHubId });
+      }
+      if (snapshot.exploration.currentSceneId !== storyNode.sceneId) {
+        requestSceneTransition(storyNode.sceneId as SceneId);
+      }
+      return true;
+    }
+
     dispatchGameAction({ type: 'story/visitNode', nodeId });
     if (snapshot.exploration.currentSceneId !== storyNode.sceneId) {
       requestSceneTransition(storyNode.sceneId as SceneId);
+    }
+    dispatchGameAction({ type: 'story/setCurrentNodeId', nodeId });
+    if (!getCutsceneForNode(nodeId)) {
+      openNarrativeOverlay(nodeId, 'story');
     }
     return true;
   }

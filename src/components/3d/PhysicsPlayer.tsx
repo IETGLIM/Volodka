@@ -561,8 +561,9 @@ export function PhysicsPlayer({
       const targetVx = moveDir.x * speed;
       const targetVz = moveDir.z * speed;
       if (keyboardDrivesMove) {
-        vel.x = targetVx;
-        vel.z = targetVz;
+        const kbAccel = moveAccel * 1.35;
+        vel.x = THREE.MathUtils.damp(vel.x, targetVx, kbAccel, dt);
+        vel.z = THREE.MathUtils.damp(vel.z, targetVz, kbAccel, dt);
       } else {
         vel.x = THREE.MathUtils.damp(vel.x, targetVx, moveAccel, dt);
         vel.z = THREE.MathUtils.damp(vel.z, targetVz, moveAccel, dt);

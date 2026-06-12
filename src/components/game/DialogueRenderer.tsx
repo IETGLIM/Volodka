@@ -77,6 +77,7 @@ import { useTypewriter } from '@/hooks/useTypewriter';
 
 /* ── Apply effects ── */
 import { applyEffects } from '@/shared/utils/applyEffects';
+import { recordExplorationStoryStep } from '@/shared/explorationStoryBridge';
 
 /* ── Skill icons & labels (consistent with LevelUpSummary) ── */
 const SKILL_LABELS: Record<TrainablePlayerSkill, string> = {
@@ -203,6 +204,7 @@ export function DialogueRenderer() {
       appliedRef.current = node.id;
 
       visitNode(node.id);
+      recordExplorationStoryStep(node.id);
       if (node.sceneId) {
         const currentSceneId = getGameStore().exploration.currentSceneId;
         if (currentSceneId !== node.sceneId) {

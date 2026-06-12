@@ -1,0 +1,18 @@
+import { dispatchGameAction } from '@/engine/GameActionDispatcher';
+
+/** Maps 3D exploration dialogue ids to golden-path story node ids. */
+export const EXPLORATION_DIALOGUE_STORY_STEP: Readonly<Record<string, string>> = {
+  explore_room_table: 'room_table',
+  explore_room_bookshelf: 'room_bookshelf',
+  explore_room_window: 'room_table',
+  explore_corridor_door: 'corridor_door',
+  explore_kitchen_table: 'kitchen_table',
+  explore_street_entry: 'street_bench',
+  explore_go_home: 'go_home',
+};
+
+export function recordExplorationStoryStep(dialogueNodeId: string): void {
+  const storyNodeId = EXPLORATION_DIALOGUE_STORY_STEP[dialogueNodeId];
+  if (!storyNodeId) return;
+  dispatchGameAction({ type: 'story/visitNode', nodeId: storyNodeId });
+}

@@ -74,34 +74,34 @@ export const EXPANDED_NPC_BARK_TEXTS: Record<string, {
 /* ── Expanded NPC definitions (compatible with NPCDefinition type) ── */
 
 export const EXPANDED_NPCS: NPCDefinition[] = [
-  /* ─────────────── ВЕРА – archive keeper ─────────────── */
+  /* ─────────────── СОЛНЫШ (vera) – соседка, хранительница архивов ─────────────── */
   {
     id: 'vera',
-    name: 'Вера',
+    name: 'Солныш',
     modelPath: '',
-    scale: 0.9,
+    scale: 0.88,
     animations: { idle: 'idle', walk: 'walk', talk: 'talk' },
-    defaultPosition: [-1.0, 0, 3.0],
-    patrolRadius: 1.5,
+    defaultPosition: [0, 0, 1.5],
+    patrolRadius: 1.2,
     patrolWaypoints: [
-      [-1.0, 0, 3.0],
-      [-0.5, 0, 2.5],
-      [-1.5, 0, 2.0],
-      [-1.0, 0, 3.0],
+      [0, 0, 1.5],
+      [0.5, 0, 0.5],
+      [-0.4, 0, -0.5],
+      [0, 0, 1.5],
     ],
     dialogueNodeId: 'vera_greeting',
-    description: 'Бывшая журналистка, хранительница архивов. Единственный человек, который помнит мир до Краха.',
+    description: 'Тихая соседка с тёплой улыбкой. Помнит старые стихи и верит, что слова ещё могут менять город.',
     barkTexts: {
-      hostile: 'Уходи. Мне нечего тебе сказать.',
-      neutral: 'Новые лица... Редкость в наши дни.',
-      friendly: 'Володька! Заходи, есть кое-что интересное.',
+      hostile: 'Не сейчас, Володька... мне нужно побыть одной.',
+      neutral: 'Привет. Ты снова задумчивый.',
+      friendly: 'Володька! Я как раз думала о тебе. Зайди, покажу кое-что.',
     },
     appearance: {
-      bodyColor: '#e8e0a0',
-      accentColor: '#e8e0a0',
+      bodyColor: '#f0b8c8',
+      accentColor: '#ffd4e0',
       headAccessory: 'scarf',
-      height: 0.9,
-      glowColor: '#e8e0a0',
+      height: 0.88,
+      glowColor: '#ffb8d0',
       silhouette: 'slim',
     },
   },

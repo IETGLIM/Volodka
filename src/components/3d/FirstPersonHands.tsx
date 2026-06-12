@@ -16,6 +16,8 @@ import { extendGltfLoader } from '@/engine/assets/gltfPipeline';
 import { useSkinnedGltfClone } from '@/hooks/useSkinnedGltfClone';
 
 const FPS_ARMS_URL = '/models/fps/fps_arms.glb';
+/** Khronos-style FPS rig units — matches FpsFingerEnhancement coordinates */
+const FPS_ARMS_RIG_SCALE = 0.012;
 const extendLoader = extendGltfLoader as unknown as NonNullable<Parameters<typeof useGLTF>[3]>;
 
 /** Source: https://github.com/eraofjavascript/fps-arms.glb (community FPS rig; verify license in ATTRIBUTION.md) */
@@ -115,9 +117,9 @@ function FirstPersonHandsInner({ moveBlendRef }: FirstPersonHandsProps) {
     const guard = combatGuardRef.current;
     const bob = bobPhaseRef.current;
     mount.position.set(
-      Math.sin(bob * 0.55) * 0.01 * move * (1 - guard * 0.8),
-      -0.18 + Math.sin(bob) * 0.012 * move * (1 - guard * 0.8) + lunge * 0.04 - guard * 0.03,
-      -0.32 + lunge * 0.14 - guard * 0.06,
+      Math.sin(bob * 0.55) * 0.012 * move * (1 - guard * 0.8),
+      -0.16 + Math.sin(bob) * 0.014 * move * (1 - guard * 0.8) + lunge * 0.04 - guard * 0.03,
+      -0.28 + lunge * 0.14 - guard * 0.06,
     );
     mount.rotation.set(
       0.06 + Math.sin(bob * 0.4) * 0.02 * move * (1 - guard) - lunge * 0.35 - guard * 0.22,
@@ -139,9 +141,11 @@ function FirstPersonHandsInner({ moveBlendRef }: FirstPersonHandsProps) {
 
   return (
     <group ref={rigRef}>
-      <group ref={armsMountRef} scale={0.01}>
-        <primitive object={scene} />
-        <FpsFingerEnhancement />
+      <group ref={armsMountRef}>
+        <group scale={FPS_ARMS_RIG_SCALE}>
+          <primitive object={scene} />
+          <FpsFingerEnhancement />
+        </group>
       </group>
     </group>
   );

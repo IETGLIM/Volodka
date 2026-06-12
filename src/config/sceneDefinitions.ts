@@ -242,27 +242,27 @@ export const cafe_evening_def: SceneDefinition = {
   fog: { near: 5, far: 14 },
 };
 
-/** Corridor of the communal apartment — narrow indoor hallway */
+/** Corridor of the communal apartment — widened indoor hallway */
 export const volodka_corridor_def: SceneDefinition = {
   id: 'volodka_corridor',
   name: 'Коридор коммуналки',
-  dimensions: [4, 3, 12],
+  dimensions: [6, 3, 16],
   type: 'indoor',
   hasCeiling: true,
-  defaultSpawn: [0, 0.01, 2],
+  defaultSpawn: [0, 0.01, 5],
   defaultSpawnRotation: 0,
   characterModelScale: 1.0,
-  locomotionScale: 0.92,
+  locomotionScale: 0.95,
   doorways: [
-    { id: 'corridor_to_room', position: [0, 1, 3.5], width: 0.9, height: 2.1 },
-    { id: 'corridor_to_kitchen', position: [1.4, 0.5, -1.0], width: 0.8, height: 2.0 },
-    { id: 'corridor_to_street', position: [-1.4, 0.5, -1.0], width: 1.0, height: 2.2 },
+    { id: 'corridor_to_room', position: [0, 1, 7.3], width: 1.0, height: 2.1 },
+    { id: 'corridor_to_kitchen', position: [2.7, 0.5, -2.0], width: 0.9, height: 2.0 },
+    { id: 'corridor_to_street', position: [-2.7, 0.5, -2.0], width: 1.0, height: 2.2 },
   ],
   exits: [
     {
       id: 'corridor_to_room',
       targetScene: 'volodka_room',
-      position: [0, 1, 3.5],
+      position: [0, 1, 7.3],
       spawnPosition: [0, 0.01, 2],
       spawnRotation: 0,
       label: '→ Комната',
@@ -271,7 +271,7 @@ export const volodka_corridor_def: SceneDefinition = {
     {
       id: 'corridor_to_kitchen',
       targetScene: 'home_evening',
-      position: [1.4, 0.5, -1.0],
+      position: [2.7, 0.5, -2.0],
       spawnPosition: [0, 0.01, 2],
       spawnRotation: Math.PI,
       label: '→ Кухня',
@@ -280,7 +280,7 @@ export const volodka_corridor_def: SceneDefinition = {
     {
       id: 'corridor_to_street',
       targetScene: 'street_night',
-      position: [-1.4, 0.5, -1.0],
+      position: [-2.7, 0.5, -2.0],
       spawnPosition: [0, 0.01, 0],
       spawnRotation: 0,
       label: '→ Улица',
@@ -288,32 +288,33 @@ export const volodka_corridor_def: SceneDefinition = {
     },
   ],
   floors: [
-    { type: 'cuboid', size: [2, 0.05, 6], position: [0, -0.05, 0], footstepMaterial: 'wood' },
+    { type: 'cuboid', size: [3, 0.05, 8], position: [0, -0.05, 0], footstepMaterial: 'wood' },
   ],
   walls: [
-    { type: 'cuboidObstacle', size: [2, 1.5, 0.1], position: [0, 1.5, -6], footstepMaterial: 'wood' },
-    { type: 'cuboidObstacle', size: [2, 1.5, 0.1], position: [0, 1.5, 6], footstepMaterial: 'wood' },
-    { type: 'cuboidObstacle', size: [6, 1.5, 0.1], position: [-2, 1.5, 0], rotation: Math.PI / 2, footstepMaterial: 'wood' },
-    { type: 'cuboidObstacle', size: [6, 1.5, 0.1], position: [2, 1.5, 0], rotation: Math.PI / 2, footstepMaterial: 'wood' },
+    { type: 'cuboidObstacle', size: [3, 1.5, 0.1], position: [0, 1.5, -8], footstepMaterial: 'wood' },
+    { type: 'cuboidObstacle', size: [3, 1.5, 0.1], position: [0, 1.5, 8], footstepMaterial: 'wood' },
+    { type: 'cuboidObstacle', size: [8, 1.5, 0.1], position: [-3, 1.5, 0], rotation: Math.PI / 2, footstepMaterial: 'wood' },
+    { type: 'cuboidObstacle', size: [8, 1.5, 0.1], position: [3, 1.5, 0], rotation: Math.PI / 2, footstepMaterial: 'wood' },
   ],
   obstacles: [
-    { type: 'cuboidObstacle', size: [0.5, 0.7, 0.4], position: [-1.7, 0.35, 3.5], footstepMaterial: 'wood' },
-    { type: 'cuboidObstacle', size: [0.08, 0.8, 0.6], position: [1.92, 0.4, -1.0], footstepMaterial: 'wood' },
+    { type: 'cuboidObstacle', size: [0.6, 0.7, 0.45], position: [-2.4, 0.35, 4.8], footstepMaterial: 'wood' },
+    { type: 'cuboidObstacle', size: [0.08, 0.8, 0.6], position: [2.92, 0.4, -2.0], footstepMaterial: 'wood' },
+    { type: 'cuboidObstacle', size: [1.8, 0.04, 0.9], position: [0, 0.02, 0.5], footstepMaterial: 'wood' },
   ],
   ceilings: [
-    { type: 'cuboid', size: [2, 0.1, 6], position: [0, 3.1, 0] },
+    { type: 'cuboid', size: [3, 0.1, 8], position: [0, 3.1, 0] },
   ],
   visualComponent: 'VolodkaCorridorVisual',
   lights: [
-    { position: [0, 2.5, 0], intensity: 1.0, color: '#ffcc66', distance: 10 },
-    { position: [0, 2.5, -3], intensity: 0.6, color: '#ffeeaa', distance: 8 },
-    { position: [0, 2.5, 3], intensity: 0.6, color: '#ffddaa', distance: 8 },
+    { position: [0, 2.5, 0], intensity: 1.0, color: '#ffcc66', distance: 12 },
+    { position: [0, 2.5, -4], intensity: 0.6, color: '#ffeeaa', distance: 10 },
+    { position: [0, 2.5, 4], intensity: 0.6, color: '#ffddaa', distance: 10 },
   ],
   ambientColor: '#2a2530',
   ambientIntensity: 0.6,
   groundColor: '#252530',
   fogEnabled: true,
-  fog: { near: 4, far: 10 },
+  fog: { near: 5, far: 14 },
 };
 
 /** Kitchen — evening — warm indoor family space */
