@@ -1,12 +1,12 @@
+import { ensureStoryNode } from '@/data/gameDataLoader';
 import { eventBus } from '@/engine/EventBus';
-import { performSceneTransition } from '@/engine/core/SceneTransitionManager';
 import { dispatchGameAction } from '@/engine/GameActionDispatcher';
 import { openLinkedStory } from '@/engine/interaction/narrativeOpenHelpers';
 import {
   getPlayerRigidBody,
   isPlayerRigidBodyValid,
 } from '@/engine/PlayerRigidBodyState';
-import { closeNarrativeOverlay } from '@/engine/scene/narrativeOverlay';
+import { closeNarrativeOverlay, openNarrativeOverlay } from '@/engine/scene/narrativeOverlay';
 import { resolveSceneSpawn } from '@/engine/scene/sceneTransition';
 import { getGameStore } from '@/store/gameStore';
 import type { SceneId } from '@/shared/types/game';
@@ -21,12 +21,11 @@ export interface VolodkaE2EBridge {
   setPlayerPosition: (x: number, y: number, z: number) => void;
   getPlayerPosition: () => VolodkaE2EPosition;
   interactTriggerZone: (zoneId: string) => void;
-  /** Jump to a story node (localhost Playwright only). */
   visitStoryNode: (nodeId: string) => void;
-  /** Skip Act I — open Act II entry beat with flags and act progression. */
   bootstrapAct2Entry: () => Promise<void>;
-  /** Mid–Act I office hub — diagnosis golden path (localhost Playwright only). */
   bootstrapMidActOffice: () => Promise<void>;
+  bootstrapStartDiagnosis: () => Promise<void>;
+  bootstrapAct2AlbertHint: () => Promise<void>;
 }
 
 declare global {
@@ -35,11 +34,20 @@ declare global {
   }
 }
 
-function forceScene(sceneId: SceneId): void {
-  performSceneTransition({
+async function jumpToStoryBeat(nodeId: string, sceneId: SceneId): Promise<void> {
+  await ensureStoryNode(nodeId);
+  const store = getGameStore();
+  store.setIntroActive(false);
+  store.setMainMenuOpen(false);
+  closeNarrativeOverlay();
+  dispatchGameAction({ type: 'story/visitNode', nodeId });
+  dispatchGameAction({ type: 'story/setCurrentNodeId', nodeId });
+  dispatchGameAction({
+    type: 'exploration/applySceneTransition',
     targetScene: sceneId,
     spawnAt: resolveSceneSpawn(sceneId),
   });
+  openNarrativeOverlay(nodeId, 'story');
 }
 
 /** Localhost-only hook for Playwright — not registered on production hosts. */
@@ -79,32 +87,35 @@ export function registerVolodkaE2EBridge(): void {
     },
     async bootstrapAct2Entry() {
       const store = getGameStore();
-      store.setIntroActive(false);
-      store.setMainMenuOpen(false);
       if (store.playerState.progression.currentAct < 2) {
         store.advanceAct();
       }
       store.setFlag('act2_started', true);
       store.setFlag('advanced_to_act2', true);
       store.markCutsceneTriggered('act1_to_act2');
-      closeNarrativeOverlay();
-      dispatchGameAction({ type: 'story/visitNode', nodeId: 'act2_transition' });
-      dispatchGameAction({ type: 'story/setCurrentNodeId', nodeId: 'act2_transition' });
-      forceScene('street_night');
-      await openLinkedStory('act2_transition');
+      await jumpToStoryBeat('act2_transition', 'street_night');
     },
     async bootstrapMidActOffice() {
       const store = getGameStore();
-      store.setIntroActive(false);
-      store.setMainMenuOpen(false);
-      closeNarrativeOverlay();
       store.setFlag('agreed_help_alexander', true);
       store.setFlag('going_to_cafe', true);
       dispatchGameAction({ type: 'story/visitNode', nodeId: 'office_alexander' });
-      dispatchGameAction({ type: 'story/visitNode', nodeId: 'office_explore_mode' });
-      dispatchGameAction({ type: 'story/setCurrentNodeId', nodeId: 'office_explore_mode' });
-      forceScene('office_day');
-      await openLinkedStory('office_explore_mode');
+      await jumpToStoryBeat('office_explore_mode', 'office_day');
+    },
+    async bootstrapStartDiagnosis() {
+      const store = getGameStore();
+      store.setFlag('agreed_help_alexander', true);
+      store.setFlag('started_decryption', true);
+      await jumpToStoryBeat('start_diagnosis', 'office_day');
+    },
+    async bootstrapAct2AlbertHint() {
+      const store = getGameStore();
+      if (store.playerState.progression.currentAct < 2) {
+        store.advanceAct();
+      }
+      store.setFlag('act2_started', true);
+      store.setFlag('advanced_to_act2', true);
+      await jumpToStoryBeat('act2_albert_hint', 'cafe_evening');
     },
   };
 }
