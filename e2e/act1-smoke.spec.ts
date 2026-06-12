@@ -52,6 +52,24 @@ async function closeNarrativeOverlay(page: import('@playwright/test').Page) {
   }
 }
 
+/** WASD moves the player during walkable explore hub (overlay may stay open). */
+async function assertExplorationMovement(page: import('@playwright/test').Page) {
+  const before = await page.evaluate(() => window.__volodka_e2e?.getPlayerPosition());
+  expect(before).toBeTruthy();
+
+  await page.keyboard.down('KeyW');
+  await page.waitForTimeout(900);
+  await page.keyboard.up('KeyW');
+  await page.waitForTimeout(200);
+
+  const after = await page.evaluate(() => window.__volodka_e2e?.getPlayerPosition());
+  expect(after).toBeTruthy();
+
+  const deltaZ = Math.abs((after?.z ?? 0) - (before?.z ?? 0));
+  const deltaX = Math.abs((after?.x ?? 0) - (before?.x ?? 0));
+  expect(deltaZ + deltaX).toBeGreaterThan(0.15);
+}
+
 async function skipTitleCardIfPresent(page: import('@playwright/test').Page) {
   const cutsceneText = page.getByText(/Солныш|Алина/i).first();
   if (!(await cutsceneText.isVisible({ timeout: 8000 }).catch(() => false))) return;
@@ -106,7 +124,7 @@ async function enterCorridorViaPhysicalDoor(page: import('@playwright/test').Pag
 }
 
 test.describe('Act I smoke', () => {
-  test('new game → wake → first_reading → corridor door', async ({ page }) => {
+  test('new game → wake → movement + first_reading → corridor door', async ({ page }) => {
     await waitForMenuReady(page);
     await page.getByTestId('menu-new-game').click();
     await expect(page.locator('canvas[data-engine]')).toBeVisible({ timeout: 90_000 });
@@ -114,7 +132,13 @@ test.describe('Act I smoke', () => {
     await skipWakeCinematic(page);
 
     await expect(page.getByTestId('game-hud')).toBeVisible({ timeout: 30_000 });
-    await leaveExploreHub(page);
+    await expect(page.getByRole('dialog', { name: /Голос/i })).toBeVisible({ timeout: 45_000 });
+    await dismissFirstReadingBeats(page);
+    await assertExplorationMovement(page);
+    await skipStoryTypewriter(page);
+    const corridorBtn = page.getByRole('button', { name: /Выйти в коридор/i });
+    await expect(corridorBtn).toBeVisible({ timeout: 30_000 });
+    await corridorBtn.click();
     await expect(page.getByText(/коридор|Солныш|дверь/i).first()).toBeVisible({ timeout: 15_000 });
   });
 

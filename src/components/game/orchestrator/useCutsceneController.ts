@@ -117,6 +117,7 @@ export function useCutsceneController() {
         clearGameplayPhaseFlags(currentStore);
         setCinematicPresentationMode('first_person');
         eventBus.emit('camera:cutscene_end', {});
+        eventBus.emit('camera:recenter', {});
       }
       if (currentStore.currentNodeId) {
         openNarrativeAfterCutscene(

@@ -318,9 +318,9 @@ export function PhysicsPlayer({
     const phase = readGamePhase(storeSnapshot);
     const inCinematic = phase === 'cutscene' || phase === 'intro';
 
-    if (inCinematic) {
-      warmupFramesRef.current = 0;
-    } else if (warmupFramesRef.current < 10) {
+    // Pause warmup during cinematics — resetting every frame caused a 10-frame
+    // locomotion freeze after each cutscene (sprint/WASD felt stuck).
+    if (!inCinematic && warmupFramesRef.current < 10) {
       warmupFramesRef.current++;
     }
 

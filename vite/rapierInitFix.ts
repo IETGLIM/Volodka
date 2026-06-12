@@ -1,8 +1,10 @@
 import type { Plugin } from 'vite';
 
-/** wasm-bindgen init expects `{ module_or_path }`; upstream -compat passes bytes directly. */
-const RAPIER_INIT_FIX =
-  /yield xA\(Lg\.toByteArray\("([^"]*)"\)\)/;
+/**
+ * wasm-bindgen init expects `{ module_or_path }`; upstream -compat passes bytes directly.
+ * Match only the call prefix — the inlined WASM base64 is ~2 MB; capturing it breaks the regex.
+ */
+const RAPIER_INIT_CALL_PREFIX = /yield (\w+)\((\w+)\.toByteArray\(/;
 
 export function rapierInitFix(): Plugin {
   return {
@@ -10,11 +12,11 @@ export function rapierInitFix(): Plugin {
     transform(code, id) {
       const normalized = id.replace(/\\/g, '/');
       if (!normalized.includes('@dimforge/rapier3d-compat/rapier.')) return;
-      if (!code.includes('yield xA(Lg.toByteArray(')) return;
+      if (!RAPIER_INIT_CALL_PREFIX.test(code)) return;
 
       const fixed = code.replace(
-        RAPIER_INIT_FIX,
-        'yield xA({module_or_path:Lg.toByteArray("$1")})',
+        RAPIER_INIT_CALL_PREFIX,
+        'yield $1({module_or_path:$2.toByteArray(',
       );
       if (fixed === code) return;
 
