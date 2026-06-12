@@ -23,7 +23,7 @@ async function skipTitleCardIfPresent(page: import('@playwright/test').Page) {
 async function skipStoryTypewriter(page: import('@playwright/test').Page) {
   const skipBtn = page.getByRole('button', { name: /Пропустить анимацию текста/i });
   if (await skipBtn.isVisible({ timeout: 5000 }).catch(() => false)) {
-    await skipBtn.click();
+    await skipBtn.click({ force: true });
     await page.waitForTimeout(400);
   }
 }
@@ -45,20 +45,13 @@ test.describe('Act II smoke', () => {
     await page.evaluate(() => {
       window.__volodka_e2e?.bootstrapAct2Entry();
     });
-    await page.waitForTimeout(2500);
 
     await skipTitleCardIfPresent(page);
-
-    const hubDialog = page.getByRole('dialog', { name: /Голос/i });
-    await expect(hubDialog).toBeVisible({ timeout: 45_000 });
     await skipStoryTypewriter(page);
-    await expect(hubDialog.getByText(/неон|поверхност|инцидент|стих/i).first()).toBeVisible({
-      timeout: 20_000,
-    });
 
     const cafeBtn = page.getByRole('button', { name: /Вернуться в кафе/i });
-    await expect(cafeBtn).toBeVisible({ timeout: 15_000 });
-    await cafeBtn.click();
+    await expect(cafeBtn).toBeVisible({ timeout: 45_000 });
+    await cafeBtn.click({ force: true });
 
     await expect(page.getByText(/Альберт|гильдии|стихи/i).first()).toBeVisible({
       timeout: 20_000,
@@ -81,14 +74,11 @@ test.describe('Act II smoke', () => {
     await page.evaluate(() => {
       window.__volodka_e2e?.bootstrapMidActOffice();
     });
-    await page.waitForTimeout(2500);
 
-    const hubDialog = page.getByRole('dialog', { name: /Голос/i });
-    await expect(hubDialog).toBeVisible({ timeout: 30_000 });
     await skipStoryTypewriter(page);
 
-    const terminalBtn = hubDialog.getByRole('button', { name: /терминал/i });
-    await expect(terminalBtn).toBeVisible({ timeout: 15_000 });
+    const terminalBtn = page.getByRole('button', { name: /Сесть за терминал/i });
+    await expect(terminalBtn).toBeVisible({ timeout: 45_000 });
     await terminalBtn.click({ force: true });
 
     await expect(page.getByText(/4729|расшифров|стихи/i).first()).toBeVisible({

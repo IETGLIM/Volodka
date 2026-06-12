@@ -5,7 +5,7 @@ import {
   getPlayerRigidBody,
   isPlayerRigidBodyValid,
 } from '@/engine/PlayerRigidBodyState';
-import { openNarrativeOverlay } from '@/engine/scene/narrativeOverlay';
+import { closeNarrativeOverlay } from '@/engine/scene/narrativeOverlay';
 import { requestSceneTransition } from '@/engine/scene/sceneTransition';
 import { getGameStore } from '@/store/gameStore';
 import type { SceneId } from '@/shared/types/game';
@@ -32,6 +32,21 @@ declare global {
   interface Window {
     __volodka_e2e?: VolodkaE2EBridge;
   }
+}
+
+function whenSceneLoaded(sceneId: SceneId, onReady: () => void): void {
+  const store = getGameStore();
+  if (store.exploration.currentSceneId === sceneId) {
+    onReady();
+    return;
+  }
+
+  const unsub = eventBus.on('scene:loaded', (data) => {
+    if (data.sceneId !== sceneId) return;
+    unsub();
+    onReady();
+  });
+  requestSceneTransition(sceneId);
 }
 
 /** Localhost-only hook for Playwright — not registered on production hosts. */
@@ -79,26 +94,26 @@ export function registerVolodkaE2EBridge(): void {
       store.setFlag('act2_started', true);
       store.setFlag('advanced_to_act2', true);
       store.markCutsceneTriggered('act1_to_act2');
+      closeNarrativeOverlay();
       dispatchGameAction({ type: 'story/visitNode', nodeId: 'act2_transition' });
       dispatchGameAction({ type: 'story/setCurrentNodeId', nodeId: 'act2_transition' });
-      if (store.exploration.currentSceneId !== 'street_night') {
-        requestSceneTransition('street_night');
-      }
-      openNarrativeOverlay('act2_transition', 'story');
+      whenSceneLoaded('street_night', () => {
+        void openLinkedStory('act2_transition');
+      });
     },
     bootstrapMidActOffice() {
       const store = getGameStore();
       store.setIntroActive(false);
       store.setMainMenuOpen(false);
+      closeNarrativeOverlay();
       store.setFlag('agreed_help_alexander', true);
       store.setFlag('going_to_cafe', true);
       dispatchGameAction({ type: 'story/visitNode', nodeId: 'office_alexander' });
       dispatchGameAction({ type: 'story/visitNode', nodeId: 'office_explore_mode' });
       dispatchGameAction({ type: 'story/setCurrentNodeId', nodeId: 'office_explore_mode' });
-      if (store.exploration.currentSceneId !== 'office_day') {
-        requestSceneTransition('office_day');
-      }
-      openNarrativeOverlay('office_explore_mode', 'story');
+      whenSceneLoaded('office_day', () => {
+        void openLinkedStory('office_explore_mode');
+      });
     },
   };
 }
