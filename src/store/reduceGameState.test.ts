@@ -61,10 +61,8 @@ describe('reduceGameState via dispatchGameAction', () => {
     unsub();
   });
 
-  it('routes dispatch through useGameStore.setState', () => {
+  it('routes dispatch through slice store actions', () => {
     useGameStore.setState({ quests: [{ ...TEST_QUEST, objectives: { only: false } }] });
-
-    const setStateSpy = vi.spyOn(useGameStore, 'setState');
 
     dispatchGameAction({
       type: 'quest/completeObjective',
@@ -72,8 +70,6 @@ describe('reduceGameState via dispatchGameAction', () => {
       objectiveId: 'only',
     });
 
-    expect(setStateSpy).toHaveBeenCalled();
     expect(useGameStore.getState().quests[0]?.objectives.only).toBe(true);
-    setStateSpy.mockRestore();
   });
 });

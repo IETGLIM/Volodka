@@ -63,7 +63,7 @@ export const createPlayerQuestRewardsSlice: StateCreator<
   PlayerQuestRewardsSlice
 > = (set, get) => ({
   giftItemToNPC: (itemId, npcId) => {
-    const cross = pickPlayerQuestRewardsCrossActions(get);
+    const cross = pickPlayerQuestRewardsCrossActions();
     const npcDef = findNpcById(npcId);
     if (!npcDef) {
       cross.pushNotification('stress', 'Персонаж не найден');
@@ -159,7 +159,7 @@ export const createPlayerQuestRewardsSlice: StateCreator<
     const xpGained = getDefaultQuestXp(questDef.questType);
     const creditsGained = computeQuestCreditReward(questDef);
     const appliedRewards: string[] = [];
-    const cross = pickPlayerQuestRewardsCrossActions(get);
+    const cross = pickPlayerQuestRewardsCrossActions();
 
     get().applyPlayerRewardBatch((draft, sideEffects) => {
       const rewards = questDef.rewards ?? [];

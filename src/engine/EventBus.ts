@@ -77,7 +77,7 @@ const DEDUP_EXEMPT = new Set<string>(DEDUP_EXEMPT_EVENTS);
  *  - For testing, use `createEventBus()` to obtain an isolated instance.
  *  - In dev, `registerHmrDispose` clears the singleton when the module hot-reloads.
  */
-export class EventBusClass<TMap extends Record<string, unknown> = EventMap>
+export class EventBusClass<TMap extends object = EventMap>
   implements EventBusScopeHost<TMap>
 {
   private handlers = new Map<keyof TMap, PrioritizedListener[]>();
@@ -315,12 +315,12 @@ export class EventBusClass<TMap extends Record<string, unknown> = EventMap>
  * Primarily intended for testing — each test gets a fresh bus
  * without polluting the global singleton.
  */
-export function createEventBus<TMap extends Record<string, unknown> = EventMap>(): EventBusClass<TMap> {
+export function createEventBus<TMap extends object = EventMap>(): EventBusClass<TMap> {
   return new EventBusClass<TMap>();
 }
 
 /** Singleton event bus instance — typed with the consolidated EventMap. */
-export const eventBus = createEventBus<EventMap>();
+export const eventBus = createEventBus();
 
 export function disposeEventBus(): void {
   eventBus.dispose();

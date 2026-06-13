@@ -12,6 +12,7 @@ import { eventBus } from '@/engine/EventBus';
 import { clamp, type PoemPowerState } from '../shared';
 import { applyFairmathRelation } from '@/shared/fairmath';
 import type { GameStoreState } from '../types';
+import { getUIStore } from '../storeBindings';
 import {
   pickPlayerRewardBatchActions,
   pickWorldCrossActions,
@@ -149,13 +150,13 @@ export const createWorldSlice: StateCreator<
     }
 
     const quests = state.quests.filter((q) => q.questId !== questId);
-    const { timeOfDay } = readWorldFromExploration(get());
+    const { timeOfDay } = readWorldFromExploration();
     quests.push({ questId, status: 'active', objectives, startedAtTime: timeOfDay });
 
     eventBus.emit('quest:accepted', { questId, questTitle: definition.title });
 
     set({ quests });
-    pickWorldCrossActions(get).pushNotification('quest', `Новое задание: ${definition.title}`);
+    pickWorldCrossActions().pushNotification('quest', `Новое задание: ${definition.title}`);
   },
 
   completeQuestObjective: (questId, objectiveId) =>
@@ -194,7 +195,7 @@ export const createWorldSlice: StateCreator<
     }));
 
     eventBus.emit('quest:completed', { questId, npcId: questDef?.questGiverNpcId });
-    pickWorldCrossActions(get).pushNotification('quest', `Задание выполнено: ${questTitle}`);
+    pickWorldCrossActions().pushNotification('quest', `Задание выполнено: ${questTitle}`);
   },
 
   failQuest: (questId) =>
@@ -219,7 +220,7 @@ export const createWorldSlice: StateCreator<
 
     eventBus.emit('poem:collected', { poemId });
     set({ collectedPoems: [...state.collectedPoems, poemId] });
-    pickWorldCrossActions(get).pushNotification('poem', `Стих собран: ${poem.title}`);
+    pickWorldCrossActions().pushNotification('poem', `Стих собран: ${poem.title}`);
   },
 
   setNpcRelation: (npcId, delta) =>
@@ -288,7 +289,7 @@ export const createWorldSlice: StateCreator<
       unlockedAchievements: [...state.unlockedAchievements, { id: achievementId, unlockedAt: timestamp }],
     });
 
-    pickPlayerRewardBatchActions(get).applyPlayerRewardBatch((draft, sideEffects) => {
+    pickPlayerRewardBatchActions().applyPlayerRewardBatch((draft, sideEffects) => {
       for (const reward of def.rewards) {
         switch (reward.type) {
           case 'xp':
@@ -373,7 +374,7 @@ export const createWorldSlice: StateCreator<
     };
 
     set({ acceptedDailyMissions: [...state.acceptedDailyMissions, newMission] });
-    pickWorldCrossActions(get).pushNotification('quest', 'Ежедневное задание принято');
+    pickWorldCrossActions().pushNotification('quest', 'Ежедневное задание принято');
   },
 
   abandonDailyMission: (missionId) =>
@@ -426,7 +427,7 @@ export const createWorldSlice: StateCreator<
     });
 
     if (newlyCompletedTitle) {
-      pickWorldCrossActions(get).pushNotification(
+      pickWorldCrossActions().pushNotification(
         'quest',
         `Ежедневное задание выполнено: ${newlyCompletedTitle}`,
       );
@@ -448,7 +449,7 @@ export const createWorldSlice: StateCreator<
     });
 
     const rewards = missionDef.rewards;
-    pickPlayerRewardBatchActions(get).applyPlayerRewardBatch((draft, sideEffects) => {
+    pickPlayerRewardBatchActions().applyPlayerRewardBatch((draft, sideEffects) => {
       if (rewards.xp) batchAddXp(draft, sideEffects, rewards.xp);
       if (rewards.karma) batchAddKarma(draft, sideEffects, rewards.karma);
       if (rewards.credits) batchAddCredits(draft, rewards.credits);
@@ -472,7 +473,7 @@ export const createWorldSlice: StateCreator<
     // Legacy saves without lastDailyReset: use last save time as baseline
     let lastReset = state.lastDailyReset;
     if (lastReset === 0) {
-      lastReset = state.lastSaveTimestamp ?? now;
+      lastReset = getUIStore().lastSaveTimestamp ?? now;
       if (now - lastReset < MS_PER_DAY) {
         set({ lastDailyReset: lastReset });
         return;

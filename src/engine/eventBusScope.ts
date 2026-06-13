@@ -18,7 +18,7 @@ type EventHandler<T> = (payload: T) => void;
 type AnyEventHandler = (event: string, payload: unknown) => void;
 
 /** Minimal EventBus surface required by EventBusScope (avoids circular imports). */
-export interface EventBusScopeHost<TMap extends Record<string, unknown> = EventMap> {
+export interface EventBusScopeHost<TMap extends object = EventMap> {
   on<K extends keyof TMap>(
     event: K,
     handler: EventHandler<TMap[K]>,
@@ -27,7 +27,7 @@ export interface EventBusScopeHost<TMap extends Record<string, unknown> = EventM
   onAny(handler: AnyEventHandler, priority?: number): () => void;
 }
 
-export class EventBusScope<TMap extends Record<string, unknown> = EventMap> {
+export class EventBusScope<TMap extends object = EventMap> {
   private readonly cleanups: (() => void)[] = [];
   private closed = false;
 
@@ -93,7 +93,7 @@ export class EventBusScope<TMap extends Record<string, unknown> = EventMap> {
  * Register subscriptions inside `register`, return a single dispose for useEffect.
  * On registration throw, already-registered listeners are torn down.
  */
-export function bindEventBusScope<TMap extends Record<string, unknown> = EventMap>(
+export function bindEventBusScope<TMap extends object = EventMap>(
   bus: EventBusScopeHost<TMap>,
   register: (scope: EventBusScope<TMap>) => void,
 ): () => void {

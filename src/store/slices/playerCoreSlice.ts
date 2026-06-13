@@ -153,8 +153,8 @@ export const createPlayerCoreSlice: StateCreator<
     })),
 
   restAtHome: () => {
-    const { currentSceneId } = readPlayerFromExploration(get());
-    const { advanceTime } = pickPlayerCoreCrossActions(get);
+    const { currentSceneId } = readPlayerFromExploration();
+    const { advanceTime } = pickPlayerCoreCrossActions();
 
     if (currentSceneId !== 'volodka_room' && currentSceneId !== 'home_evening') return;
 

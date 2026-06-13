@@ -82,7 +82,7 @@ export const createPlayerEconomySlice: StateCreator<
     const recipe = getRecipeById(recipeId);
     if (!recipe) return;
 
-    const { pushNotification } = pickPlayerEconomyCrossActions(get);
+    const { pushNotification } = pickPlayerEconomyCrossActions();
 
     for (const req of recipe.skillRequirements) {
       if ((state.playerState.skills[req.skill] ?? 0) < req.level) {
@@ -136,14 +136,14 @@ export const createPlayerEconomySlice: StateCreator<
 
   buyItem: (npcId, itemId) => {
     const state = get();
-    const { pushNotification } = pickPlayerEconomyCrossActions(get);
+    const { pushNotification } = pickPlayerEconomyCrossActions();
     const merchant = getMerchantInventory(npcId);
     if (!merchant) {
       pushNotification('stress', 'Этот персонаж не торгует');
       return;
     }
 
-    const relationValue = readNpcRelationValue(state, npcId);
+    const relationValue = readNpcRelationValue(npcId);
     const price = getBuyPrice(merchant, itemId, relationValue);
 
     if (state.playerState.credits < price) {
@@ -184,14 +184,14 @@ export const createPlayerEconomySlice: StateCreator<
 
   sellItem: (npcId, itemId) => {
     const state = get();
-    const { pushNotification } = pickPlayerEconomyCrossActions(get);
+    const { pushNotification } = pickPlayerEconomyCrossActions();
     const merchant = getMerchantInventory(npcId);
     if (!merchant) {
       pushNotification('stress', 'Этот персонаж не торгует');
       return;
     }
 
-    const relationValue = readNpcRelationValue(state, npcId);
+    const relationValue = readNpcRelationValue(npcId);
 
     if (!merchantBuysItem(npcId, itemId, relationValue)) {
       pushNotification('stress', 'Этот торговец не покупает данный предмет');
@@ -241,7 +241,7 @@ export const createPlayerEconomySlice: StateCreator<
     const merchant = getMerchantInventory(npcId);
     if (!merchant) return false;
 
-    const relationValue = readNpcRelationValue(state, npcId);
+    const relationValue = readNpcRelationValue(npcId);
     const price = getBuyPrice(merchant, itemId, relationValue);
 
     if (state.playerState.credits < price) return false;
@@ -267,7 +267,7 @@ export const createPlayerEconomySlice: StateCreator<
     const merchant = getMerchantInventory(npcId);
     if (!merchant) return false;
 
-    const relationValue = readNpcRelationValue(state, npcId);
+    const relationValue = readNpcRelationValue(npcId);
 
     if (!merchantBuysItem(npcId, itemId, relationValue)) return false;
 
@@ -289,7 +289,7 @@ export const createPlayerEconomySlice: StateCreator<
       },
     });
     if (amount !== 0) {
-      pickPlayerEconomyCrossActions(get).pushNotification(
+      pickPlayerEconomyCrossActions().pushNotification(
         'skill',
         `${amount > 0 ? '+' : ''}${amount} кредитов`,
       );

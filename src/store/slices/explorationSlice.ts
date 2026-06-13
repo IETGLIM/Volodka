@@ -7,6 +7,7 @@ import type { ExplorationState, SceneId } from '@/shared/types/game';
 import { sanitizeExplorationSceneId, SCENE_CONFIG } from '@/config/scenes';
 import { clamp, createDefaultExploration } from '../shared';
 import type { GameStoreState } from '../types';
+import { getCombinedGameState } from '../storeBindings';
 import { readExplorationFromPlayer } from '../crossSliceReads';
 import { eventBus } from '@/engine/EventBus';
 import { requestSceneTransition } from '@/engine/scene/sceneTransition';
@@ -126,7 +127,7 @@ export const createExplorationSlice: StateCreator<
         newTime = newTime + 24;
       }
       // ── World Clock: rebuild NPC states when time changes ──
-      const scheduleCtx = buildScheduleContext(state);
+      const scheduleCtx = buildScheduleContext(getCombinedGameState());
       const npcStates = buildNPCStatesForTime(newTime, scheduleCtx);
       // Emit world:hour_changed so other systems (quests, weather, achievements) can react
       // Use setTimeout to avoid emitting during Zustand setState (can cause issues)
@@ -208,7 +209,7 @@ export const createExplorationSlice: StateCreator<
     if (!state.discoveredScenes.includes(sceneId)) return;
 
     // Check story flag gate
-    const { flags } = readExplorationFromPlayer(get());
+    const { flags } = readExplorationFromPlayer();
     if (!isSceneGateOpen(sceneId, flags)) return;
 
     // Get target scene config for spawn point

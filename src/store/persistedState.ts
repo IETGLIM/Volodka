@@ -21,7 +21,7 @@ import {
 } from './shared';
 import { createEmptyActiveTTLFlagMap } from './activeTTLFlags';
 import type { GameStoreState } from './types';
-import { getGameStore } from './gameStore';
+import { getCombinedGameState } from './storeBindings';
 
 /** Persisted fields only — validated before localStorage write. */
 const PickSavePayloadSchema = SavePayloadSchema.omit({ saveVersion: true });
@@ -137,7 +137,7 @@ export function pickSavePayload(
 
 /** Capture a validated save payload from live store state (no localStorage write). */
 export function saveGameSnapshot(): Omit<SavePayload, 'saveVersion'> {
-  return pickSavePayload(getGameStore());
+  return pickSavePayload(getCombinedGameState());
 }
 
 /** Merge validated save data over defaults for loadGame. */
