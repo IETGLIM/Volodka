@@ -8,9 +8,12 @@ import * as THREE from 'three';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import { useCurrentSceneId } from '@/store/selectors';
 import { useGameStore } from '@/store/gameStore';
+import { getCurrentScheduleEntry } from '@/engine/ScheduleEngine';
+import { buildScheduleContext } from '@/shared/scheduleContext';
 import type { MutableRefObject } from 'react';
 
 const UMKA_SCENES = new Set(['volodka_corridor', 'solnysh_room']);
+const CORRIDOR_VERA_ANCHOR: [number, number, number] = [0, 0, 1.5];
 const ORBIT_RADIUS = 0.55;
 const ORBIT_SPEED = 1.6;
 /** Feet on walkable floor (matches scene floorY ≈ 0.01). */
@@ -65,6 +68,8 @@ function UmkaMesh() {
 export function UmkaDog({ livePlayerPositionRef }: UmkaDogProps) {
   const sceneId = useCurrentSceneId();
   const veraState = useGameStore((s) => s.exploration.npcStates.vera);
+  const activeCutsceneId = useGameStore((s) => s.activeCutsceneId);
+  const timeOfDay = useGameStore((s) => s.exploration.timeOfDay);
   const groupRef = useRef<THREE.Group>(null);
   const phaseRef = useRef(Math.random() * Math.PI * 2);
   const labelRef = useRef<HTMLDivElement>(null);
@@ -73,14 +78,30 @@ export function UmkaDog({ livePlayerPositionRef }: UmkaDogProps) {
     const group = groupRef.current;
     if (!group || !UMKA_SCENES.has(sceneId)) return;
 
-    if (veraState?.sceneId !== sceneId) {
+    const inCorridorCutscene =
+      sceneId === 'volodka_corridor' && activeCutsceneId === 'act1_corridor_solnysh';
+
+    let anchor: [number, number, number] | null = null;
+    if (veraState?.sceneId === sceneId) {
+      anchor = veraState.position;
+    } else if (inCorridorCutscene) {
+      anchor = CORRIDOR_VERA_ANCHOR;
+    } else if (sceneId === 'volodka_corridor') {
+      const scheduleCtx = buildScheduleContext(useGameStore.getState());
+      const entry = getCurrentScheduleEntry('vera', timeOfDay, scheduleCtx);
+      if (entry?.sceneId === 'volodka_corridor') {
+        anchor = entry.position;
+      }
+    }
+
+    if (!anchor) {
       group.visible = false;
       return;
     }
     group.visible = true;
 
-    const ax = veraState.position[0];
-    const az = veraState.position[2];
+    const ax = anchor[0];
+    const az = anchor[2];
 
     phaseRef.current += delta * ORBIT_SPEED;
     const t = phaseRef.current;

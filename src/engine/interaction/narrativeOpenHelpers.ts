@@ -21,6 +21,7 @@ import { enterSceneFreeExplorationHub } from '@/engine/scene/freeExplorationHub'
 import { devWarn } from '@/shared/utils/devLog';
 import type { SceneId } from '@/shared/types/game';
 import { closeNarrativeOverlay } from '@/engine/scene/narrativeOverlay';
+import { clearGameplayPhaseFlags } from '@/shared/gamePhase';
 
 type NarrativeKind = 'dialogue' | 'story';
 
@@ -211,16 +212,30 @@ export function triggerSceneEntryStoryIfNeeded(
       cutscene != null && !store.triggeredCutscenes.includes(cutscene.id);
 
     if (store.currentNodeId === entryNodeId) {
+      const hubId = SCENE_ENTRY_NODE_TO_HUB[entryNodeId];
       if (cutscenePending) {
         closeNarrativeOverlay();
         // Node id unchanged — useCutsceneController won't re-run; bounce via hub then re-arm entry.
-        const hubId = SCENE_ENTRY_NODE_TO_HUB[entryNodeId];
         if (hubId && hubId !== entryNodeId) {
           dispatchGameAction({ type: 'story/setCurrentNodeId', nodeId: hubId });
           queueMicrotask(() => {
             dispatchGameAction({ type: 'story/visitNode', nodeId: entryNodeId });
             dispatchGameAction({ type: 'story/setCurrentNodeId', nodeId: entryNodeId });
           });
+        }
+      } else if (hubId && hubId !== entryNodeId) {
+        // Cutscene already played or skipped — promote to explore hub so [E] and movement unlock.
+        if (store.activeCutsceneId) {
+          store.setCutscene(null, []);
+          clearGameplayPhaseFlags(store);
+          closeNarrativeOverlay();
+        }
+        if (isClosedOverlayExploreHub(hubId)) {
+          enterSceneFreeExplorationHub(hubId);
+        } else {
+          dispatchGameAction({ type: 'story/visitNode', nodeId: hubId });
+          dispatchGameAction({ type: 'story/setCurrentNodeId', nodeId: hubId });
+          closeNarrativeOverlay();
         }
       }
       return;

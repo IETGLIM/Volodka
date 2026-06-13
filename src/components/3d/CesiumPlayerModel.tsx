@@ -96,9 +96,12 @@ function CesiumPlayerModelInner({ modelScale, currentAnimRef, rotationRef }: Pro
     const anim = currentAnimRef.current;
     const moving = anim === 'walk' || anim === 'run';
     if (actionRef.current) {
-      actionRef.current.timeScale = moving ? (anim === 'run' ? 1.45 : 1.05) : 0.3;
+      // Pause locomotion clip when idle — 0.3 timeScale caused walk-in-place during cutscenes.
+      actionRef.current.timeScale = moving ? (anim === 'run' ? 1.45 : 1.05) : 0;
     }
-    mixer.update(delta);
+    if (moving) {
+      mixer.update(delta);
+    }
   });
 
   return (

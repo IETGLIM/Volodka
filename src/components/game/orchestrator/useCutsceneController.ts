@@ -27,6 +27,7 @@ export function useCutsceneController() {
     if (!store.activeCutsceneId) return false;
 
     cancelCutsceneSession();
+    store.markCutsceneTriggered(store.activeCutsceneId!);
     store.setCutscene(null, []);
     clearGameplayPhaseFlags(store);
     eventBus.emit('cutscene:overlay_end', {});
@@ -70,8 +71,6 @@ export function useCutsceneController() {
       store.setNarrativeKind('story');
     }
 
-    store.markCutsceneTriggered(cutscene.id);
-
     clearGameplayPhaseFlags(store);
     setCinematicPresentationMode('third_person');
     store.setCutscene(cutscene.id, cutscene.waypoints);
@@ -113,6 +112,7 @@ export function useCutsceneController() {
 
       const currentStore = useGameStore.getState();
       if (currentStore.activeCutsceneId) {
+        currentStore.markCutsceneTriggered(cutscene.id);
         currentStore.setCutscene(null, []);
         clearGameplayPhaseFlags(currentStore);
         setCinematicPresentationMode('first_person');

@@ -207,6 +207,9 @@ export function StoryRenderer() {
       audioEngine.playSfx('confirm');
 
       if (choice.effects) {
+        if (choice.effects.some((fx) => fx.type === 'transitionScene')) {
+          closeNarrativeOverlay();
+        }
         applyEffects(choice.effects);
         setAppliedEffects(choice.effects);
         scheduleEffectTimer(() => setAppliedEffects([]), 3000);

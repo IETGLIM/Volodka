@@ -180,8 +180,8 @@ function createTerminalScreenTexture(): THREE.CanvasTexture {
   ctx.fillRect(6, 16 + lines.length * 19, 8, 11);
   const tex = new THREE.CanvasTexture(canvas);
   tex.colorSpace = THREE.SRGBColorSpace;
-  tex.wrapT = THREE.RepeatWrapping;
-  tex.repeat.set(1, 1.6);
+  tex.wrapS = THREE.ClampToEdgeWrapping;
+  tex.wrapT = THREE.ClampToEdgeWrapping;
   return tex;
 }
 
@@ -558,14 +558,14 @@ export function VolodkaRoomVisual({ livePlayerPositionRef: _livePlayerPositionRe
         ] as const).map(({ id, tex, x, rotY }) => (
           <group key={id} position={[x, 1.12, -0.18]} rotation={[0, rotY, 0]}>
             {/* Bezel */}
-            <mesh geometry={geo_box_18}>
+            <mesh geometry={geo_box_18} renderOrder={1}>
 
               <meshStandardMaterial color="#08080b" roughness={0.4} metalness={0.4} />
             </mesh>
-            {/* Screen — unlit map so the dashboards stay crisp and readable */}
-            <mesh position={[0, 0, 0.0225]} geometry={geo_pln_19}>
+            {/* Screen — nudged in front of bezel to avoid z-fighting / white seam */}
+            <mesh position={[0, 0, 0.028]} geometry={geo_pln_19} renderOrder={2}>
 
-              <meshBasicMaterial map={tex} toneMapped={false} />
+              <meshBasicMaterial map={tex} toneMapped={false} depthWrite={false} />
             </mesh>
             {/* Zabbix blinking alert LED */}
             {id === 'zabbix' && (
