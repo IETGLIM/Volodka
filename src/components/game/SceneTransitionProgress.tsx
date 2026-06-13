@@ -8,7 +8,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { eventBus } from '@/engine/EventBus';
+import { eventBus, EventBusPriority } from '@/engine/EventBus';
 import { SCENE_CONFIG } from '@/config/scenes';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import type { SceneId } from '@/shared/types/game';
@@ -55,6 +55,8 @@ export function SceneTransitionProgress() {
   const progressRef = useRef(0);
   const phaseRef = useRef<TransitionPhase>('idle');
   const loadingTransitionRef = useRef(false);
+  /** scene:enter can nest inside scene:transition when the handler runs performSceneTransition first */
+  const pendingEnterSceneRef = useRef<SceneId | null>(null);
 
   /** Clear all pending timers */
   const clearTimers = useCallback(() => {
@@ -64,7 +66,11 @@ export function SceneTransitionProgress() {
   }, []);
 
   const completeTransition = useCallback((sceneId: SceneId) => {
-    if (!loadingTransitionRef.current) return;
+    if (!loadingTransitionRef.current) {
+      pendingEnterSceneRef.current = sceneId;
+      return;
+    }
+    pendingEnterSceneRef.current = null;
     loadingTransitionRef.current = false;
 
     if (slowTickRef.current) { clearInterval(slowTickRef.current); slowTickRef.current = null; }
@@ -84,11 +90,18 @@ export function SceneTransitionProgress() {
     }, COMPLETE_HOLD_MS);
   }, []);
 
-  /* ── Listen for scene:transition (start) ── */
+  /* ── Listen for scene:transition (start) — Engine priority so latch is set before performSceneTransition emits scene:enter ── */
   useEffect(() => {
     const unsub = eventBus.on('scene:transition', (payload) => {
       clearTimers();
       loadingTransitionRef.current = true;
+
+      const pendingEnter = pendingEnterSceneRef.current;
+      if (pendingEnter) {
+        pendingEnterSceneRef.current = null;
+        completeTransition(pendingEnter);
+        return;
+      }
 
       setSceneId(payload.targetScene);
       phaseRef.current = 'loading';
@@ -110,13 +123,13 @@ export function SceneTransitionProgress() {
           }
         }, SLOW_TICK_MS);
       }, INITIAL_JUMP_MS);
-    });
+    }, EventBusPriority.Engine);
 
     return () => {
       unsub();
       clearTimers();
     };
-  }, [clearTimers]);
+  }, [clearTimers, completeTransition]);
 
   /* ── Listen for scene:enter (fires synchronously after scene:transition) ── */
   useEffect(() => {

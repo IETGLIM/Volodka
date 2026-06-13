@@ -605,7 +605,7 @@ export function LoadingScreen({ progress, message = 'Загрузка...', showT
         transition={{ delay: 2 }}
         className="absolute bottom-8 right-6 z-[70] flex flex-col items-end gap-0.5"
       >
-        <span className="font-mono text-[10px] tracking-[0.15em] text-cyan-500/25">v4.2.1</span>
+        <span className="font-mono text-[10px] tracking-[0.15em] text-cyan-500/25">v4.2.2</span>
         <span className="font-mono text-[8px] tracking-[0.1em] text-slate-700/40">build.2026</span>
       </motion.div>
 

@@ -205,10 +205,15 @@ export function StoryRenderer() {
   const handleChoice = useCallback(
     (choice: StoryChoice) => {
       audioEngine.playSfx('confirm');
+      const transitionsScene =
+        choice.effects?.some((fx) => fx.type === 'transitionScene') ?? false;
 
       if (choice.effects) {
-        if (choice.effects.some((fx) => fx.type === 'transitionScene')) {
+        if (transitionsScene) {
           closeNarrativeOverlay();
+          if (choice.next) {
+            setCurrentNodeId(choice.next);
+          }
         }
         applyEffects(choice.effects);
         setAppliedEffects(choice.effects);
@@ -232,7 +237,7 @@ export function StoryRenderer() {
         } else {
           closeNarrativeOverlay();
         }
-      } else {
+      } else if (choice.next && !transitionsScene) {
         setCurrentNodeId(choice.next);
       }
     },

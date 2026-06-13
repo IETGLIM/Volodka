@@ -1,5 +1,12 @@
 # Changelog — ВОЛОДЬКА RPG
 
+## v4.2.2 — 13 июня 2026
+
+### Scene transitions / narrative
+- **Progress bar 90% hang**: `scene:enter` вложенно срабатывал до latch прогресс-бара — приоритеты EventBus (`Engine` → `Orchestrator`) и буфер `pendingEnter`.
+- **Коридор коммуналки**: `corridor_door` / кат-сцена `act1_corridor_solnysh` — story-узел выставляется до `transitionScene`, чтобы cutscene-controller и entry-хелперы видели beat.
+- **Regression test**: `SceneTransitionProgress.test.ts` на порядок `scene:transition` / `scene:enter`.
+
 ## v4.2.1 — 13 июня 2026
 
 ### Player / controls
