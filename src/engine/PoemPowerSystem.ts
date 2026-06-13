@@ -243,6 +243,7 @@ const POEM_POWERS: Record<string, PoemPower> = {
       addSkill('writing', 4);
       addSkill('persuasion', 4);
     },
+    flagsToSet: [{ key: 'word_power_active', durationMs: 30000 }],
     reverseOnExpiry: [{ type: 'skill', key: 'writing', value: -4 }, { type: 'skill', key: 'persuasion', value: -4 }],
   },
   poem_7: {
@@ -277,6 +278,7 @@ const POEM_POWERS: Record<string, PoemPower> = {
       addKarma(3);
       addSkill('persuasion', 2);
     },
+    flagsToSet: [{ key: 'jester_word_active', durationMs: 30000 }],
     reverseOnExpiry: [{ type: 'karma', value: -3 }, { type: 'skill', key: 'persuasion', value: -2 }],
   },
   poem_10: {
