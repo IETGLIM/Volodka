@@ -20,7 +20,7 @@ import {
 } from '@react-three/postprocessing';
 import { BlendFunction, KernelSize, ToneMappingMode } from 'postprocessing';
 import type { EffectComposer as EffectComposerImpl } from 'postprocessing';
-import { usePostFxSceneState, usePlayerStress } from '@/store/selectors';
+import { usePostFxSceneState, usePlayerStress, useGameMode } from '@/store/selectors';
 import { useMobileVisualPerf } from '@/hooks/use-mobile';
 import { useVisualSettings } from '@/hooks/useVisualSettings';
 import { SCENE_VISIBILITY } from '@/shared/constants/sceneVisibility';
@@ -205,6 +205,7 @@ function useRendererReady(): boolean {
  *  This prevents the `null.alpha` crash in postprocessing's EffectComposer.addPass(). */
 export function ExplorationPostFX() {
   const rendererReady = useRendererReady();
+  const gameMode = useGameMode();
   const { postfxEnabled } = useVisualSettings();
 
   // Synchronous double-check: even if useRendererReady says true,
@@ -212,7 +213,7 @@ export function ExplorationPostFX() {
   // EffectComposer. This catches the race condition where gl changes
   // but ready hasn't been reset yet.
   const gl = useThree((state) => state.gl);
-  if (!postfxEnabled) return null;
+  if (gameMode === 'menu' || !postfxEnabled) return null;
   if (!rendererReady) return null;
   try {
     const ctx = gl.getContext();

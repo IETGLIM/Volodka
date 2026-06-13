@@ -27,7 +27,7 @@
  *  • Autostep handles stairs and small obstacles
  */
 
-import { useRef, useEffect, useMemo } from 'react';
+import { useRef, useEffect, useLayoutEffect, useMemo } from 'react';
 import type { RootState } from '@react-three/fiber';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import { setPhysicsStepMs } from '@/engine/frame/FrameBudgetRegistry';
@@ -127,8 +127,7 @@ const PLAYER_RADIUS = 0.3;
 const ROTATION_SPEED = 10;
 
 /* ─── Character Controller Constants ─── */
-const SKIN_WIDTH = 0.08;             // 8cm collision skin — increased from 2cm to prevent
-                                     // tunneling through thin trimesh furniture colliders
+const SKIN_WIDTH = 0.04;
 const MAX_SLOPE_CLIMB = Math.PI / 4; // 45° — walkable slopes
 const MIN_SLOPE_SLIDE = Math.PI / 6;  // 30° — auto-slide steeper
 const AUTOSTEP_HEIGHT = 0.3;         // 30cm max step height
@@ -221,6 +220,8 @@ export function PhysicsPlayer({
   const noMovementFramesRef = useRef(0);
   const kccRecoveryFramesRef = useRef(0);
   const virtualHoldTimesRef = useRef<VirtualHoldTimes>({});
+  const rbBoundRef = useRef(false);
+  const snapAirborneRef = useRef(false);
 
   const { world, rapier } = useRapier();
 
@@ -256,13 +257,11 @@ export function PhysicsPlayer({
     };
   }, [world]);
 
-  // Share rigid body ref with the interaction system
-  useEffect(() => {
-    if (rigidBodyRef.current?.isValid()) {
-      setPlayerRigidBody(rigidBodyRef.current);
-    }
+  // Share rigid body ref with the interaction system once Rapier marks it valid.
+  useLayoutEffect(() => {
     return () => {
       clearPlayerRigidBody();
+      rbBoundRef.current = false;
     };
   }, []);
 
@@ -371,7 +370,15 @@ export function PhysicsPlayer({
     scratch.vel = velocityRef.current;
 
     // Guard against disposed RigidBody during scene transitions
-    if (!rb.isValid()) return false;
+    if (!rb.isValid()) {
+      rbBoundRef.current = false;
+      return false;
+    }
+
+    if (!rbBoundRef.current) {
+      setPlayerRigidBody(rb);
+      rbBoundRef.current = true;
+    }
 
     const vel = scratch.vel;
     const fallbackFloorY = scratch.floorY;
@@ -419,6 +426,7 @@ export function PhysicsPlayer({
       capsuleColliderRef.current,
       rb,
     );
+    scratch.groundY = rescueGroundY;
 
     // If the RigidBody drops well below detected ground, snap back to that level.
     if (currentPos.y < rescueGroundY - 0.1) {
@@ -489,24 +497,11 @@ export function PhysicsPlayer({
     const controller = scratch.controller!;
     if (!rb.isValid()) return;
     const vel = scratch.vel;
-    const fallbackFloorY = scratch.floorY;
+    const groundY = scratch.groundY;
     const dt = scratch.dt;
     const currentMode = scratch.currentMode;
 
-    // ─── Check for external velocity from InteractionSystemBridge ───
     const external = getPlayerExternalVelocity();
-
-    const lockedPos = rb.translation();
-    const groundY = probeGroundY(
-      world,
-      rapier,
-      lockedPos.x,
-      lockedPos.y,
-      lockedPos.z,
-      fallbackFloorY,
-      capsuleColliderRef.current,
-      rb,
-    );
 
     // ──── LOCKED STATE: interaction system controls movement ────
     // External velocity (approach/align) goes through the character
@@ -597,7 +592,6 @@ export function PhysicsPlayer({
     const controller = scratch.controller!;
     if (!rb.isValid()) return false;
     const vel = scratch.vel;
-    const fallbackFloorY = scratch.floorY;
     const dt = scratch.dt;
     const tickState = scratch.tickState!;
 
@@ -700,16 +694,7 @@ export function PhysicsPlayer({
       (isGroundedRef.current || coyoteTimerRef.current > 0);
 
     const posForGroundCheck = rb.translation();
-    const groundY = probeGroundY(
-      world,
-      rapier,
-      posForGroundCheck.x,
-      posForGroundCheck.y,
-      posForGroundCheck.z,
-      fallbackFloorY,
-      capsuleColliderRef.current,
-      rb,
-    );
+    const groundY = scratch.groundY;
     scratch.groundY = groundY;
     const floorSlack = isOutdoor ? 0.08 : 0.05;
     const nearFloor = posForGroundCheck.y <= groundY + floorSlack;
@@ -820,10 +805,9 @@ export function PhysicsPlayer({
     controllerFailCountRef.current = 0;
 
     // Disable snap-to-ground while jumping — otherwise KCC cancels upward velocity.
-    if (airborneIntent) {
-      controller.enableSnapToGround(0);
-    } else {
-      controller.enableSnapToGround(SNAP_DISTANCE);
+    if (airborneIntent !== snapAirborneRef.current) {
+      snapAirborneRef.current = airborneIntent;
+      controller.enableSnapToGround(airborneIntent ? 0 : SNAP_DISTANCE);
     }
 
     let physicsT0: number | undefined;
@@ -905,7 +889,6 @@ export function PhysicsPlayer({
     const rb = scratch.rb!;
     if (!rb.isValid()) return;
     const vel = scratch.vel;
-    const fallbackFloorY = scratch.floorY;
     const dt = scratch.dt;
     const {
       airborneIntent,
@@ -921,10 +904,6 @@ export function PhysicsPlayer({
     } = scratch;
 
     // ─── Floor material from scene config (single source of truth) ───
-    // Previously, we read the collider name (fs:<material>) via raycast.
-    // Now, with auto-colliders from visual geometry (trimesh), the collider
-    // name is the scene geometry ID, not a footstep material.
-    // Floor material is determined by SceneConfig.floorMaterial — no raycast needed.
     currentFloorMaterialRef.current = config.floorMaterial;
 
     // ─── Animation state ───
@@ -975,16 +954,7 @@ export function PhysicsPlayer({
 
     // ─── Update position ref for camera + other systems ───
     let finalPos = rb.translation();
-    const finalGroundY = probeGroundY(
-      world,
-      rapier,
-      finalPos.x,
-      finalPos.y,
-      finalPos.z,
-      fallbackFloorY,
-      capsuleColliderRef.current,
-      rb,
-    );
+    const finalGroundY = groundY;
 
     // Lock Y on flat ground — skip when KCC already grounded to avoid fighting snap-to-ground.
     const floorSnapEps = isOutdoor ? 0.02 : 0.008;

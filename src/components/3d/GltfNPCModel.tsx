@@ -1,8 +1,8 @@
 /* ─── Volodka RPG – Animated GLB NPC mesh with procedural fallback ─── */
 
 import { Component, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
-import { useFrame } from '@react-three/fiber';
 import { Html, useGLTF } from '@react-three/drei';
+import { useFrameTick } from '@/engine/frame/useFrameTick';
 import * as THREE from 'three';
 import type { NPCDefinition } from '@/shared/types/game';
 import { getNpcModelMeta, resolveNpcModelUrl } from '@/config/npcModelRegistry';
@@ -90,9 +90,9 @@ function GltfNPCModelInner({
     setFit({ scale: autoScale, rotX, y });
   }, [scene, modelScale, targetHeightFactor]);
 
-  useFrame((_, delta) => {
+  useFrameTick('npc', ({ delta }) => {
     if (mixer) mixer.update(delta);
-  });
+  }, { label: 'GltfNPCMixer' });
 
   const isTalking =
     interactionState === InteractionState.Dialogue ||

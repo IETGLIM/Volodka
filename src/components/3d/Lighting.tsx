@@ -8,6 +8,7 @@
 import { useGameStore } from '@/store/gameStore';
 import { getSceneConfig } from '@/config/scenes';
 import { useIsMobileVisual } from '@/hooks/use-mobile';
+import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
 import { SCENE_VISIBILITY } from '@/shared/constants/sceneVisibility';
 
 /** Shadow config constants — tuned to prevent z-fighting/shadow acne */
@@ -73,8 +74,9 @@ function ScenePointLights() {
 export function ExplorationLighting() {
   const sceneId = useGameStore((s) => s.exploration.currentSceneId);
   const isMobile = useIsMobileVisual();
+  const { preset } = useGraphicsQuality();
   const config = getSceneConfig(sceneId);
-  const shadowSize = isMobile ? 512 : 2048;
+  const shadowSize = isMobile ? 512 : preset.id === 'ultra' ? 2048 : 1024;
 
   const ambientColor = config.ambientColor ?? '#1a1a2e';
   const ambientIntensity =

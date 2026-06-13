@@ -23,6 +23,7 @@
 
 import { useMemo } from 'react';
 import { useGameStore } from '@/store/gameStore';
+import { useGameMode } from '@/store/selectors';
 import { useMobileVisualPerf } from '@/hooks/use-mobile';
 import { useVisualSettings } from '@/hooks/useVisualSettings';
 import { VolumetricFog, FOG_PRESETS } from './VolumetricFog';
@@ -63,17 +64,11 @@ const EMBER_SCENES = new Set(['abandoned_factory']);
 /** Main controller: renders appropriate atmospheric effects per scene */
 export function AtmosphericEffects() {
   const sceneId = useGameStore((s) => s.exploration.currentSceneId);
+  const gameMode = useGameMode();
   const { visualLite, effectsScale } = useMobileVisualPerf();
-  // User setting "Частицы" — gates decorative particles (fog/god rays stay)
-  const { particlesEnabled } = useVisualSettings();
+  const { particlesEnabled, postfxEnabled } = useVisualSettings();
   const heavyEffects = visualLite || effectsScale < 0.85;
-
-  const showFog = sceneHasFog(sceneId);
-  const showGodRays = sceneHasGodRays(sceneId);
-  const showSteam = particlesEnabled && STEAM_SCENES.has(sceneId);
-  const showMatrixFog = particlesEnabled && MATRIX_FOG_SCENES.has(sceneId);
-  const showDust = particlesEnabled && DUST_SCENES.has(sceneId);
-  const showEmbers = particlesEnabled && EMBER_SCENES.has(sceneId);
+  const effectsEnabled = gameMode !== 'menu' && postfxEnabled;
 
   const fogConfig = useMemo(() => {
     const preset = FOG_PRESETS[sceneId] ?? {};
@@ -94,6 +89,15 @@ export function AtmosphericEffects() {
         return preset;
     }
   }, [sceneId, heavyEffects]);
+
+  if (!effectsEnabled) return null;
+
+  const showFog = sceneHasFog(sceneId);
+  const showGodRays = sceneHasGodRays(sceneId);
+  const showSteam = particlesEnabled && STEAM_SCENES.has(sceneId);
+  const showMatrixFog = particlesEnabled && MATRIX_FOG_SCENES.has(sceneId);
+  const showDust = particlesEnabled && DUST_SCENES.has(sceneId);
+  const showEmbers = particlesEnabled && EMBER_SCENES.has(sceneId);
 
   return (
     <>

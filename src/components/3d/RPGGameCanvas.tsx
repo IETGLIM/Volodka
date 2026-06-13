@@ -293,6 +293,7 @@ export function RPGGameCanvas() {
   const gameMode = useGameMode();
   const devToolsArmed = useGameStore((s) => s.devToolsArmed);
   const physicsPaused = gameMode === 'menu' || gameMode === 'intro';
+  const canvasFrameloop = physicsPaused ? 'demand' : 'always';
 
   // Dynamic DPR scaling based on measured FPS + quality preset
   const dpr = useDynamicDPR({
@@ -338,7 +339,7 @@ export function RPGGameCanvas() {
       <Canvas3DErrorBoundary>
         <Canvas
           flat
-          frameloop="always"
+          frameloop={canvasFrameloop}
           dpr={dpr}
           camera={{ fov: 55, near: 0.1, far: 200, position: [0, 2.35, 2.5] }}
           shadows={preset.shadows}
@@ -370,6 +371,7 @@ export function RPGGameCanvas() {
           style={{ background: '#000' }}
         >
         <GltfPipelineInit />
+        <CanvasFrameloopController idle={physicsPaused} />
         <VisualizationLayers livePlayerPositionRef={livePlayerPositionRef}>
           <Suspense
             fallback={
@@ -406,13 +408,15 @@ export function RPGGameCanvas() {
         <WeatherController />
 
         {/* Volumetric fog, god rays, and atmospheric effects */}
-        <AtmosphericEffects />
+        {!physicsPaused && <AtmosphericEffects />}
 
         {/* Post-processing — wrapped in inner error boundary so 3D scene
             still works even if EffectComposer fails to initialize */}
+        {!physicsPaused && (
         <PostFXErrorBoundary>
           <ExplorationPostFX />
         </PostFXErrorBoundary>
+        )}
 
         {devToolsArmed && (
           <Suspense fallback={null}>
@@ -434,6 +438,17 @@ export function RPGGameCanvas() {
       {/* Mobile virtual controls are handled by ExplorationMobileHud in GameOrchestrator */}
     </div>
   );
+}
+
+/** Kick the render loop when leaving menu/intro demand mode. */
+function CanvasFrameloopController({ idle }: { idle: boolean }) {
+  const invalidate = useThree((state) => state.invalidate);
+
+  useEffect(() => {
+    if (!idle) invalidate();
+  }, [idle, invalidate]);
+
+  return null;
 }
 
 /** Post-render guards: NoToneMapping enforcement + canvas:first-frame emit. */

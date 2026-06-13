@@ -73,8 +73,11 @@ export function PropDistanceGate({
     }
   });
 
-  if (!visible) return null;
-  return <group position={position}>{children}</group>;
+  return (
+    <group position={position} visible={visible}>
+      {children}
+    </group>
+  );
 }
 
 interface EnvironmentDetailProps {
