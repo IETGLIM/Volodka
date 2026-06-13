@@ -304,6 +304,11 @@ export class EventBusClass<TMap extends object = EventMap>
   isDisposed(): boolean {
     return this.disposed;
   }
+
+  /** Re-arm after orchestrator remount (React StrictMode). */
+  revive(): void {
+    this.disposed = false;
+  }
 }
 
 /**
@@ -320,6 +325,10 @@ export const eventBus = createEventBus();
 
 export function disposeEventBus(): void {
   eventBus.dispose();
+}
+
+export function reviveEventBus(): void {
+  eventBus.revive();
 }
 
 registerHmrDispose(disposeEventBus);

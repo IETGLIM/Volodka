@@ -114,9 +114,17 @@ export function resetAllPoemEffects(): void {
   dispatchGameAction({ type: 'poem/clearAllEffects' });
 }
 
-eventBus.on('poem:reset_all_effects', () => {
-  activeEffects.length = 0;
-});
+let unsubPoemReset: (() => void) | null = null;
+
+/** Re-bind after EventBus dispose (StrictMode / HMR). */
+export function bindPoemResetListener(): void {
+  unsubPoemReset?.();
+  unsubPoemReset = eventBus.on('poem:reset_all_effects', () => {
+    activeEffects.length = 0;
+  });
+}
+
+bindPoemResetListener();
 
 /** How often (ms) the game loop should call processExpiredTTLFlags */
 export function getTTLCheckInterval(): number {
