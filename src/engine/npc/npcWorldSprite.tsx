@@ -1,9 +1,31 @@
-import { useRef, useEffect, useMemo } from 'react';
+import { useRef, useEffect, useMemo, useLayoutEffect, useId } from 'react';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import * as THREE from 'three';
 
 const LABEL_CANVAS_W = 256;
 const LABEL_CANVAS_H = 64;
+const NAME_MAX_CHARS = 18;
+
+function hexWithAlpha(hex: string, alpha: number): string {
+  const normalized = hex.replace('#', '');
+  const r = Number.parseInt(normalized.slice(0, 2), 16);
+  const g = Number.parseInt(normalized.slice(2, 4), 16);
+  const b = Number.parseInt(normalized.slice(4, 6), 16);
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
+function truncateLabel(text: string, maxChars: number): string {
+  return text.length > maxChars ? `${text.slice(0, maxChars - 1)}…` : text;
+}
+
+function disposeCanvasSpriteResources(
+  texture: THREE.CanvasTexture,
+  material: THREE.SpriteMaterial,
+): void {
+  material.dispose();
+  texture.dispose();
+  texture.image = null;
+}
 
 function drawNameLabelCanvas(
   ctx: CanvasRenderingContext2D,
@@ -11,12 +33,13 @@ function drawNameLabelCanvas(
   accentColor: string,
   bodyColor: string,
 ): void {
+  const displayName = truncateLabel(name, NAME_MAX_CHARS);
   ctx.clearRect(0, 0, LABEL_CANVAS_W, LABEL_CANVAS_H);
   ctx.font = '600 22px monospace';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
 
-  const metrics = ctx.measureText(name);
+  const metrics = ctx.measureText(displayName);
   const padX = 16;
   const boxW = Math.min(LABEL_CANVAS_W - 8, metrics.width + padX * 2);
   const boxH = 32;
@@ -28,14 +51,14 @@ function drawNameLabelCanvas(
   ctx.roundRect(boxX, boxY, boxW, boxH, 4);
   ctx.fill();
 
-  ctx.strokeStyle = `${bodyColor}99`;
+  ctx.strokeStyle = hexWithAlpha(bodyColor, 0.6);
   ctx.lineWidth = 2;
   ctx.stroke();
 
   ctx.fillStyle = accentColor;
   ctx.shadowColor = accentColor;
   ctx.shadowBlur = 6;
-  ctx.fillText(name, LABEL_CANVAS_W / 2, LABEL_CANVAS_H / 2);
+  ctx.fillText(displayName, LABEL_CANVAS_W / 2, LABEL_CANVAS_H / 2);
   ctx.shadowBlur = 0;
 }
 
@@ -51,28 +74,52 @@ export function NpcNameSprite({
   opacity: number;
 }) {
   const spriteRef = useRef<THREE.Sprite>(null);
-  const { texture, material } = useMemo(() => {
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const textureRef = useRef<THREE.CanvasTexture | null>(null);
+  const materialRef = useRef<THREE.SpriteMaterial | null>(null);
+
+  const texture = useMemo(() => {
     const canvas = document.createElement('canvas');
     canvas.width = LABEL_CANVAS_W;
     canvas.height = LABEL_CANVAS_H;
-    const ctx = canvas.getContext('2d')!;
-    drawNameLabelCanvas(ctx, name, accentColor, bodyColor);
+    canvasRef.current = canvas;
     const tex = new THREE.CanvasTexture(canvas);
     tex.colorSpace = THREE.SRGBColorSpace;
+    textureRef.current = tex;
+    return tex;
+  }, []);
+
+  const material = useMemo(() => {
     const mat = new THREE.SpriteMaterial({
-      map: tex,
+      map: texture,
       transparent: true,
       depthWrite: false,
-      opacity,
     });
-    return { texture: tex, material: mat };
-  }, [name, accentColor, bodyColor, opacity]);
+    materialRef.current = mat;
+    return mat;
+  }, [texture]);
+
+  useEffect(() => {
+    const ctx = canvasRef.current?.getContext('2d');
+    if (!ctx) return;
+    drawNameLabelCanvas(ctx, name, accentColor, bodyColor);
+    texture.needsUpdate = true;
+  }, [name, accentColor, bodyColor, texture]);
 
   useEffect(() => {
     material.opacity = opacity;
   }, [material, opacity]);
 
-  useEffect(() => () => { texture.dispose(); material.dispose(); }, [texture, material]);
+  useLayoutEffect(
+    () => () => {
+      const tex = textureRef.current;
+      const mat = materialRef.current;
+      if (tex && mat) {
+        disposeCanvasSpriteResources(tex, mat);
+      }
+    },
+    [],
+  );
 
   return (
     <sprite
@@ -91,7 +138,7 @@ function drawSpeechBubbleCanvas(
   ctx: CanvasRenderingContext2D,
   phase: 'thinking' | 'speaking' | 'fading',
   text: string,
-  dotPhase: number,
+  activeDot: number,
 ): void {
   ctx.clearRect(0, 0, BUBBLE_CANVAS_W, BUBBLE_CANVAS_H);
   const isThinking = phase === 'thinking';
@@ -116,10 +163,7 @@ function drawSpeechBubbleCanvas(
   ctx.textBaseline = 'middle';
 
   if (isThinking) {
-    const dots = ['·', '·', '·'].map((d, i) => {
-      const active = Math.floor((dotPhase * 3) % 3) === i;
-      return active ? d : ' ';
-    });
+    const dots = ['·', '·', '·'].map((d, i) => (activeDot === i ? d : ' '));
     ctx.fillText(dots.join(' '), BUBBLE_CANVAS_W / 2, boxY + boxH / 2);
   } else {
     const display = text.length > 28 ? `${text.slice(0, 27)}…` : text;
@@ -136,51 +180,81 @@ export function NpcSpeechSprite({
   text: string;
   opacity: number;
 }) {
+  const tickLabel = useId();
   const dotPhaseRef = useRef(0);
+  const activeDotRef = useRef(0);
+  const phaseRef = useRef(phase);
+  const textRef = useRef(text);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const ctxRef = useRef<CanvasRenderingContext2D | null>(null);
+  const textureRef = useRef<THREE.CanvasTexture | null>(null);
+  const materialRef = useRef<THREE.SpriteMaterial | null>(null);
 
-  const { texture, material } = useMemo(() => {
+  phaseRef.current = phase;
+  textRef.current = text;
+
+  const texture = useMemo(() => {
     const canvas = document.createElement('canvas');
     canvas.width = BUBBLE_CANVAS_W;
     canvas.height = BUBBLE_CANVAS_H;
     canvasRef.current = canvas;
-    const ctx = canvas.getContext('2d')!;
-    ctxRef.current = ctx;
-    drawSpeechBubbleCanvas(ctx, phase, text, 0);
     const tex = new THREE.CanvasTexture(canvas);
     tex.colorSpace = THREE.SRGBColorSpace;
+    textureRef.current = tex;
+    return tex;
+  }, []);
+
+  const material = useMemo(() => {
     const mat = new THREE.SpriteMaterial({
-      map: tex,
+      map: texture,
       transparent: true,
       depthWrite: false,
-      opacity,
     });
-    return { texture: tex, material: mat };
-  }, [phase, text, opacity]);
+    materialRef.current = mat;
+    return mat;
+  }, [texture]);
+
+  const redrawBubble = (activeDot: number) => {
+    const ctx = canvasRef.current?.getContext('2d');
+    if (!ctx) return;
+    drawSpeechBubbleCanvas(ctx, phaseRef.current, textRef.current, activeDot);
+    texture.needsUpdate = true;
+  };
+
+  useEffect(() => {
+    if (phase === 'thinking') {
+      dotPhaseRef.current = 0;
+      activeDotRef.current = 0;
+    }
+    redrawBubble(activeDotRef.current);
+  }, [phase, text, texture]);
 
   useEffect(() => {
     material.opacity = opacity;
   }, [material, opacity]);
 
-  useFrameTick('npc', ({ delta }) => {
-    if (phase !== 'thinking') return;
-    dotPhaseRef.current += delta;
-    const ctx = ctxRef.current;
-    const tex = texture;
-    if (!ctx) return;
-    drawSpeechBubbleCanvas(ctx, phase, text, dotPhaseRef.current);
-    tex.needsUpdate = true;
-  });
+  useFrameTick(
+    'npc',
+    ({ delta }) => {
+      if (phaseRef.current !== 'thinking') return;
+      dotPhaseRef.current += delta;
+      const nextDot = Math.floor((dotPhaseRef.current * 3) % 3);
+      if (nextDot === activeDotRef.current) return;
+      activeDotRef.current = nextDot;
+      redrawBubble(nextDot);
+    },
+    { label: tickLabel },
+  );
 
-  useEffect(() => {
-    const ctx = ctxRef.current;
-    if (!ctx) return;
-    drawSpeechBubbleCanvas(ctx, phase, text, dotPhaseRef.current);
-    texture.needsUpdate = true;
-  }, [phase, text, texture]);
-
-  useEffect(() => () => { texture.dispose(); material.dispose(); }, [texture, material]);
+  useLayoutEffect(
+    () => () => {
+      const tex = textureRef.current;
+      const mat = materialRef.current;
+      if (tex && mat) {
+        disposeCanvasSpriteResources(tex, mat);
+      }
+    },
+    [],
+  );
 
   return (
     <sprite
@@ -192,13 +266,13 @@ export function NpcSpeechSprite({
 }
 
 const MARKER_CANVAS_SIZE = 128;
+const MARKER_BASE_SCALE = 0.35;
 
 function drawQuestMarkerCanvas(
   ctx: CanvasRenderingContext2D,
   icon: string,
   color: string,
   questName: string,
-  glowAlpha: number,
 ): void {
   ctx.clearRect(0, 0, MARKER_CANVAS_SIZE, MARKER_CANVAS_SIZE);
   const cx = MARKER_CANVAS_SIZE / 2;
@@ -206,7 +280,7 @@ function drawQuestMarkerCanvas(
 
   ctx.beginPath();
   ctx.arc(cx, cy, 18, 0, Math.PI * 2);
-  ctx.fillStyle = `${color}${Math.round(glowAlpha * 45).toString(16).padStart(2, '0')}`;
+  ctx.fillStyle = hexWithAlpha(color, 0.27);
   ctx.fill();
 
   ctx.font = 'bold 36px monospace';
@@ -214,7 +288,7 @@ function drawQuestMarkerCanvas(
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   ctx.shadowColor = color;
-  ctx.shadowBlur = 8 * glowAlpha;
+  ctx.shadowBlur = 8;
   ctx.fillText(icon, cx, cy);
   ctx.shadowBlur = 0;
 
@@ -236,44 +310,79 @@ export function NpcQuestMarkerSprite({
   questName: string;
   pulseSpeed: number;
 }) {
+  const tickLabel = useId();
+  const spriteRef = useRef<THREE.Sprite>(null);
   const pulsePhaseRef = useRef(0);
+  const pulseSpeedRef = useRef(pulseSpeed);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const ctxRef = useRef<CanvasRenderingContext2D | null>(null);
+  const textureRef = useRef<THREE.CanvasTexture | null>(null);
+  const materialRef = useRef<THREE.SpriteMaterial | null>(null);
 
-  const { texture, material } = useMemo(() => {
+  pulseSpeedRef.current = pulseSpeed;
+
+  const texture = useMemo(() => {
     const canvas = document.createElement('canvas');
     canvas.width = MARKER_CANVAS_SIZE;
     canvas.height = MARKER_CANVAS_SIZE;
     canvasRef.current = canvas;
-    const ctx = canvas.getContext('2d')!;
-    ctxRef.current = ctx;
-    drawQuestMarkerCanvas(ctx, icon, color, questName, 1);
     const tex = new THREE.CanvasTexture(canvas);
     tex.colorSpace = THREE.SRGBColorSpace;
+    textureRef.current = tex;
+    return tex;
+  }, []);
+
+  const material = useMemo(() => {
     const mat = new THREE.SpriteMaterial({
-      map: tex,
+      map: texture,
       transparent: true,
       depthWrite: false,
     });
-    return { texture: tex, material: mat };
-  }, [icon, color, questName]);
+    materialRef.current = mat;
+    return mat;
+  }, [texture]);
 
-  useFrameTick('npc', ({ delta }) => {
-    pulsePhaseRef.current += delta * (1.5 / pulseSpeed) * 3.0;
-    const glowIntensity = 0.7 + Math.sin(pulsePhaseRef.current) * 0.5;
-    const ctx = ctxRef.current;
+  useEffect(() => {
+    const ctx = canvasRef.current?.getContext('2d');
     if (!ctx) return;
-    drawQuestMarkerCanvas(ctx, icon, color, questName, glowIntensity);
+    drawQuestMarkerCanvas(ctx, icon, color, questName);
     texture.needsUpdate = true;
-  });
+  }, [icon, color, questName, texture]);
 
-  useEffect(() => () => { texture.dispose(); material.dispose(); }, [texture, material]);
+  useFrameTick(
+    'npc',
+    ({ delta }) => {
+      pulsePhaseRef.current += delta * (1.5 / pulseSpeedRef.current) * 3.0;
+      const pulse = 0.7 + Math.sin(pulsePhaseRef.current) * 0.5;
+      const mat = materialRef.current;
+      if (mat) {
+        mat.opacity = 0.75 + pulse * 0.25;
+      }
+      const sprite = spriteRef.current;
+      if (sprite) {
+        const scale = MARKER_BASE_SCALE * (0.92 + pulse * 0.12);
+        sprite.scale.set(scale, scale, 1);
+      }
+    },
+    { label: tickLabel },
+  );
+
+  useLayoutEffect(
+    () => () => {
+      const tex = textureRef.current;
+      const mat = materialRef.current;
+      if (tex && mat) {
+        disposeCanvasSpriteResources(tex, mat);
+      }
+    },
+    [],
+  );
 
   return (
     <sprite
+      ref={spriteRef}
       position={[0, 1.75, 0]}
       material={material}
-      scale={[0.35, 0.35, 1]}
+      scale={[MARKER_BASE_SCALE, MARKER_BASE_SCALE, 1]}
     />
   );
 }
