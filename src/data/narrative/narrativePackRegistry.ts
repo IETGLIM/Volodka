@@ -194,6 +194,10 @@ export async function loadDialoguePack(id: DialoguePackId): Promise<void> {
   await loadDialoguePackInternal(id);
 }
 
+export async function loadSceneExploreHubs(): Promise<void> {
+  await loadSceneExploreHubsInternal();
+}
+
 export async function loadBootstrapNarrativePacks(): Promise<void> {
   await Promise.all([
     ...BOOTSTRAP_STORY_PACKS.map(loadStoryPackInternal),

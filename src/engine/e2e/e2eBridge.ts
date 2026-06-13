@@ -1,4 +1,5 @@
 import { ensureStoryNode, getStoryNodes } from '@/data/gameDataLoader';
+import { loadSceneExploreHubs } from '@/data/narrative/narrativePackRegistry';
 import { getCutsceneForNode } from '@/data/cutscenes';
 import { eventBus } from '@/engine/EventBus';
 import { dispatchGameAction } from '@/engine/GameActionDispatcher';
@@ -9,7 +10,7 @@ import {
 } from '@/engine/PlayerRigidBodyState';
 import { closeNarrativeOverlay, openNarrativeOverlay } from '@/engine/scene/narrativeOverlay';
 import { enterSceneFreeExplorationHub } from '@/engine/scene/freeExplorationHub';
-import { resolveSceneSpawn } from '@/engine/scene/sceneTransition';
+import { resolveSceneSpawn, requestSceneTransition } from '@/engine/scene/sceneTransition';
 import { getGameStore } from '@/store/gameStore';
 import type { SceneId } from '@/shared/types/game';
 
@@ -30,6 +31,8 @@ export interface VolodkaE2EBridge {
   bootstrapAct2AlbertHint: () => Promise<void>;
   bootstrapFixSuccess: () => Promise<void>;
   bootstrapAct2MariaMeeting: () => Promise<void>;
+  bootstrapAct3ParkHub: () => Promise<void>;
+  bootstrapAct3LibraryHub: () => Promise<void>;
   promoteClosedOverlayHub: (hubId: string, sceneId: SceneId) => Promise<void>;
   isStoryOverlayReady: (expectedNodeId?: string) => boolean;
 }
@@ -41,24 +44,41 @@ declare global {
 }
 
 async function waitForScene(sceneId: SceneId): Promise<void> {
-  const store = getGameStore();
-  if (store.exploration.currentSceneId === sceneId) return;
+  const deadline = Date.now() + 45_000;
 
-  await new Promise<void>((resolve) => {
+  const sceneReady = () => getGameStore().exploration.currentSceneId === sceneId;
+
+  if (sceneReady()) return;
+
+  await new Promise<void>((resolve, reject) => {
     const unsub = eventBus.on('scene:loaded', (data) => {
       if (data.sceneId !== sceneId) return;
       unsub();
       resolve();
     });
-    dispatchGameAction({
-      type: 'exploration/applySceneTransition',
-      targetScene: sceneId,
-      spawnAt: resolveSceneSpawn(sceneId),
-    });
-    if (getGameStore().exploration.currentSceneId === sceneId) {
+
+    requestSceneTransition(sceneId, resolveSceneSpawn(sceneId));
+
+    if (sceneReady()) {
       unsub();
       resolve();
+      return;
     }
+
+    const poll = () => {
+      if (sceneReady()) {
+        unsub();
+        resolve();
+        return;
+      }
+      if (Date.now() >= deadline) {
+        unsub();
+        reject(new Error(`[e2eBridge] waitForScene timeout for ${sceneId}`));
+        return;
+      }
+      requestAnimationFrame(poll);
+    };
+    requestAnimationFrame(poll);
   });
 }
 
@@ -107,6 +127,7 @@ async function jumpToStoryBeat(nodeId: string, sceneId: SceneId): Promise<void> 
 }
 
 async function jumpToClosedOverlayHub(hubId: string, sceneId: SceneId): Promise<void> {
+  await loadSceneExploreHubs();
   await ensureStoryNode(hubId);
   const store = getGameStore();
   store.setIntroActive(false);
@@ -203,6 +224,26 @@ export function registerVolodkaE2EBridge(): void {
       store.setFlag('maria_introduced', true);
       store.markCutsceneTriggered('act1_to_act2');
       await jumpToStoryBeat('act2_maria_meeting_place', 'street_night');
+    },
+    async bootstrapAct3ParkHub() {
+      while (getGameStore().playerState.progression.currentAct < 3) {
+        getGameStore().advanceAct();
+      }
+      const store = getGameStore();
+      store.setFlag('act3_started', true);
+      store.setFlag('advanced_to_act3', true);
+      dispatchGameAction({ type: 'story/visitNode', nodeId: 'park_entrance' });
+      await jumpToClosedOverlayHub('park_explore_mode', 'park_day');
+    },
+    async bootstrapAct3LibraryHub() {
+      while (getGameStore().playerState.progression.currentAct < 3) {
+        getGameStore().advanceAct();
+      }
+      const store = getGameStore();
+      store.setFlag('act3_started', true);
+      store.setFlag('advanced_to_act3', true);
+      dispatchGameAction({ type: 'story/visitNode', nodeId: 'library_entrance' });
+      await jumpToClosedOverlayHub('library_explore_mode', 'library_day');
     },
     async promoteClosedOverlayHub(hubId, sceneId) {
       await jumpToClosedOverlayHub(hubId, sceneId);

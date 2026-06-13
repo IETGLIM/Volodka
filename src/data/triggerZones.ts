@@ -825,6 +825,25 @@ export const TRIGGER_ZONES: TriggerZone[] = [
     ],
   },
 
+  /* ─────────────── PARK INSCRIPTION — Act III golden path (closed-overlay hub) ─────────────── */
+  {
+    id: 'park_inscription_stone',
+    sceneId: 'park_day',
+    position: [0, 0, -2.5],
+    size: [1.5, 2.0, 1.5],
+    enterToast: 'У подножия памятника — высеченные буквы, наполовину стёртые гильдией.',
+    linkedDialogueNodeId: 'explore_act3_zarema_warning',
+    requiredAct: 3,
+    interactionType: 'examine',
+    interactionLabel: 'Осторожно очистить надпись на камне',
+    examineData: {
+      title: 'Надпись на камне',
+      description: 'Буквы на памятнике — наполовину стёрты временем и цензурой гильдии.',
+      detailText: 'Под мхом проступают строки. Камень помнит то, что люди забыли. Здесь же Зарема просила встретиться.',
+      icon: '🪨',
+    },
+  },
+
   /* ─────────────── PARK MEMORIAL ─────────────── */
   {
     id: 'park_memorial',

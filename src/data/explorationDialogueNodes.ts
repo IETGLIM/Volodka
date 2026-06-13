@@ -290,4 +290,27 @@ export const EXPLORATION_DIALOGUE_NODES: Record<string, DialogueNode> = {
       },
     ],
   },
+
+  explore_act3_zarema_warning: {
+    id: 'explore_act3_zarema_warning',
+    speaker: 'Голос',
+    text: 'У подножия памятника — высеченные буквы, наполовину стёртые временем и гильдией. Ты осторожно очищаешь камень от мха — под пальцами проступают строки. Камень помнит. Между деревьями мелькает знакомая фигура.',
+    sceneId: 'park_day',
+    choices: [
+      {
+        text: 'Искать Зарему — она должна быть здесь',
+        next: null,
+        effects: [
+          { type: 'visitStoryNode', nodeId: 'act3_zarema_warning' },
+          { type: 'collectPoem', poemId: 'poem_10' },
+          { type: 'npcChange', npcId: 'zarema', npcChange: { relation: 3 } },
+        ],
+      },
+      {
+        text: 'Ещё раз пройтись по аллеям',
+        next: null,
+        effects: [{ type: 'addSkill', skill: 'intuition', value: 1 }],
+      },
+    ],
+  },
 };
