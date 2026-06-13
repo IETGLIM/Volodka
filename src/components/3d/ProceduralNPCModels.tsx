@@ -1,7 +1,6 @@
 
 /* ─── Volodka RPG – Unique Procedural Humanoid NPC Models
-     Each of the 12 NPCs has a distinct silhouette, clothing, accessories,
-     and idle/walk/talk animations built entirely from Three.js primitives.
+     Distinct silhouettes per lore NPC — low-poly Three.js primitives.
      Quality matches the ProceduralPlayerModel in PhysicsPlayer.tsx. ─── */
 
 import { useRef, useEffect, useMemo } from 'react';
@@ -1365,6 +1364,285 @@ function KateModel({ appearance, animState = 'idle' }: { appearance: NPCAppearan
   );
 }
 
+/* ═══════════════════════════════════════════════════════════════════
+    13–21. Lore NPCs — distinct low-poly silhouettes (audit P2)
+    ═══════════════════════════════════════════════════════════════════ */
+
+/** Viktor — old slim hacker, cardigan, scholarly glasses, gray hair */
+function ViktorModel({ appearance, animState = 'idle' }: { appearance: NPCAppearance; animState?: 'idle' | 'walk' | 'talk' }) {
+  const groupRef = useRef<THREE.Group>(null);
+  useNPCAnimation(groupRef, animState, 0.06);
+  const bodyColor = appearance.bodyColor;
+  const accentColor = appearance.accentColor;
+  const glowColor = appearance.glowColor;
+  const cardigan = bodyColor;
+  const cardiganDark = '#2a2a40';
+  return (
+    <group ref={groupRef}>
+      <group name="torso" position={[0, 1.05, 0.02]} rotation={[0.06, 0, 0]}>
+        <mesh castShadow geometry={boxGeo(0.34, 0.46, 0.20)} material={npcMat({ color: cardigan, emissive: glowColor, emissiveIntensity: 0.06, roughness: 0.85 })} />
+        <mesh position={[0, 0.10, 0.108]} geometry={boxGeo(0.10, 0.14, 0.006)} material={npcMat({ color: '#3a3a50', roughness: 0.7 })} />
+        <mesh position={[0.22, -0.30, 0.06]} rotation={[0.2, 0, 0.1]} geometry={boxGeo(0.07, 0.09, 0.02)} material={npcMat({ color: cardiganDark, roughness: 0.8 })} />
+        <mesh position={[0, 0.26, 0]} geometry={sharedGeo.neckCylinderSlim} material={skinMat(SKIN_MEDIUM)} />
+        <group name="head" position={[0, 0.44, 0.02]}>
+          <mesh castShadow geometry={sharedGeo.skullSphereSm} material={skinMat(SKIN_MEDIUM)} />
+          <mesh position={[0, -0.045, 0.02]} castShadow geometry={sharedGeo.jawBoxSm} material={skinMat(SKIN_MEDIUM)} />
+          <Eyes browAngle={0.12} irisColor="#4a5aff" />
+          <FaceFeatures skinColor={SKIN_MEDIUM} shadowColor={SKIN_SHADOW_MED} />
+          <GlassesScholarly accentColor={accentColor} glowColor={glowColor} />
+          <mesh geometry={mergedGeo.hairGrayCluster} material={sharedMat.hairGray} />
+        </group>
+        <Arms sleeveColor={cardigan} skinColor={SKIN_MEDIUM} armWidth={0.038} forearmWidth={0.034} />
+      </group>
+      <Legs pantsColor="#2a2a38" pantsDark="#1a1a28" shoeColor="#2a2a2a" accentGlow={glowColor} accentColor={accentColor} legWidth={0.048} lowerLegWidth={0.042} />
+    </group>
+  );
+}
+
+/** Kira — street informant, slim, purple jacket, dangling earring */
+function KiraModel({ appearance, animState = 'idle' }: { appearance: NPCAppearance; animState?: 'idle' | 'walk' | 'talk' }) {
+  const groupRef = useRef<THREE.Group>(null);
+  useNPCAnimation(groupRef, animState, 0.04);
+  const bodyColor = appearance.bodyColor;
+  const accentColor = appearance.accentColor;
+  const glowColor = appearance.glowColor;
+  const skinColor = '#c9a090';
+  return (
+    <group ref={groupRef}>
+      <group name="torso" position={[0, 1.05, 0.01]} rotation={[0.04, 0, 0]}>
+        <mesh castShadow geometry={boxGeo(0.32, 0.44, 0.19)} material={npcMat({ color: bodyColor, emissive: glowColor, emissiveIntensity: 0.1, roughness: 0.8 })} />
+        <mesh position={[0, 0.18, 0.10]} geometry={boxGeo(0.20, 0.02, 0.01)} material={npcMat({ color: accentColor, emissive: glowColor, emissiveIntensity: 0.25, roughness: 0.5 })} />
+        <mesh position={[0, 0.26, 0]} geometry={sharedGeo.neckCylinderSm} material={skinMat(skinColor)} />
+        <group name="head" position={[0, 0.44, 0.02]}>
+          <mesh castShadow geometry={sharedGeo.skullSphereMd} material={skinMat(skinColor)} />
+          <mesh position={[0, -0.05, 0.025]} castShadow geometry={sharedGeo.jawBoxMd} material={skinMat(skinColor)} />
+          <Eyes browAngle={0.05} irisColor="#802060" />
+          <FaceFeatures skinColor={skinColor} shadowColor="#b08070" mouthCornersDown={false} />
+          <mesh position={[0, 0.06, -0.02]} geometry={sphereGeo(0.085, 5, 4)} material={hairMat('#2a1020')} />
+          <mesh position={[0.09, -0.02, 0.04]} geometry={sphereGeo(0.012, 6, 6)} material={npcMat({ color: accentColor, emissive: glowColor, emissiveIntensity: 0.5, metalness: 0.9, roughness: 0.1 })} />
+        </group>
+        <Arms sleeveColor={bodyColor} skinColor={skinColor} armWidth={0.036} forearmWidth={0.032} />
+      </group>
+      <Legs pantsColor="#1a1020" pantsDark="#100818" shoeColor="#1a1a1a" accentGlow={glowColor} accentColor={accentColor} legWidth={0.046} lowerLegWidth={0.040} />
+    </group>
+  );
+}
+
+/** Boris — factory worker, heavy build, hard hat, oil-stained jacket */
+function BorisModel({ appearance, animState = 'idle' }: { appearance: NPCAppearance; animState?: 'idle' | 'walk' | 'talk' }) {
+  const groupRef = useRef<THREE.Group>(null);
+  useNPCAnimation(groupRef, animState, 0.08);
+  const bodyColor = appearance.bodyColor;
+  const accentColor = appearance.accentColor;
+  const glowColor = appearance.glowColor;
+  return (
+    <group ref={groupRef}>
+      <group name="torso" position={[0, 1.05, 0.03]} rotation={[0.08, 0, 0]}>
+        <mesh castShadow geometry={boxGeo(0.48, 0.50, 0.26)} material={npcMat({ color: bodyColor, emissive: glowColor, emissiveIntensity: 0.05, roughness: 0.9 })} />
+        <mesh position={[-0.12, 0.08, 0.14]} geometry={boxGeo(0.08, 0.06, 0.01)} material={npcMat({ color: '#3a3020', roughness: 0.85 })} />
+        <mesh position={[0.12, 0.08, 0.14]} geometry={boxGeo(0.08, 0.06, 0.01)} material={npcMat({ color: '#3a3020', roughness: 0.85 })} />
+        <mesh position={[0, 0.26, 0]} geometry={sharedGeo.neckCylinderLg} material={skinMat(SKIN_MEDIUM)} />
+        <group name="head" position={[0, 0.48, 0.02]}>
+          <mesh castShadow geometry={sharedGeo.skullSphereLg} material={skinMat(SKIN_MEDIUM)} />
+          <mesh position={[0, -0.06, 0.025]} castShadow geometry={sharedGeo.jawBoxLg} material={skinMat(SKIN_MEDIUM)} />
+          <Eyes browAngle={0.10} irisColor="#4a3a20" />
+          <FaceFeatures skinColor={SKIN_MEDIUM} shadowColor={SKIN_SHADOW_MED} />
+          <mesh position={[0, 0.12, 0]} geometry={cylinderGeo(0.11, 0.12, 0.04, 8)} material={npcMat({ color: accentColor, emissive: glowColor, emissiveIntensity: 0.15, roughness: 0.7 })} />
+          <mesh position={[0, 0.16, 0]} geometry={sphereGeo(0.10, 6, 4, 0, Math.PI * 2, 0, Math.PI * 0.45)} material={npcMat({ color: accentColor, roughness: 0.8 })} />
+        </group>
+        <Arms sleeveColor={bodyColor} skinColor={SKIN_MEDIUM} armWidth={0.054} forearmWidth={0.048} />
+      </group>
+      <Legs pantsColor="#3a3525" pantsDark="#2a2515" shoeColor="#2a1a0a" accentGlow={glowColor} accentColor={accentColor} legWidth={0.064} lowerLegWidth={0.056} shoeScale={1.1} />
+    </group>
+  );
+}
+
+/** Tamara — keeper of forbidden texts, glasses, dark cardigan, bun */
+function TamaraModel({ appearance, animState = 'idle' }: { appearance: NPCAppearance; animState?: 'idle' | 'walk' | 'talk' }) {
+  const groupRef = useRef<THREE.Group>(null);
+  useNPCAnimation(groupRef, animState, 0.03);
+  const bodyColor = appearance.bodyColor;
+  const accentColor = appearance.accentColor;
+  const glowColor = appearance.glowColor;
+  const hairColor = '#3a2828';
+  return (
+    <group ref={groupRef}>
+      <group name="torso" position={[0, 1.05, 0.01]} rotation={[0.03, 0, 0]}>
+        <mesh castShadow geometry={boxGeo(0.36, 0.46, 0.21)} material={npcMat({ color: bodyColor, emissive: glowColor, emissiveIntensity: 0.06, roughness: 0.85 })} />
+        <mesh position={[0, 0.14, 0.112]} geometry={boxGeo(0.12, 0.10, 0.006)} material={npcMat({ color: '#5a4040', roughness: 0.7 })} />
+        <mesh position={[0.24, -0.28, 0.06]} rotation={[0.2, 0, 0.1]} geometry={boxGeo(0.06, 0.08, 0.02)} material={npcMat({ color: accentColor, emissive: glowColor, emissiveIntensity: 0.12, roughness: 0.7 })} />
+        <mesh position={[0, 0.26, 0]} geometry={sharedGeo.neckCylinderSlim} material={skinMat(SKIN_LIGHT)} />
+        <group name="head" position={[0, 0.46, 0.02]}>
+          <mesh castShadow geometry={sharedGeo.skullSphereMd} material={skinMat(SKIN_LIGHT)} />
+          <mesh position={[0, -0.05, 0.025]} castShadow geometry={sharedGeo.jawBoxMd} material={skinMat(SKIN_LIGHT)} />
+          <Eyes browAngle={0.08} irisColor="#6a3a30" />
+          <FaceFeatures skinColor={SKIN_LIGHT} shadowColor={SKIN_SHADOW_LIGHT} mouthCornersDown={false} />
+          <GlassesRound accentColor={accentColor} glowColor={glowColor} />
+          <mesh position={[0, 0.08, -0.10]} geometry={sharedGeo.hairBunSm} material={hairMat(hairColor)} />
+          <mesh geometry={mergedGeo.hairDarkSidesBack} material={hairMat(hairColor)} />
+        </group>
+        <Arms sleeveColor={bodyColor} skinColor={SKIN_LIGHT} armWidth={0.038} forearmWidth={0.034} />
+      </group>
+      <Legs pantsColor="#2a2020" pantsDark="#1a1010" shoeColor="#2a2a2a" accentGlow={glowColor} accentColor={accentColor} legWidth={0.050} lowerLegWidth={0.044} />
+    </group>
+  );
+}
+
+/** Grisha — rooftop dweller, windbreaker, scarf, beanie */
+function GrishaModel({ appearance, animState = 'idle' }: { appearance: NPCAppearance; animState?: 'idle' | 'walk' | 'talk' }) {
+  const groupRef = useRef<THREE.Group>(null);
+  useNPCAnimation(groupRef, animState, 0.05);
+  const bodyColor = appearance.bodyColor;
+  const accentColor = appearance.accentColor;
+  const glowColor = appearance.glowColor;
+  const skinColor = SKIN_LIGHT;
+  return (
+    <group ref={groupRef}>
+      <group name="torso" position={[0, 1.05, 0.02]} rotation={[0.05, 0, 0]}>
+        <mesh castShadow geometry={boxGeo(0.36, 0.46, 0.22)} material={npcMat({ color: bodyColor, emissive: glowColor, emissiveIntensity: 0.08, roughness: 0.85 })} />
+        <mesh position={[0, 0.20, 0.12]} geometry={boxGeo(0.24, 0.05, 0.02)} material={npcMat({ color: accentColor, emissive: glowColor, emissiveIntensity: 0.15, roughness: 0.7 })} />
+        <mesh geometry={mergedGeo.scarfTailPair} material={npcMat({ color: accentColor, roughness: 0.8 })} />
+        <mesh position={[0, 0.26, 0]} geometry={sharedGeo.neckCylinderMd} material={skinMat(skinColor)} />
+        <group name="head" position={[0, 0.46, 0.02]}>
+          <mesh castShadow geometry={sharedGeo.skullSphereMd} material={skinMat(skinColor)} />
+          <mesh position={[0, -0.05, 0.025]} castShadow geometry={sharedGeo.jawBoxMd} material={skinMat(skinColor)} />
+          <Eyes browAngle={0.06} irisColor="#4a7aff" />
+          <FaceFeatures skinColor={skinColor} shadowColor={SKIN_SHADOW_LIGHT} />
+          <group position={[0, 0.06, 0]}>
+            <mesh position={[0, 0.04, 0]} geometry={sphereGeo(0.10, 6, 4, 0, Math.PI * 2, 0, Math.PI * 0.55)} material={npcMat({ color: '#1a2a4a', roughness: 0.9 })} />
+            <mesh position={[0, -0.02, 0]} geometry={cylinderGeo(0.10, 0.10, 0.04, 8)} material={npcMat({ color: bodyColor, roughness: 0.9 })} />
+          </group>
+        </group>
+        <Arms sleeveColor={bodyColor} skinColor={skinColor} armWidth={0.040} forearmWidth={0.035} />
+      </group>
+      <Legs pantsColor="#1a2a3a" pantsDark="#101820" shoeColor="#1a1a1a" accentGlow={glowColor} accentColor={accentColor} />
+    </group>
+  );
+}
+
+/** Trofim — old fisherman, bucket hat, fishing rod */
+function TrofimModel({ appearance, animState = 'idle' }: { appearance: NPCAppearance; animState?: 'idle' | 'walk' | 'talk' }) {
+  const groupRef = useRef<THREE.Group>(null);
+  useNPCAnimation(groupRef, animState, 0.04);
+  const bodyColor = appearance.bodyColor;
+  const accentColor = appearance.accentColor;
+  const glowColor = appearance.glowColor;
+  const skinColor = '#a08870';
+  return (
+    <group ref={groupRef}>
+      <group name="torso" position={[0, 1.05, 0.02]} rotation={[0.04, 0, 0]}>
+        <mesh castShadow geometry={boxGeo(0.40, 0.46, 0.23)} material={npcMat({ color: bodyColor, emissive: glowColor, emissiveIntensity: 0.05, roughness: 0.9 })} />
+        <mesh position={[0, 0.16, 0.118]} geometry={boxGeo(0.12, 0.08, 0.006)} material={npcMat({ color: '#5a6a50', roughness: 0.8 })} />
+        <group position={[-0.26, -0.20, 0.1]} rotation={[0.1, 0, 0.3]}>
+          <mesh geometry={cylinderGeo(0.008, 0.008, 1.2, 4)} material={npcMat({ color: '#6a5a40', roughness: 0.8 })} />
+          <mesh position={[0, 0.55, 0]} geometry={boxGeo(0.004, 0.3, 0.004)} material={sharedMat.cord} />
+        </group>
+        <mesh position={[0, 0.26, 0]} geometry={sharedGeo.neckCylinder} material={skinMat(skinColor)} />
+        <group name="head" position={[0, 0.46, 0.02]}>
+          <mesh castShadow geometry={sharedGeo.skullSphere} material={skinMat(skinColor)} />
+          <mesh position={[0, -0.055, 0.025]} castShadow geometry={sharedGeo.jawBox} material={skinMat(skinColor)} />
+          <Eyes browAngle={0.14} irisColor="#4a5a40" />
+          <FaceFeatures skinColor={skinColor} shadowColor="#908060" />
+          <mesh position={[0, 0.10, 0.02]} geometry={cylinderGeo(0.12, 0.13, 0.02, 10)} material={npcMat({ color: accentColor, roughness: 0.85 })} />
+          <mesh position={[0, 0.12, 0]} geometry={sphereGeo(0.10, 6, 4, 0, Math.PI * 2, 0, Math.PI * 0.4)} material={npcMat({ color: accentColor, roughness: 0.85 })} />
+          <mesh position={[0, 0.06, -0.02]} geometry={sphereGeo(0.07, 5, 4)} material={sharedMat.hairGray} />
+        </group>
+        <Arms sleeveColor={bodyColor} skinColor={skinColor} armWidth={0.046} forearmWidth={0.040} />
+      </group>
+      <Legs pantsColor="#2a3028" pantsDark="#1a2018" shoeColor="#3a2a18" accentGlow={glowColor} accentColor={accentColor} legWidth={0.054} lowerLegWidth={0.048} />
+    </group>
+  );
+}
+
+/** Maxim — resistance leader, tactical vest, heavy build */
+function MaximModel({ appearance, animState = 'idle' }: { appearance: NPCAppearance; animState?: 'idle' | 'walk' | 'talk' }) {
+  const groupRef = useRef<THREE.Group>(null);
+  useNPCAnimation(groupRef, animState, 0.06);
+  const bodyColor = appearance.bodyColor;
+  const accentColor = appearance.accentColor;
+  const glowColor = appearance.glowColor;
+  return (
+    <group ref={groupRef}>
+      <group name="torso" position={[0, 1.05, 0.02]} rotation={[0.06, 0, 0]}>
+        <mesh castShadow geometry={boxGeo(0.46, 0.50, 0.26)} material={npcMat({ color: '#2a2020', roughness: 0.85 })} />
+        <mesh position={[0, 0.04, 0.14]} geometry={boxGeo(0.32, 0.24, 0.01)} material={npcMat({ color: bodyColor, emissive: glowColor, emissiveIntensity: 0.1, roughness: 0.6, metalness: 0.2 })} />
+        <mesh position={[0, 0.04, 0.145]} geometry={boxGeo(0.006, 0.28, 0.006)} material={npcMat({ color: accentColor, emissive: glowColor, emissiveIntensity: 0.3, metalness: 0.7, roughness: 0.2 })} />
+        <mesh position={[0, 0.26, 0]} geometry={sharedGeo.neckCylinderLg} material={skinMat(SKIN_MEDIUM)} />
+        <group name="head" position={[0, 0.48, 0.02]}>
+          <mesh castShadow geometry={sharedGeo.skullSphereLg} material={skinMat(SKIN_MEDIUM)} />
+          <mesh position={[0, -0.06, 0.025]} castShadow geometry={sharedGeo.jawBoxLg} material={skinMat(SKIN_MEDIUM)} />
+          <Eyes browAngle={0.12} irisColor="#4a3020" />
+          <FaceFeatures skinColor={SKIN_MEDIUM} shadowColor={SKIN_SHADOW_MED} />
+          <mesh position={[0, 0.08, -0.01]} geometry={sphereGeo(0.085, 5, 4)} material={sharedMat.hairDark} />
+          <mesh position={[0, -0.06, 0.07]} geometry={sharedGeo.stubblePlaneMd} material={stubbleMat(SKIN_SHADOW_MED, 0.2)} />
+        </group>
+        <Arms sleeveColor={bodyColor} skinColor={SKIN_MEDIUM} armWidth={0.052} forearmWidth={0.046} />
+      </group>
+      <Legs pantsColor="#1a1818" pantsDark="#101010" shoeColor="#1a1010" accentGlow={glowColor} accentColor={accentColor} legWidth={0.062} lowerLegWidth={0.054} shoeScale={1.12} />
+    </group>
+  );
+}
+
+/** Zeka — old factory hacker, work coat, cap, wrench */
+function ZekaModel({ appearance, animState = 'idle' }: { appearance: NPCAppearance; animState?: 'idle' | 'walk' | 'talk' }) {
+  const groupRef = useRef<THREE.Group>(null);
+  useNPCAnimation(groupRef, animState, 0.07);
+  const bodyColor = appearance.bodyColor;
+  const accentColor = appearance.accentColor;
+  const glowColor = appearance.glowColor;
+  return (
+    <group ref={groupRef}>
+      <group name="torso" position={[0, 1.05, 0.03]} rotation={[0.07, 0, 0]}>
+        <mesh castShadow geometry={boxGeo(0.42, 0.48, 0.24)} material={npcMat({ color: bodyColor, emissive: glowColor, emissiveIntensity: 0.05, roughness: 0.9 })} />
+        <mesh position={[0, 0.18, 0.125]} geometry={boxGeo(0.14, 0.06, 0.008)} material={npcMat({ color: '#4a4a40', roughness: 0.7 })} />
+        <mesh position={[-0.24, -0.32, 0.06]} rotation={[0.4, 0, -0.2]} geometry={boxGeo(0.02, 0.12, 0.02)} material={sharedMat.metalGray} />
+        <mesh position={[0, 0.26, 0]} geometry={sharedGeo.neckCylinder} material={skinMat(SKIN_MEDIUM)} />
+        <group name="head" position={[0, 0.47, 0.02]}>
+          <mesh castShadow geometry={sharedGeo.skullSphere} material={skinMat(SKIN_MEDIUM)} />
+          <mesh position={[0, -0.055, 0.025]} castShadow geometry={sharedGeo.jawBox} material={skinMat(SKIN_MEDIUM)} />
+          <Eyes browAngle={0.11} irisColor="#5a5a40" />
+          <FaceFeatures skinColor={SKIN_MEDIUM} shadowColor={SKIN_SHADOW_MED} />
+          <mesh position={[0, 0.06, 0]} geometry={sphereGeo(0.10, 6, 4, 0, Math.PI * 2, 0, Math.PI * 0.5)} material={npcMat({ color: '#4a4a38', roughness: 0.9 })} />
+          <mesh position={[0, 0.10, 0.08]} geometry={boxGeo(0.12, 0.008, 0.06)} material={npcMat({ color: '#4a4a38', roughness: 0.85 })} />
+          <mesh position={[0, 0.08, -0.02]} geometry={sphereGeo(0.07, 5, 4)} material={sharedMat.hairGray} />
+        </group>
+        <Arms sleeveColor={bodyColor} skinColor={SKIN_MEDIUM} armWidth={0.050} forearmWidth={0.044} />
+      </group>
+      <Legs pantsColor="#3a3830" pantsDark="#2a2820" shoeColor="#2a2a20" accentGlow={glowColor} accentColor={accentColor} legWidth={0.056} lowerLegWidth={0.048} />
+    </group>
+  );
+}
+
+/** Anya — young resistance hacker, slim, tech hoodie, glasses */
+function AnyaModel({ appearance, animState = 'idle' }: { appearance: NPCAppearance; animState?: 'idle' | 'walk' | 'talk' }) {
+  const groupRef = useRef<THREE.Group>(null);
+  useNPCAnimation(groupRef, animState, 0.04);
+  const bodyColor = appearance.bodyColor;
+  const accentColor = appearance.accentColor;
+  const glowColor = appearance.glowColor;
+  const skinColor = '#d0b8a0';
+  return (
+    <group ref={groupRef}>
+      <group name="torso" position={[0, 1.05, 0.01]} rotation={[0.04, 0, 0]}>
+        <mesh castShadow geometry={boxGeo(0.32, 0.44, 0.19)} material={npcMat({ color: bodyColor, emissive: glowColor, emissiveIntensity: 0.08, roughness: 0.85 })} />
+        <mesh geometry={mergedGeo.cyberAccentPair} material={npcMat({ color: accentColor, emissive: glowColor, emissiveIntensity: 0.5, roughness: 0.2 })} />
+        <mesh position={[0, 0.26, 0]} geometry={sharedGeo.neckCylinderSm} material={skinMat(skinColor)} />
+        <group name="head" position={[0, 0.44, 0.02]}>
+          <mesh castShadow geometry={sharedGeo.skullSphereSm} material={skinMat(skinColor)} />
+          <mesh position={[0, -0.045, 0.02]} castShadow geometry={sharedGeo.jawBoxSm} material={skinMat(skinColor)} />
+          <Eyes browAngle={0.05} irisColor="#4080c0" />
+          <FaceFeatures skinColor={skinColor} shadowColor="#c0a890" mouthCornersDown={false} />
+          <GlassesRound accentColor={accentColor} glowColor={glowColor} />
+          <mesh position={[0, 0.07, 0.05]} geometry={sphereGeo(0.06, 5, 4)} material={hairMat('#2a3040')} />
+          <mesh position={[0, 0.05, -0.06]} geometry={sphereGeo(0.065, 5, 4)} material={hairMat('#2a3040')} />
+        </group>
+        <Arms sleeveColor={bodyColor} skinColor={skinColor} armWidth={0.036} forearmWidth={0.032} />
+      </group>
+      <Legs pantsColor="#1a2030" pantsDark="#101820" shoeColor="#1a1a1a" accentGlow={glowColor} accentColor={accentColor} legWidth={0.046} lowerLegWidth={0.040} />
+    </group>
+  );
+}
+
 export interface ProceduralNPCModelProps {
   definitionId: string;
   appearance: NPCAppearance;
@@ -1534,6 +1812,60 @@ function ProceduralNPCModelInner({
       return (
         <group scale={[widthScale, heightScale, widthScale]}>
           <KateModel appearance={app} animState={animState} />
+        </group>
+      );
+    case 'viktor':
+      return (
+        <group scale={[widthScale, heightScale, widthScale]}>
+          <ViktorModel appearance={app} animState={animState} />
+        </group>
+      );
+    case 'kira':
+      return (
+        <group scale={[widthScale, heightScale, widthScale]}>
+          <KiraModel appearance={app} animState={animState} />
+        </group>
+      );
+    case 'boris':
+      return (
+        <group scale={[widthScale, heightScale, widthScale]}>
+          <BorisModel appearance={app} animState={animState} />
+        </group>
+      );
+    case 'tamara':
+      return (
+        <group scale={[widthScale, heightScale, widthScale]}>
+          <TamaraModel appearance={app} animState={animState} />
+        </group>
+      );
+    case 'grisha':
+      return (
+        <group scale={[widthScale, heightScale, widthScale]}>
+          <GrishaModel appearance={app} animState={animState} />
+        </group>
+      );
+    case 'fisherman_trofim':
+      return (
+        <group scale={[widthScale, heightScale, widthScale]}>
+          <TrofimModel appearance={app} animState={animState} />
+        </group>
+      );
+    case 'maxim':
+      return (
+        <group scale={[widthScale, heightScale, widthScale]}>
+          <MaximModel appearance={app} animState={animState} />
+        </group>
+      );
+    case 'zeka':
+      return (
+        <group scale={[widthScale, heightScale, widthScale]}>
+          <ZekaModel appearance={app} animState={animState} />
+        </group>
+      );
+    case 'anya':
+      return (
+        <group scale={[widthScale, heightScale, widthScale]}>
+          <AnyaModel appearance={app} animState={animState} />
         </group>
       );
     default:

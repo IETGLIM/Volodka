@@ -295,9 +295,9 @@ export const QUESTS_ACT1: QuestDefinition[] = [
       },
       {
         id: 'investigate_server_logs',
-        description: 'Проверить серверные логи в офисе',
-        type: 'location_visited',
-        target: 'office_day',
+        description: 'Поговорить с Сергеем о серверных логах',
+        type: 'npc_talked',
+        target: 'sergey',
         completed: false,
       },
       {
@@ -323,7 +323,7 @@ export const QUESTS_ACT1: QuestDefinition[] = [
       { type: 'addXp', value: 80 },
     ],
     linkedStoryNodeId: 'office_alexander',
-    questGiverNpcId: 'office_alexander',
+    questGiverNpcId: 'sergey',
   },
 
   /* ─────────────── QUEST 7: Albert's lesson ─────────────── */

@@ -72,6 +72,11 @@ export const NPC_QUEST_BARKS: Record<string, NpcQuestBarkEntry[]> = {
   ],
   sergey: [
     {
+      questId: 'night_shift_mystery',
+      objectiveId: 'investigate_server_logs',
+      text: 'Логи ночной смены — у меня. Спроси, пока серверная не ушла в автономный режим.',
+    },
+    {
       questId: 'blind_spot',
       objectiveId: 'check_office_logs',
       text: 'Логи доступа к офису у меня. Спроси — покажу, кто ходил ночью, когда Сеть молчала.',
@@ -110,6 +115,18 @@ export const NPC_QUEST_BARKS: Record<string, NpcQuestBarkEntry[]> = {
       text: 'Предложение за границей… Решать нам вместе. Твоё слово для неё много значит.',
     },
   ],
+  lena: [
+    {
+      questId: 'digital_ghost',
+      objectiveId: 'consult_lena',
+      text: 'Сеть шепчет о призраке в логах. Я знаю, где искать — если ты готов слушать.',
+    },
+    {
+      questId: 'secrets_of_old_code',
+      objectiveId: 'share_with_lena',
+      text: '«Живой код» из кафе — не шутка. Покажи расшифровку, я скажу, куда копать дальше.',
+    },
+  ],
   oleg: [
     {
       questId: 'blind_spot',
@@ -118,6 +135,10 @@ export const NPC_QUEST_BARKS: Record<string, NpcQuestBarkEntry[]> = {
     },
   ],
   kate: [
+    {
+      questId: 'poetry_smuggling',
+      text: 'Запрещённые стихи лежат в тайнике за полкой. Гильдия патрулирует маршруты — иди окольно.',
+    },
     {
       questId: 'echo_of_vladimir',
       objectiveId: 'find_kate_clue',

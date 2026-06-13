@@ -148,7 +148,7 @@ export const EXPANDED_DIALOGUE_NODES: Record<string, DialogueNode> = {
     speaker: 'Сергей',
     text: 'Логи... Странные вещи творятся по ночам. Неучтённые процессы. Трафик, которого не должно быть. Кто-то или что-то обращается к серверам в три часа ночи. И это не автоматика — автоматика работает по расписанию. Это... целенаправленный доступ.',
     choices: [
-      { text: 'Можешь показать логи?', next: null, effects: [{ type: 'setFlag', flag: 'suspicious_logs_seen', flagValue: true }, { type: 'addSkill', skill: 'logic', value: 1 }] },
+      { text: 'Можешь показать логи?', next: null, effects: [{ type: 'setFlag', flag: 'suspicious_logs_seen', flagValue: true }, { type: 'addSkill', skill: 'logic', value: 1 }, { type: 'triggerQuest', questId: 'night_shift_mystery' }] },
       { text: 'Может, это просто баг?', next: null },
     ],
   },
@@ -188,7 +188,7 @@ export const EXPANDED_DIALOGUE_NODES: Record<string, DialogueNode> = {
     speaker: 'Лена',
     text: 'Сеть — это не просто провода и серверы. Это... сознание. Коллективное. Я родилась в нём. Не метафорически — буквально. В ночь Краха что-то произошло. Данные стали... чем-то большим. И я — часть этого "большего".',
     choices: [
-      { text: 'Как Виктория...', next: null, effects: [{ type: 'setFlag', flag: 'lena_network_connection', flagValue: true }, { type: 'addSkill', skill: 'intuition', value: 2 }] },
+      { text: 'Как Виктория...', next: null, effects: [{ type: 'setFlag', flag: 'lena_network_connection', flagValue: true }, { type: 'addSkill', skill: 'intuition', value: 2 }, { type: 'triggerQuest', questId: 'digital_ghost' }] },
       { text: 'Это звучит безумно.', next: null, effects: [{ type: 'addSkill', skill: 'logic', value: 1 }] },
     ],
   },
@@ -228,7 +228,7 @@ export const EXPANDED_DIALOGUE_NODES: Record<string, DialogueNode> = {
     speaker: 'Олег',
     text: 'Типичный охранник не задаёт вопросов. Типичный охранник не читает Канта между обходами. Типичный охранник не... Впрочем, это уже лишнее. Давай скажем так: я здесь не потому, что верю в систему. Я здесь потому, что внутри системы — я могу её менять. Медленно. Изнутри.',
     choices: [
-      { text: 'Ты — наш человек внутри?', next: null, effects: [{ type: 'setFlag', flag: 'oleg_sympathy', flagValue: true }, { type: 'addKarma', value: 2 }] },
+      { text: 'Ты — наш человек внутри?', next: null, effects: [{ type: 'setFlag', flag: 'oleg_sympathy', flagValue: true }, { type: 'setFlag', flag: 'guild_ally_found', flagValue: true }, { type: 'addKarma', value: 2 }] },
       { text: 'Осторожнее с такими речами.', next: null },
     ],
   },
@@ -267,7 +267,7 @@ export const EXPANDED_DIALOGUE_NODES: Record<string, DialogueNode> = {
     speaker: 'Катя',
     text: 'Запрещённые книги... Вот, смотри. Это "Стихи о Москве" — после Краха весь тираж уничтожили. А это руководство по кибербезопасности — настоящее, не то, что гильдия разрешает. И вот — дневник одного программиста. Он писал его до самого конца. До Краха.',
     choices: [
-      { text: 'Можно взять почитать?', next: null, effects: [{ type: 'addItem', itemId: 'albert_poetry_collection', value: 1 }, { type: 'addSkill', skill: 'writing', value: 1 }] },
+      { text: 'Можно взять почитать?', next: null, effects: [{ type: 'addItem', itemId: 'albert_poetry_collection', value: 1 }, { type: 'addSkill', skill: 'writing', value: 1 }, { type: 'triggerQuest', questId: 'poetry_smuggling' }] },
       { text: 'Страшно думать, что слова могут быть преступлением.', next: null, effects: [{ type: 'addKarma', value: 3 }] },
     ],
   },

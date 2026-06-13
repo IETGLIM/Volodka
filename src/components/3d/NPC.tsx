@@ -36,8 +36,8 @@ import {
 } from '@/engine/lod/distanceLod';
 
 /* ─── NPC models ───
- *  All NPCs use ProceduralNPCModel (Three.js primitives) — no GLB files.
- *  The Suspense fallback shows a capsule impostor while the procedural model renders. */
+ *  GLB when a shipped asset exists (npcModelRegistry); otherwise ProceduralNPCModel.
+ *  Suspense shows a capsule impostor while the model loads. */
 
 /* ─── Speech bubble timing ─── */
 const THINKING_DURATION = 1.2; // seconds before bark text appears
@@ -424,9 +424,7 @@ function getNPCPointLightColor(npcId: string, glowColor: string): string {
   return glowColor;                    // Use NPC's unique glow color for neutral
 }
 
-/* NPCModel removed — all NPCs now use ProceduralNPCModel exclusively */
-
-/** NPC model renderer — GLB when modelPath/registry entry exists, else procedural.
+/** NPC model renderer — GLB when a shipped modelPath/registry entry exists, else procedural.
  *  Quality preset npcRenderMode='procedural' (low tier) skips GLB entirely. */
 function NPCModelWithErrorBoundary({
   definition,

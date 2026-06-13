@@ -256,7 +256,7 @@ export const QUESTS_ACT2: QuestDefinition[] = [
       { type: 'addXp', value: 100 },
     ],
     linkedStoryNodeId: 'street_bench',
-    questGiverNpcId: 'cafe_barista',
+    questGiverNpcId: 'kate',
   },
 
   /* ═══════════════════════════════════════════════════════════════════

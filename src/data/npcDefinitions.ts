@@ -7,7 +7,7 @@ export const NPC_DEFINITIONS: NPCDefinition[] = [
   {
     id: 'albert',
     name: 'Альберт',
-    modelPath: '/models/npcs/albert.glb',
+    modelPath: '',
     scale: 1.0,
     animations: { idle: 'idle', walk: 'walk', talk: 'talk' },
     defaultPosition: [-2.5, 0, -3.0],
@@ -34,7 +34,7 @@ export const NPC_DEFINITIONS: NPCDefinition[] = [
   {
     id: 'zarema',
     name: 'Зарема',
-    modelPath: '/models/npcs/zarema.glb',
+    modelPath: '',
     scale: 0.95,
     animations: { idle: 'idle', walk: 'walk', talk: 'talk' },
     defaultPosition: [1.5, 0, 2.0],

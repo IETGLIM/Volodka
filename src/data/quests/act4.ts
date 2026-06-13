@@ -26,9 +26,9 @@ export const QUESTS_ACT4: QuestDefinition[] = [
       },
       {
         id: 'find_ally_inside',
-        description: 'Найти союзника внутри здания гильдии',
-        type: 'flag_set',
-        target: 'guild_ally_found',
+        description: 'Завоевать доверие Олега — союзника внутри гильдии',
+        type: 'npc_talked',
+        target: 'oleg',
         completed: false,
       },
       {
@@ -134,6 +134,13 @@ export const QUESTS_ACT4: QuestDefinition[] = [
     requiresQuests: ['incident_scroll_4729'],
     objectives: [
       {
+        id: 'consult_lena',
+        description: 'Спросить Лену о цифровых следах в сети',
+        type: 'npc_talked',
+        target: 'lena',
+        completed: false,
+      },
+      {
         id: 'find_server_room',
         description: 'Найти серверную комнату в офисе гильдии',
         type: 'flag_set',
@@ -172,7 +179,7 @@ export const QUESTS_ACT4: QuestDefinition[] = [
       { type: 'addXp', value: 120 },
     ],
     linkedStoryNodeId: 'office_alexander',
-    questGiverNpcId: 'office_alexander',
+    questGiverNpcId: 'lena',
   },
 
   /* ─────────────── QUEST 19: Банковский Перевод ─────────────── */
@@ -657,6 +664,13 @@ export const QUESTS_ACT4: QuestDefinition[] = [
         description: 'Обнаружить другие файлы «живого кода» в городе',
         type: 'location_visited',
         target: 'abandoned_factory',
+        completed: false,
+      },
+      {
+        id: 'share_with_lena',
+        description: 'Показать Лене расшифрованный «живой код»',
+        type: 'npc_talked',
+        target: 'lena',
         completed: false,
       },
       {

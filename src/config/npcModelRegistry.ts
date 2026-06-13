@@ -12,37 +12,24 @@ export interface NpcModelAssetMeta {
 
 const NPCS = '/models/npcs';
 
-/** Distinct Khronos rigged GLBs — silhouette differs per NPC at conversation range. */
+/**
+ * GLB files that exist under public/models/npcs and pass validate-gltf-assets.
+ * NPCs not listed here (albert, zarema, office_alexander, …) render via
+ * ProceduralNPCModel — see ProceduralNPCModels.tsx switch.
+ */
+const SHIPPED_NPC_GLB_URLS = new Set<string>([
+  `${NPCS}/cafe_barista.glb`,
+  `${NPCS}/office_colleague.glb`,
+]);
+
+/** Distinct Khronos rigged GLBs — only entries with files on disk. */
 export const NPC_MODEL_ASSETS: Partial<Record<string, NpcModelAssetMeta>> = {
-  albert: {
-    url: `${NPCS}/albert.glb`,
-    scale: 1,
-    license: 'CC0',
-    source: 'Khronos glTF Sample Models — CesiumMan',
-    sourceUrl: 'https://github.com/KhronosGroup/glTF-Sample-Models/tree/main/2.0/CesiumMan',
-  },
-  zarema: {
-    url: `${NPCS}/zarema.glb`,
-    scale: 1,
-    license: 'CC0',
-    source: 'Khronos glTF Sample Models — RiggedFigure',
-    sourceUrl: 'https://github.com/KhronosGroup/glTF-Sample-Models/tree/main/2.0/RiggedFigure',
-  },
   cafe_barista: {
     url: `${NPCS}/cafe_barista.glb`,
     scale: 1,
     license: 'CC0',
     source: 'three.js examples — Soldier (CC0)',
     sourceUrl: 'https://github.com/mrdoob/three.js/tree/dev/examples/models/gltf',
-  },
-  office_alexander: {
-    // NOTE: GltfNPCModel auto-normalizes to 1.7 m — scale is a multiplier on top.
-    // The old 0.35 double-corrected and produced a 0.6 m dwarf.
-    url: `${NPCS}/office_alexander.glb`,
-    scale: 1,
-    license: 'CC0',
-    source: 'Khronos glTF Sample Models — BrainStem',
-    sourceUrl: 'https://github.com/KhronosGroup/glTF-Sample-Models/tree/main/2.0/BrainStem',
   },
   office_colleague: {
     url: `${NPCS}/office_colleague.glb`,
@@ -53,9 +40,17 @@ export const NPC_MODEL_ASSETS: Partial<Record<string, NpcModelAssetMeta>> = {
   },
 };
 
+/**
+ * Documented procedural fallbacks (no GLB shipped yet):
+ * - albert, zarema → AlbertModel / ZaremaModel
+ * - office_alexander → AlexanderModel
+ * - all expanded NPCs → unique or themed procedural silhouettes
+ */
+
 export function resolveNpcModelUrl(npcId: string, modelPath?: string): string | undefined {
-  if (modelPath) return modelPath;
-  return NPC_MODEL_ASSETS[npcId]?.url;
+  const candidate = modelPath || NPC_MODEL_ASSETS[npcId]?.url;
+  if (!candidate || !SHIPPED_NPC_GLB_URLS.has(candidate)) return undefined;
+  return candidate;
 }
 
 export function getNpcModelMeta(npcId: string): NpcModelAssetMeta | undefined {
@@ -63,7 +58,5 @@ export function getNpcModelMeta(npcId: string): NpcModelAssetMeta | undefined {
 }
 
 export function getNpcModelUrls(): string[] {
-  return Object.values(NPC_MODEL_ASSETS)
-    .map((m) => m?.url)
-    .filter(Boolean) as string[];
+  return [...SHIPPED_NPC_GLB_URLS];
 }
