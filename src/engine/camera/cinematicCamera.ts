@@ -901,6 +901,12 @@ export function startSceneTransition(
   state.endLookAt.copy(targetLookAt);
 }
 
+/** Cancel an in-flight scene transition (unmount / scene change cleanup). */
+export function cancelSceneTransition(state: SceneTransitionState): void {
+  state.active = false;
+  state.progress = 0;
+}
+
 /**
  * Update scene transition camera.
  * Returns interpolated camera position and look-at during transition.

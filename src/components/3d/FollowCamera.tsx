@@ -720,6 +720,11 @@ export function FollowCamera({
       );
     }
 
+    if (!raycasterRef.current) {
+      raycasterRef.current = new THREE.Raycaster();
+      configureCameraCollisionRaycaster(raycasterRef.current);
+    }
+
     const ctx: CameraModeContext = {
       delta,
       time: timeRef.current,
@@ -732,7 +737,7 @@ export function FollowCamera({
       playerRotation: livePlayerRotationRef.current,
       playerVelocity: _playerVelocity.current,
       spring,
-      raycaster: raycaster.current,
+      raycaster: raycasterRef.current,
       yaw: yawRef.current,
       pitch: pitchRef.current,
       distance: distanceRef.current,
