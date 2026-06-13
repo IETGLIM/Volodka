@@ -29,8 +29,9 @@ import {
   WAKEUP_PHASE,
 } from '@/engine/wakeup/wakeUpCinematic';
 import {
-  registerCameraOwner,
-  releaseCameraOwner,
+  acquireCameraOwnership,
+  canWriteCamera,
+  releaseCameraOwnership,
 } from '@/engine/camera/cameraOwnerState';
 
 export function WakeUpSequence() {
@@ -62,7 +63,7 @@ export function WakeUpSequence() {
     }
     setActive(false);
     activeRef.current = false;
-    releaseCameraOwner('wakeUp');
+    releaseCameraOwnership('wakeUp');
     handoffStartedRef.current = false;
     sequenceStartedRef.current = false;
 
@@ -134,7 +135,7 @@ export function WakeUpSequence() {
       sequenceStartedRef.current = true;
       setActive(true);
       activeRef.current = true;
-      registerCameraOwner('wakeUp');
+      acquireCameraOwnership('wakeUp');
       elapsedRef.current = 0;
       phaseStartTimeRef.current = 0;
       currentWaypointRef.current = 0;
@@ -198,7 +199,7 @@ export function WakeUpSequence() {
   }, [camera]);
 
   useFrameTick('misc', ({ delta }) => {
-    if (!active) return;
+    if (!active || !canWriteCamera('wakeUp')) return;
     elapsedRef.current += delta;
     const elapsed = elapsedRef.current;
 

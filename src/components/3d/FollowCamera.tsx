@@ -158,6 +158,7 @@ export function FollowCamera({
 
   useLayoutEffect(() => {
     resetCameraForSceneChange(runtimeRef.current, sceneId);
+    // Cancel in-flight transition if scene changes again or unmounts mid-teleport.
     return () => {
       cleanupInFlightCameraTransitions(runtimeRef.current, sceneIdRef.current);
     };
