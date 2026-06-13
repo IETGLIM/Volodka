@@ -475,8 +475,8 @@ export const STORY_NODES_ACT1: Record<string, StoryNode> = {
     effects: [{ type: 'triggerQuest', questId: 'vault_backup_trial' }],
     choices: [
       {
-        text: 'Попросить его помочь с доступом',
-        next: 'office_alexander',
+        text: 'Поблагодарить и выйти на балкон — нужно подумать',
+        next: 'balcony_thought',
         goldenPath: true,
         effects: [
           { type: 'addSkill', skill: 'persuasion', value: 2 },
@@ -538,7 +538,7 @@ export const STORY_NODES_ACT1: Record<string, StoryNode> = {
     choices: [
       {
         text: 'Записать стихотворение, родившееся в голове',
-        next: 'go_to_cafe',
+        next: 'friday_arrives',
         goldenPath: true,
         effects: [
           { type: 'collectPoem', poemId: 'poem_3' },
@@ -573,7 +573,7 @@ export const STORY_NODES_ACT1: Record<string, StoryNode> = {
     choices: [
       {
         text: 'Написать стихотворение об одиночестве',
-        next: 'go_to_cafe',
+        next: 'act2_transition',
         goldenPath: true,
         effects: [
           { type: 'collectPoem', poemId: 'poem_4' },
@@ -609,7 +609,8 @@ export const STORY_NODES_ACT1: Record<string, StoryNode> = {
     choices: [
       {
         text: 'Да. Расскажи мне всё.',
-        next: 'act2_transition',
+        next: 'act2_maria_meeting_place',
+        goldenPath: true,
         effects: [
           { type: 'collectPoem', poemId: 'poem_6' },
           { type: 'addKarma', value: 5 },

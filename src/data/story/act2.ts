@@ -96,7 +96,7 @@ export const STORY_NODES_ACT2: Record<string, StoryNode> = {
     choices: [
       {
         text: 'Веди меня.',
-        next: 'act2_maria_meeting_place',
+        next: 'maria_introduction',
         goldenPath: true,
         effects: [
           { type: 'addKarma', value: 3 },
@@ -412,8 +412,9 @@ export const STORY_NODES_ACT2: Record<string, StoryNode> = {
         ],
       },
       {
-        text: 'Познакомиться с членами Сети',
-        next: 'act2_network_members',
+        text: 'Послушать, как Сеть читает стихи вслух',
+        next: 'reading_reaction',
+        goldenPath: true,
         effects: [
           { type: 'addSkill', skill: 'empathy', value: 2 },
           { type: 'npcChange', npcId: 'maria', npcChange: { relation: 3 } },
@@ -546,12 +547,15 @@ export const STORY_NODES_ACT2: Record<string, StoryNode> = {
     sceneId: 'abandoned_factory',
     choices: [
       {
-        text: 'Мы должны защитить Хранилище любой ценой',
-        next: 'act2_dmitry_office_meeting',
+        text: 'Договориться с баристой о явочной квартире',
+        next: 'act2_safehouse_agreed',
+        goldenPath: true,
         effects: [
           { type: 'addKarma', value: 5 },
           { type: 'setFlag', flag: 'vault_protect_vowed', flagValue: true },
           { type: 'setFlag', flag: 'vault_access_granted', flagValue: true },
+          { type: 'setFlag', flag: 'cafe_safehouse_agreed', flagValue: true },
+          { type: 'triggerQuest', questId: 'cafe_safehouse' },
         ],
       },
       {

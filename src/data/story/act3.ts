@@ -91,6 +91,19 @@ export const STORY_NODES_ACT3: Record<string, StoryNode> = {
     sceneId: 'volodka_corridor',
     choices: [
       {
+        text: 'Срочно собрать Сеть — спасаем Зарему',
+        next: 'act3_detention_infiltration',
+        goldenPath: true,
+        effects: [
+          { type: 'addKarma', value: 5 },
+          { type: 'addStat', stat: 'stress', value: 5 },
+          { type: 'setFlag', flag: 'zarema_arrested', flagValue: true },
+          { type: 'setFlag', flag: 'pledge_rescue_zarema', flagValue: true },
+          { type: 'setFlag', flag: 'priority_rescue_zarema', flagValue: true },
+          { type: 'triggerQuest', questId: 'zarema_rescue' },
+        ],
+      },
+      {
         text: 'Вступиться за Зарему — она невиновна!',
         next: 'act3_zarema_arrest_resist',
         effects: [
@@ -388,7 +401,8 @@ export const STORY_NODES_ACT3: Record<string, StoryNode> = {
     choices: [
       {
         text: 'Спасибо, Виктория. Я не справился бы без тебя.',
-        next: 'act3_maria_revelation',
+        next: 'act3_maria_mystery',
+        goldenPath: true,
         effects: [
           { type: 'collectPoem', poemId: 'poem_11' },
           { type: 'addKarma', value: 5 },

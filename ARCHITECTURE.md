@@ -118,9 +118,10 @@ patrol→chase→engaged→cooldown, конус зрения проецируе�
   act-pack: `factory_*`, `basement_*`, `pier_*`, `solnysh_*`.
   **Миграция free exploration для walkable hubs завершена** (Phase 7);
   e2e: `act3-smoke` … `act7-smoke`.
-- Канонический путь: `GOLDEN_PATH_STORY_SPINE` (до `act7_true_end`) + derivation
-  из меток `choice.goldenPath` (`deriveGoldenPath.ts`); валидатор контента
-  (`npm run validate:content`) сверяет оба источника.
+- Канонический путь: `GOLDEN_PATH_STORY_SPINE` (116 узлов, до `act7_true_end`) +
+  derivation из меток `choice.goldenPath` (`deriveGoldenPath.ts`); валидатор контента
+  (`npm run validate:content`) сверяет длину и порядок обоих источника (терминальный
+  узел без исходящего goldenPath — ожидаемо).
 - Прогресс: `GuidedStoryManager` (visitedNodes, флаги, npc:talked,
   `scene:enter`) + `QuestTracker` (objectives: location/npc/flag/item/poem/minigame).
   Spine advance: только текущий шаг (`resolveStorySpineAdvance`), debounce 32 ms

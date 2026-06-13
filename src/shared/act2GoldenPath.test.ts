@@ -3,11 +3,11 @@ import { STORY_NODES_SCENE_EXPLORE_HUBS } from '@/data/story/sceneExploreHubs';
 import { STORY_NODES_ACT2 } from '@/data/story/act2';
 
 describe('Act II golden path markers', () => {
-  it('marks act2_maria_search golden branch to meeting place', () => {
+  it('marks act2_maria_search golden branch to maria introduction', () => {
     const node = STORY_NODES_ACT2.act2_maria_search;
     const golden = node.choices.filter((c) => c.goldenPath === true);
     expect(golden).toHaveLength(1);
-    expect(golden[0]?.next).toBe('act2_maria_meeting_place');
+    expect(golden[0]?.next).toBe('maria_introduction');
   });
 
   it('marks act2_transition cafe spine golden branch', () => {

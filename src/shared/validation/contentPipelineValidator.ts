@@ -645,6 +645,9 @@ function validateGoldenPath(reg: ReturnType<typeof buildSets>, out: ValidationIs
   }
 
   for (const nodeId of report.missingGoldenPathMarkers) {
+    if (nodeId === GOLDEN_PATH_STORY_SPINE[GOLDEN_PATH_STORY_SPINE.length - 1]) {
+      continue;
+    }
     out.push(
       issue(
         'warning',

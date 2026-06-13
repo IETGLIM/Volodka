@@ -17,11 +17,11 @@ describe('Act I golden path markers', () => {
     }
   });
 
-  it('marks colleague_persuasion_line golden branch to office_alexander', () => {
+  it('marks colleague_persuasion_line golden branch to balcony_thought', () => {
     const node = STORY_NODES_ACT1.colleague_persuasion_line;
     const golden = node.choices.filter((c) => c.goldenPath === true);
     expect(golden).toHaveLength(1);
-    expect(golden[0]?.next).toBe('office_alexander');
+    expect(golden[0]?.next).toBe('balcony_thought');
   });
 
   it('corridor_explore_mode golden branch leads to kitchen_table', () => {
@@ -31,17 +31,17 @@ describe('Act I golden path markers', () => {
     expect(golden[0]?.next).toBe('kitchen_table');
   });
 
-  it('marks balcony_thought golden branch to go_to_cafe', () => {
+  it('marks balcony_thought golden branch to friday_arrives', () => {
     const node = STORY_NODES_ACT1.balcony_thought;
     const golden = node.choices.filter((c) => c.goldenPath === true);
     expect(golden).toHaveLength(1);
-    expect(golden[0]?.next).toBe('go_to_cafe');
+    expect(golden[0]?.next).toBe('friday_arrives');
   });
 
-  it('marks friday_arrives golden branch to go_to_cafe', () => {
+  it('marks friday_arrives golden branch to act2_transition', () => {
     const node = STORY_NODES_ACT1.friday_arrives;
     const golden = node.choices.filter((c) => c.goldenPath === true);
     expect(golden).toHaveLength(1);
-    expect(golden[0]?.next).toBe('go_to_cafe');
+    expect(golden[0]?.next).toBe('act2_transition');
   });
 });
