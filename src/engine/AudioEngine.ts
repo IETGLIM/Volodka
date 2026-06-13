@@ -3,5 +3,5 @@
  * This file re-exports the public API for backward compatibility.
  */
 
-export { audioEngine } from './audio/AudioEngine';
+export { audioEngine, type PlayFootstepOptions } from './audio/AudioEngine';
 export { default } from './audio/AudioEngine';

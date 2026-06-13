@@ -35,6 +35,18 @@ import {
 import { registerHmrDispose } from '@/shared/dev/hmrDispose';
 import { RandomSoundLoopRegistry } from './randomSoundLoopRegistry';
 
+export type PlayFootstepOptions = {
+  /** Stable id — when set, replaces any still-playing footstep on this voice. */
+  sourceId?: string;
+  /** Default false when sourceId is set; true when omitted (legacy one-shot behavior). */
+  allowOverlap?: boolean;
+};
+
+type FootstepVoice = {
+  noise: AudioBufferSourceNode;
+  click?: OscillatorNode;
+};
+
 /**
  * AAA procedural audio engine using the Web Audio API.
  * Generates ambient music, SFX, footstep sounds, ambient drones, spatial audio,
@@ -109,6 +121,9 @@ class AudioEngine {
   private _onBlur: (() => void) | null = null;
   private _onFocus: (() => void) | null = null;
 
+  /** One voice per sourceId — prevents footstep stacking on fast cadence or lag spikes. */
+  private footstepVoiceBySourceId = new Map<string, FootstepVoice>();
+
   constructor() {
     // DEFER AudioContext creation — browsers require a user gesture before
     // AudioContext can start. Creating it here (module load time) causes:
@@ -181,14 +196,35 @@ class AudioEngine {
     safeStop(osc, now + preset.duration + 0.01);
   }
 
+  private stopFootstepVoice(sourceId: string): void {
+    const voice = this.footstepVoiceBySourceId.get(sourceId);
+    if (!voice) return;
+    releaseBufferSource(voice.noise);
+    if (voice.click) safeStop(voice.click);
+    this.footstepVoiceBySourceId.delete(sourceId);
+  }
+
+  private clearFootstepVoices(): void {
+    for (const sourceId of this.footstepVoiceBySourceId.keys()) {
+      this.stopFootstepVoice(sourceId);
+    }
+  }
+
   /**
    * Play a procedural footstep sound.
    * @param material — surface material (default, wood, concrete, metal, carpet, snow, tile, gravel, grass, metal_grate)
+   * @param options — optional voice id; when sourceId is set, previous step on that voice is stopped unless allowOverlap is true
    */
-  playFootstep(material?: string): void {
+  playFootstep(material?: string, options?: PlayFootstepOptions): void {
     if (this.disposed) return;
     this.initContext();
     this.resume();
+
+    const sourceId = options?.sourceId;
+    const allowOverlap = options?.allowOverlap ?? sourceId === undefined;
+    if (sourceId && !allowOverlap) {
+      this.stopFootstepVoice(sourceId);
+    }
 
     const preset = FOOTSTEP_PRESETS[material ?? 'default'] ?? FOOTSTEP_PRESETS['default'];
     const ctx = this.ctx;
@@ -227,10 +263,12 @@ class AudioEngine {
     envGain.connect(dest);
 
     noiseSource.start(now);
+    safeStop(noiseSource, now + preset.noiseDuration + 0.01);
 
     // Additional click/harmonic for hard surfaces (tile, metal_grate, wood, gravel)
+    let clickOsc: OscillatorNode | undefined;
     if (preset.clickFreq > 0) {
-      const clickOsc = ctx.createOscillator();
+      clickOsc = ctx.createOscillator();
       clickOsc.type = 'sine';
       clickOsc.frequency.setValueAtTime(preset.clickFreq * (0.9 + Math.random() * 0.2), now);
 
@@ -243,6 +281,16 @@ class AudioEngine {
 
       clickOsc.start(now);
       safeStop(clickOsc, now + 0.05);
+    }
+
+    if (sourceId) {
+      this.footstepVoiceBySourceId.set(sourceId, { noise: noiseSource, click: clickOsc });
+      noiseSource.onended = () => {
+        const current = this.footstepVoiceBySourceId.get(sourceId);
+        if (current?.noise === noiseSource) {
+          this.footstepVoiceBySourceId.delete(sourceId);
+        }
+      };
     }
   }
 
@@ -1828,6 +1876,7 @@ class AudioEngine {
   dispose(): void {
     if (this.disposed) return;
     this.disposed = true;
+    this.clearFootstepVoices();
     this.flushPendingAmbientCleanup();
     this.flushPendingMusicCleanup();
     this.stopAmbient();

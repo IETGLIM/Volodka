@@ -35,7 +35,8 @@
   "include": [
     "src",
     "config",
-    "vite-env.d.ts"
+    "vite-env.d.ts",
+    "e2e/volodka-e2e.d.ts"
   ],
   "exclude": [
     "node_modules"

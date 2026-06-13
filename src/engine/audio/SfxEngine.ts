@@ -3,7 +3,7 @@
  * Delegates synthesis to AudioEngine — keeps call sites off the monolith.
  */
 
-import { audioEngine } from './AudioEngine';
+import { audioEngine, type PlayFootstepOptions } from './AudioEngine';
 
 export type StingerId =
   | 'tension'
@@ -21,8 +21,8 @@ class SfxEngineImpl {
     audioEngine.playSfx(type);
   }
 
-  playFootstep(material?: string): void {
-    audioEngine.playFootstep(material);
+  playFootstep(material?: string, options?: PlayFootstepOptions): void {
+    audioEngine.playFootstep(material, options);
   }
 
   playStinger(id: StingerId): void {

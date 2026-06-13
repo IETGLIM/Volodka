@@ -13,6 +13,27 @@ interface SolnyshRoomVisualProps {
 }
 
 /** Cozy room with carpets — designer + barista couple (8×8 m) */
+/* ─── Shared geometries (module-level, reused across renders) ─── */
+
+const geo_pln_1 = new THREE.PlaneGeometry(8, 8);
+const geo_pln_2 = new THREE.PlaneGeometry(4.2, 3.2);
+const geo_pln_3 = new THREE.PlaneGeometry(2, 1.6);
+const geo_box_4 = new THREE.BoxGeometry(0.06, 1.1, 0.06);
+const geo_box_5 = new THREE.BoxGeometry(0.7, 0.55, 0.03);
+const geo_pln_6 = new THREE.PlaneGeometry(0.5, 0.4);
+const geo_box_7 = new THREE.BoxGeometry(0.9, 0.9, 0.5);
+const geo_cyl_8 = new THREE.CylinderGeometry(0.12, 0.14, 0.35, 8);
+const geo_cyl_9 = new THREE.CylinderGeometry(0.04, 0.04, 0.12, 6);
+const geo_box_10 = new THREE.BoxGeometry(0.8, 1.5, 0.45);
+const geo_box_11 = new THREE.BoxGeometry(0.72, 1.4, 0.02);
+const geo_box_12 = new THREE.BoxGeometry(0.22, 0.16, 0.02);
+const geo_pln_13 = new THREE.PlaneGeometry(0.18, 0.12);
+const geo_box_14 = new THREE.BoxGeometry(0.32, 0.26, 0.02);
+const geo_pln_15 = new THREE.PlaneGeometry(0.26, 0.2);
+const geo_cyl_16 = new THREE.CylinderGeometry(0.28, 0.32, 0.1, 12);
+const geo_pln_wall_wh = new THREE.PlaneGeometry(8, 3);
+const geo_pln_wall_dh = new THREE.PlaneGeometry(8, 3);
+
 export function SolnyshRoomVisual({ livePlayerPositionRef: _livePlayerPositionRef }: SolnyshRoomVisualProps) {
   const floorTexture = useCachedCanvasTexture('solnysh_room:floor', createWoodFloorTexture);
   const carpetTexture = useCachedCanvasTexture('solnysh_room:carpet', createCarpetTexture);
@@ -25,23 +46,23 @@ export function SolnyshRoomVisual({ livePlayerPositionRef: _livePlayerPositionRe
 
   return (
     <group>
-      <mesh rotation-x={-Math.PI / 2} receiveShadow position-y={0.002}>
-        <planeGeometry args={[W, D]} />
+      <mesh rotation-x={-Math.PI / 2} receiveShadow position-y={0.002} geometry={geo_pln_1}>
+
         <meshStandardMaterial map={floorTexture} color="#7a6a58" roughness={0.88} polygonOffset polygonOffsetFactor={2} polygonOffsetUnits={2} />
       </mesh>
 
       {/* Layered carpets */}
-      <mesh rotation-x={-Math.PI / 2} receiveShadow position={[0, 0.008, 0]}>
-        <planeGeometry args={[4.2, 3.2]} />
-        <meshStandardMaterial map={carpetTexture} color="#8a4050" roughness={0.96} />
+      <mesh rotation-x={-Math.PI / 2} position={[0, 0, 0]} renderOrder={1} geometry={geo_pln_2}>
+
+        <meshBasicMaterial map={carpetTexture} color="#8a4050" depthTest={false} depthWrite={false} />
       </mesh>
-      <mesh rotation-x={-Math.PI / 2} receiveShadow position={[-2.2, 0.01, 1.8]}>
-        <planeGeometry args={[2.0, 1.6]} />
-        <meshStandardMaterial map={carpetTexture} color="#6a3548" roughness={0.96} />
+      <mesh rotation-x={-Math.PI / 2} position={[-2.2, 0, 1.8]} renderOrder={1} geometry={geo_pln_3}>
+
+        <meshBasicMaterial map={carpetTexture} color="#6a3548" depthTest={false} depthWrite={false} />
       </mesh>
 
-      <mesh position={[0, H, 0]} rotation-x={Math.PI / 2}>
-        <planeGeometry args={[W, D]} />
+      <mesh position={[0, H, 0]} rotation-x={Math.PI / 2} geometry={geo_pln_1}>
+
         <meshStandardMaterial color="#e8dcc8" roughness={0.95} />
       </mesh>
 
@@ -51,8 +72,7 @@ export function SolnyshRoomVisual({ livePlayerPositionRef: _livePlayerPositionRe
         [-W / 2 + 0.01, H / 2, 0, Math.PI / 2],
         [W / 2 - 0.01, H / 2, 0, -Math.PI / 2],
       ].map(([x, y, z, ry], i) => (
-        <mesh key={i} position={[x, y, z]} rotation-y={ry}>
-          <planeGeometry args={[i < 2 ? W : D, H]} />
+        <mesh key={i} position={[x, y, z]} rotation-y={ry} geometry={i < 2 ? geo_pln_wall_wh : geo_pln_wall_dh}>
           <meshStandardMaterial map={wallTexture} color="#d8c8b8" roughness={0.9} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
         </mesh>
       ))}
@@ -60,32 +80,32 @@ export function SolnyshRoomVisual({ livePlayerPositionRef: _livePlayerPositionRe
       <EnvironmentDetail currentLod={lod} minLod="standard">
         {/* Easel + canvas — Солныш designer */}
         <group position={[2.2, 0, -2.0]}>
-          <mesh position={[0, 0.55, 0]} castShadow>
-            <boxGeometry args={[0.06, 1.1, 0.06]} />
+          <mesh position={[0, 0.55, 0]} castShadow geometry={geo_box_4}>
+
             <meshStandardMaterial color="#5a4030" roughness={0.85} />
           </mesh>
-          <mesh position={[0, 0.9, 0.08]} rotation-x={-0.15} castShadow>
-            <boxGeometry args={[0.7, 0.55, 0.03]} />
+          <mesh position={[0, 0.9, 0.08]} rotation-x={-0.15} castShadow geometry={geo_box_5}>
+
             <meshStandardMaterial color="#f0e8d8" roughness={0.7} />
           </mesh>
-          <mesh position={[0.08, 0.95, 0.1]} rotation-x={-0.15}>
-            <planeGeometry args={[0.5, 0.4]} />
+          <mesh position={[0.08, 0.95, 0.1]} rotation-x={-0.15} geometry={geo_pln_6}>
+
             <meshStandardMaterial color="#88aacc" roughness={0.6} />
           </mesh>
         </group>
 
         {/* Coffee corner — Лёня barista */}
         <group position={[-2.4, 0, -2.2]}>
-          <mesh position={[0, 0.45, 0]} castShadow>
-            <boxGeometry args={[0.9, 0.9, 0.5]} />
+          <mesh position={[0, 0.45, 0]} castShadow geometry={geo_box_7}>
+
             <meshStandardMaterial color="#4a3828" roughness={0.8} />
           </mesh>
-          <mesh position={[0, 0.95, 0]} castShadow>
-            <cylinderGeometry args={[0.12, 0.14, 0.35, 8]} />
+          <mesh position={[0, 0.95, 0]} castShadow geometry={geo_cyl_8}>
+
             <meshStandardMaterial color="#666" metalness={0.5} roughness={0.35} />
           </mesh>
-          <mesh position={[0.25, 0.52, 0.1]}>
-            <cylinderGeometry args={[0.04, 0.04, 0.12, 6]} />
+          <mesh position={[0.25, 0.52, 0.1]} geometry={geo_cyl_9}>
+
             <meshStandardMaterial color="#eee" roughness={0.4} />
           </mesh>
         </group>
@@ -97,12 +117,12 @@ export function SolnyshRoomVisual({ livePlayerPositionRef: _livePlayerPositionRe
 
         {/* Wardrobe — wine hint location */}
         <group position={[-2.6, 0, 1.6]}>
-          <mesh position={[0, 0.75, 0]} castShadow>
-            <boxGeometry args={[0.8, 1.5, 0.45]} />
+          <mesh position={[0, 0.75, 0]} castShadow geometry={geo_box_10}>
+
             <meshStandardMaterial color="#5a4030" roughness={0.82} />
           </mesh>
-          <mesh position={[0, 0.75, 0.24]}>
-            <boxGeometry args={[0.72, 1.4, 0.02]} />
+          <mesh position={[0, 0.75, 0.24]} geometry={geo_box_11}>
+
             <meshStandardMaterial color="#4a3828" roughness={0.9} />
           </mesh>
         </group>
@@ -117,12 +137,12 @@ export function SolnyshRoomVisual({ livePlayerPositionRef: _livePlayerPositionRe
             ] as const
           ).map(({ x, tint }, i) => (
             <group key={i} position={[x, 0, 0]}>
-              <mesh>
-                <boxGeometry args={[0.22, 0.16, 0.02]} />
+              <mesh geometry={geo_box_12}>
+
                 <meshStandardMaterial color="#3a3028" roughness={0.85} />
               </mesh>
-              <mesh position={[0, 0, 0.012]}>
-                <planeGeometry args={[0.18, 0.12]} />
+              <mesh position={[0, 0, 0.012]} geometry={geo_pln_13}>
+
                 <meshStandardMaterial color={tint} roughness={0.7} />
               </mesh>
             </group>
@@ -136,12 +156,12 @@ export function SolnyshRoomVisual({ livePlayerPositionRef: _livePlayerPositionRe
           { pos: [3.92, 1.35, -0.6] as const, rot: -Math.PI / 2, color: '#aaccaa' },
         ].map(({ pos, rot, color }, i) => (
           <group key={i} position={pos} rotation-y={rot}>
-            <mesh>
-              <boxGeometry args={[0.32, 0.26, 0.02]} />
+            <mesh geometry={geo_box_14}>
+
               <meshStandardMaterial color="#4a3828" roughness={0.8} />
             </mesh>
-            <mesh position={[0, 0, 0.012]}>
-              <planeGeometry args={[0.26, 0.2]} />
+            <mesh position={[0, 0, 0.012]} geometry={geo_pln_15}>
+
               <meshStandardMaterial color={color} roughness={0.65} />
             </mesh>
           </group>
@@ -149,8 +169,8 @@ export function SolnyshRoomVisual({ livePlayerPositionRef: _livePlayerPositionRe
 
         {/* Dog bed */}
         <group position={[-0.8, 0, 0.2]}>
-          <mesh position={[0, 0.06, 0]} castShadow>
-            <cylinderGeometry args={[0.28, 0.32, 0.1, 12]} />
+          <mesh position={[0, 0.06, 0]} castShadow geometry={geo_cyl_16}>
+
             <meshStandardMaterial color="#c87888" roughness={0.95} />
           </mesh>
         </group>

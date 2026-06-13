@@ -2,11 +2,11 @@
 /* ─── Volodka RPG – Interactive triggers with god-ray highlight, particle burst, pulse tooltip,
      NPC staged interaction routing, and centralized prompt stacking ─── */
 
-import { useRef, useState, useEffect, useCallback, useMemo } from 'react';
+import { useRef, useState, useEffect, useCallback, useMemo, useId } from 'react';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import { Html } from '@react-three/drei';
 import * as THREE from 'three';
-import { getGameStore, useGameStore } from '@/store/gameStore';
+import { useGameStore } from '@/store/gameStore';
 import { useCurrentSceneId, useInteractionOverlay, useTimeOfDay, useSceneExitState, useScheduleContext } from '@/store/selectors';
 import { useSceneEnterEffect } from '@/hooks/useSceneEnterEffect';
 import { TRIGGER_ZONES, type TriggerZone, INTERACTION_LABELS } from '@/data/triggerZones';
@@ -32,13 +32,14 @@ import { ProximityGodRay } from './ProximityGodRay';
 /** Maximum number of visible [E] prompts at once */
 const MAX_VISIBLE_PROMPTS = 2;
 
-/** Fixed god-ray height for proximity highlight — not scaled to zone size */
 /** Scene exit proximity — matches SceneExitIndicator */
 const EXIT_PROXIMITY_RANGE = 2.5;
+
 const LMB_CLICK_DRAG_THRESHOLD_PX = 12;
 
 function isCanvasAreaTarget(target: EventTarget | null): boolean {
   const el = target as HTMLElement;
+  if (!(el instanceof Element)) return false;
   if (el.tagName === 'CANVAS') return true;
   return !el.closest(
     '[data-exploration-ui], [data-panel], dialog, [role="dialog"], button, a, input, textarea',
@@ -48,16 +49,16 @@ function isCanvasAreaTarget(target: EventTarget | null): boolean {
 /** Maximum number of sparkle particles per trigger zone (InstancedMesh pool size) */
 const MAX_PARTICLES = 8;
 
-/** Global E-key debounce: prevents multiple triggers from firing on the same key press.
- *  Shared via window.__volodka_ekey_consumed so SceneExitIndicator can also check it. */
-let globalEKeyConsumed = false;
-
 /** Prompt data for centralized overlay */
 interface PromptData {
   id: string;
   label: string;
   distance: number;
   type: 'zone' | 'npc';
+}
+
+function getTopPrompts(hits: InteractionTargetHit[]): InteractionTargetHit[] {
+  return hits.slice(0, MAX_VISIBLE_PROMPTS);
 }
 
 interface InteractiveTriggersProps {
@@ -70,6 +71,7 @@ export function InteractiveTriggers({
   livePlayerPositionRef,
   livePlayerRotationRef,
 }: InteractiveTriggersProps) {
+  const promptFadeInAnim = `promptFadeIn-${useId().replace(/:/g, '')}`;
   const { sceneId, gameMode, showStoryOverlay, currentNodeId } = useInteractionOverlay();
   const { playerFlags, playerKarma } = useSceneExitState();
   const timeOfDay = useTimeOfDay();
@@ -80,6 +82,21 @@ export function InteractiveTriggers({
     () => getSceneExits(sceneId, playerFlags, playerKarma),
     [sceneId, playerFlags, playerKarma],
   );
+
+  const overlappedExitIndices = useMemo(() => {
+    const set = new Set<number>();
+    for (let i = 0; i < sceneExits.length; i++) {
+      const exit = sceneExits[i];
+      const overlapped = zones.some(
+        (z) =>
+          z.sceneId === sceneId &&
+          Math.abs(z.position[0] - exit.position[0]) < 1.5 &&
+          Math.abs(z.position[2] - exit.position[2]) < 1.5,
+      );
+      if (overlapped) set.add(i);
+    }
+    return set;
+  }, [zones, sceneExits]);
 
   const npcQueryTargets = useMemo((): NpcQueryTarget[] => {
     const npcIdsInScene = getNPCsForScene(sceneId, timeOfDay, scheduleCtx);
@@ -99,10 +116,12 @@ export function InteractiveTriggers({
   }, [sceneId, timeOfDay, scheduleCtx]);
 
   const npcQueryTargetsRef = useRef(npcQueryTargets);
-  npcQueryTargetsRef.current = npcQueryTargets;
-
   const sceneExitsRef = useRef(sceneExits);
-  sceneExitsRef.current = sceneExits;
+  const overlappedExitIndicesRef = useRef(overlappedExitIndices);
+  const zonesRef = useRef(zones);
+  const sceneIdRef = useRef(sceneId);
+  const isOverlayBlockingRef = useRef(false);
+  const executeInteractionHitRef = useRef<(hit: InteractionTargetHit) => boolean>(() => false);
 
   // Hide prompts when not exploring or when narrative overlay locks movement (non-hub nodes)
   const isOverlayBlocking =
@@ -117,13 +136,15 @@ export function InteractiveTriggers({
   const [visiblePrompts, setVisiblePrompts] = useState<PromptData[]>([]);
   const frameCountRef = useRef(0);
   const lastHintIdRef = useRef<string | null>(null);
+  const eKeyTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   useSceneEnterEffect(() => {
     promptsMapRef.current.clear();
     allowedIdsRef.current.clear();
     setVisiblePrompts([]);
-    globalEKeyConsumed = false;
-    (window as unknown as { __volodka_ekey_consumed?: boolean }).__volodka_ekey_consumed = false;
+    if (eKeyTimerRef.current) clearTimeout(eKeyTimerRef.current);
+    eKeyTimerRef.current = undefined;
+    window.__volodka_ekey_consumed = false;
     lastHintIdRef.current = null;
     eventBus.emit('interaction:end', {});
   });
@@ -171,13 +192,27 @@ export function InteractiveTriggers({
     return true;
   }, [sceneExits, sceneId, zones]);
 
+  useEffect(() => {
+    isOverlayBlockingRef.current = isOverlayBlocking;
+    sceneExitsRef.current = sceneExits;
+    zonesRef.current = zones;
+    sceneIdRef.current = sceneId;
+    npcQueryTargetsRef.current = npcQueryTargets;
+    overlappedExitIndicesRef.current = overlappedExitIndices;
+    executeInteractionHitRef.current = executeInteractionHit;
+  });
+
   const firePrimaryInteraction = useCallback((): boolean => {
-    if (isOverlayBlocking) return false;
+    if (isOverlayBlockingRef.current) return false;
     if (isInteractionLocked()) return false;
-    if (globalEKeyConsumed) return false;
+    if (window.__volodka_ekey_consumed) return false;
 
     const playerPos = livePlayerPositionRef.current;
     const lookYaw = sharedCameraYawRef.current;
+    const sceneExits = sceneExitsRef.current;
+    const zones = zonesRef.current;
+    const sceneId = sceneIdRef.current;
+    const npcQueryTargets = npcQueryTargetsRef.current;
 
     const exitTargets: ExitQueryTarget[] = [];
     for (let idx = 0; idx < sceneExits.length; idx++) {
@@ -209,26 +244,24 @@ export function InteractiveTriggers({
     const primary = hits[0];
     if (!primary) return false;
 
-    const handled = executeInteractionHit(primary);
+    const handled = executeInteractionHitRef.current(primary);
     if (!handled) return false;
 
-    globalEKeyConsumed = true;
-    (window as unknown as { __volodka_ekey_consumed?: boolean }).__volodka_ekey_consumed = true;
-    setTimeout(() => {
-      globalEKeyConsumed = false;
-      (window as unknown as { __volodka_ekey_consumed?: boolean }).__volodka_ekey_consumed = false;
+    if (eKeyTimerRef.current) clearTimeout(eKeyTimerRef.current);
+    window.__volodka_ekey_consumed = true;
+    eKeyTimerRef.current = setTimeout(() => {
+      window.__volodka_ekey_consumed = false;
+      eKeyTimerRef.current = undefined;
     }, 200);
 
     return true;
-  }, [
-    executeInteractionHit,
-    isOverlayBlocking,
-    livePlayerPositionRef,
-    npcQueryTargets,
-    sceneExits,
-    sceneId,
-    zones,
-  ]);
+  }, [livePlayerPositionRef]);
+
+  useEffect(() => {
+    return () => {
+      if (eKeyTimerRef.current) clearTimeout(eKeyTimerRef.current);
+    };
+  }, []);
 
   // Central E-key router — one code path instead of per-trigger duplicates.
   useEffect(() => {
@@ -316,14 +349,8 @@ export function InteractiveTriggers({
 
     const exitTargets: ExitQueryTarget[] = [];
     for (let idx = 0; idx < sceneExitsRef.current.length; idx++) {
+      if (overlappedExitIndicesRef.current.has(idx)) continue;
       const exit = sceneExitsRef.current[idx];
-      const hasOverlap = TRIGGER_ZONES.some(
-        (z) =>
-          z.sceneId === sceneId &&
-          Math.abs(z.position[0] - exit.position[0]) < 1.5 &&
-          Math.abs(z.position[2] - exit.position[2]) < 1.5,
-      );
-      if (hasOverlap) continue;
 
       exitTargets.push({
         id: `exit_${exit.targetScene}_${idx}`,
@@ -342,7 +369,7 @@ export function InteractiveTriggers({
       checkLineOfSight: true,
     });
 
-    const topHits = hits.slice(0, MAX_VISIBLE_PROMPTS);
+    const topHits = getTopPrompts(hits);
     allowedIdsRef.current = new Set(topHits.map((h) => h.id));
 
     const primaryHit = topHits[0];
@@ -487,7 +514,7 @@ export function InteractiveTriggers({
                     fontFamily: '"JetBrains Mono", "Fira Code", monospace',
                     letterSpacing: '0.04em',
                     opacity: 0,
-                    animation: `promptFadeIn 0.25s ease ${i * 0.08}s forwards`,
+                    animation: `${promptFadeInAnim} 0.25s ease ${i * 0.08}s forwards`,
                     backdropFilter: 'blur(6px)',
                     WebkitBackdropFilter: 'blur(6px)',
                     transition: 'all 0.15s ease',
@@ -515,7 +542,7 @@ export function InteractiveTriggers({
           </div>
           {/* Inline keyframes for prompt fade-in */}
           <style>{`
-            @keyframes promptFadeIn {
+            @keyframes ${promptFadeInAnim} {
               from { opacity: 0; transform: translateY(12px) scale(0.95); }
               to { opacity: 1; transform: translateY(0) scale(1); }
             }
@@ -606,6 +633,7 @@ function NPCProximityTrigger({
   const promptId = `npc_${npcId}`;
   const [showIndicator, setShowIndicator] = useState(false);
   const showIndicatorRef = useRef(false);
+  const lastPromptDistanceRef = useRef<number | null>(null);
   const proximityRef = useRef(0);
   const pulsePhaseRef = useRef(0);
 
@@ -618,12 +646,18 @@ function NPCProximityTrigger({
     const dist = playerPos.distanceTo(tempVecRef.current);
 
     const isNear = dist < 3.0 && !isInteractionLocked();
-    proximityRef.current = isNear ? Math.max(0.4, 1 - dist / 3.5) : 0;
-    if (isNear) pulsePhaseRef.current += delta * 3.2;
+    const isAllowed = allowedIdsRef.current.has(promptId);
+    const shouldShow = isNear && isAllowed;
+    proximityRef.current = shouldShow ? Math.max(0.4, 1 - dist / 3.5) : 0;
+    if (shouldShow) pulsePhaseRef.current += delta * 3.2;
 
-    if (isNear !== showIndicatorRef.current) {
-      showIndicatorRef.current = isNear;
-      setShowIndicator(isNear);
+    const distanceChangedSignificantly =
+      lastPromptDistanceRef.current === null ||
+      Math.abs(dist - lastPromptDistanceRef.current) > 0.2;
+
+    if (shouldShow !== showIndicatorRef.current) {
+      showIndicatorRef.current = shouldShow;
+      setShowIndicator(shouldShow);
 
       if (isNear) {
         registerPrompt({
@@ -632,16 +666,19 @@ function NPCProximityTrigger({
           distance: dist,
           type: 'npc' as const,
         });
+        lastPromptDistanceRef.current = dist;
       } else {
         unregisterPrompt(promptId);
+        lastPromptDistanceRef.current = null;
       }
-    } else if (isNear) {
+    } else if (shouldShow && distanceChangedSignificantly) {
       registerPrompt({
         id: promptId,
         label: `Поговорить с ${npcName}`,
         distance: dist,
         type: 'npc' as const,
       });
+      lastPromptDistanceRef.current = dist;
     }
 
   });
@@ -696,6 +733,7 @@ function TriggerZoneComponent({
   unregisterPrompt: (id: string) => void;
 }) {
   const showIndicatorRef = useRef(false);
+  const lastPromptDistanceRef = useRef<number | null>(null);
   const [showIndicator, setShowIndicator] = useState(false);
   const triggeredRef = useRef(false);
   const triggerCooldown = useRef(0);
@@ -751,12 +789,18 @@ function TriggerZoneComponent({
     // Show "Press E" if player is within trigger range
     const range = Math.max(zone.size[0], zone.size[2]) / 2 + 1.0;
     const isNear = dist < range && !isInteractionLocked();
-    proximityRef.current = isNear ? Math.max(0.35, 1 - dist / (range + 1.2)) : 0;
+    const isAllowed = allowedIdsRef.current.has(zone.id);
+    const shouldShow = isNear && isAllowed;
+    proximityRef.current = shouldShow ? Math.max(0.35, 1 - dist / (range + 1.2)) : 0;
+
+    const distanceChangedSignificantly =
+      lastPromptDistanceRef.current === null ||
+      Math.abs(dist - lastPromptDistanceRef.current) > 0.2;
 
     // Only update React state when value actually changes
-    if (isNear !== showIndicatorRef.current) {
-      showIndicatorRef.current = isNear;
-      setShowIndicator(isNear);
+    if (shouldShow !== showIndicatorRef.current) {
+      showIndicatorRef.current = shouldShow;
+      setShowIndicator(shouldShow);
 
       if (isNear) {
         registerPrompt({
@@ -765,21 +809,23 @@ function TriggerZoneComponent({
           distance: dist,
           type: 'zone',
         });
+        lastPromptDistanceRef.current = dist;
       } else {
         unregisterPrompt(zone.id);
+        lastPromptDistanceRef.current = null;
       }
-    } else if (isNear) {
-      // Update distance for sorting
+    } else if (shouldShow && distanceChangedSignificantly) {
       registerPrompt({
         id: zone.id,
         label: zone.interactionLabel ?? INTERACTION_LABELS[zone.interactionType ?? 'default'],
         distance: dist,
         type: 'zone',
       });
+      lastPromptDistanceRef.current = dist;
     }
 
     // Cooldown timer while near interactables
-    if (isNear) {
+    if (shouldShow) {
       pulsePhaseRef.current += delta * 3;
     }
 
@@ -873,7 +919,8 @@ function TriggerZoneComponent({
         life: 0,
       });
     }
-    particlesRef.current = newParticles;
+    const current = particlesRef.current;
+    particlesRef.current = [...current, ...newParticles].slice(-MAX_PARTICLES);
 
     // Initialize InstancedMesh with zero-scale for all instances
     if (particleInstanceRef.current) {
@@ -940,54 +987,4 @@ function TriggerZoneComponent({
   );
 }
 
-/** World item that can be picked up — bobs up and down */
-export function WorldItem({
-  id,
-  position,
-  label,
-  onPickup,
-}: {
-  id: string;
-  position: [number, number, number];
-  label: string;
-  onPickup?: (id: string) => void;
-}) {
-  const meshRef = useRef<THREE.Mesh>(null);
-  const baseY = position[1];
-  const time = useRef(0);
-  const [picked, setPicked] = useState(false);
-
-  useFrameTick('interaction', ({ delta }) => {
-    if (!meshRef.current || picked) return;
-    time.current += delta;
-    // Bob animation
-    meshRef.current.position.y = baseY + Math.sin(time.current * 2) * 0.08;
-    // Slow rotation
-    meshRef.current.rotation.y += delta * 0.5;
-  });
-
-  if (picked) return null;
-
-  return (
-    <group position={position}>
-      <mesh
-        ref={meshRef}
-        onClick={() => {
-          setPicked(true);
-          onPickup?.(id);
-          eventBus.emit('object:interact', {
-            objectId: id,
-            sceneId: getGameStore().exploration.currentSceneId,
-          });
-        }}
-      >
-        <boxGeometry args={[0.2, 0.2, 0.2]} />
-        <meshStandardMaterial
-          color="#ffaa44"
-          emissive="#ff8800"
-          emissiveIntensity={0.55}
-        />
-      </mesh>
-    </group>
-  );
-}
+export { WorldItem } from './WorldItem';

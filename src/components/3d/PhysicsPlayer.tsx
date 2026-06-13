@@ -28,6 +28,7 @@
  */
 
 import { useRef, useEffect, useMemo } from 'react';
+import type { RootState } from '@react-three/fiber';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import { setPhysicsStepMs } from '@/engine/frame/FrameBudgetRegistry';
 import { RigidBody, CapsuleCollider, useRapier, type RapierRigidBody, type RapierCollider } from '@react-three/rapier';
@@ -62,6 +63,7 @@ import {
 } from '@/engine/camera/cinematicPresentation';
 import { CinematicPlayerAvatar } from './CinematicPlayerAvatar';
 import type { RapierCharacterController } from '@/engine/physics/rapierTypes';
+import { probeGroundY } from '@/engine/physics/groundProbe';
 import type { SceneId } from '@/shared/types/game';
 
 /** Lerp angle with wraparound — smooth rotation without 360 jumps */
@@ -70,6 +72,46 @@ function lerpAngle(a: number, b: number, t: number): number {
   while (diff > Math.PI) diff -= Math.PI * 2;
   while (diff < -Math.PI) diff += Math.PI * 2;
   return a + diff * Math.min(t, 1);
+}
+
+/** Snap rigid body to probed ground when at/below floor level and falling. */
+function enforceFloor(
+  rb: RapierRigidBody,
+  vel: THREE.Vector3,
+  groundY: number,
+  tolerance = 0.02,
+): boolean {
+  if (!rb.isValid()) return false;
+  const pos = rb.translation();
+  if (pos.y <= groundY + tolerance && vel.y < 0) {
+    rb.setTranslation({ x: pos.x, y: groundY, z: pos.z }, true);
+    vel.y = 0;
+    return true;
+  }
+  return false;
+}
+
+type WorldWithOptionalControllerRemove = {
+  removeCharacterController?: (controller: RapierCharacterController) => void;
+};
+
+type CharacterControllerWithOptionalFree = RapierCharacterController & {
+  free?: () => void;
+};
+
+/** Release KCC across Rapier builds (world.remove vs controller.free vs world teardown). */
+function disposeCharacterController(
+  world: WorldWithOptionalControllerRemove,
+  controller: RapierCharacterController,
+): void {
+  if (typeof world.removeCharacterController === 'function') {
+    world.removeCharacterController(controller);
+    return;
+  }
+  const free = (controller as CharacterControllerWithOptionalFree).free;
+  if (typeof free === 'function') {
+    free.call(controller);
+  }
 }
 
 /* ─── Physics Constants ─── */
@@ -92,9 +134,13 @@ const MIN_SLOPE_SLIDE = Math.PI / 6;  // 30° — auto-slide steeper
 const AUTOSTEP_HEIGHT = 0.3;         // 30cm max step height
 const AUTOSTEP_WIDTH = 0.2;          // 20cm min step width
 const SNAP_DISTANCE = 0.15;          // 15cm snap — large values cause Y bounce while walking
+/** Horizontal movement blocked when actual displacement falls below this fraction of desired. */
+const BLOCKED_RATIO = 0.35;
 const COYOTE_TIME = 0.15;            // 150ms jump grace after leaving edge
 const JUMP_COOLDOWN = 0.3;           // 300ms between jumps
 const TERMINAL_VELOCITY = GRAVITY * 2; // max fall speed
+/** Hold player at spawn while KCC/Rapier settle after scene load or wake. */
+const WARMUP_DURATION_S = 0.2;
 
 type DirectMovementTelemetryRefs = {
   useDirectRef: React.MutableRefObject<boolean>;
@@ -170,7 +216,7 @@ export function PhysicsPlayer({
   const currentFloorMaterialRef = useRef<string>('default');
   const stuckLockTimerRef = useRef(0);
   const lastDebugLogRef = useRef(0);
-  const warmupFramesRef = useRef(0);
+  const warmupTimerRef = useRef(0);
   const prevRbPosRef = useRef(new THREE.Vector3());
   const noMovementFramesRef = useRef(0);
   const kccRecoveryFramesRef = useRef(0);
@@ -205,16 +251,14 @@ export function PhysicsPlayer({
     controllerRef.current = controller;
 
     return () => {
-      try {
-        world.removeCharacterController(controller);
-      } catch { /* already removed */ }
+      disposeCharacterController(world, controller);
       controllerRef.current = null;
     };
   }, [world]);
 
   // Share rigid body ref with the interaction system
   useEffect(() => {
-    if (rigidBodyRef.current) {
+    if (rigidBodyRef.current?.isValid()) {
       setPlayerRigidBody(rigidBodyRef.current);
     }
     return () => {
@@ -234,11 +278,11 @@ export function PhysicsPlayer({
       const storeSpawn = getGameStore().exploration.playerPosition;
       const spawn = storeSpawn ?? newConfig.spawnPoint;
 
-      warmupFramesRef.current = 0;
+      warmupTimerRef.current = 0;
       jumpCooldownRef.current = 0;
       noMovementFramesRef.current = 0;
 
-      if (rigidBodyRef.current) {
+      if (rigidBodyRef.current?.isValid()) {
         rigidBodyRef.current.setTranslation(
           { x: spawn[0], y: spawn[1], z: spawn[2] },
           true,
@@ -261,7 +305,7 @@ export function PhysicsPlayer({
     const unsub = eventBus.on('scene:enter', ({ sceneId: enteredScene }) => {
       const spawn = getGameStore().exploration.playerPosition;
       prevSceneIdRef.current = enteredScene;
-      warmupFramesRef.current = 0;
+      warmupTimerRef.current = 0;
       jumpCooldownRef.current = 0;
       noMovementFramesRef.current = 0;
       velocityRef.current.set(0, 0, 0);
@@ -291,25 +335,53 @@ export function PhysicsPlayer({
   const tempUp = useRef(new THREE.Vector3(0, 1, 0));
   const tempMoveDir = useRef(new THREE.Vector3());
 
-  // ─── Main physics loop ───
-  useFrameTick('player', ({ state, delta }) => {
-    let physicsStepMs = 0;
+  /** Per-frame scratch shared across sequential player tick stages. */
+  const frameScratchRef = useRef({
+    tickState: null as RootState | null,
+    dt: 0,
+    rb: null as RapierRigidBody | null,
+    controller: null as RapierCharacterController | null,
+    vel: velocityRef.current,
+    floorY: config.floorY,
+    isLocked: false,
+    currentMode: readGamePhase(getGameStore()),
+    wasGrounded: true,
+    isMoving: false,
+    running: false,
+    keyboardDrivesMove: false,
+    blockedByWall: false,
+    onFlatGround: false,
+    airborneIntent: false,
+    floorSlack: 0.05,
+    isGroundedNow: false,
+    isOutdoor: false,
+    groundY: config.floorY,
+  });
+
+  /** Warmup, locks, mobile detect — returns false to skip remaining stages. */
+  function prepareFrame(delta: number): boolean {
+    const scratch = frameScratchRef.current;
     const rb = rigidBodyRef.current;
     const controller = controllerRef.current;
-    if (!rb || !controller) return;
+    if (!rb || !controller) return false;
 
-    const floorY = config.floorY;
+    scratch.rb = rb;
+    scratch.controller = controller;
+    scratch.floorY = config.floorY;
+    scratch.vel = velocityRef.current;
 
     // Guard against disposed RigidBody during scene transitions
-    if (!rb.isValid()) return;
+    if (!rb.isValid()) return false;
 
-    const vel = velocityRef.current;
+    const vel = scratch.vel;
+    const fallbackFloorY = scratch.floorY;
 
     // Clamp delta to avoid physics explosions on tab-switch
     const dt = Math.min(delta, 0.05);
+    scratch.dt = dt;
 
-    // ─── Physics warmup: skip gravity for first N frames ───
-    // The KinematicCharacterController needs a few frames to initialize.
+    // ─── Physics warmup: skip gravity for WARMUP_DURATION_S ───
+    // The KinematicCharacterController needs a short settle window to initialize.
     // During warmup, we hold the player at spawn height and skip gravity.
     // Hold warmup only during intro/cutscene modes where Rapier may still be settling.
     // Narrative overlay (showStoryOverlay) and tutorials use the isLocked branch below —
@@ -318,13 +390,13 @@ export function PhysicsPlayer({
     const phase = readGamePhase(storeSnapshot);
     const inCinematic = phase === 'cutscene' || phase === 'intro';
 
-    // Pause warmup during cinematics — resetting every frame caused a 10-frame
-    // locomotion freeze after each cutscene (sprint/WASD felt stuck).
-    if (!inCinematic && warmupFramesRef.current < 10) {
-      warmupFramesRef.current++;
+    // Pause warmup during cinematics — resetting every frame caused a post-cutscene
+    // locomotion freeze (sprint/WASD felt stuck).
+    if (!inCinematic && warmupTimerRef.current < WARMUP_DURATION_S) {
+      warmupTimerRef.current += dt;
     }
 
-    if (warmupFramesRef.current < 10) {
+    if (warmupTimerRef.current < WARMUP_DURATION_S) {
       vel.set(0, 0, 0);
       const storePos = getGameStore().exploration.playerPosition;
       const holdX = storePos[0];
@@ -334,19 +406,28 @@ export function PhysicsPlayer({
       livePlayerPositionRef.current.set(holdX, holdY, holdZ);
       isGroundedRef.current = true;
       currentAnimRef.current = 'idle';
-      return;
+      return false;
     }
-    // If the RigidBody drops well below floorY, teleport back to floor level.
     const currentPos = rb.translation();
-    if (currentPos.y < floorY - 0.1) {
-      // Player fell below floor — snap back to spawn point
-      const spawn = config.spawnPoint;
-      rb.setTranslation({ x: currentPos.x, y: floorY, z: currentPos.z }, true);
+    const rescueGroundY = probeGroundY(
+      world,
+      rapier,
+      currentPos.x,
+      currentPos.y,
+      currentPos.z,
+      fallbackFloorY,
+      capsuleColliderRef.current,
+      rb,
+    );
+
+    // If the RigidBody drops well below detected ground, snap back to that level.
+    if (currentPos.y < rescueGroundY - 0.1) {
+      rb.setTranslation({ x: currentPos.x, y: rescueGroundY, z: currentPos.z }, true);
       vel.set(0, 0, 0);
       isGroundedRef.current = true;
       coyoteTimerRef.current = 0;
-      livePlayerPositionRef.current.set(currentPos.x, floorY, currentPos.z);
-      return;
+      livePlayerPositionRef.current.set(currentPos.x, rescueGroundY, currentPos.z);
+      return false;
     }
 
     // ─── Tick cooldowns ───
@@ -370,6 +451,9 @@ export function PhysicsPlayer({
       currentMode === 'intro' ||
       currentMode === 'combat' ||
       isInteractionLocked();
+
+    scratch.isLocked = isLocked;
+    scratch.currentMode = currentMode;
 
     // Stuck lock safety — only when interaction state is wedged without narrative UI.
     // Do NOT fire during Approach/Cutscene (normal flow exceeds 2s) or while overlay is open.
@@ -395,110 +479,133 @@ export function PhysicsPlayer({
       stuckLockTimerRef.current = 0;
     }
 
+    return true;
+  }
+
+  /** Locked branch — combat anim, external velocity, KCC/direct when interaction holds movement. */
+  function lockedMovement(): void {
+    const scratch = frameScratchRef.current;
+    const rb = scratch.rb!;
+    const controller = scratch.controller!;
+    if (!rb.isValid()) return;
+    const vel = scratch.vel;
+    const fallbackFloorY = scratch.floorY;
+    const dt = scratch.dt;
+    const currentMode = scratch.currentMode;
+
     // ─── Check for external velocity from InteractionSystemBridge ───
     const external = getPlayerExternalVelocity();
 
-    if (isLocked) {
-      // ──── LOCKED STATE: interaction system controls movement ────
-      if (currentMode === 'combat') {
-        currentAnimRef.current = 'combat';
+    const lockedPos = rb.translation();
+    const groundY = probeGroundY(
+      world,
+      rapier,
+      lockedPos.x,
+      lockedPos.y,
+      lockedPos.z,
+      fallbackFloorY,
+      capsuleColliderRef.current,
+      rb,
+    );
+
+    // ──── LOCKED STATE: interaction system controls movement ────
+    // External velocity (approach/align) goes through the character
+    // controller for collision resolution — no wall clipping!
+    if (external.active) {
+      vel.x = external.vx;
+      vel.z = external.vz;
+
+      // Rotation follows movement direction during approach
+      const hSpeed = Math.sqrt(vel.x * vel.x + vel.z * vel.z);
+      if (hSpeed > 0.1) {
+        const targetYaw = Math.atan2(vel.x, vel.z);
+        const rotT = 1 - Math.exp(-ROTATION_SPEED * dt);
+        livePlayerRotationRef.current = lerpAngle(
+          livePlayerRotationRef.current, targetYaw, rotT,
+        );
       }
-      // External velocity (approach/align) goes through the character
-      // controller for collision resolution — no wall clipping!
-      if (external.active) {
-        vel.x = external.vx;
-        vel.z = external.vz;
+    } else {
+      vel.x = 0;
+      vel.z = 0;
+    }
 
-        // Rotation follows movement direction during approach
-        const hSpeed = Math.sqrt(vel.x * vel.x + vel.z * vel.z);
-        if (hSpeed > 0.1) {
-          const targetYaw = Math.atan2(vel.x, vel.z);
-          const rotT = 1 - Math.exp(-ROTATION_SPEED * dt);
-          livePlayerRotationRef.current = lerpAngle(
-            livePlayerRotationRef.current, targetYaw, rotT,
-          );
-        }
-      } else {
-        vel.x = 0;
-        vel.z = 0;
-      }
+    // Always apply gravity even when locked (so player doesn't float)
+    vel.y += GRAVITY * dt;
+    if (vel.y < TERMINAL_VELOCITY) vel.y = TERMINAL_VELOCITY;
 
-      // Always apply gravity even when locked (so player doesn't float)
-      vel.y += GRAVITY * dt;
-      if (vel.y < TERMINAL_VELOCITY) vel.y = TERMINAL_VELOCITY;
+    // ─── CRITICAL FIX: Pre-movement ground enforcement in locked state ───
+    // Same as the main movement path: if player is at floor level and falling,
+    // zero out vertical velocity BEFORE computing displacement.
+    // Without this, the player can tunnel through the floor during cutscenes
+    // because the desiredDisplacement has a large downward component.
+    if (enforceFloor(rb, vel, groundY)) {
+      isGroundedRef.current = true;
+    }
 
-      // ─── CRITICAL FIX: Pre-movement ground enforcement in locked state ───
-      // Same as the main movement path: if player is at floor level and falling,
-      // zero out vertical velocity BEFORE computing displacement.
-      // Without this, the player can tunnel through the floor during cutscenes
-      // because the desiredDisplacement has a large downward component.
-      {
-        const pos = rb.translation();
-        if (pos.y <= floorY + 0.02 && vel.y < 0) {
-          rb.setTranslation({ x: pos.x, y: floorY, z: pos.z }, true);
-          vel.y = 0;
-          isGroundedRef.current = true;
-        }
-      }
+    // Compute collision-safe displacement via character controller
+    const desiredDisp = { x: vel.x * dt, y: vel.y * dt, z: vel.z * dt };
+    const posBeforeMovement = rb.translation(); // fresh position after ground enforcement
+    const lockedCollider = capsuleColliderRef.current;
+    if (lockedCollider && controller) {
+      controller.computeColliderMovement(lockedCollider, desiredDisp);
+      const actual = controller.computedMovement();
+      const grounded = controller.computedGrounded();
 
-      // Compute collision-safe displacement via character controller
-      const desiredDisp = { x: vel.x * dt, y: vel.y * dt, z: vel.z * dt };
-      const posBeforeMovement = rb.translation(); // fresh position after ground enforcement
-      const lockedCollider = capsuleColliderRef.current;
-      if (lockedCollider && controller) {
-        controller.computeColliderMovement(lockedCollider, desiredDisp);
-        const actual = controller.computedMovement();
-        const grounded = controller.computedGrounded();
+      rb.setTranslation({
+        x: posBeforeMovement.x + actual.x,
+        y: posBeforeMovement.y + actual.y,
+        z: posBeforeMovement.z + actual.z,
+      }, true);
 
-        rb.setTranslation({
-          x: posBeforeMovement.x + actual.x,
-          y: posBeforeMovement.y + actual.y,
-          z: posBeforeMovement.z + actual.z,
-        }, true);
-
-        if (grounded) {
-          vel.y = 0;
-          isGroundedRef.current = true;
-        } else {
-          // Correct vertical velocity based on actual movement
-          if (dt > 0.001) {
-            const actualVy = actual.y / dt;
-            if (vel.y < 0 && actualVy > vel.y + 2.0) vel.y = actualVy;
-            if (vel.y > 0 && actualVy < vel.y - 2.0) vel.y = 0;
-          }
-          isGroundedRef.current = false;
-        }
-      } else {
-        // Fallback: apply displacement directly when collider not available
-        rb.setTranslation({
-          x: posBeforeMovement.x + desiredDisp.x,
-          y: posBeforeMovement.y + desiredDisp.y,
-          z: posBeforeMovement.z + desiredDisp.z,
-        }, true);
-      }
-
-      currentAnimRef.current = 'idle';
-      const pos = rb.translation();
-
-      // ─── Ground enforcement in locked state (cutscenes/dialogues) ───
-      // Same as the main movement path: if player is at floor level and falling,
-      // snap to floor. This prevents the character from sinking during cutscenes.
-      if (pos.y <= floorY + 0.02 && vel.y < 0) {
-        rb.setTranslation({ x: pos.x, y: floorY, z: pos.z }, true);
+      if (grounded) {
         vel.y = 0;
         isGroundedRef.current = true;
-        livePlayerPositionRef.current.set(pos.x, floorY, pos.z);
       } else {
-        livePlayerPositionRef.current.set(pos.x, pos.y, pos.z);
+        // Correct vertical velocity based on actual movement
+        if (dt > 0.001) {
+          const actualVy = actual.y / dt;
+          if (vel.y < 0 && actualVy > vel.y + 2.0) vel.y = actualVy;
+          if (vel.y > 0 && actualVy < vel.y - 2.0) vel.y = 0;
+        }
+        isGroundedRef.current = false;
       }
-      return;
+    } else {
+      // Fallback: apply displacement directly when collider not available
+      rb.setTranslation({
+        x: posBeforeMovement.x + desiredDisp.x,
+        y: posBeforeMovement.y + desiredDisp.y,
+        z: posBeforeMovement.z + desiredDisp.z,
+      }, true);
     }
+
+    if (currentMode === 'combat') {
+      currentAnimRef.current = 'combat';
+    } else {
+      currentAnimRef.current = 'idle';
+    }
+    if (enforceFloor(rb, vel, groundY)) {
+      isGroundedRef.current = true;
+    }
+    const pos = rb.translation();
+    livePlayerPositionRef.current.set(pos.x, pos.y, pos.z);
+  }
+
+  /** Main KCC/direct movement path — returns false when fallback handled the frame. */
+  function mainMovement(): boolean {
+    const scratch = frameScratchRef.current;
+    const rb = scratch.rb!;
+    const controller = scratch.controller!;
+    if (!rb.isValid()) return false;
+    const vel = scratch.vel;
+    const fallbackFloorY = scratch.floorY;
+    const dt = scratch.dt;
+    const tickState = scratch.tickState!;
 
     // ══════════════════════════════════════════════════════════════════════════
     //  MAIN MOVEMENT — KinematicCharacterController with full physics
     // ══════════════════════════════════════════════════════════════════════════
 
-    const wasGrounded = isGroundedRef.current;
+    scratch.wasGrounded = isGroundedRef.current;
 
     // ─── Camera-relative movement direction ───
     const camFwd = tempCameraForward.current;
@@ -506,7 +613,7 @@ export function PhysicsPlayer({
     const up = tempUp.current;
     const moveDir = tempMoveDir.current;
 
-    state.camera.getWorldDirection(camFwd);
+    tickState.camera.getWorldDirection(camFwd);
     camFwd.y = 0;
     if (camFwd.length() > 0.001) camFwd.normalize();
     else camFwd.set(0, 0, -1);
@@ -516,7 +623,7 @@ export function PhysicsPlayer({
     const keys = controls.getKeys();
     const virtual = sampleHeldVirtualControls(
       virtualControlsRef?.current,
-      state.clock.elapsedTime,
+      tickState.clock.elapsedTime,
       virtualHoldTimesRef.current,
     );
     const keyboardDrivesMove = keys.hasMovement;
@@ -554,6 +661,11 @@ export function PhysicsPlayer({
     const moveAccel = keyboardDrivesMove ? KEYBOARD_ACCEL : movementTuning.accel;
     const stopDamping = keyboardDrivesMove ? movementTuning.damping * 0.55 : movementTuning.damping;
 
+    scratch.isMoving = isMoving;
+    scratch.running = running;
+    scratch.keyboardDrivesMove = keyboardDrivesMove;
+    scratch.isOutdoor = isOutdoor;
+
     // ─── Horizontal velocity with acceleration / damping ───
     if (isMoving) {
       moveDir.normalize();
@@ -588,10 +700,23 @@ export function PhysicsPlayer({
       (isGroundedRef.current || coyoteTimerRef.current > 0);
 
     const posForGroundCheck = rb.translation();
+    const groundY = probeGroundY(
+      world,
+      rapier,
+      posForGroundCheck.x,
+      posForGroundCheck.y,
+      posForGroundCheck.z,
+      fallbackFloorY,
+      capsuleColliderRef.current,
+      rb,
+    );
+    scratch.groundY = groundY;
     const floorSlack = isOutdoor ? 0.08 : 0.05;
-    const nearFloor = posForGroundCheck.y <= floorY + floorSlack;
+    const nearFloor = posForGroundCheck.y <= groundY + floorSlack;
 
     const airborneIntent = wantsJump || vel.y > 0.2;
+    scratch.airborneIntent = airborneIntent;
+    scratch.floorSlack = floorSlack;
 
     if (wantsJump) {
       vel.y = JUMP_FORCE;
@@ -616,6 +741,7 @@ export function PhysicsPlayer({
 
     // ─── Compute desired displacement (input → desired movement) ───
     const onFlatGround = (isGroundedRef.current || nearFloor) && !airborneIntent;
+    scratch.onFlatGround = onFlatGround;
     const desiredDisplacement = {
       x: vel.x * dt,
       y: onFlatGround ? 0 : vel.y * dt,
@@ -632,6 +758,10 @@ export function PhysicsPlayer({
     // resolves collisions with slopes/steps/walls, and returns the
     // actual safe displacement. No more fighting Rapier's solver!
     const collider = capsuleColliderRef.current;
+
+    if (collider && controller && useDirectMovementRef.current) {
+      restoreKccMovementMode(directMovementTelemetry, { sceneId });
+    }
 
     // Pre-compute boundary clamping values (shared between fallback and failsafe)
     const [sceneW, sceneD] = config.size;
@@ -676,17 +806,14 @@ export function PhysicsPlayer({
       const clampedX = Math.max(-halfW, Math.min(halfW, newX));
       const clampedZ = Math.max(-halfD, Math.min(halfD, newZ));
 
-      // Ground enforcement
-      if (newY <= floorY + 0.02 && vel.y < 0) {
-        newY = floorY;
-        vel.y = 0;
+      rb.setTranslation({ x: clampedX, y: newY, z: clampedZ }, true);
+      if (enforceFloor(rb, vel, groundY)) {
         isGroundedRef.current = true;
         coyoteTimerRef.current = 0;
       }
-
-      rb.setTranslation({ x: clampedX, y: newY, z: clampedZ }, true);
-      livePlayerPositionRef.current.set(clampedX, newY, clampedZ);
-      return;
+      const pos = rb.translation();
+      livePlayerPositionRef.current.set(pos.x, pos.y, pos.z);
+      return false;
     }
 
     // Reset fail counter — collider was found
@@ -699,12 +826,14 @@ export function PhysicsPlayer({
       controller.enableSnapToGround(SNAP_DISTANCE);
     }
 
-    const physicsT0 = performance.now();
+    let physicsT0: number | undefined;
+    if (import.meta.env.DEV) physicsT0 = performance.now();
     controller.computeColliderMovement(collider, desiredDisplacement);
-    physicsStepMs = performance.now() - physicsT0;
+    if (import.meta.env.DEV) setPhysicsStepMs(performance.now() - physicsT0!);
 
     const actualDisplacement = controller.computedMovement();
     const isGroundedNow = controller.computedGrounded();
+    scratch.isGroundedNow = isGroundedNow;
 
     // Always apply collision-resolved displacement — never bypass the controller
     // when it blocks horizontal movement (walls, obstacles, slopes).
@@ -718,6 +847,7 @@ export function PhysicsPlayer({
     // The controller may have changed the displacement (slope slide,
     // wall collision, ceiling hit). We correct velocity to match
     // the actual movement so the next frame's input is coherent.
+    const wasGrounded = scratch.wasGrounded;
     if (isGroundedNow && !airborneIntent) {
       vel.y = 0;
       if (!wasGrounded) {
@@ -751,19 +881,44 @@ export function PhysicsPlayer({
 
     const desiredHLen = Math.sqrt(desiredDisplacement.x ** 2 + desiredDisplacement.z ** 2);
     const actualHLen = Math.sqrt(actualDisplacement.x ** 2 + actualDisplacement.z ** 2);
-    const blockedByCollider = desiredHLen > 0.001 && actualHLen < desiredHLen * 0.3;
+    const blockedByCollider = desiredHLen > 0.001 && actualHLen < desiredHLen * BLOCKED_RATIO;
     const collisionCount =
       typeof controller.numComputedCollisions === 'function'
         ? controller.numComputedCollisions()
         : 0;
     const blockedByWall = blockedByCollider && collisionCount > 0;
+    scratch.blockedByWall = blockedByWall;
 
     // Don't let velocity build against walls — reduces keyboard stutter in tight rooms.
-    if (blockedByCollider && desiredHLen > 0.001 && actualHLen < desiredHLen * 0.35) {
+    if (blockedByCollider && desiredHLen > 0.001 && actualHLen < desiredHLen * BLOCKED_RATIO) {
       const slideRatio = Math.max(actualHLen / desiredHLen, 0.15);
       vel.x *= slideRatio;
       vel.z *= slideRatio;
     }
+
+    return true;
+  }
+
+  /** Animations, footsteps, position sync, ground enforce, DEV timing. */
+  function finalizeFrame(): void {
+    const scratch = frameScratchRef.current;
+    const rb = scratch.rb!;
+    if (!rb.isValid()) return;
+    const vel = scratch.vel;
+    const fallbackFloorY = scratch.floorY;
+    const dt = scratch.dt;
+    const {
+      airborneIntent,
+      floorSlack,
+      isGroundedNow,
+      onFlatGround,
+      isOutdoor,
+      isMoving,
+      running,
+      keyboardDrivesMove,
+      blockedByWall,
+      groundY,
+    } = scratch;
 
     // ─── Floor material from scene config (single source of truth) ───
     // Previously, we read the collider name (fs:<material>) via raycast.
@@ -779,14 +934,14 @@ export function PhysicsPlayer({
     // even when the character controller briefly loses ground contact while walking.
     if (
       !airborneIntent &&
-      animPos.y <= floorY + floorSlack &&
+      animPos.y <= groundY + floorSlack &&
       Math.abs(vel.y) < 0.75
     ) {
       isGroundedRef.current = true;
       if (Math.abs(vel.y) < 0.25) vel.y = 0;
     }
     if (!isGroundedRef.current) {
-      const clearlyAirborne = animPos.y > floorY + 0.08 || vel.y > 0.35;
+      const clearlyAirborne = animPos.y > groundY + 0.08 || vel.y > 0.35;
       if (clearlyAirborne) {
         currentAnimRef.current = vel.y > 0.5 ? 'jump' : 'fall';
       } else {
@@ -810,7 +965,9 @@ export function PhysicsPlayer({
           position: [pos.x, pos.y, pos.z],
           yaw: livePlayerRotationRef.current,
         });
-        audioEngine.playFootstep(currentFloorMaterialRef.current);
+        audioEngine.playFootstep(currentFloorMaterialRef.current, {
+          sourceId: 'player-footstep',
+        });
       }
     } else {
       footstepTimerRef.current = 0;
@@ -818,15 +975,25 @@ export function PhysicsPlayer({
 
     // ─── Update position ref for camera + other systems ───
     let finalPos = rb.translation();
+    const finalGroundY = probeGroundY(
+      world,
+      rapier,
+      finalPos.x,
+      finalPos.y,
+      finalPos.z,
+      fallbackFloorY,
+      capsuleColliderRef.current,
+      rb,
+    );
 
     // Lock Y on flat ground — skip when KCC already grounded to avoid fighting snap-to-ground.
     const floorSnapEps = isOutdoor ? 0.02 : 0.008;
     if (
       onFlatGround &&
       !isGroundedNow &&
-      Math.abs(finalPos.y - floorY) > floorSnapEps
+      Math.abs(finalPos.y - finalGroundY) > floorSnapEps
     ) {
-      rb.setTranslation({ x: finalPos.x, y: floorY, z: finalPos.z }, true);
+      rb.setTranslation({ x: finalPos.x, y: finalGroundY, z: finalPos.z }, true);
       vel.y = 0;
       isGroundedRef.current = true;
       finalPos = rb.translation();
@@ -868,7 +1035,18 @@ export function PhysicsPlayer({
       }
     }
     prevRbPosRef.current.set(finalPos.x, finalPos.y, finalPos.z);
-    setPhysicsStepMs(physicsStepMs);
+  }
+
+  // ─── Main physics loop ───
+  useFrameTick('player', ({ state, delta }) => {
+    frameScratchRef.current.tickState = state;
+    if (!prepareFrame(delta)) return;
+    if (frameScratchRef.current.isLocked) {
+      lockedMovement();
+      return;
+    }
+    if (!mainMovement()) return;
+    finalizeFrame();
   }, { label: 'PhysicsPlayer' });
 
   const spawnPoint = config.spawnPoint;

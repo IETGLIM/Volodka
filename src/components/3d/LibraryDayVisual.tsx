@@ -417,7 +417,7 @@ export function LibraryDayVisual() {
         </mesh>
         {/* Desk legs (tapered) */}
         {[[-0.38, -0.2], [0.38, -0.2], [-0.38, 0.2], [0.38, 0.2]].map(([x, z], i) => (
-          <mesh key={`dleg-${i}`} position={[x, 0.36, z]} castShadow>
+          <mesh key={`dleg-${i}`} position={[x, 0.36, z]}>
             <boxGeometry args={[0.04, 0.72, 0.04]} />
             <meshStandardMaterial color="#4a3520" roughness={0.7} />
           </mesh>
@@ -665,7 +665,7 @@ function ReadingTable({ position }: { position: [number, number, number] }) {
       </mesh>
       {/* Legs */}
       {[[-0.9, -0.3], [0.9, -0.3], [-0.9, 0.3], [0.9, 0.3]].map(([x, z], i) => (
-        <mesh key={i} position={[x, 0.36, z]} castShadow>
+        <mesh key={i} position={[x, 0.36, z]}>
           <boxGeometry args={[0.06, 0.72, 0.06]} />
           <meshStandardMaterial color="#4a3520" roughness={0.7} />
         </mesh>

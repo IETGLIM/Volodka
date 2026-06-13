@@ -585,7 +585,7 @@ function OfficeDesk({ position }: { position: [number, number, number] }) {
         <meshStandardMaterial color="#3a3a4a" metalness={0.5} roughness={0.4} />
       </mesh>
       {/* Monitor */}
-      <mesh position={[0, 1.1, -0.15]} castShadow>
+      <mesh position={[0, 1.1, -0.15]}>
         <boxGeometry args={[0.55, 0.35, 0.03]} />
         <meshStandardMaterial color="#001122" emissive="#4488ff" emissiveIntensity={1.0} />
       </mesh>

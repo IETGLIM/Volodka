@@ -59,9 +59,9 @@ export function ExaminePanel({ open, data, onClose, hasLinkedContent, onContinue
       if (e.code !== 'KeyE') return;
       e.preventDefault();
       e.stopPropagation();
-      (window as Window & { __volodka_ekey_consumed?: boolean }).__volodka_ekey_consumed = true;
+      window.__volodka_ekey_consumed = true;
       setTimeout(() => {
-        (window as Window & { __volodka_ekey_consumed?: boolean }).__volodka_ekey_consumed = false;
+        window.__volodka_ekey_consumed = false;
       }, 300);
       onContinue();
     };
