@@ -52,6 +52,9 @@ const COMBAT_SHAKE_DURATION = 0.4;    // seconds shake lasts
 const TRANSITION_FLY_DURATION = 1.2;  // seconds for fly-through
 const TRANSITION_FLY_HEIGHT = 4.0;    // camera rises during transition
 
+/* ── Cutscene ── */
+const MIN_SEGMENT_DURATION = 0.001;   // guard against zero-duration infinite loop
+
 /* ── Pre-allocated temp vectors (avoid GC) ── */
 const _tempPos = new THREE.Vector3();
 const _tempLook = new THREE.Vector3();
@@ -133,12 +136,12 @@ export function updateSpringCamera(
 ): void {
   const dt = Math.min(delta, 0.05);
 
-  // ── Position spring ──
+  // ── Position spring (frame-rate independent exponential integration) ──
+  const expStiffness = 1 - Math.exp(-stiffness * dt);
+  const expDamping = 1 - Math.exp(-damping * dt);
   _springForce.copy(targetPos).sub(state.position);
-  _springForce.multiplyScalar(stiffness * dt);
-
-  _tempVel.copy(state.velocity).multiplyScalar(damping);
-  state.velocity.add(_springForce).sub(_tempVel);
+  state.velocity.addScaledVector(_springForce, expStiffness);
+  state.velocity.multiplyScalar(1 - expDamping);
 
   // Add velocity * dt directly (avoid clone for perf)
   _tempPos.copy(state.velocity).multiplyScalar(dt);
@@ -661,14 +664,22 @@ export function updateCutsceneController(
   controller.elapsed += dt;
 
   const waypoints = controller.waypoints;
-  const segment = controller.currentSegment;
+
+  const getSegmentDuration = (segmentIndex: number): number =>
+    Math.max(waypoints[segmentIndex + 1]?.duration ?? 1, MIN_SEGMENT_DURATION);
 
   // Advance progress
-  const segmentDuration = waypoints[segment + 1]?.duration ?? 1;
-  controller.segmentProgress += dt / segmentDuration;
+  controller.segmentProgress += dt / getSegmentDuration(controller.currentSegment);
 
   // Move to next segment if current is done
-  while (controller.segmentProgress >= 1 && segment < waypoints.length - 1) {
+  let safetyIterations = 0;
+  const maxSegmentAdvances = waypoints.length;
+  while (
+    controller.segmentProgress >= 1
+    && controller.currentSegment < waypoints.length - 1
+    && safetyIterations < maxSegmentAdvances
+  ) {
+    safetyIterations++;
     controller.segmentProgress -= 1;
     controller.currentSegment++;
     if (controller.currentSegment >= waypoints.length - 1) {
