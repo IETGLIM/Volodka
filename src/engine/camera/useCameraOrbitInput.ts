@@ -254,7 +254,6 @@ export function useCameraOrbitInput(
     if (canvasEl) {
       canvasEl.addEventListener('wheel', onWheel, { passive: false, capture: true });
     }
-    window.addEventListener('wheel', onWheel, { passive: false, capture: true });
     window.addEventListener('contextmenu', onContextMenu);
     window.addEventListener('touchstart', onTouchStart, { passive: true });
     window.addEventListener('touchmove', onTouchMove, { passive: true });
@@ -268,7 +267,6 @@ export function useCameraOrbitInput(
       if (canvasEl) {
         canvasEl.removeEventListener('wheel', onWheel, { capture: true } as EventListenerOptions);
       }
-      window.removeEventListener('wheel', onWheel, { capture: true } as EventListenerOptions);
       window.removeEventListener('contextmenu', onContextMenu);
       window.removeEventListener('touchstart', onTouchStart);
       window.removeEventListener('touchmove', onTouchMove);
