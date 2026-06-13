@@ -6,12 +6,14 @@ import {
   getTopTickTimings,
   registerFrameTick,
   runFrameBudget,
+  runFrameBudgetForPhase,
   runPostFrameBudget,
   setFrameBudgetProfilingArmed,
   unregisterFrameTick,
 } from './FrameBudgetRegistry';
+import { DEFAULT_FRAME_GAME_SNAPSHOT } from './frameGameSnapshot';
 
-const frameCtx = { state: {} as RootState, delta: 1 / 60 };
+const frameCtx = { state: {} as RootState, delta: 1 / 60, game: DEFAULT_FRAME_GAME_SNAPSHOT };
 
 describe('FrameBudgetRegistry', () => {
   const registeredIds: number[] = [];
@@ -20,10 +22,11 @@ describe('FrameBudgetRegistry', () => {
     while (registeredIds.length > 0) {
       unregisterFrameTick(registeredIds.pop()!);
     }
-    setFrameBudgetProfilingArmed(false);
     vi.restoreAllMocks();
+    setFrameBudgetProfilingArmed(true);
     runFrameBudget(frameCtx);
     runPostFrameBudget(frameCtx);
+    setFrameBudgetProfilingArmed(false);
   });
 
   it('unregisterFrameTick removes tick before next runFrameBudget', () => {
@@ -100,5 +103,30 @@ describe('FrameBudgetRegistry', () => {
     runFrameBudget(frameCtx);
     runPostFrameBudget(frameCtx);
     expect(getTopTickTimings().some((entry) => entry.label === 'snapshot-player')).toBe(false);
+  });
+
+  it('runFrameBudgetForPhase runs only ticks registered for that phase', () => {
+    const order: string[] = [];
+    const preId = registerFrameTick(
+      'player',
+      () => {
+        order.push('pre');
+      },
+      { label: 'pre', phase: 'pre' },
+    );
+    const postId = registerFrameTick(
+      'camera',
+      () => {
+        order.push('post');
+      },
+      { label: 'post', phase: 'post' },
+    );
+    registeredIds.push(preId, postId);
+
+    runFrameBudgetForPhase(frameCtx, 'pre');
+    expect(order).toEqual(['pre']);
+
+    runFrameBudgetForPhase(frameCtx, 'post');
+    expect(order).toEqual(['pre', 'post']);
   });
 });

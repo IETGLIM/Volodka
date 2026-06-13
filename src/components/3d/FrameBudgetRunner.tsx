@@ -6,7 +6,9 @@
 
 import { useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
+import { getGameStore } from '@/store/gameStore';
 import { runFrameBudget } from '@/engine/frame/FrameBudgetRegistry';
+import { createFrameGameSnapshotFromStore } from '@/engine/frame/frameGameSnapshot';
 import { resetFrameProfilerCounters } from '@/engine/frame/frameProfilerCounters';
 
 export function FrameBudgetRunner() {
@@ -19,6 +21,7 @@ export function FrameBudgetRunner() {
     runFrameBudget({
       state,
       delta: Math.min(delta, 0.05),
+      game: createFrameGameSnapshotFromStore(getGameStore()),
     });
   }, -1000);
 

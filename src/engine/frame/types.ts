@@ -1,4 +1,5 @@
 import type { RootState } from '@react-three/fiber';
+import type { FrameGameSnapshot } from './frameGameSnapshot';
 
 /** Ordered frame systems — lower index runs earlier in the budget. */
 export type FrameSystemId =
@@ -26,6 +27,8 @@ export const FRAME_BUDGET_MS = 1000 / 60;
 export interface FrameTickContext {
   state: RootState;
   delta: number;
+  /** Atomic store snapshot captured once before pre-render ticks. */
+  game: FrameGameSnapshot;
 }
 
 export type FrameTickCallback = (ctx: FrameTickContext) => void;
