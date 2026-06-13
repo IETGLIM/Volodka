@@ -9,6 +9,12 @@ import {
 } from '@/shared/sceneExploreHubRegistry';
 import type { NarrativeKind } from '@/store/slices/uiSlice';
 
+/** Entry beats (corridor_door, kitchen_table, …) map to explore hubs after the player reads them. */
+export function shouldShowEntryStoryAfterCutscene(nodeId: string): boolean {
+  const hubId = SCENE_ENTRY_NODE_TO_HUB[nodeId];
+  return hubId != null && hubId !== nodeId;
+}
+
 /** Entry beats (e.g. corridor_door) promote to their explore hub after a cutscene. */
 export function resolvePostCutsceneNarrativeNode(nodeId: string): string {
   const hubId = SCENE_ENTRY_NODE_TO_HUB[nodeId];
@@ -17,15 +23,14 @@ export function resolvePostCutsceneNarrativeNode(nodeId: string): string {
 
 /** After cinematic beats: closed-overlay hubs dismiss VN panel; others keep walkable hub overlay. */
 export function openNarrativeAfterCutscene(nodeId: string, kind: NarrativeKind): void {
-  const resolved = resolvePostCutsceneNarrativeNode(nodeId);
-
-  // Act I prologue — show full wake text once; hub promotion happens via story choices.
-  if (nodeId === 'start') {
-    openNarrativeOverlay('start', kind);
+  if (shouldShowEntryStoryAfterCutscene(nodeId)) {
+    openNarrativeOverlay(nodeId, kind);
     eventBus.emit('interaction:end', {});
     forceEmitInteractionEnd();
     return;
   }
+
+  const resolved = resolvePostCutsceneNarrativeNode(nodeId);
 
   if (isClosedOverlayExploreHub(resolved)) {
     if (resolved !== nodeId) {

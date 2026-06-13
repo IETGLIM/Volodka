@@ -36,7 +36,7 @@ const SCENE_COLOR_GRADE: Record<string, { hue: number; saturation: number; brigh
   home_evening:       { hue: 0.04,  saturation: 0.1,  brightness: 0.0,  contrast: 0.1  }, // warm amber
   street_night:       { hue: 0.02,  saturation: 0.08, brightness: 0.04, contrast: 0.2 }, // gray rainy cyberpunk
   street_winter:      { hue: -0.02, saturation: -0.12, brightness: 0.12, contrast: 0.08  },
-  cafe_evening:       { hue: 0.01,  saturation: 0.05, brightness: -0.02, contrast: 0.18 }, // hazy blue-neon café
+  cafe_evening:       { hue: 0.01,  saturation: 0.05, brightness: 0.03, contrast: 0.16 }, // hazy blue-neon café
   office_day:         { hue: -0.01, saturation: -0.15, brightness: 0.03, contrast: 0.05 }, // sterile
   park_day:           { hue: -0.04, saturation: -0.08, brightness: 0.02, contrast: 0.14 }, // gothic mist — hero lift
   library_day:        { hue: 0.02,  saturation: -0.05, brightness: 0.0,  contrast: 0.1  }, // aged paper
@@ -59,7 +59,7 @@ const SCENE_VIGNETTE: Record<string, { offset: number; darkness: number }> = {
   volodka_corridor:   { offset: 0.3, darkness: 0.36 },
   home_evening:       { offset: 0.4,  darkness: 0.35 },
   street_night:       { offset: 0.4,  darkness: 0.3 },
-  cafe_evening:       { offset: 0.32, darkness: 0.4 },
+  cafe_evening:       { offset: 0.34, darkness: 0.32 },
   sleep_dream:        { offset: 0.25, darkness: 0.5 },
   abandoned_factory:  { offset: 0.3,  darkness: 0.45 },
   rooftop_edge:       { offset: 0.3,  darkness: 0.4 },
