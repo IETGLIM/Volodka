@@ -31,6 +31,7 @@ export const transitionStrategy: CameraModeStrategy = {
     const targetFov = DEFAULT_FOV;
 
     spring.position.copy(targetPos);
+    spring.velocity.set(0, 0, 0);
     spring.lookAt.copy(targetLook);
     spring.fov = targetFov;
 
