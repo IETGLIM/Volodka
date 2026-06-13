@@ -146,8 +146,6 @@ export function runMainPlayerMovement(deps: PlayerMovementDeps): boolean {
     const targetVx = moveDir.x * speed;
     const targetVz = moveDir.z * speed;
     if (keyboardDrivesMove) {
-      // Match SimplePlayer — keyboard is digital; damped ramp feels sluggish and
-      // compounds with KCC slide-ratio crushing on minor floor contacts.
       vel.x = targetVx;
       vel.z = targetVz;
     } else {

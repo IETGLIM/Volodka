@@ -1,5 +1,13 @@
 # Changelog — ВОЛОДЬКА RPG
 
+## v4.2.1 — 13 июня 2026
+
+### Player / controls
+- **Keyboard movement**: мгновенная целевая скорость WASD (как в SimplePlayer) — без медленного damp-разгона.
+- **KCC**: slide-damping скорости только при реальном ударе о стену, не на микро-коллизиях пола.
+- **Input**: held-клавиши не сбрасываются при blur, если документ ещё в фокусе (клик по HUD).
+- **Virtual controls**: единый `virtualControlsRef` через `usePlayerControls` для HUD и физики.
+
 ## v4.2.0 — 13 июня 2026
 
 ### Critical fixes

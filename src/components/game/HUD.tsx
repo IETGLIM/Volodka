@@ -937,7 +937,7 @@ export function HUD(props: HUDProps) {
           </div>
           {/* Version indicator */}
           <div className="absolute bottom-1.5 right-3 pointer-events-none">
-            <span className="text-[8px] text-slate-600/50 font-mono">v4.2.0</span>
+            <span className="text-[8px] text-slate-600/50 font-mono">v4.2.1</span>
           </div>
         </div>
       </div>

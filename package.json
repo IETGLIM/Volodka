@@ -1,6 +1,6 @@
 {
   "name": "volodka-rpg",
-  "version": "4.2.0",
+  "version": "4.2.1",
   "private": true,
   "type": "module",
   "scripts": {
@@ -22,7 +22,8 @@
     "test:e2e:ui": "playwright test --ui",
     "check": "npm run lint && npm run typecheck && npm run validate:content && npm run build && npm run budgets",
     "budgets": "node scripts/check-bundle-budgets.mjs --report",
-    "budgets:check": "node scripts/check-bundle-budgets.mjs"
+    "budgets:check": "node scripts/check-bundle-budgets.mjs",
+    "deploy:archive": "node scripts/create-deploy-archive.mjs"
   },
   "dependencies": {
     "@dimforge/rapier3d-compat": "^0.19.3",
