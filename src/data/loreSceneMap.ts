@@ -1,8 +1,6 @@
 /* ─── Volodka RPG – Lore discovery map ───
  * Maps scenes and story nodes to lore entries that should be discovered.
- * This ensures all 43 lore points are reachable during gameplay.
- *
- * Two discovery methods:
+ * Ambient lore is reachable via scene entry and story effects.
  * 1. Scene entry: when the player enters a scene, associated lore is auto-discovered
  * 2. Story effects: discoverLore effects in story/dialogue node choices
  */
@@ -24,6 +22,13 @@ export const LORE_SCENE_MAP: Partial<Record<SceneId, string[]>> = {
     'lore_zarema',             // Zarema's backstory discovered in kitchen
     'lore_home_evening_routine', // Evening ritual discovered in kitchen
     'lore_zarema_albert_backstory', // Cross-destinies discovered in kitchen
+    'lore_communal_radio',     // Kitchen radio — shortwave freedom
+  ],
+  solnysh_room: [
+    'lore_solnysh_studio',     // Solnysh's art studio atmosphere
+  ],
+  zarema_albert_room: [
+    'lore_zarema_albert_home', // Neighbors' cozy shared room
   ],
   street_night: [
     'lore_city_ufa',           // City overview from the street
@@ -37,6 +42,7 @@ export const LORE_SCENE_MAP: Partial<Record<SceneId, string[]>> = {
     'lore_network',            // Network lore from the cafe atmosphere
     'lore_poem_virus',         // Poem virus phenomenon discussed at cafe
     'lore_digital_resistance',  // Resistance discovered at cafe
+    'lore_cafe_backroom',      // Hidden backroom behind the bar
   ],
   office_day: [
     'lore_it_guild',           // Guild lore discovered at the office
@@ -46,17 +52,21 @@ export const LORE_SCENE_MAP: Partial<Record<SceneId, string[]>> = {
     'lore_colleague_double_life', // Colleague's double life discovered at office
     'lore_dmitry_project',     // Dmitry's project discovered at office
     'lore_neurosys_chips',     // Chip anatomy discovered at office
+    'lore_office_server_hum',  // Server room 50 Hz pulse
   ],
   park_day: [
     'lore_park_memorial',      // Memorial discovered in the park
     'lore_great_crash_2029',   // Great Crash lore from the memorial
+    'lore_park_autumn_bench',  // Bench pause between battles
   ],
   chk_forest_zorge: [
     'lore_tolpa_chk',          // TOLPA / Black Room discovered at campfire
+    'lore_chk_moonlight',      // Moonlight on the forest clearing
   ],
   library_day: [
     'lore_forbidden_books',    // Forbidden books discovered in library
     'lore_18_poems',           // 18 Poems legend discovered in library
+    'lore_library_index',      // Paper card catalog memory
   ],
   rooftop_edge: [
     'lore_rooftop',            // Rooftop transition point discovered
@@ -70,6 +80,7 @@ export const LORE_SCENE_MAP: Partial<Record<SceneId, string[]>> = {
   factory_basement: [
     'lore_factory_progress7',  // Secret sublevel discovered by descending
     'lore_zarya_project_early', // Early Zarya project context in the basement
+    'lore_basement_ozone',     // Ozone breath of the machine
   ],
   river_pier: [
     'lore_pier_three',         // Pier history discovered by visiting
@@ -78,6 +89,7 @@ export const LORE_SCENE_MAP: Partial<Record<SceneId, string[]>> = {
   sleep_dream: [
     'lore_dreamworld',         // Dream world rules discovered in dream
     'lore_dream_rules',        // Dream rules discovered in dream
+    'lore_dream_echo',         // Short dream echo — unwritten line
   ],
 };
 

@@ -9,10 +9,17 @@ import {
 } from '@/shared/sceneExploreHubRegistry';
 import { hasVisitedNode } from '@/store/visitedNodesIndex';
 
-/** One-shot diegetic location context on first hub enter (revisit = silent). */
-function showHubLocationContext(hubId: string): void {
+/** One-shot diegetic location context on first hub enter; shorter line on revisit. */
+function showHubLocationContext(hubId: string, revisit: boolean): void {
   const def = getExploreHubDef(hubId);
   if (!def) return;
+
+  if (revisit && def.hubTextRevisit) {
+    eventBus.emit('ui:exploration_message', { text: def.hubTextRevisit });
+    return;
+  }
+
+  if (revisit) return;
 
   const sceneName = getSceneConfig(def.sceneId).name;
   eventBus.emit('game:notification', {
@@ -39,7 +46,9 @@ export function enterSceneFreeExplorationHub(hubId: string): void {
   closeNarrativeOverlay();
 
   if (firstVisit) {
-    showHubLocationContext(hubId);
+    showHubLocationContext(hubId, false);
+  } else {
+    showHubLocationContext(hubId, true);
   }
 
   eventBus.emit('interaction:end', {});

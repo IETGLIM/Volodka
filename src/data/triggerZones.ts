@@ -168,6 +168,7 @@ export const TRIGGER_ZONES: TriggerZone[] = [
     },
     effects: [
       { type: 'setFlag', flag: 'examined_room_wardrobe', flagValue: true },
+      { type: 'discoverLore', loreId: 'lore_volodka_childhood' },
     ],
   },
   {
@@ -245,10 +246,10 @@ export const TRIGGER_ZONES: TriggerZone[] = [
     examineData: {
       title: 'Почтовые ящики',
       description: 'Ржавые ящики с потёртыми табличками. Твой — третий сверху.',
-      detailText: 'Внутри — счета, реклама и одно письмо без обратного адреса. Ты ещё не решился его открыть.',
+      detailText: 'Внутри — счета, реклама и одно письмо без обратного адреса. Конверт пожелтел третий месяц. Ты ещё не решился его открыть. Почерк на обороте почти знаком.',
       icon: '📬',
     },
-    effects: [{ type: 'setFlag', flag: 'examined_corridor_mailboxes', flagValue: true }],
+    effects: [{ type: 'setFlag', flag: 'examined_corridor_mailboxes', flagValue: true }, { type: 'discoverLore', loreId: 'lore_corridor_letter' }],
   },
   {
     id: 'corridor_intercom',
@@ -342,6 +343,26 @@ export const TRIGGER_ZONES: TriggerZone[] = [
   },
 
   /* ─────────────── SOLNYSH ROOM ─────────────── */
+  {
+    id: 'solnysh_easel',
+    sceneId: 'solnysh_room',
+    position: [-1.5, 0.6, -2.2],
+    size: [1.0, 1.6, 0.8],
+    enterToast: 'Мольберт — недописанный макет, краска ещё свежая.',
+    isOneTime: true,
+    interactionType: 'examine',
+    examineData: {
+      title: 'Мольберт Солныш',
+      description: 'Акварель на мольберте — город без серверов, люди с открытыми лицами.',
+      detailText: 'Солныш не заканчивает работы, пока не «услышит цвет». На полях карандашом — строчка, которую ты почти узнаёшь. Дизайн — единственный язык, который «Паноптикум» не читает.',
+      icon: '🎨',
+    },
+    effects: [
+      { type: 'discoverLore', loreId: 'lore_solnysh_studio' },
+      { type: 'addSkill', skill: 'writing', value: 1 },
+      { type: 'setFlag', flag: 'examined_solnysh_easel', flagValue: true },
+    ],
+  },
   {
     id: 'solnysh_wine_closet',
     sceneId: 'solnysh_room',
@@ -446,6 +467,7 @@ export const TRIGGER_ZONES: TriggerZone[] = [
     effects: [
       { type: 'addStat', stat: 'stress', value: 3 },
       { type: 'addSkill', skill: 'intuition', value: 1 },
+      { type: 'discoverLore', loreId: 'lore_communal_radio' },
     ],
   },
   {
@@ -760,6 +782,7 @@ export const TRIGGER_ZONES: TriggerZone[] = [
     },
     effects: [
       { type: 'setFlag', flag: 'found_server_room', flagValue: true },
+      { type: 'discoverLore', loreId: 'lore_office_server_hum' },
     ],
   },
 
@@ -1302,6 +1325,27 @@ export const TRIGGER_ZONES: TriggerZone[] = [
     ],
   },
 
+  /* ─────────────── ZAREMA & ALBERT ROOM — ambient lore ─────────────── */
+  {
+    id: 'zarema_bookshelf',
+    sceneId: 'zarema_albert_room',
+    position: [-3.0, 1.0, -2.5],
+    size: [0.8, 2.0, 0.6],
+    enterToast: 'Книжная полка — сказки рядом с Мандельштамом.',
+    isOneTime: true,
+    interactionType: 'read',
+    examineData: {
+      title: 'Книжная полка',
+      description: 'Детские сказки, философия, учебники — и том за учебником.',
+      detailText: 'Альберт чинит петли. Зарема читает шёпотом по ночам то, что нельзя оцифровать. Игрушки на полу — для детей, которых они ждут в этом мире.',
+      icon: '📚',
+    },
+    effects: [
+      { type: 'discoverLore', loreId: 'lore_zarema_albert_home' },
+      { type: 'setFlag', flag: 'examined_zarema_bookshelf', flagValue: true },
+    ],
+  },
+
   /* ─────────────── ZAREMA BANK ACCOUNT — Банковский Перевод ─────────────── */
   {
     id: 'zarema_bank_account',
@@ -1322,6 +1366,108 @@ export const TRIGGER_ZONES: TriggerZone[] = [
     },
     effects: [
       { type: 'setFlag', flag: 'found_zarema_bank', flagValue: true },
+    ],
+  },
+
+  {
+    id: 'park_avenue_bench',
+    sceneId: 'park_day',
+    position: [2.5, 0, 1.0],
+    size: [1.2, 1.0, 1.0],
+    enterToast: 'Скамейка «депрекейтед» — краска облезла, сесть приятнее, чем на NFC-лавочки.',
+    isOneTime: true,
+    interactionType: 'examine',
+    examineData: {
+      title: 'Скамейка у аллеи',
+      description: 'Старая лавочка без чипов оплаты «комфорта». Скрипит честно.',
+      detailText: 'Здесь Зарема приносила чай в термосе, когда гильдия охотилась на поэтов. Парк днём — место, где «Паноптикум» теряет фокус. Стихи звучат не громче — честнее.',
+      icon: '🪑',
+    },
+    effects: [
+      { type: 'discoverLore', loreId: 'lore_park_autumn_bench' },
+      { type: 'addStat', stat: 'stress', value: -4 },
+      { type: 'setFlag', flag: 'park_bench_rested', flagValue: true },
+    ],
+  },
+
+  {
+    id: 'library_card_catalog',
+    sceneId: 'library_day',
+    position: [3.0, 0.8, 2.0],
+    size: [1.2, 1.4, 0.8],
+    enterToast: 'Картотека — ящики с карточками, которые не оцифровали.',
+    isOneTime: true,
+    interactionType: 'read',
+    examineData: {
+      title: 'Картотека',
+      description: 'Картонные карточки, почерк трёх поколений библиотекарей, запах нафталина.',
+      detailText: 'В ящике «Л» — карточка «Лебедев» с пометкой «не выдавать без личного разговора». Бумага не зависает. Бумага не предаёт.',
+      icon: '🗃️',
+    },
+    effects: [
+      { type: 'discoverLore', loreId: 'lore_library_index' },
+      { type: 'setFlag', flag: 'examined_library_catalog', flagValue: true },
+    ],
+  },
+
+  {
+    id: 'cafe_backroom_door',
+    sceneId: 'cafe_evening',
+    position: [-3.2, 0.8, 1.5],
+    size: [0.6, 1.6, 0.5],
+    enterToast: 'За стеллажом — дверь без таблички. Бариста смотрит, но не мешает.',
+    isOneTime: true,
+    interactionType: 'examine',
+    examineData: {
+      title: 'Задняя дверь',
+      description: 'Дверь без таблички за стеллажом с зёрнами. Розетка, которую электрик гильдии не нашёл.',
+      detailText: 'Все говорят «там» или «назад». Гильдия знает о подсобке. Подсобка знает о гильдии больше архивов.',
+      icon: '🚪',
+    },
+    effects: [
+      { type: 'discoverLore', loreId: 'lore_cafe_backroom' },
+      { type: 'setFlag', flag: 'noticed_cafe_backroom', flagValue: true },
+    ],
+  },
+
+  {
+    id: 'sleep_dream_mist',
+    sceneId: 'sleep_dream',
+    position: [-2.0, 1.0, 0],
+    size: [2.0, 2.5, 2.0],
+    enterToast: 'Туман сна сгущается — из него проступает строка, которую ты не писал.',
+    isOneTime: true,
+    interactionType: 'examine',
+    examineData: {
+      title: 'Эхо сна',
+      description: 'Строка на периферии зрения — как код, который дописывается сам.',
+      detailText: 'Пятое, неписаное правило: то, что слышишь во сне, уже существует в Сети. Просто ещё не в твоей тетради. Запиши. Потом разберёмся.',
+      icon: '🌫️',
+    },
+    effects: [
+      { type: 'discoverLore', loreId: 'lore_dream_echo' },
+      { type: 'addSkill', skill: 'intuition', value: 1 },
+      { type: 'setFlag', flag: 'dream_echo_heard', flagValue: true },
+    ],
+  },
+
+  {
+    id: 'basement_ozone_vent',
+    sceneId: 'factory_basement',
+    position: [-1.5, 1.2, -2.0],
+    size: [0.8, 1.0, 0.6],
+    enterToast: 'Вентиляция пахнет озоном — машина «думает».',
+    isOneTime: true,
+    interactionType: 'examine',
+    examineData: {
+      title: 'Вентиляционная решётка',
+      description: 'Воздух ионизирован, как перед грозой. Озон и машинное масло.',
+      detailText: 'Трофим предупреждал: если озон станет сладким — уходи. Сладкий озон означает, что «Заря-М» не просто дышит. Она зовёт.',
+      icon: '💨',
+    },
+    effects: [
+      { type: 'discoverLore', loreId: 'lore_basement_ozone' },
+      { type: 'setFlag', flag: 'basement_ozone_noted', flagValue: true },
     ],
   },
 

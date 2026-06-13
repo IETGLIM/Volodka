@@ -65,7 +65,7 @@ describe('enterSceneFreeExplorationHub', () => {
     );
   });
 
-  it('skips location toast on revisit', () => {
+  it('shows shorter revisit message when hubTextRevisit is set', () => {
     mockSnapshot.playerState.visitedNodes = ['explore_mode'];
     enterSceneFreeExplorationHub('explore_mode');
 
@@ -74,6 +74,9 @@ describe('enterSceneFreeExplorationHub', () => {
       'game:notification',
       expect.anything(),
     );
+    expect(eventBusEmit).toHaveBeenCalledWith('ui:exploration_message', {
+      text: expect.stringContaining('Комната'),
+    });
   });
 
   it('supports home_evening closed-overlay hub', () => {
