@@ -53,6 +53,13 @@ describe('Act II golden path markers', () => {
     expect(golden[0]?.next).toBe('cafe_evening_end');
   });
 
+  it('marks act2_closing golden branch to act3_transition', () => {
+    const node = STORY_NODES_ACT2.act2_closing;
+    const golden = node.choices.filter((c) => c.goldenPath === true);
+    expect(golden).toHaveLength(1);
+    expect(golden[0]?.next).toBe('act3_transition');
+  });
+
   it('marks act2_safehouse_agreed golden branch to terminal install', () => {
     const node = STORY_NODES_ACT2.act2_safehouse_agreed;
     const golden = node.choices.filter((c) => c.goldenPath === true);

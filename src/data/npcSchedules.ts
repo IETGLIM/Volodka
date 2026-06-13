@@ -528,6 +528,23 @@ export const ACT_SCHEDULE_OVERRIDES: ActScheduleOverride[] = [
     ],
   },
 
+  /* ── Act 2: Sergey winter night patrol on street_winter (full schedule replacement) ── */
+  {
+    id: 'override_sergey_act2_winter_patrol',
+    npcId: 'sergey',
+    minAct: 2,
+    excludedFlags: ['act2_complete'],
+    entries: [
+      { startHour: 0, endHour: 6, sceneId: 'street_winter', position: [1.8, 0, -2.0], activity: 'walk' },
+      { startHour: 6, endHour: 7, sceneId: 'street_night', position: [0, 0, -1.0], activity: 'walk' },
+      { startHour: 7, endHour: 13, sceneId: 'home_evening', position: [1.0, 0, 1.0], activity: 'sleep' },
+      { startHour: 13, endHour: 14, sceneId: 'cafe_evening', position: [0.5, 0, 0.5], activity: 'rest' },
+      { startHour: 14, endHour: 18, sceneId: 'office_day', position: [2.5, 0, -1.0], activity: 'work' },
+      { startHour: 18, endHour: 20, sceneId: 'abandoned_factory', position: [1.5, 0, -0.5], activity: 'work' },
+      { startHour: 20, endHour: 24, sceneId: 'street_winter', position: [1.8, 0, -2.0], activity: 'walk' },
+    ],
+  },
+
   /* ── Act 5: Sergey defends the vault → always at office ── */
   {
     id: 'override_sergey_act5',

@@ -376,4 +376,46 @@ test.describe('Act II smoke', () => {
       timeout: 20_000,
     });
   });
+
+  test('bootstrap street winter hub → act2 closing bridge trigger', async ({ page }) => {
+    await waitForMenuReady(page);
+    await page.getByTestId('menu-new-game').click();
+    await expect(page.locator('canvas[data-engine]')).toBeVisible({ timeout: 90_000 });
+
+    await skipWakeCinematic(page);
+    await expect(page.getByTestId('game-hud')).toBeVisible({ timeout: 30_000 });
+    await settleAfterWake(page);
+    await prepareStoryBootstrap(page);
+
+    await page.evaluate(async () => {
+      await window.__volodka_e2e?.bootstrapAct2ClosingWinter();
+    });
+
+    await expect(page.getByRole('dialog', { name: /Голос/i })).not.toBeVisible({ timeout: 5000 });
+    await expect(page.getByText(/зимн|снег|улиц/i).first()).toBeVisible({
+      timeout: 20_000,
+    });
+
+    await page.waitForFunction(
+      () => typeof window.__volodka_e2e?.interactTriggerZone === 'function',
+      null,
+      { timeout: 30_000 },
+    );
+    await page.evaluate(() => {
+      window.__volodka_e2e?.setPlayerPosition(-1.5, 0.01, 4.0);
+      window.__volodka_e2e?.interactTriggerZone('street_winter_act2_closing');
+    });
+
+    await page.waitForTimeout(800);
+
+    const homeBtn = page.getByRole('button', { name: /Идти домой/i });
+    if (await homeBtn.isVisible({ timeout: 8000 }).catch(() => false)) {
+      await homeBtn.first().click({ force: true });
+      await page.waitForTimeout(600);
+    }
+
+    await expect(page.getByText(/снег|домой|новый день|act3/i).first()).toBeVisible({
+      timeout: 20_000,
+    });
+  });
 });

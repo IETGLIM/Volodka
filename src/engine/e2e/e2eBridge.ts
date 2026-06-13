@@ -37,6 +37,7 @@ export interface VolodkaE2EBridge {
   bootstrapAct2VaultGuildFragment: () => Promise<void>;
   bootstrapAct2PoetrySmugglingLibrary: () => Promise<void>;
   bootstrapAct2PierBasement: () => Promise<void>;
+  bootstrapAct2ClosingWinter: () => Promise<void>;
   bootstrapAct3ParkHub: () => Promise<void>;
   bootstrapAct3LibraryHub: () => Promise<void>;
   bootstrapAct4StreetWinterHub: () => Promise<void>;
@@ -330,6 +331,19 @@ export function registerVolodkaE2EBridge(): void {
       store.markCutsceneTriggered('act1_to_act2');
       dispatchGameAction({ type: 'story/visitNode', nodeId: 'pier_arrival' });
       await jumpToClosedOverlayHub('pier_explore_mode', 'river_pier');
+    },
+    async bootstrapAct2ClosingWinter() {
+      const store = getGameStore();
+      if (store.playerState.progression.currentAct < 2) {
+        store.advanceAct();
+      }
+      store.setFlag('act2_started', true);
+      store.setFlag('advanced_to_act2', true);
+      store.setFlag('dmitry_defected', true);
+      store.setFlag('heard_dmitry_story', true);
+      store.markCutsceneTriggered('act1_to_act2');
+      dispatchGameAction({ type: 'story/visitNode', nodeId: 'cafe_evening_end' });
+      await jumpToClosedOverlayHub('street_winter_explore_mode', 'street_winter');
     },
     async bootstrapAct3ParkHub() {
       while (getGameStore().playerState.progression.currentAct < 3) {

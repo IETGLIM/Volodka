@@ -849,6 +849,28 @@ export const EXPLORATION_DIALOGUE_NODES: Record<string, DialogueNode> = {
     ],
   },
 
+  explore_act2_closing: {
+    id: 'explore_act2_closing',
+    speaker: 'Голос',
+    text: 'Ты выходишь на зимнюю улицу. Снег ложится на плечи, на лицо, на ладони. Город затихает — редкий момент тишины. Впереди — борьба. Но сегодня ты просто идёшь домой сквозь снег.',
+    sceneId: 'street_winter',
+    choices: [
+      {
+        text: 'Идти домой — завтра будет новый день',
+        next: null,
+        effects: [{ type: 'visitStoryNode', nodeId: 'act2_closing' }],
+      },
+      {
+        text: 'Зайти к Зареме — рассказать всё',
+        next: null,
+        effects: [
+          { type: 'visitStoryNode', nodeId: 'act2_closing' },
+          { type: 'npcChange', npcId: 'zarema', npcChange: { relation: 3 } },
+        ],
+      },
+    ],
+  },
+
   /* ─── Act II Phase 5 — pier / basement side-arc ─── */
 
   explore_pier_trofim_portwine: {

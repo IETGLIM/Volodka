@@ -111,6 +111,12 @@ class AudioEngine {
   private ambientReverbGain: GainNode | null = null;
   private ambientDryReverbGain: GainNode | null = null;
   private currentReverbPreset: string | null = null;
+
+  /** One-shot spatial SFX (footsteps, doors) — shared scene reverb + dialogue duck */
+  private sfxMasterGain: GainNode | null = null;
+  private sfxDryGain: GainNode | null = null;
+  private sfxWetGain: GainNode | null = null;
+  private sfxConvolver: ConvolverNode | null = null;
   /** Deferred scene-teardown — flushed on the next scene change so buffers unload promptly */
   private pendingAmbientCleanupTimer: ReturnType<typeof setTimeout> | null = null;
   private pendingAmbientCleanup: (() => void) | null = null;
@@ -149,6 +155,67 @@ class AudioEngine {
       this.masterGain = this.ctx.createGain();
       this.masterGain.gain.value = this.volume;
       this.masterGain.connect(this.ctx.destination);
+      this.ensureSfxBus();
+    }
+  }
+
+  /** Footstep / door one-shots — dry + wet through scene reverb preset. */
+  private ensureSfxBus(): void {
+    if (!this.ctx || !this.masterGain || this.sfxMasterGain) return;
+
+    const ctx = this.ctx;
+    this.sfxMasterGain = ctx.createGain();
+    this.sfxMasterGain.gain.value = 1;
+    this.sfxMasterGain.connect(this.masterGain);
+
+    this.sfxDryGain = ctx.createGain();
+    this.sfxWetGain = ctx.createGain();
+    this.sfxDryGain.connect(this.sfxMasterGain);
+    this.sfxWetGain.connect(this.sfxMasterGain);
+
+    this.applySfxReverbPreset(this.currentReverbPreset ?? 'small_room', false);
+  }
+
+  private applySfxReverbPreset(preset: string, smooth: boolean): void {
+    if (!this.ctx || !this.sfxDryGain || !this.sfxWetGain) return;
+
+    const reverbConfig = REVERB_PRESETS[preset] ?? REVERB_PRESETS['small_room'];
+    const wetMix = reverbConfig.wetMix * 0.35;
+    const dryMix = 1 - wetMix;
+    const now = this.ctx.currentTime;
+
+    if (this.sfxConvolver) {
+      releaseConvolver(this.sfxConvolver);
+      this.sfxConvolver = null;
+    }
+    this.sfxConvolver = tryCreateConvolver(
+      this.ctx,
+      createAmbientReverbImpulse(this.ctx, reverbConfig.decay * 0.65),
+    );
+    if (this.sfxConvolver) {
+      this.sfxConvolver.connect(this.sfxWetGain);
+    }
+
+    if (smooth) {
+      this.sfxWetGain.gain.setValueAtTime(this.sfxWetGain.gain.value, now);
+      this.sfxWetGain.gain.linearRampToValueAtTime(this.sfxConvolver ? wetMix : 0, now + 0.5);
+      this.sfxDryGain.gain.setValueAtTime(this.sfxDryGain.gain.value, now);
+      this.sfxDryGain.gain.linearRampToValueAtTime(this.sfxConvolver ? dryMix : 1, now + 0.5);
+    } else {
+      this.sfxWetGain.gain.value = this.sfxConvolver ? wetMix : 0;
+      this.sfxDryGain.gain.value = this.sfxConvolver ? dryMix : 1;
+    }
+  }
+
+  private connectSpatialOneShot(node: AudioNode): void {
+    this.ensureSfxBus();
+    if (!this.sfxDryGain) {
+      node.connect(this.masterGain!);
+      return;
+    }
+    node.connect(this.sfxDryGain);
+    if (this.sfxConvolver) {
+      node.connect(this.sfxConvolver);
     }
   }
 
@@ -234,8 +301,7 @@ class AudioEngine {
 
     const preset = FOOTSTEP_PRESETS[material ?? 'default'] ?? FOOTSTEP_PRESETS['default'];
     const ctx = this.ctx;
-    const dest = this.masterGain;
-    if (!ctx || !dest) return;
+    if (!ctx || !this.masterGain) return;
 
     const now = ctx.currentTime;
 
@@ -266,7 +332,7 @@ class AudioEngine {
 
     noiseSource.connect(filter);
     filter.connect(envGain);
-    envGain.connect(dest);
+    this.connectSpatialOneShot(envGain);
 
     noiseSource.start(now);
     safeStop(noiseSource, now + preset.noiseDuration + 0.01);
@@ -283,7 +349,7 @@ class AudioEngine {
       clickGain.gain.exponentialRampToValueAtTime(0.001, now + 0.04);
 
       clickOsc.connect(clickGain);
-      clickGain.connect(dest);
+      this.connectSpatialOneShot(clickGain);
 
       clickOsc.start(now);
       safeStop(clickOsc, now + 0.05);
@@ -1056,8 +1122,7 @@ class AudioEngine {
     this.resume();
 
     const ctx = this.ctx;
-    const dest = this.masterGain;
-    if (!ctx || !dest) return;
+    if (!ctx || !this.masterGain) return;
 
     const now = ctx.currentTime;
 
@@ -1072,7 +1137,7 @@ class AudioEngine {
     creakGain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
 
     creakOsc.connect(creakGain);
-    creakGain.connect(dest);
+    this.connectSpatialOneShot(creakGain);
     creakOsc.start(now);
     safeStop(creakOsc, now + 0.35);
 
@@ -1098,7 +1163,7 @@ class AudioEngine {
 
     thudSource.connect(thudFilter);
     thudFilter.connect(thudGain);
-    thudGain.connect(dest);
+    this.connectSpatialOneShot(thudGain);
     thudSource.start(now + 0.15);
   }
 
@@ -1117,8 +1182,7 @@ class AudioEngine {
     this.resume();
 
     const ctx = this.ctx;
-    const dest = this.masterGain;
-    if (!ctx || !dest) return;
+    if (!ctx || !this.masterGain) return;
 
     const now = ctx.currentTime;
 
@@ -1144,7 +1208,7 @@ class AudioEngine {
 
     slamSource.connect(slamFilter);
     slamFilter.connect(slamGain);
-    slamGain.connect(dest);
+    this.connectSpatialOneShot(slamGain);
     slamSource.start(now);
 
     // Latch click (sharp square blip)
@@ -1157,7 +1221,7 @@ class AudioEngine {
     clickGain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
 
     clickOsc.connect(clickGain);
-    clickGain.connect(dest);
+    this.connectSpatialOneShot(clickGain);
     clickOsc.start(now + 0.08);
     safeStop(clickOsc, now + 0.15);
   }
@@ -1826,22 +1890,34 @@ class AudioEngine {
    * Creates a "behind the wall" effect so dialogue stands out.
    */
   enableDialogueMuffle(): void {
-    if (this.disposed || !this.ambientMuffleFilter || !this.ctx) return;
+    if (this.disposed || !this.ctx) return;
     this.muffleEnabled = true;
     const now = this.ctx.currentTime;
-    this.ambientMuffleFilter.frequency.setValueAtTime(this.ambientMuffleFilter.frequency.value, now);
-    this.ambientMuffleFilter.frequency.linearRampToValueAtTime(800, now + 0.3);
+    if (this.ambientMuffleFilter) {
+      this.ambientMuffleFilter.frequency.setValueAtTime(this.ambientMuffleFilter.frequency.value, now);
+      this.ambientMuffleFilter.frequency.linearRampToValueAtTime(800, now + 0.3);
+    }
+    if (this.sfxMasterGain) {
+      this.sfxMasterGain.gain.setValueAtTime(this.sfxMasterGain.gain.value, now);
+      this.sfxMasterGain.gain.linearRampToValueAtTime(0.5, now + 0.3);
+    }
   }
 
   /**
    * Disable dialogue muffle — smoothly ramp ambient lowpass filter back to full range.
    */
   disableDialogueMuffle(): void {
-    if (this.disposed || !this.ambientMuffleFilter || !this.ctx) return;
+    if (this.disposed || !this.ctx) return;
     this.muffleEnabled = false;
     const now = this.ctx.currentTime;
-    this.ambientMuffleFilter.frequency.setValueAtTime(this.ambientMuffleFilter.frequency.value, now);
-    this.ambientMuffleFilter.frequency.linearRampToValueAtTime(22050, now + 0.5);
+    if (this.ambientMuffleFilter) {
+      this.ambientMuffleFilter.frequency.setValueAtTime(this.ambientMuffleFilter.frequency.value, now);
+      this.ambientMuffleFilter.frequency.linearRampToValueAtTime(22050, now + 0.5);
+    }
+    if (this.sfxMasterGain) {
+      this.sfxMasterGain.gain.setValueAtTime(this.sfxMasterGain.gain.value, now);
+      this.sfxMasterGain.gain.linearRampToValueAtTime(1, now + 0.5);
+    }
   }
 
   /* ─── Ambient Reverb Presets ─── */
@@ -1854,16 +1930,18 @@ class AudioEngine {
     this.currentReverbPreset = preset;
 
     // If ambient is currently playing, apply the new reverb immediately
-    if (!this.ambientConvolver || !this.ctx || !this.ambientReverbGain || !this.ambientDryReverbGain) return;
+    if (this.ambientConvolver && this.ctx && this.ambientReverbGain && this.ambientDryReverbGain) {
+      const reverbConfig = REVERB_PRESETS[preset] ?? REVERB_PRESETS['small_room'];
+      const now = this.ctx.currentTime;
 
-    const reverbConfig = REVERB_PRESETS[preset] ?? REVERB_PRESETS['small_room'];
-    const now = this.ctx.currentTime;
+      // Smoothly transition the wet/dry mix
+      this.ambientReverbGain.gain.setValueAtTime(this.ambientReverbGain.gain.value, now);
+      this.ambientReverbGain.gain.linearRampToValueAtTime(reverbConfig.wetMix, now + 0.5);
+      this.ambientDryReverbGain.gain.setValueAtTime(this.ambientDryReverbGain.gain.value, now);
+      this.ambientDryReverbGain.gain.linearRampToValueAtTime(1 - reverbConfig.wetMix, now + 0.5);
+    }
 
-    // Smoothly transition the wet/dry mix
-    this.ambientReverbGain.gain.setValueAtTime(this.ambientReverbGain.gain.value, now);
-    this.ambientReverbGain.gain.linearRampToValueAtTime(reverbConfig.wetMix, now + 0.5);
-    this.ambientDryReverbGain.gain.setValueAtTime(this.ambientDryReverbGain.gain.value, now);
-    this.ambientDryReverbGain.gain.linearRampToValueAtTime(1 - reverbConfig.wetMix, now + 0.5);
+    this.applySfxReverbPreset(preset, true);
   }
 
   /** Get default reverb preset based on scene ID */
@@ -1912,6 +1990,18 @@ class AudioEngine {
       try { this.masterGain.disconnect(); } catch { /* ignore */ }
       this.masterGain = null;
     }
+    if (this.sfxConvolver) {
+      releaseConvolver(this.sfxConvolver);
+      this.sfxConvolver = null;
+    }
+    for (const node of [this.sfxDryGain, this.sfxWetGain, this.sfxMasterGain]) {
+      if (node) {
+        try { node.disconnect(); } catch { /* ignore */ }
+      }
+    }
+    this.sfxDryGain = null;
+    this.sfxWetGain = null;
+    this.sfxMasterGain = null;
     // Shared AudioContext is closed by disposeSharedAudioContext()
     this.ctx = null;
   }

@@ -1002,10 +1002,11 @@ export const TRIGGER_ZONES: TriggerZone[] = [
   {
     id: 'street_winter_sergey_patrol',
     sceneId: 'street_winter',
-    position: [2.0, 0, -1.0],
-    size: [1.5, 2.0, 1.5],
+    position: [1.8, 0, -2.0],
+    size: [2.5, 2.0, 2.5],
     enterToast: 'Сергей выходит на ночной дозор — фонарь и терминал с логами.',
     requiredAct: 2,
+    hiddenWhenFlag: 'act2_complete',
     linkedNpcId: 'sergey',
     linkedDialogueNodeId: 'sergey_greeting',
     linkedQuestId: 'night_watch',
@@ -1031,6 +1032,27 @@ export const TRIGGER_ZONES: TriggerZone[] = [
     effects: [
       { type: 'setFlag', flag: 'spotted_mugger_alley', flagValue: true },
     ],
+  },
+
+  /* ─────────────── STREET WINTER ACT II CLOSING — Act II → III bridge (closed-overlay hub) ─────────────── */
+  {
+    id: 'street_winter_act2_closing',
+    sceneId: 'street_winter',
+    position: [-1.5, 0, 4.0],
+    size: [2.5, 2.0, 2.0],
+    enterToast: 'Снег ложится на плечи — город затихает. Пора идти домой.',
+    requiredAct: 2,
+    requiredFlag: 'dmitry_defected',
+    hiddenWhenFlag: 'act2_complete',
+    linkedDialogueNodeId: 'explore_act2_closing',
+    interactionType: 'examine',
+    interactionLabel: 'Идти домой сквозь снег',
+    examineData: {
+      title: 'Зимняя улица',
+      description: 'Снег глушит звуки. Редкий момент тишины перед новой борьбой.',
+      detailText: 'Сеть реальна, Хранилище существует, Протокол Забвения — угроза. Сегодня ты просто идёшь домой, и строчки складываются сами.',
+      icon: '❄️',
+    },
   },
 
   /* ─────────────── STREET WINTER MARCH — Act IV golden path (closed-overlay hub) ─────────────── */
