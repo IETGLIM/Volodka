@@ -146,9 +146,10 @@ export function runMainPlayerMovement(deps: PlayerMovementDeps): boolean {
     const targetVx = moveDir.x * speed;
     const targetVz = moveDir.z * speed;
     if (keyboardDrivesMove) {
-      const kbAccel = moveAccel * 1.35;
-      vel.x = THREE.MathUtils.damp(vel.x, targetVx, kbAccel, dt);
-      vel.z = THREE.MathUtils.damp(vel.z, targetVz, kbAccel, dt);
+      // Match SimplePlayer — keyboard is digital; damped ramp feels sluggish and
+      // compounds with KCC slide-ratio crushing on minor floor contacts.
+      vel.x = targetVx;
+      vel.z = targetVz;
     } else {
       vel.x = THREE.MathUtils.damp(vel.x, targetVx, moveAccel, dt);
       vel.z = THREE.MathUtils.damp(vel.z, targetVz, moveAccel, dt);
@@ -287,8 +288,8 @@ export function runMainPlayerMovement(deps: PlayerMovementDeps): boolean {
   const blockedByWall = blockedByCollider && collisionCount > 0;
   scratch.blockedByWall = blockedByWall;
 
-  if (blockedByCollider && desiredHLen > 0.001 && actualHLen < desiredHLen * BLOCKED_RATIO) {
-    const slideRatio = Math.max(actualHLen / desiredHLen, 0.15);
+  if (blockedByWall) {
+    const slideRatio = Math.max(actualHLen / Math.max(desiredHLen, 0.001), 0.15);
     vel.x *= slideRatio;
     vel.z *= slideRatio;
   }

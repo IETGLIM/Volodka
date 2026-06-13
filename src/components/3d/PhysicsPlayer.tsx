@@ -97,7 +97,7 @@ export function PhysicsPlayer({
   onInteractPress,
   moveBlendRef,
 }: PhysicsPlayerProps) {
-  const controls = usePlayerControls(onInteractPress);
+  const controls = usePlayerControls(onInteractPress, virtualControlsRef);
   const sceneId = useCurrentSceneId();
   const { activeCutsceneId, gameMode } = usePlayerPresentationState();
   const hideForWakeup = isIntroWakeupCutscene(activeCutsceneId);

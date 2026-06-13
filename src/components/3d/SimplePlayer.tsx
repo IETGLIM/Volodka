@@ -54,7 +54,7 @@ export function SimplePlayer({
   virtualControlsRef,
   onInteractPress,
 }: SimplePlayerProps) {
-  const controls = usePlayerControls(onInteractPress);
+  const controls = usePlayerControls(onInteractPress, virtualControlsRef);
   const sceneId = useCurrentSceneId();
   const karma = usePlayerKarma();
 

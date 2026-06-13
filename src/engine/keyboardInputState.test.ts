@@ -71,4 +71,14 @@ describe('keyboardInputState', () => {
     expect(sampleKeyboardMovement().forward).toBe(false);
     expect(sampleKeyboardMovement().hasMovement).toBe(false);
   });
+
+  it('blur does not clear keys while document still has focus', () => {
+    bindKeyboardInput();
+    dispatchKey('keydown', 'KeyW');
+    vi.stubGlobal('document', { hasFocus: () => true });
+    handlers.get('blur')?.({} as FocusEvent);
+    expect(sampleKeyboardMovement().forward).toBe(true);
+    vi.unstubAllGlobals();
+    vi.stubGlobal('window', { addEventListener, removeEventListener });
+  });
 });

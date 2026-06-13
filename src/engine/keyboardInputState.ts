@@ -156,6 +156,9 @@ function onKeyUp(e: KeyboardEvent): void {
 }
 
 function onBlur(): void {
+  // Canvas/UI focus changes fire blur on child elements — only clear when the
+  // document truly lost focus (Alt+Tab, another app), not when clicking HUD.
+  if (typeof document !== 'undefined' && document.hasFocus()) return;
   keys.forward = false;
   keys.backward = false;
   keys.left = false;

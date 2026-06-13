@@ -1,7 +1,7 @@
 
 /* ─── Volodka RPG – player controls hook ─── */
 
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef, useCallback, type MutableRefObject } from 'react';
 import { bindKeyboardInput, sampleKeyboardMovement } from '@/engine/keyboardInputState';
 
 export interface VirtualControls {
@@ -36,8 +36,10 @@ export interface PlayerControls {
  */
 export function usePlayerControls(
   onInteractPress?: () => void,
+  /** Shared ref from VirtualControlsContext — mobile HUD / gamepad write here. */
+  externalVirtualControlsRef?: MutableRefObject<VirtualControls>,
 ): PlayerControls {
-  const virtualControlsRef = useRef<VirtualControls>({
+  const localVirtualControlsRef = useRef<VirtualControls>({
     forward: 0,
     backward: 0,
     left: 0,
@@ -45,6 +47,7 @@ export function usePlayerControls(
     run: 0,
     jump: 0,
   });
+  const virtualControlsRef = externalVirtualControlsRef ?? localVirtualControlsRef;
 
   const interactPressRef = useRef<(() => void) | null>(null);
   useEffect(() => {
