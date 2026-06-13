@@ -32,7 +32,7 @@ subscribeAllStores(() => {
   invalidateBridgeSnapshot();
   facadeSetState(getCombinedGameState(), true);
 });
-useGameStore.setState = ((partial, replace) => {
+useGameStore.setState = ((partial, _replace) => {
   const patch = typeof partial === 'function' ? partial(getCombinedGameState()) : partial;
   applyCombinedPatch(patch as Partial<GameStoreState>);
 }) as typeof useGameStore.setState;
