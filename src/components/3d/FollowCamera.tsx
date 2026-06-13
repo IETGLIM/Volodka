@@ -33,7 +33,11 @@ import { applyPendingGamepadOrbit } from '@/engine/input/gamepadCamera';
 import { configureCameraCollisionRaycaster } from '@/engine/camera/cameraCollisionLayers';
 import { applyCameraFrame, isInDialogueInteraction } from '@/engine/camera/applyCameraFrame';
 import {
-  shouldFollowCameraYield,
+  acquireCameraOwnership,
+  canFollowCameraDriveFrame,
+  canWriteCamera,
+  getCameraOwner,
+  releaseCameraOwnership,
 } from '@/engine/camera/cameraOwnerState';
 import type { CameraModeContext } from '@/engine/camera/types';
 import { isInteractionLocked } from '@/engine/interaction/interactionSession';
