@@ -11,6 +11,7 @@ import {
 } from 'react';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import * as THREE from 'three';
+import { getSceneConfig } from '@/config/scenes';
 import { useCurrentSceneId } from '@/store/selectors';
 import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
 import {
@@ -35,7 +36,7 @@ interface EnvironmentLodProviderProps {
 }
 
 /**
- * Computes environment LOD from player distance to scene origin.
+ * Computes environment LOD from player distance to the scene anchor (spawn point).
  * Large outdoor/industrial scenes downgrade clutter when the player moves away.
  */
 export function EnvironmentLodProvider({
@@ -45,6 +46,7 @@ export function EnvironmentLodProvider({
   const sceneId = useCurrentSceneId();
   const { preset } = useGraphicsQuality();
   const profile = useMemo(() => getEnvironmentLodProfile(sceneId), [sceneId]);
+  const sceneAnchorRef = useRef(new THREE.Vector3());
 
   const lodRef = useRef<EnvironmentLodLevel>('full');
   const [lod, setLod] = useState<EnvironmentLodLevel>('full');
@@ -55,7 +57,9 @@ export function EnvironmentLodProvider({
     if (timerRef.current < 0.15) return;
     timerRef.current = 0;
 
-    const dist = livePlayerPositionRef.current.length();
+    const spawn = getSceneConfig(sceneId).spawnPoint;
+    sceneAnchorRef.current.set(spawn[0], spawn[1], spawn[2]);
+    const dist = livePlayerPositionRef.current.distanceTo(sceneAnchorRef.current);
     const next = environmentLodFromDistance(dist, profile, preset.lodBias);
     if (next !== lodRef.current) {
       lodRef.current = next;

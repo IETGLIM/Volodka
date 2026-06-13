@@ -8,6 +8,8 @@
 
 import { useMemo } from 'react';
 import { useGameStore } from '@/store/gameStore';
+import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
+import { getFxBudget } from '@/engine/graphics/fxGovernor';
 import { RainSystem } from './RainSystem';
 import { SnowSystem } from './SnowSystem';
 import type { SceneId } from '@/shared/types/game';
@@ -40,11 +42,15 @@ const SCENE_WEATHER: Record<SceneId, WeatherType> = {
 export function WeatherController() {
   const sceneId = useGameStore((s) => s.exploration.currentSceneId);
   const weatherEnabled = useGameStore((s) => s.weatherEnabled);
+  const { preset } = useGraphicsQuality();
+  const fxTier = preset.id === 'low' ? 'low' : preset.id === 'high' || preset.id === 'ultra' ? 'high' : 'medium';
+  const fxBudget = getFxBudget(fxTier);
 
   const weatherType = useMemo<WeatherType>(() => {
     if (!weatherEnabled) return 'none';
+    if (!fxBudget.allowRain && SCENE_WEATHER[sceneId]?.startsWith('rain')) return 'none';
     return SCENE_WEATHER[sceneId] ?? 'none';
-  }, [sceneId, weatherEnabled]);
+  }, [sceneId, weatherEnabled, fxBudget.allowRain]);
 
   switch (weatherType) {
     case 'rain_heavy':

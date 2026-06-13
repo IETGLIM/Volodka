@@ -13,6 +13,15 @@ const SCENE_JS_CHUNK_PRELOAD: Partial<Record<SceneId, readonly ChunkPreloader[]>
   home_evening: [
     () => import('./homeEvening/HomeEveningPropsChunk'),
   ],
+  factory_basement: [
+    () => import('./factoryBasement/FactoryBasementClutterChunk'),
+  ],
+  chk_forest_zorge: [
+    () => import('./chkForestZorge/ChkForestZorgeClutterChunk'),
+  ],
+  street_night: [
+    () => import('./streetNight/StreetNightClutterChunk'),
+  ],
 };
 
 export function preloadSceneJsChunks(sceneId: SceneId): void {

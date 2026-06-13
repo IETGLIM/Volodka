@@ -413,15 +413,49 @@ function CapsuleImpostorNPC({ appearance }: { appearance: NPCAppearance }) {
   );
 }
 
-/** Get point light color based on NPC relation level */
-function getNPCPointLightColor(npcId: string, glowColor: string): string {
+/** Emissive tint based on NPC relation level — replaces per-NPC point lights */
+function getNpcEmissiveColor(npcId: string, glowColor: string): string {
   const npcRelations = useGameStore.getState().npcRelations;
   const relation = npcRelations.find((r) => r.npcId === npcId);
   const value = relation?.value ?? 50;
 
-  if (value >= 70) return '#ffaa44';  // Warm amber for friendly
-  if (value <= 30) return '#ff2222';  // Red for hostile
-  return glowColor;                    // Use NPC's unique glow color for neutral
+  if (value >= 70) return '#ffaa44';
+  if (value <= 30) return '#ff4444';
+  return glowColor;
+}
+
+/** Boost emissive on child meshes for readable silhouettes without point lights */
+function NpcEmissiveGlow({
+  npcId,
+  glowColor,
+  children,
+}: {
+  npcId: string;
+  glowColor: string;
+  children: React.ReactNode;
+}) {
+  const groupRef = useRef<THREE.Group>(null);
+  const emissiveColor = useMemo(
+    () => getNpcEmissiveColor(npcId, glowColor),
+    [npcId, glowColor],
+  );
+
+  useEffect(() => {
+    const root = groupRef.current;
+    if (!root) return;
+    root.traverse((obj) => {
+      const mesh = obj as THREE.Mesh;
+      if (!mesh.isMesh) return;
+      const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+      for (const mat of materials) {
+        if (!(mat instanceof THREE.MeshStandardMaterial)) continue;
+        mat.emissive.set(emissiveColor);
+        mat.emissiveIntensity = Math.max(mat.emissiveIntensity, 0.45);
+      }
+    });
+  }, [emissiveColor]);
+
+  return <group ref={groupRef}>{children}</group>;
 }
 
 /** NPC model renderer — GLB when a shipped modelPath/registry entry exists, else procedural.
@@ -441,27 +475,8 @@ function NPCModelWithErrorBoundary({
   const { preset } = useGraphicsQuality();
   const allowGlbNpc = preset.npcRenderMode !== 'procedural';
 
-  // Dynamic point light color based on NPC relation
-  const [pointLightColor] = useState(() =>
-    getNPCPointLightColor(definition.id, appearance.glowColor)
-  );
-
   return (
-    <group>
-      <pointLight
-        position={[0, 2.0, 0]}
-        color={pointLightColor}
-        intensity={1.0}
-        distance={5}
-        decay={2}
-      />
-      <pointLight
-        position={[0, 0.3, 0]}
-        color={pointLightColor}
-        intensity={0.25}
-        distance={2}
-        decay={2}
-      />
+    <NpcEmissiveGlow npcId={definition.id} glowColor={appearance.glowColor}>
       {allowGlbNpc && resolveNpcModelUrl(definition.id, definition.modelPath) ? (
         <GltfNPCModel
           definition={definition}
@@ -478,7 +493,7 @@ function NPCModelWithErrorBoundary({
           activity={activity}
         />
       )}
-    </group>
+    </NpcEmissiveGlow>
   );
 }
 
@@ -631,27 +646,23 @@ function ThinkingDots() {
  *  - Green ✓ — Quest ready to turn in (all objectives complete) */
 function QuestMarker({ npcId }: { npcId: string }) {
   const quests = useQuests();
-  const [glowIntensity, setGlowIntensity] = useState(1);
+  const glowRef = useRef<HTMLDivElement>(null);
+  const iconRef = useRef<HTMLDivElement>(null);
+  const pulsePhaseRef = useRef(0);
 
   const markerInfo = useMemo(
     () => getNpcQuestMarkerDisplay(npcId),
     [quests, npcId],
   );
 
-  // Pulse animation — speed depends on marker type
-  useEffect(() => {
-    if (!markerInfo) return
-    let frame: number;
-    let t = 0;
-    const speed = markerInfo.pulseSpeed;
-    const animate = () => {
-      t += 0.04 * (1.5 / speed);
-      setGlowIntensity(0.7 + Math.sin(t * 3.0) * 0.5);
-      frame = requestAnimationFrame(animate);
-    };
-    frame = requestAnimationFrame(animate);
-    return () => cancelAnimationFrame(frame);
-  }, [markerInfo]);
+  useFrameTick('npc', ({ delta }) => {
+    if (!markerInfo || !glowRef.current || !iconRef.current) return;
+    pulsePhaseRef.current += delta * (1.5 / markerInfo.pulseSpeed) * 3.0;
+    const glowIntensity = 0.7 + Math.sin(pulsePhaseRef.current) * 0.5;
+    glowRef.current.style.background = `${markerInfo.glowPrefix} ${0.18 * glowIntensity})`;
+    glowRef.current.style.boxShadow = `0 0 ${8 * glowIntensity}px ${markerInfo.glowPrefix} ${0.35 * glowIntensity})`;
+    iconRef.current.style.textShadow = `0 0 ${4 * glowIntensity}px ${markerInfo.glowPrefix} 0.6)`;
+  });
 
   if (!markerInfo) return null;
 
@@ -673,21 +684,23 @@ function QuestMarker({ npcId }: { npcId: string }) {
         }}
       >
         <div
+          ref={glowRef}
           style={{
             position: 'absolute',
             width: '22px',
             height: '22px',
             borderRadius: '50%',
-            background: `${markerInfo.glowPrefix} ${0.18 * glowIntensity})`,
-            boxShadow: `0 0 ${8 * glowIntensity}px ${markerInfo.glowPrefix} ${0.35 * glowIntensity})`,
+            background: `${markerInfo.glowPrefix} 0.18)`,
+            boxShadow: `0 0 8px ${markerInfo.glowPrefix} 0.35)`,
           }}
         />
         <div
+          ref={iconRef}
           style={{
             color: markerInfo.color,
             fontSize: isComplete ? '12px' : '14px',
             fontWeight: 'bold',
-            textShadow: `0 0 ${4 * glowIntensity}px ${markerInfo.glowPrefix} 0.6)`,
+            textShadow: `0 0 4px ${markerInfo.glowPrefix} 0.6)`,
             userSelect: 'none',
             position: 'relative',
             zIndex: UI_LAYERS.WORLD_LABELS,

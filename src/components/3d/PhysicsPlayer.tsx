@@ -65,117 +65,35 @@ import { CinematicPlayerAvatar } from './CinematicPlayerAvatar';
 import type { RapierCharacterController } from '@/engine/physics/rapierTypes';
 import { probeGroundY } from '@/engine/physics/groundProbe';
 import type { SceneId } from '@/shared/types/game';
-
-/** Lerp angle with wraparound — smooth rotation without 360 jumps */
-function lerpAngle(a: number, b: number, t: number): number {
-  let diff = b - a;
-  while (diff > Math.PI) diff -= Math.PI * 2;
-  while (diff < -Math.PI) diff += Math.PI * 2;
-  return a + diff * Math.min(t, 1);
-}
-
-/** Snap rigid body to probed ground when at/below floor level and falling. */
-function enforceFloor(
-  rb: RapierRigidBody,
-  vel: THREE.Vector3,
-  groundY: number,
-  tolerance = 0.02,
-): boolean {
-  if (!rb.isValid()) return false;
-  const pos = rb.translation();
-  if (pos.y <= groundY + tolerance && vel.y < 0) {
-    rb.setTranslation({ x: pos.x, y: groundY, z: pos.z }, true);
-    vel.y = 0;
-    return true;
-  }
-  return false;
-}
-
-type WorldWithOptionalControllerRemove = {
-  removeCharacterController?: (controller: RapierCharacterController) => void;
-};
-
-type CharacterControllerWithOptionalFree = RapierCharacterController & {
-  free?: () => void;
-};
-
-/** Release KCC across Rapier builds (world.remove vs controller.free vs world teardown). */
-function disposeCharacterController(
-  world: WorldWithOptionalControllerRemove,
-  controller: RapierCharacterController,
-): void {
-  if (typeof world.removeCharacterController === 'function') {
-    world.removeCharacterController(controller);
-    return;
-  }
-  const free = (controller as CharacterControllerWithOptionalFree).free;
-  if (typeof free === 'function') {
-    free.call(controller);
-  }
-}
-
-/* ─── Physics Constants ─── */
-const WALK_SPEED = 4;
-const RUN_SPEED = 7;
-/** Keyboard gets snappier response than touch/gamepad damp tuning. */
-const KEYBOARD_ACCEL = 50;
-const JUMP_FORCE = 5.5;
-const GRAVITY = -15;
-const FOOTSTEP_INTERVAL = 0.4;
-const PLAYER_HEIGHT = 1.75;
-const PLAYER_RADIUS = 0.3;
-const ROTATION_SPEED = 10;
-
-/* ─── Character Controller Constants ─── */
-const SKIN_WIDTH = 0.04;
-const MAX_SLOPE_CLIMB = Math.PI / 4; // 45° — walkable slopes
-const MIN_SLOPE_SLIDE = Math.PI / 6;  // 30° — auto-slide steeper
-const AUTOSTEP_HEIGHT = 0.3;         // 30cm max step height
-const AUTOSTEP_WIDTH = 0.2;          // 20cm min step width
-const SNAP_DISTANCE = 0.15;          // 15cm snap — large values cause Y bounce while walking
-/** Horizontal movement blocked when actual displacement falls below this fraction of desired. */
-const BLOCKED_RATIO = 0.35;
-const COYOTE_TIME = 0.15;            // 150ms jump grace after leaving edge
-const JUMP_COOLDOWN = 0.3;           // 300ms between jumps
-const TERMINAL_VELOCITY = GRAVITY * 2; // max fall speed
-/** Hold player at spawn while KCC/Rapier settle after scene load or wake. */
-const WARMUP_DURATION_S = 0.2;
-
-type DirectMovementTelemetryRefs = {
-  useDirectRef: React.MutableRefObject<boolean>;
-  loggedRef: React.MutableRefObject<boolean>;
-  reasonRef: React.MutableRefObject<string | null>;
-};
-
-/** Dev-only telemetry when KCC is bypassed (collider missing / mobile stuck). */
-function activateDirectMovementMode(
-  refs: DirectMovementTelemetryRefs,
-  reason: string,
-  meta: { sceneId: SceneId; failFrames?: number; stuckFrames?: number },
-): void {
-  refs.useDirectRef.current = true;
-  if (refs.loggedRef.current && refs.reasonRef.current === reason) return;
-  refs.loggedRef.current = true;
-  refs.reasonRef.current = reason;
-  devWarn('[PhysicsPlayer][direct-movement]', reason, meta);
-}
-
-function restoreKccMovementMode(
-  refs: DirectMovementTelemetryRefs,
-  meta: { sceneId: SceneId },
-): void {
-  if (refs.loggedRef.current) {
-    devLog('[PhysicsPlayer][direct-movement] restored KCC', {
-      ...meta,
-      previousReason: refs.reasonRef.current,
-    });
-  }
-  refs.useDirectRef.current = false;
-  refs.loggedRef.current = false;
-  refs.reasonRef.current = null;
-}
-
-/* ─── Character Controller Constants ─── */
+import {
+  WALK_SPEED,
+  RUN_SPEED,
+  KEYBOARD_ACCEL,
+  JUMP_FORCE,
+  GRAVITY,
+  FOOTSTEP_INTERVAL,
+  PLAYER_HEIGHT,
+  PLAYER_RADIUS,
+  ROTATION_SPEED,
+  SKIN_WIDTH,
+  MAX_SLOPE_CLIMB,
+  MIN_SLOPE_SLIDE,
+  AUTOSTEP_HEIGHT,
+  AUTOSTEP_WIDTH,
+  SNAP_DISTANCE,
+  BLOCKED_RATIO,
+  COYOTE_TIME,
+  JUMP_COOLDOWN,
+  TERMINAL_VELOCITY,
+  WARMUP_DURATION_S,
+} from '@/engine/player/playerConstants';
+import { lerpAngle, enforceFloor } from '@/engine/player/playerMath';
+import {
+  activateDirectMovementMode,
+  restoreKccMovementMode,
+  type DirectMovementTelemetryRefs,
+} from '@/engine/player/directMovementTelemetry';
+import { disposeCharacterController } from '@/engine/player/characterControllerLifecycle';
 
 interface PhysicsPlayerProps {
   livePlayerPositionRef: React.MutableRefObject<THREE.Vector3>;

@@ -3,7 +3,10 @@ import { useFrameTick } from '@/engine/frame/useFrameTick';
 import * as THREE from 'three';
 
 interface ProximityGodRayProps {
-  active: boolean;
+  /** Static active flag — omit when using activeRef */
+  active?: boolean;
+  /** Imperative active flag — avoids React re-renders when toggled from central tick */
+  activeRef?: React.RefObject<boolean>;
   color?: string;
   beamHeight?: number;
   baseY?: number;
@@ -17,7 +20,8 @@ interface ProximityGodRayProps {
 
 /** Soft spotlight + volumetric cone for nearby interactables (no floor ring). */
 export function ProximityGodRay({
-  active,
+  active = false,
+  activeRef,
   color = '#88eeff',
   beamHeight = 2.4,
   baseY = 0.35,
@@ -28,11 +32,21 @@ export function ProximityGodRay({
   const spotRef = useRef<THREE.SpotLight>(null);
   const fillRef = useRef<THREE.PointLight>(null);
   const coneMatRef = useRef<THREE.MeshBasicMaterial>(null);
+  const coneMeshRef = useRef<THREE.Mesh>(null);
   const pulseRef = useRef(0);
+  const usesActiveRef = activeRef !== undefined;
 
   useFrameTick('interaction', ({ delta }) => {
-    if (!active) return;
+    const liveActive = usesActiveRef ? (activeRef?.current ?? false) : active;
+    if (!liveActive) {
+      if (spotRef.current) spotRef.current.intensity = 0;
+      if (fillRef.current) fillRef.current.intensity = 0;
+      if (coneMatRef.current) coneMatRef.current.opacity = 0;
+      if (coneMeshRef.current) coneMeshRef.current.visible = false;
+      return;
+    }
 
+    if (coneMeshRef.current) coneMeshRef.current.visible = true;
     pulseRef.current += delta * 2.8;
     const prox = Math.max(0.25, Math.min(1, proximityRef?.current ?? 1));
     const phase = pulsePhaseRef?.current ?? pulseRef.current;
@@ -47,7 +61,7 @@ export function ProximityGodRay({
     }
   });
 
-  if (!active) return null;
+  if (!usesActiveRef && !active) return null;
 
   return (
     <group position={[0, baseY, 0]}>
@@ -64,7 +78,7 @@ export function ProximityGodRay({
       >
         <object3D attach="target" position={[0, 0, 0]} />
       </spotLight>
-      <mesh position={[0, beamHeight * 0.42, 0]} rotation={[Math.PI, 0, 0]}>
+      <mesh ref={coneMeshRef} position={[0, beamHeight * 0.42, 0]} rotation={[Math.PI, 0, 0]}>
         <coneGeometry args={[0.34, beamHeight * 0.9, 16, 1, true]} />
         <meshBasicMaterial
           ref={coneMatRef}

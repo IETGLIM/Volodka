@@ -4,7 +4,8 @@
 
 import type { MutableRefObject } from 'react';
 import { Suspense, useEffect, useMemo, useRef } from 'react';
-import { useFrame, useThree } from '@react-three/fiber';
+import { useFrameTick } from '@/engine/frame/useFrameTick';
+import { useThree } from '@react-three/fiber';
 import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
 import { useGameStore } from '@/store/gameStore';
@@ -89,7 +90,7 @@ function FirstPersonHandsInner({ moveBlendRef }: FirstPersonHandsProps) {
     idleActionRef.current?.reset().fadeIn(0.2).play();
   }, [actions]);
 
-  useFrame((_, delta) => {
+  useFrameTick('player', ({ delta }) => {
     const rig = rigRef.current;
     const mount = armsMountRef.current;
     if (!rig || !mount) return;

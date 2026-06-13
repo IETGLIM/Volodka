@@ -1,5 +1,7 @@
-import { Suspense, useMemo } from 'react';
+import { Suspense, useMemo, useRef } from 'react';
 import { useGLTF } from '@react-three/drei';
+import { useFrameTick } from '@/engine/frame/useFrameTick';
+import * as THREE from 'three';
 import { getAssetDefinition, resolveVariantUrl } from '@/config/assetManifest';
 import { extendGltfLoader } from '@/engine/assets/gltfPipeline';
 import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
@@ -21,9 +23,10 @@ interface GltfAssetSceneProps {
   url: string;
   castShadow: boolean;
   receiveShadow: boolean;
+  visible?: boolean;
 }
 
-function GltfAssetScene({ url, castShadow, receiveShadow }: GltfAssetSceneProps) {
+function GltfAssetScene({ url, castShadow, receiveShadow, visible = true }: GltfAssetSceneProps) {
   const gltf = useGLTF(url, true, true, extendLoader);
 
   const cloneOptions = useMemo(
@@ -33,7 +36,7 @@ function GltfAssetScene({ url, castShadow, receiveShadow }: GltfAssetSceneProps)
 
   const { scene } = useSkinnedGltfClone(gltf.scene, gltf.animations, cloneOptions);
 
-  return <primitive object={scene} />;
+  return <primitive object={scene} visible={visible} />;
 }
 
 function GltfAssetInner({
@@ -44,6 +47,8 @@ function GltfAssetInner({
 }: Omit<GltfAssetProps, 'fallback'>) {
   const { preset } = useGraphicsQuality();
   const asset = getAssetDefinition(assetId);
+  const lodGroupRefs = useRef<Map<string, THREE.Group>>(new Map());
+
   if (!asset || asset.shipped !== true) return null;
 
   const castShadow = asset.castShadow ?? false;
@@ -58,15 +63,14 @@ function GltfAssetInner({
     <group position={position} rotation={rotation} scale={scaleProp}>
       {useDistanceLod ? (
         <LodSwitcher asset={asset}>
-          {(lodUrl) => (
-            <Suspense fallback={null}>
-              <GltfAssetScene
-                key={lodUrl}
-                url={lodUrl}
-                castShadow={castShadow}
-                receiveShadow={receiveShadow}
-              />
-            </Suspense>
+          {({ activeUrlRef, urls }) => (
+            <GltfLodBranches
+              urls={urls}
+              activeUrlRef={activeUrlRef}
+              lodGroupRefs={lodGroupRefs}
+              castShadow={castShadow}
+              receiveShadow={receiveShadow}
+            />
           )}
         </LodSwitcher>
       ) : (
@@ -79,6 +83,55 @@ function GltfAssetInner({
         </Suspense>
       )}
     </group>
+  );
+}
+
+function GltfLodBranches({
+  urls,
+  activeUrlRef,
+  lodGroupRefs,
+  castShadow,
+  receiveShadow,
+}: {
+  urls: readonly string[];
+  activeUrlRef: React.MutableRefObject<string>;
+  lodGroupRefs: React.MutableRefObject<Map<string, THREE.Group>>;
+  castShadow: boolean;
+  receiveShadow: boolean;
+}) {
+  useFrameTick(
+    'misc',
+    () => {
+      const activeUrl = activeUrlRef.current;
+      for (const url of urls) {
+        const group = lodGroupRefs.current.get(url);
+        if (group) group.visible = url === activeUrl;
+      }
+    },
+    { label: 'GltfAssetLodVisibility' },
+  );
+
+  return (
+    <>
+      {urls.map((lodUrl) => (
+        <group
+          key={lodUrl}
+          ref={(node) => {
+            if (node) lodGroupRefs.current.set(lodUrl, node);
+            else lodGroupRefs.current.delete(lodUrl);
+          }}
+          visible={lodUrl === activeUrlRef.current}
+        >
+          <Suspense fallback={null}>
+            <GltfAssetScene
+              url={lodUrl}
+              castShadow={castShadow}
+              receiveShadow={receiveShadow}
+            />
+          </Suspense>
+        </group>
+      ))}
+    </>
   );
 }
 

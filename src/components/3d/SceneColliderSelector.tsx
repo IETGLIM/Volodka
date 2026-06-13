@@ -80,7 +80,7 @@ export function SceneColliderSelector({ livePlayerPositionRef }: SceneColliderSe
 
       {/* Midground layer — architecture, walls, floors, furniture (visual only). */}
       <SceneLayer layer="MIDGROUND">
-        <Suspense key={sceneId} fallback={null}>
+        <Suspense key={sceneId} fallback={<SceneLoadGreybox sceneId={sceneId} />}>
           <EnvironmentLodProvider livePlayerPositionRef={livePlayerPositionRef}>
             <SceneVisualRoot
               key={sceneId}
@@ -359,6 +359,23 @@ function DistantBuildingSilhouettes({ sceneId }: { sceneId: SceneId }) {
   );
 }
 
+function SceneLoadGreybox({ sceneId }: { sceneId: SceneId }) {
+  const config = getSceneConfig(sceneId);
+  const [w, d] = config.size;
+  return (
+    <group>
+      <mesh rotation-x={-Math.PI / 2} position-y={config.floorY}>
+        <boxGeometry args={[w, 0.05, d]} />
+        <meshStandardMaterial color="#3a3a3a" roughness={0.95} />
+      </mesh>
+      <mesh position={[0, 1.5, 0]}>
+        <boxGeometry args={[w * 0.6, 3, d * 0.6]} />
+        <meshStandardMaterial color="#2a2a2a" wireframe transparent opacity={0.35} />
+      </mesh>
+    </group>
+  );
+}
+
 function FallbackVisual({ sceneId }: { sceneId: SceneId }) {
   const config = getSceneConfig(sceneId);
   const [w, d] = config.size;
@@ -440,25 +457,45 @@ function StreetForegroundObjects() {
   const lampPositions: [number, number, number][] = [
     [-3, 0, -5], [3, 0, 5], [-3, 0, 12], [3, 0, -12],
   ];
+  const poleRef = useRef<THREE.InstancedMesh>(null);
+  const bulbRef = useRef<THREE.InstancedMesh>(null);
+  const dummy = useMemo(() => new THREE.Object3D(), []);
+
+  useEffect(() => {
+    if (!poleRef.current || !bulbRef.current) return;
+    lampPositions.forEach((pos, i) => {
+      dummy.position.set(pos[0], pos[1] + 2.5, pos[2]);
+      dummy.scale.set(1, 1, 1);
+      dummy.updateMatrix();
+      poleRef.current!.setMatrixAt(i, dummy.matrix);
+      dummy.position.set(pos[0], pos[1] + 5.1, pos[2]);
+      dummy.scale.set(1, 1, 1);
+      dummy.updateMatrix();
+      bulbRef.current!.setMatrixAt(i, dummy.matrix);
+    });
+    poleRef.current.instanceMatrix.needsUpdate = true;
+    bulbRef.current.instanceMatrix.needsUpdate = true;
+  }, [dummy]);
 
   return (
     <group>
+      <instancedMesh ref={poleRef} args={[undefined, undefined, lampPositions.length]} castShadow>
+        <cylinderGeometry args={[0.03, 0.05, 5, 6]} />
+        <meshStandardMaterial color="#444" metalness={0.7} roughness={0.3} />
+      </instancedMesh>
+      <instancedMesh ref={bulbRef} args={[undefined, undefined, lampPositions.length]}>
+        <sphereGeometry args={[0.08, 8, 8]} />
+        <meshStandardMaterial color="#ffe8a0" emissive="#ffdd80" emissiveIntensity={3} />
+      </instancedMesh>
       {lampPositions.map((pos, i) => (
-        <group key={`fg-lamp-${i}`} position={pos}>
-          <mesh position={[0, 2.5, 0]} castShadow>
-            <cylinderGeometry args={[0.03, 0.05, 5, 6]} />
-            <meshStandardMaterial color="#444" metalness={0.7} roughness={0.3} />
-          </mesh>
-          <mesh position={[0, 5.1, 0]}>
-            <boxGeometry args={[0.3, 0.1, 0.2]} />
-            <meshStandardMaterial color="#555" metalness={0.6} />
-          </mesh>
-          <mesh position={[0, 4.95, 0]}>
-            <sphereGeometry args={[0.08, 8, 8]} />
-            <meshStandardMaterial color="#ffe8a0" emissive="#ffdd80" emissiveIntensity={3} />
-          </mesh>
-          <pointLight position={[0, 4.9, 0]} color="#ffdd80" intensity={4.2} distance={18} castShadow={false} shadow-mapSize-width={256} shadow-bias={-0.002} />
-        </group>
+        <pointLight
+          key={`fg-lamp-light-${i}`}
+          position={[pos[0], pos[1] + 4.9, pos[2]]}
+          color="#ffdd80"
+          intensity={4.2}
+          distance={18}
+          castShadow={false}
+        />
       ))}
       <group position={[2.5, 0, -2]}>
         <mesh position={[0, 0.9, 0]} castShadow>

@@ -26,6 +26,8 @@ import { useGameStore } from '@/store/gameStore';
 import { useGameMode } from '@/store/selectors';
 import { useMobileVisualPerf } from '@/hooks/use-mobile';
 import { useVisualSettings } from '@/hooks/useVisualSettings';
+import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
+import { getFxBudget } from '@/engine/graphics/fxGovernor';
 import { VolumetricFog, FOG_PRESETS } from './VolumetricFog';
 import { GodRays, GODRAY_PRESETS } from './GodRays';
 import { SteamParticles } from './SteamParticles';
@@ -67,6 +69,9 @@ export function AtmosphericEffects() {
   const gameMode = useGameMode();
   const { visualLite, effectsScale } = useMobileVisualPerf();
   const { particlesEnabled, postfxEnabled } = useVisualSettings();
+  const { preset } = useGraphicsQuality();
+  const fxTier = preset.id === 'low' ? 'low' : preset.id === 'high' || preset.id === 'ultra' ? 'high' : 'medium';
+  const fxBudget = getFxBudget(fxTier);
   const heavyEffects = visualLite || effectsScale < 0.85;
   const effectsEnabled = gameMode !== 'menu' && postfxEnabled;
 
@@ -92,8 +97,8 @@ export function AtmosphericEffects() {
 
   if (!effectsEnabled) return null;
 
-  const showFog = sceneHasFog(sceneId);
-  const showGodRays = sceneHasGodRays(sceneId);
+  const showFog = fxBudget.allowFog && sceneHasFog(sceneId);
+  const showGodRays = fxBudget.allowGodRays && sceneHasGodRays(sceneId);
   const showSteam = particlesEnabled && STEAM_SCENES.has(sceneId);
   const showMatrixFog = particlesEnabled && MATRIX_FOG_SCENES.has(sceneId);
   const showDust = particlesEnabled && DUST_SCENES.has(sceneId);

@@ -1,6 +1,6 @@
 /**
  * Scene GPU lifecycle — evict previous scene loader cache, preload next scene GLBs.
- * Runs on scene:enter (after store update, before visual Suspense resolves).
+ * Prop/NPC preloads are scoped per scene instead of loading the full registry.
  */
 
 import * as THREE from 'three';
@@ -10,8 +10,8 @@ import { getAssetDefinition } from '@/config/assetManifest';
 import { preloadGltfAsset } from '@/components/3d/assets/GltfAsset';
 import { preloadTriggerZoneProps } from '@/components/3d/TriggerZoneProp';
 import { preloadSceneJsChunks } from '@/components/3d/sceneChunks/sceneChunkRegistry';
-import { getNpcModelUrls } from '@/config/npcModelRegistry';
-import { getPropModelUrls } from '@/config/propModelRegistry';
+import { resolveNpcModelUrl } from '@/config/npcModelRegistry';
+import { getPropModelDefinition } from '@/config/propModelRegistry';
 import { extendGltfLoader } from '@/engine/assets/gltfPipeline';
 
 const FPS_ARMS_URL = '/models/fps/fps_arms.glb';
@@ -23,6 +23,22 @@ const SCENE_GLTF_ASSETS: Partial<Record<SceneId, readonly string[]>> = {
   park_day: ['veg_tree_pine'],
   volodka_room: ['player_volodka'],
   volodka_corridor: [],
+};
+
+/** Kenney prop ids used per scene (trigger-zone props + set dressing). */
+const SCENE_PROP_IDS: Partial<Record<SceneId, readonly string[]>> = {
+  volodka_room: ['kenney_desk', 'kenney_bed', 'kenney_wardrobe', 'kenney_terminal'],
+  volodka_corridor: ['kenney_door'],
+  office_day: ['kenney_desk', 'kenney_terminal', 'kenney_bookshelf'],
+  library_day: ['kenney_bookshelf'],
+  zarema_albert_room: ['kenney_bed', 'kenney_wardrobe'],
+  cafe_evening: ['kenney_desk'],
+};
+
+/** Shipped GLB NPC ids present in each scene (procedural NPCs are not preloaded). */
+const SCENE_NPC_IDS: Partial<Record<SceneId, readonly string[]>> = {
+  cafe_evening: ['cafe_barista'],
+  office_day: ['office_colleague'],
 };
 
 export function getSceneGltfAssetIds(sceneId: SceneId): readonly string[] {
@@ -42,18 +58,28 @@ function collectAssetUrls(assetId: string): string[] {
   return [...urls];
 }
 
+function preloadScenePropModels(sceneId: SceneId): void {
+  for (const propId of SCENE_PROP_IDS[sceneId] ?? []) {
+    const def = getPropModelDefinition(propId);
+    if (def) useGLTF.preload(def.url, true, true, extendLoader);
+  }
+}
+
+function preloadSceneNpcModels(sceneId: SceneId): void {
+  for (const npcId of SCENE_NPC_IDS[sceneId] ?? []) {
+    const url = resolveNpcModelUrl(npcId);
+    if (url) useGLTF.preload(url, true, true, extendLoader);
+  }
+}
+
 export function preloadSceneGpuAssets(sceneId: SceneId): void {
   for (const assetId of getSceneGltfAssetIds(sceneId)) {
     preloadGltfAsset(assetId);
   }
   preloadTriggerZoneProps(sceneId);
+  preloadScenePropModels(sceneId);
+  preloadSceneNpcModels(sceneId);
   useGLTF.preload(FPS_ARMS_URL, true, true, extendLoader);
-  for (const url of getPropModelUrls()) {
-    useGLTF.preload(url, true, true, extendLoader);
-  }
-  for (const url of getNpcModelUrls()) {
-    useGLTF.preload(url, true, true, extendLoader);
-  }
 }
 
 /** Remove loader + THREE.Cache entries for assets only used by `fromSceneId`. */

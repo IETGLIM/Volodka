@@ -11,7 +11,7 @@
  */
 
 import { Suspense, useEffect, useRef, useState } from 'react';
-import { useFrame } from '@react-three/fiber';
+import { useFrameTick } from '@/engine/frame/useFrameTick';
 import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
 import { MODEL_URLS } from '@/config/modelUrls';
@@ -90,7 +90,7 @@ function CesiumPlayerModelInner({ modelScale, currentAnimRef, rotationRef }: Pro
     setFit({ scale, rotX, y });
   }, [scene]);
 
-  useFrame((_, delta) => {
+  useFrameTick('player', ({ delta }) => {
     if (yawRef.current) yawRef.current.rotation.y = rotationRef.current + FORWARD_OFFSET;
     if (!mixer) return;
     const anim = currentAnimRef.current;
