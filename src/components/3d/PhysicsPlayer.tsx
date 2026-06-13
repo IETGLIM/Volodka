@@ -73,6 +73,10 @@ import { preparePlayerFrame } from '@/engine/player/playerFramePrepare';
 import { runLockedPlayerMovement } from '@/engine/player/playerLockedMovement';
 import { runMainPlayerMovement } from '@/engine/player/playerMainMovement';
 import { finalizePlayerFrame } from '@/engine/player/playerFinalizeFrame';
+import {
+  createGroundProbeCache,
+  invalidateGroundProbeCache,
+} from '@/engine/physics/groundProbeCache';
 
 interface PhysicsPlayerProps {
   livePlayerPositionRef: React.MutableRefObject<THREE.Vector3>;
@@ -190,6 +194,7 @@ export function PhysicsPlayer({
 
       restoreKccMovementMode(directMovementTelemetry, { sceneId });
       controllerFailCountRef.current = 0;
+      groundProbeCacheRef.current = createGroundProbeCache(newConfig.floorY, sceneId);
     }
   }, [sceneId, livePlayerRotationRef, livePlayerPositionRef]);
 
@@ -217,6 +222,8 @@ export function PhysicsPlayer({
 
       restoreKccMovementMode(directMovementTelemetry, { sceneId: enteredScene });
       controllerFailCountRef.current = 0;
+      const sceneConfig = getSceneConfig(enteredScene);
+      groundProbeCacheRef.current = createGroundProbeCache(sceneConfig.floorY, enteredScene);
     });
     return unsub;
   }, [livePlayerPositionRef, livePlayerRotationRef]);
@@ -225,6 +232,7 @@ export function PhysicsPlayer({
   const tempCameraRight = useRef(new THREE.Vector3());
   const tempUp = useRef(new THREE.Vector3(0, 1, 0));
   const tempMoveDir = useRef(new THREE.Vector3());
+  const groundProbeCacheRef = useRef(createGroundProbeCache(config.floorY, sceneId));
 
   const frameScratchRef = useRef<PlayerFrameScratch>({
     tickState: null as RootState | null,
@@ -248,8 +256,48 @@ export function PhysicsPlayer({
     groundY: config.floorY,
   });
 
-  const movementDepsRef = useRef<PlayerMovementDeps | null>(null);
-  if (!movementDepsRef.current) {
+  const movementDepsRef = useRef<PlayerMovementDeps>({
+    sceneId,
+    config,
+    locomotionScale,
+    movementTuning,
+    world,
+    rapier,
+    groundProbeCacheRef,
+    controls,
+    frameScratchRef,
+    rigidBodyRef,
+    capsuleColliderRef,
+    controllerRef,
+    velocityRef,
+    isGroundedRef,
+    coyoteTimerRef,
+    jumpCooldownRef,
+    footstepTimerRef,
+    currentAnimRef,
+    stuckLockTimerRef,
+    warmupTimerRef,
+    noMovementFramesRef,
+    kccRecoveryFramesRef,
+    controllerFailCountRef,
+    useDirectMovementRef,
+    snapAirborneRef,
+    rbBoundRef,
+    prevRbPosRef,
+    currentFloorMaterialRef,
+    virtualHoldTimesRef,
+    directMovementTelemetry,
+    livePlayerPositionRef,
+    livePlayerRotationRef,
+    virtualControlsRef,
+    moveBlendRef,
+    tempCameraForward,
+    tempCameraRight,
+    tempUp,
+    tempMoveDir,
+  });
+
+  useEffect(() => {
     movementDepsRef.current = {
       sceneId,
       config,
@@ -289,21 +337,49 @@ export function PhysicsPlayer({
       tempUp,
       tempMoveDir,
     };
-  } else {
-    const deps = movementDepsRef.current;
-    deps.sceneId = sceneId;
-    deps.config = config;
-    deps.locomotionScale = locomotionScale;
-    deps.movementTuning = movementTuning;
-    deps.world = world;
-    deps.rapier = rapier;
-    deps.controls = controls;
-    deps.virtualControlsRef = virtualControlsRef;
-    deps.moveBlendRef = moveBlendRef;
-  }
+  }, [
+    sceneId,
+    config,
+    locomotionScale,
+    movementTuning,
+    world,
+    rapier,
+    groundProbeCacheRef,
+    controls,
+    frameScratchRef,
+    rigidBodyRef,
+    capsuleColliderRef,
+    controllerRef,
+    velocityRef,
+    isGroundedRef,
+    coyoteTimerRef,
+    jumpCooldownRef,
+    footstepTimerRef,
+    currentAnimRef,
+    stuckLockTimerRef,
+    warmupTimerRef,
+    noMovementFramesRef,
+    kccRecoveryFramesRef,
+    controllerFailCountRef,
+    useDirectMovementRef,
+    snapAirborneRef,
+    rbBoundRef,
+    prevRbPosRef,
+    currentFloorMaterialRef,
+    virtualHoldTimesRef,
+    directMovementTelemetry,
+    livePlayerPositionRef,
+    livePlayerRotationRef,
+    virtualControlsRef,
+    moveBlendRef,
+    tempCameraForward,
+    tempCameraRight,
+    tempUp,
+    tempMoveDir,
+  ]);
 
   useFrameTick('player', ({ state, delta }) => {
-    const deps = movementDepsRef.current!;
+    const deps = movementDepsRef.current;
     deps.frameScratchRef.current.tickState = state;
     if (!preparePlayerFrame(deps, delta)) return;
     if (deps.frameScratchRef.current.isLocked) {
