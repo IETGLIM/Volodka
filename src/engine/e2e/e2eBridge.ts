@@ -36,6 +36,7 @@ export interface VolodkaE2EBridge {
   bootstrapAct3LibraryHub: () => Promise<void>;
   bootstrapAct4StreetWinterHub: () => Promise<void>;
   bootstrapAct4RooftopHub: () => Promise<void>;
+  bootstrapAct5FactoryHub: () => Promise<void>;
   promoteClosedOverlayHub: (hubId: string, sceneId: SceneId) => Promise<void>;
   isStoryOverlayReady: (expectedNodeId?: string) => boolean;
 }
@@ -269,6 +270,18 @@ export function registerVolodkaE2EBridge(): void {
       store.setFlag('broadcast_ready', true);
       dispatchGameAction({ type: 'story/visitNode', nodeId: 'act4_rooftop_broadcast' });
       await jumpToClosedOverlayHub('rooftop_explore_mode', 'rooftop_edge');
+    },
+    async bootstrapAct5FactoryHub() {
+      while (getGameStore().playerState.progression.currentAct < 5) {
+        getGameStore().advanceAct();
+      }
+      const store = getGameStore();
+      store.setFlag('act5_started', true);
+      store.setFlag('factory_unlocked', true);
+      store.setFlag('basement_key_found', true);
+      store.setFlag('entered_factory_basement', true);
+      dispatchGameAction({ type: 'story/visitNode', nodeId: 'abandoned_workshop' });
+      await jumpToClosedOverlayHub('factory_explore_mode', 'abandoned_factory');
     },
     async promoteClosedOverlayHub(hubId, sceneId) {
       await jumpToClosedOverlayHub(hubId, sceneId);

@@ -676,6 +676,7 @@ export const STORY_NODES_ACT2: Record<string, StoryNode> = {
       {
         text: 'Идти к заброшенному заводу — если ключ уже есть',
         next: 'abandoned_workshop',
+        goldenPath: true,
         condition: { flag: 'factory_unlocked' },
         effects: [{ type: 'addStat', stat: 'stress', value: 3 }],
       },

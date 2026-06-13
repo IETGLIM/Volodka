@@ -101,14 +101,19 @@ patrol→chase→engaged→cooldown, конус зрения проецируе�
   scene-toast (`enterSceneFreeExplorationHub`), действия через trigger zones;
   `ui:exploration_message` → `EventNotificationPopup`. Реестр:
   `CLOSED_OVERLAY_EXPLORE_HUB_IDS` в `sceneExploreHubRegistry.ts`.
-  **Trigger zones vs golden path (Acts 3–7, Phase 4 audit):** hub-продолжения
-  из `GOLDEN_PATH_HUB_CONTINUE` (`sceneExploreHubs.ts`) пока проведены в 3D только
-  для `office_explore_mode` → `office_terminal` и `park_explore_mode` →
-  `park_inscription_stone` → `explore_act3_zarema_warning`. Остальные closed-overlay
-  хабы Acts 3–7 (`library_explore_mode`, `street_winter_explore_mode`,
-  `rooftop_explore_mode`, `factory_*`, `chk_explore_mode`, `pier_explore_mode`,
-  `solnysh_explore_mode`, …) имеют side-quest/lore триггеры, но golden-path beats
-  всё ещё доступны только через VN overlay — см. backlog Phase 5.
+  **Trigger zones vs golden path (Acts 3–7, Phase 6 audit):** hub-продолжения
+  из `GOLDEN_PATH_HUB_CONTINUE` (`sceneExploreHubs.ts`) и act-pack хабов
+  проведены в 3D для Acts 3–5:
+  `park_inscription_stone` → `act3_zarema_warning`,
+  `street_winter_march_banner` → `act4_peaceful_march`,
+  `rooftop_broadcast_antenna` → `act4_rooftop_broadcast`,
+  `factory_basement_stairs` → `factory_basement`,
+  `basement_zarya_confession` → `machine_confession_scene`,
+  `pier_factory_route`, `solnysh_golden_talk`, `chk_explore_dawn`.
+  Auto-generated хабы Acts 6–7: `chk_explore_mode`, `dream_explore_mode`
+  (GOLDEN_PATH_HUB_CONTINUE); act-pack: `factory_*`, `basement_*`, `pier_*`,
+  `solnysh_*`. Остаётся backlog Phase 7: `zarema_room_explore_mode`,
+  dream-trigger в сцене сна, полный e2e Acts 6–7.
 - Канонический путь: `GOLDEN_PATH_STORY_SPINE` (до `act7_true_end`) + derivation
   из меток `choice.goldenPath` (`deriveGoldenPath.ts`); валидатор контента
   (`npm run validate:content`) сверяет оба источника.

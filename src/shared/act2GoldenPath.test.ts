@@ -52,4 +52,18 @@ describe('Act II golden path markers', () => {
     expect(golden).toHaveLength(1);
     expect(golden[0]?.next).toBe('act4_rooftop_broadcast');
   });
+
+  it('chk_explore_mode hub golden branch leads to chk_act5_campfire_dawn', () => {
+    const node = STORY_NODES_SCENE_EXPLORE_HUBS.chk_explore_mode;
+    const golden = node.choices.filter((c) => c.goldenPath === true);
+    expect(golden).toHaveLength(1);
+    expect(golden[0]?.next).toBe('chk_act5_campfire_dawn');
+  });
+
+  it('dream_explore_mode hub golden branch leads to sleep_dream_entrance', () => {
+    const node = STORY_NODES_SCENE_EXPLORE_HUBS.dream_explore_mode;
+    const golden = node.choices.filter((c) => c.goldenPath === true);
+    expect(golden).toHaveLength(1);
+    expect(golden[0]?.next).toBe('sleep_dream_entrance');
+  });
 });

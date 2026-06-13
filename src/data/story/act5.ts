@@ -1349,6 +1349,7 @@ export const STORY_NODES_ACT5: Record<string, StoryNode> = {
       {
         text: 'Спуститься в подвал к «Заре-М»',
         next: 'factory_basement',
+        goldenPath: true,
         effects: [
           { type: 'addStat', stat: 'stress', value: 8 },
           { type: 'setFlag', flag: 'entered_factory_basement', flagValue: true },
@@ -1395,6 +1396,7 @@ export const STORY_NODES_ACT5: Record<string, StoryNode> = {
       {
         text: 'Слушать «Зарю-М» — исповедь машины',
         next: 'machine_confession_scene',
+        goldenPath: true,
         condition: { flag: 'zarya_confession_requested' },
       },
       {

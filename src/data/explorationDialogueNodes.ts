@@ -359,6 +359,116 @@ export const EXPLORATION_DIALOGUE_NODES: Record<string, DialogueNode> = {
     ],
   },
 
+  explore_factory_basement_descent: {
+    id: 'explore_factory_basement_descent',
+    speaker: 'Голос',
+    text: 'Лестница в подвал тянет холодом и гулом на 50 герц. Слабое мерцание внизу — «Заря-М» не спит.',
+    sceneId: 'abandoned_factory',
+    choices: [
+      {
+        text: 'Спуститься к «Заре-М»',
+        next: null,
+        effects: [
+          { type: 'visitStoryNode', nodeId: 'factory_basement' },
+          { type: 'setFlag', flag: 'entered_factory_basement', flagValue: true },
+        ],
+      },
+      {
+        text: 'Остаться в цеху',
+        next: null,
+        effects: [{ type: 'addSkill', skill: 'intuition', value: 1 }],
+      },
+    ],
+  },
+
+  explore_basement_machine_confession: {
+    id: 'explore_basement_machine_confession',
+    speaker: 'Голос',
+    text: 'Монолит «Заря-М» пульсирует зелёным. Гул проходит сквозь подошвы — и выше, до затылка. Баба Зина кивает: «Послушай. Машина ждёт.»',
+    sceneId: 'factory_basement',
+    choices: [
+      {
+        text: 'Слушать исповедь машины',
+        next: null,
+        effects: [
+          { type: 'visitStoryNode', nodeId: 'machine_confession_scene' },
+          { type: 'setFlag', flag: 'zarya_confession_requested', flagValue: true },
+        ],
+      },
+      {
+        text: 'Ещё раз обойти монолит',
+        next: null,
+        effects: [{ type: 'addSkill', skill: 'intuition', value: 1 }],
+      },
+    ],
+  },
+
+  explore_chk_act5_campfire_dawn: {
+    id: 'explore_chk_act5_campfire_dawn',
+    speaker: 'Голос',
+    text: 'Рассвет после эфира. Костёр ещё тлеет, а Ру уже наливает портвейн в кружки. Чекисты молчат — город слышал стихи, и лес тоже.',
+    sceneId: 'chk_forest_zorge',
+    choices: [
+      {
+        text: 'Подойти к Ру — финальное слово ЧК',
+        next: null,
+        effects: [
+          { type: 'visitStoryNode', nodeId: 'chk_act5_campfire_dawn' },
+          { type: 'setFlag', flag: 'tolpa_act5_blessing', flagValue: true },
+        ],
+      },
+      {
+        text: 'Посидеть у костра молча',
+        next: null,
+        effects: [{ type: 'addStat', stat: 'stress', value: -4 }],
+      },
+    ],
+  },
+
+  explore_pier_factory_route: {
+    id: 'explore_pier_factory_route',
+    speaker: 'Голос',
+    text: 'Трофим кивает на север: «Ключ от «Хрома-М» — у тебя. Завод не спит, как и река. Иди, если готов слушать, а не трогать.»',
+    sceneId: 'river_pier',
+    choices: [
+      {
+        text: 'Идти к заброшенному заводу',
+        next: null,
+        effects: [
+          { type: 'visitStoryNode', nodeId: 'abandoned_workshop' },
+          { type: 'transitionScene', sceneId: 'abandoned_factory' },
+        ],
+      },
+      {
+        text: 'Остаться у воды',
+        next: null,
+        effects: [{ type: 'addStat', stat: 'stress', value: -3 }],
+      },
+    ],
+  },
+
+  explore_solnysh_room_talk: {
+    id: 'explore_solnysh_room_talk',
+    speaker: 'Голос',
+    text: 'Солныш откладывает кисть и смотрит на тебя голубыми глазами. Умка крутится у ног, ожидая, что ты останешься.',
+    sceneId: 'solnysh_room',
+    choices: [
+      {
+        text: 'Поговорить с Солныш',
+        next: null,
+        effects: [
+          { type: 'visitStoryNode', nodeId: 'solnysh_room_talk' },
+          { type: 'npcChange', npcId: 'vera', npcChange: { relation: 3 } },
+        ],
+      },
+      {
+        text: 'Побуду рядом молча',
+        next: null,
+        effects: [{ type: 'addStat', stat: 'stress', value: -4 }],
+      },
+    ],
+  },
+
   explore_act7_library_archive: {
     id: 'explore_act7_library_archive',
     speaker: 'Голос',

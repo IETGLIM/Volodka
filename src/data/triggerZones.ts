@@ -863,6 +863,88 @@ export const TRIGGER_ZONES: TriggerZone[] = [
     },
   },
 
+  /* ─────────────── FACTORY BASEMENT STAIRS — Act V golden path (closed-overlay hub) ─────────────── */
+  {
+    id: 'factory_basement_stairs',
+    sceneId: 'abandoned_factory',
+    position: [-9, 0, -6],
+    size: [2.0, 2.5, 1.5],
+    enterToast: 'Лестница в подвал — гул «Зари-М» тянет вниз.',
+    linkedDialogueNodeId: 'explore_factory_basement_descent',
+    requiredAct: 2,
+    requiredFlag: 'basement_key_found',
+    interactionType: 'open',
+    interactionLabel: 'Спуститься к «Заре-М»',
+    examineData: {
+      title: 'Лестница в подвал',
+      description: 'Железные ступени уходят в красный полумрак. Гул на 50 герц — как дыхание спящего.',
+      detailText: 'Трофим говорил: сначала слушай — потом трогай. Но ключ у тебя, и «Заря-М» ждёт.',
+      icon: '⬇️',
+    },
+  },
+
+  /* ─────────────── BASEMENT ZARYA CONFESSION — Act V golden path (closed-overlay hub) ─────────────── */
+  {
+    id: 'basement_zarya_confession',
+    sceneId: 'factory_basement',
+    position: [0, 0.8, -3.8],
+    size: [2.6, 2.0, 1.4],
+    enterToast: 'Монолит «Зари-М» пульсирует — машина готова говорить.',
+    linkedDialogueNodeId: 'explore_basement_machine_confession',
+    requiredAct: 2,
+    interactionType: 'examine',
+    interactionLabel: 'Слушать исповедь «Зари-М»',
+    examineData: {
+      title: 'Исповедь машины',
+      description: 'Зелёная пульсация ровная, как дыхание. Экран ждёт поэта.',
+      detailText: '«Я запоминала всё, что убивала. Двадцать лет — кладбище стихов.» Баба Зина кивает: «Слушай.»',
+      icon: '🟩',
+    },
+  },
+
+  /* ─────────────── PIER FACTORY ROUTE — Act II/V golden path (closed-overlay hub) ─────────────── */
+  {
+    id: 'pier_factory_route',
+    sceneId: 'river_pier',
+    position: [4.0, 0.5, -7.2],
+    size: [2.0, 2.0, 2.0],
+    enterToast: 'Трофим кивает на север — путь к «Хрому-М».',
+    linkedDialogueNodeId: 'explore_pier_factory_route',
+    requiredAct: 2,
+    requiredFlag: 'factory_unlocked',
+    interactionType: 'talk',
+    interactionLabel: 'Спросить дорогу к заводу',
+    linkedNpcId: 'fisherman_trofim',
+  },
+
+  /* ─────────────── SOLNYSH GOLDEN TALK — closed-overlay hub ─────────────── */
+  {
+    id: 'solnysh_golden_talk',
+    sceneId: 'solnysh_room',
+    position: [1.0, 0, -1.0],
+    size: [1.4, 2.0, 1.4],
+    enterToast: 'Солныш откладывает кисть — ей нужно поговорить.',
+    linkedDialogueNodeId: 'explore_solnysh_room_talk',
+    linkedNpcId: 'vera',
+    interactionType: 'talk',
+    interactionLabel: 'Поговорить с Солныш',
+  },
+
+  /* ─────────────── CHK ACT5 DAWN — Act V golden path (closed-overlay hub) ─────────────── */
+  {
+    id: 'chk_explore_dawn',
+    sceneId: 'chk_forest_zorge',
+    position: [0.5, 0.5, 0.8],
+    size: [2.5, 2, 2.5],
+    enterToast: 'Рассвет после эфира — Ру ждёт у костра.',
+    linkedDialogueNodeId: 'explore_chk_act5_campfire_dawn',
+    requiredAct: 5,
+    requiredFlag: 'act5_started',
+    interactionType: 'talk',
+    interactionLabel: 'Рассвет после эфира',
+    linkedNpcId: 'chk_ru',
+  },
+
   /* ─────────────── LIBRARY ARCHIVE — Act VII golden path (closed-overlay hub) ─────────────── */
   {
     id: 'library_archive_console',

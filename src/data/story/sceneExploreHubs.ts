@@ -31,6 +31,14 @@ const GOLDEN_PATH_HUB_CONTINUE: Partial<
     next: 'act7_library_archive',
     text: 'Открыть городской архив стихов',
   },
+  chk_explore_mode: {
+    next: 'chk_act5_campfire_dawn',
+    text: 'Подойти к Ру — рассвет после эфира',
+  },
+  dream_explore_mode: {
+    next: 'sleep_dream_entrance',
+    text: 'Запомнить стихотворение из сна',
+  },
 };
 
 function buildSceneExploreHubNode(def: (typeof SCENE_EXPLORE_HUB_DEFS)[number]): StoryNode {
