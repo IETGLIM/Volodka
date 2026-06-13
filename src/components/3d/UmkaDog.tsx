@@ -13,7 +13,9 @@ import type { MutableRefObject } from 'react';
 const UMKA_SCENES = new Set(['volodka_corridor', 'solnysh_room']);
 const ORBIT_RADIUS = 0.55;
 const ORBIT_SPEED = 1.6;
-const BOB_HEIGHT = 0.12;
+/** Feet on walkable floor (matches scene floorY ≈ 0.01). */
+const FLOOR_Y = 0.01;
+const BOB_HEIGHT = FLOOR_Y + 0.11;
 
 interface UmkaDogProps {
   livePlayerPositionRef: MutableRefObject<THREE.Vector3>;

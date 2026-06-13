@@ -174,10 +174,17 @@ export function VolodkaCorridorVisual({ livePlayerPositionRef: _livePlayerPositi
         <meshStandardMaterial map={floorTexture} color="#5a4a40" roughness={0.85} polygonOffset polygonOffsetFactor={2} polygonOffsetUnits={2} />
       </mesh>
 
-      {/* ── Carpet runner ── */}
-      <mesh rotation-x={-Math.PI / 2} position={[0, 0, 0]} renderOrder={1} geometry={geo_pln_2}>
+      {/* ── Carpet runner (decal on floor — no physics collider) ── */}
+      <mesh rotation-x={-Math.PI / 2} position-y={0.004} renderOrder={1} geometry={geo_pln_2}>
 
-        <meshBasicMaterial map={carpetTexture} color="#6a3a30" depthTest={false} depthWrite={false} />
+        <meshStandardMaterial
+          map={carpetTexture}
+          color="#6a3a30"
+          roughness={0.95}
+          polygonOffset
+          polygonOffsetFactor={-1}
+          polygonOffsetUnits={-1}
+        />
       </mesh>
 
       {/* ── Ceiling ── */}
@@ -584,9 +591,15 @@ export function VolodkaCorridorVisual({ livePlayerPositionRef: _livePlayerPositi
       </mesh>
 
       {/* ── Welcome mat at entrance ── */}
-      <mesh rotation-x={-Math.PI / 2} position={[0, 0, D / 2 - 0.3]} renderOrder={1} geometry={geo_pln_48}>
+      <mesh rotation-x={-Math.PI / 2} position={[0, 0.004, D / 2 - 0.3]} renderOrder={1} geometry={geo_pln_48}>
 
-        <meshBasicMaterial color="#4a4030" depthTest={false} depthWrite={false} />
+        <meshStandardMaterial
+          color="#4a4030"
+          roughness={0.95}
+          polygonOffset
+          polygonOffsetFactor={-1}
+          polygonOffsetUnits={-1}
+        />
       </mesh>
 
       {/* ── Exposed pipe along ceiling (left wall side) ── */}

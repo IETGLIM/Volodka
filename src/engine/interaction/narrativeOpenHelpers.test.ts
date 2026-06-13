@@ -94,13 +94,29 @@ describe('triggerSceneEntryStoryIfNeeded', () => {
     expect(dispatchGameAction).not.toHaveBeenCalled();
   });
 
-  it('closes overlay when story path already sits on pending entry node', () => {
+  it('closes overlay when story path already sits on entry node after cutscene played', () => {
     mockSnapshot.currentNodeId = 'corridor_door';
+    mockSnapshot.triggeredCutscenes = ['act1_corridor_solnysh'];
     triggerSceneEntryStoryIfNeeded('volodka_corridor', 'volodka_room');
-    expect(closeNarrativeOverlay).toHaveBeenCalled();
+    expect(closeNarrativeOverlay).not.toHaveBeenCalled();
     expect(dispatchGameAction).not.toHaveBeenCalledWith(
       expect.objectContaining({ type: 'story/setCurrentNodeId' }),
     );
+  });
+
+  it('re-arms corridor_door cutscene when already on entry node with pending cinematic', async () => {
+    mockSnapshot.currentNodeId = 'corridor_door';
+    triggerSceneEntryStoryIfNeeded('volodka_corridor', 'volodka_room');
+    await Promise.resolve();
+    expect(dispatchGameAction).toHaveBeenCalledWith({
+      type: 'story/setCurrentNodeId',
+      nodeId: 'corridor_explore_mode',
+    });
+    await Promise.resolve();
+    expect(dispatchGameAction).toHaveBeenCalledWith({
+      type: 'story/setCurrentNodeId',
+      nodeId: 'corridor_door',
+    });
   });
 
   it('promotes to corridor hub on revisit after cutscene played', () => {

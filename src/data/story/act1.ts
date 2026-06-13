@@ -32,7 +32,7 @@ export const STORY_NODES_ACT1: Record<string, StoryNode> = {
     choices: [
       { text: 'Подойти к столу', next: 'room_table', goldenPath: true },
       { text: 'Осмотреть книжную полку', next: 'room_bookshelf' },
-      { text: 'Выйти в коридор', next: 'corridor_door' },
+      { text: 'Выйти в коридор', next: 'corridor_door', effects: [{ type: 'transitionScene', sceneId: 'volodka_corridor' }] },
       { text: 'Свободно исследовать комнату', next: 'explore_mode' },
     ],
   },

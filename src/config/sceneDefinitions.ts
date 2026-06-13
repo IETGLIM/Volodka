@@ -309,7 +309,6 @@ export const volodka_corridor_def: SceneDefinition = {
   obstacles: [
     { type: 'cuboidObstacle', size: [0.6, 0.7, 0.45], position: [-2.4, 0.35, 4.8], footstepMaterial: 'wood' },
     { type: 'cuboidObstacle', size: [0.08, 0.8, 0.6], position: [2.92, 0.4, -2.0], footstepMaterial: 'wood' },
-    { type: 'cuboidObstacle', size: [1.8, 0.04, 0.9], position: [0, 0.02, 0.5], footstepMaterial: 'wood' },
   ],
   ceilings: [
     { type: 'cuboid', size: [3, 0.1, 8], position: [0, 3.1, 0] },

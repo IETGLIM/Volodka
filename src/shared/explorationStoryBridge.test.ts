@@ -14,7 +14,7 @@ describe('explorationStoryBridge', () => {
 
   it('maps exploration dialogue ids to story spine ids', () => {
     expect(EXPLORATION_DIALOGUE_STORY_STEP.explore_room_table).toBe('room_table');
-    expect(EXPLORATION_DIALOGUE_STORY_STEP.explore_corridor_door).toBe('corridor_explore_mode');
+    expect(EXPLORATION_DIALOGUE_STORY_STEP.explore_corridor_door).toBe('corridor_door');
   });
 
   it('dispatches visitNode for mapped exploration dialogue', () => {

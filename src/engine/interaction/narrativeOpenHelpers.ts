@@ -213,6 +213,15 @@ export function triggerSceneEntryStoryIfNeeded(
     if (store.currentNodeId === entryNodeId) {
       if (cutscenePending) {
         closeNarrativeOverlay();
+        // Node id unchanged — useCutsceneController won't re-run; bounce via hub then re-arm entry.
+        const hubId = SCENE_ENTRY_NODE_TO_HUB[entryNodeId];
+        if (hubId && hubId !== entryNodeId) {
+          dispatchGameAction({ type: 'story/setCurrentNodeId', nodeId: hubId });
+          queueMicrotask(() => {
+            dispatchGameAction({ type: 'story/visitNode', nodeId: entryNodeId });
+            dispatchGameAction({ type: 'story/setCurrentNodeId', nodeId: entryNodeId });
+          });
+        }
       }
       return;
     }
