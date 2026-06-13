@@ -9,6 +9,7 @@ const ACT_PACK_DEFINED_HUB_IDS = new Set([
   'pier_explore_mode',
   'factory_explore_mode',
   'basement_explore_mode',
+  'solnysh_explore_mode',
 ]);
 
 /** Golden-path continuation from auto-generated explore hubs (matches GOLDEN_PATH_STORY_SPINE). */

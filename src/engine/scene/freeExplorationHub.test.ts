@@ -110,8 +110,25 @@ describe('enterSceneFreeExplorationHub', () => {
     );
   });
 
-  it('ignores open-overlay hub ids', () => {
+  it('supports Act III closed-overlay hubs', () => {
     enterSceneFreeExplorationHub('park_explore_mode');
+
+    expect(dispatchGameAction).toHaveBeenCalledWith({
+      type: 'story/setCurrentNodeId',
+      nodeId: 'park_explore_mode',
+    });
+    expect(closeNarrativeOverlay).toHaveBeenCalled();
+    expect(eventBusEmit).toHaveBeenCalledWith(
+      'game:notification',
+      expect.objectContaining({
+        type: 'scene',
+        subtitle: expect.stringContaining('Парк'),
+      }),
+    );
+  });
+
+  it('ignores unknown hub ids', () => {
+    enterSceneFreeExplorationHub('not_a_real_hub');
     expect(dispatchGameAction).not.toHaveBeenCalled();
     expect(closeNarrativeOverlay).not.toHaveBeenCalled();
   });

@@ -9,19 +9,6 @@ export interface SceneExploreHubDef {
   entryNodeIds: readonly string[];
 }
 
-/** Hubs that close the VN overlay — location via scene toast; actions via 3D triggers. */
-export const CLOSED_OVERLAY_EXPLORE_HUB_IDS: ReadonlySet<string> = new Set([
-  'explore_mode',
-  'corridor_explore_mode',
-  'street_bench_view',
-  'home_evening_explore_mode',
-  'cafe_explore_mode',
-  'office_explore_mode',
-]);
-
-/** @deprecated Use CLOSED_OVERLAY_EXPLORE_HUB_IDS */
-export const ACT1_FREE_EXPLORATION_HUB_IDS = CLOSED_OVERLAY_EXPLORE_HUB_IDS;
-
 /** Single source of truth for scene ↔ explore-hub mapping. */
 export const SCENE_EXPLORE_HUB_DEFS: readonly SceneExploreHubDef[] = [
   {
@@ -156,6 +143,14 @@ export const SCENE_EXPLORE_HUB_DEFS: readonly SceneExploreHubDef[] = [
     entryNodeIds: [],
   },
 ] as const;
+
+/** Hubs that close the VN overlay — location via scene toast; actions via 3D triggers. */
+export const CLOSED_OVERLAY_EXPLORE_HUB_IDS: ReadonlySet<string> = new Set(
+  SCENE_EXPLORE_HUB_DEFS.map((def) => def.hubId),
+);
+
+/** @deprecated Use CLOSED_OVERLAY_EXPLORE_HUB_IDS */
+export const ACT1_FREE_EXPLORATION_HUB_IDS = CLOSED_OVERLAY_EXPLORE_HUB_IDS;
 
 function buildMaps() {
   const hubIds = new Set<string>();
