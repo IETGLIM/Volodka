@@ -96,6 +96,8 @@ function writeDeployDocs(staging, meta) {
 - Exploration-first сюжет: explore-hub для всех локаций, движение + [E] на hub-узлах
 - Remap legacy explore_mode → hub текущей сцены (act5, ЧК, все акты)
 - syncNarrativeOnSceneEnter: beat-узлы → scene hub при входе в сцену
+- v4.2.0: critical fixes — NPC template disposal, audio graph cleanup, LOD bias, poem_1 defense, lazy narrative barrel
+- v4.2.0: perks prerequisites, canvas GPU registry, worker error fallback, StrictMode removed for stable R3F
 - v4.1.0: modular game types, GPU lifecycle, lazy CombatUI/minigames + UI perf/leak fixes
 - v4.1.0: combat buff slots (2 buff + 2 debuff/target), 363 unit tests
 - v3.4.0: cinematic 3rd-person (wake-up, cutscenes, scene transitions) → FP exploration

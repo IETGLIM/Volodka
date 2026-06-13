@@ -1,4 +1,3 @@
-import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { Toaster } from '@/components/ui/sonner';
 import { BootScreen } from '@/app/BootScreen';
@@ -30,10 +29,10 @@ async function boot() {
   clearChunkReloadFlag();
 
   reactRoot.render(
-    <StrictMode>
+    <>
       <GamePage />
       <Toaster position="top-right" richColors />
-    </StrictMode>,
+    </>,
   );
 }
 

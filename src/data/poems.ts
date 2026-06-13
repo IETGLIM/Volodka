@@ -8,7 +8,6 @@
    ═══════════════════════════════════════════════════════════════ */
 
 import type { Poem } from '@/shared/types/game';
-import { STORY_NODES } from './storyNodes';
 
 // ─── ИНТРО-ПРОЗА К ИГРЕ ───
 // Each paragraph is a separate cinematic beat.
@@ -1589,7 +1588,11 @@ export function getHiddenPoems(): Poem[] {
 }
 
 /** Dev-only: validate poem unlock nodes and unique IDs. Returns list of problems. */
-export function validatePoemUnlockNodes(): string[] {
+export async function validatePoemUnlockNodes(): Promise<string[]> {
+  const { loadAllNarrativePacks, getStoryNodesCache } = await import('./narrative/narrativePackRegistry');
+  await loadAllNarrativePacks();
+  const storyNodes = getStoryNodesCache();
+
   const problems: string[] = [];
   const seenIds = new Set<string>();
   for (const poem of POEMS) {
@@ -1597,7 +1600,7 @@ export function validatePoemUnlockNodes(): string[] {
       problems.push(`duplicate poem id "${poem.id}"`);
     }
     seenIds.add(poem.id);
-    if (!STORY_NODES[poem.unlocksAt]) {
+    if (!storyNodes[poem.unlocksAt]) {
       problems.push(`${poem.id} unlocksAt "${poem.unlocksAt}" not in STORY_NODES`);
     }
   }

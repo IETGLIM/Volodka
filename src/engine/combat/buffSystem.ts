@@ -113,9 +113,11 @@ export function tickBuffs(state: CombatState, target: 'player' | 'enemy'): { sta
    Derived Buff Calculations
    ═══════════════════════════════════════════════════════════════ */
 
-/** Get total enemy defense reduction from buffs (0–1) */
+/** Get total enemy defense reduction from buffs (0–1).
+ *  `enemyDefenseReduction` on CombatState is a UI mirror only — do not add it here
+ *  or buff + legacy field double-count (e.g. poem_1 after playerAttack sync). */
 export function getEnemyDefenseReduction(state: CombatState): number {
-  return Math.min(1, sumBuffEffect(state, 'enemy', 'defense_reduction') + state.enemyDefenseReduction);
+  return Math.min(1, sumBuffEffect(state, 'enemy', 'defense_reduction'));
 }
 
 /** Get player damage multiplier from buffs */

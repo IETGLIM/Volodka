@@ -16,9 +16,8 @@ export {
   DEFAULT_SKILLS,
 } from './constants';
 
-// Story & dialogue data
-export { STORY_NODES } from './storyNodes';
-export { DIALOGUE_NODES } from './dialogueNodes';
+// Story & dialogue nodes: use getStoryNodes() / getDialogueNodes() from './gameDataLoader'.
+// Do NOT re-export STORY_NODES / DIALOGUE_NODES — eager merge defeats lazy narrative packs.
 
 // NPCs
 export { NPC_DEFINITIONS } from './npcDefinitions';

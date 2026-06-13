@@ -1,5 +1,6 @@
 /* ─── Volodka RPG – quest derived selectors ─── */
 
+import { useMemo } from 'react';
 import type { QuestState, QuestType, SceneId } from '@/shared/types/game';
 import { getQuestDefinitions } from '@/data/gameDataLoader';
 import { resolveCanonicalNpcId, GOLDEN_PATH_QUEST_SPINE } from '@/data/goldenPath';
@@ -304,14 +305,18 @@ export function getQuestIndicatorForNpc(npcId: string): QuestIndicatorType | nul
 /* ─── React hooks ─── */
 
 export function useActiveQuests(): QuestState[] {
-  return useGameSelector((state) =>
-    state.quests.filter((q) => q.status === 'active'),
+  const quests = useGameSelector((state) => state.quests);
+  return useMemo(
+    () => quests.filter((q) => q.status === 'active'),
+    [quests],
   );
 }
 
 export function useFailedQuests(): QuestState[] {
-  return useGameSelector((state) =>
-    state.quests.filter((q) => q.status === 'failed'),
+  const quests = useGameSelector((state) => state.quests);
+  return useMemo(
+    () => quests.filter((q) => q.status === 'failed'),
+    [quests],
   );
 }
 

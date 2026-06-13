@@ -4,6 +4,8 @@
 */
 
 import { KARMA_HIGH_THRESHOLD, KARMA_LOW_THRESHOLD } from './constants';
+import { POEMS } from './poems';
+import type { Poem } from '@/shared/types/game';
 
 export interface PoemMarginCondition {
   /** Заметка показывается при карме >= minKarma */
@@ -364,6 +366,38 @@ export const POEM_MARGINS: PoemMargin[] = [
   },
 ];
 
+const POEM_IDS_WITH_DEDICATED_MARGINS = new Set(POEM_MARGINS.map((m) => m.poemId));
+
+function buildFallbackMarginText(poem: Poem): string {
+  if (poem.id === 'poem_tolpa') {
+    return 'ЧК, костёр, портвейн. Этот стих не из архива — из ночи, которую не залью в репозиторий.';
+  }
+  if (poem.id.startsWith('poem_act6_')) {
+    return 'Акт шестой. Пишу на полях, когда город уже не тот, но слова ещё держатся.';
+  }
+  if (poem.id.startsWith('poem_act7_')) {
+    return 'Финал близко. Каждая строчка на полях — как коммит, который уже не откатишь.';
+  }
+  if (poem.bonus || poem.order > 21) {
+    return 'Нашёл позже основной двадцатки. Записал на полях — пока память свежая. Сам стих не трогал.';
+  }
+  return 'Записал на полях. Перечитаю, когда снова пойму, зачем эта строчка осталась.';
+}
+
+/** Unconditional fallbacks for poems without hand-authored margin variants. */
+const GENERATED_POEM_MARGIN_FALLBACKS: PoemMargin[] = POEMS.filter(
+  (poem) => !POEM_IDS_WITH_DEDICATED_MARGINS.has(poem.id),
+).map((poem) => ({
+  id: `margin_${poem.id}_fallback`,
+  poemId: poem.id,
+  text: buildFallbackMarginText(poem),
+}));
+
+const ALL_POEM_MARGINS: readonly PoemMargin[] = [
+  ...POEM_MARGINS,
+  ...GENERATED_POEM_MARGIN_FALLBACKS,
+];
+
 /* ─── Выбор заметки ───
    Из всех подходящих по условиям вариантов берётся самый специфичный:
    чем больше заполненных полей в condition, тем выше приоритет.
@@ -411,5 +445,5 @@ export function selectPoemMargin(
 
 /** Заметка Володьки «на полях» для стиха в текущем контексте игрока. */
 export function getPoemMargin(poemId: string, ctx: PoemMarginContext): PoemMargin | undefined {
-  return selectPoemMargin(POEM_MARGINS, poemId, ctx);
+  return selectPoemMargin(ALL_POEM_MARGINS, poemId, ctx);
 }

@@ -12,6 +12,9 @@ export interface NpcModelAssetMeta {
 
 const NPCS = '/models/npcs';
 
+/** Explicit marker — no shipped GLB; renderer uses ProceduralNPCModel. */
+export const NPC_PROCEDURAL_MODEL_PLACEHOLDER = 'procedural';
+
 /**
  * GLB files that exist under public/models/npcs and pass validate-gltf-assets.
  * NPCs not listed here (albert, zarema, office_alexander, …) render via
@@ -48,6 +51,11 @@ export const NPC_MODEL_ASSETS: Partial<Record<string, NpcModelAssetMeta>> = {
  */
 
 export function resolveNpcModelUrl(npcId: string, modelPath?: string): string | undefined {
+  if (!modelPath || modelPath === NPC_PROCEDURAL_MODEL_PLACEHOLDER) {
+    const registryUrl = NPC_MODEL_ASSETS[npcId]?.url;
+    if (registryUrl && SHIPPED_NPC_GLB_URLS.has(registryUrl)) return registryUrl;
+    return undefined;
+  }
   const candidate = modelPath || NPC_MODEL_ASSETS[npcId]?.url;
   if (!candidate || !SHIPPED_NPC_GLB_URLS.has(candidate)) return undefined;
   return candidate;

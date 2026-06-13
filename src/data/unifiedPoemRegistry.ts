@@ -524,6 +524,9 @@ export function getAllUnifiedPoems(): UnifiedPoemDescriptor[] {
   return Object.values(UNIFIED_POEM_REGISTRY);
 }
 
+/** Canonical collectible poem count — keep ending/UI thresholds in sync with this. */
+export const TOTAL_UNIFIED_POEMS = Object.keys(UNIFIED_POEM_REGISTRY).length;
+
 /** Validate that a poem ID exists in the registry */
 export function isValidPoemId(poemId: string): boolean {
   return poemId in UNIFIED_POEM_REGISTRY;

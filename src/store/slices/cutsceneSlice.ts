@@ -7,6 +7,7 @@
 
 import type { StateCreator } from 'zustand';
 import type { CameraWaypointData } from '@/engine/events';
+import type { GameStoreState } from '../types';
 
 /* ─── Slice types ─── */
 
@@ -29,7 +30,7 @@ export type CutsceneSlice = CutsceneSliceState & CutsceneSliceActions;
 /* ─── Slice creator ─── */
 
 export const createCutsceneSlice: StateCreator<
-  CutsceneSlice,
+  GameStoreState,
   [],
   [],
   CutsceneSlice

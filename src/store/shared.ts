@@ -94,6 +94,8 @@ export interface GameNotification {
   timestamp: number;
 }
 
+let notificationCounter = 0;
+
 /** Push a notification to the list, keeping at most maxItems */
 export function pushNotification(
   notifications: GameNotification[],
@@ -103,7 +105,7 @@ export function pushNotification(
 ): GameNotification[] {
   return [
     ...notifications,
-    { id: `${type}-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`, type, text, timestamp: Date.now() },
+    { id: `${type}-${Date.now()}-${++notificationCounter}`, type, text, timestamp: Date.now() },
   ].slice(-maxItems);
 }
 

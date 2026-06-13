@@ -161,7 +161,7 @@ export const createWorldSlice: StateCreator<
     pickWorldCrossActions().pushNotification('quest', `Новое задание: ${definition.title}`);
   },
 
-  completeQuestObjective: (questId, objectiveId) =>
+  completeQuestObjective: (questId, objectiveId) => {
     set((state) => {
       const quests = state.quests.map((q) => {
         if (q.questId !== questId) return q;
@@ -174,10 +174,11 @@ export const createWorldSlice: StateCreator<
         };
       });
 
-      eventBus.emit('quest:objective_updated', { questId, objectiveId });
-
       return { quests };
-    }),
+    });
+
+    eventBus.emit('quest:objective_updated', { questId, objectiveId });
+  },
 
   completeQuest: (questId) => {
     const questDef = getQuestDefinitions().find((d) => d.id === questId);

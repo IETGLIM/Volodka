@@ -8,6 +8,7 @@ import { STORY_NODES } from '@/data/storyNodes';
 import { DIALOGUE_NODES } from '@/data/dialogueNodes';
 import { QUEST_DEFINITIONS } from '@/data/quests';
 import { ALL_NPC_DEFINITIONS } from '@/data/allNpcDefinitions';
+import { validateNpcDefinitionModelPaths } from '@/data/npcDefinitions';
 import { TRIGGER_ZONES } from '@/data/triggerZones';
 import { SCENE_DEFINITIONS, type SceneId } from '@/config/sceneDefinitions';
 import { POEMS } from '@/data/poems';
@@ -400,6 +401,10 @@ function validateQuestStoryGiverAlignment(out: ValidationIssue[]): void {
 }
 
 function validateNpcs(reg: ReturnType<typeof buildSets>, out: ValidationIssue[]): void {
+  for (const { npcId, message } of validateNpcDefinitionModelPaths()) {
+    out.push(issue('warning', 'npc', `npc:${npcId}`, message));
+  }
+
   for (const npc of ALL_NPC_DEFINITIONS) {
     const base = `npc:${npc.id}`;
     if (npc.dialogueNodeId && !reg.dialogueNodeIds.has(npc.dialogueNodeId)) {

@@ -32,9 +32,18 @@ function postWorldComputeRequest(request: WorldComputeRequest): Promise<WorldCom
 
   return new Promise((resolve, reject) => {
     const onMessage = (event: MessageEvent<WorldComputeResponse>) => {
+      const data = event.data;
+      if (data.id !== undefined && data.id !== id) return;
+
       w.removeEventListener('message', onMessage);
       w.removeEventListener('error', onError);
-      resolve(event.data);
+
+      if (data.op === 'error') {
+        reject(new Error(`[computeWorker] ${data.requestOp} failed: ${data.message}`));
+        return;
+      }
+
+      resolve(data);
     };
 
     const onError = (event: ErrorEvent) => {

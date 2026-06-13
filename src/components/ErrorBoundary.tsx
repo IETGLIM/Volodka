@@ -4,6 +4,7 @@
  * a Russian-language fallback UI instead of crashing the whole app. */
 
 import { Component, type ReactNode } from 'react';
+import { forceDisposeOrphanedWebGLResources } from '@/engine/canvas/canvasRendererRegistry';
 
 interface ErrorBoundaryProps {
   name: string;
@@ -28,6 +29,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo): void {
     console.error(`[ErrorBoundary:${this.props.name}]`, error, errorInfo);
+    forceDisposeOrphanedWebGLResources(this.props.name);
   }
 
   handleRetry = () => {

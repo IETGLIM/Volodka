@@ -1,5 +1,21 @@
 # Changelog — ВОЛОДЬКА RPG
 
+## v4.2.0 — 13 июня 2026
+
+### Critical fixes
+- **NPC templates**: `disposeNpcInstance` skips shared GPU geometry/materials on clone teardown.
+- **Audio**: one-shot SFX/ambient/random sounds disconnect nodes on `onended`; gesture handlers re-arm after dispose/revive.
+- **LOD**: `lodBias` scales thresholds correctly (low preset → sooner downgrade, ultra → longer detail).
+- **Combat**: `getEnemyDefenseReduction` reads buffs only — fixes poem_1 100% defense strip after first attack.
+- **Data**: missing perk prerequisites (`iron_will`, `scavenger`, `poetic_soul`, `combat_veteran`); lazy narrative barrel (no eager `STORY_NODES` export).
+- **R3F dev**: removed React `StrictMode` wrapper to prevent double effect invocations / physics duplication.
+
+### Engine / UI
+- **Canvas registry**: `canvasRendererRegistry` + ErrorBoundary GPU cleanup on crash.
+- **Store/hooks**: quest objective emit after `set()`, stable toast/scene-enter/DPR deps, monotonic notification IDs.
+- **Workers**: `worldCompute.worker` error responses; client rejects and falls back to main thread.
+- **Content**: poem margin fallbacks (22–35, act6/7), `TOTAL_UNIFIED_POEMS`, NPC model path validation, compiled ambience regexes.
+
 ## v4.1.0 — 13 июня 2026
 
 ### Архитектура и типы

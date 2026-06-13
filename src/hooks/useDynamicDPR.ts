@@ -51,6 +51,8 @@ export function useDynamicDPR(options: DynamicDPROptions): [number, number] {
     stabilizationWindows = 2,
   } = options;
 
+  const [targetDprMin, targetDprMax] = targetDpr;
+
   const [dpr, setDpr] = useState<[number, number]>(targetDpr);
 
   // Ring buffer for O(1) push/trim (replaces Array.shift O(n) pruning)
@@ -146,11 +148,11 @@ export function useDynamicDPR(options: DynamicDPROptions): [number, number] {
           lowFpsStreak.current = 0; // Reset after applying
           const newMax = Math.max(minDpr, Math.round((prevMax - step) * 10) / 10);
           return [Math.min(prevMin, newMax), newMax];
-        } else if (highFpsStreak.current >= stabilizationWindows && prevMax < targetDpr[1]) {
+        } else if (highFpsStreak.current >= stabilizationWindows && prevMax < targetDprMax) {
           // Upgrade — increase max DPR back toward target (stabilized)
           highFpsStreak.current = 0; // Reset after applying
           const newMax = Math.min(
-            targetDpr[1],
+            targetDprMax,
             Math.round((prevMax + step) * 10) / 10,
           );
           return [Math.min(prevMin, newMax), newMax];
@@ -160,12 +162,12 @@ export function useDynamicDPR(options: DynamicDPROptions): [number, number] {
     }, windowMs);
 
     return () => clearInterval(interval);
-  }, [lowFpsThreshold, highFpsThreshold, minDpr, step, targetDpr, windowMs, stabilizationWindows]);
+  }, [lowFpsThreshold, highFpsThreshold, minDpr, step, targetDprMin, targetDprMax, windowMs, stabilizationWindows]);
 
   // Re-sync when quality preset changes
   useEffect(() => {
-    setDpr(targetDpr);
-  }, [targetDpr[0], targetDpr[1]]);
+    setDpr([targetDprMin, targetDprMax]);
+  }, [targetDprMin, targetDprMax]);
 
   return dpr;
 }

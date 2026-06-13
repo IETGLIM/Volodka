@@ -578,6 +578,16 @@ export const SCENE_AMBIENCE_MAP: SceneAmbience[] = [
   },
 ];
 
+type CompiledSceneAmbience = SceneAmbience & { compiledPattern: RegExp };
+
+/** Pre-compiled patterns — avoid RegExp allocation on every scene transition. */
+const COMPILED_SCENE_AMBIENCE_MAP: CompiledSceneAmbience[] = SCENE_AMBIENCE_MAP.map(
+  (mapping) => ({
+    ...mapping,
+    compiledPattern: new RegExp(mapping.scenePattern),
+  }),
+);
+
 /* ─── Helper Function ─── */
 
 /**
@@ -589,9 +599,8 @@ export const SCENE_AMBIENCE_MAP: SceneAmbience[] = [
  */
 export function getAmbienceForScene(sceneId: string, timeOfDay: number): AmbientSoundType | null {
   // Find the first matching scene pattern
-  for (const mapping of SCENE_AMBIENCE_MAP) {
-    const regex = new RegExp(mapping.scenePattern);
-    if (regex.test(sceneId)) {
+  for (const mapping of COMPILED_SCENE_AMBIENCE_MAP) {
+    if (mapping.compiledPattern.test(sceneId)) {
       // Daytime: 6:00 to 20:00, Nighttime: 20:00 to 6:00
       const isDay = timeOfDay >= 6 && timeOfDay < 20;
       return isDay ? mapping.daySound : mapping.nightSound;
@@ -607,9 +616,8 @@ export function getAmbienceForScene(sceneId: string, timeOfDay: number): Ambient
  * @returns Crossfade duration in ms, or 2000 as default
  */
 export function getAmbientTransitionDuration(sceneId: string): number {
-  for (const mapping of SCENE_AMBIENCE_MAP) {
-    const regex = new RegExp(mapping.scenePattern);
-    if (regex.test(sceneId)) {
+  for (const mapping of COMPILED_SCENE_AMBIENCE_MAP) {
+    if (mapping.compiledPattern.test(sceneId)) {
       return mapping.transitionDuration;
     }
   }

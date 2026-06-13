@@ -39,6 +39,18 @@ describe('getPoemMargin', () => {
     expect(getPoemMargin('poem_nope', neutralCtx)).toBeUndefined();
   });
 
+  it('returns a generated fallback for late-game poems without dedicated margins', () => {
+    const margin = getPoemMargin('poem_22', neutralCtx);
+    expect(margin?.id).toBe('margin_poem_22_fallback');
+    expect(margin?.text).toContain('основной двадцатки');
+  });
+
+  it('returns act-specific fallback text for act6 and act7 poems', () => {
+    expect(getPoemMargin('poem_act6_01', neutralCtx)?.text).toContain('Акт шестой');
+    expect(getPoemMargin('poem_act7_ending', neutralCtx)?.text).toContain('Финал близко');
+    expect(getPoemMargin('poem_tolpa', neutralCtx)?.text).toContain('ЧК');
+  });
+
   it('respects minKarma / maxKarma conditions', () => {
     const low = getPoemMargin('poem_1', { ...neutralCtx, karma: KARMA_LOW_THRESHOLD });
     expect(low?.id).toBe('margin_poem_1_low');

@@ -1,13 +1,18 @@
 /* ─── Volodka RPG – NPC definitions ─── */
 
 import type { NPCDefinition } from '@/shared/types/game';
+import {
+  NPC_MODEL_ASSETS,
+  NPC_PROCEDURAL_MODEL_PLACEHOLDER,
+  resolveNpcModelUrl,
+} from '@/config/npcModelRegistry';
 
 export const NPC_DEFINITIONS: NPCDefinition[] = [
   /* ─────────────── ALBERT – philosopher at the cafe ─────────────── */
   {
     id: 'albert',
     name: 'Альберт',
-    modelPath: '',
+    modelPath: NPC_PROCEDURAL_MODEL_PLACEHOLDER,
     scale: 1.0,
     animations: { idle: 'idle', walk: 'walk', talk: 'talk' },
     defaultPosition: [-2.5, 0, -3.0],
@@ -34,7 +39,7 @@ export const NPC_DEFINITIONS: NPCDefinition[] = [
   {
     id: 'zarema',
     name: 'Зарема',
-    modelPath: '',
+    modelPath: NPC_PROCEDURAL_MODEL_PLACEHOLDER,
     scale: 0.95,
     animations: { idle: 'idle', walk: 'walk', talk: 'talk' },
     defaultPosition: [1.5, 0, 2.0],
@@ -88,7 +93,7 @@ export const NPC_DEFINITIONS: NPCDefinition[] = [
   {
     id: 'office_alexander',
     name: 'Александр',
-    modelPath: '',
+    modelPath: NPC_PROCEDURAL_MODEL_PLACEHOLDER,
     scale: 1.05,
     animations: { idle: 'idle', walk: 'walk', talk: 'talk' },
     defaultPosition: [3.0, 0, -2.0],
@@ -121,7 +126,7 @@ export const NPC_DEFINITIONS: NPCDefinition[] = [
   {
     id: 'office_colleague',
     name: 'Коллега',
-    modelPath: '',
+    modelPath: '/models/npcs/office_colleague.glb',
     scale: 0.95,
     animations: { idle: 'idle', walk: 'walk', talk: 'talk' },
     defaultPosition: [1.0, 0, 0.5],
@@ -148,7 +153,7 @@ export const NPC_DEFINITIONS: NPCDefinition[] = [
   {
     id: 'maria',
     name: 'Виктория',
-    modelPath: '',
+    modelPath: NPC_PROCEDURAL_MODEL_PLACEHOLDER,
     scale: 0.8,
     animations: { idle: 'idle', walk: 'walk', talk: 'talk' },
     defaultPosition: [-3.0, 0, 2.0],
@@ -181,7 +186,7 @@ export const NPC_DEFINITIONS: NPCDefinition[] = [
   {
     id: 'office_dmitry',
     name: 'Дмитрий',
-    modelPath: '',
+    modelPath: NPC_PROCEDURAL_MODEL_PLACEHOLDER,
     scale: 1.1,
     animations: { idle: 'idle', walk: 'walk', talk: 'talk' },
     defaultPosition: [-2.0, 0, 1.5],
@@ -214,7 +219,7 @@ export const NPC_DEFINITIONS: NPCDefinition[] = [
   {
     id: 'viktor',
     name: 'Виктор',
-    modelPath: '',
+    modelPath: NPC_PROCEDURAL_MODEL_PLACEHOLDER,
     scale: 1.0,
     animations: { idle: 'idle', walk: 'walk', talk: 'talk' },
     defaultPosition: [-4.0, 0, 2.0],
@@ -247,7 +252,7 @@ export const NPC_DEFINITIONS: NPCDefinition[] = [
   {
     id: 'kira',
     name: 'Кира',
-    modelPath: '',
+    modelPath: NPC_PROCEDURAL_MODEL_PLACEHOLDER,
     scale: 1.0,
     animations: { idle: 'idle', walk: 'walk', talk: 'talk' },
     defaultPosition: [3.0, 0, -4.0],
@@ -280,7 +285,7 @@ export const NPC_DEFINITIONS: NPCDefinition[] = [
   {
     id: 'boris',
     name: 'Борис',
-    modelPath: '',
+    modelPath: NPC_PROCEDURAL_MODEL_PLACEHOLDER,
     scale: 1.1,
     animations: { idle: 'idle', walk: 'walk', talk: 'talk' },
     defaultPosition: [0.0, 0, -5.0],
@@ -307,7 +312,7 @@ export const NPC_DEFINITIONS: NPCDefinition[] = [
   {
     id: 'tamara',
     name: 'Тамара',
-    modelPath: '',
+    modelPath: NPC_PROCEDURAL_MODEL_PLACEHOLDER,
     scale: 0.95,
     animations: { idle: 'idle', walk: 'walk', talk: 'talk' },
     defaultPosition: [2.0, 0, 3.0],
@@ -340,7 +345,7 @@ export const NPC_DEFINITIONS: NPCDefinition[] = [
   {
     id: 'grisha',
     name: 'Гриша',
-    modelPath: '',
+    modelPath: NPC_PROCEDURAL_MODEL_PLACEHOLDER,
     scale: 1.05,
     animations: { idle: 'idle', walk: 'walk', talk: 'talk' },
     defaultPosition: [-3.0, 0, -5.0],
@@ -363,3 +368,39 @@ export const NPC_DEFINITIONS: NPCDefinition[] = [
     },
   },
 ];
+
+/** Dev/CI: flag NPCs with missing or inconsistent modelPath assignments. */
+export function validateNpcDefinitionModelPaths(): Array<{ npcId: string; message: string }> {
+  const problems: Array<{ npcId: string; message: string }> = [];
+
+  for (const npc of NPC_DEFINITIONS) {
+    const path = npc.modelPath ?? '';
+
+    if (path === '') {
+      problems.push({
+        npcId: npc.id,
+        message: `modelPath is empty — set a shipped GLB path or "${NPC_PROCEDURAL_MODEL_PLACEHOLDER}"`,
+      });
+      continue;
+    }
+
+    if (path === NPC_PROCEDURAL_MODEL_PLACEHOLDER) {
+      if (NPC_MODEL_ASSETS[npc.id]?.url) {
+        problems.push({
+          npcId: npc.id,
+          message: 'has shipped GLB in npcModelRegistry but modelPath is procedural placeholder',
+        });
+      }
+      continue;
+    }
+
+    if (!resolveNpcModelUrl(npc.id, path)) {
+      problems.push({
+        npcId: npc.id,
+        message: `modelPath "${path}" is not a shipped GLB — renderer will use procedural fallback`,
+      });
+    }
+  }
+
+  return problems;
+}

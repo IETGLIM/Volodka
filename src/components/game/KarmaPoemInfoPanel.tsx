@@ -10,6 +10,7 @@ import { FocusTrap } from '@/components/a11y/FocusTrap'
 import { usePanelDialog } from '@/components/a11y/usePanelDialog'
 import { useKarmaPoemInfoPanelState } from '@/store/selectors'
 import { ALL_ENDINGS } from '@/data/goldenPath'
+import { TOTAL_UNIFIED_POEMS } from '@/data/unifiedPoemRegistry'
 import { QUEST_DEFINITIONS } from '@/data/quests'
 import { UI_LAYERS } from '@/shared/constants/uiLayers'
 
@@ -41,7 +42,7 @@ export function KarmaPoemInfoPanel({ open, onClose }: KarmaPoemInfoPanelProps) {
         // Simplified: always show as potential
         available = true
       } else if (ending.id === 'ending_poet') {
-        available = collectedPoems.length >= 21
+        available = collectedPoems.length >= TOTAL_UNIFIED_POEMS
       }
       return { ...ending, available }
     })
@@ -54,9 +55,9 @@ export function KarmaPoemInfoPanel({ open, onClose }: KarmaPoemInfoPanelProps) {
       .slice(-5)
   }, [notifications])
 
-  // Poem slots (21 total)
+  // Poem slots (all unified registry entries)
   const poemSlots = useMemo(() => {
-    const totalPoems = 21
+    const totalPoems = TOTAL_UNIFIED_POEMS
     return Array.from({ length: totalPoems }, (_, i) => {
       const poemId = `poem_${i + 1}`
       const collected = collectedPoems.includes(poemId)
@@ -339,7 +340,7 @@ function PoemsTab({
       {/* Poem grid */}
       <div>
         <h3 className="text-[11px] font-mono tracking-wider mb-3" style={{ color: '#00ff6688' }}>
-          СОБРАННЫЕ СТИХИ ({collectedCount}/21):
+          СОБРАННЫЕ СТИХИ ({collectedCount}/{TOTAL_UNIFIED_POEMS}):
         </h3>
         <div className="grid grid-cols-7 gap-2">
           {poemSlots.map((slot) => (

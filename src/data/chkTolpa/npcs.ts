@@ -223,7 +223,7 @@ export const CHK_NPCS: NPCDefinition[] = [
     modelPath: '',
     scale: 0.98,
     animations: { idle: 'idle', walk: 'walk', talk: 'talk' },
-    defaultPosition: [2.0, 0, 0.5],
+    defaultPosition: [2.5, 0, 1.0],
     defaultRotation: -0.5,
     patrolRadius: 0.5,
     dialogueNodeId: 'chk_guest_analyst_greeting',

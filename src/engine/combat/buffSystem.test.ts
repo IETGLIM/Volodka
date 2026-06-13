@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { CombatBuff, CombatState } from './types';
-import { addBuff, createBuff } from './buffSystem';
+import { addBuff, createBuff, getEnemyDefenseReduction } from './buffSystem';
 
 function minimalState(buffs: CombatBuff[] = [], nextBuffId = 1): CombatState {
   return {
@@ -25,6 +25,18 @@ function makeBuff(
     effect: { type: effectType, value: 0.5 },
   };
 }
+
+describe('getEnemyDefenseReduction', () => {
+  it('reads buffs only — ignores mirrored enemyDefenseReduction field', () => {
+    const buff = makeBuff('poem_1', 'debuff', 'enemy', 'defense_reduction');
+    const state = {
+      ...minimalState([buff]),
+      enemyDefenseReduction: 0.5,
+    } as CombatState;
+
+    expect(getEnemyDefenseReduction(state)).toBe(0.5);
+  });
+});
 
 describe('addBuff slot limits', () => {
   it('does not evict player buffs when adding a player debuff', () => {

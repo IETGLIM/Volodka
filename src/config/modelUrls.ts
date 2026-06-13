@@ -1,5 +1,5 @@
 /* ─── Model URL configuration ─── */
-const MODELS_BASE = (typeof process !== 'undefined' && process.env?.VITE_MODELS_BASE) ?? '';
+const MODELS_BASE = import.meta.env?.VITE_MODELS_BASE ?? '';
 
 export interface ModelUrls {
   volodka: string;

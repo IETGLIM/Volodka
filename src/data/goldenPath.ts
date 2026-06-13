@@ -1,5 +1,7 @@
 /* ─── Volodka RPG – golden path ─── */
 
+import { TOTAL_UNIFIED_POEMS } from './unifiedPoemRegistry';
+
 /**
  * GOLDEN_PATH_STORY_SPINE — the canonical story path from start through the
  * act-5 reconciliation ending and onward into acts 6–7, finishing at act7_true_end.
@@ -588,7 +590,7 @@ export const ALL_ENDINGS: { id: string; title: string; description: string; cond
     id: 'ending_poet',
     title: 'Поэт',
     description: 'Собраны ВСЕ стихи Владимира: Реальность — это поэзия, Володька открывает последнюю истину.',
-    condition: 'Собраны все 21 стихотворение',
+    condition: `Собраны все ${TOTAL_UNIFIED_POEMS} стихотворений`,
   },
 ];
 

@@ -156,6 +156,32 @@ export const PERKS: PerkDefinition[] = [
     ],
     flavorText: 'Тот, кого не замечают, переживает всех.',
   },
+  {
+    id: 'iron_will',
+    name: 'Железная воля',
+    description: '+15 порог стресса. Разум не сдаётся, когда тело хочет сбежать.',
+    category: 'survival',
+    icon: 'ShieldAlert',
+    minLevel: 9,
+    requiredPerks: ['stress_resistance'],
+    effects: [
+      { type: 'stress_resist', value: 0.15, description: '+15 порог стресса' },
+    ],
+    flavorText: 'Воля — это мышца. Её тренируют, когда больше некуда бежать.',
+  },
+  {
+    id: 'scavenger',
+    name: 'Собиратель',
+    description: '+20% находок и лута. Ты видишь ценность там, где другие видят мусор.',
+    category: 'survival',
+    icon: 'Search',
+    minLevel: 6,
+    requiredPerks: ['iron_stomach'],
+    effects: [
+      { type: 'credits_mult', value: 0.2, description: '+20% кредитов от находок' },
+    ],
+    flavorText: 'В руинах города ничто не пропадает зря — если знать, куда смотреть.',
+  },
 
   /* ═══ SOCIAL PERKS ═══ */
   {
@@ -293,6 +319,20 @@ export const PERKS: PerkDefinition[] = [
     ],
     flavorText: 'Код горит. Ошибки плавятся. Ты — компилятор разрушения.',
   },
+  {
+    id: 'combat_veteran',
+    name: 'Боевой ветеран',
+    description: '+15% урона и +10% защиты. Сотни стычек закалили рефлексы.',
+    category: 'combat',
+    icon: 'Medal',
+    minLevel: 10,
+    requiredPerks: ['counterattack', 'fortitude'],
+    effects: [
+      { type: 'combat_bonus', value: 0.15, description: '+15% урона' },
+      { type: 'combat_bonus', value: 0.1, description: '+10% защиты' },
+    ],
+    flavorText: 'Ветеран не ищет бой. Он просто всегда к нему готов.',
+  },
 
   /* ═══ POETIC PERKS ═══ */
   {
@@ -372,6 +412,20 @@ export const PERKS: PerkDefinition[] = [
       { type: 'poem_power', value: 0.25, description: '-25% перезарядка стихотворных сил' },
     ],
     flavorText: 'Музы шепчут тем, кто умеет слушать тишину.',
+  },
+  {
+    id: 'poetic_soul',
+    name: 'Поэтическая душа',
+    description: '+15% силы стихов и +10% кармы. Стих живёт в тебе, а не на бумаге.',
+    category: 'poetic',
+    icon: 'Heart',
+    minLevel: 8,
+    requiredPerks: ['voice_of_elements', 'rhyme_mythme'],
+    effects: [
+      { type: 'poem_power', value: 0.15, description: '+15% силы стихов' },
+      { type: 'karma_gain', value: 0.1, description: '+10% кармы' },
+    ],
+    flavorText: 'Душа поэта слышит ритм мира раньше, чем он становится словом.',
   },
 
   /* ═══ TECHNICAL PERKS ═══ */
