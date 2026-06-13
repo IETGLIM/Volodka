@@ -53,22 +53,43 @@ function InteriorLoadPlaceholder() {
   );
 }
 
+/** Renders one interior export after LazyInteriorModuleGate resolves — avoids eager renderLoaded during suspend. */
+function DeferredInteriorRenderer({
+  exportName,
+  interiorProps,
+}: {
+  exportName: InteriorComponentKey;
+  interiorProps: Record<string, unknown>;
+}) {
+  if (!loadedInteriorModule) {
+    return <InteriorLoadPlaceholder />;
+  }
+  const Component = loadedInteriorModule[exportName] as ComponentType<any>;
+  return <Component {...interiorProps} />;
+}
+
 function createInteriorComponent<K extends InteriorComponentKey>(exportName: K) {
   type Props = ComponentProps<InteriorModule[K]>;
 
   function renderLoaded(props: Props) {
-    const Component = loadedInteriorModule![exportName] as ComponentType<any>;
+    if (!loadedInteriorModule) {
+      return <InteriorLoadPlaceholder />;
+    }
+    const Component = loadedInteriorModule[exportName] as ComponentType<any>;
     return <Component {...props} />;
   }
 
   function InteriorProp(props: Props) {
-    const content = loadedInteriorModule ? (
-      renderLoaded(props)
-    ) : (
-      <Suspense fallback={<InteriorLoadPlaceholder />}>
-        <LazyInteriorModuleGate>{renderLoaded(props)}</LazyInteriorModuleGate>
-      </Suspense>
-    );
+    const deferredProps = props as Record<string, unknown>;
+    const content = loadedInteriorModule
+      ? renderLoaded(props)
+      : (
+        <Suspense fallback={<InteriorLoadPlaceholder />}>
+          <LazyInteriorModuleGate>
+            <DeferredInteriorRenderer exportName={exportName} interiorProps={deferredProps} />
+          </LazyInteriorModuleGate>
+        </Suspense>
+      );
 
     return (
       <ErrorBoundary name={`interior:${String(exportName)}`} fallback={null}>
