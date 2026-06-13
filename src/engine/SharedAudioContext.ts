@@ -88,12 +88,32 @@ const resumeOnce = () => {
   void safeResume();
 };
 
-// ── Browser autoplay policy: resume AudioContext on first user gesture ──
-if (typeof window !== 'undefined') {
+function registerGestureResumeHandlers(): void {
+  if (typeof window === 'undefined') return;
   window.addEventListener('click', resumeOnce, { once: true });
   window.addEventListener('keydown', resumeOnce, { once: true });
   window.addEventListener('touchstart', resumeOnce, { once: true });
 }
+
+let tabVisibilityHandlersRegistered = false;
+
+function registerTabVisibilityHandlers(): void {
+  if (typeof window === 'undefined' || tabVisibilityHandlersRegistered) return;
+  window.addEventListener('blur', suspendSharedAudioContext);
+  window.addEventListener('focus', resumeSharedAudioContext);
+  tabVisibilityHandlersRegistered = true;
+}
+
+function unregisterTabVisibilityHandlers(): void {
+  if (typeof window === 'undefined' || !tabVisibilityHandlersRegistered) return;
+  window.removeEventListener('blur', suspendSharedAudioContext);
+  window.removeEventListener('focus', resumeSharedAudioContext);
+  tabVisibilityHandlersRegistered = false;
+}
+
+// ── Browser autoplay policy: resume AudioContext on first user gesture ──
+registerGestureResumeHandlers();
+registerTabVisibilityHandlers();
 
 /**
  * Check if the shared AudioContext has been created and is running.
@@ -121,17 +141,11 @@ export function resumeSharedAudioContext(): void {
 }
 
 // Tab blur/focus handlers — managed centrally for both engines
-if (typeof window !== 'undefined') {
-  window.addEventListener('blur', suspendSharedAudioContext);
-  window.addEventListener('focus', resumeSharedAudioContext);
-}
+registerTabVisibilityHandlers();
 
 /** Close shared AudioContext and drop tab blur/focus hooks (unmount / HMR). */
 export function disposeSharedAudioContext(): void {
-  if (typeof window !== 'undefined') {
-    window.removeEventListener('blur', suspendSharedAudioContext);
-    window.removeEventListener('focus', resumeSharedAudioContext);
-  }
+  unregisterTabVisibilityHandlers();
   if (sharedCtx) {
     sharedCtx.close().catch(() => {});
     sharedCtx = null;
@@ -139,6 +153,13 @@ export function disposeSharedAudioContext(): void {
   resetAudioCapabilitiesCache();
   _pendingQueue = [];
   _userInteracted = false;
+  registerGestureResumeHandlers();
+}
+
+/** Re-arm tab blur/focus hooks after dispose (React StrictMode). Idempotent. */
+export function reviveSharedAudioContext(): void {
+  registerGestureResumeHandlers();
+  registerTabVisibilityHandlers();
 }
 
 registerHmrDispose(disposeSharedAudioContext);
