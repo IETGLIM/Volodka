@@ -109,6 +109,9 @@ export function RooftopEdgeVisual({ livePlayerPositionRef: _livePlayerPositionRe
         <meshStandardMaterial color="#3a3a3a" roughness={0.85} />
       </mesh>
 
+      {/* Pipe railings on open drop edges (visual-only; physics boundary unchanged) */}
+      <RooftopEdgeRailings w={W} d={D} />
+
       {/* Back wall (building wall) */}
       <mesh position={[0, 2.5, -D / 2]} castShadow>
         <boxGeometry args={[W, 5, 0.3]} />
@@ -301,6 +304,83 @@ export function RooftopEdgeVisual({ livePlayerPositionRef: _livePlayerPositionRe
         </mesh>
       </group>
       </EnvironmentDetail>
+    </group>
+  );
+}
+
+/** Low-poly metal railings along open roof edges — matches parapet height, gap at street exit. */
+function RooftopEdgeRailings({ w, d }: { w: number; d: number }) {
+  const railColor = '#555555';
+  const railMat = { color: railColor, metalness: 0.65, roughness: 0.45 };
+  const postSpacing = 1.75;
+  const railYLow = 1.05;
+  const railYHigh = 1.18;
+  const postBaseY = 1.0;
+  const postHeight = 0.22;
+
+  const postPositions: Array<{ key: string; pos: [number, number, number] }> = [];
+
+  // Front edge (+Z) — gap for rooftop_to_street doorway (~0.9 m at centre)
+  const frontZ = d / 2 - 0.06;
+  const doorwayHalf = 0.55;
+  for (let x = -w / 2 + 0.35; x <= w / 2 - 0.35; x += postSpacing) {
+    if (Math.abs(x) < doorwayHalf) continue;
+    postPositions.push({ key: `front-${x.toFixed(2)}`, pos: [x, postBaseY, frontZ] });
+  }
+
+  // Side edges (±X)
+  for (let z = -d / 2 + 0.35; z <= d / 2 - 0.35; z += postSpacing) {
+    postPositions.push({ key: `left-${z.toFixed(2)}`, pos: [-w / 2 + 0.06, postBaseY, z] });
+    postPositions.push({ key: `right-${z.toFixed(2)}`, pos: [w / 2 - 0.06, postBaseY, z] });
+  }
+
+  const frontSegments: Array<[number, number]> = [
+    [-w / 2 + 0.2, -doorwayHalf],
+    [doorwayHalf, w / 2 - 0.2],
+  ];
+  const sideSpan = d - 0.5;
+
+  return (
+    <group>
+      {postPositions.map(({ key, pos }) => (
+        <mesh key={key} position={pos} castShadow>
+          <boxGeometry args={[0.04, postHeight, 0.04]} />
+          <meshStandardMaterial {...railMat} />
+        </mesh>
+      ))}
+
+      {frontSegments.map(([fromX, toX], i) => {
+        const length = toX - fromX;
+        const centerX = (fromX + toX) / 2;
+        return (
+          <group key={`front-rail-${i}`}>
+            <mesh position={[centerX, railYLow, frontZ]} castShadow>
+              <boxGeometry args={[length, 0.025, 0.025]} />
+              <meshStandardMaterial {...railMat} />
+            </mesh>
+            <mesh position={[centerX, railYHigh, frontZ]} castShadow>
+              <boxGeometry args={[length, 0.025, 0.025]} />
+              <meshStandardMaterial {...railMat} />
+            </mesh>
+          </group>
+        );
+      })}
+
+      {(['left', 'right'] as const).map((side) => {
+        const x = side === 'left' ? -w / 2 + 0.06 : w / 2 - 0.06;
+        return (
+          <group key={`${side}-rails`}>
+            <mesh position={[x, railYLow, 0]} castShadow>
+              <boxGeometry args={[0.025, 0.025, sideSpan]} />
+              <meshStandardMaterial {...railMat} />
+            </mesh>
+            <mesh position={[x, railYHigh, 0]} castShadow>
+              <boxGeometry args={[0.025, 0.025, sideSpan]} />
+              <meshStandardMaterial {...railMat} />
+            </mesh>
+          </group>
+        );
+      })}
     </group>
   );
 }

@@ -15,7 +15,8 @@ export function LibraryDayVisual() {
 
   const W = 16;
   const D = 14;
-  const H = 4.5;
+  /** Match sceneDefinitions library_day dimensions[1] (physics ceiling at y=3). */
+  const H = 3;
 
   return (
     <group>
@@ -61,29 +62,29 @@ export function LibraryDayVisual() {
       {/* ═══════════════════════════════════════════════ */}
 
       {/* Back wall shelves */}
-      <Bookshelf position={[-6, 0, -6.5]} height={3.5} />
-      <Bookshelf position={[-3.5, 0, -6.5]} height={3.5} />
-      <Bookshelf position={[-1, 0, -6.5]} height={3.5} />
-      <Bookshelf position={[1.5, 0, -6.5]} height={3.5} />
-      <Bookshelf position={[4, 0, -6.5]} height={3.5} />
-      <Bookshelf position={[6.5, 0, -6.5]} height={3.5} />
+      <Bookshelf position={[-6, 0, -6.5]} height={2.2} />
+      <Bookshelf position={[-3.5, 0, -6.5]} height={2.2} />
+      <Bookshelf position={[-1, 0, -6.5]} height={2.2} />
+      <Bookshelf position={[1.5, 0, -6.5]} height={2.2} />
+      <Bookshelf position={[4, 0, -6.5]} height={2.2} />
+      <Bookshelf position={[6.5, 0, -6.5]} height={2.2} />
 
       {/* Left wall shelves */}
-      <Bookshelf position={[-7.5, 0, -4]} height={3.5} rotation={Math.PI / 2} />
-      <Bookshelf position={[-7.5, 0, -1]} height={3.5} rotation={Math.PI / 2} />
-      <Bookshelf position={[-7.5, 0, 2]} height={3.5} rotation={Math.PI / 2} />
+      <Bookshelf position={[-7.5, 0, -4]} height={2.2} rotation={Math.PI / 2} />
+      <Bookshelf position={[-7.5, 0, -1]} height={2.2} rotation={Math.PI / 2} />
+      <Bookshelf position={[-7.5, 0, 2]} height={2.2} rotation={Math.PI / 2} />
 
       {/* Right wall shelves */}
-      <Bookshelf position={[7.5, 0, -4]} height={3.5} rotation={-Math.PI / 2} />
-      <Bookshelf position={[7.5, 0, -1]} height={3.5} rotation={-Math.PI / 2} />
-      <Bookshelf position={[7.5, 0, 2]} height={3.5} rotation={-Math.PI / 2} />
+      <Bookshelf position={[7.5, 0, -4]} height={2.2} rotation={-Math.PI / 2} />
+      <Bookshelf position={[7.5, 0, -1]} height={2.2} rotation={-Math.PI / 2} />
+      <Bookshelf position={[7.5, 0, 2]} height={2.2} rotation={-Math.PI / 2} />
 
       {/* Free-standing shelf rows (center) */}
-      <Bookshelf position={[-2.5, 0, -2]} height={2.5} />
-      <Bookshelf position={[-2.5, 0, 1]} height={2.5} />
+      <Bookshelf position={[-2.5, 0, -2]} height={2.0} />
+      <Bookshelf position={[-2.5, 0, 1]} height={2.0} />
 
-      <Bookshelf position={[2.5, 0, -2]} height={2.5} />
-      <Bookshelf position={[2.5, 0, 1]} height={2.5} />
+      <Bookshelf position={[2.5, 0, -2]} height={2.0} />
+      <Bookshelf position={[2.5, 0, 1]} height={2.0} />
 
       {/* ═══════════════════════════════════════════════ */}
       {/* ── READING TABLES WITH GREEN BANKER LAMPS ── */}
@@ -97,14 +98,14 @@ export function LibraryDayVisual() {
       {/* ═══════════════════════════════════════════════ */}
       <group position={[6, 0, -5]}>
         {/* Central pillar */}
-        <mesh position={[0, 2, 0]} castShadow>
-          <cylinderGeometry args={[0.08, 0.08, 4, 8]} />
+        <mesh position={[0, 1.25, 0]} castShadow>
+          <cylinderGeometry args={[0.08, 0.08, 2.5, 8]} />
           <meshStandardMaterial color="#3a2818" metalness={0.4} roughness={0.5} />
         </mesh>
         {/* Stair steps (simplified as wedges/boxes) */}
         {Array.from({ length: 12 }).map((_, i) => {
           const angle = (i / 12) * Math.PI * 1.5;
-          const y = (i / 12) * 3;
+          const y = (i / 12) * 2;
           return (
             <mesh key={i} position={[Math.cos(angle) * 0.6, y, Math.sin(angle) * 0.6]} rotation={[0, -angle, 0]} castShadow>
               <boxGeometry args={[0.7, 0.06, 0.3]} />
@@ -113,7 +114,7 @@ export function LibraryDayVisual() {
           );
         })}
         {/* Railing */}
-        <mesh position={[0, 3.5, 0]} castShadow>
+        <mesh position={[0, 2.2, 0]} castShadow>
           <torusGeometry args={[0.7, 0.02, 6, 24, Math.PI * 1.5]} />
           <meshStandardMaterial color="#2a2a30" metalness={0.6} roughness={0.4} />
         </mesh>
@@ -122,9 +123,9 @@ export function LibraryDayVisual() {
       {/* ═══════════════════════════════════════════════ */}
       {/* ── STAINED GLASS WINDOW (right wall, emissive) ── */}
       {/* ═══════════════════════════════════════════════ */}
-      <group position={[W / 2 - 0.01, 2.5, -2]}>
+      <group position={[W / 2 - 0.01, 1.5, -2]}>
         <mesh rotation-y={-Math.PI / 2}>
-          <planeGeometry args={[2.5, 3.0]} />
+          <planeGeometry args={[2.2, 2.0]} />
           <meshStandardMaterial
             color="#1a0a20"
             emissive="#8800aa"
@@ -133,16 +134,16 @@ export function LibraryDayVisual() {
         </mesh>
         {/* Window frame */}
         <mesh rotation-y={-Math.PI / 2} position={[0.01, 0, 0]}>
-          <boxGeometry args={[0.06, 3.1, 2.6]} />
+          <boxGeometry args={[0.06, 2.1, 2.3]} />
           <meshStandardMaterial color="#3a2818" roughness={0.7} />
         </mesh>
         {/* Cross bars */}
         <mesh rotation-y={-Math.PI / 2} position={[0.02, 0, 0]}>
-          <boxGeometry args={[0.04, 3.0, 0.04]} />
+          <boxGeometry args={[0.04, 2.0, 0.04]} />
           <meshStandardMaterial color="#3a2818" />
         </mesh>
         <mesh rotation-y={-Math.PI / 2} position={[0.02, 0, 0]}>
-          <boxGeometry args={[0.04, 0.04, 2.5]} />
+          <boxGeometry args={[0.04, 0.04, 2.2]} />
           <meshStandardMaterial color="#3a2818" />
         </mesh>
         {/* Color segments */}
@@ -210,14 +211,14 @@ export function LibraryDayVisual() {
       <pointLight position={[0, 1.8, 3]} color="#44aa66" intensity={1.8} distance={7} />
 
       {/* Amber reading lights (overhead) */}
-      <pointLight position={[-4, 3.5, -2]} color="#ffaa44" intensity={2.0} distance={10} />
-      <pointLight position={[4, 3.5, 2]} color="#ffaa44" intensity={2.0} distance={10} />
+      <pointLight position={[-4, 2.7, -2]} color="#ffaa44" intensity={2.0} distance={10} />
+      <pointLight position={[4, 2.7, 2]} color="#ffaa44" intensity={2.0} distance={10} />
 
       {/* Stained glass glow */}
       <pointLight position={[7.5, 2.5, -2]} color="#8800aa" intensity={1.2} distance={7} />
 
       {/* General fill */}
-      <pointLight position={[0, 4, 0]} color="#c8b898" intensity={1.0} distance={16} />
+      <pointLight position={[0, 2.85, 0]} color="#c8b898" intensity={1.0} distance={16} />
 
       {/* ═══════════════════════════════════════════════ */}
       {/* ── ENVIRONMENTAL CLUTTER / STORYTELLING ── */}
@@ -298,24 +299,24 @@ export function LibraryDayVisual() {
       {/* ── Rolling ladder on wheels (left wall, leaning against shelf) ── */}
       <group position={[-7.0, 0, -2.5]} rotation={[0, 0.15, 0]}>
         {/* Left rail */}
-        <mesh position={[-0.2, 1.5, 0]} castShadow>
-          <boxGeometry args={[0.04, 3.0, 0.04]} />
+        <mesh position={[-0.2, 1.0, 0]} castShadow>
+          <boxGeometry args={[0.04, 2.0, 0.04]} />
           <meshStandardMaterial color="#5a4030" roughness={0.7} />
         </mesh>
         {/* Right rail */}
-        <mesh position={[0.2, 1.5, 0]} castShadow>
-          <boxGeometry args={[0.04, 3.0, 0.04]} />
+        <mesh position={[0.2, 1.0, 0]} castShadow>
+          <boxGeometry args={[0.04, 2.0, 0.04]} />
           <meshStandardMaterial color="#5a4030" roughness={0.7} />
         </mesh>
         {/* Rungs */}
-        {[0.3, 0.7, 1.1, 1.5, 1.9, 2.3, 2.7].map((y, i) => (
+        {[0.3, 0.55, 0.8, 1.05, 1.3, 1.55, 1.8].map((y, i) => (
           <mesh key={`rung-${i}`} position={[0, y, 0]} rotation={[0, 0, Math.PI / 2]} castShadow>
             <cylinderGeometry args={[0.015, 0.015, 0.4, 6]} />
             <meshStandardMaterial color="#4a3520" roughness={0.7} />
           </mesh>
         ))}
         {/* Top rail cap */}
-        <mesh position={[0, 3.02, 0]}>
+        <mesh position={[0, 2.02, 0]}>
           <boxGeometry args={[0.5, 0.03, 0.05]} />
           <meshStandardMaterial color="#5a4030" roughness={0.7} />
         </mesh>
@@ -440,9 +441,9 @@ export function LibraryDayVisual() {
       </group>
 
       {/* ── Second stained glass window (left wall) ── */}
-      <group position={[-W / 2 + 0.01, 2.5, -2]}>
+      <group position={[-W / 2 + 0.01, 1.5, -2]}>
         <mesh rotation-y={Math.PI / 2}>
-          <planeGeometry args={[2.5, 3.0]} />
+          <planeGeometry args={[2.2, 2.0]} />
           <meshStandardMaterial
             color="#0a0a20"
             emissive="#2255aa"
@@ -451,16 +452,16 @@ export function LibraryDayVisual() {
         </mesh>
         {/* Window frame */}
         <mesh rotation-y={Math.PI / 2} position={[-0.01, 0, 0]}>
-          <boxGeometry args={[0.06, 3.1, 2.6]} />
+          <boxGeometry args={[0.06, 2.1, 2.3]} />
           <meshStandardMaterial color="#3a2818" roughness={0.7} />
         </mesh>
         {/* Color segments */}
-        <mesh rotation-y={Math.PI / 2} position={[-0.02, 0.5, -0.4]}>
-          <planeGeometry args={[0.6, 0.8]} />
+        <mesh rotation-y={Math.PI / 2} position={[-0.02, 0.35, -0.4]}>
+          <planeGeometry args={[0.6, 0.55]} />
           <meshStandardMaterial color="#1a1a00" emissive="#887722" emissiveIntensity={0.5} transparent opacity={0.5} polygonOffset polygonOffsetFactor={-1} polygonOffsetUnits={-1} />
         </mesh>
-        <mesh rotation-y={Math.PI / 2} position={[-0.02, 0.5, 0.5]}>
-          <planeGeometry args={[0.5, 0.7]} />
+        <mesh rotation-y={Math.PI / 2} position={[-0.02, 0.35, 0.5]}>
+          <planeGeometry args={[0.5, 0.5]} />
           <meshStandardMaterial color="#0a0a1a" emissive="#3344aa" emissiveIntensity={0.4} transparent opacity={0.5} polygonOffset polygonOffsetFactor={-1} polygonOffsetUnits={-1} />
         </mesh>
         {/* Window light spill */}
@@ -598,7 +599,7 @@ export function LibraryDayVisual() {
 
       {/* ── Additional warm library lights ── */}
       {/* Overhead chandelier effect */}
-      <pointLight position={[0, 4.0, 3.0]} color="#c8a878" intensity={1.5} distance={14} />
+      <pointLight position={[0, 2.85, 3.0]} color="#c8a878" intensity={1.5} distance={14} />
 
       {/* Candle warm glow at writing desk */}
       <pointLight position={[-5.0, 1.2, 3.0]} color="#ffaa44" intensity={0.6} distance={4} />
@@ -610,7 +611,7 @@ export function LibraryDayVisual() {
 }
 
 /** Tall bookshelf with books */
-function Bookshelf({ position, height = 3.5, rotation = 0 }: { position: [number, number, number]; height?: number; rotation?: number }) {
+function Bookshelf({ position, height = 2.2, rotation = 0 }: { position: [number, number, number]; height?: number; rotation?: number }) {
   const shelfCount = Math.floor(height / 0.5);
   return (
     <group position={position} rotation={[0, rotation, 0]}>
