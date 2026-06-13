@@ -77,6 +77,11 @@ export const NPC_QUEST_BARKS: Record<string, NpcQuestBarkEntry[]> = {
       text: 'Логи ночной смены — у меня. Спроси, пока серверная не ушла в автономный режим.',
     },
     {
+      questId: 'night_watch',
+      objectiveId: 'patrol_street',
+      text: 'Зимняя улица ночью — не для слабонервных. Обойди квартал, если готов к дозору.',
+    },
+    {
       questId: 'blind_spot',
       objectiveId: 'check_office_logs',
       text: 'Логи доступа к офису у меня. Спроси — покажу, кто ходил ночью, когда Сеть молчала.',
@@ -135,6 +140,10 @@ export const NPC_QUEST_BARKS: Record<string, NpcQuestBarkEntry[]> = {
     },
   ],
   kate: [
+    {
+      questId: 'poetry_collection',
+      text: 'Стихи разбросаны по городу — в библиотеке, на столах, в тайниках. Собери все — правда сложится сама.',
+    },
     {
       questId: 'poetry_smuggling',
       text: 'Запрещённые стихи лежат в тайнике за полкой. Гильдия патрулирует маршруты — иди окольно.',

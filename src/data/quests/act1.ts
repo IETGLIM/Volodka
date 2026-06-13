@@ -272,7 +272,7 @@ export const QUESTS_ACT1: QuestDefinition[] = [
       { type: 'addXp', value: 200 },
     ],
     linkedStoryNodeId: 'volodka_inner',
-    questGiverNpcId: undefined, // Self-discovered collection quest
+    questGiverNpcId: 'kate',
   },
 
   /* ─────────────── QUEST 6: Night shift mystery ─────────────── */

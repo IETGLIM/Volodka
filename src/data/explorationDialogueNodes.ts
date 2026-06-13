@@ -291,6 +291,32 @@ export const EXPLORATION_DIALOGUE_NODES: Record<string, DialogueNode> = {
     ],
   },
 
+  explore_act2_albert_hint: {
+    id: 'explore_act2_albert_hint',
+    speaker: 'Голос',
+    text: 'Кафе «Синяя яма», вечер. Альберт сидит в своём углу — пальцы постукивают по столу, нервный ритм, не похожий на обычную созерцательность. «Володька,» — говорит он тихо, — «тебе не кажется странным, что стихи появились именно в коде гильдии?»',
+    sceneId: 'cafe_evening',
+    choices: [
+      {
+        text: 'Ты знаешь, кто мог их туда поместить?',
+        next: null,
+        effects: [
+          { type: 'visitStoryNode', nodeId: 'act2_albert_hint' },
+          { type: 'setFlag', flag: 'heard_act2_albert_hint', flagValue: true },
+        ],
+      },
+      {
+        text: 'Может, это старый код — до Краха?',
+        next: null,
+        effects: [
+          { type: 'visitStoryNode', nodeId: 'act2_albert_hint' },
+          { type: 'setFlag', flag: 'heard_act2_albert_hint', flagValue: true },
+          { type: 'addSkill', skill: 'intuition', value: 1 },
+        ],
+      },
+    ],
+  },
+
   explore_act2_dmitry_office_meeting: {
     id: 'explore_act2_dmitry_office_meeting',
     speaker: 'Голос',

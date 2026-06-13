@@ -967,6 +967,65 @@ function BaristaModel({ appearance, animState = 'idle' }: { appearance: NPCAppea
 }
 
 /* ═══════════════════════════════════════════════════════════════════
+    7b. ЛЁНЯ – coffee roaster, beard, leather apron (not barista clone)
+    ═══════════════════════════════════════════════════════════════════ */
+function LyonyaModel({ appearance, animState = 'idle' }: { appearance: NPCAppearance; animState?: 'idle' | 'walk' | 'talk' }) {
+  const groupRef = useRef<THREE.Group>(null);
+  useNPCAnimation(groupRef, animState, 0.035);
+
+  const bodyColor = appearance.bodyColor;
+  const accentColor = appearance.accentColor;
+  const glowColor = appearance.glowColor;
+
+  const shirtColor = '#3a3228';
+  const apronColor = '#5a4030';
+  const apronAccent = accentColor;
+  const pantsColor = '#2a2420';
+  const pantsDark = '#1a1814';
+  const skinColor = '#c8a888';
+  const skinShadow = '#b89878';
+  const hairColor = '#3a2a18';
+  const beardColor = '#4a3828';
+
+  return (
+    <group ref={groupRef}>
+      <group name="torso" position={[0, 1.05, 0.02]} rotation={[0.04, 0, 0]}>
+        <mesh castShadow geometry={boxGeo(0.40, 0.48, 0.24)} material={npcMat({ color: shirtColor, emissive: glowColor, emissiveIntensity: 0.05, roughness: 0.85 })} />
+        {/* Rolled sleeves */}
+        <mesh position={[-0.22, 0.08, 0]} geometry={boxGeo(0.06, 0.10, 0.24)} material={npcMat({ color: shirtColor, roughness: 0.85 })} />
+        <mesh position={[0.22, 0.08, 0]} geometry={boxGeo(0.06, 0.10, 0.24)} material={npcMat({ color: shirtColor, roughness: 0.85 })} />
+
+        {/* Leather roaster apron */}
+        <mesh position={[0, -0.04, 0.13]} castShadow geometry={boxGeo(0.38, 0.44, 0.012)} material={npcMat({ color: apronColor, emissive: glowColor, emissiveIntensity: 0.08, roughness: 0.75 })} />
+        <mesh position={[0, 0.14, 0.13]} geometry={boxGeo(0.22, 0.14, 0.012)} material={npcMat({ color: apronColor, roughness: 0.75 })} />
+        <mesh position={[0, 0.04, 0.135]} geometry={boxGeo(0.40, 0.025, 0.008)} material={npcMat({ color: apronAccent, emissive: glowColor, emissiveIntensity: 0.12, roughness: 0.7 })} />
+        {/* Coffee bean pouch on apron */}
+        <mesh position={[-0.10, -0.08, 0.138]} geometry={boxGeo(0.08, 0.06, 0.01)} material={npcMat({ color: '#2a1810', roughness: 0.9 })} />
+
+        <mesh position={[0, 0.26, 0]} geometry={sharedGeo.neckCylinderMd} material={skinMat(skinColor)} />
+
+        <group name="head" position={[0, 0.46, 0.02]}>
+          <mesh castShadow geometry={sharedGeo.skullSphereMd} material={skinMat(skinColor)} />
+          <mesh position={[0, -0.05, 0.025]} castShadow geometry={sharedGeo.jawBoxMd} material={skinMat(skinColor)} />
+          <Eyes browAngle={0.02} irisColor="#4a3820" />
+          <FaceFeatures skinColor={skinColor} shadowColor={skinShadow} mouthCornersDown={false} />
+
+          {/* Short hair */}
+          <mesh position={[0, 0.06, -0.02]} geometry={sphereGeo(0.105, 6, 4, 0, Math.PI * 2, 0, Math.PI * 0.55)} material={hairMat(hairColor)} />
+          {/* Beard */}
+          <mesh position={[0, -0.10, 0.04]} geometry={boxGeo(0.12, 0.10, 0.08)} material={hairMat(beardColor)} />
+          <mesh position={[0, -0.06, 0.06]} geometry={sphereGeo(0.06, 4, 3, 0, Math.PI * 2, 0, Math.PI * 0.5)} material={hairMat(beardColor)} />
+        </group>
+
+        <Arms sleeveColor={shirtColor} skinColor={skinColor} />
+      </group>
+
+      <Legs pantsColor={pantsColor} pantsDark={pantsDark} shoeColor="#1a1814" accentGlow={glowColor} accentColor={accentColor} />
+    </group>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════════
     SELECTOR — picks the right procedural model based on NPC definition id
     ═══════════════════════════════════════════════════════════════════ */
 
@@ -1755,7 +1814,7 @@ function ProceduralNPCModelInner({
     case 'lyonya':
       return (
         <group scale={[widthScale, heightScale, widthScale]}>
-          <BaristaModel appearance={app} animState={animState} />
+          <LyonyaModel appearance={app} animState={animState} />
         </group>
       );
     case 'sergey':

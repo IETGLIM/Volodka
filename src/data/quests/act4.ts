@@ -280,7 +280,7 @@ export const QUESTS_ACT4: QuestDefinition[] = [
       { type: 'addXp', value: 100 },
     ],
     linkedStoryNodeId: 'street_bench',
-    questGiverNpcId: 'albert',
+    questGiverNpcId: 'sergey',
   },
 
   /* ─────────────── QUEST 21: Стих под Прикрытием ─────────────── */

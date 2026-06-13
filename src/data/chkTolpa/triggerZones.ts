@@ -112,6 +112,24 @@ export const CHK_TRIGGER_ZONES: TriggerZone[] = [
     linkedNpcId: 'chk_elis',
     linkedDialogueNodeId: 'chk_elis_greeting',
   },
+  {
+    id: 'chk_talk_guest_devops',
+    sceneId: 'chk_forest_zorge',
+    position: [2.0, 0.5, 0.5],
+    size: [1.5, 2, 1.5],
+    interactionType: 'talk',
+    linkedNpcId: 'chk_guest_devops',
+    linkedDialogueNodeId: 'chk_guest_devops_greeting',
+  },
+  {
+    id: 'chk_talk_guest_analyst',
+    sceneId: 'chk_forest_zorge',
+    position: [2.0, 0.5, 0.5],
+    size: [1.5, 2, 1.5],
+    interactionType: 'talk',
+    linkedNpcId: 'chk_guest_analyst',
+    linkedDialogueNodeId: 'chk_guest_analyst_greeting',
+  },
   /* ── Poem: after Elis song ── */
   {
     id: 'chk_tolpa_poem_fire',

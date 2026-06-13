@@ -1,8 +1,8 @@
 /* ─── Volodka RPG – Animated GLB NPC mesh with procedural fallback ─── */
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { Component, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useFrame } from '@react-three/fiber';
-import { useGLTF } from '@react-three/drei';
+import { Html, useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
 import type { NPCDefinition } from '@/shared/types/game';
 import { getNpcModelMeta, resolveNpcModelUrl } from '@/config/npcModelRegistry';
@@ -11,6 +11,7 @@ import { useSkinnedGltfClone } from '@/hooks/useSkinnedGltfClone';
 import { useNPCAnimation } from '@/engine/npc/useNPCAnimation';
 import { InteractionState } from '@/engine/interaction/interactionMachine';
 import { ProceduralNPCModel } from '@/components/3d/ProceduralNPCModels';
+import { devWarn } from '@/shared/utils/devLog';
 
 const extendLoader = extendGltfLoader as unknown as NonNullable<Parameters<typeof useGLTF>[3]>;
 
@@ -104,6 +105,55 @@ function GltfNPCModelInner({
   );
 }
 
+interface GltfLoadErrorBoundaryProps {
+  npcId: string;
+  modelUrl: string;
+  fallback: ReactNode;
+  children: ReactNode;
+}
+
+interface GltfLoadErrorBoundaryState {
+  hasError: boolean;
+  errorMessage: string;
+}
+
+/** Catches useGLTF / skinned-clone failures and renders procedural fallback. */
+class GltfLoadErrorBoundary extends Component<GltfLoadErrorBoundaryProps, GltfLoadErrorBoundaryState> {
+  constructor(props: GltfLoadErrorBoundaryProps) {
+    super(props);
+    this.state = { hasError: false, errorMessage: '' };
+  }
+
+  static getDerivedStateFromError(error: Error): GltfLoadErrorBoundaryState {
+    return { hasError: true, errorMessage: error.message };
+  }
+
+  componentDidCatch(error: Error): void {
+    devWarn(
+      `[GltfNPCModel:${this.props.npcId}] GLB load failed (${this.props.modelUrl}), using procedural fallback:`,
+      error.message,
+    );
+  }
+
+  render(): ReactNode {
+    if (this.state.hasError) {
+      return (
+        <>
+          {this.props.fallback}
+          {import.meta.env.DEV && (
+            <Html position={[0, 2.1, 0]} center distanceFactor={8} zIndexRange={[100, 0]}>
+              <div className="pointer-events-none rounded bg-amber-950/90 px-1.5 py-0.5 text-[9px] text-amber-200 whitespace-nowrap">
+                GLB fallback: {this.props.npcId}
+              </div>
+            </Html>
+          )}
+        </>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 interface GltfNPCModelProps {
   definition: NPCDefinition;
   interactionState: InteractionState;
@@ -116,33 +166,42 @@ export function GltfNPCModel({
   definition,
   interactionState,
   isInteractionTarget,
+  activity,
 }: GltfNPCModelProps) {
   const url = resolveNpcModelUrl(definition.id, definition.modelPath);
   const meta = getNpcModelMeta(definition.id);
   const appearance = definition.appearance;
 
+  const proceduralFallback = (
+    <ProceduralNPCModel
+      definitionId={definition.id}
+      appearance={appearance!}
+      interactionState={interactionState}
+      isInteractionTarget={isInteractionTarget}
+      activity={activity}
+    />
+  );
+
   if (!url) {
-    return (
-      <ProceduralNPCModel
-        definitionId={definition.id}
-        appearance={appearance!}
-        interactionState={interactionState}
-        isInteractionTarget={isInteractionTarget}
-        activity="idle"
-      />
-    );
+    return proceduralFallback;
   }
 
   const scale = definition.scale ?? meta?.scale ?? 1;
 
   return (
-    <GltfNPCModelInner
-      definition={definition}
-      url={url}
-      modelScale={scale}
-      interactionState={interactionState}
-      isInteractionTarget={isInteractionTarget}
-    />
+    <GltfLoadErrorBoundary
+      npcId={definition.id}
+      modelUrl={url}
+      fallback={proceduralFallback}
+    >
+      <GltfNPCModelInner
+        definition={definition}
+        url={url}
+        modelScale={scale}
+        interactionState={interactionState}
+        isInteractionTarget={isInteractionTarget}
+      />
+    </GltfLoadErrorBoundary>
   );
 }
 
