@@ -177,6 +177,59 @@ describe('guidedStoryLogic', () => {
     expect(activated).toBe(true);
     expect(deps.actions.activateQuest).toHaveBeenCalledWith('cafe_safehouse');
   });
+
+  it('reconcileSpineQuestActivation activates vault_key_fragments when vault revealed', () => {
+    const deps = createTestDeps({
+      currentAct: 2,
+      flags: { vault_access_granted: true, network_joined: true },
+      quests: [
+        { questId: 'vault_backup_trial', status: 'completed', objectives: {} },
+        { questId: 'network_initiation', status: 'completed', objectives: {} },
+      ],
+    });
+    deps.graph.getQuestDefinitionById = vi.fn((id: string) =>
+      id === 'vault_key_fragments'
+        ? {
+            id: 'vault_key_fragments',
+            title: 'Фрагменты ключа',
+            description: 'test',
+            questType: 'main' as const,
+            requiresQuests: ['vault_backup_trial'],
+            objectives: [],
+          }
+        : undefined,
+    );
+
+    const activated = reconcileSpineQuestActivation(deps);
+    expect(activated).toBe(true);
+    expect(deps.actions.activateQuest).toHaveBeenCalledWith('vault_key_fragments');
+  });
+
+  it('reconcileSpineQuestActivation activates poetry_smuggling when safehouse established', () => {
+    const deps = createTestDeps({
+      currentAct: 2,
+      flags: { cafe_safehouse_established: true, network_joined: true },
+      quests: [
+        { questId: 'cafe_safehouse', status: 'completed', objectives: {} },
+      ],
+    });
+    deps.graph.getQuestDefinitionById = vi.fn((id: string) =>
+      id === 'poetry_smuggling'
+        ? {
+            id: 'poetry_smuggling',
+            title: 'Контрабанда стихов',
+            description: 'test',
+            questType: 'side' as const,
+            requiresQuests: ['cafe_safehouse'],
+            objectives: [],
+          }
+        : undefined,
+    );
+
+    const activated = reconcileSpineQuestActivation(deps);
+    expect(activated).toBe(true);
+    expect(deps.actions.activateQuest).toHaveBeenCalledWith('poetry_smuggling');
+  });
 });
 
 describe('storyGraphTraversal', () => {

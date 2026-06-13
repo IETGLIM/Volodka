@@ -120,6 +120,13 @@ patrol→chase→engaged→cooldown, конус зрения проецируе�
   `cafe_safehouse_channel` → `act2_safehouse_message`;
   `reconcileSpineQuestActivation` догоняет `dmitry_defection` и `cafe_safehouse`.
   e2e: `act2-smoke` (office/cafe physical beats).
+  **Act II Phase 5 (vault_key_fragments / poetry_smuggling / pier-basement):**
+  `office_vault_guild_fragment`, `factory_maria_vault_fragment`, `factory_vault_neutral_fragment`,
+  `cafe_vault_key_assemble` → `act2_vault_revealed`;
+  `library_poetry_stash` → `park_poetry_patrol` → `rooftop_poetry_route` → `cafe_poetry_delivery`;
+  `pier_trofim_portwine`, `basement_hum_listen`;
+  `reconcileSpineQuestActivation` догоняет `vault_key_fragments` и `poetry_smuggling`.
+  e2e: `act2-smoke` (+ guild fragment, poetry stash, pier portwine).
   Auto-generated хабы Acts 6–7: `chk_explore_mode`, `library_explore_mode`,
   `dream_explore_mode`, `zarema_room_explore_mode` (GOLDEN_PATH_HUB_CONTINUE);
   act-pack: `factory_*`, `basement_*`, `pier_*`, `solnysh_*`.

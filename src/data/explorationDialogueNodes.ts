@@ -637,4 +637,235 @@ export const EXPLORATION_DIALOGUE_NODES: Record<string, DialogueNode> = {
       },
     ],
   },
+
+  /* ─── Act II Phase 5 — vault_key_fragments ─── */
+
+  explore_act2_vault_guild_fragment: {
+    id: 'explore_act2_vault_guild_fragment',
+    speaker: 'Голос',
+    text: 'За серверной стойкой — потайной шкафчик с логотипом гильдии. Внутри, между кабелями, — металлическая пластина с выгравированным фрагментом ключа. Кто-то спрятал его здесь на случай «второго Краха».',
+    sceneId: 'office_day',
+    choices: [
+      {
+        text: 'Забрать фрагмент ключа гильдии',
+        next: null,
+        effects: [
+          { type: 'addItem', itemId: 'vault_key_fragment', value: 1 },
+          { type: 'setFlag', flag: 'guild_vault_fragment_found', flagValue: true },
+          { type: 'triggerQuest', questId: 'vault_key_fragments' },
+        ],
+      },
+      {
+        text: 'Сфотографировать и оставить на месте',
+        next: null,
+        effects: [{ type: 'addSkill', skill: 'logic', value: 1 }],
+      },
+    ],
+  },
+
+  explore_act2_vault_maria_fragment: {
+    id: 'explore_act2_vault_maria_fragment',
+    speaker: 'Виктория',
+    text: '«Фрагмент Сети,» — шепчет Виктория, протягивая чип в ладони. «Мы выковали его из стихов, которые гильдия не смогла стереть. Храни — без него Хранилище не откроется. И помни: гильдия ищет все три.»',
+    sceneId: 'abandoned_factory',
+    choices: [
+      {
+        text: 'Принять фрагмент Сети',
+        next: null,
+        effects: [
+          { type: 'addItem', itemId: 'vault_key_fragment', value: 1 },
+          { type: 'setFlag', flag: 'maria_vault_fragment_given', flagValue: true },
+          { type: 'npcChange', npcId: 'maria', npcChange: { relation: 3 } },
+        ],
+      },
+      {
+        text: 'Спросить, где искать третий фрагмент',
+        next: null,
+        effects: [
+          { type: 'addSkill', skill: 'intuition', value: 1 },
+          { type: 'setFlag', flag: 'maria_vault_fragment_given', flagValue: true },
+        ],
+      },
+    ],
+  },
+
+  explore_act2_vault_neutral_fragment: {
+    id: 'explore_act2_vault_neutral_fragment',
+    speaker: 'Голос',
+    text: 'Под ржавым станком — ниша, которую не видно с прохода. Внутри — третий фрагмент: без герба гильдии, без метки Сети. Его оставил тот, кто не принадлежал никому. Металл холодный, но пульсирует слабым светом.',
+    sceneId: 'abandoned_factory',
+    choices: [
+      {
+        text: 'Забрать нейтральный фрагмент',
+        next: null,
+        effects: [
+          { type: 'addItem', itemId: 'vault_key_fragment', value: 1 },
+          { type: 'setFlag', flag: 'neutral_vault_fragment_found', flagValue: true },
+        ],
+      },
+      {
+        text: 'Осмотреть нишу ещё раз',
+        next: null,
+        effects: [{ type: 'addSkill', skill: 'intuition', value: 1 }],
+      },
+    ],
+  },
+
+  explore_act2_vault_assemble: {
+    id: 'explore_act2_vault_assemble',
+    speaker: 'Голос',
+    text: 'Три фрагмента ложатся в ладонь — металл щёлкает, как замок, которого давно ждали. Ключ Хранилища собран. На поверхности проступает надпись: «Слово сильнее стирания.»',
+    sceneId: 'cafe_evening',
+    choices: [
+      {
+        text: 'Собрать полный ключ Хранилища',
+        next: null,
+        effects: [
+          { type: 'visitStoryNode', nodeId: 'act2_vault_revealed' },
+          { type: 'setFlag', flag: 'vault_key_assembled', flagValue: true },
+          { type: 'setFlag', flag: 'full_vault_access', flagValue: true },
+        ],
+      },
+    ],
+  },
+
+  /* ─── Act II Phase 5 — poetry_smuggling (library → park → rooftop → cafe) ─── */
+
+  explore_act2_poetry_library_stash: {
+    id: 'explore_act2_poetry_library_stash',
+    speaker: 'Голос',
+    text: 'За потайной полкой — свёрток в восковой бумаге. Внутри — запрещённые стихи, спрятанные до «Надзора». Гильдия патрулирует основные маршруты. Придётся идти через парк и крыши.',
+    sceneId: 'library_day',
+    choices: [
+      {
+        text: 'Забрать свёрток и идти через парк',
+        next: null,
+        effects: [
+          { type: 'addItem', itemId: 'encrypted_scroll', value: 1 },
+          { type: 'setFlag', flag: 'poetry_stash_retrieved', flagValue: true },
+          { type: 'triggerQuest', questId: 'poetry_smuggling' },
+          { type: 'transitionScene', sceneId: 'park_day' },
+          { type: 'visitStoryNode', nodeId: 'park_explore_mode' },
+        ],
+      },
+      {
+        text: 'Переписать стихи на память и спрятать обратно',
+        next: null,
+        effects: [
+          { type: 'addSkill', skill: 'writing', value: 1 },
+          { type: 'setFlag', flag: 'poetry_stash_retrieved', flagValue: true },
+        ],
+      },
+    ],
+  },
+
+  explore_act2_poetry_park_patrol: {
+    id: 'explore_act2_poetry_park_patrol',
+    speaker: 'Голос',
+    text: 'Патруль гильдии проходит по аллее — два силуэта в серых плащах, сканеры в руках. Ты прижимаешься к дереву, держишь свёрток под курткой. Они проходят мимо. Дальше — крыши.',
+    sceneId: 'park_day',
+    choices: [
+      {
+        text: 'Перебраться на крыши',
+        next: null,
+        effects: [
+          { type: 'setFlag', flag: 'poetry_park_evaded', flagValue: true },
+          { type: 'transitionScene', sceneId: 'rooftop_edge' },
+          { type: 'visitStoryNode', nodeId: 'rooftop_explore_mode' },
+        ],
+      },
+      {
+        text: 'Подождать, пока патруль уйдёт',
+        next: null,
+        effects: [{ type: 'addSkill', skill: 'intuition', value: 1 }],
+      },
+    ],
+  },
+
+  explore_act2_poetry_rooftop_cross: {
+    id: 'explore_act2_poetry_rooftop_cross',
+    speaker: 'Голос',
+    text: 'Ветер бьёт в лицо. Ты перебираешься по крышам — свёрток под мышкой, город внизу не подозревает. Впереди — огни «Синей ямы». Последний рывок.',
+    sceneId: 'rooftop_edge',
+    choices: [
+      {
+        text: 'Спуститься к кафе через пожарную лестницу',
+        next: null,
+        effects: [
+          { type: 'setFlag', flag: 'poetry_rooftop_crossed', flagValue: true },
+          { type: 'transitionScene', sceneId: 'cafe_evening' },
+          { type: 'visitStoryNode', nodeId: 'cafe_explore_mode' },
+        ],
+      },
+      {
+        text: 'Остановиться и перевести дух',
+        next: null,
+        effects: [{ type: 'addStat', stat: 'stress', value: -3 }],
+      },
+    ],
+  },
+
+  explore_act2_poetry_cafe_delivery: {
+    id: 'explore_act2_poetry_cafe_delivery',
+    speaker: 'Бариста',
+    text: 'Бариста принимает свёрток, не задавая вопросов. «Задняя комната,» — кивает он. «Здесь стихи в безопасности. Гильдия крыши не контролирует — пока.»',
+    sceneId: 'cafe_evening',
+    choices: [
+      {
+        text: 'Передать стихи в безопасную комнату',
+        next: null,
+        effects: [
+          { type: 'visitStoryNode', nodeId: 'street_bench' },
+          { type: 'setFlag', flag: 'poems_smuggled', flagValue: true },
+          { type: 'npcChange', npcId: 'cafe_barista', npcChange: { relation: 4 } },
+        ],
+      },
+    ],
+  },
+
+  /* ─── Act II Phase 5 — pier / basement side-arc ─── */
+
+  explore_pier_trofim_portwine: {
+    id: 'explore_pier_trofim_portwine',
+    speaker: 'Трофим',
+    text: 'Ха! «777». Уважил старика. *долго смотрит на бутылку, потом лезет за пазуху и достаёт ключ на ржавой проволоке* Держи. От двери в дальнем углу цеха. Спустишься — её не трогай. Просто послушай.',
+    sceneId: 'river_pier',
+    choices: [
+      {
+        text: 'Принять ключ сторожа',
+        next: null,
+        effects: [
+          { type: 'removeItem', itemId: 'port_wine_777' },
+          { type: 'setFlag', flag: 'trofim_portwine_delivered', flagValue: true },
+          { type: 'addItem', itemId: 'watchman_key' },
+          { type: 'setFlag', flag: 'basement_key_found', flagValue: true },
+          { type: 'triggerQuest', questId: 'basement_hum' },
+          { type: 'npcChange', npcId: 'fisherman_trofim', npcChange: { relation: 6 } },
+        ],
+      },
+    ],
+  },
+
+  explore_basement_hum_listen: {
+    id: 'explore_basement_hum_listen',
+    speaker: 'Голос',
+    text: 'Гул на 50 герц проходит сквозь подошвы — и выше, до затылка. Монолит «Зари-М» пульсирует зелёным, но не говорит. Трофим просил: не трогай — послушай. Ты слушаешь. По коже — мурашки.',
+    sceneId: 'factory_basement',
+    choices: [
+      {
+        text: 'Запомнить гул и отступить',
+        next: null,
+        effects: [
+          { type: 'setFlag', flag: 'basement_hum_heard', flagValue: true },
+          { type: 'setFlag', flag: 'zarya_monolith_examined', flagValue: true },
+          { type: 'discoverLore', loreId: 'lore_zarya_project_early' },
+        ],
+      },
+      {
+        text: 'Ещё раз обойти монолит',
+        next: null,
+        effects: [{ type: 'addSkill', skill: 'intuition', value: 1 }],
+      },
+    ],
+  },
 };

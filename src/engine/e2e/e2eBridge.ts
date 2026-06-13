@@ -34,6 +34,9 @@ export interface VolodkaE2EBridge {
   bootstrapAct2MariaMeeting: () => Promise<void>;
   bootstrapAct2DmitryOffice: () => Promise<void>;
   bootstrapAct2CafeSafehouse: () => Promise<void>;
+  bootstrapAct2VaultGuildFragment: () => Promise<void>;
+  bootstrapAct2PoetrySmugglingLibrary: () => Promise<void>;
+  bootstrapAct2PierBasement: () => Promise<void>;
   bootstrapAct3ParkHub: () => Promise<void>;
   bootstrapAct3LibraryHub: () => Promise<void>;
   bootstrapAct4StreetWinterHub: () => Promise<void>;
@@ -288,6 +291,45 @@ export function registerVolodkaE2EBridge(): void {
       store.markCutsceneTriggered('act1_to_act2');
       dispatchGameAction({ type: 'story/visitNode', nodeId: 'cafe_enter' });
       await jumpToClosedOverlayHub('cafe_explore_mode', 'cafe_evening');
+    },
+    async bootstrapAct2VaultGuildFragment() {
+      const store = getGameStore();
+      if (store.playerState.progression.currentAct < 2) {
+        store.advanceAct();
+      }
+      store.setFlag('act2_started', true);
+      store.setFlag('advanced_to_act2', true);
+      store.setFlag('network_joined', true);
+      store.setFlag('vault_access_granted', true);
+      store.setFlag('vault_protect_vowed', true);
+      store.markCutsceneTriggered('act1_to_act2');
+      dispatchGameAction({ type: 'story/visitNode', nodeId: 'office_alexander' });
+      await jumpToClosedOverlayHub('office_explore_mode', 'office_day');
+    },
+    async bootstrapAct2PoetrySmugglingLibrary() {
+      const store = getGameStore();
+      if (store.playerState.progression.currentAct < 2) {
+        store.advanceAct();
+      }
+      store.setFlag('act2_started', true);
+      store.setFlag('advanced_to_act2', true);
+      store.setFlag('cafe_safehouse_established', true);
+      store.markCutsceneTriggered('act1_to_act2');
+      dispatchGameAction({ type: 'story/visitNode', nodeId: 'library_entrance' });
+      await jumpToClosedOverlayHub('library_explore_mode', 'library_day');
+    },
+    async bootstrapAct2PierBasement() {
+      const store = getGameStore();
+      if (store.playerState.progression.currentAct < 2) {
+        store.advanceAct();
+      }
+      store.setFlag('act2_started', true);
+      store.setFlag('advanced_to_act2', true);
+      store.setFlag('visited_river_pier', true);
+      store.setFlag('pier_portwine_taken', true);
+      store.markCutsceneTriggered('act1_to_act2');
+      dispatchGameAction({ type: 'story/visitNode', nodeId: 'pier_arrival' });
+      await jumpToClosedOverlayHub('pier_explore_mode', 'river_pier');
     },
     async bootstrapAct3ParkHub() {
       while (getGameStore().playerState.progression.currentAct < 3) {

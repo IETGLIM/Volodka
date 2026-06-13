@@ -307,6 +307,31 @@ const CAFE_SAFEHOUSE_PROGRESS_FLAGS = [
   'safehouse_terminal_installed',
 ] as const;
 
+const VAULT_KEY_FRAGMENTS_ACTIVATION_NODES = new Set([
+  'act2_vault_revealed',
+  'act2_safehouse_message',
+  'act2_network_oath',
+]);
+
+const VAULT_KEY_FRAGMENTS_PROGRESS_FLAGS = [
+  'vault_access_granted',
+  'vault_protect_vowed',
+  'guild_vault_fragment_found',
+  'maria_vault_fragment_given',
+  'neutral_vault_fragment_found',
+] as const;
+
+const POETRY_SMUGGLING_ACTIVATION_NODES = new Set([
+  'street_bench',
+  'act2_closing',
+]);
+
+const POETRY_SMUGGLING_PROGRESS_FLAGS = [
+  'cafe_safehouse_established',
+  'poetry_stash_retrieved',
+  'poems_smuggled',
+] as const;
+
 interface SpineQuestReconcileRule {
   questId: string;
   activationNodes: ReadonlySet<string>;
@@ -328,6 +353,16 @@ const SPINE_QUEST_RECONCILE_RULES: SpineQuestReconcileRule[] = [
     questId: 'cafe_safehouse',
     activationNodes: CAFE_SAFEHOUSE_ACTIVATION_NODES,
     progressFlags: CAFE_SAFEHOUSE_PROGRESS_FLAGS,
+  },
+  {
+    questId: 'vault_key_fragments',
+    activationNodes: VAULT_KEY_FRAGMENTS_ACTIVATION_NODES,
+    progressFlags: VAULT_KEY_FRAGMENTS_PROGRESS_FLAGS,
+  },
+  {
+    questId: 'poetry_smuggling',
+    activationNodes: POETRY_SMUGGLING_ACTIVATION_NODES,
+    progressFlags: POETRY_SMUGGLING_PROGRESS_FLAGS,
   },
 ];
 
