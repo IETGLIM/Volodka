@@ -641,6 +641,7 @@ class MusicEngine {
   // Timers
   private chordTimer: ReturnType<typeof setTimeout> | null = null;
   private bassTimer: ReturnType<typeof setInterval> | null = null;
+  private pendingStopCleanupTimer: ReturnType<typeof setTimeout> | null = null;
 
   // Blur/focus handlers for audio context suspend/resume
   private _onBlur: (() => void) | null = null;
@@ -720,6 +721,10 @@ class MusicEngine {
   stopMusic(fadeDuration = 2): void {
     this.sceneGeneration++; // Invalidate any pending callbacks
 
+    if (this.pendingStopCleanupTimer) {
+      clearTimeout(this.pendingStopCleanupTimer);
+      this.pendingStopCleanupTimer = null;
+    }
     if (this.chordTimer) {
       clearTimeout(this.chordTimer as unknown as number);
       this.chordTimer = null;
@@ -734,14 +739,23 @@ class MusicEngine {
     }
 
     const ctx = this.ctx;
-    if (ctx && this.masterGainNode && this.currentScene !== null) {
+    const shouldFade =
+      !this.disposed &&
+      fadeDuration > 0 &&
+      ctx &&
+      this.masterGainNode &&
+      this.currentScene !== null;
+
+    if (shouldFade) {
       const now = ctx.currentTime;
       // Fade out master gain
-      this.masterGainNode.gain.setValueAtTime(this.masterGainNode.gain.value, now);
-      this.masterGainNode.gain.linearRampToValueAtTime(0, now + fadeDuration);
+      this.masterGainNode!.gain.setValueAtTime(this.masterGainNode!.gain.value, now);
+      this.masterGainNode!.gain.linearRampToValueAtTime(0, now + fadeDuration);
 
       // Schedule cleanup after fade
-      setTimeout(() => {
+      this.pendingStopCleanupTimer = setTimeout(() => {
+        this.pendingStopCleanupTimer = null;
+        if (this.disposed) return;
         this.cleanupAllNodes();
       }, (fadeDuration + 0.5) * 1000);
     } else {
@@ -964,6 +978,14 @@ class MusicEngine {
     }
 
     const timer = setTimeout(() => {
+      if (this.disposed) {
+        for (const voice of voices) {
+          try { voice.osc.stop(); } catch { /* already stopped */ }
+          try { voice.gain.disconnect(); } catch { /* ignore */ }
+        }
+        return;
+      }
+
       const idx = this.pendingPadRetirements.findIndex((entry) => entry.timer === timer);
       if (idx !== -1) this.pendingPadRetirements.splice(idx, 1);
 
@@ -1157,7 +1179,11 @@ class MusicEngine {
 
     // Clean up filter/gain after note ends
     setTimeout(() => {
-      if (this.sceneGeneration !== myGeneration) return;
+      if (this.disposed || this.sceneGeneration !== myGeneration) {
+        try { melodyFilter.disconnect(); } catch { /* ignore */ }
+        try { envGain.disconnect(); } catch { /* ignore */ }
+        return;
+      }
       try { melodyFilter.disconnect(); } catch { /* ignore */ }
       try { envGain.disconnect(); } catch { /* ignore */ }
     }, (noteDuration + 0.5) * 1000);
@@ -1208,6 +1234,8 @@ class MusicEngine {
 
     // Pad infrastructure
     try { this.padLfo?.stop(); } catch { /* already stopped */ }
+    try { this.padLfoGain?.disconnect(); } catch { /* ignore */ }
+    try { this.padLfo?.disconnect(); } catch { /* ignore */ }
     this.padLfo = null;
     this.padLfoGain = null;
 
