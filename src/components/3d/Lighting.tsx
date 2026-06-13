@@ -21,8 +21,8 @@ const SHADOW_NORMAL_BIAS = 0.04;
  *  to let scene-specific lights (monitor, lamp, window) drive the atmosphere.
  *  Format: { color, intensity } */
 const INDOOR_AMBIENT: Record<string, { color: string; intensity: number }> = {
-  volodka_room:       { color: '#2a2540', intensity: 0.48 },
-  volodka_corridor:   { color: '#252035', intensity: 0.52 },
+  volodka_room:       { color: '#3a3548', intensity: 0.62 },
+  volodka_corridor:   { color: '#383448', intensity: 0.66 },
   home_evening:       { color: '#3a2818', intensity: 0.55 },
   cafe_evening:       { color: '#1a2038', intensity: 0.5 },
   office_day:         { color: '#c0c8d0', intensity: 0.65 },
@@ -36,8 +36,8 @@ const DEFAULT_INDOOR_AMBIENT = { color: '#2a2a3a', intensity: 0.52 };
  *  completely black corners while preserving noir shadows.
  *  Format: { position, intensity, color, distance } or null to disable */
 const INDOOR_FILL: Record<string, { position: [number, number, number]; intensity: number; color: string; distance: number } | null> = {
-  volodka_room:       { position: [0, 2.0, 0], intensity: 0.9, color: '#665577', distance: 9 },
-  volodka_corridor:   { position: [0, 2.2, 0], intensity: 1.6, color: '#998877', distance: 12 },
+  volodka_room:       { position: [0, 2.0, 0], intensity: 1.35, color: '#887799', distance: 10 },
+  volodka_corridor:   { position: [0, 2.2, 0], intensity: 2.1, color: '#bbAA88', distance: 14 },
   home_evening:       { position: [0, 2.2, 0], intensity: 2.0, color: '#cc9966', distance: 11 },
   cafe_evening:       { position: [0, 2.5, -1], intensity: 1.4, color: '#9988aa', distance: 11 },
   office_day:         { position: [0, 2.5, 0], intensity: 2.6, color: '#d0d8e8', distance: 15 },

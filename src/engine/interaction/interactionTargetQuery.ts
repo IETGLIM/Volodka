@@ -132,7 +132,7 @@ function pushZoneTarget(
   const range = Math.max(zone.size[0], zone.size[2]) / 2 + ZONE_RANGE_PADDING;
   const scored = scoreInteractionTarget(playerPos, playerYaw, _target, range);
   if (!scored) return;
-  if (checkLos && scored.distance > 1.2 && !hasInteractionLineOfSight(playerPos, _target)) return;
+  // Trigger zones sit on furniture/walls — Rapier LOS falsely blocks desk, shelf, etc.
 
   hits.push({
     id: zone.id,

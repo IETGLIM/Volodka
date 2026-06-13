@@ -31,12 +31,26 @@ export const explorationStrategy: CameraModeStrategy = {
 
     // ── First-person: camera at the eyes, look along yaw/pitch ──
     if (FIRST_PERSON_ENABLED && !ctx.interactionLocked) {
+      const exploration = ctx.exploration;
+      let eyeBaseY = playerPos.y;
+      if (exploration) {
+        const expResult = updateExplorationState(
+          exploration,
+          playerPos,
+          yaw,
+          playerVelocity,
+          ctx.delta,
+          ctx.moveBlend,
+        );
+        eyeBaseY = expResult.targetHeight;
+      }
+
       offset.set(
         Math.sin(yaw) * Math.cos(pitch),
         Math.sin(pitch),
         Math.cos(yaw) * Math.cos(pitch),
       );
-      const eyeY = playerPos.y + FIRST_PERSON_EYE_HEIGHT;
+      const eyeY = eyeBaseY + FIRST_PERSON_EYE_HEIGHT;
       const targetPos = desiredPos.set(playerPos.x, eyeY, playerPos.z);
       const targetLook = lookTarget.set(
         targetPos.x + offset.x * 3,

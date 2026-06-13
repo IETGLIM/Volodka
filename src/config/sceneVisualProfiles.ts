@@ -55,8 +55,8 @@ const STANDARD_PROFILE: SceneVisualProfile = {
 };
 
 const PROFILES: Partial<Record<SceneId, SceneVisualProfile>> = {
-  volodka_room: HERO_PROFILE,
-  volodka_corridor: HERO_PROFILE,
+  volodka_room: { ...HERO_PROFILE, enhancedAmbientOcclusion: false },
+  volodka_corridor: { ...HERO_PROFILE, enhancedAmbientOcclusion: false },
   home_evening: HERO_PROFILE,
   street_night: HERO_PROFILE,
   cafe_evening: HERO_PROFILE,

@@ -31,8 +31,8 @@ import { disposeEffectComposer, type PostprocessingComposerLike } from '@/engine
 
 /** Per-scene color grading overrides for CyberPunk2077 / Noir / Gothic feel */
 const SCENE_COLOR_GRADE: Record<string, { hue: number; saturation: number; brightness: number; contrast: number }> = {
-  volodka_room:       { hue: -0.08, saturation: 0.15, brightness: -0.03, contrast: 0.28 }, // matrix monitor glow
-  volodka_corridor:   { hue: -0.05, saturation: -0.18, brightness: -0.06, contrast: 0.2 }, // dim rainy noir
+  volodka_room:       { hue: -0.06, saturation: 0.12, brightness: 0.04, contrast: 0.22 }, // matrix monitor glow
+  volodka_corridor:   { hue: -0.04, saturation: -0.12, brightness: 0.02, contrast: 0.16 }, // dim rainy noir
   home_evening:       { hue: 0.04,  saturation: 0.1,  brightness: 0.0,  contrast: 0.1  }, // warm amber
   street_night:       { hue: 0.02,  saturation: 0.08, brightness: 0.04, contrast: 0.2 }, // gray rainy cyberpunk
   street_winter:      { hue: -0.02, saturation: -0.12, brightness: 0.12, contrast: 0.08  },
@@ -55,8 +55,8 @@ const DEFAULT_COLOR_GRADE = { hue: 0, saturation: 0, brightness: 0, contrast: 0.
 
 /** Scene-specific vignette darkness — noir scenes get heavier vignette */
 const SCENE_VIGNETTE: Record<string, { offset: number; darkness: number }> = {
-  volodka_room:       { offset: 0.28, darkness: 0.52 }, // heavy noir vignette
-  volodka_corridor:   { offset: 0.26, darkness: 0.5 },
+  volodka_room:       { offset: 0.32, darkness: 0.38 },
+  volodka_corridor:   { offset: 0.3, darkness: 0.36 },
   home_evening:       { offset: 0.4,  darkness: 0.35 },
   street_night:       { offset: 0.4,  darkness: 0.3 },
   cafe_evening:       { offset: 0.32, darkness: 0.4 },

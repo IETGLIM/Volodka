@@ -726,8 +726,8 @@ export function MenuScreen() {
       // to exploration with the first story node. Previously this skipped
       // the intro entirely which removed the narrative experience.
       const store = useGameStore.getState();
-      // Staging hub — wake completion sets 'start' to fire act1_prologue once.
-      store.setCurrentNodeId('explore_mode');
+      // Staging — wake cutscene then act1_prologue title → start story overlay.
+      store.setCurrentNodeId('start');
       store.setIntroSeen(true);
       store.setPlayerPosition([0.5, 0.01, 2.4]);
       store.setPlayerRotation(Math.PI);

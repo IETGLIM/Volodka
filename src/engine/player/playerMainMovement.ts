@@ -127,11 +127,11 @@ export function runMainPlayerMovement(deps: PlayerMovementDeps): boolean {
   moveDir.addScaledVector(camFwd, fwd - bwd);
   moveDir.addScaledVector(camRight, rgt - lft);
 
-  const moveLen = moveDir.length();  if (deps.moveBlendRef) {
+  if (deps.moveBlendRef) {
     deps.moveBlendRef.current = THREE.MathUtils.damp(
       deps.moveBlendRef.current,
       isMoving ? 1 : 0,
-      8,
+      4,
       dt,
     );
   }
@@ -142,7 +142,8 @@ export function runMainPlayerMovement(deps: PlayerMovementDeps): boolean {
     * deps.locomotionScale
     * touchScale
     * a11yScale
-    * analogSpeedScale;  const moveAccel = keyboardDrivesMove ? KEYBOARD_ACCEL : deps.movementTuning.accel;
+    * analogSpeedScale;
+  const moveAccel = keyboardDrivesMove ? KEYBOARD_ACCEL : deps.movementTuning.accel;
   const stopDamping = keyboardDrivesMove ? deps.movementTuning.damping * 0.55 : deps.movementTuning.damping;
 
   scratch.isMoving = isMoving;

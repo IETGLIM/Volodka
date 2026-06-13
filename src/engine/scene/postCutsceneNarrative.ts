@@ -19,6 +19,14 @@ export function resolvePostCutsceneNarrativeNode(nodeId: string): string {
 export function openNarrativeAfterCutscene(nodeId: string, kind: NarrativeKind): void {
   const resolved = resolvePostCutsceneNarrativeNode(nodeId);
 
+  // Act I prologue — show full wake text once; hub promotion happens via story choices.
+  if (nodeId === 'start') {
+    openNarrativeOverlay('start', kind);
+    eventBus.emit('interaction:end', {});
+    forceEmitInteractionEnd();
+    return;
+  }
+
   if (isClosedOverlayExploreHub(resolved)) {
     if (resolved !== nodeId) {
       dispatchGameAction({ type: 'story/visitNode', nodeId });

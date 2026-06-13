@@ -321,7 +321,7 @@ export function VolodkaCorridorVisual({ livePlayerPositionRef: _livePlayerPositi
         <group position={[0.02, 0, 0.45]} ref={kitchenDoorRef}>
           <mesh position={[0, 1.1, -0.45]} geometry={geo_box_14}>
 
-            <meshStandardMaterial color="#5a4030" roughness={0.75} />
+            <meshStandardMaterial color="#6a5038" roughness={0.72} emissive="#3a2818" emissiveIntensity={0.12} />
           </mesh>
           {/* Door handle */}
           <mesh position={[0, 1.05, -0.08]} geometry={geo_cyl_15}>
@@ -399,7 +399,7 @@ export function VolodkaCorridorVisual({ livePlayerPositionRef: _livePlayerPositi
         <group position={[-0.45, 0, 0.02]} ref={roomDoorRef}>
           <mesh position={[0.45, 1.1, 0]} geometry={geo_box_19}>
 
-            <meshStandardMaterial color="#5a4030" roughness={0.75} />
+            <meshStandardMaterial color="#6a5038" roughness={0.72} emissive="#3a2818" emissiveIntensity={0.12} />
           </mesh>
           {/* Door handle */}
           <mesh position={[0.78, 1.05, 0.03]} rotation={[0, 0, Math.PI / 2]} geometry={geo_cyl_15}>
@@ -721,7 +721,7 @@ export function VolodkaCorridorVisual({ livePlayerPositionRef: _livePlayerPositi
         {/* Door panel (closed) */}
         <mesh position={[0.02, 1.0, 0]} rotation-y={-Math.PI / 2} geometry={geo_box_58}>
 
-          <meshStandardMaterial color="#5a4030" roughness={0.75} />
+          <meshStandardMaterial color="#6a5038" roughness={0.72} emissive="#3a2818" emissiveIntensity={0.12} />
         </mesh>
         {/* Door handle */}
         <mesh position={[0.02, 1.0, 0.28]} geometry={geo_cyl_59}>

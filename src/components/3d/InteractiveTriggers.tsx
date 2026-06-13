@@ -331,8 +331,10 @@ export function InteractiveTriggers({
     const zone = zones.find((z) => z.id === hit.triggerZoneId);
     if (!zone) return false;
 
-    if (zone.linkedDialogueNodeId) {
-      const npcDef = findNpcByDialogueNodeId(zone.linkedDialogueNodeId);
+    if (zone.linkedDialogueNodeId || zone.linkedNpcId) {
+      const npcDef = zone.linkedNpcId
+        ? findNpcById(zone.linkedNpcId)
+        : findNpcByDialogueNodeId(zone.linkedDialogueNodeId!);
       if (npcDef) {
         eventBus.emit('interaction:start', { npcId: npcDef.id });
         return true;
