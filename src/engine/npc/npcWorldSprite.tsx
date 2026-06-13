@@ -1,4 +1,4 @@
-import { useRef, useEffect, useMemo, useLayoutEffect, useId } from 'react';
+import { useRef, useEffect, useMemo, useLayoutEffect, useId, type MutableRefObject } from 'react';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import * as THREE from 'three';
 
@@ -21,10 +21,14 @@ function truncateLabel(text: string, maxChars: number): string {
 function disposeCanvasSpriteResources(
   texture: THREE.CanvasTexture,
   material: THREE.SpriteMaterial,
+  canvasRef: MutableRefObject<HTMLCanvasElement | null>,
 ): void {
-  material.dispose();
   texture.dispose();
-  texture.image = null;
+  if (texture.source?.data) {
+    (texture.source as { data: unknown }).data = null;
+  }
+  material.dispose();
+  canvasRef.current = null;
 }
 
 function drawNameLabelCanvas(
@@ -115,7 +119,7 @@ export function NpcNameSprite({
       const tex = textureRef.current;
       const mat = materialRef.current;
       if (tex && mat) {
-        disposeCanvasSpriteResources(tex, mat);
+        disposeCanvasSpriteResources(tex, mat, canvasRef);
       }
     },
     [],
@@ -242,7 +246,7 @@ export function NpcSpeechSprite({
       activeDotRef.current = nextDot;
       redrawBubble(nextDot);
     },
-    { label: tickLabel },
+    { phase: 'pre', label: tickLabel },
   );
 
   useLayoutEffect(
@@ -250,7 +254,7 @@ export function NpcSpeechSprite({
       const tex = textureRef.current;
       const mat = materialRef.current;
       if (tex && mat) {
-        disposeCanvasSpriteResources(tex, mat);
+        disposeCanvasSpriteResources(tex, mat, canvasRef);
       }
     },
     [],
@@ -363,7 +367,7 @@ export function NpcQuestMarkerSprite({
         sprite.scale.set(scale, scale, 1);
       }
     },
-    { label: tickLabel },
+    { phase: 'pre', label: tickLabel },
   );
 
   useLayoutEffect(
@@ -371,7 +375,7 @@ export function NpcQuestMarkerSprite({
       const tex = textureRef.current;
       const mat = materialRef.current;
       if (tex && mat) {
-        disposeCanvasSpriteResources(tex, mat);
+        disposeCanvasSpriteResources(tex, mat, canvasRef);
       }
     },
     [],
