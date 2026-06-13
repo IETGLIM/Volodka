@@ -6,6 +6,7 @@ import {
   disposeRendererShadowMaps,
   type DisposeThreeOptions,
 } from '@/engine/three/disposeThreeResources';
+import { disposeNpcInstance } from '@/engine/three/npcTemplateCache';
 
 export interface UseThreeCleanupOptions extends DisposeThreeOptions {
   /**
@@ -21,7 +22,8 @@ export interface UseThreeCleanupOptions extends DisposeThreeOptions {
  * texture maps, shader uniforms, skeleton bone textures, and light shadow maps.
  *
  * Pass `options.skip` for module-level shared geometry/material caches
- * (procedural NPC/player singletons).
+ * (procedural NPC/player singletons). For `cloneNpcTemplate()` instances use
+ * `useNpcTemplateCleanup()` instead.
  *
  * Do **not** pass WebGLRenderer here — the renderer is canvas-scoped; use
  * `useCanvasRendererCleanup()` only when the entire Canvas unmounts.
@@ -36,6 +38,33 @@ export function useThreeCleanup(
 
   const disposeTree = () => {
     disposeObject3DTree(groupRef.current, optionsRef.current);
+  };
+
+  useLayoutEffect(() => {
+    if (sceneId === undefined) return undefined;
+    return disposeTree;
+  }, [sceneId]);
+
+  useEffect(() => () => disposeTree(), [groupRef]);
+}
+
+/**
+ * Dispose a `cloneNpcTemplate()` instance on unmount without corrupting the
+ * shared baked template or other active clones.
+ */
+export function useNpcTemplateCleanup(
+  groupRef: RefObject<THREE.Object3D | null>,
+  definitionId: string,
+  options?: Omit<UseThreeCleanupOptions, 'skip'>,
+) {
+  const optionsRef = useRef(options);
+  optionsRef.current = options;
+  const definitionIdRef = useRef(definitionId);
+  definitionIdRef.current = definitionId;
+  const sceneId = options?.sceneId;
+
+  const disposeTree = () => {
+    disposeNpcInstance(groupRef.current, definitionIdRef.current);
   };
 
   useLayoutEffect(() => {

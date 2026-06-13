@@ -1,5 +1,33 @@
 import * as THREE from 'three';
-import { disposeObject3DTree } from '@/engine/three/disposeThreeResources';
+import {
+  disposeObject3DTree,
+  type DisposeThreeSkipSets,
+} from '@/engine/three/disposeThreeResources';
+
+function collectTemplateSharedResources(template: THREE.Object3D): DisposeThreeSkipSets {
+  const geometries = new Set<THREE.BufferGeometry>();
+  const materials = new Set<THREE.Material>();
+
+  template.traverse((child) => {
+    if (
+      child instanceof THREE.Mesh
+      || child instanceof THREE.SkinnedMesh
+      || child instanceof THREE.InstancedMesh
+      || child instanceof THREE.Points
+      || child instanceof THREE.Line
+      || child instanceof THREE.LineSegments
+      || child instanceof THREE.Sprite
+    ) {
+      if (child.geometry) geometries.add(child.geometry);
+      const mats = Array.isArray(child.material) ? child.material : [child.material];
+      for (const mat of mats) {
+        if (mat) materials.add(mat);
+      }
+    }
+  });
+
+  return { geometries, materials };
+}
 
 /**
  * One baked template Group per NPC/enemy definition — instances clone this tree
@@ -29,6 +57,31 @@ export function cloneNpcTemplate(definitionId: string): THREE.Group | null {
   return instance;
 }
 
+/**
+ * Dispose a template clone without tearing down shared template GPU resources.
+ * Pass the baked template or its definition id.
+ */
+export function disposeNpcInstance(
+  instance: THREE.Object3D | null | undefined,
+  templateOrDefinitionId: THREE.Object3D | string,
+): void {
+  if (!instance) return;
+
+  const template =
+    typeof templateOrDefinitionId === 'string'
+      ? npcTemplateCache.get(templateOrDefinitionId)
+      : templateOrDefinitionId;
+
+  if (!template) {
+    disposeObject3DTree(instance);
+    return;
+  }
+
+  disposeObject3DTree(instance, {
+    skip: collectTemplateSharedResources(template),
+  });
+}
+
 export function disposeNpcTemplate(definitionId: string): void {
   const template = npcTemplateCache.get(definitionId);
   if (!template) return;
@@ -36,9 +89,14 @@ export function disposeNpcTemplate(definitionId: string): void {
   npcTemplateCache.delete(definitionId);
 }
 
-/** Test-only reset */
-export function clearNpcTemplateCacheForTests(): void {
+/** Drop baked NPC templates so GLB reload picks up the new quality tier. */
+export function evictNpcTemplateCache(): void {
   for (const id of [...npcTemplateCache.keys()]) {
     disposeNpcTemplate(id);
   }
+}
+
+/** Test-only reset */
+export function clearNpcTemplateCacheForTests(): void {
+  evictNpcTemplateCache();
 }
