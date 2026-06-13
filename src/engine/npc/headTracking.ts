@@ -32,6 +32,10 @@ export const DEFAULT_HEAD_TRACKING_CONFIG: HeadTrackingConfig = {
 
 /** Shared forward axis for bone look-at (read-only). */
 const HEAD_TRACK_FORWARD = new THREE.Vector3(0, 0, 1);
+const HEAD_TRACK_UP = new THREE.Vector3(0, 1, 0);
+const DEGENERATE_DIR_EPS = 1e-8;
+const ANTI_PARALLEL_DOT = -0.9999;
+const PARALLEL_DOT = 0.9999;
 
 /**
  * Per-NPC math state — intentionally no THREE.Object3D refs so LOD/model
@@ -102,6 +106,43 @@ function resolveHeadObject(
   const found = findHeadBone(npcGroup);
   state.headObjUuid = found?.uuid ?? null;
   return found;
+}
+
+/**
+ * setFromUnitVectors safe variant — avoids NaN when vectors are near-zero or anti-parallel.
+ * Returns false when `to` is degenerate (caller should skip rotation update).
+ */
+function setQuaternionFromUnitVectorsSafe(
+  quat: THREE.Quaternion,
+  from: THREE.Vector3,
+  to: THREE.Vector3,
+  axis: THREE.Vector3,
+): boolean {
+  const toLenSq = to.lengthSq();
+  if (toLenSq < DEGENERATE_DIR_EPS) return false;
+
+  const toNormX = to.x / Math.sqrt(toLenSq);
+  const toNormY = to.y / Math.sqrt(toLenSq);
+  const toNormZ = to.z / Math.sqrt(toLenSq);
+  const dot = from.x * toNormX + from.y * toNormY + from.z * toNormZ;
+
+  if (dot > PARALLEL_DOT) {
+    quat.identity();
+    return true;
+  }
+
+  if (dot < ANTI_PARALLEL_DOT) {
+    axis.crossVectors(from, HEAD_TRACK_UP);
+    if (axis.lengthSq() < DEGENERATE_DIR_EPS) {
+      axis.set(1, 0, 0);
+    }
+    axis.normalize();
+    quat.setFromAxisAngle(axis, Math.PI);
+    return true;
+  }
+
+  quat.setFromUnitVectors(from, to);
+  return true;
 }
 
 /**
@@ -182,7 +223,16 @@ export function updateHeadTracking(
 
   // Compute direction from NPC head to player (in world space)
   headObj.getWorldPosition(state.headWorldPos);
-  state.direction.subVectors(playerPosition, state.headWorldPos).normalize();
+  const dirLenSq = state.direction.subVectors(playerPosition, state.headWorldPos).lengthSq();
+  if (dirLenSq < DEGENERATE_DIR_EPS) {
+    if (state.isProcedural) {
+      headObj.rotation.y += (state.originalRotY - headObj.rotation.y) * Math.min(1, config.trackSpeed * delta * 0.5);
+    } else {
+      headObj.quaternion.slerp(state.originalQuat, config.trackSpeed * delta * 0.5);
+    }
+    return;
+  }
+  state.direction.normalize();
 
   if (state.isProcedural) {
     // For procedural models: simple Y-axis rotation toward player
@@ -208,14 +258,32 @@ export function updateHeadTracking(
     headObj.getWorldQuaternion(state.worldQuatInv).invert();
     state.localDir.copy(state.direction).applyQuaternion(state.worldQuatInv);
 
-    // Create a look-at quaternion in local space
-    state.targetQuat.setFromUnitVectors(HEAD_TRACK_FORWARD, state.localDir);
+    state.localDir.copy(state.direction).applyQuaternion(state.worldQuatInv);
+
+    if (!setQuaternionFromUnitVectorsSafe(
+      state.targetQuat,
+      HEAD_TRACK_FORWARD,
+      state.localDir,
+      state.axis,
+    )) {
+      headObj.quaternion.slerp(state.originalQuat, config.trackSpeed * delta * 0.5);
+      return;
+    }
 
     // Clamp rotation to maxAngle
     const angle = 2 * Math.acos(Math.min(1, Math.abs(state.targetQuat.w)));
     if (angle > config.maxAngle) {
       const clampedAngle = config.maxAngle;
-      state.axis.set(state.targetQuat.x, state.targetQuat.y, state.targetQuat.z).normalize();
+      const sinHalfAngle = Math.sin(angle / 2);
+      if (sinHalfAngle > DEGENERATE_DIR_EPS) {
+        state.axis.set(
+          state.targetQuat.x / sinHalfAngle,
+          state.targetQuat.y / sinHalfAngle,
+          state.targetQuat.z / sinHalfAngle,
+        );
+      } else {
+        state.axis.set(0, 1, 0);
+      }
       const halfAngle = clampedAngle / 2;
       const sinHalf = Math.sin(halfAngle);
       state.targetQuat.set(

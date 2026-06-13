@@ -58,6 +58,11 @@ function collectAssetUrls(assetId: string): string[] {
   return [...urls];
 }
 
+function evictGltfUrl(url: string): void {
+  useGLTF.clear(url);
+  THREE.Cache.remove(url);
+}
+
 function preloadScenePropModels(sceneId: SceneId): void {
   for (const propId of SCENE_PROP_IDS[sceneId] ?? []) {
     const def = getPropModelDefinition(propId);
@@ -84,19 +89,38 @@ export function preloadSceneGpuAssets(sceneId: SceneId): void {
 
 /** Remove loader + THREE.Cache entries for assets only used by `fromSceneId`. */
 export function evictSceneGpuCache(fromSceneId: SceneId, keepSceneId?: SceneId): void {
-  const keepIds = new Set<string>();
+  const keepGltfAssetIds = new Set<string>();
+  const keepPropIds = new Set<string>();
+  const keepNpcIds = new Set<string>();
   if (keepSceneId !== undefined) {
     for (const assetId of getSceneGltfAssetIds(keepSceneId)) {
-      keepIds.add(assetId);
+      keepGltfAssetIds.add(assetId);
+    }
+    for (const propId of SCENE_PROP_IDS[keepSceneId] ?? []) {
+      keepPropIds.add(propId);
+    }
+    for (const npcId of SCENE_NPC_IDS[keepSceneId] ?? []) {
+      keepNpcIds.add(npcId);
     }
   }
 
   for (const assetId of getSceneGltfAssetIds(fromSceneId)) {
-    if (keepIds.has(assetId)) continue;
+    if (keepGltfAssetIds.has(assetId)) continue;
     for (const url of collectAssetUrls(assetId)) {
-      useGLTF.clear(url);
-      THREE.Cache.remove(url);
+      evictGltfUrl(url);
     }
+  }
+
+  for (const propId of SCENE_PROP_IDS[fromSceneId] ?? []) {
+    if (keepPropIds.has(propId)) continue;
+    const def = getPropModelDefinition(propId);
+    if (def) evictGltfUrl(def.url);
+  }
+
+  for (const npcId of SCENE_NPC_IDS[fromSceneId] ?? []) {
+    if (keepNpcIds.has(npcId)) continue;
+    const url = resolveNpcModelUrl(npcId);
+    if (url) evictGltfUrl(url);
   }
 }
 

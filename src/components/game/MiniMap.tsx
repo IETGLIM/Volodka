@@ -79,6 +79,17 @@ export function MiniMap() {
     }));
   }, [sceneConfig]);
 
+  const playerPosRef = useRef(playerPos);
+  const playerRotationRef = useRef(playerRotation);
+  const npcsInSceneRef = useRef(npcsInScene);
+  const questMarkersRef = useRef(questMarkers);
+  const sceneExitsRef = useRef(sceneExits);
+  playerPosRef.current = playerPos;
+  playerRotationRef.current = playerRotation;
+  npcsInSceneRef.current = npcsInScene;
+  questMarkersRef.current = questMarkers;
+  sceneExitsRef.current = sceneExits;
+
   // Animation loop for pulsing glow
   useEffect(() => {
     if (!sceneConfig) return;
@@ -143,7 +154,7 @@ export function MiniMap() {
       }
 
       // ── Scene exit indicators (arrows at map edges) ──
-      for (const exit of sceneExits) {
+      for (const exit of sceneExitsRef.current) {
         const ex = toMapX(exit.position[0]);
         const ey = toMapY(exit.position[2]);
 
@@ -177,7 +188,7 @@ export function MiniMap() {
       }
 
       // ── Quest markers (!) ──
-      for (const marker of questMarkers) {
+      for (const marker of questMarkersRef.current) {
         const mx = toMapX(marker.position[0]);
         const my = toMapY(marker.position[2]);
         ctx.fillStyle = 'rgba(251, 191, 36, 0.9)';
@@ -186,7 +197,7 @@ export function MiniMap() {
       }
 
       // ── NPC dots (colored per NPC) ──
-      for (const npc of npcsInScene) {
+      for (const npc of npcsInSceneRef.current) {
         const nx = toMapX(npc.position[0]);
         const ny = toMapY(npc.position[2]);
         const color = NPC_DOT_COLORS[npc.id] ?? 'rgba(148, 163, 184, 0.6)';
@@ -205,8 +216,8 @@ export function MiniMap() {
       }
 
       // ── Player dot with direction indicator and pulsing glow ──
-      const px = toMapX(playerPos[0]);
-      const py = toMapY(playerPos[2]);
+      const px = toMapX(playerPosRef.current[0]);
+      const py = toMapY(playerPosRef.current[2]);
 
       // Pulsing outer glow
       const glowSize = 5 + pulse * 3;
@@ -224,7 +235,7 @@ export function MiniMap() {
       ctx.stroke();
 
       // Direction triangle (small triangle pointing in player facing direction)
-      const dirAngle = playerRotation; // Y-axis rotation
+      const dirAngle = playerRotationRef.current; // Y-axis rotation
       ctx.save();
       ctx.translate(px, py);
       ctx.rotate(-dirAngle + Math.PI / 2); // Adjust for coordinate system
@@ -289,7 +300,7 @@ export function MiniMap() {
     return () => {
       cancelAnimationFrame(animFrameRef.current);
     };
-  }, [sceneConfig, playerPos, playerRotation, npcsInScene, questMarkers, sceneExits]);
+  }, [sceneConfig]);
 
   if (!sceneConfig) return null;
 

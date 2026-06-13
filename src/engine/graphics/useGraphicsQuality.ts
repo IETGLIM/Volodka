@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import {
+  dispatchQualityGpuCleanup,
   dispatchQualityPresetChanged,
   QUALITY_PRESET_CHANGED,
   readQualityPresetId,
@@ -49,6 +50,7 @@ export function useGraphicsQuality(): GraphicsQualityState {
 
   const setPreset = (id: QualityPresetId) => {
     writeQualityPresetId(id);
+    dispatchQualityGpuCleanup(id);
     setSelectedPreset(id);
     dispatchQualityPresetChanged(id);
   };

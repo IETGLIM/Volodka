@@ -343,6 +343,7 @@ function startCombatImmediate(
     maxCombo: 0,
     lastCritical: false,
     lastPoemPowersUsed: [null, null],
+    lastUsedPoemId: null,
   });
 
   dispatchGameAction({ type: 'story/setCombatActive', active: true });
@@ -475,6 +476,7 @@ export function playerUsePoemPower(poemId: string): CombatState | null {
 
   // Track poem power usage for combo detection
   const lastPowers: [string | null, string | null] = [cs.lastPoemPowersUsed[1], poemId];
+  const lastUsedPoemId = poemId !== 'poem_16' ? poemId : cs.lastUsedPoemId;
 
   // Apply ability
   const logLenBefore = cs.log.length;
@@ -490,6 +492,7 @@ export function playerUsePoemPower(poemId: string): CombatState | null {
         ...consumeSideEffects(comboResult.state),
         powerCooldowns: newCooldowns,
         lastPoemPowersUsed: lastPowers,
+        lastUsedPoemId,
         comboCount: cs.comboCount + 1,
       };
       combat.setState({
@@ -501,6 +504,7 @@ export function playerUsePoemPower(poemId: string): CombatState | null {
         ...consumeSideEffects(abilityResult),
         powerCooldowns: newCooldowns,
         lastPoemPowersUsed: lastPowers,
+        lastUsedPoemId,
         comboCount: cs.comboCount + 1,
       });
     }
@@ -509,6 +513,7 @@ export function playerUsePoemPower(poemId: string): CombatState | null {
       ...consumeSideEffects(abilityResult),
       powerCooldowns: newCooldowns,
       lastPoemPowersUsed: lastPowers,
+      lastUsedPoemId,
       comboCount: cs.comboCount + 1,
     });
   }

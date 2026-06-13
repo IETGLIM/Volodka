@@ -42,6 +42,7 @@ describe('SceneTransitionManager', () => {
     const order: string[] = [];
 
     const unsub = eventBus.on('scene:unload', () => order.push('unload'));
+    eventBus.on('scene:transition_start', () => order.push('transition_start'));
     eventBus.on('scene:enter', () => order.push('enter'));
     eventBus.on('scene:loaded', () => order.push('loaded'));
 
@@ -52,9 +53,9 @@ describe('SceneTransitionManager', () => {
       spawnAt: [1, 0, 2],
     });
 
-    expect(order).toEqual(['unload', 'cleanup', 'enter']);
+    expect(order).toEqual(['transition_start', 'unload', 'cleanup', 'enter']);
     await flushSceneLoaded();
-    expect(order).toEqual(['unload', 'cleanup', 'enter', 'loaded']);
+    expect(order).toEqual(['transition_start', 'unload', 'cleanup', 'enter', 'loaded']);
     expect(dispatchGameAction).toHaveBeenCalledWith({
       type: 'exploration/applySceneTransition',
       targetScene: 'cafe_evening',
@@ -69,6 +70,7 @@ describe('SceneTransitionManager', () => {
     const order: string[] = [];
 
     eventBus.on('scene:unload', () => order.push('unload'));
+    eventBus.on('scene:transition_start', () => order.push('transition_start'));
     eventBus.on('scene:enter', () => order.push('enter'));
     eventBus.on('scene:loaded', () => order.push('loaded'));
 
@@ -77,9 +79,9 @@ describe('SceneTransitionManager', () => {
       spawnAt: [0, 0, 0],
     });
 
-    expect(order).toEqual(['enter']);
+    expect(order).toEqual(['transition_start', 'enter']);
     await flushSceneLoaded();
-    expect(order).toEqual(['enter', 'loaded']);
+    expect(order).toEqual(['transition_start', 'enter', 'loaded']);
     resetGlobalCleanupRegistry();
   });
 

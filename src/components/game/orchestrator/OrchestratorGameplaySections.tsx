@@ -35,7 +35,6 @@ import { FloatingTextLayer } from '../FloatingText';
 import { ScreenEffects } from '../ScreenEffects';
 import { CutsceneOverlay } from '@/components/game/CutsceneOverlay';
 import { IntroWakeOverlay } from '@/components/game/IntroWakeOverlay';
-import { CombatUI } from '@/components/game/CombatUI';
 import { PoetryPowerBar } from '@/components/game/PoetryPowerBar';
 import { PoemPowerEffect } from '@/components/game/PoemPowerEffect';
 import { DirectionalDamageIndicator } from '@/components/game/DirectionalDamageIndicator';
@@ -45,6 +44,7 @@ import { AchievementNotification } from '../AchievementNotification';
 import {
   LazyStoryRenderer,
   LazyDialogueRenderer,
+  LazyCombatUI,
   LazyHUD,
   LazyMiniMap,
   LazyQuestNotificationSystem,
@@ -424,7 +424,9 @@ export const GameplayCombatLayer = memo(function GameplayCombatLayer() {
 
   return (
     <ErrorBoundary name="combat">
-      <CombatUI />
+      <Suspense fallback={null}>
+        <LazyCombatUI />
+      </Suspense>
     </ErrorBoundary>
   );
 });

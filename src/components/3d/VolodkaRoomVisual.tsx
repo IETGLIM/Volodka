@@ -3,6 +3,10 @@
 
 import { useMemo, useRef, useEffect, type MutableRefObject } from 'react';
 import * as THREE from 'three';
+import {
+  registerModuleGeometries,
+  registerModuleGeometry,
+} from '@/engine/three/moduleGeometryRegistry';
 import { useEnvironmentLod } from './lod/EnvironmentLodProvider';
 import { Lamp, Rug, Radiator } from './lazyInteriorModels';
 import { useCachedCanvasTexture } from '@/hooks/useCachedCanvasTexture';
@@ -109,11 +113,13 @@ function bookSpineGeo(w: number, h: number, d = 0.18): THREE.BoxGeometry {
   const key = `${w}_${h}_${d}`;
   let geo = bookSpineGeoCache.get(key);
   if (!geo) {
-    geo = new THREE.BoxGeometry(w, h, d);
+    geo = registerModuleGeometry(new THREE.BoxGeometry(w, h, d));
     bookSpineGeoCache.set(key, geo);
   }
   return geo;
 }
+
+registerModuleGeometries([geo_pln_1, geo_pln_2, geo_pln_3, geo_box_4, geo_box_5, geo_box_6, geo_box_7, geo_cyl_8, geo_box_9, geo_box_10, geo_box_11, geo_box_12, geo_box_13, geo_sph_14, geo_box_15, geo_box_16, geo_box_17, geo_box_18, geo_pln_19, geo_cir_20, geo_box_21, geo_box_22, geo_box_23, geo_box_24, geo_box_25, geo_box_26, geo_cyl_27, geo_tor_28, geo_cyl_29, geo_box_30, geo_box_31, geo_box_32, geo_box_33, geo_box_34, geo_box_35, geo_box_36, geo_box_37, geo_box_38, geo_box_39, geo_box_40, geo_box_41, geo_pln_42, geo_box_43, geo_pln_44, geo_box_45, geo_cyl_46, geo_tor_47, geo_box_48, geo_cyl_49, geo_box_50, geo_box_51, geo_sph_52, geo_sph_53, geo_box_54, geo_pln_55, geo_box_56, geo_box_57, geo_box_58, geo_box_59, geo_box_60, geo_box_61, geo_tor_62, geo_cyl_63, geo_cyl_64, geo_box_65, geo_box_66, geo_cyl_67, geo_box_68, geo_box_69, geo_cyl_70, geo_box_71, geo_box_72, geo_cyl_73, geo_box_74, geo_pln_75, geo_pln_76, geo_pln_77, geo_pln_78, geo_box_79, geo_box_80, geo_box_81, geo_box_82, geo_box_83]);
 
 export function VolodkaRoomVisual({ livePlayerPositionRef: _livePlayerPositionRef }: VolodkaRoomVisualProps) {
   // Canvas textures created synchronously via useMemo

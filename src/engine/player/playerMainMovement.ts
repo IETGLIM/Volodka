@@ -20,8 +20,9 @@ import {
   JUMP_COOLDOWN,
   TERMINAL_VELOCITY,
   KCC_FAIL_FRAMES_BEFORE_DEGRADE,
+  MAX_DIRECT_DISPLACEMENT,
 } from '@/engine/player/playerConstants';
-import { lerpAngle, enforceFloor } from '@/engine/player/playerMath';
+import { lerpAngle, enforceFloor, clampHorizontalDisplacement } from '@/engine/player/playerMath';
 import { computeKccMovementSubstepped } from '@/engine/player/physicsSubstep';
 import type { PlayerMovementDeps } from '@/engine/player/playerFrameTypes';
 
@@ -32,12 +33,19 @@ function applyDegradedMovement(deps: PlayerMovementDeps, onFlatGround: boolean):
   const dt = scratch.dt;
   const groundY = scratch.groundY;
 
-  vel.x = 0;
-  vel.z = 0;
-
   const pos = rb.translation();
+  const { dx, dz } = clampHorizontalDisplacement(vel.x * dt, vel.z * dt, MAX_DIRECT_DISPLACEMENT);
+
+  const [sceneW, sceneD] = deps.config.size;
+  const boundaryMargin = MAX_DIRECT_DISPLACEMENT;
+  const halfW = sceneW / 2 - boundaryMargin;
+  const halfD = sceneD / 2 - boundaryMargin;
+
+  const newX = Math.max(-halfW, Math.min(halfW, pos.x + dx));
+  const newZ = Math.max(-halfD, Math.min(halfD, pos.z + dz));
   const newY = onFlatGround ? pos.y : pos.y + vel.y * dt;
-  rb.setTranslation({ x: pos.x, y: newY, z: pos.z }, true);
+
+  rb.setTranslation({ x: newX, y: newY, z: newZ }, true);
   if (enforceFloor(rb, vel, groundY)) {
     deps.isGroundedRef.current = true;
     deps.coyoteTimerRef.current = 0;
@@ -133,7 +141,7 @@ export function runMainPlayerMovement(deps: PlayerMovementDeps): boolean {
   scratch.keyboardDrivesMove = keyboardDrivesMove;
   scratch.isOutdoor = isOutdoor;
 
-  if (isMoving && !deps.controlsDegradedRef.current) {
+  if (isMoving) {
     moveDir.normalize();
     const targetVx = moveDir.x * speed;
     const targetVz = moveDir.z * speed;
@@ -151,7 +159,7 @@ export function runMainPlayerMovement(deps: PlayerMovementDeps): boolean {
     deps.livePlayerRotationRef.current = lerpAngle(
       deps.livePlayerRotationRef.current, targetYaw, rotT,
     );
-  } else if (!deps.controlsDegradedRef.current) {
+  } else {
     vel.x = THREE.MathUtils.damp(vel.x, 0, stopDamping, dt);
     vel.z = THREE.MathUtils.damp(vel.z, 0, stopDamping, dt);
   }

@@ -41,10 +41,20 @@ export function getSharedTextureRefCount(key: string): number {
   return textureReuseMap.get(key)?.refs ?? 0;
 }
 
-/** Test-only reset */
-export function clearTextureReuseMapForTests(): void {
+/** Drop all shared textures — used on quality preset change. */
+export function evictTextureReuseMap(): void {
   for (const entry of textureReuseMap.values()) {
     entry.texture.dispose();
+    const image = entry.texture.image as { close?: () => void } | null;
+    if (image && typeof image.close === 'function') {
+      image.close();
+    }
+    entry.texture.image = null;
   }
   textureReuseMap.clear();
+}
+
+/** Test-only reset */
+export function clearTextureReuseMapForTests(): void {
+  evictTextureReuseMap();
 }

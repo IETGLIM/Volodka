@@ -391,6 +391,25 @@ export function CombatUI() {
   const [introMeta, setIntroMeta] = useState<{ emoji: string; name: string } | null>(null);
   const logEndRef = useRef<HTMLDivElement>(null);
   const damageIdRef = useRef(0);
+  const timersRef = useRef(new Set<ReturnType<typeof setTimeout>>());
+
+  const scheduleTimeout = useCallback((fn: () => void, ms: number) => {
+    const id = setTimeout(() => {
+      timersRef.current.delete(id);
+      fn();
+    }, ms);
+    timersRef.current.add(id);
+  }, []);
+
+  useEffect(() => {
+    const timers = timersRef.current;
+    return () => {
+      for (const id of timers) {
+        clearTimeout(id);
+      }
+      timers.clear();
+    };
+  }, []);
 
   const dismissIntro = useCallback(() => setIntroVisible(false), []);
 
@@ -430,7 +449,7 @@ export function CombatUI() {
           const id = damageIdRef.current++;
           const isCrit = entry.isCritical || entry.type === 'critical_hit';
           setDamageNumbers((prev) => [...prev, { id, damage: entry.damage!, type: entry.type, isCritical: isCrit }]);
-          setTimeout(() => {
+          scheduleTimeout(() => {
             setDamageNumbers((prev) => prev.filter((d) => d.id !== id));
           }, isCrit ? 1800 : 1200);
 
@@ -438,26 +457,37 @@ export function CombatUI() {
           if (isCrit) {
             setScreenShake(true);
             setFlashColor('rgba(255,255,100,0.15)');
-            setTimeout(() => { setScreenShake(false); setFlashColor(null); }, 300);
+            scheduleTimeout(() => { setScreenShake(false); setFlashColor(null); }, 300);
           } else if (entry.type === 'enemy_attack' || entry.type === 'enemy_special') {
             setScreenShake(true);
             setFlashColor('rgba(239,68,68,0.1)');
-            setTimeout(() => { setScreenShake(false); setFlashColor(null); }, 300);
+            scheduleTimeout(() => { setScreenShake(false); setFlashColor(null); }, 300);
           }
         }
       }
     }
     prevLogLen.current = currentLen;
-  }, [combatState]);
+  }, [combatState, scheduleTimeout]);
 
   // Close powers menu when turn changes; unlock UI after terminal states
   useEffect(() => {
     if (combatState?.isPlayerTurn || combatState?.status !== 'active') {
-      setTimeout(() => setPendingAction(false), 0);
+      scheduleTimeout(() => setPendingAction(false), 0);
     }
-  }, [combatState?.isPlayerTurn, combatState?.turn, combatState?.status]);
+  }, [combatState?.isPlayerTurn, combatState?.turn, combatState?.status, scheduleTimeout]);
 
-  const availablePowers = useMemo(() => getAvailableCombatPowers(), [combatState]);
+  const availablePowers = useMemo(
+    () => getAvailableCombatPowers(),
+    [combatState?.powerCooldowns, combatState?.turn],
+  );
+  const playerBuffs = useMemo(
+    () => getActiveBuffs('player'),
+    [combatState?.buffs],
+  );
+  const enemyBuffs = useMemo(
+    () => getActiveBuffs('enemy'),
+    [combatState?.buffs],
+  );
   const handleAttack = useCallback(() => {
     if (pendingAction || !combatState?.isPlayerTurn) return;
     setPendingAction(true);
@@ -516,9 +546,6 @@ export function CombatUI() {
   const enemy = combatState.enemy;
   const isActive = combatState.status === 'active';
   const isPlayerTurn = combatState.isPlayerTurn && isActive && !introVisible;
-
-  const playerBuffs = getActiveBuffs('player');
-  const enemyBuffs = getActiveBuffs('enemy');
 
   // Check if silenced
   const isSilenced = combatState.buffs.some(b => b.target === 'player' && b.effect.type === 'silence_specials');

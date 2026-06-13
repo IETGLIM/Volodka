@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
+import { eventBus } from '@/engine/EventBus';
 import { InteractionState } from '@/engine/interaction/interactionMachine';
 import {
   getInteractionState,
@@ -45,5 +46,19 @@ describe('interactionSession transitions', () => {
   it('allows idempotent same-state writes', () => {
     writeInteractionSession(InteractionState.Approach, 'zarema');
     expect(writeInteractionSession(InteractionState.Approach, 'zarema')).toBe(true);
+  });
+
+  it('resets to Idle on scene:transition_start', () => {
+    writeInteractionSession(InteractionState.Approach, 'zarema');
+    writeInteractionSession(InteractionState.Cutscene, 'zarema');
+    writeInteractionSession(InteractionState.Align, 'zarema');
+    writeInteractionSession(InteractionState.Lock, 'zarema');
+    eventBus.emit('scene:transition_start', {
+      fromSceneId: 'volodka_room',
+      targetScene: 'volodka_corridor',
+      spawnAt: [0, 0, 0],
+    });
+    expect(getInteractionState()).toBe(InteractionState.Idle);
+    expect(getInteractionTargetNPCId()).toBeNull();
   });
 });

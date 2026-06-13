@@ -104,6 +104,12 @@ function applyHighlightLayout(slot: SlotResources, size: [number, number, number
 }
 
 function disposeSlot(slot: SlotResources) {
+  slot.light.removeFromParent();
+  slot.spotLight.removeFromParent();
+  slot.spotLight.target.removeFromParent();
+  slot.light.dispose();
+  slot.spotLight.dispose();
+
   slot.innerGeo.dispose();
   slot.outerGeo.dispose();
   slot.innerMat.dispose();

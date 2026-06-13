@@ -1,6 +1,7 @@
 /* ─── Volodka RPG – Item Catalog ─── */
 
 import type { InventoryItem, TrainablePlayerSkill, LinkedContent } from '@/shared/types/game';
+import { asItemId } from '@/shared/types/brands';
 
 export type ItemCategory = 'consumable' | 'quest_item' | 'key_item' | 'book' | 'equipment' | 'poem_fragment' | 'misc';
 export type ItemRarity = 'common' | 'uncommon' | 'rare' | 'legendary';
@@ -1254,22 +1255,35 @@ export function createInventoryItem(
   itemId: string,
   quantity: number = 1,
 ): InventoryItem {
+  const id = asItemId(itemId);
   const def = ITEM_MAP.get(itemId);
   if (def) {
+    const category = mapCategory(def.category);
+    if (def.stackable) {
+      return {
+        id,
+        name: def.name,
+        description: def.description,
+        icon: def.icon,
+        stackable: true,
+        quantity,
+        category,
+      };
+    }
     return {
-      id: def.id,
+      id,
       name: def.name,
       description: def.description,
       icon: def.icon,
-      stackable: def.stackable,
-      quantity,
-      category: mapCategory(def.category),
+      stackable: false,
+      quantity: 1,
+      category,
     };
   }
 
   // Fallback for items not yet in catalog
   return {
-    id: itemId,
+    id,
     name: itemId,
     description: '',
     stackable: true,

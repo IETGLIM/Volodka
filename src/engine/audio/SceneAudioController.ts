@@ -183,6 +183,7 @@ export function getSceneAudioController(): SceneAudioController {
 /** Invalidate controller session timers (unmount / HMR). */
 export function disposeSceneAudioController(): void {
   controllerInstance?.dispose();
+  controllerInstance = null;
 }
 
 registerHmrDispose(disposeSceneAudioController);

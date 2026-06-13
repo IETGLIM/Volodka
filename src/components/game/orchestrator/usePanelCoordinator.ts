@@ -68,6 +68,7 @@ export function usePanelCoordinator({
   const [panelStack, dispatchStack] = useReducer(panelStackReducer, [] as NonNullPanelType[]);
   const panelStackRef = useRef(panelStack);
   panelStackRef.current = panelStack;
+  const prevPanelStackLengthRef = useRef(0);
   const activePanel = getTopPanel(panelStack);
 
   const [questAccept, setQuestAccept] = useState<QuestDialogState>(null);
@@ -161,8 +162,10 @@ export function usePanelCoordinator({
   );
 
   useEffect(() => {
-    if (panelStack.length === 0) return;
-    onPanelOpened?.();
+    if (panelStack.length > prevPanelStackLengthRef.current) {
+      onPanelOpened?.();
+    }
+    prevPanelStackLengthRef.current = panelStack.length;
   }, [panelStack.length, onPanelOpened]);
 
   useEffect(() => {

@@ -3,7 +3,7 @@
  * Applies [data-cyberpunk] scope. Palette lives in tokens.css + cyberPalette.ts.
  */
 
-import { createContext, type ReactNode } from 'react';
+import { createContext, useMemo, type ReactNode } from 'react';
 import {
   CYBERPUNK_COLORS,
   cyberColorRgba,
@@ -33,11 +33,14 @@ interface CyberpunkThemeProviderProps {
 }
 
 export function CyberpunkThemeProvider({ children }: CyberpunkThemeProviderProps) {
-  const contextValue: CyberpunkThemeContextValue = {
-    colors: CYBERPUNK_COLORS,
-    rgba: cyberColorRgba,
-    cssVar: (key) => CSS_VAR_MAP[key],
-  };
+  const contextValue = useMemo<CyberpunkThemeContextValue>(
+    () => ({
+      colors: CYBERPUNK_COLORS,
+      rgba: cyberColorRgba,
+      cssVar: (key) => CSS_VAR_MAP[key],
+    }),
+    [],
+  );
 
   return (
     <CyberpunkThemeContext.Provider value={contextValue}>

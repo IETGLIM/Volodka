@@ -96,6 +96,8 @@ function writeDeployDocs(staging, meta) {
 - Exploration-first сюжет: explore-hub для всех локаций, движение + [E] на hub-узлах
 - Remap legacy explore_mode → hub текущей сцены (act5, ЧК, все акты)
 - syncNarrativeOnSceneEnter: beat-узлы → scene hub при входе в сцену
+- v4.1.0: modular game types, GPU lifecycle, lazy CombatUI/minigames + UI perf/leak fixes
+- v4.1.0: combat buff slots (2 buff + 2 debuff/target), 363 unit tests
 - v3.4.0: cinematic 3rd-person (wake-up, cutscenes, scene transitions) → FP exploration
 - v3.4.0: процедурные пальцы на FPS-руках; rich explore-хабы пирса и подвала
 - v3.3.3: прыжок, combat UI overlap, corridor NPC pile

@@ -74,4 +74,37 @@ describe('headTracking', () => {
     cleanupHeadTracking('npc_b');
     expect(true).toBe(true);
   });
+
+  it('keeps bone quaternion finite when player is directly behind (anti-parallel)', () => {
+    const root = new THREE.Group();
+    const head = new THREE.Bone();
+    head.name = 'Head';
+    root.add(head);
+    root.updateMatrixWorld(true);
+
+    const playerPos = new THREE.Vector3(0, 0, -5);
+    updateHeadTracking('npc_antiparallel', root, playerPos, 0.1);
+    root.updateMatrixWorld(true);
+
+    expect(Number.isFinite(head.quaternion.x)).toBe(true);
+    expect(Number.isFinite(head.quaternion.y)).toBe(true);
+    expect(Number.isFinite(head.quaternion.z)).toBe(true);
+    expect(Number.isFinite(head.quaternion.w)).toBe(true);
+  });
+
+  it('keeps bone quaternion finite when player overlaps head position', () => {
+    const root = new THREE.Group();
+    const head = new THREE.Bone();
+    head.name = 'Head';
+    root.add(head);
+    root.updateMatrixWorld(true);
+
+    const playerPos = new THREE.Vector3(0, 0, 0);
+    updateHeadTracking('npc_degenerate', root, playerPos, 0.1);
+
+    expect(Number.isFinite(head.quaternion.x)).toBe(true);
+    expect(Number.isFinite(head.quaternion.y)).toBe(true);
+    expect(Number.isFinite(head.quaternion.z)).toBe(true);
+    expect(Number.isFinite(head.quaternion.w)).toBe(true);
+  });
 });

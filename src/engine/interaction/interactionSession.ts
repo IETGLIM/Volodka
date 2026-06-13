@@ -3,6 +3,7 @@ import {
   INTERACTION_STATE_LABELS,
   isValidInteractionTransition,
 } from '@/engine/interaction/interactionMachine';
+import { eventBus } from '@/engine/EventBus';
 import { devWarn } from '@/shared/utils/devLog';
 import { registerHmrDispose } from '@/shared/dev/hmrDispose';
 export interface InteractionSessionSnapshot {
@@ -67,4 +68,13 @@ export function resetInteractionSession(): void {
   session = { ...IDLE };
 }
 
-registerHmrDispose(resetInteractionSession);
+const unsubSceneTransitionStart = eventBus.on('scene:transition_start', () => {
+  resetInteractionSession();
+});
+
+function disposeInteractionSessionModule(): void {
+  unsubSceneTransitionStart();
+  resetInteractionSession();
+}
+
+registerHmrDispose(disposeInteractionSessionModule);

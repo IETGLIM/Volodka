@@ -1,6 +1,6 @@
 /* ─── Volodka RPG – trigger zones for interactive objects ─── */
 
-import type { SceneId, GameEffect, InteractionType, ExamineData } from '@/shared/types/game';
+import type { SceneId, StoryEffect, InteractionType, ExamineData } from '@/shared/types/game';
 import { CHK_TRIGGER_ZONES } from './chkTolpa/triggerZones';
 
 export interface TriggerZone {
@@ -12,7 +12,7 @@ export interface TriggerZone {
   linkedStoryNodeId?: string;
   linkedDialogueNodeId?: string;
   linkedQuestId?: string;
-  effects?: GameEffect[];
+  effects?: StoryEffect[];
   /** Flag that must be set for this trigger zone to be active */
   requiredFlag?: string;
   /** Hide this zone once the flag is set (e.g. casual NPC talk → story beat). */

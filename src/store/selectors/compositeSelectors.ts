@@ -49,6 +49,10 @@ export function useSceneExitState() {
     sceneId: s.exploration.currentSceneId,
     playerFlags: s.playerState.flags,
     playerKarma: s.playerState.karma,
+    playerSkills: s.playerState.skills,
+    collectedPoems: s.collectedPoems,
+    currentAct: s.playerState.progression.currentAct,
+    timeOfDay: s.exploration.timeOfDay,
   }));
 }
 

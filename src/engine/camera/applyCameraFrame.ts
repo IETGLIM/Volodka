@@ -34,6 +34,9 @@ export interface PostModeFrameState {
   playerMovingTimer: number;
 }
 
+/** Minimum squared distance from camera to look target — below this, lookAt degenerates. */
+const LOOK_AT_MIN_DIST_SQ = 1e-8;
+
 /** Shared post-mode logic: dialogue transitions, spring, shake, auto-follow, POI */
 export function applyCameraFrame(
   ctx: CameraModeContext,
@@ -111,11 +114,17 @@ export function applyCameraFrame(
     ctx.yaw += yawDiff * (1 - Math.exp(-1.0 * delta));
   }
 
-  cam.lookAt(spring.lookAt);
+  _rollForward.subVectors(spring.lookAt, cam.position);
+  const hasLookDirection = _rollForward.lengthSq() > LOOK_AT_MIN_DIST_SQ;
+
+  if (hasLookDirection) {
+    cam.lookAt(spring.lookAt);
+  }
+
   cam.fov = spring.fov;
 
-  if (Math.abs(spring.roll) > 0.0001) {
-    _rollForward.subVectors(spring.lookAt, cam.position).normalize();
+  if (hasLookDirection && Math.abs(spring.roll) > 0.0001) {
+    _rollForward.normalize();
     _rollRight.crossVectors(_rollForward, _rollUp).normalize();
     _rollRolledUp.copy(_rollUp).applyAxisAngle(_rollRight, spring.roll);
     cam.up.copy(_rollRolledUp);

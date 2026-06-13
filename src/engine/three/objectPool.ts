@@ -26,7 +26,13 @@ export class ObjectPool<T> {
   release(item: T): void {
     this.reset?.(item);
     if (this.available.length >= this.maxSize) {
-      this.disposeOverflow?.(item);
+      if (this.disposeOverflow) {
+        this.disposeOverflow(item);
+      } else {
+        console.warn(
+          '[ObjectPool] Pool at capacity and disposeOverflow is unset — item was dropped and may leak GPU resources.',
+        );
+      }
       return;
     }
     this.available.push(item);

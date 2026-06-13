@@ -49,7 +49,18 @@ function CesiumPlayerModelInner({ modelScale, currentAnimRef, rotationRef }: Pro
   const [fit, setFit] = useState<Fit>({ scale: 1.1, rotX: 0, y: 0 });
 
   useEffect(() => {
-    if (!mixer || gltf.animations.length === 0) return;
+    if (!mixer || gltf.animations.length === 0) {
+      actionRef.current = null;
+      return;
+    }
+
+    const prev = actionRef.current;
+    if (prev) {
+      prev.stop();
+      mixer.uncacheClip(prev.getClip());
+      actionRef.current = null;
+    }
+
     const walkClip =
       gltf.animations.find((c) => /walk/i.test(c.name)) ?? gltf.animations[0];
     const action = mixer.clipAction(walkClip);
@@ -57,8 +68,13 @@ function CesiumPlayerModelInner({ modelScale, currentAnimRef, rotationRef }: Pro
     action.reset();
     action.play();
     actionRef.current = action;
+
     return () => {
-      actionRef.current = null;
+      action.stop();
+      mixer.uncacheClip(walkClip);
+      if (actionRef.current === action) {
+        actionRef.current = null;
+      }
     };
   }, [mixer, gltf.animations]);
 

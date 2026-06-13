@@ -368,7 +368,10 @@ export function PhysicsPlayer({
       pendingFinalizeRef.current = true;
       return;
     }
-    if (!runMainPlayerMovement(deps)) return;
+    if (!runMainPlayerMovement(deps)) {
+      pendingFinalizeRef.current = true;
+      return;
+    }
     pendingFinalizeRef.current = true;
   }, { label: 'PhysicsPlayer', phase: 'pre_physics', enabled: !physicsPaused });
 

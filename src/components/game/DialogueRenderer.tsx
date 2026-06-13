@@ -273,25 +273,49 @@ export function DialogueRenderer() {
     return () => clearTimeout(timer);
   }, [autoAdvance, done, node, conditionCtx, handleChoice]);
 
+  const npcData = useMemo(() => {
+    const speaker = node?.speaker;
+    const text = node?.text ?? '';
+    const npcDef = speaker ? findNpcByName(speaker) : undefined;
+    const npcId = npcDef?.id ?? '';
+    const portraitColors = npcId
+      ? (NPC_PORTRAIT_COLORS[npcId] ?? NPC_PORTRAIT_COLORS.cafe_barista)
+      : NPC_PORTRAIT_COLORS.cafe_barista;
+    const emotion = detectEmotion(text);
+    const emotionBorder = EMOTION_BORDER[emotion] || EMOTION_BORDER.calm;
+    const relationLevel = npcId ? getRelationLevel(npcId, npcRelations) : ('neutral' as const);
+    const speakerBgStyle: React.CSSProperties = npcId
+      ? {
+          background: `linear-gradient(90deg, ${portraitColors.bg} 0%, transparent 100%)`,
+          borderLeft: `3px solid ${portraitColors.primary}`,
+          paddingLeft: '6px',
+        }
+      : {};
+
+    return {
+      npcDef,
+      npcId,
+      portraitColors,
+      emotion,
+      emotionBorder,
+      relationLevel,
+      speakerBgStyle,
+    };
+  }, [node?.speaker, node?.text, npcRelations]);
+
   if (!isOpen || !node) return null;
 
-  const npcDef = findNpcByName(node.speaker);
-  const npcId = npcDef?.id ?? '';
-  const portraitColors = npcId ? (NPC_PORTRAIT_COLORS[npcId] ?? NPC_PORTRAIT_COLORS.cafe_barista) : NPC_PORTRAIT_COLORS.cafe_barista;
-  const emotion = detectEmotion(node.text);
-  const emotionBorder = EMOTION_BORDER[emotion] || EMOTION_BORDER.calm;
-  const relationLevel = npcId ? getRelationLevel(npcId, npcRelations) : 'neutral';
+  const {
+    npcDef,
+    npcId,
+    portraitColors,
+    emotion,
+    emotionBorder,
+    relationLevel,
+    speakerBgStyle,
+  } = npcData;
 
   const RelationIcon = relationLevel === 'ally' ? Shield : relationLevel === 'enemy' ? Skull : Circle;
-
-  // Speaker name colored background style
-  const speakerBgStyle: React.CSSProperties = npcId
-    ? {
-        background: `linear-gradient(90deg, ${portraitColors.bg} 0%, transparent 100%)`,
-        borderLeft: `3px solid ${portraitColors.primary}`,
-        paddingLeft: '6px',
-      }
-    : {};
 
   const speakerTitleId = `dialogue-speaker-${currentNodeId}`;
   const typewriterLiveMessage = node.speaker

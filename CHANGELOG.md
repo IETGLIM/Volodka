@@ -1,5 +1,35 @@
 # Changelog — ВОЛОДЬКА RPG
 
+## v4.1.0 — 13 июня 2026
+
+### Архитектура и типы
+- **Модульные game types**: `src/shared/types/` — `definitions/`, `state/`,
+  `common/`, `brands.ts`; barrel `game.ts` без циклического re-export EventMap.
+- **GPU lifecycle**: `graphicsGpuCleanup`, `moduleGeometryRegistry`, расширенный
+  `bufferGeometrySanitize`, ref-count текстур/геометрий, тесты teardown.
+- **Scene transitions**: `SceneTransitionManager` — re-entrance guard, combat
+  start gate; тесты и события `sceneEvents`.
+
+### UI / оркестратор (performance & leaks)
+- **Lazy CombatUI** — code-split через `LazyCombatUI` + Suspense (не в boot bundle).
+- **Lazy minigames** — `retryLazyDefault` для всех 8 мини-игр (retry на flaky network).
+- **Cutscene controller** — cleanup `cutscene:overlay_end` + `ControllerSession.cancel`.
+- **CyberpunkTheme** — stable context value (`useMemo`).
+- **MiniMap** — stable rAF loop (refs для player/NPC/quest data).
+- **CombatUI** — tracked timeouts; memoized buffs/powers.
+- **HUD controller** — tracked timeouts (save indicator, karma/energy/stress pulse).
+- **Panel coordinator** — `onPanelOpened` только при открытии панели.
+- **DialogueRenderer** — memoized NPC/emotion/relation lookups.
+
+### Engine / gameplay
+- **Combat buffs**: отдельные слоты buff/debuff (2+2 на target); тесты `buffSystem`.
+- **Combat transient pool**, gamepad input tests, head tracking fixes.
+- **AudioEngine** refactor + capability probe; player movement/math helpers.
+- **Interaction session** — generation guards; NPC sprite texture stability (3D).
+
+### Качество
+- Юнит-тесты: **363/363** · `npm run check` (lint + typecheck + validate + build + budgets) — OK.
+
 ## v3.4.0 — 12 июня 2026
 
 - **Exploration-first сюжет**: explore-hub для всех игровых локаций

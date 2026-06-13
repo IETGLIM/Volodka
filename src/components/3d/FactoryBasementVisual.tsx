@@ -198,6 +198,7 @@ function ServerRackRow({
 }) {
   const ledsRef = useRef<THREE.InstancedMesh>(null);
   const tRef = useRef(0);
+  const blinkColorRef = useRef(new THREE.Color());
 
   const leds = useMemo(() => {
     const rng = basementSeededRandom(seed * 7919 + 13);
@@ -238,7 +239,7 @@ function ServerRackRow({
     const mesh = ledsRef.current;
     if (!mesh) return;
     const t = tRef.current;
-    const color = new THREE.Color();
+    const color = blinkColorRef.current;
     // Blink a small rotating subset each frame — cheap (no full loop per frame)
     const start = Math.floor(t * 10) % leds.length;
     for (let k = 0; k < 6; k++) {

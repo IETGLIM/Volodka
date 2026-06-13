@@ -85,11 +85,31 @@ export function useHUDController(props: HUDProps) {
   const questNotificationCount = useQuestNotificationCount();
 
   const [showSaveIndicator, setShowSaveIndicator] = useState(false);
+  const timersRef = useRef(new Set<ReturnType<typeof setTimeout>>());
+
+  const scheduleTimeout = useCallback((fn: () => void, ms: number) => {
+    const id = setTimeout(() => {
+      timersRef.current.delete(id);
+      fn();
+    }, ms);
+    timersRef.current.add(id);
+  }, []);
+
+  useEffect(() => {
+    const timers = timersRef.current;
+    return () => {
+      for (const id of timers) {
+        clearTimeout(id);
+      }
+      timers.clear();
+    };
+  }, []);
+
   const handleSave = useCallback(() => {
     saveGame({ source: 'manual' });
     setShowSaveIndicator(true);
-    setTimeout(() => setShowSaveIndicator(false), 2000);
-  }, [saveGame]);
+    scheduleTimeout(() => setShowSaveIndicator(false), 2000);
+  }, [saveGame, scheduleTimeout]);
 
   const perkCount = unlockedPerks?.length ?? 0;
 
@@ -108,7 +128,6 @@ export function useHUDController(props: HUDProps) {
   }, [currentWeather, unlockedPerks, energy, stress]);
 
   const [karmaDirection, setKarmaDirection] = useState<'up' | 'down' | null>(null);
-  const karmaDirectionTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [karmaPulse, setKarmaPulse] = useState(false);
   const [energyPulse, setEnergyPulse] = useState(false);
   const [stressPulse, setStressPulse] = useState(false);
@@ -123,39 +142,35 @@ export function useHUDController(props: HUDProps) {
       const delta = karma - prevKarma.current;
       prevKarma.current = karma;
       if (delta !== 0) floatKarma(delta);
-      const dirTimeout = setTimeout(() => {
+      scheduleTimeout(() => {
         if (delta > 0) setKarmaDirection('up');
         else if (delta < 0) setKarmaDirection('down');
-        if (karmaDirectionTimeout.current) clearTimeout(karmaDirectionTimeout.current);
-        karmaDirectionTimeout.current = setTimeout(() => setKarmaDirection(null), 2000);
+        scheduleTimeout(() => setKarmaDirection(null), 2000);
       }, 0);
-      const t = setTimeout(() => setKarmaPulse(true), 0);
-      const t2 = setTimeout(() => setKarmaPulse(false), 600);
-      return () => { clearTimeout(t); clearTimeout(t2); clearTimeout(dirTimeout); };
+      scheduleTimeout(() => setKarmaPulse(true), 0);
+      scheduleTimeout(() => setKarmaPulse(false), 600);
     }
-  }, [karma]);
+  }, [karma, scheduleTimeout]);
 
   useEffect(() => {
     if (energy !== prevEnergy.current) {
       const delta = energy - prevEnergy.current;
       prevEnergy.current = energy;
       if (delta !== 0) floatEnergy(delta);
-      const t = setTimeout(() => setEnergyPulse(true), 0);
-      const t2 = setTimeout(() => setEnergyPulse(false), 600);
-      return () => { clearTimeout(t); clearTimeout(t2); };
+      scheduleTimeout(() => setEnergyPulse(true), 0);
+      scheduleTimeout(() => setEnergyPulse(false), 600);
     }
-  }, [energy]);
+  }, [energy, scheduleTimeout]);
 
   useEffect(() => {
     if (stress !== prevStress.current) {
       const delta = stress - prevStress.current;
       prevStress.current = stress;
       if (delta !== 0) floatStress(delta);
-      const t = setTimeout(() => setStressPulse(true), 0);
-      const t2 = setTimeout(() => setStressPulse(false), 600);
-      return () => { clearTimeout(t); clearTimeout(t2); };
+      scheduleTimeout(() => setStressPulse(true), 0);
+      scheduleTimeout(() => setStressPulse(false), 600);
     }
-  }, [stress]);
+  }, [stress, scheduleTimeout]);
 
   useEffect(() => {
     if (xp !== prevXp.current) {

@@ -256,7 +256,11 @@ export class InteractionController {
         openedNarrative = await tryOpenDialogue(narrativeTarget.nodeId);
       }
 
-      if (!openedNarrative) {
+      if (openedNarrative) {
+        if (this.session.isDisposed()) return;
+        const talkedNodeId = narrativeTarget?.nodeId ?? npcDef.dialogueNodeId;
+        eventBus.emit('npc:talked', { npcId, dialogueNodeId: talkedNodeId });
+      } else {
         if (!narrativeTarget) {
           devWarn(`[InteractionController] No narrative linked for NPC "${npcId}"`);
         }
@@ -266,9 +270,6 @@ export class InteractionController {
         });
       }
     });
-
-    const talkedNodeId = narrativeTarget?.nodeId ?? npcDef.dialogueNodeId;
-    eventBus.emit('npc:talked', { npcId, dialogueNodeId: talkedNodeId });
   }
 
   handleMinigameOpen(gameType: string): void {

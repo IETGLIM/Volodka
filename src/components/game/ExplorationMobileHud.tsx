@@ -154,7 +154,12 @@ export function ExplorationMobileHud({ onInteractPress, onOpenInventory }: Explo
         const sceneId = store.exploration.currentSceneId;
         const flags = store.playerState.flags;
         const karma = store.playerState.karma;
-        const exits = getSceneExits(sceneId, flags, karma);
+        const exits = getSceneExits(sceneId, flags, karma, {
+          skills: store.playerState.skills,
+          collectedPoems: store.collectedPoems,
+          currentAct: store.playerState.progression.currentAct,
+          timeOfDay: store.exploration.timeOfDay,
+        });
 
         for (const exit of exits) {
           const dx = playerPos[0] - exit.position[0];

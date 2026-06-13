@@ -25,3 +25,15 @@ export function enforceFloor(
   }
   return false;
 }
+
+/** Clamp horizontal displacement for direct-movement fallback (no KCC collision). */
+export function clampHorizontalDisplacement(
+  dx: number,
+  dz: number,
+  maxDisplacement: number,
+): { dx: number; dz: number } {
+  const hLen = Math.sqrt(dx * dx + dz * dz);
+  if (hLen <= maxDisplacement || hLen === 0) return { dx, dz };
+  const scale = maxDisplacement / hLen;
+  return { dx: dx * scale, dz: dz * scale };
+}

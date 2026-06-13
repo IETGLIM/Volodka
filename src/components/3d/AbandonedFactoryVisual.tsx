@@ -26,6 +26,16 @@ export function AbandonedFactoryVisual({ livePlayerPositionRef }: AbandonedFacto
 
   const dripRef = useRef<THREE.Mesh>(null);
 
+  const debrisData = useMemo(
+    () =>
+      Array.from({ length: 6 }, (_, i) => ({
+        position: [(i - 3) * 0.5, 0.1 + Math.random() * 0.2, (i % 3) * 0.4] as [number, number, number],
+        rotation: [Math.random() * 0.3, Math.random() * Math.PI, 0] as [number, number, number],
+        size: [0.3 + Math.random() * 0.4, 0.08, 0.2 + Math.random() * 0.3] as [number, number, number],
+      })),
+    [],
+  );
+
   useFrameTick('misc', ({ state }) => {
     if (dripRef.current) {
       const t = state.clock.elapsedTime;
@@ -232,9 +242,9 @@ export function AbandonedFactoryVisual({ livePlayerPositionRef }: AbandonedFacto
       <FactoryPropGate livePlayerPositionRef={livePlayerPositionRef} position={[5, 0, -5]} maxDistance={envProfile.decorativeDistance}>
       <group position={[0, 0, 0]}>
         {/* Debris on floor */}
-        {Array.from({ length: 6 }).map((_, i) => (
-          <mesh key={i} position={[(i - 3) * 0.5, 0.1 + Math.random() * 0.2, (i % 3) * 0.4]} rotation={[Math.random() * 0.3, Math.random() * Math.PI, 0]} castShadow>
-            <boxGeometry args={[0.3 + Math.random() * 0.4, 0.08, 0.2 + Math.random() * 0.3]} />
+        {debrisData.map((debris, i) => (
+          <mesh key={i} position={debris.position} rotation={debris.rotation} castShadow>
+            <boxGeometry args={debris.size} />
             <meshStandardMaterial color="#3a3530" roughness={0.9} />
           </mesh>
         ))}

@@ -19,6 +19,14 @@ export function writeQualityPresetId(id: QualityPresetId): void {
 /** Fired on window when preset changes (SettingsPanel, DevPanel). */
 export const QUALITY_PRESET_CHANGED = 'volodka:quality-preset-changed';
 
+/** Fired before preset listeners re-render — texture/GLTF caches evict stale GPU resources. */
+export const QUALITY_GPU_CLEANUP = 'volodka:quality-gpu-cleanup';
+
+export function dispatchQualityGpuCleanup(id: QualityPresetId): void {
+  if (typeof window === 'undefined') return;
+  window.dispatchEvent(new CustomEvent(QUALITY_GPU_CLEANUP, { detail: { id } }));
+}
+
 export function dispatchQualityPresetChanged(id: QualityPresetId): void {
   window.dispatchEvent(new CustomEvent(QUALITY_PRESET_CHANGED, { detail: { id } }));
 }

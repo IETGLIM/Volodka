@@ -23,7 +23,7 @@ function buffStackKey(buff: CombatBuff): string {
 
 /** Add a buff to combat state with stack limit and mutual exclusion rules.
  *  Re-applying the same buff (e.g. spam Defend) refreshes duration instead of stacking.
- *  Max 2 active buffs per target. defense_reduction and damage_multiplier
+ *  Max 2 active buffs and 2 active debuffs per target (counted separately).
  *  on the same target are mutually exclusive (the weaker one is removed). */
 export function addBuff(state: CombatState, buff: CombatBuff): CombatState {
   const key = buffStackKey(buff);
@@ -51,8 +51,10 @@ export function addBuff(state: CombatState, buff: CombatBuff): CombatState {
     filtered = filtered.filter((b) => !(b.target === buff.target && b.effect.type === excludedType));
   }
 
-  // Stack limit: max 2 buffs per target (excluding the one being refreshed)
-  const existingForTarget = filtered.filter((b) => b.target === buff.target);
+  // Stack limit: max 2 effects per target and kind (buff/debuff tracked separately)
+  const existingForTarget = filtered.filter(
+    (b) => b.target === buff.target && b.kind === buff.kind,
+  );
   if (existingForTarget.length >= 2) {
     // Remove the oldest buff for this target to make room
     const oldestId = existingForTarget[0].id;

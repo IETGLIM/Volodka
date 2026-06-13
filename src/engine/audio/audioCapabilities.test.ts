@@ -127,8 +127,21 @@ describe('audioCapabilities', () => {
     const ctx = buildMockContext({ stereoPanner: false });
     const source = ctx.createGain();
     const dest = ctx.createGain();
-    connectWithStereoPan(ctx, source, dest, -1, 1, 0, 1);
+    const cleanup = connectWithStereoPan(ctx, source, dest, -1, 1, 0, 1);
     expect(source.connect).toHaveBeenCalledWith(dest);
+    cleanup();
+  });
+
+  it('connectWithStereoPan cleanup disconnects stereo panner', () => {
+    const ctx = buildMockContext({ stereoPanner: true });
+    const source = ctx.createGain();
+    const dest = ctx.createGain();
+    const cleanup = connectWithStereoPan(ctx, source, dest, -1, 1, 0, 1);
+    const panner = (source.connect as ReturnType<typeof vi.fn>).mock.calls[0][0] as {
+      disconnect: ReturnType<typeof vi.fn>;
+    };
+    cleanup();
+    expect(panner.disconnect).toHaveBeenCalled();
   });
 
   it('attenuates by distance in dry fallback', () => {

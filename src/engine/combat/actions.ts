@@ -35,7 +35,6 @@ export const POEM_COMBAT_ABILITIES: Record<string, PoemCombatAbility> = {
       const s = addBuff(state, buff);
       return {
         ...s,
-        enemyDefenseReduction: 0.5, // sync flat field for backward compat
         log: [
           ...s.log,
           { turn: state.turn, text: '✦ Правда Глас обнажает слабость врага! Защита снижена на 2 хода.', type: 'player_power' as const },
@@ -315,12 +314,8 @@ export const POEM_COMBAT_ABILITIES: Record<string, PoemCombatAbility> = {
     description: 'Повторяет последнее использованное стихотворение. Без дополнительного кулдауна.',
     cooldown: 5,
     execute: (state) => {
-      // Find last used poem from cooldowns (highest remaining = most recently used)
-      const cooldownEntries = Object.entries(state.powerCooldowns)
-        .filter(([id, cd]) => cd > 0 && id !== 'poem_16');
-      if (cooldownEntries.length > 0) {
-        // Use the one with highest cooldown (most recently used)
-        const lastUsed = cooldownEntries.sort((a, b) => b[1] - a[1])[0][0];
+      const lastUsed = state.lastUsedPoemId;
+      if (lastUsed && lastUsed !== 'poem_16') {
         const ability = POEM_COMBAT_ABILITIES[lastUsed];
         if (ability) {
           const result = ability.execute(state);

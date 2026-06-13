@@ -45,15 +45,30 @@ const PlayerProgressionSchema = z.object({
   unlockedPerks: z.array(z.string()).optional().default([]),
 });
 
-const InventoryItemSchema = z.object({
+const NonStackableInventoryItemSchema = z.object({
   id: z.string().min(1),
   name: z.string().min(1),
   description: z.string(),
   icon: z.string().optional(),
-  stackable: z.boolean(),
+  stackable: z.literal(false),
+  quantity: z.literal(1),
+  category: z.enum(['key', 'consumable', 'misc', 'quest', 'equipment']),
+});
+
+const StackableInventoryItemSchema = z.object({
+  id: z.string().min(1),
+  name: z.string().min(1),
+  description: z.string(),
+  icon: z.string().optional(),
+  stackable: z.literal(true),
   quantity: z.number().int().min(1),
   category: z.enum(['key', 'consumable', 'misc', 'quest', 'equipment']),
 });
+
+const InventoryItemSchema = z.discriminatedUnion('stackable', [
+  NonStackableInventoryItemSchema,
+  StackableInventoryItemSchema,
+]);
 
 const EquippedItemsSchema = z.object({
   head: InventoryItemSchema.nullable(),

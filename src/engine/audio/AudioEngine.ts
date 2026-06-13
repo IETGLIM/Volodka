@@ -224,6 +224,15 @@ class AudioEngine {
     safeResume();
   }
 
+  /** Disconnect one-shot graph nodes; Web Audio throws if already disconnected. */
+  private disconnectOneShot(...nodes: (AudioNode | null | undefined)[]): void {
+    for (const node of nodes) {
+      if (node) {
+        try { node.disconnect(); } catch { /* ignore */ }
+      }
+    }
+  }
+
   /**
    * Play a procedural SFX sound.
    * @param type — preset name (click, confirm, cancel, notify, etc.)
@@ -241,8 +250,7 @@ class AudioEngine {
 
     const preset = SFX_PRESETS[type] ?? SFX_PRESETS['click'];
     const ctx = this.ctx;
-    const dest = this.masterGain;
-    if (!ctx || !dest) return;
+    if (!ctx || !this.masterGain) return;
 
     const now = ctx.currentTime;
 
@@ -257,10 +265,13 @@ class AudioEngine {
     envGain.gain.exponentialRampToValueAtTime(0.001, now + preset.duration);
 
     osc.connect(envGain);
-    envGain.connect(dest);
+    this.connectSpatialOneShot(envGain);
 
     osc.start(now);
     safeStop(osc, now + preset.duration + 0.01);
+    osc.onended = () => {
+      this.disconnectOneShot(osc, envGain);
+    };
   }
 
   private stopFootstepVoice(sourceId: string): void {
@@ -353,16 +364,24 @@ class AudioEngine {
 
       clickOsc.start(now);
       safeStop(clickOsc, now + 0.05);
+      clickOsc.onended = () => {
+        this.disconnectOneShot(clickOsc, clickGain);
+      };
     }
 
-    if (sourceId) {
-      this.footstepVoiceBySourceId.set(sourceId, { noise: noiseSource, click: clickOsc });
-      noiseSource.onended = () => {
+    noiseSource.onended = () => {
+      releaseBufferSource(noiseSource);
+      this.disconnectOneShot(filter, envGain);
+      if (sourceId) {
         const current = this.footstepVoiceBySourceId.get(sourceId);
         if (current?.noise === noiseSource) {
           this.footstepVoiceBySourceId.delete(sourceId);
         }
-      };
+      }
+    };
+
+    if (sourceId) {
+      this.footstepVoiceBySourceId.set(sourceId, { noise: noiseSource, click: clickOsc });
     }
   }
 
@@ -611,6 +630,9 @@ class AudioEngine {
 
       osc.start(now);
       safeStop(osc, now + sound.duration + 0.01);
+      osc.onended = () => {
+        this.disconnectOneShot(osc, envGain);
+      };
     };
 
     const scheduleNext = () => {
@@ -662,10 +684,11 @@ class AudioEngine {
         envGain.gain.setValueAtTime(soundDef.gain, now);
         envGain.gain.exponentialRampToValueAtTime(0.001, now + duration);
 
+        let cleanupPan = () => {};
+        source.connect(filter);
+        filter.connect(envGain);
         if (soundDef.panStart !== undefined && soundDef.panEnd !== undefined) {
-          source.connect(filter);
-          filter.connect(envGain);
-          connectWithStereoPan(
+          cleanupPan = connectWithStereoPan(
             ctx,
             envGain,
             this.ambientMuffleFilter,
@@ -675,12 +698,15 @@ class AudioEngine {
             duration,
           );
         } else {
-          source.connect(filter);
-          filter.connect(envGain);
           envGain.connect(this.ambientMuffleFilter);
         }
 
         source.start(now);
+        source.onended = () => {
+          releaseBufferSource(source);
+          this.disconnectOneShot(filter, envGain);
+          cleanupPan();
+        };
       } else {
         const osc = ctx.createOscillator();
         osc.type = soundDef.type;
@@ -698,9 +724,10 @@ class AudioEngine {
         envGain.gain.setValueAtTime(soundDef.gain, now);
         envGain.gain.exponentialRampToValueAtTime(0.001, now + soundDef.duration);
 
+        let cleanupPan = () => {};
+        osc.connect(envGain);
         if (soundDef.panStart !== undefined && soundDef.panEnd !== undefined) {
-          osc.connect(envGain);
-          connectWithStereoPan(
+          cleanupPan = connectWithStereoPan(
             ctx,
             envGain,
             this.ambientMuffleFilter,
@@ -710,12 +737,15 @@ class AudioEngine {
             soundDef.duration,
           );
         } else {
-          osc.connect(envGain);
           envGain.connect(this.ambientMuffleFilter);
         }
 
         osc.start(now);
         safeStop(osc, now + soundDef.duration + 0.01);
+        osc.onended = () => {
+          this.disconnectOneShot(osc, envGain);
+          cleanupPan();
+        };
       }
     };
 
@@ -985,6 +1015,9 @@ class AudioEngine {
       osc.start(now);
       // Stop after chord duration + fade-out + buffer
       safeStop(osc, now + chord.duration + 1);
+      osc.onended = () => {
+        this.disconnectOneShot(osc, voiceGain);
+      };
 
       this.musicNodes.push({ osc, gain: voiceGain });
     }
@@ -1003,9 +1036,9 @@ class AudioEngine {
       // Clean up finished oscillators
       this.musicNodes = this.musicNodes.filter((n) => {
         try {
-          // If osc is still playing, stop it
           n.osc.stop();
         } catch { /* already stopped */ }
+        this.disconnectOneShot(n.osc, n.gain);
         return false;
       });
 
@@ -1140,6 +1173,9 @@ class AudioEngine {
     this.connectSpatialOneShot(creakGain);
     creakOsc.start(now);
     safeStop(creakOsc, now + 0.35);
+    creakOsc.onended = () => {
+      this.disconnectOneShot(creakOsc, creakGain);
+    };
 
     // Thud / impact (low frequency noise burst)
     const thudSize = Math.ceil(ctx.sampleRate * 0.1);
@@ -1165,6 +1201,10 @@ class AudioEngine {
     thudFilter.connect(thudGain);
     this.connectSpatialOneShot(thudGain);
     thudSource.start(now + 0.15);
+    thudSource.onended = () => {
+      releaseBufferSource(thudSource);
+      this.disconnectOneShot(thudFilter, thudGain);
+    };
   }
 
   /**
@@ -1210,6 +1250,10 @@ class AudioEngine {
     slamFilter.connect(slamGain);
     this.connectSpatialOneShot(slamGain);
     slamSource.start(now);
+    slamSource.onended = () => {
+      releaseBufferSource(slamSource);
+      this.disconnectOneShot(slamFilter, slamGain);
+    };
 
     // Latch click (sharp square blip)
     const clickOsc = ctx.createOscillator();
@@ -1224,6 +1268,9 @@ class AudioEngine {
     this.connectSpatialOneShot(clickGain);
     clickOsc.start(now + 0.08);
     safeStop(clickOsc, now + 0.15);
+    clickOsc.onended = () => {
+      this.disconnectOneShot(clickOsc, clickGain);
+    };
   }
 
   /* ─── UI Sound Polish ─── */
@@ -1235,8 +1282,7 @@ class AudioEngine {
     this.resume();
 
     const ctx = this.ctx;
-    const dest = this.masterGain;
-    if (!ctx || !dest) return;
+    if (!ctx || !this.masterGain) return;
 
     const now = ctx.currentTime;
     const notes = [523.25, 659.25, 783.99, 1046.5]; // C5, E5, G5, C6
@@ -1263,14 +1309,20 @@ class AudioEngine {
       shimmerGain.gain.exponentialRampToValueAtTime(0.001, now + delay + 0.4);
 
       osc.connect(envGain);
-      envGain.connect(dest);
+      this.connectSpatialOneShot(envGain);
       shimmer.connect(shimmerGain);
-      shimmerGain.connect(dest);
+      this.connectSpatialOneShot(shimmerGain);
 
       osc.start(now + delay);
       safeStop(osc, now + delay + 0.6);
+      osc.onended = () => {
+        this.disconnectOneShot(osc, envGain);
+      };
       shimmer.start(now + delay);
       safeStop(shimmer, now + delay + 0.5);
+      shimmer.onended = () => {
+        this.disconnectOneShot(shimmer, shimmerGain);
+      };
     });
   }
 
@@ -1281,8 +1333,7 @@ class AudioEngine {
     this.resume();
 
     const ctx = this.ctx;
-    const dest = this.masterGain;
-    if (!ctx || !dest) return;
+    if (!ctx || !this.masterGain) return;
 
     const now = ctx.currentTime;
 
@@ -1300,8 +1351,8 @@ class AudioEngine {
     reverbGain.connect(delay);
     delay.connect(feedback);
     feedback.connect(delay);
-    delay.connect(dest);
-    reverbGain.connect(dest);
+    this.connectSpatialOneShot(delay);
+    this.connectSpatialOneShot(reverbGain);
 
     chimeFreqs.forEach((freq, i) => {
       const delayTime = i * 0.15;
@@ -1319,13 +1370,14 @@ class AudioEngine {
 
       osc.start(now + delayTime);
       safeStop(osc, now + delayTime + 1.5);
+      osc.onended = () => {
+        this.disconnectOneShot(osc, envGain);
+      };
     });
 
     // Clean up delay after 3 seconds
     setTimeout(() => {
-      try { reverbGain.disconnect(); } catch { /* ignore */ }
-      try { delay.disconnect(); } catch { /* ignore */ }
-      try { feedback.disconnect(); } catch { /* ignore */ }
+      this.disconnectOneShot(reverbGain, delay, feedback);
     }, 3000);
   }
 
@@ -1336,8 +1388,7 @@ class AudioEngine {
     this.resume();
 
     const ctx = this.ctx;
-    const dest = this.masterGain;
-    if (!ctx || !dest) return;
+    if (!ctx || !this.masterGain) return;
 
     const now = ctx.currentTime;
 
@@ -1370,14 +1421,20 @@ class AudioEngine {
       harmGain.gain.exponentialRampToValueAtTime(0.001, now + time + dur * 0.8);
 
       osc.connect(envGain);
-      envGain.connect(dest);
+      this.connectSpatialOneShot(envGain);
       harm.connect(harmGain);
-      harmGain.connect(dest);
+      this.connectSpatialOneShot(harmGain);
 
       osc.start(now + time);
       safeStop(osc, now + time + dur + 0.1);
+      osc.onended = () => {
+        this.disconnectOneShot(osc, envGain);
+      };
       harm.start(now + time);
       safeStop(harm, now + time + dur + 0.1);
+      harm.onended = () => {
+        this.disconnectOneShot(harm, harmGain);
+      };
     });
   }
 
@@ -1388,8 +1445,7 @@ class AudioEngine {
     this.resume();
 
     const ctx = this.ctx;
-    const dest = this.masterGain;
-    if (!ctx || !dest) return;
+    if (!ctx || !this.masterGain) return;
 
     const now = ctx.currentTime;
 
@@ -1415,8 +1471,12 @@ class AudioEngine {
 
     thudSource.connect(thudFilter);
     thudFilter.connect(thudGain);
-    thudGain.connect(dest);
+    this.connectSpatialOneShot(thudGain);
     thudSource.start(now);
+    thudSource.onended = () => {
+      releaseBufferSource(thudSource);
+      this.disconnectOneShot(thudFilter, thudGain);
+    };
 
     // Harsh high-frequency sting (descending sawtooth)
     const stingOsc = ctx.createOscillator();
@@ -1429,9 +1489,12 @@ class AudioEngine {
     stingGain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
 
     stingOsc.connect(stingGain);
-    stingGain.connect(dest);
+    this.connectSpatialOneShot(stingGain);
     stingOsc.start(now);
     safeStop(stingOsc, now + 0.25);
+    stingOsc.onended = () => {
+      this.disconnectOneShot(stingOsc, stingGain);
+    };
   }
 
   /** Play a heal sound — gentle ascending shimmer with reverb */
@@ -1441,8 +1504,7 @@ class AudioEngine {
     this.resume();
 
     const ctx = this.ctx;
-    const dest = this.masterGain;
-    if (!ctx || !dest) return;
+    if (!ctx || !this.masterGain) return;
 
     const now = ctx.currentTime;
 
@@ -1472,10 +1534,13 @@ class AudioEngine {
       vibratoGain.connect(osc.frequency);
 
       osc.connect(envGain);
-      envGain.connect(dest);
+      this.connectSpatialOneShot(envGain);
 
       osc.start(now + delay);
       safeStop(osc, now + delay + 1);
+      osc.onended = () => {
+        this.disconnectOneShot(osc, envGain, vibrato, vibratoGain);
+      };
       vibrato.start(now + delay);
       safeStop(vibrato, now + delay + 1);
     });
@@ -1537,7 +1602,10 @@ class AudioEngine {
 
     osc.start(now);
     safeStop(osc, now + preset.duration + 0.01);
-    setTimeout(() => spatial.disconnect(), (preset.duration + 0.05) * 1000);
+    osc.onended = () => {
+      this.disconnectOneShot(osc, envGain);
+      spatial.disconnect();
+    };
   }
 
   /**
@@ -1599,7 +1667,10 @@ class AudioEngine {
 
     osc.start(now);
     safeStop(osc, now + 0.25);
-    setTimeout(() => spatial.disconnect(), 300);
+    osc.onended = () => {
+      this.disconnectOneShot(osc, formant1, formant2, envGain, formant2Gain);
+      spatial.disconnect();
+    };
   }
 
   /**
@@ -1675,8 +1746,7 @@ class AudioEngine {
           try { osc.stop(); } catch { /* already stopped */ }
           try { lfo?.stop(); } catch { /* already stopped */ }
           spatial.disconnect();
-          try { gainNode.disconnect(); } catch { /* ignore */ }
-          try { lfoGain?.disconnect(); } catch { /* ignore */ }
+          this.disconnectOneShot(osc, gainNode, lfo, lfoGain);
         }, 600);
       },
     };
@@ -1753,7 +1823,14 @@ class AudioEngine {
 
         osc.start(now);
         safeStop(osc, now + 2.3);
+        osc.onended = () => {
+          this.disconnectOneShot(osc, filter, envGain);
+        };
         noiseSource.start(now);
+        noiseSource.onended = () => {
+          releaseBufferSource(noiseSource);
+          this.disconnectOneShot(noiseFilter, noiseGain);
+        };
         break;
       }
       case 'discovery': {
@@ -1787,8 +1864,14 @@ class AudioEngine {
 
           osc.start(now + delay);
           safeStop(osc, now + delay + 0.9);
+          osc.onended = () => {
+            this.disconnectOneShot(osc, envGain);
+          };
           shimmer.start(now + delay);
           safeStop(shimmer, now + delay + 0.7);
+          shimmer.onended = () => {
+            this.disconnectOneShot(shimmer, shimmerGain);
+          };
         });
         break;
       }
@@ -1807,6 +1890,9 @@ class AudioEngine {
         envGain.connect(dest);
         osc.start(now);
         safeStop(osc, now + 1.3);
+        osc.onended = () => {
+          this.disconnectOneShot(osc, envGain);
+        };
 
         // Noise burst
         const burstSize = Math.ceil(ctx.sampleRate * 0.15);
@@ -1830,6 +1916,10 @@ class AudioEngine {
         burstFilter.connect(burstGain);
         burstGain.connect(dest);
         burstSource.start(now);
+        burstSource.onended = () => {
+          releaseBufferSource(burstSource);
+          this.disconnectOneShot(burstFilter, burstGain);
+        };
         break;
       }
       case 'emotional': {
@@ -1851,6 +1941,9 @@ class AudioEngine {
           envGain.connect(dest);
           osc.start(now);
           safeStop(osc, now + 3.1);
+          osc.onended = () => {
+            this.disconnectOneShot(osc, envGain);
+          };
         });
         break;
       }
@@ -1878,7 +1971,16 @@ class AudioEngine {
         osc2.start(now);
         safeStop(osc1, now + 2.3);
         safeStop(osc2, now + 2.3);
+        const cleanupMystery = () => {
+          this.disconnectOneShot(osc1, osc2, envGain);
+        };
+        osc1.onended = cleanupMystery;
+        osc2.onended = cleanupMystery;
         break;
+      }
+      default: {
+        const _exhaustive: never = type;
+        return _exhaustive;
       }
     }
   }
@@ -1954,8 +2056,11 @@ class AudioEngine {
 
   setVolume(v: number): void {
     this.volume = Math.max(0, Math.min(1, v));
-    if (this.masterGain) {
-      this.masterGain.gain.value = this.volume;
+    if (this.masterGain && this.ctx) {
+      const now = this.ctx.currentTime;
+      this.masterGain.gain.cancelScheduledValues(now);
+      this.masterGain.gain.setValueAtTime(this.masterGain.gain.value, now);
+      this.masterGain.gain.linearRampToValueAtTime(this.volume, now + 0.05);
     }
   }
 

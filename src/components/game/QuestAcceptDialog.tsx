@@ -12,7 +12,7 @@ import { findNpcById } from '@/data/allNpcDefinitions'
 import { resolveCanonicalNpcId } from '@/data/goldenPath'
 import { eventBus } from '@/engine/EventBus'
 import { UI_LAYERS } from '@/shared/constants/uiLayers'
-import type { NPCDefinition, QuestDefinition, QuestObjective } from '@/shared/types/game'
+import type { NPCDefinition, QuestDefinition, QuestObjective, StoryEffect } from '@/shared/types/game'
 
 interface QuestAcceptDialogProps {
   questId: string | null
@@ -565,7 +565,7 @@ function ObjectiveRow({ objective }: { objective: QuestObjective }) {
 }
 
 /* ─── Reward row ─── */
-function RewardRow({ reward }: { reward: QuestDefinition['rewards'] extends (infer R)[] | undefined ? R : never }) {
+function RewardRow({ reward }: { reward: StoryEffect }) {
   const icon = reward.type === 'addSkill'
     ? '🧠'
     : reward.type === 'addKarma'

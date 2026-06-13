@@ -6,6 +6,7 @@
 import { useRef } from 'react';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import * as THREE from 'three';
+import { registerModuleGeometries } from '@/engine/three/moduleGeometryRegistry';
 /* ─── Shared geometries (module-level, reused across renders) ─── */
 
 const geo_box_1 = new THREE.BoxGeometry(1.4, 0.05, 0.7);
@@ -104,7 +105,7 @@ const geo_box_book_h1 = new THREE.BoxGeometry(0.05, 0.20, 0.18);
 const geo_box_book_h2 = new THREE.BoxGeometry(0.05, 0.22, 0.18);
 const BOOK_GEOS = [geo_box_book_h0, geo_box_book_h1, geo_box_book_h2] as const;
 
-
+registerModuleGeometries([geo_box_1, geo_box_2, geo_box_3, geo_box_4, geo_box_5, geo_box_6, geo_box_7, geo_box_8, geo_box_9, geo_box_10, geo_box_11, geo_box_12, geo_box_13, geo_box_14, geo_box_15, geo_box_16, geo_box_17, geo_box_18, geo_box_19, geo_box_20, geo_box_21, geo_cyl_22, geo_box_23, geo_box_24, geo_cyl_25, geo_cyl_26, geo_box_27, geo_box_28, geo_box_29, geo_box_30, geo_box_31, geo_box_32, geo_box_33, geo_box_34, geo_box_35, geo_cyl_36, geo_cyl_37, geo_cyl_38, geo_sph_39, geo_cyl_40, geo_cyl_41, geo_cyl_42, geo_sph_43, geo_cyl_44, geo_cyl_45, geo_sph_46, geo_sph_47, geo_pln_48, geo_pln_49, geo_box_50, geo_pln_51, geo_cyl_52, geo_tor_53, geo_box_54, geo_box_55, geo_pln_56, geo_box_57, geo_box_58, geo_box_59, geo_box_60, geo_box_61, geo_box_62, geo_cyl_63, geo_box_64, geo_box_65, geo_box_66, geo_cyl_67, geo_box_68, geo_sph_69, geo_box_70, geo_sph_71, geo_box_72, geo_box_73, geo_cyl_74, geo_cyl_75, geo_box_76, geo_cyl_77, geo_cyl_78, geo_box_79, geo_box_80, geo_box_81, geo_box_82, geo_tor_83, geo_box_84, geo_box_85, geo_box_86, geo_box_87, geo_box_88, geo_box_89, geo_cyl_90, geo_cyl_91, geo_box_book_h0, geo_box_book_h1, geo_box_book_h2, ...BOOK_GEOS]);
 
 /* ─── Shared prop types ─── */
 

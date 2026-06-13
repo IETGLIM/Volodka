@@ -1,5 +1,6 @@
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type * as THREE from 'three';
+import { QUALITY_GPU_CLEANUP } from '@/engine/graphics/graphicsSettingsStorage';
 import {
   getCachedCanvasTexture,
   releaseCachedCanvasTexture,
@@ -12,13 +13,23 @@ export function useCachedCanvasTexture(
 ): THREE.CanvasTexture {
   const factoryRef = useRef(factory);
   factoryRef.current = factory;
+  const [generation, setGeneration] = useState(0);
+
+  useEffect(() => {
+    const onQualityCleanup = () => {
+      releaseCachedCanvasTexture(key);
+      setGeneration((value) => value + 1);
+    };
+    window.addEventListener(QUALITY_GPU_CLEANUP, onQualityCleanup);
+    return () => window.removeEventListener(QUALITY_GPU_CLEANUP, onQualityCleanup);
+  }, [key]);
 
   const texture = useMemo(
     () => getCachedCanvasTexture(key, () => factoryRef.current()),
-    [key],
+    [key, generation],
   );
 
-  useEffect(() => () => releaseCachedCanvasTexture(key), [key]);
+  useEffect(() => () => releaseCachedCanvasTexture(key), [key, generation]);
 
   return texture;
 }

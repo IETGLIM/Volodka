@@ -12,6 +12,9 @@
 import type { SceneConfig, SceneExit } from '@/shared/types/game';
 import { SCENE_DEFINITIONS, SCENE_IDS, type SceneId } from '@/config/sceneDefinitions';
 import { generateSceneConfig, generateAllSceneConfigs } from '@/config/sceneDefinitionGenerator';
+import { checkStoryCondition } from '@/shared/storyConditions';
+import type { StoryConditionContext } from '@/shared/storyConditions';
+import { DEFAULT_SKILLS } from '@/data/constants';
 
 /** Complete scene configuration map — GENERATED from SceneDefinitions.
  *  No more hardcoded data — all scene config derives from sceneDefinitions.ts. */
@@ -88,6 +91,11 @@ export function getSceneFloorY(sceneId: SceneId): number {
   return getSceneConfig(sceneId).floorY;
 }
 
+/** Optional context for exit condition gates beyond flags/karma. */
+export type SceneExitFilterExtras = Partial<
+  Omit<StoryConditionContext, 'karma' | 'flags'>
+>;
+
 /**
  * Get the exits for a given scene, filtered by player flags and karma.
  * Returns only exits the player can currently use.
@@ -96,15 +104,29 @@ export function getSceneExits(
   sceneId: SceneId,
   playerFlags: Record<string, boolean>,
   playerKarma: number,
+  extras: SceneExitFilterExtras = {},
 ): SceneExit[] {
   const config = getSceneConfig(sceneId);
   const exits = config.exits ?? [];
+  const conditionContext: StoryConditionContext = {
+    karma: playerKarma,
+    flags: playerFlags,
+    skills: extras.skills ?? DEFAULT_SKILLS,
+    collectedPoems: extras.collectedPoems ?? [],
+    currentAct: extras.currentAct ?? 1,
+    npcRelations: extras.npcRelations,
+    npcId: extras.npcId,
+    timeOfDay: extras.timeOfDay,
+  };
+
   return exits.filter((exit) => {
-    // Check required flag
+    if (exit.condition) {
+      return checkStoryCondition(exit.condition, conditionContext).pass;
+    }
+
     if (exit.requiredFlag && !playerFlags[exit.requiredFlag]) {
       return false;
     }
-    // Check karma requirements
     if (exit.minKarma !== undefined && playerKarma < exit.minKarma) {
       return false;
     }

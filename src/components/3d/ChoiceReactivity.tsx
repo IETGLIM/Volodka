@@ -5,7 +5,7 @@
  * Positive karma → cyan pulse; negative karma → red pulse.
  * Also emits a glitch effect for dramatic impact. */
 
-import { useRef, useState, useEffect } from 'react';
+import { useRef, useEffect } from 'react';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import * as THREE from 'three';
 import { eventBus } from '@/engine/EventBus';
@@ -20,60 +20,61 @@ const PULSE_FREQUENCY = 4;
 const PULSE_MAX_INTENSITY = 3;
 
 export function ChoiceReactivity() {
-  const [pulseActive, setPulseActive] = useState(false);
-  const [pulseColor, setPulseColor] = useState('#ffffff');
+  const pulseActiveRef = useRef(false);
+  const pulseColorRef = useRef('#ffffff');
   const pulseRef = useRef<THREE.PointLight>(null);
   const timerRef = useRef(0);
 
   useEffect(() => {
     const unsub = eventBus.on('choice:made', ({ karmaChange, npcId, relationChange }) => {
       if (Math.abs(karmaChange) >= 5) {
-        // Positive karma → cyan, negative → red
-        setPulseColor(karmaChange > 0 ? '#00ffcc' : '#ff4444');
-        setPulseActive(true);
+        pulseColorRef.current = karmaChange > 0 ? '#00ffcc' : '#ff4444';
+        pulseActiveRef.current = true;
         timerRef.current = 0;
+        if (pulseRef.current) {
+          pulseRef.current.color.set(pulseColorRef.current);
+        }
 
-        // Also emit a glitch effect proportional to the karma change magnitude
         const glitchIntensity = Math.min(Math.abs(karmaChange) / 20, 0.5);
         eventBus.emit('fx:glitch', { intensity: glitchIntensity, duration: 500 });
       }
 
-      // NPC relation changes get a subtler effect
       if (npcId && relationChange && Math.abs(relationChange) >= 5) {
-        // Warm pulse for positive relation, cold for negative
-        setPulseColor(relationChange > 0 ? '#ffcc44' : '#8844ff');
-        setPulseActive(true);
+        pulseColorRef.current = relationChange > 0 ? '#ffcc44' : '#8844ff';
+        pulseActiveRef.current = true;
         timerRef.current = 0;
+        if (pulseRef.current) {
+          pulseRef.current.color.set(pulseColorRef.current);
+        }
       }
     });
     return unsub;
   }, []);
 
   useFrameTick('misc', ({ delta }) => {
-    if (pulseActive) {
+    const light = pulseRef.current;
+    if (!light) return;
+
+    if (pulseActiveRef.current) {
       timerRef.current += delta;
       if (timerRef.current > PULSE_DURATION) {
-        setPulseActive(false);
-      }
-    }
-    if (pulseRef.current) {
-      if (pulseActive) {
-        // Sinusoidal pulse with exponential decay
+        pulseActiveRef.current = false;
+      } else {
         const t = timerRef.current;
         const decay = 1 - (t / PULSE_DURATION);
-        pulseRef.current.intensity = Math.sin(t * PULSE_FREQUENCY) * PULSE_MAX_INTENSITY * decay + 0.5;
-      } else {
-        // Smoothly fade to 0
-        pulseRef.current.intensity = THREE.MathUtils.lerp(pulseRef.current.intensity, 0, 0.1);
+        light.intensity = Math.sin(t * PULSE_FREQUENCY) * PULSE_MAX_INTENSITY * decay + 0.5;
+        return;
       }
     }
+
+    light.intensity = THREE.MathUtils.lerp(light.intensity, 0, 0.1);
   });
 
   return (
     <pointLight
       ref={pulseRef}
       position={[0, 3, 0]}
-      color={pulseColor}
+      color={pulseColorRef.current}
       intensity={0}
       distance={15}
       decay={2}

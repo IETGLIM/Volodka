@@ -44,7 +44,7 @@ export const combatStrategy: CameraModeStrategy = {
     );
 
     const combatResult = updateCombatCamera(combat, ctx.delta, ctx.spring.position);
-    targetPos = targetPos.add(combatResult.shakeOffset);
+    const shakenPos = ctx.tempVec2.copy(targetPos).add(combatResult.shakeOffset);
 
     let targetRoll = 0;
     const exploration = ctx.exploration;
@@ -63,7 +63,7 @@ export const combatStrategy: CameraModeStrategy = {
       kind: 'targets',
       mode: 'combat',
       targets: {
-        targetPos,
+        targetPos: shakenPos,
         targetLook,
         targetFov: combatResult.effectiveFov,
         targetRoll,

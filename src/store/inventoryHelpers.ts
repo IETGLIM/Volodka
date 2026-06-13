@@ -1,6 +1,11 @@
 /* ─── Volodka RPG – pure inventory mutation helpers ─── */
 
-import type { InventoryItem } from '@/shared/types/game';
+import type {
+  InventoryItem,
+  NonStackableInventoryItem,
+  StackableInventoryItem,
+} from '@/shared/types/game';
+import { asItemId } from '@/shared/types/brands';
 import { MAX_INVENTORY_SLOTS } from '@/data/constants';
 
 export function findInventoryItemIndex(inventory: InventoryItem[], itemId: string): number {
@@ -18,7 +23,7 @@ export function getInventoryFullMessage(itemName: string): string {
 
 export function canAddInventoryItem(
   inventory: InventoryItem[],
-  item: Pick<InventoryItem, 'id' | 'stackable'>,
+  item: { id: string; stackable: boolean },
 ): boolean {
   const existingIdx = findInventoryItemIndex(inventory, item.id);
   if (existingIdx >= 0 && inventory[existingIdx].stackable) return true;
@@ -29,24 +34,51 @@ export type AddInventoryItemResult =
   | { ok: true; inventory: InventoryItem[] }
   | { ok: false; reason: 'full'; itemName: string };
 
+type InventoryItemLike = {
+  id: string;
+  name: string;
+  description: string;
+  icon?: string;
+  category: NonStackableInventoryItem['category'];
+  stackable: boolean;
+  quantity: number;
+};
+
+/** Normalize legacy save rows to the stackable discriminated union. */
+export function normalizeInventoryItem(item: InventoryItemLike): InventoryItem {
+  const id = asItemId(item.id);
+  if (item.stackable) {
+    return { ...item, id, stackable: true, quantity: Math.max(1, item.quantity) };
+  }
+  return { ...item, id, stackable: false, quantity: 1 };
+}
+
 /** Stack or append an item. Returns false when inventory is full. */
 export function addInventoryItem(inventory: InventoryItem[], item: InventoryItem): AddInventoryItemResult {
   const next = [...inventory];
-  const existingIdx = findInventoryItemIndex(next, item.id);
+  const normalized = normalizeInventoryItem(item);
+  const existingIdx = findInventoryItemIndex(next, normalized.id);
 
   if (existingIdx >= 0 && next[existingIdx].stackable) {
-    const updated = { ...next[existingIdx] };
-    updated.quantity = updated.quantity + (item.quantity ?? 1);
+    const existing = next[existingIdx];
+    if (!existing.stackable) {
+      return { ok: false, reason: 'full', itemName: normalized.name };
+    }
+    const addQty = normalized.stackable ? normalized.quantity : 1;
+    const updated: StackableInventoryItem = {
+      ...existing,
+      quantity: existing.quantity + addQty,
+    };
     next[existingIdx] = updated;
     return { ok: true, inventory: next };
   }
 
   if (next.length < MAX_INVENTORY_SLOTS) {
-    next.push({ ...item, quantity: item.quantity ?? 1 });
+    next.push(normalized);
     return { ok: true, inventory: next };
   }
 
-  return { ok: false, reason: 'full', itemName: item.name };
+  return { ok: false, reason: 'full', itemName: normalized.name };
 }
 
 export interface RemoveInventoryItemResult {
@@ -64,13 +96,21 @@ export function removeInventoryItem(
   const idx = findInventoryItemIndex(next, itemId);
   if (idx < 0) return { inventory: next, removed: false };
 
-  const item = { ...next[idx] };
-  item.quantity -= quantity;
+  const existing = next[idx];
+  if (!existing.stackable) {
+    next.splice(idx, 1);
+    return { inventory: next, removed: true };
+  }
 
-  if (item.quantity <= 0) {
+  const updated: StackableInventoryItem = {
+    ...existing,
+    quantity: existing.quantity - quantity,
+  };
+
+  if (updated.quantity <= 0) {
     next.splice(idx, 1);
   } else {
-    next[idx] = item;
+    next[idx] = updated;
   }
 
   return { inventory: next, removed: true };

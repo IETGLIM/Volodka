@@ -294,7 +294,7 @@ export function connectWithStereoPan(
   panEnd: number,
   startTime: number,
   duration: number,
-): void {
+): () => void {
   const caps = probeAudioCapabilities(ctx);
   if (caps.stereoPanner) {
     try {
@@ -303,13 +303,20 @@ export function connectWithStereoPan(
       panner.pan.linearRampToValueAtTime(panEnd, startTime + duration);
       source.connect(panner);
       panner.connect(destination);
-      return;
+      return () => {
+        try {
+          panner.disconnect();
+        } catch {
+          // ignore
+        }
+      };
     } catch {
       // fall through
     }
   }
 
   source.connect(destination);
+  return () => {};
 }
 
 /** Create convolver when supported; returns null on mobile browsers that reject large IRs. */

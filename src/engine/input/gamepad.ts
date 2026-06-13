@@ -48,11 +48,24 @@ const emptyFrame: GamepadFrame = {
   rt: 0,
 };
 
-/** Apply radial deadzone and re-scale to full range. */
+/** Apply per-axis deadzone for single-axis inputs (triggers). */
 export function applyDeadzone(value: number, deadzone = DEFAULT_DEADZONE): number {
   if (Math.abs(value) < deadzone) return 0;
   const sign = Math.sign(value);
   return sign * ((Math.abs(value) - deadzone) / (1 - deadzone));
+}
+
+/** Circular deadzone for analog sticks — preserves direction and consistent magnitude. */
+export function applyRadialDeadzone(
+  x: number,
+  y: number,
+  deadzone = DEFAULT_DEADZONE,
+): GamepadStick {
+  const magnitude = Math.hypot(x, y);
+  if (magnitude < deadzone) return { x: 0, y: 0 };
+  const rescaled = Math.min(1, (magnitude - deadzone) / (1 - deadzone));
+  const scale = rescaled / magnitude;
+  return { x: x * scale, y: y * scale };
 }
 
 /** Clamp stick vector to unit circle. */
@@ -88,12 +101,10 @@ export function pollGamepad(deadzone = DEFAULT_DEADZONE): GamepadFrame {
   const pad = getActiveGamepad();
   if (!pad) return emptyFrame;
 
-  const lx = applyDeadzone(pad.axes[0] ?? 0, deadzone);
-  const ly = applyDeadzone(pad.axes[1] ?? 0, deadzone);
-  const rx = applyDeadzone(pad.axes[2] ?? 0, deadzone);
-  const ry = applyDeadzone(pad.axes[3] ?? 0, deadzone);
-  const leftStick = normalizeStick(lx, ly);
-  const rightStick = normalizeStick(rx, ry);
+  const leftRaw = applyRadialDeadzone(pad.axes[0] ?? 0, pad.axes[1] ?? 0, deadzone);
+  const rightRaw = applyRadialDeadzone(pad.axes[2] ?? 0, pad.axes[3] ?? 0, deadzone);
+  const leftStick = normalizeStick(leftRaw.x, leftRaw.y);
+  const rightStick = normalizeStick(rightRaw.x, rightRaw.y);
 
   const buttons = pad.buttons.map((b) => isButtonPressed(b));
   const lt = Math.max(readTrigger(pad.buttons[GAMEPAD.LT]), pad.axes[4] !== undefined ? applyDeadzone(pad.axes[4], 0.05) : 0);

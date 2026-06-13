@@ -59,6 +59,12 @@ export function performSceneTransition(payload: SceneTransitionPayload): void {
     const fromSceneId = getGameSnapshot().exploration.currentSceneId;
     const { targetScene, spawnAt } = payload;
 
+    eventBus.emit('scene:transition_start', {
+      fromSceneId,
+      targetScene,
+      spawnAt,
+    });
+
     if (fromSceneId !== targetScene) {
       eventBus.emit('scene:unload', {
         sceneId: fromSceneId,

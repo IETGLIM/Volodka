@@ -13,6 +13,7 @@ import {
   type SavePayload,
   parseNpcStatesFromSave,
 } from '@/shared/validation/saveSchema';
+import { normalizeInventoryItem } from '@/store/inventoryHelpers';
 import { BOOT_PHASE_FLAGS, phaseFlagsFromLegacyMode } from '@/shared/gamePhase';
 import {
   createDefaultExploration,
@@ -155,6 +156,18 @@ export function storePatchFromSave(payload: SavePayload): Partial<GameStoreState
       ...defaults.playerState,
       ...payload.playerState,
       flags: migratedFlags,
+      inventory: payload.playerState.inventory.map((item) => normalizeInventoryItem(item)),
+      equippedItems: {
+        head: payload.playerState.equippedItems.head
+          ? normalizeInventoryItem(payload.playerState.equippedItems.head)
+          : null,
+        body: payload.playerState.equippedItems.body
+          ? normalizeInventoryItem(payload.playerState.equippedItems.body)
+          : null,
+        accessory: payload.playerState.equippedItems.accessory
+          ? normalizeInventoryItem(payload.playerState.equippedItems.accessory)
+          : null,
+      },
     },
     exploration: {
       ...defaults.exploration,

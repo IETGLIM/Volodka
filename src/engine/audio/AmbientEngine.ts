@@ -430,6 +430,10 @@ export class AmbientSoundPlayer {
 
     osc.start(now);
     safeStop(osc, now + rs.duration + 0.01);
+    osc.onended = () => {
+      try { osc.disconnect(); } catch { /* ignore */ }
+      try { envGain.disconnect(); } catch { /* ignore */ }
+    };
   }
 
   /** Fade out an ambient instance and clean it up */

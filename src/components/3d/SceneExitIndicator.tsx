@@ -18,9 +18,26 @@ interface SceneExitIndicatorProps {
 
 /** Renders exit markers at scene boundaries and triggers scene transitions */
 export function SceneExitIndicator({ livePlayerPositionRef }: SceneExitIndicatorProps) {
-  const { sceneId, playerFlags, playerKarma } = useSceneExitState();
+  const {
+    sceneId,
+    playerFlags,
+    playerKarma,
+    playerSkills,
+    collectedPoems,
+    currentAct,
+    timeOfDay,
+  } = useSceneExitState();
 
-  const exits = useMemo(() => getSceneExits(sceneId, playerFlags, playerKarma), [sceneId, playerFlags, playerKarma]);
+  const exits = useMemo(
+    () =>
+      getSceneExits(sceneId, playerFlags, playerKarma, {
+        skills: playerSkills,
+        collectedPoems,
+        currentAct,
+        timeOfDay,
+      }),
+    [sceneId, playerFlags, playerKarma, playerSkills, collectedPoems, currentAct, timeOfDay],
+  );
 
   return (
     <group key={`exits:${sceneId}`}>

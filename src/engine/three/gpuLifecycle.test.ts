@@ -1,5 +1,6 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import * as THREE from 'three';
+import { useGLTF } from '@react-three/drei';
 import {
   acquireSharedTexture,
   releaseSharedTexture,
@@ -13,6 +14,7 @@ import {
 import {
   handleSceneGpuTransition,
   getSceneGltfAssetIds,
+  evictSceneGpuCache,
 } from '@/engine/scene/sceneGpuLifecycle';
 
 describe('textureReuseMap', () => {
@@ -69,6 +71,22 @@ describe('ObjectPool', () => {
     expect(pool.capacity).toBe(2);
     expect(disposed).toEqual([3]);
   });
+
+  it('warns when overflow is dropped without disposeOverflow', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    let nextId = 1;
+    const pool = new ObjectPool(() => ({ id: nextId++ }), undefined, 0, 1);
+
+    const a = pool.acquire();
+    const b = pool.acquire();
+    pool.release(a);
+    pool.release(b);
+
+    expect(warn).toHaveBeenCalledWith(
+      '[ObjectPool] Pool at capacity and disposeOverflow is unset — item was dropped and may leak GPU resources.',
+    );
+    warn.mockRestore();
+  });
 });
 
 describe('threeLodGroup', () => {
@@ -105,5 +123,34 @@ describe('sceneGpuLifecycle', () => {
 
   it('handleSceneGpuTransition does not throw for unknown scenes', () => {
     expect(() => handleSceneGpuTransition('battle', 'office_day')).not.toThrow();
+  });
+
+  describe('evictSceneGpuCache', () => {
+    beforeEach(() => {
+      vi.spyOn(useGLTF, 'clear').mockImplementation(() => {});
+      vi.spyOn(THREE.Cache, 'remove').mockImplementation(() => {});
+    });
+
+    it('evicts prop GLBs for the scene being left', () => {
+      evictSceneGpuCache('volodka_room');
+
+      expect(useGLTF.clear).toHaveBeenCalledWith('/models/props/desk.glb');
+      expect(useGLTF.clear).toHaveBeenCalledWith('/models/props/bed.glb');
+      expect(THREE.Cache.remove).toHaveBeenCalledWith('/models/props/desk.glb');
+    });
+
+    it('evicts NPC GLBs for the scene being left', () => {
+      evictSceneGpuCache('cafe_evening');
+
+      expect(useGLTF.clear).toHaveBeenCalledWith('/models/npcs/cafe_barista.glb');
+      expect(THREE.Cache.remove).toHaveBeenCalledWith('/models/npcs/cafe_barista.glb');
+    });
+
+    it('keeps prop GLBs shared between from and keep scenes', () => {
+      evictSceneGpuCache('volodka_room', 'office_day');
+
+      expect(useGLTF.clear).not.toHaveBeenCalledWith('/models/props/desk.glb');
+      expect(useGLTF.clear).toHaveBeenCalledWith('/models/props/bed.glb');
+    });
   });
 });

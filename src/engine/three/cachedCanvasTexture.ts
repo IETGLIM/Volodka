@@ -32,10 +32,15 @@ export function releaseCachedCanvasTexture(key: string): void {
   }
 }
 
-/** Test-only reset */
-export function clearCanvasTextureCacheForTests(): void {
+/** Drop all cached canvas textures — used on quality preset change. */
+export function evictCanvasTextureCache(): void {
   for (const entry of canvasTextureCache.values()) {
     entry.texture.dispose();
   }
   canvasTextureCache.clear();
+}
+
+/** Test-only reset */
+export function clearCanvasTextureCacheForTests(): void {
+  evictCanvasTextureCache();
 }

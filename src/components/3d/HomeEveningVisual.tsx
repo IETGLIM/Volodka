@@ -4,6 +4,7 @@
 import { useRef, useEffect } from 'react';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import * as THREE from 'three';
+import { registerModuleGeometries } from '@/engine/three/moduleGeometryRegistry';
 import { useGameStore } from '@/store/gameStore';
 import { eventBus } from '@/engine/EventBus';
 import { Radiator, Plant, Picture } from './lazyInteriorModels';
@@ -99,6 +100,8 @@ const geo_pln_photo_0 = new THREE.PlaneGeometry(0.2, 0.15);
 const geo_pln_photo_1 = new THREE.PlaneGeometry(0.24, 0.17);
 const geo_pln_photo_2 = new THREE.PlaneGeometry(0.28, 0.19);
 const PHOTO_PLANE_GEOS = [geo_pln_photo_0, geo_pln_photo_1, geo_pln_photo_2] as const;
+
+registerModuleGeometries([geo_pln_1, geo_pln_2, geo_box_3, geo_box_4, geo_box_5, geo_box_6, geo_box_7, geo_box_8, geo_box_9, geo_pln_10, geo_pln_11, geo_box_12, geo_cyl_13, geo_box_14, geo_box_15, geo_box_16, geo_box_17, geo_box_18, geo_box_19, geo_box_20, geo_box_21, geo_box_22, geo_box_23, geo_box_24, geo_box_25, geo_box_26, geo_box_27, geo_box_28, geo_cyl_29, geo_box_30, geo_pln_31, geo_box_32, geo_box_33, geo_box_34, geo_box_35, geo_box_36, geo_tor_37, geo_box_38, geo_cyl_39, geo_cyl_40, geo_sph_41, geo_cyl_42, geo_tor_43, geo_box_44, geo_cyl_45, geo_box_46, geo_cyl_47, geo_pln_48, geo_box_49, geo_box_50, geo_cyl_51, geo_cyl_52, geo_cyl_53, geo_sph_54, geo_box_55, geo_cyl_56, geo_cyl_57, geo_pln_58, geo_cyl_59, geo_pln_60, geo_pln_61, geo_cyl_62, geo_cyl_63, geo_cyl_64, geo_box_65, geo_box_66, geo_pln_67, geo_box_68, geo_pln_69, geo_box_70, geo_box_71, geo_cyl_72, geo_box_book_h0, geo_box_book_h1, geo_box_book_h2, geo_box_photo_0, geo_box_photo_1, geo_box_photo_2, geo_pln_photo_0, geo_pln_photo_1, geo_pln_photo_2, ...BOOK_GEOS, ...PHOTO_FRAME_GEOS, ...PHOTO_PLANE_GEOS]);
 
 export function HomeEveningVisual() {
   const floorTexture = useCachedCanvasTexture('home_evening:floor', createHomeFloorTexture);

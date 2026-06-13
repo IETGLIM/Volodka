@@ -7,6 +7,7 @@ import { useRef, useMemo, useEffect } from 'react';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import * as THREE from 'three';
 import { useGameStore } from '@/store/gameStore';
+import { seededRand } from '@/shared/utils/seededRand';
 
 /** Particle type per scene */
 type ParticleType = 'rain' | 'snow' | 'dust' | 'embers' | 'fireflies' | 'sparks';
@@ -189,11 +190,13 @@ function ParticleSystem({ type }: { type: ParticleType }) {
 
   // Mutable velocity storage (ref allows modification in useFrame without lint issues)
   const velocitiesRef = useRef<Float32Array | null>(null);
+  const resetGenRef = useRef<Uint32Array | null>(null);
   useEffect(() => {
     if (!velocitiesRef.current || velocitiesRef.current.length !== initialVelocities.length) {
       velocitiesRef.current = new Float32Array(initialVelocities);
     }
-  }, [initialVelocities]);
+    resetGenRef.current = new Uint32Array(config.count);
+  }, [initialVelocities, config.count]);
 
   const geometry = useMemo(() => {
     const geo = new THREE.BufferGeometry();
@@ -235,10 +238,12 @@ function ParticleSystem({ type }: { type: ParticleType }) {
 
   useFrameTick('weather', ({ delta }) => {
     if (!pointsRef.current) return;
-    timeRef.current += delta;
+    const dt = Math.min(delta, 0.05);
+    timeRef.current += dt;
 
     const velocities = velocitiesRef.current;
-    if (!velocities) return;
+    const resetGen = resetGenRef.current;
+    if (!velocities || !resetGen) return;
 
     const posAttr = pointsRef.current.geometry.getAttribute('position') as THREE.BufferAttribute;
     const posArray = posAttr.array as Float32Array;
@@ -251,37 +256,41 @@ function ParticleSystem({ type }: { type: ParticleType }) {
       const phase = phases[i];
 
       // Base movement
-      posArray[i3] += velocities[i3] * delta;
-      posArray[i3 + 1] += velocities[i3 + 1] * delta;
-      posArray[i3 + 2] += velocities[i3 + 2] * delta;
+      posArray[i3] += velocities[i3] * dt;
+      posArray[i3 + 1] += velocities[i3 + 1] * dt;
+      posArray[i3 + 2] += velocities[i3 + 2] * dt;
 
       // Per-type special behavior
       switch (type) {
         case 'rain':
           // Rain streaks fall fast, reset when below ground
           if (posArray[i3 + 1] < -1) {
-            posArray[i3] = (Math.random() - 0.5) * bx;
-            posArray[i3 + 1] = by + Math.random() * 3;
-            posArray[i3 + 2] = (Math.random() - 0.5) * bz;
+            const gen = ++resetGen[i];
+            const seed = i * 1000 + gen * 100;
+            posArray[i3] = (seededRand(seed + 0) - 0.5) * bx;
+            posArray[i3 + 1] = by + seededRand(seed + 1) * 3;
+            posArray[i3 + 2] = (seededRand(seed + 2) - 0.5) * bz;
           }
           break;
 
         case 'snow':
           // Snow drifts laterally with sinusoidal wind
-          posArray[i3] += Math.sin(time * 0.5 + phase) * 0.02 * delta;
-          posArray[i3 + 2] += Math.cos(time * 0.3 + phase * 1.3) * 0.015 * delta;
+          posArray[i3] += Math.sin(time * 0.5 + phase) * 0.02 * dt;
+          posArray[i3 + 2] += Math.cos(time * 0.3 + phase * 1.3) * 0.015 * dt;
           if (posArray[i3 + 1] < -1) {
-            posArray[i3] = (Math.random() - 0.5) * bx;
-            posArray[i3 + 1] = by + Math.random() * 3;
-            posArray[i3 + 2] = (Math.random() - 0.5) * bz;
+            const gen = ++resetGen[i];
+            const seed = i * 1000 + gen * 100;
+            posArray[i3] = (seededRand(seed + 0) - 0.5) * bx;
+            posArray[i3 + 1] = by + seededRand(seed + 1) * 3;
+            posArray[i3 + 2] = (seededRand(seed + 2) - 0.5) * bz;
           }
           break;
 
         case 'dust':
           // Dust motes float in slow circular paths
-          posArray[i3] += Math.sin(time * 0.3 + phase) * 0.005 * delta;
-          posArray[i3 + 1] += Math.sin(time * 0.2 + phase * 2) * 0.003 * delta;
-          posArray[i3 + 2] += Math.cos(time * 0.25 + phase * 1.5) * 0.005 * delta;
+          posArray[i3] += Math.sin(time * 0.3 + phase) * 0.005 * dt;
+          posArray[i3 + 1] += Math.sin(time * 0.2 + phase * 2) * 0.003 * dt;
+          posArray[i3 + 2] += Math.cos(time * 0.25 + phase * 1.5) * 0.005 * dt;
           // Wrap around box boundaries
           if (posArray[i3] > bx / 2) posArray[i3] = -bx / 2;
           if (posArray[i3] < -bx / 2) posArray[i3] = bx / 2;
@@ -293,22 +302,24 @@ function ParticleSystem({ type }: { type: ParticleType }) {
 
         case 'embers':
           // Embers rise, decelerate, and drift
-          velocities[i3 + 1] -= 0.5 * delta; // slight gravity
-          posArray[i3] += Math.sin(time * 1.5 + phase) * 0.03 * delta;
+          velocities[i3 + 1] -= 0.5 * dt; // slight gravity
+          posArray[i3] += Math.sin(time * 1.5 + phase) * 0.03 * dt;
           // Reset when too high or fallen
           if (posArray[i3 + 1] > by || posArray[i3 + 1] < -1) {
-            posArray[i3] = (Math.random() - 0.5) * bx * 0.6;
-            posArray[i3 + 1] = Math.random() * 2;
-            posArray[i3 + 2] = (Math.random() - 0.5) * bz * 0.6;
-            velocities[i3 + 1] = 0.5 + Math.random() * 2;
+            const gen = ++resetGen[i];
+            const seed = i * 1000 + gen * 100;
+            posArray[i3] = (seededRand(seed + 0) - 0.5) * bx * 0.6;
+            posArray[i3 + 1] = seededRand(seed + 1) * 2;
+            posArray[i3 + 2] = (seededRand(seed + 2) - 0.5) * bz * 0.6;
+            velocities[i3 + 1] = 0.5 + seededRand(seed + 3) * 2;
           }
           break;
 
         case 'fireflies':
           // Fireflies wander slowly with pulsing glow
-          posArray[i3] += Math.sin(time * 0.4 + phase) * 0.08 * delta;
-          posArray[i3 + 1] += Math.sin(time * 0.25 + phase * 2.1) * 0.05 * delta;
-          posArray[i3 + 2] += Math.cos(time * 0.35 + phase * 1.7) * 0.08 * delta;
+          posArray[i3] += Math.sin(time * 0.4 + phase) * 0.08 * dt;
+          posArray[i3 + 1] += Math.sin(time * 0.25 + phase * 2.1) * 0.05 * dt;
+          posArray[i3 + 2] += Math.cos(time * 0.35 + phase * 1.7) * 0.08 * dt;
           // Wrap around
           if (posArray[i3] > bx / 2) posArray[i3] = -bx / 2;
           if (posArray[i3] < -bx / 2) posArray[i3] = bx / 2;
@@ -320,14 +331,16 @@ function ParticleSystem({ type }: { type: ParticleType }) {
 
         case 'sparks':
           // Sparks: gravity pulls them down
-          velocities[i3 + 1] -= 3 * delta;
+          velocities[i3 + 1] -= 3 * dt;
           if (posArray[i3 + 1] < -1) {
-            posArray[i3] = (Math.random() - 0.5) * bx * 0.5;
-            posArray[i3 + 1] = Math.random() * 2;
-            posArray[i3 + 2] = (Math.random() - 0.5) * bz * 0.5;
-            velocities[i3] = (Math.random() - 0.5) * 2;
-            velocities[i3 + 1] = 1 + Math.random() * 3;
-            velocities[i3 + 2] = (Math.random() - 0.5) * 2;
+            const gen = ++resetGen[i];
+            const seed = i * 1000 + gen * 100;
+            posArray[i3] = (seededRand(seed + 0) - 0.5) * bx * 0.5;
+            posArray[i3 + 1] = seededRand(seed + 1) * 2;
+            posArray[i3 + 2] = (seededRand(seed + 2) - 0.5) * bz * 0.5;
+            velocities[i3] = (seededRand(seed + 3) - 0.5) * 2;
+            velocities[i3 + 1] = 1 + seededRand(seed + 4) * 3;
+            velocities[i3 + 2] = (seededRand(seed + 5) - 0.5) * 2;
           }
           break;
       }

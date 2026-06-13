@@ -260,8 +260,23 @@ export const WORLD_LOCATIONS: Record<SceneId, WorldLocation> = {
 
 /* ─── Lookup helpers ─── */
 
+/** Safe defaults when a SceneId is not yet registered in WORLD_LOCATIONS. */
+function createFallbackWorldLocation(sceneId: SceneId): WorldLocation {
+  if (import.meta.env.DEV) {
+    console.warn(
+      `[worldRegistry] Unknown scene "${sceneId}" — using fallback location (volodka_city:downtown)`,
+    );
+  }
+  return {
+    sceneId,
+    kind: 'story',
+    regionId: 'volodka_city',
+    cellId: 'volodka_city:downtown',
+  };
+}
+
 export function getWorldLocation(sceneId: SceneId): WorldLocation {
-  return WORLD_LOCATIONS[sceneId];
+  return WORLD_LOCATIONS[sceneId] ?? createFallbackWorldLocation(sceneId);
 }
 
 export function getWorldRegion(regionId: WorldRegionId): WorldRegion {

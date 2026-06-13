@@ -1,8 +1,8 @@
 /* ─── Mobile LOD player model — same skeleton/animation as full model, ~12 meshes ─── */
 
-import { useRef, useMemo, memo } from 'react';
+import { useRef, useMemo, useEffect, memo } from 'react';
 import * as THREE from 'three';
-import { boxGeo, capsuleGeo, sphereGeo, torusGeo } from './proceduralNpcShared';
+import { boxGeo, capsuleGeo, sphereGeo } from './proceduralNpcShared';
 import {
   useProceduralPlayerAnimation,
   type ProceduralPlayerModelProps,
@@ -54,7 +54,7 @@ export const ProceduralPlayerModelLite = memo(function ProceduralPlayerModelLite
         transparent: true,
         opacity: 0.6,
       }),
-      wristbandGeo: torusGeo(0.034, 0.006, 4, 8),
+      wristbandGeo: new THREE.TorusGeometry(0.034, 0.006, 4, 8),
     }),
     [karmaGlow],
   );
@@ -70,6 +70,20 @@ export const ProceduralPlayerModelLite = memo(function ProceduralPlayerModelLite
     }),
     [],
   );
+
+  useEffect(() => {
+    return () => {
+      Object.values(mat).forEach((m) => m.dispose());
+    };
+  }, [mat]);
+
+  useEffect(() => {
+    return () => {
+      karmaMat.phoneGlow.dispose();
+      karmaMat.wristbandGlow.dispose();
+      karmaMat.wristbandGeo.dispose();
+    };
+  }, [karmaMat]);
 
   return (
     <group ref={groupRef} scale={[modelScale, modelScale, modelScale]}>

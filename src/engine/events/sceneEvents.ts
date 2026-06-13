@@ -3,6 +3,12 @@ import type { SceneId } from '@/config/sceneDefinitions';
 /** Scene transitions and WebGL canvas lifecycle. */
 export interface SceneEvents {
   'scene:transition': { targetScene: SceneId; spawnAt: [number, number, number] };
+  /** Fired at the start of performSceneTransition — before unload and store write. */
+  'scene:transition_start': {
+    fromSceneId: SceneId;
+    targetScene: SceneId;
+    spawnAt: [number, number, number];
+  };
   /** Fired before store scene write — orchestrators tear down old scene resources. */
   'scene:unload': { sceneId: SceneId; nextSceneId: SceneId };
   'scene:enter': { sceneId: SceneId; fromSceneId: SceneId };

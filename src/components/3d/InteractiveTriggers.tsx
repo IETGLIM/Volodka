@@ -185,8 +185,14 @@ export function InteractiveTriggers({
 }: InteractiveTriggersProps) {
   const promptFadeInAnim = `promptFadeIn-${useId().replace(/:/g, '')}`;
   const { sceneId, gameMode, showStoryOverlay, currentNodeId } = useInteractionOverlay();
-  const { playerFlags, playerKarma } = useSceneExitState();
-  const currentAct = useGameStore((s) => s.playerState.progression.currentAct);
+  const {
+    playerFlags,
+    playerKarma,
+    playerSkills,
+    collectedPoems,
+    currentAct,
+    timeOfDay: exitTimeOfDay,
+  } = useSceneExitState();
   const timeOfDay = useTimeOfDay();
   const scheduleCtx = useScheduleContext();
   const zones = useMemo(
@@ -200,8 +206,14 @@ export function InteractiveTriggers({
   );
 
   const sceneExits = useMemo(
-    () => getSceneExits(sceneId, playerFlags, playerKarma),
-    [sceneId, playerFlags, playerKarma],
+    () =>
+      getSceneExits(sceneId, playerFlags, playerKarma, {
+        skills: playerSkills,
+        collectedPoems,
+        currentAct,
+        timeOfDay: exitTimeOfDay,
+      }),
+    [sceneId, playerFlags, playerKarma, playerSkills, collectedPoems, currentAct, exitTimeOfDay],
   );
 
   const overlappedExitIndices = useMemo(() => {

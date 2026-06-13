@@ -3,8 +3,9 @@ import {
   GRAVITY,
   ROTATION_SPEED,
   TERMINAL_VELOCITY,
+  MAX_DIRECT_DISPLACEMENT,
 } from '@/engine/player/playerConstants';
-import { lerpAngle, enforceFloor } from '@/engine/player/playerMath';
+import { lerpAngle, enforceFloor, clampHorizontalDisplacement } from '@/engine/player/playerMath';
 import { computeKccMovementSubstepped } from '@/engine/player/physicsSubstep';
 import type { PlayerMovementDeps } from '@/engine/player/playerFrameTypes';
 
@@ -69,10 +70,15 @@ export function runLockedPlayerMovement(deps: PlayerMovementDeps): void {
       deps.isGroundedRef.current = false;
     }
   } else {
+    const { dx, dz } = clampHorizontalDisplacement(
+      desiredDisp.x,
+      desiredDisp.z,
+      MAX_DIRECT_DISPLACEMENT,
+    );
     rb.setTranslation({
-      x: posBeforeMovement.x + desiredDisp.x,
+      x: posBeforeMovement.x + dx,
       y: posBeforeMovement.y + desiredDisp.y,
-      z: posBeforeMovement.z + desiredDisp.z,
+      z: posBeforeMovement.z + dz,
     }, true);
   }
 

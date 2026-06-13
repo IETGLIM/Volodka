@@ -27,6 +27,7 @@ export function CafeVisual({ livePlayerPositionRef }: CafeVisualProps) {
   const coffeeSteamTimeRef = useRef(0);
   const shimmerRef = useRef<THREE.Mesh>(null);
   const shimmerMaterialRef = useRef<THREE.MeshBasicMaterial>(null);
+  const shimmerLayer2MaterialRef = useRef<THREE.MeshBasicMaterial>(null);
   const shimmerTimeRef = useRef(0);
 
   const W = 10;
@@ -57,10 +58,13 @@ export function CafeVisual({ livePlayerPositionRef }: CafeVisualProps) {
     return geo;
   }, [steamData.positions]);
 
-  // ── Dispose steam geometry on unmount (textures are module-cached) ──
+  // ── Dispose owned GPU resources on unmount (textures are module-cached) ──
   useEffect(() => {
     return () => {
-      steamGeometry?.dispose();
+      steamGeometry.dispose();
+      coffeeSteamMaterialRef.current?.dispose();
+      shimmerMaterialRef.current?.dispose();
+      shimmerLayer2MaterialRef.current?.dispose();
     };
   }, [steamGeometry]);
 
@@ -415,6 +419,7 @@ export function CafeVisual({ livePlayerPositionRef }: CafeVisualProps) {
       <mesh position={[-0.5, 1.5, -4.5]} rotation={[0.05, 0.1, 0]}>
         <planeGeometry args={[1.2, 0.8]} />
         <meshBasicMaterial
+          ref={shimmerLayer2MaterialRef}
           color="#ffaa66"
           transparent
           opacity={0.02}

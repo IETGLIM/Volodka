@@ -133,6 +133,11 @@ export function useCutsceneController() {
     unsubOverlayEnd = eventBus.on('cutscene:overlay_end', finishCutsceneBeat);
 
     cutsceneSessionRef.current.schedule(finishCutsceneBeat, totalDuration + 300);
+
+    return () => {
+      unsubOverlayEnd?.();
+      cutsceneSessionRef.current.cancel();
+    };
   }, [currentNodeId]);
 
   return { skipActiveCutscene };

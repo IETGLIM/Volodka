@@ -1,6 +1,6 @@
 # Архитектура — ВОЛОДЬКА RPG
 
-> Карта систем проекта для инженеров. Актуально для v3.4.0.
+> Карта систем проекта для инженеров. Актуально для v4.1.0.
 
 ## Слои
 
@@ -163,6 +163,46 @@ Zod-схема (SAVE_VERSION=1), two-phase write + rollback, backup-ключ.
   `parseTrainablePlayerSkill`) — без silent cast на невалидные ключи.
 - UI: `OrchestratorGameplayLayer` — `memo` + field-wise compare (canvas-only
   rerender не трогает gameplay HUD).
+
+### Типы (`src/shared/types/`)
+Монолит `game.ts` разбит на barrel + модули (v4.1):
+- `definitions/*` — декларативные контракты (quest, dialogue, combat, items, …).
+- `state/*` — runtime-состояние (player, exploration, combat, relations, …).
+- `common/*` — условия и эффекты сюжета (`conditions`, `effects`).
+- `brands.ts` — брендированные id там, где нужна типобезопасность.
+- `game.ts` — только re-export; **EventMap не реэкспортируется** (цикл с engine).
+
+### UI-оркестратор: производительность и утечки (v4.1)
+- **Lazy tiers**: `CombatUI` и мини-игры грузятся через `retryLazyDefault`
+  (`lazyPanels.tsx`, `lazyMinigames.tsx`) — retry при ChunkLoadError + stale deploy.
+- **ControllerSession** (`useCutsceneController`, interaction/combat hooks):
+  generation-guarded timers; cleanup на unmount (`cancel()` / `dispose()`).
+- **Стабильный контекст**: `CyberpunkThemeProvider` — `useMemo` для context value.
+- **MiniMap rAF**: позиция/rotation в refs; effect только на `[sceneConfig]`.
+- **CombatUI / HUD**: `scheduleTimeout` + `timersRef`; buffs/powers — `useMemo`
+  с узкими deps (`combatState.buffs`, `powerCooldowns`, `turn`).
+- **Panel stack**: `onPanelOpened` только при росте `panelStack.length`
+  (закрытие панели не сбрасывает examine).
+- **DialogueRenderer**: NPC lookup/emotion/relation — `useMemo` по speaker/text
+  (не пересчитывается на каждый тик typewriter 30 ms).
+
+### GPU и Three.js lifecycle (v4.1)
+- `sceneGpuLifecycle.ts`, `graphicsGpuCleanup.ts` — централизованный teardown
+  текстур/геометрий при смене сцены и quality preset.
+- `moduleGeometryRegistry.ts` — учёт shared BufferGeometry между сценами.
+- `bufferGeometrySanitize.ts` — guard NaN/Inf в атрибутах (god-rays, процедурка).
+- `textureReuseMap` / `cachedCanvasTexture` / `objectPool` — ref-count + dispose
+  при последнем unmount; тесты в `gpuLifecycle.test.ts`.
+
+### Аудио (v4.1)
+- `AudioEngine` — capability probe (`audioCapabilities.ts`), graceful mute при
+  suspended context; scene handoff через `SceneAudioController` + `AmbientEngine`.
+- Singleton revive после StrictMode dispose синхронизирован с EventBus.
+
+### Бой: баффы (v4.1)
+- `buffSystem.ts`: refresh по stack key; mutual exclusion defense_reduction ↔
+  damage_multiplier; **лимит 2 buff + 2 debuff на target** (считаются отдельно).
+- `combatTransientPool` — пул transient UI state; тесты buff/pool/gamepad.
 
 ### Числовая устойчивость
 - `cameraShake.ts` — `Number.isFinite` на intensity/decay/dt (NaN не залипает).

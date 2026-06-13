@@ -5,7 +5,6 @@
 import type { MutableRefObject } from 'react';
 import { Suspense, useEffect, useMemo, useRef } from 'react';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
-import { useThree } from '@react-three/fiber';
 import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
 import { useGameStore } from '@/store/gameStore';
@@ -52,7 +51,6 @@ function FirstPersonHandsInner({ moveBlendRef }: FirstPersonHandsProps) {
   const combatGuardRef = useRef(0);
   const idleActionRef = useRef<THREE.AnimationAction | null>(null);
   const walkActionRef = useRef<THREE.AnimationAction | null>(null);
-  const { camera } = useThree();
 
   useEffect(() => {
     const scope = eventBus.createScope();
@@ -91,13 +89,13 @@ function FirstPersonHandsInner({ moveBlendRef }: FirstPersonHandsProps) {
     idleActionRef.current?.reset().fadeIn(0.2).play();
   }, [actions]);
 
-  useFrameTick('player', ({ delta }) => {
+  useFrameTick('player', ({ state, delta }) => {
     const rig = rigRef.current;
     const mount = armsMountRef.current;
     if (!rig || !mount) return;
 
-    rig.position.copy(camera.position);
-    rig.quaternion.copy(camera.quaternion);
+    rig.position.copy(state.camera.position);
+    rig.quaternion.copy(state.camera.quaternion);
 
     const move = THREE.MathUtils.clamp(moveBlendRef?.current ?? 0, 0, 1) * (1 - combatGuardRef.current * 0.85);
     bobPhaseRef.current += delta * (2 + move * 8);

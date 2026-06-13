@@ -11,7 +11,7 @@ import { QUEST_DEFINITIONS } from '@/data/quests'
 import { findNpcById } from '@/data/allNpcDefinitions'
 import { resolveCanonicalNpcId } from '@/data/goldenPath'
 import { UI_LAYERS } from '@/shared/constants/uiLayers'
-import type { NPCDefinition, QuestDefinition } from '@/shared/types/game'
+import type { NPCDefinition, QuestDefinition, StoryEffect } from '@/shared/types/game'
 import { computeQuestCreditReward, getDefaultQuestXp } from '@/shared/utils/questRewards'
 
 interface QuestCompleteDialogProps {
@@ -526,7 +526,7 @@ function getRewardIcon(type: string): string {
   }
 }
 
-function getRewardLabel(reward: QuestDefinition['rewards'] extends (infer R)[] | undefined ? R : never): string {
+function getRewardLabel(reward: StoryEffect): string {
   switch (reward.type) {
     case 'addSkill': return `${reward.skill} +${reward.value}`
     case 'addKarma': return `Карма +${reward.value}`
