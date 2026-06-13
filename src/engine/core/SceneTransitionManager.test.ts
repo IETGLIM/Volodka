@@ -12,10 +12,15 @@ vi.mock('@/engine/interaction/narrativeOpenHelpers', () => ({
   triggerSceneEntryStoryIfNeeded: vi.fn(),
 }));
 
+vi.mock('@/engine/guidedStory/createGuidedStoryDeps', () => ({
+  getStoryNodeSceneId: () => undefined,
+}));
+
 vi.mock('@/engine/GameActionDispatcher', () => ({
   getGameSnapshot: () => ({
     exploration: { currentSceneId: 'volodka_room' },
     showStoryOverlay: false,
+    currentNodeId: 'explore_mode',
   }),
   dispatchGameAction: (...args: unknown[]) => dispatchGameAction(...args),
 }));

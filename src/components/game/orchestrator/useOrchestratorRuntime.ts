@@ -100,6 +100,13 @@ export function useOrchestratorRuntime() {
     panels.closeAllPanels();
   }, [isOverlayActive, interaction.dismissForNarrativeOverlay, panels.closeAllPanels]);
 
+  useEffect(() => {
+    if (!isOverlayActive || typeof document === 'undefined') return;
+    if (document.pointerLockElement) {
+      document.exitPointerLock();
+    }
+  }, [isOverlayActive]);
+
   const panelClosers = useStablePanelClosers(panels.closePanelByType);
   const hudSecondaryOpeners = useStableHudPanelOpeners(panels.dispatchPanel);
 

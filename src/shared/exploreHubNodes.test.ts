@@ -9,6 +9,7 @@ const dispatchGameAction = vi.fn();
 
 let mockSnapshot = {
   showStoryOverlay: true,
+  currentNodeId: 'explore_mode',
 };
 
 vi.mock('@/engine/GameActionDispatcher', () => ({
@@ -22,6 +23,8 @@ vi.mock('@/engine/guidedStory/createGuidedStoryDeps', () => ({
       corridor_door: 'volodka_corridor',
       kitchen_table: 'home_evening',
       cafe_barista: 'cafe_evening',
+      explore_mode: 'volodka_room',
+      start_diagnosis: 'office_day',
     };
     return map[nodeId];
   },
@@ -32,6 +35,7 @@ describe('exploreHubNodes', () => {
     dispatchGameAction.mockClear();
     mockSnapshot = {
       showStoryOverlay: true,
+      currentNodeId: 'explore_mode',
     };
   });
 
@@ -43,8 +47,15 @@ describe('exploreHubNodes', () => {
   });
 
   it('closes narrative overlay on physical scene enter', () => {
+    mockSnapshot.currentNodeId = 'explore_mode';
     syncNarrativeOnSceneEnter('volodka_corridor');
     expect(dispatchGameAction).toHaveBeenCalledWith({ type: 'story/closeNarrativeOverlay' });
+  });
+
+  it('preserves overlay when current story beat owns the target scene', () => {
+    mockSnapshot.currentNodeId = 'start_diagnosis';
+    syncNarrativeOnSceneEnter('office_day');
+    expect(dispatchGameAction).not.toHaveBeenCalled();
   });
 
   it('does nothing when overlay is already closed', () => {

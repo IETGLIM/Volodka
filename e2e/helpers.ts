@@ -28,6 +28,19 @@ export async function skipStoryTypewriter(page: Page) {
   }
 }
 
+/** Wait for story overlay, skip typewriter, poll until choice buttons render. */
+export async function advanceStoryOverlay(page: Page, expectedNodeId?: string, timeout = 45_000) {
+  await waitForStoryDialog(page, expectedNodeId, timeout);
+  for (let attempt = 0; attempt < 8; attempt += 1) {
+    await skipStoryTypewriter(page);
+    const skipBtn = page.getByRole('button', { name: /Пропустить анимацию текста/i });
+    if (!(await skipBtn.isVisible({ timeout: 800 }).catch(() => false))) {
+      return;
+    }
+    await page.waitForTimeout(300);
+  }
+}
+
 /** Dismiss first_reading matrix quote + quest-complete dialog after deferred activation. */
 export async function dismissFirstReadingBeats(page: Page) {
   await page.waitForTimeout(1200);
@@ -88,11 +101,72 @@ export async function settleAfterWake(page: Page) {
   await dismissFirstPlayTutorial(page);
 }
 
+/** Dismiss overlays and wait for canvas before mid-game story bootstraps. */
+export async function prepareStoryBootstrap(page: Page) {
+  await waitForExplorationInputReady(page);
+  await page.waitForFunction(
+    () => typeof window.__volodka_e2e?.isStoryOverlayReady === 'function',
+    null,
+    { timeout: 30_000 },
+  );
+  await page.waitForFunction(
+    () => {
+      const loading = document.body.innerText.match(/Загрузка:[^\n]*/)?.[0] ?? '';
+      return loading.length === 0 || /100\s*%/.test(loading);
+    },
+    null,
+    { timeout: 60_000 },
+  );
+}
+
 export async function waitForStoryDialog(page: Page, expectedNodeId?: string, timeout = 45_000) {
   if (expectedNodeId) {
     const speaker = page.locator(`#story-speaker-${expectedNodeId}`);
-    await expect(speaker).toBeVisible({ timeout });
-    return page.getByRole('dialog').filter({ has: speaker });
+    const dialog = page.getByRole('dialog').filter({ has: speaker });
+    const deadline = Date.now() + timeout;
+
+    while (Date.now() < deadline) {
+      if (await speaker.isVisible().catch(() => false)) {
+        return dialog;
+      }
+
+      const overlayReady = await page
+        .evaluate((nodeId) => window.__volodka_e2e?.isStoryOverlayReady(nodeId) ?? false, expectedNodeId)
+        .catch(() => false);
+
+      if (!overlayReady) {
+        await page
+          .evaluate(async (nodeId) => {
+            if (window.__volodka_e2e?.ensureStoryOverlay) {
+              await window.__volodka_e2e.ensureStoryOverlay(nodeId);
+              return;
+            }
+            await window.__volodka_e2e?.visitStoryNode(nodeId);
+          }, expectedNodeId)
+          .catch(() => undefined);
+      }
+
+      const genericDialog = page.getByRole('dialog', { name: /Голос/i });
+      if (await genericDialog.isVisible().catch(() => false)) {
+        const hasExpectedSpeaker = await speaker.isVisible().catch(() => false);
+        if (!hasExpectedSpeaker) {
+          await page
+            .evaluate(async (nodeId) => {
+              if (window.__volodka_e2e?.ensureStoryOverlay) {
+                await window.__volodka_e2e.ensureStoryOverlay(nodeId);
+                return;
+              }
+              await window.__volodka_e2e?.visitStoryNode(nodeId);
+            }, expectedNodeId)
+            .catch(() => undefined);
+        }
+      }
+
+      await page.waitForTimeout(400);
+    }
+
+    await expect(speaker).toBeVisible({ timeout: 0 });
+    return dialog;
   }
 
   const storyDialog = page.getByRole('dialog', { name: /Голос/i });

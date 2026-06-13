@@ -11,7 +11,7 @@ import {
 import { closeNarrativeOverlay, openNarrativeOverlay } from '@/engine/scene/narrativeOverlay';
 import { enterSceneFreeExplorationHub } from '@/engine/scene/freeExplorationHub';
 import { resolveSceneSpawn, requestSceneTransition } from '@/engine/scene/sceneTransition';
-import { getGameStore } from '@/store/gameStore';
+import { getGameStore, useGameStore } from '@/store/gameStore';
 import type { SceneId } from '@/shared/types/game';
 
 export interface VolodkaE2EPosition {
@@ -43,6 +43,7 @@ export interface VolodkaE2EBridge {
   bootstrapAct7LibraryHub: () => Promise<void>;
   bootstrapAct7DreamHub: () => Promise<void>;
   promoteClosedOverlayHub: (hubId: string, sceneId: SceneId) => Promise<void>;
+  ensureStoryOverlay: (nodeId: string) => Promise<void>;
   isStoryOverlayReady: (expectedNodeId?: string) => boolean;
 }
 
@@ -98,8 +99,22 @@ function suppressCutsceneForStoryNode(nodeId: string): void {
   }
 }
 
-async function waitForStoryOverlayReady(nodeId: string): Promise<void> {
-  const deadline = Date.now() + 15_000;
+/** Mid-game e2e bootstraps skip Act I — don't let deferred first-play tutorial steal input. */
+function dismissFirstPlayTutorialForBootstrap(): void {
+  const { tutorialFlags } = getGameStore();
+  useGameStore.setState({
+    tutorialFlags: {
+      ...tutorialFlags,
+      tutorialsCompleted: true,
+      tutorial_seen_movement: true,
+      tutorial_seen_interact: true,
+      tutorial_seen_controls: true,
+    },
+  });
+}
+
+async function waitForStoryOverlayReady(nodeId: string): Promise<boolean> {
+  const deadline = Date.now() + 20_000;
   while (Date.now() < deadline) {
     const store = getGameStore();
     if (
@@ -107,12 +122,13 @@ async function waitForStoryOverlayReady(nodeId: string): Promise<void> {
       store.currentNodeId === nodeId &&
       Boolean(getStoryNodes()[nodeId])
     ) {
-      return;
+      return true;
     }
     await new Promise<void>((resolve) => {
       requestAnimationFrame(() => resolve());
     });
   }
+  return false;
 }
 
 async function jumpToStoryBeat(nodeId: string, sceneId: SceneId): Promise<void> {
@@ -120,6 +136,7 @@ async function jumpToStoryBeat(nodeId: string, sceneId: SceneId): Promise<void> 
   const store = getGameStore();
   store.setIntroActive(false);
   store.setMainMenuOpen(false);
+  dismissFirstPlayTutorialForBootstrap();
   closeNarrativeOverlay();
   if (store.activeCutsceneId) {
     store.setCutscene(null, []);
@@ -132,7 +149,14 @@ async function jumpToStoryBeat(nodeId: string, sceneId: SceneId): Promise<void> 
     requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
   });
   openNarrativeOverlay(nodeId, 'story');
-  await waitForStoryOverlayReady(nodeId);
+  let ready = await waitForStoryOverlayReady(nodeId);
+  if (!ready) {
+    openNarrativeOverlay(nodeId, 'story');
+    ready = await waitForStoryOverlayReady(nodeId);
+  }
+  if (!ready) {
+    throw new Error(`[e2eBridge] story overlay not ready for ${nodeId}`);
+  }
 }
 
 async function jumpToClosedOverlayHub(hubId: string, sceneId: SceneId): Promise<void> {
@@ -141,6 +165,7 @@ async function jumpToClosedOverlayHub(hubId: string, sceneId: SceneId): Promise<
   const store = getGameStore();
   store.setIntroActive(false);
   store.setMainMenuOpen(false);
+  dismissFirstPlayTutorialForBootstrap();
   closeNarrativeOverlay();
   if (store.activeCutsceneId) {
     store.setCutscene(null, []);
@@ -348,6 +373,14 @@ export function registerVolodkaE2EBridge(): void {
     },
     async promoteClosedOverlayHub(hubId, sceneId) {
       await jumpToClosedOverlayHub(hubId, sceneId);
+    },
+    async ensureStoryOverlay(nodeId) {
+      await ensureStoryNode(nodeId);
+      const storyNode = getStoryNodes()[nodeId];
+      if (!storyNode?.sceneId) {
+        throw new Error(`[e2eBridge] ensureStoryOverlay: missing scene for ${nodeId}`);
+      }
+      await jumpToStoryBeat(nodeId, storyNode.sceneId as SceneId);
     },
     isStoryOverlayReady(expectedNodeId) {
       const store = getGameStore();

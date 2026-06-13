@@ -1,5 +1,7 @@
 import { test, expect } from '@playwright/test';
 import {
+  advanceStoryOverlay,
+  prepareStoryBootstrap,
   settleAfterWake,
   skipStoryTypewriter,
   skipWakeCinematic,
@@ -16,15 +18,12 @@ test.describe('Act II smoke', () => {
     await skipWakeCinematic(page);
     await expect(page.getByTestId('game-hud')).toBeVisible({ timeout: 30_000 });
     await settleAfterWake(page);
+    await prepareStoryBootstrap(page);
 
     await page.evaluate(async () => {
       await window.__volodka_e2e?.bootstrapAct2Entry();
     });
 
-    const hubDialog = page.getByRole('dialog', { name: /Голос/i });
-    if (!(await hubDialog.isVisible({ timeout: 12_000 }).catch(() => false))) {
-      await page.evaluate(() => window.__volodka_e2e?.visitStoryNode('act2_transition'));
-    }
     await waitForStoryDialog(page, 'act2_transition');
     await skipStoryTypewriter(page);
 
@@ -48,15 +47,12 @@ test.describe('Act II smoke', () => {
     await skipWakeCinematic(page);
     await expect(page.getByTestId('game-hud')).toBeVisible({ timeout: 30_000 });
     await settleAfterWake(page);
+    await prepareStoryBootstrap(page);
 
     await page.evaluate(async () => {
       await window.__volodka_e2e?.bootstrapAct2AlbertHint();
     });
 
-    const storyDialog = page.getByRole('dialog', { name: /Голос/i });
-    if (!(await storyDialog.isVisible({ timeout: 12_000 }).catch(() => false))) {
-      await page.evaluate(() => window.__volodka_e2e?.visitStoryNode('act2_albert_hint'));
-    }
     await waitForStoryDialog(page, 'act2_albert_hint');
     await skipStoryTypewriter(page);
     await expect(page.getByText(/Альберт|гильдии|стихи/i).first()).toBeVisible({
@@ -72,6 +68,7 @@ test.describe('Act II smoke', () => {
     await skipWakeCinematic(page);
     await expect(page.getByTestId('game-hud')).toBeVisible({ timeout: 30_000 });
     await settleAfterWake(page);
+    await prepareStoryBootstrap(page);
 
     await page.evaluate(async () => {
       await window.__volodka_e2e?.bootstrapMidActOffice();
@@ -102,17 +99,13 @@ test.describe('Act II smoke', () => {
     await skipWakeCinematic(page);
     await expect(page.getByTestId('game-hud')).toBeVisible({ timeout: 30_000 });
     await settleAfterWake(page);
+    await prepareStoryBootstrap(page);
 
     await page.evaluate(async () => {
       await window.__volodka_e2e?.bootstrapStartDiagnosis();
     });
 
-    const storyDialog = page.getByRole('dialog', { name: /Голос/i });
-    if (!(await storyDialog.isVisible({ timeout: 12_000 }).catch(() => false))) {
-      await page.evaluate(() => window.__volodka_e2e?.visitStoryNode('start_diagnosis'));
-    }
-    await waitForStoryDialog(page, 'start_diagnosis');
-    await skipStoryTypewriter(page);
+    await advanceStoryOverlay(page, 'start_diagnosis');
 
     await expect(
       page.getByRole('button', { name: /Начать расшифровку/i }),
@@ -127,15 +120,12 @@ test.describe('Act II smoke', () => {
     await skipWakeCinematic(page);
     await expect(page.getByTestId('game-hud')).toBeVisible({ timeout: 30_000 });
     await settleAfterWake(page);
+    await prepareStoryBootstrap(page);
 
     await page.evaluate(async () => {
       await window.__volodka_e2e?.bootstrapFixSuccess();
     });
 
-    const storyDialog = page.getByRole('dialog', { name: /Голос/i });
-    if (!(await storyDialog.isVisible({ timeout: 12_000 }).catch(() => false))) {
-      await page.evaluate(() => window.__volodka_e2e?.visitStoryNode('fix_success'));
-    }
     await waitForStoryDialog(page, 'fix_success');
     await skipStoryTypewriter(page);
 
@@ -152,17 +142,13 @@ test.describe('Act II smoke', () => {
     await skipWakeCinematic(page);
     await expect(page.getByTestId('game-hud')).toBeVisible({ timeout: 30_000 });
     await settleAfterWake(page);
+    await prepareStoryBootstrap(page);
 
     await page.evaluate(async () => {
       await window.__volodka_e2e?.bootstrapAct2MariaMeeting();
     });
 
-    const mariaDialog = page.getByRole('dialog', { name: /Голос/i });
-    if (!(await mariaDialog.isVisible({ timeout: 12_000 }).catch(() => false))) {
-      await page.evaluate(() => window.__volodka_e2e?.visitStoryNode('act2_maria_meeting_place'));
-    }
-    await waitForStoryDialog(page, 'act2_maria_meeting_place');
-    await skipStoryTypewriter(page);
+    await advanceStoryOverlay(page, 'act2_maria_meeting_place');
 
     await expect(page.getByText(/Сеть|дверью|Виктория|клятв/i).first()).toBeVisible({
       timeout: 20_000,
@@ -177,6 +163,7 @@ test.describe('Act II smoke', () => {
     await skipWakeCinematic(page);
     await expect(page.getByTestId('game-hud')).toBeVisible({ timeout: 30_000 });
     await settleAfterWake(page);
+    await prepareStoryBootstrap(page);
 
     await page.evaluate(async () => {
       await window.__volodka_e2e?.bootstrapAct2DmitryOffice();
@@ -224,6 +211,7 @@ test.describe('Act II smoke', () => {
     await skipWakeCinematic(page);
     await expect(page.getByTestId('game-hud')).toBeVisible({ timeout: 30_000 });
     await settleAfterWake(page);
+    await prepareStoryBootstrap(page);
 
     await page.evaluate(async () => {
       await window.__volodka_e2e?.bootstrapAct2CafeSafehouse();
