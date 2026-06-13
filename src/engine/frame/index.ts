@@ -7,6 +7,7 @@ export {
   normalizeFrameTickPhase,
   type FramePipelinePhase,
   type FrameTickPhase,
+  type LegacyFrameTickPhase,
   type FrameSystemId,
   type FrameTickContext,
   type FrameTickCallback,
@@ -53,4 +54,4 @@ export {
   wrapStoreSubscribe,
 } from './frameProfilerCounters';
 
-export { useFrameTick } from './useFrameTick';
+export { useFrameTick, usePostFrameTick } from './useFrameTick';

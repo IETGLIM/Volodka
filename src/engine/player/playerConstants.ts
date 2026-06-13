@@ -22,3 +22,5 @@ export const COYOTE_TIME = 0.15;
 export const JUMP_COOLDOWN = 0.3;
 export const TERMINAL_VELOCITY = GRAVITY * 2;
 export const WARMUP_DURATION_S = 0.2;
+export const KCC_FAIL_FRAMES_BEFORE_DEGRADE = 60;
+export const KCC_STUCK_FRAMES_BEFORE_RECREATE = 15;

@@ -240,7 +240,7 @@ export function runFrameBudgetForPhase(ctx: FrameTickContext, phase: FrameTickPh
   }
 }
 
-/** @deprecated Use runFrameBudgetForPhase — runs all pre-draw phases for tests. */
+/** Runs all pre-draw phases (pre_physics → post_physics → pre_render). */
 export function runFrameBudget(ctx: FrameTickContext): void {
   beginFrameBudget();
   runTicks(ctx, 'pre_physics', true);

@@ -134,7 +134,7 @@ export function PoemPowerEffect() {
 
   /* ── Listen to EventBus 'poem:power_used' ── */
   useEffect(() => {
-    const unsub = eventBus.on('poem:power_used', (payload: { poemId: string; powerName: string }) => {
+    const unsub = eventBus.on('poem:power_used', (payload) => {
       createNotification(payload.poemId, payload.powerName);
     });
     return () => unsub();

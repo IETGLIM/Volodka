@@ -8,7 +8,7 @@ import {
   getPhysicsStepMs,
   getRegisteredTickCount,
   getSystemCpuMs,
-  getTopTickTimings,
+  getCurrentFrameTopTickTimings,
   getTotalBudgetCpuMs,
 } from './FrameBudgetRegistry';
 import {
@@ -137,7 +137,7 @@ export function publishFrameProfiler(
     physicsStepMs: getPhysicsStepMs(),
     gpuFrameMs: null,
     systems,
-    topTicks: getTopTickTimings(8),
+    topTicks: getCurrentFrameTopTickTimings(8),
     registeredTicks: getRegisteredTickCount(),
     legacyUseFrameEstimate: Math.max(0, partial.cpuFrameMs - cpuBudgetMs),
     reactRendersThisFrame: getReactRendersThisFrame(),

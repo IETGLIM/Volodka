@@ -1,5 +1,6 @@
 /* ─── Volodka RPG – Main game orchestrator (thin coordinator) ─── */
 
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { VirtualControlsContext, sharedVirtualControlsRef } from '@/engine/VirtualControlsState';
 import { CyberpunkThemeProvider } from './CyberpunkTheme';
 import { PanelStackProvider } from './orchestrator/PanelStackContext';
@@ -22,34 +23,40 @@ export function GameOrchestrator() {
             className={`fixed inset-0 bg-black overflow-hidden ${runtime.isDialogueActive || runtime.isStoryActive ? 'dialogue-focus-active' : ''}`}
             style={{ touchAction: 'none' }}
           >
-            <OrchestratorCanvasLayer
-              mode={runtime.mode}
-              introSeen={runtime.introSeen}
-              gameDataReady={runtime.gameDataReady}
-              canvasMounted={runtime.canvasMounted}
-              canvasReady={runtime.canvasReady}
-              isTransitioning={runtime.isTransitioning}
-              fadeOutMs={runtime.fadeOutMs}
-              matrixQuote={runtime.matrixQuote}
-              onDismissMatrixQuote={runtime.dismissMatrixQuote}
-            />
+            <ErrorBoundary name="canvas">
+              <OrchestratorCanvasLayer
+                mode={runtime.mode}
+                introSeen={runtime.introSeen}
+                gameDataReady={runtime.gameDataReady}
+                canvasMounted={runtime.canvasMounted}
+                canvasReady={runtime.canvasReady}
+                isTransitioning={runtime.isTransitioning}
+                fadeOutMs={runtime.fadeOutMs}
+                matrixQuote={runtime.matrixQuote}
+                onDismissMatrixQuote={runtime.dismissMatrixQuote}
+              />
+            </ErrorBoundary>
 
-            <OrchestratorGameplayLayer
-              gameDataReady={runtime.gameDataReady}
-              sceneBanner={runtime.sceneBanner}
-              interaction={runtime.interaction}
-              panels={runtime.panels}
-              panelClosers={panelClosers}
-              hudSecondaryOpeners={hudSecondaryOpeners}
-            />
+            <ErrorBoundary name="gameplay">
+              <OrchestratorGameplayLayer
+                gameDataReady={runtime.gameDataReady}
+                sceneBanner={runtime.sceneBanner}
+                interaction={runtime.interaction}
+                panels={runtime.panels}
+                panelClosers={panelClosers}
+                hudSecondaryOpeners={hudSecondaryOpeners}
+              />
+            </ErrorBoundary>
 
-            <OrchestratorPanelLayer
-              showGameplayPanels={runtime.showGameplayPanels}
-              onClose={panelClosers}
-              onOpenPoetryBook={panels.handleOpenPoetryBook}
-              devToolsArmed={runtime.devToolsArmed}
-              devPanelStartOpen={runtime.devPanelStartOpen}
-            />
+            <ErrorBoundary name="panels">
+              <OrchestratorPanelLayer
+                showGameplayPanels={runtime.showGameplayPanels}
+                onClose={panelClosers}
+                onOpenPoetryBook={panels.handleOpenPoetryBook}
+                devToolsArmed={runtime.devToolsArmed}
+                devPanelStartOpen={runtime.devPanelStartOpen}
+              />
+            </ErrorBoundary>
 
             <OrchestratorPauseMenu pauseDialog={pauseDialog} panels={panels} onClose={panelClosers} />
 

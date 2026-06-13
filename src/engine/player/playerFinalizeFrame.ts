@@ -1,8 +1,8 @@
 import { eventBus } from '@/engine/EventBus';
 import { audioEngine } from '@/engine/AudioEngine';
-import { FOOTSTEP_INTERVAL } from '@/engine/player/playerConstants';
+import { FOOTSTEP_INTERVAL, KCC_STUCK_FRAMES_BEFORE_RECREATE } from '@/engine/player/playerConstants';
 import {
-  activateDirectMovementMode,
+  logKccRecreateAttempt,
   restoreKccMovementMode,
 } from '@/engine/player/directMovementTelemetry';
 import type { PlayerMovementDeps } from '@/engine/player/playerFrameTypes';
@@ -94,27 +94,25 @@ export function finalizePlayerFrame(deps: PlayerMovementDeps): void {
     const posDelta = Math.sqrt(dx * dx + dz * dz);
     if (posDelta < 0.001) {
       deps.noMovementFramesRef.current++;
-      if (deps.noMovementFramesRef.current >= 15 && !deps.useDirectMovementRef.current) {
-        activateDirectMovementMode(deps.directMovementTelemetry, 'input_no_displacement_15f', {
+      if (deps.noMovementFramesRef.current >= KCC_STUCK_FRAMES_BEFORE_RECREATE) {
+        logKccRecreateAttempt(deps.directMovementTelemetry, 'input_no_displacement', {
           sceneId: deps.sceneId,
           stuckFrames: deps.noMovementFramesRef.current,
         });
+        const recreated = deps.recreateCharacterController();
+        if (recreated && deps.capsuleColliderRef.current) {
+          deps.frameScratchRef.current.controller = recreated;
+          deps.noMovementFramesRef.current = 0;
+          if (deps.controlsDegradedRef.current) {
+            restoreKccMovementMode(deps.directMovementTelemetry, { sceneId: deps.sceneId });
+          }
+        }
       }
     } else {
       deps.noMovementFramesRef.current = 0;
-      if (deps.useDirectMovementRef.current) {
-        deps.kccRecoveryFramesRef.current++;
-        if (deps.kccRecoveryFramesRef.current >= 6) {
-          restoreKccMovementMode(deps.directMovementTelemetry, { sceneId: deps.sceneId });
-          deps.kccRecoveryFramesRef.current = 0;
-        }
-      }
     }
   } else {
     deps.noMovementFramesRef.current = 0;
-    if (!deps.useDirectMovementRef.current) {
-      deps.kccRecoveryFramesRef.current = 0;
-    }
   }
   deps.prevRbPosRef.current.set(finalPos.x, finalPos.y, finalPos.z);
 }

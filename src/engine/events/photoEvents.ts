@@ -1,3 +1,5 @@
+import { EMPTY_EVENT_PAYLOAD } from './emptyPayload';
+
 /**
  * Photo mode screenshot feature — PhotoMode, HUD, GameOrchestrator.
  *
@@ -19,4 +21,4 @@ export const PHOTO_EVENTS = {
 export type PhotoEventKey = keyof PhotoEvents;
 
 /** Empty payload shared by all photo mode events. */
-export const PHOTO_EMPTY_PAYLOAD = {} as Record<string, never>;
+export const PHOTO_EMPTY_PAYLOAD = EMPTY_EVENT_PAYLOAD;

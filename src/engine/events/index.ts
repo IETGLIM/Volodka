@@ -48,6 +48,8 @@ export type { WorldEvents } from './worldEvents';
 export type { StoryEvents } from './storyEvents';
 
 export { PHOTO_EVENTS, PHOTO_EMPTY_PAYLOAD } from './photoEvents';
+export type { EmptyEventPayload } from './emptyPayload';
+export { EMPTY_EVENT_PAYLOAD } from './emptyPayload';
 
 /** Flat typed event map — single bus, domain-organized source. */
 export type EventMap =
@@ -74,6 +76,9 @@ export type EventMap =
   PhotoEvents &
   WorldEvents &
   StoryEvents;
+
+/** All registered event names on the singleton bus. */
+export type EventName = keyof EventMap;
 
 /** Registry of domain prefixes for DevPanel / documentation. */
 export const EVENT_DOMAINS = {

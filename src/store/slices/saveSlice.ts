@@ -4,7 +4,7 @@
  * data across all slices. */
 
 import type { StateCreator } from 'zustand';
-import { eventBus } from '@/engine/EventBus';
+import { eventBus, EMPTY_EVENT_PAYLOAD } from '@/engine/EventBus';
 import { dispatchGameAction } from '@/engine/GameActionDispatcher';
 import { SAVE_VERSION } from '@/shared/validation/saveSchema';
 import { pushNotification } from '../shared';
@@ -167,7 +167,7 @@ export const createSaveSlice: StateCreator<
         });
       }
 
-      eventBus.emit('game:loaded', {} as Record<string, never>);
+      eventBus.emit('game:loaded', EMPTY_EVENT_PAYLOAD);
     } catch (err) {
       // Unexpected runtime error — also notify
       console.error('[loadGame] Unexpected error:', err);

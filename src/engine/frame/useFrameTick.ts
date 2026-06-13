@@ -4,9 +4,9 @@ import {
   setFrameTickEnabled,
   unregisterFrameTick,
 } from './FrameBudgetRegistry';
-import type { FrameSystemId, FrameTickCallback, FrameTickOptions } from './types';
+import { normalizeFrameTickPhase, type FrameSystemId, type FrameTickCallback, type FrameTickOptions } from './types';
 
-/** Register a per-frame callback in the central budget runner (pre- or post-render). */
+/** Register a per-frame callback in the central budget runner. */
 export function useFrameTick(
   system: FrameSystemId,
   callback: FrameTickCallback,
@@ -15,24 +15,21 @@ export function useFrameTick(
   const callbackRef = useRef(callback);
   callbackRef.current = callback;
 
-  const { priority = 0, label, enabled = true, phase = 'pre' } = options;
+  const { priority = 0, label, enabled = true, phase = 'pre_render' } = options;
   const tickIdRef = useRef<number | null>(null);
 
-  // useLayoutEffect (not useEffect): unregister must run synchronously during
-  // React commit, before R3F useFrame / FrameBudgetRunner can invoke a stale
-  // tick on the same frame as unmount.
   useLayoutEffect(() => {
     const id = registerFrameTick(
       system,
       (ctx) => callbackRef.current(ctx),
-      { priority, label, enabled, phase },
+      { priority, label, enabled, phase: normalizeFrameTickPhase(phase) },
     );
     tickIdRef.current = id;
     return () => {
       unregisterFrameTick(id);
       tickIdRef.current = null;
     };
-  }, [system, priority, label, phase]);
+  }, [system, priority, label, phase, enabled]);
 
   useLayoutEffect(() => {
     if (tickIdRef.current != null) {
@@ -41,11 +38,11 @@ export function useFrameTick(
   }, [enabled]);
 }
 
-/** Shorthand for post-render frame ticks (profiler, canvas guards). */
+/** Shorthand for post_render frame ticks (profiler, canvas guards). */
 export function usePostFrameTick(
   system: FrameSystemId,
   callback: FrameTickCallback,
   options: Omit<FrameTickOptions, 'phase'> = {},
 ): void {
-  useFrameTick(system, callback, { ...options, phase: 'post' });
+  useFrameTick(system, callback, { ...options, phase: 'post_render' });
 }

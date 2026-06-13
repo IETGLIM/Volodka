@@ -18,20 +18,20 @@ type EventHandler<T> = (payload: T) => void;
 type AnyEventHandler = (event: string, payload: unknown) => void;
 
 /** Minimal EventBus surface required by EventBusScope (avoids circular imports). */
-export interface EventBusScopeHost {
-  on<K extends keyof EventMap>(
+export interface EventBusScopeHost<TMap extends Record<string, unknown> = EventMap> {
+  on<K extends keyof TMap>(
     event: K,
-    handler: EventHandler<EventMap[K]>,
+    handler: EventHandler<TMap[K]>,
     priority?: number,
   ): () => void;
   onAny(handler: AnyEventHandler, priority?: number): () => void;
 }
 
-export class EventBusScope {
+export class EventBusScope<TMap extends Record<string, unknown> = EventMap> {
   private readonly cleanups: (() => void)[] = [];
   private closed = false;
 
-  constructor(private readonly bus: EventBusScopeHost) {}
+  constructor(private readonly bus: EventBusScopeHost<TMap>) {}
 
   get isDisposed(): boolean {
     return this.closed;
@@ -45,9 +45,9 @@ export class EventBusScope {
    * Subscribe to a typed event. Returns `this` for chaining.
    * Throws if the scope is already disposed.
    */
-  on<K extends keyof EventMap>(
+  on<K extends keyof TMap>(
     event: K,
-    handler: EventHandler<EventMap[K]>,
+    handler: EventHandler<TMap[K]>,
     priority?: number,
   ): this {
     this.track(this.bus.on(event, handler, priority));
@@ -93,9 +93,9 @@ export class EventBusScope {
  * Register subscriptions inside `register`, return a single dispose for useEffect.
  * On registration throw, already-registered listeners are torn down.
  */
-export function bindEventBusScope(
-  bus: EventBusScopeHost,
-  register: (scope: EventBusScope) => void,
+export function bindEventBusScope<TMap extends Record<string, unknown> = EventMap>(
+  bus: EventBusScopeHost<TMap>,
+  register: (scope: EventBusScope<TMap>) => void,
 ): () => void {
   const scope = new EventBusScope(bus);
   try {

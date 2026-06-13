@@ -106,27 +106,38 @@ describe('FrameBudgetRegistry', () => {
   });
 
   it('runFrameBudgetForPhase runs only ticks registered for that phase', () => {
+    setFrameBudgetProfilingArmed(true);
     const order: string[] = [];
     const preId = registerFrameTick(
       'player',
       () => {
-        order.push('pre');
+        order.push('pre_physics');
       },
-      { label: 'pre', phase: 'pre' },
+      { label: 'pre', phase: 'pre_physics' },
     );
     const postId = registerFrameTick(
+      'player',
+      () => {
+        order.push('post_physics');
+      },
+      { label: 'post', phase: 'post_physics' },
+    );
+    const renderId = registerFrameTick(
       'camera',
       () => {
-        order.push('post');
+        order.push('pre_render');
       },
-      { label: 'post', phase: 'post' },
+      { label: 'render', phase: 'pre_render' },
     );
-    registeredIds.push(preId, postId);
+    registeredIds.push(preId, postId, renderId);
 
-    runFrameBudgetForPhase(frameCtx, 'pre');
-    expect(order).toEqual(['pre']);
+    runFrameBudgetForPhase(frameCtx, 'pre_physics');
+    expect(order).toEqual(['pre_physics']);
 
-    runFrameBudgetForPhase(frameCtx, 'post');
-    expect(order).toEqual(['pre', 'post']);
+    runFrameBudgetForPhase(frameCtx, 'post_physics');
+    expect(order).toEqual(['pre_physics', 'post_physics']);
+
+    runFrameBudgetForPhase(frameCtx, 'pre_render');
+    expect(order).toEqual(['pre_physics', 'post_physics', 'pre_render']);
   });
 });

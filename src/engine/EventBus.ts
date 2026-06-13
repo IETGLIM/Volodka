@@ -20,6 +20,8 @@ import { registerHmrDispose } from '@/shared/dev/hmrDispose';
 export { EventBusPriority } from '@/engine/eventBusPriority';
 export { EventBusScope, bindEventBusScope } from '@/engine/eventBusScope';
 export type { EventBusScopeHost } from '@/engine/eventBusScope';
+export type { EventMap, EventName, EmptyEventPayload } from '@/engine/events';
+export { EMPTY_EVENT_PAYLOAD } from '@/engine/events';
 
 type EventHandler<T> = (payload: T) => void;
 type AnyEventHandler = (event: string, payload: unknown) => void;
@@ -27,8 +29,8 @@ type AnyEventHandler = (event: string, payload: unknown) => void;
 /** Unsubscribe handle returned by eventBus.on() / onAny(). */
 export type EventBusUnsubscribe = () => void;
 
-/** Events that should never be deduped — each emission must fire */
-const DEDUP_EXEMPT = new Set([
+/** Events that should never be deduped — each emission must fire. */
+const DEDUP_EXEMPT_EVENTS = [
   'combat:hit',
   'combat:damage',
   'combat:heal',
@@ -40,7 +42,9 @@ const DEDUP_EXEMPT = new Set([
   'object:interact',
   'npc:interact_staged',
   'interaction:end',
-]);
+] as const satisfies readonly (keyof EventMap)[];
+
+const DEDUP_EXEMPT = new Set<string>(DEDUP_EXEMPT_EVENTS);
 
 /**
  * A lightweight, typed pub/sub event bus with payload-aware deduplication.
@@ -73,8 +77,10 @@ const DEDUP_EXEMPT = new Set([
  *  - For testing, use `createEventBus()` to obtain an isolated instance.
  *  - In dev, `registerHmrDispose` clears the singleton when the module hot-reloads.
  */
-export class EventBusClass implements EventBusScopeHost {
-  private handlers = new Map<keyof EventMap, PrioritizedListener[]>();
+export class EventBusClass<TMap extends Record<string, unknown> = EventMap>
+  implements EventBusScopeHost<TMap>
+{
+  private handlers = new Map<keyof TMap, PrioritizedListener[]>();
   private debug = false;
 
   /** Fixed-size dedup slots — numeric hashes only */
@@ -104,7 +110,7 @@ export class EventBusClass implements EventBusScopeHost {
   }
 
   /** Create a scope that tracks subscriptions for batch dispose (orchestrator pattern). */
-  createScope(): EventBusScope {
+  createScope(): EventBusScope<TMap> {
     return new EventBusScope(this);
   }
 
@@ -168,9 +174,9 @@ export class EventBusClass implements EventBusScopeHost {
    *
    * @param priority Lower runs first — use `EventBusPriority` tiers (default: Normal/UI).
    */
-  on<K extends keyof EventMap>(
+  on<K extends keyof TMap>(
     event: K,
-    handler: EventHandler<EventMap[K]>,
+    handler: EventHandler<TMap[K]>,
     priority: number = EventBusPriority.Normal,
   ): EventBusUnsubscribe {
     this.disposed = false;
@@ -207,7 +213,7 @@ export class EventBusClass implements EventBusScopeHost {
    * DEDUP_WINDOW_MS, subsequent emissions are suppressed unless the event
    * is in DEDUP_EXEMPT.
    */
-  emit<K extends keyof EventMap>(event: K, payload: EventMap[K]): void {
+  emit<K extends keyof TMap>(event: K, payload: TMap[K]): void {
     const dispatchGeneration = this.lifecycleGeneration;
 
     if (this.debug) {
@@ -240,7 +246,7 @@ export class EventBusClass implements EventBusScopeHost {
           return;
         }
         try {
-          (handler as EventHandler<EventMap[K]>)(payload);
+          (handler as EventHandler<TMap[K]>)(payload);
         } catch (err) {
           this.logHandlerError(`[EventBus] Error in handler for "${String(event)}":`, err);
         }
@@ -268,9 +274,9 @@ export class EventBusClass implements EventBusScopeHost {
   /**
    * Remove a specific handler for an event.
    */
-  off<K extends keyof EventMap>(
+  off<K extends keyof TMap>(
     event: K,
-    handler: EventHandler<EventMap[K]>,
+    handler: EventHandler<TMap[K]>,
   ): void {
     const list = this.handlers.get(event);
     if (!list) return;
@@ -309,12 +315,12 @@ export class EventBusClass implements EventBusScopeHost {
  * Primarily intended for testing — each test gets a fresh bus
  * without polluting the global singleton.
  */
-export function createEventBus(): EventBusClass {
-  return new EventBusClass();
+export function createEventBus<TMap extends Record<string, unknown> = EventMap>(): EventBusClass<TMap> {
+  return new EventBusClass<TMap>();
 }
 
-/** Singleton event bus instance */
-export const eventBus = new EventBusClass();
+/** Singleton event bus instance — typed with the consolidated EventMap. */
+export const eventBus = createEventBus<EventMap>();
 
 export function disposeEventBus(): void {
   eventBus.dispose();

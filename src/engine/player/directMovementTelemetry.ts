@@ -3,38 +3,56 @@ import { devLog, devWarn } from '@/shared/utils/devLog';
 import { eventBus } from '@/engine/EventBus';
 
 export type DirectMovementTelemetryRefs = {
-  useDirectRef: React.MutableRefObject<boolean>;
-  loggedRef: React.MutableRefObject<boolean>;
-  reasonRef: React.MutableRefObject<string | null>;
+  controlsDegradedRef: React.MutableRefObject<boolean>;
+  degradedLoggedRef: React.MutableRefObject<boolean>;
+  degradedReasonRef: React.MutableRefObject<string | null>;
+  recreateAttemptsRef: React.MutableRefObject<number>;
 };
 
-/** Dev-only telemetry when KCC is bypassed (collider missing / mobile stuck). */
-export function activateDirectMovementMode(
+const CONTROLS_DEGRADED_USER_MESSAGE =
+  'Движение временно ограничено. Попробуйте сменить сцену или перезагрузить игру.';
+
+export function logKccRecreateAttempt(
   refs: DirectMovementTelemetryRefs,
   reason: string,
   meta: { sceneId: SceneId; failFrames?: number; stuckFrames?: number },
 ): void {
-  refs.useDirectRef.current = true;
-  if (refs.loggedRef.current && refs.reasonRef.current === reason) return;
-  refs.loggedRef.current = true;
-  refs.reasonRef.current = reason;
-  devWarn('[PhysicsPlayer][direct-movement]', reason, meta);
-  if (import.meta.env.DEV) {
-    eventBus.emit('ui:exploration_message', { text: `[DEV] Direct movement: ${reason}` });
-  }
+  refs.recreateAttemptsRef.current += 1;
+  devLog('[PhysicsPlayer][KCC-recreate]', reason, {
+    ...meta,
+    attempt: refs.recreateAttemptsRef.current,
+  });
+}
+
+export function notifyControlsDegraded(
+  refs: DirectMovementTelemetryRefs,
+  reason: string,
+  meta: { sceneId: SceneId; failFrames?: number; stuckFrames?: number },
+): void {
+  refs.controlsDegradedRef.current = true;
+  if (refs.degradedLoggedRef.current && refs.degradedReasonRef.current === reason) return;
+  refs.degradedLoggedRef.current = true;
+  refs.degradedReasonRef.current = reason;
+  devWarn('[PhysicsPlayer][controls-degraded]', reason, meta);
+  const text = import.meta.env.DEV
+    ? `[DEV] Controls degraded: ${reason}`
+    : CONTROLS_DEGRADED_USER_MESSAGE;
+  eventBus.emit('ui:exploration_message', { text });
 }
 
 export function restoreKccMovementMode(
   refs: DirectMovementTelemetryRefs,
   meta: { sceneId: SceneId },
 ): void {
-  if (refs.loggedRef.current) {
-    devLog('[PhysicsPlayer][direct-movement] restored KCC', {
+  if (refs.degradedLoggedRef.current || refs.recreateAttemptsRef.current > 0) {
+    devLog('[PhysicsPlayer][KCC] restored', {
       ...meta,
-      previousReason: refs.reasonRef.current,
+      previousReason: refs.degradedReasonRef.current,
+      recreateAttempts: refs.recreateAttemptsRef.current,
     });
   }
-  refs.useDirectRef.current = false;
-  refs.loggedRef.current = false;
-  refs.reasonRef.current = null;
+  refs.controlsDegradedRef.current = false;
+  refs.degradedLoggedRef.current = false;
+  refs.degradedReasonRef.current = null;
+  refs.recreateAttemptsRef.current = 0;
 }

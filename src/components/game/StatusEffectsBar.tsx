@@ -258,7 +258,7 @@ export function StatusEffectsBar() {
 
   const [snowActive, setSnowActive] = useState(false);
   useEffect(() => {
-    const unsub = eventBus.on('weather:snow', (payload: { active: boolean }) => {
+    const unsub = eventBus.on('weather:snow', (payload) => {
       setSnowActive(payload.active);
     });
     return () => { unsub(); };
