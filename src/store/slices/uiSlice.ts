@@ -215,12 +215,12 @@ export const createUISlice: StateCreator<
         const rarity: LoreRarity = entryData?.rarity ?? 'common';
 
         // Grant +5 XP for any lore discovery
-        const crossState = get();
-        crossState.addXp(5);
+        const player = getPlayerStore();
+        player.addXp(5);
 
         // Grant +1 writing skill for rare/legendary entries
         if (rarity === 'rare' || rarity === 'legendary') {
-          crossState.addSkill('writing', 1);
+          player.addSkill('writing', 1);
         }
 
         // Emit event for toast notification
