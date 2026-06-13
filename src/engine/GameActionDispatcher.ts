@@ -131,9 +131,10 @@ export interface GameSnapshotSubscribeOptions<T> {
 export interface GameActionBridge {
   dispatch(action: GameAction): void;
   getSnapshot(): GameStoreSnapshot;
+  subscribe(listener: (snapshot: GameStoreSnapshot) => void): () => void;
   subscribe<T>(
-    listener: (snapshot: GameStoreSnapshot) => void,
-    options?: GameSnapshotSubscribeOptions<T>,
+    listener: (selected: T) => void,
+    options: GameSnapshotSubscribeOptions<T>,
   ): () => void;
   tryAddItem(item: InventoryItem): boolean;
   tryActivatePoemPower(poemId: string): boolean;
@@ -166,17 +167,20 @@ export function subscribeGameSnapshot(
   listener: (snapshot: GameStoreSnapshot) => void,
 ): () => void;
 export function subscribeGameSnapshot<T>(
-  listener: (snapshot: GameStoreSnapshot) => void,
+  listener: (selected: T) => void,
   options: GameSnapshotSubscribeOptions<T>,
 ): () => void;
 export function subscribeGameSnapshot<T>(
-  listener: (snapshot: GameStoreSnapshot) => void,
+  listener: ((snapshot: GameStoreSnapshot) => void) | ((selected: T) => void),
   options?: GameSnapshotSubscribeOptions<T>,
 ): () => void {
   if (!bridge) {
     throw new Error('[GameActionDispatcher] No bridge registered');
   }
-  return bridge.subscribe(listener, options);
+  if (options) {
+    return bridge.subscribe(listener as (selected: T) => void, options);
+  }
+  return bridge.subscribe(listener as (snapshot: GameStoreSnapshot) => void);
 }
 
 export function tryAddInventoryItem(item: InventoryItem): boolean {

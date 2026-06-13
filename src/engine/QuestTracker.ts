@@ -121,8 +121,8 @@ export class QuestTracker {
 
     // Subscribe only to quest-relevant store slices (not HUD, camera, notifications, etc.)
     this.unsubscribeStore = subscribeGameSnapshot(
-      (state) => {
-        this.onStateChanged(state);
+      (slice) => {
+        this.onStateChanged(slice);
       },
       {
         selector: selectQuestTrackerSlice,
@@ -263,11 +263,11 @@ export class QuestTracker {
   }
 
   /** Called when quest-relevant store slices change */
-  private onStateChanged(state: GameStoreSnapshot): void {
-    const currentSceneId = state.exploration.currentSceneId;
-    const currentFlags = state.playerState.flags;
-    const currentInventoryIds = new Set(state.playerState.inventory.map((i) => i.id));
-    const currentPoems = new Set(state.collectedPoems);
+  private onStateChanged(slice: QuestTrackerRelevantSlice): void {
+    const currentSceneId = slice.currentSceneId;
+    const currentFlags = slice.flags;
+    const currentInventoryIds = new Set(slice.inventoryIds);
+    const currentPoems = new Set(slice.collectedPoems);
 
     // ── location_visited ──
     if (currentSceneId !== this.previousSceneId) {
@@ -288,7 +288,7 @@ export class QuestTracker {
     this.previousPoems = currentPoems;
 
     // ── Check time limits on active quests ──
-    this.checkTimeLimits(state);
+    this.checkTimeLimits(slice);
   }
 
   /** Scene changed — check location_visited objectives */
@@ -447,10 +447,10 @@ export class QuestTracker {
   }
 
   /** Check time limits for active quests with timeLimitHours */
-  private checkTimeLimits(state: GameStoreSnapshot): void {
-    const currentTime = state.exploration.timeOfDay;
+  private checkTimeLimits(slice: QuestTrackerRelevantSlice): void {
+    const currentTime = slice.timeOfDay;
 
-    for (const quest of state.quests) {
+    for (const quest of slice.quests) {
       if (quest.status !== 'active') continue;
       if (quest.startedAtTime === undefined) continue;
 

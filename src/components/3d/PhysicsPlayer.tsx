@@ -98,7 +98,7 @@ export function PhysicsPlayer({
   const showThirdPersonBody =
     shouldShowThirdPersonAvatar(gameMode, activeCutsceneId) && !hideForWakeup;
 
-  const rigidBodyRef = useRef<RapierRigidBody>(null!);
+  const rigidBodyRef = useRef<RapierRigidBody | null>(null);
   const capsuleColliderRef = useRef<RapierCollider | null>(null);
   const controllerRef = useRef<RapierCharacterController | null>(null);
   const velocityRef = useRef(new THREE.Vector3(0, 0, 0));
@@ -131,6 +131,9 @@ export function PhysicsPlayer({
   };
 
   useEffect(() => {
+    if (controllerRef.current) {
+      disposeCharacterController(world, controllerRef.current);
+    }
     const controller = world.createCharacterController(SKIN_WIDTH);
     controller.setUp({ x: 0, y: 1, z: 0 });
     controller.setMaxSlopeClimbAngle(MAX_SLOPE_CLIMB);
@@ -144,8 +147,10 @@ export function PhysicsPlayer({
     controllerRef.current = controller;
 
     return () => {
-      disposeCharacterController(world, controller);
-      controllerRef.current = null;
+      if (controllerRef.current) {
+        disposeCharacterController(world, controllerRef.current);
+        controllerRef.current = null;
+      }
     };
   }, [world]);
 

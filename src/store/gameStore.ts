@@ -79,7 +79,9 @@ export function getGameStore() {
   return useGameStore.getState();
 }
 
-function toGameSnapshot(state: GameStoreState): GameStoreSnapshot {
+const gameSnapshotCache = new WeakMap<GameStoreState, GameStoreSnapshot>();
+
+function buildGameSnapshot(state: GameStoreState): GameStoreSnapshot {
   return {
     mode: getGamePhase({
       mainMenuOpen: state.mainMenuOpen,
@@ -118,6 +120,44 @@ function toGameSnapshot(state: GameStoreState): GameStoreSnapshot {
     unlockedAchievements: state.unlockedAchievements,
     achievementProgress: state.achievementProgress,
   };
+}
+
+/** Memoized per zustand state reference — avoids rebuilding on every subscribe tick. */
+function toGameSnapshot(state: GameStoreState): GameStoreSnapshot {
+  const cached = gameSnapshotCache.get(state);
+  if (cached) return cached;
+  const snapshot = buildGameSnapshot(state);
+  gameSnapshotCache.set(state, snapshot);
+  return snapshot;
+}
+
+function subscribeGameBridge(listener: (snapshot: GameStoreSnapshot) => void): () => void;
+function subscribeGameBridge<T>(
+  listener: (selected: T) => void,
+  options: GameSnapshotSubscribeOptions<T>,
+): () => void;
+function subscribeGameBridge<T>(
+  listener: ((snapshot: GameStoreSnapshot) => void) | ((selected: T) => void),
+  options?: GameSnapshotSubscribeOptions<T>,
+): () => void {
+  if (!options) {
+    // Full-snapshot path: fires on every store mutation; snapshot is memoized per state ref.
+    const fullListener = listener as (snapshot: GameStoreSnapshot) => void;
+    return useGameStore.subscribe((state) => {
+      fullListener(toGameSnapshot(state));
+    });
+  }
+
+  const { selector, equalityFn } = options;
+  const selectedListener = listener as (selected: T) => void;
+  let prevSelected = selector(toGameSnapshot(useGameStore.getState()));
+
+  return useGameStore.subscribe((state) => {
+    const selected = selector(toGameSnapshot(state));
+    if (equalityFn(prevSelected, selected)) return;
+    prevSelected = selected;
+    selectedListener(selected);
+  });
 }
 
 registerGameActionBridge({
@@ -262,24 +302,7 @@ registerGameActionBridge({
   getSnapshot() {
     return toGameSnapshot(useGameStore.getState());
   },
-  subscribe<T>(listener: (snapshot: GameStoreSnapshot) => void, options?: GameSnapshotSubscribeOptions<T>) {
-    if (!options) {
-      return useGameStore.subscribe((state) => {
-        listener(toGameSnapshot(state));
-      });
-    }
-
-    const { selector, equalityFn } = options;
-    let prevSelected = selector(toGameSnapshot(useGameStore.getState()));
-
-    return useGameStore.subscribe((state) => {
-      const snapshot = toGameSnapshot(state);
-      const selected = selector(snapshot);
-      if (equalityFn(prevSelected, selected)) return;
-      prevSelected = selected;
-      listener(snapshot);
-    });
-  },
+  subscribe: subscribeGameBridge,
   tryAddItem(item) {
     return useGameStore.getState().addItem(item);
   },

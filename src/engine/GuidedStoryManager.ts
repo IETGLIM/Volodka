@@ -320,8 +320,7 @@ export class GuidedStoryManager {
     const { path } = this.deps;
 
     this.unsubVisitNode = subscribeGameSnapshot(
-      (snapshot) => {
-        const lastNode = selectLastVisitedNode(snapshot);
+      (lastNode) => {
         if (lastNode) this.advanceStorySpine(lastNode);
       },
       {
@@ -355,8 +354,7 @@ export class GuidedStoryManager {
     });
 
     this.unsubFlagSet = subscribeGameSnapshot(
-      (snapshot) => {
-        const flagKeys = toGuidedStorySnapshot(snapshot).activeTTLFlagKeys;
+      (flagKeys) => {
         const currentStepNodeId = path.storySpine[this.currentStepIndex];
         if (!currentStepNodeId) return;
         for (const key of flagKeys) {
