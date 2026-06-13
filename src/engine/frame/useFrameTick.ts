@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useLayoutEffect, useRef } from 'react';
 import {
   registerFrameTick,
   setFrameTickEnabled,
@@ -18,7 +18,10 @@ export function useFrameTick(
   const { priority = 0, label, enabled = true, phase = 'pre' } = options;
   const tickIdRef = useRef<number | null>(null);
 
-  useEffect(() => {
+  // useLayoutEffect (not useEffect): unregister must run synchronously during
+  // React commit, before R3F useFrame / FrameBudgetRunner can invoke a stale
+  // tick on the same frame as unmount.
+  useLayoutEffect(() => {
     const id = registerFrameTick(
       system,
       (ctx) => callbackRef.current(ctx),
@@ -31,7 +34,7 @@ export function useFrameTick(
     };
   }, [system, priority, label, phase]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (tickIdRef.current != null) {
       setFrameTickEnabled(tickIdRef.current, enabled);
     }

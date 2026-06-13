@@ -56,18 +56,16 @@ import {
   PLAYER_HEIGHT,
   PLAYER_RADIUS,
   SKIN_WIDTH,
-  MAX_SLOPE_CLIMB,
-  MIN_SLOPE_SLIDE,
-  AUTOSTEP_HEIGHT,
-  AUTOSTEP_WIDTH,
-  SNAP_DISTANCE,
 } from '@/engine/player/playerConstants';
 import {
-  activateDirectMovementMode,
   restoreKccMovementMode,
   type DirectMovementTelemetryRefs,
 } from '@/engine/player/directMovementTelemetry';
-import { disposeCharacterController } from '@/engine/player/characterControllerLifecycle';
+import {
+  createConfiguredCharacterController,
+  disposeCharacterController,
+  recreateCharacterController,
+} from '@/engine/player/characterControllerLifecycle';
 import type { PlayerFrameScratch, PlayerMovementDeps } from '@/engine/player/playerFrameTypes';
 import { preparePlayerFrame } from '@/engine/player/playerFramePrepare';
 import { runLockedPlayerMovement } from '@/engine/player/playerLockedMovement';
@@ -75,13 +73,13 @@ import { runMainPlayerMovement } from '@/engine/player/playerMainMovement';
 import { finalizePlayerFrame } from '@/engine/player/playerFinalizeFrame';
 import {
   createGroundProbeCache,
-  invalidateGroundProbeCache,
 } from '@/engine/physics/groundProbeCache';
 
 interface PhysicsPlayerProps {
   livePlayerPositionRef: React.MutableRefObject<THREE.Vector3>;
   livePlayerRotationRef: React.MutableRefObject<number>;
   virtualControlsRef?: React.MutableRefObject<VirtualControls>;
+  physicsPaused?: boolean;
   onInteractPress?: () => void;
   moveBlendRef?: React.MutableRefObject<number>;
 }
@@ -91,6 +89,7 @@ export function PhysicsPlayer({
   livePlayerPositionRef,
   livePlayerRotationRef,
   virtualControlsRef,
+  physicsPaused = false,
   onInteractPress,
   moveBlendRef,
 }: PhysicsPlayerProps) {
@@ -117,38 +116,37 @@ export function PhysicsPlayer({
   const warmupTimerRef = useRef(0);
   const prevRbPosRef = useRef(new THREE.Vector3());
   const noMovementFramesRef = useRef(0);
-  const kccRecoveryFramesRef = useRef(0);
   const virtualHoldTimesRef = useRef({});
   const rbBoundRef = useRef(false);
   const snapAirborneRef = useRef(false);
+  const mountedRef = useRef(true);
 
   const { world, rapier } = useRapier();
 
   const controllerFailCountRef = useRef(0);
-  const useDirectMovementRef = useRef(false);
-  const directMovementLoggedRef = useRef(false);
-  const directMovementReasonRef = useRef<string | null>(null);
+  const controlsDegradedRef = useRef(false);
+  const degradedLoggedRef = useRef(false);
+  const degradedReasonRef = useRef<string | null>(null);
+  const recreateAttemptsRef = useRef(0);
   const directMovementTelemetry: DirectMovementTelemetryRefs = {
-    useDirectRef: useDirectMovementRef,
-    loggedRef: directMovementLoggedRef,
-    reasonRef: directMovementReasonRef,
+    controlsDegradedRef,
+    degradedLoggedRef,
+    degradedReasonRef,
+    recreateAttemptsRef,
+  };
+
+  const recreateCharacterControllerFn = useRef<(() => RapierCharacterController | null) | null>(null);
+  recreateCharacterControllerFn.current = () => {
+    const next = recreateCharacterController(world, controllerRef.current, SKIN_WIDTH);
+    controllerRef.current = next;
+    return next;
   };
 
   useEffect(() => {
     if (controllerRef.current) {
       disposeCharacterController(world, controllerRef.current);
     }
-    const controller = world.createCharacterController(SKIN_WIDTH);
-    controller.setUp({ x: 0, y: 1, z: 0 });
-    controller.setMaxSlopeClimbAngle(MAX_SLOPE_CLIMB);
-    controller.setMinSlopeSlideAngle(MIN_SLOPE_SLIDE);
-    controller.enableAutostep(AUTOSTEP_HEIGHT, AUTOSTEP_WIDTH, true);
-    controller.enableSnapToGround(SNAP_DISTANCE);
-    controller.setSlideEnabled(true);
-    controller.setApplyImpulsesToDynamicBodies(true);
-    controller.setCharacterMass(75);
-    controller.setNormalNudgeFactor(0.5);
-    controllerRef.current = controller;
+    controllerRef.current = createConfiguredCharacterController(world, SKIN_WIDTH);
 
     return () => {
       if (controllerRef.current) {
@@ -159,7 +157,9 @@ export function PhysicsPlayer({
   }, [world]);
 
   useLayoutEffect(() => {
+    mountedRef.current = true;
     return () => {
+      mountedRef.current = false;
       clearPlayerRigidBody();
       rbBoundRef.current = false;
     };
@@ -168,6 +168,7 @@ export function PhysicsPlayer({
   const locomotionScale = getExplorationLocomotionScale(sceneId);
   const movementTuning = getExplorationMovementTuning(sceneId);
   const config = getSceneConfig(sceneId);
+  const groundProbeCacheRef = useRef(createGroundProbeCache(config.floorY, sceneId));
 
   useEffect(() => {
     if (sceneId !== prevSceneIdRef.current) {
@@ -222,7 +223,6 @@ export function PhysicsPlayer({
 
       restoreKccMovementMode(directMovementTelemetry, { sceneId: enteredScene });
       controllerFailCountRef.current = 0;
-      const sceneConfig = getSceneConfig(enteredScene);
       groundProbeCacheRef.current = createGroundProbeCache(sceneConfig.floorY, enteredScene);
     });
     return unsub;
@@ -232,7 +232,6 @@ export function PhysicsPlayer({
   const tempCameraRight = useRef(new THREE.Vector3());
   const tempUp = useRef(new THREE.Vector3(0, 1, 0));
   const tempMoveDir = useRef(new THREE.Vector3());
-  const groundProbeCacheRef = useRef(createGroundProbeCache(config.floorY, sceneId));
 
   const frameScratchRef = useRef<PlayerFrameScratch>({
     tickState: null as RootState | null,
@@ -278,9 +277,9 @@ export function PhysicsPlayer({
     stuckLockTimerRef,
     warmupTimerRef,
     noMovementFramesRef,
-    kccRecoveryFramesRef,
     controllerFailCountRef,
-    useDirectMovementRef,
+    controlsDegradedRef,
+    recreateCharacterController: () => recreateCharacterControllerFn.current?.() ?? null,
     snapAirborneRef,
     rbBoundRef,
     prevRbPosRef,
@@ -305,6 +304,7 @@ export function PhysicsPlayer({
       movementTuning,
       world,
       rapier,
+      groundProbeCacheRef,
       controls,
       frameScratchRef,
       rigidBodyRef,
@@ -319,9 +319,9 @@ export function PhysicsPlayer({
       stuckLockTimerRef,
       warmupTimerRef,
       noMovementFramesRef,
-      kccRecoveryFramesRef,
       controllerFailCountRef,
-      useDirectMovementRef,
+      controlsDegradedRef,
+      recreateCharacterController: () => recreateCharacterControllerFn.current?.() ?? null,
       snapAirborneRef,
       rbBoundRef,
       prevRbPosRef,
@@ -344,41 +344,16 @@ export function PhysicsPlayer({
     movementTuning,
     world,
     rapier,
-    groundProbeCacheRef,
     controls,
-    frameScratchRef,
-    rigidBodyRef,
-    capsuleColliderRef,
-    controllerRef,
-    velocityRef,
-    isGroundedRef,
-    coyoteTimerRef,
-    jumpCooldownRef,
-    footstepTimerRef,
-    currentAnimRef,
-    stuckLockTimerRef,
-    warmupTimerRef,
-    noMovementFramesRef,
-    kccRecoveryFramesRef,
-    controllerFailCountRef,
-    useDirectMovementRef,
-    snapAirborneRef,
-    rbBoundRef,
-    prevRbPosRef,
-    currentFloorMaterialRef,
-    virtualHoldTimesRef,
-    directMovementTelemetry,
-    livePlayerPositionRef,
-    livePlayerRotationRef,
     virtualControlsRef,
     moveBlendRef,
-    tempCameraForward,
-    tempCameraRight,
-    tempUp,
-    tempMoveDir,
+    livePlayerPositionRef,
+    livePlayerRotationRef,
+    directMovementTelemetry,
   ]);
 
   useFrameTick('player', ({ state, delta }) => {
+    if (!mountedRef.current) return;
     const deps = movementDepsRef.current;
     deps.frameScratchRef.current.tickState = state;
     if (!preparePlayerFrame(deps, delta)) return;
@@ -388,7 +363,7 @@ export function PhysicsPlayer({
     }
     if (!runMainPlayerMovement(deps)) return;
     finalizePlayerFrame(deps);
-  }, { label: 'PhysicsPlayer' });
+  }, { label: 'PhysicsPlayer', enabled: !physicsPaused });
 
   const spawnPoint = config.spawnPoint;
 

@@ -70,6 +70,7 @@ function PhysicsSceneInner({
         livePlayerRotationRef={livePlayerRotationRef}
         virtualControlsRef={virtualControlsRef}
         moveBlendRef={moveBlendRef}
+        physicsPaused={physicsPaused}
         onInteractPress={() => {
           eventBus.emit('interact:press', { source: 'player' });
         }}
