@@ -76,6 +76,15 @@ export function explorationEventToastTopPx(): number {
   return EXPLORATION_HUD_LAYOUT.TOP_BAR_HEIGHT + EXPLORATION_HUD_LAYOUT.SLOT_GAP;
 }
 
+/** Lore/codex discovery toasts — top-left under objective strip */
+export function explorationLoreToastTopPx(): number {
+  return (
+    explorationObjectiveTopPx()
+    + EXPLORATION_HUD_LAYOUT.OBJECTIVE_STRIP_HEIGHT
+    + EXPLORATION_HUD_LAYOUT.SLOT_GAP
+  );
+}
+
 export function bottomToolbarPx(): number {
   return EXPLORATION_HUD_LAYOUT.BOTTOM_TOOLBAR;
 }

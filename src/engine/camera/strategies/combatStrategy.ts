@@ -55,6 +55,7 @@ export const combatStrategy: CameraModeStrategy = {
         yaw,
         ctx.playerVelocity,
         ctx.delta,
+        ctx.moveBlend,
       );
       targetRoll = expResult.targetRoll * 0.5;
     }

@@ -5,9 +5,7 @@ import type { StateCreator } from 'zustand';
 import { eventBus } from '@/engine/EventBus';
 import { dispatchGameAction } from '@/engine/GameActionDispatcher';
 import { SAVE_VERSION } from '@/shared/validation/saveSchema';
-import { pushNotification } from '../shared';
 import type { GameStoreState } from '../types';
-import { readWorldFromPlayer } from '../crossSliceReads';
 import {
   createDefaultResetState,
   pickSavePayload,
@@ -52,24 +50,18 @@ export const createSaveSlice: StateCreator<GameStoreState, [], [], SaveSlice> = 
       json = JSON.stringify(payloadWithVersion);
     } catch (err) {
       console.error('[saveGame] Failed to serialize save payload:', err);
-      applyCombinedPatch({
-        notifications: pushNotification(
-          readWorldFromPlayer().notifications,
-          'quest',
-          'Ошибка сохранения',
-        ),
+      eventBus.emit('game:system_alert', {
+        kind: 'save_failed',
+        message: 'Не удалось подготовить данные сохранения.',
       });
       return;
     }
 
     try {
       if (!writeSaveToLocalStorage(json)) {
-        applyCombinedPatch({
-          notifications: pushNotification(
-            readWorldFromPlayer().notifications,
-            'quest',
-            'Ошибка сохранения',
-          ),
+        eventBus.emit('game:system_alert', {
+          kind: 'save_failed',
+          message: 'Нет доступа к локальному хранилищу.',
         });
         return;
       }
@@ -82,12 +74,9 @@ export const createSaveSlice: StateCreator<GameStoreState, [], [], SaveSlice> = 
       eventBus.emit('game:saved', { timestamp, source });
     } catch {
       console.error('[saveGame] Failed to write save to localStorage');
-      applyCombinedPatch({
-        notifications: pushNotification(
-          readWorldFromPlayer().notifications,
-          'quest',
-          'Ошибка сохранения',
-        ),
+      eventBus.emit('game:system_alert', {
+        kind: 'save_failed',
+        message: 'Запись сохранения прервана.',
       });
     }
   },
@@ -107,12 +96,9 @@ export const createSaveSlice: StateCreator<GameStoreState, [], [], SaveSlice> = 
             '| Backup also unusable:',
             resolved.backupError,
           );
-          applyCombinedPatch({
-            notifications: pushNotification(
-              readWorldFromPlayer().notifications,
-              'quest',
-              resolved.primaryError,
-            ),
+          eventBus.emit('game:system_alert', {
+            kind: 'load_failed',
+            message: resolved.primaryError,
           });
           return;
 
@@ -137,24 +123,18 @@ export const createSaveSlice: StateCreator<GameStoreState, [], [], SaveSlice> = 
       resetGuidedStoryManager();
 
       if (resolved.status === 'recovered-from-backup') {
-        applyCombinedPatch({
-          notifications: pushNotification(
-            readWorldFromPlayer().notifications,
-            'quest',
-            'Основное сохранение повреждено — загружена резервная копия.',
-          ),
+        eventBus.emit('game:system_alert', {
+          kind: 'load_recovered',
+          message: 'Основное сохранение повреждено — загружена резервная копия.',
         });
       }
 
       eventBus.emit('game:loaded', {} as Record<string, never>);
     } catch (err) {
       console.error('[loadGame] Unexpected error:', err);
-      applyCombinedPatch({
-        notifications: pushNotification(
-          readWorldFromPlayer().notifications,
-          'quest',
-          'Ошибка загрузки',
-        ),
+      eventBus.emit('game:system_alert', {
+        kind: 'load_failed',
+        message: 'Ошибка загрузки сохранения.',
       });
     }
   },

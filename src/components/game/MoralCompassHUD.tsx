@@ -8,11 +8,13 @@ import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { getKarmaTierLabel } from '@/shared/utils/karmaTier';
 import { bottomMoralCompassPx, bottomRightInsetPx } from '@/shared/constants/hudLayout';
 import { useHudQuietStyle } from '@/hooks/useHudQuiet';
+import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 import { useEffect, useRef } from 'react';
 
 export function MoralCompassHUD() {
   const karma = usePlayerKarma();
   const quietStyle = useHudQuietStyle();
+  const reducedMotion = useEffectiveReducedMotion();
 
   // Pulse animation via motion value
   const pulseScale = useMotionValue(1);
@@ -20,16 +22,16 @@ export function MoralCompassHUD() {
   const prevKarmaRef = useRef(karma);
 
   useEffect(() => {
-    // Only trigger pulse when karma actually changes
-    if (prevKarmaRef.current === karma) return;
+    if (prevKarmaRef.current === karma) return undefined;
     prevKarmaRef.current = karma;
+    if (reducedMotion) return undefined;
 
     pulseScale.set(1);
     pulseOpacity.set(0.6);
     const controls = animate(pulseScale, 1.5, { duration: 0.8 });
     animate(pulseOpacity, 0, { duration: 0.8 });
     return () => controls.stop();
-  }, [karma]);
+  }, [karma, reducedMotion, pulseOpacity, pulseScale]);
 
   // Color based on karma level
   const color =
@@ -47,6 +49,7 @@ export function MoralCompassHUD() {
     <div
       className="fixed pointer-events-none hidden lg:block"
       data-exploration-ui
+      data-testid="moral-compass-hud"
       style={{
         zIndex: UI_LAYERS.HUD,
         bottom: bottomMoralCompassPx(),

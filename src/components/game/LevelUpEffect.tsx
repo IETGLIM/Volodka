@@ -8,6 +8,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { eventBus } from '@/engine/EventBus';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
+import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 
 interface LevelUpState {
   newLevel: number;
@@ -23,6 +24,8 @@ const PARTICLE_COUNT = 18;
 export function LevelUpEffect() {
   const [levelUp, setLevelUp] = useState<LevelUpState | null>(null);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const reducedMotion = useEffectiveReducedMotion();
+  const dismissMs = reducedMotion ? 1800 : 3000;
 
   const triggerLevelUp = useCallback((
     newLevel: number,
@@ -39,8 +42,8 @@ export function LevelUpEffect() {
     // Auto-dismiss after ~3 seconds
     timerRef.current = setTimeout(() => {
       setLevelUp(null);
-    }, 3000);
-  }, []);
+    }, dismissMs);
+  }, [dismissMs]);
 
   // ── Watch EventBus for player:levelup ──
   useEffect(() => {
@@ -65,11 +68,13 @@ export function LevelUpEffect() {
           key={levelUp.id}
           className="fixed inset-0 pointer-events-none level-up-overlay"
           style={{ zIndex: UI_LAYERS.LOADING }}
-          initial={{ opacity: 0 }}
+          initial={reducedMotion ? false : { opacity: 0 }}
           animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.3 }}
+          exit={reducedMotion ? undefined : { opacity: 0 }}
+          transition={{ duration: reducedMotion ? 0 : 0.3 }}
         >
+          {!reducedMotion && (
+          <>
           {/* ── Full-screen golden flash ── */}
           <motion.div
             className="absolute inset-0"
@@ -134,15 +139,17 @@ export function LevelUpEffect() {
               );
             })}
           </div>
+          </>
+          )}
 
           {/* ── Centered "УРОВЕНЬ {n}!" text with scale animation ── */}
           <div className="absolute inset-0 flex items-center justify-center">
             <motion.div
               className="flex flex-col items-center gap-2"
-              initial={{ scale: 0.3, opacity: 0 }}
-              animate={{ scale: [0.3, 1.15, 1], opacity: [0, 1, 1] }}
-              exit={{ scale: 1.1, opacity: 0 }}
-              transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+              initial={reducedMotion ? false : { scale: 0.3, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={reducedMotion ? undefined : { scale: 1.1, opacity: 0 }}
+              transition={{ duration: reducedMotion ? 0 : 0.6, ease: [0.16, 1, 0.3, 1] }}
             >
               {/* Top decorative line */}
               <motion.div
@@ -184,12 +191,14 @@ export function LevelUpEffect() {
                       '0 0 20px rgba(251,191,36,0.6), 0 0 40px rgba(251,191,36,0.3)',
                     ],
                   }}
-                  transition={{ duration: 1.5, repeat: 1, ease: 'easeInOut' }}
+                  transition={reducedMotion ? { duration: 0 } : { duration: 1.5, repeat: 1, ease: 'easeInOut' }}
                 >
                   УРОВЕНЬ {levelUp.newLevel}!
                 </motion.p>
               </motion.div>
 
+              {!reducedMotion && (
+              <>
               {/* Bottom decorative line */}
               <motion.div
                 className="h-[1px]"
@@ -200,6 +209,9 @@ export function LevelUpEffect() {
                 animate={{ width: 180 }}
                 transition={{ duration: 0.5, delay: 0.3 }}
               />
+
+              </>
+              )}
 
               {/* Subtitle */}
               <motion.div
@@ -233,7 +245,7 @@ export function LevelUpEffect() {
             </motion.div>
           </div>
 
-          {/* ── Scan-line sweep across the screen ── */}
+          {!reducedMotion && (
           <motion.div
             className="absolute inset-0"
             style={{
@@ -243,6 +255,7 @@ export function LevelUpEffect() {
             animate={{ y: '100%' }}
             transition={{ duration: 1.5, ease: 'easeInOut' }}
           />
+          )}
         </motion.div>
       )}
     </AnimatePresence>

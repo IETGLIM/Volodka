@@ -6,6 +6,8 @@ import { readGamePhase } from '@/shared/gamePhase';
 import { eventBus, EventBusPriority } from '@/engine/EventBus';
 import { withHmrCleanup } from '@/shared/dev/hmrDispose';
 import { SCENE_CONFIG } from '@/config/scenes';
+import type { SceneId } from '@/shared/types/game';
+import { formatSceneBanner, type SceneBannerPresentation } from '@/engine/world/worldAmbiencePresentation';
 import { AUTO_SAVE_INTERVAL_MS } from '@/data/constants';
 import { processExpiredTTLFlags } from '@/engine/PoemPowerSystem';
 import { preloadNarrativeGameData, ensureNarrativeNodeIds } from '@/data/gameDataLoader';
@@ -15,8 +17,10 @@ import { reconcileGuidedStory } from '@/engine/GuidedStoryManager';
 import { runGlobalCombatEnd } from '@/engine/core/GlobalCleanupService';
 
 /** Autosave, TTL cleanup, daily resets, scene banners, guided story lifecycle. */
+export type { SceneBannerPresentation } from '@/engine/world/worldAmbiencePresentation';
+
 export function useGameLifecycleManager(mode: string) {
-  const [sceneBanner, setSceneBanner] = useState<string | null>(null);
+  const [sceneBanner, setSceneBanner] = useState<SceneBannerPresentation | null>(null);
   const sceneBannerTimeout = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const isMountedRef = useRef(true);
 
@@ -63,7 +67,7 @@ export function useGameLifecycleManager(mode: string) {
         if (!sceneName || !isMountedRef.current) return;
 
         if (sceneBannerTimeout.current) clearTimeout(sceneBannerTimeout.current);
-        setSceneBanner(sceneName);
+        setSceneBanner(formatSceneBanner(newScene as SceneId, sceneName));
         sceneBannerTimeout.current = setTimeout(() => {
           if (!isMountedRef.current) return;
           setSceneBanner(null);

@@ -6,6 +6,7 @@ export type { NonNullPanelType } from './types';
 
 export type PanelStackAction =
   | { type: 'toggle'; panel: NonNullPanelType }
+  | { type: 'ensureOpen'; panel: NonNullPanelType }
   | { type: 'pop' }
   | { type: 'remove'; panel: NonNullPanelType }
   | { type: 'clear' };
@@ -31,8 +32,13 @@ export function panelStackReducer(
       }
       return [...stack, action.panel];
     }
-    default:
-      return stack;
+    case 'ensureOpen':
+      if (stack.includes(action.panel)) return stack;
+      return [...stack, action.panel];
+    default: {
+      const _exhaustive: never = action;
+      return _exhaustive;
+    }
   }
 }
 

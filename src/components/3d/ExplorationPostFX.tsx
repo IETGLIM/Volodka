@@ -26,7 +26,7 @@ import { useMobileVisualPerf } from '@/hooks/use-mobile';
 import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
 import { useVisualSettings } from '@/hooks/useVisualSettings';
 import { SCENE_VISIBILITY } from '@/shared/constants/sceneVisibility';
-import { getSceneVisualProfile } from '@/config/sceneVisualProfiles';
+import { resolveSceneRenderingPipeline } from '@/engine/graphics/resolveSceneRenderingPipeline';
 import { disposeEffectComposer, type PostprocessingComposerLike } from '@/engine/three/disposeThreeResources';
 
 /** Per-scene color grading overrides for CyberPunk2077 / Noir / Gothic feel */
@@ -38,7 +38,7 @@ const SCENE_COLOR_GRADE: Record<string, { hue: number; saturation: number; brigh
   street_winter:      { hue: -0.02, saturation: -0.12, brightness: 0.12, contrast: 0.08  },
   cafe_evening:       { hue: 0.01,  saturation: 0.05, brightness: -0.02, contrast: 0.18 }, // hazy blue-neon café
   office_day:         { hue: -0.01, saturation: -0.15, brightness: 0.03, contrast: 0.05 }, // sterile
-  park_day:           { hue: -0.04, saturation: -0.1, brightness: 0.0,  contrast: 0.1  }, // gothic mist
+  park_day:           { hue: -0.04, saturation: -0.08, brightness: 0.02, contrast: 0.14 }, // gothic mist — hero lift
   library_day:        { hue: 0.02,  saturation: -0.05, brightness: 0.0,  contrast: 0.1  }, // aged paper
   battle:             { hue: 0.08,  saturation: 0.2,  brightness: -0.05, contrast: 0.3  }, // intense combat
   sleep_dream:        { hue: 0.12,  saturation: 0.3,  brightness: -0.03, contrast: 0.15 }, // dark fantasy
@@ -84,7 +84,7 @@ const SCENE_BLOOM: Record<string, { intensity: number; threshold: number; smooth
   street_night:       { intensity: 0.55, threshold: 0.58, smoothing: 0.48 }, // wet neon reflections
   cafe_evening:       { intensity: 0.58, threshold: 0.52, smoothing: 0.45 }, // blue neon bar glow
   office_day:         { intensity: 0.2,  threshold: 0.85, smoothing: 0.6 },  // sterile
-  park_day:           { intensity: 0.3,  threshold: 0.85, smoothing: 0.6 },  // natural
+  park_day:           { intensity: 0.38, threshold: 0.78, smoothing: 0.55 },
   library_day:        { intensity: 0.2,  threshold: 0.85, smoothing: 0.6 },  // quiet
   battle:             { intensity: 0.8,  threshold: 0.5,  smoothing: 0.4 },  // intense combat flash
   sleep_dream:        { intensity: 0.5,  threshold: 0.6,  smoothing: 0.5 },  // ethereal glow
@@ -310,22 +310,14 @@ function PostFXPipeline() {
   const { sceneId, noirMode } = usePostFxSceneState();
   const { visualLite } = useMobileVisualPerf();
   const { preset } = useGraphicsQuality();
-  const visualProfile = getSceneVisualProfile(sceneId);
-  const useUltraAo =
-    (preset.id === 'ultra' || visualProfile.enhancedAmbientOcclusion) && !visualLite;
-  // User brightness slider (50–150%) → BrightnessContrast offset (−0.15…+0.15)
+  const rendering = resolveSceneRenderingPipeline(sceneId, preset, visualLite);
   const { brightness: userBrightness } = useVisualSettings();
   const userBrightnessOffset = (userBrightness - 1) * 0.3;
 
-  // NOTE: Renderer toneMapping is set to NoToneMapping in RPGGameCanvas.tsx
-  // to prevent double tone mapping with this EffectComposer's ToneMapping pass.
-
-  // Scene-driven color grading
   const colorGrade = SCENE_COLOR_GRADE[sceneId] ?? DEFAULT_COLOR_GRADE;
   const vignetteParams = SCENE_VIGNETTE[sceneId] ?? DEFAULT_VIGNETTE;
   const bloomParams = SCENE_BLOOM[sceneId] ?? DEFAULT_BLOOM;
 
-  // Noir mode: desaturate, boost contrast, darken vignette
   const effectiveSaturation = noirMode
     ? Math.min(colorGrade.saturation - 0.35, 0)
     : colorGrade.saturation;
@@ -342,34 +334,28 @@ function PostFXPipeline() {
   const effectiveBrightness =
     colorGrade.brightness + SCENE_VISIBILITY.postFxBrightnessLift + userBrightnessOffset;
 
-  // Stress-driven effects: higher stress = heavier vignette
   const stress = usePlayerStress();
-  const stressFactor = stress / 100; // 0-1
+  const stressFactor = stress / 100;
 
-  // Dynamic bloom: boost slightly with stress for a "pressure" feel
-  const effectiveBloomIntensity = bloomParams.intensity + stressFactor * 0.1;
+  const effectiveBloomIntensity =
+    (bloomParams.intensity + stressFactor * 0.1) * rendering.bloomIntensityScale;
 
-  // Stress-reactive vignette: darkness increases with stress
   const stressVignetteDarkness = Math.min(
     effectiveVignetteDarkness + stressFactor * 0.12,
     0.75,
   );
-  // Vignette offset shrinks with stress (tighter focus / tunnel vision)
   const stressVignetteOffset = Math.max(
     vignetteParams.offset - stressFactor * 0.15,
     0.1,
   );
 
-  // ── Lite post-FX: mobile/low quality, or heavy scenes on any preset ──
-  const useLitePostFx =
-    visualLite || (sceneId === 'abandoned_factory' && !visualProfile.forceFullPostFx);
-  const pipelineKey = `${sceneId}-${useLitePostFx ? 'lite' : 'full'}`;
+  const pipelineKey = `${sceneId}-${rendering.useLitePostFx ? 'lite' : rendering.useAmbientOcclusion ? 'ao' : 'full'}`;
 
-  if (useLitePostFx) {
+  if (rendering.useLitePostFx) {
     return (
       <ManagedEffectComposer remountKey={pipelineKey} sceneId={sceneId} multisampling={0}>
         <Bloom
-          intensity={0.45}
+          intensity={0.45 * rendering.bloomIntensityScale}
           luminanceThreshold={0.75}
           luminanceSmoothing={0.9}
           mipmapBlur
@@ -393,8 +379,8 @@ function PostFXPipeline() {
     );
   }
 
-  const fullPipelineEffects = (
-    <>
+  return (
+    <ManagedEffectComposer remountKey={pipelineKey} sceneId={sceneId} multisampling={0}>
       <Bloom
         intensity={effectiveBloomIntensity}
         luminanceThreshold={bloomParams.threshold}
@@ -402,6 +388,17 @@ function PostFXPipeline() {
         mipmapBlur
         kernelSize={KernelSize.LARGE}
       />
+      {rendering.useAmbientOcclusion ? (
+        <N8AO
+          aoRadius={rendering.aoRadius}
+          intensity={rendering.aoIntensity}
+          distanceFalloff={0.5}
+          halfRes
+          color="black"
+        />
+      ) : (
+        <></>
+      )}
       <Vignette
         offset={stressVignetteOffset}
         darkness={stressVignetteDarkness}
@@ -421,46 +418,6 @@ function PostFXPipeline() {
         mode={ToneMappingMode.ACES_FILMIC}
         exposure={SCENE_VISIBILITY.toneExposure}
       />
-    </>
-  );
-
-  if (useUltraAo) {
-    return (
-      <ManagedEffectComposer remountKey={`${pipelineKey}-ao`} sceneId={sceneId} multisampling={0}>
-        <Bloom
-          intensity={effectiveBloomIntensity}
-          luminanceThreshold={bloomParams.threshold}
-          luminanceSmoothing={bloomParams.smoothing}
-          mipmapBlur
-          kernelSize={KernelSize.LARGE}
-        />
-        <N8AO aoRadius={0.4} intensity={2.5} distanceFalloff={0.5} halfRes color="black" />
-        <Vignette
-          offset={stressVignetteOffset}
-          darkness={stressVignetteDarkness}
-          blendFunction={BlendFunction.NORMAL}
-        />
-        <HueSaturation
-          hue={colorGrade.hue}
-          saturation={effectiveSaturation}
-          blendFunction={BlendFunction.NORMAL}
-        />
-        <BrightnessContrast
-          brightness={effectiveBrightness}
-          contrast={effectiveContrast}
-          blendFunction={BlendFunction.NORMAL}
-        />
-        <ToneMapping
-          mode={ToneMappingMode.ACES_FILMIC}
-          exposure={SCENE_VISIBILITY.toneExposure}
-        />
-      </ManagedEffectComposer>
-    );
-  }
-
-  return (
-    <ManagedEffectComposer remountKey={pipelineKey} sceneId={sceneId} multisampling={0}>
-      {fullPipelineEffects}
     </ManagedEffectComposer>
   );
 }

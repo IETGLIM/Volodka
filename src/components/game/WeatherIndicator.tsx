@@ -20,6 +20,7 @@ import {
 import { useWeatherIndicatorState } from '@/store/selectors';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { useHudQuietStyle } from '@/hooks/useHudQuiet';
+import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 import type { SceneId } from '@/shared/types/game';
 
 /* ── Weather types ── */
@@ -177,6 +178,8 @@ function tempColor(temp: number): string {
 export function WeatherIndicator() {
   const { currentSceneId, timeOfDay } = useWeatherIndicatorState();
   const quietStyle = useHudQuietStyle();
+  const reducedMotion = useEffectiveReducedMotion();
+  const microTransition = reducedMotion ? { duration: 0 } : { duration: 0.25 };
 
   const weather = useMemo(
     () => deriveWeather(currentSceneId, timeOfDay),
@@ -192,6 +195,7 @@ export function WeatherIndicator() {
   return (
     <div
       className="fixed pointer-events-none hidden lg:block"
+      data-testid="weather-indicator"
       style={{ top: 390, right: 12, zIndex: UI_LAYERS.HUD + 1, ...quietStyle }}
     >
       <motion.div
@@ -202,9 +206,9 @@ export function WeatherIndicator() {
           borderColor: accent.border,
           boxShadow: `0 0 12px ${accent.glow}, 0 4px 16px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.03)`,
         }}
-        initial={{ opacity: 0, x: 20, scale: 0.95 }}
+        initial={reducedMotion ? false : { opacity: 0, x: 20, scale: 0.95 }}
         animate={{ opacity: 1, x: 0, scale: 1 }}
-        transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+        transition={reducedMotion ? { duration: 0 } : { duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
       >
         {/* ── Header: time icon + weather label ── */}
         <div
@@ -221,7 +225,7 @@ export function WeatherIndicator() {
                 initial={{ opacity: 0, scale: 0.7, rotate: -15 }}
                 animate={{ opacity: 1, scale: 1, rotate: 0 }}
                 exit={{ opacity: 0, scale: 0.7, rotate: 15 }}
-                transition={{ duration: 0.3 }}
+                transition={microTransition}
               >
                 {isNight ? (
                   <Moon className="size-3.5 text-slate-400" />
@@ -292,7 +296,7 @@ export function WeatherIndicator() {
                   initial={{ opacity: 0, x: 8 }}
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -8 }}
-                  transition={{ duration: 0.25 }}
+                  transition={microTransition}
                   className={`text-base font-mono font-bold leading-none ${tempColor(weather.temperature)}`}
                   style={{
                     textShadow: `0 0 8px currentColor`,
@@ -327,7 +331,7 @@ export function WeatherIndicator() {
                   initial={{ opacity: 0, y: -3 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: 3 }}
-                  transition={{ duration: 0.2 }}
+                  transition={microTransition}
                   className="text-[10px] font-mono text-slate-400"
                 >
                   {windInfo.text}
@@ -358,7 +362,7 @@ export function WeatherIndicator() {
                   initial={{ opacity: 0, y: -3 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: 3 }}
-                  transition={{ duration: 0.2 }}
+                  transition={microTransition}
                   className={`text-[10px] font-mono ${airInfo.color}`}
                 >
                   {airInfo.text}

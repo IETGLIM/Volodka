@@ -1,4 +1,4 @@
-import { findNpcById, getStoryNodes } from '@/data/gameDataLoader';
+import { findNpcById, getStoryNodes, isNarrativeGameDataLoaded } from '@/data/gameDataLoader';
 import { eventBus } from '@/engine/EventBus';
 import {
   dispatchGameAction,
@@ -99,5 +99,6 @@ export function createDefaultGuidedStoryDeps(): GuidedStoryDeps {
 }
 
 export function getStoryNodeSceneId(nodeId: string): string | undefined {
+  if (!isNarrativeGameDataLoaded()) return undefined;
   return getStoryNodes()[nodeId]?.sceneId;
 }

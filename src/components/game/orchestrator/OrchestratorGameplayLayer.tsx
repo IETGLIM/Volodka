@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { useOrchestratorShell } from '@/store/selectors';
+import type { SceneBannerPresentation } from '@/engine/world/worldAmbiencePresentation';
 import type { OrchestratorRuntime } from './useOrchestratorRuntime';
 import type { PanelCloseHandlers } from './useStablePanelClosers';
 import type { HudSecondaryPanelOpeners } from './useStableHudPanelOpeners';
@@ -19,7 +20,7 @@ import {
 
 type Props = {
   gameDataReady: boolean;
-  sceneBanner: string | null;
+  sceneBanner: SceneBannerPresentation | null;
   interaction: OrchestratorRuntime['interaction'];
   panels: Pick<
     OrchestratorRuntime['panels'],

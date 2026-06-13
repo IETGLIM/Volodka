@@ -4,54 +4,65 @@
  * Appears during story moments (act transitions, key choices, poem discoveries).
  * Auto-dismisses after 5 seconds or on click. */
 
-import { useState, useEffect, useMemo, useCallback } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { useTypewriter } from '@/hooks/useTypewriter'
-import { UI_LAYERS } from '@/shared/constants/uiLayers'
+import { useState, useEffect, useMemo, useCallback } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useTypewriter } from '@/hooks/useTypewriter';
+import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
+import { UI_LAYERS } from '@/shared/constants/uiLayers';
 
 interface MatrixRainQuoteProps {
-  /** The quote text to display */
-  text: string
-  /** Act number for color theming */
-  actNumber?: number
-  /** Auto-dismiss timeout in ms (default 5000) */
-  duration?: number
-  /** Callback when dismissed */
-  onDismiss: () => void
+  text: string;
+  actNumber?: number;
+  chapterTitle?: string;
+  duration?: number;
+  onDismiss: () => void;
 }
 
 export function MatrixRainQuote({
   text,
   actNumber = 1,
+  chapterTitle,
   duration = 5000,
   onDismiss,
 }: MatrixRainQuoteProps) {
-  const [visible, setVisible] = useState(true)
-  const { displayed, done } = useTypewriter(text, 35)
+  const reducedMotion = useEffectiveReducedMotion();
+  const [visible, setVisible] = useState(true);
+  const bodyText = text.trim() || chapterTitle?.trim() || '';
+  const showChapterSubtitle = Boolean(chapterTitle?.trim() && text.trim());
+  const typeSpeed = reducedMotion ? 0 : 35;
+  const { displayed, done, skip } = useTypewriter(bodyText, typeSpeed);
+
+  useEffect(() => {
+    if (reducedMotion && bodyText) skip();
+  }, [reducedMotion, bodyText, skip]);
 
   const handleDismiss = useCallback(() => {
-    setVisible(false)
-    setTimeout(onDismiss, 500)
-  }, [onDismiss])
+    setVisible(false);
+    setTimeout(onDismiss, reducedMotion ? 0 : 500);
+  }, [onDismiss, reducedMotion]);
 
-  // Auto-dismiss after typewriter completes + buffer
   useEffect(() => {
-    if (!done) return
-    const timer = setTimeout(handleDismiss, duration)
-    return () => clearTimeout(timer)
-  }, [done, duration, handleDismiss])
+    if (!done) return;
+    const timer = setTimeout(handleDismiss, duration);
+    return () => clearTimeout(timer);
+  }, [done, duration, handleDismiss]);
 
-  // Color theme per act
   const themeColor = useMemo(() => {
     switch (actNumber) {
-      case 1: return '#00ffee'
-      case 2: return '#00ff66'
-      case 3: return '#ff6644'
-      case 4: return '#ffcc00'
-      case 5: return '#cc88ff'
-      default: return '#00ffee'
+      case 1: return '#00ffee';
+      case 2: return '#00ff66';
+      case 3: return '#ff6644';
+      case 4: return '#ffcc00';
+      case 5: return '#cc88ff';
+      case 6: return '#ff88cc';
+      case 7: return '#aaddff';
+      default: return '#00ffee';
     }
-  }, [actNumber])
+  }, [actNumber]);
+
+  const fadeDuration = reducedMotion ? 0 : 0.5;
+
+  if (!bodyText) return null;
 
   return (
     <AnimatePresence>
@@ -60,23 +71,23 @@ export function MatrixRainQuote({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.5 }}
+          transition={{ duration: fadeDuration }}
           className="fixed inset-0 flex items-center justify-center cursor-pointer"
           style={{ zIndex: UI_LAYERS.CINEMATIC_TRANSITION, background: 'rgba(0,0,0,0.92)' }}
           onClick={handleDismiss}
+          role="dialog"
+          aria-live="polite"
+          aria-label={chapterTitle ? `Акт ${actNumber}: ${chapterTitle}` : `Акт ${actNumber}`}
         >
-          {/* Matrix rain columns */}
-          <MatrixRainColumns color={themeColor} />
+          {!reducedMotion ? <MatrixRainColumns color={themeColor} /> : null}
 
-          {/* Quote text */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
+            initial={reducedMotion ? false : { opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95 }}
-            transition={{ duration: 0.8, ease: 'easeOut' }}
+            exit={reducedMotion ? undefined : { opacity: 0, scale: 0.95 }}
+            transition={{ duration: reducedMotion ? 0 : 0.8, ease: 'easeOut' }}
             className="relative z-10 text-center px-8 max-w-2xl"
           >
-            {/* Glow effect behind text */}
             <div
               className="absolute inset-0 -m-8 rounded-xl pointer-events-none"
               style={{
@@ -85,7 +96,15 @@ export function MatrixRainQuote({
               }}
             />
 
-            {/* The quote */}
+            {showChapterSubtitle ? (
+              <p
+                className="mb-4 text-sm md:text-base font-mono tracking-[0.25em] uppercase"
+                style={{ color: `${themeColor}cc` }}
+              >
+                Акт {actNumber} — {chapterTitle}
+              </p>
+            ) : null}
+
             <p
               className="text-xl md:text-2xl font-mono leading-relaxed tracking-wide"
               style={{
@@ -94,8 +113,7 @@ export function MatrixRainQuote({
               }}
             >
               {displayed}
-              {/* Blinking cursor */}
-              {!done && (
+              {!done && !reducedMotion ? (
                 <motion.span
                   animate={{ opacity: [1, 0] }}
                   transition={{ duration: 0.6, repeat: Infinity }}
@@ -103,44 +121,44 @@ export function MatrixRainQuote({
                 >
                   |
                 </motion.span>
-              )}
+              ) : null}
             </p>
 
-            {/* Act indicator below */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 0.4 }}
-              transition={{ delay: 1 }}
-              className="mt-6 text-xs font-mono tracking-[0.3em]"
-              style={{ color: themeColor }}
-            >
-              АКТ {actNumber}
-            </motion.div>
+            {!showChapterSubtitle ? (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 0.5 }}
+                transition={{ delay: reducedMotion ? 0 : 1 }}
+                className="mt-6 text-xs font-mono tracking-[0.3em]"
+                style={{ color: themeColor }}
+              >
+                АКТ {actNumber}
+                {chapterTitle ? ` · ${chapterTitle.toUpperCase()}` : ''}
+              </motion.div>
+            ) : null}
 
-            {/* Dismiss hint */}
-            {done && (
+            {done ? (
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 0.3 }}
-                transition={{ delay: 0.5 }}
+                transition={{ delay: reducedMotion ? 0 : 0.5 }}
                 className="mt-4 text-[10px] font-mono"
                 style={{ color: '#666' }}
               >
                 нажмите чтобы продолжить
               </motion.div>
-            )}
+            ) : null}
           </motion.div>
         </motion.div>
       )}
     </AnimatePresence>
-  )
+  );
 }
 
-/* ─── Matrix rain columns (lightweight CSS version) ─── */
 function MatrixRainColumns({ color }: { color: string }) {
   const columns = useMemo(() => {
-    const CHARS = '0123456789ABCDEF{}[]<>/\\|#$@!клмнопрстуфхцчшщъыьэюя'
-    const count = Math.min(Math.ceil(typeof window !== 'undefined' ? window.innerWidth / 18 : 60), 80)
+    const CHARS = '0123456789ABCDEF{}[]<>/\\|#$@!клмнопрстуфхцчшщъыьэюя';
+    const count = Math.min(Math.ceil(typeof window !== 'undefined' ? window.innerWidth / 18 : 60), 80);
     return Array.from({ length: count }, (_, i) => ({
       id: i,
       x: i * 18,
@@ -149,8 +167,8 @@ function MatrixRainColumns({ color }: { color: string }) {
       ),
       duration: 3 + Math.random() * 6,
       delay: Math.random() * 4,
-    }))
-  }, [])
+    }));
+  }, []);
 
   return (
     <div
@@ -194,5 +212,5 @@ function MatrixRainColumns({ color }: { color: string }) {
         }
       `}</style>
     </div>
-  )
+  );
 }

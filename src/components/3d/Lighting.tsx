@@ -7,9 +7,11 @@
 
 import { useGameStore } from '@/store/gameStore';
 import { getSceneConfig } from '@/config/scenes';
-import { useIsMobileVisual } from '@/hooks/use-mobile';
+import { useIsMobileVisual, useMobileVisualPerf } from '@/hooks/use-mobile';
 import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
+import { resolveSceneRenderingPipeline } from '@/engine/graphics/resolveSceneRenderingPipeline';
 import { SCENE_VISIBILITY } from '@/shared/constants/sceneVisibility';
+import type { SceneId } from '@/shared/types/game';
 
 /** Shadow config constants — tuned to prevent z-fighting/shadow acne */
 const SHADOW_BIAS = -0.002;
@@ -72,11 +74,17 @@ function ScenePointLights() {
 
 /** Exploration lighting: directional + hemisphere + ambient + scene-specific lights */
 export function ExplorationLighting() {
-  const sceneId = useGameStore((s) => s.exploration.currentSceneId);
+  const sceneId = useGameStore((s) => s.exploration.currentSceneId) as SceneId;
   const isMobile = useIsMobileVisual();
   const { preset } = useGraphicsQuality();
+  const { visualLite } = useMobileVisualPerf();
+  const rendering = resolveSceneRenderingPipeline(sceneId, preset, visualLite);
   const config = getSceneConfig(sceneId);
-  const shadowSize = isMobile ? 512 : preset.id === 'ultra' ? 2048 : 1024;
+  const baseShadow = isMobile ? 512 : preset.id === 'ultra' ? 2048 : 1024;
+  const shadowSize = Math.min(
+    2048,
+    Math.round(baseShadow * rendering.shadowMapScale),
+  );
 
   const ambientColor = config.ambientColor ?? '#1a1a2e';
   const ambientIntensity =

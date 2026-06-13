@@ -6,38 +6,63 @@ import { eventBus } from '@/engine/EventBus';
 import { PHOTO_EVENTS } from '@/engine/events';
 import { floatKarma, floatEnergy, floatStress, floatXP } from '@/components/game/FloatingText';
 import { determineWeatherType, type WeatherType } from '@/data/weatherEffects';
+import {
+  resolveHudQuestBadgeCount,
+  shouldPulseQuestBadge,
+} from '@/hooks/questHudPresentation';
 import type { HUDProps } from './hudTypes';
 
-function useQuestNotificationCount(): number {
+function useQuestNotificationCount(): { count: number; pulse: boolean; activeCount: number } {
   const activeQuests = useActiveQuests();
-  const [newCount, setNewCount] = useState(0);
+  const [recentNewCount, setRecentNewCount] = useState(0);
   const seenQuests = useRef<Set<string>>(new Set());
   const recentQueue = useRef<{ questId: string; time: number }[]>([]);
+
+  const bumpRecent = useCallback((questId: string) => {
+    recentQueue.current.push({ questId, time: Date.now() });
+    const now = Date.now();
+    const recent = recentQueue.current.filter((r) => now - r.time < 30000);
+    recentQueue.current = recent;
+    setRecentNewCount(recent.length);
+  }, []);
 
   useEffect(() => {
     for (const q of activeQuests) {
       if (!seenQuests.current.has(q.questId)) {
         seenQuests.current.add(q.questId);
-        recentQueue.current.push({ questId: q.questId, time: Date.now() });
+        bumpRecent(q.questId);
       }
     }
+  }, [activeQuests, bumpRecent]);
 
-    const now = Date.now();
-    const recent = recentQueue.current.filter((r) => now - r.time < 30000);
-    recentQueue.current = recent;
-    setNewCount(recent.length);
+  useEffect(() => {
+    const unsubs = [
+      eventBus.on('story:quest_available', ({ questId }) => bumpRecent(questId)),
+      eventBus.on('quest:objective_updated', ({ questId }) => bumpRecent(questId)),
+      eventBus.on('quest:accepted', ({ questId }) => bumpRecent(questId)),
+    ];
+    return () => {
+      for (const unsub of unsubs) unsub();
+    };
+  }, [bumpRecent]);
 
+  useEffect(() => {
     const timer = setInterval(() => {
-      const n = Date.now();
-      const r = recentQueue.current.filter((e) => n - e.time < 30000);
-      recentQueue.current = r;
-      setNewCount(r.length);
+      const now = Date.now();
+      const recent = recentQueue.current.filter((entry) => now - entry.time < 30000);
+      recentQueue.current = recent;
+      setRecentNewCount(recent.length);
     }, 5000);
 
     return () => clearInterval(timer);
-  }, [activeQuests]);
+  }, []);
 
-  return newCount;
+  const count = resolveHudQuestBadgeCount(recentNewCount, activeQuests.length);
+  return {
+    count,
+    pulse: shouldPulseQuestBadge(recentNewCount),
+    activeCount: activeQuests.length,
+  };
 }
 
 /** Game logic for exploration HUD — no layout JSX. */
@@ -82,7 +107,10 @@ export function useHUDController(props: HUDProps) {
   );
 
   const sceneName = SCENE_CONFIG[currentSceneId]?.name ?? 'Неизвестно';
-  const questNotificationCount = useQuestNotificationCount();
+  const questBadge = useQuestNotificationCount();
+  const questNotificationCount = questBadge.count;
+  const questBadgePulse = questBadge.pulse;
+  const activeQuestCount = questBadge.activeCount;
 
   const [showSaveIndicator, setShowSaveIndicator] = useState(false);
   const timersRef = useRef(new Set<ReturnType<typeof setTimeout>>());
@@ -231,6 +259,8 @@ export function useHUDController(props: HUDProps) {
     currentWeather,
     collectedPoems,
     questNotificationCount,
+    questBadgePulse,
+    activeQuestCount,
     showSaveIndicator,
     handleSave,
     karma,

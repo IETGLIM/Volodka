@@ -1,21 +1,10 @@
-/* ─── Volodka RPG – Cesium player model ───
- * Main player avatar: the CC0 Khronos "CesiumMan" rigged GLB.
- *
- * That model is a COLLADA2GLTF export authored Z-up (its geometry height runs
- * along Z and it relies on a root "Z_UP" matrix to stand). To be robust against
- * however the loader/clone handles that, we MEASURE the clone at runtime and
- * adapt: detect lying-vs-standing, normalise to a target height, and drop the
- * feet to the floor. Falls back to the procedural model while the GLB streams.
- *
- * Drop-in replacement for ProceduralPlayerModelAdaptive (same props).
- */
-
 import { Suspense, useEffect, useRef, useState } from 'react';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
 import { MODEL_URLS } from '@/config/modelUrls';
 import { useSkinnedGltfClone } from '@/hooks/useSkinnedGltfClone';
+import { resolveLocomotionClipState } from '@/engine/player/playerLocomotionPresentation';
 import { ProceduralPlayerModelAdaptive } from './ProceduralPlayerModel';
 import type { ProceduralPlayerModelProps } from './useProceduralPlayerAnimation';
 useGLTF.preload(MODEL_URLS.cc0KhronosCesiumMan);
@@ -24,6 +13,7 @@ useGLTF.preload(MODEL_URLS.cc0KhronosCesiumMan);
 const TARGET_HEIGHT = 1.7;
 /** Flip to Math.PI if the avatar faces backwards while walking. */
 const FORWARD_OFFSET = 0;
+const CLIP_CROSSFADE_SEC = 0.2;
 
 interface Fit {
   scale: number;
@@ -44,41 +34,56 @@ function CesiumPlayerModelInner({ modelScale, currentAnimRef, rotationRef }: Pro
   const { scene, mixer } = useSkinnedGltfClone(gltf.scene, gltf.animations, { castShadow: true });
   const yawRef = useRef<THREE.Group>(null);
   const fitRef = useRef<THREE.Group>(null);
-  const actionRef = useRef<THREE.AnimationAction | null>(null);
-  // Safe default until measured (≈1.5m model → ~1.65m). Refined in the effect.
+  const walkActionRef = useRef<THREE.AnimationAction | null>(null);
+  const runActionRef = useRef<THREE.AnimationAction | null>(null);
+  const prevRunWeightRef = useRef(0);
   const [fit, setFit] = useState<Fit>({ scale: 1.1, rotX: 0, y: 0 });
 
   useEffect(() => {
     if (!mixer || gltf.animations.length === 0) {
-      actionRef.current = null;
+      walkActionRef.current = null;
+      runActionRef.current = null;
       return;
     }
 
-    const prev = actionRef.current;
-    if (prev) {
-      prev.stop();
-      mixer.uncacheClip(prev.getClip());
-      actionRef.current = null;
+    for (const action of [walkActionRef.current, runActionRef.current]) {
+      if (action) {
+        action.stop();
+        mixer.uncacheClip(action.getClip());
+      }
     }
+    walkActionRef.current = null;
+    runActionRef.current = null;
 
     const walkClip =
       gltf.animations.find((c) => /walk/i.test(c.name)) ?? gltf.animations[0];
-    const action = mixer.clipAction(walkClip);
-    action.setLoop(THREE.LoopRepeat, Infinity);
-    action.reset();
-    action.play();
-    actionRef.current = action;
+    const runClip = gltf.animations.find((c) => /run/i.test(c.name) && c !== walkClip);
+
+    const walkAction = mixer.clipAction(walkClip);
+    walkAction.setLoop(THREE.LoopRepeat, Infinity);
+    walkAction.play();
+    walkActionRef.current = walkAction;
+
+    if (runClip) {
+      const runAction = mixer.clipAction(runClip);
+      runAction.setLoop(THREE.LoopRepeat, Infinity);
+      runAction.play();
+      runAction.setEffectiveWeight(0);
+      runActionRef.current = runAction;
+    }
 
     return () => {
-      action.stop();
+      walkAction.stop();
       mixer.uncacheClip(walkClip);
-      if (actionRef.current === action) {
-        actionRef.current = null;
+      if (runClip && runActionRef.current) {
+        runActionRef.current.stop();
+        mixer.uncacheClip(runClip);
       }
+      walkActionRef.current = null;
+      runActionRef.current = null;
     };
   }, [mixer, gltf.animations]);
 
-  // Adaptive orient + scale + foot-drop, measured from the actual clone.
   useEffect(() => {
     const inner = fitRef.current;
     if (!inner) return;
@@ -89,15 +94,13 @@ function CesiumPlayerModelInner({ modelScale, currentAnimRef, rotationRef }: Pro
     const { size } = measure(scene);
     let rotX = 0;
     let heightDim = size.y;
-    // Z-up / lying model → its longest vertical extent is along Z. Stand it up.
     if (size.z > size.y * 1.15) {
       rotX = -Math.PI / 2;
       heightDim = size.z;
     }
-    if (!isFinite(heightDim) || heightDim < 0.2) heightDim = 1.5; // degenerate guard
+    if (!isFinite(heightDim) || heightDim < 0.2) heightDim = 1.5;
     const scale = TARGET_HEIGHT / heightDim;
 
-    // Apply, then re-measure to drop the feet exactly to y = 0.
     inner.rotation.x = rotX;
     inner.scale.setScalar(scale);
     const { min } = measure(scene);
@@ -109,14 +112,35 @@ function CesiumPlayerModelInner({ modelScale, currentAnimRef, rotationRef }: Pro
   useFrameTick('player', ({ delta }) => {
     if (yawRef.current) yawRef.current.rotation.y = rotationRef.current + FORWARD_OFFSET;
     if (!mixer) return;
-    const anim = currentAnimRef.current;
-    const moving = anim === 'walk' || anim === 'run';
-    if (actionRef.current) {
-      // Pause locomotion clip when idle — 0.3 timeScale caused walk-in-place during cutscenes.
-      actionRef.current.timeScale = moving ? (anim === 'run' ? 1.45 : 1.05) : 0;
-    }
-    if (moving) {
+
+    const clipState = resolveLocomotionClipState(currentAnimRef.current);
+    const walkAction = walkActionRef.current;
+    const runAction = runActionRef.current;
+
+    if (!walkAction) return;
+
+    if (clipState.locomotionActive) {
+      walkAction.timeScale = clipState.walkTimeScale;
+      if (runAction) {
+        runAction.timeScale = clipState.runTimeScale;
+        if (clipState.runWeight !== prevRunWeightRef.current) {
+          if (clipState.runWeight >= 1) {
+            walkAction.crossFadeTo(runAction, CLIP_CROSSFADE_SEC, false);
+          } else {
+            runAction.crossFadeTo(walkAction, CLIP_CROSSFADE_SEC, false);
+          }
+          prevRunWeightRef.current = clipState.runWeight;
+        }
+      } else {
+        walkAction.timeScale = clipState.runWeight > 0
+          ? clipState.runTimeScale
+          : clipState.walkTimeScale;
+      }
       mixer.update(delta);
+    } else {
+      walkAction.timeScale = 0;
+      if (runAction) runAction.timeScale = 0;
+      prevRunWeightRef.current = 0;
     }
   });
 

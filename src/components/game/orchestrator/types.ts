@@ -52,4 +52,5 @@ export type QuestDialogState = {
 export type MatrixQuoteState = {
   text: string;
   actNumber: number;
+  chapterTitle?: string;
 } | null;

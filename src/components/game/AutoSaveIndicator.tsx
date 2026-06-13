@@ -12,6 +12,7 @@ import { eventBus } from '@/engine/EventBus';
 import { useAutoSaveTimestamps } from '@/store/selectors';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { bottomAutoSavePx } from '@/shared/constants/hudLayout';
+import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 import { useMobileDetection } from './orchestrator/useMobileDetection';
 
 /* ─── Types ─── */
@@ -83,6 +84,8 @@ const ACCENT = {
 
 export function AutoSaveIndicator() {
   const isMobile = useMobileDetection();
+  const reducedMotion = useEffectiveReducedMotion();
+  const motionDuration = reducedMotion ? 0 : 0.35;
   const [phase, setPhase] = useState<Phase>('idle');
   const [source, setSource] = useState<SaveSource>('auto');
   const [lastSaveAt, setLastSaveAt] = useState<number | null>(null);
@@ -176,11 +179,13 @@ export function AutoSaveIndicator() {
               boxShadow: accent.shadow,
               minWidth: '180px',
             }}
-            initial={{ opacity: 0, x: 40, scale: 0.92 }}
+            initial={reducedMotion ? false : { opacity: 0, x: 40, scale: 0.92 }}
             animate={{ opacity: 1, x: 0, scale: 1 }}
-            exit={{ opacity: 0, x: 20, scale: 0.92 }}
-            transition={{ duration: 0.35, ease: [0.25, 0.46, 0.45, 0.94] }}
+            exit={reducedMotion ? undefined : { opacity: 0, x: 20, scale: 0.92 }}
+            transition={{ duration: motionDuration, ease: [0.25, 0.46, 0.45, 0.94] }}
           >
+            {!reducedMotion && (
+              <>
             {/* Scan-line sweep animation */}
             <motion.div
               className="absolute inset-0 pointer-events-none z-10"
@@ -206,12 +211,17 @@ export function AutoSaveIndicator() {
               }}
               transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
             />
+              </>
+            )}
 
             {/* Content */}
             <div className="relative z-20 flex items-center gap-2.5 px-3.5 py-2.5">
               {/* Icon */}
               <div className="flex items-center justify-center w-6 h-6 shrink-0">
                 {phase === 'saving' ? (
+                  reducedMotion ? (
+                    <Save className="size-4" style={{ color: accent.primary }} />
+                  ) : (
                   <motion.div
                     animate={{ rotate: 360 }}
                     transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
@@ -221,6 +231,7 @@ export function AutoSaveIndicator() {
                       style={{ color: accent.primary }}
                     />
                   </motion.div>
+                  )
                 ) : (
                   <Check
                     className="size-4"
@@ -303,10 +314,10 @@ export function AutoSaveIndicator() {
               border: `1px solid ${accent.border}`,
               boxShadow: accent.shadow,
             }}
-            initial={{ opacity: 0, scale: 0.7 }}
+            initial={reducedMotion ? false : { opacity: 0, scale: 0.7 }}
             animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.7 }}
-            transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
+            exit={reducedMotion ? undefined : { opacity: 0, scale: 0.7 }}
+            transition={{ duration: motionDuration, ease: [0.25, 0.46, 0.45, 0.94] }}
             title={
               source === 'auto'
                 ? `Автосохранение: ${relativeLabel ?? '—'}`
@@ -341,6 +352,7 @@ export function AutoSaveIndicator() {
             </motion.div>
 
             {/* Subtle breathing glow */}
+            {!reducedMotion && (
             <motion.div
               className="absolute inset-0 rounded-full pointer-events-none"
               style={{
@@ -349,6 +361,7 @@ export function AutoSaveIndicator() {
               animate={{ opacity: [0.2, 0.5, 0.2], scale: [1, 1.1, 1] }}
               transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
             />
+            )}
           </motion.div>
         )}
       </AnimatePresence>

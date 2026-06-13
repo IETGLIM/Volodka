@@ -57,6 +57,7 @@ import { useHudQuietStyle } from '@/hooks/useHudQuiet';
 import { AriaLiveRegion } from '@/components/a11y/AriaLiveRegion';
 import { getKarmaTierLabel } from '@/shared/utils/karmaTier';
 import { useHUDController } from '@/components/game/hud/useHUDController';
+import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 import type { HUDProps } from '@/components/game/hud/hudTypes';
 
 export type { HUDProps } from '@/components/game/hud/hudTypes';
@@ -448,6 +449,7 @@ function HUDMenuItem({ icon, label, shortcut, onClick, badge }: SecondaryAction)
 
 export function HUD(props: HUDProps) {
   const state = useHUDController(props);
+  const reducedMotion = useEffectiveReducedMotion();
   const quietStyle = useHudQuietStyle();
   const totalPoems = getPoems().length;
   const {
@@ -458,6 +460,8 @@ export function HUD(props: HUDProps) {
     currentWeather,
     collectedPoems,
     questNotificationCount,
+    questBadgePulse,
+    activeQuestCount,
     showSaveIndicator,
     handleSave,
     karma,
@@ -631,18 +635,41 @@ export function HUD(props: HUDProps) {
             )}
 
             {/* Quest button with notification badge */}
-            <div className="relative">
-              <HUDButton icon={<ScrollText className="size-3.5 sm:size-4" />} label="Задания [Q]" onClick={onOpenQuests} tooltip="Задания [Q]" />
+            <div className="relative" data-testid="hud-quest-button">
+              <HUDButton
+                icon={<ScrollText className="size-3.5 sm:size-4" />}
+                label={`Задания [Q]${activeQuestCount > 0 ? ` · ${activeQuestCount} активных` : ''}`}
+                onClick={onOpenQuests}
+                tooltip={activeQuestCount > 0 ? `Задания [Q] · ${activeQuestCount} активных` : 'Задания [Q]'}
+              />
               {/* Notification badge */}
               <AnimatePresence>
                 {questNotificationCount > 0 && (
                   <motion.span
-                    initial={{ scale: 0, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    exit={{ scale: 0, opacity: 0 }}
-                    transition={{ type: 'spring', stiffness: 500, damping: 25 }}
-                    className="absolute -top-1 -right-1 min-w-4 h-4 rounded-full bg-amber-500 text-[8px] font-bold text-black flex items-center justify-center px-1"
-                    style={{ boxShadow: '0 0 8px rgba(251,191,36,0.5)' }}
+                    initial={reducedMotion ? false : { scale: 0, opacity: 0 }}
+                    animate={
+                      reducedMotion
+                        ? { scale: 1, opacity: 1 }
+                        : questBadgePulse
+                          ? { scale: [1, 1.12, 1], opacity: 1 }
+                          : { scale: 1, opacity: 1 }
+                    }
+                    exit={reducedMotion ? undefined : { scale: 0, opacity: 0 }}
+                    transition={
+                      reducedMotion
+                        ? { duration: 0 }
+                        : questBadgePulse
+                          ? { scale: { duration: 1.2, repeat: Infinity, ease: 'easeInOut' }, opacity: { duration: 0.2 } }
+                          : { type: 'spring', stiffness: 500, damping: 25 }
+                    }
+                    className={`absolute -top-1 -right-1 min-w-4 h-4 rounded-full text-[8px] font-bold text-black flex items-center justify-center px-1 ${
+                      questBadgePulse ? 'bg-amber-500' : 'bg-cyan-600/90'
+                    }`}
+                    style={{
+                      boxShadow: questBadgePulse
+                        ? '0 0 8px rgba(251,191,36,0.5)'
+                        : '0 0 8px rgb(var(--cyber-cyan-rgb) / 0.35)',
+                    }}
                   >
                     {questNotificationCount > 9 ? '9+' : questNotificationCount}
                   </motion.span>

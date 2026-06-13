@@ -11,9 +11,11 @@ import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { useNotificationSlot, NOTIFY_PRIORITY } from '@/hooks/useNotificationSlot';
 import { bottomQuestToastPx } from '@/shared/constants/hudLayout';
 import { useMobileDetection } from './orchestrator/useMobileDetection';
+import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 import { eventBus } from '@/engine/EventBus'
 import { AriaLiveRegion } from '@/components/a11y/AriaLiveRegion'
 import { QUEST_DEFINITIONS } from '@/data/quests'
+import { findNpcById } from '@/data/allNpcDefinitions'
 import { useGamePhase } from '@/store/selectors'
 import { useQuests } from '@/store/selectors'
 import type { QuestState } from '@/shared/types/game'
@@ -106,24 +108,45 @@ const MAX_VISIBLE = 3
 
 /* ─── Progress bar component ─── */
 
-function ProgressBar({ completed, total }: { completed: number; total: number }) {
+function ProgressBar({
+  completed,
+  total,
+  reducedMotion,
+}: {
+  completed: number;
+  total: number;
+  reducedMotion: boolean;
+}) {
   const pct = total > 0 ? Math.round((completed / total) * 100) : 0
   return (
     <div className="w-full h-1.5 rounded-full bg-white/10 overflow-hidden mt-1.5">
       <motion.div
         className="h-full rounded-full"
         style={{ background: 'linear-gradient(90deg, #4ade80, var(--cyber-cyan))' }}
-        initial={{ width: 0 }}
+        initial={reducedMotion ? false : { width: 0 }}
         animate={{ width: `${pct}%` }}
-        transition={{ duration: 0.6, ease: 'easeOut' }}
+        transition={reducedMotion ? { duration: 0 } : { duration: 0.6, ease: 'easeOut' }}
       />
     </div>
   )
 }
 
-/* ─── Animated checkmark ─── */
+function AnimatedCheckmark({ reducedMotion }: { reducedMotion: boolean }) {
+  if (reducedMotion) {
+    return (
+      <svg width="16" height="16" viewBox="0 0 16 16">
+        <path
+          d="M3 8.5L6.5 12L13 4"
+          fill="none"
+          stroke="#4ade80"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    )
+  }
 
-function AnimatedCheckmark() {
   return (
     <motion.svg
       width="16"
@@ -150,13 +173,13 @@ function AnimatedCheckmark() {
 
 /* ─── Retry button for failed quests ─── */
 
-function RetryButton({ onClick }: { onClick: () => void }) {
+function RetryButton({ onClick, reducedMotion }: { onClick: () => void; reducedMotion: boolean }) {
   return (
     <motion.button
       type="button"
-      initial={{ opacity: 0, scale: 0.9 }}
+      initial={reducedMotion ? false : { opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
-      transition={{ delay: 0.5 }}
+      transition={reducedMotion ? { duration: 0 } : { delay: 0.5 }}
       onClick={(e) => {
         e.stopPropagation()
         onClick()
@@ -177,9 +200,10 @@ interface QuestNotifCardProps {
   notif: QuestNotification
   onDismiss: (id: string) => void
   onQuestCompleteClick?: (questId: string) => void
+  reducedMotion: boolean
 }
 
-function QuestNotifCard({ notif, onDismiss, onQuestCompleteClick }: QuestNotifCardProps) {
+function QuestNotifCard({ notif, onDismiss, onQuestCompleteClick, reducedMotion }: QuestNotifCardProps) {
   const style = QUEST_NOTIF_STYLES[notif.type]
   const autoDismiss = AUTO_DISMISS_MS[notif.type]
 
@@ -200,17 +224,27 @@ function QuestNotifCard({ notif, onDismiss, onQuestCompleteClick }: QuestNotifCa
   const handleClick = useCallback(() => {
     if (notif.type === 'complete' && onQuestCompleteClick) {
       onQuestCompleteClick(notif.questId)
+    } else if (notif.type === 'available' || notif.type === 'started' || notif.type === 'objective') {
+      eventBus.emit('ui:open_panel', { panel: 'quests', questId: notif.questId })
     }
     onDismiss(notif.id)
   }, [notif.id, notif.type, notif.questId, onDismiss, onQuestCompleteClick])
 
+  const cardMotion = reducedMotion
+    ? { initial: false as const, animate: { opacity: 1 }, exit: { opacity: 0 } }
+    : {
+      initial: { x: 120, opacity: 0, scale: 0.9 },
+      animate: { x: 0, opacity: 1, scale: 1 },
+      exit: { x: 80, opacity: 0, scale: 0.9, transition: { duration: 0.25 } },
+    }
+
   return (
     <motion.div
-      layout
-      initial={{ x: 120, opacity: 0, scale: 0.9 }}
-      animate={{ x: 0, opacity: 1, scale: 1 }}
-      exit={{ x: 80, opacity: 0, scale: 0.9, transition: { duration: 0.25 } }}
-      transition={{ type: 'spring', damping: 24, stiffness: 300 }}
+      layout={!reducedMotion}
+      initial={cardMotion.initial}
+      animate={cardMotion.animate}
+      exit={cardMotion.exit}
+      transition={reducedMotion ? { duration: 0 } : { type: 'spring', damping: 24, stiffness: 300 }}
       onClick={handleClick}
       className="pointer-events-auto cursor-pointer w-full"
       style={{
@@ -267,7 +301,7 @@ function QuestNotifCard({ notif, onDismiss, onQuestCompleteClick }: QuestNotifCa
             fontWeight: 700,
           }}
         >
-          {notif.type === 'complete' ? <AnimatedCheckmark /> : style.icon}
+          {notif.type === 'complete' ? <AnimatedCheckmark reducedMotion={reducedMotion} /> : style.icon}
         </span>
 
         <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0, flex: 1 }}>
@@ -336,7 +370,11 @@ function QuestNotifCard({ notif, onDismiss, onQuestCompleteClick }: QuestNotifCa
           >
             {notif.objectiveDescription}
           </span>
-          <ProgressBar completed={notif.completedObjectives} total={notif.totalObjectives} />
+          <ProgressBar
+            completed={notif.completedObjectives}
+            total={notif.totalObjectives}
+            reducedMotion={reducedMotion}
+          />
           <span
             style={{
               color: style.textColor,
@@ -349,6 +387,18 @@ function QuestNotifCard({ notif, onDismiss, onQuestCompleteClick }: QuestNotifCa
             {notif.completedObjectives}/{notif.totalObjectives} целей
           </span>
         </div>
+      )}
+
+      {notif.type !== 'complete' && notif.type !== 'failed' && (
+        <span
+          style={{
+            color: 'rgba(255,255,255,0.45)',
+            fontSize: 10,
+            lineHeight: 1.3,
+          }}
+        >
+          Нажмите — журнал заданий [Q]
+        </span>
       )}
 
       {/* Rewards for complete quests */}
@@ -378,7 +428,9 @@ function QuestNotifCard({ notif, onDismiss, onQuestCompleteClick }: QuestNotifCa
               {notif.reason}
             </span>
           )}
-          {notif.canRetry && <RetryButton onClick={() => onDismiss(notif.id)} />}
+          {notif.canRetry && (
+            <RetryButton reducedMotion={reducedMotion} onClick={() => onDismiss(notif.id)} />
+          )}
         </div>
       )}
     </motion.div>
@@ -390,6 +442,7 @@ function QuestNotifCard({ notif, onDismiss, onQuestCompleteClick }: QuestNotifCa
    ═══════════════════════════════════════════════════════════ */
 
 export function QuestNotificationSystem() {
+  const reducedMotion = useEffectiveReducedMotion();
   const [notifications, setNotifications] = useState<QuestNotification[]>([])
   const shownIds = useRef(new Set<string>())
   const notifCounter = useRef(0)
@@ -505,6 +558,17 @@ export function QuestNotificationSystem() {
 
     // quest:accepted — covered by store watcher (inactive → active, type 'started')
 
+    unsubs.push(
+      eventBus.on('story:quest_available', ({ questId, questTitle, npcId }) => {
+        addNotification({
+          type: 'available',
+          questId,
+          questTitle,
+          npcName: npcId ? findNpcById(npcId)?.name : undefined,
+        })
+      }),
+    )
+
     // Quest objective updated
     unsubs.push(
       eventBus.on('quest:objective_updated', ({ questId, objectiveId }) => {
@@ -584,6 +648,7 @@ export function QuestNotificationSystem() {
             notif={notif}
             onDismiss={dismissNotification}
             onQuestCompleteClick={handleQuestCompleteClick}
+            reducedMotion={reducedMotion}
           />
         ))}
       </AnimatePresence>

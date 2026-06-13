@@ -14,6 +14,7 @@ import {
   configureCameraCollisionRaycaster,
   isCameraCollisionHit,
 } from '@/engine/camera/cameraCollisionLayers';
+import { getExplorationCameraMotionScale } from '@/engine/player/playerLocomotionPresentation';
 
 /* ════════════════════════════════════════════════════
  * CONSTANTS
@@ -487,8 +488,10 @@ export function updateExplorationState(
   currentYaw: number,
   playerVelocity: THREE.Vector3,
   delta: number,
+  moveBlend = 0,
 ): { targetRoll: number; targetHeight: number } {
   const dt = Math.min(delta, 0.05);
+  const motionScale = getExplorationCameraMotionScale(moveBlend);
 
   // ── Height smoothing (for stairs/slopes) ──
   state.smoothedHeight = THREE.MathUtils.lerp(
@@ -516,7 +519,7 @@ export function updateExplorationState(
     state.smoothedTurnRate * 0.003,
     -TURN_TILT_MAX,
     TURN_TILT_MAX,
-  );
+  ) * motionScale.turnTiltScale;
 
   // ── Idle breathing ──
   const speed = playerVelocity.length();
@@ -529,7 +532,7 @@ export function updateExplorationState(
   // Breathing fades in after idle delay
   if (state.idleTimer >= BREATHING_IDLE_DELAY) {
     const fadeIn = Math.min(1, (state.idleTimer - BREATHING_IDLE_DELAY) * BREATHING_FADE_IN_SPEED);
-    state.breathingIntensity = fadeIn * BREATHING_INTENSITY_MAX;
+    state.breathingIntensity = fadeIn * BREATHING_INTENSITY_MAX * motionScale.breathingScale;
   } else {
     state.breathingIntensity = Math.max(0, state.breathingIntensity - dt * 2);
   }

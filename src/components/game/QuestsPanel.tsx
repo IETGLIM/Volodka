@@ -4,7 +4,7 @@
    Dark glass morphism with cyberpunk accents.
 */
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   CheckCircle2, Circle, Trophy, BookOpen, EyeOff,
@@ -21,7 +21,8 @@ import {
 import { GOLDEN_PATH_QUEST_SPINE, ACT1_SOLNYSH_QUEST_SPINE } from '@/data/goldenPath';
 import { getGameStore } from '@/store/gameStore';
 import { useQuests } from '@/store/selectors';
-import { Badge } from '@/components/ui/badge';
+import { eventBus } from '@/engine/EventBus';
+import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -86,15 +87,63 @@ function RewardBadge({ reward, index }: { reward: { type: string; skill?: string
 }
 
 export function QuestsPanel({ open, onClose }: QuestsPanelProps) {
+  const reducedMotion = useEffectiveReducedMotion();
   const quests = useQuests();
   const [showCompleted, setShowCompleted] = useState(false);
   const [showFailed, setShowFailed] = useState(true);
   const [expandedQuests, setExpandedQuests] = useState<Set<string>>(new Set());
+  const prevOpenRef = useRef(false);
 
   const activeQuests = useActiveQuests();
   const failedQuests = useFailedQuests();
   const completedQuests = quests.filter((q) => q.status === 'completed');
 
+  const goldenPathFocusId = useMemo(() => {
+    for (const questId of GOLDEN_PATH_QUEST_SPINE) {
+      if (activeQuests.some((q) => q.questId === questId)) {
+        return questId;
+      }
+    }
+    return null;
+  }, [activeQuests]);
+
+  const expandQuest = useCallback((questId: string) => {
+    setExpandedQuests((prev) => {
+      const next = new Set(prev);
+      next.add(questId);
+      return next;
+    });
+    requestAnimationFrame(() => {
+      document
+        .querySelector(`[data-quest-id="${questId}"]`)
+        ?.scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth', block: 'nearest' });
+    });
+  }, [reducedMotion]);
+
+  useEffect(() => {
+    if (open && !prevOpenRef.current) {
+      const spineActive = GOLDEN_PATH_QUEST_SPINE.find((id) =>
+        activeQuests.some((q) => q.questId === id),
+      );
+      const mainActive = activeQuests.find((q) => {
+        const def = QUEST_DEFINITIONS.find((d) => d.id === q.questId);
+        return def?.questType === 'main';
+      });
+      const toExpand = spineActive ?? mainActive?.questId ?? activeQuests[0]?.questId;
+      if (toExpand) {
+        expandQuest(toExpand);
+      }
+    }
+    prevOpenRef.current = open;
+  }, [open, activeQuests, expandQuest]);
+
+  useEffect(() => {
+    if (!open) return undefined;
+    const unsub = eventBus.on('quests:select_quest', ({ questId }) => {
+      expandQuest(questId);
+    });
+    return unsub;
+  }, [open, expandQuest]);
   // Group active quests by quest type
   const activeByType = useMemo(() => {
     const groups: Record<QuestType, QuestState[]> = {
@@ -164,7 +213,7 @@ export function QuestsPanel({ open, onClose }: QuestsPanelProps) {
         </div>
       )}
     >
-      <div className="scanline-overlay" style={{ background: 'rgba(0,0,0,0.2)' }}>
+      <div className="scanline-overlay" style={{ background: 'rgba(0,0,0,0.2)' }} data-testid="quests-panel">
 
             <ScrollArea className="flex-1 px-4 py-3">
               {/* Active quests by type */}
@@ -190,10 +239,17 @@ export function QuestsPanel({ open, onClose }: QuestsPanelProps) {
                           const isExpanded = expandedQuests.has(qs.questId);
                           const deps = areDependenciesMet(qs.questId);
 
+                          const isGoldenPathFocus = qs.questId === goldenPathFocusId;
+
                           return (
                             <div
                               key={qs.questId}
-                              className="rounded-xl border border-cyan-900/15 overflow-hidden"
+                              data-quest-id={qs.questId}
+                              className={`rounded-xl border overflow-hidden ${
+                                isGoldenPathFocus
+                                  ? 'border-cyan-500/40 ring-1 ring-cyan-400/25'
+                                  : 'border-cyan-900/15'
+                              }`}
                               style={{
                                 background: 'linear-gradient(135deg, rgba(15,23,42,0.6) 0%, rgba(8,12,28,0.7) 100%)',
                                 boxShadow: 'inset 0 1px 0 rgb(var(--cyber-cyan-rgb) / 0.04)',
@@ -262,13 +318,12 @@ export function QuestsPanel({ open, onClose }: QuestsPanelProps) {
 
                               {isExpanded && (
                                 <motion.div
-                                  initial={{ height: 0, opacity: 0 }}
+                                  initial={reducedMotion ? false : { height: 0, opacity: 0 }}
                                   animate={{ height: 'auto', opacity: 1 }}
-                                  exit={{ height: 0, opacity: 0 }}
-                                  transition={{ duration: 0.2 }}
+                                  exit={reducedMotion ? undefined : { height: 0, opacity: 0 }}
+                                  transition={{ duration: reducedMotion ? 0 : 0.2 }}
                                   className="px-4 pb-3 border-t border-cyan-900/15 pt-3"
-                                >
-                                  <p className="text-xs text-slate-400 mb-3">{def.description}</p>
+                                >                                  <p className="text-xs text-slate-400 mb-3">{def.description}</p>
 
                                   {/* Hint section (expanded) */}
                                   {def.hint && (

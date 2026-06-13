@@ -3,6 +3,7 @@ import {
   updateExplorationState,
   resolveCameraCollision,
 } from '../cinematicCamera';
+import { getExplorationCameraMotionScale } from '@/engine/player/playerLocomotionPresentation';
 import {
   LOOK_HEIGHT,
   MIN_DISTANCE,
@@ -76,6 +77,7 @@ export const explorationStrategy: CameraModeStrategy = {
         yaw,
         playerVelocity,
         ctx.delta,
+        ctx.moveBlend,
       );
       targetRoll = expResult.targetRoll;
       heightOffset = expResult.targetHeight - playerPos.y;
@@ -106,7 +108,8 @@ export const explorationStrategy: CameraModeStrategy = {
     );
 
     if (!ctx.interactionLocked) {
-      const breathBob = Math.sin(ctx.time * BREATHING_BOB_SPEED) * BREATHING_BOB_AMPLITUDE;
+      const bobScale = getExplorationCameraMotionScale(ctx.moveBlend).bobScale;
+      const breathBob = Math.sin(ctx.time * BREATHING_BOB_SPEED) * BREATHING_BOB_AMPLITUDE * bobScale;
       targetPos.y += breathBob;
     }
 

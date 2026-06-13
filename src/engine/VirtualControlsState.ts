@@ -15,6 +15,7 @@ const defaultControls: VirtualControls = {
   right: 0,
   run: 0,
   jump: 0,
+  moveMagnitude: 0,
 };
 
 /**

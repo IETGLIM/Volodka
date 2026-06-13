@@ -1,6 +1,8 @@
 import { memo, Suspense, useCallback } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
+import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
+import type { SceneBannerPresentation } from '@/engine/world/worldAmbiencePresentation';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import {
   useActiveCutsceneId,
@@ -23,10 +25,13 @@ import { AutoSaveIndicator } from '../AutoSaveIndicator';
 import { AmbientSoundMixer } from '../AmbientSoundMixer';
 import { SceneTransitionProgress } from '../SceneTransitionProgress';
 import { SceneTransitionFailureBanner } from '../SceneTransitionFailureBanner';
+import { NarrativeWorldDim } from '../NarrativeWorldDim';
 import { QuickUseBar } from '../QuickUseBar';
 import { EventNotificationPopup } from '../EventNotificationPopup';
+import { LoreDiscoveryToast } from '../LoreDiscoveryToast';
 import { WeatherAlertNotification } from '../WeatherAlertNotification';
 import { CraftingDiscoveryToast } from '../CraftingDiscoveryToast';
+import { GameSystemToast } from '../GameSystemToast';
 import { CompassHUD } from '../CompassHUD';
 import { ExplorationMobileHud } from '../ExplorationMobileHud';
 import { SceneTransitionOverlay } from '../SceneTransitionOverlay';
@@ -118,6 +123,7 @@ export const GameplayExplorationNotifications = memo(function GameplayExploratio
       </Suspense>
       <WeatherAlertNotification />
       <CraftingDiscoveryToast />
+      <GameSystemToast />
       {/* MUST stay mounted during exploration: registers pushNotification() singleton. */}
       <LootNotification />
     </>
@@ -129,6 +135,7 @@ export const GameplayEventNotifications = memo(function GameplayEventNotificatio
   return (
     <>
       <EventNotificationPopup />
+      <LoreDiscoveryToast />
       <AchievementNotification />
     </>
   );
@@ -243,31 +250,35 @@ export const GameplaySharedEffects = memo(function GameplaySharedEffects() {
 export const GameplaySceneBanner = memo(function GameplaySceneBanner({
   sceneBanner,
 }: {
-  sceneBanner: string | null;
+  sceneBanner: SceneBannerPresentation | null;
 }) {
+  const reducedMotion = useEffectiveReducedMotion();
+  const motionDuration = reducedMotion ? 0 : 0.5;
+
   return (
     <AnimatePresence>
       {sceneBanner && (
         <motion.div
-          key={sceneBanner}
+          key={sceneBanner.bannerKey}
           className="fixed inset-0 flex items-center justify-center pointer-events-none"
           style={{ zIndex: UI_LAYERS.SCENE_BANNER }}
-          initial={{ opacity: 0 }}
+          data-testid="scene-banner"
+          initial={reducedMotion ? false : { opacity: 0 }}
           animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.5 }}
+          exit={reducedMotion ? undefined : { opacity: 0 }}
+          transition={{ duration: motionDuration }}
         >
           <motion.div
-            className="px-12 py-6 rounded-lg"
+            className="px-10 sm:px-12 py-5 sm:py-6 rounded-lg"
             style={{
               backdropFilter: 'blur(8px)',
               WebkitBackdropFilter: 'blur(8px)',
               background: 'rgba(0, 0, 0, 0.35)',
             }}
-            initial={{ scale: 0.9, y: 10 }}
+            initial={reducedMotion ? false : { scale: 0.9, y: 10 }}
             animate={{ scale: 1, y: 0 }}
-            exit={{ scale: 1.05, y: -5 }}
-            transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
+            exit={reducedMotion ? undefined : { scale: 1.05, y: -5 }}
+            transition={{ duration: motionDuration, ease: [0.25, 0.46, 0.45, 0.94] }}
           >
             <motion.h2
               className="text-2xl sm:text-3xl md:text-4xl font-semibold tracking-wider text-center"
@@ -276,22 +287,34 @@ export const GameplaySceneBanner = memo(function GameplaySceneBanner({
                 color: 'rgba(220, 230, 250, 0.9)',
                 textShadow: '0 0 30px rgba(150, 180, 255, 0.3), 0 0 60px rgba(100, 130, 200, 0.15)',
               }}
-              initial={{ opacity: 0, y: 8 }}
+              initial={reducedMotion ? false : { opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.6, ease: 'easeOut' }}
+              exit={reducedMotion ? undefined : { opacity: 0, y: -8 }}
+              transition={{ duration: reducedMotion ? 0 : 0.6, ease: 'easeOut' }}
             >
-              {sceneBanner}
+              {sceneBanner.title}
             </motion.h2>
+            {sceneBanner.subtitle && (
+              <motion.p
+                className="mt-2 text-xs sm:text-sm text-center font-mono tracking-widest uppercase"
+                style={{ color: 'rgba(148, 163, 184, 0.75)' }}
+                initial={reducedMotion ? false : { opacity: 0, y: 4 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={reducedMotion ? undefined : { opacity: 0 }}
+                transition={{ duration: reducedMotion ? 0 : 0.5, delay: reducedMotion ? 0 : 0.15 }}
+              >
+                {sceneBanner.subtitle}
+              </motion.p>
+            )}
             <motion.div
               className="mt-3 mx-auto w-24 h-px"
               style={{
                 background: 'linear-gradient(90deg, transparent, rgba(150, 180, 255, 0.4), transparent)',
               }}
-              initial={{ scaleX: 0 }}
+              initial={reducedMotion ? false : { scaleX: 0 }}
               animate={{ scaleX: 1 }}
-              exit={{ scaleX: 0 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
+              exit={reducedMotion ? undefined : { scaleX: 0 }}
+              transition={{ duration: reducedMotion ? 0 : 0.6, delay: reducedMotion ? 0 : 0.2 }}
             />
           </motion.div>
         </motion.div>
@@ -394,6 +417,7 @@ export const GameplayNarrativeOverlay = memo(function GameplayNarrativeOverlay()
 
   return (
     <>
+      <NarrativeWorldDim />
       {isStoryActive && (
         <ErrorBoundary name="story">
           <Suspense fallback={null}>

@@ -365,6 +365,7 @@ export function RPGGameCanvas() {
             // EffectComposer's ToneMapping pass (white screen).
             renderer.toneMapping = THREE.NoToneMapping;
             renderer.toneMappingExposure = 1.0;
+            renderer.outputColorSpace = THREE.SRGBColorSpace;
             renderer.setClearColor(0x000000, 1);
             return renderer;
           }}
@@ -493,6 +494,9 @@ function CanvasGuardSystem() {
       try {
         if (ctx.state.gl.toneMapping !== THREE.NoToneMapping) {
           ctx.state.gl.toneMapping = THREE.NoToneMapping;
+        }
+        if (ctx.state.gl.outputColorSpace !== THREE.SRGBColorSpace) {
+          ctx.state.gl.outputColorSpace = THREE.SRGBColorSpace;
         }
         toneMappingEnforced.current = true;
       } catch {

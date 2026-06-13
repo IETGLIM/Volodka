@@ -12,6 +12,7 @@ import { useSceneEnterEffect } from '@/hooks/useSceneEnterEffect';
 import { TRIGGER_ZONES, type TriggerZone, INTERACTION_LABELS, isTriggerZoneAvailable } from '@/data/triggerZones';
 import { findNpcById, findNpcByDialogueNodeId } from '@/data/allNpcDefinitions';
 import { getNPCsForScene, getCurrentScheduleEntry } from '@/engine/ScheduleEngine';
+import { formatNpcActivityHint } from '@/engine/npc/npcActivityPresentation';
 import { eventBus } from '@/engine/EventBus';
 import { isInteractionLocked } from '@/engine/interaction/interactionSession';
 import { isNarrativeMovementLocked } from '@/shared/exploreHubNodes';
@@ -243,6 +244,7 @@ export function InteractiveTriggers({
           npcId,
           position: (entry?.position ?? npc.defaultPosition) as [number, number, number],
           label: `Поговорить с ${npc.name}`,
+          activity: entry?.activity,
         };
       })
       .filter(Boolean) as NpcQueryTarget[];
@@ -560,9 +562,14 @@ export function InteractiveTriggers({
     if (primaryHit) {
       if (lastHintIdRef.current !== primaryHit.id) {
         lastHintIdRef.current = primaryHit.id;
+        const npcTarget =
+          primaryHit.kind === 'npc'
+            ? npcQueryTargetsRef.current.find((n) => n.id === primaryHit.id)
+            : undefined;
         eventBus.emit('interaction:hint', {
           label: primaryHit.label,
           key: 'E',
+          description: formatNpcActivityHint(npcTarget?.activity),
           type:
             primaryHit.kind === 'npc'
               ? 'npc'

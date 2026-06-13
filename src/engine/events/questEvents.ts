@@ -7,4 +7,5 @@ export interface QuestEvents {
   'quest:objective_updated': { questId: string; objectiveId: string };
   'quest:poem_bypass': { questId: string; objectiveId: string; poemId: string };
   'quest:complete_objective': { questId: string; objectiveId: string };
+  'quests:select_quest': { questId: string };
 }

@@ -24,8 +24,12 @@ import {
 } from '@/engine/player/playerConstants';
 import { lerpAngle, enforceFloor, clampHorizontalDisplacement } from '@/engine/player/playerMath';
 import { computeKccMovementSubstepped } from '@/engine/player/physicsSubstep';
+import {
+  computeSlopeLocomotionScale,
+  getAccessibilityLocomotionScale,
+  resolveMovementIntent,
+} from '@/engine/player/playerLocomotionPresentation';
 import type { PlayerMovementDeps } from '@/engine/player/playerFrameTypes';
-
 function applyDegradedMovement(deps: PlayerMovementDeps, onFlatGround: boolean): void {
   const scratch = deps.frameScratchRef.current;
   const rb = scratch.rb!;
@@ -106,23 +110,24 @@ export function runMainPlayerMovement(deps: PlayerMovementDeps): boolean {
     tickState.clock.elapsedTime,
     deps.virtualHoldTimesRef.current,
   );
-  const keyboardDrivesMove = keys.hasMovement;
-  const mergeVirtual = !keyboardDrivesMove;
-
-  const fwd = (keys.forward ? 1 : 0) + (mergeVirtual ? (virtual?.forward ?? 0) : 0);
-  const bwd = (keys.backward ? 1 : 0) + (mergeVirtual ? (virtual?.backward ?? 0) : 0);
-  const lft = (keys.left ? 1 : 0) + (mergeVirtual ? (virtual?.left ?? 0) : 0);
-  const rgt = (keys.right ? 1 : 0) + (mergeVirtual ? (virtual?.right ?? 0) : 0);
-  const running = keys.run || (virtual?.run ?? 0) > 0;
-  const jumping = keys.jump || (virtual?.jump ?? 0) > 0;
+  const intent = resolveMovementIntent({ keys, virtual });
+  const {
+    fwd,
+    bwd,
+    lft,
+    rgt,
+    running,
+    jumping,
+    keyboardDrivesMove,
+    analogSpeedScale,
+    isMoving,
+  } = intent;
 
   moveDir.set(0, 0, 0);
   moveDir.addScaledVector(camFwd, fwd - bwd);
   moveDir.addScaledVector(camRight, rgt - lft);
 
-  const moveLen = moveDir.length();
-  const isMoving = moveLen > 0.01;
-  if (deps.moveBlendRef) {
+  const moveLen = moveDir.length();  if (deps.moveBlendRef) {
     deps.moveBlendRef.current = THREE.MathUtils.damp(
       deps.moveBlendRef.current,
       isMoving ? 1 : 0,
@@ -132,8 +137,12 @@ export function runMainPlayerMovement(deps: PlayerMovementDeps): boolean {
   }
   const isOutdoor = !deps.config.hasCeiling;
   const touchScale = keyboardDrivesMove ? 1 : getTouchLocomotionFactor();
-  const speed = (running ? RUN_SPEED : WALK_SPEED) * deps.locomotionScale * touchScale;
-  const moveAccel = keyboardDrivesMove ? KEYBOARD_ACCEL : deps.movementTuning.accel;
+  const a11yScale = getAccessibilityLocomotionScale();
+  const speed = (running ? RUN_SPEED : WALK_SPEED)
+    * deps.locomotionScale
+    * touchScale
+    * a11yScale
+    * analogSpeedScale;  const moveAccel = keyboardDrivesMove ? KEYBOARD_ACCEL : deps.movementTuning.accel;
   const stopDamping = keyboardDrivesMove ? deps.movementTuning.damping * 0.55 : deps.movementTuning.damping;
 
   scratch.isMoving = isMoving;
@@ -292,6 +301,18 @@ export function runMainPlayerMovement(deps: PlayerMovementDeps): boolean {
     vel.z *= slideRatio;
   }
 
+  if (isGroundedNow && !airborneIntent && isMoving) {
+    const slopeScale = computeSlopeLocomotionScale(
+      actualDisplacement.x,
+      actualDisplacement.y,
+      actualDisplacement.z,
+      true,
+    );
+    if (slopeScale < 1) {
+      vel.x *= slopeScale;
+      vel.z *= slopeScale;
+    }
+  }
+
   return true;
 }
-

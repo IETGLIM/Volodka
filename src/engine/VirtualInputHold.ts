@@ -23,13 +23,25 @@ export function sampleHeldVirtualControls(
   if (!virtual) return undefined;
 
   const sampled = { ...virtual };
+  let heldMove = false;
   for (const key of MOVEMENT_AXES) {
     if (virtual[key] > 0) {
       lastActive[key] = clockTime;
+      if (key !== 'jump') heldMove = true;
     } else {
       const activeAt = lastActive[key] ?? 0;
       sampled[key] = clockTime - activeAt < HOLD_SEC ? 1 : 0;
+      if (key !== 'jump' && sampled[key] > 0) heldMove = true;
     }
+  }
+  if (heldMove && sampled.moveMagnitude <= 0) {
+    sampled.moveMagnitude = Math.max(
+      sampled.forward,
+      sampled.backward,
+      sampled.left,
+      sampled.right,
+      virtual.moveMagnitude,
+    );
   }
   return sampled;
 }

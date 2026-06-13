@@ -18,7 +18,8 @@ import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { SCENE_OVERLAY_MS } from '@/shared/constants/transitionTimings';
 import { SCENE_CONFIG } from '@/config/scenes';
 import { useSceneTransitionOverlayController } from '@/hooks/useSceneTransitionOverlayController';
-import type { SceneConfig } from '@/shared/types/game';
+import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
+import { getSceneTransitionAccent } from '@/engine/exploration/explorationUxPresentation';
 
 const GLITCH_DURATION = SCENE_OVERLAY_MS.GLITCH;
 const FLASH_DURATION = SCENE_OVERLAY_MS.FLASH;
@@ -36,24 +37,17 @@ const DIAGONAL_OFFSET = 3;
 const WIPE_EASE: [number, number, number, number] = [0.25, 0.1, 0.25, 1];
 const SMOOTH_EASE: [number, number, number, number] = [0.16, 1, 0.3, 1];
 
-/* ─── Get accent color based on scene type ─── */
-function getTransitionAccent(style: SceneConfig['transitionStyle']): string {
-  switch (style) {
-    case 'flash': return 'rgba(255, 200, 100, 1)';     // warm amber
-    case 'darken': return 'rgba(100, 130, 180, 1)';     // muted blue
-    case 'ripple': return 'rgba(180, 100, 255, 1)';     // purple/violet
-    case 'dissolve': return 'rgba(200, 180, 255, 1)';   // lavender
-    default: return 'rgba(0, 255, 255, 1)';             // cyan
-  }
-}
-
 export function SceneTransitionOverlay() {
+  const reducedMotion = useEffectiveReducedMotion();
   const { overlayPhase: phase, transitionStyle, targetSceneId, isActive } =
     useSceneTransitionOverlayController();
   const [glitchOffset, setGlitchOffset] = useState(0);
   const rafRef = useRef<number | null>(null);
   useEffect(() => {
-    if (phase !== 'glitch') return;
+    if (phase !== 'glitch' || reducedMotion) {
+      setGlitchOffset(0);
+      return undefined;
+    }
 
     let elapsed = 0;
     const jitter = () => {
@@ -73,18 +67,19 @@ export function SceneTransitionOverlay() {
     return () => {
       if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
     };
-  }, [phase]);
+  }, [phase, reducedMotion]);
 
   const sceneName = SCENE_CONFIG[targetSceneId]?.name ?? targetSceneId;
-  const accent = getTransitionAccent(transitionStyle);
+  const accent = getSceneTransitionAccent(transitionStyle ?? 'wipe');
+  const motionDuration = (ms: number) => (reducedMotion ? 0 : ms / 1000);
 
   /* ── Render scene name display (shared across all transition styles) ── */
   const SceneNameDisplay = (
     <motion.div
       className="absolute inset-0 flex items-center justify-center"
-      initial={{ opacity: 0 }}
+      initial={reducedMotion ? false : { opacity: 0 }}
       animate={{ opacity: 1 }}
-      transition={{ duration: 0.2, ease: 'easeOut' }}
+      transition={{ duration: motionDuration(200), ease: 'easeOut' }}
     >
       <div className="flex flex-col items-center gap-3">
         <motion.div
@@ -125,6 +120,7 @@ export function SceneTransitionOverlay() {
           key="scene-transition-overlay"
           className="fixed inset-0 pointer-events-none"
           style={{ zIndex: UI_LAYERS.CINEMATIC_TRANSITION }}
+          data-testid="scene-transition-overlay"
           initial={{ opacity: 1 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0, transition: { duration: 0.3, ease: 'easeInOut' } }}
@@ -139,6 +135,14 @@ export function SceneTransitionOverlay() {
               ═══════════════════════════════════════════════════════════ */}
           {phase === 'glitch' && (
             <div className="absolute inset-0 overflow-hidden">
+              {reducedMotion ? (
+                <motion.div
+                  className="absolute inset-0 bg-black/90"
+                  initial={false}
+                  animate={{ opacity: 1 }}
+                />
+              ) : (
+                <>
               <div className="absolute inset-0" style={{ background: 'rgba(255, 0, 0, 0.08)', mixBlendMode: 'screen', transform: `translateX(${glitchOffset * 1.5}px)` }} />
               <div className="absolute inset-0" style={{ background: 'rgba(0, 100, 255, 0.08)', mixBlendMode: 'screen', transform: `translateX(${-glitchOffset * 1.2}px)` }} />
               <div className="absolute inset-0" style={{ background: 'rgba(0, 255, 100, 0.04)', mixBlendMode: 'screen', transform: `translateX(${glitchOffset * 0.7}px)` }} />
@@ -151,6 +155,8 @@ export function SceneTransitionOverlay() {
                 background: 'linear-gradient(transparent 0%, transparent 30%, rgba(0,255,255,0.02) 30%, rgba(0,255,255,0.02) 32%, transparent 32%, transparent 55%, rgba(255,0,100,0.03) 55%, rgba(255,0,100,0.03) 57%, transparent 57%, transparent 78%, rgba(0,100,255,0.02) 78%, rgba(0,100,255,0.02) 80%, transparent 80%)',
                 transform: `translateX(${glitchOffset * 2}px)`,
               }} />
+                </>
+              )}
             </div>
           )}
 

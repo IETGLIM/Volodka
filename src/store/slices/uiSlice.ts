@@ -213,6 +213,7 @@ export const createUISlice: StateCreator<
         const entryData = existing ?? getInitialLoreEntries().find((e) => e.id === entryId);
         const title = entryData?.title ?? entryId;
         const rarity: LoreRarity = entryData?.rarity ?? 'common';
+        const category = entryData?.category;
 
         // Grant +5 XP for any lore discovery
         const player = getPlayerStore();
@@ -225,7 +226,7 @@ export const createUISlice: StateCreator<
 
         // Emit event for toast notification
         try {
-          eventBus.emit('lore:discovered', { id: entryId, title, rarity });
+          eventBus.emit('lore:discovered', { id: entryId, title, rarity, category });
         } catch { /* ignore */ }
       }
 

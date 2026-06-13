@@ -24,6 +24,7 @@ import {
   type NonNullPanelType,
   type PanelStackAction,
 } from './panelStackReducer';
+import { PANEL_IDS } from './types';
 
 export interface UsePanelCoordinatorOptions {
   /** Called when a panel opens — closes examine UI in one setState. */
@@ -120,8 +121,24 @@ export function usePanelCoordinator({
     });
     scope.on('story:act_transition', (data) => {
       const quote = getActQuote(data.toAct);
-      if (quote) {
-        setMatrixQuote({ text: quote, actNumber: data.toAct });
+      setMatrixQuote({
+        text: quote ?? '',
+        actNumber: data.toAct,
+        chapterTitle: data.chapterTitle,
+      });
+    });
+
+    scope.on('ui:open_panel', (payload) => {
+      const phase = readGamePhase(useGameStore.getState());
+      if (phase === 'intro' || phase === 'menu') return;
+      if (!(PANEL_IDS as readonly string[]).includes(payload.panel)) return;
+      const panel = payload.panel as NonNullPanelType;
+      dispatchStack({ type: 'ensureOpen', panel });
+      if (payload.loreId) {
+        eventBus.emit('codex:select_entry', { loreId: payload.loreId });
+      }
+      if (payload.questId) {
+        eventBus.emit('quests:select_quest', { questId: payload.questId });
       }
     });
 

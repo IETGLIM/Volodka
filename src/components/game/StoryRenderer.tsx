@@ -29,7 +29,9 @@ import type { StoryChoice, StoryEffect } from '@/shared/types/game';
 import { checkStoryCondition, buildStoryConditionContext } from '@/shared/storyConditions';
 
 /* ── Typewriter hook — shared ── */
-import { useTypewriter } from '@/hooks/useTypewriter';
+import { useNarrativeTypewriter } from '@/hooks/useNarrativeTypewriter';
+import { useNarrativeChoiceKeyboard } from '@/hooks/useNarrativeChoiceKeyboard';
+import { narrativeSubtitleStyle } from '@/hooks/narrativePresentation';
 
 /* ── Apply effects — shared ── */
 import { applyEffects } from '@/shared/utils/applyEffects';
@@ -157,7 +159,7 @@ export function StoryRenderer() {
     [storyNodes, currentNodeId, storyPackVersion],
   );
 
-  const { displayed, done, skip } = useTypewriter(node?.text ?? '', 28);
+  const { displayed, done, skip, reducedMotion } = useNarrativeTypewriter(node?.text ?? '', 28);
 
   useEffect(() => () => clearEffectTimers(), [clearEffectTimers]);
 
@@ -254,25 +256,26 @@ export function StoryRenderer() {
     closeNarrativeOverlay();
   }, []);
 
-  // Keyboard shortcuts
-  useEffect(() => {
-    if (!done || !node || node.choices.length === 0) return;
+  const trySelectStoryChoice = useCallback(
+    (index: number) => {
+      if (!node || !done) return;
+      const choice = node.choices[index];
+      if (!choice) return;
+      const cond = checkStoryCondition(choice.condition, conditionCtx);
+      if (!cond.pass) return;
+      handleChoice(choice);
+    },
+    [node, done, conditionCtx, handleChoice],
+  );
 
-    const handleKey = (e: KeyboardEvent) => {
-      const target = e.target as HTMLElement;
-      if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) return;
-
-      const num = parseInt(e.key);
-      if (num >= 1 && num <= node.choices.length) {
-        const choice = node.choices[num - 1];
-        const cond = checkStoryCondition(choice.condition, conditionCtx);
-        if (cond.pass) handleChoice(choice);
-      }
-    };
-
-    window.addEventListener('keydown', handleKey);
-    return () => window.removeEventListener('keydown', handleKey);
-  }, [done, node, conditionCtx, handleChoice]);
+  useNarrativeChoiceKeyboard({
+    active: Boolean(showStoryOverlay && node),
+    done,
+    choiceCount: node?.choices.length ?? 0,
+    onSelectChoice: trySelectStoryChoice,
+    onSkip: skip,
+    onClose: handleClose,
+  });
 
   // World Director: story overlay renders during exploration (and cutscene handoff)
   const isOpen = showStoryOverlay && !!node;
@@ -307,20 +310,20 @@ export function StoryRenderer() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        transition={{ duration: 0.3, ease: 'easeOut' }}
+        transition={{ duration: reducedMotion ? 0 : 0.3, ease: 'easeOut' }}
         className="fixed inset-x-0 bottom-0 flex justify-center pointer-events-none"
         style={{ zIndex: UI_LAYERS.DIALOGUE }}
         onClick={done ? undefined : skip}
       >
         <AriaLiveRegion message={typewriterLiveMessage} priority="polite" />
-        <div className="absolute inset-0 bg-black/20 backdrop-blur-[2px]" aria-hidden="true" />
+        <div className="absolute inset-0 bg-black/30 backdrop-blur-[1px]" aria-hidden="true" />
 
         <FocusTrap>
           <motion.div
-            initial={{ y: 40, opacity: 0 }}
+            initial={reducedMotion ? false : { y: 40, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            exit={{ y: 20, opacity: 0 }}
-            transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+            exit={reducedMotion ? undefined : { y: 20, opacity: 0 }}
+            transition={{ duration: reducedMotion ? 0 : 0.35, ease: [0.16, 1, 0.3, 1] }}
             className="relative z-10 w-full max-w-[700px] mx-3 mb-3 pointer-events-auto"
             role="dialog"
             aria-modal="true"
@@ -371,10 +374,11 @@ export function StoryRenderer() {
                 <div className="min-h-[36px] mb-2">
                   <motion.p
                     key={currentNodeId}
-                    initial={{ opacity: 0, y: 6 }}
+                    initial={reducedMotion ? false : { opacity: 0, y: 6 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.25, ease: 'easeOut' }}
-                    className="text-sm text-slate-100 leading-relaxed"
+                    transition={{ duration: reducedMotion ? 0 : 0.25, ease: 'easeOut' }}
+                    className="text-slate-100 leading-relaxed"
+                    style={narrativeSubtitleStyle()}
                   >
                     {displayed}
                     {!done && (

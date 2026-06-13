@@ -24,6 +24,8 @@ import {
   setColorBlindMode,
   setReducedMotionOverride,
   setSubtitleScale,
+  setTextSpeed,
+  setLocomotionSpeed,
   type ColorBlindMode,
 } from '@/engine/accessibility/accessibilitySettings';
 
@@ -99,6 +101,10 @@ function VisualSettingsTab({
   setReducedMotion,
   subtitleScale,
   setSubtitleScaleState,
+  textSpeed,
+  setTextSpeedState,
+  locomotionSpeed,
+  setLocomotionSpeedState,
   persist,
 }: {
   postfx: boolean;
@@ -117,6 +123,10 @@ function VisualSettingsTab({
   setReducedMotion: (v: boolean) => void;
   subtitleScale: number;
   setSubtitleScaleState: (v: number) => void;
+  textSpeed: number;
+  setTextSpeedState: (v: number) => void;
+  locomotionSpeed: number;
+  setLocomotionSpeedState: (v: number) => void;
   persist: (key: string, value: number | boolean) => void;
 }) {
   const { selectedPreset, preset, setPreset } = useGraphicsQuality();
@@ -231,6 +241,36 @@ function VisualSettingsTab({
         }}
         unit="%"
       />
+      <CyberSlider
+        label="Скорость текста"
+        value={Math.round(textSpeed * 100)}
+        min={50}
+        max={200}
+        onChange={(v) => {
+          const speed = v / 100;
+          setTextSpeedState(speed);
+          setTextSpeed(speed);
+        }}
+        unit="%"
+      />
+      <p className="font-mono text-[10px] text-slate-500/80 leading-relaxed -mt-2">
+        Скорость печати в диалогах и сюжете. Размер субтитров на скорость не влияет.
+      </p>
+      <CyberSlider
+        label="Скорость ходьбы"
+        value={Math.round(locomotionSpeed * 100)}
+        min={70}
+        max={130}
+        onChange={(v) => {
+          const speed = v / 100;
+          setLocomotionSpeedState(speed);
+          setLocomotionSpeed(speed);
+        }}
+        unit="%"
+      />
+      <p className="font-mono text-[10px] text-slate-500/80 leading-relaxed -mt-2">
+        Множитель скорости бега и ходьбы персонажа в исследовании.
+      </p>
     </motion.div>
   );
 }
@@ -265,6 +305,8 @@ function SettingsPanelContent({ onClose }: { onClose: () => void }) {
   const [colorBlindMode, setColorBlindModeState] = useState<ColorBlindMode>(() => a11yInit.colorBlindMode);
   const [reducedMotion, setReducedMotion] = useState(() => a11yInit.reducedMotionOverride);
   const [subtitleScale, setSubtitleScaleState] = useState(() => a11yInit.subtitleScale);
+  const [textSpeed, setTextSpeedState] = useState(() => a11yInit.textSpeed);
+  const [locomotionSpeed, setLocomotionSpeedState] = useState(() => a11yInit.locomotionSpeed);
 
   // ── Controls state ──
   const [mouseSens, setMouseSens] = useState(() => lsGetNumber('volodka_mouse_sens', 5));
@@ -300,6 +342,8 @@ function SettingsPanelContent({ onClose }: { onClose: () => void }) {
     setColorBlindModeState(a11y.colorBlindMode);
     setReducedMotion(a11y.reducedMotionOverride);
     setSubtitleScaleState(a11y.subtitleScale);
+    setTextSpeedState(a11y.textSpeed);
+    setLocomotionSpeedState(a11y.locomotionSpeed);
   }, []);
 
   // ── Render tab content ──
@@ -367,6 +411,10 @@ function SettingsPanelContent({ onClose }: { onClose: () => void }) {
             setReducedMotion={setReducedMotion}
             subtitleScale={subtitleScale}
             setSubtitleScaleState={setSubtitleScaleState}
+            textSpeed={textSpeed}
+            setTextSpeedState={setTextSpeedState}
+            locomotionSpeed={locomotionSpeed}
+            setLocomotionSpeedState={setLocomotionSpeedState}
             persist={persist}
           />
         );

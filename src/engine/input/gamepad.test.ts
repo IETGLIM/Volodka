@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { applyRadialDeadzone, DEFAULT_DEADZONE } from './gamepad';
+import { applyRadialDeadzone, DEFAULT_DEADZONE, stickToVirtualMovement } from './gamepad';
 
 describe('applyRadialDeadzone', () => {
   it('returns zero inside the deadzone', () => {
@@ -14,5 +14,13 @@ describe('applyRadialDeadzone', () => {
 
   it('zeros stick input when vector magnitude is inside the deadzone', () => {
     expect(applyRadialDeadzone(0.08, 0.08, DEFAULT_DEADZONE)).toEqual({ x: 0, y: 0 });
+  });
+});
+
+describe('stickToVirtualMovement', () => {
+  it('preserves analog magnitude for partial stick deflection', () => {
+    const move = stickToVirtualMovement({ x: 0, y: -0.5 });
+    expect(move.forward).toBeCloseTo(0.5);
+    expect(move.moveMagnitude).toBeCloseTo(0.5);
   });
 });

@@ -11,6 +11,7 @@ import { useGamePhase } from '@/store/selectors';
 import { useGameStore } from '@/store/gameStore';
 import { SCENE_DEFINITIONS } from '@/config/sceneDefinitions';
 import { useHudQuietStyle } from '@/hooks/useHudQuiet';
+import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 import { sharedPlayerRotationRef } from '@/engine/PlayerRotationState';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { explorationCompassTopPx } from '@/shared/constants/hudLayout';
@@ -127,6 +128,7 @@ function TickMark({ offset, isMajor }: { offset: number; isMajor: boolean }) {
 /* ── Main component ── */
 export function CompassHUD() {
   const mode = useGamePhase();
+  const reducedMotion = useEffectiveReducedMotion();
   const sceneId = useGameStore((s) => s.exploration.currentSceneId);
   const quietStyle = useHudQuietStyle();
   const [rotation, setRotation] = useState(sharedPlayerRotationRef.current);
@@ -221,12 +223,13 @@ export function CompassHUD() {
     <AnimatePresence>
       {isVisible && (
         <motion.div
-          initial={{ opacity: 0, y: -20 }}
+          initial={reducedMotion ? false : { opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -20 }}
-          transition={{ duration: 0.3, ease: 'easeOut' }}
+          exit={reducedMotion ? undefined : { opacity: 0, y: -20 }}
+          transition={{ duration: reducedMotion ? 0 : 0.3, ease: 'easeOut' }}
           className="compass-hud fixed left-1/2 -translate-x-1/2 pointer-events-none"
           data-exploration-ui
+          data-testid="compass-hud"
           style={{ top: explorationCompassTopPx(), zIndex: UI_LAYERS.HUD + 1, ...quietStyle }}
         >
           {/* Glass-morphism container */}

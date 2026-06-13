@@ -8,6 +8,8 @@ import {
   resolveSceneHeavyFx,
   tierFromPresetId,
 } from '@/engine/graphics/fxGovernor';
+import { isHeroScene } from '@/config/sceneVisualProfiles';
+import type { SceneId } from '@/shared/types/game';
 import { VolumetricFog, FOG_PRESETS } from './VolumetricFog';
 import { GodRays, GODRAY_PRESETS } from './GodRays';
 import { SteamParticles } from './SteamParticles';
@@ -24,7 +26,7 @@ function sceneHasGodRays(sceneId: string): boolean {
 
 const STEAM_SCENES = new Set(['cafe_evening', 'home_evening']);
 const MATRIX_FOG_SCENES = new Set(['battle']);
-const DUST_SCENES = new Set(['volodka_room', 'volodka_corridor', 'library_day']);
+const DUST_SCENES = new Set(['volodka_room', 'volodka_corridor', 'library_day', 'park_day', 'home_evening']);
 const EMBER_SCENES = new Set(['abandoned_factory']);
 
 /** Main controller: renders appropriate atmospheric effects per scene */
@@ -36,7 +38,8 @@ export function AtmosphericEffects() {
   const { particlesEnabled, postfxEnabled } = useVisualSettings();
   const { preset } = useGraphicsQuality();
   const fxTier = tierFromPresetId(preset.id);
-  const heavyEffects = visualLite || effectsScale < 0.85;
+  const heroScene = isHeroScene(sceneId as SceneId);
+  const heavyEffects = (visualLite || effectsScale < 0.85) && !heroScene;
   const effectsEnabled = gameMode !== 'menu' && postfxEnabled;
 
   const wantsFog = sceneHasFog(sceneId);

@@ -11,6 +11,8 @@ export interface VirtualControls {
   right: number;
   run: number;
   jump: number;
+  /** Analog stick magnitude 0–1 (gamepad); 1 for keyboard/touch axis peaks. */
+  moveMagnitude: number;
 }
 
 export interface PlayerControls {
@@ -46,6 +48,7 @@ export function usePlayerControls(
     right: 0,
     run: 0,
     jump: 0,
+    moveMagnitude: 0,
   });
   const virtualControlsRef = externalVirtualControlsRef ?? localVirtualControlsRef;
 
@@ -81,9 +84,11 @@ export function usePlayerControls(
       const bothHeld = (buttons & 1) !== 0 && (buttons & 2) !== 0;
       if (bothHeld) {
         virtualControlsRef.current.forward = 1;
+        virtualControlsRef.current.moveMagnitude = 1;
         mouseOwnsForward = true;
       } else if (mouseOwnsForward) {
         virtualControlsRef.current.forward = 0;
+        virtualControlsRef.current.moveMagnitude = 0;
         mouseOwnsForward = false;
       }
     };

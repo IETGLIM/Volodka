@@ -80,6 +80,7 @@ function PhysicsSceneInner({
       <FollowCamera
         livePlayerPositionRef={livePlayerPositionRef}
         livePlayerRotationRef={livePlayerRotationRef}
+        moveBlendRef={moveBlendRef}
       />
       <FirstPersonHands moveBlendRef={moveBlendRef} />
       <TriggerZoneProps />

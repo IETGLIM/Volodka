@@ -12,6 +12,11 @@ import type { SceneId } from '@/shared/types/game';
 import { useGameStore } from '@/store/gameStore';
 import { DEFAULT_NPC_LOD, scaleNpcLodThresholds } from '@/engine/lod/distanceLod';
 import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
+import {
+  MAX_AMBIENT_NPC_INSTANCES,
+  resolveAmbientNpcCount,
+  resolveAmbientNpcOpacity,
+} from '@/engine/world/resolveAmbientNpcBudget';
 
 /* ─── Types ─── */
 
@@ -31,7 +36,18 @@ interface AmbientNPCConfig {
 /* ─── Scene configs ─── */
 
 const SCENE_CONFIGS: Partial<Record<SceneId, AmbientNPCConfig>> = {
-  // Corridor is narrow — scheduled NPCs + lore beats are enough; ambient duplicates caused piles.
+  volodka_corridor: {
+    count: 1,
+    type: 'corridor_neighbor',
+    spawnPositions: [[0, 0, 3.5]],
+    wanderRadius: 1.0,
+  },
+  home_evening: {
+    count: 1,
+    type: 'corridor_neighbor',
+    spawnPositions: [[-1.2, 0, 0.5], [1.0, 0, -0.8]],
+    wanderRadius: 1.2,
+  },
   office_day: {
     count: 4,
     type: 'office_worker',
@@ -84,9 +100,9 @@ const TYPE_COLORS: Record<AmbientNPCType, { body: string; head: string; emissive
 
 /* ─── Constants ─── */
 
-const MAX_INSTANCES = 4;
+const MAX_INSTANCES = MAX_AMBIENT_NPC_INSTANCES;
 const NPC_SCALE = 0.85;     // Smaller than named NPCs
-const BODY_OPACITY = 0.6;   // Ghostly semi-transparent
+const BODY_OPACITY = 0.6;   // Ghostly semi-transparent (hero scenes boosted at runtime)
 const WALK_SPEED = 0.5;     // Slow walk
 const IDLE_CHANCE = 0.3;    // 30% chance to idle on waypoint reach
 const IDLE_DURATION_MIN = 2; // seconds
@@ -145,7 +161,9 @@ export function AmbientNPCs({ livePlayerPositionRef }: AmbientNPCsProps) {
   );
 
   const config = SCENE_CONFIGS[sceneId] ?? null;
-  const count = config?.count ?? 0;
+  const baseCount = config?.count ?? 0;
+  const count = resolveAmbientNpcCount(sceneId, baseCount, preset.id);
+  const bodyOpacity = resolveAmbientNpcOpacity(sceneId, BODY_OPACITY);
 
   // Colors for current type
   const colors = config ? TYPE_COLORS[config.type] : TYPE_COLORS.office_worker;
@@ -369,7 +387,7 @@ export function AmbientNPCs({ livePlayerPositionRef }: AmbientNPCsProps) {
           emissive={colors.emissive}
           emissiveIntensity={0.08}
           transparent
-          opacity={BODY_OPACITY}
+          opacity={bodyOpacity}
           roughness={0.9}
           depthWrite={false}
         />
@@ -386,7 +404,7 @@ export function AmbientNPCs({ livePlayerPositionRef }: AmbientNPCsProps) {
           emissive={colors.emissive}
           emissiveIntensity={0.08}
           transparent
-          opacity={BODY_OPACITY}
+          opacity={bodyOpacity}
           roughness={0.8}
           depthWrite={false}
         />

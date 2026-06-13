@@ -7,7 +7,7 @@
 
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, ChevronRight, Zap, Shield, Skull, Circle, Clock, FastForward, History, Eye } from 'lucide-react';
+import { X, ChevronRight, Zap, Shield, Skull, Circle, Clock, FastForward, History, Eye, SkipForward } from 'lucide-react';
 import {
   useDialogueContext,
   useSetCurrentNodeId,
@@ -74,8 +74,10 @@ const RELATION_GLOW: Record<string, { color: string; shadow: string; border: str
   enemy: { color: '#fb7185', shadow: '0 0 8px rgba(251,113,133,0.4), 0 0 16px rgba(251,113,133,0.2)', border: 'rgba(251,113,133,0.3)' },
 };
 
-/* ── Typewriter hook ── */
-import { useTypewriter } from '@/hooks/useTypewriter';
+/* ── Typewriter hook — shared ── */
+import { useNarrativeTypewriter } from '@/hooks/useNarrativeTypewriter';
+import { useNarrativeChoiceKeyboard } from '@/hooks/useNarrativeChoiceKeyboard';
+import { narrativeSubtitleStyle } from '@/hooks/narrativePresentation';
 
 /* ── Apply effects ── */
 import { applyEffects } from '@/shared/utils/applyEffects';
@@ -197,7 +199,7 @@ export function DialogueRenderer() {
       timeOfDay,
     }, collectedPoems);
   }, [karma, skills, flags, progression, npcRelations, timeOfDay, node, collectedPoems]);
-  const { displayed, done, skip } = useTypewriter(node?.text ?? '', 30);
+  const { displayed, done, skip, reducedMotion } = useNarrativeTypewriter(node?.text ?? '', 30);
 
   // Apply node-level effects on mount
   const appliedRef = useRef<string | null>(null);
@@ -257,6 +259,38 @@ export function DialogueRenderer() {
     },
     [setCurrentNodeId],
   );
+
+  const trySelectChoice = useCallback(
+    (index: number) => {
+      if (!node || !done) return;
+      const choice = node.choices[index];
+      if (!choice) return;
+
+      const cond = checkStoryCondition(choice.condition, conditionCtx);
+      if (!cond.pass) return;
+
+      if (choice.condition?.minSkillCheck && cond.skillCheckResult) {
+        setSkillCheckBanner({
+          skill: cond.skillCheckResult.skill,
+          success: cond.skillCheckResult.success,
+        });
+        if (!cond.skillCheckResult.success) return;
+        setTimeout(() => setSkillCheckBanner(null), 1500);
+      }
+
+      handleChoice(choice);
+    },
+    [node, done, conditionCtx, handleChoice],
+  );
+
+  useNarrativeChoiceKeyboard({
+    active: Boolean(isOpen && node),
+    done,
+    choiceCount: node?.choices.length ?? 0,
+    onSelectChoice: trySelectChoice,
+    onSkip: skip,
+    onClose: handleClose,
+  });
 
   // Auto-advance: pick first choice that passes checkStoryCondition (incl. npcId for relation gates).
   useEffect(() => {
@@ -333,22 +367,21 @@ export function DialogueRenderer() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        transition={{ duration: 0.3, ease: 'easeOut' }}
+        transition={{ duration: reducedMotion ? 0 : 0.3, ease: 'easeOut' }}
         className="fixed inset-x-0 bottom-0 flex justify-center pointer-events-none"
         style={{ zIndex: UI_LAYERS.DIALOGUE }}
         onClick={done ? undefined : skip}
       >
         <AriaLiveRegion message={typewriterLiveMessage} priority="polite" />
-        {/* Subtle backdrop — only behind the widget area */}
-        <div className="absolute inset-0 bg-black/20" aria-hidden="true" />
+        <div className="absolute inset-0 bg-black/30 backdrop-blur-[1px]" aria-hidden="true" />
 
         {/* Compact dialogue widget */}
         <FocusTrap>
           <motion.div
-            initial={{ y: 40, opacity: 0 }}
+            initial={reducedMotion ? false : { y: 40, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            exit={{ y: 20, opacity: 0 }}
-            transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+            exit={reducedMotion ? undefined : { y: 20, opacity: 0 }}
+            transition={{ duration: reducedMotion ? 0 : 0.35, ease: [0.16, 1, 0.3, 1] }}
             className="relative z-10 w-full max-w-[700px] mx-3 mb-3 pointer-events-auto"
             role="dialog"
             aria-modal="true"
@@ -369,6 +402,17 @@ export function DialogueRenderer() {
               <span className="h-1 w-1 rounded-full bg-red-500/80" />
               <span className="ml-2 font-mono text-[7px] uppercase tracking-[0.2em] text-cyan-500/30">volodka://dialogue</span>
               <div className="flex-1" />
+              {!done && (
+                <button
+                  type="button"
+                  onClick={(e) => { e.stopPropagation(); skip(); }}
+                  className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[8px] font-mono text-slate-500 hover:text-cyan-400 transition-colors"
+                  aria-label="Пропустить анимацию текста"
+                >
+                  <SkipForward className="size-2" />
+                  Пропустить
+                </button>
+              )}
               {/* Auto-advance toggle */}
               <button
                 onClick={() => setAutoAdvance(!autoAdvance)}
@@ -520,10 +564,11 @@ export function DialogueRenderer() {
               <div className="min-h-[36px] mb-2">
                 <motion.p
                   key={currentNodeId}
-                  initial={{ opacity: 0, y: 6 }}
+                  initial={reducedMotion ? false : { opacity: 0, y: 6 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.25, ease: 'easeOut' }}
-                  className="text-sm text-slate-100 leading-relaxed"
+                  transition={{ duration: reducedMotion ? 0 : 0.25, ease: 'easeOut' }}
+                  className="text-slate-100 leading-relaxed"
+                  style={narrativeSubtitleStyle()}
                 >
                   {displayed}
                   {!done && (
@@ -550,20 +595,7 @@ export function DialogueRenderer() {
                   {node.choices.map((choice, i) => {
                     const cond = checkStoryCondition(choice.condition, conditionCtx);
 
-                    const handleClick = () => {
-                      if (!cond.pass) return;
-
-                      if (choice.condition?.minSkillCheck && cond.skillCheckResult) {
-                        setSkillCheckBanner({
-                          skill: cond.skillCheckResult.skill,
-                          success: cond.skillCheckResult.success,
-                        });
-                        if (!cond.skillCheckResult.success) return;
-                        setTimeout(() => setSkillCheckBanner(null), 1500);
-                      }
-
-                      handleChoice(choice);
-                    };
+                    const handleClick = () => trySelectChoice(i);
 
                     const impact = getChoiceImpact(choice.effects, npcId);
                     const hasImpact = impact.karma !== 0 || impact.energy !== 0 || impact.stress !== 0 || impact.npcRelation !== null || impact.skills.length > 0;

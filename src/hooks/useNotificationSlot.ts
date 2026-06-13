@@ -17,6 +17,8 @@ export const NOTIFY_PRIORITY = {
   event: 90,
   toast: 70,
   achievement: 60,
+  system: 58,
+  lore: 55,
   weather: 40,
   crafting: 30,
   loot: 20,

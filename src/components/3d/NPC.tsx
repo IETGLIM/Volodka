@@ -15,7 +15,7 @@ import * as THREE from 'three';
 import type { NPCDefinition, NPCAppearance } from '@/shared/types/game';
 
 import { useGameStore } from '@/store/gameStore';
-import { useQuests } from '@/store/selectors';
+import { useQuests, useCurrentSceneId } from '@/store/selectors';
 import { eventBus } from '@/engine/EventBus';
 import { registerNPCGroup, unregisterNPCGroup } from '@/engine/interaction/npcRegistry';
 import {
@@ -27,6 +27,7 @@ import { InteractionState } from '@/engine/interaction/interactionMachine';
 import { GltfNPCModel } from '@/components/3d/GltfNPCModel';
 import { ProceduralNPCModel } from '@/components/3d/ProceduralNPCModels';
 import { resolveNpcModelUrl } from '@/config/npcModelRegistry';
+import { getSceneVisualProfile } from '@/config/sceneVisualProfiles';
 import { createPatrolState, updatePatrol, shouldPatrol, type PatrolState } from '@/engine/npc/npcPatrol';
 import { getNpcQuestMarkerDisplay } from '@/store/questStore';
 import { resolveNpcQuestBark } from '@/engine/npc/npcQuestBark';
@@ -104,9 +105,11 @@ export function NPC({
   const questMarkerRef = useRef<THREE.Group>(null);
   const lodLevelRef = useRef<NpcLodLevel>('impostor');
   const { preset } = useGraphicsQuality();
+  const sceneId = useCurrentSceneId();
+  const npcLodDistanceScale = getSceneVisualProfile(sceneId).npcLodDistanceScale ?? 1;
   const npcLodThresholds = useMemo(
-    () => scaleNpcLodThresholds(DEFAULT_NPC_LOD, preset.lodBias),
-    [preset.lodBias],
+    () => scaleNpcLodThresholds(DEFAULT_NPC_LOD, preset.lodBias * npcLodDistanceScale),
+    [preset.lodBias, npcLodDistanceScale],
   );
 
   // ── Patrol state ──

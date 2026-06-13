@@ -133,6 +133,7 @@ export function OrchestratorCanvasLayer({
             <LazyMatrixRainQuote
               text={matrixQuote.text}
               actNumber={matrixQuote.actNumber}
+              chapterTitle={matrixQuote.chapterTitle}
               onDismiss={onDismissMatrixQuote}
             />
           </Suspense>

@@ -6,7 +6,7 @@
    progress bar, and PanelWrapper integration.
 */
 
-import { useEffect, useState, useMemo, useCallback, useRef } from 'react';
+import { useEffect, useState, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   BookMarked, BookOpen, Search, Lock, MapPin,
@@ -20,6 +20,9 @@ import { PanelWrapper } from './PanelWrapper';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 import type { SceneId } from '@/shared/types/game';
+import { eventBus } from '@/engine/EventBus';
+import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
+import { useNarrativeTypewriter } from '@/hooks/useNarrativeTypewriter';
 
 /* ─── Types ─── */
 
@@ -39,33 +42,15 @@ function getSceneName(sceneId: string): string {
 
 /* ─── Typewriter Hook ─── */
 
-function useTypewriter(text: string, speed = 18, enabled = true) {
-  const [displayed, setDisplayed] = useState('');
-  const indexRef = useRef(0);
+function useCodexTypewriter(text: string, animate: boolean) {
+  const reducedMotion = useEffectiveReducedMotion();
+  const { displayed, skip } = useNarrativeTypewriter(text, 16);
 
   useEffect(() => {
-    if (!enabled) {
-      // Defer to avoid synchronous setState in effect
-      const t = setTimeout(() => setDisplayed(text), 0);
-      return () => clearTimeout(t);
-    }
-    const t0 = setTimeout(() => setDisplayed(''), 0);
-    indexRef.current = 0;
-    const interval = setInterval(() => {
-      indexRef.current += 1;
-      if (indexRef.current >= text.length) {
-        setDisplayed(text);
-        clearInterval(interval);
-      } else {
-        setDisplayed(text.slice(0, indexRef.current));
-      }
-    }, speed);
-    return () => {
-      clearTimeout(t0);
-      clearInterval(interval);
-    };
-  }, [text, speed, enabled]);
+    if (!animate || reducedMotion) skip();
+  }, [animate, reducedMotion, skip, text]);
 
+  if (!animate || reducedMotion) return text;
   return displayed;
 }
 
@@ -150,6 +135,7 @@ function EntryDetail({
   onSelectRelated: (id: string) => void;
 }) {
   const [showFull, setShowFull] = useState(false);
+  const reducedMotion = useEffectiveReducedMotion();
 
   // Reset showFull when entry changes (deferred to avoid sync setState)
   useEffect(() => {
@@ -157,15 +143,15 @@ function EntryDetail({
     return () => clearTimeout(t);
   }, [entry.id]);
 
-  const displayedBody = useTypewriter(entry.body, 16, !showFull);
+  const displayedBody = useCodexTypewriter(entry.body, !showFull);
 
   if (!entry.discovered) {
     return (
       <div className="flex flex-col items-center justify-center h-full text-center py-12">
         <motion.div
-          initial={{ opacity: 0, scale: 0.8 }}
+          initial={reducedMotion ? false : { opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.3 }}
+          transition={{ duration: reducedMotion ? 0 : 0.3 }}
         >
           <Lock className="size-10 text-slate-700 mb-3 mx-auto" />
         </motion.div>
@@ -195,9 +181,9 @@ function EntryDetail({
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 8 }}
+      initial={reducedMotion ? false : { opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.25 }}
+      transition={{ duration: reducedMotion ? 0 : 0.25 }}
       className="p-4"
     >
       {/* Title + Rarity */}
@@ -285,6 +271,15 @@ export function CodexPanel({ open, onClose }: CodexPanelProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterMode, setFilterMode] = useState<FilterMode>('all');
   const [activeCategory, setActiveCategory] = useState<LoreCategory | 'all'>('all');
+
+  useEffect(() => {
+    const unsub = eventBus.on('codex:select_entry', ({ loreId }) => {
+      setSelectedId(loreId);
+      setFilterMode('discovered');
+      setActiveCategory('all');
+    });
+    return unsub;
+  }, []);
 
   // Merge INITIAL_LORE_ENTRIES with store entries (store entries take precedence)
   const allEntries = useMemo(() => {
@@ -403,7 +398,7 @@ export function CodexPanel({ open, onClose }: CodexPanelProps) {
       urlPath="volodka://codex"
       footer={footer}
     >
-      <div className="flex flex-col h-full">
+      <div className="flex flex-col h-full" data-testid="codex-panel">
         {/* Search + Filter bar */}
         <div className="px-4 py-2 border-b border-slate-800/40 flex items-center gap-2">
           <div className="flex-1 flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-slate-700/30 bg-slate-900/40">

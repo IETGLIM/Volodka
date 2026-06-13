@@ -70,6 +70,8 @@ export interface CameraModeContext {
 
   lookAheadOffset: THREE.Vector3;
   prevVelocitySmooth: THREE.Vector3;
+  /** Damped 0–1 movement blend from PhysicsPlayer (reduces idle camera bob while walking). */
+  moveBlend: number;
 
   // Pre-allocated temp vectors (GC avoidance)
   desiredPos: THREE.Vector3;

@@ -22,6 +22,8 @@ export interface NpcQueryTarget {
   npcId: string;
   position: [number, number, number];
   label: string;
+  /** Schedule activity — shown as hint subtitle when approaching NPC. */
+  activity?: string;
 }
 
 export interface ExitQueryTarget {

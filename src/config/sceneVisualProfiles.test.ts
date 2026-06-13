@@ -11,7 +11,7 @@ describe('sceneVisualProfiles', () => {
   });
 
   it('uses standard profile for non-hero scenes', () => {
-    const profile = getSceneVisualProfile('park_day');
+    const profile = getSceneVisualProfile('library_day');
     expect(profile.tier).toBe('standard');
     expect(profile.forceFullPostFx).toBe(false);
   });

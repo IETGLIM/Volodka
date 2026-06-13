@@ -22,6 +22,7 @@ import {
   reconcileSpineQuestActivation,
   syncSpineStateFromSnapshot,
 } from '@/engine/guidedStory/guidedStoryLogic';
+import { enrichGuidanceWithLocation } from '@/engine/guidedStory/guidanceLocation';
 import type { GuidedStoryDeps, GuidanceInfo } from '@/engine/guidedStory/guidedStoryTypes';
 
 export type { GuidanceInfo } from '@/engine/guidedStory/guidedStoryTypes';
@@ -250,7 +251,12 @@ export class GuidedStoryManager {
 
   private emitGuidanceUpdate() {
     const guidance = this.getCurrentGuidance();
-    if (guidance) this.deps.events.emitGuidanceUpdate(guidance);
+    if (!guidance) return;
+    const enriched = enrichGuidanceWithLocation(
+      guidance,
+      this.deps.path.getNpcIdForStoryNode,
+    );
+    this.deps.events.emitGuidanceUpdate(enriched);
   }
 
   private autoStartFirstQuest() {
@@ -347,10 +353,10 @@ export class GuidedStoryManager {
 
     this.unsubSceneEnter = eventBus.on('scene:enter', ({ sceneId }) => {
       const stepNodeId = path.storySpine[this.currentStepIndex];
-      if (!stepNodeId) return;
-      if (getStoryNodeSceneId(stepNodeId) === sceneId) {
+      if (stepNodeId && getStoryNodeSceneId(stepNodeId) === sceneId) {
         this.advanceStorySpine(stepNodeId);
       }
+      this.emitGuidanceUpdate();
     });
 
     this.unsubFlagSet = subscribeGameSnapshot(

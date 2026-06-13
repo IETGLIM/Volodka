@@ -10,6 +10,8 @@ import * as THREE from 'three';
 import { liftHexColor, SCENE_VISIBILITY } from '@/shared/constants/sceneVisibility';
 import { ENV_MAP_WARMUP_FRAMES } from '@/shared/constants/transitionTimings';
 import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
+import { isHeroScene } from '@/config/sceneVisualProfiles';
+import type { SceneId } from '@/shared/types/game';
 
 /** Per-scene fog color overrides matching style pillars:
  *  Noir, CyberPunk2077, Gothic, Dark Fantasy, Glitch, MatrixRain
@@ -118,6 +120,7 @@ export function SceneEnvironment() {
   }, [sceneId]);
 
   const isIndoor = config.hasCeiling;
+  const heroScene = isHeroScene(sceneId as SceneId);
   const enableEnvMap = !isIndoor && !preset.visualLite;
 
   useFrameTick('misc', () => {
@@ -208,7 +211,15 @@ export function SceneEnvironment() {
         <Environment
           preset={envPreset}
           background={false}
-          environmentIntensity={preset.id === 'ultra' ? 0.35 : 0.28}
+          environmentIntensity={
+            heroScene
+              ? preset.id === 'ultra'
+                ? 0.38
+                : 0.32
+              : preset.id === 'ultra'
+                ? 0.35
+                : 0.28
+          }
         />
       )}
     </>

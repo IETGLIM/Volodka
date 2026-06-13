@@ -57,11 +57,13 @@ import {
 interface FollowCameraProps {
   livePlayerPositionRef: React.MutableRefObject<THREE.Vector3>;
   livePlayerRotationRef: React.MutableRefObject<number>;
+  moveBlendRef?: React.MutableRefObject<number>;
 }
 
 export function FollowCamera({
   livePlayerPositionRef,
   livePlayerRotationRef,
+  moveBlendRef,
 }: FollowCameraProps) {
   const camera = useThree((s) => s.camera);
   const threeScene = useThree((s) => s.scene);
@@ -291,6 +293,7 @@ export function FollowCamera({
       interactionLocked,
       lookAheadOffset: lookAheadOffsetRef.current,
       prevVelocitySmooth: prevVelocitySmoothRef.current,
+      moveBlend: moveBlendRef?.current ?? 0,
       desiredPos: _desiredPos.current,
       lookTarget: _lookTarget.current,
       offset: _offset.current,

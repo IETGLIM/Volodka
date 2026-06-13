@@ -44,7 +44,7 @@ import { SCENE_CONFIG } from '@/config/scenes';
 import { getStoryNodes, isNarrativeGameDataLoaded, ensureNarrativeNodeIds } from '@/data/gameDataLoader';
 import { devWarn } from '@/shared/utils/devLog';
 import { audioEngine } from '@/engine/AudioEngine';
-import { INITIAL_LORE_ENTRIES } from '@/data/loreEntries';
+import { INITIAL_LORE_ENTRIES, LORE_RARITY_META, LORE_CATEGORY_META } from '@/data/loreEntries';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -661,12 +661,25 @@ function LoreTab({ searchQuery }: { searchQuery: string }) {
                   <p className={`text-sm font-medium ${isSelected ? 'text-cyan-200' : 'text-slate-300'}`}>
                     {entry.title}
                   </p>
-                  {sceneConfig && (
-                    <p className="text-[10px] text-slate-600 mt-0.5">
-                      <MapPin className="size-2.5 inline mr-0.5" />
-                      {sceneConfig.name}
-                    </p>
-                  )}
+                  <div className="flex flex-wrap items-center gap-1.5 mt-0.5">
+                    {LORE_CATEGORY_META[entry.category] && (
+                      <span className="text-[9px] text-slate-600">
+                        {LORE_CATEGORY_META[entry.category].icon}{' '}
+                        {LORE_CATEGORY_META[entry.category].label}
+                      </span>
+                    )}
+                    {entry.rarity !== 'common' && LORE_RARITY_META[entry.rarity] && (
+                      <span className={`text-[9px] ${LORE_RARITY_META[entry.rarity].color}`}>
+                        {LORE_RARITY_META[entry.rarity].label}
+                      </span>
+                    )}
+                    {sceneConfig && (
+                      <span className="text-[10px] text-slate-600">
+                        <MapPin className="size-2.5 inline mr-0.5" />
+                        {sceneConfig.name}
+                      </span>
+                    )}
+                  </div>
                 </button>
               );
             })}
@@ -697,9 +710,14 @@ function LoreTab({ searchQuery }: { searchQuery: string }) {
         {selected && selected.discovered ? (
           <ScrollArea className="h-full">
             <div className="p-5 font-serif">
-              <div className="flex items-center gap-2 mb-1">
+              <div className="flex items-center gap-2 mb-1 flex-wrap">
                 <BookOpen className="size-4 text-cyan-400/60" />
                 <h3 className="text-lg font-semibold text-cyan-200">{selected.title}</h3>
+                {selected.rarity !== 'common' && LORE_RARITY_META[selected.rarity] && (
+                  <span className={`text-[10px] font-medium ${LORE_RARITY_META[selected.rarity].color}`}>
+                    {LORE_RARITY_META[selected.rarity].label}
+                  </span>
+                )}
               </div>
               {SCENE_CONFIG[selected.sceneId as SceneId] && (
                 <p className="text-xs text-slate-500 mb-4">

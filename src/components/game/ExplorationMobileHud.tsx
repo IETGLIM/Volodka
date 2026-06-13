@@ -81,9 +81,15 @@ export function ExplorationMobileHud({ onInteractPress, onOpenInventory }: Explo
   const syncMovementControls = useCallback(() => {
     const vc = virtualControlsRef.current;
     const active = new Set(pointerBindingsRef.current.values());
-    for (const key of MOVEMENT_CONTROL_KEYS) {
-      vc[key] = active.has(key) ? 1 : 0;
+    const directionKeys = ['forward', 'backward', 'left', 'right'] as const;
+    let moving = false;
+    for (const key of directionKeys) {
+      const on = active.has(key);
+      vc[key] = on ? 1 : 0;
+      if (on) moving = true;
     }
+    vc.jump = active.has('jump') ? 1 : 0;
+    vc.moveMagnitude = moving ? 1 : 0;
   }, [virtualControlsRef]);
 
   const bindPointerControl = useCallback(
@@ -121,6 +127,7 @@ export function ExplorationMobileHud({ onInteractPress, onOpenInventory }: Explo
     vc.right = 0;
     vc.run = 0;
     vc.jump = 0;
+    vc.moveMagnitude = 0;
     setRunToggled(false);
   }, [virtualControlsRef]);
 

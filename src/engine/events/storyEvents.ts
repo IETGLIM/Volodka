@@ -1,3 +1,5 @@
+import type { SceneId } from '@/shared/types/game';
+
 /** Guided story progression — GuidedStoryManager, StoryGuidanceHUD, GameOrchestrator. */
 export interface StoryEvents {
   'story:guidance_update': {
@@ -7,8 +9,8 @@ export interface StoryEvents {
     urgency: 'optional' | 'recommended' | 'required';
     actNumber: number;
     chapterTitle: string;
-  };
-  'story:act_transition': { fromAct: number; toAct: number; chapterTitle: string };
+    targetSceneId?: SceneId;
+  };  'story:act_transition': { fromAct: number; toAct: number; chapterTitle: string };
   'story:quest_available': { questId: string; questTitle: string; questType: string; npcId?: string };
   'story:quest_chain_unlock': {
     completedQuestId: string;

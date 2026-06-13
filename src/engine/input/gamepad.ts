@@ -146,11 +146,15 @@ export function stickToVirtualMovement(stick: GamepadStick): {
   backward: number;
   left: number;
   right: number;
+  /** Radial stick magnitude 0–1 after deadzone (for analog walk speed). */
+  moveMagnitude: number;
 } {
+  const moveMagnitude = Math.min(1, Math.hypot(stick.x, stick.y));
   return {
     forward: Math.max(0, -stick.y),
     backward: Math.max(0, stick.y),
     left: Math.max(0, -stick.x),
     right: Math.max(0, stick.x),
+    moveMagnitude,
   };
 }

@@ -37,6 +37,8 @@ export interface GuidedStorySpineState {
   lastAdvancedToAct: number;
 }
 
+import type { SceneId } from '@/shared/types/game';
+
 export interface GuidanceInfo {
   objectiveText: string;
   objectiveType: 'talk_to_npc' | 'visit_location' | 'complete_quest' | 'collect_item' | 'make_choice';
@@ -44,6 +46,8 @@ export interface GuidanceInfo {
   urgency: 'optional' | 'recommended' | 'required';
   actNumber: number;
   chapterTitle: string;
+  /** 3D scene the player should travel to for this objective (when known). */
+  targetSceneId?: SceneId;
 }
 
 export interface GuidedStoryNpcLookup {

@@ -92,6 +92,7 @@ export function useGamepadInput({
           vc.backward = move.backward;
           vc.left = move.left;
           vc.right = move.right;
+          vc.moveMagnitude = move.moveMagnitude;
           vc.run = frame.buttons[GAMEPAD.LB] ? 1 : 0;
           vc.jump = frame.buttons[GAMEPAD.B] ? 1 : 0;
         } else if (wasConnectedRef.current) {
@@ -100,6 +101,7 @@ export function useGamepadInput({
           vc.backward = 0;
           vc.left = 0;
           vc.right = 0;
+          vc.moveMagnitude = 0;
           vc.run = 0;
           vc.jump = 0;
         }
@@ -152,6 +154,7 @@ export function useGamepadInput({
           vc.backward = 0;
           vc.left = 0;
           vc.right = 0;
+          vc.moveMagnitude = 0;
           vc.run = 0;
           vc.jump = 0;
           previousButtonsRef.current.clear();
