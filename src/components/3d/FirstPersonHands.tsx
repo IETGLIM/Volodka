@@ -10,6 +10,7 @@ import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
 import { useGameStore } from '@/store/gameStore';
 import { readGamePhase } from '@/shared/gamePhase';
+import { usePlayerPresentationState } from '@/store/selectors';
 import { shouldUseFirstPersonHands } from '@/engine/camera/cinematicPresentation';
 import { eventBus } from '@/engine/EventBus';
 import { FpsFingerEnhancement } from './fpsFingerEnhancement';
@@ -153,8 +154,7 @@ function FirstPersonHandsInner({ moveBlendRef }: FirstPersonHandsProps) {
 }
 
 export function FirstPersonHands({ moveBlendRef }: FirstPersonHandsProps) {
-  const activeCutsceneId = useGameStore((s) => s.activeCutsceneId);
-  const gameMode = useGameStore((s) => readGamePhase(s));
+  const { activeCutsceneId, gameMode } = usePlayerPresentationState();
 
   if (!shouldUseFirstPersonHands(gameMode, activeCutsceneId)) {
     return null;

@@ -14,6 +14,14 @@ function phaseFromStore(s: GameStoreState) {
   });
 }
 
+/** PhysicsPlayer + FirstPersonHands — cutscene id + computed phase. */
+export function usePlayerPresentationState() {
+  return useGameSelector((s) => ({
+    activeCutsceneId: s.activeCutsceneId,
+    gameMode: phaseFromStore(s),
+  }));
+}
+
 /** FollowCamera: scene + phase + cutscene state. */
 export function useFollowCameraState() {
   return useGameSelector((s) => ({
