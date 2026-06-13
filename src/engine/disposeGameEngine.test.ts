@@ -1,13 +1,26 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import {
   disposeGameEngine,
   reviveGameEngine,
   isGameEngineDisposed,
 } from '@/engine/disposeGameEngine';
 import { eventBus } from '@/engine/EventBus';
+import { questTracker } from '@/engine/QuestTracker';
+import {
+  activatePoemPowerById,
+  clearAllPowerTimers,
+  getActiveEffects,
+} from '@/engine/PoemPowerSystem';
+import { useGameStore } from '@/store/gameStore';
+import { getWorldEventDirector } from '@/engine/world/WorldEventDirector';
+import { getWorldStreamManager } from '@/engine/world/WorldStreamManager';
+import { getNavMeshLayer } from '@/engine/world/NavMeshLayer';
+import { isWorldComputeWorkerAvailable, getWorldComputeWorker } from '@/engine/workers/computeWorkerClient';
+import { bindKeyboardInput, sampleKeyboardMovement } from '@/engine/keyboardInputState';
 
 describe('disposeGameEngine', () => {
   beforeEach(() => {
+    clearAllPowerTimers();
     reviveGameEngine();
   });
 
@@ -40,5 +53,125 @@ describe('disposeGameEngine', () => {
 
     disposeGameEngine();
     expect(isGameEngineDisposed()).toBe(true);
+  });
+
+  it('reviveGameEngine re-binds poem:reset_all_effects listener', () => {
+    useGameStore.setState({ collectedPoems: ['poem_1'] });
+    expect(activatePoemPowerById('poem_1')).toBe(true);
+    expect(getActiveEffects().length).toBeGreaterThan(0);
+
+    disposeGameEngine();
+    eventBus.emit('poem:reset_all_effects', {});
+    expect(getActiveEffects().length).toBeGreaterThan(0);
+
+    reviveGameEngine();
+    eventBus.emit('poem:reset_all_effects', {});
+    expect(getActiveEffects()).toHaveLength(0);
+  });
+
+  it('reviveGameEngine re-enables EventBus handlers', () => {
+    const calls: string[] = [];
+    eventBus.on('scene:enter', () => {
+      calls.push('enter');
+    });
+
+    disposeGameEngine();
+    reviveGameEngine();
+
+    eventBus.on('scene:enter', () => {
+      calls.push('enter');
+    });
+    eventBus.emit('scene:enter', {
+      sceneId: 'volodka_room',
+      fromSceneId: 'volodka_room',
+    });
+    expect(calls).toHaveLength(1);
+  });
+
+  it('reviveGameEngine re-arms QuestTracker subscriptions', () => {
+    questTracker.start();
+
+    disposeGameEngine();
+    reviveGameEngine();
+
+    expect(() => questTracker.start()).not.toThrow();
+  });
+
+  it('reviveGameEngine re-arms WorldEventDirector', () => {
+    const before = getWorldEventDirector();
+    before.start();
+
+    disposeGameEngine();
+    reviveGameEngine();
+
+    const after = getWorldEventDirector();
+    expect(after).not.toBe(before);
+  });
+
+  it('reviveGameEngine recreates WorldStreamManager singleton after dispose', () => {
+    const before = getWorldStreamManager();
+    before.setStreamingEnabled(true);
+    expect(before.isStreamingEnabled()).toBe(true);
+
+    disposeGameEngine();
+    reviveGameEngine();
+
+    const after = getWorldStreamManager();
+    expect(after).not.toBe(before);
+    expect(after.isStreamingEnabled()).toBe(false);
+  });
+
+  it('reviveGameEngine recreates NavMeshLayer singleton after dispose', () => {
+    const before = getNavMeshLayer();
+
+    disposeGameEngine();
+    reviveGameEngine();
+
+    expect(getNavMeshLayer()).not.toBe(before);
+  });
+
+  it('reviveGameEngine recreates world compute worker when available', () => {
+    if (!isWorldComputeWorkerAvailable()) return;
+
+    const before = getWorldComputeWorker();
+
+    disposeGameEngine();
+    reviveGameEngine();
+
+    const after = getWorldComputeWorker();
+    expect(after).not.toBe(before);
+  });
+
+  it('disposeGameEngine detaches keyboard listeners', () => {
+    const handlers = new Map<string, EventListener>();
+    vi.stubGlobal('window', {
+      addEventListener: (type: string, handler: EventListener) => {
+        handlers.set(type, handler);
+      },
+      removeEventListener: (type: string, handler: EventListener) => {
+        if (handlers.get(type) === handler) handlers.delete(type);
+      },
+      dispatchEvent: vi.fn(),
+    });
+
+    bindKeyboardInput();
+    handlers.get('keydown')?.({
+      code: 'KeyW',
+      target: null,
+      repeat: false,
+    } as KeyboardEvent);
+    expect(sampleKeyboardMovement().forward).toBe(true);
+
+    disposeGameEngine();
+    expect(sampleKeyboardMovement().forward).toBe(false);
+
+    handlers.get('keydown')?.({
+      code: 'KeyW',
+      target: null,
+      repeat: false,
+    } as KeyboardEvent);
+    expect(sampleKeyboardMovement().forward).toBe(false);
+
+    vi.unstubAllGlobals();
   });
 });

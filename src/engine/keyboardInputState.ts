@@ -168,18 +168,28 @@ function onBlur(): void {
 }
 
 function attachListeners(): void {
+  if (listenersInstalled) return;
   window.addEventListener('keydown', onKeyDown);
   window.addEventListener('keyup', onKeyUp);
   window.addEventListener('blur', onBlur);
+  listenersInstalled = true;
+}
+
+/** Remove window keyboard listeners and reset held-key state (tests, unmount, HMR). */
+export function detachKeyboardListeners(): void {
+  if (!listenersInstalled) return;
+  window.removeEventListener('keydown', onKeyDown);
+  window.removeEventListener('keyup', onKeyUp);
+  window.removeEventListener('blur', onBlur);
+  listenersInstalled = false;
+  onInteractPress = null;
+  onBlur();
 }
 
 /** Wire interact callback; listeners stay mounted for the session (survives remounts). */
 export function bindKeyboardInput(interactPress?: () => void): () => void {
   onInteractPress = interactPress ?? null;
-  if (!listenersInstalled) {
-    attachListeners();
-    listenersInstalled = true;
-  }
+  attachListeners();
 
   return () => {
     onInteractPress = null;

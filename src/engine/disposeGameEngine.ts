@@ -6,18 +6,18 @@
  * EventBus is cleared last so scoped listener disposes can still run.
  */
 
-import { disposeEventBus } from '@/engine/EventBus';
-import { disposeGuidedStoryManager } from '@/engine/GuidedStoryManager';
-import { disposeQuestTracker } from '@/engine/QuestTracker';
-import { disposeCombatSystem } from '@/engine/CombatSystem';
-import { disposeWorldEventDirector } from '@/engine/world/WorldEventDirector';
-import { disposeNavMeshLayer } from '@/engine/world/NavMeshLayer';
-import { disposeWorldStreamManager } from '@/engine/world/WorldStreamManager';
+import { disposeEventBus, reviveEventBus } from '@/engine/EventBus';
+import { disposeGuidedStoryManager, reviveGuidedStoryManager } from '@/engine/GuidedStoryManager';
+import { disposeQuestTracker, reviveQuestTracker } from '@/engine/QuestTracker';
+import { disposeCombatSystem, reviveCombatSystem } from '@/engine/CombatSystem';
+import { disposeWorldEventDirector, reviveWorldEventDirector } from '@/engine/world/WorldEventDirector';
+import { disposeNavMeshLayer, reviveNavMeshLayer } from '@/engine/world/NavMeshLayer';
+import { disposeWorldStreamManager, reviveWorldStreamManager } from '@/engine/world/WorldStreamManager';
 import { disposeSceneAudioController, getSceneAudioController } from '@/engine/audio/SceneAudioController';
 import { disposeMusicEngine, reviveMusicEngine } from '@/engine/MusicEngine';
 import { disposeAmbientEngine, reviveAmbientEngine } from '@/engine/audio/AmbientEngine';
 import { disposeAudioEngine, reviveAudioEngine } from '@/engine/audio/AudioEngine';
-import { disposeSharedAudioContext } from '@/engine/SharedAudioContext';
+import { disposeSharedAudioContext, reviveSharedAudioContext } from '@/engine/SharedAudioContext';
 import { resetInteractionSession } from '@/engine/interaction/interactionSession';
 import { resetInteractionEndDedupState } from '@/engine/interaction/interactionEndDedup';
 import { clearAutoCloseTimers } from '@/store/slices/explorationSlice';
@@ -27,13 +27,15 @@ import {
 } from '@/engine/PlayerRigidBodyState';
 import { invalidateCanvasFirstFrame } from '@/engine/canvas/canvasFirstFrameSession';
 import { disposeCombatTransientPools } from '@/engine/combat/combatTransientPool';
-import { disposeWorldComputeWorker } from '@/engine/workers/computeWorkerClient';
+import { disposeWorldComputeWorker, reviveWorldComputeWorker } from '@/engine/workers/computeWorkerClient';
 import { registerHmrDispose } from '@/shared/dev/hmrDispose';
 import {
   resetGlobalCleanupRegistry,
   runGlobalUnmountCleanup,
 } from '@/engine/core/GlobalCleanupService';
 import { getGameSnapshot } from '@/engine/GameActionDispatcher';
+import { bindPoemResetListener } from '@/engine/PoemPowerSystem';
+import { detachKeyboardListeners } from '@/engine/keyboardInputState';
 import type { SceneId } from '@/shared/types/game';
 
 let engineDisposed = false;
@@ -56,6 +58,7 @@ export function disposeGameEngine(): void {
   engineDisposed = true;
 
   try {
+    detachKeyboardListeners();
     clearPlayerExternalVelocity();
     clearPlayerRigidBody();
     resetInteractionEndDedupState();
@@ -93,6 +96,19 @@ export function disposeGameEngine(): void {
  */
 export function reviveGameEngine(): void {
   engineDisposed = false;
+
+  reviveEventBus();
+  bindPoemResetListener();
+
+  reviveQuestTracker();
+  reviveGuidedStoryManager();
+  reviveCombatSystem();
+  reviveWorldEventDirector();
+  reviveNavMeshLayer();
+  reviveWorldStreamManager();
+  reviveWorldComputeWorker();
+
+  reviveSharedAudioContext();
   reviveMusicEngine();
   reviveAudioEngine();
   reviveAmbientEngine();
