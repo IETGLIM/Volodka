@@ -5,62 +5,30 @@ import { useMemo, useRef, useEffect } from 'react';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import * as THREE from 'three';
 import FastNoiseLite from 'fastnoise-lite';
-import { useProceduralTerrain, DREAM_TERRAIN } from '@/hooks/useProceduralTerrain';
 import { useEnvironmentLod } from './lod/EnvironmentLodProvider';
 import { EnvironmentDetail } from './lod/PropDistanceGate';
 import { useCachedCanvasTexture } from '@/hooks/useCachedCanvasTexture';
 
-/** Dark Fantasy/Psychonauts2 dreamscape (50×50m) with procedural terrain */
+/** Dark Fantasy/Psychonauts2 dreamscape (50×50m) — flat walkable floor aligned with physics */
 export function SleepDreamVisual() {
   const W = 50;
   const D = 50;
   const { lod } = useEnvironmentLod();
 
-  // ── Procedural terrain with FastNoiseLite ──
-  const { geometry, getHeightAt } = useProceduralTerrain({
-    width: W,
-    depth: D,
-    segments: 128,
-    preset: DREAM_TERRAIN,
-  });
+  const groundGeometry = useMemo(() => {
+    const geo = new THREE.PlaneGeometry(W, D, 64, 64);
+    geo.rotateX(-Math.PI / 2);
+    return geo;
+  }, [W, D]);
 
-  // ── Animated terrain mesh ──
-  const terrainRef = useRef<THREE.Mesh>(null);
-  const originalPositions = useMemo(() => {
-    return new Float32Array((geometry.attributes.position as THREE.BufferAttribute).array as Float32Array);
-  }, [geometry]);
-
-  // ── Dream ground texture (now more detailed) ──
   const groundTexture = useCachedCanvasTexture('sleep_dream:ground', createDreamGroundTexture);
-
-  // ── Slow terrain animation ──
-  useFrameTick('misc', ({ state }) => {
-    if (!terrainRef.current) return;
-    const posAttr = terrainRef.current.geometry.attributes.position as THREE.BufferAttribute;
-    const t = state.clock.elapsedTime;
-
-    for (let i = 0; i < posAttr.count; i++) {
-      const ox = originalPositions[i * 3];
-      const oz = originalPositions[i * 3 + 2];
-      const oy = originalPositions[i * 3 + 1];
-
-      // Slow dreamy undulation — waves ripple across the landscape
-      const wave = Math.sin(ox * 0.12 + t * 0.15) * 0.4
-                 + Math.cos(oz * 0.09 + t * 0.12) * 0.25
-                 + Math.sin((ox + oz) * 0.06 + t * 0.08) * 0.15;
-
-      posAttr.setY(i, oy + wave);
-    }
-    posAttr.needsUpdate = true;
-    terrainRef.current.geometry.computeVertexNormals();
-  });
 
   return (
     <group>
       {/* ═══════════════════════════════════════════════ */}
-      {/* ── PROCEDURAL TERRAIN (FastNoiseLite) ──       */}
+      {/* ── FLAT DREAM FLOOR (matches physics plane) ── */}
       {/* ═══════════════════════════════════════════════ */}
-      <mesh ref={terrainRef} geometry={geometry} receiveShadow>
+      <mesh geometry={groundGeometry} receiveShadow>
         <meshStandardMaterial
           map={groundTexture}
           color="#0a0515"

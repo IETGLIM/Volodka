@@ -54,7 +54,7 @@ describe('generateBoundaryWallSegments', () => {
     // Doors at x=±2.7 with halfW=3 sit on the left/right planes
     expect(segmentsOnSide(segments, 'left').length).toBeGreaterThanOrEqual(2);
     expect(segmentsOnSide(segments, 'right').length).toBeGreaterThanOrEqual(2);
-    expect(backstopsOnSide(segments, 'left')).toHaveLength(1);
+    expect(backstopsOnSide(segments, 'left')).toHaveLength(2);
     expect(backstopsOnSide(segments, 'right')).toHaveLength(2);
   });
 

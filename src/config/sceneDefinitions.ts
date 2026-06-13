@@ -258,6 +258,7 @@ export const volodka_corridor_def: SceneDefinition = {
     { id: 'corridor_to_kitchen', position: [2.7, 0.5, -2.0], width: 0.9, height: 2.0 },
     { id: 'corridor_to_street', position: [-2.7, 0.5, -2.0], width: 1.0, height: 2.2 },
     { id: 'corridor_to_solnysh_room', position: [2.7, 0.5, 4.0], width: 0.9, height: 2.0 },
+    { id: 'corridor_to_zarema_room', position: [-2.7, 0.5, 4.0], width: 0.9, height: 2.0 },
   ],
   exits: [
     {
@@ -295,6 +296,15 @@ export const volodka_corridor_def: SceneDefinition = {
       spawnRotation: Math.PI,
       label: '→ Солныш и Лёня',
       doorwayId: 'corridor_to_solnysh_room',
+    },
+    {
+      id: 'corridor_to_zarema_room',
+      targetScene: 'zarema_albert_room',
+      position: [-2.7, 0.5, 4.0],
+      spawnPosition: [0, 0.01, 2],
+      spawnRotation: Math.PI,
+      label: '→ Зарема и Альберт',
+      doorwayId: 'corridor_to_zarema_room',
     },
   ],
   floors: [
@@ -932,7 +942,7 @@ export const zarema_albert_room_def: SceneDefinition = {
       id: 'zarema_to_corridor',
       targetScene: 'volodka_corridor',
       position: [0, 1, 3.5],
-      spawnPosition: [0, 0.01, 4],
+      spawnPosition: [-2.0, 0.01, 3.6],
       spawnRotation: 0,
       label: '→ Коридор',
       doorwayId: 'zarema_to_corridor',

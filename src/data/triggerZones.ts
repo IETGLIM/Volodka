@@ -296,6 +296,20 @@ export const TRIGGER_ZONES: TriggerZone[] = [
     effects: [{ type: 'setFlag', flag: 'read_corridor_graffiti', flagValue: true }],
   },
   {
+    id: 'corridor_zarema_door',
+    sceneId: 'volodka_corridor',
+    position: [-2.7, 0, 4.0],
+    size: [1.2, 2.2, 0.5],
+    enterToast: 'Из комнаты Заремы и Альберта тянет чаем и детскими голосами.',
+    interactionType: 'open',
+    examineData: {
+      title: 'Комната Заремы и Альберта',
+      description: 'За дверью — книги, игрушки и запах свежего чая.',
+      detailText: 'Соседи с самого детства. Зарема учит, Альберт чинит — и всегда найдётся место за их столом.',
+      icon: '🚪',
+    },
+  },
+  {
     id: 'corridor_solnysh_door',
     sceneId: 'volodka_corridor',
     position: [2.7, 0, 4.0],

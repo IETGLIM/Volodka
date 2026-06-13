@@ -95,6 +95,7 @@ export function VolodkaCorridorVisual({ livePlayerPositionRef: _livePlayerPositi
   const streetDoorRef = useRef<THREE.Group>(null);
   const roomDoorRef = useRef<THREE.Group>(null);
   const solnyshDoorRef = useRef<THREE.Group>(null);
+  const zaremaDoorRef = useRef<THREE.Group>(null);
 
   // ── Listen for object:interact events to toggle interactive objects ──
   useEffect(() => {
@@ -103,7 +104,8 @@ export function VolodkaCorridorVisual({ livePlayerPositionRef: _livePlayerPositi
         payload.objectId === 'corridor_kitchen_door' ||
         payload.objectId === 'corridor_street_door' ||
         payload.objectId === 'corridor_room_door' ||
-        payload.objectId === 'corridor_solnysh_door'
+        payload.objectId === 'corridor_solnysh_door' ||
+        payload.objectId === 'corridor_zarema_door'
       ) {
         useGameStore.getState().toggleInteractiveObject(payload.objectId);
       }
@@ -160,6 +162,16 @@ export function VolodkaCorridorVisual({ livePlayerPositionRef: _livePlayerPositi
       const targetY = open ? -Math.PI / 2 : 0;
       solnyshDoorRef.current.rotation.y = THREE.MathUtils.lerp(
         solnyshDoorRef.current.rotation.y,
+        targetY,
+        1 - Math.exp(-delta * 5),
+      );
+    }
+
+    if (zaremaDoorRef.current) {
+      const open = objStates['corridor_zarema_door'] ?? false;
+      const targetY = open ? Math.PI / 2 : 0;
+      zaremaDoorRef.current.rotation.y = THREE.MathUtils.lerp(
+        zaremaDoorRef.current.rotation.y,
         targetY,
         1 - Math.exp(-delta * 5),
       );
@@ -664,6 +676,28 @@ export function VolodkaCorridorVisual({ livePlayerPositionRef: _livePlayerPositi
           <mesh position={[0, 1.1, -0.45]} geometry={geo_box_14}>
 
             <meshStandardMaterial color="#6a4550" roughness={0.75} />
+          </mesh>
+          <mesh position={[0, 1.05, -0.08]} geometry={geo_cyl_15}>
+
+            <meshStandardMaterial color="#aaa" metalness={0.8} roughness={0.2} />
+          </mesh>
+        </group>
+      </group>
+
+      {/* ── Door: Зарема & Альберт (left wall, z=4) — animated ── */}
+      <group position={[-W / 2 + 0.02, 0, 4.0]}>
+        <mesh rotation-y={Math.PI / 2} geometry={geo_pln_11}>
+
+          <meshStandardMaterial color="#4a4035" roughness={0.85} />
+        </mesh>
+        <mesh position={[-0.01, 1.1, 0]} rotation-y={Math.PI / 2} geometry={geo_box_12}>
+
+          <meshStandardMaterial color="#5a4838" />
+        </mesh>
+        <group position={[-0.02, 0, 0.45]} ref={zaremaDoorRef}>
+          <mesh position={[0, 1.1, -0.45]} geometry={geo_box_14}>
+
+            <meshStandardMaterial color="#6a5040" roughness={0.75} />
           </mesh>
           <mesh position={[0, 1.05, -0.08]} geometry={geo_cyl_15}>
 
