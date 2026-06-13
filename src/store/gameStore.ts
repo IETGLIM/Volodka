@@ -131,6 +131,7 @@ function toGameSnapshot(state: GameStoreState): GameStoreSnapshot {
   return snapshot;
 }
 
+/** Selector subscribe passes `selected` (not full snapshot); equality short-circuits before listener. */
 function subscribeGameBridge(listener: (snapshot: GameStoreSnapshot) => void): () => void;
 function subscribeGameBridge<T>(
   listener: (selected: T) => void,
