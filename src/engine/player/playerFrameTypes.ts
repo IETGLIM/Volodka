@@ -40,7 +40,7 @@ export interface PlayerMovementDeps {
   rapier: unknown;
   controls: PlayerControls;
   frameScratchRef: React.MutableRefObject<PlayerFrameScratch>;
-  rigidBodyRef: React.MutableRefObject<RapierRigidBody>;
+  rigidBodyRef: React.MutableRefObject<RapierRigidBody | null>;
   capsuleColliderRef: React.MutableRefObject<RapierCollider | null>;
   controllerRef: React.MutableRefObject<RapierCharacterController | null>;
   velocityRef: React.MutableRefObject<THREE.Vector3>;
