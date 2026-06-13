@@ -26,9 +26,10 @@ const INDOOR_AMBIENT: Record<string, { color: string; intensity: number }> = {
   home_evening:       { color: '#4a3828', intensity: 0.62 },
   cafe_evening:       { color: '#2a3048', intensity: 0.58 },
   office_day:         { color: '#c0c8d0', intensity: 0.65 },
-  library_day:        { color: '#4a4030', intensity: 0.52 },
-  abandoned_factory:  { color: '#2a2218', intensity: 0.48 },
-  zarema_albert_room: { color: '#2a2218', intensity: 0.52 },
+  library_day:        { color: '#4a4438', intensity: 0.62 },
+  abandoned_factory:  { color: '#3a3228', intensity: 0.58 },
+  factory_basement:   { color: '#283830', intensity: 0.55 },
+  zarema_albert_room: { color: '#3a3228', intensity: 0.58 },
 };
 const DEFAULT_INDOOR_AMBIENT = { color: '#2a2a3a', intensity: 0.52 };
 
@@ -38,12 +39,13 @@ const DEFAULT_INDOOR_AMBIENT = { color: '#2a2a3a', intensity: 0.52 };
 const INDOOR_FILL: Record<string, { position: [number, number, number]; intensity: number; color: string; distance: number } | null> = {
   volodka_room:       { position: [0, 2.0, 0], intensity: 1.35, color: '#887799', distance: 10 },
   volodka_corridor:   { position: [0, 2.2, 0], intensity: 2.1, color: '#bbAA88', distance: 14 },
-  home_evening:       { position: [0, 2.2, 0], intensity: 2.0, color: '#cc9966', distance: 11 },
+  home_evening:       { position: [0, 2.2, 0], intensity: 2.2, color: '#ddaa77', distance: 12 },
   cafe_evening:       { position: [0, 2.5, -1], intensity: 1.75, color: '#aa99cc', distance: 13 },
-  office_day:         { position: [0, 2.5, 0], intensity: 2.6, color: '#d0d8e8', distance: 15 },
-  library_day:        { position: [0, 2.5, 0], intensity: 1.6, color: '#bb9966', distance: 13 },
-  abandoned_factory:  { position: [0, 2.5, 0], intensity: 1.2, color: '#aa8866', distance: 15 },
-  zarema_albert_room: { position: [0, 2.2, 0], intensity: 1.4, color: '#998866', distance: 11 },
+  office_day:         { position: [0, 2.5, 0], intensity: 2.8, color: '#dde8f8', distance: 16 },
+  library_day:        { position: [0, 2.5, 0], intensity: 1.85, color: '#ccaa77', distance: 14 },
+  abandoned_factory:  { position: [0, 3.0, 0], intensity: 1.45, color: '#cc9966', distance: 16 },
+  factory_basement:   { position: [0, 2.4, 0], intensity: 1.35, color: '#668877', distance: 14 },
+  zarema_albert_room: { position: [0, 2.2, 0], intensity: 1.65, color: '#aa9977', distance: 12 },
 };
 const DEFAULT_INDOOR_FILL: NonNullable<typeof INDOOR_FILL[string]> = {
   position: [0, 2.2, 0], intensity: 1.6, color: '#998877', distance: 12,
@@ -160,7 +162,7 @@ export function ExplorationLighting() {
       )}
 
       {sceneId === 'street_night' && (
-        <ambientLight intensity={0.38} color="#606088" />
+        <ambientLight intensity={0.45} color="#606088" />
       )}
 
       {sceneId === 'street_winter' && (

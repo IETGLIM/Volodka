@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   resolvePostCutsceneNarrativeNode,
   shouldShowEntryStoryAfterCutscene,
+  shouldShowStoryBeatAfterCutscene,
 } from './postCutsceneNarrative';
 
 describe('resolvePostCutsceneNarrativeNode', () => {
@@ -37,5 +38,21 @@ describe('shouldShowEntryStoryAfterCutscene', () => {
     expect(shouldShowEntryStoryAfterCutscene('corridor_explore_mode')).toBe(false);
     expect(shouldShowEntryStoryAfterCutscene('act2_transition')).toBe(false);
     expect(shouldShowEntryStoryAfterCutscene('fix_success')).toBe(false);
+  });
+});
+
+describe('shouldShowStoryBeatAfterCutscene', () => {
+  it('includes act transitions and mid-act title cards', () => {
+    expect(shouldShowStoryBeatAfterCutscene('act2_transition')).toBe(true);
+    expect(shouldShowStoryBeatAfterCutscene('act3_transition')).toBe(true);
+    expect(shouldShowStoryBeatAfterCutscene('maria_curious')).toBe(true);
+    expect(shouldShowStoryBeatAfterCutscene('fix_success')).toBe(true);
+  });
+
+  it('includes act II explore entry beats', () => {
+    expect(shouldShowStoryBeatAfterCutscene('act2_network_initiation')).toBe(true);
+    expect(shouldShowStoryBeatAfterCutscene('abandoned_workshop')).toBe(true);
+    expect(shouldShowStoryBeatAfterCutscene('pier_arrival')).toBe(true);
+    expect(shouldShowStoryBeatAfterCutscene('go_to_cafe')).toBe(true);
   });
 });

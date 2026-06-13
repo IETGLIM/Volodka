@@ -38,16 +38,16 @@ const SCENE_COLOR_GRADE: Record<string, { hue: number; saturation: number; brigh
   street_winter:      { hue: -0.02, saturation: -0.12, brightness: 0.12, contrast: 0.08  },
   cafe_evening:       { hue: 0.01,  saturation: 0.05, brightness: 0.03, contrast: 0.16 }, // hazy blue-neon café
   office_day:         { hue: -0.01, saturation: -0.15, brightness: 0.03, contrast: 0.05 }, // sterile
-  park_day:           { hue: -0.04, saturation: -0.08, brightness: 0.02, contrast: 0.14 }, // gothic mist — hero lift
-  library_day:        { hue: 0.02,  saturation: -0.05, brightness: 0.0,  contrast: 0.1  }, // aged paper
+  park_day:           { hue: -0.04, saturation: -0.06, brightness: 0.05, contrast: 0.12 },
+  library_day:        { hue: 0.02,  saturation: -0.03, brightness: 0.04, contrast: 0.08 },
   battle:             { hue: 0.08,  saturation: 0.2,  brightness: -0.05, contrast: 0.3  }, // intense combat
   sleep_dream:        { hue: 0.12,  saturation: 0.3,  brightness: -0.03, contrast: 0.15 }, // dark fantasy
   rooftop_edge:       { hue: 0.05,  saturation: 0.15, brightness: 0.0,  contrast: 0.2  }, // noir sunset
-  abandoned_factory:  { hue: 0.06,  saturation: -0.05, brightness: -0.03, contrast: 0.2  }, // rust gothic
-  zarema_albert_room: { hue: 0.02,  saturation: 0.05, brightness: 0.0,  contrast: 0.1  }, // warm domestic
+  abandoned_factory:  { hue: 0.06,  saturation: -0.03, brightness: 0.02, contrast: 0.16 },
+  factory_basement:   { hue: -0.04, saturation: -0.05, brightness: 0.0,  contrast: 0.2 },
+  zarema_albert_room: { hue: 0.02,  saturation: 0.05, brightness: 0.03, contrast: 0.08 },
   solnysh_room:       { hue: 0.05,  saturation: 0.12, brightness: 0.02, contrast: 0.1  }, // warm cozy carpets
   chk_forest_zorge:   { hue: 0.03,  saturation: 0.08, brightness: 0.02, contrast: 0.12 }, // campfire warmth
-  factory_basement:   { hue: -0.06, saturation: -0.08, brightness: -0.04, contrast: 0.24 }, // cold green crypt
   river_pier:         { hue: 0.04,  saturation: 0.1,  brightness: 0.0,  contrast: 0.14 }, // warm fire vs cold water
 };
 
@@ -61,7 +61,7 @@ const SCENE_VIGNETTE: Record<string, { offset: number; darkness: number }> = {
   street_night:       { offset: 0.4,  darkness: 0.3 },
   cafe_evening:       { offset: 0.34, darkness: 0.32 },
   sleep_dream:        { offset: 0.25, darkness: 0.5 },
-  abandoned_factory:  { offset: 0.3,  darkness: 0.45 },
+  abandoned_factory:  { offset: 0.32, darkness: 0.36 },
   rooftop_edge:       { offset: 0.3,  darkness: 0.4 },
   battle:             { offset: 0.2,  darkness: 0.55 },
   office_day:         { offset: 0.4,  darkness: 0.3 },
@@ -71,7 +71,7 @@ const SCENE_VIGNETTE: Record<string, { offset: number; darkness: number }> = {
   zarema_albert_room: { offset: 0.4,  darkness: 0.3 },
   solnysh_room:       { offset: 0.42, darkness: 0.28 },
   chk_forest_zorge:   { offset: 0.4,  darkness: 0.28 },
-  factory_basement:   { offset: 0.28, darkness: 0.5 },
+  factory_basement:   { offset: 0.3, darkness: 0.38 },
   river_pier:         { offset: 0.4,  darkness: 0.26 },
 };
 const DEFAULT_VIGNETTE = { offset: 0.4, darkness: 0.32 };

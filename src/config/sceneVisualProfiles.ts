@@ -62,6 +62,10 @@ const PROFILES: Partial<Record<SceneId, SceneVisualProfile>> = {
   cafe_evening: HERO_PROFILE,
   office_day: HERO_PROFILE,
   park_day: HERO_PROFILE,
+  library_day: { ...HERO_PROFILE, enhancedAmbientOcclusion: false },
+  abandoned_factory: { ...STANDARD_PROFILE, forceFullPostFx: true, enhancedAmbientOcclusion: false },
+  factory_basement: { ...STANDARD_PROFILE, forceFullPostFx: true, enhancedAmbientOcclusion: false },
+  zarema_albert_room: { ...STANDARD_PROFILE, forceFullPostFx: true, enhancedAmbientOcclusion: false },
 };
 
 export function getSceneVisualProfile(sceneId: SceneId): SceneVisualProfile {

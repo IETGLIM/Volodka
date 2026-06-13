@@ -9,6 +9,26 @@ import {
 } from '@/shared/sceneExploreHubRegistry';
 import type { NarrativeKind } from '@/store/slices/uiSlice';
 
+/** Story nodes with title-card cutscenes that must show VN text (not silent hub jump). */
+export const CUTSCENE_STORY_BEAT_IDS = [
+  'act2_transition',
+  'act3_transition',
+  'act4_transition',
+  'act4_final_choice',
+  'fix_success',
+  'maria_curious',
+  'join_resistance',
+  'poem_virus_truth',
+  'solnysh_roof_arrival',
+] as const;
+
+export function shouldShowStoryBeatAfterCutscene(nodeId: string): boolean {
+  return (
+    shouldShowEntryStoryAfterCutscene(nodeId)
+    || (CUTSCENE_STORY_BEAT_IDS as readonly string[]).includes(nodeId)
+  );
+}
+
 /** Entry beats (corridor_door, kitchen_table, …) map to explore hubs after the player reads them. */
 export function shouldShowEntryStoryAfterCutscene(nodeId: string): boolean {
   const hubId = SCENE_ENTRY_NODE_TO_HUB[nodeId];
@@ -23,7 +43,7 @@ export function resolvePostCutsceneNarrativeNode(nodeId: string): string {
 
 /** After cinematic beats: closed-overlay hubs dismiss VN panel; others keep walkable hub overlay. */
 export function openNarrativeAfterCutscene(nodeId: string, kind: NarrativeKind): void {
-  if (shouldShowEntryStoryAfterCutscene(nodeId)) {
+  if (shouldShowStoryBeatAfterCutscene(nodeId)) {
     openNarrativeOverlay(nodeId, kind);
     eventBus.emit('interaction:end', {});
     forceEmitInteractionEnd();
