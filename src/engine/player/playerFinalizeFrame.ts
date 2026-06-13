@@ -1,0 +1,120 @@
+import { eventBus } from '@/engine/EventBus';
+import { audioEngine } from '@/engine/AudioEngine';
+import { FOOTSTEP_INTERVAL } from '@/engine/player/playerConstants';
+import {
+  activateDirectMovementMode,
+  restoreKccMovementMode,
+} from '@/engine/player/directMovementTelemetry';
+import type { PlayerMovementDeps } from '@/engine/player/playerFrameTypes';
+
+/** Animations, footsteps, position sync, ground enforce, DEV timing. */
+export function finalizePlayerFrame(deps: PlayerMovementDeps): void {
+  const scratch = deps.frameScratchRef.current;
+  const rb = scratch.rb!;
+  if (!rb.isValid()) return;
+  const vel = scratch.vel;
+  const dt = scratch.dt;
+  const {
+    airborneIntent,
+    floorSlack,
+    isGroundedNow,
+    onFlatGround,
+    isOutdoor,
+    isMoving,
+    running,
+    keyboardDrivesMove,
+    blockedByWall,
+    groundY,
+  } = scratch;
+
+  deps.currentFloorMaterialRef.current = deps.config.floorMaterial;
+
+  const horizontalSpeed = Math.sqrt(vel.x * vel.x + vel.z * vel.z);
+  const animPos = rb.translation();
+  if (
+    !airborneIntent &&
+    animPos.y <= groundY + floorSlack &&
+    Math.abs(vel.y) < 0.75
+  ) {
+    deps.isGroundedRef.current = true;
+    if (Math.abs(vel.y) < 0.25) vel.y = 0;
+  }
+  if (!deps.isGroundedRef.current) {
+    const clearlyAirborne = animPos.y > groundY + 0.08 || vel.y > 0.35;
+    if (clearlyAirborne) {
+      deps.currentAnimRef.current = vel.y > 0.5 ? 'jump' : 'fall';
+    } else {
+      deps.isGroundedRef.current = true;
+      vel.y = 0;
+    }
+  } else if (horizontalSpeed > 0.5) {
+    deps.currentAnimRef.current = running ? 'run' : 'walk';
+  } else {
+    deps.currentAnimRef.current = 'idle';
+  }
+
+  if (isMoving && deps.isGroundedRef.current) {
+    deps.footstepTimerRef.current += dt;
+    const stepInterval = running ? FOOTSTEP_INTERVAL * 0.65 : FOOTSTEP_INTERVAL;
+    if (deps.footstepTimerRef.current >= stepInterval) {
+      deps.footstepTimerRef.current = 0;
+      const pos = rb.translation();
+      eventBus.emit('exploration:footstep', {
+        position: [pos.x, pos.y, pos.z],
+        yaw: deps.livePlayerRotationRef.current,
+      });
+      audioEngine.playFootstep(deps.currentFloorMaterialRef.current, {
+        sourceId: 'player-footstep',
+      });
+    }
+  } else {
+    deps.footstepTimerRef.current = 0;
+  }
+
+  let finalPos = rb.translation();
+  const finalGroundY = groundY;
+
+  const floorSnapEps = isOutdoor ? 0.02 : 0.008;
+  if (
+    onFlatGround &&
+    !isGroundedNow &&
+    Math.abs(finalPos.y - finalGroundY) > floorSnapEps
+  ) {
+    rb.setTranslation({ x: finalPos.x, y: finalGroundY, z: finalPos.z }, true);
+    vel.y = 0;
+    deps.isGroundedRef.current = true;
+    finalPos = rb.translation();
+  }
+
+  deps.livePlayerPositionRef.current.set(finalPos.x, finalPos.y, finalPos.z);
+
+  if (isMoving && !blockedByWall && !keyboardDrivesMove) {
+    const dx = finalPos.x - deps.prevRbPosRef.current.x;
+    const dz = finalPos.z - deps.prevRbPosRef.current.z;
+    const posDelta = Math.sqrt(dx * dx + dz * dz);
+    if (posDelta < 0.001) {
+      deps.noMovementFramesRef.current++;
+      if (deps.noMovementFramesRef.current >= 15 && !deps.useDirectMovementRef.current) {
+        activateDirectMovementMode(deps.directMovementTelemetry, 'input_no_displacement_15f', {
+          sceneId: deps.sceneId,
+          stuckFrames: deps.noMovementFramesRef.current,
+        });
+      }
+    } else {
+      deps.noMovementFramesRef.current = 0;
+      if (deps.useDirectMovementRef.current) {
+        deps.kccRecoveryFramesRef.current++;
+        if (deps.kccRecoveryFramesRef.current >= 6) {
+          restoreKccMovementMode(deps.directMovementTelemetry, { sceneId: deps.sceneId });
+          deps.kccRecoveryFramesRef.current = 0;
+        }
+      }
+    }
+  } else {
+    deps.noMovementFramesRef.current = 0;
+    if (!deps.useDirectMovementRef.current) {
+      deps.kccRecoveryFramesRef.current = 0;
+    }
+  }
+  deps.prevRbPosRef.current.set(finalPos.x, finalPos.y, finalPos.z);
+}

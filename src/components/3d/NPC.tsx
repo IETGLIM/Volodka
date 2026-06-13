@@ -6,14 +6,12 @@
 
 import { useRef, useState, useEffect, Suspense, useMemo } from 'react';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
-import { Html } from '@react-three/drei';
 import * as THREE from 'three';
 import type { NPCDefinition, NPCAppearance } from '@/shared/types/game';
 
 import { useGameStore } from '@/store/gameStore';
 import { useQuests } from '@/store/selectors';
 import { eventBus } from '@/engine/EventBus';
-import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { registerNPCGroup, unregisterNPCGroup } from '@/engine/interaction/npcRegistry';
 import {
   updateHeadTracking,
@@ -34,6 +32,11 @@ import {
   scaleNpcLodThresholds,
   type NpcLodLevel,
 } from '@/engine/lod/distanceLod';
+import {
+  NpcNameSprite,
+  NpcSpeechSprite,
+  NpcQuestMarkerSprite,
+} from '@/engine/npc/npcWorldSprite';
 
 /* ─── NPC models ───
  *  GLB when a shipped asset exists (npcModelRegistry); otherwise ProceduralNPCModel.
@@ -512,41 +515,12 @@ function NPCNameLabel({
   opacity: number;
 }) {
   return (
-    <Html
-      position={[0, 2.15, 0]}
-      center
-      style={{ pointerEvents: 'none' }}
-    >
-      <div
-        style={{
-          opacity,
-          transition: 'opacity 0.2s ease',
-          userSelect: 'none',
-          whiteSpace: 'nowrap',
-        }}
-      >
-        <div
-          style={{
-            color: accentColor,
-            fontSize: '11px',
-            fontWeight: '600',
-            fontFamily: 'monospace',
-            letterSpacing: '0.06em',
-            textShadow: `
-              0 0 4px ${accentColor}88,
-              0 0 8px ${bodyColor}66,
-              0 1px 2px rgba(0,0,0,0.9)
-            `,
-            padding: '2px 8px',
-            borderRadius: '3px',
-            background: `linear-gradient(135deg, rgba(0,0,0,0.6), ${bodyColor}22)`,
-            border: `1px solid ${bodyColor}66`,
-          }}
-        >
-          {name}
-        </div>
-      </div>
-    </Html>
+    <NpcNameSprite
+      name={name}
+      accentColor={accentColor}
+      bodyColor={bodyColor}
+      opacity={opacity}
+    />
   );
 }
 
@@ -560,83 +534,7 @@ function SpeechBubble({
   text: string;
   opacity: number;
 }) {
-  return (
-    <Html
-      position={[0, 2.4, 0]}
-      center
-      style={{ pointerEvents: 'none' }}
-    >
-      <div
-        style={{
-          background: 'rgba(8, 8, 18, 0.95)',
-          color: phase === 'thinking' ? '#00ffee' : '#f0f0f0',
-          padding: '7px 14px',
-          borderRadius: '7px',
-          fontSize: '13px',
-          fontWeight: phase === 'thinking' ? 'normal' : '600',
-          whiteSpace: 'nowrap',
-          userSelect: 'none',
-          border: `1.5px solid ${phase === 'thinking' ? 'rgba(0, 255, 238, 0.7)' : 'rgba(255, 180, 40, 0.7)'}`,
-          boxShadow: phase === 'thinking'
-            ? '0 0 12px rgba(0, 255, 238, 0.4), 0 0 4px rgba(0, 255, 238, 0.2), inset 0 0 6px rgba(0, 255, 238, 0.12)'
-            : '0 0 12px rgba(255, 180, 40, 0.35), 0 0 4px rgba(255, 180, 40, 0.15), inset 0 0 6px rgba(255, 180, 40, 0.08)',
-          opacity,
-          transition: 'opacity 0.1s ease',
-          fontFamily: 'monospace',
-          letterSpacing: '0.02em',
-          position: 'relative',
-          maxWidth: '220px',
-          overflow: 'hidden',
-          textOverflow: 'ellipsis',
-        }}
-      >
-        {phase === 'thinking' ? (
-          <ThinkingDots />
-        ) : (
-          text
-        )}
-        {/* Speech bubble tail */}
-        <div
-          style={{
-            position: 'absolute',
-            bottom: '-6px',
-            left: '50%',
-            transform: 'translateX(-50%)',
-            width: 0,
-            height: 0,
-            borderLeft: '6px solid transparent',
-            borderRight: '6px solid transparent',
-            borderTop: '6px solid rgba(10, 10, 20, 0.92)',
-          }}
-        />
-      </div>
-    </Html>
-  );
-}
-
-/** Animated "..." thinking dots — pure CSS animation, no setInterval */
-function ThinkingDots() {
-  return (
-    <span style={{ display: 'inline-flex', gap: '2px', minWidth: '24px' }}>
-      <span style={{ animation: 'thinkingDot1 1.05s ease-in-out infinite' }}>·</span>
-      <span style={{ animation: 'thinkingDot2 1.05s ease-in-out infinite' }}>·</span>
-      <span style={{ animation: 'thinkingDot3 1.05s ease-in-out infinite' }}>·</span>
-      <style>{`
-        @keyframes thinkingDot1 {
-          0%, 33%, 100% { opacity: 0.3; }
-          16% { opacity: 1; }
-        }
-        @keyframes thinkingDot2 {
-          0%, 33%, 66%, 100% { opacity: 0.3; }
-          50% { opacity: 1; }
-        }
-        @keyframes thinkingDot3 {
-          0%, 66%, 100% { opacity: 0.3; }
-          83% { opacity: 1; }
-        }
-      `}</style>
-    </span>
-  );
+  return <NpcSpeechSprite phase={phase} text={text} opacity={opacity} />;
 }
 
 /** Quest marker (!/?) floating above NPC head with pulse/glow
@@ -646,86 +544,20 @@ function ThinkingDots() {
  *  - Green ✓ — Quest ready to turn in (all objectives complete) */
 function QuestMarker({ npcId }: { npcId: string }) {
   const quests = useQuests();
-  const glowRef = useRef<HTMLDivElement>(null);
-  const iconRef = useRef<HTMLDivElement>(null);
-  const pulsePhaseRef = useRef(0);
 
   const markerInfo = useMemo(
     () => getNpcQuestMarkerDisplay(npcId),
     [quests, npcId],
   );
 
-  useFrameTick('npc', ({ delta }) => {
-    if (!markerInfo || !glowRef.current || !iconRef.current) return;
-    pulsePhaseRef.current += delta * (1.5 / markerInfo.pulseSpeed) * 3.0;
-    const glowIntensity = 0.7 + Math.sin(pulsePhaseRef.current) * 0.5;
-    glowRef.current.style.background = `${markerInfo.glowPrefix} ${0.18 * glowIntensity})`;
-    glowRef.current.style.boxShadow = `0 0 ${8 * glowIntensity}px ${markerInfo.glowPrefix} ${0.35 * glowIntensity})`;
-    iconRef.current.style.textShadow = `0 0 ${4 * glowIntensity}px ${markerInfo.glowPrefix} 0.6)`;
-  });
-
   if (!markerInfo) return null;
 
-  const isComplete = markerInfo.type === 'complete';
-
   return (
-    <Html
-      position={[0, 1.75, 0]}
-      center
-      style={{ pointerEvents: 'none' }}
-    >
-      <div
-        style={{
-          position: 'relative',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
-      >
-        <div
-          ref={glowRef}
-          style={{
-            position: 'absolute',
-            width: '22px',
-            height: '22px',
-            borderRadius: '50%',
-            background: `${markerInfo.glowPrefix} 0.18)`,
-            boxShadow: `0 0 8px ${markerInfo.glowPrefix} 0.35)`,
-          }}
-        />
-        <div
-          ref={iconRef}
-          style={{
-            color: markerInfo.color,
-            fontSize: isComplete ? '12px' : '14px',
-            fontWeight: 'bold',
-            textShadow: `0 0 4px ${markerInfo.glowPrefix} 0.6)`,
-            userSelect: 'none',
-            position: 'relative',
-            zIndex: UI_LAYERS.WORLD_LABELS,
-          }}
-        >
-          {markerInfo.icon}
-        </div>
-        <div
-          style={{
-            color: markerInfo.color,
-            fontSize: '7px',
-            fontFamily: 'monospace',
-            letterSpacing: '0.02em',
-            marginTop: '1px',
-            maxWidth: '64px',
-            textAlign: 'center',
-            opacity: 0.65,
-            whiteSpace: 'nowrap',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-          }}
-        >
-          {markerInfo.questName}
-        </div>
-      </div>
-    </Html>
+    <NpcQuestMarkerSprite
+      icon={markerInfo.icon}
+      color={markerInfo.color}
+      questName={markerInfo.questName}
+      pulseSpeed={markerInfo.pulseSpeed}
+    />
   );
 }

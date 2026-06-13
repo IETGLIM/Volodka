@@ -1,15 +1,11 @@
-
-/* ─── Volodka RPG – Weather Controller ───
- *  Automatically activates rain/snow based on current scene
- *  street_night → Rain (heavy), street_winter → Snow,
- *  rooftop_edge → Rain (light), chk_forest_zorge → Snow (light), others → No weather
- *  Can also be triggered by weather: events
- */
-
 import { useMemo } from 'react';
 import { useGameStore } from '@/store/gameStore';
 import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
-import { getFxBudget } from '@/engine/graphics/fxGovernor';
+import {
+  getFxBudget,
+  resolveSceneHeavyFx,
+  tierFromPresetId,
+} from '@/engine/graphics/fxGovernor';
 import { RainSystem } from './RainSystem';
 import { SnowSystem } from './SnowSystem';
 import type { SceneId } from '@/shared/types/game';
@@ -43,14 +39,24 @@ export function WeatherController() {
   const sceneId = useGameStore((s) => s.exploration.currentSceneId);
   const weatherEnabled = useGameStore((s) => s.weatherEnabled);
   const { preset } = useGraphicsQuality();
-  const fxTier = preset.id === 'low' ? 'low' : preset.id === 'high' || preset.id === 'ultra' ? 'high' : 'medium';
+  const fxTier = tierFromPresetId(preset.id);
   const fxBudget = getFxBudget(fxTier);
+
+  const heavyFx = useMemo(
+    () => resolveSceneHeavyFx(fxTier, sceneId, {
+      weatherEnabled,
+      wantsFog: false,
+      wantsGodRays: false,
+    }),
+    [fxTier, sceneId, weatherEnabled],
+  );
 
   const weatherType = useMemo<WeatherType>(() => {
     if (!weatherEnabled) return 'none';
     if (!fxBudget.allowRain && SCENE_WEATHER[sceneId]?.startsWith('rain')) return 'none';
+    if (!heavyFx.rain && SCENE_WEATHER[sceneId]?.startsWith('rain')) return 'none';
     return SCENE_WEATHER[sceneId] ?? 'none';
-  }, [sceneId, weatherEnabled, fxBudget.allowRain]);
+  }, [sceneId, weatherEnabled, fxBudget.allowRain, heavyFx.rain]);
 
   switch (weatherType) {
     case 'rain_heavy':

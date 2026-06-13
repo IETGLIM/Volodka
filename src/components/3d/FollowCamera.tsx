@@ -70,6 +70,11 @@ import { useCameraOrbitInput } from '@/engine/camera/useCameraOrbitInput';
 import { applyPendingGamepadOrbit } from '@/engine/input/gamepadCamera';
 import { configureCameraCollisionRaycaster } from '@/engine/camera/cameraCollisionLayers';
 import { applyCameraFrame, isInDialogueInteraction } from '@/engine/camera/applyCameraFrame';
+import {
+  registerCameraOwner,
+  releaseCameraOwner,
+  shouldFollowCameraYield,
+} from '@/engine/camera/cameraOwnerState';
 import type { CameraModeContext } from '@/engine/camera/types';
 import { isInteractionLocked } from '@/engine/interaction/interactionSession';
 import { getNPCGroup } from '@/engine/interaction/npcRegistry';
@@ -352,6 +357,7 @@ export function FollowCamera({
       if (phase === 'fadeOut' || phase === 'hold') {
         cinematicFreezeRef.current = true;
         cinematicFreezeStartRef.current = timeRef.current;
+        registerCameraOwner('cinematicFreeze');
         setCinematicHoldActive(true);
         setCinematicPresentationMode('third_person');
 
@@ -374,6 +380,7 @@ export function FollowCamera({
         }
       } else if (phase === 'fadeIn') {
         cinematicFreezeRef.current = false;
+        releaseCameraOwner('cinematicFreeze');
         setCinematicHoldActive(false);
         setCinematicPresentationMode('first_person');
         eventBus.emit('camera:recenter', {});
@@ -639,8 +646,8 @@ export function FollowCamera({
     const playerPos = livePlayerPositionRef.current;
     if (!playerPos) return;
 
-    // During the opening wake-up cutscene, WakeUpSequence fully owns the camera.
-    // Yield so the two systems don't fight over camera.position each frame.
+    // WakeUpSequence / cutscene owners drive camera.position — yield to avoid fighting.
+    if (shouldFollowCameraYield()) return;
     if (gameMode === 'cutscene' && activeCutsceneId === 'intro_wakeup') return;
 
     const delta = applyTimeScale(Math.min(rawDelta, 0.05));

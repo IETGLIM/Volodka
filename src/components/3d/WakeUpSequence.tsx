@@ -28,6 +28,10 @@ import {
   WAKEUP_FALLBACK_MS,
   WAKEUP_PHASE,
 } from '@/engine/wakeup/wakeUpCinematic';
+import {
+  registerCameraOwner,
+  releaseCameraOwner,
+} from '@/engine/camera/cameraOwnerState';
 
 export function WakeUpSequence() {
   const [active, setActive] = useState(false);
@@ -58,6 +62,7 @@ export function WakeUpSequence() {
     }
     setActive(false);
     activeRef.current = false;
+    releaseCameraOwner('wakeUp');
     handoffStartedRef.current = false;
     sequenceStartedRef.current = false;
 
@@ -129,6 +134,7 @@ export function WakeUpSequence() {
       sequenceStartedRef.current = true;
       setActive(true);
       activeRef.current = true;
+      registerCameraOwner('wakeUp');
       elapsedRef.current = 0;
       phaseStartTimeRef.current = 0;
       currentWaypointRef.current = 0;
