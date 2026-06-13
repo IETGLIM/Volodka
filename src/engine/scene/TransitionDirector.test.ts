@@ -3,7 +3,9 @@ import { eventBus } from '@/engine/EventBus';
 import {
   getTransitionDirectorSnapshot,
   resetTransitionDirector,
-} from './TransitionDirector';
+  disposeTransitionDirector,
+  reviveTransitionDirector,
+} from '@/engine/scene/TransitionDirector';
 import { TRANSITION_MILESTONES } from '@/shared/constants/transitionTimings';
 
 describe('TransitionDirector', () => {
@@ -56,5 +58,15 @@ describe('TransitionDirector', () => {
     expect(getTransitionDirectorSnapshot().phase).toBe('idle');
     expect(getTransitionDirectorSnapshot().progress).toBe(0);
     expect(getTransitionDirectorSnapshot().targetScene).toBeNull();
+  });
+
+  it('dispose clears subscriptions; revive restores them', () => {
+    disposeTransitionDirector();
+    reviveTransitionDirector();
+    eventBus.emit('scene:transition', {
+      targetScene: 'office_day',
+      spawnAt: [0, 0, 0] as [number, number, number],
+    });
+    expect(getTransitionDirectorSnapshot().phase).toBe('loading');
   });
 });

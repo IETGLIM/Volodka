@@ -1,5 +1,8 @@
 /* ─── Shared distance LOD thresholds (hysteresis) ─── */
 
+import { getSceneVisualProfile } from '@/config/sceneVisualProfiles';
+import type { SceneId } from '@/shared/types/game';
+
 /** NPC visual tiers */
 export type NpcLodLevel = 'culled' | 'impostor' | 'full';
 
@@ -92,7 +95,12 @@ export const SCENE_ENV_LOD: Partial<Record<string, EnvironmentLodProfile>> = {
 };
 
 export function getEnvironmentLodProfile(sceneId: string): EnvironmentLodProfile {
-  return SCENE_ENV_LOD[sceneId] ?? DEFAULT_ENV_PROFILE;
+  const base = SCENE_ENV_LOD[sceneId] ?? DEFAULT_ENV_PROFILE;
+  const scale = getSceneVisualProfile(sceneId as SceneId).detailDistanceScale;
+  return {
+    clutterDistance: base.clutterDistance * scale,
+    decorativeDistance: base.decorativeDistance * scale,
+  };
 }
 
 export function environmentLodFromDistance(

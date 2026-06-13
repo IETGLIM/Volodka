@@ -101,7 +101,7 @@ export class LoadingPipeline {
     if (stage === 'error') return;
 
     const nextPct = STAGE_PCT[stage];
-    if (nextPct < this.snapshot.pct && stage !== 'error') return;
+    if (nextPct < this.snapshot.pct) return;
     this.setStage(stage, message);
   }
 
@@ -144,7 +144,7 @@ export class LoadingPipeline {
       errorCode,
     };
     this.emit();
-    eventBus.emit('scene:transition_failed', { reason: message, errorCode });
+    eventBus.emit('boot:failed', { reason: message, errorCode });
   }
 
   getSnapshot(): LoadingPipelineSnapshot {

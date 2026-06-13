@@ -95,5 +95,8 @@ export const LOADING_PLAYABLE_DISMISS_MS = 180;
 /** Pipeline hold from `playable` to `complete` — keep in sync with LoadingPipeline. */
 export const LOADING_PLAYABLE_HOLD_MS = 320;
 
+/** Headless / slow WebGL — synthetic first-frame fallback after game mount. */
+export const BOOT_FIRST_FRAME_FALLBACK_MS = LOADING_PLAYABLE_DISMISS_MS + 6000;
+
 /** LazyPanelSlot fallback if panel does not signal exit via onExitComplete. */
 export const PANEL_UNMOUNT_GRACE_MS = PANEL_EXIT_MS + 80;

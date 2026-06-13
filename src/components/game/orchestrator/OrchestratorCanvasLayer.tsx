@@ -4,6 +4,7 @@ import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { MOTION_EASE } from '@/shared/constants/transitionTimings';
 import { PipelineLoadingOverlay } from '../PipelineLoadingOverlay';
 import { loadingPipeline } from '@/engine/loading/LoadingPipeline';
+import { useLoadingPipelineMeta } from '@/hooks/useLoadingPipeline';
 import { IntroAutoSkip } from './IntroAutoSkip';
 import { RPGGameCanvas, LazyMenuScreen, LazyIntroScreen, LazyMatrixRainQuote } from './lazyPanels';
 import type { MatrixQuoteState } from './types';
@@ -34,6 +35,14 @@ export function OrchestratorCanvasLayer({
   onDismissMatrixQuote,
 }: Props) {
   const [menuLoadingDismissed, setMenuLoadingDismissed] = useState(false);
+  const { stage } = useLoadingPipelineMeta();
+  const bootOverlayComplete = stage === 'playable' || stage === 'complete';
+
+  useEffect(() => {
+    if (bootOverlayComplete) {
+      setMenuLoadingDismissed(true);
+    }
+  }, [bootOverlayComplete]);
 
   useEffect(() => {
     if (canvasMounted && !canvasReady && mode === 'menu') {
@@ -81,7 +90,7 @@ export function OrchestratorCanvasLayer({
         </Suspense>
       )}
 
-      {mode === 'menu' && canvasMounted && !menuLoadingDismissed && (
+      {mode === 'menu' && canvasMounted && !menuLoadingDismissed && !bootOverlayComplete && (
         <PipelineLoadingOverlay
           showTitle
           message="Инициализация..."

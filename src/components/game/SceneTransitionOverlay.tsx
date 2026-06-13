@@ -12,27 +12,22 @@
  *  Each transition type uses the scene name display during hold phase.
  */
 
-import { useEffect, useState, useRef, useCallback } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useGameStore } from '@/store/gameStore';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { SCENE_OVERLAY_MS } from '@/shared/constants/transitionTimings';
 import { SCENE_CONFIG } from '@/config/scenes';
-import { eventBus } from '@/engine/EventBus';
-import type { SceneId, SceneConfig } from '@/shared/types/game';
+import { useSceneTransitionOverlayController } from '@/hooks/useSceneTransitionOverlayController';
+import type { SceneConfig } from '@/shared/types/game';
 
-/* ─── Phase timing (milliseconds) — from shared transitionTimings ─── */
 const GLITCH_DURATION = SCENE_OVERLAY_MS.GLITCH;
 const FLASH_DURATION = SCENE_OVERLAY_MS.FLASH;
 const DARKEN_DURATION = SCENE_OVERLAY_MS.DARKEN;
 const RIPPLE_DURATION = SCENE_OVERLAY_MS.RIPPLE;
 const DISSOLVE_DURATION = SCENE_OVERLAY_MS.DISSOLVE;
 const WIPE_IN_DURATION = SCENE_OVERLAY_MS.WIPE_IN;
-const HOLD_DURATION = SCENE_OVERLAY_MS.HOLD;
 const WIPE_OUT_DURATION = SCENE_OVERLAY_MS.WIPE_OUT;
 const REVEAL_DURATION = SCENE_OVERLAY_MS.REVEAL;
-
-type TransitionPhase = 'idle' | 'glitch' | 'flash' | 'darken' | 'ripple-in' | 'dissolve-in' | 'wipe-in' | 'hold' | 'wipe-out' | 'reveal';
 
 /* ─── Diagonal offset for the wipe edge ─── */
 const DIAGONAL_OFFSET = 3;
@@ -40,11 +35,6 @@ const DIAGONAL_OFFSET = 3;
 /* ─── Shared easing curves ─── */
 const WIPE_EASE: [number, number, number, number] = [0.25, 0.1, 0.25, 1];
 const SMOOTH_EASE: [number, number, number, number] = [0.16, 1, 0.3, 1];
-
-/* ─── Get transition style from scene config ─── */
-function getTransitionStyle(sceneId: SceneId): SceneConfig['transitionStyle'] {
-  return SCENE_CONFIG[sceneId]?.transitionStyle ?? 'wipe';
-}
 
 /* ─── Get accent color based on scene type ─── */
 function getTransitionAccent(style: SceneConfig['transitionStyle']): string {
@@ -58,152 +48,10 @@ function getTransitionAccent(style: SceneConfig['transitionStyle']): string {
 }
 
 export function SceneTransitionOverlay() {
-  const [phase, setPhase] = useState<TransitionPhase>('idle');
-  const [targetSceneId, setTargetSceneId] = useState<SceneId>('volodka_room');
-  const [transitionStyle, setTransitionStyle] = useState<SceneConfig['transitionStyle']>('wipe');
+  const { overlayPhase: phase, transitionStyle, targetSceneId, isActive } =
+    useSceneTransitionOverlayController();
   const [glitchOffset, setGlitchOffset] = useState(0);
-  const timersRef = useRef<Array<ReturnType<typeof setTimeout>>>([]);
   const rafRef = useRef<number | null>(null);
-  const overlayGenRef = useRef(0);
-
-  const clearTimers = useCallback(() => {
-    for (const t of timersRef.current) clearTimeout(t);
-    timersRef.current = [];
-    if (rafRef.current !== null) {
-      cancelAnimationFrame(rafRef.current);
-      rafRef.current = null;
-    }
-  }, []);
-
-  /* ── Determine initial phase for each transition style ── */
-  const getInitialPhase = useCallback((style: SceneConfig['transitionStyle']): TransitionPhase => {
-    switch (style) {
-      case 'flash': return 'flash';
-      case 'darken': return 'darken';
-      case 'ripple': return 'ripple-in';
-      case 'dissolve': return 'dissolve-in';
-      default: return 'glitch';
-    }
-  }, []);
-
-  /* ── Schedule full transition sequence ── */
-  const scheduleTransition = useCallback((style: SceneConfig['transitionStyle'], sceneId: SceneId, gen: number) => {
-    const go = (fn: () => void) => {
-      if (gen !== overlayGenRef.current) return;
-      fn();
-    };
-
-    switch (style) {
-      case 'flash': {
-        // Flash → Hold → Reveal
-        const t1 = setTimeout(() => {
-          go(() => {
-            setPhase('hold');
-            eventBus.emit('camera:cinematic_transition', { phase: 'hold', sceneId });
-            const t2 = setTimeout(() => {
-              go(() => {
-                setPhase('reveal');
-                eventBus.emit('camera:cinematic_transition', { phase: 'fadeIn', sceneId });
-                const t3 = setTimeout(() => go(() => setPhase('idle')), REVEAL_DURATION);
-                timersRef.current.push(t3);
-              });
-            }, HOLD_DURATION);
-            timersRef.current.push(t2);
-          });
-        }, FLASH_DURATION);
-        timersRef.current.push(t1);
-        break;
-      }
-      case 'darken': {
-        // Darken → Hold → Reveal
-        const t1 = setTimeout(() => {
-          go(() => {
-            setPhase('hold');
-            eventBus.emit('camera:cinematic_transition', { phase: 'hold', sceneId });
-            const t2 = setTimeout(() => {
-              go(() => {
-                setPhase('reveal');
-                eventBus.emit('camera:cinematic_transition', { phase: 'fadeIn', sceneId });
-                const t3 = setTimeout(() => go(() => setPhase('idle')), REVEAL_DURATION);
-                timersRef.current.push(t3);
-              });
-            }, HOLD_DURATION);
-            timersRef.current.push(t2);
-          });
-        }, DARKEN_DURATION);
-        timersRef.current.push(t1);
-        break;
-      }
-      case 'ripple': {
-        // Ripple expand → Hold → Reveal
-        const t1 = setTimeout(() => {
-          go(() => {
-            setPhase('hold');
-            eventBus.emit('camera:cinematic_transition', { phase: 'hold', sceneId });
-            const t2 = setTimeout(() => {
-              go(() => {
-                setPhase('reveal');
-                eventBus.emit('camera:cinematic_transition', { phase: 'fadeIn', sceneId });
-                const t3 = setTimeout(() => go(() => setPhase('idle')), REVEAL_DURATION);
-                timersRef.current.push(t3);
-              });
-            }, HOLD_DURATION);
-            timersRef.current.push(t2);
-          });
-        }, RIPPLE_DURATION);
-        timersRef.current.push(t1);
-        break;
-      }
-      case 'dissolve': {
-        // Dissolve in → Hold → Reveal
-        const t1 = setTimeout(() => {
-          go(() => {
-            setPhase('hold');
-            eventBus.emit('camera:cinematic_transition', { phase: 'hold', sceneId });
-            const t2 = setTimeout(() => {
-              go(() => {
-                setPhase('reveal');
-                eventBus.emit('camera:cinematic_transition', { phase: 'fadeIn', sceneId });
-                const t3 = setTimeout(() => go(() => setPhase('idle')), REVEAL_DURATION);
-                timersRef.current.push(t3);
-              });
-            }, HOLD_DURATION);
-            timersRef.current.push(t2);
-          });
-        }, DISSOLVE_DURATION);
-        timersRef.current.push(t1);
-        break;
-      }
-      default: {
-        // Original wipe: Glitch → Wipe-in → Hold → Wipe-out
-        const t1 = setTimeout(() => {
-          go(() => {
-            setPhase('wipe-in');
-            eventBus.emit('camera:cinematic_transition', { phase: 'hold', sceneId });
-            const t2 = setTimeout(() => {
-              go(() => {
-                setPhase('hold');
-                const t3 = setTimeout(() => {
-                  go(() => {
-                    setPhase('wipe-out');
-                    eventBus.emit('camera:cinematic_transition', { phase: 'fadeIn', sceneId });
-                    const t4 = setTimeout(() => go(() => setPhase('idle')), WIPE_OUT_DURATION);
-                    timersRef.current.push(t4);
-                  });
-                }, HOLD_DURATION);
-                timersRef.current.push(t3);
-              });
-            }, WIPE_IN_DURATION);
-            timersRef.current.push(t2);
-          });
-        }, GLITCH_DURATION);
-        timersRef.current.push(t1);
-        break;
-      }
-    }
-  }, []);
-
-  /* ── Glitch jitter animation via requestAnimationFrame ── */
   useEffect(() => {
     if (phase !== 'glitch') return;
 
@@ -227,45 +75,8 @@ export function SceneTransitionOverlay() {
     };
   }, [phase]);
 
-  /* ── Watch for scene ID changes and trigger transition ── */
-  useEffect(() => {
-    const unsubscribe = useGameStore.subscribe((state, prevState) => {
-      const newSceneId = state.exploration.currentSceneId;
-      const oldSceneId = prevState.exploration.currentSceneId;
-
-      if (newSceneId !== oldSceneId && oldSceneId !== undefined) {
-        overlayGenRef.current += 1;
-        const gen = overlayGenRef.current;
-        clearTimers();
-        setTargetSceneId(newSceneId);
-
-        const style = getTransitionStyle(newSceneId);
-        setTransitionStyle(style);
-
-        // Emit camera freeze
-        eventBus.emit('camera:cinematic_transition', { phase: 'fadeOut', sceneId: newSceneId });
-
-        // Choose initial phase based on transition style
-        const initialPhase = getInitialPhase(style);
-        setPhase(initialPhase);
-
-        // Schedule the transition sequence based on style
-        scheduleTransition(style, newSceneId, gen);
-      }
-    });
-
-    return () => {
-      unsubscribe();
-      clearTimers();
-    };
-  }, [clearTimers, getInitialPhase, scheduleTransition]);
-
-  /* ── Resolve scene display name from config ── */
   const sceneName = SCENE_CONFIG[targetSceneId]?.name ?? targetSceneId;
   const accent = getTransitionAccent(transitionStyle);
-
-  /* ── Determine if overlay is visible ── */
-  const isActive = phase !== 'idle';
 
   /* ── Render scene name display (shared across all transition styles) ── */
   const SceneNameDisplay = (

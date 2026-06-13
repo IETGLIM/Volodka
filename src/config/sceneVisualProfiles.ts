@@ -1,0 +1,50 @@
+import type { SceneId } from '@/shared/types/game';
+
+/** Hero scenes — full AAA visual treatment (post-FX, clutter, wet surfaces). */
+export const HERO_SCENE_IDS = [
+  'volodka_room',
+  'street_night',
+  'cafe_evening',
+  'office_day',
+] as const satisfies readonly SceneId[];
+
+export type HeroSceneId = (typeof HERO_SCENE_IDS)[number];
+
+export interface SceneVisualProfile {
+  tier: 'hero' | 'standard';
+  /** Prefer full post-FX pipeline even on mid-tier GPUs (unless visualLite). */
+  forceFullPostFx: boolean;
+  /** Enable N8AO on high preset for this scene. */
+  enhancedAmbientOcclusion: boolean;
+  /** Clutter/decorative prop visibility multiplier (>1 = see detail farther). */
+  detailDistanceScale: number;
+}
+
+const HERO_PROFILE: SceneVisualProfile = {
+  tier: 'hero',
+  forceFullPostFx: true,
+  enhancedAmbientOcclusion: true,
+  detailDistanceScale: 1.15,
+};
+
+const STANDARD_PROFILE: SceneVisualProfile = {
+  tier: 'standard',
+  forceFullPostFx: false,
+  enhancedAmbientOcclusion: false,
+  detailDistanceScale: 1,
+};
+
+const PROFILES: Partial<Record<SceneId, SceneVisualProfile>> = {
+  volodka_room: HERO_PROFILE,
+  street_night: HERO_PROFILE,
+  cafe_evening: HERO_PROFILE,
+  office_day: HERO_PROFILE,
+};
+
+export function getSceneVisualProfile(sceneId: SceneId): SceneVisualProfile {
+  return PROFILES[sceneId] ?? STANDARD_PROFILE;
+}
+
+export function isHeroScene(sceneId: SceneId): boolean {
+  return getSceneVisualProfile(sceneId).tier === 'hero';
+}

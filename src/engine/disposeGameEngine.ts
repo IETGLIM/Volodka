@@ -35,6 +35,10 @@ import {
 } from '@/engine/core/GlobalCleanupService';
 import { getGameSnapshot } from '@/engine/GameActionDispatcher';
 import { bindPoemResetListener } from '@/engine/PoemPowerSystem';
+import {
+  disposeTransitionDirector,
+  reviveTransitionDirector,
+} from '@/engine/scene/TransitionDirector';
 import { detachKeyboardListeners } from '@/engine/keyboardInputState';
 import type { SceneId } from '@/shared/types/game';
 
@@ -84,6 +88,7 @@ export function disposeGameEngine(): void {
     runGlobalUnmountCleanup(getSceneIdForCleanup());
     resetGlobalCleanupRegistry();
 
+    disposeTransitionDirector();
     disposeEventBus();
   } catch (err) {
     console.error('[disposeGameEngine] teardown error:', err);
@@ -112,6 +117,7 @@ export function reviveGameEngine(): void {
   reviveMusicEngine();
   reviveAudioEngine();
   reviveAmbientEngine();
+  reviveTransitionDirector();
   getSceneAudioController().init();
 }
 

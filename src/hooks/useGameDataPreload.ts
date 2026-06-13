@@ -35,6 +35,7 @@ export function useGameDataPreload(): boolean {
       })
       .catch((error) => {
         console.error('[useGameDataPreload] Failed to load narrative data:', error);
+        loadingPipeline.reportError(error);
       });
     return () => {
       cancelled = true;

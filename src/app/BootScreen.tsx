@@ -29,6 +29,7 @@ export function BootError({ message, errorCode, onRetry, onGoToMenu }: BootError
       className="fixed inset-0 flex items-center justify-center bg-black p-6 text-center font-mono text-red-400"
       role="alert"
       aria-live="assertive"
+      data-testid="boot-error"
     >
       <div className="max-w-md">
         <div className="mb-3 text-2xl" aria-hidden>
@@ -131,6 +132,7 @@ export function BootScreen({
         <motion.div
           key="boot-loading"
           className="fixed inset-0"
+          data-testid="boot-loading-overlay"
           style={{ zIndex: UI_LAYERS.LOADING }}
           initial={{ opacity: 1 }}
           animate={{ opacity: 1 }}

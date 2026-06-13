@@ -1,7 +1,8 @@
 import { APP_VERSION } from '@/shared/constants/appVersion';
 
 import { useState, useEffect, useMemo, useRef, memo } from 'react';
-import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { CanvasMatrixRain } from './shared/CanvasMatrixRain';
 
@@ -321,9 +322,9 @@ interface LoadingScreenProps {
 }
 
 export function LoadingScreen({ progress, message = 'Загрузка...', showTitle = false }: LoadingScreenProps) {
-  const reduceMotion = useReducedMotion();
+  const reduceMotion = useEffectiveReducedMotion();
   const [showTip, setShowTip] = useState(true);
-  const [showBootText, setShowBootText] = useState(true);
+  const [showBootText, setShowBootText] = useState(!reduceMotion);
 
   const quoteIndex = useMemo(() => {
     return Math.floor(Math.random() * POEM_QUOTES.length);
@@ -331,8 +332,12 @@ export function LoadingScreen({ progress, message = 'Загрузка...', showT
 
   const [tipIndex, setTipIndex] = useState(0);
 
-  // Rotate tips every 4 seconds
+  // Rotate tips every 4 seconds (skip when reduced motion)
   useEffect(() => {
+    if (reduceMotion) {
+      setShowTip(true);
+      return;
+    }
     const scheduleNext = (): ReturnType<typeof setTimeout> => {
       return setTimeout(() => {
         setShowTip(false);
@@ -345,25 +350,28 @@ export function LoadingScreen({ progress, message = 'Загрузка...', showT
     };
     const tipTimerRef = { current: scheduleNext() };
     return () => clearTimeout(tipTimerRef.current);
-  }, []);
+  }, [reduceMotion]);
 
   // Hide boot text after it finishes
   useEffect(() => {
+    if (reduceMotion) return;
     const timer = setTimeout(() => setShowBootText(false), BOOT_LINES.length * 60 + 3000);
     return () => clearTimeout(timer);
-  }, []);
+  }, [reduceMotion]);
+
+  const statusText =
+    progress !== undefined ? `${message}, ${progress} процентов` : message;
 
   return (
     <div
       className="fixed inset-0 flex flex-col items-center justify-center bg-black overflow-hidden loading-screen-fade-in"
       style={{ zIndex: UI_LAYERS.LOADING }}
-      role="progressbar"
       aria-busy="true"
-      aria-valuemin={0}
-      aria-valuemax={100}
-      aria-valuenow={progress ?? undefined}
-      aria-label={message}
     >
+      <span className="sr-only" aria-live="polite" aria-atomic="true">
+        {statusText}
+      </span>
+
       {/* ── Layer 0: Matrix Rain Canvas ── */}
       {!reduceMotion && (
       <div className="absolute inset-0 z-[1]">
@@ -372,6 +380,7 @@ export function LoadingScreen({ progress, message = 'Загрузка...', showT
       )}
 
       {/* ── Layer 1: Film grain ── */}
+      {!reduceMotion && (
       <div
         className="absolute inset-0 pointer-events-none z-[2]"
         style={{
@@ -382,6 +391,7 @@ export function LoadingScreen({ progress, message = 'Загрузка...', showT
           animation: 'cinematic-grain 0.4s steps(8) infinite',
         }}
       />
+      )}
 
       {/* ── Layer 2: Scanlines ── */}
       <div
@@ -392,7 +402,7 @@ export function LoadingScreen({ progress, message = 'Загрузка...', showT
       />
 
       {/* ── Layer 3: Hex dump overlay ── */}
-      <HexDumpOverlay />
+      {!reduceMotion && <HexDumpOverlay />}
 
       {/* ── Layer 4: Terminal boot text ── */}
       <AnimatePresence>
@@ -410,6 +420,8 @@ export function LoadingScreen({ progress, message = 'Загрузка...', showT
       </AnimatePresence>
 
       {/* ── Layer 5: Breathing glow ── */}
+      {!reduceMotion && (
+      <>
       <motion.div
         className="absolute inset-0 pointer-events-none z-[6]"
         animate={{
@@ -433,9 +445,11 @@ export function LoadingScreen({ progress, message = 'Загрузка...', showT
         }}
         transition={{ duration: 8, repeat: Infinity, repeatType: 'reverse' }}
       />
+      </>
+      )}
 
       {/* ── Layer 6: CRT sweep line ── */}
-      <CRTSweep />
+      {!reduceMotion && <CRTSweep />}
 
       {/* ── Layer 7: Vignette ── */}
       <div
@@ -446,13 +460,17 @@ export function LoadingScreen({ progress, message = 'Загрузка...', showT
       />
 
       {/* ── Layer 8: Cinematic letterbox bars ── */}
-      <CinematicBars />
+      {!reduceMotion && <CinematicBars />}
 
       {/* ── Corner decorations ── */}
+      {!reduceMotion && (
+      <>
       <motion.div className="absolute top-4 left-4 w-16 h-16 border-l-2 border-t-2 border-cyan-500/20 z-[70]" animate={{ opacity: [0.2, 0.4, 0.2] }} transition={{ duration: 3, repeat: Infinity }} />
       <motion.div className="absolute top-4 right-4 w-16 h-16 border-r-2 border-t-2 border-cyan-500/20 z-[70]" animate={{ opacity: [0.2, 0.4, 0.2] }} transition={{ duration: 3, repeat: Infinity, delay: 0.5 }} />
       <motion.div className="absolute bottom-4 left-4 w-16 h-16 border-l-2 border-b-2 border-amber-500/15 z-[70]" animate={{ opacity: [0.15, 0.3, 0.15] }} transition={{ duration: 3, repeat: Infinity, delay: 1 }} />
       <motion.div className="absolute bottom-4 right-4 w-16 h-16 border-r-2 border-b-2 border-amber-500/15 z-[70]" animate={{ opacity: [0.15, 0.3, 0.15] }} transition={{ duration: 3, repeat: Infinity, delay: 1.5 }} />
+      </>
+      )}
 
       {/* ════════════════════════════════════════════════════════════
          CENTER CONTENT
@@ -497,7 +515,14 @@ export function LoadingScreen({ progress, message = 'Загрузка...', showT
           className="w-72 flex flex-col items-center gap-3"
         >
           {/* Progress bar — cyberpunk styled */}
-          <div className="w-full h-2 bg-slate-900/80 rounded-sm overflow-hidden relative border border-cyan-900/30">
+          <div
+            className="w-full h-2 bg-slate-900/80 rounded-sm overflow-hidden relative border border-cyan-900/30"
+            role="progressbar"
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-valuenow={progress ?? undefined}
+            aria-label={message}
+          >
             {/* Track glow */}
             <div className="absolute inset-0 pointer-events-none" style={{ boxShadow: 'inset 0 0 6px rgb(var(--cyber-cyan-rgb) / 0.1)' }} />
             {/* Segment marks */}

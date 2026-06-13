@@ -109,6 +109,8 @@ export function PipelineLoadingOverlay({
               >
                 <button
                   type="button"
+                  autoFocus
+                  aria-label="Начать игру"
                   onClick={handleStart}
                   className="border border-cyan-400/50 bg-black/60 px-8 py-3 font-mono text-sm tracking-[0.25em] uppercase text-cyan-300/90 backdrop-blur-sm transition-colors hover:border-cyan-300 hover:text-cyan-200"
                 >
@@ -117,6 +119,11 @@ export function PipelineLoadingOverlay({
               </motion.div>
             )}
           </AnimatePresence>
+          {showStartButton && (
+            <span className="sr-only" aria-live="polite">
+              Игра готова. Нажмите «Начать», чтобы продолжить.
+            </span>
+          )}
           {stage === 'playable' && !requireStartConfirm && (
             <span className="sr-only" aria-live="polite">
               Игра готова

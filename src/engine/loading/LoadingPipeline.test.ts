@@ -63,9 +63,9 @@ describe('LoadingPipeline', () => {
     expect(pipeline.getSnapshot().errorCode).toBe(deriveLoadingErrorCode(new Error('bang'), 'bang'));
   });
 
-  it('emits scene:transition_failed on reportError', () => {
+  it('emits boot:failed on reportError', () => {
     const failed: string[] = [];
-    const unsub = eventBus.on('scene:transition_failed', ({ reason }) => {
+    const unsub = eventBus.on('boot:failed', ({ reason }) => {
       failed.push(reason);
     });
     pipeline.reportError(new Error('boot failed'));

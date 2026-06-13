@@ -22,6 +22,7 @@ import { QuickAccessToolbar } from '../QuickAccessToolbar';
 import { AutoSaveIndicator } from '../AutoSaveIndicator';
 import { AmbientSoundMixer } from '../AmbientSoundMixer';
 import { SceneTransitionProgress } from '../SceneTransitionProgress';
+import { SceneTransitionFailureBanner } from '../SceneTransitionFailureBanner';
 import { QuickUseBar } from '../QuickUseBar';
 import { EventNotificationPopup } from '../EventNotificationPopup';
 import { WeatherAlertNotification } from '../WeatherAlertNotification';
@@ -195,6 +196,7 @@ export const GameplaySceneTransitionFx = memo(function GameplaySceneTransitionFx
   return (
     <>
       <SceneTransitionProgress />
+      <SceneTransitionFailureBanner />
       <SceneTransitionOverlay />
     </>
   );

@@ -32,6 +32,7 @@ const listeners = new Set<Listener>();
 let completeTimer: ReturnType<typeof setTimeout> | null = null;
 let canvasFadeTimer: ReturnType<typeof setTimeout> | null = null;
 let initialized = false;
+const busUnsubs: Array<() => void> = [];
 
 function emit(): void {
   for (const fn of listeners) fn(snapshot);
@@ -95,60 +96,76 @@ function ensureInitialized(): void {
   if (initialized) return;
   initialized = true;
 
-  eventBus.on(
-    'scene:transition',
-    (payload) => {
-      beginTransition(payload.targetScene);
-    },
-    EventBusPriority.Engine,
+  busUnsubs.push(
+    eventBus.on(
+      'scene:transition',
+      (payload) => {
+        beginTransition(payload.targetScene);
+      },
+      EventBusPriority.Engine,
+    ),
   );
 
-  eventBus.on('scene:transition_start', ({ fromSceneId, targetScene }) => {
-    setSnapshot({
-      progress: Math.max(snapshot.progress, TRANSITION_MILESTONES.unloading),
-      targetScene,
-      fromScene: fromSceneId,
-      isCanvasFading: true,
-    });
-  });
-
-  eventBus.on('scene:unload', () => {
-    setSnapshot({
-      progress: Math.max(snapshot.progress, TRANSITION_MILESTONES.unloading),
-    });
-  });
-
-  eventBus.on('scene:enter', ({ sceneId }) => {
-    setSnapshot({
-      progress: Math.max(snapshot.progress, TRANSITION_MILESTONES.entered),
-      targetScene: sceneId,
-    });
-  });
-
-  eventBus.on('scene:loaded', ({ sceneId }) => {
-    completeTransition(sceneId);
-  });
-
-  eventBus.on('canvas:first-frame', () => {
-    if (snapshot.phase === 'loading') {
+  busUnsubs.push(
+    eventBus.on('scene:transition_start', ({ fromSceneId, targetScene }) => {
       setSnapshot({
-        progress: Math.max(snapshot.progress, TRANSITION_MILESTONES.loaded - 5),
+        progress: Math.max(snapshot.progress, TRANSITION_MILESTONES.unloading),
+        targetScene,
+        fromScene: fromSceneId,
+        isCanvasFading: true,
       });
-    }
-  });
+    }),
+  );
 
-  eventBus.on('scene:transition_failed', () => {
-    abortTransition();
-  });
+  busUnsubs.push(
+    eventBus.on('scene:unload', () => {
+      setSnapshot({
+        progress: Math.max(snapshot.progress, TRANSITION_MILESTONES.unloading),
+      });
+    }),
+  );
 
-  eventBus.on('canvas:context-lost', () => {
-    if (snapshot.phase !== 'loading') return;
-    eventBus.emit('scene:transition_failed', {
-      reason: 'WebGL context lost',
-      targetScene: snapshot.targetScene ?? undefined,
-      fromScene: snapshot.fromScene ?? undefined,
-    });
-  });
+  busUnsubs.push(
+    eventBus.on('scene:enter', ({ sceneId }) => {
+      setSnapshot({
+        progress: Math.max(snapshot.progress, TRANSITION_MILESTONES.entered),
+        targetScene: sceneId,
+      });
+    }),
+  );
+
+  busUnsubs.push(
+    eventBus.on('scene:loaded', ({ sceneId }) => {
+      completeTransition(sceneId);
+    }),
+  );
+
+  busUnsubs.push(
+    eventBus.on('canvas:first-frame', () => {
+      if (snapshot.phase === 'loading') {
+        setSnapshot({
+          progress: Math.max(snapshot.progress, TRANSITION_MILESTONES.loaded - 5),
+        });
+      }
+    }),
+  );
+
+  busUnsubs.push(
+    eventBus.on('scene:transition_failed', () => {
+      abortTransition();
+    }),
+  );
+
+  busUnsubs.push(
+    eventBus.on('canvas:context-lost', () => {
+      if (snapshot.phase !== 'loading') return;
+      eventBus.emit('scene:transition_failed', {
+        reason: 'WebGL context lost',
+        targetScene: snapshot.targetScene ?? undefined,
+        fromScene: snapshot.fromScene ?? undefined,
+      });
+    }),
+  );
 }
 
 export function getTransitionDirectorSnapshot(): TransitionDirectorSnapshot {
@@ -169,6 +186,22 @@ export function resetTransitionDirector(): void {
   clearCanvasFadeTimer();
   snapshot = { ...IDLE };
   emit();
+}
+
+/** Tear down bus subscriptions (StrictMode / engine dispose). */
+export function disposeTransitionDirector(): void {
+  clearCompleteTimer();
+  clearCanvasFadeTimer();
+  for (const unsub of busUnsubs) unsub();
+  busUnsubs.length = 0;
+  initialized = false;
+  snapshot = { ...IDLE };
+  emit();
+}
+
+/** Re-arm after EventBus revive. */
+export function reviveTransitionDirector(): void {
+  ensureInitialized();
 }
 
 /** Cancel an in-flight transition and return the director to idle. */

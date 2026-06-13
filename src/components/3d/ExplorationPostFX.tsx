@@ -26,6 +26,7 @@ import { useMobileVisualPerf } from '@/hooks/use-mobile';
 import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
 import { useVisualSettings } from '@/hooks/useVisualSettings';
 import { SCENE_VISIBILITY } from '@/shared/constants/sceneVisibility';
+import { getSceneVisualProfile } from '@/config/sceneVisualProfiles';
 import { disposeEffectComposer, type PostprocessingComposerLike } from '@/engine/three/disposeThreeResources';
 
 /** Per-scene color grading overrides for CyberPunk2077 / Noir / Gothic feel */
@@ -309,7 +310,9 @@ function PostFXPipeline() {
   const { sceneId, noirMode } = usePostFxSceneState();
   const { visualLite } = useMobileVisualPerf();
   const { preset } = useGraphicsQuality();
-  const useUltraAo = preset.id === 'ultra' && !visualLite;
+  const visualProfile = getSceneVisualProfile(sceneId);
+  const useUltraAo =
+    (preset.id === 'ultra' || visualProfile.enhancedAmbientOcclusion) && !visualLite;
   // User brightness slider (50–150%) → BrightnessContrast offset (−0.15…+0.15)
   const { brightness: userBrightness } = useVisualSettings();
   const userBrightnessOffset = (userBrightness - 1) * 0.3;
@@ -358,7 +361,8 @@ function PostFXPipeline() {
   );
 
   // ── Lite post-FX: mobile/low quality, or heavy scenes on any preset ──
-  const useLitePostFx = visualLite || sceneId === 'abandoned_factory';
+  const useLitePostFx =
+    visualLite || (sceneId === 'abandoned_factory' && !visualProfile.forceFullPostFx);
   const pipelineKey = `${sceneId}-${useLitePostFx ? 'lite' : 'full'}`;
 
   if (useLitePostFx) {

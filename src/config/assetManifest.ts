@@ -62,6 +62,20 @@ export const ASSET_MANIFEST: Record<string, GltfAssetDefinition> = {
     impostor: { url: `${MODELS}/characters/volodka/volodka_impostor.ktx2`, distance: 45 },
     castShadow: true,
   },
+  npc_cafe_barista: {
+    id: 'npc_cafe_barista',
+    category: 'character',
+    lods: [{ url: `${MODELS}/npcs/cafe_barista.glb`, maxDistance: 0 }],
+    castShadow: true,
+    shipped: true,
+  },
+  npc_office_colleague: {
+    id: 'npc_office_colleague',
+    category: 'character',
+    lods: [{ url: `${MODELS}/npcs/office_colleague.glb`, maxDistance: 0 }],
+    castShadow: true,
+    shipped: true,
+  },
   env_cafe_props: {
     id: 'env_cafe_props',
     category: 'environment',

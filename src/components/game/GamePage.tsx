@@ -1,24 +1,19 @@
 import { lazy, Suspense } from 'react';
 import { GameErrorBoundary } from '@/components/game/GameErrorBoundary';
-import { PipelineLoadingOverlay } from '@/components/game/PipelineLoadingOverlay';
 
 const GameOrchestrator = lazy(() =>
   import('./GameOrchestrator').then((m) => ({ default: m.GameOrchestrator })),
 );
 
-function GamePageSuspenseFallback() {
-  return (
-    <PipelineLoadingOverlay
-      showTitle
-      message="Подключение оркестратора..."
-    />
-  );
+interface GamePageProps {
+  /** When true, boot overlay is still visible — skip duplicate Suspense fallback. */
+  suppressBootOverlay?: boolean;
 }
 
-export function GamePage() {
+export function GamePage({ suppressBootOverlay = false }: GamePageProps) {
   return (
     <GameErrorBoundary>
-      <Suspense fallback={<GamePageSuspenseFallback />}>
+      <Suspense fallback={suppressBootOverlay ? null : undefined}>
         <GameOrchestrator />
       </Suspense>
     </GameErrorBoundary>
