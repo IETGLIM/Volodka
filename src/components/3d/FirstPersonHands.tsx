@@ -1,5 +1,5 @@
 /* ─── Volodka RPG – First-person hands (GLB) ───
- * CC0/community FPS arms attached to the active camera in useFrame.
+ * CC0/community FPS arms attached to the active camera via useFrameTick.
  * Hidden during intro_wakeup cutscene and when FP mode is off. */
 
 import type { MutableRefObject } from 'react';

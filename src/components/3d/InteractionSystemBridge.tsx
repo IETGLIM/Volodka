@@ -489,7 +489,7 @@ export function InteractionSystemBridge({
         npcId: prevNpcId ?? undefined,
       });
     }
-  }, { priority: -1, label: 'InteractionSystemBridge' });
+  }, { priority: -1, label: 'InteractionSystemBridge', phase: 'pre_physics' });
 
   return null; // No visual output
 }

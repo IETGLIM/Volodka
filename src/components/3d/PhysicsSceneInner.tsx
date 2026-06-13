@@ -37,6 +37,7 @@ import { FirstPersonHands } from './FirstPersonHands';
 import { UmkaDog } from './UmkaDog';
 import { TriggerZoneProps } from './TriggerZoneProp';
 import { eventBus } from '@/engine/EventBus';
+import { FRAME_PHYSICS_R3F_PRIORITY } from '@/engine/frame/types';
 import { InteractionState } from '@/engine/interaction/interactionMachine';
 import type { VirtualControls } from '@/hooks/useGamePhysics';
 
@@ -62,6 +63,7 @@ function PhysicsSceneInner({
       interpolate={false}
       debug={false}
       paused={physicsPaused}
+      updatePriority={FRAME_PHYSICS_R3F_PRIORITY}
     >
       <SceneColliderSelector livePlayerPositionRef={livePlayerPositionRef} />
       <EnvironmentalAnimator livePlayerPositionRef={livePlayerPositionRef} />
