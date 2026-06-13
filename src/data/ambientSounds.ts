@@ -464,6 +464,12 @@ export const SCENE_AMBIENCE_MAP: SceneAmbience[] = [
     nightSound: 'home',
     transitionDuration: 2000,
   },
+  {
+    scenePattern: '^solnysh_room$',
+    daySound: 'home',
+    nightSound: 'home',
+    transitionDuration: 2000,
+  },
 
   // Corridor
   {
@@ -541,6 +547,18 @@ export const SCENE_AMBIENCE_MAP: SceneAmbience[] = [
     daySound: 'factory',
     nightSound: 'factory',
     transitionDuration: 2000,
+  },
+  {
+    scenePattern: '^factory_basement$',
+    daySound: 'factory',
+    nightSound: 'factory',
+    transitionDuration: 2500,
+  },
+  {
+    scenePattern: '^river_pier$',
+    daySound: 'street',
+    nightSound: 'street',
+    transitionDuration: 2500,
   },
 
   // Battle

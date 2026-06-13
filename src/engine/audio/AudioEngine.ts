@@ -217,6 +217,12 @@ class AudioEngine {
    */
   playFootstep(material?: string, options?: PlayFootstepOptions): void {
     if (this.disposed) return;
+    whenAudioReady(() => {
+      this._playFootstepInternal(material, options);
+    });
+  }
+
+  private _playFootstepInternal(material?: string, options?: PlayFootstepOptions): void {
     this.initContext();
     this.resume();
 
@@ -1040,6 +1046,12 @@ class AudioEngine {
    */
   playDoorOpen(): void {
     if (this.disposed) return;
+    whenAudioReady(() => {
+      this._playDoorOpenInternal();
+    });
+  }
+
+  private _playDoorOpenInternal(): void {
     this.initContext();
     this.resume();
 
@@ -1095,6 +1107,12 @@ class AudioEngine {
    */
   playDoorClose(): void {
     if (this.disposed) return;
+    whenAudioReady(() => {
+      this._playDoorCloseInternal();
+    });
+  }
+
+  private _playDoorCloseInternal(): void {
     this.initContext();
     this.resume();
 

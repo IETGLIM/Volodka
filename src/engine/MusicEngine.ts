@@ -11,7 +11,7 @@
  */
 
 import type { SceneId } from '@/shared/types/game';
-import { getSharedAudioContext } from './SharedAudioContext';
+import { getSharedAudioContext, safeResume } from './SharedAudioContext';
 import { registerHmrDispose } from '@/shared/dev/hmrDispose';
 import { releaseConvolver } from './audio/AudioEngineCore';
 import { tryCreateConvolver } from './audio/audioCapabilities';
@@ -602,6 +602,7 @@ class MusicEngine {
   private ctx: AudioContext | null = null;
   private masterGainNode: GainNode | null = null;
   private musicVolume = 0.5; // 0-1 user-facing volume
+  private presentationDucked = false;
   private disposed = false;
   private sceneGeneration = 0;
 
@@ -664,9 +665,13 @@ class MusicEngine {
 
   /** Ensure context is running (browsers require user gesture) */
   private resume(): void {
-    if (this.ctx?.state === 'suspended') {
-      void this.ctx.resume();
-    }
+    void safeResume();
+  }
+
+  /** Lower music during VN overlays without stopping the bed. */
+  setPresentationDucked(ducked: boolean): void {
+    this.presentationDucked = ducked;
+    this.applyVolume();
   }
 
   /* ═══════════════════ PUBLIC API ═══════════════════ */
@@ -851,7 +856,7 @@ class MusicEngine {
     this.padLfo.start(now);
 
     // ── Fade in master gain over 2 seconds ──
-    const effectiveGain = config.masterGain * this.musicVolume;
+    const effectiveGain = config.masterGain * this.musicVolume * (this.presentationDucked ? 0.55 : 1);
     dest.gain.setValueAtTime(0, now);
     dest.gain.linearRampToValueAtTime(effectiveGain, now + 2);
 
@@ -1183,7 +1188,8 @@ class MusicEngine {
   private applyVolume(): void {
     if (!this.masterGainNode || !this.ctx) return;
 
-    const effectiveGain = (this.currentConfig?.masterGain ?? 0.04) * this.musicVolume;
+    const duckMul = this.presentationDucked ? 0.55 : 1;
+    const effectiveGain = (this.currentConfig?.masterGain ?? 0.04) * this.musicVolume * duckMul;
     const now = this.ctx.currentTime;
     this.masterGainNode.gain.setValueAtTime(this.masterGainNode.gain.value, now);
     this.masterGainNode.gain.linearRampToValueAtTime(effectiveGain, now + 0.3);

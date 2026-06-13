@@ -162,6 +162,10 @@ export const createExplorationSlice: StateCreator<
       },
     }));
 
+    if (id.includes('door') || id.includes('wardrobe')) {
+      eventBus.emit('sound:play', { type: newState ? 'door_open' : 'door_close' });
+    }
+
     // Auto-close after 5 seconds if opening
     if (newState) {
       const capturedGeneration = autoCloseGeneration;
@@ -176,6 +180,9 @@ export const createExplorationSlice: StateCreator<
               [id]: false,
             },
           }));
+          if (id.includes('door') || id.includes('wardrobe')) {
+            eventBus.emit('sound:play', { type: 'door_close' });
+          }
         }
       }, 5000);
       autoCloseTimers.set(id, timer);

@@ -75,6 +75,11 @@ export function useAudioOrchestrator() {
       ctrl.onQuestAccepted();
     });
 
+    scope.on('sound:play', ({ type }) => {
+      if (disposedRef.current) return;
+      ctrl.onSoundPlay(type);
+    });
+
     scope.on('scene:unload', () => {
       if (disposedRef.current) return;
       ctrl.onSceneUnload();

@@ -61,10 +61,11 @@ export class SceneAudioController {
     if (phase === 'menu' || phase === 'intro') {
       musicEngine.stopMusic(1);
       ambientEngine.stopAll();
+      musicEngine.setPresentationDucked(false);
       return;
     }
 
-    if (phase === 'exploration') {
+    if (phase === 'exploration' || phase === 'cutscene') {
       musicEngine.playSceneMusic(sceneId);
       this.playSceneAmbient(sceneId, timeOfDay);
     }
@@ -77,7 +78,10 @@ export class SceneAudioController {
     if (!this.guard()) return;
 
     const preset = getSceneReverbPreset(sceneId);
-    if (preset) sfxEngine.setReverbPreset(preset);
+    if (preset) {
+      sfxEngine.setReverbPreset(preset);
+      ambientEngine.setReverbPreset(preset);
+    }
 
     const nextMood = getSceneMusicMood(sceneId);
     if (nextMood && this.lastMusicMood && nextMood !== this.lastMusicMood) {
@@ -140,13 +144,20 @@ export class SceneAudioController {
 
   setDialogueState(showStoryOverlay: boolean, phase: GamePhase): void {
     if (!this.guard()) return;
+    const duckPresentation = showStoryOverlay || phase === 'cutscene';
+    musicEngine.setPresentationDucked(duckPresentation);
     if (showStoryOverlay) {
       sfxEngine.enableDialogueMuffle(true);
       ambientEngine.setDialogueDucked(true);
-    } else if (phase === 'exploration') {
+    } else if (phase === 'exploration' || phase === 'cutscene') {
       sfxEngine.enableDialogueMuffle(false);
-      ambientEngine.setDialogueDucked(false);
+      ambientEngine.setDialogueDucked(phase === 'cutscene');
     }
+  }
+
+  onSoundPlay(type: string): void {
+    if (!this.guard()) return;
+    sfxEngine.playNamedSound(type);
   }
 
   private playSceneAmbient(sceneId: string, timeOfDay: number): void {

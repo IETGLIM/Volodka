@@ -8,7 +8,7 @@ import {
   type AmbientSoundType,
   type AmbientSoundDef,
 } from '../../data/ambientSounds';
-import { getSharedAudioContext } from '../SharedAudioContext';
+import { getSharedAudioContext, safeResume } from '../SharedAudioContext';
 import { registerHmrDispose } from '@/shared/dev/hmrDispose';
 import { releaseBufferSource } from './AudioEngineCore';
 
@@ -81,6 +81,7 @@ export class AmbientSoundPlayer {
   private baseVolume = 0.7;
   private combatMuted = false;
   private dialogueDucked = false;
+  private sceneReverbPreset = 'small_room';
 
   /** Monotonic counter — stale crossfade transitions are ignored */
   private transitionGeneration = 0;
@@ -110,9 +111,26 @@ export class AmbientSoundPlayer {
 
   /** Resume context if suspended (browser autoplay policy) */
   private resume(): void {
-    if (this.ctx?.state === 'suspended') {
-      void this.ctx.resume();
+    void safeResume();
+  }
+
+  /** Scene reverb preset — shapes ambient filter for spatial variation. */
+  setReverbPreset(preset: string): void {
+    this.sceneReverbPreset = preset;
+    if (this.currentAmbient) {
+      this.applyReverbFilter(this.currentAmbient.filter);
     }
+  }
+
+  private applyReverbFilter(filter: BiquadFilterNode, baseFreq?: number): void {
+    const cutoffByPreset: Record<string, number> = {
+      small_room: 2200,
+      corridor: 1400,
+      large_space: 900,
+      dream: 650,
+    };
+    const presetFreq = cutoffByPreset[this.sceneReverbPreset] ?? 1800;
+    filter.frequency.value = baseFreq != null ? Math.min(baseFreq, presetFreq) : presetFreq;
   }
 
   /** Get the effective volume considering combat mute and dialogue duck */
@@ -210,6 +228,7 @@ export class AmbientSoundPlayer {
     instance.filter.type = 'lowpass';
     instance.filter.frequency.value = def.filterFreq;
     instance.filter.Q.value = 0.7;
+    this.applyReverbFilter(instance.filter, def.filterFreq);
 
     // ── Routing: oscillators → filter → masterGain → destination ──
     instance.filter.connect(instance.masterGain);

@@ -14,6 +14,8 @@ export const SFX_PRESETS: Record<string, SfxConfig> = {
   combat_hit: { type: 'square', frequency: 320, duration: 0.07, gain: 0.14 },
   ui_open: { type: 'sine', frequency: 440, duration: 0.05, gain: 0.1 },
   ui_close: { type: 'sine', frequency: 330, duration: 0.05, gain: 0.1 },
+  item_use: { type: 'sine', frequency: 520, duration: 0.06, gain: 0.14 },
+  screenshot: { type: 'square', frequency: 1200, duration: 0.04, gain: 0.1 },
 };
 
 export const FOOTSTEP_PRESETS: Record<string, FootstepConfig> = {

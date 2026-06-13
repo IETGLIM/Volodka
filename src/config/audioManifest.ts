@@ -52,6 +52,9 @@ export interface EmotionalTransition {
 
 /** Scene → reverb + mood (extends inline map from useAudioOrchestrator) */
 export const SCENE_AUDIO_PROFILES: Partial<Record<SceneId, SceneAudioProfile>> = {
+  solnysh_room: { sceneId: 'solnysh_room', reverbPreset: 'small_room', musicMood: 'cozy_indoor' },
+  factory_basement: { sceneId: 'factory_basement', reverbPreset: 'large_space', musicMood: 'tension', enterStinger: 'tension' },
+  river_pier: { sceneId: 'river_pier', reverbPreset: 'large_space', musicMood: 'noir_street', enterStinger: 'mystery' },
   volodka_room: { sceneId: 'volodka_room', reverbPreset: 'small_room', musicMood: 'cozy_indoor' },
   zarema_albert_room: { sceneId: 'zarema_albert_room', reverbPreset: 'small_room', musicMood: 'cozy_indoor' },
   home_evening: { sceneId: 'home_evening', reverbPreset: 'small_room', musicMood: 'cozy_indoor' },

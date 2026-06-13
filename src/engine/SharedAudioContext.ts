@@ -60,24 +60,32 @@ export function whenAudioReady(fn: () => void): void {
  * Resume the shared AudioContext. Always attempts resume — browser
  * will reject if no user gesture, which we catch silently.
  */
+function flushPendingAudioQueue(): void {
+  const queue = _pendingQueue;
+  _pendingQueue = [];
+  for (const fn of queue) {
+    try {
+      fn();
+    } catch {
+      // ignore playback errors during queue flush
+    }
+  }
+}
+
 export function safeResume(): Promise<void> {
   if (!sharedCtx) return Promise.resolve();
   if (sharedCtx.state === 'suspended') {
     return sharedCtx.resume().then(() => {
-      // Flush pending sound queue
-      const queue = _pendingQueue;
-      _pendingQueue = [];
-      queue.forEach(fn => { try { fn(); } catch {} });
+      flushPendingAudioQueue();
     }).catch(() => {});
   }
+  flushPendingAudioQueue();
   return Promise.resolve();
 }
 
 const resumeOnce = () => {
   _userInteracted = true;
-  if (sharedCtx && sharedCtx.state === 'suspended') {
-    sharedCtx.resume().catch(() => {});
-  }
+  void safeResume();
 };
 
 // ── Browser autoplay policy: resume AudioContext on first user gesture ──

@@ -54,6 +54,7 @@ const { mockGetSharedAudioContext } = vi.hoisted(() => ({
 
 vi.mock('../SharedAudioContext', () => ({
   getSharedAudioContext: mockGetSharedAudioContext,
+  safeResume: vi.fn(() => Promise.resolve()),
 }));
 
 import { AmbientSoundPlayer, getAmbientPlayer, disposeAmbientEngine, ambientEngine } from './AmbientEngine';

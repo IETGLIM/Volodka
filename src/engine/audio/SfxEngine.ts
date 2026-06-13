@@ -25,6 +25,33 @@ class SfxEngineImpl {
     audioEngine.playFootstep(material, options);
   }
 
+  playDoorOpen(): void {
+    audioEngine.playDoorOpen();
+  }
+
+  playDoorClose(): void {
+    audioEngine.playDoorClose();
+  }
+
+  /** Route generic sound:play events to procedural SFX. */
+  playNamedSound(type: string): void {
+    switch (type) {
+      case 'door_open':
+        this.playDoorOpen();
+        break;
+      case 'door_close':
+        this.playDoorClose();
+        break;
+      case 'item_use':
+      case 'screenshot':
+        this.playSfx(type);
+        break;
+      default:
+        this.playSfx(type);
+        break;
+    }
+  }
+
   playStinger(id: StingerId): void {
     audioEngine.playStinger(id);
   }
