@@ -313,4 +313,71 @@ export const EXPLORATION_DIALOGUE_NODES: Record<string, DialogueNode> = {
       },
     ],
   },
+
+  explore_act4_peaceful_march: {
+    id: 'explore_act4_peaceful_march',
+    speaker: 'Голос',
+    text: 'На зимней улице собирается марш — плакаты со стихами, терминалы с лозунгами, люди идут к башне гильдии. Поток растёт, но остаётся мирным.',
+    sceneId: 'street_winter',
+    choices: [
+      {
+        text: 'Продолжить марш — мирно и уверенно',
+        next: null,
+        effects: [
+          { type: 'visitStoryNode', nodeId: 'act4_peaceful_march' },
+          { type: 'addKarma', value: 5 },
+          { type: 'setFlag', flag: 'public_speech_done', flagValue: true },
+        ],
+      },
+      {
+        text: 'Понаблюдать из стороны',
+        next: null,
+        effects: [{ type: 'addSkill', skill: 'persuasion', value: 1 }],
+      },
+    ],
+  },
+
+  explore_act4_rooftop_broadcast: {
+    id: 'explore_act4_rooftop_broadcast',
+    speaker: 'Голос',
+    text: 'На краю крыши — передающая антенна. Ветер бьёт в лицо, но оборудование уже подключено. Город внизу ждёт эфира.',
+    sceneId: 'rooftop_edge',
+    choices: [
+      {
+        text: 'Начать подготовку вещания',
+        next: null,
+        effects: [
+          { type: 'visitStoryNode', nodeId: 'act4_rooftop_broadcast' },
+          { type: 'setFlag', flag: 'broadcast_ready', flagValue: true },
+        ],
+      },
+      {
+        text: 'Ещё раз проверить антенну',
+        next: null,
+        effects: [{ type: 'addSkill', skill: 'coding', value: 1 }],
+      },
+    ],
+  },
+
+  explore_act7_library_archive: {
+    id: 'explore_act7_library_archive',
+    speaker: 'Голос',
+    text: 'Центральная консоль библиотеки — серверные стойки вместо запертых шкафов. Катя и Алина готовят открытый архив стихов для всего города.',
+    sceneId: 'library_day',
+    choices: [
+      {
+        text: 'Открыть архив для всего города',
+        next: null,
+        effects: [
+          { type: 'visitStoryNode', nodeId: 'act7_library_archive' },
+          { type: 'addKarma', value: 5 },
+        ],
+      },
+      {
+        text: 'Просмотреть каталог спасённых стихов',
+        next: null,
+        effects: [{ type: 'addSkill', skill: 'writing', value: 1 }],
+      },
+    ],
+  },
 };

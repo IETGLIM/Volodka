@@ -19,6 +19,18 @@ const GOLDEN_PATH_HUB_CONTINUE: Partial<
   cafe_explore_mode: { next: 'cafe_barista', text: 'Подойти к баристе' },
   office_explore_mode: { next: 'start_diagnosis', text: 'Сесть за терминал Александра' },
   park_explore_mode: { next: 'act3_zarema_warning', text: 'Осторожно очистить надпись на камне' },
+  street_winter_explore_mode: {
+    next: 'act4_peaceful_march',
+    text: 'Присоединиться к мирному маршу',
+  },
+  rooftop_explore_mode: {
+    next: 'act4_rooftop_broadcast',
+    text: 'Настроить передающую антенну',
+  },
+  library_explore_mode: {
+    next: 'act7_library_archive',
+    text: 'Открыть городской архив стихов',
+  },
 };
 
 function buildSceneExploreHubNode(def: (typeof SCENE_EXPLORE_HUB_DEFS)[number]): StoryNode {

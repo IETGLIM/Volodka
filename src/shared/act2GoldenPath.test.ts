@@ -38,4 +38,18 @@ describe('Act II golden path markers', () => {
     expect(golden).toHaveLength(1);
     expect(golden[0]?.next).toBe('start_diagnosis');
   });
+
+  it('street_winter_explore_mode hub golden branch leads to act4_peaceful_march', () => {
+    const node = STORY_NODES_SCENE_EXPLORE_HUBS.street_winter_explore_mode;
+    const golden = node.choices.filter((c) => c.goldenPath === true);
+    expect(golden).toHaveLength(1);
+    expect(golden[0]?.next).toBe('act4_peaceful_march');
+  });
+
+  it('rooftop_explore_mode hub golden branch leads to act4_rooftop_broadcast', () => {
+    const node = STORY_NODES_SCENE_EXPLORE_HUBS.rooftop_explore_mode;
+    const golden = node.choices.filter((c) => c.goldenPath === true);
+    expect(golden).toHaveLength(1);
+    expect(golden[0]?.next).toBe('act4_rooftop_broadcast');
+  });
 });

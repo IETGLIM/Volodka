@@ -24,7 +24,8 @@ export interface VolodkaE2EBridge {
   setPlayerPosition: (x: number, y: number, z: number) => void;
   getPlayerPosition: () => VolodkaE2EPosition;
   interactTriggerZone: (zoneId: string) => void;
-  visitStoryNode: (nodeId: string) => void;
+  visitStoryNode: (nodeId: string) => Promise<void>;
+  forceStoryBeat: (nodeId: string, sceneId: SceneId) => Promise<void>;
   bootstrapAct2Entry: () => Promise<void>;
   bootstrapMidActOffice: () => Promise<void>;
   bootstrapStartDiagnosis: () => Promise<void>;
@@ -33,6 +34,8 @@ export interface VolodkaE2EBridge {
   bootstrapAct2MariaMeeting: () => Promise<void>;
   bootstrapAct3ParkHub: () => Promise<void>;
   bootstrapAct3LibraryHub: () => Promise<void>;
+  bootstrapAct4StreetWinterHub: () => Promise<void>;
+  bootstrapAct4RooftopHub: () => Promise<void>;
   promoteClosedOverlayHub: (hubId: string, sceneId: SceneId) => Promise<void>;
   isStoryOverlayReady: (expectedNodeId?: string) => boolean;
 }
@@ -173,7 +176,10 @@ export function registerVolodkaE2EBridge(): void {
       });
     },
     visitStoryNode(nodeId) {
-      void openLinkedStory(nodeId);
+      return openLinkedStory(nodeId).then(() => undefined);
+    },
+    forceStoryBeat(nodeId, sceneId) {
+      return jumpToStoryBeat(nodeId, sceneId);
     },
     async bootstrapAct2Entry() {
       const store = getGameStore();
@@ -244,6 +250,25 @@ export function registerVolodkaE2EBridge(): void {
       store.setFlag('advanced_to_act3', true);
       dispatchGameAction({ type: 'story/visitNode', nodeId: 'library_entrance' });
       await jumpToClosedOverlayHub('library_explore_mode', 'library_day');
+    },
+    async bootstrapAct4StreetWinterHub() {
+      while (getGameStore().playerState.progression.currentAct < 4) {
+        getGameStore().advanceAct();
+      }
+      const store = getGameStore();
+      store.setFlag('act4_started', true);
+      store.setFlag('public_speech_done', true);
+      await jumpToClosedOverlayHub('street_winter_explore_mode', 'street_winter');
+    },
+    async bootstrapAct4RooftopHub() {
+      while (getGameStore().playerState.progression.currentAct < 4) {
+        getGameStore().advanceAct();
+      }
+      const store = getGameStore();
+      store.setFlag('act4_started', true);
+      store.setFlag('broadcast_ready', true);
+      dispatchGameAction({ type: 'story/visitNode', nodeId: 'act4_rooftop_broadcast' });
+      await jumpToClosedOverlayHub('rooftop_explore_mode', 'rooftop_edge');
     },
     async promoteClosedOverlayHub(hubId, sceneId) {
       await jumpToClosedOverlayHub(hubId, sceneId);

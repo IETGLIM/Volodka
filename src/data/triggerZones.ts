@@ -825,6 +825,63 @@ export const TRIGGER_ZONES: TriggerZone[] = [
     ],
   },
 
+  /* ─────────────── STREET WINTER MARCH — Act IV golden path (closed-overlay hub) ─────────────── */
+  {
+    id: 'street_winter_march_banner',
+    sceneId: 'street_winter',
+    position: [0, 0, -3.0],
+    size: [2.5, 2.0, 2.0],
+    enterToast: 'На зимней улице собирается марш — плакаты со стихами и терминалы с лозунгами.',
+    linkedDialogueNodeId: 'explore_act4_peaceful_march',
+    requiredAct: 4,
+    interactionType: 'examine',
+    interactionLabel: 'Присоединиться к мирному маршу',
+    examineData: {
+      title: 'Мирный марш',
+      description: 'Люди идут к башне гильдии — стихи на плакатах, лозунги на экранах терминалов.',
+      detailText: 'Поток растёт, но остаётся мирным. Виктория координирует марш из сети. Ты можешь встать во главе колонны.',
+      icon: '🕊️',
+    },
+  },
+
+  /* ─────────────── ROOFTOP BROADCAST — Act IV golden path (closed-overlay hub) ─────────────── */
+  {
+    id: 'rooftop_broadcast_antenna',
+    sceneId: 'rooftop_edge',
+    position: [0, 0, -3.5],
+    size: [2.0, 2.5, 1.5],
+    enterToast: 'Передающая антенна на краю крыши — город ждёт эфира.',
+    linkedDialogueNodeId: 'explore_act4_rooftop_broadcast',
+    requiredAct: 4,
+    interactionType: 'use',
+    interactionLabel: 'Настроить передающую антенну',
+    examineData: {
+      title: 'Передающая антенна',
+      description: 'Оборудование подключено к городским ретрансляторам.',
+      detailText: 'Виктория уже в сети. Одно слово — и весь город увидит стихи на каждом экране.',
+      icon: '📡',
+    },
+  },
+
+  /* ─────────────── LIBRARY ARCHIVE — Act VII golden path (closed-overlay hub) ─────────────── */
+  {
+    id: 'library_archive_console',
+    sceneId: 'library_day',
+    position: [0, 0.5, -3.0],
+    size: [1.5, 2.0, 1.5],
+    enterToast: 'Центральная консоль — открытый архив стихов для всего города.',
+    linkedDialogueNodeId: 'explore_act7_library_archive',
+    requiredAct: 7,
+    interactionType: 'use',
+    interactionLabel: 'Открыть городской архив стихов',
+    examineData: {
+      title: 'Архив Свободной Гильдии',
+      description: 'Серверные стойки вместо запертых шкафов — стихи, спасённые от «Надзора».',
+      detailText: 'Катя и Алина подготовили каталог. Осталось открыть доступ для всего города.',
+      icon: '📚',
+    },
+  },
+
   /* ─────────────── PARK INSCRIPTION — Act III golden path (closed-overlay hub) ─────────────── */
   {
     id: 'park_inscription_stone',
