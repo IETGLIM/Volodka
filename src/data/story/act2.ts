@@ -684,6 +684,24 @@ export const STORY_NODES_ACT2: Record<string, StoryNode> = {
     ],
   },
 
+  zarema_bank_discovery: {
+    id: 'zarema_bank_discovery',
+    text: 'Ноутбук Заремы на столе — экран не погашен. Банковское приложение пульсирует красным: транзакции уходят странными маршрутами, суммы не сходятся. Зарема ещё не знает, что ты это видишь. Следы ведут к гильдии — и к выбору, который нельзя отложить.',
+    speaker: 'narrator',
+    sceneId: 'zarema_albert_room',
+    choices: [
+      {
+        text: 'Зафиксировать следы и начать расследование',
+        next: 'zarema_room_explore_mode',
+        effects: [
+          { type: 'setFlag', flag: 'found_zarema_bank', flagValue: true },
+          { type: 'triggerQuest', questId: 'bank_transfer' },
+          { type: 'addSkill', skill: 'logic', value: 1 },
+        ],
+      },
+    ],
+  },
+
   act2_closing: {
     id: 'act2_closing',
     text: 'Ты выходишь из кафе. Снег ложится на плечи, на лицо, на ладони. Город затихает — редкий момент тишины. Ты знаешь теперь: Сеть реальна, Хранилище существует, Протокол Забвения — угроза. Впереди — борьба. Но сегодня — сегодня ты просто идёшь домой сквозь снег, и строчки складываются сами, как будто город дышит тобой.',

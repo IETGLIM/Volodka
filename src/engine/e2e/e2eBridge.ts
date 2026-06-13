@@ -37,6 +37,9 @@ export interface VolodkaE2EBridge {
   bootstrapAct4StreetWinterHub: () => Promise<void>;
   bootstrapAct4RooftopHub: () => Promise<void>;
   bootstrapAct5FactoryHub: () => Promise<void>;
+  bootstrapAct6ChkHub: () => Promise<void>;
+  bootstrapAct7LibraryHub: () => Promise<void>;
+  bootstrapAct7DreamHub: () => Promise<void>;
   promoteClosedOverlayHub: (hubId: string, sceneId: SceneId) => Promise<void>;
   isStoryOverlayReady: (expectedNodeId?: string) => boolean;
 }
@@ -282,6 +285,37 @@ export function registerVolodkaE2EBridge(): void {
       store.setFlag('entered_factory_basement', true);
       dispatchGameAction({ type: 'story/visitNode', nodeId: 'abandoned_workshop' });
       await jumpToClosedOverlayHub('factory_explore_mode', 'abandoned_factory');
+    },
+    async bootstrapAct6ChkHub() {
+      while (getGameStore().playerState.progression.currentAct < 6) {
+        getGameStore().advanceAct();
+      }
+      const store = getGameStore();
+      store.setFlag('act5_started', true);
+      store.setFlag('act6_started', true);
+      store.setFlag('chk_forest_unlocked', true);
+      store.setFlag('tolpa_act5_blessing', true);
+      dispatchGameAction({ type: 'story/visitNode', nodeId: 'chk_act5_campfire_dawn' });
+      await jumpToClosedOverlayHub('chk_explore_mode', 'chk_forest_zorge');
+    },
+    async bootstrapAct7LibraryHub() {
+      while (getGameStore().playerState.progression.currentAct < 7) {
+        getGameStore().advanceAct();
+      }
+      const store = getGameStore();
+      store.setFlag('act7_started', true);
+      store.setFlag('new_council_elected', true);
+      dispatchGameAction({ type: 'story/visitNode', nodeId: 'act7_charter_drafting' });
+      await jumpToClosedOverlayHub('library_explore_mode', 'library_day');
+    },
+    async bootstrapAct7DreamHub() {
+      while (getGameStore().playerState.progression.currentAct < 7) {
+        getGameStore().advanceAct();
+      }
+      const store = getGameStore();
+      store.setFlag('act7_started', true);
+      store.setFlag('dream_poem_seen', false);
+      await jumpToClosedOverlayHub('dream_explore_mode', 'sleep_dream');
     },
     async promoteClosedOverlayHub(hubId, sceneId) {
       await jumpToClosedOverlayHub(hubId, sceneId);

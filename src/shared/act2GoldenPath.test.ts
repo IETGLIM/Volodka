@@ -66,4 +66,18 @@ describe('Act II golden path markers', () => {
     expect(golden).toHaveLength(1);
     expect(golden[0]?.next).toBe('sleep_dream_entrance');
   });
+
+  it('zarema_room_explore_mode hub golden branch leads to zarema_bank_discovery', () => {
+    const node = STORY_NODES_SCENE_EXPLORE_HUBS.zarema_room_explore_mode;
+    const golden = node.choices.filter((c) => c.goldenPath === true);
+    expect(golden).toHaveLength(1);
+    expect(golden[0]?.next).toBe('zarema_bank_discovery');
+  });
+
+  it('library_explore_mode hub golden branch leads to act7_library_archive', () => {
+    const node = STORY_NODES_SCENE_EXPLORE_HUBS.library_explore_mode;
+    const golden = node.choices.filter((c) => c.goldenPath === true);
+    expect(golden).toHaveLength(1);
+    expect(golden[0]?.next).toBe('act7_library_archive');
+  });
 });

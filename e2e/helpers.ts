@@ -89,18 +89,14 @@ export async function settleAfterWake(page: Page) {
 }
 
 export async function waitForStoryDialog(page: Page, expectedNodeId?: string, timeout = 45_000) {
+  if (expectedNodeId) {
+    const speaker = page.locator(`#story-speaker-${expectedNodeId}`);
+    await expect(speaker).toBeVisible({ timeout });
+    return page.getByRole('dialog').filter({ has: speaker });
+  }
+
   const storyDialog = page.getByRole('dialog', { name: /Голос/i });
   await expect(storyDialog).toBeVisible({ timeout });
-  if (expectedNodeId) {
-    await page
-      .waitForFunction(
-        (nodeId: string) =>
-          document.querySelector(`[aria-labelledby="story-speaker-${nodeId}"]`) != null,
-        expectedNodeId,
-        { timeout: 10_000 },
-      )
-      .catch(() => undefined);
-  }
   return storyDialog;
 }
 

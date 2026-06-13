@@ -101,19 +101,23 @@ patrol→chase→engaged→cooldown, конус зрения проецируе�
   scene-toast (`enterSceneFreeExplorationHub`), действия через trigger zones;
   `ui:exploration_message` → `EventNotificationPopup`. Реестр:
   `CLOSED_OVERLAY_EXPLORE_HUB_IDS` в `sceneExploreHubRegistry.ts`.
-  **Trigger zones vs golden path (Acts 3–7, Phase 6 audit):** hub-продолжения
+  **Trigger zones vs golden path (Acts 3–7, Phase 7 complete):** hub-продолжения
   из `GOLDEN_PATH_HUB_CONTINUE` (`sceneExploreHubs.ts`) и act-pack хабов
-  проведены в 3D для Acts 3–5:
+  проведены в 3D для всех walkable explore-хабов Acts 3–7:
   `park_inscription_stone` → `act3_zarema_warning`,
   `street_winter_march_banner` → `act4_peaceful_march`,
   `rooftop_broadcast_antenna` → `act4_rooftop_broadcast`,
   `factory_basement_stairs` → `factory_basement`,
   `basement_zarya_confession` → `machine_confession_scene`,
-  `pier_factory_route`, `solnysh_golden_talk`, `chk_explore_dawn`.
-  Auto-generated хабы Acts 6–7: `chk_explore_mode`, `dream_explore_mode`
-  (GOLDEN_PATH_HUB_CONTINUE); act-pack: `factory_*`, `basement_*`, `pier_*`,
-  `solnysh_*`. Остаётся backlog Phase 7: `zarema_room_explore_mode`,
-  dream-trigger в сцене сна, полный e2e Acts 6–7.
+  `pier_factory_route`, `solnysh_golden_talk`, `chk_explore_dawn`,
+  `library_archive_console` → `act7_library_archive`,
+  `sleep_dream_poem_core` → `sleep_dream_entrance`,
+  `zarema_bank_account` → `zarema_bank_discovery`.
+  Auto-generated хабы Acts 6–7: `chk_explore_mode`, `library_explore_mode`,
+  `dream_explore_mode`, `zarema_room_explore_mode` (GOLDEN_PATH_HUB_CONTINUE);
+  act-pack: `factory_*`, `basement_*`, `pier_*`, `solnysh_*`.
+  **Миграция free exploration для walkable hubs завершена** (Phase 7);
+  e2e: `act3-smoke` … `act7-smoke`.
 - Канонический путь: `GOLDEN_PATH_STORY_SPINE` (до `act7_true_end`) + derivation
   из меток `choice.goldenPath` (`deriveGoldenPath.ts`); валидатор контента
   (`npm run validate:content`) сверяет оба источника.

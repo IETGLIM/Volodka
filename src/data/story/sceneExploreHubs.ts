@@ -39,6 +39,10 @@ const GOLDEN_PATH_HUB_CONTINUE: Partial<
     next: 'sleep_dream_entrance',
     text: 'Запомнить стихотворение из сна',
   },
+  zarema_room_explore_mode: {
+    next: 'zarema_bank_discovery',
+    text: 'Проверить банковский счёт на ноутбуке Заремы',
+  },
 };
 
 function buildSceneExploreHubNode(def: (typeof SCENE_EXPLORE_HUB_DEFS)[number]): StoryNode {

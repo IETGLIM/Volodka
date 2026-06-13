@@ -1057,10 +1057,11 @@ export const TRIGGER_ZONES: TriggerZone[] = [
     position: [0, 0.5, -2.0],
     size: [1.0, 1.0, 0.8],
     enterToast: 'Ноутбук Заремы — на экране банковское приложение. Сумма подозрительно велика.',
+    linkedDialogueNodeId: 'explore_zarema_bank_discovery',
     linkedQuestId: 'bank_transfer',
     requiredAct: 2,
-    interactionType: 'hack',
-    interactionLabel: 'Проверить счёт',
+    interactionType: 'use',
+    interactionLabel: 'Проверить банковский счёт на ноутбуке Заремы',
     examineData: {
       title: 'Ноутбук Заремы',
       description: 'На экране банковское приложение. Сумма подозрительно велика.',
@@ -1070,6 +1071,24 @@ export const TRIGGER_ZONES: TriggerZone[] = [
     effects: [
       { type: 'setFlag', flag: 'found_zarema_bank', flagValue: true },
     ],
+  },
+
+  /* ─────────────── SLEEP DREAM POEM — Act VII golden path (closed-overlay hub) ─────────────── */
+  {
+    id: 'sleep_dream_poem_core',
+    sceneId: 'sleep_dream',
+    position: [0, 1.5, -4.0],
+    size: [2.5, 2.5, 2.5],
+    enterToast: 'В центре сна — светящиеся строки, складывающиеся в стихотворение.',
+    linkedDialogueNodeId: 'explore_sleep_dream_entrance',
+    interactionType: 'examine',
+    interactionLabel: 'Запомнить стихотворение из сна',
+    examineData: {
+      title: 'Стихотворение из сна',
+      description: 'Строки складываются сами — город без неона, голос, похожий на твой.',
+      detailText: 'Во сне код и поэзия — одно целое. Каждое слово меняет реальность, пока ты не проснёшься.',
+      icon: '💫',
+    },
   },
 
   /* ═══════════════════════════════════════════════════════════════════

@@ -490,4 +490,48 @@ export const EXPLORATION_DIALOGUE_NODES: Record<string, DialogueNode> = {
       },
     ],
   },
+
+  explore_sleep_dream_entrance: {
+    id: 'explore_sleep_dream_entrance',
+    speaker: 'Голос',
+    text: 'В центре сна — светящиеся строки, складывающиеся в стихотворение. Город без неона, люди с открытыми лицами, голос, который звучит как твой — но говорит то, чего ты не писал наяву.',
+    sceneId: 'sleep_dream',
+    choices: [
+      {
+        text: 'Запомнить стихотворение из сна',
+        next: null,
+        effects: [
+          { type: 'visitStoryNode', nodeId: 'sleep_dream_entrance' },
+          { type: 'setFlag', flag: 'dream_poem_seen', flagValue: true },
+        ],
+      },
+      {
+        text: 'Бродить по сну ещё немного',
+        next: null,
+        effects: [{ type: 'addSkill', skill: 'intuition', value: 1 }],
+      },
+    ],
+  },
+
+  explore_zarema_bank_discovery: {
+    id: 'explore_zarema_bank_discovery',
+    speaker: 'Голос',
+    text: 'Ноутбук Заремы — банковское приложение пульсирует красным. Суммы уходят странными маршрутами, следы ведут к гильдии. Зарема ещё не знает, что ты это видишь.',
+    sceneId: 'zarema_albert_room',
+    choices: [
+      {
+        text: 'Зафиксировать следы и начать расследование',
+        next: null,
+        effects: [
+          { type: 'visitStoryNode', nodeId: 'zarema_bank_discovery' },
+          { type: 'setFlag', flag: 'found_zarema_bank', flagValue: true },
+        ],
+      },
+      {
+        text: 'Закрыть ноутбук — не сейчас',
+        next: null,
+        effects: [{ type: 'addStat', stat: 'stress', value: 2 }],
+      },
+    ],
+  },
 };

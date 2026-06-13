@@ -133,7 +133,7 @@ export const SCENE_EXPLORE_HUB_DEFS: readonly SceneExploreHubDef[] = [
     sceneId: 'zarema_albert_room',
     hubText:
       'Комната Заремы и Альберта — уютный беспорядок, книги, чайник и тихий свет настольной лампы.',
-    entryNodeIds: [],
+    entryNodeIds: ['zarema_bank_discovery'],
   },
   {
     hubId: 'dream_explore_mode',
