@@ -5,6 +5,7 @@ import {
   resetDialogueShotController,
   setGlobalTimeScale,
 } from './cinematicCamera';
+import { canWriteCamera, getCameraOwner } from './cameraOwnerState';
 import { getCameraShakeOffset } from './cameraShake';
 import { getCameraPOI } from './cameraPOI';
 import {
@@ -68,6 +69,8 @@ export function applyCameraFrame(
   }
 
   updateSpringCamera(spring, targetPos, targetLook, targetFov, delta, targetRoll);
+
+  if (!canWriteCamera(getCameraOwner())) return;
 
   const shakeOffset = getCameraShakeOffset(delta);
   cam.position.set(

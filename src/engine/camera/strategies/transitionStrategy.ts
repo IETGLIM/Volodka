@@ -3,6 +3,7 @@ import {
   updateSceneTransition,
   DEFAULT_FOV,
 } from '../cinematicCamera';
+import { canWriteCamera } from '../cameraOwnerState';
 import type { CameraModeContext, CameraModeStrategy } from '../types';
 
 /** Scene transition fly-through — highest priority, bypasses spring */
@@ -15,6 +16,8 @@ export const transitionStrategy: CameraModeStrategy = {
   },
 
   update(ctx) {
+    if (!canWriteCamera('transition')) return null;
+
     const transition = ctx.transition;
     const spring = ctx.spring;
     const cam = ctx.camera;

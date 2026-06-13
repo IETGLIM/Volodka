@@ -43,7 +43,6 @@ import { createWorldSlice } from './slices/worldSlice';
 import { createUISlice } from './slices/uiSlice';
 import { createCutsceneSlice } from './slices/cutsceneSlice';
 import { createSaveSlice } from './slices/saveSlice';
-import { eventBus } from '@/engine/EventBus';
 import { wrapStoreSubscribe } from '@/engine/frame/frameProfilerCounters';
 import {
   registerGameActionBridge,
@@ -55,6 +54,7 @@ import {
 // Import and re-export composed store type (defined in types.ts — no slice imports in shared.ts)
 import type { GameStoreState } from './types';
 export type { GameStoreState, CrossSliceReads } from './types';
+import { reduceGameState } from './reduceGameState';
 
 /* ─── Composed store ─── */
 
@@ -162,142 +162,7 @@ function subscribeGameBridge<T>(
 
 registerGameActionBridge({
   dispatch(action: GameAction) {
-    const store = useGameStore.getState();
-    switch (action.type) {
-      case 'quest/completeObjective':
-        store.completeQuestObjective(action.questId, action.objectiveId);
-        break;
-      case 'quest/complete':
-        store.completeQuest(action.questId);
-        break;
-      case 'quest/completeAndApplyRewards':
-        store.completeQuestAndApplyRewards(action.questId);
-        break;
-      case 'quest/fail':
-        store.failQuest(action.questId);
-        break;
-      case 'quest/activate':
-        store.activateQuest(action.questId);
-        break;
-      case 'player/addSkill':
-        store.addSkill(action.skill, action.amount);
-        break;
-      case 'player/addEnergy':
-        store.addEnergy(action.amount);
-        break;
-      case 'player/addStress':
-        store.addStress(action.amount);
-        break;
-      case 'player/addKarma':
-        store.addKarma(action.amount);
-        break;
-      case 'player/addXp':
-        store.addXp(action.amount);
-        break;
-      case 'player/addCredits':
-        store.addCredits(action.amount);
-        break;
-      case 'player/setFlag':
-        store.setFlag(action.key, action.value);
-        break;
-      case 'player/setNpcRelation':
-        store.setNpcRelation(action.npcId, action.delta);
-        break;
-      case 'poem/upsertTTLFlag':
-        store.upsertActiveTTLFlag(action.flag);
-        break;
-      case 'poem/upsertTTLFlags':
-        store.upsertActiveTTLFlags(action.flags);
-        break;
-      case 'poem/removeTTLFlags':
-        store.removeActiveTTLFlags(action.keys);
-        break;
-      case 'poem/clearAllEffects': {
-        const flags = store.activeTTLFlags ?? {};
-        for (const f of Object.values(flags)) {
-          store.setFlag(f.key, false);
-        }
-        store.clearActiveTTLFlags();
-        eventBus.emit('poem:reset_all_effects', {});
-        break;
-      }
-      case 'story/setCombatActive':
-        store.setCombatActive(action.active);
-        break;
-      case 'story/setIntroActive':
-        store.setIntroActive(action.active);
-        break;
-      case 'story/setMainMenuOpen':
-        store.setMainMenuOpen(action.open);
-        break;
-      case 'story/setCurrentNodeId':
-        if (action.nodeId != null) store.setCurrentNodeId(action.nodeId);
-        break;
-      case 'story/setShowStoryOverlay':
-        store.setShowStoryOverlay(action.show);
-        break;
-      case 'story/openNarrativeOverlay':
-        store.openNarrativeOverlay(action.nodeId, action.kind ?? store.narrativeKind ?? 'story');
-        break;
-      case 'story/closeNarrativeOverlay':
-        store.closeNarrativeOverlay();
-        break;
-      case 'story/visitNode':
-        store.visitNode(action.nodeId);
-        break;
-      case 'story/advanceAct':
-        store.advanceAct();
-        break;
-      case 'inventory/addItem':
-        store.addItem(action.item);
-        break;
-      case 'achievement/unlock':
-        store.unlockAchievement(action.achievementId);
-        break;
-      case 'achievement/trackSceneVisit':
-        store.trackSceneVisit(action.sceneId);
-        break;
-      case 'achievement/trackNightHour':
-        store.trackNightHour();
-        break;
-      case 'achievement/trackCombatVictory':
-        store.trackCombatVictory(action.enemyType, action.combo);
-        break;
-      case 'achievement/resetConsecutiveVictories':
-        store.resetConsecutiveVictories();
-        break;
-      case 'achievement/trackMaxCombo':
-        store.trackMaxCombo(action.comboCount);
-        break;
-      case 'achievement/trackCriticalHit':
-        store.trackCriticalHit();
-        break;
-      case 'achievement/trackPoemPowerInCombat':
-        store.trackPoemPowerInCombat();
-        break;
-      case 'skill/unlockTreeNode':
-        store.unlockSkillTreeNode(action.skillId);
-        break;
-      case 'notification/push':
-        store.pushNotification(action.notificationType, action.text);
-        break;
-      case 'notification/dismiss':
-        store.dismissNotification(action.id);
-        break;
-      case 'exploration/toggleInteractiveObject':
-        store.toggleInteractiveObject(action.objectId);
-        break;
-      case 'exploration/applySceneTransition':
-        store.setExplorationScene(action.targetScene);
-        store.setPlayerPosition(action.spawnAt);
-        store.discoverScene(action.targetScene);
-        store.autoRegenBetweenScenes();
-        break;
-      default: {
-        const _exhaustive: never = action;
-        return _exhaustive;
-      }
-    }
+    useGameStore.setState((state) => reduceGameState(state, action));
   },
   getSnapshot() {
     return toGameSnapshot(useGameStore.getState());
