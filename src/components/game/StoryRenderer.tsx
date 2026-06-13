@@ -1,12 +1,9 @@
-
-/* ─── Volodka RPG – Story narrative overlay (v4) ───
-   Bottom-panel overlay matching DialogueRenderer (World Director pattern).
-   3D world stays visible; no fullscreen VN center card.
+/* ─── Volodka RPG – Story narrative overlay (cinematic) ───
+   Full-screen AAA title-card beats; 3D world stays visible behind letterbox.
 */
 
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronRight, Zap, SkipForward, X } from 'lucide-react';
 import {
   useSetCurrentNodeId,
   useStoryContext,
@@ -23,21 +20,20 @@ import {
   isClosedOverlayExploreHub,
   resolveExploreHubNavigation,
 } from '@/shared/exploreHubNodes';
-import { KARMA_LOW_THRESHOLD, KARMA_HIGH_THRESHOLD } from '@/data/constants';
-import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import type { StoryChoice, StoryEffect } from '@/shared/types/game';
 import { checkStoryCondition, buildStoryConditionContext } from '@/shared/storyConditions';
+import {
+  CinematicNarrativeChoices,
+  CinematicNarrativeFrame,
+  resolveCinematicNarrativePresentation,
+} from '@/components/game/cinematic';
 
 /* ── Typewriter hook — shared ── */
 import { useNarrativeTypewriter } from '@/hooks/useNarrativeTypewriter';
 import { useNarrativeChoiceKeyboard } from '@/hooks/useNarrativeChoiceKeyboard';
-import { narrativeSubtitleStyle } from '@/hooks/narrativePresentation';
 
 /* ── Apply effects — shared ── */
 import { applyEffects } from '@/shared/utils/applyEffects';
-import { AriaLiveRegion } from '@/components/a11y/AriaLiveRegion';
-import { FocusTrap } from '@/components/a11y/FocusTrap';
-import { buildChoiceAriaLabel } from '@/shared/utils/choiceAriaLabel';
 import { devWarn } from '@/shared/utils/devLog';
 import { eventBus } from '@/engine/EventBus';
 import { STORY_NODE_TO_NPC_ID } from '@/data/goldenPath';
@@ -281,218 +277,82 @@ export function StoryRenderer() {
   const isOpen = showStoryOverlay && !!node;
   if (!isOpen) return null;
 
-  const karmaLevel =
-    karma >= KARMA_HIGH_THRESHOLD
-      ? 'high'
-      : karma <= KARMA_LOW_THRESHOLD
-        ? 'low'
-        : 'mid';
-
-  const speakerColor =
-    node.speaker === 'narrator'
-      ? 'text-slate-300'
-      : karmaLevel === 'high'
-        ? 'text-cyan-400'
-        : karmaLevel === 'low'
-          ? 'text-rose-400'
-          : 'text-slate-200';
-
   const speakerTitleId = `story-speaker-${currentNodeId}`;
-  const speakerLabel = node.speaker === 'narrator' ? 'Голос' : node.speaker;
-  const typewriterLiveMessage = node.speaker
+  const speakerLabel =
+    node.speaker && node.speaker !== 'narrator' ? node.speaker : undefined;
+  const typewriterLiveMessage = speakerLabel
     ? `${speakerLabel}: ${displayed}${done ? '' : '…'}`
     : `${displayed}${done ? '' : '…'}`;
 
+  const presentation = resolveCinematicNarrativePresentation(
+    currentNodeId,
+    'story',
+    node.speaker,
+  );
+
   return (
-    <AnimatePresence mode="wait">
-      <motion.div
-        key={`story-${currentNodeId}`}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        transition={{ duration: reducedMotion ? 0 : 0.3, ease: 'easeOut' }}
-        className="fixed inset-x-0 bottom-0 flex justify-center pointer-events-none"
-        style={{ zIndex: UI_LAYERS.DIALOGUE }}
-        onClick={done ? undefined : skip}
-      >
-        <AriaLiveRegion message={typewriterLiveMessage} priority="polite" />
-        <div className="absolute inset-0 bg-black/30 backdrop-blur-[1px]" aria-hidden="true" />
-
-        <FocusTrap>
-          <motion.div
-            initial={reducedMotion ? false : { y: 40, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={reducedMotion ? undefined : { y: 20, opacity: 0 }}
-            transition={{ duration: reducedMotion ? 0 : 0.35, ease: [0.16, 1, 0.3, 1] }}
-            className="relative z-10 w-full max-w-[700px] mx-3 mb-3 pointer-events-auto"
-            role="dialog"
-            aria-modal="true"
-            {...(node.speaker ? { 'aria-labelledby': speakerTitleId } : { 'aria-label': 'Сюжетная сцена' })}
-          >
-            <div
-              className="relative border border-cyan-800/40 backdrop-blur-md overflow-hidden"
-              style={{
-                clipPath: 'polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px))',
-                background: 'linear-gradient(145deg, rgba(0,0,0,0.92) 0%, rgba(15,23,42,0.88) 50%, rgba(0,0,0,0.85) 100%)',
-                boxShadow: '0 0 20px rgb(var(--cyber-cyan-rgb) / 0.06), 0 4px 16px rgba(0,0,0,0.4), inset 0 0 12px rgba(0,0,0,0.3)',
-              }}
+    <CinematicNarrativeFrame
+      nodeKey={`story-${currentNodeId}`}
+      presentation={presentation}
+      ariaLabel="Сюжетная сцена"
+      speakerTitleId={speakerLabel ? speakerTitleId : undefined}
+      speakerLabel={speakerLabel ?? (node.speaker === 'narrator' ? 'Голос' : undefined)}
+      displayedText={displayed}
+      done={done}
+      reducedMotion={reducedMotion}
+      liveMessage={typewriterLiveMessage}
+      onSkip={skip}
+      onClose={handleClose}
+      footer={
+        appliedEffects.length > 0 ? (
+          <AnimatePresence>
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              className="flex flex-wrap gap-2 justify-center mt-2"
             >
-              <div className="flex items-center gap-2 border-b border-cyan-500/15 bg-black/40 px-3 py-1">
-                <span className="h-1 w-1 rounded-full bg-emerald-500/80" />
-                <span className="h-1 w-1 rounded-full bg-amber-400/80" />
-                <span className="h-1 w-1 rounded-full bg-red-500/80" />
-                <span className="ml-2 font-mono text-[7px] uppercase tracking-[0.2em] text-cyan-500/30">volodka://narrative</span>
-                <div className="flex-1" />
-                {!done && (
-                  <button
-                    onClick={(e) => { e.stopPropagation(); skip(); }}
-                    className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[8px] font-mono text-slate-500 hover:text-cyan-400 transition-colors"
-                    aria-label="Пропустить анимацию текста"
-                  >
-                    <SkipForward className="size-2" />
-                    Пропустить
-                  </button>
-                )}
-                <button
-                  onClick={handleClose}
-                  className="text-slate-500 hover:text-white hover:bg-rose-500/20 rounded p-0.5 transition-colors"
-                  aria-label="Закрыть"
-                >
-                  <X className="size-3" />
-                </button>
-              </div>
-
-              <div className="relative z-0 p-3">
-                {node.speaker && (
-                  <div className={`mb-2 flex items-center gap-2 ${speakerColor}`}>
-                    <span id={speakerTitleId} className="text-[10px] font-medium tracking-wider uppercase">
-                      {speakerLabel}
+              {appliedEffects.map((effect, i) => (
+                <StatChangeChip key={i} effect={effect} />
+              ))}
+            </motion.div>
+          </AnimatePresence>
+        ) : null
+      }
+    >
+      {done && (
+        <>
+          {currentNodeId === 'act2_maria_meeting_place' &&
+            karma < 30 &&
+            node.choices.some(
+              (c) => c.condition?.minKarma !== undefined && karma < c.condition.minKarma,
+            ) && (
+              <p className="text-xs text-rose-200/90 text-center mb-2 px-2">
+                ☯ Карма слишком низкая для клятвы (нужно ≥30).
+              </p>
+            )}
+          <CinematicNarrativeChoices
+            accentColor={presentation.accentColor}
+            onContinue={node.choices.length === 0 ? handleContinue : undefined}
+            choices={node.choices.map((choice, i) => {
+              const cond = checkStoryCondition(choice.condition, conditionCtx);
+              return {
+                key: `${currentNodeId}-choice-${i}`,
+                text: choice.text,
+                pass: cond.pass,
+                cond,
+                onSelect: () => handleChoice(choice),
+                trailing:
+                  !cond.pass && cond.karmaNeeded ? (
+                    <span className="text-[10px] font-mono text-rose-300">
+                      ☯ {cond.karmaNeeded.current}/{cond.karmaNeeded.needed}
                     </span>
-                  </div>
-                )}
-
-                <div className="min-h-[36px] mb-2">
-                  <motion.p
-                    key={currentNodeId}
-                    initial={reducedMotion ? false : { opacity: 0, y: 6 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: reducedMotion ? 0 : 0.25, ease: 'easeOut' }}
-                    className="text-slate-100 leading-relaxed"
-                    style={narrativeSubtitleStyle()}
-                  >
-                    {displayed}
-                    {!done && (
-                      <span
-                        className="inline-block w-0.5 h-3.5 ml-0.5 align-middle"
-                        style={{
-                          background: 'rgb(var(--cyber-cyan-rgb) / 0.8)',
-                          boxShadow: '0 0 4px rgb(var(--cyber-cyan-rgb) / 0.6)',
-                          animation: 'cursor-blink 0.8s step-end infinite',
-                        }}
-                      />
-                    )}
-                  </motion.p>
-                </div>
-
-                <AnimatePresence>
-                  {appliedEffects.length > 0 && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -5 }}
-                      className="flex flex-wrap gap-1.5 mb-2"
-                    >
-                      {appliedEffects.map((effect, i) => (
-                        <StatChangeChip key={i} effect={effect} />
-                      ))}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-
-                {done && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3 }}
-                    className="flex flex-col gap-1.5"
-                  >
-                    {currentNodeId === 'act2_maria_meeting_place' &&
-                      karma < 30 &&
-                      node.choices.some(
-                        (c) => c.condition?.minKarma !== undefined && karma < c.condition.minKarma,
-                      ) && (
-                        <p className="text-xs text-rose-300/90 px-1 mb-0.5">
-                          ☯ Карма слишком низкая для клятвы (нужно ≥30). Совершай добрые поступки или
-                          используй чип Виктории, если он у тебя есть.
-                        </p>
-                      )}
-                    {node.choices.length > 0 ? (
-                      node.choices.map((choice, i) => {
-                        const cond = checkStoryCondition(choice.condition, conditionCtx);
-                        return (
-                          <motion.button
-                            key={`${currentNodeId}-choice-${i}`}
-                            initial={{ opacity: 0, x: -12 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: i * 0.06, duration: 0.25, ease: 'easeOut' }}
-                            whileHover={cond.pass ? { scale: 1.01, x: 2 } : {}}
-                            whileTap={cond.pass ? { scale: 0.99 } : {}}
-                            onClick={() => { if (cond.pass) handleChoice(choice); }}
-                            disabled={!cond.pass}
-                            aria-label={buildChoiceAriaLabel({ index: i, text: choice.text, cond })}
-                            aria-disabled={!cond.pass}
-                            className={`group relative text-left px-3 py-2 rounded-md text-sm transition-all duration-200 overflow-hidden ${
-                              cond.pass
-                                ? 'border border-cyan-800/60 bg-cyan-950/30 hover:bg-cyan-900/40 hover:border-cyan-500/70 text-slate-100 cursor-pointer'
-                                : 'border border-slate-700/40 bg-slate-900/20 text-slate-500 cursor-not-allowed opacity-50'
-                            }`}
-                          >
-                            <div className="flex items-center gap-2">
-                              <ChevronRight className="size-3 text-cyan-500/70 group-hover:text-cyan-300 transition-colors shrink-0" />
-                              <span className="flex-1">{choice.text}</span>
-                              {cond.skillCheck && (
-                                <span className="flex items-center gap-1 text-xs text-rose-400 shrink-0">
-                                  <Zap className="size-3" />
-                                  {cond.skillCheck.skill} {cond.skillCheck.needed}
-                                </span>
-                              )}
-                              {!cond.pass && cond.karmaNeeded && (
-                                <span
-                                  className="text-[9px] font-mono px-1 py-px rounded bg-rose-950/40 border border-rose-500/30 text-rose-300 shrink-0"
-                                  title={`Текущая карма: ${cond.karmaNeeded.current}`}
-                                >
-                                  ☯ {cond.karmaNeeded.type === 'min' ? `≥${cond.karmaNeeded.needed}` : `≤${cond.karmaNeeded.needed}`}{' '}
-                                  <span className="text-rose-400/60">({cond.karmaNeeded.current})</span>
-                                </span>
-                              )}
-                            </div>
-                          </motion.button>
-                        );
-                      })
-                    ) : (
-                      <motion.button
-                        initial={{ opacity: 0, x: -12 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ duration: 0.25 }}
-                        whileHover={{ scale: 1.01, x: 2 }}
-                        whileTap={{ scale: 0.99 }}
-                        onClick={handleContinue}
-                        aria-label="Продолжить"
-                        className="group relative text-left px-3 py-2 rounded-md text-sm border border-cyan-800/60 bg-cyan-950/30 hover:bg-cyan-900/40 hover:border-cyan-500/70 text-slate-100 cursor-pointer transition-all duration-200"
-                      >
-                        <div className="flex items-center gap-2">
-                          <ChevronRight className="size-3 text-cyan-500 group-hover:text-cyan-300 transition-colors" />
-                          <span>Продолжить</span>
-                        </div>
-                      </motion.button>
-                    )}
-                  </motion.div>
-                )}
-              </div>
-            </div>
-          </motion.div>
-        </FocusTrap>
-      </motion.div>
-    </AnimatePresence>
+                  ) : undefined,
+              };
+            })}
+          />
+        </>
+      )}
+    </CinematicNarrativeFrame>
   );
 }

@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { CUTSCENES } from '@/data/cutscenes';
 import {
   resolvePostCutsceneNarrativeNode,
   shouldShowEntryStoryAfterCutscene,
@@ -54,5 +55,16 @@ describe('shouldShowStoryBeatAfterCutscene', () => {
     expect(shouldShowStoryBeatAfterCutscene('abandoned_workshop')).toBe(true);
     expect(shouldShowStoryBeatAfterCutscene('pier_arrival')).toBe(true);
     expect(shouldShowStoryBeatAfterCutscene('go_to_cafe')).toBe(true);
+  });
+
+  it('covers every registered cutscene trigger node', () => {
+    for (const def of Object.values(CUTSCENES)) {
+      expect(shouldShowStoryBeatAfterCutscene(def.triggerStoryNode)).toBe(true);
+    }
+  });
+
+  it('returns false for plain explore hubs without cutscenes', () => {
+    expect(shouldShowStoryBeatAfterCutscene('explore_mode')).toBe(false);
+    expect(shouldShowStoryBeatAfterCutscene('cafe_explore_mode')).toBe(false);
   });
 });

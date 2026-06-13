@@ -20,6 +20,7 @@ import { SCENE_CONFIG } from '@/config/scenes';
 import { useSceneTransitionOverlayController } from '@/hooks/useSceneTransitionOverlayController';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 import { getSceneTransitionAccent } from '@/engine/exploration/explorationUxPresentation';
+import { CinematicShell, CinematicTitleCard } from '@/components/game/cinematic';
 
 const GLITCH_DURATION = SCENE_OVERLAY_MS.GLITCH;
 const FLASH_DURATION = SCENE_OVERLAY_MS.FLASH;
@@ -72,45 +73,26 @@ export function SceneTransitionOverlay() {
   const sceneName = SCENE_CONFIG[targetSceneId]?.name ?? targetSceneId;
   const accent = getSceneTransitionAccent(transitionStyle ?? 'wipe');
   const motionDuration = (ms: number) => (reducedMotion ? 0 : ms / 1000);
+  const transitionPresentation = {
+    type: 'story_moment' as const,
+    accentColor: accent,
+    letterboxStyle: 'full' as const,
+    showEmbers: false,
+    glitchIntensity: 0.06,
+  };
 
-  /* ── Render scene name display (shared across all transition styles) ── */
   const SceneNameDisplay = (
-    <motion.div
-      className="absolute inset-0 flex items-center justify-center"
-      initial={reducedMotion ? false : { opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: motionDuration(200), ease: 'easeOut' }}
-    >
-      <div className="flex flex-col items-center gap-3">
-        <motion.div
-          className="w-16 sm:w-24 h-px"
-          style={{ background: `linear-gradient(90deg, transparent, ${accent}66, transparent)` }}
-          initial={{ scaleX: 0 }}
-          animate={{ scaleX: 1 }}
-          transition={{ duration: 0.25, ease: 'easeOut' }}
+    <div className="absolute inset-0 flex items-center justify-center">
+      <CinematicShell presentation={transitionPresentation} backdropVariant="transition">
+        <CinematicTitleCard
+          title={sceneName}
+          subtitle="переход"
+          accentColor={accent}
+          reducedMotion={reducedMotion}
+          size="location"
         />
-        <motion.h2
-          className="text-xl sm:text-2xl md:text-3xl tracking-widest text-center px-6"
-          style={{
-            fontFamily: '"Georgia", "Times New Roman", serif',
-            color: 'rgba(200, 220, 240, 0.85)',
-            textShadow: `0 0 20px ${accent}4D, 0 0 40px ${accent}1A`,
-          }}
-          initial={{ opacity: 0, y: 6 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.2, delay: 0.05, ease: 'easeOut' }}
-        >
-          {sceneName}
-        </motion.h2>
-        <motion.div
-          className="w-12 sm:w-16 h-px"
-          style={{ background: `linear-gradient(90deg, transparent, ${accent}4D, transparent)` }}
-          initial={{ scaleX: 0 }}
-          animate={{ scaleX: 1 }}
-          transition={{ duration: 0.25, delay: 0.1, ease: 'easeOut' }}
-        />
-      </div>
-    </motion.div>
+      </CinematicShell>
+    </div>
   );
 
   return (

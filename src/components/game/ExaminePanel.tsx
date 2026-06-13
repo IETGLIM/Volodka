@@ -1,62 +1,44 @@
-
-/* ─── Volodka RPG – Examine Panel ───
- *  When the player interacts with an object that has examineData, this panel shows:
- *  - Object name and description
- *  - A 3D-like rotating view (styled card with CSS transforms)
- *  - Flavor text about the object
- *  - "Continue" button to trigger linked content (dialogue/story/minigame)
- *  - Close via Escape, backdrop click, or header X (PanelWrapper)
+/* ─── Volodka RPG – Examine cinematic beat ───
+ *  Object inspection as full-screen AAA title card (not HUD panel).
  */
 
-import { useEffect, useRef } from 'react';
-import { motion } from 'framer-motion';
-import { ChevronRight } from 'lucide-react';
+import { useEffect } from 'react';
 import type { ExamineData } from '@/shared/types/game';
-import { PanelWrapper } from './PanelWrapper';
+import {
+  CinematicNarrativeChoices,
+  CinematicNarrativeFrame,
+  resolveExaminePresentation,
+} from '@/components/game/cinematic';
+import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
+import { useNarrativeTypewriter } from '@/hooks/useNarrativeTypewriter';
 
 interface ExaminePanelProps {
   open: boolean;
   data: ExamineData | null;
   onClose: () => void;
-  /** Whether this object has a linked dialogue/story (shows "Continue" button) */
   hasLinkedContent?: boolean;
-  /** Callback to trigger the linked content when user clicks "Continue" or presses E */
   onContinue?: () => void;
 }
 
-export function ExaminePanel({ open, data, onClose, hasLinkedContent, onContinue }: ExaminePanelProps) {
-  const cardRef = useRef<HTMLDivElement>(null);
-  const rotationRef = useRef(0);
+export function ExaminePanel({
+  open,
+  data,
+  onClose,
+  hasLinkedContent,
+  onContinue,
+}: ExaminePanelProps) {
+  const reducedMotion = useEffectiveReducedMotion();
+  const bodyText = data
+    ? data.detailText
+      ? `${data.description}\n\n${data.detailText}`
+      : data.description
+    : '';
+  const { displayed, done, skip } = useNarrativeTypewriter(bodyText, open ? 22 : 0);
 
-  // Animate card tilt via DOM transform — avoid setState every frame (React #185 under overlay handoff).
-  useEffect(() => {
-    if (!open) return;
-    let rafId: number;
-    let lastTime = 0;
-    rotationRef.current = 0;
-
-    const animate = (timestamp: number) => {
-      if (lastTime > 0) {
-        const delta = timestamp - lastTime;
-        rotationRef.current += (delta / 30) * 0.5;
-        const el = cardRef.current;
-        if (el) {
-          const r = rotationRef.current;
-          el.style.transform = `rotateY(${Math.sin(r * 0.02) * 15}deg) rotateX(${Math.cos(r * 0.015) * 8}deg)`;
-        }
-      }
-      lastTime = timestamp;
-      rafId = requestAnimationFrame(animate);
-    };
-    rafId = requestAnimationFrame(animate);
-    return () => cancelAnimationFrame(rafId);
-  }, [open]);
-
-  // E key for Continue — capture phase so 3D interaction system does not re-fire
   useEffect(() => {
     if (!open || !hasLinkedContent || !onContinue) return;
     const handleKey = (e: KeyboardEvent) => {
-      if (e.code !== 'KeyE') return;
+      if (e.code !== 'KeyE' || !done) return;
       e.preventDefault();
       e.stopPropagation();
       window.__volodka_ekey_consumed = true;
@@ -67,9 +49,8 @@ export function ExaminePanel({ open, data, onClose, hasLinkedContent, onContinue
     };
     window.addEventListener('keydown', handleKey, true);
     return () => window.removeEventListener('keydown', handleKey, true);
-  }, [open, hasLinkedContent, onContinue]);
+  }, [open, hasLinkedContent, onContinue, done]);
 
-  // ESC: consume before GameOrchestrator pause-menu handler (React 19 sync flush race)
   useEffect(() => {
     if (!open) return;
     const handleKey = (e: KeyboardEvent) => {
@@ -82,72 +63,46 @@ export function ExaminePanel({ open, data, onClose, hasLinkedContent, onContinue
     return () => window.removeEventListener('keydown', handleKey, true);
   }, [open, onClose]);
 
-  if (!data) return null;
+  if (!open || !data) return null;
 
   const icon = data.icon || '🔍';
+  const presentation = resolveExaminePresentation('#66ddcc');
 
   return (
-    <PanelWrapper
-      open={open}
+    <CinematicNarrativeFrame
+      nodeKey={`examine-${data.title}`}
+      presentation={presentation}
+      ariaLabel="Осмотр предмета"
+      speakerTitleId="examine-title"
+      speakerLabel={data.title}
+      displayedText={displayed}
+      done={done}
+      reducedMotion={reducedMotion}
+      liveMessage={`${data.title}: ${displayed}`}
+      onSkip={skip}
       onClose={onClose}
-      title={data.title}
-      urlPath="volodka://inspect"
-      accentColor="cyan"
-      maxWidth="max-w-md"
-      shortcutLabel="ESC"
-      icon={<span className="text-lg leading-none">{icon}</span>}
       footer={
-        <div className="flex flex-col gap-2">
-          {hasLinkedContent && onContinue && (
-            <motion.button
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.25, delay: 0.1 }}
-              onClick={onContinue}
-              className="group w-full relative text-left px-4 py-2.5 rounded-lg border border-cyan-500/40 bg-cyan-950/30 hover:border-cyan-400/60 hover:bg-cyan-900/30 transition-all duration-200 overflow-hidden cursor-pointer"
-              whileHover={{ scale: 1.01 }}
-              whileTap={{ scale: 0.98 }}
-            >
-              <div className="flex items-center gap-2">
-                <ChevronRight className="size-4 text-cyan-400" />
-                <span className="text-sm font-medium text-cyan-300 font-mono">Продолжить</span>
-                <span className="ml-auto text-xs font-mono text-cyan-500/60">[E]</span>
-              </div>
-            </motion.button>
-          )}
-          <p className="text-center text-[10px] text-slate-600 font-mono">[ESC] закрыть · клик по фону</p>
-        </div>
+        <p className="text-center text-4xl sm:text-5xl mt-2" aria-hidden>
+          {icon}
+        </p>
       }
     >
-      <div className="px-5 py-5 overflow-y-auto custom-scrollbar max-h-[60vh]">
-        {/* 3D-like rotating card */}
-        <div className="flex justify-center mb-5">
-          <div style={{ perspective: '600px' }}>
-            <div
-              ref={cardRef}
-              className="flex items-center justify-center text-5xl rounded-xl border border-cyan-500/20"
-              style={{
-                width: '140px',
-                height: '140px',
-                background: 'linear-gradient(135deg, rgb(var(--cyber-cyan-rgb) / 0.1), rgb(var(--cyber-cyan-rgb) / 0.02))',
-                boxShadow: '0 8px 32px rgba(0,0,0,0.4), 0 0 20px rgb(var(--cyber-cyan-rgb) / 0.06)',
-              }}
-            >
-              {icon}
-            </div>
-          </div>
-        </div>
-
-        <p className="text-center text-sm text-slate-300 mb-4 leading-relaxed font-mono">
-          {data.description}
-        </p>
-
-        <div className="h-px mb-4 bg-gradient-to-r from-transparent via-cyan-500/30 to-transparent" />
-
-        <p className="text-sm text-slate-400 leading-relaxed italic font-mono">
-          {data.detailText}
-        </p>
-      </div>
-    </PanelWrapper>
+      {done && hasLinkedContent && onContinue && (
+        <CinematicNarrativeChoices
+          accentColor={presentation.accentColor}
+          continueLabel="Продолжить [E]"
+          onContinue={onContinue}
+          choices={[]}
+        />
+      )}
+      {done && !hasLinkedContent && (
+        <CinematicNarrativeChoices
+          accentColor={presentation.accentColor}
+          continueLabel="Закрыть"
+          onContinue={onClose}
+          choices={[]}
+        />
+      )}
+    </CinematicNarrativeFrame>
   );
 }

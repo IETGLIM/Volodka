@@ -2,6 +2,12 @@ import { memo, Suspense, useCallback } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
+import { useCinematicNarrativePresentation } from '@/hooks/useCinematicNarrativePresentation';
+import {
+  CinematicShell,
+  CinematicTitleCard,
+  resolveSceneLocationPresentation,
+} from '@/components/game/cinematic';
 import type { SceneBannerPresentation } from '@/engine/world/worldAmbiencePresentation';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import {
@@ -246,14 +252,16 @@ export const GameplaySharedEffects = memo(function GameplaySharedEffects() {
   );
 });
 
-/** Scene title banner on location change. */
+/** Scene title banner on location change — AAA cinematic card. */
 export const GameplaySceneBanner = memo(function GameplaySceneBanner({
   sceneBanner,
 }: {
   sceneBanner: SceneBannerPresentation | null;
 }) {
   const reducedMotion = useEffectiveReducedMotion();
-  const motionDuration = reducedMotion ? 0 : 0.5;
+  const presentation = resolveSceneLocationPresentation('#88aacc');
+  const visible = sceneBanner != null;
+  useCinematicNarrativePresentation(visible);
 
   return (
     <AnimatePresence>
@@ -266,57 +274,17 @@ export const GameplaySceneBanner = memo(function GameplaySceneBanner({
           initial={reducedMotion ? false : { opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={reducedMotion ? undefined : { opacity: 0 }}
-          transition={{ duration: motionDuration }}
+          transition={{ duration: reducedMotion ? 0 : 0.5 }}
         >
-          <motion.div
-            className="px-10 sm:px-12 py-5 sm:py-6 rounded-lg"
-            style={{
-              backdropFilter: 'blur(8px)',
-              WebkitBackdropFilter: 'blur(8px)',
-              background: 'rgba(0, 0, 0, 0.35)',
-            }}
-            initial={reducedMotion ? false : { scale: 0.9, y: 10 }}
-            animate={{ scale: 1, y: 0 }}
-            exit={reducedMotion ? undefined : { scale: 1.05, y: -5 }}
-            transition={{ duration: motionDuration, ease: [0.25, 0.46, 0.45, 0.94] }}
-          >
-            <motion.h2
-              className="text-2xl sm:text-3xl md:text-4xl font-semibold tracking-wider text-center"
-              style={{
-                fontFamily: '"Georgia", "Times New Roman", serif',
-                color: 'rgba(220, 230, 250, 0.9)',
-                textShadow: '0 0 30px rgba(150, 180, 255, 0.3), 0 0 60px rgba(100, 130, 200, 0.15)',
-              }}
-              initial={reducedMotion ? false : { opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={reducedMotion ? undefined : { opacity: 0, y: -8 }}
-              transition={{ duration: reducedMotion ? 0 : 0.6, ease: 'easeOut' }}
-            >
-              {sceneBanner.title}
-            </motion.h2>
-            {sceneBanner.subtitle && (
-              <motion.p
-                className="mt-2 text-xs sm:text-sm text-center font-mono tracking-widest uppercase"
-                style={{ color: 'rgba(148, 163, 184, 0.75)' }}
-                initial={reducedMotion ? false : { opacity: 0, y: 4 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={reducedMotion ? undefined : { opacity: 0 }}
-                transition={{ duration: reducedMotion ? 0 : 0.5, delay: reducedMotion ? 0 : 0.15 }}
-              >
-                {sceneBanner.subtitle}
-              </motion.p>
-            )}
-            <motion.div
-              className="mt-3 mx-auto w-24 h-px"
-              style={{
-                background: 'linear-gradient(90deg, transparent, rgba(150, 180, 255, 0.4), transparent)',
-              }}
-              initial={reducedMotion ? false : { scaleX: 0 }}
-              animate={{ scaleX: 1 }}
-              exit={reducedMotion ? undefined : { scaleX: 0 }}
-              transition={{ duration: reducedMotion ? 0 : 0.6, delay: reducedMotion ? 0 : 0.2 }}
+          <CinematicShell presentation={presentation} backdropVariant="transition">
+            <CinematicTitleCard
+              title={sceneBanner.title}
+              subtitle={sceneBanner.subtitle ?? undefined}
+              accentColor={presentation.accentColor}
+              reducedMotion={reducedMotion}
+              size="location"
             />
-          </motion.div>
+          </CinematicShell>
         </motion.div>
       )}
     </AnimatePresence>
@@ -410,6 +378,12 @@ export const GameplayNarrativeOverlay = memo(function GameplayNarrativeOverlay()
   const { mode } = useOrchestratorShell();
   const { showStoryOverlay, narrativeKind } = useOrchestratorNarrativeOverlay();
 
+  const cinematicActive =
+    mode !== 'combat' &&
+    showStoryOverlay &&
+    (narrativeKind === 'story' || narrativeKind === 'dialogue');
+  useCinematicNarrativePresentation(cinematicActive);
+
   if (mode === 'combat') return null;
 
   const isStoryActive = showStoryOverlay && narrativeKind === 'story';
@@ -457,7 +431,7 @@ export const GameplayCombatLayer = memo(function GameplayCombatLayer() {
   );
 });
 
-/** Examine interaction panel. */
+/** Examine interaction — cinematic object beat. */
 export const GameplayExamineOverlay = memo(function GameplayExamineOverlay({
   open,
   data,
@@ -466,6 +440,8 @@ export const GameplayExamineOverlay = memo(function GameplayExamineOverlay({
   onReset,
   onClearPendingTriggerZone,
 }: GameplayExamineProps) {
+  useCinematicNarrativePresentation(open);
+
   const handleClose = useCallback(() => {
     onReset();
     onClearPendingTriggerZone();

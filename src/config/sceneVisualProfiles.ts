@@ -57,15 +57,17 @@ const STANDARD_PROFILE: SceneVisualProfile = {
 const PROFILES: Partial<Record<SceneId, SceneVisualProfile>> = {
   volodka_room: { ...HERO_PROFILE, enhancedAmbientOcclusion: false },
   volodka_corridor: { ...HERO_PROFILE, enhancedAmbientOcclusion: false },
-  home_evening: HERO_PROFILE,
-  street_night: HERO_PROFILE,
-  cafe_evening: HERO_PROFILE,
-  office_day: HERO_PROFILE,
-  park_day: HERO_PROFILE,
+  home_evening: { ...HERO_PROFILE, enhancedAmbientOcclusion: false },
+  street_night: { ...HERO_PROFILE, enhancedAmbientOcclusion: false },
+  cafe_evening: { ...HERO_PROFILE, enhancedAmbientOcclusion: false },
+  office_day: { ...HERO_PROFILE, enhancedAmbientOcclusion: false },
+  park_day: { ...HERO_PROFILE, enhancedAmbientOcclusion: false },
   library_day: { ...HERO_PROFILE, enhancedAmbientOcclusion: false },
   abandoned_factory: { ...STANDARD_PROFILE, forceFullPostFx: true, enhancedAmbientOcclusion: false },
   factory_basement: { ...STANDARD_PROFILE, forceFullPostFx: true, enhancedAmbientOcclusion: false },
   zarema_albert_room: { ...STANDARD_PROFILE, forceFullPostFx: true, enhancedAmbientOcclusion: false },
+  solnysh_room: { ...STANDARD_PROFILE, forceFullPostFx: true, enhancedAmbientOcclusion: false },
+  sleep_dream: { ...STANDARD_PROFILE, forceFullPostFx: true, enhancedAmbientOcclusion: false },
 };
 
 export function getSceneVisualProfile(sceneId: SceneId): SceneVisualProfile {

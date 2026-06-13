@@ -4,7 +4,7 @@ import { useOrchestratorNarrativeOverlay, useOrchestratorShell } from '@/store/s
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 
-/** Cinematic dim over the 3D world while story/dialogue overlays are open. */
+/** Cinematic dim over the 3D world while story/dialogue beats play (letterbox-friendly). */
 export const NarrativeWorldDim = memo(function NarrativeWorldDim() {
   const { mode } = useOrchestratorShell();
   const { showStoryOverlay } = useOrchestratorNarrativeOverlay();
@@ -21,18 +21,16 @@ export const NarrativeWorldDim = memo(function NarrativeWorldDim() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: reducedMotion ? 0 : 0.35 }}
+          transition={{ duration: reducedMotion ? 0 : 0.45 }}
           aria-hidden
         >
-          <div className="absolute inset-0 bg-black/30" />
           <div
             className="absolute inset-0"
             style={{
               background:
-                'radial-gradient(ellipse 85% 70% at 50% 45%, transparent 0%, rgba(0,0,0,0.35) 100%)',
+                'radial-gradient(ellipse at center, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.72) 88%)',
             }}
           />
-          <div className="absolute inset-x-0 bottom-0 h-[45dvh] bg-gradient-to-t from-black/55 via-black/20 to-transparent" />
         </motion.div>
       ) : null}
     </AnimatePresence>

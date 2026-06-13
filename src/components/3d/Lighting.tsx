@@ -29,7 +29,8 @@ const INDOOR_AMBIENT: Record<string, { color: string; intensity: number }> = {
   library_day:        { color: '#4a4438', intensity: 0.62 },
   abandoned_factory:  { color: '#3a3228', intensity: 0.58 },
   factory_basement:   { color: '#283830', intensity: 0.55 },
-  zarema_albert_room: { color: '#3a3228', intensity: 0.58 },
+  solnysh_room:       { color: '#3a3428', intensity: 0.6 },
+  sleep_dream:        { color: '#3a2850', intensity: 0.58 },
 };
 const DEFAULT_INDOOR_AMBIENT = { color: '#2a2a3a', intensity: 0.52 };
 
@@ -46,6 +47,14 @@ const INDOOR_FILL: Record<string, { position: [number, number, number]; intensit
   abandoned_factory:  { position: [0, 3.0, 0], intensity: 1.45, color: '#cc9966', distance: 16 },
   factory_basement:   { position: [0, 2.4, 0], intensity: 1.35, color: '#668877', distance: 14 },
   zarema_albert_room: { position: [0, 2.2, 0], intensity: 1.65, color: '#aa9977', distance: 12 },
+  solnysh_room:       { position: [0, 2.2, 0], intensity: 1.7, color: '#ccaa88', distance: 11 },
+  sleep_dream:        { position: [0, 2.4, 0], intensity: 1.5, color: '#8866aa', distance: 14 },
+};
+const OUTDOOR_READABILITY_AMBIENT: Record<string, { intensity: number; color: string }> = {
+  park_day:         { intensity: 0.14, color: '#8a9888' },
+  rooftop_edge:     { intensity: 0.12, color: '#8899aa' },
+  river_pier:       { intensity: 0.13, color: '#778899' },
+  chk_forest_zorge: { intensity: 0.11, color: '#6a7868' },
 };
 const DEFAULT_INDOOR_FILL: NonNullable<typeof INDOOR_FILL[string]> = {
   position: [0, 2.2, 0], intensity: 1.6, color: '#998877', distance: 12,
@@ -113,6 +122,7 @@ export function ExplorationLighting() {
 
   // Indoor fill — per-scene tuned or disabled
   const indoorFill = isIndoor ? (INDOOR_FILL[sceneId] ?? DEFAULT_INDOOR_FILL) : null;
+  const outdoorReadability = !isIndoor ? OUTDOOR_READABILITY_AMBIENT[sceneId] : null;
 
   return (
     <>
@@ -185,6 +195,10 @@ export function ExplorationLighting() {
           color={indoorFill.color}
           distance={indoorFill.distance}
         />
+      )}
+
+      {outdoorReadability && (
+        <ambientLight intensity={outdoorReadability.intensity} color={outdoorReadability.color} />
       )}
 
       {/* Scene-specific point lights from config */}
