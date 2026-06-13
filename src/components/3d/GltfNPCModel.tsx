@@ -35,6 +35,8 @@ interface GltfNPCModelInnerProps {
   definition: NPCDefinition;
   url: string;
   modelScale: number;
+  /** Matches procedural NPC `appearance.height` scaling (default 1.0 ≈ TARGET_HEIGHT). */
+  targetHeightFactor: number;
   interactionState: InteractionState;
   isInteractionTarget: boolean;
 }
@@ -43,6 +45,7 @@ function GltfNPCModelInner({
   definition,
   url,
   modelScale,
+  targetHeightFactor,
   interactionState,
   isInteractionTarget,
 }: GltfNPCModelInnerProps) {
@@ -77,14 +80,15 @@ function GltfNPCModelInner({
       heightDim = size.z;
     }
     if (!isFinite(heightDim) || heightDim < 0.2) heightDim = 1.5;
-    const autoScale = (TARGET_HEIGHT / heightDim) * modelScale;
+    const targetHeight = TARGET_HEIGHT * targetHeightFactor;
+    const autoScale = (targetHeight / heightDim) * modelScale;
 
     inner.rotation.x = rotX;
     inner.scale.setScalar(autoScale);
     const { min } = measure(scene);
     const y = isFinite(min.y) ? -min.y : 0;
     setFit({ scale: autoScale, rotX, y });
-  }, [scene, modelScale]);
+  }, [scene, modelScale, targetHeightFactor]);
 
   useFrame((_, delta) => {
     if (mixer) mixer.update(delta);
@@ -187,6 +191,7 @@ export function GltfNPCModel({
   }
 
   const scale = definition.scale ?? meta?.scale ?? 1;
+  const targetHeightFactor = appearance?.height ?? 1;
 
   return (
     <GltfLoadErrorBoundary
@@ -198,6 +203,7 @@ export function GltfNPCModel({
         definition={definition}
         url={url}
         modelScale={scale}
+        targetHeightFactor={targetHeightFactor}
         interactionState={interactionState}
         isInteractionTarget={isInteractionTarget}
       />

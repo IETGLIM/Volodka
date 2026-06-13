@@ -3,6 +3,7 @@ import { INTERACTION_LABELS, type TriggerZone } from '@/data/triggerZones';
 import type { SceneId } from '@/shared/types/game';
 import { FIRST_PERSON_ENABLED, FIRST_PERSON_EYE_HEIGHT } from '@/engine/camera/cameraConstants';
 import { getInteractionQueryContext } from '@/engine/interaction/interactionQueryContext';
+import { getNPCGroup } from '@/engine/interaction/npcRegistry';
 export type InteractionTargetKind = 'zone' | 'npc' | 'exit';
 
 export interface InteractionTargetHit {
@@ -44,6 +45,18 @@ const _playerForward = new THREE.Vector3();
 const _toTarget = new THREE.Vector3();
 const _eye = new THREE.Vector3();
 const _target = new THREE.Vector3();
+const _npcLivePos = new THREE.Vector3();
+
+/** Prefer live NPC group world position over schedule anchor when registered. */
+export function resolveNpcWorldPosition(
+  npcId: string,
+  schedulePos: [number, number, number],
+): [number, number, number] {
+  const group = getNPCGroup(npcId);
+  if (!group) return schedulePos;
+  group.getWorldPosition(_npcLivePos);
+  return [_npcLivePos.x, _npcLivePos.y, _npcLivePos.z];
+}
 
 const NPC_MAX_RANGE = 3.0;
 const ZONE_RANGE_PADDING = 1.35;
@@ -136,7 +149,8 @@ function pushNpcTarget(
   npc: NpcQueryTarget,
   checkLos: boolean,
 ): void {
-  _target.set(npc.position[0], npc.position[1], npc.position[2]);
+  const livePos = resolveNpcWorldPosition(npc.npcId, npc.position);
+  _target.set(livePos[0], livePos[1], livePos[2]);
   const scored = scoreInteractionTarget(playerPos, playerYaw, _target, NPC_MAX_RANGE);
   if (!scored) return;
   if (checkLos && scored.distance > 1.2 && !hasInteractionLineOfSight(playerPos, _target)) return;

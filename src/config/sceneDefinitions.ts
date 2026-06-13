@@ -221,10 +221,10 @@ export const cafe_evening_def: SceneDefinition = {
   ],
   obstacles: [
     { type: 'cuboidObstacle', size: [2.5, 0.55, 0.4], position: [0, 0.55, -4.0], footstepMaterial: 'wood' },
-    { type: 'cuboidObstacle', size: [0.4, 0.35, 0.4], position: [-3.0, 0.35, -2.0], footstepMaterial: 'wood' },
-    { type: 'cuboidObstacle', size: [0.4, 0.35, 0.4], position: [3.0, 0.35, 0], footstepMaterial: 'wood' },
-    { type: 'cuboidObstacle', size: [0.4, 0.35, 0.4], position: [0, 0.35, 2.5], footstepMaterial: 'wood' },
-    { type: 'cuboidObstacle', size: [0.4, 0.35, 0.4], position: [-3.0, 0.35, 1.5], footstepMaterial: 'wood' },
+    { type: 'cuboidObstacle', size: [0.75, 0.35, 0.75], position: [-3.0, 0.35, -2.0], footstepMaterial: 'wood' },
+    { type: 'cuboidObstacle', size: [0.75, 0.35, 0.75], position: [3.0, 0.35, 0], footstepMaterial: 'wood' },
+    { type: 'cuboidObstacle', size: [0.75, 0.35, 0.75], position: [0, 0.35, 2.5], footstepMaterial: 'wood' },
+    { type: 'cuboidObstacle', size: [0.75, 0.35, 0.75], position: [-3.0, 0.35, 1.5], footstepMaterial: 'wood' },
   ],
   ceilings: [
     { type: 'cuboid', size: [5, 0.1, 5], position: [0, 3.1, 0] },
@@ -475,6 +475,9 @@ export const office_day_def: SceneDefinition = {
     { type: 'cuboidObstacle', size: [1.2, 0.35, 0.6], position: [4, 0.35, -3], footstepMaterial: 'wood' },
     { type: 'cuboidObstacle', size: [2.0, 0.8, 0.5], position: [0, 0.8, 0], footstepMaterial: 'wood' },
     { type: 'cuboidObstacle', size: [0.8, 0.35, 0.8], position: [-5, 0.35, 3], footstepMaterial: 'wood' },
+    // Glass meeting room partitions (front-right, group at [4.5, 0, 4.0])
+    { type: 'cuboidObstacle', size: [3.0, 1.6, 0.1], position: [4.5, 1.6, 2.5], footstepMaterial: 'concrete' },
+    { type: 'cuboidObstacle', size: [0.1, 1.6, 3.0], position: [6.0, 1.6, 4.0], footstepMaterial: 'concrete' },
   ],
   ceilings: [
     { type: 'cuboid', size: [7, 0.1, 6], position: [0, 3.1, 0] },

@@ -37,14 +37,31 @@ export function OfficeDayVisual({ livePlayerPositionRef }: OfficeDayVisualProps)
     return { housingGeo, tubeGeo, housingMat, tubeMat, positions };
   }, []);
 
+  const glassMat = useMemo(
+    () =>
+      new THREE.MeshStandardMaterial({
+        color: '#b0c0d0',
+        transparent: true,
+        opacity: 0.25,
+        metalness: 0.1,
+        roughness: 0.05,
+        depthWrite: false,
+        polygonOffset: true,
+        polygonOffsetFactor: 1,
+        polygonOffsetUnits: 1,
+      }),
+    [],
+  );
+
   useEffect(() => {
     return () => {
       lightPanel.housingGeo.dispose();
       lightPanel.tubeGeo.dispose();
       lightPanel.housingMat.dispose();
       lightPanel.tubeMat.dispose();
+      glassMat.dispose();
     };
-  }, [lightPanel]);
+  }, [lightPanel, glassMat]);
 
   return (
     <group>
@@ -121,14 +138,12 @@ export function OfficeDayVisual({ livePlayerPositionRef }: OfficeDayVisualProps)
       {/* ── GLASS MEETING ROOM (front-right) ── */}
       {/* ═══════════════════════════════════════════════ */}
       <group position={[4.5, 0, 4.0]}>
-        {/* Glass walls */}
-        <mesh position={[0, H / 2, -1.5]} castShadow>
+        {/* Glass walls — renderOrder + depthWrite/polygonOffset to avoid z-fighting */}
+        <mesh position={[0, H / 2, -1.5]} renderOrder={2} material={glassMat}>
           <boxGeometry args={[3.0, H, 0.05]} />
-          <meshStandardMaterial color="#b0c0d0" transparent opacity={0.25} metalness={0.1} roughness={0.05} />
         </mesh>
-        <mesh position={[1.5, H / 2, 0]} castShadow>
+        <mesh position={[1.5, H / 2, 0]} renderOrder={2} material={glassMat}>
           <boxGeometry args={[0.05, H, 3.0]} />
-          <meshStandardMaterial color="#b0c0d0" transparent opacity={0.25} metalness={0.1} roughness={0.05} />
         </mesh>
         {/* Conference table */}
         <mesh position={[0, 0.4, 0]} castShadow>
