@@ -103,6 +103,8 @@ export interface WorldSliceActions {
   resetConsecutiveVictories: () => void;
   /** Update max combo if the new value is higher (does not increment victories) */
   trackMaxCombo: (combo: number) => void;
+  /** Apply scene-visit and night-hour tracking from checkAchievements in one set pass */
+  batchCheckAchievementProgress: (updates: { sceneVisit?: string; trackNightHour?: boolean }) => void;
 }
 
 export type WorldSlice = WorldSliceState & WorldSliceActions;
@@ -599,5 +601,30 @@ export const createWorldSlice: StateCreator<
           maxComboAchieved: combo,
         },
       };
+    }),
+
+  batchCheckAchievementProgress: (updates) =>
+    set((state) => {
+      let nextProgress = state.achievementProgress;
+      let changed = false;
+
+      if (updates.sceneVisit && !nextProgress.visitedScenes.includes(updates.sceneVisit)) {
+        nextProgress = {
+          ...nextProgress,
+          visitedScenes: [...nextProgress.visitedScenes, updates.sceneVisit],
+        };
+        changed = true;
+      }
+
+      if (updates.trackNightHour) {
+        nextProgress = {
+          ...nextProgress,
+          nightTimeHours: nextProgress.nightTimeHours + 0.01,
+        };
+        changed = true;
+      }
+
+      if (!changed) return state;
+      return { achievementProgress: nextProgress };
     }),
 });

@@ -12,6 +12,7 @@
 import {
   dispatchGameAction,
   getGameSnapshot,
+  type AchievementProgressSnapshot,
 } from '@/engine/GameActionDispatcher';
 import { ACHIEVEMENT_MAP, TOTAL_ACHIEVEMENTS } from '@/data/achievements';
 import type { EnemyType } from '@/shared/types/game';
@@ -80,22 +81,55 @@ export interface AchievementCheckState {
 
 /* ─── Main check function ─── */
 
+function projectCheckProgressUpdates(
+  progress: AchievementProgressSnapshot,
+  sceneId: string,
+  timeOfDay: number,
+): {
+  progress: AchievementProgressSnapshot;
+  batch: { sceneVisit?: string; trackNightHour?: boolean };
+} {
+  let nextProgress = progress;
+  const batch: { sceneVisit?: string; trackNightHour?: boolean } = {};
+
+  if (!progress.visitedScenes.includes(sceneId)) {
+    batch.sceneVisit = sceneId;
+    nextProgress = {
+      ...nextProgress,
+      visitedScenes: [...nextProgress.visitedScenes, sceneId],
+    };
+  }
+
+  if (timeOfDay >= 22 || timeOfDay < 6) {
+    batch.trackNightHour = true;
+    nextProgress = {
+      ...nextProgress,
+      nightTimeHours: nextProgress.nightTimeHours + 0.01,
+    };
+  }
+
+  return { progress: nextProgress, batch };
+}
+
 export function checkAchievements(state: AchievementCheckState): void {
   const mode = state.mode;
   const sceneId = state.currentSceneId;
   const poems = state.collectedPoems;
-  const karma = state.karma;
   const energy = state.energy;
   const flags = state.flags;
   const npcRelations = state.npcRelations;
   const timeOfDay = state.timeOfDay;
 
-  const currentProgress = getGameSnapshot().achievementProgress;
-  if (!currentProgress.visitedScenes.includes(sceneId)) {
-    dispatchGameAction({ type: 'achievement/trackSceneVisit', sceneId });
-  }
+  const snapshot = getGameSnapshot();
+  const { progress, batch } = projectCheckProgressUpdates(
+    snapshot.achievementProgress,
+    sceneId,
+    timeOfDay,
+  );
 
-  const progress = getGameSnapshot().achievementProgress;
+  if (batch.sceneVisit !== undefined || batch.trackNightHour) {
+    dispatchGameAction({ type: 'achievement/batchCheckProgress', ...batch });
+  }
 
   // ─── STORY ACHIEVEMENTS ───
 
@@ -172,9 +206,7 @@ export function checkAchievements(state: AchievementCheckState): void {
   }
 
   if (timeOfDay >= 22 || timeOfDay < 6) {
-    dispatchGameAction({ type: 'achievement/trackNightHour' });
-    const progressAfterNight = getGameSnapshot().achievementProgress;
-    if (progressAfterNight.nightTimeHours >= 2) {
+    if (progress.nightTimeHours >= 2) {
       tryUnlock('explorer_night_owl');
     }
   }

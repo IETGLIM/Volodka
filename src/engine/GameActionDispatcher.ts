@@ -109,6 +109,11 @@ export type GameAction =
   | { type: 'achievement/trackMaxCombo'; comboCount: number }
   | { type: 'achievement/trackCriticalHit' }
   | { type: 'achievement/trackPoemPowerInCombat' }
+  | {
+      type: 'achievement/batchCheckProgress';
+      sceneVisit?: string;
+      trackNightHour?: boolean;
+    }
   /* ── Skill tree ── */
   | { type: 'skill/unlockTreeNode'; skillId: string }
   /* ── Notifications ── */
