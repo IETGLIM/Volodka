@@ -11,8 +11,13 @@ import {
   resetSceneTransitionGuard,
 } from './SceneTransitionManager';
 import { resetGlobalCleanupRegistry } from './GlobalCleanupService';
+import { resetSceneLoadedGate } from './sceneLoadedGate';
 
 const dispatchGameAction = vi.fn();
+
+async function flushSceneLoaded(): Promise<void> {
+  await Promise.resolve();
+}
 
 vi.mock('@/engine/interaction/narrativeOpenHelpers', () => ({
   triggerSceneEntryStoryIfNeeded: vi.fn(),
@@ -35,11 +40,12 @@ describe('combatStartGate', () => {
   beforeEach(() => {
     resetCombatStartGate();
     resetSceneTransitionGuard();
+    resetSceneLoadedGate();
     resetGlobalCleanupRegistry();
     dispatchGameAction.mockClear();
   });
 
-  it('defers combat during performSceneTransition and flushes after scene:loaded', () => {
+  it('defers combat during performSceneTransition and flushes after scene:loaded', async () => {
     const order: string[] = [];
     const executor = vi.fn(() => order.push('combat'));
 
@@ -56,6 +62,8 @@ describe('combatStartGate', () => {
       spawnAt: [0, 0, 0],
     });
 
+    expect(order).toEqual(['enter']);
+    await flushSceneLoaded();
     expect(order).toEqual(['enter', 'loaded', 'combat']);
     expect(executor).toHaveBeenCalledTimes(1);
     expect(executor).toHaveBeenCalledWith('system_daemon', undefined);

@@ -3,7 +3,7 @@
  *  Handles scene transitions with:
  *  - Door open/close sounds
  *  - Camera shake effect
- *  - SceneTransitionManager protocol (unload → store → enter → loaded)
+ *  - SceneTransitionManager protocol (unload → store → enter → loaded on first frame)
  *  - Brief camera position freeze during transition
  *
  *  SINGLE WRITER for exploration.currentSceneId + playerPosition on transition.

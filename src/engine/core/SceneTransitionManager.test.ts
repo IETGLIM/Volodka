@@ -5,8 +5,13 @@ import {
   resetSceneTransitionGuard,
 } from './SceneTransitionManager';
 import { registerGlobalCleanup, resetGlobalCleanupRegistry } from './GlobalCleanupService';
+import { resetSceneLoadedGate } from './sceneLoadedGate';
 
 const dispatchGameAction = vi.fn();
+
+async function flushSceneLoaded(): Promise<void> {
+  await Promise.resolve();
+}
 
 vi.mock('@/engine/interaction/narrativeOpenHelpers', () => ({
   triggerSceneEntryStoryIfNeeded: vi.fn(),
@@ -29,9 +34,10 @@ describe('SceneTransitionManager', () => {
   beforeEach(() => {
     dispatchGameAction.mockClear();
     resetSceneTransitionGuard();
+    resetSceneLoadedGate();
   });
 
-  it('emits unload → enter → loaded in order', () => {
+  it('emits unload → enter → loaded in order', async () => {
     resetGlobalCleanupRegistry();
     const order: string[] = [];
 
@@ -46,6 +52,8 @@ describe('SceneTransitionManager', () => {
       spawnAt: [1, 0, 2],
     });
 
+    expect(order).toEqual(['unload', 'cleanup', 'enter']);
+    await flushSceneLoaded();
     expect(order).toEqual(['unload', 'cleanup', 'enter', 'loaded']);
     expect(dispatchGameAction).toHaveBeenCalledWith({
       type: 'exploration/applySceneTransition',
@@ -56,7 +64,7 @@ describe('SceneTransitionManager', () => {
     resetGlobalCleanupRegistry();
   });
 
-  it('skips unload when target equals current scene', () => {
+  it('skips unload when target equals current scene', async () => {
     resetGlobalCleanupRegistry();
     const order: string[] = [];
 
@@ -69,6 +77,8 @@ describe('SceneTransitionManager', () => {
       spawnAt: [0, 0, 0],
     });
 
+    expect(order).toEqual(['enter']);
+    await flushSceneLoaded();
     expect(order).toEqual(['enter', 'loaded']);
     resetGlobalCleanupRegistry();
   });

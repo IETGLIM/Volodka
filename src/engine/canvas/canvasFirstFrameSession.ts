@@ -23,6 +23,10 @@ export function getCanvasFirstFrameSession(canvas: HTMLCanvasElement): CanvasFir
   return session;
 }
 
+export function hasRegisteredCanvas(): boolean {
+  return registeredCanvas !== null;
+}
+
 export function registerCanvasForFirstFrame(canvas: HTMLCanvasElement): void {
   registeredCanvas = canvas;
 }

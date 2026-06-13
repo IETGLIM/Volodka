@@ -5,7 +5,7 @@
  *  1. scene:unload + GlobalCleanupService (GPU/audio/timer teardown)
  *  2. store write (currentSceneId, spawn)
  *  3. scene:enter (audio, narrative, preload listeners)
- *  4. scene:loaded (post-commit; heavy assets may still stream via Suspense)
+ *  4. scene:loaded (deferred — first canvas frame after enter; Suspense chunks may still stream)
  */
 
 import { eventBus } from '@/engine/EventBus';
@@ -15,6 +15,12 @@ import { syncNarrativeOnSceneEnter } from '@/shared/exploreHubNodes';
 import { triggerSceneEntryStoryIfNeeded } from '@/engine/interaction/narrativeOpenHelpers';
 import { flushDeferredCombatStart } from './combatStartGate';
 import { runGlobalSceneUnload } from './GlobalCleanupService';
+import { ensureSceneLoadedBridge, scheduleSceneLoaded } from './sceneLoadedGate';
+
+ensureSceneLoadedBridge();
+eventBus.on('scene:loaded', () => {
+  queueMicrotask(() => flushDeferredCombatStart());
+});
 
 export interface SceneTransitionPayload {
   targetScene: SceneId;
@@ -74,12 +80,12 @@ export function performSceneTransition(payload: SceneTransitionPayload): void {
       fromSceneId,
     });
 
-    eventBus.emit('scene:loaded', {
+    // scene:enter = store committed; scene:loaded = first composited frame (see sceneLoadedGate).
+    scheduleSceneLoaded({
       sceneId: targetScene,
       fromSceneId,
     });
   } finally {
     transitionInProgress = false;
-    flushDeferredCombatStart();
   }
 }

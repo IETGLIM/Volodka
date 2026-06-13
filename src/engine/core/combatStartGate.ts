@@ -51,7 +51,7 @@ export function deferCombatStartIfTransitionBusy(
   return true;
 }
 
-/** Run deferred combat after transition events have settled. */
+/** Run deferred combat after scene:loaded (first composited frame). */
 export function flushDeferredCombatStart(): void {
   const req = pending;
   pending = null;
