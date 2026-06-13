@@ -2,6 +2,10 @@ import { memo, Suspense, useCallback } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
+import {
+  isExplorationHudProfile,
+  useGameplayPresentationProfile,
+} from '@/hooks/useGameplayPresentationProfile';
 import { useCinematicNarrativePresentation } from '@/hooks/useCinematicNarrativePresentation';
 import {
   CinematicShell,
@@ -65,6 +69,7 @@ import {
   LazyPhotoMode,
 } from './lazyPanels';
 import { OrchestratorMinigameOverlays } from './OrchestratorMinigameOverlays';
+import { EncounterBeatOverlay } from '../EncounterBeatOverlay';
 import { OrchestratorStatsPanel } from './OrchestratorPanelSlots';
 import { useMobileDetection } from './useMobileDetection';
 import type { PanelCloseHandlers } from './useStablePanelClosers';
@@ -115,8 +120,8 @@ function isAnyMinigameOpen(props: GameplayMinigameProps): boolean {
 
 /** Exploration-only notification toasts and guidance. */
 export const GameplayExplorationNotifications = memo(function GameplayExplorationNotifications() {
-  const { mode } = useOrchestratorShell();
-  if (mode !== 'exploration') return null;
+  const profile = useGameplayPresentationProfile();
+  if (!isExplorationHudProfile(profile)) return null;
 
   return (
     <>
@@ -217,16 +222,16 @@ export const GameplaySceneTransitionFx = memo(function GameplaySceneTransitionFx
 
 /** Poem power activation VFX — exploration only. */
 export const GameplayPoemPowerFx = memo(function GameplayPoemPowerFx() {
-  const { mode } = useOrchestratorShell();
-  if (mode !== 'exploration') return null;
+  const profile = useGameplayPresentationProfile();
+  if (!isExplorationHudProfile(profile)) return null;
 
   return <PoemPowerEffect />;
 });
 
 /** Photo mode viewfinder — exploration only (Ctrl+P / HUD button). */
 export const GameplayPhotoMode = memo(function GameplayPhotoMode() {
-  const { mode } = useOrchestratorShell();
-  if (mode !== 'exploration') return null;
+  const profile = useGameplayPresentationProfile();
+  if (!isExplorationHudProfile(profile)) return null;
 
   return (
     <Suspense fallback={null}>
@@ -244,6 +249,7 @@ export const GameplaySharedEffects = memo(function GameplaySharedEffects() {
       <GameplayCombatVisualFx />
       <GameplayScreenEffectsLayer />
       <GameplayIntroWakeOverlay />
+      <EncounterBeatOverlay />
       <GameplayCutsceneOverlay />
       <GameplaySceneTransitionFx />
       <GameplayPoemPowerFx />
@@ -293,8 +299,8 @@ export const GameplaySceneBanner = memo(function GameplaySceneBanner({
 
 /** Stress, compass, quick-use — exploration only (widgets no-op in cutscene). */
 export const GameplayAmbientExplorationHud = memo(function GameplayAmbientExplorationHud() {
-  const { mode } = useOrchestratorShell();
-  if (mode !== 'exploration') return null;
+  const profile = useGameplayPresentationProfile();
+  if (!isExplorationHudProfile(profile)) return null;
 
   return (
     <>
@@ -317,8 +323,8 @@ export const GameplayExplorationHud = memo(function GameplayExplorationHud({
   panelOpeners: GameplayHudPanelOpeners;
   hudSecondaryOpeners: HudSecondaryPanelOpeners;
 }) {
-  const { mode } = useOrchestratorShell();
-  if (mode !== 'exploration' || !gameDataReady) return null;
+  const profile = useGameplayPresentationProfile();
+  if (!isExplorationHudProfile(profile) || !gameDataReady) return null;
 
   return (
     <>
@@ -366,9 +372,9 @@ export const GameplayMobileExplorationHud = memo(function GameplayMobileExplorat
 }: {
   onOpenInventory: () => void;
 }) {
-  const { mode } = useOrchestratorShell();
+  const profile = useGameplayPresentationProfile();
   const isMobile = useMobileDetection();
-  if (!isMobile || mode !== 'exploration') return null;
+  if (!isMobile || !isExplorationHudProfile(profile)) return null;
 
   return <ExplorationMobileHud onOpenInventory={onOpenInventory} />;
 });

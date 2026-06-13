@@ -4,6 +4,7 @@
 import { useRef, useEffect, useLayoutEffect } from 'react';
 import { useThree } from '@react-three/fiber';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
+import { isEncounterPresentationActive } from '@/engine/combat/encounterPresentation';
 import * as THREE from 'three';
 import { useCameraFollowState } from '@/store/selectors';
 import {
@@ -241,7 +242,7 @@ export function FollowCamera({
 
     const isInDialogue = isInDialogueInteraction();
     const isCutscene = gameMode === 'cutscene' && cutsceneActiveRef.current;
-    const isCombat = sceneId === 'battle' && gameMode === 'exploration';
+    const isCombat = gameMode === 'combat' || isEncounterPresentationActive();
     const interactionLocked = isInteractionLocked();
 
     const targetInteractionDist = interactionLocked ? NPC_INTERACTION_DISTANCE : distanceRef.current;

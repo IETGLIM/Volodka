@@ -1,6 +1,8 @@
 import type { GamePhase } from '@/shared/gamePhase';
 import { getGamePhase } from '@/shared/gamePhase';
 import { isNarrativeMovementLocked } from '@/shared/exploreHubNodes';
+import { isEncounterPresentationActive } from '@/engine/combat/encounterPresentation';
+import { isCinematicHoldActive } from '@/engine/camera/cinematicPresentation';
 import type { GameStoreSnapshot } from '@/engine/GameActionDispatcher';
 import type { GameStoreState } from '@/store/types';
 
@@ -29,7 +31,9 @@ export function createFrameGameSnapshot(store: GameStoreSnapshot): FrameGameSnap
     isNarrativeMovementLocked(showStoryOverlay, currentNodeId ?? '') ||
     gamePhase === 'cutscene' ||
     gamePhase === 'intro' ||
-    gamePhase === 'combat';
+    gamePhase === 'combat' ||
+    isEncounterPresentationActive() ||
+    isCinematicHoldActive();
 
   return {
     gamePhase,
@@ -52,7 +56,9 @@ export function createFrameGameSnapshotFromStore(state: GameStoreState): FrameGa
     isNarrativeMovementLocked(state.showStoryOverlay, state.currentNodeId ?? '') ||
     gamePhase === 'cutscene' ||
     gamePhase === 'intro' ||
-    gamePhase === 'combat';
+    gamePhase === 'combat' ||
+    isEncounterPresentationActive() ||
+    isCinematicHoldActive();
 
   return {
     gamePhase,

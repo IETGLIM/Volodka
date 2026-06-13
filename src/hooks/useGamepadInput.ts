@@ -13,6 +13,7 @@ import {
 import { setPendingGamepadOrbit } from '@/engine/input/gamepadCamera';
 import { fireInteractPress } from '@/engine/input/fireInteractPress';
 import { isNarrativeMovementLocked } from '@/shared/exploreHubNodes';
+import { isEncounterPresentationActive } from '@/engine/combat/encounterPresentation';
 import type { VirtualControls } from '@/hooks/useGamePhysics';
 import type { PanelType } from '@/components/game/orchestrator/types';
 
@@ -33,6 +34,7 @@ function dispatchKey(code: string, key: string): void {
 function shouldBlockMovement(mode: string, panelStackLength: number): boolean {
   const { showStoryOverlay, currentNodeId } = useGameStore.getState();
   if (mode !== 'exploration' && mode !== 'combat') return true;
+  if (isEncounterPresentationActive()) return true;
   if (isNarrativeMovementLocked(showStoryOverlay, currentNodeId)) return true;
   if (getInteractionState() === InteractionState.Dialogue) return true;
   if (panelStackLength > 0) return true;

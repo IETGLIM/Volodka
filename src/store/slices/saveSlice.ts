@@ -15,6 +15,7 @@ import { applyCombinedPatch } from '../patchState';
 import { getCombinedGameState } from '../storeBindings';
 import { resetGuidedStoryManager } from '@/engine/GuidedStoryManager';
 import { resetCinematicPresentation } from '@/engine/camera/cinematicPresentation';
+import { cancelEncounterPresentation } from '@/engine/combat/encounterPresentation';
 import { clearAutoCloseTimers } from './explorationSlice';
 import { resolveSaveFromStorage, writeSaveToLocalStorage } from './saveStorage';
 
@@ -37,6 +38,7 @@ export const createSaveSlice: StateCreator<GameStoreState, [], [], SaveSlice> = 
     applyCombinedPatch(createDefaultResetState());
     resetGuidedStoryManager();
     resetCinematicPresentation();
+    cancelEncounterPresentation();
   },
 
   saveGame: (options) => {
@@ -121,6 +123,8 @@ export const createSaveSlice: StateCreator<GameStoreState, [], [], SaveSlice> = 
       clearAutoCloseTimers();
       applyCombinedPatch(storePatchFromSave(resolved.data));
       resetGuidedStoryManager();
+      resetCinematicPresentation();
+      cancelEncounterPresentation();
 
       if (resolved.status === 'recovered-from-backup') {
         eventBus.emit('game:system_alert', {

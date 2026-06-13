@@ -21,6 +21,12 @@ import {
   deferCombatStartIfTransitionBusy,
   registerCombatStartExecutor,
 } from '@/engine/core/combatStartGate';
+import {
+  cancelEncounterPresentation,
+  registerEncounterCommitHandler,
+  startEncounter,
+} from '@/engine/combat/encounterPresentation';
+import type { EncounterSource } from '@/engine/combat/encounterTypes';
 import { eventBus } from '@/engine/EventBus';
 import { registerHmrDispose } from '@/shared/dev/hmrDispose';
 import {
@@ -231,6 +237,7 @@ function notifyNewCombatLogEntries(beforeLen: number): void {
 
 /** Tear down combat session timers and listener refs. Idempotent. */
 export function disposeCombatSystem(): void {
+  cancelEncounterPresentation();
   clearDeferredCombatStart();
   combat.dispose();
 }
@@ -241,7 +248,16 @@ export function reviveCombatSystem(): void {
 }
 
 registerCombatStartExecutor((enemyType, options) => {
-  startCombatImmediate(enemyType, options);
+  startEncounter({
+    source: options?.encounterSource ?? 'story',
+    enemyType,
+    encounterName: options?.encounterName,
+    creepId: options?.creepId,
+  });
+});
+
+registerEncounterCommitHandler((ctx) => {
+  startCombatImmediate(ctx.enemyType, { encounterName: ctx.encounterName });
 });
 
 registerHmrDispose(disposeCombatSystem);
@@ -263,16 +279,30 @@ export function getCombatState(): CombatState | null {
 export interface CombatStartOptions {
   /** Street creep / story label shown in toasts when templates differ from context. */
   encounterName?: string;
+  encounterSource?: EncounterSource;
+  creepId?: string;
+  /** Test harness — skip the shared encounter presentation beat. */
+  skipPresentation?: boolean;
 }
 
 export function startCombat(
   enemyType: EnemyType,
   options?: CombatStartOptions,
 ): CombatState | null {
-  if (deferCombatStartIfTransitionBusy(enemyType, options)) {
-    return null;
+  if (options?.skipPresentation) {
+    if (deferCombatStartIfTransitionBusy(enemyType, options)) {
+      return null;
+    }
+    return startCombatImmediate(enemyType, options);
   }
-  return startCombatImmediate(enemyType, options);
+
+  startEncounter({
+    source: options?.encounterSource ?? 'story',
+    enemyType,
+    encounterName: options?.encounterName,
+    creepId: options?.creepId,
+  });
+  return getCombatState()?.status === 'active' ? getCombatState() : null;
 }
 
 function startCombatImmediate(
@@ -353,9 +383,6 @@ function startCombatImmediate(
     encounterName: encounterLabel,
     encounterEmoji: enemy.emoji,
   });
-  eventBus.emit('fx:flash', { color: 'rgba(255,40,60,0.32)', opacity: 0.32, duration: 420 });
-  eventBus.emit('fx:glitch', { intensity: 0.48, duration: 520 });
-  eventBus.emit('camera:combat_impact', { intensity: 0.5 });
 
   combat.notifyListeners();
   return combat.getState()!;

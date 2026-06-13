@@ -1,3 +1,4 @@
+import { isEncounterPresentationActive } from '@/engine/combat/encounterPresentation';
 import {
   updateCombatCamera,
   updateExplorationState,
@@ -12,7 +13,7 @@ export const combatStrategy: CameraModeStrategy = {
   priority: 60,
 
   isActive(ctx) {
-    return ctx.sceneId === 'battle' && ctx.gameMode === 'exploration';
+    return ctx.gameMode === 'combat' || isEncounterPresentationActive();
   },
 
   update(ctx) {

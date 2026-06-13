@@ -1,7 +1,10 @@
-import type { CombatAction, EnemyType } from '@/shared/types/game';
+import type { EncounterContext } from '@/engine/combat/encounterTypes';
+import type { CombatAction, EnemyType, SceneId } from '@/shared/types/game';
 
 /** Turn-based combat — CombatSystem, ScreenEffects, useCombatOrchestrator. */
 export interface CombatEvents {
+  'encounter:presentation_start': EncounterContext & { sceneId: SceneId };
+  'encounter:presentation_end': EncounterContext;
   'combat:start': { enemyType: EnemyType; encounterName?: string; encounterEmoji?: string };
   'combat:turn': { turn: number; isPlayerTurn: boolean };
   'combat:action': { action: CombatAction; damage?: number };

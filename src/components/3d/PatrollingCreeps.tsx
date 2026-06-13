@@ -16,7 +16,7 @@ import { useGameStore } from '@/store/gameStore';
 import { readGamePhase } from '@/shared/gamePhase';
 import { eventBus } from '@/engine/EventBus';
 import { isSceneTransitionInProgress } from '@/engine/core/SceneTransitionManager';
-import { startCombat } from '@/engine/CombatSystem';
+import { startEncounter } from '@/engine/combat/encounterPresentation';
 import { ENEMY_TEMPLATES } from '@/engine/combat/enemies';
 import { audioEngine } from '@/engine/audio/AudioEngine';
 import { getCreepsForScene, type CreepPatrolDef } from '@/data/creepPatrols';
@@ -28,8 +28,6 @@ const CONTACT_DISTANCE = 1.15;
 const LOSE_AGGRO_DISTANCE = 9.5;
 const COOLDOWN_AFTER_ESCAPE_S = 8;
 const HOVER_HEIGHT = 0.9;
-/** Brief beat between contact and turn-based UI — sells the clash moment. */
-const ENGAGE_DELAY_MS = 420;
 
 /** Poem power «Путеводная Звезда» (poem_3) — TTL flag that guides the player
  *  past dangers: creep vision shrinks to this fraction while active. */
@@ -122,7 +120,6 @@ function Creep({
   const shockwaveRef = useRef<THREE.Mesh>(null);
   const shockwaveMatRef = useRef<THREE.MeshBasicMaterial>(null);
   const beamMatRef = useRef<THREE.MeshBasicMaterial>(null);
-  const engageTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const stateRef = useRef<CreepState>('patrol');
   const hitReactRef = useRef(0);
@@ -149,21 +146,11 @@ function Creep({
   }, [def]);
 
   useEffect(() => {
-    return () => {
-      if (engageTimerRef.current) clearTimeout(engageTimerRef.current);
-    };
-  }, []);
-
-  useEffect(() => {
     const scope = eventBus.createScope();
     const endDuel = () => {
       setDueling(false);
       setEngaging(false);
       engageQueuedRef.current = false;
-      if (engageTimerRef.current) {
-        clearTimeout(engageTimerRef.current);
-        engageTimerRef.current = null;
-      }
     };
     scope.on('combat:start', () => {
       if (engagedCreepIdRef.current === def.id) {
@@ -291,14 +278,12 @@ function Creep({
           pos.z = player.z + Math.cos(faceYaw) * 2.4;
           headingRef.current = faceYaw + Math.PI;
 
-          audioEngine.playSfx('combat_engage');
-          eventBus.emit('fx:glitch', { intensity: 0.62, duration: 480 });
-          eventBus.emit('camera:combat_impact', { intensity: 0.58 });
-
-          engageTimerRef.current = setTimeout(() => {
-            engageTimerRef.current = null;
-            startCombat(def.enemyType, { encounterName: def.name });
-          }, ENGAGE_DELAY_MS);
+          startEncounter({
+            source: 'creep',
+            enemyType: def.enemyType,
+            encounterName: def.name,
+            creepId: def.id,
+          });
         } else {
           const step = def.chaseSpeed * delta;
           pos.x += (dx / playerDist) * step;

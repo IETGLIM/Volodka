@@ -132,7 +132,8 @@ export function useCutsceneController() {
 
     unsubOverlayEnd = eventBus.on('cutscene:overlay_end', finishCutsceneBeat);
 
-    cutsceneSessionRef.current.schedule(finishCutsceneBeat, totalDuration + 300);
+    // Safety fallback if overlay_end never fires (stuck overlay).
+    cutsceneSessionRef.current.schedule(finishCutsceneBeat, totalDuration + 5000);
 
     return () => {
       unsubOverlayEnd?.();

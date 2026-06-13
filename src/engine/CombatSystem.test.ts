@@ -70,11 +70,11 @@ describe('CombatSystem session timers', () => {
 
     const randomSpy = vi.spyOn(Math, 'random').mockReturnValue(0);
 
-    startCombat('system_daemon');
+    startCombat('system_daemon', { skipPresentation: true });
     playerAttack();
     expect(getCombatState()?.status).toBe('victory');
 
-    startCombat('system_daemon');
+    startCombat('system_daemon', { skipPresentation: true });
     expect(getCombatState()?.status).toBe('active');
 
     vi.advanceTimersByTime(3000);

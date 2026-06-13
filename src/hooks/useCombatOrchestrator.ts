@@ -25,7 +25,7 @@ import type { EnemyType } from '@/shared/types/game';
  */
 export function useCombatOrchestrator() {
   const startCombatFromStory = useCallback((enemyType: EnemyType) => {
-    startCombat(enemyType);
+    startCombat(enemyType, { encounterSource: 'story' });
   }, []);
 
   useEffect(() => {
@@ -40,7 +40,7 @@ export function useCombatOrchestrator() {
           if (karma > 65) enemyType = 'shadow_agent';
           else if (karma > 35) enemyType = 'corporate_golem';
 
-          startCombat(enemyType);
+          startCombat(enemyType, { encounterSource: 'arena' });
         }
       }
     });

@@ -4,11 +4,14 @@
  */
 
 import { getGameSnapshot } from '@/engine/GameActionDispatcher';
+import type { EncounterSource } from '@/engine/combat/encounterTypes';
 import type { EnemyType, SceneId } from '@/shared/types/game';
 import { isSceneTransitionInProgress } from './SceneTransitionManager';
 
 export interface DeferredCombatStartOptions {
   encounterName?: string;
+  encounterSource?: EncounterSource;
+  creepId?: string;
 }
 
 interface PendingCombatStart {
