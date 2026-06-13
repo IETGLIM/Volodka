@@ -24,14 +24,14 @@ export const DEFAULT_NPC_LOD: LodThresholds = {
   impostorIn: 11,
 };
 
-/** Scale thresholds — lower bias = keep high detail longer (ultra preset). */
+/** Scale thresholds — lower lodBias switches to low detail sooner. */
 export function scaleNpcLodThresholds(base: LodThresholds, lodBias: number): LodThresholds {
-  const inv = 1 / Math.max(lodBias, 0.25);
+  const scale = Math.max(lodBias, 0.25);
   return {
-    cullOut: base.cullOut * inv,
-    cullIn: base.cullIn * inv,
-    impostorOut: base.impostorOut * inv,
-    impostorIn: base.impostorIn * inv,
+    cullOut: base.cullOut * scale,
+    cullIn: base.cullIn * scale,
+    impostorOut: base.impostorOut * scale,
+    impostorIn: base.impostorIn * scale,
   };
 }
 
@@ -100,8 +100,9 @@ export function environmentLodFromDistance(
   profile: EnvironmentLodProfile,
   lodBias: number,
 ): EnvironmentLodLevel {
-  const clutter = profile.clutterDistance / Math.max(lodBias, 0.25);
-  const decorative = profile.decorativeDistance / Math.max(lodBias, 0.25);
+  const scale = Math.max(lodBias, 0.25);
+  const clutter = profile.clutterDistance * scale;
+  const decorative = profile.decorativeDistance * scale;
 
   if (distance <= clutter) return 'full';
   if (distance <= decorative) return 'standard';

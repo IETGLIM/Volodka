@@ -26,9 +26,24 @@ describe('resolveNpcLod', () => {
 });
 
 describe('scaleNpcLodThresholds', () => {
-  it('expands thresholds when lodBias < 1 (ultra preset)', () => {
-    const scaled = scaleNpcLodThresholds(DEFAULT_NPC_LOD, 0.5);
-    expect(scaled.cullOut).toBeGreaterThan(DEFAULT_NPC_LOD.cullOut);
+  it('shrinks thresholds when lodBias < 1 (low preset switches sooner)', () => {
+    const low = scaleNpcLodThresholds(DEFAULT_NPC_LOD, 0.6);
+    expect(low.impostorOut).toBeCloseTo(DEFAULT_NPC_LOD.impostorOut * 0.6);
+    expect(low.cullOut).toBeLessThan(DEFAULT_NPC_LOD.cullOut);
+  });
+
+  it('expands thresholds when lodBias > 1 (ultra preset keeps detail longer)', () => {
+    const ultra = scaleNpcLodThresholds(DEFAULT_NPC_LOD, 1.25);
+    expect(ultra.impostorOut).toBeCloseTo(DEFAULT_NPC_LOD.impostorOut * 1.25);
+    expect(ultra.cullOut).toBeGreaterThan(DEFAULT_NPC_LOD.cullOut);
+  });
+
+  it('low quality switches to impostor sooner than ultra at same distance', () => {
+    const low = scaleNpcLodThresholds(DEFAULT_NPC_LOD, 0.6);
+    const ultra = scaleNpcLodThresholds(DEFAULT_NPC_LOD, 1.25);
+    const midDistance = 15;
+    expect(resolveNpcLod(midDistance, 'full', low)).toBe('impostor');
+    expect(resolveNpcLod(midDistance, 'full', ultra)).toBe('full');
   });
 });
 
@@ -45,6 +60,11 @@ describe('environmentLodFromDistance', () => {
 
   it('returns minimal beyond decorative', () => {
     expect(environmentLodFromDistance(25, profile, 1)).toBe('minimal');
+  });
+
+  it('low lodBias shrinks detail radii (switches to minimal sooner)', () => {
+    expect(environmentLodFromDistance(7, profile, 0.6)).toBe('standard');
+    expect(environmentLodFromDistance(7, profile, 1.25)).toBe('full');
   });
 });
 
