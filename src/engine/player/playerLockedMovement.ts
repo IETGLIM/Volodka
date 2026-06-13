@@ -5,6 +5,7 @@ import {
   TERMINAL_VELOCITY,
 } from '@/engine/player/playerConstants';
 import { lerpAngle, enforceFloor } from '@/engine/player/playerMath';
+import { computeKccMovementSubstepped } from '@/engine/player/physicsSubstep';
 import type { PlayerMovementDeps } from '@/engine/player/playerFrameTypes';
 
 /** Locked branch — combat anim, external velocity, KCC/direct when interaction holds movement. */
@@ -48,15 +49,13 @@ export function runLockedPlayerMovement(deps: PlayerMovementDeps): void {
   const posBeforeMovement = rb.translation();
   const lockedCollider = deps.capsuleColliderRef.current;
   if (lockedCollider && controller) {
-    controller.computeColliderMovement(lockedCollider, desiredDisp);
-    const actual = controller.computedMovement();
-    const grounded = controller.computedGrounded();
-
-    rb.setTranslation({
-      x: posBeforeMovement.x + actual.x,
-      y: posBeforeMovement.y + actual.y,
-      z: posBeforeMovement.z + actual.z,
-    }, true);
+    const { actualDisplacement: actual, isGrounded: grounded } = computeKccMovementSubstepped(
+      controller,
+      lockedCollider,
+      rb,
+      desiredDisp,
+      dt,
+    );
 
     if (grounded) {
       vel.y = 0;

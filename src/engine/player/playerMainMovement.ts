@@ -1,9 +1,10 @@
 import * as THREE from 'three';
-import { setPhysicsStepMs } from '@/engine/frame/FrameBudgetRegistry';
+import { setPhysicsStepMs, shouldTrackFrameTiming } from '@/engine/frame/FrameBudgetRegistry';
 import { sampleHeldVirtualControls } from '@/engine/VirtualInputHold';
 import { getTouchLocomotionFactor } from '@/config/scenes';
 import {
-  activateDirectMovementMode,
+  logKccRecreateAttempt,
+  notifyControlsDegraded,
   restoreKccMovementMode,
 } from '@/engine/player/directMovementTelemetry';
 import {
@@ -18,15 +19,52 @@ import {
   COYOTE_TIME,
   JUMP_COOLDOWN,
   TERMINAL_VELOCITY,
+  KCC_FAIL_FRAMES_BEFORE_DEGRADE,
 } from '@/engine/player/playerConstants';
 import { lerpAngle, enforceFloor } from '@/engine/player/playerMath';
+import { computeKccMovementSubstepped } from '@/engine/player/physicsSubstep';
 import type { PlayerMovementDeps } from '@/engine/player/playerFrameTypes';
 
-/** Main KCC/direct movement path — returns false when fallback handled the frame. */
+function applyDegradedMovement(deps: PlayerMovementDeps): void {
+  const scratch = deps.frameScratchRef.current;
+  const rb = scratch.rb!;
+  const vel = scratch.vel;
+
+  vel.x = 0;
+  vel.z = 0;
+
+  const pos = rb.translation();
+  deps.livePlayerPositionRef.current.set(pos.x, pos.y, pos.z);
+}
+
+function tryRecoverKcc(deps: PlayerMovementDeps, reason: string): boolean {
+  const collider = deps.capsuleColliderRef.current;
+  let controller = deps.controllerRef.current;
+  if (collider && controller) return true;
+
+  logKccRecreateAttempt(deps.directMovementTelemetry, reason, {
+    sceneId: deps.sceneId,
+    failFrames: deps.controllerFailCountRef.current,
+    stuckFrames: deps.noMovementFramesRef.current,
+  });
+  const recreated = deps.recreateCharacterController();
+  controller = recreated ?? deps.controllerRef.current;
+  deps.frameScratchRef.current.controller = controller;
+
+  if (deps.capsuleColliderRef.current && controller) {
+    deps.controllerFailCountRef.current = 0;
+    if (deps.controlsDegradedRef.current) {
+      restoreKccMovementMode(deps.directMovementTelemetry, { sceneId: deps.sceneId });
+    }
+    return true;
+  }
+  return false;
+}
+
+/** Main KCC movement path — returns false when degraded fallback handled the frame. */
 export function runMainPlayerMovement(deps: PlayerMovementDeps): boolean {
   const scratch = deps.frameScratchRef.current;
   const rb = scratch.rb!;
-  const controller = scratch.controller!;
   if (!rb.isValid()) return false;
   const vel = scratch.vel;
   const dt = scratch.dt;
@@ -86,7 +124,7 @@ export function runMainPlayerMovement(deps: PlayerMovementDeps): boolean {
   scratch.keyboardDrivesMove = keyboardDrivesMove;
   scratch.isOutdoor = isOutdoor;
 
-  if (isMoving) {
+  if (isMoving && !deps.controlsDegradedRef.current) {
     moveDir.normalize();
     const targetVx = moveDir.x * speed;
     const targetVz = moveDir.z * speed;
@@ -104,7 +142,7 @@ export function runMainPlayerMovement(deps: PlayerMovementDeps): boolean {
     deps.livePlayerRotationRef.current = lerpAngle(
       deps.livePlayerRotationRef.current, targetYaw, rotT,
     );
-  } else {
+  } else if (!deps.controlsDegradedRef.current) {
     vel.x = THREE.MathUtils.damp(vel.x, 0, stopDamping, dt);
     vel.z = THREE.MathUtils.damp(vel.z, 0, stopDamping, dt);
   }
@@ -124,7 +162,7 @@ export function runMainPlayerMovement(deps: PlayerMovementDeps): boolean {
   scratch.airborneIntent = airborneIntent;
   scratch.floorSlack = floorSlack;
 
-  if (wantsJump) {
+  if (wantsJump && !deps.controlsDegradedRef.current) {
     vel.y = JUMP_FORCE;
     deps.isGroundedRef.current = false;
     deps.jumpCooldownRef.current = JUMP_COOLDOWN;
@@ -152,71 +190,53 @@ export function runMainPlayerMovement(deps: PlayerMovementDeps): boolean {
   };
 
   const posAfterGroundEnforcement = rb.translation();
-  const collider = deps.capsuleColliderRef.current;
+  let collider = deps.capsuleColliderRef.current;
+  let controller = scratch.controller;
 
-  if (collider && controller && deps.useDirectMovementRef.current) {
-    restoreKccMovementMode(deps.directMovementTelemetry, { sceneId: deps.sceneId });
-  }
+  if (!collider || !controller) {
+    deps.controllerFailCountRef.current++;
+    const recovered = tryRecoverKcc(
+      deps,
+      !collider ? 'collider_or_controller_missing' : 'controller_missing',
+    );
+    collider = deps.capsuleColliderRef.current;
+    controller = deps.controllerRef.current;
+    scratch.controller = controller;
 
-  const [sceneW, sceneD] = deps.config.size;
-  const BOUNDARY_MARGIN = 0.3;
-  const halfW = sceneW / 2 - BOUNDARY_MARGIN;
-  const halfD = sceneD / 2 - BOUNDARY_MARGIN;
-
-  if (!collider || !controller || deps.useDirectMovementRef.current) {
-    if (!collider && !deps.useDirectMovementRef.current) {
-      deps.controllerFailCountRef.current++;
-      if (deps.controllerFailCountRef.current === 60) {
-        activateDirectMovementMode(deps.directMovementTelemetry, 'collider_missing_60f', {
+    if (!recovered) {
+      if (deps.controllerFailCountRef.current >= KCC_FAIL_FRAMES_BEFORE_DEGRADE) {
+        notifyControlsDegraded(deps.directMovementTelemetry, 'kcc_unavailable', {
           sceneId: deps.sceneId,
           failFrames: deps.controllerFailCountRef.current,
         });
       }
-    } else if (collider && deps.controllerFailCountRef.current > 0) {
-      deps.controllerFailCountRef.current = 0;
-      if (deps.useDirectMovementRef.current) {
-        restoreKccMovementMode(deps.directMovementTelemetry, { sceneId: deps.sceneId });
-      }
+      applyDegradedMovement(deps);
+      return false;
     }
-
-    const newX = posAfterGroundEnforcement.x + vel.x * dt;
-    const newZ = posAfterGroundEnforcement.z + vel.z * dt;
-    let newY = posAfterGroundEnforcement.y + vel.y * dt;
-
-    const clampedX = Math.max(-halfW, Math.min(halfW, newX));
-    const clampedZ = Math.max(-halfD, Math.min(halfD, newZ));
-
-    rb.setTranslation({ x: clampedX, y: newY, z: clampedZ }, true);
-    if (enforceFloor(rb, vel, groundY)) {
-      deps.isGroundedRef.current = true;
-      deps.coyoteTimerRef.current = 0;
+  } else if (deps.controllerFailCountRef.current > 0) {
+    deps.controllerFailCountRef.current = 0;
+    if (deps.controlsDegradedRef.current) {
+      restoreKccMovementMode(deps.directMovementTelemetry, { sceneId: deps.sceneId });
     }
-    const pos = rb.translation();
-    deps.livePlayerPositionRef.current.set(pos.x, pos.y, pos.z);
-    return false;
   }
 
   deps.controllerFailCountRef.current = 0;
 
   if (airborneIntent !== deps.snapAirborneRef.current) {
     deps.snapAirborneRef.current = airborneIntent;
-    controller.enableSnapToGround(airborneIntent ? 0 : SNAP_DISTANCE);
+    controller!.enableSnapToGround(airborneIntent ? 0 : SNAP_DISTANCE);
   }
 
   let physicsT0: number | undefined;
-  if (import.meta.env.DEV) physicsT0 = performance.now();
-  controller.computeColliderMovement(collider, desiredDisplacement);
-  if (import.meta.env.DEV) setPhysicsStepMs(performance.now() - physicsT0!);
+  if (shouldTrackFrameTiming()) physicsT0 = performance.now();
+  const {
+    actualDisplacement,
+    isGrounded: isGroundedNow,
+    collisionCount,
+  } = computeKccMovementSubstepped(controller!, collider!, rb, desiredDisplacement, dt);
+  if (shouldTrackFrameTiming()) setPhysicsStepMs(performance.now() - physicsT0!);
 
-  const actualDisplacement = controller.computedMovement();
-  const isGroundedNow = controller.computedGrounded();
   scratch.isGroundedNow = isGroundedNow;
-
-  rb.setTranslation({
-    x: posAfterGroundEnforcement.x + actualDisplacement.x,
-    y: posAfterGroundEnforcement.y + actualDisplacement.y,
-    z: posAfterGroundEnforcement.z + actualDisplacement.z,
-  }, true);
 
   const wasGrounded = scratch.wasGrounded;
   if (isGroundedNow && !airborneIntent) {
@@ -247,10 +267,6 @@ export function runMainPlayerMovement(deps: PlayerMovementDeps): boolean {
   const desiredHLen = Math.sqrt(desiredDisplacement.x ** 2 + desiredDisplacement.z ** 2);
   const actualHLen = Math.sqrt(actualDisplacement.x ** 2 + actualDisplacement.z ** 2);
   const blockedByCollider = desiredHLen > 0.001 && actualHLen < desiredHLen * BLOCKED_RATIO;
-  const collisionCount =
-    typeof controller.numComputedCollisions === 'function'
-      ? controller.numComputedCollisions()
-      : 0;
   const blockedByWall = blockedByCollider && collisionCount > 0;
   scratch.blockedByWall = blockedByWall;
 
