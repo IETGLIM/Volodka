@@ -2,6 +2,7 @@ import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { eventBus, EventBusPriority } from '@/engine/EventBus';
 import { performSceneTransition, resetSceneTransitionGuard } from '@/engine/core/SceneTransitionManager';
 import { resetSceneLoadedGate } from '@/engine/core/sceneLoadedGate';
+import { resetTransitionDirector } from '@/engine/scene/TransitionDirector';
 
 /**
  * Regression: SceneTransitionHandler calls performSceneTransition inside scene:transition,
@@ -31,6 +32,7 @@ describe('SceneTransitionProgress event ordering', () => {
   beforeEach(() => {
     resetSceneTransitionGuard();
     resetSceneLoadedGate();
+    resetTransitionDirector();
   });
 
   it('completes when scene:enter nests inside scene:transition (handler-before-progress order)', () => {

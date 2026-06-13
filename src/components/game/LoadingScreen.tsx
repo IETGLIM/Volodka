@@ -1,5 +1,4 @@
-
-/* ─── Volodka RPG – Loading Screen (AAA+ CYBERPUNK / MATRIX / GOTHIC / HACKING) ─── */
+import { APP_VERSION } from '@/shared/constants/appVersion';
 
 import { useState, useEffect, useMemo, useRef, memo } from 'react';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
@@ -355,7 +354,16 @@ export function LoadingScreen({ progress, message = 'Загрузка...', showT
   }, []);
 
   return (
-    <div className="fixed inset-0 flex flex-col items-center justify-center bg-black overflow-hidden loading-screen-fade-in" style={{ zIndex: UI_LAYERS.LOADING }}>
+    <div
+      className="fixed inset-0 flex flex-col items-center justify-center bg-black overflow-hidden loading-screen-fade-in"
+      style={{ zIndex: UI_LAYERS.LOADING }}
+      role="progressbar"
+      aria-busy="true"
+      aria-valuemin={0}
+      aria-valuemax={100}
+      aria-valuenow={progress ?? undefined}
+      aria-label={message}
+    >
       {/* ── Layer 0: Matrix Rain Canvas ── */}
       {!reduceMotion && (
       <div className="absolute inset-0 z-[1]">
@@ -499,13 +507,12 @@ export function LoadingScreen({ progress, message = 'Загрузка...', showT
               ))}
             </div>
             {progress !== undefined ? (
-              <motion.div
+              <div
                 className="h-full bg-gradient-to-r from-cyan-600 via-cyan-400 to-emerald-400"
-                initial={{ width: 0 }}
-                animate={{ width: `${progress}%` }}
-                transition={{ duration: 0.3 }}
                 style={{
-                  boxShadow: '0 0 12px rgb(var(--cyber-cyan-rgb) / 0.4), 0 0 4px rgba(52,211,153,0.2)',
+                  width: `${progress}%`,
+                  boxShadow:
+                    '0 0 12px rgb(var(--cyber-cyan-rgb) / 0.4), 0 0 4px rgba(52,211,153,0.2)',
                 }}
               />
             ) : (
@@ -605,7 +612,7 @@ export function LoadingScreen({ progress, message = 'Загрузка...', showT
         transition={{ delay: 2 }}
         className="absolute bottom-8 right-6 z-[70] flex flex-col items-end gap-0.5"
       >
-        <span className="font-mono text-[10px] tracking-[0.15em] text-cyan-500/25">v4.2.2</span>
+        <span className="font-mono text-[10px] tracking-[0.15em] text-cyan-500/25">v{APP_VERSION}</span>
         <span className="font-mono text-[8px] tracking-[0.1em] text-slate-700/40">build.2026</span>
       </motion.div>
 

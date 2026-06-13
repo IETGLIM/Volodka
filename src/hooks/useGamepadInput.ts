@@ -125,21 +125,23 @@ export function useGamepadInput({
             closePanelRef.current();
           } else if (mode === 'exploration') {
             dispatchPanelRef.current('menu');
+          } else if (mode === 'menu') {
+            /* menu navigation handled by useMenuNavigation */
           } else {
             dispatchKey('Escape', 'Escape');
           }
         }
 
         if (consumeButtonPress(padIdx, GAMEPAD.Y, frame.buttons[GAMEPAD.Y] ?? false, previousButtonsRef)) {
-          dispatchKey('KeyI', 'i');
+          dispatchPanelRef.current('inventory');
         }
 
         if (consumeButtonPress(padIdx, GAMEPAD.X, frame.buttons[GAMEPAD.X] ?? false, previousButtonsRef)) {
-          dispatchKey('KeyQ', 'q');
+          dispatchPanelRef.current('quests');
         }
 
         if (consumeButtonPress(padIdx, GAMEPAD.SELECT, frame.buttons[GAMEPAD.SELECT] ?? false, previousButtonsRef)) {
-          dispatchKey('KeyJ', 'j');
+          dispatchPanelRef.current('journal');
         }
 
         wasConnectedRef.current = true;

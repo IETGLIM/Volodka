@@ -57,7 +57,7 @@ npm run build    # Production-сборка в dist/
 
 ## ✅ Качество
 
-- typecheck / ESLint: 0 ошибок · юнит-тесты: **363/363** · e2e smoke (Playwright)
+- typecheck / ESLint: 0 ошибок · юнит-тесты: **380+** · e2e smoke (Playwright)
 - Валидатор контента: квесты, история, стихи, golden path — 0 ошибок
 - Бюджеты бандла в CI: меню ~300 КБ gzip (лимит 439), game-start 540 КБ (лимит 1172)
 

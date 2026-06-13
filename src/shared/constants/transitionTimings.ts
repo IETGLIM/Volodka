@@ -57,8 +57,43 @@ export const MOTION_EASE = {
 /** Defer heavy IBL HDR fetch until the scene has settled (frames @ 60fps) */
 export const ENV_MAP_WARMUP_FRAMES = 48;
 
+/** Canvas fade during scene transition — derived from cinematic phases. */
+export const CANVAS_SCENE_FADE_MS = Math.round(
+  (CINEMATIC_PHASES.FADE_OUT_DURATION + CINEMATIC_PHASES.HOLD_DURATION) * 1000,
+);
+
+/** Scene overlay phase durations (milliseconds) — used by SceneTransitionOverlay. */
+export const SCENE_OVERLAY_MS = {
+  GLITCH: 150,
+  FLASH: 200,
+  DARKEN: 400,
+  RIPPLE: 500,
+  DISSOLVE: 400,
+  WIPE_IN: Math.round(CINEMATIC_PHASES.FADE_OUT_DURATION * 1000) - 150,
+  HOLD: Math.round(CINEMATIC_PHASES.HOLD_DURATION * 1000),
+  WIPE_OUT: Math.round(CINEMATIC_PHASES.FADE_IN_DURATION * 1000),
+  REVEAL: Math.round(CINEMATIC_PHASES.FADE_IN_DURATION * 1000),
+} as const;
+
+/** Transition progress milestones (0–100). */
+export const TRANSITION_MILESTONES = {
+  started: 10,
+  unloading: 30,
+  entered: 70,
+  loaded: 100,
+} as const;
+
 /** Panel close: keep subtree mounted through PanelWrapper exit (backdrop 200ms + panel ~320ms). */
 export const PANEL_EXIT_MS = 320;
+
+/** Boot / pipeline loading screen fade-out after stage `complete`. */
+export const LOADING_EXIT_MS = 420;
+
+/** Brief beat at `playable` (97%) before auto-dismiss overlay. */
+export const LOADING_PLAYABLE_DISMISS_MS = 180;
+
+/** Pipeline hold from `playable` to `complete` — keep in sync with LoadingPipeline. */
+export const LOADING_PLAYABLE_HOLD_MS = 320;
 
 /** LazyPanelSlot fallback if panel does not signal exit via onExitComplete. */
 export const PANEL_UNMOUNT_GRACE_MS = PANEL_EXIT_MS + 80;

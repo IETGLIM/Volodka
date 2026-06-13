@@ -111,9 +111,9 @@ export function ExplorationLighting() {
         position={dirPosition}
         intensity={dirIntensity}
         color={dirColor}
-        castShadow={!isMobile}
-        shadow-mapSize-width={shadowSize}
-        shadow-mapSize-height={shadowSize}
+        castShadow={preset.shadows}
+        shadow-mapSize-width={preset.id === 'medium' ? 512 : shadowSize}
+        shadow-mapSize-height={preset.id === 'medium' ? 512 : shadowSize}
         shadow-camera-near={0.1}
         shadow-camera-far={50}
         shadow-camera-left={-15}

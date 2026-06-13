@@ -11,6 +11,7 @@ import {
   isWeakLaptopProfile,
 } from '@/config/performanceBudgets';
 import type { FrameProfilerSnapshot } from '@/engine/frame/FrameProfilerState';
+import { emitRuntimeBudgetViolations } from '@/engine/performance/runtimeBudgetEvents';
 
 export type BudgetSeverity = 'ok' | 'warn' | 'fail';
 
@@ -196,6 +197,8 @@ export function publishRuntimeBudgetCheck(
       console.warn(`[perf:budget] ${v.message}`);
     }
   }
+
+  emitRuntimeBudgetViolations(snapshot.violations);
 
   return snapshot;
 }

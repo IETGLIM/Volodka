@@ -5,6 +5,7 @@ import {
 } from '@/data/gameDataLoader';
 import { preloadPhysicsChunk } from '@/engine/physics/preloadPhysicsChunk';
 import { markGameDataReady } from '@/engine/performance/LoadingTimeline';
+import { loadingPipeline } from '@/engine/loading/LoadingPipeline';
 
 function preloadCombatUiChunk(): Promise<unknown> {
   return import('@/components/game/CombatUI');
@@ -17,8 +18,18 @@ export function useGameDataPreload(): boolean {
   useEffect(() => {
     if (ready) return;
     let cancelled = false;
-    void Promise.all([preloadNarrativeGameData(), preloadPhysicsChunk(), preloadCombatUiChunk()])
+    loadingPipeline.reportStage('orchestrator');
+    void preloadNarrativeGameData()
       .then(() => {
+        loadingPipeline.reportStage('narrative_data');
+        return preloadPhysicsChunk();
+      })
+      .then(() => {
+        loadingPipeline.reportStage('physics_wasm');
+        return preloadCombatUiChunk();
+      })
+      .then(() => {
+        loadingPipeline.reportStage('combat_ui');
         markGameDataReady();
         if (!cancelled) setReady(true);
       })

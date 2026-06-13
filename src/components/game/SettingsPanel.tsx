@@ -18,6 +18,14 @@ import {
 } from '@/components/game/design-system';
 import { applyAudioSettings } from '@/engine/audio/AudioSettings';
 import { applyVisualSettings } from '@/engine/visualSettings';
+import {
+  applyAccessibilitySettings,
+  getAccessibilitySettings,
+  setColorBlindMode,
+  setReducedMotionOverride,
+  setSubtitleScale,
+  type ColorBlindMode,
+} from '@/engine/accessibility/accessibilitySettings';
 
 // ─── Types ───
 
@@ -85,6 +93,12 @@ function VisualSettingsTab({
   setCamShake,
   brightness,
   setBrightness,
+  colorBlindMode,
+  setColorBlindModeState,
+  reducedMotion,
+  setReducedMotion,
+  subtitleScale,
+  setSubtitleScaleState,
   persist,
 }: {
   postfx: boolean;
@@ -97,6 +111,12 @@ function VisualSettingsTab({
   setCamShake: (v: boolean) => void;
   brightness: number;
   setBrightness: (v: number) => void;
+  colorBlindMode: ColorBlindMode;
+  setColorBlindModeState: (v: ColorBlindMode) => void;
+  reducedMotion: boolean;
+  setReducedMotion: (v: boolean) => void;
+  subtitleScale: number;
+  setSubtitleScaleState: (v: number) => void;
   persist: (key: string, value: number | boolean) => void;
 }) {
   const { selectedPreset, preset, setPreset } = useGraphicsQuality();
@@ -170,6 +190,47 @@ function VisualSettingsTab({
         onChange={(v) => { setBrightness(v); persist('volodka_brightness', v); applyVisualSettings(); }}
         unit="%"
       />
+      <SectionDivider />
+      <span className="font-mono text-xs text-cyan-400/50 uppercase tracking-[0.15em]">
+        Доступность
+      </span>
+      <div className="flex flex-col gap-2">
+        <label className="font-mono text-[11px] text-slate-400">Режим для дальтоников</label>
+        <select
+          className="bg-slate-900/80 border border-cyan-900/40 rounded px-2 py-1.5 font-mono text-xs text-cyan-200"
+          value={colorBlindMode}
+          onChange={(e) => {
+            const mode = e.target.value as ColorBlindMode;
+            setColorBlindModeState(mode);
+            setColorBlindMode(mode);
+          }}
+        >
+          <option value="none">Выключен</option>
+          <option value="protanopia">Протанопия</option>
+          <option value="deuteranopia">Дейтеранопия</option>
+          <option value="tritanopia">Тританопия</option>
+        </select>
+      </div>
+      <CyberToggle
+        label="Уменьшить анимации"
+        checked={reducedMotion}
+        onChange={(v) => {
+          setReducedMotion(v);
+          setReducedMotionOverride(v);
+        }}
+      />
+      <CyberSlider
+        label="Размер субтитров"
+        value={Math.round(subtitleScale * 100)}
+        min={80}
+        max={150}
+        onChange={(v) => {
+          const scale = v / 100;
+          setSubtitleScaleState(scale);
+          setSubtitleScale(scale);
+        }}
+        unit="%"
+      />
     </motion.div>
   );
 }
@@ -200,6 +261,10 @@ function SettingsPanelContent({ onClose }: { onClose: () => void }) {
   const [particles, setParticles] = useState(() => lsGetBool('volodka_particles', true));
   const [camShake, setCamShake] = useState(() => lsGetBool('volodka_cam_shake', true));
   const [brightness, setBrightness] = useState(() => lsGetNumber('volodka_brightness', 100));
+  const a11yInit = getAccessibilitySettings();
+  const [colorBlindMode, setColorBlindModeState] = useState<ColorBlindMode>(() => a11yInit.colorBlindMode);
+  const [reducedMotion, setReducedMotion] = useState(() => a11yInit.reducedMotionOverride);
+  const [subtitleScale, setSubtitleScaleState] = useState(() => a11yInit.subtitleScale);
 
   // ── Controls state ──
   const [mouseSens, setMouseSens] = useState(() => lsGetNumber('volodka_mouse_sens', 5));
@@ -230,6 +295,11 @@ function SettingsPanelContent({ onClose }: { onClose: () => void }) {
     setPointerLock(DEFAULTS.volodka_pointer_lock as boolean);
     applyAudioSettings();
     applyVisualSettings();
+    applyAccessibilitySettings();
+    const a11y = getAccessibilitySettings();
+    setColorBlindModeState(a11y.colorBlindMode);
+    setReducedMotion(a11y.reducedMotionOverride);
+    setSubtitleScaleState(a11y.subtitleScale);
   }, []);
 
   // ── Render tab content ──
@@ -291,6 +361,12 @@ function SettingsPanelContent({ onClose }: { onClose: () => void }) {
             setCamShake={setCamShake}
             brightness={brightness}
             setBrightness={setBrightness}
+            colorBlindMode={colorBlindMode}
+            setColorBlindModeState={setColorBlindModeState}
+            reducedMotion={reducedMotion}
+            setReducedMotion={setReducedMotion}
+            subtitleScale={subtitleScale}
+            setSubtitleScaleState={setSubtitleScaleState}
             persist={persist}
           />
         );

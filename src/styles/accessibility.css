@@ -94,6 +94,15 @@ select:focus-visible {
   --cb-amber: #f97316;
 }
 
+[data-reduced-motion="true"] *,
+[data-reduced-motion="true"] *::before,
+[data-reduced-motion="true"] *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}
+
 [data-color-blind-mode] {
   /* Apply color-blind friendly palette */
   .text-rose-400,

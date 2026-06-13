@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useOrchestratorShell, useOrchestratorNarrativeOverlay, useArmDevTools } from '@/store/selectors';
-import { sharedVirtualControlsRef } from '@/engine/VirtualControlsState';
 import { useCombatOrchestrator } from '@/hooks/useCombatOrchestrator';
 import { useAudioOrchestrator } from '@/hooks/useAudioOrchestrator';
 import { useInteractionOrchestrator } from '@/hooks/useInteractionOrchestrator';
@@ -10,15 +9,10 @@ import { useMinigameForQuest } from '../MinigameQuestBridge';
 import { useAchievementChecker } from '@/hooks/useAchievementChecker';
 import { useWorldClock } from '@/hooks/useWorldClock';
 import { useWorldStream } from '@/hooks/useWorldStream';
-import { useGameDataPreload } from '@/hooks/useGameDataPreload';
-import { markOrchestratorMount } from '@/engine/performance/LoadingTimeline';
 import { disposeGameEngine, reviveGameEngine } from '@/engine/disposeGameEngine';
 import { usePanelDialog } from '@/components/a11y/usePanelDialog';
-import { useCanvasTransitionManager } from './useCanvasTransitionManager';
 import { useCutsceneController } from './useCutsceneController';
 import { usePanelCoordinator } from './usePanelCoordinator';
-import { useKeyboardShortcutManager } from './useKeyboardShortcutManager';
-import { useGamepadInput } from '@/hooks/useGamepadInput';
 import { useGameLifecycleManager } from './useGameLifecycleManager';
 import { useNarrativeKindRecovery } from './useNarrativeKindRecovery';
 import { useMobileDetection } from './useMobileDetection';
@@ -26,31 +20,29 @@ import { useStablePanelClosers } from './useStablePanelClosers';
 import { useStableHudPanelOpeners } from './useStableHudPanelOpeners';
 import { useGameIntegrityGuard } from '@/hooks/useGameIntegrityGuard';
 import { registerVolodkaE2EBridge } from '@/engine/e2e/e2eBridge';
+import { useOrchestratorLoading } from './useOrchestratorLoading';
+import { useOrchestratorInput } from './useOrchestratorInput';
+import { useAdaptiveQuality } from '@/hooks/useAdaptiveQuality';
+import { setMusicIntensityLayer, musicLayerForMode } from '@/engine/audio/musicIntensityLayers';
 
 /** Bundles orchestrator hooks — GameOrchestrator stays a thin render coordinator. */
 export function useOrchestratorRuntime() {
-  const gameDataReady = useGameDataPreload();
+  const { mode, introSeen, mainMenuOpen, devToolsArmed } = useOrchestratorShell();
+  const { showStoryOverlay, narrativeKind } = useOrchestratorNarrativeOverlay();
+
+  const {
+    gameDataReady,
+    canvasMounted,
+    canvasReady,
+    isTransitioning,
+    fadeOutMs,
+  } = useOrchestratorLoading(mode, mainMenuOpen);
 
   useEffect(() => {
     reviveGameEngine();
-    markOrchestratorMount();
     registerVolodkaE2EBridge();
     return () => disposeGameEngine();
   }, []);
-
-  const { mode, introSeen, mainMenuOpen, devToolsArmed } = useOrchestratorShell();
-  const { showStoryOverlay, narrativeKind } = useOrchestratorNarrativeOverlay();
-  const [canvasMounted, setCanvasMounted] = useState(mainMenuOpen);
-
-  useEffect(() => {
-    if (mainMenuOpen) setCanvasMounted(true);
-  }, [mainMenuOpen]);
-
-  useEffect(() => {
-    if (mode === 'cutscene' || mode === 'exploration' || mode === 'combat') {
-      setCanvasMounted(true);
-    }
-  }, [mode]);
 
   const pauseDialog = usePanelDialog();
   const armDevTools = useArmDevTools();
@@ -84,7 +76,12 @@ export function useOrchestratorRuntime() {
   useWorldClock();
   useWorldStream(!mainMenuOpen && mode !== 'intro');
 
-  const { canvasReady, isTransitioning, fadeOutMs } = useCanvasTransitionManager(mode);
+  useAdaptiveQuality(!mainMenuOpen && mode !== 'menu');
+
+  useEffect(() => {
+    setMusicIntensityLayer(musicLayerForMode(mode));
+  }, [mode]);
+
   const { skipActiveCutscene } = useCutsceneController();
   const { sceneBanner } = useGameLifecycleManager(mode);
   useGameIntegrityGuard(devToolsArmed);
@@ -110,7 +107,8 @@ export function useOrchestratorRuntime() {
   const panelClosers = useStablePanelClosers(panels.closePanelByType);
   const hudSecondaryOpeners = useStableHudPanelOpeners(panels.dispatchPanel);
 
-  useKeyboardShortcutManager({
+  useOrchestratorInput({
+    mode,
     activePanel: panels.activePanel,
     panelStackLength: panels.panelStack.length,
     codebreakerOpen: interaction.codebreakerOpen,
@@ -122,22 +120,14 @@ export function useOrchestratorRuntime() {
     quizGameOpen: interaction.quizGameOpen,
     rhythmGameOpen: interaction.rhythmGameOpen,
     examineOpen: interaction.examineOpen,
-    mode,
     dispatchPanel: panels.dispatchPanel,
     closePanel: panels.closePanel,
     closeAllPanels: panels.closeAllPanels,
     minigameSetters: interaction.minigameSetters,
+    setExamineOpen: interaction.setExamineOpen,
     skipActiveCutscene,
     resetExamine: interaction.resetExamine,
     clearPendingTriggerZone: interaction.clearPendingTriggerZone,
-  });
-
-  useGamepadInput({
-    virtualControlsRef: sharedVirtualControlsRef,
-    panelStackLength: panels.panelStack.length,
-    dispatchPanel: panels.dispatchPanel,
-    closePanel: panels.closePanel,
-    skipActiveCutscene,
   });
 
   return {

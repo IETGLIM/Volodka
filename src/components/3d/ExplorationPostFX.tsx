@@ -17,11 +17,13 @@ import {
   HueSaturation,
   BrightnessContrast,
   ToneMapping,
+  N8AO,
 } from '@react-three/postprocessing';
 import { BlendFunction, KernelSize, ToneMappingMode } from 'postprocessing';
 import type { EffectComposer as EffectComposerImpl } from 'postprocessing';
 import { usePostFxSceneState, usePlayerStress, useGameMode } from '@/store/selectors';
 import { useMobileVisualPerf } from '@/hooks/use-mobile';
+import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
 import { useVisualSettings } from '@/hooks/useVisualSettings';
 import { SCENE_VISIBILITY } from '@/shared/constants/sceneVisibility';
 import { disposeEffectComposer, type PostprocessingComposerLike } from '@/engine/three/disposeThreeResources';
@@ -306,6 +308,8 @@ function EffectComposerInstance({
 function PostFXPipeline() {
   const { sceneId, noirMode } = usePostFxSceneState();
   const { visualLite } = useMobileVisualPerf();
+  const { preset } = useGraphicsQuality();
+  const useUltraAo = preset.id === 'ultra' && !visualLite;
   // User brightness slider (50–150%) → BrightnessContrast offset (−0.15…+0.15)
   const { brightness: userBrightness } = useVisualSettings();
   const userBrightnessOffset = (userBrightness - 1) * 0.3;
@@ -385,9 +389,8 @@ function PostFXPipeline() {
     );
   }
 
-  return (
-    <ManagedEffectComposer remountKey={pipelineKey} sceneId={sceneId} multisampling={0}>
-      {/* ── Bloom — dynamic intensity per scene, stress-boosted ── */}
+  const fullPipelineEffects = (
+    <>
       <Bloom
         intensity={effectiveBloomIntensity}
         luminanceThreshold={bloomParams.threshold}
@@ -395,15 +398,11 @@ function PostFXPipeline() {
         mipmapBlur
         kernelSize={KernelSize.LARGE}
       />
-
-      {/* ── Vignette — stress-reactive: darker + tighter at high stress ── */}
       <Vignette
         offset={stressVignetteOffset}
         darkness={stressVignetteDarkness}
         blendFunction={BlendFunction.NORMAL}
       />
-
-      {/* ── Color Grading — teal/orange CyberPunk2077 look ── */}
       <HueSaturation
         hue={colorGrade.hue}
         saturation={effectiveSaturation}
@@ -414,12 +413,50 @@ function PostFXPipeline() {
         contrast={effectiveContrast}
         blendFunction={BlendFunction.NORMAL}
       />
-
-      {/* ── Tone Mapping — cinematic ACES with readability exposure ── */}
       <ToneMapping
         mode={ToneMappingMode.ACES_FILMIC}
         exposure={SCENE_VISIBILITY.toneExposure}
       />
+    </>
+  );
+
+  if (useUltraAo) {
+    return (
+      <ManagedEffectComposer remountKey={`${pipelineKey}-ao`} sceneId={sceneId} multisampling={0}>
+        <Bloom
+          intensity={effectiveBloomIntensity}
+          luminanceThreshold={bloomParams.threshold}
+          luminanceSmoothing={bloomParams.smoothing}
+          mipmapBlur
+          kernelSize={KernelSize.LARGE}
+        />
+        <N8AO aoRadius={0.4} intensity={2.5} distanceFalloff={0.5} halfRes color="black" />
+        <Vignette
+          offset={stressVignetteOffset}
+          darkness={stressVignetteDarkness}
+          blendFunction={BlendFunction.NORMAL}
+        />
+        <HueSaturation
+          hue={colorGrade.hue}
+          saturation={effectiveSaturation}
+          blendFunction={BlendFunction.NORMAL}
+        />
+        <BrightnessContrast
+          brightness={effectiveBrightness}
+          contrast={effectiveContrast}
+          blendFunction={BlendFunction.NORMAL}
+        />
+        <ToneMapping
+          mode={ToneMappingMode.ACES_FILMIC}
+          exposure={SCENE_VISIBILITY.toneExposure}
+        />
+      </ManagedEffectComposer>
+    );
+  }
+
+  return (
+    <ManagedEffectComposer remountKey={pipelineKey} sceneId={sceneId} multisampling={0}>
+      {fullPipelineEffects}
     </ManagedEffectComposer>
   );
 }

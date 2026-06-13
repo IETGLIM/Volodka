@@ -2,6 +2,8 @@
 /* ─── Volodka RPG – Street scene procedural 3D visual ─── */
 
 import { useRef, useMemo, useEffect } from 'react';
+import { useGameStore } from '@/store/gameStore';
+import { useWetSurfaceMaterial } from '@/hooks/useWetSurfaceMaterial';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import * as THREE from 'three';
 import type { SceneId } from '@/shared/types/game';
@@ -14,25 +16,32 @@ interface StreetVisualProps {
   livePlayerPositionRef?: React.MutableRefObject<THREE.Vector3>;
 }
 
+/** Rain-wet ground plane for street scenes. */
+function StreetGround({ isWinter, rainIntensity }: { isWinter: boolean; rainIntensity: number }) {
+  const wetMat = useWetSurfaceMaterial(isWinter ? '#a0a8b8' : '#3a3a52', {
+    dryRoughness: isWinter ? 0.7 : 0.85,
+    dryMetalness: 0.05,
+    rainIntensity: isWinter ? 0 : rainIntensity,
+  });
+
+  return (
+    <mesh rotation-x={-Math.PI / 2} receiveShadow position-y={0.001}>
+      <planeGeometry args={[60, 60]} />
+      <primitive object={wetMat} attach="material" />
+    </mesh>
+  );
+}
+
 /** Street scene with buildings, neon, fog, lamps, and weather */
 export function StreetVisual({ sceneId = 'street_night', livePlayerPositionRef }: StreetVisualProps) {
   const isWinter = sceneId === 'street_winter';
+  const rainIntensity = useGameStore((s) => s.rainIntensity);
   const { lod } = useEnvironmentLod();
   const envProfile = useMemo(() => getEnvironmentLodProfile(sceneId), [sceneId]);
 
   return (
     <group>
-      {/* ── Dark ground plane ── */}
-      <mesh rotation-x={-Math.PI / 2} receiveShadow position-y={0.001}>
-        <planeGeometry args={[60, 60]} />
-        <meshStandardMaterial
-          color={isWinter ? '#a0a8b8' : '#3a3a52'}
-          roughness={isWinter ? 0.7 : 0.85}
-          polygonOffset
-          polygonOffsetFactor={1}
-          polygonOffsetUnits={1}
-        />
-      </mesh>
+      <StreetGround isWinter={isWinter} rainIntensity={rainIntensity} />
 
       {/* ── Sidewalk ── */}
       <mesh rotation-x={-Math.PI / 2} position={[0, 0.015, 0]} receiveShadow>
@@ -272,35 +281,51 @@ function StreetClutterGate({
 }
 
 /** 5 panel building silhouettes using InstancedMesh */
+/** Modular facade buildings with emissive window grid (replaces flat instanced boxes). */
 function PanelBuildings() {
-  const meshRef = useRef<THREE.InstancedMesh>(null);
-
-  const buildingData = useMemo(() => [
-    { pos: [-12, 0, -15] as [number, number, number], w: 8, h: 18, d: 6 },
-    { pos: [12, 0, -20] as [number, number, number], w: 10, h: 22, d: 6 },
-    { pos: [-15, 0, 5] as [number, number, number], w: 7, h: 15, d: 5 },
-    { pos: [14, 0, 8] as [number, number, number], w: 9, h: 20, d: 6 },
-    { pos: [0, 0, -25] as [number, number, number], w: 12, h: 25, d: 8 },
-  ], []);
-
-  // Set up instance matrices in useEffect (not useMemo) to avoid ref access during render
-  useEffect(() => {
-    if (!meshRef.current) return;
-    const dummy = new THREE.Object3D();
-    buildingData.forEach((b, i) => {
-      dummy.position.set(b.pos[0], b.h / 2, b.pos[2]);
-      dummy.scale.set(b.w, b.h, b.d);
-      dummy.updateMatrix();
-      meshRef.current!.setMatrixAt(i, dummy.matrix);
-    });
-    meshRef.current.instanceMatrix.needsUpdate = true;
-  }, [buildingData]);
+  const buildings = useMemo(
+    () => [
+      { pos: [-12, 0, -15] as [number, number, number], w: 8, h: 18, d: 6 },
+      { pos: [12, 0, -20] as [number, number, number], w: 10, h: 22, d: 6 },
+      { pos: [-15, 0, 5] as [number, number, number], w: 7, h: 15, d: 5 },
+      { pos: [14, 0, 8] as [number, number, number], w: 9, h: 20, d: 6 },
+      { pos: [0, 0, -25] as [number, number, number], w: 12, h: 25, d: 8 },
+    ],
+    [],
+  );
 
   return (
-    <instancedMesh ref={meshRef} args={[undefined, undefined, 5]} castShadow>
-      <boxGeometry args={[1, 1, 1]} />
-      <meshStandardMaterial color="#323248" roughness={0.95} />
-    </instancedMesh>
+    <group>
+      {buildings.map((b, i) => (
+        <group key={`facade-${i}`} position={b.pos}>
+          <mesh position={[0, b.h / 2, 0]} castShadow receiveShadow>
+            <boxGeometry args={[b.w, b.h, b.d]} />
+            <meshStandardMaterial color="#2a2a3e" roughness={0.92} metalness={0.08} />
+          </mesh>
+          {/* Emissive window strip */}
+          <mesh position={[0, b.h * 0.55, b.d / 2 + 0.02]}>
+            <planeGeometry args={[b.w * 0.75, b.h * 0.35]} />
+            <meshStandardMaterial
+              color="#1a2030"
+              emissive="#88ccff"
+              emissiveIntensity={0.35 + (i % 3) * 0.15}
+              roughness={0.4}
+            />
+          </mesh>
+          {/* Ground floor shop front */}
+          <mesh position={[0, 1.2, b.d / 2 + 0.03]}>
+            <planeGeometry args={[b.w * 0.4, 2.2]} />
+            <meshStandardMaterial
+              color="#ffaa44"
+              emissive="#ff8800"
+              emissiveIntensity={0.5}
+              transparent
+              opacity={0.85}
+            />
+          </mesh>
+        </group>
+      ))}
+    </group>
   );
 }
 

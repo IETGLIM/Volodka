@@ -97,6 +97,13 @@ export const QUESTS_ACT2: QuestDefinition[] = [
         target: 'dmitry_defected',
         completed: false,
       },
+      {
+        id: 'betray_dmitry_alt',
+        description: 'Передать Дмитрия гильдии (альтернативная ветка)',
+        type: 'flag_set',
+        target: 'dmitry_betrayed',
+        completed: false,
+      },
     ],
     rewards: [
       { type: 'addSkill', skill: 'persuasion', value: 3 },

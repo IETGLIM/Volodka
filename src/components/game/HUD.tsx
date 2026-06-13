@@ -6,6 +6,7 @@
 */
 
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { APP_VERSION } from '@/shared/constants/appVersion';
 import { motion, AnimatePresence, useSpring, useTransform } from 'framer-motion';
 import {
   Save,
@@ -937,7 +938,7 @@ export function HUD(props: HUDProps) {
           </div>
           {/* Version indicator */}
           <div className="absolute bottom-1.5 right-3 pointer-events-none">
-            <span className="text-[8px] text-slate-600/50 font-mono">v4.2.2</span>
+            <span className="text-[8px] text-slate-600/50 font-mono">v{APP_VERSION}</span>
           </div>
         </div>
       </div>

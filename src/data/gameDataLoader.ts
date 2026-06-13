@@ -84,17 +84,28 @@ export function isGameDataLoaded(): boolean {
 export async function preloadBootGameData(): Promise<void> {
   if (bootLoaded) return;
   if (!bootPromise) {
-    bootPromise = Promise.all([
-      import('@/data/achievements'),
-      import('@/data/dailyMissions'),
-      import('@/data/loreEntries'),
-      import('@/data/triggerZones'),
-      import('@/data/items'),
-      import('@/data/allNpcDefinitions'),
-      import('@/data/skillTree'),
-      import('@/data/perks'),
-      import('@/data/npcGifts'),
-    ]).then(([
+    const { loadingPipeline } = await import('@/engine/loading/LoadingPipeline');
+    loadingPipeline.reportStage('boot_data');
+    const modules = [
+      '@/data/achievements',
+      '@/data/dailyMissions',
+      '@/data/loreEntries',
+      '@/data/triggerZones',
+      '@/data/items',
+      '@/data/allNpcDefinitions',
+      '@/data/skillTree',
+      '@/data/perks',
+      '@/data/npcGifts',
+    ] as const;
+    let loaded = 0;
+    bootPromise = Promise.all(
+      modules.map(async (spec) => {
+        const mod = await import(spec);
+        loaded += 1;
+        loadingPipeline.reportSubProgress(loaded / modules.length);
+        return mod;
+      }),
+    ).then(([
       achievements,
       dailyMissions,
       lore,
@@ -115,6 +126,7 @@ export async function preloadBootGameData(): Promise<void> {
       perksMod = perks;
       npcGiftsMod = npcGifts;
       bootLoaded = true;
+      loadingPipeline.reportStage('boot_data');
     });
   }
   await bootPromise;

@@ -13,6 +13,7 @@ import { POEMS } from '@/data/poems';
 import { audioEngine } from '@/engine/AudioEngine';
 import { eventBus } from '@/engine/EventBus';
 import { useTypewriter } from '@/hooks/useTypewriter';
+import { useMenuNavigation } from '@/hooks/useMenuNavigation';
 import { CanvasMatrixRain } from './shared/CanvasMatrixRain';
 import { validateSaveData } from '@/shared/validation/saveSchema';
 import {
@@ -21,7 +22,7 @@ import {
 } from '@/store/slices/saveStorage';
 
 const TOTAL_POEMS = POEMS.length;
-const VERSION = '3.0.0';
+import { APP_VERSION } from '@/shared/constants/appVersion';
 
 // ============================================
 // MENU ITEM DEFINITIONS
@@ -624,7 +625,7 @@ function AboutPanel({ onClose }: { onClose: () => void }) {
           </div>
 
           <div className="flex items-center gap-3 pt-2">
-            <span className="font-mono text-[9px] text-slate-600 tracking-wide">v{VERSION}</span>
+            <span className="font-mono text-[9px] text-slate-600 tracking-wide">v{APP_VERSION}</span>
             <span className="text-slate-700 text-[8px]">|</span>
             <span className="font-mono text-[9px] text-slate-600 tracking-wide">Next.js + Three.js</span>
             <span className="text-slate-700 text-[8px]">|</span>
@@ -765,53 +766,13 @@ export function MenuScreen() {
     }
   }, [handleNewGame, handleContinue, handleSettings, handleAbout]);
 
-  // ── Keyboard navigation (arrow keys + Enter) ──
-  useEffect(() => {
-    const enabledItems = menuItems.filter(item => !item.disabled);
-    const enabledIndices = menuItems.map((item, i) => !item.disabled ? i : -1).filter(i => i >= 0);
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      // Don't handle if panels are open
-      if (showAbout || showSettings) return;
-
-      const target = e.target as HTMLElement;
-      if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) return;
-
-      switch (e.code) {
-        case 'ArrowUp':
-        case 'KeyW': {
-          e.preventDefault();
-          const currentEnabledIdx = enabledIndices.indexOf(selectedIndex);
-          const prevEnabledIdx = currentEnabledIdx > 0 ? currentEnabledIdx - 1 : enabledIndices.length - 1;
-          const newIdx = enabledIndices[prevEnabledIdx];
-          setSelectedIndex(newIdx);
-          audioEngine.playSfx('click');
-          break;
-        }
-        case 'ArrowDown':
-        case 'KeyS': {
-          e.preventDefault();
-          const currentEnabledIdx2 = enabledIndices.indexOf(selectedIndex);
-          const nextEnabledIdx = currentEnabledIdx2 < enabledIndices.length - 1 ? currentEnabledIdx2 + 1 : 0;
-          const newIdx2 = enabledIndices[nextEnabledIdx];
-          setSelectedIndex(newIdx2);
-          audioEngine.playSfx('click');
-          break;
-        }
-        case 'Enter':
-        case 'Space': {
-          e.preventDefault();
-          if (!menuItems[selectedIndex]?.disabled) {
-            handleMenuAction(menuItems[selectedIndex]?.id ?? '');
-          }
-          break;
-        }
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedIndex, menuItems, handleMenuAction, showAbout, showSettings]);
+  useMenuNavigation({
+    items: menuItems,
+    selectedIndex,
+    setSelectedIndex,
+    onSelect: handleMenuAction,
+    enabled: !showAbout && !showSettings && !isFadingOut,
+  });
 
   // ── Get accent color for menu item ──
   const getAccentColors = (accent?: string, isSelected?: boolean) => {
@@ -1324,7 +1285,7 @@ export function MenuScreen() {
               fontFamily: '"JetBrains Mono", "Fira Code", "Courier New", monospace',
             }}
           >
-            v{VERSION}
+            v{APP_VERSION}
           </span>
           <span className="w-px h-2.5 bg-cyan-500/20" />
           <span

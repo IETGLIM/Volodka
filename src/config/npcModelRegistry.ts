@@ -41,6 +41,13 @@ export const NPC_MODEL_ASSETS: Partial<Record<string, NpcModelAssetMeta>> = {
     source: 'three.js examples — Soldier (CC0)',
     sourceUrl: 'https://github.com/mrdoob/three.js/tree/dev/examples/models/gltf',
   },
+  maria: {
+    url: `${NPCS}/cafe_barista.glb`,
+    scale: 1.02,
+    license: 'CC0',
+    source: 'three.js examples — Soldier (CC0) — hero placeholder',
+    sourceUrl: 'https://github.com/mrdoob/three.js/tree/dev/examples/models/gltf',
+  },
 };
 
 /**

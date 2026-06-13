@@ -16,20 +16,21 @@ import { useEffect, useState, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGameStore } from '@/store/gameStore';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
+import { SCENE_OVERLAY_MS } from '@/shared/constants/transitionTimings';
 import { SCENE_CONFIG } from '@/config/scenes';
 import { eventBus } from '@/engine/EventBus';
 import type { SceneId, SceneConfig } from '@/shared/types/game';
 
-/* ─── Phase timing (milliseconds) ─── */
-const GLITCH_DURATION = 150;
-const FLASH_DURATION = 200;
-const DARKEN_DURATION = 400;
-const RIPPLE_DURATION = 500;
-const DISSOLVE_DURATION = 400;
-const WIPE_IN_DURATION = 350;
-const HOLD_DURATION = 300;
-const WIPE_OUT_DURATION = 400;
-const REVEAL_DURATION = 400;
+/* ─── Phase timing (milliseconds) — from shared transitionTimings ─── */
+const GLITCH_DURATION = SCENE_OVERLAY_MS.GLITCH;
+const FLASH_DURATION = SCENE_OVERLAY_MS.FLASH;
+const DARKEN_DURATION = SCENE_OVERLAY_MS.DARKEN;
+const RIPPLE_DURATION = SCENE_OVERLAY_MS.RIPPLE;
+const DISSOLVE_DURATION = SCENE_OVERLAY_MS.DISSOLVE;
+const WIPE_IN_DURATION = SCENE_OVERLAY_MS.WIPE_IN;
+const HOLD_DURATION = SCENE_OVERLAY_MS.HOLD;
+const WIPE_OUT_DURATION = SCENE_OVERLAY_MS.WIPE_OUT;
+const REVEAL_DURATION = SCENE_OVERLAY_MS.REVEAL;
 
 type TransitionPhase = 'idle' | 'glitch' | 'flash' | 'darken' | 'ripple-in' | 'dissolve-in' | 'wipe-in' | 'hold' | 'wipe-out' | 'reveal';
 

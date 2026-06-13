@@ -1,8 +1,9 @@
-import { Suspense } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { MOTION_EASE } from '@/shared/constants/transitionTimings';
-import { LoadingScreen } from '../LoadingScreen';
+import { PipelineLoadingOverlay } from '../PipelineLoadingOverlay';
+import { loadingPipeline } from '@/engine/loading/LoadingPipeline';
 import { IntroAutoSkip } from './IntroAutoSkip';
 import { RPGGameCanvas, LazyMenuScreen, LazyIntroScreen, LazyMatrixRainQuote } from './lazyPanels';
 import type { MatrixQuoteState } from './types';
@@ -32,12 +33,18 @@ export function OrchestratorCanvasLayer({
   matrixQuote,
   onDismissMatrixQuote,
 }: Props) {
+  const [menuLoadingDismissed, setMenuLoadingDismissed] = useState(false);
+
+  useEffect(() => {
+    if (canvasMounted && !canvasReady && mode === 'menu') {
+      loadingPipeline.reportStage('canvas_init');
+    }
+  }, [canvasMounted, canvasReady, mode]);
+
   return (
     <>
       {mode !== 'menu' && !gameDataReady && (
-        <div style={{ pointerEvents: 'none', zIndex: UI_LAYERS.LOADING }} className="fixed inset-0">
-          <LoadingScreen showTitle message="Загрузка данных..." />
-        </div>
+        <PipelineLoadingOverlay showTitle message="Загрузка данных..." />
       )}
 
       <AnimatePresence>
@@ -74,10 +81,12 @@ export function OrchestratorCanvasLayer({
         </Suspense>
       )}
 
-      {mode === 'menu' && canvasMounted && !canvasReady && (
-        <div style={{ pointerEvents: 'none' }}>
-          <LoadingScreen showTitle message="Инициализация..." />
-        </div>
+      {mode === 'menu' && canvasMounted && !menuLoadingDismissed && (
+        <PipelineLoadingOverlay
+          showTitle
+          message="Инициализация..."
+          onComplete={() => setMenuLoadingDismissed(true)}
+        />
       )}
 
       {mode === 'intro' && !introSeen && (

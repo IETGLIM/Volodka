@@ -14,6 +14,14 @@ export interface SceneEvents {
   'scene:enter': { sceneId: SceneId; fromSceneId: SceneId };
   /** Fired after the first canvas frame following scene:enter; Suspense chunks may still stream. */
   'scene:loaded': { sceneId: SceneId; fromSceneId: SceneId };
+  /** Transition aborted — load error, user cancel, or unrecoverable canvas failure. */
+  'scene:transition_failed': {
+    reason: string;
+    targetScene?: SceneId;
+    fromScene?: SceneId;
+    errorCode?: string;
+    cancelled?: boolean;
+  };
   'canvas:first-frame': { generation: number };
   'canvas:invalidate-first-frame': { generation: number };
   'canvas:context-lost': Record<string, never>;

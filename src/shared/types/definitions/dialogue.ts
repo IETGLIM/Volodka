@@ -18,4 +18,8 @@ export interface DialogueNode {
   readonly choices: DialogueChoice[];
   readonly effects?: StoryEffect[];
   readonly sceneId?: SceneId;
+  /** Directed performance — overrides regex emotion detection */
+  readonly emotion?: 'calm' | 'angry' | 'sad' | 'happy' | 'whisper';
+  readonly voiceLineId?: string;
+  readonly cameraShot?: 'close' | 'medium' | 'wide';
 }

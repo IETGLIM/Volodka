@@ -12,13 +12,13 @@ export const SCENE_VISIBILITY = {
   /** Scene-config point lights */
   pointLightScale: 1.35,
   /** Post-FX brightness offset (added to per-scene grade) */
-  postFxBrightnessLift: 0.12,
+  postFxBrightnessLift: 0.06,
   /** Slightly lower contrast so shadows aren't crushed */
-  postFxContrastReduction: 0.06,
+  postFxContrastReduction: 0.03,
   /** ACES exposure in ExplorationPostFX */
-  toneExposure: 1.38,
+  toneExposure: 1.22,
   /** Vignette darkness multiplier (lower = lighter edges) */
-  vignetteDarknessScale: 0.42,
+  vignetteDarknessScale: 0.55,
   /** Push fog away from the camera */
   fogNearScale: 1.2,
   fogFarScale: 1.4,

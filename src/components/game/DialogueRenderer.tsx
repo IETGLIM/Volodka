@@ -41,6 +41,7 @@ import { AriaLiveRegion } from '@/components/a11y/AriaLiveRegion';
 import { FocusTrap } from '@/components/a11y/FocusTrap';
 import { buildChoiceAriaLabel } from '@/shared/utils/choiceAriaLabel';
 import { devWarn } from '@/shared/utils/devLog';
+import { getVoiceLine } from '@/engine/audio/VoiceLineRegistry';
 
 /* ── Emotion detection from text ── */
 function detectEmotion(text: string): 'calm' | 'angry' | 'sad' | 'happy' {
@@ -281,7 +282,11 @@ export function DialogueRenderer() {
     const portraitColors = npcId
       ? (NPC_PORTRAIT_COLORS[npcId] ?? NPC_PORTRAIT_COLORS.cafe_barista)
       : NPC_PORTRAIT_COLORS.cafe_barista;
-    const emotion = detectEmotion(text);
+    const voiceMeta = node?.id ? getVoiceLine(node.id) : undefined;
+    const emotion =
+      node?.emotion ??
+      (voiceMeta?.emotion && voiceMeta.emotion !== 'whisper' ? voiceMeta.emotion : undefined) ??
+      detectEmotion(text);
     const emotionBorder = EMOTION_BORDER[emotion] || EMOTION_BORDER.calm;
     const relationLevel = npcId ? getRelationLevel(npcId, npcRelations) : ('neutral' as const);
     const speakerBgStyle: React.CSSProperties = npcId

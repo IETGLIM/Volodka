@@ -376,9 +376,9 @@ export function VolodkaRoomVisual({ livePlayerPositionRef: _livePlayerPositionRe
         ))}
 
         {/* Monitor glow — keeps the room lit (the screens are the primary source) */}
-        <pointLight position={[0, 1.25, 0.15]} color="#00ff88" intensity={3.2} distance={9} />
-        <pointLight position={[-0.62, 1.1, 0.1]} color="#22d3ee" intensity={1.3} distance={5} />
-        <pointLight position={[0.62, 1.1, 0.1]} color="#f59e0b" intensity={1.0} distance={5} />
+        <pointLight position={[0, 1.25, 0.15]} color="#00ff88" intensity={4.5} distance={9} />
+        <pointLight position={[-0.62, 1.1, 0.1]} color="#22d3ee" intensity={1.5} distance={5} />
+        <pointLight position={[0.62, 1.1, 0.1]} color="#f59e0b" intensity={1.2} distance={5} />
         {/* Keyboard */}
         <mesh position={[0, 0.78, 0.1]} geometry={geo_box_23}>
 
