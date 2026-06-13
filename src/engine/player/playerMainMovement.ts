@@ -25,16 +25,25 @@ import { lerpAngle, enforceFloor } from '@/engine/player/playerMath';
 import { computeKccMovementSubstepped } from '@/engine/player/physicsSubstep';
 import type { PlayerMovementDeps } from '@/engine/player/playerFrameTypes';
 
-function applyDegradedMovement(deps: PlayerMovementDeps): void {
+function applyDegradedMovement(deps: PlayerMovementDeps, onFlatGround: boolean): void {
   const scratch = deps.frameScratchRef.current;
   const rb = scratch.rb!;
   const vel = scratch.vel;
+  const dt = scratch.dt;
+  const groundY = scratch.groundY;
 
   vel.x = 0;
   vel.z = 0;
 
   const pos = rb.translation();
-  deps.livePlayerPositionRef.current.set(pos.x, pos.y, pos.z);
+  const newY = onFlatGround ? pos.y : pos.y + vel.y * dt;
+  rb.setTranslation({ x: pos.x, y: newY, z: pos.z }, true);
+  if (enforceFloor(rb, vel, groundY)) {
+    deps.isGroundedRef.current = true;
+    deps.coyoteTimerRef.current = 0;
+  }
+  const finalPos = rb.translation();
+  deps.livePlayerPositionRef.current.set(finalPos.x, finalPos.y, finalPos.z);
 }
 
 function tryRecoverKcc(deps: PlayerMovementDeps, reason: string): boolean {
@@ -210,7 +219,7 @@ export function runMainPlayerMovement(deps: PlayerMovementDeps): boolean {
           failFrames: deps.controllerFailCountRef.current,
         });
       }
-      applyDegradedMovement(deps);
+      applyDegradedMovement(deps, onFlatGround);
       return false;
     }
   } else if (deps.controllerFailCountRef.current > 0) {
@@ -278,3 +287,4 @@ export function runMainPlayerMovement(deps: PlayerMovementDeps): boolean {
 
   return true;
 }
+
