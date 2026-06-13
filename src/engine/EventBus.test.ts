@@ -65,6 +65,31 @@ describe('EventBusClass lifecycle', () => {
   });
 });
 
+describe('EventBusClass dedup', () => {
+  it('fires quest:completed twice within the dedup window', () => {
+    const bus = createEventBus();
+    const handler = vi.fn();
+
+    bus.on('quest:completed', handler);
+    bus.emit('quest:completed', { questId: 'q1' });
+    bus.emit('quest:completed', { questId: 'q1' });
+
+    expect(handler).toHaveBeenCalledTimes(2);
+  });
+
+  it('suppresses duplicate fx:glitch within the dedup window', () => {
+    const bus = createEventBus();
+    const handler = vi.fn();
+    const payload = { intensity: 0.5, duration: 300 };
+
+    bus.on('fx:glitch', handler);
+    bus.emit('fx:glitch', payload);
+    bus.emit('fx:glitch', payload);
+
+    expect(handler).toHaveBeenCalledTimes(1);
+  });
+});
+
 describe('EventBusClass priority dispatch', () => {
   it('runs lower priority numbers before higher tiers', () => {
     const bus = createEventBus();

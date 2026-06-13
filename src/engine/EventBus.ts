@@ -29,22 +29,19 @@ type AnyEventHandler = (event: string, payload: unknown) => void;
 /** Unsubscribe handle returned by eventBus.on() / onAny(). */
 export type EventBusUnsubscribe = () => void;
 
-/** Events that should never be deduped — each emission must fire. */
-const DEDUP_EXEMPT_EVENTS = [
-  'combat:hit',
-  'combat:damage',
-  'combat:heal',
-  'combat:turn',
-  'combat:action',
-  'combat:victory',
-  'combat:defeat',
-  'scene:enter',
-  'object:interact',
-  'npc:interact_staged',
-  'interaction:end',
+/** Visual/atmospheric events where duplicate suppression within the window is safe. */
+const DEDUP_ENABLED_EVENTS = [
+  'fx:glitch',
+  'fx:flash',
+  'fx:shake',
+  'fx:vignette',
+  'camera:combat_impact',
+  'camera:combat_shake',
+  'weather:rain',
+  'weather:snow',
 ] as const satisfies readonly (keyof EventMap)[];
 
-const DEDUP_EXEMPT = new Set<string>(DEDUP_EXEMPT_EVENTS);
+const DEDUP_ENABLED = new Set<string>(DEDUP_ENABLED_EVENTS);
 
 /**
  * A lightweight, typed pub/sub event bus with payload-aware deduplication.
@@ -57,7 +54,7 @@ const DEDUP_EXEMPT = new Set<string>(DEDUP_EXEMPT_EVENTS);
  *    (no JSON.stringify, no retained key strings in the cache).
  *  - Fixed 64-slot array stores `{ hash, ts }` — O(64) lookup per emit, no Map churn.
  *  - Stale entries expire lazily inside dedupShouldSuppress on each emit (no background timer).
- *  - Events listed in DEDUP_EXEMPT always fire, bypassing dedup entirely.
+ *  - Dedup is opt-in: only events in DEDUP_ENABLED are suppressed when duplicated within the window.
  *
  * Dispatch order:
  *  - Typed handlers run first by ascending priority (Engine → Orchestrator → UI → FX).
@@ -209,9 +206,8 @@ export class EventBusClass<TMap extends object = EventMap>
    * Emit an event with its typed payload.
    * Calls every registered handler for the event key in priority order.
    *
-   * Dedup: if the same (event, payload) pair was emitted within the last
-   * DEDUP_WINDOW_MS, subsequent emissions are suppressed unless the event
-   * is in DEDUP_EXEMPT.
+   * Dedup: for events in DEDUP_ENABLED, if the same (event, payload) pair was
+   * emitted within the last DEDUP_WINDOW_MS, subsequent emissions are suppressed.
    */
   emit<K extends keyof TMap>(event: K, payload: TMap[K]): void {
     const dispatchGeneration = this.lifecycleGeneration;
@@ -221,7 +217,7 @@ export class EventBusClass<TMap extends object = EventMap>
     }
 
     const eventStr = String(event);
-    if (!DEDUP_EXEMPT.has(eventStr)) {
+    if (DEDUP_ENABLED.has(eventStr)) {
       const now = Date.now();
       if (this.shouldSuppressDedup(eventStr, payload, now)) {
         if (this.debug) {
