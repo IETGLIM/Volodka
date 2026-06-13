@@ -4,6 +4,8 @@ declare global {
   interface Window {
     /** E-key debounce shared with InteractiveTriggers / ExaminePanel / SceneExitIndicator */
     __volodka_ekey_consumed?: boolean;
+    /** Enable frame budget tick timing in production (dev panel / e2e). */
+    __VOL_PROFILE__?: boolean;
   }
 }
 

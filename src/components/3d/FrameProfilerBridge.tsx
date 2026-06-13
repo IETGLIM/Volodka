@@ -3,8 +3,9 @@
  * Replaces RendererInfoBridge with extended frame budget metrics.
  */
 
-import { useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { useThree } from '@react-three/fiber';
+import { setFrameBudgetProfilingArmed } from '@/engine/frame/FrameBudgetRegistry';
 import { usePostFrameTick } from '@/engine/frame/useFrameTick';
 import { publishFrameProfiler, getFrameProfilerSnapshot } from '@/engine/frame/FrameProfilerState';
 import { publishRuntimeBudgetCheck } from '@/engine/performance/RuntimeBudgetMonitor';
@@ -16,6 +17,11 @@ export function FrameProfilerBridge() {
   const dpr = useThree((state) => state.viewport.dpr);
   const lastFrameTimeRef = useRef(performance.now());
   const frameNumberRef = useRef(0);
+
+  useEffect(() => {
+    setFrameBudgetProfilingArmed(true);
+    return () => setFrameBudgetProfilingArmed(false);
+  }, []);
 
   usePostFrameTick(
     'misc',
