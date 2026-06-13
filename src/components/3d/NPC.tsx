@@ -5,6 +5,11 @@
      and procedural 3D models ─── */
 
 import { useRef, useState, useEffect, Suspense, useMemo } from 'react';
+import { useCachedCanvasTexture } from '@/hooks/useCachedCanvasTexture';
+import {
+  CONTACT_SHADOW_CACHE_KEYS,
+  createContactShadowTexture,
+} from '@/engine/three/contactShadowTexture';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import * as THREE from 'three';
 import type { NPCDefinition, NPCAppearance } from '@/shared/types/game';
@@ -340,30 +345,12 @@ export function NPC({
   );
 }
 
-/** Shared contact shadow texture — created once and reused across all NPCs */
-let _sharedContactShadowTexture: THREE.CanvasTexture | null = null;
-
-function getSharedContactShadowTexture(): THREE.CanvasTexture {
-  if (_sharedContactShadowTexture) return _sharedContactShadowTexture;
-  const size = 64;
-  const canvas = document.createElement('canvas');
-  canvas.width = size;
-  canvas.height = size;
-  const ctx = canvas.getContext('2d')!;
-  const gradient = ctx.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2);
-  gradient.addColorStop(0, 'rgba(0, 0, 0, 0.4)');
-  gradient.addColorStop(0.4, 'rgba(0, 0, 0, 0.2)');
-  gradient.addColorStop(0.7, 'rgba(0, 0, 0, 0.06)');
-  gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
-  ctx.fillStyle = gradient;
-  ctx.fillRect(0, 0, size, size);
-  _sharedContactShadowTexture = new THREE.CanvasTexture(canvas);
-  return _sharedContactShadowTexture;
-}
-
 /** Contact shadow for NPCs — flat circle mesh at feet with radial gradient (shared texture) */
 function NPCContactShadow() {
-  const shadowTexture = useMemo(() => getSharedContactShadowTexture(), []);
+  const shadowTexture = useCachedCanvasTexture(
+    CONTACT_SHADOW_CACHE_KEYS.npc,
+    () => createContactShadowTexture({ variant: 'npc' }),
+  );
 
   return (
     <mesh
