@@ -7,6 +7,8 @@ import type { VirtualControls, PlayerControls } from '@/hooks/useGamePhysics';
 import type { DirectMovementTelemetryRefs } from '@/engine/player/directMovementTelemetry';
 import type { VirtualHoldTimes } from '@/engine/VirtualInputHold';
 import type { getSceneConfig, getExplorationMovementTuning } from '@/config/scenes';
+import type { GroundProbeRapier, GroundProbeWorld } from '@/engine/physics/groundProbe';
+import type { GroundProbeCacheState } from '@/engine/physics/groundProbeCache';
 
 /** Per-frame scratch shared across sequential player tick stages. */
 export interface PlayerFrameScratch {
@@ -36,8 +38,9 @@ export interface PlayerMovementDeps {
   config: ReturnType<typeof getSceneConfig>;
   locomotionScale: number;
   movementTuning: ReturnType<typeof getExplorationMovementTuning>;
-  world: { createCharacterController: (offset: number) => RapierCharacterController };
-  rapier: unknown;
+  world: GroundProbeWorld & { createCharacterController: (offset: number) => RapierCharacterController };
+  rapier: GroundProbeRapier;
+  groundProbeCacheRef: React.MutableRefObject<GroundProbeCacheState>;
   controls: PlayerControls;
   frameScratchRef: React.MutableRefObject<PlayerFrameScratch>;
   rigidBodyRef: React.MutableRefObject<RapierRigidBody | null>;
@@ -52,9 +55,9 @@ export interface PlayerMovementDeps {
   stuckLockTimerRef: React.MutableRefObject<number>;
   warmupTimerRef: React.MutableRefObject<number>;
   noMovementFramesRef: React.MutableRefObject<number>;
-  kccRecoveryFramesRef: React.MutableRefObject<number>;
   controllerFailCountRef: React.MutableRefObject<number>;
-  useDirectMovementRef: React.MutableRefObject<boolean>;
+  controlsDegradedRef: React.MutableRefObject<boolean>;
+  recreateCharacterController: () => RapierCharacterController | null;
   snapAirborneRef: React.MutableRefObject<boolean>;
   rbBoundRef: React.MutableRefObject<boolean>;
   prevRbPosRef: React.MutableRefObject<THREE.Vector3>;

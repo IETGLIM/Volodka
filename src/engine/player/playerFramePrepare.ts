@@ -1,5 +1,3 @@
-import { getGameStore } from '@/store/gameStore';
-import { readGamePhase } from '@/shared/gamePhase';
 import { isNarrativeMovementLocked } from '@/shared/exploreHubNodes';
 import { getInteractionState, isInteractionLocked } from '@/engine/interaction/interactionSession';
 import { InteractionState } from '@/engine/interaction/interactionMachine';
@@ -7,16 +5,26 @@ import { forceEmitInteractionEnd } from '@/engine/interaction/interactionEndDedu
 import { eventBus } from '@/engine/EventBus';
 import { setPlayerRigidBody } from '@/engine/PlayerRigidBodyState';
 import { devWarn } from '@/shared/utils/devLog';
-import { probeGroundY } from '@/engine/physics/groundProbe';
+import { resolveCachedGroundY } from '@/engine/physics/groundProbeCache';
 import { WARMUP_DURATION_S } from '@/engine/player/playerConstants';
+import type { FrameGameSnapshot } from '@/engine/frame/frameGameSnapshot';
 import type { PlayerMovementDeps } from '@/engine/player/playerFrameTypes';
 
 /** Warmup, locks, mobile detect — returns false to skip remaining stages. */
-export function preparePlayerFrame(deps: PlayerMovementDeps, delta: number): boolean {
+export function preparePlayerFrame(
+  deps: PlayerMovementDeps,
+  delta: number,
+  game: FrameGameSnapshot,
+): boolean {
   const scratch = deps.frameScratchRef.current;
   const rb = deps.rigidBodyRef.current;
-  const controller = deps.controllerRef.current;
-  if (!rb || !controller) return false;
+  if (!rb) return false;
+
+  let controller = deps.controllerRef.current;
+  if (!controller) {
+    controller = deps.recreateCharacterController();
+  }
+  if (!controller) return false;
 
   scratch.rb = rb;
   scratch.controller = controller;
@@ -39,8 +47,7 @@ export function preparePlayerFrame(deps: PlayerMovementDeps, delta: number): boo
   const dt = Math.min(delta, 0.05);
   scratch.dt = dt;
 
-  const storeSnapshot = getGameStore();
-  const phase = readGamePhase(storeSnapshot);
+  const phase = game.gamePhase;
   const inCinematic = phase === 'cutscene' || phase === 'intro';
 
   if (!inCinematic && deps.warmupTimerRef.current < WARMUP_DURATION_S) {
@@ -49,7 +56,7 @@ export function preparePlayerFrame(deps: PlayerMovementDeps, delta: number): boo
 
   if (deps.warmupTimerRef.current < WARMUP_DURATION_S) {
     vel.set(0, 0, 0);
-    const storePos = getGameStore().exploration.playerPosition;
+    const storePos = game.playerPosition;
     const holdX = storePos[0];
     const holdY = storePos[1];
     const holdZ = storePos[2];
@@ -61,15 +68,23 @@ export function preparePlayerFrame(deps: PlayerMovementDeps, delta: number): boo
   }
 
   const currentPos = rb.translation();
-  const rescueGroundY = probeGroundY(
-    deps.world as unknown as Parameters<typeof probeGroundY>[0],
-    deps.rapier as Parameters<typeof probeGroundY>[1],
-    currentPos.x,
-    currentPos.y,
-    currentPos.z,
-    fallbackFloorY,
-    deps.capsuleColliderRef.current,
-    rb,
+  const airborne =
+    !deps.isGroundedRef.current || scratch.vel.y > 0.2;
+  const rescueGroundY = resolveCachedGroundY(
+    deps.world,
+    deps.rapier,
+    deps.groundProbeCacheRef.current,
+    {
+      sceneId: deps.sceneId,
+      x: currentPos.x,
+      feetY: currentPos.y,
+      z: currentPos.z,
+      fallbackFloorY,
+      dt,
+      airborne,
+      excludeCollider: deps.capsuleColliderRef.current,
+      excludeRigidBody: rb,
+    },
   );
   scratch.groundY = rescueGroundY;
 
@@ -85,15 +100,10 @@ export function preparePlayerFrame(deps: PlayerMovementDeps, delta: number): boo
   if (deps.jumpCooldownRef.current > 0) deps.jumpCooldownRef.current -= dt;
   if (deps.coyoteTimerRef.current > 0) deps.coyoteTimerRef.current -= dt;
 
-  const lockState = getGameStore();
-  const currentMode = readGamePhase(lockState);
-  const showStoryOverlay = lockState.showStoryOverlay;
-  const currentNodeId = lockState.currentNodeId;
+  const currentMode = game.gamePhase;
+  const showStoryOverlay = game.showStoryOverlay;
   const isLocked =
-    isNarrativeMovementLocked(showStoryOverlay, currentNodeId) ||
-    currentMode === 'cutscene' ||
-    currentMode === 'intro' ||
-    currentMode === 'combat' ||
+    game.movementLocked ||
     isInteractionLocked();
 
   scratch.isLocked = isLocked;

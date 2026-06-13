@@ -8,7 +8,8 @@ const GROUND_PROBE_MAX_DISTANCE = 10;
 const GROUND_PROBE_ORIGIN_LIFT = 0.1;
 const DOWN = { x: 0, y: -1, z: 0 } as const;
 
-type GroundProbeWorld = {
+/** Minimal Rapier world surface for downward ground raycasts. */
+export type GroundProbeWorld = {
   castRayAndGetNormal(
     ray: unknown,
     maxToi: number,
@@ -20,7 +21,8 @@ type GroundProbeWorld = {
   ): { timeOfImpact: number; normal: { x: number; y: number; z: number } } | null;
 };
 
-type GroundProbeRapier = {
+/** Minimal Rapier module surface for constructing probe rays. */
+export type GroundProbeRapier = {
   Ray: new (
     origin: { x: number; y: number; z: number },
     dir: { x: number; y: number; z: number },

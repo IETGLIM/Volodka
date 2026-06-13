@@ -27,15 +27,19 @@
  *  • Autostep handles stairs and small obstacles
  */
 
-import { useRef, useEffect, useLayoutEffect, useMemo } from 'react';
+import { useRef, useEffect, useLayoutEffect } from 'react';
+import { useCachedCanvasTexture } from '@/hooks/useCachedCanvasTexture';
+import {
+  CONTACT_SHADOW_CACHE_KEYS,
+  createContactShadowTexture,
+} from '@/engine/three/contactShadowTexture';
 import type { RootState } from '@react-three/fiber';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import { RigidBody, CapsuleCollider, useRapier, type RapierRigidBody, type RapierCollider } from '@react-three/rapier';
 import * as THREE from 'three';
 
-import { getGameStore, useGameStore } from '@/store/gameStore';
-import { readGamePhase } from '@/shared/gamePhase';
-import { useCurrentSceneId } from '@/store/selectors';
+import { getGameStore } from '@/store/gameStore';
+import { useCurrentSceneId, usePlayerPresentationState } from '@/store/selectors';
 import { usePlayerControls, type VirtualControls } from '@/hooks/useGamePhysics';
 
 import {
@@ -95,8 +99,7 @@ export function PhysicsPlayer({
 }: PhysicsPlayerProps) {
   const controls = usePlayerControls(onInteractPress);
   const sceneId = useCurrentSceneId();
-  const activeCutsceneId = useGameStore((s) => s.activeCutsceneId);
-  const gameMode = useGameStore((s) => readGamePhase(s));
+  const { activeCutsceneId, gameMode } = usePlayerPresentationState();
   const hideForWakeup = isIntroWakeupCutscene(activeCutsceneId);
   const showThirdPersonBody =
     shouldShowThirdPersonAvatar(gameMode, activeCutsceneId) && !hideForWakeup;
@@ -241,7 +244,7 @@ export function PhysicsPlayer({
     vel: velocityRef.current,
     floorY: config.floorY,
     isLocked: false,
-    currentMode: readGamePhase(getGameStore()),
+    currentMode: 'exploration',
     wasGrounded: true,
     isMoving: false,
     running: false,
@@ -352,18 +355,27 @@ export function PhysicsPlayer({
     directMovementTelemetry,
   ]);
 
-  useFrameTick('player', ({ state, delta }) => {
+  const pendingFinalizeRef = useRef(false);
+
+  useFrameTick('player', ({ state, delta, game }) => {
     if (!mountedRef.current) return;
+    pendingFinalizeRef.current = false;
     const deps = movementDepsRef.current;
     deps.frameScratchRef.current.tickState = state;
-    if (!preparePlayerFrame(deps, delta)) return;
+    if (!preparePlayerFrame(deps, delta, game)) return;
     if (deps.frameScratchRef.current.isLocked) {
       runLockedPlayerMovement(deps);
+      pendingFinalizeRef.current = true;
       return;
     }
     if (!runMainPlayerMovement(deps)) return;
-    finalizePlayerFrame(deps);
-  }, { label: 'PhysicsPlayer', enabled: !physicsPaused });
+    pendingFinalizeRef.current = true;
+  }, { label: 'PhysicsPlayer', phase: 'pre_physics', enabled: !physicsPaused });
+
+  useFrameTick('player', () => {
+    if (!mountedRef.current || !pendingFinalizeRef.current) return;
+    finalizePlayerFrame(movementDepsRef.current);
+  }, { label: 'PhysicsPlayerFinalize', phase: 'post_physics', enabled: !physicsPaused });
 
   const spawnPoint = config.spawnPoint;
 
@@ -398,25 +410,10 @@ export function PhysicsPlayer({
 
 /** Contact shadow — flat circle mesh under player feet with radial gradient */
 function ContactShadow() {
-  const shadowTexture = useMemo(() => {
-    const size = 64;
-    const canvas = document.createElement('canvas');
-    canvas.width = size;
-    canvas.height = size;
-    const ctx = canvas.getContext('2d')!;
-    const gradient = ctx.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2);
-    gradient.addColorStop(0, 'rgba(0, 0, 0, 0.45)');
-    gradient.addColorStop(0.4, 'rgba(0, 0, 0, 0.25)');
-    gradient.addColorStop(0.7, 'rgba(0, 0, 0, 0.08)');
-    gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
-    ctx.fillStyle = gradient;
-    ctx.fillRect(0, 0, size, size);
-    return new THREE.CanvasTexture(canvas);
-  }, []);
-
-  useEffect(() => {
-    return () => { shadowTexture.dispose(); };
-  }, [shadowTexture]);
+  const shadowTexture = useCachedCanvasTexture(
+    CONTACT_SHADOW_CACHE_KEYS.player,
+    () => createContactShadowTexture({ variant: 'player' }),
+  );
 
   return (
     <mesh
