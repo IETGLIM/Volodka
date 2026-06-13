@@ -235,6 +235,11 @@ export function disposeCombatSystem(): void {
   combat.dispose();
 }
 
+/** Re-arm after orchestrator remount (React StrictMode). CombatManager has no disposed gate. */
+export function reviveCombatSystem(): void {
+  // No-op — session state is recreated on next combat start.
+}
+
 registerCombatStartExecutor((enemyType, options) => {
   startCombatImmediate(enemyType, options);
 });

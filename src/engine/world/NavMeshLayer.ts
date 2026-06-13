@@ -111,4 +111,9 @@ export function disposeNavMeshLayer(): void {
   sharedNavMesh = null;
 }
 
+/** Re-arm after orchestrator remount (React StrictMode). Ensures singleton exists. */
+export function reviveNavMeshLayer(): void {
+  getNavMeshLayer();
+}
+
 registerHmrDispose(disposeNavMeshLayer);

@@ -239,4 +239,9 @@ export function disposeWorldStreamManager(): void {
   sharedStream = null;
 }
 
+/** Re-arm after orchestrator remount (React StrictMode). Recreates singleton if disposed. */
+export function reviveWorldStreamManager(): void {
+  getWorldStreamManager();
+}
+
 registerHmrDispose(disposeWorldStreamManager);

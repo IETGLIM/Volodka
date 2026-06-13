@@ -26,7 +26,7 @@ export function useWorldStream(enabled = true): UseWorldStreamResult {
   const sceneId = useGameStore((s) => s.exploration.currentSceneId);
   const localPosition = useGameStore((s) => s.exploration.playerPosition);
 
-  const manager = useMemo(() => getWorldStreamManager(), []);
+  const manager = getWorldStreamManager();
 
   const [activeChunks, setActiveChunks] = useState<WorldChunkCoord[]>([]);
   const lastDiffRef = useRef<WorldChunkDiff | null>(null);

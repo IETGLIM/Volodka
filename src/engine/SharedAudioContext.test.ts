@@ -39,4 +39,21 @@ describe('SharedAudioContext gesture handlers', () => {
     expect(reRegistered).toHaveLength(3);
     expect(reRegistered.every(([, , opts]) => opts?.once === true)).toBe(true);
   });
+
+  it('registers tab blur/focus handlers and re-registers after dispose/revive', async () => {
+    const { disposeSharedAudioContext, reviveSharedAudioContext } = await import('./SharedAudioContext');
+
+    const tabHandlers = () =>
+      addEventListener.mock.calls.filter(([event]) => event === 'blur' || event === 'focus');
+    expect(tabHandlers()).toHaveLength(2);
+
+    disposeSharedAudioContext();
+
+    addEventListener.mockClear();
+    reviveSharedAudioContext();
+
+    const revived = tabHandlers();
+    expect(revived).toHaveLength(2);
+    expect(revived.map(([event]) => event)).toEqual(['blur', 'focus']);
+  });
 });

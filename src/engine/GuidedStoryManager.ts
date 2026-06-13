@@ -431,6 +431,11 @@ export function initGuidedStoryManager() {
   getGuidedStoryManager().init();
 }
 
+/** Re-arm after orchestrator remount (React StrictMode). Init runs via useGameLifecycleManager. */
+export function reviveGuidedStoryManager(): void {
+  // Instance is recreated lazily on next getGuidedStoryManager(); init() runs after narrative preload.
+}
+
 export function resetGuidedStoryManager() {
   invalidateStoryGraphIndex();
   guidedStoryManagerInstance?.resetState();

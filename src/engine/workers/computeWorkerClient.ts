@@ -72,3 +72,8 @@ export function disposeWorldComputeWorker(): void {
   worker.terminate();
   worker = null;
 }
+
+/** Re-arm after orchestrator remount (React StrictMode). Lazily recreates worker on next use. */
+export function reviveWorldComputeWorker(): void {
+  getWorldComputeWorker();
+}

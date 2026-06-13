@@ -106,4 +106,9 @@ export function disposeWorldEventDirector(): void {
   sharedDirector = null;
 }
 
+/** Re-arm after orchestrator remount (React StrictMode). Idempotent. */
+export function reviveWorldEventDirector(): void {
+  getWorldEventDirector().start();
+}
+
 registerHmrDispose(disposeWorldEventDirector);
