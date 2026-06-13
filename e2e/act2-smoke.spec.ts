@@ -168,4 +168,98 @@ test.describe('Act II smoke', () => {
       timeout: 20_000,
     });
   });
+
+  test('bootstrap office hub → dmitry_defection physical beat', async ({ page }) => {
+    await waitForMenuReady(page);
+    await page.getByTestId('menu-new-game').click();
+    await expect(page.locator('canvas[data-engine]')).toBeVisible({ timeout: 90_000 });
+
+    await skipWakeCinematic(page);
+    await expect(page.getByTestId('game-hud')).toBeVisible({ timeout: 30_000 });
+    await settleAfterWake(page);
+
+    await page.evaluate(async () => {
+      await window.__volodka_e2e?.bootstrapAct2DmitryOffice();
+    });
+
+    await expect(page.getByRole('dialog', { name: /Голос/i })).not.toBeVisible({ timeout: 5000 });
+    await expect(page.getByText(/IT-гильдии|офис|сервер/i).first()).toBeVisible({
+      timeout: 20_000,
+    });
+
+    await page.waitForFunction(
+      () => typeof window.__volodka_e2e?.interactTriggerZone === 'function',
+      null,
+      { timeout: 30_000 },
+    );
+    await page.evaluate(() => {
+      window.__volodka_e2e?.setPlayerPosition(-2.0, 0.01, 1.5);
+      window.__volodka_e2e?.interactTriggerZone('office_dmitry_meeting');
+    });
+
+    await page.waitForTimeout(800);
+
+    const continueBtn = page.getByRole('button', { name: /^Продолжить$/i });
+    if (await continueBtn.isVisible({ timeout: 5000 }).catch(() => false)) {
+      await continueBtn.click({ force: true });
+      await page.waitForTimeout(600);
+    }
+
+    const protocolBtn = page.getByRole('button', { name: /Протокол|Дмитрий|Александр/i });
+    if (await protocolBtn.isVisible({ timeout: 8000 }).catch(() => false)) {
+      await protocolBtn.first().click({ force: true });
+      await page.waitForTimeout(800);
+    }
+
+    await expect(page.getByText(/Протокол|Дмитрий|Забвения|терминал/i).first()).toBeVisible({
+      timeout: 20_000,
+    });
+  });
+
+  test('bootstrap cafe hub → cafe_safehouse barista trigger', async ({ page }) => {
+    await waitForMenuReady(page);
+    await page.getByTestId('menu-new-game').click();
+    await expect(page.locator('canvas[data-engine]')).toBeVisible({ timeout: 90_000 });
+
+    await skipWakeCinematic(page);
+    await expect(page.getByTestId('game-hud')).toBeVisible({ timeout: 30_000 });
+    await settleAfterWake(page);
+
+    await page.evaluate(async () => {
+      await window.__volodka_e2e?.bootstrapAct2CafeSafehouse();
+    });
+
+    await expect(page.getByRole('dialog', { name: /Голос/i })).not.toBeVisible({ timeout: 5000 });
+    await expect(page.getByText(/Синяя яма|кафе|бариста/i).first()).toBeVisible({
+      timeout: 20_000,
+    });
+
+    await page.waitForFunction(
+      () => typeof window.__volodka_e2e?.interactTriggerZone === 'function',
+      null,
+      { timeout: 30_000 },
+    );
+    await page.evaluate(() => {
+      window.__volodka_e2e?.setPlayerPosition(0, 0.01, -3.5);
+      window.__volodka_e2e?.interactTriggerZone('cafe_safehouse_barista');
+    });
+
+    await page.waitForTimeout(800);
+
+    const continueBtn = page.getByRole('button', { name: /^Продолжить$/i });
+    if (await continueBtn.isVisible({ timeout: 5000 }).catch(() => false)) {
+      await continueBtn.click({ force: true });
+      await page.waitForTimeout(600);
+    }
+
+    const safehouseBtn = page.getByRole('button', { name: /явочн|Договорились|задн/i });
+    if (await safehouseBtn.isVisible({ timeout: 8000 }).catch(() => false)) {
+      await safehouseBtn.first().click({ force: true });
+      await page.waitForTimeout(800);
+    }
+
+    await expect(page.getByText(/явочн|задн|барист|Сети|подсобк/i).first()).toBeVisible({
+      timeout: 20_000,
+    });
+  });
 });

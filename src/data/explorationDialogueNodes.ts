@@ -291,6 +291,109 @@ export const EXPLORATION_DIALOGUE_NODES: Record<string, DialogueNode> = {
     ],
   },
 
+  explore_act2_dmitry_office_meeting: {
+    id: 'explore_act2_dmitry_office_meeting',
+    speaker: 'Голос',
+    text: 'Офис гильдии, поздний вечер. Дмитрий ждёт у терминала — худой, усталый, с глазами загнанного зверя. Он оглядывается на дверь кабинета Александра. «Ты пришёл,» — шепчет он. — «Протокол Забвения нужно остановить. У нас мало времени.»',
+    sceneId: 'office_day',
+    choices: [
+      {
+        text: 'Спросить, как отключить Протокол',
+        next: null,
+        effects: [
+          { type: 'visitStoryNode', nodeId: 'act2_dmitry_office_meeting' },
+          { type: 'setFlag', flag: 'heard_dmitry_story', flagValue: true },
+          { type: 'setFlag', flag: 'dmitry_escape_planned', flagValue: true },
+        ],
+      },
+      {
+        text: 'Сначала убедиться, что Александр не следит',
+        next: null,
+        effects: [
+          { type: 'visitStoryNode', nodeId: 'act2_dmitry_office_meeting' },
+          { type: 'addSkill', skill: 'intuition', value: 1 },
+          { type: 'setFlag', flag: 'heard_dmitry_story', flagValue: true },
+        ],
+      },
+    ],
+  },
+
+  explore_act2_barista_safehouse: {
+    id: 'explore_act2_barista_safehouse',
+    speaker: 'Голос',
+    text: 'Бариста пододвигается ближе. Его металлическая рука тихо жужжит. «Слышал про Хранилище,» — говорит он негромко. «У меня есть задняя комната. Никто не знает о ней — даже гильдия. Сделаем явочную квартиру для Сети?» На запястье — татуировка: свиток и единица.',
+    sceneId: 'cafe_evening',
+    choices: [
+      {
+        text: 'Договорились. Это будет явочная квартира.',
+        next: null,
+        effects: [
+          { type: 'visitStoryNode', nodeId: 'act2_safehouse_agreed' },
+          { type: 'setFlag', flag: 'cafe_safehouse_agreed', flagValue: true },
+          { type: 'triggerQuest', questId: 'cafe_safehouse' },
+          { type: 'npcChange', npcId: 'cafe_barista', npcChange: { relation: 5 } },
+        ],
+      },
+      {
+        text: 'Мне нужно сначала поговорить с Альбертом',
+        next: null,
+        effects: [
+          { type: 'addSkill', skill: 'logic', value: 1 },
+          { type: 'setFlag', flag: 'cafe_safehouse_pending_albert', flagValue: true },
+        ],
+      },
+    ],
+  },
+
+  explore_act2_safehouse_terminal: {
+    id: 'explore_act2_safehouse_terminal',
+    speaker: 'Голос',
+    text: 'Подсобка тесная, пахнет обжаренными зёрнами и озоном. За стеллажом — ниша, в которой стоит древний терминал. Экран мерцает зелёным. Ключ-карта от баристы подходит идеально.',
+    sceneId: 'cafe_evening',
+    choices: [
+      {
+        text: 'Установить терминал и включить канал',
+        next: null,
+        effects: [
+          { type: 'visitStoryNode', nodeId: 'act2_safehouse_terminal' },
+          { type: 'setFlag', flag: 'safehouse_terminal_installed', flagValue: true },
+          { type: 'addItem', itemId: 'vault_key_fragment', value: 1 },
+        ],
+      },
+      {
+        text: 'Осмотреть нишу ещё раз',
+        next: null,
+        effects: [{ type: 'addSkill', skill: 'intuition', value: 1 }],
+      },
+    ],
+  },
+
+  explore_act2_safehouse_message: {
+    id: 'explore_act2_safehouse_message',
+    speaker: 'Голос',
+    text: 'На зелёном экране мигает конверт. Сообщение простое: «Добро пожаловать в Сеть. Твоё стихотворение — ключ. Хранилище ждёт. — Д.» Кто такой Д.?',
+    sceneId: 'cafe_evening',
+    choices: [
+      {
+        text: 'Ответить на сообщение',
+        next: null,
+        effects: [
+          { type: 'visitStoryNode', nodeId: 'act2_safehouse_message' },
+          { type: 'setFlag', flag: 'secure_channel_tested', flagValue: true },
+          { type: 'setFlag', flag: 'contacted_dmitry_network', flagValue: true },
+        ],
+      },
+      {
+        text: 'Сохранить сообщение и выйти',
+        next: null,
+        effects: [
+          { type: 'setFlag', flag: 'secure_channel_tested', flagValue: true },
+          { type: 'addSkill', skill: 'coding', value: 1 },
+        ],
+      },
+    ],
+  },
+
   explore_act3_zarema_warning: {
     id: 'explore_act3_zarema_warning',
     speaker: 'Голос',

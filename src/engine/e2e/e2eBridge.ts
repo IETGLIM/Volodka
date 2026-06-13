@@ -32,6 +32,8 @@ export interface VolodkaE2EBridge {
   bootstrapAct2AlbertHint: () => Promise<void>;
   bootstrapFixSuccess: () => Promise<void>;
   bootstrapAct2MariaMeeting: () => Promise<void>;
+  bootstrapAct2DmitryOffice: () => Promise<void>;
+  bootstrapAct2CafeSafehouse: () => Promise<void>;
   bootstrapAct3ParkHub: () => Promise<void>;
   bootstrapAct3LibraryHub: () => Promise<void>;
   bootstrapAct4StreetWinterHub: () => Promise<void>;
@@ -234,6 +236,33 @@ export function registerVolodkaE2EBridge(): void {
       store.setFlag('maria_introduced', true);
       store.markCutsceneTriggered('act1_to_act2');
       await jumpToStoryBeat('act2_maria_meeting_place', 'street_night');
+    },
+    async bootstrapAct2DmitryOffice() {
+      const store = getGameStore();
+      if (store.playerState.progression.currentAct < 2) {
+        store.advanceAct();
+      }
+      store.setFlag('act2_started', true);
+      store.setFlag('advanced_to_act2', true);
+      store.setFlag('network_joined', true);
+      store.setFlag('dmitry_meeting_agreed', true);
+      store.setFlag('contacted_dmitry_network', true);
+      store.markCutsceneTriggered('act1_to_act2');
+      dispatchGameAction({ type: 'story/visitNode', nodeId: 'office_alexander' });
+      await jumpToClosedOverlayHub('office_explore_mode', 'office_day');
+    },
+    async bootstrapAct2CafeSafehouse() {
+      const store = getGameStore();
+      if (store.playerState.progression.currentAct < 2) {
+        store.advanceAct();
+      }
+      store.setFlag('act2_started', true);
+      store.setFlag('advanced_to_act2', true);
+      store.setFlag('network_joined', true);
+      store.setFlag('vault_protect_vowed', true);
+      store.markCutsceneTriggered('act1_to_act2');
+      dispatchGameAction({ type: 'story/visitNode', nodeId: 'cafe_enter' });
+      await jumpToClosedOverlayHub('cafe_explore_mode', 'cafe_evening');
     },
     async bootstrapAct3ParkHub() {
       while (getGameStore().playerState.progression.currentAct < 3) {

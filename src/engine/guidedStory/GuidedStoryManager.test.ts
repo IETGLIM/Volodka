@@ -125,6 +125,58 @@ describe('guidedStoryLogic', () => {
     expect(reconcileSpineQuestActivation(deps)).toBe(false);
     expect(deps.actions.activateQuest).not.toHaveBeenCalled();
   });
+
+  it('reconcileSpineQuestActivation activates dmitry_defection when meeting flag exists', () => {
+    const deps = createTestDeps({
+      currentAct: 2,
+      flags: { dmitry_meeting_agreed: true, network_joined: true },
+      quests: [
+        { questId: 'network_initiation', status: 'completed', objectives: {} },
+      ],
+    });
+    deps.graph.getQuestDefinitionById = vi.fn((id: string) =>
+      id === 'dmitry_defection'
+        ? {
+            id: 'dmitry_defection',
+            title: 'Дезертирство Дмитрия',
+            description: 'test',
+            questType: 'main' as const,
+            requiresQuests: ['network_initiation'],
+            objectives: [],
+          }
+        : undefined,
+    );
+
+    const activated = reconcileSpineQuestActivation(deps);
+    expect(activated).toBe(true);
+    expect(deps.actions.activateQuest).toHaveBeenCalledWith('dmitry_defection');
+  });
+
+  it('reconcileSpineQuestActivation activates cafe_safehouse when vault vowed', () => {
+    const deps = createTestDeps({
+      currentAct: 2,
+      flags: { vault_protect_vowed: true, network_joined: true },
+      quests: [
+        { questId: 'network_initiation', status: 'completed', objectives: {} },
+      ],
+    });
+    deps.graph.getQuestDefinitionById = vi.fn((id: string) =>
+      id === 'cafe_safehouse'
+        ? {
+            id: 'cafe_safehouse',
+            title: 'Тихая гавань',
+            description: 'test',
+            questType: 'main' as const,
+            requiresQuests: ['network_initiation'],
+            objectives: [],
+          }
+        : undefined,
+    );
+
+    const activated = reconcileSpineQuestActivation(deps);
+    expect(activated).toBe(true);
+    expect(deps.actions.activateQuest).toHaveBeenCalledWith('cafe_safehouse');
+  });
 });
 
 describe('storyGraphTraversal', () => {

@@ -32,6 +32,34 @@ describe('Act II golden path markers', () => {
     expect(golden[0]?.next).toBe('act2_network_oath');
   });
 
+  it('marks act2_vault_revealed golden branch to safehouse agreement', () => {
+    const node = STORY_NODES_ACT2.act2_vault_revealed;
+    const golden = node.choices.filter((c) => c.goldenPath === true);
+    expect(golden).toHaveLength(1);
+    expect(golden[0]?.next).toBe('act2_safehouse_agreed');
+  });
+
+  it('marks act2_dmitry_contact golden branch to office meeting', () => {
+    const node = STORY_NODES_ACT2.act2_dmitry_contact;
+    const golden = node.choices.filter((c) => c.goldenPath === true);
+    expect(golden).toHaveLength(1);
+    expect(golden[0]?.next).toBe('act2_dmitry_office_meeting');
+  });
+
+  it('marks act2_dmitry_office_meeting golden branch to cafe evening end', () => {
+    const node = STORY_NODES_ACT2.act2_dmitry_office_meeting;
+    const golden = node.choices.filter((c) => c.goldenPath === true);
+    expect(golden).toHaveLength(1);
+    expect(golden[0]?.next).toBe('cafe_evening_end');
+  });
+
+  it('marks act2_safehouse_agreed golden branch to terminal install', () => {
+    const node = STORY_NODES_ACT2.act2_safehouse_agreed;
+    const golden = node.choices.filter((c) => c.goldenPath === true);
+    expect(golden).toHaveLength(1);
+    expect(golden[0]?.next).toBe('act2_safehouse_terminal');
+  });
+
   it('office_explore_mode hub golden branch leads to start_diagnosis', () => {
     const node = STORY_NODES_SCENE_EXPLORE_HUBS.office_explore_mode;
     const golden = node.choices.filter((c) => c.goldenPath === true);

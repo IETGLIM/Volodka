@@ -113,6 +113,13 @@ patrol→chase→engaged→cooldown, конус зрения проецируе�
   `library_archive_console` → `act7_library_archive`,
   `sleep_dream_poem_core` → `sleep_dream_entrance`,
   `zarema_bank_account` → `zarema_bank_discovery`.
+  **Act II Phase 4 (dmitry_defection / cafe_safehouse):**
+  `office_dmitry_meeting` → `act2_dmitry_office_meeting` (флаг `dmitry_meeting_agreed`),
+  `cafe_safehouse_barista` → `act2_safehouse_agreed`,
+  `cafe_safehouse_backroom` → `act2_safehouse_terminal`,
+  `cafe_safehouse_channel` → `act2_safehouse_message`;
+  `reconcileSpineQuestActivation` догоняет `dmitry_defection` и `cafe_safehouse`.
+  e2e: `act2-smoke` (office/cafe physical beats).
   Auto-generated хабы Acts 6–7: `chk_explore_mode`, `library_explore_mode`,
   `dream_explore_mode`, `zarema_room_explore_mode` (GOLDEN_PATH_HUB_CONTINUE);
   act-pack: `factory_*`, `basement_*`, `pier_*`, `solnysh_*`.

@@ -7,7 +7,7 @@ import {
   findNpcById,
   getItemDefinition,
 } from '@/data/gameDataLoader';
-import { findTriggerZoneByNpcId } from '@/data/triggerZones';
+import { findTriggerZoneByNpcId, isTriggerZoneAvailable } from '@/data/triggerZones';
 import {
   findNpcTriggerZoneForScene,
   resolveNpcNarrativeTarget,
@@ -177,6 +177,17 @@ export class InteractionController {
         notificationType: 'quest',
         text: `Станет доступно в акте ${zone.requiredAct}`,
       });
+      return;
+    }
+
+    if (
+      !isTriggerZoneAvailable(
+        zone,
+        snapshot.playerState.flags,
+        snapshot.playerState.progression.currentAct,
+      )
+    ) {
+      devWarn(`[InteractionController] Zone "${triggerZoneId}" not available for current state`);
       return;
     }
 

@@ -282,35 +282,77 @@ const NETWORK_INITIATION_PROGRESS_FLAGS = [
   'network_joined',
 ] as const;
 
-/**
- * Activate spine quests when story progress outpaced explicit triggerQuest effects
- * (e.g. cafe/barista shortcuts into act2_network_initiation).
- */
-export function reconcileSpineQuestActivation(deps: GuidedStoryDeps): boolean {
-  const snapshot = deps.getSnapshot();
-  const questId = 'network_initiation';
+const DMITRY_DEFECTION_ACTIVATION_NODES = new Set([
+  'act2_dmitry_contact',
+  'act2_dmitry_office_meeting',
+  'act2_safehouse_message',
+]);
 
-  const existing = snapshot.quests.find((q) => q.questId === questId);
+const DMITRY_DEFECTION_PROGRESS_FLAGS = [
+  'dmitry_meeting_agreed',
+  'contacted_dmitry_network',
+] as const;
+
+const CAFE_SAFEHOUSE_ACTIVATION_NODES = new Set([
+  'act2_barista_revealed',
+  'act2_safehouse_agreed',
+  'act2_safehouse_terminal',
+  'act2_safehouse_message',
+  'act2_vault_revealed',
+]);
+
+const CAFE_SAFEHOUSE_PROGRESS_FLAGS = [
+  'cafe_safehouse_agreed',
+  'vault_protect_vowed',
+  'safehouse_terminal_installed',
+] as const;
+
+interface SpineQuestReconcileRule {
+  questId: string;
+  activationNodes: ReadonlySet<string>;
+  progressFlags: readonly string[];
+}
+
+const SPINE_QUEST_RECONCILE_RULES: SpineQuestReconcileRule[] = [
+  {
+    questId: 'network_initiation',
+    activationNodes: NETWORK_INITIATION_ACTIVATION_NODES,
+    progressFlags: NETWORK_INITIATION_PROGRESS_FLAGS,
+  },
+  {
+    questId: 'dmitry_defection',
+    activationNodes: DMITRY_DEFECTION_ACTIVATION_NODES,
+    progressFlags: DMITRY_DEFECTION_PROGRESS_FLAGS,
+  },
+  {
+    questId: 'cafe_safehouse',
+    activationNodes: CAFE_SAFEHOUSE_ACTIVATION_NODES,
+    progressFlags: CAFE_SAFEHOUSE_PROGRESS_FLAGS,
+  },
+];
+
+function tryActivateSpineQuest(rule: SpineQuestReconcileRule, deps: GuidedStoryDeps): boolean {
+  const snapshot = deps.getSnapshot();
+
+  const existing = snapshot.quests.find((q) => q.questId === rule.questId);
   if (existing && existing.status !== 'inactive' && existing.status !== 'failed') {
     return false;
   }
 
-  if (!canStartQuest(questId, deps)) return false;
+  if (!canStartQuest(rule.questId, deps)) return false;
 
   const visitedSet = getVisitedNodeSet(snapshot.visitedNodes);
-  const reachedActivationNode = [...NETWORK_INITIATION_ACTIVATION_NODES].some((nodeId) =>
-    visitedSet.has(nodeId),
-  );
-  const hasProgressFlag = NETWORK_INITIATION_PROGRESS_FLAGS.some((flag) => snapshot.flags[flag]);
+  const reachedActivationNode = [...rule.activationNodes].some((nodeId) => visitedSet.has(nodeId));
+  const hasProgressFlag = rule.progressFlags.some((flag) => snapshot.flags[flag]);
 
   if (!reachedActivationNode && !hasProgressFlag) return false;
 
-  deps.actions.activateQuest(questId);
+  deps.actions.activateQuest(rule.questId);
 
-  const def = deps.graph.getQuestDefinitionById(questId);
+  const def = deps.graph.getQuestDefinitionById(rule.questId);
   if (def) {
     deps.events.emitQuestAvailable({
-      questId,
+      questId: rule.questId,
       questTitle: def.title,
       questType: def.questType,
       npcId: findNpcForQuest(def),
@@ -318,4 +360,18 @@ export function reconcileSpineQuestActivation(deps: GuidedStoryDeps): boolean {
   }
 
   return true;
+}
+
+/**
+ * Activate spine quests when story progress outpaced explicit triggerQuest effects
+ * (e.g. cafe/barista shortcuts into act2_network_initiation).
+ */
+export function reconcileSpineQuestActivation(deps: GuidedStoryDeps): boolean {
+  let activated = false;
+  for (const rule of SPINE_QUEST_RECONCILE_RULES) {
+    if (tryActivateSpineQuest(rule, deps)) {
+      activated = true;
+    }
+  }
+  return activated;
 }

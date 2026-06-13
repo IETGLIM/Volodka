@@ -15,6 +15,8 @@ export interface TriggerZone {
   effects?: GameEffect[];
   /** Flag that must be set for this trigger zone to be active */
   requiredFlag?: string;
+  /** Hide this zone once the flag is set (e.g. casual NPC talk → story beat). */
+  hiddenWhenFlag?: string;
   /** Context-sensitive interaction label (replaces generic [E]) */
   interactionLabel?: string;
   /** Context-sensitive interaction type — determines the [E] prompt verb */
@@ -68,6 +70,18 @@ export function findTriggerZoneByDialogueNodeId(
   dialogueNodeId: string,
 ): TriggerZone | undefined {
   return zones.find((z) => z.linkedDialogueNodeId === dialogueNodeId);
+}
+
+/** Whether a trigger zone is visible/interactable for the current player state. */
+export function isTriggerZoneAvailable(
+  zone: TriggerZone,
+  flags: Record<string, boolean | undefined>,
+  currentAct: number,
+): boolean {
+  if (zone.requiredAct && currentAct < zone.requiredAct) return false;
+  if (zone.requiredFlag && !flags[zone.requiredFlag]) return false;
+  if (zone.hiddenWhenFlag && flags[zone.hiddenWhenFlag]) return false;
+  return true;
 }
 
 export const TRIGGER_ZONES: TriggerZone[] = [
@@ -629,10 +643,33 @@ export const TRIGGER_ZONES: TriggerZone[] = [
     enterToast: 'Дмитрий — старший разработчик — что-то ищет в архивах.',
     linkedDialogueNodeId: 'dmitry_greeting',
     linkedNpcId: 'office_dmitry',
+    hiddenWhenFlag: 'dmitry_meeting_agreed',
     interactionType: 'talk',
     effects: [
       { type: 'npcChange', npcId: 'office_dmitry', npcChange: { relation: 2 } },
     ],
+  },
+
+  /* ─────────────── OFFICE DMITRY MEETING — Act II golden path (closed-overlay hub) ─────────────── */
+  {
+    id: 'office_dmitry_meeting',
+    sceneId: 'office_day',
+    position: [-2.0, 0, 1.5],
+    size: [2.0, 1.5, 1.5],
+    enterToast: 'Дмитрий ждёт у терминала — время ограничено.',
+    requiredFlag: 'dmitry_meeting_agreed',
+    requiredAct: 2,
+    linkedDialogueNodeId: 'explore_act2_dmitry_office_meeting',
+    linkedQuestId: 'dmitry_defection',
+    linkedNpcId: 'office_dmitry',
+    interactionType: 'talk',
+    interactionLabel: 'Встретиться с Дмитрием о Протоколе',
+    examineData: {
+      title: 'Дмитрий у терминала',
+      description: 'Старший разработчик нервно оглядывается — встреча по зашифрованному каналу.',
+      detailText: 'Он знает слишком много о Протоколе Забвения. Александр следит. Нужно действовать быстро.',
+      icon: '💻',
+    },
   },
 
   /* ═══════════════════════════════════════════════════════════════════
@@ -1139,14 +1176,79 @@ export const TRIGGER_ZONES: TriggerZone[] = [
     ],
   },
 
-  /* ─────────────── CAFE BACKROOM TERMINAL — OpenStack ─────────────── */
+  /* ─────────────── CAFE SAFEHOUSE BARISTA — Act II golden path (closed-overlay hub) ─────────────── */
+  {
+    id: 'cafe_safehouse_barista',
+    sceneId: 'cafe_evening',
+    position: [0, 0.5, -3.5],
+    size: [2.5, 1.5, 1.0],
+    enterToast: 'Бариста кивает — задняя комната может стать явочной квартирой.',
+    requiredAct: 2,
+    requiredFlag: 'vault_protect_vowed',
+    hiddenWhenFlag: 'cafe_safehouse_agreed',
+    linkedDialogueNodeId: 'explore_act2_barista_safehouse',
+    linkedQuestId: 'cafe_safehouse',
+    linkedNpcId: 'cafe_barista',
+    interactionType: 'talk',
+    interactionLabel: 'Договориться о явочной квартире',
+    examineData: {
+      title: 'Бариста у стойки',
+      description: 'Он знает больше, чем говорит — татуировка «свиток и единица» на запястье.',
+      detailText: 'Кафе может стать узлом Сети. Нужно убедить баристу и попросить Альберта хранить тайну.',
+      icon: '☕',
+    },
+  },
+
+  /* ─────────────── CAFE SAFEHOUSE BACKROOM — Act II terminal install ─────────────── */
+  {
+    id: 'cafe_safehouse_backroom',
+    sceneId: 'cafe_evening',
+    position: [-4.0, 0.5, -4.0],
+    size: [1.2, 1.5, 1.0],
+    enterToast: 'Подсобка за стеллажом — ниша для терминала Сети.',
+    requiredAct: 2,
+    requiredFlag: 'cafe_safehouse_agreed',
+    hiddenWhenFlag: 'safehouse_terminal_installed',
+    linkedDialogueNodeId: 'explore_act2_safehouse_terminal',
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть подсобку',
+    examineData: {
+      title: 'Подсобка кафе',
+      description: 'Тесное помещение за стеллажом с кофеварками — место для защищённого терминала.',
+      detailText: 'Старый монитор ждёт установки. Зашифрованный канал связи — подарок баристы Сети.',
+      icon: '🖧',
+    },
+  },
+
+  /* ─────────────── CAFE SAFEHOUSE CHANNEL — Act II secure message ─────────────── */
+  {
+    id: 'cafe_safehouse_channel',
+    sceneId: 'cafe_evening',
+    position: [-4.0, 0.5, -4.0],
+    size: [1.0, 1.2, 0.8],
+    enterToast: 'Терминал в подсобке — зелёный экран мигает конвертом.',
+    requiredAct: 2,
+    requiredFlag: 'safehouse_terminal_installed',
+    hiddenWhenFlag: 'secure_channel_tested',
+    linkedDialogueNodeId: 'explore_act2_safehouse_message',
+    interactionType: 'read',
+    interactionLabel: 'Прочитать сообщение Сети',
+    examineData: {
+      title: 'Зашифрованный канал',
+      description: 'На экране мигает конверт — кто-то уже прислал сообщение.',
+      detailText: '«Добро пожаловать в Сеть. Хранилище ждёт. — Д.» Ответить можно прямо отсюда.',
+      icon: '📨',
+    },
+  },
+
+  /* ─────────────── CAFE BACKROOM TERMINAL — OpenStack (post-safehouse) ─────────────── */
   {
     id: 'cafe_backroom_terminal',
     sceneId: 'cafe_evening',
     position: [-4.0, 0.5, -4.0],
     size: [0.8, 1.2, 0.6],
     enterToast: 'Задняя комната — старый терминал с доступом к OpenStack.',
-    requiredFlag: 'safehouse_terminal_installed',
+    requiredFlag: 'secure_channel_tested',
     linkedMinigame: 'openstack_terminal',
     interactionType: 'hack',
     interactionLabel: 'Подключиться к OpenStack',

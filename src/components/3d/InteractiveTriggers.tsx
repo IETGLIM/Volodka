@@ -9,7 +9,7 @@ import * as THREE from 'three';
 import { useGameStore } from '@/store/gameStore';
 import { useCurrentSceneId, useInteractionOverlay, useTimeOfDay, useSceneExitState, useScheduleContext } from '@/store/selectors';
 import { useSceneEnterEffect } from '@/hooks/useSceneEnterEffect';
-import { TRIGGER_ZONES, type TriggerZone, INTERACTION_LABELS } from '@/data/triggerZones';
+import { TRIGGER_ZONES, type TriggerZone, INTERACTION_LABELS, isTriggerZoneAvailable } from '@/data/triggerZones';
 import { findNpcById, findNpcByDialogueNodeId } from '@/data/allNpcDefinitions';
 import type { NPCDefinition } from '@/shared/types/game';
 import { getNPCsForScene, getCurrentScheduleEntry } from '@/engine/ScheduleEngine';
@@ -74,9 +74,18 @@ export function InteractiveTriggers({
   const promptFadeInAnim = `promptFadeIn-${useId().replace(/:/g, '')}`;
   const { sceneId, gameMode, showStoryOverlay, currentNodeId } = useInteractionOverlay();
   const { playerFlags, playerKarma } = useSceneExitState();
+  const currentAct = useGameStore((s) => s.playerState.progression.currentAct);
   const timeOfDay = useTimeOfDay();
   const scheduleCtx = useScheduleContext();
-  const zones = TRIGGER_ZONES.filter((z) => z.sceneId === sceneId);
+  const zones = useMemo(
+    () =>
+      TRIGGER_ZONES.filter(
+        (z) =>
+          z.sceneId === sceneId &&
+          isTriggerZoneAvailable(z, playerFlags, currentAct),
+      ),
+    [sceneId, playerFlags, currentAct],
+  );
 
   const sceneExits = useMemo(
     () => getSceneExits(sceneId, playerFlags, playerKarma),
