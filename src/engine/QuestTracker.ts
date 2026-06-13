@@ -61,6 +61,42 @@ function stringArraysEqual(a: string[], b: string[]): boolean {
   return true;
 }
 
+type QuestTrackerQuestRef = QuestTrackerRelevantSlice['quests'][number];
+
+interface QuestTrackerContext {
+  activeQuests: readonly QuestTrackerQuestRef[];
+  definitionById: ReadonlyMap<string, QuestDefinition>;
+}
+
+let questDefinitionByIdCache: Map<string, QuestDefinition> | null = null;
+
+const emptyQuestDefinitionById: ReadonlyMap<string, QuestDefinition> = new Map();
+
+function getQuestDefinitionByIdMap(): ReadonlyMap<string, QuestDefinition> {
+  if (questDefinitionByIdCache === null) {
+    questDefinitionByIdCache = new Map(
+      getQuestDefinitions().map((definition) => [definition.id, definition]),
+    );
+  }
+  return questDefinitionByIdCache;
+}
+
+/** Clears cached quest definition map (tests / HMR). */
+export function resetQuestTrackerDefinitionCache(): void {
+  questDefinitionByIdCache = null;
+}
+
+function toQuestTrackerQuestRef(
+  quest: GameStoreSnapshot['quests'][number],
+): QuestTrackerQuestRef {
+  return {
+    questId: quest.questId,
+    status: quest.status,
+    startedAtTime: quest.startedAtTime,
+    objectives: quest.objectives,
+  };
+}
+
 function questTrackerSliceEqual(a: QuestTrackerRelevantSlice, b: QuestTrackerRelevantSlice): boolean {
   if (a.currentSceneId !== b.currentSceneId) return false;
   if (a.timeOfDay !== b.timeOfDay) return false;
@@ -112,6 +148,8 @@ export class QuestTracker {
 
   /** Start tracking — subscribe to store changes and events */
   start(): void {
+    if (this.unsubscribeStore !== null) return;
+
     // Snapshot initial state
     const state = getGameSnapshot();
     this.previousSceneId = state.exploration.currentSceneId;
@@ -208,10 +246,12 @@ export class QuestTracker {
    *  have already been met (e.g. poem collected before quest was active). */
   private retroactiveCheck(): void {
     const state = getGameSnapshot();
-    const activeQuests = state.quests.filter((q) => q.status === 'active');
+    const ctx = this.createContext(
+      state.quests.filter((q) => q.status === 'active').map(toQuestTrackerQuestRef),
+    );
 
-    for (const quest of activeQuests) {
-      const definition = getQuestDefinitions().find((d) => d.id === quest.questId);
+    for (const quest of ctx.activeQuests) {
+      const definition = ctx.definitionById.get(quest.questId);
       if (!definition) continue;
 
       for (const objective of definition.objectives) {
@@ -262,40 +302,56 @@ export class QuestTracker {
     this.unsubscribeEvents = [];
   }
 
+  private createContext(activeQuests: QuestTrackerQuestRef[]): QuestTrackerContext {
+    return {
+      activeQuests,
+      definitionById: activeQuests.length > 0
+        ? getQuestDefinitionByIdMap()
+        : emptyQuestDefinitionById,
+    };
+  }
+
+  private createContextFromSnapshot(): QuestTrackerContext {
+    const state = getGameSnapshot();
+    return this.createContext(
+      state.quests.filter((q) => q.status === 'active').map(toQuestTrackerQuestRef),
+    );
+  }
+
   /** Called when quest-relevant store slices change */
   private onStateChanged(slice: QuestTrackerRelevantSlice): void {
     const currentSceneId = slice.currentSceneId;
     const currentFlags = slice.flags;
     const currentInventoryIds = new Set(slice.inventoryIds);
     const currentPoems = new Set(slice.collectedPoems);
+    const ctx = this.createContext(slice.quests.filter((q) => q.status === 'active'));
 
     // ── location_visited ──
     if (currentSceneId !== this.previousSceneId) {
-      this.onSceneChanged(currentSceneId);
+      this.onSceneChanged(currentSceneId, ctx);
       this.previousSceneId = currentSceneId;
     }
 
     // ── flag_set ──
-    this.checkNewFlags(currentFlags);
+    this.checkNewFlags(currentFlags, ctx);
     this.previousFlags = { ...currentFlags };
 
     // ── item_collected ──
-    this.checkNewItems(currentInventoryIds);
+    this.checkNewItems(currentInventoryIds, ctx);
     this.previousInventoryIds = currentInventoryIds;
 
     // ── poem_collected ──
-    this.checkNewPoems(currentPoems);
+    this.checkNewPoems(currentPoems, ctx);
     this.previousPoems = currentPoems;
 
     // ── Check time limits on active quests ──
-    this.checkTimeLimits(slice);
+    this.checkTimeLimits(ctx, slice.timeOfDay);
   }
 
   /** Scene changed — check location_visited objectives */
-  private onSceneChanged(sceneId: SceneId): void {
-    const activeQuests = this.getActiveQuests();
-    for (const quest of activeQuests) {
-      const definition = getQuestDefinitions().find((d) => d.id === quest.questId);
+  private onSceneChanged(sceneId: SceneId, ctx: QuestTrackerContext): void {
+    for (const quest of ctx.activeQuests) {
+      const definition = ctx.definitionById.get(quest.questId);
       if (!definition) continue;
 
       for (const objective of definition.objectives) {
@@ -310,9 +366,9 @@ export class QuestTracker {
 
   /** NPC talked — check npc_talked objectives */
   private onNpcTalked(npcId: string): void {
-    const activeQuests = this.getActiveQuests();
-    for (const quest of activeQuests) {
-      const definition = getQuestDefinitions().find((d) => d.id === quest.questId);
+    const ctx = this.createContextFromSnapshot();
+    for (const quest of ctx.activeQuests) {
+      const definition = ctx.definitionById.get(quest.questId);
       if (!definition) continue;
 
       for (const objective of definition.objectives) {
@@ -326,7 +382,7 @@ export class QuestTracker {
   }
 
   /** Check for newly set flags — flag_set objectives */
-  private checkNewFlags(currentFlags: Record<string, boolean>): void {
+  private checkNewFlags(currentFlags: Record<string, boolean>, ctx: QuestTrackerContext): void {
     const newFlags: string[] = [];
     for (const [key, val] of Object.entries(currentFlags)) {
       if (val && !this.previousFlags[key]) {
@@ -336,9 +392,8 @@ export class QuestTracker {
 
     if (newFlags.length === 0) return;
 
-    const activeQuests = this.getActiveQuests();
-    for (const quest of activeQuests) {
-      const definition = getQuestDefinitions().find((d) => d.id === quest.questId);
+    for (const quest of ctx.activeQuests) {
+      const definition = ctx.definitionById.get(quest.questId);
       if (!definition) continue;
 
       for (const objective of definition.objectives) {
@@ -352,7 +407,7 @@ export class QuestTracker {
   }
 
   /** Check for newly collected items — item_collected objectives */
-  private checkNewItems(currentInventoryIds: Set<string>): void {
+  private checkNewItems(currentInventoryIds: Set<string>, ctx: QuestTrackerContext): void {
     const newItems: string[] = [];
     for (const id of currentInventoryIds) {
       if (!this.previousInventoryIds.has(id)) {
@@ -362,9 +417,8 @@ export class QuestTracker {
 
     if (newItems.length === 0) return;
 
-    const activeQuests = this.getActiveQuests();
-    for (const quest of activeQuests) {
-      const definition = getQuestDefinitions().find((d) => d.id === quest.questId);
+    for (const quest of ctx.activeQuests) {
+      const definition = ctx.definitionById.get(quest.questId);
       if (!definition) continue;
 
       for (const objective of definition.objectives) {
@@ -378,7 +432,7 @@ export class QuestTracker {
   }
 
   /** Check for newly collected poems — poem_collected objectives */
-  private checkNewPoems(currentPoems: Set<string>): void {
+  private checkNewPoems(currentPoems: Set<string>, ctx: QuestTrackerContext): void {
     const newPoems: string[] = [];
     for (const id of currentPoems) {
       if (!this.previousPoems.has(id)) {
@@ -388,9 +442,8 @@ export class QuestTracker {
 
     if (newPoems.length === 0) return;
 
-    const activeQuests = this.getActiveQuests();
-    for (const quest of activeQuests) {
-      const definition = getQuestDefinitions().find((d) => d.id === quest.questId);
+    for (const quest of ctx.activeQuests) {
+      const definition = ctx.definitionById.get(quest.questId);
       if (!definition) continue;
 
       for (const objective of definition.objectives) {
@@ -430,9 +483,9 @@ export class QuestTracker {
       }
     }
 
-    const activeQuests = this.getActiveQuests();
-    for (const quest of activeQuests) {
-      const definition = getQuestDefinitions().find((d) => d.id === quest.questId);
+    const ctx = this.createContextFromSnapshot();
+    for (const quest of ctx.activeQuests) {
+      const definition = ctx.definitionById.get(quest.questId);
       if (!definition) continue;
 
       for (const objective of definition.objectives) {
@@ -447,14 +500,11 @@ export class QuestTracker {
   }
 
   /** Check time limits for active quests with timeLimitHours */
-  private checkTimeLimits(slice: QuestTrackerRelevantSlice): void {
-    const currentTime = slice.timeOfDay;
-
-    for (const quest of slice.quests) {
-      if (quest.status !== 'active') continue;
+  private checkTimeLimits(ctx: QuestTrackerContext, currentTime: number): void {
+    for (const quest of ctx.activeQuests) {
       if (quest.startedAtTime === undefined) continue;
 
-      const definition = getQuestDefinitions().find((d) => d.id === quest.questId);
+      const definition = ctx.definitionById.get(quest.questId);
       if (!definition?.timeLimitHours) continue;
 
       // Calculate elapsed hours (handles midnight wraparound)
@@ -476,11 +526,10 @@ export class QuestTracker {
 
   /** Called when a poem power is used — check for quest bypasses */
   private onPoemPowerUsed(poemId: string): void {
-    const snapshot = getGameSnapshot();
-    const activeQuests = snapshot.quests.filter((q) => q.status === 'active');
+    const ctx = this.createContextFromSnapshot();
 
-    for (const quest of activeQuests) {
-      const definition = getQuestDefinitions().find((d) => d.id === quest.questId);
+    for (const quest of ctx.activeQuests) {
+      const definition = ctx.definitionById.get(quest.questId);
       if (!definition) continue;
 
       for (const objective of definition.objectives) {
@@ -505,7 +554,7 @@ export class QuestTracker {
     if (!quest || quest.status !== 'active') return;
     if (quest.objectives[objectiveId]) return;
 
-    const definition = getQuestDefinitions().find((d) => d.id === questId);
+    const definition = getQuestDefinitionByIdMap().get(questId);
     if (!definition) return;
 
     const objective = definition.objectives.find((o) => o.id === objectiveId);
@@ -547,7 +596,7 @@ export class QuestTracker {
     const quest = state.quests.find((q) => q.questId === questId);
     if (!quest || quest.status !== 'active') return;
 
-    const definition = getQuestDefinitions().find((d) => d.id === questId);
+    const definition = getQuestDefinitionByIdMap().get(questId);
     if (!definition) return;
 
     const allComplete = definition.objectives.every(
@@ -565,7 +614,7 @@ export class QuestTracker {
     const quest = snapshot.quests.find((q) => q.questId === questId);
     if (!quest || quest.status !== 'active') return;
 
-    const definition = getQuestDefinitions().find((d) => d.id === questId);
+    const definition = getQuestDefinitionByIdMap().get(questId);
     if (!definition) return;
 
     dispatchGameAction({ type: 'quest/fail', questId });
@@ -575,7 +624,7 @@ export class QuestTracker {
 
   /** Check if a quest can be activated (dependencies, required flags, etc.) */
   canActivateQuest(questId: string): boolean {
-    const definition = getQuestDefinitions().find((d) => d.id === questId);
+    const definition = getQuestDefinitionByIdMap().get(questId);
     if (!definition) return false;
 
     const state = getGameSnapshot();
@@ -607,12 +656,7 @@ export class QuestTracker {
 
   /** Get the definition for a quest */
   getQuestDefinition(questId: string): QuestDefinition | undefined {
-    return getQuestDefinitions().find((d) => d.id === questId);
-  }
-
-  /** Get all currently active quests */
-  private getActiveQuests(): GameStoreSnapshot['quests'] {
-    return getGameSnapshot().quests.filter((q) => q.status === 'active');
+    return getQuestDefinitionByIdMap().get(questId);
   }
 
   /** Get quest progress as a percentage */
@@ -621,7 +665,7 @@ export class QuestTracker {
     const quest = state.quests.find((q) => q.questId === questId);
     if (!quest) return 0;
 
-    const definition = getQuestDefinitions().find((d) => d.id === questId);
+    const definition = getQuestDefinitionByIdMap().get(questId);
     if (!definition) return 0;
 
     const total = definition.objectives.length;
@@ -641,6 +685,11 @@ export const questTracker = new QuestTracker();
 /** Stop store/event subscriptions (unmount / HMR). Idempotent. */
 export function disposeQuestTracker(): void {
   questTracker.stop();
+}
+
+/** Re-arm after orchestrator remount (React StrictMode). Idempotent. */
+export function reviveQuestTracker(): void {
+  questTracker.start();
 }
 
 registerHmrDispose(disposeQuestTracker);
