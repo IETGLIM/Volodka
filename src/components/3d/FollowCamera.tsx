@@ -239,10 +239,7 @@ export function FollowCamera({
   const _playerVelocity = useRef(new THREE.Vector3());
 
   // ── Raycaster for wall collision (layer 5 — see cameraCollisionLayers.ts) ──
-  const raycaster = useRef(new THREE.Raycaster());
-  useEffect(() => {
-    configureCameraCollisionRaycaster(raycaster.current);
-  }, []);
+  const raycasterRef = useRef<THREE.Raycaster | null>(null);
 
   // ── Initialize all camera subsystems ──
   useEffect(() => {
@@ -357,7 +354,7 @@ export function FollowCamera({
       if (phase === 'fadeOut' || phase === 'hold') {
         cinematicFreezeRef.current = true;
         cinematicFreezeStartRef.current = timeRef.current;
-        registerCameraOwner('cinematicFreeze');
+        acquireCameraOwnership('cinematicFreeze');
         setCinematicHoldActive(true);
         setCinematicPresentationMode('third_person');
 
@@ -380,7 +377,7 @@ export function FollowCamera({
         }
       } else if (phase === 'fadeIn') {
         cinematicFreezeRef.current = false;
-        releaseCameraOwner('cinematicFreeze');
+        releaseCameraOwnership('cinematicFreeze');
         setCinematicHoldActive(false);
         setCinematicPresentationMode('first_person');
         eventBus.emit('camera:recenter', {});
@@ -496,6 +493,7 @@ export function FollowCamera({
     unsubs.push(eventBus.on('camera:cutscene_start', ({ waypoints }) => {
       const controller = buildCutsceneController(waypoints);
       if (controller) {
+        acquireCameraOwnership('cutscene');
         cutsceneRef.current = controller;
         startCutscene(controller);
         cutsceneActiveRef.current = true;
@@ -507,12 +505,14 @@ export function FollowCamera({
         stopCutscene(cutsceneRef.current);
         cutsceneActiveRef.current = false;
       }
+      releaseCameraOwnership('cutscene');
     }));
 
-    // Also start cutscene when activeCutsceneId is set in store
-    if (activeCutsceneId && cutsceneWaypoints.length > 0) {
+    // Also start cutscene when activeCutsceneId is set in store (WakeUp owns intro_wakeup)
+    if (activeCutsceneId && cutsceneWaypoints.length > 0 && activeCutsceneId !== 'intro_wakeup') {
       const controller = buildCutsceneController(cutsceneWaypoints);
       if (controller) {
+        acquireCameraOwnership('cutscene');
         cutsceneRef.current = controller;
         startCutscene(controller);
         cutsceneActiveRef.current = true;
@@ -551,6 +551,7 @@ export function FollowCamera({
       // Build the cutscene controller with NPC-relative waypoints
       const controller = buildCutsceneController(waypoints, npcPos);
       if (controller) {
+        acquireCameraOwnership('cutscene');
         npcCutsceneRef.current = controller;
         startCutscene(controller);
         npcCutsceneActiveRef.current = true;
@@ -562,6 +563,7 @@ export function FollowCamera({
         stopCutscene(npcCutsceneRef.current);
         npcCutsceneActiveRef.current = false;
       }
+      releaseCameraOwnership('cutscene');
     }));
 
     return () => unsubs.forEach((u) => u());
@@ -604,6 +606,7 @@ export function FollowCamera({
           targetPos,
           targetLook,
         );
+        acquireCameraOwnership('transition');
       }
     }
   }, [sceneId]);
@@ -666,6 +669,7 @@ export function FollowCamera({
       const frozenDuration = timeRef.current - cinematicFreezeStartRef.current;
       if (frozenDuration > CINEMATIC_FREEZE_TIMEOUT) {
         cinematicFreezeRef.current = false;
+        releaseCameraOwnership('cinematicFreeze');
         resetCinematicPresentation();
         eventBus.emit('camera:recenter', {});
       } else {
