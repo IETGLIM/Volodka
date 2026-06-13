@@ -35,12 +35,8 @@ export function GameOrchestrator() {
             />
 
             <OrchestratorGameplayLayer
-              mode={runtime.mode}
               gameDataReady={runtime.gameDataReady}
               sceneBanner={runtime.sceneBanner}
-              isMobile={runtime.isMobile}
-              isStoryActive={runtime.isStoryActive}
-              isDialogueActive={runtime.isDialogueActive}
               interaction={runtime.interaction}
               panels={runtime.panels}
               panelClosers={panelClosers}

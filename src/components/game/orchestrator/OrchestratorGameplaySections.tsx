@@ -1,0 +1,457 @@
+import { memo, Suspense, useCallback } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
+import { UI_LAYERS } from '@/shared/constants/uiLayers';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
+import {
+  useActiveCutsceneId,
+  useOrchestratorShell,
+  useOrchestratorNarrativeOverlay,
+} from '@/store/selectors';
+import { usePanelStack } from './PanelStackContext';
+import type { MinigamePanelSetters } from '@/shared/constants/minigames';
+import type { ExamineData } from '@/shared/types/game';
+import { LootNotification } from '../LootNotification';
+import { NotificationToasts } from '../NotificationToasts';
+import { ExaminePanel } from '../ExaminePanel';
+import { InteractionHintPopup } from '../InteractionHintPopup';
+import { MoralCompassHUD } from '../MoralCompassHUD';
+import { TutorialOverlay } from '../TutorialOverlay';
+import { FirstPlayTutorial } from '../FirstPlayTutorial';
+import { StressIndicator } from '../StressIndicator';
+import { QuickAccessToolbar } from '../QuickAccessToolbar';
+import { AutoSaveIndicator } from '../AutoSaveIndicator';
+import { AmbientSoundMixer } from '../AmbientSoundMixer';
+import { SceneTransitionProgress } from '../SceneTransitionProgress';
+import { QuickUseBar } from '../QuickUseBar';
+import { EventNotificationPopup } from '../EventNotificationPopup';
+import { WeatherAlertNotification } from '../WeatherAlertNotification';
+import { CraftingDiscoveryToast } from '../CraftingDiscoveryToast';
+import { CompassHUD } from '../CompassHUD';
+import { ExplorationMobileHud } from '../ExplorationMobileHud';
+import { SceneTransitionOverlay } from '../SceneTransitionOverlay';
+import { WeatherIndicator } from '../WeatherIndicator';
+import { DayNightCycleIndicator } from '../DayNightCycleIndicator';
+import { FloatingTextLayer } from '../FloatingText';
+import { ScreenEffects } from '../ScreenEffects';
+import { CutsceneOverlay } from '@/components/game/CutsceneOverlay';
+import { IntroWakeOverlay } from '@/components/game/IntroWakeOverlay';
+import { CombatUI } from '@/components/game/CombatUI';
+import { PoetryPowerBar } from '@/components/game/PoetryPowerBar';
+import { PoemPowerEffect } from '@/components/game/PoemPowerEffect';
+import { DirectionalDamageIndicator } from '@/components/game/DirectionalDamageIndicator';
+import { DamageNumberFloat } from '@/components/game/DamageNumberFloat';
+import { LevelUpSummary } from '../LevelUpSummary';
+import { AchievementNotification } from '../AchievementNotification';
+import {
+  LazyStoryRenderer,
+  LazyDialogueRenderer,
+  LazyHUD,
+  LazyMiniMap,
+  LazyQuestNotificationSystem,
+  LazyStoryGuidanceHUD,
+  LazyLevelUpEffect,
+  LazyPhotoMode,
+} from './lazyPanels';
+import { OrchestratorMinigameOverlays } from './OrchestratorMinigameOverlays';
+import { OrchestratorStatsPanel } from './OrchestratorPanelSlots';
+import { useMobileDetection } from './useMobileDetection';
+import type { PanelCloseHandlers } from './useStablePanelClosers';
+import type { HudSecondaryPanelOpeners } from './useStableHudPanelOpeners';
+
+export type GameplayHudPanelOpeners = {
+  onOpenQuests: () => void;
+  onOpenInventory: () => void;
+  onOpenPoetry: () => void;
+  onOpenJournal: () => void;
+  onToggleTutorials: () => void;
+  onOpenMenu: () => void;
+};
+
+export type GameplayExamineProps = {
+  open: boolean;
+  data: ExamineData | null;
+  hasLinkedContent: boolean;
+  onContinue: () => void;
+  onReset: () => void;
+  onClearPendingTriggerZone: () => void;
+};
+
+export type GameplayMinigameProps = {
+  codebreakerOpen: boolean;
+  openstackTerminalOpen: boolean;
+  bashTerminalOpen: boolean;
+  poetryGameOpen: boolean;
+  hackingGameOpen: boolean;
+  memoryGameOpen: boolean;
+  quizGameOpen: boolean;
+  rhythmGameOpen: boolean;
+  minigameSetters: MinigamePanelSetters;
+};
+
+function isAnyMinigameOpen(props: GameplayMinigameProps): boolean {
+  return (
+    props.codebreakerOpen
+    || props.openstackTerminalOpen
+    || props.bashTerminalOpen
+    || props.poetryGameOpen
+    || props.hackingGameOpen
+    || props.memoryGameOpen
+    || props.quizGameOpen
+    || props.rhythmGameOpen
+  );
+}
+
+/** Exploration-only notification toasts and guidance. */
+export const GameplayExplorationNotifications = memo(function GameplayExplorationNotifications() {
+  const { mode } = useOrchestratorShell();
+  if (mode !== 'exploration') return null;
+
+  return (
+    <>
+      <NotificationToasts />
+      <Suspense fallback={null}>
+        <LazyQuestNotificationSystem />
+      </Suspense>
+      <Suspense fallback={null}>
+        <LazyStoryGuidanceHUD />
+      </Suspense>
+      <WeatherAlertNotification />
+      <CraftingDiscoveryToast />
+      {/* MUST stay mounted during exploration: registers pushNotification() singleton. */}
+      <LootNotification />
+    </>
+  );
+});
+
+/** EventBus-driven toasts — must stay mounted during gameplay to receive payloads. */
+export const GameplayEventNotifications = memo(function GameplayEventNotifications() {
+  return (
+    <>
+      <EventNotificationPopup />
+      <AchievementNotification />
+    </>
+  );
+});
+
+/** Level-up full-screen effects — exploration and combat only. */
+export const GameplayLevelUpEffects = memo(function GameplayLevelUpEffects() {
+  const { mode } = useOrchestratorShell();
+  if (mode !== 'exploration' && mode !== 'combat') return null;
+
+  return (
+    <>
+      <LevelUpSummary />
+      <Suspense fallback={null}>
+        <LazyLevelUpEffect />
+      </Suspense>
+    </>
+  );
+});
+
+/** Floating combat/exploration numbers and edge flashes. */
+export const GameplayCombatVisualFx = memo(function GameplayCombatVisualFx() {
+  const { mode } = useOrchestratorShell();
+  if (mode !== 'exploration' && mode !== 'combat') return null;
+
+  return (
+    <>
+      <FloatingTextLayer />
+      <DirectionalDamageIndicator />
+      <DamageNumberFloat />
+    </>
+  );
+});
+
+/** FX flash/shake/vignette — all gameplay modes (cutscene drama, combat hits). */
+export const GameplayScreenEffectsLayer = memo(function GameplayScreenEffectsLayer() {
+  return <ScreenEffects />;
+});
+
+/** Intro wake cinematic letterbox — only during intro_wakeup cutscene. */
+export const GameplayIntroWakeOverlay = memo(function GameplayIntroWakeOverlay() {
+  const cutsceneId = useActiveCutsceneId();
+  if (cutsceneId !== 'intro_wakeup') return null;
+
+  return <IntroWakeOverlay />;
+});
+
+/**
+ * Cutscene text overlay — mounted while a cutscene is active.
+ * MUST stay mounted for the full cutscene: listens on cutscene:overlay EventBus.
+ */
+export const GameplayCutsceneOverlay = memo(function GameplayCutsceneOverlay() {
+  const { mode } = useOrchestratorShell();
+  const cutsceneId = useActiveCutsceneId();
+  if (mode !== 'cutscene' && cutsceneId == null) return null;
+
+  return <CutsceneOverlay />;
+});
+
+/** Scene transition progress bar and wipe overlay. */
+export const GameplaySceneTransitionFx = memo(function GameplaySceneTransitionFx() {
+  const { mode } = useOrchestratorShell();
+  if (mode !== 'exploration' && mode !== 'cutscene') return null;
+
+  return (
+    <>
+      <SceneTransitionProgress />
+      <SceneTransitionOverlay />
+    </>
+  );
+});
+
+/** Poem power activation VFX — exploration only. */
+export const GameplayPoemPowerFx = memo(function GameplayPoemPowerFx() {
+  const { mode } = useOrchestratorShell();
+  if (mode !== 'exploration') return null;
+
+  return <PoemPowerEffect />;
+});
+
+/** Photo mode viewfinder — exploration only (Ctrl+P / HUD button). */
+export const GameplayPhotoMode = memo(function GameplayPhotoMode() {
+  const { mode } = useOrchestratorShell();
+  if (mode !== 'exploration') return null;
+
+  return (
+    <Suspense fallback={null}>
+      <LazyPhotoMode />
+    </Suspense>
+  );
+});
+
+/** Cross-mode HUD effects — conditionally mounted sub-layers. */
+export const GameplaySharedEffects = memo(function GameplaySharedEffects() {
+  return (
+    <>
+      <GameplayLevelUpEffects />
+      <GameplayEventNotifications />
+      <GameplayCombatVisualFx />
+      <GameplayScreenEffectsLayer />
+      <GameplayIntroWakeOverlay />
+      <GameplayCutsceneOverlay />
+      <GameplaySceneTransitionFx />
+      <GameplayPoemPowerFx />
+      <GameplayPhotoMode />
+    </>
+  );
+});
+
+/** Scene title banner on location change. */
+export const GameplaySceneBanner = memo(function GameplaySceneBanner({
+  sceneBanner,
+}: {
+  sceneBanner: string | null;
+}) {
+  return (
+    <AnimatePresence>
+      {sceneBanner && (
+        <motion.div
+          key={sceneBanner}
+          className="fixed inset-0 flex items-center justify-center pointer-events-none"
+          style={{ zIndex: UI_LAYERS.SCENE_BANNER }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <motion.div
+            className="px-12 py-6 rounded-lg"
+            style={{
+              backdropFilter: 'blur(8px)',
+              WebkitBackdropFilter: 'blur(8px)',
+              background: 'rgba(0, 0, 0, 0.35)',
+            }}
+            initial={{ scale: 0.9, y: 10 }}
+            animate={{ scale: 1, y: 0 }}
+            exit={{ scale: 1.05, y: -5 }}
+            transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
+          >
+            <motion.h2
+              className="text-2xl sm:text-3xl md:text-4xl font-semibold tracking-wider text-center"
+              style={{
+                fontFamily: '"Georgia", "Times New Roman", serif',
+                color: 'rgba(220, 230, 250, 0.9)',
+                textShadow: '0 0 30px rgba(150, 180, 255, 0.3), 0 0 60px rgba(100, 130, 200, 0.15)',
+              }}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.6, ease: 'easeOut' }}
+            >
+              {sceneBanner}
+            </motion.h2>
+            <motion.div
+              className="mt-3 mx-auto w-24 h-px"
+              style={{
+                background: 'linear-gradient(90deg, transparent, rgba(150, 180, 255, 0.4), transparent)',
+              }}
+              initial={{ scaleX: 0 }}
+              animate={{ scaleX: 1 }}
+              exit={{ scaleX: 0 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+            />
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+});
+
+/** Stress, compass, quick-use — exploration only (widgets no-op in cutscene). */
+export const GameplayAmbientExplorationHud = memo(function GameplayAmbientExplorationHud() {
+  const { mode } = useOrchestratorShell();
+  if (mode !== 'exploration') return null;
+
+  return (
+    <>
+      <StressIndicator />
+      <QuickUseBar />
+      <QuickAccessToolbar />
+      <AutoSaveIndicator />
+      <CompassHUD />
+    </>
+  );
+});
+
+/** Primary exploration HUD — gated on game data preload. */
+export const GameplayExplorationHud = memo(function GameplayExplorationHud({
+  gameDataReady,
+  panelOpeners,
+  hudSecondaryOpeners,
+}: {
+  gameDataReady: boolean;
+  panelOpeners: GameplayHudPanelOpeners;
+  hudSecondaryOpeners: HudSecondaryPanelOpeners;
+}) {
+  const { mode } = useOrchestratorShell();
+  if (mode !== 'exploration' || !gameDataReady) return null;
+
+  return (
+    <>
+      <AmbientSoundMixer />
+      <Suspense fallback={null}>
+        <LazyHUD
+          onOpenQuests={panelOpeners.onOpenQuests}
+          onOpenInventory={panelOpeners.onOpenInventory}
+          onOpenPoetry={panelOpeners.onOpenPoetry}
+          onOpenJournal={panelOpeners.onOpenJournal}
+          onToggleTutorials={panelOpeners.onToggleTutorials}
+          onOpenMenu={panelOpeners.onOpenMenu}
+          {...hudSecondaryOpeners}
+        />
+      </Suspense>
+      <Suspense fallback={null}>
+        <LazyMiniMap />
+      </Suspense>
+      <MoralCompassHUD />
+      <InteractionHintPopup />
+      <WeatherIndicator />
+      <DayNightCycleIndicator />
+      <TutorialOverlay />
+      <FirstPlayTutorial />
+      <PoetryPowerBar />
+    </>
+  );
+});
+
+/** Stack-driven stats panel slot — mount only while stats panel is open. */
+export const GameplayStatsPanel = memo(function GameplayStatsPanel({
+  onClose,
+}: {
+  onClose: PanelCloseHandlers;
+}) {
+  const { isPanelOpen } = usePanelStack();
+  if (!isPanelOpen('stats')) return null;
+
+  return <OrchestratorStatsPanel onClose={onClose} />;
+});
+
+/** Touch-first exploration controls. */
+export const GameplayMobileExplorationHud = memo(function GameplayMobileExplorationHud({
+  onOpenInventory,
+}: {
+  onOpenInventory: () => void;
+}) {
+  const { mode } = useOrchestratorShell();
+  const isMobile = useMobileDetection();
+  if (!isMobile || mode !== 'exploration') return null;
+
+  return <ExplorationMobileHud onOpenInventory={onOpenInventory} />;
+});
+
+/** Story and dialogue overlays — store selectors avoid stale narrative flags. */
+export const GameplayNarrativeOverlay = memo(function GameplayNarrativeOverlay() {
+  const { mode } = useOrchestratorShell();
+  const { showStoryOverlay, narrativeKind } = useOrchestratorNarrativeOverlay();
+
+  if (mode === 'combat') return null;
+
+  const isStoryActive = showStoryOverlay && narrativeKind === 'story';
+  const isDialogueActive = showStoryOverlay && narrativeKind === 'dialogue';
+
+  return (
+    <>
+      {isStoryActive && (
+        <ErrorBoundary name="story">
+          <Suspense fallback={null}>
+            <LazyStoryRenderer />
+          </Suspense>
+        </ErrorBoundary>
+      )}
+      {isDialogueActive && (
+        <ErrorBoundary name="dialogue">
+          <Suspense fallback={null}>
+            <LazyDialogueRenderer />
+          </Suspense>
+        </ErrorBoundary>
+      )}
+    </>
+  );
+});
+
+/** Minigame overlay stack — mount only while a minigame panel is open. */
+export const GameplayMinigameLayer = memo(function GameplayMinigameLayer(props: GameplayMinigameProps) {
+  if (!isAnyMinigameOpen(props)) return null;
+
+  return <OrchestratorMinigameOverlays {...props} />;
+});
+
+/** Combat UI shell. */
+export const GameplayCombatLayer = memo(function GameplayCombatLayer() {
+  const { mode } = useOrchestratorShell();
+  if (mode !== 'combat') return null;
+
+  return (
+    <ErrorBoundary name="combat">
+      <CombatUI />
+    </ErrorBoundary>
+  );
+});
+
+/** Examine interaction panel. */
+export const GameplayExamineOverlay = memo(function GameplayExamineOverlay({
+  open,
+  data,
+  hasLinkedContent,
+  onContinue,
+  onReset,
+  onClearPendingTriggerZone,
+}: GameplayExamineProps) {
+  const handleClose = useCallback(() => {
+    onReset();
+    onClearPendingTriggerZone();
+  }, [onReset, onClearPendingTriggerZone]);
+
+  if (!open) return null;
+
+  return (
+    <ExaminePanel
+      open={open}
+      data={data}
+      hasLinkedContent={hasLinkedContent}
+      onContinue={onContinue}
+      onClose={handleClose}
+    />
+  );
+});
