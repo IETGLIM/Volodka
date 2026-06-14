@@ -441,12 +441,14 @@ export function RPGGameCanvas() {
   );
 }
 
-/** Kick the render loop when leaving menu/intro demand mode. */
+/** Kick the render loop on mount and when leaving menu/intro demand mode. */
 function CanvasFrameloopController({ idle }: { idle: boolean }) {
   const invalidate = useThree((state) => state.invalidate);
 
   useEffect(() => {
-    if (!idle) invalidate();
+    // Demand frameloop does not paint until invalidated — required for canvas:first-frame
+    // during intro/menu boot while the loading pipeline waits at canvas_init (82%).
+    invalidate();
   }, [idle, invalidate]);
 
   return null;

@@ -295,7 +295,7 @@ export function StoryRenderer() {
       nodeKey={`story-${currentNodeId}`}
       presentation={presentation}
       ariaLabel="Сюжетная сцена"
-      speakerTitleId={speakerLabel ? speakerTitleId : undefined}
+      speakerTitleId={speakerTitleId}
       speakerLabel={speakerLabel ?? (node.speaker === 'narrator' ? 'Голос' : undefined)}
       displayedText={displayed}
       done={done}

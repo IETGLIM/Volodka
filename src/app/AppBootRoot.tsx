@@ -85,22 +85,34 @@ export function AppBootRoot() {
     setOverlayVisible(false);
   }, []);
 
-  /** Degraded boot path — menu boot has no canvas; synthesize first-frame once data is ready. */
+  /** Menu boot may finish before real first-frame; synthesize or retry once data/canvas are ready. */
   useEffect(() => {
     if (!gameMounted || !overlayVisible) return;
 
-    const tryCompleteMenuBoot = (): boolean => {
-      if (menuBootSynthesizedRef.current) return true;
+    const synthesizeCanvasFirstFrame = (): void => {
+      loadingPipeline.reportStage('canvas_init');
+      eventBus.emit('canvas:first-frame', { generation: Date.now() });
+    };
 
+    const tryCompleteMenuBoot = (): boolean => {
       const snap = loadingPipeline.getSnapshot();
       if (snap.stage === 'playable' || snap.stage === 'complete' || snap.stage === 'error') {
         menuBootSynthesizedRef.current = true;
         return true;
       }
+
+      // Retry when canvas_init was reported without a matching first-frame (82% hang).
+      if (snap.stage === 'canvas_init') {
+        menuBootSynthesizedRef.current = true;
+        eventBus.emit('canvas:first-frame', { generation: Date.now() });
+        return true;
+      }
+
+      if (menuBootSynthesizedRef.current) return true;
+
       if (snap.pct >= 68) {
         menuBootSynthesizedRef.current = true;
-        loadingPipeline.reportStage('canvas_init');
-        eventBus.emit('canvas:first-frame', { generation: Date.now() });
+        synthesizeCanvasFirstFrame();
         return true;
       }
       return false;

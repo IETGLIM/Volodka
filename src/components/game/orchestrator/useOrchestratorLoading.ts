@@ -5,8 +5,6 @@ import { markOrchestratorMount } from '@/engine/performance/LoadingTimeline';
 import { useCanvasTransitionManager } from './useCanvasTransitionManager';
 import type { GamePhase } from '@/shared/gamePhase';
 
-const CANVAS_PHASES = new Set<GamePhase>(['intro', 'exploration', 'combat', 'cutscene']);
-
 /** Loading, canvas mount, and transition state for the orchestrator. */
 export function useOrchestratorLoading(mode: GamePhase) {
   const gameDataReady = useGameDataPreload();
@@ -16,13 +14,9 @@ export function useOrchestratorLoading(mode: GamePhase) {
 
   useEffect(() => {
     markOrchestratorMount();
+    // Mount WebGL during boot even in menu (hidden) so first-frame can fire.
+    setCanvasMounted(true);
   }, []);
-
-  useEffect(() => {
-    if (CANVAS_PHASES.has(mode)) {
-      setCanvasMounted(true);
-    }
-  }, [mode]);
 
   return {
     gameDataReady,
