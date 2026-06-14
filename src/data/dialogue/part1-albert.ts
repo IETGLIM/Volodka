@@ -28,6 +28,12 @@ export const DIALOGUE_PART1: Record<string, DialogueNode> = {
         effects: [{ type: 'addStat', stat: 'stress', value: 2 }],
       },
       {
+        text: 'Научи меня — код и стихи одно?',
+        next: null,
+        condition: { flag: 'met_albert' },
+        effects: [{ type: 'visitStoryNode', nodeId: 'cafe_albert_lesson_intro' }],
+      },
+      {
         text: 'Расскажи что-нибудь новое. Я готов слушать.',
         next: 'albert_philosophy',
         condition: { flag: 'albert_relation_warm', minNpcRelation: 60, minTimeOfDay: 15, maxTimeOfDay: 22 },
@@ -347,6 +353,12 @@ export const DIALOGUE_PART1: Record<string, DialogueNode> = {
           { type: 'addStat', stat: 'stress', value: -10 },
           { type: 'setFlag', flag: 'zarema_care_accepted', flagValue: true },
         ],
+      },
+      {
+        text: 'Радио опять шипит — может, покрутить настройку?',
+        next: null,
+        condition: { flag: 'zarema_radio_needs_fix' },
+        effects: [{ type: 'visitStoryNode', nodeId: 'zarema_radio_request' }],
       },
       {
         text: 'А ты когда-нибудь писала стихи?',

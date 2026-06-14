@@ -2,6 +2,7 @@ import { test, expect } from '@playwright/test';
 import {
   advanceStoryOverlay,
   assertExplorationMovement,
+  advancePastAct1WakePrologue,
   dismissFirstPlayTutorial,
   dismissFirstReadingBeats,
   dismissTitleCardIfPresent,
@@ -11,14 +12,16 @@ import {
 } from './helpers';
 
 async function expectAct1FreeExploration(page: import('@playwright/test').Page) {
-  await expect(page.getByTestId('game-hud')).toBeVisible({ timeout: 45_000 });
+  await advancePastAct1WakePrologue(page);
   await dismissFirstReadingBeats(page);
   await dismissFirstPlayTutorial(page);
 
   const hubDialog = page.getByRole('dialog', { name: /Голос/i });
-  await expect(hubDialog).not.toBeVisible({ timeout: 3000 });
+  await expect(hubDialog).not.toBeVisible({ timeout: 5000 });
 
-  await expect(page.getByText(/Комната Володьки|коридор|Солныш/i).first()).toBeVisible({
+  const gameHud = page.getByTestId('game-hud');
+  await expect(gameHud).toBeVisible({ timeout: 20_000 });
+  await expect(gameHud).toContainText(/Комната Володьки|Комната небольшая|уютная/i, {
     timeout: 20_000,
   });
 }

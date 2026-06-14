@@ -170,6 +170,7 @@ export const TRIGGER_ZONES: TriggerZone[] = [
       { type: 'setFlag', flag: 'examined_room_wardrobe', flagValue: true },
       { type: 'discoverLore', loreId: 'lore_volodka_childhood' },
     ],
+    linkedDialogueNodeId: 'explore_room_wardrobe',
   },
   {
     id: 'room_terminal',
@@ -250,6 +251,7 @@ export const TRIGGER_ZONES: TriggerZone[] = [
       icon: '📬',
     },
     effects: [{ type: 'setFlag', flag: 'examined_corridor_mailboxes', flagValue: true }, { type: 'discoverLore', loreId: 'lore_corridor_letter' }],
+    linkedDialogueNodeId: 'explore_corridor_letter',
   },
   {
     id: 'corridor_intercom',
@@ -265,6 +267,7 @@ export const TRIGGER_ZONES: TriggerZone[] = [
       icon: '🔔',
     },
     effects: [{ type: 'setFlag', flag: 'examined_corridor_intercom', flagValue: true }],
+    linkedDialogueNodeId: 'explore_corridor_intercom',
   },
   {
     id: 'corridor_mirror',
@@ -456,7 +459,7 @@ export const TRIGGER_ZONES: TriggerZone[] = [
     position: [-2.0, 0.8, -1.5],
     size: [0.5, 0.5, 0.5],
     enterToast: 'Старый радиоприёмник шипит статикой.',
-    linkedDialogueNodeId: 'explore_volodka_inner',
+    linkedDialogueNodeId: 'explore_kitchen_radio',
     interactionType: 'use',
     examineData: {
       title: 'Радиоприёмник',
@@ -468,6 +471,7 @@ export const TRIGGER_ZONES: TriggerZone[] = [
       { type: 'addStat', stat: 'stress', value: 3 },
       { type: 'addSkill', skill: 'intuition', value: 1 },
       { type: 'discoverLore', loreId: 'lore_communal_radio' },
+      { type: 'setFlag', flag: 'zarema_radio_needs_fix', flagValue: true },
     ],
   },
   {
@@ -593,6 +597,21 @@ export const TRIGGER_ZONES: TriggerZone[] = [
   },
 
   /* ─────────────── STREET NIGHT ─────────────── */
+  {
+    id: 'street_guild_tower_view',
+    sceneId: 'street_night',
+    position: [6.0, 2.0, -6.0],
+    size: [2.0, 3.0, 2.0],
+    enterToast: 'Башня IT-гильдии пульсирует на горизонте.',
+    linkedDialogueNodeId: 'explore_street_guild_tower',
+    interactionType: 'examine',
+    examineData: {
+      title: 'Башня гильдии',
+      description: 'Стеклянная игла на горизонте — fifty hertz, как лампочка в коридоре.',
+      detailText: 'Окна верхних этажей мигают не в такт рекламе. Ночная смена никогда не спит до конца.',
+      icon: '🏢',
+    },
+  },
   {
     id: 'street_bench_zone',
     sceneId: 'street_night',

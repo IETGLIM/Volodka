@@ -916,4 +916,127 @@ export const EXPLORATION_DIALOGUE_NODES: Record<string, DialogueNode> = {
       },
     ],
   },
+
+  explore_corridor_letter: {
+    id: 'explore_corridor_letter',
+    speaker: 'Голос',
+    text: 'Третий ящик сверху. Конверт без марки — только твоё имя, написанное почерком, который ты почти узнаёшь. Бумага пожелтела. Три месяца ты не решался открыть.',
+    sceneId: 'volodka_corridor',
+    choices: [
+      {
+        text: 'Открыть письмо',
+        next: null,
+        effects: [{ type: 'visitStoryNode', nodeId: 'corridor_letter_open' }],
+      },
+      {
+        text: 'Не сейчас',
+        next: null,
+        effects: [{ type: 'addStat', stat: 'stress', value: 1 }],
+      },
+    ],
+  },
+
+  explore_corridor_intercom: {
+    id: 'explore_corridor_intercom',
+    speaker: 'Голос',
+    text: 'Красная кнопка домофона мигает. В динамике — тихое жужжание, как перед соединением. Кто-то звонил вчера ночью. Ты не открыл.',
+    sceneId: 'volodka_corridor',
+    choices: [
+      {
+        text: 'Нажать кнопку — ответить',
+        next: null,
+        effects: [{ type: 'visitStoryNode', nodeId: 'corridor_intercom_whisper' }],
+      },
+      {
+        text: 'Отойти',
+        next: null,
+      },
+    ],
+  },
+
+  explore_room_wardrobe: {
+    id: 'explore_room_wardrobe',
+    speaker: 'Голос',
+    text: 'На верхней полке — фотоальбом, который ты давно не открывал. Гимназия, первый компьютер, Солныш с Умкой на лестнице. Между страницами — листок с четырьмя строками.',
+    sceneId: 'volodka_room',
+    choices: [
+      {
+        text: 'Прочитать листок',
+        next: null,
+        effects: [{ type: 'visitStoryNode', nodeId: 'room_wardrobe_memory' }],
+      },
+      {
+        text: 'Закрыть шкаф',
+        next: null,
+        effects: [{ type: 'setFlag', flag: 'morning_ritual_wardrobe', flagValue: true }],
+      },
+    ],
+  },
+
+  explore_kitchen_radio: {
+    id: 'explore_kitchen_radio',
+    speaker: 'Голос',
+    text: '«Океан» шипит между станциями. Между волнами статики — обрывки голосов, словно кто-то читает стихи в белом шуме. Зарема говорила: иногда там слышен голос, которого не должно быть в эфире.',
+    sceneId: 'home_evening',
+    choices: [
+      {
+        text: 'Покрутить настройку — поймать сигнал',
+        next: null,
+        effects: [
+          { type: 'setFlag', flag: 'zarema_radio_quest_started', flagValue: true },
+          { type: 'triggerQuest', questId: 'zarema_radio' },
+          { type: 'visitStoryNode', nodeId: 'zarema_radio_success' },
+          { type: 'setFlag', flag: 'zarema_radio_fixed', flagValue: true },
+          { type: 'setFlag', flag: 'zarema_radio_needs_fix', flagValue: false },
+        ],
+      },
+      {
+        text: 'Попросить Зарему помочь',
+        next: null,
+        effects: [{ type: 'visitStoryNode', nodeId: 'zarema_radio_request' }],
+      },
+      {
+        text: 'Оставить радио в покое',
+        next: null,
+      },
+    ],
+  },
+
+  explore_street_guild_tower: {
+    id: 'explore_street_guild_tower',
+    speaker: 'Голос',
+    text: 'Башня IT-гильдии пульсирует ровным светом на горизонте. Окна верхних этажей мигают не в такт рекламе — кто-то там работает ночью. Сергея из ночной смены ты ещё не знаешь, но ритм уже запоминается.',
+    sceneId: 'street_night',
+    choices: [
+      {
+        text: 'Запомнить ритм — пригодится',
+        next: null,
+        effects: [
+          { type: 'visitStoryNode', nodeId: 'street_guild_pulse' },
+        ],
+      },
+      {
+        text: 'Отвернуться — не сейчас',
+        next: null,
+      },
+    ],
+  },
+
+  explore_albert_lesson: {
+    id: 'explore_albert_lesson',
+    speaker: 'Альберт',
+    text: '«Код и стих — один язык, разный синтаксис. Докажи, что видишь глубже поверхности — и я научу тебя приёмам, которых нет в учебниках гильдии.»',
+    sceneId: 'cafe_evening',
+    choices: [
+      {
+        text: 'Принять урок',
+        next: null,
+        effects: [{ type: 'visitStoryNode', nodeId: 'cafe_albert_lesson_intro' }],
+      },
+      {
+        text: 'Мне некогда',
+        next: null,
+      },
+    ],
+  },
 };

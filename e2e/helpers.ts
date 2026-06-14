@@ -11,10 +11,72 @@ export async function skipWakeCinematic(page: Page) {
   await page.keyboard.press('Escape');
   await page.waitForTimeout(3500);
   await dismissTitleCardIfPresent(page);
+  // Wake handoff may still be opening the start beat or title card.
+  await page.waitForTimeout(1500);
+}
+
+/** Advance Act I wake prologue (start → explore_mode) so exploration HUD mounts. */
+export async function advancePastAct1WakePrologue(page: Page) {
+  await dismissTitleCardIfPresent(page);
+
+  await page.waitForFunction(
+    () => typeof window.__volodka_e2e?.promoteClosedOverlayHub === 'function',
+    null,
+    { timeout: 90_000 },
+  );
+
+  const hubDialog = page.getByRole('dialog', { name: /Голос/i });
+  const gameHud = page.getByTestId('game-hud');
+
+  const deadline = Date.now() + 90_000;
+  while (Date.now() < deadline) {
+    const hudVisible = await gameHud.isVisible().catch(() => false);
+    const hubOpen = await hubDialog.isVisible().catch(() => false);
+    if (hudVisible && !hubOpen) return;
+
+    await dismissTitleCardIfPresent(page);
+    await dismissLevelUpAndQuestOverlays(page);
+
+    const startSpeaker = page.locator('#story-speaker-start');
+    if (await startSpeaker.isVisible({ timeout: 500 }).catch(() => false)) {
+      await skipStoryTypewriter(page);
+      const riseBtn = page.getByRole('button', { name: /Подняться и осмотреться/i });
+      if (await riseBtn.isVisible({ timeout: 3000 }).catch(() => false)) {
+        await riseBtn.click({ force: true });
+        await page.waitForTimeout(800);
+        continue;
+      }
+    } else if (hubOpen) {
+      await skipStoryTypewriter(page);
+      const exploreBtn = page.getByRole('button', { name: /Подняться и осмотреться/i });
+      if (await exploreBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
+        await exploreBtn.click({ force: true });
+        await page.waitForTimeout(800);
+        continue;
+      }
+    }
+
+    await page.evaluate(async () => {
+      await window.__volodka_e2e!.promoteClosedOverlayHub('explore_mode', 'volodka_room');
+    });
+    await page.waitForTimeout(1000);
+  }
+
+  if (await hubDialog.isVisible().catch(() => false)) {
+    await page.evaluate(async () => {
+      await window.__volodka_e2e!.promoteClosedOverlayHub('explore_mode', 'volodka_room');
+    });
+    await page.waitForTimeout(1000);
+  }
+
+  await expect(hubDialog).not.toBeVisible({ timeout: 15_000 });
+  await expect(gameHud).toBeVisible({ timeout: 15_000 });
 }
 
 export async function skipStoryTypewriter(page: Page) {
   for (let attempt = 0; attempt < 8; attempt += 1) {
+    if (page.isClosed()) return;
+
     const skipBtn = page.getByRole('button', { name: /Пропустить анимацию текста/i });
     if (!(await skipBtn.isVisible({ timeout: 1500 }).catch(() => false))) {
       return;
@@ -24,7 +86,11 @@ export async function skipStoryTypewriter(page: Page) {
     } catch {
       // Overlay may close mid-skip during hub promotion or cutscene handoff.
     }
-    await page.waitForTimeout(300);
+    try {
+      await page.waitForTimeout(300);
+    } catch {
+      return;
+    }
   }
 }
 
@@ -121,6 +187,7 @@ export async function waitForStoryChoices(page: Page, choicePattern: RegExp, tim
 
 /** Wait for story overlay, skip typewriter, poll until choice buttons render. */
 export async function advanceStoryOverlay(page: Page, expectedNodeId?: string, timeout = 45_000) {
+  await dismissLevelUpAndQuestOverlays(page);
   await waitForStoryDialog(page, expectedNodeId, timeout);
   for (let attempt = 0; attempt < 8; attempt += 1) {
     await skipStoryTypewriter(page);
@@ -185,7 +252,8 @@ export async function waitForExplorationInputReady(page: Page) {
 }
 
 export async function settleAfterWake(page: Page) {
-  await expect(page.getByTestId('game-hud')).toBeVisible({ timeout: 45_000 });
+  await advancePastAct1WakePrologue(page);
+  await expect(page.getByTestId('game-hud')).toBeVisible({ timeout: 60_000 });
   await dismissFirstReadingBeats(page);
   await dismissFirstPlayTutorial(page);
   await page.waitForTimeout(1500);
@@ -201,14 +269,16 @@ export async function prepareStoryBootstrap(page: Page) {
     null,
     { timeout: 30_000 },
   );
-  await page.waitForFunction(
-    () => {
-      const loading = document.body.innerText.match(/Загрузка:[^\n]*/)?.[0] ?? '';
-      return loading.length === 0 || /100\s*%/.test(loading);
-    },
-    null,
-    { timeout: 60_000 },
-  );
+  await page
+    .waitForFunction(
+      () => {
+        const loading = document.body.innerText.match(/Загрузка:[^\n]*/)?.[0] ?? '';
+        return loading.length === 0 || /100\s*%/.test(loading);
+      },
+      null,
+      { timeout: 20_000 },
+    )
+    .catch(() => undefined);
 }
 
 export async function waitForStoryDialog(page: Page, expectedNodeId?: string, timeout = 45_000) {

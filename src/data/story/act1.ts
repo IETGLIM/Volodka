@@ -11,15 +11,12 @@ export const STORY_NODES_ACT1: Record<string, StoryNode> = {
       {
         text: 'Подняться и осмотреться',
         next: 'explore_mode', goldenPath: true,
-        effects: [{ type: 'setFlag', flag: 'woke_up', flagValue: true }],
+        effects: [{ type: 'setFlag', flag: 'woke_up', flagValue: true }, { type: 'triggerQuest', questId: 'morning_ritual' }],
       },
       {
         text: 'Проверить терминал',
-        next: 'room_table',
-        effects: [
-          { type: 'addSkill', skill: 'coding', value: 1 },
-          { type: 'setFlag', flag: 'checked_terminal', flagValue: true },
-        ],
+        next: 'room_terminal_wake',
+        effects: [{ type: 'setFlag', flag: 'morning_ritual_terminal', flagValue: true }],
       },
     ],
   },
@@ -32,6 +29,7 @@ export const STORY_NODES_ACT1: Record<string, StoryNode> = {
     choices: [
       { text: 'Подойти к столу', next: 'room_table', goldenPath: true },
       { text: 'Осмотреть книжную полку', next: 'room_bookshelf' },
+      { text: 'Заглянуть в платяной шкаф', next: 'room_wardrobe_memory' },
       { text: 'Выйти в коридор', next: 'corridor_door', effects: [{ type: 'transitionScene', sceneId: 'volodka_corridor' }] },
       { text: 'Свободно исследовать комнату', next: 'explore_mode' },
     ],
@@ -133,6 +131,8 @@ export const STORY_NODES_ACT1: Record<string, StoryNode> = {
     choices: [
       { text: 'Поговорить с Солныш', next: 'solnysh_corridor_talk' },
       { text: 'Зайти к Алине и Лёне', next: 'solnysh_door' },
+      { text: 'Проверить почтовые ящики', next: 'corridor_letter_open' },
+      { text: 'Ответить на звонок в домофон', next: 'corridor_intercom_whisper' },
       { text: 'Пойти на кухню', next: 'kitchen_table', goldenPath: true },
       { text: 'Выйти на улицу', next: 'street_bench' },
       { text: 'Вернуться в комнату', next: 'go_home' },
@@ -430,6 +430,7 @@ export const STORY_NODES_ACT1: Record<string, StoryNode> = {
     sceneId: 'street_night',
     choices: [
       { text: 'Присесть на скамейку у подъезда', next: 'street_bench', goldenPath: true },
+      { text: 'Посмотреть на башню гильдии', next: 'street_guild_pulse' },
       { text: 'Войти в кафе', next: 'cafe_enter' },
       { text: 'Подойти к силуэту', next: 'maria_curious' },
       {
@@ -513,6 +514,8 @@ export const STORY_NODES_ACT1: Record<string, StoryNode> = {
           { type: 'setFlag', flag: 'found_first_poem', flagValue: true },
           { type: 'setFlag', flag: 'read_poem_1', flagValue: true },
           { type: 'setFlag', flag: 'thread_lore_4729', flagValue: true },
+          { type: 'setFlag', flag: 'solved_albert_riddle', flagValue: true },
+          { type: 'setFlag', flag: 'proved_poetry_code_link', flagValue: true },
         ],
       },
       {

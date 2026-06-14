@@ -372,4 +372,116 @@ export const QUESTS_ACT1: QuestDefinition[] = [
     questGiverNpcId: 'albert',
   },
 
+  /* ─────────────── QUEST 8: Anonymous letter ─────────────── */
+  {
+    id: 'corridor_letter',
+    title: 'Письмо без адреса',
+    description: 'В почтовом ящике — конверт без марки и обратного адреса. Почерк почти знаком. Кто-то оставил послание до того, как его доставили.',
+    act: 1,
+    faction: undefined,
+    questType: 'side',
+    difficulty: 'easy',
+    hint: 'Проверь почтовые ящики в коридоре — третий сверху.',
+    objectives: [
+      {
+        id: 'open_letter',
+        description: 'Открыть письмо без обратного адреса',
+        type: 'flag_set',
+        target: 'corridor_letter_opened',
+        completed: false,
+      },
+      {
+        id: 'keep_letter',
+        description: 'Сохранить или показать письмо Зареме',
+        type: 'flag_set',
+        target: 'corridor_letter_kept',
+        completed: false,
+      },
+    ],
+    rewards: [
+      { type: 'addSkill', skill: 'intuition', value: 2 },
+      { type: 'addKarma', value: 5 },
+      { type: 'addXp', value: 60 },
+    ],
+    linkedStoryNodeId: 'corridor_letter_open',
+    questGiverNpcId: undefined,
+  },
+
+  /* ─────────────── QUEST 9: Zarema's radio ─────────────── */
+  {
+    id: 'zarema_radio',
+    title: 'Голос в белом шуме',
+    description: 'Старый радиоприёмник «Океан» шипит между станциями. Зарема слышит в статике голос — может, это эхо Краха. Настрой приёмник.',
+    act: 1,
+    faction: undefined,
+    questType: 'side',
+    difficulty: 'medium',
+    hint: 'Поговори с Заремой на кухне или покрути радиоприёмник у окна.',
+    objectives: [
+      {
+        id: 'start_radio_quest',
+        description: 'Согласиться помочь с радио',
+        type: 'flag_set',
+        target: 'zarema_radio_quest_started',
+        completed: false,
+      },
+      {
+        id: 'fix_radio',
+        description: 'Уловить голос в эфире',
+        type: 'flag_set',
+        target: 'zarema_radio_fixed',
+        completed: false,
+      },
+    ],
+    rewards: [
+      { type: 'addSkill', skill: 'intuition', value: 2 },
+      { type: 'addKarma', value: 8 },
+      { type: 'addXp', value: 80 },
+    ],
+    linkedStoryNodeId: 'zarema_radio_request',
+    questGiverNpcId: 'zarema',
+  },
+
+  /* ─────────────── QUEST 10: Morning ritual ─────────────── */
+  {
+    id: 'morning_ritual',
+    title: 'Утренний обход',
+    description: 'Проснуться — не значит проснуться по-настоящему. Осмотри комнату, коридор и кухню, прежде чем шагнуть в город.',
+    act: 1,
+    faction: undefined,
+    questType: 'side',
+    difficulty: 'easy',
+    hint: 'Исследуй комнату, коридор и кухню — каждый угол хранит утреннюю улику.',
+    objectives: [
+      {
+        id: 'ritual_terminal',
+        description: 'Проверить терминал или рабочий стол',
+        type: 'flag_set',
+        target: 'morning_ritual_terminal',
+        completed: false,
+      },
+      {
+        id: 'ritual_wardrobe',
+        description: 'Заглянуть в платяной шкаф',
+        type: 'flag_set',
+        target: 'morning_ritual_wardrobe',
+        completed: false,
+      },
+      {
+        id: 'ritual_intercom',
+        description: 'Услышать шёпот в домофоне',
+        type: 'flag_set',
+        target: 'morning_ritual_intercom',
+        completed: false,
+      },
+    ],
+    rewards: [
+      { type: 'addSkill', skill: 'intuition', value: 2 },
+      { type: 'addKarma', value: 5 },
+      { type: 'addXp', value: 70 },
+    ],
+    linkedStoryNodeId: 'explore_mode',
+    questGiverNpcId: undefined,
+  },
+
 ];

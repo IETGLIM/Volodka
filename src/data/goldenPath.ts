@@ -436,6 +436,13 @@ export const ACT_CHAPTER_TITLES: Record<number, string> = Object.fromEntries(
 export const GOLDEN_PATH_BRANCH_HINTS: Record<string, string> = {
   // Act 1
   start: 'Проверь терминал — сообщение гильдии важнее, чем кажется.',
+  room_terminal_wake: 'Сохрани лог гильдии — инцидент #4729 начинается здесь.',
+  room_wardrobe_memory: 'Фотоальбом хранит строки, которые ждут читателя.',
+  corridor_letter_open: 'Открой письмо — почерк ведёт к правде.',
+  corridor_intercom_whisper: 'Голос в домофоне знает твой маршрут.',
+  zarema_radio_request: 'Настрой «Океан» — в белом шуме слышен эхо.',
+  street_guild_pulse: 'Запомни ритм башни — ночная смена не спит.',
+  cafe_albert_lesson_intro: 'Прими урок Альберта — код и стих едины.',
   room_table: 'Осмотри стол — затем выйди в коридор к Солныш.',
   corridor_door: 'Поздоровайся с Солныш — она ждёт у зеркала.',
   corridor_explore_mode: 'Поговори с Солныш или зайди к ней с Лёней — линия друга с детства.',

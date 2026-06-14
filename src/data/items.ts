@@ -137,6 +137,18 @@ const ITEMS: ItemDefinition[] = [
     questRelated: true,
   },
   {
+    id: 'anonymous_letter',
+    name: 'Письмо без обратного адреса',
+    description: 'Конверт без марки. Одна строка о деньгах, правде и стихах. Почерк почти знаком.',
+    category: 'quest_item',
+    rarity: 'uncommon',
+    icon: 'Mail',
+    stackable: false,
+    maxStack: 1,
+    effects: [],
+    questRelated: true,
+  },
+  {
     id: 'guild_access_badge',
     name: 'Пропуск гильдии',
     description: 'Удостоверение старшего члена IT-гильдии. Открывает доступ к закрытым зонам.',
