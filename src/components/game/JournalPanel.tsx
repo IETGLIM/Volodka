@@ -837,6 +837,7 @@ export function JournalPanel({
             transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
             className="relative z-10 w-[95vw] max-w-4xl h-[85vh] max-h-[700px] flex overflow-hidden rounded-xl shadow-2xl shadow-black/50"
             {...dialogProps}
+            data-testid="journal-panel"
             style={{
               background: 'linear-gradient(135deg, rgba(8,12,28,0.95) 0%, rgba(4,8,18,0.97) 100%)',
               border: '1px solid rgb(var(--cyber-cyan-rgb) / 0.15)',

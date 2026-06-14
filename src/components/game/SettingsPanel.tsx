@@ -668,6 +668,7 @@ export function SettingsPanel({ open, onClose }: SettingsPanelProps) {
         <motion.div
           className="fixed inset-0 flex items-center justify-center"
           style={{ zIndex: UI_LAYERS.MENU }}
+          data-testid="settings-panel"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}

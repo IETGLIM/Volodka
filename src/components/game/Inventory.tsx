@@ -411,6 +411,7 @@ export function Inventory({ open, onClose, onOpenPoetryBook }: InventoryProps) {
       open={open}
       onClose={handleClose}
       title="Инвентарь"
+      testId="inventory-panel"
       urlPath="volodka://inventory"
       accentColor="cyan"
       layout="centered"

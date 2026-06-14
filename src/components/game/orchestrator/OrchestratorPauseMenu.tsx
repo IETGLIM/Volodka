@@ -41,6 +41,7 @@ export function OrchestratorPauseMenu({ pauseDialog, panels, onClose }: Props) {
                 transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
                 className="relative z-10 w-80 bg-slate-950/95 border border-cyan-500/20 p-0 backdrop-blur-md overflow-hidden"
                 {...pauseDialog.dialogProps}
+                data-testid="pause-menu"
                 style={{
                   clipPath: 'polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px))',
                   boxShadow:

@@ -19,6 +19,7 @@ import { usePanelDialog } from '@/components/a11y/usePanelDialog';
 import { usePanelId, usePanelStack } from '@/components/game/orchestrator/PanelStackContext';
 import { usePanelExitComplete } from '@/components/game/orchestrator/PanelExitContext';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
+import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 
 /* ─── Accent color mapping ─── */
 const ACCENT_MAP = {
@@ -86,6 +87,8 @@ interface PanelWrapperProps {
   headerExtra?: ReactNode;
   /** Optional footer content */
   footer?: ReactNode;
+  /** Playwright / e2e hook */
+  testId?: string;
 }
 
 /* ══════════════════════════════════════════════════════════════
@@ -104,7 +107,9 @@ export function PanelWrapper({
   shortcutLabel,
   headerExtra,
   footer,
+  testId,
 }: PanelWrapperProps) {
+  const reducedMotion = useEffectiveReducedMotion();
   const { closeButtonRef, dialogProps, titleProps } = usePanelDialog();
   const accent = ACCENT_MAP[accentColor];
   const panelId = usePanelId();
@@ -139,24 +144,33 @@ export function PanelWrapper({
     return () => window.removeEventListener('keydown', handler);
   }, [open, isTop, handleClose]);
 
-  /* ── Animation variants based on layout ── */
-  const backdropInitial = { opacity: 0 };
-  const backdropAnimate = { opacity: 1 };
-  const backdropExit = { opacity: 0 };
+  const motionDuration = (seconds: number) => (reducedMotion ? 0 : seconds);
 
-  const panelVariants = layout === 'sidebar'
+  /* ── Animation variants based on layout ── */
+  const backdropInitial = reducedMotion ? false : { opacity: 0 };
+  const backdropAnimate = { opacity: 1 };
+  const backdropExit = reducedMotion ? undefined : { opacity: 0 };
+
+  const panelVariants = reducedMotion
     ? {
-        initial: { x: '100%', opacity: 0.5 },
-        animate: { x: 0, opacity: 1 },
-        exit: { x: '100%', opacity: 0.5 },
-        transition: { type: 'spring' as const, damping: 25, stiffness: 200 },
+        initial: false as const,
+        animate: { x: 0, opacity: 1, scale: 1, y: 0 },
+        exit: { opacity: 0 },
+        transition: { duration: 0 },
       }
-    : {
-        initial: { scale: 0.95, opacity: 0, y: 10 },
-        animate: { scale: 1, opacity: 1, y: 0 },
-        exit: { scale: 0.95, opacity: 0, y: 10 },
-        transition: { duration: 0.25, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] },
-      };
+    : layout === 'sidebar'
+      ? {
+          initial: { x: '100%', opacity: 0.5 },
+          animate: { x: 0, opacity: 1 },
+          exit: { x: '100%', opacity: 0.5 },
+          transition: { type: 'spring' as const, damping: 25, stiffness: 200 },
+        }
+      : {
+          initial: { scale: 0.95, opacity: 0, y: 10 },
+          animate: { scale: 1, opacity: 1, y: 0 },
+          exit: { scale: 0.95, opacity: 0, y: 10 },
+          transition: { duration: 0.25, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] },
+        };
 
   const resolvedUrl = urlPath ?? `volodka://${title.toLowerCase().replace(/\s+/g, '')}`;
 
@@ -167,7 +181,7 @@ export function PanelWrapper({
           initial={backdropInitial}
           animate={backdropAnimate}
           exit={backdropExit}
-          transition={{ duration: 0.2 }}
+          transition={{ duration: motionDuration(0.2) }}
           className={`fixed inset-0 ${layout === 'sidebar' ? '' : 'flex items-center justify-center'}`}
           style={{
             zIndex: panelId != null ? 1 : UI_LAYERS.PANEL,
@@ -192,6 +206,7 @@ export function PanelWrapper({
             exit={panelVariants.exit}
             transition={panelVariants.transition}
             {...dialogProps}
+            data-testid={testId}
             className={`
               relative z-10 overflow-hidden panel-slide-in digital-noise edge-glow
               ${layout === 'sidebar'
@@ -212,13 +227,20 @@ export function PanelWrapper({
                 : `0 0 30px ${accent.glow}, 0 8px 32px rgba(0,0,0,0.5), inset 0 1px 0 ${accent.glow}`,
             }}
           >
-            {/* Glow pulse — opacity only (cheaper than animating boxShadow every frame) */}
-            <motion.div
-              className="absolute inset-0 pointer-events-none rounded-[inherit]"
-              animate={{ opacity: [0.35, 0.7, 0.35] }}
-              transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
-              style={{ boxShadow: `inset 0 0 8px ${accent.glow}` }}
-            />
+            {/* Glow pulse — disabled when reduced motion is active */}
+            {reducedMotion ? (
+              <div
+                className="absolute inset-0 pointer-events-none rounded-[inherit]"
+                style={{ boxShadow: `inset 0 0 8px ${accent.glow}`, opacity: 0.5 }}
+              />
+            ) : (
+              <motion.div
+                className="absolute inset-0 pointer-events-none rounded-[inherit]"
+                animate={{ opacity: [0.35, 0.7, 0.35] }}
+                transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+                style={{ boxShadow: `inset 0 0 8px ${accent.glow}` }}
+              />
+            )}
 
             {/* Data stream background pattern */}
             <div className="absolute inset-0 data-stream-bg hex-grid-bg pointer-events-none rounded-[inherit]" />

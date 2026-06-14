@@ -1,7 +1,9 @@
-import { Suspense } from 'react';
+import { Suspense, useMemo } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useGameStore } from '@/store/gameStore';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
+import { AriaLiveRegion } from '@/components/a11y/AriaLiveRegion';
+import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 import { LazyQuestAcceptDialog, LazyQuestCompleteDialog } from './lazyPanels';
 import type { PanelCoordinatorResult } from './usePanelCoordinator';
 
@@ -23,8 +25,19 @@ export function OrchestratorQuestOverlays({
   questChainUnlock,
   setQuestChainUnlock,
 }: Props) {
+  const reducedMotion = useEffectiveReducedMotion();
+
+  const questChainAriaMessage = useMemo(() => {
+    if (!questChainUnlock) return '';
+    const actSuffix =
+      questChainUnlock.actNumber > 1 ? ` Акт ${questChainUnlock.actNumber}.` : '';
+    return `Новое задание доступно: ${questChainUnlock.nextQuestTitle}. После «${questChainUnlock.completedQuestTitle}».${actSuffix}`;
+  }, [questChainUnlock]);
+
   return (
     <>
+      <AriaLiveRegion message={questChainAriaMessage} priority="assertive" />
+
       {questAccept && (
         <Suspense fallback={null}>
           <LazyQuestAcceptDialog
@@ -53,10 +66,14 @@ export function OrchestratorQuestOverlays({
         {questChainUnlock && (
           <motion.div
             key="quest-chain-unlock"
-            initial={{ opacity: 0, y: 40, scale: 0.9 }}
+            data-testid="quest-chain-unlock-toast"
+            initial={reducedMotion ? false : { opacity: 0, y: 40, scale: 0.9 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 20, scale: 0.95 }}
-            transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+            exit={reducedMotion ? undefined : { opacity: 0, y: 20, scale: 0.95 }}
+            transition={{
+              duration: reducedMotion ? 0 : 0.5,
+              ease: [0.16, 1, 0.3, 1],
+            }}
             className="fixed bottom-8 left-1/2 -translate-x-1/2 pointer-events-auto"
             style={{ zIndex: UI_LAYERS.TOASTS + 3 }}
             onClick={() => setQuestChainUnlock(null)}
