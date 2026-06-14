@@ -90,9 +90,6 @@ export function WakeUpSequence() {
       }
       live.setCurrentNodeId('start');
       openNarrativeOverlay('start', 'story');
-      setTimeout(() => {
-        getGameStore().activateQuest('first_reading');
-      }, 600);
     };
 
     if (!store.isCutsceneTriggered('act1_prologue')) {

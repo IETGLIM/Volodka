@@ -12,7 +12,7 @@ type Props = Pick<
   | 'questAccept'
   | 'setQuestAccept'
   | 'questComplete'
-  | 'setQuestComplete'
+  | 'dismissQuestComplete'
   | 'questChainUnlock'
   | 'setQuestChainUnlock'
 >;
@@ -21,7 +21,7 @@ export function OrchestratorQuestOverlays({
   questAccept,
   setQuestAccept,
   questComplete,
-  setQuestComplete,
+  dismissQuestComplete,
   questChainUnlock,
   setQuestChainUnlock,
 }: Props) {
@@ -57,7 +57,7 @@ export function OrchestratorQuestOverlays({
           <LazyQuestCompleteDialog
             questId={questComplete.questId}
             npcId={questComplete.npcId}
-            onClose={() => setQuestComplete(null)}
+            onClose={dismissQuestComplete}
           />
         </Suspense>
       )}

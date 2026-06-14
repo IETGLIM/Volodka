@@ -5,6 +5,7 @@
 import { eventBus } from '@/engine/EventBus';
 import { subscribeGameSnapshot, getGameSnapshot, type GameStoreSnapshot } from '@/engine/GameActionDispatcher';
 import { getQuotesByAct } from '@/data/matrixQuotes';
+import { shouldSuppressQuestAcceptEmit } from '@/engine/quest/questAcceptDeferral';
 import { registerHmrDispose } from '@/shared/dev/hmrDispose';
 import { getStoryGraphIndex, invalidateStoryGraphIndex } from '@/engine/story/storyGraphIndex';
 import {
@@ -278,12 +279,15 @@ export class GuidedStoryManager {
     actions.activateQuest(firstQuestId);
     this.currentQuestSpineIndex = 0;
 
-    events.emitQuestAvailable({
-      questId: firstQuestId,
-      questTitle: def.title,
-      questType: def.questType,
-      npcId: findNpcForQuest(def),
-    });
+    // Wake/prologue grants first_reading silently in the apartment.
+    if (!shouldSuppressQuestAcceptEmit(firstQuestId)) {
+      events.emitQuestAvailable({
+        questId: firstQuestId,
+        questTitle: def.title,
+        questType: def.questType,
+        npcId: findNpcForQuest(def),
+      });
+    }
   }
 
   private syncFromStore() {

@@ -12,6 +12,11 @@ import { eventBus } from '@/engine/EventBus';
 import { withHmrCleanup } from '@/shared/dev/hmrDispose';
 import { getActQuote } from '@/engine/GuidedStoryManager';
 import { getQuoteByTrigger } from '@/data/matrixQuotes';
+import {
+  isQuestCompletionFlowBusy,
+  shouldDeferQuestAcceptDialog,
+  type QuestAcceptPayload,
+} from '@/engine/quest/questAcceptDeferral';
 import type {
   MatrixQuoteState,
   PanelType,
@@ -47,6 +52,8 @@ export interface PanelCoordinatorResult {
   setQuestAccept: (value: QuestDialogState) => void;
   questComplete: QuestDialogState;
   setQuestComplete: (value: QuestDialogState) => void;
+  /** Close quest-complete dialog and flush any queued accept dialog. */
+  dismissQuestComplete: () => void;
   questChainUnlock: QuestChainUnlockState | null;
   setQuestChainUnlock: (value: QuestChainUnlockState | null) => void;
   matrixQuote: MatrixQuoteState;
@@ -77,7 +84,50 @@ export function usePanelCoordinator({
   const [questChainUnlock, setQuestChainUnlock] = useState<QuestChainUnlockState | null>(null);
   const [matrixQuote, setMatrixQuote] = useState<MatrixQuoteState>(null);
   const pendingQuestCompleteRef = useRef<QuestDialogState>(null);
+  const pendingQuestAcceptRef = useRef<QuestAcceptPayload | null>(null);
+  const matrixQuoteActiveRef = useRef(false);
+  const questCompleteActiveRef = useRef(false);
   const questChainUnlockTimeout = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+
+  useEffect(() => {
+    matrixQuoteActiveRef.current = matrixQuote !== null;
+  }, [matrixQuote]);
+
+  useEffect(() => {
+    questCompleteActiveRef.current = questComplete !== null;
+  }, [questComplete]);
+
+  const isCompletionFlowBusy = useCallback((): boolean => {
+    return isQuestCompletionFlowBusy({
+      matrixQuoteActive: matrixQuoteActiveRef.current,
+      questCompleteActive: questCompleteActiveRef.current,
+      pendingQuestComplete: pendingQuestCompleteRef.current,
+    });
+  }, []);
+
+  const flushPendingQuestAccept = useCallback(() => {
+    const pending = pendingQuestAcceptRef.current;
+    if (!pending) return;
+    if (isCompletionFlowBusy()) return;
+
+    const sceneId = useGameStore.getState().exploration.currentSceneId;
+    if (shouldDeferQuestAcceptDialog(pending.questId, sceneId)) return;
+
+    pendingQuestAcceptRef.current = null;
+    setQuestAccept(pending);
+  }, [isCompletionFlowBusy]);
+
+  const queueOrShowQuestAccept = useCallback(
+    (payload: QuestAcceptPayload) => {
+      const sceneId = useGameStore.getState().exploration.currentSceneId;
+      if (shouldDeferQuestAcceptDialog(payload.questId, sceneId) || isCompletionFlowBusy()) {
+        pendingQuestAcceptRef.current = payload;
+        return;
+      }
+      setQuestAccept(payload);
+    },
+    [isCompletionFlowBusy],
+  );
 
   const dismissMatrixQuote = useCallback(() => {
     setMatrixQuote(null);
@@ -85,8 +135,15 @@ export function usePanelCoordinator({
     if (pending) {
       pendingQuestCompleteRef.current = null;
       setQuestComplete(pending);
+      return;
     }
-  }, []);
+    flushPendingQuestAccept();
+  }, [flushPendingQuestAccept]);
+
+  const dismissQuestComplete = useCallback(() => {
+    setQuestComplete(null);
+    flushPendingQuestAccept();
+  }, [flushPendingQuestAccept]);
 
   useEffect(() => {
     const scope = eventBus.createScope();
@@ -94,7 +151,7 @@ export function usePanelCoordinator({
     scope.on('story:quest_available', (data) => {
       const phase = readGamePhase(useGameStore.getState());
       if (phase === 'intro' || phase === 'menu') return;
-      setQuestAccept({ questId: data.questId, npcId: data.npcId });
+      queueOrShowQuestAccept({ questId: data.questId, npcId: data.npcId });
     });
     scope.on('quest:completed', (data) => {
       const quote = getQuoteByTrigger(data.questId);
@@ -104,6 +161,9 @@ export function usePanelCoordinator({
         return;
       }
       setQuestComplete({ questId: data.questId, npcId: data.npcId });
+    });
+    scope.on('scene:enter', () => {
+      flushPendingQuestAccept();
     });
     scope.on('story:quest_chain_unlock', (data) => {
       setQuestChainUnlock({
@@ -149,7 +209,7 @@ export function usePanelCoordinator({
         questChainUnlockTimeout.current = undefined;
       }
     });
-  }, []);
+  }, [flushPendingQuestAccept, queueOrShowQuestAccept]);
 
   const dispatchStackAction = useCallback((action: PanelStackAction) => {
     dispatchStack(action);
@@ -243,6 +303,7 @@ export function usePanelCoordinator({
     setQuestAccept,
     questComplete,
     setQuestComplete,
+    dismissQuestComplete,
     questChainUnlock,
     setQuestChainUnlock,
     matrixQuote,
