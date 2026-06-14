@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
   ACCESSIBILITY_NUMERIC_RANGES,
+  accessibilitySliderBounds,
+  accessibilitySliderPercent,
   clampInRange,
   clampNumericAccessibilitySetting,
   createSubtitleScale,
@@ -25,6 +27,13 @@ describe('accessibilityConstraints', () => {
     expect(parseColorBlindMode('invalid')).toBe('none');
     expect(clampInRange('deuteranopia', 'colorBlindMode')).toBe('deuteranopia');
     expect(VALID_COLOR_BLIND_MODES).toContain('tritanopia');
+  });
+
+  it('derives slider bounds from ACCESSIBILITY_NUMERIC_RANGES', () => {
+    expect(accessibilitySliderBounds('subtitleScale')).toEqual({ min: 80, max: 150 });
+    expect(accessibilitySliderBounds('textSpeed')).toEqual({ min: 50, max: 200 });
+    expect(accessibilitySliderBounds('locomotionSpeed')).toEqual({ min: 70, max: 130 });
+    expect(accessibilitySliderPercent(1.25)).toBe(125);
   });
 
   it('creates branded numeric settings through factories', () => {

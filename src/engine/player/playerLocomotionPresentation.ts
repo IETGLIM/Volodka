@@ -1,4 +1,7 @@
-import { getAccessibilitySettings } from '@/engine/accessibility/accessibilitySettings';
+import {
+  getAccessibilitySettings,
+  isEffectiveReducedMotion,
+} from '@/engine/accessibility/accessibilitySettings';
 
 export type LocomotionAnimState = 'idle' | 'walk' | 'run' | 'jump' | 'fall' | 'combat';
 
@@ -125,8 +128,7 @@ export function getAccessibilityLocomotionScale(): number {
 export function getExplorationCameraMotionScale(
   moveBlend: number,
 ): ExplorationCameraMotionScale {
-  const reducedMotion = getAccessibilitySettings().reducedMotionOverride;
-  if (reducedMotion) {
+  if (isEffectiveReducedMotion()) {
     return { breathingScale: 0, turnTiltScale: 0, bobScale: 0 };
   }
   const locomotionDamp = 1 - Math.min(1, moveBlend) * 0.75;

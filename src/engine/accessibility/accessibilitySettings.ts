@@ -42,6 +42,8 @@ export {
 } from './AccessibilityManager';
 export {
   ACCESSIBILITY_NUMERIC_RANGES,
+  accessibilitySliderBounds,
+  accessibilitySliderPercent,
   clampInRange,
   clampNumericAccessibilitySetting,
   createLocomotionSpeed,
@@ -78,6 +80,13 @@ export function readAccessibilitySettings(): AccessibilitySettingsSnapshot {
 
 export function getAccessibilitySettings(): AccessibilitySettingsSnapshot {
   return manager().getSettings();
+}
+
+/** In-game reduced-motion override or OS prefers-reduced-motion (engine-safe, no React). */
+export function isEffectiveReducedMotion(): boolean {
+  if (getAccessibilitySettings().reducedMotionOverride) return true;
+  if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return false;
+  return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 }
 
 export function applyAccessibilitySettings(): AccessibilitySettingsSnapshot {

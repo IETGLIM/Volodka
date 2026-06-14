@@ -1,10 +1,17 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+import * as accessibilitySettings from '@/engine/accessibility/accessibilitySettings';
 import {
   computeSlopeLocomotionScale,
   getExplorationCameraMotionScale,
   resolveLocomotionClipState,
   resolveMovementIntent,
 } from '@/engine/player/playerLocomotionPresentation';
+
+const ZERO_EXPLORATION_CAMERA_MOTION = {
+  breathingScale: 0,
+  turnTiltScale: 0,
+  bobScale: 0,
+} as const;
 
 describe('playerLocomotionPresentation', () => {
   it('resolveLocomotionClipState maps walk/run/idle', () => {
@@ -62,8 +69,14 @@ describe('playerLocomotionPresentation', () => {
     expect(computeSlopeLocomotionScale(0.1, 0.04, 0.1, false)).toBe(1);
   });
 
-  it('getExplorationCameraMotionScale zeros motion when reduced', () => {
-    expect(getExplorationCameraMotionScale(0).breathingScale).toBeLessThanOrEqual(1);
+  it('getExplorationCameraMotionScale dampens bob while moving', () => {
+    expect(getExplorationCameraMotionScale(0).breathingScale).toBe(1);
     expect(getExplorationCameraMotionScale(1).breathingScale).toBeLessThan(1);
+  });
+
+  it('getExplorationCameraMotionScale zeros motion when reduced motion is effective', () => {
+    const spy = vi.spyOn(accessibilitySettings, 'isEffectiveReducedMotion').mockReturnValue(true);
+    expect(getExplorationCameraMotionScale(1)).toEqual(ZERO_EXPLORATION_CAMERA_MOTION);
+    spy.mockRestore();
   });
 });

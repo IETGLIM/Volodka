@@ -9,8 +9,10 @@ import { createSubtitleScale, createTextSpeed } from './accessibilityConstraints
 import {
   getAccessibilitySettings,
   initAccessibilitySettings,
+  isEffectiveReducedMotion,
   replaceDefaultAccessibilityManager,
   resetDefaultAccessibilityManager,
+  setReducedMotionOverride,
   setTextSpeed,
 } from './accessibilitySettings';
 
@@ -181,5 +183,27 @@ describe('accessibilitySettings facade', () => {
 
     setTextSpeed(1.1);
     expect(getAccessibilitySettings().textSpeed).toBe(1.1);
+  });
+
+  it('isEffectiveReducedMotion is true when in-game override is set', () => {
+    initAccessibilitySettings();
+    setReducedMotionOverride(true);
+    expect(isEffectiveReducedMotion()).toBe(true);
+  });
+
+  it('isEffectiveReducedMotion is true when OS prefers reduced motion', () => {
+    initAccessibilitySettings();
+    vi.stubGlobal('window', {
+      matchMedia: () => ({ matches: true }),
+    });
+    expect(isEffectiveReducedMotion()).toBe(true);
+  });
+
+  it('isEffectiveReducedMotion is false with defaults and no OS preference', () => {
+    initAccessibilitySettings();
+    vi.stubGlobal('window', {
+      matchMedia: () => ({ matches: false }),
+    });
+    expect(isEffectiveReducedMotion()).toBe(false);
   });
 });

@@ -1,22 +1,10 @@
-import { useEffect, useState } from 'react';
 import { useReducedMotion } from 'framer-motion';
-import { eventBus } from '@/engine/EventBus';
-import { getAccessibilitySettings } from '@/engine/accessibility/accessibilitySettings';
+import { useAccessibilitySettings } from '@/hooks/useAccessibilitySettings';
 
-/** OS reduced-motion preference plus in-game accessibility override. */
+/** OS reduced-motion preference plus in-game accessibility override. React counterpart of isEffectiveReducedMotion(). */
 export function useEffectiveReducedMotion(): boolean {
   const framerReduced = useReducedMotion();
-  const [settingsReduced, setSettingsReduced] = useState(
-    () => getAccessibilitySettings().reducedMotionOverride,
-  );
+  const { reducedMotionOverride } = useAccessibilitySettings();
 
-  useEffect(() => {
-    return eventBus.on('accessibility:changed', ({ changedKey, settings }) => {
-      if (changedKey === 'all' || changedKey === 'reducedMotionOverride') {
-        setSettingsReduced(settings.reducedMotionOverride);
-      }
-    });
-  }, []);
-
-  return Boolean(framerReduced || settingsReduced);
+  return Boolean(framerReduced || reducedMotionOverride);
 }

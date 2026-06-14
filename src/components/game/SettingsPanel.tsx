@@ -19,7 +19,8 @@ import {
 import { applyAudioSettings } from '@/engine/audio/AudioSettings';
 import { applyVisualSettings } from '@/engine/visualSettings';
 import {
-  getAccessibilitySettings,
+  accessibilitySliderBounds,
+  accessibilitySliderPercent,
   parseColorBlindMode,
   resetAccessibilitySettings,
   createLocomotionSpeed,
@@ -31,12 +32,8 @@ import {
   setTextSpeed,
   setLocomotionSpeed,
 } from '@/engine/accessibility/accessibilitySettings';
-import type {
-  ColorBlindMode,
-  LocomotionSpeed,
-  SubtitleScale,
-  TextSpeed,
-} from '@/engine/accessibility/accessibilitySettings';
+import type { AccessibilitySettingsSnapshot } from '@/engine/accessibility/accessibilitySettings';
+import { useAccessibilitySettings } from '@/hooks/useAccessibilitySettings';
 
 // ─── Types ───
 
@@ -93,6 +90,10 @@ const QUALITY_OPTIONS: { id: QualityPresetId; label: string }[] = [
   })),
 ];
 
+const SUBTITLE_SLIDER = accessibilitySliderBounds('subtitleScale');
+const TEXT_SPEED_SLIDER = accessibilitySliderBounds('textSpeed');
+const LOCOMOTION_SLIDER = accessibilitySliderBounds('locomotionSpeed');
+
 function VisualSettingsTab({
   postfx,
   setPostfx,
@@ -104,16 +105,7 @@ function VisualSettingsTab({
   setCamShake,
   brightness,
   setBrightness,
-  colorBlindMode,
-  setColorBlindModeState,
-  reducedMotion,
-  setReducedMotion,
-  subtitleScale,
-  setSubtitleScaleState,
-  textSpeed,
-  setTextSpeedState,
-  locomotionSpeed,
-  setLocomotionSpeedState,
+  a11y,
   persist,
 }: {
   postfx: boolean;
@@ -126,16 +118,7 @@ function VisualSettingsTab({
   setCamShake: (v: boolean) => void;
   brightness: number;
   setBrightness: (v: number) => void;
-  colorBlindMode: ColorBlindMode;
-  setColorBlindModeState: (v: ColorBlindMode) => void;
-  reducedMotion: boolean;
-  setReducedMotion: (v: boolean) => void;
-  subtitleScale: SubtitleScale;
-  setSubtitleScaleState: (v: SubtitleScale) => void;
-  textSpeed: TextSpeed;
-  setTextSpeedState: (v: TextSpeed) => void;
-  locomotionSpeed: LocomotionSpeed;
-  setLocomotionSpeedState: (v: LocomotionSpeed) => void;
+  a11y: AccessibilitySettingsSnapshot;
   persist: (key: string, value: number | boolean) => void;
 }) {
   const { selectedPreset, preset, setPreset } = useGraphicsQuality();
@@ -217,11 +200,9 @@ function VisualSettingsTab({
         <label className="font-mono text-[11px] text-slate-400">Режим для дальтоников</label>
         <select
           className="bg-slate-900/80 border border-cyan-900/40 rounded px-2 py-1.5 font-mono text-xs text-cyan-200"
-          value={colorBlindMode}
+          value={a11y.colorBlindMode}
           onChange={(e) => {
-            const mode = parseColorBlindMode(e.target.value);
-            setColorBlindModeState(mode);
-            setColorBlindMode(mode);
+            setColorBlindMode(parseColorBlindMode(e.target.value));
           }}
         >
           <option value="none">Выключен</option>
@@ -232,33 +213,28 @@ function VisualSettingsTab({
       </div>
       <CyberToggle
         label="Уменьшить анимации"
-        checked={reducedMotion}
+        checked={a11y.reducedMotionOverride}
         onChange={(v) => {
-          setReducedMotion(v);
           setReducedMotionOverride(v);
         }}
       />
       <CyberSlider
         label="Размер субтитров"
-        value={Math.round(subtitleScale * 100)}
-        min={80}
-        max={150}
+        value={accessibilitySliderPercent(a11y.subtitleScale)}
+        min={SUBTITLE_SLIDER.min}
+        max={SUBTITLE_SLIDER.max}
         onChange={(v) => {
-          const scale = createSubtitleScale(v / 100);
-          setSubtitleScaleState(scale);
-          setSubtitleScale(scale);
+          setSubtitleScale(createSubtitleScale(v / 100));
         }}
         unit="%"
       />
       <CyberSlider
         label="Скорость текста"
-        value={Math.round(textSpeed * 100)}
-        min={50}
-        max={200}
+        value={accessibilitySliderPercent(a11y.textSpeed)}
+        min={TEXT_SPEED_SLIDER.min}
+        max={TEXT_SPEED_SLIDER.max}
         onChange={(v) => {
-          const speed = createTextSpeed(v / 100);
-          setTextSpeedState(speed);
-          setTextSpeed(speed);
+          setTextSpeed(createTextSpeed(v / 100));
         }}
         unit="%"
       />
@@ -267,13 +243,11 @@ function VisualSettingsTab({
       </p>
       <CyberSlider
         label="Скорость ходьбы"
-        value={Math.round(locomotionSpeed * 100)}
-        min={70}
-        max={130}
+        value={accessibilitySliderPercent(a11y.locomotionSpeed)}
+        min={LOCOMOTION_SLIDER.min}
+        max={LOCOMOTION_SLIDER.max}
         onChange={(v) => {
-          const speed = createLocomotionSpeed(v / 100);
-          setLocomotionSpeedState(speed);
-          setLocomotionSpeed(speed);
+          setLocomotionSpeed(createLocomotionSpeed(v / 100));
         }}
         unit="%"
       />
@@ -297,6 +271,7 @@ const TABS: { id: SettingsTab; icon: string; label: string }[] = [
 function SettingsPanelContent({ onClose }: { onClose: () => void }) {
   const { closeButtonRef, dialogProps, titleProps } = usePanelDialog();
   const [activeTab, setActiveTab] = useState<SettingsTab>('audio');
+  const a11y = useAccessibilitySettings();
 
   // ── Audio state (lazy init from localStorage) ──
   const [musicVol, setMusicVol] = useState(() => lsGetNumber('volodka_music_volume', 70));
@@ -310,12 +285,6 @@ function SettingsPanelContent({ onClose }: { onClose: () => void }) {
   const [particles, setParticles] = useState(() => lsGetBool('volodka_particles', true));
   const [camShake, setCamShake] = useState(() => lsGetBool('volodka_cam_shake', true));
   const [brightness, setBrightness] = useState(() => lsGetNumber('volodka_brightness', 100));
-  const a11yInit = getAccessibilitySettings();
-  const [colorBlindMode, setColorBlindModeState] = useState<ColorBlindMode>(() => a11yInit.colorBlindMode);
-  const [reducedMotion, setReducedMotion] = useState(() => a11yInit.reducedMotionOverride);
-  const [subtitleScale, setSubtitleScaleState] = useState(() => a11yInit.subtitleScale);
-  const [textSpeed, setTextSpeedState] = useState(() => a11yInit.textSpeed);
-  const [locomotionSpeed, setLocomotionSpeedState] = useState(() => a11yInit.locomotionSpeed);
 
   // ── Controls state ──
   const [mouseSens, setMouseSens] = useState(() => lsGetNumber('volodka_mouse_sens', 5));
@@ -347,12 +316,6 @@ function SettingsPanelContent({ onClose }: { onClose: () => void }) {
     applyAudioSettings();
     applyVisualSettings();
     resetAccessibilitySettings();
-    const a11y = getAccessibilitySettings();
-    setColorBlindModeState(a11y.colorBlindMode);
-    setReducedMotion(a11y.reducedMotionOverride);
-    setSubtitleScaleState(a11y.subtitleScale);
-    setTextSpeedState(a11y.textSpeed);
-    setLocomotionSpeedState(a11y.locomotionSpeed);
   }, []);
 
   // ── Render tab content ──
@@ -414,16 +377,7 @@ function SettingsPanelContent({ onClose }: { onClose: () => void }) {
             setCamShake={setCamShake}
             brightness={brightness}
             setBrightness={setBrightness}
-            colorBlindMode={colorBlindMode}
-            setColorBlindModeState={setColorBlindModeState}
-            reducedMotion={reducedMotion}
-            setReducedMotion={setReducedMotion}
-            subtitleScale={subtitleScale}
-            setSubtitleScaleState={setSubtitleScaleState}
-            textSpeed={textSpeed}
-            setTextSpeedState={setTextSpeedState}
-            locomotionSpeed={locomotionSpeed}
-            setLocomotionSpeedState={setLocomotionSpeedState}
+            a11y={a11y}
             persist={persist}
           />
         );

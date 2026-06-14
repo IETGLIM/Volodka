@@ -22,6 +22,17 @@ import {
   getTouchLocomotionFactor,
 } from '@/config/scenes';
 import { sampleHeldVirtualControls, type VirtualHoldTimes } from '@/engine/VirtualInputHold';
+import {
+  getAccessibilityLocomotionScale,
+  resolveMovementIntent,
+} from '@/engine/player/playerLocomotionPresentation';
+import {
+  FOOTSTEP_INTERVAL,
+  KEYBOARD_ACCEL,
+  ROTATION_SPEED,
+  RUN_SPEED,
+  WALK_SPEED,
+} from '@/engine/player/playerConstants';
 import { eventBus } from '@/engine/EventBus';
 import { audioEngine } from '@/engine/AudioEngine';
 import { isInteractionLocked } from '@/engine/interaction/interactionSession';
@@ -33,12 +44,6 @@ function lerpAngle(a: number, b: number, t: number): number {
   while (diff < -Math.PI) diff += Math.PI * 2;
   return a + diff * Math.min(t, 1);
 }
-
-const WALK_SPEED = 4;
-const RUN_SPEED = 7;
-const KEYBOARD_ACCEL = 50;
-const FOOTSTEP_INTERVAL = 0.4;
-const ROTATION_SPEED = 10; // frame-rate-independent rotation speed
 
 interface SimplePlayerProps {
   livePlayerPositionRef: React.MutableRefObject<THREE.Vector3>;
@@ -163,23 +168,27 @@ export function SimplePlayer({
       state.clock.elapsedTime,
       virtualHoldTimesRef.current,
     );
-    const keyboardDrivesMove = keys.hasMovement;
-    const mergeVirtual = !keyboardDrivesMove;
-
-    const fwd = (keys.forward ? 1 : 0) + (mergeVirtual ? (virtual?.forward ?? 0) : 0);
-    const bwd = (keys.backward ? 1 : 0) + (mergeVirtual ? (virtual?.backward ?? 0) : 0);
-    const lft = (keys.left ? 1 : 0) + (mergeVirtual ? (virtual?.left ?? 0) : 0);
-    const rgt = (keys.right ? 1 : 0) + (mergeVirtual ? (virtual?.right ?? 0) : 0);
-    const running = keys.run || (virtual?.run ?? 0) > 0;
+    const {
+      fwd,
+      bwd,
+      lft,
+      rgt,
+      running,
+      keyboardDrivesMove,
+      analogSpeedScale,
+      isMoving,
+    } = resolveMovementIntent({ keys, virtual });
 
     moveDir.set(0, 0, 0);
     moveDir.addScaledVector(camFwd, fwd - bwd);
     moveDir.addScaledVector(camRight, rgt - lft);
 
-    const moveLen = moveDir.length();
-    const isMoving = moveLen > 0.01;
     const touchScale = keyboardDrivesMove ? 1 : getTouchLocomotionFactor();
-    const speed = (running ? RUN_SPEED : WALK_SPEED) * locomotionScale * touchScale;
+    const speed = (running ? RUN_SPEED : WALK_SPEED)
+      * locomotionScale
+      * touchScale
+      * getAccessibilityLocomotionScale()
+      * analogSpeedScale;
     const moveAccel = keyboardDrivesMove ? KEYBOARD_ACCEL : movementTuning.accel;
     const stopDamping = keyboardDrivesMove ? movementTuning.damping * 0.55 : movementTuning.damping;
 

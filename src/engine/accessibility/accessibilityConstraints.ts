@@ -20,25 +20,38 @@ function clampNumber(value: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, value));
 }
 
-export function createSubtitleScale(value: unknown, fallback: number = 1): SubtitleScale {
-  const { min, max } = ACCESSIBILITY_NUMERIC_RANGES.subtitleScale;
+function createBrandedNumericSetting<K extends AccessibilityNumericSettingKey>(
+  key: K,
+  value: unknown,
+  fallback: number,
+): AccessibilitySettingsSnapshot[K] {
+  const { min, max } = ACCESSIBILITY_NUMERIC_RANGES[key];
   const n = Number(value);
   const resolved = Number.isFinite(n) ? n : fallback;
-  return clampNumber(resolved, min, max) as SubtitleScale;
+  return clampNumber(resolved, min, max) as AccessibilitySettingsSnapshot[K];
+}
+
+/** Slider min/max in whole percents — derived from ACCESSIBILITY_NUMERIC_RANGES. */
+export function accessibilitySliderBounds(key: AccessibilityNumericSettingKey): { min: number; max: number } {
+  const { min, max } = ACCESSIBILITY_NUMERIC_RANGES[key];
+  return { min: Math.round(min * 100), max: Math.round(max * 100) };
+}
+
+/** Normalized multiplier → whole-percent slider value (e.g. 1.25 → 125). */
+export function accessibilitySliderPercent(multiplier: number): number {
+  return Math.round(multiplier * 100);
+}
+
+export function createSubtitleScale(value: unknown, fallback: number = 1): SubtitleScale {
+  return createBrandedNumericSetting('subtitleScale', value, fallback);
 }
 
 export function createTextSpeed(value: unknown, fallback: number = 1): TextSpeed {
-  const { min, max } = ACCESSIBILITY_NUMERIC_RANGES.textSpeed;
-  const n = Number(value);
-  const resolved = Number.isFinite(n) ? n : fallback;
-  return clampNumber(resolved, min, max) as TextSpeed;
+  return createBrandedNumericSetting('textSpeed', value, fallback);
 }
 
 export function createLocomotionSpeed(value: unknown, fallback: number = 1): LocomotionSpeed {
-  const { min, max } = ACCESSIBILITY_NUMERIC_RANGES.locomotionSpeed;
-  const n = Number(value);
-  const resolved = Number.isFinite(n) ? n : fallback;
-  return clampNumber(resolved, min, max) as LocomotionSpeed;
+  return createBrandedNumericSetting('locomotionSpeed', value, fallback);
 }
 
 const NUMERIC_SETTING_FACTORIES = {
