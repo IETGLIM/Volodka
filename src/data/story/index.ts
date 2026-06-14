@@ -3,6 +3,7 @@ import { CHK_STORY_NODES } from '../chkTolpa/storyNodes';
 import { STORY_NODES_SOLNYSH } from './solnyshStory';
 import { STORY_NODES_ACT1 } from './act1';
 import { STORY_NODES_ACT1_EXTENDED } from './act1Extended';
+import { STORY_NODES_ACT1_CAFE_OFFICE } from './act1ExtendedCafeOffice';
 import { STORY_NODES_ACT2 } from './act2';
 import { STORY_NODES_ACT3 } from './act3';
 import { STORY_NODES_ACT4 } from './act4';
@@ -14,6 +15,7 @@ import { STORY_NODES_SCENE_EXPLORE_HUBS } from './sceneExploreHubs';
 export const STORY_NODES: Record<string, StoryNode> = {
   ...STORY_NODES_ACT1,
   ...STORY_NODES_ACT1_EXTENDED,
+  ...STORY_NODES_ACT1_CAFE_OFFICE,
   ...STORY_NODES_SOLNYSH,
   ...STORY_NODES_SCENE_EXPLORE_HUBS,
   ...STORY_NODES_ACT2,

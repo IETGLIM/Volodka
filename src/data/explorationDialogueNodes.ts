@@ -1039,4 +1039,81 @@ export const EXPLORATION_DIALOGUE_NODES: Record<string, DialogueNode> = {
       },
     ],
   },
+
+  explore_cafe_backroom: {
+    id: 'explore_cafe_backroom',
+    speaker: 'Голос',
+    text: 'За стеллажом — дверь без таблички. Из щели тянет озоном и старым кофе. Бариста делает вид, что не смотрит. «Там» — говорят в «Синей яме», когда не хотят называть место вслух.',
+    sceneId: 'cafe_evening',
+    choices: [
+      {
+        text: 'Заглянуть внутрь',
+        next: null,
+        effects: [{ type: 'visitStoryNode', nodeId: 'cafe_backroom_peek' }],
+      },
+      {
+        text: 'Не сейчас',
+        next: null,
+        effects: [{ type: 'setFlag', flag: 'noticed_cafe_backroom', flagValue: true }],
+      },
+    ],
+  },
+
+  explore_office_server_hum: {
+    id: 'explore_office_server_hum',
+    speaker: 'Голос',
+    text: 'Серверная гудит на fifty hertz. Зелёный свет между стойками пульсирует в такт башне за окном. Где-то здесь ночью работает Сергей — и видит то, что днём прячут логи.',
+    sceneId: 'office_day',
+    choices: [
+      {
+        text: 'Поговорить с Сергеем у стойки',
+        next: null,
+        effects: [
+          { type: 'visitStoryNode', nodeId: 'office_server_pulse' },
+          { type: 'triggerQuest', questId: 'night_shift_mystery' },
+        ],
+      },
+      {
+        text: 'Только осмотреться',
+        next: null,
+        effects: [
+          { type: 'setFlag', flag: 'found_server_room', flagValue: true },
+          { type: 'discoverLore', loreId: 'lore_office_server_hum' },
+        ],
+      },
+    ],
+  },
+
+  explore_office_vault_bash: {
+    id: 'explore_office_vault_bash',
+    speaker: 'Голос',
+    text: 'Терминал Хранилища ждёт bash-доступа. Коллега дал пароль — или ты вспомнил подсказку Альберта: truth без return — это молчание. Стихи в архиве не удаляются. Их только прячут.',
+    sceneId: 'office_day',
+    choices: [
+      {
+        text: 'Начать взлом терминала',
+        next: null,
+        effects: [{ type: 'setFlag', flag: 'vault_terminal_accessed', flagValue: true }],
+      },
+    ],
+  },
+
+  explore_office_vault_archive: {
+    id: 'explore_office_vault_archive',
+    speaker: 'Голос',
+    text: 'Шифр снят. В резервной копии — стих, которого нет в официальных архивах. Строки складываются сами, как будто кто-то дописывал их годами.',
+    sceneId: 'office_day',
+    choices: [
+      {
+        text: 'Сохранить стих и отключиться',
+        next: null,
+        condition: { flag: 'bash_terminal_solved' },
+        effects: [{ type: 'visitStoryNode', nodeId: 'office_vault_archive' }],
+      },
+      {
+        text: 'Сначала нужно взломать терминал',
+        next: null,
+      },
+    ],
+  },
 };

@@ -1,4 +1,5 @@
 import { STORY_NODES_ACT1_EXTENDED } from '../src/data/story/act1Extended.ts';
+import { STORY_NODES_ACT1_CAFE_OFFICE } from '../src/data/story/act1ExtendedCafeOffice.ts';
 import { QUESTS_ACT1 } from '../src/data/quests/act1.ts';
 import { SCENE_IDS } from '../src/config/sceneDefinitions.ts';
 import { STORY_NODES } from '../src/data/story/index.ts';
@@ -15,7 +16,9 @@ const dialogueIds = new Set(Object.keys(EXPLORATION_DIALOGUE_NODES));
 const errors: string[] = [];
 const warnings: string[] = [];
 
-for (const [id, node] of Object.entries(STORY_NODES_ACT1_EXTENDED)) {
+const EXTENDED_NODES = { ...STORY_NODES_ACT1_EXTENDED, ...STORY_NODES_ACT1_CAFE_OFFICE };
+
+for (const [id, node] of Object.entries(EXTENDED_NODES)) {
   if (!sceneSet.has(node.sceneId)) errors.push(`story ${id}: missing scene ${node.sceneId}`);
   for (const c of node.choices) {
     if (c.next && !storyIds.has(c.next)) errors.push(`story ${id}: missing next ${c.next}`);
@@ -28,7 +31,7 @@ for (const [id, node] of Object.entries(STORY_NODES_ACT1_EXTENDED)) {
   }
 }
 
-const newQuestIds = ['corridor_letter', 'zarema_radio', 'morning_ritual'];
+const newQuestIds = ['corridor_letter', 'zarema_radio', 'morning_ritual', 'cafe_backroom_echo'];
 for (const q of QUESTS_ACT1.filter((q) => newQuestIds.includes(q.id))) {
   if (q.linkedStoryNodeId && !storyIds.has(q.linkedStoryNodeId)) {
     errors.push(`quest ${q.id}: missing linkedStoryNode ${q.linkedStoryNodeId}`);
@@ -58,6 +61,10 @@ const newDialogueLinks = [
   'explore_room_wardrobe',
   'explore_kitchen_radio',
   'explore_street_guild_tower',
+  'explore_cafe_backroom',
+  'explore_office_server_hum',
+  'explore_office_vault_bash',
+  'explore_office_vault_archive',
 ];
 
 for (const lid of newDialogueLinks) {
@@ -73,7 +80,7 @@ for (const npcId of expectedAct1Npcs) {
 }
 
 console.log('Act1 extended scene/NPC verification');
-console.log(`Story nodes: ${Object.keys(STORY_NODES_ACT1_EXTENDED).length}`);
+console.log(`Story nodes: ${Object.keys(EXTENDED_NODES).length}`);
 console.log(`Act1 trigger zones: ${act1Zones.length}`);
 console.log(`Act1 scenes registered: ${act1Scenes.every((s) => sceneSet.has(s))}`);
 console.log('Errors:', errors.length ? errors : 'none');

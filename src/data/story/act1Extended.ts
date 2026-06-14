@@ -110,6 +110,7 @@ export const STORY_NODES_ACT1_EXTENDED: Record<string, StoryNode> = {
       {
         text: 'Показать Зареме — может, она знает почерк',
         next: 'zarema_letter_reaction',
+        effects: [{ type: 'transitionScene', sceneId: 'home_evening' }],
       },
     ],
   },

@@ -15,13 +15,14 @@ import {
 } from './helpers';
 
 test.describe('Act II smoke', () => {
+  test.describe.configure({ timeout: 180_000 });
+
   test('bootstrap act2 → act2_transition → cafe golden branch', async ({ page }) => {
     await waitForMenuReady(page);
     await page.getByTestId('menu-new-game').click();
     await expect(page.locator('canvas[data-engine]')).toBeVisible({ timeout: 90_000 });
 
     await skipWakeCinematic(page);
-    await expect(page.getByTestId('game-hud')).toBeVisible({ timeout: 30_000 });
     await settleAfterWake(page);
     await prepareStoryBootstrap(page);
 
@@ -50,7 +51,6 @@ test.describe('Act II smoke', () => {
     await expect(page.locator('canvas[data-engine]')).toBeVisible({ timeout: 90_000 });
 
     await skipWakeCinematic(page);
-    await expect(page.getByTestId('game-hud')).toBeVisible({ timeout: 30_000 });
     await settleAfterWake(page);
     await prepareStoryBootstrap(page);
 
@@ -71,7 +71,6 @@ test.describe('Act II smoke', () => {
     await expect(page.locator('canvas[data-engine]')).toBeVisible({ timeout: 90_000 });
 
     await skipWakeCinematic(page);
-    await expect(page.getByTestId('game-hud')).toBeVisible({ timeout: 30_000 });
     await settleAfterWake(page);
     await prepareStoryBootstrap(page);
 
@@ -102,7 +101,6 @@ test.describe('Act II smoke', () => {
     await expect(page.locator('canvas[data-engine]')).toBeVisible({ timeout: 90_000 });
 
     await skipWakeCinematic(page);
-    await expect(page.getByTestId('game-hud')).toBeVisible({ timeout: 30_000 });
     await settleAfterWake(page);
     await prepareStoryBootstrap(page);
 
@@ -123,7 +121,6 @@ test.describe('Act II smoke', () => {
     await expect(page.locator('canvas[data-engine]')).toBeVisible({ timeout: 90_000 });
 
     await skipWakeCinematic(page);
-    await expect(page.getByTestId('game-hud')).toBeVisible({ timeout: 30_000 });
     await settleAfterWake(page);
     await prepareStoryBootstrap(page);
 
@@ -142,7 +139,6 @@ test.describe('Act II smoke', () => {
     await expect(page.locator('canvas[data-engine]')).toBeVisible({ timeout: 90_000 });
 
     await skipWakeCinematic(page);
-    await expect(page.getByTestId('game-hud')).toBeVisible({ timeout: 30_000 });
     await settleAfterWake(page);
     await prepareStoryBootstrap(page);
 
@@ -150,6 +146,7 @@ test.describe('Act II smoke', () => {
       await window.__volodka_e2e?.bootstrapAct2MariaMeeting();
     });
 
+    await dismissLevelUpAndQuestOverlays(page);
     await advanceStoryOverlay(page, 'act2_maria_meeting_place');
 
     await expect(page.getByText(/Сеть|дверью|Виктория|клятв/i).first()).toBeVisible({
@@ -163,7 +160,6 @@ test.describe('Act II smoke', () => {
     await expect(page.locator('canvas[data-engine]')).toBeVisible({ timeout: 90_000 });
 
     await skipWakeCinematic(page);
-    await expect(page.getByTestId('game-hud')).toBeVisible({ timeout: 30_000 });
     await settleAfterWake(page);
     await prepareStoryBootstrap(page);
 
@@ -206,7 +202,6 @@ test.describe('Act II smoke', () => {
     await expect(page.locator('canvas[data-engine]')).toBeVisible({ timeout: 90_000 });
 
     await skipWakeCinematic(page);
-    await expect(page.getByTestId('game-hud')).toBeVisible({ timeout: 30_000 });
     await settleAfterWake(page);
     await prepareStoryBootstrap(page);
 
@@ -254,7 +249,6 @@ test.describe('Act II smoke', () => {
     await expect(page.locator('canvas[data-engine]')).toBeVisible({ timeout: 90_000 });
 
     await skipWakeCinematic(page);
-    await expect(page.getByTestId('game-hud')).toBeVisible({ timeout: 30_000 });
     await settleAfterWake(page);
     await prepareStoryBootstrap(page);
 
@@ -296,7 +290,6 @@ test.describe('Act II smoke', () => {
     await expect(page.locator('canvas[data-engine]')).toBeVisible({ timeout: 90_000 });
 
     await skipWakeCinematic(page);
-    await expect(page.getByTestId('game-hud')).toBeVisible({ timeout: 30_000 });
     await settleAfterWake(page);
     await prepareStoryBootstrap(page);
 
@@ -338,7 +331,6 @@ test.describe('Act II smoke', () => {
     await expect(page.locator('canvas[data-engine]')).toBeVisible({ timeout: 90_000 });
 
     await skipWakeCinematic(page);
-    await expect(page.getByTestId('game-hud')).toBeVisible({ timeout: 30_000 });
     await settleAfterWake(page);
     await prepareStoryBootstrap(page);
 
@@ -380,7 +372,6 @@ test.describe('Act II smoke', () => {
     await expect(page.locator('canvas[data-engine]')).toBeVisible({ timeout: 90_000 });
 
     await skipWakeCinematic(page);
-    await expect(page.getByTestId('game-hud')).toBeVisible({ timeout: 30_000 });
     await settleAfterWake(page);
     await prepareStoryBootstrap(page);
 

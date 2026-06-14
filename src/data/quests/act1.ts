@@ -484,4 +484,39 @@ export const QUESTS_ACT1: QuestDefinition[] = [
     questGiverNpcId: undefined,
   },
 
+  /* ─────────────── QUEST 11: Cafe backroom echo ─────────────── */
+  {
+    id: 'cafe_backroom_echo',
+    title: 'Эхо подсобки',
+    description: 'За стеллажом в «Синей яме» — дверь без таблички. Терминал в нише иногда дописывает строки сам. Бариста называет это «сердцем кафе».',
+    act: 1,
+    faction: 'neutral',
+    questType: 'side',
+    difficulty: 'easy',
+    hint: 'Осмотри заднюю дверь за стеллажом с зёрнами — или спроси бариста про «особый» кофе.',
+    objectives: [
+      {
+        id: 'notice_backroom',
+        description: 'Заметить дверь в подсобку',
+        type: 'flag_set',
+        target: 'noticed_cafe_backroom',
+        completed: false,
+      },
+      {
+        id: 'hear_echo',
+        description: 'Услышать строку из терминала подсобки',
+        type: 'flag_set',
+        target: 'cafe_backroom_echo_heard',
+        completed: false,
+      },
+    ],
+    rewards: [
+      { type: 'addSkill', skill: 'writing', value: 2 },
+      { type: 'addKarma', value: 5 },
+      { type: 'addXp', value: 65 },
+    ],
+    linkedStoryNodeId: 'cafe_backroom_peek',
+    questGiverNpcId: 'cafe_barista',
+  },
+
 ];

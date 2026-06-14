@@ -4,6 +4,7 @@
  *  and applies it to the camera position for screen-shake effects.
  */
 
+import { isEffectiveReducedMotion } from '@/engine/accessibility/accessibilitySettings';
 import { getVisualSettings } from '@/engine/visualSettings';
 
 // Module-level shake state
@@ -36,7 +37,7 @@ const shakeOffsetOut = { x: 0, y: 0 };
  * No-op when the user disabled camera shake in settings.
  */
 export function triggerCameraShake(intensity: number, decay?: number): void {
-  if (!getVisualSettings().cameraShakeEnabled) return;
+  if (!getVisualSettings().cameraShakeEnabled || isEffectiveReducedMotion()) return;
   normalizeShakeState();
 
   const safeIntensity = finiteOr(intensity, 0);

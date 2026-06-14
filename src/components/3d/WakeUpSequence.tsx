@@ -33,6 +33,7 @@ import {
   canWriteCamera,
   releaseCameraOwnership,
 } from '@/engine/camera/cameraOwnerState';
+import { isEffectiveReducedMotion } from '@/engine/accessibility/accessibilitySettings';
 
 export function WakeUpSequence() {
   const [active, setActive] = useState(false);
@@ -157,6 +158,11 @@ export function WakeUpSequence() {
       camera.updateProjectionMatrix();
 
       audioEngine.playStinger('mystery');
+
+      if (isEffectiveReducedMotion()) {
+        finishGameplay();
+        return;
+      }
 
       if (fallbackTimerRef.current) clearTimeout(fallbackTimerRef.current);
       fallbackTimerRef.current = setTimeout(finishGameplay, WAKEUP_FALLBACK_MS);

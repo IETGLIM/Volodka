@@ -272,12 +272,11 @@ export const STORY_NODES_ACT1: Record<string, StoryNode> = {
       },
       {
         text: 'Что за «особый»?',
-        next: 'explore_mode',
+        next: 'cafe_special_coffee',
         effects: [
           { type: 'addSkill', skill: 'intuition', value: 1 },
           { type: 'setFlag', flag: 'asked_special_coffee', flagValue: true },
         ],
-        condition: { minKarma: 40 },
       },
     ],
   },
@@ -339,10 +338,9 @@ export const STORY_NODES_ACT1: Record<string, StoryNode> = {
       },
       {
         text: 'Сначала расскажи подробности',
-        next: 'start_diagnosis',
+        next: 'office_incident_debrief',
         effects: [
-          { type: 'addSkill', skill: 'logic', value: 2 },
-          { type: 'setFlag', flag: 'asked_details_alexander', flagValue: true },
+          { type: 'addSkill', skill: 'logic', value: 1 },
         ],
       },
       {

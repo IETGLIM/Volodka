@@ -19,6 +19,8 @@ import { useGameStore } from '@/store/gameStore';
 import { readGamePhase, clearGameplayPhaseFlags } from '@/shared/gamePhase';
 import { setCinematicPresentationMode } from '@/engine/camera/cinematicPresentation';
 import type { CutsceneDef } from '@/data/cutscenes';
+import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
+import { AriaLiveRegion } from '@/components/a11y/AriaLiveRegion';
 
 function finishCutscenePresentation(): void {
   setCinematicPresentationMode('first_person');
@@ -78,7 +80,13 @@ const CutsceneEmbers = memo(function CutsceneEmbers({ count = 20, accentColor = 
 const LETTERBOX_GRADIENT =
   'linear-gradient(180deg, #000 0%, #050810 70%, #0a1420 100%)';
 
-const LetterboxBars = memo(function LetterboxBars({ style }: { style: 'full' | 'thin' | 'none' }) {
+const LetterboxBars = memo(function LetterboxBars({
+  style,
+  reducedMotion = false,
+}: {
+  style: 'full' | 'thin' | 'none';
+  reducedMotion?: boolean;
+}) {
   if (style === 'none') return null;
   const h = style === 'full' ? 'h-[8dvh] min-h-[32px]' : 'h-[4dvh] min-h-[16px]';
   const barStyle: React.CSSProperties = {
@@ -86,14 +94,17 @@ const LetterboxBars = memo(function LetterboxBars({ style }: { style: 'full' | '
     background: LETTERBOX_GRADIENT,
     boxShadow: 'inset 0 -1px 0 rgba(0, 255, 200, 0.06)',
   };
+  const barTransition = reducedMotion
+    ? { duration: 0 }
+    : { duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94] as const };
   return (
     <>
       <motion.div
         className={`absolute top-0 left-0 right-0 ${h} pointer-events-none`}
         style={barStyle}
-        initial={{ scaleY: 0, transformOrigin: 'top' }}
+        initial={reducedMotion ? false : { scaleY: 0, transformOrigin: 'top' }}
         animate={{ scaleY: 1 }}
-        transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94] }}
+        transition={barTransition}
       />
       <motion.div
         className={`absolute bottom-0 left-0 right-0 ${h} pointer-events-none`}
@@ -102,9 +113,9 @@ const LetterboxBars = memo(function LetterboxBars({ style }: { style: 'full' | '
           background: 'linear-gradient(0deg, #000 0%, #050810 70%, #0a1420 100%)',
           boxShadow: 'inset 0 1px 0 rgba(0, 255, 200, 0.06)',
         }}
-        initial={{ scaleY: 0, transformOrigin: 'bottom' }}
+        initial={reducedMotion ? false : { scaleY: 0, transformOrigin: 'bottom' }}
         animate={{ scaleY: 1 }}
-        transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94] }}
+        transition={barTransition}
       />
     </>
   );
@@ -227,9 +238,11 @@ function getTypeStyles(type: CutsceneDef['type'] = 'act_transition') {
 // ════════════════════════════════════════════════════════════════
 
 export function CutsceneOverlay() {
+  const reducedMotion = useEffectiveReducedMotion();
   const [active, setActive] = useState(false);
   const [text, setText] = useState('');
   const [subtitle, setSubtitle] = useState('');
+  const [ariaAnnouncement, setAriaAnnouncement] = useState('');
   const [accentColor, setAccentColor] = useState('var(--cyber-cyan)');
   const [cutsceneType, setCutsceneType] = useState<CutsceneDef['type']>('act_transition');
   const [letterboxStyle, setLetterboxStyle] = useState<'full' | 'thin' | 'none'>('full');
@@ -266,6 +279,7 @@ export function CutsceneOverlay() {
     // 2. Hide the overlay immediately
     setActive(false);
     setShowSkip(false);
+    setAriaAnnouncement('');
 
     // 3. End cutscene in the store
     const store = useGameStore.getState();
@@ -280,33 +294,46 @@ export function CutsceneOverlay() {
     finishCutscenePresentation();
   }, [clearTimer, clearSkipDelayTimer]);
 
+  const motionDuration = (seconds: number) => (reducedMotion ? 0 : seconds);
+  const motionDelay = (seconds: number) => (reducedMotion ? 0 : seconds);
+
   useEffect(() => {
     const unsub = eventBus.on('cutscene:overlay', (payload) => {
       // Cancel any in-progress overlay
       clearTimer();
       clearSkipDelayTimer();
 
+      const displayDurationMs = reducedMotion
+        ? Math.min(payload.durationMs, 2_500)
+        : payload.durationMs;
+
       setText(payload.text);
       setSubtitle(payload.subtitle ?? '');
       setAccentColor(payload.accentColor);
       setCutsceneType(payload.type ?? 'act_transition');
-      setLetterboxStyle(payload.letterboxStyle ?? 'full');
-      setShowEmbers(payload.showEmbers ?? false);
-      setGlitchIntensity(payload.glitchIntensity ?? 0);
+      setLetterboxStyle(reducedMotion ? 'thin' : (payload.letterboxStyle ?? 'full'));
+      setShowEmbers(!reducedMotion && (payload.showEmbers ?? false));
+      setGlitchIntensity(reducedMotion ? 0 : (payload.glitchIntensity ?? 0));
       setActive(true);
-      setShowSkip(false);
+      setShowSkip(true);
       skippedRef.current = false;
+      setAriaAnnouncement(
+        payload.subtitle ? `${payload.text}. ${payload.subtitle}` : payload.text,
+      );
 
       // Show skip button after a 1-second delay to prevent accidental skips
-      skipDelayTimerRef.current = setTimeout(() => {
-        setShowSkip(true);
-        skipDelayTimerRef.current = null;
-      }, 1000);
+      if (!reducedMotion) {
+        skipDelayTimerRef.current = setTimeout(() => {
+          setShowSkip(true);
+          skipDelayTimerRef.current = null;
+        }, 1000);
+      }
 
       // Auto-dismiss after the specified duration
       timerRef.current = setTimeout(() => {
         setActive(false);
         setShowSkip(false);
+        setAriaAnnouncement('');
         eventBus.emit('cutscene:overlay_end', {});
 
         // End cutscene in the store if we're still in cutscene mode
@@ -319,7 +346,7 @@ export function CutsceneOverlay() {
         finishCutscenePresentation();
 
         timerRef.current = null;
-      }, payload.durationMs);
+      }, displayDurationMs);
     });
 
     return () => {
@@ -327,7 +354,7 @@ export function CutsceneOverlay() {
       clearTimer();
       clearSkipDelayTimer();
     };
-  }, [clearTimer, clearSkipDelayTimer]);
+  }, [clearTimer, clearSkipDelayTimer, reducedMotion]);
 
   // ESC key listener
   useEffect(() => {
@@ -347,14 +374,16 @@ export function CutsceneOverlay() {
   const typeStyles = getTypeStyles(cutsceneType);
 
   return (
-    <AnimatePresence>
+    <>
+      <AriaLiveRegion message={ariaAnnouncement} priority="assertive" />
+      <AnimatePresence>
       {active && (
         <motion.div
           key="cutscene-text-overlay"
-          initial={{ opacity: 0 }}
+          initial={reducedMotion ? false : { opacity: 0 }}
           animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 1.0, ease: 'easeInOut' }}
+          exit={reducedMotion ? undefined : { opacity: 0 }}
+          transition={{ duration: motionDuration(1.0), ease: 'easeInOut' }}
           className="fixed inset-0 flex items-center justify-center pointer-events-none"
           style={{ zIndex: UI_LAYERS.DIALOGUE }}
         >
@@ -371,7 +400,7 @@ export function CutsceneOverlay() {
           />
 
           {/* Letterbox bars */}
-          <LetterboxBars style={letterboxStyle} />
+          <LetterboxBars style={letterboxStyle} reducedMotion={reducedMotion} />
 
           {/* Ember particles */}
           {showEmbers && <CutsceneEmbers count={cutsceneType === 'revelation' ? 30 : 15} accentColor={accentColor} />}
@@ -389,9 +418,9 @@ export function CutsceneOverlay() {
               background: `radial-gradient(ellipse at center, ${accentColor}15 0%, transparent 70%)`,
               filter: 'blur(60px)',
             }}
-            initial={{ opacity: 0, scale: 0.5 }}
-            animate={{ opacity: 1, scale: 1.3 }}
-            transition={{ duration: 2, ease: 'easeOut' }}
+            initial={reducedMotion ? false : { opacity: 0, scale: 0.5 }}
+            animate={{ opacity: 1, scale: reducedMotion ? 1 : 1.3 }}
+            transition={{ duration: motionDuration(2), ease: 'easeOut' }}
           />
 
           {/* Skip button – bottom-right corner */}
@@ -399,10 +428,10 @@ export function CutsceneOverlay() {
             {showSkip && (
               <motion.button
                 key="cutscene-skip-btn"
-                initial={{ opacity: 0, y: 10 }}
+                initial={reducedMotion ? false : { opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 10 }}
-                transition={{ duration: 0.3, ease: 'easeOut' }}
+                exit={reducedMotion ? undefined : { opacity: 0, y: 10 }}
+                transition={{ duration: motionDuration(0.3), ease: 'easeOut' }}
                 onClick={skipCutscene}
                 onTouchStart={(e) => { e.preventDefault(); skipCutscene(); }}
                 className="fixed bottom-6 right-6 z-50 px-5 py-2.5 rounded-lg
@@ -425,9 +454,9 @@ export function CutsceneOverlay() {
 
             {/* Decorative top line */}
             <motion.div
-              initial={{ scaleX: 0 }}
+              initial={reducedMotion ? false : { scaleX: 0 }}
               animate={{ scaleX: 1 }}
-              transition={{ duration: 1.5, delay: 0.2, ease: 'easeOut' }}
+              transition={{ duration: motionDuration(1.5), delay: motionDelay(0.2), ease: 'easeOut' }}
               className="w-20 sm:w-32 h-px origin-center"
               style={{
                 background: `linear-gradient(90deg, transparent, ${accentColor}80, transparent)`,
@@ -436,9 +465,9 @@ export function CutsceneOverlay() {
 
             {/* Main text */}
             <motion.h1
-              initial={{ opacity: 0, y: 20, filter: 'blur(12px)' }}
+              initial={reducedMotion ? false : { opacity: 0, y: 20, filter: 'blur(12px)' }}
               animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-              transition={{ duration: typeStyles.fadeInDuration, delay: typeStyles.titleDelay, ease: 'easeOut' }}
+              transition={{ duration: motionDuration(typeStyles.fadeInDuration), delay: motionDelay(typeStyles.titleDelay), ease: 'easeOut' }}
               className={`${typeStyles.titleSize} ${typeStyles.titleWeight} ${typeStyles.titleTracking} text-center px-6`}
               style={{
                 fontFamily: '"Georgia", "Times New Roman", serif',
@@ -456,9 +485,9 @@ export function CutsceneOverlay() {
             {/* Subtitle */}
             {subtitle && (
               <motion.p
-                initial={{ opacity: 0, y: 10 }}
+                initial={reducedMotion ? false : { opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 1.2, delay: typeStyles.subtitleDelay, ease: 'easeOut' }}
+                transition={{ duration: motionDuration(1.2), delay: motionDelay(typeStyles.subtitleDelay), ease: 'easeOut' }}
                 className={`${typeStyles.subtitleSize} tracking-wide text-center px-6 max-w-lg`}
                 style={{
                   fontFamily: '"Georgia", "Times New Roman", serif',
@@ -474,9 +503,9 @@ export function CutsceneOverlay() {
 
             {/* Decorative bottom line */}
             <motion.div
-              initial={{ scaleX: 0 }}
+              initial={reducedMotion ? false : { scaleX: 0 }}
               animate={{ scaleX: 1 }}
-              transition={{ duration: 1.5, delay: 0.5, ease: 'easeOut' }}
+              transition={{ duration: motionDuration(1.5), delay: motionDelay(0.5), ease: 'easeOut' }}
               className="w-12 sm:w-20 h-px origin-center"
               style={{
                 background: `linear-gradient(90deg, transparent, ${accentColor}50, transparent)`,
@@ -486,9 +515,9 @@ export function CutsceneOverlay() {
             {/* Act transition: decorative type label */}
             {cutsceneType === 'act_transition' && (
               <motion.div
-                initial={{ opacity: 0 }}
+                initial={reducedMotion ? false : { opacity: 0 }}
                 animate={{ opacity: 1 }}
-                transition={{ duration: 1, delay: 1.5 }}
+                transition={{ duration: motionDuration(1), delay: motionDelay(1.5) }}
                 className="mt-4"
               >
                 <div className="w-8 h-px mx-auto mb-2" style={{ background: `linear-gradient(90deg, transparent, ${accentColor}30, transparent)` }} />
@@ -507,5 +536,6 @@ export function CutsceneOverlay() {
         </motion.div>
       )}
     </AnimatePresence>
+    </>
   );
 }

@@ -790,7 +790,7 @@ export const TRIGGER_ZONES: TriggerZone[] = [
     position: [-4.0, 0.5, -4.5],
     size: [1.5, 2.0, 1.5],
     enterToast: 'Серверная — за стойками мерцает зелёный свет. Следы удалённого ИИ?',
-    linkedQuestId: 'digital_ghost',
+    linkedQuestId: 'night_shift_mystery',
     interactionType: 'examine',
     interactionLabel: 'Осмотреть серверную',
     examineData: {
@@ -803,6 +803,43 @@ export const TRIGGER_ZONES: TriggerZone[] = [
       { type: 'setFlag', flag: 'found_server_room', flagValue: true },
       { type: 'discoverLore', loreId: 'lore_office_server_hum' },
     ],
+    linkedDialogueNodeId: 'explore_office_server_hum',
+  },
+
+  /* ─────────────── OFFICE VAULT TERMINAL — Act 1 Хранилище ─────────────── */
+  {
+    id: 'office_vault_bash_terminal',
+    sceneId: 'office_day',
+    position: [-4.5, 0.5, -3.5],
+    size: [0.9, 1.3, 0.7],
+    enterToast: 'Терминал Хранилища — доступ по служебному пропуску коллеги.',
+    requiredFlag: 'vault_access_granted',
+    hiddenWhenFlag: 'vault_backup_archived',
+    linkedQuestId: 'vault_backup_trial',
+    linkedMinigame: 'bash_terminal',
+    linkedDialogueNodeId: 'explore_office_vault_bash',
+    interactionType: 'hack',
+    interactionLabel: 'Взломать Хранилище',
+    examineData: {
+      title: 'Терминал Хранилища',
+      description: 'Резервная копия стёртых архивов. Доступ только для старших — или для тех, кому доверили пароль.',
+      detailText: 'Bash-оболочка мигает приглашением. За шифром — стихи, которых не должно существовать в официальной сети.',
+      icon: '🔐',
+    },
+    effects: [{ type: 'setFlag', flag: 'vault_terminal_accessed', flagValue: true }],
+  },
+  {
+    id: 'office_vault_archive_read',
+    sceneId: 'office_day',
+    position: [-4.5, 0.5, -3.5],
+    size: [0.9, 1.3, 0.7],
+    enterToast: 'Хранилище открыто — в резервной копии проступает стих.',
+    requiredFlag: 'vault_terminal_accessed',
+    hiddenWhenFlag: 'vault_backup_archived',
+    linkedDialogueNodeId: 'explore_office_vault_archive',
+    linkedQuestId: 'vault_backup_trial',
+    interactionType: 'read',
+    interactionLabel: 'Скачать резервную копию',
   },
 
   /* ─────────────── OFFICE TERMINALS — Сломанный Терминал ─────────────── */
@@ -1435,8 +1472,8 @@ export const TRIGGER_ZONES: TriggerZone[] = [
     position: [-3.2, 0.8, 1.5],
     size: [0.6, 1.6, 0.5],
     enterToast: 'За стеллажом — дверь без таблички. Бариста смотрит, но не мешает.',
-    isOneTime: true,
-    interactionType: 'examine',
+    interactionType: 'open',
+    interactionLabel: 'Заглянуть в подсобку',
     examineData: {
       title: 'Задняя дверь',
       description: 'Дверь без таблички за стеллажом с зёрнами. Розетка, которую электрик гильдии не нашёл.',
@@ -1447,6 +1484,7 @@ export const TRIGGER_ZONES: TriggerZone[] = [
       { type: 'discoverLore', loreId: 'lore_cafe_backroom' },
       { type: 'setFlag', flag: 'noticed_cafe_backroom', flagValue: true },
     ],
+    linkedDialogueNodeId: 'explore_cafe_backroom',
   },
 
   {
