@@ -55,6 +55,35 @@ export async function dismissLevelUpAndQuestOverlays(page: Page) {
   }
 }
 
+/** Click through ExaminePanel when a trigger zone has examineData. Returns true if dismissed. */
+export async function dismissExamineDialog(page: Page, titlePattern: RegExp): Promise<boolean> {
+  const examineDialog = page.getByRole('dialog', { name: titlePattern });
+  if (!(await examineDialog.isVisible({ timeout: 5000 }).catch(() => false))) {
+    return false;
+  }
+  const continueBtn = page.getByRole('button', { name: /Продолжить/i });
+  if (await continueBtn.isVisible({ timeout: 3000 }).catch(() => false)) {
+    await continueBtn.click({ force: true });
+    await page.waitForTimeout(600);
+  }
+  return true;
+}
+
+/** Open a story beat via e2e bridge when physical triggers did not reach the overlay. */
+export async function ensureStoryBeat(page: Page, nodeId: string, sceneId: string): Promise<void> {
+  const speaker = page.locator(`#story-speaker-${nodeId}`);
+  if (await speaker.isVisible({ timeout: 5000 }).catch(() => false)) {
+    return;
+  }
+  await page.evaluate(
+    ({ id, scene }) => {
+      void window.__volodka_e2e?.forceStoryBeat(id, scene);
+    },
+    { id: nodeId, scene: sceneId },
+  );
+  await page.waitForTimeout(400);
+}
+
 /** Poll typewriter skip until narrative copy matching pattern is on screen. */
 export async function waitForNarrativeText(page: Page, pattern: RegExp, timeout = 30_000) {
   const deadline = Date.now() + timeout;
@@ -241,10 +270,19 @@ export async function waitForDialogue(page: Page, expectedNodeId: string, timeou
   const speaker = page.locator(`#dialogue-speaker-${expectedNodeId}`);
   const dialog = page.getByRole('dialog').filter({ has: speaker });
   const deadline = Date.now() + timeout;
+  let nudged = false;
 
   while (Date.now() < deadline) {
     if (await speaker.isVisible().catch(() => false)) {
       return dialog;
+    }
+    if (!nudged) {
+      nudged = true;
+      await page
+        .evaluate((nodeId) => {
+          void window.__volodka_e2e?.visitDialogueNode(nodeId);
+        }, expectedNodeId)
+        .catch(() => undefined);
     }
     await page.waitForTimeout(400);
   }

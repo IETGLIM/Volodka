@@ -2,6 +2,8 @@ import { test, expect } from '@playwright/test';
 import {
   advanceStoryOverlay,
   dismissLevelUpAndQuestOverlays,
+  dismissExamineDialog,
+  ensureStoryBeat,
   prepareStoryBootstrap,
   settleAfterWake,
   skipStoryTypewriter,
@@ -189,19 +191,10 @@ test.describe('Act II smoke', () => {
     await page.waitForTimeout(800);
     await dismissLevelUpAndQuestOverlays(page);
 
-    const examineDialog = page.getByRole('dialog', { name: /Дмитрий у терминал/i });
-    if (!(await examineDialog.isVisible({ timeout: 10_000 }).catch(() => false))) {
-      await dismissLevelUpAndQuestOverlays(page);
+    if (!(await dismissExamineDialog(page, /Дмитрий у терминал/i))) {
       await page.evaluate(() => window.__volodka_e2e?.interactTriggerZone('office_dmitry_meeting'));
       await page.waitForTimeout(800);
-    }
-
-    if (await examineDialog.isVisible({ timeout: 5000 }).catch(() => false)) {
-      const continueBtn = page.getByRole('button', { name: /Продолжить/i });
-      if (await continueBtn.isVisible({ timeout: 5000 }).catch(() => false)) {
-        await continueBtn.click({ force: true });
-        await page.waitForTimeout(600);
-      }
+      await dismissExamineDialog(page, /Дмитрий у терминал/i);
     }
 
     await waitForNarrativeText(page, /Протокол|Дмитрий|Забвения|терминал/i, 30_000);
@@ -412,31 +405,15 @@ test.describe('Act II smoke', () => {
 
     await page.waitForTimeout(800);
     await dismissLevelUpAndQuestOverlays(page);
+    await dismissExamineDialog(page, /Зимняя улица/i);
 
-    const winterExamine = page.getByRole('dialog', { name: /Зимняя улица/i });
-    if (await winterExamine.isVisible({ timeout: 5000 }).catch(() => false)) {
-      const continueBtn = page.getByRole('button', { name: /Продолжить/i });
-      if (await continueBtn.isVisible({ timeout: 3000 }).catch(() => false)) {
-        await continueBtn.click({ force: true });
-        await page.waitForTimeout(600);
-      }
+    const homeBtn = page.getByRole('button', { name: /Идти домой/i });
+    if (await homeBtn.isVisible({ timeout: 5000 }).catch(() => false)) {
+      await homeBtn.first().click({ force: true });
+      await page.waitForTimeout(600);
     }
 
-    const closingSpeaker = page.locator('#dialogue-speaker-explore_act2_closing');
-    if (await closingSpeaker.isVisible({ timeout: 5000 }).catch(() => false)) {
-      const homeBtn = page.getByRole('button', { name: /Идти домой/i });
-      if (await homeBtn.isVisible({ timeout: 5000 }).catch(() => false)) {
-        await homeBtn.first().click({ force: true });
-        await page.waitForTimeout(600);
-      }
-    }
-
-    if (!(await page.locator('#story-speaker-act2_closing').isVisible({ timeout: 5000 }).catch(() => false))) {
-      await page.evaluate(async () => {
-        await window.__volodka_e2e?.forceStoryBeat('act2_closing', 'street_winter');
-      });
-    }
-
+    await ensureStoryBeat(page, 'act2_closing', 'street_winter');
     await waitForStoryDialog(page, 'act2_closing');
     await waitForStoryChoices(page, /домой|Зареме/i, 45_000);
   });

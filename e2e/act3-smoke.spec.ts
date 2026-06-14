@@ -2,6 +2,8 @@ import { test, expect } from '@playwright/test';
 import {
   assertExplorationMovement,
   dismissLevelUpAndQuestOverlays,
+  dismissExamineDialog,
+  ensureStoryBeat,
   prepareStoryBootstrap,
   settleAfterWake,
   skipWakeCinematic,
@@ -52,15 +54,7 @@ async function interactParkInscriptionToZaremaWarning(page: import('@playwright/
 
   await page.waitForTimeout(800);
   await dismissLevelUpAndQuestOverlays(page);
-
-  const stoneExamine = page.getByRole('dialog', { name: /Надпись на камне/i });
-  if (await stoneExamine.isVisible({ timeout: 8000 }).catch(() => false)) {
-    const continueBtn = page.getByRole('button', { name: /Продолжить/i });
-    if (await continueBtn.isVisible({ timeout: 5000 }).catch(() => false)) {
-      await continueBtn.click({ force: true });
-      await page.waitForTimeout(600);
-    }
-  }
+  await dismissExamineDialog(page, /Надпись на камне/i);
 
   const dialogueSpeaker = page.locator('#dialogue-speaker-explore_act3_zarema_warning');
   if (!(await dialogueSpeaker.isVisible({ timeout: 8000 }).catch(() => false))) {
@@ -113,12 +107,7 @@ test.describe('Act III smoke', () => {
     await expectParkFreeExploration(page);
     await interactParkInscriptionToZaremaWarning(page);
 
-    if (!(await page.locator('#story-speaker-act3_zarema_warning').isVisible({ timeout: 8000 }).catch(() => false))) {
-      await page.evaluate(async () => {
-        await window.__volodka_e2e?.forceStoryBeat('act3_zarema_warning', 'park_day');
-      });
-    }
-
+    await ensureStoryBeat(page, 'act3_zarema_warning', 'park_day');
     await waitForStoryDialog(page, 'act3_zarema_warning');
     await waitForStoryChoices(page, /обиду|скрыться/i, 45_000);
   });

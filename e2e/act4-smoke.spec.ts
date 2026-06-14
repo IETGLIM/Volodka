@@ -1,13 +1,27 @@
 import { test, expect } from '@playwright/test';
 import {
   assertExplorationMovement,
+  dismissExamineDialog,
   dismissFirstPlayTutorial,
+  dismissLevelUpAndQuestOverlays,
+  ensureStoryBeat,
+  prepareStoryBootstrap,
   settleAfterWake,
   skipStoryTypewriter,
   skipWakeCinematic,
   waitForMenuReady,
+  waitForStoryChoices,
   waitForStoryDialog,
 } from './helpers';
+
+async function expectRooftopFreeExploration(page: import('@playwright/test').Page) {
+  await dismissLevelUpAndQuestOverlays(page);
+  await expect(page.getByTestId('game-hud')).toBeVisible({ timeout: 45_000 });
+  await expect(page.getByRole('dialog', { name: /Голос/i })).not.toBeVisible({ timeout: 5000 });
+  await expect(page.getByText(/Край крыши|Крыша|ветер|город/i).first()).toBeVisible({
+    timeout: 20_000,
+  });
+}
 
 async function expectStreetWinterFreeExploration(page: import('@playwright/test').Page) {
   await expect(page.getByTestId('game-hud')).toBeVisible({ timeout: 45_000 });
@@ -40,9 +54,7 @@ async function interactMarchBannerToPeacefulMarch(page: import('@playwright/test
 
   const examineDialog = page.getByRole('dialog', { name: /Мирный марш/i });
   if (await examineDialog.isVisible({ timeout: 5000 }).catch(() => false)) {
-    const examineContinue = page.getByRole('button', { name: /Продолжить/i });
-    await examineContinue.first().click({ force: true });
-    await page.waitForTimeout(600);
+    await dismissExamineDialog(page, /Мирный марш/i);
   }
 
   const marchBtn = page.getByRole('button', { name: /Продолжить марш/i });
@@ -114,14 +126,13 @@ test.describe('Act IV smoke', () => {
 
     await skipWakeCinematic(page);
     await settleAfterWake(page);
+    await prepareStoryBootstrap(page);
 
     await page.evaluate(async () => {
       await window.__volodka_e2e?.bootstrapAct4RooftopHub();
     });
 
-    await expect(page.getByTestId('game-hud')).toBeVisible({ timeout: 45_000 });
-    await expect(page.getByRole('dialog', { name: /Голос/i })).not.toBeVisible({ timeout: 5000 });
-    await expect(page.getByText(/Крыша|ветер|город/i).first()).toBeVisible({ timeout: 20_000 });
+    await expectRooftopFreeExploration(page);
 
     await page.waitForFunction(
       () => typeof window.__volodka_e2e?.interactTriggerZone === 'function',
@@ -137,39 +148,18 @@ test.describe('Act IV smoke', () => {
       window.__volodka_e2e?.interactTriggerZone('rooftop_broadcast_antenna');
     });
 
-    await page.locator('canvas[data-engine]').click({ force: true, position: { x: 400, y: 300 } });
-    await page.keyboard.press('KeyE');
     await page.waitForTimeout(800);
-
-    const examineDialog = page.getByRole('dialog', { name: /Передающая антенна/i });
-    if (await examineDialog.isVisible({ timeout: 5000 }).catch(() => false)) {
-      const examineContinue = page.getByRole('button', { name: /Продолжить/i });
-      await examineContinue.first().click({ force: true });
-      await page.waitForTimeout(600);
-    }
+    await dismissLevelUpAndQuestOverlays(page);
+    await dismissExamineDialog(page, /Передающая антенна/i);
 
     const broadcastBtn = page.getByRole('button', { name: /Начать подготовку вещания/i });
     if (await broadcastBtn.isVisible({ timeout: 8000 }).catch(() => false)) {
       await broadcastBtn.click({ force: true });
       await page.waitForTimeout(800);
-    } else {
-      await page.evaluate(async () => {
-        await window.__volodka_e2e?.forceStoryBeat('act4_rooftop_broadcast', 'rooftop_edge');
-      });
-      await page.waitForTimeout(800);
     }
 
-    const storyDialog = page.getByRole('dialog', { name: /Голос/i });
-    if (!(await storyDialog.isVisible({ timeout: 12_000 }).catch(() => false))) {
-      await page.evaluate(async () => {
-        await window.__volodka_e2e?.forceStoryBeat('act4_rooftop_broadcast', 'rooftop_edge');
-      });
-    }
+    await ensureStoryBeat(page, 'act4_rooftop_broadcast', 'rooftop_edge');
     await waitForStoryDialog(page, 'act4_rooftop_broadcast');
-    await skipStoryTypewriter(page);
-
-    await expect(page.getByText(/антенн|эфир|вещан/i).first()).toBeVisible({
-      timeout: 20_000,
-    });
+    await waitForStoryChoices(page, /вещан/i, 45_000);
   });
 });

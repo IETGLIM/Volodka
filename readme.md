@@ -73,7 +73,8 @@ npm run assets:validate
 
 ## ✅ Качество
 
-- typecheck / ESLint: 0 ошибок · unit + component tests: **475** · e2e smoke (Playwright)
+- typecheck / ESLint: 0 ошибок · unit + component tests: **475** · e2e smoke (Playwright, 38)
+- `npm run test:unit` — Vitest (unit + component) · `npm run test:e2e` — production build + Playwright
 - Валидатор контента: квесты, история, стихи, golden path — 0 ошибок
 - Бюджеты бандла в CI: меню ~300 КБ gzip (лимит 439), game-start 540 КБ (лимит 1172)
 
