@@ -6,7 +6,6 @@ import {
   settleAfterWake,
   skipStoryTypewriter,
   skipWakeCinematic,
-  waitForDialogue,
   waitForMenuReady,
   waitForNarrativeText,
   waitForStoryChoices,
