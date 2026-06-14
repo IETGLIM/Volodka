@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { dispatchGameAction } from '@/engine/GameActionDispatcher';
+import { dispatchGameAction } from '@/shared/gameBridge/gameActionBridge';
 import { useGameStore } from './gameStore';
 import type { QuestState } from '@/shared/types/game';
 

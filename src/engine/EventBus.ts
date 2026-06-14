@@ -23,6 +23,13 @@ export type { EventBusScopeHost } from '@/engine/eventBusScope';
 export type { EventMap, EventName, EmptyEventPayload } from '@/engine/events';
 export { EMPTY_EVENT_PAYLOAD } from '@/engine/events';
 
+export interface EventBusOptions {
+  /** Hard cap on typed handlers per event key (default 20). */
+  maxHandlersPerEvent?: number;
+  /** Hard cap on onAny catch-all handlers (default 20). */
+  maxAnyHandlers?: number;
+}
+
 type EventHandler<T> = (payload: T) => void;
 type AnyEventHandler = (event: string, payload: unknown) => void;
 
@@ -67,8 +74,10 @@ const DEDUP_ENABLED = new Set<string>(DEDUP_ENABLED_EVENTS);
  *  - dispose() bumps lifecycleGeneration; in-flight emit aborts before further onAny/typed handlers.
  *
  * Lifecycle:
- *  - Call `dispose()` to clear all state (e.g. on app unmount). The bus can be reused after
- *    handlers are re-subscribed.
+ *  - Call `dispose()` to clear all state (e.g. on app unmount).
+ *  - Call `revive()` before `on()` / `onAny()` after disposal (e.g. `reviveGameEngine()`).
+ *  - Subscribing on a disposed bus throws — never silently clears the disposed flag.
+ *  - Per-event and onAny handler counts are hard-capped (default 20); overflow throws.
  *  - Use `createScope()` in orchestrators — one `scope.dispose()` drops all listeners without
  *    storing handler references (see bindEventBusScope / useEventBusScope).
  *  - For testing, use `createEventBus()` to obtain an isolated instance.
@@ -94,15 +103,35 @@ export class EventBusClass<TMap extends object = EventMap>
   /** Monotonic registration order for stable tie-breaking */
   private nextListenerOrder = 0;
 
-  /** Whether this bus has been disposed and needs re-initialisation on next use */
+  /** Hard caps — subscription throws when exceeded (catches listener leaks). */
+  private readonly maxHandlersPerEvent: number;
+  private readonly maxAnyHandlers: number;
+
+  /** Whether this bus has been disposed — subscribe only after revive(). */
   private disposed = false;
 
-  /** Safety limit: warn if more than this many handlers are registered for a single event.
-   *  Catches subscription leaks early (e.g., component subscribing in render instead of useEffect). */
-  private static MAX_HANDLERS_PER_EVENT = 20;
+  constructor(options: EventBusOptions = {}) {
+    this.maxHandlersPerEvent = options.maxHandlersPerEvent ?? 20;
+    this.maxAnyHandlers = options.maxAnyHandlers ?? 20;
+  }
+
+  private assertHandlerCapacity(currentCount: number, limit: number, label: string): void {
+    if (currentCount < limit) return;
+    throw new Error(
+      `[EventBus] Cannot subscribe — ${label} already has ${currentCount} handlers (limit: ${limit}). ` +
+        'Fix the subscription leak or call the returned unsubscribe function.',
+    );
+  }
+
+  private assertSubscribable(operation: 'on' | 'onAny'): void {
+    if (!this.disposed) return;
+    throw new Error(
+      `[EventBus] Cannot ${operation}() on a disposed bus. Call reviveEventBus() (or bus.revive()) before subscribing.`,
+    );
+  }
 
   /** Enable or disable debug logging of emitted events. */
-  setDebug(enabled: boolean) {
+  setDebug(enabled: boolean): void {
     this.debug = enabled;
   }
 
@@ -161,7 +190,8 @@ export class EventBusClass<TMap extends object = EventMap>
     handler: AnyEventHandler,
     priority: number = EventBusPriority.Normal,
   ): EventBusUnsubscribe {
-    this.disposed = false;
+    this.assertSubscribable('onAny');
+    this.assertHandlerCapacity(this.anyHandlers.length, this.maxAnyHandlers, 'onAny');
     return this.registerListener(this.anyHandlers, handler, priority);
   }
 
@@ -176,7 +206,7 @@ export class EventBusClass<TMap extends object = EventMap>
     handler: EventHandler<TMap[K]>,
     priority: number = EventBusPriority.Normal,
   ): EventBusUnsubscribe {
-    this.disposed = false;
+    this.assertSubscribable('on');
 
     let list = this.handlers.get(event);
     if (!list) {
@@ -184,14 +214,9 @@ export class EventBusClass<TMap extends object = EventMap>
       this.handlers.set(event, list);
     }
 
-    const unsubscribe = this.registerListener(list, handler, priority);
+    this.assertHandlerCapacity(list.length, this.maxHandlersPerEvent, String(event));
 
-    if (list.length > EventBusClass.MAX_HANDLERS_PER_EVENT) {
-      console.warn(
-        `[EventBus] ${String(event)} has ${list.length} handlers (limit: ${EventBusClass.MAX_HANDLERS_PER_EVENT}). ` +
-        `Possible subscription leak — ensure each eventBus.on() is cleaned up in useEffect return.`
-      );
-    }
+    const unsubscribe = this.registerListener(list, handler, priority);
 
     return () => {
       unsubscribe();
@@ -289,8 +314,7 @@ export class EventBusClass<TMap extends object = EventMap>
   /**
    * Dispose of the event bus — clears all caches/handlers and cancels in-flight dispatch.
    * Call this when the bus is no longer needed (e.g. app unmount).
-   *
-   * After disposal, the bus can still be used — re-subscribe handlers before emitting.
+   * After disposal, call `revive()` before subscribing again.
    */
   dispose(): void {
     this.lifecycleGeneration++;
@@ -305,9 +329,11 @@ export class EventBusClass<TMap extends object = EventMap>
     return this.disposed;
   }
 
-  /** Re-arm after orchestrator remount (React StrictMode). */
+  /** Re-arm after orchestrator remount (React StrictMode). Idempotent while already live. */
   revive(): void {
+    if (!this.disposed) return;
     this.disposed = false;
+    clearDedupSlots(this.dedupSlots);
   }
 }
 
@@ -316,8 +342,10 @@ export class EventBusClass<TMap extends object = EventMap>
  * Primarily intended for testing — each test gets a fresh bus
  * without polluting the global singleton.
  */
-export function createEventBus<TMap extends object = EventMap>(): EventBusClass<TMap> {
-  return new EventBusClass<TMap>();
+export function createEventBus<TMap extends object = EventMap>(
+  options?: EventBusOptions,
+): EventBusClass<TMap> {
+  return new EventBusClass<TMap>(options);
 }
 
 /** Singleton event bus instance — typed with the consolidated EventMap. */

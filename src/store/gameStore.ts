@@ -7,42 +7,74 @@ export type { NotificationType, GameNotification, JournalTab, LoreEntry, LoreCat
 export type { UnlockedAchievement } from './slices/worldSlice';
 export { useGameSelector, useGamePrimitive } from './selectors/hooks';
 export { usePlayerStore, useExplorationStore, useWorldStore, useUIStore, useCutsceneStore, useSaveStore } from './stores';
-import { wrapStoreSubscribe } from '@/engine/frame/frameProfilerCounters';
-import { registerGameActionBridge, type GameSnapshotSubscribeOptions, type GameStoreSnapshot } from '@/engine/GameActionDispatcher';
+import { wrapStoreSubscribeIfDev } from './dev/storeSubscribeProfiler';
+import { registerGameActionBridge, type GameSnapshotSubscribeOptions, type GameStoreSnapshot } from '@/shared/gameBridge/gameActionBridge';
 import type { GameStoreState } from './types';
 export type { GameStoreState, CrossSliceReads } from './types';
-import { getCombinedGameState, subscribeAllStores } from './combinedState';
+import { getCombinedGameState, subscribeAllStores, invalidateCombinedGameStateCache, scheduleAfterSliceStoresSettle } from './combinedState';
 import { applyCombinedPatch } from './patchState';
 import { reduceGameState } from './reduceGameState';
 
 export const useGameStore = create<GameStoreState>()(subscribeWithSelector(() => getCombinedGameState()));
 const facadeSetState = useGameStore.setState.bind(useGameStore);
+const baseGetState = useGameStore.getState.bind(useGameStore);
 
-let cachedBridgeSnapshot: GameStoreSnapshot | null = null;
-function invalidateBridgeSnapshot(): void {
-  cachedBridgeSnapshot = null;
+let facadeDirty = false;
+let facadeFlushQueued = false;
+
+function flushFacadeState(): void {
+  facadeDirty = false;
+  const next = getCombinedGameState();
+  if (next === baseGetState()) return;
+  facadeSetState(next, true);
 }
+
+function syncMarkFacadeDirty(): void {
+  invalidateCombinedGameStateCache();
+  invalidateGameSnapshotCache();
+  facadeDirty = true;
+}
+
+function scheduleFacadeFlush(): void {
+  if (facadeFlushQueued) return;
+  facadeFlushQueued = true;
+  scheduleAfterSliceStoresSettle(() => {
+    facadeFlushQueued = false;
+    if (facadeDirty) flushFacadeState();
+  });
+}
+
 function getBridgeSnapshot(): GameStoreSnapshot {
-  if (cachedBridgeSnapshot) return cachedBridgeSnapshot;
-  cachedBridgeSnapshot = buildGameSnapshot(getCombinedGameState());
-  return cachedBridgeSnapshot;
+  return toGameSnapshot(getCombinedGameState());
 }
 
 subscribeAllStores(() => {
-  invalidateBridgeSnapshot();
-  facadeSetState(getCombinedGameState(), true);
+  syncMarkFacadeDirty();
+  scheduleFacadeFlush();
 });
+
+useGameStore.getState = () => {
+  if (facadeDirty) flushFacadeState();
+  return baseGetState();
+};
 useGameStore.setState = ((partial, _replace) => {
-  const patch = typeof partial === 'function' ? partial(getCombinedGameState()) : partial;
-  applyCombinedPatch(patch as Partial<GameStoreState>);
+  if (typeof partial === 'function') {
+    partial(getCombinedGameState());
+    flushFacadeState();
+    return;
+  }
+  applyCombinedPatch(partial as Partial<GameStoreState>);
+  flushFacadeState();
 }) as typeof useGameStore.setState;
 if (import.meta.env?.DEV) {
   const baseSubscribe = useGameStore.subscribe.bind(useGameStore);
-  useGameStore.subscribe = wrapStoreSubscribe(baseSubscribe) as typeof useGameStore.subscribe;
+  useGameStore.subscribe = wrapStoreSubscribeIfDev(baseSubscribe) as typeof useGameStore.subscribe;
 }
-export function getGameStore(): GameStoreState { return getCombinedGameState(); }
+export function getGameStore(): GameStoreState { return useGameStore.getState(); }
 
-const gameSnapshotCache = new WeakMap<GameStoreState, GameStoreSnapshot>();
+let cachedGameSnapshot: GameStoreSnapshot | null = null;
+let cachedGameSnapshotState: GameStoreState | null = null;
+
 function buildGameSnapshot(state: GameStoreState): GameStoreSnapshot {
   return {
     mode: getGamePhase({ mainMenuOpen: state.mainMenuOpen, introActive: state.introActive, combatActive: state.combatActive, activeCutsceneId: state.activeCutsceneId }),
@@ -50,14 +82,23 @@ function buildGameSnapshot(state: GameStoreState): GameStoreSnapshot {
     showStoryOverlay: state.showStoryOverlay,
     exploration: { currentSceneId: state.exploration.currentSceneId, playerPosition: state.exploration.playerPosition, timeOfDay: state.exploration.timeOfDay, interactiveObjectStates: state.interactiveObjectStates },
     playerState: { flags: state.playerState.flags, inventory: state.playerState.inventory, skills: state.playerState.skills, energy: state.playerState.energy, karma: state.playerState.karma, stress: state.playerState.stress, visitedNodes: state.playerState.visitedNodes, progression: { level: state.playerState.progression?.level ?? 1, currentAct: state.playerState.progression?.currentAct ?? 1, skillPoints: state.playerState.progression?.skillPoints ?? 0, unlockedSkills: state.playerState.progression?.unlockedSkills ?? [] } },
-    collectedPoems: state.collectedPoems, quests: state.quests, activeTTLFlags: state.activeTTLFlags ?? {}, poemPowers: state.poemPowers, npcRelations: state.npcRelations, unlockedAchievements: state.unlockedAchievements, achievementProgress: state.achievementProgress,
+    collectedPoems: state.collectedPoems, quests: state.quests, activeTTLFlags: state.activeTTLFlags ?? {}, poemPowers: state.poemPowers, npcRelations: state.npcRelations,     unlockedAchievements: state.unlockedAchievements, achievementProgress: state.achievementProgress,
+    activeCutsceneId: state.activeCutsceneId,
+    triggeredCutscenes: state.triggeredCutscenes,
   };
 }
+function invalidateGameSnapshotCache(): void {
+  cachedGameSnapshot = null;
+  cachedGameSnapshotState = null;
+}
+
 function toGameSnapshot(state: GameStoreState): GameStoreSnapshot {
-  const cached = gameSnapshotCache.get(state);
-  if (cached) return cached;
+  if (cachedGameSnapshot && cachedGameSnapshotState === state) {
+    return cachedGameSnapshot;
+  }
   const snapshot = buildGameSnapshot(state);
-  gameSnapshotCache.set(state, snapshot);
+  cachedGameSnapshotState = state;
+  cachedGameSnapshot = snapshot;
   return snapshot;
 }
 function subscribeGameBridge(listener: (snapshot: GameStoreSnapshot) => void): () => void;

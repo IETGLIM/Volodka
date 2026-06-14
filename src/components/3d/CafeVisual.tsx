@@ -9,6 +9,11 @@ import { useEnvironmentLod } from './lod/EnvironmentLodProvider';
 import { EnvironmentDetail, SceneClutterGate } from './lod/PropDistanceGate';
 import { FloorLamp, PastryCase, Window, Plant } from './lazyInteriorModels';
 import { useCachedCanvasTexture } from '@/hooks/useCachedCanvasTexture';
+import { useOwnedBufferGeometry } from '@/hooks/useOwnedBufferGeometry';
+import {
+  getSharedBoxGeometry,
+  getSharedPlaneGeometry,
+} from '@/engine/three/moduleGeometryRegistry';
 
 interface CafeVisualProps {
   livePlayerPositionRef?: MutableRefObject<THREE.Vector3>;
@@ -52,21 +57,20 @@ export function CafeVisual({ livePlayerPositionRef }: CafeVisualProps) {
   }, []);
   const steamVelocitiesRef = useRef(steamData.velocities);
 
-  const steamGeometry = useMemo(() => {
+  const steamGeometry = useOwnedBufferGeometry(() => {
     const geo = new THREE.BufferGeometry();
     geo.setAttribute('position', new THREE.BufferAttribute(steamData.positions.slice(), 3));
     return geo;
   }, [steamData.positions]);
 
-  // ── Dispose owned GPU resources on unmount (textures are module-cached) ──
+  // ── Dispose owned materials on unmount (textures are module-cached) ──
   useEffect(() => {
     return () => {
-      steamGeometry.dispose();
       coffeeSteamMaterialRef.current?.dispose();
       shimmerMaterialRef.current?.dispose();
       shimmerLayer2MaterialRef.current?.dispose();
     };
-  }, [steamGeometry]);
+  }, []);
 
   // ── Animations via useFrame ──
   useFrameTick('misc', ({ delta }) => {
@@ -118,32 +122,26 @@ export function CafeVisual({ livePlayerPositionRef }: CafeVisualProps) {
   return (
     <group>
       {/* ── Floor ── */}
-      <mesh rotation-x={-Math.PI / 2} receiveShadow position-y={0.001}>
-        <planeGeometry args={[W, D]} />
+      <mesh rotation-x={-Math.PI / 2} receiveShadow position-y={0.001} geometry={getSharedPlaneGeometry(W, D)}>
         <meshStandardMaterial map={floorTexture} color="#5a4a3a" roughness={0.85} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
       </mesh>
 
       {/* ── Ceiling ── */}
-      <mesh position={[0, H, 0]} rotation-x={Math.PI / 2}>
-        <planeGeometry args={[W, D]} />
+      <mesh position={[0, H, 0]} rotation-x={Math.PI / 2} geometry={getSharedPlaneGeometry(W, D)}>
         <meshStandardMaterial color="#3a3038" roughness={0.95} />
       </mesh>
 
       {/* ── Walls ── */}
-      <mesh position={[0, H / 2, -D / 2]}>
-        <planeGeometry args={[W, H]} />
+      <mesh position={[0, H / 2, -D / 2]} geometry={getSharedPlaneGeometry(W, H)}>
         <meshStandardMaterial map={wallTexture} color="#4a3a30" roughness={0.9} />
       </mesh>
-      <mesh position={[0, H / 2, D / 2]} rotation-y={Math.PI}>
-        <planeGeometry args={[W, H]} />
+      <mesh position={[0, H / 2, D / 2]} rotation-y={Math.PI} geometry={getSharedPlaneGeometry(W, H)}>
         <meshStandardMaterial map={wallTexture} color="#4a3a30" roughness={0.9} />
       </mesh>
-      <mesh position={[-W / 2, H / 2, 0]} rotation-y={Math.PI / 2}>
-        <planeGeometry args={[D, H]} />
+      <mesh position={[-W / 2, H / 2, 0]} rotation-y={Math.PI / 2} geometry={getSharedPlaneGeometry(D, H)}>
         <meshStandardMaterial map={wallTexture} color="#4a3a30" roughness={0.9} />
       </mesh>
-      <mesh position={[W / 2, H / 2, 0]} rotation-y={-Math.PI / 2}>
-        <planeGeometry args={[D, H]} />
+      <mesh position={[W / 2, H / 2, 0]} rotation-y={-Math.PI / 2} geometry={getSharedPlaneGeometry(D, H)}>
         <meshStandardMaterial map={wallTexture} color="#4a3a30" roughness={0.9} />
       </mesh>
 
@@ -151,24 +149,20 @@ export function CafeVisual({ livePlayerPositionRef }: CafeVisualProps) {
       {/* ── BAR COUNTER (back wall) ── */}
       {/* ═══════════════════════════════════════════════ */}
       <group position={[0, 0, -4.0]}>
-        <mesh position={[0, 0.55, 0]} castShadow receiveShadow>
-          <boxGeometry args={[5.0, 1.1, 0.8]} />
+        <mesh position={[0, 0.55, 0]} castShadow receiveShadow geometry={getSharedBoxGeometry(5.0, 1.1, 0.8)}>
           <meshStandardMaterial color="#4a3020" roughness={0.7} />
         </mesh>
         {/* Counter top */}
-        <mesh position={[0, 1.11, 0]}>
-          <boxGeometry args={[5.1, 0.04, 0.85]} />
+        <mesh position={[0, 1.11, 0]} geometry={getSharedBoxGeometry(5.1, 0.04, 0.85)}>
           <meshStandardMaterial color="#5a4030" metalness={0.1} roughness={0.4} />
         </mesh>
         {/* Shelf behind counter */}
-        <mesh position={[0, 1.8, -0.3]} castShadow>
-          <boxGeometry args={[4.0, 0.04, 0.4]} />
+        <mesh position={[0, 1.8, -0.3]} castShadow geometry={getSharedBoxGeometry(4.0, 0.04, 0.4)}>
           <meshStandardMaterial color="#3a2518" roughness={0.7} />
         </mesh>
         {/* Bottles on shelf */}
         {[-1.5, -0.8, 0, 0.7, 1.4].map((x, i) => (
-          <mesh key={i} position={[x, 2.05, -0.3]}>
-            <boxGeometry args={[0.08, 0.4, 0.08]} />
+          <mesh key={i} position={[x, 2.05, -0.3]} geometry={getSharedBoxGeometry(0.08, 0.4, 0.08)}>
             <meshStandardMaterial
               color={['#1a4a1a', '#4a1a1a', '#1a1a4a', '#4a4a1a', '#1a4a4a'][i]}
               roughness={0.3}
@@ -179,8 +173,7 @@ export function CafeVisual({ livePlayerPositionRef }: CafeVisualProps) {
 
       {/* ── Neon Sign behind bar ── */}
       <group position={[0, 2.5, -4.8]}>
-        <mesh>
-          <boxGeometry args={[3.0, 0.4, 0.05]} />
+        <mesh geometry={getSharedBoxGeometry(3.0, 0.4, 0.05)}>
           <meshStandardMaterial
             color="#001133"
             emissive="#1a4aff"

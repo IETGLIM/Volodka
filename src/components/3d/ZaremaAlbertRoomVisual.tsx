@@ -7,6 +7,7 @@ import { Desk, Chair, Laptop, Lamp, Radiator, Plant } from './lazyInteriorModels
 import { useEnvironmentLod } from './lod/EnvironmentLodProvider';
 import { EnvironmentDetail } from './lod/PropDistanceGate';
 import { useCachedCanvasTexture } from '@/hooks/useCachedCanvasTexture';
+import { registerModuleGeometries } from '@/engine/three/moduleGeometryRegistry';
 
 interface ZaremaAlbertRoomVisualProps {
   livePlayerPositionRef?: MutableRefObject<THREE.Vector3>;
@@ -59,6 +60,8 @@ const geo_cyl_41 = new THREE.CylinderGeometry(0.12, 0.08, 0.3, 8);
 const geo_cyl_42 = new THREE.CylinderGeometry(0.015, 0.015, 0.5, 6);
 const geo_cyl_43 = new THREE.CylinderGeometry(0.04, 0.03, 0.08, 6);
 const geo_cyl_44 = new THREE.CylinderGeometry(0.008, 0.008, 0.4, 4);
+
+registerModuleGeometries([geo_pln_1, geo_pln_2, geo_box_3, geo_box_4, geo_box_5, geo_box_6, geo_box_7, geo_box_8, geo_box_9, geo_box_10, geo_box_11, geo_box_12, geo_box_13, geo_box_14, geo_box_15, geo_box_16, geo_pln_17, geo_box_18, geo_pln_19, geo_box_20, geo_pln_21, geo_box_22, geo_pln_23, geo_pln_24, geo_cyl_25, geo_box_26, geo_box_27, geo_box_28, geo_cyl_29, geo_cyl_30, geo_cyl_31, geo_cyl_32, geo_pln_33, geo_box_34, geo_box_35, geo_box_36, geo_box_37, geo_box_38, geo_pln_39, geo_pln_40, geo_cyl_41, geo_cyl_42, geo_cyl_43, geo_cyl_44]);
 
 export function ZaremaAlbertRoomVisual({ livePlayerPositionRef: _livePlayerPositionRef }: ZaremaAlbertRoomVisualProps) {
   const floorTexture = useCachedCanvasTexture('zarema_albert_room:floor', createRoomFloorTexture);

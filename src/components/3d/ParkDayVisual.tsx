@@ -6,7 +6,7 @@ import * as THREE from 'three';
 import { getEnvironmentLodProfile } from '@/engine/lod/distanceLod';
 import { useEnvironmentLod } from './lod/EnvironmentLodProvider';
 import { EnvironmentDetail, SceneClutterGate } from './lod/PropDistanceGate';
-import { useCachedCanvasTexture } from '@/hooks/useCachedCanvasTexture';
+import { scratchColor } from '@/engine/three/frameScratch';
 
 interface ParkDayVisualProps {
   livePlayerPositionRef?: MutableRefObject<THREE.Vector3>;
@@ -281,7 +281,8 @@ function MistyTreeBelt() {
     const canopy = canopyRef.current;
     if (!trunk || !canopy) return;
     const dummy = new THREE.Object3D();
-    const color = new THREE.Color();
+    scratchColor.set('#ffffff');
+    const color = scratchColor;
     placements.forEach((p, i) => {
       const trunkH = 3.0 * p.s;
       dummy.position.set(p.x, trunkH * 0.5, p.z);

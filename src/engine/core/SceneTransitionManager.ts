@@ -23,10 +23,18 @@ import {
 
 export { isSceneTransitionInProgress, resetSceneTransitionGuard } from './sceneTransitionGuard';
 
+let unsubDeferredCombatStart: (() => void) | null = null;
+
+/** (Re)bind scene:loaded → deferred combat flush after EventBus dispose/revive. */
+export function bindDeferredCombatStartListener(): void {
+  unsubDeferredCombatStart?.();
+  unsubDeferredCombatStart = eventBus.on('scene:loaded', () => {
+    queueMicrotask(() => flushDeferredCombatStart());
+  });
+}
+
 ensureSceneLoadedBridge();
-eventBus.on('scene:loaded', () => {
-  queueMicrotask(() => flushDeferredCombatStart());
-});
+bindDeferredCombatStartListener();
 
 export interface SceneTransitionPayload {
   targetScene: SceneId;

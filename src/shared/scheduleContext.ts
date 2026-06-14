@@ -1,7 +1,7 @@
 /* ─── Schedule context — pure data for NPC schedule resolution ─── */
 /* Keeps ScheduleEngine free of store imports (breaks engine↔store cycle). */
 
-import type { ActiveTTLFlagMap } from '@/store/activeTTLFlags';
+import type { ActiveTTLFlagMap } from '@/shared/activeTTLFlags';
 
 export interface ScheduleContext {
   currentAct: number;

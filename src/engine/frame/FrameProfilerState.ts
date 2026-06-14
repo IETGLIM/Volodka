@@ -15,6 +15,8 @@ import {
   getReactRendersThisFrame,
   getZustandNotificationsThisFrame,
 } from './frameProfilerCounters';
+import type { GpuResourceBudgetSnapshot } from '@/engine/performance/GpuResourceBudgetTracker';
+import { getGpuResourceBudgetSnapshot } from '@/engine/performance/GpuResourceBudgetTracker';
 
 /** @deprecated Use FrameProfilerSnapshot — kept for DevPanel backward compat. */
 export interface RendererInfoSnapshot {
@@ -59,6 +61,9 @@ export interface FrameProfilerSnapshot {
 
   reactRendersThisFrame: number;
   zustandNotificationsThisFrame: number;
+
+  /** Estimated GPU memory budget snapshot (updated each frame via GpuResourceBudgetTracker). */
+  gpuMemory: GpuResourceBudgetSnapshot | null;
 }
 
 const FRAME_BUDGET_MS = 1000 / 60;
@@ -94,6 +99,7 @@ function createEmptySnapshot(): FrameProfilerSnapshot {
     dpr: 1,
     reactRendersThisFrame: 0,
     zustandNotificationsThisFrame: 0,
+    gpuMemory: null,
   };
 }
 
@@ -142,6 +148,7 @@ export function publishFrameProfiler(
     legacyUseFrameEstimate: Math.max(0, partial.cpuFrameMs - cpuBudgetMs),
     reactRendersThisFrame: getReactRendersThisFrame(),
     zustandNotificationsThisFrame: getZustandNotificationsThisFrame(),
+    gpuMemory: getGpuResourceBudgetSnapshot(),
   });
 }
 

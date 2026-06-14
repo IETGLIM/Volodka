@@ -18,12 +18,12 @@ import type { GameStoreState } from '../types';
 import { getPlayerStore } from '../storeBindings';
 import { readUIFromExploration } from '../crossSliceReads';
 import { getInitialLoreEntries } from '@/data/gameDataLoader';
-import { eventBus } from '@/engine/EventBus';
-import { musicEngine } from '@/engine/MusicEngine';
+import { emitAppEvent } from '@/shared/events/appEventBus';
 
 /* ─── Slice types ─── */
 
-export type NarrativeKind = 'story' | 'dialogue';
+import type { NarrativeKind } from '@/shared/types/narrativeKind';
+export type { NarrativeKind } from '@/shared/types/narrativeKind';
 
 export interface UISliceState {
   /** Always `'exploration'` — use phase flags + getGamePhase() for UI branching. */
@@ -156,7 +156,7 @@ export const createUISlice: StateCreator<
   setMusicVolume: (volume) => {
     const clampedVolume = clamp(volume, 0, 1);
     set({ musicVolume: clampedVolume });
-    musicEngine.setVolume(clampedVolume);
+    emitAppEvent('ui:music_volume', { volume: clampedVolume });
     try {
       localStorage.setItem('volodka_music_volume', String(Math.round(clampedVolume * 100)));
     } catch {
@@ -164,17 +164,12 @@ export const createUISlice: StateCreator<
     }
   },
 
-  toggleMusic: () =>
-    set((state) => {
-      const newEnabled = !state.musicEnabled;
-      if (!newEnabled) {
-        musicEngine.stopMusic(1);
-      } else {
-        const { currentSceneId } = readUIFromExploration();
-        musicEngine.playSceneMusic(currentSceneId);
-      }
-      return { musicEnabled: newEnabled };
-    }),
+  toggleMusic: () => {
+    const newEnabled = !get().musicEnabled;
+    set({ musicEnabled: newEnabled });
+    const { currentSceneId } = readUIFromExploration();
+    emitAppEvent('ui:music_enabled', { enabled: newEnabled, sceneId: currentSceneId });
+  },
 
   toggleJournal: () => set((state) => ({ journalOpen: !state.journalOpen })),
 
@@ -188,18 +183,17 @@ export const createUISlice: StateCreator<
       return { loreEntries: [...state.loreEntries, entry] };
     }),
 
-  discoverLoreEntry: (entryId) =>
+  discoverLoreEntry: (entryId) => {
+    let firstDiscovery: { title: string; rarity: LoreRarity; category: LoreEntry['category'] } | null = null;
+
     set((state) => {
-      // Check if already discovered in store
       const existing = state.loreEntries.find((e) => e.id === entryId);
       const wasAlreadyDiscovered = existing?.discovered ?? false;
 
-      // Update lore entries
       const newLoreEntries = state.loreEntries.map((e) =>
         e.id === entryId ? { ...e, discovered: true } : e,
       );
 
-      // If entry not in store yet, add it discovered
       if (!existing) {
         const initialEntry = getInitialLoreEntries().find((e) => e.id === entryId);
         if (initialEntry) {
@@ -207,31 +201,32 @@ export const createUISlice: StateCreator<
         }
       }
 
-      // Only grant rewards on first discovery
       if (!wasAlreadyDiscovered) {
-        // Look up entry data (from store or initial entries) for rarity
         const entryData = existing ?? getInitialLoreEntries().find((e) => e.id === entryId);
-        const title = entryData?.title ?? entryId;
-        const rarity: LoreRarity = entryData?.rarity ?? 'common';
-        const category = entryData?.category;
-
-        // Grant +5 XP for any lore discovery
-        const player = getPlayerStore();
-        player.addXp(5);
-
-        // Grant +1 writing skill for rare/legendary entries
-        if (rarity === 'rare' || rarity === 'legendary') {
-          player.addSkill('writing', 1);
-        }
-
-        // Emit event for toast notification
-        try {
-          eventBus.emit('lore:discovered', { id: entryId, title, rarity, category });
-        } catch { /* ignore */ }
+        firstDiscovery = {
+          title: entryData?.title ?? entryId,
+          rarity: entryData?.rarity ?? 'common',
+          category: entryData?.category,
+        };
       }
 
       return { loreEntries: newLoreEntries };
-    }),
+    });
+
+    if (firstDiscovery) {
+      const player = getPlayerStore();
+      player.addXp(5);
+      if (firstDiscovery.rarity === 'rare' || firstDiscovery.rarity === 'legendary') {
+        player.addSkill('writing', 1);
+      }
+      emitAppEvent('lore:discovered', {
+        id: entryId,
+        title: firstDiscovery.title,
+        rarity: firstDiscovery.rarity,
+        category: firstDiscovery.category,
+      });
+    }
+  },
 
   addConversationLog: (npcId, entry) =>
     set((state) => {

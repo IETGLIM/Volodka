@@ -58,8 +58,13 @@ export function forceDisposeOrphanedWebGLResources(source?: string): void {
   }
 }
 
-/** Test-only reset */
-export function resetCanvasRendererRegistryForTests(): void {
+/** Clear stale renderer refs after HMR or tests. GltfPipelineInit re-registers on mount. */
+export function resetCanvasRendererRegistry(): void {
   registeredGl = null;
   registeredScene = null;
+}
+
+/** Test-only reset */
+export function resetCanvasRendererRegistryForTests(): void {
+  resetCanvasRendererRegistry();
 }

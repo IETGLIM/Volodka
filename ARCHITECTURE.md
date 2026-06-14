@@ -15,7 +15,7 @@
 │   NPCSystem / PatrollingCreeps / DynamicProps / PostFX      │
 ├─────────────────────────────────────────────────────────────┤
 │ Engine (без React)                                          │
-│   EventBus · GameActionDispatcher · CombatSystem ·          │
+│   EventBus · StateDispatcher · CombatSystem ·               │
 │   GuidedStoryManager · QuestTracker · PoemPowerSystem ·     │
 │   MusicEngine/AudioEngine · camera strategies ·             │
 │   visualSettings/AudioSettings                              │
@@ -40,11 +40,35 @@
 - Снапшоты слушателей на время dispatch; `createScope()` для пакетной отписки
   в оркестраторах; `dispose()` обрывает in-flight dispatch через generation.
 
-### GameActionDispatcher (`src/engine/GameActionDispatcher.ts`)
-Engine-модули не импортируют store. Мутации — типизированные `GameAction`
-(quest/*, player/*, poem/*, story/*, exploration/*, …), чтение —
-`GameStoreSnapshot`, мост регистрируется store-ом на старте
-(`registerGameActionBridge`). Engine → store только через dispatcher.
+### Слои и мосты (Store ↔ Engine)
+
+```
+Store ──emitAppEvent──► AppEventBus ──bind──► EventBus ──► Engine / UI
+Engine ──dispatchStateAction──► StateDispatcher ──register──► Store (reduceGameState)
+Store ──storeEngineHost──► Engine (scene transition, guided story, runtime reset)
+Engine ──storeLifecycleHost──► Store (XP batch reset on dispose)
+Shared ──sceneTransitionBridge──► Engine (applyEffects, без импорта engine)
+```
+
+**Правило ESLint:** `src/store/**` и `src/engine/**` (prod) не импортируют друг друга;
+`src/shared/**` не импортирует ни store, ни engine (кроме validation tools).
+
+### StateDispatcher (`src/shared/gameBridge/stateDispatcher.ts`)
+Канонический Engine→Store контракт. Алиасы `dispatchStateAction`, `registerStateDispatcher`.
+Re-export: `@/engine/StateDispatcher.ts`, `@/engine/GameActionDispatcher.ts` (legacy).
+
+### AppEventBus (`src/shared/events/appEventBus.ts`)
+Store→Engine/UI без `@/engine/EventBus` в slice-ах. `emitAppEvent` / `onAppEvent`;
+привязка в `bindApplicationLayers()`.
+
+### GameActionDispatcher (legacy name)
+Тот же мост, что StateDispatcher. Типизированные `StateAction` / `GameAction`
+(quest/*, player/*, poem/*, story/*, exploration/*, inventory/*, lore/*, …),
+чтение — `GameStoreSnapshot`, регистрация — `registerGameActionBridge` в `gameStore.ts`.
+
+### storeEngineHost (`src/store/storeEngineHost.ts`)
+Store→Engine imperative callbacks: `requestSceneTransition`, `resetGuidedStoryManager`,
+`resetEngineModuleRuntimeState`, `canStartQuest`. Bind в `bindApplicationLayers()`.
 
 ### Переходы сцен (`SceneTransitionManager.ts`)
 Единый синхронный пайплайн: `scene:unload` → store

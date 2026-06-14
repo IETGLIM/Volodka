@@ -1,13 +1,19 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, beforeEach } from 'vitest';
 import * as THREE from 'three';
 import {
   acquireCombatHitSpark,
   disposeCombatTransientPools,
   releaseCombatHitSpark,
 } from './combatTransientPool';
+import { disposeAllModuleGeometries } from '@/engine/three/moduleGeometryRegistry';
 
 describe('combatTransientPool', () => {
-  it('disposes shared hit spark geometry on pool teardown', () => {
+  beforeEach(() => {
+    disposeCombatTransientPools();
+    disposeAllModuleGeometries();
+  });
+
+  it('disposes shared hit spark geometry via moduleGeometryRegistry', () => {
     const mesh = acquireCombatHitSpark();
     const geometry = mesh.geometry;
     releaseCombatHitSpark(mesh);
@@ -20,6 +26,7 @@ describe('combatTransientPool', () => {
     };
 
     disposeCombatTransientPools();
+    disposeAllModuleGeometries();
     expect(disposed).toBe(true);
   });
 
@@ -28,6 +35,7 @@ describe('combatTransientPool', () => {
     const geometry1 = mesh1.geometry;
     releaseCombatHitSpark(mesh1);
     disposeCombatTransientPools();
+    disposeAllModuleGeometries();
 
     const mesh2 = acquireCombatHitSpark();
     expect(mesh2.geometry).not.toBe(geometry1);

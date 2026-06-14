@@ -9,6 +9,7 @@ import { setFrameBudgetProfilingArmed } from '@/engine/frame/FrameBudgetRegistry
 import { usePostFrameTick } from '@/engine/frame/useFrameTick';
 import { publishFrameProfiler, getFrameProfilerSnapshot } from '@/engine/frame/FrameProfilerState';
 import { publishRuntimeBudgetCheck } from '@/engine/performance/RuntimeBudgetMonitor';
+import { publishGpuRendererSnapshot } from '@/engine/performance/GpuResourceBudgetTracker';
 import { useGameStore } from '@/store/gameStore';
 import type { SceneId } from '@/shared/types/game';
 
@@ -32,6 +33,11 @@ export function FrameProfilerBridge() {
       frameNumberRef.current += 1;
 
       const info = gl.info;
+      publishGpuRendererSnapshot({
+        geometryCount: info.memory.geometries,
+        textureCount: info.memory.textures,
+        triangleCount: info.render.triangles,
+      });
       publishFrameProfiler({
         frameNumber: frameNumberRef.current,
         cpuFrameMs,

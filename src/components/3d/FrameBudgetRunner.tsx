@@ -7,10 +7,11 @@
 
 import { useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
-import { getGameStore } from '@/store/gameStore';
+import { getGameSnapshot } from '@/engine/StateDispatcher';
 import { runFrameBudgetForPhase } from '@/engine/frame/FrameBudgetRegistry';
+import { isFrameSimulationActive } from '@/engine/frame/frameVisibility';
 import {
-  createFrameGameSnapshotFromStore,
+  createFrameGameSnapshot,
   DEFAULT_FRAME_GAME_SNAPSHOT,
 } from '@/engine/frame/frameGameSnapshot';
 import { resetFrameProfilerCounters } from '@/engine/frame/frameProfilerCounters';
@@ -28,17 +29,21 @@ export function FrameBudgetRunner() {
   });
 
   useFrame((state, delta) => {
+    if (!isFrameSimulationActive()) return;
+
     resetFrameProfilerCounters();
     frameIndexRef.current += 1;
     frameCtxRef.current = {
       state,
       delta: Math.min(delta, 0.05),
-      game: createFrameGameSnapshotFromStore(getGameStore()),
+      game: createFrameGameSnapshot(getGameSnapshot()),
     };
     runFrameBudgetForPhase(frameCtxRef.current, 'pre_physics');
   }, FRAME_PHASE_R3F_PRIORITY.pre_physics);
 
   useFrame((state, delta) => {
+    if (!isFrameSimulationActive()) return;
+
     frameCtxRef.current = {
       ...frameCtxRef.current,
       state,
@@ -48,6 +53,8 @@ export function FrameBudgetRunner() {
   }, FRAME_PHASE_R3F_PRIORITY.post_physics);
 
   useFrame((state, delta) => {
+    if (!isFrameSimulationActive()) return;
+
     frameCtxRef.current = {
       ...frameCtxRef.current,
       state,

@@ -8,6 +8,10 @@ import { getEnvironmentLodProfile } from '@/engine/lod/distanceLod';
 import { useEnvironmentLod } from './lod/EnvironmentLodProvider';
 import { EnvironmentDetail, SceneClutterGate } from './lod/PropDistanceGate';
 import { useCachedCanvasTexture } from '@/hooks/useCachedCanvasTexture';
+import {
+  getSharedBoxGeometry,
+  getSharedPlaneGeometry,
+} from '@/engine/three/moduleGeometryRegistry';
 
 interface OfficeDayVisualProps {
   livePlayerPositionRef?: MutableRefObject<THREE.Vector3>;
@@ -26,8 +30,8 @@ export function OfficeDayVisual({ livePlayerPositionRef }: OfficeDayVisualProps)
 
   // Shared geometry/materials for the ceiling light panel grid (12 panels)
   const lightPanel = useMemo(() => {
-    const housingGeo = new THREE.BoxGeometry(2.4, 0.06, 0.34);
-    const tubeGeo = new THREE.BoxGeometry(2.3, 0.03, 0.1);
+    const housingGeo = getSharedBoxGeometry(2.4, 0.06, 0.34);
+    const tubeGeo = getSharedBoxGeometry(2.3, 0.03, 0.1);
     const housingMat = new THREE.MeshStandardMaterial({ color: '#aab2bc', metalness: 0.3, roughness: 0.6 });
     const tubeMat = new THREE.MeshStandardMaterial({ color: '#e8f0f8', emissive: '#f4faff', emissiveIntensity: 1.6 });
     const positions: [number, number][] = [];
@@ -55,8 +59,6 @@ export function OfficeDayVisual({ livePlayerPositionRef }: OfficeDayVisualProps)
 
   useEffect(() => {
     return () => {
-      lightPanel.housingGeo.dispose();
-      lightPanel.tubeGeo.dispose();
       lightPanel.housingMat.dispose();
       lightPanel.tubeMat.dispose();
       glassMat.dispose();
@@ -66,8 +68,7 @@ export function OfficeDayVisual({ livePlayerPositionRef }: OfficeDayVisualProps)
   return (
     <group>
       {/* ── Floor ── */}
-      <mesh rotation-x={-Math.PI / 2} receiveShadow position-y={0.001}>
-        <planeGeometry args={[W, D]} />
+      <mesh rotation-x={-Math.PI / 2} receiveShadow position-y={0.001} geometry={getSharedPlaneGeometry(W, D)}>
         <meshStandardMaterial
           map={floorTexture}
           color="#c8d0d8"
@@ -79,26 +80,21 @@ export function OfficeDayVisual({ livePlayerPositionRef }: OfficeDayVisualProps)
       </mesh>
 
       {/* ── Ceiling ── */}
-      <mesh position={[0, H, 0]} rotation-x={Math.PI / 2}>
-        <planeGeometry args={[W, D]} />
+      <mesh position={[0, H, 0]} rotation-x={Math.PI / 2} geometry={getSharedPlaneGeometry(W, D)}>
         <meshStandardMaterial color="#e0e8f0" roughness={0.9} />
       </mesh>
 
       {/* ── Walls ── */}
-      <mesh position={[0, H / 2, -D / 2]}>
-        <planeGeometry args={[W, H]} />
+      <mesh position={[0, H / 2, -D / 2]} geometry={getSharedPlaneGeometry(W, H)}>
         <meshStandardMaterial map={wallTexture} color="#d0d8e0" roughness={0.7} />
       </mesh>
-      <mesh position={[0, H / 2, D / 2]} rotation-y={Math.PI}>
-        <planeGeometry args={[W, H]} />
+      <mesh position={[0, H / 2, D / 2]} rotation-y={Math.PI} geometry={getSharedPlaneGeometry(W, H)}>
         <meshStandardMaterial map={wallTexture} color="#d0d8e0" roughness={0.7} />
       </mesh>
-      <mesh position={[-W / 2, H / 2, 0]} rotation-y={Math.PI / 2}>
-        <planeGeometry args={[D, H]} />
+      <mesh position={[-W / 2, H / 2, 0]} rotation-y={Math.PI / 2} geometry={getSharedPlaneGeometry(D, H)}>
         <meshStandardMaterial map={wallTexture} color="#d0d8e0" roughness={0.7} />
       </mesh>
-      <mesh position={[W / 2, H / 2, 0]} rotation-y={-Math.PI / 2}>
-        <planeGeometry args={[D, H]} />
+      <mesh position={[W / 2, H / 2, 0]} rotation-y={-Math.PI / 2} geometry={getSharedPlaneGeometry(D, H)}>
         <meshStandardMaterial map={wallTexture} color="#d0d8e0" roughness={0.7} />
       </mesh>
 

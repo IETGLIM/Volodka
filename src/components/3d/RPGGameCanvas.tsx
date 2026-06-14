@@ -1,7 +1,7 @@
 
 /* ─── Volodka RPG – Main 3D Canvas ─── */
 
-import { Suspense, lazy, useRef, useEffect, Component, Fragment, type ReactNode, type ErrorInfo } from 'react';
+import { Suspense, lazy, useRef, useEffect, useState, Component, Fragment, type ReactNode, type ErrorInfo } from 'react';
 import { Canvas, useThree } from '@react-three/fiber';
 import { usePostFrameTick } from '@/engine/frame/useFrameTick';
 import * as THREE from 'three';
@@ -27,6 +27,7 @@ import { useVirtualControlsRef } from '@/engine/VirtualControlsState';
 import { eventBus } from '@/engine/EventBus';
 import { type VirtualControls } from '@/hooks/useGamePhysics';
 import { useGameMode } from '@/store/selectors';
+import { setFrameSimulationPaused } from '@/engine/frame/frameVisibility';
 import { useGameStore } from '@/store/gameStore';
 import {
   getCanvasFirstFrameSession,
@@ -293,7 +294,22 @@ export function RPGGameCanvas() {
   const gameMode = useGameMode();
   const devToolsArmed = useGameStore((s) => s.devToolsArmed);
   const physicsPaused = gameMode === 'menu' || gameMode === 'intro';
-  const canvasFrameloop = physicsPaused ? 'demand' : 'always';
+  const [tabVisible, setTabVisible] = useState(
+    () => typeof document === 'undefined' || !document.hidden,
+  );
+  const canvasFrameloop = physicsPaused || !tabVisible ? 'demand' : 'always';
+
+  useEffect(() => {
+    setFrameSimulationPaused(physicsPaused);
+  }, [physicsPaused]);
+
+  useEffect(() => {
+    const onVisibilityChange = () => {
+      setTabVisible(!document.hidden);
+    };
+    document.addEventListener('visibilitychange', onVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', onVisibilityChange);
+  }, []);
 
   // Dynamic DPR scaling based on measured FPS + quality preset
   const dpr = useDynamicDPR({
@@ -372,7 +388,7 @@ export function RPGGameCanvas() {
           style={{ background: '#000' }}
         >
         <GltfPipelineInit />
-        <CanvasFrameloopController idle={physicsPaused} />
+        <CanvasFrameloopController idle={physicsPaused || !tabVisible} />
         <VisualizationLayers livePlayerPositionRef={livePlayerPositionRef}>
           <Suspense
             fallback={
@@ -441,7 +457,7 @@ export function RPGGameCanvas() {
   );
 }
 
-/** Kick the render loop on mount and when leaving menu/intro demand mode. */
+/** Kick the render loop on mount, when leaving idle mode, or when the tab becomes visible. */
 function CanvasFrameloopController({ idle }: { idle: boolean }) {
   const invalidate = useThree((state) => state.invalidate);
 

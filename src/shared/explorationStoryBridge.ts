@@ -1,9 +1,7 @@
-import { dispatchGameAction } from '@/engine/GameActionDispatcher';
+import { dispatchStateAction } from '@/shared/gameBridge/stateDispatcher';
 
 /**
  * Maps 3D exploration dialogue ids to golden-path story node ids.
- * Only include ids where opening the dialogue should visit the node immediately
- * (not choices that gate progression — those use visitStoryNode effects).
  */
 export const EXPLORATION_DIALOGUE_STORY_STEP: Readonly<Record<string, string>> = {
   explore_room_table: 'room_table',
@@ -18,5 +16,5 @@ export const EXPLORATION_DIALOGUE_STORY_STEP: Readonly<Record<string, string>> =
 export function recordExplorationStoryStep(dialogueNodeId: string): void {
   const storyNodeId = EXPLORATION_DIALOGUE_STORY_STEP[dialogueNodeId];
   if (!storyNodeId) return;
-  dispatchGameAction({ type: 'story/visitNode', nodeId: storyNodeId });
+  dispatchStateAction({ type: 'story/visitNode', nodeId: storyNodeId });
 }

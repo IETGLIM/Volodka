@@ -16,7 +16,7 @@ describe('EventBusClass lifecycle', () => {
     expect(anyHandler).not.toHaveBeenCalled();
   });
 
-  it('allows emit after dispose once handlers are re-subscribed', () => {
+  it('allows emit after dispose once bus is revived and handlers are re-subscribed', () => {
     const bus = createEventBus();
     const handler = vi.fn();
 
@@ -25,10 +25,28 @@ describe('EventBusClass lifecycle', () => {
     expect(handler).toHaveBeenCalledTimes(1);
 
     bus.dispose();
+    bus.revive();
 
     bus.on('sound:play', handler);
     bus.emit('sound:play', { type: 'item_use' });
     expect(handler).toHaveBeenCalledTimes(2);
+  });
+
+  it('throws when subscribing on a disposed bus without revive', () => {
+    const bus = createEventBus();
+    bus.dispose();
+
+    expect(() => bus.on('sound:play', vi.fn())).toThrow(/disposed bus/i);
+    expect(() => bus.onAny(vi.fn())).toThrow(/disposed bus/i);
+  });
+
+  it('revive is idempotent', () => {
+    const bus = createEventBus();
+    bus.dispose();
+    bus.revive();
+    expect(() => bus.on('sound:play', vi.fn())).not.toThrow();
+    bus.revive();
+    expect(() => bus.on('sound:play', vi.fn())).not.toThrow();
   });
 
   it('snapshots onAny handlers registered during typed dispatch', () => {
@@ -129,5 +147,32 @@ describe('EventBusClass priority dispatch', () => {
     bus.emit('combat:turn', { turn: 1, isPlayerTurn: true });
 
     expect(order).toEqual(['typed-ui', 'any-engine', 'any-debug']);
+  });
+});
+
+describe('EventBusClass handler limits', () => {
+  it('throws when typed handler limit is reached', () => {
+    const bus = createEventBus({ maxHandlersPerEvent: 2 });
+    bus.on('sound:play', vi.fn());
+    bus.on('sound:play', vi.fn());
+
+    expect(() => bus.on('sound:play', vi.fn())).toThrow(/limit: 2/i);
+  });
+
+  it('allows subscribe again after unsubscribe frees a slot', () => {
+    const bus = createEventBus({ maxHandlersPerEvent: 1 });
+    const unsub = bus.on('sound:play', vi.fn());
+
+    expect(() => bus.on('sound:play', vi.fn())).toThrow(/limit: 1/i);
+
+    unsub();
+    expect(() => bus.on('sound:play', vi.fn())).not.toThrow();
+  });
+
+  it('throws when onAny handler limit is reached', () => {
+    const bus = createEventBus({ maxAnyHandlers: 1 });
+    bus.onAny(vi.fn());
+
+    expect(() => bus.onAny(vi.fn())).toThrow(/onAny.*limit: 1/i);
   });
 });

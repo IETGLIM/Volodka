@@ -39,14 +39,48 @@ describe('ObjectPool', () => {
     const pool = new ObjectPool(factory, undefined, 0);
 
     const a = pool.acquire();
-    pool.release(a);
+    expect(a).not.toBeNull();
+    pool.release(a!);
     const b = pool.acquire();
 
     expect(factory).toHaveBeenCalledTimes(1);
     expect(b).toBe(a);
   });
 
-  it('caps available[] growth and disposes overflow on release', () => {
+  it('caps burst acquire at maxSize instead of unbounded factory calls', () => {
+    let nextId = 1;
+    const factory = vi.fn(() => ({ id: nextId++ }));
+    const pool = new ObjectPool(factory, undefined, 0, 2);
+
+    const a = pool.acquire();
+    const b = pool.acquire();
+    const c = pool.acquire();
+
+    expect(a).not.toBeNull();
+    expect(b).not.toBeNull();
+    expect(c).toBeNull();
+    expect(factory).toHaveBeenCalledTimes(2);
+    expect(pool.inUseCount).toBe(2);
+    expect(pool.totalLive).toBe(2);
+  });
+
+  it('allows acquire again after release when at capacity', () => {
+    let nextId = 1;
+    const factory = vi.fn(() => ({ id: nextId++ }));
+    const pool = new ObjectPool(factory, undefined, 0, 2);
+
+    const a = pool.acquire()!;
+    pool.acquire();
+    expect(pool.acquire()).toBeNull();
+
+    pool.release(a);
+    const c = pool.acquire();
+
+    expect(c).toBe(a);
+    expect(factory).toHaveBeenCalledTimes(2);
+  });
+
+  it('disposes overflow on release when idle pool is full', () => {
     let nextId = 1;
     const factory = vi.fn(() => ({ id: nextId++ }));
     const disposed: number[] = [];
@@ -60,16 +94,16 @@ describe('ObjectPool', () => {
       },
     );
 
-    const a = pool.acquire();
-    const b = pool.acquire();
-    const c = pool.acquire();
+    const a = pool.acquire()!;
+    const b = pool.acquire()!;
+    expect(pool.acquire()).toBeNull();
     pool.release(a);
     pool.release(b);
-    pool.release(c);
+    pool.release({ id: 99 } as { id: number });
 
     expect(pool.size).toBe(2);
     expect(pool.capacity).toBe(2);
-    expect(disposed).toEqual([3]);
+    expect(disposed).toEqual([99]);
   });
 
   it('warns when overflow is dropped without disposeOverflow', () => {
@@ -77,10 +111,10 @@ describe('ObjectPool', () => {
     let nextId = 1;
     const pool = new ObjectPool(() => ({ id: nextId++ }), undefined, 0, 1);
 
-    const a = pool.acquire();
-    const b = pool.acquire();
+    const a = pool.acquire()!;
+    expect(pool.acquire()).toBeNull();
     pool.release(a);
-    pool.release(b);
+    pool.release({ id: 99 } as { id: number });
 
     expect(warn).toHaveBeenCalledWith(
       '[ObjectPool] Pool at capacity and disposeOverflow is unset — item was dropped and may leak GPU resources.',

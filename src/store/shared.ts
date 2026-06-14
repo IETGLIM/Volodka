@@ -85,14 +85,9 @@ export function applyXpGain(prog: PlayerProgression, amount: number): XpGainResu
 
 /* ─── Notification system ─── */
 
-export type NotificationType = 'karma' | 'skill' | 'energy' | 'stress' | 'poem' | 'quest';
-
-export interface GameNotification {
-  id: string;
-  type: NotificationType;
-  text: string;
-  timestamp: number;
-}
+export type { NotificationType, GameNotification } from '@/shared/types/notifications';
+export type { NarrativeKind } from '@/shared/types/narrativeKind';
+import type { GameNotification, NotificationType } from '@/shared/types/notifications';
 
 let notificationCounter = 0;
 

@@ -20,7 +20,7 @@ import {
 } from '../inventoryHelpers';
 import type { GameStoreState } from '../types';
 import { pickPlayerEconomyCrossActions, readNpcRelationValue } from '../crossSliceReads';
-import { eventBus } from '@/engine/EventBus';
+import { emitAppEvent } from '@/shared/events/appEventBus';
 
 /* ─── Slice types ─── */
 
@@ -118,13 +118,13 @@ export const createPlayerEconomySlice: StateCreator<
     });
 
     queueMicrotask(() => {
-      eventBus.emit('crafting:discovered', {
+      emitAppEvent('crafting:discovered', {
         recipeId,
         recipeName: recipe.name,
         rarity: recipe.outputRarity,
       });
 
-      eventBus.emit('item:crafted', {
+      emitAppEvent('item:crafted', {
         recipeId,
         recipeName: recipe.name,
         category: recipe.category,

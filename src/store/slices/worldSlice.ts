@@ -8,7 +8,7 @@ import type {
   AcceptedDailyMission,
 } from '@/shared/types/game';
 import { getPoemById, getQuestDefinitions, getAchievementMap, getDailyMissionById, getTotalAchievements } from '@/data/gameDataLoader';
-import { eventBus } from '@/engine/EventBus';
+import { emitAppEvent } from '@/shared/events/appEventBus';
 import { clamp, type PoemPowerState } from '../shared';
 import { applyFairmathRelation } from '@/shared/fairmath';
 import type { GameStoreState } from '../types';
@@ -155,7 +155,7 @@ export const createWorldSlice: StateCreator<
     const { timeOfDay } = readWorldFromExploration();
     quests.push({ questId, status: 'active', objectives, startedAtTime: timeOfDay });
 
-    eventBus.emit('quest:accepted', { questId, questTitle: definition.title });
+    emitAppEvent('quest:accepted', { questId, questTitle: definition.title });
 
     set({ quests });
     pickWorldCrossActions().pushNotification('quest', `Новое задание: ${definition.title}`);
@@ -177,7 +177,7 @@ export const createWorldSlice: StateCreator<
       return { quests };
     });
 
-    eventBus.emit('quest:objective_updated', { questId, objectiveId });
+    emitAppEvent('quest:objective_updated', { questId, objectiveId });
   },
 
   completeQuest: (questId) => {
@@ -197,7 +197,7 @@ export const createWorldSlice: StateCreator<
       }),
     }));
 
-    eventBus.emit('quest:completed', { questId, npcId: questDef?.questGiverNpcId });
+    emitAppEvent('quest:completed', { questId, npcId: questDef?.questGiverNpcId });
     pickWorldCrossActions().pushNotification('quest', `Задание выполнено: ${questTitle}`);
   },
 
@@ -221,7 +221,7 @@ export const createWorldSlice: StateCreator<
     const poem = getPoemById(poemId);
     if (!poem) return;
 
-    eventBus.emit('poem:collected', { poemId });
+    emitAppEvent('poem:collected', { poemId });
     set({ collectedPoems: [...state.collectedPoems, poemId] });
     pickWorldCrossActions().pushNotification('poem', `Стих собран: ${poem.title}`);
   },
@@ -322,7 +322,7 @@ export const createWorldSlice: StateCreator<
     });
 
     // Emit achievement events for UI
-    eventBus.emit('achievement:unlocked', {
+    emitAppEvent('achievement:unlocked', {
       achievementId,
       title: def.title,
       description: def.description,
@@ -330,7 +330,7 @@ export const createWorldSlice: StateCreator<
       category: def.category,
     });
 
-    eventBus.emit('fx:achievement', {
+    emitAppEvent('fx:achievement', {
       title: def.title,
       description: def.description,
       icon: def.icon,

@@ -8,7 +8,7 @@ import type {
   QuestDefinition,
   QuestObjective,
 } from '@/engine/guidedStory/guidedStoryTypes';
-import { getVisitedNodeSet } from '@/store/visitedNodesIndex';
+import { getVisitedNodeSet } from '@/shared/visitedNodesIndex';
 
 export function getActForNode(nodeId: string, path: GuidedStoryPathConfig): number {
   const direct = path.actTransitions.find((t) => t.entryNodeId === nodeId);

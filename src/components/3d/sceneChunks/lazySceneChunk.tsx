@@ -1,5 +1,6 @@
 import { Suspense, type ComponentType } from 'react';
 import { retryLazyDefault } from '@/shared/utils/retryLazy';
+import './sceneChunkGpuLifecycle';
 
 export interface SceneChunkProps {
   /** Vite chunk label for DevTools / bundle analyzer. */

@@ -28,4 +28,67 @@ export default tseslint.config(
       'no-empty': ['warn', { allowEmptyCatch: true }],
     },
   },
+  {
+    files: ['src/store/**/*.{ts,tsx}'],
+    ignores: ['src/store/**/*.test.{ts,tsx}'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['@/engine', '@/engine/**'],
+              message:
+                'Store must not import Engine. Use @/shared/events/appEventBus, storeEngineHost, or @/shared/gameBridge.',
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    files: ['src/engine/**/*.{ts,tsx}'],
+    ignores: ['src/engine/**/*.test.{ts,tsx}', 'src/engine/e2e/**'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['@/store', '@/store/**'],
+              message:
+                'Engine must not import Store. Use StateDispatcher / @/shared/gameBridge storeLifecycleHost.',
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    files: ['src/shared/**/*.{ts,tsx}'],
+    ignores: [
+      'src/shared/**/*.test.{ts,tsx}',
+      'src/shared/validation/contentPipelineValidator.ts',
+      'src/shared/validation/saveSchema.test.ts',
+    ],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['@/engine', '@/engine/**'],
+              message:
+                'Shared must not import Engine. Use @/shared/gameBridge or appEventBus.',
+            },
+            {
+              group: ['@/store', '@/store/**'],
+              message:
+                'Shared must not import Store. Use StateDispatcher / shared bridges.',
+            },
+          ],
+        },
+      ],
+    },
+  },
 );

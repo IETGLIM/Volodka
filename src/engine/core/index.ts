@@ -1,5 +1,8 @@
 export {
   registerGlobalCleanup,
+  registerModuleGlobalCleanupBinder,
+  reviveModuleGlobalCleanupBindings,
+  getRegisteredGlobalCleanupHandlerCount,
   runGlobalCleanup,
   runGlobalSceneUnload,
   runGlobalCombatEnd,

@@ -1,10 +1,14 @@
 /**
  * Generic object pool — reuse transient combat VFX / projectiles instead of
  * allocating new Three.js objects every action.
+ *
+ * `maxSize` caps total live instances (in use + idle). When exhausted, `acquire()`
+ * returns null instead of calling `factory()` without limit.
  */
 export class ObjectPool<T> {
   private readonly available: T[] = [];
   private readonly maxSize: number;
+  private inUse = 0;
 
   constructor(
     private readonly factory: () => T,
@@ -19,11 +23,23 @@ export class ObjectPool<T> {
     }
   }
 
-  acquire(): T {
-    return this.available.pop() ?? this.factory();
+  /** Borrow an instance, or null when the pool is at `maxSize` capacity. */
+  acquire(): T | null {
+    if (this.available.length > 0) {
+      this.inUse += 1;
+      return this.available.pop()!;
+    }
+    if (this.totalLive < this.maxSize) {
+      this.inUse += 1;
+      return this.factory();
+    }
+    return null;
   }
 
   release(item: T): void {
+    if (this.inUse > 0) {
+      this.inUse -= 1;
+    }
     this.reset?.(item);
     if (this.available.length >= this.maxSize) {
       if (this.disposeOverflow) {
@@ -49,6 +65,14 @@ export class ObjectPool<T> {
 
   get size(): number {
     return this.available.length;
+  }
+
+  get inUseCount(): number {
+    return this.inUse;
+  }
+
+  get totalLive(): number {
+    return this.inUse + this.available.length;
   }
 
   get capacity(): number {

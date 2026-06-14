@@ -7,7 +7,7 @@ import {
   getExploreHubDef,
   isClosedOverlayExploreHub,
 } from '@/shared/sceneExploreHubRegistry';
-import { hasVisitedNode } from '@/store/visitedNodesIndex';
+import { hasVisitedNode } from '@/shared/visitedNodesIndex';
 
 /** One-shot diegetic location context on first hub enter; shorter line on revisit. */
 function showHubLocationContext(hubId: string, revisit: boolean): void {

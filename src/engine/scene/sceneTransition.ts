@@ -71,6 +71,12 @@ export function requestSceneTransition(
   return true;
 }
 
+/** Reset dedupe state on engine dispose / new game. */
+export function resetSceneTransitionDedupe(): void {
+  lastDedupeKey = '';
+  lastDedupeAt = 0;
+}
+
 /** Transition to the scene declared on a story node (if any). */
 export function requestSceneTransitionForStoryNode(
   storyNodeId: string,

@@ -1,15 +1,10 @@
 import * as THREE from 'three';
 import { ObjectPool } from '@/engine/three/objectPool';
 import { disposeObject3DTree } from '@/engine/three/disposeThreeResources';
-
-/** Shared hit-spark mesh pool for combat camera impacts (3D feedback). */
-let hitSparkGeometry: THREE.SphereGeometry | null = null;
+import { getSharedSphereGeometry } from '@/engine/three/moduleGeometryRegistry';
 
 function getHitSparkGeometry(): THREE.SphereGeometry {
-  if (!hitSparkGeometry) {
-    hitSparkGeometry = new THREE.SphereGeometry(0.07, 4, 4);
-  }
-  return hitSparkGeometry;
+  return getSharedSphereGeometry(0.07, 4, 4);
 }
 
 function createHitSpark(): THREE.Mesh {
@@ -34,13 +29,13 @@ function resetHitSpark(mesh: THREE.Mesh): void {
 }
 
 function disposeHitSpark(mesh: THREE.Mesh): void {
-  const sharedGeometry = hitSparkGeometry;
+  const sharedGeometry = getHitSparkGeometry();
   disposeObject3DTree(mesh, {
-    skip: sharedGeometry ? { geometries: new Set([sharedGeometry]) } : undefined,
+    skip: { geometries: new Set([sharedGeometry]) },
   });
 }
 
-/** Prewarm 8, cap idle pool at 16 — excess sparks are disposed on release. */
+/** Prewarm 8, cap total live sparks at 16 — burst acquire returns null when exhausted. */
 export const combatHitSparkPool = new ObjectPool(
   createHitSpark,
   resetHitSpark,
@@ -49,8 +44,9 @@ export const combatHitSparkPool = new ObjectPool(
   disposeHitSpark,
 );
 
-export function acquireCombatHitSpark(): THREE.Mesh {
+export function acquireCombatHitSpark(): THREE.Mesh | null {
   const mesh = combatHitSparkPool.acquire();
+  if (!mesh) return null;
   mesh.visible = true;
   return mesh;
 }
@@ -59,15 +55,12 @@ export function releaseCombatHitSpark(mesh: THREE.Mesh): void {
   combatHitSparkPool.release(mesh);
 }
 
+/** Clears pooled meshes; shared geometry is owned by moduleGeometryRegistry. */
 export function disposeCombatTransientPools(): void {
-  const sharedGeometry = hitSparkGeometry;
+  const sharedGeometry = getHitSparkGeometry();
   combatHitSparkPool.clear((mesh) => {
     disposeObject3DTree(mesh, {
-      skip: sharedGeometry ? { geometries: new Set([sharedGeometry]) } : undefined,
+      skip: { geometries: new Set([sharedGeometry]) },
     });
   });
-  if (sharedGeometry) {
-    sharedGeometry.dispose();
-    hitSparkGeometry = null;
-  }
 }

@@ -970,3 +970,7 @@ export function getGlobalTimeScale(): number {
 export function applyTimeScale(delta: number): number {
   return delta * globalTimeScale;
 }
+
+export function resetGlobalTimeScale(): void {
+  globalTimeScale = 1.0;
+}

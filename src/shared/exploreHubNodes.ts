@@ -1,14 +1,7 @@
 import type { SceneId } from '@/shared/types/game';
-import { dispatchGameAction, getGameSnapshot } from '@/engine/GameActionDispatcher';
-import { getStoryNodeSceneId } from '@/engine/guidedStory/createGuidedStoryDeps';
-import {
-  EXPLORE_HUB_NODE_IDS,
-  SCENE_ENTRY_NODE_TO_HUB,
-  SCENE_TO_EXPLORE_HUB,
-  getExploreHubForScene,
-  isExploreHubNode,
-  resolveExploreHubNavigation,
-} from '@/shared/sceneExploreHubRegistry';
+import { dispatchStateAction, getGameSnapshot } from '@/shared/gameBridge/stateDispatcher';
+import { getStoryNodeSceneId } from '@/shared/story/getStoryNodeSceneId';
+import { isExploreHubNode } from '@/shared/sceneExploreHubRegistry';
 
 export {
   EXPLORE_HUB_NODE_IDS,
@@ -33,7 +26,6 @@ export function isNarrativeMovementLocked(
 /**
  * After a physical scene transition, dismiss any open narrative overlay so the player
  * can explore freely. Story/dialogue only opens from interactions and cutscenes.
- * Keeps overlay open when the current beat belongs to the scene we just entered.
  */
 export function syncNarrativeOnSceneEnter(sceneId: SceneId): void {
   const snapshot = getGameSnapshot();
@@ -44,5 +36,5 @@ export function syncNarrativeOnSceneEnter(sceneId: SceneId): void {
     : undefined;
   if (storySceneId === sceneId) return;
 
-  dispatchGameAction({ type: 'story/closeNarrativeOverlay' });
+  dispatchStateAction({ type: 'story/closeNarrativeOverlay' });
 }

@@ -1,10 +1,8 @@
 import type { GamePhase } from '@/shared/gamePhase';
-import { getGamePhase } from '@/shared/gamePhase';
 import { isNarrativeMovementLocked } from '@/shared/exploreHubNodes';
 import { isEncounterPresentationActive } from '@/engine/combat/encounterPresentation';
 import { isCinematicHoldActive } from '@/engine/camera/cinematicPresentation';
-import type { GameStoreSnapshot } from '@/engine/GameActionDispatcher';
-import type { GameStoreState } from '@/store/types';
+import type { GameStoreSnapshot } from '@/shared/gameBridge/gameActionBridge';
 
 /** Minimal game state read once per frame for tick callbacks. */
 export interface FrameGameSnapshot {
@@ -44,27 +42,7 @@ export function createFrameGameSnapshot(store: GameStoreSnapshot): FrameGameSnap
   };
 }
 
-/** Lightweight per-frame snapshot — avoids full GameStoreSnapshot on the hot path. */
-export function createFrameGameSnapshotFromStore(state: GameStoreState): FrameGameSnapshot {
-  const gamePhase = getGamePhase({
-    mainMenuOpen: state.mainMenuOpen,
-    introActive: state.introActive,
-    combatActive: state.combatActive,
-    activeCutsceneId: state.activeCutsceneId,
-  });
-  const movementLocked =
-    isNarrativeMovementLocked(state.showStoryOverlay, state.currentNodeId ?? '') ||
-    gamePhase === 'cutscene' ||
-    gamePhase === 'intro' ||
-    gamePhase === 'combat' ||
-    isEncounterPresentationActive() ||
-    isCinematicHoldActive();
-
-  return {
-    gamePhase,
-    playerPosition: state.exploration.playerPosition,
-    showStoryOverlay: state.showStoryOverlay,
-    currentNodeId: state.currentNodeId,
-    movementLocked,
-  };
+/** @deprecated Use createFrameGameSnapshot(getGameSnapshot()) — avoids @/store import. */
+export function createFrameGameSnapshotFromStore(state: GameStoreSnapshot): FrameGameSnapshot {
+  return createFrameGameSnapshot(state);
 }

@@ -1,5 +1,5 @@
 import {
-  getAccessibilitySettings,
+  getAccessibilityLocomotionSpeed,
   isEffectiveReducedMotion,
 } from '@/engine/accessibility/accessibilitySettings';
 
@@ -122,7 +122,7 @@ export function computeSlopeLocomotionScale(
 }
 
 export function getAccessibilityLocomotionScale(): number {
-  return getAccessibilitySettings().locomotionSpeed;
+  return getAccessibilityLocomotionSpeed();
 }
 
 export function getExplorationCameraMotionScale(

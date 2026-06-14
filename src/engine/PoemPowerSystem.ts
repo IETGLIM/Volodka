@@ -20,8 +20,8 @@ import {
   getGameSnapshot,
   tryActivatePoemPower,
 } from '@/engine/GameActionDispatcher';
-import { partitionExpiredActiveTTLFlags } from '@/store/activeTTLFlags';
-export type { ActiveTTLFlag } from '@/store/activeTTLFlags';
+import { partitionExpiredActiveTTLFlags } from '@/shared/activeTTLFlags';
+export type { ActiveTTLFlag } from '@/shared/activeTTLFlags';
 import type { TrainablePlayerSkill } from '@/shared/types/game';
 import { isTrainablePlayerSkill, warnInvalidValue } from '@/shared/validation/typeGuards';
 

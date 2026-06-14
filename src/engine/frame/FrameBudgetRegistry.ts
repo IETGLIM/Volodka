@@ -8,6 +8,7 @@ import {
   type FrameTickPhase,
   type RegisteredFrameTick,
 } from './types';
+import { isFrameSimulationActive } from './frameVisibility';
 
 export type { RegisteredFrameTick };
 
@@ -184,6 +185,8 @@ function runTicks(
   phase: FrameTickPhase,
   trackSystemCpu: boolean,
 ): void {
+  if (!isFrameSimulationActive()) return;
+
   const buffer: RegisteredFrameTick[] = [];
   for (const tick of ticks.values()) {
     if (tick.enabled && tick.phase === phase) {

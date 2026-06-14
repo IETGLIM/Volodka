@@ -13,7 +13,7 @@ import {
   getGiftXpReward,
   getGiftReactionText,
 } from '@/data/gameDataLoader';
-import { eventBus } from '@/engine/EventBus';
+import { emitAppEvent } from '@/shared/events/appEventBus';
 import {
   applyXpToProgression,
   formatLevelUpMessage,
@@ -142,7 +142,7 @@ export const createPlayerQuestRewardsSlice: StateCreator<
       scheduleLevelUpEmit(levelUpInfo);
     }
 
-    eventBus.emit('npc:gift', {
+    emitAppEvent('npc:gift', {
       npcId,
       itemId,
       preference,
@@ -228,7 +228,7 @@ export const createPlayerQuestRewardsSlice: StateCreator<
 
     cross.completeQuest(questId);
 
-    eventBus.emit('quest:reward_applied', {
+    emitAppEvent('quest:reward_applied', {
       questId,
       questTitle: questDef.title,
       xpGained,

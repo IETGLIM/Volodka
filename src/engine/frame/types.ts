@@ -1,4 +1,6 @@
 import type { RootState } from '@react-three/fiber';
+import type { RefObject } from 'react';
+import type * as THREE from 'three';
 import type { FrameGameSnapshot } from './frameGameSnapshot';
 
 /**
@@ -90,6 +92,8 @@ export interface FrameTickOptions {
   label?: string;
   enabled?: boolean;
   phase?: FrameTickPhase | LegacyFrameTickPhase;
+  /** Skip when this Object3D or an ancestor has visible=false. Page visibility is handled centrally. */
+  visibilityRef?: RefObject<THREE.Object3D | null>;
 }
 
 export interface RegisteredFrameTick {

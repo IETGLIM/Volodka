@@ -1,13 +1,9 @@
 import type { SceneId } from '@/config/sceneDefinitions';
 
-/** Waypoint data for cutscene camera (serializable). */
-export interface CameraWaypointData {
-  position: [number, number, number];
-  lookAt: [number, number, number];
-  fov: number;
-  duration: number;
-  controlPoint?: [number, number, number];
-}
+import type { CameraWaypointData } from '@/shared/types/camera';
+
+/** @deprecated Import from @/shared/types/camera */
+export type { CameraWaypointData };
 
 /** Camera rig control — FollowCamera, SceneTransitionOverlay. */
 export interface CameraEvents {

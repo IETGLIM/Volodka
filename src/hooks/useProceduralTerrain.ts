@@ -3,6 +3,10 @@
 
 import { useMemo, useRef, useEffect } from 'react';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
+import {
+  createAnimatedTerrainMaterial,
+  setAnimatedTerrainTime,
+} from '@/engine/three/animatedTerrainMaterial';
 import * as THREE from 'three';
 import FastNoiseLite from 'fastnoise-lite';
 
@@ -237,44 +241,27 @@ export function useProceduralTerrain(config: TerrainConfig) {
 /* ═══════════════════════════════════════════════════════════════════ */
 
 /**
- * Animated terrain — slowly shifts the terrain over time using a time offset.
- * Use sparingly (dream scene only) — costs CPU per frame for re-sampling noise.
+ * Animated terrain — gentle vertex displacement driven by a GPU shader uniform.
+ * Use sparingly (dream scene only). Pass `material` to the mesh; wave motion is
+ * visual-only — `getHeightAt` returns the static procedural heightmap.
  */
 export function useAnimatedTerrain(config: TerrainConfig, timeScale = 0.15) {
   const { geometry, getHeightAt } = useProceduralTerrain(config);
   const meshRef = useRef<THREE.Mesh>(null);
-  const positionsRef = useRef<Float32Array | null>(null);
+  const material = useMemo(
+    () => createAnimatedTerrainMaterial({ timeScale, roughness: 0.9 }),
+    [timeScale],
+  );
 
-  // Store original positions for animation
-  useEffect(() => {
-    if (geometry.attributes.position && !positionsRef.current) {
-      positionsRef.current = new Float32Array(
-        (geometry.attributes.position as THREE.BufferAttribute).array as Float32Array
-      );
-    }
-  }, [geometry]);
+  useEffect(() => () => material.dispose(), [material]);
 
   useFrameTick(
     'misc',
     (ctx) => {
-      if (!meshRef.current || !positionsRef.current) return;
-
-      const posAttr = meshRef.current.geometry.attributes.position as THREE.BufferAttribute;
-      const origPositions = positionsRef.current;
-      const t = ctx.state.clock.elapsedTime * timeScale;
-
-      for (let i = 0; i < posAttr.count; i++) {
-        const ox = origPositions[i * 3];
-        const oz = origPositions[i * 3 + 2];
-        const oy = origPositions[i * 3 + 1];
-        const wave = Math.sin(ox * 0.1 + t) * 0.3 + Math.cos(oz * 0.08 + t * 0.7) * 0.2;
-        posAttr.setY(i, oy + wave);
-      }
-      posAttr.needsUpdate = true;
-      meshRef.current.geometry.computeVertexNormals();
+      setAnimatedTerrainTime(material, ctx.state.clock.elapsedTime);
     },
-    { label: 'AnimatedTerrain' },
+    { label: 'AnimatedTerrain', visibilityRef: meshRef },
   );
 
-  return { geometry, getHeightAt, meshRef };
+  return { geometry, getHeightAt, meshRef, material };
 }

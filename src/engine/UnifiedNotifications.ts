@@ -15,7 +15,7 @@
 
 import { eventBus } from '@/engine/EventBus';
 import { dispatchGameAction } from '@/engine/GameActionDispatcher';
-import type { NotificationType } from '@/store/shared';
+import type { NotificationType } from '@/shared/types/notifications';
 
 /** All toast/notification types used across the game */
 export type UnifiedNotificationType = NotificationType;

@@ -17,6 +17,14 @@ import { getWorldStreamManager } from '@/engine/world/WorldStreamManager';
 import { getNavMeshLayer } from '@/engine/world/NavMeshLayer';
 import { isWorldComputeWorkerAvailable, getWorldComputeWorker } from '@/engine/workers/computeWorkerClient';
 import { bindKeyboardInput, sampleKeyboardMovement } from '@/engine/keyboardInputState';
+import {
+  getRegisteredGlobalCleanupHandlerCount,
+  runGlobalUnmountCleanup,
+} from '@/engine/core/GlobalCleanupService';
+import {
+  getRegisteredModuleGeometryCount,
+  getSharedBoxGeometry,
+} from '@/engine/three/moduleGeometryRegistry';
 
 describe('disposeGameEngine', () => {
   beforeEach(() => {
@@ -140,6 +148,24 @@ describe('disposeGameEngine', () => {
 
     const after = getWorldComputeWorker();
     expect(after).not.toBe(before);
+  });
+
+  it('reviveGameEngine re-registers module global cleanup handlers', () => {
+    const handlerCount = getRegisteredGlobalCleanupHandlerCount();
+    expect(handlerCount).toBeGreaterThan(0);
+
+    getSharedBoxGeometry(1, 1, 1);
+    expect(getRegisteredModuleGeometryCount()).toBeGreaterThan(0);
+
+    disposeGameEngine();
+    expect(getRegisteredGlobalCleanupHandlerCount()).toBe(0);
+
+    reviveGameEngine();
+    expect(getRegisteredGlobalCleanupHandlerCount()).toBe(handlerCount);
+
+    getSharedBoxGeometry(2, 2, 2);
+    runGlobalUnmountCleanup('volodka_room');
+    expect(getRegisteredModuleGeometryCount()).toBe(0);
   });
 
   it('disposeGameEngine detaches keyboard listeners', () => {

@@ -5,7 +5,7 @@
 import { createContext, memo, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { useThree } from '@react-three/fiber';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
-import * as THREE from 'three';
+import { scratchColor } from '@/engine/three/frameScratch';
 
 // ─── Layer Definitions ───
 
@@ -225,7 +225,7 @@ function DepthFogLayer({ layer, children }: DepthFogProps) {
     // Skip re-cloning if fogFactor hasn't changed since last application
     if (fogFactor === lastFogFactorRef.current) return;
 
-    const fogColor = new THREE.Color('#1a1a2e'); // default fog color
+    const fogColor = scratchColor.set('#1a1a2e'); // default fog color
     const clonedMaterials = new Map<THREE.Material, THREE.Material>();
 
     groupRef.current.traverse((child) => {

@@ -1,11 +1,12 @@
-import { eventBus } from '@/engine/EventBus';
-import type { GameAction } from '@/engine/GameActionDispatcher';
+import { emitAppEvent } from '@/shared/events/appEventBus';
+import type { GameAction } from '@/shared/gameBridge/gameActionBridge';
 import type { GameStoreState } from './types';
 import type { ActiveTTLFlag } from './activeTTLFlags';
 import { getPlayerStoreState } from './stores/playerStore';
 import { getExplorationStoreState } from './stores/explorationStore';
 import { getWorldStoreState } from './stores/worldStore';
 import { getUIStoreState } from './stores/uiStore';
+import { getCutsceneStoreState } from './stores/cutsceneStore';
 export function reduceGameState(_state: GameStoreState, action: GameAction): Partial<GameStoreState> {
   const player = getPlayerStoreState();
   const exploration = getExplorationStoreState();
@@ -28,7 +29,7 @@ export function reduceGameState(_state: GameStoreState, action: GameAction): Par
     case 'poem/upsertTTLFlag': player.upsertActiveTTLFlag(action.flag); break;
     case 'poem/upsertTTLFlags': player.upsertActiveTTLFlags(action.flags); break;
     case 'poem/removeTTLFlags': player.removeActiveTTLFlags(action.keys); break;
-    case 'poem/clearAllEffects': { const flags = player.activeTTLFlags ?? {}; for (const f of Object.values(flags) as ActiveTTLFlag[]) player.setFlag(f.key, false); player.clearActiveTTLFlags(); eventBus.emit('poem:reset_all_effects', {}); break; }
+    case 'poem/clearAllEffects': { const flags = player.activeTTLFlags ?? {}; for (const f of Object.values(flags) as ActiveTTLFlag[]) player.setFlag(f.key, false); player.clearActiveTTLFlags(); emitAppEvent('poem:reset_all_effects', {}); break; }
     case 'story/setCombatActive': ui.setCombatActive(action.active); break;
     case 'story/setIntroActive': ui.setIntroActive(action.active); break;
     case 'story/setMainMenuOpen': ui.setMainMenuOpen(action.open); break;
@@ -39,6 +40,9 @@ export function reduceGameState(_state: GameStoreState, action: GameAction): Par
     case 'story/visitNode': player.visitNode(action.nodeId); break;
     case 'story/advanceAct': player.advanceAct(); break;
     case 'inventory/addItem': player.addItem(action.item); break;
+    case 'inventory/removeItem': player.removeItem(action.itemId, action.quantity ?? 1); break;
+    case 'world/collectPoem': world.collectPoem(action.poemId); break;
+    case 'lore/discover': ui.discoverLoreEntry(action.entryId); break;
     case 'achievement/unlock': world.unlockAchievement(action.achievementId); break;
     case 'achievement/trackSceneVisit': world.trackSceneVisit(action.sceneId); break;
     case 'achievement/trackNightHour': world.trackNightHour(); break;
@@ -53,6 +57,8 @@ export function reduceGameState(_state: GameStoreState, action: GameAction): Par
     case 'notification/dismiss': player.dismissNotification(action.id); break;
     case 'exploration/toggleInteractiveObject': exploration.toggleInteractiveObject(action.objectId); break;
     case 'exploration/applySceneTransition': exploration.setExplorationScene(action.targetScene); exploration.setPlayerPosition(action.spawnAt); exploration.discoverScene(action.targetScene); player.autoRegenBetweenScenes(); break;
+    case 'cutscene/clear': getCutsceneStoreState().setCutscene(null, []); break;
+    case 'phase/clearGameplayFlags': ui.setMainMenuOpen(false); ui.setIntroActive(false); ui.setCombatActive(false); break;
     default: { const _exhaustive: never = action; return _exhaustive; }
   }
   return {};

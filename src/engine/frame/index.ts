@@ -55,3 +55,13 @@ export {
 } from './frameProfilerCounters';
 
 export { useFrameTick, usePostFrameTick } from './useFrameTick';
+
+export {
+  disposeFrameVisibility,
+  isFrameSimulationActive,
+  isFrameSimulationPaused,
+  isPageVisible,
+  resetFrameVisibilityForTests,
+  reviveFrameVisibility,
+  setFrameSimulationPaused,
+} from './frameVisibility';

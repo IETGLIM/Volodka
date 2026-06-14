@@ -13,6 +13,19 @@ import type { GameStoreState } from './types';
 
 let pendingXpAmount = 0;
 let flushScheduled = false;
+let batchGeneration = 0;
+
+/** Drop queued XP and invalidate any pending microtask flush (resetGame / load / dispose). */
+export function resetPlayerXpBatch(): void {
+  pendingXpAmount = 0;
+  flushScheduled = false;
+  batchGeneration += 1;
+}
+
+/** @deprecated Use resetPlayerXpBatch — kept for existing test imports. */
+export function resetPlayerXpBatchForTests(): void {
+  resetPlayerXpBatch();
+}
 
 export function queuePlayerXp(
   amount: number,
@@ -24,8 +37,10 @@ export function queuePlayerXp(
   if (flushScheduled) return;
 
   flushScheduled = true;
+  const capturedGeneration = batchGeneration;
   queueMicrotask(() => {
     flushScheduled = false;
+    if (capturedGeneration !== batchGeneration) return;
     const total = pendingXpAmount;
     pendingXpAmount = 0;
     if (total <= 0) return;
@@ -62,10 +77,4 @@ export function queuePlayerXp(
       scheduleLevelUpEmit(levelUpToEmit);
     }
   });
-}
-
-/** Test-only reset for pending XP queue state. */
-export function resetPlayerXpBatchForTests(): void {
-  pendingXpAmount = 0;
-  flushScheduled = false;
 }

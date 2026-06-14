@@ -20,6 +20,15 @@ export {
 } from './RuntimeBudgetMonitor';
 
 export {
+  getGpuResourceBudgetSnapshot,
+  notifyGpuResourceSceneChange,
+  resetGpuResourceBudgetTracker,
+  settleGpuResourceBaseline,
+  type GpuResourceBudgetSnapshot,
+  type GpuDriftSeverity,
+} from './GpuResourceBudgetTracker';
+
+export {
   PERFORMANCE_BUDGETS,
   getDrawCallBudget,
   getDrawCallWarnThreshold,

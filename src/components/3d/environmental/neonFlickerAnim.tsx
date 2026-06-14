@@ -49,7 +49,7 @@ export function NeonFlickerAnim({ anim }: { anim: EnvAnimation }) {
     if (lightRef.current) {
       lightRef.current.intensity = isOnRef.current ? onEmissive * 0.5 : 0;
     }
-  });
+  }, { visibilityRef: meshRef });
 
   return (
     <group position={anim.position}>

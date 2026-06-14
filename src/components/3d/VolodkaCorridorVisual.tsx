@@ -9,6 +9,7 @@ import { eventBus } from '@/engine/EventBus';
 import { useEnvironmentLod } from './lod/EnvironmentLodProvider';
 import { EnvironmentDetail } from './lod/PropDistanceGate';
 import { useCachedCanvasTexture } from '@/hooks/useCachedCanvasTexture';
+import { registerModuleGeometries } from '@/engine/three/moduleGeometryRegistry';
 
 interface VolodkaCorridorVisualProps {
   livePlayerPositionRef?: MutableRefObject<THREE.Vector3>;
@@ -78,6 +79,8 @@ const geo_box_58 = new THREE.BoxGeometry(0.04, 1.95, 0.7);
 const geo_cyl_59 = new THREE.CylinderGeometry(0.012, 0.012, 0.08, 6);
 const geo_pln_60 = new THREE.PlaneGeometry(0.06, 0.04);
 
+registerModuleGeometries([geo_pln_1, geo_pln_2, geo_pln_3, geo_pln_4, geo_box_5, geo_box_6, geo_box_7, geo_box_8, geo_box_9, geo_cyl_10, geo_pln_11, geo_box_12, geo_box_13, geo_box_14, geo_cyl_15, geo_box_16, geo_box_17, geo_box_18, geo_box_19, geo_box_20, geo_pln_21, geo_pln_22, geo_sph_23, geo_sph_24, geo_pln_25, geo_pln_26, geo_cyl_27, geo_pln_28, geo_pln_29, geo_pln_30, geo_box_31, geo_box_32, geo_box_33, geo_cyl_34, geo_box_35, geo_box_36, geo_box_37, geo_cyl_38, geo_cyl_39, geo_pln_40, geo_pln_41, geo_pln_42, geo_box_43, geo_pln_44, geo_cyl_45, geo_cyl_46, geo_box_47, geo_pln_48, geo_cyl_49, geo_box_50, geo_cyl_51, geo_box_52, geo_box_53, geo_box_54, geo_sph_55, geo_pln_56, geo_box_57, geo_box_58, geo_cyl_59, geo_pln_60]);
+
 export function VolodkaCorridorVisual({ livePlayerPositionRef: _livePlayerPositionRef }: VolodkaCorridorVisualProps) {
   const floorTexture = useCachedCanvasTexture('volodka_corridor:floor', createCorridorFloorTexture);
   const wallTexture = useCachedCanvasTexture('volodka_corridor:wall', createCorridorWallTexture);
@@ -89,6 +92,7 @@ export function VolodkaCorridorVisual({ livePlayerPositionRef: _livePlayerPositi
   const H = 3;
 
   const flickerLightRef = useRef<THREE.PointLight>(null);
+  const rootGroupRef = useRef<THREE.Group>(null);
 
   // ── Interactive object animation refs ──
   const kitchenDoorRef = useRef<THREE.Group>(null);
@@ -176,10 +180,10 @@ export function VolodkaCorridorVisual({ livePlayerPositionRef: _livePlayerPositi
         1 - Math.exp(-delta * 5),
       );
     }
-  });
+  }, { visibilityRef: rootGroupRef });
 
   return (
-    <group>
+    <group ref={rootGroupRef}>
       {/* ── Floor (linoleum) ── */}
       <mesh rotation-x={-Math.PI / 2} receiveShadow position-y={0.002} renderOrder={0} geometry={geo_pln_1}>
 

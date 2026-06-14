@@ -54,7 +54,12 @@ export function registerQualityGpuCleanupListener(): void {
   });
 }
 
+/** Reset listener guard after HMR so GltfPipelineInit can re-register. */
+export function resetQualityGpuCleanupListener(): void {
+  listenerRegistered = false;
+}
+
 /** Test-only reset */
 export function resetQualityGpuCleanupListenerForTests(): void {
-  listenerRegistered = false;
+  resetQualityGpuCleanupListener();
 }

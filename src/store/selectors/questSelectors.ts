@@ -7,16 +7,17 @@ import { resolveCanonicalNpcId, GOLDEN_PATH_QUEST_SPINE } from '@/data/goldenPat
 import { getObjectiveNpcHint, getObjectiveSceneHint } from '@/data/questNpcMarkers';
 import { getSceneConfig } from '@/config/scenes';
 import { getGameStore } from '../gameStore';
-import { memoizeBySourceRef } from './memo';
+import { memoizeBySourceRef, createSourceRefCache } from './memo';
 import { useGameSelector } from './hooks';
 import { selectQuests } from './worldSelectors';
-import { canStartQuest } from '@/engine/GuidedStoryManager';
+import { areQuestDependenciesMet } from '@/shared/quest/questDependencies';
+import { canStartQuestFromEngine } from '../storeEngineHost';
 
 /* ─── Memo caches for imperative getters ─── */
 
-const activeQuestsCache = { source: null as QuestState[] | null, result: null as QuestState[] | null };
-const failedQuestsCache = { source: null as QuestState[] | null, result: null as QuestState[] | null };
-const questsByTypeCache = { source: null as QuestState[] | null, result: null as Record<QuestType, QuestState[]> | null };
+const activeQuestsCache = createSourceRefCache<QuestState[], QuestState[]>();
+const failedQuestsCache = createSourceRefCache<QuestState[], QuestState[]>();
+const questsByTypeCache = createSourceRefCache<QuestState[], Record<QuestType, QuestState[]>>();
 
 /* ─── Plain getters (memoized by quests array reference) ─── */
 
@@ -75,23 +76,8 @@ export function getQuestProgress(questId: string): number {
 }
 
 export function areDependenciesMet(questId: string): { met: boolean; missing: string[] } {
-  const definition = getQuestDefinitions().find((d) => d.id === questId);
-  if (!definition?.requiresQuests || definition.requiresQuests.length === 0) {
-    return { met: true, missing: [] };
-  }
-
   const quests = selectQuests();
-  const missing: string[] = [];
-
-  for (const reqId of definition.requiresQuests) {
-    const reqQuest = quests.find((q) => q.questId === reqId);
-    if (!reqQuest || reqQuest.status !== 'completed') {
-      const reqDef = getQuestDefinitions().find((d) => d.id === reqId);
-      missing.push(reqDef?.title ?? reqId);
-    }
-  }
-
-  return { met: missing.length === 0, missing };
+  return areQuestDependenciesMet(questId, quests, (id) => getQuestDefinitions().find((d) => d.id === id));
 }
 
 export function getQuestMarker(
@@ -245,7 +231,7 @@ export function getNpcQuestMarkerDisplay(npcId: string): NpcQuestMarkerDisplay |
     if (!isNpcRelevantToQuest(qDef.id, canonicalNpcId)) continue;
     const existing = quests.find((q) => q.questId === qDef.id);
     if (existing && existing.status !== 'inactive') continue;
-    if (!canStartQuest(qDef.id)) continue;
+    if (!canStartQuestFromEngine(qDef.id)) continue;
 
     const isGoldenPath = GOLDEN_PATH_QUEST_SPINE.includes(qDef.id);
     if (!isGoldenPath && qDef.questType !== 'main' && qDef.questType !== 'side') continue;

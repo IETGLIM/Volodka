@@ -2,8 +2,8 @@
 /* Save/load/reset orchestration across independent slice stores. */
 
 import type { StateCreator } from 'zustand';
-import { eventBus } from '@/engine/EventBus';
-import { dispatchGameAction } from '@/engine/GameActionDispatcher';
+import { emitAppEvent } from '@/shared/events/appEventBus';
+import { dispatchGameAction } from '@/shared/gameBridge/gameActionBridge';
 import { SAVE_VERSION } from '@/shared/validation/saveSchema';
 import type { GameStoreState } from '../types';
 import {
@@ -13,10 +13,9 @@ import {
 } from '../persistedState';
 import { applyCombinedPatch } from '../patchState';
 import { getCombinedGameState } from '../storeBindings';
-import { resetGuidedStoryManager } from '@/engine/GuidedStoryManager';
-import { resetCinematicPresentation } from '@/engine/camera/cinematicPresentation';
-import { cancelEncounterPresentation } from '@/engine/combat/encounterPresentation';
-import { clearAutoCloseTimers } from './explorationSlice';
+import { resetGuidedStoryFromStore, resetEngineRuntimeFromStore } from '../storeEngineHost';
+import { resetPlayerXpBatch } from '../playerXpBatch';
+import { clearAutoCloseTimers } from '@/shared/explorationAutoCloseTimers';
 import { resolveSaveFromStorage, writeSaveToLocalStorage } from './saveStorage';
 
 export interface SaveSliceState {
@@ -33,12 +32,12 @@ export type SaveSlice = SaveSliceState & SaveSliceActions;
 
 export const createSaveSlice: StateCreator<GameStoreState, [], [], SaveSlice> = () => ({
   resetGame: () => {
+    resetPlayerXpBatch();
     dispatchGameAction({ type: 'poem/clearAllEffects' });
     clearAutoCloseTimers();
     applyCombinedPatch(createDefaultResetState());
-    resetGuidedStoryManager();
-    resetCinematicPresentation();
-    cancelEncounterPresentation();
+    resetGuidedStoryFromStore();
+    resetEngineRuntimeFromStore();
   },
 
   saveGame: (options) => {
@@ -52,7 +51,7 @@ export const createSaveSlice: StateCreator<GameStoreState, [], [], SaveSlice> = 
       json = JSON.stringify(payloadWithVersion);
     } catch (err) {
       console.error('[saveGame] Failed to serialize save payload:', err);
-      eventBus.emit('game:system_alert', {
+      emitAppEvent('game:system_alert', {
         kind: 'save_failed',
         message: 'Не удалось подготовить данные сохранения.',
       });
@@ -61,7 +60,7 @@ export const createSaveSlice: StateCreator<GameStoreState, [], [], SaveSlice> = 
 
     try {
       if (!writeSaveToLocalStorage(json)) {
-        eventBus.emit('game:system_alert', {
+        emitAppEvent('game:system_alert', {
           kind: 'save_failed',
           message: 'Нет доступа к локальному хранилищу.',
         });
@@ -73,10 +72,10 @@ export const createSaveSlice: StateCreator<GameStoreState, [], [], SaveSlice> = 
         lastSaveTimestamp: timestamp,
         ...(source === 'auto' ? { lastAutoSaveTimestamp: timestamp } : {}),
       });
-      eventBus.emit('game:saved', { timestamp, source });
+      emitAppEvent('game:saved', { timestamp, source });
     } catch {
       console.error('[saveGame] Failed to write save to localStorage');
-      eventBus.emit('game:system_alert', {
+      emitAppEvent('game:system_alert', {
         kind: 'save_failed',
         message: 'Запись сохранения прервана.',
       });
@@ -98,7 +97,7 @@ export const createSaveSlice: StateCreator<GameStoreState, [], [], SaveSlice> = 
             '| Backup also unusable:',
             resolved.backupError,
           );
-          eventBus.emit('game:system_alert', {
+          emitAppEvent('game:system_alert', {
             kind: 'load_failed',
             message: resolved.primaryError,
           });
@@ -121,22 +120,22 @@ export const createSaveSlice: StateCreator<GameStoreState, [], [], SaveSlice> = 
       }
 
       clearAutoCloseTimers();
+      resetPlayerXpBatch();
       applyCombinedPatch(storePatchFromSave(resolved.data));
       resetGuidedStoryManager();
-      resetCinematicPresentation();
-      cancelEncounterPresentation();
+      resetEngineModuleRuntimeState();
 
       if (resolved.status === 'recovered-from-backup') {
-        eventBus.emit('game:system_alert', {
+        emitAppEvent('game:system_alert', {
           kind: 'load_recovered',
           message: 'Основное сохранение повреждено — загружена резервная копия.',
         });
       }
 
-      eventBus.emit('game:loaded', {} as Record<string, never>);
+      emitAppEvent('game:loaded', {} as Record<string, never>);
     } catch (err) {
       console.error('[loadGame] Unexpected error:', err);
-      eventBus.emit('game:system_alert', {
+      emitAppEvent('game:system_alert', {
         kind: 'load_failed',
         message: 'Ошибка загрузки сохранения.',
       });

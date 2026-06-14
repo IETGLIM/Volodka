@@ -7,7 +7,7 @@ import * as THREE from 'three';
 import { getEnvironmentLodProfile } from '@/engine/lod/distanceLod';
 import { useEnvironmentLod } from './lod/EnvironmentLodProvider';
 import { EnvironmentDetail, SceneClutterGate } from './lod/PropDistanceGate';
-import { useCachedCanvasTexture } from '@/hooks/useCachedCanvasTexture';
+import { scratchColor } from '@/engine/three/frameScratch';
 
 interface ChkForestZorgeVisualProps {
   livePlayerPositionRef?: MutableRefObject<THREE.Vector3>;
@@ -274,7 +274,8 @@ function InstancedTreeBelt() {
 
   useLayoutEffect(() => {
     const dummy = new THREE.Object3D();
-    const color = new THREE.Color();
+    scratchColor.set('#ffffff');
+    const color = scratchColor;
     const trunk = trunkRef.current;
     const low = canopyLowRef.current;
     const top = canopyTopRef.current;

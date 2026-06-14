@@ -1,5 +1,5 @@
-import { useRef } from 'react';
-import { useFrame } from '@react-three/fiber';
+import { useLayoutEffect, useRef } from 'react';
+import { registerFrameTick, unregisterFrameTick } from '@/engine/frame/FrameBudgetRegistry';
 import * as THREE from 'three';
 import { applyWetness } from '@/engine/graphics/materials/pbrPresets';
 
@@ -15,19 +15,43 @@ export function useWetSurfaceMaterial(
   options: WetSurfaceMaterialOptions,
 ): THREE.MeshStandardMaterial {
   const matRef = useRef<THREE.MeshStandardMaterial | null>(null);
+  const lastColorRef = useRef<string | null>(null);
+  const optionsRef = useRef(options);
+  optionsRef.current = options;
+
+  const wetActive = (options.rainIntensity ?? 0) > 0;
+
   if (!matRef.current) {
     matRef.current = new THREE.MeshStandardMaterial({
       color,
       roughness: options.dryRoughness,
       metalness: options.dryMetalness,
     });
+    lastColorRef.current = color;
+  } else if (lastColorRef.current !== color) {
+    lastColorRef.current = color;
+    matRef.current.color.set(color);
   }
 
-  useFrame(() => {
-    const mat = matRef.current;
-    if (!mat) return;
-    applyWetness(mat, options.dryRoughness, options.dryMetalness, options.rainIntensity ?? 0);
-  });
+  useLayoutEffect(() => {
+    if (!wetActive) {
+      const mat = matRef.current;
+      if (mat) {
+        const { dryRoughness, dryMetalness } = optionsRef.current;
+        applyWetness(mat, dryRoughness, dryMetalness, 0);
+      }
+      return;
+    }
+
+    const tickId = registerFrameTick('weather', () => {
+      const mat = matRef.current;
+      if (!mat) return;
+      const { dryRoughness, dryMetalness, rainIntensity } = optionsRef.current;
+      applyWetness(mat, dryRoughness, dryMetalness, rainIntensity ?? 0);
+    });
+
+    return () => unregisterFrameTick(tickId);
+  }, [wetActive, options.dryRoughness, options.dryMetalness]);
 
   return matRef.current;
 }

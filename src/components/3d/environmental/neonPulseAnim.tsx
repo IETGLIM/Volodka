@@ -25,7 +25,7 @@ export function NeonPulseAnim({ anim }: { anim: EnvAnimation }) {
     timeRef.current += delta;
     const pulse = minE + (maxE - minE) * (0.5 + 0.5 * Math.sin(timeRef.current * speed * Math.PI * 2));
     materialRef.current.emissiveIntensity = pulse;
-  });
+  }, { visibilityRef: meshRef });
 
   return (
     <mesh ref={meshRef} position={anim.position}>

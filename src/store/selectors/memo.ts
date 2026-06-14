@@ -34,16 +34,28 @@ export function createMemoSelector<D extends readonly unknown[], R>(
  * Cache a derived value keyed on a single source reference (e.g. store array).
  * Returns the cached result when `source` is the same reference as last call.
  */
+export type SourceRefCache<S, R> = {
+  source: S | null;
+  result: R | null;
+  /** Set after first compute — allows caching `null` results. */
+  hit: boolean;
+};
+
+export function createSourceRefCache<S, R>(): SourceRefCache<S, R> {
+  return { source: null, result: null, hit: false };
+}
+
 export function memoizeBySourceRef<S, R>(
   source: S,
-  cache: { source: S | null; result: R | null },
+  cache: SourceRefCache<S, R>,
   compute: (source: S) => R,
 ): R {
-  if (cache.source === source && cache.result !== null) {
-    return cache.result;
+  if (cache.hit && cache.source === source) {
+    return cache.result as R;
   }
   const result = compute(source);
   cache.source = source;
   cache.result = result;
+  cache.hit = true;
   return result;
 }

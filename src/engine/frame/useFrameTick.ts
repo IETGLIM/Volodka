@@ -1,10 +1,32 @@
 import { useLayoutEffect, useRef } from 'react';
+import type * as THREE from 'three';
 import {
   registerFrameTick,
   setFrameTickEnabled,
   unregisterFrameTick,
 } from './FrameBudgetRegistry';
+import { isFrameSimulationActive } from './frameVisibility';
 import { normalizeFrameTickPhase, type FrameSystemId, type FrameTickCallback, type FrameTickOptions } from './types';
+
+function isObject3DVisibleInScene(object: THREE.Object3D): boolean {
+  let node: THREE.Object3D | null = object;
+  while (node) {
+    if (!node.visible) return false;
+    node = node.parent;
+  }
+  return true;
+}
+
+function wrapFrameTickGuards(
+  callback: FrameTickCallback,
+  visibilityRef?: FrameTickOptions['visibilityRef'],
+): FrameTickCallback {
+  return (ctx) => {
+    if (!isFrameSimulationActive()) return;
+    if (visibilityRef?.current && !isObject3DVisibleInScene(visibilityRef.current)) return;
+    callback(ctx);
+  };
+}
 
 /** Register a per-frame callback in the central budget runner. */
 export function useFrameTick(
@@ -15,13 +37,13 @@ export function useFrameTick(
   const callbackRef = useRef(callback);
   callbackRef.current = callback;
 
-  const { priority = 0, label, enabled = true, phase = 'pre_render' } = options;
+  const { priority = 0, label, enabled = true, phase = 'pre_render', visibilityRef } = options;
   const tickIdRef = useRef<number | null>(null);
 
   useLayoutEffect(() => {
     const id = registerFrameTick(
       system,
-      (ctx) => callbackRef.current(ctx),
+      wrapFrameTickGuards((ctx) => callbackRef.current(ctx), visibilityRef),
       { priority, label, enabled, phase: normalizeFrameTickPhase(phase) },
     );
     tickIdRef.current = id;
@@ -29,7 +51,7 @@ export function useFrameTick(
       unregisterFrameTick(id);
       tickIdRef.current = null;
     };
-  }, [system, priority, label, phase, enabled]);
+  }, [system, priority, label, phase, enabled, visibilityRef]);
 
   useLayoutEffect(() => {
     if (tickIdRef.current != null) {

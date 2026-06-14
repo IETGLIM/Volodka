@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { dispatchGameAction } from '@/engine/GameActionDispatcher';
+import { dispatchGameAction } from '@/shared/gameBridge/stateDispatcher';
 import { useGameStore } from './gameStore';
 
 vi.mock('@/engine/EventBus', () => ({

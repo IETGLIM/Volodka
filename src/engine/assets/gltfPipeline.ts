@@ -61,3 +61,12 @@ export function getBasisTranscoderPath(): string {
 export function isGltfPipelineConfigured(): boolean {
   return configured;
 }
+
+/** Reset loader singletons after engine dispose or HMR so configureGltfPipeline can re-run. */
+export function resetGltfPipeline(): void {
+  configured = false;
+  sharedDraco?.dispose();
+  sharedDraco = null;
+  sharedKtx2?.dispose();
+  sharedKtx2 = null;
+}

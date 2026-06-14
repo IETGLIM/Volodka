@@ -145,6 +145,7 @@ function shouldDeferDomApply(options: AccessibilityManagerOptions): boolean {
 /** Owns accessibility settings state, DOM hooks, and cross-tab sync. */
 export class AccessibilityManager {
   private settings: AccessibilitySettingsSnapshot = { ...DEFAULT_ACCESSIBILITY_SETTINGS };
+  private cachedSettings: Readonly<AccessibilitySettingsSnapshot> | null = null;
   private initialized = false;
   private readonly options: AccessibilityManagerOptions;
   private storageListener: ((event: StorageEvent) => void) | null = null;
@@ -155,9 +156,33 @@ export class AccessibilityManager {
     this.options = options;
   }
 
-  /** Snapshot — defaults until init/hydrate. Returns a copy. */
+  /** Snapshot for React — cached immutable copy, invalidated on change. */
   getSettings(): AccessibilitySettingsSnapshot {
-    return this.initialized ? { ...this.settings } : { ...DEFAULT_ACCESSIBILITY_SETTINGS };
+    if (!this.initialized) {
+      return { ...DEFAULT_ACCESSIBILITY_SETTINGS };
+    }
+    if (!this.cachedSettings) {
+      this.cachedSettings = Object.freeze({ ...this.settings });
+    }
+    return this.cachedSettings;
+  }
+
+  /** Hot-path read — no allocation. */
+  getReducedMotionOverride(): boolean {
+    return this.initialized
+      ? this.settings.reducedMotionOverride
+      : DEFAULT_ACCESSIBILITY_SETTINGS.reducedMotionOverride;
+  }
+
+  /** Hot-path read — no allocation. */
+  getLocomotionSpeed(): AccessibilitySettingsSnapshot['locomotionSpeed'] {
+    return this.initialized
+      ? this.settings.locomotionSpeed
+      : DEFAULT_ACCESSIBILITY_SETTINGS.locomotionSpeed;
+  }
+
+  private invalidateSettingsCache(): void {
+    this.cachedSettings = null;
   }
 
   /** Hydrate from storage, apply DOM, optionally bind cross-tab sync. */
@@ -185,6 +210,7 @@ export class AccessibilityManager {
 
     this.settings = { ...DEFAULT_ACCESSIBILITY_SETTINGS };
     this.initialized = true;
+    this.invalidateSettingsCache();
     this.applyDom('all');
     this.emitChanged('all');
     return this.getSettings();
@@ -200,9 +226,11 @@ export class AccessibilityManager {
     if (!this.initialized && storage) {
       this.settings = readAccessibilitySettingsFromStorage(storage);
       this.initialized = true;
+      this.invalidateSettingsCache();
     }
 
     this.settings = { ...this.settings, [key]: clamped };
+    this.invalidateSettingsCache();
 
     if (storage) {
       writeSettingToStorage(storage, key, clamped);
@@ -234,6 +262,7 @@ export class AccessibilityManager {
     this.pendingDomKeys = null;
     this.settings = { ...DEFAULT_ACCESSIBILITY_SETTINGS };
     this.initialized = false;
+    this.invalidateSettingsCache();
   }
 
   private hydrateFromStorage(changedKey: AccessibilityChangedKey): AccessibilitySettingsSnapshot {
@@ -242,6 +271,7 @@ export class AccessibilityManager {
       ? readAccessibilitySettingsFromStorage(storage)
       : { ...DEFAULT_ACCESSIBILITY_SETTINGS };
     this.initialized = true;
+    this.invalidateSettingsCache();
     this.applyDom(changedKey);
     this.emitChanged(changedKey);
     return this.getSettings();
@@ -256,6 +286,7 @@ export class AccessibilityManager {
     const nextValue = parseSettingFromStorageValue(settingKey, event.newValue);
     this.settings = { ...this.settings, [settingKey]: nextValue };
     this.initialized = true;
+    this.invalidateSettingsCache();
     this.applyDom(settingKey);
     this.emitChanged(settingKey);
   }
@@ -353,7 +384,7 @@ export class AccessibilityManager {
   private emitChanged(changedKey: AccessibilityChangedKey): void {
     eventBus.emit('accessibility:changed', {
       changedKey,
-      settings: { ...this.settings },
+      settings: this.getSettings(),
     });
   }
 }

@@ -7,7 +7,7 @@ import type { PlayerState } from '@/shared/types/game';
 import { clamp, createDefaultPlayerState, pushNotification, type GameNotification } from '../shared';
 import type { GameStoreState } from '../types';
 import { pickPlayerCoreCrossActions, readPlayerFromExploration } from '../crossSliceReads';
-import { eventBus } from '@/engine/EventBus';
+import { emitAppEvent } from '@/shared/events/appEventBus';
 import {
   createEmptyActiveTTLFlagMap,
   type ActiveTTLFlag,
@@ -108,7 +108,7 @@ export const createPlayerCoreSlice: StateCreator<
     }));
 
     if (Math.abs(amount) >= 5) {
-      eventBus.emit('choice:made', { karmaChange: amount });
+      emitAppEvent('choice:made', { karmaChange: amount });
     }
   },
 

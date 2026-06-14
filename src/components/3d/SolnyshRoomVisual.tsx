@@ -7,6 +7,7 @@ import { Desk, Chair, Lamp, Plant } from './lazyInteriorModels';
 import { useEnvironmentLod } from './lod/EnvironmentLodProvider';
 import { EnvironmentDetail } from './lod/PropDistanceGate';
 import { useCachedCanvasTexture } from '@/hooks/useCachedCanvasTexture';
+import { registerModuleGeometries } from '@/engine/three/moduleGeometryRegistry';
 
 interface SolnyshRoomVisualProps {
   livePlayerPositionRef?: MutableRefObject<THREE.Vector3>;
@@ -33,6 +34,8 @@ const geo_pln_15 = new THREE.PlaneGeometry(0.26, 0.2);
 const geo_cyl_16 = new THREE.CylinderGeometry(0.28, 0.32, 0.1, 12);
 const geo_pln_wall_wh = new THREE.PlaneGeometry(8, 3);
 const geo_pln_wall_dh = new THREE.PlaneGeometry(8, 3);
+
+registerModuleGeometries([geo_pln_1, geo_pln_2, geo_pln_3, geo_box_4, geo_box_5, geo_pln_6, geo_box_7, geo_cyl_8, geo_cyl_9, geo_box_10, geo_box_11, geo_box_12, geo_pln_13, geo_box_14, geo_pln_15, geo_cyl_16, geo_pln_wall_wh, geo_pln_wall_dh]);
 
 export function SolnyshRoomVisual({ livePlayerPositionRef: _livePlayerPositionRef }: SolnyshRoomVisualProps) {
   const floorTexture = useCachedCanvasTexture('solnysh_room:floor', createWoodFloorTexture);

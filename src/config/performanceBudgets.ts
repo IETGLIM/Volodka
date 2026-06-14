@@ -38,6 +38,15 @@ export interface PerformanceBudgetsConfig {
   reactRendersPerFrame: { warn: number; hardMax: number };
   zustandNotificationsPerFrame: { warn: number; hardMax: number };
   cpuFrameMs: NumericBudget;
+  gpuMemoryEstimateMb: NumericBudget & {
+    leakDriftWarnMb: number;
+    leakDriftFailMb: number;
+    sampleIntervalMs: number;
+  };
+  gpuResourceCounts: {
+    geometries: { warn: number; hardMax: number };
+    textures: { warn: number; hardMax: number };
+  };
   bundleTiers: {
     boot: string[];
     bootMenu?: string[];

@@ -1,5 +1,5 @@
 import { lazy, type ComponentType, type LazyExoticComponent } from 'react';
-import { isChunkLoadError, recoverFromStaleChunk } from '@/engine/chunkLoadRecovery';
+import { isChunkLoadError, recoverFromStaleChunk } from '@/shared/chunk/chunkLoadRecovery';
 
 async function retryImport<T>(
   importFn: () => Promise<T>,

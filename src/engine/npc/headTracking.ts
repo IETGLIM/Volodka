@@ -1,7 +1,7 @@
 /* ─── Volodka RPG – NPC Head Tracking ─── */
 
 import * as THREE from 'three';
-import { registerGlobalCleanup } from '@/engine/core/GlobalCleanupService';
+import { registerGlobalCleanup, registerModuleGlobalCleanupBinder } from '@/engine/core/GlobalCleanupService';
 
 /**
  * Makes an NPC's head bone track the player position using
@@ -342,8 +342,16 @@ export function disposeAllHeadTracking(): void {
   headTrackingStates.clear();
 }
 
-registerGlobalCleanup((ctx) => {
-  if (ctx.reason === 'scene-unload' || ctx.reason === 'unmount') {
-    disposeAllHeadTracking();
-  }
-});
+let unregisterHeadTrackingGlobalCleanup: (() => void) | null = null;
+
+function bindHeadTrackingGlobalCleanup(): void {
+  unregisterHeadTrackingGlobalCleanup?.();
+  unregisterHeadTrackingGlobalCleanup = registerGlobalCleanup((ctx) => {
+    if (ctx.reason === 'scene-unload' || ctx.reason === 'unmount') {
+      disposeAllHeadTracking();
+    }
+  });
+}
+
+registerModuleGlobalCleanupBinder(bindHeadTrackingGlobalCleanup);
+bindHeadTrackingGlobalCleanup();

@@ -7,6 +7,7 @@
 
 import { useRef, useMemo, useEffect } from 'react';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
+import { scratchColor, scratchColorB } from '@/engine/three/frameScratch';
 import * as THREE from 'three';
 import type { SceneId } from '@/shared/types/game';
 import { useGameStore } from '@/store/gameStore';
@@ -247,12 +248,12 @@ export function AmbientNPCs({ livePlayerPositionRef }: AmbientNPCsProps) {
   useEffect(() => {
     if (!bodyMeshRef.current || !headMeshRef.current) return;
 
-    const bodyColor = new THREE.Color(colors.body);
-    const headColor = new THREE.Color(colors.head);
+    scratchColor.set(colors.body);
+    scratchColorB.set(colors.head);
 
     for (let i = 0; i < MAX_INSTANCES; i++) {
-      bodyMeshRef.current.setColorAt(i, bodyColor);
-      headMeshRef.current.setColorAt(i, headColor);
+      bodyMeshRef.current.setColorAt(i, scratchColor);
+      headMeshRef.current.setColorAt(i, scratchColorB);
     }
 
     bodyMeshRef.current.instanceColor!.needsUpdate = true;
@@ -369,7 +370,7 @@ export function AmbientNPCs({ livePlayerPositionRef }: AmbientNPCsProps) {
 
     bodyMesh.instanceMatrix.needsUpdate = true;
     headMesh.instanceMatrix.needsUpdate = true;
-  }, { label: 'AmbientNPCs' });
+  }, { label: 'AmbientNPCs', visibilityRef: bodyMeshRef });
 
   // Don't render anything if no config for this scene
   if (!config || count === 0) return null;

@@ -4,17 +4,20 @@
  */
 
 import { useFrame } from '@react-three/fiber';
-import { getGameStore } from '@/store/gameStore';
+import { getGameSnapshot } from '@/engine/StateDispatcher';
 import { runPostFrameBudget } from '@/engine/frame/FrameBudgetRegistry';
-import { createFrameGameSnapshotFromStore } from '@/engine/frame/frameGameSnapshot';
+import { isFrameSimulationActive } from '@/engine/frame/frameVisibility';
+import { createFrameGameSnapshot } from '@/engine/frame/frameGameSnapshot';
 import { FRAME_PHASE_R3F_PRIORITY } from '@/engine/frame/types';
 
 export function PostFrameBudgetRunner() {
   useFrame((state, delta) => {
+    if (!isFrameSimulationActive()) return;
+
     runPostFrameBudget({
       state,
       delta: Math.min(delta, 0.05),
-      game: createFrameGameSnapshotFromStore(getGameStore()),
+      game: createFrameGameSnapshot(getGameSnapshot()),
     });
   }, FRAME_PHASE_R3F_PRIORITY.post_render);
 

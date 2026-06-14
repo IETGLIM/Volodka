@@ -84,9 +84,14 @@ export function getAccessibilitySettings(): AccessibilitySettingsSnapshot {
 
 /** In-game reduced-motion override or OS prefers-reduced-motion (engine-safe, no React). */
 export function isEffectiveReducedMotion(): boolean {
-  if (getAccessibilitySettings().reducedMotionOverride) return true;
+  if (defaultManager.getReducedMotionOverride()) return true;
   if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return false;
   return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+}
+
+/** Hot-path locomotion scale — no snapshot allocation. */
+export function getAccessibilityLocomotionSpeed(): number {
+  return defaultManager.getLocomotionSpeed();
 }
 
 export function applyAccessibilitySettings(): AccessibilitySettingsSnapshot {

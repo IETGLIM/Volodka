@@ -9,27 +9,21 @@ import { clamp, createDefaultExploration } from '../shared';
 import type { GameStoreState } from '../types';
 import { getCombinedGameState } from '../storeBindings';
 import { readExplorationFromPlayer } from '../crossSliceReads';
-import { eventBus } from '@/engine/EventBus';
-import { requestSceneTransition } from '@/engine/scene/sceneTransition';
-import { buildNPCStatesForTime } from '@/engine/ScheduleEngine';
+import { emitAppEvent } from '@/shared/events/appEventBus';
+import { buildNPCStatesForTime } from '@/shared/schedule/ScheduleEngine';
+import { requestSceneTransitionFromStore } from '../storeEngineHost';
 import { buildScheduleContext } from '@/shared/scheduleContext';
 import { isSceneGateOpen } from '@/shared/sceneGates';
-import { registerHmrDispose } from '@/shared/dev/hmrDispose';
+import {
+  clearAutoCloseTimer,
+  clearAutoCloseTimers,
+  deleteAutoCloseTimer,
+  getAutoCloseGeneration,
+  isAutoCloseSchedulingSuspended,
+  trackAutoCloseTimer,
+} from '@/shared/explorationAutoCloseTimers';
 
-/* ─── Auto-close timer tracking for interactive objects ─── */
-const autoCloseTimers = new Map<string, ReturnType<typeof setTimeout>>();
-let autoCloseGeneration = 0;
-
-/** Clear all pending auto-close timers (game reset / HMR). */
-export function clearAutoCloseTimers(): void {
-  autoCloseGeneration++;
-  for (const timer of autoCloseTimers.values()) {
-    clearTimeout(timer);
-  }
-  autoCloseTimers.clear();
-}
-
-registerHmrDispose(clearAutoCloseTimers);
+export { clearAutoCloseTimers } from '@/shared/explorationAutoCloseTimers';
 
 /* ─── Travel time cost per scene (hours) — based on distance from city center ─── */
 const TRAVEL_TIME: Partial<Record<SceneId, number>> = {
@@ -119,26 +113,28 @@ export const createExplorationSlice: StateCreator<
       exploration: { ...state.exploration, playerRotation: rot },
     })),
 
-  advanceTime: (hours) =>
-    set((state) => {
-      const previousHour = state.exploration.timeOfDay;
-      let newTime = (state.exploration.timeOfDay + hours) % 24;
-      if (newTime < 0) {
-        newTime = newTime + 24;
-      }
-      // ── World Clock: rebuild NPC states when time changes ──
-      const scheduleCtx = buildScheduleContext(getCombinedGameState());
-      const npcStates = buildNPCStatesForTime(newTime, scheduleCtx);
-      // Emit world:hour_changed so other systems (quests, weather, achievements) can react
-      // Use setTimeout to avoid emitting during Zustand setState (can cause issues)
-      const hour = newTime;
-      setTimeout(() => {
-        eventBus.emit('world:hour_changed', { hour, previousHour, npcStates });
-      }, 0);
-      return {
-        exploration: { ...state.exploration, timeOfDay: newTime, npcStates },
-      };
-    }),
+  advanceTime: (hours) => {
+    const previousHour = get().exploration.timeOfDay;
+    let newTime = (previousHour + hours) % 24;
+    if (newTime < 0) {
+      newTime += 24;
+    }
+
+    const scheduleCtx = buildScheduleContext(getCombinedGameState());
+    const npcStates = buildNPCStatesForTime(newTime, scheduleCtx);
+
+    set((state) => ({
+      exploration: {
+        ...state.exploration,
+        timeOfDay: newTime,
+        npcStates,
+      },
+    }));
+
+    queueMicrotask(() => {
+      emitAppEvent('world:hour_changed', { hour: newTime, previousHour, npcStates });
+    });
+  },
 
   toggleWeather: () => set((state) => ({ weatherEnabled: !state.weatherEnabled })),
 
@@ -150,10 +146,9 @@ export const createExplorationSlice: StateCreator<
     const newState = !currentState;
 
     // Cancel any pending auto-close timer for this object
-    const existingTimer = autoCloseTimers.get(id);
+    const existingTimer = clearAutoCloseTimer(id);
     if (existingTimer !== undefined) {
       clearTimeout(existingTimer);
-      autoCloseTimers.delete(id);
     }
 
     set((state) => ({
@@ -164,15 +159,15 @@ export const createExplorationSlice: StateCreator<
     }));
 
     if (id.includes('door') || id.includes('wardrobe')) {
-      eventBus.emit('sound:play', { type: newState ? 'door_open' : 'door_close' });
+      emitAppEvent('sound:play', { type: newState ? 'door_open' : 'door_close' });
     }
 
     // Auto-close after 5 seconds if opening
-    if (newState) {
-      const capturedGeneration = autoCloseGeneration;
+    if (newState && !isAutoCloseSchedulingSuspended()) {
+      const capturedGeneration = getAutoCloseGeneration();
       const timer = setTimeout(() => {
-        autoCloseTimers.delete(id);
-        if (capturedGeneration !== autoCloseGeneration) return;
+        deleteAutoCloseTimer(id);
+        if (capturedGeneration !== getAutoCloseGeneration()) return;
         const checkState = get().interactiveObjectStates[id];
         if (checkState) {
           set((state) => ({
@@ -182,11 +177,11 @@ export const createExplorationSlice: StateCreator<
             },
           }));
           if (id.includes('door') || id.includes('wardrobe')) {
-            eventBus.emit('sound:play', { type: 'door_close' });
+            emitAppEvent('sound:play', { type: 'door_close' });
           }
         }
       }, 5000);
-      autoCloseTimers.set(id, timer);
+      trackAutoCloseTimer(id, timer, capturedGeneration);
     }
   },
 
@@ -226,7 +221,7 @@ export const createExplorationSlice: StateCreator<
       },
     }));
 
-    requestSceneTransition(sceneId, [...targetConfig.spawnPoint] as [number, number, number]);
+    requestSceneTransitionFromStore(sceneId, [...targetConfig.spawnPoint] as [number, number, number]);
   },
 
   setExplorationTimeOfDay: (hour) =>

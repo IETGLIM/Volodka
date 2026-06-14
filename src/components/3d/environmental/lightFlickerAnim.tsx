@@ -5,6 +5,7 @@ import type { EnvAnimation } from '@/engine/EnvironmentalAnimations';
 import { seededRandom, hashString } from './seededRandom';
 
 export function LightFlickerAnim({ anim }: { anim: EnvAnimation }) {
+  const rootRef = useRef<THREE.Group>(null);
   const lightRef = useRef<THREE.PointLight>(null);
   const timeRef = useRef(0);
   const rng = useMemo(() => seededRandom(hashString(anim.id)), [anim.id]);
@@ -29,15 +30,17 @@ export function LightFlickerAnim({ anim }: { anim: EnvAnimation }) {
     // Smooth interpolation toward target
     currentIntensityRef.current += (targetIntensityRef.current - currentIntensityRef.current) * Math.min(delta * 8, 1);
     lightRef.current.intensity = currentIntensityRef.current;
-  });
+  }, { visibilityRef: rootRef });
 
   return (
-    <pointLight
+    <group ref={rootRef}>
+      <pointLight
       ref={lightRef}
       position={anim.position}
       color="#ffcc88"
       intensity={(minI + maxI) / 2}
       distance={6}
     />
+    </group>
   );
 }

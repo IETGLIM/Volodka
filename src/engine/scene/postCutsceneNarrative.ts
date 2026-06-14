@@ -8,7 +8,7 @@ import {
   isClosedOverlayExploreHub,
   SCENE_ENTRY_NODE_TO_HUB,
 } from '@/shared/sceneExploreHubRegistry';
-import type { NarrativeKind } from '@/store/slices/uiSlice';
+import type { NarrativeKind } from '@/shared/types/narrativeKind';
 
 /** Entry beats (corridor_door, kitchen_table, …) map to explore hubs after the player reads them. */
 export function shouldShowEntryStoryAfterCutscene(nodeId: string): boolean {

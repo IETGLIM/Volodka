@@ -206,4 +206,16 @@ describe('accessibilitySettings facade', () => {
     });
     expect(isEffectiveReducedMotion()).toBe(false);
   });
+
+  it('getSettings returns the same cached reference until a setting changes', () => {
+    initAccessibilitySettings();
+    const first = getAccessibilitySettings();
+    const second = getAccessibilitySettings();
+    expect(first).toBe(second);
+
+    setTextSpeed(1.2);
+    const third = getAccessibilitySettings();
+    expect(third).not.toBe(first);
+    expect(third.textSpeed).toBe(1.2);
+  });
 });

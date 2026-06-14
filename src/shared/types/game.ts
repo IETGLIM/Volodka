@@ -29,4 +29,6 @@ export * from './state/player';
 export * from './state/exploration';
 export * from './state/game';
 
-// EventMap / CameraWaypointData: import from '@/engine/events' (no re-export here — avoids cycle).
+export type { CameraWaypointData } from './camera';
+
+// EventMap: import from '@/engine/events' (engine-owned bus types).

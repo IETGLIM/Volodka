@@ -19,22 +19,33 @@ import { disposeAmbientEngine, reviveAmbientEngine } from '@/engine/audio/Ambien
 import { disposeAudioEngine, reviveAudioEngine } from '@/engine/audio/AudioEngine';
 import { disposeSharedAudioContext, reviveSharedAudioContext } from '@/engine/SharedAudioContext';
 import { resetInteractionSession } from '@/engine/interaction/interactionSession';
-import { resetInteractionEndDedupState } from '@/engine/interaction/interactionEndDedup';
-import { clearAutoCloseTimers } from '@/store/slices/explorationSlice';
+import {
+  resumeAutoCloseTimers,
+  suspendAutoCloseTimers,
+} from '@/shared/explorationAutoCloseTimers';
+import { resetPlayerXpBatchFromEngine } from '@/shared/gameBridge/storeLifecycleHost';
+import { resetEngineModuleRuntimeState } from '@/engine/engineRuntimeReset';
+import {
+  disposeFrameVisibility,
+  reviveFrameVisibility,
+} from '@/engine/frame/frameVisibility';
 import {
   clearPlayerExternalVelocity,
   clearPlayerRigidBody,
 } from '@/engine/PlayerRigidBodyState';
 import { invalidateCanvasFirstFrame } from '@/engine/canvas/canvasFirstFrameSession';
-import { disposeCombatTransientPools } from '@/engine/combat/combatTransientPool';
+import { disposeAllEngineGpuResources } from '@/engine/three/gpuResourceLifecycle';
 import { disposeWorldComputeWorker, reviveWorldComputeWorker } from '@/engine/workers/computeWorkerClient';
 import { registerHmrDispose } from '@/shared/dev/hmrDispose';
 import {
   resetGlobalCleanupRegistry,
+  reviveModuleGlobalCleanupBindings,
   runGlobalUnmountCleanup,
 } from '@/engine/core/GlobalCleanupService';
 import { getGameSnapshot } from '@/engine/GameActionDispatcher';
 import { bindPoemResetListener } from '@/engine/PoemPowerSystem';
+import { bindDeferredCombatStartListener } from '@/engine/core/SceneTransitionManager';
+import { bindSceneLoadedBridge } from '@/engine/core/sceneLoadedGate';
 import {
   disposeTransitionDirector,
   reviveTransitionDirector,
@@ -63,11 +74,13 @@ export function disposeGameEngine(): void {
 
   try {
     detachKeyboardListeners();
+    resetEngineModuleRuntimeState();
+    disposeFrameVisibility();
     clearPlayerExternalVelocity();
     clearPlayerRigidBody();
-    resetInteractionEndDedupState();
     resetInteractionSession();
-    clearAutoCloseTimers();
+    suspendAutoCloseTimers();
+    resetPlayerXpBatchFromEngine();
 
     disposeCombatSystem();
     disposeQuestTracker();
@@ -77,7 +90,7 @@ export function disposeGameEngine(): void {
     disposeWorldStreamManager();
     disposeWorldComputeWorker();
     invalidateCanvasFirstFrame();
-    disposeCombatTransientPools();
+    disposeAllEngineGpuResources('engine');
 
     disposeSceneAudioController();
     disposeMusicEngine();
@@ -101,8 +114,13 @@ export function disposeGameEngine(): void {
  */
 export function reviveGameEngine(): void {
   engineDisposed = false;
+  resumeAutoCloseTimers();
+  reviveModuleGlobalCleanupBindings();
 
+  reviveFrameVisibility();
   reviveEventBus();
+  bindSceneLoadedBridge();
+  bindDeferredCombatStartListener();
   bindPoemResetListener();
 
   reviveQuestTracker();

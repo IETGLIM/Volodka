@@ -4,7 +4,7 @@
  */
 
 import { dispatchGameAction } from '@/engine/GameActionDispatcher';
-import type { NarrativeKind } from '@/store/slices/uiSlice';
+import type { NarrativeKind } from '@/shared/types/narrativeKind';
 
 /** Open narrative overlay with node id in a single store write. */
 export function openNarrativeOverlay(nodeId: string, kind: NarrativeKind): void {

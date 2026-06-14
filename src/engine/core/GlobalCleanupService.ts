@@ -16,6 +16,7 @@ export interface GlobalCleanupContext {
 export type GlobalCleanupHandler = (ctx: GlobalCleanupContext) => void;
 
 const handlers = new Set<GlobalCleanupHandler>();
+const moduleCleanupBinders = new Set<() => void>();
 
 /** Register a global cleanup handler. Returns unsubscribe. */
 export function registerGlobalCleanup(handler: GlobalCleanupHandler): () => void {
@@ -23,6 +24,26 @@ export function registerGlobalCleanup(handler: GlobalCleanupHandler): () => void
   return () => {
     handlers.delete(handler);
   };
+}
+
+/**
+ * Register a module-level cleanup binder (import-time singletons).
+ * Called once at module load and again from `reviveModuleGlobalCleanupBindings()`.
+ */
+export function registerModuleGlobalCleanupBinder(bind: () => void): void {
+  moduleCleanupBinders.add(bind);
+}
+
+/** Re-arm module-level cleanup handlers after `resetGlobalCleanupRegistry()`. */
+export function reviveModuleGlobalCleanupBindings(): void {
+  for (const bind of moduleCleanupBinders) {
+    bind();
+  }
+}
+
+/** Test / diagnostics — count of registered handlers. */
+export function getRegisteredGlobalCleanupHandlerCount(): number {
+  return handlers.size;
 }
 
 /** Run all registered handlers for a cleanup context (errors logged, never thrown). */

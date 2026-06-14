@@ -65,6 +65,18 @@
     "hardMax": 33.33,
     "description": "Wall frame time — 16.67 ms @ 60 FPS, 33.33 ms @ 30 FPS"
   },
+  "gpuMemoryEstimateMb": {
+    "target": 128,
+    "hardMax": 256,
+    "leakDriftWarnMb": 24,
+    "leakDriftFailMb": 64,
+    "sampleIntervalMs": 5000,
+    "description": "Heuristic GPU buffer+texture estimate; drift vs per-scene baseline detects slow leaks"
+  },
+  "gpuResourceCounts": {
+    "geometries": { "warn": 400, "hardMax": 800 },
+    "textures": { "warn": 200, "hardMax": 400 }
+  },
   "bundleTiers": {
     "boot": ["^index-", "^vendor-"],
     "bootMenu": [

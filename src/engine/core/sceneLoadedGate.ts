@@ -16,7 +16,7 @@ export type SceneLoadedPayload = { sceneId: SceneId; fromSceneId: SceneId };
 
 let pending: SceneLoadedPayload | null = null;
 let pendingGeneration = 0;
-let bridgeInitialized = false;
+let unsubCanvasFirstFrame: (() => void) | null = null;
 
 function flushPendingLoaded(generation: number): void {
   if (generation !== pendingGeneration || !pending) return;
@@ -40,17 +40,22 @@ export function scheduleSceneLoaded(payload: SceneLoadedPayload): void {
   invalidateCanvasFirstFrame();
 }
 
-export function ensureSceneLoadedBridge(): void {
-  if (bridgeInitialized) return;
-  bridgeInitialized = true;
-
-  eventBus.on('canvas:first-frame', () => {
+/** (Re)bind canvas:first-frame → scene:loaded bridge after EventBus dispose/revive. */
+export function bindSceneLoadedBridge(): void {
+  unsubCanvasFirstFrame?.();
+  unsubCanvasFirstFrame = eventBus.on('canvas:first-frame', () => {
     flushPendingLoaded(pendingGeneration);
   });
+}
+
+export function ensureSceneLoadedBridge(): void {
+  bindSceneLoadedBridge();
 }
 
 /** Test harness — reset pending latch between cases. */
 export function resetSceneLoadedGate(): void {
   pending = null;
   pendingGeneration = 0;
+  unsubCanvasFirstFrame?.();
+  unsubCanvasFirstFrame = null;
 }

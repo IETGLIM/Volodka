@@ -12,6 +12,11 @@ import {
 } from '@/config/performanceBudgets';
 import type { FrameProfilerSnapshot } from '@/engine/frame/FrameProfilerState';
 import { emitRuntimeBudgetViolations } from '@/engine/performance/runtimeBudgetEvents';
+import {
+  getGpuResourceBudgetSnapshot,
+  notifyGpuResourceSceneChange,
+  type GpuResourceBudgetSnapshot,
+} from '@/engine/performance/GpuResourceBudgetTracker';
 
 export type BudgetSeverity = 'ok' | 'warn' | 'fail';
 
@@ -29,6 +34,7 @@ export interface RuntimeBudgetSnapshot {
   sceneId: SceneId | null;
   violations: BudgetViolation[];
   firstScenePlayableMs: number | null;
+  gpu: GpuResourceBudgetSnapshot | null;
 }
 
 const fpsSamples: number[] = [];
@@ -45,6 +51,88 @@ function pushFpsSample(frameMs: number): void {
 function averageFps(): number {
   if (fpsSamples.length === 0) return 0;
   return fpsSamples.reduce((a, b) => a + b, 0) / fpsSamples.length;
+}
+
+function evaluateGpuBudgetViolations(gpu: GpuResourceBudgetSnapshot): BudgetViolation[] {
+  const violations: BudgetViolation[] = [];
+  const memBudget = PERFORMANCE_BUDGETS.gpuMemoryEstimateMb;
+  const countBudget = PERFORMANCE_BUDGETS.gpuResourceCounts;
+  const totalMb = gpu.estimatedTotalBytes / (1024 * 1024);
+
+  if (totalMb > memBudget.hardMax) {
+    violations.push({
+      id: 'gpuMemory',
+      severity: 'fail',
+      message: `GPU est. ${totalMb.toFixed(0)} MB > ${memBudget.hardMax} MB`,
+      value: totalMb,
+      limit: memBudget.hardMax,
+    });
+  } else if (totalMb > memBudget.target) {
+    violations.push({
+      id: 'gpuMemory',
+      severity: 'warn',
+      message: `GPU est. ${totalMb.toFixed(0)} MB > target ${memBudget.target} MB`,
+      value: totalMb,
+      limit: memBudget.target,
+    });
+  }
+
+  if (gpu.rendererGeometryCount > countBudget.geometries.hardMax) {
+    violations.push({
+      id: 'gpuGeometries',
+      severity: 'fail',
+      message: `Geometries ${gpu.rendererGeometryCount} > ${countBudget.geometries.hardMax}`,
+      value: gpu.rendererGeometryCount,
+      limit: countBudget.geometries.hardMax,
+    });
+  } else if (gpu.rendererGeometryCount > countBudget.geometries.warn) {
+    violations.push({
+      id: 'gpuGeometries',
+      severity: 'warn',
+      message: `Geometries ${gpu.rendererGeometryCount} near limit ${countBudget.geometries.hardMax}`,
+      value: gpu.rendererGeometryCount,
+      limit: countBudget.geometries.warn,
+    });
+  }
+
+  if (gpu.rendererTextureCount > countBudget.textures.hardMax) {
+    violations.push({
+      id: 'gpuTextures',
+      severity: 'fail',
+      message: `Textures ${gpu.rendererTextureCount} > ${countBudget.textures.hardMax}`,
+      value: gpu.rendererTextureCount,
+      limit: countBudget.textures.hardMax,
+    });
+  } else if (gpu.rendererTextureCount > countBudget.textures.warn) {
+    violations.push({
+      id: 'gpuTextures',
+      severity: 'warn',
+      message: `Textures ${gpu.rendererTextureCount} near limit ${countBudget.textures.hardMax}`,
+      value: gpu.rendererTextureCount,
+      limit: countBudget.textures.warn,
+    });
+  }
+
+  const driftMb = gpu.driftBytes / (1024 * 1024);
+  if (gpu.driftSeverity === 'fail' && gpu.consecutiveDriftViolations >= 2) {
+    violations.push({
+      id: 'gpuMemoryDrift',
+      severity: 'fail',
+      message: `GPU drift +${driftMb.toFixed(0)} MB vs scene baseline (leak?)`,
+      value: driftMb,
+      limit: memBudget.leakDriftFailMb,
+    });
+  } else if (gpu.driftSeverity !== 'ok' && gpu.consecutiveDriftViolations >= 2) {
+    violations.push({
+      id: 'gpuMemoryDrift',
+      severity: 'warn',
+      message: `GPU drift +${driftMb.toFixed(0)} MB vs scene baseline`,
+      value: driftMb,
+      limit: memBudget.leakDriftWarnMb,
+    });
+  }
+
+  return violations;
 }
 
 export function evaluateRuntimeBudgets(
@@ -164,12 +252,17 @@ export function evaluateRuntimeBudgets(
     });
   }
 
+  notifyGpuResourceSceneChange(sceneId);
+  const gpu = getGpuResourceBudgetSnapshot();
+  violations.push(...evaluateGpuBudgetViolations(gpu));
+
   return {
     fps,
     fpsProfile: weak ? 'weakLaptop' : 'desktop',
     sceneId,
     violations,
     firstScenePlayableMs: null,
+    gpu,
   };
 }
 

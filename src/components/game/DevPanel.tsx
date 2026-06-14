@@ -387,6 +387,55 @@ function PerfTab({
             <Row label="Programs" value={frameProfiler.programs} />
             <Row label="GPU frame" value={frameProfiler.gpuFrameMs != null ? `${frameProfiler.gpuFrameMs.toFixed(2)} ms` : 'N/A'} />
           </div>
+
+          {frameProfiler.gpuMemory && (
+            <div style={{ marginTop: 12 }}>
+              <div style={{ color: '#555', fontSize: 9, textTransform: 'uppercase', letterSpacing: 1.5, marginBottom: 6 }}>
+                GPU Memory (est.)
+              </div>
+              {(() => {
+                const gpu = frameProfiler.gpuMemory;
+                const totalMb = gpu.estimatedTotalBytes / (1024 * 1024);
+                const budget = PERFORMANCE_BUDGETS.gpuMemoryEstimateMb;
+                const pct = Math.min(100, (totalMb / budget.hardMax) * 100);
+                const barColor =
+                  totalMb > budget.hardMax ? '#f44' : totalMb > budget.target ? '#ff4' : 'var(--cyber-cyan)';
+                const driftMb = gpu.driftBytes / (1024 * 1024);
+                return (
+                  <>
+                    <Row
+                      label="Total est."
+                      value={`${totalMb.toFixed(1)} / ${budget.hardMax} MB`}
+                      valueColor={barColor}
+                    />
+                    <Row label="Module geo" value={formatBytes(gpu.moduleGeometryBytes)} />
+                    <Row label="Module mat" value={formatBytes(gpu.moduleMaterialBytes)} />
+                    <Row label="Scene est." value={formatBytes(gpu.sceneEstimateBytes)} />
+                    {gpu.baselineBytes != null && (
+                      <Row
+                        label="Drift vs baseline"
+                        value={`+${driftMb.toFixed(1)} MB`}
+                        valueColor={gpu.driftSeverity === 'fail' ? '#f44' : gpu.driftSeverity === 'warn' ? '#ff4' : '#888'}
+                      />
+                    )}
+                    <div style={{ marginTop: 4 }}>
+                      <div style={{ height: 4, borderRadius: 2, background: '#222', overflow: 'hidden' }}>
+                        <div
+                          style={{
+                            height: '100%',
+                            width: `${pct}%`,
+                            background: barColor,
+                            borderRadius: 2,
+                            transition: 'width 0.3s',
+                          }}
+                        />
+                      </div>
+                    </div>
+                  </>
+                );
+              })()}
+            </div>
+          )}
         </>
       )}
 

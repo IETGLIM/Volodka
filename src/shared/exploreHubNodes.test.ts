@@ -12,12 +12,12 @@ let mockSnapshot = {
   currentNodeId: 'explore_mode',
 };
 
-vi.mock('@/engine/GameActionDispatcher', () => ({
+vi.mock('@/shared/gameBridge/stateDispatcher', () => ({
   getGameSnapshot: () => mockSnapshot,
-  dispatchGameAction: (...args: unknown[]) => dispatchGameAction(...args),
+  dispatchStateAction: (...args: unknown[]) => dispatchGameAction(...args),
 }));
 
-vi.mock('@/engine/guidedStory/createGuidedStoryDeps', () => ({
+vi.mock('@/shared/story/getStoryNodeSceneId', () => ({
   getStoryNodeSceneId: (nodeId: string) => {
     const map: Record<string, string> = {
       corridor_door: 'volodka_corridor',

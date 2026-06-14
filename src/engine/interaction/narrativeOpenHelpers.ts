@@ -4,11 +4,11 @@ import {
   getDialogueNodes,
   getStoryNodes,
 } from '@/data/gameDataLoader';
-import { dispatchGameAction, getGameSnapshot } from '@/engine/GameActionDispatcher';
-import { getGameStore } from '@/store/gameStore';
+import { dispatchStateAction, getGameSnapshot } from '@/engine/StateDispatcher';
+import type { NarrativeKind } from '@/shared/types/narrativeKind';
+import { hasVisitedNode } from '@/shared/visitedNodesIndex';
+import { openNarrativeOverlay, closeNarrativeOverlay } from '@/engine/scene/narrativeOverlay';
 import { requestSceneTransition } from '@/engine/scene/sceneTransition';
-import { openNarrativeOverlay } from '@/engine/scene/narrativeOverlay';
-import { hasVisitedNode } from '@/store/visitedNodesIndex';
 import { getCutsceneForNode } from '@/data/cutscenes';
 import {
   SCENE_ENTRY_NODE_TO_HUB,
@@ -20,10 +20,6 @@ import { getStoryNodeSceneId } from '@/engine/guidedStory/createGuidedStoryDeps'
 import { enterSceneFreeExplorationHub } from '@/engine/scene/freeExplorationHub';
 import { devWarn } from '@/shared/utils/devLog';
 import type { SceneId } from '@/shared/types/game';
-import { closeNarrativeOverlay } from '@/engine/scene/narrativeOverlay';
-import { clearGameplayPhaseFlags } from '@/shared/gamePhase';
-
-type NarrativeKind = 'dialogue' | 'story';
 
 /** Entry beats that only fire from specific source scenes (avoid replay when backtracking). */
 const ENTRY_BEAT_SOURCE_SCENES: Partial<Record<string, readonly SceneId[]>> = {
@@ -57,7 +53,7 @@ function notifyNarrativeUnavailable(
   } else {
     devWarn(`[narrative] ${kind} node not found: "${nodeId}"`);
   }
-  dispatchGameAction({
+  dispatchStateAction({
     type: 'notification/push',
     notificationType: 'quest',
     text: userMessageForKind(kind),
@@ -143,13 +139,13 @@ export async function openLinkedStory(nodeId: string): Promise<boolean> {
     const alreadyVisited = hasVisitedNode(snapshot.playerState.visitedNodes, nodeId);
 
     if (alreadyVisited) {
-      dispatchGameAction({ type: 'story/visitNode', nodeId });
+      dispatchStateAction({ type: 'story/visitNode', nodeId });
       if (entryHubId !== nodeId) {
         if (isClosedOverlayExploreHub(entryHubId)) {
           enterSceneFreeExplorationHub(entryHubId);
         } else {
-          dispatchGameAction({ type: 'story/visitNode', nodeId: entryHubId });
-          dispatchGameAction({ type: 'story/setCurrentNodeId', nodeId: entryHubId });
+          dispatchStateAction({ type: 'story/visitNode', nodeId: entryHubId });
+          dispatchStateAction({ type: 'story/setCurrentNodeId', nodeId: entryHubId });
         }
       }
       if (snapshot.exploration.currentSceneId !== storyNode.sceneId) {
@@ -158,11 +154,11 @@ export async function openLinkedStory(nodeId: string): Promise<boolean> {
       return true;
     }
 
-    dispatchGameAction({ type: 'story/visitNode', nodeId });
+    dispatchStateAction({ type: 'story/visitNode', nodeId });
     if (snapshot.exploration.currentSceneId !== storyNode.sceneId) {
       requestSceneTransition(storyNode.sceneId as SceneId);
     }
-    dispatchGameAction({ type: 'story/setCurrentNodeId', nodeId });
+    dispatchStateAction({ type: 'story/setCurrentNodeId', nodeId });
     if (!getCutsceneForNode(nodeId)) {
       openNarrativeOverlay(nodeId, 'story');
     }
@@ -187,17 +183,18 @@ export function triggerSceneEntryStoryIfNeeded(
   toSceneId: SceneId,
   fromSceneId: SceneId,
 ): void {
-  const store = getGameStore();
-  if (store.activeCutsceneId) return;
+  const snapshot = getGameSnapshot();
+  if (snapshot.activeCutsceneId) return;
 
   const hubDef = getExploreHubDefForScene(toSceneId);
   if (!hubDef || hubDef.entryNodeIds.length === 0) return;
 
-  const currentStorySceneId = getStoryNodeSceneId(store.currentNodeId);
+  const currentStorySceneId = getStoryNodeSceneId(snapshot.currentNodeId);
   if (
-    !isExploreHubNode(store.currentNodeId) &&
+    !isExploreHubNode(snapshot.currentNodeId) &&
     currentStorySceneId === toSceneId &&
-    !hubDef.entryNodeIds.includes(store.currentNodeId)
+    snapshot.currentNodeId != null &&
+    !hubDef.entryNodeIds.includes(snapshot.currentNodeId)
   ) {
     return;
   }
@@ -209,32 +206,30 @@ export function triggerSceneEntryStoryIfNeeded(
 
     const cutscene = getCutsceneForNode(entryNodeId);
     const cutscenePending =
-      cutscene != null && !store.triggeredCutscenes.includes(cutscene.id);
+      cutscene != null && !snapshot.triggeredCutscenes.includes(cutscene.id);
 
-    if (store.currentNodeId === entryNodeId) {
+    if (snapshot.currentNodeId === entryNodeId) {
       const hubId = SCENE_ENTRY_NODE_TO_HUB[entryNodeId];
       if (cutscenePending) {
         closeNarrativeOverlay();
-        // Node id unchanged — useCutsceneController won't re-run; bounce via hub then re-arm entry.
         if (hubId && hubId !== entryNodeId) {
-          dispatchGameAction({ type: 'story/setCurrentNodeId', nodeId: hubId });
+          dispatchStateAction({ type: 'story/setCurrentNodeId', nodeId: hubId });
           queueMicrotask(() => {
-            dispatchGameAction({ type: 'story/visitNode', nodeId: entryNodeId });
-            dispatchGameAction({ type: 'story/setCurrentNodeId', nodeId: entryNodeId });
+            dispatchStateAction({ type: 'story/visitNode', nodeId: entryNodeId });
+            dispatchStateAction({ type: 'story/setCurrentNodeId', nodeId: entryNodeId });
           });
         }
       } else if (hubId && hubId !== entryNodeId) {
-        // Cutscene already played or skipped — promote to explore hub so [E] and movement unlock.
-        if (store.activeCutsceneId) {
-          store.setCutscene(null, []);
-          clearGameplayPhaseFlags(store);
+        if (snapshot.activeCutsceneId) {
+          dispatchStateAction({ type: 'cutscene/clear' });
+          dispatchStateAction({ type: 'phase/clearGameplayFlags' });
           closeNarrativeOverlay();
         }
         if (isClosedOverlayExploreHub(hubId)) {
           enterSceneFreeExplorationHub(hubId);
         } else {
-          dispatchGameAction({ type: 'story/visitNode', nodeId: hubId });
-          dispatchGameAction({ type: 'story/setCurrentNodeId', nodeId: hubId });
+          dispatchStateAction({ type: 'story/visitNode', nodeId: hubId });
+          dispatchStateAction({ type: 'story/setCurrentNodeId', nodeId: hubId });
           closeNarrativeOverlay();
         }
       }
@@ -242,8 +237,8 @@ export function triggerSceneEntryStoryIfNeeded(
     }
 
     const hubId = SCENE_ENTRY_NODE_TO_HUB[entryNodeId];
-    const onHub = hubId != null && store.currentNodeId === hubId;
-    const visited = hasVisitedNode(store.playerState.visitedNodes, entryNodeId);
+    const onHub = hubId != null && snapshot.currentNodeId === hubId;
+    const visited = hasVisitedNode(snapshot.playerState.visitedNodes, entryNodeId);
 
     if (!visited || cutscenePending) {
       void openLinkedStory(entryNodeId).catch((error) => {
@@ -256,8 +251,8 @@ export function triggerSceneEntryStoryIfNeeded(
       if (isClosedOverlayExploreHub(hubId)) {
         enterSceneFreeExplorationHub(hubId);
       } else {
-        dispatchGameAction({ type: 'story/visitNode', nodeId: hubId });
-        dispatchGameAction({ type: 'story/setCurrentNodeId', nodeId: hubId });
+        dispatchStateAction({ type: 'story/visitNode', nodeId: hubId });
+        dispatchStateAction({ type: 'story/setCurrentNodeId', nodeId: hubId });
       }
       return;
     }

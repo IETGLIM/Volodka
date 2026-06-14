@@ -2,7 +2,6 @@
 
 import type { CombatState } from './types';
 import { dispatchGameAction, getGameSnapshot } from '@/engine/GameActionDispatcher';
-import { calculateXpToNextLevel as storeCalculateXpToNextLevel } from '@/store/shared';
 
 function snap() {
   return getGameSnapshot();
@@ -43,7 +42,7 @@ export function isPowerAvailable(poemId: string, state: CombatState): boolean {
   return true;
 }
 
-export const calculateXpToNextLevel = storeCalculateXpToNextLevel;
+export { calculateXpToNextLevel } from '@/shared/progression/xp';
 
 export function addXp(amount: number): void {
   dispatchGameAction({ type: 'player/addXp', amount });

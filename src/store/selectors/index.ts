@@ -1,7 +1,7 @@
 /* ─── Volodka RPG – selector barrel ─── */
 
 export { useGameSelector, useGamePrimitive } from './hooks';
-export { createMemoSelector, memoizeBySourceRef } from './memo';
+export { createMemoSelector, memoizeBySourceRef, createSourceRefCache, type SourceRefCache } from './memo';
 export { createShallowSelectorHook, createPrimitiveSelectorHook } from './createSelectorHooks';
 
 export * from './playerSelectors';

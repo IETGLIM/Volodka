@@ -1,11 +1,11 @@
-import { findNpcById, getStoryNodes, isNarrativeGameDataLoaded } from '@/data/gameDataLoader';
+import { findNpcById, getQuestDefinitions, getStoryNodes, isNarrativeGameDataLoaded } from '@/data/gameDataLoader';
 import { eventBus } from '@/engine/EventBus';
 import {
   dispatchGameAction,
   getGameSnapshot,
   type GameStoreSnapshot,
 } from '@/engine/GameActionDispatcher';
-import { areDependenciesMet } from '@/store/questStore';
+import { areQuestDependenciesMet } from '@/shared/quest/questDependencies';
 import { getGuidedStoryPathConfig } from '@/engine/guidedStory/guidedStoryPath';
 import { createSnapshotStoryGraphAccess } from '@/engine/guidedStory/guidedStoryQuestGraph';
 import type {
@@ -15,6 +15,7 @@ import type {
 } from '@/engine/guidedStory/guidedStoryTypes';
 import { STORY_FLAG_TO_NODE_ID } from '@/data/goldenPath';
 import type { QuestDefinition } from '@/shared/types/game';
+import { getStoryNodeSceneId as getStoryNodeSceneIdFromShared } from '@/shared/story/getStoryNodeSceneId';
 
 export function toGuidedStorySnapshot(store: GameStoreSnapshot): GuidedStorySnapshot {
   return {
@@ -83,7 +84,22 @@ export function createDefaultGuidedStoryDeps(): GuidedStoryDeps {
     getSnapshot: readGuidedStorySnapshot,
     path: getGuidedStoryPathConfig(),
     npc: { findNpcById },
-    quests: { areDependenciesMet },
+    quests: {
+      areDependenciesMet: (questId) => {
+        const snapshot = readGuidedStorySnapshot();
+        const result = areQuestDependenciesMet(
+          questId,
+          snapshot.quests.map((q) => ({
+            questId: q.questId,
+            status: q.status,
+            objectives: q.objectives,
+            startedAtTime: 0,
+          })),
+          (id) => getQuestDefinitions().find((d) => d.id === id),
+        );
+        return { met: result.met };
+      },
+    },
     graph: createSnapshotStoryGraphAccess(readGuidedStorySnapshot),
     actions: {
       advanceAct: advanceStoryAct,
@@ -98,7 +114,4 @@ export function createDefaultGuidedStoryDeps(): GuidedStoryDeps {
   };
 }
 
-export function getStoryNodeSceneId(nodeId: string): string | undefined {
-  if (!isNarrativeGameDataLoaded()) return undefined;
-  return getStoryNodes()[nodeId]?.sceneId;
-}
+export { getStoryNodeSceneIdFromShared as getStoryNodeSceneId };
