@@ -88,6 +88,7 @@ const PlayerStateSchema = z.object({
   equippedItems: EquippedItemsSchema,
   flags: z.record(z.string(), z.boolean()),
   visitedNodes: z.array(z.string()),
+  visitedNodeTimestamps: z.record(z.string(), z.number()).optional().default({}),
   choiceLog: z.array(z.string()),
   moralChoices: z.array(z.string()),
   interactions: z.array(z.string()),

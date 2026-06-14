@@ -287,3 +287,29 @@
 .stat-flash {
   animation: stat-flash 0.6s ease-out;
 }
+
+/* ─── MatrixRainQuote falling columns ─── */
+@keyframes matrixFallQuote {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(calc(200vh + 100%)); }
+}
+
+.matrix-rain-quote-column {
+  will-change: transform;
+}
+
+/* ─── MiniGameHub card shimmer ─── */
+@keyframes minigameHubShimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+.minigame-hub-shimmer {
+  animation: minigameHubShimmer 3s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .minigame-hub-shimmer {
+    animation: none;
+  }
+}

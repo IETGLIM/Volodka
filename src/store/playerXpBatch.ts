@@ -51,6 +51,10 @@ export function queuePlayerXp(
       const { progression, levelUp } = applyXpToProgression(
         state.playerState.progression,
         total,
+        {
+          prevSkills: state.playerState.skills,
+          prevKarma: state.playerState.karma,
+        },
       );
       levelUpToEmit = levelUp;
 

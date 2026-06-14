@@ -106,6 +106,10 @@ export function setReducedMotionOverride(enabled: boolean): void {
   manager().updateSetting('reducedMotionOverride', enabled);
 }
 
+export function setLoadingFxDisabled(enabled: boolean): void {
+  manager().updateSetting('loadingFxDisabled', enabled);
+}
+
 export function setSubtitleScale(scale: number | SubtitleScale): void {
   manager().updateSetting('subtitleScale', createSubtitleScale(scale));
 }

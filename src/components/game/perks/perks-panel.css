@@ -1,0 +1,11 @@
+.perk-card--pulse {
+  animation: perk-available-pulse 2.5s ease-in-out infinite;
+}
+
+.perks-panel--reduced-motion .perk-card--pulse {
+  animation: none;
+}
+
+.perks-panel--reduced-motion .perk-card-hover-scale:hover {
+  transform: none;
+}

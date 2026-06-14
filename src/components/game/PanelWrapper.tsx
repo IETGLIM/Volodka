@@ -20,6 +20,11 @@ import { usePanelId, usePanelStack } from '@/components/game/orchestrator/PanelS
 import { usePanelExitComplete } from '@/components/game/orchestrator/PanelExitContext';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
+import { useTransitionDirector } from '@/hooks/useTransitionDirector';
+
+const PANEL_WRAPPER_LABELS = {
+  close: 'Закрыть',
+} as const;
 
 /* ─── Accent color mapping ─── */
 const ACCENT_MAP = {
@@ -110,6 +115,7 @@ export function PanelWrapper({
   testId,
 }: PanelWrapperProps) {
   const reducedMotion = useEffectiveReducedMotion();
+  const { phase: transitionPhase } = useTransitionDirector();
   const { closeButtonRef, dialogProps, titleProps } = usePanelDialog();
   const accent = ACCENT_MAP[accentColor];
   const panelId = usePanelId();
@@ -117,19 +123,17 @@ export function PanelWrapper({
   const isTop = panelId == null || isTopPanel(panelId);
   const notifyPanelExit = usePanelExitComplete();
 
-  /* Accent color for corner brackets (matches panel accent) */
-  const cornerBorderColor = accentColor === 'emerald'
-    ? 'rgba(52,211,153,0.25)'
-    : accentColor === 'amber'
-      ? 'rgba(251,191,36,0.25)'
-      : accentColor === 'fuchsia'
-        ? 'rgba(217,70,239,0.25)'
-        : 'rgb(var(--cyber-cyan-rgb) / 0.25)';
-
   /* ── Escape key handler ── */
   const handleClose = useCallback(() => {
     onClose();
   }, [onClose]);
+
+  useEffect(() => {
+    if (!open) return;
+    if (transitionPhase === 'loading') {
+      handleClose();
+    }
+  }, [open, transitionPhase, handleClose]);
 
   useEffect(() => {
     if (!open || !isTop) return;
@@ -232,6 +236,7 @@ export function PanelWrapper({
               <div
                 className="absolute inset-0 pointer-events-none rounded-[inherit]"
                 style={{ boxShadow: `inset 0 0 8px ${accent.glow}`, opacity: 0.5 }}
+                aria-hidden="true"
               />
             ) : (
               <motion.div
@@ -239,29 +244,54 @@ export function PanelWrapper({
                 animate={{ opacity: [0.35, 0.7, 0.35] }}
                 transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
                 style={{ boxShadow: `inset 0 0 8px ${accent.glow}` }}
+                aria-hidden="true"
               />
             )}
 
-            {/* Data stream background pattern */}
-            <div className="absolute inset-0 data-stream-bg hex-grid-bg pointer-events-none rounded-[inherit]" />
-
-            {/* Scanline overlay */}
-            <div className="absolute inset-0 pointer-events-none rounded-[inherit] panel-scanlines" />
+            {!reducedMotion && (
+              <>
+                <div
+                  className="absolute inset-0 data-stream-bg hex-grid-bg pointer-events-none rounded-[inherit]"
+                  aria-hidden="true"
+                />
+                <div
+                  className="absolute inset-0 pointer-events-none rounded-[inherit] panel-scanlines"
+                  aria-hidden="true"
+                />
+              </>
+            )}
 
             {/* Corner bracket decorations */}
-            <div className="corner-bracket corner-bracket-tl" style={{ borderTopColor: cornerBorderColor, borderLeftColor: cornerBorderColor }} />
-            <div className="corner-bracket corner-bracket-tr" style={{ borderTopColor: cornerBorderColor, borderRightColor: cornerBorderColor }} />
-            <div className="corner-bracket corner-bracket-bl" style={{ borderBottomColor: cornerBorderColor, borderLeftColor: cornerBorderColor }} />
-            <div className="corner-bracket corner-bracket-br" style={{ borderBottomColor: cornerBorderColor, borderRightColor: cornerBorderColor }} />
+            <div
+              className="corner-bracket corner-bracket-tl"
+              style={{ borderTopColor: accent.border, borderLeftColor: accent.border }}
+              aria-hidden="true"
+            />
+            <div
+              className="corner-bracket corner-bracket-tr"
+              style={{ borderTopColor: accent.border, borderRightColor: accent.border }}
+              aria-hidden="true"
+            />
+            <div
+              className="corner-bracket corner-bracket-bl"
+              style={{ borderBottomColor: accent.border, borderLeftColor: accent.border }}
+              aria-hidden="true"
+            />
+            <div
+              className="corner-bracket corner-bracket-br"
+              style={{ borderBottomColor: accent.border, borderRightColor: accent.border }}
+              aria-hidden="true"
+            />
 
             {/* Terminal header bar with holographic shimmer */}
             <div className="relative flex items-center gap-2 border-b bg-black/40 px-3 py-1.5 shrink-0" style={{ borderColor: `${accent.border}` }}>
-              <div className="absolute inset-0 holo-shimmer pointer-events-none" />
-              {/* Circuit trace line at header bottom */}
-              <div className="absolute bottom-0 left-0 right-0 h-px circuit-trace-line" />
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500/80" />
-              <span className="h-1.5 w-1.5 rounded-full bg-amber-400/80" />
-              <span className="h-1.5 w-1.5 rounded-full bg-red-500/80" />
+              <div className="absolute inset-0 holo-shimmer pointer-events-none" aria-hidden="true" />
+              <div className="absolute bottom-0 left-0 right-0 h-px circuit-trace-line" aria-hidden="true" />
+              <div className="flex items-center gap-2" aria-hidden="true">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500/80" />
+                <span className="h-1.5 w-1.5 rounded-full bg-amber-400/80" />
+                <span className="h-1.5 w-1.5 rounded-full bg-red-500/80" />
+              </div>
               <span className="ml-2 font-mono text-[8px] uppercase tracking-[0.2em]" style={{ color: accent.dotColor }}>
                 {resolvedUrl}
               </span>
@@ -289,9 +319,9 @@ export function PanelWrapper({
                   type="button"
                   onClick={handleClose}
                   className="close-btn-glow w-7 h-7 rounded-md flex items-center justify-center text-slate-400 hover:text-white transition-all duration-150 hover:rotate-90"
-                  aria-label="Закрыть"
+                  aria-label={PANEL_WRAPPER_LABELS.close}
                 >
-                  <X className="size-4" />
+                  <X className="size-4" aria-hidden="true" />
                 </button>
               </div>
             </div>

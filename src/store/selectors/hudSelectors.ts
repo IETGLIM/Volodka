@@ -40,6 +40,8 @@ export function useKarmaPoemInfoPanelState() {
     collectedPoems: s.collectedPoems,
     notifications: s.notifications,
     poemPowers: s.poemPowers,
+    skills: s.playerState.skills,
+    flags: s.playerState.flags,
   }));
 }
 

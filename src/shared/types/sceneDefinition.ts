@@ -7,6 +7,7 @@
  * on-the-fly via sceneDefinitionGenerator.ts — no duplicate data maintenance. */
 
 import type { SceneId } from '@/config/sceneDefinitions';
+import type { LocationCategory } from '@/shared/types/locationCategory';
 
 // ─── Floor Material ───
 
@@ -220,4 +221,6 @@ export interface SceneDefinition {
   /** Transition style used when entering this scene from another.
    *  Defaults to 'wipe' if not specified. */
   transitionStyle?: 'wipe' | 'flash' | 'darken' | 'ripple' | 'dissolve';
+  /** Optional override for schedule timeline location coloring. */
+  locationCategory?: LocationCategory;
 }

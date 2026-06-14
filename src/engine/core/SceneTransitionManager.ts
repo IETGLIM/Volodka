@@ -18,10 +18,11 @@ import { runGlobalSceneUnload } from './GlobalCleanupService';
 import { ensureSceneLoadedBridge, scheduleSceneLoaded } from './sceneLoadedGate';
 import {
   isSceneTransitionInProgress,
+  resetSceneTransitionGuard,
   setSceneTransitionInProgress,
 } from './sceneTransitionGuard';
 
-export { isSceneTransitionInProgress, resetSceneTransitionGuard } from './sceneTransitionGuard';
+export { isSceneTransitionInProgress, resetSceneTransitionGuard };
 
 let unsubDeferredCombatStart: (() => void) | null = null;
 

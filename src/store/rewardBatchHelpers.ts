@@ -171,6 +171,10 @@ export function finalizeRewardBatch(
   const { progression, levelUp } = applyXpToProgression(
     draft.playerState.progression,
     amount,
+    {
+      prevSkills: draft.playerState.skills,
+      prevKarma: draft.playerState.karma,
+    },
   );
 
   draft.playerState = {

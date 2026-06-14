@@ -83,7 +83,11 @@ export interface PoemPower {
   poemId: string;
   name: string;
   description: string;
-  cooldownMs: number; // 1 in-game hour = 3600000ms real-time (but we use shorter for gameplay)
+  cooldownMs: number;
+  /** Optional act override for presentation (defaults from poem id). */
+  act?: 1 | 2 | 3;
+  /** Optional color theme override for FX (defaults from poem id). */
+  colorTheme?: 'act1' | 'act2' | 'act3' | 'combat' | 'defense';
   /** Immediate effects (skill boosts, karma, etc.) */
   effect: () => void;
   /** TTL-based flags to set — will be stored with expiryTimestamp for save/load safety */

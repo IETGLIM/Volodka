@@ -9,6 +9,7 @@
 import type { SceneDefinition, ColliderDef, ExitDef, LightDef, FloorMaterial, FogConfig } from '@/shared/types/sceneDefinition';
 import { FOG_DEFAULTS } from '@/shared/types/sceneDefinition';
 import type { SceneConfig, SceneExit } from '@/shared/types/game';
+import { getSceneLocationCategory } from '@/config/sceneLocationCategories';
 
 /** Top surface of the auto-generated structural floor cuboid (SceneColliderSelector). */
 export const DEFAULT_FLOOR_Y = 0.01;
@@ -59,6 +60,7 @@ export function generateSceneConfig(def: SceneDefinition): SceneConfig {
     exits: def.exits.map(generateSceneExit),
     lights: def.lights.map(generateLightConfig),
     ...(def.transitionStyle && { transitionStyle: def.transitionStyle }),
+    locationCategory: def.locationCategory ?? getSceneLocationCategory(def.id),
   };
 }
 

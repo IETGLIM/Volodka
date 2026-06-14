@@ -329,6 +329,12 @@ export class EventBusClass<TMap extends object = EventMap>
     return this.disposed;
   }
 
+  /** Whether at least one typed handler is registered for the event. */
+  hasHandlers<K extends keyof TMap>(event: K): boolean {
+    const list = this.handlers.get(event);
+    return list !== undefined && list.length > 0;
+  }
+
   /** Re-arm after orchestrator remount (React StrictMode). Idempotent while already live. */
   revive(): void {
     if (!this.disposed) return;

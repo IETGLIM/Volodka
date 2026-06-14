@@ -27,6 +27,7 @@ import {
   readWorldFromExploration,
 } from '../crossSliceReads';
 import { parseTrainablePlayerSkill } from '../skillHelpers';
+import { QUEST_BOARD_MAX_ACTIVE_MISSIONS } from '@/engine/questBoard/questBoardConstants';
 import {
   batchAddCredits,
   batchAddKarma,
@@ -373,7 +374,7 @@ export const createWorldSlice: StateCreator<
     const state = get();
     if (state.acceptedDailyMissions.some((m) => m.missionId === missionId)) return;
     const activeCount = state.acceptedDailyMissions.filter((m) => !m.completed && !m.claimed).length;
-    if (activeCount >= 3) return;
+    if (activeCount >= QUEST_BOARD_MAX_ACTIVE_MISSIONS) return;
 
     const newMission: AcceptedDailyMission = {
       missionId,

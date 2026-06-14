@@ -6,12 +6,12 @@
 
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect, useLayoutEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
-import { useGameStore } from '@/store/gameStore';
-import { hasVisitedNode } from '@/store/visitedNodesIndex';
-import { useGamePhase, useTutorialFlags } from '@/store/selectors';
+import { completeTutorial } from '@/store/actions/tutorialActions';
+import { useGamePhase, useTutorialFlags, useTutorialReady } from '@/store/selectors';
+import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 import {
   Gamepad2,
   ScrollText,
@@ -277,6 +277,18 @@ function injectScanlineStyles() {
   document.head.appendChild(style);
 }
 
+/* ── Animation timing ── */
+const STEP_TRANSITION_DURATION = 0.25;
+const OVERLAY_FADE_DURATION = 0.4;
+const CARD_ENTER_DURATION = 0.5;
+const SCANLINE_SWEEP_DURATION_S = 5;
+const SCANLINE_LINES_DURATION_S = 0.3;
+
+function handlesOwnEnterOrSpace(activeElement: Element | null): boolean {
+  const tag = (activeElement?.tagName ?? '').toLowerCase();
+  return tag === 'button' || tag === 'a' || tag === 'input' || tag === 'textarea';
+}
+
 /* ── Step transition variants ── */
 const stepVariants = {
   enter: (direction: number) => ({
@@ -296,75 +308,141 @@ const stepVariants = {
   }),
 };
 
-/** Defer first-play tutorial until the player enters free exploration or visits a beat. */
-const ACT1_TUTORIAL_READY_NODES = [
-  'explore_mode',
-  'room_table',
-  'room_bookshelf',
-  'corridor_door',
-  'corridor_explore_mode',
-] as const;
-
-function isAct1TutorialReady(visitedNodes: readonly string[]): boolean {
-  return ACT1_TUTORIAL_READY_NODES.some((nodeId) => hasVisitedNode(visitedNodes, nodeId));
-}
-
 /* ── Main component ── */
 export function FirstPlayTutorial() {
+  const reducedMotion = useEffectiveReducedMotion();
   const mode = useGamePhase();
   const tutorialFlags = useTutorialFlags();
-  const visitedNodes = useGameStore((s) => s.playerState.visitedNodes);
+  const tutorialReady = useTutorialReady();
 
   const [currentStep, setCurrentStep] = useState(0);
   const [direction, setDirection] = useState(1);
   const [dismissed, setDismissed] = useState(false);
+  const [overlayReady, setOverlayReady] = useState(false);
 
-  // First play only — wait until after explore hub choice or corridor visit (not during wake VN).
+  const currentStepRef = useRef(currentStep);
+  const nextButtonRef = useRef<HTMLButtonElement>(null);
+  const skipButtonRef = useRef<HTMLButtonElement>(null);
+  const stepContentRef = useRef<HTMLDivElement>(null);
+  const overlayVisibleRef = useRef(false);
+
+  currentStepRef.current = currentStep;
+
   const shouldShow =
     !dismissed &&
     mode === 'exploration' &&
     !tutorialFlags.tutorialsDisabled &&
     !tutorialFlags.tutorialsCompleted &&
-    isAct1TutorialReady(visitedNodes);
+    tutorialReady;
 
-  // Inject scanline animation styles
-  if (typeof window !== 'undefined') {
+  useEffect(() => {
     injectScanlineStyles();
-  }
+  }, []);
+
+  useEffect(() => {
+    overlayVisibleRef.current = shouldShow;
+    if (!shouldShow) {
+      setOverlayReady(false);
+      return;
+    }
+    if (reducedMotion) {
+      setOverlayReady(true);
+    }
+  }, [shouldShow, reducedMotion]);
+
+  const handleOverlayAnimationComplete = useCallback(() => {
+    if (overlayVisibleRef.current) {
+      setOverlayReady(true);
+    }
+  }, []);
+
+  const finishTutorial = useCallback(() => {
+    completeTutorial();
+    setDismissed(true);
+  }, []);
 
   const handleNext = useCallback(() => {
     if (currentStep < STEPS.length - 1) {
       setDirection(1);
       setCurrentStep((s) => s + 1);
     } else {
-      // Tutorial complete — mark all flags and close
-      useGameStore.setState({
-        tutorialFlags: {
-          ...useGameStore.getState().tutorialFlags,
-          tutorialsCompleted: true,
-          tutorial_seen_movement: true,
-          tutorial_seen_interact: true,
-          tutorial_seen_controls: true,
-        },
-      });
-      setDismissed(true);
+      finishTutorial();
     }
-  }, [currentStep]);
+  }, [currentStep, finishTutorial]);
 
   const handleSkip = useCallback(() => {
-    useGameStore.setState({
-      tutorialFlags: {
-        ...useGameStore.getState().tutorialFlags,
-        tutorialsCompleted: true,
-        tutorial_seen_movement: true,
-        tutorial_seen_interact: true,
-        tutorial_seen_controls: true,
-      },
-    });
-    setDismissed(true);
-  }, []);
+    finishTutorial();
+  }, [finishTutorial]);
+
+  const callbacksRef = useRef({ handleNext, handleSkip });
+
+  useLayoutEffect(() => {
+    callbacksRef.current = { handleNext, handleSkip };
+  }, [handleNext, handleSkip]);
+
+  useEffect(() => {
+    if (!shouldShow) return;
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      const activeElement = document.activeElement;
+
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        callbacksRef.current.handleSkip();
+        return;
+      }
+
+      if (event.key === 'Enter' || event.key === ' ') {
+        if (
+          handlesOwnEnterOrSpace(activeElement) ||
+          activeElement === nextButtonRef.current ||
+          activeElement === skipButtonRef.current
+        ) {
+          return;
+        }
+        event.preventDefault();
+        callbacksRef.current.handleNext();
+        return;
+      }
+
+      if (event.key === 'ArrowRight') {
+        event.preventDefault();
+        const step = currentStepRef.current;
+        if (step < STEPS.length - 1) {
+          setDirection(1);
+          setCurrentStep(step + 1);
+        }
+        return;
+      }
+
+      if (event.key === 'ArrowLeft' && currentStepRef.current > 0) {
+        event.preventDefault();
+        setDirection(-1);
+        setCurrentStep((s) => s - 1);
+      }
+    };
+
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [shouldShow]);
+
+  useEffect(() => {
+    if (!shouldShow || !overlayReady) return;
+    stepContentRef.current?.focus({ preventScroll: true });
+  }, [currentStep, shouldShow, overlayReady]);
 
   const step = STEPS[currentStep];
+  if (!step) return null;
+
+  const stepTransitionDuration = reducedMotion ? 0 : STEP_TRANSITION_DURATION;
+  const overlayFadeDuration = reducedMotion ? 0 : OVERLAY_FADE_DURATION;
+  const cardEnterDuration = reducedMotion ? 0 : CARD_ENTER_DURATION;
+  const progressWidth = `${((currentStep + 1) / STEPS.length) * 100}%`;
+  const nextStepTitle = STEPS[currentStep + 1]?.title;
+  const nextButtonAriaLabel =
+    currentStep < STEPS.length - 1
+      ? `Перейти к шагу: ${nextStepTitle}`
+      : 'Завершить обучение';
 
   return (
     <AnimatePresence>
@@ -375,7 +453,11 @@ export function FirstPlayTutorial() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.4 }}
+          transition={{ duration: overlayFadeDuration }}
+          onAnimationComplete={handleOverlayAnimationComplete}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Обучение игре"
         >
           {/* Dark backdrop with scanlines */}
           <div
@@ -392,7 +474,9 @@ export function FirstPlayTutorial() {
               style={{
                 backgroundImage:
                   'repeating-linear-gradient(0deg, transparent, transparent 2px, rgb(var(--cyber-cyan-rgb) / 0.015) 2px, rgb(var(--cyber-cyan-rgb) / 0.015) 4px)',
-                animation: 'fps-scanline-lines 0.3s linear infinite',
+                animation: reducedMotion
+                  ? 'none'
+                  : `fps-scanline-lines ${SCANLINE_LINES_DURATION_S}s linear infinite`,
               }}
             />
             {/* Sweeping scanline bar */}
@@ -401,7 +485,9 @@ export function FirstPlayTutorial() {
               style={{
                 background:
                   'linear-gradient(180deg, transparent 0%, rgb(var(--cyber-cyan-rgb) / 0.03) 30%, rgb(var(--cyber-cyan-rgb) / 0.06) 50%, rgb(var(--cyber-cyan-rgb) / 0.03) 70%, transparent 100%)',
-                animation: 'fps-scanline-sweep 5s linear infinite',
+                animation: reducedMotion
+                  ? 'none'
+                  : `fps-scanline-sweep ${SCANLINE_SWEEP_DURATION_S}s linear infinite`,
               }}
             />
           </div>
@@ -412,7 +498,7 @@ export function FirstPlayTutorial() {
             initial={{ scale: 0.9, opacity: 0, y: 30 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.9, opacity: 0, y: 30 }}
-            transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
+            transition={{ duration: cardEnterDuration, ease: [0.25, 0.46, 0.45, 0.94] }}
           >
             <div
               className="relative rounded-lg border overflow-hidden"
@@ -437,6 +523,7 @@ export function FirstPlayTutorial() {
                 <div className="flex items-center gap-3">
                   {step.icon}
                   <h2
+                    id="tutorial-title"
                     className="text-base font-semibold tracking-wide font-mono"
                     style={{
                       color: 'rgb(var(--cyber-cyan-rgb) / 0.95)',
@@ -450,6 +537,7 @@ export function FirstPlayTutorial() {
                 <div className="flex items-center gap-2">
                   <span
                     className="text-xs font-mono px-2 py-0.5 rounded border"
+                    aria-label={`Шаг ${currentStep + 1} из ${STEPS.length}`}
                     style={{
                       color: 'rgb(var(--cyber-cyan-rgb) / 0.6)',
                       borderColor: 'rgb(var(--cyber-cyan-rgb) / 0.15)',
@@ -459,6 +547,8 @@ export function FirstPlayTutorial() {
                     {currentStep + 1}/{STEPS.length}
                   </span>
                   <button
+                    ref={skipButtonRef}
+                    type="button"
                     onClick={handleSkip}
                     aria-label="Пропустить обучение"
                     className="flex items-center justify-center w-6 h-6 rounded border text-slate-400 hover:text-white transition-colors"
@@ -474,20 +564,42 @@ export function FirstPlayTutorial() {
 
               {/* Progress bar */}
               <div className="h-0.5 w-full" style={{ background: 'rgb(var(--cyber-cyan-rgb) / 0.08)' }}>
-                <motion.div
-                  className="h-full"
-                  style={{
-                    background: 'linear-gradient(90deg, rgb(var(--cyber-cyan-rgb) / 0.6), rgb(var(--cyber-cyan-rgb) / 0.3))',
-                    boxShadow: '0 0 8px rgb(var(--cyber-cyan-rgb) / 0.4)',
-                  }}
-                  initial={false}
-                  animate={{ width: `${((currentStep + 1) / STEPS.length) * 100}%` }}
-                  transition={{ duration: 0.4, ease: 'easeOut' }}
-                />
+                {reducedMotion ? (
+                  <div
+                    className="h-full"
+                    style={{
+                      width: progressWidth,
+                      background:
+                        'linear-gradient(90deg, rgb(var(--cyber-cyan-rgb) / 0.6), rgb(var(--cyber-cyan-rgb) / 0.3))',
+                      boxShadow: '0 0 8px rgb(var(--cyber-cyan-rgb) / 0.4)',
+                    }}
+                  />
+                ) : (
+                  <motion.div
+                    className="h-full"
+                    style={{
+                      background:
+                        'linear-gradient(90deg, rgb(var(--cyber-cyan-rgb) / 0.6), rgb(var(--cyber-cyan-rgb) / 0.3))',
+                      boxShadow: '0 0 8px rgb(var(--cyber-cyan-rgb) / 0.4)',
+                    }}
+                    initial={false}
+                    animate={{ width: progressWidth }}
+                    transition={{ duration: 0.4, ease: 'easeOut' }}
+                  />
+                )}
               </div>
 
               {/* Step content with slide animation */}
-              <div className="relative px-5 py-6 overflow-hidden min-h-[180px] flex items-center">
+              <div
+                ref={stepContentRef}
+                className="relative px-5 py-6 overflow-hidden min-h-[180px] flex items-center"
+                data-tutorial-step-content
+                tabIndex={-1}
+                role="status"
+                aria-live="polite"
+                aria-atomic="true"
+                aria-labelledby="tutorial-title"
+              >
                 <AnimatePresence mode="wait" custom={direction}>
                   <motion.div
                     key={currentStep}
@@ -496,10 +608,14 @@ export function FirstPlayTutorial() {
                     initial="enter"
                     animate="center"
                     exit="exit"
-                    transition={{
-                      x: { type: 'spring', stiffness: 300, damping: 30 },
-                      opacity: { duration: 0.25 },
-                    }}
+                    transition={
+                      reducedMotion
+                        ? { duration: 0 }
+                        : {
+                            x: { type: 'spring', stiffness: 300, damping: 30 },
+                            opacity: { duration: stepTransitionDuration },
+                          }
+                    }
                     className="w-full"
                   >
                     {step.content}
@@ -535,32 +651,35 @@ export function FirstPlayTutorial() {
                 </div>
 
                 {/* Action button */}
-                <button
+                <motion.button
+                  ref={nextButtonRef}
+                  type="button"
                   onClick={handleNext}
-                  className="group flex items-center gap-1.5 px-5 py-2 rounded text-sm font-semibold font-mono tracking-wider transition-all duration-200"
+                  aria-label={nextButtonAriaLabel}
+                  className="group flex items-center gap-1.5 px-5 py-2 rounded text-sm font-semibold font-mono tracking-wider"
                   style={{
                     background: 'rgb(var(--cyber-cyan-rgb) / 0.1)',
                     border: '1px solid rgb(var(--cyber-cyan-rgb) / 0.3)',
                     color: 'rgb(var(--cyber-cyan-rgb) / 0.95)',
                     textShadow: '0 0 8px rgb(var(--cyber-cyan-rgb) / 0.3)',
                   }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = 'rgb(var(--cyber-cyan-rgb) / 0.2)';
-                    e.currentTarget.style.borderColor = 'rgb(var(--cyber-cyan-rgb) / 0.5)';
-                    e.currentTarget.style.boxShadow = '0 0 16px rgb(var(--cyber-cyan-rgb) / 0.2)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = 'rgb(var(--cyber-cyan-rgb) / 0.1)';
-                    e.currentTarget.style.borderColor = 'rgb(var(--cyber-cyan-rgb) / 0.3)';
-                    e.currentTarget.style.boxShadow = 'none';
-                  }}
+                  whileHover={
+                    reducedMotion
+                      ? undefined
+                      : {
+                          background: 'rgb(var(--cyber-cyan-rgb) / 0.2)',
+                          borderColor: 'rgb(var(--cyber-cyan-rgb) / 0.5)',
+                          boxShadow: '0 0 16px rgb(var(--cyber-cyan-rgb) / 0.2)',
+                        }
+                  }
+                  transition={{ duration: 0.2 }}
                 >
                   {step.buttonLabel}
                   <ChevronRight
                     className="size-4 transition-transform duration-200 group-hover:translate-x-0.5"
                     style={{ filter: 'drop-shadow(0 0 4px rgb(var(--cyber-cyan-rgb) / 0.4))' }}
                   />
-                </button>
+                </motion.button>
               </div>
 
               {/* Bottom decoration: terminal label */}

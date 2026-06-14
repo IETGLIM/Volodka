@@ -172,6 +172,7 @@ export function createDefaultPlayerState(): PlayerState {
     } as Record<EquipmentSlot, InventoryItem | null>,
     flags: {},
     visitedNodes: [],
+    visitedNodeTimestamps: {},
     choiceLog: [],
     moralChoices: [],
     interactions: [],

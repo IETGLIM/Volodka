@@ -135,7 +135,7 @@ export const GameplayExplorationNotifications = memo(function GameplayExploratio
       <WeatherAlertNotification />
       <CraftingDiscoveryToast />
       <GameSystemToast />
-      {/* MUST stay mounted during exploration: registers pushNotification() singleton. */}
+      {/* MUST stay mounted during exploration: listens for ui:loot_notification on EventBus. */}
       <LootNotification />
     </>
   );

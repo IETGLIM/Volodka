@@ -26,7 +26,6 @@ describe('BootError', () => {
 describe('BootScreen', () => {
   beforeEach(() => {
     loadingPipeline.reset();
-    loadingPipeline.reportStage('boot_start');
   });
 
   afterEach(() => {
@@ -39,12 +38,17 @@ describe('BootScreen', () => {
     expect(screen.getByRole('progressbar')).toBeInTheDocument();
   });
 
-  it('shows boot error UI when pipeline reports failure', () => {
+  it('shows boot error UI with retry when pipeline reports failure', () => {
+    const onRetry = vi.fn();
     loadingPipeline.reportError(new Error('chunk load failed'));
-    render(<BootScreen onRetry={vi.fn()} />);
+    render(<BootScreen onRetry={onRetry} />);
 
-    expect(screen.getByRole('alert')).toBeInTheDocument();
-    expect(screen.getByText('chunk load failed')).toBeInTheDocument();
+    const alert = screen.getByRole('alert');
+    expect(alert).toBeInTheDocument();
+    expect(alert).toHaveTextContent('chunk load failed');
     expect(screen.queryByTestId('boot-loading-overlay')).not.toBeInTheDocument();
+
+    screen.getByRole('button', { name: 'Повторить' }).click();
+    expect(onRetry).toHaveBeenCalledOnce();
   });
 });

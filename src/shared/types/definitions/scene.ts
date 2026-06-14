@@ -3,6 +3,7 @@
 import type { SceneId } from '@/config/sceneDefinitions';
 import type { FloorMaterial } from '../sceneDefinition';
 import type { ChoiceCondition } from '../common/conditions';
+import type { LocationCategory } from '../locationCategory';
 
 export type ExitDirection = 'north' | 'south' | 'east' | 'west' | 'door';
 
@@ -46,4 +47,6 @@ export interface SceneConfig {
     readonly distance: number;
   }>;
   readonly transitionStyle?: 'wipe' | 'flash' | 'darken' | 'ripple' | 'dissolve';
+  /** Schedule timeline color category — explicit, not derived from scene id strings. */
+  readonly locationCategory: LocationCategory;
 }

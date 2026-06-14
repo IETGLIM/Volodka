@@ -1,69 +1,21 @@
-/* ─── Volodka RPG – Main game orchestrator (thin coordinator) ─── */
+'use client';
 
-import { ErrorBoundary } from '@/components/ErrorBoundary';
-import { VirtualControlsContext, sharedVirtualControlsRef } from '@/engine/VirtualControlsState';
-import { CyberpunkThemeProvider } from './CyberpunkTheme';
-import { PanelStackProvider } from './orchestrator/PanelStackContext';
-import { useOrchestratorRuntime } from './orchestrator/useOrchestratorRuntime';
-import { OrchestratorCanvasLayer } from './orchestrator/OrchestratorCanvasLayer';
-import { OrchestratorGameplayLayer } from './orchestrator/OrchestratorGameplayLayer';
-import { OrchestratorPanelLayer } from './orchestrator/OrchestratorPanelSlots';
-import { OrchestratorPauseMenu } from './orchestrator/OrchestratorPauseMenu';
-import { OrchestratorQuestOverlays } from './orchestrator/OrchestratorQuestOverlays';
+import { useEffect, useState } from 'react';
+import { OrchestratorContent } from './orchestrator/OrchestratorContent';
 
+/** Thin client coordinator — waits for browser APIs, then mounts orchestrator layers. */
 export function GameOrchestrator() {
-  const runtime = useOrchestratorRuntime();
-  const { panels, panelClosers, hudSecondaryOpeners, pauseDialog } = runtime;
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  if (!isClient) return null;
 
   return (
-    <VirtualControlsContext.Provider value={sharedVirtualControlsRef}>
-      <CyberpunkThemeProvider>
-        <PanelStackProvider stack={panels.panelStack}>
-          <div
-            className={`fixed inset-0 bg-black overflow-hidden ${runtime.isDialogueActive || runtime.isStoryActive ? 'dialogue-focus-active' : ''}`}
-            style={{ touchAction: 'none' }}
-          >
-            <ErrorBoundary name="canvas">
-              <OrchestratorCanvasLayer
-                mode={runtime.mode}
-                introSeen={runtime.introSeen}
-                gameDataReady={runtime.gameDataReady}
-                canvasMounted={runtime.canvasMounted}
-                canvasReady={runtime.canvasReady}
-                isTransitioning={runtime.isTransitioning}
-                fadeOutMs={runtime.fadeOutMs}
-                matrixQuote={runtime.matrixQuote}
-                onDismissMatrixQuote={runtime.dismissMatrixQuote}
-              />
-            </ErrorBoundary>
-
-            <ErrorBoundary name="gameplay">
-              <OrchestratorGameplayLayer
-                gameDataReady={runtime.gameDataReady}
-                sceneBanner={runtime.sceneBanner}
-                interaction={runtime.interaction}
-                panels={runtime.panels}
-                panelClosers={panelClosers}
-                hudSecondaryOpeners={hudSecondaryOpeners}
-              />
-            </ErrorBoundary>
-
-            <ErrorBoundary name="panels">
-              <OrchestratorPanelLayer
-                showGameplayPanels={runtime.showGameplayPanels}
-                onClose={panelClosers}
-                onOpenPoetryBook={panels.handleOpenPoetryBook}
-                devToolsArmed={runtime.devToolsArmed}
-                devPanelStartOpen={runtime.devPanelStartOpen}
-              />
-            </ErrorBoundary>
-
-            <OrchestratorPauseMenu pauseDialog={pauseDialog} panels={panels} onClose={panelClosers} />
-
-            <OrchestratorQuestOverlays {...panels} />
-          </div>
-        </PanelStackProvider>
-      </CyberpunkThemeProvider>
-    </VirtualControlsContext.Provider>
+    <div data-testid="game-orchestrator">
+      <OrchestratorContent />
+    </div>
   );
 }

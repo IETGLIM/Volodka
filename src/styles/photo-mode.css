@@ -31,6 +31,11 @@
   user-select: none;
 }
 
+.photo-mode--reduced-motion .viewfinder-pulse {
+  animation: none;
+  opacity: 0.5;
+}
+
 .inv-border-glow-legendary {
   animation: inv-legendary-border-pulse 2s ease-in-out infinite;
 }

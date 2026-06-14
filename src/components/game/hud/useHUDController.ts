@@ -4,7 +4,8 @@ import { SCENE_CONFIG } from '@/config/scenes';
 import { useActiveQuests } from '@/store/questStore';
 import { eventBus } from '@/engine/EventBus';
 import { PHOTO_EVENTS } from '@/engine/events';
-import { floatKarma, floatEnergy, floatStress, floatXP } from '@/components/game/FloatingText';
+import { floatKarma, floatEnergy, floatStress, floatXP, floatLevelUp } from '@/components/game/FloatingText';
+import type { SkillAchievementNotice } from '@/components/game/hud/parts/AchievementPopup';
 import { determineWeatherType, type WeatherType } from '@/data/weatherEffects';
 import {
   resolveHudQuestBadgeCount,
@@ -164,6 +165,8 @@ export function useHUDController(props: HUDProps) {
   const prevStress = useRef(stress);
   const prevLevel = useRef(level);
   const prevXp = useRef(xp);
+  const [justLeveled, setJustLeveled] = useState(false);
+  const [skillAchievement, setSkillAchievement] = useState<SkillAchievementNotice | null>(null);
 
   useEffect(() => {
     if (karma !== prevKarma.current) {
@@ -209,8 +212,30 @@ export function useHUDController(props: HUDProps) {
   }, [xp]);
 
   useEffect(() => {
-    if (level > prevLevel.current) prevLevel.current = level;
-  }, [level]);
+    if (level > prevLevel.current) {
+      const newLevel = level;
+      prevLevel.current = level;
+      scheduleTimeout(() => {
+        setJustLeveled(true);
+        floatLevelUp(newLevel);
+        scheduleTimeout(() => setJustLeveled(false), 1500);
+      }, 0);
+    }
+  }, [level, scheduleTimeout]);
+
+  useEffect(() => {
+    const unsubSkill = eventBus.on('skill:level_up', (payload) => {
+      setSkillAchievement({
+        title: `${payload.skill} ур.${payload.level}`,
+        description: 'Навык улучшен!',
+        icon: '⬆',
+      });
+      scheduleTimeout(() => setSkillAchievement(null), 3000);
+    });
+    return () => {
+      unsubSkill();
+    };
+  }, [scheduleTimeout]);
 
   const [moreMenuOpen, setMoreMenuOpen] = useState(false);
   const moreMenuRef = useRef<HTMLDivElement>(null);
@@ -251,6 +276,15 @@ export function useHUDController(props: HUDProps) {
     setHudMounted(true);
   }, []);
 
+  const [poemBadgePulse, setPoemBadgePulse] = useState(false);
+  useEffect(() => {
+    const unsub = eventBus.on('ui:highlight_poem_badge', () => {
+      setPoemBadgePulse(true);
+      scheduleTimeout(() => setPoemBadgePulse(false), 8000);
+    });
+    return () => { unsub(); };
+  }, [scheduleTimeout]);
+
   return {
     photoModeOn,
     hudMounted,
@@ -260,6 +294,7 @@ export function useHUDController(props: HUDProps) {
     collectedPoems,
     questNotificationCount,
     questBadgePulse,
+    poemBadgePulse,
     activeQuestCount,
     showSaveIndicator,
     handleSave,
@@ -275,6 +310,8 @@ export function useHUDController(props: HUDProps) {
     karmaPulse,
     energyPulse,
     stressPulse,
+    justLeveled,
+    skillAchievement,
     isLowEnergy: energy < 25,
     isHighStress: stress > 70,
     moreMenuOpen,
@@ -291,3 +328,7 @@ export function useHUDController(props: HUDProps) {
 }
 
 export type HUDControllerState = ReturnType<typeof useHUDController>;
+
+/** Alias for exploration HUD data hook. */
+export { useHUDController as useExplorationHUD };
+export type ExplorationHUDState = HUDControllerState;

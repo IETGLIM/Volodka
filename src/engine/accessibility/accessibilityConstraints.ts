@@ -63,6 +63,7 @@ const NUMERIC_SETTING_FACTORIES = {
 export const DEFAULT_ACCESSIBILITY_SETTINGS: AccessibilitySettingsSnapshot = {
   colorBlindMode: 'none',
   reducedMotionOverride: false,
+  loadingFxDisabled: false,
   subtitleScale: createSubtitleScale(1),
   textSpeed: createTextSpeed(1),
   locomotionSpeed: createLocomotionSpeed(1),
@@ -78,6 +79,8 @@ export function clampInRange<K extends AccessibilitySettingKey>(
     case 'colorBlindMode':
       return parseColorBlindMode(value) as AccessibilitySettingsSnapshot[K];
     case 'reducedMotionOverride':
+      return (value === true || value === 'true') as AccessibilitySettingsSnapshot[K];
+    case 'loadingFxDisabled':
       return (value === true || value === 'true') as AccessibilitySettingsSnapshot[K];
     case 'subtitleScale':
       return createSubtitleScale(value, Number(fallback)) as AccessibilitySettingsSnapshot[K];

@@ -58,16 +58,7 @@ export function useCraftingPanelState() {
   }));
 }
 
-/** GiftDialog — inventory + affinity + gift action. */
-export function useGiftDialogState() {
-  return useGameSelector((s) => ({
-    inventory: s.playerState.inventory,
-    npcAffinity: s.npcAffinity,
-    giftItemToNPC: s.giftItemToNPC,
-  }));
-}
-
-/** QuestBoardPanel — daily missions + player level. */
+/** @deprecated Prefer useQuestBoardSelectors + useQuestBoardController. */
 export function useQuestBoardPanelState() {
   return useGameSelector((s) => ({
     acceptedDailyMissions: s.acceptedDailyMissions,

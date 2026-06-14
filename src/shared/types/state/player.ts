@@ -29,6 +29,8 @@ export interface PlayerState {
   equippedItems: Record<EquipmentSlot, InventoryItem | null>;
   flags: Record<string, boolean>;
   visitedNodes: string[];
+  /** ISO visit time per story node id (newest-first journal ordering). */
+  visitedNodeTimestamps: Record<string, number>;
   choiceLog: string[];
   moralChoices: string[];
   interactions: string[];

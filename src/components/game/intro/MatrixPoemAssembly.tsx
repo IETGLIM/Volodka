@@ -113,6 +113,7 @@ export const MatrixPoemAssembly = memo(function MatrixPoemAssembly({
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 1 }}
+      style={{ willChange: 'opacity' }}
     >
       {/* Soft glow behind poem */}
       <div
@@ -130,6 +131,7 @@ export const MatrixPoemAssembly = memo(function MatrixPoemAssembly({
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 1.2 }}
+        style={{ willChange: 'opacity, transform' }}
       >
         <h2
           className="text-lg sm:text-xl md:text-2xl font-semibold tracking-wide mb-1"

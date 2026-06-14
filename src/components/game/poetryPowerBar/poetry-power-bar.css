@@ -1,0 +1,17 @@
+.poetry-power-empty-slot {
+  background: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 3px,
+    rgba(120, 113, 108, 0.04) 3px,
+    rgba(120, 113, 108, 0.04) 6px
+  );
+}
+
+.poetry-power-slot--ready:hover:not(:disabled) {
+  transform: scale(1.05);
+}
+
+.poetry-power-slot--just-used {
+  transform: scale(1.1);
+}

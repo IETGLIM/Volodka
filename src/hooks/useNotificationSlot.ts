@@ -8,6 +8,8 @@
  *  Usage in a channel component:
  *    const granted = useNotificationSlot('loot', NOTIFY_PRIORITY.loot, wantsToShow);
  *    if (!granted) return null; // or keep mounted but hidden
+ *
+ *  Critical channels (e.g. save/load failures) bypass the visible cap.
  */
 
 import { useEffect, useSyncExternalStore } from 'react';
@@ -31,6 +33,7 @@ interface Claim {
   priority: number;
   /** FIFO tiebreaker for equal priority */
   order: number;
+  critical: boolean;
 }
 
 let nextOrder = 0;
@@ -42,18 +45,29 @@ function recompute(): void {
   const sorted = [...claims.values()].sort(
     (a, b) => b.priority - a.priority || a.order - b.order,
   );
-  const next = new Set(sorted.slice(0, MAX_VISIBLE).map((c) => c.id));
-  // Only notify when the granted set actually changed
+  const critical = sorted.filter((claim) => claim.critical);
+  const normal = sorted.filter((claim) => !claim.critical);
+  const remainingSlots = Math.max(0, MAX_VISIBLE - critical.length);
+  const next = new Set([
+    ...critical.map((claim) => claim.id),
+    ...normal.slice(0, remainingSlots).map((claim) => claim.id),
+  ]);
   if (next.size === grantedIds.size && [...next].every((id) => grantedIds.has(id))) return;
   grantedIds = next;
   for (const listener of listeners) listener();
 }
 
-function claim(id: string, priority: number): void {
-  if (!claims.has(id)) {
-    claims.set(id, { id, priority, order: nextOrder++ });
-    recompute();
+function claim(id: string, priority: number, critical: boolean): void {
+  const existing = claims.get(id);
+  if (existing) {
+    if (existing.priority !== priority || existing.critical !== critical) {
+      claims.set(id, { ...existing, priority, critical });
+      recompute();
+    }
+    return;
   }
+  claims.set(id, { id, priority, order: nextOrder++, critical });
+  recompute();
 }
 
 function release(id: string): void {
@@ -65,6 +79,11 @@ function subscribe(onStoreChange: () => void): () => void {
   return () => listeners.delete(onStoreChange);
 }
 
+export type NotificationSlotOptions = {
+  /** Always render when wants=true, reserving a slot ahead of non-critical channels. */
+  critical?: boolean;
+};
+
 /**
  * Claim a display slot while `wants` is true.
  * Returns true when this channel is allowed to render its card.
@@ -73,12 +92,15 @@ export function useNotificationSlot(
   channelId: string,
   priority: number,
   wants: boolean,
+  options?: NotificationSlotOptions,
 ): boolean {
+  const critical = options?.critical ?? false;
+
   useEffect(() => {
     if (!wants) return;
-    claim(channelId, priority);
+    claim(channelId, priority, critical);
     return () => release(channelId);
-  }, [channelId, priority, wants]);
+  }, [channelId, priority, wants, critical]);
 
   const granted = useSyncExternalStore(
     subscribe,
@@ -86,5 +108,13 @@ export function useNotificationSlot(
     () => true,
   );
 
+  if (critical && wants) return true;
   return wants && granted;
+}
+
+/** Test-only reset for notification slot state. */
+export function resetNotificationSlotsForTests(): void {
+  claims.clear();
+  grantedIds = new Set();
+  nextOrder = 0;
 }

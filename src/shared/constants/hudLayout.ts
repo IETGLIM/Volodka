@@ -18,6 +18,8 @@ export const EXPLORATION_HUD_LAYOUT = {
   BOTTOM_POETRY: 100,
   /** Crafting discovery toasts — above quick-use bar */
   BOTTOM_CRAFTING_TOAST: 80,
+  /** System alerts stack above crafting toasts (crafting + quick-use tier gap). */
+  SYSTEM_ALERT_ABOVE_CRAFTING_OFFSET: 56,
   /** Contextual [E] prompt — above poetry bar, centered */
   BOTTOM_INTERACT_PROMPT: 196,
   /** Bottom-right stack (px from viewport bottom) */
@@ -99,6 +101,12 @@ export function bottomPoetryPx(): number {
 
 export function bottomCraftingToastPx(isMobile = false): number {
   return EXPLORATION_HUD_LAYOUT.BOTTOM_CRAFTING_TOAST + mobileBottomReserve(isMobile);
+}
+
+export function bottomSystemAlertPx(isMobile = false): number {
+  return (
+    bottomCraftingToastPx(isMobile) + EXPLORATION_HUD_LAYOUT.SYSTEM_ALERT_ABOVE_CRAFTING_OFFSET
+  );
 }
 
 export function bottomInteractPromptPx(): number {

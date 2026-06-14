@@ -1,4 +1,4 @@
-import type { TrainablePlayerSkill } from '@/shared/types/game';
+import type { TrainablePlayerSkill, PlayerSkills } from '@/shared/types/game';
 
 /** Player progression, skills, choices, loot. */
 export interface PlayerEvents {
@@ -12,6 +12,11 @@ export interface PlayerEvents {
     levelsGained?: number;
     perkPointsGained?: number;
     perkPointGained?: boolean;
+    prevSkillPoints?: number;
+    prevPerkPoints?: number;
+    prevXp?: number;
+    prevSkills?: PlayerSkills;
+    prevKarma?: number;
   };
   'player:heal': { amount: number };
   'choice:made': { karmaChange: number; npcId?: string; relationChange?: number };

@@ -79,6 +79,10 @@ export function useVisitedNodes() {
   return useGameSelector((s) => s.playerState.visitedNodes);
 }
 
+export function useVisitedNodeTimestamps() {
+  return useGameSelector((s) => s.playerState.visitedNodeTimestamps);
+}
+
 export function useVisitedNodeSet(): ReadonlySet<string> {
   return useGameSelector((s) => getVisitedNodeSet(s.playerState.visitedNodes));
 }

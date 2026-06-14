@@ -34,11 +34,13 @@ export function isQuestCompletionFlowBusy(input: {
   matrixQuoteActive: boolean;
   questCompleteActive: boolean;
   pendingQuestComplete: QuestDialogState;
+  cinematicCelebrationActive?: boolean;
 }): boolean {
   return (
     input.matrixQuoteActive ||
     input.questCompleteActive ||
-    input.pendingQuestComplete !== null
+    input.pendingQuestComplete !== null ||
+    input.cinematicCelebrationActive === true
   );
 }
 

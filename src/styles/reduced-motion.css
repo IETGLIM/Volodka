@@ -36,7 +36,12 @@
   .neon-reflection,
   .holo-flicker,
   .holo-flicker-soft,
-  .weather-icon-bob {
+  .weather-icon-bob,
+  .menu-particle-drift,
+  .menu-particle-stream,
+  .menu-fullscan-line,
+  .menu-footer-dot,
+  .menu-title-parallax {
     animation: none;
   }
 

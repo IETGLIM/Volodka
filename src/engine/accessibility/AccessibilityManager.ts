@@ -24,6 +24,7 @@ export type { AccessibilityNumericSettingKey } from './accessibilityConstraints'
 export const ACCESSIBILITY_LS_KEYS = {
   colorBlindMode: 'volodka_color_blind_mode',
   reducedMotionOverride: 'volodka_reduced_motion_override',
+  loadingFxDisabled: 'volodka_loading_fx_disabled',
   subtitleScale: 'volodka_subtitle_scale',
   textSpeed: 'volodka_text_speed',
   locomotionSpeed: 'volodka_locomotion_speed',
@@ -84,6 +85,14 @@ export function readAccessibilitySettingsFromStorage(
         DEFAULT_ACCESSIBILITY_SETTINGS.reducedMotionOverride,
       ),
       'reducedMotionOverride',
+    ),
+    loadingFxDisabled: clampInRange(
+      readBool(
+        storage,
+        ACCESSIBILITY_LS_KEYS.loadingFxDisabled,
+        DEFAULT_ACCESSIBILITY_SETTINGS.loadingFxDisabled,
+      ),
+      'loadingFxDisabled',
     ),
     subtitleScale: clampInRange(
       readNumber(storage, ACCESSIBILITY_LS_KEYS.subtitleScale, DEFAULT_ACCESSIBILITY_SETTINGS.subtitleScale),

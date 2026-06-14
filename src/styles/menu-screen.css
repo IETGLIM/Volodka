@@ -71,3 +71,23 @@
 .menu-footer-dot {
   animation: menu-footer-dot 1.2s step-end infinite;
 }
+
+.menu-particle-drift,
+.menu-particle-stream {
+  will-change: transform, opacity;
+}
+
+.menu-fullscan-line {
+  will-change: transform;
+  animation: menu-fullscan-transform 8s linear infinite;
+}
+
+@keyframes menu-fullscan-transform {
+  0% { transform: translateY(-2%); }
+  100% { transform: translateY(102vh); }
+}
+
+.menu-title-parallax {
+  transform: translate3d(var(--menu-parallax-x, 0px), var(--menu-parallax-y, 0px), 0);
+  will-change: transform;
+}

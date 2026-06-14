@@ -77,6 +77,10 @@ export const createPlayerCoreSlice: StateCreator<
         playerState: {
           ...state.playerState,
           visitedNodes: [...state.playerState.visitedNodes, id],
+          visitedNodeTimestamps: {
+            ...state.playerState.visitedNodeTimestamps,
+            [id]: Date.now(),
+          },
         },
       };
     }),

@@ -30,6 +30,8 @@ export interface PerkDefinition {
   mutuallyExclusiveWith?: string[];
   // Flavor text
   flavorText: string;
+  /** Perk point cost — defaults to 1 when omitted. */
+  cost?: number;
 }
 
 /* ─── Category metadata ─── */

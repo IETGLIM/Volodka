@@ -2,7 +2,7 @@
 
 import type { NPCRelation, QuestState } from '@/shared/types/game';
 import { getGameStore } from '../gameStore';
-import { useGameSelector } from './hooks';
+import { useGameSelector, useGamePrimitive } from './hooks';
 
 /* ─── Plain getters ─── */
 
@@ -33,4 +33,8 @@ export function useCollectedPoems() {
 
 export function useNpcAffinity() {
   return useGameSelector((s) => s.npcAffinity);
+}
+
+export function useNpcRelationValue(npcId: string | undefined): number {
+  return useGamePrimitive((s) => (npcId ? selectNpcRelationValue(s, npcId) : 50));
 }

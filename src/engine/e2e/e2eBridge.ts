@@ -11,7 +11,8 @@ import {
 import { closeNarrativeOverlay, openNarrativeOverlay } from '@/engine/scene/narrativeOverlay';
 import { enterSceneFreeExplorationHub } from '@/engine/scene/freeExplorationHub';
 import { resolveSceneSpawn, requestSceneTransition } from '@/engine/scene/sceneTransition';
-import { getGameStore, useGameStore } from '@/store/gameStore';
+import { completeTutorial } from '@/store/actions/tutorialActions';
+import { getGameStore } from '@/store/gameStore';
 import type { SceneId } from '@/shared/types/game';
 
 export interface VolodkaE2EPosition {
@@ -106,16 +107,7 @@ function suppressCutsceneForStoryNode(nodeId: string): void {
 
 /** Mid-game e2e bootstraps skip Act I — don't let deferred first-play tutorial steal input. */
 function dismissFirstPlayTutorialForBootstrap(): void {
-  const { tutorialFlags } = getGameStore();
-  useGameStore.setState({
-    tutorialFlags: {
-      ...tutorialFlags,
-      tutorialsCompleted: true,
-      tutorial_seen_movement: true,
-      tutorial_seen_interact: true,
-      tutorial_seen_controls: true,
-    },
-  });
+  completeTutorial();
 }
 
 async function waitForStoryOverlayReady(nodeId: string): Promise<boolean> {

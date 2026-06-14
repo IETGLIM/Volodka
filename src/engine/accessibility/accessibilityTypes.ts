@@ -24,6 +24,7 @@ export type LocomotionSpeed = number & { readonly [locomotionSpeedBrand]: true }
 export interface AccessibilitySettingsSnapshot {
   colorBlindMode: ColorBlindMode;
   reducedMotionOverride: boolean;
+  loadingFxDisabled: boolean;
   subtitleScale: SubtitleScale;
   textSpeed: TextSpeed;
   locomotionSpeed: LocomotionSpeed;

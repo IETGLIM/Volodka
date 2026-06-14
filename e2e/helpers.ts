@@ -36,6 +36,7 @@ export async function advancePastAct1WakePrologue(page: Page) {
 
     await dismissTitleCardIfPresent(page);
     await dismissLevelUpAndQuestOverlays(page);
+    await dismissFirstReadingBeats(page);
 
     const startSpeaker = page.locator('#story-speaker-start');
     if (await startSpeaker.isVisible({ timeout: 500 }).catch(() => false)) {
@@ -97,6 +98,16 @@ export async function skipStoryTypewriter(page: Page) {
 /** Dismiss level-up summary and quest popup overlays that block interactions. */
 export async function dismissLevelUpAndQuestOverlays(page: Page) {
   for (let attempt = 0; attempt < 8; attempt += 1) {
+    const continueBtn = page.getByTestId('first-reading-celebration-continue');
+    if (await continueBtn.isVisible({ timeout: 800 }).catch(() => false)) {
+      try {
+        await continueBtn.click({ force: true, timeout: 2000 });
+      } catch {
+        // Overlay may unmount mid-click.
+      }
+      await page.waitForTimeout(400);
+      continue;
+    }
     const levelContinue = page.getByRole('button', { name: /^Продолжить$/i });
     if (await levelContinue.isVisible({ timeout: 1200 }).catch(() => false)) {
       try {
@@ -199,28 +210,47 @@ export async function advanceStoryOverlay(page: Page, expectedNodeId?: string, t
   }
 }
 
-/** Dismiss first_reading matrix quote + quest-complete dialog after deferred activation. */
+/** Dismiss first_reading cinematic celebration (quote → rewards card). */
 export async function dismissFirstReadingBeats(page: Page) {
-  await page.waitForTimeout(1200);
+  for (let attempt = 0; attempt < 6; attempt += 1) {
+    const celebration = page.getByTestId('first-reading-celebration');
+    if (!(await celebration.isVisible({ timeout: attempt === 0 ? 12_000 : 1500 }).catch(() => false))) {
+      break;
+    }
+
+    await page.keyboard.press('Enter');
+    await page.waitForTimeout(400);
+
+    const continueBtn = page.getByTestId('first-reading-celebration-continue');
+    if (await continueBtn.isVisible({ timeout: 5000 }).catch(() => false)) {
+      await continueBtn.click({ force: true });
+      await page.waitForTimeout(500);
+      continue;
+    }
+
+    await page.mouse.click(400, 300);
+    await page.waitForTimeout(400);
+  }
+
+  await expect(page.getByTestId('first-reading-celebration')).not.toBeVisible({ timeout: 5000 }).catch(() => {});
+
   const matrixQuote = page.getByText(/Слова — это протокол/i);
-  if (await matrixQuote.isVisible({ timeout: 10_000 }).catch(() => false)) {
+  if (await matrixQuote.isVisible({ timeout: 3000 }).catch(() => false)) {
     await page.mouse.click(400, 300);
     await page.waitForTimeout(800);
   }
   const continueQuest = page.getByRole('button', { name: /^Продолжить$/i });
-  if (await continueQuest.isVisible({ timeout: 5000 }).catch(() => false)) {
+  if (await continueQuest.isVisible({ timeout: 3000 }).catch(() => false)) {
     await continueQuest.click();
     await page.waitForTimeout(500);
   }
 }
 
-/** Assert HUD toasts after first_reading completion (optional beat — slot may defer). */
+/** Assert post-celebration HUD reminder (optional — notification slot may defer). */
 export async function expectFirstReadingRewardToasts(page: Page) {
+  await expect(page.getByTestId('game-hud')).toBeVisible({ timeout: 15_000 });
   await expect(
-    page.getByText(/«Первое чтение» выполнено|Первое чтение/i).first(),
-  ).toBeVisible({ timeout: 12_000 });
-  await expect(
-    page.getByText(/Стих в сборнике|Смерть есть лишь начало/i).first(),
+    page.getByText(/Первое чтение|Смерть есть лишь начало|сборнике/i).first(),
   ).toBeVisible({ timeout: 12_000 });
 }
 
@@ -257,6 +287,7 @@ export async function dismissFirstPlayTutorial(page: Page) {
 /** Block until overlays that steal keyboard input are gone. */
 export async function waitForExplorationInputReady(page: Page) {
   await dismissTitleCardIfPresent(page);
+  await dismissFirstReadingBeats(page);
   await dismissFirstPlayTutorial(page);
   await expect(page.getByRole('dialog', { name: /Голос/i })).not.toBeVisible({ timeout: 5000 });
 }

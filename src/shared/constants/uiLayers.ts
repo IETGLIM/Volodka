@@ -38,6 +38,10 @@ export const UI_LAYERS = {
   TOOLTIP: 58,
   /** Cinematic transition (fade-to-black) */
   CINEMATIC_TRANSITION: 95,
+  /** Poem power activation FX overlay */
+  POEM_POWER_EFFECT: 92,
+  /** Poem power activation title stack */
+  POEM_POWER_EFFECT_LABEL: 93,
   /** Loading screen — always on top */
   LOADING: 100,
   /** Developer debug panel (F3) — above everything */

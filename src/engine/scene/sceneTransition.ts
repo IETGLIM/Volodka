@@ -10,6 +10,7 @@
 import { SCENE_CONFIG } from '@/config/scenes';
 import { eventBus } from '@/engine/EventBus';
 import { getGameSnapshot } from '@/engine/GameActionDispatcher';
+import { resetSceneTransitionGuard } from '@/engine/core/SceneTransitionManager';
 import type { SceneId } from '@/shared/types/game';
 
 type SpawnTuple = [number, number, number];
@@ -75,6 +76,43 @@ export function requestSceneTransition(
 export function resetSceneTransitionDedupe(): void {
   lastDedupeKey = '';
   lastDedupeAt = 0;
+}
+
+/**
+ * Force reload the active scene at the current spawn (recovery path).
+ * Bypasses same-scene coalesce in requestSceneTransition.
+ */
+export function forceReloadCurrentScene(spawnAt?: SpawnTuple): boolean {
+  if (typeof window === 'undefined') return false;
+
+  try {
+    const { currentSceneId, playerPosition } = getGameSnapshot().exploration;
+    resetSceneTransitionDedupe();
+    resetSceneTransitionGuard();
+    const spawn = resolveSceneSpawn(currentSceneId, spawnAt ?? playerPosition);
+    eventBus.emit('scene:transition', { targetScene: currentSceneId, spawnAt: spawn });
+    return true;
+  } catch (error) {
+    console.warn('[sceneTransition] forceReloadCurrentScene failed:', error);
+    return false;
+  }
+}
+
+/** Restart the active scene at its default spawn point. */
+export function restartCurrentSceneAtDefaultSpawn(): boolean {
+  if (typeof window === 'undefined') return false;
+
+  try {
+    const { currentSceneId } = getGameSnapshot().exploration;
+    resetSceneTransitionDedupe();
+    resetSceneTransitionGuard();
+    const spawn = resolveSceneSpawn(currentSceneId);
+    eventBus.emit('scene:transition', { targetScene: currentSceneId, spawnAt: spawn });
+    return true;
+  } catch (error) {
+    console.warn('[sceneTransition] restartCurrentSceneAtDefaultSpawn failed:', error);
+    return false;
+  }
 }
 
 /** Transition to the scene declared on a story node (if any). */

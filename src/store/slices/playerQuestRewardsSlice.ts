@@ -109,7 +109,10 @@ export const createPlayerQuestRewardsSlice: StateCreator<
     let levelUpInfo: LevelUpEvent | null = null;
 
     if (xpReward > 0) {
-      const xpResult = applyXpToProgression(progression, xpReward);
+      const xpResult = applyXpToProgression(progression, xpReward, {
+        prevSkills: state.playerState.skills,
+        prevKarma: state.playerState.karma,
+      });
       progression = xpResult.progression;
       if (xpResult.levelUp) {
         levelUpInfo = xpResult.levelUp;

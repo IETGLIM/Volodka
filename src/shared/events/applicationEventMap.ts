@@ -3,7 +3,7 @@
  * Engine binds these to the central bus at bootstrap.
  */
 
-import type { SceneId } from '@/shared/types/game';
+import type { SceneId, PlayerSkills } from '@/shared/types/game';
 
 export interface ApplicationEventMap {
   'game:saved': { timestamp: number; source: 'auto' | 'manual' };
@@ -37,6 +37,11 @@ export interface ApplicationEventMap {
     levelsGained?: number;
     perkPointsGained?: number;
     perkPointGained?: boolean;
+    prevSkillPoints?: number;
+    prevPerkPoints?: number;
+    prevXp?: number;
+    prevSkills?: PlayerSkills;
+    prevKarma?: number;
   };
   'choice:made': { karmaChange: number; npcId?: string; relationChange?: number };
   'crafting:discovered': { recipeId: string; recipeName: string; rarity: string };

@@ -4,7 +4,7 @@ import { useGameStore } from '@/store/gameStore';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { AriaLiveRegion } from '@/components/a11y/AriaLiveRegion';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
-import { LazyQuestAcceptDialog, LazyQuestCompleteDialog } from './lazyPanels';
+import { LazyFirstReadingCelebration, LazyQuestAcceptDialog, LazyQuestCompleteDialog } from './lazyPanels';
 import type { PanelCoordinatorResult } from './usePanelCoordinator';
 
 type Props = Pick<
@@ -13,6 +13,8 @@ type Props = Pick<
   | 'setQuestAccept'
   | 'questComplete'
   | 'dismissQuestComplete'
+  | 'firstReadingCelebration'
+  | 'dismissFirstReadingCelebration'
   | 'questChainUnlock'
   | 'setQuestChainUnlock'
 >;
@@ -22,6 +24,8 @@ export function OrchestratorQuestOverlays({
   setQuestAccept,
   questComplete,
   dismissQuestComplete,
+  firstReadingCelebration,
+  dismissFirstReadingCelebration,
   questChainUnlock,
   setQuestChainUnlock,
 }: Props) {
@@ -37,6 +41,12 @@ export function OrchestratorQuestOverlays({
   return (
     <>
       <AriaLiveRegion message={questChainAriaMessage} priority="assertive" />
+
+      {firstReadingCelebration && (
+        <Suspense fallback={null}>
+          <LazyFirstReadingCelebration onDismiss={dismissFirstReadingCelebration} />
+        </Suspense>
+      )}
 
       {questAccept && (
         <Suspense fallback={null}>

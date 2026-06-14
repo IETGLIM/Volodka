@@ -1,12 +1,12 @@
 
 /* ─── Volodka RPG – System alerts (save/load failures, recovery) ─── */
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, type CSSProperties, type FC } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AlertTriangle, Save, RotateCcw } from 'lucide-react';
 import { eventBus, EventBusPriority } from '@/engine/EventBus';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
-import { bottomCraftingToastPx } from '@/shared/constants/hudLayout';
+import { bottomSystemAlertPx } from '@/shared/constants/hudLayout';
 import { useNotificationSlot, NOTIFY_PRIORITY } from '@/hooks/useNotificationSlot';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 import { useGamePhase } from '@/store/selectors';
@@ -44,21 +44,15 @@ const ACCENT: Record<SystemAlertKind, { primary: string; border: string; bg: str
   },
 };
 
-let nextId = 0;
+const ALERT_ICONS: Record<SystemAlertKind, FC<{ className?: string; style?: CSSProperties }>> = {
+  save_failed: Save,
+  load_failed: AlertTriangle,
+  load_recovered: RotateCcw,
+};
 
 function AlertIcon({ kind, color }: { kind: SystemAlertKind; color: string }) {
-  switch (kind) {
-    case 'save_failed':
-      return <Save className="size-4" style={{ color }} />;
-    case 'load_failed':
-      return <AlertTriangle className="size-4" style={{ color }} />;
-    case 'load_recovered':
-      return <RotateCcw className="size-4" style={{ color }} />;
-    default: {
-      const _exhaustive: never = kind;
-      return _exhaustive;
-    }
-  }
+  const Icon = ALERT_ICONS[kind];
+  return <Icon className="size-4" style={{ color }} />;
 }
 
 export function GameSystemToast() {
@@ -66,8 +60,12 @@ export function GameSystemToast() {
   const reducedMotion = useEffectiveReducedMotion();
   const isMobile = useMobileDetection();
   const mode = useGamePhase();
-  const slotGranted = useNotificationSlot('system', NOTIFY_PRIORITY.system, alert !== null);
+  const slotGranted = useNotificationSlot('system', NOTIFY_PRIORITY.system, alert !== null, {
+    critical: true,
+  });
+  const idCounterRef = useRef(0);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const mountedRef = useRef(true);
 
   const dismiss = useCallback(() => {
     setAlert(null);
@@ -77,18 +75,38 @@ export function GameSystemToast() {
     }
   }, []);
 
+  const dismissRef = useRef(dismiss);
+  dismissRef.current = dismiss;
+
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
+
   useEffect(() => {
     const unsub = eventBus.on('game:system_alert', (payload) => {
-      const id = `system-alert-${++nextId}`;
+      idCounterRef.current += 1;
+      const id = `system-alert-${idCounterRef.current}`;
       setAlert({ id, kind: payload.kind, message: payload.message });
       if (timerRef.current) clearTimeout(timerRef.current);
-      timerRef.current = setTimeout(dismiss, getSystemAlertDurationMs(payload.kind));
+      const durationMs = getSystemAlertDurationMs(payload.kind);
+      timerRef.current = setTimeout(() => {
+        if (mountedRef.current) {
+          dismissRef.current();
+        }
+      }, durationMs);
     }, EventBusPriority.UI);
+
     return () => {
       unsub();
-      if (timerRef.current) clearTimeout(timerRef.current);
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+        timerRef.current = null;
+      }
     };
-  }, [dismiss]);
+  }, []);
 
   if (mode === 'menu' || mode === 'intro') return null;
   if (!slotGranted || !alert) return null;
@@ -101,19 +119,16 @@ export function GameSystemToast() {
       className="fixed left-3 sm:left-4 pointer-events-none"
       data-exploration-ui
       data-testid="game-system-toast"
-      style={{ bottom: bottomCraftingToastPx(isMobile) + 56, zIndex: UI_LAYERS.TOASTS }}
+      style={{ bottom: bottomSystemAlertPx(isMobile), zIndex: UI_LAYERS.TOASTS }}
     >
       <AnimatePresence mode="wait">
         <motion.div
           key={alert.id}
           role="alert"
-          className="pointer-events-auto relative overflow-hidden max-w-[320px]"
+          className="pointer-events-auto relative overflow-hidden max-w-[320px] rounded-lg backdrop-blur-md"
           style={{
-            backdropFilter: 'blur(12px)',
-            WebkitBackdropFilter: 'blur(12px)',
             background: accent.bg,
             border: `1px solid ${accent.border}`,
-            borderRadius: '8px',
             boxShadow: `0 0 12px ${accent.glow}`,
           }}
           initial={reducedMotion ? false : { opacity: 0, x: -48, scale: 0.94 }}

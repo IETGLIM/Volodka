@@ -1,8 +1,14 @@
 /* ─── Volodka RPG – level-up notification + event helpers ─── */
 
-import type { PlayerProgression } from '@/shared/types/game';
+import type { PlayerProgression, PlayerSkills } from '@/shared/types/game';
+import { DEFAULT_SKILLS } from '@/data/constants';
 import { applyXpGain } from './shared';
 import { scheduleLevelUpEvent } from './storeEffects';
+
+export interface LevelUpPlayerSnapshot {
+  prevSkills: PlayerSkills;
+  prevKarma: number;
+}
 
 export interface LevelUpEvent {
   newLevel: number;
@@ -10,6 +16,11 @@ export interface LevelUpEvent {
   levelsGained: number;
   perkPointsGained: number;
   perkPointGained: boolean;
+  prevSkillPoints: number;
+  prevPerkPoints: number;
+  prevXp: number;
+  prevSkills: PlayerSkills;
+  prevKarma: number;
 }
 
 export function formatLevelUpMessage(
@@ -30,10 +41,19 @@ export function formatLevelUpMessage(
 export function applyXpToProgression(
   progression: PlayerProgression,
   amount: number,
+  playerSnapshot?: LevelUpPlayerSnapshot,
 ): { progression: PlayerProgression; levelUp: LevelUpEvent | null } {
+  const prevSkillPoints = progression.skillPoints;
+  const prevPerkPoints = progression.perkPoints;
+  const prevXp = progression.xp;
+
   const result = applyXpGain(progression, amount);
   if (result.levelsGained <= 0) {
     return { progression: result.progression, levelUp: null };
+  }
+
+  if (!playerSnapshot) {
+    console.warn('[levelUp] applyXpToProgression without player snapshot — summary diffs may be incomplete');
   }
 
   return {
@@ -44,6 +64,11 @@ export function applyXpToProgression(
       levelsGained: result.levelsGained,
       perkPointsGained: result.perkPointsGained,
       perkPointGained: result.perkPointGained,
+      prevSkillPoints,
+      prevPerkPoints,
+      prevXp,
+      prevSkills: playerSnapshot?.prevSkills ?? DEFAULT_SKILLS,
+      prevKarma: playerSnapshot?.prevKarma ?? 0,
     },
   };
 }
@@ -62,6 +87,11 @@ export function mergeLevelUpEvents(events: LevelUpEvent[]): LevelUpEvent | null 
     levelsGained: last.newLevel - first.prevLevel,
     perkPointsGained,
     perkPointGained: perkPointsGained > 0,
+    prevSkillPoints: first.prevSkillPoints,
+    prevPerkPoints: first.prevPerkPoints,
+    prevXp: first.prevXp,
+    prevSkills: first.prevSkills,
+    prevKarma: first.prevKarma,
   };
 }
 

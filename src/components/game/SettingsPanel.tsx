@@ -28,6 +28,7 @@ import {
   createTextSpeed,
   setColorBlindMode,
   setReducedMotionOverride,
+  setLoadingFxDisabled,
   setSubtitleScale,
   setTextSpeed,
   setLocomotionSpeed,
@@ -216,6 +217,13 @@ function VisualSettingsTab({
         checked={a11y.reducedMotionOverride}
         onChange={(v) => {
           setReducedMotionOverride(v);
+        }}
+      />
+      <CyberToggle
+        label="Отключить анимации загрузки"
+        checked={a11y.loadingFxDisabled}
+        onChange={(v) => {
+          setLoadingFxDisabled(v);
         }}
       />
       <CyberSlider

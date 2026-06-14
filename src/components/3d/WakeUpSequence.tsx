@@ -83,8 +83,7 @@ export function WakeUpSequence() {
     const openPrologueStory = (): void => {
       prefetchStoryNodes(['start', 'explore_mode', 'room_table']);
       void import('@/components/game/StoryRenderer');
-      void import('@/components/game/QuestCompleteDialog');
-      void import('@/components/game/MatrixRainQuote');
+      void import('@/components/game/FirstReadingCelebration');
 
       const live = getGameStore();
       if (live.activeCutsceneId) {

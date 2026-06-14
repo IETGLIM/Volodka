@@ -9,48 +9,18 @@ import { useMemo, useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useStatusEffectsContext } from '@/store/selectors';
 import {
-  type StatusEffectType,
   type StatusEffectDef,
   STATUS_EFFECTS,
   getStatusEffectById,
 } from '@/data/statusEffects';
-import { type WeatherType, determineWeatherType, WEATHER_EFFECTS } from '@/data/weatherEffects';
+import { type WeatherType, determineWeatherType } from '@/data/weatherEffects';
 import { eventBus } from '@/engine/EventBus';
+import {
+  buildActiveStatusEffects,
+  type ActiveStatusEffect,
+} from '@/engine/statusEffects/activeStatusEffects';
 
-/* ─── Active effect instance ─── */
-
-export interface ActiveStatusEffect {
-  id: StatusEffectType;
-  remainingHours?: number;
-  stacks?: number;
-}
-
-/* ─── Weather → status effect mapping ─── */
-
-const WEATHER_EFFECT_MAP: Record<string, StatusEffectType> = {
-  rain: 'rain_debuff',
-  snow: 'snow_debuff',
-  fog: 'fog_debuff',
-  storm: 'storm_debuff',
-};
-
-/* ─── Perk ID → status effect mapping ─── */
-
-const PERK_EFFECT_MAP: Record<string, StatusEffectType> = {
-  night_watch: 'night_vision',
-  iron_stomach: 'iron_stomach',
-  counterattack: 'counter_strike',
-  poetic_trance: 'poetic_trance',
-};
-
-/* ─── Category sort order ─── */
-
-const CATEGORY_ORDER: Record<string, number> = {
-  perk: 0,
-  buff: 1,
-  weather: 2,
-  debuff: 3,
-};
+export type { ActiveStatusEffect };
 
 /* ─── Tooltip ─── */
 
@@ -271,50 +241,16 @@ export function StatusEffectsBar() {
   );
 
   // Build active effects list
-  const activeEffects: ActiveStatusEffect[] = useMemo(() => {
-    const effects: ActiveStatusEffect[] = [];
-
-    // ── Weather debuffs ──
-    if (currentWeather !== 'clear') {
-      const weatherEffectId = WEATHER_EFFECT_MAP[currentWeather];
-      if (weatherEffectId) {
-        effects.push({ id: weatherEffectId });
-      }
-    }
-
-    // ── Perk-based buffs ──
-    for (const perkId of unlockedPerks) {
-      const effectId = PERK_EFFECT_MAP[perkId];
-      if (effectId) {
-        effects.push({ id: effectId });
-      }
-    }
-
-    // ── Low energy → exhausted debuff ──
-    if (energy < 25) {
-      effects.push({ id: 'exhausted', stacks: energy < 10 ? 2 : 1 });
-    }
-
-    // ── High stress → stressed debuff ──
-    if (stress > 70) {
-      effects.push({ id: 'stressed', stacks: stress > 90 ? 3 : stress > 80 ? 2 : 1 });
-    }
-
-    // ── Night time → night_vision buff if perk is unlocked ──
-    // (Already covered by perk mapping above, but the effect is only meaningful at night)
-
-    // ── Sort: perks first, then buffs, then weather, then debuffs ──
-    effects.sort((a, b) => {
-      const defA = STATUS_EFFECTS[a.id];
-      const defB = STATUS_EFFECTS[b.id];
-      const orderA = CATEGORY_ORDER[defA.category] ?? 99;
-      const orderB = CATEGORY_ORDER[defB.category] ?? 99;
-      if (orderA !== orderB) return orderA - orderB;
-      return a.id.localeCompare(b.id);
-    });
-
-    return effects;
-  }, [currentWeather, unlockedPerks, energy, stress]);
+  const activeEffects: ActiveStatusEffect[] = useMemo(
+    () =>
+      buildActiveStatusEffects({
+        currentWeather,
+        unlockedPerks,
+        energy,
+        stress,
+      }),
+    [currentWeather, unlockedPerks, energy, stress],
+  );
 
   // Split into visible + overflow
   const visibleEffects = activeEffects.slice(0, MAX_VISIBLE_EFFECTS);

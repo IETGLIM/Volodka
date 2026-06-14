@@ -1,88 +1,135 @@
-
 import React from 'react';
+import { RecoveryScreen } from '@/components/game/RecoveryScreen';
+import {
+  buildErrorCode,
+  buildErrorRecoveryContext,
+} from '@/engine/recovery/buildErrorRecoveryContext';
+import type { ErrorRecoveryContext } from '@/engine/recovery/errorRecoveryTypes';
+import { gameTelemetry } from '@/engine/recovery/gameTelemetry';
+import { recoveryManager } from '@/engine/recovery/recoveryManager';
+import { useErrorRecoveryContext } from '@/engine/recovery/useErrorRecoveryContext';
 
-interface GameErrorBoundaryProps {
+type GameErrorBoundaryProps = {
   children: React.ReactNode;
   fallback?: React.ReactNode;
-}
+};
 
-interface GameErrorBoundaryState {
+type GameErrorBoundaryCoreProps = GameErrorBoundaryProps & {
+  context: ErrorRecoveryContext;
+};
+
+type GameErrorBoundaryState = {
   hasError: boolean;
   error: Error | null;
-}
+  errorInfo: React.ErrorInfo | null;
+  recoveryKey: number;
+  recoveryContext: ErrorRecoveryContext;
+};
 
 /**
- * Error boundary that wraps the entire game UI.
- * Catches render crashes in any game component (HUD, CombatUI, panels, etc.)
- * and shows a recovery screen instead of blank-whiting the page.
+ * Catches render crashes in game UI and shows a recovery screen.
+ * Wrapped by {@link GameErrorBoundary} which supplies live diagnostic context.
  */
-export class GameErrorBoundary extends React.Component<
-  GameErrorBoundaryProps,
+class GameErrorBoundaryCore extends React.Component<
+  GameErrorBoundaryCoreProps,
   GameErrorBoundaryState
 > {
-  constructor(props: GameErrorBoundaryProps) {
+  constructor(props: GameErrorBoundaryCoreProps) {
     super(props);
-    this.state = { hasError: false, error: null };
+    this.state = {
+      hasError: false,
+      error: null,
+      errorInfo: null,
+      recoveryKey: 0,
+      recoveryContext: props.context,
+    };
   }
 
-  static getDerivedStateFromError(error: Error): GameErrorBoundaryState {
+  static getDerivedStateFromError(error: Error): Partial<GameErrorBoundaryState> {
     return { hasError: true, error };
   }
 
-  componentDidCatch(error: Error, info: React.ErrorInfo) {
-    console.error('[GameErrorBoundary] Caught render error:', error, info.componentStack);
+  componentDidUpdate(prevProps: GameErrorBoundaryCoreProps): void {
+    if (!this.state.hasError && prevProps.context !== this.props.context) {
+      this.setState({ recoveryContext: this.props.context });
+    }
   }
 
-  handleReload = () => {
-    this.setState({ hasError: false, error: null });
+  componentDidCatch(error: Error, info: React.ErrorInfo): void {
+    const recoveryContext = {
+      ...buildErrorRecoveryContext(error),
+      ...this.props.context,
+      errorCode: buildErrorCode(error),
+    };
+
+    this.setState({ errorInfo: info, recoveryContext });
+
+    gameTelemetry.captureException(error, {
+      componentStack: info.componentStack,
+      context: recoveryContext,
+    });
+  }
+
+  clearErrorState = (): void => {
+    this.setState((state) => ({
+      hasError: false,
+      error: null,
+      errorInfo: null,
+      recoveryKey: state.recoveryKey + 1,
+      recoveryContext: this.props.context,
+    }));
   };
 
-  handleRestart = () => {
-    // Clear save and reload fresh
-    try {
-      localStorage.removeItem('volodka_save');
-    } catch {}
-    window.location.reload();
+  handleRecover = (): void => {
+    recoveryManager.attemptRecovery();
+    this.clearErrorState();
   };
 
-  render() {
+  handleRestartScene = (): void => {
+    recoveryManager.restartCurrentScene();
+    this.clearErrorState();
+  };
+
+  handleResetSettings = (): void => {
+    recoveryManager.resetSettings();
+  };
+
+  handleResetAll = (): void => {
+    recoveryManager.resetAllData();
+  };
+
+  render(): React.ReactNode {
     if (this.state.hasError) {
       if (this.props.fallback) return this.props.fallback;
 
       return (
-        <div className="fixed inset-0 bg-black flex items-center justify-center z-[9999]">
-          <div className="max-w-md text-center p-8">
-            <div className="text-5xl mb-4 animate-pulse">&#9888;</div>
-            <h1 className="text-xl font-bold text-rose-400 mb-2">
-              Критическая ошибка
-            </h1>
-            <p className="text-sm text-slate-400 mb-4">
-              Что-то пошло не так. Попробуйте перезагрузить или начать заново.
-            </p>
-            {this.state.error && (
-              <pre className="text-xs text-slate-600 bg-slate-900/50 p-3 rounded mb-4 max-h-32 overflow-auto text-left">
-                {this.state.error.message}
-              </pre>
-            )}
-            <div className="flex gap-3 justify-center">
-              <button
-                onClick={this.handleReload}
-                className="px-4 py-2 rounded border border-cyan-800/40 bg-cyan-950/30 text-cyan-300 hover:bg-cyan-900/30 text-sm transition-colors"
-              >
-                Попробовать снова
-              </button>
-              <button
-                onClick={this.handleRestart}
-                className="px-4 py-2 rounded border border-rose-800/40 bg-rose-950/30 text-rose-300 hover:bg-rose-900/30 text-sm transition-colors"
-              >
-                Начать заново
-              </button>
-            </div>
-          </div>
-        </div>
+        <RecoveryScreen
+          error={this.state.error}
+          errorInfo={this.state.errorInfo}
+          context={this.state.recoveryContext}
+          onRecover={this.handleRecover}
+          onRestartScene={this.handleRestartScene}
+          onResetSettings={this.handleResetSettings}
+          onResetAll={this.handleResetAll}
+        />
       );
     }
 
-    return this.props.children;
+    return (
+      <div key={this.state.recoveryKey} className="contents" data-testid="game-error-boundary">
+        {this.props.children}
+      </div>
+    );
   }
+}
+
+/** Functional wrapper — supplies live game context to the class error boundary. */
+export function GameErrorBoundary({ children, fallback }: GameErrorBoundaryProps) {
+  const context = useErrorRecoveryContext();
+
+  return (
+    <GameErrorBoundaryCore context={context} fallback={fallback}>
+      {children}
+    </GameErrorBoundaryCore>
+  );
 }

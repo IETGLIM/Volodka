@@ -168,6 +168,7 @@ export function storePatchFromSave(payload: SavePayload): Partial<GameStoreState
           ? normalizeInventoryItem(payload.playerState.equippedItems.accessory)
           : null,
       },
+      visitedNodeTimestamps: payload.playerState.visitedNodeTimestamps ?? {},
     },
     exploration: {
       ...defaults.exploration,

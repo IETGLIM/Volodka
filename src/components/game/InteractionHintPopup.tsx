@@ -4,8 +4,9 @@
    interactive objects/NPCs. Cyberpunk glass-morphism styling.
 */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
+import { useTouchDevice } from '@/hooks/useTouchDevice';
 import { motion, AnimatePresence } from 'framer-motion';
 import { User, Package, DoorOpen, Sparkles, Hand } from 'lucide-react';
 import { useGamePhase } from '@/store/selectors';
@@ -68,6 +69,7 @@ function CornerBrackets({ accentColor }: { accentColor: string }) {
 export function InteractionHintPopup() {
   const mode = useGamePhase();
   const reducedMotion = useEffectiveReducedMotion();
+  const isTouchDevice = useTouchDevice();
   const [hint, setHint] = useState<InteractionHint | null>(null);
   const [isVisible, setIsVisible] = useState(false);
 
@@ -97,9 +99,7 @@ export function InteractionHintPopup() {
   /* ── Also hide when leaving exploration mode ── */
   useEffect(() => {
     if (mode !== 'exploration') {
-      // Defer to avoid synchronous setState in effect (react-hooks/set-state-in-effect)
-      const id = requestAnimationFrame(() => setIsVisible(false));
-      return () => cancelAnimationFrame(id);
+      setIsVisible(false);
     }
   }, [mode]);
 
@@ -187,7 +187,7 @@ export function InteractionHintPopup() {
                   animation: reducedMotion ? undefined : 'hint-key-pulse 2s ease-in-out infinite',
                 }}
               >
-                {'ontouchstart' in window ? <Hand size={16} /> : `[${hint.key}]`}
+                {isTouchDevice ? <Hand size={16} /> : `[${hint.key}]`}
               </div>
 
               {/* Text content */}

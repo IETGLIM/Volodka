@@ -1,0 +1,97 @@
+.openstack-terminal-panel {
+  background: linear-gradient(135deg, rgba(0, 5, 2, 0.98), rgba(0, 12, 6, 0.98));
+  border-color: rgba(68, 255, 136, 0.25);
+  box-shadow:
+    0 0 30px rgba(68, 255, 136, 0.08),
+    inset 0 0 30px rgba(68, 255, 136, 0.02);
+}
+
+.openstack-terminal-header {
+  border-bottom: 1px solid rgba(68, 255, 136, 0.15);
+  background: rgba(68, 255, 136, 0.03);
+}
+
+.openstack-terminal-scanlines {
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(68, 255, 136, 0.015) 2px,
+    rgba(68, 255, 136, 0.015) 4px
+  );
+}
+
+.openstack-terminal--reduced-motion .openstack-terminal-scanlines {
+  display: none;
+}
+
+.openstack-terminal-output {
+  font-family: monospace;
+  font-size: 11px;
+  line-height: 1.5;
+  border-bottom: 1px solid rgba(68, 255, 136, 0.1);
+  scrollbar-width: thin;
+  scrollbar-color: rgba(68, 255, 136, 0.2) transparent;
+}
+
+.openstack-cmd-btn {
+  background: rgba(68, 255, 136, 0.04);
+  border: 1px solid rgba(68, 255, 136, 0.15);
+  color: #44ff88;
+}
+
+.openstack-cmd-btn:hover:not(:disabled) {
+  background: rgba(68, 255, 136, 0.1);
+  border-color: rgba(68, 255, 136, 0.35);
+}
+
+.openstack-cmd-btn:disabled {
+  cursor: wait;
+}
+
+.openstack-cmd-btn--dimmed {
+  opacity: 0.4;
+}
+
+.openstack-cmd-btn--selected-correct {
+  background: rgba(68, 255, 136, 0.15);
+  border-color: rgba(68, 255, 136, 0.5);
+  color: #44ff88;
+}
+
+.openstack-cmd-btn--selected-wrong {
+  background: rgba(255, 68, 68, 0.15);
+  border-color: rgba(255, 68, 68, 0.5);
+  color: #ff4444;
+}
+
+.openstack-cmd-key {
+  background: rgba(68, 255, 136, 0.1);
+  border: 1px solid rgba(68, 255, 136, 0.3);
+  color: #44ff88;
+}
+
+.openstack-outcome-btn--success {
+  background: rgba(68, 255, 136, 0.15);
+  border: 1px solid rgba(68, 255, 136, 0.4);
+  color: #44ff88;
+}
+
+.openstack-outcome-btn--failure {
+  background: rgba(255, 68, 68, 0.15);
+  border: 1px solid rgba(255, 68, 68, 0.3);
+  color: #ff4444;
+}
+
+.openstack-outcome-btn:hover {
+  transform: scale(1.05);
+}
+
+.openstack-outcome-btn:active {
+  transform: scale(0.95);
+}
+
+.openstack-terminal--reduced-motion .openstack-outcome-btn:hover,
+.openstack-terminal--reduced-motion .openstack-outcome-btn:active {
+  transform: none;
+}
