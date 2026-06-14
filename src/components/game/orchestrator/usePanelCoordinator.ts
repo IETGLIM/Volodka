@@ -143,6 +143,7 @@ export function usePanelCoordinator({
       !shouldFlushGatedFirstReadingCelebration({
         sceneId: state.exploration.currentSceneId,
         showStoryOverlay: state.showStoryOverlay,
+        currentNodeId: state.currentNodeId,
       })
     ) {
       return;
@@ -229,12 +230,6 @@ export function usePanelCoordinator({
       }
       presentQuestCompleted(payload);
     });
-    scope.on('scene:enter', ({ sceneId }) => {
-      flushPendingQuestAccept();
-      if (sceneId !== 'volodka_room') {
-        flushPendingQuestCompletionPresentation();
-      }
-    });
     scope.on('story:quest_chain_unlock', (data) => {
       queueOrShowQuestChainUnlock({
         nextQuestTitle: data.nextQuestTitle,
@@ -281,8 +276,15 @@ export function usePanelCoordinator({
       if (prevState.showStoryOverlay && !state.showStoryOverlay) {
         flushPendingQuestCompletionPresentation();
       }
+
+      if (prevState.exploration.currentSceneId !== state.exploration.currentSceneId) {
+        flushPendingQuestAccept();
+        if (state.exploration.currentSceneId !== 'volodka_room') {
+          flushPendingQuestCompletionPresentation();
+        }
+      }
     });
-  }, [flushPendingQuestCompletionPresentation]);
+  }, [flushPendingQuestAccept, flushPendingQuestCompletionPresentation]);
 
   const dispatchStackAction = useCallback((action: PanelStackAction) => {
     dispatchStack(action);

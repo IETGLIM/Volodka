@@ -31,6 +31,7 @@ describe('questAcceptDeferral', () => {
       shouldFlushGatedFirstReadingCelebration({
         sceneId: 'volodka_room',
         showStoryOverlay: true,
+        currentNodeId: 'start',
       }),
     ).toBe(false);
 
@@ -38,6 +39,15 @@ describe('questAcceptDeferral', () => {
       shouldFlushGatedFirstReadingCelebration({
         sceneId: 'volodka_room',
         showStoryOverlay: false,
+        currentNodeId: 'start',
+      }),
+    ).toBe(false);
+
+    expect(
+      shouldFlushGatedFirstReadingCelebration({
+        sceneId: 'volodka_room',
+        showStoryOverlay: false,
+        currentNodeId: 'explore_mode',
       }),
     ).toBe(true);
   });

@@ -53,7 +53,11 @@ export function shouldGateFirstReadingCelebration(
 export function shouldFlushGatedFirstReadingCelebration(input: {
   sceneId: string;
   showStoryOverlay: boolean;
+  currentNodeId: string | null;
 }): boolean {
   if (input.sceneId !== 'volodka_room') return true;
-  return !input.showStoryOverlay;
+  if (input.showStoryOverlay) return false;
+  // Wake sets currentNodeId to `start` before the overlay opens — wait for explore hub.
+  if (input.currentNodeId === 'start' || input.currentNodeId === null) return false;
+  return true;
 }

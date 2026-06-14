@@ -5,6 +5,7 @@ import {
   advancePastAct1WakePrologue,
   dismissFirstPlayTutorial,
   dismissFirstReadingBeats,
+  expectFirstReadingRewardToasts,
   dismissTitleCardIfPresent,
   skipStoryTypewriter,
   skipWakeCinematic,
@@ -168,6 +169,18 @@ async function enterCorridorViaPhysicalDoor(page: import('@playwright/test').Pag
 }
 
 test.describe('Act I smoke', () => {
+  test('new game → wake → first_reading rewards after prologue', async ({ page }) => {
+    await waitForMenuReady(page);
+    await page.getByTestId('menu-new-game').click();
+    await expect(page.locator('canvas[data-engine]')).toBeVisible({ timeout: 90_000 });
+
+    await skipWakeCinematic(page);
+    await advancePastAct1WakePrologue(page);
+    await dismissFirstReadingBeats(page);
+    await expectFirstReadingRewardToasts(page);
+    await expect(page.getByTestId('game-hud')).toBeVisible({ timeout: 15_000 });
+  });
+
   test('new game → wake → movement + first_reading → corridor door', async ({ page }) => {
     await waitForMenuReady(page);
     await page.getByTestId('menu-new-game').click();

@@ -214,6 +214,16 @@ export async function dismissFirstReadingBeats(page: Page) {
   }
 }
 
+/** Assert HUD toasts after first_reading completion (optional beat — slot may defer). */
+export async function expectFirstReadingRewardToasts(page: Page) {
+  await expect(
+    page.getByText(/«Первое чтение» выполнено|Первое чтение/i).first(),
+  ).toBeVisible({ timeout: 12_000 });
+  await expect(
+    page.getByText(/Стих в сборнике|Смерть есть лишь начало/i).first(),
+  ).toBeVisible({ timeout: 12_000 });
+}
+
 export async function dismissTitleCardIfPresent(page: Page) {
   for (let attempt = 0; attempt < 4; attempt += 1) {
     const cutsceneText = page
