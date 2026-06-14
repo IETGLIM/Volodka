@@ -44,7 +44,7 @@ export function applyCameraFrame(
   frameState: PostModeFrameState,
 ): void {
   const { spring, camera: cam, delta, playerPos, playerVelocity } = ctx;
-  let { targetPos, targetLook, targetFov, targetRoll } = targets;
+  const { targetPos, targetLook, targetFov, targetRoll } = targets;
 
   const isInDialogue = frameState.isInDialogue;
   const isCutscene = frameState.isCutscene;

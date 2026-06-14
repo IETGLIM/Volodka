@@ -3,7 +3,6 @@ import {
   preloadNarrativeGameData,
   isGameDataLoaded,
 } from '@/data/gameDataLoader';
-import { preloadPhysicsChunk } from '@/engine/physics/preloadPhysicsChunk';
 import { markGameDataReady } from '@/engine/performance/LoadingTimeline';
 import { loadingPipeline } from '@/engine/loading/LoadingPipeline';
 
@@ -11,7 +10,7 @@ function preloadCombatUiChunk(): Promise<unknown> {
   return import('@/components/game/CombatUI');
 }
 
-/** Boot data loads in main.tsx; this hook finishes narrative + physics preload. */
+/** Boot data loads in main.tsx; narrative + combat UI. Rapier deferred to usePhysicsPreload. */
 export function useGameDataPreload(): boolean {
   const [ready, setReady] = useState(isGameDataLoaded());
 
@@ -22,10 +21,6 @@ export function useGameDataPreload(): boolean {
     void preloadNarrativeGameData()
       .then(() => {
         loadingPipeline.reportStage('narrative_data');
-        return preloadPhysicsChunk();
-      })
-      .then(() => {
-        loadingPipeline.reportStage('physics_wasm');
         return preloadCombatUiChunk();
       })
       .then(() => {

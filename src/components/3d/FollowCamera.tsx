@@ -169,7 +169,7 @@ export function FollowCamera({
 
   useEffect(() => {
     return () => disposeFollowCamera(runtimeRef.current, sceneIdRef.current);
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- unmount only
+     
   }, []);
 
   useEffect(() => {

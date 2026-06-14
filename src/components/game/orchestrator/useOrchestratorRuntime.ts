@@ -36,7 +36,7 @@ export function useOrchestratorRuntime() {
     canvasReady,
     isTransitioning,
     fadeOutMs,
-  } = useOrchestratorLoading(mode, mainMenuOpen);
+  } = useOrchestratorLoading(mode);
 
   useEffect(() => {
     reviveGameEngine();

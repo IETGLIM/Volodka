@@ -89,6 +89,7 @@ export function AppBootRoot() {
         return;
       }
       if (snap.pct >= 68) {
+        // Menu boot ends at combat_ui (68%) without Rapier; synthesize first-frame for playable.
         loadingPipeline.reportStage('canvas_init');
         eventBus.emit('canvas:first-frame', { generation: Date.now() });
       }
