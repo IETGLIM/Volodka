@@ -1,114 +1,137 @@
 /**
- * Accessibility settings — applies data attributes to document root for CSS hooks.
+ * Accessibility settings — default manager instance and backward-compatible facade.
  */
 
-export type ColorBlindMode = 'none' | 'protanopia' | 'deuteranopia' | 'tritanopia';
+import {
+  AccessibilityManager,
+  DEFAULT_ACCESSIBILITY_SETTINGS,
+  readAccessibilitySettingsFromStorage,
+} from './AccessibilityManager';
+import {
+  createLocomotionSpeed,
+  createSubtitleScale,
+  createTextSpeed,
+} from './accessibilityConstraints';
+import type {
+  AccessibilitySettingsSnapshot,
+  ColorBlindMode,
+  LocomotionSpeed,
+  SubtitleScale,
+  TextSpeed,
+} from './accessibilityTypes';
 
-export interface AccessibilitySettingsSnapshot {
-  colorBlindMode: ColorBlindMode;
-  reducedMotionOverride: boolean;
-  subtitleScale: number;
-  /** Dialogue/story typewriter speed multiplier (independent of font size). */
-  textSpeed: number;
-  /** Player walk/run speed multiplier (accessibility). */
-  locomotionSpeed: number;
+export type {
+  AccessibilityChangedKey,
+  AccessibilitySettingKey,
+  AccessibilitySettingsSnapshot,
+  ColorBlindMode,
+  LocomotionSpeed,
+  SubtitleScale,
+  TextSpeed,
+} from './accessibilityTypes';
+export {
+  isColorBlindMode,
+  parseColorBlindMode,
+  VALID_COLOR_BLIND_MODES,
+} from './accessibilityTypes';
+
+export {
+  AccessibilityManager,
+  ACCESSIBILITY_LS_KEYS,
+  readAccessibilitySettingsFromStorage,
+} from './AccessibilityManager';
+export {
+  ACCESSIBILITY_NUMERIC_RANGES,
+  clampInRange,
+  clampNumericAccessibilitySetting,
+  createLocomotionSpeed,
+  createSubtitleScale,
+  createTextSpeed,
+  DEFAULT_ACCESSIBILITY_SETTINGS,
+} from './accessibilityConstraints';
+export {
+  ACCESSIBILITY_DOM_HOOKS,
+  ACCESSIBILITY_DOM_SETTING_KEYS,
+  applyAccessibilityDomHooks,
+} from './accessibilityDomPresentation';
+export type {
+  AccessibilityCssVarDomHook,
+  AccessibilityDataAttributeDomHook,
+  AccessibilityDomHook,
+} from './accessibilityDomPresentation';
+export type { AccessibilityNumericSettingKey } from './accessibilityConstraints';
+export type { AccessibilityManagerOptions, AccessibilityStorage } from './AccessibilityManager';
+
+let defaultManager = new AccessibilityManager();
+
+function manager(): AccessibilityManager {
+  return defaultManager;
 }
 
-export const ACCESSIBILITY_SETTINGS_CHANGED = 'volodka:accessibility-settings-changed';
-
-const LS_COLOR_BLIND = 'volodka_color_blind_mode';
-const LS_REDUCED_MOTION = 'volodka_reduced_motion_override';
-const LS_SUBTITLE_SCALE = 'volodka_subtitle_scale';
-const LS_TEXT_SPEED = 'volodka_text_speed';
-const LS_LOCOMOTION_SPEED = 'volodka_locomotion_speed';
-
-function lsGet(key: string, fallback: string): string {
-  try {
-    return localStorage.getItem(key) ?? fallback;
-  } catch {
-    return fallback;
-  }
-}
-
-function lsGetBool(key: string, fallback: boolean): boolean {
-  return lsGet(key, String(fallback)) === 'true';
-}
-
-function lsGetNumber(key: string, fallback: number): number {
-  const n = Number(lsGet(key, String(fallback)));
-  return Number.isFinite(n) ? n : fallback;
-}
-
+/** @deprecated Prefer accessibilityManager.getSettings() — kept for call sites. */
 export function readAccessibilitySettings(): AccessibilitySettingsSnapshot {
-  const raw = lsGet(LS_COLOR_BLIND, 'none') as ColorBlindMode;
-  const colorBlindMode: ColorBlindMode =
-    raw === 'protanopia' || raw === 'deuteranopia' || raw === 'tritanopia' ? raw : 'none';
-  return {
-    colorBlindMode,
-    reducedMotionOverride: lsGetBool(LS_REDUCED_MOTION, false),
-    subtitleScale: Math.max(0.8, Math.min(1.5, lsGetNumber(LS_SUBTITLE_SCALE, 1))),
-    textSpeed: Math.max(0.5, Math.min(2, lsGetNumber(LS_TEXT_SPEED, 1))),
-    locomotionSpeed: Math.max(0.7, Math.min(1.3, lsGetNumber(LS_LOCOMOTION_SPEED, 1))),
-  };
+  const storage = typeof localStorage !== 'undefined' ? localStorage : null;
+  return storage
+    ? readAccessibilitySettingsFromStorage(storage)
+    : { ...DEFAULT_ACCESSIBILITY_SETTINGS };
 }
-
-let cached = readAccessibilitySettings();
 
 export function getAccessibilitySettings(): AccessibilitySettingsSnapshot {
-  return cached;
-}
-
-function applyToDom(settings: AccessibilitySettingsSnapshot): void {
-  if (typeof document === 'undefined') return;
-  const root = document.documentElement;
-  if (settings.colorBlindMode === 'none') {
-    root.removeAttribute('data-color-blind-mode');
-  } else {
-    root.setAttribute('data-color-blind-mode', settings.colorBlindMode);
-  }
-  if (settings.reducedMotionOverride) {
-    root.setAttribute('data-reduced-motion', 'true');
-  } else {
-    root.removeAttribute('data-reduced-motion');
-  }
-  root.style.setProperty('--subtitle-scale', String(settings.subtitleScale));
+  return manager().getSettings();
 }
 
 export function applyAccessibilitySettings(): AccessibilitySettingsSnapshot {
-  cached = readAccessibilitySettings();
-  applyToDom(cached);
-  if (typeof window !== 'undefined') {
-    window.dispatchEvent(new CustomEvent(ACCESSIBILITY_SETTINGS_CHANGED));
-  }
-  return cached;
+  return manager().applyFromStorage();
 }
 
 export function setColorBlindMode(mode: ColorBlindMode): void {
-  localStorage.setItem(LS_COLOR_BLIND, mode);
-  applyAccessibilitySettings();
+  manager().updateSetting('colorBlindMode', mode);
 }
 
 export function setReducedMotionOverride(enabled: boolean): void {
-  localStorage.setItem(LS_REDUCED_MOTION, String(enabled));
-  applyAccessibilitySettings();
+  manager().updateSetting('reducedMotionOverride', enabled);
 }
 
-export function setSubtitleScale(scale: number): void {
-  localStorage.setItem(LS_SUBTITLE_SCALE, String(Math.max(0.8, Math.min(1.5, scale))));
-  applyAccessibilitySettings();
+export function setSubtitleScale(scale: number | SubtitleScale): void {
+  manager().updateSetting('subtitleScale', createSubtitleScale(scale));
 }
 
-export function setTextSpeed(speed: number): void {
-  localStorage.setItem(LS_TEXT_SPEED, String(Math.max(0.5, Math.min(2, speed))));
-  applyAccessibilitySettings();
+export function setTextSpeed(speed: number | TextSpeed): void {
+  manager().updateSetting('textSpeed', createTextSpeed(speed));
 }
 
-export function setLocomotionSpeed(speed: number): void {
-  localStorage.setItem(LS_LOCOMOTION_SPEED, String(Math.max(0.7, Math.min(1.3, speed))));
-  applyAccessibilitySettings();
+export function setLocomotionSpeed(speed: number | LocomotionSpeed): void {
+  manager().updateSetting('locomotionSpeed', createLocomotionSpeed(speed));
 }
 
-/** Call once at app boot. */
-export function initAccessibilitySettings(): void {
-  applyAccessibilitySettings();
+export function resetAccessibilitySettings(): AccessibilitySettingsSnapshot {
+  return manager().reset();
 }
+
+/** Call once at app boot before UI render. */
+export function initAccessibilitySettings(): AccessibilitySettingsSnapshot {
+  return manager().init();
+}
+
+/** Production singleton — prefer injecting AccessibilityManager in tests. */
+export function getAccessibilityManager(): AccessibilityManager {
+  return defaultManager;
+}
+
+/** Test harness — replace default manager with a fresh isolated instance. */
+export function replaceDefaultAccessibilityManager(next: AccessibilityManager): AccessibilityManager {
+  defaultManager.dispose();
+  defaultManager = next;
+  return defaultManager;
+}
+
+/** Test harness — restore a fresh default manager. */
+export function resetDefaultAccessibilityManager(): AccessibilityManager {
+  return replaceDefaultAccessibilityManager(new AccessibilityManager({ syncCrossTab: false }));
+}
+
+export const accessibilityManager = {
+  get current(): AccessibilityManager {
+    return defaultManager;
+  },
+};

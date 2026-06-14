@@ -18,6 +18,7 @@ import { fileURLToPath } from 'node:url';
 import { ASSET_MANIFEST } from '../src/config/assetManifest';
 import { getPropModelUrls } from '../src/config/propModelRegistry';
 import { getNpcModelUrls } from '../src/config/npcModelRegistry';
+import { getAi3dgenPublicUrls } from '../src/config/ai3dgenAssetCatalog';
 import { MODEL_URLS } from '../src/config/modelUrls';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -84,7 +85,21 @@ for (const [key, url] of Object.entries(MODEL_URLS)) {
   checkFile(`model-urls:${key}`, url, true);
 }
 
+/* ── 3. AI3DGen catalog (validate only when file already imported) ── */
+let ai3dgenPending = 0;
+for (const url of getAi3dgenPublicUrls()) {
+  const file = publicPath(url);
+  if (file && existsSync(file)) {
+    checkFile('ai3dgen', url, true);
+  } else {
+    ai3dgenPending += 1;
+  }
+}
+
 /* ── Report ── */
+if (ai3dgenPending > 0) {
+  console.log(`ℹ AI3DGen catalog: ${ai3dgenPending} model(s) not imported yet (see assets-source/ai3dgen/README.md)`);
+}
 if (skippedManifest.length > 0) {
   console.log(`ℹ Skipped unshipped manifest assets: ${skippedManifest.join(', ')}`);
 }

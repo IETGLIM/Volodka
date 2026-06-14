@@ -9,6 +9,7 @@ export const HERO_SCENE_IDS = [
   'cafe_evening',
   'office_day',
   'park_day',
+  'library_day',
 ] as const satisfies readonly SceneId[];
 
 export type HeroSceneId = (typeof HERO_SCENE_IDS)[number];

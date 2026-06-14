@@ -55,6 +55,22 @@ npm run check    # Полный гейт: lint + typecheck + контент + с
 npm run build    # Production-сборка в dist/
 ```
 
+### 3D-ассеты (AI3DGen)
+
+Каталог целей: `src/config/ai3dgenAssetCatalog.ts`. Импорт OBJ/GLB с [AI3DGen](https://www.ai3dgen.com/ru/image-to-3d-model-free):
+
+```bash
+npm run assets:ai3dgen-import -- --list
+npm run assets:ai3dgen-import -- --id npc_albert --file ./downloads/albert.obj
+npm run assets:validate
+```
+
+Подробный цикл — в [assets-source/ai3dgen/README.md](./assets-source/ai3dgen/README.md).
+
+### Доступность
+
+Настройки (субтитры, скорость текста, reduced motion, дальтонизм) хранятся в `localStorage`, синхронизируются между вкладками и рассылают `accessibility:changed` через `eventBus`. Инициализация — `initAccessibilitySettings()` в `main.tsx`.
+
 ## ✅ Качество
 
 - typecheck / ESLint: 0 ошибок · юнит-тесты: **380+** · e2e smoke (Playwright)

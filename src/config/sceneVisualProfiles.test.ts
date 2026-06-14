@@ -6,13 +6,14 @@ describe('sceneVisualProfiles', () => {
     for (const sceneId of HERO_SCENE_IDS) {
       expect(isHeroScene(sceneId)).toBe(true);
       expect(getSceneVisualProfile(sceneId).forceFullPostFx).toBe(true);
-      expect(getSceneVisualProfile(sceneId).enhancedAmbientOcclusion).toBe(true);
+      // Hero profiles disable N8AO by default — full post-FX without SS AO cost.
+      expect(getSceneVisualProfile(sceneId).enhancedAmbientOcclusion).toBe(false);
     }
   });
 
   it('uses standard profile for non-hero scenes', () => {
-    const profile = getSceneVisualProfile('library_day');
+    const profile = getSceneVisualProfile('factory_basement');
     expect(profile.tier).toBe('standard');
-    expect(profile.forceFullPostFx).toBe(false);
+    expect(profile.forceFullPostFx).toBe(true);
   });
 });

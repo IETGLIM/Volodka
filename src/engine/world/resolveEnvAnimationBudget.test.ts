@@ -16,7 +16,7 @@ describe('resolveEnvAnimationsForTier', () => {
   });
 
   it('trims animations on standard scenes at low tier', () => {
-    expect(resolveEnvAnimationsForTier('library_day', SAMPLE, 'low')).toHaveLength(2);
-    expect(resolveEnvAnimationsForTier('library_day', SAMPLE, 'medium')).toHaveLength(4);
+    expect(resolveEnvAnimationsForTier('factory_basement', SAMPLE, 'low')).toHaveLength(2);
+    expect(resolveEnvAnimationsForTier('factory_basement', SAMPLE, 'medium')).toHaveLength(4);
   });
 });

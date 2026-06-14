@@ -1,4 +1,12 @@
-/* ─── Volodka RPG – interactable prop GLB registry (CC0 Kenney Furniture Kit) ─── */
+/* ─── Volodka RPG – interactable prop GLB registry (CC0 Kenney + AI3DGen props) ─── */
+
+import {
+  getAi3dgenPropStub,
+  getShippedAi3dgenPropStubs,
+  type Ai3dgenPropStub,
+} from './ai3dgenPropRegistry';
+
+export type PropModelLicense = 'CC0' | 'AI3DGen-Free' | 'AI3DGen-Pro';
 
 export interface PropModelDefinition {
   id: string;
@@ -8,9 +16,22 @@ export interface PropModelDefinition {
   rotation?: [number, number, number];
   /** Local offset from trigger zone origin (metres) */
   offset?: [number, number, number];
-  license: 'CC0';
+  license: PropModelLicense;
   source: string;
   sourceUrl: string;
+}
+
+const AI3DGEN_SOURCE_URL = 'https://www.ai3dgen.com/ru/image-to-3d-model-free';
+
+function ai3dgenStubToPropDefinition(stub: Ai3dgenPropStub): PropModelDefinition {
+  return {
+    id: stub.propModelId,
+    url: stub.url,
+    scale: stub.scale,
+    license: stub.license,
+    source: `AI3DGen — ${stub.catalogId}`,
+    sourceUrl: AI3DGEN_SOURCE_URL,
+  };
 }
 
 const PROPS = '/models/props';
@@ -90,9 +111,15 @@ export const PROP_MODEL_REGISTRY: Record<string, PropModelDefinition> = {
 };
 
 export function getPropModelDefinition(propModelId: string): PropModelDefinition | undefined {
-  return PROP_MODEL_REGISTRY[propModelId];
+  const kenney = PROP_MODEL_REGISTRY[propModelId];
+  if (kenney) return kenney;
+  const stub = getAi3dgenPropStub(propModelId);
+  if (!stub || stub.shipped !== true) return undefined;
+  return ai3dgenStubToPropDefinition(stub);
 }
 
 export function getPropModelUrls(): string[] {
-  return Object.values(PROP_MODEL_REGISTRY).map((p) => p.url);
+  const kenney = Object.values(PROP_MODEL_REGISTRY).map((p) => p.url);
+  const ai3dgen = getShippedAi3dgenPropStubs().map((stub) => stub.url);
+  return [...kenney, ...ai3dgen];
 }

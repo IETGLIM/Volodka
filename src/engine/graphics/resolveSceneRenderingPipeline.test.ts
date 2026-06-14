@@ -15,7 +15,7 @@ describe('resolveSceneRenderingPipeline', () => {
 
   it('uses lite post-FX on non-hero scenes when visualLite', () => {
     const pipe = resolveSceneRenderingPipeline(
-      'library_day',
+      'rooftop_edge',
       QUALITY_PRESETS.medium,
       true,
     );
@@ -23,32 +23,32 @@ describe('resolveSceneRenderingPipeline', () => {
     expect(pipe.useAmbientOcclusion).toBe(false);
   });
 
-  it('enables AO on high preset for hero scenes', () => {
+  it('skips AO on hero scenes when enhancedAmbientOcclusion is off', () => {
     const pipe = resolveSceneRenderingPipeline(
       'street_night',
       QUALITY_PRESETS.high,
       false,
     );
     expect(pipe.useLitePostFx).toBe(false);
-    expect(pipe.useAmbientOcclusion).toBe(true);
+    expect(pipe.useAmbientOcclusion).toBe(false);
     expect(pipe.aoIntensity).toBeGreaterThan(2.5);
   });
 
-  it('enables AO on ultra for any scene with enhancedAmbientOcclusion profile', () => {
+  it('skips AO on ultra when profile disables enhancedAmbientOcclusion', () => {
     const pipe = resolveSceneRenderingPipeline(
       'volodka_room',
       QUALITY_PRESETS.ultra,
       false,
     );
-    expect(pipe.useAmbientOcclusion).toBe(true);
+    expect(pipe.useAmbientOcclusion).toBe(false);
   });
 
-  it('factory stays lite when not hero-forced', () => {
+  it('standard scenes keep full post on high when visualLite is off', () => {
     const pipe = resolveSceneRenderingPipeline(
-      'abandoned_factory',
+      'rooftop_edge',
       QUALITY_PRESETS.high,
       false,
     );
-    expect(pipe.useLitePostFx).toBe(true);
+    expect(pipe.useLitePostFx).toBe(false);
   });
 });

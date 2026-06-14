@@ -1,3 +1,4 @@
+import { clampNumericAccessibilitySetting } from '@/engine/accessibility/accessibilityConstraints';
 import type { CSSProperties } from 'react';
 
 /** Shared narrative overlay typewriter speed from accessibility settings. */
@@ -11,8 +12,8 @@ export function resolveNarrativeTypewriterSpeed(
   textSpeed = 1,
 ): number {
   if (reducedMotion) return 0;
-  const fontScale = Math.max(0.8, Math.min(1.5, subtitleScale));
-  const speedMul = Math.max(0.5, Math.min(2, textSpeed));
+  const fontScale = clampNumericAccessibilitySetting('subtitleScale', subtitleScale);
+  const speedMul = clampNumericAccessibilitySetting('textSpeed', textSpeed);
   return Math.round(baseMs / (fontScale * speedMul));
 }
 

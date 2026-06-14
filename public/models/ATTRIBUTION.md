@@ -43,3 +43,16 @@ All props in `public/models/props/` converted from Kenney Furniture Kit OBJ via 
 - **License:** CC0 / permissive Khronos sample assets
 
 NPCs without `modelPath` continue to use procedural meshes (`ProceduralNPCModel`).
+
+## AI3DGen (image → 3D)
+
+Models generated via [AI3DGen](https://www.ai3dgen.com/ru/image-to-3d-model-free) and imported with `npm run assets:ai3dgen-import`.
+
+| Catalog ID | File | Tier | Notes |
+|------------|------|------|-------|
+| _(add after import)_ | | | Document tier + date in this table |
+
+- **Free tier:** personal use only (OBJ, no textures).
+- **Pro tier:** commercial license — required for shipped builds with AI3DGen assets.
+
+See `assets-source/ai3dgen/README.md` for the full workflow.

@@ -1,9 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useReducedMotion } from 'framer-motion';
-import {
-  ACCESSIBILITY_SETTINGS_CHANGED,
-  getAccessibilitySettings,
-} from '@/engine/accessibility/accessibilitySettings';
+import { eventBus } from '@/engine/EventBus';
+import { getAccessibilitySettings } from '@/engine/accessibility/accessibilitySettings';
 
 /** OS reduced-motion preference plus in-game accessibility override. */
 export function useEffectiveReducedMotion(): boolean {
@@ -13,9 +11,11 @@ export function useEffectiveReducedMotion(): boolean {
   );
 
   useEffect(() => {
-    const sync = () => setSettingsReduced(getAccessibilitySettings().reducedMotionOverride);
-    window.addEventListener(ACCESSIBILITY_SETTINGS_CHANGED, sync);
-    return () => window.removeEventListener(ACCESSIBILITY_SETTINGS_CHANGED, sync);
+    return eventBus.on('accessibility:changed', ({ changedKey, settings }) => {
+      if (changedKey === 'all' || changedKey === 'reducedMotionOverride') {
+        setSettingsReduced(settings.reducedMotionOverride);
+      }
+    });
   }, []);
 
   return Boolean(framerReduced || settingsReduced);

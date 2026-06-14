@@ -15,7 +15,7 @@ describe('resolveAmbientNpcBudget', () => {
   });
 
   it('does not boost non-hero scenes', () => {
-    expect(resolveAmbientNpcCount('library_day', 2, 'ultra')).toBe(2);
+    expect(resolveAmbientNpcCount('factory_basement', 2, 'ultra')).toBe(2);
   });
 
   it('caps at MAX_AMBIENT_NPC_INSTANCES', () => {
@@ -26,6 +26,6 @@ describe('resolveAmbientNpcBudget', () => {
 
   it('raises opacity on hero scenes', () => {
     expect(resolveAmbientNpcOpacity('cafe_evening', 0.6)).toBeGreaterThan(0.6);
-    expect(resolveAmbientNpcOpacity('library_day', 0.6)).toBe(0.6);
+    expect(resolveAmbientNpcOpacity('factory_basement', 0.6)).toBe(0.6);
   });
 });

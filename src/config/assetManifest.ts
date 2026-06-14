@@ -76,6 +76,67 @@ export const ASSET_MANIFEST: Record<string, GltfAssetDefinition> = {
     castShadow: true,
     shipped: true,
   },
+  /** AI3DGen pipeline targets — flip shipped after import (see ai3dgenAssetCatalog.ts). */
+  npc_albert: {
+    id: 'npc_albert',
+    category: 'character',
+    lods: [{ url: `${MODELS}/npcs/albert.glb`, maxDistance: 0 }],
+    castShadow: true,
+  },
+  npc_zarema: {
+    id: 'npc_zarema',
+    category: 'character',
+    lods: [{ url: `${MODELS}/npcs/zarema.glb`, maxDistance: 0 }],
+    castShadow: true,
+  },
+  npc_maria_ai3dgen: {
+    id: 'npc_maria_ai3dgen',
+    category: 'character',
+    lods: [{ url: `${MODELS}/npcs/maria.glb`, maxDistance: 0 }],
+    castShadow: true,
+  },
+  npc_office_alexander: {
+    id: 'npc_office_alexander',
+    category: 'character',
+    lods: [{ url: `${MODELS}/npcs/office_alexander.glb`, maxDistance: 0 }],
+    castShadow: true,
+  },
+  npc_office_dmitry: {
+    id: 'npc_office_dmitry',
+    category: 'character',
+    lods: [{ url: `${MODELS}/npcs/office_dmitry.glb`, maxDistance: 0 }],
+    castShadow: true,
+  },
+  npc_viktor: {
+    id: 'npc_viktor',
+    category: 'character',
+    lods: [{ url: `${MODELS}/npcs/viktor.glb`, maxDistance: 0 }],
+    castShadow: true,
+  },
+  npc_kira: {
+    id: 'npc_kira',
+    category: 'character',
+    lods: [{ url: `${MODELS}/npcs/kira.glb`, maxDistance: 0 }],
+    castShadow: true,
+  },
+  npc_boris: {
+    id: 'npc_boris',
+    category: 'character',
+    lods: [{ url: `${MODELS}/npcs/boris.glb`, maxDistance: 0 }],
+    castShadow: true,
+  },
+  npc_tamara: {
+    id: 'npc_tamara',
+    category: 'character',
+    lods: [{ url: `${MODELS}/npcs/tamara.glb`, maxDistance: 0 }],
+    castShadow: true,
+  },
+  npc_grisha: {
+    id: 'npc_grisha',
+    category: 'character',
+    lods: [{ url: `${MODELS}/npcs/grisha.glb`, maxDistance: 0 }],
+    castShadow: true,
+  },
   env_cafe_props: {
     id: 'env_cafe_props',
     category: 'environment',

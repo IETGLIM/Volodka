@@ -19,14 +19,23 @@ import {
 import { applyAudioSettings } from '@/engine/audio/AudioSettings';
 import { applyVisualSettings } from '@/engine/visualSettings';
 import {
-  applyAccessibilitySettings,
   getAccessibilitySettings,
+  parseColorBlindMode,
+  resetAccessibilitySettings,
+  createLocomotionSpeed,
+  createSubtitleScale,
+  createTextSpeed,
   setColorBlindMode,
   setReducedMotionOverride,
   setSubtitleScale,
   setTextSpeed,
   setLocomotionSpeed,
-  type ColorBlindMode,
+} from '@/engine/accessibility/accessibilitySettings';
+import type {
+  ColorBlindMode,
+  LocomotionSpeed,
+  SubtitleScale,
+  TextSpeed,
 } from '@/engine/accessibility/accessibilitySettings';
 
 // ─── Types ───
@@ -121,12 +130,12 @@ function VisualSettingsTab({
   setColorBlindModeState: (v: ColorBlindMode) => void;
   reducedMotion: boolean;
   setReducedMotion: (v: boolean) => void;
-  subtitleScale: number;
-  setSubtitleScaleState: (v: number) => void;
-  textSpeed: number;
-  setTextSpeedState: (v: number) => void;
-  locomotionSpeed: number;
-  setLocomotionSpeedState: (v: number) => void;
+  subtitleScale: SubtitleScale;
+  setSubtitleScaleState: (v: SubtitleScale) => void;
+  textSpeed: TextSpeed;
+  setTextSpeedState: (v: TextSpeed) => void;
+  locomotionSpeed: LocomotionSpeed;
+  setLocomotionSpeedState: (v: LocomotionSpeed) => void;
   persist: (key: string, value: number | boolean) => void;
 }) {
   const { selectedPreset, preset, setPreset } = useGraphicsQuality();
@@ -210,7 +219,7 @@ function VisualSettingsTab({
           className="bg-slate-900/80 border border-cyan-900/40 rounded px-2 py-1.5 font-mono text-xs text-cyan-200"
           value={colorBlindMode}
           onChange={(e) => {
-            const mode = e.target.value as ColorBlindMode;
+            const mode = parseColorBlindMode(e.target.value);
             setColorBlindModeState(mode);
             setColorBlindMode(mode);
           }}
@@ -235,7 +244,7 @@ function VisualSettingsTab({
         min={80}
         max={150}
         onChange={(v) => {
-          const scale = v / 100;
+          const scale = createSubtitleScale(v / 100);
           setSubtitleScaleState(scale);
           setSubtitleScale(scale);
         }}
@@ -247,7 +256,7 @@ function VisualSettingsTab({
         min={50}
         max={200}
         onChange={(v) => {
-          const speed = v / 100;
+          const speed = createTextSpeed(v / 100);
           setTextSpeedState(speed);
           setTextSpeed(speed);
         }}
@@ -262,7 +271,7 @@ function VisualSettingsTab({
         min={70}
         max={130}
         onChange={(v) => {
-          const speed = v / 100;
+          const speed = createLocomotionSpeed(v / 100);
           setLocomotionSpeedState(speed);
           setLocomotionSpeed(speed);
         }}
@@ -337,7 +346,7 @@ function SettingsPanelContent({ onClose }: { onClose: () => void }) {
     setPointerLock(DEFAULTS.volodka_pointer_lock as boolean);
     applyAudioSettings();
     applyVisualSettings();
-    applyAccessibilitySettings();
+    resetAccessibilitySettings();
     const a11y = getAccessibilitySettings();
     setColorBlindModeState(a11y.colorBlindMode);
     setReducedMotion(a11y.reducedMotionOverride);
