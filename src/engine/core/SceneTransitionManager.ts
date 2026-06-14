@@ -16,6 +16,12 @@ import { triggerSceneEntryStoryIfNeeded } from '@/engine/interaction/narrativeOp
 import { flushDeferredCombatStart } from './combatStartGate';
 import { runGlobalSceneUnload } from './GlobalCleanupService';
 import { ensureSceneLoadedBridge, scheduleSceneLoaded } from './sceneLoadedGate';
+import {
+  isSceneTransitionInProgress,
+  setSceneTransitionInProgress,
+} from './sceneTransitionGuard';
+
+export { isSceneTransitionInProgress, resetSceneTransitionGuard } from './sceneTransitionGuard';
 
 ensureSceneLoadedBridge();
 eventBus.on('scene:loaded', () => {
@@ -27,24 +33,12 @@ export interface SceneTransitionPayload {
   spawnAt: [number, number, number];
 }
 
-let transitionInProgress = false;
-
-/** True while unload → store → enter → loaded is running synchronously. */
-export function isSceneTransitionInProgress(): boolean {
-  return transitionInProgress;
-}
-
-/** Test harness — reset re-entrance guard between cases. */
-export function resetSceneTransitionGuard(): void {
-  transitionInProgress = false;
-}
-
 /**
  * Apply a scene transition. Call only from SceneTransitionHandler (EventBus listener)
  * or test harness — never mutate exploration.currentSceneId elsewhere.
  */
 export function performSceneTransition(payload: SceneTransitionPayload): void {
-  if (transitionInProgress) {
+  if (isSceneTransitionInProgress()) {
     if (import.meta.env.DEV) {
       console.warn(
         '[SceneTransitionManager] Dropped re-entrant transition to',
@@ -54,7 +48,7 @@ export function performSceneTransition(payload: SceneTransitionPayload): void {
     return;
   }
 
-  transitionInProgress = true;
+  setSceneTransitionInProgress(true);
   try {
     const fromSceneId = getGameSnapshot().exploration.currentSceneId;
     const { targetScene, spawnAt } = payload;
@@ -92,6 +86,6 @@ export function performSceneTransition(payload: SceneTransitionPayload): void {
       fromSceneId,
     });
   } finally {
-    transitionInProgress = false;
+    setSceneTransitionInProgress(false);
   }
 }

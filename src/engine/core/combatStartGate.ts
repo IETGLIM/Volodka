@@ -6,7 +6,7 @@
 import { getGameSnapshot } from '@/engine/GameActionDispatcher';
 import type { EncounterSource } from '@/engine/combat/encounterTypes';
 import type { EnemyType, SceneId } from '@/shared/types/game';
-import { isSceneTransitionInProgress } from './SceneTransitionManager';
+import { isSceneTransitionInProgress } from './sceneTransitionGuard';
 
 export interface DeferredCombatStartOptions {
   encounterName?: string;

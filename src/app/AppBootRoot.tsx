@@ -51,6 +51,11 @@ export function AppBootRoot() {
   const [overlayVisible, setOverlayVisible] = useState(true);
   const [bootAttempt, setBootAttempt] = useState(0);
   const bootRunIdRef = useRef(0);
+  const menuBootSynthesizedRef = useRef(false);
+
+  useEffect(() => {
+    menuBootSynthesizedRef.current = false;
+  }, [bootAttempt]);
 
   useEffect(() => {
     const runId = ++bootRunIdRef.current;
@@ -80,21 +85,41 @@ export function AppBootRoot() {
     setOverlayVisible(false);
   }, []);
 
-  /** Degraded boot path — headless CI / slow WebGL may never emit first-frame. */
+  /** Degraded boot path — menu boot has no canvas; synthesize first-frame once data is ready. */
   useEffect(() => {
     if (!gameMounted || !overlayVisible) return;
-    const timer = setTimeout(() => {
+
+    const tryCompleteMenuBoot = (): boolean => {
+      if (menuBootSynthesizedRef.current) return true;
+
       const snap = loadingPipeline.getSnapshot();
       if (snap.stage === 'playable' || snap.stage === 'complete' || snap.stage === 'error') {
-        return;
+        menuBootSynthesizedRef.current = true;
+        return true;
       }
       if (snap.pct >= 68) {
-        // Menu boot ends at combat_ui (68%) without Rapier; synthesize first-frame for playable.
+        menuBootSynthesizedRef.current = true;
         loadingPipeline.reportStage('canvas_init');
         eventBus.emit('canvas:first-frame', { generation: Date.now() });
+        return true;
       }
+      return false;
+    };
+
+    if (tryCompleteMenuBoot()) return;
+
+    const unsub = loadingPipeline.subscribe(() => {
+      tryCompleteMenuBoot();
+    });
+
+    const timer = setTimeout(() => {
+      tryCompleteMenuBoot();
     }, BOOT_FIRST_FRAME_FALLBACK_MS);
-    return () => clearTimeout(timer);
+
+    return () => {
+      unsub();
+      clearTimeout(timer);
+    };
   }, [gameMounted, overlayVisible]);
 
   return (
