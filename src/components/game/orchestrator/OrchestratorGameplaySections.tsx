@@ -400,7 +400,19 @@ export const GameplayNarrativeOverlay = memo(function GameplayNarrativeOverlay()
       <NarrativeWorldDim />
       {isStoryActive && (
         <ErrorBoundary name="story">
-          <Suspense fallback={null}>
+          <Suspense
+            fallback={
+              <div
+                className="fixed inset-0 flex items-end justify-center pb-28 pointer-events-none"
+                style={{ zIndex: UI_LAYERS.DIALOGUE }}
+                aria-hidden
+              >
+                <span className="text-xs font-mono tracking-widest text-cyan-300/60 animate-pulse">
+                  Загрузка сцены…
+                </span>
+              </div>
+            }
+          >
             <LazyStoryRenderer />
           </Suspense>
         </ErrorBoundary>

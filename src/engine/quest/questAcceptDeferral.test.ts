@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 import {
   isQuestCompletionFlowBusy,
   shouldDeferQuestAcceptDialog,
+  shouldFlushGatedFirstReadingCelebration,
+  shouldGateFirstReadingCelebration,
   shouldSuppressQuestAcceptEmit,
 } from './questAcceptDeferral';
 
@@ -19,6 +21,25 @@ describe('questAcceptDeferral', () => {
   it('suppresses first_reading quest-available emit from guided story auto-start', () => {
     expect(shouldSuppressQuestAcceptEmit('first_reading')).toBe(true);
     expect(shouldSuppressQuestAcceptEmit('maria_connection')).toBe(false);
+  });
+
+  it('gates first_reading celebration until prologue overlay closes in-room', () => {
+    expect(shouldGateFirstReadingCelebration('first_reading', 'volodka_room')).toBe(true);
+    expect(shouldGateFirstReadingCelebration('maria_connection', 'volodka_room')).toBe(false);
+
+    expect(
+      shouldFlushGatedFirstReadingCelebration({
+        sceneId: 'volodka_room',
+        showStoryOverlay: true,
+      }),
+    ).toBe(false);
+
+    expect(
+      shouldFlushGatedFirstReadingCelebration({
+        sceneId: 'volodka_room',
+        showStoryOverlay: false,
+      }),
+    ).toBe(true);
   });
 
   it('treats matrix quote and pending completion as busy overlay flow', () => {

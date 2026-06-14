@@ -41,3 +41,19 @@ export function isQuestCompletionFlowBusy(input: {
     input.pendingQuestComplete !== null
   );
 }
+
+/** Wait for the wake prologue overlay to close before celebrating in the apartment. */
+export function shouldGateFirstReadingCelebration(
+  questId: string,
+  sceneId: string,
+): boolean {
+  return questId === 'first_reading' && sceneId === 'volodka_room';
+}
+
+export function shouldFlushGatedFirstReadingCelebration(input: {
+  sceneId: string;
+  showStoryOverlay: boolean;
+}): boolean {
+  if (input.sceneId !== 'volodka_room') return true;
+  return !input.showStoryOverlay;
+}

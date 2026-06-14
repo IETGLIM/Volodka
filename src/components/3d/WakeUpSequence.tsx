@@ -10,6 +10,7 @@ import * as THREE from 'three';
 import { eventBus } from '@/engine/EventBus';
 import { audioEngine } from '@/engine/AudioEngine';
 import { getGameStore, useGameStore } from '@/store/gameStore';
+import { prefetchStoryNodes } from '@/data/gameDataLoader';
 import { openNarrativeOverlay } from '@/engine/scene/narrativeOverlay';
 import { setCinematicPresentationMode } from '@/engine/camera/cinematicPresentation';
 import { CinematicPlayerAvatar } from './CinematicPlayerAvatar';
@@ -80,6 +81,11 @@ export function WakeUpSequence() {
     eventBus.emit('camera:recenter', {});
 
     const openPrologueStory = (): void => {
+      prefetchStoryNodes(['start', 'explore_mode', 'room_table']);
+      void import('@/components/game/StoryRenderer');
+      void import('@/components/game/QuestCompleteDialog');
+      void import('@/components/game/MatrixRainQuote');
+
       const live = getGameStore();
       if (live.activeCutsceneId) {
         live.setCutscene(null, []);

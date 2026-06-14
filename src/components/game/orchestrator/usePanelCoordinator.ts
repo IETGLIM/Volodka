@@ -15,8 +15,11 @@ import { getQuoteByTrigger } from '@/data/matrixQuotes';
 import {
   isQuestCompletionFlowBusy,
   shouldDeferQuestAcceptDialog,
+  shouldFlushGatedFirstReadingCelebration,
+  shouldGateFirstReadingCelebration,
   type QuestAcceptPayload,
 } from '@/engine/quest/questAcceptDeferral';
+import { emitFirstReadingCompletionFeedback } from '@/engine/quest/questCompletionFeedback';
 import type {
   MatrixQuoteState,
   PanelType,
@@ -85,6 +88,8 @@ export function usePanelCoordinator({
   const [matrixQuote, setMatrixQuote] = useState<MatrixQuoteState>(null);
   const pendingQuestCompleteRef = useRef<QuestDialogState>(null);
   const pendingQuestAcceptRef = useRef<QuestAcceptPayload | null>(null);
+  const pendingQuestCompletionPresentationRef = useRef<QuestDialogState>(null);
+  const pendingQuestChainUnlockRef = useRef<QuestChainUnlockState | null>(null);
   const matrixQuoteActiveRef = useRef(false);
   const questCompleteActiveRef = useRef(false);
   const questChainUnlockTimeout = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
@@ -117,6 +122,60 @@ export function usePanelCoordinator({
     setQuestAccept(pending);
   }, [isCompletionFlowBusy]);
 
+  const presentQuestCompleted = useCallback((data: NonNullable<QuestDialogState>) => {
+    const quote = getQuoteByTrigger(data.questId);
+    if (quote) {
+      pendingQuestCompleteRef.current = data;
+      setMatrixQuote({ text: quote.text, actNumber: quote.act });
+      return;
+    }
+    setQuestComplete(data);
+  }, []);
+
+  const flushPendingQuestCompletionPresentation = useCallback(() => {
+    const pending = pendingQuestCompletionPresentationRef.current;
+    if (!pending) return;
+    if (isCompletionFlowBusy()) return;
+
+    const state = useGameStore.getState();
+    if (
+      shouldGateFirstReadingCelebration(pending.questId, state.exploration.currentSceneId) &&
+      !shouldFlushGatedFirstReadingCelebration({
+        sceneId: state.exploration.currentSceneId,
+        showStoryOverlay: state.showStoryOverlay,
+      })
+    ) {
+      return;
+    }
+
+    pendingQuestCompletionPresentationRef.current = null;
+    presentQuestCompleted(pending);
+
+    const chainUnlock = pendingQuestChainUnlockRef.current;
+    if (chainUnlock) {
+      pendingQuestChainUnlockRef.current = null;
+      setQuestChainUnlock(chainUnlock);
+      if (questChainUnlockTimeout.current) clearTimeout(questChainUnlockTimeout.current);
+      questChainUnlockTimeout.current = setTimeout(() => {
+        setQuestChainUnlock(null);
+        questChainUnlockTimeout.current = undefined;
+      }, 8000);
+    }
+  }, [isCompletionFlowBusy, presentQuestCompleted]);
+
+  const queueOrShowQuestChainUnlock = useCallback((data: QuestChainUnlockState) => {
+    if (pendingQuestCompletionPresentationRef.current) {
+      pendingQuestChainUnlockRef.current = data;
+      return;
+    }
+    setQuestChainUnlock(data);
+    if (questChainUnlockTimeout.current) clearTimeout(questChainUnlockTimeout.current);
+    questChainUnlockTimeout.current = setTimeout(() => {
+      setQuestChainUnlock(null);
+      questChainUnlockTimeout.current = undefined;
+    }, 8000);
+  }, []);
+
   const queueOrShowQuestAccept = useCallback(
     (payload: QuestAcceptPayload) => {
       const sceneId = useGameStore.getState().exploration.currentSceneId;
@@ -141,9 +200,13 @@ export function usePanelCoordinator({
   }, [flushPendingQuestAccept]);
 
   const dismissQuestComplete = useCallback(() => {
+    const completed = questComplete;
     setQuestComplete(null);
+    if (completed?.questId === 'first_reading') {
+      emitFirstReadingCompletionFeedback();
+    }
     flushPendingQuestAccept();
-  }, [flushPendingQuestAccept]);
+  }, [questComplete, flushPendingQuestAccept]);
 
   useEffect(() => {
     const scope = eventBus.createScope();
@@ -154,30 +217,32 @@ export function usePanelCoordinator({
       queueOrShowQuestAccept({ questId: data.questId, npcId: data.npcId });
     });
     scope.on('quest:completed', (data) => {
-      const quote = getQuoteByTrigger(data.questId);
-      if (quote) {
-        pendingQuestCompleteRef.current = { questId: data.questId, npcId: data.npcId };
-        setMatrixQuote({ text: quote.text, actNumber: quote.act });
+      const payload: NonNullable<QuestDialogState> = {
+        questId: data.questId,
+        npcId: data.npcId,
+      };
+      const sceneId = useGameStore.getState().exploration.currentSceneId;
+      if (shouldGateFirstReadingCelebration(data.questId, sceneId)) {
+        pendingQuestCompletionPresentationRef.current = payload;
+        flushPendingQuestCompletionPresentation();
         return;
       }
-      setQuestComplete({ questId: data.questId, npcId: data.npcId });
+      presentQuestCompleted(payload);
     });
-    scope.on('scene:enter', () => {
+    scope.on('scene:enter', ({ sceneId }) => {
       flushPendingQuestAccept();
+      if (sceneId !== 'volodka_room') {
+        flushPendingQuestCompletionPresentation();
+      }
     });
     scope.on('story:quest_chain_unlock', (data) => {
-      setQuestChainUnlock({
+      queueOrShowQuestChainUnlock({
         nextQuestTitle: data.nextQuestTitle,
         nextQuestType: data.nextQuestType,
         completedQuestTitle: data.completedQuestTitle,
         npcId: data.npcId,
         actNumber: data.actNumber,
       });
-      if (questChainUnlockTimeout.current) clearTimeout(questChainUnlockTimeout.current);
-      questChainUnlockTimeout.current = setTimeout(() => {
-        setQuestChainUnlock(null);
-        questChainUnlockTimeout.current = undefined;
-      }, 8000);
     });
     scope.on('story:act_transition', (data) => {
       const quote = getActQuote(data.toAct);
@@ -209,7 +274,15 @@ export function usePanelCoordinator({
         questChainUnlockTimeout.current = undefined;
       }
     });
-  }, [flushPendingQuestAccept, queueOrShowQuestAccept]);
+  }, [flushPendingQuestAccept, flushPendingQuestCompletionPresentation, presentQuestCompleted, queueOrShowQuestAccept, queueOrShowQuestChainUnlock]);
+
+  useEffect(() => {
+    return useGameStore.subscribe((state, prevState) => {
+      if (prevState.showStoryOverlay && !state.showStoryOverlay) {
+        flushPendingQuestCompletionPresentation();
+      }
+    });
+  }, [flushPendingQuestCompletionPresentation]);
 
   const dispatchStackAction = useCallback((action: PanelStackAction) => {
     dispatchStack(action);
