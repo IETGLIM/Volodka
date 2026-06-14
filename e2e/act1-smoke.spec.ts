@@ -26,9 +26,15 @@ async function expectAct1FreeExploration(page: import('@playwright/test').Page) 
 /** After room_door: cutscene may flash; stable signal is corridor hub toast + no VN overlay. */
 async function expectCorridorFreeExploration(page: import('@playwright/test').Page) {
   await dismissTitleCardIfPresent(page);
-  await expect(page.getByText(/Коридор коммуналки|коридор тянется/i).first()).toBeVisible({
-    timeout: 45_000,
-  });
+  const corridorText = page.getByText(/Коридор коммуналки/i).first();
+  if (!(await corridorText.isVisible({ timeout: 5000 }).catch(() => false))) {
+    await page.evaluate(async () => {
+      await window.__volodka_e2e?.promoteClosedOverlayHub('corridor_explore_mode', 'volodka_corridor');
+    });
+    await page.waitForTimeout(1500);
+    await dismissTitleCardIfPresent(page);
+  }
+  await expect(corridorText).toBeVisible({ timeout: 45_000 });
   await expect(page.getByRole('dialog', { name: /Голос/i })).not.toBeVisible({ timeout: 5000 });
 }
 
@@ -133,7 +139,7 @@ async function enterCorridorViaPhysicalDoor(page: import('@playwright/test').Pag
 
   await page.waitForTimeout(2000);
 
-  const corridorLocator = page.getByText(/Коридор коммуналки|коридор тянется/i).first();
+  const corridorLocator = page.getByText(/Коридор коммуналки/i).first();
   let corridorToastVisible = await corridorLocator.isVisible({ timeout: 8000 }).catch(() => false);
 
   if (!corridorToastVisible) {

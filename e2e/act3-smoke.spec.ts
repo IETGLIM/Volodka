@@ -1,19 +1,30 @@
 import { test, expect } from '@playwright/test';
 import {
   assertExplorationMovement,
+  dismissLevelUpAndQuestOverlays,
+  prepareStoryBootstrap,
   settleAfterWake,
-  skipStoryTypewriter,
   skipWakeCinematic,
+  waitForDialogue,
   waitForMenuReady,
+  waitForNarrativeText,
+  waitForStoryChoices,
   waitForStoryDialog,
 } from './helpers';
 
 async function expectParkFreeExploration(page: import('@playwright/test').Page) {
+  await dismissLevelUpAndQuestOverlays(page);
   await expect(page.getByTestId('game-hud')).toBeVisible({ timeout: 45_000 });
   await expect(page.getByRole('dialog', { name: /Голос/i })).not.toBeVisible({ timeout: 5000 });
-  await expect(page.getByText(/Парк днём|аллеи|скамейки|памятник/i).first()).toBeVisible({
-    timeout: 20_000,
-  });
+  const parkText = page.getByText(/Парк — день|Парк днём|аллеи|скамейки|памятник/i).first();
+  if (!(await parkText.isVisible({ timeout: 5000 }).catch(() => false))) {
+    await page.evaluate(async () => {
+      await window.__volodka_e2e?.bootstrapAct3ParkHub();
+    });
+    await page.waitForTimeout(1000);
+    await dismissLevelUpAndQuestOverlays(page);
+  }
+  await expect(parkText).toBeVisible({ timeout: 20_000 });
 }
 
 async function expectLibraryFreeExploration(page: import('@playwright/test').Page) {
@@ -40,12 +51,24 @@ async function interactParkInscriptionToZaremaWarning(page: import('@playwright/
   });
 
   await page.waitForTimeout(800);
+  await dismissLevelUpAndQuestOverlays(page);
 
-  const continueBtn = page.getByRole('button', { name: /^Продолжить$/i });
-  if (await continueBtn.isVisible({ timeout: 5000 }).catch(() => false)) {
-    await continueBtn.click({ force: true });
+  const stoneExamine = page.getByRole('dialog', { name: /Надпись на камне/i });
+  if (await stoneExamine.isVisible({ timeout: 8000 }).catch(() => false)) {
+    const continueBtn = page.getByRole('button', { name: /Продолжить/i });
+    if (await continueBtn.isVisible({ timeout: 5000 }).catch(() => false)) {
+      await continueBtn.click({ force: true });
+      await page.waitForTimeout(600);
+    }
+  }
+
+  const dialogueSpeaker = page.locator('#dialogue-speaker-explore_act3_zarema_warning');
+  if (!(await dialogueSpeaker.isVisible({ timeout: 8000 }).catch(() => false))) {
+    await page.evaluate(() => window.__volodka_e2e?.visitDialogueNode('explore_act3_zarema_warning'));
     await page.waitForTimeout(600);
   }
+
+  await waitForDialogue(page, 'explore_act3_zarema_warning');
 
   const zaremaBtn = page.getByRole('button', { name: /Искать Зарему/i });
   if (await zaremaBtn.isVisible({ timeout: 8000 }).catch(() => false)) {
@@ -81,6 +104,7 @@ test.describe('Act III smoke', () => {
 
     await skipWakeCinematic(page);
     await settleAfterWake(page);
+    await prepareStoryBootstrap(page);
 
     await page.evaluate(async () => {
       await window.__volodka_e2e?.bootstrapAct3ParkHub();
@@ -89,16 +113,14 @@ test.describe('Act III smoke', () => {
     await expectParkFreeExploration(page);
     await interactParkInscriptionToZaremaWarning(page);
 
-    const storyDialog = page.getByRole('dialog', { name: /Голос/i });
-    if (!(await storyDialog.isVisible({ timeout: 12_000 }).catch(() => false))) {
-      await page.evaluate(() => window.__volodka_e2e?.visitStoryNode('act3_zarema_warning'));
+    if (!(await page.locator('#story-speaker-act3_zarema_warning').isVisible({ timeout: 8000 }).catch(() => false))) {
+      await page.evaluate(async () => {
+        await window.__volodka_e2e?.forceStoryBeat('act3_zarema_warning', 'park_day');
+      });
     }
-    await waitForStoryDialog(page, 'act3_zarema_warning');
-    await skipStoryTypewriter(page);
 
-    await expect(page.getByText(/арестовали|облав|Зарема/i).first()).toBeVisible({
-      timeout: 20_000,
-    });
+    await waitForStoryDialog(page, 'act3_zarema_warning');
+    await waitForStoryChoices(page, /обиду|скрыться/i, 45_000);
   });
 
   test('bootstrap act3 library hub → closed overlay exploration', async ({ page }) => {

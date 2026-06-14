@@ -3,7 +3,7 @@ import { loadSceneExploreHubs } from '@/data/narrative/narrativePackRegistry';
 import { getCutsceneForNode } from '@/data/cutscenes';
 import { eventBus } from '@/engine/EventBus';
 import { dispatchGameAction } from '@/engine/GameActionDispatcher';
-import { openLinkedStory } from '@/engine/interaction/narrativeOpenHelpers';
+import { openLinkedStory, tryOpenDialogue } from '@/engine/interaction/narrativeOpenHelpers';
 import {
   getPlayerRigidBody,
   isPlayerRigidBodyValid,
@@ -25,6 +25,7 @@ export interface VolodkaE2EBridge {
   getPlayerPosition: () => VolodkaE2EPosition;
   interactTriggerZone: (zoneId: string) => void;
   visitStoryNode: (nodeId: string) => Promise<void>;
+  visitDialogueNode: (nodeId: string) => Promise<void>;
   forceStoryBeat: (nodeId: string, sceneId: SceneId) => Promise<void>;
   bootstrapAct2Entry: () => Promise<void>;
   bootstrapMidActOffice: () => Promise<void>;
@@ -212,6 +213,9 @@ export function registerVolodkaE2EBridge(): void {
     },
     visitStoryNode(nodeId) {
       return openLinkedStory(nodeId).then(() => undefined);
+    },
+    visitDialogueNode(nodeId) {
+      return tryOpenDialogue(nodeId).then(() => undefined);
     },
     forceStoryBeat(nodeId, sceneId) {
       return jumpToStoryBeat(nodeId, sceneId);

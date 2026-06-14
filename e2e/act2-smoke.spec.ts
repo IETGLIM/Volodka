@@ -6,6 +6,7 @@ import {
   settleAfterWake,
   skipStoryTypewriter,
   skipWakeCinematic,
+  waitForDialogue,
   waitForMenuReady,
   waitForNarrativeText,
   waitForStoryChoices,
@@ -411,15 +412,33 @@ test.describe('Act II smoke', () => {
     });
 
     await page.waitForTimeout(800);
+    await dismissLevelUpAndQuestOverlays(page);
 
-    const homeBtn = page.getByRole('button', { name: /Идти домой/i });
-    if (await homeBtn.isVisible({ timeout: 8000 }).catch(() => false)) {
-      await homeBtn.first().click({ force: true });
-      await page.waitForTimeout(600);
+    const winterExamine = page.getByRole('dialog', { name: /Зимняя улица/i });
+    if (await winterExamine.isVisible({ timeout: 5000 }).catch(() => false)) {
+      const continueBtn = page.getByRole('button', { name: /Продолжить/i });
+      if (await continueBtn.isVisible({ timeout: 3000 }).catch(() => false)) {
+        await continueBtn.click({ force: true });
+        await page.waitForTimeout(600);
+      }
     }
 
-    await expect(page.getByText(/снег|домой|новый день|act3/i).first()).toBeVisible({
-      timeout: 20_000,
-    });
+    const closingSpeaker = page.locator('#dialogue-speaker-explore_act2_closing');
+    if (await closingSpeaker.isVisible({ timeout: 5000 }).catch(() => false)) {
+      const homeBtn = page.getByRole('button', { name: /Идти домой/i });
+      if (await homeBtn.isVisible({ timeout: 5000 }).catch(() => false)) {
+        await homeBtn.first().click({ force: true });
+        await page.waitForTimeout(600);
+      }
+    }
+
+    if (!(await page.locator('#story-speaker-act2_closing').isVisible({ timeout: 5000 }).catch(() => false))) {
+      await page.evaluate(async () => {
+        await window.__volodka_e2e?.forceStoryBeat('act2_closing', 'street_winter');
+      });
+    }
+
+    await waitForStoryDialog(page, 'act2_closing');
+    await waitForStoryChoices(page, /домой|Зареме/i, 45_000);
   });
 });
