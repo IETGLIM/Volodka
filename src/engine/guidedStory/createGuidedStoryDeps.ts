@@ -6,6 +6,7 @@ import {
   type GameStoreSnapshot,
 } from '@/engine/GameActionDispatcher';
 import { areQuestDependenciesMet } from '@/shared/quest/questDependencies';
+import type { QuestStatus } from '@/shared/types/state/quest';
 import { getGuidedStoryPathConfig } from '@/engine/guidedStory/guidedStoryPath';
 import { createSnapshotStoryGraphAccess } from '@/engine/guidedStory/guidedStoryQuestGraph';
 import type {
@@ -91,7 +92,7 @@ export function createDefaultGuidedStoryDeps(): GuidedStoryDeps {
           questId,
           snapshot.quests.map((q) => ({
             questId: q.questId,
-            status: q.status,
+            status: q.status as QuestStatus,
             objectives: q.objectives,
             startedAtTime: 0,
           })),

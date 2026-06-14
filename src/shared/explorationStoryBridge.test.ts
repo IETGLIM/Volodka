@@ -3,8 +3,8 @@ import { EXPLORATION_DIALOGUE_STORY_STEP, recordExplorationStoryStep } from './e
 
 const dispatchMock = vi.fn();
 
-vi.mock('@/engine/GameActionDispatcher', () => ({
-  dispatchGameAction: (...args: unknown[]) => dispatchMock(...args),
+vi.mock('@/shared/gameBridge/stateDispatcher', () => ({
+  dispatchStateAction: (...args: unknown[]) => dispatchMock(...args),
 }));
 
 describe('explorationStoryBridge', () => {

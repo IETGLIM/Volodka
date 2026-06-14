@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { triggerSceneEntryStoryIfNeeded } from './narrativeOpenHelpers';
 
-const dispatchGameAction = vi.fn();
+const dispatchStateAction = vi.fn();
 const closeNarrativeOverlay = vi.fn();
 const requestSceneTransition = vi.fn();
 
@@ -13,9 +13,14 @@ let mockSnapshot: {
   exploration: { currentSceneId: string };
 };
 
+vi.mock('@/engine/StateDispatcher', () => ({
+  getGameSnapshot: () => mockSnapshot,
+  dispatchStateAction: (...args: unknown[]) => dispatchStateAction(...args),
+}));
+
 vi.mock('@/engine/GameActionDispatcher', () => ({
   getGameSnapshot: () => mockSnapshot,
-  dispatchGameAction: (...args: unknown[]) => dispatchGameAction(...args),
+  dispatchGameAction: (...args: unknown[]) => dispatchStateAction(...args),
 }));
 
 vi.mock('@/store/gameStore', () => ({
@@ -68,7 +73,7 @@ vi.mock('@/shared/sceneExploreHubRegistry', async (importOriginal) => {
 
 describe('triggerSceneEntryStoryIfNeeded', () => {
   beforeEach(() => {
-    dispatchGameAction.mockClear();
+    dispatchStateAction.mockClear();
     closeNarrativeOverlay.mockClear();
     requestSceneTransition.mockClear();
     mockSnapshot = {
@@ -83,7 +88,7 @@ describe('triggerSceneEntryStoryIfNeeded', () => {
   it('starts corridor_door entry when walking from room to corridor', async () => {
     triggerSceneEntryStoryIfNeeded('volodka_corridor', 'volodka_room');
     await Promise.resolve();
-    expect(dispatchGameAction).toHaveBeenCalledWith({
+    expect(dispatchStateAction).toHaveBeenCalledWith({
       type: 'story/setCurrentNodeId',
       nodeId: 'corridor_door',
     });
@@ -91,14 +96,14 @@ describe('triggerSceneEntryStoryIfNeeded', () => {
 
   it('skips corridor_door when entering from the street', () => {
     triggerSceneEntryStoryIfNeeded('volodka_corridor', 'street_night');
-    expect(dispatchGameAction).not.toHaveBeenCalled();
+    expect(dispatchStateAction).not.toHaveBeenCalled();
   });
 
   it('promotes to corridor hub when already on entry node after cutscene played', () => {
     mockSnapshot.currentNodeId = 'corridor_door';
     mockSnapshot.triggeredCutscenes = ['act1_corridor_solnysh'];
     triggerSceneEntryStoryIfNeeded('volodka_corridor', 'volodka_room');
-    expect(dispatchGameAction).toHaveBeenCalledWith({
+    expect(dispatchStateAction).toHaveBeenCalledWith({
       type: 'story/setCurrentNodeId',
       nodeId: 'corridor_explore_mode',
     });
@@ -108,12 +113,12 @@ describe('triggerSceneEntryStoryIfNeeded', () => {
     mockSnapshot.currentNodeId = 'corridor_door';
     triggerSceneEntryStoryIfNeeded('volodka_corridor', 'volodka_room');
     await Promise.resolve();
-    expect(dispatchGameAction).toHaveBeenCalledWith({
+    expect(dispatchStateAction).toHaveBeenCalledWith({
       type: 'story/setCurrentNodeId',
       nodeId: 'corridor_explore_mode',
     });
     await Promise.resolve();
-    expect(dispatchGameAction).toHaveBeenCalledWith({
+    expect(dispatchStateAction).toHaveBeenCalledWith({
       type: 'story/setCurrentNodeId',
       nodeId: 'corridor_door',
     });
@@ -126,7 +131,7 @@ describe('triggerSceneEntryStoryIfNeeded', () => {
 
     triggerSceneEntryStoryIfNeeded('volodka_corridor', 'volodka_room');
 
-    expect(dispatchGameAction).toHaveBeenCalledWith({
+    expect(dispatchStateAction).toHaveBeenCalledWith({
       type: 'story/setCurrentNodeId',
       nodeId: 'corridor_explore_mode',
     });
@@ -140,7 +145,7 @@ describe('triggerSceneEntryStoryIfNeeded', () => {
 
     triggerSceneEntryStoryIfNeeded('home_evening', 'volodka_corridor');
 
-    expect(dispatchGameAction).toHaveBeenCalledWith({
+    expect(dispatchStateAction).toHaveBeenCalledWith({
       type: 'story/setCurrentNodeId',
       nodeId: 'home_evening_explore_mode',
     });
@@ -153,7 +158,7 @@ describe('triggerSceneEntryStoryIfNeeded', () => {
     triggerSceneEntryStoryIfNeeded('cafe_evening', 'street_night');
     await Promise.resolve();
 
-    expect(dispatchGameAction).not.toHaveBeenCalled();
+    expect(dispatchStateAction).not.toHaveBeenCalled();
   });
 
   it('skips door auto-entry for mid-scene office beats not in entry list', () => {
@@ -162,6 +167,6 @@ describe('triggerSceneEntryStoryIfNeeded', () => {
 
     triggerSceneEntryStoryIfNeeded('office_day', 'cafe_evening');
 
-    expect(dispatchGameAction).not.toHaveBeenCalled();
+    expect(dispatchStateAction).not.toHaveBeenCalled();
   });
 });

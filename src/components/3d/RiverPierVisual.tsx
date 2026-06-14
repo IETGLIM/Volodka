@@ -7,6 +7,15 @@
 
 import { useLayoutEffect, useMemo, useRef, type MutableRefObject } from 'react';
 import * as THREE from 'three';
+import {
+  getSharedBoxGeometry,
+  getSharedCircleGeometry,
+  getSharedConeGeometry,
+  getSharedCylinderGeometry,
+  getSharedPlaneGeometry,
+  getSharedSphereGeometry,
+} from '@/engine/three/moduleGeometryRegistry';
+
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import { useCachedCanvasTexture } from '@/hooks/useCachedCanvasTexture';
 
@@ -52,8 +61,7 @@ export function RiverPierVisual(_props: RiverPierVisualProps) {
   return (
     <group>
       {/* ── Wooden pier deck (player area) ── */}
-      <mesh rotation-x={-Math.PI / 2} receiveShadow position-y={0.001}>
-        <planeGeometry args={[W, D]} />
+      <mesh rotation-x={-Math.PI / 2} receiveShadow position-y={0.001} geometry={getSharedPlaneGeometry(W, D)}>
         <meshStandardMaterial
           map={plankTexture}
           color="#4a3e30"
@@ -65,8 +73,7 @@ export function RiverPierVisual(_props: RiverPierVisualProps) {
       </mesh>
 
       {/* ── Water — dark plane stretching south past the railing ── */}
-      <mesh ref={waterRef} rotation-x={-Math.PI / 2} position={[0, -0.35, -26]}>
-        <planeGeometry args={[90, 44]} />
+      <mesh ref={waterRef} rotation-x={-Math.PI / 2} position={[0, -0.35, -26]} geometry={getSharedPlaneGeometry(90, 44)}>
         <meshStandardMaterial
           color="#0d1b26"
           metalness={0.85}
@@ -76,8 +83,7 @@ export function RiverPierVisual(_props: RiverPierVisualProps) {
         />
       </mesh>
       {/* Moon road on the water (fog-exempt shimmer) */}
-      <mesh ref={moonRoadRef} rotation-x={-Math.PI / 2} position={[5, -0.33, -22]}>
-        <planeGeometry args={[2.2, 30]} />
+      <mesh ref={moonRoadRef} rotation-x={-Math.PI / 2} position={[5, -0.33, -22]} geometry={getSharedPlaneGeometry(2.2, 30)}>
         <meshBasicMaterial color="#cdd8ee" transparent opacity={0.18} fog={false} depthWrite={false} blending={THREE.AdditiveBlending} />
       </mesh>
 
@@ -90,8 +96,7 @@ export function RiverPierVisual(_props: RiverPierVisualProps) {
         { x: -4, h: 3.5, w: 7 },
         { x: 12, h: 6, w: 11 },
       ].map((bank, i) => (
-        <mesh key={`bank-${i}`} position={[bank.x, bank.h / 2 - 0.3, -42]}>
-          <boxGeometry args={[bank.w, bank.h, 2]} />
+        <mesh key={`bank-${i}`} position={[bank.x, bank.h / 2 - 0.3, -42]} geometry={getSharedBoxGeometry(bank.w, bank.h, 2)}>
           <meshStandardMaterial color="#0c1118" roughness={1} />
         </mesh>
       ))}
@@ -101,27 +106,23 @@ export function RiverPierVisual(_props: RiverPierVisualProps) {
 
       {/* ── Pilings under the deck edge ── */}
       {[-10, -6, -2, 2, 6, 10].map((x) => (
-        <mesh key={`piling-${x}`} position={[x, -0.5, -9.2]}>
-          <cylinderGeometry args={[0.14, 0.16, 1.6, 7]} />
+        <mesh key={`piling-${x}`} position={[x, -0.5, -9.2]} geometry={getSharedCylinderGeometry(0.14, 0.16, 1.6, 7)}>
           <meshStandardMaterial color="#2c2419" roughness={0.95} />
         </mesh>
       ))}
 
       {/* ── Barrel fire ── */}
       <group position={[0, 0, -2]}>
-        <mesh position={[0, 0.5, 0]} castShadow>
-          <cylinderGeometry args={[0.34, 0.32, 1.0, 12]} />
+        <mesh position={[0, 0.5, 0]} castShadow geometry={getSharedCylinderGeometry(0.34, 0.32, 1.0, 12)}>
           <meshStandardMaterial color="#3a3026" metalness={0.55} roughness={0.6} />
         </mesh>
         {/* Glow holes punched in the barrel */}
         {[0.4, 1.6, 2.9, 4.2].map((a) => (
-          <mesh key={`hole-${a}`} position={[Math.cos(a) * 0.33, 0.45, Math.sin(a) * 0.33]} rotation={[0, -a + Math.PI / 2, 0]}>
-            <circleGeometry args={[0.045, 8]} />
+          <mesh key={`hole-${a}`} position={[Math.cos(a) * 0.33, 0.45, Math.sin(a) * 0.33]} rotation={[0, -a + Math.PI / 2, 0]} geometry={getSharedCircleGeometry(0.045, 8)}>
             <meshStandardMaterial color="#200a00" emissive="#ff7722" emissiveIntensity={2.2} toneMapped={false} />
           </mesh>
         ))}
-        <mesh ref={fireRef} position={[0, 1.15, 0]}>
-          <coneGeometry args={[0.22, 0.5, 8]} />
+        <mesh ref={fireRef} position={[0, 1.15, 0]} geometry={getSharedConeGeometry(0.22, 0.5, 8)}>
           <meshStandardMaterial color="#ff6622" emissive="#ff4400" emissiveIntensity={2.6} transparent opacity={0.85} />
         </mesh>
       </group>
@@ -132,40 +133,33 @@ export function RiverPierVisual(_props: RiverPierVisualProps) {
         { pos: [1.7, -1.4] as const, rot: -0.5 },
         { pos: [0.4, -3.6] as const, rot: 1.1 },
       ].map((crate, i) => (
-        <mesh key={`crate-${i}`} position={[crate.pos[0], 0.25, crate.pos[1]]} rotation={[0, crate.rot, 0]} castShadow>
-          <boxGeometry args={[0.65, 0.5, 0.65]} />
+        <mesh key={`crate-${i}`} position={[crate.pos[0], 0.25, crate.pos[1]]} rotation={[0, crate.rot, 0]} castShadow geometry={getSharedBoxGeometry(0.65, 0.5, 0.65)}>
           <meshStandardMaterial color="#54422c" roughness={0.9} />
         </mesh>
       ))}
 
       {/* ── Port wine: bottles + tin cups on a crate-table ── */}
       <group position={[-0.7, 0, -2.9]}>
-        <mesh position={[0, 0.2, 0]} castShadow>
-          <boxGeometry args={[0.55, 0.4, 0.45]} />
+        <mesh position={[0, 0.2, 0]} castShadow geometry={getSharedBoxGeometry(0.55, 0.4, 0.45)}>
           <meshStandardMaterial color="#4a3a26" roughness={0.9} />
         </mesh>
-        <mesh position={[-0.12, 0.55, 0.05]} castShadow>
-          <cylinderGeometry args={[0.042, 0.048, 0.3, 8]} />
+        <mesh position={[-0.12, 0.55, 0.05]} castShadow geometry={getSharedCylinderGeometry(0.042, 0.048, 0.3, 8)}>
           <meshStandardMaterial color="#2a0814" roughness={0.3} metalness={0.2} />
         </mesh>
-        <mesh position={[0.14, 0.52, -0.08]} castShadow>
-          <cylinderGeometry args={[0.04, 0.045, 0.26, 8]} />
+        <mesh position={[0.14, 0.52, -0.08]} castShadow geometry={getSharedCylinderGeometry(0.04, 0.045, 0.26, 8)}>
           <meshStandardMaterial color="#1c0610" roughness={0.3} metalness={0.2} />
         </mesh>
-        <mesh position={[0.05, 0.44, 0.14]}>
-          <cylinderGeometry args={[0.035, 0.03, 0.08, 8]} />
+        <mesh position={[0.05, 0.44, 0.14]} geometry={getSharedCylinderGeometry(0.035, 0.03, 0.08, 8)}>
           <meshStandardMaterial color="#8a8d90" metalness={0.8} roughness={0.35} />
         </mesh>
       </group>
 
       {/* ── Guitar against a crate ── */}
       <group position={[2.4, 0, -2.6]} rotation={[0, -0.7, 0]}>
-        <mesh position={[0, 0.42, 0]} rotation={[0.18, 0, -0.3]} castShadow>
-          <cylinderGeometry args={[0.26, 0.3, 0.09, 12]} />
+        <mesh position={[0, 0.42, 0]} rotation={[0.18, 0, -0.3]} castShadow geometry={getSharedCylinderGeometry(0.26, 0.3, 0.09, 12)}>
           <meshStandardMaterial color="#7a4f24" roughness={0.55} />
         </mesh>
-        <mesh position={[0.18, 0.85, 0.02]} rotation={[0.18, 0, -0.3]} castShadow>
-          <boxGeometry args={[0.05, 0.75, 0.04]} />
+        <mesh position={[0.18, 0.85, 0.02]} rotation={[0.18, 0, -0.3]} castShadow geometry={getSharedBoxGeometry(0.05, 0.75, 0.04)}>
           <meshStandardMaterial color="#3c2a16" roughness={0.6} />
         </mesh>
       </group>
@@ -179,8 +173,7 @@ export function RiverPierVisual(_props: RiverPierVisualProps) {
       </group>
 
       {/* ── Fishing rod leaning on the railing ── */}
-      <mesh position={[4.5, 0.7, -8.2]} rotation={[0.5, 0, 0.15]} castShadow>
-        <cylinderGeometry args={[0.012, 0.02, 2.4, 5]} />
+      <mesh position={[4.5, 0.7, -8.2]} rotation={[0.5, 0, 0.15]} castShadow geometry={getSharedCylinderGeometry(0.012, 0.02, 2.4, 5)}>
         <meshStandardMaterial color="#5a4a34" roughness={0.8} />
       </mesh>
 
@@ -218,12 +211,10 @@ function PierNightSky() {
         <pointsMaterial color="#d4dcf2" size={1.5} sizeAttenuation={false} transparent opacity={0.8} fog={false} depthWrite={false} />
       </points>
       <group position={[5, 14, -38]}>
-        <mesh>
-          <circleGeometry args={[1.8, 24]} />
+        <mesh geometry={getSharedCircleGeometry(1.8, 24)}>
           <meshBasicMaterial color="#e9edf6" fog={false} />
         </mesh>
-        <mesh position={[0, 0, -0.05]}>
-          <circleGeometry args={[3.0, 24]} />
+        <mesh position={[0, 0, -0.05]} geometry={getSharedCircleGeometry(3.0, 24)}>
           <meshBasicMaterial color="#9aa8cc" transparent opacity={0.2} fog={false} depthWrite={false} />
         </mesh>
       </group>
@@ -236,17 +227,14 @@ function PierRailing() {
   return (
     <group position={[0, 0, -8.5]}>
       {[-6, -4, -2, 0, 2, 4, 6].map((x) => (
-        <mesh key={`post-${x}`} position={[x, 0.5, 0]} castShadow>
-          <cylinderGeometry args={[0.04, 0.05, 1.0, 6]} />
+        <mesh key={`post-${x}`} position={[x, 0.5, 0]} castShadow geometry={getSharedCylinderGeometry(0.04, 0.05, 1.0, 6)}>
           <meshStandardMaterial color="#4c4438" metalness={0.4} roughness={0.7} />
         </mesh>
       ))}
-      <mesh position={[0, 0.92, 0]}>
-        <boxGeometry args={[13, 0.06, 0.06]} />
+      <mesh position={[0, 0.92, 0]} geometry={getSharedBoxGeometry(13, 0.06, 0.06)}>
         <meshStandardMaterial color="#564c3e" metalness={0.4} roughness={0.7} />
       </mesh>
-      <mesh position={[0, 0.5, 0]}>
-        <boxGeometry args={[13, 0.04, 0.04]} />
+      <mesh position={[0, 0.5, 0]} geometry={getSharedBoxGeometry(13, 0.04, 0.04)}>
         <meshStandardMaterial color="#4c4438" metalness={0.4} roughness={0.7} />
       </mesh>
     </group>
@@ -279,18 +267,15 @@ function StringLights() {
     <group>
       {/* Poles */}
       {[-4, 4].map((x) => (
-        <mesh key={`pole-${x}`} position={[x, 1.3, -4]} castShadow>
-          <cylinderGeometry args={[0.05, 0.07, 2.6, 6]} />
+        <mesh key={`pole-${x}`} position={[x, 1.3, -4]} castShadow geometry={getSharedCylinderGeometry(0.05, 0.07, 2.6, 6)}>
           <meshStandardMaterial color="#3a3228" roughness={0.85} />
         </mesh>
       ))}
       {/* Wire (approximated with a thin sagging box) */}
-      <mesh position={[0, 2.35, -4]} rotation={[0, 0, 0]}>
-        <boxGeometry args={[8, 0.012, 0.012]} />
+      <mesh position={[0, 2.35, -4]} rotation={[0, 0, 0]} geometry={getSharedBoxGeometry(8, 0.012, 0.012)}>
         <meshStandardMaterial color="#1c1a16" roughness={0.9} />
       </mesh>
-      <instancedMesh ref={bulbsRef} args={[undefined, undefined, BULB_COUNT]} frustumCulled={false}>
-        <sphereGeometry args={[0.05, 6, 5]} />
+      <instancedMesh ref={bulbsRef} args={[getSharedSphereGeometry(0.05, 6, 5), undefined, BULB_COUNT]} frustumCulled={false}>
         <meshStandardMaterial color="#4a2c08" emissive="#ffc266" emissiveIntensity={1.8} toneMapped={false} />
       </instancedMesh>
     </group>
@@ -329,8 +314,7 @@ function Reeds() {
   }, [placements]);
 
   return (
-    <instancedMesh ref={reedsRef} args={[undefined, undefined, placements.length]} frustumCulled={false}>
-      <cylinderGeometry args={[0.015, 0.03, 1, 4]} />
+    <instancedMesh ref={reedsRef} args={[getSharedCylinderGeometry(0.015, 0.03, 1, 4), undefined, placements.length]} frustumCulled={false}>
       <meshStandardMaterial color="#3c4a2c" roughness={0.95} />
     </instancedMesh>
   );

@@ -23,6 +23,14 @@ vi.mock('@/engine/interaction/narrativeOpenHelpers', () => ({
   triggerSceneEntryStoryIfNeeded: vi.fn(),
 }));
 
+vi.mock('@/shared/exploreHubNodes', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/shared/exploreHubNodes')>();
+  return {
+    ...actual,
+    syncNarrativeOnSceneEnter: vi.fn(),
+  };
+});
+
 vi.mock('@/engine/guidedStory/createGuidedStoryDeps', () => ({
   getStoryNodeSceneId: () => undefined,
 }));

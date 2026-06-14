@@ -10,7 +10,9 @@ import { fileURLToPath } from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
-const OUT_DIR = path.join(ROOT, 'deploy-archive');
+const OUT_DIR =
+  process.env.DEPLOY_ARCHIVE_DIR ??
+  (process.platform === 'win32' ? 'G:/volodka-vercel-deploy' : path.join(ROOT, 'deploy-archive'));
 
 const EXCLUDE_DIRS = new Set([
   'node_modules',
@@ -96,6 +98,7 @@ function writeDeployDocs(staging, meta) {
 - Exploration-first сюжет: explore-hub для всех локаций, движение + [E] на hub-узлах
 - Remap legacy explore_mode → hub текущей сцены (act5, ЧК, все акты)
 - syncNarrativeOnSceneEnter: beat-узлы → scene hub при входе в сцену
+- v4.2.2: TypeScript build fixes, content quest/NPC alignment, cached canvas textures in scene visuals
 - v4.2.1: snappy WASD keyboard movement, KCC wall-only slide damping, shared virtual controls
 - v4.2.0: critical fixes — NPC template disposal, audio graph cleanup, LOD bias, poem_1 defense, lazy narrative barrel
 - v4.2.0: perks prerequisites, canvas GPU registry, worker error fallback, StrictMode removed for stable R3F

@@ -6,6 +6,14 @@ import { useGameStore } from '@/store/gameStore';
 import { useWetSurfaceMaterial } from '@/hooks/useWetSurfaceMaterial';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import * as THREE from 'three';
+import {
+  getSharedBoxGeometry,
+  getSharedCircleGeometry,
+  getSharedCylinderGeometry,
+  getSharedPlaneGeometry,
+  getSharedSphereGeometry,
+} from '@/engine/three/moduleGeometryRegistry';
+
 import type { SceneId } from '@/shared/types/game';
 import { getEnvironmentLodProfile } from '@/engine/lod/distanceLod';
 import { useEnvironmentLod } from './lod/EnvironmentLodProvider';
@@ -25,8 +33,7 @@ function StreetGround({ isWinter, rainIntensity }: { isWinter: boolean; rainInte
   });
 
   return (
-    <mesh rotation-x={-Math.PI / 2} receiveShadow position-y={0.001}>
-      <planeGeometry args={[60, 60]} />
+    <mesh rotation-x={-Math.PI / 2} receiveShadow position-y={0.001} geometry={getSharedPlaneGeometry(60, 60)}>
       <primitive object={wetMat} attach="material" />
     </mesh>
   );
@@ -44,8 +51,7 @@ export function StreetVisual({ sceneId = 'street_night', livePlayerPositionRef }
       <StreetGround isWinter={isWinter} rainIntensity={rainIntensity} />
 
       {/* ── Sidewalk ── */}
-      <mesh rotation-x={-Math.PI / 2} position={[0, 0.015, 0]} receiveShadow>
-        <planeGeometry args={[6, 40]} />
+      <mesh rotation-x={-Math.PI / 2} position={[0, 0.015, 0]} receiveShadow geometry={getSharedPlaneGeometry(6, 40)}>
         <meshStandardMaterial
           color={isWinter ? '#b0b8c8' : '#4a4a62'}
           roughness={0.8}
@@ -74,16 +80,13 @@ export function StreetVisual({ sceneId = 'street_night', livePlayerPositionRef }
 
       {/* ── Wet bench (matches street_bench_zone trigger at origin) ── */}
       <group position={[0, 0, 0]}>
-        <mesh position={[0, 0.25, 0]} castShadow receiveShadow>
-          <boxGeometry args={[1.6, 0.08, 0.55]} />
+        <mesh position={[0, 0.25, 0]} castShadow receiveShadow geometry={getSharedBoxGeometry(1.6, 0.08, 0.55)}>
           <meshStandardMaterial color="#3a4a3a" roughness={0.85} />
         </mesh>
-        <mesh position={[-0.65, 0.45, 0]} castShadow>
-          <boxGeometry args={[0.08, 0.32, 0.5]} />
+        <mesh position={[-0.65, 0.45, 0]} castShadow geometry={getSharedBoxGeometry(0.08, 0.32, 0.5)}>
           <meshStandardMaterial color="#2a3a2a" roughness={0.9} />
         </mesh>
-        <mesh position={[0.65, 0.45, 0]} castShadow>
-          <boxGeometry args={[0.08, 0.32, 0.5]} />
+        <mesh position={[0.65, 0.45, 0]} castShadow geometry={getSharedBoxGeometry(0.08, 0.32, 0.5)}>
           <meshStandardMaterial color="#2a3a2a" roughness={0.9} />
         </mesh>
       </group>
@@ -95,17 +98,14 @@ export function StreetVisual({ sceneId = 'street_night', livePlayerPositionRef }
         maxDistance={envProfile.clutterDistance}
       >
         {/* Trash can */}
-        <mesh position={[0, 0.5, 0]} castShadow>
-          <cylinderGeometry args={[0.25, 0.2, 1.0, 8]} />
+        <mesh position={[0, 0.5, 0]} castShadow geometry={getSharedCylinderGeometry(0.25, 0.2, 1.0, 8)}>
           <meshStandardMaterial color="#3a4a3a" metalness={0.3} roughness={0.7} />
         </mesh>
         {/* Overflow trash on top */}
-        <mesh position={[0.1, 1.05, 0]} rotation={[0.2, 0.5, 0]}>
-          <boxGeometry args={[0.12, 0.06, 0.08]} />
+        <mesh position={[0.1, 1.05, 0]} rotation={[0.2, 0.5, 0]} geometry={getSharedBoxGeometry(0.12, 0.06, 0.08)}>
           <meshStandardMaterial color="#6a5a40" roughness={0.95} />
         </mesh>
-        <mesh position={[-0.08, 1.08, 0.1]} rotation={[0.3, 1.2, 0.1]}>
-          <sphereGeometry args={[0.05, 5, 5]} />
+        <mesh position={[-0.08, 1.08, 0.1]} rotation={[0.3, 1.2, 0.1]} geometry={getSharedSphereGeometry(0.05, 5, 5)}>
           <meshStandardMaterial color="#8a8a80" roughness={0.95} />
         </mesh>
       </StreetClutterGate>
@@ -116,20 +116,17 @@ export function StreetVisual({ sceneId = 'street_night', livePlayerPositionRef }
         position={[-2.5, 0, -8]}
         maxDistance={envProfile.clutterDistance}
       >
-        <mesh position={[0, 0.45, 0]} castShadow>
-          <cylinderGeometry args={[0.22, 0.18, 0.9, 8]} />
+        <mesh position={[0, 0.45, 0]} castShadow geometry={getSharedCylinderGeometry(0.22, 0.18, 0.9, 8)}>
           <meshStandardMaterial color="#4a3a2a" metalness={0.3} roughness={0.7} />
         </mesh>
       </StreetClutterGate>
 
       {/* ── Puddle reflections - polygonOffset prevents Z-fighting */}
       <EnvironmentDetail currentLod={lod} minLod="full">
-        <mesh rotation-x={-Math.PI / 2} position={[1.5, 0.02, 2]}>
-          <circleGeometry args={[0.6, 12]} />
+        <mesh rotation-x={-Math.PI / 2} position={[1.5, 0.02, 2]} geometry={getSharedCircleGeometry(0.6, 12)}>
           <meshStandardMaterial color="#0e0e1e" metalness={0.8} roughness={0.1} transparent opacity={0.5} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
         </mesh>
-        <mesh rotation-x={-Math.PI / 2} position={[-1, 0.02, -4]}>
-          <circleGeometry args={[0.4, 12]} />
+        <mesh rotation-x={-Math.PI / 2} position={[-1, 0.02, -4]} geometry={getSharedCircleGeometry(0.4, 12)}>
           <meshStandardMaterial color="#0e0e1e" metalness={0.7} roughness={0.1} transparent opacity={0.4} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
         </mesh>
       </EnvironmentDetail>
@@ -140,13 +137,11 @@ export function StreetVisual({ sceneId = 'street_night', livePlayerPositionRef }
         maxDistance={envProfile.decorativeDistance}
       >
         {/* Dripping pipe (thin cylinder from building) */}
-        <mesh position={[0, 3.5, 0]} rotation={[0, 0, Math.PI / 2]}>
-          <cylinderGeometry args={[0.02, 0.02, 0.8, 6]} />
+        <mesh position={[0, 3.5, 0]} rotation={[0, 0, Math.PI / 2]} geometry={getSharedCylinderGeometry(0.02, 0.02, 0.8, 6)}>
           <meshStandardMaterial color="#5a5a5a" metalness={0.6} roughness={0.4} />
         </mesh>
         {/* Drip at end of pipe */}
-        <mesh position={[0, 3.1, 0]}>
-          <sphereGeometry args={[0.02, 6, 6]} />
+        <mesh position={[0, 3.1, 0]} geometry={getSharedSphereGeometry(0.02, 6, 6)}>
           <meshStandardMaterial color="#4a6a8a" transparent opacity={0.7} />
         </mesh>
       </StreetClutterGate>
@@ -157,17 +152,14 @@ export function StreetVisual({ sceneId = 'street_night', livePlayerPositionRef }
         maxDistance={envProfile.decorativeDistance}
       >
         {/* Broken window in building */}
-        <mesh position={[0, 8, 0]}>
-          <planeGeometry args={[0.8, 1.0]} />
+        <mesh position={[0, 8, 0]} geometry={getSharedPlaneGeometry(0.8, 1.0)}>
           <meshStandardMaterial color="#0a0a12" roughness={0.95} />
         </mesh>
         {/* Broken glass shards */}
-        <mesh position={[0, 8.3, 0.01]}>
-          <planeGeometry args={[0.25, 0.3]} />
+        <mesh position={[0, 8.3, 0.01]} geometry={getSharedPlaneGeometry(0.25, 0.3)}>
           <meshStandardMaterial color="#607080" transparent opacity={0.3} metalness={0.2} roughness={0.1} side={THREE.DoubleSide} />
         </mesh>
-        <mesh position={[0.15, 7.7, 0.01]}>
-          <planeGeometry args={[0.2, 0.35]} />
+        <mesh position={[0.15, 7.7, 0.01]} geometry={getSharedPlaneGeometry(0.2, 0.35)}>
           <meshStandardMaterial color="#607080" transparent opacity={0.2} metalness={0.2} roughness={0.1} side={THREE.DoubleSide} />
         </mesh>
       </StreetClutterGate>
@@ -211,28 +203,23 @@ function StreetBoundary({ isWinter }: { isWinter: boolean }) {
 
   return (
     <group>
-      <instancedMesh ref={postsRef} args={[undefined, undefined, postPositions.length]} castShadow frustumCulled={false}>
-        <cylinderGeometry args={[0.035, 0.035, 1.1, 6]} />
+      <instancedMesh ref={postsRef} args={[getSharedCylinderGeometry(0.035, 0.035, 1.1, 6), undefined, postPositions.length]} castShadow frustumCulled={false}>
         <meshStandardMaterial color={railColor} metalness={0.6} roughness={0.5} />
       </instancedMesh>
 
       {/* Two horizontal rails per side */}
       {[0.6, 1.0].map((y) => (
         <group key={`rails-${y}`}>
-          <mesh position={[0, y, -edge]}>
-            <boxGeometry args={[span, 0.04, 0.04]} />
+          <mesh position={[0, y, -edge]} geometry={getSharedBoxGeometry(span, 0.04, 0.04)}>
             <meshStandardMaterial color={railColor} metalness={0.6} roughness={0.5} />
           </mesh>
-          <mesh position={[0, y, edge]}>
-            <boxGeometry args={[span, 0.04, 0.04]} />
+          <mesh position={[0, y, edge]} geometry={getSharedBoxGeometry(span, 0.04, 0.04)}>
             <meshStandardMaterial color={railColor} metalness={0.6} roughness={0.5} />
           </mesh>
-          <mesh position={[-edge, y, 0]} rotation={[0, Math.PI / 2, 0]}>
-            <boxGeometry args={[span, 0.04, 0.04]} />
+          <mesh position={[-edge, y, 0]} rotation={[0, Math.PI / 2, 0]} geometry={getSharedBoxGeometry(span, 0.04, 0.04)}>
             <meshStandardMaterial color={railColor} metalness={0.6} roughness={0.5} />
           </mesh>
-          <mesh position={[edge, y, 0]} rotation={[0, Math.PI / 2, 0]}>
-            <boxGeometry args={[span, 0.04, 0.04]} />
+          <mesh position={[edge, y, 0]} rotation={[0, Math.PI / 2, 0]} geometry={getSharedBoxGeometry(span, 0.04, 0.04)}>
             <meshStandardMaterial color={railColor} metalness={0.6} roughness={0.5} />
           </mesh>
         </group>
@@ -245,8 +232,7 @@ function StreetBoundary({ isWinter }: { isWinter: boolean }) {
         { pos: [-HALF + 0.1, 0.08, 0] as const, rot: Math.PI / 2 },
         { pos: [HALF - 0.1, 0.08, 0] as const, rot: Math.PI / 2 },
       ].map((c, i) => (
-        <mesh key={`curb-${i}`} position={[c.pos[0], c.pos[1], c.pos[2]]} rotation={[0, c.rot, 0]} receiveShadow>
-          <boxGeometry args={[HALF * 2, 0.16, 0.35]} />
+        <mesh key={`curb-${i}`} position={[c.pos[0], c.pos[1], c.pos[2]]} rotation={[0, c.rot, 0]} receiveShadow geometry={getSharedBoxGeometry(HALF * 2, 0.16, 0.35)}>
           <meshStandardMaterial color={curbColor} roughness={0.9} />
         </mesh>
       ))}
@@ -298,13 +284,11 @@ function PanelBuildings() {
     <group>
       {buildings.map((b, i) => (
         <group key={`facade-${i}`} position={b.pos}>
-          <mesh position={[0, b.h / 2, 0]} castShadow receiveShadow>
-            <boxGeometry args={[b.w, b.h, b.d]} />
+          <mesh position={[0, b.h / 2, 0]} castShadow receiveShadow geometry={getSharedBoxGeometry(b.w, b.h, b.d)}>
             <meshStandardMaterial color="#2a2a3e" roughness={0.92} metalness={0.08} />
           </mesh>
           {/* Emissive window strip */}
-          <mesh position={[0, b.h * 0.55, b.d / 2 + 0.02]}>
-            <planeGeometry args={[b.w * 0.75, b.h * 0.35]} />
+          <mesh position={[0, b.h * 0.55, b.d / 2 + 0.02]} geometry={getSharedPlaneGeometry(b.w * 0.75, b.h * 0.35)}>
             <meshStandardMaterial
               color="#1a2030"
               emissive="#88ccff"
@@ -313,8 +297,7 @@ function PanelBuildings() {
             />
           </mesh>
           {/* Ground floor shop front */}
-          <mesh position={[0, 1.2, b.d / 2 + 0.03]}>
-            <planeGeometry args={[b.w * 0.4, 2.2]} />
+          <mesh position={[0, 1.2, b.d / 2 + 0.03]} geometry={getSharedPlaneGeometry(b.w * 0.4, 2.2)}>
             <meshStandardMaterial
               color="#ffaa44"
               emissive="#ff8800"
@@ -389,8 +372,7 @@ function NeonSigns({ isWinter }: { isWinter: boolean }) {
     <group>
       {/* "Синяя яма" cafe sign */}
       <group position={[8, 4, -8]}>
-        <mesh ref={cafeSignRef}>
-          <boxGeometry args={[2.5, 0.3, 0.05]} />
+        <mesh ref={cafeSignRef} geometry={getSharedBoxGeometry(2.5, 0.3, 0.05)}>
           <meshStandardMaterial
             color="#001133"
             emissive="#1a4aff"
@@ -403,14 +385,12 @@ function NeonSigns({ isWinter }: { isWinter: boolean }) {
       {/* "КАФЕ" neon sign — flickering broken tube style */}
       <group position={[-6, 5, -10]}>
         {/* Sign backing */}
-        <mesh position={[0, 0.15, -0.02]}>
-          <boxGeometry args={[2.0, 0.6, 0.02]} />
+        <mesh position={[0, 0.15, -0.02]} geometry={getSharedBoxGeometry(2.0, 0.6, 0.02)}>
           <meshStandardMaterial color="#111111" roughness={0.9} />
         </mesh>
         {/* Neon letter frames — 4 Cyrillic letters К А Ф Е */}
         {[-0.7, -0.2, 0.2, 0.7].map((x, i) => (
-          <mesh key={i} ref={i === 0 ? cafeKafeRef : undefined} position={[x, 0.15, 0]}>
-            <boxGeometry args={[0.35, 0.4, 0.05]} />
+          <mesh key={i} ref={i === 0 ? cafeKafeRef : undefined} position={[x, 0.15, 0]} geometry={getSharedBoxGeometry(0.35, 0.4, 0.05)}>
             <meshStandardMaterial
               color="#001133"
               emissive="#ff4488"
@@ -431,13 +411,11 @@ function NeonSigns({ isWinter }: { isWinter: boolean }) {
       {/* Cyberpunk bar sign with scrolling light */}
       <group position={[5, 6, -15]}>
         {/* Sign panel */}
-        <mesh position={[0, 0.2, -0.02]}>
-          <boxGeometry args={[3.0, 0.8, 0.02]} />
+        <mesh position={[0, 0.2, -0.02]} geometry={getSharedBoxGeometry(3.0, 0.8, 0.02)}>
           <meshStandardMaterial color="#0a0a0a" roughness={0.9} />
         </mesh>
         {/* Bar name neon strip */}
-        <mesh ref={barScrollRef} position={[0, 0.3, 0]}>
-          <boxGeometry args={[2.6, 0.15, 0.05]} />
+        <mesh ref={barScrollRef} position={[0, 0.3, 0]} geometry={getSharedBoxGeometry(2.6, 0.15, 0.05)}>
           <meshStandardMaterial
             color="#001a00"
             emissive="#00ffaa"
@@ -446,8 +424,7 @@ function NeonSigns({ isWinter }: { isWinter: boolean }) {
           />
         </mesh>
         {/* Bottom decorative strip */}
-        <mesh position={[0, 0.05, 0]}>
-          <boxGeometry args={[2.8, 0.05, 0.05]} />
+        <mesh position={[0, 0.05, 0]} geometry={getSharedBoxGeometry(2.8, 0.05, 0.05)}>
           <meshStandardMaterial
             color="#1a0000"
             emissive="#ff2200"
@@ -467,8 +444,7 @@ function NeonSigns({ isWinter }: { isWinter: boolean }) {
 
       {/* Red neon strip on building */}
       <group position={[-12, 8, -12]}>
-        <mesh ref={redSignRef}>
-          <boxGeometry args={[3, 0.15, 0.05]} />
+        <mesh ref={redSignRef} geometry={getSharedBoxGeometry(3, 0.15, 0.05)}>
           <meshStandardMaterial
             color="#330011"
             emissive="#ff1a3a"
@@ -480,8 +456,7 @@ function NeonSigns({ isWinter }: { isWinter: boolean }) {
 
       {/* Green pharmacy cross */}
       <group position={[14, 6, 7]}>
-        <mesh>
-          <boxGeometry args={[0.8, 0.8, 0.05]} />
+        <mesh geometry={getSharedBoxGeometry(0.8, 0.8, 0.05)}>
           <meshStandardMaterial
             color="#003311"
             emissive="#00ff44"
@@ -493,8 +468,7 @@ function NeonSigns({ isWinter }: { isWinter: boolean }) {
 
       {/* Yellow advertisement strip */}
       <group position={[0, 12, -24]}>
-        <mesh>
-          <boxGeometry args={[4, 0.2, 0.05]} />
+        <mesh geometry={getSharedBoxGeometry(4, 0.2, 0.05)}>
           <meshStandardMaterial
             color="#332200"
             emissive="#ffaa00"

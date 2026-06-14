@@ -4,6 +4,7 @@
 
 import { createContext, memo, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { useThree } from '@react-three/fiber';
+import * as THREE from 'three';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import { scratchColor } from '@/engine/three/frameScratch';
 

@@ -4,6 +4,13 @@
 import { useMemo, useRef, useEffect } from 'react';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import * as THREE from 'three';
+import {
+  getSharedBoxGeometry,
+  getSharedCylinderGeometry,
+  getSharedPlaneGeometry,
+  getSharedSphereGeometry,
+} from '@/engine/three/moduleGeometryRegistry';
+
 import FastNoiseLite from 'fastnoise-lite';
 import { useEnvironmentLod } from './lod/EnvironmentLodProvider';
 import { EnvironmentDetail } from './lod/PropDistanceGate';
@@ -332,16 +339,13 @@ function FloatingIsland({ position, scale = 1 }: { position: [number, number, nu
 
   return (
     <group ref={groupRef} position={position}>
-      <mesh position={[0, -0.5, 0]} scale={scale} castShadow>
-        <cylinderGeometry args={[0.3, 1.2, 1.5, 6]} />
+      <mesh position={[0, -0.5, 0]} scale={scale} castShadow geometry={getSharedCylinderGeometry(0.3, 1.2, 1.5, 6)}>
         <meshStandardMaterial color="#1a0a30" roughness={0.9} />
       </mesh>
-      <mesh position={[0, 0.25, 0]} scale={scale} castShadow>
-        <cylinderGeometry args={[1.2, 1.2, 0.1, 6]} />
+      <mesh position={[0, 0.25, 0]} scale={scale} castShadow geometry={getSharedCylinderGeometry(1.2, 1.2, 0.1, 6)}>
         <meshStandardMaterial color="#2a1a40" roughness={0.8} />
       </mesh>
-      <mesh position={[0, 0.6, 0]} scale={scale * 0.4}>
-        <sphereGeometry args={[1, 6, 6]} />
+      <mesh position={[0, 0.6, 0]} scale={scale * 0.4} geometry={getSharedSphereGeometry(1, 6, 6)}>
         <meshStandardMaterial color="#1a2a1a" roughness={0.95} />
       </mesh>
     </group>
@@ -352,16 +356,13 @@ function FloatingIsland({ position, scale = 1 }: { position: [number, number, nu
 function ImpossibleStructure({ position }: { position: [number, number, number] }) {
   return (
     <group position={position}>
-      <mesh position={[0, 1.5, 0]} rotation={[0, 0, 0.5]} castShadow>
-        <boxGeometry args={[0.15, 3, 0.15]} />
+      <mesh position={[0, 1.5, 0]} rotation={[0, 0, 0.5]} castShadow geometry={getSharedBoxGeometry(0.15, 3, 0.15)}>
         <meshStandardMaterial color="#2a1a40" emissive="#00cccc" emissiveIntensity={0.2} roughness={0.7} />
       </mesh>
-      <mesh position={[0.7, 1.5, 0]} rotation={[0, 0, -0.5]} castShadow>
-        <boxGeometry args={[0.15, 3, 0.15]} />
+      <mesh position={[0.7, 1.5, 0]} rotation={[0, 0, -0.5]} castShadow geometry={getSharedBoxGeometry(0.15, 3, 0.15)}>
         <meshStandardMaterial color="#2a1a40" emissive="#00cccc" emissiveIntensity={0.2} roughness={0.7} />
       </mesh>
-      <mesh position={[0.35, 2.8, 0]} rotation={[0, 0, 0]} castShadow>
-        <boxGeometry args={[1.4, 0.15, 0.15]} />
+      <mesh position={[0.35, 2.8, 0]} rotation={[0, 0, 0]} castShadow geometry={getSharedBoxGeometry(1.4, 0.15, 0.15)}>
         <meshStandardMaterial color="#2a1a40" emissive="#00cccc" emissiveIntensity={0.2} roughness={0.7} />
       </mesh>
     </group>
@@ -397,8 +398,7 @@ function FloatingPoemFragment({ position, text }: { position: [number, number, n
 
   return (
     <group ref={groupRef} position={position}>
-      <mesh>
-        <planeGeometry args={[2.5, 0.6]} />
+      <mesh geometry={getSharedPlaneGeometry(2.5, 0.6)}>
         <meshStandardMaterial map={texture} transparent opacity={0.7} side={THREE.DoubleSide} emissive="#00cccc" emissiveIntensity={0.3} />
       </mesh>
     </group>
@@ -418,8 +418,7 @@ function MemoryFragment({ position, color }: { position: [number, number, number
   });
 
   return (
-    <mesh ref={meshRef} position={position}>
-      <boxGeometry args={[0.3, 0.3, 0.3]} />
+    <mesh ref={meshRef} position={position} geometry={getSharedBoxGeometry(0.3, 0.3, 0.3)}>
       <meshStandardMaterial color={color} emissive={color} emissiveIntensity={1.5} transparent opacity={0.8} />
     </mesh>
   );
@@ -429,16 +428,14 @@ function MemoryFragment({ position, color }: { position: [number, number, number
 function SpiralPillar({ position }: { position: [number, number, number] }) {
   return (
     <group position={position}>
-      <mesh position={[0, 2, 0]} castShadow>
-        <cylinderGeometry args={[0.15, 0.15, 4, 8]} />
+      <mesh position={[0, 2, 0]} castShadow geometry={getSharedCylinderGeometry(0.15, 0.15, 4, 8)}>
         <meshStandardMaterial color="#2a1a40" emissive="#1a0a30" emissiveIntensity={0.2} roughness={0.7} />
       </mesh>
       {Array.from({ length: 8 }).map((_, i) => {
         const angle = (i / 8) * Math.PI * 3;
         const y = (i / 8) * 3.5 + 0.3;
         return (
-          <mesh key={i} position={[Math.cos(angle) * 0.5, y, Math.sin(angle) * 0.5]} rotation={[0, -angle, 0]}>
-            <boxGeometry args={[0.4, 0.08, 0.12]} />
+          <mesh key={i} position={[Math.cos(angle) * 0.5, y, Math.sin(angle) * 0.5]} rotation={[0, -angle, 0]} geometry={getSharedBoxGeometry(0.4, 0.08, 0.12)}>
             <meshStandardMaterial color="#1a0a30" emissive="#00cccc" emissiveIntensity={0.15} roughness={0.7} />
           </mesh>
         );
@@ -458,8 +455,7 @@ function AnimatedFogLayer({ y, speed }: { y: number; speed: number }) {
   });
 
   return (
-    <mesh ref={meshRef} position={[0, y, 0]} rotation-x={-Math.PI / 2}>
-      <planeGeometry args={[50, 50]} />
+    <mesh ref={meshRef} position={[0, y, 0]} rotation-x={-Math.PI / 2} geometry={getSharedPlaneGeometry(50, 50)}>
       <meshStandardMaterial color="#1a0a30" transparent opacity={0.08} side={THREE.DoubleSide} />
     </mesh>
   );
@@ -480,16 +476,13 @@ function FloatingClock({ position }: { position: [number, number, number] }) {
 
   return (
     <group ref={groupRef} position={position}>
-      <mesh>
-        <cylinderGeometry args={[0.3, 0.3, 0.04, 16]} />
+      <mesh geometry={getSharedCylinderGeometry(0.3, 0.3, 0.04, 16)}>
         <meshStandardMaterial color="#1a0a30" emissive="#ffcc44" emissiveIntensity={0.5} transparent opacity={0.7} />
       </mesh>
-      <mesh position={[0, 0.025, 0]} rotation={[0, 0, 0.8]}>
-        <boxGeometry args={[0.15, 0.01, 0.005]} />
+      <mesh position={[0, 0.025, 0]} rotation={[0, 0, 0.8]} geometry={getSharedBoxGeometry(0.15, 0.01, 0.005)}>
         <meshStandardMaterial color="#ffcc44" emissive="#ffcc44" emissiveIntensity={1} />
       </mesh>
-      <mesh position={[0, 0.025, 0]} rotation={[0, 0, -0.3]}>
-        <boxGeometry args={[0.1, 0.01, 0.005]} />
+      <mesh position={[0, 0.025, 0]} rotation={[0, 0, -0.3]} geometry={getSharedBoxGeometry(0.1, 0.01, 0.005)}>
         <meshStandardMaterial color="#ffcc44" emissive="#ffcc44" emissiveIntensity={1} />
       </mesh>
     </group>
@@ -500,8 +493,7 @@ function GlowingOrbs() {
   return (
     <>
       {[[-3, 3, 5], [8, 7, -12], [-12, 2, -8]].map((pos, i) => (
-        <mesh key={`orb-${i}`} position={pos as [number, number, number]}>
-          <sphereGeometry args={[0.15, 8, 8]} />
+        <mesh key={`orb-${i}`} position={pos as [number, number, number]} geometry={getSharedSphereGeometry(0.15, 8, 8)}>
           <meshStandardMaterial
             color={['#ff44aa', '#00cccc', '#ffcc44'][i]}
             emissive={['#ff44aa', '#00cccc', '#ffcc44'][i]}
@@ -518,12 +510,10 @@ function GlowingOrbs() {
 function TornPhoto({ position }: { position: [number, number, number] }) {
   return (
     <group position={position}>
-      <mesh rotation={[0.2, 0.4, 0.1]}>
-        <planeGeometry args={[0.2, 0.15]} />
+      <mesh rotation={[0.2, 0.4, 0.1]} geometry={getSharedPlaneGeometry(0.2, 0.15)}>
         <meshStandardMaterial color="#c8b8a0" roughness={0.9} side={THREE.DoubleSide} transparent opacity={0.7} />
       </mesh>
-      <mesh position={[0.08, -0.04, 0]} rotation={[0.2, 0.4, 0.3]}>
-        <planeGeometry args={[0.08, 0.06]} />
+      <mesh position={[0.08, -0.04, 0]} rotation={[0.2, 0.4, 0.3]} geometry={getSharedPlaneGeometry(0.08, 0.06)}>
         <meshStandardMaterial color="#c8b8a0" roughness={0.9} side={THREE.DoubleSide} transparent opacity={0.5} />
       </mesh>
     </group>
@@ -533,16 +523,13 @@ function TornPhoto({ position }: { position: [number, number, number] }) {
 function MeltingChair({ position }: { position: [number, number, number] }) {
   return (
     <group position={position}>
-      <mesh position={[0, 0.3, 0]} castShadow scale={[1, 0.6, 1]}>
-        <boxGeometry args={[0.4, 0.04, 0.4]} />
+      <mesh position={[0, 0.3, 0]} castShadow scale={[1, 0.6, 1]} geometry={getSharedBoxGeometry(0.4, 0.04, 0.4)}>
         <meshStandardMaterial color="#2a1a40" emissive="#1a0a30" emissiveIntensity={0.1} roughness={0.9} />
       </mesh>
-      <mesh position={[0, 0.5, -0.15]} scale={[1, 1.3, 0.5]}>
-        <boxGeometry args={[0.4, 0.4, 0.04]} />
+      <mesh position={[0, 0.5, -0.15]} scale={[1, 1.3, 0.5]} geometry={getSharedBoxGeometry(0.4, 0.4, 0.04)}>
         <meshStandardMaterial color="#2a1a40" emissive="#1a0a30" emissiveIntensity={0.1} roughness={0.9} />
       </mesh>
-      <mesh position={[0.15, 0.1, 0.15]}>
-        <cylinderGeometry args={[0.015, 0.008, 0.25, 4]} />
+      <mesh position={[0.15, 0.1, 0.15]} geometry={getSharedCylinderGeometry(0.015, 0.008, 0.25, 4)}>
         <meshStandardMaterial color="#2a1a40" emissive="#00cccc" emissiveIntensity={0.15} roughness={0.9} />
       </mesh>
     </group>
@@ -552,8 +539,7 @@ function MeltingChair({ position }: { position: [number, number, number] }) {
 function InvertedDoorFrame({ position }: { position: [number, number, number] }) {
   return (
     <group position={position} rotation={[Math.PI, 0.3, 0]}>
-      <mesh>
-        <boxGeometry args={[0.9, 2.2, 0.08]} />
+      <mesh geometry={getSharedBoxGeometry(0.9, 2.2, 0.08)}>
         <meshStandardMaterial color="#2a1a40" emissive="#1a0a30" emissiveIntensity={0.15} roughness={0.8} />
       </mesh>
     </group>

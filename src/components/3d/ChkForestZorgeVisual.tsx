@@ -4,10 +4,20 @@
 import { useLayoutEffect, useMemo, useRef, type MutableRefObject } from 'react';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import * as THREE from 'three';
+import {
+  getSharedBoxGeometry,
+  getSharedCircleGeometry,
+  getSharedConeGeometry,
+  getSharedCylinderGeometry,
+  getSharedPlaneGeometry,
+  getSharedSphereGeometry,
+} from '@/engine/three/moduleGeometryRegistry';
+
 import { getEnvironmentLodProfile } from '@/engine/lod/distanceLod';
 import { useEnvironmentLod } from './lod/EnvironmentLodProvider';
 import { EnvironmentDetail, SceneClutterGate } from './lod/PropDistanceGate';
 import { scratchColor } from '@/engine/three/frameScratch';
+import { useCachedCanvasTexture } from '@/hooks/useCachedCanvasTexture';
 
 interface ChkForestZorgeVisualProps {
   livePlayerPositionRef?: MutableRefObject<THREE.Vector3>;
@@ -67,8 +77,7 @@ export function ChkForestZorgeVisual({ livePlayerPositionRef }: ChkForestZorgeVi
   return (
     <group>
       {/* Ground — mossy clearing */}
-      <mesh rotation-x={-Math.PI / 2} receiveShadow position-y={0.001}>
-        <planeGeometry args={[W, D]} />
+      <mesh rotation-x={-Math.PI / 2} receiveShadow position-y={0.001} geometry={getSharedPlaneGeometry(W, D)}>
         <meshStandardMaterial
           map={groundTexture}
           color="#2a4a22"
@@ -80,8 +89,7 @@ export function ChkForestZorgeVisual({ livePlayerPositionRef }: ChkForestZorgeVi
       </mesh>
 
       {/* Dirt path from north edge */}
-      <mesh rotation-x={-Math.PI / 2} position={[0, 0.015, -14]} receiveShadow>
-        <planeGeometry args={[2.2, 8]} />
+      <mesh rotation-x={-Math.PI / 2} position={[0, 0.015, -14]} receiveShadow geometry={getSharedPlaneGeometry(2.2, 8)}>
         <meshStandardMaterial color="#4a3a28" roughness={1} />
       </mesh>
 
@@ -121,14 +129,12 @@ export function ChkForestZorgeVisual({ livePlayerPositionRef }: ChkForestZorgeVi
         {Array.from({ length: 8 }).map((_, i) => {
           const a = (i / 8) * Math.PI * 2;
           return (
-            <mesh key={`log-${i}`} position={[Math.cos(a) * 0.55, 0.08, Math.sin(a) * 0.55]} rotation={[0, a, Math.PI / 2]} castShadow>
-              <cylinderGeometry args={[0.06, 0.08, 0.5, 6]} />
+            <mesh key={`log-${i}`} position={[Math.cos(a) * 0.55, 0.08, Math.sin(a) * 0.55]} rotation={[0, a, Math.PI / 2]} castShadow geometry={getSharedCylinderGeometry(0.06, 0.08, 0.5, 6)}>
               <meshStandardMaterial color="#3a2818" roughness={0.9} />
             </mesh>
           );
         })}
-        <mesh ref={fireMeshRef} position={[0, 0.35, 0]}>
-          <coneGeometry args={[0.25, 0.55, 8]} />
+        <mesh ref={fireMeshRef} position={[0, 0.35, 0]} geometry={getSharedConeGeometry(0.25, 0.55, 8)}>
           <meshStandardMaterial color="#ff6622" emissive="#ff4400" emissiveIntensity={2.5} transparent opacity={0.85} />
         </mesh>
         <pointLight ref={fireLightRef} color="#ff8833" intensity={3.2} distance={14} position={[0, 1.2, 0]} castShadow />
@@ -142,50 +148,42 @@ export function ChkForestZorgeVisual({ livePlayerPositionRef }: ChkForestZorgeVi
         [-0.8, 0, 2.1],
         [-1.8, 0, -1.5],
       ].map(([x, y, z], i) => (
-        <mesh key={`seat-${i}`} position={[x, y + 0.12, z]} rotation={[0, i * 0.7, 0]} castShadow>
-          <cylinderGeometry args={[0.18, 0.2, 0.24, 8]} />
+        <mesh key={`seat-${i}`} position={[x, y + 0.12, z]} rotation={[0, i * 0.7, 0]} castShadow geometry={getSharedCylinderGeometry(0.18, 0.2, 0.24, 8)}>
           <meshStandardMaterial color="#4a3520" roughness={0.85} />
         </mesh>
       ))}
 
       {/* Port wine crate + bottles */}
       <group position={[1.8, 0, 1.6]}>
-        <mesh position={[0, 0.2, 0]} castShadow>
-          <boxGeometry args={[0.7, 0.4, 0.5]} />
+        <mesh position={[0, 0.2, 0]} castShadow geometry={getSharedBoxGeometry(0.7, 0.4, 0.5)}>
           <meshStandardMaterial color="#5a3020" roughness={0.8} />
         </mesh>
-        <mesh position={[-0.15, 0.48, 0]} castShadow>
-          <cylinderGeometry args={[0.04, 0.04, 0.28, 8]} />
+        <mesh position={[-0.15, 0.48, 0]} castShadow geometry={getSharedCylinderGeometry(0.04, 0.04, 0.28, 8)}>
           <meshStandardMaterial color="#2a0818" roughness={0.4} metalness={0.3} />
         </mesh>
-        <mesh position={[0.12, 0.46, 0.08]} castShadow>
-          <cylinderGeometry args={[0.035, 0.035, 0.24, 8]} />
+        <mesh position={[0.12, 0.46, 0.08]} castShadow geometry={getSharedCylinderGeometry(0.035, 0.035, 0.24, 8)}>
           <meshStandardMaterial color="#1a0610" roughness={0.4} metalness={0.3} />
         </mesh>
       </group>
 
       {/* Guitar lean spot (Элис) */}
       <group position={[-1.6, 0, -1.2]} rotation={[0, 0.4, 0]}>
-        <mesh position={[0, 0.55, 0]} rotation={[0.15, 0, -0.25]} castShadow>
-          <boxGeometry args={[0.35, 0.55, 0.06]} />
+        <mesh position={[0, 0.55, 0]} rotation={[0.15, 0, -0.25]} castShadow geometry={getSharedBoxGeometry(0.35, 0.55, 0.06)}>
           <meshStandardMaterial color="#8B4513" roughness={0.7} />
         </mesh>
       </group>
 
       {/* Portable speaker (heavy music) */}
-      <mesh position={[2.5, 0.25, -1.0]} castShadow>
-        <boxGeometry args={[0.35, 0.5, 0.25]} />
+      <mesh position={[2.5, 0.25, -1.0]} castShadow geometry={getSharedBoxGeometry(0.35, 0.5, 0.25)}>
         <meshStandardMaterial color="#1a1a1a" roughness={0.6} metalness={0.4} />
       </mesh>
 
       {/* Zorge street sign — rusted marker at path entrance */}
       <group position={[0, 0, -16]}>
-        <mesh position={[0, 0.9, 0]} castShadow>
-          <boxGeometry args={[1.4, 0.35, 0.06]} />
+        <mesh position={[0, 0.9, 0]} castShadow geometry={getSharedBoxGeometry(1.4, 0.35, 0.06)}>
           <meshStandardMaterial color="#555548" roughness={0.85} metalness={0.2} />
         </mesh>
-        <mesh position={[0, 0.4, 0]} castShadow>
-          <cylinderGeometry args={[0.04, 0.05, 0.8, 6]} />
+        <mesh position={[0, 0.4, 0]} castShadow geometry={getSharedCylinderGeometry(0.04, 0.05, 0.8, 6)}>
           <meshStandardMaterial color="#444440" roughness={0.9} />
         </mesh>
       </group>
@@ -217,29 +215,24 @@ function ForestTree({
 
   return (
     <group position={position} rotation={[0, rotation, 0]} scale={scale}>
-      <mesh position={[0, trunkH * 0.5, 0]} castShadow>
-        <cylinderGeometry args={[trunkR * 0.7, trunkR, trunkH, 8]} />
+      <mesh position={[0, trunkH * 0.5, 0]} castShadow geometry={getSharedCylinderGeometry(trunkR * 0.7, trunkR, trunkH, 8)}>
         <meshStandardMaterial color={trunkColor} roughness={0.9} />
       </mesh>
       {kind === 'pine' ? (
         <>
-          <mesh position={[0, trunkH + 0.9 * scale, 0]} castShadow>
-            <coneGeometry args={[1.3 * scale * (size === 'large' ? 1.2 : 1), 2.2 * scale, 8]} />
+          <mesh position={[0, trunkH + 0.9 * scale, 0]} castShadow geometry={getSharedConeGeometry(1.3 * scale * (size === 'large' ? 1.2 : 1), 2.2 * scale, 8)}>
             <meshStandardMaterial color={leafColor} roughness={0.95} />
           </mesh>
-          <mesh position={[0, trunkH + 1.9 * scale, 0]} castShadow>
-            <coneGeometry args={[1.0 * scale, 1.8 * scale, 8]} />
+          <mesh position={[0, trunkH + 1.9 * scale, 0]} castShadow geometry={getSharedConeGeometry(1.0 * scale, 1.8 * scale, 8)}>
             <meshStandardMaterial color={leafColor2} roughness={0.95} />
           </mesh>
         </>
       ) : (
         <>
-          <mesh position={[0, trunkH + 0.8 * scale, 0]} castShadow>
-            <sphereGeometry args={[1.4 * scale * (size === 'large' ? 1.2 : size === 'small' ? 0.85 : 1), 8, 8]} />
+          <mesh position={[0, trunkH + 0.8 * scale, 0]} castShadow geometry={getSharedSphereGeometry(1.4 * scale * (size === 'large' ? 1.2 : size === 'small' ? 0.85 : 1), 8, 8)}>
             <meshStandardMaterial color={leafColor} roughness={0.95} />
           </mesh>
-          <mesh position={[0.5 * scale, trunkH + 1.2 * scale, 0.3 * scale]} castShadow>
-            <sphereGeometry args={[0.9 * scale, 8, 6]} />
+          <mesh position={[0.5 * scale, trunkH + 1.2 * scale, 0.3 * scale]} castShadow geometry={getSharedSphereGeometry(0.9 * scale, 8, 6)}>
             <meshStandardMaterial color={leafColor2} roughness={0.95} />
           </mesh>
         </>
@@ -315,16 +308,13 @@ function InstancedTreeBelt() {
 
   return (
     <group>
-      <instancedMesh ref={trunkRef} args={[undefined, undefined, count]} castShadow frustumCulled={false}>
-        <cylinderGeometry args={[0.16, 0.26, 3.4, 6]} />
+      <instancedMesh ref={trunkRef} args={[getSharedCylinderGeometry(0.16, 0.26, 3.4, 6), undefined, count]} castShadow frustumCulled={false}>
         <meshStandardMaterial color="#33241a" roughness={0.95} />
       </instancedMesh>
-      <instancedMesh ref={canopyLowRef} args={[undefined, undefined, count]} castShadow frustumCulled={false}>
-        <coneGeometry args={[1.5, 2.6, 7]} />
+      <instancedMesh ref={canopyLowRef} args={[getSharedConeGeometry(1.5, 2.6, 7), undefined, count]} castShadow frustumCulled={false}>
         <meshStandardMaterial color="#1c3a1a" roughness={0.95} />
       </instancedMesh>
-      <instancedMesh ref={canopyTopRef} args={[undefined, undefined, count]} frustumCulled={false}>
-        <coneGeometry args={[1.1, 2.0, 7]} />
+      <instancedMesh ref={canopyTopRef} args={[getSharedConeGeometry(1.1, 2.0, 7), undefined, count]} frustumCulled={false}>
         <meshStandardMaterial color="#234822" roughness={0.95} />
       </instancedMesh>
     </group>
@@ -366,12 +356,10 @@ function NightSky() {
       </points>
       {/* Moon disc with soft halo */}
       <group position={[9, 19, -22]}>
-        <mesh>
-          <circleGeometry args={[1.6, 24]} />
+        <mesh geometry={getSharedCircleGeometry(1.6, 24)}>
           <meshBasicMaterial color="#e8ecf5" fog={false} />
         </mesh>
-        <mesh position={[0, 0, -0.05]}>
-          <circleGeometry args={[2.6, 24]} />
+        <mesh position={[0, 0, -0.05]} geometry={getSharedCircleGeometry(2.6, 24)}>
           <meshBasicMaterial color="#9aa8cc" transparent opacity={0.22} fog={false} depthWrite={false} />
         </mesh>
       </group>
@@ -473,8 +461,7 @@ function ForestFloorClutter() {
 
   return (
     <group>
-      <instancedMesh ref={bushRef} args={[undefined, undefined, bushes.length]} frustumCulled={false}>
-        <sphereGeometry args={[0.6, 7, 5]} />
+      <instancedMesh ref={bushRef} args={[getSharedSphereGeometry(0.6, 7, 5), undefined, bushes.length]} frustumCulled={false}>
         <meshStandardMaterial color="#22381c" roughness={0.95} />
       </instancedMesh>
 
@@ -489,8 +476,7 @@ function ForestFloorClutter() {
           position={[log.pos[0], log.pos[1], log.pos[2]]}
           rotation={[0, log.rot, Math.PI / 2]}
           castShadow
-        >
-          <cylinderGeometry args={[0.2, 0.24, log.len, 7]} />
+         geometry={getSharedCylinderGeometry(0.2, 0.24, log.len, 7)}>
           <meshStandardMaterial color="#41301f" roughness={0.95} />
         </mesh>
       ))}
@@ -500,8 +486,7 @@ function ForestFloorClutter() {
         [-9.5, 0.25, 1.5],
         [5.5, 0.22, 9.5],
       ].map(([x, y, z], i) => (
-        <mesh key={`stump-${i}`} position={[x, y, z]} castShadow>
-          <cylinderGeometry args={[0.3, 0.38, 0.5, 8]} />
+        <mesh key={`stump-${i}`} position={[x, y, z]} castShadow geometry={getSharedCylinderGeometry(0.3, 0.38, 0.5, 8)}>
           <meshStandardMaterial color="#3a2c1c" roughness={0.95} />
         </mesh>
       ))}

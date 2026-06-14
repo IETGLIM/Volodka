@@ -189,12 +189,14 @@ export function triggerSceneEntryStoryIfNeeded(
   const hubDef = getExploreHubDefForScene(toSceneId);
   if (!hubDef || hubDef.entryNodeIds.length === 0) return;
 
-  const currentStorySceneId = getStoryNodeSceneId(snapshot.currentNodeId);
+  const currentNodeId = snapshot.currentNodeId;
+  const currentStorySceneId =
+    currentNodeId != null ? getStoryNodeSceneId(currentNodeId) : undefined;
   if (
-    !isExploreHubNode(snapshot.currentNodeId) &&
+    currentNodeId != null &&
+    !isExploreHubNode(currentNodeId) &&
     currentStorySceneId === toSceneId &&
-    snapshot.currentNodeId != null &&
-    !hubDef.entryNodeIds.includes(snapshot.currentNodeId)
+    !hubDef.entryNodeIds.includes(currentNodeId)
   ) {
     return;
   }

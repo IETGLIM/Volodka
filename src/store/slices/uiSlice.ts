@@ -183,7 +183,9 @@ export const createUISlice: StateCreator<
     }),
 
   discoverLoreEntry: (entryId) => {
-    let firstDiscovery: { title: string; rarity: LoreRarity; category: LoreEntry['category'] } | null = null;
+    const firstDiscoveryRef: {
+      value: { title: string; rarity: LoreRarity; category: LoreEntry['category'] } | null;
+    } = { value: null };
 
     set((state) => {
       const existing = state.loreEntries.find((e) => e.id === entryId);
@@ -202,7 +204,7 @@ export const createUISlice: StateCreator<
 
       if (!wasAlreadyDiscovered) {
         const entryData = existing ?? getInitialLoreEntries().find((e) => e.id === entryId);
-        firstDiscovery = {
+        firstDiscoveryRef.value = {
           title: entryData?.title ?? entryId,
           rarity: entryData?.rarity ?? 'common',
           category: entryData?.category ?? 'history',
@@ -212,6 +214,7 @@ export const createUISlice: StateCreator<
       return { loreEntries: newLoreEntries };
     });
 
+    const firstDiscovery = firstDiscoveryRef.value;
     if (firstDiscovery) {
       const player = getPlayerStore();
       player.addXp(5);

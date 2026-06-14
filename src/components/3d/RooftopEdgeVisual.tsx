@@ -4,6 +4,14 @@
 import { useMemo, useRef } from 'react';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import * as THREE from 'three';
+import {
+  getSharedBoxGeometry,
+  getSharedCircleGeometry,
+  getSharedConeGeometry,
+  getSharedCylinderGeometry,
+  getSharedPlaneGeometry,
+} from '@/engine/three/moduleGeometryRegistry';
+
 import { useEnvironmentLod } from './lod/EnvironmentLodProvider';
 import { EnvironmentDetail } from './lod/PropDistanceGate';
 import { useCachedCanvasTexture } from '@/hooks/useCachedCanvasTexture';
@@ -63,8 +71,7 @@ export function RooftopEdgeVisual({ livePlayerPositionRef: _livePlayerPositionRe
       <SunsetSkyDome />
 
       {/* ── Rooftop surface ── */}
-      <mesh rotation-x={-Math.PI / 2} receiveShadow position-y={0.001}>
-        <planeGeometry args={[W, D]} />
+      <mesh rotation-x={-Math.PI / 2} receiveShadow position-y={0.001} geometry={getSharedPlaneGeometry(W, D)}>
         <meshStandardMaterial
           map={floorTexture}
           color="#3a3a3a"
@@ -77,12 +84,10 @@ export function RooftopEdgeVisual({ livePlayerPositionRef: _livePlayerPositionRe
 
       {/* ── Rain puddles on the tar surface ── */}
       <EnvironmentDetail currentLod={lod} minLod="full">
-        <mesh rotation-x={-Math.PI / 2} position={[-2.2, 0.02, 0.8]}>
-          <circleGeometry args={[0.55, 12]} />
+        <mesh rotation-x={-Math.PI / 2} position={[-2.2, 0.02, 0.8]} geometry={getSharedCircleGeometry(0.55, 12)}>
           <meshStandardMaterial color="#101622" metalness={0.85} roughness={0.08} transparent opacity={0.55} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
         </mesh>
-        <mesh rotation-x={-Math.PI / 2} position={[1.4, 0.02, 1.9]}>
-          <circleGeometry args={[0.35, 12]} />
+        <mesh rotation-x={-Math.PI / 2} position={[1.4, 0.02, 1.9]} geometry={getSharedCircleGeometry(0.35, 12)}>
           <meshStandardMaterial color="#101622" metalness={0.8} roughness={0.1} transparent opacity={0.45} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
         </mesh>
       </EnvironmentDetail>
@@ -92,20 +97,17 @@ export function RooftopEdgeVisual({ livePlayerPositionRef: _livePlayerPositionRe
       {/* ═══════════════════════════════════════════════ */}
 
       {/* Front parapet (the edge) */}
-      <mesh position={[0, 0.5, D / 2]} castShadow>
-        <boxGeometry args={[W, 1.0, 0.2]} />
+      <mesh position={[0, 0.5, D / 2]} castShadow geometry={getSharedBoxGeometry(W, 1.0, 0.2)}>
         <meshStandardMaterial color="#3a3a3a" roughness={0.85} />
       </mesh>
 
       {/* Left parapet */}
-      <mesh position={[-W / 2, 0.5, 0]} castShadow>
-        <boxGeometry args={[0.2, 1.0, D]} />
+      <mesh position={[-W / 2, 0.5, 0]} castShadow geometry={getSharedBoxGeometry(0.2, 1.0, D)}>
         <meshStandardMaterial color="#3a3a3a" roughness={0.85} />
       </mesh>
 
       {/* Right parapet */}
-      <mesh position={[W / 2, 0.5, 0]} castShadow>
-        <boxGeometry args={[0.2, 1.0, D]} />
+      <mesh position={[W / 2, 0.5, 0]} castShadow geometry={getSharedBoxGeometry(0.2, 1.0, D)}>
         <meshStandardMaterial color="#3a3a3a" roughness={0.85} />
       </mesh>
 
@@ -113,8 +115,7 @@ export function RooftopEdgeVisual({ livePlayerPositionRef: _livePlayerPositionRe
       <RooftopEdgeRailings w={W} d={D} />
 
       {/* Back wall (building wall) */}
-      <mesh position={[0, 2.5, -D / 2]} castShadow>
-        <boxGeometry args={[W, 5, 0.3]} />
+      <mesh position={[0, 2.5, -D / 2]} castShadow geometry={getSharedBoxGeometry(W, 5, 0.3)}>
         <meshStandardMaterial color="#2a2a2a" roughness={0.9} />
       </mesh>
 
@@ -122,25 +123,21 @@ export function RooftopEdgeVisual({ livePlayerPositionRef: _livePlayerPositionRe
       {/* ── HVAC UNITS ── */}
       {/* ═══════════════════════════════════════════════ */}
       <group position={[-3.5, 0, -2.5]}>
-        <mesh position={[0, 0.6, 0]} castShadow>
-          <boxGeometry args={[1.2, 1.2, 0.8]} />
+        <mesh position={[0, 0.6, 0]} castShadow geometry={getSharedBoxGeometry(1.2, 1.2, 0.8)}>
           <meshStandardMaterial color="#4a4a4a" metalness={0.4} roughness={0.6} />
         </mesh>
         {/* Vent grille */}
-        <mesh position={[0, 0.8, 0.41]}>
-          <planeGeometry args={[0.8, 0.5]} />
+        <mesh position={[0, 0.8, 0.41]} geometry={getSharedPlaneGeometry(0.8, 0.5)}>
           <meshStandardMaterial color="#3a3a3a" metalness={0.3} roughness={0.5} />
         </mesh>
         {/* Pipes */}
-        <mesh position={[-0.5, 0.3, -0.3]} castShadow>
-          <cylinderGeometry args={[0.04, 0.04, 0.6, 6]} />
+        <mesh position={[-0.5, 0.3, -0.3]} castShadow geometry={getSharedCylinderGeometry(0.04, 0.04, 0.6, 6)}>
           <meshStandardMaterial color="#6a5a4a" metalness={0.6} roughness={0.4} />
         </mesh>
       </group>
 
       <group position={[3.0, 0, -2.0]}>
-        <mesh position={[0, 0.5, 0]} castShadow>
-          <boxGeometry args={[0.8, 1.0, 0.6]} />
+        <mesh position={[0, 0.5, 0]} castShadow geometry={getSharedBoxGeometry(0.8, 1.0, 0.6)}>
           <meshStandardMaterial color="#4a4a4a" metalness={0.4} roughness={0.6} />
         </mesh>
       </group>
@@ -154,14 +151,12 @@ export function RooftopEdgeVisual({ livePlayerPositionRef: _livePlayerPositionRe
       {/* ═══════════════════════════════════════════════ */}
       {SKYLINE_BUILDINGS.map((b, i) => (
         <group key={i} position={b.pos}>
-          <mesh position={[0, b.h / 2, 0]}>
-            <boxGeometry args={[b.w, b.h, b.d]} />
+          <mesh position={[0, b.h / 2, 0]} geometry={getSharedBoxGeometry(b.w, b.h, b.d)}>
             <meshStandardMaterial color="#0a0a15" roughness={0.95} />
           </mesh>
           {/* Lit windows (deterministic, seeded) */}
           {skylineWindows[i].map((win, j) => (
-            <mesh key={j} position={[win.x, win.y, b.d / 2 + 0.01]}>
-              <planeGeometry args={[0.4, 0.3]} />
+            <mesh key={j} position={[win.x, win.y, b.d / 2 + 0.01]} geometry={getSharedPlaneGeometry(0.4, 0.3)}>
               <meshStandardMaterial
                 color="#000000"
                 emissive="#ffaa44"
@@ -176,16 +171,14 @@ export function RooftopEdgeVisual({ livePlayerPositionRef: _livePlayerPositionRe
       {/* ── NEON BILLBOARDS (distant) ── */}
       {/* ═══════════════════════════════════════════════ */}
       <group position={[15, 18, -30]}>
-        <mesh>
-          <boxGeometry args={[4, 2, 0.1]} />
+        <mesh geometry={getSharedBoxGeometry(4, 2, 0.1)}>
           <meshStandardMaterial color="#001122" emissive="#ff44aa" emissiveIntensity={1.0} />
         </mesh>
         <pointLight position={[0, -1, 1]} color="#ff44aa" intensity={1.5} distance={8} />
       </group>
 
       <group position={[-15, 12, -32]}>
-        <mesh>
-          <boxGeometry args={[3, 1.5, 0.1]} />
+        <mesh geometry={getSharedBoxGeometry(3, 1.5, 0.1)}>
           <meshStandardMaterial color="#002200" emissive="#44ffaa" emissiveIntensity={0.8} />
         </mesh>
       </group>
@@ -197,20 +190,17 @@ export function RooftopEdgeVisual({ livePlayerPositionRef: _livePlayerPositionRe
         {/* Legs */}
         {[-0.4, 0.4].map((x, i) => (
           [-0.4, 0.4].map((z, j) => (
-            <mesh key={`${i}-${j}`} position={[x, 1, z]} castShadow>
-              <cylinderGeometry args={[0.04, 0.06, 2, 6]} />
+            <mesh key={`${i}-${j}`} position={[x, 1, z]} castShadow geometry={getSharedCylinderGeometry(0.04, 0.06, 2, 6)}>
               <meshStandardMaterial color="#5a4a3a" metalness={0.5} roughness={0.5} />
             </mesh>
           ))
         ))}
         {/* Tank */}
-        <mesh position={[0, 2.5, 0]} castShadow>
-          <cylinderGeometry args={[0.6, 0.5, 1.0, 8]} />
+        <mesh position={[0, 2.5, 0]} castShadow geometry={getSharedCylinderGeometry(0.6, 0.5, 1.0, 8)}>
           <meshStandardMaterial color="#4a4a4a" metalness={0.3} roughness={0.6} />
         </mesh>
         {/* Tank top */}
-        <mesh position={[0, 3.05, 0]}>
-          <coneGeometry args={[0.65, 0.3, 8]} />
+        <mesh position={[0, 3.05, 0]} geometry={getSharedConeGeometry(0.65, 0.3, 8)}>
           <meshStandardMaterial color="#4a4a4a" metalness={0.3} roughness={0.6} />
         </mesh>
       </group>
@@ -220,18 +210,15 @@ export function RooftopEdgeVisual({ livePlayerPositionRef: _livePlayerPositionRe
       {/* ═══════════════════════════════════════════════ */}
       <group position={[2, 0, -D / 2 + 0.15]}>
         {/* Door frame */}
-        <mesh position={[0, 1.1, 0]} castShadow>
-          <boxGeometry args={[0.9, 2.2, 0.1]} />
+        <mesh position={[0, 1.1, 0]} castShadow geometry={getSharedBoxGeometry(0.9, 2.2, 0.1)}>
           <meshStandardMaterial color="#3a2a20" roughness={0.8} />
         </mesh>
         {/* Door */}
-        <mesh position={[0, 1.1, 0.06]}>
-          <boxGeometry args={[0.8, 2.1, 0.05]} />
+        <mesh position={[0, 1.1, 0.06]} geometry={getSharedBoxGeometry(0.8, 2.1, 0.05)}>
           <meshStandardMaterial color="#2a1a10" roughness={0.85} />
         </mesh>
         {/* Handle */}
-        <mesh position={[0.3, 1.0, 0.1]}>
-          <boxGeometry args={[0.04, 0.12, 0.04]} />
+        <mesh position={[0.3, 1.0, 0.1]} geometry={getSharedBoxGeometry(0.04, 0.12, 0.04)}>
           <meshStandardMaterial color="#8a7a50" metalness={0.7} roughness={0.3} />
         </mesh>
       </group>
@@ -267,39 +254,32 @@ export function RooftopEdgeVisual({ livePlayerPositionRef: _livePlayerPositionRe
       {/* ── Clothesline with one shirt ── */}
       <group position={[-2, 0, 2]}>
         {/* Poles */}
-        <mesh position={[-1, 1.2, 0]} castShadow>
-          <cylinderGeometry args={[0.02, 0.03, 2.4, 4]} />
+        <mesh position={[-1, 1.2, 0]} castShadow geometry={getSharedCylinderGeometry(0.02, 0.03, 2.4, 4)}>
           <meshStandardMaterial color="#5a4a3a" roughness={0.8} />
         </mesh>
-        <mesh position={[1, 1.2, 0]} castShadow>
-          <cylinderGeometry args={[0.02, 0.03, 2.4, 4]} />
+        <mesh position={[1, 1.2, 0]} castShadow geometry={getSharedCylinderGeometry(0.02, 0.03, 2.4, 4)}>
           <meshStandardMaterial color="#5a4a3a" roughness={0.8} />
         </mesh>
         {/* Line */}
-        <mesh position={[0, 2.35, 0]} rotation={[0, 0, Math.PI / 2]}>
-          <cylinderGeometry args={[0.003, 0.003, 2, 4]} />
+        <mesh position={[0, 2.35, 0]} rotation={[0, 0, Math.PI / 2]} geometry={getSharedCylinderGeometry(0.003, 0.003, 2, 4)}>
           <meshStandardMaterial color="#888" roughness={0.9} />
         </mesh>
         {/* Shirt hanging */}
-        <mesh ref={shirtRef} position={[0.2, 2.1, 0.05]}>
-          <boxGeometry args={[0.2, 0.3, 0.02]} />
+        <mesh ref={shirtRef} position={[0.2, 2.1, 0.05]} geometry={getSharedBoxGeometry(0.2, 0.3, 0.02)}>
           <meshStandardMaterial color="#4a6a8a" roughness={0.9} />
         </mesh>
         {/* Sleeve */}
-        <mesh position={[0.1, 2.05, 0.05]} rotation={[0, 0, 0.3]}>
-          <boxGeometry args={[0.15, 0.06, 0.01]} />
+        <mesh position={[0.1, 2.05, 0.05]} rotation={[0, 0, 0.3]} geometry={getSharedBoxGeometry(0.15, 0.06, 0.01)}>
           <meshStandardMaterial color="#4a6a8a" roughness={0.9} />
         </mesh>
       </group>
 
       {/* ── Broken antenna (bent metal) ── */}
       <group position={[-3.5, 1.2, -3.0]}>
-        <mesh rotation={[0, 0, 0.6]} castShadow>
-          <cylinderGeometry args={[0.01, 0.015, 1.5, 4]} />
+        <mesh rotation={[0, 0, 0.6]} castShadow geometry={getSharedCylinderGeometry(0.01, 0.015, 1.5, 4)}>
           <meshStandardMaterial color="#6a6a6a" metalness={0.8} roughness={0.3} />
         </mesh>
-        <mesh position={[0.3, 0.8, 0]} rotation={[0, 0, 1.2]} castShadow>
-          <cylinderGeometry args={[0.008, 0.01, 0.8, 4]} />
+        <mesh position={[0.3, 0.8, 0]} rotation={[0, 0, 1.2]} castShadow geometry={getSharedCylinderGeometry(0.008, 0.01, 0.8, 4)}>
           <meshStandardMaterial color="#5a5a5a" metalness={0.7} roughness={0.4} />
         </mesh>
       </group>
@@ -343,8 +323,7 @@ function RooftopEdgeRailings({ w, d }: { w: number; d: number }) {
   return (
     <group>
       {postPositions.map(({ key, pos }) => (
-        <mesh key={key} position={pos} castShadow>
-          <boxGeometry args={[0.04, postHeight, 0.04]} />
+        <mesh key={key} position={pos} castShadow geometry={getSharedBoxGeometry(0.04, postHeight, 0.04)}>
           <meshStandardMaterial {...railMat} />
         </mesh>
       ))}
@@ -354,12 +333,10 @@ function RooftopEdgeRailings({ w, d }: { w: number; d: number }) {
         const centerX = (fromX + toX) / 2;
         return (
           <group key={`front-rail-${i}`}>
-            <mesh position={[centerX, railYLow, frontZ]} castShadow>
-              <boxGeometry args={[length, 0.025, 0.025]} />
+            <mesh position={[centerX, railYLow, frontZ]} castShadow geometry={getSharedBoxGeometry(length, 0.025, 0.025)}>
               <meshStandardMaterial {...railMat} />
             </mesh>
-            <mesh position={[centerX, railYHigh, frontZ]} castShadow>
-              <boxGeometry args={[length, 0.025, 0.025]} />
+            <mesh position={[centerX, railYHigh, frontZ]} castShadow geometry={getSharedBoxGeometry(length, 0.025, 0.025)}>
               <meshStandardMaterial {...railMat} />
             </mesh>
           </group>
@@ -370,12 +347,10 @@ function RooftopEdgeRailings({ w, d }: { w: number; d: number }) {
         const x = side === 'left' ? -w / 2 + 0.06 : w / 2 - 0.06;
         return (
           <group key={`${side}-rails`}>
-            <mesh position={[x, railYLow, 0]} castShadow>
-              <boxGeometry args={[0.025, 0.025, sideSpan]} />
+            <mesh position={[x, railYLow, 0]} castShadow geometry={getSharedBoxGeometry(0.025, 0.025, sideSpan)}>
               <meshStandardMaterial {...railMat} />
             </mesh>
-            <mesh position={[x, railYHigh, 0]} castShadow>
-              <boxGeometry args={[0.025, 0.025, sideSpan]} />
+            <mesh position={[x, railYHigh, 0]} castShadow geometry={getSharedBoxGeometry(0.025, 0.025, sideSpan)}>
               <meshStandardMaterial {...railMat} />
             </mesh>
           </group>

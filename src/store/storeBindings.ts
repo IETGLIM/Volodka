@@ -81,7 +81,7 @@ export function getCombinedGameState(): GameStoreState {
   }
 
   cachedSliceRefs = refs;
-  cachedCombined = Object.assign(
+  const combined = Object.assign(
     {} as GameStoreState,
     refs[0],
     refs[1],
@@ -90,7 +90,8 @@ export function getCombinedGameState(): GameStoreState {
     refs[4],
     refs[5],
   );
-  return cachedCombined;
+  cachedCombined = combined;
+  return combined;
 }
 
 /** Drop cached combined object when slice stores change. */

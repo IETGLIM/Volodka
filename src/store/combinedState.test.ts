@@ -15,8 +15,10 @@ describe('subscribeAllStores', () => {
     const unsub = subscribeAllStores(listener);
 
     const menuOpen = useUIStore.getState().mainMenuOpen;
-    const energy = usePlayerStore.getState().energy;
-    usePlayerStore.setState({ energy: energy - 1 });
+    const energy = usePlayerStore.getState().playerState.energy;
+    usePlayerStore.setState({
+      playerState: { ...usePlayerStore.getState().playerState, energy: energy - 1 },
+    });
     useUIStore.setState({ mainMenuOpen: !menuOpen });
 
     expect(listener).not.toHaveBeenCalled();
@@ -24,7 +26,9 @@ describe('subscribeAllStores', () => {
     await Promise.resolve();
     expect(listener).toHaveBeenCalledTimes(1);
 
-    usePlayerStore.setState({ energy });
+    usePlayerStore.setState({
+      playerState: { ...usePlayerStore.getState().playerState, energy },
+    });
     useUIStore.setState({ mainMenuOpen: menuOpen });
     unsub();
   });
@@ -80,11 +84,13 @@ describe('gameStore facade flush', () => {
     facadeListener.mockClear();
 
     const menuOpen = useUIStore.getState().mainMenuOpen;
-    const energy = usePlayerStore.getState().energy;
+    const energy = usePlayerStore.getState().playerState.energy;
 
     await new Promise<void>((resolve) => {
       setTimeout(() => {
-        usePlayerStore.setState({ energy: energy - 1 });
+        usePlayerStore.setState({
+          playerState: { ...usePlayerStore.getState().playerState, energy: energy - 1 },
+        });
         setTimeout(() => {
           useUIStore.setState({ mainMenuOpen: !menuOpen });
           resolve();
@@ -99,7 +105,9 @@ describe('gameStore facade flush', () => {
     rafQueue[0]?.(0);
     expect(facadeListener).toHaveBeenCalledTimes(1);
 
-    usePlayerStore.setState({ energy });
+    usePlayerStore.setState({
+      playerState: { ...usePlayerStore.getState().playerState, energy },
+    });
     useUIStore.setState({ mainMenuOpen: menuOpen });
     unsub();
   });

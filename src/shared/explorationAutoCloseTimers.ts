@@ -3,7 +3,7 @@
 import { registerHmrDispose } from '@/shared/dev/hmrDispose';
 
 interface AutoCloseEntry {
-  timer: ReturnType<typeof setTimeout>;
+  timer: ReturnType<typeof setTimeout> | number;
   generation: number;
 }
 
@@ -21,7 +21,7 @@ export function isAutoCloseSchedulingSuspended(): boolean {
 
 export function trackAutoCloseTimer(
   id: string,
-  timer: ReturnType<typeof setTimeout>,
+  timer: ReturnType<typeof setTimeout> | number,
   generation: number,
 ): void {
   if (generation !== autoCloseGeneration) {
@@ -31,7 +31,7 @@ export function trackAutoCloseTimer(
   autoCloseTimers.set(id, { timer, generation });
 }
 
-export function clearAutoCloseTimer(id: string): ReturnType<typeof setTimeout> | undefined {
+export function clearAutoCloseTimer(id: string): (ReturnType<typeof setTimeout> | number) | undefined {
   const existing = autoCloseTimers.get(id);
   if (existing !== undefined) {
     autoCloseTimers.delete(id);

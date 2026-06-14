@@ -3,6 +3,14 @@
 
 import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
+import {
+  getSharedBoxGeometry,
+  getSharedCircleGeometry,
+  getSharedCylinderGeometry,
+  getSharedPlaneGeometry,
+  getSharedSphereGeometry,
+} from '@/engine/three/moduleGeometryRegistry';
+
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import { eventBus } from '@/engine/EventBus';
 import { useEnvironmentLod } from './lod/EnvironmentLodProvider';
@@ -24,8 +32,7 @@ export function BattleVisual({ livePlayerPositionRef: _livePlayerPositionRef }: 
   return (
     <group>
       {/* ── Floor ── */}
-      <mesh rotation-x={-Math.PI / 2} receiveShadow position-y={0.001}>
-        <planeGeometry args={[W, D]} />
+      <mesh rotation-x={-Math.PI / 2} receiveShadow position-y={0.001} geometry={getSharedPlaneGeometry(W, D)}>
         <meshStandardMaterial
           map={floorTexture}
           color="#3a3a3a"
@@ -55,23 +62,19 @@ export function BattleVisual({ livePlayerPositionRef: _livePlayerPositionRef }: 
       {/* ── NEON-LIT ARENA EDGES ── */}
       {/* ═══════════════════════════════════════════════ */}
       {/* Red neon strip - back */}
-      <mesh position={[0, 0.15, -6]} castShadow>
-        <boxGeometry args={[12, 0.3, 0.1]} />
+      <mesh position={[0, 0.15, -6]} castShadow geometry={getSharedBoxGeometry(12, 0.3, 0.1)}>
         <meshStandardMaterial color="#330011" emissive="#ff2244" emissiveIntensity={1.5} />
       </mesh>
       {/* Blue neon strip - left */}
-      <mesh position={[-6, 0.15, 0]} rotation={[0, Math.PI / 2, 0]} castShadow>
-        <boxGeometry args={[12, 0.3, 0.1]} />
+      <mesh position={[-6, 0.15, 0]} rotation={[0, Math.PI / 2, 0]} castShadow geometry={getSharedBoxGeometry(12, 0.3, 0.1)}>
         <meshStandardMaterial color="#001133" emissive="#2244ff" emissiveIntensity={1.5} />
       </mesh>
       {/* Red neon strip - front */}
-      <mesh position={[0, 0.15, 6]} castShadow>
-        <boxGeometry args={[12, 0.3, 0.1]} />
+      <mesh position={[0, 0.15, 6]} castShadow geometry={getSharedBoxGeometry(12, 0.3, 0.1)}>
         <meshStandardMaterial color="#330011" emissive="#ff2244" emissiveIntensity={1.5} />
       </mesh>
       {/* Blue neon strip - right */}
-      <mesh position={[6, 0.15, 0]} rotation={[0, Math.PI / 2, 0]} castShadow>
-        <boxGeometry args={[12, 0.3, 0.1]} />
+      <mesh position={[6, 0.15, 0]} rotation={[0, Math.PI / 2, 0]} castShadow geometry={getSharedBoxGeometry(12, 0.3, 0.1)}>
         <meshStandardMaterial color="#001133" emissive="#2244ff" emissiveIntensity={1.5} />
       </mesh>
 
@@ -90,8 +93,7 @@ export function BattleVisual({ livePlayerPositionRef: _livePlayerPositionRef }: 
         const x = Math.sin(i * 2.7) * 4;
         const z = Math.cos(i * 3.1) * 4;
         return (
-          <mesh key={i} position={[x, 0.08, z]} rotation={[Math.random() * 0.5, Math.random() * Math.PI, 0]} castShadow>
-            <boxGeometry args={[0.2 + Math.random() * 0.3, 0.1, 0.15 + Math.random() * 0.2]} />
+          <mesh key={i} position={[x, 0.08, z]} rotation={[Math.random() * 0.5, Math.random() * Math.PI, 0]} castShadow geometry={getSharedBoxGeometry(0.2 + Math.random() * 0.3, 0.1, 0.15 + Math.random() * 0.2)}>
             <meshStandardMaterial color="#4a4a4a" roughness={0.9} />
           </mesh>
         );
@@ -103,20 +105,17 @@ export function BattleVisual({ livePlayerPositionRef: _livePlayerPositionRef }: 
       <group position={[0, 0, -5.8]}>
         {/* Fence posts */}
         {[-5, -2.5, 0, 2.5, 5].map((x, i) => (
-          <mesh key={i} position={[x, 1.5, 0]} castShadow>
-            <cylinderGeometry args={[0.03, 0.03, 3, 6]} />
+          <mesh key={i} position={[x, 1.5, 0]} castShadow geometry={getSharedCylinderGeometry(0.03, 0.03, 3, 6)}>
             <meshStandardMaterial color="#4a4a4a" metalness={0.6} roughness={0.4} />
           </mesh>
         ))}
         {/* Top rail */}
-        <mesh position={[0, 3, 0]}>
-          <boxGeometry args={[10, 0.04, 0.04]} />
+        <mesh position={[0, 3, 0]} geometry={getSharedBoxGeometry(10, 0.04, 0.04)}>
           <meshStandardMaterial color="#4a4a4a" metalness={0.6} roughness={0.4} />
         </mesh>
         {/* Chain link panels */}
         {[-3.75, -1.25, 1.25, 3.75].map((x, i) => (
-          <mesh key={`cl-${i}`} position={[x, 1.5, 0]}>
-            <planeGeometry args={[2.5, 3]} />
+          <mesh key={`cl-${i}`} position={[x, 1.5, 0]} geometry={getSharedPlaneGeometry(2.5, 3)}>
             <meshStandardMaterial color="#3a3a3a" transparent opacity={0.3} side={THREE.DoubleSide} wireframe />
           </mesh>
         ))}
@@ -154,54 +153,46 @@ export function BattleVisual({ livePlayerPositionRef: _livePlayerPositionRef }: 
       {/* ── Broken monitors (shattered glass effect) ── */}
       <group position={[4, 0, -1]} rotation={[0, 0.8, 0]}>
         {/* Monitor frame on ground */}
-        <mesh position={[0, 0.15, 0]} rotation={[0.3, 0, 0.2]} castShadow>
-          <boxGeometry args={[0.55, 0.35, 0.03]} />
+        <mesh position={[0, 0.15, 0]} rotation={[0.3, 0, 0.2]} castShadow geometry={getSharedBoxGeometry(0.55, 0.35, 0.03)}>
           <meshStandardMaterial color="#2a2a2a" metalness={0.5} roughness={0.5} />
         </mesh>
         {/* Cracked screen glow */}
-        <mesh position={[0, 0.17, 0.02]} rotation={[0.3, 0, 0.2]}>
-          <planeGeometry args={[0.45, 0.28]} />
+        <mesh position={[0, 0.17, 0.02]} rotation={[0.3, 0, 0.2]} geometry={getSharedPlaneGeometry(0.45, 0.28)}>
           <meshStandardMaterial color="#000000" emissive="#2244ff" emissiveIntensity={0.3} />
         </mesh>
         {/* Glass shards */}
-        <mesh position={[0.1, 0.2, 0.04]} rotation={[0.5, 0.3, 0]}>
-          <planeGeometry args={[0.08, 0.12]} />
+        <mesh position={[0.1, 0.2, 0.04]} rotation={[0.5, 0.3, 0]} geometry={getSharedPlaneGeometry(0.08, 0.12)}>
           <meshStandardMaterial color="#6080a0" transparent opacity={0.4} metalness={0.2} roughness={0.1} side={THREE.DoubleSide} />
         </mesh>
       </group>
 
       {/* ── Sparks from damaged equipment (emissive dots) ── */}
       {[[2.5, 0.3, -3], [-3, 0.5, 2]].map((pos, i) => (
-        <mesh key={`spark-${i}`} position={pos as [number, number, number]}>
-          <sphereGeometry args={[0.03, 6, 6]} />
+        <mesh key={`spark-${i}`} position={pos as [number, number, number]} geometry={getSharedSphereGeometry(0.03, 6, 6)}>
           <meshStandardMaterial color="#ffaa22" emissive="#ffaa22" emissiveIntensity={3} />
         </mesh>
       ))}
 
       {/* ── Scattered papers ── */}
       {[[-1, 0.02, 1], [1.5, 0.02, -2], [-2, 0.02, -1]].map((pos, i) => (
-        <mesh key={`paper-${i}`} rotation={[-Math.PI / 2, 0, 0.3 + i * 0.5]} position={pos as [number, number, number]}>
-          <planeGeometry args={[0.15, 0.1]} />
+        <mesh key={`paper-${i}`} rotation={[-Math.PI / 2, 0, 0.3 + i * 0.5]} position={pos as [number, number, number]} geometry={getSharedPlaneGeometry(0.15, 0.1)}>
           <meshStandardMaterial color="#e8e4dc" roughness={0.95} side={THREE.DoubleSide} />
         </mesh>
       ))}
 
       {/* ── Bullet holes in walls (dark circles) ── */}
       {[[-5.9, 1.5, -3], [-5.9, 2.0, -1], [-5.9, 1.2, 1]].map((pos, i) => (
-        <mesh key={`bullet-${i}`} position={pos as [number, number, number]} rotation-y={Math.PI / 2}>
-          <circleGeometry args={[0.03, 8]} />
+        <mesh key={`bullet-${i}`} position={pos as [number, number, number]} rotation-y={Math.PI / 2} geometry={getSharedCircleGeometry(0.03, 8)}>
           <meshStandardMaterial color="#1a1a1a" roughness={0.95} />
         </mesh>
       ))}
 
       {/* ── Overturned chair ── */}
       <group position={[-1, 0, 2.5]} rotation={[0.3, 0.5, Math.PI / 2.5]}>
-        <mesh position={[0, 0.2, 0]} castShadow>
-          <boxGeometry args={[0.45, 0.04, 0.45]} />
+        <mesh position={[0, 0.2, 0]} castShadow geometry={getSharedBoxGeometry(0.45, 0.04, 0.45)}>
           <meshStandardMaterial color="#2a2a3a" roughness={0.7} />
         </mesh>
-        <mesh position={[0, 0.5, -0.2]} castShadow>
-          <boxGeometry args={[0.45, 0.45, 0.04]} />
+        <mesh position={[0, 0.5, -0.2]} castShadow geometry={getSharedBoxGeometry(0.45, 0.45, 0.04)}>
           <meshStandardMaterial color="#2a2a3a" roughness={0.7} />
         </mesh>
       </group>
@@ -241,8 +232,7 @@ function ArenaReactiveGrid({ size }: { size: number }) {
   });
 
   return (
-    <mesh rotation-x={-Math.PI / 2} position-y={0.012}>
-      <planeGeometry args={[size, size]} />
+    <mesh rotation-x={-Math.PI / 2} position-y={0.012} geometry={getSharedPlaneGeometry(size, size)}>
       <meshBasicMaterial
         ref={materialRef}
         map={gridTexture}
@@ -264,18 +254,15 @@ function WreckedCar({ position, rotation }: { position: [number, number, number]
   return (
     <group position={position} rotation={[0, rotation, 0]}>
       {/* Body */}
-      <mesh position={[0, 0.45, 0]} castShadow receiveShadow>
-        <boxGeometry args={[2.6, 0.6, 1.2]} />
+      <mesh position={[0, 0.45, 0]} castShadow receiveShadow geometry={getSharedBoxGeometry(2.6, 0.6, 1.2)}>
         <meshStandardMaterial color="#37404a" metalness={0.5} roughness={0.6} />
       </mesh>
       {/* Crushed cabin */}
-      <mesh position={[-0.25, 0.92, 0]} rotation={[0, 0, 0.06]} castShadow>
-        <boxGeometry args={[1.3, 0.42, 1.05]} />
+      <mesh position={[-0.25, 0.92, 0]} rotation={[0, 0, 0.06]} castShadow geometry={getSharedBoxGeometry(1.3, 0.42, 1.05)}>
         <meshStandardMaterial color="#2c343c" metalness={0.4} roughness={0.7} />
       </mesh>
       {/* Shattered windshield */}
-      <mesh position={[0.42, 0.92, 0]} rotation={[0, 0, -0.5]}>
-        <planeGeometry args={[0.5, 1.0]} />
+      <mesh position={[0.42, 0.92, 0]} rotation={[0, 0, -0.5]} geometry={getSharedPlaneGeometry(0.5, 1.0)}>
         <meshStandardMaterial color="#6080a0" transparent opacity={0.35} metalness={0.2} roughness={0.15} side={THREE.DoubleSide} />
       </mesh>
       {/* Wheels (one missing — on blocks) */}
@@ -284,19 +271,16 @@ function WreckedCar({ position, rotation }: { position: [number, number, number]
         [0.9, 0.22, 0.62],
         [-0.9, 0.22, -0.62],
       ].map(([x, y, z], i) => (
-        <mesh key={`wheel-${i}`} position={[x, y, z]} rotation={[Math.PI / 2, 0, 0]} castShadow>
-          <cylinderGeometry args={[0.22, 0.22, 0.16, 10]} />
+        <mesh key={`wheel-${i}`} position={[x, y, z]} rotation={[Math.PI / 2, 0, 0]} castShadow geometry={getSharedCylinderGeometry(0.22, 0.22, 0.16, 10)}>
           <meshStandardMaterial color="#181818" roughness={0.9} />
         </mesh>
       ))}
       {/* Brick under the missing wheel */}
-      <mesh position={[0.9, 0.12, -0.62]} castShadow>
-        <boxGeometry args={[0.3, 0.24, 0.2]} />
+      <mesh position={[0.9, 0.12, -0.62]} castShadow geometry={getSharedBoxGeometry(0.3, 0.24, 0.2)}>
         <meshStandardMaterial color="#5a4438" roughness={0.95} />
       </mesh>
       {/* Hazard light still blinking */}
-      <mesh position={[1.32, 0.55, 0.45]}>
-        <sphereGeometry args={[0.05, 6, 6]} />
+      <mesh position={[1.32, 0.55, 0.45]} geometry={getSharedSphereGeometry(0.05, 6, 6)}>
         <meshStandardMaterial color="#ff6622" emissive="#ff6622" emissiveIntensity={2.5} />
       </mesh>
     </group>
@@ -334,13 +318,11 @@ function createArenaGridTexture(): THREE.CanvasTexture {
 function ConcreteBarrier({ position, rotation }: { position: [number, number, number]; rotation: number }) {
   return (
     <group position={position} rotation={[0, rotation, 0]}>
-      <mesh position={[0, 0.4, 0]} castShadow receiveShadow>
-        <boxGeometry args={[1.2, 0.8, 0.4]} />
+      <mesh position={[0, 0.4, 0]} castShadow receiveShadow geometry={getSharedBoxGeometry(1.2, 0.8, 0.4)}>
         <meshStandardMaterial color="#5a5a5a" roughness={0.9} />
       </mesh>
       {/* Scuff marks */}
-      <mesh position={[0, 0.4, 0.21]}>
-        <planeGeometry args={[0.3, 0.2]} />
+      <mesh position={[0, 0.4, 0.21]} geometry={getSharedPlaneGeometry(0.3, 0.2)}>
         <meshStandardMaterial color="#4a4a4a" roughness={0.95} transparent opacity={0.5} polygonOffset polygonOffsetFactor={-1} polygonOffsetUnits={-1} />
       </mesh>
     </group>
@@ -352,13 +334,11 @@ function HolographicDisplay({ position, color }: { position: [number, number, nu
   return (
     <group position={position}>
       {/* Display stand */}
-      <mesh position={[0, 0.5, 0]} castShadow>
-        <boxGeometry args={[0.1, 1.0, 0.1]} />
+      <mesh position={[0, 0.5, 0]} castShadow geometry={getSharedBoxGeometry(0.1, 1.0, 0.1)}>
         <meshStandardMaterial color="#3a3a3a" metalness={0.6} roughness={0.4} />
       </mesh>
       {/* Holographic screen */}
-      <mesh position={[0, 1.8, 0.006]}>
-        <planeGeometry args={[1.2, 0.8]} />
+      <mesh position={[0, 1.8, 0.006]} geometry={getSharedPlaneGeometry(1.2, 0.8)}>
         <meshStandardMaterial
           color="#000000"
           emissive={color}
@@ -369,8 +349,7 @@ function HolographicDisplay({ position, color }: { position: [number, number, nu
         />
       </mesh>
       {/* Frame */}
-      <mesh position={[0, 1.8, 0]}>
-        <boxGeometry args={[1.3, 0.9, 0.02]} />
+      <mesh position={[0, 1.8, 0]} geometry={getSharedBoxGeometry(1.3, 0.9, 0.02)}>
         <meshStandardMaterial color="#2a2a2a" metalness={0.5} roughness={0.5} />
       </mesh>
     </group>
@@ -382,18 +361,15 @@ function SpotlightTower({ position, lightColor }: { position: [number, number, n
   return (
     <group position={position}>
       {/* Tower pole */}
-      <mesh position={[0, 3, 0]} castShadow>
-        <cylinderGeometry args={[0.06, 0.08, 6, 6]} />
+      <mesh position={[0, 3, 0]} castShadow geometry={getSharedCylinderGeometry(0.06, 0.08, 6, 6)}>
         <meshStandardMaterial color="#3a3a3a" metalness={0.7} roughness={0.3} />
       </mesh>
       {/* Light housing */}
-      <mesh position={[0, 6.1, 0]} castShadow>
-        <boxGeometry args={[0.4, 0.15, 0.3]} />
+      <mesh position={[0, 6.1, 0]} castShadow geometry={getSharedBoxGeometry(0.4, 0.15, 0.3)}>
         <meshStandardMaterial color="#2a2a2a" metalness={0.6} roughness={0.4} />
       </mesh>
       {/* Spotlight glow */}
-      <mesh position={[0, 6.0, 0.1]}>
-        <sphereGeometry args={[0.08, 6, 6]} />
+      <mesh position={[0, 6.0, 0.1]} geometry={getSharedSphereGeometry(0.08, 6, 6)}>
         <meshStandardMaterial color={lightColor} emissive={lightColor} emissiveIntensity={3} />
       </mesh>
       {/* Spot light */}

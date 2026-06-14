@@ -43,15 +43,19 @@ export function installFrameProfilerInstrumentation(
     });
 }
 
-export function wrapStoreSubscribe<T>(
-  subscribe: (
-    listener: (state: T, prevState: T) => void,
-  ) => () => void,
-): (listener: (state: T, prevState: T) => void) => () => void {
-  if (!import.meta.env.DEV) return subscribe;
-  return (listener) =>
-    subscribe((state, prevState) => {
+type SubscribeFn = <TState>(
+  listener: (state: TState, prevState: TState) => void,
+) => () => void;
+
+export function wrapStoreSubscribe<T extends SubscribeFn>(base: T): T {
+  if (!import.meta.env.DEV) return base;
+  function wrapped<TState>(
+    listener: (state: TState, prevState: TState) => void,
+  ): () => void {
+    return base((state: TState, prevState: TState) => {
       incrementZustandNotification();
       listener(state, prevState);
     });
+  }
+  return wrapped as T;
 }

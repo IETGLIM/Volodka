@@ -15,6 +15,8 @@ describe('combatTransientPool', () => {
 
   it('disposes shared hit spark geometry via moduleGeometryRegistry', () => {
     const mesh = acquireCombatHitSpark();
+    expect(mesh).not.toBeNull();
+    if (!mesh) return;
     const geometry = mesh.geometry;
     releaseCombatHitSpark(mesh);
 
@@ -32,12 +34,16 @@ describe('combatTransientPool', () => {
 
   it('recreates geometry after dispose on next acquire', () => {
     const mesh1 = acquireCombatHitSpark();
+    expect(mesh1).not.toBeNull();
+    if (!mesh1) return;
     const geometry1 = mesh1.geometry;
     releaseCombatHitSpark(mesh1);
     disposeCombatTransientPools();
     disposeAllModuleGeometries();
 
     const mesh2 = acquireCombatHitSpark();
+    expect(mesh2).not.toBeNull();
+    if (!mesh2) return;
     expect(mesh2.geometry).not.toBe(geometry1);
     releaseCombatHitSpark(mesh2);
   });

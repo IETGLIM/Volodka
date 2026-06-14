@@ -178,7 +178,7 @@ export const QUESTS_ACT4: QuestDefinition[] = [
       { type: 'setFlag', flag: 'digital_ghost_resolved', flagValue: true },
       { type: 'addXp', value: 120 },
     ],
-    linkedStoryNodeId: 'office_alexander',
+    linkedStoryNodeId: 'library_explore_mode',
     questGiverNpcId: 'lena',
   },
 

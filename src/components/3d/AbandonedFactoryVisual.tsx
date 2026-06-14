@@ -4,6 +4,14 @@
 import { useMemo, useRef } from 'react';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import * as THREE from 'three';
+import {
+  getSharedBoxGeometry,
+  getSharedCircleGeometry,
+  getSharedCylinderGeometry,
+  getSharedPlaneGeometry,
+  getSharedSphereGeometry,
+} from '@/engine/three/moduleGeometryRegistry';
+
 import { getEnvironmentLodProfile } from '@/engine/lod/distanceLod';
 import { useEnvironmentLod } from './lod/EnvironmentLodProvider';
 import { EnvironmentDetail, PropDistanceGate } from './lod/PropDistanceGate';
@@ -51,8 +59,7 @@ export function AbandonedFactoryVisual({ livePlayerPositionRef }: AbandonedFacto
   return (
     <group>
       {/* ── Floor ── */}
-      <mesh rotation-x={-Math.PI / 2} receiveShadow position-y={0.001}>
-        <planeGeometry args={[W, D]} />
+      <mesh rotation-x={-Math.PI / 2} receiveShadow position-y={0.001} geometry={getSharedPlaneGeometry(W, D)}>
         <meshStandardMaterial
           map={floorTexture}
           color="#2a2520"
@@ -64,26 +71,21 @@ export function AbandonedFactoryVisual({ livePlayerPositionRef }: AbandonedFacto
       </mesh>
 
       {/* ── Ceiling ── */}
-      <mesh position={[0, H, 0]} rotation-x={Math.PI / 2}>
-        <planeGeometry args={[W, D]} />
+      <mesh position={[0, H, 0]} rotation-x={Math.PI / 2} geometry={getSharedPlaneGeometry(W, D)}>
         <meshStandardMaterial color="#1a1510" roughness={0.95} />
       </mesh>
 
       {/* ── Walls ── */}
-      <mesh position={[0, H / 2, -D / 2]}>
-        <planeGeometry args={[W, H]} />
+      <mesh position={[0, H / 2, -D / 2]} geometry={getSharedPlaneGeometry(W, H)}>
         <meshStandardMaterial map={wallTexture} color="#3a3530" roughness={0.9} />
       </mesh>
-      <mesh position={[0, H / 2, D / 2]} rotation-y={Math.PI}>
-        <planeGeometry args={[W, H]} />
+      <mesh position={[0, H / 2, D / 2]} rotation-y={Math.PI} geometry={getSharedPlaneGeometry(W, H)}>
         <meshStandardMaterial map={wallTexture} color="#3a3530" roughness={0.9} />
       </mesh>
-      <mesh position={[-W / 2, H / 2, 0]} rotation-y={Math.PI / 2}>
-        <planeGeometry args={[D, H]} />
+      <mesh position={[-W / 2, H / 2, 0]} rotation-y={Math.PI / 2} geometry={getSharedPlaneGeometry(D, H)}>
         <meshStandardMaterial map={wallTexture} color="#3a3530" roughness={0.9} />
       </mesh>
-      <mesh position={[W / 2, H / 2, 0]} rotation-y={-Math.PI / 2}>
-        <planeGeometry args={[D, H]} />
+      <mesh position={[W / 2, H / 2, 0]} rotation-y={-Math.PI / 2} geometry={getSharedPlaneGeometry(D, H)}>
         <meshStandardMaterial map={wallTexture} color="#3a3530" roughness={0.9} />
       </mesh>
 
@@ -93,27 +95,22 @@ export function AbandonedFactoryVisual({ livePlayerPositionRef }: AbandonedFacto
       <EnvironmentDetail currentLod={lod} minLod="standard">
         <FactoryPropGate livePlayerPositionRef={livePlayerPositionRef} position={[-7, 0, -5]} maxDistance={envProfile.decorativeDistance}>
           {/* Large press machine (left) */}
-          <mesh position={[0, 1.5, 0]} castShadow>
-            <boxGeometry args={[2.0, 3.0, 1.5]} />
+          <mesh position={[0, 1.5, 0]} castShadow geometry={getSharedBoxGeometry(2.0, 3.0, 1.5)}>
             <meshStandardMaterial color="#8a4020" roughness={0.9} metalness={0.3} />
           </mesh>
-          <mesh position={[0, 3.5, 0]} castShadow>
-            <boxGeometry args={[1.2, 0.4, 0.8]} />
+          <mesh position={[0, 3.5, 0]} castShadow geometry={getSharedBoxGeometry(1.2, 0.4, 0.8)}>
             <meshStandardMaterial color="#4a4a4a" metalness={0.5} roughness={0.6} />
           </mesh>
-          <mesh position={[0, 4.2, 0]} castShadow>
-            <cylinderGeometry args={[0.1, 0.1, 1.5, 8]} />
+          <mesh position={[0, 4.2, 0]} castShadow geometry={getSharedCylinderGeometry(0.1, 0.1, 1.5, 8)}>
             <meshStandardMaterial color="#5a5a5a" metalness={0.6} roughness={0.4} />
           </mesh>
         </FactoryPropGate>
 
         <FactoryPropGate livePlayerPositionRef={livePlayerPositionRef} position={[6, 0, -3]} maxDistance={envProfile.decorativeDistance}>
-          <mesh position={[0, 0.8, 0]} castShadow>
-            <boxGeometry args={[1.2, 1.6, 1.0]} />
+          <mesh position={[0, 0.8, 0]} castShadow geometry={getSharedBoxGeometry(1.2, 1.6, 1.0)}>
             <meshStandardMaterial color="#8a4020" roughness={0.85} metalness={0.3} />
           </mesh>
-          <mesh position={[0, 1.3, 0.51]}>
-            <planeGeometry args={[0.5, 0.4]} />
+          <mesh position={[0, 1.3, 0.51]} geometry={getSharedPlaneGeometry(0.5, 0.4)}>
             <meshStandardMaterial color="#1a1a1a" emissive="#22aa44" emissiveIntensity={0.3} />
           </mesh>
         </FactoryPropGate>
@@ -123,8 +120,7 @@ export function AbandonedFactoryVisual({ livePlayerPositionRef }: AbandonedFacto
       {/* ── BROKEN WINDOWS WITH LIGHT BEAMS ── */}
       {/* ═══════════════════════════════════════════════ */}
       <group position={[W / 2 - 0.01, 4, -4]}>
-        <mesh rotation-y={-Math.PI / 2}>
-          <planeGeometry args={[2.5, 2.0]} />
+        <mesh rotation-y={-Math.PI / 2} geometry={getSharedPlaneGeometry(2.5, 2.0)}>
           <meshStandardMaterial
             color="#1a1a10"
             emissive="#ffdd88"
@@ -132,19 +128,16 @@ export function AbandonedFactoryVisual({ livePlayerPositionRef }: AbandonedFacto
           />
         </mesh>
         {/* Broken glass shards */}
-        <mesh rotation-y={-Math.PI / 2} position={[0.02, 0.5, -0.8]}>
-          <planeGeometry args={[0.3, 0.6]} />
+        <mesh rotation-y={-Math.PI / 2} position={[0.02, 0.5, -0.8]} geometry={getSharedPlaneGeometry(0.3, 0.6)}>
           <meshStandardMaterial color="#a0b0c0" transparent opacity={0.3} metalness={0.2} roughness={0.1} side={THREE.DoubleSide} />
         </mesh>
-        <mesh rotation-y={-Math.PI / 2} position={[0.02, -0.3, 0.5]}>
-          <planeGeometry args={[0.4, 0.5]} />
+        <mesh rotation-y={-Math.PI / 2} position={[0.02, -0.3, 0.5]} geometry={getSharedPlaneGeometry(0.4, 0.5)}>
           <meshStandardMaterial color="#a0b0c0" transparent opacity={0.2} metalness={0.2} roughness={0.1} side={THREE.DoubleSide} />
         </mesh>
       </group>
 
       <group position={[W / 2 - 0.01, 4, 3]}>
-        <mesh rotation-y={-Math.PI / 2}>
-          <planeGeometry args={[2.5, 2.0]} />
+        <mesh rotation-y={-Math.PI / 2} geometry={getSharedPlaneGeometry(2.5, 2.0)}>
           <meshStandardMaterial
             color="#1a1a10"
             emissive="#ffdd88"
@@ -159,21 +152,18 @@ export function AbandonedFactoryVisual({ livePlayerPositionRef }: AbandonedFacto
       <EnvironmentDetail currentLod={lod} minLod="standard">
       <group position={[0, 0, 2]}>
         {/* Belt surface */}
-        <mesh position={[0, 0.6, 0]} castShadow>
-          <boxGeometry args={[8, 0.05, 1.0]} />
+        <mesh position={[0, 0.6, 0]} castShadow geometry={getSharedBoxGeometry(8, 0.05, 1.0)}>
           <meshStandardMaterial color="#2a2a2a" roughness={0.95} />
         </mesh>
         {/* Belt supports */}
         {[-3.5, -1.5, 0.5, 2.5].map((x, i) => (
-          <mesh key={i} position={[x, 0.3, 0]} castShadow>
-            <boxGeometry args={[0.1, 0.6, 0.8]} />
+          <mesh key={i} position={[x, 0.3, 0]} castShadow geometry={getSharedBoxGeometry(0.1, 0.6, 0.8)}>
             <meshStandardMaterial color="#4a4a4a" metalness={0.4} roughness={0.6} />
           </mesh>
         ))}
         {/* Rollers */}
         {[-3.0, -1.0, 1.0, 3.0].map((x, i) => (
-          <mesh key={`r-${i}`} position={[x, 0.63, 0]} rotation={[0, 0, Math.PI / 2]}>
-            <cylinderGeometry args={[0.06, 0.06, 0.9, 6]} />
+          <mesh key={`r-${i}`} position={[x, 0.63, 0]} rotation={[0, 0, Math.PI / 2]} geometry={getSharedCylinderGeometry(0.06, 0.06, 0.9, 6)}>
             <meshStandardMaterial color="#5a5a5a" metalness={0.6} roughness={0.4} />
           </mesh>
         ))}
@@ -197,20 +187,17 @@ export function AbandonedFactoryVisual({ livePlayerPositionRef }: AbandonedFacto
       <EnvironmentDetail currentLod={lod} minLod="standard">
       <group position={[0, 3.5, -7]}>
         {/* Walkway */}
-        <mesh castShadow>
-          <boxGeometry args={[12, 0.05, 1.2]} />
+        <mesh castShadow geometry={getSharedBoxGeometry(12, 0.05, 1.2)}>
           <meshStandardMaterial color="#4a4a4a" metalness={0.5} roughness={0.5} />
         </mesh>
         {/* Railing posts */}
         {[-5.5, -3, -0.5, 2, 4.5].map((x, i) => (
-          <mesh key={i} position={[x, 0.5, 0.55]} castShadow>
-            <cylinderGeometry args={[0.02, 0.02, 1.0, 4]} />
+          <mesh key={i} position={[x, 0.5, 0.55]} castShadow geometry={getSharedCylinderGeometry(0.02, 0.02, 1.0, 4)}>
             <meshStandardMaterial color="#5a5a5a" metalness={0.6} roughness={0.4} />
           </mesh>
         ))}
         {/* Top rail */}
-        <mesh position={[0, 1.0, 0.55]} castShadow>
-          <boxGeometry args={[12, 0.03, 0.03]} />
+        <mesh position={[0, 1.0, 0.55]} castShadow geometry={getSharedBoxGeometry(12, 0.03, 0.03)}>
           <meshStandardMaterial color="#5a5a5a" metalness={0.6} roughness={0.4} />
         </mesh>
       </group>
@@ -222,14 +209,12 @@ export function AbandonedFactoryVisual({ livePlayerPositionRef }: AbandonedFacto
       <EnvironmentDetail currentLod={lod} minLod="full">
       <group position={[-W / 2 + 0.02, 2, 0]}>
         {/* Graffiti patch 1 */}
-        <mesh rotation-y={Math.PI / 2}>
-          <planeGeometry args={[2, 1.5]} />
+        <mesh rotation-y={Math.PI / 2} geometry={getSharedPlaneGeometry(2, 1.5)}>
           <meshStandardMaterial color="#1a1a1a" emissive="#ff2244" emissiveIntensity={0.15} />
         </mesh>
       </group>
       <group position={[-W / 2 + 0.02, 3, -5]}>
-        <mesh rotation-y={Math.PI / 2}>
-          <planeGeometry args={[1.5, 1.0]} />
+        <mesh rotation-y={Math.PI / 2} geometry={getSharedPlaneGeometry(1.5, 1.0)}>
           <meshStandardMaterial color="#1a1a1a" emissive="#4488ff" emissiveIntensity={0.12} />
         </mesh>
       </group>
@@ -243,19 +228,16 @@ export function AbandonedFactoryVisual({ livePlayerPositionRef }: AbandonedFacto
       <group position={[0, 0, 0]}>
         {/* Debris on floor */}
         {debrisData.map((debris, i) => (
-          <mesh key={i} position={debris.position} rotation={debris.rotation} castShadow>
-            <boxGeometry args={debris.size} />
+          <mesh key={i} position={debris.position} rotation={debris.rotation} castShadow geometry={getSharedBoxGeometry(...debris.size)}>
             <meshStandardMaterial color="#3a3530" roughness={0.9} />
           </mesh>
         ))}
         {/* Twisted beam */}
-        <mesh position={[0, 0.5, 0]} rotation={[0.2, 0.5, 0.3]} castShadow>
-          <boxGeometry args={[2.5, 0.15, 0.1]} />
+        <mesh position={[0, 0.5, 0]} rotation={[0.2, 0.5, 0.3]} castShadow geometry={getSharedBoxGeometry(2.5, 0.15, 0.1)}>
           <meshStandardMaterial color="#4a4a4a" metalness={0.5} roughness={0.6} />
         </mesh>
         {/* Opening to sky (bright patch on ceiling) */}
-        <mesh position={[0, H - 0.02, 0]} rotation-x={Math.PI / 2}>
-          <planeGeometry args={[3, 3]} />
+        <mesh position={[0, H - 0.02, 0]} rotation-x={Math.PI / 2} geometry={getSharedPlaneGeometry(3, 3)}>
           <meshStandardMaterial color="#0a0a10" emissive="#8a9ab0" emissiveIntensity={0.5} />
         </mesh>
       </group>
@@ -286,18 +268,15 @@ export function AbandonedFactoryVisual({ livePlayerPositionRef }: AbandonedFacto
       {/* ═══════════════════════════════════════════════ */}
 
       {/* ── Dripping pipes (thin cylinders) ── */}
-      <mesh position={[6, 4, 0]} rotation={[0, 0, Math.PI / 2]}>
-        <cylinderGeometry args={[0.03, 0.03, 3, 6]} />
+      <mesh position={[6, 4, 0]} rotation={[0, 0, Math.PI / 2]} geometry={getSharedCylinderGeometry(0.03, 0.03, 3, 6)}>
         <meshStandardMaterial color="#5a5a5a" metalness={0.6} roughness={0.4} />
       </mesh>
       {/* Pipe joint */}
-      <mesh position={[4.5, 4, 0]}>
-        <cylinderGeometry args={[0.05, 0.05, 0.15, 6]} />
+      <mesh position={[4.5, 4, 0]} geometry={getSharedCylinderGeometry(0.05, 0.05, 0.15, 6)}>
         <meshStandardMaterial color="#6a5a4a" metalness={0.5} roughness={0.5} />
       </mesh>
       {/* Drip at pipe end */}
-      <mesh ref={dripRef} position={[4.5, 3.9, 0.05]}>
-        <sphereGeometry args={[0.02, 6, 6]} />
+      <mesh ref={dripRef} position={[4.5, 3.9, 0.05]} geometry={getSharedSphereGeometry(0.02, 6, 6)}>
         <meshStandardMaterial color="#4a6a8a" transparent opacity={0.7} />
       </mesh>
 
@@ -305,8 +284,7 @@ export function AbandonedFactoryVisual({ livePlayerPositionRef }: AbandonedFacto
       {[
         [2, 0.01, 4], [2.3, 0.01, 4.2], [1.8, 0.01, 4.5], [2.5, 0.01, 3.8],
       ].map((pos, i) => (
-        <mesh key={`glass-${i}`} position={pos as [number, number, number]} rotation={[-Math.PI / 2, 0, 0.3 + i * 0.7]}>
-          <planeGeometry args={[0.08, 0.05]} />
+        <mesh key={`glass-${i}`} position={pos as [number, number, number]} rotation={[-Math.PI / 2, 0, 0.3 + i * 0.7]} geometry={getSharedPlaneGeometry(0.08, 0.05)}>
           <meshStandardMaterial color="#a0b8c0" transparent opacity={0.4} metalness={0.2} roughness={0.1} side={THREE.DoubleSide} />
         </mesh>
       ))}
@@ -325,14 +303,12 @@ export function AbandonedFactoryVisual({ livePlayerPositionRef }: AbandonedFacto
       </group>
 
       {/* ── Additional graffiti tag ── */}
-      <mesh position={[W / 2 - 0.02, 2.5, 5]} rotation-y={-Math.PI / 2}>
-        <planeGeometry args={[1.8, 0.8]} />
+      <mesh position={[W / 2 - 0.02, 2.5, 5]} rotation-y={-Math.PI / 2} geometry={getSharedPlaneGeometry(1.8, 0.8)}>
         <meshStandardMaterial color="#1a1a1a" emissive="#44ff44" emissiveIntensity={0.1} roughness={0.95} />
       </mesh>
 
       {/* ── Oil puddle on floor ── */}
-      <mesh rotation-x={-Math.PI / 2} position={[-5, 0.008, 3]}>
-        <circleGeometry args={[0.6, 12]} />
+      <mesh rotation-x={-Math.PI / 2} position={[-5, 0.008, 3]} geometry={getSharedCircleGeometry(0.6, 12)}>
         <meshStandardMaterial color="#0a0a05" metalness={0.4} roughness={0.3} transparent opacity={0.5} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
       </mesh>
     </group>
@@ -369,18 +345,15 @@ function ChemicalVat({ position, color }: { position: [number, number, number]; 
   return (
     <group position={position}>
       {/* Vat body */}
-      <mesh position={[0, 0.8, 0]} castShadow>
-        <cylinderGeometry args={[0.5, 0.4, 1.6, 8]} />
+      <mesh position={[0, 0.8, 0]} castShadow geometry={getSharedCylinderGeometry(0.5, 0.4, 1.6, 8)}>
         <meshStandardMaterial color="#4a4a4a" metalness={0.4} roughness={0.5} />
       </mesh>
       {/* Chemical surface */}
-      <mesh position={[0, 1.5, 0]}>
-        <cylinderGeometry args={[0.45, 0.45, 0.05, 8]} />
+      <mesh position={[0, 1.5, 0]} geometry={getSharedCylinderGeometry(0.45, 0.45, 0.05, 8)}>
         <meshStandardMaterial color={color} emissive={color} emissiveIntensity={0.6} transparent opacity={0.7} />
       </mesh>
       {/* Pipes */}
-      <mesh position={[0.5, 1.2, 0]} rotation={[0, 0, Math.PI / 2]}>
-        <cylinderGeometry args={[0.04, 0.04, 0.6, 6]} />
+      <mesh position={[0.5, 1.2, 0]} rotation={[0, 0, Math.PI / 2]} geometry={getSharedCylinderGeometry(0.04, 0.04, 0.6, 6)}>
         <meshStandardMaterial color="#5a5a5a" metalness={0.5} roughness={0.5} />
       </mesh>
     </group>

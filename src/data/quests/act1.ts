@@ -322,7 +322,7 @@ export const QUESTS_ACT1: QuestDefinition[] = [
       { type: 'addItem', itemId: 'encrypted_scroll', value: 1 },
       { type: 'addXp', value: 80 },
     ],
-    linkedStoryNodeId: 'office_alexander',
+    linkedStoryNodeId: 'street_guild_pulse',
     questGiverNpcId: 'sergey',
   },
 

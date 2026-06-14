@@ -3,10 +3,20 @@
 
 import { useLayoutEffect, useMemo, useRef, type MutableRefObject } from 'react';
 import * as THREE from 'three';
+import {
+  getSharedBoxGeometry,
+  getSharedCircleGeometry,
+  getSharedConeGeometry,
+  getSharedCylinderGeometry,
+  getSharedPlaneGeometry,
+  getSharedSphereGeometry,
+} from '@/engine/three/moduleGeometryRegistry';
+
 import { getEnvironmentLodProfile } from '@/engine/lod/distanceLod';
 import { useEnvironmentLod } from './lod/EnvironmentLodProvider';
 import { EnvironmentDetail, SceneClutterGate } from './lod/PropDistanceGate';
 import { scratchColor } from '@/engine/three/frameScratch';
+import { useCachedCanvasTexture } from '@/hooks/useCachedCanvasTexture';
 
 interface ParkDayVisualProps {
   livePlayerPositionRef?: MutableRefObject<THREE.Vector3>;
@@ -33,8 +43,7 @@ export function ParkDayVisual({ livePlayerPositionRef }: ParkDayVisualProps) {
   return (
     <group>
       {/* ── Ground ── */}
-      <mesh rotation-x={-Math.PI / 2} receiveShadow position-y={0.001}>
-        <planeGeometry args={[W, D]} />
+      <mesh rotation-x={-Math.PI / 2} receiveShadow position-y={0.001} geometry={getSharedPlaneGeometry(W, D)}>
         <meshStandardMaterial
           map={groundTexture}
           color="#3a5a2a"
@@ -46,13 +55,11 @@ export function ParkDayVisual({ livePlayerPositionRef }: ParkDayVisualProps) {
       </mesh>
 
       {/* ── Path (gravel) ── */}
-      <mesh rotation-x={-Math.PI / 2} position={[0, 0.02, 0]} receiveShadow>
-        <planeGeometry args={[2.5, 20]} />
+      <mesh rotation-x={-Math.PI / 2} position={[0, 0.02, 0]} receiveShadow geometry={getSharedPlaneGeometry(2.5, 20)}>
         <meshStandardMaterial color="#7a7a70" roughness={0.95} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
       </mesh>
       {/* Cross path */}
-      <mesh rotation={[-Math.PI / 2, 0, Math.PI / 2]} position={[0, 0.025, 0]} receiveShadow>
-        <planeGeometry args={[2.5, 20]} />
+      <mesh rotation={[-Math.PI / 2, 0, Math.PI / 2]} position={[0, 0.025, 0]} receiveShadow geometry={getSharedPlaneGeometry(2.5, 20)}>
         <meshStandardMaterial color="#7a7a70" roughness={0.95} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
       </mesh>
 
@@ -101,23 +108,19 @@ export function ParkDayVisual({ livePlayerPositionRef }: ParkDayVisualProps) {
       {/* ═══════════════════════════════════════════════ */}
       <group position={[0, 0, -2]}>
         {/* Base */}
-        <mesh position={[0, 0.15, 0]} castShadow>
-          <boxGeometry args={[1.5, 0.3, 1.5]} />
+        <mesh position={[0, 0.15, 0]} castShadow geometry={getSharedBoxGeometry(1.5, 0.3, 1.5)}>
           <meshStandardMaterial color="#7a7a70" roughness={0.8} />
         </mesh>
         {/* Mid base */}
-        <mesh position={[0, 0.5, 0]} castShadow>
-          <boxGeometry args={[1.1, 0.4, 1.1]} />
+        <mesh position={[0, 0.5, 0]} castShadow geometry={getSharedBoxGeometry(1.1, 0.4, 1.1)}>
           <meshStandardMaterial color="#6a6a60" roughness={0.8} />
         </mesh>
         {/* Obelisk shaft */}
-        <mesh position={[0, 2.5, 0]} castShadow>
-          <cylinderGeometry args={[0.15, 0.35, 4.0, 6]} />
+        <mesh position={[0, 2.5, 0]} castShadow geometry={getSharedCylinderGeometry(0.15, 0.35, 4.0, 6)}>
           <meshStandardMaterial color="#7a7a70" roughness={0.7} />
         </mesh>
         {/* Obelisk tip */}
-        <mesh position={[0, 4.7, 0]} castShadow>
-          <coneGeometry args={[0.18, 0.4, 6]} />
+        <mesh position={[0, 4.7, 0]} castShadow geometry={getSharedConeGeometry(0.18, 0.4, 6)}>
           <meshStandardMaterial color="#8a8a80" roughness={0.6} />
         </mesh>
       </group>
@@ -143,16 +146,14 @@ export function ParkDayVisual({ livePlayerPositionRef }: ParkDayVisualProps) {
       {/* ═══════════════════════════════════════════════ */}
       <group position={[-8, 0, 8]}>
         {/* Pond surface - polygonOffset prevents Z-fighting with ground */}
-        <mesh rotation-x={-Math.PI / 2} position={[0, 0.02, 0]}>
-          <circleGeometry args={[3, 16]} />
+        <mesh rotation-x={-Math.PI / 2} position={[0, 0.02, 0]} geometry={getSharedCircleGeometry(3, 16)}>
           <meshStandardMaterial color="#1a3a3a" metalness={0.3} roughness={0.2} transparent opacity={0.7} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
         </mesh>
         {/* Pond edge stones */}
         {Array.from({ length: 12 }).map((_, i) => {
           const angle = (i / 12) * Math.PI * 2;
           return (
-            <mesh key={i} position={[Math.cos(angle) * 3.1, 0.1, Math.sin(angle) * 3.1]}>
-              <sphereGeometry args={[0.2, 6, 6]} />
+            <mesh key={i} position={[Math.cos(angle) * 3.1, 0.1, Math.sin(angle) * 3.1]} geometry={getSharedSphereGeometry(0.2, 6, 6)}>
               <meshStandardMaterial color="#6a6a60" roughness={0.9} />
             </mesh>
           );
@@ -166,8 +167,7 @@ export function ParkDayVisual({ livePlayerPositionRef }: ParkDayVisualProps) {
         const x = (Math.sin(i * 7.3) * 12);
         const z = (Math.cos(i * 5.1) * 12);
         return (
-          <mesh key={`leaf-${i}`} rotation-x={-Math.PI / 2} position={[x, 0.03, z]}>
-            <planeGeometry args={[0.15, 0.1]} />
+          <mesh key={`leaf-${i}`} rotation-x={-Math.PI / 2} position={[x, 0.03, z]} geometry={getSharedPlaneGeometry(0.15, 0.1)}>
             <meshStandardMaterial
               color={['#6a4020', '#8a5a20', '#5a3a10', '#7a4a18'][i % 4]}
               roughness={0.95}
@@ -199,47 +199,39 @@ export function ParkDayVisual({ livePlayerPositionRef }: ParkDayVisualProps) {
 
       {/* ── Bench with graffiti ── */}
       <group position={[8, 0, 3]} rotation={[0, 0.3, 0]}>
-        <mesh position={[0, 0.4, 0]} castShadow>
-          <boxGeometry args={[1.2, 0.08, 0.4]} />
+        <mesh position={[0, 0.4, 0]} castShadow geometry={getSharedBoxGeometry(1.2, 0.08, 0.4)}>
           <meshStandardMaterial color="#7a7a70" roughness={0.85} />
         </mesh>
-        <mesh position={[-0.5, 0.2, 0]}>
-          <boxGeometry args={[0.1, 0.4, 0.35]} />
+        <mesh position={[-0.5, 0.2, 0]} geometry={getSharedBoxGeometry(0.1, 0.4, 0.35)}>
           <meshStandardMaterial color="#6a6a60" roughness={0.85} />
         </mesh>
-        <mesh position={[0.5, 0.2, 0]}>
-          <boxGeometry args={[0.1, 0.4, 0.35]} />
+        <mesh position={[0.5, 0.2, 0]} geometry={getSharedBoxGeometry(0.1, 0.4, 0.35)}>
           <meshStandardMaterial color="#6a6a60" roughness={0.85} />
         </mesh>
         {/* Graffiti spray on bench */}
-        <mesh position={[0, 0.42, 0.21]}>
-          <planeGeometry args={[0.4, 0.1]} />
+        <mesh position={[0, 0.42, 0.21]} geometry={getSharedPlaneGeometry(0.4, 0.1)}>
           <meshStandardMaterial color="#3a3a3a" emissive="#ff2244" emissiveIntensity={0.15} transparent opacity={0.6} />
         </mesh>
       </group>
 
       {/* ── Bird on tree (tiny shape) ── */}
       <group position={[-8, 4.2, -8]}>
-        <mesh>
-          <sphereGeometry args={[0.06, 6, 6]} />
+        <mesh geometry={getSharedSphereGeometry(0.06, 6, 6)}>
           <meshStandardMaterial color="#2a2a2a" roughness={0.9} />
         </mesh>
         {/* Head */}
-        <mesh position={[0.04, 0.04, 0]}>
-          <sphereGeometry args={[0.03, 6, 6]} />
+        <mesh position={[0.04, 0.04, 0]} geometry={getSharedSphereGeometry(0.03, 6, 6)}>
           <meshStandardMaterial color="#1a1a1a" roughness={0.9} />
         </mesh>
       </group>
 
       {/* ── Discarded newspaper on path ── */}
-      <mesh rotation={[-Math.PI / 2, 0, 0.3]} position={[1.5, 0.04, -1.0]}>
-        <planeGeometry args={[0.3, 0.2]} />
+      <mesh rotation={[-Math.PI / 2, 0, 0.3]} position={[1.5, 0.04, -1.0]} geometry={getSharedPlaneGeometry(0.3, 0.2)}>
         <meshStandardMaterial color="#c8c0a0" roughness={0.95} side={THREE.DoubleSide} />
       </mesh>
 
       {/* ── Puddle with reflection near path ── */}
-      <mesh rotation-x={-Math.PI / 2} position={[-1, 0.03, 2]}>
-        <circleGeometry args={[0.5, 12]} />
+      <mesh rotation-x={-Math.PI / 2} position={[-1, 0.03, 2]} geometry={getSharedCircleGeometry(0.5, 12)}>
         <meshStandardMaterial color="#1a3a3a" metalness={0.5} roughness={0.1} transparent opacity={0.6} />
       </mesh>
     </group>
@@ -305,12 +297,10 @@ function MistyTreeBelt() {
 
   return (
     <group>
-      <instancedMesh ref={trunkRef} args={[undefined, undefined, placements.length]} frustumCulled={false}>
-        <cylinderGeometry args={[0.18, 0.32, 3.0, 6]} />
+      <instancedMesh ref={trunkRef} args={[getSharedCylinderGeometry(0.18, 0.32, 3.0, 6), undefined, placements.length]} frustumCulled={false}>
         <meshStandardMaterial color="#2e241c" roughness={0.95} />
       </instancedMesh>
-      <instancedMesh ref={canopyRef} args={[undefined, undefined, placements.length]} frustumCulled={false}>
-        <sphereGeometry args={[1.9, 7, 6]} />
+      <instancedMesh ref={canopyRef} args={[getSharedSphereGeometry(1.9, 7, 6), undefined, placements.length]} frustumCulled={false}>
         <meshStandardMaterial color="#2a3a24" roughness={0.95} />
       </instancedMesh>
     </group>
@@ -358,12 +348,10 @@ function Ravens() {
 
   return (
     <group>
-      <instancedMesh ref={bodyRef} args={[undefined, undefined, RAVEN_PERCHES.length]} frustumCulled={false}>
-        <sphereGeometry args={[0.07, 6, 5]} />
+      <instancedMesh ref={bodyRef} args={[getSharedSphereGeometry(0.07, 6, 5), undefined, RAVEN_PERCHES.length]} frustumCulled={false}>
         <meshStandardMaterial color="#16161c" roughness={0.85} />
       </instancedMesh>
-      <instancedMesh ref={headRef} args={[undefined, undefined, RAVEN_PERCHES.length]} frustumCulled={false}>
-        <sphereGeometry args={[0.04, 5, 4]} />
+      <instancedMesh ref={headRef} args={[getSharedSphereGeometry(0.04, 5, 4), undefined, RAVEN_PERCHES.length]} frustumCulled={false}>
         <meshStandardMaterial color="#101016" roughness={0.85} />
       </instancedMesh>
     </group>
@@ -377,26 +365,22 @@ function ParkGate() {
       {/* Stone pillars */}
       {[-1.6, 1.6].map((x) => (
         <group key={`pillar-${x}`} position={[x, 0, 0]}>
-          <mesh position={[0, 1.1, 0]} castShadow>
-            <boxGeometry args={[0.5, 2.2, 0.5]} />
+          <mesh position={[0, 1.1, 0]} castShadow geometry={getSharedBoxGeometry(0.5, 2.2, 0.5)}>
             <meshStandardMaterial color="#6a6a60" roughness={0.85} />
           </mesh>
-          <mesh position={[0, 2.32, 0]} castShadow>
-            <coneGeometry args={[0.38, 0.35, 4]} />
+          <mesh position={[0, 2.32, 0]} castShadow geometry={getSharedConeGeometry(0.38, 0.35, 4)}>
             <meshStandardMaterial color="#5a5a50" roughness={0.8} />
           </mesh>
         </group>
       ))}
       {/* Arch */}
-      <mesh position={[0, 2.5, 0]}>
-        <boxGeometry args={[3.6, 0.12, 0.08]} />
+      <mesh position={[0, 2.5, 0]} geometry={getSharedBoxGeometry(3.6, 0.12, 0.08)}>
         <meshStandardMaterial color="#2a2a30" metalness={0.7} roughness={0.4} />
       </mesh>
       {/* Open gate leaves (swung inward) */}
       {[-1, 1].map((side) => (
         <group key={`leaf-${side}`} position={[side * 1.3, 0, 0]} rotation={[0, side * 0.9, 0]}>
-          <mesh position={[side * -0.55, 0.9, 0]}>
-            <boxGeometry args={[1.1, 1.6, 0.04]} />
+          <mesh position={[side * -0.55, 0.9, 0]} geometry={getSharedBoxGeometry(1.1, 1.6, 0.04)}>
             <meshStandardMaterial color="#26262e" metalness={0.65} roughness={0.45} transparent opacity={0.92} />
           </mesh>
         </group>
@@ -410,21 +394,17 @@ function AncientTree({ position }: { position: [number, number, number] }) {
   return (
     <group position={position}>
       {/* Trunk */}
-      <mesh position={[0, 1.5, 0]} castShadow>
-        <cylinderGeometry args={[0.2, 0.4, 3.0, 8]} />
+      <mesh position={[0, 1.5, 0]} castShadow geometry={getSharedCylinderGeometry(0.2, 0.4, 3.0, 8)}>
         <meshStandardMaterial color="#3a2a1a" roughness={0.9} />
       </mesh>
       {/* Canopy layers */}
-      <mesh position={[0, 3.8, 0]} castShadow>
-        <sphereGeometry args={[2.5, 8, 8]} />
+      <mesh position={[0, 3.8, 0]} castShadow geometry={getSharedSphereGeometry(2.5, 8, 8)}>
         <meshStandardMaterial color="#2a4a1a" roughness={0.95} />
       </mesh>
-      <mesh position={[0.8, 4.2, 0.5]} castShadow>
-        <sphereGeometry args={[1.5, 8, 6]} />
+      <mesh position={[0.8, 4.2, 0.5]} castShadow geometry={getSharedSphereGeometry(1.5, 8, 6)}>
         <meshStandardMaterial color="#3a5a2a" roughness={0.95} />
       </mesh>
-      <mesh position={[-0.6, 3.5, -0.6]} castShadow>
-        <sphereGeometry args={[1.2, 8, 6]} />
+      <mesh position={[-0.6, 3.5, -0.6]} castShadow geometry={getSharedSphereGeometry(1.2, 8, 6)}>
         <meshStandardMaterial color="#2a4a1a" roughness={0.95} />
       </mesh>
     </group>
@@ -436,17 +416,14 @@ function StoneBench({ position, rotation }: { position: [number, number, number]
   return (
     <group position={position} rotation={[0, rotation, 0]}>
       {/* Seat */}
-      <mesh position={[0, 0.4, 0]} castShadow>
-        <boxGeometry args={[1.2, 0.08, 0.4]} />
+      <mesh position={[0, 0.4, 0]} castShadow geometry={getSharedBoxGeometry(1.2, 0.08, 0.4)}>
         <meshStandardMaterial color="#7a7a70" roughness={0.85} />
       </mesh>
       {/* Legs */}
-      <mesh position={[-0.5, 0.2, 0]}>
-        <boxGeometry args={[0.1, 0.4, 0.35]} />
+      <mesh position={[-0.5, 0.2, 0]} geometry={getSharedBoxGeometry(0.1, 0.4, 0.35)}>
         <meshStandardMaterial color="#6a6a60" roughness={0.85} />
       </mesh>
-      <mesh position={[0.5, 0.2, 0]}>
-        <boxGeometry args={[0.1, 0.4, 0.35]} />
+      <mesh position={[0.5, 0.2, 0]} geometry={getSharedBoxGeometry(0.1, 0.4, 0.35)}>
         <meshStandardMaterial color="#6a6a60" roughness={0.85} />
       </mesh>
     </group>
@@ -458,23 +435,19 @@ function IronFencePost({ position, rotation = 0 }: { position: [number, number, 
   return (
     <group position={position} rotation={[0, rotation, 0]}>
       {/* Post */}
-      <mesh position={[0, 0.6, 0]} castShadow>
-        <boxGeometry args={[0.04, 1.2, 0.04]} />
+      <mesh position={[0, 0.6, 0]} castShadow geometry={getSharedBoxGeometry(0.04, 1.2, 0.04)}>
         <meshStandardMaterial color="#2a2a30" metalness={0.7} roughness={0.4} />
       </mesh>
       {/* Post cap */}
-      <mesh position={[0, 1.25, 0]}>
-        <sphereGeometry args={[0.05, 6, 6]} />
+      <mesh position={[0, 1.25, 0]} geometry={getSharedSphereGeometry(0.05, 6, 6)}>
         <meshStandardMaterial color="#2a2a30" metalness={0.8} roughness={0.3} />
       </mesh>
       {/* Horizontal rail */}
-      <mesh position={[0, 0.8, 0]}>
-        <boxGeometry args={[2.4, 0.03, 0.03]} />
+      <mesh position={[0, 0.8, 0]} geometry={getSharedBoxGeometry(2.4, 0.03, 0.03)}>
         <meshStandardMaterial color="#2a2a30" metalness={0.7} roughness={0.4} />
       </mesh>
       {/* Bottom rail */}
-      <mesh position={[0, 0.3, 0]}>
-        <boxGeometry args={[2.4, 0.03, 0.03]} />
+      <mesh position={[0, 0.3, 0]} geometry={getSharedBoxGeometry(2.4, 0.03, 0.03)}>
         <meshStandardMaterial color="#2a2a30" metalness={0.7} roughness={0.4} />
       </mesh>
     </group>
