@@ -14,9 +14,9 @@ export async function skipWakeCinematic(page: Page) {
 }
 
 export async function skipStoryTypewriter(page: Page) {
-  for (let attempt = 0; attempt < 4; attempt += 1) {
+  for (let attempt = 0; attempt < 8; attempt += 1) {
     const skipBtn = page.getByRole('button', { name: /Пропустить анимацию текста/i });
-    if (!(await skipBtn.isVisible({ timeout: 2000 }).catch(() => false))) {
+    if (!(await skipBtn.isVisible({ timeout: 1500 }).catch(() => false))) {
       return;
     }
     try {
@@ -24,8 +24,70 @@ export async function skipStoryTypewriter(page: Page) {
     } catch {
       // Overlay may close mid-skip during hub promotion or cutscene handoff.
     }
-    await page.waitForTimeout(400);
+    await page.waitForTimeout(300);
   }
+}
+
+/** Dismiss level-up summary and quest popup overlays that block interactions. */
+export async function dismissLevelUpAndQuestOverlays(page: Page) {
+  for (let attempt = 0; attempt < 8; attempt += 1) {
+    const levelContinue = page.getByRole('button', { name: /^Продолжить$/i });
+    if (await levelContinue.isVisible({ timeout: 1200 }).catch(() => false)) {
+      try {
+        await levelContinue.click({ force: true, timeout: 2000 });
+      } catch {
+        // Overlay may unmount mid-click.
+      }
+      await page.waitForTimeout(400);
+      continue;
+    }
+    const questAccept = page.getByRole('button', { name: /^ПРИНЯТЬ$/i });
+    if (await questAccept.isVisible({ timeout: 800 }).catch(() => false)) {
+      try {
+        await questAccept.click({ force: true, timeout: 2000 });
+      } catch {
+        // Quest card may re-render mid-click.
+      }
+      await page.waitForTimeout(400);
+      continue;
+    }
+    return;
+  }
+}
+
+/** Poll typewriter skip until narrative copy matching pattern is on screen. */
+export async function waitForNarrativeText(page: Page, pattern: RegExp, timeout = 30_000) {
+  const deadline = Date.now() + timeout;
+  while (Date.now() < deadline) {
+    await skipStoryTypewriter(page);
+    const match = page.getByText(pattern).first();
+    if (await match.isVisible().catch(() => false)) {
+      return;
+    }
+    await page.waitForTimeout(300);
+  }
+  await expect(page.getByText(pattern).first()).toBeVisible({ timeout: 0 });
+}
+
+/** Skip typewriter until story choice buttons matching pattern are rendered. */
+export async function waitForStoryChoices(page: Page, choicePattern: RegExp, timeout = 45_000) {
+  const deadline = Date.now() + timeout;
+  while (Date.now() < deadline) {
+    const choice = page.getByRole('button', { name: choicePattern }).first();
+    if (await choice.isVisible().catch(() => false)) {
+      return;
+    }
+    const skipBtn = page.getByRole('button', { name: /Пропустить анимацию текста/i });
+    if (await skipBtn.isVisible().catch(() => false)) {
+      try {
+        await skipBtn.click({ force: true, timeout: 2000 });
+      } catch {
+        // Overlay may close mid-skip.
+      }
+    }
+    await page.waitForTimeout(300);
+  }
+  await expect(page.getByRole('button', { name: choicePattern }).first()).toBeVisible({ timeout: 0 });
 }
 
 /** Wait for story overlay, skip typewriter, poll until choice buttons render. */
@@ -104,6 +166,7 @@ export async function settleAfterWake(page: Page) {
 /** Dismiss overlays and wait for canvas before mid-game story bootstraps. */
 export async function prepareStoryBootstrap(page: Page) {
   await waitForExplorationInputReady(page);
+  await dismissLevelUpAndQuestOverlays(page);
   await page.waitForFunction(
     () => typeof window.__volodka_e2e?.isStoryOverlayReady === 'function',
     null,
@@ -172,6 +235,22 @@ export async function waitForStoryDialog(page: Page, expectedNodeId?: string, ti
   const storyDialog = page.getByRole('dialog', { name: /Голос/i });
   await expect(storyDialog).toBeVisible({ timeout });
   return storyDialog;
+}
+
+export async function waitForDialogue(page: Page, expectedNodeId: string, timeout = 45_000) {
+  const speaker = page.locator(`#dialogue-speaker-${expectedNodeId}`);
+  const dialog = page.getByRole('dialog').filter({ has: speaker });
+  const deadline = Date.now() + timeout;
+
+  while (Date.now() < deadline) {
+    if (await speaker.isVisible().catch(() => false)) {
+      return dialog;
+    }
+    await page.waitForTimeout(400);
+  }
+
+  await expect(speaker).toBeVisible({ timeout: 0 });
+  return dialog;
 }
 
 /** WASD moves the player during closed-overlay free exploration. */

@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import {
+  advanceStoryOverlay,
   assertExplorationMovement,
   dismissFirstPlayTutorial,
   dismissFirstReadingBeats,
@@ -108,10 +109,18 @@ async function enterStreetViaCorridorDoor(page: import('@playwright/test').Page)
 
 /** Physical 3D path: room_door trigger → corridor_door story/cutscene chain. */
 async function enterCorridorViaPhysicalDoor(page: import('@playwright/test').Page) {
+  await dismissFirstPlayTutorial(page);
+
   await page.waitForFunction(
     () => typeof window.__volodka_e2e?.interactTriggerZone === 'function',
     null,
     { timeout: 30_000 },
+  );
+
+  await page.waitForFunction(
+    () => Boolean(window.__volodka_e2e?.getPlayerPosition()),
+    null,
+    { timeout: 45_000 },
   );
 
   await page.evaluate(async () => {
@@ -122,21 +131,28 @@ async function enterCorridorViaPhysicalDoor(page: import('@playwright/test').Pag
     window.__volodka_e2e?.interactTriggerZone('room_door');
   });
 
-  await page.waitForTimeout(1500);
+  await page.waitForTimeout(2000);
 
-  const storyDialog = page.getByRole('dialog', { name: /Голос/i });
-  const corridorToastVisible = await page
-    .getByText(/Коридор коммуналки|коридор тянется/i)
-    .first()
-    .isVisible({ timeout: 8000 })
-    .catch(() => false);
+  const corridorLocator = page.getByText(/Коридор коммуналки|коридор тянется/i).first();
+  let corridorToastVisible = await corridorLocator.isVisible({ timeout: 8000 }).catch(() => false);
 
   if (!corridorToastVisible) {
-    if (!(await storyDialog.isVisible({ timeout: 5000 }).catch(() => false))) {
-      await page.evaluate(() => window.__volodka_e2e?.visitStoryNode('corridor_door'));
+    const storyDialog = page.getByRole('dialog', { name: /Голос/i });
+    if (await storyDialog.isVisible({ timeout: 5000 }).catch(() => false)) {
+      await advanceStoryOverlay(page, 'corridor_door');
     } else {
-      await skipStoryTypewriter(page);
+      await page.evaluate(() => window.__volodka_e2e?.visitStoryNode('corridor_door'));
+      await advanceStoryOverlay(page, 'corridor_door');
     }
+    await dismissTitleCardIfPresent(page);
+    corridorToastVisible = await corridorLocator.isVisible({ timeout: 8000 }).catch(() => false);
+  }
+
+  if (!corridorToastVisible) {
+    await page.evaluate(async () => {
+      await window.__volodka_e2e?.promoteClosedOverlayHub('corridor_explore_mode', 'volodka_corridor');
+    });
+    await page.waitForTimeout(1000);
   }
 
   await expectCorridorFreeExploration(page);

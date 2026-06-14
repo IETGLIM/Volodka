@@ -1,11 +1,14 @@
 import { test, expect } from '@playwright/test';
 import {
   advanceStoryOverlay,
+  dismissLevelUpAndQuestOverlays,
   prepareStoryBootstrap,
   settleAfterWake,
   skipStoryTypewriter,
   skipWakeCinematic,
   waitForMenuReady,
+  waitForNarrativeText,
+  waitForStoryChoices,
   waitForStoryDialog,
 } from './helpers';
 
@@ -127,11 +130,8 @@ test.describe('Act II smoke', () => {
     });
 
     await waitForStoryDialog(page, 'fix_success');
-    await skipStoryTypewriter(page);
-
-    await expect(page.getByText(/Стихи|живые стихи|4729|расшифров/i).first()).toBeVisible({
-      timeout: 20_000,
-    });
+    await expect(page.locator('#story-speaker-fix_success')).toBeVisible({ timeout: 10_000 });
+    await waitForStoryChoices(page, /прочитать|Александру/i, 45_000);
   });
 
   test('bootstrap act2 maria meeting place with karma gate hint', async ({ page }) => {
@@ -174,6 +174,8 @@ test.describe('Act II smoke', () => {
       timeout: 20_000,
     });
 
+    await dismissLevelUpAndQuestOverlays(page);
+
     await page.waitForFunction(
       () => typeof window.__volodka_e2e?.interactTriggerZone === 'function',
       null,
@@ -185,22 +187,24 @@ test.describe('Act II smoke', () => {
     });
 
     await page.waitForTimeout(800);
+    await dismissLevelUpAndQuestOverlays(page);
 
-    const continueBtn = page.getByRole('button', { name: /^Продолжить$/i });
-    if (await continueBtn.isVisible({ timeout: 5000 }).catch(() => false)) {
-      await continueBtn.click({ force: true });
-      await page.waitForTimeout(600);
-    }
-
-    const protocolBtn = page.getByRole('button', { name: /Протокол|Дмитрий|Александр/i });
-    if (await protocolBtn.isVisible({ timeout: 8000 }).catch(() => false)) {
-      await protocolBtn.first().click({ force: true });
+    const examineDialog = page.getByRole('dialog', { name: /Дмитрий у терминал/i });
+    if (!(await examineDialog.isVisible({ timeout: 10_000 }).catch(() => false))) {
+      await dismissLevelUpAndQuestOverlays(page);
+      await page.evaluate(() => window.__volodka_e2e?.interactTriggerZone('office_dmitry_meeting'));
       await page.waitForTimeout(800);
     }
 
-    await expect(page.getByText(/Протокол|Дмитрий|Забвения|терминал/i).first()).toBeVisible({
-      timeout: 20_000,
-    });
+    if (await examineDialog.isVisible({ timeout: 5000 }).catch(() => false)) {
+      const continueBtn = page.getByRole('button', { name: /Продолжить/i });
+      if (await continueBtn.isVisible({ timeout: 5000 }).catch(() => false)) {
+        await continueBtn.click({ force: true });
+        await page.waitForTimeout(600);
+      }
+    }
+
+    await waitForNarrativeText(page, /Протокол|Дмитрий|Забвения|терминал/i, 30_000);
   });
 
   test('bootstrap cafe hub → cafe_safehouse barista trigger', async ({ page }) => {
