@@ -18,7 +18,11 @@ import type { GameStoreState } from '../types';
 import { getPlayerStore } from '../storeBindings';
 import { readUIFromExploration } from '../crossSliceReads';
 import { getInitialLoreEntries } from '@/data/gameDataLoader';
-import { emitAppEvent } from '@/shared/events/appEventBus';
+import {
+  emitLoreDiscovered,
+  scheduleMusicEnabledChanged,
+  scheduleMusicVolumeChanged,
+} from '../storeEffects';
 
 /* ─── Slice types ─── */
 
@@ -156,19 +160,14 @@ export const createUISlice: StateCreator<
   setMusicVolume: (volume) => {
     const clampedVolume = clamp(volume, 0, 1);
     set({ musicVolume: clampedVolume });
-    emitAppEvent('ui:music_volume', { volume: clampedVolume });
-    try {
-      localStorage.setItem('volodka_music_volume', String(Math.round(clampedVolume * 100)));
-    } catch {
-      /* ignore */
-    }
+    scheduleMusicVolumeChanged(clampedVolume);
   },
 
   toggleMusic: () => {
     const newEnabled = !get().musicEnabled;
     set({ musicEnabled: newEnabled });
     const { currentSceneId } = readUIFromExploration();
-    emitAppEvent('ui:music_enabled', { enabled: newEnabled, sceneId: currentSceneId });
+    scheduleMusicEnabledChanged(newEnabled, currentSceneId);
   },
 
   toggleJournal: () => set((state) => ({ journalOpen: !state.journalOpen })),
@@ -206,7 +205,7 @@ export const createUISlice: StateCreator<
         firstDiscovery = {
           title: entryData?.title ?? entryId,
           rarity: entryData?.rarity ?? 'common',
-          category: entryData?.category,
+          category: entryData?.category ?? 'history',
         };
       }
 
@@ -219,7 +218,7 @@ export const createUISlice: StateCreator<
       if (firstDiscovery.rarity === 'rare' || firstDiscovery.rarity === 'legendary') {
         player.addSkill('writing', 1);
       }
-      emitAppEvent('lore:discovered', {
+      emitLoreDiscovered({
         id: entryId,
         title: firstDiscovery.title,
         rarity: firstDiscovery.rarity,

@@ -3,6 +3,10 @@
  * Does not touch persisted accessibility or localStorage settings.
  */
 
+import { resetAchievementTracking } from '@/engine/AchievementEngine';
+import { resetKeyboardInputState } from '@/engine/keyboardInputState';
+import { resetLoadingTimelineForSession } from '@/engine/performance/LoadingTimeline';
+import { invalidateStoryGraphIndex } from '@/engine/story/storyGraphIndex';
 import { resetCameraShake } from '@/engine/camera/cameraShake';
 import { resetGlobalTimeScale } from '@/engine/camera/cinematicCamera';
 import { resetCinematicPresentation } from '@/engine/camera/cinematicPresentation';
@@ -20,4 +24,8 @@ export function resetEngineModuleRuntimeState(): void {
   resetSceneTransitionDedupe();
   resetInteractionEndDedupState();
   cancelEncounterPresentation();
+  resetAchievementTracking();
+  invalidateStoryGraphIndex();
+  resetKeyboardInputState();
+  resetLoadingTimelineForSession();
 }

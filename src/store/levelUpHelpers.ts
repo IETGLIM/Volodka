@@ -1,8 +1,8 @@
 /* ─── Volodka RPG – level-up notification + event helpers ─── */
 
 import type { PlayerProgression } from '@/shared/types/game';
-import { emitAppEvent } from '@/shared/events/appEventBus';
 import { applyXpGain } from './shared';
+import { scheduleLevelUpEvent } from './storeEffects';
 
 export interface LevelUpEvent {
   newLevel: number;
@@ -66,9 +66,7 @@ export function mergeLevelUpEvents(events: LevelUpEvent[]): LevelUpEvent | null 
 }
 
 export function scheduleLevelUpEmit(event: LevelUpEvent): void {
-  queueMicrotask(() => {
-    emitAppEvent('player:levelup', event);
-  });
+  scheduleLevelUpEvent(event);
 }
 
 export function scheduleLevelUpEmitMerged(events: LevelUpEvent[]): void {

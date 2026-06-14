@@ -1,10 +1,14 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { dispatchGameAction } from '@/shared/gameBridge/stateDispatcher';
+import { dispatchGameAction } from '@/shared/gameBridge/gameActionBridge';
 import { useGameStore } from './gameStore';
 
-vi.mock('@/engine/EventBus', () => ({
-  eventBus: { emit: vi.fn(), on: vi.fn(), off: vi.fn() },
-}));
+vi.mock('./storeEffects', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('./storeEffects')>();
+  return {
+    ...actual,
+    runAfterStoreCommit: (fn: () => void) => fn(),
+  };
+});
 
 describe('achievement/batchCheckProgress', () => {
   beforeEach(() => {

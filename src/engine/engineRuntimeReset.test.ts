@@ -1,14 +1,16 @@
 import { describe, expect, it, beforeEach } from 'vitest';
 import { resetEngineModuleRuntimeState } from './engineRuntimeReset';
-import { getCameraShakeIntensity, resetCameraShake, triggerCameraShake } from './camera/cameraShake';
-import { getGlobalTimeScale, resetGlobalTimeScale, setGlobalTimeScale } from './camera/cinematicCamera';
+import { getCameraShakeIntensity, triggerCameraShake } from './camera/cameraShake';
+import { getGlobalTimeScale, setGlobalTimeScale } from './camera/cinematicCamera';
 import {
   getCinematicPresentationMode,
-  resetCinematicPresentation,
   setCinematicPresentationMode,
 } from './camera/cinematicPresentation';
-import { isSceneTransitionInProgress, resetSceneTransitionGuard, setSceneTransitionInProgress } from './core/sceneTransitionGuard';
+import { isSceneTransitionInProgress, setSceneTransitionInProgress } from './core/sceneTransitionGuard';
 import { resetSceneTransitionDedupe } from './scene/sceneTransition';
+import { markGameDataReady, resetLoadingTimelineForSession } from './performance/LoadingTimeline';
+import { invalidateStoryGraphIndex } from './story/storyGraphIndex';
+import { resetKeyboardInputState } from './keyboardInputState';
 
 describe('resetEngineModuleRuntimeState', () => {
   beforeEach(() => {
@@ -32,5 +34,21 @@ describe('resetEngineModuleRuntimeState', () => {
   it('resetSceneTransitionDedupe is safe to call repeatedly', () => {
     resetSceneTransitionDedupe();
     expect(() => resetSceneTransitionDedupe()).not.toThrow();
+  });
+
+  it('resets loading timeline session flag so gameDataReady can fire again', () => {
+    markGameDataReady();
+    resetLoadingTimelineForSession();
+    expect(() => markGameDataReady()).not.toThrow();
+  });
+
+  it('invalidates story graph index without throwing', () => {
+    expect(() => invalidateStoryGraphIndex()).not.toThrow();
+    expect(() => resetEngineModuleRuntimeState()).not.toThrow();
+  });
+
+  it('clears keyboard input state without throwing', () => {
+    resetKeyboardInputState();
+    expect(() => resetEngineModuleRuntimeState()).not.toThrow();
   });
 });

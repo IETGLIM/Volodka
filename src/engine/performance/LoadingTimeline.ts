@@ -24,6 +24,11 @@ export interface LoadingTimelineSnapshot {
 
 let gameDataReadyFlag = false;
 
+/** Reset session flags so a new game / engine revive can re-measure boot path. */
+export function resetLoadingTimelineForSession(): void {
+  gameDataReadyFlag = false;
+}
+
 function navStart(): number {
   const nav = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming | undefined;
   return nav?.startTime ?? 0;

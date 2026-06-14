@@ -20,7 +20,7 @@ import {
 } from '../inventoryHelpers';
 import type { GameStoreState } from '../types';
 import { pickPlayerEconomyCrossActions, readNpcRelationValue } from '../crossSliceReads';
-import { emitAppEvent } from '@/shared/events/appEventBus';
+import { scheduleCraftingDiscovered, scheduleItemCrafted } from '../storeEffects';
 
 /* ─── Slice types ─── */
 
@@ -117,18 +117,16 @@ export const createPlayerEconomySlice: StateCreator<
       },
     });
 
-    queueMicrotask(() => {
-      emitAppEvent('crafting:discovered', {
-        recipeId,
-        recipeName: recipe.name,
-        rarity: recipe.outputRarity,
-      });
+    scheduleCraftingDiscovered({
+      recipeId,
+      recipeName: recipe.name,
+      rarity: recipe.outputRarity,
+    });
 
-      emitAppEvent('item:crafted', {
-        recipeId,
-        recipeName: recipe.name,
-        category: recipe.category,
-      });
+    scheduleItemCrafted({
+      recipeId,
+      recipeName: recipe.name,
+      category: recipe.category,
     });
 
     pushNotification('skill', `Скрафчено: ${recipe.name}!`);

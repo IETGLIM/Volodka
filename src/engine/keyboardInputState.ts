@@ -155,8 +155,7 @@ function onKeyUp(e: KeyboardEvent): void {
   }
 }
 
-function onBlur(): void {
-  if (typeof document !== 'undefined' && document.hasFocus()) return;
+function clearKeyboardInputState(): void {
   keys.forward = false;
   keys.backward = false;
   keys.left = false;
@@ -166,6 +165,16 @@ function onBlur(): void {
   keys.interact = false;
   lastVerticalAxis = null;
   lastHorizontalAxis = null;
+}
+
+function onBlur(): void {
+  if (typeof document !== 'undefined' && document.hasFocus()) return;
+  clearKeyboardInputState();
+}
+
+/** Clear held keys without removing listeners (new game / engine reset). */
+export function resetKeyboardInputState(): void {
+  clearKeyboardInputState();
 }
 
 function attachListeners(): void {
@@ -184,7 +193,7 @@ export function detachKeyboardListeners(): void {
   window.removeEventListener('blur', onBlur);
   listenersInstalled = false;
   onInteractPress = null;
-  onBlur();
+  clearKeyboardInputState();
 }
 
 /** Wire interact callback; listeners stay mounted for the session (survives remounts). */

@@ -30,7 +30,7 @@ export default tseslint.config(
   },
   {
     files: ['src/store/**/*.{ts,tsx}'],
-    ignores: ['src/store/**/*.test.{ts,tsx}'],
+    ignores: ['src/store/**/*.test.{ts,tsx}', 'src/store/storeEffects.ts'],
     rules: {
       'no-restricted-imports': [
         'error',
@@ -39,7 +39,11 @@ export default tseslint.config(
             {
               group: ['@/engine', '@/engine/**'],
               message:
-                'Store must not import Engine. Use @/shared/events/appEventBus, storeEngineHost, or @/shared/gameBridge.',
+                'Store must not import Engine. Use storeEffects, storeEngineHost, or @/shared/gameBridge.',
+            },
+            {
+              group: ['@/shared/events/appEventBus', '@/shared/events/appEventBus/**'],
+              message: 'Slices use storeEffects.ts — only storeEffects may import appEventBus.',
             },
           ],
         },

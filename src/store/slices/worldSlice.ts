@@ -8,7 +8,15 @@ import type {
   AcceptedDailyMission,
 } from '@/shared/types/game';
 import { getPoemById, getQuestDefinitions, getAchievementMap, getDailyMissionById, getTotalAchievements } from '@/data/gameDataLoader';
-import { emitAppEvent } from '@/shared/events/appEventBus';
+import {
+  emitAchievementFx,
+  emitAchievementUnlocked,
+  emitPoemCollected,
+  runAfterStoreCommit,
+  scheduleQuestAccepted,
+  scheduleQuestCompleted,
+  scheduleQuestObjectiveUpdated,
+} from '../storeEffects';
 import { clamp, type PoemPowerState } from '../shared';
 import { applyFairmathRelation } from '@/shared/fairmath';
 import type { GameStoreState } from '../types';
@@ -155,9 +163,8 @@ export const createWorldSlice: StateCreator<
     const { timeOfDay } = readWorldFromExploration();
     quests.push({ questId, status: 'active', objectives, startedAtTime: timeOfDay });
 
-    emitAppEvent('quest:accepted', { questId, questTitle: definition.title });
-
     set({ quests });
+    scheduleQuestAccepted(questId, definition.title);
     pickWorldCrossActions().pushNotification('quest', `Новое задание: ${definition.title}`);
   },
 
@@ -177,7 +184,7 @@ export const createWorldSlice: StateCreator<
       return { quests };
     });
 
-    emitAppEvent('quest:objective_updated', { questId, objectiveId });
+    scheduleQuestObjectiveUpdated(questId, objectiveId);
   },
 
   completeQuest: (questId) => {
@@ -197,7 +204,7 @@ export const createWorldSlice: StateCreator<
       }),
     }));
 
-    emitAppEvent('quest:completed', { questId, npcId: questDef?.questGiverNpcId });
+    scheduleQuestCompleted(questId, questDef?.questGiverNpcId);
     pickWorldCrossActions().pushNotification('quest', `Задание выполнено: ${questTitle}`);
   },
 
@@ -221,8 +228,8 @@ export const createWorldSlice: StateCreator<
     const poem = getPoemById(poemId);
     if (!poem) return;
 
-    emitAppEvent('poem:collected', { poemId });
     set({ collectedPoems: [...state.collectedPoems, poemId] });
+    runAfterStoreCommit(() => emitPoemCollected(poemId));
     pickWorldCrossActions().pushNotification('poem', `Стих собран: ${poem.title}`);
   },
 
@@ -321,19 +328,19 @@ export const createWorldSlice: StateCreator<
       }
     });
 
-    // Emit achievement events for UI
-    emitAppEvent('achievement:unlocked', {
-      achievementId,
-      title: def.title,
-      description: def.description,
-      icon: def.icon,
-      category: def.category,
-    });
-
-    emitAppEvent('fx:achievement', {
-      title: def.title,
-      description: def.description,
-      icon: def.icon,
+    runAfterStoreCommit(() => {
+      emitAchievementUnlocked({
+        achievementId,
+        title: def.title,
+        description: def.description,
+        icon: def.icon,
+        category: def.category,
+      });
+      emitAchievementFx({
+        title: def.title,
+        description: def.description,
+        icon: def.icon,
+      });
     });
 
     // Check for "all achievements" meta-achievement

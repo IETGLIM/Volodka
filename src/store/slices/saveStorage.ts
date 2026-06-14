@@ -5,7 +5,7 @@
  * removed here — they stay readable for manual recovery until the next
  * successful save overwrites them. */
 
-import { onAppEvent } from '@/shared/events/appEventBus';
+import { subscribeGameSaved } from '../storeEffects';
 import {
   validateSaveData,
   type SavePayload,
@@ -37,7 +37,7 @@ function installSavePresenceHooks(): void {
   if (savePresenceHooksInstalled) return;
   savePresenceHooksInstalled = true;
   window.addEventListener('storage', onSaveStorageEvent);
-  unsubGameSaved = onAppEvent('game:saved', notifySavePresenceChange);
+  unsubGameSaved = subscribeGameSaved(notifySavePresenceChange);
 }
 
 function uninstallSavePresenceHooks(): void {

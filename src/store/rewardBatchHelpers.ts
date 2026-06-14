@@ -7,7 +7,7 @@ import type {
   PlayerState,
   TrainablePlayerSkill,
 } from '@/shared/types/game';
-import { emitAppEvent } from '@/shared/events/appEventBus';
+import { scheduleChoiceMade } from './storeEffects';
 import { clamp, pushNotification, type GameNotification } from './shared';
 import {
   addInventoryItem,
@@ -194,9 +194,7 @@ export function finalizeRewardBatch(
 
 export function flushRewardBatchSideEffects(sideEffects: RewardBatchSideEffects): void {
   for (const karmaChange of sideEffects.karmaChanges) {
-    queueMicrotask(() => {
-      emitAppEvent('choice:made', { karmaChange });
-    });
+    scheduleChoiceMade({ karmaChange });
   }
   if (sideEffects.levelUp) {
     scheduleLevelUpEmit(sideEffects.levelUp);

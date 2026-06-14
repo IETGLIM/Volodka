@@ -3,9 +3,15 @@ import { dispatchGameAction } from '@/shared/gameBridge/gameActionBridge';
 import { useGameStore } from './gameStore';
 import type { QuestState } from '@/shared/types/game';
 
-vi.mock('@/engine/EventBus', () => ({
-  eventBus: { emit: vi.fn(), on: vi.fn(), off: vi.fn() },
-}));
+vi.mock('./storeEffects', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('./storeEffects')>();
+  return {
+    ...actual,
+    runAfterStoreCommit: (fn: () => void) => fn(),
+    scheduleQuestObjectiveUpdated: vi.fn(),
+    emitPoemResetAllEffects: vi.fn(),
+  };
+});
 
 const TEST_QUEST: QuestState = {
   questId: 'test_quest',

@@ -9,7 +9,7 @@ import { clamp, createDefaultExploration } from '../shared';
 import type { GameStoreState } from '../types';
 import { getCombinedGameState } from '../storeBindings';
 import { readExplorationFromPlayer } from '../crossSliceReads';
-import { emitAppEvent } from '@/shared/events/appEventBus';
+import { emitSoundPlay, scheduleWorldHourChanged } from '../storeEffects';
 import { buildNPCStatesForTime } from '@/shared/schedule/ScheduleEngine';
 import { requestSceneTransitionFromStore } from '../storeEngineHost';
 import { buildScheduleContext } from '@/shared/scheduleContext';
@@ -131,9 +131,7 @@ export const createExplorationSlice: StateCreator<
       },
     }));
 
-    queueMicrotask(() => {
-      emitAppEvent('world:hour_changed', { hour: newTime, previousHour, npcStates });
-    });
+    scheduleWorldHourChanged({ hour: newTime, previousHour, npcStates });
   },
 
   toggleWeather: () => set((state) => ({ weatherEnabled: !state.weatherEnabled })),
@@ -159,7 +157,7 @@ export const createExplorationSlice: StateCreator<
     }));
 
     if (id.includes('door') || id.includes('wardrobe')) {
-      emitAppEvent('sound:play', { type: newState ? 'door_open' : 'door_close' });
+      emitSoundPlay(newState ? 'door_open' : 'door_close');
     }
 
     // Auto-close after 5 seconds if opening
@@ -177,7 +175,7 @@ export const createExplorationSlice: StateCreator<
             },
           }));
           if (id.includes('door') || id.includes('wardrobe')) {
-            emitAppEvent('sound:play', { type: 'door_close' });
+            emitSoundPlay('door_close');
           }
         }
       }, 5000);

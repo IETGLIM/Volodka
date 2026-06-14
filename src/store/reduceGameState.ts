@@ -1,4 +1,4 @@
-import { emitAppEvent } from '@/shared/events/appEventBus';
+import { emitPoemResetAllEffects } from './storeEffects';
 import type { GameAction } from '@/shared/gameBridge/gameActionBridge';
 import type { GameStoreState } from './types';
 import type { ActiveTTLFlag } from './activeTTLFlags';
@@ -29,7 +29,7 @@ export function reduceGameState(_state: GameStoreState, action: GameAction): Par
     case 'poem/upsertTTLFlag': player.upsertActiveTTLFlag(action.flag); break;
     case 'poem/upsertTTLFlags': player.upsertActiveTTLFlags(action.flags); break;
     case 'poem/removeTTLFlags': player.removeActiveTTLFlags(action.keys); break;
-    case 'poem/clearAllEffects': { const flags = player.activeTTLFlags ?? {}; for (const f of Object.values(flags) as ActiveTTLFlag[]) player.setFlag(f.key, false); player.clearActiveTTLFlags(); emitAppEvent('poem:reset_all_effects', {}); break; }
+    case 'poem/clearAllEffects': { const flags = player.activeTTLFlags ?? {}; for (const f of Object.values(flags) as ActiveTTLFlag[]) player.setFlag(f.key, false); player.clearActiveTTLFlags(); emitPoemResetAllEffects(); break; }
     case 'story/setCombatActive': ui.setCombatActive(action.active); break;
     case 'story/setIntroActive': ui.setIntroActive(action.active); break;
     case 'story/setMainMenuOpen': ui.setMainMenuOpen(action.open); break;
