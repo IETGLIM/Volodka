@@ -1,4 +1,13 @@
 # Changelog — ВОЛОДЬКА RPG
+## v4.2.8 — 16 июня 2026
+
+### GLB model integration (scene rendering)
+- **Manifest / dressing / trigger props**: all shipped GLB bundles render in exploration when quality preset allows (`allowsGlbAssetRendering` — hybrid/glb tiers only).
+- **Scene prop dressing**: volodka room/corridor, café, factory, and basement placements for AI3DGen quest props (compiler, filter, amulet, server fragment).
+- **Trigger zone props**: encrypted scroll, digital amulet, and server fragment wired to desk, vault, park patrol, office server, and basement rack zones; availability gated via `isTriggerZoneAvailable`.
+- **NPC bootstrap**: distinct CC0 silhouettes for Maria (RiggedSimple), Tamara (CesiumMan), barista/colleague/viktor (Soldier).
+- **GPU lifecycle**: office/factory scene ids registered for GLTF preload bookkeeping.
+
 ## v4.2.7 — 16 июня 2026
 
 ### AAA graphics P0 (synthwave grade, bloom, street reflector, N8AO)
