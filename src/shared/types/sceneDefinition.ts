@@ -7,6 +7,7 @@
  * on-the-fly via sceneDefinitionGenerator.ts — no duplicate data maintenance. */
 
 import type { SceneId } from '@/config/sceneDefinitions';
+import type { SceneAmbienceConfig } from '@/shared/types/ambientSound';
 import type { LocationCategory } from '@/shared/types/locationCategory';
 
 // ─── Floor Material ───
@@ -223,4 +224,6 @@ export interface SceneDefinition {
   transitionStyle?: 'wipe' | 'flash' | 'darken' | 'ripple' | 'dissolve';
   /** Optional override for schedule timeline location coloring. */
   locationCategory?: LocationCategory;
+  /** Procedural ambient sound profile for this scene (day/night). */
+  ambience?: SceneAmbienceConfig;
 }

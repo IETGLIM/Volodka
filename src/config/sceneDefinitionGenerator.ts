@@ -60,6 +60,7 @@ export function generateSceneConfig(def: SceneDefinition): SceneConfig {
     exits: def.exits.map(generateSceneExit),
     lights: def.lights.map(generateLightConfig),
     ...(def.transitionStyle && { transitionStyle: def.transitionStyle }),
+    ...(def.ambience && { ambience: def.ambience }),
     locationCategory: def.locationCategory ?? getSceneLocationCategory(def.id),
   };
 }

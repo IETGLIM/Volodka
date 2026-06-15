@@ -4,115 +4,131 @@
  *  to generate scene-appropriate background ambience without audio files.
  *
  *  Part of the Ambient Sound System: data layer only (no playback logic).
- *  Playback is handled by AmbientSoundPlayer in useAudioOrchestrator.
+ *  Playback is handled by AmbientSoundPlayer in SceneAudioController.
  */
 
-/* ─── Type Definitions ─── */
+import { SCENE_DEFINITIONS, type SceneId } from '@/config/sceneDefinitions';
+import type {
+  AmbientSoundType,
+  SceneAmbienceConfig,
+  SceneWeatherType,
+} from '@/shared/types/ambientSound';
 
-/** Available ambient sound types, each mapped to a procedural sound recipe */
-export type AmbientSoundType =
-  | 'cafe'
-  | 'office'
-  | 'park'
-  | 'library'
-  | 'street'
-  | 'home'
-  | 'factory'
-  | 'rooftop'
-  | 'corridor'
-  | 'combat'
-  | 'rain'
-  | 'snow';
+export type { AmbientSoundType, SceneAmbienceConfig, SceneWeatherType } from '@/shared/types/ambientSound';
 
 /** Defines how to generate a single procedural ambient sound */
 export interface AmbientSoundDef {
-  /** Which ambient type this definition is for */
   type: AmbientSoundType;
-  /** Russian display label (for debug UI) */
+  /** i18n key — display label */
+  labelKey: string;
+  /** i18n key — short atmosphere summary */
+  descriptionKey: string;
+  /** i18n key — accessibility subtitle for deaf/HoH players */
+  accessibilityDescriptionKey: string;
+  /** Russian fallback label (debug / until i18n layer) */
   label: string;
-  /** Russian description of the sound atmosphere */
+  /** Russian fallback description */
   description: string;
-  /** Base frequency for the primary oscillator drone (Hz) */
+  /** Russian fallback accessibility subtitle */
+  accessibilityDescription: string;
   baseFrequency: number;
-  /** Low-pass filter cutoff frequency (Hz) — shapes the overall tonal warmth */
   filterFreq: number;
-  /** Master gain level (0–1) — should be quiet, typically 0.02–0.08 */
   gain: number;
-  /** Oscillator types to layer for the drone sound */
   oscillators: OscillatorType[];
-  /** LFO rate in Hz — controls slow modulation of the filter or gain */
   lfoRate: number;
-  /** LFO depth in Hz — how much the LFO modulates the target parameter */
   lfoDepth: number;
-  /** Optional noise layer configuration */
+  /** When true, LFO / random events are skipped under reduced-motion accessibility */
+  respectReducedMotion?: boolean;
   noise?: {
-    /** Filter type for the noise layer */
     filterType: BiquadFilterType;
-    /** Filter cutoff/center frequency (Hz) */
     filterFreq: number;
-    /** Filter Q (resonance) */
     filterQ: number;
-    /** Noise gain level (0–1) */
     gain: number;
-    /** LFO rate for noise filter modulation (0 = no LFO) */
     lfoFreq: number;
-    /** LFO depth for noise filter modulation (Hz) */
     lfoDepth: number;
   };
-  /** Optional secondary harmonic oscillator */
   harmonic?: {
-    /** Oscillator type for the harmonic */
     type: OscillatorType;
-    /** Frequency multiplier relative to baseFrequency (e.g., 2.0 = octave) */
     freqMultiplier: number;
-    /** Harmonic gain (0–1), typically much lower than main gain */
     gain: number;
   };
-  /** Optional random sound events that play at irregular intervals */
   randomSounds?: {
-    /** Oscillator type for the random sound */
     type: OscillatorType;
-    /** Base frequency (Hz) */
     frequency: number;
-    /** Duration in seconds */
     duration: number;
-    /** Gain level */
     gain: number;
-    /** Minimum interval between plays (seconds) */
     minInterval: number;
-    /** Maximum interval between plays (seconds) */
     maxInterval: number;
-    /** Optional frequency ramp target for sweeps */
     frequencyRamp?: number;
   }[];
+  spatial?: {
+    position: [number, number, number];
+    refDistance: number;
+    maxDistance: number;
+    rolloffFactor: number;
+  };
 }
 
-/** Maps a scene pattern to day/night ambient sounds */
+/** @deprecated Legacy regex map — prefer SceneDefinition.ambience + SCENE_AMBIENCE_BY_ID */
 export interface SceneAmbience {
-  /** Regex pattern for matching scene IDs (e.g., "cafe" matches cafe_evening) */
   scenePattern: string;
-  /** Ambient sound to play during daytime (6:00–20:00) */
   daySound: AmbientSoundType;
-  /** Ambient sound to play during nighttime (20:00–6:00) */
   nightSound: AmbientSoundType;
-  /** Crossfade duration in ms when transitioning between day/night or scenes */
   transitionDuration: number;
 }
 
-/* ─── Ambient Sound Definitions ─── */
+export interface AmbienceResolveOptions {
+  /** Story node override — takes priority over scene + weather */
+  proceduralOverride?: AmbientSoundType | null;
+  /** Active weather — may swap outdoor beds to rain/snow */
+  weather?: SceneWeatherType;
+}
 
-/**
- * Complete set of procedural ambient sound definitions.
- * Each type defines oscillator layers, noise layers, and optional random events
- * to create immersive scene-appropriate background sounds.
- */
-export const AMBIENT_SOUNDS: Record<AmbientSoundType, AmbientSoundDef> = {
+export interface ResolvedSceneAmbience {
+  sound: AmbientSoundType;
+  transitionDuration: number;
+  source: 'story' | 'weather' | 'scene';
+}
+
+const FILTER_FREQ_MIN = 20;
+const FILTER_FREQ_MAX = 20_000;
+const DEFAULT_TRANSITION_MS = 2000;
+
+function ambientMeta(
+  type: AmbientSoundType,
+  label: string,
+  description: string,
+  accessibilityDescription: string,
+): Pick<
+  AmbientSoundDef,
+  | 'label'
+  | 'description'
+  | 'accessibilityDescription'
+  | 'labelKey'
+  | 'descriptionKey'
+  | 'accessibilityDescriptionKey'
+> {
+  return {
+    label,
+    description,
+    accessibilityDescription,
+    labelKey: `ambient.${type}.label`,
+    descriptionKey: `ambient.${type}.description`,
+    accessibilityDescriptionKey: `ambient.${type}.accessibility`,
+  };
+}
+
+/* ─── Ambient Sound Definitions ─── */export const AMBIENT_SOUNDS: Record<AmbientSoundType, AmbientSoundDef> = {
   /* ─── Cafe: Warm ambient drone + clinking + chatter murmur ─── */
   cafe: {
     type: 'cafe',
-    label: 'Кафе',
-    description: 'Тёплый гул кафе, звон посуды, приглушённый разговор',
-    baseFrequency: 165,
+    ...ambientMeta(
+      'cafe',
+      'Кафе',
+      'Тёплый гул кафе, звон посуды, приглушённый разговор',
+      'Слышен тёплый гул кафе, звон посуды и приглушённые разговоры',
+    ),
+    respectReducedMotion: true,    baseFrequency: 165,
     filterFreq: 600,
     gain: 0.04,
     oscillators: ['sine', 'triangle'],
@@ -135,14 +151,23 @@ export const AMBIENT_SOUNDS: Record<AmbientSoundType, AmbientSoundDef> = {
       { type: 'sine', frequency: 2500, duration: 0.015, gain: 0.035, minInterval: 2, maxInterval: 5 },
       { type: 'sawtooth', frequency: 200, duration: 0.5, gain: 0.01, minInterval: 3, maxInterval: 8 },
     ],
+    spatial: {
+      position: [-2, 0, -1],
+      refDistance: 1,
+      maxDistance: 8,
+      rolloffFactor: 1,
+    },
   },
-
   /* ─── Office: Server hum + AC drone + keyboard clicks ─── */
   office: {
     type: 'office',
-    label: 'Офис',
-    description: 'Гул серверов, кондиционер, щелчки клавиатуры',
-    baseFrequency: 60,
+    ...ambientMeta(
+      'office',
+      'Офис',
+      'Гул серверов, кондиционер, щелчки клавиатуры',
+      'Слышен гул серверов и кондиционера, периодические щелчки клавиатуры',
+    ),
+    respectReducedMotion: true,    baseFrequency: 60,
     filterFreq: 300,
     gain: 0.035,
     oscillators: ['sawtooth', 'sine'],
@@ -170,9 +195,13 @@ export const AMBIENT_SOUNDS: Record<AmbientSoundType, AmbientSoundDef> = {
   /* ─── Park: Wind through trees + birds + distant water ─── */
   park: {
     type: 'park',
-    label: 'Парк',
-    description: 'Шум ветра, пение птиц, плеск воды',
-    baseFrequency: 90,
+    ...ambientMeta(
+      'park',
+      'Парк',
+      'Шум ветра, пение птиц, плеск воды',
+      'Слышен шум ветра в деревьях, пение птиц и плеск воды',
+    ),
+    respectReducedMotion: true,    baseFrequency: 90,
     filterFreq: 800,
     gain: 0.03,
     oscillators: ['sine'],
@@ -200,9 +229,13 @@ export const AMBIENT_SOUNDS: Record<AmbientSoundType, AmbientSoundDef> = {
   /* ─── Library: Deep silence + clock ticking + page turns ─── */
   library: {
     type: 'library',
-    label: 'Библиотека',
-    description: 'Тишина, тиканье часов, шорох страниц',
-    baseFrequency: 40,
+    ...ambientMeta(
+      'library',
+      'Библиотека',
+      'Тишина, тиканье часов, шорох страниц',
+      'Тихая атмосфера: тиканье часов и шорох перелистываемых страниц',
+    ),
+    respectReducedMotion: true,    baseFrequency: 40,
     filterFreq: 200,
     gain: 0.01,
     oscillators: ['sine'],
@@ -217,9 +250,13 @@ export const AMBIENT_SOUNDS: Record<AmbientSoundType, AmbientSoundDef> = {
   /* ─── Street: Urban drone + sirens + car pass-by ─── */
   street: {
     type: 'street',
-    label: 'Улица',
-    description: 'Городской шум, сирены, проезжающие машины',
-    baseFrequency: 80,
+    ...ambientMeta(
+      'street',
+      'Улица',
+      'Городской шум, сирены, проезжающие машины',
+      'Слышен городской шум, далёкие сирены и проезжающие машины',
+    ),
+    respectReducedMotion: true,    baseFrequency: 80,
     filterFreq: 350,
     gain: 0.035,
     oscillators: ['sawtooth'],
@@ -247,9 +284,13 @@ export const AMBIENT_SOUNDS: Record<AmbientSoundType, AmbientSoundDef> = {
   /* ─── Home: Warm drone + soft clicks + domestic sounds ─── */
   home: {
     type: 'home',
-    label: 'Дом',
-    description: 'Тёплый домашний гул, мягкие звуки быта',
-    baseFrequency: 100,
+    ...ambientMeta(
+      'home',
+      'Дом',
+      'Тёплый домашний гул, мягкие звуки быта',
+      'Слышен тёплый домашний гул и мягкие бытовые звуки',
+    ),
+    respectReducedMotion: true,    baseFrequency: 100,
     filterFreq: 600,
     gain: 0.03,
     oscillators: ['sine', 'triangle'],
@@ -268,9 +309,13 @@ export const AMBIENT_SOUNDS: Record<AmbientSoundType, AmbientSoundDef> = {
   /* ─── Factory: Industrial hum + dripping + metal creaks ─── */
   factory: {
     type: 'factory',
-    label: 'Завод',
-    description: 'Индустриальный гул, капли, скрежет металла',
-    baseFrequency: 45,
+    ...ambientMeta(
+      'factory',
+      'Завод',
+      'Индустриальный гул, капли, скрежет металла',
+      'Слышен индустриальный гул, капли и скрежет металла',
+    ),
+    respectReducedMotion: true,    baseFrequency: 45,
     filterFreq: 250,
     gain: 0.04,
     oscillators: ['sawtooth', 'square'],
@@ -298,9 +343,13 @@ export const AMBIENT_SOUNDS: Record<AmbientSoundType, AmbientSoundDef> = {
   /* ─── Rooftop: Strong wind + city drone below + antenna creak ─── */
   rooftop: {
     type: 'rooftop',
-    label: 'Крыша',
-    description: 'Ветер на высоте, далёкий город, скрип антенны',
-    baseFrequency: 70,
+    ...ambientMeta(
+      'rooftop',
+      'Крыша',
+      'Ветер на высоте, далёкий город, скрип антенны',
+      'Слышен сильный ветер на высоте, далёкий город и скрип антенны',
+    ),
+    respectReducedMotion: true,    baseFrequency: 70,
     filterFreq: 350,
     gain: 0.03,
     oscillators: ['sawtooth'],
@@ -328,9 +377,13 @@ export const AMBIENT_SOUNDS: Record<AmbientSoundType, AmbientSoundDef> = {
   /* ─── Corridor: Echoing hallway hum + fluorescent buzz + distant door slams ─── */
   corridor: {
     type: 'corridor',
-    label: 'Коридор',
-    description: 'Гулкий коридор, жужжание ламп, далёкие шаги',
-    baseFrequency: 65,
+    ...ambientMeta(
+      'corridor',
+      'Коридор',
+      'Гулкий коридор, жужжание ламп, далёкие шаги',
+      'Слышен гулкий коридор, жужжание ламп и далёкие шаги',
+    ),
+    respectReducedMotion: true,    baseFrequency: 65,
     filterFreq: 300,
     gain: 0.035,
     oscillators: ['sawtooth', 'square'],
@@ -350,9 +403,13 @@ export const AMBIENT_SOUNDS: Record<AmbientSoundType, AmbientSoundDef> = {
   /* ─── Combat: Ominous drone + electrical crackling + heartbeat ─── */
   combat: {
     type: 'combat',
-    label: 'Бой',
-    description: 'Зловещий гул, электрические разряды, пульс',
-    baseFrequency: 100,
+    ...ambientMeta(
+      'combat',
+      'Бой',
+      'Зловещий гул, электрические разряды, пульс',
+      'Слышен зловещий пульсирующий гул, электрические разряды и учащённый пульс',
+    ),
+    respectReducedMotion: true,    baseFrequency: 100,
     filterFreq: 500,
     gain: 0.05,
     oscillators: ['sawtooth', 'square'],
@@ -380,9 +437,13 @@ export const AMBIENT_SOUNDS: Record<AmbientSoundType, AmbientSoundDef> = {
   /* ─── Rain: Rain patter on surfaces + distant thunder ─── */
   rain: {
     type: 'rain',
-    label: 'Дождь',
-    description: 'Шум дождя, отдалённые раскаты грома',
-    baseFrequency: 55,
+    ...ambientMeta(
+      'rain',
+      'Дождь',
+      'Шум дождя, отдалённые раскаты грома',
+      'Слышен шум дождя и отдалённые раскаты грома',
+    ),
+    respectReducedMotion: true,    baseFrequency: 55,
     filterFreq: 300,
     gain: 0.03,
     oscillators: ['sine'],
@@ -409,9 +470,13 @@ export const AMBIENT_SOUNDS: Record<AmbientSoundType, AmbientSoundDef> = {
   /* ─── Snow: Wind howl + snow crunch + distant bells ─── */
   snow: {
     type: 'snow',
-    label: 'Снег',
-    description: 'Завывание ветра, хруст снега, далёкие колокола',
-    baseFrequency: 50,
+    ...ambientMeta(
+      'snow',
+      'Снег',
+      'Завывание ветра, хруст снега, далёкие колокола',
+      'Слышно завывание ветра, хруст снега и далёкие колокола',
+    ),
+    respectReducedMotion: true,    baseFrequency: 50,
     filterFreq: 280,
     gain: 0.03,
     oscillators: ['sawtooth', 'triangle'],
@@ -435,191 +500,282 @@ export const AMBIENT_SOUNDS: Record<AmbientSoundType, AmbientSoundDef> = {
       { type: 'sine', frequency: 700, duration: 0.6, gain: 0.012, minInterval: 10, maxInterval: 25, frequencyRamp: 680 },
     ] as AmbientSoundDef['randomSounds'],
   },
+
+  /* ─── Pier: Water lap + gulls + wooden creaks ─── */
+  pier: {
+    type: 'pier',
+    ...ambientMeta(
+      'pier',
+      'Пирс',
+      'Плеск воды, крики чаек, скрип дерева',
+      'Слышен плеск воды у пирса, крики чаек и скрип деревянных настилов',
+    ),
+    respectReducedMotion: true,
+    baseFrequency: 85,
+    filterFreq: 500,
+    gain: 0.03,
+    oscillators: ['sine'],
+    lfoRate: 0.08,
+    lfoDepth: 4,
+    noise: {
+      filterType: 'bandpass',
+      filterFreq: 600,
+      filterQ: 0.3,
+      gain: 0.02,
+      lfoFreq: 0.12,
+      lfoDepth: 300,
+    },
+    randomSounds: [
+      { type: 'sine', frequency: 200, duration: 0.3, gain: 0.015, minInterval: 2, maxInterval: 6 },
+      { type: 'sine', frequency: 1200, duration: 0.1, gain: 0.012, minInterval: 4, maxInterval: 10 },
+    ],
+  },
+
+  /* ─── Basement: Zarya-M 50 Hz relic hum (lore) ─── */
+  basement: {
+    type: 'basement',
+    ...ambientMeta(
+      'basement',
+      'Подвал «Заря-М»',
+      'Низкий гул 50 Гц от реликвии, гул серверов',
+      'Слышен низкий гул 50 герц от «Заря-М» и гул подвальных серверов',
+    ),
+    respectReducedMotion: true,
+    baseFrequency: 50,
+    filterFreq: 180,
+    gain: 0.045,
+    oscillators: ['sine', 'triangle'],
+    lfoRate: 0.04,
+    lfoDepth: 2,
+    noise: {
+      filterType: 'lowpass',
+      filterFreq: 220,
+      filterQ: 0.6,
+      gain: 0.018,
+      lfoFreq: 0.03,
+      lfoDepth: 40,
+    },
+    harmonic: {
+      type: 'sine',
+      freqMultiplier: 2.0,
+      gain: 0.02,
+    },
+    randomSounds: [
+      { type: 'sine', frequency: 120, duration: 0.2, gain: 0.02, minInterval: 8, maxInterval: 20 },
+    ] as AmbientSoundDef['randomSounds'],
+  },
 };
+/* ─── Scene → Ambient Sound Mapping (O(1) via SceneDefinition.ambience) ─── */
 
-/* ─── Scene → Ambient Sound Mapping ─── */
-
-/**
- * Maps scene ID patterns to appropriate day/night ambient sounds.
- * Patterns are matched using RegExp against the scene ID string.
- * First matching pattern wins, so order matters (more specific first).
- */
-export const SCENE_AMBIENCE_MAP: SceneAmbience[] = [
-  // Indoor / cozy
-  {
-    scenePattern: '^volodka_room$',
-    daySound: 'home',
-    nightSound: 'home',
-    transitionDuration: 2000,
-  },
-  {
-    scenePattern: '^home_evening$',
-    daySound: 'home',
-    nightSound: 'home',
-    transitionDuration: 2000,
-  },
-  {
-    scenePattern: '^zarema_albert_room$',
-    daySound: 'home',
-    nightSound: 'home',
-    transitionDuration: 2000,
-  },
-  {
-    scenePattern: '^solnysh_room$',
-    daySound: 'home',
-    nightSound: 'home',
-    transitionDuration: 2000,
-  },
-
-  // Corridor
-  {
-    scenePattern: '^volodka_corridor$',
-    daySound: 'corridor',
-    nightSound: 'corridor',
-    transitionDuration: 2000,
-  },
-
-  // Cafe
-  {
-    scenePattern: '^cafe_evening$',
-    daySound: 'cafe',
-    nightSound: 'cafe',
-    transitionDuration: 2000,
-  },
-
-  // Office
-  {
-    scenePattern: '^office_day$',
-    daySound: 'office',
-    nightSound: 'corridor', // Office at night = empty corridor feel
-    transitionDuration: 2000,
-  },
-
-  // Park
-  {
-    scenePattern: '^park_day$',
-    daySound: 'park',
-    nightSound: 'park', // Park at night is quieter but same type
-    transitionDuration: 2000,
-  },
-
-  // TOLPA forest clearing (CHK · Zorge)
-  {
-    scenePattern: '^chk_forest_zorge$',
-    daySound: 'park',
-    nightSound: 'corridor',
-    transitionDuration: 2500,
-  },
-
-  // Library
-  {
-    scenePattern: '^library_day$',
-    daySound: 'library',
-    nightSound: 'library',
-    transitionDuration: 2000,
-  },
-
-  // Street scenes
-  {
-    scenePattern: '^street_night$',
-    daySound: 'street',
-    nightSound: 'street',
-    transitionDuration: 2000,
-  },
-  {
-    scenePattern: '^street_winter$',
-    daySound: 'snow',
-    nightSound: 'snow',
-    transitionDuration: 2000,
-  },
-
-  // Rooftop
-  {
-    scenePattern: '^rooftop_edge$',
-    daySound: 'rooftop',
-    nightSound: 'rooftop',
-    transitionDuration: 2000,
-  },
-
-  // Factory
-  {
-    scenePattern: '^abandoned_factory$',
-    daySound: 'factory',
-    nightSound: 'factory',
-    transitionDuration: 2000,
-  },
-  {
-    scenePattern: '^factory_basement$',
-    daySound: 'factory',
-    nightSound: 'factory',
-    transitionDuration: 2500,
-  },
-  {
-    scenePattern: '^river_pier$',
-    daySound: 'street',
-    nightSound: 'street',
-    transitionDuration: 2500,
-  },
-
-  // Battle
-  {
-    scenePattern: '^battle$',
-    daySound: 'combat',
-    nightSound: 'combat',
-    transitionDuration: 1500, // Faster transition into combat
-  },
-
-  // Dream
-  {
-    scenePattern: '^sleep_dream$',
-    daySound: 'rain', // Rain works well for dream atmosphere
-    nightSound: 'rain',
-    transitionDuration: 3000, // Slow transition for dreams
-  },
-];
-
-type CompiledSceneAmbience = SceneAmbience & { compiledPattern: RegExp };
-
-/** Pre-compiled patterns — avoid RegExp allocation on every scene transition. */
-const COMPILED_SCENE_AMBIENCE_MAP: CompiledSceneAmbience[] = SCENE_AMBIENCE_MAP.map(
-  (mapping) => ({
-    ...mapping,
-    compiledPattern: new RegExp(mapping.scenePattern),
-  }),
+const SCENE_AMBIENCE_BY_ID = new Map<SceneId, SceneAmbienceConfig>(
+  Object.entries(SCENE_DEFINITIONS)
+    .filter((entry): entry is [SceneId, (typeof SCENE_DEFINITIONS)[SceneId]] => {
+      return Boolean(entry[1].ambience);
+    })
+    .map(([sceneId, def]) => [sceneId, def.ambience!]),
 );
 
-/* ─── Helper Function ─── */
+const OUTDOOR_SCENES = new Set<SceneId>([
+  'street_night',
+  'street_winter',
+  'park_day',
+  'rooftop_edge',
+  'river_pier',
+  'chk_forest_zorge',
+]);
 
-/**
- * Determine the appropriate ambient sound type for a given scene and time of day.
- *
- * @param sceneId — The current scene ID (e.g., 'cafe_evening', 'street_night')
- * @param timeOfDay — Current in-game hour (0–24)
- * @returns The AmbientSoundType to play, or null if no mapping exists
- */
-export function getAmbienceForScene(sceneId: string, timeOfDay: number): AmbientSoundType | null {
-  // Find the first matching scene pattern
-  for (const mapping of COMPILED_SCENE_AMBIENCE_MAP) {
-    if (mapping.compiledPattern.test(sceneId)) {
-      // Daytime: 6:00 to 20:00, Nighttime: 20:00 to 6:00
-      const isDay = timeOfDay >= 6 && timeOfDay < 20;
-      return isDay ? mapping.daySound : mapping.nightSound;
-    }
+/** Weather-driven ambient overrides for outdoor exploration scenes */
+const WEATHER_AMBIENT_OVERRIDE: Partial<Record<SceneWeatherType, AmbientSoundType>> = {
+  rain: 'rain',
+  storm: 'rain',
+  snow: 'snow',
+};
+
+function isDaytime(timeOfDay: number): boolean {
+  return timeOfDay >= 6 && timeOfDay < 20;
+}
+
+function baseAmbienceForScene(sceneId: SceneId, timeOfDay: number): {
+  sound: AmbientSoundType;
+  transitionDuration: number;
+} | null {
+  const config = SCENE_AMBIENCE_BY_ID.get(sceneId);
+  if (!config) return null;
+  const sound = isDaytime(timeOfDay) ? config.daySound : config.nightSound;
+  return {
+    sound,
+    transitionDuration: config.transitionDuration ?? DEFAULT_TRANSITION_MS,
+  };
+}
+
+/** Apply weather layer on top of scene bed (outdoor scenes only). */
+export function applyWeatherAmbienceOverride(
+  sceneId: SceneId,
+  baseSound: AmbientSoundType,
+  weather?: SceneWeatherType,
+): { sound: AmbientSoundType; weatherApplied: boolean } {
+  if (!weather || weather === 'clear' || weather === 'fog') {
+    return { sound: baseSound, weatherApplied: false };
   }
-  return null;
+  if (!OUTDOOR_SCENES.has(sceneId)) {
+    return { sound: baseSound, weatherApplied: false };
+  }
+  const override = WEATHER_AMBIENT_OVERRIDE[weather];
+  if (!override || override === baseSound) {
+    return { sound: baseSound, weatherApplied: false };
+  }
+  return { sound: override, weatherApplied: true };
 }
 
 /**
- * Get the transition duration for a scene's ambient sound.
- *
- * @param sceneId — The current scene ID
- * @returns Crossfade duration in ms, or 2000 as default
+ * Resolve procedural ambient for a scene with optional story + weather overrides.
  */
-export function getAmbientTransitionDuration(sceneId: string): number {
-  for (const mapping of COMPILED_SCENE_AMBIENCE_MAP) {
-    if (mapping.compiledPattern.test(sceneId)) {
-      return mapping.transitionDuration;
+export function resolveAmbienceForScene(
+  sceneId: SceneId,
+  timeOfDay: number,
+  options: AmbienceResolveOptions = {},
+): ResolvedSceneAmbience | null {
+  if (options.proceduralOverride) {
+    const base = baseAmbienceForScene(sceneId, timeOfDay);
+    return {
+      sound: options.proceduralOverride,
+      transitionDuration: base?.transitionDuration ?? DEFAULT_TRANSITION_MS,
+      source: 'story',
+    };
+  }
+
+  const base = baseAmbienceForScene(sceneId, timeOfDay);
+  if (!base) return null;
+
+  const weatherResult = applyWeatherAmbienceOverride(sceneId, base.sound, options.weather);
+  if (weatherResult.weatherApplied) {
+    return {
+      sound: weatherResult.sound,
+      transitionDuration: base.transitionDuration,
+      source: 'weather',
+    };
+  }
+
+  return {
+    sound: base.sound,
+    transitionDuration: base.transitionDuration,
+    source: 'scene',
+  };
+}
+
+/** @deprecated Use resolveAmbienceForScene — kept for callers without weather/story context */
+export function getAmbienceForScene(
+  sceneId: string,
+  timeOfDay: number,
+  options?: AmbienceResolveOptions,
+): AmbientSoundType | null {
+  const resolved = resolveAmbienceForScene(sceneId as SceneId, timeOfDay, options);
+  return resolved?.sound ?? null;
+}
+
+export function getAmbientTransitionDuration(
+  sceneId: string,
+  timeOfDay = 12,
+  options?: AmbienceResolveOptions,
+): number {
+  const resolved = resolveAmbienceForScene(sceneId as SceneId, timeOfDay, options);
+  return resolved?.transitionDuration ?? DEFAULT_TRANSITION_MS;
+}
+
+export function getAmbientSoundDef(type: AmbientSoundType): AmbientSoundDef {
+  return AMBIENT_SOUNDS[type];
+}
+
+export function getAmbienceAccessibilityText(type: AmbientSoundType | null): string | null {
+  if (!type) return null;
+  return AMBIENT_SOUNDS[type].accessibilityDescription;
+}
+
+/** Playback-safe copy — strips vestibular layers when reduced motion is active */
+export function getPlaybackAmbientDef(
+  type: AmbientSoundType,
+  reducedMotion: boolean,
+): AmbientSoundDef {
+  const def = AMBIENT_SOUNDS[type];
+  if (!reducedMotion || def.respectReducedMotion === false) {
+    return def;
+  }
+
+  const safeNoise = def.noise
+    ? { ...def.noise, lfoFreq: 0, lfoDepth: 0 }
+    : undefined;
+
+  return {
+    ...def,
+    lfoRate: 0,
+    lfoDepth: 0,
+    noise: safeNoise,
+    randomSounds: undefined,
+  };
+}
+
+export interface AmbientValidationIssue {
+  path: string;
+  message: string;
+}
+
+/** Validate oscillator parameters at content load time */
+export function validateAmbientSoundDefs(): AmbientValidationIssue[] {
+  const issues: AmbientValidationIssue[] = [];
+
+  for (const def of Object.values(AMBIENT_SOUNDS)) {
+    const prefix = `ambient.${def.type}`;
+
+    if (def.gain < 0 || def.gain > 1) {
+      issues.push({ path: prefix, message: `gain must be 0–1 (got ${def.gain})` });
+    }
+    if (def.filterFreq < FILTER_FREQ_MIN || def.filterFreq > FILTER_FREQ_MAX) {
+      issues.push({
+        path: prefix,
+        message: `filterFreq out of range ${FILTER_FREQ_MIN}–${FILTER_FREQ_MAX}`,
+      });
+    }
+    if (def.lfoRate < 0) {
+      issues.push({ path: prefix, message: `lfoRate must be >= 0 (got ${def.lfoRate})` });
+    }
+    if (def.noise) {
+      if (def.noise.gain < 0 || def.noise.gain > 1) {
+        issues.push({ path: `${prefix}.noise`, message: 'noise gain must be 0–1' });
+      }
+      if (def.noise.filterFreq < FILTER_FREQ_MIN || def.noise.filterFreq > FILTER_FREQ_MAX) {
+        issues.push({ path: `${prefix}.noise`, message: 'noise filterFreq out of range' });
+      }
+    }
+    for (const rs of def.randomSounds ?? []) {
+      if (rs.gain < 0 || rs.gain > 1) {
+        issues.push({ path: `${prefix}.randomSounds`, message: 'random sound gain must be 0–1' });
+      }
+      if (rs.minInterval > rs.maxInterval) {
+        issues.push({ path: `${prefix}.randomSounds`, message: 'minInterval > maxInterval' });
+      }
     }
   }
-  return 2000;
+
+  return issues;
+}
+
+/** Ensure every registered scene has an ambience profile */
+export function validateSceneAmbienceCoverage(): AmbientValidationIssue[] {
+  const issues: AmbientValidationIssue[] = [];
+  for (const sceneId of Object.keys(SCENE_DEFINITIONS) as SceneId[]) {
+    if (!SCENE_AMBIENCE_BY_ID.has(sceneId)) {
+      issues.push({
+        path: `scene.${sceneId}`,
+        message: 'missing SceneDefinition.ambience — no procedural ambient profile',
+      });
+    }
+  }
+  return issues;
+}
+
+if (import.meta.env?.DEV) {
+  const devIssues = [...validateAmbientSoundDefs(), ...validateSceneAmbienceCoverage()];
+  if (devIssues.length > 0) {
+    console.warn('[ambientSounds] validation issues:', devIssues);
+  }
 }

@@ -4,7 +4,7 @@
  */
 
 import {
-  AMBIENT_SOUNDS,
+  getPlaybackAmbientDef,
   type AmbientSoundType,
   type AmbientSoundDef,
 } from '../../data/ambientSounds';
@@ -68,6 +68,8 @@ interface PlayingAmbient {
   fadeOutTimer?: ReturnType<typeof setTimeout>;
   /** Whether this instance is being faded out */
   fadingOut: boolean;
+  /** Optional spatial panner */
+  panner?: PannerNode;
 }
 
 export class AmbientSoundPlayer {
@@ -81,6 +83,8 @@ export class AmbientSoundPlayer {
   private baseVolume = 0.7;
   private combatMuted = false;
   private dialogueDucked = false;
+  private paused = false;
+  private reducedMotion = false;
   private sceneReverbPreset = 'small_room';
 
   /** Monotonic counter — stale crossfade transitions are ignored */
@@ -135,9 +139,31 @@ export class AmbientSoundPlayer {
 
   /** Get the effective volume considering combat mute and dialogue duck */
   private getEffectiveVolume(): number {
+    if (this.paused) return 0;
     if (this.combatMuted) return 0;
     if (this.dialogueDucked) return this.baseVolume * 0.3;
     return this.baseVolume;
+  }
+
+  /** Respect accessibility reduced-motion — disables LFO / random layers on next play */
+  setReducedMotion(enabled: boolean): void {
+    if (this.disposed || this.reducedMotion === enabled) return;
+    this.reducedMotion = enabled;
+    const type = this.currentType;
+    if (type) {
+      this.play(type, 400);
+    }
+  }
+
+  /** Pause output when the tab is hidden (pairs with AudioSettings volume) */
+  setPaused(paused: boolean): void {
+    if (this.disposed || this.paused === paused) return;
+    this.paused = paused;
+    this.applyVolume();
+  }
+
+  getReducedMotion(): boolean {
+    return this.reducedMotion;
   }
 
   /**
@@ -161,7 +187,7 @@ export class AmbientSoundPlayer {
     const dest = this.destination;
     if (!ctx || !dest) return;
 
-    const def = AMBIENT_SOUNDS[type];
+    const def = getPlaybackAmbientDef(type, this.reducedMotion);
     if (!def) return;
 
     const crossfadeSec = crossfadeMs / 1000;
@@ -230,9 +256,25 @@ export class AmbientSoundPlayer {
     instance.filter.Q.value = 0.7;
     this.applyReverbFilter(instance.filter, def.filterFreq);
 
-    // ── Routing: oscillators → filter → masterGain → destination ──
+    // ── Routing: oscillators → filter → masterGain → (panner?) → destination ──
     instance.filter.connect(instance.masterGain);
-    instance.masterGain.connect(dest);
+
+    if (def.spatial) {
+      const panner = ctx.createPanner();
+      panner.panningModel = 'HRTF';
+      panner.distanceModel = 'inverse';
+      panner.refDistance = def.spatial.refDistance;
+      panner.maxDistance = def.spatial.maxDistance;
+      panner.rolloffFactor = def.spatial.rolloffFactor;
+      panner.positionX.setValueAtTime(def.spatial.position[0], now);
+      panner.positionY.setValueAtTime(def.spatial.position[1], now);
+      panner.positionZ.setValueAtTime(def.spatial.position[2], now);
+      instance.masterGain.connect(panner);
+      panner.connect(dest);
+      instance.panner = panner;
+    } else {
+      instance.masterGain.connect(dest);
+    }
 
     // ── Create oscillator layers ──
     for (const oscType of def.oscillators) {
@@ -243,24 +285,27 @@ export class AmbientSoundPlayer {
       const oscGain = ctx.createGain();
       oscGain.gain.setValueAtTime(def.gain / def.oscillators.length, now);
 
-      // LFO for oscillator
-      const lfo = ctx.createOscillator();
-      lfo.type = 'sine';
-      lfo.frequency.setValueAtTime(def.lfoRate, now);
-
-      const lfoGain = ctx.createGain();
-      lfoGain.gain.setValueAtTime(def.lfoDepth, now);
-
-      lfo.connect(lfoGain);
-      lfoGain.connect(osc.frequency);
-
       osc.connect(oscGain);
       oscGain.connect(instance.filter);
 
-      lfo.start(now);
-      osc.start(now);
+      if (def.lfoRate > 0 && def.lfoDepth > 0) {
+        const lfo = ctx.createOscillator();
+        lfo.type = 'sine';
+        lfo.frequency.setValueAtTime(def.lfoRate, now);
 
-      instance.oscillators.push({ osc, gain: oscGain, lfo, lfoGain });
+        const lfoGain = ctx.createGain();
+        lfoGain.gain.setValueAtTime(def.lfoDepth, now);
+
+        lfo.connect(lfoGain);
+        lfoGain.connect(osc.frequency);
+
+        lfo.start(now);
+        instance.oscillators.push({ osc, gain: oscGain, lfo, lfoGain });
+      } else {
+        instance.oscillators.push({ osc, gain: oscGain });
+      }
+
+      osc.start(now);
     }
 
     // ── Harmonic ──
@@ -530,6 +575,10 @@ export class AmbientSoundPlayer {
     }
     if (ambient.noiseLfoGain) {
       try { ambient.noiseLfoGain.disconnect(); } catch { /* ignore */ }
+    }
+
+    if (ambient.panner) {
+      try { ambient.panner.disconnect(); } catch { /* ignore */ }
     }
 
     // Disconnect filter and master gain

@@ -1,6 +1,7 @@
 /* ─── Story / narrative definitions ─── */
 
 import type { SceneId } from '@/config/sceneDefinitions';
+import type { AmbientSoundType } from '@/shared/types/ambientSound';
 import type { ChoiceCondition } from '../common/conditions';
 import type { StoryEffect } from '../common/effects';
 import type {
@@ -39,6 +40,8 @@ export interface StoryNode {
   readonly contextNote?: string;
   /** Optional ambient bed path — layered when node opens */
   readonly ambientSound?: string;
+  /** Override procedural ambient profile while this node is active */
+  readonly proceduralAmbientOverride?: AmbientSoundType;
   /** Location/state change announcement for assistive tech */
   readonly accessibilityAnnounce?: string;
   readonly soundEffect?: string;

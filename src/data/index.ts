@@ -105,11 +105,24 @@ export type { NPCGiftPreference, NPCAffinityLevel, GiftPreference } from './npcG
 // Ambient Sounds
 export {
   AMBIENT_SOUNDS,
-  SCENE_AMBIENCE_MAP,
   getAmbienceForScene,
   getAmbientTransitionDuration,
+  resolveAmbienceForScene,
+  getAmbientSoundDef,
+  getAmbienceAccessibilityText,
+  getPlaybackAmbientDef,
+  applyWeatherAmbienceOverride,
+  validateAmbientSoundDefs,
+  validateSceneAmbienceCoverage,
 } from './ambientSounds';
-export type { AmbientSoundType, AmbientSoundDef, SceneAmbience } from './ambientSounds';
+export type {
+  AmbientSoundType,
+  AmbientSoundDef,
+  SceneAmbience,
+  SceneAmbienceConfig,
+  AmbienceResolveOptions,
+  ResolvedSceneAmbience,
+} from './ambientSounds';
 
 // Status Effects
 export {

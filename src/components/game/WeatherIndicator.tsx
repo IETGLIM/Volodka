@@ -21,19 +21,14 @@ import { useWeatherIndicatorState } from '@/store/selectors';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { useHudQuietStyle } from '@/hooks/useHudQuiet';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
-import type { SceneId } from '@/shared/types/game';
+import {
+  deriveSceneWeather,
+  type SceneWeatherState,
+} from '@/shared/weather/deriveSceneWeather';
 
-/* ── Weather types ── */
-type WeatherType = 'clear' | 'rain' | 'snow' | 'fog' | 'storm';
-type WindLevel = 'calm' | 'light' | 'strong';
-type AirQuality = 'clean' | 'dusty' | 'smoggy';
-
-interface WeatherState {
-  type: WeatherType;
-  temperature: number;
-  wind: WindLevel;
-  airQuality: AirQuality;
-}
+type WeatherType = SceneWeatherState['type'];
+type WindLevel = SceneWeatherState['wind'];
+type AirQuality = SceneWeatherState['airQuality'];
 
 /* ── Weather icon mapping ── */
 const WEATHER_ICONS: Record<WeatherType, React.ComponentType<{ className?: string }>> = {
@@ -76,88 +71,6 @@ const WEATHER_LABELS: Record<WeatherType, string> = {
   storm: 'Гроза',
 };
 
-/* ── Derive weather from scene + time ── */
-function deriveWeather(sceneId: SceneId, timeOfDay: number): WeatherState {
-  const isNight = timeOfDay >= 21 || timeOfDay < 6;
-  const isMorning = timeOfDay >= 6 && timeOfDay < 10;
-  const isDay = timeOfDay >= 10 && timeOfDay < 18;
-  const isEvening = timeOfDay >= 18 && timeOfDay < 21;
-
-  switch (sceneId) {
-    /* ── Indoor scenes — always clear/calm ── */
-    case 'volodka_room':
-      return { type: 'clear', temperature: 21, wind: 'calm', airQuality: 'clean' };
-    case 'volodka_corridor':
-      return { type: 'clear', temperature: 20, wind: 'calm', airQuality: 'clean' };
-    case 'home_evening':
-      return { type: 'clear', temperature: 22, wind: 'calm', airQuality: 'clean' };
-    case 'zarema_albert_room':
-      return { type: 'clear', temperature: 21, wind: 'calm', airQuality: 'clean' };
-
-    /* ── Street night — rain at night, clear otherwise ── */
-    case 'street_night': {
-      if (isNight) return { type: 'rain', temperature: 4, wind: 'light', airQuality: 'smoggy' };
-      if (isMorning) return { type: 'fog', temperature: 8, wind: 'light', airQuality: 'smoggy' };
-      if (isDay) return { type: 'clear', temperature: 14, wind: 'light', airQuality: 'smoggy' };
-      return { type: 'rain', temperature: 7, wind: 'light', airQuality: 'smoggy' };
-    }
-
-    /* ── Street winter — always snow ── */
-    case 'street_winter':
-      return { type: 'snow', temperature: isNight ? -15 : -8, wind: 'strong', airQuality: 'dusty' };
-
-    /* ── Cafe — indoor, slight haze ── */
-    case 'cafe_evening':
-      return { type: 'clear', temperature: 23, wind: 'calm', airQuality: 'clean' };
-
-    /* ── Office — clean air-con ── */
-    case 'office_day':
-      return { type: 'clear', temperature: 22, wind: 'calm', airQuality: 'clean' };
-
-    /* ── Park — morning fog, otherwise clear ── */
-    case 'park_day': {
-      if (isMorning) return { type: 'fog', temperature: 12, wind: 'calm', airQuality: 'clean' };
-      if (isNight) return { type: 'clear', temperature: 10, wind: 'light', airQuality: 'clean' };
-      return { type: 'clear', temperature: 20, wind: 'light', airQuality: 'clean' };
-    }
-
-    /* ── Library — indoor ── */
-    case 'library_day':
-      return { type: 'clear', temperature: 20, wind: 'calm', airQuality: 'clean' };
-
-    /* ── Battle — storm ── */
-    case 'battle':
-      return { type: 'storm', temperature: 2, wind: 'strong', airQuality: 'dusty' };
-
-    /* ── Dream — ethereal fog ── */
-    case 'sleep_dream':
-      return { type: 'fog', temperature: 15, wind: 'calm', airQuality: 'clean' };
-
-    /* ── CHK forest — winter night gathering, light snow and fog ── */
-    case 'chk_forest_zorge': {
-      if (isNight || isEvening) {
-        return { type: 'snow', temperature: -8, wind: 'light', airQuality: 'clean' };
-      }
-      if (isMorning) return { type: 'fog', temperature: -4, wind: 'calm', airQuality: 'clean' };
-      return { type: 'fog', temperature: -2, wind: 'light', airQuality: 'clean' };
-    }
-
-    /* ── Rooftop — strong winds, clear or storm at night ── */
-    case 'rooftop_edge': {
-      if (isNight) return { type: 'storm', temperature: -3, wind: 'strong', airQuality: 'smoggy' };
-      return { type: 'clear', temperature: 2, wind: 'strong', airQuality: 'smoggy' };
-    }
-
-    /* ── Factory — dusty, foggy ── */
-    case 'abandoned_factory':
-      return { type: 'fog', temperature: isNight ? 8 : 14, wind: 'light', airQuality: 'dusty' };
-
-    /* ── Fallback ── */
-    default:
-      return { type: 'clear', temperature: 18, wind: 'calm', airQuality: 'clean' };
-  }
-}
-
 /* ── Temperature display with sign ── */
 function formatTemp(temp: number): string {
   if (temp > 0) return `+${temp}°`;
@@ -182,7 +95,7 @@ export function WeatherIndicator() {
   const microTransition = reducedMotion ? { duration: 0 } : { duration: 0.25 };
 
   const weather = useMemo(
-    () => deriveWeather(currentSceneId, timeOfDay),
+    () => deriveSceneWeather(currentSceneId, timeOfDay),
     [currentSceneId, timeOfDay],
   );
 

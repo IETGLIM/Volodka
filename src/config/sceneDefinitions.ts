@@ -11,6 +11,7 @@
  */
 
 import type { SceneDefinition } from '@/shared/types/sceneDefinition';
+import type { SceneAmbienceConfig } from '@/shared/types/ambientSound';
 
 /** Volodka's room — small indoor room with desk, bookshelf, bed */
 export const volodka_room_def: SceneDefinition = {
@@ -1145,26 +1146,53 @@ export const river_pier_def: SceneDefinition = {
   transitionStyle: 'dissolve',
 };
 
+/** Per-scene procedural ambient profiles — merged into SceneDefinition at export. */
+const SCENE_AMBIENCE_BY_ID: Record<string, SceneAmbienceConfig> = {
+  volodka_room: { daySound: 'home', nightSound: 'home', transitionDuration: 2000 },
+  home_evening: { daySound: 'home', nightSound: 'home', transitionDuration: 2000 },
+  zarema_albert_room: { daySound: 'home', nightSound: 'home', transitionDuration: 2000 },
+  solnysh_room: { daySound: 'home', nightSound: 'home', transitionDuration: 2000 },
+  volodka_corridor: { daySound: 'corridor', nightSound: 'corridor', transitionDuration: 2000 },
+  cafe_evening: { daySound: 'cafe', nightSound: 'cafe', transitionDuration: 2000 },
+  office_day: { daySound: 'office', nightSound: 'corridor', transitionDuration: 2000 },
+  park_day: { daySound: 'park', nightSound: 'park', transitionDuration: 2000 },
+  chk_forest_zorge: { daySound: 'park', nightSound: 'corridor', transitionDuration: 2500 },
+  library_day: { daySound: 'library', nightSound: 'library', transitionDuration: 2000 },
+  street_night: { daySound: 'street', nightSound: 'street', transitionDuration: 2000 },
+  street_winter: { daySound: 'snow', nightSound: 'snow', transitionDuration: 2000 },
+  rooftop_edge: { daySound: 'rooftop', nightSound: 'rooftop', transitionDuration: 2000 },
+  abandoned_factory: { daySound: 'factory', nightSound: 'factory', transitionDuration: 2000 },
+  factory_basement: { daySound: 'basement', nightSound: 'basement', transitionDuration: 2500 },
+  river_pier: { daySound: 'pier', nightSound: 'pier', transitionDuration: 2500 },
+  battle: { daySound: 'combat', nightSound: 'combat', transitionDuration: 1500 },
+  sleep_dream: { daySound: 'rain', nightSound: 'rain', transitionDuration: 3000 },
+};
+
+function withSceneAmbience(def: SceneDefinition): SceneDefinition {
+  const ambience = SCENE_AMBIENCE_BY_ID[def.id];
+  return ambience ? { ...def, ambience } : def;
+}
+
 /** Map of all scene definitions — single source of truth */
 export const SCENE_DEFINITIONS = {
-  volodka_room: volodka_room_def,
-  volodka_corridor: volodka_corridor_def,
-  home_evening: home_evening_def,
-  street_night: street_night_def,
-  street_winter: street_winter_def,
-  cafe_evening: cafe_evening_def,
-  office_day: office_day_def,
-  park_day: park_day_def,
-  library_day: library_day_def,
-  battle: battle_def,
-  sleep_dream: sleep_dream_def,
-  rooftop_edge: rooftop_edge_def,
-  abandoned_factory: abandoned_factory_def,
-  zarema_albert_room: zarema_albert_room_def,
-  solnysh_room: solnysh_room_def,
-  chk_forest_zorge: chk_forest_zorge_def,
-  factory_basement: factory_basement_def,
-  river_pier: river_pier_def,
+  volodka_room: withSceneAmbience(volodka_room_def),
+  volodka_corridor: withSceneAmbience(volodka_corridor_def),
+  home_evening: withSceneAmbience(home_evening_def),
+  street_night: withSceneAmbience(street_night_def),
+  street_winter: withSceneAmbience(street_winter_def),
+  cafe_evening: withSceneAmbience(cafe_evening_def),
+  office_day: withSceneAmbience(office_day_def),
+  park_day: withSceneAmbience(park_day_def),
+  library_day: withSceneAmbience(library_day_def),
+  battle: withSceneAmbience(battle_def),
+  sleep_dream: withSceneAmbience(sleep_dream_def),
+  rooftop_edge: withSceneAmbience(rooftop_edge_def),
+  abandoned_factory: withSceneAmbience(abandoned_factory_def),
+  zarema_albert_room: withSceneAmbience(zarema_albert_room_def),
+  solnysh_room: withSceneAmbience(solnysh_room_def),
+  chk_forest_zorge: withSceneAmbience(chk_forest_zorge_def),
+  factory_basement: withSceneAmbience(factory_basement_def),
+  river_pier: withSceneAmbience(river_pier_def),
 } as const satisfies Record<string, SceneDefinition>;
 
 /** Scene identifier — derived from SCENE_DEFINITIONS keys (no manual union). */

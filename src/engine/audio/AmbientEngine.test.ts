@@ -44,6 +44,18 @@ function buildMockAudioContext() {
       start: vi.fn(),
       stop: vi.fn(),
     }),
+    createPanner: () => ({
+      panningModel: 'HRTF' as PanningModelType,
+      distanceModel: 'inverse' as DistanceModelType,
+      refDistance: 1,
+      maxDistance: 100,
+      rolloffFactor: 1,
+      positionX: { setValueAtTime: vi.fn() },
+      positionY: { setValueAtTime: vi.fn() },
+      positionZ: { setValueAtTime: vi.fn() },
+      connect: vi.fn(),
+      disconnect: vi.fn(),
+    }),
     resume: vi.fn().mockResolvedValue(undefined),
   } as unknown as AudioContext;
 }
@@ -223,5 +235,22 @@ describe('AmbientSoundPlayer crossfade', () => {
     disposeAmbientEngine();
     ambientEngine.play('cafe', 0);
     expect(getAmbientPlayer().getCurrentType()).toBe('cafe');
+  });
+
+  it('rebuilds combat bed without LFO when reduced motion is enabled', () => {
+    const player = new AmbientSoundPlayer();
+    player.setReducedMotion(true);
+    player.play('combat', 0);
+
+    const internal = player as unknown as {
+      currentAmbient: {
+        oscillators: Array<{ lfo?: OscillatorNode }>;
+        randomTimers: unknown[];
+      } | null;
+    };
+
+    expect(player.getCurrentType()).toBe('combat');
+    expect(internal.currentAmbient?.oscillators.every((o) => !o.lfo)).toBe(true);
+    expect(internal.currentAmbient?.randomTimers).toHaveLength(0);
   });
 });

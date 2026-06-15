@@ -97,4 +97,30 @@ describe('Act 6 story presentation', () => {
       expect(GOLDEN_PATH_BRANCH_HINTS[id], id).toBeTruthy();
     }
   });
+
+  it('all act 6 nodes have context notes', () => {
+    for (const [id, node] of Object.entries(STORY_NODES_ACT6)) {
+      expect(node.contextNote, id).toBeTruthy();
+    }
+  });
+
+  it('act 6 nodes with ambient beds expose procedural overrides', () => {
+    const withAmbient = Object.entries(STORY_NODES_ACT6).filter(([, n]) => n.ambientSound);
+    expect(withAmbient.length).toBeGreaterThanOrEqual(20);
+    for (const [id, node] of withAmbient) {
+      expect(node.proceduralAmbientOverride, id).toBeTruthy();
+    }
+  });
+
+  it('act6_bridge opens act with autosave and home ambience', () => {
+    const bridge = STORY_NODES_ACT6.act6_bridge;
+    expect(bridge.autoSave).toBe(true);
+    expect(bridge.musicCue).toBe('mystery');
+    expect(bridge.proceduralAmbientOverride).toBe('home');
+  });
+
+  it('act6_nadzor_battle uses combat procedural bed', () => {
+    expect(STORY_NODES_ACT6.act6_nadzor_battle.proceduralAmbientOverride).toBe('combat');
+    expect(STORY_NODES_ACT6.act6_core_choice.proceduralAmbientOverride).toBe('basement');
+  });
 });

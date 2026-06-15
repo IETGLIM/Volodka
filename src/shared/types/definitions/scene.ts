@@ -1,6 +1,7 @@
 /* ─── Scene / location definitions ─── */
 
 import type { SceneId } from '@/config/sceneDefinitions';
+import type { SceneAmbienceConfig } from '@/shared/types/ambientSound';
 import type { FloorMaterial } from '../sceneDefinition';
 import type { ChoiceCondition } from '../common/conditions';
 import type { LocationCategory } from '../locationCategory';
@@ -49,4 +50,6 @@ export interface SceneConfig {
   readonly transitionStyle?: 'wipe' | 'flash' | 'darken' | 'ripple' | 'dissolve';
   /** Schedule timeline color category — explicit, not derived from scene id strings. */
   readonly locationCategory: LocationCategory;
+  /** Procedural ambient bed for exploration (day/night profiles). */
+  readonly ambience?: SceneAmbienceConfig;
 }

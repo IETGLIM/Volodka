@@ -4,7 +4,11 @@ import { useGameStore } from '@/store/gameStore';
 import { eventBus, EventBusPriority } from '@/engine/EventBus';
 import { withHmrCleanup } from '@/shared/dev/hmrDispose';
 import { triggerCameraShake } from '@/engine/camera/cameraShake';
-import { getSceneAudioController } from '@/engine/audio/SceneAudioController';
+import {
+  getSceneAudioController,
+  type AmbientPlayContext,
+} from '@/engine/audio/SceneAudioController';
+import { getStoryProceduralAmbientOverride } from '@/engine/audio/ambientPlayContext';
 import { getGamePhase } from '@/shared/gamePhase';
 import type { SceneId } from '@/config/sceneDefinitions';
 
@@ -17,13 +21,26 @@ function selectAudioPhase(state: ReturnType<typeof useGameStore.getState>) {
   });
 }
 
+function buildAmbientContext(
+  state: ReturnType<typeof useGameStore.getState>,
+): AmbientPlayContext {
+  const override = getStoryProceduralAmbientOverride(
+    state.showStoryOverlay,
+    state.currentNodeId,
+  );
+  return override ? { proceduralOverride: override } : {};
+}
+
 function syncAudioFromStore(ctrl: ReturnType<typeof getSceneAudioController>): void {
   const state = useGameStore.getState();
+  const ambientContext = buildAmbientContext(state);
+  ctrl.setAmbientPlayContext(ambientContext);
   ctrl.onModeChange(
     selectAudioPhase(state),
     state.exploration.currentSceneId as SceneId,
     state.exploration.timeOfDay,
     state.showStoryOverlay,
+    ambientContext,
   );
 }
 
@@ -87,8 +104,9 @@ export function useAudioOrchestrator() {
 
     scope.on('scene:enter', ({ sceneId }) => {
       if (disposedRef.current) return;
-      const timeOfDay = useGameStore.getState().exploration.timeOfDay;
-      ctrl.onSceneEnter(sceneId as SceneId, timeOfDay);
+      const state = useGameStore.getState();
+      const ambientContext = buildAmbientContext(state);
+      ctrl.onSceneEnter(sceneId as SceneId, state.exploration.timeOfDay, ambientContext);
       triggerCameraShake(0.03, 3);
     });
 
@@ -97,11 +115,30 @@ export function useAudioOrchestrator() {
       syncAudioFromStore(ctrl);
     });
 
+    scope.on('accessibility:changed', () => {
+      if (disposedRef.current) return;
+      ctrl.onAccessibilityChanged();
+      const state = useGameStore.getState();
+      ctrl.refreshSceneAmbient(
+        state.exploration.currentSceneId as SceneId,
+        state.exploration.timeOfDay,
+      );
+    });
+
     scope.on('fx:glitch', () => {
       triggerCameraShake(0.05, 8);
     });
 
-    return withHmrCleanup(() => scope.dispose());
+    const onVisibility = () => {
+      if (disposedRef.current) return;
+      ctrl.onVisibilityChanged(!document.hidden);
+    };
+    document.addEventListener('visibilitychange', onVisibility);
+
+    return withHmrCleanup(() => {
+      scope.dispose();
+      document.removeEventListener('visibilitychange', onVisibility);
+    });
   }, []);
 
   useEffect(() => {
@@ -110,11 +147,19 @@ export function useAudioOrchestrator() {
       (state) => ({
         phase: selectAudioPhase(state),
         showStoryOverlay: state.showStoryOverlay,
+        currentNodeId: state.currentNodeId,
         sceneId: state.exploration.currentSceneId,
         timeOfDay: state.exploration.timeOfDay,
       }),
       (selected, prev) => {
         if (disposedRef.current) return;
+
+        const ambientContext = buildAmbientContext({
+          ...useGameStore.getState(),
+          showStoryOverlay: selected.showStoryOverlay,
+          currentNodeId: selected.currentNodeId,
+        });
+        ctrl.setAmbientPlayContext(ambientContext);
 
         if (selected.phase !== prev.phase) {
           ctrl.onModeChange(
@@ -122,10 +167,20 @@ export function useAudioOrchestrator() {
             selected.sceneId as SceneId,
             selected.timeOfDay,
             selected.showStoryOverlay,
+            ambientContext,
           );
         } else {
           if (selected.showStoryOverlay !== prev.showStoryOverlay) {
             ctrl.setDialogueState(selected.showStoryOverlay, selected.phase);
+          }
+          if (
+            selected.showStoryOverlay !== prev.showStoryOverlay ||
+            selected.currentNodeId !== prev.currentNodeId
+          ) {
+            ctrl.refreshSceneAmbient(
+              selected.sceneId as SceneId,
+              selected.timeOfDay,
+            );
           }
           if (selected.phase === 'combat' || prev.phase === 'combat') {
             ctrl.onModeChange(
@@ -133,6 +188,7 @@ export function useAudioOrchestrator() {
               selected.sceneId as SceneId,
               selected.timeOfDay,
               selected.showStoryOverlay,
+              ambientContext,
             );
           }
         }

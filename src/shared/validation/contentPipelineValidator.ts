@@ -30,6 +30,10 @@ import { getGoldenPathDerivationReport } from '@/engine/guidedStory/buildGuidedS
 import { QUEST_ITEM_DEFINITIONS } from '@/data/questItems';
 import { isKnownMinigameId, MINIGAME_COMPLETION_FLAGS } from '@/shared/constants/minigames';
 import { QUEST_MINIGAME_MAP } from '@/data/questMinigameMap';
+import {
+  validateAmbientSoundDefs,
+  validateSceneAmbienceCoverage,
+} from '@/data/ambientSounds';
 import { ENEMY_TEMPLATES } from '@/engine/combat/enemies';
 import {
   QUEST_START_ITEMS,
@@ -691,6 +695,15 @@ function validateGoldenPath(reg: ReturnType<typeof buildSets>, out: ValidationIs
   }
 }
 
+function validateAmbientContent(out: ValidationIssue[]): void {
+  for (const item of validateAmbientSoundDefs()) {
+    out.push(issue('error', 'ambient', item.path, item.message));
+  }
+  for (const item of validateSceneAmbienceCoverage()) {
+    out.push(issue('error', 'ambient', item.path, item.message));
+  }
+}
+
 /** Run all content pipeline cross-reference checks. */
 export function validateContentPipeline(): ValidationReport {
   const reg = buildSets();
@@ -711,6 +724,7 @@ export function validateContentPipeline(): ValidationReport {
   validateCutscenes(reg, issues);
   validateQuestItems(reg, issues);
   validateGoldenPath(reg, issues);
+  validateAmbientContent(issues);
 
   const errorCount = issues.filter((i) => i.severity === 'error').length;
   const warningCount = issues.filter((i) => i.severity === 'warning').length;

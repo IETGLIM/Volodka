@@ -17,19 +17,28 @@ import {
   type MusicMood,
 } from '../../config/audioManifest';
 import {
-  getAmbienceForScene,
-  getAmbientTransitionDuration,
+  resolveAmbienceForScene,
+  getAmbienceAccessibilityText,
   type AmbientSoundType,
 } from '../../data/ambientSounds';
+import { deriveSceneWeather } from '@/shared/weather/deriveSceneWeather';
+import { isEffectiveReducedMotion } from '@/engine/accessibility/accessibilitySettings';
+import { isPageVisible } from '@/engine/frame/frameVisibility';
 import type { SceneId } from '@/config/sceneDefinitions';
 import type { GamePhase } from '@/shared/gamePhase';
 import { ControllerSession } from '@/engine/controller/ControllerSession';
 import { registerHmrDispose } from '@/shared/dev/hmrDispose';
 
+export interface AmbientPlayContext {
+  proceduralOverride?: AmbientSoundType | null;
+}
+
 export class SceneAudioController {
   private readonly session = new ControllerSession();
   private lastMusicMood: MusicMood | null = null;
   private enteredScenes = new Set<string>();
+  private lastResolvedAmbient: AmbientSoundType | null = null;
+  private ambientContext: AmbientPlayContext = {};
 
   init(): void {
     this.session.begin();
@@ -55,8 +64,12 @@ export class SceneAudioController {
     sceneId: SceneId,
     timeOfDay: number,
     showStoryOverlay: boolean,
+    ambientContext?: AmbientPlayContext,
   ): void {
     if (!this.guard()) return;
+    if (ambientContext) {
+      this.ambientContext = ambientContext;
+    }
 
     if (phase === 'menu' || phase === 'intro') {
       musicEngine.stopMusic(1);
@@ -74,8 +87,11 @@ export class SceneAudioController {
     ambientEngine.setCombatMuted(phase === 'combat');
   }
 
-  onSceneEnter(sceneId: SceneId, timeOfDay: number): void {
+  onSceneEnter(sceneId: SceneId, timeOfDay: number, ambientContext?: AmbientPlayContext): void {
     if (!this.guard()) return;
+    if (ambientContext) {
+      this.ambientContext = ambientContext;
+    }
 
     const preset = getSceneReverbPreset(sceneId);
     if (preset) {
@@ -155,17 +171,58 @@ export class SceneAudioController {
     }
   }
 
+  onAccessibilityChanged(): void {
+    if (!this.guard()) return;
+    ambientEngine.setReducedMotion(isEffectiveReducedMotion());
+  }
+
+  onVisibilityChanged(visible: boolean): void {
+    if (!this.guard()) return;
+    ambientEngine.setPaused(!visible);
+  }
+
+  getLastResolvedAmbient(): AmbientSoundType | null {
+    return this.lastResolvedAmbient;
+  }
+
+  getAmbienceAccessibilityCaption(): string | null {
+    return getAmbienceAccessibilityText(this.lastResolvedAmbient);
+  }
+
+  setAmbientPlayContext(context: AmbientPlayContext): void {
+    if (!this.guard()) return;
+    this.ambientContext = context;
+  }
+
+  refreshSceneAmbient(sceneId: SceneId, timeOfDay: number): void {
+    if (!this.guard()) return;
+    this.playSceneAmbient(sceneId, timeOfDay);
+  }
+
   onSoundPlay(type: string): void {
     if (!this.guard()) return;
     sfxEngine.playNamedSound(type);
   }
 
-  private playSceneAmbient(sceneId: string, timeOfDay: number): void {
-    const ambientType = getAmbienceForScene(sceneId, timeOfDay);
-    if (ambientType) {
-      const crossfadeMs = getAmbientTransitionDuration(sceneId);
-      ambientEngine.play(ambientType as AmbientSoundType, crossfadeMs);
+  private syncAccessibilityAndVisibility(): void {
+    ambientEngine.setReducedMotion(isEffectiveReducedMotion());
+    ambientEngine.setPaused(!isPageVisible());
+  }
+
+  private playSceneAmbient(sceneId: SceneId, timeOfDay: number): void {
+    this.syncAccessibilityAndVisibility();
+
+    const weather = deriveSceneWeather(sceneId, timeOfDay).type;
+    const resolved = resolveAmbienceForScene(sceneId, timeOfDay, {
+      proceduralOverride: this.ambientContext.proceduralOverride ?? undefined,
+      weather,
+    });
+
+    if (resolved) {
+      this.lastResolvedAmbient = resolved.sound;
+      ambientEngine.play(resolved.sound, resolved.transitionDuration);
     } else {
+      this.lastResolvedAmbient = null;
       ambientEngine.stopAll();
     }
   }
