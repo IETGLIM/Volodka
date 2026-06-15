@@ -10,6 +10,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { eventBus, EventBusPriority } from '@/engine/EventBus';
 import { useScreenEffectsVitals } from '@/store/selectors';
+import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 
 /* ── Effect state types ── */
 interface FlashEffect {
@@ -58,6 +59,7 @@ export function triggerXpGain(amount: number, source?: string) {
 
 /* ── Component ── */
 export function ScreenEffects() {
+  const reducedMotion = useEffectiveReducedMotion();
   const [flashes, setFlashes] = useState<FlashEffect[]>([]);
   const [shake, setShake] = useState<ShakeEffect | null>(null);
   const [vignetteIntensity, setVignetteIntensity] = useState(0);
@@ -70,8 +72,8 @@ export function ScreenEffects() {
       const flash: FlashEffect = {
         id: nextEffectId++,
         color: payload.color,
-        opacity: payload.opacity,
-        duration: payload.duration,
+        opacity: reducedMotion ? Math.min(payload.opacity, 0.12) : payload.opacity,
+        duration: reducedMotion ? Math.min(payload.duration, 120) : payload.duration,
       };
       setFlashes((prev) => [...prev, flash]);
       setTimeout(() => {
@@ -79,11 +81,12 @@ export function ScreenEffects() {
       }, payload.duration + 50);
     });
     return unsub;
-  }, []);
+  }, [reducedMotion]);
 
   // ── Shake listener ──
   useEffect(() => {
     const unsub = eventBus.on('fx:shake', (payload) => {
+      if (reducedMotion) return;
       const effect: ShakeEffect = {
         id: nextEffectId++,
         intensity: payload.intensity,
@@ -95,34 +98,37 @@ export function ScreenEffects() {
       }, payload.duration + 50);
     });
     return unsub;
-  }, []);
+  }, [reducedMotion]);
 
   // ── Vignette listener ──
   useEffect(() => {
     const unsub = eventBus.on('fx:vignette', (payload) => {
+      if (reducedMotion) return;
       setVignetteIntensity(payload.intensity);
       setTimeout(() => setVignetteIntensity(0), payload.duration);
     });
     return unsub;
-  }, []);
+  }, [reducedMotion]);
 
   // ── Chromatic aberration listener ──
   useEffect(() => {
     const unsub = eventBus.on('fx:chromatic', (payload) => {
+      if (reducedMotion) return;
       setChromaticIntensity(payload.intensity);
       setTimeout(() => setChromaticIntensity(0), payload.duration);
     });
     return unsub;
-  }, []);
+  }, [reducedMotion]);
 
   // ── Slow motion listener ──
   useEffect(() => {
     const unsub = eventBus.on('fx:slowmo', (payload) => {
+      if (reducedMotion) return;
       setIsSlowMo(true);
       setTimeout(() => setIsSlowMo(false), payload.duration);
     });
     return unsub;
-  }, []);
+  }, [reducedMotion]);
 
   // ── Auto-trigger from game events ──
   useEffect(() => {
@@ -130,23 +136,24 @@ export function ScreenEffects() {
 
     unsubs.push(eventBus.on('combat:hit', (payload) => {
       if (payload.isPlayerHit) {
-        triggerFlash('rgba(255,50,50,0.25)', 0.25, 200);
-        triggerShake(6, 300);
+        triggerFlash('rgba(255,50,50,0.25)', reducedMotion ? 0.1 : 0.25, reducedMotion ? 100 : 200);
+        if (!reducedMotion) triggerShake(6, 300);
       } else {
-        triggerFlash('rgba(255,200,50,0.1)', 0.1, 150);
+        triggerFlash('rgba(255,200,50,0.1)', reducedMotion ? 0.06 : 0.1, reducedMotion ? 80 : 150);
       }
     }, EventBusPriority.FX));
 
     unsubs.push(eventBus.on('combat:victory', () => {
-      triggerFlash('rgba(251,191,36,0.2)', 0.2, 600);
+      triggerFlash('rgba(251,191,36,0.2)', reducedMotion ? 0.08 : 0.2, reducedMotion ? 120 : 600);
     }, EventBusPriority.FX));
 
     unsubs.push(eventBus.on('combat:defeat', () => {
-      triggerFlash('rgba(255,0,0,0.35)', 0.35, 800);
-      triggerVignette(0.8, 3000);
+      triggerFlash('rgba(255,0,0,0.35)', reducedMotion ? 0.1 : 0.35, reducedMotion ? 120 : 800);
+      if (!reducedMotion) triggerVignette(0.8, 3000);
     }, EventBusPriority.FX));
 
     unsubs.push(eventBus.on('fx:glitch', (payload) => {
+      if (reducedMotion) return;
       triggerChromaticAberration(payload.intensity * 2, payload.duration);
       if (payload.intensity > 0.5) {
         triggerShake(payload.intensity * 4, payload.duration);
@@ -154,11 +161,11 @@ export function ScreenEffects() {
     }));
 
     unsubs.push(eventBus.on('skill:level_up', () => {
-      triggerFlash('rgba(251,191,36,0.15)', 0.15, 400);
+      triggerFlash('rgba(251,191,36,0.15)', reducedMotion ? 0.08 : 0.15, reducedMotion ? 100 : 400);
     }));
 
     return () => { for (const u of unsubs) u(); };
-  }, []);
+  }, [reducedMotion]);
 
   const shakeStyle: React.CSSProperties = shake
     ? {

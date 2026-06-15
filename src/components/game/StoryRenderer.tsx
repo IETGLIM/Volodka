@@ -26,6 +26,7 @@ import {
   buildNarrativeLiveMessage,
   resolveNarrativeText,
 } from '@/shared/narrativePresentation';
+import { appendTrueEndEpilogueReflection } from '@/engine/story/resolveTrueEndEpilogue';
 import {
   CinematicNarrativeChoices,
   CinematicNarrativeFrame,
@@ -159,10 +160,12 @@ export function StoryRenderer() {
     [storyNodes, currentNodeId, storyPackVersion],
   );
 
-  const resolvedText = useMemo(
-    () => (node ? resolveNarrativeText(node, karma) : ''),
-    [node, karma],
-  );
+  const resolvedText = useMemo(() => {
+    if (!node) return '';
+    const base = resolveNarrativeText(node, karma);
+    if (node.id !== 'act7_true_end') return base;
+    return appendTrueEndEpilogueReflection(base, { flags, collectedPoems });
+  }, [node, karma, flags, collectedPoems]);
 
   const { displayed, done, skip, reducedMotion } = useNarrativeTypewriter(resolvedText, 28);
 

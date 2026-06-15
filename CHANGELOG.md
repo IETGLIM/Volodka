@@ -1,5 +1,12 @@
 # Changelog — ВОЛОДЬКА RPG
 
+## v4.2.5 — 15 июня 2026
+
+### AAA polish pass (endings + accessibility)
+- **True ending epilogue**: `resolveTrueEndEpilogue` appends up to 3 personalized lines to `act7_true_end` from ending flags, poem collection, and NPC fates (Зарема, Дмитрий, Виктория, ЧК, «Заря-М»).
+- **ScreenEffects**: `useEffectiveReducedMotion` — shake/vignette/chromatic/slowmo off; combat flashes softened when reduced motion is on.
+- **Tests**: `resolveTrueEndEpilogue.test.ts`.
+
 ## v4.2.4 — 15 июня 2026
 
 ### AAA polish pass (presentation profile)
