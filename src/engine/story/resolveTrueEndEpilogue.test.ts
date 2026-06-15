@@ -51,4 +51,21 @@ describe('resolveTrueEndEpilogue', () => {
     expect(reflection).toContain('прощение');
     expect(reflection).not.toContain('Предательство');
   });
+
+  it('prefers exile scar over generic traitor when Dmitry was banished', () => {
+    const reflection = buildTrueEndEpilogueReflection({
+      flags: { traitor_revealed: true, dmitry_exiled: true },
+      collectedPoems: [],
+    });
+    expect(reflection).toContain('изгнан');
+    expect(reflection).not.toContain('Предательство');
+  });
+
+  it('includes guild restored and peace path reflections', () => {
+    const reflection = buildTrueEndEpilogueReflection({
+      flags: { ending_true_guardian: true, guild_restored: true, peace_chosen: true },
+      collectedPoems: [],
+    });
+    expect(reflection).toContain('гильдию');
+  });
 });

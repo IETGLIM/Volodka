@@ -11,6 +11,12 @@ import {
   createRooftopHorizonStarGeometry,
   createRooftopSunsetGalaxySkyTexture,
   createStreetNightSynthwaveSkyTexture,
+  createStreetWinterColdSkyTexture,
+  createVolodkaCorridorRainySkyTexture,
+  createVolodkaRoomNightSkyTexture,
+  createAbandonedFactoryIndustrialSkyTexture,
+  createFactoryBasementCoreGlowTexture,
+  createZaremaAlbertWarmSkyTexture,
 } from './proceduralSkyTextures';
 
 describe('proceduralSkyTextures', () => {
@@ -95,5 +101,21 @@ describe('proceduralSkyTextures', () => {
     expect(tex.image).toBeInstanceOf(HTMLCanvasElement);
     expect(tex.wrapS).toBe(THREE.ClampToEdgeWrapping);
     tex.dispose();
+  });
+
+  it('creates hero interior and industrial ceiling washes with clamp wrapping', () => {
+    for (const create of [
+      createVolodkaRoomNightSkyTexture,
+      createVolodkaCorridorRainySkyTexture,
+      createAbandonedFactoryIndustrialSkyTexture,
+      createFactoryBasementCoreGlowTexture,
+      createZaremaAlbertWarmSkyTexture,
+      createStreetWinterColdSkyTexture,
+    ]) {
+      const tex = create();
+      expect(tex.image).toBeInstanceOf(HTMLCanvasElement);
+      expect(tex.wrapT).toBe(THREE.ClampToEdgeWrapping);
+      tex.dispose();
+    }
   });
 });

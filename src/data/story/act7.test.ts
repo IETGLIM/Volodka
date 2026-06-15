@@ -92,6 +92,23 @@ describe('Act 7 story presentation', () => {
     });
   });
 
+  it('act7 endings share karma thresholds and scene labels', () => {
+    const endings = [
+      STORY_NODES_ACT7.act7_ending_poet_legacy,
+      STORY_NODES_ACT7.act7_ending_guardian,
+      STORY_NODES_ACT7.act7_ending_wanderer,
+    ];
+    for (const node of endings) {
+      expect(node.karmaThresholds).toEqual({ high: 70, low: 35 });
+      expect(node.guidanceSceneLabel, node.id).toBeTruthy();
+      expect(node.musicCue, node.id).toBeTruthy();
+      expect(node.autoSave, node.id).toBe(true);
+    }
+    expect(STORY_NODES_ACT7.act7_ending_wanderer.sceneId).toBe('street_winter');
+    expect(STORY_NODES_ACT7.act7_ending_poet_legacy.sceneId).toBe('cafe_evening');
+    expect(STORY_NODES_ACT7.act7_ending_guardian.sceneId).toBe('library_day');
+  });
+
   it('key act 7 nodes have golden path hints', () => {
     const ids = [
       'act7_bridge',

@@ -19,6 +19,9 @@ describe('proceduralLutTextures', () => {
     expect(resolveProceduralLutKind('sleep_dream')).toBe('synthwave_neon');
     expect(resolveProceduralLutKind('home_evening')).toBe('warm_interior');
     expect(resolveProceduralLutKind('library_day')).toBe('gothic_dust');
+    expect(resolveProceduralLutKind('volodka_room')).toBe('warm_interior');
+    expect(resolveProceduralLutKind('factory_basement')).toBe('gothic_dust');
+    expect(resolveProceduralLutKind('street_winter')).toBe('gothic_dust');
     expect(resolveProceduralLutKind('park_day')).toBeNull();
   });
 
@@ -49,5 +52,7 @@ describe('proceduralLutTextures', () => {
   it('covers hero interior scenes in registry', () => {
     expect(PROCEDURAL_LUT_SCENES.office_day).toBe('gothic_dust');
     expect(PROCEDURAL_LUT_SCENES.home_evening).toBe('warm_interior');
+    expect(PROCEDURAL_LUT_SCENES.volodka_corridor).toBe('gothic_dust');
+    expect(PROCEDURAL_LUT_SCENES.zarema_albert_room).toBe('warm_interior');
   });
 });

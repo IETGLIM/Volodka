@@ -10,6 +10,7 @@ import {
 import { useEnvironmentLod } from './lod/EnvironmentLodProvider';
 import { Lamp, Rug, Radiator } from './lazyInteriorModels';
 import { useCachedCanvasTexture } from '@/hooks/useCachedCanvasTexture';
+import { createVolodkaRoomNightSkyTexture } from '@/engine/graphics/proceduralSkyTextures';
 import { VolodkaRoomClutter } from './sceneChunks/volodkaRoom';
 import {
   createGrafanaTexture,
@@ -125,6 +126,10 @@ export function VolodkaRoomVisual({ livePlayerPositionRef: _livePlayerPositionRe
   // Canvas textures created synchronously via useMemo
   const floorTexture = useCachedCanvasTexture('volodka_room:floor', createFloorTexture);
   const wallTexture = useCachedCanvasTexture('volodka_room:wall', createWallTexture);
+  const ceilingWashTexture = useCachedCanvasTexture(
+    'volodka_room:matrix-ceiling',
+    createVolodkaRoomNightSkyTexture,
+  );
   const { lod } = useEnvironmentLod();
 
   // ── Animated elements refs ──
@@ -195,10 +200,15 @@ export function VolodkaRoomVisual({ livePlayerPositionRef: _livePlayerPositionRe
         />
       </mesh>
 
-      {/* ── Ceiling ── */}
+      {/* ── Ceiling — matrix monitor HDR wash ── */}
       <mesh position={[0, H, 0]} rotation-x={Math.PI / 2} geometry={geo_pln_1}>
-
-        <meshStandardMaterial color="#1a1820" roughness={0.95} emissive="#0a0810" emissiveIntensity={0.15} />
+        <meshStandardMaterial
+          map={ceilingWashTexture}
+          color="#101820"
+          emissive="#183828"
+          emissiveIntensity={0.26}
+          roughness={0.95}
+        />
       </mesh>
 
       {/* ── Back Wall (z = -D/2) ── */}

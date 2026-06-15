@@ -30,6 +30,21 @@ const EPILOGUE_REFLECTIONS: readonly EpilogueReflection[] = [
     line: 'Ты ушёл в дорогу — но город помнит твой след.',
   },
   {
+    priority: 13,
+    when: ({ flags }) => flags.guild_restored === true,
+    line: 'Гильдия восстановлена — устав написан стихами и кодом.',
+  },
+  {
+    priority: 14,
+    when: ({ flags }) => flags.peace_chosen === true,
+    line: 'Ты выбрал примирение — снег в «Синей яме» стоит дороже победы.',
+  },
+  {
+    priority: 15,
+    when: ({ flags }) => flags.revolution_chosen === true,
+    line: 'Башня рухнула — революция не нуждается в памятнике, только в слове.',
+  },
+  {
     priority: 20,
     when: ({ collectedPoems }) =>
       collectedPoems.filter(isMainPoemId).length >= TOTAL_MAIN_POEMS,
@@ -49,11 +64,19 @@ const EPILOGUE_REFLECTIONS: readonly EpilogueReflection[] = [
   {
     priority: 32,
     when: ({ flags }) =>
-      flags.traitor_revealed === true && flags.dmitry_forgiven !== true,
+      flags.traitor_revealed === true
+      && flags.dmitry_forgiven !== true
+      && flags.dmitry_exiled !== true,
     line: 'Предательство Дмитрия оставило шрам — но сопротивление выстояло.',
   },
   {
-    priority: 33,
+    priority: 34,
+    when: ({ flags }) =>
+      flags.traitor_revealed === true && flags.dmitry_exiled === true,
+    line: 'Дмитрий изгнан с чипом — память города чище, но шрам остался.',
+  },
+  {
+    priority: 35,
     when: ({ flags }) => flags.maria_truth_accepted === true,
     line: 'Виктория улыбается из сети — ты поверил в её человечность.',
   },
@@ -71,6 +94,16 @@ const EPILOGUE_REFLECTIONS: readonly EpilogueReflection[] = [
     priority: 42,
     when: ({ flags }) => flags.zarya_shutdown === true,
     line: 'Экран «Зари-М» погас тихо — стихи вернулись к людям.',
+  },
+  {
+    priority: 43,
+    when: ({ flags }) => flags.quiet_song_ritka === true,
+    line: 'Ритка поёт у воды — песня, которую не сжать в архив.',
+  },
+  {
+    priority: 44,
+    when: ({ flags }) => flags.final_poem_read === true,
+    line: 'Последняя тетрадь Владимира прочитана — ты пишешь продолжение.',
   },
 ] as const;
 

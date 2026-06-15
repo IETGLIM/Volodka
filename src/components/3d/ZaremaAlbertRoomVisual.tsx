@@ -7,6 +7,7 @@ import { Desk, Chair, Laptop, Lamp, Radiator, Plant } from './lazyInteriorModels
 import { useEnvironmentLod } from './lod/EnvironmentLodProvider';
 import { EnvironmentDetail } from './lod/PropDistanceGate';
 import { useCachedCanvasTexture } from '@/hooks/useCachedCanvasTexture';
+import { createZaremaAlbertWarmSkyTexture } from '@/engine/graphics/proceduralSkyTextures';
 import { registerModuleGeometries } from '@/engine/three/moduleGeometryRegistry';
 
 interface ZaremaAlbertRoomVisualProps {
@@ -66,6 +67,10 @@ registerModuleGeometries([geo_pln_1, geo_pln_2, geo_box_3, geo_box_4, geo_box_5,
 export function ZaremaAlbertRoomVisual({ livePlayerPositionRef: _livePlayerPositionRef }: ZaremaAlbertRoomVisualProps) {
   const floorTexture = useCachedCanvasTexture('zarema_albert_room:floor', createRoomFloorTexture);
   const wallTexture = useCachedCanvasTexture('zarema_albert_room:wall', createRoomWallTexture);
+  const ceilingWashTexture = useCachedCanvasTexture(
+    'zarema_albert_room:warm-ceiling',
+    createZaremaAlbertWarmSkyTexture,
+  );
   const { lod } = useEnvironmentLod();
 
   const W = 8;
@@ -87,10 +92,15 @@ export function ZaremaAlbertRoomVisual({ livePlayerPositionRef: _livePlayerPosit
         />
       </mesh>
 
-      {/* ── Ceiling ── */}
+      {/* ── Ceiling — warm domestic HDR wash ── */}
       <mesh position={[0, H, 0]} rotation-x={Math.PI / 2} geometry={geo_pln_1}>
-
-        <meshStandardMaterial color="#d8c8b0" roughness={0.95} />
+        <meshStandardMaterial
+          map={ceilingWashTexture}
+          color="#403020"
+          emissive="#584838"
+          emissiveIntensity={0.24}
+          roughness={0.95}
+        />
       </mesh>
 
       {/* ── Walls ── */}

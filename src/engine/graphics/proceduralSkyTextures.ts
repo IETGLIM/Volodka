@@ -334,6 +334,231 @@ export function createHomeEveningWarmSkyTexture(): THREE.CanvasTexture {
   return tex;
 }
 
+/** Matrix monitor glow ceiling wash for volodka_room — noir apartment HDR. */
+export function createVolodkaRoomNightSkyTexture(): THREE.CanvasTexture {
+  const w = 64;
+  const h = 256;
+  const canvas = document.createElement('canvas');
+  canvas.width = w;
+  canvas.height = h;
+  const ctx = canvas.getContext('2d')!;
+
+  const grad = ctx.createLinearGradient(0, 0, 0, h);
+  grad.addColorStop(0.0, '#060810');
+  grad.addColorStop(0.2, '#0a1018');
+  grad.addColorStop(0.42, '#101828');
+  grad.addColorStop(0.62, '#142030');
+  grad.addColorStop(0.8, '#183828');
+  grad.addColorStop(1.0, '#0c1018');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, w, h);
+
+  for (let i = 0; i < 5; i++) {
+    const cx = seededRand(i * 31 + 8401) * w;
+    const cy = 18 + seededRand(i * 47 + 8401) * (h * 0.4);
+    const radius = 12 + seededRand(i * 59 + 8401) * 20;
+    const glow = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius);
+    const huePick = seededRand(i * 73 + 8401);
+    if (huePick < 0.45) {
+      glow.addColorStop(0, 'rgba(0, 255, 136, 0.16)');
+      glow.addColorStop(1, 'rgba(8, 16, 24, 0)');
+    } else if (huePick < 0.75) {
+      glow.addColorStop(0, 'rgba(68, 136, 238, 0.14)');
+      glow.addColorStop(1, 'rgba(8, 12, 24, 0)');
+    } else {
+      glow.addColorStop(0, 'rgba(255, 200, 120, 0.1)');
+      glow.addColorStop(1, 'rgba(12, 10, 16, 0)');
+    }
+    ctx.fillStyle = glow;
+    ctx.fillRect(0, 0, w, h);
+  }
+
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.wrapS = THREE.ClampToEdgeWrapping;
+  tex.wrapT = THREE.ClampToEdgeWrapping;
+  return tex;
+}
+
+/** Dim rainy corridor ceiling wash for volodka_corridor — communal noir. */
+export function createVolodkaCorridorRainySkyTexture(): THREE.CanvasTexture {
+  const w = 64;
+  const h = 256;
+  const canvas = document.createElement('canvas');
+  canvas.width = w;
+  canvas.height = h;
+  const ctx = canvas.getContext('2d')!;
+
+  const grad = ctx.createLinearGradient(0, 0, 0, h);
+  grad.addColorStop(0.0, '#101018');
+  grad.addColorStop(0.28, '#181820');
+  grad.addColorStop(0.52, '#242430');
+  grad.addColorStop(0.72, '#303038');
+  grad.addColorStop(0.88, '#383840');
+  grad.addColorStop(1.0, '#1a1a22');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, w, h);
+
+  for (let i = 0; i < 4; i++) {
+    const cx = seededRand(i * 27 + 8503) * w;
+    const cy = 20 + seededRand(i * 41 + 8503) * (h * 0.45);
+    const radius = 14 + seededRand(i * 53 + 8503) * 22;
+    const haze = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius);
+    haze.addColorStop(0, 'rgba(255, 220, 140, 0.12)');
+    haze.addColorStop(1, 'rgba(24, 24, 32, 0)');
+    ctx.fillStyle = haze;
+    ctx.fillRect(0, 0, w, h);
+  }
+
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.wrapS = THREE.ClampToEdgeWrapping;
+  tex.wrapT = THREE.ClampToEdgeWrapping;
+  return tex;
+}
+
+/** Rust industrial ceiling wash for abandoned_factory — gothic decay. */
+export function createAbandonedFactoryIndustrialSkyTexture(): THREE.CanvasTexture {
+  const w = 64;
+  const h = 256;
+  const canvas = document.createElement('canvas');
+  canvas.width = w;
+  canvas.height = h;
+  const ctx = canvas.getContext('2d')!;
+
+  const grad = ctx.createLinearGradient(0, 0, 0, h);
+  grad.addColorStop(0.0, '#0a0806');
+  grad.addColorStop(0.25, '#1a1410');
+  grad.addColorStop(0.5, '#2a2018');
+  grad.addColorStop(0.72, '#3a2820');
+  grad.addColorStop(0.88, '#4a3028');
+  grad.addColorStop(1.0, '#1a1008');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, w, h);
+
+  for (let i = 0; i < 5; i++) {
+    const cx = seededRand(i * 33 + 8605) * w;
+    const cy = 16 + seededRand(i * 49 + 8605) * (h * 0.5);
+    const radius = 16 + seededRand(i * 61 + 8605) * 26;
+    const rust = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius);
+    rust.addColorStop(0, 'rgba(180, 80, 40, 0.14)');
+    rust.addColorStop(1, 'rgba(20, 12, 8, 0)');
+    ctx.fillStyle = rust;
+    ctx.fillRect(0, 0, w, h);
+  }
+
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.wrapS = THREE.ClampToEdgeWrapping;
+  tex.wrapT = THREE.ClampToEdgeWrapping;
+  return tex;
+}
+
+/** «Заря-М» core glow ceiling wash for factory_basement — machine confession mood. */
+export function createFactoryBasementCoreGlowTexture(): THREE.CanvasTexture {
+  const w = 64;
+  const h = 256;
+  const canvas = document.createElement('canvas');
+  canvas.width = w;
+  canvas.height = h;
+  const ctx = canvas.getContext('2d')!;
+
+  const grad = ctx.createLinearGradient(0, 0, 0, h);
+  grad.addColorStop(0.0, '#060a08');
+  grad.addColorStop(0.22, '#0a1410');
+  grad.addColorStop(0.45, '#102018');
+  grad.addColorStop(0.65, '#183028');
+  grad.addColorStop(0.82, '#204838');
+  grad.addColorStop(1.0, '#101818');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, w, h);
+
+  for (let i = 0; i < 4; i++) {
+    const cx = seededRand(i * 29 + 8707) * w;
+    const cy = 20 + seededRand(i * 43 + 8707) * (h * 0.42);
+    const radius = 14 + seededRand(i * 57 + 8707) * 24;
+    const pulse = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius);
+    pulse.addColorStop(0, 'rgba(0, 220, 120, 0.2)');
+    pulse.addColorStop(1, 'rgba(8, 16, 12, 0)');
+    ctx.fillStyle = pulse;
+    ctx.fillRect(0, 0, w, h);
+  }
+
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.wrapS = THREE.ClampToEdgeWrapping;
+  tex.wrapT = THREE.ClampToEdgeWrapping;
+  return tex;
+}
+
+/** Cozy domestic ceiling wash for zarema_albert_room — warm tea-and-pie mood. */
+export function createZaremaAlbertWarmSkyTexture(): THREE.CanvasTexture {
+  const w = 64;
+  const h = 256;
+  const canvas = document.createElement('canvas');
+  canvas.width = w;
+  canvas.height = h;
+  const ctx = canvas.getContext('2d')!;
+
+  const grad = ctx.createLinearGradient(0, 0, 0, h);
+  grad.addColorStop(0.0, '#181008');
+  grad.addColorStop(0.25, '#282018');
+  grad.addColorStop(0.5, '#403020');
+  grad.addColorStop(0.72, '#584838');
+  grad.addColorStop(0.88, '#685848');
+  grad.addColorStop(1.0, '#302820');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, w, h);
+
+  for (let i = 0; i < 4; i++) {
+    const cx = seededRand(i * 31 + 8809) * w;
+    const cy = 22 + seededRand(i * 47 + 8809) * (h * 0.4);
+    const radius = 14 + seededRand(i * 59 + 8809) * 20;
+    const glow = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius);
+    glow.addColorStop(0, 'rgba(255, 200, 120, 0.16)');
+    glow.addColorStop(1, 'rgba(32, 24, 16, 0)');
+    ctx.fillStyle = glow;
+    ctx.fillRect(0, 0, w, h);
+  }
+
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.wrapS = THREE.ClampToEdgeWrapping;
+  tex.wrapT = THREE.ClampToEdgeWrapping;
+  return tex;
+}
+
+/** Cold overcast winter sky dome for street_winter — desolate departure road. */
+export function createStreetWinterColdSkyTexture(): THREE.CanvasTexture {
+  const w = 64;
+  const h = 256;
+  const canvas = document.createElement('canvas');
+  canvas.width = w;
+  canvas.height = h;
+  const ctx = canvas.getContext('2d')!;
+
+  const grad = ctx.createLinearGradient(0, 0, 0, h);
+  grad.addColorStop(0.0, '#506070');
+  grad.addColorStop(0.22, '#607080');
+  grad.addColorStop(0.45, '#708898');
+  grad.addColorStop(0.65, '#8098a8');
+  grad.addColorStop(0.82, '#90a8b8');
+  grad.addColorStop(1.0, '#a0b0c0');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, w, h);
+
+  for (let i = 0; i < 5; i++) {
+    const cx = seededRand(i * 23 + 8911) * w;
+    const cy = 12 + seededRand(i * 37 + 8911) * (h * 0.35);
+    const radius = 16 + seededRand(i * 51 + 8911) * 28;
+    const snow = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius);
+    snow.addColorStop(0, 'rgba(220, 230, 240, 0.2)');
+    snow.addColorStop(1, 'rgba(96, 112, 128, 0)');
+    ctx.fillStyle = snow;
+    ctx.fillRect(0, 0, w, h);
+  }
+
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.wrapS = THREE.ClampToEdgeWrapping;
+  tex.wrapT = THREE.ClampToEdgeWrapping;
+  return tex;
+}
+
 /** Upper-hemisphere starfield for sleep_dream — fog-exempt, slow-rotatable. */
 export function createDreamGalaxyStarGeometry(starCount = 220): THREE.BufferGeometry {
   const positions = new Float32Array(starCount * 3);

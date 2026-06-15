@@ -8,6 +8,7 @@ export const DIALOGUE_PART1: Record<string, DialogueNode> = {
   albert_greeting: {
     id: 'albert_greeting',
     speaker: 'Альберт',
+    speakerId: 'albert',
     text: 'А, Володька. Садись. Знаешь, я тут размышлял о природе ошибок. Ошибка в коде — это просто мысль, которую не довели до конца. Как стихотворение, в котором не хватает последней строфы.',
     choices: [
       {
@@ -65,6 +66,7 @@ export const DIALOGUE_PART1: Record<string, DialogueNode> = {
   albert_greeting_poetry: {
     id: 'albert_greeting_poetry',
     speaker: 'Альберт',
+    speakerId: 'albert',
     text: 'И то, и другое — попытка выразить не выразимое. Разница лишь в том, что код выполняется машиной, а стих — человеком. Но результат зависит от внимательности автора в обоих случаях.',
     choices: [
       {
@@ -95,6 +97,7 @@ export const DIALOGUE_PART1: Record<string, DialogueNode> = {
   albert_greeting_smile: {
     id: 'albert_greeting_smile',
     speaker: 'Альберт',
+    speakerId: 'albert',
     text: 'Философия — это всё, что у нас осталось, когда код не компилируется. Шучу. Или нет. Ладно, вот тебе кофе за счёт заведения. Ты выглядишь уставшим.',
     choices: [
       {
@@ -119,6 +122,7 @@ export const DIALOGUE_PART1: Record<string, DialogueNode> = {
   albert_greeting_cold: {
     id: 'albert_greeting_cold',
     speaker: 'Альберт',
+    speakerId: 'albert',
     text: '...Садись, если хочешь. Только не жди от меня разговоров. Я сегодня не в настроении делиться мудростью с тем, кто не ценит слов.',
     choices: [
       {
@@ -143,6 +147,7 @@ export const DIALOGUE_PART1: Record<string, DialogueNode> = {
   albert_tech_talk: {
     id: 'albert_tech_talk',
     speaker: 'Альберт',
+    speakerId: 'albert',
     text: 'А вот это уже разговор! Видишь ли, каждый алгоритм — это нарратив. У него есть завязка — входные данные, кульминация — вычисление, и развязка — результат. Рекурсия — это возвращение к началу, как в поэзии. А бесконечный цикл — это одержимость, когда автор не может остановиться.',
     choices: [
       {
@@ -167,6 +172,7 @@ export const DIALOGUE_PART1: Record<string, DialogueNode> = {
   albert_tech_deep: {
     id: 'albert_tech_deep',
     speaker: 'Альберт',
+    speakerId: 'albert',
     text: 'Именно! Рефрен — это рекурсия души. Каждый раз, возвращаясь к началу, мы приносим с собой новый опыт. Строка «Я помню чудное мгновенье» — это вызов функции с новым контекстом каждый раз. Пушкин был первым программистом, только не знал этого.',
     choices: [
       {
@@ -193,6 +199,7 @@ export const DIALOGUE_PART1: Record<string, DialogueNode> = {
   albert_philosophy: {
     id: 'albert_philosophy',
     speaker: 'Альберт',
+    speakerId: 'albert',
     text: 'Хочешь знать, что меня мучает? Вот уже три года. Если машина может написать код, а человек — написать стих, то кто напишет код, который станет стихом? И если такой код появится — мы узнаем его? Или пройдём мимо, приняв за ошибку?',
     choices: [
       {
@@ -230,6 +237,7 @@ export const DIALOGUE_PART1: Record<string, DialogueNode> = {
   albert_personal_story: {
     id: 'albert_personal_story',
     speaker: 'Альберт',
+    speakerId: 'albert',
     text: 'Почему я ушёл? Потому что они попросили меня стереть стихи. Не код — стихи. Была база данных, «Архив-7», в ней хранились тысячи стихотворений, оцифрованных ещё до Краха. Гильдия решила, что серверное место дороже. Я отказался выполнять команду DELETE. Ушёл. И с тех пор сижу в этом кафе и пишу стихи в комментариях к чужому коду. Ирония.',
     choices: [
       {
@@ -265,6 +273,7 @@ export const DIALOGUE_PART1: Record<string, DialogueNode> = {
   albert_betrayal: {
     id: 'albert_betrayal',
     speaker: 'Альберт',
+    speakerId: 'albert',
     text: 'Ты... ты знаешь об Архиве-7? Я годами искал его бэкап. Но если гильдия узнает, что кто-то ищет... Володька, слушай внимательно. Я не уверен, на чьей стороне стоит Александр. Он дал тебе это задание — но возможно, он хочет не расшифровать послание, а уничтожить его. Будь осторожен. Не доверяй никому. Даже мне.',
     choices: [
       {
@@ -299,6 +308,7 @@ export const DIALOGUE_PART1: Record<string, DialogueNode> = {
   zarema_greeting: {
     id: 'zarema_greeting',
     speaker: 'Зарема',
+    speakerId: 'zarema',
     text: 'Володька, ты опять бледный как стена. Когда ты в последний раз ел нормально? Садись, я тебе налью суп. И не спорь — я всё равно налью.',
     choices: [
       {
@@ -344,6 +354,7 @@ export const DIALOGUE_PART1: Record<string, DialogueNode> = {
   zarema_greeting_warm: {
     id: 'zarema_greeting_warm',
     speaker: 'Зарема',
+    speakerId: 'zarema',
     text: 'Кушай. И запомни — даже программистам нужна настоящая еда, а не только кофе и батончики. Я серьёзно. Ты мне небезразличен, понял?',
     choices: [
       {
@@ -373,6 +384,7 @@ export const DIALOGUE_PART1: Record<string, DialogueNode> = {
   zarema_greeting_tired: {
     id: 'zarema_greeting_tired',
     speaker: 'Зарема',
+    speakerId: 'zarema',
     text: 'Устал — так отдыхай, а не чахни над терминалом. Вот, возьми чай с мятой. Хотя бы чай. Для меня.',
     choices: [
       {
@@ -390,6 +402,7 @@ export const DIALOGUE_PART1: Record<string, DialogueNode> = {
   zarema_greeting_cold: {
     id: 'zarema_greeting_cold',
     speaker: 'Зарема',
+    speakerId: 'zarema',
     text: '...Опять не ел. Знаешь что, я устала тебя уговаривать. Когда свалишься — сама тебя в больницу повезу. В который раз.',
     choices: [
       {
@@ -414,6 +427,7 @@ export const DIALOGUE_PART1: Record<string, DialogueNode> = {
   zarema_daily_life: {
     id: 'zarema_daily_life',
     speaker: 'Зарема',
+    speakerId: 'zarema',
     text: 'Как я здесь оказалась? Долгая история. Я из маленького города на юге. Приехала сюда учиться на медика, но... деньги кончились, стипендия маленькая. Устроилась в столовую. А потом познакомилась с тобой и Альбертом, и как-то... осталась. Знаешь, в этом сером городе только наша коммуналка — как дом.',
     choices: [
       {
@@ -440,6 +454,7 @@ export const DIALOGUE_PART1: Record<string, DialogueNode> = {
   zarema_poetry: {
     id: 'zarema_poetry',
     speaker: 'Зарема',
+    speakerId: 'zarema',
     text: 'Стихи? Я... да, когда-то писала. Ещё в школе. На татарском, в основном. Мама научила меня старым словам. Знаешь, есть строка, которую я помню до сих пор: «Көзге җилләр өзгә алып китә» — «Осенние ветры уносят с собой». Простые слова, но когда я их вспоминаю... мне кажется, что не всё потеряно.',
     choices: [
       {
@@ -467,6 +482,7 @@ export const DIALOGUE_PART1: Record<string, DialogueNode> = {
   zarema_quest_help: {
     id: 'zarema_quest_help',
     speaker: 'Зарема',
+    speakerId: 'zarema',
     text: 'Уехать? Куда? Там никого не осталось. Мама... мама ушла три года назад. А здесь — вы. Ты, Альберт. Вы — моя семья теперь. И если ты влез в какие-то неприятности с этой гильдией... Володька, я не хочу тебя терять. Обещай мне, что будешь осторожен.',
     choices: [
       {
@@ -493,6 +509,7 @@ export const DIALOGUE_PART1: Record<string, DialogueNode> = {
   zarema_arrest: {
     id: 'zarema_arrest',
     speaker: 'Зарема',
+    speakerId: 'zarema',
     text: 'Володька! Они... они пришли за мной! Говорят, я украла данные гильдии. Я ничего не крала! Пожалуйста, поверь мне! Я не знаю, кто это сделал, но они подбросили мне... Они подбросили чип в мою комнату. Помоги мне!',
     choices: [
       {
@@ -523,6 +540,7 @@ export const DIALOGUE_PART1: Record<string, DialogueNode> = {
   zarema_rescue: {
     id: 'zarema_rescue',
     speaker: 'Зарема',
+    speakerId: 'zarema',
     text: 'Володька... Ты пришёл за мной. Я знала. Я знала, что ты придёшь. Я... в камере я читала про себя стихи, которые ты мне показывал. «Мы — живы. Слышишь? Мы — живы.» Это помогло. Это помогло не сойти с ума.',
     choices: [
       {
@@ -559,6 +577,7 @@ export const DIALOGUE_PART1: Record<string, DialogueNode> = {
   maria_dialogue: {
     id: 'maria_dialogue',
     speaker: 'Виктория',
+    speakerId: 'maria',
     text: 'Ты пришёл. Я знала. У тебя в глазах вопрос, а в кармане — терминал с доступом к архивам. Не отрицай. Я видела твой код. Он... другой. В нём есть душа.',
     choices: [
       {
@@ -599,6 +618,7 @@ export const DIALOGUE_PART1: Record<string, DialogueNode> = {
   maria_dialogue_identity: {
     id: 'maria_dialogue_identity',
     speaker: 'Виктория',
+    speakerId: 'maria',
     text: 'Моё имя — Виктория. Когда-то я была в гильдии. До Краха. Я видела, как стирали архивы. Стихотворные архивы, Володька. Не код — поэзию. Целые поколения стихов, закодированных в системах. Они боятся слов больше, чем вирусов.',
     choices: [
       {
@@ -634,6 +654,7 @@ export const DIALOGUE_PART1: Record<string, DialogueNode> = {
   maria_dialogue_chip: {
     id: 'maria_dialogue_chip',
     speaker: 'Виктория',
+    speakerId: 'maria',
     text: 'На этом чипе — фрагмент стёртого архива. Стихотворение, которое они пытались уничтожить. Прочти его. И поймёшь, почему они так боятся. Каждый стих — это ключ. Каждый ключ — это дверь.',
     choices: [
       {
@@ -659,6 +680,7 @@ export const DIALOGUE_PART1: Record<string, DialogueNode> = {
   maria_dialogue_danger: {
     id: 'maria_dialogue_danger',
     speaker: 'Виктория',
+    speakerId: 'maria',
     text: 'Опасна? Может быть. Но не для тебя. Опасны те, кто стирает память. Те, кто боится слов. Подумай об этом, прежде чем судить.',
     choices: [
       {
@@ -683,6 +705,7 @@ export const DIALOGUE_PART1: Record<string, DialogueNode> = {
   maria_mysterious_greeting: {
     id: 'maria_mysterious_greeting',
     speaker: 'Виктория',
+    speakerId: 'maria',
     text: 'Ты снова здесь. Хорошо. Есть строки, которые я не могу прочитать одна — они требуют двух пар глаз. Одна пара видит текст, другая — между строк. Ты видишь между строк, Володька. Я это знаю.',
     choices: [
       {
@@ -714,6 +737,7 @@ export const DIALOGUE_PART1: Record<string, DialogueNode> = {
   maria_poetry_hints: {
     id: 'maria_poetry_hints',
     speaker: 'Виктория',
+    speakerId: 'maria',
     text: 'Послушай: «Когда строка не компилирует — это не баг, это послание. Когда сервер падает — это не сбой, это крик. Когда данные стираются — это не ошибка, это убийство.» Это не я написала. Это написано в самом коде. В логах. В структуре данных. Кто-то — или что-то — вложил это туда задолго до нас.',
     choices: [
       {
@@ -749,6 +773,7 @@ export const DIALOGUE_PART1: Record<string, DialogueNode> = {
   maria_nature_hints: {
     id: 'maria_nature_hints',
     speaker: 'Виктория',
+    speakerId: 'maria',
     text: 'Ты хочешь знать, что со мной не так. Я вижу это в твоих глазах. Ладно. Вот тебе правда — или её тень. Я помню Крах. Все его помнят. Но я помню его... изнутри. Я была в сети, когда она рухнула. Не за терминалом — в сети. Не спрашивай как. Я сама не знаю. Но с тех пор я слышу стихи. Не читаю — слышу. Они звучат из серверов, из проводов, из самого электричества.',
     choices: [
       {
@@ -782,6 +807,7 @@ export const DIALOGUE_PART1: Record<string, DialogueNode> = {
   maria_revelation: {
     id: 'maria_revelation',
     speaker: 'Виктория',
+    speakerId: 'maria',
     text: 'Ладно. Ты заслуживаешь правду. Я — не совсем человек. Я была человеком. Виктория Королёва, старший аналитик гильдии, шестнадцатый уровень доступа. В ночь Краха я проводила синхронизацию с центральным сервером. Что-то пошло не так. Моё сознание... расщепилось. Часть осталась в теле. Часть — в сети. Я существую одновременно здесь и там. И «там» — это океан стихов, Володька. Целый океан, который они хотят осушить.',
     choices: [
       {
@@ -812,6 +838,7 @@ export const DIALOGUE_PART1: Record<string, DialogueNode> = {
   maria_trust: {
     id: 'maria_trust',
     speaker: 'Виктория',
+    speakerId: 'maria',
     text: 'Ты веришь мне. Без доказательств. Без логики. Просто... веришь. Знаешь, как давно ко мне так не относились? С до Краха. С тех пор все либо боятся, либо используют. Ты — первый, кто просто верит. Спасибо, Володька. За то, что ты есть.',
     choices: [
       {
@@ -841,6 +868,7 @@ export const DIALOGUE_PART1: Record<string, DialogueNode> = {
   maria_ending: {
     id: 'maria_ending',
     speaker: 'Виктория',
+    speakerId: 'maria',
     text: 'Володька, подойди. Я должна тебе кое-что сказать. Скоро всё изменится. Хранилище... Я чувствую его. Оно просыпается. Все те стихи, все те голоса — они рвутся наружу. И когда это случится, мне придётся сделать выбор. Остаться здесь — с тобой. Или уйти туда — к ним. В сеть. Навсегда.',
     choices: [
       {
@@ -883,6 +911,7 @@ export const DIALOGUE_PART1: Record<string, DialogueNode> = {
   dmitry_greeting: {
     id: 'dmitry_greeting',
     speaker: 'Дмитрий',
+    speakerId: 'dmitry',
     text: 'Ты... новый? Или тебя Александр прислал? Слушай, мне сейчас не до разговоров. Я пытаюсь восстановить фрагмент данных из старых логов. Три дня работы, и всё ещё нехватка двух строк. А ты чего пришёл?',
     choices: [
       {
@@ -918,6 +947,7 @@ export const DIALOGUE_PART1: Record<string, DialogueNode> = {
   dmitry_defection: {
     id: 'dmitry_defection',
     speaker: 'Дмитрий',
+    speakerId: 'dmitry',
     text: 'Стирала? Ха. Не стирала — зачищала. Я сам видел приказы. «Оптимизация серверного пространства», — говорили они. А на самом деле — уничтожение культурного слоя. Целые базы данных стихов, эссе, мемуаров — под нож. Я возражал. Меня понизили. Перевели на уровень ниже. Сказали: «Дмитрий, ты хороший программист, но не стратег». Стратег... Я бы назвал это иначе.',
     choices: [
       {
@@ -953,6 +983,7 @@ export const DIALOGUE_PART1: Record<string, DialogueNode> = {
   dmitry_guild_knowledge: {
     id: 'dmitry_guild_knowledge',
     speaker: 'Дмитрий',
+    speakerId: 'dmitry',
     text: 'Инцидент #4729? Знаю. Я пытался предупредить Александра, но он... он не слушает. Думает, что это просто баг. Но послушай: код в этом инциденте не написан человеком. Не в том смысле, в котором ты думаешь. Метки времени образуют стихотворный ритм. Ямб. Чистый ямб. Кто-то — или что-то — вкладывает стихи в самое сердце системы.',
     choices: [
       {
@@ -984,6 +1015,7 @@ export const DIALOGUE_PART1: Record<string, DialogueNode> = {
   dmitry_technical_assist: {
     id: 'dmitry_technical_assist',
     speaker: 'Дмитрий',
+    speakerId: 'dmitry',
     text: 'Могу. Вот что я нашёл: в логах инцидента есть скрытый слой. На первый взгляд — случайный шум. Но если пропустить его через фильтр ритмических паттернов... появляются строки. Стихотворные строки. Я написал скрипт для декодирования. Он у меня на терминале. Но я боюсь его запускать — вдруг гильдия отслеживает.',
     choices: [
       {
@@ -1012,6 +1044,7 @@ export const DIALOGUE_PART1: Record<string, DialogueNode> = {
   dmitry_warning: {
     id: 'dmitry_warning',
     speaker: 'Дмитрий',
+    speakerId: 'dmitry',
     text: 'Потому что... Володька, я работаю в гильдии двенадцать лет. Я видел, как пишет код человек. И я видел, как пишет код... не человек. Инцидент #4729 — не человек. Это не ИИ, не алгоритм, не нейросеть. Это... что-то другое. Что-то, что живёт в сети. Что-то, что говорит стихами. И я боюсь, Володька. Впервые за двенадцать лет — я правда боюсь.',
     choices: [
       {
@@ -1039,6 +1072,7 @@ export const DIALOGUE_PART1: Record<string, DialogueNode> = {
   dmitry_secret: {
     id: 'dmitry_secret',
     speaker: 'Дмитрий',
+    speakerId: 'dmitry',
     text: 'Ты... ты понимаешь. Да. Я остался, чтобы сохранить то, что можно. Каждый месяц я копирую фрагменты архивов на скрытые сервера. Вне гильдии. Вне системы. Маленькие островки памяти в океане забвения. У меня уже пять серверов. Пять хранилищ стихов. Если гильдия узнает — мне конец. Но если я уйду — стихам конец. Понимаешь?',
     choices: [
       {

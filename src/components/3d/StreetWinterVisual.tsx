@@ -7,6 +7,7 @@ import { getEnvironmentLodProfile } from '@/engine/lod/distanceLod';
 import { useEnvironmentLod } from './lod/EnvironmentLodProvider';
 import { EnvironmentDetail, PropDistanceGate } from './lod/PropDistanceGate';
 import { useCachedCanvasTexture } from '@/hooks/useCachedCanvasTexture';
+import { createStreetWinterColdSkyTexture } from '@/engine/graphics/proceduralSkyTextures';
 
 interface StreetWinterVisualProps {
   livePlayerPositionRef?: React.MutableRefObject<THREE.Vector3>;
@@ -226,7 +227,29 @@ export function StreetWinterVisual({ livePlayerPositionRef }: StreetWinterVisual
         </mesh>
       ))}
       </EnvironmentDetail>
+
+      <StreetWinterSkyDome />
     </group>
+  );
+}
+
+/** Cold overcast winter sky dome — fog-exempt horizon depth for street_winter. */
+function StreetWinterSkyDome() {
+  const skyTexture = useCachedCanvasTexture(
+    'street_winter:cold-sky',
+    createStreetWinterColdSkyTexture,
+  );
+
+  return (
+    <mesh position={[0, 10, 0]} renderOrder={-10}>
+      <sphereGeometry args={[62, 28, 14, 0, Math.PI * 2, 0, Math.PI * 0.55]} />
+      <meshBasicMaterial
+        map={skyTexture}
+        side={THREE.BackSide}
+        fog={false}
+        depthWrite={false}
+      />
+    </mesh>
   );
 }
 

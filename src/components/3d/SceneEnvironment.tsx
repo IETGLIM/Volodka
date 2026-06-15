@@ -35,6 +35,7 @@ const SCENE_FOG_COLORS: Record<string, string> = {
   // ─── Gothic ───
   park_day:           '#2a3828', // misty green-gray (Gothic forest)
   abandoned_factory:  '#1a1008', // dark rust (Gothic industrial)
+  factory_basement:   '#0a1410', // machine-core green-black
 
   // ─── Bank / IT Support ───
   office_day:         '#c8d4e0', // sterile blue-white
@@ -65,6 +66,7 @@ const SCENE_BG_COLORS: Record<string, string> = {
   street_night:       '#1a1a2c',  // gray rainy night sky
   park_day:           '#101810',
   abandoned_factory:  '#100804',
+  factory_basement:   '#060a08',
   office_day:         '#b0bcc8',
   sleep_dream:        '#060210',
   battle:             '#0a0202',
@@ -101,6 +103,7 @@ const SCENE_FOG_ANIM: Record<string, FogAnimConfig> = {
   sleep_dream:        { pulseFreq: 0.02, nearAmplitude: 0.2,  farAmplitude: 0.15, altFogColor: '#100830', colorShiftAmp: 0.4 },
   rooftop_edge:       { pulseFreq: 0.06, nearAmplitude: 0.08, farAmplitude: 0.06, altFogColor: '#1a1008', colorShiftAmp: 0.2 },
   abandoned_factory:  { pulseFreq: 0.08, nearAmplitude: 0.1,  farAmplitude: 0.08, altFogColor: '#1a1205', colorShiftAmp: 0.2 },
+  factory_basement:   { pulseFreq: 0.06, nearAmplitude: 0.08, farAmplitude: 0.06, altFogColor: '#102018', colorShiftAmp: 0.18 },
   street_winter:      { pulseFreq: 0.04, nearAmplitude: 0.1,  farAmplitude: 0.08, altFogColor: '#90a0b8', colorShiftAmp: 0.15 },
   zarema_albert_room: { pulseFreq: 0.05, nearAmplitude: 0.03, farAmplitude: 0.02, colorShiftAmp: 0 },
   chk_forest_zorge:   { pulseFreq: 0.03, nearAmplitude: 0.1, farAmplitude: 0.08, altFogColor: '#1a3020', colorShiftAmp: 0.2 },

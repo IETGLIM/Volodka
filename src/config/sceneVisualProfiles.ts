@@ -56,8 +56,8 @@ const STANDARD_PROFILE: SceneVisualProfile = {
 };
 
 const PROFILES: Partial<Record<SceneId, SceneVisualProfile>> = {
-  volodka_room: { ...HERO_PROFILE, enhancedAmbientOcclusion: false },
-  volodka_corridor: { ...HERO_PROFILE, enhancedAmbientOcclusion: false },
+  volodka_room: { ...HERO_PROFILE, enhancedAmbientOcclusion: false, bloomIntensityScale: 1.07 },
+  volodka_corridor: { ...HERO_PROFILE, enhancedAmbientOcclusion: false, bloomIntensityScale: 1.05 },
   home_evening: { ...HERO_PROFILE, enhancedAmbientOcclusion: false, bloomIntensityScale: 1.08 },
   street_night: {
     ...HERO_PROFILE,
@@ -74,9 +74,10 @@ const PROFILES: Partial<Record<SceneId, SceneVisualProfile>> = {
     enhancedAmbientOcclusion: false,
     bloomIntensityScale: 1.14,
   },
-  abandoned_factory: { ...STANDARD_PROFILE, forceFullPostFx: true, enhancedAmbientOcclusion: false },
-  factory_basement: { ...STANDARD_PROFILE, forceFullPostFx: true, enhancedAmbientOcclusion: false },
-  zarema_albert_room: { ...STANDARD_PROFILE, forceFullPostFx: true, enhancedAmbientOcclusion: false },
+  abandoned_factory: { ...STANDARD_PROFILE, forceFullPostFx: true, enhancedAmbientOcclusion: false, bloomIntensityScale: 1.06 },
+  factory_basement: { ...STANDARD_PROFILE, forceFullPostFx: true, enhancedAmbientOcclusion: false, bloomIntensityScale: 1.1 },
+  zarema_albert_room: { ...STANDARD_PROFILE, forceFullPostFx: true, enhancedAmbientOcclusion: false, bloomIntensityScale: 1.05 },
+  street_winter: { ...STANDARD_PROFILE, forceFullPostFx: true, enhancedAmbientOcclusion: false, bloomIntensityScale: 1.04 },
   solnysh_room: { ...STANDARD_PROFILE, forceFullPostFx: true, enhancedAmbientOcclusion: false },
   sleep_dream: {
     ...STANDARD_PROFILE,

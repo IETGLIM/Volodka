@@ -16,6 +16,7 @@ import { getEnvironmentLodProfile } from '@/engine/lod/distanceLod';
 import { useEnvironmentLod } from './lod/EnvironmentLodProvider';
 import { EnvironmentDetail, PropDistanceGate } from './lod/PropDistanceGate';
 import { useCachedCanvasTexture } from '@/hooks/useCachedCanvasTexture';
+import { createAbandonedFactoryIndustrialSkyTexture } from '@/engine/graphics/proceduralSkyTextures';
 
 interface AbandonedFactoryVisualProps {
   livePlayerPositionRef?: React.MutableRefObject<THREE.Vector3>;
@@ -25,6 +26,10 @@ interface AbandonedFactoryVisualProps {
 export function AbandonedFactoryVisual({ livePlayerPositionRef }: AbandonedFactoryVisualProps) {
   const floorTexture = useCachedCanvasTexture('abandoned_factory:floor', createFactoryFloorTexture);
   const wallTexture = useCachedCanvasTexture('abandoned_factory:wall', createFactoryWallTexture);
+  const ceilingWashTexture = useCachedCanvasTexture(
+    'abandoned_factory:industrial-ceiling',
+    createAbandonedFactoryIndustrialSkyTexture,
+  );
   const { lod } = useEnvironmentLod();
   const envProfile = useMemo(() => getEnvironmentLodProfile('abandoned_factory'), []);
 
@@ -70,9 +75,15 @@ export function AbandonedFactoryVisual({ livePlayerPositionRef }: AbandonedFacto
         />
       </mesh>
 
-      {/* ── Ceiling ── */}
+      {/* ── Ceiling — rust industrial HDR wash ── */}
       <mesh position={[0, H, 0]} rotation-x={Math.PI / 2} geometry={getSharedPlaneGeometry(W, D)}>
-        <meshStandardMaterial color="#1a1510" roughness={0.95} />
+        <meshStandardMaterial
+          map={ceilingWashTexture}
+          color="#2a2018"
+          emissive="#3a2820"
+          emissiveIntensity={0.18}
+          roughness={0.95}
+        />
       </mesh>
 
       {/* ── Walls ── */}

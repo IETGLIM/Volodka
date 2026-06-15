@@ -713,6 +713,7 @@ export const EXPLORATION_DIALOGUE_NODES: Record<string, DialogueNode> = {
   explore_act2_vault_maria_fragment: {
     id: 'explore_act2_vault_maria_fragment',
     speaker: 'Виктория',
+    speakerId: 'maria',
     text: '«Фрагмент Сети,» — шепчет Виктория, протягивая чип в ладони. «Мы выковали его из стихов, которые гильдия не смогла стереть. Храни — без него Хранилище не откроется. И помни: гильдия ищет все три.»',
     sceneId: 'abandoned_factory',
     choices: [
@@ -1044,6 +1045,7 @@ export const EXPLORATION_DIALOGUE_NODES: Record<string, DialogueNode> = {
   explore_albert_lesson: {
     id: 'explore_albert_lesson',
     speaker: 'Альберт',
+    speakerId: 'albert',
     text: '«Код и стих — один язык, разный синтаксис. Докажи, что видишь глубже поверхности — и я научу тебя приёмам, которых нет в учебниках гильдии.»',
     sceneId: 'cafe_evening',
     choices: [

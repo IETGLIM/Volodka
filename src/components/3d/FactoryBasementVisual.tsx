@@ -17,6 +17,7 @@ import {
   getSharedSphereGeometry,
 } from '@/engine/three/moduleGeometryRegistry';
 import { useCachedCanvasTexture } from '@/hooks/useCachedCanvasTexture';
+import { createFactoryBasementCoreGlowTexture } from '@/engine/graphics/proceduralSkyTextures';
 
 interface FactoryBasementVisualProps {
   livePlayerPositionRef?: MutableRefObject<THREE.Vector3>;
@@ -36,6 +37,10 @@ function basementSeededRandom(seed: number): () => number {
 
 export function FactoryBasementVisual(_props: FactoryBasementVisualProps) {
   const floorTexture = useCachedCanvasTexture('factory_basement:floor', createBasementFloorTexture);
+  const ceilingWashTexture = useCachedCanvasTexture(
+    'factory_basement:core-ceiling',
+    createFactoryBasementCoreGlowTexture,
+  );
   const coreRef = useRef<THREE.Mesh>(null);
   const coreLightRef = useRef<THREE.PointLight>(null);
   const rootGroupRef = useRef<THREE.Group>(null);
@@ -80,7 +85,13 @@ export function FactoryBasementVisual(_props: FactoryBasementVisualProps) {
         </mesh>
       ))}
       <mesh rotation-x={Math.PI / 2} position-y={CEIL_H} geometry={getSharedPlaneGeometry(W, D)}>
-        <meshStandardMaterial color="#1d2123" roughness={0.95} />
+        <meshStandardMaterial
+          map={ceilingWashTexture}
+          color="#101818"
+          emissive="#204838"
+          emissiveIntensity={0.22}
+          roughness={0.95}
+        />
       </mesh>
 
       {/* ── Support columns ── */}

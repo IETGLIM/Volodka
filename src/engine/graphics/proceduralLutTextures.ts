@@ -12,6 +12,12 @@ export const PROCEDURAL_LUT_SCENES: Record<string, ProceduralLutKind> = {
   home_evening: 'warm_interior',
   library_day: 'gothic_dust',
   office_day: 'gothic_dust',
+  volodka_room: 'warm_interior',
+  volodka_corridor: 'gothic_dust',
+  abandoned_factory: 'gothic_dust',
+  factory_basement: 'gothic_dust',
+  zarema_albert_room: 'warm_interior',
+  street_winter: 'gothic_dust',
 };
 
 export function resolveProceduralLutKind(sceneId: string): ProceduralLutKind | null {

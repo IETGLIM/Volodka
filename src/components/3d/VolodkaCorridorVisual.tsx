@@ -9,6 +9,7 @@ import { eventBus } from '@/engine/EventBus';
 import { useEnvironmentLod } from './lod/EnvironmentLodProvider';
 import { EnvironmentDetail } from './lod/PropDistanceGate';
 import { useCachedCanvasTexture } from '@/hooks/useCachedCanvasTexture';
+import { createVolodkaCorridorRainySkyTexture } from '@/engine/graphics/proceduralSkyTextures';
 import { registerModuleGeometries } from '@/engine/three/moduleGeometryRegistry';
 
 interface VolodkaCorridorVisualProps {
@@ -85,6 +86,10 @@ export function VolodkaCorridorVisual({ livePlayerPositionRef: _livePlayerPositi
   const floorTexture = useCachedCanvasTexture('volodka_corridor:floor', createCorridorFloorTexture);
   const wallTexture = useCachedCanvasTexture('volodka_corridor:wall', createCorridorWallTexture);
   const carpetTexture = useCachedCanvasTexture('volodka_corridor:carpet', createCorridorCarpetTexture);
+  const ceilingWashTexture = useCachedCanvasTexture(
+    'volodka_corridor:rainy-ceiling',
+    createVolodkaCorridorRainySkyTexture,
+  );
   const { lod } = useEnvironmentLod();
 
   const W = 6;
@@ -203,10 +208,15 @@ export function VolodkaCorridorVisual({ livePlayerPositionRef: _livePlayerPositi
         />
       </mesh>
 
-      {/* ── Ceiling ── */}
+      {/* ── Ceiling — dim rainy HDR wash ── */}
       <mesh position={[0, H, 0]} rotation-x={Math.PI / 2} geometry={geo_pln_1}>
-
-        <meshStandardMaterial color="#3a3535" roughness={0.95} />
+        <meshStandardMaterial
+          map={ceilingWashTexture}
+          color="#242430"
+          emissive="#303038"
+          emissiveIntensity={0.2}
+          roughness={0.95}
+        />
       </mesh>
 
       {/* ── Left Wall ── */}

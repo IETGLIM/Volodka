@@ -1,4 +1,13 @@
 # Changelog — ВОЛОДЬКА RPG
+## v4.2.18 — 16 июня 2026
+
+### Story polish + remaining hero scene graphics
+- **Act 7 endings**: unified karma thresholds (70/35), `musicCue` + `guidanceSceneLabel` on all three finales; wanderer ending aligned to `street_winter` (scene + ambient).
+- **True-end epilogue**: `resolveTrueEndEpilogue` — guild/peace/revolution paths, Dmitry exile, Ritka song, final poem edge cases; traitor scar excludes exile.
+- **Dialogue speakerId**: `part1-albert` (Albert/Zarema/Victoria/Dmitry) + exploration nodes for Victoria fragment and Albert lesson.
+- **Hero scene graphics**: procedural ceiling/sky washes + LUT for `volodka_room`, `volodka_corridor`, `abandoned_factory`, `factory_basement`, `zarema_albert_room`, `street_winter` (sky dome); bloom profiles tuned.
+- **Tests**: act7 ending consistency, epilogue edge cases, sky/LUT/profile regressions.
+
 ## v4.2.17 — 16 июня 2026
 
 ### Accessibility AAA (gamepad hints, reduced-motion bob, weather caps)
