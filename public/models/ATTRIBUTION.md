@@ -5,6 +5,8 @@ Production bootstrap: `npm run assets:bootstrap` (distinct CC0 interim meshes un
 
 **Last updated:** June 2026 · **Production target:** AI3DGen Pro commercial tier
 
+**Где брать бесплатно (CC0 / free):** Mixamo, Sketchfab (CC0 filter), Quaternius, Kenney.nl, Poly Pizza — таблица, прямые ссылки, папки `assets-source/ai3dgen/` и команды импорта: [`assets-source/ai3dgen/README.md`](../../assets-source/ai3dgen/README.md#где-брать-бесплатно).
+
 ## First-person hands
 
 | File | Source | License | Notes |
@@ -74,9 +76,50 @@ Preload: `cafe_evening` → `env_cafe_props`, `park_day` → `veg_tree_pine` (`s
 
 | Registry ID | GLB | License |
 |-------------|-----|---------|
-| kenney_* | `props/*.glb` | CC0 1.0 — [Kenney Furniture Kit](https://opengameart.org/content/furniture-kit) |
+| kenney_* | `props/*.glb` | CC0 1.0 — [Kenney Furniture Kit](https://kenney.nl/assets/furniture-kit) |
+| kenney_city_* | `props/citykit/*.glb` | CC0 1.0 — Kenney City Kit (Roads) + Furniture Kit + OpenGameArt campfire |
 
-Rendered via `ScenePropDressing` (`src/config/scenePropDressing.ts`) in volodka_room, corridor, office, library, café, zarema_albert_room.
+Rendered via `ScenePropDressing` in volodka_room, corridor, office, library, café, street_night, pier, CHK forest, rooftop.
+
+## Kenney interior shells (Poly Pizza TODO)
+
+| Manifest ID | File | Interim source | Target |
+|-------------|------|----------------|--------|
+| interior_room_bedroom | `interiors/room_bedroom.glb` | Kenney Suburban `building-type-a` | Poly Pizza bedroom |
+| interior_cafe | `interiors/cafe_interior.glb` | Kenney Commercial `building-c` | Poly Pizza café |
+| interior_office | `interiors/office.glb` | Kenney Commercial skyscraper | Poly Pizza office |
+| interior_library | `interiors/library.glb` | Kenney Commercial `building-b` | Poly Pizza library |
+| interior_factory | `interiors/factory.glb` | Kenney Industrial `building-a` | Poly Pizza factory |
+| interior_corridor | `interiors/corridor.glb` | Kenney Suburban driveway | Poly Pizza corridor |
+| interior_rooftop | `interiors/rooftop.glb` | Kenney Commercial low-detail | Poly Pizza rooftop |
+| interior_basement | `interiors/basement.glb` | Kenney Industrial tank | Poly Pizza basement |
+| interior_pier | `interiors/pier.glb` | Kenney Suburban path stones | Poly Pizza pier |
+| interior_forest_clearing | `interiors/forest_clearing.glb` | Kenney Suburban tree | Poly Pizza forest |
+
+Rendered via `SceneInteriorAssets` (`sceneInteriorAssets.ts`). Replace GLBs manually from [Poly Pizza](https://poly.pizza/) (CC0), then `npm run assets:freekit-stage`.
+
+Campfire prop: [OpenGameArt Low Poly Camping Assets](https://opengameart.org/content/low-poly-camping-assets) (CC0) by Saraskau.
+
+## Mixamo animations (`models/animations/`)
+
+| Clip | File | Source | License |
+|------|------|--------|---------|
+| Idle (standing) | `animations/idle.glb` | [Mixamo](https://www.mixamo.com) | Free with Adobe account — commercial OK per Mixamo ToS |
+| Walking | `animations/walking.glb` | Mixamo | same |
+| Talking | `animations/talking.glb` | Mixamo | same |
+| Sitting | `animations/sitting.glb` | Mixamo | same |
+
+Import (manual download — Adobe login required):
+
+```bash
+npm run assets:mixamo-import -- --list
+npm run assets:mixamo-import -- --clip idle --file <path.glb>
+npm run assets:validate
+```
+
+Guide: `assets-source/mixamo/README.md` · Catalog: `src/config/mixamoAnimationCatalog.ts`
+
+Clips target Mixamo humanoid rigs; retarget or re-export per character when replacing interim Khronos NPC GLBs.
 
 ## Khronos reference library (`models/khronos/`)
 
