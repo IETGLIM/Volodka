@@ -12,8 +12,8 @@
 История о программисте, который находит стихи, спрятанные в серверном коде, и обнаруживает,
 что слова могут менять реальность.
 
-Стихи в игре — авторства **Владимира Лебедева**. Они являются неотъемлемой частью
-нарратива и не подлежат изменению.
+Стихи в игре — **авторское произведение Владимира Лебедева** (правообладатель проекта).
+Они неотъемлемая часть нарратива; тексты неприкосновенны для контрибьюторов.
 
 ## 🎮 Особенности
 
@@ -76,15 +76,38 @@ npm run assets:validate
 - typecheck / ESLint: 0 ошибок · unit + component tests: **475** · e2e smoke (Playwright, 38)
 - `npm run test:unit` — Vitest (unit + component) · `npm run test:e2e` — production build + Playwright
 - Валидатор контента: квесты, история, стихи, golden path — 0 ошибок
-- Бюджеты бандла в CI: меню ~300 КБ gzip (лимит 439), game-start 540 КБ (лимит 1172)
+- Бюджеты бандла в CI: boot target 450 КБ gzip (hard max 650), game-start target 1.2 МБ (hard max 1.8)
+- `npm run assets:bootstrap` — CC0 GLB для первого production-деплоя · `npm run assets:validate` — гейт в build
 
 ## 📦 Vercel Deploy
 
-`vercel.json` настроен (SPA-rewrites, immutable-кэш ассетов, security-заголовки):
+`vercel.json` настроен (SPA-rewrites, immutable-кэш `/assets/` и `/models/`, security-заголовки).
+
+**Перед первым деплоем:**
+
+```bash
+npm run assets:bootstrap   # скачать CC0 GLB (если ещё не в репо)
+npm run check              # lint + typecheck + validate + build + verify:deploy
+```
+
+**Vercel Environment Variables** (см. `.env.example`):
+
+| Variable | Значение |
+|----------|----------|
+| `VITE_SITE_URL` | `https://volodka.vercel.app` — canonical + OG preview |
+
+**Чек-лист production:**
+
+1. `npm run check` — зелёный
+2. Preview: New Game → 10 мин без 404 на `.glb`
+3. Promote to Production
+
+**Подключение:**
 
 1. Залей репозиторий на GitHub
 2. Подключи Vercel к репозиторию
-3. Vercel автоматически определит Vite и соберёт проект
+3. Задай `VITE_SITE_URL` в Environment Variables
+4. Vercel автоматически определит Vite и соберёт проект
 
 ## 🎯 Управление
 
@@ -108,3 +131,4 @@ npm run assets:validate
 ---
 
 *С любовью, от тех, кто верит в слова.*
+

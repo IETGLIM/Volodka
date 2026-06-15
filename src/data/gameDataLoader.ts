@@ -424,9 +424,9 @@ export function findNpcByName(name: string): NPCDefinition | undefined {
   return npcMod!.findNpcByName(name);
 }
 
-export function resolveNpcIdFromSpeaker(speaker: string): string | undefined {
+export function resolveNpcIdFromSpeaker(speaker: string, speakerId?: string): string | undefined {
   assertBootLoaded();
-  return npcMod!.resolveNpcIdFromSpeaker(speaker);
+  return npcMod!.resolveNpcIdFromSpeaker(speaker, speakerId);
 }
 
 export function getSkillTreeMap() {

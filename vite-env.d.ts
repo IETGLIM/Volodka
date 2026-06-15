@@ -1,6 +1,16 @@
 /// <reference types="vite/client" />
 /// <reference types="@testing-library/jest-dom" />
 
+interface ImportMetaEnv {
+  readonly VITE_SITE_URL: string;
+  readonly VITE_MODELS_BASE?: string;
+  readonly VITE_DEFAULT_PLAYER_MODEL?: string;
+}
+
+interface ImportMeta {
+  readonly env: ImportMetaEnv;
+}
+
 declare global {
   interface Window {
     /** E-key debounce shared with InteractiveTriggers / ExaminePanel / SceneExitIndicator */

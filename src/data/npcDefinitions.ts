@@ -12,7 +12,7 @@ export const NPC_DEFINITIONS: NPCDefinition[] = [
   {
     id: 'albert',
     name: 'Альберт',
-    modelPath: NPC_PROCEDURAL_MODEL_PLACEHOLDER,
+    modelPath: '/models/npcs/albert.glb',
     scale: 1.0,
     animations: { idle: 'idle', walk: 'walk', talk: 'talk' },
     defaultPosition: [-2.5, 0, -3.0],
@@ -39,7 +39,7 @@ export const NPC_DEFINITIONS: NPCDefinition[] = [
   {
     id: 'zarema',
     name: 'Зарема',
-    modelPath: NPC_PROCEDURAL_MODEL_PLACEHOLDER,
+    modelPath: '/models/npcs/zarema.glb',
     scale: 0.95,
     animations: { idle: 'idle', walk: 'walk', talk: 'talk' },
     defaultPosition: [1.5, 0, 2.0],
@@ -93,7 +93,7 @@ export const NPC_DEFINITIONS: NPCDefinition[] = [
   {
     id: 'office_alexander',
     name: 'Александр',
-    modelPath: NPC_PROCEDURAL_MODEL_PLACEHOLDER,
+    modelPath: '/models/npcs/office_alexander.glb',
     scale: 1.05,
     animations: { idle: 'idle', walk: 'walk', talk: 'talk' },
     defaultPosition: [3.0, 0, -2.0],
@@ -153,7 +153,7 @@ export const NPC_DEFINITIONS: NPCDefinition[] = [
   {
     id: 'maria',
     name: 'Виктория',
-    modelPath: NPC_PROCEDURAL_MODEL_PLACEHOLDER,
+    modelPath: '/models/npcs/maria.glb',
     scale: 0.8,
     animations: { idle: 'idle', walk: 'walk', talk: 'talk' },
     defaultPosition: [-3.0, 0, 2.0],
@@ -186,7 +186,7 @@ export const NPC_DEFINITIONS: NPCDefinition[] = [
   {
     id: 'office_dmitry',
     name: 'Дмитрий',
-    modelPath: NPC_PROCEDURAL_MODEL_PLACEHOLDER,
+    modelPath: '/models/npcs/office_dmitry.glb',
     scale: 1.1,
     animations: { idle: 'idle', walk: 'walk', talk: 'talk' },
     defaultPosition: [-2.0, 0, 1.5],
@@ -219,7 +219,7 @@ export const NPC_DEFINITIONS: NPCDefinition[] = [
   {
     id: 'viktor',
     name: 'Виктор',
-    modelPath: NPC_PROCEDURAL_MODEL_PLACEHOLDER,
+    modelPath: '/models/npcs/viktor.glb',
     scale: 1.0,
     animations: { idle: 'idle', walk: 'walk', talk: 'talk' },
     defaultPosition: [-4.0, 0, 2.0],
@@ -252,7 +252,7 @@ export const NPC_DEFINITIONS: NPCDefinition[] = [
   {
     id: 'kira',
     name: 'Кира',
-    modelPath: NPC_PROCEDURAL_MODEL_PLACEHOLDER,
+    modelPath: '/models/npcs/kira.glb',
     scale: 1.0,
     animations: { idle: 'idle', walk: 'walk', talk: 'talk' },
     defaultPosition: [3.0, 0, -4.0],
@@ -285,7 +285,7 @@ export const NPC_DEFINITIONS: NPCDefinition[] = [
   {
     id: 'boris',
     name: 'Борис',
-    modelPath: NPC_PROCEDURAL_MODEL_PLACEHOLDER,
+    modelPath: '/models/npcs/boris.glb',
     scale: 1.1,
     animations: { idle: 'idle', walk: 'walk', talk: 'talk' },
     defaultPosition: [0.0, 0, -5.0],
@@ -312,7 +312,7 @@ export const NPC_DEFINITIONS: NPCDefinition[] = [
   {
     id: 'tamara',
     name: 'Тамара',
-    modelPath: NPC_PROCEDURAL_MODEL_PLACEHOLDER,
+    modelPath: '/models/npcs/tamara.glb',
     scale: 0.95,
     animations: { idle: 'idle', walk: 'walk', talk: 'talk' },
     defaultPosition: [2.0, 0, 3.0],
@@ -345,7 +345,7 @@ export const NPC_DEFINITIONS: NPCDefinition[] = [
   {
     id: 'grisha',
     name: 'Гриша',
-    modelPath: NPC_PROCEDURAL_MODEL_PLACEHOLDER,
+    modelPath: '/models/npcs/grisha.glb',
     scale: 1.05,
     animations: { idle: 'idle', walk: 'walk', talk: 'talk' },
     defaultPosition: [-3.0, 0, -5.0],

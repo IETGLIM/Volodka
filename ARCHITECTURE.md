@@ -254,7 +254,20 @@ npm run test:unit        # vitest (node env)
 npm run test:e2e         # Playwright smoke
 npm run validate:content # квесты/история/стихи/golden path
 npm run assets:validate  # GLB на диске и валидны
+npm run assets:bootstrap # CC0 production placeholders (первый деплой / CI)
 ```
+
+## 3D-ассеты (production)
+
+- **Пути:** все runtime GLB под `public/models/` (`/models/khronos/`, `/models/npcs/`, …).
+- **Bootstrap:** `npm run assets:bootstrap` — скачивает CC0 Khronos/three.js и раскладывает
+  по каталогу; interim до замены на AI3DGen Pro (`assets:ai3dgen-import` + `assets:process`).
+- **Shipped-флаги:** `assetManifest.shipped`, `ai3dgenPropRegistry.shipped`, `npcModelRegistry`
+  — только `true` когда файлы на диске (иначе 404 в production).
+- **NPC-анимация:** AI3DGen mesh статичны; ключевые NPC — GLB в диалоге + procedural в патруле.
+- **Герой:** `player_volodka` — interim CC0 CesiumMan LOD; финал = AI3DGen block-out + Blender rig.
+- **Валидация:** `assets:validate` в `npm run build` и CI — обязательный гейт перед Vercel.
+- **Атрибуция:** `public/models/ATTRIBUTION.md`.
 
 ## Правила для контрибьюторов (и агентов)
 

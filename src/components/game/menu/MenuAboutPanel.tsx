@@ -53,6 +53,7 @@ export function MenuAboutPanel({ onClose }: MenuAboutPanelProps) {
           <p className="font-serif text-xs italic text-slate-400/50">&ldquo;Между сменами — сказка. Между строками — правда.&rdquo;</p>
           <div className="flex items-center gap-3 pt-2">
             <span className="font-mono text-[9px] text-slate-600">v{APP_VERSION}</span>
+            <span className="font-mono text-[9px] text-slate-600/70">© 2026</span>
           </div>
         </div>
 

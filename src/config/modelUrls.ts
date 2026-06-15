@@ -1,5 +1,6 @@
 /* ─── Model URL configuration ─── */
 const MODELS_BASE = import.meta.env?.VITE_MODELS_BASE ?? '';
+const KHRONOS = '/models/khronos';
 
 export interface ModelUrls {
   volodka: string;
@@ -18,42 +19,41 @@ export interface ModelUrls {
 }
 
 export const MODEL_URLS: ModelUrls = {
-  volodka: '/models-external/khronos_cc0_RiggedFigure.glb',
-  cc0KhronosCesiumMan: '/models-external/khronos_cc0_CesiumMan.glb',
-  cc0KhronosRiggedFigure: '/models-external/khronos_cc0_RiggedFigure.glb',
-  cc0KhronosBrainStem: '/models-external/khronos_cc0_BrainStem.glb',
-  cc0Michelle: '/models-external/cc0_Michelle.glb',
-  cc0Soldier: '/models-external/cc0_Soldier.glb',
-  cc0Xbot: '/models-external/cc0_Xbot.glb',
-  cc0KhronosFox: '/models-external/khronos_cc0_Fox.glb',
-  // Stand-ins (files not in repo, point to Fox)
-  cc0KhronosBoomBox: '/models-external/khronos_cc0_Fox.glb',
-  cc0KhronosBoxVertexColors: '/models-external/khronos_cc0_Fox.glb',
-  cc0KhronosAnimatedMorphCube: '/models-external/khronos_cc0_Fox.glb',
-  cc0KhronosNormalTangentTest: '/models-external/khronos_cc0_Fox.glb',
+  volodka: `${KHRONOS}/RiggedFigure.glb`,
+  cc0KhronosCesiumMan: `${KHRONOS}/CesiumMan.glb`,
+  cc0KhronosRiggedFigure: `${KHRONOS}/RiggedFigure.glb`,
+  cc0KhronosBrainStem: `${KHRONOS}/BrainStem.glb`,
+  cc0Michelle: `${KHRONOS}/RiggedSimple.glb`,
+  cc0Soldier: `${KHRONOS}/Soldier.glb`,
+  cc0Xbot: `${KHRONOS}/RiggedSimple.glb`,
+  cc0KhronosFox: `${KHRONOS}/Fox.glb`,
+  cc0KhronosBoomBox: `${KHRONOS}/Fox.glb`,
+  cc0KhronosBoxVertexColors: `${KHRONOS}/Fox.glb`,
+  cc0KhronosAnimatedMorphCube: `${KHRONOS}/Fox.glb`,
+  cc0KhronosNormalTangentTest: `${KHRONOS}/Fox.glb`,
 };
 
-export const DEFAULT_PLAYER_GLB_FILENAME = 'khronos_cc0_CesiumMan.glb';
+export const DEFAULT_PLAYER_GLB_FILENAME = 'CesiumMan.glb';
 
 export function getDefaultPlayerModelPath(): string {
-  const override = (typeof process !== 'undefined' && process.env?.VITE_DEFAULT_PLAYER_MODEL) || '';
+  const override = import.meta.env?.VITE_DEFAULT_PLAYER_MODEL ?? '';
   if (override) return override;
-  return `/models-external/${DEFAULT_PLAYER_GLB_FILENAME}`;
+  return `${KHRONOS}/${DEFAULT_PLAYER_GLB_FILENAME}`;
 }
 
 export function getModelsPublicBase(): string {
-  return MODELS_BASE || '/models-external';
+  return MODELS_BASE || '/models';
 }
 
 export function rewriteLegacyModelPath(path: string): string {
-  // /models/... → /models-external/...
+  if (path.startsWith('/models-external/')) {
+    return path.replace('/models-external/', `${KHRONOS}/`);
+  }
   if (path.startsWith('/models/')) {
-    const rewritten = path.replace('/models/', '/models-external/');
-    // Redirect old Volodka.glb
-    if (rewritten.endsWith('/Volodka.glb') || rewritten.endsWith('Volodka.glb')) {
-      return '/models-external/khronos_cc0_RiggedFigure.glb';
+    if (path.endsWith('/Volodka.glb') || path.endsWith('Volodka.glb')) {
+      return `${KHRONOS}/RiggedFigure.glb`;
     }
-    return rewritten;
+    return path;
   }
   return path;
 }

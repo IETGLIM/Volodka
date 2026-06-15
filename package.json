@@ -6,10 +6,11 @@
   "scripts": {
     "dev": "vite",
     "dev:inspect": "vite --mode inspect",
-    "build": "npm run validate && tsc -b && vite build && npm run budgets",
+    "build": "npm run validate && npm run assets:validate && tsc -b && vite build && npm run budgets",
     "build:analyze": "npm run validate && tsc -b && vite build --mode analyze && npm run budgets",
     "validate": "npx tsx --tsconfig tsconfig.json scripts/validate-content.ts",
     "validate:content": "npx tsx --tsconfig tsconfig.json scripts/validate-content.ts",
+    "assets:bootstrap": "node scripts/bootstrap-production-assets.mjs",
     "assets:process": "node scripts/process-gltf-assets.mjs",
     "assets:ai3dgen-import": "node scripts/ai3dgen-import.mjs",
     "assets:validate": "npx tsx --tsconfig tsconfig.json scripts/validate-gltf-assets.ts",
@@ -22,11 +23,11 @@
     "test:unit:watch": "vitest",
     "test:e2e": "npm run build && playwright test",
     "test:e2e:ui": "playwright test --ui",
-    "check": "npm run lint && npm run typecheck && npm run validate:content && npm run build && npm run budgets",
+    "check": "npm run lint && npm run typecheck && npm run validate:content && npm run assets:validate && npm run build && npm run verify:deploy",
     "budgets": "node scripts/check-bundle-budgets.mjs --report",
     "budgets:check": "node scripts/check-bundle-budgets.mjs",
     "deploy:archive": "node scripts/create-deploy-archive.mjs",
-    "verify:deploy": "node scripts/verify-deploy-assets.mjs"
+    "verify:deploy": "npx tsx --tsconfig tsconfig.json scripts/verify-deploy-assets.ts"
   },
   "dependencies": {
     "@dimforge/rapier3d-compat": "^0.19.3",

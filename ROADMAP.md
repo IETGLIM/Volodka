@@ -4,31 +4,26 @@
 > подготовка к запуску на Vercel. Документ заменяет устаревшие `CODE_REVIEW.md` и
 > `DEEP_CODE_REVIEW.md`, которые описывают состояние проекта **до** большого рефакторинга.
 
-**Дата:** 8 июня 2026 · **Версия:** 3.0.1 · **Целевая аудитория игры:** и новички
+**Дата:** 15 июня 2026 · **Версия:** 4.2.2 · **Целевая аудитория игры:** и новички
 (родители, друзья — не геймеры), и опытные игроки (баланс «лёгкий вход + глубина»).
 
 ---
 
-## 0. Реальное состояние (проверено, а не по старым отчётам)
-
-Все метрики ниже получены прогоном собственных команд проекта 8 июня 2026.
+## 0. Реальное состояние (production-ready baseline)
 
 | Проверка | Команда | Результат |
 |---|---|---|
-| Типы | `npm run typecheck` | ✅ чисто, 0 ошибок |
-| Юнит-тесты | `npm run test:unit` | ✅ **130/130** в 25 файлах |
-| Линтер | `npm run lint` | ✅ 0 ошибок, ~294 предупреждения (косметика) |
-| Контент | `npm run validate:content` | ✅ 0 ошибок, **75** предупреждений |
-| Сборка | `npm run build` | ✅ ~15с, бюджеты бандла проходят |
-| Бандл (boot, gzip) | бюджет | 291 КБ при лимите 439 КБ |
-| Физика (Rapier, gzip) | ленивый чанк | 917 КБ — грузится лениво, вне старта |
+| Типы | `npm run typecheck` | ✅ чисто |
+| Юнит-тесты | `npm run test:unit` | ✅ 475+ тестов |
+| Линтер | `npm run lint` | ✅ 0 ошибок |
+| Контент | `npm run validate:content` | ✅ 0 ошибок |
+| Ассеты | `npm run assets:validate` | ✅ shipped GLB на диске |
+| Сборка | `npm run build` | ✅ + бюджеты бандла |
+| Deploy | `npm run verify:deploy` | ✅ dist + пути GLB |
 
-**Вывод:** проект здоров. Критические проблемы из старых отчётов (утечки памяти,
-race conditions, битые квесты, отсутствие тестов/ESLint) либо уже устранены при
-рефакторинге, либо были переоценены. Архитектура сильная: разделение
-`engine ↔ data ↔ components`, типизированный EventBus, error boundaries с graceful
-degradation, ленивая загрузка контента по актам, бюджеты бандла в CI, валидатор
-контента.
+**3D production:** `npm run assets:bootstrap` — CC0 interim; замена на AI3DGen Pro по каталогу.
+
+**Вывод:** инженерная база готова к Vercel production. Следующий визуальный апгрейд — AI3DGen Pro + Blender rig для героя.
 
 ---
 
@@ -111,15 +106,16 @@ degradation, ленивая загрузка контента по актам, �
 
 ## 5. Запуск на Vercel
 
-`vercel.json` уже корректен: SPA-rewrites, `immutable`-кэш для `/assets`,
-`/models-external`, `.glb/.gltf`, security-заголовки.
+`vercel.json` настроен: SPA-rewrites, `immutable`-кэш для `/assets/` и `/models/`,
+security-заголовки, `Permissions-Policy`.
 
-**Чек-лист перед деплоем:**
-1. `npm run check` (lint + typecheck + validate + build + budgets) — должен пройти.
-2. Проверить, что все ссылки на 3D-модели резолвятся в `dist/` (пути к
-   `models-external` / `public`).
-3. Деплой превью → пройти первые 10 минут игры на чистом окружении (десктоп + мобайл).
-4. Проверить отсутствие инстанцирования WebGL на SSR (проект — SPA, риск низкий).
+**Чек-лист перед production:**
+
+1. `npm run assets:bootstrap` (если GLB ещё не в репозитории)
+2. `npm run check` — lint + typecheck + validate + assets:validate + build + verify:deploy
+3. `VITE_SITE_URL` в Vercel Environment Variables
+4. Preview smoke → 10 мин gameplay, 0× 404 на `.glb`
+5. Promote to Production
 
 ---
 

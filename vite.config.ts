@@ -8,11 +8,21 @@ import { resolveManualChunk } from './vite/chunks';
 import { rapierInitFix } from './vite/rapierInitFix';
 
 export default defineConfig(({ mode }) => {
+  // Canonical URL for OG meta in index.html (%VITE_SITE_URL% substitution)
+  process.env.VITE_SITE_URL ??= 'https://volodka.vercel.app';
+  const siteUrl = process.env.VITE_SITE_URL.replace(/\/$/, '');
+
   const analyze = mode === 'analyze';
   const inspect = mode === 'inspect';
 
   return {
     plugins: [
+      {
+        name: 'html-transform-site-url',
+        transformIndexHtml(html) {
+          return html.replaceAll('%VITE_SITE_URL%', siteUrl);
+        },
+      },
       rapierInitFix(),
       react(),
       tailwindcss(),

@@ -173,7 +173,7 @@ export const AI3DGEN_ASSET_CATALOG: Ai3dgenAssetSpec[] = [
     publicUrl: `${MODELS}/props/digital_amulet.glb`,
     wire: { kind: 'item_prop', propModelId: 'ai3dgen_digital_amulet', itemId: 'digital_amulet' },
     defaultScale: 0.35,
-    licenseTier: 'free',
+    licenseTier: 'pro',
   },
   {
     id: 'craft_poetic_compiler',
@@ -184,7 +184,7 @@ export const AI3DGEN_ASSET_CATALOG: Ai3dgenAssetSpec[] = [
     publicUrl: `${MODELS}/props/poetic_compiler.glb`,
     wire: { kind: 'item_prop', propModelId: 'ai3dgen_poetic_compiler', itemId: 'poetic_compiler' },
     defaultScale: 0.4,
-    licenseTier: 'free',
+    licenseTier: 'pro',
   },
   {
     id: 'craft_neural_filter',
@@ -195,7 +195,7 @@ export const AI3DGEN_ASSET_CATALOG: Ai3dgenAssetSpec[] = [
     publicUrl: `${MODELS}/props/neural_filter.glb`,
     wire: { kind: 'item_prop', propModelId: 'ai3dgen_neural_filter', itemId: 'neural_filter' },
     defaultScale: 0.25,
-    licenseTier: 'free',
+    licenseTier: 'pro',
   },
   // ── Quest interactables ──
   {
@@ -211,7 +211,7 @@ export const AI3DGEN_ASSET_CATALOG: Ai3dgenAssetSpec[] = [
       triggerZoneIds: ['volodka_room_desk'],
     },
     defaultScale: 0.3,
-    licenseTier: 'free',
+    licenseTier: 'pro',
   },
   {
     id: 'quest_server_fragment',
@@ -222,7 +222,7 @@ export const AI3DGEN_ASSET_CATALOG: Ai3dgenAssetSpec[] = [
     publicUrl: `${MODELS}/props/server_fragment.glb`,
     wire: { kind: 'prop', propModelId: 'ai3dgen_server_fragment' },
     defaultScale: 0.45,
-    licenseTier: 'free',
+    licenseTier: 'pro',
   },
 ];
 

@@ -29,11 +29,13 @@ jobs:
 
       - run: npm run validate
 
+      - run: npm run assets:validate
+
       - run: npm run test:unit
 
       - run: npm run build
 
-      - run: npm run budgets
+      - run: npm run verify:deploy
 
   e2e:
     runs-on: ubuntu-latest

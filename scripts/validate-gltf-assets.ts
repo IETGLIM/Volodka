@@ -5,7 +5,7 @@
  *  1. ASSET_MANIFEST entries with `shipped: true` — full LOD/variant/impostor/lightmap set.
  *     Unshipped assets are skipped (runtime skips them too) and reported as info.
  *  2. Runtime registries that load eagerly per scene: PROP_MODEL_REGISTRY,
- *     NPC_MODEL_ASSETS, first-person arms, MODEL_URLS (models-external).
+ *     NPC_MODEL_ASSETS, first-person arms, MODEL_URLS (public/models/khronos).
  *     Files must exist AND start with the binary glTF magic — catches
  *     "404: Not Found" HTML/text stubs saved as .glb.
  *
