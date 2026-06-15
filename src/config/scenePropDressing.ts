@@ -18,6 +18,10 @@ export const SCENE_PROP_DRESSING: Partial<Record<SceneId, readonly ScenePropPlac
     { propModelId: 'kenney_terminal', position: [0.72, 0.78, -2.62], offset: [0, -0.28, 0] },
     { propModelId: 'kenney_bookshelf', position: [-2.2, 0, 0] },
     { propModelId: 'kenney_window', position: [2.4, 1.2, -2.0], rotationY: -Math.PI / 2 },
+    { propModelId: 'kenney_door_open', position: [0, 0, 3.45] },
+    { propModelId: 'ai3dgen_poetic_compiler', position: [-0.35, 0.82, -2.38], rotationY: 0.25 },
+    { propModelId: 'ai3dgen_neural_filter', position: [0.95, 0.82, -2.55], rotationY: -0.35 },
+    { propModelId: 'ai3dgen_digital_amulet', position: [-2.05, 1.55, 0.05], rotationY: Math.PI / 2 },
   ],
   volodka_corridor: [
     { propModelId: 'kenney_door', position: [0, 0, 7.3] },
@@ -26,6 +30,7 @@ export const SCENE_PROP_DRESSING: Partial<Record<SceneId, readonly ScenePropPlac
     { propModelId: 'kenney_desk', position: [-2.0, 0, -1.5] },
     { propModelId: 'kenney_terminal', position: [-1.2, 0.78, -1.2], offset: [0, -0.28, 0] },
     { propModelId: 'kenney_bookshelf', position: [3.5, 0, -2.0] },
+    { propModelId: 'ai3dgen_server_fragment', position: [-4.0, 0.15, -4.5] },
   ],
   library_day: [
     { propModelId: 'kenney_bookshelf', position: [-3.0, 0, -1.0] },
@@ -33,10 +38,17 @@ export const SCENE_PROP_DRESSING: Partial<Record<SceneId, readonly ScenePropPlac
   ],
   cafe_evening: [
     { propModelId: 'kenney_desk', position: [-3.5, 0, -2.0], rotationY: Math.PI / 2 },
+    { propModelId: 'ai3dgen_poetic_compiler', position: [-4.0, 0.55, -3.5] },
   ],
   zarema_albert_room: [
     { propModelId: 'kenney_bed', position: [-1.5, 0, 1.5] },
     { propModelId: 'kenney_wardrobe', position: [2.0, 0, 2.0] },
+  ],
+  abandoned_factory: [
+    { propModelId: 'ai3dgen_server_fragment', position: [-6.0, 0.25, -5.0], rotationY: 0.4 },
+  ],
+  factory_basement: [
+    { propModelId: 'ai3dgen_server_fragment', position: [-3.6, 0.55, -1.0], rotationY: -Math.PI / 2 },
   ],
 };
 

@@ -102,6 +102,8 @@ export const TRIGGER_ZONES: TriggerZone[] = [
       icon: '🖥️',
     },
     effects: [{ type: 'setFlag', flag: 'interacted_desk', flagValue: true }],
+    propModelId: 'ai3dgen_encrypted_scroll',
+    propOffset: [0.42, 0.1, 0.12],
   },
   {
     id: 'room_bookshelf',
@@ -805,6 +807,8 @@ export const TRIGGER_ZONES: TriggerZone[] = [
       { type: 'discoverLore', loreId: 'lore_office_server_hum' },
     ],
     linkedDialogueNodeId: 'explore_office_server_hum',
+    propModelId: 'ai3dgen_server_fragment',
+    propOffset: [0, 0.05, 0.2],
   },
 
   /* ─────────────── OFFICE VAULT TERMINAL — Act 1 Хранилище ─────────────── */
@@ -1737,6 +1741,8 @@ export const TRIGGER_ZONES: TriggerZone[] = [
       detailText: 'Его оставил тот, кто не принадлежал никому. Металл холодный, но пульсирует слабым светом.',
       icon: '🗝️',
     },
+    propModelId: 'ai3dgen_digital_amulet',
+    propOffset: [0, 0.12, 0],
   },
   {
     id: 'cafe_vault_key_assemble',
@@ -1779,6 +1785,8 @@ export const TRIGGER_ZONES: TriggerZone[] = [
       detailText: 'Гильдия патрулирует основные маршруты. Придётся идти через парк и крыши.',
       icon: '📜',
     },
+    propModelId: 'ai3dgen_encrypted_scroll',
+    propOffset: [0, -0.15, 0.18],
   },
   {
     id: 'park_poetry_patrol',
@@ -2098,6 +2106,8 @@ export const TRIGGER_ZONES: TriggerZone[] = [
       { type: 'setFlag', flag: 'basement_server_searched', flagValue: true },
       { type: 'addXp', value: 25 },
     ],
+    propModelId: 'ai3dgen_server_fragment',
+    propOffset: [0, 0.35, 0.15],
   },
   {
     id: 'basement_watchman_desk',

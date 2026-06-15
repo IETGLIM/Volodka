@@ -3,10 +3,13 @@
 import { Suspense, useMemo } from 'react';
 import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
+import { useGameStore } from '@/store/gameStore';
 import { useCurrentSceneId } from '@/store/selectors';
-import { TRIGGER_ZONES, type TriggerZone } from '@/data/triggerZones';
+import { TRIGGER_ZONES, type TriggerZone, isTriggerZoneAvailable } from '@/data/triggerZones';
 import { getPropModelDefinition } from '@/config/propModelRegistry';
 import { extendGltfLoader } from '@/engine/assets/gltfPipeline';
+import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
+import { allowsGlbAssetRendering } from '@/engine/graphics/qualityPresets';
 
 const extendLoader = extendGltfLoader as unknown as NonNullable<Parameters<typeof useGLTF>[3]>;
 
@@ -63,12 +66,23 @@ function TriggerZonePropMeshInner({ zone, def }: TriggerZonePropMeshInnerProps) 
 /** Renders shipped GLB props for trigger zones in the active scene. */
 export function TriggerZoneProps() {
   const sceneId = useCurrentSceneId();
+  const { preset } = useGraphicsQuality();
+  const flags = useGameStore((s) => s.playerState.flags);
+  const currentAct = useGameStore((s) => s.playerState.progression.currentAct);
   const zones = useMemo(
-    () => TRIGGER_ZONES.filter((z) => z.sceneId === sceneId && z.propModelId),
-    [sceneId],
+    () =>
+      TRIGGER_ZONES.filter(
+        (z) =>
+          z.sceneId === sceneId &&
+          z.propModelId &&
+          isTriggerZoneAvailable(z, flags, currentAct),
+      ),
+    [sceneId, flags, currentAct],
   );
 
-  if (zones.length === 0) return null;
+  if (!allowsGlbAssetRendering(preset.environmentRenderMode) || zones.length === 0) {
+    return null;
+  }
 
   return (
     <group key={`props:${sceneId}`}>

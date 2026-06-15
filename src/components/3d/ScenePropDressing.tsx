@@ -8,6 +8,8 @@ import { getPropModelDefinition } from '@/config/propModelRegistry';
 import type { SceneId } from '@/shared/types/game';
 import { getScenePropDressing, type ScenePropPlacement } from '@/config/scenePropDressing';
 import { extendGltfLoader } from '@/engine/assets/gltfPipeline';
+import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
+import { allowsGlbAssetRendering } from '@/engine/graphics/qualityPresets';
 
 const extendLoader = extendGltfLoader as unknown as NonNullable<Parameters<typeof useGLTF>[3]>;
 
@@ -63,9 +65,12 @@ function ScenePropMeshInner({ placement, def }: ScenePropMeshInnerProps) {
 /** Renders shipped GLB props configured in scenePropDressing for the active scene. */
 export function ScenePropDressing() {
   const sceneId = useCurrentSceneId();
+  const { preset } = useGraphicsQuality();
   const placements = useMemo(() => getScenePropDressing(sceneId), [sceneId]);
 
-  if (placements.length === 0) return null;
+  if (!allowsGlbAssetRendering(preset.environmentRenderMode) || placements.length === 0) {
+    return null;
+  }
 
   return (
     <group key={`dressing:${sceneId}`}>

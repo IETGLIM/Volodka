@@ -222,7 +222,11 @@ export const AI3DGEN_ASSET_CATALOG: Ai3dgenAssetSpec[] = [
     imageBrief: 'Broken server blade, sparking wires, cyberpunk salvage part',
     sourceRelativePath: `${AI3DGEN}/props/server_fragment.glb`,
     publicUrl: `${MODELS}/props/server_fragment.glb`,
-    wire: { kind: 'prop', propModelId: 'ai3dgen_server_fragment' },
+    wire: {
+      kind: 'prop',
+      propModelId: 'ai3dgen_server_fragment',
+      triggerZoneIds: ['office_server_room', 'basement_server_rack'],
+    },
     defaultScale: 0.45,
     licenseTier: 'pro',
   },

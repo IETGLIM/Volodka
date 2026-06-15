@@ -111,18 +111,20 @@ function stageProductionLayout() {
     'models/characters/volodka/volodka_lod0.meshopt.glb',
   ]);
 
-  // P0 NPCs
+  // P0 NPCs + barista / colleague (Soldier rig)
   stageCopy('models/khronos/CesiumMan.glb', ['models/npcs/albert.glb']);
   stageCopy('models/khronos/RiggedFigure.glb', ['models/npcs/zarema.glb']);
+  stageCopy('models/khronos/Soldier.glb', [
+    'models/npcs/cafe_barista.glb',
+    'models/npcs/office_colleague.glb',
+    'models/npcs/viktor.glb',
+  ]);
 
   // P1 NPCs — distinct CC0 silhouettes until AI3DGen Pro drops land
-  stageCopy('models/npcs/cafe_barista.glb', ['models/npcs/maria.glb']);
+  stageCopy('models/khronos/RiggedSimple.glb', ['models/npcs/maria.glb', 'models/npcs/boris.glb']);
   stageCopy('models/khronos/BrainStem.glb', ['models/npcs/office_alexander.glb']);
-  stageCopy('models/khronos/CesiumMan.glb', ['models/npcs/office_dmitry.glb']);
-  stageCopy('models/khronos/Soldier.glb', ['models/npcs/viktor.glb']);
+  stageCopy('models/khronos/CesiumMan.glb', ['models/npcs/office_dmitry.glb', 'models/npcs/tamara.glb']);
   stageCopy('models/khronos/RiggedFigure.glb', ['models/npcs/kira.glb']);
-  stageCopy('models/khronos/RiggedSimple.glb', ['models/npcs/boris.glb']);
-  stageCopy('models/khronos/RiggedSimple.glb', ['models/npcs/tamara.glb']);
   stageCopy('models/khronos/Fox.glb', ['models/npcs/grisha.glb']);
 
   // Craft / quest props — small CC0 prop placeholder

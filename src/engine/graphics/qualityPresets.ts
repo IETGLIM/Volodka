@@ -152,3 +152,18 @@ export function resolveQualityPreset(
       : selected;
   return QUALITY_PRESETS[id];
 }
+
+/** Whether shipped GLB dressing / props should render for this render-mode tier. */
+export function allowsGlbAssetRendering(mode: AssetRenderMode): boolean {
+  switch (mode) {
+    case 'procedural':
+      return false;
+    case 'hybrid':
+    case 'glb':
+      return true;
+    default: {
+      const _exhaustive: never = mode;
+      return _exhaustive;
+    }
+  }
+}

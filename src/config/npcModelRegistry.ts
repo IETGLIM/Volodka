@@ -80,8 +80,8 @@ export const NPC_MODEL_ASSETS: Partial<Record<string, NpcModelAssetMeta>> = {
     url: `${NPCS}/maria.glb`,
     scale: 0.8,
     license: 'CC0',
-    source: THREE_SOLDIER,
-    sourceUrl: THREE_SOLDIER_URL,
+    source: `${KHRONOS} — RiggedSimple`,
+    sourceUrl: KHRONOS_URL,
   },
   office_dmitry: {
     url: `${NPCS}/office_dmitry.glb`,
@@ -115,7 +115,7 @@ export const NPC_MODEL_ASSETS: Partial<Record<string, NpcModelAssetMeta>> = {
     url: `${NPCS}/tamara.glb`,
     scale: 1,
     license: 'CC0',
-    source: `${KHRONOS} — RiggedSimple`,
+    source: `${KHRONOS} — CesiumMan`,
     sourceUrl: KHRONOS_URL,
   },
   grisha: {

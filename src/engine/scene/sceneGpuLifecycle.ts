@@ -26,6 +26,9 @@ const SCENE_GLTF_ASSETS: Partial<Record<SceneId, readonly string[]>> = {
   park_day: ['veg_tree_pine'],
   volodka_room: ['player_volodka'],
   volodka_corridor: [],
+  office_day: [],
+  abandoned_factory: [],
+  factory_basement: [],
 };
 
 /** Kenney prop ids used per scene — derived from scenePropDressing placements. */
