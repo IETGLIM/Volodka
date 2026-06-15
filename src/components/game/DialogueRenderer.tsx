@@ -198,7 +198,7 @@ export function DialogueRenderer() {
 
       if (node.speaker) {
         const npcId =
-          resolveNpcIdFromSpeaker(node.speaker)
+          resolveNpcIdFromSpeaker(node.speaker, node.speakerId)
           ?? node.speaker.toLowerCase().replace(/\s+/g, '_');
         eventBus.emit('npc:talked', { npcId, dialogueNodeId: node.id });
       }

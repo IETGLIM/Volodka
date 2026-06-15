@@ -29,19 +29,19 @@ export const STATIC_GUIDED_STORY_PATH: GuidedStoryPathConfig = {
 /** @deprecated Use getGuidedStoryPathConfig() — derived from story graph when loaded. */
 export const DEFAULT_GUIDED_STORY_PATH = STATIC_GUIDED_STORY_PATH;
 
-let cachedPath: GuidedStoryPathConfig | null = null;
+const guidedPathCache: { current: GuidedStoryPathConfig | null } = { current: null };
 
 /** Story spine + hints derived from loaded nodes; falls back to static tables. */
 export function getGuidedStoryPathConfig(): GuidedStoryPathConfig {
-  if (cachedPath) return cachedPath;
+  if (guidedPathCache.current) return guidedPathCache.current;
   if (!isNarrativeGameDataLoaded()) return STATIC_GUIDED_STORY_PATH;
 
-  cachedPath = buildGuidedStoryPathConfig(getStoryNodes(), getQuestDefinitions());
-  return cachedPath;
+  guidedPathCache.current = buildGuidedStoryPathConfig(getStoryNodes(), getQuestDefinitions());
+  return guidedPathCache.current;
 }
 
 export function invalidateGuidedStoryPathConfig(): void {
-  cachedPath = null;
+  guidedPathCache.current = null;
 }
 
 /** Resolved story spine (derived when narrative data is loaded). */

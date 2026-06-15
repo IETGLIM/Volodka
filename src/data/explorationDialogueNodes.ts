@@ -554,6 +554,27 @@ export const EXPLORATION_DIALOGUE_NODES: Record<string, DialogueNode> = {
     ],
   },
 
+  explore_chk_act7_farewell: {
+    id: 'explore_chk_act7_farewell',
+    speaker: 'Голос',
+    text: 'Седьмой акт на дворе. Костёр в лесу горит тише, чем в начале пути — но всё ещё твой. Ру кивает: чекисты не прощаются, они просто ждут.',
+    sceneId: 'chk_forest_zorge',
+    choices: [
+      {
+        text: 'Подойти к Ру — прощание с ТОЛПА',
+        next: null,
+        effects: [
+          { type: 'visitStoryNode', nodeId: 'chk_act7_farewell' },
+        ],
+      },
+      {
+        text: 'Посидеть у костра молча',
+        next: null,
+        effects: [{ type: 'addStat', stat: 'stress', value: -5 }],
+      },
+    ],
+  },
+
   explore_pier_factory_route: {
     id: 'explore_pier_factory_route',
     speaker: 'Голос',

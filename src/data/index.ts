@@ -23,9 +23,15 @@ export {
 export { NPC_DEFINITIONS } from './npcDefinitions';
 export {
   ALL_NPC_DEFINITIONS,
+  ALL_NPC_IDS,
+  NPC_BY_ID,
+  NPC_BY_DIALOGUE_NODE,
+  NPCS_BY_FACTION,
   findNpcById,
   findNpcByName,
   findNpcByDialogueNodeId,
+  findNpcByQuestId,
+  resolveNpcIdFromSpeaker,
 } from './allNpcDefinitions';
 export { EXPANDED_NPCS, EXPANDED_NPC_BARK_TEXTS, EXPANDED_NPC_QUEST_LINKS } from './expandedNPCs';
 

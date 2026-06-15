@@ -1,6 +1,7 @@
 /* ─── Volodka RPG – Achievement Definitions ─── */
 
 import type { StoryEffect } from '@/shared/types/game';
+import { TOTAL_MAIN_POEMS } from '@/data/poemCollectionMeta';
 
 /** Default unlock stinger — procedural audio via AudioEngine. */
 export const DEFAULT_ACHIEVEMENT_SOUND = 'stinger:discovery';
@@ -420,7 +421,7 @@ export const ACHIEVEMENTS: AchievementDefinition[] = [
     rarity: 'legendary',
     hidden: false,
     conditionDescription: 'Соберите все стихотворения',
-    progressTracking: { type: 'collection', collectionKind: 'poems', target: 21 },
+    progressTracking: { type: 'collection', collectionKind: 'poems', target: TOTAL_MAIN_POEMS },
     rewards: [{ type: 'addXp', value: 100 }, { type: 'addKarma', value: 20 }],
   }),
   ach({

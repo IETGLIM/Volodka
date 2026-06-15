@@ -5,6 +5,7 @@ import {
   evaluateEndingAvailability,
   isEndingCurrentlyAvailable,
 } from '@/engine/karmaPoem/karmaPoemPresentation';
+import { MAIN_POEM_IDS } from '@/data/poemCollectionMeta';
 import { getPoemPower } from '@/engine/PoemPowerSystem';
 import { createDefaultPlayerState } from '@/store/shared';
 
@@ -12,24 +13,30 @@ const baseSkills = createDefaultPlayerState().skills;
 
 describe('isEndingCurrentlyAvailable', () => {
   it('requires writing skill for creator ending', () => {
-    expect(isEndingCurrentlyAvailable('ending_creator', 70, 0, { ...baseSkills, writing: 7 }, {}, 35)).toBe(true);
-    expect(isEndingCurrentlyAvailable('ending_creator', 70, 0, { ...baseSkills, writing: 6 }, {}, 35)).toBe(false);
+    expect(isEndingCurrentlyAvailable('ending_creator', 70, [], { ...baseSkills, writing: 7 }, {})).toBe(true);
+    expect(isEndingCurrentlyAvailable('ending_creator', 70, [], { ...baseSkills, writing: 6 }, {})).toBe(false);
   });
 
   it('requires low_empathy flag and coding for machine ending', () => {
-    expect(isEndingCurrentlyAvailable('ending_machine', 50, 0, { ...baseSkills, coding: 8 }, { low_empathy: true }, 35)).toBe(true);
-    expect(isEndingCurrentlyAvailable('ending_machine', 50, 0, { ...baseSkills, coding: 8 }, {}, 35)).toBe(false);
-    expect(isEndingCurrentlyAvailable('ending_machine', 50, 0, { ...baseSkills, coding: 7 }, { low_empathy: true }, 35)).toBe(false);
+    expect(isEndingCurrentlyAvailable('ending_machine', 50, [], { ...baseSkills, coding: 8 }, { low_empathy: true })).toBe(true);
+    expect(isEndingCurrentlyAvailable('ending_machine', 50, [], { ...baseSkills, coding: 8 }, {})).toBe(false);
+    expect(isEndingCurrentlyAvailable('ending_machine', 50, [], { ...baseSkills, coding: 7 }, { low_empathy: true })).toBe(false);
+  });
+
+  it('requires all 21 main poems for poet ending, not bonus count alone', () => {
+    const bonusOnly = Array.from({ length: 46 }, (_, i) => `poem_${i + 1}`);
+    expect(isEndingCurrentlyAvailable('ending_poet', 50, bonusOnly.slice(22), baseSkills, {})).toBe(false);
+    expect(isEndingCurrentlyAvailable('ending_poet', 50, [...MAIN_POEM_IDS], baseSkills, {})).toBe(true);
   });
 
   it('returns false for unknown endings', () => {
-    expect(isEndingCurrentlyAvailable('ending_unknown', 50, 0, baseSkills, {}, 35)).toBe(false);
+    expect(isEndingCurrentlyAvailable('ending_unknown', 50, [], baseSkills, {})).toBe(false);
   });
 });
 
 describe('evaluateEndingAvailability', () => {
   it('maps all endings with availability flags', () => {
-    const endings = evaluateEndingAvailability(30, 0, baseSkills, {}, 35);
+    const endings = evaluateEndingAvailability(30, [], baseSkills, {});
     expect(endings.length).toBeGreaterThan(0);
     expect(endings.every((ending) => typeof ending.available === 'boolean')).toBe(true);
   });

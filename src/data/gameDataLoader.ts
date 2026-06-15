@@ -39,6 +39,9 @@ import {
   onNarrativePacksChanged,
   hasStoryNode,
   hasDialogueNode,
+  getLoadedStoryPackIds,
+  getLoadedDialoguePackIds,
+  resetNarrativePackRegistryForTests,
 } from '@/data/narrative/narrativePackRegistry';
 type TriggerModule = typeof import('@/data/triggerZones');
 type ItemsModule = typeof import('@/data/items');
@@ -46,6 +49,8 @@ type NpcModule = typeof import('@/data/allNpcDefinitions');
 type SkillTreeModule = typeof import('@/data/skillTree');
 type PerksModule = typeof import('@/data/perks');
 type NpcGiftsModule = typeof import('@/data/npcGifts');
+
+const PRELOAD_GAME_DATA_TIMEOUT_MS = 30_000;
 
 let bootPromise: Promise<void> | null = null;
 let narrativePromise: Promise<void> | null = null;
@@ -66,6 +71,75 @@ let skillTreeMod: SkillTreeModule | null = null;
 let perksMod: PerksModule | null = null;
 let npcGiftsMod: NpcGiftsModule | null = null;
 
+export interface GameDataLoadState {
+  bootLoaded: boolean;
+  narrativeLoaded: boolean;
+  questsLoaded: boolean;
+  bootModuleCount: number;
+  narrativeModuleCount: number;
+  storyNodeCount: number;
+  dialogueNodeCount: number;
+  loadedStoryPackCount: number;
+  loadedDialoguePackCount: number;
+}
+
+function countBootModulesLoaded(): number {
+  let count = 0;
+  if (achievementsMod) count++;
+  if (dailyMissionsMod) count++;
+  if (loreMod) count++;
+  if (triggerMod) count++;
+  if (itemsMod) count++;
+  if (npcMod) count++;
+  if (skillTreeMod) count++;
+  if (perksMod) count++;
+  if (npcGiftsMod) count++;
+  return count;
+}
+
+function countNarrativeModulesLoaded(): number {
+  let count = 0;
+  if (questsMod) count++;
+  if (poemsMod) count++;
+  return count;
+}
+
+export function getGameDataLoadState(): GameDataLoadState {
+  return {
+    bootLoaded,
+    narrativeLoaded,
+    questsLoaded,
+    bootModuleCount: countBootModulesLoaded(),
+    narrativeModuleCount: countNarrativeModulesLoaded(),
+    storyNodeCount: Object.keys(getStoryNodesCache()).length,
+    dialogueNodeCount: Object.keys(getDialogueNodesCache()).length,
+    loadedStoryPackCount: getLoadedStoryPackIds().length,
+    loadedDialoguePackCount: getLoadedDialoguePackIds().length,
+  };
+}
+
+/** Test / dev reset — clears loader promises, flags, and narrative pack cache. */
+export function resetGameDataLoader(): void {
+  bootPromise = null;
+  narrativePromise = null;
+  bootLoaded = false;
+  narrativeLoaded = false;
+  questsLoaded = false;
+  questsMod = null;
+  poemsMod = null;
+  achievementsMod = null;
+  dailyMissionsMod = null;
+  loreMod = null;
+  narrativePackListenerRegistered = false;
+  triggerMod = null;
+  itemsMod = null;
+  npcMod = null;
+  skillTreeMod = null;
+  perksMod = null;
+  npcGiftsMod = null;
+  resetNarrativePackRegistryForTests();
+}
+
 export function isBootGameDataLoaded(): boolean {
   return bootLoaded;
 }
@@ -82,42 +156,66 @@ export function isGameDataLoaded(): boolean {
 export async function preloadBootGameData(): Promise<void> {
   if (bootLoaded) return;
   if (!bootPromise) {
-    const { loadingPipeline } = await import('@/engine/loading/LoadingPipeline');
-    loadingPipeline.reportStage('boot_data');
-    bootPromise = Promise.all([
-      import('@/data/achievements'),
-      import('@/data/dailyMissions'),
-      import('@/data/loreEntries'),
-      import('@/data/triggerZones'),
-      import('@/data/items'),
-      import('@/data/allNpcDefinitions'),
-      import('@/data/skillTree'),
-      import('@/data/perks'),
-      import('@/data/npcGifts'),
-    ]).then(([
-      achievements,
-      dailyMissions,
-      lore,
-      triggers,
-      items,
-      npcs,
-      skillTree,
-      perks,
-      npcGifts,
-    ]) => {
-      loadingPipeline.reportSubProgress(1);
-      achievementsMod = achievements;
-      dailyMissionsMod = dailyMissions;
-      loreMod = lore;
-      triggerMod = triggers;
-      itemsMod = items;
-      npcMod = npcs;
-      skillTreeMod = skillTree;
-      perksMod = perks;
-      npcGiftsMod = npcGifts;
-      bootLoaded = true;
+    const bootStartedAt = import.meta.env?.DEV ? performance.now() : 0;
+    bootPromise = (async () => {
+      const { loadingPipeline } = await import('@/engine/loading/LoadingPipeline');
       loadingPipeline.reportStage('boot_data');
-    });
+      try {
+        const [
+          achievements,
+          dailyMissions,
+          lore,
+          triggers,
+          items,
+          npcs,
+          skillTree,
+          perks,
+          npcGifts,
+        ] = await Promise.all([
+          import('@/data/achievements'),
+          import('@/data/dailyMissions'),
+          import('@/data/loreEntries'),
+          import('@/data/triggerZones'),
+          import('@/data/items'),
+          import('@/data/allNpcDefinitions'),
+          import('@/data/skillTree'),
+          import('@/data/perks'),
+          import('@/data/npcGifts'),
+        ]);
+        loadingPipeline.reportSubProgress(1);
+        achievementsMod = achievements;
+        dailyMissionsMod = dailyMissions;
+        loreMod = lore;
+        triggerMod = triggers;
+        itemsMod = items;
+        npcMod = npcs;
+        skillTreeMod = skillTree;
+        perksMod = perks;
+        npcGiftsMod = npcGifts;
+        bootLoaded = true;
+        loadingPipeline.reportStage('boot_data');
+        if (import.meta.env?.DEV) {
+          console.debug(
+            `[gameDataLoader] boot loaded in ${(performance.now() - bootStartedAt).toFixed(1)}ms`,
+          );
+        }
+      } catch (error) {
+        bootPromise = null;
+        bootLoaded = false;
+        achievementsMod = null;
+        dailyMissionsMod = null;
+        loreMod = null;
+        triggerMod = null;
+        itemsMod = null;
+        npcMod = null;
+        skillTreeMod = null;
+        perksMod = null;
+        npcGiftsMod = null;
+        const { loadingPipeline: pipeline } = await import('@/engine/loading/LoadingPipeline');
+        pipeline.reportError(error);
+        throw error;
+      }
+    })();
   }
   await bootPromise;
 }
@@ -126,33 +224,54 @@ export function isQuestsGameDataLoaded(): boolean {
   return questsLoaded;
 }
 
-/** Narrative blobs — quests first, then story/dialogue/poems in parallel. */
+/** Narrative blobs — quests/poems import, then bootstrap story/dialogue packs. */
 export async function preloadNarrativeGameData(): Promise<void> {
   if (narrativeLoaded) return;
   if (!narrativePromise) {
+    const narrativeStartedAt = import.meta.env?.DEV ? performance.now() : 0;
     narrativePromise = (async () => {
-      const quests = await import('@/data/quests');
-      questsMod = quests;
-      questsLoaded = true;
+      const { loadingPipeline } = await import('@/engine/loading/LoadingPipeline');
+      loadingPipeline.reportStage('narrative_data');
+      try {
+        const quests = await import('@/data/quests');
+        const poems = await import('@/data/poems');
 
-      const poems = await import('@/data/poems');
-      poemsMod = poems;
+        if (!narrativePackListenerRegistered) {
+          onNarrativePacksChanged(() => {
+            void import('@/engine/guidedStory/guidedStoryPath').then((mod) => {
+              mod.invalidateGuidedStoryPathConfig();
+            });
+            void import('@/engine/story/storyGraphIndex').then((mod) => {
+              mod.syncStoryGraphIndexAfterNarrativeChange();
+            });
+          });
+          narrativePackListenerRegistered = true;
+        }
 
-      if (!narrativePackListenerRegistered) {
-        onNarrativePacksChanged(() => {
-          void import('@/engine/guidedStory/guidedStoryPath').then((mod) => {
-            mod.invalidateGuidedStoryPathConfig();
-          });
-          void import('@/engine/story/storyGraphIndex').then((mod) => {
-            mod.syncStoryGraphIndexAfterNarrativeChange();
-          });
-        });
-        narrativePackListenerRegistered = true;
+        await loadBootstrapNarrativePacks();
+        loadingPipeline.reportStage('narrative_data');
+
+        questsMod = quests;
+        poemsMod = poems;
+        questsLoaded = true;
+        narrativeLoaded = true;
+        prefetchRemainingStoryPacksInIdle();
+
+        if (import.meta.env?.DEV) {
+          console.debug(
+            `[gameDataLoader] narrative loaded in ${(performance.now() - narrativeStartedAt).toFixed(1)}ms`,
+          );
+        }
+      } catch (error) {
+        narrativePromise = null;
+        narrativeLoaded = false;
+        questsLoaded = false;
+        questsMod = null;
+        poemsMod = null;
+        const { loadingPipeline: pipeline } = await import('@/engine/loading/LoadingPipeline');
+        pipeline.reportError(error);
+        throw error;
       }
-
-      await loadBootstrapNarrativePacks();
-      prefetchRemainingStoryPacksInIdle();
-      narrativeLoaded = true;
     })();
   }
   await narrativePromise;
@@ -160,9 +279,31 @@ export async function preloadNarrativeGameData(): Promise<void> {
 
 /** Full preload — boot + narrative + all story/dialogue packs (save/load, dev tools). */
 export async function preloadGameData(): Promise<void> {
-  await preloadBootGameData();
-  await preloadNarrativeGameData();
-  await loadAllNarrativePacks();
+  let timeoutId: ReturnType<typeof setTimeout> | undefined;
+  const timeoutPromise = new Promise<never>((_, reject) => {
+    timeoutId = globalThis.setTimeout(() => {
+      reject(new Error(`[gameDataLoader] preloadGameData timed out after ${PRELOAD_GAME_DATA_TIMEOUT_MS / 1000}s`));
+    }, PRELOAD_GAME_DATA_TIMEOUT_MS);
+  });
+
+  try {
+    await Promise.race([
+      (async () => {
+        await preloadBootGameData();
+        await preloadNarrativeGameData();
+        await loadAllNarrativePacks();
+      })(),
+      timeoutPromise,
+    ]);
+  } catch (error) {
+    const { loadingPipeline } = await import('@/engine/loading/LoadingPipeline');
+    loadingPipeline.reportError(error);
+    throw error;
+  } finally {
+    if (timeoutId !== undefined) {
+      globalThis.clearTimeout(timeoutId);
+    }
+  }
 }
 
 function assertBootLoaded(): void {
@@ -224,11 +365,20 @@ export function getInitialLoreEntries(): LoreEntry[] {
   return loreMod!.INITIAL_LORE_ENTRIES;
 }
 
+/**
+ * Returns the in-memory story node cache. After preloadNarrativeGameData only bootstrap
+ * packs (Act 1 + early dialogue) are present; later acts load via ensureStoryNode or
+ * prefetchRemainingStoryPacksInIdle. Use ensureStoryNode(id) when a specific node is required.
+ */
 export function getStoryNodes(): Record<string, StoryNode> {
   assertNarrativeLoaded();
   return getStoryNodesCache() as Record<string, StoryNode>;
 }
 
+/**
+ * Returns the in-memory dialogue node cache. Bootstrap dialogue packs load at narrative
+ * preload; remaining parts load on demand via ensureDialogueNode.
+ */
 export function getDialogueNodes(): Record<string, DialogueNode> {
   assertNarrativeLoaded();
   return getDialogueNodesCache() as Record<string, DialogueNode>;

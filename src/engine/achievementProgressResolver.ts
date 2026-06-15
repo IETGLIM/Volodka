@@ -1,4 +1,5 @@
 import type { AchievementDefinition } from '@/data/achievements';
+import { countCollectedMainPoems } from '@/data/poemCollectionMeta';
 import type { AchievementProgressSnapshot } from '@/engine/GameActionDispatcher';
 
 export interface AchievementProgressView {
@@ -61,8 +62,9 @@ export function resolveAchievementProgress(
     }
     case 'collection': {
       if (tracking.collectionKind === 'poems') {
+        const current = countCollectedMainPoems(state.collectedPoems);
         return {
-          current: Math.min(state.collectedPoems.length, tracking.target),
+          current: Math.min(current, tracking.target),
           target: tracking.target,
         };
       }

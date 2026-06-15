@@ -34,6 +34,12 @@ export interface NPCAccessibility {
 export interface NPCDefinition {
   readonly id: string;
   readonly name: string;
+  /** i18n lookup key — searched before `name` in findNpcByName. */
+  readonly nameKey?: string;
+  /** Faction tag for grouping (e.g. network, tolpa). */
+  readonly faction?: string;
+  /** Quest ids this NPC can give or anchor. */
+  readonly questsGiven?: readonly string[];
   /** Omit or use `procedural` — renderer builds silhouette from appearance */
   readonly modelPath?: string;
   readonly scale?: number;

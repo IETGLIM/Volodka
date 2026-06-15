@@ -7,19 +7,23 @@ import type { StoryEffect } from '@/shared/types/game';
 import { STORY_NODES } from '@/data/storyNodes';
 import { DIALOGUE_NODES } from '@/data/dialogueNodes';
 import { QUEST_DEFINITIONS } from '@/data/quests';
-import { ALL_NPC_DEFINITIONS } from '@/data/allNpcDefinitions';
-import { validateNpcDefinitionModelPaths } from '@/data/npcDefinitions';
-import { TRIGGER_ZONES } from '@/data/triggerZones';
+import { ALL_NPC_DEFINITIONS, detectNpcDuplicateIds } from '@/data/allNpcDefinitions';
+import { NPC_DEFINITIONS, validateNpcDefinitionModelPaths } from '@/data/npcDefinitions';
+import { EXPANDED_NPC_QUEST_LINKS } from '@/data/expandedNPCs';
 import { SCENE_DEFINITIONS, type SceneId } from '@/config/sceneDefinitions';
 import { POEMS } from '@/data/poems';
 import { getAllItemDefinitions } from '@/data/items';
 import { getAllUnifiedPoems } from '@/data/unifiedPoemRegistry';
-import { TOTAL_UNIFIED_POEMS as CANONICAL_POEM_COUNT } from '@/data/poemCollectionMeta';
+import {
+  ALL_UNIFIED_POEM_IDS,
+  TOTAL_MAIN_POEMS,
+  TOTAL_UNIFIED_POEMS as CANONICAL_UNIFIED_POEM_COUNT,
+} from '@/data/poemCollectionMeta';
 import { INITIAL_LORE_ENTRIES } from '@/data/loreEntries';
 import { LORE_SCENE_MAP, LORE_STORY_NODE_MAP } from '@/data/loreSceneMap';
 import { CUTSCENES } from '@/data/cutscenes';
 import { NPC_SCHEDULES, ACT_SCHEDULE_OVERRIDES } from '@/data/npcSchedules';
-import { EXPANDED_NPC_QUEST_LINKS } from '@/data/expandedNPCs';
+import { TRIGGER_ZONES } from '@/data/triggerZones';
 import {
   GOLDEN_PATH_STORY_SPINE,
   GOLDEN_PATH_QUEST_SPINE,
@@ -419,7 +423,22 @@ function validateQuestStoryGiverAlignment(out: ValidationIssue[]): void {
   }
 }
 
+function validateNpcDuplicateIds(out: ValidationIssue[]): void {
+  for (const dupe of detectNpcDuplicateIds()) {
+    out.push(
+      issue(
+        'error',
+        'npc',
+        `npc:${dupe.id}`,
+        `duplicate npc id (in ${dupe.firstSource} and ${dupe.duplicateSource})`,
+      ),
+    );
+  }
+}
+
 function validateNpcs(reg: ReturnType<typeof buildSets>, out: ValidationIssue[]): void {
+  validateNpcDuplicateIds(out);
+
   for (const { npcId, message } of validateNpcDefinitionModelPaths()) {
     out.push(issue('warning', 'npc', `npc:${npcId}`, message));
   }
@@ -509,15 +528,22 @@ function validateScenes(reg: ReturnType<typeof buildSets>, out: ValidationIssue[
 
 function validatePoems(reg: ReturnType<typeof buildSets>, out: ValidationIssue[]): void {
   const registryCount = getAllUnifiedPoems().length;
-  if (registryCount !== CANONICAL_POEM_COUNT) {
+  if (registryCount !== CANONICAL_UNIFIED_POEM_COUNT) {
     out.push(
       issue(
         'error',
         'poem',
         'poemCollectionMeta',
-        `TOTAL_UNIFIED_POEMS (${CANONICAL_POEM_COUNT}) !== UNIFIED_POEM_REGISTRY length (${registryCount})`,
+        `TOTAL_UNIFIED_POEMS (${CANONICAL_UNIFIED_POEM_COUNT}) !== UNIFIED_POEM_REGISTRY length (${registryCount})`,
       ),
     );
+  }
+  for (const poemId of ALL_UNIFIED_POEM_IDS) {
+    if (!reg.unifiedPoemIds.has(poemId)) {
+      out.push(
+        issue('error', 'poem', 'unifiedPoemRegistry', `registry missing unified poem id "${poemId}"`),
+      );
+    }
   }
   const seenIds = new Set<string>();
   const orderToIds = new Map<number, string[]>();

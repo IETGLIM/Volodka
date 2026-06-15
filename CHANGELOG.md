@@ -1,6 +1,26 @@
 # Changelog — ВОЛОДЬКА RPG
 
-## v4.2.2 — 13 июня 2026
+## v4.2.3 — 15 июня 2026
+
+### AAA polish pass
+- **Poem registry**: 21 main + 25 hidden = 46 unified poems (`poemCollectionMeta`); `poem_act6_01` kept as registry ID; achievement/dialogue gates aligned with `TOTAL_UNIFIED_POEMS`.
+- **gameDataLoader**: split boot/narrative preload, error reporting via `loadingPipeline`, quest-loaded guard on bootstrap failure; unit tests.
+- **NPC registry**: merged `ALL_NPC_DEFINITIONS` with O(1) maps, duplicate detection, `speakerId` on dialogue nodes, `resolveNpcIdFromSpeaker(speaker, speakerId)`.
+- **CHK Tolpa**: `speakerId` on all dialogue nodes; `tolpa_honorary_chekist` farewell variant; `chk_silence` / `chk_silence_night` time gates; Act 7 `chk_act7_farewell` story beat + trigger zone.
+- **Rapier**: `rapierInitFix` hardened — esbuild expand, `module_or_path` patch, transform cache, DEV self-test.
+- **Chunks**: rollup manual chunks keep narrative engine + data acyclic (no circular TDZ splits).
+- **Validation**: content pipeline OK; poem count parity enforced in `contentPipelineValidator`.
+
+## v4.2.2 — 15 июня 2026
+
+### AAA polish pass (content, boot, bundles)
+- **Poem registry**: 21 main (`poem_1`–`poem_21`) + 25 bonus/hidden = **46 unified**; `poem_act6_01` kept as registry id (not aliased to `poem_22`); achievements and CHK easter-egg gates aligned with `TOTAL_UNIFIED_POEMS`.
+- **gameDataLoader**: boot/narrative preload error handling, load-state introspection, `resetGameDataLoader` for tests; guided-path cache invalidation without circular-import TDZ.
+- **NPC registry**: merged `ALL_NPC_DEFINITIONS` with O(1) lookup, `speakerId` on CHK dialogues, `resolveNpcIdFromSpeaker` for i18n-safe portrait routing.
+- **CHK Tolpa**: `speakerId`, night/day `chk_silence` variants, `tolpa_honorary_chekist` farewell dialogue, Act 7 story beat `chk_act7_farewell` + explore trigger.
+- **Rapier / Vite**: `rapierInitFix` hardened (esbuild expand, pattern guards, transform cache, version logging).
+- **Rollup chunks**: manual chunk splits to avoid data-mechanics TDZ; validator enforces poem registry parity.
+- **Regression tests**: `poemCollectionMeta`, `allNpcDefinitions`, `gameDataLoader`, expanded CHK dialogue coverage.
 
 ### Scene transitions / narrative
 - **Progress bar 90% hang**: `scene:enter` вложенно срабатывал до latch прогресс-бара — приоритеты EventBus (`Engine` → `Orchestrator`) и буфер `pendingEnter`.

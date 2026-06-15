@@ -16,7 +16,10 @@ export type DialogueTextVariants = NarrativeTextVariants;
 
 export interface DialogueNode {
   readonly id: string;
+  /** Display name shown in the dialogue UI (locale-specific). */
   readonly speaker: string;
+  /** Canonical NPC registry id for lookup; prefer over `speaker` when set (i18n-safe). */
+  readonly speakerId?: string;
   readonly text: string;
   readonly textVariants?: DialogueTextVariants;
   readonly karmaThresholds?: KarmaThresholds;

@@ -1,5 +1,12 @@
 import { ALL_ENDINGS } from '@/data/goldenPath';
-import { getAllUnifiedPoems, getUnifiedPoem, TOTAL_UNIFIED_POEMS } from '@/data/unifiedPoemRegistry';
+import {
+  countCollectedHiddenPoems,
+  countCollectedMainPoems,
+  hasAllMainPoems,
+  TOTAL_MAIN_POEMS,
+  TOTAL_UNIFIED_POEMS,
+} from '@/data/poemCollectionMeta';
+import { getAllUnifiedPoems, getUnifiedPoem } from '@/data/unifiedPoemRegistry';
 import { QUEST_DEFINITIONS } from '@/data/quests';
 import { getPoemPower } from '@/engine/PoemPowerSystem';
 import type { PlayerSkills } from '@/shared/types/game';
@@ -36,24 +43,22 @@ export function isKarmaPoemPanelDataReady(): boolean {
 
 export function evaluateEndingAvailability(
   karma: number,
-  collectedPoemCount: number,
+  collectedPoems: readonly string[],
   skills: PlayerSkills,
   flags: Record<string, boolean>,
-  totalPoems: number = TOTAL_UNIFIED_POEMS,
 ): EndingView[] {
   return ALL_ENDINGS.map((ending) => ({
     ...ending,
-    available: isEndingCurrentlyAvailable(ending.id, karma, collectedPoemCount, skills, flags, totalPoems),
+    available: isEndingCurrentlyAvailable(ending.id, karma, collectedPoems, skills, flags),
   }));
 }
 
 export function isEndingCurrentlyAvailable(
   endingId: string,
   karma: number,
-  collectedPoemCount: number,
+  collectedPoems: readonly string[],
   skills: PlayerSkills,
   flags: Record<string, boolean>,
-  totalPoems: number,
 ): boolean {
   switch (endingId) {
     case 'ending_creator':
@@ -65,7 +70,7 @@ export function isEndingCurrentlyAvailable(
     case 'ending_machine':
       return skills.coding >= 8 && flags.low_empathy === true;
     case 'ending_poet':
-      return collectedPoemCount >= totalPoems;
+      return hasAllMainPoems(collectedPoems);
     default:
       return false;
   }
@@ -110,21 +115,27 @@ export function buildPoemBypassQuests(): Array<{ id: string; title: string }> {
 }
 
 export function buildKarmaPoemPanelView(input: KarmaPoemPanelInput) {
-  const totalPoems = TOTAL_UNIFIED_POEMS;
+  const mainCollectedCount = countCollectedMainPoems(input.collectedPoems);
+  const bonusCollectedCount = countCollectedHiddenPoems(input.collectedPoems);
+
   return {
     dataReady: isKarmaPoemPanelDataReady(),
     karma: input.karma,
     availableEndings: evaluateEndingAvailability(
       input.karma,
-      input.collectedPoems.length,
+      input.collectedPoems,
       input.skills,
       input.flags,
-      totalPoems,
     ),
     recentKarmaChanges: buildRecentKarmaChanges(input.notifications),
     poemSlots: buildPoemSlots(input.collectedPoems),
-    collectedCount: input.collectedPoems.length,
-    totalPoems,
+    /** Сюжетные стихи Владимира (poem_1–poem_21) — для концовки «Поэт». */
+    collectedCount: mainCollectedCount,
+    totalPoems: TOTAL_MAIN_POEMS,
+    /** Бонусные/скрытые стихи — для 100% completion. */
+    bonusCollectedCount,
+    totalBonusPoems: TOTAL_UNIFIED_POEMS - TOTAL_MAIN_POEMS,
+    totalUnifiedPoems: TOTAL_UNIFIED_POEMS,
     readyPowerCount: countReadyPoemPowers(input.collectedPoems, input.poemPowers),
     powerPoemCount: countPoemsWithPowers(input.collectedPoems),
     poemBypassQuests: buildPoemBypassQuests(),

@@ -1255,6 +1255,22 @@ export const TRIGGER_ZONES: TriggerZone[] = [
     linkedNpcId: 'chk_ru',
   },
 
+  /* ─────────────── CHK ACT7 FAREWELL — Act VII honorary chekist beat ─────────────── */
+  {
+    id: 'chk_explore_act7_farewell',
+    sceneId: 'chk_forest_zorge',
+    position: [0.5, 0.5, 0.8],
+    size: [2.5, 2, 2.5],
+    enterToast: 'Ру ждёт у костра — прощание с ТОЛПА.',
+    linkedDialogueNodeId: 'explore_chk_act7_farewell',
+    requiredAct: 7,
+    requiredFlag: 'tolpa_honorary_chekist',
+    hiddenWhenFlag: 'tolpa_act7_farewell_heard',
+    interactionType: 'talk',
+    interactionLabel: 'Прощание с ЧК',
+    linkedNpcId: 'chk_ru',
+  },
+
   /* ─────────────── LIBRARY ARCHIVE — Act VII golden path (closed-overlay hub) ─────────────── */
   {
     id: 'library_archive_console',

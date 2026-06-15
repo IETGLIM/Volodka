@@ -357,7 +357,7 @@ export async function ensureNarrativeNodeIds(nodeIds: readonly string[]): Promis
 
 function scheduleIdleWork(fn: () => void, fallbackMs: number): void {
   if (typeof requestIdleCallback !== 'undefined') {
-    requestIdleCallback(fn);
+    requestIdleCallback(fn, { timeout: fallbackMs });
     return;
   }
   globalThis.setTimeout(fn, fallbackMs);

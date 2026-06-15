@@ -122,6 +122,7 @@ export const SCENE_EXPLORE_HUB_DEFS: readonly SceneExploreHubDef[] = [
       'chk_act4_stalker_briefing',
       'chk_act4_broadcast_watch',
       'chk_act5_campfire_dawn',
+      'chk_act7_farewell',
     ],
   },
   {

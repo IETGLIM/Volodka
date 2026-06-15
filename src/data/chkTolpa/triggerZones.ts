@@ -203,4 +203,22 @@ export const CHK_TRIGGER_ZONES: TriggerZone[] = [
     linkedStoryNodeId: 'chk_act5_campfire_dawn',
     linkedNpcId: 'chk_ru',
   },
+  /* ── Act 7: honorary chekist farewell before true end ── */
+  {
+    id: 'chk_act7_farewell',
+    sceneId: 'chk_forest_zorge',
+    position: [0.5, 0.5, 0.8],
+    size: [2.5, 2, 2.5],
+    interactionType: 'talk',
+    interactionLabel: 'Прощание с ЧК',
+    requiredAct: 7,
+    requiredFlag: 'tolpa_honorary_chekist',
+    linkedStoryNodeId: 'chk_act7_farewell',
+    linkedNpcId: 'chk_ru',
+    examineData: {
+      title: 'Прощание с ТОЛПА',
+      description: 'Ру ждёт у костра — последнее слово чекистов перед финалом.',
+      detailText: 'Чекисты не прощаются. Они просто гасят костёр позже, чем город.',
+    },
+  },
 ];

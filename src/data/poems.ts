@@ -8,6 +8,7 @@
    ═══════════════════════════════════════════════════════════════ */
 
 import type { Poem } from '@/shared/types/game';
+import { isMainPoemId } from '@/data/poemCollectionMeta';
 
 // ─── ИНТРО-ПРОЗА К ИГРЕ ───
 // Each paragraph is a separate cinematic beat.
@@ -1580,11 +1581,11 @@ export function getOrderedPoems(): Poem[] {
 }
 
 export function getMainPoems(): Poem[] {
-  return POEMS.filter((p) => p.order <= 13).sort((a, b) => a.order - b.order);
+  return POEMS.filter((p) => isMainPoemId(p.id)).sort((a, b) => a.order - b.order);
 }
 
 export function getHiddenPoems(): Poem[] {
-  return POEMS.filter((p) => p.order > 13);
+  return POEMS.filter((p) => !isMainPoemId(p.id));
 }
 
 /** Dev-only: validate poem unlock nodes and unique IDs. Returns list of problems. */

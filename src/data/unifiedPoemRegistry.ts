@@ -13,6 +13,11 @@
 
 import type { Poem } from '@/shared/types/game';
 import { POEMS, getPoemById } from '@/data/poems';
+import {
+  ALL_UNIFIED_POEM_IDS,
+  TOTAL_MAIN_POEMS,
+  TOTAL_UNIFIED_POEMS,
+} from '@/data/poemCollectionMeta';
 
 /* ─── Unified Poem Descriptor ─── */
 export interface UnifiedPoemDescriptor {
@@ -524,8 +529,18 @@ export function getAllUnifiedPoems(): UnifiedPoemDescriptor[] {
   return Object.values(UNIFIED_POEM_REGISTRY);
 }
 
-/** Canonical collectible poem count — keep ending/UI thresholds in sync with this. */
-export const TOTAL_UNIFIED_POEMS = Object.keys(UNIFIED_POEM_REGISTRY).length;
+if (import.meta.env?.DEV) {
+  const registryIds = Object.keys(UNIFIED_POEM_REGISTRY);
+  console.assert(
+    registryIds.length === TOTAL_UNIFIED_POEMS,
+    `[unifiedPoemRegistry] registry length ${registryIds.length} !== TOTAL_UNIFIED_POEMS ${TOTAL_UNIFIED_POEMS}`,
+  );
+  for (const id of ALL_UNIFIED_POEM_IDS) {
+    console.assert(registryIds.includes(id), `[unifiedPoemRegistry] missing id "${id}"`);
+  }
+}
+
+export { TOTAL_MAIN_POEMS, TOTAL_UNIFIED_POEMS };
 
 /** Validate that a poem ID exists in the registry */
 export function isValidPoemId(poemId: string): boolean {

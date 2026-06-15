@@ -15,6 +15,7 @@ import {
   type AchievementProgressSnapshot,
 } from '@/engine/GameActionDispatcher';
 import { ACHIEVEMENT_MAP, ACHIEVEMENTS, TOTAL_ACHIEVEMENTS } from '@/data/achievements';
+import { hasAllMainPoems } from '@/data/poemCollectionMeta';
 import type { EnemyType } from '@/shared/types/game';
 
 /* ─── Session-only tracking (not persisted — ephemeral per page load) ─── */
@@ -249,7 +250,7 @@ export function checkAchievements(state: AchievementCheckState): void {
     tryUnlock('poetry_rhyme_collector');
   }
 
-  if (poems.length >= 21) {
+  if (hasAllMainPoems(poems)) {
     tryUnlock('poetry_word_keeper');
   }
 

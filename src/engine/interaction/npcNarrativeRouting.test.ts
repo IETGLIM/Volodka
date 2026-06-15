@@ -36,6 +36,11 @@ describe('resolveNpcNarrativeTarget', () => {
 });
 
 describe('resolveNpcIdFromSpeaker', () => {
+  it('prefers speakerId when provided', () => {
+    expect(resolveNpcIdFromSpeaker('Солныш', 'lyonya')).toBe('lyonya');
+    expect(resolveNpcIdFromSpeaker('Unknown', 'kate')).toBe('kate');
+  });
+
   it('maps Солныш and Алина to solnysh', () => {
     expect(resolveNpcIdFromSpeaker('Солныш')).toBe('solnysh');
     expect(resolveNpcIdFromSpeaker('Алина')).toBe('solnysh');

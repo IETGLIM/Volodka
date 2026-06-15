@@ -181,4 +181,27 @@ export const CHK_STORY_NODES: Record<string, StoryNode> = {
       },
     ],
   },
+
+  chk_act7_farewell: {
+    id: 'chk_act7_farewell',
+    speaker: 'Ру',
+    text: 'Акт седьмой на дворе — а ты всё ещё заглядываешь в лес. Хорошо. Чекисты не прощаются: мы просто гасим костёр позже, чем город выключает свет. Пиши новое — но не забывай страницу «Зорге» в своей книге. Басед налил «777». Элис настроила гитару. Место твоё.',
+    contextNote: 'Прощание с ЧК перед финалом. Костёр тлеет, но не гаснет.',
+    accessibilityAnnounce: 'Ру прощается с чекистом перед финалом седьмого акта.',
+    guidanceHint: 'Выслушайте Ру — это последнее слово ТОЛПА перед финалом.',
+    ambientSound: 'sounds/ambient/street_night_rain.ogg',
+    sceneId: 'chk_forest_zorge',
+    choices: [
+      {
+        text: 'ЧК своих не бросает. До новых строк.',
+        next: 'explore_mode',
+        effects: [
+          { type: 'setFlag', flag: 'tolpa_act7_farewell_heard', flagValue: true },
+          { type: 'addKarma', value: 8 },
+          { type: 'addStat', stat: 'stress', value: -12 },
+          { type: 'npcChange', npcId: 'chk_ru', npcChange: { relation: 8 } },
+        ],
+      },
+    ],
+  },
 };

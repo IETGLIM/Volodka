@@ -1,6 +1,6 @@
 /* ─── Volodka RPG – golden path ─── */
 
-import { TOTAL_UNIFIED_POEMS } from './poemCollectionMeta';
+import { TOTAL_MAIN_POEMS } from './poemCollectionMeta';
 import { NPC_ID_ALIASES as SHARED_NPC_ID_ALIASES, resolveCanonicalNpcId as resolveNpcAlias } from '@/shared/npcIdAliases';
 
 /**
@@ -183,6 +183,7 @@ export const STORY_NODE_TO_NPC_ID: Record<string, string> = {
   chk_act4_stalker_briefing: 'chk_stalker',
   chk_act4_broadcast_watch: 'chk_based',
   chk_act5_campfire_dawn: 'chk_ru',
+  chk_act7_farewell: 'chk_ru',
   act6_office_confrontation: 'office_dmitry',
   act6_dmitry_confession: 'office_dmitry',
   act6_resistance_briefing: 'anya',
@@ -230,6 +231,7 @@ export const STORY_NODE_TO_SCENE_LABEL: Record<string, string> = {
   chk_act4_stalker_briefing: 'лес на Зорге (ЧК)',
   chk_act4_broadcast_watch: 'костёр ЧК',
   chk_act5_campfire_dawn: 'костёр ЧК',
+  chk_act7_farewell: 'костёр ЧК',
   office_alexander: 'офис IT-гильдии',
   office_colleague: 'офис IT-гильдии',
   act2_dmitry_office_meeting: 'офис IT-гильдии',
@@ -314,6 +316,7 @@ export const STORY_FLAG_TO_NODE_ID: Record<string, string> = {
   tolpa_heard_broadcast: 'chk_act4_broadcast_watch',
   act5_started: 'act5_dawn',
   tolpa_act5_blessing: 'chk_act5_campfire_dawn',
+  tolpa_act7_farewell_heard: 'chk_act7_farewell',
   rooftop_confrontation_done: 'act7_bridge',
   chose_guardian_path: 'act7_bridge',
   chose_liberator_path: 'act7_bridge',
@@ -543,6 +546,7 @@ export const GOLDEN_PATH_BRANCH_HINTS: Record<string, string> = {
   act4_final_choice: 'Кто ты после всего? Создатель, Повстанец, Изгой, Машина или Поэт — выбирай осознанно.',
   // Act 5
   chk_act5_campfire_dawn: 'После рассвета — зайди к Ру у костра за финальное слово ЧК.',
+  chk_act7_farewell: 'Перед финалом — зайди к Ру у костра за прощание с ТОЛПА.',
   act5_peaceful_path: 'Построй новый мир — где код и поэзия едины.',
   ending_reconciliation: 'Прости — клевета вернётся к тем, кто лжёт. Но финал — не конец.',
   act5_ending_epilogue: 'Проверь терминал — подвал «Зари-М», библиотека и предатель в гильдии ждут.',
@@ -665,7 +669,7 @@ export const ALL_ENDINGS: { id: string; title: string; description: string; cond
     id: 'ending_poet',
     title: 'Поэт',
     description: 'Собраны ВСЕ стихи Владимира: Реальность — это поэзия, Володька открывает последнюю истину.',
-    condition: `Собраны все ${TOTAL_UNIFIED_POEMS} стихотворений`,
+    condition: `Собраны все ${TOTAL_MAIN_POEMS} стихотворений Владимира`,
   },
 ];
 

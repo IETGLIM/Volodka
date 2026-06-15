@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { CHK_DIALOGUE_NODES } from './dialogues';
-import { TOTAL_UNIFIED_POEMS } from '@/data/unifiedPoemRegistry';
+import { ALL_UNIFIED_POEM_IDS, TOTAL_UNIFIED_POEMS } from '@/data/poemCollectionMeta';
 import { checkStoryCondition } from '@/shared/storyConditions';
 import { resolveDialogueText } from '@/engine/dialogue/resolveDialoguePresentation';
 
@@ -26,7 +26,7 @@ describe('CHK_DIALOGUE_NODES', () => {
     );
     expect(choice?.condition?.minCollectedPoems).toBe(TOTAL_UNIFIED_POEMS);
 
-    const poems = Array.from({ length: TOTAL_UNIFIED_POEMS }, (_, i) => `poem_${i + 1}`);
+    const poems = [...ALL_UNIFIED_POEM_IDS];
     const pass = checkStoryCondition(choice?.condition, {
       karma: 50,
       skills: {
@@ -91,5 +91,28 @@ describe('CHK_DIALOGUE_NODES', () => {
     expect(silence.contextNote).toBeTruthy();
     const rest = silence.choices.find((c) => c.text.includes('тишине'));
     expect(rest?.effects).toContainEqual({ type: 'addStat', stat: 'stress', value: -5 });
+
+    const night = CHK_DIALOGUE_NODES.chk_silence_night;
+    expect(night.contextNote).toContain('Ночь');
+    const nightRest = night.choices.find((c) => c.text.includes('тишине'));
+    expect(nightRest?.effects).toContainEqual({ type: 'addStat', stat: 'stress', value: -8 });
+  });
+
+  it('gates honorary chekist farewell on tolpa_honorary_chekist', () => {
+    const choice = CHK_DIALOGUE_NODES.chk_ru_return.choices.find(
+      (c) => c.next === 'chk_ru_honorary_farewell',
+    );
+    expect(choice?.condition).toEqual({ flag: 'tolpa_honorary_chekist' });
+    expect(CHK_DIALOGUE_NODES.chk_ru_honorary_farewell.speakerId).toBe('chk_ru');
+  });
+
+  it('routes silence by time of day', () => {
+    const greeting = CHK_DIALOGUE_NODES.chk_ru_greeting;
+    const night = greeting.choices.filter((c) => c.next === 'chk_silence_night');
+    expect(night).toHaveLength(2);
+    expect(night.some((c) => c.condition?.minTimeOfDay === 21)).toBe(true);
+    expect(night.some((c) => c.condition?.maxTimeOfDay === 5)).toBe(true);
+    const day = greeting.choices.find((c) => c.next === 'chk_silence');
+    expect(day?.condition).toEqual({ minTimeOfDay: 6, maxTimeOfDay: 20 });
   });
 });

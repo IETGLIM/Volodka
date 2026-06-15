@@ -34,7 +34,7 @@ import {
   BarChart3,
   Camera,
 } from 'lucide-react';
-import { getPoems } from '@/data/gameDataLoader';
+import { countCollectedMainPoems, TOTAL_MAIN_POEMS } from '@/data/poemCollectionMeta';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { bottomStatusEffectsPx } from '@/shared/constants/hudLayout';
 import { eventBus } from '@/engine/EventBus';
@@ -65,7 +65,7 @@ export function ExplorationHUD(props: HUDProps) {
   const state = useHUDController(props);
   const reducedMotion = useEffectiveReducedMotion();
   const quietStyle = useHudQuietStyle();
-  const totalPoems = getPoems().length;
+  const totalPoems = TOTAL_MAIN_POEMS;
   const {
     photoModeOn,
     hudMounted,
@@ -106,6 +106,8 @@ export function ExplorationHUD(props: HUDProps) {
     onOpenTrading,
     onOpenStats,
   } = state;
+
+  const mainPoemCount = countCollectedMainPoems(collectedPoems);
 
   const {
     onToggleTutorials,
@@ -231,7 +233,7 @@ export function ExplorationHUD(props: HUDProps) {
               }
               className="relative flex items-center gap-1 sm:gap-1.5 px-1.5 sm:px-2.5 py-1 rounded-md text-xs border transition-colors hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/60"
               title="Стихи [⇧P]"
-              aria-label={`Стихи: ${collectedPoems.length} из ${totalPoems}`}
+              aria-label={`Стихи: ${mainPoemCount} из ${totalPoems}`}
               style={{
                 background: poemBadgePulse ? 'rgba(120,60,10,0.45)' : 'rgba(120,60,10,0.25)',
                 borderColor: poemBadgePulse ? 'rgba(251,191,36,0.75)' : 'rgba(251,191,36,0.35)',
@@ -250,7 +252,7 @@ export function ExplorationHUD(props: HUDProps) {
               ) : null}
               <span className="text-sm">📖</span>
               <span className="text-amber-200 font-semibold hidden sm:inline" style={{ textShadow: '0 0 8px rgba(251,191,36,0.4)' }}>Стихи:</span>
-              <AnimatedCounter value={collectedPoems.length} className="text-amber-300 font-bold" style={{ textShadow: '0 0 6px rgba(251,191,36,0.5)' }} />
+              <AnimatedCounter value={mainPoemCount} className="text-amber-300 font-bold" style={{ textShadow: '0 0 6px rgba(251,191,36,0.5)' }} />
               <span className="text-amber-500/60 hidden sm:inline">/</span>
               <span className="text-amber-400/70 hidden sm:inline">{totalPoems}</span>
             </motion.button>
