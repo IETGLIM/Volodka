@@ -3,7 +3,8 @@
 
 ### Consolidated asset pipeline (Kenney · Poly · RPM · Quaternius · Mixamo)
 - **NPC priority**: Ready Player Me `npc_*.glb` > Quaternius CC0 > Khronos bootstrap — `npcModelRegistry` ships only files on disk; pending slots use procedural silhouettes.
-- **Quaternius CLI**: `npm run assets:quaternius-import` (`--download`, `--extract`, `--import`, `--status`) — 20 rigged slots mapped to story + CHK Толпа NPCs.
+- **Quaternius shipped**: Ultimate Modular Men/Women CC0 — hero Volodka LOD chain + 19 story/CHK NPC GLBs staged under `public/models/`; sources `male_01`…`female_09` in `assets-source/ai3dgen/npcs/`.
+- **Quaternius CLI**: `npm run assets:quaternius-import` (`--download`, `--extract`, `--import`, `--status`) — maps 20 rigged slots to registry ids; bootstrap skips Khronos when sources exist.
 - **RPM CLI**: `npm run assets:rpm-import` (`--list`, `--id`, `--apply-all`) — 20 avatar catalog; drop GLBs in `assets-source/ai3dgen/npcs/`.
 - **Mixamo CLI**: `npm run assets:mixamo-import` — idle/walk/talk/sit clips for NPC activity + player arms.
 - **Kenney + interiors**: `assets:freekit-stage` → citykit props + interior shells in 10 hero scenes (`SceneInteriorAssets`).
