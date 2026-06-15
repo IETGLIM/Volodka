@@ -9,7 +9,7 @@
 import { copyFileSync, createWriteStream, existsSync, mkdirSync, openSync, readSync, closeSync, readdirSync, statSync } from 'node:fs';
 import { get as httpsGet } from 'node:https';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const PUBLIC = path.join(ROOT, 'public');
@@ -78,7 +78,59 @@ function copyLocal(srcRel, destRel) {
 
 function stageCopy(sourceRel, destRels) {
   for (const destRel of destRels) {
+    if (shouldSkipCc0ForDest(destRel)) {
+      console.log(`⊘ skip CC0 ${destRel} (RPM source present)`);
+      continue;
+    }
     copyLocal(sourceRel, destRel);
+  }
+}
+
+/** If RPM source exists for this public dest, skip CC0 overwrite. */
+function shouldSkipCc0ForDest(destRel) {
+  if (!rpmCatalog) return false;
+  for (const entry of rpmCatalog) {
+    const pubRel = entry.publicUrl.replace(/^\//, '');
+    if (pubRel !== destRel) continue;
+    const src = path.join(ROOT, entry.sourceRelativePath);
+    if (existsSync(src)) return true;
+  }
+  return false;
+}
+
+function stageRpmNpcs() {
+  if (!rpmCatalog) return;
+  console.log('\nStaging Ready Player Me NPCs (when source on disk)…');
+  for (const entry of rpmCatalog) {
+    const src = path.join(ROOT, entry.sourceRelativePath);
+    if (!existsSync(src)) continue;
+    const destRel = entry.publicUrl.replace(/^\//, '');
+    const dest = path.join(PUBLIC, destRel);
+    mkdirSync(path.dirname(dest), { recursive: true });
+    copyFileSync(src, dest);
+    console.log(`✓ RPM ${entry.id} → ${destRel}`);
+    if (entry.wire?.kind === 'hero') {
+      for (const lodUrl of rpmHeroLods) {
+        if (lodUrl === entry.publicUrl) continue;
+        const lodDest = path.join(PUBLIC, lodUrl.replace(/^\//, ''));
+        mkdirSync(path.dirname(lodDest), { recursive: true });
+        copyFileSync(src, lodDest);
+        console.log(`  ✓ hero LOD → ${lodUrl.replace(/^\//, '')}`);
+      }
+    }
+  }
+}
+
+let rpmCatalog = null;
+let rpmHeroLods = [];
+
+async function loadRpmCatalog() {
+  try {
+    const mod = await import(pathToFileURL(path.join(ROOT, 'src/config/rpmNpcCatalog.ts')).href);
+    rpmCatalog = mod.RPM_NPC_CATALOG;
+    rpmHeroLods = mod.RPM_HERO_LOD_URLS ?? [];
+  } catch {
+    rpmCatalog = null;
   }
 }
 
@@ -170,10 +222,12 @@ function reportSize() {
 async function main() {
   console.log('Bootstrap production assets…\n');
   await ensureRemoteAssets();
+  await loadRpmCatalog();
+  stageRpmNpcs();
   stageProductionLayout();
   reportSize();
   console.log('\n✓ Production asset bootstrap complete.');
-  console.log('  Next: npm run assets:validate');
+  console.log('  Next: npm run assets:freekit-stage && npm run assets:validate');
 }
 
 main().catch((err) => {

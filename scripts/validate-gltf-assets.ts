@@ -19,6 +19,10 @@ import { ASSET_MANIFEST } from '../src/config/assetManifest';
 import { getPropModelUrls } from '../src/config/propModelRegistry';
 import { getNpcModelUrls } from '../src/config/npcModelRegistry';
 import { getAi3dgenPublicUrls } from '../src/config/ai3dgenAssetCatalog';
+import { getRpmPublicUrls } from '../src/config/rpmNpcCatalog';
+import { RPM_SHIPPED_NPC_GLB_URLS } from '../src/config/rpmNpcShipped.generated';
+import { MIXAMO_ANIMATION_CATALOG } from '../src/config/mixamoAnimationCatalog';
+import { SHIPPED_MIXAMO_CLIP_IDS } from '../src/config/mixamoAnimationShipped';
 import { MODEL_URLS } from '../src/config/modelUrls';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -96,9 +100,42 @@ for (const url of getAi3dgenPublicUrls()) {
   }
 }
 
+/* ── 4. RPM NPC catalog (validate only when imported / shipped) ── */
+let rpmPending = 0;
+const rpmShipped = new Set(RPM_SHIPPED_NPC_GLB_URLS);
+for (const url of getRpmPublicUrls()) {
+  const file = publicPath(url);
+  if (rpmShipped.has(url) && file && existsSync(file)) {
+    checkFile('rpm-npc', url, true);
+  } else if (!rpmShipped.has(url)) {
+    rpmPending += 1;
+  }
+}
+
+let mixamoPending = 0;
+const shippedMixamo = new Set(SHIPPED_MIXAMO_CLIP_IDS);
+for (const spec of MIXAMO_ANIMATION_CATALOG) {
+  if (!shippedMixamo.has(spec.id)) {
+    mixamoPending += 1;
+    continue;
+  }
+  const file = publicPath(spec.publicUrl);
+  if (file && existsSync(file)) {
+    checkFile(`mixamo:${spec.id}`, spec.publicUrl, true);
+  } else if (file) {
+    missing.push({ label: `mixamo:${spec.id}`, url: spec.publicUrl, file });
+  }
+}
+
 /* ── Report ── */
+if (mixamoPending > 0) {
+  console.log(`ℹ Mixamo catalog: ${mixamoPending} clip(s) not imported yet (see assets-source/mixamo/README.md)`);
+}
 if (ai3dgenPending > 0) {
   console.log(`ℹ AI3DGen catalog: ${ai3dgenPending} model(s) not imported yet (see assets-source/ai3dgen/README.md)`);
+}
+if (rpmPending > 0) {
+  console.log(`ℹ RPM NPC catalog: ${rpmPending} avatar(s) pending (see assets-source/ai3dgen/npcs/README.md)`);
 }
 if (skippedManifest.length > 0) {
   console.log(`ℹ Skipped unshipped manifest assets: ${skippedManifest.join(', ')}`);

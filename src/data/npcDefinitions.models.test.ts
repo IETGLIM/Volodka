@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { ALL_NPC_DEFINITIONS } from '@/data/allNpcDefinitions';
-import { NPC_PROCEDURAL_MODEL_PLACEHOLDER } from '@/config/npcModelRegistry';
-import { resolveNpcModelUrl } from '@/config/npcModelRegistry';
+import { NPC_PROCEDURAL_MODEL_PLACEHOLDER, resolveNpcModelUrl, isRpmNpcShipped } from '@/config/npcModelRegistry';
 
 describe('npcDefinitions model paths', () => {
   it('resolves shipped GLB paths for story NPCs with explicit models', () => {
@@ -10,7 +9,13 @@ describe('npcDefinitions model paths', () => {
     );
     expect(withGlb.length).toBeGreaterThan(0);
     for (const npc of withGlb) {
-      expect(resolveNpcModelUrl(npc.id, npc.modelPath), npc.id).toBe(npc.modelPath);
+      const resolved = resolveNpcModelUrl(npc.id, npc.modelPath);
+      if (resolved) {
+        expect(resolved, npc.id).toBe(npc.modelPath);
+      } else if (isRpmNpcShipped(npc.id)) {
+        expect(resolved, npc.id).toBe(npc.modelPath);
+      }
+      // Pending RPM imports use procedural fallback at runtime until shipped.
     }
   });
 

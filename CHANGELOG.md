@@ -1,4 +1,33 @@
 # Changelog — ВОЛОДЬКА RPG
+## v4.2.21 — 16 июня 2026
+
+### Kenney City Kit props + interior shells (Poly Pizza TODO)
+- **Source**: 10 CC0 props in `assets-source/ai3dgen/props/` (Kenney Furniture + City Kit Roads + OpenGameArt campfire).
+- **Interiors**: 10 Kenney building shells in `assets-source/ai3dgen/interiors/` — Poly Pizza download blocked without API; mapping documented for manual swap.
+- **Pipeline**: `npm run assets:freekit-stage` → `public/models/props/citykit/` + `public/models/interiors/`.
+- **Runtime**: `SceneInteriorAssets`, `sceneInteriorAssets.ts`, `kenney_city_*` props in `propModelRegistry` + `scenePropDressing` (street, café, pier, CHK, rooftop).
+- **Catalog**: 20 entries in `ai3dgenAssetCatalog.ts` (props + interiors, `licenseTier: free`).
+- **Docs**: `assets-source/ai3dgen/README.md`, `ATTRIBUTION.md` Kenney + Poly Pizza credits.
+
+## v4.2.20 — 16 июня 2026
+
+### Ready Player Me NPC pipeline (20 story avatars)
+- **RPM_NPC_CATALOG**: 20 slots in `src/config/rpmNpcCatalog.ts` — source `npc_*.glb` → registry id → `public/models/npcs/{id}.glb`; aliases for Victoria→maria, Solnysh→alina source, Katya→kate, Zheka→zeka, Trofim→fisherman_trofim.
+- **Import CLI**: `npm run assets:rpm-import` — `--list`, `--id npc_albert --file path.glb`, `--apply-all`; regenerates `rpmNpcShipped.generated.ts`.
+- **Registry**: `npcModelRegistry` prefers shipped RPM over Khronos CC0; expanded + CHK Tolpa NPCs wired with target `modelPath`.
+- **Bootstrap**: `assets:bootstrap` stages RPM sources when present and skips CC0 overwrite for those slots.
+- **Docs**: `assets-source/ai3dgen/npcs/README.md` — RPM export, Blender cleanup, Mixamo retarget notes.
+- CI never downloads RPM avatars (user account required).
+
+## v4.2.19 — 16 июня 2026
+
+### Mixamo animation pipeline (idle / walk / talk / sit)
+- **Catalog**: `src/config/mixamoAnimationCatalog.ts` — four humanoid clips with NPC state mapping and Mixamo name aliases.
+- **Import CLI**: `npm run assets:mixamo-import` (`--list`, `--status`, `--clip <id> --file <path>`) stages to `assets-source/mixamo/` + `public/models/animations/`; auto-updates `mixamoAnimationShipped.ts`.
+- **Runtime**: `GltfNPCModel` drives GLB clips from schedule/patrol activity (walk, sit, talk) + dialogue events; `CesiumPlayerModel` prefers shipped Mixamo idle/walking.
+- **Docs**: `assets-source/mixamo/README.md` (Adobe export settings), `ATTRIBUTION.md` Mixamo section, cross-link from AI3DGen README.
+- **Tests**: catalog registry + `npcActivityAnimation` activity→state mapping.
+
 ## v4.2.18 — 16 июня 2026
 
 ### Story polish + remaining hero scene graphics

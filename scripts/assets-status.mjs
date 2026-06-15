@@ -28,9 +28,13 @@ function fileState(url) {
 async function loadModules() {
   const manifestMod = await import(pathToFileURL(path.join(ROOT, 'src/config/assetManifest.ts')).href);
   const catalogMod = await import(pathToFileURL(path.join(ROOT, 'src/config/ai3dgenAssetCatalog.ts')).href);
+  const mixamoMod = await import(pathToFileURL(path.join(ROOT, 'src/config/mixamoAnimationCatalog.ts')).href);
+  const mixamoShippedMod = await import(pathToFileURL(path.join(ROOT, 'src/config/mixamoAnimationShipped.ts')).href);
+  const rpmMod = await import(pathToFileURL(path.join(ROOT, 'src/config/rpmNpcCatalog.ts')).href);
+  const rpmShippedMod = await import(pathToFileURL(path.join(ROOT, 'src/config/rpmNpcShipped.generated.ts')).href);
   const propMod = await import(pathToFileURL(path.join(ROOT, 'src/config/propModelRegistry.ts')).href);
   const npcMod = await import(pathToFileURL(path.join(ROOT, 'src/config/npcModelRegistry.ts')).href);
-  return { manifestMod, catalogMod, propMod, npcMod };
+  return { manifestMod, catalogMod, mixamoMod, mixamoShippedMod, rpmMod, rpmShippedMod, propMod, npcMod };
 }
 
 function mark(ok) {
@@ -38,9 +42,11 @@ function mark(ok) {
 }
 
 async function main() {
-  const { manifestMod, catalogMod, propMod, npcMod } = await loadModules();
+  const { manifestMod, catalogMod, mixamoMod, mixamoShippedMod, rpmMod, rpmShippedMod, propMod, npcMod } = await loadModules();
   const manifest = manifestMod.ASSET_MANIFEST;
   const catalog = catalogMod.AI3DGEN_ASSET_CATALOG;
+  const mixamoCatalog = mixamoMod.MIXAMO_ANIMATION_CATALOG;
+  const shippedMixamo = new Set(mixamoShippedMod.SHIPPED_MIXAMO_CLIP_IDS);
 
   console.log('═══ Asset manifest ═══\n');
   let shippedOk = 0;
@@ -77,6 +83,44 @@ async function main() {
   console.log('  Import: npm run assets:ai3dgen-import -- --id <id> --file <path>');
   console.log('  List:   npm run assets:ai3dgen-import -- --list');
 
+  console.log('\n═══ Mixamo animations ═══\n');
+  let mixamoImported = 0;
+  let mixamoPending = 0;
+  for (const entry of mixamoCatalog) {
+    const sourcePath = path.join(ROOT, entry.sourceRelativePath);
+    const publicState = fileState(entry.publicUrl);
+    const hasSource = existsSync(sourcePath);
+    const shipped = shippedMixamo.has(entry.id);
+    if (publicState.ok && shipped) mixamoImported += 1;
+    else mixamoPending += 1;
+    console.log(
+      `  ${mark(publicState.ok)} public  ${mark(hasSource)} source  ${shipped ? 'SHIP' : 'hold'}  ${entry.id.padEnd(10)} ${entry.title}`,
+    );
+  }
+  console.log(`\n  Shipped Mixamo clips: ${mixamoImported}/${mixamoCatalog.length} (${mixamoPending} pending)`);
+  console.log('  Import: npm run assets:mixamo-import -- --clip <id> --file <path>');
+  console.log('  Guide:  assets-source/mixamo/README.md');
+
+  console.log('\n═══ RPM NPC catalog (Ready Player Me) ═══\n');
+  let rpmSource = 0;
+  let rpmPublic = 0;
+  for (const entry of rpmMod.RPM_NPC_CATALOG) {
+    const sourcePath = path.join(ROOT, entry.sourceRelativePath);
+    const publicState = fileState(entry.publicUrl);
+    const hasSource = existsSync(sourcePath);
+    if (hasSource) rpmSource += 1;
+    if (publicState.ok) rpmPublic += 1;
+    console.log(
+      `  ${mark(publicState.ok)} public  ${mark(hasSource)} source  ${entry.id.padEnd(22)} → ${entry.npcId}`,
+    );
+  }
+  console.log(
+    `\n  Source on disk: ${rpmSource}/${rpmMod.RPM_NPC_CATALOG.length} · public: ${rpmPublic} · shipped registry: ${rpmShippedMod.RPM_SHIPPED_NPC_GLB_URLS.length}`,
+  );
+  console.log('  Import: npm run assets:rpm-import -- --id <id> --file <path>');
+  console.log('  List:   npm run assets:rpm-import -- --list');
+  console.log('  Guide:  assets-source/ai3dgen/npcs/README.md');
+
   console.log('\n═══ Runtime GLB registries ═══\n');
   const propUrls = propMod.getPropModelUrls();
   const npcUrls = npcMod.getNpcModelUrls();
@@ -102,6 +146,12 @@ async function main() {
   }
   if (pending > 0) {
     console.log('  AI3DGen Pro → assets:ai3dgen-import → assets:process → flip shipped flags');
+  }
+  if (mixamoPending > 0) {
+    console.log('  Mixamo → assets:mixamo-import (Adobe login) → assets:validate');
+  }
+  if (rpmMod.RPM_NPC_CATALOG.length - rpmSource > 0) {
+    console.log('  RPM → assets:rpm-import (Ready Player Me login) → assets:validate');
   }
   console.log('  npm run assets:validate');
 }

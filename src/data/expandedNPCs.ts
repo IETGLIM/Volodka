@@ -93,7 +93,7 @@ export const EXPANDED_NPCS: NPCDefinition[] = [
   {
     id: 'solnysh',
     name: 'Солныш (Алина)',
-    modelPath: '',
+    modelPath: '/models/npcs/solnysh.glb',
     scale: 0.92,
     animations: { idle: 'idle', walk: 'walk', talk: 'talk' },
     defaultPosition: [0, 0, 1.5],
@@ -254,7 +254,7 @@ export const EXPANDED_NPCS: NPCDefinition[] = [
   {
     id: 'kate',
     name: 'Катя',
-    modelPath: '',
+    modelPath: '/models/npcs/kate.glb',
     scale: 0.9,
     animations: { idle: 'idle', walk: 'walk', talk: 'talk' },
     defaultPosition: [-2.0, 0, -2.0],
@@ -286,7 +286,7 @@ export const EXPANDED_NPCS: NPCDefinition[] = [
   {
     id: 'maxim',
     name: 'Максим',
-    modelPath: '',
+    modelPath: '/models/npcs/maxim.glb',
     scale: 1.1,
     animations: { idle: 'idle', walk: 'walk', talk: 'talk' },
     defaultPosition: [-2.0, 0, -1.5],
@@ -318,7 +318,7 @@ export const EXPANDED_NPCS: NPCDefinition[] = [
   {
     id: 'zeka',
     name: 'Жека',
-    modelPath: '',
+    modelPath: '/models/npcs/zeka.glb',
     scale: 1.0,
     animations: { idle: 'idle', walk: 'walk', talk: 'talk' },
     defaultPosition: [1.0, 0, -1.0],
@@ -350,7 +350,7 @@ export const EXPANDED_NPCS: NPCDefinition[] = [
   {
     id: 'anya',
     name: 'Аня',
-    modelPath: '',
+    modelPath: '/models/npcs/anya.glb',
     scale: 0.9,
     animations: { idle: 'idle', walk: 'walk', talk: 'talk' },
     defaultPosition: [0.5, 0, 2.0],
@@ -382,7 +382,7 @@ export const EXPANDED_NPCS: NPCDefinition[] = [
   {
     id: 'fisherman_trofim',
     name: 'Трофим',
-    modelPath: '',
+    modelPath: '/models/npcs/trofim.glb',
     scale: 1.0,
     animations: { idle: 'idle', walk: 'walk', talk: 'talk' },
     defaultPosition: [4.0, 0, -7.2],
@@ -409,7 +409,7 @@ export const EXPANDED_NPCS: NPCDefinition[] = [
   {
     id: 'baba_zina',
     name: 'Баба Зина',
-    modelPath: '',
+    modelPath: '/models/npcs/baba_zina.glb',
     scale: 0.88,
     animations: { idle: 'idle', walk: 'walk', talk: 'talk' },
     defaultPosition: [-2.0, 0, -4.0],

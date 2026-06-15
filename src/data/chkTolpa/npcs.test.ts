@@ -1,15 +1,27 @@
 import { describe, expect, it } from 'vitest';
 import { CHK_NPCS } from './npcs';
 import { NPC_PROCEDURAL_MODEL_PLACEHOLDER } from '@/config/npcModelRegistry';
+import { getRpmNpcByRegistryId } from '@/config/rpmNpcCatalog';
 import { CHK_NPC_SCHEDULES } from './schedules';
 import { CHK_QUESTS } from './quests';
+
+const CHK_GUEST_IDS = new Set(['chk_guest_devops', 'chk_guest_analyst']);
 
 describe('CHK_NPCS', () => {
   const scheduleIds = new Set(CHK_NPC_SCHEDULES.map((s) => s.id));
 
-  it('uses procedural models explicitly', () => {
+  it('uses RPM model paths for core Tolpa members; guests stay procedural', () => {
     for (const npc of CHK_NPCS) {
-      expect(npc.modelPath, npc.id).toBe(NPC_PROCEDURAL_MODEL_PLACEHOLDER);
+      if (CHK_GUEST_IDS.has(npc.id)) {
+        expect(npc.modelPath, npc.id).toBe(NPC_PROCEDURAL_MODEL_PLACEHOLDER);
+        continue;
+      }
+      const rpm = getRpmNpcByRegistryId(npc.id);
+      if (rpm) {
+        expect(npc.modelPath, npc.id).toBe(rpm.publicUrl);
+      } else {
+        expect(npc.modelPath, npc.id).toBe(NPC_PROCEDURAL_MODEL_PLACEHOLDER);
+      }
     }
   });
 
