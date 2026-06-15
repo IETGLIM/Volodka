@@ -16,8 +16,10 @@ const PUBLIC = path.join(ROOT, 'public');
 
 const KHRONOS_BASE =
   'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/main/2.0';
-const THREE_SOLDIER =
-  'https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/models/gltf/Soldier.glb';
+const THREE_BASE =
+  'https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/models/gltf';
+const THREE_SOLDIER = `${THREE_BASE}/Soldier.glb`;
+const THREE_ROBOT = `${THREE_BASE}/RobotExpressive/RobotExpressive.glb`;
 
 /** Remote URL → local path under public/ */
 const REMOTE_ASSETS = {
@@ -28,6 +30,12 @@ const REMOTE_ASSETS = {
   'models/khronos/Fox.glb': `${KHRONOS_BASE}/Fox/glTF-Binary/Fox.glb`,
   'models/khronos/Avocado.glb': `${KHRONOS_BASE}/Avocado/glTF-Binary/Avocado.glb`,
   'models/khronos/Soldier.glb': THREE_SOLDIER,
+  'models/khronos/Xbot.glb': `${THREE_BASE}/Xbot.glb`,
+  'models/khronos/DamagedHelmet.glb': `${KHRONOS_BASE}/DamagedHelmet/glTF-Binary/DamagedHelmet.glb`,
+  'models/khronos/Lantern.glb': `${KHRONOS_BASE}/Lantern/glTF-Binary/Lantern.glb`,
+  'models/khronos/WaterBottle.glb': `${KHRONOS_BASE}/WaterBottle/glTF-Binary/WaterBottle.glb`,
+  'models/khronos/AntiqueCamera.glb': `${KHRONOS_BASE}/AntiqueCamera/glTF-Binary/AntiqueCamera.glb`,
+  'models/khronos/RobotExpressive.glb': THREE_ROBOT,
 };
 
 function download(url, dest) {
@@ -101,8 +109,8 @@ async function ensureRemoteAssets() {
 }
 
 function stageProductionLayout() {
-  // Hero Volodka — interim CC0 CesiumMan LOD chain (replace after Blender rig pass)
-  const heroBase = 'models/khronos/CesiumMan.glb';
+  // Hero Volodka — RiggedFigure LOD chain (human rig; replace after AI3DGen + Blender pass)
+  const heroBase = 'models/khronos/RiggedFigure.glb';
   stageCopy(heroBase, [
     'models/characters/volodka/volodka_lod0.glb',
     'models/characters/volodka/volodka_lod1.glb',
@@ -111,47 +119,37 @@ function stageProductionLayout() {
     'models/characters/volodka/volodka_lod0.meshopt.glb',
   ]);
 
-  // P0 NPCs + barista / colleague (Soldier rig)
-  stageCopy('models/khronos/CesiumMan.glb', ['models/npcs/albert.glb']);
-  stageCopy('models/khronos/RiggedFigure.glb', ['models/npcs/zarema.glb']);
-  stageCopy('models/khronos/Soldier.glb', [
-    'models/npcs/cafe_barista.glb',
-    'models/npcs/office_colleague.glb',
-    'models/npcs/viktor.glb',
-  ]);
-
-  // P1 NPCs — distinct CC0 silhouettes until AI3DGen Pro drops land
-  stageCopy('models/khronos/RiggedSimple.glb', ['models/npcs/maria.glb', 'models/npcs/boris.glb']);
-  stageCopy('models/khronos/BrainStem.glb', ['models/npcs/office_alexander.glb']);
-  stageCopy('models/khronos/CesiumMan.glb', ['models/npcs/office_dmitry.glb', 'models/npcs/tamara.glb']);
-  stageCopy('models/khronos/RiggedFigure.glb', ['models/npcs/kira.glb']);
+  // P0/P1 NPCs — one CC0 silhouette per pair max until AI3DGen Pro drops land
+  stageCopy('models/khronos/RiggedFigure.glb', ['models/npcs/albert.glb', 'models/npcs/kira.glb']);
+  stageCopy('models/khronos/CesiumMan.glb', ['models/npcs/zarema.glb', 'models/npcs/tamara.glb']);
+  stageCopy('models/khronos/Soldier.glb', ['models/npcs/cafe_barista.glb', 'models/npcs/viktor.glb']);
+  stageCopy('models/khronos/Xbot.glb', ['models/npcs/office_alexander.glb', 'models/npcs/office_dmitry.glb']);
+  stageCopy('models/khronos/RiggedSimple.glb', ['models/npcs/office_colleague.glb', 'models/npcs/boris.glb']);
+  stageCopy('models/khronos/RobotExpressive.glb', ['models/npcs/maria.glb']);
   stageCopy('models/khronos/Fox.glb', ['models/npcs/grisha.glb']);
 
-  // Craft / quest props — small CC0 prop placeholder
-  const propPaths = [
-    'models/props/digital_amulet.glb',
-    'models/props/poetic_compiler.glb',
-    'models/props/neural_filter.glb',
-    'models/props/encrypted_scroll.glb',
-    'models/props/server_fragment.glb',
-  ];
-  stageCopy('models/khronos/Avocado.glb', propPaths);
+  // Craft / quest props — distinct CC0 meshes (no duplicate Avocado)
+  stageCopy('models/khronos/Lantern.glb', ['models/props/digital_amulet.glb']);
+  stageCopy('models/khronos/DamagedHelmet.glb', ['models/props/poetic_compiler.glb']);
+  stageCopy('models/khronos/WaterBottle.glb', ['models/props/neural_filter.glb']);
+  stageCopy('models/khronos/Avocado.glb', ['models/props/encrypted_scroll.glb']);
+  stageCopy('models/khronos/AntiqueCamera.glb', ['models/props/server_fragment.glb']);
 
   // FPS arms — CC0 Soldier rig (replace with Drillimpact PSX arms when manually added)
   stageCopy('models/khronos/Soldier.glb', ['models/fps/fps_arms.glb']);
 
-  // Environment bundles — interim CC0 until AI3DGen / art pass (see env_cafe_props, veg_tree_pine)
-  stageCopy('models/khronos/BrainStem.glb', [
-    'models/environments/cafe/props_lod0.glb',
-    'models/environments/cafe/props_lod1.glb',
+  // Environment bundles — distinct CC0 props per variant
+  stageCopy('models/khronos/BrainStem.glb', ['models/environments/cafe/props_lod0.glb']);
+  stageCopy('models/khronos/DamagedHelmet.glb', ['models/environments/cafe/props_lod1.glb']);
+  stageCopy('models/khronos/Lantern.glb', [
     'models/environments/cafe/props.draco.glb',
     'models/environments/cafe/props.meshopt.glb',
   ]);
-  stageCopy('models/khronos/Avocado.glb', [
-    'models/vegetation/pine/pine_lod0.glb',
-    'models/vegetation/pine/pine_lod1.glb',
-    'models/vegetation/pine/pine_lod2.glb',
-  ]);
+
+  // Pine LOD chain — distinct silhouettes (interim until AI3DGen vegetation)
+  stageCopy('models/khronos/Avocado.glb', ['models/vegetation/pine/pine_lod0.glb']);
+  stageCopy('models/khronos/Lantern.glb', ['models/vegetation/pine/pine_lod1.glb']);
+  stageCopy('models/khronos/WaterBottle.glb', ['models/vegetation/pine/pine_lod2.glb']);
 }
 
 function reportSize() {

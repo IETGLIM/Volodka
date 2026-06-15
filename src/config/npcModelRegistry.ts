@@ -17,8 +17,8 @@ export const NPC_PROCEDURAL_MODEL_PLACEHOLDER = 'procedural';
 
 const KHRONOS = 'Khronos glTF Sample Models';
 const KHRONOS_URL = 'https://github.com/KhronosGroup/glTF-Sample-Models';
-const THREE_SOLDIER = 'three.js examples — Soldier (CC0)';
-const THREE_SOLDIER_URL = 'https://github.com/mrdoob/three.js/tree/dev/examples/models/gltf';
+const THREE_SAMPLES = 'three.js examples (CC0)';
+const THREE_SAMPLES_URL = 'https://github.com/mrdoob/three.js/tree/dev/examples/models/gltf';
 
 /**
  * GLB files under public/models/npcs — validated by validate-gltf-assets.
@@ -45,57 +45,57 @@ export const NPC_MODEL_ASSETS: Partial<Record<string, NpcModelAssetMeta>> = {
     url: `${NPCS}/albert.glb`,
     scale: 1,
     license: 'CC0',
-    source: `${KHRONOS} — CesiumMan`,
+    source: `${KHRONOS} — RiggedFigure`,
     sourceUrl: KHRONOS_URL,
   },
   zarema: {
     url: `${NPCS}/zarema.glb`,
     scale: 0.95,
     license: 'CC0',
-    source: `${KHRONOS} — RiggedFigure`,
+    source: `${KHRONOS} — CesiumMan`,
     sourceUrl: KHRONOS_URL,
   },
   cafe_barista: {
     url: `${NPCS}/cafe_barista.glb`,
     scale: 1,
     license: 'CC0',
-    source: THREE_SOLDIER,
-    sourceUrl: THREE_SOLDIER_URL,
+    source: `${THREE_SAMPLES} — Soldier`,
+    sourceUrl: THREE_SAMPLES_URL,
   },
   office_alexander: {
     url: `${NPCS}/office_alexander.glb`,
     scale: 1.05,
     license: 'CC0',
-    source: `${KHRONOS} — BrainStem`,
+    source: `${THREE_SAMPLES} — Xbot`,
     sourceUrl: KHRONOS_URL,
   },
   office_colleague: {
     url: `${NPCS}/office_colleague.glb`,
     scale: 1,
     license: 'CC0',
-    source: THREE_SOLDIER,
-    sourceUrl: THREE_SOLDIER_URL,
+    source: `${KHRONOS} — RiggedSimple`,
+    sourceUrl: KHRONOS_URL,
   },
   maria: {
     url: `${NPCS}/maria.glb`,
     scale: 0.8,
     license: 'CC0',
-    source: `${KHRONOS} — RiggedSimple`,
-    sourceUrl: KHRONOS_URL,
+    source: `${THREE_SAMPLES} — RobotExpressive`,
+    sourceUrl: THREE_SAMPLES_URL,
   },
   office_dmitry: {
     url: `${NPCS}/office_dmitry.glb`,
     scale: 1.1,
     license: 'CC0',
-    source: `${KHRONOS} — CesiumMan`,
+    source: `${THREE_SAMPLES} — Xbot`,
     sourceUrl: KHRONOS_URL,
   },
   viktor: {
     url: `${NPCS}/viktor.glb`,
     scale: 1,
     license: 'CC0',
-    source: THREE_SOLDIER,
-    sourceUrl: THREE_SOLDIER_URL,
+    source: `${THREE_SAMPLES} — Soldier`,
+    sourceUrl: THREE_SAMPLES_URL,
   },
   kira: {
     url: `${NPCS}/kira.glb`,
