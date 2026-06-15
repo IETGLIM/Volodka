@@ -1,5 +1,5 @@
 import { audioEngine } from '@/engine/AudioEngine';
-import { DEFAULT_ACHIEVEMENT_SOUND } from '@/data/achievementHelpers';
+import { DEFAULT_ACHIEVEMENT_SOUND } from '@/data/achievements';
 
 type StingerId = 'tension' | 'discovery' | 'danger' | 'emotional' | 'mystery';
 

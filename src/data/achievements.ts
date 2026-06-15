@@ -1,7 +1,9 @@
 /* ─── Volodka RPG – Achievement Definitions ─── */
 
 import type { StoryEffect } from '@/shared/types/game';
-import { DEFAULT_ACHIEVEMENT_SOUND } from '@/data/achievementHelpers';
+
+/** Default unlock stinger — procedural audio via AudioEngine. */
+export const DEFAULT_ACHIEVEMENT_SOUND = 'stinger:discovery';
 
 /* ─── Types ─── */
 

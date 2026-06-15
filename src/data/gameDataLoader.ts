@@ -41,7 +41,6 @@ import {
   hasDialogueNode,
 } from '@/data/narrative/narrativePackRegistry';
 import { invalidateGuidedStoryPathConfig } from '@/engine/guidedStory/guidedStoryPath';
-import { syncStoryGraphIndexAfterNarrativeChange } from '@/engine/story/storyGraphIndex';
 type TriggerModule = typeof import('@/data/triggerZones');
 type ItemsModule = typeof import('@/data/items');
 type NpcModule = typeof import('@/data/allNpcDefinitions');
@@ -143,7 +142,9 @@ export async function preloadNarrativeGameData(): Promise<void> {
       if (!narrativePackListenerRegistered) {
         onNarrativePacksChanged(() => {
           invalidateGuidedStoryPathConfig();
-          syncStoryGraphIndexAfterNarrativeChange();
+          void import('@/engine/story/storyGraphIndex').then((mod) => {
+            mod.syncStoryGraphIndexAfterNarrativeChange();
+          });
         });
         narrativePackListenerRegistered = true;
       }

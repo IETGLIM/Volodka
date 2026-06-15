@@ -94,7 +94,7 @@ describe('SceneTransitionManager', () => {
     resetGlobalCleanupRegistry();
   });
 
-  it('keeps re-entrance guard set until scene:loaded', async () => {
+  it('keeps async transition guard set until scene:loaded', async () => {
     performSceneTransition({
       targetScene: 'cafe_evening',
       spawnAt: [1, 0, 2],

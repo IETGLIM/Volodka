@@ -1,9 +1,6 @@
 import type { StoryEffect } from '@/shared/types/game';
 import type { AchievementDefinition } from '@/data/achievements';
 
-/** Default unlock stinger — procedural audio via AudioEngine. */
-export const DEFAULT_ACHIEVEMENT_SOUND = 'stinger:discovery';
-
 /** Human-readable reward label for achievement UI. */
 export function formatStoryEffectReward(effect: StoryEffect): string {
   switch (effect.type) {

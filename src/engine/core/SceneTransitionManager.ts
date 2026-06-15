@@ -17,22 +17,23 @@ import { flushDeferredCombatStart } from './combatStartGate';
 import { runGlobalSceneUnload } from './GlobalCleanupService';
 import { ensureSceneLoadedBridge, scheduleSceneLoaded } from './sceneLoadedGate';
 import {
-  isSceneTransitionInProgress,
+  isSyncSceneTransitionInProgress,
   resetSceneTransitionGuard,
-  setSceneTransitionInProgress,
+  setAsyncSceneTransitionInProgress,
+  setSyncSceneTransitionInProgress,
 } from './sceneTransitionGuard';
 
-export { isSceneTransitionInProgress, resetSceneTransitionGuard };
+export { isSceneTransitionInProgress, resetSceneTransitionGuard } from './sceneTransitionGuard';
 
 let unsubDeferredCombatStart: (() => void) | null = null;
 let unsubTransitionGuardComplete: (() => void) | null = null;
 
-/** Clear re-entrance guard after scene:loaded or failed transition (async pipeline tail). */
+/** Clear async guard after scene:loaded or failed transition. */
 export function bindSceneTransitionGuardListeners(): void {
   unsubTransitionGuardComplete?.();
-  const clearGuard = () => setSceneTransitionInProgress(false);
-  const unsubLoaded = eventBus.on('scene:loaded', clearGuard);
-  const unsubFailed = eventBus.on('scene:transition_failed', clearGuard);
+  const clearAsyncGuard = () => setAsyncSceneTransitionInProgress(false);
+  const unsubLoaded = eventBus.on('scene:loaded', clearAsyncGuard);
+  const unsubFailed = eventBus.on('scene:transition_failed', clearAsyncGuard);
   unsubTransitionGuardComplete = () => {
     unsubLoaded();
     unsubFailed();
@@ -61,7 +62,7 @@ export interface SceneTransitionPayload {
  * or test harness — never mutate exploration.currentSceneId elsewhere.
  */
 export function performSceneTransition(payload: SceneTransitionPayload): void {
-  if (isSceneTransitionInProgress()) {
+  if (isSyncSceneTransitionInProgress()) {
     if (import.meta.env.DEV) {
       console.warn(
         '[SceneTransitionManager] Dropped re-entrant transition to',
@@ -71,7 +72,8 @@ export function performSceneTransition(payload: SceneTransitionPayload): void {
     return;
   }
 
-  setSceneTransitionInProgress(true);
+  setSyncSceneTransitionInProgress(true);
+  setAsyncSceneTransitionInProgress(true);
   try {
     const fromSceneId = getGameSnapshot().exploration.currentSceneId;
     const { targetScene, spawnAt } = payload;
@@ -109,7 +111,10 @@ export function performSceneTransition(payload: SceneTransitionPayload): void {
       fromSceneId,
     });
   } catch (error) {
-    setSceneTransitionInProgress(false);
+    setSyncSceneTransitionInProgress(false);
+    setAsyncSceneTransitionInProgress(false);
     throw error;
+  } finally {
+    setSyncSceneTransitionInProgress(false);
   }
 }

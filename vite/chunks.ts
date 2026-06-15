@@ -115,6 +115,7 @@ const DATA_MECHANICS = new Set([
   'craftingRecipes',
   'statusEffects',
   'achievements',
+  'achievementHelpers',
   'dailyMissions',
   'tradingData',
   'unifiedPoemRegistry',
