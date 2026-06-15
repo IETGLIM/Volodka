@@ -1,11 +1,14 @@
 # Changelog — ВОЛОДЬКА RPG
 ## v4.2.23 — 16 июня 2026
 
-### Quaternius animated NPC pipeline (20 rigged GLBs)
-- **Import CLI**: `npm run assets:quaternius-import` — download Ultimate Modular Men/Women glTF from Quaternius Google Drive, normalize to `male_01`…`female_09`, stage to `public/models/npcs/` + hero LOD chain.
-- **Registry**: `npcModelRegistry.ts` — 20 Quaternius-mapped NPCs (story + expanded + CHK Толпа); embedded GLB idle via `useNPCAnimation`.
-- **Bootstrap**: `assets:bootstrap` prefers Quaternius sources over Khronos CC0 placeholders when present.
-- **Docs**: `assets-source/ai3dgen/npcs/README.md`, `ATTRIBUTION.md` Quaternius CC0 credit.
+### Consolidated asset pipeline (Kenney · Poly · RPM · Quaternius · Mixamo)
+- **NPC priority**: Ready Player Me `npc_*.glb` > Quaternius CC0 > Khronos bootstrap — `npcModelRegistry` ships only files on disk; pending slots use procedural silhouettes.
+- **Quaternius CLI**: `npm run assets:quaternius-import` (`--download`, `--extract`, `--import`, `--status`) — 20 rigged slots mapped to story + CHK Толпа NPCs.
+- **RPM CLI**: `npm run assets:rpm-import` (`--list`, `--id`, `--apply-all`) — 20 avatar catalog; drop GLBs in `assets-source/ai3dgen/npcs/`.
+- **Mixamo CLI**: `npm run assets:mixamo-import` — idle/walk/talk/sit clips for NPC activity + player arms.
+- **Kenney + interiors**: `assets:freekit-stage` → citykit props + interior shells in 10 hero scenes (`SceneInteriorAssets`).
+- **Status**: `npm run assets:status` reports manifest, AI3DGen, Mixamo, RPM, Quaternius, runtime registries.
+- **Docs**: `assets-source/ai3dgen/README.md` (free sources table), `npcs/README.md`, `mixamo/README.md`, `ATTRIBUTION.md`.
 
 ## v4.2.22 — 16 июня 2026
 

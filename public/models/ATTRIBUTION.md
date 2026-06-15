@@ -17,9 +17,22 @@ Production bootstrap: `npm run assets:bootstrap` (distinct CC0 interim meshes un
 
 | File | Source | License | Notes |
 |------|--------|---------|-------|
-| `characters/volodka/volodka_lod*.glb` | Khronos RiggedFigure (interim) | CC0 | Shipped via `player_volodka` manifest — replace after AI3DGen Pro + Blender rig pass |
+| `characters/volodka/volodka_lod*.glb` | [Quaternius](https://quaternius.com/packs/ultimatemodularcharacters.html) Ultimate Modular Men (male_01) when imported; else Khronos RiggedFigure interim | CC0 | `npm run assets:quaternius-import -- --all`
 
-## NPC models
+## Quaternius animated NPCs (CC0)
+
+Pack: [Ultimate Modular Men](https://quaternius.com/packs/ultimatemodularcharacters.html) + [Ultimate Modular Women](https://quaternius.com/packs/ultimatemodularwomen.html) · License: CC0 · Author: [Quaternius](https://quaternius.com)
+
+Import:
+
+```bash
+npm run assets:quaternius-import -- --all
+npm run assets:validate
+```
+
+Mapped NPCs (when staged): Володя, Альберт, Зарема, Дмитрий, бариста, Александр, Мария, Максим, Жека, Трофим, Катя, Аня, Баба Зина, Солныш, CHK (Ру, Басед, Смерть, Сталкер, Элис, Ритка). See `assets-source/ai3dgen/npcs/README.md` and `scripts/quaternius-import.mjs`.
+
+## NPC models (interim Khronos until Quaternius import)
 
 | NPC | File | Interim source | License |
 |-----|------|----------------|---------|

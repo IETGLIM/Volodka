@@ -1,70 +1,61 @@
-# Ready Player Me NPC avatars — Volodka RPG
+# Quaternius animated NPC sources (CC0)
 
-Twenty story NPCs ship as **Ready Player Me** GLB exports (Mixamo-rigged, CC0 Sketchfab fallback for extras). This pipeline **replaces Khronos/Quaternius CC0 placeholders** when `npc_*.glb` files are present under this folder.
+Pack: **Ultimate Modular Men Pack** (11) + **Ultimate Modular Women Pack** (9 used)  
+License: [CC0](https://creativecommons.org/publicdomain/zero/1.0/) — [Quaternius](https://quaternius.com)
 
-## Workflow
+## Automated pipeline
 
-1. **Create avatar** on [Ready Player Me](https://readyplayer.me/) (free tier — requires your account; CI never downloads avatars).
-2. **Export GLB** (T-pose, no animations in RPM export).
-3. **Optional Blender cleanup**
-   - Scale to ~1.8 m height, apply transforms
-   - Remove RPM branding mesh if present
-   - Merge materials if needed for WebGL budget
-4. **Drop file here** using the catalog name, e.g. `npc_albert.glb`.
-5. **Import into the game**
-   ```bash
-   npm run assets:rpm-import -- --id npc_albert --file ./npc_albert.glb
-   # or when all 20 files are present:
-   npm run assets:rpm-import -- --apply-all
-   npm run assets:validate
-   ```
+```bash
+npm run assets:quaternius-import -- --all
+npm run assets:validate
+```
 
-## Mixamo animation retargeting
+Steps:
 
-RPM exports use the Mixamo skeleton. After Blender cleanup:
+1. `--download` — fetches glTF from Quaternius Google Drive folders into `_quaternius_raw/`
+2. `--extract` — converts to `male_01.glb` … `female_09.glb` under this folder
+3. `--import` — copies mapped GLBs to `public/models/npcs/` and `public/models/characters/volodka/`
 
-1. Upload the cleaned mesh to [Mixamo](https://www.mixamo.com/) (same Adobe account works).
-2. Download **Idle**, **Walking**, **Talking** (or custom) as FBX *without skin*.
-3. In Blender: import FBX, retarget to your RPM armature (Mixamo bone names match).
-4. Export GLB with animation clips named `idle`, `walk`, `talk` to match `npcDefinitions` animation keys.
+Status: `npm run assets:quaternius-import -- --status`
 
-Until animations land, `GltfNPCModel` plays clip index 0 or falls back to procedural idle.
+## Manual download (if Google Drive blocks automation)
 
-## Catalog — 20 NPCs
+1. Open [Ultimate Modular Men Pack](https://quaternius.com/packs/ultimatemodularcharacters.html) → **Download** (Google Drive).
+2. Open [Ultimate Modular Women Pack](https://quaternius.com/packs/ultimatemodularwomen.html) → **Download**.
+3. From each zip, extract **Individual Characters → glTF** (or FBX + convert in Blender).
+4. Rename in pack order (see `scripts/quaternius-import.mjs` `MEN_GLTF` / `WOMEN_GLTF`) to:
+   - `male_01.glb` … `male_11.glb`
+   - `female_01.glb` … `female_09.glb`
+5. Place files in this directory, then run:
 
-| Source file | Registry id | Public GLB | Visual brief |
-|---|---|---|---|
-| `npc_volodka.glb` | `player_volodka` | `characters/volodka/volodka_lod0.glb` | Hero — thin, glasses, tired poet |
-| `npc_zarema.glb` | `zarema` | `npcs/zarema.glb` | 50+, headscarf, caring neighbor |
-| `npc_alina.glb` | `solnysh` | `npcs/solnysh.glb` | Blonde, blue eyes — Solnysh/Alina |
-| `npc_albert.glb` | `albert` | `npcs/albert.glb` | Beard, philosopher, café regular |
-| `npc_barista.glb` | `cafe_barista` | `npcs/cafe_barista.glb` | Cyber prosthetic arm |
-| `npc_alexander.glb` | `office_alexander` | `npcs/office_alexander.glb` | Suit, badge, tired IT lead |
-| `npc_dmitry.glb` | `office_dmitry` | `npcs/office_dmitry.glb` | Thin, nervous senior dev |
-| `npc_maria.glb` | `maria` | `npcs/maria.glb` | Victoria — dark hair, winter eyes |
-| `npc_chk_ru.glb` | `chk_ru` | `npcs/chk_ru.glb` | CHK Tolpa — architect, hat |
-| `npc_chk_based.glb` | `chk_based` | `npcs/chk_based.glb` | CHK — portwine sysadmin |
-| `npc_chk_smert.glb` | `chk_smert` | `npcs/chk_smert.glb` | CHK — accountant philosopher |
-| `npc_chk_stalker.glb` | `chk_stalker` | `npcs/chk_stalker.glb` | CHK — forest security scout |
-| `npc_chk_elis.glb` | `chk_elis` | `npcs/chk_elis.glb` | CHK — QA bard, guitar |
-| `npc_chk_ritka.glb` | `chk_ritka` | `npcs/chk_ritka.glb` | CHK — pier bard, junior tester |
-| `npc_maxim.glb` | `maxim` | `npcs/maxim.glb` | Resistance leader, implants |
-| `npc_anya.glb` | `anya` | `npcs/anya.glb` | Resistance hacker |
-| `npc_zheka.glb` | `zeka` | `npcs/zeka.glb` | Old factory hacker |
-| `npc_baba_zina.glb` | `baba_zina` | `npcs/baba_zina.glb` | 80-year-old solderer |
-| `npc_trofim.glb` | `fisherman_trofim` | `npcs/trofim.glb` | Pier fisherman, ex-watchman |
-| `npc_katya.glb` | `kate` | `npcs/kate.glb` | Librarian — glasses, quiet |
+```bash
+npm run assets:quaternius-import -- --import
+npm run assets:validate
+```
 
-Code catalog: `src/config/rpmNpcCatalog.ts` · CLI: `npm run assets:rpm-import -- --list`
+## Mapping (source → game)
 
-## Bootstrap priority
+| Source | NPC / hero |
+|--------|------------|
+| male_01 | Володя (player_volodka) |
+| male_02 | albert |
+| male_03 | office_dmitry |
+| male_04 | cafe_barista |
+| male_05 | office_alexander |
+| male_06 | chk_ru |
+| male_07 | chk_based |
+| male_08 | chk_stalker |
+| male_09 | maxim |
+| male_10 | zeka |
+| male_11 | fisherman_trofim → `trofim.glb` |
+| female_01 | zarema |
+| female_02 | solnysh (Алина) |
+| female_03 | maria |
+| female_04 | chk_smert |
+| female_05 | chk_elis |
+| female_06 | chk_ritka |
+| female_07 | anya |
+| female_08 | baba_zina |
+| female_09 | kate |
 
-`npm run assets:bootstrap` copies CC0 Khronos placeholders **only when no RPM source** exists for that slot. If `assets-source/ai3dgen/npcs/npc_*.glb` is on disk, bootstrap stages the RPM file to `public/` instead.
-
-## Licensing
-
-- **Ready Player Me**: follow [RPM terms](https://readyplayer.me/terms) for commercial use.
-- **Mixamo**: Adobe account, standard Mixamo license.
-- **Interim CC0**: Khronos / three.js samples until RPM files land.
-
-Attribution: `public/models/ATTRIBUTION.md`
+Credit: [Quaternius](https://quaternius.com) — CC0.

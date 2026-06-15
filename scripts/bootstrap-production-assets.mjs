@@ -10,9 +10,11 @@ import { copyFileSync, createWriteStream, existsSync, mkdirSync, openSync, readS
 import { get as httpsGet } from 'node:https';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { NPC_QUATERNIUS_MAP } from './quaternius-import.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const PUBLIC = path.join(ROOT, 'public');
+const QUATERNIUS_SOURCE = path.join(ROOT, 'assets-source/ai3dgen/npcs');
 
 const KHRONOS_BASE =
   'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/main/2.0';
@@ -86,8 +88,13 @@ function stageCopy(sourceRel, destRels) {
   }
 }
 
-/** If RPM source exists for this public dest, skip CC0 overwrite. */
+/** If RPM or Quaternius source exists for this public dest, skip CC0 overwrite. */
 function shouldSkipCc0ForDest(destRel) {
+  for (const entry of NPC_QUATERNIUS_MAP) {
+    if (!entry.publicPaths.includes(destRel)) continue;
+    const src = path.join(QUATERNIUS_SOURCE, entry.source);
+    if (existsSync(src)) return true;
+  }
   if (!rpmCatalog) return false;
   for (const entry of rpmCatalog) {
     const pubRel = entry.publicUrl.replace(/^\//, '');
@@ -96,6 +103,25 @@ function shouldSkipCc0ForDest(destRel) {
     if (existsSync(src)) return true;
   }
   return false;
+}
+
+function stageQuaterniusNpcs() {
+  console.log('\nStaging Quaternius NPCs (when source on disk)…');
+  let staged = 0;
+  for (const entry of NPC_QUATERNIUS_MAP) {
+    const src = path.join(QUATERNIUS_SOURCE, entry.source);
+    if (!existsSync(src)) continue;
+    for (const destRel of entry.publicPaths) {
+      const dest = path.join(PUBLIC, destRel);
+      mkdirSync(path.dirname(dest), { recursive: true });
+      copyFileSync(src, dest);
+      staged += 1;
+      console.log(`✓ Quaternius ${entry.source} → ${destRel}`);
+    }
+  }
+  if (staged === 0) {
+    console.log('  (no Quaternius sources — run npm run assets:quaternius-import -- --all)');
+  }
 }
 
 function stageRpmNpcs() {
@@ -223,6 +249,7 @@ async function main() {
   console.log('Bootstrap production assets…\n');
   await ensureRemoteAssets();
   await loadRpmCatalog();
+  stageQuaterniusNpcs();
   stageRpmNpcs();
   stageProductionLayout();
   reportSize();

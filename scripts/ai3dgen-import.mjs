@@ -88,6 +88,9 @@ AI3DGen import — Volodka RPG
 
 Generator: https://www.ai3dgen.com/ru/image-to-3d-model-free
 
+Quaternius CC0 NPCs (rigged): npm run assets:quaternius-import -- --all
+  See assets-source/ai3dgen/npcs/README.md
+
 Notes:
   • Free tier: OBJ only, no PBR textures, personal-use license.
   • Pro tier: GLB/STL + textures; required for commercial ship.

@@ -65,6 +65,11 @@ upload/
 
 # local working junk — not part of the game
 /.tmp-archive/
+/.tmp-external/
+/.tmp-kenney/
+/.tmp-quaternius-men/
+/.tmp-quaternius.html
+/assets-source/ai3dgen/npcs/_quaternius_raw/
 /temp_assets/
 /.zscripts/
 *.zip

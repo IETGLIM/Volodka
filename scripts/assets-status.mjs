@@ -32,9 +32,10 @@ async function loadModules() {
   const mixamoShippedMod = await import(pathToFileURL(path.join(ROOT, 'src/config/mixamoAnimationShipped.ts')).href);
   const rpmMod = await import(pathToFileURL(path.join(ROOT, 'src/config/rpmNpcCatalog.ts')).href);
   const rpmShippedMod = await import(pathToFileURL(path.join(ROOT, 'src/config/rpmNpcShipped.generated.ts')).href);
+  const quaterniusMod = await import(pathToFileURL(path.join(ROOT, 'scripts/quaternius-import.mjs')).href);
   const propMod = await import(pathToFileURL(path.join(ROOT, 'src/config/propModelRegistry.ts')).href);
   const npcMod = await import(pathToFileURL(path.join(ROOT, 'src/config/npcModelRegistry.ts')).href);
-  return { manifestMod, catalogMod, mixamoMod, mixamoShippedMod, rpmMod, rpmShippedMod, propMod, npcMod };
+  return { manifestMod, catalogMod, mixamoMod, mixamoShippedMod, rpmMod, rpmShippedMod, quaterniusMod, propMod, npcMod };
 }
 
 function mark(ok) {
@@ -42,7 +43,7 @@ function mark(ok) {
 }
 
 async function main() {
-  const { manifestMod, catalogMod, mixamoMod, mixamoShippedMod, rpmMod, rpmShippedMod, propMod, npcMod } = await loadModules();
+  const { manifestMod, catalogMod, mixamoMod, mixamoShippedMod, rpmMod, rpmShippedMod, quaterniusMod, propMod, npcMod } = await loadModules();
   const manifest = manifestMod.ASSET_MANIFEST;
   const catalog = catalogMod.AI3DGEN_ASSET_CATALOG;
   const mixamoCatalog = mixamoMod.MIXAMO_ANIMATION_CATALOG;
@@ -121,6 +122,26 @@ async function main() {
   console.log('  List:   npm run assets:rpm-import -- --list');
   console.log('  Guide:  assets-source/ai3dgen/npcs/README.md');
 
+  console.log('\n═══ Quaternius NPC catalog (CC0) ═══\n');
+  let quaterniusSource = 0;
+  let quaterniusPublic = 0;
+  for (const entry of quaterniusMod.NPC_QUATERNIUS_MAP) {
+    const sourcePath = path.join(ROOT, 'assets-source/ai3dgen/npcs', entry.source);
+    const primary = `/${entry.publicPaths[0]}`;
+    const publicState = fileState(primary);
+    const hasSource = existsSync(sourcePath);
+    if (hasSource) quaterniusSource += 1;
+    if (publicState.ok) quaterniusPublic += 1;
+    console.log(
+      `  ${mark(publicState.ok)} public  ${mark(hasSource)} source  ${entry.source.padEnd(14)} → ${entry.npcId ?? 'hero'}`,
+    );
+  }
+  console.log(
+    `\n  Source on disk: ${quaterniusSource}/${quaterniusMod.NPC_QUATERNIUS_MAP.length} · public primary: ${quaterniusPublic}`,
+  );
+  console.log('  Import: npm run assets:quaternius-import -- --all');
+  console.log('  Status: npm run assets:quaternius-import -- --status');
+
   console.log('\n═══ Runtime GLB registries ═══\n');
   const propUrls = propMod.getPropModelUrls();
   const npcUrls = npcMod.getNpcModelUrls();
@@ -152,6 +173,9 @@ async function main() {
   }
   if (rpmMod.RPM_NPC_CATALOG.length - rpmSource > 0) {
     console.log('  RPM → assets:rpm-import (Ready Player Me login) → assets:validate');
+  }
+  if (quaterniusMod.NPC_QUATERNIUS_MAP.length - quaterniusSource > 0) {
+    console.log('  Quaternius → assets:quaternius-import -- --all → assets:validate');
   }
   console.log('  npm run assets:validate');
 }
