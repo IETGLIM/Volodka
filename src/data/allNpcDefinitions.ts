@@ -1,7 +1,7 @@
 /* ─── Volodka RPG – merged NPC registry ─── */
 
 import type { NPCDefinition } from '@/shared/types/game';
-import { resolveCanonicalNpcId } from './goldenPath';
+import { resolveCanonicalNpcId } from '@/shared/npcIdAliases';
 import { NPC_DEFINITIONS } from './npcDefinitions';
 import { EXPANDED_NPCS } from './expandedNPCs';
 import { CHK_NPCS } from './chkTolpa/npcs';

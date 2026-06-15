@@ -1,7 +1,7 @@
 /* ─── ТОЛПА / ЧК — dialogue trees ─── */
 
 import type { DialogueNode } from '@/shared/types/game';
-import { TOTAL_UNIFIED_POEMS } from '@/data/unifiedPoemRegistry';
+import { TOTAL_UNIFIED_POEMS } from '@/data/poemCollectionMeta';
 
 export const CHK_DIALOGUE_NODES: Record<string, DialogueNode> = {
   chk_ru_greeting: {

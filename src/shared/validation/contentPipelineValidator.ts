@@ -14,6 +14,7 @@ import { SCENE_DEFINITIONS, type SceneId } from '@/config/sceneDefinitions';
 import { POEMS } from '@/data/poems';
 import { getAllItemDefinitions } from '@/data/items';
 import { getAllUnifiedPoems } from '@/data/unifiedPoemRegistry';
+import { TOTAL_UNIFIED_POEMS as CANONICAL_POEM_COUNT } from '@/data/poemCollectionMeta';
 import { INITIAL_LORE_ENTRIES } from '@/data/loreEntries';
 import { LORE_SCENE_MAP, LORE_STORY_NODE_MAP } from '@/data/loreSceneMap';
 import { CUTSCENES } from '@/data/cutscenes';
@@ -156,6 +157,20 @@ function walkEffects(
       case 'combat':
         if (e.enemyType && !reg.enemyTypes.has(e.enemyType)) {
           out.push(issue('error', 'effect', ep, `unknown enemyType "${e.enemyType}"`));
+        }
+        break;
+      case 'transitionScene':
+        if (e.sceneId && !reg.sceneIds.has(e.sceneId)) {
+          out.push(issue('error', 'effect', ep, `unknown sceneId "${e.sceneId}"`));
+        }
+        break;
+      case 'visitStoryNode':
+        if (
+          e.nodeId &&
+          !reg.storyNodeIds.has(e.nodeId) &&
+          !reg.dialogueNodeIds.has(e.nodeId)
+        ) {
+          out.push(issue('error', 'effect', ep, `unknown nodeId "${e.nodeId}"`));
         }
         break;
       default:
@@ -493,6 +508,17 @@ function validateScenes(reg: ReturnType<typeof buildSets>, out: ValidationIssue[
 }
 
 function validatePoems(reg: ReturnType<typeof buildSets>, out: ValidationIssue[]): void {
+  const registryCount = getAllUnifiedPoems().length;
+  if (registryCount !== CANONICAL_POEM_COUNT) {
+    out.push(
+      issue(
+        'error',
+        'poem',
+        'poemCollectionMeta',
+        `TOTAL_UNIFIED_POEMS (${CANONICAL_POEM_COUNT}) !== UNIFIED_POEM_REGISTRY length (${registryCount})`,
+      ),
+    );
+  }
   const seenIds = new Set<string>();
   const orderToIds = new Map<number, string[]>();
 
@@ -631,7 +657,7 @@ function validateGoldenPath(reg: ReturnType<typeof buildSets>, out: ValidationIs
   if (report.storySpine.length !== GOLDEN_PATH_STORY_SPINE.length) {
     out.push(
       issue(
-        'warning',
+        'error',
         'golden-path',
         'deriveStorySpine',
         `derived spine length ${report.storySpine.length} !== manual ${GOLDEN_PATH_STORY_SPINE.length} — add choice.goldenPath markers or update fallback`,
@@ -642,7 +668,7 @@ function validateGoldenPath(reg: ReturnType<typeof buildSets>, out: ValidationIs
       if (report.storySpine[i] !== GOLDEN_PATH_STORY_SPINE[i]) {
         out.push(
           issue(
-            'warning',
+            'error',
             'golden-path',
             `deriveStorySpine[${i}]`,
             `derived "${report.storySpine[i]}" !== manual "${GOLDEN_PATH_STORY_SPINE[i]}"`,
@@ -659,7 +685,7 @@ function validateGoldenPath(reg: ReturnType<typeof buildSets>, out: ValidationIs
     }
     out.push(
       issue(
-        'warning',
+        'error',
         'golden-path',
         `story.${nodeId}`,
         'spine step lacks choice.goldenPath — still using GOLDEN_PATH_STORY_SPINE fallback',

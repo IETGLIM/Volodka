@@ -133,8 +133,8 @@ const QUEST_ENGINE_MODULES = new Set([
 
 function resolveStoryPackChunk(posix: string): string | undefined {
   if (!posix.includes('/src/data/chkTolpa/')) return undefined;
-  if (posix.includes('/npcs.')) return 'pack-chk-npc';
-  if (posix.includes('/schedules.')) return 'pack-chk-npc';
+  // Colocate with data-npc — avoids pack-chk-npc ↔ data-npc circular chunk via schedules/npcs.
+  if (posix.includes('/npcs.') || posix.includes('/schedules.')) return 'data-npc';
   if (posix.includes('/triggerZones.')) return 'pack-chk-world';
   return 'pack-chk-narrative';
 }
@@ -158,12 +158,19 @@ function resolveDataChunk(posix: string): string | undefined {
     return 'data-golden-path';
   }
 
+  if (posix.includes('/src/data/poemCollectionMeta')) {
+    return 'data-golden-path';
+  }
+
   const pack = resolveStoryPackChunk(posix);
   if (pack) return pack;
 
   if (posix.includes('/src/data/story/act')) {
     const actMatch = posix.match(/\/src\/data\/story\/act(\d+)\./);
     if (actMatch) return `data-story-act${actMatch[1]}`;
+  }
+  if (posix.includes('explorationHubTemplate')) {
+    return 'data-story-act1';
   }
   if (posix.includes('/src/data/dialogue/part')) {
     const partMatch = posix.match(/\/src\/data\/dialogue\/part(\d+)/);

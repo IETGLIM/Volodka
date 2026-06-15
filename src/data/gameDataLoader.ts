@@ -40,7 +40,6 @@ import {
   hasStoryNode,
   hasDialogueNode,
 } from '@/data/narrative/narrativePackRegistry';
-import { invalidateGuidedStoryPathConfig } from '@/engine/guidedStory/guidedStoryPath';
 type TriggerModule = typeof import('@/data/triggerZones');
 type ItemsModule = typeof import('@/data/items');
 type NpcModule = typeof import('@/data/allNpcDefinitions');
@@ -141,7 +140,9 @@ export async function preloadNarrativeGameData(): Promise<void> {
 
       if (!narrativePackListenerRegistered) {
         onNarrativePacksChanged(() => {
-          invalidateGuidedStoryPathConfig();
+          void import('@/engine/guidedStory/guidedStoryPath').then((mod) => {
+            mod.invalidateGuidedStoryPathConfig();
+          });
           void import('@/engine/story/storyGraphIndex').then((mod) => {
             mod.syncStoryGraphIndexAfterNarrativeChange();
           });

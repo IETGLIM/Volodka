@@ -340,6 +340,8 @@ export function RPGGameCanvas() {
     <div
       ref={containerRef}
       tabIndex={0}
+      role="application"
+      aria-label="Игровой мир Володьки — исследование от первого лица"
       style={{
         width: '100%',
         height: '100%',

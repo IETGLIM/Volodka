@@ -1,6 +1,6 @@
 /* ─── Volodka RPG – golden path ─── */
 
-import { TOTAL_UNIFIED_POEMS } from './unifiedPoemRegistry';
+import { TOTAL_UNIFIED_POEMS } from './poemCollectionMeta';
 import { NPC_ID_ALIASES as SHARED_NPC_ID_ALIASES, resolveCanonicalNpcId as resolveNpcAlias } from '@/shared/npcIdAliases';
 
 /**
