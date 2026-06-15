@@ -1,5 +1,13 @@
 # Changelog — ВОЛОДЬКА RPG
 
+## v4.2.6 — 15 июня 2026
+
+### Asset pipeline (environment bundles + status tooling)
+- **Shipped env bundles**: `env_cafe_props` and `veg_tree_pine` marked `shipped: true` with CC0 interim GLBs (BrainStem / Avocado) staged via `assets:bootstrap`.
+- **Asset status**: `npm run assets:status` — manifest vs disk, AI3DGen catalog import progress, prop/NPC registry coverage.
+- **AI3DGen CLI**: `assets:ai3dgen-import -- --status`; catalog entries for café props and park pine (`environment` / `vegetation` categories).
+- **Pipeline folders**: `assets-source/ai3dgen/{characters,npcs,props,environments,vegetation}` scaffold for Pro imports.
+
 ## v4.2.5 — 15 июня 2026
 
 ### AAA polish pass (endings + accessibility)

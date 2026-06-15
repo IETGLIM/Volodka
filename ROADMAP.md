@@ -4,7 +4,7 @@
 > подготовка к запуску на Vercel. Документ заменяет устаревшие `CODE_REVIEW.md` и
 > `DEEP_CODE_REVIEW.md`, которые описывают состояние проекта **до** большого рефакторинга.
 
-**Дата:** 15 июня 2026 · **Версия:** 4.2.5 · **Целевая аудитория игры:** и новички
+**Дата:** 15 июня 2026 · **Версия:** 4.2.6 · **Целевая аудитория игры:** и новички
 (родители, друзья — не геймеры), и опытные игроки (баланс «лёгкий вход + глубина»).
 
 ---
@@ -17,11 +17,12 @@
 | Юнит-тесты | `npm run test:unit` | ✅ 475+ тестов |
 | Линтер | `npm run lint` | ✅ 0 ошибок |
 | Контент | `npm run validate:content` | ✅ 0 ошибок |
-| Ассеты | `npm run assets:validate` | ✅ shipped GLB на диске |
+| Ассеты | `npm run assets:validate` | ✅ shipped GLB на диске (вкл. env/veg bundles) |
+| Статус пайплайна | `npm run assets:status` | ✅ manifest + AI3DGen catalog vs disk |
 | Сборка | `npm run build` | ✅ + бюджеты бандла |
 | Deploy | `npm run verify:deploy` | ✅ dist + пути GLB |
 
-**3D production:** `npm run assets:bootstrap` — CC0 interim; замена на AI3DGen Pro по каталогу.
+**3D production:** `npm run assets:bootstrap` — CC0 interim; `assets:status` / `assets:ai3dgen-import -- --status` — прогресс; замена на AI3DGen Pro по каталогу.
 
 **Вывод:** инженерная база готова к Vercel production. Следующий визуальный апгрейд — AI3DGen Pro + Blender rig для героя.
 

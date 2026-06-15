@@ -11,6 +11,8 @@
 
 ```bash
 npm run assets:ai3dgen-import -- --list
+npm run assets:ai3dgen-import -- --status
+npm run assets:status
 npm run assets:ai3dgen-import -- --id npc_albert --file "C:/Downloads/albert.obj"
 npm run assets:process -- --input assets-source/ai3dgen/npcs/albert.glb
 npm run assets:validate
@@ -41,6 +43,8 @@ assets-source/ai3dgen/
   characters/
   npcs/
   props/
+  environments/
+  vegetation/
 public/models/          ← после process или quick-stage из import
 ```
 

@@ -50,10 +50,21 @@ Production bootstrap: `npm run assets:bootstrap` (CC0 placeholders until AI3DGen
 Replace interim meshes via:
 
 ```bash
+npm run assets:status
+npm run assets:ai3dgen-import -- --status
 npm run assets:ai3dgen-import -- --id <catalog-id> --file <path.glb>
 npm run assets:process -- --input assets-source/ai3dgen/<path>.glb
 npm run assets:validate
 ```
+
+## Environment / vegetation (scene bundles)
+
+| Asset ID | Files | Interim | Production target |
+|----------|-------|---------|-------------------|
+| env_cafe_props | `environments/cafe/props_lod*.glb` | Khronos BrainStem (CC0) | AI3DGen Pro café kit |
+| veg_tree_pine | `vegetation/pine/pine_lod*.glb` | Khronos Avocado (CC0) | AI3DGen Pro stylized pine |
+
+Preload: `cafe_evening` → `env_cafe_props`, `park_day` → `veg_tree_pine` (`sceneGpuLifecycle.ts`).
 
 ## Kenney environment props
 

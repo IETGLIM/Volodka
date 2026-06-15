@@ -12,7 +12,9 @@ export type Ai3dgenAssetCategory =
   | 'prop'
   | 'item'
   | 'craft'
-  | 'quest';
+  | 'quest'
+  | 'environment'
+  | 'vegetation';
 
 export type Ai3dgenWireTarget =
   | { kind: 'npc'; npcId: string }
@@ -222,6 +224,28 @@ export const AI3DGEN_ASSET_CATALOG: Ai3dgenAssetSpec[] = [
     publicUrl: `${MODELS}/props/server_fragment.glb`,
     wire: { kind: 'prop', propModelId: 'ai3dgen_server_fragment' },
     defaultScale: 0.45,
+    licenseTier: 'pro',
+  },
+  // ── Environment / vegetation (scene preload bundles) ──
+  {
+    id: 'env_cafe_props',
+    category: 'environment',
+    title: 'Кафе — набор пропсов',
+    imageBrief: 'Cyberpunk café clutter: tables, mugs, neon sign, low-poly kit, dark mood',
+    sourceRelativePath: `${AI3DGEN}/environments/cafe_props.glb`,
+    publicUrl: `${MODELS}/environments/cafe/props_lod0.glb`,
+    wire: { kind: 'manifest', assetManifestId: 'env_cafe_props' },
+    licenseTier: 'pro',
+  },
+  {
+    id: 'veg_tree_pine',
+    category: 'vegetation',
+    title: 'Сосна (парк)',
+    imageBrief: 'Stylized pine tree, winter cyberpunk park, single hero tree, plain background',
+    sourceRelativePath: `${AI3DGEN}/vegetation/pine.glb`,
+    publicUrl: `${MODELS}/vegetation/pine/pine_lod0.glb`,
+    wire: { kind: 'manifest', assetManifestId: 'veg_tree_pine' },
+    defaultScale: 1.2,
     licenseTier: 'pro',
   },
 ];

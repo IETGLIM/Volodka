@@ -137,6 +137,19 @@ function stageProductionLayout() {
 
   // FPS arms — CC0 Soldier rig (replace with Drillimpact PSX arms when manually added)
   stageCopy('models/khronos/Soldier.glb', ['models/fps/fps_arms.glb']);
+
+  // Environment bundles — interim CC0 until AI3DGen / art pass (see env_cafe_props, veg_tree_pine)
+  stageCopy('models/khronos/BrainStem.glb', [
+    'models/environments/cafe/props_lod0.glb',
+    'models/environments/cafe/props_lod1.glb',
+    'models/environments/cafe/props.draco.glb',
+    'models/environments/cafe/props.meshopt.glb',
+  ]);
+  stageCopy('models/khronos/Avocado.glb', [
+    'models/vegetation/pine/pine_lod0.glb',
+    'models/vegetation/pine/pine_lod1.glb',
+    'models/vegetation/pine/pine_lod2.glb',
+  ]);
 }
 
 function reportSize() {

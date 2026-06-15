@@ -13,7 +13,7 @@
  *   node scripts/ai3dgen-import.mjs --id craft_digital_amulet --file ./downloads/amulet.obj
  */
 
-import { copyFileSync, existsSync, mkdirSync } from 'node:fs';
+import { copyFileSync, existsSync, mkdirSync, statSync } from 'node:fs';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath, pathToFileURL } from 'node:url';
@@ -21,10 +21,11 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
 function parseArgs(argv) {
-  const args = { list: false, id: null, file: null };
+  const args = { list: false, status: false, id: null, file: null };
   for (let i = 2; i < argv.length; i += 1) {
     const token = argv[i];
     if (token === '--list') args.list = true;
+    else if (token === '--status') args.status = true;
     else if (token === '--id') args.id = argv[++i] ?? null;
     else if (token === '--file') args.file = argv[++i] ?? null;
     else if (token === '--help' || token === '-h') args.help = true;
@@ -81,7 +82,9 @@ function printHelp() {
 AI3DGen import — Volodka RPG
 
   npm run assets:ai3dgen-import -- --list
+  npm run assets:ai3dgen-import -- --status
   npm run assets:ai3dgen-import -- --id <catalog-id> --file <path-to.obj|glb>
+  npm run assets:status
 
 Generator: https://www.ai3dgen.com/ru/image-to-3d-model-free
 
@@ -108,6 +111,28 @@ async function main() {
       console.log(`  ${entry.id.padEnd(28)} ${entry.title} [${entry.category}]`);
     }
     console.log('\nUpload imageBrief from catalog to AI3DGen, then import with --id.');
+    console.log('Run --status to see which files are already on disk.');
+    return;
+  }
+
+  if (args.status) {
+    console.log('AI3DGen import status:\n');
+    for (const entry of catalog.AI3DGEN_ASSET_CATALOG) {
+      const sourcePath = path.join(ROOT, entry.sourceRelativePath);
+      const publicPath = path.join(ROOT, 'public', entry.publicUrl.replace(/^\//, ''));
+      const hasSource = existsSync(sourcePath);
+      const hasPublic = existsSync(publicPath);
+      const srcKb = hasSource ? ` ${(statSync(sourcePath).size / 1024).toFixed(0)} KB` : '';
+      const pubKb = hasPublic ? ` ${(statSync(publicPath).size / 1024).toFixed(0)} KB` : '';
+      console.log(
+        `${hasPublic ? '✓' : '·'} public  ${hasSource ? '✓' : '·'} source  [${entry.licenseTier}]  ${entry.id}`,
+      );
+      if (hasSource || hasPublic) {
+        console.log(`    source: ${path.relative(ROOT, sourcePath)}${srcKb}`);
+        console.log(`    public: ${entry.publicUrl}${pubKb}`);
+      }
+    }
+    console.log('\nFull report: npm run assets:status');
     return;
   }
 

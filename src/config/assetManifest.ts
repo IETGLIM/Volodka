@@ -156,10 +156,10 @@ export const ASSET_MANIFEST: Record<string, GltfAssetDefinition> = {
       draco: `${MODELS}/environments/cafe/props.draco.glb`,
       meshopt: `${MODELS}/environments/cafe/props.meshopt.glb`,
     },
-    textureAtlas: `${MODELS}/environments/cafe/cafe_atlas`,
-    bakedLightmap: `${MODELS}/environments/cafe/cafe_lightmap.ktx2`,
+    // textureAtlas / bakedLightmap — add when KTX2 cafe pack lands (assets:process)
     instancing: true,
     receiveShadow: true,
+    shipped: true,
   },
   veg_tree_pine: {
     id: 'veg_tree_pine',
@@ -169,8 +169,9 @@ export const ASSET_MANIFEST: Record<string, GltfAssetDefinition> = {
       { url: `${MODELS}/vegetation/pine/pine_lod1.glb`, maxDistance: 25 },
       { url: `${MODELS}/vegetation/pine/pine_lod2.glb`, maxDistance: 50 },
     ],
-    impostor: { url: `${MODELS}/vegetation/pine/pine_impostor.ktx2`, distance: 55 },
+    // impostor atlas — add when vegetation impostor bake is ready
     instancing: true,
+    shipped: true,
   },
 };
 
