@@ -35,6 +35,9 @@ function ai3dgenStubToPropDefinition(stub: Ai3dgenPropStub): PropModelDefinition
 }
 
 const PROPS = '/models/props';
+const CITYKIT = `${PROPS}/citykit`;
+const KENNEY_CITY_URL = 'https://kenney.nl/assets/city-kit-roads';
+const KENNEY_FURNITURE_URL = 'https://kenney.nl/assets/furniture-kit';
 
 /** Kenney Furniture Kit (CC0) — converted OBJ→GLB via obj2gltf for web use.
  *
@@ -106,7 +109,88 @@ export const PROP_MODEL_REGISTRY: Record<string, PropModelDefinition> = {
     scale: 0.18, // → 1.03 × 0.68 × 2.03 m
     license: 'CC0',
     source: 'Kenney Furniture Kit — bedSingle',
-    sourceUrl: 'https://opengameart.org/content/furniture-kit',
+    sourceUrl: KENNEY_FURNITURE_URL,
+  },
+  // ── Kenney City Kit + Furniture (CC0) — assets-source/ai3dgen/props/ ──
+  kenney_city_bench: {
+    id: 'kenney_city_bench',
+    url: `${CITYKIT}/bench.glb`,
+    scale: 0.2,
+    license: 'CC0',
+    source: 'Kenney Furniture Kit — bench',
+    sourceUrl: KENNEY_FURNITURE_URL,
+  },
+  kenney_city_lamp_post: {
+    id: 'kenney_city_lamp_post',
+    url: `${CITYKIT}/lamp_post.glb`,
+    scale: 0.18,
+    license: 'CC0',
+    source: 'Kenney City Kit (Roads) — light-square',
+    sourceUrl: KENNEY_CITY_URL,
+  },
+  kenney_city_table_small: {
+    id: 'kenney_city_table_small',
+    url: `${CITYKIT}/table_small.glb`,
+    scale: 0.2,
+    license: 'CC0',
+    source: 'Kenney Furniture Kit — sideTable',
+    sourceUrl: KENNEY_FURNITURE_URL,
+  },
+  kenney_city_chair: {
+    id: 'kenney_city_chair',
+    url: `${CITYKIT}/chair.glb`,
+    scale: 0.2,
+    license: 'CC0',
+    source: 'Kenney Furniture Kit — chair',
+    sourceUrl: KENNEY_FURNITURE_URL,
+  },
+  kenney_city_bookshelf: {
+    id: 'kenney_city_bookshelf',
+    url: `${CITYKIT}/bookshelf.glb`,
+    scale: 0.25,
+    license: 'CC0',
+    source: 'Kenney Furniture Kit — bookcaseClosed',
+    sourceUrl: KENNEY_FURNITURE_URL,
+  },
+  kenney_city_terminal: {
+    id: 'kenney_city_terminal',
+    url: `${CITYKIT}/terminal.glb`,
+    scale: 0.15,
+    license: 'CC0',
+    source: 'Kenney Furniture Kit — computerScreen',
+    sourceUrl: KENNEY_FURNITURE_URL,
+  },
+  kenney_city_coffee_machine: {
+    id: 'kenney_city_coffee_machine',
+    url: `${CITYKIT}/coffee_machine.glb`,
+    scale: 0.15,
+    license: 'CC0',
+    source: 'Kenney Furniture Kit — kitchenCoffeeMachine',
+    sourceUrl: KENNEY_FURNITURE_URL,
+  },
+  kenney_city_guitar: {
+    id: 'kenney_city_guitar',
+    url: `${CITYKIT}/guitar.glb`,
+    scale: 0.15,
+    license: 'CC0',
+    source: 'Kenney Furniture Kit — radio (interim guitar prop)',
+    sourceUrl: KENNEY_FURNITURE_URL,
+  },
+  kenney_city_bottle: {
+    id: 'kenney_city_bottle',
+    url: `${CITYKIT}/bottle.glb`,
+    scale: 0.15,
+    license: 'CC0',
+    source: 'Kenney Furniture Kit — tableCoffeeGlass',
+    sourceUrl: KENNEY_FURNITURE_URL,
+  },
+  kenney_city_campfire: {
+    id: 'kenney_city_campfire',
+    url: `${CITYKIT}/campfire.glb`,
+    scale: 0.25,
+    license: 'CC0',
+    source: 'OpenGameArt Low Poly Camping — camp_fire (CC0)',
+    sourceUrl: 'https://opengameart.org/content/low-poly-camping-assets',
   },
 };
 

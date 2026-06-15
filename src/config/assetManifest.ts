@@ -173,6 +173,77 @@ export const ASSET_MANIFEST: Record<string, GltfAssetDefinition> = {
     instancing: true,
     shipped: true,
   },
+  /** CC0 interior shells — Kenney fallback; replace with Poly Pizza via assets:freekit-stage. */
+  interior_room_bedroom: {
+    id: 'interior_room_bedroom',
+    category: 'environment',
+    lods: [{ url: `${MODELS}/interiors/room_bedroom.glb`, maxDistance: 0 }],
+    receiveShadow: true,
+    shipped: true,
+  },
+  interior_cafe: {
+    id: 'interior_cafe',
+    category: 'environment',
+    lods: [{ url: `${MODELS}/interiors/cafe_interior.glb`, maxDistance: 0 }],
+    receiveShadow: true,
+    shipped: true,
+  },
+  interior_office: {
+    id: 'interior_office',
+    category: 'environment',
+    lods: [{ url: `${MODELS}/interiors/office.glb`, maxDistance: 0 }],
+    receiveShadow: true,
+    shipped: true,
+  },
+  interior_library: {
+    id: 'interior_library',
+    category: 'environment',
+    lods: [{ url: `${MODELS}/interiors/library.glb`, maxDistance: 0 }],
+    receiveShadow: true,
+    shipped: true,
+  },
+  interior_factory: {
+    id: 'interior_factory',
+    category: 'environment',
+    lods: [{ url: `${MODELS}/interiors/factory.glb`, maxDistance: 0 }],
+    receiveShadow: true,
+    shipped: true,
+  },
+  interior_corridor: {
+    id: 'interior_corridor',
+    category: 'environment',
+    lods: [{ url: `${MODELS}/interiors/corridor.glb`, maxDistance: 0 }],
+    receiveShadow: true,
+    shipped: true,
+  },
+  interior_rooftop: {
+    id: 'interior_rooftop',
+    category: 'environment',
+    lods: [{ url: `${MODELS}/interiors/rooftop.glb`, maxDistance: 0 }],
+    receiveShadow: true,
+    shipped: true,
+  },
+  interior_basement: {
+    id: 'interior_basement',
+    category: 'environment',
+    lods: [{ url: `${MODELS}/interiors/basement.glb`, maxDistance: 0 }],
+    receiveShadow: true,
+    shipped: true,
+  },
+  interior_pier: {
+    id: 'interior_pier',
+    category: 'environment',
+    lods: [{ url: `${MODELS}/interiors/pier.glb`, maxDistance: 0 }],
+    receiveShadow: true,
+    shipped: true,
+  },
+  interior_forest_clearing: {
+    id: 'interior_forest_clearing',
+    category: 'environment',
+    lods: [{ url: `${MODELS}/interiors/forest_clearing.glb`, maxDistance: 0 }],
+    receiveShadow: true,
+    shipped: true,
+  },
 };
 
 export function getAssetDefinition(assetId: string): GltfAssetDefinition | undefined {

@@ -1,4 +1,12 @@
 # Changelog — ВОЛОДЬКА RPG
+## v4.2.23 — 16 июня 2026
+
+### Quaternius animated NPC pipeline (20 rigged GLBs)
+- **Import CLI**: `npm run assets:quaternius-import` — download Ultimate Modular Men/Women glTF from Quaternius Google Drive, normalize to `male_01`…`female_09`, stage to `public/models/npcs/` + hero LOD chain.
+- **Registry**: `npcModelRegistry.ts` — 20 Quaternius-mapped NPCs (story + expanded + CHK Толпа); embedded GLB idle via `useNPCAnimation`.
+- **Bootstrap**: `assets:bootstrap` prefers Quaternius sources over Khronos CC0 placeholders when present.
+- **Docs**: `assets-source/ai3dgen/npcs/README.md`, `ATTRIBUTION.md` Quaternius CC0 credit.
+
 ## v4.2.22 — 16 июня 2026
 
 ### Mixamo animation pipeline (idle / walk / talk / sit)

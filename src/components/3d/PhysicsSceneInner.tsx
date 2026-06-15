@@ -38,6 +38,7 @@ import { UmkaDog } from './UmkaDog';
 import { TriggerZoneProps } from './TriggerZoneProp';
 import { ScenePropDressing } from './ScenePropDressing';
 import { SceneManifestAssets } from './SceneManifestAssets';
+import { SceneInteriorAssets } from './SceneInteriorAssets';
 import { eventBus } from '@/engine/EventBus';
 import { FRAME_PHYSICS_R3F_PRIORITY } from '@/engine/frame/types';
 import { InteractionState } from '@/engine/interaction/interactionMachine';
@@ -88,6 +89,7 @@ function PhysicsSceneInner({
       <TriggerZoneProps />
       <ScenePropDressing />
       <SceneManifestAssets />
+      <SceneInteriorAssets />
       <NPCSystemWrapper livePlayerPositionRef={livePlayerPositionRef} />
       <UmkaDog livePlayerPositionRef={livePlayerPositionRef} />
       <AmbientNPCs livePlayerPositionRef={livePlayerPositionRef} />

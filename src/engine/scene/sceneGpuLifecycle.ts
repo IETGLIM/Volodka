@@ -15,6 +15,7 @@ import { preloadSceneJsChunks } from '@/components/3d/sceneChunks/sceneChunkRegi
 import { resolveNpcModelUrl } from '@/config/npcModelRegistry';
 import { getPropModelDefinition } from '@/config/propModelRegistry';
 import { getScenePropDressingIds } from '@/config/scenePropDressing';
+import { getSceneInteriorAssetIds } from '@/config/sceneInteriorAssets';
 import { extendGltfLoader } from '@/engine/assets/gltfPipeline';
 
 const FPS_ARMS_URL = '/models/fps/fps_arms.glb';
@@ -22,13 +23,18 @@ const extendLoader = extendGltfLoader as unknown as NonNullable<Parameters<typeo
 
 /** GLB assets warmed per scene — extend as interior props migrate off procedural meshes. */
 const SCENE_GLTF_ASSETS: Partial<Record<SceneId, readonly string[]>> = {
-  cafe_evening: ['env_cafe_props'],
+  cafe_evening: ['env_cafe_props', 'interior_cafe'],
   park_day: ['veg_tree_pine'],
-  volodka_room: ['player_volodka'],
-  volodka_corridor: [],
-  office_day: [],
-  abandoned_factory: [],
-  factory_basement: [],
+  volodka_room: ['player_volodka', 'interior_room_bedroom'],
+  volodka_corridor: ['interior_corridor'],
+  office_day: ['interior_office'],
+  library_day: ['interior_library'],
+  abandoned_factory: ['interior_factory'],
+  factory_basement: ['interior_basement'],
+  rooftop_edge: ['interior_rooftop'],
+  river_pier: ['interior_pier'],
+  chk_forest_zorge: ['interior_forest_clearing'],
+  street_night: [],
 };
 
 /** Kenney prop ids used per scene — derived from scenePropDressing placements. */

@@ -38,7 +38,29 @@ export const SCENE_PROP_DRESSING: Partial<Record<SceneId, readonly ScenePropPlac
   ],
   cafe_evening: [
     { propModelId: 'kenney_desk', position: [-3.5, 0, -2.0], rotationY: Math.PI / 2 },
+    { propModelId: 'kenney_city_coffee_machine', position: [2.5, 0, -1.2], rotationY: -Math.PI / 2 },
+    { propModelId: 'kenney_city_table_small', position: [-2.0, 0, 1.5] },
+    { propModelId: 'kenney_city_chair', position: [-2.0, 0, 2.3], rotationY: Math.PI },
+    { propModelId: 'kenney_city_bottle', position: [-1.85, 0.55, 1.55] },
     { propModelId: 'ai3dgen_poetic_compiler', position: [-4.0, 0.55, -3.5] },
+  ],
+  street_night: [
+    { propModelId: 'kenney_city_bench', position: [-4.5, 0, 2.0], rotationY: Math.PI / 2 },
+    { propModelId: 'kenney_city_lamp_post', position: [-6.0, 0, -1.5] },
+    { propModelId: 'kenney_city_lamp_post', position: [5.5, 0, 3.0], rotationY: Math.PI / 4 },
+  ],
+  rooftop_edge: [
+    { propModelId: 'kenney_city_guitar', position: [-1.2, 0.05, -2.0], rotationY: 0.6 },
+  ],
+  river_pier: [
+    { propModelId: 'kenney_city_bench', position: [3.0, 0, -1.0], rotationY: -Math.PI / 3 },
+    { propModelId: 'kenney_city_guitar', position: [-2.5, 0.05, 0.5], rotationY: -0.4 },
+    { propModelId: 'kenney_city_bottle', position: [3.2, 0.45, -0.8] },
+  ],
+  chk_forest_zorge: [
+    { propModelId: 'kenney_city_campfire', position: [0, 0, -2.0] },
+    { propModelId: 'kenney_city_bench', position: [2.5, 0, -1.5], rotationY: -Math.PI / 2 },
+    { propModelId: 'kenney_city_guitar', position: [-2.0, 0.05, -1.0], rotationY: 0.3 },
   ],
   zarema_albert_room: [
     { propModelId: 'kenney_bed', position: [-1.5, 0, 1.5] },
