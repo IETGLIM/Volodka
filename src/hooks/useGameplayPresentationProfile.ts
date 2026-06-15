@@ -1,5 +1,5 @@
 import { useSyncExternalStore } from 'react';
-import { eventBus } from '@/engine/EventBus';
+import { eventBus, type EventBusUnsubscribe } from '@/engine/EventBus';
 import { useGameStore } from '@/store/gameStore';
 import { getGamePhase } from '@/shared/gamePhase';
 import { isSceneTransitionInProgress } from '@/engine/core/SceneTransitionManager';
@@ -15,15 +15,38 @@ export type GameplayPresentationProfile =
   | 'encounter'
   | 'transition';
 
+const listeners = new Set<() => void>();
+let sceneEnterUnsub: EventBusUnsubscribe | null = null;
+let sceneLoadedUnsub: EventBusUnsubscribe | null = null;
+
+function notifyListeners(): void {
+  for (const listener of listeners) listener();
+}
+
+function attachSceneBusListeners(): void {
+  if (sceneEnterUnsub) return;
+  sceneEnterUnsub = eventBus.on('scene:enter', notifyListeners);
+  sceneLoadedUnsub = eventBus.on('scene:loaded', notifyListeners);
+}
+
+function detachSceneBusListeners(): void {
+  sceneEnterUnsub?.();
+  sceneEnterUnsub = null;
+  sceneLoadedUnsub?.();
+  sceneLoadedUnsub = null;
+}
+
 function subscribe(onStoreChange: () => void): () => void {
   const unsubs = [
     useGameStore.subscribe(onStoreChange),
     subscribeEncounterPresentation(onStoreChange),
-    eventBus.on('scene:enter', onStoreChange),
-    eventBus.on('scene:loaded', onStoreChange),
   ];
+  listeners.add(onStoreChange);
+  if (listeners.size === 1) attachSceneBusListeners();
   return () => {
     unsubs.forEach((unsub) => unsub());
+    listeners.delete(onStoreChange);
+    if (listeners.size === 0) detachSceneBusListeners();
   };
 }
 
