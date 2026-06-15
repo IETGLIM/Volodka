@@ -262,48 +262,9 @@ export const STORY_NODES_ACT4: Record<string, StoryNode> = {
 
   /* ═══════════════════════════════════════════════════════════════════
      ТИХИЙ ЧАС — необязательные контемплятивные сцены перед штурмом.
-     Вход: act4_infiltration_prep → act4_quiet_hour. Каждая сцена ставит
-     флаг quiet_* — концовки-зеркала акта 5/7 читают их в отражениях.
+     Вход: act4_infiltration_prep → act4_quiet_hour (hub in act4QuietHour.ts).
+     Каждая сцена ставит флаг quiet_* — концовки-зеркала акта 5/7 читают их.
      ═══════════════════════════════════════════════════════════════════ */
-
-  act4_quiet_hour: {
-    id: 'act4_quiet_hour',
-    text: 'Час. Шестьдесят минут, которые гильдия ещё не отняла. План лежит на ящике из-под микрочипов, исчерченный стрелками, и больше в него смотреть незачем. Снаружи гудит город — неон, серверы, чужие окна. Ты вдруг понимаешь простую вещь: завтра может не быть. А сегодня ещё есть люди, голоса, строки. Один тихий час — на то, что нельзя взять с собой в башню.',
-    contextNote: 'Тихий час перед штурмом. План на ящике, город гудит за стеной.',
-    ambientSound: 'sounds/ambient/underground_hum.ogg',
-    speaker: 'narrator',
-    sceneId: 'abandoned_factory',
-    guidanceHint: 'Потрать час на близких — или вернись к плану.',
-    guidanceObjectiveType: 'make_choice',
-    choices: [
-      {
-        text: 'Подняться на крышу — Дмитрий курит там один',
-        next: 'act4_quiet_rooftop_dmitry',
-        condition: { flag: 'dmitry_defected' },
-      },
-      {
-        text: 'Зайти к Зареме — последний чай перед бурей',
-        next: 'act4_quiet_tea_zarema',
-        condition: { flag: 'zarema_rescued' },
-      },
-      {
-        text: 'Прочитать сообщение от Альберта',
-        next: 'act4_quiet_albert_message',
-      },
-      {
-        text: 'Постоять у окна в опенспейсе — в последний раз',
-        next: 'act4_quiet_openspace_window',
-      },
-      {
-        text: 'Перечитать первый стих — с которого всё началось',
-        next: 'act4_quiet_first_poem',
-      },
-      {
-        text: 'Час истёк. Вернуться к плану.',
-        next: 'act4_infiltration_prep',
-      },
-    ],
-  },
 
   act4_quiet_rooftop_dmitry: {
     id: 'act4_quiet_rooftop_dmitry',
