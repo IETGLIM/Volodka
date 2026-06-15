@@ -75,7 +75,65 @@ export function formatTransitionProgressLabel(sceneName: string, isComplete: boo
   return isComplete ? `✓ Загрузка: ${sceneName}` : `Загрузка: ${sceneName}`;
 }
 
-export function formatInteractionHintAria(label: string, key: string, description?: string): string {
-  const base = `${label}, клавиша ${key}`;
+export const GAMEPAD_INTERACT_BUTTON = 'A';
+
+export type InteractionInputMode = 'keyboard' | 'gamepad' | 'touch';
+
+export interface InteractionHintInputOptions {
+  gamepadConnected?: boolean;
+  touchDevice?: boolean;
+}
+
+export function resolveInteractionInputMode(
+  options: InteractionHintInputOptions,
+): InteractionInputMode {
+  if (options.touchDevice) return 'touch';
+  if (options.gamepadConnected) return 'gamepad';
+  return 'keyboard';
+}
+
+/** Keyboard key, gamepad face button, or touch sentinel for hint badges. */
+export function formatInteractionHintKey(
+  keyboardKey: string,
+  options: InteractionHintInputOptions,
+): string {
+  const mode = resolveInteractionInputMode(options);
+  switch (mode) {
+    case 'touch':
+      return 'touch';
+    case 'gamepad':
+      return GAMEPAD_INTERACT_BUTTON;
+    case 'keyboard':
+      return keyboardKey;
+    default: {
+      const _exhaustive: never = mode;
+      return _exhaustive;
+    }
+  }
+}
+
+export function formatInteractionHintBadge(
+  keyboardKey: string,
+  options: InteractionHintInputOptions,
+): string {
+  const key = formatInteractionHintKey(keyboardKey, options);
+  if (key === 'touch') return '';
+  return `[${key}]`;
+}
+
+export function formatInteractionHintAria(
+  label: string,
+  key: string,
+  description?: string,
+  options?: InteractionHintInputOptions,
+): string {
+  const mode = options ? resolveInteractionInputMode(options) : 'keyboard';
+  const binding =
+    mode === 'gamepad'
+      ? `кнопка ${GAMEPAD_INTERACT_BUTTON}`
+      : mode === 'touch'
+        ? 'коснитесь экрана'
+        : `клавиша ${key}`;
+  const base = `${label}, ${binding}`;
   return description ? `${base}. ${description}` : base;
 }

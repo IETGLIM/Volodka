@@ -1,4 +1,13 @@
 # Changelog — ВОЛОДЬКА RPG
+## v4.2.17 — 16 июня 2026
+
+### Accessibility AAA (gamepad hints, reduced-motion bob, weather caps)
+- **Gamepad hints**: `formatInteractionHintKey` / `useGamepadConnected` — interaction popup shows `[A]` when a controller is connected; touch still shows tap icon.
+- **FirstPlayTutorial**: controls step switches to stick/LB/A layout when gamepad is detected.
+- **FPS arms bob**: `FirstPersonHands` disables head-bob under effective reduced motion (matches exploration camera scale).
+- **Weather particle caps**: `getParticleCount` accepts `reducedMotion` — rain, snow, dust, embers, steam, and exploration particles scale to 35% when reduced motion is on.
+- **Tests**: `explorationUxPresentation`, `mobileParticleScale`.
+
 ## v4.2.16 — 16 июня 2026
 
 ### UX handoff polish (v4.2.14 follow-up)

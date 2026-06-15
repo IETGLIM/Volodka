@@ -9,6 +9,7 @@ import { useRef, useMemo, useEffect } from 'react';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import * as THREE from 'three';
 import { useIsMobileVisual, useMobileVisualPerf } from '@/hooks/use-mobile';
+import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 import { getParticleCount } from '@/shared/utils/mobileParticleScale';
 import { useGlobalWeatherControls } from '@/store/selectors';
 import { eventBus } from '@/engine/EventBus';
@@ -68,10 +69,11 @@ function buildSnowConfig(
   isMobile: boolean,
   visualLite: boolean,
   effectsScale: number,
+  reducedMotion: boolean,
 ): SnowConfig {
   return {
     ...SNOW_BASE[level],
-    count: getParticleCount(DESKTOP_COUNTS[level], isMobile, visualLite, effectsScale),
+    count: getParticleCount(DESKTOP_COUNTS[level], isMobile, visualLite, effectsScale, reducedMotion),
   };
 }
 
@@ -130,6 +132,7 @@ export function SnowSystem({ intensity = 1 }: { intensity?: number }) {
   const { weatherEnabled, rainIntensity } = useGlobalWeatherControls();
   const isMobile = useIsMobileVisual();
   const { visualLite, effectsScale } = useMobileVisualPerf();
+  const reducedMotion = useEffectiveReducedMotion();
 
   const configLevel = useMemo(() => {
     const effective = intensity * rainIntensity;
@@ -139,8 +142,8 @@ export function SnowSystem({ intensity = 1 }: { intensity?: number }) {
   }, [intensity, rainIntensity]);
 
   const config = useMemo(
-    () => buildSnowConfig(configLevel, isMobile, visualLite, effectsScale),
-    [configLevel, isMobile, visualLite, effectsScale],
+    () => buildSnowConfig(configLevel, isMobile, visualLite, effectsScale, reducedMotion),
+    [configLevel, isMobile, visualLite, effectsScale, reducedMotion],
   );
 
   if (!weatherEnabled) return null;

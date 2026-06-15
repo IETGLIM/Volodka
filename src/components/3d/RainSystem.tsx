@@ -11,6 +11,7 @@ import * as THREE from 'three';
 import { useGlobalWeatherControls } from '@/store/selectors';
 import { eventBus } from '@/engine/EventBus';
 import { useIsMobileVisual, useMobileVisualPerf } from '@/hooks/use-mobile';
+import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 import { getParticleCount } from '@/shared/utils/mobileParticleScale';
 
 /** Rain configuration */
@@ -74,14 +75,16 @@ const MOBILE_COUNTS: Record<RainLevel, number> = {
 const MAX_SPLASHES_BASE = 300;
 const SPLASH_LIFETIME = 0.4;
 
-function buildRainConfig(level: RainLevel, isMobile: boolean, visualLite: boolean): RainConfig {
+function buildRainConfig(
+  level: RainLevel,
+  isMobile: boolean,
+  visualLite: boolean,
+  reducedMotion: boolean,
+): RainConfig {
   const desktop = DESKTOP_COUNTS[level];
   const mobile = MOBILE_COUNTS[level];
-  const count = visualLite
-    ? getParticleCount(isMobile ? mobile : desktop, false, true)
-    : isMobile
-      ? mobile
-      : desktop;
+  const base = isMobile ? mobile : desktop;
+  const count = getParticleCount(base, isMobile, visualLite, 1, reducedMotion);
 
   return {
     ...RAIN_BASE[level],
@@ -172,6 +175,7 @@ export function RainSystem({ intensity = 1 }: { intensity?: number }) {
   const { weatherEnabled: rainEnabled, rainIntensity } = useGlobalWeatherControls();
   const isMobile = useIsMobileVisual();
   const { visualLite, effectsScale } = useMobileVisualPerf();
+  const reducedMotion = useEffectiveReducedMotion();
 
   const configLevel = useMemo(() => {
     const effectiveIntensity = intensity * rainIntensity;
@@ -181,13 +185,13 @@ export function RainSystem({ intensity = 1 }: { intensity?: number }) {
   }, [intensity, rainIntensity]);
 
   const config = useMemo(
-    () => buildRainConfig(configLevel, isMobile, visualLite),
-    [configLevel, isMobile, visualLite],
+    () => buildRainConfig(configLevel, isMobile, visualLite, reducedMotion),
+    [configLevel, isMobile, visualLite, reducedMotion],
   );
 
   const maxSplashes = useMemo(
-    () => getParticleCount(MAX_SPLASHES_BASE, isMobile, visualLite, effectsScale),
-    [isMobile, visualLite, effectsScale],
+    () => getParticleCount(MAX_SPLASHES_BASE, isMobile, visualLite, effectsScale, reducedMotion),
+    [isMobile, visualLite, effectsScale, reducedMotion],
   );
 
   if (!rainEnabled) return null;

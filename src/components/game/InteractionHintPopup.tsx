@@ -6,6 +6,7 @@
 
 import { useState, useEffect } from 'react';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
+import { useGamepadConnected } from '@/hooks/useGamepadConnected';
 import {
   isExplorationHudProfile,
   useGameplayPresentationProfile,
@@ -18,6 +19,7 @@ import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { bottomInteractPromptPx } from '@/shared/constants/hudLayout';
 import {
   formatInteractionHintAria,
+  formatInteractionHintKey,
   getInteractionHintVisual,
   type InteractionHintType,
 } from '@/engine/exploration/explorationUxPresentation';
@@ -74,6 +76,7 @@ export function InteractionHintPopup() {
   const explorationHudActive = isExplorationHudProfile(profile);
   const reducedMotion = useEffectiveReducedMotion();
   const isTouchDevice = useTouchDevice();
+  const gamepadConnected = useGamepadConnected();
   const [hint, setHint] = useState<InteractionHint | null>(null);
   const [isVisible, setIsVisible] = useState(false);
 
@@ -110,6 +113,11 @@ export function InteractionHintPopup() {
 
   /* ── Get accent style for current hint type ── */
   const accent = hint ? getInteractionHintVisual(hint.type) : getInteractionHintVisual('npc');
+  const hintInputOptions = { gamepadConnected, touchDevice: isTouchDevice };
+  const hintKey = hint
+    ? formatInteractionHintKey(hint.key, hintInputOptions)
+    : 'E';
+  const showTouchHint = hintKey === 'touch';
 
   return (
     <AnimatePresence>
@@ -125,7 +133,7 @@ export function InteractionHintPopup() {
           data-testid="interaction-hint"
           role="status"
           aria-live="polite"
-          aria-label={formatInteractionHintAria(hint.label, hint.key, hint.description)}
+          aria-label={hint ? formatInteractionHintAria(hint.label, hint.key, hint.description, hintInputOptions) : undefined}
           style={{ zIndex: UI_LAYERS.HUD, bottom: bottomInteractPromptPx() }}
         >
           <div
@@ -189,7 +197,7 @@ export function InteractionHintPopup() {
                   animation: reducedMotion ? undefined : 'hint-key-pulse 2s ease-in-out infinite',
                 }}
               >
-                {isTouchDevice ? <Hand size={16} /> : `[${hint.key}]`}
+                {showTouchHint ? <Hand size={16} /> : `[${hintKey}]`}
               </div>
 
               {/* Text content */}

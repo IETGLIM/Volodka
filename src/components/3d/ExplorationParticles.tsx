@@ -8,6 +8,9 @@ import { useFrameTick } from '@/engine/frame/useFrameTick';
 import * as THREE from 'three';
 import { useGameStore } from '@/store/gameStore';
 import { seededRand } from '@/shared/utils/seededRand';
+import { useIsMobileVisual, useMobileVisualPerf } from '@/hooks/use-mobile';
+import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
+import { getParticleCount } from '@/shared/utils/mobileParticleScale';
 
 /** Particle type per scene */
 type ParticleType = 'rain' | 'snow' | 'dust' | 'embers' | 'fireflies' | 'sparks';
@@ -101,6 +104,9 @@ const PARTICLE_CONFIGS: Record<ParticleType, ParticleConfig> = {
 /** Weather particles: rain, snow, dust, embers, fireflies based on sceneId */
 export function ExplorationParticles() {
   const sceneId = useGameStore((s) => s.exploration.currentSceneId);
+  const isMobile = useIsMobileVisual();
+  const { visualLite, effectsScale } = useMobileVisualPerf();
+  const reducedMotion = useEffectiveReducedMotion();
 
   const particleType = useMemo<ParticleType | null>(() => {
     return SCENE_PARTICLES[sceneId] ?? null;
@@ -108,16 +114,43 @@ export function ExplorationParticles() {
 
   if (!particleType) return null;
 
-  return <ParticleSystem type={particleType} />;
+  return (
+    <ParticleSystem
+      type={particleType}
+      isMobile={isMobile}
+      visualLite={visualLite}
+      effectsScale={effectsScale}
+      reducedMotion={reducedMotion}
+    />
+  );
 }
 
 /** AAA Particle system with pre-computed positions and per-type behavior */
-function ParticleSystem({ type }: { type: ParticleType }) {
+function ParticleSystem({
+  type,
+  isMobile,
+  visualLite,
+  effectsScale,
+  reducedMotion,
+}: {
+  type: ParticleType;
+  isMobile: boolean;
+  visualLite: boolean;
+  effectsScale: number;
+  reducedMotion: boolean;
+}) {
   const pointsRef = useRef<THREE.Points>(null);
   const materialRef = useRef<THREE.PointsMaterial>(null);
   const timeRef = useRef(0);
 
-  const config = PARTICLE_CONFIGS[type];
+  const baseConfig = PARTICLE_CONFIGS[type];
+  const config = useMemo(
+    () => ({
+      ...baseConfig,
+      count: getParticleCount(baseConfig.count, isMobile, visualLite, effectsScale, reducedMotion),
+    }),
+    [baseConfig, isMobile, visualLite, effectsScale, reducedMotion],
+  );
 
   // Pre-computed particle data (no Math.random in useFrame)
   const { positions, phases, sizes, initialVelocities } = useMemo(() => {

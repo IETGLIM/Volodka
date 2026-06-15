@@ -11,6 +11,7 @@ import { useGameStore } from '@/store/gameStore';
 import { readGamePhase } from '@/shared/gamePhase';
 import { usePlayerPresentationState } from '@/store/selectors';
 import { shouldUseFirstPersonHands } from '@/engine/camera/cinematicPresentation';
+import { isEffectiveReducedMotion } from '@/engine/accessibility/accessibilitySettings';
 import { eventBus } from '@/engine/EventBus';
 import { FpsFingerEnhancement } from './fpsFingerEnhancement';
 import { extendGltfLoader } from '@/engine/assets/gltfPipeline';
@@ -98,7 +99,11 @@ function FirstPersonHandsInner({ moveBlendRef }: FirstPersonHandsProps) {
     rig.quaternion.copy(state.camera.quaternion);
 
     const move = THREE.MathUtils.clamp(moveBlendRef?.current ?? 0, 0, 1) * (1 - combatGuardRef.current * 0.85);
-    bobPhaseRef.current += delta * (2 + move * 8);
+    const reducedMotion = isEffectiveReducedMotion();
+    const moveBob = reducedMotion ? 0 : move;
+    if (!reducedMotion) {
+      bobPhaseRef.current += delta * (2 + moveBob * 8);
+    }
 
     if (combatLungeRef.current > 0) {
       combatLungeRef.current = Math.max(0, combatLungeRef.current - delta * 5.5);
@@ -117,12 +122,12 @@ function FirstPersonHandsInner({ moveBlendRef }: FirstPersonHandsProps) {
     const guard = combatGuardRef.current;
     const bob = bobPhaseRef.current;
     mount.position.set(
-      Math.sin(bob * 0.55) * 0.012 * move * (1 - guard * 0.8),
-      -0.16 + Math.sin(bob) * 0.014 * move * (1 - guard * 0.8) + lunge * 0.04 - guard * 0.03,
+      Math.sin(bob * 0.55) * 0.012 * moveBob * (1 - guard * 0.8),
+      -0.16 + Math.sin(bob) * 0.014 * moveBob * (1 - guard * 0.8) + lunge * 0.04 - guard * 0.03,
       -0.28 + lunge * 0.14 - guard * 0.06,
     );
     mount.rotation.set(
-      0.06 + Math.sin(bob * 0.4) * 0.02 * move * (1 - guard) - lunge * 0.35 - guard * 0.22,
+      0.06 + Math.sin(bob * 0.4) * 0.02 * moveBob * (1 - guard) - lunge * 0.35 - guard * 0.22,
       lunge * 0.08,
       guard * 0.04,
     );

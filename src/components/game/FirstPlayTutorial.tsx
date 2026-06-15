@@ -12,6 +12,7 @@ import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { completeTutorial } from '@/store/actions/tutorialActions';
 import { useTutorialFlags, useTutorialReady } from '@/store/selectors';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
+import { useGamepadConnected } from '@/hooks/useGamepadConnected';
 import {
   isExplorationHudProfile,
   useGameplayPresentationProfile,
@@ -129,6 +130,67 @@ function ShortcutRow({ keys, label }: { keys: React.ReactNode; label: string }) 
   );
 }
 
+/* ── Movement + input tutorial (keyboard / gamepad) ── */
+function ControlsTutorialContent() {
+  const gamepadConnected = useGamepadConnected();
+
+  return (
+    <div className="space-y-3">
+      {gamepadConnected ? (
+        <>
+          <div className="flex items-center gap-3">
+            <KeyCap wide>Левый стик</KeyCap>
+            <span className="text-sm text-slate-300/80">Движение</span>
+          </div>
+          <div className="flex items-center gap-3">
+            <KeyCap wide>LB</KeyCap>
+            <span className="text-sm text-slate-300/80">Бег</span>
+          </div>
+          <div className="flex items-center gap-3">
+            <KeyCap>A</KeyCap>
+            <span className="text-sm text-slate-300/80">Взаимодействие</span>
+          </div>
+          <div className="flex items-center gap-3">
+            <KeyCap wide>Правый стик</KeyCap>
+            <span className="text-sm text-slate-300/80">Камера</span>
+          </div>
+        </>
+      ) : (
+        <>
+          <div className="flex items-center gap-4">
+            <WASDLayout />
+            <span className="text-sm text-slate-300/80">Движение</span>
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="flex gap-1">
+              <KeyCap wide>⇧ Shift</KeyCap>
+            </div>
+            <span className="text-sm text-slate-300/80">Бег</span>
+          </div>
+          <div className="flex items-center gap-3">
+            <KeyCap>E</KeyCap>
+            <span className="text-sm text-slate-300/80">Взаимодействие</span>
+          </div>
+          <div className="flex items-center gap-3">
+            <span
+              className="inline-flex items-center justify-center w-8 h-8 rounded text-xs font-mono"
+              style={{
+                background: 'rgba(15, 23, 42, 0.7)',
+                border: '1px solid rgb(var(--cyber-cyan-rgb) / 0.25)',
+                color: 'rgb(var(--cyber-cyan-rgb) / 0.9)',
+                textShadow: '0 0 8px rgb(var(--cyber-cyan-rgb) / 0.5)',
+              }}
+            >
+              🖱
+            </span>
+            <span className="text-sm text-slate-300/80">Камера</span>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
 /* ── Tutorial step data ── */
 interface TutorialStep {
   icon: React.ReactNode;
@@ -160,38 +222,7 @@ const STEPS: TutorialStep[] = [
   {
     icon: <Gamepad2 className="size-6 text-cyan-400" style={{ filter: 'drop-shadow(0 0 6px rgba(0,229,255,0.5))' }} />,
     title: 'Управление',
-    content: (
-      <div className="space-y-3">
-        <div className="flex items-center gap-4">
-          <WASDLayout />
-          <span className="text-sm text-slate-300/80">Движение</span>
-        </div>
-        <div className="flex items-center gap-3">
-          <div className="flex gap-1">
-            <KeyCap wide>⇧ Shift</KeyCap>
-          </div>
-          <span className="text-sm text-slate-300/80">Бег</span>
-        </div>
-        <div className="flex items-center gap-3">
-          <KeyCap>E</KeyCap>
-          <span className="text-sm text-slate-300/80">Взаимодействие</span>
-        </div>
-        <div className="flex items-center gap-3">
-          <span
-            className="inline-flex items-center justify-center w-8 h-8 rounded text-xs font-mono"
-            style={{
-              background: 'rgba(15, 23, 42, 0.7)',
-              border: '1px solid rgb(var(--cyber-cyan-rgb) / 0.25)',
-              color: 'rgb(var(--cyber-cyan-rgb) / 0.9)',
-              textShadow: '0 0 8px rgb(var(--cyber-cyan-rgb) / 0.5)',
-            }}
-          >
-            🖱
-          </span>
-          <span className="text-sm text-slate-300/80">Камера</span>
-        </div>
-      </div>
-    ),
+    content: <ControlsTutorialContent />,
     buttonLabel: 'Понятно',
   },
 

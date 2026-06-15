@@ -19,6 +19,9 @@ export const MOBILE_FOG_PLANE_MAX = 3;
 /** Max volumetric fog planes when visualLite is active */
 export const VISUAL_LITE_FOG_PLANE_MAX = 2;
 
+/** Particle count multiplier when reduced motion is effective (OS or in-game). */
+export const REDUCED_MOTION_PARTICLE_MULTIPLIER = 0.35;
+
 function particleMultiplier(isMobile: boolean, visualLite?: boolean): number {
   if (!isMobile && !visualLite) return 1;
   return visualLite ? VISUAL_LITE_PARTICLE_MULTIPLIER : MOBILE_PARTICLE_MULTIPLIER;
@@ -30,8 +33,12 @@ export function getParticleCount(
   isMobile: boolean,
   visualLite?: boolean,
   effectsScale = 1,
+  reducedMotion = false,
 ): number {
-  const scaled = base * particleMultiplier(isMobile, visualLite) * effectsScale;
+  let scaled = base * particleMultiplier(isMobile, visualLite) * effectsScale;
+  if (reducedMotion) {
+    scaled *= REDUCED_MOTION_PARTICLE_MULTIPLIER;
+  }
   return Math.max(1, Math.round(scaled));
 }
 

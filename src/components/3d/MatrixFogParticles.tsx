@@ -8,6 +8,7 @@ import { useRef, useMemo, useEffect } from 'react';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import * as THREE from 'three';
 import { useIsMobileVisual, useMobileVisualPerf } from '@/hooks/use-mobile';
+import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 import { getParticleCount } from '@/shared/utils/mobileParticleScale';
 
 const BASE_PARTICLE_COUNT = 200;
@@ -16,9 +17,10 @@ const BOX_SIZE: [number, number, number] = [12, 8, 12];
 export function MatrixFogParticles() {
   const isMobile = useIsMobileVisual();
   const { visualLite, effectsScale } = useMobileVisualPerf();
+  const reducedMotion = useEffectiveReducedMotion();
   const particleCount = useMemo(
-    () => getParticleCount(BASE_PARTICLE_COUNT, isMobile, visualLite, effectsScale),
-    [isMobile, visualLite, effectsScale],
+    () => getParticleCount(BASE_PARTICLE_COUNT, isMobile, visualLite, effectsScale, reducedMotion),
+    [isMobile, visualLite, effectsScale, reducedMotion],
   );
 
   const pointsRef = useRef<THREE.Points>(null);

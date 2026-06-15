@@ -10,6 +10,7 @@ import { useRef, useMemo, useEffect } from 'react';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import * as THREE from 'three';
 import { useIsMobileVisual, useMobileVisualPerf } from '@/hooks/use-mobile';
+import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 import { getParticleCount } from '@/shared/utils/mobileParticleScale';
 
 // ═══════════════════════════════════════════════════
@@ -48,14 +49,15 @@ export function DustMotes({ sceneId }: { sceneId: string }) {
   const baseConfig = DUST_CONFIGS[sceneId];
   const isMobile = useIsMobileVisual();
   const { visualLite, effectsScale } = useMobileVisualPerf();
+  const reducedMotion = useEffectiveReducedMotion();
 
   const config = useMemo(() => {
     if (!baseConfig) return null;
     return {
       ...baseConfig,
-      count: getParticleCount(baseConfig.count, isMobile, visualLite, effectsScale),
+      count: getParticleCount(baseConfig.count, isMobile, visualLite, effectsScale, reducedMotion),
     };
-  }, [baseConfig, isMobile, visualLite, effectsScale]);
+  }, [baseConfig, isMobile, visualLite, effectsScale, reducedMotion]);
 
   if (!config) return null;
   return <DustSystem config={config} />;
@@ -181,14 +183,15 @@ export function EmberParticles({ sceneId }: { sceneId: string }) {
   const baseConfig = EMBER_CONFIGS[sceneId];
   const isMobile = useIsMobileVisual();
   const { visualLite, effectsScale } = useMobileVisualPerf();
+  const reducedMotion = useEffectiveReducedMotion();
 
   const config = useMemo(() => {
     if (!baseConfig) return null;
     return {
       ...baseConfig,
-      count: getParticleCount(baseConfig.count, isMobile, visualLite, effectsScale),
+      count: getParticleCount(baseConfig.count, isMobile, visualLite, effectsScale, reducedMotion),
     };
-  }, [baseConfig, isMobile, visualLite, effectsScale]);
+  }, [baseConfig, isMobile, visualLite, effectsScale, reducedMotion]);
 
   if (!config) return null;
   return <EmberSystem config={config} />;
