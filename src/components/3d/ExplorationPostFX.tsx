@@ -8,7 +8,7 @@
  *  PERF: SSAO + DoF removed (~40% GPU savings). Bloom + Vignette are sufficient.
  */
 
-import { useState, useEffect, useLayoutEffect, useRef, type ComponentProps } from 'react';
+import { useState, useEffect, useLayoutEffect, useRef, useMemo, type ComponentProps } from 'react';
 import { useThree } from '@react-three/fiber';
 import {
   EffectComposer,
@@ -18,6 +18,7 @@ import {
   BrightnessContrast,
   ToneMapping,
   N8AO,
+  LUT,
 } from '@react-three/postprocessing';
 import { BlendFunction, KernelSize, ToneMappingMode } from 'postprocessing';
 import type { EffectComposer as EffectComposerImpl } from 'postprocessing';
@@ -28,18 +29,22 @@ import { useVisualSettings } from '@/hooks/useVisualSettings';
 import { SCENE_VISIBILITY } from '@/shared/constants/sceneVisibility';
 import { resolveSceneRenderingPipeline } from '@/engine/graphics/resolveSceneRenderingPipeline';
 import { disposeEffectComposer, type PostprocessingComposerLike } from '@/engine/three/disposeThreeResources';
+import {
+  getCachedProceduralLut3DTexture,
+  resolveProceduralLutKind,
+} from '@/engine/graphics/proceduralLutTextures';
 
 /** Per-scene color grading overrides for CyberPunk2077 / Noir / Gothic feel */
 const SCENE_COLOR_GRADE: Record<string, { hue: number; saturation: number; brightness: number; contrast: number }> = {
   volodka_room:       { hue: -0.06, saturation: 0.12, brightness: 0.04, contrast: 0.22 }, // matrix monitor glow
   volodka_corridor:   { hue: -0.04, saturation: -0.12, brightness: 0.02, contrast: 0.16 }, // dim rainy noir
-  home_evening:       { hue: 0.04,  saturation: 0.1,  brightness: 0.0,  contrast: 0.1  }, // warm amber
+  home_evening:       { hue: 0.05,  saturation: 0.14, brightness: 0.02, contrast: 0.14 }, // warm amber mood
   street_night:       { hue: 0.08,  saturation: 0.22, brightness: 0.05, contrast: 0.30 }, // synthwave neon rain
   street_winter:      { hue: -0.02, saturation: -0.12, brightness: 0.12, contrast: 0.08  },
   cafe_evening:       { hue: 0.06,  saturation: 0.20, brightness: 0.02, contrast: 0.22 }, // hazy blue-neon café
-  office_day:         { hue: -0.01, saturation: -0.15, brightness: 0.03, contrast: 0.05 }, // sterile
+  office_day:         { hue: -0.02, saturation: -0.12, brightness: 0.04, contrast: 0.08 }, // sterile overcast
   park_day:           { hue: -0.02, saturation: 0.02, brightness: 0.06, contrast: 0.14 }, // gothic haze
-  library_day:        { hue: 0.02,  saturation: -0.03, brightness: 0.04, contrast: 0.08 },
+  library_day:        { hue: 0.03,  saturation: 0.06, brightness: 0.02, contrast: 0.12 }, // dusty amber reading light
   battle:             { hue: 0.08,  saturation: 0.2,  brightness: -0.05, contrast: 0.3  }, // intense combat
   sleep_dream:        { hue: 0.18,  saturation: 0.48, brightness: 0.06, contrast: 0.18 }, // galaxy dream grade
   rooftop_edge:       { hue: 0.07,  saturation: 0.20, brightness: 0.06, contrast: 0.22 }, // galaxy sunset noir
@@ -80,12 +85,12 @@ const DEFAULT_VIGNETTE = { offset: 0.4, darkness: 0.32 };
 const SCENE_BLOOM: Record<string, { intensity: number; threshold: number; smoothing: number }> = {
   volodka_room:       { intensity: 0.68, threshold: 0.52, smoothing: 0.45 }, // monitor glow bloom
   volodka_corridor:   { intensity: 0.35, threshold: 0.72, smoothing: 0.55 }, // dim corridor haze
-  home_evening:       { intensity: 0.4,  threshold: 0.7,  smoothing: 0.5 },  // warm
+  home_evening:       { intensity: 0.48, threshold: 0.66, smoothing: 0.48 },  // warm lamp bloom
   street_night:       { intensity: 0.68, threshold: 0.50, smoothing: 0.44 }, // wet neon reflections
   cafe_evening:       { intensity: 0.70, threshold: 0.45, smoothing: 0.41 }, // blue neon bar glow
-  office_day:         { intensity: 0.2,  threshold: 0.85, smoothing: 0.6 },  // sterile
+  office_day:         { intensity: 0.28, threshold: 0.82, smoothing: 0.58 }, // fluorescent spill
   park_day:           { intensity: 0.42, threshold: 0.74, smoothing: 0.52 },
-  library_day:        { intensity: 0.2,  threshold: 0.85, smoothing: 0.6 },  // quiet
+  library_day:        { intensity: 0.32, threshold: 0.78, smoothing: 0.55 },  // banker-lamp glow
   battle:             { intensity: 0.8,  threshold: 0.5,  smoothing: 0.4 },  // intense combat flash
   sleep_dream:        { intensity: 0.58, threshold: 0.52, smoothing: 0.44 }, // galaxy ethereal glow
   rooftop_edge:       { intensity: 0.58, threshold: 0.54, smoothing: 0.46 }, // galaxy sunset bloom
@@ -350,6 +355,11 @@ function PostFXPipeline() {
   );
 
   const pipelineKey = `${sceneId}-${rendering.useLitePostFx ? 'lite' : rendering.useAmbientOcclusion ? 'ao' : 'full'}`;
+  const lutKind = resolveProceduralLutKind(sceneId);
+  const proceduralLut = useMemo(
+    () => (lutKind ? getCachedProceduralLut3DTexture(lutKind) : null),
+    [lutKind],
+  );
 
   if (rendering.useLitePostFx) {
     return (
@@ -414,6 +424,11 @@ function PostFXPipeline() {
         contrast={effectiveContrast}
         blendFunction={BlendFunction.NORMAL}
       />
+      {proceduralLut ? (
+        <LUT lut={proceduralLut} tetrahedralInterpolation blendFunction={BlendFunction.NORMAL} />
+      ) : (
+        <></>
+      )}
       <ToneMapping
         mode={ToneMappingMode.ACES_FILMIC}
         exposure={SCENE_VISIBILITY.toneExposure}

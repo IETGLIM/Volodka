@@ -30,4 +30,10 @@ describe('sceneVisualProfiles', () => {
   it('boosts park haze bloom on hero tier', () => {
     expect(getSceneVisualProfile('park_day').bloomIntensityScale).toBe(1.06);
   });
+
+  it('boosts interior mood bloom for home, library, office', () => {
+    expect(getSceneVisualProfile('home_evening').bloomIntensityScale).toBe(1.08);
+    expect(getSceneVisualProfile('library_day').bloomIntensityScale).toBe(1.05);
+    expect(getSceneVisualProfile('office_day').bloomIntensityScale).toBe(1.04);
+  });
 });

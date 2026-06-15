@@ -5,12 +5,17 @@ import * as THREE from 'three';
 import { useEnvironmentLod } from './lod/EnvironmentLodProvider';
 import { EnvironmentDetail } from './lod/PropDistanceGate';
 import { useCachedCanvasTexture } from '@/hooks/useCachedCanvasTexture';
+import { createLibraryDayWarmSkyTexture } from '@/engine/graphics/proceduralSkyTextures';
 import { LibraryDayInterior } from './sceneChunks/libraryDay';
 
 /** Gothic/AuthorMaterial library (16×14m) */
 export function LibraryDayVisual() {
   const floorTexture = useCachedCanvasTexture('library_day:floor', createLibraryFloorTexture);
   const wallTexture = useCachedCanvasTexture('library_day:wall', createLibraryWallTexture);
+  const ceilingWashTexture = useCachedCanvasTexture(
+    'library_day:warm-ceiling',
+    createLibraryDayWarmSkyTexture,
+  );
   const { lod } = useEnvironmentLod();
 
   const W = 16;
@@ -33,10 +38,16 @@ export function LibraryDayVisual() {
         />
       </mesh>
 
-      {/* ── Ceiling ── */}
+      {/* ── Ceiling — dusty amber reading-light wash ── */}
       <mesh position={[0, H, 0]} rotation-x={Math.PI / 2}>
         <planeGeometry args={[W, D]} />
-        <meshStandardMaterial color="#3a2a18" roughness={0.95} />
+        <meshStandardMaterial
+          map={ceilingWashTexture}
+          color="#4a3820"
+          emissive="#6a5030"
+          emissiveIntensity={0.28}
+          roughness={0.95}
+        />
       </mesh>
 
       {/* ── Walls ── */}

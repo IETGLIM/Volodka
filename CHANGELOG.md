@@ -1,4 +1,14 @@
 # Changelog — ВОЛОДЬКА RPG
+## v4.2.15 — 16 июня 2026
+
+### AAA graphics P2 (daytime interiors + procedural LUT)
+- **ExplorationPostFX**: procedural 16³ LUT pass (`LUT3DEffect`) for neon scenes (`street_night`, `cafe_evening`, `sleep_dream`) and interior moods (`home_evening`, `library_day`, `office_day`).
+- **office_day ceiling**: cold overcast HDR wash (`createOfficeDayOvercastSkyTexture`) — sterile fluorescent ambience.
+- **library_day ceiling**: dusty amber reading-light dome (`createLibraryDayWarmSkyTexture`) — gothic archive mood.
+- **home_evening ceiling**: warm amber wash with city-blue window spill (`createHomeEveningWarmSkyTexture`).
+- **Visual profiles**: bloom scale boosts for `home_evening` (1.08), `library_day` (1.05), `office_day` (1.04); tuned color grade + bloom thresholds.
+- **Tests**: `proceduralLutTextures`, expanded sky texture + scene profile assertions.
+
 ## v4.2.14 — 16 июня 2026
 
 ### AAA graphics + UX polish

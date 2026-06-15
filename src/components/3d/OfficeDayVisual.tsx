@@ -8,6 +8,7 @@ import { getEnvironmentLodProfile } from '@/engine/lod/distanceLod';
 import { useEnvironmentLod } from './lod/EnvironmentLodProvider';
 import { EnvironmentDetail, SceneClutterGate } from './lod/PropDistanceGate';
 import { useCachedCanvasTexture } from '@/hooks/useCachedCanvasTexture';
+import { createOfficeDayOvercastSkyTexture } from '@/engine/graphics/proceduralSkyTextures';
 import {
   getSharedBoxGeometry,
   getSharedPlaneGeometry,
@@ -21,6 +22,10 @@ interface OfficeDayVisualProps {
 export function OfficeDayVisual({ livePlayerPositionRef }: OfficeDayVisualProps) {
   const floorTexture = useCachedCanvasTexture('office_day:floor', createOfficeFloorTexture);
   const wallTexture = useCachedCanvasTexture('office_day:wall', createOfficeWallTexture);
+  const ceilingWashTexture = useCachedCanvasTexture(
+    'office_day:overcast-ceiling',
+    createOfficeDayOvercastSkyTexture,
+  );
   const { lod } = useEnvironmentLod();
   const envProfile = useMemo(() => getEnvironmentLodProfile('office_day'), []);
 
@@ -79,9 +84,15 @@ export function OfficeDayVisual({ livePlayerPositionRef }: OfficeDayVisualProps)
         />
       </mesh>
 
-      {/* ── Ceiling ── */}
+      {/* ── Ceiling — procedural overcast HDR wash ── */}
       <mesh position={[0, H, 0]} rotation-x={Math.PI / 2} geometry={getSharedPlaneGeometry(W, D)}>
-        <meshStandardMaterial color="#e0e8f0" roughness={0.9} />
+        <meshStandardMaterial
+          map={ceilingWashTexture}
+          color="#c8d4e0"
+          emissive="#a0b8d0"
+          emissiveIntensity={0.22}
+          roughness={0.95}
+        />
       </mesh>
 
       {/* ── Walls ── */}

@@ -11,6 +11,7 @@ import { Radiator, Plant, Picture } from './lazyInteriorModels';
 import { useEnvironmentLod } from './lod/EnvironmentLodProvider';
 import { EnvironmentDetail } from './lod/PropDistanceGate';
 import { useCachedCanvasTexture } from '@/hooks/useCachedCanvasTexture';
+import { createHomeEveningWarmSkyTexture } from '@/engine/graphics/proceduralSkyTextures';
 import { HomeEveningProps } from './sceneChunks/homeEvening';
 
 /** Home evening room (14×14m) – kitchen, living area, bedroom area */
@@ -106,6 +107,10 @@ registerModuleGeometries([geo_pln_1, geo_pln_2, geo_box_3, geo_box_4, geo_box_5,
 export function HomeEveningVisual() {
   const floorTexture = useCachedCanvasTexture('home_evening:floor', createHomeFloorTexture);
   const wallTexture = useCachedCanvasTexture('home_evening:wall', createHomeWallTexture);
+  const ceilingWashTexture = useCachedCanvasTexture(
+    'home_evening:warm-ceiling',
+    createHomeEveningWarmSkyTexture,
+  );
   const { lod } = useEnvironmentLod();
 
   const W = 14;
@@ -180,10 +185,15 @@ export function HomeEveningVisual() {
         <meshStandardMaterial map={floorTexture} color="#6a5840" roughness={0.85} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
       </mesh>
 
-      {/* ── Ceiling ── */}
+      {/* ── Ceiling — warm amber HDR wash with city-blue spill ── */}
       <mesh position={[0, H, 0]} rotation-x={Math.PI / 2} geometry={geo_pln_1}>
-
-        <meshStandardMaterial color="#3a3535" roughness={0.95} />
+        <meshStandardMaterial
+          map={ceilingWashTexture}
+          color="#382818"
+          emissive="#503820"
+          emissiveIntensity={0.32}
+          roughness={0.95}
+        />
       </mesh>
 
       {/* ── Walls ── */}

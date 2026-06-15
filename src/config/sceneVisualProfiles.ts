@@ -58,16 +58,16 @@ const STANDARD_PROFILE: SceneVisualProfile = {
 const PROFILES: Partial<Record<SceneId, SceneVisualProfile>> = {
   volodka_room: { ...HERO_PROFILE, enhancedAmbientOcclusion: false },
   volodka_corridor: { ...HERO_PROFILE, enhancedAmbientOcclusion: false },
-  home_evening: { ...HERO_PROFILE, enhancedAmbientOcclusion: false },
+  home_evening: { ...HERO_PROFILE, enhancedAmbientOcclusion: false, bloomIntensityScale: 1.08 },
   street_night: {
     ...HERO_PROFILE,
     enhancedAmbientOcclusion: true,
     bloomIntensityScale: 1.18,
   },
   cafe_evening: { ...HERO_PROFILE, enhancedAmbientOcclusion: false, bloomIntensityScale: 1.15 },
-  office_day: { ...HERO_PROFILE, enhancedAmbientOcclusion: false },
+  office_day: { ...HERO_PROFILE, enhancedAmbientOcclusion: false, bloomIntensityScale: 1.04 },
   park_day: { ...HERO_PROFILE, enhancedAmbientOcclusion: false, bloomIntensityScale: 1.06 },
-  library_day: { ...HERO_PROFILE, enhancedAmbientOcclusion: false },
+  library_day: { ...HERO_PROFILE, enhancedAmbientOcclusion: false, bloomIntensityScale: 1.05 },
   rooftop_edge: {
     ...STANDARD_PROFILE,
     forceFullPostFx: true,

@@ -4,6 +4,9 @@ import {
   createCafeEveningNeonSkyTexture,
   createDreamGalaxySkyTexture,
   createDreamGalaxyStarGeometry,
+  createHomeEveningWarmSkyTexture,
+  createLibraryDayWarmSkyTexture,
+  createOfficeDayOvercastSkyTexture,
   createParkHazySkyTexture,
   createRooftopHorizonStarGeometry,
   createRooftopSunsetGalaxySkyTexture,
@@ -70,6 +73,27 @@ describe('proceduralSkyTextures', () => {
     const tex = createCafeEveningNeonSkyTexture();
     expect(tex.image).toBeInstanceOf(HTMLCanvasElement);
     expect(tex.wrapT).toBe(THREE.ClampToEdgeWrapping);
+    tex.dispose();
+  });
+
+  it('creates office day overcast ceiling wash with clamp wrapping', () => {
+    const tex = createOfficeDayOvercastSkyTexture();
+    expect(tex.image).toBeInstanceOf(HTMLCanvasElement);
+    expect(tex.wrapS).toBe(THREE.ClampToEdgeWrapping);
+    tex.dispose();
+  });
+
+  it('creates library day warm ceiling wash with clamp wrapping', () => {
+    const tex = createLibraryDayWarmSkyTexture();
+    expect(tex.image).toBeInstanceOf(HTMLCanvasElement);
+    expect(tex.wrapT).toBe(THREE.ClampToEdgeWrapping);
+    tex.dispose();
+  });
+
+  it('creates home evening warm ceiling wash with clamp wrapping', () => {
+    const tex = createHomeEveningWarmSkyTexture();
+    expect(tex.image).toBeInstanceOf(HTMLCanvasElement);
+    expect(tex.wrapS).toBe(THREE.ClampToEdgeWrapping);
     tex.dispose();
   });
 });

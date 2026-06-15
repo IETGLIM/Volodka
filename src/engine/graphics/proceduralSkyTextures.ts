@@ -221,6 +221,119 @@ export function createCafeEveningNeonSkyTexture(): THREE.CanvasTexture {
   return tex;
 }
 
+/** Sterile overcast wash for office_day ceiling — cold fluorescent haze. */
+export function createOfficeDayOvercastSkyTexture(): THREE.CanvasTexture {
+  const w = 64;
+  const h = 256;
+  const canvas = document.createElement('canvas');
+  canvas.width = w;
+  canvas.height = h;
+  const ctx = canvas.getContext('2d')!;
+
+  const grad = ctx.createLinearGradient(0, 0, 0, h);
+  grad.addColorStop(0.0, '#8898a8'); // cool zenith
+  grad.addColorStop(0.3, '#a0b0c0'); // overcast mid
+  grad.addColorStop(0.55, '#b8c4d0'); // flat cloud bank
+  grad.addColorStop(0.78, '#c8d4e0'); // window spill
+  grad.addColorStop(1.0, '#d8e4f0'); // floor bounce
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, w, h);
+
+  for (let i = 0; i < 4; i++) {
+    const cx = seededRand(i * 27 + 9101) * w;
+    const cy = 20 + seededRand(i * 43 + 9101) * (h * 0.55);
+    const radius = 14 + seededRand(i * 61 + 9101) * 28;
+    const haze = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius);
+    haze.addColorStop(0, 'rgba(200, 220, 240, 0.22)');
+    haze.addColorStop(1, 'rgba(140, 160, 180, 0)');
+    ctx.fillStyle = haze;
+    ctx.fillRect(0, 0, w, h);
+  }
+
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.wrapS = THREE.ClampToEdgeWrapping;
+  tex.wrapT = THREE.ClampToEdgeWrapping;
+  return tex;
+}
+
+/** Dusty amber-green dome for library_day — gothic reading light through high windows. */
+export function createLibraryDayWarmSkyTexture(): THREE.CanvasTexture {
+  const w = 64;
+  const h = 256;
+  const canvas = document.createElement('canvas');
+  canvas.width = w;
+  canvas.height = h;
+  const ctx = canvas.getContext('2d')!;
+
+  const grad = ctx.createLinearGradient(0, 0, 0, h);
+  grad.addColorStop(0.0, '#1a1408'); // dark rafters
+  grad.addColorStop(0.28, '#2a2010'); // aged wood shadow
+  grad.addColorStop(0.52, '#4a3820'); // dusty mid
+  grad.addColorStop(0.72, '#6a5030'); // warm shaft light
+  grad.addColorStop(0.88, '#8a6840'); // amber spill
+  grad.addColorStop(1.0, '#3a2818'); // floor blend
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, w, h);
+
+  for (let i = 0; i < 5; i++) {
+    const cx = seededRand(i * 33 + 7203) * w;
+    const cy = 16 + seededRand(i * 47 + 7203) * (h * 0.5);
+    const radius = 12 + seededRand(i * 59 + 7203) * 24;
+    const dust = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius);
+    dust.addColorStop(0, 'rgba(180, 140, 70, 0.2)');
+    dust.addColorStop(1, 'rgba(40, 28, 12, 0)');
+    ctx.fillStyle = dust;
+    ctx.fillRect(0, 0, w, h);
+  }
+
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.wrapS = THREE.ClampToEdgeWrapping;
+  tex.wrapT = THREE.ClampToEdgeWrapping;
+  return tex;
+}
+
+/** Warm amber ceiling wash for home_evening — cozy kitchen/living mood with city-blue spill. */
+export function createHomeEveningWarmSkyTexture(): THREE.CanvasTexture {
+  const w = 64;
+  const h = 256;
+  const canvas = document.createElement('canvas');
+  canvas.width = w;
+  canvas.height = h;
+  const ctx = canvas.getContext('2d')!;
+
+  const grad = ctx.createLinearGradient(0, 0, 0, h);
+  grad.addColorStop(0.0, '#120c06'); // dark ceiling void
+  grad.addColorStop(0.22, '#201408'); // warm shadow
+  grad.addColorStop(0.45, '#382818'); // amber mid
+  grad.addColorStop(0.65, '#503820'); // lamp spill
+  grad.addColorStop(0.82, '#302848'); // city-blue window leak
+  grad.addColorStop(1.0, '#181018'); // floor blend
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, w, h);
+
+  for (let i = 0; i < 4; i++) {
+    const cx = seededRand(i * 29 + 8305) * w;
+    const cy = 24 + seededRand(i * 41 + 8305) * (h * 0.42);
+    const radius = 14 + seededRand(i * 67 + 8305) * 22;
+    const glow = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius);
+    const warm = seededRand(i * 79 + 8305) < 0.65;
+    if (warm) {
+      glow.addColorStop(0, 'rgba(255, 180, 80, 0.18)');
+      glow.addColorStop(1, 'rgba(32, 16, 8, 0)');
+    } else {
+      glow.addColorStop(0, 'rgba(40, 60, 140, 0.12)');
+      glow.addColorStop(1, 'rgba(12, 8, 24, 0)');
+    }
+    ctx.fillStyle = glow;
+    ctx.fillRect(0, 0, w, h);
+  }
+
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.wrapS = THREE.ClampToEdgeWrapping;
+  tex.wrapT = THREE.ClampToEdgeWrapping;
+  return tex;
+}
+
 /** Upper-hemisphere starfield for sleep_dream — fog-exempt, slow-rotatable. */
 export function createDreamGalaxyStarGeometry(starCount = 220): THREE.BufferGeometry {
   const positions = new Float32Array(starCount * 3);
