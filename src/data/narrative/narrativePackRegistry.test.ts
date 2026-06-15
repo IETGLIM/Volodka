@@ -36,6 +36,14 @@ describe('narrativePackRegistry', () => {
     expect(getLoadedStoryPackIds()).toContain('act2');
   });
 
+  it('loads act1 satellite nodes on demand via ensureStoryNode', async () => {
+    await loadBootstrapNarrativePacks();
+    await ensureStoryNode('solnysh_door');
+
+    expect(hasStoryNode('solnysh_door')).toBe(true);
+    expect(getLoadedStoryPackIds()).toContain('act1');
+  });
+
   it('loads dialogue parts on demand', async () => {
     await loadBootstrapNarrativePacks();
     await ensureDialogueNode('albert_greeting');

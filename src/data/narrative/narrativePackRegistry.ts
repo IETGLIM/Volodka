@@ -7,6 +7,19 @@ import type { DialogueNode, StoryNode } from '@/shared/types/game';
 import { devWarn } from '@/shared/utils/devLog';
 
 export type StoryPackId = 'act1' | 'act2' | 'act3' | 'act4' | 'act5' | 'act6' | 'act7' | 'chk';
+
+/** Satellite story files merged in buildStoryNodes but not act-sized — loaded with parent acts or on demand. */
+export type StorySatellitePackId =
+  | 'act1Extended'
+  | 'act1CafeOffice'
+  | 'solnysh'
+  | 'act4QuietHour'
+  | 'chkExtended'
+  | 'pier'
+  | 'library'
+  | 'factory'
+  | 'resistance'
+  | 'epilogue';
 export type DialoguePackId =
   | 'part1'
   | 'part2'
@@ -56,6 +69,41 @@ const storyLoaders: Record<StoryPackId, () => Promise<Record<string, StoryNode>>
   chk: () => import('../chkTolpa/storyNodes').then((m) => m.CHK_STORY_NODES),
 };
 
+const storySatelliteLoaders: Record<
+  StorySatellitePackId,
+  () => Promise<Record<string, StoryNode>>
+> = {
+  act1Extended: () => import('../story/act1Extended').then((m) => m.STORY_NODES_ACT1_EXTENDED),
+  act1CafeOffice: () =>
+    import('../story/act1ExtendedCafeOffice').then((m) => m.STORY_NODES_ACT1_CAFE_OFFICE),
+  solnysh: () => import('../story/solnyshStory').then((m) => m.STORY_NODES_SOLNYSH),
+  act4QuietHour: () =>
+    import('../story/act4QuietHour').then((m) => m.STORY_NODES_ACT4_QUIET_HOUR),
+  chkExtended: () =>
+    import('../chkTolpa/storyNodesExtended').then((m) => m.CHK_STORY_NODES_EXTENDED),
+  pier: () => import('../story/pierStory').then((m) => m.STORY_NODES_PIER),
+  library: () => import('../story/libraryStory').then((m) => m.STORY_NODES_LIBRARY),
+  factory: () => import('../story/factoryStory').then((m) => m.STORY_NODES_FACTORY),
+  resistance: () => import('../story/resistanceStory').then((m) => m.STORY_NODES_RESISTANCE),
+  epilogue: () => import('../story/epilogueStory').then((m) => m.STORY_NODES_EPILOGUE),
+};
+
+/** Satellites loaded automatically when their parent act pack loads. */
+const ACT_STORY_SATELLITES: Partial<Record<StoryPackId, readonly StorySatellitePackId[]>> = {
+  act1: ['act1Extended', 'act1CafeOffice', 'solnysh'],
+  act4: ['act4QuietHour'],
+  chk: ['chkExtended'],
+};
+
+/** Side-story satellites loaded on demand after main acts when resolving a node id. */
+export const STANDALONE_STORY_SATELLITE_ORDER: readonly StorySatellitePackId[] = [
+  'pier',
+  'library',
+  'factory',
+  'resistance',
+  'epilogue',
+] as const;
+
 const dialogueLoaders: Record<DialoguePackId, () => Promise<Record<string, DialogueNode>>> = {
   part1: () => import('../dialogue/part1-albert').then((m) => m.DIALOGUE_PART1),
   part2: () => import('../dialogue/part2-npcs').then((m) => m.DIALOGUE_PART2),
@@ -71,8 +119,10 @@ const storyNodes: Record<string, StoryNode> = {};
 const dialogueNodes: Record<string, DialogueNode> = {};
 
 const loadedStoryPacks = new Set<StoryPackId>();
+const loadedStorySatellitePacks = new Set<StorySatellitePackId>();
 const loadedDialoguePacks = new Set<DialoguePackId>();
 const loadingStoryPacks = new Map<StoryPackId, Promise<void>>();
+const loadingStorySatellitePacks = new Map<StorySatellitePackId, Promise<void>>();
 const loadingDialoguePacks = new Map<DialoguePackId, Promise<void>>();
 
 const packChangeListeners = new Set<PackChangeListener>();
@@ -125,6 +175,10 @@ export function getLoadedStoryPackIds(): readonly StoryPackId[] {
   return [...loadedStoryPacks];
 }
 
+export function getLoadedStorySatellitePackIds(): readonly StorySatellitePackId[] {
+  return [...loadedStorySatellitePacks];
+}
+
 export function getLoadedDialoguePackIds(): readonly DialoguePackId[] {
   return [...loadedDialoguePacks];
 }
@@ -146,16 +200,43 @@ export function hasDialogueNode(nodeId: string): boolean {
   return nodeId in dialogueNodes;
 }
 
+async function loadStorySatellitePackInternal(id: StorySatellitePackId): Promise<void> {
+  if (loadedStorySatellitePacks.has(id)) return;
+
+  let pending = loadingStorySatellitePacks.get(id);
+  if (!pending) {
+    pending = storySatelliteLoaders[id]()
+      .then((nodes) => {
+        mergeNodesIntoCache(storyNodes, nodes, id, 'story');
+        loadedStorySatellitePacks.add(id);
+        notifyPackChange();
+      })
+      .finally(() => {
+        loadingStorySatellitePacks.delete(id);
+      });
+    loadingStorySatellitePacks.set(id, pending);
+  }
+
+  await pending;
+}
+
+async function loadActStorySatellites(actId: StoryPackId): Promise<void> {
+  const satellites = ACT_STORY_SATELLITES[actId];
+  if (!satellites?.length) return;
+  await Promise.all(satellites.map(loadStorySatellitePackInternal));
+}
+
 async function loadStoryPackInternal(id: StoryPackId): Promise<void> {
   if (loadedStoryPacks.has(id)) return;
 
   let pending = loadingStoryPacks.get(id);
   if (!pending) {
     pending = storyLoaders[id]()
-      .then((nodes) => {
+      .then(async (nodes) => {
         mergeNodesIntoCache(storyNodes, nodes, id, 'story');
         loadedStoryPacks.add(id);
         notifyPackChange();
+        await loadActStorySatellites(id);
       })
       .finally(() => {
         loadingStoryPacks.delete(id);
@@ -164,6 +245,10 @@ async function loadStoryPackInternal(id: StoryPackId): Promise<void> {
   }
 
   await pending;
+}
+
+async function loadAllStorySatellitePacksInternal(): Promise<void> {
+  await Promise.all(STANDALONE_STORY_SATELLITE_ORDER.map(loadStorySatellitePackInternal));
 }
 
 async function loadDialoguePackInternal(id: DialoguePackId): Promise<void> {
@@ -211,6 +296,7 @@ export async function loadAllNarrativePacks(): Promise<void> {
     ...STORY_PACK_ORDER.map(loadStoryPackInternal),
     ...DIALOGUE_PACK_ORDER.map(loadDialoguePackInternal),
     loadSceneExploreHubsInternal(),
+    loadAllStorySatellitePacksInternal(),
   ]);
 }
 
@@ -224,6 +310,11 @@ export async function ensureStoryNode(nodeId: string): Promise<void> {
 
   await loadSceneExploreHubsInternal();
   if (hasStoryNode(nodeId)) return;
+
+  for (const satellite of STANDALONE_STORY_SATELLITE_ORDER) {
+    await loadStorySatellitePackInternal(satellite);
+    if (hasStoryNode(nodeId)) return;
+  }
 
   throw new Error(`[narrativePackRegistry] Story node "${nodeId}" not found`);
 }
@@ -255,6 +346,10 @@ export async function ensureNarrativeNodeIds(nodeIds: readonly string[]): Promis
       for (const pack of DIALOGUE_PACK_ORDER) {
         await loadDialoguePackInternal(pack);
         if (hasDialogueNode(nodeId)) return;
+      }
+      for (const satellite of STANDALONE_STORY_SATELLITE_ORDER) {
+        await loadStorySatellitePackInternal(satellite);
+        if (hasStoryNode(nodeId)) return;
       }
     }),
   );
@@ -306,8 +401,10 @@ export function resetNarrativePackRegistryForTests(): void {
   for (const key of Object.keys(storyNodes)) delete storyNodes[key];
   for (const key of Object.keys(dialogueNodes)) delete dialogueNodes[key];
   loadedStoryPacks.clear();
+  loadedStorySatellitePacks.clear();
   loadedDialoguePacks.clear();
   loadingStoryPacks.clear();
+  loadingStorySatellitePacks.clear();
   loadingDialoguePacks.clear();
   sceneExploreHubsLoaded = false;
 }

@@ -25,6 +25,19 @@ import {
 export { isSceneTransitionInProgress, resetSceneTransitionGuard };
 
 let unsubDeferredCombatStart: (() => void) | null = null;
+let unsubTransitionGuardComplete: (() => void) | null = null;
+
+/** Clear re-entrance guard after scene:loaded or failed transition (async pipeline tail). */
+export function bindSceneTransitionGuardListeners(): void {
+  unsubTransitionGuardComplete?.();
+  const clearGuard = () => setSceneTransitionInProgress(false);
+  const unsubLoaded = eventBus.on('scene:loaded', clearGuard);
+  const unsubFailed = eventBus.on('scene:transition_failed', clearGuard);
+  unsubTransitionGuardComplete = () => {
+    unsubLoaded();
+    unsubFailed();
+  };
+}
 
 /** (Re)bind scene:loaded → deferred combat flush after EventBus dispose/revive. */
 export function bindDeferredCombatStartListener(): void {
@@ -35,6 +48,7 @@ export function bindDeferredCombatStartListener(): void {
 }
 
 ensureSceneLoadedBridge();
+bindSceneTransitionGuardListeners();
 bindDeferredCombatStartListener();
 
 export interface SceneTransitionPayload {
@@ -94,7 +108,8 @@ export function performSceneTransition(payload: SceneTransitionPayload): void {
       sceneId: targetScene,
       fromSceneId,
     });
-  } finally {
+  } catch (error) {
     setSceneTransitionInProgress(false);
+    throw error;
   }
 }

@@ -44,7 +44,7 @@ import {
 } from '@/engine/core/GlobalCleanupService';
 import { getGameSnapshot } from '@/engine/GameActionDispatcher';
 import { bindPoemResetListener } from '@/engine/PoemPowerSystem';
-import { bindDeferredCombatStartListener } from '@/engine/core/SceneTransitionManager';
+import { bindDeferredCombatStartListener, bindSceneTransitionGuardListeners } from '@/engine/core/SceneTransitionManager';
 import { bindSceneLoadedBridge } from '@/engine/core/sceneLoadedGate';
 import {
   disposeTransitionDirector,
@@ -120,6 +120,7 @@ export function reviveGameEngine(): void {
   reviveFrameVisibility();
   reviveEventBus();
   bindSceneLoadedBridge();
+  bindSceneTransitionGuardListeners();
   bindDeferredCombatStartListener();
   bindPoemResetListener();
 

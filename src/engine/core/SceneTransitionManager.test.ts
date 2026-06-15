@@ -3,6 +3,7 @@ import { eventBus } from '@/engine/EventBus';
 import {
   performSceneTransition,
   resetSceneTransitionGuard,
+  isSceneTransitionInProgress,
 } from './SceneTransitionManager';
 import { registerGlobalCleanup, resetGlobalCleanupRegistry } from './GlobalCleanupService';
 import { resetSceneLoadedGate } from './sceneLoadedGate';
@@ -91,6 +92,17 @@ describe('SceneTransitionManager', () => {
     await flushSceneLoaded();
     expect(order).toEqual(['transition_start', 'enter', 'loaded']);
     resetGlobalCleanupRegistry();
+  });
+
+  it('keeps re-entrance guard set until scene:loaded', async () => {
+    performSceneTransition({
+      targetScene: 'cafe_evening',
+      spawnAt: [1, 0, 2],
+    });
+
+    expect(isSceneTransitionInProgress()).toBe(true);
+    await flushSceneLoaded();
+    expect(isSceneTransitionInProgress()).toBe(false);
   });
 
   it('drops re-entrant performSceneTransition from unload listeners', () => {

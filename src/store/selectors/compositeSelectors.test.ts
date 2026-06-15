@@ -28,6 +28,7 @@ function makeState(): GameStoreState {
       skills: { writing: 1, hacking: 1, intuition: 1, charisma: 1 },
       flags: { quiet_tea_zarema: true },
       progression: { currentAct: 1, level: 1, xp: 0, xpToNextLevel: 100 },
+      inventory: [],
     },
     npcRelations: [],
     exploration: { timeOfDay: 12 },

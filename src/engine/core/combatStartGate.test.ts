@@ -9,6 +9,7 @@ import {
 import {
   performSceneTransition,
   resetSceneTransitionGuard,
+  isSceneTransitionInProgress,
 } from './SceneTransitionManager';
 import { resetGlobalCleanupRegistry } from './GlobalCleanupService';
 import { resetSceneLoadedGate } from './sceneLoadedGate';
@@ -75,6 +76,25 @@ describe('combatStartGate', () => {
     expect(order).toEqual(['enter', 'loaded', 'combat']);
     expect(executor).toHaveBeenCalledTimes(1);
     expect(executor).toHaveBeenCalledWith('system_daemon', undefined);
+  });
+
+  it('defers combat in the async gap after performSceneTransition returns', async () => {
+    const order: string[] = [];
+    const executor = vi.fn(() => order.push('combat'));
+
+    registerCombatStartExecutor(executor);
+
+    performSceneTransition({
+      targetScene: 'battle',
+      spawnAt: [0, 0, 0],
+    });
+
+    expect(isSceneTransitionInProgress()).toBe(true);
+    expect(deferCombatStartIfTransitionBusy('system_daemon')).toBe(true);
+
+    await flushSceneLoaded();
+    expect(order).toEqual(['combat']);
+    expect(isSceneTransitionInProgress()).toBe(false);
   });
 
   it('drops deferred combat when scene changed before flush', () => {

@@ -26,7 +26,9 @@ describe('resolveNpcBarkForRelation', () => {
 
   it('selects band by relation value', () => {
     expect(resolveNpcBarkForRelation(texts, 20)).toBe('hostile');
+    vi.spyOn(Math, 'random').mockReturnValue(0);
     expect(resolveNpcBarkForRelation(texts, 50)).toBe('neutral-a');
+    vi.restoreAllMocks();
     expect(resolveNpcBarkForRelation(texts, 80)).toBe('friendly');
   });
 });

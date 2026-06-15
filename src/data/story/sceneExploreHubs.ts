@@ -39,6 +39,10 @@ const GOLDEN_PATH_HUB_CONTINUE: Partial<
     next: 'sleep_dream_entrance',
     text: 'Запомнить стихотворение из сна',
   },
+  zarema_room_explore_mode: {
+    next: 'zarema_bank_discovery',
+    text: 'Зафиксировать следы и начать расследование',
+  },
   zarema_room_solo_explore_mode: {
     next: 'act4_quiet_zarema_room',
     text: 'Заглянуть к Зареме',
