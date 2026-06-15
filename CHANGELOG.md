@@ -1,5 +1,14 @@
 # Changelog — ВОЛОДЬКА RPG
 
+## v4.2.4 — 15 июня 2026
+
+### AAA polish pass (presentation profile)
+- **Gameplay presentation profile**: helpers `isMotionFxProfile` / `shouldMountSceneTransitionFx` — level-up bursts, floating damage, and transition chrome hide during encounter beats and scene wipes (cleaner cinematic stack).
+- **OrchestratorGameplaySections**: motion FX and scene-transition layers gated on profile instead of raw `mode`.
+- **Exploration HUD**: `StoryGuidanceHUD`, `InteractionHintPopup`, `FirstPlayTutorial`, `AmbientAtmosphereCaption` use `isExplorationHudProfile` — no objective strip or E-hint over encounter/transition beats.
+- **Guidance regression**: `goldenPathGuidance.test.ts` — every spine step must resolve to hint, NPC, or scene label (AAA onboarding for non-gamers).
+- **Regression tests**: `useGameplayPresentationProfile.test.tsx`, `useSceneEnterEffect.test.tsx` — guard EventBus singleton hooks after production leak fix.
+
 ## v4.2.3 — 15 июня 2026
 
 ### AAA polish pass

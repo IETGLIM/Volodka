@@ -9,7 +9,7 @@ import { eventBus } from '@/engine/EventBus';
 import { getCurrentGuidance, type GuidanceInfo } from '@/engine/GuidedStoryManager';
 import { buildGuidanceDirectionHint } from '@/engine/guidedStory/guidanceLocation';
 import { getNextTrackedObjective, areDependenciesMet, getQuestMarker } from '@/store/questStore';
-import { useQuests, useGameMode, useCurrentSceneId } from '@/store/selectors';
+import { useQuests, useCurrentSceneId } from '@/store/selectors';
 import { useInteractionOverlay } from '@/store/selectors';
 import { QUEST_DEFINITIONS } from '@/data/quests';
 import { GOLDEN_PATH_QUEST_SPINE } from '@/data/goldenPath';
@@ -20,6 +20,10 @@ import {
 } from '@/shared/constants/hudLayout';
 import { isInteractionLocked } from '@/engine/interaction/interactionSession';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
+import {
+  isExplorationHudProfile,
+  useGameplayPresentationProfile,
+} from '@/hooks/useGameplayPresentationProfile';
 import {
   computeObjectiveProgressPercent,
   formatQuestObjectiveProgress,
@@ -46,7 +50,7 @@ export function StoryGuidanceHUD() {
   });
 
   const quests = useQuests();
-  const mode = useGameMode();
+  const profile = useGameplayPresentationProfile();
   const currentSceneId = useCurrentSceneId();
   const { showStoryOverlay } = useInteractionOverlay();
   const [interactionLocked, setInteractionLocked] = useState(() => isInteractionLocked());
@@ -209,7 +213,7 @@ export function StoryGuidanceHUD() {
     openQuestJournal(currentObjective?.questId);
   }, [currentObjective?.questId, openQuestJournal]);
   const shouldShow =
-    mode === 'exploration'
+    isExplorationHudProfile(profile)
     && !showStoryOverlay
     && !interactionLocked
     && Boolean(displayText);

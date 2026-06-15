@@ -10,8 +10,12 @@ import { useState, useCallback, useEffect, useLayoutEffect, useRef } from 'react
 import { motion, AnimatePresence } from 'framer-motion';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { completeTutorial } from '@/store/actions/tutorialActions';
-import { useGamePhase, useTutorialFlags, useTutorialReady } from '@/store/selectors';
+import { useTutorialFlags, useTutorialReady } from '@/store/selectors';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
+import {
+  isExplorationHudProfile,
+  useGameplayPresentationProfile,
+} from '@/hooks/useGameplayPresentationProfile';
 import {
   Gamepad2,
   ScrollText,
@@ -311,7 +315,7 @@ const stepVariants = {
 /* ── Main component ── */
 export function FirstPlayTutorial() {
   const reducedMotion = useEffectiveReducedMotion();
-  const mode = useGamePhase();
+  const profile = useGameplayPresentationProfile();
   const tutorialFlags = useTutorialFlags();
   const tutorialReady = useTutorialReady();
 
@@ -330,7 +334,7 @@ export function FirstPlayTutorial() {
 
   const shouldShow =
     !dismissed &&
-    mode === 'exploration' &&
+    isExplorationHudProfile(profile) &&
     !tutorialFlags.tutorialsDisabled &&
     !tutorialFlags.tutorialsCompleted &&
     tutorialReady;

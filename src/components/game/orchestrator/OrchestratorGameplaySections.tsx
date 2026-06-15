@@ -4,6 +4,8 @@ import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 import {
   isExplorationHudProfile,
+  isMotionFxProfile,
+  shouldMountSceneTransitionFx,
   useGameplayPresentationProfile,
 } from '@/hooks/useGameplayPresentationProfile';
 import { useCinematicNarrativePresentation } from '@/hooks/useCinematicNarrativePresentation';
@@ -153,10 +155,10 @@ export const GameplayEventNotifications = memo(function GameplayEventNotificatio
   );
 });
 
-/** Level-up full-screen effects — exploration and combat only. */
+/** Level-up full-screen effects — exploration and combat only (not encounter/transition beats). */
 export const GameplayLevelUpEffects = memo(function GameplayLevelUpEffects() {
-  const { mode } = useOrchestratorShell();
-  if (mode !== 'exploration' && mode !== 'combat') return null;
+  const profile = useGameplayPresentationProfile();
+  if (!isMotionFxProfile(profile)) return null;
 
   return (
     <>
@@ -170,8 +172,8 @@ export const GameplayLevelUpEffects = memo(function GameplayLevelUpEffects() {
 
 /** Floating combat/exploration numbers and edge flashes. */
 export const GameplayCombatVisualFx = memo(function GameplayCombatVisualFx() {
-  const { mode } = useOrchestratorShell();
-  if (mode !== 'exploration' && mode !== 'combat') return null;
+  const profile = useGameplayPresentationProfile();
+  if (!isMotionFxProfile(profile)) return null;
 
   return (
     <>
@@ -209,8 +211,8 @@ export const GameplayCutsceneOverlay = memo(function GameplayCutsceneOverlay() {
 
 /** Scene transition progress bar and wipe overlay. */
 export const GameplaySceneTransitionFx = memo(function GameplaySceneTransitionFx() {
-  const { mode } = useOrchestratorShell();
-  if (mode !== 'exploration' && mode !== 'cutscene') return null;
+  const profile = useGameplayPresentationProfile();
+  if (!shouldMountSceneTransitionFx(profile)) return null;
 
   return (
     <>

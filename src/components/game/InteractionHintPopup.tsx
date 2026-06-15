@@ -6,10 +6,13 @@
 
 import { useState, useEffect } from 'react';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
+import {
+  isExplorationHudProfile,
+  useGameplayPresentationProfile,
+} from '@/hooks/useGameplayPresentationProfile';
 import { useTouchDevice } from '@/hooks/useTouchDevice';
 import { motion, AnimatePresence } from 'framer-motion';
 import { User, Package, DoorOpen, Sparkles, Hand } from 'lucide-react';
-import { useGamePhase } from '@/store/selectors';
 import { eventBus } from '@/engine/EventBus';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { bottomInteractPromptPx } from '@/shared/constants/hudLayout';
@@ -67,7 +70,8 @@ function CornerBrackets({ accentColor }: { accentColor: string }) {
 
 /* ── Main component ── */
 export function InteractionHintPopup() {
-  const mode = useGamePhase();
+  const profile = useGameplayPresentationProfile();
+  const explorationHudActive = isExplorationHudProfile(profile);
   const reducedMotion = useEffectiveReducedMotion();
   const isTouchDevice = useTouchDevice();
   const [hint, setHint] = useState<InteractionHint | null>(null);
@@ -96,15 +100,13 @@ export function InteractionHintPopup() {
     };
   }, []);
 
-  /* ── Also hide when leaving exploration mode ── */
   useEffect(() => {
-    if (mode !== 'exploration') {
+    if (!explorationHudActive) {
       setIsVisible(false);
     }
-  }, [mode]);
+  }, [explorationHudActive]);
 
-  /* ── Only render during exploration mode ── */
-  const shouldRender = mode === 'exploration' && hint !== null;
+  const shouldRender = explorationHudActive && hint !== null;
 
   /* ── Get accent style for current hint type ── */
   const accent = hint ? getInteractionHintVisual(hint.type) : getInteractionHintVisual('npc');

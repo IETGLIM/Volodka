@@ -2,7 +2,10 @@ import { useMemo } from 'react';
 import { Waves } from 'lucide-react';
 import { useGameStore } from '@/store/gameStore';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
-import { useGameplayPresentationProfile } from '@/hooks/useGameplayPresentationProfile';
+import {
+  isExplorationHudProfile,
+  useGameplayPresentationProfile,
+} from '@/hooks/useGameplayPresentationProfile';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 import { resolveAmbientPresentation } from '@/engine/audio/ambientPlayContext';
 import type { SceneId } from '@/config/sceneDefinitions';
@@ -21,7 +24,7 @@ export function AmbientAtmosphereCaption() {
     [sceneId, timeOfDay, showStoryOverlay, currentNodeId],
   );
 
-  if (profile !== 'exploration' || !presentation.resolved) return null;
+  if (!isExplorationHudProfile(profile) || !presentation.resolved) return null;
 
   return (
     <div

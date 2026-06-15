@@ -70,3 +70,15 @@ export function useGameplayPresentationProfile(): GameplayPresentationProfile {
 export function isExplorationHudProfile(profile: GameplayPresentationProfile): boolean {
   return profile === 'exploration';
 }
+
+/** Floating damage, level-up bursts — only during free exploration or turn combat. */
+export function isMotionFxProfile(profile: GameplayPresentationProfile): boolean {
+  return profile === 'exploration' || profile === 'combat';
+}
+
+/** Scene transition progress/wipe — hidden during encounter beat and combat UI. */
+export function shouldMountSceneTransitionFx(
+  profile: GameplayPresentationProfile,
+): boolean {
+  return profile !== 'combat' && profile !== 'encounter';
+}
