@@ -398,10 +398,24 @@ export const GameplayNarrativeOverlay = memo(function GameplayNarrativeOverlay()
 
   const isStoryActive = showStoryOverlay && narrativeKind === 'story';
   const isDialogueActive = showStoryOverlay && narrativeKind === 'dialogue';
+  const isResolvingNarrativeKind = showStoryOverlay && narrativeKind == null;
 
   return (
     <>
       <NarrativeWorldDim />
+      {isResolvingNarrativeKind && (
+        <div
+          className="fixed inset-0 flex items-end justify-center pb-28 pointer-events-none"
+          style={{ zIndex: UI_LAYERS.DIALOGUE }}
+          aria-busy="true"
+          aria-live="polite"
+          data-testid="narrative-kind-recovery"
+        >
+          <span className="text-xs font-mono tracking-widest text-cyan-300/60 animate-pulse">
+            Загрузка сцены…
+          </span>
+        </div>
+      )}
       {isStoryActive && (
         <ErrorBoundary name="story">
           <Suspense

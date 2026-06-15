@@ -1,4 +1,20 @@
 # Changelog — ВОЛОДЬКА RPG
+## v4.2.12 — 16 июня 2026
+
+### Production GLB: distinct CC0 interim meshes
+- **Hero**: Volodka LOD chain now stages Khronos RiggedFigure (was duplicate CesiumMan).
+- **NPCs**: bootstrap assigns distinct CC0 silhouettes (Xbot, RobotExpressive, RiggedFigure pairs, etc.) — no triple Soldier/CesiumMan copies.
+- **Quest/craft props**: each prop uses its own Khronos mesh (Lantern, DamagedHelmet, WaterBottle, Avocado, AntiqueCamera) instead of five Avocado clones.
+- **Vegetation / café bundles**: pine LODs and café prop variants use distinct CC0 sources.
+- **Attribution**: `public/models/ATTRIBUTION.md` and `npcModelRegistry` updated; run `npm run assets:bootstrap` to refresh on disk.
+
+## v4.2.11 — 16 июня 2026
+
+### P0: narrative blank dim fix
+- **GameplayNarrativeOverlay**: show «Загрузка сцены…» while `showStoryOverlay` is true but `narrativeKind` is still null (avoids dark screen with no text during kind recovery).
+- **useOrchestratorRuntime**: treat resolving narrative kind as an active overlay (pointer lock exit, panel dismiss).
+- **Tests**: `OrchestratorGameplaySections.test.tsx` regression for recovery loading state.
+
 ## v4.2.10 — 16 июня 2026
 
 ### AAA graphics P1 (rooftop galaxy sunset, park haze, synthwave boost)

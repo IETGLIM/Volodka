@@ -64,7 +64,8 @@ export function useOrchestratorRuntime() {
 
   const isStoryActive = showStoryOverlay && narrativeKind === 'story';
   const isDialogueActive = showStoryOverlay && narrativeKind === 'dialogue';
-  const isOverlayActive = isDialogueActive || isStoryActive;
+  const isResolvingNarrativeKind = showStoryOverlay && narrativeKind == null;
+  const isOverlayActive = isDialogueActive || isStoryActive || isResolvingNarrativeKind;
 
   const { startCombatFromStory } = useCombatOrchestrator();
   useAudioOrchestrator();
