@@ -2,12 +2,14 @@ import { Suspense, useEffect, useRef, useState } from 'react';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
-import { MODEL_URLS } from '@/config/modelUrls';
+import { getPlayerVolodkaModelUrl } from '@/config/playerModelUrl';
 import { useSkinnedGltfClone } from '@/hooks/useSkinnedGltfClone';
 import { resolveLocomotionClipState } from '@/engine/player/playerLocomotionPresentation';
 import { ProceduralPlayerModelAdaptive } from './ProceduralPlayerModel';
 import type { ProceduralPlayerModelProps } from './useProceduralPlayerAnimation';
-useGLTF.preload(MODEL_URLS.cc0KhronosCesiumMan);
+
+const PLAYER_MODEL_URL = getPlayerVolodkaModelUrl();
+useGLTF.preload(PLAYER_MODEL_URL);
 
 /** Target avatar height (metres) at modelScale = 1. */
 const TARGET_HEIGHT = 1.7;
@@ -30,7 +32,7 @@ function measure(obj: THREE.Object3D): { size: THREE.Vector3; min: THREE.Vector3
 }
 
 function CesiumPlayerModelInner({ modelScale, currentAnimRef, rotationRef }: ProceduralPlayerModelProps) {
-  const gltf = useGLTF(MODEL_URLS.cc0KhronosCesiumMan);
+  const gltf = useGLTF(PLAYER_MODEL_URL);
   const { scene, mixer } = useSkinnedGltfClone(gltf.scene, gltf.animations, { castShadow: true });
   const yawRef = useRef<THREE.Group>(null);
   const fitRef = useRef<THREE.Group>(null);

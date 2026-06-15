@@ -15,7 +15,7 @@ Production bootstrap: `npm run assets:bootstrap` (CC0 placeholders until AI3DGen
 
 | File | Source | License | Notes |
 |------|--------|---------|-------|
-| `characters/volodka/volodka_lod*.glb` | Khronos CesiumMan (interim) | CC0 | Replace after AI3DGen Pro + Blender rig pass |
+| `characters/volodka/volodka_lod*.glb` | Khronos CesiumMan (interim) | CC0 | Shipped via `player_volodka` manifest — replace after AI3DGen Pro + Blender rig pass |
 
 ## NPC models
 
@@ -71,6 +71,8 @@ Preload: `cafe_evening` → `env_cafe_props`, `park_day` → `veg_tree_pine` (`s
 | Registry ID | GLB | License |
 |-------------|-----|---------|
 | kenney_* | `props/*.glb` | CC0 1.0 — [Kenney Furniture Kit](https://opengameart.org/content/furniture-kit) |
+
+Rendered via `ScenePropDressing` (`src/config/scenePropDressing.ts`) in volodka_room, corridor, office, library, café, zarema_albert_room.
 
 ## Khronos reference library (`models/khronos/`)
 

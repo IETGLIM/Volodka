@@ -36,6 +36,8 @@ import { RotationSyncBridge } from './RotationSyncBridge';
 import { FirstPersonHands } from './FirstPersonHands';
 import { UmkaDog } from './UmkaDog';
 import { TriggerZoneProps } from './TriggerZoneProp';
+import { ScenePropDressing } from './ScenePropDressing';
+import { SceneManifestAssets } from './SceneManifestAssets';
 import { eventBus } from '@/engine/EventBus';
 import { FRAME_PHYSICS_R3F_PRIORITY } from '@/engine/frame/types';
 import { InteractionState } from '@/engine/interaction/interactionMachine';
@@ -84,6 +86,8 @@ function PhysicsSceneInner({
       />
       <FirstPersonHands moveBlendRef={moveBlendRef} />
       <TriggerZoneProps />
+      <ScenePropDressing />
+      <SceneManifestAssets />
       <NPCSystemWrapper livePlayerPositionRef={livePlayerPositionRef} />
       <UmkaDog livePlayerPositionRef={livePlayerPositionRef} />
       <AmbientNPCs livePlayerPositionRef={livePlayerPositionRef} />

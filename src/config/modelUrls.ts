@@ -19,7 +19,7 @@ export interface ModelUrls {
 }
 
 export const MODEL_URLS: ModelUrls = {
-  volodka: `${KHRONOS}/RiggedFigure.glb`,
+  volodka: '/models/characters/volodka/volodka_lod0.glb',
   cc0KhronosCesiumMan: `${KHRONOS}/CesiumMan.glb`,
   cc0KhronosRiggedFigure: `${KHRONOS}/RiggedFigure.glb`,
   cc0KhronosBrainStem: `${KHRONOS}/BrainStem.glb`,
@@ -33,12 +33,12 @@ export const MODEL_URLS: ModelUrls = {
   cc0KhronosNormalTangentTest: `${KHRONOS}/Fox.glb`,
 };
 
-export const DEFAULT_PLAYER_GLB_FILENAME = 'CesiumMan.glb';
+export const DEFAULT_PLAYER_GLB_FILENAME = 'volodka_lod0.glb';
 
 export function getDefaultPlayerModelPath(): string {
   const override = import.meta.env?.VITE_DEFAULT_PLAYER_MODEL ?? '';
   if (override) return override;
-  return `${KHRONOS}/${DEFAULT_PLAYER_GLB_FILENAME}`;
+  return '/models/characters/volodka/volodka_lod0.glb';
 }
 
 export function getModelsPublicBase(): string {

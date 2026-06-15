@@ -10,9 +10,11 @@ import { resolveDerivedSceneId } from '@/config/sceneInheritance';
 import { getAssetDefinition } from '@/config/assetManifest';
 import { preloadGltfAsset } from '@/components/3d/assets/GltfAsset';
 import { preloadTriggerZoneProps } from '@/components/3d/TriggerZoneProp';
+import { preloadScenePropDressing } from '@/components/3d/ScenePropDressing';
 import { preloadSceneJsChunks } from '@/components/3d/sceneChunks/sceneChunkRegistry';
 import { resolveNpcModelUrl } from '@/config/npcModelRegistry';
 import { getPropModelDefinition } from '@/config/propModelRegistry';
+import { getScenePropDressingIds } from '@/config/scenePropDressing';
 import { extendGltfLoader } from '@/engine/assets/gltfPipeline';
 
 const FPS_ARMS_URL = '/models/fps/fps_arms.glb';
@@ -26,20 +28,22 @@ const SCENE_GLTF_ASSETS: Partial<Record<SceneId, readonly string[]>> = {
   volodka_corridor: [],
 };
 
-/** Kenney prop ids used per scene (trigger-zone props + set dressing). */
-const SCENE_PROP_IDS: Partial<Record<SceneId, readonly string[]>> = {
-  volodka_room: ['kenney_desk', 'kenney_bed', 'kenney_wardrobe', 'kenney_terminal'],
-  volodka_corridor: ['kenney_door'],
-  office_day: ['kenney_desk', 'kenney_terminal', 'kenney_bookshelf'],
-  library_day: ['kenney_bookshelf'],
-  zarema_albert_room: ['kenney_bed', 'kenney_wardrobe'],
-  cafe_evening: ['kenney_desk'],
-};
+/** Kenney prop ids used per scene — derived from scenePropDressing placements. */
+function getScenePropIds(sceneId: SceneId): readonly string[] {
+  return getScenePropDressingIds(sceneId);
+}
 
 /** Shipped GLB NPC ids present in each scene (procedural NPCs are not preloaded). */
 const SCENE_NPC_IDS: Partial<Record<SceneId, readonly string[]>> = {
-  cafe_evening: ['cafe_barista'],
-  office_day: ['office_colleague'],
+  cafe_evening: ['cafe_barista', 'albert', 'zarema', 'maria'],
+  office_day: ['office_colleague', 'office_alexander', 'office_dmitry'],
+  park_day: ['albert', 'zarema'],
+  zarema_albert_room: ['albert', 'zarema'],
+  home_evening: ['zarema'],
+  street_night: ['viktor', 'kira'],
+  abandoned_factory: ['boris'],
+  rooftop_edge: ['grisha'],
+  volodka_corridor: ['tamara'],
 };
 
 export function getSceneGltfAssetIds(sceneId: SceneId): readonly string[] {
@@ -65,11 +69,7 @@ function evictGltfUrl(url: string): void {
 }
 
 function preloadScenePropModels(sceneId: SceneId): void {
-  const rootSceneId = resolveDerivedSceneId(sceneId);
-  for (const propId of SCENE_PROP_IDS[rootSceneId] ?? []) {
-    const def = getPropModelDefinition(propId);
-    if (def) useGLTF.preload(def.url, true, true, extendLoader);
-  }
+  preloadScenePropDressing(resolveDerivedSceneId(sceneId));
 }
 
 function preloadSceneNpcModels(sceneId: SceneId): void {
@@ -101,7 +101,7 @@ export function evictSceneGpuCache(fromSceneId: SceneId, keepSceneId?: SceneId):
     for (const assetId of getSceneGltfAssetIds(keepSceneId!)) {
       keepGltfAssetIds.add(assetId);
     }
-    for (const propId of SCENE_PROP_IDS[keepRoot] ?? []) {
+    for (const propId of getScenePropIds(keepRoot)) {
       keepPropIds.add(propId);
     }
     for (const npcId of SCENE_NPC_IDS[keepRoot] ?? []) {
@@ -116,7 +116,7 @@ export function evictSceneGpuCache(fromSceneId: SceneId, keepSceneId?: SceneId):
     }
   }
 
-  for (const propId of SCENE_PROP_IDS[fromRoot] ?? []) {
+  for (const propId of getScenePropIds(fromRoot)) {
     if (keepPropIds.has(propId)) continue;
     const def = getPropModelDefinition(propId);
     if (def) evictGltfUrl(def.url);

@@ -210,7 +210,7 @@ export const AI3DGEN_ASSET_CATALOG: Ai3dgenAssetSpec[] = [
     wire: {
       kind: 'prop',
       propModelId: 'ai3dgen_encrypted_scroll',
-      triggerZoneIds: ['volodka_room_desk'],
+      triggerZoneIds: ['room_desk'],
     },
     defaultScale: 0.3,
     licenseTier: 'pro',
