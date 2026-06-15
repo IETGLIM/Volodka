@@ -6,8 +6,8 @@ describe('sceneVisualProfiles', () => {
     for (const sceneId of HERO_SCENE_IDS) {
       expect(isHeroScene(sceneId)).toBe(true);
       expect(getSceneVisualProfile(sceneId).forceFullPostFx).toBe(true);
-      // Hero profiles disable N8AO by default — full post-FX without SS AO cost.
-      expect(getSceneVisualProfile(sceneId).enhancedAmbientOcclusion).toBe(false);
+      const aoEnabled = sceneId === 'street_night';
+      expect(getSceneVisualProfile(sceneId).enhancedAmbientOcclusion).toBe(aoEnabled);
     }
   });
 

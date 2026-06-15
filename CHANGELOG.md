@@ -1,4 +1,13 @@
 # Changelog — ВОЛОДЬКА RPG
+## v4.2.7 — 16 июня 2026
+
+### AAA graphics P0 (synthwave grade, bloom, street reflector, N8AO)
+- **Color grade**: stronger synthwave/neon tuning for `street_night`, `cafe_evening`, and `sleep_dream` in exploration post-FX.
+- **Bloom**: higher wet-neon bloom on `street_night` and café evening scenes.
+- **street_night profile**: N8AO (`enhancedAmbientOcclusion`) and bloom intensity scale 1.18; café bloom scale 1.15.
+- **Ultra reflector**: planar `MeshReflectorMaterial` wet ground on `street_night` at ultra quality with rain-driven wetness ticks.
+- **Tests**: scene visual profiles and rendering pipeline expectations updated.
+
 
 ## v4.2.6 — 15 июня 2026
 

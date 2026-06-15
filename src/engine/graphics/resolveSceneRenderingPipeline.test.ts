@@ -25,13 +25,23 @@ describe('resolveSceneRenderingPipeline', () => {
 
   it('skips AO on hero scenes when enhancedAmbientOcclusion is off', () => {
     const pipe = resolveSceneRenderingPipeline(
-      'street_night',
+      'volodka_room',
       QUALITY_PRESETS.high,
       false,
     );
     expect(pipe.useLitePostFx).toBe(false);
     expect(pipe.useAmbientOcclusion).toBe(false);
     expect(pipe.aoIntensity).toBeGreaterThan(2.5);
+  });
+
+  it('enables AO on street_night at ultra', () => {
+    const pipe = resolveSceneRenderingPipeline(
+      'street_night',
+      QUALITY_PRESETS.ultra,
+      false,
+    );
+    expect(pipe.useLitePostFx).toBe(false);
+    expect(pipe.useAmbientOcclusion).toBe(true);
   });
 
   it('skips AO on ultra when profile disables enhancedAmbientOcclusion', () => {
