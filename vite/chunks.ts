@@ -118,7 +118,6 @@ const DATA_MECHANICS = new Set([
   'achievementHelpers',
   'dailyMissions',
   'tradingData',
-  'unifiedPoemRegistry',
   'quizQuestions',
   'constants',
 ]);
@@ -130,6 +129,22 @@ const NARRATIVE_ENGINE_MODULES = new Set([
 const QUEST_ENGINE_MODULES = new Set([
   'QuestTracker',
 ]);
+
+const SATELLITE_STORY_FILES: Readonly<Record<string, string>> = {
+  pierStory: 'data-story-pier',
+  libraryStory: 'data-story-library',
+  factoryStory: 'data-story-factory',
+  resistanceStory: 'data-story-resistance',
+  epilogueStory: 'data-story-epilogue',
+  solnyshStory: 'data-story-solnysh',
+};
+
+function resolveSatelliteStoryChunk(posix: string): string | undefined {
+  for (const [file, chunk] of Object.entries(SATELLITE_STORY_FILES)) {
+    if (posix.includes(`/src/data/story/${file}`)) return chunk;
+  }
+  return undefined;
+}
 
 function resolveStoryPackChunk(posix: string): string | undefined {
   if (!posix.includes('/src/data/chkTolpa/')) return undefined;
@@ -165,8 +180,11 @@ function resolveDataChunk(posix: string): string | undefined {
   const pack = resolveStoryPackChunk(posix);
   if (pack) return pack;
 
+  const satelliteStoryChunk = resolveSatelliteStoryChunk(posix);
+  if (satelliteStoryChunk) return satelliteStoryChunk;
+
   if (posix.includes('/src/data/story/act')) {
-    const actMatch = posix.match(/\/src\/data\/story\/act(\d+)\./);
+    const actMatch = posix.match(/\/src\/data\/story\/act(\d+)/);
     if (actMatch) return `data-story-act${actMatch[1]}`;
   }
   if (posix.includes('explorationHubTemplate')) {
@@ -308,6 +326,7 @@ export function resolveManualChunk(id: string): string | undefined {
     return `game-ui-${toKebab(base)}`;
   }
 
+  // Main WebGL shell — isolated so menu boot does not pull three.js via colocation.
   if (base === 'RPGGameCanvas') return 'game-canvas';
 
   if (base === 'PhysicsSceneInner') return 'physics-scene';
@@ -326,4 +345,33 @@ export function resolveManualChunk(id: string): string | undefined {
   }
 
   return resolveDataChunk(posix);
+}
+
+const DATA_MODULE_SETS: ReadonlyArray<{ readonly name: string; readonly set: ReadonlySet<string> }> = [
+  { name: 'DATA_STORY', set: DATA_STORY },
+  { name: 'DATA_DIALOGUE', set: DATA_DIALOGUE },
+  { name: 'DATA_QUESTS', set: DATA_QUESTS },
+  { name: 'DATA_POEMS', set: DATA_POEMS },
+  { name: 'DATA_LORE_NARRATIVE', set: DATA_LORE_NARRATIVE },
+  { name: 'DATA_NPC', set: DATA_NPC },
+  { name: 'DATA_WORLD', set: DATA_WORLD },
+  { name: 'DATA_MECHANICS', set: DATA_MECHANICS },
+];
+
+/** CI/dev guard: detect module ids listed in more than one DATA_* bucket. */
+export function validateChunkConfig(): string[] {
+  const warnings: string[] = [];
+  const owner = new Map<string, string>();
+
+  for (const { name, set } of DATA_MODULE_SETS) {
+    for (const moduleId of set) {
+      const prev = owner.get(moduleId);
+      if (prev) {
+        warnings.push(`[chunks] "${moduleId}" listed in both ${prev} and ${name}`);
+      }
+      owner.set(moduleId, name);
+    }
+  }
+
+  return warnings;
 }
