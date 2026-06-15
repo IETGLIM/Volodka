@@ -29,6 +29,9 @@ function showHubLocationContext(hubId: string, revisit: boolean): void {
   });
 }
 
+/** Defer hub location toast so it does not overlap scene-transition / guidance HUD handoff. */
+const HUB_LOCATION_TOAST_DELAY_MS = 480;
+
 /**
  * Promote to a closed-overlay explore hub: spine tracking, closed overlay,
  * optional first-visit location toast. Player actions use 3D trigger zones.
@@ -45,11 +48,13 @@ export function enterSceneFreeExplorationHub(hubId: string): void {
   dispatchGameAction({ type: 'story/visitNode', nodeId: hubId });
   closeNarrativeOverlay();
 
-  if (firstVisit) {
-    showHubLocationContext(hubId, false);
-  } else {
-    showHubLocationContext(hubId, true);
-  }
+  setTimeout(() => {
+    if (firstVisit) {
+      showHubLocationContext(hubId, false);
+    } else {
+      showHubLocationContext(hubId, true);
+    }
+  }, HUB_LOCATION_TOAST_DELAY_MS);
 
   eventBus.emit('interaction:end', {});
   forceEmitInteractionEnd();

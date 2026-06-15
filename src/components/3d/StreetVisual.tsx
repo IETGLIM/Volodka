@@ -23,6 +23,8 @@ import type { SceneId } from '@/shared/types/game';
 import { getEnvironmentLodProfile } from '@/engine/lod/distanceLod';
 import { useEnvironmentLod } from './lod/EnvironmentLodProvider';
 import { EnvironmentDetail, PropDistanceGate } from './lod/PropDistanceGate';
+import { useCachedCanvasTexture } from '@/hooks/useCachedCanvasTexture';
+import { createStreetNightSynthwaveSkyTexture } from '@/engine/graphics/proceduralSkyTextures';
 
 interface StreetVisualProps {
   sceneId?: SceneId;
@@ -111,6 +113,7 @@ export function StreetVisual({ sceneId = 'street_night', livePlayerPositionRef }
 
   return (
     <group>
+      {!isWinter && sceneId === 'street_night' ? <StreetNightSkyDome /> : null}
       <StreetGround sceneId={sceneId} isWinter={isWinter} rainIntensity={rainIntensity} />
 
       {/* ── Sidewalk ── */}
@@ -543,4 +546,23 @@ function NeonSigns({ isWinter }: { isWinter: boolean }) {
   );
 }
 
+/** Rainy synthwave sky dome — fog-exempt horizon depth for street_night. */
+function StreetNightSkyDome() {
+  const skyTexture = useCachedCanvasTexture(
+    'street_night:synthwave-sky',
+    createStreetNightSynthwaveSkyTexture,
+  );
+
+  return (
+    <mesh position={[0, 8, 0]} renderOrder={-10}>
+      <sphereGeometry args={[62, 28, 14, 0, Math.PI * 2, 0, Math.PI * 0.55]} />
+      <meshBasicMaterial
+        map={skyTexture}
+        side={THREE.BackSide}
+        fog={false}
+        depthWrite={false}
+      />
+    </mesh>
+  );
+}
 

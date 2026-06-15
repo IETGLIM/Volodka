@@ -1,11 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import * as THREE from 'three';
 import {
+  createCafeEveningNeonSkyTexture,
   createDreamGalaxySkyTexture,
   createDreamGalaxyStarGeometry,
   createParkHazySkyTexture,
   createRooftopHorizonStarGeometry,
   createRooftopSunsetGalaxySkyTexture,
+  createStreetNightSynthwaveSkyTexture,
 } from './proceduralSkyTextures';
 
 describe('proceduralSkyTextures', () => {
@@ -52,6 +54,20 @@ describe('proceduralSkyTextures', () => {
 
   it('creates park hazy sky texture with clamp wrapping', () => {
     const tex = createParkHazySkyTexture();
+    expect(tex.image).toBeInstanceOf(HTMLCanvasElement);
+    expect(tex.wrapT).toBe(THREE.ClampToEdgeWrapping);
+    tex.dispose();
+  });
+
+  it('creates street night synthwave sky with clamp wrapping', () => {
+    const tex = createStreetNightSynthwaveSkyTexture();
+    expect(tex.image).toBeInstanceOf(HTMLCanvasElement);
+    expect(tex.wrapS).toBe(THREE.ClampToEdgeWrapping);
+    tex.dispose();
+  });
+
+  it('creates cafe evening neon ceiling wash with clamp wrapping', () => {
+    const tex = createCafeEveningNeonSkyTexture();
     expect(tex.image).toBeInstanceOf(HTMLCanvasElement);
     expect(tex.wrapT).toBe(THREE.ClampToEdgeWrapping);
     tex.dispose();

@@ -142,6 +142,85 @@ export function createParkHazySkyTexture(): THREE.CanvasTexture {
   return tex;
 }
 
+/** Rainy synthwave night sky — street_night horizon haze + neon zenith band. */
+export function createStreetNightSynthwaveSkyTexture(): THREE.CanvasTexture {
+  const w = 64;
+  const h = 256;
+  const canvas = document.createElement('canvas');
+  canvas.width = w;
+  canvas.height = h;
+  const ctx = canvas.getContext('2d')!;
+
+  const grad = ctx.createLinearGradient(0, 0, 0, h);
+  grad.addColorStop(0.0, '#0a0820'); // deep violet zenith
+  grad.addColorStop(0.2, '#121830'); // indigo smog
+  grad.addColorStop(0.42, '#283048'); // rainy blue-grey
+  grad.addColorStop(0.62, '#3a3858'); // wet haze mid
+  grad.addColorStop(0.78, '#484868'); // street fog lift
+  grad.addColorStop(0.92, '#585878'); // horizon glow
+  grad.addColorStop(1.0, '#686888'); // wet pavement bounce
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, w, h);
+
+  for (let i = 0; i < 5; i++) {
+    const cx = seededRand(i * 23 + 8103) * w;
+    const cy = 12 + seededRand(i * 41 + 8103) * (h * 0.35);
+    const radius = 14 + seededRand(i * 67 + 8103) * 24;
+    const smog = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius);
+    const huePick = seededRand(i * 89 + 8103);
+    if (huePick < 0.5) {
+      smog.addColorStop(0, 'rgba(40, 80, 180, 0.28)');
+      smog.addColorStop(1, 'rgba(16, 20, 40, 0)');
+    } else {
+      smog.addColorStop(0, 'rgba(180, 40, 120, 0.18)');
+      smog.addColorStop(1, 'rgba(20, 16, 36, 0)');
+    }
+    ctx.fillStyle = smog;
+    ctx.fillRect(0, 0, w, h);
+  }
+
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.wrapS = THREE.ClampToEdgeWrapping;
+  tex.wrapT = THREE.ClampToEdgeWrapping;
+  return tex;
+}
+
+/** Blue-neon ceiling wash for cafe_evening — hazy interior HDR ambience. */
+export function createCafeEveningNeonSkyTexture(): THREE.CanvasTexture {
+  const w = 64;
+  const h = 256;
+  const canvas = document.createElement('canvas');
+  canvas.width = w;
+  canvas.height = h;
+  const ctx = canvas.getContext('2d')!;
+
+  const grad = ctx.createLinearGradient(0, 0, 0, h);
+  grad.addColorStop(0.0, '#080818'); // dark ceiling void
+  grad.addColorStop(0.25, '#0c1028'); // deep blue-black
+  grad.addColorStop(0.48, '#142040'); // neon spill mid
+  grad.addColorStop(0.68, '#1a2850'); // hazy blue band
+  grad.addColorStop(0.85, '#201838'); // warm bar spill
+  grad.addColorStop(1.0, '#181018'); // floor blend
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, w, h);
+
+  for (let i = 0; i < 4; i++) {
+    const cx = seededRand(i * 31 + 6207) * w;
+    const cy = 20 + seededRand(i * 43 + 6207) * (h * 0.45);
+    const radius = 16 + seededRand(i * 59 + 6207) * 26;
+    const glow = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius);
+    glow.addColorStop(0, 'rgba(30, 80, 220, 0.22)');
+    glow.addColorStop(1, 'rgba(8, 12, 28, 0)');
+    ctx.fillStyle = glow;
+    ctx.fillRect(0, 0, w, h);
+  }
+
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.wrapS = THREE.ClampToEdgeWrapping;
+  tex.wrapT = THREE.ClampToEdgeWrapping;
+  return tex;
+}
+
 /** Upper-hemisphere starfield for sleep_dream — fog-exempt, slow-rotatable. */
 export function createDreamGalaxyStarGeometry(starCount = 220): THREE.BufferGeometry {
   const positions = new Float32Array(starCount * 3);

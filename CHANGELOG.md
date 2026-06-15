@@ -1,4 +1,14 @@
 # Changelog — ВОЛОДЬКА RPG
+## v4.2.14 — 16 июня 2026
+
+### AAA graphics + UX polish
+- **street_night sky dome**: procedural synthwave rainy gradient (`createStreetNightSynthwaveSkyTexture`) + stronger IBL intensity for wet-neon mood.
+- **cafe_evening ceiling wash**: procedural blue-neon HDR gradient on café ceiling for hazy interior ambience.
+- **StoryGuidanceHUD**: 420ms reveal delay after narrative recovery / scene transition — no flash during overlay handoff.
+- **Explore hub handoff**: location toast deferred 480ms after overlay close so it does not clash with transition HUD.
+- **Settings onboarding**: quality preset hints — «GLB-модели: medium+», «Ultra: мокрые отражения на улице».
+- **Tests**: jsdom fix for procedural sky textures; deferred hub toast; new street/café sky texture assertions.
+
 ## v4.2.13 — 16 июня 2026
 
 ### AAA audio + performance (post-deploy audit P2/P1)

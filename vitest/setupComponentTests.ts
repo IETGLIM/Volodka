@@ -58,6 +58,8 @@ const canvasContextStub = {
   font: '',
   fillRect: vi.fn(),
   fillText: vi.fn(),
+  createLinearGradient: vi.fn(() => ({ addColorStop: vi.fn() })),
+  createRadialGradient: vi.fn(() => ({ addColorStop: vi.fn() })),
 };
 
 HTMLCanvasElement.prototype.getContext = vi.fn(

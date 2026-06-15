@@ -9,6 +9,7 @@ import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
 import {
   QUALITY_PRESET_ORDER,
+  type QualityPreset,
   type QualityPresetId,
 } from '@/engine/graphics/qualityPresets';
 import {
@@ -97,6 +98,26 @@ const QUALITY_OPTIONS: { id: QualityPresetId; label: string }[] = [
   })),
 ];
 
+function formatQualityPresetDetail(
+  selectedPreset: QualityPresetId,
+  preset: QualityPreset,
+): string {
+  const base =
+    selectedPreset === 'auto'
+      ? `Авто → ${preset.labelRu}: Draco/Meshopt, LOD, KTX2 при high/ultra`
+      : `${preset.labelRu}: ${preset.npcRenderMode} NPC · ${preset.environmentRenderMode} окружение · DPR ${preset.dpr[0]}–${preset.dpr[1]}`;
+
+  const hints: string[] = [];
+  if (preset.id !== 'low') {
+    hints.push('GLB-модели: medium+');
+  }
+  if (selectedPreset === 'ultra' || preset.id === 'ultra') {
+    hints.push('Ultra: мокрые отражения на улице');
+  }
+
+  return hints.length > 0 ? `${base} · ${hints.join(' · ')}` : base;
+}
+
 const SUBTITLE_SLIDER = accessibilitySliderBounds('subtitleScale');
 const TEXT_SPEED_SLIDER = accessibilitySliderBounds('textSpeed');
 const LOCOMOTION_SLIDER = accessibilitySliderBounds('locomotionSpeed');
@@ -164,9 +185,7 @@ function VisualSettingsTab({
           })}
         </div>
         <p className="font-mono text-[10px] text-slate-500/80 leading-relaxed">
-          {selectedPreset === 'auto'
-            ? `Авто → ${preset.labelRu}: Draco/Meshopt, LOD, KTX2 при high/ultra`
-            : `${preset.labelRu}: ${preset.npcRenderMode} NPC · ${preset.environmentRenderMode} окружение · DPR ${preset.dpr[0]}–${preset.dpr[1]}`}
+          {formatQualityPresetDetail(selectedPreset, preset)}
         </p>
       </div>
       <SectionDivider />

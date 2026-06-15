@@ -9,6 +9,7 @@ import { useEnvironmentLod } from './lod/EnvironmentLodProvider';
 import { EnvironmentDetail, SceneClutterGate } from './lod/PropDistanceGate';
 import { FloorLamp, PastryCase, Window, Plant } from './lazyInteriorModels';
 import { useCachedCanvasTexture } from '@/hooks/useCachedCanvasTexture';
+import { createCafeEveningNeonSkyTexture } from '@/engine/graphics/proceduralSkyTextures';
 import { useOwnedBufferGeometry } from '@/hooks/useOwnedBufferGeometry';
 import {
   getSharedBoxGeometry,
@@ -23,6 +24,10 @@ interface CafeVisualProps {
 export function CafeVisual({ livePlayerPositionRef }: CafeVisualProps) {
   const floorTexture = useCachedCanvasTexture('cafe_evening:floor', createCafeFloorTexture);
   const wallTexture = useCachedCanvasTexture('cafe_evening:wall', createCafeWallTexture);
+  const ceilingGlowTexture = useCachedCanvasTexture(
+    'cafe_evening:neon-ceiling',
+    createCafeEveningNeonSkyTexture,
+  );
   const { lod } = useEnvironmentLod();
   const envProfile = useMemo(() => getEnvironmentLodProfile('cafe_evening'), []);
 
@@ -126,9 +131,15 @@ export function CafeVisual({ livePlayerPositionRef }: CafeVisualProps) {
         <meshStandardMaterial map={floorTexture} color="#5a4a3a" roughness={0.85} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
       </mesh>
 
-      {/* ── Ceiling ── */}
+      {/* ── Ceiling — procedural blue-neon HDR wash ── */}
       <mesh position={[0, H, 0]} rotation-x={Math.PI / 2} geometry={getSharedPlaneGeometry(W, D)}>
-        <meshStandardMaterial color="#3a3038" roughness={0.95} />
+        <meshStandardMaterial
+          map={ceilingGlowTexture}
+          color="#3a3038"
+          emissive="#1a2850"
+          emissiveIntensity={0.35}
+          roughness={0.95}
+        />
       </mesh>
 
       {/* ── Walls ── */}

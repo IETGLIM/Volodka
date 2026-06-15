@@ -11,6 +11,7 @@ import * as THREE from 'three';
 import { liftHexColor, SCENE_VISIBILITY } from '@/shared/constants/sceneVisibility';
 import { ENV_MAP_WARMUP_FRAMES } from '@/shared/constants/transitionTimings';
 import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
+import type { QualityPresetId } from '@/engine/graphics/qualityPresets';
 import { isHeroScene } from '@/config/sceneVisualProfiles';
 import type { SceneId } from '@/shared/types/game';
 
@@ -164,6 +165,7 @@ export function SceneEnvironment() {
 
   // Choose environment preset based on scene
   const envPreset = getEnvPreset(visualSceneId);
+  const envIntensity = getEnvironmentIntensity(visualSceneId, heroScene, preset.id);
 
   // Fog animation config
   const fogAnim = SCENE_FOG_ANIM[visualSceneId] ?? DEFAULT_FOG_ANIM;
@@ -213,19 +215,26 @@ export function SceneEnvironment() {
         <Environment
           preset={envPreset}
           background={false}
-          environmentIntensity={
-            heroScene
-              ? preset.id === 'ultra'
-                ? 0.38
-                : 0.32
-              : preset.id === 'ultra'
-                ? 0.35
-                : 0.28
-          }
+          environmentIntensity={envIntensity}
         />
       )}
     </>
   );
+}
+
+function getEnvironmentIntensity(
+  sceneId: string,
+  heroScene: boolean,
+  presetId: Exclude<QualityPresetId, 'auto'>,
+): number {
+  const ultraBoost = presetId === 'ultra' ? 0.06 : 0;
+  if (sceneId === 'street_night') {
+    return presetId === 'ultra' ? 0.45 : 0.38;
+  }
+  if (heroScene) {
+    return presetId === 'ultra' ? 0.38 + ultraBoost : 0.32;
+  }
+  return presetId === 'ultra' ? 0.35 : 0.28;
 }
 
 function getEnvPreset(sceneId: string): 'night' | 'dawn' | 'sunset' | 'city' | 'park' | 'warehouse' | 'forest' {

@@ -9,8 +9,7 @@ import { eventBus } from '@/engine/EventBus';
 import { getCurrentGuidance, type GuidanceInfo } from '@/engine/GuidedStoryManager';
 import { buildGuidanceDirectionHint } from '@/engine/guidedStory/guidanceLocation';
 import { getNextTrackedObjective, areDependenciesMet, getQuestMarker } from '@/store/questStore';
-import { useQuests, useCurrentSceneId } from '@/store/selectors';
-import { useInteractionOverlay } from '@/store/selectors';
+import { useQuests, useCurrentSceneId, useOrchestratorNarrativeOverlay } from '@/store/selectors';
 import { QUEST_DEFINITIONS } from '@/data/quests';
 import { GOLDEN_PATH_QUEST_SPINE } from '@/data/goldenPath';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
@@ -34,6 +33,8 @@ import {
 } from '@/hooks/questHudPresentation';
 import type { QuestType, SceneId } from '@/shared/types/game';
 const GUIDANCE_DISMISS_KEY = 'volodka_guidance_dismissed_sig';
+/** Grace period after narrative recovery / hub handoff before HUD animates in. */
+const GUIDANCE_REVEAL_DELAY_MS = 420;
 
 export function StoryGuidanceHUD() {
   const reducedMotion = useEffectiveReducedMotion();
@@ -51,9 +52,14 @@ export function StoryGuidanceHUD() {
 
   const quests = useQuests();
   const profile = useGameplayPresentationProfile();
+  const { showStoryOverlay, narrativeKind } = useOrchestratorNarrativeOverlay();
   const currentSceneId = useCurrentSceneId();
-  const { showStoryOverlay } = useInteractionOverlay();
   const [interactionLocked, setInteractionLocked] = useState(() => isInteractionLocked());
+  const [revealReady, setRevealReady] = useState(false);
+  const revealTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const isResolvingNarrativeKind = showStoryOverlay && narrativeKind == null;
+  const suppressForHandoff = profile === 'transition' || isResolvingNarrativeKind;
 
   useEffect(() => {
     const sync = () => setInteractionLocked(isInteractionLocked());
@@ -147,6 +153,30 @@ export function StoryGuidanceHUD() {
     : '';
 
   useEffect(() => {
+    if (revealTimerRef.current) {
+      clearTimeout(revealTimerRef.current);
+      revealTimerRef.current = null;
+    }
+
+    if (suppressForHandoff || !displayText) {
+      setRevealReady(false);
+      return;
+    }
+
+    revealTimerRef.current = setTimeout(() => {
+      setRevealReady(true);
+      revealTimerRef.current = null;
+    }, GUIDANCE_REVEAL_DELAY_MS);
+
+    return () => {
+      if (revealTimerRef.current) {
+        clearTimeout(revealTimerRef.current);
+        revealTimerRef.current = null;
+      }
+    };
+  }, [suppressForHandoff, displayText]);
+
+  useEffect(() => {
     if (!objectiveSig) return;
     if (dismissedSig && dismissedSig !== objectiveSig) {
       setDismissedSig(null);
@@ -216,6 +246,7 @@ export function StoryGuidanceHUD() {
     isExplorationHudProfile(profile)
     && !showStoryOverlay
     && !interactionLocked
+    && revealReady
     && Boolean(displayText);
 
   if (!shouldShow) return null;

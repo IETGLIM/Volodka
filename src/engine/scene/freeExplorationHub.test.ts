@@ -1,4 +1,4 @@
-import { describe, expect, it, vi, beforeEach } from 'vitest';
+import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
 import { enterSceneFreeExplorationHub } from './freeExplorationHub';
 
 const dispatchGameAction = vi.fn();
@@ -35,6 +35,7 @@ vi.mock('@/store/visitedNodesIndex', () => ({
 
 describe('enterSceneFreeExplorationHub', () => {
   beforeEach(() => {
+    vi.useFakeTimers();
     dispatchGameAction.mockClear();
     closeNarrativeOverlay.mockClear();
     eventBusEmit.mockClear();
@@ -42,6 +43,10 @@ describe('enterSceneFreeExplorationHub', () => {
       currentNodeId: 'start',
       playerState: { visitedNodes: [] },
     };
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
   it('closes overlay and shows location context on first visit', () => {
@@ -56,6 +61,12 @@ describe('enterSceneFreeExplorationHub', () => {
       nodeId: 'explore_mode',
     });
     expect(closeNarrativeOverlay).toHaveBeenCalled();
+    expect(eventBusEmit).not.toHaveBeenCalledWith(
+      'game:notification',
+      expect.anything(),
+    );
+
+    vi.advanceTimersByTime(480);
     expect(eventBusEmit).toHaveBeenCalledWith(
       'game:notification',
       expect.objectContaining({
@@ -70,6 +81,7 @@ describe('enterSceneFreeExplorationHub', () => {
     enterSceneFreeExplorationHub('explore_mode');
 
     expect(closeNarrativeOverlay).toHaveBeenCalled();
+    vi.advanceTimersByTime(480);
     expect(eventBusEmit).not.toHaveBeenCalledWith(
       'game:notification',
       expect.anything(),
@@ -87,6 +99,7 @@ describe('enterSceneFreeExplorationHub', () => {
       nodeId: 'home_evening_explore_mode',
     });
     expect(closeNarrativeOverlay).toHaveBeenCalled();
+    vi.advanceTimersByTime(480);
     expect(eventBusEmit).toHaveBeenCalledWith(
       'game:notification',
       expect.objectContaining({
@@ -104,6 +117,7 @@ describe('enterSceneFreeExplorationHub', () => {
       nodeId: 'cafe_explore_mode',
     });
     expect(closeNarrativeOverlay).toHaveBeenCalled();
+    vi.advanceTimersByTime(480);
     expect(eventBusEmit).toHaveBeenCalledWith(
       'game:notification',
       expect.objectContaining({
@@ -121,6 +135,7 @@ describe('enterSceneFreeExplorationHub', () => {
       nodeId: 'park_explore_mode',
     });
     expect(closeNarrativeOverlay).toHaveBeenCalled();
+    vi.advanceTimersByTime(480);
     expect(eventBusEmit).toHaveBeenCalledWith(
       'game:notification',
       expect.objectContaining({
