@@ -1,4 +1,5 @@
 import type { SceneId } from '@/config/sceneDefinitions';
+import { resolveDerivedSceneId } from '@/config/sceneInheritance';
 import type { SceneWeatherType } from '@/shared/types/ambientSound';
 
 export interface SceneWeatherState {
@@ -10,12 +11,13 @@ export interface SceneWeatherState {
 
 /** Derive in-world weather from scene id and time of day (shared by HUD + audio). */
 export function deriveSceneWeather(sceneId: SceneId, timeOfDay: number): SceneWeatherState {
+  const rootScene = resolveDerivedSceneId(sceneId);
   const isNight = timeOfDay >= 21 || timeOfDay < 6;
   const isMorning = timeOfDay >= 6 && timeOfDay < 10;
   const isDay = timeOfDay >= 10 && timeOfDay < 18;
   const isEvening = timeOfDay >= 18 && timeOfDay < 21;
 
-  switch (sceneId) {
+  switch (rootScene) {
     case 'volodka_room':
     case 'volodka_corridor':
     case 'home_evening':

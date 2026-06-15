@@ -5,7 +5,7 @@ import type { AmbientConfig, AmbientMusicConfig, ReverbPresetConfig } from './ty
 
 /* ─── Ambient Drone Configs ─── */
 
-const AMBIENT_CONFIGS: Record<SceneId, AmbientConfig> = {
+const AMBIENT_CONFIGS: Partial<Record<SceneId, AmbientConfig>> = {
   /* ─── 1. volodka_room — Terminal hum + clicks (kept as is) ─── */
   volodka_room: {
     layers: [

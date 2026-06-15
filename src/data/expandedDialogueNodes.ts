@@ -914,4 +914,40 @@ export const EXPANDED_DIALOGUE_NODES: Record<string, DialogueNode> = {
       { text: 'Потом.', next: null },
     ],
   },
+
+  street_poet_greeting: {
+    id: 'street_poet_greeting',
+    speaker: 'Уличный поэт',
+    text: 'Слова тяжелеют к утру, поэт. Неси их осторожно — дроны любят лёгкие фразы.',
+    choices: [
+      { text: 'Поблагодарить и уйти', next: null },
+      {
+        text: 'Прочитать ответное четверостишие',
+        next: null,
+        effects: [{ type: 'visitStoryNode', nodeId: 'act4_quiet_poet_reply' }],
+      },
+    ],
+  },
+
+  marat_echo_greeting: {
+    id: 'marat_echo_greeting',
+    speaker: 'Марат (эхо)',
+    text: '[терминал мигает] Если читаешь это — я ещё в проводах. Не верь гильдии. Верь рифме.',
+    choices: [
+      {
+        text: 'Ответить строкой из тетради',
+        next: null,
+        effects: [{ type: 'visitStoryNode', nodeId: 'library_marat_echo' }],
+      },
+    ],
+  },
+
+  guild_defector_greeting: {
+    id: 'guild_defector_greeting',
+    speaker: 'Перебежчик',
+    text: 'Серверную я помню наизусть. Себя — почти нет. Спасибо, что вытащил.',
+    choices: [
+      { text: 'Держись', next: null, effects: [{ type: 'addKarma', value: 1 }] },
+    ],
+  },
 }

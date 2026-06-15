@@ -39,9 +39,29 @@ const GOLDEN_PATH_HUB_CONTINUE: Partial<
     next: 'sleep_dream_entrance',
     text: 'Запомнить стихотворение из сна',
   },
-  zarema_room_explore_mode: {
-    next: 'zarema_bank_discovery',
-    text: 'Проверить банковский счёт на ноутбуке Заремы',
+  zarema_room_solo_explore_mode: {
+    next: 'act4_quiet_zarema_room',
+    text: 'Заглянуть к Зареме',
+  },
+  pier_evening_explore_mode: {
+    next: 'pier_story_intro',
+    text: 'Поговорить с Трофимом и Риткой',
+  },
+  library_basement_explore_mode: {
+    next: 'library_lost_archive_start',
+    text: 'Искать утерянный архив с Катей',
+  },
+  bunker_explore_mode: {
+    next: 'resistance_bunker_hub',
+    text: 'Встретиться с Максимом',
+  },
+  factory_roof_explore_mode: {
+    next: 'factory_roof_lookout',
+    text: 'Подняться к Жеке на крышу',
+  },
+  city_square_explore_mode: {
+    next: 'act4_public_leader',
+    text: 'Выйти на площадь — обратиться к людям',
   },
 };
 

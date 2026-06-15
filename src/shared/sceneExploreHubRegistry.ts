@@ -155,6 +155,70 @@ export const SCENE_EXPLORE_HUB_DEFS: readonly SceneExploreHubDef[] = [
     hubTextRevisit: 'Сон. Строки в воздухе. Не засыпай во сне.',
     entryNodeIds: [],
   },
+  {
+    hubId: 'pier_evening_explore_mode',
+    sceneId: 'pier_evening',
+    hubText:
+      'Вечерний пирс — вода темнее, костёр в бочке рыжее, чем в лесу. Трофим смотрит на поплавок, Ритка перебирает струны. Здесь ЧК дышит спокойнее.',
+    hubTextRevisit: 'Пирс. Вода. Костёр.',
+    entryNodeIds: ['pier_story_intro', 'pier_midnight_fishing_start'],
+  },
+  {
+    hubId: 'library_basement_explore_mode',
+    sceneId: 'library_basement',
+    hubText:
+      'Подвал библиотеки — сырость, железная решётка, запах бумаги, которую не успели сжечь. Катя знает каждый ящик с пометкой «УТИЛЬ».',
+    entryNodeIds: ['library_lost_archive_start', 'library_marat_echo'],
+  },
+  {
+    hubId: 'city_square_explore_mode',
+    sceneId: 'city_square',
+    hubText:
+      'Центральная площадь — бетон, ветер, редкие прохожие. Здесь читают вслух то, что нельзя постить. Уличные поэты и дроны делят небо.',
+    entryNodeIds: ['act4_quiet_poet_square', 'act4_public_leader', 'act4_peaceful_march', 'act4_march_continues'],
+  },
+  {
+    hubId: 'bunker_explore_mode',
+    sceneId: 'underground_bunker',
+    hubText:
+      'Бункер Сопротивления — зелёный свет, карта с нитями, запах пайки. Максим планирует, Аня держит связь. Здесь гильдия не слышит.',
+    entryNodeIds: ['resistance_bunker_hub', 'resistance_story_intro'],
+  },
+  {
+    hubId: 'mainframe_explore_mode',
+    sceneId: 'guild_mainframe',
+    hubText:
+      'Серверная гильдии — ряды стоек, холодный воздух, зелёные индикаторы. Сердце Протокола Забвения бьётся где-то здесь.',
+    entryNodeIds: ['act4_quiet_mainframe'],
+  },
+  {
+    hubId: 'factory_roof_explore_mode',
+    sceneId: 'factory_roof',
+    hubText:
+      'Крыша завода — ветер, ржавые перила, огни города и дроны на горизонте. Отсюда видно, куда идёт война.',
+    entryNodeIds: ['factory_roof_lookout', 'act6_rooftop_showdown', 'act6_final_confrontation'],
+  },
+  {
+    hubId: 'albert_backroom_explore_mode',
+    sceneId: 'albert_backroom',
+    hubText:
+      'Подсобка «Синей ямы» — мешки зерна, кофемолка, запах жжёного. Здесь Альберт говорит правду, которую в зале не скажешь.',
+    entryNodeIds: ['act4_quiet_albert_backroom', 'chk_portwine_pickup'],
+  },
+  {
+    hubId: 'chk_campfire_night_explore_mode',
+    sceneId: 'chk_campfire_night',
+    hubText:
+      'Ночной костёр ЧК — огонь выше, тени длиннее. То, о чём днём молчат, здесь звучит вполголоса под гитару Элис.',
+    entryNodeIds: ['chk_campfire_night_arrival', 'chk_portwine_delivered'],
+  },
+  {
+    hubId: 'zarema_room_solo_explore_mode',
+    sceneId: 'zarema_room',
+    hubText:
+      'Комната Заремы — лампа, книга на середине, тишина дороже Wi-Fi. Здесь можно поплакать и никто не запишет в лог.',
+    entryNodeIds: ['act4_quiet_zarema_room'],
+  },
 ] as const;
 
 /** Hubs that close the VN overlay — location via scene toast; actions via 3D triggers. */

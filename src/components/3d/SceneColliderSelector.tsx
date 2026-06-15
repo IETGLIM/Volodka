@@ -33,6 +33,7 @@ import { SceneLayer, LayeredForeground } from './VisualizationLayers';
 import { CameraCollisionProxies } from './CameraCollisionProxies';
 import { EnvironmentLodProvider } from './lod/EnvironmentLodProvider';
 import type { SceneId } from '@/shared/types/game';
+import { resolveDerivedSceneId } from '@/config/sceneInheritance';
 import type { MutableRefObject } from 'react';
 import * as THREE from 'three';
 import { useThreeCleanup } from '@/hooks/useThreeCleanup';
@@ -251,7 +252,8 @@ function SceneVisualRoot({ sceneId, livePlayerPositionRef }: VisualSceneProps) {
 }
 
 function VisualScene({ sceneId, livePlayerPositionRef }: VisualSceneProps) {
-  switch (sceneId) {
+  const visualSceneId = resolveDerivedSceneId(sceneId);
+  switch (visualSceneId) {
     case 'volodka_room':
       return <VolodkaRoomVisual livePlayerPositionRef={livePlayerPositionRef} />;
     case 'volodka_corridor':

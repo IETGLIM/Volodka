@@ -120,7 +120,7 @@ export const WORLD_CELLS: Record<WorldCellId, WorldCell> = {
 
 /* ─── Handcrafted locations (every legacy SceneId) ─── */
 
-export const WORLD_LOCATIONS: Record<SceneId, WorldLocation> = {
+export const WORLD_LOCATIONS: Partial<Record<SceneId, WorldLocation>> = {
   /* District exteriors */
   street_night: {
     sceneId: 'street_night',
@@ -256,6 +256,71 @@ export const WORLD_LOCATIONS: Record<SceneId, WorldLocation> = {
     anchorSceneId: 'volodka_room',
     districtSpawn: [0, 0.01, 2],
   },
+
+  /* AAA narrative extension scenes */
+  chk_campfire_night: {
+    sceneId: 'chk_campfire_night',
+    kind: 'district',
+    regionId: 'chk_tolpa',
+    cellId: 'chk_tolpa:forest',
+    anchorSceneId: 'chk_forest_zorge',
+  },
+  pier_evening: {
+    sceneId: 'pier_evening',
+    kind: 'district',
+    regionId: 'volodka_city',
+    cellId: 'volodka_city:civic',
+    anchorSceneId: 'river_pier',
+  },
+  factory_roof: {
+    sceneId: 'factory_roof',
+    kind: 'story',
+    regionId: 'industrial_quarter',
+    cellId: 'industrial_quarter:factory',
+    anchorSceneId: 'abandoned_factory',
+  },
+  library_basement: {
+    sceneId: 'library_basement',
+    kind: 'interior',
+    regionId: 'volodka_city',
+    cellId: 'volodka_city:civic',
+    anchorSceneId: 'library_day',
+  },
+  city_square: {
+    sceneId: 'city_square',
+    kind: 'district',
+    regionId: 'volodka_city',
+    cellId: 'volodka_city:downtown',
+    anchorSceneId: 'street_night',
+  },
+  underground_bunker: {
+    sceneId: 'underground_bunker',
+    kind: 'interior',
+    regionId: 'volodka_city',
+    cellId: 'volodka_city:downtown',
+    anchorSceneId: 'street_night',
+  },
+  guild_mainframe: {
+    sceneId: 'guild_mainframe',
+    kind: 'interior',
+    regionId: 'volodka_city',
+    cellId: 'volodka_city:civic',
+    anchorSceneId: 'office_day',
+  },
+  zarema_room: {
+    sceneId: 'zarema_room',
+    kind: 'interior',
+    regionId: 'volodka_city',
+    cellId: 'volodka_city:volodka_home',
+    anchorSceneId: 'zarema_albert_room',
+  },
+  albert_backroom: {
+    sceneId: 'albert_backroom',
+    kind: 'interior',
+    regionId: 'volodka_city',
+    cellId: 'volodka_city:downtown',
+    anchorSceneId: 'cafe_evening',
+  },
 };
 
 /* ─── Lookup helpers ─── */
@@ -313,7 +378,7 @@ export function scenesOfKind(kind: WorldLocationKind): SceneId[] {
 }
 
 /** Per-scene chunk placement on the coarse world grid (hybrid migration layout). */
-export const SCENE_CHUNK_COORD: Record<SceneId, WorldChunkCoord> = {
+export const SCENE_CHUNK_COORD: Partial<Record<SceneId, WorldChunkCoord>> = {
   street_night: { x: 0, z: 0 },
   street_winter: { x: 1, z: 0 },
   cafe_evening: { x: 0, z: -1 },
@@ -332,6 +397,15 @@ export const SCENE_CHUNK_COORD: Record<SceneId, WorldChunkCoord> = {
   chk_forest_zorge: { x: 2, z: 1 },
   factory_basement: { x: -2, z: 0 },
   river_pier: { x: 2, z: 2 },
+  pier_evening: { x: 2, z: 2 },
+  chk_campfire_night: { x: 2, z: 1 },
+  factory_roof: { x: -1, z: 0 },
+  library_basement: { x: -1, z: 1 },
+  city_square: { x: 0, z: 0 },
+  underground_bunker: { x: 0, z: 0 },
+  guild_mainframe: { x: 0, z: 1 },
+  zarema_room: { x: -2, z: -1 },
+  albert_backroom: { x: 0, z: -1 },
 };
 
 const SCENE_BY_CHUNK = new Map<string, SceneId>();

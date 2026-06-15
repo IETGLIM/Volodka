@@ -11,6 +11,7 @@
  */
 
 import type { SceneId } from '@/shared/types/game';
+import { resolveDerivedSceneId } from '@/config/sceneInheritance';
 import { getSharedAudioContext, safeResume } from './SharedAudioContext';
 import { registerHmrDispose } from '@/shared/dev/hmrDispose';
 import { releaseConvolver } from './audio/AudioEngineCore';
@@ -136,7 +137,7 @@ interface SceneMusicConfig {
  * Scene → music config mapping.
  * All 14 scenes are covered across 6 mood categories.
  */
-const SCENE_MUSIC_CONFIGS: Record<SceneId, SceneMusicConfig> = {
+const SCENE_MUSIC_CONFIGS: Partial<Record<SceneId, SceneMusicConfig>> = {
   /* ─── 1. INDOOR/COZY ─── */
   volodka_room: {
     scale: SCALES.minor_pentatonic,
@@ -690,7 +691,7 @@ class MusicEngine {
     // Same scene — no change needed
     if (this.currentScene === sceneId) return;
 
-    const config = SCENE_MUSIC_CONFIGS[sceneId as SceneId];
+    const config = SCENE_MUSIC_CONFIGS[resolveDerivedSceneId(sceneId as SceneId)];
     if (!config) {
       // No music config for this scene — stop current music
       this.stopMusic();

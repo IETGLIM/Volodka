@@ -115,6 +115,15 @@ function getSceneConfigName(sceneId: SceneId): string {
     chk_forest_zorge: 'ЧК · Лес · Зорге',
     factory_basement: 'Подвал завода',
     river_pier: 'Пирс у реки',
+    chk_campfire_night: 'Костёр ЧК — ночь',
+    pier_evening: 'Пирс — вечер',
+    factory_roof: 'Крыша завода',
+    library_basement: 'Подвал библиотеки',
+    city_square: 'Центральная площадь',
+    underground_bunker: 'Бункер Сопротивления',
+    guild_mainframe: 'Серверная гильдии',
+    zarema_room: 'Комната Заремы',
+    albert_backroom: 'Подсобка кафе',
   };
   return names[sceneId] ?? sceneId;
 }

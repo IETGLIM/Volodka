@@ -19,6 +19,10 @@ export const NPC_ID_ALIASES: Readonly<Record<string, string>> = {
   npc_katya: 'kate',
   npc_alina: 'solnysh',
   npc_viktoria: 'maria',
+  npc_marat_echo: 'marat_echo',
+  npc_guild_defector: 'guild_defector',
+  npc_street_poet: 'street_poet',
+  npc_resistance_fighter: 'maxim',
 };
 
 export function resolveCanonicalNpcId(npcId: string): string {

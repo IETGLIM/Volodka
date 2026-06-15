@@ -4,6 +4,7 @@
  */
 
 import type { SceneId } from '@/shared/types/game';
+import { resolveDerivedSceneId } from '@/config/sceneInheritance';
 import type {
   AmbientLayer,
   AmbientMusicConfig,
@@ -401,7 +402,7 @@ class AudioEngine {
     // Stop current ambient
     this.stopAmbient();
 
-    const config = AMBIENT_CONFIGS[sceneId];
+    const config = AMBIENT_CONFIGS[resolveDerivedSceneId(sceneId as SceneId)];
     if (!config) {
       this.currentAmbientScene = sceneId;
       return; // No ambient for this scene

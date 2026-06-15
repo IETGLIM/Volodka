@@ -2,6 +2,7 @@
 /* Data-driven system that defines per-scene animated environmental effects */
 
 import type { SceneId } from '@/shared/types/game';
+import { resolveDerivedSceneId } from '@/config/sceneInheritance';
 
 // ─── Types ───
 
@@ -27,7 +28,7 @@ export interface EnvAnimation {
 
 // ─── Scene Animation Definitions ───
 
-const SCENE_ENV_ANIMATIONS: Record<SceneId, EnvAnimation[]> = {
+const SCENE_ENV_ANIMATIONS: Partial<Record<SceneId, EnvAnimation[]>> = {
   // ─── Volodka's Room: monitor scan + desk lamp flicker + CRT + lamp sway ───
   volodka_room: [
     {
@@ -455,7 +456,8 @@ const SCENE_ENV_ANIMATIONS: Record<SceneId, EnvAnimation[]> = {
 
 /** Get all environmental animations for a scene */
 export function getSceneEnvAnimations(sceneId: SceneId): EnvAnimation[] {
-  return SCENE_ENV_ANIMATIONS[sceneId] ?? [];
+  const root = resolveDerivedSceneId(sceneId);
+  return SCENE_ENV_ANIMATIONS[root] ?? [];
 }
 
 /** Get a specific animation by ID */

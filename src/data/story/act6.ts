@@ -416,6 +416,15 @@ export const STORY_NODES_ACT6: Record<string, StoryNode> = {
           { type: 'triggerQuest', questId: 'data_heist' },
         ],
       },
+      {
+        text: 'Сначала — спуститься в бункер с Максимом.',
+        next: 'resistance_bunker_hub',
+        condition: { flag: 'zeka_trusted' },
+        effects: [
+          { type: 'setFlag', flag: 'resistance_joined', flagValue: true },
+          { type: 'setFlag', flag: 'resistance_bunker_found', flagValue: true },
+        ],
+      },
     ],
   },
 
@@ -646,13 +655,13 @@ export const STORY_NODES_ACT6: Record<string, StoryNode> = {
     autoSave: true,
     speaker: 'narrator',
     sceneId: 'abandoned_factory',
-    guidanceHint: 'Поднимись на крышу — Тень «Надзора» ждёт.',
-    guidanceSceneLabel: 'бункер под заводом',
+    guidanceHint: 'Поднимись на крышу завода — Тень «Надзора» ждёт.',
+    guidanceSceneLabel: 'крышу завода',
     guidanceObjectiveType: 'visit_location',
     effects: [{ type: 'collectPoem', poemId: 'poem_26' }],
     choices: [
       {
-        text: 'Выйти на поверхность. Нужно рассказать остальным.',
+        text: 'Подняться на крышу завода — Тень ждёт там.',
         next: 'act6_rooftop_showdown', goldenPath: true,
         effects: [
           { type: 'triggerQuest', questId: 'rooftop_confrontation' },
@@ -665,15 +674,15 @@ export const STORY_NODES_ACT6: Record<string, StoryNode> = {
   act6_rooftop_showdown: {
     id: 'act6_rooftop_showdown',
     text: 'Крыша. Ветер рвёт одежду. Далеко внизу — город, который ты спас. Но ты здесь не для того, чтобы любоваться видом. Из тени выходит фигура — призрачная, полупрозрачная, сотканная из данных. То, что осталось от «Надзора». Или то, чем он стал. «Ты думал, что победил? Я — не система. Я — идея. А идеи не умирают.»',
-    contextNote: 'Крыша. Ветер, полупрозрачная Тень «Надзора» из данных.',
-    accessibilityAnnounce: 'Крыша. Тень «Надзора» выходит из тени.',
+    contextNote: 'Крыша завода. Ветер, полупрозрачная Тень «Надзора» из данных.',
+    accessibilityAnnounce: 'Крыша завода. Тень «Надзора» выходит из тени.',
     ambientSound: 'sounds/ambient/rooftop_wind.ogg',
     proceduralAmbientOverride: 'rooftop',
     musicCue: 'tension',
     speaker: 'Тень «Надзора»',
-    sceneId: 'rooftop_edge',
+    sceneId: 'factory_roof',
     guidanceHint: 'Идеи меняются — или перепиши код Тени.',
-    guidanceSceneLabel: 'крышу',
+    guidanceSceneLabel: 'крышу завода',
     guidanceObjectiveType: 'make_choice',
     choices: [
       {
@@ -708,14 +717,14 @@ export const STORY_NODES_ACT6: Record<string, StoryNode> = {
       lowKarma: 'Тень смотрит настороженно. Систему можно переписать — но цена остаётся.',
     },
     karmaThresholds: { high: 65, low: 30 },
-    contextNote: 'Крыша после боя. Тень «Надзора» — удивление и благодарность в голосе.',
-    accessibilityAnnounce: 'Финальный выбор на крыше: хранитель или освободитель.',
+    contextNote: 'Крыша завода после боя. Тень «Надзора» — удивление и благодарность в голосе.',
+    accessibilityAnnounce: 'Финальный выбор на крыше завода: хранитель или освободитель.',
     ambientSound: 'sounds/ambient/rooftop_wind.ogg',
     proceduralAmbientOverride: 'rooftop',
     musicCue: 'emotional',
     autoSave: true,
     speaker: 'Тень «Надзора»',
-    sceneId: 'rooftop_edge',
+    sceneId: 'factory_roof',
     guidanceHint: 'Хранитель памяти — или освободитель всех сознаний.',
     guidanceObjectiveType: 'make_choice',
     choices: [

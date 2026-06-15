@@ -2,6 +2,7 @@
 
 import type { SceneId, StoryEffect, InteractionType, ExamineData } from '@/shared/types/game';
 import { CHK_TRIGGER_ZONES } from './chkTolpa/triggerZones';
+import { NARRATIVE_EXPANSION_TRIGGER_ZONES } from './narrativeExpansionTriggerZones';
 
 export interface TriggerZone {
   id: string;
@@ -2111,5 +2112,6 @@ export const TRIGGER_ZONES: TriggerZone[] = [
      a vision cone to sneak around instead.
      ═══════════════════════════════════════════════════════════════════ */
 
+  ...NARRATIVE_EXPANSION_TRIGGER_ZONES,
   ...CHK_TRIGGER_ZONES,
 ];

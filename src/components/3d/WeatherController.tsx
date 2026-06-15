@@ -9,11 +9,12 @@ import {
 import { RainSystem } from './RainSystem';
 import { SnowSystem } from './SnowSystem';
 import type { SceneId } from '@/shared/types/game';
+import { resolveDerivedSceneId } from '@/config/sceneInheritance';
 
 /** Scene → weather type mapping */
 type WeatherType = 'rain_heavy' | 'rain_light' | 'snow' | 'snow_light' | 'none';
 
-const SCENE_WEATHER: Record<SceneId, WeatherType> = {
+const SCENE_WEATHER: Partial<Record<SceneId, WeatherType>> = {
   street_night: 'rain_heavy',
   street_winter: 'snow',
   rooftop_edge: 'rain_light',
@@ -53,9 +54,10 @@ export function WeatherController() {
 
   const weatherType = useMemo<WeatherType>(() => {
     if (!weatherEnabled) return 'none';
-    if (!fxBudget.allowRain && SCENE_WEATHER[sceneId]?.startsWith('rain')) return 'none';
-    if (!heavyFx.rain && SCENE_WEATHER[sceneId]?.startsWith('rain')) return 'none';
-    return SCENE_WEATHER[sceneId] ?? 'none';
+    const rootScene = resolveDerivedSceneId(sceneId);
+    if (!fxBudget.allowRain && SCENE_WEATHER[rootScene]?.startsWith('rain')) return 'none';
+    if (!heavyFx.rain && SCENE_WEATHER[rootScene]?.startsWith('rain')) return 'none';
+    return SCENE_WEATHER[rootScene] ?? 'none';
   }, [sceneId, weatherEnabled, fxBudget.allowRain, heavyFx.rain]);
 
   switch (weatherType) {
