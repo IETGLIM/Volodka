@@ -74,4 +74,22 @@ describe('checkStoryCondition', () => {
     expect(checkStoryCondition({ collectedPoem: 'poem_2' }, poemCtx).pass).toBe(true);
     expect(checkStoryCondition({ missingPoem: 'poem_2' }, ctx).pass).toBe(true);
   });
+
+  it('gates inventory item choices', () => {
+    const withWine = { ...ctx, ownedItemIdsKey: 'port_wine_777' };
+    expect(checkStoryCondition({ hasItem: 'port_wine_777' }, withWine).pass).toBe(true);
+    expect(checkStoryCondition({ hasItem: 'port_wine_777' }, ctx).pass).toBe(false);
+  });
+
+  it('gates minCollectedPoems', () => {
+    const threePoems = { ...ctx, collectedPoems: ['a', 'b', 'c'] as const };
+    expect(checkStoryCondition({ minCollectedPoems: 3 }, threePoems).pass).toBe(true);
+    expect(checkStoryCondition({ minCollectedPoems: 4 }, threePoems).pass).toBe(false);
+  });
+
+  it('gates missingFlag', () => {
+    const flagged = { ...ctx, flags: { done: true } };
+    expect(checkStoryCondition({ missingFlag: 'done' }, ctx).pass).toBe(true);
+    expect(checkStoryCondition({ missingFlag: 'done' }, flagged).pass).toBe(false);
+  });
 });

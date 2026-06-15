@@ -7,7 +7,7 @@ import type { NPCDefinition } from '@/shared/types/game'
 
 /* ── NPC-to-quest links (for quest assignment logic) ── */
 export const EXPANDED_NPC_QUEST_LINKS: Record<string, string[]> = {
-  vera: ['voice_of_the_past', 'solnysh_comfort', 'solnysh_roof_wine', 'solnysh_relocation'],
+  solnysh: ['voice_of_the_past', 'solnysh_comfort', 'solnysh_roof_wine', 'solnysh_relocation'],
   lyonya: ['solnysh_roof_wine', 'solnysh_relocation'],
   sergey: ['night_shift_mystery', 'night_watch'],
   lena: ['digital_ghost', 'secrets_of_old_code'],
@@ -17,6 +17,7 @@ export const EXPANDED_NPC_QUEST_LINKS: Record<string, string[]> = {
   zeka: ['data_heist', 'system_infiltration', 'system_takedown'],
   anya: ['data_heist', 'rebuild_the_guild'],
   fisherman_trofim: ['pier_watchman_key', 'basement_hum'],
+  baba_zina: ['machine_confession'],
 }
 
 /* ── All bark text variants (hostile/neutral/friendly arrays) ── */
@@ -25,7 +26,7 @@ export const EXPANDED_NPC_BARK_TEXTS: Record<string, {
   neutral: string[]
   friendly: string[]
 }> = {
-  vera: {
+  solnysh: {
     hostile: ['Не сейчас, Володька… мне нужно побыть одной.'],
     neutral: ['Привет. Ты снова задумчивый.', 'Умка скучала без тебя.'],
     friendly: ['Володька! Я как раз думала о тебе.', 'Помнишь, как мы бегали из гимназии?..'],
@@ -75,6 +76,11 @@ export const EXPANDED_NPC_BARK_TEXTS: Record<string, {
     neutral: ['Клюёт плохо. Река гудит.', 'Тридцать лет завод сторожил. Теперь воду сторожу.'],
     friendly: ['А, это ты. Садись, поплавок посторожим вместе.', 'Слышишь? Под полом гудело так же. Один в один.'],
   },
+  baba_zina: {
+    hostile: ['Машина не для любопытных. Уходи.'],
+    neutral: ['Слушай. Не трогай. Сначала слушай.', '«Заря-М» помнит каждого, кто спускался.'],
+    friendly: ['Поэт пришёл. Машина ждала.', 'Она пишет стихи — не для гильдии. Для тех, кто слышит.'],
+  },
 }
 
 /* ── Expanded NPC definitions (compatible with NPCDefinition type) ── */
@@ -82,7 +88,7 @@ export const EXPANDED_NPC_BARK_TEXTS: Record<string, {
 export const EXPANDED_NPCS: NPCDefinition[] = [
   /* ─────────────── АЛИНА «СОЛНЫШ» (vera) – лучшая подруга, дизайнер ─────────────── */
   {
-    id: 'vera',
+    id: 'solnysh',
     name: 'Солныш (Алина)',
     modelPath: '',
     scale: 0.92,
@@ -96,6 +102,7 @@ export const EXPANDED_NPCS: NPCDefinition[] = [
       [0, 0, 1.5],
     ],
     dialogueNodeId: 'vera_greeting',
+    scheduleId: 'schedule_solnysh',
     description: 'Алина — настоящее имя; Солныш — прозвище с детства, которым её зовёт Володька. Тридцать три года, блондинка с голубыми глазами. Лучшая подруга с детства, одноклассница из гимназии, дочь учительницы. Дизайнер и художник. Жена Лёни.',
     barkTexts: {
       hostile: 'Не сейчас, Володька… мне нужно побыть одной.',
@@ -391,6 +398,32 @@ export const EXPANDED_NPCS: NPCDefinition[] = [
       headAccessory: 'hat',
       height: 0.97,
       glowColor: '#88aa77',
+      silhouette: 'average',
+    },
+  },
+
+  /* ─────────────── БАБА ЗИНА – паяльщица, хранительница «Зари-М» ─────────────── */
+  {
+    id: 'baba_zina',
+    name: 'Баба Зина',
+    modelPath: '',
+    scale: 0.88,
+    animations: { idle: 'idle', walk: 'walk', talk: 'talk' },
+    defaultPosition: [-2.0, 0, -4.0],
+    patrolRadius: 0.4,
+    dialogueNodeId: 'baba_zina_greeting',
+    description: 'Восьмидесятилетняя паяльщица завода «Хром-М». Ежедневно спускается в подвал к «Заре-М» и говорит, что машина отвечает стихами.',
+    barkTexts: {
+      hostile: 'Машина не для любопытных. Уходи.',
+      neutral: 'Слушай. Не трогай. Сначала слушай.',
+      friendly: 'Поэт пришёл. Машина ждала.',
+    },
+    appearance: {
+      bodyColor: '#e8e4dc',
+      accentColor: '#c8c0b0',
+      headAccessory: 'none',
+      height: 0.85,
+      glowColor: '#aacc88',
       silhouette: 'average',
     },
   },

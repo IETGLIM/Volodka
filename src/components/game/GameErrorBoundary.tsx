@@ -7,7 +7,7 @@ import {
 import type { ErrorRecoveryContext } from '@/engine/recovery/errorRecoveryTypes';
 import { gameTelemetry } from '@/engine/recovery/gameTelemetry';
 import { recoveryManager } from '@/engine/recovery/recoveryManager';
-import { useErrorRecoveryContext } from '@/engine/recovery/useErrorRecoveryContext';
+import { useErrorRecoveryContext } from '@/hooks/useErrorRecoveryContext';
 
 type GameErrorBoundaryProps = {
   children: React.ReactNode;

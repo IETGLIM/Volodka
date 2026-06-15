@@ -48,6 +48,16 @@ describe('SettingsPanel', () => {
     expect(screen.getByText('Скорость ходьбы')).toBeInTheDocument();
   });
 
+  it('persists combat difficulty from controls tab', async () => {
+    const user = userEvent.setup();
+    render(<SettingsPanel open onClose={vi.fn()} />);
+
+    await user.click(screen.getByRole('button', { name: /Управление/ }));
+    await user.click(screen.getByRole('button', { name: 'Сюжетный' }));
+
+    expect(localStorage.getItem('volodka_combat_difficulty')).toBe('story');
+  });
+
   it('calls onClose from the close button and Escape', async () => {
     const user = userEvent.setup();
     const onClose = vi.fn();

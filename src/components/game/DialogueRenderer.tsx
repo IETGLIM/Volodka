@@ -31,6 +31,10 @@ import type {
   NPCRelation,
 } from '@/shared/types/game';
 import { checkStoryCondition, buildStoryConditionContext } from '@/shared/storyConditions';
+import {
+  buildDialogueLiveMessage,
+  resolveDialogueText,
+} from '@/engine/dialogue/resolveDialoguePresentation';
 import { NPC_PORTRAIT_COLORS } from './shared/NPCPortrait';
 import {
   CinematicNarrativeChoices,
@@ -103,7 +107,7 @@ interface HistoryLine {
 
 /* ── Component ── */
 export function DialogueRenderer() {
-  const { mode, showStoryOverlay, currentNodeId, karma, skills, flags, progression, npcRelations, timeOfDay, collectedPoems } = useDialogueContext();
+  const { mode, showStoryOverlay, currentNodeId, karma, skills, flags, progression, npcRelations, timeOfDay, collectedPoems, ownedItemIdsKey } = useDialogueContext();
   const setCurrentNodeId = useSetCurrentNodeId();
   const visitNode = useVisitNode();
 
@@ -148,20 +152,30 @@ export function DialogueRenderer() {
     () => (dialogueNodes ? dialogueNodes[currentNodeId] : undefined),
     [dialogueNodes, currentNodeId, dialoguePackVersion],
   );
+  const resolvedText = useMemo(
+    () => (node ? resolveDialogueText(node, karma) : ''),
+    [node, karma],
+  );
   const conditionCtx = useMemo(() => {
     const npcDef = node ? findNpcByName(node.speaker) : undefined;
     return buildStoryConditionContext({ karma, skills, flags, progression }, {
       npcRelations,
       npcId: npcDef?.id ?? '',
       timeOfDay,
+      ownedItemIdsKey,
     }, collectedPoems);
-  }, [karma, skills, flags, progression, npcRelations, timeOfDay, node, collectedPoems]);
-  const { displayed, done, skip, reducedMotion } = useNarrativeTypewriter(node?.text ?? '', 30);
+  }, [karma, skills, flags, progression, npcRelations, timeOfDay, node, collectedPoems, ownedItemIdsKey]);
+  const { displayed, done, skip, reducedMotion } = useNarrativeTypewriter(resolvedText, 30);
 
   // Apply node-level effects on mount
   const appliedRef = useRef<string | null>(null);
   useEffect(() => {
     if (node && appliedRef.current !== node.id) {
+      if (node.condition && !checkStoryCondition(node.condition, conditionCtx).pass) {
+        closeNarrativeOverlay();
+        return;
+      }
+
       appliedRef.current = node.id;
 
       visitNode(node.id);
@@ -174,9 +188,9 @@ export function DialogueRenderer() {
       }
 
       // Add to history (deferred to avoid sync setState in effect)
-      if (node.speaker && node.text) {
+      if (node.text) {
         const speaker = node.speaker;
-        const text = node.text;
+        const text = resolvedText;
         setTimeout(() => {
           setHistory((prev) => [...prev, { speaker, text, timestamp: Date.now() }]);
         }, 0);
@@ -193,7 +207,7 @@ export function DialogueRenderer() {
         applyEffects(node.effects);
       }
     }
-  }, [node, visitNode]);
+  }, [node, visitNode, conditionCtx, resolvedText]);
 
   const handleClose = useCallback(() => {
     audioEngine.playSfx('ui_close');
@@ -267,7 +281,7 @@ export function DialogueRenderer() {
 
   const npcData = useMemo(() => {
     const speaker = node?.speaker;
-    const text = node?.text ?? '';
+    const text = resolvedText;
     const npcDef = speaker ? findNpcByName(speaker) : undefined;
     const npcId = npcDef?.id ?? '';
     const portraitColors = npcId
@@ -286,16 +300,16 @@ export function DialogueRenderer() {
       emotion,
       relationLevel,
     };
-  }, [node?.speaker, node?.text, node?.emotion, node?.id, npcRelations]);
+  }, [node?.speaker, resolvedText, node?.emotion, node?.id, npcRelations]);
 
   if (!isOpen || !node) return null;
 
   const { npcId, portraitColors, emotion, relationLevel } = npcData;
 
   const speakerTitleId = `dialogue-speaker-${currentNodeId}`;
-  const typewriterLiveMessage = node.speaker
-    ? `${node.speaker}: ${displayed}${done ? '' : '…'}`
-    : `${displayed}${done ? '' : '…'}`;
+  const typewriterLiveMessage = node
+    ? buildDialogueLiveMessage(node, displayed, done, true)
+    : '';
 
   const relationHint =
     relationLevel === 'ally' ? ' · союзник' : relationLevel === 'enemy' ? ' · враг' : '';

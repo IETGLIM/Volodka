@@ -1,24 +1,13 @@
 /* ─── Volodka RPG – level-up notification + event helpers ─── */
 
 import type { PlayerProgression, PlayerSkills } from '@/shared/types/game';
+import type { LevelUpEvent } from '@/shared/types/levelUp';
+export type { LevelUpEvent } from '@/shared/types/levelUp';
 import { DEFAULT_SKILLS } from '@/data/constants';
 import { applyXpGain } from './shared';
 import { scheduleLevelUpEvent } from './storeEffects';
 
 export interface LevelUpPlayerSnapshot {
-  prevSkills: PlayerSkills;
-  prevKarma: number;
-}
-
-export interface LevelUpEvent {
-  newLevel: number;
-  prevLevel: number;
-  levelsGained: number;
-  perkPointsGained: number;
-  perkPointGained: boolean;
-  prevSkillPoints: number;
-  prevPerkPoints: number;
-  prevXp: number;
   prevSkills: PlayerSkills;
   prevKarma: number;
 }

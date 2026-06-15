@@ -4,13 +4,13 @@ import { AppBootRoot } from '@/app/AppBootRoot';
 import '@/app/globals.css';
 import { bindApplicationLayers } from '@/bootstrap/bindApplicationLayers';
 import { markAppStart } from '@/engine/performance/LoadingTimeline';
-import { applyVisualSettings } from '@/engine/visualSettings';
+import { applyGameSettings } from '@/engine/settings/SettingsFacade';
 import { initAccessibilitySettings } from '@/engine/accessibility/accessibilitySettings';
 import { initVoiceLineRegistry } from '@/engine/audio/VoiceLineRegistry';
 
 markAppStart();
 bindApplicationLayers();
-applyVisualSettings();
+applyGameSettings();
 initAccessibilitySettings();
 initVoiceLineRegistry();
 

@@ -8,8 +8,11 @@ export const STORY_NODES_ACT2: Record<string, StoryNode> = {
   act2_transition: {
     id: 'act2_transition',
     text: 'Прошли дни с момента инцидента. Ты не можешь перестать думать о зашифрованных стихах в коде. Город продолжает жить — неоновые вывески мигают, дроны жужжат, люди смотрят в терминалы. Но под поверхностью пульсирует что-то иное. Что-то, что ждёт, когда ты его найдёшь.',
+    contextNote: 'Вечерний город. Неон и дождь — под поверхностью что-то пульсирует.',
     speaker: 'narrator',
     sceneId: 'street_night',
+    guidanceHint: 'Виктория знает путь к Сети — или начни с кафе и Альберта.',
+    guidanceObjectiveType: 'visit_location',
     choices: [
       {
         text: 'Вернуться в кафе — там могут быть ответы',
@@ -31,8 +34,13 @@ export const STORY_NODES_ACT2: Record<string, StoryNode> = {
   act2_albert_hint: {
     id: 'act2_albert_hint',
     text: 'Альберт сидит в своём углу, но сегодня он напряжён. Его пальцы постукивают по столу — нервный ритм, не похожий на обычную созерцательность. «Володька,» — говорит он тихо, — «тебе не кажется странным, что стихи появились именно в коде гильдии? Это не случайность. Кто-то хотел, чтобы их нашли. Но кто-то другой — чтобы уничтожили.»',
+    contextNote: 'Угол «Синей ямы». Альберт нервно постукивает пальцами по столу.',
+    ambientSound: 'sounds/ambient/cafe_jazz_quiet.ogg',
     speaker: 'narrator',
     sceneId: 'cafe_evening',
+    guidanceNpcId: 'npc_albert',
+    guidanceHint: 'Спроси Альберта о стихах в коде гильдии.',
+    guidanceObjectiveType: 'talk_to_npc',
     choices: [
       {
         text: 'Ты знаешь, кто мог их туда поместить?',
@@ -50,8 +58,12 @@ export const STORY_NODES_ACT2: Record<string, StoryNode> = {
   act2_albert_network_hint: {
     id: 'act2_albert_network_hint',
     text: 'Альберт оглядывается и понижает голос. «Есть люди... не просто люди — сеть. Они верят, что код и поэзия — одно. Что стихи, встроенные в программы, нельзя стереть, не разрушив саму систему. Я слышал слухи, но никогда не видел доказательств. До сих пор.» Он смотрит тебе в глаза. «Инцидент #4729 — это их рук дело. Или их приглашение.»',
+    contextNote: 'Альберт шепчет о подпольной Сети поэтов-программистов.',
     speaker: 'narrator',
     sceneId: 'cafe_evening',
+    guidanceNpcId: 'npc_albert',
+    guidanceHint: 'Узнай, как найти Сеть.',
+    guidanceObjectiveType: 'talk_to_npc',
     choices: [
       {
         text: 'Как мне найти эту сеть?',
@@ -71,14 +83,23 @@ export const STORY_NODES_ACT2: Record<string, StoryNode> = {
 
   act2_albert_pre_crash: {
     id: 'act2_albert_pre_crash',
-    text: '«До Краха...» — Альберт задумывается. «До Краха существовал проект. Неофициальный. Программисты-поэты встраивали стихи в структуру данных — в комментарии, в имена переменных, даже в алгоритмы. Это называлось «живой код». Код, который не просто работает, но и чувствует. Гильдия после Краха объявила это «паразитической нагрузкой» и начала зачистку.»',
+    text: '«До Краха...» — Альберт задумывается. «До Краха существовал проект. Неофициальный. Программисты-поэты встраивали стихи в структуру данных — в комментарии, в имена переменных, даже в алгоритмы. Это называлось «живой код». Код, который не просто работает, но и чувствует. Гильдия после Краха объявила это «паразитической нагрузкой» и начала зачистку.» Он выписывает на салфетке четыре строки — обрывок, который помнит наизусть.',
+    contextNote: 'Альберт рассказывает о «живом коде» и пишет фрагмент на салфетке.',
+    soundEffect: 'item_use',
     speaker: 'narrator',
     sceneId: 'cafe_evening',
+    guidanceNpcId: 'npc_albert',
+    guidanceHint: '«Живой код» — ключ к Сети.',
+    guidanceObjectiveType: 'talk_to_npc',
     choices: [
       {
         text: 'Но кто-то продолжает традицию?',
         next: 'act2_albert_network_hint',
-        effects: [{ type: 'addSkill', skill: 'writing', value: 1 }],
+        effects: [
+          { type: 'addSkill', skill: 'writing', value: 1 },
+          { type: 'collectPoem', poemId: 'poem_6' },
+          { type: 'discoverLore', loreId: 'lore_poem_virus' },
+        ],
       },
       {
         text: '«Живой код» — звучит как миф.',
@@ -91,8 +112,13 @@ export const STORY_NODES_ACT2: Record<string, StoryNode> = {
   act2_maria_search: {
     id: 'act2_maria_search',
     text: 'Ты идёшь по вечерним улицам. Неоновые вывески отражаются в мокром асфальте. Ты ищешь Викторию — но она находит тебя первой. Из тени между двумя зданиями выступает знакомый силуэт. «Ты готов,» — говорит она без приветствия. «Готов к чему?» — спрашиваешь ты. «К правде о том, что скрывается под городом. Под кодом. Под всем.»',
+    contextNote: 'Вечерний переулок. Из тени выходит Виктория.',
+    ambientSound: 'sounds/ambient/street_night_rain.ogg',
     speaker: 'narrator',
     sceneId: 'street_night',
+    guidanceHint: 'Виктория найдёт вас сама. Ищите её в вечерних переулках.',
+    guidanceObjectiveType: 'talk_to_npc',
+    guidanceNpcId: 'npc_maria',
     choices: [
       {
         text: 'Веди меня.',
@@ -114,8 +140,12 @@ export const STORY_NODES_ACT2: Record<string, StoryNode> = {
   act2_maria_explains_network: {
     id: 'act2_maria_explains_network',
     text: '«Сеть,» — Виктория произносит это слово с почти религиозным трепетом. «Это не организация. Это... ритм. Люди, которые слышат стихи в машинном коде. Программисты, которые не могут не писать поэзию в комментариях. Хакеры, которые прячут Ахматову в лог-файлах. Мы — Сеть. И мы существуем, пока существует хотя бы одна строка стиха в цифровом мире.»',
+    contextNote: 'Виктория объясняет, что такое Сеть.',
     speaker: 'narrator',
     sceneId: 'street_night',
+    guidanceNpcId: 'npc_maria',
+    guidanceHint: 'Реши, готов ли ты стать частью Сети.',
+    guidanceObjectiveType: 'make_choice',
     choices: [
       {
         text: 'Я хочу стать частью этого.',
@@ -139,8 +169,14 @@ export const STORY_NODES_ACT2: Record<string, StoryNode> = {
   act2_maria_meeting_place: {
     id: 'act2_maria_meeting_place',
     text: 'Виктория ведёт тебя через лабиринт переулков. Вы проходите мимо закрытых магазинов, мимо спящих бездомных, мимо патрульных дронов, зависших над перекрёстками. Наконец она останавливается у неприметной двери в подвале. На косяке нацарапан символ — свиток и единица. «За этой дверью — Сеть,» — шепчет она. «Но войти может не каждый. Докажи, что ты — свой.»',
+    contextNote: 'Дверь в подвал. На косяке — символ свитка и единицы.',
+    accessibilityAnnounce: 'Виктория привела к двери Сети.',
     speaker: 'narrator',
     sceneId: 'street_night',
+    guidanceNpcId: 'npc_maria',
+    guidanceHint: 'Продекламируй стих — это твой пароль.',
+    guidanceObjectiveType: 'make_choice',
+    effects: [{ type: 'addStat', stat: 'stress', value: -5 }],
     choices: [
       {
         text: 'Продекламировать стихотворение из найденных',
@@ -173,8 +209,12 @@ export const STORY_NODES_ACT2: Record<string, StoryNode> = {
   act2_network_hesitation: {
     id: 'act2_network_hesitation',
     text: 'Виктория смотрит на тебя с разочарованием, но не с гневом. «Я понимаю,» — говорит она тихо. «Страх — естественная реакция. Но знай: каждый день промедления — это стих, который стирается навсегда. Гильдия не дремлет. Когда будешь готов — возвращайся. Дверь будет открыта.» Она растворяется в тени, оставляя тебя одного в переулке.',
+    contextNote: 'Пустой переулок. Виктория растворилась в тени.',
     speaker: 'narrator',
     sceneId: 'street_night',
+    guidanceNpcId: 'npc_maria',
+    guidanceHint: 'Вернись к двери, когда будешь готов — или подумай в кафе.',
+    guidanceObjectiveType: 'make_choice',
     choices: [
       {
         text: 'Вернуться к двери — я готов',
@@ -188,16 +228,23 @@ export const STORY_NODES_ACT2: Record<string, StoryNode> = {
       {
         text: 'Уйти и подумать',
         next: 'act2_cafe_reflection',
-        effects: [{ type: 'addSkill', skill: 'empathy', value: 1 }],
+        effects: [
+          { type: 'addSkill', skill: 'empathy', value: 1 },
+          { type: 'addStat', stat: 'energy', value: -5 },
+        ],
       },
     ],
   },
 
   act2_cafe_reflection: {
     id: 'act2_cafe_reflection',
-    text: 'Ты сидишь в «Синей яме», обхватив кружку обеими руками. Кофё давно остыл. Бариста бросает на тебя тревожные взгляды. За окном моросит дождь. Ты думаешь о стихах, спрятанных в коде, о Виктории, о Сети. Что-то происходит в этом городе — что-то большое. И ты уже не можешь остаться в стороне.',
+    text: 'Ты сидишь в «Синей яме», обхватив кружку обеими руками. Кофе давно остыл. Бариста бросает на тебя тревожные взгляды. За окном моросит дождь. Ты думаешь о стихах, спрятанных в коде, о Виктории, о Сети. Что-то происходит в этом городе — что-то большое. И ты уже не можешь остаться в стороне.',
+    contextNote: 'Ночное кафе. Остывший кофе, дождь за окном.',
+    ambientSound: 'sounds/ambient/cafe_jazz_quiet.ogg',
     speaker: 'narrator',
     sceneId: 'cafe_evening',
+    guidanceHint: 'Вернись к Сети, поговори с баристой или зайди в библиотеку.',
+    guidanceObjectiveType: 'make_choice',
     choices: [
       { text: 'Вернуться к двери Сети', next: 'act2_network_initiation' },
       {
@@ -213,16 +260,23 @@ export const STORY_NODES_ACT2: Record<string, StoryNode> = {
       {
         text: 'Пойти в библиотеку — там должны быть старые архивы',
         next: 'library_entrance',
-        effects: [{ type: 'addSkill', skill: 'logic', value: 1 }],
+        effects: [
+          { type: 'addSkill', skill: 'logic', value: 1 },
+          { type: 'setFlag', flag: 'act2_library_from_cafe', flagValue: true },
+        ],
       },
     ],
   },
 
   act2_barista_conversation: {
     id: 'act2_barista_conversation',
-    text: 'Бариста пододвигается ближе. Его металлическая рука тихо жужжит. «Слышал, ты ищешь что-то,» — говорит он негромко. «Могу помочь. У меня есть задняя комната. Никто не знает о ней — даже гильдия. Если тебе нужно место для... работы.» Он подмигивает, и ты замечаешь на его запясте маленькую татуировку — свиток и единица.',
+    text: 'Бариста пододвигается ближе. Его металлическая рука тихо жужжит. «Слышал, ты ищешь что-то,» — говорит он негромко. «Могу помочь. У меня есть задняя комната. Никто не знает о ней — даже гильдия. Если тебе нужно место для... работы.» Он подмигивает, и ты замечаешь на его запястье маленькую татуировку — свиток и единица.',
+    contextNote: 'Бариста шепчет о задней комнате. На запястье — татуировка Сети.',
     speaker: 'narrator',
     sceneId: 'cafe_evening',
+    guidanceNpcId: 'npc_barista',
+    guidanceHint: 'Спроси бариста — он знает больше, чем кажется.',
+    guidanceObjectiveType: 'talk_to_npc',
     choices: [
       {
         text: 'Ты тоже из Сети?',
@@ -242,8 +296,13 @@ export const STORY_NODES_ACT2: Record<string, StoryNode> = {
   act2_barista_revealed: {
     id: 'act2_barista_revealed',
     text: '«Из Сети?» — он усмехается. «Я — узел Сети. Кафе — мой терминал. Каждый «особый» кофе, который я подаю — это зашифрованное сообщение. Каждый третий вторник в подсобку приходят люди, и мы читаем стихи вслух, пока серверы гильдии перезагружаются. Ты можешь использовать заднюю комнату. Договорились?»',
+    contextNote: 'Бариста признаётся: кафе — узел Сети.',
+    accessibilityAnnounce: 'Бариста предлагает явочную квартиру в подсобке.',
     speaker: 'narrator',
     sceneId: 'cafe_evening',
+    guidanceNpcId: 'npc_barista',
+    guidanceHint: 'Договорись о подсобке — или сначала пройди посвящение.',
+    guidanceObjectiveType: 'make_choice',
     choices: [
       {
         text: 'Договорились. Это будет явочная квартира.',
@@ -259,14 +318,54 @@ export const STORY_NODES_ACT2: Record<string, StoryNode> = {
         next: 'act2_network_initiation',
         effects: [{ type: 'addSkill', skill: 'writing', value: 1 }],
       },
+      {
+        text: 'Сеть уже приняла меня — подсобка станет штабом',
+        next: 'act2_barista_followup',
+        condition: { flag: 'network_joined' },
+      },
+    ],
+  },
+
+  act2_barista_followup: {
+    id: 'act2_barista_followup',
+    text: 'Бариста кивает без удивления. «Знал, что вернёшься своим. Подсобка ждала — терминал уже пульсирует зелёным. Каждый узел Сети должен иметь тихое место. У нас — кофе и шифр. У тебя теперь — ключ.» Он сдвигает стеллаж: за ним мерцает экран.',
+    contextNote: 'Подсобка кафе. За стеллажом — зашифрованный терминал Сети.',
+    soundEffect: 'ui_open',
+    speaker: 'narrator',
+    sceneId: 'cafe_evening',
+    guidanceNpcId: 'npc_barista',
+    guidanceHint: 'Осмотри терминал в подсобке.',
+    guidanceObjectiveType: 'complete_quest',
+    choices: [
+      {
+        text: 'Осмотреть терминал',
+        next: 'act2_safehouse_terminal',
+        effects: [
+          { type: 'setFlag', flag: 'cafe_safehouse_agreed', flagValue: true },
+          { type: 'triggerQuest', questId: 'cafe_safehouse' },
+        ],
+      },
+      {
+        text: 'Поблагодарить и идти к Хранилищу',
+        next: 'act2_vault_revealed',
+        effects: [
+          { type: 'npcChange', npcId: 'cafe_barista', npcChange: { relation: 5 } },
+          { type: 'addKarma', value: 2 },
+        ],
+      },
     ],
   },
 
   act2_safehouse_agreed: {
     id: 'act2_safehouse_agreed',
     text: 'Бариста кивает и протягивает ключ-карту. «Подсобка. Стеллаж с кофеварками — сдвинь вторую полку. За ней — терминал. Старый, но рабочий. Зашифрованный канал — мой подарок Сети.» Ты берёшь ключ-карту. Она тёплая на ощупь — как будто живая.',
+    contextNote: 'Бариста протягивает ключ-карту от подсобки.',
+    soundEffect: 'item_use',
     speaker: 'narrator',
     sceneId: 'cafe_evening',
+    guidanceNpcId: 'npc_barista',
+    guidanceHint: 'Осмотри подсобку — там терминал Сети.',
+    guidanceObjectiveType: 'visit_location',
     choices: [
       {
         text: 'Осмотреть подсобку',
@@ -290,8 +389,12 @@ export const STORY_NODES_ACT2: Record<string, StoryNode> = {
   act2_safehouse_terminal: {
     id: 'act2_safehouse_terminal',
     text: 'Подсобка тесная, пахнет обжаренными зёрнами и озоном. За стеллажом — ниша, в которой стоит древний терминал. Экран мерцает зелёным, как старый монитор из до-Краховских времён. На нём уже открыт зашифрованный канал связи. В углу экрана мигает иконка — конверт с текстом. Кто-то уже прислал сообщение.',
+    contextNote: 'Подсобка. Древний терминал мигает зелёным — новое сообщение.',
+    ambientSound: 'sounds/ambient/backroom_hum.ogg',
     speaker: 'narrator',
     sceneId: 'cafe_evening',
+    guidanceHint: 'Прочитай сообщение на терминале.',
+    guidanceObjectiveType: 'collect_item',
     choices: [
       {
         text: 'Прочитать сообщение',
@@ -316,8 +419,13 @@ export const STORY_NODES_ACT2: Record<string, StoryNode> = {
   act2_safehouse_message: {
     id: 'act2_safehouse_message',
     text: 'Сообщение простое: «Добро пожаловать в Сеть. Твоё стихотворение — ключ. Хранилище ждёт. — Д.» Кто такой Д.? Дмитрий? Тот самый разработчик из гильдии? Если он в Сети — значит, у вас есть союзник внутри. Это меняет всё.',
+    contextNote: 'На экране — сообщение с подписью «Д.»',
+    accessibilityAnnounce: 'Зашифрованное сообщение от союзника в гильдии.',
+    soundEffect: 'notify',
     speaker: 'narrator',
     sceneId: 'cafe_evening',
+    guidanceHint: 'Ответь Дмитрию или иди на посвящение.',
+    guidanceObjectiveType: 'make_choice',
     choices: [
       {
         text: 'Ответить на сообщение',
@@ -338,8 +446,20 @@ export const STORY_NODES_ACT2: Record<string, StoryNode> = {
   act2_dmitry_contact: {
     id: 'act2_dmitry_contact',
     text: 'Ты печатаешь ответ на зелёном экране. Секунды тишины. Затем — ответ: «Я знаю, кто ты. Ты расшифровал инцидент #4729. Это я его создал. Каждый стих в том коде — мой. Мне нужна помощь выбраться из гильдии. Встретимся завтра в офисе. Только будь осторожен — Александр следит.»',
+    textVariants: {
+      highKarma: 'Ты печатаешь ответ — честно, без страха. Ответ приходит быстро: «Я знаю, кто ты. Ты расшифровал #4729. Это мои стихи. Мне нужен союзник, не шпион. Встретимся в офисе. Александр следит — но мы справимся.»',
+      neutralKarma: 'Ты печатаешь ответ на зелёном экране. Секунды тишины. Затем — ответ: «Я знаю, кто ты. Ты расшифровал инцидент #4729. Это я его создал. Каждый стих в том коде — мой. Мне нужна помощь выбраться из гильдии. Встретимся завтра в офисе. Только будь осторожен — Александр следит.»',
+      lowKarma: 'Пальцы дрожат над клавишами. Ответ резкий: «Знаю, кто ты. #4729 — мой. Не предавай — гильдия уже нюхает. Встреча в офисе. Один неверный шаг — и нас обоих сотрут.»',
+    },
+    karmaThresholds: { high: 70, low: 35 },
+    contextNote: 'Терминал в подсобке. Пришёл ответ от «Д.»',
+    autoSave: true,
+    soundEffect: 'notify',
     speaker: 'narrator',
     sceneId: 'cafe_evening',
+    guidanceNpcId: 'office_dmitry',
+    guidanceHint: 'Дмитрий предлагает встречу в офисе — решай осторожно.',
+    guidanceObjectiveType: 'talk_to_npc',
     choices: [
       {
         text: 'Согласиться на встречу',
@@ -364,16 +484,31 @@ export const STORY_NODES_ACT2: Record<string, StoryNode> = {
   act2_network_initiation: {
     id: 'act2_network_initiation',
     text: 'За дверью — лестница вниз. Стены исписаны стихами — одни выцарапаны, другие нарисованы светящейся краской, третьи просто напечатаны на бумаге и приклеены. Внизу — небольшое помещение, освещённое свечами и экранами. Человек десять сидят полукругом. В центре — пустой стул. «Садись,» — говорит Виктория. «Пришло время клятвы.»',
+    textVariants: {
+      highKarma: 'Подвал встречает теплом свечей. Десять человек смотрят без осуждения — как будто ждали именно тебя. Виктория указывает на стул: «Пришло время клятвы.»',
+      neutralKarma: 'За дверью — лестница вниз. Стены исписаны стихами. Внизу — помещение со свечами и экранами. «Садись,» — говорит Виктория. «Пришло время клятвы.»',
+      lowKarma: 'Подвал давит на плечи. Взгляды цепляются — кто-то хмурится. Виктория жестом зовёт к стулу: «Клятва. Или уходи сейчас.»',
+    },
+    karmaThresholds: { high: 70, low: 35 },
+    contextNote: 'Вы в подвале, освещённом свечами. Десять человек сидят полукругом.',
+    ambientSound: 'sounds/ambient/underground_hum.ogg',
+    accessibilityAnnounce: 'Виктория предлагает принести клятву Сети.',
+    musicCue: 'emotional',
+    autoSave: true,
     speaker: 'narrator',
     sceneId: 'abandoned_factory',
+    guidanceHint: 'Принеси клятву — слово связывает сильнее кода.',
+    guidanceObjectiveType: 'make_choice',
     choices: [
       {
         text: 'Принести клятву Сети',
         next: 'act2_network_oath', goldenPath: true,
+        condition: { minKarma: 35, minSkill: { writing: 3 } },
         effects: [
           { type: 'addKarma', value: 8 },
           { type: 'setFlag', flag: 'network_oath_taken', flagValue: true },
           { type: 'setFlag', flag: 'network_joined', flagValue: true },
+          { type: 'addStat', stat: 'stress', value: -10 },
         ],
       },
       {
@@ -391,6 +526,7 @@ export const STORY_NODES_ACT2: Record<string, StoryNode> = {
         effects: [
           { type: 'addSkill', skill: 'writing', value: 1 },
           { type: 'addKarma', value: 3 },
+          { type: 'addStat', stat: 'stress', value: -5 },
         ],
       },
     ],
@@ -399,8 +535,20 @@ export const STORY_NODES_ACT2: Record<string, StoryNode> = {
   act2_network_oath: {
     id: 'act2_network_oath',
     text: '«Я, Володька, клянусь: ни одна строка не будет забыта. Ни один стих не будет стёрт. Пока бьётся сердце и мигает курсор — я буду хранить слово.» Комната взрывается аплодисментами. Кто-то вручает тебе маленький чип — ключ Сети, зашифрованный канал связи. Ты теперь часть чего-то большего, чем ты сам.',
+    textVariants: {
+      highKarma: 'Ты произносишь клятву, и каждое слово отзывается в сердцах присутствующих. Аплодисменты — тёплые, без фанатизма. Чип в ладони — как обещание.',
+      neutralKarma: 'Ты произносишь слова. Комната слушает. Аплодисменты. Чип Сети — твой.',
+      lowKarma: 'Ты колеблешься, но слова звучат. Кто-то хмурится, но чип всё равно передают — Сеть не отвергает сомневающихся.',
+    },
+    karmaThresholds: { high: 70, low: 35 },
+    contextNote: 'Клятва Сети произнесена. В руках — чип связи.',
+    accessibilityAnnounce: 'Вы приняты в Сеть.',
+    musicCue: 'emotional',
+    soundEffect: 'quest_complete',
     speaker: 'narrator',
     sceneId: 'abandoned_factory',
+    guidanceHint: 'Спроси о Хранилище или послушай чтение стихов.',
+    guidanceObjectiveType: 'make_choice',
     choices: [
       {
         text: 'Спросить о Хранилище',
@@ -424,13 +572,15 @@ export const STORY_NODES_ACT2: Record<string, StoryNode> = {
     ],
   },
 
-  /* ─── ACT 2 missing nodes ─── */
-
   act2_network_members: {
     id: 'act2_network_members',
     text: 'Ты обходишь комнату, пожимая руки. Программистка с татуировкой Мандельштама на запястье. Бывший учитель, который прячет стихи в школьных учебниках. Студент, создавший чат-бота, который цитирует Пастернака. Каждый — узел Сети, каждый — хранитель слова. Ты чувствуешь, как тебя окутывает тепло принадлежности.',
+    contextNote: 'Круг членов Сети — каждый хранит слово по-своему.',
+    ambientSound: 'sounds/ambient/underground_hum.ogg',
     speaker: 'narrator',
     sceneId: 'abandoned_factory',
+    guidanceHint: 'Познакомься с узлами Сети.',
+    guidanceObjectiveType: 'talk_to_npc',
     choices: [
       {
         text: 'Послушать, как они читают стихи',
@@ -438,6 +588,15 @@ export const STORY_NODES_ACT2: Record<string, StoryNode> = {
         effects: [
           { type: 'addSkill', skill: 'empathy', value: 1 },
           { type: 'addKarma', value: 2 },
+        ],
+      },
+      {
+        text: 'Попросить стих у программистки с татуировкой',
+        next: 'reading_reaction',
+        effects: [
+          { type: 'addSkill', skill: 'persuasion', value: 1 },
+          { type: 'setFlag', flag: 'shared_poem_code_story', flagValue: true },
+          { type: 'collectPoem', poemId: 'poem_13' },
         ],
       },
       {
@@ -453,9 +612,13 @@ export const STORY_NODES_ACT2: Record<string, StoryNode> = {
 
   reading_reaction: {
     id: 'reading_reaction',
-    text: 'Женщина с татуировкой встаёт и начинает читать. Её голос — тихий, но уверенный — заполняет подвал. «В этом мире, где строки стираются, / в этом коде, где смысл теряется...» Стихотворение — о потери и памяти, о словах, которые не хотят умирать. По твоей щеке катится слеза. Ты не один в этом чувстве.',
+    text: 'Женщина с татуировкой встаёт и начинает читать. Её голос — тихий, но уверенный — заполняет подвал. «В этом мире, где строки стираются, / в этом коде, где смысл теряется...» Стихотворение — о потере и памяти, о словах, которые не хотят умирать. По твоей щеке катится слеза. Ты не один в этом чувстве.',
+    contextNote: 'В подвале звучит чтение стихов вслух.',
+    musicCue: 'emotional',
     speaker: 'narrator',
     sceneId: 'abandoned_factory',
+    guidanceHint: 'Поблагодари чтеца или попроси научить.',
+    guidanceObjectiveType: 'make_choice',
     choices: [
       {
         text: 'Поблагодарить её за стихи',
@@ -480,8 +643,13 @@ export const STORY_NODES_ACT2: Record<string, StoryNode> = {
   volunteer_read: {
     id: 'volunteer_read',
     text: 'Ты поднимаешься. Горло перехватило, но ты начинаешь. Стихотворение, которое ты нашёл в коде, — оно живёт в тебе, каждую строку ты помнишь наизусть. Голос крепнет с каждым словом. Когда ты замолкаешь, в комнате — тишина. Потом — овации. Виктория смотрит на тебя, и в её глазах — что-то новое. Уважение.',
+    contextNote: 'Вы читаете стих вслух в кругу Сети.',
+    accessibilityAnnounce: 'Овации после чтения стиха.',
+    musicCue: 'emotional',
     speaker: 'narrator',
     sceneId: 'abandoned_factory',
+    guidanceHint: 'Предложи чтение на мосту или спроси о Хранилище.',
+    guidanceObjectiveType: 'make_choice',
     choices: [
       {
         text: 'Предложить читать стихи на мосту — для всех',
@@ -506,8 +674,19 @@ export const STORY_NODES_ACT2: Record<string, StoryNode> = {
   act2_bridge: {
     id: 'act2_bridge',
     text: 'Мост через замёрзшую реку. Неоновые огни отражаются в льду. Ты стоишь с членами Сети, и прохожие останавливаются. Кто-то смеётся — «поэты!» — кто-то бросает монету. Но некоторые замедляют шаг и слушают. Ты чувствуешь насмешку, но и отклик — тёплый, неожиданный. Слово достучалось.',
+    textVariants: {
+      highKarma: 'Мост надо льдом. Город слушает — не все, но достаточно. Смех смешивается с тишиной, и в тишине — отклик.',
+      neutralKarma: 'Мост через замёрзшую реку. Прохожие останавливаются. Слово достучалось.',
+      lowKarma: 'Насмешки громче аплодисментов. Но один слушатель остаётся — и этого достаточно, чтобы не уйти.',
+    },
+    karmaThresholds: { high: 70, low: 35 },
+    contextNote: 'Зимний мост. Сеть читает стихи прохожим.',
+    ambientSound: 'sounds/ambient/winter_bridge.ogg',
+    soundEffect: 'notify',
     speaker: 'narrator',
     sceneId: 'street_winter',
+    guidanceHint: 'Сохрани достоинство — шут побеждает молчанием.',
+    guidanceObjectiveType: 'collect_item',
     choices: [
       {
         text: 'Продолжать читать — громче',
@@ -543,8 +722,22 @@ export const STORY_NODES_ACT2: Record<string, StoryNode> = {
   act2_vault_revealed: {
     id: 'act2_vault_revealed',
     text: '«Хранилище,» — шепчет Виктория. «Сервер, спрятанный после Краха. Там — всё. Все стихотворения, которые гильдия стёрла из официальных баз данных. Пушкин, Цветаева, Бродский, Мандельштам — все, кого попытались забыть. Хранилище — это наша Библиотека Александрия. И гильдия ищет его, чтобы сжечь во второй раз.»',
+    textVariants: {
+      highKarma: 'Виктория говорит о Хранилище с надеждой. Ты чувствуешь правоту — стихи должны жить.',
+      neutralKarma: '«Хранилище,» — шепчет Виктория. «Сервер со стёртыми стихами. Гильдия ищет его снова.»',
+      lowKarma: 'Ты оглядываешься. Кажется, за вами следят. Но стихи важнее страха — Виктория шепчет о Хранилище.',
+    },
+    karmaThresholds: { high: 70, low: 35 },
+    condition: { missingFlag: 'vault_access_granted' },
+    contextNote: 'Виктория рассказывает о тайном Хранилище стихов.',
+    accessibilityAnnounce: 'Раскрыто существование Хранилища.',
+    musicCue: 'mystery',
+    autoSave: true,
     speaker: 'narrator',
     sceneId: 'abandoned_factory',
+    guidanceNpcId: 'npc_maria',
+    guidanceHint: 'Защити Хранилище — договорись с баристой о явочной.',
+    guidanceObjectiveType: 'make_choice',
     choices: [
       {
         text: 'Договориться с баристой о явочной квартире',
@@ -564,6 +757,7 @@ export const STORY_NODES_ACT2: Record<string, StoryNode> = {
         effects: [
           { type: 'addSkill', skill: 'logic', value: 2 },
           { type: 'setFlag', flag: 'vault_copy_plan', flagValue: true },
+          { type: 'setFlag', flag: 'vault_access_granted', flagValue: true },
         ],
       },
       {
@@ -572,6 +766,7 @@ export const STORY_NODES_ACT2: Record<string, StoryNode> = {
         effects: [
           { type: 'addSkill', skill: 'intuition', value: 1 },
           { type: 'addKarma', value: 2 },
+          { type: 'setFlag', flag: 'vault_access_granted', flagValue: true },
         ],
       },
     ],
@@ -580,8 +775,19 @@ export const STORY_NODES_ACT2: Record<string, StoryNode> = {
   act2_dmitry_office_meeting: {
     id: 'act2_dmitry_office_meeting',
     text: 'Офис гильдии, поздний вечер. Дмитрий ждёт у терминала — худой, усталый, с глазами загнанного зверя. «Я пять лет прятал стихи в коде,» — говорит он быстро, оглядываясь. «Каждый комментарий, каждая переменная — послание. Александр знает. Он всегда знал. Но он... он не такой, как кажется. Есть Протокол Забвения — программа, которая стирает стихи навсегда. Её нужно остановить.»',
+    textVariants: {
+      highKarma: 'Дмитрий говорит открыто — в его голосе надежда, не паника. Протокол Забвения можно остановить, если не сдаваться.',
+      neutralKarma: 'Офис гильдии, поздний вечер. Дмитрий шепчет о Протоколе Забвения.',
+      lowKarma: 'Дмитрий оглядывается на каждый шорох. «Протокол Забвения» — слово звучит как приговор.',
+    },
+    karmaThresholds: { high: 70, low: 35 },
+    contextNote: 'Пустой офис гильдии. Дмитрий ждёт у терминала.',
+    ambientSound: 'sounds/ambient/server_room_hum.ogg',
     speaker: 'narrator',
     sceneId: 'office_day',
+    guidanceNpcId: 'office_dmitry',
+    guidanceHint: 'Узнай, как остановить Протокол Забвения.',
+    guidanceObjectiveType: 'talk_to_npc',
     choices: [
       {
         text: 'Как отключить Протокол?',
@@ -609,8 +815,12 @@ export const STORY_NODES_ACT2: Record<string, StoryNode> = {
   cafe_evening_end: {
     id: 'cafe_evening_end',
     text: 'Кафе закрывается. Бариста гасит неон, и подвальное помещение погружается в полумрак. Ты сидишь один, обдумывая всё, что узнал. За окном идёт снег — первый в этом году. Ты подносишь кружку к губам, и в остывшем кофе отражается твоё лицо — другое, чем вчера. Мир не тот. И ты — не тот.',
+    contextNote: 'Кафе закрывается. За окном — первый снег.',
+    ambientSound: 'sounds/ambient/cafe_jazz_quiet.ogg',
     speaker: 'narrator',
     sceneId: 'cafe_evening',
+    guidanceHint: 'Запиши стихи или отдохни перед финалом акта.',
+    guidanceObjectiveType: 'make_choice',
     choices: [
       {
         text: 'Записать стихи, которые пришли сами',
@@ -637,16 +847,23 @@ export const STORY_NODES_ACT2: Record<string, StoryNode> = {
 
   pier_arrival: {
     id: 'pier_arrival',
-    text: 'Пирс №3 встречает тебя запахом реки и дыма. Костёр в ржавой бочке, струнные огни над чёрной водой — failover ЧК, когда лес на Зорге слишком шумный. Старик с удочкой у перил не оборачивается: он уже знает, что кто-то пришёл. Река помнит больше, чем говорит.',
+    text: 'Пирс №3 встречает тебя запахом реки и дыма. Костёр в ржавой бочке, струнные огни над чёрной водой — failover ЧК, когда лес на Зорге слишком шумный. Старик с удочкой у перил не оборачивается: он уже знает, что кто-то пришёл. На перилах мелом — четыре строки, почти стёртые дождём. Река помнит больше, чем говорит.',
+    contextNote: 'Пирс №3. Костёр в бочке, на перилах — стих мелом.',
+    ambientSound: 'sounds/ambient/river_pier_night.ogg',
+    accessibilityAnnounce: 'Вы на пирсе у реки. ЧК собирается у воды.',
     speaker: 'narrator',
     sceneId: 'river_pier',
+    guidanceHint: 'Осмотри пирс — здесь failover ЧК и Ритка по вечерам.',
+    guidanceObjectiveType: 'visit_location',
     choices: [
       {
-        text: 'Осмотреться у воды',
+        text: 'Прочитать стих на перилах и осмотреться',
         next: 'pier_explore_mode',
         effects: [
           { type: 'setFlag', flag: 'visited_river_pier', flagValue: true },
+          { type: 'setFlag', flag: 'pier_chalk_poem_seen', flagValue: true },
           { type: 'addSkill', skill: 'intuition', value: 1 },
+          { type: 'collectPoem', poemId: 'poem_11' },
         ],
       },
     ],
@@ -654,9 +871,13 @@ export const STORY_NODES_ACT2: Record<string, StoryNode> = {
 
   pier_explore_mode: {
     id: 'pier_explore_mode',
-    text: 'Пирс у речи — костёр в бочке, лунная дорожка на воде, камыши и старая лодка килем вверх. Трофим сторожит перила, будто поплавок. Здесь ЧК говорит тише, чем в лесу: река слышит всё и хранит молчание.',
+    text: 'Пирс у реки — костёр в бочке, лунная дорожка на воде, камыши и старая лодка килем вверх. Трофим сторожит перила, будто поплавок. Здесь ЧК говорит тише, чем в лесу: река слышит всё и хранит молчание.',
+    contextNote: 'Пирс у реки. Трофим у перил, вдали — огни ЧК.',
+    ambientSound: 'sounds/ambient/river_pier_night.ogg',
     speaker: 'narrator',
     sceneId: 'river_pier',
+    guidanceHint: 'Поговори с Трофимом или исследуй берег.',
+    guidanceObjectiveType: 'visit_location',
     choices: [
       {
         text: 'Подойти к Трофиму у перил — [E] у NPC',
@@ -691,6 +912,7 @@ export const STORY_NODES_ACT2: Record<string, StoryNode> = {
   zarema_bank_discovery: {
     id: 'zarema_bank_discovery',
     text: 'Ноутбук Заремы на столе — экран не погашен. Банковское приложение пульсирует красным: транзакции уходят странными маршрутами, суммы не сходятся. Зарема ещё не знает, что ты это видишь. Следы ведут к гильдии — и к выбору, который нельзя отложить.',
+    contextNote: 'Комната Заремы. На экране — подозрительные банковские транзакции.',
     speaker: 'narrator',
     sceneId: 'zarema_albert_room',
     choices: [
@@ -706,11 +928,49 @@ export const STORY_NODES_ACT2: Record<string, StoryNode> = {
     ],
   },
 
+  act2_zarema_network: {
+    id: 'act2_zarema_network',
+    text: 'Зарема слушает молча, пока ты рассказываешь о Сети, о Хранилище, о Дмитрии. Потом ставит чай — крепкий, как всегда. «Я не понимаю половины слов,» — говорит она тихо. «Но понимаю, что ты изменился. Будь осторожен. И если бариста даст подсобку — принеси мне ключ. Я буду ждать, когда гильдия постучит.»',
+    contextNote: 'Кухня. Зарема слушает о Сети и наливает чай.',
+    accessibilityAnnounce: 'Зарема узнала о Сети.',
+    speaker: 'Зарема',
+    sceneId: 'home_evening',
+    guidanceNpcId: 'zarema',
+    guidanceHint: 'Зарема предупреждает об осторожности — поблагодари.',
+    guidanceObjectiveType: 'talk_to_npc',
+    choices: [
+      {
+        text: 'Обещаю быть осторожным',
+        next: 'act3_transition',
+        effects: [
+          { type: 'npcChange', npcId: 'zarema', npcChange: { relation: 8 } },
+          { type: 'addKarma', value: 3 },
+          { type: 'setFlag', flag: 'zarema_knows_network', flagValue: true },
+          { type: 'addStat', stat: 'stress', value: -5 },
+        ],
+      },
+      {
+        text: 'Не всё могу рассказать — но спасибо',
+        next: 'act3_transition',
+        effects: [
+          { type: 'npcChange', npcId: 'zarema', npcChange: { relation: 3 } },
+          { type: 'setFlag', flag: 'zarema_knows_network', flagValue: true },
+        ],
+      },
+    ],
+  },
+
   act2_closing: {
     id: 'act2_closing',
     text: 'Ты выходишь из кафе. Снег ложится на плечи, на лицо, на ладони. Город затихает — редкий момент тишины. Ты знаешь теперь: Сеть реальна, Хранилище существует, Протокол Забвения — угроза. Впереди — борьба. Но сегодня — сегодня ты просто идёшь домой сквозь снег, и строчки складываются сами, как будто город дышит тобой.',
+    contextNote: 'Снег на улице. Акт второй завершается.',
+    ambientSound: 'sounds/ambient/winter_street.ogg',
+    musicCue: 'emotional',
+    autoSave: true,
     speaker: 'narrator',
     sceneId: 'street_winter',
+    guidanceHint: 'Иди домой — или зайди к Зареме.',
+    guidanceObjectiveType: 'make_choice',
     choices: [
       {
         text: 'Идти домой — завтра будет новый день',
@@ -722,7 +982,7 @@ export const STORY_NODES_ACT2: Record<string, StoryNode> = {
       },
       {
         text: 'Зайти к Зареме — рассказать всё',
-        next: 'act3_transition',
+        next: 'act2_zarema_network',
         effects: [
           { type: 'npcChange', npcId: 'zarema', npcChange: { relation: 5 } },
           { type: 'addKarma', value: 3 },

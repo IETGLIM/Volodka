@@ -17,17 +17,6 @@ import {
 import { QUEST_BOARD_LABELS } from '@/engine/questBoard/questBoardConstants';
 import type { DailyMission } from '@/data/dailyMissions';
 
-vi.mock('@/store/gameStore', () => ({
-  getGameStore: vi.fn(),
-}));
-
-import { getGameStore } from '@/store/gameStore';
-
-const getGameStoreMock = vi.mocked(getGameStore);
-
-const mockStore = (acceptedDailyMissions: Parameters<typeof wasMissionAccepted>[1]) =>
-  ({ acceptedDailyMissions }) as unknown as ReturnType<typeof getGameStore>;
-
 const sampleMission: DailyMission = {
   id: 'm1',
   title: 'Test',
@@ -106,39 +95,42 @@ describe('questBoardPresentation', () => {
 
   it('tryAcceptDailyMission reads fresh store state', () => {
     const accept = vi.fn();
-    getGameStoreMock
-      .mockReturnValueOnce(mockStore([]))
-      .mockReturnValueOnce(
-        mockStore([{ missionId: 'm1', acceptedAt: 0, progress: {}, completed: false, claimed: false }]),
-      );
+    const getAccepted = vi
+      .fn()
+      .mockReturnValueOnce([])
+      .mockReturnValueOnce([
+        { missionId: 'm1', acceptedAt: 0, progress: {}, completed: false, claimed: false },
+      ]);
 
-    expect(tryAcceptDailyMission(accept, 'm1')).toBe(true);
+    expect(tryAcceptDailyMission(accept, 'm1', getAccepted)).toBe(true);
     expect(accept).toHaveBeenCalledOnce();
   });
 
   it('tryClaimDailyMission reads fresh store state', () => {
     const claim = vi.fn();
-    getGameStoreMock
-      .mockReturnValueOnce(
-        mockStore([{ missionId: 'm1', acceptedAt: 0, progress: {}, completed: true, claimed: false }]),
-      )
-      .mockReturnValueOnce(
-        mockStore([{ missionId: 'm1', acceptedAt: 0, progress: {}, completed: true, claimed: true }]),
-      );
+    const getAccepted = vi
+      .fn()
+      .mockReturnValueOnce([
+        { missionId: 'm1', acceptedAt: 0, progress: {}, completed: true, claimed: false },
+      ])
+      .mockReturnValueOnce([
+        { missionId: 'm1', acceptedAt: 0, progress: {}, completed: true, claimed: true },
+      ]);
 
-    expect(tryClaimDailyMission(claim, 'm1')).toBe(true);
+    expect(tryClaimDailyMission(claim, 'm1', getAccepted)).toBe(true);
     expect(claim).toHaveBeenCalledOnce();
   });
 
   it('tryAbandonDailyMission reads fresh store state', () => {
     const abandon = vi.fn();
-    getGameStoreMock
-      .mockReturnValueOnce(
-        mockStore([{ missionId: 'm1', acceptedAt: 0, progress: {}, completed: false, claimed: false }]),
-      )
-      .mockReturnValueOnce(mockStore([]));
+    const getAccepted = vi
+      .fn()
+      .mockReturnValueOnce([
+        { missionId: 'm1', acceptedAt: 0, progress: {}, completed: false, claimed: false },
+      ])
+      .mockReturnValueOnce([]);
 
-    expect(tryAbandonDailyMission(abandon, 'm1')).toBe(true);
+    expect(tryAbandonDailyMission(abandon, 'm1', getAccepted)).toBe(true);
     expect(abandon).toHaveBeenCalledOnce();
   });
 });

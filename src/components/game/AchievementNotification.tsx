@@ -10,11 +10,12 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGamePhase } from '@/store/selectors';
 import { eventBus } from '@/engine/EventBus';
-import { audioEngine } from '@/engine/AudioEngine';
+import { playAchievementUnlockSound } from '@/engine/achievementAudio';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
+import { AriaLiveRegion } from '@/components/a11y/AriaLiveRegion';
 import { explorationAchievementTopPx, EXPLORATION_HUD_LAYOUT } from '@/shared/constants/hudLayout';
 import { useNotificationSlot, NOTIFY_PRIORITY } from '@/hooks/useNotificationSlot';
-import { CATEGORY_META, type AchievementCategory } from '@/data/achievements';
+import { CATEGORY_META, RARITY_META, type AchievementCategory } from '@/data/achievements';
 
 /* ─── Notification State ─── */
 
@@ -25,6 +26,9 @@ interface AchievementNotif {
   description: string;
   icon: string;
   category: string;
+  rarity: string;
+  soundEffect?: string;
+  accessibilityAnnounce: string;
   timestamp: number;
 }
 
@@ -92,12 +96,8 @@ function injectAchievementStyles() {
 
 /* ─── Play achievement unlock sound ─── */
 
-function playAchievementSound() {
-  try {
-    audioEngine.playStinger('discovery');
-  } catch {
-    // Audio engine may not be initialized
-  }
+function playAchievementSound(soundEffect?: string) {
+  playAchievementUnlockSound(soundEffect);
 }
 
 /* ─── Single Achievement Card ─── */
@@ -109,8 +109,9 @@ function AchievementCard({
   notification: AchievementNotif;
   onDismiss: (id: string) => void;
 }) {
-  const { title, description, icon, category } = notification;
+  const { title, description, icon, category, rarity } = notification;
   const catMeta = CATEGORY_META[category as AchievementCategory];
+  const rarityMeta = RARITY_META[rarity as keyof typeof RARITY_META];
 
   // Auto-dismiss after DISPLAY_DURATION_MS
   useEffect(() => {
@@ -199,9 +200,9 @@ function AchievementCard({
           </span>
           <span
             className="text-[9px] font-mono mt-0.5 opacity-50"
-            style={{ color: catMeta?.color ?? '#fbbf24' }}
+            style={{ color: rarityMeta?.color ?? catMeta?.color ?? '#fbbf24' }}
           >
-            {catMeta?.icon} {catMeta?.label}
+            {rarityMeta?.label ?? 'Обычное'} · {catMeta?.label}
           </span>
         </div>
 
@@ -232,6 +233,7 @@ function AchievementCard({
 
 export function AchievementNotification() {
   const [notifications, setNotifications] = useState<AchievementNotif[]>([]);
+  const [liveAnnounce, setLiveAnnounce] = useState('');
   const queueRef = useRef<AchievementNotif[]>([]);
   const processingRef = useRef(false);
   const shownAchievements = useRef(new Set<string>());
@@ -252,7 +254,8 @@ export function AchievementNotification() {
     });
 
     // Play sound
-    playAchievementSound();
+    playAchievementSound(next.soundEffect);
+    setLiveAnnounce(next.accessibilityAnnounce);
 
     // Wait before processing next
     setTimeout(() => {
@@ -289,6 +292,9 @@ export function AchievementNotification() {
         description: payload.description,
         icon: payload.icon,
         category: payload.category,
+        rarity: payload.rarity,
+        soundEffect: payload.soundEffect,
+        accessibilityAnnounce: payload.accessibilityAnnounce,
         timestamp: Date.now(),
       });
     });
@@ -318,7 +324,9 @@ export function AchievementNotification() {
   if (!slotGranted) return null;
 
   return (
-    <div
+    <>
+      <AriaLiveRegion message={liveAnnounce} priority="assertive" />
+      <div
       className="fixed flex flex-col items-end gap-2 pointer-events-none"
       data-exploration-ui
       style={{
@@ -338,5 +346,6 @@ export function AchievementNotification() {
         ))}
       </AnimatePresence>
     </div>
+    </>
   );
 }

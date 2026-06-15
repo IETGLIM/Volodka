@@ -13,6 +13,7 @@ import { useGameStore } from '@/store/gameStore';
 import { readGamePhase } from '@/shared/gamePhase';
 import { eventBus, EventBusPriority } from '@/engine/EventBus';
 import { withHmrCleanup } from '@/shared/dev/hmrDispose';
+import { dispatchGameAction } from '@/engine/GameActionDispatcher';
 import {
   checkAchievements,
   initAchievementEngine,
@@ -52,6 +53,12 @@ export function useAchievementChecker() {
     scope.on('poem:power_used', () => {
       notifyPoemPowerUsed();
     });
+
+    scope.on('choice:made', (payload) => {
+      if (payload.karmaChange !== 0) {
+        dispatchGameAction({ type: 'achievement/trackKarmaChoice', karmaDelta: payload.karmaChange });
+      }
+    }, EventBusPriority.Orchestrator);
 
     return withHmrCleanup(() => scope.dispose());
   }, []);

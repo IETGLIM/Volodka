@@ -1,8 +1,8 @@
 import type { Transition } from 'framer-motion';
 import type { DailyMission, DailyMissionResetSchedule } from '@/data/dailyMissions';
 import type { AcceptedDailyMission } from '@/shared/types/game';
-import { getGameStore } from '@/store/gameStore';
-import { QUEST_BOARD_LABELS, QUEST_BOARD_MAX_ACTIVE_MISSIONS } from '@/engine/questBoard/questBoardConstants';
+import { QUEST_BOARD_LABELS } from '@/engine/questBoard/questBoardConstants';
+import { QUEST_BOARD_MAX_ACTIVE_MISSIONS } from '@/shared/quest/questBoardConstants';
 
 export type MissionWithAccepted = {
   mission: DailyMission;
@@ -182,26 +182,29 @@ export function wasMissionClaimed(
 export function tryAcceptDailyMission(
   accept: (missionId: string) => void,
   missionId: string,
+  getAcceptedMissions: () => readonly AcceptedDailyMission[],
 ): boolean {
-  const before = wasMissionAccepted(missionId, getGameStore().acceptedDailyMissions);
+  const before = wasMissionAccepted(missionId, getAcceptedMissions());
   safeMissionAction(() => accept(missionId));
-  return !before && wasMissionAccepted(missionId, getGameStore().acceptedDailyMissions);
+  return !before && wasMissionAccepted(missionId, getAcceptedMissions());
 }
 
 export function tryClaimDailyMission(
   claim: (missionId: string) => void,
   missionId: string,
+  getAcceptedMissions: () => readonly AcceptedDailyMission[],
 ): boolean {
-  const before = wasMissionClaimed(missionId, getGameStore().acceptedDailyMissions);
+  const before = wasMissionClaimed(missionId, getAcceptedMissions());
   safeMissionAction(() => claim(missionId));
-  return !before && wasMissionClaimed(missionId, getGameStore().acceptedDailyMissions);
+  return !before && wasMissionClaimed(missionId, getAcceptedMissions());
 }
 
 export function tryAbandonDailyMission(
   abandon: (missionId: string) => void,
   missionId: string,
+  getAcceptedMissions: () => readonly AcceptedDailyMission[],
 ): boolean {
-  const before = wasMissionAccepted(missionId, getGameStore().acceptedDailyMissions);
+  const before = wasMissionAccepted(missionId, getAcceptedMissions());
   safeMissionAction(() => abandon(missionId));
-  return before && !wasMissionAccepted(missionId, getGameStore().acceptedDailyMissions);
+  return before && !wasMissionAccepted(missionId, getAcceptedMissions());
 }

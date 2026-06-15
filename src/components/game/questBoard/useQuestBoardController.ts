@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState, type KeyboardEvent } from 'react';
 import { audioEngine } from '@/engine/AudioEngine';
+import { getGameStore } from '@/store/gameStore';
 import { getDaySeed, getWeekSeed, getDailyMissionPool, getWeeklyMissionPool } from '@/data/dailyMissions';
 import {
   canAcceptMoreMissions,
@@ -71,29 +72,34 @@ export function useQuestBoardController() {
     );
   }, [activeTab]);
 
+  const getAcceptedMissions = useCallback(
+    () => getGameStore().acceptedDailyMissions,
+    [],
+  );
+
   const handleAccept = useCallback(
     (missionId: string) => {
-      if (tryAcceptDailyMission(acceptDailyMission, missionId)) {
+      if (tryAcceptDailyMission(acceptDailyMission, missionId, getAcceptedMissions)) {
         audioEngine.playSfx('quest_complete');
       }
     },
-    [acceptDailyMission],
+    [acceptDailyMission, getAcceptedMissions],
   );
 
   const handleAbandon = useCallback(
     (missionId: string) => {
-      tryAbandonDailyMission(abandonDailyMission, missionId);
+      tryAbandonDailyMission(abandonDailyMission, missionId, getAcceptedMissions);
     },
-    [abandonDailyMission],
+    [abandonDailyMission, getAcceptedMissions],
   );
 
   const handleClaim = useCallback(
     (missionId: string) => {
-      if (tryClaimDailyMission(claimDailyMissionReward, missionId)) {
+      if (tryClaimDailyMission(claimDailyMissionReward, missionId, getAcceptedMissions)) {
         audioEngine.playSfx('quest_complete');
       }
     },
-    [claimDailyMissionReward],
+    [claimDailyMissionReward, getAcceptedMissions],
   );
 
   const handleTabListKeyDown = useCallback((event: KeyboardEvent<HTMLDivElement>) => {

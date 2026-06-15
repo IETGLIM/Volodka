@@ -3,6 +3,13 @@
 import type { SceneId } from '@/config/sceneDefinitions';
 import type { ChoiceCondition } from '../common/conditions';
 import type { StoryEffect } from '../common/effects';
+import type {
+  KarmaThresholds,
+  NarrativeTextVariants,
+  StoryMusicCue,
+} from './narrative';
+
+export type { KarmaThresholds, NarrativeTextVariants, StoryMusicCue } from './narrative';
 
 export type GameMode = 'exploration';
 
@@ -26,6 +33,18 @@ export interface StoryChoice {
 export interface StoryNode {
   readonly id: string;
   readonly text: string;
+  readonly textVariants?: NarrativeTextVariants;
+  readonly karmaThresholds?: KarmaThresholds;
+  /** Atmospheric detail for screen readers (spoken before main text) */
+  readonly contextNote?: string;
+  /** Optional ambient bed path — layered when node opens */
+  readonly ambientSound?: string;
+  /** Location/state change announcement for assistive tech */
+  readonly accessibilityAnnounce?: string;
+  readonly soundEffect?: string;
+  readonly musicCue?: StoryMusicCue;
+  /** Trigger autosave when the node is first visited */
+  readonly autoSave?: boolean;
   readonly speaker?: string;
   readonly sceneId: SceneId;
   readonly choices: StoryChoice[];
@@ -37,4 +56,6 @@ export interface StoryNode {
   readonly guidanceSceneLabel?: string;
   readonly guidanceObjectiveType?: StoryGuidanceObjectiveType;
   readonly actEntry?: number;
+  /** Gate entire node — redirects away if condition fails */
+  readonly condition?: ChoiceCondition;
 }

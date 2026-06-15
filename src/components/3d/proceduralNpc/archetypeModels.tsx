@@ -1805,7 +1805,7 @@ function ProceduralNPCModelInner({
           <BaristaModel appearance={app} animState={animState} />
         </group>
       );
-    case 'vera':
+    case 'solnysh':
       return (
         <group scale={[widthScale, heightScale, widthScale]}>
           <VeraModel appearance={app} animState={animState} />

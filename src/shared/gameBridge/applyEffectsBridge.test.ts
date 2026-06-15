@@ -51,6 +51,8 @@ describe('applyEffects via bridges', () => {
           defeatedEnemyTypes: [],
           nightTimeHours: 0,
           poemPowerUsedInCombat: false,
+          goodKarmaStreak: 0,
+          badKarmaStreak: 0,
         },
         activeCutsceneId: null,
         triggeredCutscenes: [],

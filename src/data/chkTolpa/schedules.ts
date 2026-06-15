@@ -81,8 +81,8 @@ const CHK_RITKA_DAY: NPCSchedule = {
   entries: [
     { startHour: 0, endHour: 2, sceneId: 'river_pier', position: [-1.8, 0, -2.9], activity: 'talk' },
     { startHour: 2, endHour: 10, sceneId: 'street_night', position: [-1.0, 0, 2.0], activity: 'sleep' },
-    { startHour: 10, endHour: 16, sceneId: 'park_day', position: [-3.0, 0, 2.0], activity: 'walk' },
-    { startHour: 16, endHour: 24, sceneId: 'river_pier', position: [-1.8, 0, -2.9], activity: 'talk' },
+    { startHour: 10, endHour: 18, sceneId: 'office_day', position: [1.0, 0, -0.5], activity: 'work' },
+    { startHour: 18, endHour: 24, sceneId: 'river_pier', position: [-1.8, 0, -2.9], activity: 'talk' },
   ],
 };
 

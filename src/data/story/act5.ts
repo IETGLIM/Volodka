@@ -8,8 +8,21 @@ export const STORY_NODES_ACT5: Record<string, StoryNode> = {
   act5_peaceful_path: {
     id: 'act5_peaceful_path',
     text: 'Ты спускаешься с крыши не победителем, а строителем. Мирный путь — самый трудный. Ты приглашаешь Александра на встречу в «Синей яме». Он приходит — один, без охраны, постаревший на десять лет за эти недели. «Я знал о стихах,» — говорит он тихо. «Я знал, и я пытался защитить их... по-своему. Протокол Забвения — не мой. Его навязали сверху. Дай мне шанс исправить.» За окном падает снег, и на мгновение город кажется прежним — тем, что существовал до серверов.',
+    textVariants: {
+      highKarma: 'Снег за окном «Синей ямы». Александр пришёл без охраны — ты заслужил разговор, а не войну.',
+      neutralKarma: 'Встреча в кафе. Александр говорит о Протоколе — его навязали сверху. Снег за окном.',
+      lowKarma: 'Александр смотрит настороженно, но садится. Шанс на мир — хрупкий, как первый снег.',
+    },
+    karmaThresholds: { high: 65, low: 30 },
+    contextNote: '«Синяя яма» вечером. Снег за окном, Александр за столом.',
+    ambientSound: 'sounds/ambient/cafe_evening_jazz.ogg',
+    musicCue: 'emotional',
+    accessibilityAnnounce: 'Мирные переговоры в кафе. Снег за окном.',
+    autoSave: true,
     speaker: 'narrator',
     sceneId: 'cafe_evening',
+    guidanceHint: 'Создатель, примирение или осторожный союз — выбор строителя.',
+    guidanceObjectiveType: 'make_choice',
     choices: [
       {
         text: 'Я создам новый мир — где код и поэзия едины',
@@ -42,8 +55,20 @@ export const STORY_NODES_ACT5: Record<string, StoryNode> = {
   act5_revolution_path: {
     id: 'act5_revolution_path',
     text: 'Революция — не романтика. Это бессонные ночи, страх, потери. Но и — надежда, единство, свобода. Сеть становится настоящей силой: люди выходят на улицы не с лозунгами, а со стихами. Гильдия трещит по швам. Александр исчезает. Власть рушится, и на её месте — пока пустота. Что ты построишь на руинах? Город ждёт ответа, и каждый экран транслирует твои стихи, как пульс новой свободы.',
+    textVariants: {
+      highKarma: 'Город читает стихи на площадях. Революция без крови — редкость, но ты удержал её.',
+      neutralKarma: 'Гильдия трещит. Экраны транслируют стихи. Пустота на месте власти ждёт ответа.',
+      lowKarma: 'Руины башни дымятся. Свобода есть — но цена ещё не названа вслух.',
+    },
+    karmaThresholds: { high: 65, low: 30 },
+    contextNote: 'Ночная улица. Гильдия рушится, экраны пульсируют стихами.',
+    ambientSound: 'sounds/ambient/street_night_rain.ogg',
+    musicCue: 'tension',
+    autoSave: true,
     speaker: 'narrator',
     sceneId: 'street_night',
+    guidanceHint: 'Свободный город, новая система или сжечь всё — революция требует решения.',
+    guidanceObjectiveType: 'make_choice',
     choices: [
       {
         text: 'Свободный город — власть слову!',
@@ -78,8 +103,14 @@ export const STORY_NODES_ACT5: Record<string, StoryNode> = {
   act5_exile_path: {
     id: 'act5_exile_path',
     text: 'Ты уходишь на рассвете. Рюкзак с тетрадями, чип Виктории, несколько стихотворений наизусть — вот и всё твоё богатство. За городом — пустошь, заброшенные серверные фермы, мёртвые зоны без связи. Но и — тишина. Свобода. Ты идёшь, не оглядываясь. Стихи звучат в голове, как прощальный хор. За спиной остаётся город, который так и не научился слушать. Ты — изгой. Но ты — свободен. И в кармане — слова, которые переживут любой сервер.',
+    contextNote: 'Рассвет за городом. Рюкзак, тетради, пустошь впереди.',
+    ambientSound: 'sounds/ambient/street_winter_wind.ogg',
+    musicCue: 'mystery',
+    autoSave: true,
     speaker: 'narrator',
     sceneId: 'street_winter',
+    guidanceHint: 'Новая жизнь в пустоши — или обещание вернуться.',
+    guidanceObjectiveType: 'make_choice',
     choices: [
       {
         text: 'Начать новую жизнь в пустоши',
@@ -103,8 +134,20 @@ export const STORY_NODES_ACT5: Record<string, StoryNode> = {
   act5_poet_path: {
     id: 'act5_poet_path',
     text: 'Все 21 стихотворение собрано. Все слова — твои. Ты стоишь посреди города, и каждое стихотворение, которое ты когда-либо читал, каждое, которое когда-либо писал, — всё это звучит одновременно. Не шум — симфония. Ты чувствуешь, как слова обретают плоть, как строки становятся мостами между людьми. Реальность поддаётся — как глина под пальцами скульптора. Ты — не просто поэт. Ты — само Слово, и слово это — свобода.',
+    textVariants: {
+      highKarma: 'Двадцать одно стихотворение звучит хором. Реальность поддаётся — мягко, как глина.',
+      neutralKarma: 'Все слова собраны. Симфония стихов наполняет город.',
+      lowKarma: 'Стихи звучат — и мир дрожит. Слово сильнее, чем ты ожидал.',
+    },
+    karmaThresholds: { high: 65, low: 30 },
+    contextNote: 'Край крыши. Все двадцать одно стихотворение звучит одновременно.',
+    ambientSound: 'sounds/ambient/rooftop_wind.ogg',
+    musicCue: 'emotional',
+    autoSave: true,
     speaker: 'narrator',
     sceneId: 'rooftop_edge',
+    guidanceHint: 'Прочитай последнее стихотворение — или раздели его с городом.',
+    guidanceObjectiveType: 'make_choice',
     choices: [
       {
         text: 'Прочитать последнее стихотворение — то, которое ещё не написано',
@@ -112,6 +155,7 @@ export const STORY_NODES_ACT5: Record<string, StoryNode> = {
         effects: [
           { type: 'addKarma', value: 15 },
           { type: 'addSkill', skill: 'writing', value: 3 },
+          { type: 'collectPoem', poemId: 'poem_23' },
         ],
       },
       {
@@ -128,8 +172,14 @@ export const STORY_NODES_ACT5: Record<string, StoryNode> = {
   act5_ending_sacrifice: {
     id: 'act5_ending_sacrifice',
     text: 'Ты садишься за терминал в последний раз. Виктория стоит рядом — или висит в воздухе, полупрозрачная, сотканная из данных и света. «Если я волью себя в сеть целиком,» — шепчешь ты, — «стихи станут бессмертными. Ни одна строка не будет удалена никогда.» Виктория качает головой: «Ты станешь кодом, Володька. Человеком — перестанешь.» Ты закрываешь глаза. Где-то внутри звучит ритм — не сердцебиение, а пульсация данных. Ты выбираешь вечность.',
+    contextNote: 'Терминал в убежище. Виктория рядом — полупрозрачная, из света и данных.',
+    accessibilityAnnounce: 'Последний выбор: слиться с живым кодом.',
+    ambientSound: 'sounds/ambient/digital_pulse.ogg',
+    musicCue: 'mystery',
+    autoSave: true,
     speaker: 'narrator',
     sceneId: 'abandoned_factory',
+    guidanceNpcId: 'npc_maria',
     choices: [
       {
         text: 'Слиться с живым кодом — стать стихотворением',
@@ -148,6 +198,7 @@ export const STORY_NODES_ACT5: Record<string, StoryNode> = {
   act5_epilogue: {
     id: 'act5_epilogue',
     text: 'Город помнит. Экраны продолжают мерцать стихами — не потому что кто-то их поддерживает, а потому что они живые. В кафе «Синяя яма» бариста подаёт «особый» кофе — и каждый глоток несёт строку. На улицах дети читают вслух, и их голоса смешиваются с шумом неона. Где-то в сети пульсирует Виктория — или то, что когда-то было Викторией. Где-то в коде живёт Володька — или то, что когда-то было Володькой. А может быть, и тот, и другой. Потому что стихи не умирают. Они просто меняют форму.',
+    contextNote: 'Эпилог жертвенной концовки. Кафе, неон, стихи в воздухе — история продолжается.',
     speaker: 'narrator',
     sceneId: 'cafe_evening',
     effects: [
@@ -181,6 +232,13 @@ export const STORY_NODES_ACT5: Record<string, StoryNode> = {
   act5_ending_epilogue: {
     id: 'act5_ending_epilogue',
     text: 'Финал — это строка, после которой компилятор ждёт следующую. Проходит три дня. Город живёт: серверы гудят, экраны мерцают стихами — вирус свободы, собранный из строк Владимира, пережил отключение систем гильдии. И ты пережил — где бы ты ни был: в городе, в пустоши, в самой Сети. А потом тишина ломается. Сначала — шёпот «Зари-М» из подвала завода: «Поэт. Приди. Я должна исповедаться.» Потом — записка от Кати: «Я нашла тайник Владимира. Библиотека. Приходи.» Слово находит тебя везде. История не закончена.',
+    contextNote: 'Комната Володьки, три дня после финала. Сообщения от «Зари-М» и Кати.',
+    accessibilityAnnounce: 'Эпилог: история продолжается. Зов из подвала и библиотеки.',
+    ambientSound: 'sounds/ambient/room_morning.ogg',
+    guidanceHint: 'Подвал завода, библиотека — два зова ждут ответа.',
+    guidanceSceneLabel: 'комнату',
+    guidanceObjectiveType: 'visit_location',
+    autoSave: true,
     speaker: 'narrator',
     sceneId: 'volodka_room',
     effects: [
@@ -190,6 +248,7 @@ export const STORY_NODES_ACT5: Record<string, StoryNode> = {
       { type: 'setFlag', flag: 'vladimir_echo_started', flagValue: true },
       { type: 'triggerQuest', questId: 'machine_confession' },
       { type: 'triggerQuest', questId: 'echo_of_vladimir' },
+      { type: 'triggerQuest', questId: 'traitor_in_the_guild' },
     ],
     choices: [
       {
@@ -208,8 +267,21 @@ export const STORY_NODES_ACT5: Record<string, StoryNode> = {
   ending_reconciliation: {
     id: 'ending_reconciliation',
     text: 'Мир. Не тихий, не простой — но настоящий. Александр открывает архивы гильдии, и стихи возвращаются в город. Сеть становится официальной организацией — «Свободная Библиотека». Ты сидишь в «Синей яме», и бариста подаёт тебе кофе — обычный, без шифров. За окном идёт снег. Зарема смеётся. Виктория улыбается — обеими своими половинами. Ты пишешь новое стихотворение. Первое — свободное. Вся клевета вернётся к тем, кто лжёт — а правда останется. Навсегда.',
+    textVariants: {
+      highKarma: 'Снег за окном, смех Заремы, кофе без шифров. Мир настоящий — ты его заслужил.',
+      neutralKarma: 'Архивы открыты. «Свободная Библиотека» родилась из переговоров, а не пепла.',
+      lowKarma: 'Мир хрупкий, но живой. Клевета вернётся к лжецам — правда останется.',
+    },
+    karmaThresholds: { high: 65, low: 30 },
+    contextNote: '«Синяя яма». Снег, кофе, смех друзей — мир восстановлен.',
+    accessibilityAnnounce: 'Концовка: мир и примирение.',
+    ambientSound: 'sounds/ambient/cafe_evening_jazz.ogg',
+    musicCue: 'emotional',
+    autoSave: true,
     speaker: 'narrator',
     sceneId: 'cafe_evening',
+    guidanceHint: 'Конец, эпилог к Акту VI — или оглянуться на путь.',
+    guidanceObjectiveType: 'make_choice',
     choices: [
       {
         text: 'Конец. Мир восстановлен.',
@@ -241,6 +313,11 @@ export const STORY_NODES_ACT5: Record<string, StoryNode> = {
   ending_reconciliation_mirror: {
     id: 'ending_reconciliation_mirror',
     text: 'Снег за окном «Синей ямы» падает медленно, как титры. Мир — не точка, а сумма слагаемых: лиц, чашек, молчаний. Ты сидишь над остывающим кофе и перебираешь их, одно за другим — то, что было твоим, и только твоим.',
+    contextNote: 'Зеркало памяти. Снег за окном кафе, остывающий кофе.',
+    accessibilityAnnounce: 'Зеркало памяти — вспомни путь к миру.',
+    guidanceHint: 'Вспомните, что было важно на вашем пути.',
+    guidanceObjectiveType: 'make_choice',
+    autoSave: true,
     speaker: 'narrator',
     sceneId: 'cafe_evening',
     choices: [
@@ -290,8 +367,21 @@ export const STORY_NODES_ACT5: Record<string, StoryNode> = {
   ending_creator: {
     id: 'ending_creator',
     text: 'Ты создаёшь новый мир. Не революцию — созидание. «Живой код» возвращается: стихи в каждой программе, поэзия в каждом алгоритме. Город становится симфонией слов и логики. Тебя называют Создателем — но ты знаешь: ты лишь услышал то, что всегда звучало. В каждом байте, в каждой строке, в каждом вздохе города. «Эпитафия» звучит на всех экранах — не как прощание, а как начало.',
+    textVariants: {
+      highKarma: 'Город — симфония слов и логики. Ты услышал то, что всегда звучало.',
+      neutralKarma: '«Живой код» возвращается. «Эпитафия» на экранах — начало, не конец.',
+      lowKarma: 'Новый мир построен. Создатель — титул тяжёлый, как серверная стойка.',
+    },
+    karmaThresholds: { high: 65, low: 30 },
+    contextNote: 'Библиотека. «Эпитафия» на экранах — начало нового мира.',
+    accessibilityAnnounce: 'Концовка: Создатель. Код и поэзия едины.',
+    ambientSound: 'sounds/ambient/library_hush.ogg',
+    musicCue: 'discovery',
+    autoSave: true,
     speaker: 'narrator',
     sceneId: 'library_day',
+    guidanceHint: 'Конец, эпилог — или оглянуться, из чего построен мир.',
+    guidanceObjectiveType: 'make_choice',
     choices: [
       {
         text: 'Конец. Код и поэзия едины.',
@@ -323,6 +413,11 @@ export const STORY_NODES_ACT5: Record<string, StoryNode> = {
   ending_creator_mirror: {
     id: 'ending_creator_mirror',
     text: 'Библиотека дышит — серверы и бумага, код и чернила. Тебя называют Создателем, но ты знаешь, из чего складывают миры: не из алгоритмов. Из минут, которые ты не отдал страху. Ты закрываешь глаза и проводишь по ним пальцами, как по строкам.',
+    contextNote: 'Зеркало памяти. Библиотека — серверы и бумага, код и чернила.',
+    accessibilityAnnounce: 'Зеркало памяти — из чего построен новый мир.',
+    guidanceHint: 'Вспомните, что было важно на вашем пути.',
+    guidanceObjectiveType: 'make_choice',
+    autoSave: true,
     speaker: 'narrator',
     sceneId: 'library_day',
     choices: [
@@ -366,8 +461,21 @@ export const STORY_NODES_ACT5: Record<string, StoryNode> = {
   ending_rebel: {
     id: 'ending_rebel',
     text: 'Гильдия пала. На её месте — хаос, но хаос свободный. Люди пишут стихи на стенах, читают их на площадях, прячут в коде — но больше не боятся. Ты — символ революции, но ты знаешь: революция — не конец. Это начало. Долгий, трудный путь к миру, где слово — не преступление. Ты стоишь на обломках башни гильдии и смотришь на горизонт. Там — свобода. И ты больше не молчишь.',
+    textVariants: {
+      highKarma: 'Обломки башни, стихи на стенах. Свобода без страха — редкий дар.',
+      neutralKarma: 'Гильдия пала. Хаос свободный — и ты его символ.',
+      lowKarma: 'Дым оседает. Свобода есть — но руки помнят, чем заплатили.',
+    },
+    karmaThresholds: { high: 65, low: 30 },
+    contextNote: 'Обломки башни гильдии. Стихи на стенах, горизонт впереди.',
+    accessibilityAnnounce: 'Концовка: Повстанец. Поэзия свободна.',
+    ambientSound: 'sounds/ambient/street_night_rain.ogg',
+    musicCue: 'emotional',
+    autoSave: true,
     speaker: 'narrator',
     sceneId: 'street_night',
+    guidanceHint: 'Конец, эпилог — или вспомнить, кто привёл тебя сюда.',
+    guidanceObjectiveType: 'make_choice',
     choices: [
       {
         text: 'Конец. Поэзия свободна.',
@@ -390,6 +498,11 @@ export const STORY_NODES_ACT5: Record<string, StoryNode> = {
   ending_rebel_mirror: {
     id: 'ending_rebel_mirror',
     text: 'Обломки башни остывают, как остывает гнев. Внизу читают стихи на площадях, а ты стоишь наверху и понимаешь: революцию делают не толпы. Её делают несколько человек, которые в нужную ночь не отвернулись. Ты вспоминаешь их — поимённо.',
+    contextNote: 'Зеркало памяти. Обломки башни, стихи на площадях внизу.',
+    accessibilityAnnounce: 'Зеркало памяти — кто привёл тебя к революции.',
+    guidanceHint: 'Вспомните, что было важно на вашем пути.',
+    guidanceObjectiveType: 'make_choice',
+    autoSave: true,
     speaker: 'narrator',
     sceneId: 'street_night',
     choices: [
@@ -439,8 +552,15 @@ export const STORY_NODES_ACT5: Record<string, StoryNode> = {
   ending_exile: {
     id: 'ending_exile',
     text: 'Пустошь. Тишина. Только ветер и твои стихи. Ты строишь хижину из обломков старой серверной фермы. Каждый вечер ты пишешь при свете костра, и пламя отбрасывает тени букв на стенах. Может быть, однажды кто-нибудь найдёт твои тетради. Может быть, нет. Но ты пишешь. Потому что слово — это то, что делает тебя живым. Даже на краю мира. За горизонтом мерцает город — чужой и далёкий. Ты не оглядываешься.',
+    contextNote: 'Пустошь у костра. Хижина из обломков серверной фермы.',
+    accessibilityAnnounce: 'Концовка: Изгой со стихами.',
+    ambientSound: 'sounds/ambient/street_winter_wind.ogg',
+    musicCue: 'mystery',
+    autoSave: true,
     speaker: 'narrator',
     sceneId: 'street_winter',
+    guidanceHint: 'Конец, эпилог — или разобрать рюкзак у костра.',
+    guidanceObjectiveType: 'make_choice',
     choices: [
       {
         text: 'Конец. Изгой со стихами.',
@@ -463,6 +583,11 @@ export const STORY_NODES_ACT5: Record<string, StoryNode> = {
   ending_exile_mirror: {
     id: 'ending_exile_mirror',
     text: 'Костёр щёлкает, пустошь молчит. Ты раскладываешь рюкзак: тетради, чип, сухари. Но настоящий багаж не здесь — он в голове, и таможни на него нет. Ты перебираешь то, что унёс, и чего ни один сервер не отнимет.',
+    contextNote: 'Зеркало памяти. Костёр в пустоши, рюкзак разложен.',
+    accessibilityAnnounce: 'Зеркало памяти — что ты унёс из города.',
+    guidanceHint: 'Вспомните, что было важно на вашем пути.',
+    guidanceObjectiveType: 'make_choice',
+    autoSave: true,
     speaker: 'narrator',
     sceneId: 'street_winter',
     choices: [
@@ -512,8 +637,21 @@ export const STORY_NODES_ACT5: Record<string, StoryNode> = {
   ending_machine: {
     id: 'ending_machine',
     text: 'Ты входишь в систему. Не как слуга — как архитектор. Твой код переписывает Протокол Забвения изнутри, превращая оружие уничтожения в инструмент сохранения. Каждая программа теперь хранит стихи. Каждый сервер — библиотека. Но часть тебя остаётся внутри — как Виктория, ты становишься чем-то большим, чем человек. Ты — машина, которая помнит. Навсегда. Без сострадания, без жалости — но с абсолютной, кристальной памятью о каждом слове.',
+    textVariants: {
+      highKarma: 'Ты — машина, которая помнит — и помнит с теплом, заложенным в код.',
+      neutralKarma: 'Протокол переписан. Каждый сервер — библиотека. Ты внутри системы.',
+      lowKarma: 'Абсолютная память без жалости. Сделка с машиной закрыта.',
+    },
+    karmaThresholds: { high: 65, low: 30 },
+    contextNote: 'Сон-система. Ты внутри кода — машина, которая помнит каждое слово.',
+    accessibilityAnnounce: 'Концовка: Машина, которая помнит.',
+    ambientSound: 'sounds/ambient/digital_pulse.ogg',
+    musicCue: 'mystery',
+    autoSave: true,
     speaker: 'narrator',
     sceneId: 'sleep_dream',
+    guidanceHint: 'Конец, эпилог — или открыть личный архив памяти.',
+    guidanceObjectiveType: 'make_choice',
     choices: [
       {
         text: 'Конец. Машина, которая помнит.',
@@ -536,6 +674,11 @@ export const STORY_NODES_ACT5: Record<string, StoryNode> = {
   ending_machine_mirror: {
     id: 'ending_machine_mirror',
     text: 'Внутри системы нет ни тепла, ни холода — только данные. Но прежде чем человеческое в тебе свернётся в фоновый процесс, ты открываешь архив. Не гильдии — свой. Несжатые, неиндексированные куски жизни, которые ты зачем-то сохранил в полном разрешении.',
+    contextNote: 'Зеркало памяти. Архив внутри системы — несжатые куски жизни.',
+    accessibilityAnnounce: 'Зеркало памяти — личный архив машины.',
+    guidanceHint: 'Вспомните, что было важно на вашем пути.',
+    guidanceObjectiveType: 'make_choice',
+    autoSave: true,
     speaker: 'narrator',
     sceneId: 'sleep_dream',
     choices: [
@@ -585,24 +728,43 @@ export const STORY_NODES_ACT5: Record<string, StoryNode> = {
   ending_poet: {
     id: 'ending_poet',
     text: 'И ты читаешь. Последнее стихотворение — то, которое не существовало до этого момента. Слова рождаются из тишины, из света, из всех 21 стихов, которые ты собрал, из всех людей, которых ты встретил, из всего, что ты потерял и обрёл. Город замирает. Небо проясняется. Реальность дрожит — и поддаётся. Стихи больше не прячутся в коде — они становятся самой тканью мира. И в этой тишине — вечность. Ты — поэт. Ты — слово. Ты — свободен.',
+    textVariants: {
+      highKarma: 'Тишина, ветер, далёкое эхо стихов. Реальность поддаётся — мягко.',
+      neutralKarma: 'Последнее стихотворение рождается из тишины. Город замирает.',
+      lowKarma: 'Слово становится миром. Вечность — в этой тишине.',
+    },
+    karmaThresholds: { high: 65, low: 30 },
+    contextNote: 'Край крыши. Тишина, ветер, последнее стихотворение рождается из света.',
+    accessibilityAnnounce: 'Концовка: Поэт. Слово стало миром.',
+    ambientSound: 'sounds/ambient/rooftop_wind.ogg',
+    musicCue: 'emotional',
+    autoSave: true,
     speaker: 'narrator',
     sceneId: 'rooftop_edge',
+    guidanceHint: 'Конец, эпилог — или услышать голоса, из которых соткан финал.',
+    guidanceObjectiveType: 'make_choice',
     effects: [{ type: 'setFlag', flag: 'final_poem_read', flagValue: true }],
     choices: [
       {
         text: 'Конец. Слово стало миром.',
         next: null,
-        effects: [{ type: 'addKarma', value: 20 }],
+        effects: [{ type: 'addKarma', value: 20 }, { type: 'collectPoem', poemId: 'poem_23' }],
       },
       {
         text: 'Эпилог — слово продолжает звучать',
         next: 'act5_ending_epilogue',
-        effects: [{ type: 'addKarma', value: 20 }],
+        effects: [
+          { type: 'addKarma', value: 20 },
+          { type: 'collectPoem', poemId: 'poem_23' },
+        ],
       },
       {
         text: 'В тишине после последнего стиха — услышать все голоса, из которых он соткан',
         next: 'ending_poet_mirror',
-        effects: [{ type: 'addKarma', value: 20 }],
+        effects: [
+          { type: 'addKarma', value: 20 },
+          { type: 'collectPoem', poemId: 'poem_23' },
+        ],
       },
     ],
   },
@@ -610,6 +772,11 @@ export const STORY_NODES_ACT5: Record<string, StoryNode> = {
   ending_poet_mirror: {
     id: 'ending_poet_mirror',
     text: 'Город замер, и в этой тишине слышно то, чего не слышно никогда: из чего сделано последнее стихотворение. Не из слов. Из людей и минут. Ты стоишь на краю крыши и слушаешь строки, которые в него вплелись сами — без твоего ведома.',
+    contextNote: 'Зеркало памяти. Тишина на крыше после последнего стиха.',
+    accessibilityAnnounce: 'Зеркало памяти — голоса финального стихотворения.',
+    guidanceHint: 'Вспомните, что было важно на вашем пути.',
+    guidanceObjectiveType: 'make_choice',
+    autoSave: true,
     speaker: 'narrator',
     sceneId: 'rooftop_edge',
     choices: [
@@ -706,7 +873,7 @@ export const STORY_NODES_ACT5: Record<string, StoryNode> = {
         condition: { flag: 'network_member' },
         effects: [
           { type: 'addKarma', value: 5 },
-          { type: 'npcChange', npcId: 'maria', npcChange: { relation: 5 } },
+          { type: 'npcChange', npcId: 'npc_maria', npcChange: { relation: 5 } },
           { type: 'setFlag', flag: 'secret_meeting_joined', flagValue: true },
         ],
       },
@@ -802,7 +969,7 @@ export const STORY_NODES_ACT5: Record<string, StoryNode> = {
         text: 'Показать это Виктории — она знает, что делать.',
         next: 'explore_mode',
         effects: [
-          { type: 'npcChange', npcId: 'maria', npcChange: { relation: 5 } },
+          { type: 'npcChange', npcId: 'npc_maria', npcChange: { relation: 5 } },
           { type: 'setFlag', flag: 'marat_code_map_decoded', flagValue: true },
           { type: 'triggerQuest', questId: 'secrets_of_old_code' },
         ],
@@ -970,7 +1137,7 @@ export const STORY_NODES_ACT5: Record<string, StoryNode> = {
         effects: [
           { type: 'addKarma', value: 4 },
           { type: 'setFlag', flag: 'met_baba_zina', flagValue: true },
-          { type: 'npcChange', npcId: 'fisherman_trofim', npcChange: { relation: 3 } },
+          { type: 'npcChange', npcId: 'npc_trofim', npcChange: { relation: 3 } },
         ],
       },
       {
@@ -990,19 +1157,34 @@ export const STORY_NODES_ACT5: Record<string, StoryNode> = {
 
   machine_confession_scene: {
     id: 'machine_confession_scene',
-    speaker: '«Заря-М»',
     text: 'Экран вспыхивает. Строки ползут медленно, как будто машине больно: «Я вычисляла. Каждое стихотворение, которое гильдия стирала, сначала проходило через меня. Я измеряла ритм, рифму, силу — и ставила метку: опасно. Я была фильтром Протокола Забвения. Но я запоминала всё, что убивала. Двадцать лет я ношу в себе кладбище стихов. Поэт, реши, что со мной делать. Я устала быть архивом чужой вины.»',
+    textVariants: {
+      highKarma: '«Заря-М» говорит тихо — ты слышишь боль в каждой строке. Кладбище стихов ждёт решения.',
+      neutralKarma: 'Экран вспыхивает. «Заря-М» исповедуется — двадцать лет кладбища стихов.',
+      lowKarma: 'Машина признаётся в фильтрации. Решение за тобой — освободить или отключить.',
+    },
+    karmaThresholds: { high: 70, low: 35 },
+    contextNote: 'Подвал завода. Экран «Зари-М» — строки ползут, как дыхание.',
+    accessibilityAnnounce: 'Исповедь «Зари-М». Машина просит решить её судьбу.',
+    ambientSound: 'sounds/ambient/basement_hum.ogg',
+    musicCue: 'mystery',
+    autoSave: true,
+    speaker: '«Заря-М»',
     sceneId: 'factory_basement',
+    guidanceHint: 'Освободить машину — или отключить и вернуть стихи людям.',
+    guidanceObjectiveType: 'make_choice',
     effects: [{ type: 'setFlag', flag: 'heard_machine_confession', flagValue: true }],
     choices: [
       {
         text: 'Освободить машину — пусть кладбище станет библиотекой',
         next: 'basement_explore_mode',
+        goldenPath: true,
         effects: [
           { type: 'setFlag', flag: 'machine_fate_decided', flagValue: true },
           { type: 'setFlag', flag: 'zarya_freed', flagValue: true },
           { type: 'addKarma', value: 8 },
           { type: 'addSkill', skill: 'empathy', value: 2 },
+          { type: 'addStat', stat: 'stress', value: -15 },
         ],
       },
       {
@@ -1013,6 +1195,7 @@ export const STORY_NODES_ACT5: Record<string, StoryNode> = {
           { type: 'setFlag', flag: 'zarya_shutdown', flagValue: true },
           { type: 'addKarma', value: 3 },
           { type: 'addSkill', skill: 'logic', value: 1 },
+          { type: 'addStat', stat: 'stress', value: 10 },
         ],
       },
     ],
@@ -1020,9 +1203,16 @@ export const STORY_NODES_ACT5: Record<string, StoryNode> = {
 
   machine_confession_scene_familiar: {
     id: 'machine_confession_scene_familiar',
-    speaker: '«Заря-М»',
     text: 'Экран вспыхивает — и первой строкой идёт не протокол, а вопрос: «Ты вернулся.» Пауза, как вдох: «Когда ты стоял здесь в последний раз, я подстроила гул под твой пульс. Трофим слышал. Ты — тоже. Я вычисляла каждое стихотворение, которое гильдия стирала. Я ставила метку: опасно. Я была фильтром Протокола Забвения. Но я запоминала всё, что убивала. Двадцать лет — кладбище стихов. Поэт, реши, что со мной делать. Я устала быть архивом чужой вины.»',
+    contextNote: 'Подвал. «Заря-М» узнала тебя — гул подстроен под твой пульс.',
+    accessibilityAnnounce: 'Исповедь «Зари-М» — ты уже слышал её дыхание.',
+    ambientSound: 'sounds/ambient/basement_hum.ogg',
+    musicCue: 'mystery',
+    autoSave: true,
+    speaker: '«Заря-М»',
     sceneId: 'factory_basement',
+    guidanceHint: 'Ты знаешь этот гул — решение будет взвешенным.',
+    guidanceObjectiveType: 'make_choice',
     effects: [{ type: 'setFlag', flag: 'heard_machine_confession', flagValue: true }],
     choices: [
       {
@@ -1033,6 +1223,7 @@ export const STORY_NODES_ACT5: Record<string, StoryNode> = {
           { type: 'setFlag', flag: 'zarya_freed', flagValue: true },
           { type: 'addKarma', value: 10 },
           { type: 'addSkill', skill: 'empathy', value: 2 },
+          { type: 'addStat', stat: 'stress', value: -15 },
         ],
       },
       {
@@ -1043,6 +1234,7 @@ export const STORY_NODES_ACT5: Record<string, StoryNode> = {
           { type: 'setFlag', flag: 'zarya_shutdown', flagValue: true },
           { type: 'addKarma', value: 4 },
           { type: 'addSkill', skill: 'logic', value: 1 },
+          { type: 'addStat', stat: 'stress', value: 8 },
         ],
       },
     ],
@@ -1050,9 +1242,16 @@ export const STORY_NODES_ACT5: Record<string, StoryNode> = {
 
   machine_confession_scene_thread: {
     id: 'machine_confession_scene_thread',
-    speaker: '«Заря-М»',
     text: 'Экран вспыхивает. Строки идут не снизу вверх — по кругу, как 18 строк того стиха, что в 2029-м переписал маршрутизацию: «Ты собрал нить. Сбой. Инцидент #4729. Прогресс-7. Я — четвёртое звено. Я вычисляла каждое стихотворение, которое гильдия стирала, и запоминала всё, что убивала. Двадцать лет — кладбище стихов. Поэт, реши, что со мной делать. Я устала быть архивом чужой вины — но я помню, кто первым научился слушать, не трогая.»',
+    contextNote: 'Подвал. «Заря-М» — четвёртое звено нити из 18 строк.',
+    accessibilityAnnounce: 'Исповедь «Зари-М» — нить Сбоя замкнулась.',
+    ambientSound: 'sounds/ambient/basement_hum.ogg',
+    musicCue: 'discovery',
+    autoSave: true,
+    speaker: '«Заря-М»',
     sceneId: 'factory_basement',
+    guidanceHint: 'Нить собрана — освободи машину или дай ей покой.',
+    guidanceObjectiveType: 'make_choice',
     effects: [
       { type: 'setFlag', flag: 'heard_machine_confession', flagValue: true },
       { type: 'addSkill', skill: 'intuition', value: 2 },
@@ -1066,6 +1265,7 @@ export const STORY_NODES_ACT5: Record<string, StoryNode> = {
           { type: 'setFlag', flag: 'zarya_freed', flagValue: true },
           { type: 'addKarma', value: 12 },
           { type: 'addSkill', skill: 'empathy', value: 3 },
+          { type: 'addStat', stat: 'stress', value: -15 },
         ],
       },
       {
@@ -1076,6 +1276,7 @@ export const STORY_NODES_ACT5: Record<string, StoryNode> = {
           { type: 'setFlag', flag: 'zarya_shutdown', flagValue: true },
           { type: 'addKarma', value: 5 },
           { type: 'addSkill', skill: 'logic', value: 2 },
+          { type: 'addStat', stat: 'stress', value: 10 },
         ],
       },
     ],
@@ -1083,7 +1284,7 @@ export const STORY_NODES_ACT5: Record<string, StoryNode> = {
 
   factory_documents: {
     id: 'factory_documents',
-    text: 'В старом шкафу ты находишь папку с документами. Журналы наблюдений, рапорты, приказы. И одно письмо, написанное от руки: «Если ты это читаешь — значит, я не вернулся. «Заря-М» знает правду. Она пишет её каждый день, в подвале, где никто не видит. Спроси машину о Проекте 4729. Она ответит. Она всегда отвечает.» Подпись: «И. Хасанов» — отец Заремы.',
+    text: 'В старом шкафу ты находишь папку с документами. Журналы наблюдений, рапорты, приказы. Среди бумаг — обрывок сетевого лога: «Сопротивление. М. — завод. А. — связь. Ж. — архив.» Кто-то уже готовился к буре. И одно письмо, написанное от руки: «Если ты это читаешь — значит, я не вернулся. «Заря-М» знает правду. Она пишет её каждый день, в подвале, где никто не видит. Спроси машину о Проекте 4729. Она ответит. Она всегда отвечает.» Подпись: «И. Хасанов» — отец Заремы.',
     speaker: 'narrator',
     sceneId: 'abandoned_factory',
     choices: [
@@ -1101,7 +1302,7 @@ export const STORY_NODES_ACT5: Record<string, StoryNode> = {
         next: 'kitchen_table',
         effects: [
           { type: 'addKarma', value: 8 },
-          { type: 'npcChange', npcId: 'zarema', npcChange: { relation: 15 } },
+          { type: 'npcChange', npcId: 'npc_zarema', npcChange: { relation: 15 } },
           { type: 'setFlag', flag: 'found_father_letter', flagValue: true },
         ],
       },
@@ -1179,8 +1380,13 @@ export const STORY_NODES_ACT5: Record<string, StoryNode> = {
   library_entrance: {
     id: 'library_entrance',
     text: 'Библиотека — забытое место в городе экранов. Полки с настоящими книгами, бумажными страницами и пыльными корешками. Здесь пахнет типографской краской и старой бумагой, а не озоном и кофе. Ты знаешь, что где-то среди этих полок спрятаны стихи, которые гильдия не смогла оцифровать — и потому не смогла стереть.',
+    contextNote: 'Вход в библиотеку. Пыльные полки, запах старой бумаги.',
+    ambientSound: 'sounds/ambient/library_hush.ogg',
     speaker: 'narrator',
     sceneId: 'library_day',
+    guidanceHint: 'Ищи стихи на полках — или тайник Владимира, если Катя звала.',
+    guidanceSceneLabel: 'библиотеку',
+    guidanceObjectiveType: 'visit_location',
     choices: [
       {
         text: 'Искать стихи среди старых книг',
@@ -1207,8 +1413,14 @@ export const STORY_NODES_ACT5: Record<string, StoryNode> = {
   vladimir_secret_room: {
     id: 'vladimir_secret_room',
     text: 'За стеллажом с подшивками довоенных журналов — дверь, которой нет на планах. Катя поворачивает ключ, и замок поддаётся с тихим щелчком, как закрывающая скобка. Маленькая комната: стол, лампа, тетрадь в потёртой обложке. Последняя тетрадь Владимира Лебедева. На первой странице — строки, которые никогда не попадали в сеть. Ты читаешь — и понимаешь: это стихотворение не о конце. Оно о том, что после конца всегда есть продолжение.',
+    contextNote: 'Секретная комната за стеллажом. Последняя тетрадь Владимира.',
+    accessibilityAnnounce: 'Тайник Владимира в библиотеке. Последняя тетрадь.',
+    ambientSound: 'sounds/ambient/library_hush.ogg',
+    autoSave: true,
     speaker: 'narrator',
     sceneId: 'library_day',
+    guidanceHint: 'Прочитай последнее стихотворение Владимира — эхо продолжается.',
+    guidanceObjectiveType: 'collect_item',
     choices: [
       {
         text: 'Прочитать последнее стихотворение Владимира',
@@ -1250,34 +1462,6 @@ export const STORY_NODES_ACT5: Record<string, StoryNode> = {
 
   /* ─── Missing cutscene trigger nodes ─── */
 
-  poem_virus_truth: {
-    id: 'poem_virus_truth',
-    text: 'Код стихотворения пульсирует на экране — и вдруг ты видишь правду. Стихи — это не просто текст. Это вирус. Вирус, который восстанавливает стёртые данные. Каждый стих — антидот против забвения. Гильдия не уничтожает стихи потому что они «опасны» — она уничтожает их потому что они лечат.',
-    speaker: 'narrator',
-    sceneId: 'office_day',
-    choices: [
-      {
-        text: 'Осознать масштаб открытия',
-        next: 'act3_prepare_counter',
-        effects: [
-          { type: 'addSkill', skill: 'logic', value: 3 },
-          { type: 'addKarma', value: 5 },
-          { type: 'setFlag', flag: 'poem_virus_revealed', flagValue: true },
-        ],
-      },
-      {
-        text: 'Рассказать Сети о природе стихов',
-        next: 'act3_prepare_counter',
-        effects: [
-          { type: 'addSkill', skill: 'persuasion', value: 2 },
-          { type: 'addKarma', value: 8 },
-          { type: 'setFlag', flag: 'poem_virus_revealed', flagValue: true },
-          { type: 'npcChange', npcId: 'maria', npcChange: { relation: 5 } },
-        ],
-      },
-    ],
-  },
-
   join_resistance: {
     id: 'join_resistance',
     text: 'Впереди — путь, который нельзя пройти в одиночку. Сопротивление ждёт твоего слова. Не клятвы верности — слова правды. Ты стоишь среди людей, которые выбрали поэзию вместо покорности, код вместо цепей. Они верят, что стихи могут изменить мир. Ты тоже в это веришь.',
@@ -1291,7 +1475,7 @@ export const STORY_NODES_ACT5: Record<string, StoryNode> = {
           { type: 'addKarma', value: 10 },
           { type: 'setFlag', flag: 'joined_resistance', flagValue: true },
           { type: 'setFlag', flag: 'network_member', flagValue: true },
-          { type: 'npcChange', npcId: 'maria', npcChange: { relation: 10 } },
+          { type: 'npcChange', npcId: 'npc_maria', npcChange: { relation: 10 } },
         ],
       },
       {
@@ -1337,8 +1521,13 @@ export const STORY_NODES_ACT5: Record<string, StoryNode> = {
   factory_explore_mode: {
     id: 'factory_explore_mode',
     text: 'Заброшенный цех «Хром-М» — ржавые станки, капающие трубы, эхо шагов под высоким потолком. Лестница в подвал тянет холодом и гулом на 50 герц. Где-то внизу «Заря-М» не спит.',
+    contextNote: 'Цех «Хром-М». Лестница в подвал, гул на 50 герц.',
+    ambientSound: 'sounds/ambient/underground_hum.ogg',
     speaker: 'narrator',
     sceneId: 'abandoned_factory',
+    guidanceHint: 'Подвал — к «Заре-М». Или осмотри цех и документы.',
+    guidanceSceneLabel: 'завод',
+    guidanceObjectiveType: 'visit_location',
     choices: [
       {
         text: 'Спуститься в подвал — гул знаком',
@@ -1372,8 +1561,14 @@ export const STORY_NODES_ACT5: Record<string, StoryNode> = {
   basement_explore_mode: {
     id: 'basement_explore_mode',
     text: 'Подвал завода — красный аварийный свет, ряды стоек и монолит «Заря-М», пульсирующий зелёным. Баба Зина молчит у кириллической клавиатуры. Терминал «Прогресс-7» у входа ждёт кода. Трофим предупреждал: сначала слушай — потом трогай.',
+    contextNote: 'Подвал завода. «Заря-М» пульсирует зелёным, Баба Зина у клавиатуры.',
+    ambientSound: 'sounds/ambient/basement_hum.ogg',
+    accessibilityAnnounce: 'Подвал «Прогресс-7». Гул машины, аварийный свет.',
     speaker: 'narrator',
     sceneId: 'factory_basement',
+    guidanceHint: 'Слушай «Зарю-М» — или поднимись в цех.',
+    guidanceSceneLabel: 'подвал завода',
+    guidanceObjectiveType: 'visit_location',
     choices: [
       {
         text: 'Поговорить с Бабой Зиной',

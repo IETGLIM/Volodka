@@ -63,7 +63,7 @@ export const QUESTS_ACT4: QuestDefinition[] = [
       { type: 'addXp', value: 250 },
     ],
     linkedStoryNodeId: 'act4_infiltration_prep',
-    questGiverNpcId: 'office_colleague',
+    questGiverNpcId: 'office_dmitry',
   },
 
   /* ─────────────── QUEST 17: Poetry broadcast ─────────────── */
@@ -828,7 +828,7 @@ export const QUESTS_ACT4: QuestDefinition[] = [
         id: 'meet_vera_library',
         description: 'Встретить Алину (Солныш) в библиотеке',
         type: 'npc_talked',
-        target: 'vera',
+        target: 'solnysh',
         completed: false,
       },
       {
@@ -868,7 +868,7 @@ export const QUESTS_ACT4: QuestDefinition[] = [
       { type: 'addXp', value: 200 },
     ],
     linkedStoryNodeId: 'library_entrance',
-    questGiverNpcId: 'vera',
+    questGiverNpcId: 'solnysh',
   },
 
 ];

@@ -1,5 +1,4 @@
-import type { LoreCategory } from '@/store/shared';
-import type { LoreRarity } from '@/store/shared';
+import type { LoreCategory, LoreRarity } from '@/shared/types/lore';
 
 export type LoreToastPayload = {
   loreId: string;

@@ -21,10 +21,13 @@ import {
   ACHIEVEMENTS,
   CATEGORY_ORDER,
   CATEGORY_META,
+  RARITY_META,
   TOTAL_ACHIEVEMENTS,
   type AchievementDefinition,
   type AchievementCategory,
 } from '@/data/achievements';
+import { formatStoryEffectReward } from '@/data/achievementHelpers';
+import { resolveAchievementProgress } from '@/engine/achievementProgressResolver';
 
 /* ─── Types ─── */
 
@@ -45,11 +48,13 @@ function AchievementCard({
   achievement,
   unlocked,
   unlockedAt,
+  progress,
   onClick,
 }: {
   achievement: AchievementDefinition;
   unlocked: boolean;
   unlockedAt?: number;
+  progress?: { current: number; target: number } | null;
   onClick: () => void;
 }) {
   const isHidden = achievement.hidden && !unlocked;
@@ -129,6 +134,14 @@ function AchievementCard({
               {achievement.conditionDescription}
             </span>
           )}
+          {!unlocked && progress && progress.target > 1 && (
+            <div className="mt-1.5 h-1 rounded-full bg-slate-800/80 overflow-hidden">
+              <div
+                className="h-full rounded-full bg-amber-500/60"
+                style={{ width: `${Math.round((progress.current / progress.target) * 100)}%` }}
+              />
+            </div>
+          )}
           {/* Timestamp for unlocked */}
           {unlocked && unlockedAt && (
             <div className="flex items-center gap-1 mt-1">
@@ -170,9 +183,11 @@ function AchievementCard({
 
 function AchievementDetailPopup({
   data,
+  progress,
   onClose,
 }: {
   data: DetailPopupData;
+  progress?: { current: number; target: number } | null;
   onClose: () => void;
 }) {
   const { achievement, unlocked, unlockedAt } = data;
@@ -222,6 +237,16 @@ function AchievementDetailPopup({
               <span
                 className="text-[10px] font-mono px-2 py-0.5 rounded-full"
                 style={{
+                  background: `${RARITY_META[achievement.rarity].color}15`,
+                  color: RARITY_META[achievement.rarity].color,
+                  border: `1px solid ${RARITY_META[achievement.rarity].color}30`,
+                }}
+              >
+                {RARITY_META[achievement.rarity].label}
+              </span>
+              <span
+                className="text-[10px] font-mono px-2 py-0.5 rounded-full"
+                style={{
                   background: `${CATEGORY_META[achievement.category].color}15`,
                   color: CATEGORY_META[achievement.category].color,
                   border: `1px solid ${CATEGORY_META[achievement.category].color}30`,
@@ -256,6 +281,11 @@ function AchievementDetailPopup({
             <div>
               <span className="text-[10px] text-slate-500 uppercase tracking-wider">Условие</span>
               <p className="text-xs text-amber-400/70 mt-1">{achievement.conditionDescription}</p>
+              {!unlocked && progress && (
+                <p className="text-[10px] text-slate-500 mt-1 font-mono">
+                  Прогресс: {progress.current} / {progress.target}
+                </p>
+              )}
             </div>
           )}
 
@@ -269,11 +299,7 @@ function AchievementDetailPopup({
                     key={idx}
                     className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-slate-800/50 text-amber-300/70 border border-amber-900/20"
                   >
-                    {reward.type === 'xp' && `⚡ +${reward.value} ОП`}
-                    {reward.type === 'karma' && `☯ +${reward.value} Карма`}
-                    {reward.type === 'skill' && `🎯 +${reward.value} ${reward.skill}`}
-                    {reward.type === 'credits' && `₴ +${reward.value}`}
-                    {reward.type === 'flag' && `🔓 ${reward.flag}`}
+                    {formatStoryEffectReward(reward)}
                   </span>
                 ))}
               </div>
@@ -316,6 +342,16 @@ export function AchievementDetailsPanel({ open, onClose }: AchievementDetailsPan
   const { closeButtonRef, dialogProps, titleProps } = usePanelDialog();
   /* ── Game store subscriptions ── */
   const unlockedAchievements = useGameStore((s) => s.unlockedAchievements);
+  const achievementProgress = useGameStore((s) => s.achievementProgress);
+  const collectedPoems = useGameStore((s) => s.collectedPoems);
+  const karma = useGameStore((s) => s.playerState.karma);
+  const flags = useGameStore((s) => s.playerState.flags);
+
+  const getProgress = useCallback(
+    (achievement: AchievementDefinition) =>
+      resolveAchievementProgress(achievement, achievementProgress, { collectedPoems, karma, flags }),
+    [achievementProgress, collectedPoems, karma, flags],
+  );
 
   /* ── Category filter ── */
   const [activeCategory, setActiveCategory] = useState<AchievementCategory | 'all'>('all');
@@ -524,6 +560,7 @@ export function AchievementDetailsPanel({ open, onClose }: AchievementDetailsPan
                             achievement={ach}
                             unlocked={unlockedMap.has(ach.id)}
                             unlockedAt={unlockedMap.get(ach.id)}
+                            progress={unlockedMap.has(ach.id) ? null : getProgress(ach)}
                             onClick={() => handleAchievementClick(ach)}
                           />
                         ))}
@@ -540,6 +577,7 @@ export function AchievementDetailsPanel({ open, onClose }: AchievementDetailsPan
                       achievement={ach}
                       unlocked={unlockedMap.has(ach.id)}
                       unlockedAt={unlockedMap.get(ach.id)}
+                      progress={unlockedMap.has(ach.id) ? null : getProgress(ach)}
                       onClick={() => handleAchievementClick(ach)}
                     />
                   ))}
@@ -565,6 +603,7 @@ export function AchievementDetailsPanel({ open, onClose }: AchievementDetailsPan
             {detailPopup && (
               <AchievementDetailPopup
                 data={detailPopup}
+                progress={getProgress(detailPopup.achievement)}
                 onClose={() => setDetailPopup(null)}
               />
             )}

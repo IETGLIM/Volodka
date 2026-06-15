@@ -3,8 +3,8 @@
 import { useMemo } from 'react';
 import { useGamePhase } from '@/store/selectors';
 import { useGameStore } from '@/store/gameStore';
-import { buildErrorRecoveryContext } from './buildErrorRecoveryContext';
-import type { ErrorRecoveryContext } from './errorRecoveryTypes';
+import { buildErrorRecoveryContext } from '@/engine/recovery/buildErrorRecoveryContext';
+import type { ErrorRecoveryContext } from '@/engine/recovery/errorRecoveryTypes';
 
 /** Snapshot of game state for error diagnostics — safe when store is healthy. */
 export function useErrorRecoveryContext(): ErrorRecoveryContext {

@@ -21,6 +21,8 @@ export interface StoryConditionContext {
   npcRelations?: NPCRelation[];
   npcId?: string;
   timeOfDay?: number;
+  /** Pipe-delimited sorted item ids from player inventory */
+  ownedItemIdsKey?: string;
 }
 
 export interface StoryConditionExtras {
@@ -29,6 +31,7 @@ export interface StoryConditionExtras {
   timeOfDay?: number;
   /** Override act; defaults to playerState.progression.currentAct */
   currentAct?: number;
+  ownedItemIdsKey?: string;
 }
 
 /** Build condition context from player state — shared by StoryRenderer & DialogueRenderer. */
@@ -46,6 +49,7 @@ export function buildStoryConditionContext(
     npcRelations: extras.npcRelations,
     npcId: extras.npcId,
     timeOfDay: extras.timeOfDay,
+    ownedItemIdsKey: extras.ownedItemIdsKey,
   };
 }
 
@@ -84,11 +88,22 @@ export function checkStoryCondition(
 
   if (condition.flag && !ctx.flags[condition.flag]) return { pass: false };
 
+  if (condition.missingFlag && ctx.flags[condition.missingFlag]) return { pass: false };
+
   if (condition.collectedPoem && !ctx.collectedPoems.includes(condition.collectedPoem)) {
     return { pass: false };
   }
   if (condition.missingPoem && ctx.collectedPoems.includes(condition.missingPoem)) {
     return { pass: false };
+  }
+
+  if (condition.hasItem !== undefined) {
+    const owned = ctx.ownedItemIdsKey ? ctx.ownedItemIdsKey.split('|') : [];
+    if (!owned.includes(condition.hasItem)) return { pass: false };
+  }
+
+  if (condition.minCollectedPoems !== undefined) {
+    if (ctx.collectedPoems.length < condition.minCollectedPoems) return { pass: false };
   }
 
   if (condition.minNpcRelation !== undefined && ctx.npcId && ctx.npcRelations) {

@@ -16,7 +16,7 @@ describe('ACT1_SOLNYSH_QUEST_SPINE', () => {
 describe('questNpcMarkers solnysh', () => {
   it('maps wine search to lyonya and comfort to vera', () => {
     expect(getObjectiveNpcHint('solnysh_roof_wine', 'find_wine')).toBe('lyonya');
-    expect(getObjectiveNpcHint('solnysh_comfort', 'comfort_solnysh')).toBe('vera');
+    expect(getObjectiveNpcHint('solnysh_comfort', 'comfort_solnysh')).toBe('solnysh');
   });
 
   it('provides scene hints for corridor and room', () => {

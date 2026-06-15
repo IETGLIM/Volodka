@@ -20,8 +20,8 @@ export function findNpcById(id: string): NPCDefinition | undefined {
 
 /** Dialogue/story speaker labels → canonical NPC ids. */
 export const NPC_SPEAKER_ALIASES: Readonly<Record<string, string>> = {
-  Солныш: 'vera',
-  Алина: 'vera',
+  Солныш: 'solnysh',
+  Алина: 'solnysh',
   Лёня: 'lyonya',
   Леонид: 'lyonya',
 };

@@ -51,6 +51,7 @@ export function reduceGameState(_state: GameStoreState, action: GameAction): Par
     case 'achievement/trackMaxCombo': world.trackMaxCombo(action.comboCount); break;
     case 'achievement/trackCriticalHit': world.trackCriticalHit(); break;
     case 'achievement/trackPoemPowerInCombat': world.trackPoemPowerInCombat(); break;
+    case 'achievement/trackKarmaChoice': world.trackKarmaChoice(action.karmaDelta); break;
     case 'achievement/batchCheckProgress': world.batchCheckAchievementProgress({ sceneVisit: action.sceneVisit, trackNightHour: action.trackNightHour }); break;
     case 'skill/unlockTreeNode': player.unlockSkillTreeNode(action.skillId); break;
     case 'notification/push': player.pushNotification(action.notificationType, action.text); break;

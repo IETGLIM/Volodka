@@ -16,6 +16,8 @@ export interface ChoiceCondition {
   /** Probabilistic skill gate; difficulty is validated as integer 1–20 at runtime. */
   readonly minSkillCheck?: MinSkillCheck;
   readonly flag?: string;
+  /** Hide when this flag is already set */
+  readonly missingFlag?: string;
   /** G11: Minimum NPC relationship level required to see this choice */
   readonly minNpcRelation?: number;
   /** Minimum act required to see this choice (1 or 2) */
@@ -28,6 +30,10 @@ export interface ChoiceCondition {
   readonly collectedPoem?: string;
   /** Show only when this poem is not yet collected */
   readonly missingPoem?: string;
+  /** Show only when the player owns this inventory item */
+  readonly hasItem?: string;
+  /** Minimum number of collected poems required */
+  readonly minCollectedPoems?: number;
 }
 
 /** Alias for ChoiceCondition — used in exit filtering and story gates. */

@@ -25,11 +25,13 @@ describe('Act II golden path markers', () => {
     expect(golden[0]?.condition?.minKarma).toBe(30);
   });
 
-  it('marks act2_network_initiation golden branch to oath', () => {
+  it('marks act2_network_initiation golden branch to oath with skill gate', () => {
     const node = STORY_NODES_ACT2.act2_network_initiation;
     const golden = node.choices.filter((c) => c.goldenPath === true);
     expect(golden).toHaveLength(1);
     expect(golden[0]?.next).toBe('act2_network_oath');
+    expect(golden[0]?.condition?.minKarma).toBe(35);
+    expect(golden[0]?.condition?.minSkill?.writing).toBe(3);
   });
 
   it('marks act2_vault_revealed golden branch to safehouse agreement', () => {

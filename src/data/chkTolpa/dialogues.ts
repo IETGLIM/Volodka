@@ -1,12 +1,20 @@
 /* ─── ТОЛПА / ЧК — dialogue trees ─── */
 
 import type { DialogueNode } from '@/shared/types/game';
+import { TOTAL_UNIFIED_POEMS } from '@/data/unifiedPoemRegistry';
 
 export const CHK_DIALOGUE_NODES: Record<string, DialogueNode> = {
   chk_ru_greeting: {
     id: 'chk_ru_greeting',
     speaker: 'Ру',
     text: 'Ты нашёл Чёрную Комнату. Днём мы — архитекторы, админы, бухгалтеры. Ночью — чекисты ТОЛПА. Садись: Басед наливает, Смерть спорит с квантовой механикой, Элис настраивает гитару.',
+    textVariants: {
+      highKarma: 'Володька! Свои. Проходи — Басед наливает лучшее, Смерть ждёт дискуссии. Твоя карма говорит за тебя.',
+      neutralKarma: 'Ты нашёл ЧК. Садись. Присмотрись: у нас тут не клуб, а скорее... распределённая система поддержки.',
+      lowKarma: 'Стой. У костра место не покупается. Ру ответит, если карма позволит. Но чай — даже врагу.',
+    },
+    karmaThresholds: { high: 65, low: 30 },
+    contextNote: 'У костра трещат сучья. Ру сидит на перевёрнутом ящике, в шляпе, и жестом приглашает присесть.',
     choices: [
       {
         text: 'Что такое ТОЛПА?',
@@ -28,8 +36,120 @@ export const CHK_DIALOGUE_NODES: Record<string, DialogueNode> = {
         condition: { flag: 'chk_path_known' },
       },
       {
+        text: 'Нужен совет.',
+        next: 'chk_ru_advice',
+      },
+      {
+        text: 'Протокол Чистоты — что будем делать?',
+        next: 'chk_ru_act4_sabotage',
+        condition: { flag: 'guild_purity_protocol' },
+      },
+      {
+        text: 'Ты собрал все мои стихи...',
+        next: 'chk_ru_easter_egg_all_poems',
+        condition: { minCollectedPoems: TOTAL_UNIFIED_POEMS },
+      },
+      {
+        text: 'Просто посижу в тишине.',
+        next: 'chk_silence',
+      },
+      {
         text: 'Просто послушаю у костра.',
         next: null,
+      },
+    ],
+  },
+  chk_ru_return: {
+    id: 'chk_ru_return',
+    speaker: 'Ру',
+    text: 'Снова у костра. Хорошо. У нас сегодня: Басед тестирует новый портвейн, Смерть доказывает, что баги — это проявление свободы воли в коде, а Ритка обещала прийти с пирса.',
+    textVariants: {
+      highKarma: 'Володька. Твой стул всё ещё твой. Садись.',
+      neutralKarma: 'Возвращение — уже традиция. Чай? Портвейн?',
+      lowKarma: 'Ты вернулся. Посмотрим, изменилось ли что-то.',
+    },
+    karmaThresholds: { high: 65, low: 30 },
+    contextNote: 'Знакомый костёр. Ру кивает, не вставая — как будто ты опоздал на планёрку, но тебя всё равно ждали.',
+    choices: [
+      { text: 'Что нового у ТОЛПА?', next: 'chk_ru_news' },
+      { text: 'Нужен совет.', next: 'chk_ru_advice' },
+      { text: 'Просто посижу в тишине.', next: 'chk_silence' },
+      { text: 'Просто посижу.', next: null },
+    ],
+  },
+  chk_ru_advice: {
+    id: 'chk_ru_advice',
+    speaker: 'Ру',
+    text: 'Совет? Смотря что ищешь. Если путь — спроси Сталкера. Если правду — Смерть. Если тепла — к Элис. Если просто побыть — садись.',
+    contextNote: 'Ру откладывает кружку и смотрит на огонь, как на дашборд с единственным зелёным виджетом.',
+    choices: [
+      {
+        text: 'Где искать Хранилище Гильдии?',
+        next: 'chk_ru_hint_guild',
+        condition: { flag: 'seeking_guild_vault' },
+      },
+      { text: 'Как найти укрытие?', next: 'chk_ru_hint_sanctuary' },
+      { text: 'Ничего. Просто побуду.', next: null },
+    ],
+  },
+  chk_ru_hint_guild: {
+    id: 'chk_ru_hint_guild',
+    speaker: 'Ру',
+    text: 'Хранилище — не на карте. Спроси Сталкера про коллектор под гильдией. И не светись: у них логи дольше, чем наша память о вчерашнем портвейне.',
+    choices: [{ text: 'Понял.', next: null }],
+  },
+  chk_ru_hint_sanctuary: {
+    id: 'chk_ru_hint_sanctuary',
+    speaker: 'Ру',
+    text: 'Лес на Зорге. Табличка «Зорге», тропа влево от скамейки. Если гильдия давит — скажи своим: у нас чай, костёр и тишина. Иногда этого хватает.',
+    choices: [
+      {
+        text: 'Спасибо.',
+        next: null,
+        effects: [{ type: 'setFlag', flag: 'tolpa_sanctuary_offered', flagValue: true }],
+      },
+    ],
+  },
+  chk_ru_news: {
+    id: 'chk_ru_news',
+    speaker: 'Ру',
+    text: 'Новости? Басед нашёл бутылку без этикетки — на вкус как 2008-й. Смерть спорит с аналитиком про p-value кармы. Элис репетирует кавер на твой стих — если соберёшь «Город шепчет», попроси её.',
+    contextNote: 'У костра слышны обрывки разговоров — как фоновый шум open space, только честнее.',
+    choices: [{ text: 'Звучит как дом.', next: null }],
+  },
+  chk_ru_act4_sabotage: {
+    id: 'chk_ru_act4_sabotage',
+    speaker: 'Ру',
+    text: 'Гильдия запустила «Протокол Чистоты» — удаляют стихи из общего репозитория. У ТОЛПА есть зеркала. Но нужно физически отключить их сервер в дата-центре. Сталкер знает вход.',
+    contextNote: 'Ру говорит тихо — так, как говорят о проде, когда рядом стажёр из гильдии.',
+    choices: [
+      {
+        text: 'Я сделаю это.',
+        next: null,
+        effects: [
+          { type: 'triggerQuest', questId: 'tolpa_act4_server_heist' },
+          { type: 'addKarma', value: 8 },
+          { type: 'npcChange', npcId: 'chk_ru', npcChange: { relation: 10 } },
+        ],
+      },
+      { text: 'Слишком опасно.', next: null },
+    ],
+  },
+  chk_ru_easter_egg_all_poems: {
+    id: 'chk_ru_easter_egg_all_poems',
+    speaker: 'Ру',
+    text: '*Ру встаёт и снимает шляпу* Володька. Ты собрал всё. Не гильдия, не ТОЛПА — ты. Твои стихи будут петь у костров, когда нас уже не будет в этом коде. Басед, наливай «особый» портвейн. Сегодня — праздник Поэта.',
+    condition: { minCollectedPoems: TOTAL_UNIFIED_POEMS },
+    contextNote: 'Костёр вспыхивает ярче. Все у огня замолкают — редкий момент, когда даже DevOps не спорит.',
+    choices: [
+      {
+        text: 'Спасибо.',
+        next: null,
+        effects: [
+          { type: 'addKarma', value: 15 },
+          { type: 'setFlag', flag: 'tolpa_poet_honored', flagValue: true },
+          { type: 'triggerQuest', questId: 'tolpa_legendary_fire' },
+        ],
       },
     ],
   },
@@ -84,7 +204,13 @@ export const CHK_DIALOGUE_NODES: Record<string, DialogueNode> = {
     id: 'chk_based_greeting',
     speaker: 'Басед',
     text: 'Портвейн — не для слабонервных и не для отчётов. Держи бокал. Сегодня обсуждаем: почему прод упал, а мы всё ещё живы.',
+    contextNote: 'Басед наливает из потёртой бутылки. Запах портвейна смешивается с дымом костра.',
     choices: [
+      {
+        text: 'Держи «777».',
+        next: 'chk_based_gift_wine',
+        condition: { hasItem: 'port_wine_777' },
+      },
       {
         text: 'За uptime!',
         next: 'chk_based_oath',
@@ -96,10 +222,30 @@ export const CHK_DIALOGUE_NODES: Record<string, DialogueNode> = {
       },
     ],
   },
+  chk_based_gift_wine: {
+    id: 'chk_based_gift_wine',
+    speaker: 'Басед',
+    text: 'Это... тот самый «777»? Ты знаешь, где его взять. Легенда. Садись — сегодня пьём из горла.',
+    condition: { hasItem: 'port_wine_777' },
+    contextNote: 'Басед берёт бутылку двумя руками — как реликвию, а не как deploy artifact.',
+    choices: [
+      {
+        text: 'За ЧК.',
+        next: null,
+        effects: [
+          { type: 'removeItem', itemId: 'port_wine_777' },
+          { type: 'setFlag', flag: 'tolpa_legendary_wine_shared', flagValue: true },
+          { type: 'npcChange', npcId: 'chk_based', npcChange: { relation: 8 } },
+          { type: 'triggerQuest', questId: 'tolpa_legendary_wine' },
+        ],
+      },
+    ],
+  },
   chk_based_oath: {
     id: 'chk_based_oath',
     speaker: 'Басед',
     text: 'Чекист клянётся: не пить один у монитора, делиться бутылкой и не деплоить в пятницу после полуночи. Ну... стараться.',
+    contextNote: 'Басед поднимает бокал. Клятва звучит как SLA, только с душой.',
     choices: [
       {
         text: 'Клянусь.',
@@ -109,12 +255,36 @@ export const CHK_DIALOGUE_NODES: Record<string, DialogueNode> = {
           { type: 'npcChange', npcId: 'chk_based', npcChange: { relation: 5 } },
         ],
       },
+      {
+        text: 'Я скорее соблюдаю кодекс молчания, чем клятву.',
+        next: 'chk_based_respect',
+        condition: { minSkill: { persuasion: 20 } },
+        effects: [
+          { type: 'npcChange', npcId: 'chk_based', npcChange: { relation: 7 } },
+        ],
+      },
+    ],
+  },
+  chk_based_respect: {
+    id: 'chk_based_respect',
+    speaker: 'Басед',
+    text: 'Хм. Читаешь людей. Ладно, без клятвы. Но портвейн — вскладчину. И деплоить в пятницу всё равно не советую.',
+    choices: [
+      {
+        text: 'Договорились.',
+        next: null,
+        effects: [
+          { type: 'setFlag', flag: 'tolpa_oath_taken', flagValue: true },
+          { type: 'npcChange', npcId: 'chk_based', npcChange: { relation: 3 } },
+        ],
+      },
     ],
   },
   chk_smert_greeting: {
     id: 'chk_smert_greeting',
     speaker: 'Смерть',
     text: 'Если наблюдатель закрывает ноутбук — коллапсирует ли волновая функция деплоя? Обсудим после второго бокала. Кстати, я не настоящая Смерть. Я бухгалтер.',
+    contextNote: 'Смерть сидит у костра, помешивая чай ложкой. На ней старая футболка с надписью «I void warranties».',
     choices: [
       {
         text: 'Объясни квантовую запутанность для PM.',
@@ -186,15 +356,54 @@ export const CHK_DIALOGUE_NODES: Record<string, DialogueNode> = {
     id: 'chk_elis_greeting',
     speaker: 'Элис',
     text: 'Тест-кейсы зелёные — можно петь. Сегодня что-нибудь из разряда «баг в проде, но мы держимся». Слушать или попробуешь подпеть?',
+    contextNote: 'Элис настраивает гитару у костра. Струны звенят тихо, между смехом и треском дров.',
     choices: [
       {
         text: 'Поём вместе.',
         next: 'chk_elis_song',
       },
       {
+        text: 'У меня есть стих «Город шепчет»...',
+        next: 'chk_elis_poem_reaction',
+        condition: { collectedPoem: 'poem_act6_01' },
+      },
+      {
         text: 'Только слушаю.',
         next: null,
         effects: [{ type: 'npcChange', npcId: 'chk_elis', npcChange: { relation: 3 } }],
+      },
+    ],
+  },
+  chk_elis_poem_reaction: {
+    id: 'chk_elis_poem_reaction',
+    speaker: 'Элис',
+    text: '*откладывает гитару* Знаешь, твои стихи... я попробовала положить «Город шепчет» на аккорды. Получилось тревожно, как будто город сам поёт. Хочешь послушать?',
+    condition: { collectedPoem: 'poem_act6_01' },
+    contextNote: 'Элис смотрит на гитару, потом на тебя — как на соавтора, которого ещё не добавили в репозиторий.',
+    choices: [
+      {
+        text: 'Да.',
+        next: 'chk_elis_poem_song',
+        effects: [
+          { type: 'npcChange', npcId: 'chk_elis', npcChange: { relation: 5 } },
+          { type: 'addStat', stat: 'stress', value: -5 },
+        ],
+      },
+      { text: 'Оставь для следующего раза.', next: null },
+    ],
+  },
+  chk_elis_poem_song: {
+    id: 'chk_elis_poem_song',
+    speaker: 'Элис',
+    text: '*играет медленно* «Город шепчет ночью сквозь провода...» *голос ломается на полтона, и это делает песню честнее любого автотюна*',
+    choices: [
+      {
+        text: 'Ещё раз, когда-нибудь.',
+        next: null,
+        effects: [
+          { type: 'setFlag', flag: 'tolpa_elis_poem_song', flagValue: true },
+          { type: 'addSkill', skill: 'writing', value: 2 },
+        ],
       },
     ],
   },
@@ -244,6 +453,29 @@ export const CHK_DIALOGUE_NODES: Record<string, DialogueNode> = {
           { type: 'npcChange', npcId: 'chk_guest_devops', npcChange: { relation: 3 } },
         ],
       },
+      {
+        text: 'Ты не пробовал Chaos Engineering?',
+        next: 'chk_guest_devops_chaos',
+        condition: { minSkill: { logic: 25 } },
+        effects: [
+          { type: 'npcChange', npcId: 'chk_guest_devops', npcChange: { relation: 2 } },
+        ],
+      },
+    ],
+  },
+  chk_guest_devops_chaos: {
+    id: 'chk_guest_devops_chaos',
+    speaker: 'Гость (DevOps)',
+    text: 'Хаос? Мы и так живём в хаосе. Но идея хорошая. Пожалуй, на следующем ретро предложу.',
+    choices: [
+      {
+        text: 'Удачи.',
+        next: null,
+        effects: [
+          { type: 'addSkill', skill: 'logic', value: 2 },
+          { type: 'setFlag', flag: 'tolpa_chaos_engineering', flagValue: true },
+        ],
+      },
     ],
   },
   chk_guest_analyst_greeting: {
@@ -286,6 +518,11 @@ export const CHK_DIALOGUE_NODES: Record<string, DialogueNode> = {
       { text: 'Что это за место?', next: 'chk_ritka_about' },
       { text: 'Сыграешь что-нибудь?', next: 'chk_ritka_song_request' },
       {
+        text: 'На перилах мелом — стих. Твой?',
+        next: 'chk_ritka_pier_poem',
+        condition: { flag: 'pier_chalk_poem_seen' },
+      },
+      {
         text: 'Свои. Клятва портвейна принята.',
         next: 'chk_ritka_tolpa',
         condition: { flag: 'tolpa_member' },
@@ -296,6 +533,36 @@ export const CHK_DIALOGUE_NODES: Record<string, DialogueNode> = {
         condition: { flag: 'quiet_song_ritka' },
       },
       { text: 'Не буду мешать.', next: null },
+    ],
+  },
+  chk_ritka_pier_return: {
+    id: 'chk_ritka_pier_return',
+    speaker: 'Ритка',
+    text: '*не поднимая головы* Снова ты. Пирс не закрывается — в отличие от офиса. Если за стихом — смотри на перила. Если за песней — принеси вдохновение.',
+    choices: [
+      { text: 'Сыграешь что-нибудь?', next: 'chk_ritka_song_request' },
+      {
+        text: 'Стих на перилах — я его прочитал.',
+        next: 'chk_ritka_pier_poem',
+        condition: { flag: 'pier_chalk_poem_seen' },
+      },
+      { text: 'Просто мимо.', next: null },
+    ],
+  },
+  chk_ritka_pier_poem: {
+    id: 'chk_ritka_pier_poem',
+    speaker: 'Ритка',
+    text: '*смотрит на воду* Не мой. Кто-то из Сети оставил — мелом, пока гильдия спала. Говорят, город не отпускает к двери. Я добавила аккорд. Третья струна всё равно дребезжит, но стих держится.',
+    choices: [
+      {
+        text: 'Город и правда не отпускает.',
+        next: null,
+        effects: [
+          { type: 'npcChange', npcId: 'chk_ritka', npcChange: { relation: 4 } },
+          { type: 'setFlag', flag: 'ritka_pier_poem_discussed', flagValue: true },
+        ],
+      },
+      { text: 'Понял.', next: null },
     ],
   },
   chk_ritka_about: {
@@ -407,6 +674,20 @@ export const CHK_DIALOGUE_NODES: Record<string, DialogueNode> = {
           { type: 'npcChange', npcId: 'chk_stalker', npcChange: { relation: 3 } },
         ],
       },
+    ],
+  },
+  chk_silence: {
+    id: 'chk_silence',
+    speaker: '',
+    text: '*Костёр трещит. Река вдали. Кто-то тихо перебирает струны. Слова не нужны.*',
+    contextNote: 'Все у костра молчат. Слышен только треск дров и далёкий плеск воды.',
+    choices: [
+      {
+        text: 'Остаться в тишине.',
+        next: null,
+        effects: [{ type: 'addStat', stat: 'stress', value: -5 }],
+      },
+      { text: 'Встать и уйти.', next: null },
     ],
   },
 };

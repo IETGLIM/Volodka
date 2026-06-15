@@ -122,7 +122,7 @@ export const QUESTS_ACT7: QuestDefinition[] = [
       { type: 'setFlag', flag: 'nadzor_destroyed', flagValue: true },
       { type: 'addXp', value: 500 },
     ],
-    linkedStoryNodeId: 'act7_system_shutdown',
+    linkedStoryNodeId: 'act7_guild_restored',
     questGiverNpcId: 'maxim',
   },
 

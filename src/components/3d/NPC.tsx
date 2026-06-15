@@ -31,6 +31,7 @@ import { getSceneVisualProfile } from '@/config/sceneVisualProfiles';
 import { createPatrolState, updatePatrol, shouldPatrol, type PatrolState } from '@/engine/npc/npcPatrol';
 import { getNpcQuestMarkerDisplay } from '@/store/questStore';
 import { resolveNpcQuestBark } from '@/engine/npc/npcQuestBark';
+import { resolveNpcBarkForRelation } from '@/shared/npcBark';
 import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
 import {
   DEFAULT_NPC_LOD,
@@ -382,13 +383,7 @@ function computeBark(definition: NPCDefinition): string | null {
   const relation = npcRelations.find((r) => r.npcId === definition.id);
   const value = relation?.value ?? 50;
 
-  if (value <= 30) {
-    return definition.barkTexts.hostile;
-  } else if (value >= 70) {
-    return definition.barkTexts.friendly;
-  } else {
-    return definition.barkTexts.neutral;
-  }
+  return resolveNpcBarkForRelation(definition.barkTexts, value);
 }
 
 /** Far LOD: simple capsule impostor tinted with NPC body color — brighter emissive for dark scenes */

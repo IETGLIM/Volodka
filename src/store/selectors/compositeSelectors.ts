@@ -188,6 +188,10 @@ export function selectDialogueContext(s: GameStoreState) {
     npcRelations: s.npcRelations,
     timeOfDay: s.exploration.timeOfDay,
     collectedPoems: s.collectedPoems,
+    ownedItemIdsKey: s.playerState.inventory
+      .map((item) => item.id)
+      .sort()
+      .join('|'),
   };
 }
 

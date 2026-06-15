@@ -1,5 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import type { StoryNode } from '@/shared/types/game';
+import { STORY_NODES } from '@/data/story';
+import { GOLDEN_PATH_STORY_SPINE } from '@/data/goldenPath';
 import {
   deriveGoldenPath,
   deriveStorySpine,
@@ -159,5 +161,13 @@ describe('deriveGoldenPath', () => {
       },
     ];
     expect(deriveQuestSpine(quests, index, [])).toEqual(['q_early', 'q_late']);
+  });
+
+  it('derives production golden path spine without fallback drift', () => {
+    const { spine, missingMarkers } = deriveStorySpine(STORY_NODES, {
+      fallbackStorySpine: GOLDEN_PATH_STORY_SPINE,
+    });
+    expect(spine).toEqual(GOLDEN_PATH_STORY_SPINE);
+    expect(missingMarkers.filter((id) => id !== 'act7_true_end')).toEqual([]);
   });
 });

@@ -83,6 +83,9 @@ export function MenuSettingsPanel({ musicEnabled, onToggleMusic, onClose }: Menu
 
           <div className="pt-3 border-t border-slate-800/50 space-y-1.5">
             <p className="text-[10px] font-mono text-slate-500 tracking-wide uppercase mb-2">Управление</p>
+            <p className="text-[10px] font-mono text-slate-500/90 leading-relaxed mb-2">
+              Полные настройки (графика, доступность, сложность боя) — в паузе во время игры.
+            </p>
             <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-[10px] font-mono">
               <span className="text-cyan-500/50">WASD</span>
               <span className="text-slate-400/50">Движение</span>

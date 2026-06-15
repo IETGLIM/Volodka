@@ -10,6 +10,7 @@ vi.mock('@/engine/GameActionDispatcher', () => ({
 
 vi.mock('@/data/achievements', () => ({
   ACHIEVEMENT_MAP: {},
+  ACHIEVEMENTS: [],
   TOTAL_ACHIEVEMENTS: 0,
 }));
 
@@ -28,6 +29,8 @@ const defaultProgress = {
   defeatedEnemyTypes: [] as string[],
   nightTimeHours: 0,
   poemPowerUsedInCombat: false,
+  goodKarmaStreak: 0,
+  badKarmaStreak: 0,
 };
 
 function makeCheckState(overrides: Partial<AchievementCheckState> = {}): AchievementCheckState {

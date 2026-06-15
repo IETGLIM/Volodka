@@ -16,6 +16,12 @@ import {
   CyberToggle,
   SectionDivider,
 } from '@/components/game/design-system';
+import {
+  COMBAT_DIFFICULTY_PROFILES,
+  readCombatDifficulty,
+  writeCombatDifficulty,
+  type CombatDifficultyId,
+} from '@/engine/combat/combatDifficulty';
 import { applyAudioSettings } from '@/engine/audio/AudioSettings';
 import { applyVisualSettings } from '@/engine/visualSettings';
 import {
@@ -298,6 +304,7 @@ function SettingsPanelContent({ onClose }: { onClose: () => void }) {
   const [mouseSens, setMouseSens] = useState(() => lsGetNumber('volodka_mouse_sens', 5));
   const [invertY, setInvertY] = useState(() => lsGetBool('volodka_invert_y', false));
   const [pointerLock, setPointerLock] = useState(() => lsGetBool('volodka_pointer_lock', false));
+  const [combatDifficulty, setCombatDifficulty] = useState<CombatDifficultyId>(() => readCombatDifficulty());
 
   // ── Persist helper (write to localStorage immediately) ──
   const persist = useCallback((key: string, value: number | boolean) => {
@@ -417,6 +424,31 @@ function SettingsPanelContent({ onClose }: { onClose: () => void }) {
               checked={pointerLock}
               onChange={(v) => { setPointerLock(v); persist('volodka_pointer_lock', v); applyVisualSettings(); }}
             />
+            <SectionDivider />
+            <div className="flex flex-col gap-2">
+              <span className="font-mono text-xs text-cyan-400/50 uppercase tracking-[0.15em]">
+                Сложность боя
+              </span>
+              <div className="grid grid-cols-3 gap-2">
+                {(Object.keys(COMBAT_DIFFICULTY_PROFILES) as CombatDifficultyId[]).map((id) => (
+                  <button
+                    key={id}
+                    type="button"
+                    onClick={() => {
+                      setCombatDifficulty(id);
+                      writeCombatDifficulty(id);
+                    }}
+                    className={`px-2 py-2 font-mono text-[10px] uppercase tracking-wide border rounded ${
+                      combatDifficulty === id
+                        ? 'border-cyan-400/60 text-cyan-200 bg-cyan-950/40'
+                        : 'border-slate-700/40 text-slate-400'
+                    }`}
+                  >
+                    {COMBAT_DIFFICULTY_PROFILES[id].label}
+                  </button>
+                ))}
+              </div>
+            </div>
             <SectionDivider />
             {/* Keyboard shortcuts hint */}
             <div className="flex flex-col gap-2">

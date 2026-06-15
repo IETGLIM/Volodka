@@ -211,7 +211,7 @@ export const QUESTS_ACT2: QuestDefinition[] = [
       { type: 'setFlag', flag: 'cafe_safehouse_established', flagValue: true },
       { type: 'addXp', value: 100 },
     ],
-    linkedStoryNodeId: 'act2_barista_revealed',
+    linkedStoryNodeId: 'act2_safehouse_agreed',
     questGiverNpcId: 'cafe_barista',
   },
 

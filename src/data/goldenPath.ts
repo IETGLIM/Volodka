@@ -1,6 +1,7 @@
 /* ─── Volodka RPG – golden path ─── */
 
 import { TOTAL_UNIFIED_POEMS } from './unifiedPoemRegistry';
+import { NPC_ID_ALIASES as SHARED_NPC_ID_ALIASES, resolveCanonicalNpcId as resolveNpcAlias } from '@/shared/npcIdAliases';
 
 /**
  * GOLDEN_PATH_STORY_SPINE — the canonical story path from start through the
@@ -71,6 +72,7 @@ export const GOLDEN_PATH_STORY_SPINE: string[] = [
   'act3_guild_counterattack',
   'act3_hide_network',
   'act3_prepare_counter',
+  'act3_dmitry_briefing',
   'act3_decision_point',
   // Act 4 — Революция
   'act4_transition',
@@ -139,14 +141,14 @@ export const GOLDEN_PATH_STORY_SPINE: string[] = [
  * Exact lookup only — no substring / includes matching.
  */
 export const STORY_NODE_TO_NPC_ID: Record<string, string> = {
-  corridor_door: 'vera',
-  solnysh_corridor_talk: 'vera',
-  solnysh_door: 'vera',
-  solnysh_room_talk: 'vera',
-  solnysh_comfort_deep: 'vera',
-  solnysh_wine_offer: 'vera',
-  solnysh_roof_arrival: 'vera',
-  solnysh_relocation_talk: 'vera',
+  corridor_door: 'solnysh',
+  solnysh_corridor_talk: 'solnysh',
+  solnysh_door: 'solnysh',
+  solnysh_room_talk: 'solnysh',
+  solnysh_comfort_deep: 'solnysh',
+  solnysh_wine_offer: 'solnysh',
+  solnysh_roof_arrival: 'solnysh',
+  solnysh_relocation_talk: 'solnysh',
   lyonya_room_talk: 'lyonya',
   maria_curious: 'maria',
   cafe_barista: 'cafe_barista',
@@ -171,7 +173,7 @@ export const STORY_NODE_TO_NPC_ID: Record<string, string> = {
   act3_maria_truth_accepted: 'maria',
   act3_albert_loyalty: 'albert',
   act3_albert_choice: 'albert',
-  act4_infiltration_prep: 'office_colleague',
+  act4_infiltration_prep: 'office_dmitry',
   chk_office_whisper: 'office_colleague',
   chk_campfire_intro: 'chk_ru',
   chk_campfire_bond: 'chk_based',
@@ -181,11 +183,21 @@ export const STORY_NODE_TO_NPC_ID: Record<string, string> = {
   chk_act4_stalker_briefing: 'chk_stalker',
   chk_act4_broadcast_watch: 'chk_based',
   chk_act5_campfire_dawn: 'chk_ru',
-  act6_resistance_briefing: 'maxim',
+  act6_office_confrontation: 'office_dmitry',
+  act6_dmitry_confession: 'office_dmitry',
+  act6_resistance_briefing: 'anya',
+  act6_resistance_formed: 'maxim',
   act6_data_heist_planning: 'zeka',
   act6_zeka_encounter: 'zeka',
   act7_guild_rebuilding: 'anya',
-  act7_system_shutdown: 'maxim',
+  act7_charter_drafting: 'sergey',
+  act7_community_voice: 'solnysh',
+  act7_library_archive: 'kate',
+  act7_guild_restored: 'maxim',
+  act7_system_shutdown: 'zeka',
+  act7_goodbye_zarema: 'zarema',
+  act7_final_walk: 'maria',
+  act7_maria_future: 'maria',
 };
 
 /** Human-readable location labels for guidance (exact node → label). */
@@ -302,6 +314,17 @@ export const STORY_FLAG_TO_NODE_ID: Record<string, string> = {
   tolpa_heard_broadcast: 'chk_act4_broadcast_watch',
   act5_started: 'act5_dawn',
   tolpa_act5_blessing: 'chk_act5_campfire_dawn',
+  rooftop_confrontation_done: 'act7_bridge',
+  chose_guardian_path: 'act7_bridge',
+  chose_liberator_path: 'act7_bridge',
+  traitor_revealed: 'act6_traitor_revealed',
+  dmitry_forgiven: 'act6_dmitry_confession',
+  nadzor_truth_revealed: 'act6_infiltration_prep',
+  guild_restored: 'act7_library_archive',
+  nadzor_shutdown_complete: 'act7_nadzor_dies',
+  volodka_future_chosen: 'act7_maria_future',
+  game_completed: 'act7_true_end',
+  tolpa_honorary_chekist: 'act7_poet_legacy_mirror',
 };
 
 /** Canonical NPC id for a golden-path story node, or undefined if not an NPC step. */
@@ -313,12 +336,12 @@ export function getNpcIdForStoryNode(nodeId: string): string | undefined {
 
 /** Legacy story-node ids kept for save/back-compat — must resolve in STORY_NODES. */
 export const STORY_NODE_ALIASES: Record<string, string> = {
-  act4_rooftop_broadcast: 'act4_broadcast_execute',
+  act4_rooftop_broadcast: 'act4_broadcast_prep',
 };
 
 /** Legacy NPC ids → canonical registry ids. */
 export const NPC_ID_ALIASES: Record<string, string> = {
-  nina: 'kate',
+  ...SHARED_NPC_ID_ALIASES,
 };
 
 export function resolveStoryNodeAlias(nodeId: string): string {
@@ -326,7 +349,9 @@ export function resolveStoryNodeAlias(nodeId: string): string {
 }
 
 export function resolveCanonicalNpcId(id: string): string {
-  return NPC_ID_ALIASES[id] ?? STORY_NODE_TO_NPC_ID[id] ?? id;
+  const aliased = resolveNpcAlias(id);
+  if (aliased !== id) return aliased;
+  return STORY_NODE_TO_NPC_ID[id] ?? id;
 }
 
 /** How an act advances to the next one. */
@@ -439,10 +464,12 @@ export const GOLDEN_PATH_BRANCH_HINTS: Record<string, string> = {
   room_terminal_wake: 'Сохрани лог гильдии — инцидент #4729 начинается здесь.',
   room_wardrobe_memory: 'Фотоальбом хранит строки, которые ждут читателя.',
   corridor_letter_open: 'Открой письмо — почерк ведёт к правде.',
+  corridor_letter_read: 'Спрятай письмо или покажи Зареме — она может узнать почерк.',
   corridor_intercom_whisper: 'Голос в домофоне знает твой маршрут.',
   zarema_radio_request: 'Настрой «Океан» — в белом шуме слышен эхо.',
   street_guild_pulse: 'Запомни ритм башни — ночная смена не спит.',
   cafe_albert_lesson_intro: 'Прими урок Альберта — код и стих едины.',
+  cafe_albert_riddle_solved: 'Загадка решена — Альберт признал связь кода и стиха.',
   cafe_special_coffee: 'Особый кофе открывает подсказки баристы.',
   cafe_backroom_peek: 'Подсобка хранит эхо стёртых архивов.',
   office_incident_debrief: 'Александр знает больше — слушай, прежде чем садиться за терминал.',
@@ -477,6 +504,9 @@ export const GOLDEN_PATH_BRANCH_HINTS: Record<string, string> = {
   reading_reaction: 'Не отворачивайся от чужой боли — крылатым всегда грустно.',
   volunteer_read: 'Если знаешь куда идти — иди до конца.',
   act2_bridge: 'Сохрани достоинство — шут побеждает молчанием. (Побочно: в офисе ходят слухи о ТОЛПА — лес на Зорге.)',
+  act2_barista_followup: 'Подсобка станет штабом Сети.',
+  act2_zarema_network: 'Расскажи Зареме о Сети — она заслуживает правды.',
+  pier_arrival: 'На перилах мелом — стих. Ритка знает больше.',
   cafe_evening_end: 'Отпусти прошлое — паруса рваной души всё ещё ловят ветер.',
   // Act 3
   act3_transition: 'Найди Зарему — она нуждается в тебе сейчас больше всего.',
@@ -491,6 +521,10 @@ export const GOLDEN_PATH_BRANCH_HINTS: Record<string, string> = {
   act3_albert_loyalty: 'Прости ему страх — слабость часть силы.',
   act3_albert_choice: 'Поддержи Альберта — верность возвращается.',
   act3_guild_counterattack: 'Укрой членов Сети — спасай людей. (Чекистам: лес на Зорге.)',
+  act3_hide_network: 'Спрячь Сеть. ЧК на Зорге примет своих.',
+  act3_zarema_farewell: 'Зарему увели — запомни её слова.',
+  act3_barista_safehouse: 'Бариста укрыл в подсобке — передышка.',
+  act3_dmitry_briefing: 'Дмитрий передаёт план — 30 секунд на периметр.',
   act3_prepare_counter: 'Выйди к людям — правда сильнее протоколов.',
   act3_decision_point: 'Твой путь определяет тебя — высокое письмо ведёт к созиданию, убеждение — к революции, код без эмпатии — к машине.',
   chk_tolpa_poem: 'Запиши «Портвейн у костра» — стих работает только у огня ЧК.',
@@ -500,7 +534,7 @@ export const GOLDEN_PATH_BRANCH_HINTS: Record<string, string> = {
   vera_inspiration: 'Вспомни детские мечты — звёзды ждут тех, кто дерзает.',
   act4_public_leader: 'Мирный марш — сила в правде, не в насилии.',
   act4_peaceful_march: 'Продолжай мирно — каждая жизнь на счету.',
-  act4_infiltration_prep: 'Найди союзника — коллега или Сталкер из ЧК.',
+  act4_infiltration_prep: 'Найди союзника — Дмитрий, Сталкер из ЧК или иди один.',
   chk_act4_stalker_briefing: 'Получи маршрут Сталкера — тихий путь к гильдии.',
   chk_act4_broadcast_watch: 'После вещания — загляни к чекистам у костра.',
   act4_core_server: 'Отключи Протокол Забвения — спаси память.',
@@ -512,13 +546,35 @@ export const GOLDEN_PATH_BRANCH_HINTS: Record<string, string> = {
   chk_act5_campfire_dawn: 'После рассвета — зайди к Ру у костра за финальное слово ЧК.',
   act5_peaceful_path: 'Построй новый мир — где код и поэзия едины.',
   ending_reconciliation: 'Прости — клевета вернётся к тем, кто лжёт. Но финал — не конец.',
-  act5_ending_epilogue: 'Проверь терминал — «Заря-М» и Катя ждут ответа.',
+  act5_ending_epilogue: 'Проверь терминал — подвал «Зари-М», библиотека и предатель в гильдии ждут.',
+  machine_confession_scene: 'Освободи «Зарю-М» — или отключи и верни стихи людям.',
+  basement_explore_mode: 'Слушай «Зарю-М» в подвале — или поднимись в цех.',
+  factory_explore_mode: 'Спустись в подвал к «Заре-М» — гул на 50 герц.',
+  library_entrance: 'Тайник Владимира — за стеллажом, если Катя звала.',
+  ending_poet: 'Последнее стихотворение — слово становится миром.',
   // Act 6
   act6_bridge: 'Отправляйся на фабрику — источник зашифрованного пакета там.',
-  act6_final_confrontation: 'Перепиши систему — хранитель памяти сильнее разрушителя.',
+  act6_traitor_revealed: 'Дмитрий — предатель. Иди в офис за разговором.',
+  act6_alliance_formed: 'Союз с Дмитрием — время собирать сопротивление.',
+  act6_nadzor_revealed: 'Правда о «Надзоре» открыта — штурм бункера.',
+  act6_dmitry_confession: 'Прости Дмитрия — или изгони с чипом данных.',
+  act6_heist_execution: 'Взломай сервер офиса — компромат «Надзора» на кону.',
+  act6_nadzor_battle: 'Сразись с Хранителем у ядра «Надзора».',
+  act6_core_choice: 'Код и стихи — ключ к ядру. Память против забвения.',
+  act6_final_confrontation: 'Хранитель или освободитель — финальный выбор на крыше.',
   // Act 7
   act7_bridge: 'Спустись в город — восстановление начинается с первого шага.',
-  act7_maria_future: 'Кто ты теперь? Поэт продолжает писать.',
+  act7_library_archive: 'Открой публичный архив в библиотеке.',
+  act7_nadzor_dies: '«Надзор» мёртв — напиши финальное стихотворение в парке.',
+  act7_rooftop_recital: 'Прочитай стих на крыше — отпусти прошлое.',
+  act7_maria_future: 'Кто ты теперь? Путь из Акта V отражается в выборе.',
+  act7_ending_poet_legacy: 'Останься в городе — пиши, учи, вдохновляй.',
+  act7_ending_guardian: 'Стань хранителем архива — память сильнее забвения.',
+  act7_ending_wanderer: 'Уйди с дорогой — твои стихи останутся с теми, кого ты спас.',
+  act7_poet_legacy_mirror: 'Перелистай книгу памяти — каждая страница из вашего пути.',
+  act7_guardian_legacy_mirror: 'Вспомни, ради чего ты стал хранителем.',
+  act7_wanderer_legacy_mirror: 'Разложи рюкзак — что ты унёс из города?',
+  act7_true_end: 'Финал — благодарность городу и всем, кого ты встретил на пути.',
 };
 
 /**

@@ -1,4 +1,4 @@
-export const QUEST_BOARD_MAX_ACTIVE_MISSIONS = 3;
+export { QUEST_BOARD_MAX_ACTIVE_MISSIONS } from '@/shared/quest/questBoardConstants';
 
 export const QUEST_BOARD_TAB_IDS = {
   daily: 'quest-board-tab-daily',

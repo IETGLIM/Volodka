@@ -14,7 +14,7 @@ export const QUESTS_SOLNYSH: QuestDefinition[] = [
         id: 'talk_solnysh',
         description: 'Поговорить с Солныш',
         type: 'npc_talked',
-        target: 'vera',
+        target: 'solnysh',
         completed: false,
       },
       {
@@ -31,7 +31,7 @@ export const QUESTS_SOLNYSH: QuestDefinition[] = [
       { type: 'addXp', value: 60 },
     ],
     linkedStoryNodeId: 'solnysh_room_talk',
-    questGiverNpcId: 'vera',
+    questGiverNpcId: 'solnysh',
   },
 
   {
@@ -72,7 +72,7 @@ export const QUESTS_SOLNYSH: QuestDefinition[] = [
       { type: 'addXp', value: 90 },
     ],
     linkedStoryNodeId: 'solnysh_roof_arrival',
-    questGiverNpcId: 'vera',
+    questGiverNpcId: 'solnysh',
   },
 
   {
@@ -89,7 +89,7 @@ export const QUESTS_SOLNYSH: QuestDefinition[] = [
         id: 'discuss_move',
         description: 'Обсудить переезд с Алиной',
         type: 'npc_talked',
-        target: 'vera',
+        target: 'solnysh',
         completed: false,
       },
       {
@@ -106,6 +106,6 @@ export const QUESTS_SOLNYSH: QuestDefinition[] = [
       { type: 'addCredits', value: 50 },
     ],
     linkedStoryNodeId: 'solnysh_relocation_talk',
-    questGiverNpcId: 'vera',
+    questGiverNpcId: 'solnysh',
   },
 ];

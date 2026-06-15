@@ -27,6 +27,8 @@ export interface AchievementProgressSnapshot {
   defeatedEnemyTypes: string[];
   nightTimeHours: number;
   poemPowerUsedInCombat: boolean;
+  goodKarmaStreak: number;
+  badKarmaStreak: number;
 }
 
 /** Read-only snapshot for engine systems that observe game state. */
@@ -106,6 +108,7 @@ export type GameAction =
   | { type: 'achievement/trackMaxCombo'; comboCount: number }
   | { type: 'achievement/trackCriticalHit' }
   | { type: 'achievement/trackPoemPowerInCombat' }
+  | { type: 'achievement/trackKarmaChoice'; karmaDelta: number }
   | {
       type: 'achievement/batchCheckProgress';
       sceneVisit?: string;

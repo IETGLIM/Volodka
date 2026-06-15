@@ -20,7 +20,7 @@ export const EXPANDED_DIALOGUE_NODES: Record<string, DialogueNode> = {
         next: null,
         effects: [
           { type: 'setFlag', flag: 'solnysh_comforted', flagValue: true },
-          { type: 'npcChange', npcId: 'vera', npcChange: { relation: 8 } },
+          { type: 'npcChange', npcId: 'solnysh', npcChange: { relation: 8 } },
           { type: 'addKarma', value: 5 },
           { type: 'triggerQuest', questId: 'solnysh_comfort' },
         ],
@@ -34,7 +34,7 @@ export const EXPANDED_DIALOGUE_NODES: Record<string, DialogueNode> = {
         text: 'Умка сегодня симпатичная',
         next: null,
         effects: [
-          { type: 'npcChange', npcId: 'vera', npcChange: { relation: 3 } },
+          { type: 'npcChange', npcId: 'solnysh', npcChange: { relation: 3 } },
           { type: 'addStat', stat: 'stress', value: -3 },
         ],
       },
@@ -540,7 +540,7 @@ export const EXPANDED_DIALOGUE_NODES: Record<string, DialogueNode> = {
         effects: [
           { type: 'addKarma', value: 5 },
           { type: 'setFlag', flag: 'vera_vault_intel', flagValue: true },
-          { type: 'npcChange', npcId: 'vera', npcChange: { relation: 8 } },
+          { type: 'npcChange', npcId: 'solnysh', npcChange: { relation: 8 } },
         ],
       },
     ],
@@ -898,6 +898,20 @@ export const EXPANDED_DIALOGUE_NODES: Record<string, DialogueNode> = {
           { type: 'npcChange', npcId: 'fisherman_trofim', npcChange: { relation: 3 } },
         ],
       },
+    ],
+  },
+
+  baba_zina_greeting: {
+    id: 'baba_zina_greeting',
+    speaker: 'Баба Зина',
+    text: 'Слушай. Не трогай — сначала слушай. «Заря-М» пишет стихи не для гильдии. Для тех, кто слышит гул на пятьдесят герц. Максимовы люди следят за цехом — они придут, когда придёт поэт. Ты пришёл не зря.',
+    choices: [
+      {
+        text: 'Я хочу услышать машину.',
+        next: null,
+        effects: [{ type: 'visitStoryNode', nodeId: 'basement_explore_mode' }],
+      },
+      { text: 'Потом.', next: null },
     ],
   },
 }

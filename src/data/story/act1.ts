@@ -1,12 +1,86 @@
 import type { StoryNode } from '@/shared/types/game';
+import { buildExplorationHubNode } from './explorationHubTemplate';
+
+const EXPLORE_MODE = buildExplorationHubNode({
+  id: 'explore_mode',
+  sceneId: 'volodka_room',
+  text: 'Комната небольшая, но уютная в своём роде. Стены увешаны распечатками кода и выцветшими фотографиями. Книжная полка грозит обрушиться под тяжестью томов. Рабочий стол — эпицентр твоей жизни — завален чашками и проводами. Дверь в коридор приоткрыта.',
+  contextNote: 'Ты в своей комнате. Мониторы мерцают, за окном моросит дождь.',
+  accessibilityAnnounce: 'Локация: комната Володьки.',
+  guidanceHint: 'Осмотритесь в комнате и проверьте терминал',
+  guidanceSceneLabel: 'Комната Володьки',
+  guidanceObjectiveType: 'visit_location',
+  choices: [
+    { text: 'Подойти к столу', next: 'room_table', goldenPath: true },
+    { text: 'Осмотреть книжную полку', next: 'room_bookshelf' },
+    { text: 'Заглянуть в платяной шкаф', next: 'room_wardrobe_memory' },
+    {
+      text: 'Выйти в коридор',
+      next: 'corridor_door',
+      effects: [{ type: 'transitionScene', sceneId: 'volodka_corridor' }],
+    },
+  ],
+  freeRoamLabel: 'Свободно исследовать комнату',
+  freeRoamPasses: [
+    { flag: 'room_free_explore_1', effects: [{ type: 'addStat', stat: 'stress', value: -2 }] },
+    {
+      flag: 'room_free_explore_2',
+      effects: [
+        { type: 'addStat', stat: 'stress', value: -1 },
+        { type: 'addSkill', skill: 'intuition', value: 1 },
+      ],
+    },
+    { flag: 'room_free_explore_3', effects: [{ type: 'addSkill', skill: 'intuition', value: 1 }] },
+  ],
+});
+
+const CORRIDOR_EXPLORE_MODE = buildExplorationHubNode({
+  id: 'corridor_explore_mode',
+  sceneId: 'volodka_corridor',
+  text: 'Коридор тянется в обе стороны — потёртый линолеум, облупившаяся краска, таблички с фамилиями на дверях соседей. У зеркала — Солныш и Умка; дальше по правой стене — знакомая дверь в комнату Алины и Лёни, откуда пахнет кофе. Лампочка под потолком то гаснет, то вспыхивает.',
+  contextNote: 'Коридор коммуналки. У зеркала Солныш, у ног крутится Умка.',
+  accessibilityAnnounce: 'Локация: коридор коммуналки.',
+  guidanceHint: 'Поговори с Солныш или зайди к ней с Лёней — линия друга с детства.',
+  guidanceSceneLabel: 'Коридор',
+  guidanceObjectiveType: 'talk_to_npc',
+  guidanceNpcId: 'solnysh',
+  choices: [
+    { text: 'Поговорить с Солныш', next: 'solnysh_corridor_talk' },
+    { text: 'Погласить Умку', next: 'umka_corridor_pet' },
+    { text: 'Зайти к Алине и Лёне', next: 'solnysh_door' },
+    { text: 'Проверить почтовые ящики', next: 'corridor_letter_open' },
+    { text: 'Ответить на звонок в домофон', next: 'corridor_intercom_whisper' },
+    { text: 'Пойти на кухню', next: 'kitchen_table', goldenPath: true },
+    { text: 'Выйти на улицу', next: 'street_bench' },
+    { text: 'Вернуться в комнату', next: 'go_home' },
+  ],
+  freeRoamLabel: 'Свободно исследовать коридор',
+  freeRoamPasses: [
+    { flag: 'corridor_free_explore_1', effects: [{ type: 'addStat', stat: 'stress', value: -1 }] },
+    { flag: 'corridor_free_explore_2', effects: [{ type: 'addSkill', skill: 'intuition', value: 1 }] },
+  ],
+});
 
 export const STORY_NODES_ACT1: Record<string, StoryNode> = {
   /* ─────────────── ACT 1 – PROLOGUE ─────────────── */
   start: {
     id: 'start',
     text: 'Ты просыпаешься от назойливого писка терминала. В правом запястье — знакомый тянущий спазм, напоминание о двенадцати часах за клавиатурой. Тусклый свет монитора едва прорезает полумрак комнаты, и серое отражение ложится на стёкла очков — минус три с половиной, и каждый год чуть хуже. На столе — полупустая кружка растворимого кофе, остывшая часов пять назад; на дне — коричневая плёнка, как осадок прожитого дня. На экране — новое сообщение от IT-гильдии. За окном моросит дождь, и город тонет в привычной серости. Твоё имя — Володька, тебе тридцать три, поясница ноет, и сегодня всё изменится.',
+    textVariants: {
+      highKarma: 'Ты просыпаешься с чувством, что сегодня — хороший день. Терминал пищит, но даже писк кажется терпимым. За окном дождь, но в комнате тепло.',
+      neutralKarma: 'Ты просыпаешься от писка терминала. Мониторы мерцают, дождь за окном — привычная серость.',
+      lowKarma: 'Ты просыпаешься с тяжестью в груди. Ещё один серый день. Терминал не даёт забыть о гильдии.',
+    },
+    karmaThresholds: { high: 65, low: 30 },
+    contextNote: 'Ты в своей комнате. Мониторы мерцают, дождь за окном.',
+    accessibilityAnnounce: 'Начало истории. Комната Володьки.',
+    musicCue: 'mystery',
     speaker: 'narrator',
     sceneId: 'volodka_room',
+    guidanceHint: 'Осмотритесь в комнате и проверьте терминал',
+    guidanceSceneLabel: 'Комната Володьки',
+    guidanceObjectiveType: 'visit_location',
+    autoSave: true,
     choices: [
       {
         text: 'Подняться и осмотреться',
@@ -21,19 +95,7 @@ export const STORY_NODES_ACT1: Record<string, StoryNode> = {
     ],
   },
 
-  explore_mode: {
-    id: 'explore_mode',
-    text: 'Комната небольшая, но уютная в своём роде. Стены увешаны распечатками кода и выцветшими фотографиями. Книжная полка грозит обрушиться под тяжестью томов. Рабочий стол — эпицентр твоей жизни — завален чашками и проводами. Дверь в коридор приоткрыта.',
-    speaker: 'narrator',
-    sceneId: 'volodka_room',
-    choices: [
-      { text: 'Подойти к столу', next: 'room_table', goldenPath: true },
-      { text: 'Осмотреть книжную полку', next: 'room_bookshelf' },
-      { text: 'Заглянуть в платяной шкаф', next: 'room_wardrobe_memory' },
-      { text: 'Выйти в коридор', next: 'corridor_door', effects: [{ type: 'transitionScene', sceneId: 'volodka_corridor' }] },
-      { text: 'Свободно исследовать комнату', next: 'explore_mode' },
-    ],
-  },
+  explore_mode: EXPLORE_MODE,
 
   room_table: {
     id: 'room_table',
@@ -105,15 +167,19 @@ export const STORY_NODES_ACT1: Record<string, StoryNode> = {
   corridor_door: {
     id: 'corridor_door',
     text: 'Ты выходишь в коридор коммуналки. Лампочка мигает, отбрасывая нервные тени. У зеркала стоит Алина — для тебя она всегда Солныш: светлые волосы, голубые глаза, лёгкий платок на плечах. У её ног крутится Умка. Из кухни доносится звон посуды — Зарема уже проснулась.',
+    contextNote: 'Коридор коммуналки. Солныш у зеркала, Умка крутится у ног.',
+    accessibilityAnnounce: 'Новая локация: коридор. Солныш ждёт у зеркала.',
+    soundEffect: 'door_open',
     speaker: 'narrator',
     sceneId: 'volodka_corridor',
+    autoSave: true,
     choices: [
       {
         text: 'Поздороваться с Солныш и осмотреться',
         next: 'corridor_explore_mode',
         goldenPath: true,
         effects: [
-          { type: 'npcChange', npcId: 'vera', npcChange: { relation: 3 } },
+          { type: 'npcChange', npcId: 'solnysh', npcChange: { relation: 3 } },
           { type: 'triggerQuest', questId: 'solnysh_comfort' },
         ],
       },
@@ -123,22 +189,7 @@ export const STORY_NODES_ACT1: Record<string, StoryNode> = {
     ],
   },
 
-  corridor_explore_mode: {
-    id: 'corridor_explore_mode',
-    text: 'Коридор тянется в обе стороны — потёртый линолеум, облупившаяся краска, таблички с фамилиями на дверях соседей. У зеркала — Солныш и Умка; дальше по правой стене — знакомая дверь в комнату Алины и Лёни, откуда пахнет кофе. Лампочка под потолком то гаснет, то вспыхивает.',
-    speaker: 'narrator',
-    sceneId: 'volodka_corridor',
-    choices: [
-      { text: 'Поговорить с Солныш', next: 'solnysh_corridor_talk' },
-      { text: 'Зайти к Алине и Лёне', next: 'solnysh_door' },
-      { text: 'Проверить почтовые ящики', next: 'corridor_letter_open' },
-      { text: 'Ответить на звонок в домофон', next: 'corridor_intercom_whisper' },
-      { text: 'Пойти на кухню', next: 'kitchen_table', goldenPath: true },
-      { text: 'Выйти на улицу', next: 'street_bench' },
-      { text: 'Вернуться в комнату', next: 'go_home' },
-      { text: 'Свободно исследовать коридор', next: 'corridor_explore_mode' },
-    ],
-  },
+  corridor_explore_mode: CORRIDOR_EXPLORE_MODE,
 
   solnysh_corridor_talk: {
     id: 'solnysh_corridor_talk',
@@ -151,7 +202,7 @@ export const STORY_NODES_ACT1: Record<string, StoryNode> = {
         next: 'corridor_explore_mode',
         effects: [
           { type: 'setFlag', flag: 'solnysh_comforted', flagValue: true },
-          { type: 'npcChange', npcId: 'vera', npcChange: { relation: 8 } },
+          { type: 'npcChange', npcId: 'solnysh', npcChange: { relation: 8 } },
           { type: 'addKarma', value: 5 },
           { type: 'triggerQuest', questId: 'solnysh_comfort' },
         ],
@@ -164,7 +215,7 @@ export const STORY_NODES_ACT1: Record<string, StoryNode> = {
         text: 'Умка сегодня симпатичная',
         next: 'corridor_explore_mode',
         effects: [
-          { type: 'npcChange', npcId: 'vera', npcChange: { relation: 3 } },
+          { type: 'npcChange', npcId: 'solnysh', npcChange: { relation: 3 } },
           { type: 'addStat', stat: 'stress', value: -3 },
         ],
       },
@@ -192,9 +243,13 @@ export const STORY_NODES_ACT1: Record<string, StoryNode> = {
 
   kitchen_table: {
     id: 'kitchen_table',
-    text: 'На кухне Зарема ставит перед тобой кружку горячего чая. «Опять не спал всю ночь?» — спрашивает она мягко, но с тревогой в глазах. На столе — хлеб, варенье и старый радиоприёмник, из которого льётся статика. Зарема — единственный человек, который по-настоящему заботится о тебе в этом городе.',
+    text: 'На кухне Зарема ставит перед тобой кружку горячего чая. «Опять не спал всю ночь?» — спрашивает она мягко, но с тревогой в глазах. На столе — хлеб, варенье и старый радиоприёмник «Океан», из которого льётся статика. «Опять шипит,» — вздыхает Зарема. «Между станциями иногда пробивается голос — не музыка. Словно кто-то читает стихи в белом шуме.» Зарема — единственный человек, который по-настоящему заботится о тебе в этом городе.',
+    contextNote: 'Кухня. На подоконнике шипит радио «Океан», на столе — чай и варенье.',
     speaker: 'narrator',
     sceneId: 'home_evening',
+    guidanceNpcId: 'zarema',
+    guidanceHint: 'Поблагодари Зарему или настрой радио — в эфире слышен эхо.',
+    guidanceObjectiveType: 'talk_to_npc',
     choices: [
       {
         text: 'Поблагодарить Зарему',
@@ -203,6 +258,11 @@ export const STORY_NODES_ACT1: Record<string, StoryNode> = {
           { type: 'addKarma', value: 3 },
           { type: 'npcChange', npcId: 'zarema', npcChange: { relation: 5 } },
         ],
+      },
+      {
+        text: '«Океан» шипит — попробую настроить',
+        next: 'zarema_radio_request',
+        condition: { missingFlag: 'zarema_radio_fixed' },
       },
       {
         text: 'Промолчать и пить чай',
@@ -382,6 +442,9 @@ export const STORY_NODES_ACT1: Record<string, StoryNode> = {
   maria_curious: {
     id: 'maria_curious',
     text: 'Она поднимает голову. Глаза — два осколка зимнего неба. «Ты — уставший инженер,» — говорит она без вопроса. Не угроза, а констатация. «Я видела твой код в архивах. У тебя другой почерк. Не такой, как у них.» Она протягивает руку, и в ладони блестит чип данных. «Тебе стоит это прочитать. Пока ещё можно.»',
+    contextNote: 'Переулок у подъезда. Незнакомка в тени неоновой вывески.',
+    accessibilityAnnounce: 'Новая локация: улица. Мария ждёт у переулка.',
+    musicCue: 'tension',
     speaker: 'narrator',
     sceneId: 'street_night',
     choices: [
@@ -449,6 +512,7 @@ export const STORY_NODES_ACT1: Record<string, StoryNode> = {
       {
         text: 'Начать расшифровку',
         next: 'fix_success', goldenPath: true,
+        condition: { minSkill: { coding: 2 } },
         effects: [
           { type: 'addSkill', skill: 'coding', value: 3 },
           { type: 'addStat', stat: 'energy', value: -15 },
@@ -500,6 +564,9 @@ export const STORY_NODES_ACT1: Record<string, StoryNode> = {
   fix_success: {
     id: 'fix_success',
     text: 'Твои пальцы летают по клавиатуре. Строки кода складываются в узор — ты видишь закономерность, скрытую за хаосом. Переменные разворачиваются, дешифратор делает последний проход, и на экране проступает текст. Не код. Стихи. Настоящие, живые стихи, спрятанные в недрах серверов гильдии. У тебя перехватывает дыхание.',
+    contextNote: 'Офис гильдии. На экране — расшифрованные строки, похожие на стихи.',
+    musicCue: 'discovery',
+    autoSave: true,
     speaker: 'narrator',
     sceneId: 'office_day',
     choices: [
@@ -569,6 +636,8 @@ export const STORY_NODES_ACT1: Record<string, StoryNode> = {
   friday_arrives: {
     id: 'friday_arrives',
     text: 'Пятница. Вечер. Сто сорок седьмая пятница с тех пор, как ты ушёл из гильдии. Город зажигает огни, но ты не чувствуешь праздника — только усталость, въевшуюся в кости, как пыль в старые серверы. Комната кажется особенно пустой, когда дверь Заремы закрыта: квартира звучит иначе без её радио, без звона посуды, без тройного стука в стену. Только гул серверов да мигание светодиодов — тусклый пульс машины, которая никогда не спит. Ты садишься на край кровати и смотришь на свои руки. Пальцы ещё помнят клавиатуру — подушечки жёсткие от клавиш, ногти стрижены коротко, как у человека, которому некогда. Строчки кода, строчки стихов — всё сливается. За стеной кто-то включает музыку, и ты вдруг понимаешь, как одинок. Сто сорок семь пятниц. И каждая — как рекурсия, вызывающая саму себя без условия выхода.',
+    musicCue: 'emotional',
+    autoSave: true,
     speaker: 'narrator',
     sceneId: 'volodka_room',
     choices: [

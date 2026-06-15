@@ -227,6 +227,8 @@ const AchievementProgressSchema = z.object({
   defeatedEnemyTypes: z.array(z.string()).optional().default([]),
   nightTimeHours: z.number().min(0).optional().default(0),
   poemPowerUsedInCombat: z.boolean().optional().default(false),
+  goodKarmaStreak: z.number().min(0).optional().default(0),
+  badKarmaStreak: z.number().min(0).optional().default(0),
 });
 
 const LegacyGameModeSchema = z.enum([
@@ -298,6 +300,8 @@ export const SavePayloadSchema = z.object({
     defeatedEnemyTypes: [],
     nightTimeHours: 0,
     poemPowerUsedInCombat: false,
+    goodKarmaStreak: 0,
+    badKarmaStreak: 0,
   }),
   savedAt: z.number(),
   /** Optional slot-manager metadata (not applied to game state) */

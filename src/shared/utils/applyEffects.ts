@@ -5,6 +5,7 @@ import {
   tryAddInventoryItem,
 } from '@/shared/gameBridge/stateDispatcher';
 import { requestSceneTransitionFromBridge } from '@/shared/gameBridge/sceneTransitionBridge';
+import { resolveCanonicalNpcId } from '@/shared/npcIdAliases';
 import type { StoryEffect, TrainablePlayerSkill, EnemyType, SceneId } from '@/shared/types/game';
 
 /**
@@ -70,15 +71,16 @@ export function applyEffects(
         break;
       case 'npcChange':
         if (fx.npcId && fx.npcChange?.relation) {
+          const npcId = resolveCanonicalNpcId(fx.npcId);
           dispatchStateAction({
             type: 'player/setNpcRelation',
-            npcId: fx.npcId,
+            npcId,
             delta: fx.npcChange.relation,
           });
           if (Math.abs(fx.npcChange.relation) >= 5) {
             emitAppEvent('choice:made', {
               karmaChange: 0,
-              npcId: fx.npcId,
+              npcId,
               relationChange: fx.npcChange.relation,
             });
           }

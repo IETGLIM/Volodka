@@ -161,7 +161,7 @@ export const QUESTS_ACT5: QuestDefinition[] = [
       { type: 'setFlag', flag: 'echo_of_vladimir_completed', flagValue: true },
       { type: 'addXp', value: 400 },
     ],
-    linkedStoryNodeId: 'library_entrance',
+    linkedStoryNodeId: 'act5_ending_epilogue',
     questGiverNpcId: 'kate',
   },
 

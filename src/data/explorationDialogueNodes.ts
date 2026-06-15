@@ -93,7 +93,7 @@ export const EXPLORATION_DIALOGUE_NODES: Record<string, DialogueNode> = {
         next: null,
         effects: [
           { type: 'visitStoryNode', nodeId: 'corridor_explore_mode' },
-          { type: 'npcChange', npcId: 'vera', npcChange: { relation: 3 } },
+          { type: 'npcChange', npcId: 'solnysh', npcChange: { relation: 3 } },
         ],
       },
     ],
@@ -587,7 +587,7 @@ export const EXPLORATION_DIALOGUE_NODES: Record<string, DialogueNode> = {
         next: null,
         effects: [
           { type: 'visitStoryNode', nodeId: 'solnysh_room_talk' },
-          { type: 'npcChange', npcId: 'vera', npcChange: { relation: 3 } },
+          { type: 'npcChange', npcId: 'solnysh', npcChange: { relation: 3 } },
         ],
       },
       {
@@ -986,8 +986,6 @@ export const EXPLORATION_DIALOGUE_NODES: Record<string, DialogueNode> = {
           { type: 'setFlag', flag: 'zarema_radio_quest_started', flagValue: true },
           { type: 'triggerQuest', questId: 'zarema_radio' },
           { type: 'visitStoryNode', nodeId: 'zarema_radio_success' },
-          { type: 'setFlag', flag: 'zarema_radio_fixed', flagValue: true },
-          { type: 'setFlag', flag: 'zarema_radio_needs_fix', flagValue: false },
         ],
       },
       {

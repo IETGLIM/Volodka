@@ -172,9 +172,9 @@ const DMITRY_SCHEDULE: NPCSchedule = {
    ────────────────────────────────────────────────────────────────────────── */
 
 /** Солныш — best friend, designer. Corridor mornings, room evenings. */
-const VERA_SCHEDULE: NPCSchedule = {
-  id: 'schedule_vera',
-  npcId: 'vera',
+const SOLNYSH_SCHEDULE: NPCSchedule = {
+  id: 'schedule_solnysh',
+  npcId: 'solnysh',
   entries: [
     { startHour: 0, endHour: 7, sceneId: 'solnysh_room', position: [-1.0, 0, 0.5], activity: 'sleep' },
     { startHour: 7, endHour: 12, sceneId: 'volodka_corridor', position: [0, 0, 1.5], activity: 'walk' },
@@ -410,7 +410,7 @@ export const NPC_SCHEDULES: NPCSchedule[] = [
   COLLEAGUE_SCHEDULE,
   MARIA_SCHEDULE,
   DMITRY_SCHEDULE,
-  VERA_SCHEDULE,
+  SOLNYSH_SCHEDULE,
   LYONYA_SCHEDULE,
   SERGEY_SCHEDULE,
   LENA_SCHEDULE,

@@ -1,0 +1,1 @@
+export const QUEST_BOARD_MAX_ACTIVE_MISSIONS = 3;

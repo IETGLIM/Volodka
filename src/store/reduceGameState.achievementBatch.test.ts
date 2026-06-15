@@ -22,6 +22,8 @@ describe('achievement/batchCheckProgress', () => {
         defeatedEnemyTypes: [],
         nightTimeHours: 1.99,
         poemPowerUsedInCombat: false,
+        goodKarmaStreak: 0,
+        badKarmaStreak: 0,
       },
     });
   });
@@ -45,6 +47,8 @@ describe('achievement/batchCheckProgress', () => {
       defeatedEnemyTypes: [],
       nightTimeHours: 2,
       poemPowerUsedInCombat: false,
+      goodKarmaStreak: 0,
+      badKarmaStreak: 0,
     });
     expect(listener).toHaveBeenCalledTimes(1);
     unsub();

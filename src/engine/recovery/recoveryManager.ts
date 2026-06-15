@@ -10,7 +10,7 @@ import {
   clearAllPersistedGameData,
   removePersistedKeys,
   type PersistedStorage,
-} from '@/store/slices/saveStorage';
+} from '@/shared/persistence/persistedStorageOps';
 
 export class RecoveryManager {
   constructor(private readonly storage: PersistedStorage | null = getBrowserStorage()) {}

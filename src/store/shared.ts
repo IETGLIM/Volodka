@@ -108,9 +108,8 @@ export function pushNotification(
 
 export type JournalTab = 'notes' | 'skills' | 'poems' | 'lore';
 
-export type LoreCategory = 'history' | 'factions' | 'technology' | 'culture' | 'mysteries';
-
-export type LoreRarity = 'common' | 'uncommon' | 'rare' | 'legendary';
+export type { LoreCategory, LoreRarity } from '@/shared/types/lore';
+import type { LoreCategory, LoreRarity } from '@/shared/types/lore';
 
 export interface LoreEntry {
   id: string;

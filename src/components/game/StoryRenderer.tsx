@@ -23,6 +23,10 @@ import {
 import type { StoryChoice, StoryEffect } from '@/shared/types/game';
 import { checkStoryCondition, buildStoryConditionContext } from '@/shared/storyConditions';
 import {
+  buildNarrativeLiveMessage,
+  resolveNarrativeText,
+} from '@/shared/narrativePresentation';
+import {
   CinematicNarrativeChoices,
   CinematicNarrativeFrame,
   resolveCinematicNarrativePresentation,
@@ -155,13 +159,23 @@ export function StoryRenderer() {
     [storyNodes, currentNodeId, storyPackVersion],
   );
 
-  const { displayed, done, skip, reducedMotion } = useNarrativeTypewriter(node?.text ?? '', 28);
+  const resolvedText = useMemo(
+    () => (node ? resolveNarrativeText(node, karma) : ''),
+    [node, karma],
+  );
+
+  const { displayed, done, skip, reducedMotion } = useNarrativeTypewriter(resolvedText, 28);
 
   useEffect(() => () => clearEffectTimers(), [clearEffectTimers]);
 
   // Visit node on mount, apply effects, sync 3D scene when the node defines sceneId
   useEffect(() => {
     if (!node) return;
+
+    if (node.condition && !checkStoryCondition(node.condition, conditionCtx).pass) {
+      closeNarrativeOverlay();
+      return;
+    }
 
     clearEffectTimers();
     const effectGen = ++nodeEffectGenRef.current;
@@ -189,6 +203,22 @@ export function StoryRenderer() {
       }, 0);
     }
 
+    if (node.autoSave) {
+      getGameStore().saveGame({ source: 'auto' });
+    }
+
+    if (node.accessibilityAnnounce) {
+      eventBus.emit('ui:exploration_message', { text: node.accessibilityAnnounce });
+    }
+
+    if (node.soundEffect) {
+      audioEngine.playSfx(node.soundEffect);
+    }
+
+    if (node.musicCue) {
+      audioEngine.playStinger(node.musicCue);
+    }
+
     const mappedNpcId = STORY_NODE_TO_NPC_ID[node.id];
     const speakerNpcId =
       node.speaker && node.speaker !== 'narrator'
@@ -198,7 +228,7 @@ export function StoryRenderer() {
     if (questNpcId) {
       eventBus.emit('npc:talked', { npcId: questNpcId, dialogueNodeId: node.id });
     }
-  }, [node?.id, visitNode, clearEffectTimers, scheduleEffectTimer]);
+  }, [node?.id, visitNode, clearEffectTimers, scheduleEffectTimer, conditionCtx, node?.condition]);
 
   const handleChoice = useCallback(
     (choice: StoryChoice) => {
@@ -280,9 +310,9 @@ export function StoryRenderer() {
   const speakerTitleId = `story-speaker-${currentNodeId}`;
   const speakerLabel =
     node.speaker && node.speaker !== 'narrator' ? node.speaker : undefined;
-  const typewriterLiveMessage = speakerLabel
-    ? `${speakerLabel}: ${displayed}${done ? '' : '…'}`
-    : `${displayed}${done ? '' : '…'}`;
+  const typewriterLiveMessage = node
+    ? buildNarrativeLiveMessage(node, displayed, done)
+    : '';
 
   const presentation = resolveCinematicNarrativePresentation(
     currentNodeId,

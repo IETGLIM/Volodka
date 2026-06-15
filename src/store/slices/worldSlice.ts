@@ -17,6 +17,8 @@ import {
   scheduleQuestCompleted,
   scheduleQuestObjectiveUpdated,
 } from '../storeEffects';
+import { resolveAchievementAnnounce } from '@/data/achievementHelpers';
+import { applyEffects } from '@/shared/utils/applyEffects';
 import { clamp, type PoemPowerState } from '../shared';
 import { applyFairmathRelation } from '@/shared/fairmath';
 import type { GameStoreState } from '../types';
@@ -26,14 +28,13 @@ import {
   pickWorldCrossActions,
   readWorldFromExploration,
 } from '../crossSliceReads';
+import { QUEST_BOARD_MAX_ACTIVE_MISSIONS } from '@/shared/quest/questBoardConstants';
 import { parseTrainablePlayerSkill } from '../skillHelpers';
-import { QUEST_BOARD_MAX_ACTIVE_MISSIONS } from '@/engine/questBoard/questBoardConstants';
 import {
   batchAddCredits,
   batchAddKarma,
   batchAddSkill,
   batchAddXp,
-  batchSetFlag,
 } from '../rewardBatchHelpers';
 
 /* ─── Slice types ─── */
@@ -66,6 +67,10 @@ export interface WorldSliceState {
     defeatedEnemyTypes: string[];
     nightTimeHours: number;
     poemPowerUsedInCombat: boolean;
+    /** Consecutive story choices with positive karma */
+    goodKarmaStreak: number;
+    /** Consecutive story choices with negative karma */
+    badKarmaStreak: number;
   };
 }
 
@@ -108,6 +113,8 @@ export interface WorldSliceActions {
   trackNightHour: () => void;
   /** Track poem power used in combat for achievement progress */
   trackPoemPowerInCombat: () => void;
+  /** Track moral karma choice streaks (positive or negative) */
+  trackKarmaChoice: (karmaDelta: number) => void;
   /** Reset combat consecutive victories (on defeat) */
   resetConsecutiveVictories: () => void;
   /** Update max combo if the new value is higher (does not increment victories) */
@@ -143,6 +150,8 @@ export const createWorldSlice: StateCreator<
     defeatedEnemyTypes: [],
     nightTimeHours: 0,
     poemPowerUsedInCombat: false,
+    goodKarmaStreak: 0,
+    badKarmaStreak: 0,
   },
 
   /* ── Actions ── */
@@ -300,34 +309,9 @@ export const createWorldSlice: StateCreator<
       unlockedAchievements: [...state.unlockedAchievements, { id: achievementId, unlockedAt: timestamp }],
     });
 
-    pickPlayerRewardBatchActions().applyPlayerRewardBatch((draft, sideEffects) => {
-      for (const reward of def.rewards) {
-        switch (reward.type) {
-          case 'xp':
-            if (reward.value) batchAddXp(draft, sideEffects, reward.value);
-            break;
-          case 'karma':
-            if (reward.value) batchAddKarma(draft, sideEffects, reward.value);
-            break;
-          case 'skill': {
-            const skill = parseTrainablePlayerSkill(
-              reward.skill,
-              `achievement "${achievementId}" reward skill`,
-            );
-            if (skill && reward.value) {
-              batchAddSkill(draft, skill, reward.value);
-            }
-            break;
-          }
-          case 'credits':
-            if (reward.value) batchAddCredits(draft, reward.value);
-            break;
-          case 'flag':
-            if (reward.flag) batchSetFlag(draft, reward.flag, reward.flagValue ?? true);
-            break;
-        }
-      }
-    });
+    if (def.rewards.length > 0) {
+      applyEffects(def.rewards);
+    }
 
     runAfterStoreCommit(() => {
       emitAchievementUnlocked({
@@ -336,6 +320,9 @@ export const createWorldSlice: StateCreator<
         description: def.description,
         icon: def.icon,
         category: def.category,
+        rarity: def.rarity,
+        soundEffect: def.soundEffect,
+        accessibilityAnnounce: resolveAchievementAnnounce(def),
       });
       emitAchievementFx({
         title: def.title,
@@ -589,6 +576,28 @@ export const createWorldSlice: StateCreator<
         achievementProgress: {
           ...state.achievementProgress,
           poemPowerUsedInCombat: true,
+        },
+      };
+    }),
+
+  trackKarmaChoice: (karmaDelta) =>
+    set((state) => {
+      if (karmaDelta === 0) return state;
+      const prev = state.achievementProgress;
+      if (karmaDelta > 0) {
+        return {
+          achievementProgress: {
+            ...prev,
+            goodKarmaStreak: prev.goodKarmaStreak + 1,
+            badKarmaStreak: 0,
+          },
+        };
+      }
+      return {
+        achievementProgress: {
+          ...prev,
+          badKarmaStreak: prev.badKarmaStreak + 1,
+          goodKarmaStreak: 0,
         },
       };
     }),

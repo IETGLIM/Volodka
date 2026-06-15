@@ -38,7 +38,7 @@ export const STORY_NODES_SOLNYSH: Record<string, StoryNode> = {
         next: 'solnysh_explore_mode',
         effects: [
           { type: 'setFlag', flag: 'solnysh_comforted', flagValue: true },
-          { type: 'npcChange', npcId: 'vera', npcChange: { relation: 8 } },
+          { type: 'npcChange', npcId: 'solnysh', npcChange: { relation: 8 } },
           { type: 'addKarma', value: 5 },
           { type: 'triggerQuest', questId: 'solnysh_comfort' },
         ],
@@ -72,7 +72,7 @@ export const STORY_NODES_SOLNYSH: Record<string, StoryNode> = {
         next: 'solnysh_explore_mode',
         effects: [
           { type: 'setFlag', flag: 'solnysh_comforted', flagValue: true },
-          { type: 'npcChange', npcId: 'vera', npcChange: { relation: 10 } },
+          { type: 'npcChange', npcId: 'solnysh', npcChange: { relation: 10 } },
           { type: 'addSkill', skill: 'empathy', value: 2 },
           { type: 'triggerQuest', questId: 'solnysh_comfort' },
         ],
@@ -123,7 +123,7 @@ export const STORY_NODES_SOLNYSH: Record<string, StoryNode> = {
         next: 'solnysh_roof_afterglow',
         effects: [
           { type: 'setFlag', flag: 'solnysh_roof_toast_done', flagValue: true },
-          { type: 'npcChange', npcId: 'vera', npcChange: { relation: 12 } },
+          { type: 'npcChange', npcId: 'solnysh', npcChange: { relation: 12 } },
           { type: 'addKarma', value: 8 },
           { type: 'addStat', stat: 'stress', value: -15 },
         ],
@@ -157,7 +157,7 @@ export const STORY_NODES_SOLNYSH: Record<string, StoryNode> = {
         next: 'solnysh_explore_mode',
         effects: [
           { type: 'setFlag', flag: 'solnysh_relocation_supported', flagValue: true },
-          { type: 'npcChange', npcId: 'vera', npcChange: { relation: 15 } },
+          { type: 'npcChange', npcId: 'solnysh', npcChange: { relation: 15 } },
           { type: 'npcChange', npcId: 'lyonya', npcChange: { relation: 10 } },
           { type: 'addKarma', value: 10 },
         ],
@@ -165,7 +165,7 @@ export const STORY_NODES_SOLNYSH: Record<string, StoryNode> = {
       {
         text: 'Останьтесь — город ещё может измениться',
         next: 'solnysh_explore_mode',
-        effects: [{ type: 'npcChange', npcId: 'vera', npcChange: { relation: -3 } }],
+        effects: [{ type: 'npcChange', npcId: 'solnysh', npcChange: { relation: -3 } }],
       },
     ],
   },

@@ -29,6 +29,9 @@ export interface ApplicationEventMap {
     description: string;
     icon: string;
     category: string;
+    rarity: string;
+    soundEffect?: string;
+    accessibilityAnnounce: string;
   };
   'fx:achievement': { title: string; description: string; icon?: string };
   'player:levelup': {

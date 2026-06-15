@@ -67,7 +67,7 @@ function UmkaMesh() {
 
 export function UmkaDog({ livePlayerPositionRef }: UmkaDogProps) {
   const sceneId = useCurrentSceneId();
-  const veraState = useGameStore((s) => s.exploration.npcStates.vera);
+  const solnyshState = useGameStore((s) => s.exploration.npcStates.solnysh);
   const activeCutsceneId = useGameStore((s) => s.activeCutsceneId);
   const timeOfDay = useGameStore((s) => s.exploration.timeOfDay);
   const groupRef = useRef<THREE.Group>(null);
@@ -82,13 +82,13 @@ export function UmkaDog({ livePlayerPositionRef }: UmkaDogProps) {
       sceneId === 'volodka_corridor' && activeCutsceneId === 'act1_corridor_solnysh';
 
     let anchor: [number, number, number] | null = null;
-    if (veraState?.sceneId === sceneId) {
-      anchor = veraState.position;
+    if (solnyshState?.sceneId === sceneId) {
+      anchor = solnyshState.position;
     } else if (inCorridorCutscene) {
       anchor = CORRIDOR_VERA_ANCHOR;
     } else if (sceneId === 'volodka_corridor') {
       const scheduleCtx = buildScheduleContext(useGameStore.getState());
-      const entry = getCurrentScheduleEntry('vera', timeOfDay, scheduleCtx);
+      const entry = getCurrentScheduleEntry('solnysh', timeOfDay, scheduleCtx);
       if (entry?.sceneId === 'volodka_corridor') {
         anchor = entry.position;
       }

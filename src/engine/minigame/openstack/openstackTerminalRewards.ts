@@ -1,7 +1,11 @@
 import { eventBus } from '@/engine/EventBus';
-import type { GameStoreState } from '@/store/types';
 
-type StoreActions = Pick<GameStoreState, 'addSkill' | 'addKarma' | 'addStress' | 'setFlag'>;
+type StoreActions = {
+  addSkill: (skill: 'coding', amount: number) => void;
+  addKarma: (amount: number) => void;
+  addStress: (amount: number) => void;
+  setFlag: (flag: string, value: boolean) => void;
+};
 
 export function applyOpenStackSuccess(store: StoreActions): void {
   store.addSkill('coding', 5);

@@ -1,7 +1,7 @@
 import { LORE_CATEGORY_META } from '@/data/loreEntries';
 import { LORE_TOAST_HINT } from '@/engine/lore/loreDiscoveryConstants';
 import type { LoreToastPayload } from '@/engine/lore/loreDiscoveryTypes';
-import type { LoreCategory, LoreRarity } from '@/store/shared';
+import type { LoreCategory, LoreRarity } from '@/shared/types/lore';
 
 export interface LoreToastVisualConfig {
   primary: string;

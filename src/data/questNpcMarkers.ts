@@ -5,17 +5,17 @@ export const QUEST_OBJECTIVE_NPC_HINTS: Readonly<
   Record<string, Readonly<Record<string, string>>>
 > = {
   solnysh_comfort: {
-    talk_solnysh: 'vera',
-    comfort_solnysh: 'vera',
+    talk_solnysh: 'solnysh',
+    comfort_solnysh: 'solnysh',
   },
   solnysh_roof_wine: {
     find_wine: 'lyonya',
-    offer_wine: 'vera',
-    roof_toast: 'vera',
+    offer_wine: 'solnysh',
+    roof_toast: 'solnysh',
   },
   solnysh_relocation: {
-    discuss_move: 'vera',
-    support_move: 'vera',
+    discuss_move: 'solnysh',
+    support_move: 'solnysh',
   },
 };
 

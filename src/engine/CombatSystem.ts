@@ -52,6 +52,7 @@ import {
   getPlayerAttackBoost, getPlayerDefenseBoost,
 } from './combat/buffSystem';
 import { getPlayerAttack, getPlayerDefense, getPlayerMaxHp, tickPowerCooldowns, isPowerAvailable, addXp, computeCombatCredits } from './combat/formulas';
+import { getFleeChanceBonus, scaleEnemyDamageByDifficulty } from './combat/combatDifficulty';
 import { ENEMY_TEMPLATES, resolveEnemyType } from './combat/enemies';
 import {
   POEM_COMBAT_ABILITIES,
@@ -583,6 +584,8 @@ export function playerFlee(): CombatState | null {
   const karma = playerState.karma;
   if (karma >= 70) fleeChance += 0.05;
 
+  fleeChance += getFleeChanceBonus();
+
   // Clamp to [0.15, 0.95]
   const clampedChance = Math.max(0.15, Math.min(0.95, fleeChance));
   const fled = Math.random() < clampedChance;
@@ -815,6 +818,7 @@ function executeEnemyTurn() {
   const enemyDmgMultiplier = getEnemyDamageMultiplier(workingState);
 
   let enemyDamage = Math.max(1, Math.floor(effectiveEnemyAttack * enemyDmgMultiplier * (0.85 + Math.random() * 0.3)));
+  enemyDamage = scaleEnemyDamageByDifficulty(enemyDamage);
 
   if (workingState.playerDefending) {
     const playerDef = getPlayerDefense();

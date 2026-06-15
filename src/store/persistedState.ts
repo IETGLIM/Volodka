@@ -81,6 +81,8 @@ export function createDefaultPersistedState(): Pick<GameStoreState, PersistedSto
       defeatedEnemyTypes: [],
       nightTimeHours: 0,
       poemPowerUsedInCombat: false,
+      goodKarmaStreak: 0,
+      badKarmaStreak: 0,
     },
   };
 }

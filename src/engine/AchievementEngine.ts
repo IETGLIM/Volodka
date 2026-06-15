@@ -14,7 +14,7 @@ import {
   getGameSnapshot,
   type AchievementProgressSnapshot,
 } from '@/engine/GameActionDispatcher';
-import { ACHIEVEMENT_MAP, TOTAL_ACHIEVEMENTS } from '@/data/achievements';
+import { ACHIEVEMENT_MAP, ACHIEVEMENTS, TOTAL_ACHIEVEMENTS } from '@/data/achievements';
 import type { EnemyType } from '@/shared/types/game';
 
 /* ─── Session-only tracking (not persisted — ephemeral per page load) ─── */
@@ -119,6 +119,7 @@ export function checkAchievements(state: AchievementCheckState): void {
   const flags = state.flags;
   const npcRelations = state.npcRelations;
   const timeOfDay = state.timeOfDay;
+  const karma = state.karma;
 
   const snapshot = getGameSnapshot();
   const { progress, batch } = projectCheckProgressUpdates(
@@ -146,10 +147,6 @@ export function checkAchievements(state: AchievementCheckState): void {
     tryUnlock('story_meet_victoria');
   }
 
-  if (flags['zarema_rescued']) {
-    tryUnlock('story_save_zarema');
-  }
-
   if (flags['poetry_broadcast_sent'] || flags['poetry_transmitted']) {
     tryUnlock('story_poetry_broadcast');
   }
@@ -158,9 +155,36 @@ export function checkAchievements(state: AchievementCheckState): void {
     tryUnlock('story_living_code');
   }
 
-  if (flags['ending_reached'] || flags['ending_sacrifice'] || flags['ending_freedom'] ||
-      flags['ending_poetry'] || flags['ending_guild'] || flags['act5_ending']) {
+  if (
+    flags['ending_reached'] || flags['ending_sacrifice'] || flags['ending_freedom'] ||
+    flags['ending_poetry'] || flags['ending_guild'] || flags['act5_ending'] ||
+    flags['game_completed']
+  ) {
     tryUnlock('story_dawn');
+  }
+
+  if (flags['quiet_song_ritka'] && flags['tolpa_guitar_heard']) {
+    tryUnlock('collection_quiet_songs');
+  }
+
+  if (karma >= 90) {
+    tryUnlock('karma_saint');
+  }
+
+  if (progress.goodKarmaStreak >= 5) {
+    tryUnlock('karma_virtuous_streak');
+  }
+
+  if (progress.badKarmaStreak >= 5) {
+    tryUnlock('karma_ruthless_streak');
+  }
+
+  // Flag-gated achievements (Act 6–7, CHK, minigames, endings)
+  for (const def of ACHIEVEMENTS) {
+    if (!def.unlockFlag) continue;
+    if (flags[def.unlockFlag]) {
+      tryUnlock(def.id);
+    }
   }
 
   // ─── COMBAT ACHIEVEMENTS ───
@@ -249,14 +273,10 @@ export function checkAchievements(state: AchievementCheckState): void {
     tryUnlock('social_negotiator');
   }
 
-  // ─── HIDDEN ACHIEVEMENTS ───
+  // ─── HIDDEN ACHIEVEMENTS (non-flag) ───
 
-  if (flags['easter_egg_found'] || flags['found_easter_egg'] || flags['between_lines']) {
+  if (flags['easter_egg_found'] || flags['found_easter_egg']) {
     tryUnlock('hidden_between_lines');
-  }
-
-  if (flags['ending_sacrifice'] || flags['sacrifice_ending']) {
-    tryUnlock('hidden_sacrifice');
   }
 
   prevMode = mode;

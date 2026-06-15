@@ -1,5 +1,5 @@
 import type { PlayerSkills, TrainablePlayerSkill } from '@/shared/types/game';
-import type { LevelUpEvent } from '@/store/levelUpHelpers';
+import type { LevelUpEvent } from '@/shared/types/levelUp';
 import {
   formatPerkPointsLabel,
   formatSkillPointsLabel,

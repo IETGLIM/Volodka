@@ -87,7 +87,7 @@ export const NPC_QUEST_BARKS: Record<string, NpcQuestBarkEntry[]> = {
       text: 'Логи доступа к офису у меня. Спроси — покажу, кто ходил ночью, когда Сеть молчала.',
     },
   ],
-  vera: [
+  solnysh: [
     {
       questId: 'solnysh_comfort',
       objectiveId: 'comfort_solnysh',

@@ -271,7 +271,7 @@ export const QUESTS_ACT1: QuestDefinition[] = [
       { type: 'setFlag', flag: 'all_poems_collected', flagValue: true },
       { type: 'addXp', value: 200 },
     ],
-    linkedStoryNodeId: 'volodka_inner',
+    linkedStoryNodeId: 'fix_success',
     questGiverNpcId: 'kate',
   },
 
