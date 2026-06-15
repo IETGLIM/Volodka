@@ -16,4 +16,8 @@ describe('sceneVisualProfiles', () => {
     expect(profile.tier).toBe('standard');
     expect(profile.forceFullPostFx).toBe(true);
   });
+
+  it('boosts dream bloom for galaxy sky mood', () => {
+    expect(getSceneVisualProfile('sleep_dream').bloomIntensityScale).toBe(1.12);
+  });
 });

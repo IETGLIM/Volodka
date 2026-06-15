@@ -41,7 +41,7 @@ const SCENE_COLOR_GRADE: Record<string, { hue: number; saturation: number; brigh
   park_day:           { hue: -0.04, saturation: -0.06, brightness: 0.05, contrast: 0.12 },
   library_day:        { hue: 0.02,  saturation: -0.03, brightness: 0.04, contrast: 0.08 },
   battle:             { hue: 0.08,  saturation: 0.2,  brightness: -0.05, contrast: 0.3  }, // intense combat
-  sleep_dream:        { hue: 0.15,  saturation: 0.35, brightness: 0.04, contrast: 0.12 }, // dark fantasy
+  sleep_dream:        { hue: 0.18,  saturation: 0.48, brightness: 0.06, contrast: 0.18 }, // galaxy dream grade
   rooftop_edge:       { hue: 0.05,  saturation: 0.15, brightness: 0.05, contrast: 0.16 }, // noir sunset
   abandoned_factory:  { hue: 0.06,  saturation: -0.03, brightness: 0.02, contrast: 0.16 },
   factory_basement:   { hue: -0.04, saturation: -0.05, brightness: 0.0,  contrast: 0.2 },
@@ -87,7 +87,7 @@ const SCENE_BLOOM: Record<string, { intensity: number; threshold: number; smooth
   park_day:           { intensity: 0.38, threshold: 0.78, smoothing: 0.55 },
   library_day:        { intensity: 0.2,  threshold: 0.85, smoothing: 0.6 },  // quiet
   battle:             { intensity: 0.8,  threshold: 0.5,  smoothing: 0.4 },  // intense combat flash
-  sleep_dream:        { intensity: 0.5,  threshold: 0.6,  smoothing: 0.5 },  // ethereal glow
+  sleep_dream:        { intensity: 0.58, threshold: 0.52, smoothing: 0.44 }, // galaxy ethereal glow
   rooftop_edge:       { intensity: 0.5,  threshold: 0.6,  smoothing: 0.5 },  // sunset bloom
   abandoned_factory:  { intensity: 0.35, threshold: 0.7, smoothing: 0.55 },  // ember glow (lighter GPU load)
   street_winter:      { intensity: 0.3,  threshold: 0.8,  smoothing: 0.6 },  // cold

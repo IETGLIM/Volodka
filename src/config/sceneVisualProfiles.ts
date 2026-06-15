@@ -72,7 +72,12 @@ const PROFILES: Partial<Record<SceneId, SceneVisualProfile>> = {
   factory_basement: { ...STANDARD_PROFILE, forceFullPostFx: true, enhancedAmbientOcclusion: false },
   zarema_albert_room: { ...STANDARD_PROFILE, forceFullPostFx: true, enhancedAmbientOcclusion: false },
   solnysh_room: { ...STANDARD_PROFILE, forceFullPostFx: true, enhancedAmbientOcclusion: false },
-  sleep_dream: { ...STANDARD_PROFILE, forceFullPostFx: true, enhancedAmbientOcclusion: false },
+  sleep_dream: {
+    ...STANDARD_PROFILE,
+    forceFullPostFx: true,
+    enhancedAmbientOcclusion: false,
+    bloomIntensityScale: 1.12,
+  },
 };
 
 export function getSceneVisualProfile(sceneId: SceneId): SceneVisualProfile {

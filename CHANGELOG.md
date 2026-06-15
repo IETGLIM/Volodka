@@ -1,4 +1,12 @@
 # Changelog — ВОЛОДЬКА RPG
+## v4.2.9 — 16 июня 2026
+
+### AAA graphics P1 (dream galaxy sky + ethereal grade)
+- **sleep_dream sky dome**: procedural galaxy gradient with nebula wisps and slow-drifting starfield (`GalaxySkyDome` in `SleepDreamVisual`; fog-exempt, no new asset files).
+- **Dream color grade**: stronger magenta/cyan LUT-style tuning in exploration post-FX (hue, saturation, contrast, bloom threshold).
+- **Visual profile**: `sleep_dream` bloom intensity scale 1.12 for ethereal glow on floating elements.
+- **Tests**: `proceduralSkyTextures.test.ts`, `sceneVisualProfiles` dream bloom assertion.
+
 ## v4.2.8 — 16 июня 2026
 
 ### GLB model integration (scene rendering)

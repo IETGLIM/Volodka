@@ -15,6 +15,10 @@ import FastNoiseLite from 'fastnoise-lite';
 import { useEnvironmentLod } from './lod/EnvironmentLodProvider';
 import { EnvironmentDetail } from './lod/PropDistanceGate';
 import { useCachedCanvasTexture } from '@/hooks/useCachedCanvasTexture';
+import {
+  createDreamGalaxySkyTexture,
+  createDreamGalaxyStarGeometry,
+} from '@/engine/graphics/proceduralSkyTextures';
 
 /** Dark Fantasy/Psychonauts2 dreamscape (50×50m) — flat walkable floor aligned with physics */
 export function SleepDreamVisual() {
@@ -32,6 +36,9 @@ export function SleepDreamVisual() {
 
   return (
     <group>
+      {/* ── Galaxy sky dome (fog-exempt; scene skybox disabled for dream) ── */}
+      <GalaxySkyDome />
+
       {/* ═══════════════════════════════════════════════ */}
       {/* ── FLAT DREAM FLOOR (matches physics plane) ── */}
       {/* ═══════════════════════════════════════════════ */}
@@ -146,6 +153,44 @@ const SPIRAL_PILLAR_POSITIONS: [number, number, number][] = [
   [-4, 0, 10],
   [0, 0, -15],
 ];
+
+/** Inward-facing dome: galaxy gradient + slow-drifting starfield. */
+function GalaxySkyDome() {
+  const skyTexture = useCachedCanvasTexture('sleep_dream:galaxy-sky', createDreamGalaxySkyTexture);
+  const starGeometry = useMemo(() => createDreamGalaxyStarGeometry(), []);
+  const starsRef = useRef<THREE.Points>(null);
+
+  useFrameTick('misc', ({ state }) => {
+    if (starsRef.current) {
+      starsRef.current.rotation.y = state.clock.elapsedTime * 0.006;
+    }
+  });
+
+  return (
+    <group renderOrder={-10}>
+      <mesh position={[0, 6, 0]}>
+        <sphereGeometry args={[58, 32, 16, 0, Math.PI * 2, 0, Math.PI * 0.6]} />
+        <meshBasicMaterial
+          map={skyTexture}
+          side={THREE.BackSide}
+          fog={false}
+          depthWrite={false}
+        />
+      </mesh>
+      <points ref={starsRef} geometry={starGeometry}>
+        <pointsMaterial
+          color="#dde8ff"
+          size={1.4}
+          sizeAttenuation={false}
+          transparent
+          opacity={0.88}
+          fog={false}
+          depthWrite={false}
+        />
+      </points>
+    </group>
+  );
+}
 
 /* ═══════════════════════════════════════════════════════════════════ */
 /*  VEIN OVERLAY — glowing crack network using FastNoiseLite         */
