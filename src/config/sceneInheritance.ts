@@ -28,3 +28,10 @@ export function resolveDerivedSceneId(sceneId: SceneId): SceneId {
   }
   return current;
 }
+
+/** Whether an NPC schedule entry applies to the active scene (variant or parent). */
+export function sceneMatchesScheduleEntry(querySceneId: SceneId, entrySceneId: SceneId): boolean {
+  if (querySceneId === entrySceneId) return true;
+  const parent = SCENE_DERIVED_FROM[querySceneId];
+  return parent !== undefined && parent === entrySceneId;
+}

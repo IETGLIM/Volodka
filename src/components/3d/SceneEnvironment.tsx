@@ -5,6 +5,7 @@ import { useRef, useMemo, useEffect, useState } from 'react';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import { useGameStore } from '@/store/gameStore';
 import { getSceneConfig } from '@/config/scenes';
+import { resolveDerivedSceneId } from '@/config/sceneInheritance';
 import { Environment } from '@react-three/drei';
 import * as THREE from 'three';
 import { liftHexColor, SCENE_VISIBILITY } from '@/shared/constants/sceneVisibility';
@@ -109,6 +110,7 @@ const DEFAULT_FOG_ANIM: FogAnimConfig = { pulseFreq: 0.05, nearAmplitude: 0.05, 
 /** Optimized scene environment: fog, background, environment preset, animated fog */
 export function SceneEnvironment() {
   const sceneId = useGameStore((s) => s.exploration.currentSceneId);
+  const visualSceneId = resolveDerivedSceneId(sceneId);
   const config = getSceneConfig(sceneId);
   const { preset } = useGraphicsQuality();
   const [envMapReady, setEnvMapReady] = useState(false);
@@ -120,7 +122,7 @@ export function SceneEnvironment() {
   }, [sceneId]);
 
   const isIndoor = config.hasCeiling;
-  const heroScene = isHeroScene(sceneId as SceneId);
+  const heroScene = isHeroScene(visualSceneId);
   const enableEnvMap = !isIndoor && !preset.visualLite;
 
   useFrameTick('misc', () => {
@@ -139,11 +141,11 @@ export function SceneEnvironment() {
 
   // Use style-pillar-matched fog colors, fall back to scene config ambient
   const fogColor = liftHexColor(
-    SCENE_FOG_COLORS[sceneId] ?? config.ambientColor ?? '#1a1a2e',
+    SCENE_FOG_COLORS[visualSceneId] ?? config.ambientColor ?? '#1a1a2e',
     SCENE_VISIBILITY.fogColorLift,
   );
   const bgColor = liftHexColor(
-    SCENE_BG_COLORS[sceneId] ?? fogColor,
+    SCENE_BG_COLORS[visualSceneId] ?? fogColor,
     SCENE_VISIBILITY.fogColorLift * 0.85,
   );
 
@@ -161,10 +163,10 @@ export function SceneEnvironment() {
   }
 
   // Choose environment preset based on scene
-  const envPreset = getEnvPreset(sceneId);
+  const envPreset = getEnvPreset(visualSceneId);
 
   // Fog animation config
-  const fogAnim = SCENE_FOG_ANIM[sceneId] ?? DEFAULT_FOG_ANIM;
+  const fogAnim = SCENE_FOG_ANIM[visualSceneId] ?? DEFAULT_FOG_ANIM;
 
   // Pre-compute fog color and alternate color as THREE.Color for blending
   const baseFogColor = useMemo(() => new THREE.Color(fogColor), [fogColor]);

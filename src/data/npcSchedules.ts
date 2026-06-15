@@ -400,6 +400,33 @@ const TROFIM_SCHEDULE: NPCSchedule = {
   ],
 };
 
+/** Баба Зина — паяльщица у станции в заброшенном цехе. */
+const BABA_ZINA_SCHEDULE: NPCSchedule = {
+  id: 'schedule_baba_zina',
+  npcId: 'baba_zina',
+  entries: [
+    { startHour: 0, endHour: 24, sceneId: 'abandoned_factory', position: [-2.0, 0, -4.0], activity: 'work' },
+  ],
+};
+
+/** Уличный поэт на центральной площади. */
+const STREET_POET_SCHEDULE: NPCSchedule = {
+  id: 'schedule_street_poet',
+  npcId: 'street_poet',
+  entries: [
+    { startHour: 0, endHour: 24, sceneId: 'city_square', position: [0, 0, 0], activity: 'talk' },
+  ],
+};
+
+/** Перебежчик из гильдии — прячется в бункере сопротивления. */
+const GUILD_DEFECTOR_SCHEDULE: NPCSchedule = {
+  id: 'schedule_guild_defector',
+  npcId: 'guild_defector',
+  entries: [
+    { startHour: 0, endHour: 24, sceneId: 'underground_bunker', position: [-1.0, 0, 1.0], activity: 'rest' },
+  ],
+};
+
 /* ─── All schedules (core 7 + expanded 5 + new 5) ─── */
 
 export const NPC_SCHEDULES: NPCSchedule[] = [
@@ -425,6 +452,9 @@ export const NPC_SCHEDULES: NPCSchedule[] = [
   TAMARA_SCHEDULE,
   GRISHA_SCHEDULE,
   TROFIM_SCHEDULE,
+  BABA_ZINA_SCHEDULE,
+  STREET_POET_SCHEDULE,
+  GUILD_DEFECTOR_SCHEDULE,
   ...CHK_NPC_SCHEDULES,
 ];
 
@@ -599,6 +629,18 @@ export const ACT_SCHEDULE_OVERRIDES: ActScheduleOverride[] = [
     requiredFlags: ['tolpa_sanctuary_active'],
     entries: [
       { startHour: 0, endHour: 24, sceneId: 'chk_forest_zorge', position: [-1.4, 0, -1.0], activity: 'talk' },
+    ],
+  },
+
+  /* ── Act 6: Жека на крыше завода — разведка перед штурмом ── */
+  {
+    id: 'override_zeka_act6_factory_roof',
+    npcId: 'zeka',
+    minAct: 6,
+    requiredFlags: ['zeka_trusted'],
+    excludedFlags: ['factory_roof_scouted'],
+    entries: [
+      { startHour: 0, endHour: 24, sceneId: 'factory_roof', position: [0, 0, -2.0], activity: 'rest' },
     ],
   },
 ];

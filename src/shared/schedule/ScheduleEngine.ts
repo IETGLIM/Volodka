@@ -11,6 +11,7 @@
 
 import type { ScheduleEntry, SceneId } from '@/shared/types/game';
 import { hashScheduleContext, type ScheduleContext } from '@/shared/scheduleContext';
+import { sceneMatchesScheduleEntry } from '@/config/sceneInheritance';
 import { NPC_SCHEDULES_MAP, ACT_SCHEDULE_OVERRIDES } from '@/data/npcSchedules';
 
 type NPCStateRecord = Record<string, { position: [number, number, number]; sceneId: SceneId }>;
@@ -144,7 +145,7 @@ export function getNPCsInScene(
     const entries = resolveEffectiveSchedule(npcId, ctx);
     for (const entry of entries) {
       if (hour >= entry.startHour && hour < entry.endHour) {
-        if (entry.sceneId === sceneId) {
+        if (sceneMatchesScheduleEntry(sceneId, entry.sceneId)) {
           result.push(npcId);
         }
         break;
@@ -214,7 +215,7 @@ export function isNPCInScene(
   ctx: ScheduleContext,
 ): boolean {
   const entry = getNPCLocationForTime(npcId, hour, ctx);
-  return entry?.sceneId === sceneId;
+  return entry != null && sceneMatchesScheduleEntry(sceneId, entry.sceneId);
 }
 
 export function getSceneMates(

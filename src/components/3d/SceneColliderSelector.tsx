@@ -382,10 +382,11 @@ function FallbackVisual({ sceneId }: { sceneId: SceneId }) {
   const config = getSceneConfig(sceneId);
   const [w, d] = config.size;
   const h = 3;
+  const floorY = config.floorY;
 
   return (
     <group>
-      <mesh rotation-x={-Math.PI / 2} receiveShadow position-y={0.005}>
+      <mesh rotation-x={-Math.PI / 2} receiveShadow position-y={floorY + 0.005}>
         <planeGeometry args={[w, d]} />
         <meshStandardMaterial color="#2a2a2a" roughness={0.9} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
       </mesh>

@@ -25,11 +25,20 @@ const MAX_NPCS_PER_SCENE: Partial<Record<SceneId, number>> = {
   volodka_corridor: 3,
   solnysh_room: 2,
   zarema_albert_room: 2,
+  zarema_room: 2,
   home_evening: 3,
   street_night: 5,
   street_winter: 4,
+  city_square: 5,
   abandoned_factory: 5,
   park_day: 8,
+  pier_evening: 2,
+  factory_roof: 3,
+  guild_mainframe: 4,
+  albert_backroom: 2,
+  underground_bunker: 4,
+  library_basement: 3,
+  chk_campfire_night: 6,
 };
 
 /** Shared patrol loop for schedule "walk" NPCs in the narrow communal corridor. */

@@ -11,6 +11,7 @@ import { scratchColor, scratchColorB } from '@/engine/three/frameScratch';
 import * as THREE from 'three';
 import type { SceneId } from '@/shared/types/game';
 import { useGameStore } from '@/store/gameStore';
+import { resolveDerivedSceneId } from '@/config/sceneInheritance';
 import { DEFAULT_NPC_LOD, scaleNpcLodThresholds } from '@/engine/lod/distanceLod';
 import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
 import {
@@ -161,7 +162,7 @@ export function AmbientNPCs({ livePlayerPositionRef }: AmbientNPCsProps) {
     [preset.lodBias],
   );
 
-  const config = SCENE_CONFIGS[sceneId] ?? null;
+  const config = SCENE_CONFIGS[sceneId] ?? SCENE_CONFIGS[resolveDerivedSceneId(sceneId)] ?? null;
   const baseCount = config?.count ?? 0;
   const count = resolveAmbientNpcCount(sceneId, baseCount, preset.id);
   const bodyOpacity = resolveAmbientNpcOpacity(sceneId, BODY_OPACITY);

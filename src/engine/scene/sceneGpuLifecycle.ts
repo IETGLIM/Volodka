@@ -6,6 +6,7 @@
 import * as THREE from 'three';
 import { useGLTF } from '@react-three/drei';
 import type { SceneId } from '@/shared/types/game';
+import { resolveDerivedSceneId } from '@/config/sceneInheritance';
 import { getAssetDefinition } from '@/config/assetManifest';
 import { preloadGltfAsset } from '@/components/3d/assets/GltfAsset';
 import { preloadTriggerZoneProps } from '@/components/3d/TriggerZoneProp';
@@ -42,7 +43,7 @@ const SCENE_NPC_IDS: Partial<Record<SceneId, readonly string[]>> = {
 };
 
 export function getSceneGltfAssetIds(sceneId: SceneId): readonly string[] {
-  return SCENE_GLTF_ASSETS[sceneId] ?? [];
+  return SCENE_GLTF_ASSETS[resolveDerivedSceneId(sceneId)] ?? [];
 }
 
 function collectAssetUrls(assetId: string): string[] {
@@ -64,14 +65,16 @@ function evictGltfUrl(url: string): void {
 }
 
 function preloadScenePropModels(sceneId: SceneId): void {
-  for (const propId of SCENE_PROP_IDS[sceneId] ?? []) {
+  const rootSceneId = resolveDerivedSceneId(sceneId);
+  for (const propId of SCENE_PROP_IDS[rootSceneId] ?? []) {
     const def = getPropModelDefinition(propId);
     if (def) useGLTF.preload(def.url, true, true, extendLoader);
   }
 }
 
 function preloadSceneNpcModels(sceneId: SceneId): void {
-  for (const npcId of SCENE_NPC_IDS[sceneId] ?? []) {
+  const rootSceneId = resolveDerivedSceneId(sceneId);
+  for (const npcId of SCENE_NPC_IDS[rootSceneId] ?? []) {
     const url = resolveNpcModelUrl(npcId);
     if (url) useGLTF.preload(url, true, true, extendLoader);
   }
@@ -89,35 +92,37 @@ export function preloadSceneGpuAssets(sceneId: SceneId): void {
 
 /** Remove loader + THREE.Cache entries for assets only used by `fromSceneId`. */
 export function evictSceneGpuCache(fromSceneId: SceneId, keepSceneId?: SceneId): void {
+  const fromRoot = resolveDerivedSceneId(fromSceneId);
+  const keepRoot = keepSceneId !== undefined ? resolveDerivedSceneId(keepSceneId) : undefined;
   const keepGltfAssetIds = new Set<string>();
   const keepPropIds = new Set<string>();
   const keepNpcIds = new Set<string>();
-  if (keepSceneId !== undefined) {
-    for (const assetId of getSceneGltfAssetIds(keepSceneId)) {
+  if (keepRoot !== undefined) {
+    for (const assetId of getSceneGltfAssetIds(keepSceneId!)) {
       keepGltfAssetIds.add(assetId);
     }
-    for (const propId of SCENE_PROP_IDS[keepSceneId] ?? []) {
+    for (const propId of SCENE_PROP_IDS[keepRoot] ?? []) {
       keepPropIds.add(propId);
     }
-    for (const npcId of SCENE_NPC_IDS[keepSceneId] ?? []) {
+    for (const npcId of SCENE_NPC_IDS[keepRoot] ?? []) {
       keepNpcIds.add(npcId);
     }
   }
 
-  for (const assetId of getSceneGltfAssetIds(fromSceneId)) {
+  for (const assetId of SCENE_GLTF_ASSETS[fromRoot] ?? []) {
     if (keepGltfAssetIds.has(assetId)) continue;
     for (const url of collectAssetUrls(assetId)) {
       evictGltfUrl(url);
     }
   }
 
-  for (const propId of SCENE_PROP_IDS[fromSceneId] ?? []) {
+  for (const propId of SCENE_PROP_IDS[fromRoot] ?? []) {
     if (keepPropIds.has(propId)) continue;
     const def = getPropModelDefinition(propId);
     if (def) evictGltfUrl(def.url);
   }
 
-  for (const npcId of SCENE_NPC_IDS[fromSceneId] ?? []) {
+  for (const npcId of SCENE_NPC_IDS[fromRoot] ?? []) {
     if (keepNpcIds.has(npcId)) continue;
     const url = resolveNpcModelUrl(npcId);
     if (url) evictGltfUrl(url);
