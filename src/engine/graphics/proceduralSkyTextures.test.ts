@@ -3,6 +3,9 @@ import * as THREE from 'three';
 import {
   createDreamGalaxySkyTexture,
   createDreamGalaxyStarGeometry,
+  createParkHazySkyTexture,
+  createRooftopHorizonStarGeometry,
+  createRooftopSunsetGalaxySkyTexture,
 } from './proceduralSkyTextures';
 
 describe('proceduralSkyTextures', () => {
@@ -28,5 +31,29 @@ describe('proceduralSkyTextures', () => {
     }
     a.dispose();
     b.dispose();
+  });
+
+  it('creates rooftop sunset galaxy sky with clamp wrapping', () => {
+    const tex = createRooftopSunsetGalaxySkyTexture();
+    expect(tex.image).toBeInstanceOf(HTMLCanvasElement);
+    expect(tex.wrapS).toBe(THREE.ClampToEdgeWrapping);
+    tex.dispose();
+  });
+
+  it('creates deterministic rooftop horizon stars on upper hemisphere', () => {
+    const geo = createRooftopHorizonStarGeometry(32);
+    const pos = geo.getAttribute('position').array as Float32Array;
+    expect(pos.length).toBe(32 * 3);
+    for (let i = 0; i < 32; i++) {
+      expect(pos[i * 3 + 1]).toBeGreaterThan(10);
+    }
+    geo.dispose();
+  });
+
+  it('creates park hazy sky texture with clamp wrapping', () => {
+    const tex = createParkHazySkyTexture();
+    expect(tex.image).toBeInstanceOf(HTMLCanvasElement);
+    expect(tex.wrapT).toBe(THREE.ClampToEdgeWrapping);
+    tex.dispose();
   });
 });

@@ -17,6 +17,7 @@ import { useEnvironmentLod } from './lod/EnvironmentLodProvider';
 import { EnvironmentDetail, SceneClutterGate } from './lod/PropDistanceGate';
 import { scratchColor } from '@/engine/three/frameScratch';
 import { useCachedCanvasTexture } from '@/hooks/useCachedCanvasTexture';
+import { createParkHazySkyTexture } from '@/engine/graphics/proceduralSkyTextures';
 
 interface ParkDayVisualProps {
   livePlayerPositionRef?: MutableRefObject<THREE.Vector3>;
@@ -42,6 +43,9 @@ export function ParkDayVisual({ livePlayerPositionRef }: ParkDayVisualProps) {
 
   return (
     <group>
+      {/* ── Overcast haze sky dome (fog-exempt) ── */}
+      <ParkHazySkyDome />
+
       {/* ── Ground ── */}
       <mesh rotation-x={-Math.PI / 2} receiveShadow position-y={0.001} geometry={getSharedPlaneGeometry(W, D)}>
         <meshStandardMaterial
@@ -491,4 +495,15 @@ function createParkGroundTexture(): THREE.CanvasTexture {
   tex.wrapT = THREE.RepeatWrapping;
   tex.repeat.set(10, 10);
   return tex;
+}
+
+function ParkHazySkyDome() {
+  const skyTexture = useCachedCanvasTexture('park_day:hazy-sky', createParkHazySkyTexture);
+
+  return (
+    <mesh position={[0, 4, 0]} renderOrder={-10}>
+      <sphereGeometry args={[55, 24, 12, 0, Math.PI * 2, 0, Math.PI * 0.52]} />
+      <meshBasicMaterial map={skyTexture} side={THREE.BackSide} fog={false} depthWrite={false} />
+    </mesh>
+  );
 }

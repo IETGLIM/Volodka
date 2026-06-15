@@ -13,9 +13,19 @@ describe('resolveSceneRenderingPipeline', () => {
     expect(pipe.isHero).toBe(true);
   });
 
-  it('uses lite post-FX on non-hero scenes when visualLite', () => {
+  it('keeps full post-FX on rooftop_edge when visualLite (cinematic profile)', () => {
     const pipe = resolveSceneRenderingPipeline(
       'rooftop_edge',
+      QUALITY_PRESETS.medium,
+      true,
+    );
+    expect(pipe.useLitePostFx).toBe(false);
+    expect(pipe.bloomIntensityScale).toBe(1.14);
+  });
+
+  it('uses lite post-FX on standard scenes when visualLite', () => {
+    const pipe = resolveSceneRenderingPipeline(
+      'factory_basement',
       QUALITY_PRESETS.medium,
       true,
     );

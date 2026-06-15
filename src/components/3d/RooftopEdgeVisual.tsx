@@ -16,6 +16,10 @@ import { useEnvironmentLod } from './lod/EnvironmentLodProvider';
 import { EnvironmentDetail } from './lod/PropDistanceGate';
 import { useCachedCanvasTexture } from '@/hooks/useCachedCanvasTexture';
 import { seededRand } from '@/shared/utils/seededRand';
+import {
+  createRooftopHorizonStarGeometry,
+  createRooftopSunsetGalaxySkyTexture,
+} from '@/engine/graphics/proceduralSkyTextures';
 
 interface RooftopEdgeVisualProps {
   livePlayerPositionRef?: React.MutableRefObject<THREE.Vector3>;
@@ -360,41 +364,37 @@ function RooftopEdgeRailings({ w, d }: { w: number; d: number }) {
   );
 }
 
-/** Large inward-facing dome with a noir-sunset vertical gradient.
- *  Bridges the scene's teal fog and the warm god rays: deep indigo zenith →
- *  dusty teal mid → smoggy orange horizon. */
+/** Large inward-facing dome with galaxy-sunset gradient and sparse horizon stars. */
 function SunsetSkyDome() {
-  const skyTexture = useCachedCanvasTexture('rooftop_edge:sky', createSunsetSkyTexture);
+  const skyTexture = useCachedCanvasTexture('rooftop_edge:galaxy-sky', createRooftopSunsetGalaxySkyTexture);
+  const starGeometry = useMemo(() => createRooftopHorizonStarGeometry(), []);
+  const starsRef = useRef<THREE.Points>(null);
+
+  useFrameTick('misc', ({ state }) => {
+    if (starsRef.current) {
+      starsRef.current.rotation.y = state.clock.elapsedTime * 0.004;
+    }
+  });
 
   return (
-    <mesh position={[0, 0, 0]} renderOrder={-10}>
-      <sphereGeometry args={[60, 24, 12, 0, Math.PI * 2, 0, Math.PI * 0.55]} />
-      <meshBasicMaterial map={skyTexture} side={THREE.BackSide} fog={false} depthWrite={false} />
-    </mesh>
+    <group renderOrder={-10}>
+      <mesh position={[0, 0, 0]}>
+        <sphereGeometry args={[60, 24, 12, 0, Math.PI * 2, 0, Math.PI * 0.55]} />
+        <meshBasicMaterial map={skyTexture} side={THREE.BackSide} fog={false} depthWrite={false} />
+      </mesh>
+      <points ref={starsRef} geometry={starGeometry}>
+        <pointsMaterial
+          color="#ffe8c8"
+          size={1.1}
+          sizeAttenuation={false}
+          transparent
+          opacity={0.75}
+          fog={false}
+          depthWrite={false}
+        />
+      </points>
+    </group>
   );
-}
-
-function createSunsetSkyTexture(): THREE.CanvasTexture {
-  const w = 64;
-  const h = 256;
-  const canvas = document.createElement('canvas');
-  canvas.width = w;
-  canvas.height = h;
-  const ctx = canvas.getContext('2d')!;
-
-  const grad = ctx.createLinearGradient(0, 0, 0, h);
-  grad.addColorStop(0.0, '#0b1026'); // indigo zenith
-  grad.addColorStop(0.45, '#1a2a3a'); // dusty teal
-  grad.addColorStop(0.72, '#5a3a2a'); // smog band
-  grad.addColorStop(0.88, '#b56a30'); // sunset orange
-  grad.addColorStop(1.0, '#d98a40'); // horizon glow
-  ctx.fillStyle = grad;
-  ctx.fillRect(0, 0, w, h);
-
-  const tex = new THREE.CanvasTexture(canvas);
-  tex.wrapS = THREE.ClampToEdgeWrapping;
-  tex.wrapT = THREE.ClampToEdgeWrapping;
-  return tex;
 }
 
 function createRooftopFloorTexture(): THREE.CanvasTexture {

@@ -20,4 +20,14 @@ describe('sceneVisualProfiles', () => {
   it('boosts dream bloom for galaxy sky mood', () => {
     expect(getSceneVisualProfile('sleep_dream').bloomIntensityScale).toBe(1.12);
   });
+
+  it('boosts rooftop sunset bloom and keeps full post-FX', () => {
+    const profile = getSceneVisualProfile('rooftop_edge');
+    expect(profile.bloomIntensityScale).toBe(1.14);
+    expect(profile.forceFullPostFx).toBe(true);
+  });
+
+  it('boosts park haze bloom on hero tier', () => {
+    expect(getSceneVisualProfile('park_day').bloomIntensityScale).toBe(1.06);
+  });
 });

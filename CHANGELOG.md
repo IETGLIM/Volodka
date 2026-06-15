@@ -1,4 +1,13 @@
 # Changelog — ВОЛОДЬКА RPG
+## v4.2.10 — 16 июня 2026
+
+### AAA graphics P1 (rooftop galaxy sunset, park haze, synthwave boost)
+- **rooftop_edge sky dome**: procedural galaxy-sunset gradient with nebula wisps and slow-drifting horizon stars (`createRooftopSunsetGalaxySkyTexture` / `createRooftopHorizonStarGeometry`).
+- **park_day sky dome**: overcast gothic haze dome (`createParkHazySkyTexture`) — closes the memorial park horizon without new assets.
+- **Synthwave grade boost**: stronger LUT-style tuning and wet-neon bloom for `street_night` and `cafe_evening`; galaxy-sunset grade + bloom for `rooftop_edge`; warmer haze grade for `park_day`.
+- **Visual profiles**: `rooftop_edge` forceFullPostFx + bloom 1.14; `park_day` bloom 1.06.
+- **Tests**: procedural sky textures, scene visual profiles, rendering pipeline rooftop profile.
+
 ## v4.2.9 — 16 июня 2026
 
 ### AAA graphics P1 (dream galaxy sky + ethereal grade)
