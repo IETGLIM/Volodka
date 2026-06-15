@@ -1,5 +1,6 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
 import { enterSceneFreeExplorationHub } from './freeExplorationHub';
+import { EXPLORATION_HUD_HANDOFF } from '@/shared/constants/transitionTimings';
 
 const dispatchGameAction = vi.fn();
 const closeNarrativeOverlay = vi.fn();
@@ -66,7 +67,7 @@ describe('enterSceneFreeExplorationHub', () => {
       expect.anything(),
     );
 
-    vi.advanceTimersByTime(480);
+    vi.advanceTimersByTime(EXPLORATION_HUD_HANDOFF.HUB_LOCATION_TOAST_MS);
     expect(eventBusEmit).toHaveBeenCalledWith(
       'game:notification',
       expect.objectContaining({
@@ -81,7 +82,7 @@ describe('enterSceneFreeExplorationHub', () => {
     enterSceneFreeExplorationHub('explore_mode');
 
     expect(closeNarrativeOverlay).toHaveBeenCalled();
-    vi.advanceTimersByTime(480);
+    vi.advanceTimersByTime(EXPLORATION_HUD_HANDOFF.HUB_LOCATION_TOAST_MS);
     expect(eventBusEmit).not.toHaveBeenCalledWith(
       'game:notification',
       expect.anything(),
@@ -99,7 +100,7 @@ describe('enterSceneFreeExplorationHub', () => {
       nodeId: 'home_evening_explore_mode',
     });
     expect(closeNarrativeOverlay).toHaveBeenCalled();
-    vi.advanceTimersByTime(480);
+    vi.advanceTimersByTime(EXPLORATION_HUD_HANDOFF.HUB_LOCATION_TOAST_MS);
     expect(eventBusEmit).toHaveBeenCalledWith(
       'game:notification',
       expect.objectContaining({
@@ -117,7 +118,7 @@ describe('enterSceneFreeExplorationHub', () => {
       nodeId: 'cafe_explore_mode',
     });
     expect(closeNarrativeOverlay).toHaveBeenCalled();
-    vi.advanceTimersByTime(480);
+    vi.advanceTimersByTime(EXPLORATION_HUD_HANDOFF.HUB_LOCATION_TOAST_MS);
     expect(eventBusEmit).toHaveBeenCalledWith(
       'game:notification',
       expect.objectContaining({
@@ -135,7 +136,7 @@ describe('enterSceneFreeExplorationHub', () => {
       nodeId: 'park_explore_mode',
     });
     expect(closeNarrativeOverlay).toHaveBeenCalled();
-    vi.advanceTimersByTime(480);
+    vi.advanceTimersByTime(EXPLORATION_HUD_HANDOFF.HUB_LOCATION_TOAST_MS);
     expect(eventBusEmit).toHaveBeenCalledWith(
       'game:notification',
       expect.objectContaining({

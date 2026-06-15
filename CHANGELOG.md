@@ -1,4 +1,12 @@
 # Changelog — ВОЛОДЬКА RPG
+## v4.2.16 — 16 июня 2026
+
+### UX handoff polish (v4.2.14 follow-up)
+- **Shared timings**: `EXPLORATION_HUD_HANDOFF` in `transitionTimings.ts` — guidance reveal (420ms) aligned with warm canvas fade; hub toast +60ms (480ms).
+- **StoryGuidanceHUD**: uses shared constant; regression tests for overlay / kind-recovery / transition suppression.
+- **Quality preset hints**: moved to `formatQualityPresetDetailRu` in `qualityPresets.ts` — clearer Russian copy, tier-driven GLB/reflector hints; auto→ultra nudge for wet reflections.
+- **Tests**: `StoryGuidanceHUD.test.tsx`, `qualityPresetDetail.test.ts`, `transitionTimings.test.ts`; SettingsPanel visual-tab hint assertion.
+
 ## v4.2.15 — 16 июня 2026
 
 ### AAA graphics P2 (daytime interiors + procedural LUT)

@@ -17,6 +17,7 @@ import {
   EXPLORATION_HUD_LAYOUT,
   explorationObjectiveTopPx,
 } from '@/shared/constants/hudLayout';
+import { EXPLORATION_HUD_HANDOFF } from '@/shared/constants/transitionTimings';
 import { isInteractionLocked } from '@/engine/interaction/interactionSession';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 import {
@@ -33,8 +34,6 @@ import {
 } from '@/hooks/questHudPresentation';
 import type { QuestType, SceneId } from '@/shared/types/game';
 const GUIDANCE_DISMISS_KEY = 'volodka_guidance_dismissed_sig';
-/** Grace period after narrative recovery / hub handoff before HUD animates in. */
-const GUIDANCE_REVEAL_DELAY_MS = 420;
 
 export function StoryGuidanceHUD() {
   const reducedMotion = useEffectiveReducedMotion();
@@ -166,7 +165,7 @@ export function StoryGuidanceHUD() {
     revealTimerRef.current = setTimeout(() => {
       setRevealReady(true);
       revealTimerRef.current = null;
-    }, GUIDANCE_REVEAL_DELAY_MS);
+    }, EXPLORATION_HUD_HANDOFF.GUIDANCE_REVEAL_MS);
 
     return () => {
       if (revealTimerRef.current) {

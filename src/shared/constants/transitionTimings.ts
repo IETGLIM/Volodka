@@ -100,3 +100,12 @@ export const BOOT_FIRST_FRAME_FALLBACK_MS = LOADING_PLAYABLE_DISMISS_MS + 6000;
 
 /** LazyPanelSlot fallback if panel does not signal exit via onExitComplete. */
 export const PANEL_UNMOUNT_GRACE_MS = PANEL_EXIT_MS + 80;
+
+/**
+ * Exploration HUD handoff — defer chrome after narrative overlay close / scene transition.
+ * Guidance reveal aligns with warm canvas fade; hub toast waits one beat longer.
+ */
+export const EXPLORATION_HUD_HANDOFF = {
+  GUIDANCE_REVEAL_MS: CUTSCENE_TIMINGS.CANVAS_FADE_OUT_WARM_MS,
+  HUB_LOCATION_TOAST_MS: CUTSCENE_TIMINGS.CANVAS_FADE_OUT_WARM_MS + 60,
+} as const;

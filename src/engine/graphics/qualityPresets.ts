@@ -167,3 +167,29 @@ export function allowsGlbAssetRendering(mode: AssetRenderMode): boolean {
     }
   }
 }
+
+/** Russian detail line under quality preset buttons — i18n-safe, driven by preset tiers. */
+export function formatQualityPresetDetailRu(
+  selectedPreset: QualityPresetId,
+  preset: QualityPreset,
+): string {
+  const base =
+    selectedPreset === 'auto'
+      ? `Авто → ${preset.labelRu}: Draco/Meshopt, LOD, KTX2 при high/ultra`
+      : `${preset.labelRu}: ${preset.npcRenderMode} NPC · ${preset.environmentRenderMode} окружение · DPR ${preset.dpr[0]}–${preset.dpr[1]}`;
+
+  const hints: string[] = [];
+  const glbCapable =
+    allowsGlbAssetRendering(preset.npcRenderMode)
+    || allowsGlbAssetRendering(preset.environmentRenderMode);
+  if (glbCapable) {
+    hints.push('3D-модели (GLB): от пресета «Среднее»');
+  }
+  if (selectedPreset === 'ultra') {
+    hints.push('Мокрые отражения на улице');
+  } else if (selectedPreset === 'auto' && preset.id === 'ultra') {
+    hints.push('Мокрые отражения: выберите пресет «Ультра»');
+  }
+
+  return hints.length > 0 ? `${base} · ${hints.join(' · ')}` : base;
+}

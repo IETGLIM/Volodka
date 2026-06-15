@@ -8,6 +8,7 @@ import {
   isClosedOverlayExploreHub,
 } from '@/shared/sceneExploreHubRegistry';
 import { hasVisitedNode } from '@/shared/visitedNodesIndex';
+import { EXPLORATION_HUD_HANDOFF } from '@/shared/constants/transitionTimings';
 
 /** One-shot diegetic location context on first hub enter; shorter line on revisit. */
 function showHubLocationContext(hubId: string, revisit: boolean): void {
@@ -30,7 +31,6 @@ function showHubLocationContext(hubId: string, revisit: boolean): void {
 }
 
 /** Defer hub location toast so it does not overlap scene-transition / guidance HUD handoff. */
-const HUB_LOCATION_TOAST_DELAY_MS = 480;
 
 /**
  * Promote to a closed-overlay explore hub: spine tracking, closed overlay,
@@ -54,7 +54,7 @@ export function enterSceneFreeExplorationHub(hubId: string): void {
     } else {
       showHubLocationContext(hubId, true);
     }
-  }, HUB_LOCATION_TOAST_DELAY_MS);
+  }, EXPLORATION_HUD_HANDOFF.HUB_LOCATION_TOAST_MS);
 
   eventBus.emit('interaction:end', {});
   forceEmitInteractionEnd();

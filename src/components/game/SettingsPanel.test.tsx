@@ -58,6 +58,15 @@ describe('SettingsPanel', () => {
     expect(localStorage.getItem('volodka_combat_difficulty')).toBe('story');
   });
 
+  it('shows quality preset hints on the visual tab', async () => {
+    const user = userEvent.setup();
+    render(<SettingsPanel open onClose={vi.fn()} />);
+
+    await user.click(screen.getByRole('button', { name: /Визуал/ }));
+
+    expect(screen.getByText(/3D-модели \(GLB\)/)).toBeInTheDocument();
+  });
+
   it('calls onClose from the close button and Escape', async () => {
     const user = userEvent.setup();
     const onClose = vi.fn();
