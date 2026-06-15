@@ -72,8 +72,8 @@ export function isValidInteractionTransition(
 /** Alias for readability at call sites expecting validateTransition(from, to). */
 export const validateInteractionTransition = isValidInteractionTransition;
 
-/** NPC animation states driven by interaction */
-export type NPCAnimationState = 'idle' | 'talk' | 'listen' | 'gesture';
+/** NPC animation states driven by interaction and schedule activity */
+export type NPCAnimationState = 'idle' | 'walk' | 'talk' | 'sit' | 'listen' | 'gesture';
 
 /** Distance threshold for considering player "arrived" at NPC during Approach */
 export const APPROACH_ARRIVAL_DISTANCE = 1.5;

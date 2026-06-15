@@ -8,7 +8,8 @@ import type { NPCDefinition } from '@/shared/types/game';
 import { getNpcModelMeta, resolveNpcModelUrl } from '@/config/npcModelRegistry';
 import { extendGltfLoader } from '@/engine/assets/gltfPipeline';
 import { useSkinnedGltfClone } from '@/hooks/useSkinnedGltfClone';
-import { useNPCAnimation } from '@/engine/npc/useNPCAnimation';
+import { useNpcAnimationController } from '@/engine/npc/useNpcAnimationController';
+import { useMixamoAnimationClips } from '@/hooks/useMixamoAnimationClips';
 import { InteractionState } from '@/engine/interaction/interactionMachine';
 import { ProceduralNPCModel } from '@/components/3d/ProceduralNPCModels';
 import { devWarn } from '@/shared/utils/devLog';
@@ -48,22 +49,40 @@ function GltfNPCModelInner({
   targetHeightFactor,
   interactionState,
   isInteractionTarget,
-}: GltfNPCModelInnerProps) {
+  activity,
+}: GltfNPCModelInnerProps & { activity: string }) {
   const gltf = useGLTF(url, true, true, extendLoader);
   const fitRef = useRef<THREE.Group>(null);
   const { scene, mixer } = useSkinnedGltfClone(gltf.scene, gltf.animations, { castShadow: true });
   const [fit, setFit] = useState<Fit>({ scale: modelScale, rotX: 0, y: 0 });
 
-  const actions = useMemo(() => {
+  const embeddedActions = useMemo(() => {
     if (!mixer) return null;
     const record: Record<string, THREE.AnimationAction> = {};
     for (const clip of gltf.animations) {
       record[clip.name] = mixer.clipAction(clip);
     }
+    if (definition.animations?.walk && record[definition.animations.walk] === undefined) {
+      const walkClip = gltf.animations.find((c) => c.name === definition.animations?.walk);
+      if (walkClip) record[definition.animations.walk] = mixer.clipAction(walkClip);
+    }
+    if (definition.animations?.talk && record[definition.animations.talk] === undefined) {
+      const talkClip = gltf.animations.find((c) => c.name === definition.animations?.talk);
+      if (talkClip) record[definition.animations.talk] = mixer.clipAction(talkClip);
+    }
     return record;
-  }, [mixer, gltf.animations]);
+  }, [mixer, gltf.animations, definition.animations]);
 
-  useNPCAnimation(definition.id, actions, definition.animations?.idle);
+  const actions = useMixamoAnimationClips(mixer, scene, embeddedActions);
+
+  useNpcAnimationController({
+    npcId: definition.id,
+    actions,
+    defaultIdleName: definition.animations?.idle,
+    activity,
+    interactionState,
+    isInteractionTarget,
+  });
 
   useEffect(() => {
     const inner = fitRef.current;
@@ -206,6 +225,7 @@ export function GltfNPCModel({
         targetHeightFactor={targetHeightFactor}
         interactionState={interactionState}
         isInteractionTarget={isInteractionTarget}
+        activity={activity}
       />
     </GltfLoadErrorBoundary>
   );

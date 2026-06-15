@@ -1,9 +1,12 @@
-import { Suspense, useEffect, useRef, useState } from 'react';
+import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
+import { MIXAMO_ANIMATION_CATALOG } from '@/config/mixamoAnimationCatalog';
+import { SHIPPED_MIXAMO_CLIP_IDS } from '@/config/mixamoAnimationShipped';
 import { getPlayerVolodkaModelUrl } from '@/config/playerModelUrl';
 import { useSkinnedGltfClone } from '@/hooks/useSkinnedGltfClone';
+import { useMixamoAnimationClips } from '@/hooks/useMixamoAnimationClips';
 import { resolveLocomotionClipState } from '@/engine/player/playerLocomotionPresentation';
 import { ProceduralPlayerModelAdaptive } from './ProceduralPlayerModel';
 import type { ProceduralPlayerModelProps } from './useProceduralPlayerAnimation';
@@ -36,35 +39,83 @@ function CesiumPlayerModelInner({ modelScale, currentAnimRef, rotationRef }: Pro
   const { scene, mixer } = useSkinnedGltfClone(gltf.scene, gltf.animations, { castShadow: true });
   const yawRef = useRef<THREE.Group>(null);
   const fitRef = useRef<THREE.Group>(null);
+  const idleActionRef = useRef<THREE.AnimationAction | null>(null);
   const walkActionRef = useRef<THREE.AnimationAction | null>(null);
   const runActionRef = useRef<THREE.AnimationAction | null>(null);
-  const prevRunWeightRef = useRef(0);
+  const prevLocomotionRef = useRef(false);
   const [fit, setFit] = useState<Fit>({ scale: 1.1, rotX: 0, y: 0 });
 
+  const embeddedActions = useMemo(() => {
+    if (!mixer) return null;
+    const record: Record<string, THREE.AnimationAction> = {};
+    for (const clip of gltf.animations) {
+      record[clip.name] = mixer.clipAction(clip);
+    }
+    return record;
+  }, [mixer, gltf.animations]);
+
+  const mixamoActions = useMixamoAnimationClips(mixer, scene, embeddedActions);
+
+  const mixamoIdleName = MIXAMO_ANIMATION_CATALOG.find((c) => c.id === 'idle')?.canonicalClipName;
+  const mixamoWalkName = MIXAMO_ANIMATION_CATALOG.find((c) => c.id === 'walking')?.canonicalClipName;
+  const hasMixamoIdle = SHIPPED_MIXAMO_CLIP_IDS.includes('idle');
+  const hasMixamoWalk = SHIPPED_MIXAMO_CLIP_IDS.includes('walking');
+
   useEffect(() => {
-    if (!mixer || gltf.animations.length === 0) {
+    if (!mixer) {
+      idleActionRef.current = null;
       walkActionRef.current = null;
       runActionRef.current = null;
       return;
     }
 
-    for (const action of [walkActionRef.current, runActionRef.current]) {
+    for (const action of [idleActionRef.current, walkActionRef.current, runActionRef.current]) {
       if (action) {
         action.stop();
         mixer.uncacheClip(action.getClip());
       }
     }
+    idleActionRef.current = null;
     walkActionRef.current = null;
     runActionRef.current = null;
 
-    const walkClip =
-      gltf.animations.find((c) => /walk/i.test(c.name)) ?? gltf.animations[0];
-    const runClip = gltf.animations.find((c) => /run/i.test(c.name) && c !== walkClip);
+    const pickAction = (names: string[]): THREE.AnimationAction | null => {
+      if (!mixamoActions) return null;
+      for (const name of names) {
+        const action = mixamoActions[name];
+        if (action) return action;
+      }
+      return null;
+    };
 
-    const walkAction = mixer.clipAction(walkClip);
-    walkAction.setLoop(THREE.LoopRepeat, Infinity);
-    walkAction.play();
-    walkActionRef.current = walkAction;
+    const idleAction =
+      (hasMixamoIdle && mixamoIdleName ? pickAction([mixamoIdleName, 'idle', 'Idle']) : null) ??
+      pickAction(['idle', 'Idle', 'IDLE']) ??
+      (gltf.animations[0] ? mixer.clipAction(gltf.animations[0]) : null);
+
+    const walkAction =
+      (hasMixamoWalk && mixamoWalkName ? pickAction([mixamoWalkName, 'walking', 'Walking']) : null) ??
+      pickAction(['walking', 'Walking', 'walk', 'Walk']) ??
+      gltf.animations.find((c) => /walk/i.test(c.name) && c !== idleAction?.getClip())
+        ? mixer.clipAction(gltf.animations.find((c) => /walk/i.test(c.name))!)
+        : idleAction;
+
+    const runClip = gltf.animations.find(
+      (c) => /run/i.test(c.name) && c !== walkAction?.getClip() && c !== idleAction?.getClip(),
+    );
+
+    if (idleAction) {
+      idleAction.setLoop(THREE.LoopRepeat, Infinity);
+      idleAction.play();
+      idleActionRef.current = idleAction;
+    }
+
+    if (walkAction && walkAction !== idleAction) {
+      walkAction.setLoop(THREE.LoopRepeat, Infinity);
+      walkAction.play();
+      walkAction.setEffectiveWeight(0);
+      walkActionRef.current = walkAction;
+    }
 
     if (runClip) {
       const runAction = mixer.clipAction(runClip);
@@ -74,17 +125,20 @@ function CesiumPlayerModelInner({ modelScale, currentAnimRef, rotationRef }: Pro
       runActionRef.current = runAction;
     }
 
+    prevLocomotionRef.current = false;
+
     return () => {
-      walkAction.stop();
-      mixer.uncacheClip(walkClip);
-      if (runClip && runActionRef.current) {
-        runActionRef.current.stop();
-        mixer.uncacheClip(runClip);
+      for (const action of [idleActionRef.current, walkActionRef.current, runActionRef.current]) {
+        if (action) {
+          action.stop();
+          mixer.uncacheClip(action.getClip());
+        }
       }
+      idleActionRef.current = null;
       walkActionRef.current = null;
       runActionRef.current = null;
     };
-  }, [mixer, gltf.animations]);
+  }, [mixer, gltf.animations, mixamoActions, hasMixamoIdle, hasMixamoWalk, mixamoIdleName, mixamoWalkName]);
 
   useEffect(() => {
     const inner = fitRef.current;
@@ -116,22 +170,31 @@ function CesiumPlayerModelInner({ modelScale, currentAnimRef, rotationRef }: Pro
     if (!mixer) return;
 
     const clipState = resolveLocomotionClipState(currentAnimRef.current);
+    const idleAction = idleActionRef.current;
     const walkAction = walkActionRef.current;
     const runAction = runActionRef.current;
 
-    if (!walkAction) return;
+    if (!idleAction && !walkAction) return;
 
-    if (clipState.locomotionActive) {
+    const locomotionActive = clipState.locomotionActive && !!walkAction;
+
+    if (locomotionActive !== prevLocomotionRef.current) {
+      if (locomotionActive && walkAction && idleAction) {
+        idleAction.crossFadeTo(walkAction, CLIP_CROSSFADE_SEC, false);
+      } else if (!locomotionActive && idleAction && walkAction) {
+        walkAction.crossFadeTo(idleAction, CLIP_CROSSFADE_SEC, false);
+      }
+      prevLocomotionRef.current = locomotionActive;
+    }
+
+    if (locomotionActive && walkAction) {
       walkAction.timeScale = clipState.walkTimeScale;
       if (runAction) {
         runAction.timeScale = clipState.runTimeScale;
-        if (clipState.runWeight !== prevRunWeightRef.current) {
-          if (clipState.runWeight >= 1) {
-            walkAction.crossFadeTo(runAction, CLIP_CROSSFADE_SEC, false);
-          } else {
-            runAction.crossFadeTo(walkAction, CLIP_CROSSFADE_SEC, false);
-          }
-          prevRunWeightRef.current = clipState.runWeight;
+        if (clipState.runWeight >= 1) {
+          walkAction.crossFadeTo(runAction, CLIP_CROSSFADE_SEC, false);
+        } else if (clipState.runWeight === 0) {
+          runAction.crossFadeTo(walkAction, CLIP_CROSSFADE_SEC, false);
         }
       } else {
         walkAction.timeScale = clipState.runWeight > 0
@@ -139,10 +202,9 @@ function CesiumPlayerModelInner({ modelScale, currentAnimRef, rotationRef }: Pro
           : clipState.walkTimeScale;
       }
       mixer.update(delta);
-    } else {
-      walkAction.timeScale = 0;
-      if (runAction) runAction.timeScale = 0;
-      prevRunWeightRef.current = 0;
+    } else if (idleAction) {
+      idleAction.timeScale = 1;
+      mixer.update(delta);
     }
   });
 

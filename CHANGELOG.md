@@ -1,4 +1,13 @@
 # Changelog — ВОЛОДЬКА RPG
+## v4.2.22 — 16 июня 2026
+
+### Mixamo animation pipeline (idle / walk / talk / sit)
+- **Catalog**: `src/config/mixamoAnimationCatalog.ts` — four humanoid clips with NPC state mapping and Mixamo name aliases.
+- **Import CLI**: `npm run assets:mixamo-import` (`--list`, `--status`, `--clip <id> --file <path>`) stages to `assets-source/mixamo/` + `public/models/animations/`; auto-updates `mixamoAnimationShipped.ts`.
+- **Runtime**: `GltfNPCModel` drives GLB clips from schedule/patrol activity (walk, sit, talk) + dialogue events; `CesiumPlayerModel` prefers shipped Mixamo idle/walking.
+- **Docs**: `assets-source/mixamo/README.md` (Adobe export settings), `ATTRIBUTION.md` Mixamo section, cross-link from AI3DGen README.
+- **Tests**: catalog registry + `npcActivityAnimation` activity→state mapping.
+
 ## v4.2.21 — 16 июня 2026
 
 ### Kenney City Kit props + interior shells (Poly Pizza TODO)
@@ -18,15 +27,6 @@
 - **Bootstrap**: `assets:bootstrap` stages RPM sources when present and skips CC0 overwrite for those slots.
 - **Docs**: `assets-source/ai3dgen/npcs/README.md` — RPM export, Blender cleanup, Mixamo retarget notes.
 - CI never downloads RPM avatars (user account required).
-
-## v4.2.19 — 16 июня 2026
-
-### Mixamo animation pipeline (idle / walk / talk / sit)
-- **Catalog**: `src/config/mixamoAnimationCatalog.ts` — four humanoid clips with NPC state mapping and Mixamo name aliases.
-- **Import CLI**: `npm run assets:mixamo-import` (`--list`, `--status`, `--clip <id> --file <path>`) stages to `assets-source/mixamo/` + `public/models/animations/`; auto-updates `mixamoAnimationShipped.ts`.
-- **Runtime**: `GltfNPCModel` drives GLB clips from schedule/patrol activity (walk, sit, talk) + dialogue events; `CesiumPlayerModel` prefers shipped Mixamo idle/walking.
-- **Docs**: `assets-source/mixamo/README.md` (Adobe export settings), `ATTRIBUTION.md` Mixamo section, cross-link from AI3DGen README.
-- **Tests**: catalog registry + `npcActivityAnimation` activity→state mapping.
 
 ## v4.2.18 — 16 июня 2026
 

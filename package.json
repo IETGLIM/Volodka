@@ -1,6 +1,6 @@
 {
   "name": "volodka-rpg",
-  "version": "4.2.21",
+  "version": "4.2.23",
   "private": true,
   "type": "module",
   "scripts": {
@@ -14,6 +14,7 @@
     "assets:status": "npx tsx --tsconfig tsconfig.json scripts/assets-status.mjs",
     "assets:process": "node scripts/process-gltf-assets.mjs",
     "assets:ai3dgen-import": "node scripts/ai3dgen-import.mjs",
+    "assets:quaternius-import": "node scripts/quaternius-import.mjs",
     "assets:freekit-stage": "node scripts/stage-freekit-assets.mjs",
     "assets:rpm-import": "node scripts/rpm-npc-import.mjs",
     "assets:mixamo-import": "node scripts/mixamo-import.mjs",

@@ -1,29 +1,44 @@
-
 /* ─── Volodka RPG – NPC Animation State Hook ─── */
 
 import { useRef, useEffect, useCallback } from 'react';
-import { useAnimations } from '@react-three/drei';
 import * as THREE from 'three';
 import { eventBus } from '@/engine/EventBus';
 import type { NPCAnimationState } from '@/engine/interaction/interactionMachine';
+import { getMixamoClipAliasesByNpcState } from '@/config/mixamoAnimationCatalog';
+
+const MIXAMO_ALIASES = getMixamoClipAliasesByNpcState();
 
 /* ─── Animation name variants for each NPC animation state ─── */
 const ANIM_MAP: Record<NPCAnimationState, string[]> = {
   idle: [
     'idle', 'Idle', 'IDLE', '0', 'animation_0',
     'Armature|idle', 'Cesium_Man_idles', 'idle_01',
+    ...MIXAMO_ALIASES.idle,
+  ],
+  walk: [
+    'walk', 'Walk', 'WALK', 'walking', 'Walking',
+    'Armature|walk', 'Cesium_Man_walk', 'walk_01',
+    ...MIXAMO_ALIASES.walk,
   ],
   talk: [
     'talk', 'Talk', 'TALK', 'talking', 'Talking',
     'Armature|talk', 'Cesium_Man_talk', 'talk_01',
+    ...MIXAMO_ALIASES.talk,
+  ],
+  sit: [
+    'sit', 'Sit', 'SIT', 'sitting', 'Sitting',
+    'Armature|sit', 'sit_01',
+    ...MIXAMO_ALIASES.sit,
   ],
   listen: [
     'listen', 'Listen', 'idle', 'Idle', 'IDLE',
     'Armature|listen', 'Cesium_Man_idles', 'listen_01',
+    ...MIXAMO_ALIASES.idle,
   ],
   gesture: [
     'gesture', 'Gesture', 'wave', 'Wave',
     'Armature|gesture', 'Cesium_Man_gesture', 'gesture_01',
+    ...MIXAMO_ALIASES.talk,
   ],
 };
 
@@ -34,7 +49,7 @@ const ANIM_MAP: Record<NPCAnimationState, string[]> = {
  * between animation states.
  *
  * @param npcId - The NPC's unique identifier
- * @param actions - Animation actions from useAnimations
+ * @param actions - Animation actions from mixer.clipAction
  * @param defaultIdleName - Optional idle animation name from NPC definition
  */
 export function useNPCAnimation(
@@ -49,6 +64,11 @@ export function useNPCAnimation(
   const findAction = useCallback(
     (state: NPCAnimationState): THREE.AnimationAction | null => {
       if (!actions) return null;
+
+      // Per-NPC clip override from definition.animations (e.g. walk: 'walking')
+      if (state === 'idle' && defaultIdleName && actions[defaultIdleName]) {
+        return actions[defaultIdleName];
+      }
 
       // Try state-specific names first
       const candidates = ANIM_MAP[state] ?? [state];
