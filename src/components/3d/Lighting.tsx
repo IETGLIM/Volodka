@@ -87,9 +87,9 @@ function ScenePointLights() {
 export function ExplorationLighting() {
   const sceneId = useGameStore((s) => s.exploration.currentSceneId) as SceneId;
   const isMobile = useIsMobileVisual();
-  const { preset } = useGraphicsQuality();
+  const { preset, selectedPreset } = useGraphicsQuality();
   const { visualLite } = useMobileVisualPerf();
-  const rendering = resolveSceneRenderingPipeline(sceneId, preset, visualLite);
+  const rendering = resolveSceneRenderingPipeline(sceneId, preset, visualLite, selectedPreset);
   const config = getSceneConfig(sceneId);
   const baseShadow = isMobile ? 512 : preset.id === 'ultra' ? 2048 : 1024;
   const shadowSize = Math.min(

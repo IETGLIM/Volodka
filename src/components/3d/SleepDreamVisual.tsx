@@ -14,6 +14,9 @@ import {
 import FastNoiseLite from 'fastnoise-lite';
 import { useEnvironmentLod } from './lod/EnvironmentLodProvider';
 import { EnvironmentDetail } from './lod/PropDistanceGate';
+import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
+import { allowsHeavyGfxFeature } from '@/engine/graphics/qualityFeatureGates';
+import { isEffectiveReducedMotion } from '@/engine/accessibility/accessibilitySettings';
 import { useCachedCanvasTexture } from '@/hooks/useCachedCanvasTexture';
 import {
   createDreamGalaxySkyTexture,
@@ -156,14 +159,17 @@ const SPIRAL_PILLAR_POSITIONS: [number, number, number][] = [
 
 /** Inward-facing dome: galaxy gradient + slow-drifting starfield. */
 function GalaxySkyDome() {
+  const { selectedPreset } = useGraphicsQuality();
+  const animateStars =
+    allowsHeavyGfxFeature(selectedPreset, 'galaxySky')
+    && !isEffectiveReducedMotion();
   const skyTexture = useCachedCanvasTexture('sleep_dream:galaxy-sky', createDreamGalaxySkyTexture);
   const starGeometry = useMemo(() => createDreamGalaxyStarGeometry(), []);
   const starsRef = useRef<THREE.Points>(null);
 
   useFrameTick('misc', ({ state }) => {
-    if (starsRef.current) {
-      starsRef.current.rotation.y = state.clock.elapsedTime * 0.006;
-    }
+    if (!animateStars || !starsRef.current) return;
+    starsRef.current.rotation.y = state.clock.elapsedTime * 0.006;
   });
 
   return (

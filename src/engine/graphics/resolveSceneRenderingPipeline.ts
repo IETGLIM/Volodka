@@ -1,5 +1,6 @@
 import { getSceneVisualProfile, isHeroScene } from '@/config/sceneVisualProfiles';
-import type { QualityPreset } from '@/engine/graphics/qualityPresets';
+import { allowsHeavyGfxFeature } from '@/engine/graphics/qualityFeatureGates';
+import type { QualityPreset, QualityPresetId } from '@/engine/graphics/qualityPresets';
 import type { SceneId } from '@/shared/types/game';
 
 export interface SceneRenderingPipeline {
@@ -27,6 +28,7 @@ export function resolveSceneRenderingPipeline(
   sceneId: SceneId,
   preset: QualityPreset,
   visualLite: boolean,
+  selectedPreset: QualityPresetId = preset.id,
 ): SceneRenderingPipeline {
   const profile = getSceneVisualProfile(sceneId);
   const isHero = isHeroScene(sceneId);
@@ -42,7 +44,10 @@ export function resolveSceneRenderingPipeline(
     || (preset.id === 'high' && profile.enhancedAmbientOcclusion);
 
   const useAmbientOcclusion =
-    !useLitePostFx && highEnoughForAo && profile.enhancedAmbientOcclusion;
+    !useLitePostFx
+    && highEnoughForAo
+    && profile.enhancedAmbientOcclusion
+    && allowsHeavyGfxFeature(selectedPreset, 'n8ao');
 
   return {
     useLitePostFx,

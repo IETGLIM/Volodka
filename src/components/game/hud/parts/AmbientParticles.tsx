@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 
 export function AmbientParticles() {
+  const reducedMotion = useEffectiveReducedMotion();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -26,7 +28,7 @@ export function AmbientParticles() {
     [],
   );
 
-  if (!mounted) return null;
+  if (!mounted || reducedMotion) return null;
 
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden="true">

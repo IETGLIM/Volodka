@@ -309,8 +309,8 @@ function EffectComposerInstance({
 function PostFXPipeline() {
   const { sceneId, noirMode } = usePostFxSceneState();
   const { visualLite } = useMobileVisualPerf();
-  const { preset } = useGraphicsQuality();
-  const rendering = resolveSceneRenderingPipeline(sceneId, preset, visualLite);
+  const { preset, selectedPreset } = useGraphicsQuality();
+  const rendering = resolveSceneRenderingPipeline(sceneId, preset, visualLite, selectedPreset);
   const { brightness: userBrightness } = useVisualSettings();
   const userBrightnessOffset = (userBrightness - 1) * 0.3;
 

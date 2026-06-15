@@ -8,6 +8,7 @@ import { useWetSurfaceMaterial } from '@/hooks/useWetSurfaceMaterial';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import { registerFrameTick, unregisterFrameTick } from '@/engine/frame/FrameBudgetRegistry';
 import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
+import { allowsHeavyGfxFeature } from '@/engine/graphics/qualityFeatureGates';
 import { applyWetness } from '@/engine/graphics/materials/pbrPresets';
 import * as THREE from 'three';
 import {
@@ -38,8 +39,11 @@ function StreetGround({
   isWinter: boolean;
   rainIntensity: number;
 }) {
-  const { preset } = useGraphicsQuality();
-  const usePlanarReflector = preset.id === 'ultra' && sceneId === 'street_night' && !isWinter;
+  const { preset, selectedPreset } = useGraphicsQuality();
+  const usePlanarReflector =
+    allowsHeavyGfxFeature(selectedPreset, 'reflector')
+    && sceneId === 'street_night'
+    && !isWinter;
   const groundColor = isWinter ? '#a0a8b8' : '#3a3a52';
   const dryRoughness = isWinter ? 0.7 : 0.85;
   const dryMetalness = 0.05;

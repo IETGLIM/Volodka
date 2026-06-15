@@ -1,4 +1,14 @@
 # Changelog — ВОЛОДЬКА RPG
+## v4.2.13 — 16 июня 2026
+
+### AAA audio + performance (post-deploy audit P2/P1)
+- **Music ducking**: dialogue overlays keep more bed (72% music / 48% ambient) vs cinematic story (58% / 38%); smoother 450ms crossfade ramps.
+- **Tension layer**: story overlay switches music intensity to `tension` (faster chord pacing); wired into `MusicEngine` via `subscribeMusicIntensityLayer`.
+- **Performance auto-cap**: N8AO, ultra street reflector, animated galaxy stars, and god rays require explicit high/ultra — `auto` preset never enables heaviest GPU features even when heuristics resolve high.
+- **Adaptive quality**: repeated FPS budget violations now step quality preset down one tier (auto → medium, ultra → high).
+- **Accessibility**: reduced-motion hides HUD ambient particles and god rays; galaxy star drift disabled under reduced motion or auto preset.
+- **Tests**: `musicIntensityLayers`, `qualityFeatureGates`, `adaptiveQualityDegrade`, pipeline auto-cap regression.
+
 ## v4.2.12 — 16 июня 2026
 
 ### Production GLB: distinct CC0 interim meshes

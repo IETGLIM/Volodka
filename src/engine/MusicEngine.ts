@@ -16,6 +16,10 @@ import { getSharedAudioContext, safeResume } from './SharedAudioContext';
 import { registerHmrDispose } from '@/shared/dev/hmrDispose';
 import { releaseConvolver } from './audio/AudioEngineCore';
 import { tryCreateConvolver } from './audio/audioCapabilities';
+import {
+  subscribeMusicIntensityLayer,
+  type MusicIntensityLayer,
+} from './audio/musicIntensityLayers';
 
 /* ──────────────────── Helpers ──────────────────── */
 
@@ -88,7 +92,20 @@ const SCALES: Record<string, ScaleDef> = {
   },
 };
 
-/* ──────────────────── Scene Music Configs ──────────────────── */
+/** Presentation duck profiles — dialogue keeps more bed than cinematic overlays. */
+export type PresentationDuckProfile = 'none' | 'dialogue' | 'cinematic';
+
+const PRESENTATION_DUCK_GAIN: Record<PresentationDuckProfile, number> = {
+  none: 1,
+  dialogue: 0.72,
+  cinematic: 0.58,
+};
+
+const INTENSITY_TEMPO_MULTIPLIER: Record<MusicIntensityLayer, number> = {
+  exploration: 1,
+  tension: 1.14,
+  combat: 1.28,
+};
 
 interface SceneMusicConfig {
   /** Scale to use for melody and chord generation */
@@ -603,7 +620,8 @@ class MusicEngine {
   private ctx: AudioContext | null = null;
   private masterGainNode: GainNode | null = null;
   private musicVolume = 0.5; // 0-1 user-facing volume
-  private presentationDucked = false;
+  private presentationDuckProfile: PresentationDuckProfile = 'none';
+  private intensityLayer: MusicIntensityLayer = 'exploration';
   private disposed = false;
   private sceneGeneration = 0;
 
@@ -671,9 +689,18 @@ class MusicEngine {
   }
 
   /** Lower music during VN overlays without stopping the bed. */
-  setPresentationDucked(ducked: boolean): void {
-    this.presentationDucked = ducked;
+  setPresentationDucked(ducked: boolean, profile: PresentationDuckProfile = 'cinematic'): void {
+    this.presentationDuckProfile = ducked ? profile : 'none';
     this.applyVolume();
+  }
+
+  /** Adaptive tempo / chord pacing from exploration → tension → combat. */
+  setIntensityLayer(layer: MusicIntensityLayer): void {
+    if (this.intensityLayer === layer) return;
+    this.intensityLayer = layer;
+    if (this.currentConfig) {
+      this.rescheduleChordChange(this.currentConfig);
+    }
   }
 
   /* ═══════════════════ PUBLIC API ═══════════════════ */
@@ -871,7 +898,8 @@ class MusicEngine {
     this.padLfo.start(now);
 
     // ── Fade in master gain over 2 seconds ──
-    const effectiveGain = config.masterGain * this.musicVolume * (this.presentationDucked ? 0.55 : 1);
+    const effectiveGain =
+      config.masterGain * this.musicVolume * PRESENTATION_DUCK_GAIN[this.presentationDuckProfile];
     dest.gain.setValueAtTime(0, now);
     dest.gain.linearRampToValueAtTime(effectiveGain, now + 2);
 
@@ -1012,11 +1040,17 @@ class MusicEngine {
 
   /** Schedule the next chord change */
   private scheduleChordChange(config: SceneMusicConfig): void {
+    this.rescheduleChordChange(config);
+  }
+
+  private rescheduleChordChange(config: SceneMusicConfig): void {
     if (this.chordTimer) {
       clearTimeout(this.chordTimer as unknown as number);
     }
 
     const myGeneration = this.sceneGeneration;
+    const intervalMs =
+      (config.chordChangeInterval * 1000) / INTENSITY_TEMPO_MULTIPLIER[this.intensityLayer];
 
     this.chordTimer = setTimeout(() => {
       if (this.disposed || !this.currentConfig || this.currentScene === null) return;
@@ -1041,7 +1075,7 @@ class MusicEngine {
 
       // Schedule next
       this.scheduleChordChange(config);
-    }, config.chordChangeInterval * 1000) as unknown as ReturnType<typeof setTimeout>;
+    }, intervalMs) as unknown as ReturnType<typeof setTimeout>;
   }
 
   /* ═══════════════════ BASS LAYER ═══════════════════ */
@@ -1087,7 +1121,7 @@ class MusicEngine {
       clearInterval(this.bassTimer as unknown as number);
     }
 
-    const beatMs = (60 / config.tempo) * 1000; // ms per beat
+    const beatMs = (60 / config.tempo) * 1000 / INTENSITY_TEMPO_MULTIPLIER[this.intensityLayer]; // ms per beat
     const beatCount = { value: 0 };
 
     this.bassTimer = setInterval(() => {
@@ -1215,11 +1249,11 @@ class MusicEngine {
   private applyVolume(): void {
     if (!this.masterGainNode || !this.ctx) return;
 
-    const duckMul = this.presentationDucked ? 0.55 : 1;
+    const duckMul = PRESENTATION_DUCK_GAIN[this.presentationDuckProfile];
     const effectiveGain = (this.currentConfig?.masterGain ?? 0.04) * this.musicVolume * duckMul;
     const now = this.ctx.currentTime;
     this.masterGainNode.gain.setValueAtTime(this.masterGainNode.gain.value, now);
-    this.masterGainNode.gain.linearRampToValueAtTime(effectiveGain, now + 0.3);
+    this.masterGainNode.gain.linearRampToValueAtTime(effectiveGain, now + 0.45);
   }
 
   /** Clean up all audio nodes */
@@ -1268,6 +1302,8 @@ class MusicEngine {
 /** Singleton music engine instance */
 export const musicEngine = new MusicEngine();
 export default musicEngine;
+
+subscribeMusicIntensityLayer((layer) => musicEngine.setIntensityLayer(layer));
 
 export function disposeMusicEngine(): void {
   musicEngine.dispose();

@@ -41,6 +41,7 @@ function syncAudioFromStore(ctrl: ReturnType<typeof getSceneAudioController>): v
     state.exploration.timeOfDay,
     state.showStoryOverlay,
     ambientContext,
+    state.narrativeKind,
   );
 }
 
@@ -147,6 +148,7 @@ export function useAudioOrchestrator() {
       (state) => ({
         phase: selectAudioPhase(state),
         showStoryOverlay: state.showStoryOverlay,
+        narrativeKind: state.narrativeKind,
         currentNodeId: state.currentNodeId,
         sceneId: state.exploration.currentSceneId,
         timeOfDay: state.exploration.timeOfDay,
@@ -168,10 +170,18 @@ export function useAudioOrchestrator() {
             selected.timeOfDay,
             selected.showStoryOverlay,
             ambientContext,
+            selected.narrativeKind,
           );
         } else {
-          if (selected.showStoryOverlay !== prev.showStoryOverlay) {
-            ctrl.setDialogueState(selected.showStoryOverlay, selected.phase);
+          if (
+            selected.showStoryOverlay !== prev.showStoryOverlay ||
+            selected.narrativeKind !== prev.narrativeKind
+          ) {
+            ctrl.setDialogueState(
+              selected.showStoryOverlay,
+              selected.phase,
+              selected.narrativeKind,
+            );
           }
           if (
             selected.showStoryOverlay !== prev.showStoryOverlay ||
@@ -189,6 +199,7 @@ export function useAudioOrchestrator() {
               selected.timeOfDay,
               selected.showStoryOverlay,
               ambientContext,
+              selected.narrativeKind,
             );
           }
         }

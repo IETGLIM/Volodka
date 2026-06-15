@@ -14,6 +14,9 @@ import {
 
 import { useEnvironmentLod } from './lod/EnvironmentLodProvider';
 import { EnvironmentDetail } from './lod/PropDistanceGate';
+import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
+import { allowsHeavyGfxFeature } from '@/engine/graphics/qualityFeatureGates';
+import { isEffectiveReducedMotion } from '@/engine/accessibility/accessibilitySettings';
 import { useCachedCanvasTexture } from '@/hooks/useCachedCanvasTexture';
 import { seededRand } from '@/shared/utils/seededRand';
 import {
@@ -366,14 +369,17 @@ function RooftopEdgeRailings({ w, d }: { w: number; d: number }) {
 
 /** Large inward-facing dome with galaxy-sunset gradient and sparse horizon stars. */
 function SunsetSkyDome() {
+  const { selectedPreset } = useGraphicsQuality();
+  const animateStars =
+    allowsHeavyGfxFeature(selectedPreset, 'galaxySky')
+    && !isEffectiveReducedMotion();
   const skyTexture = useCachedCanvasTexture('rooftop_edge:galaxy-sky', createRooftopSunsetGalaxySkyTexture);
   const starGeometry = useMemo(() => createRooftopHorizonStarGeometry(), []);
   const starsRef = useRef<THREE.Points>(null);
 
   useFrameTick('misc', ({ state }) => {
-    if (starsRef.current) {
-      starsRef.current.rotation.y = state.clock.elapsedTime * 0.004;
-    }
+    if (!animateStars || !starsRef.current) return;
+    starsRef.current.rotation.y = state.clock.elapsedTime * 0.004;
   });
 
   return (

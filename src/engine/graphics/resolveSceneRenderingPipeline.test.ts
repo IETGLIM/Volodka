@@ -25,7 +25,7 @@ describe('resolveSceneRenderingPipeline', () => {
 
   it('uses lite post-FX on standard scenes when visualLite', () => {
     const pipe = resolveSceneRenderingPipeline(
-      'factory_basement',
+      'chk_forest_zorge',
       QUALITY_PRESETS.medium,
       true,
     );
@@ -44,14 +44,25 @@ describe('resolveSceneRenderingPipeline', () => {
     expect(pipe.aoIntensity).toBeGreaterThan(2.5);
   });
 
-  it('enables AO on street_night at ultra', () => {
+  it('enables AO on street_night at explicit ultra', () => {
     const pipe = resolveSceneRenderingPipeline(
       'street_night',
       QUALITY_PRESETS.ultra,
       false,
+      'ultra',
     );
     expect(pipe.useLitePostFx).toBe(false);
     expect(pipe.useAmbientOcclusion).toBe(true);
+  });
+
+  it('skips AO on auto even when resolved preset is ultra', () => {
+    const pipe = resolveSceneRenderingPipeline(
+      'street_night',
+      QUALITY_PRESETS.ultra,
+      false,
+      'auto',
+    );
+    expect(pipe.useAmbientOcclusion).toBe(false);
   });
 
   it('skips AO on ultra when profile disables enhancedAmbientOcclusion', () => {

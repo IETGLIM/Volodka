@@ -45,6 +45,11 @@
     animation: none;
   }
 
+  .ambient-particle {
+    animation: none !important;
+    opacity: 0.35;
+  }
+
   .menu-cinematic-bar {
     transition: none;
   }
@@ -57,4 +62,9 @@ html[data-reduced-motion='true'] *::after {
   animation-iteration-count: 1 !important;
   transition-duration: 0.01ms !important;
   scroll-behavior: auto !important;
+}
+
+html[data-reduced-motion='true'] .ambient-particle {
+  animation: none !important;
+  opacity: 0.35;
 }

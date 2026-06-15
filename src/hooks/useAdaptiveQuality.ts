@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { degradeQualityPresetOneTier } from '@/engine/graphics/adaptiveQualityDegrade';
 import { subscribeRuntimeBudgetViolations } from '@/engine/performance/runtimeBudgetEvents';
 import { applyVisualSettings } from '@/engine/visualSettings';
 
@@ -23,6 +24,7 @@ export function useAdaptiveQuality(enabled: boolean): void {
       try {
         localStorage.setItem('volodka_postfx', 'false');
         localStorage.setItem('volodka_particles', 'false');
+        degradeQualityPresetOneTier();
         applyVisualSettings();
         strikesRef.current = 0;
       } catch {

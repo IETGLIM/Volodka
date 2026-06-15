@@ -4,6 +4,8 @@ import { useGameMode } from '@/store/selectors';
 import { useMobileVisualPerf } from '@/hooks/use-mobile';
 import { useVisualSettings } from '@/hooks/useVisualSettings';
 import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
+import { allowsHeavyGfxFeature } from '@/engine/graphics/qualityFeatureGates';
+import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 import {
   resolveSceneHeavyFx,
   tierFromPresetId,
@@ -36,7 +38,8 @@ export function AtmosphericEffects() {
   const gameMode = useGameMode();
   const { visualLite, effectsScale } = useMobileVisualPerf();
   const { particlesEnabled, postfxEnabled } = useVisualSettings();
-  const { preset } = useGraphicsQuality();
+  const { preset, selectedPreset } = useGraphicsQuality();
+  const reducedMotion = useEffectiveReducedMotion();
   const fxTier = tierFromPresetId(preset.id);
   const heroScene = isHeroScene(sceneId as SceneId);
   const heavyEffects = (visualLite || effectsScale < 0.85) && !heroScene;
@@ -75,7 +78,10 @@ export function AtmosphericEffects() {
   if (!effectsEnabled) return null;
 
   const showFog = heavyFx.fog;
-  const showGodRays = heavyFx.godRays;
+  const showGodRays =
+    heavyFx.godRays
+    && allowsHeavyGfxFeature(selectedPreset, 'godRays')
+    && !reducedMotion;
   const showSteam = particlesEnabled && STEAM_SCENES.has(sceneId);
   const showMatrixFog = particlesEnabled && MATRIX_FOG_SCENES.has(sceneId);
   const showDust = particlesEnabled && DUST_SCENES.has(sceneId);

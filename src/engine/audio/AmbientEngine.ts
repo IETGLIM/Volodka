@@ -38,7 +38,6 @@ function safeStop(node: OscillatorNode | AudioBufferSourceNode, when?: number): 
 interface PlayingAmbient {
   /** The type of ambient being played */
   type: AmbientSoundType;
-  /** Master gain node for this ambient (used for crossfade) */
   masterGain: GainNode;
   /** Oscillator nodes and their gain nodes */
   oscillators: Array<{
@@ -72,6 +71,13 @@ interface PlayingAmbient {
   panner?: PannerNode;
 }
 
+export type AmbientDuckProfile = 'dialogue' | 'cinematic';
+
+const AMBIENT_DUCK_GAIN: Record<AmbientDuckProfile, number> = {
+  dialogue: 0.48,
+  cinematic: 0.38,
+};
+
 export class AmbientSoundPlayer {
   private ctx: AudioContext | null = null;
   private destination: GainNode | null = null;
@@ -83,6 +89,7 @@ export class AmbientSoundPlayer {
   private baseVolume = 0.7;
   private combatMuted = false;
   private dialogueDucked = false;
+  private dialogueDuckProfile: AmbientDuckProfile = 'cinematic';
   private paused = false;
   private reducedMotion = false;
   private sceneReverbPreset = 'small_room';
@@ -141,7 +148,7 @@ export class AmbientSoundPlayer {
   private getEffectiveVolume(): number {
     if (this.paused) return 0;
     if (this.combatMuted) return 0;
-    if (this.dialogueDucked) return this.baseVolume * 0.3;
+    if (this.dialogueDucked) return this.baseVolume * AMBIENT_DUCK_GAIN[this.dialogueDuckProfile];
     return this.baseVolume;
   }
 
@@ -623,10 +630,11 @@ export class AmbientSoundPlayer {
     this.applyVolume();
   }
 
-  /** Set dialogue duck state */
-  setDialogueDucked(ducked: boolean): void {
+  /** Set dialogue duck state with profile-specific gain */
+  setDialogueDucked(ducked: boolean, profile: AmbientDuckProfile = 'cinematic'): void {
     if (this.disposed) return;
     this.dialogueDucked = ducked;
+    this.dialogueDuckProfile = profile;
     this.applyVolume();
   }
 
@@ -649,7 +657,7 @@ export class AmbientSoundPlayer {
         this.currentAmbient.masterGain.gain.value,
         now,
       );
-      this.currentAmbient.masterGain.gain.linearRampToValueAtTime(effectiveVol, now + 0.3);
+      this.currentAmbient.masterGain.gain.linearRampToValueAtTime(effectiveVol, now + 0.45);
     } catch {
       // Gain node may have been disconnected
     }

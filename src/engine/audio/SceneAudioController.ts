@@ -26,6 +26,7 @@ import { isEffectiveReducedMotion } from '@/engine/accessibility/accessibilitySe
 import { isPageVisible } from '@/engine/frame/frameVisibility';
 import type { SceneId } from '@/config/sceneDefinitions';
 import type { GamePhase } from '@/shared/gamePhase';
+import type { NarrativeKind } from '@/shared/types/narrativeKind';
 import { ControllerSession } from '@/engine/controller/ControllerSession';
 import { registerHmrDispose } from '@/shared/dev/hmrDispose';
 
@@ -65,6 +66,7 @@ export class SceneAudioController {
     timeOfDay: number,
     showStoryOverlay: boolean,
     ambientContext?: AmbientPlayContext,
+    narrativeKind: NarrativeKind | null = null,
   ): void {
     if (!this.guard()) return;
     if (ambientContext) {
@@ -83,7 +85,7 @@ export class SceneAudioController {
       this.playSceneAmbient(sceneId, timeOfDay);
     }
 
-    this.setDialogueState(showStoryOverlay, phase);
+    this.setDialogueState(showStoryOverlay, phase, narrativeKind);
     ambientEngine.setCombatMuted(phase === 'combat');
   }
 
@@ -158,16 +160,22 @@ export class SceneAudioController {
     this.playSceneAmbient(sceneId, timeOfDay);
   }
 
-  setDialogueState(showStoryOverlay: boolean, phase: GamePhase): void {
+  setDialogueState(
+    showStoryOverlay: boolean,
+    phase: GamePhase,
+    narrativeKind: NarrativeKind | null = null,
+  ): void {
     if (!this.guard()) return;
     const duckPresentation = showStoryOverlay || phase === 'cutscene';
-    musicEngine.setPresentationDucked(duckPresentation);
+    const duckProfile =
+      narrativeKind === 'dialogue' ? 'dialogue' : 'cinematic';
+    musicEngine.setPresentationDucked(duckPresentation, duckProfile);
     if (showStoryOverlay) {
       sfxEngine.enableDialogueMuffle(true);
-      ambientEngine.setDialogueDucked(true);
+      ambientEngine.setDialogueDucked(true, duckProfile);
     } else if (phase === 'exploration' || phase === 'cutscene') {
       sfxEngine.enableDialogueMuffle(false);
-      ambientEngine.setDialogueDucked(phase === 'cutscene');
+      ambientEngine.setDialogueDucked(phase === 'cutscene', 'cinematic');
     }
   }
 

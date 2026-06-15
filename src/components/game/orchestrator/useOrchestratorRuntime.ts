@@ -23,7 +23,7 @@ import { registerVolodkaE2EBridge } from '@/engine/e2e/e2eBridge';
 import { useOrchestratorLoading } from './useOrchestratorLoading';
 import { useOrchestratorInput } from './useOrchestratorInput';
 import { useAdaptiveQuality } from '@/hooks/useAdaptiveQuality';
-import { setMusicIntensityLayer, musicLayerForMode } from '@/engine/audio/musicIntensityLayers';
+import { setMusicIntensityLayer, resolveMusicIntensityLayer } from '@/engine/audio/musicIntensityLayers';
 
 /** Bundles orchestrator hooks — GameOrchestrator stays a thin render coordinator. */
 export function useOrchestratorRuntime() {
@@ -80,8 +80,10 @@ export function useOrchestratorRuntime() {
   useAdaptiveQuality(!mainMenuOpen && mode !== 'menu');
 
   useEffect(() => {
-    setMusicIntensityLayer(musicLayerForMode(mode));
-  }, [mode]);
+    setMusicIntensityLayer(
+      resolveMusicIntensityLayer(mode, { showStoryOverlay }),
+    );
+  }, [mode, showStoryOverlay]);
 
   const { skipActiveCutscene } = useCutsceneController();
   const { sceneBanner } = useGameLifecycleManager(mode);
