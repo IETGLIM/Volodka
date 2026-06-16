@@ -152,3 +152,156 @@ npm run lint             # ESLint
 npm run build            # прод-сборка + бюджеты бандла
 npm run check            # всё сразу — главный гейт перед деплоем
 ```
+
+---
+
+## 8. AAA Audit 2026 — технический аудит и план
+
+> **Контекст:** браузерная narrative RPG (Three.js + React), не офлайн AAA-cinematic.
+> Цель аудита — довести production-качество до уровня «уверенный релиз v4.3.0», а не
+> конкурировать с Unreal offline-тайтлами. Оценки — честная инженерная самооценка по
+> состоянию v4.2.28 (17 июня 2026).
+
+**Ключевые файлы:** `src/data/goldenPath.ts`, `src/config/audioManifest.ts`,
+`src/config/sceneDefinitions.ts`, `src/engine/audio/SceneAudioController.ts`,
+`src/engine/e2e/e2eBridge.ts`, `eslint.config.js`, `e2e/*.spec.ts`,
+`scripts/check-bundle-budgets.mjs`, `config/performanceBudgets.json`.
+
+### A. Сводка оценок (1–10)
+
+| Область | Оценка | Комментарий |
+|---|---:|---|
+| Architecture | 8 | Модульный движок, валидаторы контента, scene inheritance |
+| Rendering | 7 | WebGL/Three.js стабилен; AAA wet/interiors — backlog |
+| Assets | 7 | Quaternius + Mixamo pipeline; AI3DGen Pro — в плане |
+| Narrative | 8 | 7 актов, стихи неприкосновенны; golden path — 75 gaps |
+| Audio | 7 | `SceneAudioController` + manifest; 9 extension scenes без профиля |
+| Physics | 8 | Rapier в бюджете; feet-on-ground smoke зелёный |
+| Testing | 8 | 1100+ unit; e2e smoke через `__volodka_e2e` bridge |
+| CI / deploy | 8 | `npm run check`, Vercel-ready, bundle budgets |
+| Tech debt | 6 | Golden path fallback, lint budget 362, dist ~222 MB |
+| **Overall** | **7.5** | Production-ready baseline; polish до RC v4.3.0 |
+
+### B. Ключевые риски
+
+| Риск | Масштаб | Где смотреть |
+|---|---|---|
+| Golden-path warnings | 75 узлов без `choice.goldenPath: true` | `src/data/goldenPath.ts`, `npm run validate:content` |
+| Extension scenes без профилей | 9 сцен без audio/visual profiles | `src/config/sceneDefinitions.ts` (EXTENSION_SCENE_DEFINITIONS) |
+| ESLint warnings budget | `--max-warnings 362` в `package.json` | `eslint.config.js`, `npm run lint` |
+| E2E зависимость от bridge | Smoke-тесты вызывают `window.__volodka_e2e` | `src/engine/e2e/e2eBridge.ts`, `e2e/*.spec.ts` |
+| Dist footprint | ~222 MB (GLB + bundles) | `npm run build`, `scripts/check-bundle-budgets.mjs` |
+
+### C. План: 6 спринтов (~10–12 недель)
+
+#### Sprint 0 — Production smoke + P0 (1–2 нед)
+
+**Цель:** зафиксировать зелёный baseline и закрыть остатки P0.
+
+- [ ] `npm run check` — полный зелёный прогон на CI и локально
+- [ ] Production smoke: 10 мин gameplay, 0× 404 на `.glb` (см. §5)
+- [ ] Аудит P0-квестов: `npm run validate:content` → секция `quest` пуста
+- [ ] Документировать dist size и bundle report (`npm run budgets`)
+
+**Exit criteria:** `check` зелёный; smoke без 404; P0 закрыт; baseline зафиксирован в ROADMAP §0.
+
+#### Sprint 1 — Audio + mode integrity (2 нед)
+
+**Цель:** полное audio-покрытие сцен и целостность explore/story modes.
+
+- [ ] Аудит `src/config/audioManifest.ts` — 27 core scenes + extension entries
+- [ ] Добавить audio profiles для 9 extension scenes (`sceneInheritance.ts`)
+- [ ] Проверить `SceneAudioController` transitions (ambient → combat → dialogue)
+- [ ] Mode integrity: explore ↔ story hub без audio glitches (`useAudioOrchestrator.ts`)
+
+**Exit criteria:** все shipped-сцены имеют manifest entry; 0 missing audio profile warnings; smoke audio OK.
+
+#### Sprint 2 — Art RPM / Mixamo / Poly (2 нед)
+
+**Цель:** pipeline ассетов для визуального апгрейда без блокировки релиза.
+
+- [ ] `npm run assets:status` — manifest vs disk, CC0 interim актуален
+- [ ] Mixamo clips override для NPC (`assets:mixamo-import`)
+- [ ] Poly/Quaternius: skinned bounds, idle/walk/talk/sit clips wired
+- [ ] AI3DGen Pro catalog — приоритетные замены по `assets:ai3dgen-import`
+
+**Exit criteria:** `assets:validate` зелёный; hero + story NPCs с корректными анимациями; status report без gaps.
+
+#### Sprint 3 — Graphics AAA: wet / interiors / perf (2 нед)
+
+**Цель:** визуальный polish в рамках web-бюджета (не offline cinematic).
+
+- [ ] Wet surfaces / puddle reflections (performanceBudgets gate)
+- [ ] Interior lighting pass для key hubs (campfire, safehouse, guild)
+- [ ] LOD / culling audit для extension scenes
+- [ ] `npm run budgets:check` — boot menu + first scene в hardMax
+
+**Exit criteria:** целевые сцены проходят visual smoke; bundle budgets не нарушены; FPS stable на mid-tier GPU.
+
+#### Sprint 4 — Narrative UX + golden path 0 warnings (2 нед)
+
+**Цель:** единый источник правды для золотого пути; читаемость для не-геймеров.
+
+- [ ] Пометить `goldenPath: true` на 75 узлах спайна (см. §1 P1)
+- [ ] `getGoldenPathDerivationReport()` → `missingGoldenPathMarkers: []`
+- [ ] `STORY_NODE_GUIDANCE` + `StoryGuidanceHUD` — подсказка на каждом шаге
+- [ ] Концовки `act7.ts` — эмоциональные биты + отражение выборов игрока
+
+**Exit criteria:** `validate:content` → 0 golden-path warnings; ручной `GOLDEN_PATH_STORY_SPINE` можно deprecate.
+
+#### Sprint 5 — Lint zero + e2e hardening (1–2 нед)
+
+**Цель:** убрать warnings budget и снизить хрупкость e2e.
+
+- [ ] ESLint: 362 → 0 warnings; убрать `--max-warnings 362` из `package.json`
+- [ ] `npm run lint -- --fix` + точечная зачистка unused imports
+- [ ] E2E: typed helpers поверх `e2eBridge.ts`, меньше raw `page.evaluate`
+- [ ] Добавить e2e coverage для extension scenes (smoke)
+
+**Exit criteria:** `npm run lint` без `--max-warnings`; e2e suite стабилен на CI 3× подряд.
+
+#### Sprint 6 — Playtest RC v4.3.0 (1–2 нед)
+
+**Цель:** release candidate с внешним playtest.
+
+- [ ] RC tag `v4.3.0`; changelog из спринтов 0–5
+- [ ] Preview deploy на Vercel → 3+ playtesters (новичок + опытный)
+- [ ] Сбор feedback: onboarding, story clarity, audio, perf
+- [ ] Hotfix-only window; promote to Production после sign-off
+
+**Exit criteria:** RC deployed; playtest checklist закрыт; Production promote одобрен.
+
+### D. Топ-5 приоритетов (если время ограничено)
+
+1. **Sprint 0** — зелёный `npm run check` + production smoke (блокер всего остального)
+2. **Sprint 4 / P1** — 75 golden-path warnings → 0 (защита нарратива от drift)
+3. **Sprint 1** — audio manifest для 9 extension scenes (заметный UX-gap)
+4. **Sprint 5** — lint zero + e2e hardening (CI confidence)
+5. **Sprint 6** — RC playtest v4.3.0 (ship gate)
+
+> Art (Sprint 2) и Graphics (Sprint 3) можно параллелить с 4–5, если есть отдельный art-owner.
+
+### E. Граф зависимостей спринтов
+
+```mermaid
+graph TD
+  S0["Sprint 0<br/>Production smoke + P0"]
+  S1["Sprint 1<br/>Audio + mode integrity"]
+  S2["Sprint 2<br/>Art RPM / Mixamo / Poly"]
+  S3["Sprint 3<br/>Graphics AAA wet / interiors"]
+  S4["Sprint 4<br/>Narrative UX golden path"]
+  S5["Sprint 5<br/>Lint zero + e2e hardening"]
+  S6["Sprint 6<br/>Playtest RC v4.3.0"]
+
+  S0 --> S1
+  S0 --> S4
+  S0 --> S5
+  S1 --> S3
+  S2 --> S3
+  S1 --> S6
+  S3 --> S6
+  S4 --> S6
+  S5 --> S6
+```
+
+**После каждого спринта:** `npm run check`. Зелёный прогон = безопасно мержить и деплоить preview.
