@@ -127,6 +127,7 @@ export function PhysicsPlayer({
   const { world, rapier } = useRapier();
 
   const controllerFailCountRef = useRef(0);
+  const kccHealthyFramesRef = useRef(0);
   const controlsDegradedRef = useRef(false);
   const degradedLoggedRef = useRef(false);
   const degradedReasonRef = useRef<string | null>(null);
@@ -182,6 +183,7 @@ export function PhysicsPlayer({
 
       jumpCooldownRef.current = 0;
       noMovementFramesRef.current = 0;
+      kccHealthyFramesRef.current = 0;
       currentAnimRef.current = 'idle';
       if (moveBlendRef) moveBlendRef.current = 0;
 
@@ -228,6 +230,7 @@ export function PhysicsPlayer({
 
       restoreKccMovementMode(directMovementTelemetry, { sceneId: enteredScene });
       controllerFailCountRef.current = 0;
+      kccHealthyFramesRef.current = 0;
       groundProbeCacheRef.current = createGroundProbeCache(sceneConfig.floorY, enteredScene);
     });
     return unsub;
@@ -283,6 +286,7 @@ export function PhysicsPlayer({
     warmupTimerRef,
     noMovementFramesRef,
     controllerFailCountRef,
+    kccHealthyFramesRef,
     controlsDegradedRef,
     recreateCharacterController: () => recreateCharacterControllerFn.current?.() ?? null,
     snapAirborneRef,
@@ -325,6 +329,7 @@ export function PhysicsPlayer({
       warmupTimerRef,
       noMovementFramesRef,
       controllerFailCountRef,
+      kccHealthyFramesRef,
       controlsDegradedRef,
       recreateCharacterController: () => recreateCharacterControllerFn.current?.() ?? null,
       snapAirborneRef,

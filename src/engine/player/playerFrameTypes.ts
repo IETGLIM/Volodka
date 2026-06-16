@@ -56,6 +56,7 @@ export interface PlayerMovementDeps {
   warmupTimerRef: React.MutableRefObject<number>;
   noMovementFramesRef: React.MutableRefObject<number>;
   controllerFailCountRef: React.MutableRefObject<number>;
+  kccHealthyFramesRef: React.MutableRefObject<number>;
   controlsDegradedRef: React.MutableRefObject<boolean>;
   recreateCharacterController: () => RapierCharacterController | null;
   snapAirborneRef: React.MutableRefObject<boolean>;

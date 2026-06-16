@@ -23,7 +23,7 @@ import {
 import { BlendFunction, KernelSize, ToneMappingMode } from 'postprocessing';
 import type { EffectComposer as EffectComposerImpl } from 'postprocessing';
 import { usePostFxSceneState, usePlayerStress, useGameMode } from '@/store/selectors';
-import { useMobileVisualPerf } from '@/hooks/use-mobile';
+import { useMobileVisualPerf, useIsMobileVisual } from '@/hooks/use-mobile';
 import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
 import { useVisualSettings } from '@/hooks/useVisualSettings';
 import { SCENE_VISIBILITY } from '@/shared/constants/sceneVisibility';
@@ -314,8 +314,15 @@ function EffectComposerInstance({
 function PostFXPipeline() {
   const { sceneId, noirMode } = usePostFxSceneState();
   const { visualLite } = useMobileVisualPerf();
+  const coarsePointer = useIsMobileVisual();
   const { preset, selectedPreset } = useGraphicsQuality();
-  const rendering = resolveSceneRenderingPipeline(sceneId, preset, visualLite, selectedPreset);
+  const rendering = resolveSceneRenderingPipeline(
+    sceneId,
+    preset,
+    visualLite,
+    selectedPreset,
+    coarsePointer,
+  );
   const { brightness: userBrightness } = useVisualSettings();
   const userBrightnessOffset = (userBrightness - 1) * 0.3;
 

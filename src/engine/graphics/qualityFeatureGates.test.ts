@@ -25,4 +25,10 @@ describe('allowsHeavyGfxFeature', () => {
     expect(allowsHeavyGfxFeature('ultra', 'galaxySky')).toBe(true);
     expect(allowsHeavyGfxFeature('ultra', 'godRays')).toBe(true);
   });
+
+  it('caps ultra reflector and god rays on coarse-pointer devices', () => {
+    expect(allowsHeavyGfxFeature('ultra', 'reflector', { coarsePointer: true })).toBe(false);
+    expect(allowsHeavyGfxFeature('ultra', 'godRays', { coarsePointer: true })).toBe(false);
+    expect(allowsHeavyGfxFeature('ultra', 'n8ao', { coarsePointer: true })).toBe(true);
+  });
 });

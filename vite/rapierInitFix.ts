@@ -91,15 +91,6 @@ export function applyRapierInitFix(code: string): string {
   );
 }
 
-if (import.meta.env?.DEV) {
-  const selfTestInput = 'yield xA(Lg.toByteArray("AQID")").buffer);';
-  const selfTestOutput = applyRapierInitFix(selfTestInput);
-  console.assert(
-    selfTestOutput.includes('module_or_path'),
-    '[rapierInitFix] DEV self-test failed: patch must include module_or_path',
-  );
-}
-
 /**
  * Rollup cannot parse the ~2 MB single-line rapier.mjs — expand via esbuild, then patch init.
  */

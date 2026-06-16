@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useGameStore } from '@/store/gameStore';
 import { useGameMode } from '@/store/selectors';
-import { useMobileVisualPerf } from '@/hooks/use-mobile';
+import { useIsMobileVisual, useMobileVisualPerf } from '@/hooks/use-mobile';
 import { useVisualSettings } from '@/hooks/useVisualSettings';
 import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
 import { allowsHeavyGfxFeature } from '@/engine/graphics/qualityFeatureGates';
@@ -37,6 +37,7 @@ export function AtmosphericEffects() {
   const weatherEnabled = useGameStore((s) => s.weatherEnabled);
   const gameMode = useGameMode();
   const { visualLite, effectsScale } = useMobileVisualPerf();
+  const coarsePointer = useIsMobileVisual();
   const { particlesEnabled, postfxEnabled } = useVisualSettings();
   const { preset, selectedPreset } = useGraphicsQuality();
   const reducedMotion = useEffectiveReducedMotion();
@@ -80,7 +81,7 @@ export function AtmosphericEffects() {
   const showFog = heavyFx.fog;
   const showGodRays =
     heavyFx.godRays
-    && allowsHeavyGfxFeature(selectedPreset, 'godRays')
+    && allowsHeavyGfxFeature(selectedPreset, 'godRays', { coarsePointer })
     && !reducedMotion;
   const showSteam = particlesEnabled && STEAM_SCENES.has(sceneId);
   const showMatrixFog = particlesEnabled && MATRIX_FOG_SCENES.has(sceneId);

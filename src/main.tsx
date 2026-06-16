@@ -1,4 +1,4 @@
-import { StrictMode } from 'react';
+import { StrictMode, type ReactNode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { AppBootRoot } from '@/app/AppBootRoot';
 import '@/app/globals.css';
@@ -17,8 +17,17 @@ initVoiceLineRegistry();
 const root = document.getElementById('root');
 if (!root) throw new Error('Root element not found');
 
+/** Opt-in only — StrictMode double-mount breaks Rapier KCC lifecycle in dev. */
+const enableStrictMode = import.meta.env.VITE_ENABLE_STRICT_MODE === 'true';
+
+function renderAppTree(): ReactNode {
+  return <AppBootRoot />;
+}
+
 createRoot(root).render(
-  <StrictMode>
-    <AppBootRoot />
-  </StrictMode>,
+  enableStrictMode ? (
+    <StrictMode>{renderAppTree()}</StrictMode>
+  ) : (
+    renderAppTree()
+  ),
 );

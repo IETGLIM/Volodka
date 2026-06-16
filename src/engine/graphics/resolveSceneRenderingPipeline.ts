@@ -29,6 +29,7 @@ export function resolveSceneRenderingPipeline(
   preset: QualityPreset,
   visualLite: boolean,
   selectedPreset: QualityPresetId = preset.id,
+  coarsePointer = false,
 ): SceneRenderingPipeline {
   const profile = getSceneVisualProfile(sceneId);
   const isHero = isHeroScene(sceneId);
@@ -47,7 +48,7 @@ export function resolveSceneRenderingPipeline(
     !useLitePostFx
     && highEnoughForAo
     && profile.enhancedAmbientOcclusion
-    && allowsHeavyGfxFeature(selectedPreset, 'n8ao');
+    && allowsHeavyGfxFeature(selectedPreset, 'n8ao', { coarsePointer });
 
   return {
     useLitePostFx,

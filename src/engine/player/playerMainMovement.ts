@@ -8,6 +8,11 @@ import {
   restoreKccMovementMode,
 } from '@/engine/player/directMovementTelemetry';
 import {
+  nextKccHealthyFrameCount,
+  shouldEnterKccDegraded,
+  shouldRestoreKccFromHealthyFrames,
+} from '@/engine/player/kccRecoveryState';
+import {
   WALK_SPEED,
   RUN_SPEED,
   KEYBOARD_ACCEL,
@@ -229,12 +234,13 @@ export function runMainPlayerMovement(deps: PlayerMovementDeps): boolean {
     scratch.controller = controller;
 
     if (!recovered) {
-      if (deps.controllerFailCountRef.current >= KCC_FAIL_FRAMES_BEFORE_DEGRADE) {
+      if (shouldEnterKccDegraded(deps.controllerFailCountRef.current, KCC_FAIL_FRAMES_BEFORE_DEGRADE)) {
         notifyControlsDegraded(deps.directMovementTelemetry, 'kcc_unavailable', {
           sceneId: deps.sceneId,
           failFrames: deps.controllerFailCountRef.current,
         });
       }
+      deps.kccHealthyFramesRef.current = 0;
       applyDegradedMovement(deps, onFlatGround);
       return false;
     }
@@ -242,6 +248,7 @@ export function runMainPlayerMovement(deps: PlayerMovementDeps): boolean {
     deps.controllerFailCountRef.current = 0;
     if (deps.controlsDegradedRef.current) {
       restoreKccMovementMode(deps.directMovementTelemetry, { sceneId: deps.sceneId });
+      deps.kccHealthyFramesRef.current = 0;
     }
   }
 
@@ -312,6 +319,20 @@ export function runMainPlayerMovement(deps: PlayerMovementDeps): boolean {
       vel.x *= slopeScale;
       vel.z *= slopeScale;
     }
+  }
+
+  if (deps.controlsDegradedRef.current) {
+    deps.kccHealthyFramesRef.current = nextKccHealthyFrameCount(
+      true,
+      true,
+      deps.kccHealthyFramesRef.current,
+    );
+    if (shouldRestoreKccFromHealthyFrames(true, deps.kccHealthyFramesRef.current)) {
+      restoreKccMovementMode(deps.directMovementTelemetry, { sceneId: deps.sceneId });
+      deps.kccHealthyFramesRef.current = 0;
+    }
+  } else {
+    deps.kccHealthyFramesRef.current = 0;
   }
 
   return true;

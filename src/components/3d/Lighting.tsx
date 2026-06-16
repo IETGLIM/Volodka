@@ -89,7 +89,13 @@ export function ExplorationLighting() {
   const isMobile = useIsMobileVisual();
   const { preset, selectedPreset } = useGraphicsQuality();
   const { visualLite } = useMobileVisualPerf();
-  const rendering = resolveSceneRenderingPipeline(sceneId, preset, visualLite, selectedPreset);
+  const rendering = resolveSceneRenderingPipeline(
+    sceneId,
+    preset,
+    visualLite,
+    selectedPreset,
+    isMobile,
+  );
   const config = getSceneConfig(sceneId);
   const baseShadow = isMobile ? 512 : preset.id === 'ultra' ? 2048 : 1024;
   const shadowSize = Math.min(

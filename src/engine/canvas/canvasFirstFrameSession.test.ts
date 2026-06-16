@@ -1,48 +1,37 @@
 import { describe, expect, it, beforeEach } from 'vitest';
 import {
   claimCanvasFirstFrameEmit,
-  getCanvasFirstFrameGeneration,
-  invalidateCanvasFirstFrame,
-  isCanvasFirstFramePending,
-  registerCanvasForFirstFrame,
+  getCanvasFirstFrameSession,
+  markCanvasFirstFrameSessionLost,
   resetCanvasFirstFrameSessionForTests,
 } from './canvasFirstFrameSession';
 
 describe('canvasFirstFrameSession', () => {
-  let canvas: HTMLCanvasElement;
-
   beforeEach(() => {
     resetCanvasFirstFrameSessionForTests();
-    canvas = {} as HTMLCanvasElement;
-    registerCanvasForFirstFrame(canvas);
   });
 
-  it('claimCanvasFirstFrameEmit is atomic — second claim returns null', () => {
-    invalidateCanvasFirstFrame();
-    expect(isCanvasFirstFramePending()).toBe(true);
+  function createTestCanvas(): HTMLCanvasElement {
+    return {} as HTMLCanvasElement;
+  }
 
-    const gen = claimCanvasFirstFrameEmit(canvas);
-    expect(gen).toBe(getCanvasFirstFrameGeneration());
-    expect(isCanvasFirstFramePending()).toBe(false);
+  it('re-opens first-frame latch after WebGL context loss', () => {
+    const canvas = createTestCanvas();
+    markCanvasFirstFrameSessionLost(canvas);
+
+    const session = getCanvasFirstFrameSession(canvas);
+    expect(session.contextLost).toBe(true);
+    expect(session.emitted).toBe(false);
+
+    const generation = claimCanvasFirstFrameEmit(canvas);
+    expect(generation).not.toBeNull();
+    expect(getCanvasFirstFrameSession(canvas).contextLost).toBe(false);
+    expect(getCanvasFirstFrameSession(canvas).emitted).toBe(true);
+  });
+
+  it('claimCanvasFirstFrameEmit returns null when latch already closed', () => {
+    const canvas = createTestCanvas();
+    expect(claimCanvasFirstFrameEmit(canvas)).not.toBeNull();
     expect(claimCanvasFirstFrameEmit(canvas)).toBeNull();
-  });
-
-  it('invalidate bumps generation and reopens latch', () => {
-    const gen1 = invalidateCanvasFirstFrame();
-    expect(claimCanvasFirstFrameEmit(canvas)).toBe(gen1);
-
-    const gen2 = invalidateCanvasFirstFrame();
-    expect(gen2).toBeGreaterThan(gen1);
-    expect(isCanvasFirstFramePending()).toBe(true);
-    expect(claimCanvasFirstFrameEmit(canvas)).toBe(gen2);
-  });
-
-  it('stale generation after invalidate cannot reuse old latch', () => {
-    const gen1 = invalidateCanvasFirstFrame();
-    claimCanvasFirstFrameEmit(canvas);
-
-    const gen2 = invalidateCanvasFirstFrame();
-    expect(gen2).not.toBe(gen1);
-    expect(claimCanvasFirstFrameEmit(canvas)).toBe(gen2);
   });
 });
