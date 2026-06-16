@@ -13,7 +13,13 @@ import { devWarn } from '@/shared/utils/devLog';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import * as THREE from 'three';
 import { InteractionState, DEFAULT_CUTSCENE_DURATION } from '@/engine/interaction/interactionMachine';
-import { getNPCCutscene } from '@/data/npcCutscenes';
+import { resolveNpcInteractionSplash, deriveZoneRepeatSkipFlag } from '@/engine/interaction/resolveInteractionSplash';
+import {
+  emitInteractionSplashStart,
+  emitInteractionSplashEnd,
+} from '@/engine/interaction/playInteractionSplash';
+import { findTriggerZoneByNpcId } from '@/data/triggerZones';
+import { getTriggerZones } from '@/data/gameDataLoader';
 import { eventBus } from '@/engine/EventBus';
 import { getNPCGroup } from '@/engine/interaction/npcRegistry';
 import { setPlayerExternalVelocity, clearPlayerExternalVelocity } from '@/engine/PlayerRigidBodyState';
@@ -86,6 +92,7 @@ export function InteractionSystemBridge({
   const targetPlayerRotRef = useRef(0);
   const targetNPCRotRef = useRef(0);
   const cutsceneDurationRef = useRef(DEFAULT_CUTSCENE_DURATION);
+  const activeNpcSplashRef = useRef<ReturnType<typeof resolveNpcInteractionSplash>>(null);
 
   // ── Global interaction timer (for safety timeout) ──
   const globalTimerRef = useRef(0);
@@ -295,12 +302,15 @@ export function InteractionSystemBridge({
         const dist = Math.sqrt(dx * dx + dz * dz);
 
         if (dist <= APPROACH_ARRIVAL_DISTANCE) {
-          // Arrived → transition to Cutscene (cinematic camera intro)
-          const npcRelations = useGameStore.getState().npcRelations;
-          const relation = npcRelations.find((r) => r.npcId === targetNPCIdRef.current);
-          const relationLevel = relation?.value ?? 50;
-          const cutsceneDef = getNPCCutscene(targetNPCIdRef.current ?? '', relationLevel);
-          cutsceneDurationRef.current = cutsceneDef.durationSeconds;
+          const npcId = targetNPCIdRef.current ?? '';
+          const store = useGameStore.getState();
+          const sceneId = store.exploration.currentSceneId;
+          const npcZone = findTriggerZoneByNpcId(getTriggerZones(), npcId, sceneId);
+          const metFlag = npcZone ? deriveZoneRepeatSkipFlag(npcZone) : undefined;
+
+          const splash = resolveNpcInteractionSplash(npcId, {
+            flags: store.playerState.flags,
+          }, { metFlag });
 
           // Calculate angles for later alignment
           const angleToNPC = Math.atan2(dx, dz);
@@ -311,26 +321,26 @@ export function InteractionSystemBridge({
           clearPlayerExternalVelocity();
 
           phaseTimerRef.current = 0;
-          publishInteraction(stateRef, targetNPCIdRef, InteractionState.Cutscene);
+          activeNpcSplashRef.current = splash;
 
-          eventBus.emit('interaction:state_change', {
-            state: InteractionState.Cutscene,
-            npcId: targetNPCIdRef.current ?? undefined,
-          });
+          if (splash) {
+            cutsceneDurationRef.current = splash.durationMs / 1000;
+            publishInteraction(stateRef, targetNPCIdRef, InteractionState.Cutscene);
 
-          // Emit event for camera cutscene
-          eventBus.emit('camera:npc_cutscene_start', {
-            npcId: targetNPCIdRef.current ?? '',
-            waypoints: cutsceneDef.waypoints,
-          });
+            eventBus.emit('interaction:state_change', {
+              state: InteractionState.Cutscene,
+              npcId,
+            });
 
-          // Also emit cutscene overlay for text display
-          if (cutsceneDef.textOverlay) {
-            eventBus.emit('cutscene:overlay', {
-              text: cutsceneDef.textOverlay,
-              subtitle: cutsceneDef.subtitle,
-              accentColor: cutsceneDef.textAccentColor ?? '',
-              durationMs: cutsceneDef.textDurationMs ?? 1500,
+            emitInteractionSplashStart(splash, { anchorIsNpc: true, npcId });
+          } else {
+            cutsceneDurationRef.current = 0;
+            activeNpcSplashRef.current = null;
+            publishInteraction(stateRef, targetNPCIdRef, InteractionState.Align);
+
+            eventBus.emit('interaction:state_change', {
+              state: InteractionState.Align,
+              npcId,
             });
           }
         } else {
@@ -361,10 +371,17 @@ export function InteractionSystemBridge({
         // Wait for cutscene duration
         if (phaseTimerRef.current >= cutsceneDurationRef.current) {
           phaseTimerRef.current = 0;
-          publishInteraction(stateRef, targetNPCIdRef, InteractionState.Align);
+          const splash = activeNpcSplashRef.current;
+          if (splash) {
+            emitInteractionSplashEnd(splash, {
+              npcId: targetNPCIdRef.current ?? undefined,
+            });
+            activeNpcSplashRef.current = null;
+          } else {
+            eventBus.emit('camera:npc_cutscene_end', { npcId: targetNPCIdRef.current ?? '' });
+          }
 
-          // End camera cutscene
-          eventBus.emit('camera:npc_cutscene_end', { npcId: targetNPCIdRef.current ?? '' });
+          publishInteraction(stateRef, targetNPCIdRef, InteractionState.Align);
 
           eventBus.emit('interaction:state_change', {
             state: InteractionState.Align,

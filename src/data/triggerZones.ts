@@ -40,6 +40,10 @@ export interface TriggerZone {
   requiredAct?: number;
   /** Automatically trigger effects on zone enter (for combat encounters, traps, etc.) */
   autoTrigger?: boolean;
+  /** Interaction splash preset id from interactionSplashes.ts — overrides type defaults */
+  splashProfile?: string;
+  /** Player flag that skips splash on repeat (defaults to first interacted_* / examined_* effect) */
+  splashRepeatSkipFlag?: string;
 }
 
 /** Russian labels for each interaction type — used in [E] prompts */
@@ -103,6 +107,7 @@ export const TRIGGER_ZONES: TriggerZone[] = [
     },
     effects: [{ type: 'setFlag', flag: 'interacted_desk', flagValue: true }],
     propModelId: 'ai3dgen_encrypted_scroll',
+    splashProfile: 'encrypted_scroll',
     propOffset: [0.42, 0.1, 0.12],
   },
   {
@@ -808,6 +813,7 @@ export const TRIGGER_ZONES: TriggerZone[] = [
     ],
     linkedDialogueNodeId: 'explore_office_server_hum',
     propModelId: 'ai3dgen_server_fragment',
+    splashProfile: 'server_fragment',
     propOffset: [0, 0.05, 0.2],
   },
 
@@ -1742,6 +1748,7 @@ export const TRIGGER_ZONES: TriggerZone[] = [
       icon: '🗝️',
     },
     propModelId: 'ai3dgen_digital_amulet',
+    splashProfile: 'digital_amulet',
     propOffset: [0, 0.12, 0],
   },
   {
@@ -1786,6 +1793,7 @@ export const TRIGGER_ZONES: TriggerZone[] = [
       icon: '📜',
     },
     propModelId: 'ai3dgen_encrypted_scroll',
+    splashProfile: 'encrypted_scroll',
     propOffset: [0, -0.15, 0.18],
   },
   {
@@ -2107,6 +2115,7 @@ export const TRIGGER_ZONES: TriggerZone[] = [
       { type: 'addXp', value: 25 },
     ],
     propModelId: 'ai3dgen_server_fragment',
+    splashProfile: 'server_fragment',
     propOffset: [0, 0.35, 0.15],
   },
   {

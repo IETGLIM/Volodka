@@ -19,6 +19,7 @@ export const NPC_DEFINITIONS: NPCDefinition[] = [
     defaultRotation: Math.PI * 0.25,
     patrolRadius: 1.5,
     dialogueNodeId: 'albert_greeting',
+    npcSplashProfile: 'albert_cafe',
     description: 'Философ-затворник, постоянный гость кафе «Синяя яма». Видит в коде и стихах одну природу.',
     barkTexts: {
       hostile: 'Уходи. Мне не о чем говорить с тем, кто не видит глубины.',
@@ -46,6 +47,7 @@ export const NPC_DEFINITIONS: NPCDefinition[] = [
     defaultRotation: Math.PI,
     patrolRadius: 2.0,
     dialogueNodeId: 'zarema_greeting',
+    npcSplashProfile: 'zarema_kitchen',
     description: 'Тёплая, заботливая соседка по коммуналке. Единственный человек, который по-настоящему переживает за Володьку.',
     barkTexts: {
       hostile: 'Ты опять... Ладно. Как хочешь.',
@@ -73,6 +75,7 @@ export const NPC_DEFINITIONS: NPCDefinition[] = [
     defaultRotation: 0,
     patrolRadius: 0.5,
     dialogueNodeId: 'cafe_barista_dialogue',
+    npcSplashProfile: 'barista_counter',
     description: 'Бариста кафе «Синяя яма» с кибернетическим протезом руки. Знает больше, чем говорит.',
     barkTexts: {
       hostile: 'Мы закрыты.',

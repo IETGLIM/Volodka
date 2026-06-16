@@ -34,6 +34,8 @@ import {
 } from '@/engine/interaction/interactionEndDedup';
 import { isInteractionLocked } from '@/engine/interaction/interactionSession';
 import { devWarn } from '@/shared/utils/devLog';
+import { resolveZoneInteractionSplash } from '@/engine/interaction/resolveInteractionSplash';
+import { playInteractionSplash } from '@/engine/interaction/playInteractionSplash';
 
 function runInteractionTask(label: string, task: () => Promise<void>): void {
   void task().catch((err) => {
@@ -196,29 +198,43 @@ export class InteractionController {
       return;
     }
 
-    if (zone.effects && zone.effects.length > 0) {
-      this.applyInteractionEffects(zone.effects);
-    }
+    const splash = resolveZoneInteractionSplash(zone, {
+      flags: snapshot.playerState.flags,
+    });
 
-    if (zone.isOneTime) {
-      dispatchGameAction({ type: 'exploration/toggleInteractiveObject', objectId: triggerZoneId });
-    }
+    const executeZoneInteraction = (): void => {
+      if (this.session.isDisposed()) return;
 
-    if (zone.linkedQuestId) {
-      dispatchGameAction({ type: 'quest/activate', questId: zone.linkedQuestId });
-    }
+      if (zone.effects && zone.effects.length > 0) {
+        this.applyInteractionEffects(zone.effects);
+      }
 
-    const hasLinkedContent = !!(zone.linkedDialogueNodeId || zone.linkedStoryNodeId || zone.linkedMinigame);
-    const { ui } = this.deps;
+      if (zone.isOneTime) {
+        dispatchGameAction({ type: 'exploration/toggleInteractiveObject', objectId: triggerZoneId });
+      }
 
-    if (zone.examineData) {
-      ui.setExamineData(zone.examineData);
-      ui.setExamineOpen(true);
-      ui.setExamineHasLinkedContent(hasLinkedContent);
-      audioEngine.playStinger('discovery');
-      this.deps.setPendingTriggerZone(hasLinkedContent ? zone : null);
+      if (zone.linkedQuestId) {
+        dispatchGameAction({ type: 'quest/activate', questId: zone.linkedQuestId });
+      }
+
+      const hasLinkedContent = !!(zone.linkedDialogueNodeId || zone.linkedStoryNodeId || zone.linkedMinigame);
+      const { ui } = this.deps;
+
+      if (zone.examineData) {
+        ui.setExamineData(zone.examineData);
+        ui.setExamineOpen(true);
+        ui.setExamineHasLinkedContent(hasLinkedContent);
+        audioEngine.playStinger('discovery');
+        this.deps.setPendingTriggerZone(hasLinkedContent ? zone : null);
+      } else {
+        runInteractionTask('triggerLinkedContent', () => triggerLinkedContent(zone));
+      }
+    };
+
+    if (splash) {
+      playInteractionSplash(splash, executeZoneInteraction, this.session);
     } else {
-      runInteractionTask('triggerLinkedContent', () => triggerLinkedContent(zone));
+      executeZoneInteraction();
     }
   }
 

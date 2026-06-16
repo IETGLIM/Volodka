@@ -1,4 +1,15 @@
 # Changelog — ВОЛОДЬКА RPG
+## v4.2.26 — 17 июня 2026
+
+### 3D заставки при взаимодействии (InteractionSplash)
+- **Система InteractionSplash**: короткий кинематографический кадр (0.8–2.5 с) перед диалогом / осмотром — камера подъезжает к объекту или NPC, тонкие letterbox-полосы, затем UI.
+- **Каталог** `interactionSplashes.ts`: пресеты `npc_orbit`, `prop_push_in`, `examine_close_up`, шаблоны Альберта, Заремы, бариста, серверных фрагментов и свитков.
+- **Проп-зоны (5)**: `room_desk`, `office_server_room`, `factory_vault_neutral_fragment`, `library_poetry_stash`, `basement_server_rack` — `splashProfile` на trigger zone.
+- **NPC (3)**: albert, zarema, cafe_barista — `npcSplashProfile` в npcDefinitions + каталог.
+- **Пропуск**: reduced motion, пресет «Низкое», повторное взаимодействие (`interacted_*` / `met_*`).
+- **Камера**: события `camera:interaction_splash_start/end`, переиспользование cutscene controller и CutsceneOverlay.
+- **Тесты**: `resolveInteractionSplash.test.ts` — резолв профиля и условия пропуска.
+
 ## v4.2.25 — 17 июня 2026
 
 ### Prod smoke — Quaternius NPC scale, grounding, scene coverage (medium+)

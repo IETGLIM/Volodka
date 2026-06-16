@@ -58,5 +58,7 @@ export interface NPCDefinition {
   readonly linkedPOIs?: readonly string[];
   /** SfxEngine profile id — `sounds/npc/{soundProfile}_*.ogg` */
   readonly soundProfile?: string;
+  /** Interaction splash preset id from interactionSplashes.ts */
+  readonly npcSplashProfile?: string;
   readonly appearance?: NPCAppearance;
 }
