@@ -9,6 +9,7 @@ import { resolveLocomotionClipState } from '@/engine/player/playerLocomotionPres
 import {
   findPlayerAnimationClip,
   pickPlayerClipAction,
+  pickSafeIdleClipAction,
   PLAYER_IDLE_CLIP_NAMES,
   PLAYER_RUN_CLIP_NAMES,
   PLAYER_WALK_CLIP_NAMES,
@@ -73,7 +74,8 @@ function CesiumPlayerModelInner({ modelScale, currentAnimRef, rotationRef }: Pro
     const pickAction = (names: readonly string[]): THREE.AnimationAction | null =>
       pickPlayerClipAction(mixamoActions, names);
 
-    const idleAction = pickAction(PLAYER_IDLE_CLIP_NAMES);
+    const idleAction =
+      pickAction(PLAYER_IDLE_CLIP_NAMES) ?? pickSafeIdleClipAction(mixamoActions);
 
     const walkClip = findPlayerAnimationClip(
       gltf.animations,

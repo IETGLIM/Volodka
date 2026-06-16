@@ -85,6 +85,8 @@ export function runLockedPlayerMovement(deps: PlayerMovementDeps): void {
 
   if (currentMode === 'combat') {
     deps.currentAnimRef.current = 'combat';
+  } else {
+    deps.currentAnimRef.current = 'idle';
   }
 
   const hSpeed = Math.sqrt(vel.x * vel.x + vel.z * vel.z);
