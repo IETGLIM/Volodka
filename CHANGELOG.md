@@ -1,4 +1,15 @@
 # Changelog — ВОЛОДЬКА RPG
+## v4.2.25 — 17 июня 2026
+
+### Prod smoke — Quaternius NPC scale, grounding, scene coverage (medium+)
+- **Skinned bounds**: `measureCharacterGltfBounds` — unions Quaternius modular SkinnedMesh slices after skeleton update; fixes room-scale boots and floating feet on medium/high/ultra.
+- **Runtime**: `GltfNPCModel` + `CesiumPlayerModel` use character bounds for `fitCharacterGltf` foot pivot (y = 0).
+- **Catalog**: `quaterniusNpcSlots.ts` — 20 rig slots (hero + 19 story/CHK NPCs).
+- **Tests**: `gltfScale.quaternius` (Albert GLB ~1.75 m, feet on ground), `npcQuaterniusProdSmoke` (19 shipped GLBs, schedule coverage, medium+ GLB gate).
+
+### Golden path onboarding hints
+- **GOLDEN_PATH_BRANCH_HINTS**: добавлены подсказки для 7 узлов позвоночника без `guidanceHint` — `go_to_cafe`, `street_bench`, `cafe_explore_mode`, `cafe_barista`, `office_explore_mode`, `park_explore_mode`, `act3_maria_truth_accepted`.
+
 ## v4.2.24 — 16 июня 2026
 
 ### NPC animation polish (Quaternius embedded clips + dialogue talk)

@@ -19,7 +19,7 @@ import {
 } from '@/engine/player/playerClipResolution';
 import { ProceduralPlayerModelAdaptive } from './ProceduralPlayerModel';
 import type { ProceduralPlayerModelProps } from './useProceduralPlayerAnimation';
-import { fitCharacterGltf, measureGltfBounds } from '@/engine/assets/gltfScale';
+import { fitCharacterGltf, measureCharacterGltfBounds } from '@/engine/assets/gltfScale';
 
 const PLAYER_MODEL_URL = getPlayerVolodkaModelUrl();
 useGLTF.preload(PLAYER_MODEL_URL);
@@ -135,19 +135,10 @@ function CesiumPlayerModelInner({ modelScale, currentAnimRef, rotationRef }: Pro
   }, [mixer, gltf.animations, mixamoActions]);
 
   useEffect(() => {
-    const inner = fitRef.current;
-    if (!inner) return;
-    inner.rotation.set(0, 0, 0);
-    inner.scale.set(1, 1, 1);
-    inner.position.set(0, 0, 0);
-
-    const bounds = measureGltfBounds(scene);
+    const bounds = measureCharacterGltfBounds(scene);
     const { scale, rotX, footY } = fitCharacterGltf(bounds, {
       scaleMultiplier: modelScale,
     });
-
-    inner.rotation.x = rotX;
-    inner.scale.setScalar(scale);
     setFit({ scale, rotX, y: footY });
   }, [scene, modelScale]);
 

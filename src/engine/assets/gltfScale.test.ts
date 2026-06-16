@@ -8,6 +8,7 @@ import {
   computePropUniformScale,
   fitCharacterGltf,
   fitPropGltf,
+  measureCharacterGltfBounds,
   measureGltfBounds,
 } from './gltfScale';
 
@@ -73,6 +74,20 @@ describe('gltfScale', () => {
   it('foot pivot keeps mesh base on ground', () => {
     const bounds = measureGltfBounds(boxMesh(1, 2, 1, 0.5));
     expect(computeFootPivotY(bounds, 2)).toBeCloseTo(-1, 4);
+  });
+
+  it('measureCharacterGltfBounds keeps foot pivot on ground for stacked meshes', () => {
+    const group = new THREE.Group();
+    const boot = boxMesh(0.38, 0.19, 0.28, 0);
+    group.add(boot);
+    const torso = boxMesh(0.5, 0.9, 0.35, 0.95);
+    group.add(torso);
+
+    const characterBounds = measureCharacterGltfBounds(group);
+    const fit = fitCharacterGltf(characterBounds);
+
+    expect(characterBounds.size.y).toBeGreaterThan(1);
+    expect(characterBounds.min.y * fit.scale + fit.footY).toBeCloseTo(0, 2);
   });
 
   it('scales interior backdrop to scene footprint', () => {

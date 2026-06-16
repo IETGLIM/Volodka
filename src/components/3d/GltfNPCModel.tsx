@@ -13,7 +13,7 @@ import { useMixamoAnimationClips } from '@/hooks/useMixamoAnimationClips';
 import { InteractionState } from '@/engine/interaction/interactionMachine';
 import { ProceduralNPCModel } from '@/components/3d/ProceduralNPCModels';
 import { devWarn } from '@/shared/utils/devLog';
-import { fitCharacterGltf, measureGltfBounds } from '@/engine/assets/gltfScale';
+import { fitCharacterGltf, measureCharacterGltfBounds } from '@/engine/assets/gltfScale';
 
 const extendLoader = extendGltfLoader as unknown as NonNullable<Parameters<typeof useGLTF>[3]>;
 
@@ -76,20 +76,11 @@ function GltfNPCModelInner({
   });
 
   useEffect(() => {
-    const inner = fitRef.current;
-    if (!inner) return;
-    inner.rotation.set(0, 0, 0);
-    inner.scale.set(1, 1, 1);
-    inner.position.set(0, 0, 0);
-
-    const bounds = measureGltfBounds(scene);
+    const bounds = measureCharacterGltfBounds(scene);
     const { scale, rotX, footY } = fitCharacterGltf(bounds, {
       heightFactor: targetHeightFactor,
       scaleMultiplier: modelScale,
     });
-
-    inner.rotation.x = rotX;
-    inner.scale.setScalar(scale);
     setFit({ scale, rotX, y: footY });
   }, [scene, modelScale, targetHeightFactor]);
 

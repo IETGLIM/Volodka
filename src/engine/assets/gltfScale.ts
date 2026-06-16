@@ -47,6 +47,44 @@ export function measureGltfBounds(obj: THREE.Object3D): GltfBounds {
   return { size, min: box.min.clone(), max: box.max.clone() };
 }
 
+const _meshBoundsScratch = new THREE.Box3();
+
+/**
+ * Humanoid GLB bounds — unions all SkinnedMesh slices after skeleton update.
+ * Quaternius modular rigs export many skinned parts; `setFromObject` on the root
+ * can measure a single slice (boots ≈0.19 m) and break scale/foot pivot on medium+.
+ */
+export function measureCharacterGltfBounds(obj: THREE.Object3D): GltfBounds {
+  obj.updateWorldMatrix(true, true);
+  const union = new THREE.Box3();
+  let hasUnion = false;
+
+  obj.traverse((node) => {
+    if (node instanceof THREE.SkinnedMesh) {
+      node.computeBoundingBox();
+      if (!node.boundingBox) return;
+      _meshBoundsScratch.copy(node.boundingBox).applyMatrix4(node.matrixWorld);
+    } else if (node instanceof THREE.Mesh) {
+      _meshBoundsScratch.setFromObject(node);
+    } else {
+      return;
+    }
+
+    if (_meshBoundsScratch.isEmpty()) return;
+    if (hasUnion) union.union(_meshBoundsScratch);
+    else {
+      union.copy(_meshBoundsScratch);
+      hasUnion = true;
+    }
+  });
+
+  if (!hasUnion) return measureGltfBounds(obj);
+
+  const size = new THREE.Vector3();
+  union.getSize(size);
+  return { size, min: union.min.clone(), max: union.max.clone() };
+}
+
 function resolveCharacterHeightDim(size: THREE.Vector3): { heightDim: number; rotX: number } {
   let rotX = 0;
   let heightDim = size.y;
