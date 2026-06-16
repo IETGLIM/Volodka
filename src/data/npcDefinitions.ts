@@ -109,6 +109,7 @@ export const NPC_DEFINITIONS: NPCDefinition[] = [
       [2.0, 0, -0.5],
     ],
     dialogueNodeId: 'office_alexander_dialogue',
+    npcSplashProfile: 'npc_office_alexander',
     description: 'Лидер IT-гильдии. Спокоен, профессионален, но скрывает усталость. Обратился к Володьке из-за инцидента #4729.',
     barkTexts: {
       hostile: 'Нам не о чем говорить.',
@@ -136,6 +137,7 @@ export const NPC_DEFINITIONS: NPCDefinition[] = [
     defaultRotation: Math.PI * 1.25,
     patrolRadius: 0.8,
     dialogueNodeId: 'office_colleague_dialogue',
+    npcSplashProfile: 'npc_office_colleague',
     description: 'Нервный коллега в офисе гильдии. Знает о связи между кодом и стихами, но боится говорить.',
     barkTexts: {
       hostile: 'Я тебя не знаю.',
@@ -169,6 +171,7 @@ export const NPC_DEFINITIONS: NPCDefinition[] = [
       [-2.0, 0, 0.5],
     ],
     dialogueNodeId: 'maria_dialogue',
+    npcSplashProfile: 'npc_maria',
     description: 'Таинственная незнакомка, появляющаяся в тени города. Знает о коде и стихах больше, чем кто-либо. Её прошлое — загадка, а мотивы — неясны.',
     barkTexts: {
       hostile: 'Уходи.',
@@ -202,6 +205,7 @@ export const NPC_DEFINITIONS: NPCDefinition[] = [
       [-1.5, 0, 0.0],
     ],
     dialogueNodeId: 'dmitry_greeting',
+    npcSplashProfile: 'npc_office_dmitry',
     description: 'Старший разработчик IT-гильдии. Много знает о старых архивах, но предпочитает молчать. Ментор, который мог бы стать другом.',
     barkTexts: {
       hostile: 'Тебе здесь нечего делать. Уходи.',
@@ -235,6 +239,7 @@ export const NPC_DEFINITIONS: NPCDefinition[] = [
       [-5.0, 0, 0.0],
     ],
     dialogueNodeId: 'viktor_greeting',
+    npcSplashProfile: 'npc_viktor',
     description: 'Старый хакер, переживший Великий Сбой. Знает тайны Сети, которые никому не рассказывает. Наставник, потерявший всё — кроме памяти.',
     barkTexts: {
       hostile: 'Я уже видел таких, как ты. Все сгорели.',
@@ -268,6 +273,7 @@ export const NPC_DEFINITIONS: NPCDefinition[] = [
       [4.0, 0, -5.0],
     ],
     dialogueNodeId: 'kira_greeting',
+    npcSplashProfile: 'npc_kira',
     description: 'Молодая информаторка с улиц. Торгует данными, слухами и секретами. Знает всё обо всех — за правильную цену.',
     barkTexts: {
       hostile: 'Информация не для тебя. Потеряешь — не верну.',
@@ -295,6 +301,7 @@ export const NPC_DEFINITIONS: NPCDefinition[] = [
     defaultRotation: 0,
     patrolRadius: 2.0,
     dialogueNodeId: 'boris_greeting',
+    npcSplashProfile: 'npc_boris',
     description: 'Рабочий с заброшенного завода. В тайне пишет стихи, которые никому не показывает. Его руки помнят тяжесть металла, а душа — лёгкость слова.',
     barkTexts: {
       hostile: 'Не мешай работать. Тут и так всё разваливается.',
@@ -328,6 +335,7 @@ export const NPC_DEFINITIONS: NPCDefinition[] = [
       [2.0, 0, 2.5],
     ],
     dialogueNodeId: 'tamara_greeting',
+    npcSplashProfile: 'npc_tamara',
     description: 'Библиотекарь, хранящая запрещённые тексты в цифровом и бумажном виде. Верит, что слова сильнее любого кода. Последний оплот докиберпанковой культуры.',
     barkTexts: {
       hostile: 'Эти книги не для тебя. Ты не готов.',
@@ -355,6 +363,7 @@ export const NPC_DEFINITIONS: NPCDefinition[] = [
     defaultRotation: Math.PI * 0.25,
     patrolRadius: 3.0,
     dialogueNodeId: 'grisha_greeting',
+    npcSplashProfile: 'npc_grisha',
     description: 'Обитатель крыш. Смотрит на город сверху и видит то, что другие не замечают. Знает каждый неоновый луч и каждую тень.',
     barkTexts: {
       hostile: 'С крыши видно всё. Даже то, что ты пытаешься скрыть.',

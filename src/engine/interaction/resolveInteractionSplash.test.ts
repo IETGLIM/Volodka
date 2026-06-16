@@ -1,7 +1,11 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
 import type { TriggerZone } from '@/data/triggerZones';
+import { ALL_NPC_IDS } from '@/data/allNpcDefinitions';
+import { TRIGGER_ZONES } from '@/data/triggerZones';
 import {
+  auditInteractionSplashCoverage,
   deriveZoneRepeatSkipFlag,
+  inferZoneInteractionType,
   resolveNpcInteractionSplash,
   resolveSplashProfileIdForInteractionType,
   resolveZoneInteractionSplash,
@@ -122,6 +126,60 @@ describe('resolveInteractionSplash', () => {
 
     it('maps talk to npc orbit preset', () => {
       expect(resolveSplashProfileIdForInteractionType('talk')).toBe('npc_orbit');
+    });
+
+    it('maps open to door hold preset', () => {
+      expect(resolveSplashProfileIdForInteractionType('open')).toBe('door_hold');
+    });
+
+    it('falls back to default preset when type is omitted', () => {
+      expect(resolveSplashProfileIdForInteractionType(undefined)).toBe('examine_close_up');
+    });
+  });
+
+  describe('inferZoneInteractionType', () => {
+    it('infers talk from linkedNpcId', () => {
+      expect(
+        inferZoneInteractionType({
+          ...baseZone(),
+          interactionType: undefined,
+          linkedNpcId: 'zarema',
+        }),
+      ).toBe('talk');
+    });
+
+    it('infers examine from examineData without explicit type', () => {
+      expect(
+        inferZoneInteractionType(
+          baseZone({
+            interactionType: undefined,
+            linkedDialogueNodeId: 'explore_cafe_enter',
+            examineData: { title: 'Стол', text: 'Зашифрованный свиток.' },
+          }),
+        ),
+      ).toBe('examine');
+    });
+  });
+
+  describe('interaction splash coverage inventory', () => {
+    it('wires every interactable trigger zone on first visit', () => {
+      const report = auditInteractionSplashCoverage(TRIGGER_ZONES, ALL_NPC_IDS);
+      expect(report.unwiredZoneIds).toEqual([]);
+      expect(report.wiredZoneCount).toBe(report.interactableZoneCount);
+      expect(report.interactableZoneCount).toBeGreaterThanOrEqual(120);
+    });
+
+    it('wires every registered NPC on first visit', () => {
+      const report = auditInteractionSplashCoverage(TRIGGER_ZONES, ALL_NPC_IDS);
+      expect(report.unwiredNpcIds).toEqual([]);
+      expect(report.wiredNpcCount).toBe(report.npcCount);
+      expect(report.npcCount).toBeGreaterThanOrEqual(34);
+    });
+
+    it('reports combined wired interaction count', () => {
+      const report = auditInteractionSplashCoverage(TRIGGER_ZONES, ALL_NPC_IDS);
+      const totalWired = report.wiredZoneCount + report.wiredNpcCount;
+      expect(totalWired).toBeGreaterThanOrEqual(150);
     });
   });
 });

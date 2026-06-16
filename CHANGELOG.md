@@ -1,4 +1,12 @@
 # Changelog — ВОЛОДЬКА RPG
+## v4.2.27 — 17 июня 2026
+
+### InteractionSplash — полное покрытие E-взаимодействий
+- **Каталог** `interactionSplashes.ts`: пресет `door_hold` для дверей/переходов; `npc_*` шаблоны для всех story/expanded/CHK NPC (34 персонажа); дефолты по `interactionType` (`push`, `default`).
+- **Резолвер** `resolveInteractionSplash.ts`: `inferZoneInteractionType` для зон без явного типа; NPC-профиль для talk-зон с `linkedNpcId`; `auditInteractionSplashCoverage` для инвентаризации.
+- **Данные**: `npcSplashProfile` на всех NPC в npcDefinitions, expandedNPCs, CHK; `interactionType: 'examine'` на `cafe_table_free`.
+- **Тесты**: инвентаризация — каждая interactable trigger zone + каждый NPC резолвят splash на первом визите (medium+ quality, без reduced motion).
+
 ## v4.2.26 — 17 июня 2026
 
 ### 3D заставки при взаимодействии (InteractionSplash)

@@ -82,6 +82,30 @@ export const SPLASH_EXAMINE_CLOSE_UP: InteractionSplashPreset = {
   ],
 };
 
+/** Door / exit hold — brief framing before scene transition */
+export const SPLASH_DOOR_HOLD: InteractionSplashPreset = {
+  id: 'door_hold',
+  kind: 'door_hold',
+  durationMs: 1100,
+  letterboxStyle: 'thin',
+  waypoints: [
+    { position: [0, 1.8, 2.5], lookAt: [0, 1.0, 0], fov: 50, duration: 0 },
+    {
+      position: [0, 1.4, 1.6],
+      lookAt: [0, 1.0, 0],
+      fov: 42,
+      duration: 0.6,
+      controlPoint: [0, 1.55, 2.0],
+    },
+    {
+      position: [0, 1.25, 1.2],
+      lookAt: [0, 1.0, 0],
+      fov: 38,
+      duration: 0.5,
+    },
+  ],
+};
+
 /** NPC orbit — approach face from slight angle */
 export const SPLASH_NPC_ORBIT: InteractionSplashPreset = {
   id: 'npc_orbit',
@@ -107,10 +131,66 @@ export const SPLASH_NPC_ORBIT: InteractionSplashPreset = {
   ],
 };
 
+function createNpcSplashPreset(
+  presetId: string,
+  textOverlay: string,
+  subtitle?: string,
+  textAccentColor = '#38bdf8',
+): InteractionSplashPreset {
+  return {
+    id: presetId,
+    kind: 'npc_orbit',
+    durationMs: 1700,
+    letterboxStyle: 'thin',
+    textOverlay,
+    subtitle,
+    textAccentColor,
+    waypoints: SPLASH_NPC_ORBIT.waypoints,
+  };
+}
+
+/** [npcId, overlay title, subtitle?, accent?] — builds npc_* presets + NPC_SPLASH_PROFILES */
+const NPC_SPLASH_ENTRIES: ReadonlyArray<
+  readonly [npcId: string, title: string, subtitle?: string, accent?: string]
+> = [
+  ['office_alexander', 'Александр', 'Лидер IT-гильдии', '#cc2020'],
+  ['office_colleague', 'Коллега', 'Офис гильдии', '#8a8a98'],
+  ['maria', 'Виктория', 'Тень города', '#40d0e0'],
+  ['office_dmitry', 'Дмитрий', 'Старший разработчик', '#6a8a30'],
+  ['viktor', 'Виктор', 'Старый хакер', '#5a5aff'],
+  ['kira', 'Кира', 'Информаторка', '#ff4080'],
+  ['boris', 'Борис', 'Поэт завода', '#8a6a30'],
+  ['tamara', 'Тамара', 'Библиотекарь', '#c06040'],
+  ['grisha', 'Гриша', 'Обитатель крыш', '#4a7aff'],
+  ['solnysh', 'Солныш', 'Лучшая подруга', '#ffb8d0'],
+  ['lyonya', 'Лёня', 'Обжарщик кофе', '#d4a060'],
+  ['sergey', 'Сергей', 'Сисадмин ночной смены', '#40a0c0'],
+  ['lena', 'Лена', 'Тень Сети', '#d040d0'],
+  ['oleg', 'Олег', 'Охранник гильдии', '#a0a0a0'],
+  ['kate', 'Катя', 'Библиотекарь', '#60c060'],
+  ['maxim', 'Максим', 'Сопротивление', '#c06040'],
+  ['zeka', 'Жека', 'Заводской хакер', '#808070'],
+  ['anya', 'Аня', 'Хакер сопротивления', '#5090d0'],
+  ['fisherman_trofim', 'Трофим', 'Сторож пирса', '#88aa77'],
+  ['baba_zina', 'Баба Зина', 'Хранительница «Зари-М»', '#aacc88'],
+  ['street_poet', 'Уличный поэт', 'Голос площади', '#aabbcc'],
+  ['marat_echo', 'Марат (эхо)', 'Цифровой след', '#00ffaa'],
+  ['guild_defector', 'Перебежчик', 'Бывший инженер', '#6688aa'],
+  ['chk_ru', 'Ру', 'Архитектор ЧК', '#cc2244'],
+  ['chk_based', 'Басед', 'Хранитель портвейна', '#aa6633'],
+  ['chk_smert', 'Смерть', 'Бухгалтер-философ', '#6677aa'],
+  ['chk_stalker', 'Сталкер', 'Проводник леса', '#445533'],
+  ['chk_elis', 'Элис', 'Бард ЧК', '#bb7799'],
+  ['chk_guest_devops', 'Гость (DevOps)', 'ТОЛПА', '#3399bb'],
+  ['chk_guest_analyst', 'Гость (Аналитик)', 'ТОЛПА', '#8866bb'],
+  ['chk_ritka', 'Ритка', 'Бард пирса', '#ee7799'],
+] as const;
+
 export const SPLASH_PRESETS: Record<string, InteractionSplashPreset> = {
   prop_push_in: SPLASH_PROP_PUSH_IN,
   examine_close_up: SPLASH_EXAMINE_CLOSE_UP,
   npc_orbit: SPLASH_NPC_ORBIT,
+  door_hold: SPLASH_DOOR_HOLD,
 
   albert_cafe: {
     id: 'albert_cafe',
@@ -263,14 +343,16 @@ export const SPLASH_PRESETS: Record<string, InteractionSplashPreset> = {
 };
 
 /** Default preset by interaction verb when no explicit catalog entry exists */
-export const SPLASH_BY_INTERACTION_TYPE: Partial<Record<InteractionType, string>> = {
+export const SPLASH_BY_INTERACTION_TYPE: Record<InteractionType, string> = {
   examine: 'examine_close_up',
   read: 'encrypted_scroll',
   talk: 'npc_orbit',
-  open: 'examine_close_up',
+  open: 'door_hold',
   take: 'prop_push_in',
   hack: 'prop_push_in',
   use: 'examine_close_up',
+  push: 'prop_push_in',
+  default: 'examine_close_up',
 };
 
 /** Per trigger-zone overrides (zones with propModelId and key story beats) */
@@ -282,13 +364,23 @@ export const ZONE_SPLASH_PROFILES: Record<string, string> = {
   basement_server_rack: 'server_fragment',
 };
 
-/** Per-NPC splash templates */
+/** Per-NPC splash templates — custom beats + generated npc_* presets */
 export const NPC_SPLASH_PROFILES: Record<string, string> = {
   albert: 'albert_cafe',
   zarema: 'zarema_kitchen',
   cafe_barista: 'barista_counter',
 };
 
+for (const [npcId, title, subtitle, accent] of NPC_SPLASH_ENTRIES) {
+  const presetId = `npc_${npcId}`;
+  SPLASH_PRESETS[presetId] = createNpcSplashPreset(presetId, title, subtitle, accent);
+  NPC_SPLASH_PROFILES[npcId] = presetId;
+}
+
 export function getSplashPreset(profileId: string): InteractionSplashPreset | undefined {
   return SPLASH_PRESETS[profileId];
+}
+
+export function getNpcSplashProfileId(npcId: string): string | undefined {
+  return NPC_SPLASH_PROFILES[npcId];
 }

@@ -27,6 +27,7 @@ export const CHK_NPCS: NPCDefinition[] = [
     defaultRotation: Math.PI / 4,
     patrolRadius: 0.8,
     dialogueNodeId: 'chk_ru_greeting',
+    npcSplashProfile: 'npc_chk_ru',
     description: 'Lead-архitect по будням, организатор ЧК по ночам. Любит тяжёлый металл и честный разговор у костра.',
     barkTexts: {
       hostile: ['Ты не из наших. Уходи, пока лес не стал свидетелем.'],
@@ -59,6 +60,7 @@ export const CHK_NPCS: NPCDefinition[] = [
     defaultRotation: -Math.PI / 3,
     patrolRadius: 0.5,
     dialogueNodeId: 'chk_based_greeting',
+    npcSplashProfile: 'npc_chk_based',
     description: 'Системный администратор. Хранитель портвейна и морали ЧК.',
     barkTexts: {
       hostile: ['Портвейн не для посторонних.'],
@@ -91,6 +93,7 @@ export const CHK_NPCS: NPCDefinition[] = [
     defaultRotation: Math.PI,
     patrolRadius: 0.4,
     dialogueNodeId: 'chk_smert_greeting',
+    npcSplashProfile: 'npc_chk_smert',
     description: 'Бухгалтер-философ. Обсуждает квантовую физику так, будто это sprint review.',
     barkTexts: {
       hostile: ['Квантовая суперпозия: ты здесь и не здесь. Выбери «не здесь».'],
@@ -129,6 +132,7 @@ export const CHK_NPCS: NPCDefinition[] = [
       [-2.5, 0, -2.0],
     ],
     dialogueNodeId: 'chk_stalker_greeting',
+    npcSplashProfile: 'npc_chk_stalker',
     description: 'Специалист по безопасности. Знает каждую тропу к поляне на Зорге.',
     barkTexts: {
       hostile: ['Тропа закрыта. Я уже видел твои логи.'],
@@ -161,6 +165,7 @@ export const CHK_NPCS: NPCDefinition[] = [
     defaultRotation: 0.2,
     patrolRadius: 0.6,
     dialogueNodeId: 'chk_elis_greeting',
+    npcSplashProfile: 'npc_chk_elis',
     description: 'QA-инженер и бард ЧК. Песни под гитару — после code review.',
     barkTexts: {
       hostile: ['Песня не для чужих ушей.'],
@@ -193,6 +198,7 @@ export const CHK_NPCS: NPCDefinition[] = [
     defaultRotation: -0.5,
     patrolRadius: 0.5,
     dialogueNodeId: 'chk_guest_devops_greeting',
+    npcSplashProfile: 'npc_chk_guest_devops',
     description: 'Периодический гость ЧК — инженер из соседнего деплоя.',
     barkTexts: {
       hostile: ['Я только на одну песню заехал. Не мешай.'],
@@ -224,6 +230,7 @@ export const CHK_NPCS: NPCDefinition[] = [
     defaultRotation: -0.5,
     patrolRadius: 0.5,
     dialogueNodeId: 'chk_guest_analyst_greeting',
+    npcSplashProfile: 'npc_chk_guest_analyst',
     description: 'Периодический гость ЧК — аналитик с теориями о жизни и метриках.',
     barkTexts: {
       hostile: ['Мне завтра на стендап. Я ухожу.'],
@@ -255,6 +262,7 @@ export const CHK_NPCS: NPCDefinition[] = [
     defaultRotation: Math.PI / 6,
     patrolRadius: 0.5,
     dialogueNodeId: 'chk_ritka_greeting',
+    npcSplashProfile: 'npc_chk_ritka',
     description: 'Джуниор-тестировщица днём, бард пирса №3 ночью. Младший состав ЧК: когда лес на Зорге шумный, ТОЛПА слушает её у воды.',
     barkTexts: {
       hostile: ['Песня не для тебя. И пирс тоже.'],

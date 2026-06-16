@@ -106,6 +106,7 @@ export const EXPANDED_NPCS: NPCDefinition[] = [
       [0, 0, 1.5],
     ],
     dialogueNodeId: 'vera_greeting',
+    npcSplashProfile: 'npc_solnysh',
     scheduleId: 'schedule_solnysh',
     description: 'Алина — настоящее имя; Солныш — прозвище с детства, которым её зовёт Володька. Тридцать три года, блондинка с голубыми глазами. Лучшая подруга с детства, одноклассница из гимназии, дочь учительницы. Дизайнер и художник. Жена Лёни.',
     barkTexts: {
@@ -139,6 +140,7 @@ export const EXPANDED_NPCS: NPCDefinition[] = [
       [-2.0, 0, -1.5],
     ],
     dialogueNodeId: 'lyonya_greeting',
+    npcSplashProfile: 'npc_lyonya',
     description: 'Леонид — настоящее имя; Лёня — так его зовут дома. Обжарщик кофе и бариста, муж Алины. Спокойный, надёжный — рядом с ней уже много лет.',
     barkTexts: {
       hostile: 'Не время для разговоров.',
@@ -171,6 +173,7 @@ export const EXPANDED_NPCS: NPCDefinition[] = [
       [2.5, 0, -1.0],
     ],
     dialogueNodeId: 'sergey_greeting',
+    npcSplashProfile: 'npc_sergey',
     description: 'Сисадмин ночного смены. Молчаливый, но надёжный. Знает каждый кабель в серверной.',
     barkTexts: {
       hostile: 'Не мешай работе.',
@@ -203,6 +206,7 @@ export const EXPANDED_NPCS: NPCDefinition[] = [
       [0, 0, 3.5],
     ],
     dialogueNodeId: 'lena_greeting',
+    npcSplashProfile: 'npc_lena',
     description: 'Хакер из Сети. Никто не знает её настоящего имени. Она — тень в цифровом мире.',
     barkTexts: {
       hostile: 'Ты не тот, за кого себя выдаёшь.',
@@ -235,6 +239,7 @@ export const EXPANDED_NPCS: NPCDefinition[] = [
       [4.0, 0, 0],
     ],
     dialogueNodeId: 'oleg_greeting',
+    npcSplashProfile: 'npc_oleg',
     description: 'Охранник гильдии. Бывший военный. Выполняет приказы, но сомневается.',
     barkTexts: {
       hostile: 'Стой. Доступ запрещён.',
@@ -267,6 +272,7 @@ export const EXPANDED_NPCS: NPCDefinition[] = [
       [-2.0, 0, -2.0],
     ],
     dialogueNodeId: 'kate_greeting',
+    npcSplashProfile: 'npc_kate',
     description: 'Библиотекарь. Хранительница запрещённых книг. Тихая, но опасная.',
     barkTexts: {
       hostile: 'Эта секция закрыта.',
@@ -299,6 +305,7 @@ export const EXPANDED_NPCS: NPCDefinition[] = [
       [-2.0, 0, -1.5],
     ],
     dialogueNodeId: 'maxim_greeting',
+    npcSplashProfile: 'npc_maxim',
     description: 'Лидер подпольного сопротивления. Бывший рабочий завода с боевыми имплантами.',
     barkTexts: {
       hostile: 'Не время для разговоров.',
@@ -331,6 +338,7 @@ export const EXPANDED_NPCS: NPCDefinition[] = [
       [1.0, 0, -1.0],
     ],
     dialogueNodeId: 'zeka_greeting',
+    npcSplashProfile: 'npc_zeka',
     description: 'Старый рабочий и хакер. Знал Александра до Краха. Хранит секреты «Надзора».',
     barkTexts: {
       hostile: 'Не подходи. Я не доверяю.',
@@ -363,6 +371,7 @@ export const EXPANDED_NPCS: NPCDefinition[] = [
       [0.5, 0, 2.0],
     ],
     dialogueNodeId: 'anya_greeting',
+    npcSplashProfile: 'npc_anya',
     description: 'Хакер сопротивления. Взламывает камеры и координирует связь во время операций.',
     barkTexts: {
       hostile: 'Сеть под наблюдением. Молчи.',
@@ -390,6 +399,7 @@ export const EXPANDED_NPCS: NPCDefinition[] = [
     defaultRotation: Math.PI,
     patrolRadius: 0.6,
     dialogueNodeId: 'trofim_greeting',
+    npcSplashProfile: 'npc_fisherman_trofim',
     description: 'Старик-рыбак на пирсе №3. Тридцать лет был сторожем завода «Хром-М» и до сих пор слышит гул под полом — даже сквозь воду.',
     barkTexts: {
       hostile: 'Уйди с пирса. Рыбу пугаешь.',
@@ -416,6 +426,7 @@ export const EXPANDED_NPCS: NPCDefinition[] = [
     defaultPosition: [-2.0, 0, -4.0],
     patrolRadius: 0.4,
     dialogueNodeId: 'baba_zina_greeting',
+    npcSplashProfile: 'npc_baba_zina',
     description: 'Восьмидесятилетняя паяльщица завода «Хром-М». Ежедневно спускается в подвал к «Заре-М» и говорит, что машина отвечает стихами.',
     barkTexts: {
       hostile: 'Машина не для любопытных. Уходи.',
@@ -441,6 +452,7 @@ export const EXPANDED_NPCS: NPCDefinition[] = [
     defaultPosition: [2.0, 0, 0],
     patrolRadius: 1.0,
     dialogueNodeId: 'street_poet_greeting',
+    npcSplashProfile: 'npc_street_poet',
     description: 'Читает на площади то, что гильдия пометила как шум. Голос тихий, но дроны его почему-то не слышат.',
     barkTexts: {
       hostile: 'Не смотри на меня. Смотри на строки.',
@@ -466,6 +478,7 @@ export const EXPANDED_NPCS: NPCDefinition[] = [
     defaultPosition: [0, 0, -2],
     patrolRadius: 0,
     dialogueNodeId: 'marat_echo_greeting',
+    npcSplashProfile: 'npc_marat_echo',
     description: 'Цифровой след первого поэта-прошивщика. Говорит через терминалы без питания сети.',
     barkTexts: {
       hostile: '[помехи]',
@@ -491,6 +504,7 @@ export const EXPANDED_NPCS: NPCDefinition[] = [
     defaultPosition: [-1.0, 0, 1.0],
     patrolRadius: 0.5,
     dialogueNodeId: 'guild_defector_greeting',
+    npcSplashProfile: 'npc_guild_defector',
     description: 'Бывший инженер серверной гильдии. Помнит расписание дронов наизусть.',
     barkTexts: {
       hostile: 'Не подходи. Я ещё не уверен, кто ты.',

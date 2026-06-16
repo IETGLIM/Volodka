@@ -580,6 +580,7 @@ export const TRIGGER_ZONES: TriggerZone[] = [
     size: [1.5, 1.0, 1.5],
     enterToast: 'Свободный столик у стены.',
     linkedDialogueNodeId: 'explore_cafe_enter',
+    interactionType: 'examine',
     examineData: {
       title: 'Свободный столик',
       description: 'Пустой столик у стены. На столе — следы от кружки и меню.',

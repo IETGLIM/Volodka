@@ -1,7 +1,7 @@
 import type { TriggerZone } from '@/data/triggerZones';
 import {
   getSplashPreset,
-  NPC_SPLASH_PROFILES,
+  getNpcSplashProfileId,
   SPLASH_BY_INTERACTION_TYPE,
   ZONE_SPLASH_PROFILES,
   type InteractionSplashPreset,
@@ -69,14 +69,74 @@ export function deriveNpcRepeatSkipFlag(npcId: string): string {
   return `splash_seen_npc_${npcId}`;
 }
 
+/** Whether a trigger zone supports player [E] interaction (not enter-only toasts). */
+export function isInteractableTriggerZone(zone: TriggerZone): boolean {
+  return !!(
+    zone.interactionType
+    || zone.linkedDialogueNodeId
+    || zone.linkedStoryNodeId
+    || zone.linkedMinigame
+    || zone.linkedNpcId
+  );
+}
+
+/** Infer interaction verb when zone data omits interactionType. */
+export function inferZoneInteractionType(zone: TriggerZone): InteractionType {
+  if (zone.interactionType) return zone.interactionType;
+  if (zone.linkedNpcId) return 'talk';
+  if (zone.linkedMinigame) return 'hack';
+
+  const label = zone.interactionLabel?.toLowerCase() ?? '';
+  if (label.includes('поговор') || label.includes('спрос') || label.includes('встрет')) {
+    return 'talk';
+  }
+  if (label.includes('прочит') || label.includes('скач')) return 'read';
+  if (label.includes('взять') || label.includes('дост') || label.includes('забра')) return 'take';
+  if (label.includes('взлом') || label.includes('почин') || label.includes('диагност')) return 'hack';
+  if (
+    label.includes('откры')
+    || label.includes('спуст')
+    || label.includes('заглян')
+    || label.includes('войти')
+  ) {
+    return 'open';
+  }
+  if (
+    label.includes('использ')
+    || label.includes('настро')
+    || label.includes('погре')
+    || label.includes('присест')
+  ) {
+    return 'use';
+  }
+  if (
+    label.includes('осмотр')
+    || label.includes('прислуш')
+    || label.includes('всмотр')
+    || label.includes('обойти')
+    || label.includes('слушать')
+  ) {
+    return 'examine';
+  }
+
+  if (zone.examineData) return 'examine';
+  if (zone.linkedStoryNodeId) return 'open';
+  if (zone.linkedDialogueNodeId) return 'talk';
+  return 'default';
+}
+
 function resolveProfileIdForZone(zone: TriggerZone): string | undefined {
   if (zone.splashProfile) return zone.splashProfile;
   if (ZONE_SPLASH_PROFILES[zone.id]) return ZONE_SPLASH_PROFILES[zone.id];
   if (zone.propModelId) return 'prop_push_in';
-  const byType = zone.interactionType
-    ? SPLASH_BY_INTERACTION_TYPE[zone.interactionType]
-    : undefined;
-  return byType;
+  if (zone.linkedNpcId) {
+    const npcProfile =
+      getNpcSplashProfileId(zone.linkedNpcId)
+      ?? findNpcById(zone.linkedNpcId)?.npcSplashProfile;
+    if (npcProfile) return npcProfile;
+  }
+  const interactionType = inferZoneInteractionType(zone);
+  return SPLASH_BY_INTERACTION_TYPE[interactionType];
 }
 
 function zoneAnchorPosition(zone: TriggerZone): [number, number, number] {
@@ -127,19 +187,19 @@ export function resolveNpcInteractionSplash(
   ctx: SplashResolveContext,
   options?: { profileId?: string; metFlag?: string },
 ): ResolvedInteractionSplash | null {
+  const repeatFlag = options?.metFlag ?? deriveNpcRepeatSkipFlag(npcId);
+  const skip = shouldSkipInteractionSplash(repeatFlag, ctx.flags);
+  if (skip) return null;
+
   const profileId =
     options?.profileId
+    ?? getNpcSplashProfileId(npcId)
     ?? findNpcById(npcId)?.npcSplashProfile
-    ?? NPC_SPLASH_PROFILES[npcId]
     ?? SPLASH_BY_INTERACTION_TYPE.talk;
   if (!profileId) return null;
 
   const preset = getSplashPreset(profileId);
   if (!preset) return null;
-
-  const repeatFlag = options?.metFlag ?? deriveNpcRepeatSkipFlag(npcId);
-  const skip = shouldSkipInteractionSplash(repeatFlag, ctx.flags);
-  if (skip) return null;
 
   // Anchor at origin — camera hub adds live NPC world position (same as npc cutscenes).
   return buildResolvedSplash(profileId, preset, [0, 0, 0]);
@@ -149,6 +209,39 @@ export function resolveNpcInteractionSplash(
 export function resolveSplashProfileIdForInteractionType(
   interactionType: InteractionType | undefined,
 ): string | undefined {
-  if (!interactionType) return undefined;
+  if (!interactionType) return SPLASH_BY_INTERACTION_TYPE.default;
   return SPLASH_BY_INTERACTION_TYPE[interactionType];
+}
+
+export interface InteractionSplashCoverageReport {
+  interactableZoneCount: number;
+  wiredZoneCount: number;
+  unwiredZoneIds: string[];
+  npcCount: number;
+  wiredNpcCount: number;
+  unwiredNpcIds: string[];
+}
+
+/** Audit splash wiring for trigger zones and NPC registry (tests / tooling). */
+export function auditInteractionSplashCoverage(
+  zones: readonly TriggerZone[],
+  npcIds: readonly string[],
+): InteractionSplashCoverageReport {
+  const interactable = zones.filter(isInteractableTriggerZone);
+  const unwiredZoneIds = interactable
+    .filter((zone) => !resolveZoneInteractionSplash(zone, { flags: {} }))
+    .map((zone) => zone.id);
+
+  const unwiredNpcIds = npcIds.filter(
+    (npcId) => !resolveNpcInteractionSplash(npcId, { flags: {} }),
+  );
+
+  return {
+    interactableZoneCount: interactable.length,
+    wiredZoneCount: interactable.length - unwiredZoneIds.length,
+    unwiredZoneIds,
+    npcCount: npcIds.length,
+    wiredNpcCount: npcIds.length - unwiredNpcIds.length,
+    unwiredNpcIds,
+  };
 }
