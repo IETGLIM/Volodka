@@ -1,4 +1,11 @@
 # Changelog — ВОЛОДЬКА RPG
+## v4.2.29 — 17 июня 2026
+
+### Sprint 0 — Production smoke + P0 (AAA Audit §8)
+- **P0 fix**: `WakeUpSequence` — deferred `cutscene:overlay_end` / 9s timer no longer reopens `start` prologue after `explore_mode` (interaction splashes, corridor cutscenes). Gate: `shouldOpenAct1PrologueStory`.
+- **E2E**: `waitForExplorationInputReady` dismisses stale `#story-speaker-start`; `enterCorridorViaPhysicalDoor` — bounded HUD poll + e2e bridge fallback.
+- **Verified**: `npm run check` green; 1107 unit; assets 26/26 shipped; smoke + boot-pipeline + act1 e2e green (CI workers=1).
+
 ## v4.2.28 — 17 июня 2026
 
 ### AAA code polish pass

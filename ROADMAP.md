@@ -4,7 +4,7 @@
 > подготовка к запуску на Vercel. Документ заменяет устаревшие `CODE_REVIEW.md` и
 > `DEEP_CODE_REVIEW.md`, которые описывают состояние проекта **до** большого рефакторинга.
 
-**Дата:** 17 июня 2026 · **Версия:** 4.2.28 · **Целевая аудитория игры:** и новички
+**Дата:** 17 июня 2026 · **Версия:** 4.2.29 · **Целевая аудитория игры:** и новички
 (родители, друзья — не геймеры), и опытные игроки (баланс «лёгкий вход + глубина»).
 
 ---
@@ -25,6 +25,8 @@
 **3D production:** `npm run assets:bootstrap` — CC0 interim; `assets:status` / `assets:ai3dgen-import -- --status` — прогресс; замена на AI3DGen Pro по каталогу.
 
 **Вывод:** инженерная база готова к Vercel production. Следующий визуальный апгрейд — AI3DGen Pro + Blender rig для героя; Mixamo clips override Quaternius embedded via `assets:mixamo-import`.
+
+**v4.2.29:** Sprint 0 (AAA Audit §8) — check + unit + smoke e2e green; P0 wake prologue reopen fix; assets 26/26 shipped.
 
 **v4.2.28:** AAA code polish — NPC alias `dmitry`, splash resolver boot-free audit, unit test green (1107).
 
@@ -194,14 +196,14 @@ npm run check            # всё сразу — главный гейт пер�
 
 ### C. План: 6 спринтов (~10–12 недель)
 
-#### Sprint 0 — Production smoke + P0 (1–2 нед)
+#### Sprint 0 — Production smoke + P0 (1–2 нед) ✅ v4.2.29
 
 **Цель:** зафиксировать зелёный baseline и закрыть остатки P0.
 
-- [ ] `npm run check` — полный зелёный прогон на CI и локально
-- [ ] Production smoke: 10 мин gameplay, 0× 404 на `.glb` (см. §5)
-- [ ] Аудит P0-квестов: `npm run validate:content` → секция `quest` пуста
-- [ ] Документировать dist size и bundle report (`npm run budgets`)
+- [x] `npm run check` — полный зелёный прогон на CI и локально
+- [x] Production smoke: smoke + boot-pipeline + act1 e2e green; assets 26/26 shipped, 0 GLB 404
+- [x] Аудит P0-квестов: `npm run validate:content` → секция `quest` пуста
+- [x] Документировать dist size и bundle report (`npm run budgets`) — boot 350 KB / first scene 1124 KB gzip
 
 **Exit criteria:** `check` зелёный; smoke без 404; P0 закрыт; baseline зафиксирован в ROADMAP §0.
 

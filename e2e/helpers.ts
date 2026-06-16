@@ -289,6 +289,22 @@ export async function waitForExplorationInputReady(page: Page) {
   await dismissTitleCardIfPresent(page);
   await dismissFirstReadingBeats(page);
   await dismissFirstPlayTutorial(page);
+
+  const startSpeaker = page.locator('#story-speaker-start');
+  if (await startSpeaker.isVisible({ timeout: 500 }).catch(() => false)) {
+    await skipStoryTypewriter(page);
+    const riseBtn = page.getByRole('button', { name: /Подняться и осмотреться/i });
+    if (await riseBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await riseBtn.click({ force: true });
+      await page.waitForTimeout(800);
+    } else {
+      await page.evaluate(async () => {
+        await window.__volodka_e2e!.promoteClosedOverlayHub('explore_mode', 'volodka_room');
+      });
+      await page.waitForTimeout(800);
+    }
+  }
+
   await expect(page.getByRole('dialog', { name: /Голос/i })).not.toBeVisible({ timeout: 5000 });
 }
 

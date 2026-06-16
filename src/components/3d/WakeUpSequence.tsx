@@ -29,6 +29,7 @@ import {
   WAKEUP_FALLBACK_MS,
   WAKEUP_PHASE,
 } from '@/engine/wakeup/wakeUpCinematic';
+import { shouldOpenAct1PrologueStory } from '@/engine/wakeup/shouldOpenAct1PrologueStory';
 import {
   acquireCameraOwnership,
   canWriteCamera,
@@ -48,6 +49,7 @@ export function WakeUpSequence() {
   const prevWaypointRef = useRef<{ position: THREE.Vector3; lookAt: THREE.Vector3; fov: number } | null>(null);
   const completedRef = useRef(false);
   const fallbackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const prologueTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const handoffStartedRef = useRef(false);
   const handoffFromRef = useRef({ position: new THREE.Vector3(), lookAt: new THREE.Vector3(), fov: 54 });
   const lastFootstepRef = useRef(-1);
@@ -55,6 +57,7 @@ export function WakeUpSequence() {
 
   const activeRef = useRef(false);
   const sequenceStartedRef = useRef(false);
+  const prologueStoryOpenedRef = useRef(false);
 
   const finishGameplay = (): void => {
     if (completedRef.current) return;
@@ -80,12 +83,34 @@ export function WakeUpSequence() {
     eventBus.emit('intro:wakeup_complete', {});
     eventBus.emit('camera:recenter', {});
 
+    const clearPrologueTimer = (): void => {
+      if (prologueTimerRef.current) {
+        clearTimeout(prologueTimerRef.current);
+        prologueTimerRef.current = null;
+      }
+    };
+
     const openPrologueStory = (): void => {
+      if (prologueStoryOpenedRef.current) return;
+
+      const live = getGameStore();
+      if (
+        !shouldOpenAct1PrologueStory({
+          currentNodeId: live.currentNodeId,
+          showStoryOverlay: live.showStoryOverlay,
+          visitedNodes: live.playerState.visitedNodes,
+        })
+      ) {
+        clearPrologueTimer();
+        return;
+      }
+
+      prologueStoryOpenedRef.current = true;
+      clearPrologueTimer();
       prefetchStoryNodes(['start', 'explore_mode', 'room_table']);
       void import('@/components/game/StoryRenderer');
       void import('@/components/game/FirstReadingCelebration');
 
-      const live = getGameStore();
       if (live.activeCutsceneId) {
         live.setCutscene(null, []);
         eventBus.emit('cutscene:overlay_end', {});
@@ -100,14 +125,11 @@ export function WakeUpSequence() {
     if (!store.isCutsceneTriggered('act1_prologue')) {
       store.setCurrentNodeId('start');
       const unsubPrologueEnd = eventBus.on('cutscene:overlay_end', () => {
-        unsubPrologueEnd();
         openPrologueStory();
       });
-      setTimeout(() => {
+      prologueTimerRef.current = setTimeout(() => {
+        prologueTimerRef.current = null;
         unsubPrologueEnd();
-        const live = getGameStore();
-        if (live.showStoryOverlay && live.currentNodeId === 'start') return;
-        if (live.currentNodeId === 'explore_mode') return;
         openPrologueStory();
       }, 9_000);
     } else {
@@ -200,6 +222,7 @@ export function WakeUpSequence() {
       unsubSkip();
       unsubStore();
       if (fallbackTimerRef.current) clearTimeout(fallbackTimerRef.current);
+      if (prologueTimerRef.current) clearTimeout(prologueTimerRef.current);
     };
   }, [camera]);
 
