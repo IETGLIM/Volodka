@@ -5,9 +5,11 @@ import { useGamePrimitive } from '@/store/selectors';
 import { eventBus } from '@/engine/EventBus';
 import { audioEngine } from '@/engine/AudioEngine';
 import { getCutsceneForNode } from '@/data/cutscenes';
+import { resolveCutsceneWaypoints } from '@/engine/camera/resolveCutsceneWaypoints';
 import { closeNarrativeOverlay } from '@/engine/scene/narrativeOverlay';
 import { openNarrativeAfterCutscene } from '@/engine/scene/postCutsceneNarrative';
 import { clearGameplayPhaseFlags, readGamePhase } from '@/shared/gamePhase';
+import type { SceneId } from '@/shared/types/game';
 import {
   isIntroWakeupCutscene,
   setCinematicPresentationMode,
@@ -73,11 +75,15 @@ export function useCutsceneController() {
 
     clearGameplayPhaseFlags(store);
     setCinematicPresentationMode('third_person');
-    store.setCutscene(cutscene.id, cutscene.waypoints);
+
+    const playbackSceneId = store.exploration.currentSceneId as SceneId;
+    const resolvedWaypoints = resolveCutsceneWaypoints(cutscene, playbackSceneId);
+
+    store.setCutscene(cutscene.id, resolvedWaypoints);
 
     eventBus.emit('camera:cutscene_start', {
       cutsceneId: cutscene.id,
-      waypoints: cutscene.waypoints,
+      waypoints: resolvedWaypoints,
     });
 
     cutsceneSessionRef.current.schedule(() => {

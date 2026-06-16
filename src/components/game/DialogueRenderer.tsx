@@ -43,6 +43,7 @@ import {
 } from '@/components/game/cinematic';
 import { devWarn } from '@/shared/utils/devLog';
 import { getVoiceLine } from '@/engine/audio/VoiceLineRegistry';
+import { playVoiceLineForNode, stopVoiceLinePlayback } from '@/engine/audio/voiceLinePlayer';
 import { useNarrativeTypewriter } from '@/hooks/useNarrativeTypewriter';
 import { useNarrativeChoiceKeyboard } from '@/hooks/useNarrativeChoiceKeyboard';
 import { applyEffects } from '@/shared/utils/applyEffects';
@@ -208,6 +209,15 @@ export function DialogueRenderer() {
       }
     }
   }, [node, visitNode, conditionCtx, resolvedText]);
+
+  useEffect(() => {
+    if (!isOpen || !node?.id) {
+      stopVoiceLinePlayback();
+      return;
+    }
+    playVoiceLineForNode(node.id);
+    return () => stopVoiceLinePlayback();
+  }, [isOpen, node?.id]);
 
   const handleClose = useCallback(() => {
     audioEngine.playSfx('ui_close');

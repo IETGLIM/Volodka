@@ -8,6 +8,7 @@ import {
 import { deriveSceneWeather } from '@/shared/weather/deriveSceneWeather';
 import type { SceneId } from '@/config/sceneDefinitions';
 import type { AmbientSoundType } from '@/shared/types/ambientSound';
+import { t } from '@/i18n';
 
 export interface AmbientPresentationState {
   resolved: ResolvedSceneAmbience | null;
@@ -55,7 +56,7 @@ export function resolveAmbientPresentation(
   const def = getAmbientSoundDef(resolved.sound);
   return {
     resolved,
-    label: def.label,
-    accessibilityDescription: def.accessibilityDescription,
+    label: t(def.labelKey, def.label),
+    accessibilityDescription: t(def.accessibilityDescriptionKey, def.accessibilityDescription),
   };
 }

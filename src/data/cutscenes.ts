@@ -5,6 +5,9 @@
 */
 
 import type { CameraWaypointData } from '@/engine/events';
+import type { SceneId } from '@/shared/types/game';
+
+export type CutsceneWaypointSpace = 'world' | 'spawn_offset';
 
 /* ─── Cutscene definition ─── */
 export interface CutsceneDef {
@@ -13,8 +16,12 @@ export interface CutsceneDef {
   textOverlay: string;
   /** Subtitle / secondary text below main overlay */
   subtitle?: string;
-  /** Camera waypoints using the existing CameraWaypointData format */
+  /** Camera waypoints — world coords or spawn-relative offsets (see waypointSpace). */
   waypoints: CameraWaypointData[];
+  /** Scene whose defaultSpawn anchors spawn_offset waypoints. */
+  anchorSceneId?: SceneId;
+  /** When spawn_offset, waypoints are added to anchorSceneId defaultSpawn. */
+  waypointSpace?: CutsceneWaypointSpace;
   /** Story node that triggers this cutscene */
   triggerStoryNode: string;
   /** Alternative: flag that triggers this cutscene */
@@ -48,6 +55,8 @@ export const CUTSCENES: Record<string, CutsceneDef> = {
     textOverlay: 'АКТ I',
     subtitle: 'Пробуждение',
     triggerStoryNode: 'start',
+    anchorSceneId: 'volodka_room',
+    waypointSpace: 'spawn_offset',
     textDurationMs: 4500,
     textAccentColor: '#00ff66', // green — monitor glow
     type: 'act_transition',
@@ -56,36 +65,32 @@ export const CUTSCENES: Record<string, CutsceneDef> = {
     showEmbers: true,
     glitchIntensity: 0.3,
     waypoints: [
-      // Start: Extreme close-up on the monitor
       {
-        position: [0, 1.2, -2.2],
-        lookAt: [0, 1.0, -2.5],
-        fov: 35, // tight on screen
+        position: [0, 1.19, -4.2],
+        lookAt: [0, 0.99, -4.5],
+        fov: 35,
         duration: 0,
       },
-      // Slowly pull back — revealing the desk
       {
-        position: [0.5, 1.5, -1.5],
-        lookAt: [0, 1.0, -2.0],
+        position: [0.5, 1.49, -3.5],
+        lookAt: [0, 0.99, -4.0],
         fov: 45,
         duration: 2.5,
-        controlPoint: [0.2, 1.3, -1.8],
+        controlPoint: [0.2, 1.29, -3.8],
       },
-      // Pull further — room reveals itself
       {
-        position: [0, 2.0, 0],
-        lookAt: [0, 0.5, -2.0],
+        position: [0, 1.99, -2.0],
+        lookAt: [0, 0.49, -4.0],
         fov: 55,
         duration: 2.0,
-        controlPoint: [0.3, 1.8, -0.5],
+        controlPoint: [0.3, 1.79, -2.5],
       },
-      // Settle behind where player will be standing
       {
-        position: [0, 2.5, 2],
-        lookAt: [0, 1.0, -1.0],
+        position: [0, 2.49, 0],
+        lookAt: [0, 0.99, -3.0],
         fov: 60,
         duration: 1.5,
-        controlPoint: [0, 2.2, 0.5],
+        controlPoint: [0, 2.19, -1.5],
       },
     ],
   },
@@ -95,6 +100,8 @@ export const CUTSCENES: Record<string, CutsceneDef> = {
     textOverlay: 'Алина · Солныш',
     subtitle: '«Доброе утро, Володька. Ты опять не спал?»',
     triggerStoryNode: 'corridor_door',
+    anchorSceneId: 'volodka_corridor',
+    waypointSpace: 'spawn_offset',
     textDurationMs: 5000,
     textAccentColor: '#ffb8d0',
     type: 'character_intro',
@@ -104,31 +111,31 @@ export const CUTSCENES: Record<string, CutsceneDef> = {
     glitchIntensity: 0,
     waypoints: [
       {
-        position: [0, 1.7, 4.5],
-        lookAt: [0, 1.1, 2.0],
+        position: [0, 1.69, -0.5],
+        lookAt: [0, 1.09, -3.0],
         fov: 52,
         duration: 0,
       },
       {
-        position: [0.8, 1.5, 2.8],
-        lookAt: [0.4, 1.15, 1.5],
+        position: [0.8, 1.49, -2.2],
+        lookAt: [0.4, 1.14, -3.5],
         fov: 44,
         duration: 2.2,
-        controlPoint: [0.5, 1.6, 3.5],
+        controlPoint: [0.5, 1.59, -1.5],
       },
       {
-        position: [0.2, 1.35, 2.0],
-        lookAt: [0.5, 1.2, 1.2],
+        position: [0.2, 1.34, -3.0],
+        lookAt: [0.5, 1.19, -3.8],
         fov: 38,
         duration: 1.8,
-        controlPoint: [0.35, 1.4, 2.4],
+        controlPoint: [0.35, 1.39, -2.6],
       },
       {
-        position: [0, 1.8, 3.2],
-        lookAt: [0, 1.0, 0.5],
+        position: [0, 1.79, -1.8],
+        lookAt: [0, 0.99, -4.5],
         fov: 50,
         duration: 1.5,
-        controlPoint: [0.1, 1.5, 2.0],
+        controlPoint: [0.1, 1.49, -3.0],
       },
     ],
   },
