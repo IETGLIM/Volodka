@@ -20,6 +20,7 @@ import { setPlayerExternalVelocity, clearPlayerExternalVelocity } from '@/engine
 import { useGameStore } from '@/store/gameStore';
 import { readGamePhase } from '@/shared/gamePhase';
 import { closeNarrativeOverlay } from '@/engine/scene/narrativeOverlay';
+import { preloadNpcModel } from '@/engine/scene/sceneGpuLifecycle';
 import {
   getInteractionState,
   getInteractionTargetNPCId,
@@ -48,6 +49,7 @@ function publishInteraction(
 
 /* ─── Interaction system constants ─── */
 const APPROACH_ARRIVAL_DISTANCE = 1.5;
+const APPROACH_NPC_MISSING_TIMEOUT = 2.0;
 const ALIGN_DURATION = 0.5;
 const LOCK_DURATION = 0.2;
 const EXIT_DURATION = 0.3;
@@ -116,6 +118,8 @@ export function InteractionSystemBridge({
       }
 
       if (stateRef.current !== InteractionState.Idle) return;
+
+      preloadNpcModel(npcId);
 
       phaseTimerRef.current = 0;
       globalTimerRef.current = 0; // Reset global safety timer
@@ -268,7 +272,7 @@ export function InteractionSystemBridge({
       case InteractionState.Approach: {
         // Safety: if NPC group doesn't exist after 2 seconds, cancel interaction
         if (!npcGroup) {
-          if (phaseTimerRef.current > 2.0) {
+          if (phaseTimerRef.current > APPROACH_NPC_MISSING_TIMEOUT) {
             const prevNpcId = targetNPCIdRef.current;
             phaseTimerRef.current = 0;
             publishInteraction(stateRef, targetNPCIdRef, InteractionState.Idle, null);

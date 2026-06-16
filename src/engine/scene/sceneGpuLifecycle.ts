@@ -116,6 +116,12 @@ export function preloadSceneGpuAssets(sceneId: SceneId): void {
   useGLTF.preload(FPS_ARMS_URL, true, true, extendLoader);
 }
 
+/** Warm a single NPC GLB before approach / dialogue (interaction:start). */
+export function preloadNpcModel(npcId: string): void {
+  const url = resolveNpcModelUrl(npcId);
+  if (url) useGLTF.preload(url, true, true, extendLoader);
+}
+
 /** Remove loader + THREE.Cache entries for assets only used by `fromSceneId`. */
 export function evictSceneGpuCache(fromSceneId: SceneId, keepSceneId?: SceneId): void {
   const fromRoot = resolveDerivedSceneId(fromSceneId);

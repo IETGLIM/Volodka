@@ -7,7 +7,7 @@ import {
 } from '@/engine/player/playerConstants';
 import { lerpAngle, enforceFloor, clampHorizontalDisplacement } from '@/engine/player/playerMath';
 import { computeKccMovementSubstepped } from '@/engine/player/physicsSubstep';
-import { updateMoveBlendRef } from '@/engine/player/playerLocomotionPresentation';
+import { updateMoveBlendRef, resolveLockedLocomotionPresentation } from '@/engine/player/playerLocomotionPresentation';
 import type { PlayerMovementDeps } from '@/engine/player/playerFrameTypes';
 
 /** Locked branch — combat anim, external velocity, KCC/direct when interaction holds movement. */
@@ -83,14 +83,14 @@ export function runLockedPlayerMovement(deps: PlayerMovementDeps): void {
     }, true);
   }
 
-  if (currentMode === 'combat') {
-    deps.currentAnimRef.current = 'combat';
-  } else {
-    deps.currentAnimRef.current = 'idle';
-  }
-
-  const hSpeed = Math.sqrt(vel.x * vel.x + vel.z * vel.z);
-  updateMoveBlendRef(deps.moveBlendRef, hSpeed > 0.15 ? 1 : 0, dt);
+  const presentation = resolveLockedLocomotionPresentation({
+    externalActive: external.active,
+    vx: vel.x,
+    vz: vel.z,
+    gamePhase: currentMode,
+  });
+  deps.currentAnimRef.current = presentation.anim;
+  updateMoveBlendRef(deps.moveBlendRef, presentation.moveBlendTarget, dt);
 
   if (enforceFloor(rb, vel, groundY)) {
     deps.isGroundedRef.current = true;

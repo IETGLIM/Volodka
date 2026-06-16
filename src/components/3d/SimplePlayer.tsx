@@ -36,6 +36,10 @@ import {
 import { eventBus } from '@/engine/EventBus';
 import { audioEngine } from '@/engine/AudioEngine';
 import { isInteractionLocked } from '@/engine/interaction/interactionSession';
+import { getPlayerExternalVelocity } from '@/engine/PlayerRigidBodyState';
+import {
+  resolveLockedLocomotionPresentation,
+} from '@/engine/player/playerLocomotionPresentation';
 import { ProceduralPlayerModelAdaptive } from './ProceduralPlayerModel';
 
 function lerpAngle(a: number, b: number, t: number): number {
@@ -123,13 +127,81 @@ export function SimplePlayer({
     const currentMode = readGamePhase(lockState);
     const showStoryOverlay = lockState.showStoryOverlay;
     const currentNodeId = lockState.currentNodeId;
+    const narrativeLocked = isNarrativeMovementLocked(showStoryOverlay, currentNodeId);
+    const interactionLocked = isInteractionLocked();
     const isLocked =
-      isNarrativeMovementLocked(showStoryOverlay, currentNodeId) ||
+      narrativeLocked ||
       currentMode === 'cutscene' ||
       currentMode === 'intro' ||
-      isInteractionLocked();
+      interactionLocked;
 
     if (isLocked) {
+      const external = getPlayerExternalVelocity();
+      const approachViaExternal =
+        interactionLocked &&
+        !narrativeLocked &&
+        currentMode !== 'cutscene' &&
+        currentMode !== 'intro' &&
+        external.active;
+
+      if (approachViaExternal) {
+        vel.x = external.vx;
+        vel.z = external.vz;
+
+        const presentation = resolveLockedLocomotionPresentation({
+          externalActive: true,
+          vx: external.vx,
+          vz: external.vz,
+          gamePhase: currentMode,
+        });
+        currentAnimRef.current = presentation.anim;
+
+        if (presentation.hSpeed > 0.1) {
+          const targetYaw = Math.atan2(vel.x, vel.z);
+          const rotT = 1 - Math.exp(-ROTATION_SPEED * dt);
+          livePlayerRotationRef.current = lerpAngle(
+            livePlayerRotationRef.current,
+            targetYaw,
+            rotT,
+          );
+        }
+
+        if (presentation.hSpeed > 0.5) {
+          footstepTimerRef.current += dt;
+          if (footstepTimerRef.current >= FOOTSTEP_INTERVAL) {
+            footstepTimerRef.current = 0;
+            const pos = livePlayerPositionRef.current;
+            eventBus.emit('exploration:footstep', {
+              position: [pos.x, pos.y, pos.z],
+              yaw: livePlayerRotationRef.current,
+            });
+            audioEngine.playFootstep('default');
+          }
+        } else {
+          footstepTimerRef.current = 0;
+        }
+
+        if (groupRef.current) {
+          groupRef.current.position.x += vel.x * dt;
+          groupRef.current.position.z += vel.z * dt;
+          groupRef.current.rotation.y = livePlayerRotationRef.current;
+
+          if (groupRef.current.position.y < floorY) {
+            groupRef.current.position.y = floorY;
+          }
+
+          const [sceneW, sceneD] = config.size;
+          const MARGIN = 0.3;
+          const halfW = sceneW / 2 - MARGIN;
+          const halfD = sceneD / 2 - MARGIN;
+          groupRef.current.position.x = Math.max(-halfW, Math.min(halfW, groupRef.current.position.x));
+          groupRef.current.position.z = Math.max(-halfD, Math.min(halfD, groupRef.current.position.z));
+
+          livePlayerPositionRef.current.copy(groupRef.current.position);
+        }
+        return;
+      }
+
       vel.x = 0;
       vel.z = 0;
       currentAnimRef.current = 'idle';

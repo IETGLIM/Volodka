@@ -5,7 +5,10 @@ import * as THREE from 'three';
 import { getPlayerVolodkaModelUrl } from '@/config/playerModelUrl';
 import { useSkinnedGltfClone } from '@/hooks/useSkinnedGltfClone';
 import { useMixamoAnimationClips } from '@/hooks/useMixamoAnimationClips';
-import { resolveLocomotionClipState } from '@/engine/player/playerLocomotionPresentation';
+import {
+  resolveLocomotionClipState,
+  resolveRunWalkCrossfadeTarget,
+} from '@/engine/player/playerLocomotionPresentation';
 import {
   findPlayerAnimationClip,
   pickPlayerClipAction,
@@ -40,6 +43,7 @@ function CesiumPlayerModelInner({ modelScale, currentAnimRef, rotationRef }: Pro
   const walkActionRef = useRef<THREE.AnimationAction | null>(null);
   const runActionRef = useRef<THREE.AnimationAction | null>(null);
   const prevLocomotionRef = useRef(false);
+  const prevRunWeightRef = useRef(0);
   const [fit, setFit] = useState<Fit>({ scale: 1, rotX: 0, y: 0 });
 
   const embeddedActions = useMemo(() => {
@@ -115,6 +119,7 @@ function CesiumPlayerModelInner({ modelScale, currentAnimRef, rotationRef }: Pro
     }
 
     prevLocomotionRef.current = false;
+    prevRunWeightRef.current = 0;
 
     return () => {
       for (const action of [idleActionRef.current, walkActionRef.current, runActionRef.current]) {
@@ -164,6 +169,7 @@ function CesiumPlayerModelInner({ modelScale, currentAnimRef, rotationRef }: Pro
         idleAction.crossFadeTo(walkAction, CLIP_CROSSFADE_SEC, false);
       } else if (!locomotionActive && idleAction && walkAction) {
         walkAction.crossFadeTo(idleAction, CLIP_CROSSFADE_SEC, false);
+        prevRunWeightRef.current = 0;
       }
       prevLocomotionRef.current = locomotionActive;
     }
@@ -172,11 +178,16 @@ function CesiumPlayerModelInner({ modelScale, currentAnimRef, rotationRef }: Pro
       walkAction.timeScale = clipState.walkTimeScale;
       if (runAction) {
         runAction.timeScale = clipState.runTimeScale;
-        if (clipState.runWeight >= 1) {
+        const crossfadeTarget = resolveRunWalkCrossfadeTarget(
+          prevRunWeightRef.current,
+          clipState.runWeight,
+        );
+        if (crossfadeTarget === 'walk_to_run') {
           walkAction.crossFadeTo(runAction, CLIP_CROSSFADE_SEC, false);
-        } else if (clipState.runWeight === 0) {
+        } else if (crossfadeTarget === 'run_to_walk') {
           runAction.crossFadeTo(walkAction, CLIP_CROSSFADE_SEC, false);
         }
+        prevRunWeightRef.current = clipState.runWeight;
       } else {
         walkAction.timeScale = clipState.runWeight > 0
           ? clipState.runTimeScale

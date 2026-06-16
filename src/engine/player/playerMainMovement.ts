@@ -57,6 +57,9 @@ function applyDegradedMovement(deps: PlayerMovementDeps, onFlatGround: boolean):
   }
   const finalPos = rb.translation();
   deps.livePlayerPositionRef.current.set(finalPos.x, finalPos.y, finalPos.z);
+
+  const hSpeed = Math.sqrt(vel.x * vel.x + vel.z * vel.z);
+  updateMoveBlendRef(deps.moveBlendRef, hSpeed > 0.15 ? 1 : 0, dt);
 }
 
 function tryRecoverKcc(deps: PlayerMovementDeps, reason: string): boolean {

@@ -182,6 +182,7 @@ export function PhysicsPlayer({
 
       jumpCooldownRef.current = 0;
       noMovementFramesRef.current = 0;
+      currentAnimRef.current = 'idle';
       if (moveBlendRef) moveBlendRef.current = 0;
 
       if (rigidBodyRef.current?.isValid()) {
@@ -207,6 +208,7 @@ export function PhysicsPlayer({
       const spawn = getGameStore().exploration.playerPosition;
       prevSceneIdRef.current = enteredScene;
       jumpCooldownRef.current = 0;
+      currentAnimRef.current = 'idle';
       if (moveBlendRef) moveBlendRef.current = 0;
       noMovementFramesRef.current = 0;
       velocityRef.current.set(0, 0, 0);

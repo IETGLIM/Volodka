@@ -75,6 +75,58 @@ export function updateMoveBlendRef(
   moveBlendRef.current = dampMoveBlend(moveBlendRef.current, target, dt);
 }
 
+export type RunWalkCrossfadeTarget = 'walk_to_run' | 'run_to_walk';
+
+/** Only crossfade walk↔run when runWeight crosses the run threshold (avoids per-frame jitter). */
+export function resolveRunWalkCrossfadeTarget(
+  prevRunWeight: number,
+  nextRunWeight: number,
+): RunWalkCrossfadeTarget | null {
+  const prevIsRun = prevRunWeight >= 1;
+  const nextIsRun = nextRunWeight >= 1;
+  if (prevIsRun === nextIsRun) return null;
+  return nextIsRun ? 'walk_to_run' : 'run_to_walk';
+}
+
+export interface LockedLocomotionInput {
+  externalActive: boolean;
+  vx: number;
+  vz: number;
+  gamePhase: string;
+}
+
+export interface LockedLocomotionPresentation {
+  anim: LocomotionAnimState;
+  moveBlendTarget: number;
+  hSpeed: number;
+}
+
+/** Shared idle/walk/combat presentation for locked movement (PhysicsPlayer + SimplePlayer). */
+export function resolveLockedLocomotionPresentation(
+  input: LockedLocomotionInput,
+): LockedLocomotionPresentation {
+  const hSpeed = Math.hypot(input.vx, input.vz);
+  if (input.gamePhase === 'combat') {
+    return {
+      anim: 'combat',
+      moveBlendTarget: hSpeed > 0.15 ? 1 : 0,
+      hSpeed,
+    };
+  }
+  if (input.externalActive && hSpeed > 0.12) {
+    return {
+      anim: 'walk',
+      moveBlendTarget: 1,
+      hSpeed,
+    };
+  }
+  return {
+    anim: 'idle',
+    moveBlendTarget: 0,
+    hSpeed,
+  };
+}
+
 export function resolveLocomotionClipState(anim: string): LocomotionClipPresentation {
   if (anim !== 'walk' && anim !== 'run') {
     return {

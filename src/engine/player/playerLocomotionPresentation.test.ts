@@ -4,7 +4,9 @@ import {
   computeSlopeLocomotionScale,
   getExplorationCameraMotionScale,
   resolveLocomotionClipState,
+  resolveLockedLocomotionPresentation,
   resolveMovementIntent,
+  resolveRunWalkCrossfadeTarget,
 } from '@/engine/player/playerLocomotionPresentation';
 
 const ZERO_EXPLORATION_CAMERA_MOTION = {
@@ -78,5 +80,35 @@ describe('playerLocomotionPresentation', () => {
     const spy = vi.spyOn(accessibilitySettings, 'isEffectiveReducedMotion').mockReturnValue(true);
     expect(getExplorationCameraMotionScale(1)).toEqual(ZERO_EXPLORATION_CAMERA_MOTION);
     spy.mockRestore();
+  });
+
+  it('resolveRunWalkCrossfadeTarget only fires on threshold crossing', () => {
+    expect(resolveRunWalkCrossfadeTarget(0, 0)).toBeNull();
+    expect(resolveRunWalkCrossfadeTarget(1, 1)).toBeNull();
+    expect(resolveRunWalkCrossfadeTarget(0, 1)).toBe('walk_to_run');
+    expect(resolveRunWalkCrossfadeTarget(1, 0)).toBe('run_to_walk');
+  });
+
+  it('resolveLockedLocomotionPresentation maps approach and combat', () => {
+    expect(resolveLockedLocomotionPresentation({
+      externalActive: true,
+      vx: 2,
+      vz: 0,
+      gamePhase: 'exploration',
+    })).toMatchObject({ anim: 'walk', moveBlendTarget: 1 });
+
+    expect(resolveLockedLocomotionPresentation({
+      externalActive: false,
+      vx: 0,
+      vz: 0,
+      gamePhase: 'exploration',
+    })).toMatchObject({ anim: 'idle', moveBlendTarget: 0 });
+
+    expect(resolveLockedLocomotionPresentation({
+      externalActive: false,
+      vx: 0,
+      vz: 0,
+      gamePhase: 'combat',
+    })).toMatchObject({ anim: 'combat', moveBlendTarget: 0 });
   });
 });
