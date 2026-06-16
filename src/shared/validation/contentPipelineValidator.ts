@@ -439,7 +439,7 @@ function validateNpcDuplicateIds(out: ValidationIssue[]): void {
 function validateNpcs(reg: ReturnType<typeof buildSets>, out: ValidationIssue[]): void {
   validateNpcDuplicateIds(out);
 
-  for (const { npcId, message } of validateNpcDefinitionModelPaths()) {
+  for (const { npcId, message } of validateNpcDefinitionModelPaths(ALL_NPC_DEFINITIONS)) {
     out.push(issue('warning', 'npc', `npc:${npcId}`, message));
   }
 

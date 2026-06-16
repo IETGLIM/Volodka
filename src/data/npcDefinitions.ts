@@ -370,10 +370,12 @@ export const NPC_DEFINITIONS: NPCDefinition[] = [
 ];
 
 /** Dev/CI: flag NPCs with missing or inconsistent modelPath assignments. */
-export function validateNpcDefinitionModelPaths(): Array<{ npcId: string; message: string }> {
+export function validateNpcDefinitionModelPaths(
+  npcs: readonly NPCDefinition[] = NPC_DEFINITIONS,
+): Array<{ npcId: string; message: string }> {
   const problems: Array<{ npcId: string; message: string }> = [];
 
-  for (const npc of NPC_DEFINITIONS) {
+  for (const npc of npcs) {
     const path = npc.modelPath ?? '';
 
     if (path === '') {

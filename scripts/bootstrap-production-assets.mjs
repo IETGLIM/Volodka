@@ -10,11 +10,15 @@ import { copyFileSync, createWriteStream, existsSync, mkdirSync, openSync, readS
 import { get as httpsGet } from 'node:https';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { spawnSync } from 'node:child_process';
 import { NPC_QUATERNIUS_MAP } from './quaternius-import.mjs';
+import { readShippedMixamoIds, writeShippedMixamoIds } from './lib/mixamoShipped.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const PUBLIC = path.join(ROOT, 'public');
 const QUATERNIUS_SOURCE = path.join(ROOT, 'assets-source/ai3dgen/npcs');
+const FREEKIT_INTERIORS = path.join(ROOT, 'assets-source/ai3dgen/interiors');
+const MIXAMO_SHIPPED_MODULE = path.join(ROOT, 'src/config/mixamoAnimationShipped.ts');
 
 const KHRONOS_BASE =
   'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/main/2.0';
@@ -230,6 +234,85 @@ function stageProductionLayout() {
   stageCopy('models/khronos/WaterBottle.glb', ['models/vegetation/pine/pine_lod2.glb']);
 }
 
+/** Kenney interiors when present; otherwise distinct CC0 stubs per shell. */
+const INTERIOR_SHELLS = [
+  ['models/khronos/BrainStem.glb', 'models/interiors/room_bedroom.glb'],
+  ['models/khronos/Lantern.glb', 'models/interiors/cafe_interior.glb'],
+  ['models/khronos/DamagedHelmet.glb', 'models/interiors/office.glb'],
+  ['models/khronos/WaterBottle.glb', 'models/interiors/library.glb'],
+  ['models/khronos/AntiqueCamera.glb', 'models/interiors/factory.glb'],
+  ['models/khronos/RiggedSimple.glb', 'models/interiors/corridor.glb'],
+  ['models/khronos/Avocado.glb', 'models/interiors/rooftop.glb'],
+  ['models/khronos/Xbot.glb', 'models/interiors/basement.glb'],
+  ['models/khronos/CesiumMan.glb', 'models/interiors/pier.glb'],
+  ['models/khronos/Fox.glb', 'models/interiors/forest_clearing.glb'],
+];
+
+function stageInteriorShells() {
+  console.log('\nStaging interior shells…');
+  let staged = 0;
+  for (const [fallbackRel, destRel] of INTERIOR_SHELLS) {
+    const destName = path.basename(destRel);
+    const freekitSrc = path.join(FREEKIT_INTERIORS, destName);
+    const dest = path.join(PUBLIC, destRel);
+    mkdirSync(path.dirname(dest), { recursive: true });
+    if (existsSync(freekitSrc)) {
+      copyFileSync(freekitSrc, dest);
+      staged += 1;
+      console.log(`✓ Kenney ${destName} → ${destRel}`);
+      continue;
+    }
+    stageCopy(fallbackRel, [destRel]);
+    staged += 1;
+  }
+  if (staged === 0) {
+    console.log('  (no interior shells staged)');
+  }
+}
+
+async function stageMixamoFromSource() {
+  let catalog;
+  try {
+    const mod = await import(pathToFileURL(path.join(ROOT, 'src/config/mixamoAnimationCatalog.ts')).href);
+    catalog = mod.MIXAMO_ANIMATION_CATALOG;
+  } catch {
+    return;
+  }
+
+  console.log('\nStaging Mixamo clips (when source on disk)…');
+  const shipped = readShippedMixamoIds(MIXAMO_SHIPPED_MODULE);
+  let staged = 0;
+
+  for (const entry of catalog) {
+    const src = path.join(ROOT, entry.sourceRelativePath);
+    if (!existsSync(src)) continue;
+    const dest = path.join(PUBLIC, entry.publicUrl.replace(/^\//, ''));
+    mkdirSync(path.dirname(dest), { recursive: true });
+    copyFileSync(src, dest);
+    if (!shipped.includes(entry.id)) shipped.push(entry.id);
+    staged += 1;
+    console.log(`✓ Mixamo ${entry.id} → ${entry.publicUrl}`);
+  }
+
+  if (staged > 0) {
+    writeShippedMixamoIds(MIXAMO_SHIPPED_MODULE, shipped);
+  } else {
+    console.log('  (no Mixamo sources — see assets-source/mixamo/README.md)');
+  }
+}
+
+function syncAssetShippedFlags() {
+  console.log('\nSyncing manifest on-disk shipped flags…');
+  const result = spawnSync(
+    process.platform === 'win32' ? 'npx.cmd' : 'npx',
+    ['tsx', '--tsconfig', 'tsconfig.json', 'scripts/sync-asset-shipped-flags.ts'],
+    { cwd: ROOT, stdio: 'inherit', shell: process.platform === 'win32' },
+  );
+  if (result.status !== 0) {
+    throw new Error('assets:sync-shipped failed');
+  }
+}
+
 function reportSize() {
   let total = 0;
   const walk = (dir) => {
@@ -252,9 +335,12 @@ async function main() {
   stageQuaterniusNpcs();
   stageRpmNpcs();
   stageProductionLayout();
+  stageInteriorShells();
+  await stageMixamoFromSource();
+  syncAssetShippedFlags();
   reportSize();
   console.log('\n✓ Production asset bootstrap complete.');
-  console.log('  Next: npm run assets:freekit-stage && npm run assets:validate');
+  console.log('  Optional: npm run assets:freekit-stage && npm run assets:validate');
 }
 
 main().catch((err) => {

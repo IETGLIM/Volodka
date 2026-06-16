@@ -6,14 +6,13 @@
 import * as THREE from 'three';
 import { useGLTF } from '@react-three/drei';
 import { ASSET_MANIFEST } from '@/config/assetManifest';
+import { FPS_ARMS_URL } from '@/config/fpsArmsUrl';
 import { getNpcModelUrls } from '@/config/npcModelRegistry';
 import { getPropModelUrls } from '@/config/propModelRegistry';
 import { QUALITY_GPU_CLEANUP } from '@/engine/graphics/graphicsSettingsStorage';
 import { evictCanvasTextureCache } from '@/engine/three/cachedCanvasTexture';
 import { evictNpcTemplateCache } from '@/engine/three/npcTemplateCache';
 import { evictTextureReuseMap } from '@/engine/three/textureReuseMap';
-
-const FPS_ARMS_URL = '/models/fps/fps_arms.glb';
 
 function collectQualityDependentGltfUrls(): string[] {
   const urls = new Set<string>([FPS_ARMS_URL]);

@@ -17,8 +17,7 @@ import {
   PLAYER_IDLE_CLIP_NAMES,
   PLAYER_WALK_CLIP_NAMES,
 } from '@/engine/player/playerClipResolution';
-
-const FPS_ARMS_URL = '/models/fps/fps_arms.glb';
+import { FPS_ARMS_URL } from '@/config/fpsArmsUrl';
 /** Khronos / Soldier interim rigs use ~100–200 unit height; real FPS arm GLBs are <3 m. */
 const FULL_BODY_INTERIM_MIN_HEIGHT_UNITS = 8;
 /** Scale for Khronos-style FPS arm rigs (procedural finger coords). */

@@ -61,8 +61,9 @@ function main() {
     total += stageDirectory(from, to);
   }
   if (total === 0) {
-    console.error('No GLB files found under assets-source/ai3dgen/{props,interiors}.');
-    process.exit(1);
+    console.warn('⚠ No GLB files found under assets-source/ai3dgen/{props,interiors}.');
+    console.warn('  Run npm run assets:bootstrap for CC0 fallbacks, or add Kenney sources.');
+    return;
   }
   reportSize();
   console.log('\n✓ Freekit staging complete. Next: npm run assets:validate');

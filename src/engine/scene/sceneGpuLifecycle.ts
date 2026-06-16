@@ -8,7 +8,8 @@ import { useGLTF } from '@react-three/drei';
 import type { SceneId } from '@/shared/types/game';
 import { sceneMatchesScheduleEntry, resolveDerivedSceneId } from '@/config/sceneInheritance';
 import { NPC_SCHEDULES_MAP, ACT_SCHEDULE_OVERRIDES } from '@/data/npcSchedules';
-import { getAssetDefinition } from '@/config/assetManifest';
+import { getAssetDefinition, isAssetEffectiveShipped } from '@/config/assetManifest';
+import { FPS_ARMS_URL } from '@/config/fpsArmsUrl';
 import { preloadGltfAsset } from '@/components/3d/assets/GltfAsset';
 import { preloadTriggerZoneProps } from '@/components/3d/TriggerZoneProp';
 import { preloadScenePropDressing } from '@/components/3d/ScenePropDressing';
@@ -19,7 +20,6 @@ import { getScenePropDressingIds } from '@/config/scenePropDressing';
 import { getSceneInteriorAssetIds } from '@/config/sceneInteriorAssets';
 import { extendGltfLoader } from '@/engine/assets/gltfPipeline';
 
-const FPS_ARMS_URL = '/models/fps/fps_arms.glb';
 const extendLoader = extendGltfLoader as unknown as NonNullable<Parameters<typeof useGLTF>[3]>;
 
 /** GLB assets warmed per scene — extend as interior props migrate off procedural meshes. */
@@ -113,7 +113,9 @@ export function preloadSceneGpuAssets(sceneId: SceneId): void {
   preloadTriggerZoneProps(sceneId);
   preloadScenePropModels(sceneId);
   preloadSceneNpcModels(sceneId);
-  useGLTF.preload(FPS_ARMS_URL, true, true, extendLoader);
+  if (isAssetEffectiveShipped('fps_arms')) {
+    useGLTF.preload(FPS_ARMS_URL, true, true, extendLoader);
+  }
 }
 
 /** Warm a single NPC GLB before approach / dialogue (interaction:start). */

@@ -4,6 +4,7 @@
    Linked quest IDs are in a separate record for reference. */
 
 import type { NPCDefinition } from '@/shared/types/game'
+import { NPC_PROCEDURAL_MODEL_PLACEHOLDER } from '@/config/npcModelRegistry'
 
 /* ── NPC-to-quest links (for quest assignment logic) ── */
 export const EXPANDED_NPC_QUEST_LINKS: Record<string, string[]> = {
@@ -126,7 +127,7 @@ export const EXPANDED_NPCS: NPCDefinition[] = [
   {
     id: 'lyonya',
     name: 'Лёня (Леонид)',
-    modelPath: '',
+    modelPath: NPC_PROCEDURAL_MODEL_PLACEHOLDER,
     scale: 1.0,
     animations: { idle: 'idle', walk: 'walk', talk: 'talk' },
     defaultPosition: [-2.0, 0, -1.5],
@@ -158,7 +159,7 @@ export const EXPANDED_NPCS: NPCDefinition[] = [
   {
     id: 'sergey',
     name: 'Сергей',
-    modelPath: '',
+    modelPath: NPC_PROCEDURAL_MODEL_PLACEHOLDER,
     scale: 1.05,
     animations: { idle: 'idle', walk: 'walk', talk: 'talk' },
     defaultPosition: [2.5, 0, -1.0],
@@ -190,7 +191,7 @@ export const EXPANDED_NPCS: NPCDefinition[] = [
   {
     id: 'lena',
     name: 'Лена',
-    modelPath: '',
+    modelPath: NPC_PROCEDURAL_MODEL_PLACEHOLDER,
     scale: 0.85,
     animations: { idle: 'idle', walk: 'walk', talk: 'talk' },
     defaultPosition: [0, 0, 3.5],
@@ -222,7 +223,7 @@ export const EXPANDED_NPCS: NPCDefinition[] = [
   {
     id: 'oleg',
     name: 'Олег',
-    modelPath: '',
+    modelPath: NPC_PROCEDURAL_MODEL_PLACEHOLDER,
     scale: 1.1,
     animations: { idle: 'idle', walk: 'walk', talk: 'talk' },
     defaultPosition: [4.0, 0, 0],
@@ -434,7 +435,7 @@ export const EXPANDED_NPCS: NPCDefinition[] = [
   {
     id: 'street_poet',
     name: 'Уличный поэт',
-    modelPath: '',
+    modelPath: NPC_PROCEDURAL_MODEL_PLACEHOLDER,
     scale: 1.0,
     animations: { idle: 'idle', walk: 'walk', talk: 'talk' },
     defaultPosition: [2.0, 0, 0],
@@ -459,7 +460,7 @@ export const EXPANDED_NPCS: NPCDefinition[] = [
   {
     id: 'marat_echo',
     name: 'Марат (эхо)',
-    modelPath: '',
+    modelPath: NPC_PROCEDURAL_MODEL_PLACEHOLDER,
     scale: 1.0,
     animations: { idle: 'idle', walk: 'walk', talk: 'talk' },
     defaultPosition: [0, 0, -2],
@@ -484,7 +485,7 @@ export const EXPANDED_NPCS: NPCDefinition[] = [
   {
     id: 'guild_defector',
     name: 'Перебежчик',
-    modelPath: '',
+    modelPath: NPC_PROCEDURAL_MODEL_PLACEHOLDER,
     scale: 1.0,
     animations: { idle: 'idle', walk: 'walk', talk: 'talk' },
     defaultPosition: [-1.0, 0, 1.0],

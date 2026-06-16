@@ -4,6 +4,7 @@
  */
 
 import type { CompressionPreference } from '@/engine/graphics/qualityPresets';
+import { ASSET_DISK_SHIPPED } from './assetManifestShipped.generated';
 
 export interface AssetLodLevel {
   /** Relative path under /models/ */
@@ -44,6 +45,13 @@ const MODELS = '/models';
 
 /** Processed asset catalog — extend as art pipeline grows. */
 export const ASSET_MANIFEST: Record<string, GltfAssetDefinition> = {
+  fps_arms: {
+    id: 'fps_arms',
+    category: 'character',
+    lods: [{ url: `${MODELS}/fps/fps_arms.glb`, maxDistance: 0 }],
+    castShadow: false,
+    shipped: true,
+  },
   player_volodka: {
     id: 'player_volodka',
     category: 'character',
@@ -250,9 +258,18 @@ export function getAssetDefinition(assetId: string): GltfAssetDefinition | undef
   return ASSET_MANIFEST[assetId];
 }
 
+/** Whether manifest + on-disk flags agree the asset is ready to load. */
+export function isAssetEffectiveShipped(assetId: string): boolean {
+  const asset = ASSET_MANIFEST[assetId];
+  if (!asset || asset.shipped !== true) return false;
+  const onDisk = ASSET_DISK_SHIPPED[assetId];
+  if (onDisk === undefined) return true;
+  return onDisk;
+}
+
 /** Whether an asset's processed files are shipped under public/models/. */
 export function isAssetShipped(assetId: string): boolean {
-  return ASSET_MANIFEST[assetId]?.shipped === true;
+  return isAssetEffectiveShipped(assetId);
 }
 
 /** Pick LOD url for camera distance with quality bias. */

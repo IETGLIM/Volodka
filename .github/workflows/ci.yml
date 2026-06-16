@@ -29,6 +29,8 @@ jobs:
 
       - run: npm run validate
 
+      - run: npm run assets:prepare
+
       - run: npm run assets:validate
 
       - run: npm run test:unit

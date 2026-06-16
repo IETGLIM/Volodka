@@ -11,6 +11,8 @@
     "validate": "npx tsx --tsconfig tsconfig.json scripts/validate-content.ts",
     "validate:content": "npx tsx --tsconfig tsconfig.json scripts/validate-content.ts",
     "assets:bootstrap": "node scripts/bootstrap-production-assets.mjs",
+    "assets:sync-shipped": "npx tsx --tsconfig tsconfig.json scripts/sync-asset-shipped-flags.ts",
+    "assets:prepare": "npm run assets:bootstrap && npm run assets:sync-shipped",
     "assets:status": "npx tsx --tsconfig tsconfig.json scripts/assets-status.mjs",
     "assets:process": "node scripts/process-gltf-assets.mjs",
     "assets:ai3dgen-import": "node scripts/ai3dgen-import.mjs",

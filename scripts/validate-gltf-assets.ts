@@ -24,12 +24,11 @@ import { RPM_SHIPPED_NPC_GLB_URLS } from '../src/config/rpmNpcShipped.generated'
 import { MIXAMO_ANIMATION_CATALOG } from '../src/config/mixamoAnimationCatalog';
 import { SHIPPED_MIXAMO_CLIP_IDS } from '../src/config/mixamoAnimationShipped';
 import { MODEL_URLS } from '../src/config/modelUrls';
+import { FPS_ARMS_URL } from '../src/config/fpsArmsUrl';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const PUBLIC = path.join(ROOT, 'public');
 const warnOnly = process.argv.includes('--warn-only');
-
-const FPS_ARMS_URL = '/models/fps/fps_arms.glb';
 
 function publicPath(url: string): string | null {
   if (!url.startsWith('/')) return null;
