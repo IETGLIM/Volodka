@@ -1,9 +1,4 @@
-/* ─── Volodka RPG – First-person hands (GLB) ───
- * CC0/community FPS arms attached to the active camera via useFrameTick.
- * Hidden during intro_wakeup cutscene and when FP mode is off. */
-
-import type { MutableRefObject } from 'react';
-import { Suspense, useEffect, useMemo, useRef } from 'react';
+import { Suspense, useEffect, useMemo, useRef, type MutableRefObject } from 'react';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
@@ -13,35 +8,27 @@ import { usePlayerPresentationState } from '@/store/selectors';
 import { shouldUseFirstPersonHands } from '@/engine/camera/cinematicPresentation';
 import { isEffectiveReducedMotion } from '@/engine/accessibility/accessibilitySettings';
 import { eventBus } from '@/engine/EventBus';
-import { FpsFingerEnhancement } from './fpsFingerEnhancement';
+import { FpsFingerEnhancement, armMeshHasFingerDetail } from './fpsFingerEnhancement';
 import { extendGltfLoader } from '@/engine/assets/gltfPipeline';
+import { measureGltfBounds } from '@/engine/assets/gltfScale';
 import { useSkinnedGltfClone } from '@/hooks/useSkinnedGltfClone';
+import {
+  pickPlayerClipAction,
+  PLAYER_IDLE_CLIP_NAMES,
+  PLAYER_WALK_CLIP_NAMES,
+} from '@/engine/player/playerClipResolution';
 
 const FPS_ARMS_URL = '/models/fps/fps_arms.glb';
-/** Khronos-style FPS rig units — matches FpsFingerEnhancement coordinates */
-const FPS_ARMS_RIG_SCALE = 0.012;
+/** Khronos / Soldier interim rigs use ~100–200 unit height; real FPS arm GLBs are <3 m. */
+const FULL_BODY_INTERIM_MIN_HEIGHT_UNITS = 8;
+/** Scale for Khronos-style FPS arm rigs (procedural finger coords). */
+const FPS_PROCEDURAL_RIG_SCALE = 0.012;
 const extendLoader = extendGltfLoader as unknown as NonNullable<Parameters<typeof useGLTF>[3]>;
 
-/** Source: https://github.com/eraofjavascript/fps-arms.glb (community FPS rig; verify license in ATTRIBUTION.md) */
 useGLTF.preload(FPS_ARMS_URL, true, true, extendLoader);
 
 interface FirstPersonHandsProps {
   moveBlendRef?: MutableRefObject<number>;
-}
-
-const IDLE_CANDIDATES = ['relax', 'idle', 'Idle', 'guard_idle', 'finger_gun_idle'];
-const WALK_CANDIDATES = ['walk', 'Walk', 'guard_draw'];
-
-function pickAction(
-  actions: Record<string, THREE.AnimationAction>,
-  names: string[],
-): THREE.AnimationAction | null {
-  for (const name of names) {
-    const action = actions[name];
-    if (action) return action;
-  }
-  const first = Object.values(actions).find(Boolean);
-  return first ?? null;
 }
 
 function FirstPersonHandsInner({ moveBlendRef }: FirstPersonHandsProps) {
@@ -74,19 +61,39 @@ function FirstPersonHandsInner({ moveBlendRef }: FirstPersonHandsProps) {
 
   const gltf = useGLTF(FPS_ARMS_URL, true, true, extendLoader);
   const { scene, mixer } = useSkinnedGltfClone(gltf.scene, gltf.animations, { castShadow: false });
+
+  const proceduralOnly = useMemo(() => {
+    scene.updateWorldMatrix(true, true);
+    const bounds = measureGltfBounds(scene);
+    return bounds.size.y > FULL_BODY_INTERIM_MIN_HEIGHT_UNITS || !armMeshHasFingerDetail(scene);
+  }, [scene]);
+
+  useEffect(() => {
+    scene.traverse((obj) => {
+      if (obj instanceof THREE.Mesh || obj instanceof THREE.SkinnedMesh) {
+        obj.visible = !proceduralOnly;
+      }
+    });
+  }, [scene, proceduralOnly]);
+
   const actions = useMemo(() => {
-    if (!mixer) return null;
+    if (!mixer || proceduralOnly) return null;
     const record: Record<string, THREE.AnimationAction> = {};
     for (const clip of gltf.animations) {
       record[clip.name] = mixer.clipAction(clip);
     }
     return record;
-  }, [mixer, gltf.animations]);
+  }, [mixer, gltf.animations, proceduralOnly]);
 
   useEffect(() => {
-    if (!actions) return;
-    idleActionRef.current = pickAction(actions, IDLE_CANDIDATES);
-    walkActionRef.current = pickAction(actions, WALK_CANDIDATES) ?? idleActionRef.current;
+    if (!actions) {
+      idleActionRef.current = null;
+      walkActionRef.current = null;
+      return;
+    }
+    idleActionRef.current = pickPlayerClipAction(actions, PLAYER_IDLE_CLIP_NAMES);
+    walkActionRef.current =
+      pickPlayerClipAction(actions, PLAYER_WALK_CLIP_NAMES) ?? idleActionRef.current;
     idleActionRef.current?.reset().fadeIn(0.2).play();
   }, [actions]);
 
@@ -123,13 +130,13 @@ function FirstPersonHandsInner({ moveBlendRef }: FirstPersonHandsProps) {
     const bob = bobPhaseRef.current;
     mount.position.set(
       Math.sin(bob * 0.55) * 0.012 * moveBob * (1 - guard * 0.8),
-      -0.16 + Math.sin(bob) * 0.014 * moveBob * (1 - guard * 0.8) + lunge * 0.04 - guard * 0.03,
-      -0.28 + lunge * 0.14 - guard * 0.06,
+      -0.2 + Math.sin(bob) * 0.012 * moveBob * (1 - guard * 0.8) + lunge * 0.04 - guard * 0.03,
+      -0.34 + lunge * 0.12 - guard * 0.05,
     );
     mount.rotation.set(
-      0.06 + Math.sin(bob * 0.4) * 0.02 * moveBob * (1 - guard) - lunge * 0.35 - guard * 0.22,
-      lunge * 0.08,
-      guard * 0.04,
+      0.04 + Math.sin(bob * 0.4) * 0.02 * moveBob * (1 - guard) - lunge * 0.3 - guard * 0.18,
+      lunge * 0.06,
+      guard * 0.03,
     );
 
     const idle = idleActionRef.current;
@@ -141,13 +148,13 @@ function FirstPersonHandsInner({ moveBlendRef }: FirstPersonHandsProps) {
       if (!walk.isRunning()) walk.play();
     }
 
-    if (mixer) mixer.update(delta);
+    if (mixer && !proceduralOnly) mixer.update(delta);
   });
 
   return (
     <group ref={rigRef}>
       <group ref={armsMountRef}>
-        <group scale={FPS_ARMS_RIG_SCALE}>
+        <group scale={FPS_PROCEDURAL_RIG_SCALE}>
           <primitive object={scene} />
           <FpsFingerEnhancement />
         </group>

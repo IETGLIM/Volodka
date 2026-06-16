@@ -123,6 +123,9 @@ export function WakeUpSequence() {
     camera.getWorldDirection(lookDir);
     handoffFromRef.current.lookAt.copy(camera.position).add(lookDir);
     handoffFromRef.current.fov = camera.fov;
+    setCinematicPresentationMode('first_person');
+    setActive(false);
+    activeRef.current = false;
     eventBus.emit('intro:wakeup_handoff', {});
   };
 

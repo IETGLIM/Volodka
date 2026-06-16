@@ -2,12 +2,17 @@ import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
-import { MIXAMO_ANIMATION_CATALOG } from '@/config/mixamoAnimationCatalog';
-import { SHIPPED_MIXAMO_CLIP_IDS } from '@/config/mixamoAnimationShipped';
 import { getPlayerVolodkaModelUrl } from '@/config/playerModelUrl';
 import { useSkinnedGltfClone } from '@/hooks/useSkinnedGltfClone';
 import { useMixamoAnimationClips } from '@/hooks/useMixamoAnimationClips';
 import { resolveLocomotionClipState } from '@/engine/player/playerLocomotionPresentation';
+import {
+  findPlayerAnimationClip,
+  pickPlayerClipAction,
+  PLAYER_IDLE_CLIP_NAMES,
+  PLAYER_RUN_CLIP_NAMES,
+  PLAYER_WALK_CLIP_NAMES,
+} from '@/engine/player/playerClipResolution';
 import { ProceduralPlayerModelAdaptive } from './ProceduralPlayerModel';
 import type { ProceduralPlayerModelProps } from './useProceduralPlayerAnimation';
 import { fitCharacterGltf, measureGltfBounds } from '@/engine/assets/gltfScale';
@@ -47,11 +52,6 @@ function CesiumPlayerModelInner({ modelScale, currentAnimRef, rotationRef }: Pro
 
   const mixamoActions = useMixamoAnimationClips(mixer, scene, embeddedActions);
 
-  const mixamoIdleName = MIXAMO_ANIMATION_CATALOG.find((c) => c.id === 'idle')?.canonicalClipName;
-  const mixamoWalkName = MIXAMO_ANIMATION_CATALOG.find((c) => c.id === 'walking')?.canonicalClipName;
-  const hasMixamoIdle = SHIPPED_MIXAMO_CLIP_IDS.includes('idle');
-  const hasMixamoWalk = SHIPPED_MIXAMO_CLIP_IDS.includes('walking');
-
   useEffect(() => {
     if (!mixer) {
       idleActionRef.current = null;
@@ -70,29 +70,24 @@ function CesiumPlayerModelInner({ modelScale, currentAnimRef, rotationRef }: Pro
     walkActionRef.current = null;
     runActionRef.current = null;
 
-    const pickAction = (names: string[]): THREE.AnimationAction | null => {
-      if (!mixamoActions) return null;
-      for (const name of names) {
-        const action = mixamoActions[name];
-        if (action) return action;
-      }
-      return null;
-    };
+    const pickAction = (names: readonly string[]): THREE.AnimationAction | null =>
+      pickPlayerClipAction(mixamoActions, names);
 
-    const idleAction =
-      (hasMixamoIdle && mixamoIdleName ? pickAction([mixamoIdleName, 'idle', 'Idle']) : null) ??
-      pickAction(['idle', 'Idle', 'IDLE']) ??
-      (gltf.animations[0] ? mixer.clipAction(gltf.animations[0]) : null);
+    const idleAction = pickAction(PLAYER_IDLE_CLIP_NAMES);
 
+    const walkClip = findPlayerAnimationClip(
+      gltf.animations,
+      /walk/i,
+      idleAction?.getClip(),
+    );
     const walkAction =
-      (hasMixamoWalk && mixamoWalkName ? pickAction([mixamoWalkName, 'walking', 'Walking']) : null) ??
-      pickAction(['walking', 'Walking', 'walk', 'Walk']) ??
-      gltf.animations.find((c) => /walk/i.test(c.name) && c !== idleAction?.getClip())
-        ? mixer.clipAction(gltf.animations.find((c) => /walk/i.test(c.name))!)
-        : idleAction;
+      pickAction(PLAYER_WALK_CLIP_NAMES) ??
+      (walkClip ? mixer.clipAction(walkClip) : idleAction);
 
-    const runClip = gltf.animations.find(
-      (c) => /run/i.test(c.name) && c !== walkAction?.getClip() && c !== idleAction?.getClip(),
+    const runClip = findPlayerAnimationClip(
+      gltf.animations,
+      /run/i,
+      walkAction?.getClip() ?? idleAction?.getClip(),
     );
 
     if (idleAction) {
@@ -109,7 +104,8 @@ function CesiumPlayerModelInner({ modelScale, currentAnimRef, rotationRef }: Pro
     }
 
     if (runClip) {
-      const runAction = mixer.clipAction(runClip);
+      const runAction =
+        pickAction(PLAYER_RUN_CLIP_NAMES) ?? mixer.clipAction(runClip);
       runAction.setLoop(THREE.LoopRepeat, Infinity);
       runAction.play();
       runAction.setEffectiveWeight(0);
@@ -129,7 +125,7 @@ function CesiumPlayerModelInner({ modelScale, currentAnimRef, rotationRef }: Pro
       walkActionRef.current = null;
       runActionRef.current = null;
     };
-  }, [mixer, gltf.animations, mixamoActions, hasMixamoIdle, hasMixamoWalk, mixamoIdleName, mixamoWalkName]);
+  }, [mixer, gltf.animations, mixamoActions]);
 
   useEffect(() => {
     const inner = fitRef.current;
@@ -184,11 +180,11 @@ function CesiumPlayerModelInner({ modelScale, currentAnimRef, rotationRef }: Pro
           ? clipState.runTimeScale
           : clipState.walkTimeScale;
       }
-      mixer.update(delta);
     } else if (idleAction) {
       idleAction.timeScale = 1;
-      mixer.update(delta);
     }
+
+    mixer.update(delta);
   });
 
   return (

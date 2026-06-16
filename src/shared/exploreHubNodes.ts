@@ -18,9 +18,9 @@ export {
 /** True when narrative overlay should freeze player locomotion. */
 export function isNarrativeMovementLocked(
   showStoryOverlay: boolean,
-  currentNodeId: string,
+  _currentNodeId?: string,
 ): boolean {
-  return showStoryOverlay && !isExploreHubNode(currentNodeId);
+  return showStoryOverlay;
 }
 
 /**

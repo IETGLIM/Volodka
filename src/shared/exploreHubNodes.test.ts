@@ -39,11 +39,11 @@ describe('exploreHubNodes', () => {
     };
   });
 
-  it('locks movement on non-hub overlay nodes', () => {
+  it('locks movement whenever the narrative overlay is open', () => {
     expect(isNarrativeMovementLocked(true, 'corridor_door')).toBe(true);
-    expect(isNarrativeMovementLocked(true, 'corridor_explore_mode')).toBe(false);
-    expect(isNarrativeMovementLocked(true, 'home_evening_explore_mode')).toBe(false);
-    expect(isNarrativeMovementLocked(true, 'cafe_explore_mode')).toBe(false);
+    expect(isNarrativeMovementLocked(true, 'explore_mode')).toBe(true);
+    expect(isNarrativeMovementLocked(true, 'corridor_explore_mode')).toBe(true);
+    expect(isNarrativeMovementLocked(false, 'explore_mode')).toBe(false);
   });
 
   it('closes narrative overlay on physical scene enter', () => {

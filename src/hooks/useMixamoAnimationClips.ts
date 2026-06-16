@@ -1,6 +1,6 @@
 /* ─── Volodka RPG – optional Mixamo GLB clips merged into a skinned mixer ─── */
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import type { MixamoClipId } from '@/config/mixamoAnimationCatalog';
@@ -77,9 +77,10 @@ export function useMixamoAnimationClips(
     };
   }, [mixer, root, SHIPPED_MIXAMO_CLIP_IDS.join(',')]);
 
-  if (!embeddedActions && Object.keys(mixamoActions).length === 0) {
-    return null;
-  }
-
-  return { ...embeddedActions, ...mixamoActions };
+  return useMemo(() => {
+    if (!embeddedActions && Object.keys(mixamoActions).length === 0) {
+      return null;
+    }
+    return { ...(embeddedActions ?? {}), ...mixamoActions };
+  }, [embeddedActions, mixamoActions]);
 }

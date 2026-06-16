@@ -11,6 +11,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { completeTutorial } from '@/store/actions/tutorialActions';
 import { useTutorialFlags, useTutorialReady } from '@/store/selectors';
+import { useGameStore } from '@/store/gameStore';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 import { useGamepadConnected } from '@/hooks/useGamepadConnected';
 import {
@@ -205,11 +206,11 @@ const STEPS: TutorialStep[] = [
     icon: <Sparkles className="size-6 text-amber-400" style={{ filter: 'drop-shadow(0 0 6px rgba(251,191,36,0.5))' }} />,
     title: 'Добро пожаловать в ВОЛОДЬКА',
     content: (
-      <p className="text-base leading-relaxed" style={{ color: 'rgba(251, 191, 36, 0.9)' }}>
+      <p className="text-base leading-relaxed text-amber-200/90">
         Город, где код — закон, а поэзия — преступление.
         <br />
         <span className="text-slate-300/70">Вы — </span>
-        <span style={{ color: 'rgb(var(--cyber-cyan-rgb) / 0.9)', textShadow: '0 0 8px rgb(var(--cyber-cyan-rgb) / 0.3)' }}>
+        <span className="text-emerald-400/95">
           Володька
         </span>
         <span className="text-slate-300/70">, техник IT-гильдии.</span>
@@ -349,6 +350,8 @@ export function FirstPlayTutorial() {
   const profile = useGameplayPresentationProfile();
   const tutorialFlags = useTutorialFlags();
   const tutorialReady = useTutorialReady();
+  const showStoryOverlay = useGameStore((s) => s.showStoryOverlay);
+  const activeCutsceneId = useGameStore((s) => s.activeCutsceneId);
 
   const [currentStep, setCurrentStep] = useState(0);
   const [direction, setDirection] = useState(1);
@@ -368,7 +371,9 @@ export function FirstPlayTutorial() {
     isExplorationHudProfile(profile) &&
     !tutorialFlags.tutorialsDisabled &&
     !tutorialFlags.tutorialsCompleted &&
-    tutorialReady;
+    tutorialReady &&
+    !showStoryOverlay &&
+    !activeCutsceneId;
 
   useEffect(() => {
     injectScanlineStyles();
