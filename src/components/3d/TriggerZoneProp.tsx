@@ -8,6 +8,7 @@ import { useCurrentSceneId } from '@/store/selectors';
 import { TRIGGER_ZONES, type TriggerZone, isTriggerZoneAvailable } from '@/data/triggerZones';
 import { getPropModelDefinition } from '@/config/propModelRegistry';
 import { extendGltfLoader } from '@/engine/assets/gltfPipeline';
+import { useGltfPropPlacement } from '@/hooks/useGltfPropPlacement';
 import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
 import { allowsGlbAssetRendering } from '@/engine/graphics/qualityPresets';
 
@@ -43,6 +44,11 @@ function TriggerZonePropMeshInner({ zone, def }: TriggerZonePropMeshInnerProps) 
   }, [gltf.scene]);
 
   const scale = def.scale ?? 1;
+  const { scale: fitScale, footY } = useGltfPropPlacement(clone, {
+    manualScale: scale,
+    targetSizeM: def.targetSizeM,
+    fitAxis: def.fitAxis,
+  });
   const baseRotation = def.rotation ?? [0, 0, 0];
   const offset = def.offset ?? [0, 0, 0];
   const zoneOffset = zone.propOffset ?? [0, 0, 0];
@@ -52,11 +58,11 @@ function TriggerZonePropMeshInner({ zone, def }: TriggerZonePropMeshInnerProps) 
     <group
       position={[
         zone.position[0] + offset[0] + zoneOffset[0],
-        zone.position[1] + offset[1] + zoneOffset[1],
+        zone.position[1] + offset[1] + zoneOffset[1] + footY,
         zone.position[2] + offset[2] + zoneOffset[2],
       ]}
       rotation={[baseRotation[0], rotationY, baseRotation[2]]}
-      scale={[scale, scale, scale]}
+      scale={[fitScale, fitScale, fitScale]}
     >
       <primitive object={clone} />
     </group>

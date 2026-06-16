@@ -13,10 +13,9 @@ import { useMixamoAnimationClips } from '@/hooks/useMixamoAnimationClips';
 import { InteractionState } from '@/engine/interaction/interactionMachine';
 import { ProceduralNPCModel } from '@/components/3d/ProceduralNPCModels';
 import { devWarn } from '@/shared/utils/devLog';
+import { fitCharacterGltf, measureGltfBounds } from '@/engine/assets/gltfScale';
 
 const extendLoader = extendGltfLoader as unknown as NonNullable<Parameters<typeof useGLTF>[3]>;
-
-const TARGET_HEIGHT = 1.7;
 
 interface Fit {
   scale: number;
@@ -24,19 +23,11 @@ interface Fit {
   y: number;
 }
 
-function measure(obj: THREE.Object3D): { size: THREE.Vector3; min: THREE.Vector3 } {
-  obj.updateWorldMatrix(true, true);
-  const box = new THREE.Box3().setFromObject(obj);
-  const size = new THREE.Vector3();
-  if (!box.isEmpty()) box.getSize(size);
-  return { size, min: box.min.clone() };
-}
-
 interface GltfNPCModelInnerProps {
   definition: NPCDefinition;
   url: string;
   modelScale: number;
-  /** Matches procedural NPC `appearance.height` scaling (default 1.0 ≈ TARGET_HEIGHT). */
+  /** Matches procedural NPC `appearance.height` scaling (default 1.0 ≈ 1.75 m). */
   targetHeightFactor: number;
   interactionState: InteractionState;
   isInteractionTarget: boolean;
@@ -91,22 +82,15 @@ function GltfNPCModelInner({
     inner.scale.set(1, 1, 1);
     inner.position.set(0, 0, 0);
 
-    const { size } = measure(scene);
-    let rotX = 0;
-    let heightDim = size.y;
-    if (size.z > size.y * 1.15) {
-      rotX = -Math.PI / 2;
-      heightDim = size.z;
-    }
-    if (!isFinite(heightDim) || heightDim < 0.2) heightDim = 1.5;
-    const targetHeight = TARGET_HEIGHT * targetHeightFactor;
-    const autoScale = (targetHeight / heightDim) * modelScale;
+    const bounds = measureGltfBounds(scene);
+    const { scale, rotX, footY } = fitCharacterGltf(bounds, {
+      heightFactor: targetHeightFactor,
+      scaleMultiplier: modelScale,
+    });
 
     inner.rotation.x = rotX;
-    inner.scale.setScalar(autoScale);
-    const { min } = measure(scene);
-    const y = isFinite(min.y) ? -min.y : 0;
-    setFit({ scale: autoScale, rotX, y });
+    inner.scale.setScalar(scale);
+    setFit({ scale, rotX, y: footY });
   }, [scene, modelScale, targetHeightFactor]);
 
   useFrameTick('npc', ({ delta }) => {

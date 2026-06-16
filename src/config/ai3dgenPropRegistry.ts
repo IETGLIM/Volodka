@@ -6,7 +6,9 @@ export interface Ai3dgenPropStub {
   catalogId: string;
   propModelId: string;
   url: string;
+  targetSizeM?: [number, number, number];
   scale?: number;
+  fitAxis?: 'height' | 'width' | 'depth' | 'maxHorizontal' | 'maxExtent';
   license: Ai3dgenPropLicense;
   /** Set true after import + assets:validate — avoids 404s before files exist. */
   shipped?: boolean;
@@ -17,7 +19,8 @@ export const AI3DGEN_PROP_STUBS: Ai3dgenPropStub[] = [
     catalogId: 'craft_digital_amulet',
     propModelId: 'ai3dgen_digital_amulet',
     url: '/models/props/digital_amulet.glb',
-    scale: 0.35,
+    targetSizeM: [0.08, 0.08, 0.05],
+    fitAxis: 'maxExtent',
     license: 'AI3DGen-Pro',
     shipped: true,
   },
@@ -25,7 +28,7 @@ export const AI3DGEN_PROP_STUBS: Ai3dgenPropStub[] = [
     catalogId: 'craft_poetic_compiler',
     propModelId: 'ai3dgen_poetic_compiler',
     url: '/models/props/poetic_compiler.glb',
-    scale: 0.4,
+    targetSizeM: [0.4, 0.35, 0.4],
     license: 'AI3DGen-Pro',
     shipped: true,
   },
@@ -33,7 +36,7 @@ export const AI3DGEN_PROP_STUBS: Ai3dgenPropStub[] = [
     catalogId: 'craft_neural_filter',
     propModelId: 'ai3dgen_neural_filter',
     url: '/models/props/neural_filter.glb',
-    scale: 0.25,
+    targetSizeM: [0.11, 0.26, 0.11],
     license: 'AI3DGen-Pro',
     shipped: true,
   },
@@ -41,7 +44,7 @@ export const AI3DGEN_PROP_STUBS: Ai3dgenPropStub[] = [
     catalogId: 'quest_encrypted_scroll',
     propModelId: 'ai3dgen_encrypted_scroll',
     url: '/models/props/encrypted_scroll.glb',
-    scale: 0.3,
+    targetSizeM: [0.12, 0.15, 0.08],
     license: 'AI3DGen-Pro',
     shipped: true,
   },
@@ -49,7 +52,7 @@ export const AI3DGEN_PROP_STUBS: Ai3dgenPropStub[] = [
     catalogId: 'quest_server_fragment',
     propModelId: 'ai3dgen_server_fragment',
     url: '/models/props/server_fragment.glb',
-    scale: 0.45,
+    targetSizeM: [0.45, 0.4, 0.35],
     license: 'AI3DGen-Pro',
     shipped: true,
   },

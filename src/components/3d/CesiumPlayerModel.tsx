@@ -10,12 +10,11 @@ import { useMixamoAnimationClips } from '@/hooks/useMixamoAnimationClips';
 import { resolveLocomotionClipState } from '@/engine/player/playerLocomotionPresentation';
 import { ProceduralPlayerModelAdaptive } from './ProceduralPlayerModel';
 import type { ProceduralPlayerModelProps } from './useProceduralPlayerAnimation';
+import { fitCharacterGltf, measureGltfBounds } from '@/engine/assets/gltfScale';
 
 const PLAYER_MODEL_URL = getPlayerVolodkaModelUrl();
 useGLTF.preload(PLAYER_MODEL_URL);
 
-/** Target avatar height (metres) at modelScale = 1. */
-const TARGET_HEIGHT = 1.7;
 /** Flip to Math.PI if the avatar faces backwards while walking. */
 const FORWARD_OFFSET = 0;
 const CLIP_CROSSFADE_SEC = 0.2;
@@ -24,14 +23,6 @@ interface Fit {
   scale: number;
   rotX: number;
   y: number;
-}
-
-function measure(obj: THREE.Object3D): { size: THREE.Vector3; min: THREE.Vector3 } {
-  obj.updateWorldMatrix(true, true);
-  const box = new THREE.Box3().setFromObject(obj);
-  const size = new THREE.Vector3();
-  if (!box.isEmpty()) box.getSize(size);
-  return { size, min: box.min.clone() };
 }
 
 function CesiumPlayerModelInner({ modelScale, currentAnimRef, rotationRef }: ProceduralPlayerModelProps) {
@@ -43,7 +34,7 @@ function CesiumPlayerModelInner({ modelScale, currentAnimRef, rotationRef }: Pro
   const walkActionRef = useRef<THREE.AnimationAction | null>(null);
   const runActionRef = useRef<THREE.AnimationAction | null>(null);
   const prevLocomotionRef = useRef(false);
-  const [fit, setFit] = useState<Fit>({ scale: 1.1, rotX: 0, y: 0 });
+  const [fit, setFit] = useState<Fit>({ scale: 1, rotX: 0, y: 0 });
 
   const embeddedActions = useMemo(() => {
     if (!mixer) return null;
@@ -147,23 +138,15 @@ function CesiumPlayerModelInner({ modelScale, currentAnimRef, rotationRef }: Pro
     inner.scale.set(1, 1, 1);
     inner.position.set(0, 0, 0);
 
-    const { size } = measure(scene);
-    let rotX = 0;
-    let heightDim = size.y;
-    if (size.z > size.y * 1.15) {
-      rotX = -Math.PI / 2;
-      heightDim = size.z;
-    }
-    if (!isFinite(heightDim) || heightDim < 0.2) heightDim = 1.5;
-    const scale = TARGET_HEIGHT / heightDim;
+    const bounds = measureGltfBounds(scene);
+    const { scale, rotX, footY } = fitCharacterGltf(bounds, {
+      scaleMultiplier: modelScale,
+    });
 
     inner.rotation.x = rotX;
     inner.scale.setScalar(scale);
-    const { min } = measure(scene);
-    const y = isFinite(min.y) ? -min.y : 0;
-
-    setFit({ scale, rotX, y });
-  }, [scene]);
+    setFit({ scale, rotX, y: footY });
+  }, [scene, modelScale]);
 
   useFrameTick('player', ({ delta }) => {
     if (yawRef.current) yawRef.current.rotation.y = rotationRef.current + FORWARD_OFFSET;
@@ -213,8 +196,7 @@ function CesiumPlayerModelInner({ modelScale, currentAnimRef, rotationRef }: Pro
       <group
         ref={fitRef}
         rotation={[fit.rotX, 0, 0]}
-        scale={fit.scale * modelScale}
-        position={[0, fit.y * modelScale, 0]}
+        position={[0, fit.y, 0]}
       >
         <primitive object={scene} />
       </group>

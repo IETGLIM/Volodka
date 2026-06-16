@@ -8,6 +8,7 @@ import { getPropModelDefinition } from '@/config/propModelRegistry';
 import type { SceneId } from '@/shared/types/game';
 import { getScenePropDressing, type ScenePropPlacement } from '@/config/scenePropDressing';
 import { extendGltfLoader } from '@/engine/assets/gltfPipeline';
+import { useGltfPropPlacement } from '@/hooks/useGltfPropPlacement';
 import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
 import { allowsGlbAssetRendering } from '@/engine/graphics/qualityPresets';
 
@@ -42,6 +43,11 @@ function ScenePropMeshInner({ placement, def }: ScenePropMeshInnerProps) {
   }, [gltf.scene]);
 
   const scale = def.scale ?? 1;
+  const { scale: fitScale, footY } = useGltfPropPlacement(clone, {
+    manualScale: scale,
+    targetSizeM: def.targetSizeM,
+    fitAxis: def.fitAxis,
+  });
   const baseRotation = def.rotation ?? [0, 0, 0];
   const offset = def.offset ?? [0, 0, 0];
   const placementOffset = placement.offset ?? [0, 0, 0];
@@ -51,11 +57,11 @@ function ScenePropMeshInner({ placement, def }: ScenePropMeshInnerProps) {
     <group
       position={[
         placement.position[0] + offset[0] + placementOffset[0],
-        placement.position[1] + offset[1] + placementOffset[1],
+        placement.position[1] + offset[1] + placementOffset[1] + footY,
         placement.position[2] + offset[2] + placementOffset[2],
       ]}
       rotation={[baseRotation[0], rotationY, baseRotation[2]]}
-      scale={[scale, scale, scale]}
+      scale={[fitScale, fitScale, fitScale]}
     >
       <primitive object={clone} />
     </group>

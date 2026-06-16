@@ -10,6 +10,7 @@ import { RPM_SHIPPED_NPC_GLB_URLS } from '@/config/rpmNpcShipped.generated';
 
 export interface NpcModelAssetMeta {
   url: string;
+  /** Optional multiplier after auto-fit to 1.75 m (prefer `NPCDefinition.scale`). */
   scale?: number;
   /** Y rotation offset if model faces wrong way */
   yawOffset?: number;
@@ -69,175 +70,150 @@ const CC0_SHIPPED_NPC_GLB_URLS = new Set<string>([
 const CC0_NPC_MODEL_ASSETS: Partial<Record<string, NpcModelAssetMeta>> = {
   albert: {
     url: `${NPCS}/albert.glb`,
-    scale: 1,
     license: 'CC0',
     source: QUATERNIUS,
     sourceUrl: QUATERNIUS_URL,
   },
   zarema: {
     url: `${NPCS}/zarema.glb`,
-    scale: 0.95,
     license: 'CC0',
     source: QUATERNIUS,
     sourceUrl: QUATERNIUS_URL,
   },
   cafe_barista: {
     url: `${NPCS}/cafe_barista.glb`,
-    scale: 1,
     license: 'CC0',
     source: QUATERNIUS,
     sourceUrl: QUATERNIUS_URL,
   },
   office_alexander: {
     url: `${NPCS}/office_alexander.glb`,
-    scale: 1.05,
     license: 'CC0',
     source: QUATERNIUS,
     sourceUrl: QUATERNIUS_URL,
   },
   office_colleague: {
     url: `${NPCS}/office_colleague.glb`,
-    scale: 1,
     license: 'CC0',
     source: `${KHRONOS} — RiggedSimple`,
     sourceUrl: KHRONOS_URL,
   },
   maria: {
     url: `${NPCS}/maria.glb`,
-    scale: 0.8,
     license: 'CC0',
     source: QUATERNIUS,
     sourceUrl: QUATERNIUS_URL,
   },
   office_dmitry: {
     url: `${NPCS}/office_dmitry.glb`,
-    scale: 1.1,
     license: 'CC0',
     source: QUATERNIUS,
     sourceUrl: QUATERNIUS_URL,
   },
   viktor: {
     url: `${NPCS}/viktor.glb`,
-    scale: 1,
     license: 'CC0',
     source: `${THREE_SAMPLES} — Soldier`,
     sourceUrl: THREE_SAMPLES_URL,
   },
   kira: {
     url: `${NPCS}/kira.glb`,
-    scale: 0.9,
     license: 'CC0',
     source: `${KHRONOS} — RiggedFigure`,
     sourceUrl: KHRONOS_URL,
   },
   boris: {
     url: `${NPCS}/boris.glb`,
-    scale: 1.1,
     license: 'CC0',
     source: `${KHRONOS} — RiggedSimple`,
     sourceUrl: KHRONOS_URL,
   },
   tamara: {
     url: `${NPCS}/tamara.glb`,
-    scale: 1,
     license: 'CC0',
     source: `${KHRONOS} — CesiumMan`,
     sourceUrl: KHRONOS_URL,
   },
   grisha: {
     url: `${NPCS}/grisha.glb`,
-    scale: 1,
     license: 'CC0',
     source: `${KHRONOS} — Fox`,
     sourceUrl: KHRONOS_URL,
   },
   maxim: {
     url: `${NPCS}/maxim.glb`,
-    scale: 1.1,
     license: 'CC0',
     source: QUATERNIUS,
     sourceUrl: QUATERNIUS_URL,
   },
   zeka: {
     url: `${NPCS}/zeka.glb`,
-    scale: 1,
     license: 'CC0',
     source: QUATERNIUS,
     sourceUrl: QUATERNIUS_URL,
   },
   fisherman_trofim: {
     url: `${NPCS}/trofim.glb`,
-    scale: 1,
     license: 'CC0',
     source: QUATERNIUS,
     sourceUrl: QUATERNIUS_URL,
   },
   kate: {
     url: `${NPCS}/kate.glb`,
-    scale: 0.9,
     license: 'CC0',
     source: QUATERNIUS,
     sourceUrl: QUATERNIUS_URL,
   },
   anya: {
     url: `${NPCS}/anya.glb`,
-    scale: 0.9,
     license: 'CC0',
     source: QUATERNIUS,
     sourceUrl: QUATERNIUS_URL,
   },
   baba_zina: {
     url: `${NPCS}/baba_zina.glb`,
-    scale: 0.88,
     license: 'CC0',
     source: QUATERNIUS,
     sourceUrl: QUATERNIUS_URL,
   },
   solnysh: {
     url: `${NPCS}/solnysh.glb`,
-    scale: 0.92,
     license: 'CC0',
     source: QUATERNIUS,
     sourceUrl: QUATERNIUS_URL,
   },
   chk_ru: {
     url: `${NPCS}/chk_ru.glb`,
-    scale: 1.05,
     license: 'CC0',
     source: QUATERNIUS,
     sourceUrl: QUATERNIUS_URL,
   },
   chk_based: {
     url: `${NPCS}/chk_based.glb`,
-    scale: 1,
     license: 'CC0',
     source: QUATERNIUS,
     sourceUrl: QUATERNIUS_URL,
   },
   chk_stalker: {
     url: `${NPCS}/chk_stalker.glb`,
-    scale: 1,
     license: 'CC0',
     source: QUATERNIUS,
     sourceUrl: QUATERNIUS_URL,
   },
   chk_smert: {
     url: `${NPCS}/chk_smert.glb`,
-    scale: 0.95,
     license: 'CC0',
     source: QUATERNIUS,
     sourceUrl: QUATERNIUS_URL,
   },
   chk_elis: {
     url: `${NPCS}/chk_elis.glb`,
-    scale: 0.92,
     license: 'CC0',
     source: QUATERNIUS,
     sourceUrl: QUATERNIUS_URL,
   },
   chk_ritka: {
     url: `${NPCS}/chk_ritka.glb`,
-    scale: 0.9,
     license: 'CC0',
     source: QUATERNIUS,
     sourceUrl: QUATERNIUS_URL,
@@ -336,4 +312,4 @@ export function getRpmPendingPublicUrls(): string[] {
 export function isRpmNpcShipped(npcId: string): boolean {
   return isRpmShippedForNpc(npcId);
 }
-
+
