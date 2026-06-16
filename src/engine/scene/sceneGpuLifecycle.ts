@@ -6,7 +6,8 @@
 import * as THREE from 'three';
 import { useGLTF } from '@react-three/drei';
 import type { SceneId } from '@/shared/types/game';
-import { resolveDerivedSceneId } from '@/config/sceneInheritance';
+import { sceneMatchesScheduleEntry, resolveDerivedSceneId } from '@/config/sceneInheritance';
+import { NPC_SCHEDULES_MAP, ACT_SCHEDULE_OVERRIDES } from '@/data/npcSchedules';
 import { getAssetDefinition } from '@/config/assetManifest';
 import { preloadGltfAsset } from '@/components/3d/assets/GltfAsset';
 import { preloadTriggerZoneProps } from '@/components/3d/TriggerZoneProp';
@@ -42,18 +43,35 @@ function getScenePropIds(sceneId: SceneId): readonly string[] {
   return getScenePropDressingIds(sceneId);
 }
 
-/** Shipped GLB NPC ids present in each scene (procedural NPCs are not preloaded). */
-const SCENE_NPC_IDS: Partial<Record<SceneId, readonly string[]>> = {
-  cafe_evening: ['cafe_barista', 'albert', 'zarema', 'maria'],
-  office_day: ['office_colleague', 'office_alexander', 'office_dmitry'],
-  park_day: ['albert', 'zarema'],
-  zarema_albert_room: ['albert', 'zarema'],
-  home_evening: ['zarema'],
-  street_night: ['viktor', 'kira'],
-  abandoned_factory: ['boris'],
-  rooftop_edge: ['grisha'],
-  volodka_corridor: ['tamara'],
-};
+/** All NPC ids that may appear in a scene (base schedules + act overrides). */
+export function getScheduleBackedNpcIdsForScene(sceneId: SceneId): readonly string[] {
+  const rootSceneId = resolveDerivedSceneId(sceneId);
+  const ids = new Set<string>();
+
+  for (const [npcId, schedule] of Object.entries(NPC_SCHEDULES_MAP)) {
+    for (const entry of schedule.entries) {
+      if (sceneMatchesScheduleEntry(rootSceneId, entry.sceneId)) {
+        ids.add(npcId);
+        break;
+      }
+    }
+  }
+
+  for (const override of ACT_SCHEDULE_OVERRIDES) {
+    for (const entry of override.entries) {
+      if (sceneMatchesScheduleEntry(rootSceneId, entry.sceneId)) {
+        ids.add(override.npcId);
+        break;
+      }
+    }
+  }
+
+  return [...ids].sort();
+}
+
+function getSceneNpcIds(sceneId: SceneId): readonly string[] {
+  return getScheduleBackedNpcIdsForScene(sceneId);
+}
 
 export function getSceneGltfAssetIds(sceneId: SceneId): readonly string[] {
   return SCENE_GLTF_ASSETS[resolveDerivedSceneId(sceneId)] ?? [];
@@ -82,8 +100,7 @@ function preloadScenePropModels(sceneId: SceneId): void {
 }
 
 function preloadSceneNpcModels(sceneId: SceneId): void {
-  const rootSceneId = resolveDerivedSceneId(sceneId);
-  for (const npcId of SCENE_NPC_IDS[rootSceneId] ?? []) {
+  for (const npcId of getSceneNpcIds(sceneId)) {
     const url = resolveNpcModelUrl(npcId);
     if (url) useGLTF.preload(url, true, true, extendLoader);
   }
@@ -113,7 +130,7 @@ export function evictSceneGpuCache(fromSceneId: SceneId, keepSceneId?: SceneId):
     for (const propId of getScenePropIds(keepRoot)) {
       keepPropIds.add(propId);
     }
-    for (const npcId of SCENE_NPC_IDS[keepRoot] ?? []) {
+    for (const npcId of getSceneNpcIds(keepSceneId!)) {
       keepNpcIds.add(npcId);
     }
   }
@@ -131,7 +148,7 @@ export function evictSceneGpuCache(fromSceneId: SceneId, keepSceneId?: SceneId):
     if (def) evictGltfUrl(def.url);
   }
 
-  for (const npcId of SCENE_NPC_IDS[fromRoot] ?? []) {
+  for (const npcId of getSceneNpcIds(fromSceneId)) {
     if (keepNpcIds.has(npcId)) continue;
     const url = resolveNpcModelUrl(npcId);
     if (url) evictGltfUrl(url);

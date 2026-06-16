@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { InteractionState } from '@/engine/interaction/interactionMachine';
 import {
   resolveNpcAnimationFromActivity,
+  resolveInteractionNpcAnimationState,
   shouldDeferToInteractionAnimation,
 } from './npcActivityAnimation';
 
@@ -14,6 +15,14 @@ describe('npcActivityAnimation', () => {
     expect(resolveNpcAnimationFromActivity('read')).toBe('sit');
     expect(resolveNpcAnimationFromActivity('rest')).toBe('sit');
     expect(resolveNpcAnimationFromActivity('sleep')).toBe('idle');
+  });
+
+  it('maps interaction states to talk/listen/idle GLB clips', () => {
+    expect(resolveInteractionNpcAnimationState(InteractionState.Dialogue)).toBe('talk');
+    expect(resolveInteractionNpcAnimationState(InteractionState.Lock)).toBe('talk');
+    expect(resolveInteractionNpcAnimationState(InteractionState.Align)).toBe('listen');
+    expect(resolveInteractionNpcAnimationState(InteractionState.Cutscene)).toBe('listen');
+    expect(resolveInteractionNpcAnimationState(InteractionState.Approach)).toBe('idle');
   });
 
   it('defers to interaction bus during dialogue alignment', () => {

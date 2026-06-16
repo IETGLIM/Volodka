@@ -4,7 +4,9 @@ import { useEffect } from 'react';
 import type * as THREE from 'three';
 import { InteractionState } from '@/engine/interaction/interactionMachine';
 import { useNPCAnimation } from '@/engine/npc/useNPCAnimation';
+import type { NpcAnimationClipOverrides } from '@/engine/npc/npcClipResolution';
 import {
+  resolveInteractionNpcAnimationState,
   resolveNpcAnimationFromActivity,
   shouldDeferToInteractionAnimation,
 } from '@/engine/npc/npcActivityAnimation';
@@ -12,7 +14,7 @@ import {
 export interface UseNpcAnimationControllerOptions {
   npcId: string;
   actions: Record<string, THREE.AnimationAction> | null | undefined;
-  defaultIdleName?: string;
+  clipOverrides?: NpcAnimationClipOverrides;
   activity: string;
   interactionState: InteractionState;
   isInteractionTarget: boolean;
@@ -24,15 +26,16 @@ export interface UseNpcAnimationControllerOptions {
 export function useNpcAnimationController({
   npcId,
   actions,
-  defaultIdleName,
+  clipOverrides,
   activity,
   interactionState,
   isInteractionTarget,
 }: UseNpcAnimationControllerOptions) {
-  const { crossfadeTo } = useNPCAnimation(npcId, actions, defaultIdleName);
+  const { crossfadeTo } = useNPCAnimation(npcId, actions, clipOverrides);
 
   useEffect(() => {
     if (shouldDeferToInteractionAnimation(interactionState, isInteractionTarget)) {
+      crossfadeTo(resolveInteractionNpcAnimationState(interactionState));
       return;
     }
     crossfadeTo(resolveNpcAnimationFromActivity(activity));

@@ -3,6 +3,29 @@
 import { InteractionState } from '@/engine/interaction/interactionMachine';
 import type { NPCAnimationState } from '@/engine/interaction/interactionMachine';
 
+/** GLB clip state while the interaction machine owns the NPC (dialogue, align, …). */
+export function resolveInteractionNpcAnimationState(
+  interactionState: InteractionState,
+): NPCAnimationState {
+  switch (interactionState) {
+    case InteractionState.Dialogue:
+    case InteractionState.Lock:
+      return 'talk';
+    case InteractionState.Align:
+    case InteractionState.Cutscene:
+      return 'listen';
+    case InteractionState.Approach:
+      return 'idle';
+    case InteractionState.Exit:
+    case InteractionState.Idle:
+      return 'idle';
+    default: {
+      const _exhaustive: never = interactionState;
+      return _exhaustive;
+    }
+  }
+}
+
 /**
  * Map schedule or patrol activity to an NPC GLB animation state.
  * Dialogue-driven talk/listen/gesture is handled via `npc:animation` events.

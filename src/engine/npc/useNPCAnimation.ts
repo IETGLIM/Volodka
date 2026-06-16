@@ -4,97 +4,31 @@ import { useRef, useEffect, useCallback } from 'react';
 import * as THREE from 'three';
 import { eventBus } from '@/engine/EventBus';
 import type { NPCAnimationState } from '@/engine/interaction/interactionMachine';
-import { getMixamoClipAliasesByNpcState } from '@/config/mixamoAnimationCatalog';
-
-const MIXAMO_ALIASES = getMixamoClipAliasesByNpcState();
-
-/* ─── Animation name variants for each NPC animation state ─── */
-const ANIM_MAP: Record<NPCAnimationState, string[]> = {
-  idle: [
-    'idle', 'Idle', 'IDLE', '0', 'animation_0',
-    'Armature|idle', 'Cesium_Man_idles', 'idle_01',
-    ...MIXAMO_ALIASES.idle,
-  ],
-  walk: [
-    'walk', 'Walk', 'WALK', 'walking', 'Walking',
-    'Armature|walk', 'Cesium_Man_walk', 'walk_01',
-    ...MIXAMO_ALIASES.walk,
-  ],
-  talk: [
-    'talk', 'Talk', 'TALK', 'talking', 'Talking',
-    'Armature|talk', 'Cesium_Man_talk', 'talk_01',
-    ...MIXAMO_ALIASES.talk,
-  ],
-  sit: [
-    'sit', 'Sit', 'SIT', 'sitting', 'Sitting',
-    'Armature|sit', 'sit_01',
-    ...MIXAMO_ALIASES.sit,
-  ],
-  listen: [
-    'listen', 'Listen', 'idle', 'Idle', 'IDLE',
-    'Armature|listen', 'Cesium_Man_idles', 'listen_01',
-    ...MIXAMO_ALIASES.idle,
-  ],
-  gesture: [
-    'gesture', 'Gesture', 'wave', 'Wave',
-    'Armature|gesture', 'Cesium_Man_gesture', 'gesture_01',
-    ...MIXAMO_ALIASES.talk,
-  ],
-};
+import {
+  resolveNpcClipAction,
+  type NpcAnimationClipOverrides,
+} from '@/engine/npc/npcClipResolution';
 
 /**
  * Hook that manages NPC animation state with crossfade.
  *
  * Listens to `npc:animation` events and smoothly transitions
  * between animation states.
- *
- * @param npcId - The NPC's unique identifier
- * @param actions - Animation actions from mixer.clipAction
- * @param defaultIdleName - Optional idle animation name from NPC definition
  */
 export function useNPCAnimation(
   npcId: string,
   actions: Record<string, THREE.AnimationAction> | null | undefined,
-  defaultIdleName?: string,
+  clipOverrides?: NpcAnimationClipOverrides,
 ) {
   const currentAnimRef = useRef<NPCAnimationState>('idle');
   const crossfadeDuration = 0.3;
 
-  /** Find the best matching animation action for a given state */
   const findAction = useCallback(
-    (state: NPCAnimationState): THREE.AnimationAction | null => {
-      if (!actions) return null;
-
-      // Per-NPC clip override from definition.animations (e.g. walk: 'walking')
-      if (state === 'idle' && defaultIdleName && actions[defaultIdleName]) {
-        return actions[defaultIdleName];
-      }
-
-      // Try state-specific names first
-      const candidates = ANIM_MAP[state] ?? [state];
-      for (const name of candidates) {
-        if (actions[name]) return actions[name];
-      }
-
-      // Fallback: for non-idle states, fall back to idle
-      if (state !== 'idle') {
-        const idleCandidates = ANIM_MAP.idle;
-        if (defaultIdleName && actions[defaultIdleName]) {
-          return actions[defaultIdleName];
-        }
-        for (const name of idleCandidates) {
-          if (actions[name]) return actions[name];
-        }
-      }
-
-      // Last resort: first available animation
-      const firstKey = Object.keys(actions)[0];
-      return firstKey ? actions[firstKey] ?? null : null;
-    },
-    [actions, defaultIdleName],
+    (state: NPCAnimationState): THREE.AnimationAction | null =>
+      resolveNpcClipAction(state, actions, clipOverrides),
+    [actions, clipOverrides],
   );
 
-  /** Crossfade to a new animation state */
   const crossfadeTo = useCallback(
     (newState: NPCAnimationState) => {
       if (newState === currentAnimRef.current) return;
@@ -105,7 +39,6 @@ export function useNPCAnimation(
       const targetAction = findAction(newState);
       if (!targetAction) return;
 
-      // Fade out all current actions, fade in target
       for (const action of Object.values(actions)) {
         if (action === targetAction) {
           action?.reset().fadeIn(crossfadeDuration).play();
@@ -117,7 +50,6 @@ export function useNPCAnimation(
     [actions, findAction],
   );
 
-  // ── Listen for npc:animation events ──
   useEffect(() => {
     const unsub = eventBus.on('npc:animation', ({ npcId: targetNpcId, state }) => {
       if (targetNpcId !== npcId) return;
@@ -127,12 +59,10 @@ export function useNPCAnimation(
     return unsub;
   }, [npcId, crossfadeTo]);
 
-  // Play idle on mount
   useEffect(() => {
     crossfadeTo('idle');
   }, [crossfadeTo]);
 
-  // Release animation actions when the skinned clone unmounts (combat ↔ exploration, LOD swaps).
   useEffect(() => {
     return () => {
       if (!actions) return;

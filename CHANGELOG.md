@@ -1,4 +1,15 @@
 # Changelog — ВОЛОДЬКА RPG
+## v4.2.24 — 16 июня 2026
+
+### NPC animation polish (Quaternius embedded clips + dialogue talk)
+- **Clip resolution**: `npcClipResolution` — case-insensitive match for Quaternius PascalCase clips (`Idle`, `Walk`, `Wave`, `Idle_Neutral`) with Mixamo alias fallback.
+- **Quaternius catalog**: `quaterniusAnimationCatalog.ts` — idle/walk/talk/sit/listen/gesture aliases for Ultimate Modular rigs.
+- **Dialogue talk**: `useNpcAnimationController` crossfades to `talk` during Dialogue/Lock; `listen` during Align/Cutscene (was idle-only defer).
+- **Schedule activity**: work/read/rest → sit (`Idle_Neutral` on Quaternius); patrol walk → `Walk`.
+- **Retarget prep**: `humanoidRetargetProfile.ts` — Mixamo bone naming + Blender notes for when shipped clips override embedded.
+- **GPU preload**: `getScheduleBackedNpcIdsForScene` — scene NPC GLB preload/evict derived from schedules + act overrides (all 20 Quaternius slots).
+- **Tests**: `npcClipResolution`, interaction talk mapping, schedule-backed preload assertions.
+
 ## v4.2.23 — 16 июня 2026
 
 ### Consolidated asset pipeline (Kenney · Poly · RPM · Quaternius · Mixamo)

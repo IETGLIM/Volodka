@@ -78,7 +78,7 @@ function GltfNPCModelInner({
   useNpcAnimationController({
     npcId: definition.id,
     actions,
-    defaultIdleName: definition.animations?.idle,
+    clipOverrides: definition.animations,
     activity,
     interactionState,
     isInteractionTarget,

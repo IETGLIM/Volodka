@@ -14,6 +14,7 @@ import {
 import {
   handleSceneGpuTransition,
   getSceneGltfAssetIds,
+  getScheduleBackedNpcIdsForScene,
   evictSceneGpuCache,
 } from '@/engine/scene/sceneGpuLifecycle';
 
@@ -177,7 +178,15 @@ describe('sceneGpuLifecycle', () => {
       evictSceneGpuCache('cafe_evening');
 
       expect(useGLTF.clear).toHaveBeenCalledWith('/models/npcs/cafe_barista.glb');
+      expect(useGLTF.clear).toHaveBeenCalledWith('/models/npcs/albert.glb');
       expect(THREE.Cache.remove).toHaveBeenCalledWith('/models/npcs/cafe_barista.glb');
+    });
+
+    it('preloads schedule-backed Quaternius NPCs for cafe_evening', () => {
+      const ids = getScheduleBackedNpcIdsForScene('cafe_evening');
+      expect(ids).toContain('albert');
+      expect(ids).toContain('zarema');
+      expect(ids).toContain('cafe_barista');
     });
 
     it('keeps prop GLBs shared between from and keep scenes', () => {
