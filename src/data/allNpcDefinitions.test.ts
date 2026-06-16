@@ -135,5 +135,6 @@ describe('resolveNpcIdFromSpeaker', () => {
   it('falls back to Russian speaker aliases for legacy nodes', () => {
     expect(resolveNpcIdFromSpeaker('Солныш')).toBe('solnysh');
     expect(resolveNpcIdFromSpeaker('Лёня')).toBe('lyonya');
+    expect(resolveCanonicalNpcId('dmitry')).toBe('office_dmitry');
   });
 });

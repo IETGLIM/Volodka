@@ -1,4 +1,12 @@
 # Changelog — ВОЛОДЬКА RPG
+## v4.2.28 — 17 июня 2026
+
+### AAA code polish pass
+- **NPC aliases**: `dmitry` → `office_dmitry` — исправлены 6 dialogue nodes с `speakerId: 'dmitry'` (cross-ref test).
+- **InteractionSplash resolver**: repeat-skip до boot lookup; профиль NPC из каталога без `preloadBootGameData()` в audit/tests.
+- **Тесты (7 → 0 failures)**: `StoryGuidanceHUD` — mock `questStore`; `SettingsPanel` — preset `high` для GLB hint; `resolveInteractionSplash` — корректный `ExamineData`.
+- **Lint**: `const` для неизменяемых LUT channel vars в `proceduralLutTextures.ts`.
+
 ## v4.2.27 — 17 июня 2026
 
 ### InteractionSplash — полное покрытие E-взаимодействий

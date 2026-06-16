@@ -59,6 +59,7 @@ describe('SettingsPanel', () => {
   });
 
   it('shows quality preset hints on the visual tab', async () => {
+    localStorage.setItem('volodka_quality_preset', 'high');
     const user = userEvent.setup();
     render(<SettingsPanel open onClose={vi.fn()} />);
 

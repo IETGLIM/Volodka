@@ -36,6 +36,12 @@ vi.mock('@/store/selectors', () => ({
   }),
 }));
 
+vi.mock('@/store/questStore', () => ({
+  getNextTrackedObjective: () => null,
+  areDependenciesMet: () => ({ met: false, missing: [] }),
+  getQuestMarker: () => null,
+}));
+
 vi.mock('@/engine/GuidedStoryManager', () => ({
   getCurrentGuidance: () => hudMocks.guidance,
 }));

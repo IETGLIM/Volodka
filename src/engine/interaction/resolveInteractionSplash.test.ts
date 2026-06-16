@@ -154,7 +154,11 @@ describe('resolveInteractionSplash', () => {
           baseZone({
             interactionType: undefined,
             linkedDialogueNodeId: 'explore_cafe_enter',
-            examineData: { title: 'Стол', text: 'Зашифрованный свиток.' },
+            examineData: {
+              title: 'Стол',
+              description: 'Зашифрованный свиток.',
+              detailText: 'На столе лежит свиток с непонятными символами.',
+            },
           }),
         ),
       ).toBe('examine');

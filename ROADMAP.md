@@ -4,7 +4,7 @@
 > подготовка к запуску на Vercel. Документ заменяет устаревшие `CODE_REVIEW.md` и
 > `DEEP_CODE_REVIEW.md`, которые описывают состояние проекта **до** большого рефакторинга.
 
-**Дата:** 17 июня 2026 · **Версия:** 4.2.25 · **Целевая аудитория игры:** и новички
+**Дата:** 17 июня 2026 · **Версия:** 4.2.28 · **Целевая аудитория игры:** и новички
 (родители, друзья — не геймеры), и опытные игроки (баланс «лёгкий вход + глубина»).
 
 ---
@@ -14,7 +14,7 @@
 | Проверка | Команда | Результат |
 |---|---|---|
 | Типы | `npm run typecheck` | ✅ чисто |
-| Юнит-тесты | `npm run test:unit` | ✅ 480+ тестов |
+| Юнит-тесты | `npm run test:unit` | ✅ 1100+ тестов |
 | Линтер | `npm run lint` | ✅ 0 ошибок |
 | Контент | `npm run validate:content` | ✅ 0 ошибок |
 | Ассеты | `npm run assets:validate` | ✅ shipped GLB на диске (вкл. env/veg bundles) |
@@ -25,6 +25,10 @@
 **3D production:** `npm run assets:bootstrap` — CC0 interim; `assets:status` / `assets:ai3dgen-import -- --status` — прогресс; замена на AI3DGen Pro по каталогу.
 
 **Вывод:** инженерная база готова к Vercel production. Следующий визуальный апгрейд — AI3DGen Pro + Blender rig для героя; Mixamo clips override Quaternius embedded via `assets:mixamo-import`.
+
+**v4.2.28:** AAA code polish — NPC alias `dmitry`, splash resolver boot-free audit, unit test green (1107).
+
+**v4.2.27:** InteractionSplash full E-interaction coverage — 34 NPC presets, door_hold, audit inventory.
 
 **v4.2.25:** Quaternius NPC prod smoke — skinned bounds union, feet on ground (medium+ GLB); golden path branch hints for 7 explore/transit spine nodes.
 

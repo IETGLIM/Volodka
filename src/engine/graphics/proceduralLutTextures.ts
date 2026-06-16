@@ -50,16 +50,16 @@ function applyLutTransform(
       const lum = r * 0.299 + g * 0.587 + b * 0.114;
       let nr = r * 1.04 + 0.04 * (1 - lum);
       let ng = g * 0.98 + 0.02 * lum;
-      let nb = b * 0.88 + 0.03 * (1 - lum);
+      const nb = b * 0.88 + 0.03 * (1 - lum);
       nr += 0.05 * (1 - lum);
       ng += 0.03 * (1 - lum);
       return [clamp01(nr), clamp01(ng), clamp01(nb)];
     }
     case 'gothic_dust': {
       const lum = r * 0.299 + g * 0.587 + b * 0.114;
-      let nr = r * 0.96 + 0.03 * lum;
+      const nr = r * 0.96 + 0.03 * lum;
       let ng = g * 0.94 + 0.04 * (1 - lum);
-      let nb = b * 0.92 + 0.02 * lum;
+      const nb = b * 0.92 + 0.02 * lum;
       ng += 0.03 * (1 - lum);
       return [clamp01(nr), clamp01(ng), clamp01(nb)];
     }

@@ -8,6 +8,7 @@ export const NPC_ID_ALIASES: Readonly<Record<string, string>> = {
   npc_albert: 'albert',
   npc_zarema: 'zarema',
   npc_colleague: 'office_colleague',
+  dmitry: 'office_dmitry',
   npc_dmitry: 'office_dmitry',
   npc_chk_stalker: 'chk_stalker',
   npc_trofim: 'fisherman_trofim',
