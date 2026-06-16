@@ -47,13 +47,15 @@ export function finalizePlayerFrame(deps: PlayerMovementDeps): void {
       deps.isGroundedRef.current = true;
       vel.y = 0;
     }
-  } else if (horizontalSpeed > 0.5) {
+  } else if (
+    horizontalSpeed > (scratch.isLocked ? 0.12 : 0.5)
+  ) {
     deps.currentAnimRef.current = running ? 'run' : 'walk';
   } else {
     deps.currentAnimRef.current = 'idle';
   }
 
-  if (isMoving && deps.isGroundedRef.current) {
+  if ((isMoving || horizontalSpeed > 0.5) && deps.isGroundedRef.current) {
     deps.footstepTimerRef.current += dt;
     const stepInterval = running ? FOOTSTEP_INTERVAL * 0.65 : FOOTSTEP_INTERVAL;
     if (deps.footstepTimerRef.current >= stepInterval) {

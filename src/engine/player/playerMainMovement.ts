@@ -28,6 +28,7 @@ import {
   computeSlopeLocomotionScale,
   getAccessibilityLocomotionScale,
   resolveMovementIntent,
+  updateMoveBlendRef,
 } from '@/engine/player/playerLocomotionPresentation';
 import type { PlayerMovementDeps } from '@/engine/player/playerFrameTypes';
 function applyDegradedMovement(deps: PlayerMovementDeps, onFlatGround: boolean): void {
@@ -128,12 +129,7 @@ export function runMainPlayerMovement(deps: PlayerMovementDeps): boolean {
   moveDir.addScaledVector(camRight, rgt - lft);
 
   if (deps.moveBlendRef) {
-    deps.moveBlendRef.current = THREE.MathUtils.damp(
-      deps.moveBlendRef.current,
-      isMoving ? 1 : 0,
-      4,
-      dt,
-    );
+    updateMoveBlendRef(deps.moveBlendRef, isMoving ? 1 : 0, dt);
   }
   const isOutdoor = !deps.config.hasCeiling;
   const touchScale = keyboardDrivesMove ? 1 : getTouchLocomotionFactor();

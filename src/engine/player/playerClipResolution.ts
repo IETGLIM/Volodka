@@ -43,3 +43,28 @@ export function findPlayerAnimationClip(
     (clip) => clip !== exclude && pattern.test(clip.name),
   );
 }
+
+/** Combat/death clips must never be used as idle fallback (Quaternius GLB order). */
+const UNSAFE_IDLE_CLIP_PATTERN =
+  /death|die|hit|fall|jump|combat|attack|damage|hurt|knock/i;
+
+export function isUnsafeIdleClipName(name: string): boolean {
+  return UNSAFE_IDLE_CLIP_PATTERN.test(name);
+}
+
+/** Last-resort idle when aliases miss — skips Death/Hit/etc. */
+export function pickSafeIdleClipAction(
+  actions: Record<string, THREE.AnimationAction> | null | undefined,
+): THREE.AnimationAction | null {
+  const fromAliases = pickPlayerClipAction(actions, PLAYER_IDLE_CLIP_NAMES);
+  if (fromAliases) return fromAliases;
+  if (!actions) return null;
+
+  for (const [key, action] of Object.entries(actions)) {
+    if (action && /idle/i.test(key) && !isUnsafeIdleClipName(key)) return action;
+  }
+  for (const [key, action] of Object.entries(actions)) {
+    if (action && !isUnsafeIdleClipName(key)) return action;
+  }
+  return null;
+}

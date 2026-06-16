@@ -1,3 +1,4 @@
+import * as THREE from 'three';
 import {
   getAccessibilityLocomotionSpeed,
   isEffectiveReducedMotion,
@@ -55,6 +56,24 @@ export interface ExplorationCameraMotionScale {
 
 const WALK_CLIP_TIME_SCALE = 1.05;
 const RUN_CLIP_TIME_SCALE = 1.45;
+const MOVE_BLEND_DAMP = 4;
+
+export function dampMoveBlend(
+  current: number,
+  target: number,
+  dt: number,
+): number {
+  return THREE.MathUtils.damp(current, target, MOVE_BLEND_DAMP, dt);
+}
+
+export function updateMoveBlendRef(
+  moveBlendRef: { current: number } | undefined,
+  target: number,
+  dt: number,
+): void {
+  if (!moveBlendRef) return;
+  moveBlendRef.current = dampMoveBlend(moveBlendRef.current, target, dt);
+}
 
 export function resolveLocomotionClipState(anim: string): LocomotionClipPresentation {
   if (anim !== 'walk' && anim !== 'run') {

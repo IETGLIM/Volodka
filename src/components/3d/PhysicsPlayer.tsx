@@ -180,9 +180,9 @@ export function PhysicsPlayer({
       const storeSpawn = getGameStore().exploration.playerPosition;
       const spawn = storeSpawn ?? newConfig.spawnPoint;
 
-      warmupTimerRef.current = 0;
       jumpCooldownRef.current = 0;
       noMovementFramesRef.current = 0;
+      if (moveBlendRef) moveBlendRef.current = 0;
 
       if (rigidBodyRef.current?.isValid()) {
         rigidBodyRef.current.setTranslation(
@@ -206,8 +206,8 @@ export function PhysicsPlayer({
     const unsub = eventBus.on('scene:enter', ({ sceneId: enteredScene }) => {
       const spawn = getGameStore().exploration.playerPosition;
       prevSceneIdRef.current = enteredScene;
-      warmupTimerRef.current = 0;
       jumpCooldownRef.current = 0;
+      if (moveBlendRef) moveBlendRef.current = 0;
       noMovementFramesRef.current = 0;
       velocityRef.current.set(0, 0, 0);
       isGroundedRef.current = true;

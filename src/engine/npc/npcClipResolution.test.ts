@@ -43,4 +43,9 @@ describe('npcClipResolution', () => {
     const actions = mockActions(['Idle']);
     expect(resolveNpcClipAction('gesture', actions)?.getClip().name).toBe('Idle');
   });
+
+  it('skips Death as idle fallback when clips are ordered Death-first', () => {
+    const actions = mockActions(['Death', 'Idle', 'Walk']);
+    expect(resolveNpcClipAction('idle', actions)?.getClip().name).toBe('Idle');
+  });
 });

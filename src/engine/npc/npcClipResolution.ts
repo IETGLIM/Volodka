@@ -4,6 +4,7 @@ import type * as THREE from 'three';
 import type { NPCAnimationState } from '@/engine/interaction/interactionMachine';
 import { getMixamoClipAliasesByNpcState } from '@/config/mixamoAnimationCatalog';
 import { getQuaterniusClipAliasesByNpcState } from '@/config/quaterniusAnimationCatalog';
+import { pickSafeIdleClipAction } from '@/engine/player/playerClipResolution';
 
 export interface NpcAnimationClipOverrides {
   idle?: string;
@@ -14,7 +15,7 @@ export interface NpcAnimationClipOverrides {
 
 const GENERIC_ALIASES: Record<NPCAnimationState, readonly string[]> = {
   idle: [
-    'idle', 'Idle', 'IDLE', '0', 'animation_0',
+    'Idle_Neutral', 'idle', 'Idle', 'IDLE', '0', 'animation_0',
     'Armature|idle', 'Cesium_Man_idles', 'idle_01',
   ],
   walk: [
@@ -115,6 +116,5 @@ export function resolveNpcClipAction(
     return resolveNpcClipAction('idle', actions, overrides);
   }
 
-  const firstKey = Object.keys(actions)[0];
-  return firstKey ? actions[firstKey] ?? null : null;
+  return pickSafeIdleClipAction(actions);
 }
