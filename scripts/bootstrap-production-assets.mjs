@@ -12,13 +12,13 @@ import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { spawnSync } from 'node:child_process';
 import { NPC_QUATERNIUS_MAP } from './quaternius-import.mjs';
-import { readShippedMixamoIds, writeShippedMixamoIds } from './lib/mixamoShipped.mjs';
+import { readMixamoClipIdsOnDisk, writeMixamoClipIdsOnDisk } from './lib/mixamoOnDisk.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const PUBLIC = path.join(ROOT, 'public');
 const QUATERNIUS_SOURCE = path.join(ROOT, 'assets-source/ai3dgen/npcs');
 const FREEKIT_INTERIORS = path.join(ROOT, 'assets-source/ai3dgen/interiors');
-const MIXAMO_SHIPPED_MODULE = path.join(ROOT, 'src/config/mixamoAnimationShipped.ts');
+const MIXAMO_ON_DISK_MODULE = path.join(ROOT, 'src/config/mixamoClipsOnDisk.ts');
 
 const KHRONOS_BASE =
   'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/main/2.0';
@@ -280,7 +280,7 @@ async function stageMixamoFromSource() {
   }
 
   console.log('\nStaging Mixamo clips (when source on disk)…');
-  const shipped = readShippedMixamoIds(MIXAMO_SHIPPED_MODULE);
+  const onDisk = readMixamoClipIdsOnDisk(MIXAMO_ON_DISK_MODULE);
   let staged = 0;
 
   for (const entry of catalog) {
@@ -289,13 +289,13 @@ async function stageMixamoFromSource() {
     const dest = path.join(PUBLIC, entry.publicUrl.replace(/^\//, ''));
     mkdirSync(path.dirname(dest), { recursive: true });
     copyFileSync(src, dest);
-    if (!shipped.includes(entry.id)) shipped.push(entry.id);
+    if (!onDisk.includes(entry.id)) onDisk.push(entry.id);
     staged += 1;
     console.log(`✓ Mixamo ${entry.id} → ${entry.publicUrl}`);
   }
 
   if (staged > 0) {
-    writeShippedMixamoIds(MIXAMO_SHIPPED_MODULE, shipped);
+    writeMixamoClipIdsOnDisk(MIXAMO_ON_DISK_MODULE, onDisk);
   } else {
     console.log('  (no Mixamo sources — see assets-source/mixamo/README.md)');
   }

@@ -168,7 +168,7 @@ npm run check            # всё сразу — главный гейт пер�
 > конкурировать с Unreal offline-тайтлами. Оценки — честная инженерная самооценка по
 > состоянию v4.2.30 (17 июня 2026).
 
-**Ключевые файлы:** `src/data/goldenPath.ts`, `src/config/audioManifest.ts`,
+**Ключевые файлы:** `src/data/goldenPath.ts`, `src/config/proceduralAudioCatalog.ts`,
 `src/config/sceneDefinitions.ts`, `src/engine/audio/SceneAudioController.ts`,
 `src/engine/e2e/e2eBridge.ts`, `eslint.config.js`, `e2e/*.spec.ts`,
 `scripts/check-bundle-budgets.mjs`, `config/performanceBudgets.json`.
@@ -193,7 +193,7 @@ npm run check            # всё сразу — главный гейт пер�
 | Риск | Масштаб | Где смотреть |
 |---|---|---|
 | Golden-path warnings | 75 узлов без `choice.goldenPath: true` | `src/data/goldenPath.ts`, `npm run validate:content` |
-| Extension scenes без профилей | ~~9 сцен~~ ✅ Sprint 1 | `src/config/audioManifest.ts`, `sceneInheritance.ts` |
+| Extension scenes без профилей | ~~9 сцен~~ ✅ Sprint 1 | `src/config/proceduralAudioCatalog.ts`, `sceneInheritance.ts` |
 | ESLint warnings budget | `--max-warnings 362` в `package.json` | `eslint.config.js`, `npm run lint` |
 | E2E зависимость от bridge | Smoke-тесты вызывают `window.__volodka_e2e` | `src/engine/e2e/e2eBridge.ts`, `e2e/*.spec.ts` |
 | Dist footprint | ~222 MB (GLB + bundles) | `npm run build`, `scripts/check-bundle-budgets.mjs` |
@@ -215,7 +215,7 @@ npm run check            # всё сразу — главный гейт пер�
 
 **Цель:** полное audio-покрытие сцен и целостность explore/story modes.
 
-- [x] Аудит `src/config/audioManifest.ts` — 27 core scenes + extension entries
+- [x] Аудит `src/config/proceduralAudioCatalog.ts` — 27 core scenes + extension entries
 - [x] Добавить audio profiles для 9 extension scenes (`sceneInheritance.ts`)
 - [x] Проверить `SceneAudioController` transitions (ambient → combat → dialogue)
 - [x] Mode integrity: explore ↔ story hub без audio glitches (`useAudioOrchestrator.ts`)

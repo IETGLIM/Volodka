@@ -1,9 +1,8 @@
 import { readFileSync, writeFileSync } from 'node:fs';
-import path from 'node:path';
 
-export function readShippedMixamoIds(shippedModulePath) {
+export function readMixamoClipIdsOnDisk(shippedModulePath) {
   const text = readFileSync(shippedModulePath, 'utf8');
-  const match = text.match(/SHIPPED_MIXAMO_CLIP_IDS[^=]*=\s*\[([^\]]*)\]/);
+  const match = text.match(/MIXAMO_CLIP_IDS_ON_DISK[^=]*=\s*\[([^\]]*)\]/);
   if (!match) return [];
   return match[1]
     .split(',')
@@ -11,17 +10,18 @@ export function readShippedMixamoIds(shippedModulePath) {
     .filter(Boolean);
 }
 
-export function writeShippedMixamoIds(shippedModulePath, ids) {
+export function writeMixamoClipIdsOnDisk(shippedModulePath, ids) {
   const unique = [...new Set(ids)].sort();
   const body = `/**
- * Mixamo clips present on disk — updated by \`npm run assets:mixamo-import\` / bootstrap.
+ * Mixamo clip ids confirmed on disk — updated by \`npm run assets:mixamo-import\` / bootstrap.
  * @generated — do not edit manually.
+ * Empty until clips are imported from Adobe Mixamo (Sprint 2 pipeline).
  */
 
 import type { MixamoClipId } from './mixamoAnimationCatalog';
 
 /** Clip ids staged under public/models/animations/ */
-export const SHIPPED_MIXAMO_CLIP_IDS: readonly MixamoClipId[] = [
+export const MIXAMO_CLIP_IDS_ON_DISK: readonly MixamoClipId[] = [
 ${unique.map((id) => `  '${id}',`).join('\n')}
 ];
 `;

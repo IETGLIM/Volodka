@@ -20,9 +20,9 @@ import { getPropModelUrls } from '../src/config/propModelRegistry';
 import { getNpcModelUrls } from '../src/config/npcModelRegistry';
 import { getAi3dgenPublicUrls } from '../src/config/ai3dgenAssetCatalog';
 import { getRpmPublicUrls } from '../src/config/rpmNpcCatalog';
-import { RPM_SHIPPED_NPC_GLB_URLS } from '../src/config/rpmNpcShipped.generated';
+import { RPM_NPC_GLB_URLS_ON_DISK } from '../src/config/rpmNpcOnDisk.generated';
 import { MIXAMO_ANIMATION_CATALOG } from '../src/config/mixamoAnimationCatalog';
-import { SHIPPED_MIXAMO_CLIP_IDS } from '../src/config/mixamoAnimationShipped';
+import { MIXAMO_CLIP_IDS_ON_DISK } from '../src/config/mixamoClipsOnDisk';
 import { MODEL_URLS } from '../src/config/modelUrls';
 import { FPS_ARMS_URL } from '../src/config/fpsArmsUrl';
 
@@ -99,22 +99,22 @@ for (const url of getAi3dgenPublicUrls()) {
   }
 }
 
-/* ── 4. RPM NPC catalog (validate only when imported / shipped) ── */
+/* ── 4. RPM NPC catalog (validate only when imported / on disk) ── */
 let rpmPending = 0;
-const rpmShipped = new Set(RPM_SHIPPED_NPC_GLB_URLS);
+const rpmOnDisk = new Set(RPM_NPC_GLB_URLS_ON_DISK);
 for (const url of getRpmPublicUrls()) {
   const file = publicPath(url);
-  if (rpmShipped.has(url) && file && existsSync(file)) {
+  if (rpmOnDisk.has(url) && file && existsSync(file)) {
     checkFile('rpm-npc', url, true);
-  } else if (!rpmShipped.has(url)) {
+  } else if (!rpmOnDisk.has(url)) {
     rpmPending += 1;
   }
 }
 
 let mixamoPending = 0;
-const shippedMixamo = new Set(SHIPPED_MIXAMO_CLIP_IDS);
+const onDiskMixamo = new Set(MIXAMO_CLIP_IDS_ON_DISK);
 for (const spec of MIXAMO_ANIMATION_CATALOG) {
-  if (!shippedMixamo.has(spec.id)) {
+  if (!onDiskMixamo.has(spec.id)) {
     mixamoPending += 1;
     continue;
   }
