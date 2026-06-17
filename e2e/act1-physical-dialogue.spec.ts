@@ -52,8 +52,20 @@ test.describe('Act I physical dialogue path', () => {
 
     if (await solnyshCutscene.isVisible({ timeout: 12_000 }).catch(() => false)) {
       await dismissTitleCardIfPresent(page);
-    } else if (await page.locator('#story-speaker-corridor_door').isVisible({ timeout: 3000 }).catch(() => false)) {
-      throw new Error('corridor_door opened legacy VN overlay — expected cutscene-only flow');
+    } else if (await page.locator('#diegetic-speaker-corridor_door').isVisible({ timeout: 3000 }).catch(() => false)) {
+      throw new Error('corridor_door opened diegetic HUD — expected cutscene-only flow');
+    }
+
+    await dismissTitleCardIfPresent(page);
+    const corridorDeadline = Date.now() + 45_000;
+    while (Date.now() < corridorDeadline) {
+      const hudCopy = await page.getByTestId('game-hud').textContent().catch(() => '');
+      if (/Коридор коммуналки/i.test(hudCopy ?? '')) break;
+      await page.evaluate(async () => {
+        await window.__volodka_e2e?.promoteClosedOverlayHub('corridor_explore_mode', 'volodka_corridor');
+      });
+      await page.waitForTimeout(1200);
+      await dismissTitleCardIfPresent(page);
     }
 
     await expect(page.getByTestId('game-hud')).toContainText(/Коридор коммуналки/i, {

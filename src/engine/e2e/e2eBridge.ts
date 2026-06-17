@@ -8,6 +8,7 @@ import {
   getPlayerRigidBody,
   isPlayerRigidBodyValid,
 } from '@/engine/PlayerRigidBodyState';
+import { SCENE_ENTRY_NODE_TO_HUB, isClosedOverlayExploreHub } from '@/shared/sceneExploreHubRegistry';
 import { closeNarrativeOverlay } from '@/engine/scene/narrativeOverlay';
 import { presentNarrativeBeat } from '@/engine/narrative/presentNarrativeBeat';
 import { enterSceneFreeExplorationHub } from '@/engine/scene/freeExplorationHub';
@@ -54,7 +55,8 @@ export interface VolodkaE2EBridge {
   promoteClosedOverlayHub: (hubId: string, sceneId: SceneId) => Promise<void>;
   ensureStoryOverlay: (nodeId: string) => Promise<void>;
   isStoryOverlayReady: (expectedNodeId?: string) => boolean;
-  /** Set master combat RNG seed (save-persisted). */
+  /** Force-end combat overlay for e2e stability (random encounters). */
+  endCombat: () => void;
   setPlayerRngSeed: (seed: number) => void;
   /** Read active combat RNG state for replay/debug. */
   getCombatRngState: () => ReturnType<typeof getRngState> | null;
@@ -117,7 +119,7 @@ function dismissFirstPlayTutorialForBootstrap(): void {
   completeTutorial();
 }
 
-async function waitForStoryOverlayReady(nodeId: string): Promise<boolean> {
+async function waitForNarrativeBeatReady(nodeId: string): Promise<boolean> {
   const deadline = Date.now() + 20_000;
   while (Date.now() < deadline) {
     const store = getGameStore();
@@ -128,11 +130,22 @@ async function waitForStoryOverlayReady(nodeId: string): Promise<boolean> {
     ) {
       return true;
     }
+    if (store.diegeticNarrative?.nodeId === nodeId) {
+      return true;
+    }
+    const hubId = SCENE_ENTRY_NODE_TO_HUB[nodeId];
+    if (hubId && store.currentNodeId === hubId) {
+      return true;
+    }
     await new Promise<void>((resolve) => {
       requestAnimationFrame(() => resolve());
     });
   }
   return false;
+}
+
+async function waitForStoryOverlayReady(nodeId: string): Promise<boolean> {
+  return waitForNarrativeBeatReady(nodeId);
 }
 
 async function jumpToStoryBeat(nodeId: string, sceneId: SceneId): Promise<void> {
@@ -146,27 +159,54 @@ async function jumpToStoryBeat(nodeId: string, sceneId: SceneId): Promise<void> 
     store.setCutscene(null, []);
   }
   suppressCutsceneForStoryNode(nodeId);
+
+  const storyNode = getStoryNodes()[nodeId];
+  const targetScene = (storyNode?.sceneId as SceneId | undefined) ?? sceneId;
+  const hubId = SCENE_ENTRY_NODE_TO_HUB[nodeId];
+
   dispatchGameAction({ type: 'story/visitNode', nodeId });
   dispatchGameAction({ type: 'story/setCurrentNodeId', nodeId });
-  await waitForScene(sceneId);
+
+  const opened = await openLinkedStory(nodeId);
+  if (!opened) {
+    presentNarrativeBeat(nodeId, 'story');
+  }
+
+  await waitForScene(targetScene);
   await new Promise<void>((resolve) => {
     requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
   });
-  presentNarrativeBeat(nodeId, 'story');
-  let ready = await waitForStoryOverlayReady(nodeId);
-  if (!ready) {
-    const store2 = getGameStore();
-    if (store2.diegeticNarrative?.nodeId === nodeId) {
-      ready = true;
+
+  const deadline = Date.now() + 25_000;
+  while (Date.now() < deadline) {
+    if (await waitForNarrativeBeatReady(nodeId)) return;
+
+    const live = getGameStore();
+    if (hubId && live.exploration.currentSceneId === targetScene) {
+      if (live.activeCutsceneId) {
+        live.setCutscene(null, []);
+        const cutscene = getCutsceneForNode(nodeId);
+        if (cutscene) live.markCutsceneTriggered(cutscene.id);
+      }
+      if (isClosedOverlayExploreHub(hubId)) {
+        enterSceneFreeExplorationHub(hubId);
+      } else {
+        dispatchGameAction({ type: 'story/visitNode', nodeId: hubId });
+        dispatchGameAction({ type: 'story/setCurrentNodeId', nodeId: hubId });
+      }
+      await new Promise<void>((resolve) => {
+        requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
+      });
+      if (await waitForNarrativeBeatReady(nodeId)) return;
+      if (getGameStore().currentNodeId === hubId) return;
     }
+
+    await new Promise<void>((resolve) => {
+      requestAnimationFrame(() => resolve());
+    });
   }
-  if (!ready) {
-    presentNarrativeBeat(nodeId, 'story');
-    ready = await waitForStoryOverlayReady(nodeId);
-  }
-  if (!ready) {
-    throw new Error(`[e2eBridge] story overlay not ready for ${nodeId}`);
-  }
+
+  throw new Error(`[e2eBridge] story overlay not ready for ${nodeId}`);
 }
 
 async function jumpToClosedOverlayHub(hubId: string, sceneId: SceneId): Promise<void> {
@@ -460,9 +500,22 @@ export function registerVolodkaE2EBridge(): void {
     },
     isStoryOverlayReady(expectedNodeId) {
       const store = getGameStore();
+      if (expectedNodeId) {
+        if (store.diegeticNarrative?.nodeId === expectedNodeId) return true;
+        const hubId = SCENE_ENTRY_NODE_TO_HUB[expectedNodeId];
+        if (hubId && store.currentNodeId === hubId) return true;
+        if (store.currentNodeId !== expectedNodeId) return false;
+      }
+      if (store.diegeticNarrative) {
+        return !expectedNodeId || store.diegeticNarrative.nodeId === expectedNodeId;
+      }
       if (!store.showStoryOverlay) return false;
-      if (expectedNodeId && store.currentNodeId !== expectedNodeId) return false;
       return Boolean(getStoryNodes()[store.currentNodeId]);
+    },
+    endCombat() {
+      dispatchGameAction({ type: 'story/setCombatActive', active: false });
+      dispatchGameAction({ type: 'phase/clearGameplayFlags' });
+      eventBus.emit('combat:end', {});
     },
     setPlayerRngSeed(seed) {
       dispatchGameAction({ type: 'player/setRngSeed', seed });

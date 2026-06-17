@@ -190,10 +190,14 @@ export async function dismissExamineDialog(page: Page, titlePattern: RegExp): Pr
   return true;
 }
 
-/** Open a story beat via e2e bridge when physical triggers did not reach the overlay. */
+/** Open a story beat via e2e bridge when physical triggers did not reach narrative UI. */
 export async function ensureStoryBeat(page: Page, nodeId: string, sceneId: string): Promise<void> {
-  const speaker = page.locator(`#story-speaker-${nodeId}`);
-  if (await speaker.isVisible({ timeout: 5000 }).catch(() => false)) {
+  const legacySpeaker = page.locator(`#story-speaker-${nodeId}`);
+  const diegeticSpeaker = page.locator(`#diegetic-speaker-${nodeId}`);
+  if (await legacySpeaker.isVisible({ timeout: 2000 }).catch(() => false)) {
+    return;
+  }
+  if (await diegeticSpeaker.isVisible({ timeout: 1000 }).catch(() => false)) {
     return;
   }
   await e2eBridge.forceStoryBeat(page, nodeId, sceneId as SceneId);
@@ -343,6 +347,7 @@ export async function waitForExplorationInputReady(page: Page) {
   }
 
   await expect(page.getByRole('dialog', { name: /Голос/i })).not.toBeVisible({ timeout: 5000 });
+  await expect(page.getByTestId('diegetic-dialogue-hud')).not.toBeVisible({ timeout: 5000 });
 }
 
 export async function settleAfterWake(page: Page) {
@@ -378,12 +383,17 @@ export async function prepareStoryBootstrap(page: Page) {
 export async function waitForStoryDialog(page: Page, expectedNodeId?: string, timeout = 45_000) {
   if (expectedNodeId) {
     const speaker = page.locator(`#story-speaker-${expectedNodeId}`);
+    const diegeticSpeaker = page.locator(`#diegetic-speaker-${expectedNodeId}`);
     const dialog = page.getByRole('dialog').filter({ has: speaker });
+    const diegeticDialog = page.getByTestId('diegetic-dialogue-hud');
     const deadline = Date.now() + timeout;
 
     while (Date.now() < deadline) {
       if (await speaker.isVisible().catch(() => false)) {
         return dialog;
+      }
+      if (await diegeticSpeaker.isVisible().catch(() => false)) {
+        return diegeticDialog;
       }
 
       const overlayReady = await e2eBridge.isStoryOverlayReady(page, expectedNodeId).catch(() => false);
@@ -403,8 +413,8 @@ export async function waitForStoryDialog(page: Page, expectedNodeId?: string, ti
       await page.waitForTimeout(400);
     }
 
-    await expect(speaker).toBeVisible({ timeout: 0 });
-    return dialog;
+    await expect(speaker.or(diegeticSpeaker)).toBeVisible({ timeout: 0 });
+    return (await diegeticSpeaker.isVisible().catch(() => false)) ? diegeticDialog : dialog;
   }
 
   const storyDialog = page.getByRole('dialog', { name: /Голос/i });
@@ -431,6 +441,20 @@ export async function waitForDialogue(page: Page, expectedNodeId: string, timeou
 
   await expect(speaker).toBeVisible({ timeout: 0 });
   return dialog;
+}
+
+/** Dismiss combat overlay if a random encounter started during exploration. */
+export async function dismissCombatIfPresent(page: Page) {
+  for (let attempt = 0; attempt < 4; attempt += 1) {
+    const flee = page.getByRole('button', { name: /БЕЖАТЬ/i });
+    if (!(await flee.isVisible({ timeout: 1500 }).catch(() => false))) {
+      return;
+    }
+    await flee.click({ force: true });
+    await page.waitForTimeout(800);
+  }
+  await page.evaluate(() => window.__volodka_e2e?.endCombat());
+  await page.waitForTimeout(600);
 }
 
 /** WASD moves the player during closed-overlay free exploration. */

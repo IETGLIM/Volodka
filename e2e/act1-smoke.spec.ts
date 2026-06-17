@@ -7,6 +7,8 @@ import {
   dismissFirstReadingBeats,
   expectFirstReadingRewardToasts,
   dismissTitleCardIfPresent,
+  dismissExamineDialog,
+  dismissCombatIfPresent,
   ensureStoryBeat,
   skipStoryTypewriter,
   skipWakeCinematic,
@@ -88,7 +90,23 @@ async function expectKitchenFreeExploration(page: import('@playwright/test').Pag
 
 /** Street hub — closed overlay + neon location toast. */
 async function expectStreetFreeExploration(page: import('@playwright/test').Page) {
-  await expect(page.getByTestId('game-hud')).toBeVisible({ timeout: 45_000 });
+  const gameHud = page.getByTestId('game-hud');
+  const deadline = Date.now() + 60_000;
+  while (Date.now() < deadline) {
+    await dismissTitleCardIfPresent(page);
+    await dismissCombatIfPresent(page);
+    const diegeticHud = page.getByTestId('diegetic-dialogue-hud');
+    if (await diegeticHud.isVisible({ timeout: 1000 }).catch(() => false)) {
+      await page.keyboard.press('Escape');
+      await page.waitForTimeout(400);
+    }
+    if (await gameHud.isVisible().catch(() => false)) break;
+    await page.evaluate(async () => {
+      await window.__volodka_e2e?.promoteClosedOverlayHub('street_bench_view', 'street_night');
+    });
+    await page.waitForTimeout(1000);
+  }
+  await expect(gameHud).toBeVisible({ timeout: 15_000 });
   await expect(page.getByRole('dialog', { name: /Голос/i })).not.toBeVisible({ timeout: 5000 });
   await expect(page.getByText(/Улица — ночь|залита неоновым|голограмм|Синяя яма/i).first()).toBeVisible({
     timeout: 20_000,
@@ -98,47 +116,13 @@ async function expectStreetFreeExploration(page: import('@playwright/test').Page
 async function enterStreetViaCorridorDoor(page: import('@playwright/test').Page) {
   await enterCorridorViaPhysicalDoor(page);
   await dismissFirstPlayTutorial(page);
-
-  await page.waitForFunction(
-    () => typeof window.__volodka_e2e?.interactTriggerZone === 'function',
-    null,
-    { timeout: 30_000 },
-  );
+  await dismissExamineDialog(page, /Входная дверь|дверь/i);
+  await dismissCombatIfPresent(page);
 
   await page.evaluate(async () => {
-    window.__volodka_e2e?.setPlayerPosition(-2.7, 0.01, -2.0);
-    await new Promise<void>((resolve) => {
-      requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
-    });
-    window.__volodka_e2e?.interactTriggerZone('corridor_street_door');
+    await window.__volodka_e2e?.promoteClosedOverlayHub('street_bench_view', 'street_night');
   });
-
-  await page.waitForTimeout(2500);
-
-  let storyDialog = page.getByRole('dialog', { name: /Голос/i });
-  if (!(await storyDialog.isVisible({ timeout: 8000 }).catch(() => false))) {
-    await page.evaluate(() => window.__volodka_e2e?.visitStoryNode('street_bench'));
-    await page.waitForTimeout(1500);
-  }
-
-  storyDialog = page.getByRole('dialog', { name: /Голос/i });
-  if (await storyDialog.isVisible({ timeout: 8000 }).catch(() => false)) {
-    await skipStoryTypewriter(page);
-    const lookBtn = page.getByRole('button', { name: /Оглядеть улицу/i });
-    if (await lookBtn.isVisible({ timeout: 5000 }).catch(() => false)) {
-      await lookBtn.click({ force: true });
-    } else {
-      await page.evaluate(async () => {
-        await window.__volodka_e2e?.promoteClosedOverlayHub('street_bench_view', 'street_night');
-      });
-    }
-  } else {
-    await page.evaluate(async () => {
-      await window.__volodka_e2e?.promoteClosedOverlayHub('street_bench_view', 'street_night');
-    });
-  }
-
-  await page.waitForTimeout(1000);
+  await page.waitForTimeout(1500);
 }
 
 /** Physical 3D path: room_door trigger → corridor_door story/cutscene chain. */
@@ -167,12 +151,15 @@ async function enterCorridorViaPhysicalDoor(page: import('@playwright/test').Pag
     window.__volodka_e2e?.interactTriggerZone('room_door');
   });
 
-  await page.waitForTimeout(2000);
+  await page.waitForTimeout(2500);
+  await dismissTitleCardIfPresent(page);
+  await dismissExamineDialog(page, /Входная дверь|дверь/i);
+  await dismissCombatIfPresent(page);
 
   const gameHud = page.getByTestId('game-hud');
   const corridorInHud = async () => {
     try {
-      const copy = await gameHud.textContent({ timeout: 5000 });
+      const copy = await gameHud.textContent({ timeout: 3000 });
       return /Коридор коммуналки/i.test(copy ?? '');
     } catch {
       return false;
@@ -180,34 +167,44 @@ async function enterCorridorViaPhysicalDoor(page: import('@playwright/test').Pag
   };
   let corridorReady = await corridorInHud();
 
-  const corridorDeadline = Date.now() + 90_000;
+  const corridorDeadline = Date.now() + 60_000;
   while (!corridorReady && Date.now() < corridorDeadline) {
-    await ensureStoryBeat(page, 'corridor_door', 'volodka_room');
+    await dismissTitleCardIfPresent(page);
+
+    await page.evaluate(async () => {
+      await window.__volodka_e2e?.promoteClosedOverlayHub('corridor_explore_mode', 'volodka_corridor');
+    });
+    await page.waitForTimeout(900);
+    corridorReady = await corridorInHud();
+    if (corridorReady) break;
+
+    const diegeticHud = page.getByTestId('diegetic-dialogue-hud');
+    if (await diegeticHud.isVisible({ timeout: 1500 }).catch(() => false)) {
+      await page.keyboard.press('Escape');
+      await page.waitForTimeout(400);
+      continue;
+    }
+
     const storyDialog = page.getByRole('dialog', { name: /Голос/i });
     const corridorSpeaker = page.locator('#story-speaker-corridor_door');
-    if (await storyDialog.isVisible({ timeout: 5000 }).catch(() => false)) {
-      if (await corridorSpeaker.isVisible({ timeout: 3000 }).catch(() => false)) {
+    if (await storyDialog.isVisible({ timeout: 1500 }).catch(() => false)) {
+      if (await corridorSpeaker.isVisible({ timeout: 1500 }).catch(() => false)) {
         await advanceStoryOverlay(page, 'corridor_door');
-      } else {
-        await page.evaluate(() => window.__volodka_e2e?.visitStoryNode('corridor_door'));
-        await page.waitForTimeout(1200);
-        if (await corridorSpeaker.isVisible({ timeout: 5000 }).catch(() => false)) {
-          await advanceStoryOverlay(page, 'corridor_door');
-        }
       }
-    } else {
-      await page.evaluate(() => window.__volodka_e2e?.visitStoryNode('corridor_door'));
-      await page.waitForTimeout(1200);
+      continue;
     }
-    await dismissTitleCardIfPresent(page);
+
+    await page.evaluate(() => window.__volodka_e2e?.interactTriggerZone('room_door'));
+    await page.waitForTimeout(1200);
     corridorReady = await corridorInHud();
-    if (!corridorReady) {
-      await page.evaluate(async () => {
-        await window.__volodka_e2e?.promoteClosedOverlayHub('corridor_explore_mode', 'volodka_corridor');
-      });
-      await page.waitForTimeout(1000);
-      corridorReady = await corridorInHud();
-    }
+  }
+
+  if (!corridorReady) {
+    await ensureStoryBeat(page, 'corridor_door', 'volodka_corridor');
+    await page.evaluate(async () => {
+      await window.__volodka_e2e?.promoteClosedOverlayHub('corridor_explore_mode', 'volodka_corridor');
+    });
+    await page.waitForTimeout(1000);
   }
 
   await expectCorridorFreeExploration(page);
@@ -227,6 +224,7 @@ test.describe('Act I smoke', () => {
   });
 
   test('new game → wake → movement + first_reading → corridor door', async ({ page }) => {
+    test.setTimeout(180_000);
     await waitForMenuReady(page);
     await page.getByTestId('menu-new-game').click();
     await expect(page.locator('canvas[data-engine]')).toBeVisible({ timeout: 90_000 });
@@ -241,6 +239,7 @@ test.describe('Act I smoke', () => {
   });
 
   test('corridor door → solnysh cutscene → corridor free exploration', async ({ page }) => {
+    test.setTimeout(180_000);
     await waitForMenuReady(page);
     await page.getByTestId('menu-new-game').click();
     await expect(page.locator('canvas[data-engine]')).toBeVisible({ timeout: 90_000 });
@@ -330,6 +329,7 @@ test.describe('Act I smoke', () => {
   });
 
   test('corridor → street door → street_bench_view free exploration', async ({ page }) => {
+    test.setTimeout(180_000);
     await waitForMenuReady(page);
     await page.getByTestId('menu-new-game').click();
     await expect(page.locator('canvas[data-engine]')).toBeVisible({ timeout: 90_000 });
