@@ -309,3 +309,227 @@ graph TD
 ```
 
 **После каждого спринта:** `npm run check`. Зелёный прогон = безопасно мержить и деплоить preview.
+
+---
+
+## 9. Внешние инструменты арта и 3D
+
+> **Контекст:** narrative web-RPG (Three.js + R3F + Vite), не planetary sandbox и не offline AAA.
+> Оценка инструментов — по одному критерию: *даёт ли GLB/текстуры, которые ложатся в
+> `assets-source/` → `npm run assets:*` → конкретную сцену?* Реализация art-pipeline —
+> [§8 Sprint 2 — Art RPM / Mixamo / Poly](#sprint-2--art-rpm--mixamo--poly-2-нед).
+
+**Ключевые команды:** `npm run assets:status`, `assets:validate`, `assets:process`,
+`assets:rpm-import`, `assets:mixamo-import`, `assets:quaternius-import`,
+`assets:freekit-stage`, `assets:ai3dgen-import`. См. также `assets-source/ai3dgen/README.md`.
+
+### A. Сводная таблица инструментов
+
+| Инструмент | Fit для Volodka | Роль | Приоритет |
+|---|---|---|---|
+| **Leonardo.ai** | ✅ Да | 2D concept, textures, skyboxes, UI refs для RPM | **P1** |
+| **Scenario.com** | ✅ Да | Batch 2D: иконки, постеры, promo, in-game плакаты | **P1** (не 3D) |
+| **Map3D** (cartesiancs/map3d) | ⚠️ Частично | GLB городских блоков для street/city backdrop | **P2** |
+| **Sylva** (clerisy47/Sylva) | ⚠️ Частично | Vegetation: парк, лес ЧК | **P2** |
+| **threejs-3d-map-editor** (whferr) | ⚠️ Частично | Blockout улицы/офиса → export GLB (pre-prod) | **P2** |
+| **vibe-starter-3d** (npm) | ⚠️ Частично | Reference R3F boilerplate, не замена Orchestrator | **P3** |
+| **Hello Worlds** (isaac-mason) | ❌ Нет | Planetary-scale миры — другой genre loop | **Skip** |
+| **Vite** | ✅ Core | Сборка, code-split, deploy (`vite.config.ts`) | **P0** |
+
+### B. По инструментам (кратко)
+
+#### Leonardo.ai
+
+**Для Volodka:** concept art NPC (очки Володьки, платок Заремы) → reference для Ready Player Me;
+KTX2-ready textures (neon, wet asphalt, café walls); skybox/HDR refs для `street_night`, `sleep_dream`.
+
+**Не использовать для:** rigged GLB персонажей (→ RPM + Mixamo + Quaternius).
+
+**Импорт:**
+```
+Leonardo → PNG/WebP → Blender (optional) → GLB/KTX2
+→ assets-source/ai3dgen/props/ или public/textures/
+→ npm run assets:process
+→ npm run assets:validate
+```
+
+#### Scenario.com (multi-format ad generator)
+
+**Для Volodka:** store page / itch.io caps; in-game posters, terminal UI textures; social promo.
+Связка с Leonardo: hero art в Leonardo → **варианты форматов** одного промпта в Scenario.
+
+**Не использовать для:** NPC mesh, уровни, физика, runtime 3D.
+
+**Импорт:**
+```
+Scenario → PNG/WebP (2D only)
+→ public/textures/ui/ или src/assets/promo/
+→ npm run build (не assets:process для mesh)
+```
+
+#### Map3D (cartesiancs/map3d)
+
+**Для Volodka:** быстрый GLB городского блока для `city_square`, фон `street_night` (OSM-based).
+
+**Не использовать для:** финальный noir без retexture; raw export без упрощения mesh (draw calls).
+
+**Импорт:**
+```
+Map3D → city_block.glb
+→ assets-source/ai3dgen/environments/
+→ npm run assets:freekit-stage / assets:process
+→ SceneInteriorAssets или StreetVisual backdrop
+→ npm run assets:validate
+```
+
+#### Sylva (vegetation)
+
+**Для Volodka:** деревья/кусты для `park_day`, `chk_forest_zorge`, `chk_campfire_night` вместо interim pine.
+
+**Не использовать для:** персонажи, интерьеры, городские блоки.
+
+**Импорт:**
+```
+Sylva → pine/bush.glb
+→ assets-source/ai3dgen/vegetation/
+→ npm run assets:process
+→ замена veg_* в manifest / sceneManifestAssets
+→ npm run assets:validate
+```
+
+#### threejs-3d-map-editor (whferr, R3F)
+
+**Для Volodka:** blockout `street_night`, `volodka_corridor`, `office_day`; расстановка Kenney props +
+координаты trigger zones → `triggerZones.ts`.
+
+**Не использовать для:** runtime dependency; замена procedural сцен в движке.
+
+**Импорт:**
+```
+Editor export → blockout.glb
+→ assets-source/ai3dgen/environments/ или props/
+→ npm run assets:process
+→ ручная привязка в sceneDefinitions / SceneInteriorAssets
+```
+
+#### vibe-starter-3d (npm)
+
+**Для Volodka:** reference — postFX preset, control scheme; вытащить идеи, не fork.
+
+**Не использовать для:** переписывание проекта; замена `RPGGameCanvas`, `ExplorationPostFX`, `qualityPresets`.
+
+**Импорт:** не импортировать пакет целиком. Cherry-pick паттерны в `src/engine/graphics/` при необходимости.
+
+#### Hello Worlds (isaac-mason)
+
+**Для Volodka:** только isolated dream-chunk, если появится сюжетная «космическая» сцена — не ядро loop.
+
+**Не использовать для:** основной exploration loop; конфликтует с Rapier KCC, scene transitions, narrative overlay.
+
+**Импорт:** **не внедрять** в основной pipeline.
+
+#### Vite
+
+**Для Volodka:** уже core (`vite.config.ts`, `rapierInitFix`, manual chunks, `verify:deploy`).
+
+**Не «новый ресурс»** — продолжать: lazy physics, bundle budgets, deploy gate.
+
+**Импорт:** `npm run build` / `npm run check` — без изменений пайплайна ассетов.
+
+### C. Карта: сцена → инструмент → импорт
+
+18 core + 9 extension scenes (`sceneDefinitions.ts`, `sceneExtensionDefinitions.ts`).
+
+| Сцена | Инструмент(ы) | Путь импорта |
+|---|---|---|
+| `volodka_room` | Kenney Furniture + Leonardo (wall/ceiling ref) | `assets-source/ai3dgen/interiors/room_bedroom.glb` → `assets:process` |
+| `street_night` | **Map3D** + **Leonardo** textures + Kenney City Kit | `environments/` + `public/textures/` → `assets:freekit-stage` |
+| `cafe_evening` | Kenney + Leonardo HDR refs | `interiors/cafe_interior.glb`, `props/coffee_machine.glb` → `assets:process` |
+| `volodka_corridor` | threejs-3d-map-editor blockout + Kenney | `interiors/corridor.glb` → `assets:process` |
+| `home_evening` | Kenney Furniture + Leonardo warm lighting ref | `interiors/room_bedroom.glb` → `assets:process` |
+| `street_winter` | Map3D + Leonardo (snow/wet ref) + Kenney | `environments/` + textures → `assets:freekit-stage` |
+| `office_day` | Kenney + Leonardo ceiling refs + map-editor blockout | `interiors/office.glb` → `assets:process` |
+| `park_day` | **Sylva** + Kenney bench props | `vegetation/` + `props/bench.glb` → `assets:process` |
+| `library_day` | Kenney + Leonardo (dusty shelves ref) | `interiors/library.glb`, `props/bookshelf.glb` → `assets:process` |
+| `battle` | Quaternius + Mixamo (combat poses) | `assets:mixamo-import` → `public/models/npcs/` |
+| `sleep_dream` | Leonardo skybox/HDR ref | `public/textures/` (procedural sky reference) |
+| `rooftop_edge` | Kenney + Leonardo night ref | `interiors/rooftop.glb` → `assets:process` |
+| `abandoned_factory` | Kenney + AI3DGen Pro (Sprint 2) | `interiors/factory.glb` → `assets:ai3dgen-import` |
+| `solnysh_room` | Kenney + Leonardo | `interiors/room_bedroom.glb` → `assets:process` |
+| `zarema_albert_room` | Kenney + Leonardo (character ref Зарема) | `interiors/room_bedroom.glb` → `assets:process` |
+| `chk_forest_zorge` | **Sylva** + Kenney | `vegetation/` → `assets:process` |
+| `factory_basement` | Kenney + Leonardo dim ref | `interiors/basement.glb` → `assets:process` |
+| `river_pier` | Kenney + Leonardo water/sky ref | `interiors/pier.glb`, `props/lamp_post.glb` → `assets:process` |
+| **NPCs (все сцены)** | **RPM + Mixamo + Quaternius fallback** | `assets:rpm-import`, `assets:mixamo-import`, `assets:quaternius-import` |
+| **UI / promo** | **Scenario + Leonardo** | `public/textures/ui/`, promo assets → `npm run build` |
+| `chk_campfire_night` (ext) | Sylva + Leonardo firelight ref | `vegetation/` + textures; inherits `chk_forest_zorge` |
+| `pier_evening` (ext) | Leonardo dusk ref; inherits `river_pier` | textures; parent visual `RiverPierVisual` |
+| `factory_roof` (ext) | Kenney + Leonardo; inherits `rooftop_edge` | `interiors/rooftop.glb` |
+| `library_basement` (ext) | Kenney; inherits `library_day` | `interiors/library.glb` |
+| `city_square` (ext) | **Map3D** + Leonardo retexture | `environments/` → `assets:freekit-stage`; parent `street_night` |
+| `underground_bunker` (ext) | Kenney + Leonardo; inherits `factory_basement` | `interiors/basement.glb` |
+| `guild_mainframe` (ext) | Leonardo terminal UI + Scenario posters | textures + `interiors/office.glb` ref |
+| `zarema_room` (ext) | Kenney + Leonardo; inherits `zarema_albert_room` | `interiors/room_bedroom.glb` |
+| `albert_backroom` (ext) | Kenney + Leonardo; inherits `cafe_evening` | `interiors/cafe_interior.glb` |
+
+Extension scenes наследуют visuals через `sceneInheritance.ts` — art-работа на parent + точечные overrides.
+
+### D. Граф: Art2D / Art3D / Pipeline / Runtime
+
+```mermaid
+flowchart LR
+  subgraph Art2D
+    L[Leonardo.ai textures/sky]
+    S[Scenario.com UI/promo]
+  end
+  subgraph Art3D
+    RPM[Ready Player Me NPC]
+    Q[Quaternius fallback]
+    M[Mixamo clips]
+    K[Kenney props]
+    MP[Map3D city block]
+    SY[Sylva trees]
+  end
+  subgraph Pipeline
+    AS[assets-source/ai3dgen]
+    P[assets:process / import]
+    PUB[public/models]
+  end
+  subgraph Runtime
+    R3F[R3F scenes Volodka]
+    V[Vite build]
+  end
+  L --> AS
+  RPM --> AS
+  MP --> AS
+  SY --> AS
+  AS --> P --> PUB --> R3F
+  V --> R3F
+```
+
+### E. Рекомендуемый порядок внедрения
+
+1. **Leonardo** — 5–10 textures (café neon, wet street, office ceiling) → KTX2 в hero-сцены.
+2. **RPM + Mixamo** — story NPCs (pipeline готов; см. §8 Sprint 2 exit criteria).
+3. **Map3D** — один блок для `street_night` / `city_square` backdrop (optional).
+4. **Sylva** — 2–3 pine/bush для `park_day` / `chk_forest_zorge`.
+5. **threejs-3d-map-editor** — blockout новых зон при добавлении сцен.
+6. **Scenario** — marketing / in-game 2D, параллельно коду.
+
+### F. Честный disclaimer
+
+Volodka — **narrative web-RPG** с hub-сценами (18 core + 9 extension), не planetary sandbox.
+**Не форкать** проект на `vibe-starter-3d` (потеря Orchestrator, splash, golden path) и **не внедрять**
+Hello Worlds в основной loop. Лучший ROI: **2D generation (Leonardo / Scenario) + существующий GLB pipeline
+(RPM / Quaternius / Kenney / Mixamo)**, а не импорт целых world-frameworks.
+
+| Инструмент | Почему не в core |
+|---|---|
+| Hello Worlds | Другой genre loop (exploration planet vs narrative hubs) |
+| vibe-starter-3d | Fork = потеря Orchestrator, splash, golden path |
+| Scenario | 2D only — не ждите GLB |
+| Map3D raw export | Без retexture = не noir Volodka |
+
+**Связь с ROADMAP:** art-работа выполняется в рамках [§8 Sprint 2](#sprint-2--art-rpm--mixamo--poly-2-нед);
+визуальный polish сцен — [§8 Sprint 3](#sprint-3--graphics-aaa-wet--interiors--perf-2-нед). После каждого
+импорта: `npm run assets:validate` и `npm run check`.
