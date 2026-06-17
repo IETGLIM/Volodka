@@ -9,7 +9,7 @@
 - **UI**: toast «Синергия: …»; world VFX через `poem:synergy_triggered` → `poem:world_event`.
 - **Тесты**: окно 5 с, bidirectional pairs, expired window, flag application и TTL reverse.
 
-## v4.2.33 — 17 июня 2026
+## v4.2.34 — 17 июня 2026
 
 ### Poem Reading Ritual — кинематографическое чтение перед силой стиха
 - **PoemReadingCutscene**: затемнение + letterbox, строки стиха по одной (framer-motion), камера медленно подъезжает к лицу Володьки (`camera:poem_reading_start/end`), stinger из `poemWorldEffects` при старте чтения.
