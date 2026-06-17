@@ -8,10 +8,10 @@ describe('allowsHeavyGfxFeature', () => {
     expect(allowsHeavyGfxFeature('auto', 'galaxySky')).toBe(false);
   });
 
-  it('allows N8AO and galaxy sky on explicit high', () => {
+  it('allows N8AO, galaxy sky, and reflector on explicit high', () => {
     expect(allowsHeavyGfxFeature('high', 'n8ao')).toBe(true);
     expect(allowsHeavyGfxFeature('high', 'galaxySky')).toBe(true);
-    expect(allowsHeavyGfxFeature('high', 'reflector')).toBe(false);
+    expect(allowsHeavyGfxFeature('high', 'reflector')).toBe(true);
   });
 
   it('blocks god rays on auto preset', () => {
@@ -26,8 +26,9 @@ describe('allowsHeavyGfxFeature', () => {
     expect(allowsHeavyGfxFeature('ultra', 'godRays')).toBe(true);
   });
 
-  it('caps ultra reflector and god rays on coarse-pointer devices', () => {
+  it('caps high/ultra reflector and god rays on coarse-pointer devices', () => {
     expect(allowsHeavyGfxFeature('ultra', 'reflector', { coarsePointer: true })).toBe(false);
+    expect(allowsHeavyGfxFeature('high', 'reflector', { coarsePointer: true })).toBe(false);
     expect(allowsHeavyGfxFeature('ultra', 'godRays', { coarsePointer: true })).toBe(false);
     expect(allowsHeavyGfxFeature('ultra', 'n8ao', { coarsePointer: true })).toBe(true);
   });

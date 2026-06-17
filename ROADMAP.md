@@ -4,7 +4,7 @@
 > подготовка к запуску на Vercel. Документ заменяет устаревшие `CODE_REVIEW.md` и
 > `DEEP_CODE_REVIEW.md`, которые описывают состояние проекта **до** большого рефакторинга.
 
-**Дата:** 17 июня 2026 · **Версия:** 4.2.38 · **Целевая аудитория игры:** и новички
+**Дата:** 17 июня 2026 · **Версия:** 4.2.39 · **Целевая аудитория игры:** и новички
 (родители, друзья — не геймеры), и опытные игроки (баланс «лёгкий вход + глубина»).
 
 ---
@@ -25,6 +25,8 @@
 **3D production:** `npm run assets:bootstrap` — CC0 interim; `assets:status` / `assets:ai3dgen-import -- --status` — прогресс; замена на AI3DGen Pro по каталогу.
 
 **Вывод:** инженерная база готова к Vercel production. Следующий визуальный апгрейд — AI3DGen Pro + Blender rig для героя; Mixamo clips override Quaternius embedded via `assets:mixamo-import`.
+
+**v4.2.39:** Sprint 3 (AAA Audit §8) — wet street reflector on high preset; interior lighting pass (campfire, safehouse/backroom, guild); extension scene LOD profiles; budgets:check green.
 
 **v4.2.38:** Sprint 2 (AAA Audit §8) — `assets:status` Sprint 2 audit block; manifest 26/26; Quaternius 20/20 interim; Mixamo 0/4 + RPM 0/20 blocked on user downloads.
 
@@ -183,7 +185,7 @@ npm run check            # всё сразу — главный гейт пер�
 | Область | Оценка | Комментарий |
 |---|---:|---|
 | Architecture | 8 | Модульный движок, валидаторы контента, scene inheritance |
-| Rendering | 7 | WebGL/Three.js стабилен; AAA wet/interiors — backlog |
+| Rendering | 7.5 | WebGL/Three.js стабилен; wet high preset + hub lighting (Sprint 3) |
 | Assets | 7 | Quaternius + Mixamo pipeline; AI3DGen Pro — в плане |
 | Narrative | 8 | 7 актов, стихи неприкосновенны; golden path — 75 gaps |
 | Audio | 8 | `SceneAudioController` + manifest; 27/27 scenes with profiles |
@@ -244,10 +246,10 @@ npm run check            # всё сразу — главный гейт пер�
 
 **Цель:** визуальный polish в рамках web-бюджета (не offline cinematic).
 
-- [ ] Wet surfaces / puddle reflections (performanceBudgets gate)
-- [ ] Interior lighting pass для key hubs (campfire, safehouse, guild)
-- [ ] LOD / culling audit для extension scenes
-- [ ] `npm run budgets:check` — boot menu + first scene в hardMax
+- [x] Wet surfaces / puddle reflections — `high`+ preset, `street_night` + `city_square`; tiered reflector buffers; reduced-motion + coarse-pointer gates
+- [x] Interior lighting pass для key hubs — `chk_campfire_night`, `albert_backroom` (safehouse), `guild_mainframe` (ambient/fill + scene lights)
+- [x] LOD / culling audit для extension scenes — `SCENE_ENV_LOD` profiles для 9 extension hubs; audit-only (no P0 breakage found)
+- [x] `npm run budgets:check` — boot menu + first scene в hardMax
 
 **Exit criteria:** целевые сцены проходят visual smoke; bundle budgets не нарушены; FPS stable на mid-tier GPU.
 

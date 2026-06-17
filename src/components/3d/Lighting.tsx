@@ -31,6 +31,8 @@ const INDOOR_AMBIENT: Record<string, { color: string; intensity: number }> = {
   factory_basement:   { color: '#283830', intensity: 0.55 },
   solnysh_room:       { color: '#3a3428', intensity: 0.6 },
   sleep_dream:        { color: '#3a2850', intensity: 0.58 },
+  guild_mainframe:    { color: '#1a2838', intensity: 0.48 },
+  albert_backroom:    { color: '#2a2038', intensity: 0.5 },
 };
 const DEFAULT_INDOOR_AMBIENT = { color: '#2a2a3a', intensity: 0.52 };
 
@@ -49,12 +51,15 @@ const INDOOR_FILL: Record<string, { position: [number, number, number]; intensit
   zarema_albert_room: { position: [0, 2.2, 0], intensity: 1.65, color: '#aa9977', distance: 12 },
   solnysh_room:       { position: [0, 2.2, 0], intensity: 1.7, color: '#ccaa88', distance: 11 },
   sleep_dream:        { position: [0, 2.4, 0], intensity: 1.5, color: '#8866aa', distance: 14 },
+  guild_mainframe:    { position: [0, 2.4, -1], intensity: 1.85, color: '#66ccaa', distance: 11 },
+  albert_backroom:    { position: [0, 2.0, -0.5], intensity: 1.75, color: '#ddaa77', distance: 9 },
 };
 const OUTDOOR_READABILITY_AMBIENT: Record<string, { intensity: number; color: string }> = {
   park_day:         { intensity: 0.14, color: '#8a9888' },
   rooftop_edge:     { intensity: 0.12, color: '#8899aa' },
   river_pier:       { intensity: 0.13, color: '#778899' },
   chk_forest_zorge: { intensity: 0.11, color: '#6a7868' },
+  chk_campfire_night: { intensity: 0.14, color: '#5a6858' },
 };
 const DEFAULT_INDOOR_FILL: NonNullable<typeof INDOOR_FILL[string]> = {
   position: [0, 2.2, 0], intensity: 1.6, color: '#998877', distance: 12,
@@ -112,7 +117,7 @@ export function ExplorationLighting() {
   const isIndoor = config.hasCeiling;
   const isNight = sceneId === 'street_night' || sceneId === 'cafe_evening';
   const isStreet = sceneId === 'street_night' || sceneId === 'street_winter';
-  const isChkForest = sceneId === 'chk_forest_zorge';
+  const isChkForest = sceneId === 'chk_forest_zorge' || sceneId === 'chk_campfire_night';
   const isDream = sceneId === 'sleep_dream';
 
   // Directional light — very dim indoors (barely-there ceiling bounce)

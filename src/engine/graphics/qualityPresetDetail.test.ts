@@ -16,19 +16,26 @@ describe('formatQualityPresetDetailRu', () => {
     expect(detail).toContain('3D-модели (GLB): от пресета «Среднее»');
   });
 
-  it('shows wet reflections on explicit ultra', () => {
-    const detail = formatQualityPresetDetailRu('ultra', QUALITY_PRESETS.ultra);
-    expect(detail).toContain('Мокрые отражения на улице');
-    expect(detail).not.toContain('выберите');
+  it('shows wet reflections on explicit high and ultra', () => {
+    expect(formatQualityPresetDetailRu('high', QUALITY_PRESETS.high)).toContain(
+      'Мокрые отражения на улице',
+    );
+    const ultra = formatQualityPresetDetailRu('ultra', QUALITY_PRESETS.ultra);
+    expect(ultra).toContain('Мокрые отражения на улице');
+    expect(ultra).not.toContain('выберите');
   });
 
-  it('nudges auto→ultra users to pick explicit ultra for reflector', () => {
-    const detail = formatQualityPresetDetailRu('auto', QUALITY_PRESETS.ultra);
-    expect(detail).toContain('Мокрые отражения: выберите пресет «Ультра»');
+  it('nudges auto→high/ultra users to pick an explicit preset for reflector', () => {
+    expect(formatQualityPresetDetailRu('auto', QUALITY_PRESETS.ultra)).toContain(
+      'Мокрые отражения: выберите пресет «Высокое» или выше',
+    );
+    expect(formatQualityPresetDetailRu('auto', QUALITY_PRESETS.high)).toContain(
+      'Мокрые отражения: выберите пресет «Высокое» или выше',
+    );
   });
 
-  it('does not show reflector hint for auto resolved to high', () => {
-    const detail = formatQualityPresetDetailRu('auto', QUALITY_PRESETS.high);
+  it('does not show reflector hint for auto resolved to medium', () => {
+    const detail = formatQualityPresetDetailRu('auto', QUALITY_PRESETS.medium);
     expect(detail).not.toContain('Мокрые отражения');
   });
 });

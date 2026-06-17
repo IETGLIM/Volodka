@@ -185,10 +185,13 @@ export function formatQualityPresetDetailRu(
   if (glbCapable) {
     hints.push('3D-модели (GLB): от пресета «Среднее»');
   }
-  if (selectedPreset === 'ultra') {
+  if (selectedPreset === 'ultra' || selectedPreset === 'high') {
     hints.push('Мокрые отражения на улице');
-  } else if (selectedPreset === 'auto' && preset.id === 'ultra') {
-    hints.push('Мокрые отражения: выберите пресет «Ультра»');
+  } else if (
+    selectedPreset === 'auto'
+    && (preset.id === 'ultra' || preset.id === 'high')
+  ) {
+    hints.push('Мокрые отражения: выберите пресет «Высокое» или выше');
   }
 
   return hints.length > 0 ? `${base} · ${hints.join(' · ')}` : base;

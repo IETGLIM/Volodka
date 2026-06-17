@@ -3,6 +3,7 @@ import {
   DEFAULT_NPC_LOD,
   environmentDetailVisible,
   environmentLodFromDistance,
+  getEnvironmentLodProfile,
   resolveNpcLod,
   scaleNpcLodThresholds,
 } from './distanceLod';
@@ -65,6 +66,15 @@ describe('environmentLodFromDistance', () => {
   it('low lodBias shrinks detail radii (switches to minimal sooner)', () => {
     expect(environmentLodFromDistance(7, profile, 0.6)).toBe('standard');
     expect(environmentLodFromDistance(7, profile, 1.25)).toBe('full');
+  });
+});
+
+describe('extension scene env LOD profiles', () => {
+  it('defines finite cull radii for extension hubs (not default 999)', () => {
+    expect(getEnvironmentLodProfile('guild_mainframe').clutterDistance).toBeLessThan(999);
+    expect(getEnvironmentLodProfile('albert_backroom').clutterDistance).toBeLessThan(999);
+    expect(getEnvironmentLodProfile('chk_campfire_night').clutterDistance).toBeLessThan(999);
+    expect(getEnvironmentLodProfile('city_square').clutterDistance).toBe(16);
   });
 });
 

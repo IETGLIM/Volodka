@@ -1,4 +1,12 @@
 # Changelog — ВОЛОДЬКА RPG
+## v4.2.39 — 17 июня 2026
+
+### Sprint 3 — Graphics AAA (ROADMAP §8)
+- **Wet street (high+)**: planar reflector на `street_night` и `city_square` при пресете «Высокое»/«Ультра»; tiered buffer (384 high / 512 ultra); gates: auto, reduced-motion, coarse-pointer.
+- **Interior lighting**: `chk_campfire_night` (костёр + fill), `albert_backroom` (safehouse), `guild_mainframe` — ambient/fill в `Lighting.tsx` + усиленные point lights в extension defs.
+- **LOD audit**: `SCENE_ENV_LOD` для 9 extension-сцен (finite cull radii вместо default 999).
+- **Тесты**: `wetStreetScenes`, quality preset gates, extension LOD profiles.
+
 ## v4.2.38 — 17 июня 2026
 
 ### Sprint 2 — Art pipeline audit (ROADMAP §8)

@@ -10,6 +10,8 @@ import { registerFrameTick, unregisterFrameTick } from '@/engine/frame/FrameBudg
 import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
 import { useIsMobileVisual } from '@/hooks/use-mobile';
 import { allowsHeavyGfxFeature } from '@/engine/graphics/qualityFeatureGates';
+import { getReflectorMaterialSettings, isWetStreetScene } from '@/engine/graphics/wetStreetScenes';
+import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 import { applyWetness } from '@/engine/graphics/materials/pbrPresets';
 import * as THREE from 'three';
 import {
@@ -32,7 +34,7 @@ interface StreetVisualProps {
   livePlayerPositionRef?: React.MutableRefObject<THREE.Vector3>;
 }
 
-/** Rain-wet ground plane for street scenes. Ultra street_night uses planar reflections. */
+/** Rain-wet ground plane for street scenes. High+ uses planar reflections on wet streets. */
 function StreetGround({
   sceneId,
   isWinter,
@@ -44,10 +46,13 @@ function StreetGround({
 }) {
   const { preset, selectedPreset } = useGraphicsQuality();
   const coarsePointer = useIsMobileVisual();
+  const reducedMotion = useEffectiveReducedMotion();
+  const reflectorSettings = getReflectorMaterialSettings(preset.id);
   const usePlanarReflector =
-    allowsHeavyGfxFeature(selectedPreset, 'reflector', { coarsePointer })
-    && sceneId === 'street_night'
-    && !isWinter;
+    isWetStreetScene(sceneId)
+    && !isWinter
+    && !reducedMotion
+    && allowsHeavyGfxFeature(selectedPreset, 'reflector', { coarsePointer });
   const groundColor = isWinter ? '#a0a8b8' : '#3a3a52';
   const dryRoughness = isWinter ? 0.7 : 0.85;
   const dryMetalness = 0.05;
@@ -90,10 +95,10 @@ function StreetGround({
           color={groundColor}
           roughness={dryRoughness}
           metalness={dryMetalness}
-          blur={[256, 128]}
-          resolution={512}
+          blur={reflectorSettings.blur}
+          resolution={reflectorSettings.resolution}
           mixBlur={0.85}
-          mixStrength={0.65}
+          mixStrength={reflectorSettings.mixStrength}
           mirror={0.45}
           depthScale={1}
           minDepthThreshold={0.5}
