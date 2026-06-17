@@ -1,4 +1,9 @@
 # Changelog — ВОЛОДЬКА RPG
+## v4.2.42 — 17 июня 2026
+
+### Golden path — terminal spine node
+- **deriveGoldenPath**: terminal spine end (`act7_true_end`) excluded from `missingGoldenPathMarkers` when fallback cannot advance (new-game choice is not spine).
+
 ## v4.2.41 — 17 июня 2026
 
 ### Sprint 5 — Lint zero + E2E hardening (ROADMAP §8)

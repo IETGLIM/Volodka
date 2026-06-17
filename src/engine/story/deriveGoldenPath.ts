@@ -29,7 +29,7 @@ export interface DerivedGoldenPath {
   objectiveTypeByNodeId: Readonly<Record<string, GuidedStoryObjectiveType>>;
   /** Node ids where spine used fallback instead of a goldenPath choice. */
   fallbackSpineSteps: readonly string[];
-  /** Nodes on fallback spine with no valid goldenPath outgoing edge. */
+  /** Nodes on fallback spine with no valid goldenPath outgoing edge (terminal spine end excluded). */
   missingGoldenPathMarkers: readonly string[];
   /** Nodes with 2+ valid goldenPath choices — spine cannot auto-pick. */
   ambiguousGoldenPathNodes: readonly AmbiguousGoldenPathNode[];
@@ -122,13 +122,14 @@ export function deriveStorySpine(
       const next = c.next;
       return next != null && isStoryGraphEdge(nodeId, next);
     });
-    if (!hasForwardEdge) break;
+    const manualIdx = fallback.indexOf(current);
+    const canFallbackAdvance = manualIdx >= 0 && manualIdx + 1 < fallback.length;
+    if (!hasForwardEdge && !canFallbackAdvance) break;
 
-    if (goldenNext.kind === 'none') {
+    if (goldenNext.kind === 'none' && canFallbackAdvance) {
       missingMarkers.push(current);
     }
-    const manualIdx = fallback.indexOf(current);
-    if (manualIdx >= 0 && manualIdx + 1 < fallback.length) {
+    if (canFallbackAdvance) {
       fallbackSteps.push(current);
       current = fallback[manualIdx + 1]!;
     } else {
