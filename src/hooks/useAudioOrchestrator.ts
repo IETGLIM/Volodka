@@ -75,6 +75,11 @@ export function useAudioOrchestrator() {
       ctrl.onPoemCollected(poemId);
     });
 
+    scope.on('poem:world_event', ({ poemId, profile }) => {
+      if (disposedRef.current) return;
+      ctrl.onPoemWorldEvent(poemId, profile.audioCue);
+    });
+
     scope.on('combat:start', () => {
       if (disposedRef.current) return;
       ctrl.onCombatStart();

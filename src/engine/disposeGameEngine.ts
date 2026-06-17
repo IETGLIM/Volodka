@@ -44,6 +44,7 @@ import {
 } from '@/engine/core/GlobalCleanupService';
 import { getGameSnapshot } from '@/engine/GameActionDispatcher';
 import { bindPoemResetListener } from '@/engine/PoemPowerSystem';
+import { bindPoemWorldEventBridge } from '@/engine/poemWorld/poemWorldEventBridge';
 import { bindDeferredCombatStartListener, bindSceneTransitionGuardListeners } from '@/engine/core/SceneTransitionManager';
 import { bindSceneLoadedBridge } from '@/engine/core/sceneLoadedGate';
 import {
@@ -123,6 +124,7 @@ export function reviveGameEngine(): void {
   bindSceneTransitionGuardListeners();
   bindDeferredCombatStartListener();
   bindPoemResetListener();
+  bindPoemWorldEventBridge();
 
   reviveQuestTracker();
   reviveGuidedStoryManager();

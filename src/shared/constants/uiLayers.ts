@@ -38,6 +38,8 @@ export const UI_LAYERS = {
   TOOLTIP: 58,
   /** Cinematic transition (fade-to-black) */
   CINEMATIC_TRANSITION: 95,
+  /** Ambient world response when a poem power fires (tint, epigraph) */
+  POEM_WORLD_EFFECT: 91,
   /** Poem power activation FX overlay */
   POEM_POWER_EFFECT: 92,
   /** Poem power activation title stack */

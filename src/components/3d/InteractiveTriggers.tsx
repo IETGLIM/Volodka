@@ -28,6 +28,11 @@ import {
 import { requestSceneTransition } from '@/engine/scene/sceneTransition';
 import { sharedCameraYawRef } from '@/engine/PlayerRotationState';
 import { ProximityGodRay } from './ProximityGodRay';
+import { isEffectiveReducedMotion } from '@/engine/accessibility/accessibilitySettings';
+import {
+  resolvePoemExplorationHighlight,
+  shouldHighlightZoneForPoemMode,
+} from '@/engine/poemWorld/poemExplorationHighlight';
 
 /** Maximum number of visible [E] prompts at once */
 const MAX_VISIBLE_PROMPTS = 2;
@@ -51,6 +56,11 @@ interface ZoneProximityRuntime {
   proximityRef: React.MutableRefObject<number>;
   pulsePhaseRef: React.MutableRefObject<number>;
   showIndicatorRef: React.MutableRefObject<boolean>;
+  poemHighlightRef: React.MutableRefObject<boolean>;
+  poemHighlightColorRef: React.MutableRefObject<string>;
+  poemStaticHighlightRef: React.MutableRefObject<boolean>;
+  zoneColorRef: React.MutableRefObject<string>;
+  zoneGlowActiveRef: React.MutableRefObject<boolean>;
   lastPromptDistanceRef: React.MutableRefObject<number | null>;
   triggeredRef: React.MutableRefObject<boolean>;
   triggerCooldown: React.MutableRefObject<number>;
@@ -72,6 +82,11 @@ function createZoneProximityRuntime(): ZoneProximityRuntime {
     proximityRef: { current: 0 },
     pulsePhaseRef: { current: 0 },
     showIndicatorRef: { current: false },
+    poemHighlightRef: { current: false },
+    poemHighlightColorRef: { current: '#ffd866' },
+    poemStaticHighlightRef: { current: false },
+    zoneColorRef: { current: '#88eeff' },
+    zoneGlowActiveRef: { current: false },
     lastPromptDistanceRef: { current: null },
     triggeredRef: { current: false },
     triggerCooldown: { current: 0 },
@@ -604,6 +619,13 @@ export function InteractiveTriggers({
     }
 
     // Zone proximity — god rays, prompts, enter toasts, particles
+    const activeTTLFlags = useGameStore.getState().activeTTLFlags ?? {};
+    const poemHighlight = resolvePoemExplorationHighlight(
+      activeTTLFlags,
+      playerFlags,
+      { reducedMotion: isEffectiveReducedMotion() },
+    );
+
     for (const zone of zonesRef.current) {
       const runtime = zoneRuntimeRef.current.get(zone.id);
       if (!runtime) continue;
@@ -614,7 +636,19 @@ export function InteractiveTriggers({
       const isNear = dist < range;
       const isAllowed = allowedIdsRef.current.has(zone.id);
       const shouldShow = isNear && isAllowed;
-      runtime.proximityRef.current = shouldShow ? Math.max(0.35, 1 - dist / (range + 1.2)) : 0;
+      const poemApplies =
+        poemHighlight.mode !== 'none' &&
+        shouldHighlightZoneForPoemMode(zone, poemHighlight.mode);
+      runtime.poemHighlightRef.current = poemApplies;
+      runtime.poemHighlightColorRef.current = poemHighlight.color;
+      runtime.poemStaticHighlightRef.current = poemApplies && !poemHighlight.pulse;
+      runtime.zoneColorRef.current = poemApplies ? poemHighlight.color : '#88eeff';
+      runtime.zoneGlowActiveRef.current = shouldShow || poemApplies;
+      runtime.proximityRef.current = shouldShow
+        ? Math.max(0.35, 1 - dist / (range + 1.2))
+        : poemApplies
+          ? 0.62
+          : 0;
 
       reconcileProximityPrompt(
         zone.id,
@@ -628,7 +662,9 @@ export function InteractiveTriggers({
         unregisterPrompt,
       );
 
-      if (shouldShow) runtime.pulsePhaseRef.current += delta * 3;
+      if (shouldShow || (poemApplies && poemHighlight.pulse)) {
+        runtime.pulsePhaseRef.current += delta * 3;
+      }
 
       runtime.triggerCooldown.current = Math.max(0, runtime.triggerCooldown.current - delta);
       if (isNear && !runtime.triggeredRef.current && runtime.triggerCooldown.current <= 0) {
@@ -994,13 +1030,15 @@ function TriggerZoneComponent({
   return (
     <group position={zone.position}>
       <ProximityGodRay
-        activeRef={runtime.showIndicatorRef}
+        activeRef={runtime.zoneGlowActiveRef}
         color="#88eeff"
+        colorRef={runtime.zoneColorRef}
         beamHeight={Math.max(zone.size[1] + 1.6, 2.2)}
         baseY={Math.max(zone.size[1] * 0.2, 0.35)}
         proximityRef={runtime.proximityRef}
         flashRef={runtime.outlineFlashRef}
         pulsePhaseRef={runtime.pulsePhaseRef}
+        staticHighlightRef={runtime.poemStaticHighlightRef}
       />
 
       <instancedMesh

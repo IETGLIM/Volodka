@@ -56,6 +56,7 @@ import { CutsceneOverlay } from '@/components/game/CutsceneOverlay';
 import { IntroWakeOverlay } from '@/components/game/IntroWakeOverlay';
 import { PoetryPowerBar } from '@/components/game/PoetryPowerBar';
 import { PoemPowerEffect } from '@/components/game/PoemPowerEffect';
+import { PoemWorldEffect } from '@/components/game/poemWorldEffect/PoemWorldEffect';
 import { DirectionalDamageIndicator } from '@/components/game/DirectionalDamageIndicator';
 import { DamageNumberFloat } from '@/components/game/DamageNumberFloat';
 import { LevelUpSummary } from '../LevelUpSummary';
@@ -223,10 +224,18 @@ export const GameplaySceneTransitionFx = memo(function GameplaySceneTransitionFx
   );
 });
 
-/** Poem power activation VFX — exploration only. */
+/** Poem world-event ambient layer — tint, epigraph, letterbox (below power title FX). */
+export const GameplayPoemWorldFx = memo(function GameplayPoemWorldFx() {
+  const profile = useGameplayPresentationProfile();
+  if (!isMotionFxProfile(profile)) return null;
+
+  return <PoemWorldEffect />;
+});
+
+/** Poem power activation VFX — exploration and combat. */
 export const GameplayPoemPowerFx = memo(function GameplayPoemPowerFx() {
   const profile = useGameplayPresentationProfile();
-  if (!isExplorationHudProfile(profile)) return null;
+  if (!isMotionFxProfile(profile)) return null;
 
   return <PoemPowerEffect />;
 });
@@ -255,6 +264,7 @@ export const GameplaySharedEffects = memo(function GameplaySharedEffects() {
       <EncounterBeatOverlay />
       <GameplayCutsceneOverlay />
       <GameplaySceneTransitionFx />
+      <GameplayPoemWorldFx />
       <GameplayPoemPowerFx />
       <GameplayPhotoMode />
     </>

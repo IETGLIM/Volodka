@@ -5,7 +5,7 @@
 
 import { musicEngine } from '../MusicEngine';
 import { ambientEngine } from './AmbientEngine';
-import { sfxEngine } from './SfxEngine';
+import { sfxEngine, type StingerId } from './SfxEngine';
 import { applyAudioSettings } from './AudioSettings';
 import {
   getSceneReverbPreset,
@@ -146,6 +146,17 @@ export class SceneAudioController {
   onPoemCollected(poemId?: string): void {
     if (!this.guard()) return;
     const motif = getPoemMotif(poemId ?? 'default');
+    sfxEngine.playStinger(motif.stinger);
+  }
+
+  /** Stinger / motif when a poem power reshapes the world (not just a buff). */
+  onPoemWorldEvent(poemId: string, audioCue?: StingerId): void {
+    if (!this.guard()) return;
+    if (audioCue) {
+      sfxEngine.playStinger(audioCue);
+      return;
+    }
+    const motif = getPoemMotif(poemId);
     sfxEngine.playStinger(motif.stinger);
   }
 

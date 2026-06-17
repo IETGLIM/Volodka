@@ -1,4 +1,14 @@
 # Changelog — ВОЛОДЬКА RPG
+## v4.2.31 — 17 июня 2026
+
+### Poem World Events — стих как событие мира
+- **Слой world event поверх PoemPowerSystem**: при `poem:power_used` мост эмитит `poem:world_event` — VFX, аудио, эпиграф, narrative hint flags (TTL buffs сохранены).
+- **Конфиг** `poemWorldEffects.ts`: категории (exploration / dialogue / combat / defense / social / utility), полные профили для poem_1, poem_3, poem_5, poem_10, poem_16; fallback для остальных сил.
+- **Визуал**: ScreenEffects (flash, vignette, shake) + `PoemWorldEffect` (ambient tint, god rays, letterbox, 1-строчный эпиграф); reduced motion — без shake/chromatic/letterbox.
+- **Аудио**: `SceneAudioController.onPoemWorldEvent` — stinger по `audioCue` из профиля.
+- **Мир**: TTL-флаги `poem_hint_*_active` (exit_glow, npc_shimmer, interaction_pulse) на время эффекта.
+- **Тесты**: resolver, bridge emission, reduced-motion skip для storm_break.
+
 ## v4.2.30 — 17 июня 2026
 
 ### Sprint 1 — Audio + mode integrity (AAA Audit §8)
